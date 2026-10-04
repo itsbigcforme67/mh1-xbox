@@ -272,9 +272,31 @@ How it works (each step was checked, not assumed):
 - The asm split now cuts at these starts (files f_<prefix>, gaps
   g_<first function>): 1,694 text files. All five modules still OK.
 
+### Update: workflow tools and first whole source file (same session)
+
+- tools/check.py compiles a C file and compares every function against the
+  original in any module, masking only fields covered by the object's own
+  relocations; -v prints a side-by-side diff; --add appends the range to
+  c_files.txt once every function in it matches.
+- tools/draft.py runs m2c (cloned into tools/m2c, gitignored) on single
+  functions pulled out of the split asm, with registers renamed from $31
+  to $ra (m2c needs names).
+- **src/main/set/set12.c: the whole set12 object file (6 functions,
+  0x1567C0-0x1569D8) matches** and is built as one C file. Shared struct in
+  include/set.h (SETW, offsets taken from matched code). Took one fix
+  round: the timer test is `(u16)timer != 0xFFFF`, the counter is
+  incremented and compared in separate statements, and se_req2 takes six
+  arguments (MWCC EABI passes up to 8 in a0-a3, t0-t3).
+- func_001567B4 in the split is alignment padding spimdisasm took for a
+  function. The set12 file really starts at set12_set.
+- setup_split.py now drops inferred cuts that fall inside a C range
+  (otherwise splat emits asm for the same code and it links twice).
+- Progress: 11 of 12,585 functions.
+
 ### Next
 
-1. Start decompiling for real. Good first targets: small leaf functions in
+1. Keep decompiling whole files: next the player file at 0x14F030
+   (13 functions), which starts the shared PLW player struct. Good first targets: small leaf functions in
    main's player/monster code, building up shared headers (PLW, EMW...)
    as offsets are confirmed.
 2. Infer Capcom's file boundaries in the big text blocks (needed before

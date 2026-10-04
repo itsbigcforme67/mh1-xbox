@@ -188,6 +188,9 @@ def text_subsegments(module, section, all_rows, names_by_addr, vram, lo, hi, c_r
     for mod, start, end, name in c_ranges:
         if mod != module:
             continue
+        # A C file owns its whole range: drop any other cut inside it.
+        for a in [a for a in cuts if start < a < end]:
+            del cuts[a]
         cuts[start] = ("c", name)
         if end not in cuts and end < hi:
             cuts[end] = ("asm", None)

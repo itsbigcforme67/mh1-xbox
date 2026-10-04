@@ -82,9 +82,17 @@ docs/survey/mh1_symbols.csv):
 and lobby (from AFS_DATA.AFS). The DNAS overlays are not built: they are
 Sony network security code that gets replaced.
 
-To decompile a function: write it in src/<module>/<name>.c, check it with
-tools/matchtest/cmp.py, add `module start end name` to config/c_files.txt,
-then rerun the commands above. The build must still print OK.
+To decompile code:
+
+    python3 tools/draft.py main --file f_set12      # m2c first draft per function
+    # write src/<module>/<dir>/<name>.c (shared structs go in include/)
+    python3 tools/check.py src/main/set/set12.c -v  # per-function match + diffs
+    python3 tools/check.py src/main/set/set12.c --add main set/set12
+    # then rerun setup_split, splat and build.py: every module must print OK
+
+m2c: `git clone https://github.com/matt-kempster/m2c tools/m2c` and
+`.venv/bin/pip install pycparser graphviz`. Asm file names follow the
+inferred source files (f_<prefix>, g_<first function> for gaps).
 
 ## Roadmap
 
