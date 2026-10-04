@@ -29,9 +29,11 @@ typedef struct EMW {
     u16 char0;          /* 0x2DC current animation (as PLW) */
     u8 _pad2DE[0x2E4 - 0x2DE];
     u16 act_tm0;        /* 0x2E4 */
-    u8 _pad2E6[0x2EC - 0x2E6];
+    u16 act_tm1;        /* 0x2E6 */
+    u8 _pad2E8[0x2EC - 0x2E8];
     s16 blend0;         /* 0x2EC */
-    u8 _pad2EE[0x736 - 0x2EE];
+    s16 blend1;         /* 0x2EE */
+    u8 _pad2F0[0x736 - 0x2F0];
     u8 stg;             /* 0x736 */
     u8 _pad737[0xA10 - 0x737];
 } EMW;

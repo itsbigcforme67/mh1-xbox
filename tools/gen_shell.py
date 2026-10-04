@@ -78,8 +78,42 @@ def generate(nn):
                  for k, h in cases)
     src = re.sub(r"(static void shell%s_move\(SHLW \*sh\) \{\n    switch \(sh->mode\) \{\n)"
                  r".*?(    \}\n\}\n)" % nn, lambda m: m.group(1) + sw + m.group(2), src, flags=re.S)
-    labels = "".join("    case 0x%X:\n" % v for v in sorted(vals))
-    src = src.replace("    case 0xE:\n        sh->x61 = 99;", labels + "        sh->x61 = 99;")
+    set_body = asm_func("shell%s_set" % nn)
+    st = re.search(r"sb\s+\$(\d+), 0x2\(\$2\)", set_body).group(1)
+    stype = int(re.findall(r"addiu\s+\$%s, \$0, 0x([0-9A-F]+)" % st, set_body)[-1], 16)
+    src = src.replace("            sh->type = 1;", "            sh->type = %d;" % stype)
+    m_body = asm_func("shell%s_m" % nn)
+    if "0x61(" not in m_body:
+        # variant without the x61 case list
+        src = re.sub(r"\n    switch \(sh->arg\) \{\n    default:\n        break;\n"
+                     r"    case 0xE:\n        sh->x61 = 99;\n        break;\n    \}", "", src)
+    else:
+        labels = "".join("    case 0x%X:\n" % v for v in sorted(vals))
+        src = src.replace("    case 0xE:\n        sh->x61 = 99;", labels + "        sh->x61 = 99;")
+    i_body = asm_func("shell%s_i" % nn)
+    flags = re.findall(r"addiu\s+\$5, \$0, 0x([0-9A-F]+)", i_body.split("pl_atck_data_set_shl")[0])
+    if len(set(flags)) == 2:
+        # variant: the shell flag depends on arg
+        pre = i_body.split("shell_flag_set")[0]
+        fa, fb = [int(f, 16) for f in flags]
+        consts = [int(v, 16) for v in re.findall(r"addiu\s+\$\d+, \$0, 0x([0-9A-F]+)", pre)]
+        cmpv = next(v for v in consts if v not in (1, fa, fb))
+        special, normal = (fa, fb) if fb == 0x20 else (fb, fa)
+        src = src.replace("    shell_flag_set(sh, 0x20);\n",
+                          "    if (sh->arg == %d) {\n        shell_flag_set(sh, 0x%X);\n    } else {\n"
+                          "        shell_flag_set(sh, 0x%X);\n    }\n" % (cmpv, special, normal))
+    if "0x2E6(" in i_body:
+        # variant: arg 3 uses the owner's second animation channel
+        src = src.replace('''        a = flAbs(em->blend0 % 100);
+        sh->x60 += (u8)(a - (s32)flAbs(em->act_tm0) - 1);''', '''        if (sh->arg == 3) {
+            a = flAbs(em->blend1 % 100);
+            b = flAbs(em->act_tm1);
+        } else {
+            a = flAbs(em->blend0 % 100);
+            b = flAbs(em->act_tm0);
+        }
+        sh->x60 += (u8)(a - b - 1);''')
+        src = src.replace("    s32 a;\n", "    s32 a;\n    s32 b;\n", 1)
     return src, (tbl, taddr, tsize)
 
 
