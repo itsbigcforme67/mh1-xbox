@@ -403,7 +403,12 @@ How it works (each step was checked, not assumed):
   build is far worse on this function too. Handled by splitting the file
   around the one function (set03.c / set03b.c, set03_nm.c parked).
 - Parked near-matches: shell00 (shell00_i 2 off, permuter no help),
-  set17 (set17_trans: 10 off, case-1 statement order), set22_m (trap).
+  set17 (set17_trans: 10 off; a full search of case 1's statement order
+  found nothing better), set22_m (trap), Set20_set (original leaves the
+  delay slots of its quest-number compare chain empty; cause unknown).
+- set20 (stage 25 gate) matches apart from Set20_set. `++t > 180` and
+  `++t >= 181` compile differently (slti into at vs v0); the original used
+  the first.
 - set04 and set08 (game.bin) match. set08 is the floor/water tiles on
   stages 0/26 (8x10 grid, model per tile from st00_obj_type0/1, culled with
   flCheckMeshFOV) and a 3x3 grid elsewhere, with scrolling UVs. Its
