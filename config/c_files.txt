@@ -10,3 +10,4 @@ main 0x001567C0 0x001569D8 set/set12
 main 0x0014F030 0x0014F0C4 pl/pl_normal
 main 0x0014F330 0x0014F850 pl/pl_normal2
 main 0x00156330 0x001567B4 set/set06
+main 0x001554E0 0x00156328 set/set01

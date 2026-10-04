@@ -111,7 +111,8 @@ typedef struct PLW {
     u8    work88C;       /* 0x88C */
     u8 _pad88D[0x35];
     u8    work8C2;       /* 0x8C2 */
-    u8 _pad8C3[0x2D];
+    u8 _pad8C3[0x11];
+    char  name[0x1C];    /* 0x8D4 player name (set01_i) */
     s8    work8F0;       /* 0x8F0 */
     u8 _pad8F1[0x10F];
 } PLW;
