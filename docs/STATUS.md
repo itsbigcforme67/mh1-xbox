@@ -385,6 +385,26 @@ How it works (each step was checked, not assumed):
   slot. Matching shells: 01 02 04 05 11 13 15 16 17 18 19 20 21 23.
   Progress: 147 functions.
 
+### Update: more shells and set files; a pattern in the compiler quirk
+
+- Matching now also: shell09/10/14, set03 (split), set07, set10.
+  198 functions incl. everything earlier.
+- EMW+0xA0 / SHLW+0x24 are integer rotation angles (shell14_trans converts
+  them with 2*pi*v/65536), not positions; the "VEC3_COPY" guess is gone.
+  PLW/EMW world position is at +0xAC.
+- tools/declperm.py tries every order of a function's local declarations
+  (MWCC assigns saved registers partly by declaration order); fixed
+  shell14_trans, set07, set03_trans.
+- **Second sample of the compiler quirk**: set03_m keeps a divide-by-zero
+  trap on `% num` where num is always 3, and converts a constant 100 from
+  a register in set03_trans; our builds (3.0b22-020926/b38/b50/b52) fold
+  the first and drop the trap. Same family as normal_char_set: Capcom's
+  compiler propagates constants less than any build we have. Every other
+  build is far worse on this function too. Handled by splitting the file
+  around the one function (set03.c / set03b.c, set03_nm.c parked).
+- Parked near-matches: shell00 (shell00_i 2 off, permuter no help),
+  set16 (set16_trans), set17 (set17_trans: register pressure).
+
 ### Next
 
 1. Remaining shells (00, 03, 06, 08, 09, 10, 12, 14, 22: bigger, with
