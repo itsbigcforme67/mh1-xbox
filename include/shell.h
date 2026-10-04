@@ -19,7 +19,8 @@ typedef struct SHLW {
     u8 xB;              /* 0x0B */
     u8 _pad0C[0x14 - 0x0C];
     s32 x14;            /* 0x14 */
-    u8 _pad18[0x20 - 0x18];
+    struct SENKO *senko;    /* 0x18 flash effect (shell17) */
+    u8 _pad1C[0x20 - 0x1C];
     void (*move)(struct SHLW *);    /* 0x20 */
     VEC3 pos;           /* 0x24 */
     VEC3 pos2;          /* 0x30 */

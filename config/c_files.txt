@@ -30,3 +30,5 @@ game 0x00628140 0x006285D8 shell/shell16
 game:rodata 0x00689F30 0x00689F50 shell/shell16
 game 0x00637200 0x00637768 shell/shell19
 game:rodata 0x0068A410 0x0068A430 shell/shell19
+game 0x00636920 0x00636E28 shell/shell17
+game:rodata 0x0068A3D0 0x0068A3F0 shell/shell17

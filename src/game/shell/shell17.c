@@ -1,4 +1,5 @@
-/* shell17 - game.bin, generated from the shell18 template by tools/gen_shell.py. */
+/* shell17 - game.bin 0x00636920-0x00636E28. Generated from the shell18
+ * template, then edited by hand for the flash ("senko") effect. */
 #include "shell.h"
 #include "prim.h"
 
@@ -11,6 +12,18 @@ f32 flAbs(f32);
 void flvecCopy(void *, void *);
 void release_prim(s16);
 
+/* Flash effect handed to the renderer with push_senko/pull_senko. */
+typedef struct SENKO {
+    VEC3 pos;           /* 0x00 */
+    f32 size;           /* 0x0C */
+    u8 x10;             /* 0x10 */
+    u8 _pad11[4];
+    u8 x15;             /* 0x15 */
+} SENKO;
+
+void push_senko(SENKO *);
+void pull_senko(SENKO *);
+
 static void shell17_move(SHLW *sh);
 static void shell17_i(SHLW *sh);
 static void shell17_m(SHLW *sh);
@@ -22,6 +35,26 @@ void shell17_set(EMW *em, int arg) {
 
     if (Em_stg_ck(em) != 0) {
         sh = pull_shell_work(0);
+        if (sh != 0) {
+            sh->type = 17;
+            sh->arg = arg;
+            sh->move = shell17_move;
+            sh->em_no = em->id;
+            sh->x7A = em->x10;
+            sh->char0 = em->char0;
+            sh->owner = em;
+            sh->xC8 = *(s32 *)&em->pos.y;
+            VEC3_COPY(sh->pos, em->pos);
+            em->x19 = 0;
+        }
+    }
+}
+
+void shell17_set3(EMW *em, int arg) {
+    SHLW *sh;
+
+    if (Em_stg_ck(em) != 0) {
+        sh = pull_shell_work(1);
         if (sh != 0) {
             sh->type = 17;
             sh->arg = arg;
@@ -86,6 +119,15 @@ static void shell17_i(SHLW *sh) {
         }
     }
     sh->prim = 0;
+    if (sh->arg == 22) {
+        SENKO *sk = sh->senko;
+
+        flvecCopy(sk, &sh->pos2);
+        sk->size = 2000.0f;
+        sk->x10 = 0;
+        sk->x15 = 5;
+        push_senko(sk);
+    }
 }
 
 static void shell17_m(SHLW *sh) {
@@ -94,17 +136,21 @@ static void shell17_m(SHLW *sh) {
     switch (sh->arg) {
     default:
         break;
-    case 0x5:
     case 0x13:
-    case 0x16:
     case 0x17:
     case 0x1C:
         sh->x61 = 99;
         break;
     }
+    if (sh->arg == 0x16) {
+        sh->senko->x15 = 5;
+    }
     if (em->char0 != sh->char0 || sh->xB == 0) {
         sh->xB = 0;
         sh->mode = 2;
+        if (sh->arg == 0x16) {
+            pull_senko(sh->senko);
+        }
     }
     if (sh->prim != 0) {
         flvecCopy(&sh->prim->pos, &sh->pos2);
