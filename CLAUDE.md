@@ -83,6 +83,11 @@ the network wire protocol identical to the PS2 client with DNAS removed.
 
 ## Working conventions
 
+- GitHub: https://github.com/itsbigcforme67/mh1-xbox (public). The owner
+  asked for it to be kept up to date: commit and push at the end of each
+  meaningful step (a tool works, a function matches, docs updated). Before
+  each push, check `git status` for anything that could hold Capcom bytes.
+
 - Python tools: standard library only, Python 3.8+, runnable as scripts.
 - Keep a running log in docs/STATUS.md: what was done, what was verified,
   what is next. Update it at the end of each session.
