@@ -19,7 +19,10 @@ typedef struct SETW {
     s16 cnt;            /* 0x0A */
     u8 padC[0x14 - 0x0C];
     s32 work14;         /* 0x14 */
-    char **str;         /* 0x18 set01: points at the message string slot */
+    union {
+        char **str;     /* 0x18 set01: points at the message string slot */
+        void *work;     /* 0x18 per-object work area (set07) */
+    } u;
     u8 pad1C[0x20 - 0x1C];
     void (*move)(struct SETW *);  /* 0x20 */
     f32 pos[3];         /* 0x24 */

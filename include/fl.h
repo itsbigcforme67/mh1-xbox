@@ -8,6 +8,9 @@ typedef f32 FLMAT[4][4];
 void flmatInit(FLMAT *);
 void flmatRotXYZ33(FLMAT *, f32, f32, f32);
 void flmatSetTrans(FLMAT *, f32, f32, f32);
+void flmatMakeTrans(FLMAT *, f32, f32, f32);
+void flmatMakeScale(FLMAT *, f32, f32, f32);
+void flmatMul33_2(FLMAT *, FLMAT *);
 void flSetRenderState(int state, u32 value);   /* pointers are passed cast to u32 */
 
 #endif

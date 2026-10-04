@@ -154,7 +154,7 @@ static void set01_set2_sub(char *str, u8 seq) {
         sw->type = 1;
         sw->move = set01_move;
         sw->arg = 4;
-        *sw->str = str;
+        *sw->u.str = str;
         game_w.info_now = seq;
     }
 }
@@ -219,7 +219,7 @@ static void set01_move(SETW *sw) {
 }
 
 static void set01_i(SETW *sw) {
-    char **str = sw->str;
+    char **str = sw->u.str;
     s16 len;
     f32 w;
 
@@ -307,7 +307,7 @@ static void set01_e(SETW *sw) {
 
 static void set01_trans(PRIM *pr) {
     SETW *sw = pr->owner;
-    char **str = sw->str;
+    char **str = sw->u.str;
     FRAME_MSG fm;
     s16 len;
 

@@ -10,11 +10,13 @@ typedef struct PRIM {
     f32 pos[3];                     /* 0x08 */
     void (*trans)(struct PRIM *);   /* 0x14 draw callback */
     void *owner;                    /* 0x18 */
+    s32 no;                         /* 0x1C index within the owner (set07) */
 } PRIM;
 
 s16 get_prim(void);
 PRIM *get_prim_ptr(s16);
 void add_prim(void *ot, PRIM *, int, int);
+extern u8 ot0[];
 extern u8 ot1[];
 
 #endif
