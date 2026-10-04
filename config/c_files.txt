@@ -15,3 +15,9 @@ main 0x001698B0 0x00169988 sys/vib
 main 0x00169230 0x00169300 prim/prim_init
 game 0x00636E30 0x006371F8 shell/shell18
 game:rodata 0x0068A3F0 0x0068A410 shell/shell18
+game 0x00637770 0x00637B58 shell/shell20
+game:rodata 0x0068A430 0x0068A450 shell/shell20
+game 0x00637B60 0x00637F58 shell/shell21
+game:rodata 0x0068A450 0x0068A470 shell/shell21
+game 0x006399D0 0x00639DC8 shell/shell23
+game:rodata 0x0068A4D0 0x0068A4F0 shell/shell23
