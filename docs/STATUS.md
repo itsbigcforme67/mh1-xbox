@@ -219,7 +219,30 @@ Owner approved further downloads; added 3.0b50-030527, 3.0b38-030307,
 - The library data/rodata split follows SECTION symbols. Whether every
   Capcom object's strings sit in .data or .rodata is not checked yet.
 
+### Update: overlays (same session)
+
+- **All five modules rebuild byte-identical**: main (2,662,528 bytes),
+  select.bin (32,768), game.bin (1,423,232), yn.bin (56,576), lobby.bin
+  (1,265,152). Targets are the MWo3 files from AFS_DATA.AFS, header
+  included. sha1s are printed by tools/build.py.
+- Only raw bins left: the four 64-byte MWo3 headers (splat `textbin`, so
+  they stay in front of the code) and main's VU1 microcode. 1,382 asm files.
+- Overlay calls into main resolve by name (e.g. game.bin `jal
+  get_joint_pos_em`); 0 jal targets left unnamed in game.bin.
+- setup_split.py now makes one splat config per module
+  (config/<module>.yaml) and symbol files in config/symbols/. Names are made
+  unique across all modules. c_files.txt has a module column; C lives in
+  src/<module>/.
+- splat prints "Unable to determine a segment" for main's symbols when
+  splitting an overlay. Harmless here (the build matches); could be
+  silenced with `absolute:True` on those symbols.
+- tools/progress.py: 1 of 12,585 game functions (20 of 3,481,696 bytes).
+
 ### Next
 
-1. Overlays: same flow for game.bin and lobby.bin (most monster/quest code).
-2. A progress script: matched bytes / total game bytes.
+1. Start decompiling for real. Good first targets: small leaf functions in
+   main's player/monster code, building up shared headers (PLW, EMW...)
+   as offsets are confirmed.
+2. Infer Capcom's file boundaries in the big text blocks (needed before
+   whole files can be compiled as C).
+3. Data typing per object (strings in .data vs .rodata) as C files appear.

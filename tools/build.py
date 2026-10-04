@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-build.py - assemble and link the split MH1 main executable, then check the
-result is byte-identical to the original 'main' section.
+build.py - assemble and link the split MH1 modules (main and the game
+overlays), then check each is byte-identical to the original.
 
 Prerequisites (see README.md, Phase 1):
     python3 tools/setup_split.py
-    .venv/bin/python -m splat split config/mh1_main.yaml
+    .venv/bin/python -m splat split config/<module>.yaml   (each module)
     tools/binutils -> a mips64r5900el-ps2-elf binutils install
 
 Usage:
-    python3 tools/build.py            # build and compare
+    python3 tools/build.py            # build and compare every module
+    python3 tools/build.py game       # just one module
     python3 tools/build.py --clean    # remove build/ objects first
 """
 import argparse
@@ -29,10 +30,7 @@ AS_FLAGS = ["-EL", "-march=r5900", "-mabi=eabi", "-G0", "-no-pad-sections",
 WIBO = os.path.join(ROOT, "tools/compilers/wibo")
 MWCC = os.path.join(ROOT, "tools/compilers/mwcps2-3.0b52-030722/mwccps2.exe")
 CFLAGS = ["-c", "-O4,p", "-nostdinc", "-stderr"]
-TARGET = os.path.join(ROOT, "disc/mh1/main.bin")
-LD_SCRIPT = os.path.join(ROOT, "build/mh1_main.ld")
-ELF = os.path.join(ROOT, "build/mh1_main.elf")
-BIN = os.path.join(ROOT, "build/mh1_main.bin")
+MODULES = ["main", "select", "game", "yn", "lobby"]
 
 
 def run(cmd):
@@ -88,9 +86,11 @@ def first_diff(a, b):
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("modules", nargs="*", default=MODULES)
     ap.add_argument("--clean", action="store_true")
     ap.add_argument("-j", type=int, default=os.cpu_count())
     args = ap.parse_args()
+    modules = args.modules
     if args.clean:
         for d in ("build/asm", "build/assets"):
             shutil.rmtree(os.path.join(ROOT, d), ignore_errors=True)
@@ -107,27 +107,38 @@ def main():
         print("\n".join(errors[:5]))
         sys.exit("%d files failed to assemble" % len(errors))
 
-    err = run([BU + "ld", "-EL", "-nostdlib", "--no-warn-mismatch", "-Map", "build/mh1_main.map",
-               "-T", LD_SCRIPT,
-               "-T", "config/undefined_syms_auto.txt",
-               "-T", "config/undefined_funcs_auto.txt",
-               "-o", ELF])
+    failed = [m for m in modules if not link_and_check(m)]
+    if failed:
+        sys.exit("not matching: " + ", ".join(failed))
+
+
+def link_and_check(module):
+    elf = "build/%s.elf" % module
+    out = os.path.join(ROOT, "build/%s.bin" % module)
+    err = run([BU + "ld", "-EL", "-nostdlib", "--no-warn-mismatch",
+               "-Map", "build/%s.map" % module,
+               "-T", "build/%s.ld" % module,
+               "-T", "config/%s_undefined_syms_auto.txt" % module,
+               "-T", "config/%s_undefined_funcs_auto.txt" % module,
+               "-o", elf])
     if err:
         print(err[:4000])
-        sys.exit("link failed")
-    err = run([BU + "objcopy", "-O", "binary", "-j", ".main", ELF, BIN])
+        print("%-7s link failed" % module)
+        return False
+    err = run([BU + "objcopy", "-O", "binary", "-j", "." + module, elf, out])
     if err:
-        sys.exit(err)
-
-    built, want = open(BIN, "rb").read(), open(TARGET, "rb").read()
-    h1, h2 = hashlib.sha1(built).hexdigest(), hashlib.sha1(want).hexdigest()
-    if h1 == h2:
-        print("OK: build/mh1_main.bin matches main (%d bytes, sha1 %s)" % (len(built), h1))
-        return
+        print(err)
+        return False
+    built = open(out, "rb").read()
+    want = open(os.path.join(ROOT, "disc/mh1/split/%s.bin" % module), "rb").read()
+    h1 = hashlib.sha1(built).hexdigest()
+    if h1 == hashlib.sha1(want).hexdigest():
+        print("%-7s OK  %8d bytes  sha1 %s" % (module, len(built), h1))
+        return True
     d = first_diff(built, want)
-    print("MISMATCH: built %d bytes, want %d. First difference at offset 0x%X "
-          "(vram 0x%08X)" % (len(built), len(want), d, 0x100000 + d))
-    sys.exit(1)
+    print("%-7s MISMATCH: built %d bytes, want %d; first difference at offset "
+          "0x%X" % (module, len(built), len(want), d))
+    return False
 
 
 if __name__ == "__main__":

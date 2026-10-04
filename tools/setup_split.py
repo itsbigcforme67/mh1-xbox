@@ -1,21 +1,31 @@
 #!/usr/bin/env python3
 """
-setup_split.py - generate the splat inputs for MH1's main executable.
+setup_split.py - generate the splat inputs for MH1's main executable and its
+game overlays (select.bin, game.bin, yn.bin, lobby.bin).
 
-Reads the user's own SLPM_654.95 and the symbol CSV made by elf_survey.py,
-and writes:
+Reads the user's own SLPM_654.95, AFS_DATA.AFS and the symbol CSV made by
+elf_survey.py, and writes:
 
-  disc/mh1/main.bin            the loadable bytes of the 'main' section
-                               (game data: stays in gitignored disc/)
-  config/symbol_addrs.txt      every FUNC/OBJECT symbol in main, with sizes
-  config/mh1_main.yaml         splat config, one asm subsegment per original
-                               object file where the symbol table shows one
+  disc/mh1/split/<module>.bin   the bytes to match (gitignored game data):
+                                main = the ELF's 'main' section, overlays =
+                                the MWo3 file (0x40 header + text + data)
+  config/symbols/<module>.txt   FUNC/OBJECT symbols, names unique across all
+                                modules (duplicate statics get _ADDRESS)
+  config/<module>.yaml          splat config
+
+The DNAS overlays (dnas_net, dnas_ins) are Sony network security code that
+gets replaced, not ported, so they are not split.
+
+Decompiled code is listed in config/c_files.txt as
+    MODULE START END NAME        -> src/MODULE/NAME.c
+and the asm around each range is cut so the C object drops in its place.
 
 Nothing written to config/ contains game bytes, only names and addresses.
 
 Usage:
     python3 tools/setup_split.py
-    .venv/bin/python -m splat split config/mh1_main.yaml
+    for m in main select game yn lobby; do
+        .venv/bin/python -m splat split config/$m.yaml; done
 """
 import csv
 import hashlib
@@ -27,148 +37,45 @@ from collections import Counter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ELF = os.path.join(ROOT, "disc/mh1/SLPM_654.95")
+AFS = os.path.join(ROOT, "disc/mh1/AFS_DATA.AFS")
 CSV = os.path.join(ROOT, "docs/survey/mh1_symbols.csv")
+OUT = os.path.join(ROOT, "disc/mh1/split")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from mwo_unpack import afs_entries, unpack, describe  # noqa: E402
 
-VRAM = 0x00100000
+GP = 0x0038EB70          # _gp, shared by main and the overlays
+OVERLAYS = ["select", "game", "yn", "lobby"]
+
 # Layout of 'main' as virtual addresses, worked out from SECTION symbols and
 # the program header (docs/STATUS.md).
-TEXT_END = 0x293B80     # after reward_itembox + padding; VU1 code follows
-DATA_START = 0x2E5EA0   # __data_start; VU1 microcode ends here
-LIBDATA_START = 0x306640  # first .data SECTION symbol (library objects)
-RODATA_START = 0x35C250   # first .rodata SECTION symbol; jump tables live here
-SDATA_START = 0x386B80    # _gp - 0x7FF0, first small-data object
-FILE_END = 0x38A080     # FileSiz of the first LOAD segment (_fbss)
-MEM_END = 0x533980      # MemSiz of the first LOAD segment
-GP = 0x0038EB70         # _gp
+MAIN = dict(
+    vram=0x00100000,
+    text_end=0x293B80,       # after reward_itembox + padding; VU1 code follows
+    data_start=0x2E5EA0,     # __data_start; VU1 microcode ends here
+    sdata_start=0x386B80,    # _gp - 0x7FF0, first small-data object
+    file_end=0x38A080,       # FileSiz of the first LOAD segment (_fbss)
+    mem_end=0x533980,        # MemSiz of the first LOAD segment
+)
 
-
-def read_main():
-    data = open(ELF, "rb").read()
-    shoff, = struct.unpack_from("<I", data, 32)
-    shnum, shstrndx = struct.unpack_from("<HH", data, 48)
-    secs = [struct.unpack_from("<10I", data, shoff + i * 40) for i in range(shnum)]
-    st = secs[shstrndx]
-    names = data[st[4]:st[4] + st[5]]
-    for s in secs:
-        if names[s[0]:names.index(b"\0", s[0])] == b"main":
-            assert s[3] == VRAM and s[5] == FILE_END - VRAM, "unexpected main layout"
-            return data[s[4]:s[4] + s[5]]
-    sys.exit("no 'main' section")
-
-
-def clean(name):
-    """Make a symbol name safe for GNU as. '@1234' are MWCC literal labels."""
-    name = name.replace("@", "lit_")
-    return re.sub(r"[^A-Za-z0-9_.$]", "_", name)
-
-
-def main():
-    blob = read_main()
-    with open(os.path.join(ROOT, "disc/mh1/main.bin"), "wb") as f:
-        f.write(blob)
-    sha1 = hashlib.sha1(blob).hexdigest()
-
-    rows = [r for r in csv.DictReader(open(CSV, encoding="utf-8"))
-            if r["section"] == "main" and r["type"] in ("FUNC", "OBJECT")
-            and VRAM <= int(r["addr"], 16) < MEM_END and r["name"]]
-    counts = Counter(clean(r["name"]) for r in rows)
-    seen, out = set(), []
-    for r in sorted(rows, key=lambda r: int(r["addr"], 16)):
-        addr, size = int(r["addr"], 16), int(r["size"])
-        name = clean(r["name"])
-        # Static functions and variables reuse names across files (sound_call
-        # x25). Keep globals as-is, suffix duplicate locals with the address.
-        if counts[name] > 1 and (r["bind"] == "LOCAL" or name in seen):
-            name = "%s_%08X" % (name, addr)
-        if name in seen:
-            continue
-        seen.add(name)
-        line = "%s = 0x%08X;" % (name, addr)
-        attrs = ["type:func"] if r["type"] == "FUNC" else []
-        if size:
-            attrs.append("size:0x%X" % size)
-        if attrs:
-            line += " // " + " ".join(attrs)
-        out.append(line)
-    os.makedirs(os.path.join(ROOT, "config"), exist_ok=True)
-    with open(os.path.join(ROOT, "config/symbol_addrs.txt"), "w") as f:
-        f.write("// Generated by tools/setup_split.py from SLPM_654.95's symbol table.\n")
-        f.write("\n".join(out) + "\n")
-
-    # Original object boundaries inside .text, from STT_SECTION '.text' symbols.
-    all_rows = list(csv.DictReader(open(CSV, encoding="utf-8")))
-    starts = sorted({int(r["addr"], 16) for r in all_rows
-                     if r["type"] == "SECTION" and r["section"] == "main"
-                     and r["name"] == ".text"})
-    starts = [a for a in starts if VRAM <= a < TEXT_END]
-    funcs = {}
-    for r in all_rows:
-        if r["type"] == "FUNC" and r["section"] == "main":
-            funcs.setdefault(int(r["addr"], 16), clean(r["name"]))
-    # Decompiled ranges: config/c_files.txt lines "START END src_name", e.g.
-    # "0x00152030 0x00152044 pl/pl_stg_ck_tw" -> src/pl/pl_stg_ck_tw.c.
-    # The asm around each range is cut so the C object drops in its place.
-    c_ranges = []
-    cf = os.path.join(ROOT, "config/c_files.txt")
-    if os.path.exists(cf):
-        for line in open(cf):
-            line = line.split("#", 1)[0].split()
-            if line:
-                c_ranges.append((int(line[0], 0), int(line[1], 0), line[2]))
-    cuts = {}
-    for a in starts:
-        cuts[a] = ("asm", None)
-    for lo, hi, name in c_ranges:
-        cuts[lo] = ("c", name)
-        if hi not in cuts and hi < TEXT_END:
-            cuts[hi] = ("asm", None)
-    sub = []
-    used = set()
-    for a in sorted(cuts):
-        kind, name = cuts[a]
-        if kind == "c":
-            sub.append("      - [0x%06X, c, %s]" % (a - VRAM, name))
-            continue
-        first = min((f for f in funcs if f >= a), default=None)
-        label = funcs.get(first, "text") if first is not None else "text"
-        label = "%s_%06X" % (label, a) if label in used else label
-        used.add(label)
-        sub.append("      - [0x%06X, asm, text/%s]" % (a - VRAM, label))
-    sub.append("      - [0x%06X, bin, vu1_code]" % (TEXT_END - VRAM))
-    # Data keeps the original order; files are cut at SECTION symbols, which
-    # exist for library objects only. Capcom's own data is one block, like
-    # its code. The data/rodata split follows those symbols, not checked
-    # per object (MWCC also puts string literals in .data).
-    sub.append("      - [0x%06X, data, data/game_data]" % (DATA_START - VRAM))
-
-    def cut(kind, name, lo, hi):
-        pts = sorted({int(r["addr"], 16) for r in all_rows
-                      if r["type"] == "SECTION" and r["section"] == "main"
-                      and r["name"] == name and lo <= int(r["addr"], 16) < hi} | {lo})
-        for a in pts:
-            sub.append("      - [0x%06X, %s, data/%s_%06X]" % (a - VRAM, kind, kind, a))
-    cut("data", ".data", LIBDATA_START, RODATA_START)
-    cut("rodata", ".rodata", RODATA_START, SDATA_START)
-    sub.append("      - [0x%06X, sdata, data/sdata]" % (SDATA_START - VRAM))
-
-    yaml = """# Generated by tools/setup_split.py. First milestone: byte-identical rebuild
-# of the 'main' section of SLPM_654.95 (Japanese Monster Hunter).
-name: Monster Hunter (JP) SLPM_654.95 main
+YAML = """# Generated by tools/setup_split.py. Target: byte-identical rebuild of
+# {what} from SLPM_654.95 (Japanese Monster Hunter).
+name: Monster Hunter (JP) {module}
 sha1: {sha1}
 options:
-  basename: mh1_main
-  target_path: disc/mh1/main.bin
-  elf_path: build/mh1_main.elf
+  basename: {module}
+  target_path: disc/mh1/split/{module}.bin
+  elf_path: build/{module}.elf
   base_path: ..
   platform: ps2
   compiler: MWCCPS2
-  symbol_addrs_path: [config/symbol_addrs.txt]
-  undefined_funcs_auto_path: config/undefined_funcs_auto.txt
-  undefined_syms_auto_path: config/undefined_syms_auto.txt
-  asm_path: asm
-  src_path: src
+  symbol_addrs_path: [{symfiles}]
+  undefined_funcs_auto_path: config/{module}_undefined_funcs_auto.txt
+  undefined_syms_auto_path: config/{module}_undefined_syms_auto.txt
+  asm_path: asm/{module}
+  src_path: src/{module}
+  asset_path: assets/{module}
   build_path: build
-  ld_script_path: build/mh1_main.ld
+  ld_script_path: build/{module}.ld
   gp_value: 0x{gp:08X}
   find_file_boundaries: False
   emit_subalign: False
@@ -182,7 +89,7 @@ options:
   create_undefined_funcs_auto: True
   create_undefined_syms_auto: True
 segments:
-  - name: main
+  - name: {module}
     type: code
     start: 0x000000
     vram: 0x{vram:08X}
@@ -190,12 +97,196 @@ segments:
     subsegments:
 {sub}
   - [0x{end:X}]
-""".format(sha1=sha1, gp=GP, vram=VRAM, bss=MEM_END - FILE_END,
-           sub="\n".join(sub), end=FILE_END - VRAM)
-    with open(os.path.join(ROOT, "config/mh1_main.yaml"), "w") as f:
-        f.write(yaml)
-    print("main.bin %d bytes sha1 %s" % (len(blob), sha1))
-    print("%d symbols, %d text subsegments" % (len(out), len(starts)))
+"""
+
+
+def clean(name):
+    """Make a symbol name safe for GNU as. '@1234' are MWCC literal labels."""
+    name = name.replace("@", "lit_")
+    return re.sub(r"[^A-Za-z0-9_.$]", "_", name)
+
+
+def elf_section(name):
+    data = open(ELF, "rb").read()
+    shoff, = struct.unpack_from("<I", data, 32)
+    shnum, shstrndx = struct.unpack_from("<HH", data, 48)
+    secs = [struct.unpack_from("<10I", data, shoff + i * 40) for i in range(shnum)]
+    st = secs[shstrndx]
+    names = data[st[4]:st[4] + st[5]]
+    for s in secs:
+        if names[s[0]:names.index(b"\0", s[0])] == name.encode():
+            return s[3], data[s[4]:s[4] + s[5]]
+    sys.exit("no %r section" % name)
+
+
+def overlay_modules():
+    """MWo3 modules from AFS_DATA.AFS, keyed by short name ('game')."""
+    mods = {}
+    for blob in afs_entries(AFS):
+        if blob[:4] != b"MWo3" and blob[2:6] != b"MWo3":
+            continue
+        mod, _packed = unpack(blob)
+        h = describe(mod)
+        mods[h["name"].rsplit(".", 1)[0]] = (mod, h)
+    return mods
+
+
+def symbol_names(rows):
+    """Unique, assembler-safe names for every (section, addr, name) row.
+    Static functions and variables reuse names across files (sound_call x25)
+    and overlays share a load address, so the same name can appear many
+    times. Globals keep their name the first time; everything else that
+    collides gets an _ADDRESS suffix."""
+    counts = Counter(clean(r["name"]) for r in rows)
+    seen, names = set(), {}
+    order = sorted(rows, key=lambda r: (r["bind"] != "GLOBAL", r["section"] != "main",
+                                        int(r["addr"], 16)))
+    for r in order:
+        name = clean(r["name"])
+        addr = int(r["addr"], 16)
+        if counts[name] > 1 and (r["bind"] == "LOCAL" or name in seen):
+            name = "%s_%08X" % (name, addr)
+        if name in seen:
+            name = "%s_%s_%08X" % (clean(r["name"]), r["section"].split(".")[0], addr)
+        seen.add(name)
+        names[id(r)] = name
+    return names
+
+
+def write_symbols(module, rows, names):
+    out = []
+    for r in sorted(rows, key=lambda r: int(r["addr"], 16)):
+        size = int(r["size"])
+        line = "%s = 0x%08X;" % (names[id(r)], int(r["addr"], 16))
+        attrs = ["type:func"] if r["type"] == "FUNC" else []
+        if size:
+            attrs.append("size:0x%X" % size)
+        if attrs:
+            line += " // " + " ".join(attrs)
+        out.append(line)
+    os.makedirs(os.path.join(ROOT, "config/symbols"), exist_ok=True)
+    with open(os.path.join(ROOT, "config/symbols/%s.txt" % module), "w") as f:
+        f.write("// Generated by tools/setup_split.py from SLPM_654.95's symbol table.\n")
+        f.write("\n".join(out) + "\n")
+
+
+def section_starts(all_rows, section, kind, lo, hi):
+    return sorted({int(r["addr"], 16) for r in all_rows
+                   if r["type"] == "SECTION" and r["section"] == section
+                   and r["name"] == kind and lo <= int(r["addr"], 16) < hi})
+
+
+def text_subsegments(module, section, all_rows, names_by_addr, vram, lo, hi, c_ranges):
+    """asm subsegments cut at .text SECTION symbols and around C files."""
+    cuts = {lo: ("asm", None)}
+    for a in section_starts(all_rows, section, ".text", lo, hi):
+        cuts[a] = ("asm", None)
+    for mod, start, end, name in c_ranges:
+        if mod != module:
+            continue
+        cuts[start] = ("c", name)
+        if end not in cuts and end < hi:
+            cuts[end] = ("asm", None)
+    sub, used = [], set()
+    for a in sorted(cuts):
+        kind, name = cuts[a]
+        if kind == "c":
+            sub.append("      - [0x%06X, c, %s]" % (a - vram, name))
+            continue
+        first = min((f for f in names_by_addr if a <= f < hi), default=None)
+        label = names_by_addr.get(first, "text")
+        label = "%s_%06X" % (label, a) if label in used else label
+        used.add(label)
+        sub.append("      - [0x%06X, asm, text/%s]" % (a - vram, label))
+    return sub
+
+
+def data_subsegments(section, all_rows, vram, lo, hi, prefix):
+    """Data keeps the original order. Files are cut at .data/.rodata SECTION
+    symbols, which exist for library objects only; Capcom's own data is one
+    block before them, like its code. Typing follows those symbols and is
+    not checked per object (MWCC also puts string literals in .data)."""
+    sub = ["      - [0x%06X, data, data/%s]" % (lo - vram, prefix)]
+    ro = section_starts(all_rows, section, ".rodata", lo, hi)
+    ro_start = ro[0] if ro else hi
+    for a in section_starts(all_rows, section, ".data", lo, ro_start):
+        if a != lo:
+            sub.append("      - [0x%06X, data, data/data_%06X]" % (a - vram, a))
+    for a in ro:
+        sub.append("      - [0x%06X, rodata, data/rodata_%06X]" % (a - vram, a))
+    return sub
+
+
+def read_c_ranges():
+    ranges = []
+    cf = os.path.join(ROOT, "config/c_files.txt")
+    if os.path.exists(cf):
+        for line in open(cf):
+            f = line.split("#", 1)[0].split()
+            if f:
+                ranges.append((f[0], int(f[1], 0), int(f[2], 0), f[3]))
+    return ranges
+
+
+def write_yaml(module, what, blob, symfiles, vram, bss, sub):
+    os.makedirs(OUT, exist_ok=True)
+    with open(os.path.join(OUT, module + ".bin"), "wb") as f:
+        f.write(blob)
+    text = YAML.format(what=what, module=module, sha1=hashlib.sha1(blob).hexdigest(),
+                       symfiles=", ".join("config/symbols/%s.txt" % s for s in symfiles),
+                       gp=GP, vram=vram, bss=bss, sub="\n".join(sub), end=len(blob))
+    with open(os.path.join(ROOT, "config/%s.yaml" % module), "w") as f:
+        f.write(text)
+
+
+def main():
+    all_rows = list(csv.DictReader(open(CSV, encoding="utf-8")))
+    sections = ["main"] + ["%s.bin" % o for o in OVERLAYS]
+    rows = [r for r in all_rows if r["type"] in ("FUNC", "OBJECT") and r["name"]
+            and r["section"] in sections]
+    names = symbol_names(rows)
+    c_ranges = read_c_ranges()
+
+    def funcs_of(section):
+        d = {}
+        for r in rows:
+            if r["type"] == "FUNC" and r["section"] == section:
+                d.setdefault(int(r["addr"], 16), names[id(r)])
+        return d
+
+    # main
+    m = MAIN
+    vram, blob = elf_section("main")
+    assert vram == m["vram"] and len(blob) == m["file_end"] - vram, "unexpected main layout"
+    write_symbols("main", [r for r in rows if r["section"] == "main"
+                           and vram <= int(r["addr"], 16) < m["mem_end"]], names)
+    sub = text_subsegments("main", "main", all_rows, funcs_of("main"), vram,
+                           vram, m["text_end"], c_ranges)
+    sub.append("      - [0x%06X, bin, vu1_code]" % (m["text_end"] - vram))
+    sub += data_subsegments("main", all_rows, vram, m["data_start"], m["sdata_start"],
+                            "game_data")
+    sub.append("      - [0x%06X, sdata, data/sdata]" % (m["sdata_start"] - vram))
+    write_yaml("main", "the 'main' section", blob, ["main"], vram,
+               m["mem_end"] - m["file_end"], sub)
+    print("main      %8d bytes" % len(blob))
+
+    # overlays: 0x40-byte MWo3 header, text, data; bss after.
+    mods = overlay_modules()
+    for ov in OVERLAYS:
+        blob, h = mods[ov]
+        section = ov + ".bin"
+        vram, text_lo = h["load"], h["load"] + 0x40
+        data_lo = text_lo + h["text"]
+        data_hi = data_lo + h["data"]
+        assert len(blob) == 0x40 + h["text"] + h["data"], ov
+        write_symbols(ov, [r for r in rows if r["section"] == section], names)
+        sub = ["      - [0x000000, textbin, header]"]
+        sub += text_subsegments(ov, section, all_rows, funcs_of(section), vram,
+                                text_lo, data_lo, c_ranges)
+        sub += data_subsegments(section, all_rows, vram, data_lo, data_hi, ov + "_data")
+        write_yaml(ov, "overlay %s (from AFS_DATA.AFS)" % section, blob,
+                   ["main", ov], vram, h["bss"], sub)
+        print("%-9s %8d bytes" % (ov, len(blob)))
 
 
 if __name__ == "__main__":

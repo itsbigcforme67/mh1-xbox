@@ -26,5 +26,5 @@ tools/binutils
 asm/
 build/
 assets/
-config/undefined_*_auto.txt
+config/*undefined_*_auto.txt
 .splat/

@@ -68,17 +68,23 @@ One-time setup (Linux):
     # Compiler + loader from decomp.me's release (see docs/RESEARCH.md):
     # tools/compilers/wibo, tools/compilers/mwcps2-3.0b52-030722/
 
-Each time (needs disc/mh1/SLPM_654.95 and docs/survey/mh1_symbols.csv):
+Each time (needs disc/mh1/SLPM_654.95, disc/mh1/AFS_DATA.AFS and
+docs/survey/mh1_symbols.csv):
 
     python3 tools/setup_split.py
-    .venv/bin/python -m splat split config/mh1_main.yaml
+    for m in main select game yn lobby; do
+        .venv/bin/python -m splat split config/$m.yaml; done
     python3 tools/build.py
+    python3 tools/progress.py
 
-`build.py` prints OK when build/mh1_main.bin equals the original section.
+`build.py` prints OK per module when its rebuild equals the original:
+`main` (the executable's code and data) and the overlays select, game, yn
+and lobby (from AFS_DATA.AFS). The DNAS overlays are not built: they are
+Sony network security code that gets replaced.
 
-To decompile a function: write it in src/<name>.c, check it with
-tools/matchtest/cmp.py, add its address range to config/c_files.txt, then
-rerun the three commands above. The build must still print OK.
+To decompile a function: write it in src/<module>/<name>.c, check it with
+tools/matchtest/cmp.py, add `module start end name` to config/c_files.txt,
+then rerun the commands above. The build must still print OK.
 
 ## Roadmap
 

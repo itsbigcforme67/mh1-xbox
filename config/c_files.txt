@@ -1,4 +1,4 @@
 # Decompiled code that replaces disassembly. One line per C file:
-#   START END NAME   (vram range in main, file is src/NAME.c)
+#   MODULE START END NAME   (vram range; file is src/MODULE/NAME.c)
 # Functions must byte-match before they are listed here.
-0x00152030 0x00152044 pl/pl_stg_ck_tw
+main 0x00152030 0x00152044 pl/pl_stg_ck_tw

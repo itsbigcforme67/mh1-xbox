@@ -24,8 +24,9 @@ with Metrowerks CodeWarrior, code mostly in compressed MWo3 overlays that
 tools/mwo_unpack.py unpacks. Japanese MH1 (SLPM_654.95) surveyed: 50k symbols, same compiler, chosen
 as the base. Roughly 3.2 MB of game code. Compiler found: Metrowerks mwcps2
 3.0 family (working default 3.0b52-030722 -O4,p); 5 test functions
-byte-match (tools/matchtest/). Phase 1 has started: main rebuilds
-byte-identical and one C function is linked in (README, docs/STATUS.md).
+byte-match (tools/matchtest/). Phase 1 done: main and the game
+overlays (select, game, yn, lobby) all rebuild byte-identical; one C
+function is linked in. Run tools/progress.py for numbers.
 
 - All three tools have now run on the real MH1 and G discs (fixes logged
   in docs/STATUS.md).
