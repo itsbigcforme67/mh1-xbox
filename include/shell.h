@@ -48,6 +48,8 @@ typedef struct SHLW {
     u8 _padC2[0xC8 - 0xC2];
     s16 xC8;            /* 0xC8 */
     u8 stg;             /* 0xCA */
+    u8 _padCB;
+    u8 xCC;             /* 0xCC shell05: passed to set4 */
 } SHLW;
 
 SHLW *pull_shell_work(int);

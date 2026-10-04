@@ -3,6 +3,7 @@
 build/src/game/shell/shell16.c.o .rodata .data
 build/src/game/shell/shell01.c.o .rodata .data
 build/src/game/shell/shell04.c.o .rodata .data
+build/src/game/shell/shell05.c.o .rodata .data
 build/src/game/shell/shell11.c.o .rodata .data
 build/src/game/shell/shell13.c.o .rodata .data
 build/src/game/shell/shell15.c.o .rodata .data
