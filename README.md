@@ -88,7 +88,17 @@ To decompile code:
     # write src/<module>/<dir>/<name>.c (shared structs go in include/)
     python3 tools/check.py src/main/set/set12.c -v  # per-function match + diffs
     python3 tools/check.py src/main/set/set12.c --add main set/set12
-    # then rerun setup_split, splat and build.py: every module must print OK
+    # then: tools/rebuild.sh   (every module must print OK)
+
+A C file whose own data lives in the data region (switch jump tables, for
+example) also needs a data line in config/c_files.txt:
+
+    game:rodata 0x0068A3F0 0x0068A410 shell/shell18
+
+which cuts those bytes out of the data asm and puts the C object's .rodata
+there (renamed to .data when the region is typed data).
+check.py compares call targets as well as instruction bytes.
+tools/perm.py runs decomp-permuter on a near-matching function.
 
 m2c: `git clone https://github.com/matt-kempster/m2c tools/m2c` and
 `.venv/bin/pip install pycparser graphviz`. Asm file names follow the

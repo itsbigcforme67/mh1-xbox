@@ -53,14 +53,36 @@ def assemble(src):
     return run([BU + "as"] + AS_FLAGS + [src, "-o", obj])
 
 
+def renames():
+    out = {}
+    path = os.path.join(ROOT, "config/c_renames.txt")
+    if os.path.exists(path):
+        for line in open(path):
+            f = line.split("#", 1)[0].split()
+            if f:
+                out.setdefault(f[0], []).append((f[1], f[2]))
+    return out
+
+
+RENAMES = renames()
+
+
 def compile_c(src):
     rel = os.path.relpath(src, ROOT)
     obj = os.path.join("build", rel + ".o")
-    if not stale(src, os.path.join(ROOT, obj)):
+    if not stale(src, os.path.join(ROOT, obj)) and not stale(
+            os.path.join(ROOT, "config/c_renames.txt"), os.path.join(ROOT, obj)):
         return None
     os.makedirs(os.path.join(ROOT, os.path.dirname(obj)), exist_ok=True)
     # Relative paths: wibo hands them to a Windows program.
-    return run([WIBO, MWCC] + CFLAGS + ["-Iinclude", rel, "-o", obj])
+    err = run([WIBO, MWCC] + CFLAGS + ["-Iinclude", rel, "-o", obj])
+    if err:
+        return err
+    for old, new in RENAMES.get(obj, []):
+        err = run([BU + "objcopy", "--rename-section", "%s=%s" % (old, new), obj])
+        if err:
+            return err
+    return None
 
 
 def binobj(src):

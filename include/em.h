@@ -1,0 +1,41 @@
+#ifndef EM_H
+#define EM_H
+/* Monster work: em_work[], 0xA10 bytes per monster. Shares its start with
+ * PLW (id at 0xC, char0 at 0x2DC, stg at 0x736): probably a common header.
+ * Offsets from matched code (shell18.c). */
+#include "types.h"
+
+typedef struct VEC3 {
+    f32 x, y, z;
+} VEC3;
+
+/* Copies a vector word by word through integer registers (lw/sw), which is
+ * what the original code does; a struct copy would use FPU loads. */
+#define VEC3_COPY(d, s) \
+    (((s32 *)&(d))[0] = ((s32 *)&(s))[0], \
+     ((s32 *)&(d))[1] = ((s32 *)&(s))[1], \
+     ((s32 *)&(d))[2] = ((s32 *)&(s))[2])
+
+typedef struct EMW {
+    u8 _pad000[0x0C];
+    u16 id;             /* 0x00C */
+    u8 _pad00E[2];
+    u8 x10;             /* 0x010 */
+    u8 _pad011[0x19 - 0x11];
+    u8 x19;             /* 0x019 cleared when a shell is spawned */
+    u8 _pad01A[0xA0 - 0x1A];
+    VEC3 pos;           /* 0x0A0 */
+    u8 _pad0AC[0x2DC - 0xAC];
+    u16 char0;          /* 0x2DC current animation (as PLW) */
+    u8 _pad2DE[0x2E4 - 0x2DE];
+    u16 act_tm0;        /* 0x2E4 */
+    u8 _pad2E6[0x2EC - 0x2E6];
+    s16 blend0;         /* 0x2EC */
+    u8 _pad2EE[0x736 - 0x2EE];
+    u8 stg;             /* 0x736 */
+    u8 _pad737[0xA10 - 0x737];
+} EMW;
+
+extern EMW em_work[];
+
+#endif

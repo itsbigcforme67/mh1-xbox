@@ -60,7 +60,9 @@ def original_functions():
 
 
 def read_obj(path):
-    """Functions in a relocatable .o: name -> (bytes, {offset: mask})."""
+    """Functions in a relocatable .o: name -> (bytes, {offset: mask},
+    {offset: call target name}). Call targets come from R_MIPS_26 relocs,
+    resolved through section symbols when the callee is in the same object."""
     d = open(path, "rb").read()
     shoff, = struct.unpack_from("<I", d, 32)
     shnum, shstr = struct.unpack_from("<HH", d, 48)
@@ -68,11 +70,18 @@ def read_obj(path):
 
     def nm(o, t):
         return t[o:t.index(b"\0", o)].decode()
-    shs = d[S[shstr][4]:S[shstr][4] + S[shstr][5]]
     sy = next(s for s in S if s[1] == 2)
     st = S[sy[6]]
     strs = d[st[4]:st[4] + st[5]]
-    relmask = {}                                # (section index, offset) -> mask
+    syms = []
+    for k in range(sy[5] // 16):
+        no, val, size, info, _o, sh = struct.unpack_from("<IIIBBH", d, sy[4] + k * 16)
+        syms.append((nm(no, strs), val, size, info & 0xF, sh))
+    by_sec = {}
+    for name, val, size, typ, sh in syms:
+        if typ == 2:
+            by_sec.setdefault(sh, []).append((val, name))
+    relmask, calls = {}, {}
     for i, s in enumerate(S):
         if s[1] == 9:                           # SHT_REL
             for k in range(s[5] // 8):
@@ -80,31 +89,58 @@ def read_obj(path):
                 m = MASKS.get(info & 0xFF)
                 if m:
                     relmask[(s[7], off)] = m
+                if info & 0xFF == R_MIPS_26:
+                    name, val, size, typ, sh = syms[info >> 8]
+                    if typ == 3:                # section symbol + addend in insn
+                        sec = S[s[7]]
+                        word = struct.unpack_from("<I", d, sec[4] + off)[0]
+                        tgt = (word & 0x3FFFFFF) << 2
+                        name = next((n for v, n in by_sec.get(sh, []) if v == tgt), "?")
+                    calls[(s[7], off)] = name
     funcs = {}
-    for k in range(sy[5] // 16):
-        no, val, size, info, _o, sh = struct.unpack_from("<IIIBBH", d, sy[4] + k * 16)
-        if info & 0xF != 2 or sh >= len(S):
+    for name, val, size, typ, sh in syms:
+        if typ != 2 or sh >= len(S):
             continue
         sec = S[sh]
         code = d[sec[4] + val:sec[4] + val + size]
         masks = {o - val: m for (si, o), m in relmask.items()
                  if si == sh and val <= o < val + size}
-        funcs[nm(no, strs)] = (code, masks)
+        fcalls = {o - val: n for (si, o), n in calls.items()
+                  if si == sh and val <= o < val + size}
+        funcs[name] = (code, masks, fcalls)
     return funcs
 
 
-def compare(mine, masks, orig, base):
+def func_names_by_addr():
+    out = {}
+    inv = {v: k for k, v in SECTIONS.items()}
+    for r in csv.DictReader(open(os.path.join(ROOT, "docs/survey/mh1_symbols.csv"),
+                                 encoding="utf-8")):
+        if r["type"] == "FUNC" and r["section"] in inv:
+            out.setdefault((inv[r["section"]], int(r["addr"], 16)), set()).add(r["name"])
+    return out
+
+
+def compare(mine, masks, orig, base, calls=None, names=None, module=None):
     lines, ok = [], len(mine) == len(orig)
     for i in range(0, max(len(mine), len(orig)), 4):
         a = struct.unpack_from("<I", orig, i)[0] if i + 4 <= len(orig) else None
         b = struct.unpack_from("<I", mine, i)[0] if i + 4 <= len(mine) else None
         m = masks.get(i, 0)
         same = a is not None and b is not None and (a & ~m) == (b & ~m)
+        note = ""
+        if same and calls and i in calls and names is not None:
+            tgt = ((base + i + 4) & 0xF0000000) | ((a & 0x3FFFFFF) << 2)
+            want = names.get((module, tgt), set()) | names.get(("main", tgt), set())
+            if calls[i] not in want:
+                same = False
+                note = "   (calls %s, original calls %s)" % (calls[i], "/".join(sorted(want)) or "?")
         ok = ok and same
         ta = (dis(a, base + i) or ".word") if a is not None else ""
         tb = (dis(b, base + i) or ".word") if b is not None else ""
         if m:
             tb += "   (reloc)"
+        tb += note
         lines.append("%s %08X  %-34s | %s" % ("  " if same else ">>", base + i, ta, tb))
     return ok, lines
 
@@ -137,7 +173,8 @@ def main():
     orig = original_functions()
     images = {}
     results, all_ok = [], True
-    for name, (code, masks) in funcs.items():
+    names = func_names_by_addr()
+    for name, (code, masks, calls) in funcs.items():
         cands = orig.get(name, [])
         if args.module:
             cands = [c for c in cands if c[0] == args.module] or cands
@@ -151,7 +188,7 @@ def main():
                 images[mod] = module_image(mod)
             base, img = images[mod]
             o = img[addr - base: addr - base + size]
-            ok, lines = compare(code, masks, o, addr)
+            ok, lines = compare(code, masks, o, addr, calls, names, mod)
             if best is None or ok:
                 best = (ok, lines, mod, addr, size)
             if ok:
