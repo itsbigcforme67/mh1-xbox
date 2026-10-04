@@ -11,6 +11,8 @@ void flmatSetTrans(FLMAT *, f32, f32, f32);
 void flmatMakeTrans(FLMAT *, f32, f32, f32);
 void flmatMakeScale(FLMAT *, f32, f32, f32);
 void flmatMul33_2(FLMAT *, FLMAT *);
+void flmatRotY33(FLMAT *, f32);
+f32 flSin(f32);
 void flSetRenderState(int state, u32 value);   /* pointers are passed cast to u32 */
 
 #endif
