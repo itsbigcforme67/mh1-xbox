@@ -1,0 +1,24 @@
+File: disc/mhg/SLPM_658.69  (2029336 bytes)
+Entry point: 0x00100008   e_flags: 0x20924000
+
+== Sections ==
+  .shstrtab        addr=0x00000000 size=       45  
+  .strtab          addr=0x00000000 size=        0  
+  .symtab          addr=0x00000000 size=        0  
+                   addr=0x00100000 size=  2028032  code
+  .comment         addr=0x00000000 size=       43  
+  .reginfo         addr=0x00000000 size=       24  
+  executable code: 2028032 bytes = about 507008 MIPS instructions
+
+== Debug info present ==
+  [ ] .symtab  (function and variable names)
+  [ ] .mdebug  (ECOFF: may hold types, locals, line numbers)
+  [ ] .debug_* (DWARF)
+  [ ] .stab    (STABS)
+  [x] .reginfo
+
+== Compiler identification (.comment) ==
+  MW MIPS C Compiler (2.4.1.01)
+  PlayStation2
+
+No .symtab in this file: it has been stripped. Check the other regional builds and any demo discs, which are often unstripped.

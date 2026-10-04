@@ -1,0 +1,91 @@
+File: disc/mh1/SLPM_654.95  (5648908 bytes)
+Entry point: 0x00100008   e_flags: 0x20924000
+
+== Sections ==
+  .shstrtab        addr=0x00000000 size=      280  
+  .strtab          addr=0x00000000 size=   694534  
+  .symtab          addr=0x00000000 size=   802432  
+  main             addr=0x00100000 size=  2662528  code
+  .relmain         addr=0x00000000 size=   596920  
+  select.bin       addr=0x00533980 size=        0  code
+  .relselect.bin   addr=0x00000000 size=     7784  
+  game.bin         addr=0x00533980 size=        0  code
+  .relgame.bin     addr=0x00000000 size=   287904  
+  yn.bin           addr=0x00533980 size=        0  code
+  .relyn.bin       addr=0x00000000 size=    19720  
+  lobby.bin        addr=0x00533980 size=        0  code
+  .rellobby.bin    addr=0x00000000 size=   369952  
+  dnas_net.bin     addr=0x00A06200 size=        0  code
+  .reldnas_net.bin addr=0x00000000 size=   109456  
+  dnas_ins.bin     addr=0x00A06200 size=        0  code
+  .reldnas_ins.bin addr=0x00000000 size=    30352  
+  dummy.bin        addr=0x00DFFF00 size=        0  code
+  heap             addr=0x00E00000 size=        0  data
+  .mwcats          addr=0x00000000 size=    26072  
+  .mwcats          addr=0x00000000 size=      368  
+  .mwcats          addr=0x00000000 size=    21666  
+  .mwcats          addr=0x00000000 size=      892  
+  .mwcats          addr=0x00000000 size=    16276  
+  .mwcats          addr=0x00000000 size=       40  
+  .mwcats          addr=0x00000000 size=       24  
+  .comment         addr=0x00000000 size=       43  
+  .reginfo         addr=0x00000000 size=       24  
+  executable code: 2662528 bytes = about 665632 MIPS instructions
+
+== Debug info present ==
+  [x] .symtab  (function and variable names)
+  [ ] .mdebug  (ECOFF: may hold types, locals, line numbers)
+  [ ] .debug_* (DWARF)
+  [ ] .stab    (STABS)
+  [x] .reginfo
+
+== Compiler identification (.comment) ==
+  MW MIPS C Compiler (2.4.1.01)
+  PlayStation2
+
+== Symbols ==
+  total symbols: 50151   functions: 15510   data objects: 21180
+
+  bucket    functions        bytes    share
+  game          14477      3854876    94.0%
+  sdk             573       118256     2.9%
+  runtime         460       128824     3.1%
+  'game' is what has to be decompiled. 'sdk' and 'runtime' get replaced by Xbox equivalents rather than ported.
+
+== Functions by section (overlays have their own sections) ==
+  main               6978 funcs   1627172 bytes
+  game.bin           2640 funcs   1065496 bytes
+  lobby.bin          3486 funcs    887732 bytes
+  dnas_net.bin       1677 funcs    347464 bytes
+  dnas_ins.bin        544 funcs    118760 bytes
+  yn.bin              141 funcs     35928 bytes
+  select.bin           44 funcs     19404 bytes
+
+== Largest game functions ==
+  0x0024A790   39760  ef_move_sub
+  0x00593B30   24788  ef_move_sub
+  0x00574EE0   22680  ef_move_sub
+  0x005F7800   20468  ef_move_sub
+  0x005BCD40   17280  ef_move_sub
+  0x005E21D0   16828  ef_move_sub
+  0x0015CD90   15152  trans_stage
+  0x00583BF0   13888  ef_move_sub
+  0x005CBC40   13192  ef_move_sub
+  0x001C66B0   12216  parseEsc
+  0x0026D310   11912  disp_spr_sub
+  0x00608E70   11348  ef_move_sub
+  0x005A3E50   11084  ef_move_sub
+  0x001BF1F0   10084  cftraw_CnvMbRAW8toARGB
+  0x001C1958    9976  cftraw_CnvMbRAW8toPlaneARGB
+  0x005F41A0    9872  AppendWork
+  0x00179DD0    8264  flPS2SetShaderParam
+  0x00A383D8    7720  RC2_encrypt
+  0x0056FC58    7720  RC2_encrypt
+  0x0062EA20    7584  shell08_m
+  0x0010CEA0    7500  em_material_sub
+  0x00A3A200    7184  RC2_decrypt
+  0x00571A80    7184  RC2_decrypt
+  0x0054DC30    7032  eft16_m
+  0x002687E0    6920  ms_net_patch_set
+
+Wrote 50151 symbols to docs/survey/mh1_symbols.csv

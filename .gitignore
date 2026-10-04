@@ -1,0 +1,30 @@
+# The user's own game files never go in the repo
+disc/
+data/
+*.iso
+*.bin
+*.AFS
+*.afs
+SLPM_*
+SLUS_*
+SLES_*
+SCPS_*
+*.elf
+*.dol
+
+__pycache__/
+*.pyc
+build/
+CLAUDE.local.md
+
+# Third-party compilers and loaders, downloaded locally
+tools/compilers/
+.venv/
+tools/binutils
+
+# Disassembly and build output contain Capcom code
+asm/
+build/
+assets/
+config/undefined_*_auto.txt
+.splat/
