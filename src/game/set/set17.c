@@ -14,8 +14,12 @@ typedef struct SET_MDLW {
     CLAY *clay;         /* 0x30 */
 } SET_MDLW;
 
+/* Culling sphere: centre and radius. The words around it are never
+ * touched here; they only make the stack layout match (as in set08). */
 typedef struct SPHERE {
-    f32 x, y, z, r;
+    s32 _00;
+    f32 x, y, z, r;     /* 0x04 */
+    s32 _14[2];
 } SPHERE;
 
 extern SET_MDLW *set_mdlw;
@@ -29,7 +33,7 @@ extern u8 ot3[];
 
 void Create_FOV(f32, int);
 void reload_tex(int, int);
-int flCheckMeshFOV(f32, SPHERE *, f32 *, FLMAT *, void *);
+int flCheckMeshFOV(f32, f32 *, f32 *, FLMAT *, void *);
 
 static void set17_move(SETW *sw);
 static void set17_i(SETW *sw);
@@ -113,7 +117,8 @@ static void set17_trans(PRIM *pr) {
     CLAY *cl;
     u8 *tbl;
     u8 id;
-    s16 rows, cols, i, j, base;
+    s16 rows, cols, i, j, n;
+    int base;
     f32 x0, z, step, x;
 
     if (mw != 0 && mw->flag != 0) {
@@ -168,8 +173,9 @@ static void set17_trans(PRIM *pr) {
             for (j = 0; j < cols; j++) {
                 sp.x = x;
                 sp.z = z;
-                if (flCheckMeshFOV(sp.r, &sp, out, &view_mat, fov) != 0) {
-                    id = tbl[(s16)(j + base)];
+                n = j + base;
+                if (flCheckMeshFOV(sp.r, &sp.x, out, &view_mat, fov) != 0) {
+                    id = tbl[n];
                     if (id != 0xFF) {
                         cl = &mw->clay[id & 0xF];
                         flmatMakeTrans(&mat, x, 0.0f, z);

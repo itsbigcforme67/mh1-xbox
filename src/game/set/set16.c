@@ -1,7 +1,4 @@
-/* NONMATCHING (not built; asm is used): set16_trans is far off. The
- * original keeps &uv, &mat and the model table pointer in saved registers
- * in the stage 0/26 branch (looks like an inlined helper); neither pointer
- * locals nor an inline helper reproduced it. Everything else matches.
+/*
  * set16 - game.bin 0x00625120-0x0062562C. The sky/backdrop model: follows
  * the master player (stages 0, 26) or sits far out along the camera
  * (stages 6, 7), with a scrolling texture. */
@@ -128,37 +125,43 @@ static void set16_e(SETW *sw) {
 }
 
 static void set16_trans(PRIM *pr) {
-    FLMAT uv, mat;
+    FLMAT mat, uv;
     STAGE_WORK *stw = &stage_work;
     SETW *sw = pr->owner;
     SET_MDLW *mw = set_mdlw;
     CLAY *cl;
     f32 u, v;
+    int i;
 
     if (mw != 0 && mw->flag != 0) {
         flSetRenderState(0x60, 0);
         switch (game_w.stage) {
         case 0:
         case 0x1A:
-            u = 0.0f;
-            v = 1.0f - (1.0f / 30.0f) * stw->timer;
-            u -= flFloor(u);
-            v -= flFloor(v);
-            flmatMakeTrans(&uv, u, v, 0.0f);
-            flSetRenderState(0x19, (u32)&uv);
-            flmatMakeTrans(&mat, 0.0f, 0.0f, 0.0f);
-            flSetRenderState(0x1A, (u32)&mat);
-            cl = &stw->mdl->clay[mdl_tbl_006784E0[0]];
-            if (cl->handle != -1) {
-                clay_attr_set(cl->attr);
-                SetFilterMode(1);
-                flExecuteClay(cl->handle, 0);
+            /* A one-pass loop over the model table: the compiler unrolls it but
+             * keeps &uv, &mat and the table pointer in saved registers,
+             * which is what the original does. */
+            for (i = 0; i < 1; i++) {
+                u = 0.0f;
+                v = 1.0f - (1.0f / 30.0f) * stw->timer;
+                u -= flFloor(u);
+                v -= flFloor(v);
+                flmatMakeTrans(&uv, u, v, 0.0f);
+                flSetRenderState(0x19, (u32)&uv);
+                flmatMakeTrans(&mat, 0.0f, 0.0f, 0.0f);
+                flSetRenderState(0x1A, (u32)&mat);
+                cl = &stw->mdl->clay[mdl_tbl_006784E0[i]];
+                if (cl->handle != -1) {
+                    clay_attr_set(cl->attr);
+                    SetFilterMode(1);
+                    flExecuteClay(cl->handle, 0);
+                }
             }
             break;
         case 6:
         case 7:
             cl = &stw->mdl->clay[2];
-            flmatMakeTrans(&uv, (1.0f / 256.0f) * (u8)sw->timer, 0.0f, 0.0f);
+            flmatMakeTrans(&uv, (1.0f / 256.0f) * (int)(u8)sw->timer, 0.0f, 0.0f);
             flSetRenderState(0x19, (u32)&uv);
             flmatMakeTrans(&mat, 0.0f, 0.0f, 0.0f);
             flSetRenderState(0x1A, (u32)&mat);
