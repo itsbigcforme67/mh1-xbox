@@ -378,10 +378,21 @@ How it works (each step was checked, not assumed):
   (normal_char_set, to_normal: constant-reuse quirk), adx_nm.c,
   release_texture_nm.c.
 
+- Later in the session: shell01/02/04/05/11/17 finished by hand on top of
+  the generator output (extra spawners set2-set4, draw callback at
+  SHLW+0x14, flash "senko" object, owner-alive checks). tools/
+  register_shell.py registers a hand-finished shell with its jump-table
+  slot. Matching shells: 01 02 04 05 11 13 15 16 17 18 19 20 21 23.
+  Progress: 147 functions.
+
 ### Next
 
-1. Remaining shells (00-12, 14, 17, 22) and set*/eft* in game.bin.
-2. Larger player and monster files as PLW/EMW fill in. Good first targets: small leaf functions in
+1. Remaining shells (00, 03, 06, 08, 09, 10, 12, 14, 22: bigger, with
+   draw code) and set*/eft* in game.bin.
+2. Larger player and monster files as PLW/EMW fill in.
+3. A permuter run on normal_char_set (the one-instruction compiler quirk)
+   was still going at the end of the session (build/perm_ncs.log); best
+   score so far 5 = no better than the start. Good first targets: small leaf functions in
    main's player/monster code, building up shared headers (PLW, EMW...)
    as offsets are confirmed.
 2. Infer Capcom's file boundaries in the big text blocks (needed before
