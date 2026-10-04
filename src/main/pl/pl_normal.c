@@ -5,6 +5,7 @@
  * to_normal_fly, to_normal and pl_to_normal_clr_etc are static. */
 #include "pl.h"
 #include "game.h"
+#include "shell.h"
 
 
 void pl_flag_set(PLW *, int);
@@ -13,13 +14,14 @@ void pl_st_set(PLW *pl, s8 st) {
     pl->st = st;
 }
 
-int shell_flag_ck(PLW *pl, int flag) {
-    return pl->shell_flag & flag;
+/* Despite living in a player file these act on shells (SHLW +0x78). */
+int shell_flag_ck(SHLW *sh, int flag) {
+    return sh->flag & flag;
 }
 
-int shell_flag_set(PLW *pl, int flag) {
-    int ret = pl->shell_flag & flag;
-    pl->shell_flag |= flag;
+int shell_flag_set(SHLW *sh, int flag) {
+    int ret = sh->flag & flag;
+    sh->flag |= flag;
     return ret;
 }
 

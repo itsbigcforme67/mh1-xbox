@@ -34,9 +34,10 @@ typedef struct PLW {
     u8 _pad013[0x1];
     s8    flag14;        /* 0x014 */
     s8    flag15;        /* 0x015 */
-    u8 _pad016[0x62];
-    u16   shell_flag;    /* 0x078 */
-    u8 _pad07A[0x11E];
+    u8 _pad016[0x4A];
+    u8    rot[0x18];     /* 0x060 rotation matrix (start; extent unknown), used
+                            with flvecApplyMat33 (shell00_i) */
+    u8 _pad078[0x120];
     s32   chr_no0;       /* 0x198 */
     u8 _pad19C[0x4];
     f32   chr_spd0;      /* 0x1A0 */
@@ -48,7 +49,7 @@ typedef struct PLW {
     u16   char0;         /* 0x2DC */
     u16   char1;         /* 0x2DE */
     u8 _pad2E0[0x4];
-    s16   act_tm0;       /* 0x2E4 */
+    u16   act_tm0;       /* 0x2E4 */
     s16   act_tm1;       /* 0x2E6 */
     u8 _pad2E8[0x4];
     s16   blend0;        /* 0x2EC */
@@ -69,7 +70,7 @@ typedef struct PLW {
     s32   act_flag;      /* 0x390 */
     s32   work394;       /* 0x394 */
     s16   work398;       /* 0x398 */
-    u8 _pad39A[0x2];
+    u16   cnt39A;        /* 0x39A every 3rd hit applies ailments (shell00_i) */
     s32   work39C;       /* 0x39C */
     u8 _pad3A0[0x14];
     s32   work3B4[6];    /* 0x3B4 */
@@ -78,7 +79,9 @@ typedef struct PLW {
     s8    work3D1;       /* 0x3D1 */
     u8 _pad3D2[0x22];
     s8    work3F4;       /* 0x3F4 */
-    u8 _pad3F5[0x17];
+    u8 _pad3F5[0x15];
+    u8    x40A;          /* 0x40A shell00 hits count while set (cont_add) */
+    u8 _pad40B;
     s16   work40C;       /* 0x40C */
     u8 _pad40E[0x2E];
     s16   work43C;       /* 0x43C */
@@ -96,7 +99,9 @@ typedef struct PLW {
     s8    work56B;       /* 0x56B */
     u8 _pad56C[0x98];
     u8    flag604;       /* 0x604 */
-    u8 _pad605[0x10];
+    u8 _pad605[0x0B];
+    s16   x610;          /* 0x610 shell00 hits count while set (cont_add) */
+    u8 _pad612[0x3];
     s8    work615;       /* 0x615 */
     u8 _pad616[0x10A];
     s8    work720[4];    /* 0x720 */

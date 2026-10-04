@@ -35,12 +35,16 @@ typedef struct SHLW {
     u8 x61;             /* 0x61 */
     u8 _pad62[0x6A - 0x62];
     u8 body;            /* 0x6A */
-    u8 _pad6B[0x78 - 0x6B];
+    u8 _pad6B;
+    u8 ailment;         /* 0x6C bits set from Get_atk_value 0-6 (shell00_i) */
+    s8 ailment_val;     /* 0x6D */
+    u8 _pad6E[0x78 - 0x6E];
     u16 flag;           /* 0x78 shell_flag_set/ck */
     u8 x7A;             /* 0x7A */
     u8 _pad7B;
     s16 char0;          /* 0x7C owner's animation when spawned */
-    u8 _pad7E[0x88 - 0x7E];
+    s16 x7E;            /* 0x7E */
+    u8 _pad80[0x88 - 0x80];
     s32 x88;            /* 0x88 */
     s32 x8C;            /* 0x8C */
     u8 _pad90[0x94 - 0x90];
@@ -50,7 +54,9 @@ typedef struct SHLW {
     s32 xA0;            /* 0xA0 */
     u8 _padA4[0xB4 - 0xA4];
     u8 xB4;             /* 0xB4 */
-    u8 _padB5[0xBC - 0xB5];
+    u8 _padB5[0xB8 - 0xB5];
+    s16 xB8;            /* 0xB8 shell00: owner's hit counter at spawn */
+    u8 _padBA[2];
     struct PRIM *prim;  /* 0xBC */
     s16 prim_no;        /* 0xC0 */
     u8 _padC2[0xC8 - 0xC2];
@@ -62,6 +68,6 @@ typedef struct SHLW {
 
 SHLW *pull_shell_work(int);
 void push_shell_work(SHLW *);
-int shell_flag_set(void *, int);
+int shell_flag_set(struct SHLW *, int);
 
 #endif
