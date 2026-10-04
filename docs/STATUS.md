@@ -327,10 +327,33 @@ How it works (each step was checked, not assumed):
   static in the other half are fine as long as the a0-knowledge above
   does not cross the split.
 
+### Update: set06, set01 and relocation-refined file boundaries
+
+- src/main/set/set06.c (7 functions) and set01.c (14 functions, the info
+  banner: queue, slide, text drawing) match. 43 functions total.
+- More conventions, each from a match: flSetRenderState is (int, u32) and
+  Capcom passes pointers cast to u32; a `none = -1` local assigned per
+  branch; string tables must be declared with their real sizes (MWCC
+  uses gp-relative addressing for objects of 8 bytes or less only when it
+  knows the size); strlen returns unsigned; `-O4,p` unrolls fixed loops
+  (a 30-byte copy became 5 x 6 bytes); `++x >= 20` vs `x++; if (x >= 20)`
+  compile differently.
+- Literal strings already in the data asm (e.g. "%s" = lit_355_0035B7C0)
+  are referenced as externs, not redefined, until data is split per file.
+- The link caught Info_control (a global in a "gap") calling set01's
+  statics: it belongs to set01's file. Turned into a general rule in
+  file_bounds.py: **code that references a LOCAL symbol (by name, or a
+  per-object .text SECTION symbol) is in that symbol's file.** Using the
+  ELF's relocation tables: main 339 gap functions placed and 26 over-split
+  pieces merged; game.bin 103 placed, 48 merged (gaps 95 functions, was
+  ~1,000); lobby 34/9. Still 0 known library boundaries crossed, 0
+  overlaps. set01's file now starts at 0x1554E0 automatically. (em08's
+  file contains em_act21/em_fly21: those are action numbers, not em21.)
+
 ### Next
 
-1. More whole files: more set*/eft* files (small, self-contained), then
-   larger player and monster files as PLW/EMW fill in. Good first targets: small leaf functions in
+1. More whole files: remaining small set*/eft* files, then larger player
+   and monster files as PLW/EMW fill in. Good first targets: small leaf functions in
    main's player/monster code, building up shared headers (PLW, EMW...)
    as offsets are confirmed.
 2. Infer Capcom's file boundaries in the big text blocks (needed before
