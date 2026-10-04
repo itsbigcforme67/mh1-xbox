@@ -23,7 +23,9 @@ typedef struct SETW {
         char **str;     /* 0x18 set01: points at the message string slot */
         void *work;     /* 0x18 per-object work area (set07) */
     } u;
-    u8 pad1C[0x20 - 0x1C];
+    u8 pad1C[2];
+    u8 x1E;             /* 0x1E set05: player who last turned it */
+    u8 pad1F;
     void (*move)(struct SETW *);  /* 0x20 */
     f32 pos[3];         /* 0x24 */
     f32 speed;          /* 0x30 set01 banner slide speed */

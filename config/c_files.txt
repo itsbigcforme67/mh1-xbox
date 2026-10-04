@@ -62,3 +62,5 @@ game 0x00627ED0 0x0062813C set/set22b
 game 0x00626F60 0x00627834 set/set20
 game 0x00622180 0x006229B0 set/set11
 game 0x006213F0 0x00621C6C set/set00
+game 0x00624050 0x0062511C set/set15
+game:rodata 0x00689EF0 0x00689F08 set/set15
