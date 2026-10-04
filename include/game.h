@@ -20,7 +20,9 @@ typedef struct GAME_W {
     u8 _pad1B4[0x1DE - 0x1B4];
     u8 info_seq;        /* 0x1DE set01 message sequence number (7 bits) */
     u8 info_now;        /* 0x1DF set01 message being shown, 0xFF = none */
-    u8 _pad1E0[0x210 - 0x1E0];
+    u8 _pad1E0[0x1E6 - 0x1E0];
+    u8 gate_open;       /* 0x1E6 set20 gate state, set from the quest */
+    u8 _pad1E7[0x210 - 0x1E7];
     u8 shl10_num;       /* 0x210 live shell10s owned by the master player */
     u8 _pad211[0x21F - 0x211];
     u8 info_stop;       /* 0x21F set01 queue paused while set */

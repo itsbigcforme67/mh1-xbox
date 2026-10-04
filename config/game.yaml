@@ -134,6 +134,8 @@ segments:
       - [0x0F2A30, c, set/set19]
       - [0x0F34E4, asm, text/Set20_set]
       - [0x0F34F0, asm, text/f_set20]
+      - [0x0F35E0, c, set/set20]
+      - [0x0F3EB4, asm, text/Set22_set]
       - [0x0F3EC0, c, set/set22]
       - [0x0F4038, asm, text/set22_m]
       - [0x0F4550, c, set/set22b]

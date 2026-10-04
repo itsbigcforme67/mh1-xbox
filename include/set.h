@@ -27,7 +27,7 @@ typedef struct SETW {
     void (*move)(struct SETW *);  /* 0x20 */
     f32 pos[3];         /* 0x24 */
     f32 speed;          /* 0x30 set01 banner slide speed */
-    u8 pad34[0x38 - 0x34];
+    s32 x34;            /* 0x34 cleared by Set20_set */
     struct PRIM *prim;  /* 0x38 */
     s16 prim_no;        /* 0x3C */
     u8 flag3E;          /* 0x3E */

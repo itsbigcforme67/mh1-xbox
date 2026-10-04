@@ -26,7 +26,8 @@ typedef struct EMW {
     u8 x19;             /* 0x019 cleared when a shell is spawned */
     u8 _pad01A[0xA0 - 0x1A];
     s32 ang[3];         /* 0x0A0 rotation, 0x10000 = 360 degrees (shell14_trans) */
-    u8 _pad0AC[0x2DC - 0xAC];
+    f32 pos[3];         /* 0x0AC world position (set20_m, as PLW) */
+    u8 _pad0B8[0x2DC - 0xB8];
     u16 char0;          /* 0x2DC current animation (as PLW) */
     u8 _pad2DE[0x2E4 - 0x2DE];
     u16 act_tm0;        /* 0x2E4 */
@@ -34,7 +35,11 @@ typedef struct EMW {
     u8 _pad2E8[0x2EC - 0x2E8];
     s16 blend0;         /* 0x2EC */
     s16 blend1;         /* 0x2EE */
-    u8 _pad2F0[0x736 - 0x2F0];
+    u8 _pad2F0[0x388 - 0x2F0];
+    u8 x388;            /* 0x388 non-zero keeps set20's gate shut */
+    u8 _pad389[0x5AC - 0x389];
+    f32 x5AC;           /* 0x5AC height used for set20's shell */
+    u8 _pad5B0[0x736 - 0x5B0];
     u8 stg;             /* 0x736 */
     u8 _pad737[0xA10 - 0x737];
 } EMW;
