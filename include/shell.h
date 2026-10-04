@@ -15,13 +15,18 @@ typedef struct SHLW {
     u8 arg;             /* 0x03 */
     u8 mode;            /* 0x04 */
     u8 x05;             /* 0x05 set to 1 by shell01_set2/3 */
-    u8 _pad06[0x0A - 0x06];
+    u8 _pad06;
+    u8 x07;             /* 0x07 shell10: counted in game_w.shl10_num */
+    u8 x08;             /* 0x08 */
+    u8 x09;             /* 0x09 */
     u8 em_no;           /* 0x0A owner monster number */
     u8 xB;              /* 0x0B */
     u8 _pad0C[0x14 - 0x0C];
     void (*trans)(struct SHLW *);   /* 0x14 draw callback, 0 = none */
     struct SENKO *senko;    /* 0x18 flash effect (shell17) */
-    u8 _pad1C[0x20 - 0x1C];
+    u8 _pad1C[2];
+    u8 x1E;             /* 0x1E */
+    u8 _pad1F;
     void (*move)(struct SHLW *);    /* 0x20 */
     VEC3 pos;           /* 0x24 */
     VEC3 pos2;          /* 0x30 */
@@ -40,7 +45,10 @@ typedef struct SHLW {
     s32 x8C;            /* 0x8C */
     u8 _pad90[0x94 - 0x90];
     void *owner;        /* 0x94 */
-    u8 _pad98[0xB4 - 0x98];
+    u8 _pad98[4];
+    s32 x9C;            /* 0x9C */
+    s32 xA0;            /* 0xA0 */
+    u8 _padA4[0xB4 - 0xA4];
     u8 xB4;             /* 0xB4 */
     u8 _padB5[0xBC - 0xB5];
     struct PRIM *prim;  /* 0xBC */

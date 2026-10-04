@@ -17,6 +17,7 @@ Usage:
 """
 import argparse
 import csv
+import re
 import os
 import struct
 import subprocess
@@ -176,6 +177,15 @@ def main():
     names = func_names_by_addr()
     for name, (code, masks, calls) in funcs.items():
         cands = orig.get(name, [])
+        m = re.search(r"_([0-9A-F]{8})$", name)
+        if not cands and m:
+            # functions with no symbol in the original are named by address
+            a = int(m.group(1), 16)
+            for mod in SECTIONS:
+                base, img = module_image(mod)
+                if base <= a < base + len(img):
+                    cands = [(mod, a, len(code))]
+                    break
         if args.module:
             cands = [c for c in cands if c[0] == args.module] or cands
         if not cands:

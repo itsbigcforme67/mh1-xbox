@@ -18,7 +18,9 @@ typedef struct GAME_W {
     u8 _pad0D2[0x1DE - 0xD2];
     u8 info_seq;        /* 0x1DE set01 message sequence number (7 bits) */
     u8 info_now;        /* 0x1DF set01 message being shown, 0xFF = none */
-    u8 _pad1E0[0x21F - 0x1E0];
+    u8 _pad1E0[0x210 - 0x1E0];
+    u8 shl10_num;       /* 0x210 live shell10s owned by the master player */
+    u8 _pad211[0x21F - 0x211];
     u8 info_stop;       /* 0x21F set01 queue paused while set */
     u8 _pad220[0x224 - 0x220];
 } GAME_W;
