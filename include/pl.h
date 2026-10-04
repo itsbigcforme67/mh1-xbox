@@ -64,7 +64,8 @@ typedef struct PLW {
     u8    st;            /* 0x388 */
     u8 _pad389[0x1];
     s8    work38A;       /* 0x38A */
-    u8 _pad38B[0x5];
+    u8 _pad38B[0x4];
+    u8    sw_cfg;        /* 0x38F bit 0: swap buttons 0xC00 (get_sw) */
     s32   act_flag;      /* 0x390 */
     s32   work394;       /* 0x394 */
     s16   work398;       /* 0x398 */

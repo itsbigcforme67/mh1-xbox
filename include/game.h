@@ -5,9 +5,15 @@
 #include "types.h"
 
 typedef struct GAME_W {
-    u8 _pad000[0x14];
+    u8 _pad000[0x0D];
+    u8 pad_on;          /* 0x00D read controllers this frame (swset) */
+    u8 _pad00E[0x14 - 0x0E];
     u8 stage;           /* 0x014 stage number (0x4E, 0x57 in set06) */
-    u8 _pad015[0xD1 - 0x15];
+    u8 _pad015[0x20 - 0x15];
+    u8 port[2];         /* 0x020 controller port per player (get_sw) */
+    u8 _pad022[2];
+    u8 sw_mask;         /* 0x024 buttons ignored until released (get_sw) */
+    u8 _pad025[0xD1 - 0x25];
     u8 master;          /* 0x0D1 player number of the session master */
     u8 _pad0D2[0x1DE - 0xD2];
     u8 info_seq;        /* 0x1DE set01 message sequence number (7 bits) */
