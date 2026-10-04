@@ -15,8 +15,8 @@ typedef struct SHLW {
     u8 arg;             /* 0x03 */
     u8 mode;            /* 0x04 */
     u8 x05;             /* 0x05 set to 1 by shell01_set2/3 */
-    u8 _pad06;
-    u8 x07;             /* 0x07 shell10: counted in game_w.shl10_num */
+    u8 x06;             /* 0x06 shell14: sound timer */
+    u8 x07;             /* 0x07 shell10: counted in game_w.shl10_num; shell14: flicker */
     u8 x08;             /* 0x08 */
     u8 x09;             /* 0x09 */
     u8 em_no;           /* 0x0A owner monster number */
@@ -30,7 +30,9 @@ typedef struct SHLW {
     void (*move)(struct SHLW *);    /* 0x20 */
     s32 ang[3];         /* 0x24 owner's rotation at spawn */
     VEC3 pos2;          /* 0x30 */
-    u8 _pad3C[0x60 - 0x3C];
+    u8 _pad3C[0x48 - 0x3C];
+    f32 scale;          /* 0x48 shell14: grows while charging */
+    u8 _pad4C[0x60 - 0x4C];
     u8 x60;             /* 0x60 */
     u8 x61;             /* 0x61 */
     u8 _pad62[0x6A - 0x62];
