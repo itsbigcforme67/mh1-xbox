@@ -390,9 +390,10 @@ How it works (each step was checked, not assumed):
 1. Remaining shells (00, 03, 06, 08, 09, 10, 12, 14, 22: bigger, with
    draw code) and set*/eft* in game.bin.
 2. Larger player and monster files as PLW/EMW fill in.
-3. A permuter run on normal_char_set (the one-instruction compiler quirk)
-   was still going at the end of the session (build/perm_ncs.log); best
-   score so far 5 = no better than the start. Good first targets: small leaf functions in
+3. normal_char_set: a 30-minute permuter run (~608k candidates) found
+   nothing better than the one-instruction difference; its "best" outputs
+   only change behaviour (wrong constants). Further evidence that the
+   quirk is the compiler build, not the source. Left parked. Good first targets: small leaf functions in
    main's player/monster code, building up shared headers (PLW, EMW...)
    as offsets are confirmed.
 2. Infer Capcom's file boundaries in the big text blocks (needed before
