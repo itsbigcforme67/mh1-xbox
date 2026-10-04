@@ -130,7 +130,7 @@ segments:
       - [0x0F17A0, c, set/set16]
       - [0x0F1CAC, asm, text/set17_set]
       - [0x0F1CB0, asm, text/f_set17]
-      - [0x0F2230, asm, text/f_set18]
+      - [0x0F2230, c, set/set18]
       - [0x0F2A30, asm, text/f_set19]
       - [0x0F34F0, asm, text/f_set20]
       - [0x0F3EC0, asm, text/f_set22]
