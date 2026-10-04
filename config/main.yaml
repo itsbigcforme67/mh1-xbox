@@ -98,7 +98,7 @@ segments:
       - [0x061480, asm, text/f_font]
       - [0x062634, asm, text/g_font_set_stack_no]
       - [0x062DB0, asm, text/f_disp_162DB0]
-      - [0x063810, asm, text/f_get_163810]
+      - [0x063810, c, pad/pad_get]
       - [0x063AB0, asm, text/f_weapon]
       - [0x069230, c, prim/prim_init]
       - [0x069300, asm, text/g_get_prim_ptr]

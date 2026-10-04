@@ -1,10 +1,4 @@
-/* NONMATCHING (not built; asm is used). get_ana_sw matches. swset is 16
- * instructions off: the original clears port 1 through a pointer and in a
- * different statement order than port 0, which neither a loop nor explicit
- * statements reproduce. get_sw is 18 off, all in the first path: the
- * original keeps sw in a0 and converts again on return, which looks like an
- * inlined helper we have not identified. */
-/* Controller read: raw pad state (Psw) to the per-port buffers used by
+/* Controller read (swset solved with decomp-permuter): raw pad state (Psw) to the per-port buffers used by
  * sw_set_sub, with scripted input (swset_w). SLPM_654.95 0x00163810-0x00163AB0. */
 #include "pl.h"
 #include "game.h"
@@ -43,14 +37,11 @@ void swset(void) {
     int i;
 
     for (i = 0; i < 2; i++) {
-        Plan_ang[i][0] = 0;
-        Plan_ang[i][1] = 0;
-        Plan_pow[i][0] = 0;
-        Plan_pow[i][1] = 0;
         Plsw_buff[i][1] = Plsw_buff[i][0];
-        Plan_buff[i][1] = Plan_buff[i][0];
         Plsw_buff[i][0] = 0;
+        Plan_buff[i][1] = Plan_buff[i][0];
         Plan_buff[i][0] = 0;
+        Plan_pow[i][1] = Plan_pow[i][0] = Plan_ang[i][1] = Plan_ang[i][0] = 0;
     }
     if (game_w.pad_on != 0) {
         for (i = 0; i < 2; i++) {

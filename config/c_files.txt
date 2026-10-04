@@ -21,3 +21,4 @@ game 0x00637B60 0x00637F58 shell/shell21
 game:rodata 0x0068A450 0x0068A470 shell/shell21
 game 0x006399D0 0x00639DC8 shell/shell23
 game:rodata 0x0068A4D0 0x0068A4F0 shell/shell23
+main 0x00163810 0x00163AB0 pad/pad_get
