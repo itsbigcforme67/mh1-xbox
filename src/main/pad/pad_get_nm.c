@@ -70,7 +70,7 @@ static u16 get_sw(int no) {
             game_w.sw_mask &= sw;
             sw &= ~game_w.sw_mask;
         }
-        return sw;
+        return sw & 0xFFFF;
     }
     p = swset_w.ptr[no];
     if (--swset_w.timer[no] == 0) {

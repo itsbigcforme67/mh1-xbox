@@ -29,3 +29,4 @@ assets/
 config/*undefined_*_auto.txt
 .splat/
 tools/m2c/
+tools/permuter/
