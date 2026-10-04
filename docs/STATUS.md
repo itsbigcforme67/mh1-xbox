@@ -404,6 +404,19 @@ How it works (each step was checked, not assumed):
   around the one function (set03.c / set03b.c, set03_nm.c parked).
 - Parked near-matches: shell00 (shell00_i 2 off, permuter no help),
   set16 (set16_trans), set17 (set17_trans: register pressure).
+- set04 and set08 (game.bin) match. set08 is the floor/water tiles on
+  stages 0/26 (8x10 grid, model per tile from st00_obj_type0/1, culled with
+  flCheckMeshFOV) and a 3x3 grid elsewhere, with scrolling UVs. Its
+  set08_set writes type 6, not 8 (checked against the bytes). Lessons from
+  set08_trans, all checked with tools/check.py:
+  - An index `k * 2` shows up as a separate +2 counter on the stack; MWCC
+    strength-reduces it, so write `k * 2`, not a second variable.
+  - A stack aggregate of 16 bytes or more is 16-aligned. The culling sphere
+    sits at sp+0xD4, which only fits a 28-byte struct with x,y,z,r at +4.
+    Unused locals are dropped, so they cannot fill a gap.
+  - Float registers follow declaration order. The texture-scroll values
+    and the tile position needed separate variables (u,v,w vs x,z,y) even
+    though the original reuses the same registers for both.
 
 ### Next
 
