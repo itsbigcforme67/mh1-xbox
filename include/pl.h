@@ -37,7 +37,9 @@ typedef struct PLW {
     u8 _pad016[0x4A];
     u8    rot[0x18];     /* 0x060 rotation matrix (start; extent unknown), used
                             with flvecApplyMat33 (shell00_i) */
-    u8 _pad078[0x120];
+    u8 _pad078[0xAC - 0x78];
+    f32   pos[3];        /* 0x0AC world position (set16_m, shell00_set) */
+    u8 _pad0B8[0x198 - 0xB8];
     s32   chr_no0;       /* 0x198 */
     u8 _pad19C[0x4];
     f32   chr_spd0;      /* 0x1A0 */

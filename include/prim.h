@@ -13,7 +13,7 @@ typedef struct PRIM {
     s32 no;                         /* 0x1C index within the owner (set07) */
 } PRIM;
 
-s16 get_prim(void);
+int get_prim(void);
 PRIM *get_prim_ptr(s16);
 void add_prim(void *ot, PRIM *, int, int);
 extern u8 ot0[];

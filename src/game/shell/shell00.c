@@ -36,7 +36,7 @@ void shell00_set(PLW *pl, int arg) {
         sh->ang[0] = ((EMW *)pl)->ang[0];
         sh->ang[1] = ((EMW *)pl)->ang[1];
         sh->ang[2] = ((EMW *)pl)->ang[2];
-        flvecCopy(&sh->pos2, (u8 *)pl + 0xAC);
+        flvecCopy(&sh->pos2, pl->pos);
         ((EMW *)pl)->x19 = 0;
     }
 }
