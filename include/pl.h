@@ -45,8 +45,8 @@ typedef struct PLW {
     u8 _pad1EC[0x4];
     f32   chr_spd1;      /* 0x1F0 */
     u8 _pad1F4[0xE8];
-    s16   char0;         /* 0x2DC */
-    s16   char1;         /* 0x2DE */
+    u16   char0;         /* 0x2DC */
+    u16   char1;         /* 0x2DE */
     u8 _pad2E0[0x4];
     s16   act_tm0;       /* 0x2E4 */
     s16   act_tm1;       /* 0x2E6 */

@@ -8,7 +8,7 @@
 
 typedef struct SETW {
     u8 pad0;            /* 0x00 */
-    s8 be_flag;         /* 0x01 active (set12_i sets 1, set12_d clears) */
+    u8 be_flag;         /* 0x01 active (set12_i sets 1, set12_d clears) */
     u8 type;            /* 0x02 set number (12 for set12) */
     u8 arg;             /* 0x03 */
     u8 mode;            /* 0x04 state machine index */
@@ -22,6 +22,9 @@ typedef struct SETW {
     u8 pad18[0x20 - 0x18];
     void (*move)(struct SETW *);  /* 0x20 */
     f32 pos[3];         /* 0x24 */
+    u8 pad30[0x38 - 0x30];
+    struct PRIM *prim;  /* 0x38 */
+    s16 prim_no;        /* 0x3C */
 } SETW;
 
 SETW *pull_set_work(int);

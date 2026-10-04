@@ -5,7 +5,9 @@
 #include "types.h"
 
 typedef struct GAME_W {
-    u8 _pad000[0xD1];
+    u8 _pad000[0x14];
+    u8 stage;           /* 0x014 stage number (0x4E, 0x57 in set06) */
+    u8 _pad015[0xD1 - 0x15];
     u8 master;          /* 0x0D1 player number of the session master */
     u8 _pad0D2[0x224 - 0xD2];
 } GAME_W;
