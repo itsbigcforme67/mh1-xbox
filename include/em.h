@@ -12,7 +12,9 @@ typedef struct VEC3 {
 
 typedef struct EMW {
     u8 be_flag;         /* 0x000 alive; shells end when it clears (shell11_m) */
-    u8 _pad001[3];
+    u8 x01;             /* 0x001 (set10_m) */
+    u8 kind;            /* 0x002 monster kind (set10_m checks 7) */
+    u8 _pad003;
     u8 x04;             /* 0x004 shells end when >= 2 (shell02_m) */
     u8 _pad005[0x0C - 0x05];
     u16 id;             /* 0x00C */
