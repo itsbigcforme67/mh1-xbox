@@ -72,7 +72,7 @@ static void shell05_i(SHLW *sh) {
 
     sh->mode++;
     sh->be_flag = 1;
-    sh->x14 = 0;
+    sh->trans = 0;
     shell_flag_set(sh, 0x20);
     pl_atck_data_set_shl(sh, em, sh->arg, shell05_tbl);
     sh->x88 = shell05_body_tbl[sh->body];

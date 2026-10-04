@@ -19,7 +19,7 @@ typedef struct SHLW {
     u8 em_no;           /* 0x0A owner monster number */
     u8 xB;              /* 0x0B */
     u8 _pad0C[0x14 - 0x0C];
-    s32 x14;            /* 0x14 */
+    void (*trans)(struct SHLW *);   /* 0x14 draw callback, 0 = none */
     struct SENKO *senko;    /* 0x18 flash effect (shell17) */
     u8 _pad1C[0x20 - 0x1C];
     void (*move)(struct SHLW *);    /* 0x20 */
@@ -40,7 +40,9 @@ typedef struct SHLW {
     s32 x8C;            /* 0x8C */
     u8 _pad90[0x94 - 0x90];
     void *owner;        /* 0x94 */
-    u8 _pad98[0xBC - 0x98];
+    u8 _pad98[0xB4 - 0x98];
+    u8 xB4;             /* 0xB4 */
+    u8 _padB5[0xBC - 0xB5];
     struct PRIM *prim;  /* 0xBC */
     s16 prim_no;        /* 0xC0 */
     u8 _padC2[0xC8 - 0xC2];

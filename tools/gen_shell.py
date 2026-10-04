@@ -84,6 +84,8 @@ def generate(nn):
     cases, (tbl, taddr, tsize) = move_cases(nn, syms)
     vals = m_values(nn)
     src = TEMPLATE.replace("shell18", "shell%s" % nn)
+    if not asm_func("shell%s_set" % nn):
+        src = src.replace("void shell%s_set(" % nn, "void Shell%s_set(" % nn)
     src = src.replace("/* shell%s - game.bin 0x00636E30-0x006371F8. */" % nn,
                       "/* shell%s - game.bin, generated from the shell18 template by "
                       "tools/gen_shell.py. */" % nn)
@@ -91,7 +93,8 @@ def generate(nn):
                  for k, h in cases)
     src = re.sub(r"(static void shell%s_move\(SHLW \*sh\) \{\n    switch \(sh->mode\) \{\n)"
                  r".*?(    \}\n\}\n)" % nn, lambda m: m.group(1) + sw + m.group(2), src, flags=re.S)
-    set_body = asm_func("shell%s_set" % nn)
+    set_name = "shell%s_set" % nn if asm_func("shell%s_set" % nn) else "Shell%s_set" % nn
+    set_body = asm_func(set_name)
     st = re.search(r"sb\s+\$(\d+), 0x2\(\$2\)", set_body).group(1)
     stype = int(re.findall(r"addiu\s+\$%s, \$0, 0x([0-9A-F]+)" % st, set_body)[-1], 16)
     src = src.replace("            sh->type = 1;", "            sh->type = %d;" % stype)

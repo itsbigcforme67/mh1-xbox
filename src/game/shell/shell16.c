@@ -73,7 +73,7 @@ static void shell16_i(SHLW *sh) {
 
     sh->mode++;
     sh->be_flag = 1;
-    sh->x14 = 0;
+    sh->trans = 0;
     if (sh->arg == 2) {
         shell_flag_set(sh, 0xA0);
     } else {

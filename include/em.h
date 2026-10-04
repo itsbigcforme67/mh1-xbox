@@ -17,7 +17,8 @@ typedef struct VEC3 {
      ((s32 *)&(d))[2] = ((s32 *)&(s))[2])
 
 typedef struct EMW {
-    u8 _pad000[0x0C];
+    u8 be_flag;         /* 0x000 alive; shells end when it clears (shell11_m) */
+    u8 _pad001[0x0B];
     u16 id;             /* 0x00C */
     u8 _pad00E[2];
     u8 x10;             /* 0x010 */
