@@ -4,12 +4,7 @@
  * Work entries come from pull_set_work() and run a small state machine:
  * mode 0 init (_i), 1 move (_m), 2 die (_d), 3 end (_e).
  * Field names are ours; offsets are from matched code (see each comment). */
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef short s16;
-typedef int s32;
-typedef float f32;
+#include "types.h"
 
 typedef struct SETW {
     u8 pad0;            /* 0x00 */

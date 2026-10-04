@@ -117,13 +117,18 @@ def main():
     ap.add_argument("--add", nargs=2, metavar=("MODULE", "NAME"),
                     help="if all functions match and are contiguous, add to c_files.txt")
     ap.add_argument("--module", help="prefer this module when a name is ambiguous")
+    ap.add_argument("--cc", help="another compiler dir under tools/compilers "
+                    "(e.g. bundle/mwcps2-3.0b22-020926)")
+    ap.add_argument("--flags", help="replace -O4,p (e.g. '-O3')")
     args = ap.parse_args()
 
     with tempfile.TemporaryDirectory(dir=os.path.join(ROOT, "build") if
                                      os.path.isdir(os.path.join(ROOT, "build")) else None) as tmp:
         obj = os.path.relpath(os.path.join(tmp, "check.o"), ROOT)
         src = os.path.relpath(os.path.abspath(args.cfile), ROOT)
-        p = subprocess.run([WIBO, MWCC] + CFLAGS + [src, "-o", obj], cwd=ROOT,
+        cc = os.path.join(ROOT, "tools/compilers", args.cc, "mwccps2.exe") if args.cc else MWCC
+        flags = CFLAGS if not args.flags else [f for f in CFLAGS if not f.startswith("-O")] + args.flags.split()
+        p = subprocess.run([WIBO, cc] + flags + [src, "-o", obj], cwd=ROOT,
                            capture_output=True, text=True)
         if p.returncode:
             sys.exit(p.stdout + p.stderr)

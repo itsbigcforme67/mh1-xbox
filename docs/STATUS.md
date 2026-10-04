@@ -293,10 +293,44 @@ How it works (each step was checked, not assumed):
   (otherwise splat emits asm for the same code and it links twice).
 - Progress: 11 of 12,585 functions.
 
+### Update: player file 0x14F030 (same session)
+
+- 11 of its 13 functions match and are built: src/main/pl/pl_normal.c
+  (0x14F030-0x14F0C4) and pl_normal2.c (0x14F330-0x14F850, includes the
+  pad reader sw_set_sub). include/pl.h holds PLW (0xA00 bytes, ~55 fields
+  placed from matched code, most still named by offset) and PLSW (pad
+  state at +0x364). include/game.h holds GAME_W. Progress: 22 functions.
+- **Open problem (compiler):** normal_char_set and to_normal are one
+  instruction from matching (src/main/pl/pl_normal_nm.c, not built). In a
+  switch's default case our builds reuse the constant 1 left by the
+  `case 1` compare; the original reloads it. Same in every 3.0-family
+  build on decomp.me (3.0b22-020926/3.0b38/3.0b50/3.0b52), unaffected by
+  -opt sub-options, statement order or switch/if forms. Suspect a build
+  we do not have. Revisit if more cases turn up.
+- That function did narrow the compiler: 3.0.3-020716 and 3.0b22
+  011126/020123/020716 are 44 instructions off; -O4,s/-O3/-O4 are 44 off.
+  -O4,p confirmed. Remaining candidates: 3.0b22-020926, 3.0b38, 3.0b50,
+  3.0b52.
+- MWCC conventions learnt (each confirmed by a match):
+  - `switch` cases are tested from the highest value down and `default`
+    is laid out first when it is written first; Capcom writes `default:`
+    first.
+  - Calls without a prototype (`void pl_chr_set();`) re-mask u16 args
+    (andi 0xFFFF); with a prototype they do not.
+  - `static` changes the caller: MWCC knows a static callee in the same
+    file leaves a0 alone and skips reloading it. Keep the original's
+    statics or callers stop matching.
+  - u16/s16 locals load constants with daddiu, ints with addiu.
+  - Up to 8 args in a0-a3, t0-t3 (EABI).
+- A C file must cover a contiguous range, so a non-matching function in
+  the middle splits the file (pl_normal.c / pl_normal2.c). Callers of a
+  static in the other half are fine as long as the a0-knowledge above
+  does not cross the split.
+
 ### Next
 
-1. Keep decompiling whole files: next the player file at 0x14F030
-   (13 functions), which starts the shared PLW player struct. Good first targets: small leaf functions in
+1. More whole files: more set*/eft* files (small, self-contained), then
+   larger player and monster files as PLW/EMW fill in. Good first targets: small leaf functions in
    main's player/monster code, building up shared headers (PLW, EMW...)
    as offsets are confirmed.
 2. Infer Capcom's file boundaries in the big text blocks (needed before
