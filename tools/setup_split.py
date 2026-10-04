@@ -181,6 +181,10 @@ def text_subsegments(module, section, all_rows, names_by_addr, vram, lo, hi, c_r
     cuts = {lo: ("asm", None)}
     for a in section_starts(all_rows, section, ".text", lo, hi):
         cuts[a] = ("asm", None)
+    # Inferred object-file starts (tools/file_bounds.py). Only a hint: cutting
+    # asm never changes bytes, so a wrong cut costs nothing but a file name.
+    for a, label in inferred_files(module, lo, hi):
+        cuts.setdefault(a, ("asm", label))
     for mod, start, end, name in c_ranges:
         if mod != module:
             continue
@@ -194,11 +198,28 @@ def text_subsegments(module, section, all_rows, names_by_addr, vram, lo, hi, c_r
             sub.append("      - [0x%06X, c, %s]" % (a - vram, name))
             continue
         first = min((f for f in names_by_addr if a <= f < hi), default=None)
-        label = names_by_addr.get(first, "text")
+        label = name or names_by_addr.get(first, "text")
         label = "%s_%06X" % (label, a) if label in used else label
         used.add(label)
         sub.append("      - [0x%06X, asm, text/%s]" % (a - vram, label))
     return sub
+
+
+def inferred_files(module, lo, hi):
+    """(start, label) for each inferred file in docs/survey/mh1_<module>_files.csv.
+    Files are labelled by their most common function-name prefix (em15,
+    eft06, set01...), gaps holding only global functions by their first
+    function."""
+    path = os.path.join(ROOT, "docs/survey/mh1_%s_files.csv" % module)
+    if not os.path.exists(path):
+        return []
+    out = []
+    for r in csv.DictReader(open(path)):
+        a = int(r["start"], 16)
+        if lo <= a < hi:
+            label = clean(r.get("prefix") or r["example"])
+            out.append((a, ("f_" if r["kind"] == "file" else "g_") + label))
+    return out
 
 
 def data_subsegments(section, all_rows, vram, lo, hi, prefix):

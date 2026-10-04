@@ -38,5 +38,7 @@ segments:
     subsegments:
       - [0x000000, textbin, header]
       - [0x000040, asm, text/Init_task]
+      - [0x0002E0, asm, text/f_demo]
+      - [0x000BB0, asm, text/f_disp]
       - [0x004D80, data, data/select_data]
   - [0x8000]

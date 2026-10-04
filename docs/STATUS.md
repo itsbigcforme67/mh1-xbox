@@ -238,6 +238,40 @@ Owner approved further downloads; added 3.0b50-030527, 3.0b38-030307,
   silenced with `absolute:True` on those symbols.
 - tools/progress.py: 1 of 12,585 game functions (20 of 3,481,696 bytes).
 
+### Update: inferred source-file boundaries (same session)
+
+tools/file_bounds.py rebuilds the original object-file layout from the
+order of LOCAL symbols in the ELF symtab. Results in
+docs/survey/mh1_<module>_files.csv (start, end, kind file/gap, prefix).
+
+How it works (each step was checked, not assumed):
+- The linker writes each object's locals as one contiguous run; inside a
+  run the order is scrambled (hashed), between runs it follows link order.
+  A cut is accepted where everything before is below everything after, per
+  output-section bucket, within a 200-symbol window.
+- Buckets must be real output-section regions. main: text, data
+  (0x2E5EA0-0x357980), string literals in .data (-0x35C250), named rodata
+  (-0x3671C0), rodata literal pool (-0x386B80). Mixing data with the string
+  area collapsed all of Capcom's code into one group. sdata and bss are
+  excluded: their symbols are not in link order.
+- Outliers: crt0's `_root` (0x100220) is listed after the overlays'
+  symbols and blocked every cut in the fl* engine library. Groups whose
+  functions form several address runs have the smaller runs removed and
+  the partition is redone (1 outlier in main, 0 in overlays).
+- Validation against the ground truth that exists: none of main's 342 or
+  lobby.bin's 588 library .text SECTION boundaries falls inside a detected
+  file, and no two detected files overlap.
+- Result: main 242 code files, game.bin 145, lobby.bin 95, select 2,
+  yn 5, plus "gaps" that hold only global functions (no locals to place
+  them). game.bin has one file per monster (em01, em04, em09, em15...),
+  per effect (eft*), set piece (set*) and projectile (shell*).
+- Known weaknesses: it over-splits where a file's locals happen to be in
+  address order (set01 comes out as 3 pieces), and globals in gaps are not
+  assigned to a file. Padding between functions is not a usable signal
+  (functions themselves are padded to 8/16 bytes).
+- The asm split now cuts at these starts (files f_<prefix>, gaps
+  g_<first function>): 1,694 text files. All five modules still OK.
+
 ### Next
 
 1. Start decompiling for real. Good first targets: small leaf functions in
