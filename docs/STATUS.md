@@ -350,10 +350,38 @@ How it works (each step was checked, not assumed):
   overlaps. set01's file now starts at 0x1554E0 automatically. (em08's
   file contains em_act21/em_fly21: those are action numbers, not em21.)
 
+### Update: shells, per-file data, permuter (same session)
+
+- **Per-file data**: a C file's own data (MWCC puts switch jump tables in
+  .rodata) is placed back into the data region with a line like
+  `game:rodata 0x0068A3F0 0x0068A410 shell/shell18` in c_files.txt.
+  setup_split cuts the data asm there; build.py renames the object's
+  .rodata to .data when the slot is in a region typed data
+  (config/c_renames.txt, generated). Adjacent slots work.
+- **check.py now verifies call targets** (R_MIPS_26 relocs resolved to
+  names and compared with the original's target). Before, a wrong case
+  order in shell18_move passed the check and only the full build caught it.
+- **decomp-permuter** (tools/perm.py) solved get_sw (`return sw & 0xFFFF`)
+  and swset (copy/clear loop + chained zeroing). Runs in the background.
+- Shells (game.bin projectiles/attack objects): include/shell.h (SHLW) and
+  include/em.h (EMW, monster work 0xA10 bytes; shares its first fields
+  with PLW). shell18 by hand; tools/gen_shell.py generates the template
+  family from the original asm (move switch order from the jump table,
+  type number, _m case list, second-animation-channel and arg-dependent
+  flag variants) and registers only verified matches: shell13/15/16/18/
+  20/21/23. shell19 by hand (its _m has two switches).
+- Conventions learnt: MWCC tests case labels in **reverse source order**
+  (descending values only because Capcom usually writes them ascending);
+  a vector copied through lw/sw is a word-wise copy macro (VEC3_COPY), not
+  a struct assignment; jump tables live in .rodata.
+- Parked near-matches (src/**/*_nm.c, not built): pl_normal_nm.c
+  (normal_char_set, to_normal: constant-reuse quirk), adx_nm.c,
+  release_texture_nm.c.
+
 ### Next
 
-1. More whole files: remaining small set*/eft* files, then larger player
-   and monster files as PLW/EMW fill in. Good first targets: small leaf functions in
+1. Remaining shells (00-12, 14, 17, 22) and set*/eft* in game.bin.
+2. Larger player and monster files as PLW/EMW fill in. Good first targets: small leaf functions in
    main's player/monster code, building up shared headers (PLW, EMW...)
    as offsets are confirmed.
 2. Infer Capcom's file boundaries in the big text blocks (needed before

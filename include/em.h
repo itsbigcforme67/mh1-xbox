@@ -21,7 +21,9 @@ typedef struct EMW {
     u16 id;             /* 0x00C */
     u8 _pad00E[2];
     u8 x10;             /* 0x010 */
-    u8 _pad011[0x19 - 0x11];
+    u8 _pad011[0x14 - 0x11];
+    u8 mode;            /* 0x014 4/5 end attached shells (shell19_m) */
+    u8 _pad015[0x19 - 0x15];
     u8 x19;             /* 0x019 cleared when a shell is spawned */
     u8 _pad01A[0xA0 - 0x1A];
     VEC3 pos;           /* 0x0A0 */

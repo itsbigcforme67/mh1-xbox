@@ -74,7 +74,11 @@ static void shell19_i(SHLW *sh) {
     sh->mode++;
     sh->be_flag = 1;
     sh->x14 = 0;
-    shell_flag_set(sh, 0x20);
+    if (sh->arg == 2) {
+        shell_flag_set(sh, 0xA0);
+    } else {
+        shell_flag_set(sh, 0x20);
+    }
     pl_atck_data_set_shl(sh, em, sh->arg, shell19_tbl);
     sh->x88 = shell19_body_tbl[sh->body];
     sh->x8C = 0;
@@ -99,22 +103,31 @@ static void shell19_m(SHLW *sh) {
     EMW *em = &em_work[sh->em_no];
 
     switch (sh->arg) {
-    default:
-        break;
-    case 0x4:
-    case 0x5:
     case 0xB:
+    case 0x1B:
+        if (em->char0 == 0x3F9) {
+            sh->x61 = 60;
+        }
+        break;
     case 0xC:
     case 0xE:
-    case 0x12:
-    case 0x1B:
-    case 0x3C:
-    case 0x3F9:
-    case 0x457:
-        sh->x61 = 99;
+        if (em->char0 == 0x457) {
+            sh->x61 = 18;
+        }
         break;
     }
-    if (em->char0 != sh->char0 || sh->xB == 0) {
+    if (sh->arg == 0xB || sh->arg == 0x1B) {
+        if (sh->xB == 0 || em->mode == 4 || em->mode == 5) {
+            sh->xB = 0;
+            sh->mode = 2;
+            return;
+        }
+    } else if (sh->arg == 0xC || sh->arg == 0xE) {
+        if (sh->xB == 0 || em->mode == 4 || em->mode == 5) {
+            sh->xB = 0;
+            sh->mode = 2;
+        }
+    } else if (em->char0 != sh->char0 || sh->xB == 0) {
         sh->xB = 0;
         sh->mode = 2;
     }
