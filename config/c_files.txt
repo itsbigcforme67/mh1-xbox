@@ -2,3 +2,7 @@
 #   MODULE START END NAME   (vram range; file is src/MODULE/NAME.c)
 # Functions must byte-match before they are listed here.
 main 0x00152030 0x00152044 pl/pl_stg_ck_tw
+main 0x0014FC20 0x0014FC38 pl/pl_master_ck
+main 0x00123A40 0x00123A60 clay/get_clay_ptr
+main 0x00171E90 0x00171EA0 fl/flmatSetTrans
+main 0x0016AC90 0x0016ACAC fl/fmsGetFrame

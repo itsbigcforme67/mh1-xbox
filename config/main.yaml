@@ -37,9 +37,17 @@ segments:
     bss_size: 0x1A9900
     subsegments:
       - [0x000000, asm, text/_start]
+      - [0x023A40, c, clay/get_clay_ptr]
+      - [0x023A60, asm, text/set_used_clay]
+      - [0x04FC20, c, pl/pl_master_ck]
+      - [0x04FC38, asm, text/Pl_bari_ck]
       - [0x052030, c, pl/pl_stg_ck_tw]
       - [0x052044, asm, text/World_calc]
+      - [0x06AC90, c, fl/fmsGetFrame]
+      - [0x06ACAC, asm, text/fmsReleaseFrame]
       - [0x06ACC8, asm, text/flCreateClayHandle]
+      - [0x071E90, c, fl/flmatSetTrans]
+      - [0x071EA0, asm, text/flmatAddTrans2]
       - [0x096390, asm, text/sceCdCallback]
       - [0x0978E8, asm, text/sceCdRead]
       - [0x097AC8, asm, text/sceCdSeek]
