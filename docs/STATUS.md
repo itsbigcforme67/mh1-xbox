@@ -200,8 +200,26 @@ Owner approved further downloads; added 3.0b50-030527, 3.0b38-030307,
   are next; their symbols and relocations are in the same ELF.
 - The rebuild is a flat binary of the section, not a full ELF file.
 
+### Update: data split (same session)
+
+- **Data now disassembled with symbols and still byte-identical.**
+  Layout (vram): VU1 microcode 0x293B80-0x2E5EA0 (bin; `__data_start` is
+  0x2E5EA0), game data 0x2E5EA0-0x306640 (one file, no SECTION symbols),
+  library .data 0x306640-0x35C250 (cut at 109 SECTION symbols), .rodata
+  0x35C250-0x386B80 (cut at 135), .sdata 0x386B80-0x38A080 (starts at
+  _gp - 0x7FF0, adx_cnfvol_tbl). 246 data files.
+- 19 jump tables come out as `.word .Lxxxxxxxx` tables tied to text labels.
+  Unresolved data references dropped from 12,655 to 1,152 (offsets into
+  objects, bss).
+- Bug found and fixed: with Shift-JIS string guessing, spimdisasm wrote
+  float data (0x3DCCCCCD) as half-width kana in UTF-8, growing game_data by
+  600 bytes. Now ASCII-only string guessing; Japanese text stays as bytes.
+  Found by comparing built symbol addresses (nm) against symbol_addrs.txt;
+  first moved symbol was light_specular01.
+- The library data/rodata split follows SECTION symbols. Whether every
+  Capcom object's strings sit in .data or .rodata is not checked yet.
+
 ### Next
 
-1. Split data properly (symbols for .data/.rodata/.sdata, string tables).
-2. Overlays: same flow for game.bin and lobby.bin (most monster/quest code).
-3. A progress script: matched bytes / total game bytes.
+1. Overlays: same flow for game.bin and lobby.bin (most monster/quest code).
+2. A progress script: matched bytes / total game bytes.
