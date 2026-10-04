@@ -59,8 +59,21 @@ def move_cases(nn, syms):
 
 
 def m_values(nn):
-    body = asm_func("shell%s_m" % nn)
-    return sorted({int(v, 16) for v in re.findall(r"addiu\s+\$\d+, \$0, 0x([0-9A-F]+)", body)})
+    """Constants that shellNN_m compares against sh->arg (loaded from 0x3)."""
+    body = asm_func("shell%s_m" % nn).split("0x61(")[0]   # compare chain only
+    insns = re.findall(r"\*/[ \t]+(\w+)[ \t]+([^\n]*)", body)
+    argreg, const, vals = None, {}, set()
+    for op, args in insns:
+        a = [x.strip() for x in args.split(",")]
+        if op == "lbu" and len(a) == 2 and a[1].startswith("0x3("):
+            argreg = a[0]
+        elif op == "addiu" and len(a) == 3 and a[1] == "$0":
+            const[a[0]] = int(a[2], 16)
+        elif op in ("beq", "bne") and argreg and len(a) == 3:
+            other = a[1] if a[0] == argreg else a[0] if a[1] == argreg else None
+            if other in const:
+                vals.add(const[other])
+    return sorted(vals)
 
 
 TEMPLATE = open(os.path.join(ROOT, "src/game/shell/shell18.c")).read()
@@ -69,7 +82,7 @@ TEMPLATE = open(os.path.join(ROOT, "src/game/shell/shell18.c")).read()
 def generate(nn):
     syms = symbols()
     cases, (tbl, taddr, tsize) = move_cases(nn, syms)
-    vals = [v for v in m_values(nn) if v not in (2, 0x20, 99)]   # stores and add_prim arg, not case labels
+    vals = m_values(nn)
     src = TEMPLATE.replace("shell18", "shell%s" % nn)
     src = src.replace("/* shell%s - game.bin 0x00636E30-0x006371F8. */" % nn,
                       "/* shell%s - game.bin, generated from the shell18 template by "
@@ -114,7 +127,45 @@ def generate(nn):
         }
         sh->x60 += (u8)(a - b - 1);''')
         src = src.replace("    s32 a;\n", "    s32 a;\n    s32 b;\n", 1)
+    if asm_func("shell%s_set2" % nn) is not None:
+        set2 = SET2_TEMPLATE.replace("NN", nn).replace("TYPE", str(stype))
+        a = src.index("static void shell%s_move(SHLW *sh) {\n" % nn)
+        src = src[:a] + set2 + src[a:]
     return src, (tbl, taddr, tsize)
+
+
+SET2_TEMPLATE = '''/* An object that launches shells on behalf of a monster. */
+typedef struct SHL_SRC {
+    u8 _pad00[0x24];
+    VEC3 pos;           /* 0x24 */
+    u8 _pad30[4];
+    EMW *em;            /* 0x34 */
+} SHL_SRC;
+
+void shellNN_set2(SHL_SRC *src, int arg) {
+    SHLW *sh = pull_shell_work(0);
+    EMW *em;
+
+    if (sh != 0) {
+        em = src->em;
+        sh->type = TYPE;
+        sh->arg = arg;
+        sh->move = shellNN_move;
+        sh->em_no = em->id;
+        sh->x7A = em->x10;
+        sh->char0 = em->char0;
+        sh->owner = em;
+        sh->xC8 = *(s32 *)&em->pos.y;
+        VEC3_COPY(sh->pos, em->pos);
+        sh->pos2.x = src->pos.x;
+        sh->pos2.y = src->pos.y;
+        sh->pos2.z = src->pos.z;
+        em->x19 = 0;
+        sh->x05 = 1;
+    }
+}
+
+'''
 
 
 def main():

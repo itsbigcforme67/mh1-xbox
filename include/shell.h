@@ -14,7 +14,8 @@ typedef struct SHLW {
     u8 type;            /* 0x02 */
     u8 arg;             /* 0x03 */
     u8 mode;            /* 0x04 */
-    u8 _pad05[0x0A - 0x05];
+    u8 x05;             /* 0x05 set to 1 by shell01_set2/3 */
+    u8 _pad06[0x0A - 0x06];
     u8 em_no;           /* 0x0A owner monster number */
     u8 xB;              /* 0x0B */
     u8 _pad0C[0x14 - 0x0C];
