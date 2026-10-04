@@ -1,4 +1,5 @@
-/* shell02 - game.bin, generated from the shell18 template by tools/gen_shell.py. */
+/* shell02 - game.bin 0x00628B40-0x00628FA8. Generated from the shell18
+ * template, then edited by hand. */
 #include "shell.h"
 #include "prim.h"
 
@@ -16,25 +17,28 @@ static void shell02_i(SHLW *sh);
 static void shell02_m(SHLW *sh);
 static void shell02_d(SHLW *sh);
 static void shell02_e(SHLW *sh);
+static void shell02_trans(SHLW *sh);
 
-void shell02_set(EMW *em, int arg) {
+SHLW *shell02_set(EMW *em, int arg) {
     SHLW *sh;
 
-    if (Em_stg_ck(em) != 0) {
-        sh = pull_shell_work(0);
-        if (sh != 0) {
-            sh->type = 2;
-            sh->arg = arg;
-            sh->move = shell02_move;
-            sh->em_no = em->id;
-            sh->x7A = em->x10;
-            sh->char0 = em->char0;
-            sh->owner = em;
-            sh->xC8 = *(s32 *)&em->pos.y;
-            VEC3_COPY(sh->pos, em->pos);
-            em->x19 = 0;
-        }
+    if (Em_stg_ck(em) == 0) {
+        return 0;
     }
+    sh = pull_shell_work(0);
+    if (sh != 0) {
+        sh->type = 2;
+        sh->arg = arg;
+        sh->move = shell02_move;
+        sh->em_no = em->id;
+        sh->x7A = em->x10;
+        sh->char0 = em->char0;
+        sh->owner = em;
+        sh->xC8 = *(s32 *)&em->pos.y;
+        VEC3_COPY(sh->pos, em->pos);
+        em->x19 = 0;
+    }
+    return sh;
 }
 
 static void shell02_move(SHLW *sh) {
@@ -72,12 +76,13 @@ static void shell02_i(SHLW *sh) {
 
     sh->mode++;
     sh->be_flag = 1;
-    sh->trans = 0;
+    sh->trans = shell02_trans;
     shell_flag_set(sh, 0x20);
-    pl_atck_data_set_shl(sh, em, sh->arg, shell02_tbl);
-    sh->x88 = shell02_body_tbl[sh->body];
-    sh->x8C = 0;
+    sh->xB4 = 0;
     sh->stg = em->stg;
+    pl_atck_data_set_shl(sh, em, sh->arg + 1, shell02_tbl);
+    sh->x88 = shell02_body_tbl[sh->body];
+    sh->x8C = shell02_body_tbl[sh->body];
     if (sh->x60 != 0) {
         a = flAbs(em->blend0 % 100);
         sh->x60 += (u8)(a - (s32)flAbs(em->act_tm0) - 1);
@@ -94,6 +99,7 @@ static void shell02_m(SHLW *sh) {
     switch (sh->arg) {
     default:
         break;
+    case 0x2:
     case 0x3:
     case 0x4:
     case 0x8:
@@ -106,11 +112,10 @@ static void shell02_m(SHLW *sh) {
         sh->x61 = 99;
         break;
     }
-    if (em->char0 != sh->char0 || sh->xB == 0) {
+    if (em->char0 != sh->char0 || sh->xB == 0 || em->x04 >= 2) {
         sh->xB = 0;
         sh->mode = 2;
-    }
-    if (sh->prim != 0) {
+    } else if (sh->prim != 0) {
         flvecCopy(&sh->prim->pos, &sh->pos2);
         add_prim(ot1, sh->prim, 0x20, 0);
     }
@@ -127,4 +132,7 @@ static void shell02_d(SHLW *sh) {
 
 static void shell02_e(SHLW *sh) {
     push_shell_work(sh);
+}
+
+static void shell02_trans(SHLW *sh) {
 }

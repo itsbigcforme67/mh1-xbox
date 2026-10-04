@@ -2,6 +2,7 @@
 # whose data slot sits in a differently typed region.
 build/src/game/shell/shell16.c.o .rodata .data
 build/src/game/shell/shell01.c.o .rodata .data
+build/src/game/shell/shell02.c.o .rodata .data
 build/src/game/shell/shell04.c.o .rodata .data
 build/src/game/shell/shell05.c.o .rodata .data
 build/src/game/shell/shell11.c.o .rodata .data
