@@ -403,7 +403,7 @@ How it works (each step was checked, not assumed):
   build is far worse on this function too. Handled by splitting the file
   around the one function (set03.c / set03b.c, set03_nm.c parked).
 - Parked near-matches: shell00 (shell00_i 2 off, permuter no help),
-  set16 (set16_trans), set17 (set17_trans: register pressure).
+  set17 (set17_trans: 10 off, case-1 statement order), set22_m (trap).
 - set04 and set08 (game.bin) match. set08 is the floor/water tiles on
   stages 0/26 (8x10 grid, model per tile from st00_obj_type0/1, culled with
   flCheckMeshFOV) and a 3x3 grid elsewhere, with scrolling UVs. Its
@@ -417,6 +417,23 @@ How it works (each step was checked, not assumed):
   - Float registers follow declaration order. The texture-scroll values
     and the tile position needed separate variables (u,v,w vs x,z,y) even
     though the original reuses the same registers for both.
+- set16, set18, set19 match; set22 matches except set22_m (split into
+  set22.c / set22b.c like set03, near-match in set22_nm.c). Findings, each
+  checked with tools/check.py:
+  - set16_trans: pointers held in saved registers for one branch come from
+    a one-pass loop (`for (i = 0; i < 1; i++)`) that the compiler unrolls.
+  - `(int)(u8)x` converts a byte to float with a plain signed convert; a
+    bare `(u8)x` gives the unsigned-conversion sequence instead.
+  - ran_suu returns a 32-bit value. Capcom writes `(u16)ran_suu(1)` at most
+    call sites, but set22_m's rotation uses it uncast (no andi 0xFFFF,
+    unsigned float convert). Earlier files that declared it `u16` still
+    match because they mask anyway.
+  - set22_m: `switch { default: case 7: n = 5; ... case 0x19: n = 5; }`
+    reproduces the original's leftover `li 7` with no compare; the only
+    remaining difference is the `% n` divide trap (the set03 quirk again,
+    checked against every compiler build in tools/compilers).
+  - set19: three `*pos++` reads compile to two combined increments and one
+    separate, which is how the original reads its position tables.
 
 ### Next
 
