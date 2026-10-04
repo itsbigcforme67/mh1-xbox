@@ -9,12 +9,6 @@ typedef struct VEC3 {
     f32 x, y, z;
 } VEC3;
 
-/* Copies a vector word by word through integer registers (lw/sw), which is
- * what the original code does; a struct copy would use FPU loads. */
-#define VEC3_COPY(d, s) \
-    (((s32 *)&(d))[0] = ((s32 *)&(s))[0], \
-     ((s32 *)&(d))[1] = ((s32 *)&(s))[1], \
-     ((s32 *)&(d))[2] = ((s32 *)&(s))[2])
 
 typedef struct EMW {
     u8 be_flag;         /* 0x000 alive; shells end when it clears (shell11_m) */
@@ -29,7 +23,7 @@ typedef struct EMW {
     u8 _pad015[0x19 - 0x15];
     u8 x19;             /* 0x019 cleared when a shell is spawned */
     u8 _pad01A[0xA0 - 0x1A];
-    VEC3 pos;           /* 0x0A0 */
+    s32 ang[3];         /* 0x0A0 rotation, 0x10000 = 360 degrees (shell14_trans) */
     u8 _pad0AC[0x2DC - 0xAC];
     u16 char0;          /* 0x2DC current animation (as PLW) */
     u8 _pad2DE[0x2E4 - 0x2DE];

@@ -30,8 +30,10 @@ void shell04_set(EMW *em, int arg) {
             sh->x7A = em->x10;
             sh->char0 = em->char0;
             sh->owner = em;
-            sh->xC8 = *(s32 *)&em->pos.y;
-            VEC3_COPY(sh->pos, em->pos);
+            sh->xC8 = em->ang[1];
+            sh->ang[0] = em->ang[0];
+            sh->ang[1] = em->ang[1];
+            sh->ang[2] = em->ang[2];
             em->x19 = 0;
         }
     }
@@ -58,8 +60,10 @@ void shell04_set2(SHL_SRC *src, int arg) {
         sh->x7A = em->x10;
         sh->char0 = em->char0;
         sh->owner = em;
-        sh->xC8 = *(s32 *)&em->pos.y;
-        VEC3_COPY(sh->pos, em->pos);
+        sh->xC8 = em->ang[1];
+        sh->ang[0] = em->ang[0];
+        sh->ang[1] = em->ang[1];
+        sh->ang[2] = em->ang[2];
         sh->pos2.x = src->pos.x;
         sh->pos2.y = src->pos.y;
         sh->pos2.z = src->pos.z;

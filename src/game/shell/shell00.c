@@ -31,9 +31,11 @@ void shell00_set(PLW *pl, int arg) {
         sh->x7A = ((EMW *)pl)->x10;
         sh->char0 = pl->char0;
         sh->owner = pl;
-        sh->xC8 = *(s32 *)&((EMW *)pl)->pos.y;
+        sh->xC8 = ((EMW *)pl)->ang[1];
         sh->xB8 = pl->cnt39A;
-        VEC3_COPY(sh->pos, ((EMW *)pl)->pos);
+        sh->ang[0] = ((EMW *)pl)->ang[0];
+        sh->ang[1] = ((EMW *)pl)->ang[1];
+        sh->ang[2] = ((EMW *)pl)->ang[2];
         flvecCopy(&sh->pos2, (u8 *)pl + 0xAC);
         ((EMW *)pl)->x19 = 0;
     }

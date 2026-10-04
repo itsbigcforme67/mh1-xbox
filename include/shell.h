@@ -28,7 +28,7 @@ typedef struct SHLW {
     u8 x1E;             /* 0x1E */
     u8 _pad1F;
     void (*move)(struct SHLW *);    /* 0x20 */
-    VEC3 pos;           /* 0x24 */
+    s32 ang[3];         /* 0x24 owner's rotation at spawn */
     VEC3 pos2;          /* 0x30 */
     u8 _pad3C[0x60 - 0x3C];
     u8 x60;             /* 0x60 */

@@ -63,7 +63,7 @@ void Shell09_set_pl(PLW *pl, VEC3 *pos, int arg) {
             sh->em_no = pl->id;
             sh->x7A = ((EMW *)pl)->x10;
             sh->owner = pl;
-            sh->xC8 = *(s32 *)&((EMW *)pl)->pos.y;
+            sh->xC8 = ((EMW *)pl)->ang[1];
             sh->stg = pl->stg;
         } else {
             sh->em_no = 0;
@@ -82,7 +82,7 @@ void Shell09_set_em(EMW *em, VEC3 *pos, int arg) {
         sh->em_no = em->id;
         sh->x7A = em->x10;
         sh->owner = em;
-        sh->xC8 = *(s32 *)&em->pos.y;
+        sh->xC8 = em->ang[1];
         flvecCopy(&sh->pos2, pos);
         sh->stg = em->stg;
         shell09_set_com(sh);
@@ -98,7 +98,7 @@ void Shell09_set_pl2(PLW *pl, VEC3 *pos, int arg, int stg) {
         sh->em_no = pl->id;
         sh->x7A = ((EMW *)pl)->x10;
         sh->owner = pl;
-        sh->xC8 = *(s32 *)&((EMW *)pl)->pos.y;
+        sh->xC8 = ((EMW *)pl)->ang[1];
         sh->stg = stg;
         shell09_set_com(sh);
     }
