@@ -16,9 +16,9 @@ typedef struct LB_NETW {
     u8 _pad00[2];
     u8 depth;           /* 0x02 menu depth */
     u8 step;            /* 0x03 step of the current sub menu */
-    s8 x04;             /* 0x04 */
-    s8 x05;             /* 0x05 */
-    u8 _pad06;
+    u8 x04;             /* 0x04 */
+    u8 x05;             /* 0x05 */
+    s8 x06;             /* 0x06 */
     u8 sel;             /* 0x07 selected main menu entry */
     u8 menu;            /* 0x08 index into plazaMenuTbl */
     u8 cur;             /* 0x09 cursor row */
@@ -104,7 +104,6 @@ int Put_2TF();
 int SetDialogData();
 int Lbc_set_prim();
 int lobby_bgm_set2();
-int plaza_selectMenu();
 int plaza_moveMain();
 int Plaza_chat_init();
 int Plaza_chat_move();
@@ -114,6 +113,19 @@ extern char *tl_etc[];
 extern u8 my_user_mini_data[];
 extern u8 D_3C73B4[];
 extern char lit_193_0065DBE8[];
+extern u8 Friend_data[];
+int net_Check_FriendSuu();
+int Get_kb_input();
+int SoftKeyboard_pos_set(f32, int);
+int SoftKeyboard_set();
+int SoftKeyboard_move();
+int SoftKeyboard_exit();
+extern u8 BsLbsCount;
+int Lb_select();
+int fade_set();
+int str_stop();
+int kb_chat_in_chk();
+int Name_ID_change();
 int set_dialog_square();
 int load_pit();
 int load_texlist();

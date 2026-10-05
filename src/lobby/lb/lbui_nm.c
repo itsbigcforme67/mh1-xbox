@@ -142,7 +142,7 @@ LB_NETW *a;
     return a->x10;
 }
 
-void tl_menu_cursor_up(m)
+static void tl_menu_cursor_up(m)
 LB_TLMENU *m;
 {
     u8 *tbl = plazaMenuTbl[m->menu];
@@ -168,7 +168,7 @@ LB_TLMENU *m;
     } while (tbl[m->cur * 0x24] != 1);
 }
 
-void tl_menu_cursor_down(m)
+static void tl_menu_cursor_down(m)
 LB_TLMENU *m;
 {
     u8 *tbl = plazaMenuTbl[m->menu];
@@ -186,6 +186,119 @@ LB_TLMENU *m;
         }
         if (t == 2) {
             m->cur = 0;
+        }
+    }
+}
+
+void plaza_selectMenu(a)
+LB_NETW *a;
+{
+    u8 *tbl = plazaMenuTbl[a->menu];
+    int sw;
+    u8 *t2;
+    int v;
+
+    v = Get_sw2(0);
+    a->x28 = v;
+    SetSceneSubTitle(2, 1, tl_etc[0]);
+    sw = v & 0xFFFF;
+    sw = sw & 0xFFFF;
+    a->sel = 0xE;
+    if (sw & 0x2000) {
+        tl_menu_cursor_up(a);
+        SetHelpLineMsg(2, *(u16 *)((int)tbl + a->cur * 0x24 + 2) + 2);
+        cnWrap_SoundRequest(1);
+        return;
+    }
+    if (sw & 0x1000) {
+        tl_menu_cursor_down(a);
+        SetHelpLineMsg(2, *(u16 *)((int)tbl + a->cur * 0x24 + 2) + 2);
+        cnWrap_SoundRequest(1);
+        return;
+    }
+    if (sw & 0xC00) {
+        a->menu ^= 1;
+        t2 = plazaMenuTbl[a->menu];
+        if (t2[a->cur * 0x24] != 1) {
+            tl_menu_cursor_down(a);
+        }
+        SetHelpLineMsg(2, *(u16 *)((int)t2 + a->cur * 0x24 + 2) + 2);
+        cnWrap_SoundRequest(1);
+        return;
+    }
+    if (sw & 0x20) {
+        a->sel = *(u16 *)((int)tbl + a->cur * 0x24 + 2);
+        a->depth++;
+        if (a->sel != 0xC) {
+            SetSceneSubTitle(2, 1, tbl + a->cur * 0x24 + 4);
+        }
+        SetHelpLineMsg(2, a->sel + 0x10);
+        cnWrap_SoundRequest(0);
+        switch (a->sel) {
+        case 0:
+        case 2:
+        case 3:
+        case 5:
+        case 6:
+        case 7:
+        case 0xB:
+            plaza_moveMain(a->sel);
+            break;
+        }
+        a->x28 = 0;
+        return;
+    }
+    if ((*(u16 *)0x3F3714 & 0x100) || kb_chat_in_chk() == 1) {
+        a->sel = 0xE;
+        cnWrap_SoundRequest(0xE);
+        a->depth++;
+        return;
+    }
+    if (sw & 0x200) {
+        Name_ID_change();
+    }
+}
+
+void plaza_backToServer(a)
+LB_NETW *a;
+{
+    int sw = Get_sw2(0) & 0xFFFF;
+
+    if (BsLbsCount > 1) {
+        switch (a->step) {
+        case 0:
+            a->step++;
+            SetDialogData(0x28, 2);
+            SetDialogYesNo(1);
+            break;
+        case 1:
+            a->x28 = Get_sw_on2(0);
+            a->x0C = 1;
+            switch (Lb_select()) {
+            case 0:
+                a->x10 = 2;
+                fade_set(0xA);
+                str_stop(0);
+                str_stop(1);
+                break;
+            case 3:
+                tl_exit_sub_menu(1);
+                break;
+            }
+            break;
+        }
+    } else {
+        switch (a->step) {
+        case 0:
+            a->step++;
+            SetDialogData(0x14, 3);
+            break;
+        case 1:
+            a->x0C = 1;
+            if ((u16)sw & 0x20) {
+                tl_exit_sub_menu(0);
+            }
+            break;
         }
     }
 }
@@ -210,6 +323,137 @@ int a;
     if (id != 0xFF) {
         memset(CW->comment[id], 0, 0x62);
         Lbc_RequestNetComment(a);
+        return 1;
+    }
+    return 0;
+}
+
+int mail_input(a, buf)
+LB_NETW *a;
+int buf;
+{
+    s8 r;
+
+    Get_sw(0);
+    Get_kb_input();
+    switch (a->x05) {
+    case 0:
+        a->x05++;
+        SoftKeyboard_pos_set(100.0f, 0x140);
+        SoftKeyboard_set(1, 0xE, 0x7E, buf);
+        break;
+    case 1:
+        r = SoftKeyboard_move(buf, *(s16 *)0x3F3710, *(s16 *)0x3F3714);
+        switch (r) {
+        case 1:
+        case -1:
+            a->x05++;
+            break;
+        }
+        break;
+    case 2:
+        SoftKeyboard_exit();
+        a->x05 = 0;
+        return 1;
+    }
+    return 0;
+}
+
+void get_friend_page_num(a)
+LB_NETW *a;
+{
+    a->x26 = net_Check_FriendSuu(Friend_data, 0x32);
+    if (a->x26 % 7 != 0) {
+        a->x26 = a->x26 / 7 + 1;
+        return;
+    }
+    a->x26 = a->x26 / 7;
+    if (a->x26 == 0) {
+        a->x26 = 1;
+    }
+}
+
+int get_page_num(a, b)
+s16 a;
+s16 b;
+{
+    int r;
+
+    if (a % b != 0) {
+        return (s16)(a / b + 1);
+    }
+    r = (s16)(a / b);
+    if (r == 0) {
+        r = 1;
+    }
+    return r;
+}
+
+int my_comment_input(buf)
+int buf;
+{
+    s8 r;
+
+    Get_sw(0);
+    Get_kb_input();
+    switch (pNet->x05) {
+    case 0:
+        pNet->x05++;
+        SoftKeyboard_pos_set(100.0f, 0x140);
+        SoftKeyboard_set(1, 0xE, 0x61, buf);
+        break;
+    case 1:
+        r = SoftKeyboard_move(buf, *(s16 *)0x3F3710, *(s16 *)0x3F3714);
+        switch (r) {
+        case 1:
+        case -1:
+            pNet->x05++;
+            break;
+        }
+        break;
+    case 2:
+        SoftKeyboard_exit();
+        pNet->x05 = 0;
+        return 1;
+    }
+    return 0;
+}
+
+int plaza_req_input(a, buf)
+LB_NETW *a;
+int buf;
+{
+    s8 r;
+
+    Get_sw(0);
+    switch (a->x05) {
+    case 0:
+        a->x05++;
+        SoftKeyboard_pos_set(100.0f, 0x140);
+        if (a->x04 == 1) {
+            SoftKeyboard_set(0, 6, 6, buf);
+        } else {
+            SoftKeyboard_set(3, 0xF, 8, buf);
+        }
+        break;
+    case 1:
+        r = SoftKeyboard_move(buf, *(s16 *)0x3F3710, *(s16 *)0x3F3714);
+        switch (r) {
+        case 0:
+            break;
+        case 1:
+            a->x05++;
+            a->x06 = 0;
+            break;
+        case -1:
+            a->x05++;
+            a->x06 = 0;
+            break;
+        }
+        break;
+    case 2:
+        SoftKeyboard_exit();
+        a->x05 = 0;
         return 1;
     }
     return 0;
