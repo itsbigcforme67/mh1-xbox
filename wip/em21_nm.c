@@ -73,108 +73,108 @@ void em21_init(EMW *em);
 void em21_to_normal(EMW *em);
 void em21_to_swim(EMW *em);
 s32 em21_act_sub(EMW *em, s32 arg1);
-void em_act00_00600490(EMW *em, EM21W *w);
-void em_act01_00600570(EMW *em, EM21W *w);
-void em_act02_00600650(EMW *em, EM21W *w);
-void em_act04_00600700(EMW *em, EM21W *w);
-void em_act05_006007F0(EMW *em, EM21W *w);
-void em_act06_00600900(EMW *em, EM21W *w);
-void em_act07_006009D0(EMW *em, EM21W *w);
-void em_act08_00600A50(EMW *em, EM21W *w);
-void em_act10_00600B90(EMW *em, EM21W *w);
-void em_act12_00600CD0(EMW *em, EM21W *w);
-void em_act13_00600DE0(EMW *em, EM21W *w);
-void em_act14_00600EB0(EMW *em, EM21W *w);
-void em_act15_00601000(EMW *em, EM21W *w);
-void em_act16_006010D0(EMW *em, EM21W *w);
-void em_act17_00601220(EMW *em, EM21W *w);
-void em_act18_006012F0(EMW *em, EM21W *w);
-void em_act19_00601440(EMW *em, EM21W *w);
-void em_act20_00601510(EMW *em, EM21W *w);
-void em_mv00_006015A0(EMW *em, EM21W *w);
-void em_mv01_00601700(EMW *em, EM21W *w);
-void em_mv02_00601870(EMW *em, EM21W *w);
-void em_mv03_00601AC0(EMW *em, EM21W *w);
-void em_fly00_00601C20(EMW *em, EM21W *w);
-void em_fly01_00601CB0(EMW *em, EM21W *w);
-void em_fly02_00601D80(EMW *em, EM21W *w);
-void em_fly03_00601D90(EMW *em, EM21W *w);
-void em_fly04_00602030(EMW *em, EM21W *w);
-void em_fly05_00602280(EMW *em, EM21W *w);
-void em_fly06_00602450(EMW *em, EM21W *w);
-void em_fly07_006024F0(EMW *em, EM21W *w);
-void em_fly08_00602640(EMW *em, EM21W *w);
-void em_fly09_00602780(EMW *em, EM21W *w);
-void em_fly10_00602A70(EMW *em, EM21W *w);
-void em_fly11_00602CC0(EMW *em, EM21W *w);
-void em_fly12_00602F10(EMW *em, EM21W *w);
-void em_fly13_00603000(EMW *em, EM21W *w);
-void em_fly14_006030F0(EMW *em, EM21W *w);
-void em_fly15_006033A0(EMW *em, EM21W *w);
-void em_fly16_00603460(EMW *em, EM21W *w);
-void em_fly17_00603720(EMW *em, EM21W *w);
-void em_fly18_006038C0(EMW *em, EM21W *w);
-void em_fly19_00603B90(EMW *em, EM21W *w);
-void em_fly20_00603E40(EMW *em, EM21W *w);
-void em_fly21_00604110(EMW *em, EM21W *w);
-void em_fly22_006041A0(EMW *em, EM21W *w);
-void em_fly23_00604340(EMW *em, EM21W *w);
-void em_fly24_00604440(EMW *em, EM21W *w);
-void em_fly25_006044D0(EMW *em, EM21W *w);
-void em_atk00_00604560(EMW *em, EM21W *w);
-void em_atk01_006045E0(EMW *em, EM21W *w);
-void em_atk02_006046C0(EMW *em, EM21W *w);
-void em_atk03_006047B0(EMW *em, EM21W *w);
-void em_atk04_006048C0(EMW *em, EM21W *w);
-void em_atk05_006049D0(EMW *em, EM21W *w);
-void em_atk06_00604AE0(EMW *em, EM21W *w);
-void em_atk07_00604DC0(EMW *em, EM21W *w);
-void em_dmg00_00604E40(EMW *em, EM21W *w);
-void em_dmg01_00604F20(EMW *em, EM21W *w);
-void em_dmg02_00604FB0(EMW *em, EM21W *w);
-void em_dmg03_00605040(EMW *em, EM21W *w);
-void em_dmg04_006050D0(EMW *em, EM21W *w);
-void em_dmg05_006051D0(EMW *em, EM21W *w);
-void em_dmg06_00605370(EMW *em, EM21W *w);
-void em_dmg07_006054D0(EMW *em, EM21W *w);
-void em_dmg08_00605630(EMW *em, EM21W *w);
-void em_dmg09_00605770(EMW *em, EM21W *w);
-void em_dmg10_006058E0(EMW *em, EM21W *w);
-void em_dmg11_00605970(EMW *em, EM21W *w);
-void em_dmg12_00605A50(EMW *em, EM21W *w);
-void em_dmg13_00605B70(EMW *em, EM21W *w);
-void em_dmg14_00605CA0(EMW *em, EM21W *w);
-void em_dmg15_00605DC0(EMW *em, EM21W *w);
-void em_dmg16_006060F0(EMW *em, EM21W *w);
-void em_dmg17_006061D0(EMW *em, EM21W *w);
-void em_dmg18_006063E0(EMW *em, EM21W *w);
-void em_dmg19_00606600(EMW *em, EM21W *w);
-void em_dmg20_00606700(EMW *em, EM21W *w);
+static void em_act00_00600490(EMW *em, EM21W *w);
+static void em_act01_00600570(EMW *em, EM21W *w);
+static void em_act02_00600650(EMW *em, EM21W *w);
+static void em_act04_00600700(EMW *em, EM21W *w);
+static void em_act05_006007F0(EMW *em, EM21W *w);
+static void em_act06_00600900(EMW *em, EM21W *w);
+static void em_act07_006009D0(EMW *em, EM21W *w);
+static void em_act08_00600A50(EMW *em, EM21W *w);
+static void em_act10_00600B90(EMW *em, EM21W *w);
+static void em_act12_00600CD0(EMW *em, EM21W *w);
+static void em_act13_00600DE0(EMW *em, EM21W *w);
+static void em_act14_00600EB0(EMW *em, EM21W *w);
+static void em_act15_00601000(EMW *em, EM21W *w);
+static void em_act16_006010D0(EMW *em, EM21W *w);
+static void em_act17_00601220(EMW *em, EM21W *w);
+static void em_act18_006012F0(EMW *em, EM21W *w);
+static void em_act19_00601440(EMW *em, EM21W *w);
+static void em_act20_00601510(EMW *em, EM21W *w);
+static void em_mv00_006015A0(EMW *em, EM21W *w);
+static void em_mv01_00601700(EMW *em, EM21W *w);
+static void em_mv02_00601870(EMW *em, EM21W *w);
+static void em_mv03_00601AC0(EMW *em, EM21W *w);
+static void em_fly00_00601C20(EMW *em, EM21W *w);
+static void em_fly01_00601CB0(EMW *em, EM21W *w);
+static void em_fly02_00601D80(EMW *em, EM21W *w);
+static void em_fly03_00601D90(EMW *em, EM21W *w);
+static void em_fly04_00602030(EMW *em, EM21W *w);
+static void em_fly05_00602280(EMW *em, EM21W *w);
+static void em_fly06_00602450(EMW *em, EM21W *w);
+static void em_fly07_006024F0(EMW *em, EM21W *w);
+static void em_fly08_00602640(EMW *em, EM21W *w);
+static void em_fly09_00602780(EMW *em, EM21W *w);
+static void em_fly10_00602A70(EMW *em, EM21W *w);
+static void em_fly11_00602CC0(EMW *em, EM21W *w);
+static void em_fly12_00602F10(EMW *em, EM21W *w);
+static void em_fly13_00603000(EMW *em, EM21W *w);
+static void em_fly14_006030F0(EMW *em, EM21W *w);
+static void em_fly15_006033A0(EMW *em, EM21W *w);
+static void em_fly16_00603460(EMW *em, EM21W *w);
+static void em_fly17_00603720(EMW *em, EM21W *w);
+static void em_fly18_006038C0(EMW *em, EM21W *w);
+static void em_fly19_00603B90(EMW *em, EM21W *w);
+static void em_fly20_00603E40(EMW *em, EM21W *w);
+static void em_fly21_00604110(EMW *em, EM21W *w);
+static void em_fly22_006041A0(EMW *em, EM21W *w);
+static void em_fly23_00604340(EMW *em, EM21W *w);
+static void em_fly24_00604440(EMW *em, EM21W *w);
+static void em_fly25_006044D0(EMW *em, EM21W *w);
+static void em_atk00_00604560(EMW *em, EM21W *w);
+static void em_atk01_006045E0(EMW *em, EM21W *w);
+static void em_atk02_006046C0(EMW *em, EM21W *w);
+static void em_atk03_006047B0(EMW *em, EM21W *w);
+static void em_atk04_006048C0(EMW *em, EM21W *w);
+static void em_atk05_006049D0(EMW *em, EM21W *w);
+static void em_atk06_00604AE0(EMW *em, EM21W *w);
+static void em_atk07_00604DC0(EMW *em, EM21W *w);
+static void em_dmg00_00604E40(EMW *em, EM21W *w);
+static void em_dmg01_00604F20(EMW *em, EM21W *w);
+static void em_dmg02_00604FB0(EMW *em, EM21W *w);
+static void em_dmg03_00605040(EMW *em, EM21W *w);
+static void em_dmg04_006050D0(EMW *em, EM21W *w);
+static void em_dmg05_006051D0(EMW *em, EM21W *w);
+static void em_dmg06_00605370(EMW *em, EM21W *w);
+static void em_dmg07_006054D0(EMW *em, EM21W *w);
+static void em_dmg08_00605630(EMW *em, EM21W *w);
+static void em_dmg09_00605770(EMW *em, EM21W *w);
+static void em_dmg10_006058E0(EMW *em, EM21W *w);
+static void em_dmg11_00605970(EMW *em, EM21W *w);
+static void em_dmg12_00605A50(EMW *em, EM21W *w);
+static void em_dmg13_00605B70(EMW *em, EM21W *w);
+static void em_dmg14_00605CA0(EMW *em, EM21W *w);
+static void em_dmg15_00605DC0(EMW *em, EM21W *w);
+static void em_dmg16_006060F0(EMW *em, EM21W *w);
+static void em_dmg17_006061D0(EMW *em, EM21W *w);
+static void em_dmg18_006063E0(EMW *em, EM21W *w);
+static void em_dmg19_00606600(EMW *em, EM21W *w);
+static void em_dmg20_00606700(EMW *em, EM21W *w);
 void em_dmg21(EMW *em, EM21W *w);
 void em_dmg22(EMW *em, EM21W *w);
-void em_demo00_00606B70(EMW *em, EM21W *w);
-void em_die00_00606C90(EMW *em, EM21W *w);
-void em_die01_00606E20(EMW *em, EM21W *w);
-void em_die02_00606F90(EMW *em, EM21W *w);
-void em_die03_006073F0(EMW *em, EM21W *w);
-void em_move01_00607730(EMW *em, EM21W *w);
-void em_move05_00607C10(EMW *em, EM21W *w);
-void em_move06_00607CA0(EMW *em, EM21W *w);
+static void em_demo00_00606B70(EMW *em, EM21W *w);
+static void em_die00_00606C90(EMW *em, EM21W *w);
+static void em_die01_00606E20(EMW *em, EM21W *w);
+static void em_die02_00606F90(EMW *em, EM21W *w);
+static void em_die03_006073F0(EMW *em, EM21W *w);
+static void em_move01_00607730(EMW *em, EM21W *w);
+static void em_move05_00607C10(EMW *em, EM21W *w);
+static void em_move06_00607CA0(EMW *em, EM21W *w);
 void em21_uvmove(EMW *em);
-void sound_call_sub_00608D00(EMW *em, int se, int joint);
-void sound_call_00608D70(EMW *em, int frame, int se, int joint);
-void quake_call_00608DD0(EMW *em, int frame, int arg);
-void move_default_00608E20(EMW *em);
-void ef_move_sub_00608E70(EMW *em, EM21W *w);
+static void sound_call_sub_00608D00(EMW *em, int se, int joint);
+static void sound_call_00608D70(EMW *em, int frame, int se, int joint);
+static void quake_call_00608DD0(EMW *em, int frame, int arg);
+static void move_default_00608E20(EMW *em);
+static void ef_move_sub_00608E70(EMW *em, EM21W *w);
 void Em_set_quake_sub(EMW *, int);
-void hire_move_sub2_0060BAD0(EMW *em, EM21W *w, int i);
-void hire_move_sub1_0060BCA0(EMW *em, EM21W *w, int i);
-void hire_move_0060BFE0(EMW *em, EM21W *w);
+static void hire_move_sub2_0060BAD0(EMW *em, EM21W *w, int i);
+static void hire_move_sub1_0060BCA0(EMW *em, EM21W *w, int i);
+static void hire_move_0060BFE0(EMW *em, EM21W *w);
 void em21_effect_move(EMW *em);
-void hire_req_set_0060C0C0(EMW *em, EM21W *w, u8 mode);
-void ground_land_eff_set_0060C180(EMW *em);
-void swim_eff_set_0060C1A0(f32 scale, EMW *em);
-void swim_eff_set2_0060C260(f32 scale, EMW *em);
+static void hire_req_set_0060C0C0(EMW *em, EM21W *w, u8 mode);
+static void ground_land_eff_set_0060C180(EMW *em);
+static void swim_eff_set_0060C1A0(f32 scale, EMW *em);
+static void swim_eff_set2_0060C260(f32 scale, EMW *em);
 void swim_eff_set3(f32 scale, EMW *em);
 void dummy_em_prog_0060C390(void);
 
@@ -186,47 +186,32 @@ void em21_local_init(EMW *em) {
 
 void em21_init(EMW *em) {
     EM21W *w = (EM21W *)em->ex;
-    f32 var_f2;
-    f32 var_f2_2;
-    s16 temp_v0_3;
+    s16 temp_v0;
     u8 temp_a0;
     u8 temp_a1;
-    u8 temp_v0;
-    u8 temp_v0_2;
-    u8 temp_v1;
 
     em_char_set(em, 1, 0, 0);
     if (quest_w.no == 0) {
         em->ang[1] = 0x8000;
-        if (game_w.stage != 0x36) {
-            temp_v0 = em->x13;
-            if ((s32) temp_v0 >= 0) {
-                var_f2 = (f32) temp_v0;
-            } else {
-                var_f2 = 2.0f * (f32) ((temp_v0 >> 1) | (temp_v0 & 1));
-            }
-            em->pos[0] = 5000.0f + (1500.0f * var_f2);
-            em->pos[1] = 0.0f;
-            em->pos[2] = 9000.0f;
-            em->x388 = 4;
-            em21_act_set(em, 2, 0, 0);
-        } else {
-            temp_v0_2 = em->x13;
-            if ((s32) temp_v0_2 >= 0) {
-                var_f2_2 = (f32) temp_v0_2;
-            } else {
-                var_f2_2 = 2.0f * (f32) ((temp_v0_2 >> 1) | (temp_v0_2 & 1));
-            }
-            em->pos[0] = 6000.0f + (1500.0f * var_f2_2);
+        switch (game_w.stage) {
+        case 0x36:
+            em->pos[0] = 6000.0f + 1500.0f * (f32)(u32)em->x13;
             em->pos[1] = 0.0f;
             em->pos[2] = 10000.0f;
             em->ang[1] = 0x4000;
             em->x388 = 4;
             em21_act_set(em, 2, 0, 0);
+            break;
+        default:
+            em->pos[0] = 5000.0f + 1500.0f * (f32)(u32)em->x13;
+            em->pos[1] = 0.0f;
+            em->pos[2] = 9000.0f;
+            em->x388 = 4;
+            em21_act_set(em, 2, 0, 0);
+            break;
         }
     } else {
-        temp_v1 = game_w.stage;
-        switch (temp_v1) {                          /* irregular */
+        switch (game_w.stage) {
         case 0x36:
             em->x388 = 4;
             em21_act_set(em, 2, 0, 0);
@@ -242,9 +227,9 @@ void em21_init(EMW *em) {
         }
     }
     w->x10 = 0;
-    temp_v0_3 = em_hp_vital_set2(em, 0x4B0, 0x514);
-    em->x302 = temp_v0_3;
-    em->x792 = temp_v0_3;
+    temp_v0 = em_hp_vital_set2(em, 0x4B0, 0x514);
+    em->x302 = temp_v0;
+    em->x792 = temp_v0;
     em->x839 = 1;
     em->x88B = 1;
     em->x765 = 1;
@@ -252,7 +237,7 @@ void em21_init(EMW *em) {
     em->x56A = 0;
     em->stay_tm = em21_stay_timer_tbl[em->stg];
     em->runaway_tm = em21_runaway_timer_tbl[em->stg];
-    em->x7E0 = 0x44278000;
+    em->x7E0 = 670.0f;
     w->tgt_ang = 0x4000;
     w->x28 = 0x100;
     w->x2C = 0x200;
@@ -264,12 +249,14 @@ void em21_init(EMW *em) {
     w->x3A = 0;
     temp_a0 = em->x948 & 1;
     em->x948 = temp_a0;
-    if ((temp_a0 == 0) && (temp_a1 = em->kind, (temp_a1 != 0x14))) {
-        if ((temp_a1 != 0x16) && (temp_a1 != 0x15) && (temp_a1 != 0x11) && (temp_a1 != 0xE) && (temp_a1 != 0xF) && (temp_a1 != 0xB) && (temp_a1 != 6) && (temp_a1 != 1)) {
-            return;
+    if (temp_a0 == 0) {
+        temp_a1 = em->kind;
+        if (temp_a1 != 0x14) {
+            if (temp_a1 == 0x16 || temp_a1 == 0x15 || temp_a1 == 0x11 || temp_a1 == 0xE || temp_a1 == 0xF || temp_a1 == 0xB || temp_a1 == 6 || temp_a1 == 1) {
+                em->ex[0xA3] = 0;
+                eft09_set(em, temp_a1, 0x100, 0x4000);
+            }
         }
-        w->xA3 = 0;
-        eft09_set(em, temp_a1, 0x100, 0x4000);
     }
 }
 
@@ -301,7 +288,7 @@ s32 em21_act_sub(EMW *em, s32 arg1) {
     return 0;
 }
 
-void em_act00_00600490(EMW *em, EM21W *w) {
+static void em_act00_00600490(EMW *em, EM21W *w) {
     s32 temp_v1_2;
     u8 temp_v1;
 
@@ -330,7 +317,7 @@ void em_act00_00600490(EMW *em, EM21W *w) {
     }
 }
 
-void em_act01_00600570(EMW *em, EM21W *w) {
+static void em_act01_00600570(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -358,7 +345,7 @@ void em_act01_00600570(EMW *em, EM21W *w) {
     }
 }
 
-void em_act02_00600650(EMW *em, EM21W *w) {
+static void em_act02_00600650(EMW *em, EM21W *w) {
     u8 temp_a2;
 
     temp_a2 = em->x05;
@@ -384,7 +371,7 @@ void em_act02_00600650(EMW *em, EM21W *w) {
     }
 }
 
-void em_act04_00600700(EMW *em, EM21W *w) {
+static void em_act04_00600700(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -419,7 +406,7 @@ void em_act04_00600700(EMW *em, EM21W *w) {
     }
 }
 
-void em_act05_006007F0(EMW *em, EM21W *w) {
+static void em_act05_006007F0(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a1;
 
@@ -457,7 +444,7 @@ void em_act05_006007F0(EMW *em, EM21W *w) {
     }
 }
 
-void em_act06_00600900(EMW *em, EM21W *w) {
+static void em_act06_00600900(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -484,7 +471,7 @@ void em_act06_00600900(EMW *em, EM21W *w) {
     }
 }
 
-void em_act07_006009D0(EMW *em, EM21W *w) {
+static void em_act07_006009D0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -503,7 +490,7 @@ void em_act07_006009D0(EMW *em, EM21W *w) {
     }
 }
 
-void em_act08_00600A50(EMW *em, EM21W *w) {
+static void em_act08_00600A50(EMW *em, EM21W *w) {
     f32 v[3];
     s32 temp_v0;
     u8 temp_v1;
@@ -543,7 +530,7 @@ void em_act08_00600A50(EMW *em, EM21W *w) {
     }
 }
 
-void em_act10_00600B90(EMW *em, EM21W *w) {
+static void em_act10_00600B90(EMW *em, EM21W *w) {
     f32 v[3];
     s32 temp_v0;
     u8 temp_v1;
@@ -583,7 +570,7 @@ void em_act10_00600B90(EMW *em, EM21W *w) {
     }
 }
 
-void em_act12_00600CD0(EMW *em, EM21W *w) {
+static void em_act12_00600CD0(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a1;
 
@@ -621,7 +608,7 @@ void em_act12_00600CD0(EMW *em, EM21W *w) {
     }
 }
 
-void em_act13_00600DE0(EMW *em, EM21W *w) {
+static void em_act13_00600DE0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -648,7 +635,7 @@ void em_act13_00600DE0(EMW *em, EM21W *w) {
     }
 }
 
-void em_act14_00600EB0(EMW *em, EM21W *w) {
+static void em_act14_00600EB0(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a1;
 
@@ -693,7 +680,7 @@ void em_act14_00600EB0(EMW *em, EM21W *w) {
     }
 }
 
-void em_act15_00601000(EMW *em, EM21W *w) {
+static void em_act15_00601000(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -720,7 +707,7 @@ void em_act15_00601000(EMW *em, EM21W *w) {
     }
 }
 
-void em_act16_006010D0(EMW *em, EM21W *w) {
+static void em_act16_006010D0(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a1;
 
@@ -765,7 +752,7 @@ void em_act16_006010D0(EMW *em, EM21W *w) {
     }
 }
 
-void em_act17_00601220(EMW *em, EM21W *w) {
+static void em_act17_00601220(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -792,7 +779,7 @@ void em_act17_00601220(EMW *em, EM21W *w) {
     }
 }
 
-void em_act18_006012F0(EMW *em, EM21W *w) {
+static void em_act18_006012F0(EMW *em, EM21W *w) {
     s16 temp_a0;
     s16 temp_v1;
     s32 temp_v1_2;
@@ -842,7 +829,7 @@ void em_act18_006012F0(EMW *em, EM21W *w) {
     }
 }
 
-void em_act19_00601440(EMW *em, EM21W *w) {
+static void em_act19_00601440(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -869,7 +856,7 @@ void em_act19_00601440(EMW *em, EM21W *w) {
     }
 }
 
-void em_act20_00601510(EMW *em, EM21W *w) {
+static void em_act20_00601510(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -889,7 +876,7 @@ void em_act20_00601510(EMW *em, EM21W *w) {
     }
 }
 
-void em_mv00_006015A0(EMW *em, EM21W *w) {
+static void em_mv00_006015A0(EMW *em, EM21W *w) {
     f32 sp30[3];
     f32 temp_f1;
     s32 temp_v0;
@@ -939,7 +926,7 @@ void em_mv00_006015A0(EMW *em, EM21W *w) {
     }
 }
 
-void em_mv01_00601700(EMW *em, EM21W *w) {
+static void em_mv01_00601700(EMW *em, EM21W *w) {
     f32 sp30[3];
     f32 temp_f1;
     s32 temp_v0;
@@ -989,7 +976,7 @@ void em_mv01_00601700(EMW *em, EM21W *w) {
     }
 }
 
-void em_mv02_00601870(EMW *em, EM21W *w) {
+static void em_mv02_00601870(EMW *em, EM21W *w) {
     s32 temp_t0;
     u16 temp_a2;
     u32 temp_s0;
@@ -1060,7 +1047,7 @@ block_7:
     }
 }
 
-void em_mv03_00601AC0(EMW *em, EM21W *w) {
+static void em_mv03_00601AC0(EMW *em, EM21W *w) {
     f32 sp30[3];
     f32 temp_f1;
     s32 temp_v0;
@@ -1110,7 +1097,7 @@ void em_mv03_00601AC0(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly00_00601C20(EMW *em, EM21W *w) {
+static void em_fly00_00601C20(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -1130,7 +1117,7 @@ void em_fly00_00601C20(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly01_00601CB0(EMW *em, EM21W *w) {
+static void em_fly01_00601CB0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -1152,11 +1139,11 @@ void em_fly01_00601CB0(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly02_00601D80(EMW *em, EM21W *w) {
+static void em_fly02_00601D80(EMW *em, EM21W *w) {
 
 }
 
-void em_fly03_00601D90(EMW *em, EM21W *w) {
+static void em_fly03_00601D90(EMW *em, EM21W *w) {
     f32 temp_f1;
     u32 var_t0;
     s32 temp_a3;
@@ -1223,7 +1210,7 @@ void em_fly03_00601D90(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly04_00602030(EMW *em, EM21W *w) {
+static void em_fly04_00602030(EMW *em, EM21W *w) {
     f32 temp_f1;
     f32 temp_f1_2;
     s32 temp_a0;
@@ -1295,7 +1282,7 @@ void em_fly04_00602030(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly05_00602280(EMW *em, EM21W *w) {
+static void em_fly05_00602280(EMW *em, EM21W *w) {
     f32 temp_f1;
     s32 temp_v0;
     s32 temp_v1;
@@ -1351,7 +1338,7 @@ void em_fly05_00602280(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly06_00602450(EMW *em, EM21W *w) {
+static void em_fly06_00602450(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -1372,7 +1359,7 @@ void em_fly06_00602450(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly07_006024F0(EMW *em, EM21W *w) {
+static void em_fly07_006024F0(EMW *em, EM21W *w) {
     f32 temp_f1;
     u8 temp_a1;
 
@@ -1414,7 +1401,7 @@ void em_fly07_006024F0(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly08_00602640(EMW *em, EM21W *w) {
+static void em_fly08_00602640(EMW *em, EM21W *w) {
     f32 temp_f1;
     u8 temp_a1;
 
@@ -1455,7 +1442,7 @@ void em_fly08_00602640(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly09_00602780(EMW *em, EM21W *w) {
+static void em_fly09_00602780(EMW *em, EM21W *w) {
     f32 temp_f1;
     u32 var_t0;
     s32 temp_a3;
@@ -1532,7 +1519,7 @@ void em_fly09_00602780(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly10_00602A70(EMW *em, EM21W *w) {
+static void em_fly10_00602A70(EMW *em, EM21W *w) {
     s32 temp_v0;
     s32 temp_v0_3;
     s32 temp_v1;
@@ -1601,7 +1588,7 @@ block_9:
     }
 }
 
-void em_fly11_00602CC0(EMW *em, EM21W *w) {
+static void em_fly11_00602CC0(EMW *em, EM21W *w) {
     s32 temp_v0;
     s32 temp_v0_3;
     s32 temp_v1;
@@ -1670,7 +1657,7 @@ block_9:
     }
 }
 
-void em_fly12_00602F10(EMW *em, EM21W *w) {
+static void em_fly12_00602F10(EMW *em, EM21W *w) {
     s32 temp_v0;
     u8 temp_a1;
 
@@ -1702,7 +1689,7 @@ void em_fly12_00602F10(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly13_00603000(EMW *em, EM21W *w) {
+static void em_fly13_00603000(EMW *em, EM21W *w) {
     s32 temp_v0;
     u8 temp_a1;
 
@@ -1734,7 +1721,7 @@ void em_fly13_00603000(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly14_006030F0(EMW *em, EM21W *w) {
+static void em_fly14_006030F0(EMW *em, EM21W *w) {
     f32 temp_f0;
     s32 temp_v0;
     s32 temp_v1;
@@ -1815,7 +1802,7 @@ void em_fly14_006030F0(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly15_006033A0(EMW *em, EM21W *w) {
+static void em_fly15_006033A0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -1838,7 +1825,7 @@ void em_fly15_006033A0(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly16_00603460(EMW *em, EM21W *w) {
+static void em_fly16_00603460(EMW *em, EM21W *w) {
     f32 temp_f0;
     s32 temp_v0;
     s32 temp_v1;
@@ -1921,7 +1908,7 @@ void em_fly16_00603460(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly17_00603720(EMW *em, EM21W *w) {
+static void em_fly17_00603720(EMW *em, EM21W *w) {
     PLW *temp_s0;
     s32 temp_v1;
     u8 temp_a1;
@@ -1960,7 +1947,7 @@ void em_fly17_00603720(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly18_006038C0(EMW *em, EM21W *w) {
+static void em_fly18_006038C0(EMW *em, EM21W *w) {
     f32 ofs[3];
     f32 out[3];
     s32 ang[3];
@@ -2028,13 +2015,9 @@ void em_fly18_006038C0(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly19_00603B90(EMW *em, EM21W *w) {
-    s32 sp48;
-    s32 sp44;
-    f32 sp40;
-    s32 sp38;
-    s32 sp34;
-    f32 sp30;
+static void em_fly19_00603B90(EMW *em, EM21W *w) {
+    f32 v[3];
+    f32 v2[3];
     s32 temp_v0;
     u8 temp_a1;
     u8 temp_a2;
@@ -2093,10 +2076,10 @@ void em_fly19_00603B90(EMW *em, EM21W *w) {
             em->x88B = 1;
             em21_act_set(em, 2, 0x18, 4);
         }
-        sp40 = -150.0f;
-        sp44 = 0x42480000;
-        sp48 = 0x430C0000;
-        em_sleep_eff_set(em, 0x22, &sp40, 1.60000002f);
+        v[0] = -150.0f;
+        v[1] = 50.0f;
+        v[2] = 140.0f;
+        em_sleep_eff_set(em, 0x22, v, 1.60000002f);
         if (((s32) em->work08 % 135) == 0) {
             sound_call_sub_00608D00(em, 0x57, 0x23);
             return;
@@ -2107,10 +2090,10 @@ void em_fly19_00603B90(EMW *em, EM21W *w) {
             em->x88B = 1;
             em21_act_set(em, 2, 0x18, 4);
         }
-        sp30 = -150.0f;
-        sp34 = 0x42480000;
-        sp38 = 0x430C0000;
-        em_sleep_eff_set(em, 0x22, &sp30, 1.60000002f);
+        v2[0] = -150.0f;
+        v2[1] = 50.0f;
+        v2[2] = 140.0f;
+        em_sleep_eff_set(em, 0x22, v2, 1.60000002f);
         if (((s32) em->work08 % 135) == 0) {
             sound_call_sub_00608D00(em, 0x57, 0x23);
         }
@@ -2118,13 +2101,9 @@ void em_fly19_00603B90(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly20_00603E40(EMW *em, EM21W *w) {
-    s32 sp48;
-    s32 sp44;
-    f32 sp40;
-    s32 sp38;
-    s32 sp34;
-    f32 sp30;
+static void em_fly20_00603E40(EMW *em, EM21W *w) {
+    f32 v[3];
+    f32 v2[3];
     s32 temp_v0;
     u8 temp_a2;
 
@@ -2183,10 +2162,10 @@ void em_fly20_00603E40(EMW *em, EM21W *w) {
             em->x88B = 1;
             em21_act_set(em, 2, 0x19, 4);
         }
-        sp40 = -150.0f;
-        sp44 = 0x42480000;
-        sp48 = 0x430C0000;
-        em_sleep_eff_set(em, 0x22, &sp40, 1.60000002f);
+        v[0] = -150.0f;
+        v[1] = 50.0f;
+        v[2] = 140.0f;
+        em_sleep_eff_set(em, 0x22, v, 1.60000002f);
         if (((s32) em->work08 % 135) == 0) {
             sound_call_sub_00608D00(em, 0x57, 0x23);
             return;
@@ -2197,10 +2176,10 @@ void em_fly20_00603E40(EMW *em, EM21W *w) {
             em->x88B = 1;
             em21_act_set(em, 2, 0x19, 4);
         }
-        sp30 = -150.0f;
-        sp34 = 0x42480000;
-        sp38 = 0x430C0000;
-        em_sleep_eff_set(em, 0x22, &sp30, 1.60000002f);
+        v2[0] = -150.0f;
+        v2[1] = 50.0f;
+        v2[2] = 140.0f;
+        em_sleep_eff_set(em, 0x22, v2, 1.60000002f);
         if (((s32) em->work08 % 135) == 0) {
             sound_call_sub_00608D00(em, 0x57, 0x23);
         }
@@ -2208,7 +2187,7 @@ void em_fly20_00603E40(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly21_00604110(EMW *em, EM21W *w) {
+static void em_fly21_00604110(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2229,7 +2208,7 @@ void em_fly21_00604110(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly22_006041A0(EMW *em, EM21W *w) {
+static void em_fly22_006041A0(EMW *em, EM21W *w) {
     f32 temp_f3;
     s32 temp_v1;
     u8 temp_a2;
@@ -2274,7 +2253,7 @@ void em_fly22_006041A0(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly23_00604340(EMW *em, EM21W *w) {
+static void em_fly23_00604340(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2310,7 +2289,7 @@ void em_fly23_00604340(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly24_00604440(EMW *em, EM21W *w) {
+static void em_fly24_00604440(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2332,7 +2311,7 @@ void em_fly24_00604440(EMW *em, EM21W *w) {
     }
 }
 
-void em_fly25_006044D0(EMW *em, EM21W *w) {
+static void em_fly25_006044D0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2354,7 +2333,7 @@ void em_fly25_006044D0(EMW *em, EM21W *w) {
     }
 }
 
-void em_atk00_00604560(EMW *em, EM21W *w) {
+static void em_atk00_00604560(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2374,7 +2353,7 @@ void em_atk00_00604560(EMW *em, EM21W *w) {
     }
 }
 
-void em_atk01_006045E0(EMW *em, EM21W *w) {
+static void em_atk01_006045E0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2397,7 +2376,7 @@ void em_atk01_006045E0(EMW *em, EM21W *w) {
     }
 }
 
-void em_atk02_006046C0(EMW *em, EM21W *w) {
+static void em_atk02_006046C0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2426,7 +2405,7 @@ void em_atk02_006046C0(EMW *em, EM21W *w) {
     }
 }
 
-void em_atk03_006047B0(EMW *em, EM21W *w) {
+static void em_atk03_006047B0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2452,7 +2431,7 @@ void em_atk03_006047B0(EMW *em, EM21W *w) {
     }
 }
 
-void em_atk04_006048C0(EMW *em, EM21W *w) {
+static void em_atk04_006048C0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2478,7 +2457,7 @@ void em_atk04_006048C0(EMW *em, EM21W *w) {
     }
 }
 
-void em_atk05_006049D0(EMW *em, EM21W *w) {
+static void em_atk05_006049D0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2504,7 +2483,7 @@ void em_atk05_006049D0(EMW *em, EM21W *w) {
     }
 }
 
-void em_atk06_00604AE0(EMW *em, EM21W *w) {
+static void em_atk06_00604AE0(EMW *em, EM21W *w) {
     f32 temp_f0;
     f32 temp_f1;
     s32 temp_v0;
@@ -2596,7 +2575,7 @@ void em_atk06_00604AE0(EMW *em, EM21W *w) {
     }
 }
 
-void em_atk07_00604DC0(EMW *em, EM21W *w) {
+static void em_atk07_00604DC0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2616,7 +2595,7 @@ void em_atk07_00604DC0(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg00_00604E40(EMW *em, EM21W *w) {
+static void em_dmg00_00604E40(EMW *em, EM21W *w) {
     u8 temp_a3;
 
     temp_a3 = em->x05;
@@ -2643,7 +2622,7 @@ void em_dmg00_00604E40(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg01_00604F20(EMW *em, EM21W *w) {
+static void em_dmg01_00604F20(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2663,7 +2642,7 @@ void em_dmg01_00604F20(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg02_00604FB0(EMW *em, EM21W *w) {
+static void em_dmg02_00604FB0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2683,7 +2662,7 @@ void em_dmg02_00604FB0(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg03_00605040(EMW *em, EM21W *w) {
+static void em_dmg03_00605040(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2703,7 +2682,7 @@ void em_dmg03_00605040(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg04_006050D0(EMW *em, EM21W *w) {
+static void em_dmg04_006050D0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2737,7 +2716,7 @@ void em_dmg04_006050D0(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg05_006051D0(EMW *em, EM21W *w) {
+static void em_dmg05_006051D0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2746,19 +2725,19 @@ void em_dmg05_006051D0(EMW *em, EM21W *w) {
         em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
         em_cmd_reset(em);
-        em_char_set(em, (s16)((em->x07 == 0) ? 0x4A : 0x45), 0, 0);
+        em_char_set(em, (s16)((em->x07 != 0) ? 0x45 : 0x4A), 0, 0);
         break;
     case 1:
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
             em->work08 = 0;
-            em_char_set(em, (s16)((em->x07 == 0) ? 0x4B : 0x46), 0, 0);
+            em_char_set(em, (s16)((em->x07 != 0) ? 0x46 : 0x4B), 0, 0);
         }
         break;
     case 2:
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
-            em_char_set(em, (s16)((em->x07 == 0) ? 0x80 : 0x81), 0, 0);
+            em_char_set(em, (s16)((em->x07 != 0) ? 0x81 : 0x80), 0, 0);
             return;
         }
         break;
@@ -2766,7 +2745,7 @@ void em_dmg05_006051D0(EMW *em, EM21W *w) {
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
             em->work08 = 0;
-            em_char_set(em, (s16)((em->x07 == 0) ? 0x7C : 0x47), 0, 0);
+            em_char_set(em, (s16)((em->x07 != 0) ? 0x47 : 0x7C), 0, 0);
             return;
         }
         break;
@@ -2781,7 +2760,7 @@ void em_dmg05_006051D0(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg06_00605370(EMW *em, EM21W *w) {
+static void em_dmg06_00605370(EMW *em, EM21W *w) {
     u8 temp_a1;
     u8 var_v1;
 
@@ -2802,20 +2781,17 @@ void em_dmg06_00605370(EMW *em, EM21W *w) {
     case 1:
         w->spd[1] = (s32) em->ang[1];
         speed_add_g(em, w->spd);
-        var_v1 = 2;
         if (!(em->pos[1] < em->x7E4)) {
-
+            em->x388 = 2;
         } else {
-            var_v1 = 4;
+            em->x388 = 4;
         }
-        em->x388 = var_v1;
         if (em->x7E8 != 0) {
             if (em->pos[1] < em->x7E4) {
                 em->x05 += 1;
                 em->x388 = 4;
                 em->pos[1] = em->x7E4;
                 em21_to_swim(em);
-                return;
             }
         } else {
             if (em->pos[1] < em->x5AC) {
@@ -2824,13 +2800,12 @@ void em_dmg06_00605370(EMW *em, EM21W *w) {
                 em->pos[1] = em->x5AC;
                 em21_act_set(em, 4, 0x10, 2);
             }
-            return;
         }
         break;
     }
 }
 
-void em_dmg07_006054D0(EMW *em, EM21W *w) {
+static void em_dmg07_006054D0(EMW *em, EM21W *w) {
     s32 temp_v0;
     u8 temp_a2;
 
@@ -2875,7 +2850,7 @@ void em_dmg07_006054D0(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg08_00605630(EMW *em, EM21W *w) {
+static void em_dmg08_00605630(EMW *em, EM21W *w) {
     s8 temp_v0;
     u8 temp_a1;
 
@@ -2911,7 +2886,7 @@ void em_dmg08_00605630(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg09_00605770(EMW *em, EM21W *w) {
+static void em_dmg09_00605770(EMW *em, EM21W *w) {
     u8 temp_a1;
     u8 var_v1;
 
@@ -2933,20 +2908,17 @@ void em_dmg09_00605770(EMW *em, EM21W *w) {
     case 1:
         w->spd[1] = (s32) em->ang[1];
         speed_add_g(em, w->spd);
-        var_v1 = 2;
         if (!(em->pos[1] < em->x7E4)) {
-
+            em->x388 = 2;
         } else {
-            var_v1 = 4;
+            em->x388 = 4;
         }
-        em->x388 = var_v1;
         if (em->x7E8 != 0) {
             if (em->pos[1] < em->x7E4) {
                 em->x05 += 1;
                 em->x388 = 4;
                 em->pos[1] = em->x7E4;
                 em21_to_swim(em);
-                return;
             }
         } else {
             if (em->pos[1] < em->x5AC) {
@@ -2955,13 +2927,12 @@ void em_dmg09_00605770(EMW *em, EM21W *w) {
                 em->pos[1] = em->x5AC;
                 em21_act_set(em, 4, 0x10, 2);
             }
-            return;
         }
         break;
     }
 }
 
-void em_dmg10_006058E0(EMW *em, EM21W *w) {
+static void em_dmg10_006058E0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2982,7 +2953,7 @@ void em_dmg10_006058E0(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg11_00605970(EMW *em, EM21W *w) {
+static void em_dmg11_00605970(EMW *em, EM21W *w) {
     s32 temp_v0;
     u8 temp_v1;
 
@@ -3013,7 +2984,7 @@ void em_dmg11_00605970(EMW *em, EM21W *w) {
     em_mahi_eff_set(em, 2);
 }
 
-void em_dmg12_00605A50(EMW *em, EM21W *w) {
+static void em_dmg12_00605A50(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -3049,7 +3020,7 @@ void em_dmg12_00605A50(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg13_00605B70(EMW *em, EM21W *w) {
+static void em_dmg13_00605B70(EMW *em, EM21W *w) {
     s8 temp_v0;
     u8 temp_a1;
 
@@ -3084,9 +3055,8 @@ void em_dmg13_00605B70(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg14_00605CA0(EMW *em, EM21W *w) {
+static void em_dmg14_00605CA0(EMW *em, EM21W *w) {
     s32 temp_v0;
-    s8 var_v0;
     u8 temp_v1;
 
     em->x9EA = 5;
@@ -3105,13 +3075,11 @@ void em_dmg14_00605CA0(EMW *em, EM21W *w) {
         em->work08 = temp_v0;
         if (temp_v0 <= 0) {
             em->x05 += 1;
-            var_v0 = 4;
             if (em->x8B6 != 0) {
-
+                em->x95A = 4;
             } else {
-                var_v0 = 6;
+                em->x95A = 6;
             }
-            em->x95A = var_v0;
             em_ana_loop_cnt_set(em);
             em21_act_set(em, 4, 8, 3);
         }
@@ -3127,7 +3095,7 @@ void em_dmg14_00605CA0(EMW *em, EM21W *w) {
 
 extern int em_atk_mode_timer_tbl;
 
-void em_dmg15_00605DC0(EMW *em, EM21W *w) {
+static void em_dmg15_00605DC0(EMW *em, EM21W *w) {
     f32 temp_f3;
     s32 temp_v1;
     u8 temp_a1;
@@ -3226,7 +3194,7 @@ void em_dmg15_00605DC0(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg16_006060F0(EMW *em, EM21W *w) {
+static void em_dmg16_006060F0(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -3256,7 +3224,7 @@ void em_dmg16_006060F0(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg17_006061D0(EMW *em, EM21W *w) {
+static void em_dmg17_006061D0(EMW *em, EM21W *w) {
     u8 temp_a1;
     u8 temp_a1_2;
 
@@ -3322,7 +3290,7 @@ void em_dmg17_006061D0(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg18_006063E0(EMW *em, EM21W *w) {
+static void em_dmg18_006063E0(EMW *em, EM21W *w) {
     s32 temp_v0;
     u8 temp_a1;
     u8 temp_a2;
@@ -3394,8 +3362,7 @@ void em_dmg18_006063E0(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg19_00606600(EMW *em, EM21W *w) {
-    s8 var_v0;
+static void em_dmg19_00606600(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     em->x9EA = 5;
@@ -3412,13 +3379,11 @@ void em_dmg19_00606600(EMW *em, EM21W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
-            var_v0 = 4;
             if (em->x8B6 != 0) {
-
+                em->x95A = 4;
             } else {
-                var_v0 = 6;
+                em->x95A = 6;
             }
-            em->x95A = var_v0;
             em_ana_loop_cnt_set(em);
             em21_act_set(em, 4, 0xD, 3);
         }
@@ -3431,8 +3396,7 @@ void em_dmg19_00606600(EMW *em, EM21W *w) {
     }
 }
 
-void em_dmg20_00606700(EMW *em, EM21W *w) {
-    s8 var_v0;
+static void em_dmg20_00606700(EMW *em, EM21W *w) {
     u8 temp_a1;
 
     em->x9EA = 5;
@@ -3449,13 +3413,11 @@ void em_dmg20_00606700(EMW *em, EM21W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
-            var_v0 = 4;
             if (em->x8B6 != 0) {
-
+                em->x95A = 4;
             } else {
-                var_v0 = 6;
+                em->x95A = 6;
             }
-            em->x95A = var_v0;
             em_ana_loop_cnt_set(em);
             em21_act_set(em, 4, 0xD, 3);
         }
@@ -3491,12 +3453,8 @@ void em_dmg21(EMW *em, EM21W *w) {
 }
 
 void em_dmg22(EMW *em, EM21W *w) {
-    s32 sp48;
-    s32 sp44;
-    f32 sp40;
-    s32 sp38;
-    s32 sp34;
-    f32 sp30;
+    f32 v[3];
+    f32 v2[3];
     s32 temp_v0;
     u8 temp_a2;
 
@@ -3555,10 +3513,10 @@ void em_dmg22(EMW *em, EM21W *w) {
             em->x88B = 1;
             em21_act_set(em, 2, 0x19, 4);
         }
-        sp40 = -150.0f;
-        sp44 = 0x42480000;
-        sp48 = 0x430C0000;
-        em_sleep_eff_set(em, 0x22, &sp40, 1.60000002f);
+        v[0] = -150.0f;
+        v[1] = 50.0f;
+        v[2] = 140.0f;
+        em_sleep_eff_set(em, 0x22, v, 1.60000002f);
         if (((s32) em->work08 % 135) == 0) {
             sound_call_sub_00608D00(em, 0x57, 0x23);
             return;
@@ -3569,10 +3527,10 @@ void em_dmg22(EMW *em, EM21W *w) {
             em->x88B = 1;
             em21_act_set(em, 2, 0x19, 4);
         }
-        sp30 = -150.0f;
-        sp34 = 0x42480000;
-        sp38 = 0x430C0000;
-        em_sleep_eff_set(em, 0x22, &sp30, 1.60000002f);
+        v2[0] = -150.0f;
+        v2[1] = 50.0f;
+        v2[2] = 140.0f;
+        em_sleep_eff_set(em, 0x22, v2, 1.60000002f);
         if (((s32) em->work08 % 135) == 0) {
             sound_call_sub_00608D00(em, 0x57, 0x23);
         }
@@ -3580,10 +3538,8 @@ void em_dmg22(EMW *em, EM21W *w) {
     }
 }
 
-void em_demo00_00606B70(EMW *em, EM21W *w) {
-    s32 sp28;
-    s32 sp24;
-    f32 sp20;
+static void em_demo00_00606B70(EMW *em, EM21W *w) {
+    f32 v[3];
     s32 temp_a0;
     u8 temp_v1;
 
@@ -3591,8 +3547,6 @@ void em_demo00_00606B70(EMW *em, EM21W *w) {
     em->x9EA = 5;
     temp_v1 = em->x05;
     switch (temp_v1) {                              /* irregular */
-    case 2:
-        break;
     case 0:
         em->x05 = temp_v1 + 1;
         em->x3F4 = 0;
@@ -3607,11 +3561,13 @@ void em_demo00_00606B70(EMW *em, EM21W *w) {
             Quest_enemy_capture();
         }
         break;
+    case 2:
+        break;
     }
-    sp24 = 0x41200000;
-    sp28 = 0x430C0000;
-    sp20 = 0.0f;
-    em_sleep_eff_set(em, 0x22, &sp20, 1.60000002f);
+    v[1] = 10.0f;
+    v[2] = 140.0f;
+    v[0] = 0.0f;
+    em_sleep_eff_set(em, 0x22, v, 1.6f);
     temp_a0 = em->work08 + 1;
     em->work08 = temp_a0;
     if ((temp_a0 % 135) == 0) {
@@ -3619,7 +3575,7 @@ void em_demo00_00606B70(EMW *em, EM21W *w) {
     }
 }
 
-void em_die00_00606C90(EMW *em, EM21W *w) {
+static void em_die00_00606C90(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a0;
 
@@ -3669,7 +3625,7 @@ void em_die00_00606C90(EMW *em, EM21W *w) {
     }
 }
 
-void em_die01_00606E20(EMW *em, EM21W *w) {
+static void em_die01_00606E20(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a0;
 
@@ -3717,7 +3673,7 @@ void em_die01_00606E20(EMW *em, EM21W *w) {
     }
 }
 
-void em_die02_00606F90(EMW *em, EM21W *w) {
+static void em_die02_00606F90(EMW *em, EM21W *w) {
     f32 temp_f1;
     f32 temp_f1_2;
     s32 temp_v0;
@@ -3770,7 +3726,7 @@ void em_die02_00606F90(EMW *em, EM21W *w) {
                 em->x3C0[1] = 1.0f;
                 em_char_set(em, 0x6F, 0, 0);
                 Quest_enemy_die(em);
-                em->x7E0 = 0x43DE2666;
+                em->x7E0 = 444.3f;
                 return;
             }
             w->spd[1] = (s32) em->ang[1];
@@ -3860,7 +3816,7 @@ void em_die02_00606F90(EMW *em, EM21W *w) {
     }
 }
 
-void em_die03_006073F0(EMW *em, EM21W *w) {
+static void em_die03_006073F0(EMW *em, EM21W *w) {
     s32 temp_v1;
     u8 temp_a0;
 
@@ -3929,7 +3885,7 @@ There must be a read of a variable before the instruction
 which has a name starting with with "jtbl"/"jpt_"/"lbl_"/"jumptable_".
 */
 
-void em_move01_00607730(EMW *em, EM21W *w) {
+static void em_move01_00607730(EMW *em, EM21W *w) {
     u8 temp_a2;
 
     temp_a2 = em->x15;
@@ -3976,7 +3932,7 @@ There must be a read of a variable before the instruction
 which has a name starting with with "jtbl"/"jpt_"/"lbl_"/"jumptable_".
 */
 
-void em_move05_00607C10(EMW *em, EM21W *w) {
+static void em_move05_00607C10(EMW *em, EM21W *w) {
     u8 temp_a2;
 
     temp_a2 = em->x15;
@@ -3996,7 +3952,7 @@ void em_move05_00607C10(EMW *em, EM21W *w) {
     }
 }
 
-void em_move06_00607CA0(EMW *em, EM21W *w) {
+static void em_move06_00607CA0(EMW *em, EM21W *w) {
     switch (em->x15) {
     case 0:
         em_demo00_00606B70(em, w);
@@ -4102,26 +4058,26 @@ void em21_uvmove(EMW *em) {
     } while (var_t3 < 4);
 }
 
-void sound_call_sub_00608D00(EMW *em, int se, int joint) {
+static void sound_call_sub_00608D00(EMW *em, int se, int joint) {
     f32 pos[3];
 
     flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
     Em_se_req2(em, se, 0, pos, 3, 0);
 }
 
-void sound_call_00608D70(EMW *em, int frame, int se, int joint) {
+static void sound_call_00608D70(EMW *em, int frame, int se, int joint) {
     if (em_frame_check(em, 0, (f32)frame) != 0) {
         sound_call_sub_00608D00(em, se, joint);
     }
 }
 
-void quake_call_00608DD0(EMW *em, int frame, int arg) {
+static void quake_call_00608DD0(EMW *em, int frame, int arg) {
     if (em_frame_check(em, 0, (f32)frame) != 0) {
         Em_set_quake_sub(em, arg);
     }
 }
 
-void move_default_00608E20(EMW *em) {
+static void move_default_00608E20(EMW *em) {
     M2C_FIELD(em, s32 *, 0x5C0) = 0;
     M2C_FIELD(em, s32 *, 0x5C4) = 0;
     M2C_FIELD(em, u16 *, 0x5F0) = 0xFFFF;
@@ -4140,19 +4096,11 @@ void move_default_00608E20(EMW *em) {
     M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
 }
 
-void ef_move_sub_00608E70(EMW *em, EM21W *w) {
-    s32 sp68;
-    s32 sp64;
-    f32 sp60;
-    s32 sp58;
-    s32 sp54;
-    f32 sp50;
-    s32 sp48;
-    s32 sp44;
-    f32 sp40;
-    s32 sp38;
-    s32 sp34;
-    f32 sp30;
+static void ef_move_sub_00608E70(EMW *em, EM21W *w) {
+    f32 v[3];
+    f32 v2[3];
+    f32 v3[3];
+    f32 v4[3];
     s16 temp_v1;
     u16 temp_a0;
 
@@ -4237,7 +4185,7 @@ block_91:
         if (em_frame_check(em, 0, 2.0f) != 0) {
             shell20_set(em, 8);
         }
-        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 2.0f, 78.0f) != 0) && !(game_w.x1E & 3)) {
+        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 2.0f, 78.0f) != 0) && !(GAME_X1E16 & 3)) {
             Eft20_set(1.0f, em, 0x1A, 0);
             return;
         }
@@ -4311,10 +4259,10 @@ block_91:
         sound_call_00608D70(em, 2, 0x2D, 0x23);
         sound_call_00608D70(em, 0xB6, 0x2D, 0x23);
         sound_call_00608D70(em, 0x16C, 0x2D, 0x23);
-        sp64 = 0x41200000;
-        sp68 = 0x430C0000;
-        sp60 = 0.0f;
-        em_sleep_eff_set(em, 0x22, &sp60, 1.60000002f);
+        v[1] = 10.0f;
+        v[2] = 140.0f;
+        v[0] = 0.0f;
+        em_sleep_eff_set(em, 0x22, v, 1.6f);
         break;
     case 0x408:
         sound_call_00608D70(em, 4, 0x2F, 0x23);
@@ -4333,10 +4281,10 @@ block_91:
     case 0x40A:
         sound_call_00608D70(em, 0x24, 0x57, 0x23);
         hire_req_set_0060C0C0(em, w, 3);
-        sp54 = 0x41200000;
-        sp58 = 0x430C0000;
-        sp50 = 0.0f;
-        em_sleep_eff_set(em, 0x22, &sp50, 1.60000002f);
+        v2[1] = 10.0f;
+        v2[2] = 140.0f;
+        v2[0] = 0.0f;
+        em_sleep_eff_set(em, 0x22, v2, 1.6f);
         break;
     case 0x40C:
         sound_call_00608D70(em, 0x24, 0x24, 0x23);
@@ -4375,10 +4323,10 @@ block_91:
         if (em_frame_check(em, 0, 170.0f) != 0) {
             Eft13_set_em_scl(em, 2, 4.0f, 6);
         }
-        sp44 = 0x41200000;
-        sp48 = 0x430C0000;
-        sp40 = 0.0f;
-        em_sleep_eff_set(em, 0x22, &sp40, 1.60000002f);
+        v3[1] = 10.0f;
+        v3[2] = 140.0f;
+        v3[0] = 0.0f;
+        em_sleep_eff_set(em, 0x22, v3, 1.6f);
         if (em_frame_check(em, 0, 170.0f) != 0) {
             Eft13_set_em_scl(em, 2, 4.0f, 6);
             return;
@@ -4394,7 +4342,7 @@ block_91:
         if (em_frame_check(em, 0, 30.0f) != 0) {
             shell20_set(em, 0x10);
         }
-        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 6.0f, 38.0f) != 0) && !(game_w.x1E & 3)) {
+        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 6.0f, 38.0f) != 0) && !(GAME_X1E16 & 3)) {
             Eft20_set(1.0f, em, 0x1A, 1);
             return;
         }
@@ -4562,8 +4510,8 @@ block_91:
         sound_call_00608D70(em, 4, 0x27, 0x23);
         sound_call_00608D70(em, 4, 0x2A, 0x23);
         hire_req_set_0060C0C0(em, w, 1);
-        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 4.0f, 60.0f) != 0) && !(game_w.x1E & 3)) {
-            Eft20_set(1.0f, em, 0x1A, (s16)(ran_suu(1) & 0xFFFF & 1));
+        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 4.0f, 60.0f) != 0) && !(GAME_X1E16 & 3)) {
+            Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
             return;
         }
         break;
@@ -4576,8 +4524,8 @@ block_91:
         sound_call_00608D70(em, 4, 0x28, 0x23);
         sound_call_00608D70(em, 4, 0x16, 0);
         hire_req_set_0060C0C0(em, w, 1);
-        if ((em->x8B6 != 0) && ((em_frame_check3(em, 0, 12.0f, 24.0f) != 0) || (em_frame_check3(em, 0, 46.0f, 90.0f) != 0)) && !(game_w.x1E & 3)) {
-            Eft20_set(1.0f, em, 0x1A, (s16)(ran_suu(1) & 0xFFFF & 1));
+        if ((em->x8B6 != 0) && ((em_frame_check3(em, 0, 12.0f, 24.0f) != 0) || (em_frame_check3(em, 0, 46.0f, 90.0f) != 0)) && !(GAME_X1E16 & 3)) {
+            Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
             return;
         }
         break;
@@ -4834,10 +4782,10 @@ block_284:
     case 0x471:
         sound_call_00608D70(em, 4, 0x57, 0x23);
         sound_call_00608D70(em, 0x122, 0x2D, 0x23);
-        sp34 = 0x41200000;
-        sp38 = 0x430C0000;
-        sp30 = 0.0f;
-        em_sleep_eff_set(em, 0x22, &sp30, 1.60000002f);
+        v4[1] = 10.0f;
+        v4[2] = 140.0f;
+        v4[0] = 0.0f;
+        em_sleep_eff_set(em, 0x22, v4, 1.6f);
         break;
     case 0x472:
         sound_call_00608D70(em, 0x1A, 0x2B, 0x23);
@@ -4865,7 +4813,7 @@ extern HIRE_ADD *hire_down_add_tbl_0066EE40[4];
 
 /* Second state machine of part i: swings hire_ang[i][0] back to 0 (mode 1)
  * or to hire_down_angx[i] (modes 2, 3) over 20 frames. */
-void hire_move_sub2_0060BAD0(EMW *em, EM21W *w, int i) {
+static void hire_move_sub2_0060BAD0(EMW *em, EM21W *w, int i) {
     switch (w->hire_st[i][1]) {
     case 0:
         switch (w->hire_mode) {
@@ -4907,7 +4855,7 @@ void hire_move_sub2_0060BAD0(EMW *em, EM21W *w, int i) {
 
 /* First state machine of part i: waits hire_start_timer, then walks the
  * hire_normal_add (or hire_down_add) list adding up hire_ang[i][1]. */
-void hire_move_sub1_0060BCA0(EMW *em, EM21W *w, int i) {
+static void hire_move_sub1_0060BCA0(EMW *em, EM21W *w, int i) {
     switch (w->hire_st[i][0]) {
     case 0:
         switch (w->hire_mode) {
@@ -4980,7 +4928,7 @@ void hire_move_sub1_0060BCA0(EMW *em, EM21W *w, int i) {
     }
 }
 
-void hire_move_0060BFE0(EMW *em, EM21W *w) {
+static void hire_move_0060BFE0(EMW *em, EM21W *w) {
     int i;
 
     for (i = 0; i < 4; i++) {
@@ -5008,7 +4956,7 @@ void em21_effect_move(EMW *em) {
     em21_uvmove(em);
 }
 
-void hire_req_set_0060C0C0(EMW *em, EM21W *w, u8 mode) {
+static void hire_req_set_0060C0C0(EMW *em, EM21W *w, u8 mode) {
     w->hire_mode = mode;
     if (w->hire_mode == 1 && (s16)(0.2f * (f32)em->x792) >= em->x302) {
         w->hire_mode = 2;
@@ -5018,11 +4966,11 @@ void hire_req_set_0060C0C0(EMW *em, EM21W *w, u8 mode) {
     }
 }
 
-void ground_land_eff_set_0060C180(EMW *em) {
+static void ground_land_eff_set_0060C180(EMW *em) {
     Eft20_set(1.0f, em, 0xB, 0);
 }
 
-void swim_eff_set_0060C1A0(f32 scale, EMW *em) {
+static void swim_eff_set_0060C1A0(f32 scale, EMW *em) {
     f32 pos[3];
 
     if (game_w.stage == em->stg && !(GAME_X1E16 & 3) && !(em->pos[1] < em->x7E4 - 100.0f)) {
@@ -5032,7 +4980,7 @@ void swim_eff_set_0060C1A0(f32 scale, EMW *em) {
     }
 }
 
-void swim_eff_set2_0060C260(f32 scale, EMW *em) {
+static void swim_eff_set2_0060C260(f32 scale, EMW *em) {
     f32 pos[3];
 
     if (game_w.stage == em->stg) {
