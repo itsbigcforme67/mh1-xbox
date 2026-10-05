@@ -350,3 +350,11 @@ Stay asm: em10_turn_sub (10/42), em_act03_005AE060 (the original does not reload
 ours reloads it, +16 bytes). Lesson: tools/check.py status of em10_nm.c said 25/26 OK because the static em_act03/em_move00 share a name with
 globals elsewhere; give such statics an address suffix (em_act03_005AE060) before trusting OK. A C run that ends before a 4-byte function
 pad must end at the last function's real end (0x5AE05C), not at the next function.
+
+# uvmove solved (em01/02/07/08/16/27)
+The old "61 instrs off" near-match of every uvmove was the pointer form: MWCC only keeps the original induction-pointer layout when the arrays are
+real struct members of EMW (em.h now has f32 uv[4][3] at 0x5C0, u16 uvtm[4] at 0x5F0, u8 uvty[4] at 0x5F8). Write em->uv[i][0], em->uvtm[i], em->uvty[i];
+`((u32)em->uvtm[i] >> 1)` gives srl; the switch source order is 0,1,2,3,0xFF (ladder compares in reverse). Lesson: when the original keeps
+`lhu x(t2)` with an unfolded constant offset, the data is a struct field array, not a cast pointer. Linked as tiny runs em01_uv.c .. em27_uv.c
+(500 bytes each); do NOT regenerate runs from the *_nm.c files: the run files carry hand edits (static ef_move_sub etc.). em*_effect_move
+(6 instrs, eff register a2/v1 vs v1/v0) is still open.

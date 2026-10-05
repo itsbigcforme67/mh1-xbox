@@ -146,7 +146,11 @@ typedef struct EMW {
     u8 _pad56B[0x5A0 - 0x56B];
     f32 x5A0[3];        /* 0x5A0 */
     f32 x5AC;           /* 0x5AC height used for set20's shell */
-    u8 _pad5B0[0x60C - 0x5B0];
+    u8 _pad5B0[0x5C0 - 0x5B0];
+    f32 uv[4][3];       /* 0x5C0 texture scroll per slot (x, y, unused) */
+    u16 uvtm[4];        /* 0x5F0 slot timer, 0xFFFF idle */
+    u8 uvty[4];         /* 0x5F8 slot type, 0xFF none */
+    u8 _pad5FC[0x60C - 0x5FC];
     u16 neck_tgt;       /* 0x60C neck target angle, relative (em_neck_move_sub) */
     u16 neck_ang;       /* 0x60E current neck angle */
     u8 _pad610[0x616 - 0x610];
