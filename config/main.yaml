@@ -155,6 +155,7 @@ segments:
       - [0x027C70, c, menu/menu28]
       - [0x027D30, asm, text/Pit_mv]
       - [0x0284D0, c, menu/menu03]
+      - [0x0287F0, c, menu/menu04]
       - [0x028844, asm, text/menu_retire_mv]
       - [0x028850, c, menu/menu24]
       - [0x028900, c, menu/menu05]
