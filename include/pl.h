@@ -38,10 +38,13 @@ typedef struct PLPROG {
 } PLPROG;
 
 /* One slot of the item pouch (PLW.item[20]): item id (index into Item_data) and count. */
+#ifndef PL_ITEM_DEFINED
+#define PL_ITEM_DEFINED
 typedef struct PL_ITEM {
     u16 id;
     s16 num;
 } PL_ITEM;
+#endif
 
 typedef struct PLW {
     u8    be_flag;       /* 0x000 in use (set05_m) */

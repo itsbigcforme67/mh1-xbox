@@ -72,7 +72,7 @@ extern u16 stage_start_ang[88];
 s32 Game_clear_ck(int);
 s32 Pl_Skill_ck(PLW *, int);
 s32 Pl_hold_item_ck(PLW *);
-void Pl_item_stack(PLW *, int, int);
+int Pl_item_stack(PLW *, int, int);   /* result: 0/1 emptied, 2 partly, 3 full, 5 new slot (reward_mv) */
 void Pl_stamina_calc(PLW *, int);
 void Pl_stamina_reduce(PLW *);
 void Pl_vital_calc(PLW *, s16);

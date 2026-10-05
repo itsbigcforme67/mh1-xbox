@@ -6,6 +6,15 @@
 
 typedef struct V3S { s16 x, y, z; } V3S;
 
+#ifndef PL_ITEM_DEFINED
+#define PL_ITEM_DEFINED
+/* One slot of an item list: item id (index into Item_data) and count (also in pl.h). */
+typedef struct PL_ITEM {
+    u16 id;
+    s16 num;
+} PL_ITEM;
+#endif
+
 typedef struct GAME_W {
     u8 mode;            /* 0x000 game mode (Game_task jumps on it) */
     u8 step;            /* 0x001 step inside the mode */
@@ -51,7 +60,9 @@ typedef struct GAME_W {
     u8 pl_num;          /* 0x0D3 players in the session (shell_hit_ck loops over them) */
     u8 _pad0D4;
     u8 x0D5;            /* 0x0D5 result screen: 7/8 = special end (result_prog) */
-    u8 _pad0D6[0x1B2 - 0xD6];
+    u8 _pad0D6[0x128 - 0xD6];
+    PL_ITEM reward_item[16]; /* 0x128 reward screen item list (reward_mv) */
+    u8 _pad168[0x1B2 - 0x168];
     u8 x1B2;            /* 0x1B2 set05: kind-2 fixtures fire once set */
     u8 flag1B3;         /* 0x1B3 bit 0 hides set04 on stage 28 */
     u8 _pad1B4[0x1DC - 0x1B4];
