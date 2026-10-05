@@ -1,0 +1,12 @@
+# CnetSys_w (0x00676380, size 0x3BA6C) fields: OFFSET TYPE NAME [COMMENT]; arrays as name[N]; struct arrays carry size=0x..
+0x000 s32 active
+0x018 CNET_BG bg[0x80] size=0xE00 background request slots
+0xE18 CNET_BURST burst[12] size=0x1B0 burst slots
+0xFDC s32 sock socket handle
+0xFE0 s32 rlen bytes read by the last select
+0xFE4 s16 rcmd command of the last packet
+0xFE6 s16 rcat category of the last packet
+0xFE8 u16 rseq sequence of the last packet
+0xFEA u16 rseq2
+0xFEC s8 rres result byte
+0x102C u16 rcnt receive counter

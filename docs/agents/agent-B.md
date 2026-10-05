@@ -377,3 +377,37 @@ WARNING: align.py hides differences in lui constants (a float constant 110.0f vs
 - All unregistered em text left in game.yaml (f_em_55B060, 5B5290, 5C2A80, 5D9EE0, 5EBA10, 5FFFD0) is agent D's (em14/15/17/20/21).
   Agent B's remaining em work is only the parked near-matches (em10_turn_sub, em04 act_set/ef_move_sub, em03 mv, em09, em12).
 - em10_turn_sub: four more declaration/type forms retried (u32/s32/u16 d, tgt as u32, no tgt local): still 10 instrs off (a1/a2/a3 colouring), parked.
+
+# Lobby overlay (lobby.bin, links at 0x533980 like game) - agent B, 0x533980-0x5C4E60
+
+Findings from the first pass (5 Oct 2026). Byte/structural comparison of every
+lobby function against matched game/main code (opcode+register shape, immediates
+ignored) found essentially nothing shared: only ~60 tiny coincidences (accessors,
+5-instruction wrappers). The lobby is its own code base, so nothing is reused
+from game.bin. What does repeat is *inside* the lobby network layer: 335 of the
+935 cnlbs functions fall into 82 identical-shape families (see below).
+
+## Area map (vram, size)
+- 0x533980-0x53E848 (43 KB) lobby town game logic (Capcom):
+  - 0x533A00-0x535238 lb_talk: NPC talk start/choosers, Lb_event_* (reward talks),
+    lb_talk_init, Lb_put_npc_default. MATCHED (src/lobby/lb/lb_talk.c, rodata 0x654AD0).
+  - 0x535240-0x536708 lb_mix: forge/item shop (Lb_mix, list build, select, buy/sell).
+  - 0x536708-0x53856C shop engine (Lb_shop_move step machine, list/help/tag drawing).
+  - 0x53856C-0x53C21C lb_process (weapon/armor forge menu), 0x53C21C-0x53D7D0 lb_armor
+    (armor shop), then f_sound/f_em10/f_em09/f_move (0x53D7D0-0x53E848, small).
+- 0x53E848-0x590D40 (330 KB) NOT Capcom code: Sony/third-party libraries compiled with
+  GCC: sceHTTP client (0x53E848-0x549A30), MD5/digest, then an SSL/crypto stack
+  (ASN1, BER, BIO, BN, X509, EVP, RSA/DSA/DH, SSL2/3/TLS1, OP_, R_ eitems, sk_, ...).
+  Skip (the brief says skip GCC library code).
+- 0x590D40-0x5C4E60 (207 KB, 935 functions) "cnlbs" - the lobby client:
+  - 0x590D40-0x5A2A20 (73 KB) lobby/plaza UI: Lb_eat (eat scene), dialog/window/button
+    drawing (SetDialogData, Draw_menu_square, DispButtonHelp ...), Lbs_plaza menus
+    (plaza_*: friends, mail, chat log, search), npc movement scripts (npcMv*, npcCat*,
+    npcPig*, lb_npc_*_move).
+  - 0x5A2A20-0x5AE320 (45 KB, ~370 funcs) cnLBS network protocol: cnLBS_* (start a
+    request in a CnetSys_w.bg slot), __cnet_SendReq_* (build packet in send_work),
+    _cnet_RecvFromLbs_* (reply handlers), __cnet_bgProg_* (multi-step jobs),
+    SetSendData*/GetRecvData*, lbs_encode_ex.
+  - 0x5AE320-0x5B1E74 lbs_encode_ex and friends, 0x5B1E74-0x5C4E60 lobby client state
+    machine: lm_* menus, lbc_* (login/browser/top menu/in plaza/in lobby), CallBack_Result_*,
+    Split_TagCode, server_select_*. Agent F takes 0x5C4E60 to the end.
