@@ -95,6 +95,23 @@ typedef struct CNET_CHAT {
     u8 a, b, c, d;      /* 0x11C */
 } CNET_CHAT;
 
+typedef struct CNET_FIRSTDATA { s16 h[18]; } CNET_FIRSTDATA;    /* 0x24 bytes, halfword copy loop */
+typedef struct CNET_LOGIN {     /* 0x40 bytes, copied by value (word copy loop) */
+    u8 x00[2];          /* 0x00 */
+    char key[0xB];      /* 0x02 key encoded into the connection-pair packet */
+    char pass[0x13];    /* 0x0D */
+    s32 patch_buf;      /* 0x20 patch download buffer */
+    u8 x24[8];          /* 0x24 */
+    char tel[0x14];     /* 0x2C telephone number */
+} CNET_LOGIN;
+typedef struct CNET_BUF2000 { u8 b[0x2000]; } CNET_BUF2000;
+typedef struct CNET_LUSER {     /* a user returned by the login server (0x5C bytes) */
+    char id[8];         /* 0x00 */
+    char handle[0x10];  /* 0x08 */
+    u8 pad18[4];        /* 0x18 */
+    u8 mini[0x40];      /* 0x1C mini data */
+} CNET_LUSER;
+
 /* room rule block (0x16B bytes) */
 typedef struct CNET_RULE {
     u8 b[0x16B];
@@ -102,7 +119,9 @@ typedef struct CNET_RULE {
 
 typedef struct CNET_SYS {
     s32 active;  /* 0x000  */
-    u8 _pad004[0x14];
+    u8 _pad004[0x10];
+    s8 x14;  /* 0x014  */
+    u8 _pad015[0x3];
     CNET_BG bg[0x80];  /* 0x018 background request slots */
     CNET_BURST burst[12];  /* 0xE18 burst slots */
     u8 _padFC8[0x14];
@@ -113,21 +132,36 @@ typedef struct CNET_SYS {
     u16 rseq;  /* 0xFE8 sequence of the last packet */
     u16 rseq2;  /* 0xFEA  */
     s8 rres;  /* 0xFEC result byte */
-    u8 _padFED[0x1B];
+    u8 _padFED[0x3];
+    s32 xff0;  /* 0xFF0  */
+    s32 xff4;  /* 0xFF4  */
+    u8* xff8;  /* 0xFF8  */
+    s32 patch_ptr;  /* 0xFFC  */
+    s32 patch_cnt;  /* 0x1000  */
+    s16 x1004;  /* 0x1004  */
+    u16 patch_x;  /* 0x1006  */
     s32 patch_ver;  /* 0x1008 patch information version */
-    u8 _pad100C[0x8];
+    s32 patch_size;  /* 0x100C  */
+    u8 _pad1010[0x4];
     char patch_a[0x10];  /* 0x1014 patch information string */
     char patch_b[8];  /* 0x1024 patch information string 2 */
     u16 rcnt;  /* 0x102C receive counter */
-    u8 _pad102E[0x32];
-    char tel[0x14];  /* 0x1060 telephone number (personal data) */
-    u8 _pad1074[0x86];
+    u16 echo_sum;  /* 0x102E  */
+    u8 echo_n;  /* 0x1030  */
+    u8 _pad1031[0x3];
+    CNET_LOGIN login;  /* 0x1034 login configuration (copied by value) */
+    CNET_B5C acct;  /* 0x1074 account being logged in */
+    CNET_FIRSTDATA firstdata;  /* 0x10D0 first data sent after login */
+    u8 _pad10F4[0x6];
     CNET_PDATA pdata;  /* 0x10FA personal data being registered */
     CNET_RULE rule;  /* 0x12CA room rule being set */
-    u8 _pad1435[0x141];
-    char uid[8];  /* 0x1576 user id string */
-    char uhandle[0x40];  /* 0x157E user handle string */
-    u8 _pad15BE[0x70];
+    u8 _pad1435[0x29];
+    u8 n_login_user;  /* 0x145E  */
+    u8 _pad145F[0x3];
+    CNET_LUSER login_users[4];  /* 0x1462 users returned by the login server (entry 3 is the account being logged in) */
+    char decide_id[8];  /* 0x15D2 decided user id */
+    char decide_handle[0x10];  /* 0x15DA decided user handle */
+    u8 _pad15EA[0x44];
     CNET_B5C minidata;  /* 0x162E mini data of a lobby member */
     CNET_B1004 topinfo;  /* 0x168A top information */
     CNET_H1004 warnmsg;  /* 0x268E login warning message */
@@ -161,7 +195,9 @@ typedef struct CNET_SYS {
     CNET_CHAT chat;  /* 0x30B8A chat message being received */
     u8 _pad30CAA[0x690E];
     CNET_B308 chatbin;  /* 0x375B8 chat binary */
-    u8 _pad378C0[0x4198];
+    u8 _pad378C0[0x300];
+    CNET_BUF2000 loginbuf;  /* 0x37BC0  */
+    u8 _pad39BC0[0x1E98];
     s16 curplace[3];  /* 0x3BA58 current place (3 values) */
 } CNET_SYS;
 extern CNET_SYS CnetSys_w;

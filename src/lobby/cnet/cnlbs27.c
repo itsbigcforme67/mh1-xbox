@@ -1,5 +1,36 @@
-/* cnlbs, run 28: cnLBS_Send_UserMiniData .. _cnet_RecvFromLbs_NoticeLoginOk (lobby.bin 0x005AA790-0x005AA8FC): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 28: _cnet_RecvFromLbs_NoticeUserId .. _cnet_RecvFromLbs_NoticeLoginOk (lobby.bin 0x005AA690-0x005AA8FC): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+
+void _cnet_RecvFromLbs_NoticeUserId(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.burst[0].state != 0) {
+        __cnet_Recv_UserIDandHandle();
+        res.val = 0;
+        res.id = 1;
+        CnetSys_w.burst[0].cb(res, &res);
+    }
+}
+
+void _cnet_RecvFromLbs_AnswerUserId(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.burst[0].state != 0) {
+        if (CnetSys_w.rres == 0) {
+            __cnet_Recv_UserID();
+            cnetGet_Login_DecideUserID(CnetSys_w.decide_id);
+            cnetGet_Login_DecideUserHandle(CnetSys_w.decide_handle);
+            res.val = 0;
+            res.id = 2;
+            CnetSys_w.burst[0].cb(res, &res);
+            return;
+        }
+        __cnet_Recv_ServerMessage();
+        res.val = -1;
+        res.id = 7;
+        CnetSys_w.burst[0].cb(res, &res);
+    }
+}
 
 int cnLBS_Send_UserMiniData(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0);

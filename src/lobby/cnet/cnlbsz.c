@@ -1,4 +1,4 @@
-/* cnlbs, run 26: _cnet_RecvFromLbs_AnswerCurrentPlace .. cnLBS_Init_LoginLobbyServer (lobby.bin 0x005AA040-0x005AA164): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 26: _cnet_RecvFromLbs_AnswerCurrentPlace .. cnLBS_Set_LoginFirstData (lobby.bin 0x005AA040-0x005AA308): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 
 void _cnet_RecvFromLbs_AnswerCurrentPlace(void) {
@@ -22,4 +22,32 @@ void cnLBS_Init_LoginLobbyServer(void) {
     memset(CNWP(0xE18), 0, 0x1B0);
     memset(CNWP(0x4058), 0, 0xA);
     memset(CNWP(0x1436), 0, 0x28);
+}
+
+int cnLBS_LoginLobbyServer(CNET_LOGIN cfg, int cb) {
+    if (CnetSys_w.burst[0].state == 0) {
+        CnetSys_w.login = cfg;
+        CnetSys_w.x14 = 0;
+        CnetSys_w.active = 1;
+        CnetSys_w.echo_n = 0;
+        CnetSys_w.echo_sum = 0;
+        memset(&CnetSys_w.acct, 0, 0x5C);
+        memset(CnetSys_w.login_users, 0, 0x170);
+        CnetSys_w.xff0 = 0;
+        CnetSys_w.xff4 = 0x1000;
+        CnetSys_w.xff8 = CnetSys_w.loginbuf.b;
+        memset(&CnetSys_w.warnmsg, 0, 0x1004);
+        memset(&CnetSys_w.loginbuf, 0, 0x2000);
+        CnetSys_w.burst[0].cb = (void *)cb;
+        CnetSys_w.burst[0].state = 1;
+        CnetSys_w.burst[0].x21 = 0;
+        CnetSys_w.burst[0].run = 0;
+        return 0;
+    }
+    return -1;
+}
+
+int cnLBS_Set_LoginFirstData(CNET_FIRSTDATA *src) {
+    CnetSys_w.firstdata = *src;
+    return 0;
 }

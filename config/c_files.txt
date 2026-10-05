@@ -710,13 +710,13 @@ lobby 0x005A89C0 0x005A973C cnet/cnlbsv
 lobby 0x005A9860 0x005A9940 cnet/cnlbsw
 lobby 0x005A9A80 0x005A9AE8 cnet/cnlbsx
 lobby 0x005A9CA0 0x005AA008 cnet/cnlbsy
-lobby 0x005AA040 0x005AA164 cnet/cnlbsz
+lobby 0x005AA040 0x005AA308 cnet/cnlbsz
 lobby 0x005AA430 0x005AA5FC cnet/cnlbs26
-lobby 0x005AA790 0x005AA8FC cnet/cnlbs27
+lobby 0x005AA690 0x005AA8FC cnet/cnlbs27
 lobby 0x005AAA40 0x005AAB38 cnet/cnlbs28
 lobby 0x005AAC40 0x005AACCC cnet/cnlbs29
-lobby 0x005AAE30 0x005AAE7C cnet/cnlbs30
-lobby 0x005AB600 0x005AB798 cnet/cnlbs31
+lobby 0x005AADE0 0x005AAE7C cnet/cnlbs30
+lobby 0x005AB430 0x005AB798 cnet/cnlbs31
 lobby 0x005AB8D0 0x005AC150 cnet/cnlbs32
 lobby 0x005AC860 0x005ACB84 cnet/cnlbs33
 lobby 0x005ACD60 0x005ACD8C cnet/cnlbs34

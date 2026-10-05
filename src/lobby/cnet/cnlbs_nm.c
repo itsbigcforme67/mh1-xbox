@@ -1826,6 +1826,58 @@ void cnLBS_Init_LoginLobbyServer(void) {
     memset(CNWP(0x1436), 0, 0x28);
 }
 
+int cnLBS_LoginLobbyServer(CNET_LOGIN cfg, int cb) {
+    if (CnetSys_w.burst[0].state == 0) {
+        CnetSys_w.login = cfg;
+        CnetSys_w.x14 = 0;
+        CnetSys_w.active = 1;
+        CnetSys_w.echo_n = 0;
+        CnetSys_w.echo_sum = 0;
+        memset(&CnetSys_w.acct, 0, 0x5C);
+        memset(CnetSys_w.login_users, 0, 0x170);
+        CnetSys_w.xff0 = 0;
+        CnetSys_w.xff4 = 0x1000;
+        CnetSys_w.xff8 = CnetSys_w.loginbuf.b;
+        memset(&CnetSys_w.warnmsg, 0, 0x1004);
+        memset(&CnetSys_w.loginbuf, 0, 0x2000);
+        CnetSys_w.burst[0].cb = (void *)cb;
+        CnetSys_w.burst[0].state = 1;
+        CnetSys_w.burst[0].x21 = 0;
+        CnetSys_w.burst[0].run = 0;
+        return 0;
+    }
+    return -1;
+}
+
+int cnLBS_Set_LoginFirstData(CNET_FIRSTDATA *src) {
+    CnetSys_w.firstdata = *src;
+    return 0;
+}
+
+int cnLBS_Send_LoginUserAccount(id, handle, mini)
+char *id;
+char *handle;
+void *mini;
+{
+    int n;
+
+    memset(&CnetSys_w.acct, 0, 0x5C);
+    strncpy(&CnetSys_w.acct.b[8], handle, strlen(handle));
+    memcpy(&CnetSys_w.acct.b[0x1C], mini, 0x40);
+    if (id == 0) {
+        strncpy(CnetSys_w.login_users[3].id, "******", 6);
+        memset(&CnetSys_w.acct, 0, 8);
+    } else {
+        strncpy(CnetSys_w.login_users[3].id, id, 6);
+        strncpy(&CnetSys_w.acct, id, 6);
+    }
+    n = strlen(handle);
+    strncpy(CnetSys_w.login_users[3].handle, handle, n);
+    CnetSys_w.login_users[3].handle[n] = 0;
+    __cnet_SendReq_UserID();
+    return 0;
+}
+
 u8 cnetGet_Login_NoOfUserAccount(void) {
     return CNW(u8, 0x145E);
 }
@@ -1881,6 +1933,50 @@ void _cnet_RecvFromLbs_RequestFirstData(void) {
         return;
     }
     __cnet_SendSet_FirstData();
+}
+
+void _cnet_RecvFromLbs_AnswerEchoPacket(void) {
+    int t = (CnetSys_w.rcnt * 0x10) & 0xFFFF;
+
+    CnetSys_w.echo_sum += t;
+    CnetSys_w.echo_n++;
+    if (CnetSys_w.echo_n < 4) {
+        __cnet_SendReq_EchoPacket(t);
+        return;
+    }
+    CnetSys_w.firstdata.h[14] = (u16)CnetSys_w.echo_sum >> 2;
+    __cnet_SendSet_FirstData(t);
+}
+
+void _cnet_RecvFromLbs_NoticeUserId(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.burst[0].state != 0) {
+        __cnet_Recv_UserIDandHandle();
+        res.val = 0;
+        res.id = 1;
+        CnetSys_w.burst[0].cb(res, &res);
+    }
+}
+
+void _cnet_RecvFromLbs_AnswerUserId(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.burst[0].state != 0) {
+        if (CnetSys_w.rres == 0) {
+            __cnet_Recv_UserID();
+            cnetGet_Login_DecideUserID(CnetSys_w.decide_id);
+            cnetGet_Login_DecideUserHandle(CnetSys_w.decide_handle);
+            res.val = 0;
+            res.id = 2;
+            CnetSys_w.burst[0].cb(res, &res);
+            return;
+        }
+        __cnet_Recv_ServerMessage();
+        res.val = -1;
+        res.id = 7;
+        CnetSys_w.burst[0].cb(res, &res);
+    }
 }
 
 int cnLBS_Send_UserMiniData(int arg0, int arg1) {
@@ -1957,6 +2053,18 @@ int __cnet_SendReq_TopInformation(void) {
     return cmd;
 }
 
+void __cnet_Login_Return(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.burst[0].state != 0) {
+        res.val = 0;
+        CnetSys_w.burst[0].state = 0;
+        res.id = 0;
+        CnetSys_w.burst[0].x21 = 0;
+        CnetSys_w.burst[0].cb(res, &res);
+    }
+}
+
 void _cnet_RecvFromLbs_RequestTelephoneNumber(void) {
     __cnet_SendSet_TelephoneNumber();
 }
@@ -1971,10 +2079,42 @@ void _cnet_RecvFromLbs_RequestBattleResult(void) {
     }
 }
 
+void __cnet_SendSet_ConnectionPair(void) {
+    char sp10[0x10];
+
+    SetSendCommand(&send_work, 0xD);
+    mmbbc_encode(sp10, CnetSys_w.login.key, (((send_work.seq_h << 8) & 0xFFFF) + send_work.seq_l) & 0xFFFF);
+    SetSendData16(&send_work, 0xA);
+    SetSendStringData(&send_work, sp10, 0xA);
+    SetSendEncodeStringData(&send_work, CnetSys_w.login.pass, strlen(CnetSys_w.login.pass) & 0xFFFF);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+void __cnet_SendSet_FirstData(void) {
+    u8 *s0 = (u8 *)&CnetSys_w.firstdata;
+
+    SetSendCommand(&send_work, 0x11);
+    SetSendData8(&send_work, s0[0]);
+    SetSendData8(&send_work, s0[1]);
+    SetSendData8(&send_work, s0[2]);
+    SetSendStringData2(&send_work, s0 + 4, 0xA);
+    SetSendData16(&send_work, *(u16 *)(s0 + 0x14));
+    SetSendData16(&send_work, *(u16 *)(s0 + 0x16));
+    SetSendData16(&send_work, *(u16 *)(s0 + 0x18));
+    SetSendData16(&send_work, *(u16 *)(s0 + 0x1A));
+    SetSendData16(&send_work, *(u16 *)(s0 + 0x1C));
+    SetSendData16(&send_work, *(u16 *)(s0 + 0x1E));
+    SetSendData16(&send_work, *(u16 *)(s0 + 0x20));
+    SetSendData16(&send_work, *(u16 *)(s0 + 0x22));
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
 void __cnet_SendReq_UserID(void) {
     SetSendCommand(&send_work, 0x16);
-    SetSendStringData2(&send_work, CnetSys_w.uid, 6);
-    SetSendStringData2(&send_work, CnetSys_w.uhandle, strlen(CnetSys_w.uhandle) & 0xFFFF);
+    SetSendStringData2(&send_work, CnetSys_w.login_users[3].id, 6);
+    SetSendStringData2(&send_work, CnetSys_w.login_users[3].handle, strlen(CnetSys_w.login_users[3].handle) & 0xFFFF);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
 }
@@ -1987,7 +2127,7 @@ void __cnet_SendSet_LoginFinish(void) {
 
 void __cnet_SendSet_TelephoneNumber(void) {
     SetSendCommand(&send_work, 0xF);
-    SetSendStringData2(&send_work, CnetSys_w.tel, strlen(CnetSys_w.tel) & 0xFFFF);
+    SetSendStringData2(&send_work, CnetSys_w.login.tel, strlen(CnetSys_w.login.tel) & 0xFFFF);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
 }
@@ -1998,6 +2138,36 @@ int __cnet_SendSet_MiniDataRegist(int arg0, int arg1) {
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
+}
+
+void __cnet_SendReq_EchoPacket(void) {
+    CnetSys_w.rcnt = 0;
+    SetSendCommand(&send_work, 0xA);
+    SetSendStringData2(&send_work, "0", 1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+int __cnet_Recv_UserIDandHandle(void) {
+    u8 n;
+    int i;
+    u8 *s0;
+    int p;
+
+    memset(CnetSys_w.login_users, 0, 0x170);
+    p = GetRecvData8(&n, recv_work);
+    if (n >= 4) n = 3;
+    CnetSys_w.n_login_user = n;
+    i = 0;
+    if (n > 0) {
+        s0 = (u8 *)&CnetSys_w;
+        do {
+            p = GetRecvDataOption3(s0 + 0x147E, 0x40, GetRecvDataOption3(s0 + 0x146A, 0x10, GetRecvDataOption3(s0 + 0x1462, 8, p)));
+            i++;
+            s0 += 0x5C;
+        } while (i < n);
+    }
+    return 0;
 }
 
 int __cnet_Recv_UserID(void) {

@@ -1,5 +1,17 @@
-/* cnlbs, run 31: _cnet_RecvFromLbs_RequestTelephoneNumber .. _cnet_RecvFromLbs_RequestBattleResult (lobby.bin 0x005AAE30-0x005AAE7C): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 31: __cnet_Login_Return .. _cnet_RecvFromLbs_RequestBattleResult (lobby.bin 0x005AADE0-0x005AAE7C): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+
+void __cnet_Login_Return(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.burst[0].state != 0) {
+        res.val = 0;
+        CnetSys_w.burst[0].state = 0;
+        res.id = 0;
+        CnetSys_w.burst[0].x21 = 0;
+        CnetSys_w.burst[0].cb(res, &res);
+    }
+}
 
 void _cnet_RecvFromLbs_RequestTelephoneNumber(void) {
     __cnet_SendSet_TelephoneNumber();
