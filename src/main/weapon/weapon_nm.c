@@ -80,3 +80,382 @@ void Ed_trans_pl(TRANSPL *t) {
         }
     }
 }
+
+/* weapon_joint_calc (0x164410, 2376 bytes): complete, ~440 of 594 instructions
+ * differ by layout only: the jump table for PLW.kind matches; the original
+ * fills some branch delay slots from the fall-through path (li of the next
+ * compare constant) which this build does not. `if (f) {} else {r = 1}` is
+ * written as a switch with an empty default because that gave the original
+ * block layout (beq; nop; b end; nop; b end/li). */
+s32 frame_check2(f32, PLW *, int);
+
+#define W1C4(pl) (*(s32 *)((u8 *)(pl) + 0x1C4))
+
+s16 weapon_joint_calc(PLW *pl) {
+    s16 r = 2;
+
+    switch (pl->kind) {
+    case 2:
+        switch (pl->char0) {
+        case 0x3EA:
+            if (frame_check2(6.0f, pl, 0) != 0) {
+                r = 1;
+            }
+            if (W1C4(pl) == 1) {
+                r = 2;
+            }
+            break;
+        case 0x3EB:
+            switch (frame_check2(48.0f, pl, 0)) {
+            case 0:
+                r = 1;
+                break;
+            default:
+                break;
+            }
+            break;
+        case 0x3F1:
+            switch (frame_check2(50.0f, pl, 0)) {
+            case 0:
+                r = 1;
+                break;
+            default:
+                break;
+            }
+            break;
+        case 0x3F2:
+            switch (W1C4(pl)) {
+            case 1:
+                break;
+            default:
+                r = 1;
+                break;
+            }
+            break;
+        default:
+            if (pl->flag12 != 0) {
+                r = 1;
+            }
+            break;
+        }
+        break;
+    case 3:
+        switch (pl->char0) {
+        case 0x3FA:
+        case 0x3EA:
+            r = 2;
+            switch (W1C4(pl)) {
+            case 1:
+                break;
+            default:
+                r = 1;
+                break;
+            }
+            break;
+        case 0x3EB:
+            switch (frame_check2(60.0f, pl, 0)) {
+            case 0:
+                r = 1;
+                break;
+            default:
+                break;
+            }
+            break;
+        case 0x3F1:
+            switch (frame_check2(66.0f, pl, 0)) {
+            case 0:
+                r = 1;
+                break;
+            default:
+                break;
+            }
+            break;
+        case 0x3F2:
+            switch (W1C4(pl)) {
+            case 1:
+                break;
+            default:
+                r = 1;
+                break;
+            }
+            break;
+        default:
+            if (pl->flag12 != 0) {
+                r = 1;
+            }
+            break;
+        }
+        break;
+    case 4:
+        switch (pl->char0) {
+        case 0x3F2:
+        case 0x3FA:
+        case 0x3EA:
+            r = 2;
+            switch (W1C4(pl)) {
+            case 1:
+                break;
+            default:
+                r = 1;
+                break;
+            }
+            break;
+        case 0x3EB:
+            switch (frame_check2(32.0f, pl, 0)) {
+            case 0:
+                r = 1;
+                break;
+            default:
+                break;
+            }
+            break;
+        case 0x3F1:
+            switch (frame_check2(30.0f, pl, 0)) {
+            case 0:
+                r = 1;
+                break;
+            default:
+                break;
+            }
+            break;
+        case 0x3F8:
+            if (frame_check2(14.0f, pl, 0) != 0) {
+                r = 0;
+            }
+            if (W1C4(pl) == 1) {
+                r = 2;
+            }
+            break;
+        case 0x3F9:
+            switch (frame_check2(44.0f, pl, 0)) {
+            case 0:
+                r = 0;
+                break;
+            default:
+                break;
+            }
+            break;
+        case 0x582:
+            switch (W1C4(pl)) {
+            case 1:
+                break;
+            default:
+                r = 0;
+                break;
+            }
+            break;
+        default:
+            if (pl->flag12 != 0) {
+                r = 1;
+            }
+            break;
+        }
+        break;
+    case 0:
+    default:
+        switch (pl->char0) {
+        case 0x3EA:
+            if (frame_check2(16.0f, pl, 0) != 0) {
+                r = 0;
+            }
+            if (W1C4(pl) == 1) {
+                r = 2;
+            }
+            break;
+        case 0x3EB:
+            r = 2;
+            switch (frame_check2(38.0f, pl, 0)) {
+            case 0:
+                r = 0;
+                break;
+            default:
+                break;
+            }
+            break;
+        case 0x3F8:
+            if (frame_check2(14.0f, pl, 0) != 0) {
+                r = 0;
+            }
+            if (W1C4(pl) == 1) {
+                r = 2;
+            }
+            break;
+        case 0x3F9:
+            r = 2;
+            switch (frame_check2(44.0f, pl, 0)) {
+            case 0:
+                r = 0;
+                break;
+            default:
+                break;
+            }
+            break;
+        case 0x587:
+        case 0x586:
+        case 0x585:
+        case 0x584:
+            r = 0;
+            break;
+        case 0x582:
+            r = 2;
+            switch (W1C4(pl)) {
+            case 1:
+                break;
+            default:
+                r = 0;
+                break;
+            }
+            break;
+        default:
+            if (pl->flag12 != 0) {
+                r = 1;
+            }
+            break;
+        }
+        break;
+    case 1:
+        switch (pl->char0) {
+        case 0x3EA:
+            if (frame_check2(2.0f, pl, 0) != 0) {
+                r = 1;
+            }
+            break;
+        case 0x3EB:
+            switch (frame_check2(110.0f, pl, 0)) {
+            case 0:
+                r = 1;
+                break;
+            default:
+                break;
+            }
+            if (W1C4(pl) == 1) {
+                r = 1;
+            }
+            break;
+        case 0x3F1:
+            switch (frame_check2(92.0f, pl, 0)) {
+            case 0:
+                r = 1;
+                break;
+            default:
+                break;
+            }
+            if (W1C4(pl) == 1) {
+                r = 1;
+            }
+            break;
+        default:
+            if (pl->flag12 != 0) {
+                r = 1;
+            }
+            break;
+        }
+        break;
+    case 5:
+        switch (pl->char0) {
+        case 0x3EA:
+            if (frame_check2(28.0f, pl, 0) != 0) {
+                r = 0;
+            }
+            if (W1C4(pl) == 1) {
+                r = 2;
+            }
+            break;
+        case 0x3F2:
+            if (frame_check2(22.0f, pl, 0) != 0) {
+                r = 0;
+            }
+            if (W1C4(pl) == 1) {
+                r = 2;
+            }
+            break;
+        case 0x3F1:
+        case 0x3EB:
+            if (W1C4(pl) == 1) {
+                r = 1;
+            } else {
+                r = 2;
+            }
+            break;
+        default:
+            if (pl->flag12 != 0) {
+                r = 1;
+            }
+            break;
+        }
+        break;
+    }
+    switch (pl->char0) {
+    case 0xCC:
+    case 0xCA:
+        if (pl->flag12 != 0) {
+            r = 1;
+        }
+        break;
+    case 0xD8:
+    case 0xCF:
+        if (pl->flag12 != 0) {
+            r = 2;
+            if (pl->flag14 == 6) {
+            } else {
+                r = 1;
+            }
+        }
+        break;
+    case 0x279:
+    case 0x278:
+    case 0x277:
+    case 0x276:
+    case 0x275:
+    case 0x274:
+    case 0x273:
+    case 0x272:
+    case 0x271:
+    case 0x270:
+    case 0x26F:
+    case 0x26E:
+    case 0x26D:
+    case 0x26C:
+    case 0x280:
+    case 0x3D:
+    case 0x3C:
+        r = 2;
+        break;
+    case 0xDC:
+    case 0xDB:
+    case 0xD7:
+    case 0xD6:
+    case 0xD5:
+    case 0xD4:
+    case 0xD3:
+    case 0xD1:
+    case 0xD0:
+    case 0xCE:
+    case 0xCD:
+        r = 2;
+        break;
+    case 0xD2:
+        if (pl->flag14 == 6) {
+            r = 2;
+        }
+        break;
+    case 0x19D:
+        r = 2;
+        if (frame_check2(328.0f, pl, 0) != 0) {
+        } else {
+            r = 1;
+            switch (frame_check2(22.0f, pl, 0)) {
+            case 0:
+                r = 2;
+                break;
+            default:
+                break;
+            }
+        }
+        if (W1C4(pl) == 1) {
+            r = 2;
+        }
+        break;
+    }
+    return r;
+}
