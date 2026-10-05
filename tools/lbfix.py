@@ -53,6 +53,48 @@ def fix(fn):
         if r is not None and r < best:
             best = r; bestsrc = s2
             if r == 0: break
+    # phase 2: field access widths (m2c guesses the load/store type from the register use; try the alternatives)
+    if best > 0 and best <= 10 and os.environ.get('WIDTHS', '1') == '1':
+        TYPES = ['s8', 'u8', 's16', 'u16', 's32', 'u32']
+        cur = bestsrc
+        occ = [mm for mm in re.finditer(r'\bF\((s8|u8|s16|u16|s32|u32|f32|int)\b', cur)]
+        for k in range(len(occ)):
+            occ = [mm for mm in re.finditer(r'\bF\((s8|u8|s16|u16|s32|u32|f32|int)\b', cur)]
+            if k >= len(occ): break
+            mm = occ[k]
+            for T in TYPES:
+                if T == mm.group(1): continue
+                s2 = cur[:mm.start(1)] + T + cur[mm.end(1):]
+                r = run(fn, s2, 'w%d' % k)
+                if r is not None and r < best:
+                    best = r; cur = s2
+                    if r == 0: break
+            if best == 0: break
+        # deref of (u8 *)&SYM + n: try the other store/load widths
+        def derefs(t):
+            out = []
+            for mm in re.finditer(r'\*\(\(u8 \*\)&\w+ \+', t):
+                st = mm.start() + 1; d = 0; e = None
+                for j in range(st, len(t)):
+                    if t[j] == '(': d += 1
+                    elif t[j] == ')':
+                        d -= 1
+                        if d == 0: e = j + 1; break
+                if e: out.append((mm.start(), st, e))
+            return out
+        for k in range(len(derefs(cur))):
+            ds = derefs(cur)
+            if k >= len(ds): break
+            a0, st, e = ds[k]
+            inner = cur[st + 1:e - 1]
+            for T in ['int', 's16', 'u16', 's8', 'u16']:
+                s2 = cur[:a0] + '*(%s *)(%s)' % (T, inner) + cur[e:]
+                r = run(fn, s2, 'x%d' % k)
+                if r is not None and r < best:
+                    best = r; cur = s2
+                    if r == 0: break
+            if best == 0: break
+        bestsrc = cur
     if bestsrc is not src: open(p, 'w').write(bestsrc)
     return fn, 'OK' if best == 0 else 'd%d' % best
 if __name__ == '__main__':

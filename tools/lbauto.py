@@ -135,6 +135,7 @@ def conv(s, decls):
     s = re.sub(r'\bs64 (arg\d|var_\w+|temp_\w+)', r'int \1', s)
     for reg, n in (('$t0', 4), ('$t1', 5), ('$t2', 6), ('$t3', 7)):
         s = re.sub(r'\*?M2C_ERROR\(/\* Read from unset register \%s \*/\)' % reg.replace('$', '$'), 'arg%d' % n, s)
+    s = re.sub(r',\s*\*?M2C_ERROR\(/\* Read from unset register \$a[0-3] \*/\)', '', s)
     s = s.replace('M2C_UNK', 'int')
     s = re.sub(r'\(s64\) \(\(s64\) (\w+) << 0x30\) >> 0x30', r'(s16)\1', s)
     s = re.sub(r'\(s64\) \((\w+) << 0x38\) >> 0x38', r'(s8)\1', s)

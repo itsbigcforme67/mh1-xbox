@@ -43,7 +43,7 @@ def main():
         with tempfile.NamedTemporaryFile("w", suffix=".s", delete=False) as t:
             t.write('.include "macro.inc"\n.set noat\n.set noreorder\n.section .rodata\n' + jt +
                     '\n.section .text, "ax"\n\n' + D.named_regs(text2))
-        p = subprocess.run([D.PY, D.M2C, "-t", "mips-mwcc-c", "--valid-syntax", t.name], capture_output=True, text=True)
+        p = subprocess.run([D.PY, D.M2C, "-t", "mips-mwcc-c", "--valid-syntax"] + (["--context", os.environ["DRAFT_CTX"]] if os.environ.get("DRAFT_CTX") else []) + [t.name], capture_output=True, text=True)
         os.unlink(t.name)
         res_all.append((p.stdout.strip() or p.stderr.strip()) + "\n")
     open(outf, "w").write("\n".join(res_all))

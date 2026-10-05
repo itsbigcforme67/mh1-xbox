@@ -13,20 +13,32 @@ extern u8 *cw;                 /* client work (D_6DD7E0, 0xBF40 bytes): u8 acces
 typedef struct LBCOMMER { s8 mac[6]; u8 _pad06[2]; char name[0x10]; u8 _pad18[0x5C - 0x18]; } LBCOMMER; /* 0x5C bytes x8 at lbCommer */
 extern LBCOMMER lbCommer[8];
 
-typedef struct LBPLAYER { u8 _pad00[4]; u8 x04[0x10]; u8 _pad14[0x38 - 0x14]; } LBPLAYER; /* lb_player 0x38 x8 */
+typedef struct LBPLAYER { PLW *pl; u8 x04[0x10]; u8 _pad14[0x38 - 0x14]; } LBPLAYER; /* lb_player 0x38 x8 */
 extern LBPLAYER lb_player[8];
 
 typedef struct LBSYS {         /* lb_sys 0x90 bytes */
     u8 _pad00[3];
     s8 x03;                    /* 0x03 mode (4 = send positions) */
-    u8 _pad04[0x64 - 4];
+    u8 _pad04[2];
+    s8 x06;                    /* 0x06 guild screen state */
+    u8 _pad07[0x64 - 7];
     u16 chair_mask;            /* 0x64 bit per occupied chair */
     u16 x66;                   /* 0x66 chair number (sent as a packet) */
     s32 x68;                   /* 0x68 */
     s32 x6C;                   /* 0x6C */
-    u8 _pad70[0x85 - 0x70];
+    u8 _pad70;
+    s8 x71;                    /* 0x71 */
+    s8 x72;                    /* 0x72 set01 message timer */
+    u8 _pad73[5];
+    s8 x78;                    /* 0x78 */
+    u8 _pad79[3];
+    s32 x7C;                   /* 0x7C */
+    s32 x80;                   /* 0x80 */
+    s8 x84;                    /* 0x84 */
     s8 x85;                    /* 0x85 send interval counter */
-    u8 _pad86[0x90 - 0x86];
+    u8 _pad86;
+    s8 x87;                    /* 0x87 */
+    u8 _pad88[8];
 } LBSYS;
 extern u8 lbSendInterval;
 extern LBSYS lb_sys;
@@ -220,4 +232,28 @@ extern char lit_516_00664D50[];
 void Lb_send_item_request();
 void Eft06_set2();
 extern u8 lit_584_0064E1A8[12];
+extern u8 sendDat[0x300];
+int Lbs_CheckMatchingFlag();
+void cnLBS_Send_ChatBinary();
+void cnLBS_Send_ChatBinaryTU();
+void CallBack_Result_SendChatBinaryTU();
+void Lb_check_receipt();
+extern char *lb_set01_msg[];
+int Quest_clear_bit_ck();
+int Event_flag_ck();
+void lb_select_quest_level_trans();
+void lb_questpage_trans();
+void lb_rule_seet_trans();
+void Plaza_chat_log_add();
+void DispFrameMessage();
+void PutButtonICON();
+extern char lit_1026_00665D68[];
+extern u8 client_work[0xBF40];
+extern u8 network_work[0x2C];
+void flMemset();
+void init_set_work();
+void Lbc_init_network_work();
+extern char lit_275_00665668[];
+extern char lit_743_00665D60[];
+extern int *hint_tbl[2];
 #endif
