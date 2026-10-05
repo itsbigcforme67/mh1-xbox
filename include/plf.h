@@ -173,4 +173,8 @@ s32 GetGroundHitAreaUpper(PLW *, f32 *, f32 *);
 void Oki_item_set(PLW *);
 s32 frame_check3(f32, f32, PLW *, int);
 s32 front_land_ck2(f32, f32, PLW *, int);
+void Pl_set_quake_sub(PLW *, int);
+void vib_set_pl(PLW *, int);
+int ex_kabe_ck(PLW *);
+void kabe_hosei(PLW *, int);
 #endif
