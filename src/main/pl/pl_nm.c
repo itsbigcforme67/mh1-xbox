@@ -1641,6 +1641,9 @@ void pl_horm_sub(PLW *pl) {
 }
 
 
+#include "f_game.h"
+extern u8 ot0[], ot1[];
+void add_prim(void *, void *, int, int);
 /* pl_move_sub (0x14C500, 2144 bytes): near-match, 469/536 insns differ only through delay slots.
  * The original never hoists the `daddu a0,s0,zero` argument copy into a branch delay slot (we do:
  * `bne; daddu a0,s0` vs original `bne; nop; jal; daddu a0,s0`), same effect as timer_calc_sub_pl.
