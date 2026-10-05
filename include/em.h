@@ -82,7 +82,8 @@ typedef struct EMW {
     s32 horm_ang;       /* 0x3A4 angle to turn to (emNN_horm_init) */
     u8 _pad3A8[0x3B0 - 0x3A8];
     struct PLW *x3B0;   /* 0x3B0 target player (em15 fly 33 / atk 2) */
-    u8 _pad3B4[4];
+    f32 rate_x;         /* 0x3B4 rate vector x; with adj_y, adj_z it is a f32[3]
+                         * (em19_rate_add_calc copies all three) */
     f32 adj_y;          /* 0x3B8 fly height correction per frame (fly_adjy2_suby) */
     f32 adj_z;          /* 0x3BC (fly_adjy2_subz) */
     u8 _pad3C0[0x3F4 - 0x3C0];

@@ -216,3 +216,9 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
 - New EMW fields: horm_ang (0x3A4), x3F4, stay_tm, runaway_tm, x95D.
 - Lesson (horm_main): `((a + 0x200) & 0xFFFF) < 0x400` on a u32 gives the
   unsigned sltiu; `(u16)(a + 0x200) < 0x400` promotes to int (slti).
+- em19_flyinit.c (em19_fly_adjy2_init, right before fly.c), em19_move.c
+  (em19_move_sub, em19_dir_adj, em19_rate_add_calc,
+  em20_local_area_move_init) and em15_senkai.c (em15_senkai_target = em02's
+  code) all match. EMW 0x3B4 rate_x: rate vector x; with adj_y (0x3B8) and
+  adj_z (0x3BC) it forms a f32[3] that em19_rate_add_calc copies and
+  rotates by ang[1] before adding to pos.

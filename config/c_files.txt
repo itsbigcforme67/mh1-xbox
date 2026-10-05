@@ -167,3 +167,7 @@ game 0x005C2640 0x005C2A7C em/em14_horm
 game 0x005D9BD0 0x005D9EDC em/em17_horm
 game 0x005FFCC0 0x005FFFCC em/em20_horm
 game 0x0060D400 0x0060D43C em/em27_area
+game 0x005EB3B0 0x005EB4A0 em/em19_flyinit
+game:rodata 0x00689060 0x0068907C em/em19_flyinit
+game 0x005EB780 0x005EBA08 em/em19_move
+game 0x005D04F0 0x005D05F8 em/em15_senkai
