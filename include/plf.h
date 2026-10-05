@@ -227,4 +227,5 @@ void Pl_se_req2_com(PLW *, int, int, f32 *, int, int);
 void armor_sd_req(PLW *, int);
 void func_546860(PLW *, f32 *, int);
 void get_joint_pos(PLW *, int, f32 *);
+void pl_dm003(PLW *, s32);
 #endif

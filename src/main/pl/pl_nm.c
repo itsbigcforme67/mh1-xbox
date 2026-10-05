@@ -1090,3 +1090,70 @@ void pl_at012(PLW *pl) {
         break;
     }
 }
+
+/* near-match (not built): pl_dm003 - the original compares kind with constants kept in v0 and loads the default call's `3` into a2 later;
+   ours hoists the constant 3 into a2 for both (121/144 lines differ because of the shifted register use). */
+void pl_dm003(PLW *pl, s32 arg1) {
+    u8 s;
+    u8 k;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        if (arg1 == 0) {
+            switch (pl->kind) {
+            default:
+                pl_chr_set2(pl, 0x584, 3, 0);
+                break;
+            case 4:
+                pl_chr_set2(pl, 0x3ED, 2, 0);
+                break;
+            case 3:
+                pl_chr_set2(pl, 0x3ED, 2, 0);
+                break;
+            }
+        } else {
+            k = pl->kind;
+            if ((k != 3) && (k != 4)) {
+                pl_chr_set2(pl, 0x584, 6, 0x28);
+            } else {
+                pl_chr_set2(pl, 0x3EE, 2, 0);
+            }
+        }
+        Pl_basic_flagset(pl, 0, 0, 0);
+        pl_flag_set(pl, 0x8000);
+        pl->flag12 = 1;
+        break;
+    case 1:
+        if (Pl_master_ck(pl) != 1) {
+            if (Online_ck() == 0) {
+                goto a;
+            }
+            goto b;
+        }
+a:
+        if ((pl->work39C >= 0x13) && !(pl->sw.now & 0x80)) {
+            Pl_act_set2(pl, 2, 8, 0);
+            break;
+        }
+b:
+        switch (pl->kind) {
+        case 3:
+        case 4:
+            if ((pl->char0 == 0x3ED) && (pl->work194 == 0)) {
+                pl_chr_set2(pl, 0x3EE, 2, 0);
+            }
+            if (pl->work39C >= 0x13) {
+                guard_atk_ck(pl);
+            }
+            break;
+        case 0:
+            if (pl->work39C >= 0x13) {
+                guard_atk_ck(pl);
+            }
+            break;
+        }
+        break;
+    }
+}
