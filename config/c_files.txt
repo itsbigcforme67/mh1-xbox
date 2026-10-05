@@ -181,3 +181,7 @@ game:rodata 0x006853B0 0x00685404 eft/eft04
 game 0x00542680 0x00542D34 eft/eft04b
 game 0x0053BA50 0x0053FFC4 eft/eft17
 game:rodata 0x00685230 0x006853A4 eft/eft17
+main 0x00111B20 0x001131C0 hit/hit
+main:rodata 0x00358230 0x00358250 hit/hit
+main 0x00114280 0x00114318 hit/hitb
+main 0x00114880 0x00114A88 hit/hitc

@@ -24,7 +24,9 @@ typedef struct GAME_W {
     struct EFT_MDLW *area_mdlw[10]; /* 0x0A8 model sets by area (eft07_t, Em_area_ck) */
     u8 _pad0D0;
     u8 master;          /* 0x0D1 player number of the session master */
-    u8 _pad0D2[0x1B2 - 0xD2];
+    u8 _pad0D2;
+    u8 pl_num;          /* 0x0D3 players in the session (shell_hit_ck loops over them) */
+    u8 _pad0D4[0x1B2 - 0xD4];
     u8 x1B2;            /* 0x1B2 set05: kind-2 fixtures fire once set */
     u8 flag1B3;         /* 0x1B3 bit 0 hides set04 on stage 28 */
     u8 _pad1B4[0x1DC - 0x1B4];
