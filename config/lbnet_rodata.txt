@@ -3,3 +3,4 @@
 0x0065E008 0x0065E010 __cnet_SendReq_EchoPacket
 0x0065DEF0 0x0065DF10 __cnet_bgProg_RegistPersonalData
 0x0065DFE0 0x0065E000 __cnet_bgProg_RoomSetRule
+0x0065DF10 0x0065DF30 _sub_InOutRoomMember

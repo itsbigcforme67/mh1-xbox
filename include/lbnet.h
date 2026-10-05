@@ -86,6 +86,7 @@ typedef struct CNET_B308 { u8 b[0x308]; } CNET_B308;
 typedef struct CNET_B1004 { u8 b[0x1004]; } CNET_B1004;
 typedef struct CNET_H1004 { s16 h[0x802]; } CNET_H1004;
 typedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;
+typedef struct CNET_T3 { u8 a, b, c; } CNET_T3;
 typedef struct CNET_RULEENT {   /* one room rule (0x14A5 bytes) */
     u8 flags;           /* 0x00 which parts have been received */
     char head[0x41];    /* 0x01 head word */
@@ -93,7 +94,9 @@ typedef struct CNET_RULEENT {   /* one room rule (0x14A5 bytes) */
     u8 numof;           /* 0x43 number of choices */
     u8 now;             /* 0x44 current choice */
     u8 cflag[0x20];     /* 0x45 per-choice received flags */
-    char names[0x1440]; /* 0x65 choice names, 0x41 bytes each */
+    char names[0x820];  /* 0x65 choice names, 0x41 bytes each */
+    u8 tcnt[0x20];      /* 0x885 number of values of each choice */
+    CNET_T3 tri[32][32];/* 0x8A5 values of each choice, 3 bytes each */
 } CNET_RULEENT;
 typedef struct CNET_RULETBL {   /* room rule allocation table at CnetSys_w+0x6E48 */
     u8 name_perm;       /* 0x00 */

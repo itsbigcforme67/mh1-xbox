@@ -1146,6 +1146,47 @@ void _cnet_RecvFromLbs_NoticeRoomLeaver(void) {
     _sub_InOutRoomMember(3);
 }
 
+void _sub_InOutRoomMember(kind)
+int kind;
+{
+    int r;
+
+    if (CnetSys_w.rres == 0) {
+        memset(&CnetSys_w.leave_user, 0, 0x5C);
+        r = GetRecvDataOption3(&CnetSys_w.leave_user, 8, recv_work);
+        switch (kind & 0xFF) {
+        case 0:
+        case 2:
+        case 4:
+            r = GetRecvDataOption3(&CnetSys_w.leave_user.b[8], 0x10, r);
+            GetRecvDataOption3(&CnetSys_w.leave_user.b[0x1C], 0x40, r);
+            break;
+        }
+    }
+    if (CnetSys_w.rcat == 0x10) {
+        switch (kind & 0xFF) {
+        case 0:
+            _cnet_Return_CallBack(0x26);
+            break;
+        case 1:
+            _cnet_Return_CallBack(0x27);
+            break;
+        case 2:
+            _cnet_Return_CallBack(0x1F);
+            break;
+        case 3:
+            _cnet_Return_CallBack(0x20);
+            break;
+        case 4:
+            _cnet_Return_CallBack(0x24);
+            break;
+        case 5:
+            _cnet_Return_CallBack(0x25);
+            break;
+        }
+    }
+}
+
 void _sub_ReceiveJoinUser(tbl)
 CNET_PIECE *tbl;
 {
@@ -1523,6 +1564,29 @@ void _cnet_RecvFromLbs_AnswerRuleListName(void) {
     _cnet_Return_CallBack(0);
 }
 
+void _cnet_RecvFromLbs_AnswerRuleControl(void) {
+    u8 rule;
+    u8 ch;
+    u8 *src;
+    int i;
+    int n;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_RuleControl(&rule, &ch, &src);
+        n = *src;
+        src++;
+        for (i = 0; i < n; i++) {
+            CnetSys_w.ruletbl.e[rule].tri[ch][i].a = src[0];
+            CnetSys_w.ruletbl.e[rule].tri[ch][i].b = src[1];
+            CnetSys_w.ruletbl.e[rule].tri[ch][i].c = src[2];
+            src += 3;
+        }
+        CnetSys_w.ruletbl.e[rule].tcnt[ch] = n;
+        CnetSys_w.ruletbl.e[rule].cflag[ch] |= 2;
+    }
+    _cnet_Return_CallBack(0);
+}
+
 void _cnet_RecvFromLbs_AnswerRoomSetName(void) {
 
 }
@@ -1596,15 +1660,12 @@ void _cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60(CNET_RES res) {
 void __cnet_bgProg_ReadPlazaAllocation(void) {
     CNET_BURST *b = &CnetSys_w.burst[2];
     CNET_RES res;
-    int i;
-    int m;
-    int k;
-    int ok;
-    int n;
 
     if (b->state != 0) {
         switch (b->x21) {
-        case 0:
+        case 0: {
+            int i;
+            int m;
             b->x21++;
             b->a08 = 1;
             b->a0C = 1;
@@ -1622,6 +1683,7 @@ void __cnet_bgProg_ReadPlazaAllocation(void) {
             memset(CnetSys_w.plaza, 0, 0xDE8);
             cnLBS_Read_PlazaCount((int)__cnet_CallBack_Result_Plaza_NumOfPlaza_005A6E20);
             break;
+        }
         case 1:
             if (b->res == 1) {
                 b->x21++;
@@ -1641,7 +1703,9 @@ void __cnet_bgProg_ReadPlazaAllocation(void) {
                 b->x21 = 5;
             }
             break;
-        case 3:
+        case 3: {
+            int k;
+            int n;
             if (b->res == 2) {
                 b->x21 = 6;
                 cnLBS_Init_LobbyBgProcess();
@@ -1669,7 +1733,12 @@ void __cnet_bgProg_ReadPlazaAllocation(void) {
                 b->x21++;
             }
             break;
-        case 4:
+        }
+        case 4: {
+            int n;
+            int ok;
+            int k;
+            int i;
             n = CNW(u16, 0x404E);
             ok = 1;
             for (k = 0, i = 0; ; ) {
@@ -1693,6 +1762,7 @@ void __cnet_bgProg_ReadPlazaAllocation(void) {
                 b->x21++;
             }
             break;
+        }
         case 5:
             res.val = 0;
             b->state = 0;
@@ -1730,6 +1800,128 @@ void _cnet_CallBack_Result_LobbyAllocation(CNET_RES res) {
     CnetSys_w.burst[3].res = 2;
 }
 
+void __cnet_bgProg_ReadLobbyAllocation(void) {
+    CNET_BURST *b = &CnetSys_w.burst[3];
+    CNET_RES res;
+
+    if (b->state != 0) {
+        switch (b->x21) {
+        case 0: {
+            int i;
+            int m;
+            b->x21++;
+            b->a08 = 1;
+            b->a0C = 1;
+            b->res = 0;
+            m = b->val;
+            b->cnt = 0;
+            for (i = 0; i < 0x20; i++) {
+                if (m & 1) {
+                    b->cnt++;
+                }
+                m >>= 1;
+            }
+            CNW(u16, 0x1032) = 0;
+            CNW(u16, 0x4050) = 0;
+            memset(CnetSys_w.lobby, 0, 0x1378);
+            cnLBS_Read_LobbyCount((int)_cnet_CallBack_Result_LobbyCount);
+            break;
+        }
+        case 1:
+            if (b->res == 1) {
+                b->x21++;
+                b->res = 0;
+                CNW(u16, 0x1032) = CNW(u16, 0x4050) * b->cnt;
+                res.val = 2;
+                res.id = 0xA;
+                b->cb(res, &res);
+            } else if (b->res == 2) {
+                b->x21 = 6;
+            }
+            break;
+        case 2:
+            b->x21++;
+            b->res = 0;
+            if (CNW(u16, 0x4050) == 0) {
+                b->x21 = 5;
+            }
+            break;
+        case 3: {
+            int k;
+            int n;
+            if (b->res == 2) {
+                b->x21 = 6;
+                cnLBS_Init_LobbyBgProcess();
+                break;
+            }
+            k = b->a0C;
+            if (__cnetSub_Get_RestBgWork() < b->cnt) {
+                break;
+            }
+            if (b->val & 1) {
+                cnLBS_Read_LobbyJoinUser((u16)k, (int)_cnet_CallBack_Result_LobbyAllocation);
+            }
+            if (b->val & 2) {
+                cnLBS_Read_LobbyStatus((u16)k, (int)_cnet_CallBack_Result_LobbyAllocation);
+            }
+            if (b->val & 4) {
+                cnLBS_Read_LobbyName((u16)k, (int)_cnet_CallBack_Result_LobbyAllocation);
+            }
+            if (b->val & 8) {
+                cnLBS_Read_LobbyExplain((u16)k, (int)_cnet_CallBack_Result_LobbyAllocation);
+            }
+            n = k + 1;
+            b->a0C++;
+            if (CNW(u16, 0x4050) < n || n > 0xE) {
+                b->x21++;
+            }
+            break;
+        }
+        case 4: {
+            int n;
+            int ok;
+            int k;
+            int i;
+            n = CNW(u16, 0x4050);
+            ok = 1;
+            for (k = 0, i = 0; ; ) {
+                k++;
+                if (n < k) {
+                    break;
+                }
+                if (b->val != (b->val & CnetSys_w.lobby[k - 1].flags)) {
+                    ok = 0;
+                    break;
+                }
+                i++;
+                if (i >= 0xE) {
+                    break;
+                }
+            }
+            if (b->res == 2) {
+                b->x21 = 6;
+                cnLBS_Init_LobbyBgProcess();
+            } else if (ok != 0) {
+                b->x21++;
+            }
+            break;
+        }
+        case 5:
+            res.val = 0;
+            b->state = 0;
+            b->x21 = 0;
+            b->cb(res, &res);
+            break;
+        case 6:
+            res.val = -1;
+            b->state = 0;
+            b->x21 = 0;
+            b->cb(res, &res);
+            break;
+        }
+    }
+}
+
 void _cnet_CallBack_Result_Room_NumOfRoom(CNET_RES res) {
     if (res.val == 0) {
         CnetSys_w.burst[4].res = 1;
@@ -1749,6 +1941,140 @@ void _cnet_CallBack_Result_RoomJoinJoinUser(CNET_RES res) {
         return;
     }
     CnetSys_w.burst[4].res = 2;
+}
+
+void __cnet_bgProg_ReadRoomAllocation(void) {
+    CNET_BURST *b = &CnetSys_w.burst[4];
+    CNET_RES res;
+
+    if (b->state != 0) {
+        switch (b->x21) {
+        case 0: {
+            int i;
+            int m;
+            b->x21++;
+            b->a08 = 1;
+            b->a0C = 1;
+            b->res = 0;
+            m = b->val;
+            b->cnt = 0;
+            for (i = 0; i < 0x20; i++) {
+                if (m & 1) {
+                    b->cnt++;
+                }
+                m >>= 1;
+            }
+            CNW(u16, 0x1032) = 0;
+            CNW(u16, 0x4052) = 0;
+            memset(CnetSys_w.room, 0, 0xB20);
+            cnLBS_Read_RoomCount((int)_cnet_CallBack_Result_Room_NumOfRoom);
+            break;
+        }
+        case 1:
+            if (b->res == 1) {
+                b->x21++;
+                b->res = 0;
+                CNW(u16, 0x1032) = CNW(u16, 0x4052) * b->cnt;
+                res.val = 2;
+                res.id = 0xA;
+                b->cb(res, &res);
+            } else if (b->res == 2) {
+                b->x21 = 6;
+            }
+            break;
+        case 2:
+            b->x21++;
+            b->res = 0;
+            if (CNW(u16, 0x4052) == 0) {
+                b->x21 = 5;
+            }
+            break;
+        case 3: {
+            int k;
+            int n;
+            if (b->res == 2) {
+                b->x21 = 6;
+                cnLBS_Init_LobbyBgProcess();
+                break;
+            }
+            k = b->a0C;
+            if (__cnetSub_Get_RestBgWork() < b->cnt) {
+                break;
+            }
+            if (b->val & 1) {
+                cnLBS_Read_RoomJoinUser((u16)k, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
+            }
+            if (b->val & 2) {
+                cnLBS_Read_RoomStatus((u16)k, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
+            }
+            if (b->val & 4) {
+                cnLBS_Read_RoomName((u16)k, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
+            }
+            if (b->val & 0x20) {
+                cnLBS_Read_RoomJoinInfo((u16)k, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
+            }
+            if (b->val & 8) {
+                cnLBS_Read_RoomExplain((u16)k, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
+            }
+            if (b->val & 0x10) {
+                cnLBS_Read_RoomPasswordInfo((u16)k, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
+            }
+            if (b->val & 0x40) {
+                cnLBS_Read_MatchEntryJoinUser((u16)k, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
+            }
+            if (b->val & 0x80) {
+                cnLBS_Read_RoomProperty((u16)k, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
+            }
+            n = k + 1;
+            b->a0C++;
+            if (CNW(u16, 0x4052) < n || n > 8) {
+                b->x21++;
+            }
+            break;
+        }
+        case 4: {
+            int n;
+            int ok;
+            int k;
+            int i;
+            n = CNW(u16, 0x4052);
+            ok = 1;
+            for (k = 0, i = 0; ; ) {
+                k++;
+                if (n < k) {
+                    break;
+                }
+                if (b->val != (b->val & CnetSys_w.room[k - 1].flags)) {
+                    ok = 0;
+                    break;
+                }
+                i++;
+                if (i >= 10) {
+                    break;
+                }
+            }
+            if (b->res == 2) {
+                b->x21 = 6;
+                cnLBS_Init_LobbyBgProcess();
+            } else if (ok != 0) {
+                b->x21++;
+            }
+            break;
+        }
+        case 5:
+            res.val = 0;
+            b->state = 0;
+            b->x21 = 0;
+            b->cb(res, &res);
+            break;
+        case 6:
+            res.val = -1;
+            b->state = 0;
+            b->x21 = 0;
+            b->cb(res, &res);
+            break;
+        }
+    }
 }
 
 int cnLBS_Get_AllocationProgressCount(u16 *arg0) {
@@ -3443,30 +3769,11 @@ u8 *p;
 u32 size;
 int sum;
 {
-    u32 i = 0;
+    u32 i;
     int acc = 0;
 
-    if (size > 0) {
-        if (size > 8) {
-            do {
-                i += 8;
-                acc += *p++;
-                acc += *p++;
-                acc += *p++;
-                acc += *p++;
-                acc += *p++;
-                acc += *p++;
-                acc += *p++;
-                acc += *p++;
-            } while (i < size - 8);
-        }
-        if (i < size) {
-            do {
-                i++;
-                acc += *p;
-                p++;
-            } while (i < size);
-        }
+    for (i = 0; i < size; i++) {
+        acc += *p++;
     }
     return sum == acc;
 }
