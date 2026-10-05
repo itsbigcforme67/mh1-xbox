@@ -65,7 +65,7 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
-- A (Opus): PC runtime: full quest loop (carve, clear, reward, death/restart, HUD).
+- A (Opus): PC runtime: village hub + quest counter, pause menu, small monsters, quest failure.
 - B (Sonnet): lobby overlay 0x533980-0x5C4E60 (no code shared with game; ~330 KB GCC libs skipped).
 - C (Sonnet): all Capcom code in main except E's regions; fix menu03/menu04 range overlap.
 - D (Sonnet): game overlay to 100% (near-matches by distance, permuter -j1).
