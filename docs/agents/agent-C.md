@@ -415,3 +415,57 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
     args (Reibun_select_mv(sw, idx)); check prototype arity from the asm.
   * MWCC emits `madd.s/msub.s/adda.s/mula.s` for `a*b + c*d`; flSinCos(ang, &sin, &cos) with
     sin at the higher stack address (declare `f32 s, c;` in that order).
+
+
+## Sixth session (worker C on Sonnet): f_ud, f_chat, f_sk, f_hk (main.bin) written in C
+- Every function of the four files has C now (breadth first, per the 5 Oct policy):
+  src/main/ud/ud_nm.c (f_ud 0x1723F0-0x174E10, 48 funcs), src/main/chat/chat_nm.c (f_chat 0x1755D0-0x17BF80,
+  70 funcs), src/main/sk/sk_nm.c (f_sk 0x15FA90-0x162A90, 46), src/main/hk/hk_nm.c (f_hk 0x164180-0x167198, 46).
+  None of this C is Capcom bytes. Matching runs are split out with `tools/mkruns.py NM.c OUTDIR PREFIX FIRST "comment"`
+  (new: groups address-contiguous fully matching functions, one file per run via mkrun2.py, prints the
+  c_files.txt lines; check each run file with check.py on its own before registering).
+  Linked, all five modules OK: ud01-ud08, chat01-chat13, sk01-sk08, hk01-hk08 (config/c_files.txt).
+- Status (check.py, fully matching / near-match): ud 37/11, chat 21/48, sk 12/34, hk 18/28. Many of the "near" ones
+  are only a register swap or a delay slot; most of the rest are float-heavy UI code (see below).
+- New shared header include/ud.h (UDW: User_data layout: point 0x1C, evflag 0x24, ware[64] 0x44, stock[100] 0x1C4,
+  qclear[8] 0x354, rank 0x37B, item[20] 0x37C, wkind 0x3CD, wid 0x3CE, wopt 0x3D0, armor[5] 0x3D2, widx[6] 0x456,
+  wyv_kill 0x45C). include/menu.h edited (pad carve only): PIT_CHAT (chat log entry, 0x5D bytes) and PitMenu fields
+  x04, x06/x07, x0E, x19, logtop 0x1E, lognum 0x1F, logscr 0x20, x21, x22, log[64] at 0x23.
+- tools/symsz.sh NAME: prints a symbol's address and size from config/symbols (sdata items <= 8 bytes are gp-relative:
+  declare them with their size, e.g. `extern u8 btn_menu_sub[8];`, or the compiler uses lui/addiu).
+- Lessons (function that shows it):
+  * A static function defined EARLIER in the same file keeps its caller's argument registers alive (the callee's clobber
+    set is known): Set_equip_idx/Gun_* use a0/a1 after calling gun_check/equip_idx_ck/Equip_idx_renew. They must be
+    `static` and in the same run as their callers, or the call costs the saved registers. Consequence: a run with such
+    a static helper cannot be linked unless EVERY function between the helper and its callers matches (gun_check
+    group is parked because Gun_level_up and Gun_option_ck are 9 and 15 instructions off).
+  * An unused static is dropped by the compiler: a run holding only the static helper fails the link.
+  * `UDW *u = User_data;` as a local (global declared `extern UDW User_data[];`) gives the original's single `lui/addiu`
+    base register across loops (Ud_item_num_ck); declaration order of `u` and the index decides which of a1/a2 is which
+    (tools/declbf.py found them in seconds).
+  * `u16 ret = 0; ... ret = 5;` makes constants load with `daddiu` instead of `addiu` (Hunter_point_add_sub); a long long
+    local does too but adds more. Return `(u8)ret`.
+  * `if (x) { ...; break; } return 0;` inside a switch case, with ONE shared `return 1` after the switch, matched
+    Equip_ok_ck where `if (m == x) return 1; return 0;` per case became xor/sltiu. A `goto` to a shared `return 1`
+    fixed equip_idx_ck the same way.
+  * `1LL << (n % 32)` on a u32 array gives the original's lwu/dsllv (Quest_clear_bit_ck/set).
+  * Struct-offset array tables: `((GE *)&Gun_data[0][8])[id].v` (a typedef'd view starting at the field) folds +8 into the
+    symbol like the original; `Gun_data[id][8]` keeps the displacement (Get_equip_value).
+  * Registers named with a `.sdata` extern of size > 8 are not gp-relative; Psw/PitMenu need a typed global (struct with
+    the real fields) for the original's per-field `lui at; lhu lo(at)` (chat_sw_set matched only that way).
+  * m2c output of small functions can be wrong about argument passing (it reads `$a0..` that were never set as
+    arguments): check the asm prologue before trusting a prototype. For jump-table functions m2c can be fed a temp asm
+    with the table renamed `jtbl_...` and appended as `.rodata` (see how equip_exp_core was drafted; recipe in
+    /tmp notes: rename the lit_NNN symbol used by the `lui/addiu/jr` sequence, append `glabel jtbl_lit_NNN` with its
+    `.word .L...` entries).
+  * After a run is linked the remaining asm of that file is re-split into new files (e.g. asm/main/text/
+    EquipmentDescriptionWindow.s holds the rest of f_chat): use `grep -rn "glabel NAME" asm/main/text`.
+- Near-match list with how far off (see per-function check.py output; counts are instructions that differ):
+  ud: Ud_item_stack 150, Ud_u_item_stack 75, Ud_item_num_ck2 19 / ck3 15 (u16 id param, decl order),
+  Get_bowgun_atk 25 (id*0x14 scheduled earlier), Now_equip_ck (two extra nops in the original), Seisan_ok_ck 50,
+  Set_mini_data_to_pl 17 (s1/s0 swap), Copy_user_id 8 (sym+0x1E8 folding), Gun_level_up 9, Gun_option_ck 15.
+  chat/sk/hk: not worked through per function; most diffs are float constants (the C uses literals, the original reads
+  its own literal pool: linking such a function needs `extern f32 lit_NNNN[]` pool reads, not done), prim struct
+  layouts of the local PFLP4/PFLP8 stack structs (original keeps several separate stack variables), and loops.
+- f_menu quick pass (retry of the 2-5 instruction near-matches): nothing new matched in the time box
+  (menu_data_mix_sub/monster_sub/chcnfg_reibun: declbf finds no better order; Pit_mv, disp_needle etc. untouched).

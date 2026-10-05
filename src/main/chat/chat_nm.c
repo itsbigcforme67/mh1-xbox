@@ -1386,19 +1386,19 @@ void PrintPlayerJob(void *pl) {
     font_print_uf(menu_stat_job_str[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF]);
 }
 
-int EquipmentDescriptionWindowA(u8 *, s16, s16, int);
+int EquipmentDescriptionWindowA(u8 *, s16, s16, int, u8 *, int);
 
-void EquipmentDescriptionWindow(u8 *a, s16 b, s16 c, int d) {
-    EquipmentDescriptionWindowA(a, b, c, d);
+void EquipmentDescriptionWindow(u8 *a, s16 b, s16 c, int d, u8 *e) {
+    EquipmentDescriptionWindowA(a, b, c, d, e, 0xB2);
 }
 
 extern char lit_3701[];
 extern char lit_3702[];
 void Put_PageArrow(s16, s16, int, int);
-void equip_exp_core(void *, s16, s16, int);
+void equip_exp_core(u8 *, s16, s16, int, u8 *);
 void Get_equip_icon_uv(u8 *, s16 *, s16 *);
 
-int EquipmentDescriptionWindowA(u8 *eq, s16 x, s16 y, int page) {
+int EquipmentDescriptionWindowA(u8 *eq, s16 x, s16 y, int page, u8 *cmp, int alpha) {
     struct { s16 x; s16 y; s16 sp0; s16 sp1; u8 w; u8 h; u8 a; u8 b; } fr;
     PFLP8 q;
     s16 uv[2];
@@ -1414,7 +1414,7 @@ int EquipmentDescriptionWindowA(u8 *eq, s16 x, s16 y, int page) {
     fr.b = 6;
     fr.sp0 = 0;
     fr.sp1 = 0;
-    DispFrameMessageA(&fr, 0, 0xB2);
+    DispFrameMessageA(&fr, 0, alpha);
     if (eq != 0 && eq[0] != 0) {
         if (F16(eq, 2) != 0x3E7) {
             if (eq[1] != 7) {
@@ -1443,7 +1443,7 @@ int EquipmentDescriptionWindowA(u8 *eq, s16 x, s16 y, int page) {
                 *(s16 *)&q.uv[0] = uv[0];
                 flps0008(&q);
             }
-            equip_exp_core(eq, x, y, pg);
+            equip_exp_core(eq, x, y, pg, cmp);
             return pages;
         }
         font_set_palette(0);
@@ -1455,6 +1455,373 @@ int EquipmentDescriptionWindowA(u8 *eq, s16 x, s16 y, int page) {
     flfntLocate(x + 0x36, y + 0xA);
     font_print_uf(lit_3702);
     return 0;
+}
+
+
+extern char *equip_exp_str_sword[];
+extern char *equip_exp_str_gun[];
+extern char *equip_exp_str_armor[];
+extern char *weapon_exp_str_common[];
+extern char *armor_exp_str_common[];
+extern char *reload_level_str[];
+extern char *wearable_tbl[];
+extern char *lv123str[];
+extern char *lv12str[];
+extern u8 weapon_exp[][16];
+extern u8 armor_exp[][16];
+extern char lit_4150[];
+extern char lit_4151[];
+extern char lit_4152[];
+extern char lit_4153[];
+extern char lit_4154[];
+extern char lit_4155[];
+extern char lit_4156[];
+extern char lit_4157[];
+extern char lit_4158[];
+extern char lit_4159[];
+extern char lit_4160[];
+extern char lit_4161[];
+extern char lit_4162[];
+extern char lit_4163[];
+extern char lit_4164[];
+extern char lit_4165[];
+extern char lit_4166[];
+extern char lit_4167[];
+extern char lit_4168[];
+extern char lit_4169[];
+extern char lit_4170[];
+extern char lit_4171[];
+extern char lit_4172[];
+extern char lit_4173[];
+void *Get_equip_data_ptr(void *);
+void font_print_strings(int, int, void *, int);
+int Get_bowgun_atk(void *);
+int Get_weapon_job(void *);
+u8 Get_equip_rare(u8, u16);
+void sword_zokusei(u8 *, int, s16);
+void slash_level_bar(u8 *, s16);
+
+#define ATKCONV(v, job) ((u16)((f32)(v) * job_atk_adj_tbl[job]))
+
+void equip_exp_core(u8 *eq, s16 x, s16 y, int page, u8 *cmp) {
+    u8 rare = Get_equip_rare(eq[1], F16(eq, 2));
+    int job = Get_weapon_job(eq) & 0xFF;
+    int pg = page & 0xFF;
+    u8 kind;
+    u8 *d;
+    u8 *d2;
+    s16 ty;
+    s16 tx;
+    char **str;
+    u8 c1;
+    u8 c2;
+    u8 c3;
+    u8 c4;
+    u8 c5;
+    u16 atk;
+    u16 atk2;
+    s8 g[3];
+    u16 id;
+    u8 *row;
+
+    font_set_palette(5);
+    kind = eq[1];
+    if (kind != 7 && pg >= 2) {
+        pg = 1;
+    }
+    switch (pg & 0xFF) {
+    case 0:
+        ty = y + 0xA;
+        tx = x + 0x2D;
+        flfntLocate(tx, ty);
+        font_print_sp(lit_4150, (s16)Equip_moji_color_rare(rare), Get_equip_name(eq[1], F16(eq, 2)));
+        switch (eq[1]) {
+        case 6:
+            d = Get_equip_data_ptr(eq);
+            atk = ATKCONV(F16(d, 8), job);
+            c1 = 0;
+            if (cmp != 0) {
+                if (eq[1] == cmp[1]) {
+                    d2 = Get_equip_data_ptr(cmp);
+                    atk2 = ATKCONV(F16(d2, 8), Get_weapon_job(cmp) & 0xFF);
+                } else {
+                    atk2 = (u16)((f32)Get_bowgun_atk(cmp) * job_atk_adj_tbl[Get_weapon_job(cmp) & 0xFF]);
+                }
+                if (atk2 < atk) {
+                    c1 = 4;
+                } else if (atk < atk2) {
+                    c1 = 2;
+                }
+            }
+            font_set_palette(c1);
+            ty = y + 0x28;
+            flfntLocate(x + 0x48, ty);
+            font_print(lit_3592, atk);
+            slash_level_bar((u8 *)(s32)(4.0f + (153.0f + (f32)x)), y + 0x3E);
+            sword_zokusei(d, x, y + 0x50);
+            str = equip_exp_str_sword;
+            break;
+        case 7:
+            d = Get_equip_data_ptr(eq);
+            atk = (u16)(job_atk_adj_tbl[job] * (f32)Get_bowgun_atk(eq));
+            c1 = 0;
+            c2 = 0;
+            c3 = 0;
+            c4 = 0;
+            c5 = 0;
+            if (cmp != 0) {
+                if (eq[1] == cmp[1]) {
+                    d2 = Get_equip_data_ptr(cmp);
+                    atk2 = (u16)((f32)Get_bowgun_atk(cmp) * job_atk_adj_tbl[Get_weapon_job(cmp) & 0xFF]);
+                    if (F8(d2, 3) < F8(d, 3)) {
+                        c2 = 4;
+                    } else if (F8(d, 3) < F8(d2, 3)) {
+                        c2 = 2;
+                    }
+                    g[0] = F16(cmp, 4) & 0xF;
+                    g[1] = F16(eq, 4) & 0xF;
+                    if (g[0] < g[1]) {
+                        c3 = 4;
+                    } else if (g[1] < g[0]) {
+                        c3 = 2;
+                    }
+                    if (F16(cmp, 4) & 0x40) {
+                        if (!(F16(eq, 4) & 0x40)) {
+                            c4 = 2;
+                        }
+                    } else if (F16(eq, 4) & 0x40) {
+                        c4 = 4;
+                    }
+                    if (F16(cmp, 4) & 0x30) {
+                        if (!(F16(eq, 4) & 0x30)) {
+                            c5 = 2;
+                        }
+                    } else if (F16(eq, 4) & 0x30) {
+                        c5 = 4;
+                    }
+                } else {
+                    d2 = Get_equip_data_ptr(cmp);
+                    atk2 = ATKCONV(F16(d2, 8), Get_weapon_job(cmp) & 0xFF);
+                }
+                if (atk2 < atk) {
+                    c1 = 4;
+                } else if (atk < atk2) {
+                    c1 = 2;
+                }
+            }
+            font_set_palette(c1);
+            ty = y + 0x28;
+            tx = x + 0x6C;
+            flfntLocate(tx, ty);
+            font_print(lit_3592, atk);
+            font_set_palette(c2);
+            flfntLocate(tx, y + 0x3C);
+            font_print_uf(reload_level_str[F8(d, 3)]);
+            font_set_palette(c3);
+            flfntLocate(tx, y + 0x50);
+            g[0] = 0x81;
+            g[2] = 0;
+            g[1] = (F16(eq, 4) & 0xF) + 0x50;
+            font_print_uf(g);
+            font_set_palette(c4);
+            flfntLocate(x, y + 0x64);
+            if (F16(eq, 4) & 0x40) {
+                font_print_uf(lit_4151);
+            } else {
+                font_print_uf(lit_4152);
+            }
+            font_set_palette(c5);
+            flfntLocate(x + 0xB4, ty);
+            if (F16(eq, 4) & 0x20) {
+                font_print_uf(lit_4153);
+            } else if (F16(eq, 4) & 0x10) {
+                font_print_uf(lit_4154);
+            }
+            str = equip_exp_str_gun;
+            break;
+        default:
+            c1 = 0;
+            c2 = 0;
+            c3 = 0;
+            c4 = 0;
+            c5 = 0;
+            d = Get_equip_data_ptr(eq);
+            if (cmp != 0 && eq[1] == cmp[1]) {
+                d2 = Get_equip_data_ptr(cmp);
+                if (F8(d2, 8) < F8(d, 8)) {
+                    c1 = 4;
+                } else if (F8(d, 8) < F8(d2, 8)) {
+                    c1 = 2;
+                }
+                if ((s8)F8(d2, 9) < (s8)F8(d, 9)) {
+                    c2 = 4;
+                } else if ((s8)F8(d, 9) < (s8)F8(d2, 9)) {
+                    c2 = 2;
+                }
+                if ((s8)F8(d2, 0xA) < (s8)F8(d, 0xA)) {
+                    c3 = 4;
+                } else if ((s8)F8(d, 0xA) < (s8)F8(d2, 0xA)) {
+                    c3 = 2;
+                }
+                if ((s8)F8(d2, 0xB) < (s8)F8(d, 0xB)) {
+                    c4 = 4;
+                } else if ((s8)F8(d, 0xB) < (s8)F8(d2, 0xB)) {
+                    c4 = 2;
+                }
+                if ((s8)F8(d2, 0xC) > (s8)F8(d, 0xC)) {
+                    c5 = 4;
+                } else if ((s8)F8(d, 0xC) > (s8)F8(d2, 0xC)) {
+                    c5 = 2;
+                }
+            }
+            font_set_palette(c1);
+            ty = y + 0x28;
+            tx = x + 0x48;
+            flfntLocate(tx, ty);
+            font_print(lit_3593, F8(d, 8));
+            font_set_palette(c2);
+            flfntLocate(tx, y + 0x3C);
+            font_print(lit_3593, (u8)F8(d, 9));
+            font_set_palette(c3);
+            flfntLocate(x + 0xD8, y + 0x3C);
+            font_print(lit_3593, (u8)F8(d, 0xA));
+            font_set_palette(c4);
+            flfntLocate(tx, y + 0x50);
+            font_print(lit_3593, (u8)F8(d, 0xB));
+            font_set_palette(c5);
+            flfntLocate(x + 0xD8, y + 0x50);
+            font_print(lit_3593, (u8)F8(d, 0xC));
+            str = equip_exp_str_armor;
+            break;
+        }
+        font_set_palette(5);
+        font_print_strings(x, ty, str, 0x14);
+        return;
+    case 1:
+        id = F16(eq, 2);
+        switch (kind) {
+        case 7:
+            id += 0xEA;
+        case 6:
+            font_print_strings(x, y + 0x3C, weapon_exp_str_common, 0x14);
+            row = weapon_exp[id];
+            break;
+        case 0:
+            id += 0x44;
+        case 5:
+            id += 0x4D;
+        case 4:
+            id += 0x4E;
+        case 3:
+            id += 0x4B;
+        case 2:
+            font_print_strings(x, y + 0x3C, armor_exp_str_common, 0x14);
+            row = armor_exp[id];
+            break;
+        }
+        font_set_palette(0);
+        font_print_strings(x + 0x36, y, row, 0x14);
+        flfntLocate(x + 0x90, y + 0x3C);
+        if (eq[1] != 7 && eq[1] != 6) {
+            u8 b = F8(Get_equip_data_ptr(eq), 2);
+            int w;
+            if ((b & 0xC) == 0xC) {
+                w = 2;
+            } else {
+                w = 0;
+                if (b & 4) {
+                } else {
+                    w = 1;
+                }
+            }
+            font_print_uf(wearable_tbl[w]);
+        } else {
+            font_print_uf(wearable_tbl[(eq[1] - 6) & 0xFF]);
+        }
+        flfntLocate(x + 0x48, y + 0x50);
+        if (F16(eq, 2) != 0) {
+            font_set_palette(Equip_moji_color_rare(rare));
+            g[0] = 0x81;
+            g[1] = rare + 0x50;
+            g[2] = 0;
+            font_print_uf(g);
+            return;
+        }
+        font_print_uf(lit_4155);
+        return;
+    case 2:
+        font_set_palette(0);
+        flfntLocate(x, y);
+        font_print_uf(lit_4156);
+        d = Get_equip_data_ptr(eq);
+        flfntLocate(x, y + 0x14);
+        c1 = FS32(d, 0x10) & 7;
+        font_set_palette(c1 != 0 ? 5 : 0xA);
+        font_print_sp(lit_4157, lv123str[c1]);
+        flfntLocate(x, y + 0x28);
+        c1 = (FS32(d, 0x10) & 0x38) >> 3;
+        font_set_palette(c1 != 0 ? 5 : 0xA);
+        font_print_sp(lit_4158, lv123str[c1]);
+        flfntLocate(x, y + 0x3C);
+        c1 = (FS32(d, 0x10) & 0x1C0) >> 6;
+        font_set_palette(c1 != 0 ? 5 : 0xA);
+        font_print_sp(lit_4159, lv123str[c1]);
+        flfntLocate(x, y + 0x50);
+        c1 = (FS32(d, 0x10) & 0xE00) >> 9;
+        font_set_palette(c1 != 0 ? 5 : 0xA);
+        font_print_sp(lit_4160, lv123str[c1]);
+        flfntLocate(x + 0xA2, y + 0x14);
+        c1 = (FS32(d, 0x10) & 0x7000) >> 0xC;
+        font_set_palette(c1 != 0 ? 5 : 0xA);
+        font_print_sp(lit_4161, lv123str[c1]);
+        flfntLocate(x + 0xA2, y + 0x28);
+        font_set_palette((FS32(d, 0x10) & 0x10000) ? 5 : 0xA);
+        font_print_uf(lit_4162);
+        flfntLocate(x + 0xA2, y + 0x3C);
+        c1 = (FS32(d, 0x10) & 0x60000) >> 0x11;
+        font_set_palette(c1 != 0 ? 5 : 0xA);
+        font_print_sp(lit_4163, lv12str[c1]);
+        flfntLocate(x + 0xA2, y + 0x50);
+        c1 = (FS32(d, 0x10) & 0x180000) >> 0x13;
+        font_set_palette(c1 != 0 ? 5 : 0xA);
+        font_print_sp(lit_4164, lv12str[c1]);
+        return;
+    case 3:
+        font_set_palette(0);
+        flfntLocate(x, y);
+        font_print_uf(lit_4156);
+        d = Get_equip_data_ptr(eq);
+        flfntLocate(x, y + 0x14);
+        c1 = (FS32(d, 0x10) & 0x600000) >> 0x15;
+        font_set_palette(c1 != 0 ? 5 : 0xA);
+        font_print_sp(lit_4165, lv12str[c1]);
+        flfntLocate(x, y + 0x28);
+        c1 = (FS32(d, 0x10) & 0x1800000) >> 0x17;
+        font_set_palette(c1 != 0 ? 5 : 0xA);
+        font_print_sp(lit_4166, lv12str[c1]);
+        flfntLocate(x, y + 0x3C);
+        font_set_palette((FS32(d, 0x10) & 0x2000000) ? 5 : 0xA);
+        font_print_uf(lit_4167);
+        flfntLocate(x, y + 0x50);
+        font_set_palette((FS32(d, 0x10) & 0x4000000) ? 5 : 0xA);
+        font_print_uf(lit_4168);
+        flfntLocate(x, y + 0x64);
+        font_set_palette((FS32(d, 0x10) & 0x8000000) ? 5 : 0xA);
+        font_print_uf(lit_4169);
+        flfntLocate(x + 0xA2, y + 0x14);
+        font_set_palette((FS32(d, 0x10) & 0x10000000) ? 5 : 0xA);
+        font_print_uf(lit_4170);
+        flfntLocate(x + 0xA2, y + 0x28);
+        font_set_palette((FS32(d, 0x10) & 0x20000000) ? 5 : 0xA);
+        font_print_uf(lit_4171);
+        flfntLocate(x + 0xA2, y + 0x3C);
+        font_set_palette((FS32(d, 0x10) & 0x40000000) ? 5 : 0xA);
+        font_print_uf(lit_4172);
+        flfntLocate(x + 0xA2, y + 0x50);
+        font_set_palette((FS32(d, 0x10) & 0x80000000) ? 5 : 0xA);
+        font_print_uf(lit_4173);
+        return;
+    }
 }
 
 extern char *equip_exp_str_sw_attr[];
@@ -1493,23 +1860,23 @@ void sword_zokusei(u8 *w, int x, s16 y) {
     }
 }
 
-void EquipmentCompareWindowA(int a, s16 b, s16 c, s16 d, int e);
+void EquipmentCompareWindowA(u8 *cur, u8 *other, s16 x, s16 y, int page, int alpha);
 
-void EquipmentCompareWindow(int a, s16 b, s16 c, s16 d) {
-    EquipmentCompareWindowA(a, b, c, d, 0xB2);
+void EquipmentCompareWindow(u8 *cur, u8 *other, s16 x, s16 y, int page) {
+    EquipmentCompareWindowA(cur, other, x, y, page, 0xB2);
 }
 
-void EquipmentCompareWindowA(int a, s16 b, s16 c, s16 d, int alpha) {
+void EquipmentCompareWindowA(u8 *cur, u8 *other, s16 x, s16 y, int page, int alpha) {
     s16 t;
 
-    EquipmentDescriptionWindowA((u8 *)c, d, alpha, 0);
-    EquipmentDescriptionWindowA((u8 *)b, c, d + 0x90, alpha);
+    EquipmentDescriptionWindowA(cur, x, y, page, 0, alpha);
+    EquipmentDescriptionWindowA(other, x, y + 0x90, page, cur, alpha);
     SetFilterMode(1);
     reload_tex(1, 0x11A);
     SetTextureStage(0x11A);
     t = (System_timer & 0x1F) << 11;
     flSin(0.0000958738f * (f32)t);
-    PutArrow(c + 0x89, d + 0x7A, 0x20, 0x10, 0, 0);
+    PutArrow(x + 0x89, y + 0x7A, 0x20, 0x10, 0, 0);
 }
 
 extern u8 Battle_type[];
@@ -1605,7 +1972,6 @@ void Put_shousai(void) {
 
 extern s16 equip_icon_u_tbl[];
 extern s16 weapon_icon_u_tbl[];
-int Get_weapon_job(u8);
 
 void Get_equip_icon_uv(u8 *eq, s16 *a, s16 *b) {
     s16 v;
@@ -1613,7 +1979,7 @@ void Get_equip_icon_uv(u8 *eq, s16 *a, s16 *b) {
 
     if (k == 6 || k == 7) {
         v = 0xBF;
-        a[0] = weapon_icon_u_tbl[Get_weapon_job(k) & 0xFF] + 1;
+        a[0] = weapon_icon_u_tbl[Get_weapon_job(eq) & 0xFF] + 1;
         b[0] = a[0] + 0x1E;
         a[1] = 0xA1;
     } else {
