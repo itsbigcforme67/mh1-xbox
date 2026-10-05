@@ -448,3 +448,28 @@ Lessons that were each confirmed by a match:
   copy it to a local first.
 - Compare chains of a switch are in REVERSE source order of the case labels (lb_em* ef_move_sub).
 - Statics with the same name in several files (sound_call): check with `--at`.
+
+## Lobby: where I stopped and what is next (agent B)
+Done and byte-matching (registered, lobby rebuild OK): lb_talk.c (0x533A00-0x535238) and 42 runs of
+`src/lobby/cnet/cnlbs*.c` cut from cnlbs_nm.c (about 290 network-layer functions: the cnLBS_* request
+starters, __cnet_SendReq_*, _cnet_RecvFromLbs_* handlers, the table getters, GetRecvData*/SetSendData*).
+Near-matches kept in cnlbs_nm.c (a handful of instructions off, mostly register allocation or stack
+layout): __cnetSub_Return_BgProcess (the done callback gets the slot pointer in a2 in a way I could
+not reproduce), cnLBS_RecvData / __cnetSub_RecvThreeData / __cnet_RecvFromLbs helpers, the four
+GetRecvData{String,Option,Option3} and SetSend{StringData,StringData2,EncodeStringData} (the
+original recomputes `len & 0xFFFF` instead of CSE-ing it), the Match* handlers (2 nops of
+alignment), cnLBS_Get_CurrentPlace, cnLBS_Get_GameServerAddress.
+Not written yet in 0x590D40-0x5AE320: ~55 net functions (condition search, personal data
+registration, the bgProg_* multi-step jobs, personal record tables, TopInformation/WarningMessage,
+RuleControl, MemberSub/InOut/ReceiveJoinUser), and everything below:
+- 0x590D40-0x5A2A20 (73 KB): UI/town code (Lb_eat, dialog drawing, Lbs_plaza menus, npc move
+  scripts). Many reference string literals; MWCC puts <= 8 byte literals into .sdata (gp-relative)
+  whereas the original keeps them in .rodata, so functions with short string literals do not match
+  (cnLBS_Send_LoginUserAccount, __cnet_SendReq_EchoPacket are the two cases in the net layer);
+  needs a compiler flag/pragma that is not known yet.
+- 0x5AE320-0x5B1E74: lbs_encode_ex/write_col_numeric/read_col_numeric/mmbbc_encode (bit encoders),
+  the item shop copy of the forge code (Lb_shop, lb_shop_select, ... 0x5AE8D0-0x5AFFA0, structurally
+  the same as src/lobby/lb/lb_mix_nm.c), Lb_join / lb_select_* (room join menus).
+- 0x5B1E74-0x5C4E60: login/browser/plaza/lobby state machines (lbc_*, lm_*, CallBack_*).
+- The lb_* near-match files (lb_mix_nm.c, lb_shop_nm.c, lb_em*_nm.c) still need one more tuning
+  round; K&R definitions (see lessons) were not yet tried on all of them.
