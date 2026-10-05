@@ -222,7 +222,7 @@ typedef struct CAMW {
     s8 grid;            /* 0x5DC */
     u8 area_no;         /* 0x5DD */
     u8 area_old;        /* 0x5DE */
-    s8 area_chg;        /* 0x5DF */
+    u8 area_chg;        /* 0x5DF (u8: lbu in cam_sub_std) */
     u8 cam_old;         /* 0x5E0 */
     u8 cam_no;          /* 0x5E1 0 = std, 1 = stage */
     u16 sw_on;          /* 0x5E2 */
