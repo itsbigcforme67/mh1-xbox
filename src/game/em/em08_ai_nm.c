@@ -4600,7 +4600,60 @@ void em08_main_sub(EMW *em, EM08W *w) {
     }
 }
 
-/*SKIP em08_uvmove*/
+
+#define UV_RESET(i)       \
+    do {                  \
+        uv[i][0] = 0.0f;  \
+        uv[i][1] = 0.0f;  \
+        tm[i] = 0xFFFF;   \
+        ty[i] = 0xFF;     \
+    } while (0)
+
+void em08_uvmove(EMW *em) {
+    f32 (*uv)[3] = (f32 (*)[3])((u8 *)em + 0x5C0);
+    u16 *tm = (u16 *)((u8 *)em + 0x5F0);
+    u8 *ty = (u8 *)em + 0x5F8;
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        if (tm[i] != 0xFFFF) {
+            tm[i] += 1;
+        }
+        switch (ty[i]) {
+        case 0xFF:
+            break;
+        case 0:
+            UV_RESET(i);
+            break;
+        case 1:
+            if (tm[i] >= 0x3E) {
+                UV_RESET(i);
+            } else {
+                int k = (tm[i] >> 1) + 1;
+
+                uv[i][0] = 0.125f * (f32)(k % 8);
+                uv[i][1] = 0.25f * (f32)(k / 8 % 4);
+            }
+            break;
+        case 2:
+            uv[i][0] = 0.125f;
+            uv[i][1] = 0.0f;
+            tm[i] = 0xFFFF;
+            ty[i] = 0xFF;
+            break;
+        case 3:
+            if (tm[i] >= 0xC) {
+                UV_RESET(i);
+            } else {
+                int k = (tm[i] >> 1) + 2;
+
+                uv[i][0] = 0.125f * (f32)(k % 4);
+                uv[i][1] = 0.25f * (f32)(k / 4 % 4);
+            }
+            break;
+        }
+    }
+}
 
 static void sound_call_sub_005A3CA0(EMW *em, int se, int joint) {
     f32 pos[3];

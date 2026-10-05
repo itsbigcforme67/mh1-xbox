@@ -312,3 +312,24 @@ Notes:
 - `x == 0 || x == 1` style turn tests: see EM07_TURN; the +0x8000 variant turns away from the target.
 - sound_call_mov2 had to be global (called from a run file before it), the rest of the sound/effect helpers are static (KEEP).
 - Watch out for scripted file edits: `s.index('int em07_act_sub')` matched the prototype and cut 130 lines (recovered from the draft).
+
+# em08 AI (f_em_59A280, 0x59A280-0x5A7380, 122 functions): 109 linked
+src/game/em/em08_ai.c .. em08_ail.c (12 runs, rodata 0x686880-0x686898, 0x6868A0-0x6868E0, 0x686920-0x686A28, 0x686A90-0x686AB0),
+em08_ai_nm.c = whole file. Rebuild OK (all five modules). em.h: x7E0/x7E4 (f32) carved from padding (em08 water depth/surface).
+Near-matches (stay asm): em08_init (3: eft09_set arg in the delay slot), em08_act_sub (8), em_mv02 (7), em_fly03/09 (4, sltiu at/v0),
+em_dmg00 (1, addu operand order), em_demo00 (17, a2/a3 swap), em08_main (the `idx*8 + em` addu), em08_uvmove (61, same as
+em01/02/07), em08_effect_move (6), hire_move_sub1/sub2 (100/180, static callees with custom register convention) and hire_move
+(depends on them; excluded with MKRUNS_EXCLUDE), em21_target_ang_calc (29).
+Notes:
+- Conversion pipeline that worked (a 6900-line m2c draft -> 109/122 in one session): /tmp scripts patched the draft: arg0->em,
+  M2C_FIELD(arg1,..)->w->name via a struct, missing float args filled in from the asm with f12.py (em_frame_check, Eft20_set,
+  xang_calc_target ...), `temp = em->x05; switch (temp)` -> `switch (em->x05)`, `return;` -> `break;` when the switch is the last
+  statement of the function (that single change fixed ~55 functions), then hand-fixes of what the diff showed.
+- Compound conditions that m2c prints as goto soup (em08_main damage cases) are chains `else if (!(mode == 4 && x15 == 6) && ... && x388 == 1)`.
+- `x = a ? b : c` written as `if (cond) x = b; else x = c` stores constants directly (no movz/movn); the ternary gives movz/movn.
+  For constants stored to a float field MWCC uses lui+sw (no fp register).
+- Sparse `switch` with a final `beq; nop; b end`: a switch with one case plus default (stage 0x36) or a ladder (kind in 1,6,8,0xB,...).
+- A flag variable assigned 0/1 that is compiled with daddiu and tested without andi: `u8 flag` gives daddiu (but adds an andi on test).
+- A static function with custom register arguments (hire_move_sub1/2 take $t4-$t6): its caller can only be linked together with it.
+- `em08_fly_adjy2` returns u8 in em08.c but the asm tests v0 directly: declare it `int` where the caller does not mask.
+- genef.py: `-` as table label for ladder switches, Code_Make/hire_req_set/atk_shell_set/em08_vib_set handled, SOUND5 only for em07.

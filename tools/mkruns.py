@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""mkruns.py NM.c PREFIX [env MKRUNS_KEEP=name1,name2]: split the near-match file into matching runs (files PREFIX, PREFIXb, ...) and
+"""mkruns.py NM.c PREFIX [env MKRUNS_KEEP=name1,name2 MKRUNS_EXCLUDE=name1,...]: split the near-match file into matching runs (files PREFIX, PREFIXb, ...) and
 print c_files.txt lines (text only; rodata lines separately)."""
 import re, sys, os, subprocess
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -50,7 +50,7 @@ tops = re.sub(r'\n{3,}', '\n\n', tops)
 order = sorted([n for n in fn if n in res], key=lambda n: res[n]['addr'])
 runs = []; cur = []
 for n in order:
-    if statusof(n) in ('OK', 'NOISE'): cur.append(n)
+    if statusof(n) in ('OK', 'NOISE') and n not in set(os.environ.get('MKRUNS_EXCLUDE', '').split(',')): cur.append(n)
     else:
         if cur: runs.append(cur)
         cur = []
