@@ -215,6 +215,8 @@ typedef struct {
     const uint8_t *ptmat[HUNTER_PARTS];  /* s16 tables from ptmat_tbl (0x3018F0) */
     flmat *pw[HUNTER_PARTS];         /* per part bone world matrices */
     flmat world;
+    fmt_blob tbl;                    /* plcom_tbl.bin */
+    int game;                        /* 1: posed by the game's motion code (player_work[0]) */
     uint8_t *mem[HUNTER_PARTS * 2 + 1];
 } hunter;
 
@@ -253,7 +255,10 @@ static int monster_load(monster *e, const char *amh, const char *tex, const char
 static void hunter_pose(hunter *h, float frame, const fl_light *L)
 {
     int s, i;
-    fl_skel_update(&h->master, frame);
+    if (h->game)
+        rt_player_pose(0, &h->master);   /* frame_move's motion player */
+    else
+        fl_skel_update(&h->master, frame);
     for (s = 0; s < HUNTER_PARTS; s++) {
         fl_model *m = &h->part[s];
         int nb = m->skel.nbone;
@@ -318,6 +323,7 @@ static int hunter_load(hunter *h, const int *num, int legs_id, int upper_id)
     if (!tbl)
         fprintf(stderr, "warning: no SLPM_654.95, armour parts will not follow the skeleton\n");
     tb = load("plcom_tbl.bin", &h->mem[k++]);
+    h->tbl = tb;
     if (tb.p) {
         fl_skel_set_motion(&h->master, 0, tb, legs_id, FMT_LE);   /* char0: legs */
         fl_skel_set_motion(&h->master, 1, tb, upper_id, FMT_LE);  /* char1: upper body */
@@ -506,6 +512,10 @@ int main(int argc, char **argv)
             float p[3] = { hx, gy, hz };
             rt_set_player(0, p);
             rt_debug_spawn(p);          /* RT_SPAWN test effects at the hunter */
+            if (pl.tbl.p) {             /* animate with the game's frame_init/frame_move */
+                rt_player_motion_start(0, pl.tbl.p, 1, 101);
+                pl.game = 1;
+            }
         }
     }
 
@@ -554,6 +564,8 @@ int main(int argc, char **argv)
          * have run their init and queued their prims) */
         while (ticks < 2 + (int)fr) {
             rt_game_move();
+            if (pl.game)
+                rt_player_motion_tick(0);
             ticks++;
         }
         fl_skel_update(&rathian.skel, fr);

@@ -354,3 +354,8 @@ set71_pos_tbl
 set72_pos_tbl
 set73_pos_tbl
 set75_pos_tbl
+motion_set_handle_tbl work
+em_mot_han_ofs work
+pl_mot_han_ofs work
+com_mot_han_ofs work
+lit_277_003584C0

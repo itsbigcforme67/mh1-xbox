@@ -77,6 +77,16 @@ void rt_set_camera(const float cam_world[16]);
  * Call after rt_game_init. */
 void rt_set_player(int no, const float pos[3]);
 
+/* The game's motion system (decompiled frame_init/frame_move over the
+ * native fl motion layer in rt_motion.c) for player no: builds the common
+ * hunter motion sets from plcom_tbl.bin (create_plcom_motion, once),
+ * starts legs_id on layer 0 and upper_id on layer 1. tick: frame_move.
+ * pose: pose an fl_skel (fl_skel *) from the motion player. */
+void rt_player_motion_start(int no, const uint8_t *plcom_tbl, int legs_id, int upper_id);
+int rt_player_motion_tick(int no);
+void rt_player_pose(int no, void *fl_skel_ptr);
+void rt_player_get(int no, float pos[3], int *ang_y);
+
 /* RT_SPAWN="eft13:N,eft17:N,shell22:N,eft14:N,eft08:N": spawn test effects at pos. */
 void rt_debug_spawn(const float pos[3]);
 

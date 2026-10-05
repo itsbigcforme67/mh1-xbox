@@ -107,5 +107,10 @@ s32 pl_flag_ck(FRW *, int);
 int aan_ctr_get(u8 *aan, int bank);
 u8 *aan_ofs_calc(u8 *aan, int no);
 void frame_init_b(FRW *w, int n);
+void frame_init(FRW *w, int frame, int blend, int n);
+int frame_move(FRW *w);
+void create_plcom_motion(void);
+void create_pl_motion(int pl);
+void create_em_motion(int no, s16 em);
 
 #endif

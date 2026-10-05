@@ -69,16 +69,7 @@ void reload_tex(int num, int id) { (void)num; (void)id; }
 u8 Pl_stg_ck(void *p) { return ((u8 *)p)[0x736] == game_w.stage; }
 u8 Em_stg_ck(void *p) { return ((u8 *)p)[0x736] == game_w.stage; }
 
-/* frame_check2 (0x126500): 0 while motion slot n of the object is not
- * running (+0x1C4 set), else whether frame f <= the slot's frame
- * (+0x19C + n * 0x50). */
-int frame_check2(void *p, int n, f32 f)
-{
-    u8 *b = p;
-    if (*(s32 *)(b + 0x1C4) != 0)
-        return 0;
-    return f <= *(f32 *)(b + 0x19C + n * 0x50);
-}
+/* frame_check2 now comes from the decompiled src/main/frame/f_frame_nm.c. */
 
 /* flvecApplyMat33_2(v, m): v = v * m (3x3), in place. */
 void flvecApplyMat33(f32 *out, f32 *v, f32 (*m)[4]);
@@ -90,3 +81,35 @@ void flvecApplyMat33_2(f32 *v, f32 (*m)[4]) { flvecApplyMat33(v, v, m); }
 void set_quake_sub(int kind, f32 *pos) { (void)kind; (void)pos; }
 void set_quake_sub2(int kind) { (void)kind; }
 void Em_se_req2(void *em, int a, int b, f32 *pos, int c, int d) { (void)em; (void)a; (void)b; (void)pos; (void)c; (void)d; }
+
+/* Callees of the game tick move() (src/main/frame/f_frame_nm.c, 0x1265E0)
+ * that are not ported yet. Weak, so a ported version wins when it is
+ * linked in. move() itself is not called by the host loop yet. */
+#define WEAK __attribute__((weak))
+WEAK void player_mv(void) {}
+WEAK void old_pos_save(void *w) { (void)w; }
+WEAK int enemy_mv(void *w) { (void)w; return 1; }
+WEAK void enemy_mk(void *w) { (void)w; }
+WEAK void em_ride_sub(void *w) { (void)w; }
+WEAK int npc_mv(void *w) { (void)w; return 1; }
+WEAK void npc_mk(void *w) { (void)w; }
+WEAK void item_check(void) {}
+WEAK void body_hit(void) {}
+WEAK void bgm_server(void) {}
+WEAK void HitWallPlayer(void *w, int a) { (void)w; (void)a; }
+WEAK void player_mk(void) {}
+WEAK void yure_move(void) {}
+WEAK void CameraMove(void) {}
+WEAK void light_move(void) {}
+WEAK void move_item(void) {}
+WEAK void move_stage(void) {}
+WEAK void Pit_mv(void) {}
+/* the host runs these from rt_game_move; move() is not called yet */
+WEAK void move_eft(void) {}
+WEAK void move_shell(void) {}
+WEAK void move_set(void) {}
+WEAK void move_senko(void) {}
+WEAK void move_smoke(void) {}
+/* Em_max_parts_get (game): number of motion part groups of a monster
+ * kind; create_em_motion builds 2 banks per group. Not ported. */
+WEAK u8 Em_max_parts_get(s16 em) { (void)em; return 3; }
