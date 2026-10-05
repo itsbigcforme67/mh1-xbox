@@ -40,18 +40,24 @@ typedef struct EMW {
     u8 kind;            /* 0x002 monster kind (set10_m checks 7) */
     u8 _pad003;
     u8 x04;             /* 0x004 shells end when >= 2 (shell02_m) */
-    u8 _pad005[2];
+    u8 x05;             /* 0x005 step within the current action (em29 dm00/move05) */
+    u8 _pad006;
     u8 x07;             /* 0x007 3 ends attached effects (eft07_m) */
     s32 work08;         /* 0x008 (as PLW; em08 stores a turn time here) */
     u16 id;             /* 0x00C */
     u8 _pad00E[2];
     u8 x10;             /* 0x010 */
-    u8 _pad011[0x14 - 0x11];
+    u8 _pad011[0x13 - 0x11];
+    u8 x13;             /* 0x013 spawn slot (em29_init places the monster by it) */
     u8 mode;            /* 0x014 4/5 end attached shells (shell19_m) */
     u8 x15;             /* 0x015 sub-mode (eft09_m) */
-    u8 _pad016[0x19 - 0x16];
+    u8 mode_old;        /* 0x016 mode copied each frame (em29 move 0) */
+    u8 x15_old;         /* 0x017 */
+    u8 _pad018;
     u8 x19;             /* 0x019 cleared when a shell is spawned */
-    u8 _pad01A[0xA0 - 0x1A];
+    u8 _pad01A;
+    u8 type;            /* 0x01B variant, row of the monster's type table (em29) */
+    u8 _pad01C[0xA0 - 0x1C];
     s32 ang[3];         /* 0x0A0 rotation, 0x10000 = 360 degrees (shell14_trans) */
     f32 pos[3];         /* 0x0AC world position (set20_m, as PLW) */
     f32 scale[3];       /* 0x0B8 model scale (eft09_t) */
@@ -83,7 +89,10 @@ typedef struct EMW {
     u8 _pad3B4[4];
     f32 adj_y;          /* 0x3B8 fly height correction per frame (fly_adjy2_suby) */
     f32 adj_z;          /* 0x3BC (fly_adjy2_subz) */
-    u8 _pad3C0[0x444 - 0x3C0];
+    u8 _pad3C0[0x40C - 0x3C0];
+    s16 x40C;           /* 0x40C set to 10 while dying (em29 move 5) */
+    s16 x40E;           /* 0x40E */
+    u8 _pad410[0x444 - 0x410];
     u8 ex[0x50C - 0x444]; /* 0x444 per-monster work: each emNN.c lays out its own
                          * struct here (EM07W...). The end is a guess. */
     struct EM_MDL *mdl; /* 0x50C model work */
@@ -91,7 +100,11 @@ typedef struct EMW {
     f32 x5AC;           /* 0x5AC height used for set20's shell */
     u8 _pad5B0[0x617 - 0x5B0];
     s8 x617;            /* 0x617 -1: no ... (em08_fly_act_set) */
-    u8 _pad618[0x736 - 0x618];
+    u8 _pad618[0x6FF - 0x618];
+    u8 x6FF;            /* 0x6FF non-zero: main_sub runs twice this frame (em29_main) */
+    u8 _pad700[0x734 - 0x700];
+    u8 x734;            /* 0x734 3: monster takes commands (em29_main) */
+    u8 _pad735;
     u8 stg;             /* 0x736 */
     u8 _pad737[0x74C - 0x737];
     u32 x74C;           /* 0x74C flags; 0xF000000F stops fly_adjz2 (em16) */
@@ -122,9 +135,13 @@ typedef struct EMW {
     s8 x885;            /* 0x885 */
     u8 _pad886[0x888 - 0x886];
     u8 x888;            /* 0x888 */
-    u8 _pad889[0x8B6 - 0x889];
+    u8 _pad889[0x88B - 0x889];
+    u8 x88B;            /* 0x88B */
+    u8 _pad88C[0x8B6 - 0x88C];
     u8 x8B6;            /* 0x8B6 eyes shown (eft07) */
-    u8 _pad8B7[0x8C3 - 0x8B7];
+    u8 _pad8B7[0x8BB - 0x8B7];
+    u8 x8BB;            /* 0x8BB set to 10 while ex+4 is non-zero (em29_main) */
+    u8 _pad8BC[0x8C3 - 0x8BC];
     u8 x8C3;            /* 0x8C3 0: em_cdm_act_flag_ck runs before an action is set */
     f32 x8C4[4];        /* 0x8C4 indexed by x883 (size a guess) */
     f32 x8D4[4];        /* 0x8D4 per player (indexed by x617; em01 atk 4), size a guess */
@@ -134,7 +151,9 @@ typedef struct EMW {
     struct EM_AREA *area; /* 0x940 per-stage data (em08_senkai_pos_no) */
     u8 _pad944[0x959 - 0x944];
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
-    u8 _pad95A[0x9EA - 0x95A];
+    u8 _pad95A[0x9E1 - 0x95A];
+    u8 x9E1;            /* 0x9E1 (em29_init sets 5) */
+    u8 _pad9E2[0x9EA - 0x9E2];
     s8 x9EA;            /* 0x9EA trap state (shell12_m) */
     u8 _pad9EB[0x9F3 - 0x9EB];
     u8 x9F3;            /* 0x9F3 0: em15 fly 24 falls back to act 0/7 */
