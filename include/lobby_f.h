@@ -288,4 +288,12 @@ void Pit_mv_lb();
 void Lb_cockpit_move();
 int Lb_check_pl_load();
 int add_prim();
+typedef struct BSCELL { u8 p[0x5C]; } BSCELL;   /* browser table-cell record (0x5C bytes): indexing an ARRAY of structs gives idx*size + base (addu order) */
+typedef struct BSCELL2 { u8 p[2]; } BSCELL2;
+typedef struct BSCELL4 { u8 p[4]; } BSCELL4;
+typedef struct BSCELL8 { u8 p[8]; } BSCELL8;
+#define BSC2(T, b, i, d) (*(T *)(((BSCELL2 *)((u8 *)(b) + (d) / 2 * 2))[i].p + (d) % 2))
+#define BSC4(T, b, i, d) (*(T *)(((BSCELL4 *)((u8 *)(b) + (d) / 4 * 4))[i].p + (d) % 4))
+#define BSC8(T, b, i, d) (*(T *)(((BSCELL8 *)((u8 *)(b) + (d) / 8 * 8))[i].p + (d) % 8))
+#define BSC(T, b, i, d) (*(T *)(((BSCELL *)((u8 *)(b) + (d) / 0x5C * 0x5C))[i].p + (d) % 0x5C))
 #endif

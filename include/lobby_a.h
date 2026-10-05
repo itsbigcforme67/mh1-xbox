@@ -29,7 +29,9 @@ typedef struct LBSYS {         /* lb_sys 0x90 bytes */
     u8 _pad70;
     s8 x71;                    /* 0x71 */
     s8 x72;                    /* 0x72 set01 message timer */
-    u8 _pad73[5];
+    u8 _pad73;
+    s16 x74;                   /* 0x74 */
+    u8 _pad76[2];
     s8 x78;                    /* 0x78 */
     u8 _pad79[3];
     s32 x7C;                   /* 0x7C */
@@ -287,4 +289,12 @@ void Pit_mv_lb();
 void Lb_cockpit_move();
 int Lb_check_pl_load();
 int add_prim();
+typedef struct BSCELL { u8 p[0x5C]; } BSCELL;   /* browser table-cell record (0x5C bytes): indexing an ARRAY of structs gives idx*size + base (addu order) */
+typedef struct BSCELL2 { u8 p[2]; } BSCELL2;
+typedef struct BSCELL4 { u8 p[4]; } BSCELL4;
+typedef struct BSCELL8 { u8 p[8]; } BSCELL8;
+#define BSC2(T, b, i, d) (*(T *)(((BSCELL2 *)((u8 *)(b) + (d) / 2 * 2))[i].p + (d) % 2))
+#define BSC4(T, b, i, d) (*(T *)(((BSCELL4 *)((u8 *)(b) + (d) / 4 * 4))[i].p + (d) % 4))
+#define BSC8(T, b, i, d) (*(T *)(((BSCELL8 *)((u8 *)(b) + (d) / 8 * 8))[i].p + (d) % 8))
+#define BSC(T, b, i, d) (*(T *)(((BSCELL *)((u8 *)(b) + (d) / 0x5C * 0x5C))[i].p + (d) % 0x5C))
 #endif
