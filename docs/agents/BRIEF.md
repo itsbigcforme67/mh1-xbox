@@ -38,7 +38,7 @@ single functions.
 docs/agents/agent-A.md, agent-B.md, agent-C.md, agent-D.md hold dozens of MWCC matching
 tricks and struct conventions. Monster (em) code: follow agent-C.md (per-monster struct
 cast from EMW.ex at EMW+0x444, file-static helpers with address-suffixed names are
-`static` in C with the plain name). `python3 /tmp/claude-1000/align.py FILE FUNC` shows
+`static` in C with the plain name). `python3 tools/align.py FILE FUNC` shows
 only the real differences (ignores relocations and branch-address shifts).
 Before starting a new file: `git merge main` in your worktree, then `tools/rebuild.sh`.
 
@@ -60,13 +60,13 @@ Before starting a new file: `git merge main` in your worktree, then `tools/rebui
   whole file's near-match C (not built, kept for later). File-static functions/data become
   global when a file is split. The unmatched functions stay as asm.
 - Helpers:
-  - `python3 /tmp/claude-1000/declbf.py FILE FUNC [skip]` brute-forces declaration order
+  - `python3 tools/declbf.py FILE FUNC [skip]` brute-forces declaration order
     (very often fixes register-allocation diffs).
-  - `python3 /tmp/claude-1000/dfilt.py FUNC MINADDR CTX` filters check.py -v output.
+  - `python3 tools/dfilt.py FUNC MINADDR CTX` filters check.py -v output.
   - Permuter: `timeout 1200 python3 tools/perm.py game FUNC FILE -j2 --stop-on-zero`
     (results in build/perm/FUNC/output-SCORE-N/). The machine has 8 cores and 7 GB RAM
     shared by four agents: run AT MOST ONE permuter at a time, with -j2, always under a
-    timeout, in the background. Stop one with `/tmp/claude-1000/killperm.sh FUNC` run alone.
+    timeout, in the background. Stop one with `tools/killperm.sh FUNC` run alone.
     Don't sink more than ~30 minutes into one stubborn function: leave it as a near-match
     and move on; the coordinator may return to it later.
 
