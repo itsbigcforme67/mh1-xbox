@@ -12,7 +12,7 @@ OUT = os.path.join(ROOT, 'build/lbauto'); os.makedirs(OUT, exist_ok=True)
 GP = {'-0x432C': 'cw'}
 GPV = 0x38EB70
 SYMS = []
-for l in open(os.path.join(ROOT, 'config/symbols/main.txt')):
+for l in open(os.path.join(ROOT, 'config/symbols/main.txt')).readlines() + open(os.path.join(ROOT, 'config/symbols/lobby.txt')).readlines():
     m = re.match(r'(\S+) = 0x([0-9A-F]+); // (?:type:\w+ )?size:0x([0-9A-F]+)', l)
     if m: SYMS.append((int(m[2], 16), m[1], int(m[3], 16)))
 SYMS.sort()
@@ -24,15 +24,68 @@ def gpsym(T, off):
             return a, n, sz, addr
     return None
 
+def _balanced(s, i):
+    d = 0
+    for j in range(i, len(s)):
+        if s[j] == '(': d += 1
+        elif s[j] == ')':
+            d -= 1
+            if d == 0: return j + 1
+    raise ValueError
+
+def conv_fields(s, decls):
+    out = []; i = 0; key = 'M2C_FIELD('
+    while True:
+        j = s.find(key, i)
+        if j < 0:
+            out.append(s[i:]); break
+        out.append(s[i:j])
+        e = _balanced(s, j + len(key) - 1)
+        inner = conv_fields(s[j + len(key):e - 1], decls)
+        parts, d, cur = [], 0, ''
+        for ch in inner:
+            if ch in '([': d += 1
+            elif ch in ')]': d -= 1
+            if ch == ',' and d == 0: parts.append(cur.strip()); cur = ''
+            else: cur += ch
+        parts.append(cur.strip())
+        if len(parts) == 3:
+            base, ty, off = parts
+            ty = re.sub(r'\s*\*$', '', ty).strip()
+            if base == 'saved_reg_gp':
+                m = re.match(r'(-?0x[0-9A-Fa-f]+)$', off)
+                out.append(gprep2(ty, m.group(1) if m else off, decls) if m else 'GPBAD')
+            else:
+                out.append('F(%s, %s, %s)' % (ty, base, off))
+        else:
+            out.append(s[j:e])
+        i = e
+    return ''.join(out)
+
+def gprep2(T, off, decls):
+    ptr = '*' in T or T.startswith('void')
+    T = T.replace('*', '').strip()
+    if off in GP: return '(%s)cw' % ('u8 *' if T in ('void', 'u8', 's8') else T)
+    r = gpsym(T, off)
+    if not r: return 'GPBAD'
+    a, n, sz, addr = r
+    if n == 'cw': return 'cw'
+    TT = 'u8 *' if ptr else T
+    size = 4 if ptr else TS.get(T, 4)
+    if addr == a and size <= sz:
+        decls.append('extern %s %s;' % (TT, n)); return n
+    decls.append('extern u8 %s[%d];' % (n, max(sz, 1)))
+    return '(*(%s *)(%s + %d))' % (TT, n, addr - a)
+
 def make_ah():
-    src = open(os.path.join(ROOT, 'include/lobby.h')).read()
+    src = open(os.path.join(ROOT, 'include/lobby_f.h')).read()
     out = []
     for l in src.split('\n'):
         m = re.match(r'^((?:[\w\*]+\s+)+\**)(\w+)\((.*)\);\s*$', l)
         if m and not l.startswith(('#', 'typedef', 'extern')):
             out.append('%s%s();' % (m.group(1), m.group(2)))
         else: out.append(l)
-    t = '\n'.join(out).replace('#ifndef LOBBY_H\n#define LOBBY_H', '#ifndef LOBBY_A_H\n#define LOBBY_A_H\n/* generated from lobby.h by tools/lbauto.py: function prototypes replaced by K&R declarations */')
+    t = '\n'.join(out).replace('#ifndef LOBBY_F_H\n#define LOBBY_F_H', '#ifndef LOBBY_A_H\n#define LOBBY_A_H\n/* generated from lobby.h by tools/lbauto.py: function prototypes replaced by K&R declarations */')
     open(os.path.join(ROOT, 'include/lobby_a.h'), 'w').write(t)
 make_ah()
 
@@ -58,6 +111,7 @@ def to_int_mode(body):
     return body
 
 def conv(s, decls):
+    s = conv_fields(s, decls)
     def gprep(m):
         T = m.group(1); ptr = m.group(0).count('**') > 0 or 'void' in T
         off = m.group(2)
@@ -79,6 +133,8 @@ def conv(s, decls):
     s = re.sub(r'&(\w+) \+ ', r'(u8 *)&\1 + ', s)
     s = re.sub(r'= &(\w+);', r'= (u8 *)&\1;', s)
     s = re.sub(r'\bs64 (arg\d|var_\w+|temp_\w+)', r'int \1', s)
+    for reg, n in (('$t0', 4), ('$t1', 5), ('$t2', 6), ('$t3', 7)):
+        s = re.sub(r'\*?M2C_ERROR\(/\* Read from unset register \%s \*/\)' % reg.replace('$', '$'), 'arg%d' % n, s)
     s = s.replace('M2C_UNK', 'int')
     s = re.sub(r'\(s64\) \(\(s64\) (\w+) << 0x30\) >> 0x30', r'(s16)\1', s)
     s = re.sub(r'\(s64\) \((\w+) << 0x38\) >> 0x38', r'(s8)\1', s)
@@ -118,8 +174,10 @@ def attempt(fn, mode=''):
         for x in params:
             q = re.search(r'arg(\d)$', x)
             if q: idx[int(q.group(1))] = x
-        if idx and max(idx) + 1 != len(params) or (idx and len(idx) != len(params)):
-            new = [idx.get(k, 'int arg%d' % k) for k in range(max(idx) + 1)]
+        used = {int(x) for x in re.findall(r'\barg(\d)\b', body[mm.end():])}
+        top = max(set(idx) | used) if (idx or used) else -1
+        if top >= 0 and (top + 1 != len(params) or len(idx) != len(params)):
+            new = [idx.get(k, 'int arg%d' % k) for k in range(top + 1)]
             body = mm.group(1) + ', '.join(new) + mm.group(3) + body[mm.end():]
     if 'M2C_ERROR' in body or 'GPBAD' in body or 'M2C_' in body:
         return fn, {'status': 'unsupported'}
@@ -140,7 +198,7 @@ def attempt(fn, mode=''):
             ex2 = extra
             if mode == 'int':
                 ex2 = [re.sub(r'^extern (?:\w+\s+)*\*+\s*(\w+);', r'extern int \1;', e) for e in extra]
-            src = ('#include "lobby_a.h"\n' if mode == 'int' else '#include "lobby.h"\n') + '\n'.join(ex2) + '\n' + body
+            src = ('#include "lobby_a.h"\n' if mode == 'int' else '#include "lobby_f.h"\n') + '\n'.join(ex2) + '\n' + body
             open(path, 'w').write(src)
             p = subprocess.run(['python3', 'tools/check.py', path, '--module', 'lobby'], capture_output=True, text=True, cwd=ROOT)
             out = p.stdout + p.stderr

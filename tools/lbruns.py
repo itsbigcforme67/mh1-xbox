@@ -13,7 +13,7 @@ out = subprocess.run(['python3', 'tools/check.py', nm, '--module', 'lobby'], cap
 force = set(filter(None, os.environ.get('FORCE_OK', '').split(',')))
 rows = []
 for l in out.split('\n'):
-    m = re.match(r'^(?:OK|--)\s+(\S+)\s+lobby\s+0x([0-9A-F]+)\s+(\d+) bytes', l)
+    m = re.match(r'^(?:OK|--)\s+(\S+)\s+(?:lobby|game)\s+0x([0-9A-F]+)\s+(\d+) bytes', l)
     if m and (l.startswith('OK') or m.group(1) in force):
         a = int(m.group(2), 16); sz = int(m.group(3))
         if any(s <= a < e for s, e in reg):
@@ -29,14 +29,14 @@ for r in rows:
         cur = [r]
 if cur: runs.append(cur)
 n = 1
-while os.path.exists('src/lobby/%s%02d.c' % (prefix, n)): n += 1
+while os.path.exists('src/lobby/f/%s%02d.c' % (prefix, n)): n += 1
 lines = []
 for run in runs:
     name = '%s%02d' % (prefix, n); n += 1
     s, e = run[0][1], run[-1][1] + run[-1][2]
     hdr = '%s - %s 0x%08X-0x%08X: %s. Whole file in %s.' % (name, cmt, s, e, ', '.join(r[0] for r in run), os.path.basename(nm))
-    subprocess.run(['python3', 'tools/mkrun2.py', nm, 'src/lobby/%s.c' % name, hdr] + [r[0] for r in run], check=True)
-    lines.append('lobby 0x%08X 0x%08X %s' % (s, e, name))
+    subprocess.run(['python3', 'tools/mkrun2.py', nm, 'src/lobby/f/%s.c' % name, hdr] + [r[0] for r in run], check=True)
+    lines.append('lobby 0x%08X 0x%08X f/%s' % (s, e, name))
     print(lines[-1], '#', ', '.join(r[0] for r in run))
 with open('config/c_files.txt', 'a') as f:
     f.write('\n'.join(lines) + ('\n' if lines else ''))

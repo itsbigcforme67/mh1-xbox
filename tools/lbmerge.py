@@ -18,7 +18,7 @@ def src(nm):
     raise SystemExit('no source for ' + nm)
 def split(nm):
     s = src(nm)
-    s = s.replace('#include "lobby.h"\n', '').replace('#include "lobby_a.h"\n', '')
+    s = s.replace('#include "lobby.h"\n', '').replace('#include "lobby_f.h"\n', '').replace('#include "lobby_a.h"\n', '')
     m = re.search(r'^[\w\*\s]+\b%s\([^;{]*\)(?:\n(?:[\w \*]+;\n)+)?\s*\{\n' % re.escape(nm), s, re.M)
     return [l.strip() for l in s[:m.start()].split('\n') if l.strip()], s[m.start():].strip() + '\n'
 reg = []
@@ -36,9 +36,9 @@ for n in names:
         cur = [n]
 if cur: runs.append(cur)
 num = 1
-while os.path.exists('src/lobby/%s%02d.c' % (prefix, num)): num += 1
+while os.path.exists('src/lobby/f/%s%02d.c' % (prefix, num)): num += 1
 def hdr_of(nm):
-    return 'lobby_a.h' if '#include "lobby_a.h"' in src(nm) else 'lobby.h'
+    return 'lobby_a.h' if '#include "lobby_a.h"' in src(nm) else 'lobby_f.h'
 def build(group, path):
     decls = []; bodies = []
     if len(set(hdr_of(n) for n in group)) > 1:
@@ -58,9 +58,9 @@ def ok(path, group):
 lines = []
 def emit(group):
     global num
-    path = 'src/lobby/%s%02d.c' % (prefix, num)
+    path = 'src/lobby/f/%s%02d.c' % (prefix, num)
     if build(group, path) and ok(path, group):
-        lines.append('lobby 0x%08X 0x%08X %s%02d' % (info[group[0]][0], info[group[-1]][0] + info[group[-1]][1], prefix, num))
+        lines.append('lobby 0x%08X 0x%08X f/%s%02d' % (info[group[0]][0], info[group[-1]][0] + info[group[-1]][1], prefix, num))
         print(lines[-1], '#', ', '.join(group)); num += 1
     else:
         if os.path.exists(path): os.remove(path)
