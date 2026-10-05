@@ -24,6 +24,11 @@ typedef struct PLSW {
     u16 pow[2];         /* 0x20 */
 } PLSW;
 
+typedef struct PL_HAND {
+    u8 _pad00[0x70];
+    f32 pos[3];         /* 0x70 */
+} PL_HAND;
+
 typedef struct PLW {
     u8    be_flag;       /* 0x000 in use (set05_m) */
     u8    x01;           /* 0x001 (set05_m) */
@@ -31,7 +36,9 @@ typedef struct PLW {
     s32   work04;        /* 0x004 */
     s32   work08;        /* 0x008 */
     u16   id;            /* 0x00C */
-    u8 _pad00E[0x4];
+    u8 _pad00E[0x2];
+    u8    x10;           /* 0x010 copied to shells (shell03_set) */
+    u8 _pad011;
     u8    flag12;        /* 0x012 */
     u8 _pad013[0x1];
     s8    flag14;        /* 0x014 */
@@ -42,7 +49,9 @@ typedef struct PLW {
     u8 _pad078[0xA0 - 0x78];
     s32   ang[3];        /* 0x0A0 rotation, 0x10000 = 360 degrees (set05_m, as EMW) */
     f32   pos[3];        /* 0x0AC world position (set16_m, shell00_set) */
-    u8 _pad0B8[0x198 - 0xB8];
+    u8 _pad0B8[0x158 - 0xB8];
+    struct PL_HAND *hand;  /* 0x158 thrown items start from hand->pos (shell03_set) */
+    u8 _pad15C[0x198 - 0x15C];
     s32   chr_no0;       /* 0x198 */
     u8 _pad19C[0x4];
     f32   chr_spd0;      /* 0x1A0 */

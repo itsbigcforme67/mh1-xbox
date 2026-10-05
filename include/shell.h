@@ -31,8 +31,8 @@ typedef struct SHLW {
     s32 ang[3];         /* 0x24 owner's rotation at spawn */
     VEC3 pos2;          /* 0x30 */
     u8 _pad3C[0x48 - 0x3C];
-    f32 scale;          /* 0x48 shell14: grows while charging */
-    u8 _pad4C[0x60 - 0x4C];
+    f32 rate[3];        /* 0x48 velocity (shell03); shell14 keeps its scale in rate[0] */
+    f32 rate_g[3];      /* 0x54 acceleration, added by shell_rate_add_g */
     u8 x60;             /* 0x60 */
     u8 x61;             /* 0x61 */
     u8 _pad62[0x6A - 0x62];

@@ -6,7 +6,8 @@
 
 typedef struct CLAY {
     s32 handle;             /* 0x00 passed to flExecuteClay; -1 = none */
-    u8 _pad04[0x84];
+    s32 mat_num;            /* 0x04 materials used (shell03_trans) */
+    s32 mat_no[32];         /* 0x08 indices into the model set's material table */
     s32 attr;               /* 0x88 passed to clay_attr_set */
 } CLAY;
 

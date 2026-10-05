@@ -108,7 +108,7 @@ static void shell14_i00(SHLW *sh) {
     sh->xB = 0;
     sh->x7E = 340;
     sh->char0 = 30;
-    sh->scale = 0.0f;
+    sh->rate[0] = 0.0f;
 }
 
 static void shell14_m00(SHLW *sh) {
@@ -116,10 +116,10 @@ static void shell14_m00(SHLW *sh) {
 
     switch (sh->x05) {
     case 0:
-        sh->scale += 1.0f / 30.0f;
+        sh->rate[0] += 1.0f / 30.0f;
         if (--sh->char0 <= 0) {
             sh->x05++;
-            sh->scale = 1.0f;
+            sh->rate[0] = 1.0f;
         }
         if (em09_status_ck(em) != 1) {
             sh->be_flag ^= 1;
@@ -225,7 +225,7 @@ static void shell14_trans(PRIM *pr) {
 
     if (sh->be_flag != 0 && sh->stg == game_w.stage && mw != 0 && mw->flag != 0) {
         m = mw->mat;
-        flmatMakeScale(&mat, sh->scale, sh->scale, sh->scale);
+        flmatMakeScale(&mat, sh->rate[0], sh->rate[0], sh->rate[0]);
         flmatSetTrans(&mat, pr->pos[0], pr->pos[1], pr->pos[2]);
         flmatRotXYZ33(&mat, 0.0f, DEG2RAD(ANG2DEG(em->ang[1])), 0.0f);
         cl = &mw->clay[item_chr_tbl_00389C10[sh->arg]];
