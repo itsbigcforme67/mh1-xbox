@@ -25,6 +25,11 @@ void trans_pit_1_lb();
 void trans_pit_2_lb();
 void func_5B3D70();
 void func_609750();
+int Game_clear_ck(int);
+void Quest_retire_set(void);
+int func_5BD520(void);
+void PageSelect(u8 *, int, int);
+extern u8 quest_w[];
 void font_print_uf(char *, int);
 u8 *func_5B4D30(u8);
 
@@ -63,12 +68,12 @@ void Pit_init(void) {
     PitMenu.x14 = 0;
     lpPit->map_sx = 1.0f / map_size[game_w.x2E][0];
     lpPit->map_sy = 1.0f / map_size[game_w.x2E][1];
-    lpPit->x34[3] = -1;
-    lpPit->x34[2] = -1;
-    lpPit->x34[1] = -1;
-    lpPit->x34[0] = -1;
-    *(s8 *)((u8 *)lpPit + 0x3E) = 0;
-    *(s8 *)((u8 *)lpPit + 0x3F) = 0;
+    lpPit->x3A = -1;
+    lpPit->x38 = -1;
+    lpPit->x36 = -1;
+    lpPit->x34 = -1;
+    lpPit->x3E = 0;
+    lpPit->x3F = 0;
     lpPit->x41 = 0;
     PitMenu.x10 = 0;
     lpPit->x84 = 0;
@@ -87,10 +92,10 @@ void Pit_init(void) {
     PitMenu.x00 = 0;
     PitMenu.x08 = -1;
     PitMenu.x06 = 0;
-    lpPit->x10[0] = -1;
-    lpPit->x10[1] = -1;
-    lpPit->x10[2] = -1;
-    lpPit->x10[3] = -1;
+    lpPit->x10 = -1;
+    lpPit->x12 = -1;
+    lpPit->x14 = -1;
+    lpPit->x16 = -1;
     if (game_w.x1DC == 1) {
         func_5B3D70();
         func_609750();
@@ -121,11 +126,11 @@ void Pit_reset(void) {
     PitMenu.open = 0;
     PitMenu.x0F = z;
     PitMenu.x0C = 0;
-    lpPit->x34[3] = -1;
-    lpPit->x34[2] = -1;
-    lpPit->x34[1] = -1;
-    lpPit->x34[0] = -1;
-    *(s8 *)((u8 *)lpPit + 0x3F) = 0;
+    lpPit->x3A = -1;
+    lpPit->x38 = -1;
+    lpPit->x36 = -1;
+    lpPit->x34 = -1;
+    lpPit->x3F = 0;
     lpPit->x41 = 0;
     PitMenu.x10 = 0;
     lpPit->x84 = 0;
@@ -140,10 +145,10 @@ void Pit_reset(void) {
     PitMenu.x00 = 0;
     PitMenu.x08 = -1;
     PitMenu.x06 = 0;
-    lpPit->x10[0] = -1;
-    lpPit->x10[1] = -1;
-    lpPit->x10[2] = -1;
-    lpPit->x10[3] = -1;
+    lpPit->x10 = -1;
+    lpPit->x12 = -1;
+    lpPit->x14 = -1;
+    lpPit->x16 = -1;
     if (game_w.x1DC == 1) {
         func_5B3D70();
         func_609750();
@@ -268,4 +273,90 @@ u16 pit_key_repeat(u16 now, u16 hold) {
         return lpPit->key &= h;
     }
     return 0;
+}
+
+void menu_init(void) {
+    lpPit->x05 = 1;
+    lpPit->x40 = 0;
+    GWS8(0xE) = 1;
+    PitMenu.x10 = 1;
+    PitMenu.x11 = 0;
+    PitMenu.x12 = lpPit->x41;
+    if (Online_ck() == 1 && lpPit->x41 == 9) {
+        PitMenu.x12 = 10;
+    }
+    lpPit->x84 = 0;
+}
+
+int menu_retire_i(void) {
+    if (Game_clear_ck(0) == 1) {
+        return 1;
+    }
+    lpPit->x42 = 0;
+    lpPit->yn = 1;
+    PitMenu.x10 = 0;
+    return 0;
+}
+
+int menu_retire_mv(int sw) {
+    if (Game_clear_ck(0) == 1) {
+        return 0x8000;
+    }
+    if (lpPit->x42 == 0) {
+        select_yes_no(sw, 0xC00);
+        if ((u16)sw & 0x20) {
+            if (lpPit->yn == 0) {
+                Quest_retire_set();
+                lpPit->x42++;
+                return 0;
+            }
+            return 0x40;
+        }
+        return sw;
+    }
+    return 0;
+}
+
+int juchu_chk(void) {
+    if (game_w.x1DC == 1 && func_5BD520() == 0) {
+        lpPit->x46 = 0;
+        return 0;
+    }
+    lpPit->x46 = 1;
+    return 1;
+}
+
+void Menu_quest_i(void) {
+    if (FLDS16(quest_w, 0x24) == 0x63) {
+        lpPit->x47 = 4;
+    } else if (FLDS16(quest_w, 8) == 0x65 || FLDS16(quest_w, 8) == 0x6B || FLDS16(quest_w, 8) == 0xCE) {
+        lpPit->x47 = 3;
+    } else if (FLD32(quest_w, 0x40) & 1) {
+        lpPit->x47 = 0;
+    } else if (FLD32(quest_w, 0x40) & 2) {
+        lpPit->x47 = 1;
+    } else if (FLD32(quest_w, 0x40) & 4) {
+        lpPit->x47 = 2;
+    }
+    juchu_chk();
+    lpPit->x43 = 0;
+    PitMenu.x10 = 0;
+}
+
+int Menu_quest_mv(int sw) {
+    PitMenu.x10 = 0;
+    if (juchu_chk() == 1) {
+        PageSelect(&lpPit->x43, sw, 4);
+    }
+    return sw;
+}
+
+s16 get_pl_item_type(u8 no) {
+    return ((s16 *)((u8 *)lpPit->pl + 0x828))[no * 2];
+}
+
+void menu_item_back_sub(void) {
+    lpPit->x48--;
+    se_req(7, 0x14, 0);
+    PitMenu.x12 = get_pl_item_type(lpPit->x49) + 0x18;
 }
