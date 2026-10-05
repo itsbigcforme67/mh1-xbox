@@ -200,3 +200,19 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
 1 instruction off, em20_nm.c, a 15-minute permuter run found nothing).
 153 of 154 functions byte-match; every registered file passes
 `tools/rebuild.sh game` (game OK).
+
+## Second assignment: g_em* gap files, f_em.s, Em_Master_Change, Em_Taisei_Damage_Check
+
+- horm (turn-to-face-player) code: em01_horm.c, em14_horm.c, em17_horm.c,
+  em20_horm.c, all match. em01 checks em_frame_check2 before re-picking the
+  turn animation; the others only test x194. em17 uses animation 2 instead
+  of 3. em14_horm.c also has em14_suna_ck / em14_sasari_ck. The stretch
+  after each horm file holds the next monster's local_area_move_init
+  (em15/em17/em21), kept in the same C file because the real boundaries
+  are unknown.
+- local_area_move_init (em08/em14/em27 standalone, em15/em17/em21 in the
+  horm files): `em->stay_tm = emNN_stay_timer_tbl[stg]; em->runaway_tm =
+  emNN_runaway_timer_tbl[stg];` (EMW 0x94A/0x94C, new).
+- New EMW fields: horm_ang (0x3A4), x3F4, stay_tm, runaway_tm, x95D.
+- Lesson (horm_main): `((a + 0x200) & 0xFFFF) < 0x400` on a u32 gives the
+  unsigned sltiu; `(u16)(a + 0x200) < 0x400` promotes to int (slti).

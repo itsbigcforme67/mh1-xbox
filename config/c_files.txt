@@ -160,3 +160,10 @@ game:rodata 0x006853B0 0x00685404 eft/eft04
 game 0x00542680 0x00542D34 eft/eft04b
 game 0x0053BA50 0x0053FFC4 eft/eft17
 game:rodata 0x00685230 0x006853A4 eft/eft17
+game 0x0057DE30 0x0057E120 em/em01_horm
+game 0x0059A240 0x0059A27C em/em08_area
+game 0x005B5250 0x005B528C em/em14_area
+game 0x005C2640 0x005C2A7C em/em14_horm
+game 0x005D9BD0 0x005D9EDC em/em17_horm
+game 0x005FFCC0 0x005FFFCC em/em20_horm
+game 0x0060D400 0x0060D43C em/em27_area
