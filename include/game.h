@@ -24,7 +24,9 @@ typedef struct GAME_W {
     u8 _pad0D2[0x1B2 - 0xD2];
     u8 x1B2;            /* 0x1B2 set05: kind-2 fixtures fire once set */
     u8 flag1B3;         /* 0x1B3 bit 0 hides set04 on stage 28 */
-    u8 _pad1B4[0x1DE - 0x1B4];
+    u8 _pad1B4[0x1DC - 0x1B4];
+    u8 x1DC;            /* 0x1DC non-zero in the lobby? eft01_t then reads lobby.bin tables */
+    u8 _pad1DD;
     u8 info_seq;        /* 0x1DE set01 message sequence number (7 bits) */
     u8 info_now;        /* 0x1DF set01 message being shown, 0xFF = none */
     u8 _pad1E0[0x1E6 - 0x1E0];

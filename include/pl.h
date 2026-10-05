@@ -88,7 +88,8 @@ typedef struct PLW {
     s16   work398;       /* 0x398 */
     u16   cnt39A;        /* 0x39A every 3rd hit applies ailments (shell00_i) */
     s32   work39C;       /* 0x39C */
-    u8 _pad3A0[0x14];
+    u8 _pad3A0[0x10];
+    void *x3B0;          /* 0x3B0 player marked by eft26 (eft26_m); type unknown */
     s32   work3B4[6];    /* 0x3B4 */
     u8 _pad3CC[0x4];
     s8    work3D0;       /* 0x3D0 */
