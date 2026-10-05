@@ -20,7 +20,8 @@ lib32gcc-13-dev into build/sysroot32). No other libraries.
 
     build/pc/mhview disc/mh1
 
-`disc/mh1` must contain `AFS_DATA.AFS` and `SLPM_654.95`. The ELF and the
+`disc/mh1` must contain `AFS_DATA.AFS` and `SLPM_654.95` (and `AFS00.AFS` /
+`AFS01.AFS` for sound; without them the viewer runs silent). The ELF and the
 game.bin overlay (an AFS_DATA entry, stored uncompressed) are read for the
 hunter's part-to-bone table (ptmat_tbl, 0x3018F0) and the game data tables
 the decompiled C uses (src/pc/rt/rt_data.c).
@@ -56,6 +57,8 @@ offscreen in a hidden window, reads the back buffer and writes a PNG.
 | `--play` | the pad (controller + keyboard) drives the hunter; follow camera |
 | `--input SCRIPT` | scripted pad for tests, implies --play: `idle*10,up*50,left+cross*15` = ticks per step; names in src/pc/pad/pad.h |
 | `--follow D,H,P` | `--play` camera: distance D behind, H above the hunter, pitch P (default 900,450,-0.3); the yaw is `--cam`'s |
+| `--audio-dump FILE.wav` | no audio device; mix 1/30 s per game tick into a 48 kHz stereo wav (for checking sound offscreen) |
+| `--mute` | no sound at all |
 | `--sw-trace` | print, per tick, the pad state the game's sw_set_sub gave player 0 and the player's position/angle |
 
 Verified 5 Oct 2026 with build/show/pc_viewer.png and
@@ -73,6 +76,8 @@ pc_viewer_close_0.5.png / _2.0.png:
 | `src/pc/gfx/gfx.h` | the graphics interface: textures, render states, clays |
 | `src/pc/gfx/gfx_gl.c` | its OpenGL 1.x fixed-function implementation (SDL2 window) |
 | `src/pc/fl/` | the port's "fl" layer: `fl_model` (AMO → clays, CPU skinning, VU1-style lighting), `fl_skel` (AHI + AAN motions → bone matrices), `flmat.h` (fl row-vector matrices) |
+| `src/pc/audio/` | the audio interface: `audio.h`, `audio_mix.c` (portable mixer: 48 voices + 2 streams, 48 kHz stereo), `audio_sdl.c` (SDL2 device) |
+| `src/pc/fmt/snd.c` | sound packs (SCEI HD/BD + TSBD, PS2 ADPCM) and ADX decoding (docs/formats/audio.md) |
 | `src/pc/rt/` | the port runtime: what decompiled game C expects from the PS2 side (see below) |
 | `src/pc/viewer.c` | the app: scene setup, hunter assembly (SetPartsTrans), camera, screenshot PNG writer |
 | `tools/build_pc.sh` | build script; output in build/pc/ (gitignored) |
@@ -320,6 +325,49 @@ of view is used as the vertical fov [guess]). `--follow D,H,P` or
 - x86 hazard found: a callee returning float that a caller declares void
   (k_HitWallCamera in cam_nm.c) leaves a value on the x87 stack; after
   eight calls the FPU stack overflows. Such declarations must match.
+
+### Sound
+
+docs/formats/audio.md has the formats and the game's sound calls;
+`tools/snd_dump.py` decodes packs and ADX to .wav (build/audio/).
+- src/pc/rt/rt_snd.c: se_req / se_req2 / Pl_se_req2 / Em_se_req2 /
+  Pl_se_req2_com and flSndRequest / flSndChange written from the asm
+  (distance volume curves, screen pan, random volume/pitch, chained
+  codes); host code then does the IOP driver's part (TSBD program + id,
+  note -> split -> sample -> VAG, decoded once, played on a mixer voice).
+  str_* (ADX streams from AFS00 into mixer streams, fades and str_volume's
+  dB table) are host versions of main 0x100910-0x100E18.
+- rt_snd_stage loads the ports as game12 does (common00/01, the map pack,
+  player 0's weapon + voice, em_blank + snd_em01) and starts the stage
+  stream like stage_bgm_set: st04 plays the camp theme S_M6CAMP (its
+  stage_bgm_etc_tbl entry, first entry into the stage), other stages
+  Snd_bgm_tbl[stage] (ambience such as M6_MORI1, M2_KAZE1).
+  `RT_SND_AMBIENT=1` skips the first-entry theme; `RT_SND_MAP=n` forces the
+  map pack.
+- stage_se_move (from f_stage_nm.c) runs every tick: river / waterfall
+  loops on stages 1, 3, 0x1A, 0x30, 0x34, 0x36, 0x3E.
+- Footsteps: the host player stand-in calls rt_snd_player_motion before
+  frame_move: the run loop's entries of the player's per-motion sound
+  list (ef_move_sub, main 0x24A790: ashi_sd_req kind 2 at frames 8, 30,
+  54), with the ground material the game's collision wrote to pl+0x70D.
+  The Rathian's walk (1003) plays em01's list entries (code 1 at frames 52,
+  116) from rt_snd_monster_motion, at the monster's position (no joints).
+- `RT_SND_TRACE=1` prints each pack loaded, stream started and sound
+  played (port, code, program, note, VAG, volume, pan).
+- Verified 5 Oct 2026 (offscreen, `--audio-dump`, nobody listened):
+  st04 idle 4 s: the dump equals the Python ADX decode of S_M6CAMP
+  sample for sample from 1 s to 4 s (after the 0.5 s fade-in); `--input
+  "idle*10,left*110"`: footsteps at ticks 24, 46, 70, 95, 119 (22-25
+  ticks apart = the 8/30/54 frames of the 78-frame run loop), programs 3
+  then 1 as the hunter crosses from one ground material to another;
+  stage 3: waterfall (code 0x22, 3.7 s loop) and river (0x21) start on
+  tick 4 and keep playing; stage 0x21: Rathian steps every 64 ticks. The
+  SDL device path was checked with a test program (a 1 s tone is consumed
+  in real time).
+- Not done: attack / weapon / voice sounds (the player has no actions
+  yet), other monsters' and motions' lists, joint positions for sound
+  sources, reverb, ADSR envelopes, the quest BGM changes (fight,
+  clear), menus.
 
 ### Stage drawing (trans_stage)
 

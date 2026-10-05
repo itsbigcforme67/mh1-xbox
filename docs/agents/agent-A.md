@@ -267,3 +267,28 @@ Lessons:
   PS2) now calls cpInterVector / CamRailPoint in their real argument order.
 - Lesson (x86): float-returning callees declared void leak x87 stack
   slots; prototypes must match the definition's return type too.
+
+## Assignment 11: audio platform layer (5 Oct 2026)
+Done (each step committed; details docs/formats/audio.md, docs/pc.md "Sound"):
+- Formats: AFS01 "MOMO" packs = SCEI HD + BD (PS2 ADPCM) + Capcom Tseq +
+  TSBD (SE code -> program, note, volume, pan, randomness, chain); AFS00
+  = CRI ADX (48 kHz stereo, loops in the header). BGM id = AFS00 index;
+  load_bin_req 0x10000|n = AFS01 entry n.
+- Key finding: the third argument of se_req/se_req2 is a program offset
+  (Em_se_req2 passes Snd_em_id_conv_tbl[kind] = the snd_emNN program;
+  footsteps pass the ground material pl+0x70D = map program 1..7).
+- tools/snd_dump.py: --list, --pack N [--vags], --adx N, --adx-list
+  (wav to build/audio/).
+- src/pc/audio/ (audio.h, audio_mix.c, audio_sdl.c), src/pc/fmt/snd.c,
+  src/pc/rt/rt_snd.c (se_req*, flSndRequest/Change from the asm; str_*;
+  stage packs + stream; stage_se_move; player run and Rathian walk
+  footsteps). Viewer: --audio-dump, --mute.
+- Removed stubs: se_req2 (rt_game.c), Em_se_req2 (rt_main.c),
+  Pl_se_req2 (rt_eft.c). No include/ headers or PS2-built C touched (the
+  PS2 rebuild is unaffected).
+- Checked by numbers only (cannot listen): C stream == Python decode,
+  footstep timing, loops start/persist, SDL device consumes samples.
+Next ideas: the player's ef_move_sub lists for other motions (needs
+actions), joint positions for em sounds, quest BGM switching (fight /
+clear), TSNDDRV.IRX disassembly to replace the [guess] parts (slot,
+priority, SdrSeChg semantics, pitch bend).
