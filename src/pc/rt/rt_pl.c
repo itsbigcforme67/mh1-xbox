@@ -985,27 +985,11 @@ void *Stage_mv_data_get(int stg, int master) { (void)stg; (void)master; return N
 /* fptodp: the PS2 libc float->double helper (debug printf in hit_nm.c) */
 int fptodp(float f) { (void)f; return 0; }   /* hit_nm.c declares it int; debug output only */
 
-/* ------------------------------------------------ pl01 program (0x24A240..) */
-/* pl_prog_tbl[*] -> pl01_adr_tbl = { pl_local_init x3, pl01_effect_move }:
- * init (0x24A240) does nothing; pl01_effect_move (0x24A250) runs the
- * per-motion sound/effect list (+0x444 work: +0x445 step, +0x456 timer).
- * ef_move_sub (0x24A790, 40 KB) is not decompiled: the host keeps the
- * run-loop footsteps it already had (rt_snd_player_motion). */
-void pl_local_init(void *pl) { (void)pl; }
-void rt_snd_player_motion_pl(void *pl);
-void pl01_effect_move(void *pl)
-{
-    u8 *w = (u8 *)pl + 0x444;
-    switch (w[1]) {
-    case 0:
-        w[1] = 1;
-        PS16(w, 0x12) = 0;
-        break;
-    case 1:
-        rt_snd_player_motion_pl(pl);
-        break;
-    }
-}
+/* pl01 program (pl_local_init, pl01_effect_move, ef_move_sub ...):
+ * src/main/sound/f_sound_nm.c. parts_chg (swap a hand's part model,
+ * 0x1213xx?) is not ported: the viewer draws fixed parts. */
+void parts_chg(void *pl, int part, int no) { (void)pl; (void)part; (void)no; }
+void func_60E2B0(void *pl, int a) { (void)pl; (void)a; }   /* lobby Eft25_set */
 
 /* ------------------------------------------------ parts (0x120F90) */
 /* parts_init: 32 part blocks of 0xB0 bytes (parts_work + id * 0x1600) at

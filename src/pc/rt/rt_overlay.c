@@ -95,3 +95,7 @@ void func_54B7E0(f32 *pos, int a, f32 scale) { eft14_set(pos, (s16)a, scale); }
 /* Pl_piyo_ck (game 0x639DD0, 5 instructions): stun gauge +0x7AA >= 50 */
 int Pl_piyo_ck(struct PLW *pl) { return *(s16 *)((u8 *)pl + 0x7AA) >= 50; }
 int func_639DD0(struct PLW *pl) { return Pl_piyo_ck(pl); }
+void Eft14_set4(struct PLW *pl, int arg);
+void Eft21_set(struct PLW *pl, int arg);
+void func_54BA40(struct PLW *pl, int a) { Eft14_set4(pl, a); }
+void func_555020(struct PLW *pl, int a) { Eft21_set(pl, a); }

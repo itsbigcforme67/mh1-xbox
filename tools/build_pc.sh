@@ -66,7 +66,7 @@ PL="$(ls src/main/pl/pl[0-9][0-9].c | tr '\n' ' ') src/main/pl/pl_nm.c src/main/
     src/main/pl/normal_char_set.c src/main/pl/pl_normal_nm.c src/main/pl/pl_stg_ck_tw.c \
     src/game/pl/pl_damage.c src/game/pl/pl_damageb.c src/game/pl/pl_damage_nm.c \
     src/main/hit/hit_nm.c src/main/hit/hit2_nm.c src/main/hit/hit3_nm.c src/main/stage/f_stage.c \
-    src/main/weapon/weapon_nm.c"
+    src/main/weapon/weapon_nm.c src/main/sound/f_sound_nm.c"
 WEAK="shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm"
 GAME="$GAME $HIT $CAM $EFT $PL"
 
@@ -98,7 +98,7 @@ for f in $GAME; do
     # declaration orders float and int arguments unlike the definition
     ABI=""
     case "$f" in
-    src/main/pl/*|src/game/pl/*|src/main/hit/hit_nm.c|src/main/weapon/weapon_nm.c)
+    src/main/pl/*|src/game/pl/*|src/main/hit/hit_nm.c|src/main/weapon/weapon_nm.c|src/main/sound/*)
         ABI="-Dframe_check=rtabi_frame_check -Dframe_check2=rtabi_frame_check2 -Dframe_check3=rtabi_frame_check3 \
              -DEft06_set=rtabi_Eft06_set -DEft02_set6=rtabi_Eft02_set6 \
              -DGetGroundHitStatusAreaPl=rtabi_GetGroundHitStatusAreaPl" ;;

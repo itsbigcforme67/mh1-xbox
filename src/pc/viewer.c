@@ -226,6 +226,34 @@ typedef struct {
     uint8_t *mem[HUNTER_PARTS * 2 + 1];
 } hunter;
 
+/* camera world matrix looking from eye to target (up = +Y, roll ignored) */
+static void lookat_world(flmat camw, const float *eye, const float *tar)
+{
+    float b[3], r[3], u[3], len;
+    int k;
+    for (k = 0; k < 3; k++)
+        b[k] = eye[k] - tar[k];
+    len = sqrtf(b[0] * b[0] + b[1] * b[1] + b[2] * b[2]);
+    if (len < 1e-3f) { b[0] = 0; b[1] = 0; b[2] = 1; len = 1; }
+    for (k = 0; k < 3; k++)
+        b[k] /= len;
+    r[0] = b[2]; r[1] = 0; r[2] = -b[0];          /* up (0,1,0) x back */
+    len = sqrtf(r[0] * r[0] + r[2] * r[2]);
+    if (len < 1e-3f) { r[0] = 1; r[2] = 0; len = 1; }
+    r[0] /= len; r[2] /= len;
+    u[0] = b[1] * r[2] - b[2] * r[1];               /* back x right */
+    u[1] = b[2] * r[0] - b[0] * r[2];
+    u[2] = b[0] * r[1] - b[1] * r[0];
+    memset(camw, 0, sizeof(flmat));
+    for (k = 0; k < 3; k++) {
+        camw[k] = r[k];
+        camw[4 + k] = u[k];
+        camw[8 + k] = b[k];
+        camw[12 + k] = eye[k];
+    }
+    camw[15] = 1;
+}
+
 static monster weapon;              /* the hunter's weapon (--play with the game's player code) */
 
 /* weapon bones: hierarchy roots from rt_player_weapon (weapon_trans's
@@ -668,29 +696,7 @@ int main(int argc, char **argv)
             }
         }
         if (game_cam && have_view) {    /* look-at from the game camera's eye/target (roll ignored) */
-            float b[3], r[3], u[3], len;
-            int k;
-            for (k = 0; k < 3; k++)
-                b[k] = gc_eye[k] - gc_tar[k];
-            len = sqrtf(b[0] * b[0] + b[1] * b[1] + b[2] * b[2]);
-            if (len < 1e-3f) { b[0] = 0; b[1] = 0; b[2] = 1; len = 1; }
-            for (k = 0; k < 3; k++)
-                b[k] /= len;
-            r[0] = b[2]; r[1] = 0; r[2] = -b[0];          /* up (0,1,0) x back */
-            len = sqrtf(r[0] * r[0] + r[2] * r[2]);
-            if (len < 1e-3f) { r[0] = 1; r[2] = 0; len = 1; }
-            r[0] /= len; r[2] /= len;
-            u[0] = b[1] * r[2] - b[2] * r[1];               /* back x right */
-            u[1] = b[2] * r[0] - b[0] * r[2];
-            u[2] = b[0] * r[1] - b[1] * r[0];
-            memset(camw, 0, sizeof(flmat));
-            for (k = 0; k < 3; k++) {
-                camw[k] = r[k];
-                camw[4 + k] = u[k];
-                camw[8 + k] = b[k];
-                camw[12 + k] = gc_eye[k];
-            }
-            camw[15] = 1;
+            lookat_world(camw, gc_eye, gc_tar);
         } else {   /* camera: rotate pitch then yaw, looking down -Z like GL */
             float s[3] = { 1, 1, 1 }, r[3], tr[3];
             r[0] = cam[4]; r[1] = cam[3]; r[2] = 0;
@@ -724,8 +730,16 @@ int main(int argc, char **argv)
                     pad_read(&ps, 1);
                 rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
                 rt_player_tick(0);
-                if (game_cam)
+                if (game_cam) {
+                    flmat cw;
                     rt_cam_tick();      /* CameraMove (src/main/cam) */
+                    /* rview_mat follows the game camera every tick (sound
+                     * distances, billboards), also when several ticks run
+                     * in one drawn frame */
+                    rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
+                    lookat_world(cw, gc_eye, gc_tar);
+                    rt_set_camera(cw);
+                }
                 /* right stick turns the follow camera */
                 cam[3] -= ps.rx * (0.04f / 127.0f);
                 if (sw_trace) {
