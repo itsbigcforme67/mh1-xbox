@@ -3528,6 +3528,61 @@ void _cnet_RecvFromLbs_MatchPlSide(void) {
     }
 }
 
+void _cnet_RecvFromLbs_MatchOpponentInfo(void) {
+    u8 idx;
+    s8 r;
+    u8 *p;
+
+    if (CNW(u8, 0xF34) != 0 && CnetSys_w.rcat != 0x10) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                p = CNWP(0x30310);
+                GetRecvData8(p + (idx - 1) * 0x98 + 0x1A9, GetRecvDataString(p + (idx - 1) * 0x98 + 0x170, GetRecvDataString(p + (idx - 1) * 0x98 + 0x130, GetRecvDataString(p + (idx - 1) * 0x98 + 0x11C, GetRecvDataString(p + (idx - 1) * 0x98 + 0x114, GetRecvData8(p + (idx - 1) * 0x98 + 0x1AA, GetRecvData8(&idx, recv_work)))))));
+                (p + idx * 0x98)[0x110] = idx;
+            } else {
+                r = -1;
+                __cnet_Recv_ServerMessage(CnetSys_w.rcat, recv_work);
+                __cnet_Return_MatchInformation((long long)r);
+                return;
+            }
+        }
+        pl_infoget_ctr++;
+        if (pl_infoget_ctr <= CNW(u8, 0x30310)) {
+            __cnet_SendReq_MatchOpponentInfo(pl_infoget_ctr);
+            return;
+        }
+        pl_infoget_ctr = 1;
+        __cnet_SendReq_MatchOpponentStatus(1);
+    }
+}
+
+void _cnet_RecvFromLbs_MatchOpponentStatus(void) {
+    u8 idx;
+    s8 r;
+    u8 *p;
+
+    if (CNW(u8, 0xF34) != 0 && CnetSys_w.rcat != 0x10) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                p = CNWP(0x30310);
+                GetRecvData32(p + (idx - 1) * 0x98 + 0x1A4, GetRecvData32(p + (idx - 1) * 0x98 + 0x1A0, GetRecvData32(p + (idx - 1) * 0x98 + 0x19C, GetRecvData32(p + (idx - 1) * 0x98 + 0x198, GetRecvData32(p + (idx - 1) * 0x98 + 0x194, GetRecvData16(p + (idx - 1) * 0x98 + 0x190, GetRecvData8(&idx, recv_work)))))));
+                (p + idx * 0x98)[0x110] = idx;
+            } else {
+                r = -1;
+                __cnet_Recv_ServerMessage(CnetSys_w.rcat, recv_work);
+                __cnet_Return_MatchInformation((long long)r);
+                return;
+            }
+        }
+        pl_infoget_ctr++;
+        if (pl_infoget_ctr <= CNW(u8, 0x30310)) {
+            __cnet_SendReq_MatchOpponentStatus(pl_infoget_ctr);
+            return;
+        }
+        __cnet_SendReq_MatchBattleCode(pl_infoget_ctr);
+    }
+}
+
 void _cnet_RecvFromLbs_MatchBattleCode(void) {
     CNET_RES res;
     u8 *p;
