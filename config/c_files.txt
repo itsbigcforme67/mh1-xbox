@@ -82,3 +82,5 @@ game 0x00558A80 0x0055925C eft/eft24
 game 0x00545E90 0x00545F14 eft/eft11
 game 0x005461C0 0x005468E8 eft/eft11b
 main 0x0014F0D0 0x0014F1DC pl/normal_char_set
+game 0x00543FA0 0x00544DCC eft/eft08
+game:rodata 0x00685460 0x0068549C eft/eft08
