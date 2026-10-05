@@ -371,3 +371,9 @@ The three `return;` in the turn function must be an if / else if / else chain en
 tools/appendfn.py RUN.c NM.c fname appends a function that now matches to its neighbouring run file; then extend that run's end in config/c_files.txt
 (end = function start + size). A function that is static in the nm file must become global (address-suffixed name) when asm callers remain.
 WARNING: align.py hides differences in lui constants (a float constant 110.0f vs 48.0f looked like a match); check.py or a rebuild is the arbiter.
+
+# Sixth round (post-outage)
+- Merged main (only config/c_files.txt conflicted; union + no duplicates); rebuild all five OK.
+- All unregistered em text left in game.yaml (f_em_55B060, 5B5290, 5C2A80, 5D9EE0, 5EBA10, 5FFFD0) is agent D's (em14/15/17/20/21).
+  Agent B's remaining em work is only the parked near-matches (em10_turn_sub, em04 act_set/ef_move_sub, em03 mv, em09, em12).
+- em10_turn_sub: four more declaration/type forms retried (u32/s32/u16 d, tgt as u32, no tgt local): still 10 instrs off (a1/a2/a3 colouring), parked.
