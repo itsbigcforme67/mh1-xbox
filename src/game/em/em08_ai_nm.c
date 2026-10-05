@@ -2118,9 +2118,8 @@ static void em_fly16_0059E020(EMW *em, EM08W *w) {
     case 0x3:
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
-        temp_f0 = w->dist - em->adj_z;
-        w->dist = temp_f0;
-        if ((temp_f0 <= 0.0f) || (em->adj_z <= 0.0f)) {
+        w->dist -= em->adj_z;
+        if (w->dist <= 0.0f || em->adj_z <= 0.0f) {
             em->x05++;
             em08_to_swim(em);
             break;
@@ -2229,9 +2228,8 @@ static void em_fly17_0059E400(EMW *em, EM08W *w) {
     case 0x3:
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
-        temp_f0 = w->dist - em->adj_z;
-        w->dist = temp_f0;
-        if ((temp_f0 <= 0.0f) || (em->adj_z <= 0.0f)) {
+        w->dist -= em->adj_z;
+        if (w->dist <= 0.0f || em->adj_z <= 0.0f) {
             em->x05++;
             em08_to_swim(em);
             break;
@@ -2389,8 +2387,7 @@ static void em_fly22_0059EC00(EMW *em, EM08W *w) {
         em->tgt_pos[2] = 10000.0f;
         em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
         em->x3C0[1] = -2.0f;
-        temp_f3 = (f32) em->work08;
-        em->adj_y = ((em->tgt_pos[1] - em->pos[1]) / temp_f3) - ((em->x3C0[1] * temp_f3) / 2.0f);
+        em->adj_y = ((em->tgt_pos[1] - em->pos[1]) / (f32)em->work08) - ((em->x3C0[1] * (f32)em->work08) / 2.0f);
         em->adj_z = CalcDistanceXZ(em->pos, em->tgt_pos) / (f32) em->work08;
         w->vel[0] = 0;
         w->vel[2] = 0;
@@ -2710,13 +2707,7 @@ static void em_atk06_0059F5C0(EMW *em, EM08W *w) {
             em_char_set(em, 0x67, 0xA, 0);
             w->dist = 1000.0f;
             em->work08 = 0x3C;
-            temp_v0 = em->work08;
-            temp_v1_2 = temp_v0 * temp_v0;
-            var_v0 = temp_v1_2 >> 1;
-            if (temp_v1_2 < 0) {
-                var_v0 = (s32) (temp_v1_2 + 1) >> 1;
-            }
-            em->x3C0[2] = (w->dist - ((f32) temp_v0 * em->adj_z)) / (f32) var_v0;
+            em->x3C0[2] = (w->dist - ((f32)em->work08 * em->adj_z)) / (f32)((em->work08 * em->work08) / 2);
             swim_eff_set2_005A7120(8.0f, em);
             break;
         }
@@ -2724,9 +2715,8 @@ static void em_atk06_0059F5C0(EMW *em, EM08W *w) {
     case 5:
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
-        temp_f0 = w->dist - em->adj_z;
-        w->dist = temp_f0;
-        if ((temp_f0 <= 0.0f) || (em->adj_z <= 0.0f)) {
+        w->dist -= em->adj_z;
+        if (w->dist <= 0.0f || em->adj_z <= 0.0f) {
             em->x05++;
             em08_to_swim(em);
         }
@@ -2914,20 +2904,20 @@ static void em_dmg05_0059FE40(EMW *em, EM08W *w) {
         em->x05++;
         em->x3F4 = 0;
         em_cmd_reset(em);
-        em_char_set(em, (s16)((em->x07 == 0) ? 0x4A : 0x45), 0, 0);
+        em_char_set(em, (s16)(em->x07 ? 0x45 : 0x4A), 0, 0);
         break;
     case 1:
         if (em->x194 == 0) {
             em->x05++;
             em->work08 = 0;
-            em_char_set(em, (s16)((em->x07 == 0) ? 0x4B : 0x46), 0, 0);
+            em_char_set(em, (s16)(em->x07 ? 0x46 : 0x4B), 0, 0);
             break;
         }
         break;
     case 2:
         if (em->x194 == 0) {
             em->x05++;
-            em_char_set(em, (s16)((em->x07 == 0) ? 0x80 : 0x81), 0, 0);
+            em_char_set(em, (s16)(em->x07 ? 0x81 : 0x80), 0, 0);
             break;
         }
         break;
@@ -2935,7 +2925,7 @@ static void em_dmg05_0059FE40(EMW *em, EM08W *w) {
         if (em->x194 == 0) {
             em->x05++;
             em->work08 = 0;
-            em_char_set(em, (s16)((em->x07 == 0) ? 0x7C : 0x47), 0, 0);
+            em_char_set(em, (s16)(em->x07 ? 0x47 : 0x7C), 0, 0);
             break;
         }
         break;
@@ -2951,8 +2941,6 @@ static void em_dmg05_0059FE40(EMW *em, EM08W *w) {
 }
 
 static void em_dmg06_0059FFE0(EMW *em, EM08W *w) {
-    u8 var_v1;
-
     switch (em->x05) {
     case 0:
         em->x05++;
@@ -2969,13 +2957,11 @@ static void em_dmg06_0059FFE0(EMW *em, EM08W *w) {
     case 1:
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
-        var_v1 = 2;
         if (!(em->pos[1] < em->x7E4)) {
-
+            em->x388 = 2;
         } else {
-            var_v1 = 4;
+            em->x388 = 4;
         }
-        em->x388 = var_v1;
         if (em->pos[1] < em->x5AC) {
             em->x05++;
             em->x388 = 0;
@@ -3064,8 +3050,6 @@ static void em_dmg08_005A0250(EMW *em, EM08W *w) {
 }
 
 static void em_dmg09_005A0350(EMW *em, EM08W *w) {
-    u8 var_v1;
-
     switch (em->x05) {
     case 0:
         em->x05++;
@@ -3083,13 +3067,11 @@ static void em_dmg09_005A0350(EMW *em, EM08W *w) {
     case 1:
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
-        var_v1 = 2;
         if (!(em->pos[1] < em->x7E4)) {
-
+            em->x388 = 2;
         } else {
-            var_v1 = 4;
+            em->x388 = 4;
         }
-        em->x388 = var_v1;
         if (em->pos[1] < em->x5AC) {
             em->x05++;
             em->x388 = 0;
@@ -3244,8 +3226,6 @@ static void em_dmg14_005A07B0(EMW *em, EM08W *w) {
 }
 
 static void em_dmg15_005A08C0(EMW *em, EM08W *w) {
-    f32 temp_f3;
-
     switch (em->x05) {
     case 0:
         em->x05++;
@@ -3257,8 +3237,7 @@ static void em_dmg15_005A08C0(EMW *em, EM08W *w) {
         em->_pad8B9[0] = 0;
         em->work08 = 0x1E;
         em->x3C0[1] = -10.0f;
-        temp_f3 = (f32) em->work08;
-        em->adj_y = ((em->tgt_pos[1] - em->pos[1]) / temp_f3) - ((em->x3C0[1] * temp_f3) / 2.0f);
+        em->adj_y = ((em->tgt_pos[1] - em->pos[1]) / (f32)em->work08) - ((em->x3C0[1] * (f32)em->work08) / 2.0f);
         em->adj_z = CalcDistanceXZ(em->pos, em->tgt_pos) / (f32) em->work08;
         w->vel[0] = 0;
         w->vel[2] = 0;
@@ -4058,13 +4037,11 @@ static void em_die05_005A22A0(EMW *em, EM08W *w) {
     case 0x1:
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
-        var_v1 = 2;
         if (!(em->pos[1] < em->x7E4)) {
-
+            em->x388 = 2;
         } else {
-            var_v1 = 4;
+            em->x388 = 4;
         }
-        em->x388 = var_v1;
         if (em->pos[1] < em->x5AC) {
             em->x05++;
             em->x388 = 0;
