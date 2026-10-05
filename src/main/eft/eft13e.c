@@ -1,0 +1,197 @@
+/* eft13e - SLPM_654.95 0x001097D0-0x00109E28: monster/point spawners and eft13_water_set.
+ * Part of eft13 (whole file 0x00105B10-0x00109E28). Dust, splashes and debris with
+ * 35 types (arg): up to eft13_num[arg] pieces (0x30 bytes) per effect.
+ * eft13_set_pos / eft13_set_pos_em pick the spawn point and type from the
+ * owner (player or monster kind); on water (eft13_water_ck) the effect is
+ * replaced by Eft08 splashes (game.bin Eft08_set/set2, called by address) (eft13_water_set). The big functions (i, m, t,
+ * set_pos, set_sub_em, set_pos_em) are still asm. */
+#include "eft.h"
+#include "em.h"
+#include "game.h"
+#include "prim.h"
+#include "fl.h"
+
+/* Owner fields used here (player or monster). */
+typedef struct EFT13_CHR {
+    u8 be_flag;         /* 0x000 */
+    u8 x01;             /* 0x001 */
+    u8 kind;            /* 0x002 */
+    u8 _pad003[0xA0 - 0x03];
+    s32 ang[3];         /* 0x0A0 */
+    u8 _pad0AC[0xB8 - 0xAC];
+    f32 scale[3];       /* 0x0B8 */
+    u8 _pad0C4[0x5AC - 0xC4];
+    f32 x5AC;           /* 0x5AC ground height */
+    u8 _pad5B0[0x909 - 0x5B0];
+    u8 x909;            /* 0x909 */
+} EFT13_CHR;
+
+/* One piece (0x30 bytes) of the work area. */
+typedef struct EFT13_PIECE {
+    u8 _pad00[0x2A];
+    s16 prim_no;        /* 0x2A */
+    PRIM *prim;         /* 0x2C */
+} EFT13_PIECE;
+
+extern s16 eft13_num[35];
+extern s16 eft13_water_flag[35];
+extern s16 Eft_stg_type[];
+
+u8 Pl_stg_ck(void *);
+u8 Em_stg_ck(void *);
+void release_prim(s16);
+FLMAT *get_joint_wmat(void *, s16);
+void flmatCopy(FLMAT *, FLMAT *);
+void flvecCopy(f32 *, f32 *);
+u16 calc_mat_angY(FLMAT *);
+int GetWaterHit(f32 *, f32 *);
+void se_req2(int, int, int, f32 *, int, int);
+void func_544C90(f32 *, int, int, f32);    /* game.bin Eft08_set */
+void func_544D20(void *, int, int, f32, f32); /* game.bin Eft08_set2 */
+
+void eft13_move(EFTW *ew);
+void eft13_i(EFTW *ew);
+void eft13_m(EFTW *ew);
+void eft13_d(EFTW *ew);
+void eft13_e(EFTW *ew);
+s16 eft13_set_pos(f32 *pos, EFT13_CHR *chr, s16 j, int arg);
+s16 eft13_set_pos_em(f32 *pos, EFT13_CHR *chr, s16 j, int arg);
+void eft13_set_sub_em(EFT13_CHR *chr, s16 j, int arg, EFTW *ew);
+s8 eft13_water_set(EFT13_CHR *chr, f32 *pos, s16 kind, f32 scale);
+
+void Eft13_set_em(EFT13_CHR *chr, s16 j, int arg) {
+    f32 pos[3];
+    EFTW *ew;
+    s16 k;
+
+    if (Em_stg_ck(chr) != 0) {
+        k = eft13_set_pos_em(pos, chr, j, arg);
+        if (eft13_water_set(chr, pos, k, 1.0f) == 0) {
+            if ((ew = pull_eft_work(1)) != 0) {
+                flvecCopy(ew->pos, pos);
+                ew->scale = 1.0f;
+                eft13_set_sub_em(chr, j, arg, ew);
+            }
+        }
+    }
+}
+
+void Eft13_set_em_scl(EFT13_CHR *chr, s16 j, int arg, f32 scale) {
+    f32 pos[3];
+    EFTW *ew;
+    s16 k;
+
+    if (Em_stg_ck(chr) != 0) {
+        k = eft13_set_pos_em(pos, chr, j, arg);
+        if (eft13_water_set(chr, pos, k, scale) == 0) {
+            if ((ew = pull_eft_work(1)) != 0) {
+                flvecCopy(ew->pos, pos);
+                eft13_set_sub_em(chr, j, arg, ew);
+                ew->scale = scale * chr->scale[0];
+            }
+        }
+    }
+}
+
+void Eft13_set_pos(f32 scale, f32 *pos, int arg) {
+    EFTW *ew;
+
+    if ((ew = pull_eft_work(1)) != 0) {
+        ew->type = 13;
+        ew->move = eft13_move;
+        ew->owner = 0;
+        ew->arg = arg;
+        flvecCopy(ew->pos, pos);
+        ew->scale = scale;
+    }
+}
+
+void Eft13_set_pos2(f32 scale, void *chr, f32 *pos, int arg) {
+    EFTW *ew;
+
+    if (Pl_stg_ck(chr) != 0) {
+        if ((ew = pull_eft_work(1)) != 0) {
+            ew->type = 13;
+            ew->move = eft13_move;
+            ew->owner = 0;
+            ew->arg = arg;
+            flvecCopy(ew->pos, pos);
+            ew->scale = scale;
+        }
+    }
+}
+
+s8 eft13_water_set(EFT13_CHR *chr, f32 *pos, s16 kind, f32 scale) {
+    int se = 1;
+    f32 sc;
+
+    switch (kind) {
+    case 0:
+        return 0;
+    case 1:
+    default:
+        sc = 1.2f * scale;
+        func_544C90(pos, 3, 0, sc);
+        pos[1] += 5.0f;
+        func_544C90(pos, 0, 0, sc);
+        se_req2(1, 0x2E, 0, pos, 1, 0);
+        return 1;
+    case 2:
+        if (*(u16 *)&game_w.x1E & 2) {
+            func_544C90(pos, 4, 0, 1.5f * scale);
+        }
+        pos[1] += 5.0f;
+        sc = 2.0f * scale;
+        func_544C90(pos, 2, 0, sc);
+        break;
+    case 3:
+        sc = 1.5f * scale;
+        func_544C90(pos, 4, 0, sc);
+        pos[1] += 5.0f;
+        func_544C90(pos, 5, 0, sc);
+        break;
+    case 4:
+        se = 0;
+    case 9:
+        sc = 2.7f * scale;
+        pos[1] += 5.0f;
+        func_544C90(pos, 1, 0, sc);
+        break;
+    case 5:
+        sc = 2.0f * scale;
+        pos[1] += 5.0f;
+        func_544D20(chr, 6, 0, sc, pos[1]);
+        if ((*(u16 *)&game_w.x1E & 7) == 0) {
+            se = 0;
+        }
+        break;
+    case 6:
+        sc = 2.5f * scale;
+        func_544C90(pos, 4, 0, sc);
+        pos[1] += 5.0f;
+        func_544C90(pos, 5, 0, sc);
+        break;
+    case 7:
+        sc = 3.0f * scale;
+        func_544C90(pos, 4, 0, sc);
+        pos[1] += 5.0f;
+        func_544C90(pos, 5, 0, sc);
+        break;
+    case 8:
+        if (*(u16 *)&game_w.x1E & 4) {
+            func_544C90(pos, 4, 0, 1.5f * scale);
+        }
+        sc = 2.0f * scale;
+        pos[1] += 5.0f;
+        func_544C90(pos, 2, 0, sc);
+        break;
+    }
+    if (se != 0) {
+        if (sc > 4.0f) {
+            se_req2(1, 0x76, 0, pos, 1, 0);
+        } else {
+            se_req2(1, 0x70, 0, pos, 1, 0);
+        }
+    }
+    return 1;
+}

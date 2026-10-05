@@ -77,3 +77,27 @@ set_com, Eft06_set/set2/set_hit) built. eft06_m (4.8 KB) and eft06_t
 - Eft06_set takes the float scale as its LAST parameter: argument set-up
   order of the recursive call follows parameter order.
 - eft06_continue's count parameter is s16 (int gave an extra sign-extend).
+
+set13c.c (set13_hit_calc, 0x158E00-0x158F18) is now built too; the
+near-match set13_disp_pos_calc moved to src/main/set/set13_nm.c.
+
+## eft13 (0x105B10-0x109E28) - 13/19 match
+Dust, splashes and debris (35 types). Built: eft13.c (move), eft13b.c
+(d/e), eft13c.c (se_req, water_ck, set_sub), eft13d.c (eft13_set,
+Eft13_set_scl), eft13e.c (Eft13_set_em/_em_scl/_pos/_pos2, water_set; jump
+table 0x357D70-0x357D98). Not attempted (big): eft13_i, _m, _t, _set_pos,
+_set_sub_em, _set_pos_em.
+- Main calls game.bin's Eft08_set/Eft08_set2 by address with no symbol:
+  call them as func_544C90 / func_544D20 (config/main_undefined_funcs_auto.txt).
+  check.py shows these calls as differing ("original calls ?"); the build
+  links them correctly.
+- eft13_water_set: `sc = 2.7f * scale` into a new local gives the
+  original's const*reg multiply order; reusing the parameter swaps it.
+  Statement order inside cases matters (case 2 has `pos[1] += 5` before
+  the scale, case 8 after).
+- A parameter only passed on to other functions: declaring it s16 makes
+  MWCC re-extend it at each call to a function defined in ANOTHER file,
+  while a callee defined earlier in the same file is trusted. After the
+  split, eft13_set/Eft13_set_scl need `int j` to keep the raw pass-through.
+- game_w+0x1E is read as a u16 here (`*(u16 *)&game_w.x1E`); game.h names
+  it as a u8 (eft12), left unchanged.

@@ -121,3 +121,10 @@ main 0x00102BD0 0x00103A38 eft/eft06
 main:rodata 0x003579C0 0x00357A08 eft/eft06
 main 0x00104D30 0x00104E18 eft/eft06b
 main 0x001056B0 0x00105B10 eft/eft06c
+main 0x00158E00 0x00158F18 set/set13c
+main 0x00105B10 0x00105B94 eft/eft13
+main 0x00106DB0 0x00106E48 eft/eft13b
+main 0x00107980 0x00107C50 eft/eft13c
+main 0x00108620 0x001087C0 eft/eft13d
+main 0x001097D0 0x00109E28 eft/eft13e
+main:rodata 0x00357D70 0x00357D98 eft/eft13e
