@@ -55,7 +55,8 @@ typedef struct EMW {
     u16 id;             /* 0x00C */
     s16 x0E;            /* 0x00E facing the monster turns toward (em10_turn_sub) */
     u8 x10;             /* 0x010 */
-    u8 _pad011[0x13 - 0x11];
+    u8 x11;             /* 0x011 small-size variant flag (em03_init: scale 0.85) */
+    u8 _pad012[0x13 - 0x12];
     u8 x13;             /* 0x013 spawn slot (em29_init places the monster by it) */
     u8 mode;            /* 0x014 4/5 end attached shells (shell19_m) */
     u8 x15;             /* 0x015 sub-mode (eft09_m) */
