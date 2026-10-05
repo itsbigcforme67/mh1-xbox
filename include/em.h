@@ -268,7 +268,7 @@ typedef struct EMW {
     u8 x84C;            /* 0x84C (command interpreter state) */
     u8 x84D;            /* 0x84D (em15 fly 11) */
     s8 x84E;            /* 0x84E */
-    u8 x84F;            /* 0x84F (command interpreter state) */
+    s8 x84F;            /* 0x84F (command interpreter state) */
     u8 _pad850[0x854 - 0x850];
     s32 x854;           /* 0x854 (command interpreter state) */
     u8 * cmd_p858;      /* 0x858  */

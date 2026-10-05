@@ -33,7 +33,7 @@
 /* tables of programs, one per monster kind (version picked by the byte at 0x3F341E) */
 extern u8 ***em_cmd0_tbl[], ***em_cmd1_tbl[], ***em_cmd2_tbl[], ***em_cmd3_tbl[];
 extern u8 ***em_cmd4_tbl[], ***em_cmd5_tbl[], ***em_cmd6_tbl[];
-extern u8 **em_area_mv_tbl[];
+extern u8 *em_area_mv_tbl[];
 extern u8 check_hate_tbl[];
 extern u8 area_move_high_y_tbl[];
 extern s16 em02_runaway_timer_tbl[];
