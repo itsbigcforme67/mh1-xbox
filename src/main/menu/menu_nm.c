@@ -137,7 +137,7 @@ int Get_weapon_job2(u8, u16);
 void vib_set(int, int);
 int Reibun_Edit_Core(u8);
 int Reibun_Edit_Start(u8);
-u8 Reibun_select_mv(u8);
+u8 Reibun_select_mv(int, u8);
 extern u16 item_pick_declaration_code;
 extern s16 item_pick_declaration_timer;
 int Pl_master_ck(void);
@@ -1444,7 +1444,7 @@ int menu_chcnfg_reibun(int sw) {
         a = r & 0xFFFF;
         if (!(a & 0x40)) {
             PitMenu.x12 = 3;
-            PitMenu.x1B = Reibun_select_mv(PitMenu.x1B);
+            PitMenu.x1B = Reibun_select_mv(sw, PitMenu.x1B);
             if ((a & 0x20) && Reibun_Edit_Start(PitMenu.x1B) == 1) {
                 lpPit->x7F++;
             }
@@ -1452,7 +1452,7 @@ int menu_chcnfg_reibun(int sw) {
         break;
     case 1:
         PitMenu.x12 = 4;
-        r = r & 0x7FBF & 0xFFFF;
+        r = (u16)(r & 0x7FBF);
         if ((s8)Reibun_Edit_Core(PitMenu.x1B) != 0) {
             lpPit->x7F = 0;
         }
