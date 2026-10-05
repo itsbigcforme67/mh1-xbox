@@ -4,6 +4,8 @@
 #include "plf.h"
 #include "game.h"
 #include "plst.h"
+f32 flSqrt(f32);
+extern u8 Gun_data[26][0x14];
 
 void player_init0(PLW *pl) {
     u32 i;
@@ -2285,7 +2287,6 @@ void Pl_slash_calc(PLW *pl, int dv) {
     }
 }
 
-extern s32 Gun_data[26][5];
 
 u16 Pl_shell_set(PLW *pl, int slot, int dir) {
     s16 n;
@@ -2319,7 +2320,7 @@ u16 Pl_shell_set(PLW *pl, int slot, int dir) {
     }
     for (n = 0; n < 20; n++) {
         if (pl->item[s].id != 0 && pl->item[s].num > 0 && Item_data[pl->item[s].id][1] == 2
-            && (Gun_data[pl->wpn_kind][4] & (1 << *(s16 *)&Item_data[pl->item[s].id][8]))) {
+            && (*(s32 *)&Gun_data[pl->wpn_kind][0x10] & (1 << *(s16 *)&Item_data[pl->item[s].id][8]))) {
             return s;
         }
         switch (d) {
@@ -2338,19 +2339,6 @@ u16 Pl_shell_set(PLW *pl, int slot, int dir) {
         }
     }
     return 0xFF;
-}
-
-void Shell_type_set(PLW *pl, int flag) {
-    if (pl->work88E != 0xFF) {
-        pl->ammo_type = *(s16 *)&Item_data[pl->item[pl->work88E].id][8];
-        if (Item_data[pl->item[pl->work88E].id][3] == 0xFF) {
-            pl->work8BC = 0xFF;
-        } else {
-            pl->work8BC = pl->item[pl->work88E].num;
-        }
-        pl->work01D = Shell_data[pl->ammo_type]._00;
-        pl->work01C = 0;
-    }
 }
 
 extern u8 chat_act_tbl_002F1860[0xD];
@@ -2378,4 +2366,60 @@ s32 Pl_hold_item_ck(PLW *pl) {
         }
     }
     return r;
+}
+
+typedef struct TUTO_REC {
+    u16 id;     /* 0x00 */
+    u16 _02;
+    f32 x;      /* 0x04 */
+    f32 y;      /* 0x08 */
+    f32 z;      /* 0x0C */
+    f32 r;      /* 0x10 */
+} TUTO_REC;
+s16 Pl_item_num_ck(PLW *, int);
+void adx_se_set(PLW *, int);
+void init_set_work();
+void init_eft_work();
+void init_shell_work();
+void init_item_work();
+void clr_set_work();
+void clr_eft_work();
+void clr_shell_work();
+void clr_item_work();
+void clr_used_heap(int, int);
+
+s32 Pl_scope_ck(PLW *pl) {
+    if (pl->work35F != 7) {
+        return 0;
+    }
+    return (pl->wpn_ammo & 0x40) != 0;
+}
+
+s32 Pl_silencer_ck(PLW *pl) {
+    if (pl->work35F != 7) {
+        return 0;
+    }
+    return (pl->wpn_ammo & 0x10) != 0;
+}
+
+s32 Pl_barrel_ck(PLW *pl) {
+    if (pl->work35F != 7) {
+        return 0;
+    }
+    return (pl->wpn_ammo & 0x20) != 0;
+}
+
+
+
+
+
+s32 Sansai_talk_ck(PLW *pl) {
+    s16 i;
+    EMW *e = em_work;
+    for (i = 0; i < 20; i++, e++) {
+        if (e->kind == 0xA && flvecCalcDistance(pl->pos, e->pos) <= 300.0f) {
+            return 1;
+        }
+    }
+    return 0;
 }
