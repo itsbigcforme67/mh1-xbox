@@ -189,4 +189,5 @@ void pl_chr_set2();
 void Lbc_set_prim();
 extern LBCOMMER lbCommer[8];
 void action_timer_calc();
+extern s16 chat09_chr_tbl_0064E1C0[];
 #endif
