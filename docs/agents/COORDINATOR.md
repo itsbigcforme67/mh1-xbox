@@ -39,6 +39,10 @@ the end of docs/STATUS.md first.
 
 ## Merging an agent branch
 
+If a merge conflicts in anything beyond config/c_files.txt and generated config, or the
+rebuild fails: `git merge --abort` (main must stay equal to origin) and start a fresh
+agent on that branch whose first task is `git merge main` + fix until all five OK.
+
 Note: tools/build.py skips src/pc/ (native platform code, built by tools/build_pc.sh).
 
     git merge --no-edit agent-X

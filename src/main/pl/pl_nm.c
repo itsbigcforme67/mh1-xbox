@@ -345,6 +345,8 @@ void em_ninshiki_ck(PLW *pl) {
     }
 }
 
+u16 calc_vec_ang(f32, f32, f32, f32);
+
 /* near-match: one commutated addu (original: (base+id*252)+off, ours off+(base+id*252)) */
 s32 wall_act_ck(PLW *pl, s16 mode) {
     s16 i;
@@ -1684,7 +1686,7 @@ void pl_move_sub(PLW *pl) {
     u8 a, b;
 
     if (PU8(pl, 0) != 0) {
-    em_ninshiki_ck();
+    em_ninshiki_ck(pl); /* a0 = pl passed through */
     pl_timer_calc(pl);
     pl->work8F2 = 0;
     pl->work90B = 0;

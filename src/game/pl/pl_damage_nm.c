@@ -1,8 +1,4 @@
-/* pl_damage near-match, NOT built: pl_guard_ck (0x0063A010).
- * Player damage: death, guarding (direction check, stamina cost, recoil)
- * One instruction off: our compiler masks the u8 result at the return
- * (andi v0, s0, 0xFF); the original returns it unmasked and Pl_damage_sub
- * masks it after the call. */
+/* pl_damage near-match file, kept for reference: pl_guard_ck now matches (see pl_guard.c). */
 #include "pl.h"
 
 s16 act_ck(PLW *, int, int);
@@ -25,7 +21,7 @@ void Pl_se_req2(PLW *, int, int, f32 *, int, int);
 
 int Guard_dir_ck(u16 ang, u16 dm_ang);
 
-int pl_guard_ck(PLW *pl) {
+u8 pl_guard_ck(PLW *pl) {
     u8 ret = 0;
 
     if (pl->stamina < 0x4B) {

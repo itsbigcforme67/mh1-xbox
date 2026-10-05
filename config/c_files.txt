@@ -87,7 +87,7 @@ game 0x00555A90 0x00556D98 eft/eft22
 game 0x00556FE0 0x00557474 eft/eft22b
 game:rodata 0x00685840 0x00685858 eft/eft22
 game 0x00557480 0x005587F8 eft/eft23
-game 0x00558960 0x005589EC eft/eft23b
+game 0x00558960 0x00558A74 eft/eft23b
 game:rodata 0x00685860 0x00685884 eft/eft23
 game 0x0054BB60 0x0054D654 eft/eft15
 game:rodata 0x00685650 0x00685724 eft/eft15
@@ -342,6 +342,23 @@ game:rodata 0x00689CE0 0x00689E00 em/em33
 
 game 0x005873D0 0x0058B84C em/em03
 game:rodata 0x00686490 0x00686590 em/em03
+main 0x002907C0 0x002907FC staff/staff
+main 0x002909C0 0x00290AD8 staff/staffb
+main 0x0022F7B0 0x0022FC50 movie/movie
+main 0x002862F0 0x0028699C evdemo/evdemo
+main 0x0023A0F0 0x0023A4AC omake/omakeb
+main 0x0023A7F0 0x0023AA60 omake/omakec
+main 0x0023B2E0 0x0023B4F4 omake/omaked
+main 0x0023B790 0x0023BE10 omake/omakee
+main:rodata 0x0036D1E0 0x0036D1F8 omake/omakee
+main 0x00281660 0x002816E8 mc/mcsaveb
+main 0x00281740 0x002818E4 mc/mcsaved
+main 0x002819C0 0x00281BC0 mc/mcsavec
+main 0x0023DAB0 0x0023DEA8 npc/npcb
+main 0x0023E260 0x0023E4E0 npc/npcc
+main 0x0027EF60 0x0027F1BC mc/mclowb
+main 0x0027F400 0x0027FB38 mc/mclowd
+main 0x0027FD10 0x0027FDE8 mc/mclowc
 main 0x00290E80 0x00291D30 reward/f_reward
 main:rodata 0x003865A0 0x003865EC reward/f_reward
 main 0x00291D30 0x0029250C reward/f_reward2
@@ -389,7 +406,7 @@ main 0x002227A0 0x00222E20 cam/camg
 main 0x00163AB0 0x00163D20 weapon/trans
 main 0x00163E40 0x0016440C weapon/weapon
 main 0x00164D60 0x00164F68 weapon/weapon2
-main 0x00168EA0 0x001691B4 weapon/weapon3
+main 0x00168EA0 0x00169228 weapon/weapon3
 main 0x00223E90 0x00223F8C cam/camr2
 main 0x00223F90 0x00223FDC cam/camr1
 main 0x00224790 0x002248B8 cam/camr4
@@ -522,3 +539,7 @@ main 0x00154D90 0x00154E84 pl/pl77
 main 0x00154E90 0x00154F14 pl/pl78
 main 0x001539D0 0x00153A68 pl/pl73
 main 0x00154270 0x00154324 pl/pl74
+game 0x006362B0 0x00636918 shell/shell00
+game:rodata 0x0068A3B0 0x0068A3D0 shell/shell00
+game 0x0063A010 0x0063A0E4 pl/pl_guard
+game 0x00625630 0x00625838 set/set17

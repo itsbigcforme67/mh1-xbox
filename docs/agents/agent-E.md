@@ -156,3 +156,83 @@ x88D now s8 as proved by lb in Em_hagi_point_cnt_ck).
   (or `*p++`), not `p[1]` / `p += 2` (the compiler then loads both before bumping p; the original bumps in between).
 - Still parked: Quest_retire_set (6 instr: `bne; nop` empty delay slot and -1/7 register order; switch form gets the -1 register right but wrong branch),
   Quest_str_get, Em_hagi_point_cnt_ck, quest_em_init_sub2 (see above).
+
+## Assignment 3 (6 Oct): unowned main code from 0x1A0000 (candidate list)
+0x1A0000-0x218000 is Sony/CRI/newlib library code (skipped, GCC). 0x22C670-0x22F7A0 AQ/net, 0x22F800-0x24A0F0
+network/inet/Ave/mcsls (online; skipped for now). Candidates (vram, bytes of uncovered code):
+staff 0x2907C0 (1.6K), movie_* 0x22F7B0 (1.5K), evdemo 0x2862F0 (1.7K), npc 0x23D870 (3.2K), Select_task/omake 0x23A0F0 (7.4K),
+mc* memory card 0x27EF60-0x2862F0 (28K, ~135 functions), IME dictionary 0x23E500-0x24A240 (47K, Japanese input, low priority),
+f_sound 0x24A250 (41K, sound requests), net file load/save 0x2869A0-0x28BEC0 (21K, online-ish).
+Order: staff, movie, evdemo, npc, select/omake, mc.
+
+### staff (0x2907C0-0x290AE0, credits) and movie (0x22F7B0-0x22FDD0, Sofdec wrapper)
+- staff: Staff_init + logo_disp built (src/main/staff/staff.c, staffb.c; main OK). Staff_main 2/110 off (original passes `1` in a0 reused from the
+  switch compare, mine reloads it in the call delay slot), staff_disp ~75/95 off (register choice; the loop test reloads `e->x`): both in staff_nm.c.
+- movie: everything except movie_draw built (src/main/movie/movie.c; movie_nm.c has all). movie_draw 13/96 off: store order of the sprite fields.
+- Lessons: (1) a global struct accessed many times in one function wants `SFD_W *w = &sfd_work;` as local to get the original `lui s0` base register
+  (movie_server/stop/exit); declare it late (assign after the first calls) if the original materializes it late (movie_start).
+  (2) `memset(p, 0, (u32)n)`: the cast changes arg load order (movie_start). (3) a K&R `s8 no` param gives dsll32/dsra32 but the original used the raw
+  register: use `int no`. (4) struct-copy loop of 19 words = assignment of a 19-word local struct (movie_server, local frame 0x50).
+  (5) END of a `main` range in c_files.txt: use the exact end of the last function (size from symbols), 0x290AE0 vs 0x290AD8 gave MISMATCH.
+
+### evdemo (0x2862F0-0x28699C): 6/6 built (src/main/evdemo/evdemo.c), main OK
+Event demo slots (3 per quest): EvDemoInitialize/evdemo_init_sub/EvDemoMove/check000/event000/evdemo_camera_request. The demo tables evdemo_NN stay in
+the original data. Lessons: `EVENT_DEMO *e = &event_demo;` local base pointer again gives the original lui s0 (EvDemoInitialize, EvDemoMove);
+`*(int *)slot = 0` is the original's word clear of {active, step, timer}; a store that sits in the delay slot after a `jal` in the asm listing
+(check.py -v hides nops: look at the other column) was written AFTER the call in the source (event000 case 2).
+
+### omake / mode select (0x23A0F0-0x23BE10): 14 of 20 built (omakeb/c/d/e.c, rodata lit_727_0036D1E0), main OK
+Built: Select_task, csub00, ck_start_sw, init_mode_sel, sel_sel_sub, mode_sel_end, mode_sel_exit, Sel_csr_disp, omake_check, omake_init, omake_main,
+omake_play, omake_exit, Omake_task. Near-match (omake_nm.c holds all 20 in address order): mode_sel 182/206 (nested sel compares: original keeps
+the constant 1 in v0 not a0, block layout differs), key_rept_du (gp-relative key_timer/key_wait: check.py cannot verify, tried as KT{on,cnt}[2] struct,
+31/60 off), disp_mode_menu 223/248, Sel_menu_disp 144/206 and Sel_back_disp 14/36 (original keeps &spr.field addresses in registers = separate local
+variables, not a struct), disp_omake_menu 153/164.
+Lessons:
+- check.py masks relocation ADDENDS: `Psw[4]` vs `Psw[2]` looked identical. Psw = 0x3F3710: Psw[0] = held, Psw[2] = pressed (byte 4); only the rebuild
+  catches it (omake_play case 2 needed Psw[0]). (staff_nm.c had the same mistake: fixed to Psw[2].)
+- `r = 0; if (c) r |= 1;` gives `ori v0,v0,1` (ck_start_sw); `if (--x <= 0)` on an s16 gives the dsll32/dsra32 re-sign-extension (csub00);
+  hoisted locals `int held = Psw[0]; int st = tsk->step; int push = Psw[2];` give the lhu/lbu/lhu order and leave `st` in a3 (Select_task);
+  `u8 Fade_busy_ck();` prototype gives the andi 0xFF; a K&R `u16 a; int k = a & 0xFFFF;` keeps both masks (omake_main);
+  `x > 1` instead of `x >= 2` gives `slti at` (omake_play); extra call args that only look like args in m2c (decide_se(1,3)) are stale registers.
+- functions whose K&R header + params take >= 6 lines are not found by tools/split_runs.py: put `s16 x, y, w, h;` on one line.
+- globals sized <= 8 bytes (key_wait, key_timer) are gp-relative (`addiu v1,gp,-17760`): declare them with their real size (`s16 key_wait[2]`).
+
+### mc save image helpers (0x2814E0-0x281C00): 9 of 12 built (src/main/mc/mcsaveb/c/d.c), main OK
+Written in mcsave_nm.c (all 12). Built: check_sum_set/ck, mc_copy_opt_only, mc_copy_patch, user_data_clr, User_data_init, save_data_sub, card_data_init.
+Near-match: encode_data_002814E0 (38/48; original keeps buf in s0, advances it in place and has the checksum pointer in t0), decode_data (11/42;
+local declaration order found by permuting: sum? see the file), user_data_copy2 (35/51; original reads data_load_ptr before the `if` and
+keeps the raw slot in s1), decode_to_ck matches ONLY with `static decode_data` earlier in the file (the compiler then knows a0 survives the call), so
+it is not linked. Save image layout is described at the top of mcsave_nm.c (scrambled u16 stream, key = key*0xB0 % 65363).
+
+### npc (0x23D870-0x23E500): 8 of 10 built (npcb.c, npcc.c), main OK
+NPC = a player-like work block (struct NPCW in npc_nm.c; fields named only as far as used). Built: npc_init_sub, npc_init, npc_die, npc_erase, npc_mv, npc_chr_sub,
+npc_mk, npc_effect_move (npc_effect_move = prog->init2-style call through the table at +0x3CC; the init writes game overlay function func_53A190, which check.py
+cannot verify: the rebuild did). Near-match: npc_trans 149/152 (too many live values: the original uses 7 s-registers, mine 9; locals order rad,m3,m4,m2 gave
+the right stack offsets), npc_move 193/234 (original hoists `lbu kind` into the delay slot of the first branch).
+Lessons: (1) raw `*(u8*)((u8*)p+off)` accessors on a parameter pointer change the codegen too (address CSE: `addiu v1,s0,764; sb v0,0(v1)`): a local view struct
+with named fields at the right offsets fixes it (npc_chr_sub 6/44 -> OK). Generate the struct from an offset table with padding. (2) assigning an integer
+bit pattern to an f32 field converts it: write 2.0f/1.0f (npc_init). (3) pointer tables of u16 are walked with `q++` (2 bytes), a `[][2]` s16 table gives
+`sll 2; lh` (npc_init). (4) a struct field 0x18 that is a pointer covers 0x18-0x1B: check overlapping field offsets before building a view struct.
+(5) the first call arg of K&R-declared callees may carry stale registers in m2c output (npc_init_sub(p, 1) was really npc_init_sub(p)); a 5th pl_chr_set arg (t0) is real.
+
+### mc low level (0x27EF60-0x27FDF0): 13 of 15 built (mclowb/d/c.c), main OK
+PS2 memory card step machines (MCW work struct in mclow_nm.c). Built: MemcardInit, McReadClock, mc_sync, mc_check_file, mc_read_file, mc_mkdir, mc_create_file,
+mc_write_file, mc_attr_file, mc_format, mc_unformat, mc_get_dir. Not written yet: mc_check_card (0x27F1C0). Near-match: mc_delete_dir (58/116, block layout of the
+shared error exit). Lessons: (1) m2c drops trailing call args: sceMcGetDir takes 6 (port,0,path,0,1,table), sceMcSetFileInfo 5; check the asm for t0/t1 setup, and look
+at which symbol the last arg is (mc_attr_file passes info_attr, the others mc_dir: the rebuild caught it, check.py cannot). (2) the original `default: return -1;`
+reached from several exits = `break;` in every case and one `return -1;` after the switch; the shared error block lives INSIDE case 0 as a label (`err:`)
+and later cases `goto err` (mc_read_file/mc_write_file/mc_create_file). (3) <=8 byte globals are gp-relative: declare `u8 keep_rtc[8]`. (4) the weekday formula:
+`(day + (year + year/4 - year/100 + year/400 + (mon*13+8)/5)) % 7` with `u16 year` (McReadClock, found by trying ~20 parenthesisations with a loop).
+(5) Beware overlapping struct fields when sizing arrays: state[3]/info[3], not [4].
+
+### Status of assignment 3 (end of this pass) and what is left
+Done (built, main OK): staff (2/4 functions), movie (8/9), evdemo (6/6), omake/mode select (14/20), mc save helpers (9/12), npc (8/10), mc low level (13/15).
+Written but not built (near-match files): staff_nm.c, movie_nm.c (movie_draw), omake_nm.c (6 functions), mcsave_nm.c, npc_nm.c (npc_trans, npc_move), mclow_nm.c (mc_delete_dir).
+Not started (in order of usefulness): McAct*/mc_act_* (0x27FDF0-0x280EF0, drafts via tools/draft.py work, jump table mc_act_jmp), disp_savesel* (0x280EF0),
+mc_*_ck and trans_card_0 (0x281BC0-0x2822B0), the ~90 CardAtld/CardOptsv/CardCmsv/CardConld/CardOnsv/CardOfsv/CardEasysv step functions (0x2822B0-0x2860D0,
+mostly 100-400 bytes each), net file load/save (0x2869A0-0x28BEC0), player sound wrappers sound_call*/wall_sd_req/ashi_sd_req/yoroi_sd_req (0x24A2A0-0x24A790, 1.3K,
+frame_check takes a float in f12), the IME/dictionary engine (0x23E500-0x24A240, 258 functions, low value for the port), and all network code (0x22C670-0x23A0F0, 0x22F800
+on: AQ, Ave, mcsls, Inet; Sony/Capcom online stack, skipped on purpose because the port has no online mode).
+Library code 0x1A0000-0x218000 (newlib, libm, Sony sce*, CRI Sofdec/ADX) is GCC-built: not matchable with MWCC.
+Check list when continuing: always run `tools/rebuild.sh main` after registering: check.py masks relocation addends (wrong Psw index, wrong table symbol, gp-relative
+globals) and absolute calls into other modules.

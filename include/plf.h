@@ -155,7 +155,7 @@ typedef struct { s16 chr; s16 mot; s16 flag12; s16 next; } PL_MV_ENT;
 extern PL_MV_ENT mv004_chr_tbl0[7], mv004_chr_tbl1[7], mv004_chr_tbl2[7], mv004_chr_tbl3[7];
 void pl_mv004(PLW *, u32);
 void pl_mv021(PLW *, s32);
-void pl_mv060(PLW *);
+void pl_mv060(); /* K&R: pl_normal calls it as (pl, 0) */
 extern s16 mv001_tbl[];
 int frame_check(f32, PLW *, int);
 void pl_mv001(PLW *, u32);
@@ -203,8 +203,8 @@ void Pachinger_set_quake_sub(PLW *, int);
 void func_62A6C0(PLW *, int, int);
 void pl_to_normal_b(PLW *, int, int, int);
 void pl_at008(PLW *, s32);
-void pl_at009(PLW *);
-void pl_at012(PLW *);
+void pl_at009(); /* K&R: pl_attack calls it as (pl, 0) */
+void pl_at012(); /* K&R: pl_attack calls it as (pl, 0) */
 s32 Get_string_pow(PLW *, u8);
 typedef struct { s16 chr; u16 a; u16 b; } PL_AT008_ENT;
 extern PL_AT008_ENT at008_tbl[3];
