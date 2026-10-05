@@ -63,7 +63,7 @@ always been a struct field type or a lost field.
 
 - A (Opus): PC renderer prototype, src/pc/ (docs/pc.md when done).
 - B (Opus, next on Sonnet): per-monster AI files f_em_*.s.
-- C (Opus, next on Sonnet): shared monster code (f_em.s and friends).
+- C (Sonnet): em_core near-match leftovers, then f_menu in main (f_em core linked as em_core*.c).
 - D (Opus, next on Sonnet): hit/cam/weapon in main.
 - E (Sonnet): game flow in main (f_game, f_stage, f_reward, f_quest).
 - F (Sonnet): player code f_pl.s in main.
