@@ -109,7 +109,7 @@ typedef struct EMW {
     u8 _pad350[0x388 - 0x350];
     u8 x388;            /* 0x388 non-zero keeps set20's gate shut */
     u8 _pad389[0x38E - 0x389];
-    s8 x38E;            /* 0x38E */
+    u8 x38E;            /* 0x38E (u8: lbu in em01_main, damage part index) */
     u8 _pad38F[0x390 - 0x38F];
     s32 x390;           /* 0x390 */
     s32 x394;           /* 0x394 */
