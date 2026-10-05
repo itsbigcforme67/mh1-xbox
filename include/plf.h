@@ -236,4 +236,6 @@ extern s8 piyo_ret_tbl[6];
 void egg_com_ck(PLW *, int);
 void pl_egg03(PLW *, s32);
 void pl_egg05(PLW *, s32);
+typedef struct { s16 a; s16 b; } PL_CHAT09_ENT;
+extern PL_CHAT09_ENT chat09_chr_tbl_002F17C0[4];
 #endif
