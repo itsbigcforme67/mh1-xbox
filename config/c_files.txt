@@ -983,3 +983,5 @@ main 0x001267C0 0x00127440 option/option01
 main 0x0011CDF0 0x0011D270 item/item01
 main 0x0011D560 0x0011D59C item/item02
 main 0x0011D840 0x0011DB04 item/item03
+main 0x00271FB0 0x00272010 ud/udmisc01
+main 0x00272280 0x002723E8 ud/udmisc02
