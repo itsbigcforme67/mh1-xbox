@@ -179,6 +179,8 @@ void Em_Mode_Chg(EMW *, int, int);
 void Quest_enemy_die(EMW *);
 void Em_hagi_point_set(EMW *, int);
 int Em_hagi_point_cnt_ck(EMW *);
+void cpRotMatrixYXZ2(s32 *, FLMAT *);
+void Eft13_set_em(EMW *, int, int);
 void em01_to_normal();
 void em01_to_fly();
 void em01_frame_reset();
@@ -4883,4 +4885,238 @@ static void em_move05_00573F70(EMW *em, EM01W *w) {
         em_die02_00573480(em, w);
         break;
     }
+}
+
+/* Demo (event) flight: the monster picks up / follows the em at x944 (the partner), lands near it and roars. */
+static void em_demo00_00571750(EMW *em, EM01W *w) {
+    EMW *t;
+    STAGE_DATA *sd;
+    f32 v[3];
+    f32 inA[3];
+    f32 outA[3];
+    s32 angA[3];
+    f32 inB[3];
+    f32 outB[3];
+    s32 angB[3];
+    FLMAT matA;
+    FLMAT matB;
+    f32 adj;
+
+    t = em->x944;
+    sd = Stage_data_get(em->stg);
+    if (t == 0) {
+        SetVector(v, 10000.0f, 0.0f, 10000.0f);
+    } else {
+        SetVector(v, t->pos[0], t->pos[1], t->pos[2]);
+    }
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 2;
+        em->adj_z = 100.0f;
+        em->tgt_pos[0] = 3000.0f;
+        em->tgt_pos[1] = 2000.0f;
+        em->tgt_pos[2] = 9000.0f;
+        break;
+    case 1:
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        em01_senkai_sub(em, 7, 1);
+        if (100.0f < em->adj_z) {
+            em->adj_z -= 2.0f;
+        } else if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 4000.0f) {
+            em->x05++;
+            em->work08 = 0x384;
+        }
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (em->x74C != 0) {
+            w->spd[0] = 0;
+            adj = em->adj_y;
+            if (adj < 0.0f) {
+                em->pos[1] -= adj;
+            }
+            em->pos[1] += 30.0f;
+        }
+        break;
+    case 2:
+        if (80.0f < em->adj_z) {
+            em->adj_z -= 1.0f;
+        }
+        w->dang = Em_Calc_angY(em->pos, v);
+        w->dang = w->dang - em->ang[1];
+        em01_senkai_sub(em, 3, 1);
+        if (w->dang <= 0x800 || w->dang >= 0xF800) {
+            if (CalcDistanceXZ(em->pos, v) > 4000.0f) {
+                em->x05++;
+                w->turn = 0x100;
+                em_char_set(em, 0x2C, 0, 0);
+                em->work08 = 0x708;
+            }
+        }
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (em->x74C != 0) {
+            w->spd[0] = 0;
+            adj = em->adj_y;
+            if (adj < 0.0f) {
+                em->pos[1] -= adj;
+            }
+            em->pos[1] += 30.0f;
+        }
+        if (--em->work08 <= 0 && em->x05 == 2) {
+            em->x05 = 0;
+        }
+        break;
+    case 3:
+        if (em->ang[2] != 0) {
+            if (em->ang[2] <= 0x8000) {
+                em->ang[2] = em->ang[2] - w->bank_spd;
+            } else {
+                em->ang[2] = em->ang[2] + w->bank_spd;
+            }
+        }
+        if (em_frame_check2(em, 0, 46.0f)) {
+            if (50.0f < em->adj_z) {
+                em->adj_z -= 0.1f;
+            }
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x57, 0, 0);
+            em->adj_z = 100.0f;
+            em->work08 = 0x708;
+        }
+        SetVector(em->tgt_pos, v[0], v[1], v[2]);
+        senkai_target(em);
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0xF;
+        speed_add(em, w->spd);
+        em->pos[1] -= 1.0f;
+        break;
+    case 4:
+        if (em->pos[1] <= 1000.0f + sd->floor_y) {
+            em->x05++;
+            em->work08 = 0x708;
+        }
+        if (kyusyu_char_set2_0057AAA0(em)) {
+            if (em->x05 == 4) {
+                em->x05++;
+                em->work08 = 0x708;
+            }
+        }
+        SetVector(em->tgt_pos, v[0], v[1], v[2]);
+        senkai_target(em);
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        xang_calc_target(em, w->spd, -3000.0f, 0.0f);
+        speed_add(em, w->spd);
+        break;
+    case 5:
+        kyusyu_char_set2_0057AAA0(em);
+        SetVector(em->tgt_pos, v[0], v[1], v[2]);
+        senkai_target(em);
+        if (!(200.0f + em->tgt_pos[1] < em->pos[1])) {
+            xang_calc_target(em, w->spd, 0.0f, 0.0f);
+        } else {
+            xang_calc_target(em, w->spd, -2000.0f, 0.0f);
+        }
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (CalcDistanceXZ(em->pos, v) <= 600.0f ||
+            (em->char0 == 0x415 && (em_frame_check2(em, 0, 52.0f) || em->x194 == 0))) {
+            em->x05++;
+            em->pos[1] = em->x5AC;
+            em->ang[0] = 0;
+            em->ang[2] = 0;
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            em_char_set(em, 0x29, 4, 0);
+            if (t != 0) {
+                angA[0] = 0;
+                angA[1] = em->ang[1];
+                angA[2] = 0;
+                SetVector(inA, 0.0f, 0.0f, 600.0f);
+                cpRotMatrixYXZ2(angA, &matA);
+                flvecApplyMat33(outA, inA, (f32 *)&matA);
+                t->pos[0] = em->pos[0] + outA[0];
+                t->pos[2] = em->pos[2] + outA[2];
+                if (t->mode != 6 || t->x15 != 1) {
+                    em_act_set(t, 6, 1);
+                    t->ang[1] = (em->ang[1] - 0x4000) & 0xFFFF;
+                }
+            }
+        }
+        break;
+    case 6:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x23, 0, 0);
+            if (t != 0) {
+                em_act_set(t, 6, 2);
+            }
+        }
+        if (t != 0) {
+            angB[0] = 0;
+            angB[1] = em->ang[1];
+            angB[2] = 0;
+            SetVector(inB, 0.0f, 0.0f, 600.0f);
+            cpRotMatrixYXZ2(angB, &matB);
+            flvecApplyMat33(outB, inB, (f32 *)&matB);
+            t->pos[0] = em->pos[0] + outB[0];
+            t->pos[2] = em->pos[2] + outB[2];
+            t->x40E = 5;
+        }
+        break;
+    case 7:
+        if (em_frame_check(em, 60.0f, 0) || em_frame_check(em, 202.0f, 0)) {
+            Eft13_set_em(em, 0x1C, 6);
+        }
+        if (em_frame_check(em, 52.0f, 0) || em_frame_check(em, 208.0f, 0)) {
+            Eft13_set_em(em, 0x16, 6);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x4F, 0, 0);
+            if (t != 0) {
+                em_act_set(t, 6, 3);
+            }
+        }
+        break;
+    case 8:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x3B, 0, 0);
+        }
+        break;
+    case 9:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 1, 0, 0);
+            if (t != 0) {
+                t->act_spd = 0.0f;
+            }
+        }
+        break;
+    case 10:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x14, 0, 0);
+        }
+        break;
+    case 11:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
 }
