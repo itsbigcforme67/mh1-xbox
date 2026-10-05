@@ -8,6 +8,7 @@ build/src/game/eft/eft18.c.o .rodata .data
 build/src/game/eft/eft18b.c.o .rodata .data
 build/src/game/eft/eft22.c.o .rodata .data
 build/src/game/eft/eft23.c.o .rodata .data
+build/src/game/em/em07.c.o .rodata .data
 build/src/game/set/set15.c.o .rodata .data
 build/src/game/set/set22.c.o .rodata .data
 build/src/game/shell/shell16.c.o .rodata .data

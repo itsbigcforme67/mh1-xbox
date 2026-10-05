@@ -54,7 +54,9 @@ typedef struct EMW {
     u8 mdl_no;          /* 0x34F model number (eft09_t: texture and matrix list) */
     u8 _pad350[0x388 - 0x350];
     u8 x388;            /* 0x388 non-zero keeps set20's gate shut */
-    u8 _pad389[0x50C - 0x389];
+    u8 _pad389[0x444 - 0x389];
+    u8 ex[0x50C - 0x444]; /* 0x444 per-monster work: each emNN.c lays out its own
+                         * struct here (EM07W...). The end is a guess. */
     struct EM_MDL *mdl; /* 0x50C model work */
     u8 _pad510[0x5AC - 0x510];
     f32 x5AC;           /* 0x5AC height used for set20's shell */
@@ -62,12 +64,19 @@ typedef struct EMW {
     u8 stg;             /* 0x736 */
     u8 _pad737[0x878 - 0x737];
     struct EFTW *tail;  /* 0x878 cut-tail effect (eft09_set) */
-    u8 _pad87C[0x884 - 0x87C];
+    u8 _pad87C[0x881 - 0x87C];
+    u8 x881;            /* 0x881 has a target (target position at 0x934) */
+    u8 _pad882[0x884 - 0x882];
     s8 x884;            /* 0x884 state flags picking eft19's model */
     s8 x885;            /* 0x885 */
     u8 _pad886[0x8B6 - 0x886];
     u8 x8B6;            /* 0x8B6 eyes shown (eft07) */
-    u8 _pad8B7[0x959 - 0x8B7];
+    u8 _pad8B7[0x8C3 - 0x8B7];
+    u8 x8C3;            /* 0x8C3 0: em_cdm_act_flag_ck runs before an action is set */
+    u8 _pad8C4[0x930 - 0x8C4];
+    f32 act_spd;        /* 0x930 animation speed, 1.0 set by every em*_act_set (guess) */
+    f32 tgt_pos[3];     /* 0x934 target position (CalcDistanceXZ/Em_Calc_angY from pos) */
+    u8 _pad940[0x959 - 0x940];
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
     u8 _pad95A[0x9EA - 0x95A];
     s8 x9EA;            /* 0x9EA trap state (shell12_m) */
