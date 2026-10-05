@@ -724,4 +724,6 @@ lobby 0x005ACF50 0x005AD024 cnet/cnlbs35
 lobby 0x005AD0F0 0x005AD1AC cnet/cnlbs36
 lobby 0x005AD240 0x005AD308 cnet/cnlbs37
 lobby 0x005AD440 0x005AD61C cnet/cnlbs38
-lobby 0x005AD7E0 0x005ADB58 cnet/cnlbs39
+lobby 0x005AD7E0 0x005ADBB8 cnet/cnlbs39
+lobby 0x005ADCE0 0x005AE160 cnet/cnlbs40
+lobby 0x005AE300 0x005AE320 cnet/cnlbs41

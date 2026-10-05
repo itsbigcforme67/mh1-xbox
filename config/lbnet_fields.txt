@@ -60,3 +60,5 @@
 0x15D2 char decide_id[8] decided user id
 0x15DA char decide_handle[0x10] decided user handle
 0x3FEE u8 extra_member[0x60] extra member entry
+0x378C0 char srvmsg[0x300] server message
+0xFEE u16 xfee

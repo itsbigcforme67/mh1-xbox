@@ -132,7 +132,8 @@ typedef struct CNET_SYS {
     u16 rseq;  /* 0xFE8 sequence of the last packet */
     u16 rseq2;  /* 0xFEA  */
     s8 rres;  /* 0xFEC result byte */
-    u8 _padFED[0x3];
+    u8 _padFED[0x1];
+    u16 xfee;  /* 0xFEE  */
     s32 xff0;  /* 0xFF0  */
     s32 xff4;  /* 0xFF4  */
     u8* xff8;  /* 0xFF8  */
@@ -196,7 +197,7 @@ typedef struct CNET_SYS {
     CNET_CHAT chat;  /* 0x30B8A chat message being received */
     u8 _pad30CAA[0x690E];
     CNET_B308 chatbin;  /* 0x375B8 chat binary */
-    u8 _pad378C0[0x300];
+    char srvmsg[0x300];  /* 0x378C0 server message */
     CNET_BUF2000 loginbuf;  /* 0x37BC0  */
     u8 _pad39BC0[0x1E98];
     s16 curplace[3];  /* 0x3BA58 current place (3 values) */
@@ -214,7 +215,7 @@ typedef unsigned long long u64;
 typedef struct SEND_WORK {
     u16 total;          /* 0x00 bytes after the header (written to the socket + 0xC) */
     u16 len;            /* 0x02 payload length */
-    s8 magic;           /* 0x04 0x81 */
+    u8 magic;           /* 0x04 0x81 (0x82 for Mcs) */
     u8 cat;             /* 0x05 category */
     u8 cmd_h;           /* 0x06 */
     u8 cmd_l;           /* 0x07 */

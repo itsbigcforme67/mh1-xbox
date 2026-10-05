@@ -1,4 +1,4 @@
-/* cnlbs, run 40: cnLBS_LogoutLobbyServer .. _cnet_RecvFromLbs_NoticeLobbyFull (lobby.bin 0x005AD7E0-0x005ADB58): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 40: cnLBS_LogoutLobbyServer .. GetRecvData32 (lobby.bin 0x005AD7E0-0x005ADBB8): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 
 int cnLBS_LogoutLobbyServer(int arg0) {
@@ -96,4 +96,32 @@ void _cnet_RecvFromLbs_NoticeMatchCancel(void) {
 void _cnet_RecvFromLbs_NoticeLobbyFull(void) {
     __cnet_Recv_ServerMessage();
     _cnetEvent_JumpCallBack(8, 0);
+}
+
+int GetRecvData8(dst, src)
+u8 *dst;
+u8 *src;
+{
+    *dst = *src;
+    return (int)(src + 1);
+}
+
+int GetRecvData16(dst, src)
+u8 *dst;
+u8 *src;
+{
+    dst[1] = src[0];
+    dst[0] = src[1];
+    return (int)(src + 2);
+}
+
+int GetRecvData32(dst, src)
+u8 *dst;
+u8 *src;
+{
+    dst[3] = src[0];
+    dst[2] = src[1];
+    dst[1] = src[2];
+    dst[0] = src[3];
+    return (int)(src + 4);
 }
