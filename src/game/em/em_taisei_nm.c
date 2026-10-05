@@ -1,6 +1,7 @@
 /* em_taisei_nm - game.bin 0x00559260-0x0055B054 (whole file, not built;
- * Em_Taisei_Damage_Check and Em_Taisei_Ck are near-matches, em_eye_dmg_act_set
- * and Em_Dmg_Sys are not written yet): status effects on monsters
+ * Em_Taisei_Damage_Check and em_eye_dmg_act_set match; Em_Taisei_Ck (2 off) and
+ * Em_Dmg_Sys (10 off: register of the hagitori counter, one branch shape) are
+ * near-matches): status effects on monsters
  * (poison, sleep, sleep2, paralysis "mahi"): stocking up damage until the
  * tolerance in em->*_tol is reached, then flagging the state in em->taisei
  * (bits 1 sleep2, 2 sleep, 4 poison, 8 paralysis). Meanings are guesses. */
@@ -38,6 +39,219 @@ u8 Em_Taisei_Damage_Check(EMW *em) {
 void em01_act_set(EMW *, int, u16, u16);
 void em08_act_set(EMW *, int, u16, u16);
 void em21_act_set(EMW *, int, u16, u16);
+
+void em02_act_set(EMW *, int, u16, u16);
+void em04_act_set();
+void em09_act_set();
+void em33_act_set(EMW *, int, u16, u16);
+void em_act_set(EMW *, int, u16);
+void Eft24_set_em(EMW *, int, int, int, f32, f32);
+s16 act_ck(EMW *, int, int);
+extern s16 em_eye_dmg_timer_tbl[];
+
+#define EYE_EFF(sz, no, sc) \
+    em->x88B = 0; \
+    em->x94E = em_eye_dmg_timer_tbl[em->kind]; \
+    Eft24_set_em(em, 2, no, em->x94E, sz, sc)
+#define EYE_OK() (em->x8C3 == 0 && em->x9EA == 0 && !(em->taisei & 8))
+
+/* A monster's reaction when its eyes are hit: per kind, starts the action
+ * (mode 4) that plays the eye-damage animation and a flash effect, unless
+ * a protected state is active. */
+void em_eye_dmg_act_set(EMW *em) {
+    switch (em->kind) {
+    case 1:
+    case 6:
+    case 11:
+    case 17:
+    case 20:
+    case 22:
+        EYE_EFF(150.0f, 0x22, 3.0f);
+        if (EYE_OK()) {
+            if (em->x388 == 2) {
+                em->x839 = 0;
+                em01_act_set(em, 4, 9, 2);
+                return;
+            }
+            em->x839 = 0;
+            em01_act_set(em, 4, 0xA, 2);
+        }
+        break;
+    case 14:
+    case 26:
+        if (em->x388 == 4) {
+            break;
+        }
+        EYE_EFF(150.0f, 0x22, 3.0f);
+        if (EYE_OK()) {
+            if (em->x388 == 2) {
+                em->x839 = 0;
+                em01_act_set(em, 4, 9, 2);
+                return;
+            }
+            if (em->mode == 2 || (em->mode == 0 && em->x15 == 0x1C) || (em->mode == 0 && em->x15 == 0x1D) ||
+                (em->mode == 0 && em->x15 == 0x21) || (em->mode == 4 && em->x15 == 6) ||
+                (em->mode == 4 && em->x15 == 0xD) || (em->mode == 4 && em->x15 == 0xE) ||
+                (em->mode == 4 && em->x15 == 0x11) || (em->mode == 4 && em->x15 == 0x12)) {
+                break;
+            }
+            em->x839 = 0;
+            em01_act_set(em, 4, 0xA, 2);
+            return;
+        }
+        break;
+    case 2:
+        EYE_EFF(150.0f, 0x33, 3.0f);
+        if (EYE_OK()) {
+            if (em->x388 == 2) {
+                em->x839 = 0;
+                em02_act_set(em, 4, 8, 2);
+                return;
+            }
+            em->x839 = 0;
+            em02_act_set(em, 4, 7, 2);
+            return;
+        }
+        break;
+    case 9:
+    case 23:
+        if (EYE_OK() && em->x388 == 0) {
+            if (em->mode != 4 && em->mode != 5 && em->mode != 6 && act_ck(em, 4, 2) == 0) {
+                em->x839 = 0;
+                em->x94E = em_eye_dmg_timer_tbl[em->kind];
+                em->work08 = em->x94E;
+                Eft24_set_em(em, 2, 0, em->x94E, 90.0f, 1.0f);
+                em09_act_set(em, 4, 2, 0);
+                return;
+            }
+        }
+        break;
+    case 4:
+        if (em->x8C3 == 0 && em->x388 == 0) {
+            if (em->mode != 4 && em->mode != 5 && em->mode != 6 && act_ck(em, 4, 4) == 0) {
+                em->x839 = 0;
+                em->x94E = em_eye_dmg_timer_tbl[em->kind];
+                em->work08 = em->x94E;
+                Eft24_set_em(em, 2, 0, em->x94E, 100.0f, 1.0f);
+                em04_act_set(em, 4, 4, 0);
+                return;
+            }
+        }
+        break;
+    case 13:
+    case 16:
+    case 27:
+    case 28:
+    case 30:
+    case 31:
+        EYE_EFF(50.0f, 0xE, 1.0f);
+        if (EYE_OK()) {
+            if (em->x388 == 2) {
+                em->x839 = 0;
+                em01_act_set(em, 4, 1, 2);
+                return;
+            }
+            em->x839 = 0;
+            em01_act_set(em, 4, 5, 2);
+            return;
+        }
+        break;
+    case 12:
+    case 25:
+        EYE_EFF(50.0f, 0xF, 1.5f);
+        if (EYE_OK()) {
+            em->x839 = 0;
+            em_act_set(em, 4, 5);
+            return;
+        }
+        break;
+    case 21:
+        EYE_EFF(150.0f, 0x22, 3.0f);
+        if (EYE_OK()) {
+            switch (em->x388) {
+            case 0:
+                em->x839 = 0;
+                em21_act_set(em, 4, 0xA, 2);
+                return;
+            case 1:
+                em->x839 = 0;
+                em21_act_set(em, 4, 4, 2);
+                return;
+            case 4:
+                em->x839 = 0;
+                em21_act_set(em, 4, 0x11, 2);
+                return;
+            case 2:
+                em->x839 = 0;
+                em21_act_set(em, 4, 9, 2);
+                return;
+            default:
+                em->x839 = 0;
+                em21_act_set(em, 4, 0xA, 2);
+                return;
+            }
+        }
+        break;
+    case 8:
+    case 34:
+        EYE_EFF(150.0f, 0x22, 3.0f);
+        if (EYE_OK()) {
+            switch (em->x388) {
+            case 0:
+                em->x839 = 0;
+                em08_act_set(em, 4, 0xA, 2);
+                return;
+            case 1:
+                em->x839 = 0;
+                em08_act_set(em, 4, 4, 2);
+                return;
+            case 4:
+                em->x839 = 0;
+                em08_act_set(em, 4, 0x11, 2);
+                return;
+            case 2:
+                em->x839 = 0;
+                em08_act_set(em, 4, 9, 2);
+                return;
+            default:
+                em->x839 = 0;
+                em08_act_set(em, 4, 0xA, 2);
+                return;
+            }
+        }
+        break;
+    case 3:
+        EYE_EFF(50.0f, 0x17, 1.5f);
+        if (EYE_OK()) {
+            em->x839 = 0;
+            em_act_set(em, 4, 4);
+            return;
+        }
+        break;
+    case 19:
+    case 24:
+        EYE_EFF(20.0f, 8, 1.0f);
+        if (EYE_OK()) {
+            switch (em->x388) {
+            case 0:
+                em_act_set(em, 4, 5);
+                return;
+            case 2:
+                em_act_set(em, 4, 4);
+                return;
+            }
+        }
+        break;
+    case 33:
+        EYE_EFF(50.0f, 0x17, 1.5f);
+        if (EYE_OK()) {
+            em->x839 = 0;
+            em33_act_set(em, 4, 4, 2);
+        }
+        break;
+    }
+}
+
 
 void em_eye_dmg_reset_act_set(EMW *em) {
     switch (em->kind) {
@@ -416,7 +630,6 @@ void em_cmd_reset(EMW *em);
 void pl_flag_clr(EMW *em, u32 bits);
 void em_hinshi_end2(EMW *em);
 void em_hagitori_lv_up(EMW *em, u8 bits);
-void em_eye_dmg_act_set(EMW *em, int a);
 void em_search_data_set(EMW *em, u8 no);
 void em_range_set(EMW *em, s8 no);
 extern s16 em_atk_mode_timer_tbl[];
@@ -578,7 +791,7 @@ hagi:
     } else {
         if (em->x8BC != 0) {
             em->x8BC = 0;
-            em_eye_dmg_act_set(em, 4);
+            em_eye_dmg_act_set(em);
             r = 9;
             goto fin;
         }

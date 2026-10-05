@@ -358,3 +358,9 @@ real struct members of EMW (em.h now has f32 uv[4][3] at 0x5C0, u16 uvtm[4] at 0
 `lhu x(t2)` with an unfolded constant offset, the data is a struct field array, not a cast pointer. Linked as tiny runs em01_uv.c .. em27_uv.c
 (500 bytes each); do NOT regenerate runs from the *_nm.c files: the run files carry hand edits (static ef_move_sub etc.). em*_effect_move
 (6 instrs, eff register a2/v1 vs v1/v0) is still open.
+
+# em_taisei_nm.c (agent C's file, finished by B)
+Written: em_eye_dmg_act_set (matches; no `default:` label: a jump-table switch whose holes jump to the end needs `break` instead),
+Em_Dmg_Sys (10 instrs off), Em_Taisei_Damage_Check now matches (`u8 t = x & ~4; u8 u; u = t & 0xFF;` gives the extra andi).
+EMW.hagi is now EM_HAGI hagi[8] (hp s16, cnt u8): real struct member arrays keep the em+const offsets unfolded (same lesson as uvmove).
+Not linked yet because the file still has two near-matches inside (Em_Taisei_Ck, Em_Dmg_Sys); the matching ones could be split out with mkruns_nm.py.
