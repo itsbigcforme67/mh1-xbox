@@ -443,3 +443,10 @@ void em_sleep_eff_set(EMW *em, int a, f32 *pos, f32 scale)
     if (t == 0 || t == 10 || t == 20)
         Eft06_set2(scale, em, 4, a, pos);
 }
+
+/* drawn by the host: the work is in use and on the current stage */
+int rt_monster_shown(int no)
+{
+    EMW *em = &em_work[no];
+    return em->be_flag && em->stg == game_w.stage;
+}

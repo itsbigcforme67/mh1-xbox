@@ -946,3 +946,4 @@ result_w
 reward_item_base
 reward_w
 verify_button_00387D30
+em18_act_tbl

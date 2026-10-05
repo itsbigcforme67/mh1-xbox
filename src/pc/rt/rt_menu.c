@@ -18,6 +18,7 @@
 #define PS16(p, o) (*(s16 *)((u8 *)(p) + (o)))
 
 int Modori_dama_ck(void);
+long Pl_item_num_ck(PLW *, u16);
 
 /* UseItemChk (0x275230): pouch slot n holds an item (count > 0) whose
  * Item_data kind byte (+1) is 1 (usable) */

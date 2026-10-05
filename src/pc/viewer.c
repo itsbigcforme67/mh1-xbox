@@ -493,6 +493,72 @@ static const char *script = NULL;
 static float hunter_yoff = 0;
 
 
+/* ------------------------------------------------------------ stage files
+ * The stage's area model + set model (stage.md 1) and collision, found
+ * through main's per-stage tables (stage 4 = st04, st04_1, lg004). Used at
+ * start-up and, as st_model_load, when the game changes stage (game2 steps
+ * 2-6: area exits, the cart back to camp). */
+static int load_stage_models(int st)
+{
+    fl_model old_stage = stage, old_set = set;
+    int k, reload = stage.npart > 0;
+    for (k = 0; k < 4; k++)
+        if (reload) {
+            free(keep[k]);
+            keep[k] = NULL;
+        }
+    stage_link = load_stage_file(0x2EC950, st, &keep[0]);   /* stage_model_data */
+    stage_tex = load_stage_file(0x2EDB40, st, &keep[1]);    /* STAGE_TEX */
+    set_link = load_stage_file(0x2ECD70, st, &keep[2]);     /* set_model_data */
+    set_tex = load_stage_file(0x2EF130, st, &keep[3]);      /* SET_TEX */
+    /* collision: the game's load_stage_hit (wall + ground HITS files) */
+    rt_set_file_loader(afs_entry);
+    if (rt_load_stage_hit(st) != 0)
+        fprintf(stderr, "stage %d: no ground collision\n", st);
+    if (!stage_link.p || fl_model_create(&stage, fmt_link_entry(stage_link, 0, FMT_LE),
+                                         fmt_link_entry(stage_link, 1, FMT_LE), stage_tex, 0, FMT_LE) != 0) {
+        fprintf(stderr, "stage %d: load failed\n", st);
+        return -1;
+    }
+    memset(&set, 0, sizeof set);
+    if (set_link.p)
+        fl_model_create(&set, fmt_link_entry(set_link, 0, FMT_LE), fmt_link_entry(set_link, 1, FMT_LE),
+                        set_tex, 0, FMT_LE);
+    {                           /* the area model to the game C (stage_work.mdl) */
+        gfx_clay *c[64];
+        uint32_t at[64];
+        int k, nc = stage.npart < 64 ? stage.npart : 64;
+        for (k = 0; k < nc; k++) {
+            c[k] = stage.part[k].clay;
+            at[k] = part_attr(&stage, k);
+        }
+        rt_bind_stage_model(c, at, nc);
+    }
+    if (set.npart) {            /* hand the set model to the game C (set_mdlw) */
+        gfx_clay *c[64];
+        uint32_t at[64];
+        int k, nc = set.npart < 64 ? set.npart : 64;
+        for (k = 0; k < nc; k++) {
+            c[k] = set.part[k].clay;
+            at[k] = part_attr(&set, k);
+        }
+        set_h0 = rt_bind_set_model(c, at, nc);
+    }
+    if (reload) {
+        fl_model_release(&old_stage);
+        if (old_set.npart)
+            fl_model_release(&old_set);
+        stage_no = st;
+        if (game_cam)
+            rt_cam_init(st);            /* the stage's camera file */
+        if (snd == 0) {
+            static const int em_kinds[1] = { 1 };
+            rt_snd_stage(st, em_kinds, 1);
+        }
+    }
+    return 0;
+}
+
 /* ------------------------------------------------------------ one game tick
  * What game_core does on the PS2 (swset, move, trans, hit_check), done by
  * the host pieces in the PS2 order. With --quest it runs inside the game's
@@ -626,14 +692,8 @@ int main(int argc, char **argv)
     }
     /* the stage's area model + set model (stage.md 1), ground collision,
      * found through main's per-stage tables (stage 4 = st04, st04_1, lg004) */
-    stage_link = load_stage_file(0x2EC950, stage_no, &keep[0]);   /* stage_model_data */
-    stage_tex = load_stage_file(0x2EDB40, stage_no, &keep[1]);    /* STAGE_TEX */
-    set_link = load_stage_file(0x2ECD70, stage_no, &keep[2]);     /* set_model_data */
-    set_tex = load_stage_file(0x2EF130, stage_no, &keep[3]);      /* SET_TEX */
-    /* collision: the game's load_stage_hit (wall + ground HITS files) */
-    rt_set_file_loader(afs_entry);
-    if (rt_load_stage_hit(stage_no) != 0)
-        fprintf(stderr, "stage %d: no ground collision\n", stage_no);
+    if (load_stage_models(stage_no) != 0)
+        return 1;
     if (stage_no != 4) {
         /* no hand-picked spots: the hunter at the stage's start position
          * (stage_start_pos, main 0x2F2620, also used by set09/em19), else
@@ -667,35 +727,6 @@ int main(int argc, char **argv)
             cam[3] = 0;
             cam[4] = -0.15f;
         }
-    }
-    if (!stage_link.p || fl_model_create(&stage, fmt_link_entry(stage_link, 0, FMT_LE),
-                                         fmt_link_entry(stage_link, 1, FMT_LE), stage_tex, 0, FMT_LE) != 0) {
-        fprintf(stderr, "stage load failed\n");
-        return 1;
-    }
-    memset(&set, 0, sizeof set);
-    if (set_link.p)
-        fl_model_create(&set, fmt_link_entry(set_link, 0, FMT_LE), fmt_link_entry(set_link, 1, FMT_LE),
-                        set_tex, 0, FMT_LE);
-    {                           /* the area model to the game C (stage_work.mdl) */
-        gfx_clay *c[64];
-        uint32_t at[64];
-        int k, nc = stage.npart < 64 ? stage.npart : 64;
-        for (k = 0; k < nc; k++) {
-            c[k] = stage.part[k].clay;
-            at[k] = part_attr(&stage, k);
-        }
-        rt_bind_stage_model(c, at, nc);
-    }
-    if (set.npart) {            /* hand the set model to the game C (set_mdlw) */
-        gfx_clay *c[64];
-        uint32_t at[64];
-        int k, nc = set.npart < 64 ? set.npart : 64;
-        for (k = 0; k < nc; k++) {
-            c[k] = set.part[k].clay;
-            at[k] = part_attr(&set, k);
-        }
-        set_h0 = rt_bind_set_model(c, at, nc);
     }
     load_eft_models();
     rt_game_init(stage_no);
@@ -813,6 +844,7 @@ int main(int argc, char **argv)
     if (!shot)
         SDL_SetRelativeMouseMode(SDL_TRUE);
     rt_flow_set_core(sim_tick);
+    rt_set_stage_loader(load_stage_models);
     t0 = SDL_GetTicks();
     while (running) {
         SDL_Event ev;
@@ -922,8 +954,10 @@ int main(int argc, char **argv)
             rt_stage_draw();            /* trans_stage: area model + placed set parts */
         }
         rt_game_draw();                 /* game C prims (set14 waterfalls) */
-        gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)rathian.world);
-        draw_model_attr(&rathian.model, -1);
+        if (rt_monster_shown(0)) {     /* in use and on this stage */
+            gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)rathian.world);
+            draw_model_attr(&rathian.model, -1);
+        }
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)pl.world);
         {
             int s;

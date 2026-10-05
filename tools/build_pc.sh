@@ -74,7 +74,7 @@ PL="$(ls src/main/pl/pl[0-9][0-9].c | tr '\n' ' ') src/main/pl/pl_nm.c src/main/
 # em_cmd_nm.c, the command interpreter); src/pc/rt/rt_em.c has weak
 # stand-ins for what is missing.
 EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c src/game/em/em_taisei_nm.c \
-    src/game/em/em01.c src/game/em/em01_horm.c"
+    src/game/em/em01.c src/game/em/em01_horm.c src/game/em/em18_init.c src/game/em/em18b.c"
 # Quest flow (agent C/E): f_quest (whole file near-match) and its first
 # part f_quest0_nm.c (accessors, Quest_init; written from the asm), the
 # tutorial checks it calls (game.bin tutorial.c)

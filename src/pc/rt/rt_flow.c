@@ -24,8 +24,8 @@ void rt_prims_reset(void);
 
 #define WEAK __attribute__((weak))
 static void once(const char *n) { if (getenv("RT_TRACE")) fprintf(stderr, "rt_flow: %s not ported (no-op)\n", n); }
-#define NOP(name) WEAK void name() { static int o; if (!o++) once(#name); }
-#define NOP0(name) WEAK int name() { static int o; if (!o++) once(#name); return 0; }
+#define NOP(name) void name() { static int o; if (!o++) once(#name); }
+#define NOP0(name) int name() { static int o; if (!o++) once(#name); return 0; }
 
 /* ------------------------------------------------ the host tick as game_core */
 static void (*core_fn)(void);
@@ -90,17 +90,34 @@ int rt_flow_tick(void)
     return m;
 }
 
+/* ------------------------------------------------ stage change (game2 steps 2-6)
+ * st_model_load(stage) (main 0x11EE00..) loads the area and set models;
+ * the host loads the stage's files, collision, camera file and sound
+ * itself (viewer.c registers the loader). The sound joint loads count as
+ * done at once. */
+static int (*stage_loader)(int);
+void rt_set_stage_loader(int (*fn)(int)) { stage_loader = fn; }
+void st_model_load(int stage)
+{
+    if (getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "rt_flow: st_model_load(%d)\n", stage);
+    if (stage_loader)
+        stage_loader(stage);
+}
+int snd_joint_load() { return 1; }
+int snd_joint_load_pl() { return 1; }
+
 /* ------------------------------------------------ loading / system (no-ops) */
 NOP(flFlip) NOP(flSndPortStop) NOP0(flSndPackLoadStatus) NOP0(load_busy_ck) NOP(FlushCache)
 NOP(snd_joint_load_init) NOP(load_bin_req) NOP(flSndPackLoadBG2) NOP(flSndPackLoadBG)
-NOP(all_reset) NOP(view_reset) NOP(stage_fog_set) NOP(stage_bgm_set) NOP0(snd_joint_load)
-NOP(round_init) NOP(flCompact) NOP(fade_set) NOP(DispWholeMap) NOP(Zero_rev_set) NOP(vib_stop_all)
-NOP(Tsk_Execute) NOP(st_model_load) NOP(stage_w_init) NOP(stage_load) NOP(stage_init)
-NOP(stage_free) NOP0(snd_joint_load_pl) NOP(smoke_init) NOP(smell_init) NOP(senko_init) NOP(prim_init)
+NOP(all_reset) NOP(view_reset) NOP(stage_bgm_set) 
+NOP(round_init) NOP(flCompact) NOP(fade_set) NOP(Zero_rev_set) NOP(vib_stop_all)
+NOP(Tsk_Execute) NOP(stage_load) NOP(stage_init)
+NOP(stage_free)  NOP(smoke_init) NOP(smell_init) NOP(senko_init) NOP(prim_init)
 NOP(Plsel_task) NOP(ot_init) NOP0(net_start_ck) NOP(net_receive_pl_pos_set) NOP(Load_overlay)
 NOP(init_light_work) NOP(flInitPhaseStarted) NOP(flInitPhaseFinished) NOP(EvDemoMove)
 NOP(EvDemoInitialize) NOP(em_yobi_init) NOP(em_effect_pull) NOP(ear_init) NOP(Disp_load_start)
-NOP(Copy_user_id) NOP(Disp_NowLoading2) NOP(Start_item_init)
+NOP(Copy_user_id) NOP(Disp_NowLoading2)
 
 /* ------------------------------------------------ 2D (replaced as it is ported) */
-NOP(SpritePut) NOP(trans) NOP(result_prog) NOP(Info_control) NOP(Info_Initialization)
+NOP(SpritePut) NOP(trans)

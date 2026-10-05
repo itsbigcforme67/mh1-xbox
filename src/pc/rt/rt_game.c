@@ -92,12 +92,26 @@ int rt_clay_claimed(int handle)
     return handle >= 0 && handle < nclays && claimed[handle];
 }
 
+/* a model's clays bound again (stage change): the handles of the previous
+ * model are reused, so handles kept by game C stay valid */
+static int rebind_clay(int old, gfx_clay *c)
+{
+    if (old >= 0 && old < nclays) {
+        clays[old] = c;
+        claimed[old] = 0;
+        return old;
+    }
+    return rt_register_clay(c);
+}
+
 int rt_bind_set_model(gfx_clay *const *c, const uint32_t *attr, int n)
 {
-    int i;
+    int i, old[64];
+    for (i = 0; i < 64; i++)
+        old[i] = set_mdl.flag && set_clay[i].handle >= 0 ? set_clay[i].handle : -1;
     memset(set_clay, 0, sizeof set_clay);
     for (i = 0; i < 64; i++) {
-        set_clay[i].handle = i < n ? rt_register_clay(c[i]) : -1;
+        set_clay[i].handle = i < n ? rebind_clay(old[i], c[i]) : -1;
         set_clay[i].attr = i < n && attr ? (s32)attr[i] : 0;
     }
     set_mdl.flag = 1;
@@ -109,12 +123,14 @@ int rt_bind_set_model(gfx_clay *const *c, const uint32_t *attr, int n)
 
 int rt_bind_stage_model(gfx_clay *const *c, const uint32_t *attr, int n)
 {
-    int i;
+    int i, old[64];
+    for (i = 0; i < 64; i++)
+        old[i] = stage_mdl.flag && stage_clay[i].handle >= 0 ? stage_clay[i].handle : -1;
     memset(stage_clay, 0, sizeof stage_clay);
     if (n > 64)
         n = 64;
     for (i = 0; i < 64; i++) {
-        stage_clay[i].handle = i < n ? rt_register_clay(c[i]) : -1;
+        stage_clay[i].handle = i < n ? rebind_clay(old[i], c[i]) : -1;
         stage_clay[i].attr = i < n && attr ? (s32)attr[i] : 0;
     }
     stage_mdl.flag = 1;
