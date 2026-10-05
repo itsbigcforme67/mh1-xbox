@@ -12,6 +12,52 @@ extern u8 room_member_id[];
 void *memset(void *, int, int);
 void se_req(int, int, int);
 extern u8 Item_data[327][16];
+void PlayerStatusWindow(PLW *, u8);
+void DispFrameMessage(void *, int);
+void flfntLocate(int, int);
+void font_print_sp(void *);
+extern u8 frame_retire[];
+extern int retire_str;
+extern void *retire_yesno_str[2];
+extern f32 wyvern_area_tbl[][4];
+void SetFilterMode(int);
+void SetTextureStage(int);
+void reload_tex(int, int);
+void disp_whole_map(f32, f32);
+typedef struct PFLPS {
+    s16 s[4];
+    u32 a;
+    u32 b;
+    u32 c;
+} PFLPS;
+void flps0008(void *);
+void SetTrnslMode(int, int);
+void flSetRenderState(int, int);
+void font_set_stack_no(int);
+void disp_timer(void);
+void disp_pl_vital(void);
+void disp_slash_level(void);
+void disp_pachinger(void);
+void disp_cannon(void);
+void disp_others_info(void);
+void disp_name(void);
+void Pit_disp_chat(void);
+void disp_item_stock(void);
+void func_5B4980(void);
+void func_60CE50(void);
+void Disp_NPC_message(void);
+void Pit_disp_pit_effect(void);
+void Pit_disp_receive_mes(void);
+int SoftKeyboard_alive_check(void);
+void DispSoftkeyboard(u8);
+void func_63B470(void);
+void disp_map(void);
+void disp_menu(int, PIT_W *);
+void Disp_menu_help(void);
+void disp_item(void);
+void disp_item_sub_select_ex(void);
+void trans_box(void);
+extern void (*disp_menu_jmp[])(int, PIT_W *);
 void Chat_log_clear(void);
 void pit_prim_init(void);
 u16 pit_key_repeat(u16, u16);
@@ -19,11 +65,11 @@ void SoftKeyboard_exit(void);
 int Quest_time_get(int);
 int Online_ck(void);
 int Pl_Skill_ck(PLW *, int);
-void trans_pit_0();
-void trans_pit_1();
-void trans_pit_2();
-void trans_pit_1_lb();
-void trans_pit_2_lb();
+void trans_pit_0(void);
+void trans_pit_1(void);
+void trans_pit_2(void);
+void trans_pit_1_lb(void);
+void trans_pit_2_lb(void);
 void func_5B3D70();
 void func_609750();
 int Item_ok_chk(PLW *);
@@ -1367,4 +1413,157 @@ int menu_chcnfg_reibun(int sw) {
         break;
     }
     return r;
+}
+
+void Pit_disp_menu_status(void) {
+    PlayerStatusWindow(lpPit->pl, lpPit->x43);
+}
+
+void disp_retire(void) {
+    DispFrameMessage(frame_retire, retire_str);
+    flfntLocate(0x18F, 0x106);
+    font_print_sp(retire_yesno_str[lpPit->yn]);
+}
+
+void wyvern_area(f32 *x, f32 *y, f32 *z, int no) {
+    *x = wyvern_area_tbl[no][0];
+    *y = wyvern_area_tbl[no][1];
+    *z = wyvern_area_tbl[no][2];
+}
+
+void DispWholeMap(void) {
+    PFLPS q;
+
+    SetFilterMode(1);
+    reload_tex(1, 0x156);
+    SetTextureStage(0x156);
+    q.s[2] = 0x200;
+    q.s[0] = 0;
+    q.s[3] = 0x1C0;
+    q.s[1] = 0;
+    q.b = 0;
+    q.c = 0xE000FF;
+    q.a = 0xFF606060;
+    flps0008(&q);
+    disp_whole_map(160.0f, 64.0f);
+}
+
+void WyvernAreaMove(PLW *em) {
+    if (enemy_mark_chk(lpPit->pl, (EMW *)em) != 0 && lpPit->x05 == 0 && lpPit->lb == 0 && lpPit->x83 == 0) {
+        lpPit->x3F = 0x1A;
+    }
+}
+
+void trans_pit_0(void) {
+    flSetRenderState(0x60, 0);
+    SetTrnslMode(4, 5);
+    font_set_stack_no(0);
+    if (lpPit->x83 == 0) {
+        disp_timer();
+        disp_pl_vital();
+        disp_slash_level();
+        disp_pachinger();
+        disp_cannon();
+        disp_others_info();
+        disp_name();
+        return;
+    }
+    disp_pachinger();
+    if (lpPit->x2A == 0) {
+        disp_cannon();
+    }
+}
+
+void trans_pit_1_lb(void) {
+    flSetRenderState(0x60, 0);
+    SetTrnslMode(4, 5);
+    font_set_stack_no(1);
+    if (PitMenu.open != 0) {
+        Pit_disp_chat();
+        return;
+    }
+    if (lpPit->x07 != 0) {
+        disp_item_stock();
+    } else if (GW8(0xE) != 0) {
+        func_5B4980();
+    }
+    func_60CE50();
+}
+
+void trans_pit_2_lb(void) {
+    font_set_stack_no(2);
+    if (PitMenu.x06 != 0) {
+        Disp_NPC_message();
+        PitMenu.x06 = 0;
+    } else {
+        Pit_disp_receive_mes();
+    }
+    if (PitMenu.open == 0) {
+        Pit_disp_pit_effect();
+    }
+    if ((s8)SoftKeyboard_alive_check() != 0) {
+        SetTrnslMode(4, 5);
+        DispSoftkeyboard(FLD8(system_w, 0x31));
+    }
+}
+
+void trans_pit_1(void) {
+    u8 c;
+
+    SetTrnslMode(4, 5);
+    font_set_stack_no(1);
+    if (game_w.x1E7 != 0) {
+        func_63B470();
+    }
+    if (PitMenu.open != 0) {
+        if (game_w.x1E7 == 0) {
+            Pit_disp_chat();
+            disp_map();
+        }
+    } else {
+        if (lpPit->x07 != 0) {
+            disp_item_stock();
+            return;
+        }
+        if (lpPit->x05 != 0) {
+            c = lpPit->x40;
+            switch (c) {
+            case 0:
+                disp_menu(0, lpPit);
+                break;
+            case 1:
+                disp_menu_jmp[lpPit->x41](c, lpPit);
+                break;
+            }
+            if (PitMenu.x10 != 0) {
+                Disp_menu_help();
+            }
+        } else {
+            disp_map();
+            if (FLD8(*lpPit->pl, 0x8C2) == 0) {
+                disp_item();
+            }
+        }
+    }
+}
+
+void trans_pit_2(void) {
+    font_set_stack_no(2);
+    disp_item_sub_select_ex();
+    if (PitMenu.open == 0 && lpPit->x07 == 0 && lpPit->x05 == 0) {
+        trans_box();
+    }
+    if (PitMenu.x06 != 0) {
+        Disp_NPC_message();
+        PitMenu.x06 = 0;
+    } else {
+        Pit_disp_receive_mes();
+    }
+    if (PitMenu.open == 0) {
+        Pit_disp_pit_effect();
+    }
+    if ((s8)SoftKeyboard_alive_check() != 0) {
+        SetTrnslMode(4, 5);
+        DispSoftkeyboard(FLD8(system_w, 0x31));
+    }
 }

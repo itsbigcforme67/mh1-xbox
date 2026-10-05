@@ -8,7 +8,7 @@
 typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it */
     u8 _pad00[0x4 - 0x0];
     u8 x04;           /* 0x04 cleared with 5-7 by a word store (Pit_init) */
-    s8 x05;           /* 0x05 cleared by menu_exit */
+    u8 x05;           /* 0x05 cleared by menu_exit */
     u8 x06;           /* 0x06  */
     u8 x07;           /* 0x07 non-zero while a pit menu is open (Cockpit_menu_chk) */
     PLW *pl;         /* 0x08 player the menu belongs to (game_w.master) */
@@ -26,7 +26,7 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     s16 x26;          /* 0x26  */
     s8 x28;           /* 0x28  */
     s8 x29;           /* 0x29  */
-    u8 _pad2A;
+    s8 x2A;           /* 0x2A */
     s8 x2B;           /* 0x2B  */
     f32 map_sx;       /* 0x2C 1 / map width */
     f32 map_sy;       /* 0x30 1 / map height */
