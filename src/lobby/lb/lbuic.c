@@ -6,8 +6,8 @@ void SetSceneTitle(a, b)
 int a;
 int b;
 {
-    pSceneTitle = (int)text_lobby_msg[a];
-    pSceneTitle = pSceneTitle + b * 8;
+    pSceneTitle = text_lobby_msg[a];
+    pSceneTitle = pSceneTitle + b;
 }
 
 void SetSceneSubTitle(a, b, c)
@@ -17,8 +17,8 @@ char *c;
 {
     subTitleCol = 0xFF2A0000;
     pSceneSubTitle = text_lobby_msg[a];
-    pSceneSubTitle = pSceneSubTitle + b * 8;
-    strcpy(*(char **)(pSceneSubTitle + 4), c);
+    pSceneSubTitle = pSceneSubTitle + b;
+    strcpy(pSceneSubTitle->s, c);
 }
 
 void SetSceneSubTitleColor(c)
@@ -31,7 +31,7 @@ void SetHelpLineMsg(a, b)
 int a;
 int b;
 {
-    *(u8 **)helpLineStr = text_lobby_msg[a];
+    *(u8 **)helpLineStr = (u8 *)text_lobby_msg[a];
     *(int *)(helpLineStr + 4) = 0;
     *(int *)(helpLineStr + 8) = 0;
     *(u8 **)helpLineStr = *(u8 **)helpLineStr + b * 8;
