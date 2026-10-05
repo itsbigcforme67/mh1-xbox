@@ -2789,11 +2789,13 @@ int update_entid_rtime(int *ids, int n, int rt)
 int free_entid_tab(unsigned int id)
 {
     ENTID *e;
+    s64 i;
 
     if (id >= 0x80) {
         return -1;
     }
-    e = &entid_tab[id];
+    i = (int)id;
+    e = &entid_tab[i];
     if (e->cnt == 0) {
         return -1;
     }
@@ -4482,8 +4484,8 @@ int kstrncpy(u8 *dst, u8 *src, int n)
     int total;
 
     total = n;
-    while (*src != 0 && n > 0) {
-        if (is_kanji(*src) != 0) {
+    while (*src && n > 0) {
+            if (is_kanji(*src) != 0) {
             if (n <= 1) {
                 break;
             }
@@ -4954,8 +4956,11 @@ two:
 
 void change_kind(u16 *p, int n, int kind)
 {
+    u16 k;
+
+    k = (kind & 0xFFFF) << 12;
     while (n-- != 0) {
-        *p = (*p & 0xFFF) | (((kind & 0xFFFF) << 12) & 0xFFFF);
+        *p = (*p & 0xFFF) | k;
         p++;
     }
 }
