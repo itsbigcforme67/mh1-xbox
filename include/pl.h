@@ -152,7 +152,7 @@ typedef struct PLW {
     u8    ammo_type;     /* 0x56C shot type fired (shell06_set) */
     u8 _pad56D[0x56E - 0x56D];
     u8 x56E;                 /* 0x56E non-zero: no manual camera (manual_cam_chk) */
-    u8 _pad56F[0x570 - 0x56F];
+    u8    x56F;          /* 0x56F (stage_mv_ck: zone check only while 0) */
     s16   work570;           /* 0x570 */
     u8 _pad572[0x5AC - 0x572];
     f32   x5AC;          /* 0x5AC ground height (eft21_i, as EMW) */

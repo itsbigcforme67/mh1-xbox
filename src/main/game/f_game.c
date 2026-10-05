@@ -194,7 +194,7 @@ void game13(void) {
         return;
     }
     move();
-    stage_work[1] = 1;
+    stage_work.x01 = 1;
     game_w.pad_on = 1;
     player_work[0].x01 = player_work[0].be_flag;
     player_work[1].x01 = player_work[1].be_flag;
@@ -320,7 +320,7 @@ void game2(void) {
         init_light_work();
         round_init(0xFF);
         stage_w_init();
-        stage_work[1] = 1;
+        stage_work.x01 = 1;
         stage_fog_set(game_w.stage);
         stage_set_set(game_w.stage);
         em_effect_pull();
