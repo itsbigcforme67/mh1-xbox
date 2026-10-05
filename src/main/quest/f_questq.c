@@ -166,103 +166,72 @@ typedef struct REMI {
     u16 num;            /* 0x04 count */
 } REMI;
 
-void quest_em_die(void)
+int em_capture_conv(kind)
+int kind;
 {
-    QEM *e;
-    EMW *em;
-    int hp;
-    int i;
-    int fl;
-    int no;
+    u16 *p;
 
-    em = em_work;
-    hp = (u16)quest_w.x186 >> 8 & 0xFF;
-    if ((e = em_work_serch2(quest_w.x184, quest_w.x186 & 0xFF)) != 0 && ((fl = e->x2E) & 6) != 0) {
-        no = e->x0A;
-        i = 0;
-        for (;;) {
-            if (em->id == no && *(u8 *)((u8 *)em + 0x9EB) == *(u8 *)&e->x2C) {
-                if (em->kind != e->id) {
-                    return;
-                }
-                if (em->be_flag == 0) {
-                    return;
-                }
-                if (!(fl & 4)) {
-                    if (em->x04 >= 2) {
-                        return;
-                    }
-                    if (em->mode == 5) {
-                        return;
-                    }
-                } else if (!(e->x04 > (u16)hp)) {
-                    return;
-                }
-                {
-                    if (em->x04 >= 2 || em->mode == 5) {
-                        Em_hagi_point_clr(em, fl, no, i);
-                    }
-                    func_535D20(em, 5, 0);
-                    *(s32 *)((u8 *)em + 0x798) = 0x3F800000;
-                    e->x2E = 2;
-                    em->x302 = 0;
-                    if (quest_enemy_ck_sub2(&quest_w, em->kind) != 0) {
-                        quest_w.x3C = em;
-                    }
-                }
-                return;
-            }
-            i++;
-            em++;
-            if (i >= 20) {
-                break;
-            }
+    p = capture_type_tbl;
+    while (*p != 0xFF) {
+        if ((kind & 0xFF) == (s8)*p) {
+            Share_item_stack(&player_work[game_w.master], p[1], 1);
+            return 1;
         }
-        if (e->x04 > (u16)hp) {
-            quest_enemy_ck_sub(&quest_w, (u8)e->id, no, i);
-            if (e->x05 != 0) {
-                quest_w.x34--;
-            }
-            e->x04--;
-            if (e->x04 > 0) {
-                e->x2E = 2;
-                return;
-            }
-            e->x2E = 1;
-            e->x0A = -1;
+        p += 2;
+    }
+    return 0;
+}
+
+void quest_failed_ptr_set(flag)
+int flag;
+{
+    s16 *p;
+    s16 i;
+    s16 k;
+
+    k = flag == 0 ? -2 : 0x25;
+    p = (s16 *)quest_w.x6C;
+    i = 0;
+    for (;;) {
+        if (*p == k) {
+            break;
         }
+        p += 4;
+        i++;
     }
+    quest_w.x36 = i;
 }
 
-void quest_timer_send(void)
+void quest_presuccess_ptr_set(flag)
+int flag;
 {
-    if (game_w.info_stop == 0) {
-        quest_w.x182 = 0;
-        quest_w.x181 = 5;
-        quest_w.x186 = quest_w.x10;
-        quest_w.x184 = (u32)quest_w.x10 >> 16;
-        net_send_sys(6, game_w.master);
+    s16 *p;
+    s16 i;
+    s16 k;
+
+    k = flag == 0 ? -1 : 0x26;
+    p = (s16 *)quest_w.x6C;
+    i = 0;
+    for (;;) {
+        if (*p == k) {
+            break;
+        }
+        p += 4;
+        i++;
     }
+    quest_w.x36 = i;
 }
 
-void q_net_send_em_die(e, em)
-QEM *e;
-EMW *em;
+void em_herb_set(void)
 {
-    quest_w.x182 = 0;
-    quest_w.x181 = 7;
-    quest_w.x184 = e->x2C;
-    quest_w.x186 = em->stg | (u16)(e->x04 << 8);
-    net_send_sys(6, game_w.master);
-}
+    QEM q;
 
-void q_net_send_em_capture(e, em)
-QEM *e;
-EMW *em;
-{
-    quest_w.x182 = 0;
-    quest_w.x181 = 8;
-    quest_w.x184 = e->x2C;
-    quest_w.x186 = em->stg;
-    net_send_sys(6, game_w.master);
+    q.id = 0xA;
+    q.x02 = 0;
+    q.x08 = -1;
+    q.pos[0] = 0;
+    q.pos[1] = 0;
+    q.pos[2] = 0;
+    q.x1C = 0;
+    Em_direct_set(&q);
 }

@@ -166,54 +166,103 @@ typedef struct REMI {
     u16 num;            /* 0x04 count */
 } REMI;
 
-void station_em_set(void)
+void quest_em_die(void)
 {
     QEM *e;
     EMW *em;
-    s32 *l;
-    u8 *h;
+    int hp;
     int i;
-    u8 *g;
-    int j;
-    s32 v;
+    int fl;
+    int no;
 
-    l = Em_data_com_adrs_get(quest_w.x78, 0);
-    e = (QEM *)Em_data_com_adrs_get(quest_w.x78, 1);
-    if (l != 0 && e != 0) {
+    em = em_work;
+    hp = (u16)quest_w.x186 >> 8 & 0xFF;
+    if ((e = em_work_serch2(quest_w.x184, quest_w.x186 & 0xFF)) != 0 && ((fl = e->x2E) & 6) != 0) {
+        no = e->x0A;
+        i = 0;
         for (;;) {
-            v = *l;
-            if (v == -1) {
+            if (em->id == no && *(u8 *)((u8 *)em + 0x9EB) == *(u8 *)&e->x2C) {
+                if (em->kind != e->id) {
+                    return;
+                }
+                if (em->be_flag == 0) {
+                    return;
+                }
+                if (!(fl & 4)) {
+                    if (em->x04 >= 2) {
+                        return;
+                    }
+                    if (em->mode == 5) {
+                        return;
+                    }
+                } else if (!(e->x04 > (u16)hp)) {
+                    return;
+                }
+                {
+                    if (em->x04 >= 2 || em->mode == 5) {
+                        Em_hagi_point_clr(em, fl, no, i);
+                    }
+                    func_535D20(em, 5, 0);
+                    *(s32 *)((u8 *)em + 0x798) = 0x3F800000;
+                    e->x2E = 2;
+                    em->x302 = 0;
+                    if (quest_enemy_ck_sub2(&quest_w, em->kind) != 0) {
+                        quest_w.x3C = em;
+                    }
+                }
+                return;
+            }
+            i++;
+            em++;
+            if (i >= 20) {
                 break;
             }
-            for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
-                if (g[0x28] == v) {
-                    break;
-                }
-            }
-            if (i < 4) {
-                l++;
-                continue;
-            }
-            for (j = 0, h = (u8 *)&game_w; j < 4; j++, h++) {
-                if (h[0x28] <= 0) {
-                    ((u8 *)&game_w)[0x28 + j] = v;
-                    em_create_model(j);
-                    break;
-                }
-            }
-            l++;
         }
-        for (;;) {
-            if (e->id < 0) {
-                break;
+        if (e->x04 > (u16)hp) {
+            quest_enemy_ck_sub(&quest_w, (u8)e->id, no, i);
+            if (e->x05 != 0) {
+                quest_w.x34--;
             }
-            if ((em = Em_direct_set(e)) != 0) {
-                if (em->kind == 2 && Quest_f_dra_ck(*(u8 *)&quest_w.no) != 0) {
-                    quest_w.x14C = em->x302;
-                }
-                em->stg = e->x07;
+            e->x04--;
+            if (e->x04 > 0) {
+                e->x2E = 2;
+                return;
             }
-            e++;
+            e->x2E = 1;
+            e->x0A = -1;
         }
     }
+}
+
+void quest_timer_send(void)
+{
+    if (game_w.info_stop == 0) {
+        quest_w.x182 = 0;
+        quest_w.x181 = 5;
+        quest_w.x186 = quest_w.x10;
+        quest_w.x184 = (u32)quest_w.x10 >> 16;
+        net_send_sys(6, game_w.master);
+    }
+}
+
+void q_net_send_em_die(e, em)
+QEM *e;
+EMW *em;
+{
+    quest_w.x182 = 0;
+    quest_w.x181 = 7;
+    quest_w.x184 = e->x2C;
+    quest_w.x186 = em->stg | (u16)(e->x04 << 8);
+    net_send_sys(6, game_w.master);
+}
+
+void q_net_send_em_capture(e, em)
+QEM *e;
+EMW *em;
+{
+    quest_w.x182 = 0;
+    quest_w.x181 = 8;
+    quest_w.x184 = e->x2C;
+    quest_w.x186 = em->stg;
+    net_send_sys(6, game_w.master);
 }

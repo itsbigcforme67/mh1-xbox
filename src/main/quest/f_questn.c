@@ -166,48 +166,18 @@ typedef struct REMI {
     u16 num;            /* 0x04 count */
 } REMI;
 
-int quest_item_set(id, num)
-s16 id;
-s16 num;
+void Quest_timer_calc(n)
+int n;
 {
-    int i;
-    u8 *q;
-    int t;
-
-    for (i = 0, q = (u8 *)&quest_w; i < 4; i++, q += 2) {
-        if (*(s16 *)(q + 0x1C) == 0) {
-            t = i * 2;
-            *(s16 *)((u8 *)quest_w.x1C + t) = id;
-            *(s16 *)((u8 *)quest_w.x24 + t) = num;
-            return 0;
+    if (game_w.info_stop == 0 && quest_w.x10 > 0) {
+        quest_w.x10 -= n;
+        if (quest_w.x10 < 0) {
+            quest_w.x10 = 0;
         }
     }
-    return -1;
 }
 
-int quest_enemy_set(id, num)
-s16 id;
-s16 num;
+void Quest_timer_reset(void)
 {
-    int i;
-    u8 *q;
-    int t;
-
-    for (i = 0, q = (u8 *)&quest_w; i < 2; i++, q += 2) {
-        if (*(s16 *)(q + 0x2C) == 0) {
-            t = i * 2;
-            *(s16 *)((u8 *)quest_w.x2C + t) = id;
-            *(s16 *)((u8 *)quest_w.x144 + t) = id;
-            *(s16 *)((u8 *)quest_w.x30 + t) = num;
-            *(s16 *)((u8 *)quest_w.x148 + t) = num;
-            return 0;
-        }
-    }
-    return -1;
-}
-
-int quest_item_ck(q)
-QUEST_W *q;
-{
-    return (s16)Pl_item_num_ck(&player_work[game_w.master], (u16)q->x1C[0]) >= q->x24[0];
+    quest_w.x10 = Quest_time_get(1);
 }

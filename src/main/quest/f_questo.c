@@ -166,42 +166,48 @@ typedef struct REMI {
     u16 num;            /* 0x04 count */
 } REMI;
 
-int quest_share_item_ck(q)
-QUEST_W *q;
+int quest_item_set(id, num)
+s16 id;
+s16 num;
 {
     int i;
+    u8 *q;
+    int t;
 
-    for (i = 0; i < 4; i++) {
-        if (q->x1C[i] != 0 && quest_w.x24[i] - (s16)Share_item_num_ck((u16)q->x1C[i], share_item_ck_ck()) > 0) {
+    for (i = 0, q = (u8 *)&quest_w; i < 4; i++, q += 2) {
+        if (*(s16 *)(q + 0x1C) == 0) {
+            t = i * 2;
+            *(s16 *)((u8 *)quest_w.x1C + t) = id;
+            *(s16 *)((u8 *)quest_w.x24 + t) = num;
             return 0;
         }
     }
-    return 1;
+    return -1;
 }
 
-int quest_enemy_ck(q)
-QUEST_W *q;
+int quest_enemy_set(id, num)
+s16 id;
+s16 num;
 {
     int i;
+    u8 *q;
+    int t;
 
-    for (i = 0; i < 2; i++) {
-        if (q->x2C[i] != 0) {
+    for (i = 0, q = (u8 *)&quest_w; i < 2; i++, q += 2) {
+        if (*(s16 *)(q + 0x2C) == 0) {
+            t = i * 2;
+            *(s16 *)((u8 *)quest_w.x2C + t) = id;
+            *(s16 *)((u8 *)quest_w.x144 + t) = id;
+            *(s16 *)((u8 *)quest_w.x30 + t) = num;
+            *(s16 *)((u8 *)quest_w.x148 + t) = num;
             return 0;
         }
     }
-    return 1;
+    return -1;
 }
 
-s16 quest_enemy_ck2(q, kind)
+int quest_item_ck(q)
 QUEST_W *q;
-int kind;
 {
-    int i;
-
-    for (i = 0; i < 2; i++) {
-        if (q->x2C[i] == (kind & 0xFF)) {
-            return q->x30[i];
-        }
-    }
-    return 0;
+    return (s16)Pl_item_num_ck(&player_work[game_w.master], (u16)q->x1C[0]) >= q->x24[0];
 }

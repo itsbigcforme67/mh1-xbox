@@ -166,72 +166,42 @@ typedef struct REMI {
     u16 num;            /* 0x04 count */
 } REMI;
 
-int em_capture_conv(kind)
+int quest_share_item_ck(q)
+QUEST_W *q;
+{
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        if (q->x1C[i] != 0 && quest_w.x24[i] - (s16)Share_item_num_ck((u16)q->x1C[i], share_item_ck_ck()) > 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int quest_enemy_ck(q)
+QUEST_W *q;
+{
+    int i;
+
+    for (i = 0; i < 2; i++) {
+        if (q->x2C[i] != 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+s16 quest_enemy_ck2(q, kind)
+QUEST_W *q;
 int kind;
 {
-    u16 *p;
+    int i;
 
-    p = capture_type_tbl;
-    while (*p != 0xFF) {
-        if ((kind & 0xFF) == (s8)*p) {
-            Share_item_stack(&player_work[game_w.master], p[1], 1);
-            return 1;
+    for (i = 0; i < 2; i++) {
+        if (q->x2C[i] == (kind & 0xFF)) {
+            return q->x30[i];
         }
-        p += 2;
     }
     return 0;
-}
-
-void quest_failed_ptr_set(flag)
-int flag;
-{
-    s16 *p;
-    s16 i;
-    s16 k;
-
-    k = flag == 0 ? -2 : 0x25;
-    p = (s16 *)quest_w.x6C;
-    i = 0;
-    for (;;) {
-        if (*p == k) {
-            break;
-        }
-        p += 4;
-        i++;
-    }
-    quest_w.x36 = i;
-}
-
-void quest_presuccess_ptr_set(flag)
-int flag;
-{
-    s16 *p;
-    s16 i;
-    s16 k;
-
-    k = flag == 0 ? -1 : 0x26;
-    p = (s16 *)quest_w.x6C;
-    i = 0;
-    for (;;) {
-        if (*p == k) {
-            break;
-        }
-        p += 4;
-        i++;
-    }
-    quest_w.x36 = i;
-}
-
-void em_herb_set(void)
-{
-    QEM q;
-
-    q.id = 0xA;
-    q.x02 = 0;
-    q.x08 = -1;
-    q.pos[0] = 0;
-    q.pos[1] = 0;
-    q.pos[2] = 0;
-    q.x1C = 0;
-    Em_direct_set(&q);
 }

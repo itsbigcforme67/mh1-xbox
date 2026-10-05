@@ -810,6 +810,8 @@ int n;
     int i;
     int v;
     u8 *g;
+    int j;
+    u8 *h;
 
     em_next_tbl_ck();
     func_5589F0(n);
@@ -848,10 +850,10 @@ int n;
                 l0++;
                 continue;
             }
-            for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
-                if (g[0x28] <= 0) {
-                    ((u8 *)&game_w)[0x28 + i] = v;
-                    em_create_model(i);
+            for (j = 0, h = (u8 *)&game_w; j < 4; j++, h++) {
+                if (h[0x28] <= 0) {
+                    ((u8 *)&game_w)[0x28 + j] = v;
+                    em_create_model(j);
                     break;
                 }
             }

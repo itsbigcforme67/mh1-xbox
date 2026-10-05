@@ -281,11 +281,12 @@ main 0x00229130 0x00229568 quest/f_questi
 main 0x00229700 0x0022997C quest/f_questj
 main 0x00229A50 0x00229AE0 quest/f_questk
 main 0x00229B40 0x00229E58 quest/f_questl
-main 0x0022A390 0x0022A404 quest/f_questm
-main 0x0022B8E0 0x0022BA3C quest/f_questn
-main 0x0022BC80 0x0022BDA8 quest/f_questo
-main 0x0022BEE0 0x0022C050 quest/f_questp
-main 0x0022C380 0x0022C66C quest/f_questq
+main 0x00229F60 0x0022A0B4 quest/f_questm
+main 0x0022A390 0x0022A404 quest/f_questn
+main 0x0022B8E0 0x0022BA3C quest/f_questo
+main 0x0022BC80 0x0022BDA8 quest/f_questp
+main 0x0022BEE0 0x0022C050 quest/f_questq
+main 0x0022C380 0x0022C66C quest/f_questr
 game 0x00534100 0x005341FC em/em_core
 game 0x005345B0 0x00534728 em/em_core_b
 game 0x00535450 0x005355A0 em/em_core_c
