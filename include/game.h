@@ -33,7 +33,7 @@ typedef struct GAME_W {
     u8 _pad025[0x2C - 0x25];
     u16 quest;          /* 0x02C quest number (SonchoInit: 0x83.. tutorials) */
     u8 x2E;             /* 0x02E 6: em20 fly 9 picks point 1 for monster kind 6 */
-    u8 _pad02F[0x30 - 0x2F];
+    u8 x2F;             /* 0x02F stage start slot index (pl_mv014: stage_start_pos/ang) */
     u8 x30[4];          /* 0x030 per player, copied from select_w+0x0C (game11) */
     u8 _pad034[0x40 - 0x34];
     V3S x40[4]; /* 0x040 per player 3 shorts, from select_w+0x5C (game11) */

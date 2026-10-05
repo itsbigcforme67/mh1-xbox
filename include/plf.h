@@ -168,4 +168,5 @@ void pl_mv001(PLW *, u32);
 void rate_g_calc(PLW *, int);
 void rate_add_g(PLW *);
 void rate_clear(PLW *);
+void func_628FB0(PLW *, int, int);
 #endif

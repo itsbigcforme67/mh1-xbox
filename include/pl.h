@@ -66,7 +66,9 @@ typedef struct PLW {
     u8 _pad013[0x14 - 0x13];
     u8    flag14;        /* 0x014 */
     u8    flag15;        /* 0x015 */
-    u8 _pad016[0x1C - 0x16];
+    u8    work016;           /* 0x016 */
+    u8    work017;           /* 0x017 */
+    u8 _pad018[0x4];
     u8    work01C;           /* 0x01C */
     u8    work01D;           /* 0x01D */
     s8    work01E;           /* 0x01E */
@@ -284,7 +286,7 @@ typedef struct PLW {
     u8    work886;           /* 0x886 */
     s8    work887;           /* 0x887 */
     u16   work888;           /* 0x888 */
-    s16   work88A;           /* 0x88A */
+    u16   work88A;           /* 0x88A */
     u8    work88C;       /* 0x88C */
     u8    work88D;           /* 0x88D */
     u16   work88E;           /* 0x88E */
