@@ -135,10 +135,20 @@ else
 fi
 rm -f build/pc/.m32test
 
+# Incremental: a game object is kept when it is newer than its source,
+# every include/ header and this script (FULL=1 rebuilds everything).
+STAMP=build/pc/.hdr_stamp
+NEWEST=$(ls -t include/*.h src/pc/rt/rt_ps2abs.h tools/build_pc.sh | head -1)
+[ -f "$STAMP" ] && [ "$STAMP" -nt "$NEWEST" ] || touch "$STAMP"
+[ -n "$FULL" ] && touch "$STAMP"
 # shellcheck disable=SC2086
 for f in $GAME; do
     b=$(basename "$f" .c)
     o="build/pc/$b.o"
+    if [ -f "$o" ] && [ "$o" -nt "$f" ] && [ "$o" -nt "$STAMP" ]; then
+        OBJS="$OBJS $o"
+        continue
+    fi
     # float-argument order adaptors (src/pc/rt/rt_abi.c) for callers whose
     # declaration orders float and int arguments unlike the definition
     ABI=""
