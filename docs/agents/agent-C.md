@@ -192,3 +192,11 @@ also assigned before the em_pl_pos_set call).
   `if (A) no = 0x18; else if (B) no = 4; else no = 0x19;` chain puts each
   `no = ...` in the branch delay slot (overwritten anyway on the other
   path), so it looks like "statement before the if" but is not.
+
+## Summary (end of assignment)
+
+All 11 assigned files decompiled: em07, em08, em16, em27, em21, em02, em14,
+em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
+1 instruction off, em20_nm.c, a 15-minute permuter run found nothing).
+153 of 154 functions byte-match; every registered file passes
+`tools/rebuild.sh game` (game OK).
