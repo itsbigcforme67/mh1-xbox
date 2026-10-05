@@ -174,3 +174,21 @@ Near-matches (kept in the working files): lb_commer_message (s0/s1 swapped), lb_
    they create src/lobby/zz_*.c temp files that rebuild.sh would compile).
 Names whose lobby symbol carries an address suffix (trade_get_ck_005D0750 ...) are not found by check.py (it falls back to the game
 module at the same address): check them through a renamed copy (scratch lbchk.sh idea: sed the name to the csv name, `--module lobby`).
+
+### Lobby status at the end of this session (6-7 Oct 2026)
+335 of the 928 functions in 0x5C4E60-0x610300 are C (34.8 KB of 302 KB); `tools/rebuild.sh` prints OK for all five modules.
+All my lobby C lives in src/lobby/f/ (names f/lb_xNN in config/c_files.txt) and uses include/lobby_f.h (agent B has its own include/lobby.h
+and src/lobby/cnet etc.; the helper scripts are lbf_runs.py / lbf_merge.py / lbf_conv.py because main already had B's lbruns/lbmerge/lbconv).
+Per file: lb_a (receivers), lb_b (quest money), lb_c (small helpers), lb_d (senders), lb_e (members/icons/cockpit), lb_f (gold/player init),
+lb_g (player basics), lb_h (flags/stick/adjust), lb_i (move dispatch), lb_j (lb_pl_mvNNN), lb_k (chat handlers), lb_l (trade/sleep/guest room),
+lb_m (Bs*Trans helpers), lb_n (generic senders), lb_o (lb_pl_normal), lb_p (lb_move_common, near-match), lb_pl* (copies of main pl code),
+lb_zNNN (auto-drafted: m2c + tools/lbauto.py, see the pipeline section). The working files lb_a.c .. lb_p.c keep the near-matches.
+Jump tables: a function whose switch compiled to a jump table in the original needs its table data registered as
+`lobby:rodata START END f/NAME` (tools/lbf_jt.py prints the range from the asm BEFORE the function is registered; lbf_runs/lbf_merge do it
+automatically). tools/check.py cannot see this; the failure shows up only as `undefined reference to .Lxxxxxxxx` at the lobby link.
+Left (about 590 functions): browser (Bs*/draw*/stock*/tagAct_NNN and layout), guild UI (Lb_guild 4100, lb_rule_seet_set, lb_select_quest_level_trans,
+lb_questpage_trans), lb_basic_master (4840), lb_check_status (2316), Lb_stage_load (1852), Lb_put_help, lb_disp_name, vs_square*, http_test_*.
+Known stubborn classes: (1) `addu rd, idx*N, base` vs `addu rd, base, idx*N` (operand order of an indexed address: ~12 tagAct_/stock functions
+are exactly 1 instruction off for this reason; no source form found that flips it); (2) s0/s1 register order of two long-lived locals
+(lb_commer_message, lb_set_pl_status/pos/stage, Lb_move_common); (3) rodata struct copies (Lb_put_gold, pl_sleeping); (4) functions whose
+m2c draft needs hand work for stack arguments beyond 8 (AppendWork stock* wrappers, 13 args: reg args a0-a3,t0-t3 then 5 stack dwords).
