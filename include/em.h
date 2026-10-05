@@ -240,8 +240,8 @@ typedef struct EMW {
     f32 x818;           /* 0x818 compared with x8C4[x883] (em16_act_act_set) */
     f32 x81C;           /* 0x81C */
     u16 cmd_idx;        /* 0x820 program number within cmd_tbl */
-    s16 x822;           /* 0x822 (command interpreter state) */
-    s16 x824;           /* 0x824 (command interpreter state) */
+    u16 x822;           /* 0x822 (command interpreter state) */
+    u16 x824;           /* 0x824 (command interpreter state) */
     u8 x826;            /* 0x826 (command interpreter state) */
     u8 x827;            /* 0x827 */
     u8 x828;            /* 0x828 */

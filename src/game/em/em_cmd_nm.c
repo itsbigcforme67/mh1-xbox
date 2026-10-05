@@ -610,9 +610,8 @@ u8 *em_cmd_flag_set(EMW *em, u8 *p) {
     u8 kind;
     u8 val;
 
-    kind = p[0];
-    val = p[1];
-    p += 2;
+    kind = *p++;
+    val = *p++;
     if (kind == 0) {
         kind = 1;
         n = 7;
@@ -663,8 +662,7 @@ u8 *em_cmd_flag_clear(EMW *em, u8 *p) {
     u8 *ex;
     u8 kind;
 
-    kind = p[0];
-    p += 1;
+    kind = *p++;
     if (kind == 0) {
         kind = 1;
         n = 7;
@@ -958,43 +956,44 @@ u8 *em_cmd_area_route_set(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_area_route_move(EMW *em, u8 *p) {
-    s32 temp_v0;
-    s32 var_s0;
-    u8 temp_v1;
+    u16 done;
+    u8 v;
 
-    var_s0 = 0;
+    done = 0;
     if (em->x92C == -1) {
         return p;
     }
-    EM_FIELD(em, s8 *, 0x84D) = 1;
-    EM_FIELD(em, s8 *, 0x92E) = 0xFF;
-loop_4:
-    temp_v1 = *(area_route_ptr_set(em, em->x846) + em->x92D);
-    if ((s32) temp_v1 >= 0x80) {
-        em->x92F = (u8) *area_route_rnd32(em, *(EM_FIELD(em->cmd_tbl, s32 *, 0x1C) + ((temp_v1 & 0x7F) * 4)));
-    } else {
-        em->x92F = temp_v1;
-    }
-    if (em->x92F == em->stg) {
-        em->x92D = (s8) (em->x92D + 1);
-        if (em->x92D >= em->x92C) {
-            if (em->x84C == 0) {
-                var_s0 = 1;
-                em->x92D = -1;
-                em->x92C = -1;
-            } else {
-                em->x92D = 0;
+    em->x84D = 1;
+    em->x92E = 0xFF;
+    for (;;) {
+        v = area_route_ptr_set(em, em->x846)[em->x92D];
+        if (v >= 0x80) {
+            em->x92F = *area_route_rnd32(em, (u8 *)em->cmd_tbl[7][v & 0x7F]);
+        } else {
+            em->x92F = v;
+        }
+        if (em->x92F == em->stg) {
+            em->x92D = em->x92D + 1;
+            if (!(em->x92C > em->x92D)) {
+                if (em->x84C == 0) {
+                    done = 1;
+                    em->x92D = -1;
+                    em->x92C = -1;
+                } else {
+                    em->x92D = 0;
+                }
             }
+            if ((done & 0xFF) == 1) {
+                return p;
+            }
+            continue;
         }
-        if ((var_s0 & 0xFF) == 1) {
-            return p;
-        }
-        goto loop_4;
+        break;
     }
-    EM_FIELD(em, s32 *, 0x848) = p;
-    temp_v0 = area_move_ptr_set(em, em->x847);
-    EM_FIELD(em, s32 *, 0x870) = temp_v0;
-    return temp_v0;
+    em->cmd_p848 = p;
+    p = area_move_ptr_set(em, em->x847);
+    em->cmd_top = p;
+    return p;
 }
 
 u8 *em_cmd_area_route_ck(EMW *em, u8 *p) {
@@ -1211,76 +1210,51 @@ u8 *em_cmd_mind_move_end(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_pl_ang_sel(EMW *em, u8 *p) {
-    f32 var_f2;
-    s32 var_s0;
-    s32 var_s0_2;
-    s8 temp_v1_2;
-    u8 *var_a1;
-    u8 temp_a0;
-    u8 temp_v0;
-    u8 temp_v1;
-    void *temp_v0_2;
-    void *temp_v0_3;
+    u8 *q;
+    u32 v;
+    u8 n;
+    s8 t;
+    s32 more;
 
-    var_a1 = p + 1;
-    temp_v1 = EM_FIELD(p, u8 *, 0);
-    switch (temp_v1) {                              /* irregular */
-    case 3:
-        break;
+    q = p;
+    switch (*q++) {
     case 0:
-        var_a1 += 3;
-        if ((EM_FIELD(p, u8 *, 1) & 0xFF) <= 0) {
-
+        n = *q;
+        q += 3;
+        if (!(n > 0)) {
         } else {
-            temp_v0 = *var_a1;
-            if ((s32) temp_v0 >= 0) {
-                var_f2 = (f32) temp_v0;
+            v = *q;
+            t = em->x844;
+            q += 1;
+            if (((s32)(0.5f + ((65536.0f * v) / 360.0f)) & 0xFFFF) >= em->x904[t] && t != -1) {
             } else {
-                var_f2 = 2.0f * (f32) ((temp_v0 >> 1) | (temp_v0 & 1));
-            }
-            temp_v1_2 = em->x844;
-            var_a1 += 1;
-            if ((M2C_BITWISE(s32, (0.5f + ((65536.0f * var_f2) / 360.0f))) & 0xFFFF) >= (s32) EM_FIELD(((temp_v1_2 * 2) + em), u16 *, 0x904)) {
-                if (temp_v1_2 == -1) {
-                    goto block_14;
-                }
-            } else {
-block_14:
-                var_s0 = 1;
+                more = 1;
                 do {
-                    temp_v0_2 = cmd_end_search(em, var_a1, 0x20, 3);
-                    temp_a0 = EM_FIELD(temp_v0_2, u8 *, 0);
-                    if (temp_a0 == 0x20) {
-                        if (EM_FIELD(temp_v0_2, u8 *, 1) != 2) {
-                            goto block_18;
-                        }
-                        goto block_21;
+                    q = cmd_end_search(em, q, 0x20, 3);
+                    if ((q[0] == 0x20 && q[1] == 2) || (q[0] == 0x20 && q[1] == 3)) {
+                        more = 0;
                     }
-block_18:
-                    if ((temp_a0 == 0x20) && (EM_FIELD(temp_v0_2, u8 *, 1) == 3)) {
-block_21:
-                        var_s0 = 0;
-                    }
-                    var_a1 = next_cmd_search(em, temp_v0_2);
-                } while (var_s0 != 0);
+                    q = next_cmd_search(em, q);
+                } while (more != 0);
             }
         }
         break;
     case 1:
-        var_a1 += 1;
-        /* fallthrough */
+        q += 1;
     case 2:
-        var_s0_2 = 1;
+        more = 1;
         do {
-            temp_v0_3 = cmd_end_search(em, var_a1, 0x20, 3);
-            if ((EM_FIELD(temp_v0_3, u8 *, 0) == 0x20) && (EM_FIELD(temp_v0_3, u8 *, 1) == 3)) {
-                var_s0_2 = 0;
+            q = cmd_end_search(em, q, 0x20, 3);
+            if (q[0] == 0x20 && q[1] == 3) {
+                more = 0;
             }
-            var_a1 = next_cmd_search(em, temp_v0_3);
-        } while (var_s0_2 != 0);
+            q = next_cmd_search(em, q);
+        } while (more != 0);
+        break;
+    case 3:
         break;
     }
-    return var_a1;
+    return q;
 }
 
 u8 *em_cmd_thirst_ck(EMW *em, u8 *p) {
@@ -1428,26 +1402,7 @@ u8 *em_cmd_all_pl_same_stage_ck(EMW *em, u8 *p) {
                 break;
             }
         }
-        if (ok) {
-            if (ok) {
-                for (;;) {
-                    if (q[0] == 0x28 && q[1] == 1) {
-                        break;
-                    }
-                    if (q[0] == 0x28 && q[1] == 2) {
-                        break;
-                    }
-                    q = cmd_end_search(em, q, 0x28, 2);
-                    if (!ok) {
-                        break;
-                    }
-                }
-            }
-            q = next_cmd_search(em, q);
-            if (q[0] == 0x28 && q[1] == 2) {
-                q = next_cmd_search(em, q);
-            }
-        }
+        CMD_SKIPF(em, q, 0x28, ok);
         break;
     case 1:
         q = else_ck(em, q, 0x28);
@@ -1503,120 +1458,56 @@ u8 *em_cmd_runaway_timer_ck(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_flag_ck(EMW *em, u8 *p) {
-    s32 var_s0;
-    u8 *temp_v0;
-    u8 *var_a1;
-    u8 temp_a0;
-    u8 temp_a2;
-    u8 temp_v1;
-    u8 temp_v1_2;
-    u8 temp_v1_3;
+    u8 *q;
+    u8 kind;
+    u8 val;
+    s32 ok;
 
-    var_s0 = saved_reg_s0;
-    var_a1 = p + 1;
-    temp_v1 = EM_FIELD(p, u8 *, 0);
-    switch (temp_v1) {                              /* switch 1; irregular */
-    case 2:                                         /* switch 1 */
-        break;
-    case 0:                                         /* switch 1 */
-        temp_v1_2 = EM_FIELD(p, u8 *, 1);
-        temp_a2 = EM_FIELD(var_a1, u8 *, 1);
-        var_a1 += 2;
-        switch (temp_v1_2) {                        /* switch 2 */
-        case 1:                                     /* switch 2 */
-            var_s0 = 0;
-            if (em->x88B == (temp_a2 & 0xFF)) {
-
-            } else {
-                var_s0 = 1 & 0xFF;
+    q = p;
+    ok = 0;
+    switch (*q++) {
+    case 0:
+        kind = q[0];
+        val = q[1];
+        q += 2;
+        switch (kind) {
+        case 1:
+            ok = em->x88B != val;
+            break;
+        case 2:
+            ok = em->x8C0 != val;
+            break;
+        case 3:
+            ok = em->x9E1 != val;
+            break;
+        case 4:
+            ok = em->x83A != val;
+            break;
+        case 5:
+            if (em->kind == 7) {
+                ok = EM_FIELD(em, u8 *, 0x45C) != val;
             }
             break;
-        case 2:                                     /* switch 2 */
-            var_s0 = 0;
-            if (EM_FIELD(em, u8 *, 0x8C0) == (temp_a2 & 0xFF)) {
-
-            } else {
-                var_s0 = 1 & 0xFF;
+        case 6:
+            if (em->kind == 0xF) {
+                ok = EM_FIELD(em, u8 *, 0x488) != val;
             }
             break;
-        case 3:                                     /* switch 2 */
-            var_s0 = 0;
-            if (em->x9E1 == (temp_a2 & 0xFF)) {
-
-            } else {
-                var_s0 = 1 & 0xFF;
-            }
-            break;
-        case 4:                                     /* switch 2 */
-            var_s0 = 0;
-            if (em->x83A == (temp_a2 & 0xFF)) {
-
-            } else {
-                var_s0 = 1 & 0xFF;
-            }
-            break;
-        case 5:                                     /* switch 2 */
-            if (EM_FIELD(em, u8 *, 2) == 7) {
-                var_s0 = 0;
-                if (EM_FIELD(em, u8 *, 0x45C) == (temp_a2 & 0xFF)) {
-
-                } else {
-                    var_s0 = 1 & 0xFF;
-                }
-            }
-            break;
-        case 6:                                     /* switch 2 */
-            if (EM_FIELD(em, u8 *, 2) == 0xF) {
-                var_s0 = 0;
-                if (EM_FIELD(em, u8 *, 0x488) == (temp_a2 & 0xFF)) {
-
-                } else {
-                    var_s0 = 1 & 0xFF;
-                }
-            }
-            break;
-        case 7:                                     /* switch 2 */
-            if (EM_FIELD(em, u8 *, 2) == 0xF) {
-                var_s0 = 0;
-                if (EM_FIELD(em, u8 *, 0x489) == (temp_a2 & 0xFF)) {
-
-                } else {
-                    var_s0 = 1 & 0xFF;
-                }
+        case 7:
+            if (em->kind == 0xF) {
+                ok = EM_FIELD(em, u8 *, 0x489) != val;
             }
             break;
         }
-        if (var_s0 == 0) {
-
-        } else {
-loop_39:
-            if (var_s0 != 0) {
-                temp_a0 = EM_FIELD(var_a1, u8 *, 0);
-                if ((temp_a0 != 0x2B) || (EM_FIELD(var_a1, u8 *, 1) != 1)) {
-                    if (temp_a0 == 0x2B) {
-                        if (EM_FIELD(var_a1, u8 *, 1) != 2) {
-                            goto block_38;
-                        }
-                    } else {
-block_38:
-                        var_a1 = cmd_end_search(em, var_a1, 0x2B, 2);
-                        goto loop_39;
-                    }
-                }
-            }
-            temp_v0 = next_cmd_search(em, var_a1);
-            temp_v1_3 = EM_FIELD(temp_v0, u8 *, 0);
-            var_a1 = temp_v0;
-            if ((temp_v1_3 == 0x2B) && (EM_FIELD(var_a1, u8 *, 1) == 2)) {
-                var_a1 = next_cmd_search(em, var_a1);
-            }
-        }
+        CMD_SKIPF(em, q, 0x2B, ok);
         break;
-    case 1:                                         /* switch 1 */
-        var_a1 = else_ck(em, var_a1, 0x2B);
+    case 1:
+        q = else_ck(em, q, 0x2B);
+        break;
+    case 2:
         break;
     }
-    return var_a1;
+    return q;
 }
 
 CMD_SEL_FUNC(em_cmd_myemtype_sel, 0x2C, u8, u8, em->kind)
@@ -2237,174 +2128,90 @@ block_27:
 }
 
 u8 *em_cmd_boss_same_stage_ck(EMW *em, u8 *p) {
-    s32 var_s0;
-    u8 *temp_v0_2;
-    u8 *var_a1;
-    u8 temp_v1;
-    u8 temp_v1_2;
-    void *temp_v0;
+    u8 *q;
+    EMW *b;
 
-    var_a1 = p;
-    switch (*var_a1++) {
+    q = p;
+    switch (*q++) {
     case 0:
-        temp_v0 = em->boss;
-        var_s0 = 1 & 0xFF;
-        if (temp_v0 == NULL) {
-            goto loop_16;
-        }
-        var_s0 = 1 & 0xFF;
-        if (em->stg != EM_FIELD(temp_v0, u8 *, 0x736)) {
-loop_16:
-            if (var_s0 != 0) {
-                temp_a0 = EM_FIELD(var_a1, u8 *, 0);
-                if ((temp_a0 != 0x44) || (EM_FIELD(var_a1, u8 *, 1) != 1)) {
-                    if (temp_a0 == 0x44) {
-                        if (EM_FIELD(var_a1, u8 *, 1) != 2) {
-                            goto block_15;
-                        }
-                    } else {
-block_15:
-                        var_a1 = cmd_end_search(em, var_a1, 0x44, 2);
-                        goto loop_16;
-                    }
-                }
-            }
-            temp_v0_2 = next_cmd_search(em, var_a1);
-            temp_v1_2 = EM_FIELD(temp_v0_2, u8 *, 0);
-            var_a1 = temp_v0_2;
-            if ((temp_v1_2 == 0x44) && (EM_FIELD(var_a1, u8 *, 1) == 2)) {
-                var_a1 = next_cmd_search(em, var_a1);
-            }
+        b = em->boss;
+        if (b == NULL || em->stg != b->stg) {
+            CMD_SKIP(em, q, 0x44);
         }
         break;
     case 1:
-        var_a1 = else_ck(em, var_a1, 0x44);
+        q = else_ck(em, q, 0x44);
         break;
     case 2:
         break;
     }
-    return var_a1;
+    return q;
 }
 
 u8 *em_cmd_pl_fishing_ck(EMW *em, u8 *p) {
-    s8 sp8C;
-    s32 var_s6;
-    int temp_v0;
-    int var_s1;
-    s8 *var_s0;
-    s8 var_s2;
-    u8 *temp_v0_2;
-    u8 *var_s3;
-    u8 *var_s4;
-    u8 *var_v0;
-    u8 temp_a0;
-    u8 temp_v1;
-    u8 temp_v1_2;
+    u8 list[4];
+    u8 *q;
+    PLW *pl;
+    s8 i;
+    s8 n;
+    u16 found;
+    u8 *w;
 
-    var_s4 = p + 1;
-    temp_v1 = *p;
-    var_s3 = &player_work;
-    switch (temp_v1) {                              /* irregular */
-    case 2:
-        break;
+    q = p;
+    pl = player_work;
+    switch (*q++) {
     case 0:
-        var_s2 = 0;
-        var_s1 = 0;
-        var_s6 = 0;
-        var_s0 = &sp8C;
+        i = 0;
+        n = 0;
+        found = 0;
+        w = list;
         do {
-            if ((*var_s3 != 0) && (Pl_stg_ck_tw(em, var_s3) != 0) && (pl_flag_ck(var_s3, 0x80000) != 0)) {
-                *var_s0 = var_s2;
-                var_s0 += 1;
-                var_s1 = (s8)(var_s1 + 1);
-                var_s6 = 1;
+            if (pl->be_flag != 0 && Pl_stg_ck_tw(em, pl) != 0 && pl_flag_ck(pl, 0x80000) != 0) {
+                *w = i;
+                w++;
+                n++;
+                found = 1;
             }
-            var_s2 = (s8) ((s8)(var_s2 + 1));
-            var_s3 += 0xA00;
-        } while (var_s2 < 4);
-        if (var_s6 != 0) {
-            temp_v0 = (s8)(var_s1);
-            if (temp_v0 == 0) {
-                M2C_BREAK(0);
-            }
-            EM_FIELD(em, u8 *, 0x844) = (u8) EM_FIELD((((s32) em->x39A % temp_v0) + sp), u8 *, 0x8C);
+            i++;
+            pl++;
+        } while (i < 4);
+        if (found) {
+            em->x844 = list[em->x39A % n];
         } else {
-loop_16:
-            temp_a0 = EM_FIELD(var_s4, u8 *, 0);
-            if ((temp_a0 != 0x45) || (EM_FIELD(var_s4, u8 *, 1) != 1)) {
-                if (temp_a0 == 0x45) {
-                    if (EM_FIELD(var_s4, u8 *, 1) != 2) {
-                        goto block_21;
-                    }
-                } else {
-block_21:
-                    var_s4 = cmd_end_search(em, var_s4, 0x45, 2);
-                    goto loop_16;
-                }
-            }
-            temp_v0_2 = next_cmd_search(em, var_s4);
-            temp_v1_2 = EM_FIELD(temp_v0_2, u8 *, 0);
-            var_s4 = temp_v0_2;
-            if ((temp_v1_2 == 0x45) && (EM_FIELD(var_s4, u8 *, 1) == 2)) {
-                var_v0 = next_cmd_search(em, var_s4);
-block_27:
-                var_s4 = var_v0;
-            }
+            CMD_SKIP(em, q, 0x45);
         }
         break;
     case 1:
-        var_v0 = else_ck(var_s4, 0x45);
-        goto block_27;
+        q = else_ck(em, q, 0x45);
+        break;
+    case 2:
+        break;
     }
-    return var_s4;
+    return q;
 }
 
 u8 *em_cmd_target_pl_act_ck(EMW *em, u8 *p) {
-    u8 *temp_v0;
-    u8 *var_s0;
-    u8 *var_v0;
-    u8 temp_a0;
-    u8 temp_a2;
-    u8 temp_v1;
-    u8 temp_v1_2;
+    u8 *q;
+    u8 a;
+    u8 b;
 
-    temp_v1 = EM_FIELD(p, u8 *, 0);
-    var_s0 = p + 1;
-    switch (temp_v1) {                              /* irregular */
-    case 2:
-        break;
+    q = p;
+    switch (*q++) {
     case 0:
-        temp_a2 = EM_FIELD(var_s0, u8 *, 1);
-        var_s0 += 2;
-        if (((s16)(act_ck(&player_work + ((em->x844 & 0xF) * 0xA00), EM_FIELD(p, u8 *, 1), temp_a2))) == 0) {
-loop_5:
-            temp_a0 = EM_FIELD(var_s0, u8 *, 0);
-            if ((temp_a0 != 0x46) || (EM_FIELD(var_s0, u8 *, 1) != 1)) {
-                if (temp_a0 == 0x46) {
-                    if (EM_FIELD(var_s0, u8 *, 1) != 2) {
-                        goto block_10;
-                    }
-                } else {
-block_10:
-                    var_s0 = cmd_end_search(em, var_s0, 0x46, 2);
-                    goto loop_5;
-                }
-            }
-            temp_v0 = next_cmd_search(em, var_s0);
-            temp_v1_2 = EM_FIELD(temp_v0, u8 *, 0);
-            var_s0 = temp_v0;
-            if ((temp_v1_2 == 0x46) && (EM_FIELD(var_s0, u8 *, 1) == 2)) {
-                var_v0 = next_cmd_search(em, var_s0);
-block_16:
-                var_s0 = var_v0;
-            }
+        a = q[0];
+        b = q[1];
+        q += 2;
+        if ((s16)act_ck((EMW *)&player_work[em->x844 & 0xF], a, b) == 0) {
+            CMD_SKIP(em, q, 0x46);
         }
         break;
     case 1:
-        var_v0 = else_ck(var_s0, 0x46);
-        goto block_16;
+        q = else_ck(em, q, 0x46);
+        break;
+    case 2:
+        break;
     }
-    return var_s0;
+    return q;
 }
 
 u8 *em_cmd_fish_ok_ck(EMW *em, u8 *p) {
@@ -2432,7 +2239,7 @@ u8 *em_cmd_fish_ok_ck(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_timer_set(EMW *em, u8 *p) {
-    EM_FIELD(em, s32 *, 8) = (s32) (*p * 0x1E);
+    em->work08 = *p * 30;
     return p + 1;
 }
 
@@ -2455,31 +2262,24 @@ u8 *em_cmd_pl_land_target(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_pl_look_ck(EMW *em, u8 *p) {
-    s8 temp_a0;
-    u8 *temp_v0;
-    u8 *var_a1;
-    u8 temp_v1;
-    u8 temp_v1_2;
+    u8 *q;
+    s8 t;
 
-    var_a1 = p;
-    switch (*var_a1++) {
+    q = p;
+    switch (*q++) {
     case 0:
-        temp_a0 = em->x844;
-        if (em->x88C & (1 << (temp_a0 & 0xF))) {
-            if (temp_a0 == -1) {
-                goto loop_7;
-            }
-        } else {
-            CMD_SKIP(em, var_a1, 0x4A);
+        t = em->x844;
+        if (!(em->x88C & (1 << (t & 0xF))) || t == -1) {
+            CMD_SKIP(em, q, 0x4A);
         }
         break;
     case 1:
-        var_a1 = else_ck(em, var_a1, 0x4A);
+        q = else_ck(em, q, 0x4A);
         break;
     case 2:
         break;
     }
-    return var_a1;
+    return q;
 }
 
 u8 *em_cmd_kehai_clear(EMW *em, u8 *p) {
@@ -2497,57 +2297,39 @@ u8 *em_cmd_hate_clear(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_horm_pos_set(EMW *em, u8 *p) {
-    cmd_target_kind_set(em + 0x934);
+    cmd_target_kind_set(em, em->tgt_pos);
     return p;
 }
 
 u8 *em_cmd_thirst_add(EMW *em, u8 *p) {
-    s32 temp_v0;
-    s32 var_a1;
-
-    if (*p != 0) {
-
-    } else {
-        temp_v0 = em->thirst_max;
-        var_a1 = temp_v0 >> 1;
-        if (temp_v0 < 0) {
-            var_a1 = (s32) (temp_v0 + 1) >> 1;
-        }
-        em_thirst_add(var_a1);
+    switch (*p) {
+    case 0:
+        em_thirst_add(em, em->thirst_max / 2);
+        break;
+    default:
+        break;
     }
     return p + 1;
 }
 
 u8 *em_cmd_hungry_add(EMW *em, u8 *p) {
-    s32 temp_v0;
-    s32 var_a1;
-
-    if (*p != 0) {
-
-    } else {
-        temp_v0 = em->hungry_max;
-        var_a1 = temp_v0 >> 1;
-        if (temp_v0 < 0) {
-            var_a1 = (s32) (temp_v0 + 1) >> 1;
-        }
-        em_hungry_add(var_a1);
+    switch (*p) {
+    case 0:
+        em_hungry_add(em, em->hungry_max / 2);
+        break;
+    default:
+        break;
     }
     return p + 1;
 }
 
 u8 *em_cmd_suimin_add(EMW *em, u8 *p) {
-    s32 temp_v0;
-    s32 var_a1;
-
-    if (*p != 0) {
-
-    } else {
-        temp_v0 = em->x8AC;
-        var_a1 = temp_v0 >> 1;
-        if (temp_v0 < 0) {
-            var_a1 = (s32) (temp_v0 + 1) >> 1;
-        }
-        em_suimin_add(var_a1);
+    switch (*p) {
+    case 0:
+        em_suimin_add(em, em->x8AC / 2);
+        break;
+    default:
+        break;
     }
     return p + 1;
 }
@@ -2940,79 +2722,46 @@ block_71:
 }
 
 u8 *em_cmd_target_pl_samestage_ck(EMW *em, u8 *p) {
-    s8 temp_a1;
-    u8 *temp_s2;
-    u8 *temp_v0;
-    u8 *var_s0;
-    u8 *var_v0;
-    u8 temp_a0;
-    u8 temp_v1;
-    u8 temp_v1_2;
+    u8 *q;
+    s8 t;
+    PLW *pl;
 
-    temp_v1 = *p;
-    var_s0 = p + 1;
-    switch (temp_v1) {                              /* irregular */
-    case 2:
-        break;
+    q = p;
+    switch (*q++) {
     case 0:
-        temp_a1 = em->x844;
-        if ((temp_a1 == -1) || (temp_s2 = &player_work + (temp_a1 * 0xA00), (Pl_stg_ck_tw(temp_s2) == 0)) || (*temp_s2 == 0)) {
-loop_8:
-            temp_a0 = EM_FIELD(var_s0, u8 *, 0);
-            if ((temp_a0 != 0x54) || (EM_FIELD(var_s0, u8 *, 1) != 1)) {
-                if (temp_a0 == 0x54) {
-                    if (EM_FIELD(var_s0, u8 *, 1) != 2) {
-                        goto block_13;
-                    }
-                } else {
-block_13:
-                    var_s0 = cmd_end_search(em, var_s0, 0x54, 2);
-                    goto loop_8;
-                }
-            }
-            temp_v0 = next_cmd_search(em, var_s0);
-            temp_v1_2 = EM_FIELD(temp_v0, u8 *, 0);
-            var_s0 = temp_v0;
-            if ((temp_v1_2 == 0x54) && (EM_FIELD(var_s0, u8 *, 1) == 2)) {
-                var_v0 = next_cmd_search(em, var_s0);
-block_19:
-                var_s0 = var_v0;
-            }
+        t = em->x844;
+        if (t == -1 || (pl = &player_work[t], Pl_stg_ck_tw(em, pl) == 0) || pl->be_flag == 0) {
+            CMD_SKIP(em, q, 0x54);
         }
         break;
     case 1:
-        var_v0 = else_ck(var_s0, 0x54);
-        goto block_19;
+        q = else_ck(em, q, 0x54);
+        break;
+    case 2:
+        break;
     }
-    return var_s0;
+    return q;
 }
 
 u8 *em_cmd_target_pl_hate_high_ck(EMW *em, u8 *p) {
-    s8 temp_v1_2;
-    u8 *temp_v0;
-    u8 *var_a1;
-    u8 temp_v1;
-    u8 temp_v1_3;
+    u8 *q;
+    s8 t;
 
-    var_a1 = p;
-    switch (*var_a1++) {
+    q = p;
+    switch (*q++) {
     case 0:
-        temp_v1_2 = em->x844;
-        if (temp_v1_2 != -1) {
-            if (EM_FIELD(((temp_v1_2 * 4) + em), s32 *, 0x918) < 0x7530) {
-                goto loop_7;
-            }
-        } else {
-            CMD_SKIP(em, var_a1, 0x55);
+        t = em->x844;
+        if (t == -1 || em->x918[t] < 0x7530) {
+            CMD_SKIP(em, q, 0x55);
         }
         break;
     case 1:
-        var_a1 = else_ck(em, var_a1, 0x55);
+        q = else_ck(em, q, 0x55);
         break;
     case 2:
         break;
     }
-    return var_a1;
+    return q;
 }
 
 u8 *em_cmd_quest_no_ck(EMW *em, u8 *p) {
@@ -3079,144 +2828,88 @@ u8 *em_cmd_tenjo_ck(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_target_land_no_ck(EMW *em, u8 *p) {
-    s8 temp_v1_2;
-    u8 *temp_v0;
-    u8 *var_a1;
-    u8 temp_v1;
-    u8 temp_v1_3;
+    u8 *q;
+    u8 v;
+    s8 t;
 
-    var_a1 = p;
-    switch (*var_a1++) {
+    q = p;
+    switch (*q++) {
     case 0:
-        var_a1 += 1;
-        if ((em->x881 == 0xB) && (temp_v1_2 = em->x844, (temp_v1_2 != -1))) {
-            if ((EM_FIELD(p, u8 *, 1) & 0xFF) != EM_FIELD((&player_work + ((temp_v1_2 & 0xF) * 0xA00)), u8 *, 0x70E)) {
-                goto loop_8;
-            }
-        } else {
-            CMD_SKIP(em, var_a1, 0x5A);
+        v = *q;
+        q += 1;
+        if (!(em->x881 == 0xB && (t = em->x844, t != -1) && v == EM_FIELD(&player_work[t & 0xF], u8 *, 0x70E))) {
+            CMD_SKIP(em, q, 0x5A);
         }
         break;
     case 1:
-        var_a1 = else_ck(em, var_a1, 0x5A);
+        q = else_ck(em, q, 0x5A);
         break;
     case 2:
         break;
     }
-    return var_a1;
+    return q;
 }
 
 u8 *em_cmd_ninshiki_timer_sub(EMW *em, u8 *p) {
-    int var_t1;
-    void *var_t0;
+    u8 v;
+    s8 i;
+    s16 *w;
 
-    var_t1 = 0;
-    if ((s32) *(u8 *)0x3F34C3 > 0) {
-        var_t0 = em;
-        do {
-            if (*p & 0xFF) {
-
-            } else if (!(em->x88C & (1 << ((s8)(var_t1))))) {
-                EM_FIELD(var_t0, s16 *, 0x890) = 0;
+    v = *p;
+    w = (s16 *)em;
+    for (i = 0; i < *(u8 *)0x3F34C3; i++, w++) {
+        switch (v) {
+        case 0:
+            if (!(em->x88C & (1 << i))) {
+                EM_FIELD(w, s16 *, 0x890) = 0;
             }
-            var_t1 = (s8)(var_t1 + 1);
-            var_t0 += 2;
-        } while (var_t1 < (s32) *(void *)0x3F34C3);
+            break;
+        default:
+            break;
+        }
     }
     return p + 1;
 }
 
 u8 *em_cmd_tenjostage_ck(EMW *em, u8 *p) {
-    int sp3C;
-    int sp38;
-    u8 *temp_v0;
-    u8 *var_s0;
-    u8 *var_v0;
-    u8 temp_a0;
-    u8 temp_v1;
-    u8 temp_v1_2;
+    f32 sp3C;
+    f32 sp38;
+    u8 *q;
 
-    temp_v1 = *p;
-    var_s0 = p + 1;
-    switch (temp_v1) {                              /* irregular */
-    case 2:
-        break;
+    q = p;
+    switch (*q++) {
     case 0:
-        if ((em->stg != *(u8 *)0x3F3404) || (GetTenjoHit(em + 0xAC, &sp3C, &sp38) == 0)) {
-loop_6:
-            temp_a0 = EM_FIELD(var_s0, u8 *, 0);
-            if ((temp_a0 != 0x5C) || (EM_FIELD(var_s0, u8 *, 1) != 1)) {
-                if (temp_a0 == 0x5C) {
-                    if (EM_FIELD(var_s0, u8 *, 1) != 2) {
-                        goto block_11;
-                    }
-                } else {
-block_11:
-                    var_s0 = cmd_end_search(em, var_s0, 0x5C, 2);
-                    goto loop_6;
-                }
-            }
-            temp_v0 = next_cmd_search(em, var_s0);
-            temp_v1_2 = EM_FIELD(temp_v0, u8 *, 0);
-            var_s0 = temp_v0;
-            if ((temp_v1_2 == 0x5C) && (EM_FIELD(var_s0, u8 *, 1) == 2)) {
-                var_v0 = next_cmd_search(em, var_s0);
-block_17:
-                var_s0 = var_v0;
-            }
+        if (em->stg != *(u8 *)0x3F3404 || GetTenjoHit(em->pos, &sp3C, (u16 *)&sp38) == 0) {
+            CMD_SKIP(em, q, 0x5C);
         }
         break;
     case 1:
-        var_v0 = else_ck(var_s0, 0x5C);
-        goto block_17;
+        q = else_ck(em, q, 0x5C);
+        break;
+    case 2:
+        break;
     }
-    return var_s0;
+    return q;
 }
 
 u8 *em_cmd_smell_set_ck(EMW *em, u8 *p) {
-    u8 *temp_v0;
-    u8 *var_s0;
-    u8 *var_v0;
-    u8 temp_a0;
-    u8 temp_v1;
-    u8 temp_v1_2;
+    u8 *q;
 
-    temp_v1 = *p;
-    var_s0 = p + 1;
-    switch (temp_v1) {                              /* irregular */
-    case 2:
-        break;
+    q = p;
+    switch (*q++) {
     case 0:
-        cmd_target_kind_set(em + 0x934);
-        if ((EM_FIELD(em, f32 *, 0x934) == 0.0f) || (EM_FIELD(em, f32 *, 0x938) == 0.0f) || (EM_FIELD(em, f32 *, 0x93C) == 0.0f)) {
-loop_7:
-            temp_a0 = EM_FIELD(var_s0, u8 *, 0);
-            if ((temp_a0 != 0x5D) || (EM_FIELD(var_s0, u8 *, 1) != 1)) {
-                if (temp_a0 == 0x5D) {
-                    if (EM_FIELD(var_s0, u8 *, 1) != 2) {
-                        goto block_12;
-                    }
-                } else {
-block_12:
-                    var_s0 = cmd_end_search(em, var_s0, 0x5D, 2);
-                    goto loop_7;
-                }
-            }
-            temp_v0 = next_cmd_search(em, var_s0);
-            temp_v1_2 = EM_FIELD(temp_v0, u8 *, 0);
-            var_s0 = temp_v0;
-            if ((temp_v1_2 == 0x5D) && (EM_FIELD(var_s0, u8 *, 1) == 2)) {
-                var_v0 = next_cmd_search(em, var_s0);
-block_18:
-                var_s0 = var_v0;
-            }
+        cmd_target_kind_set(em, em->tgt_pos);
+        if (em->tgt_pos[0] == 0.0f || em->tgt_pos[1] == 0.0f || em->tgt_pos[2] == 0.0f) {
+            CMD_SKIP(em, q, 0x5D);
         }
         break;
     case 1:
-        var_v0 = else_ck(var_s0, 0x5D);
-        goto block_18;
+        q = else_ck(em, q, 0x5D);
+        break;
+    case 2:
+        break;
     }
-    return var_s0;
+    return q;
 }
 
 u8 *em_cmd_my_floor_ck(EMW *em, u8 *p) {
@@ -3465,7 +3158,7 @@ u8 *em_cmd_st25_gate_ck(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_runaway_timer_set(EMW *em, u8 *p) {
-    em->runaway_tm = (s16) *(&em02_runaway_timer_tbl + (em->stg * 2));
+    em->runaway_tm = em02_runaway_timer_tbl[em->stg];
     return p;
 }
 
@@ -3492,32 +3185,27 @@ u8 *em_cmd_male_ck(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_target_pl_hate_ck(EMW *em, u8 *p) {
-    s8 temp_v1_2;
-    u8 *temp_v0;
-    u8 *var_a1;
-    u8 temp_v1;
-    u8 temp_v1_3;
+    u8 *q;
+    u8 v;
+    s8 t;
 
-    var_a1 = p;
-    switch (*var_a1++) {
+    q = p;
+    switch (*q++) {
     case 0:
-        temp_v1_2 = em->x844;
-        var_a1 += 1;
-        if (temp_v1_2 != -1) {
-            if (EM_FIELD(((temp_v1_2 * 4) + em), s32 *, 0x918) < *(&check_hate_tbl + ((EM_FIELD(p, u8 *, 1) & 0xFF) * 4))) {
-                goto loop_7;
-            }
-        } else {
-            CMD_SKIP(em, var_a1, 0x64);
+        t = em->x844;
+        v = *q;
+        q += 1;
+        if (!(t != -1 && !(em->x918[t] < check_hate_tbl[v]))) {
+            CMD_SKIP(em, q, 0x64);
         }
         break;
     case 1:
-        var_a1 = else_ck(em, var_a1, 0x64);
+        q = else_ck(em, q, 0x64);
         break;
     case 2:
         break;
     }
-    return var_a1;
+    return q;
 }
 
 u8 *em_cmd_all_pl_hate_clear(EMW *em, u8 *p) {
@@ -3529,284 +3217,214 @@ u8 *em_cmd_all_pl_hate_clear(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_pl_ride_ck(EMW *em, u8 *p) {
-    int *var_a2;
-    s32 var_s0;
-    int var_a0;
-    u8 *temp_v0;
-    u8 *var_a1;
-    u8 temp_a0;
-    u8 temp_v1;
-    u8 temp_v1_2;
-    u8 temp_v1_3;
+    u8 *q;
+    u16 ok;
+    s8 i;
+    u8 n;
 
-    var_a1 = p + 1;
-    temp_v1 = *p;
-    var_s0 = 1;
-    switch (temp_v1) {                              /* irregular */
-    case 2:
-        break;
+    q = p;
+    ok = 1;
+    switch (*q++) {
     case 0:
-        temp_v1_2 = *(u8 *)0x3F34C3;
-        var_a2 = &player_work;
-        var_a0 = 0;
-        if ((s32) temp_v1_2 > 0) {
-            do {
-                if (EM_FIELD(var_a2, u8 *, 0x604) != 0) {
-                    var_s0 = 0;
-                }
-                var_a0 = (s8)(var_a0 + 1);
-                var_a2 += 0xA00;
-            } while (var_a0 < (s32) temp_v1_2);
-        }
-        if (var_s0 != 0) {
-            if (var_s0 != 0) {
-loop_11:
-                temp_a0 = EM_FIELD(var_a1, u8 *, 0);
-                if ((temp_a0 != 0x66) || (EM_FIELD(var_a1, u8 *, 1) != 1)) {
-                    if (temp_a0 == 0x66) {
-                        if (EM_FIELD(var_a1, u8 *, 1) != 2) {
-                            goto block_16;
-                        }
-                    } else {
-block_16:
-                        var_a1 = cmd_end_search(em, var_a1, 0x66, 2);
-                        if (var_s0 != 0) {
-                            goto loop_11;
-                        }
-                    }
-                }
-            }
-            temp_v0 = next_cmd_search(em, var_a1);
-            temp_v1_3 = EM_FIELD(temp_v0, u8 *, 0);
-            var_a1 = temp_v0;
-            if ((temp_v1_3 == 0x66) && (EM_FIELD(var_a1, u8 *, 1) == 2)) {
-                var_a1 = next_cmd_search(em, var_a1);
+        n = *(u8 *)0x3F34C3;
+        for (i = 0; i < n; i++) {
+            if (player_work[i].flag604 != 0) {
+                ok = 0;
             }
         }
+        CMD_SKIPF(em, q, 0x66, ok);
         break;
     case 1:
-        var_a1 = else_ck(em, var_a1, 0x66);
+        q = else_ck(em, q, 0x66);
+        break;
+    case 2:
         break;
     }
-    return var_a1;
+    return q;
 }
 
 u8 *em_cmd_em_master_ck(EMW *em, u8 *p) {
-    s32 temp_s0;
-    u8 *temp_v0;
-    u8 *var_a1;
-    u8 temp_v1;
-    u8 temp_v1_2;
+    u8 *q;
+    s32 s;
 
-    var_a1 = p;
-    switch (*var_a1++) {
+    q = p;
+    switch (*q++) {
     case 0:
-        temp_s0 = em->x8C3 != 0;
-        if (temp_s0 != 0) {
-            if (temp_s0 != 0) {
-loop_7:
-                temp_a0 = EM_FIELD(var_a1, u8 *, 0);
-                if ((temp_a0 != 0x67) || (EM_FIELD(var_a1, u8 *, 1) != 1)) {
-                    if (temp_a0 == 0x67) {
-                        if (EM_FIELD(var_a1, u8 *, 1) != 2) {
-                            goto block_12;
-                        }
-                    } else {
-block_12:
-                        var_a1 = cmd_end_search(em, var_a1, 0x67, 2);
-                        if (temp_s0 != 0) {
-                            goto loop_7;
-                        }
-                    }
-                }
-            }
-            temp_v0 = next_cmd_search(em, var_a1);
-            temp_v1_2 = EM_FIELD(temp_v0, u8 *, 0);
-            var_a1 = temp_v0;
-            if ((temp_v1_2 == 0x67) && (EM_FIELD(var_a1, u8 *, 1) == 2)) {
-                var_a1 = next_cmd_search(em, var_a1);
-            }
-        }
+        s = em->x8C3 != 0;
+        CMD_SKIPF(em, q, 0x67, s);
         break;
     case 1:
-        var_a1 = else_ck(em, var_a1, 0x67);
+        q = else_ck(em, q, 0x67);
         break;
     case 2:
         break;
     }
-    return var_a1;
+    return q;
 }
 
 u8 *em_cmd_em_cmd_reset(EMW *em, u8 *p) {
-    em_cmd_reset();
+    em_cmd_reset(em);
     return p;
 }
 
 u8 *em_cmd_rnd32(EMW *em, u8 *p) {
-    s32 temp_at;
-    s32 temp_s1;
-    s32 var_s2;
-    s32 var_s3;
-    u8 temp_a0;
-    u8 temp_s0;
-    u8 temp_v1;
-    void *temp_v0;
-    void *temp_v0_2;
-    void *var_a1;
-    void *var_a1_2;
+    u8 *q;
+    u8 *r;
+    u8 n;
+    u8 w;
+    s32 cum;
+    s32 i;
+    s32 rnd;
 
-    var_a1 = p;
-    temp_v1 = EM_FIELD(var_a1, u8 *, 0);
-    switch (temp_v1) {                              /* irregular */
-    case 0x0:
-        temp_s0 = EM_FIELD(var_a1, u8 *, 1);
-        var_s2 = 0;
-        var_s3 = 0;
-        temp_at = (s32) temp_s0 > 0;
-        var_a1 += 2;
-        if (temp_at != 0) {
-            temp_s1 = em->x39A & 0x1F & 0xFFFF;
-loop_15:
-            temp_v0 = cmd_end_search(em, var_a1, 0x80, 0xFF);
-            temp_a0 = EM_FIELD(temp_v0, u8 *, 2);
-            var_a1 = temp_v0 + 3;
-            if ((temp_a0 == 0) || (((temp_a0 & 0xFF) != 0xFF) && (var_s2 = (var_s2 + temp_a0) & 0xFF, ((temp_s1 < var_s2) == 0)))) {
-                var_s3 = (var_s3 + 1) & 0xFFFF;
-                if (var_s3 >= (s32) temp_s0) {
-
+    q = p;
+    switch (*q) {
+    case 0:
+        n = q[1];
+        cum = 0;
+        i = 0;
+        q += 2;
+        if (n > 0) {
+            rnd = em->x39A & 0x1F & 0xFFFF;
+loop:
+            r = cmd_end_search(em, q, 0x80, 0xFF);
+            w = r[2];
+            q = r + 3;
+            if (w == 0 || ((w & 0xFF) != 0xFF && (cum = (cum + w) & 0xFF, !(rnd < cum)))) {
+                i = (i + 1) & 0xFFFF;
+                if (i >= n) {
                 } else {
-                    goto loop_15;
+                    goto loop;
                 }
             }
         }
         break;
-    case 0xA:
-    case 0x9:
-    case 0x8:
-    case 0x7:
-    case 0x6:
-    case 0x5:
-    case 0x4:
-    case 0x3:
-    case 0x2:
-    case 0x1:
-        var_a1_2 = var_a1 + 2;
-loop_22:
-        temp_v0_2 = cmd_end_search(em, var_a1_2, 0x80, 0xFF);
-        if (EM_FIELD(temp_v0_2, u8 *, 1) != 0xFF) {
-            var_a1_2 = temp_v0_2 + 3;
-            goto loop_22;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+        r = q + 2;
+        for (;;) {
+            r = cmd_end_search(em, r, 0x80, 0xFF);
+            if (r[1] != 0xFF) {
+                r = r + 3;
+                continue;
+            }
+            break;
         }
-        var_a1 = temp_v0_2 + 2;
+        q = r + 2;
         break;
     case 0xFF:
-        var_a1 += 1;
+        q += 1;
         break;
     }
-    return var_a1;
+    return q;
 }
 
 u8 *em_cmd_contents(EMW *em, u8 *p) {
-    s32 temp_a1;
-
-    EM_FIELD(em, u16 *, 0x822) = (u16) *p;
+    em->x822 = *p;
     if (em->x826 == 0) {
-        em->cmd_p808 = (void *) (p + 1);
+        em->cmd_p808 = p + 1;
     }
-    em->x826 = 1U;
-    temp_a1 = *(EM_FIELD(em->cmd_tbl, s32 *, 4) + (EM_FIELD(em, u16 *, 0x822) * 4));
-    EM_FIELD(em, s32 *, 0x870) = temp_a1;
-    return temp_a1;
+    em->x826 = 1;
+    p = em->cmd_tbl[1][em->x822];
+    em->cmd_top = p;
+    return p;
 }
 
 u8 *em_cmd_sub_contents(EMW *em, u8 *p) {
-    s32 temp_a1;
+    u8 v;
 
-    EM_FIELD(em, u16 *, 0x824) = (u16) EM_FIELD(p, u8 *, 1);
+    v = p[0];
+    em->x824 = p[1];
     if (em->x826 == 1) {
-        em->cmd_p80C = (void *) (p + 2);
+        p += 2;
+        em->cmd_p80C = p;
     }
-    em->x826 = 2U;
-    temp_a1 = *(EM_FIELD((((EM_FIELD(p, u8 *, 0) & 0xFF) * 4) + EM_FIELD(em, s32 *, 0x800)), s32 *, 0x3C) + (EM_FIELD(em, u16 *, 0x824) * 4));
-    EM_FIELD(em, s32 *, 0x870) = temp_a1;
-    return temp_a1;
+    em->x826 = 2;
+    p = em->cmd_tbl[15 + v][em->x824];
+    em->cmd_top = p;
+    return p;
 }
 
 u8 *em_cmd_range_ck(EMW *em, u8 *p) {
-    f32 temp_f1;
-    f32 var_f1;
-    s32 temp_v1_4;
-    s32 var_s1;
-    s8 temp_v1_2;
-    s8 var_a2;
-    u8 temp_v1;
-    u8 temp_v1_3;
-    void *temp_v0;
-    void *var_a0;
-    void *var_a1;
-    void *var_a1_2;
+    f32 f;
+    f32 v;
+    u8 n;
+    s32 i;
+    s32 j;
+    s8 t;
+    u8 *q;
+    u8 *r;
+    f32 *w;
 
-    var_a1 = p + 1;
-    temp_v1 = EM_FIELD(p, u8 *, 0);
-    switch (temp_v1) {                              /* irregular */
-    case 0x0:
-        temp_v1_2 = em->x844;
-        if (temp_v1_2 == -1) {
-            var_f1 = -1.0f;
+    q = p;
+    switch (*q++) {
+    case 0:
+        t = em->x844;
+        if (t == -1) {
+            f = -1.0f;
         } else {
-            var_f1 = EM_FIELD((((temp_v1_2 & 0xF) * 4) + em), f32 *, 0x8C4);
+            f = em->x8C4[t & 0xF];
         }
-        temp_v1_3 = EM_FIELD(p, u8 *, 1);
-        var_a1_2 = var_a1 + 1;
-        if (var_f1 == -1.0f) {
-            var_a2 = temp_v1_3 & 0xFF;
+        n = *q;
+        q += 1;
+        if (f == -1.0f) {
+            i = n;
         } else {
-            temp_v1_4 = temp_v1_3 & 0xFF;
-            var_a2 = 0;
-            EM_FIELD(em, f32 *, 0x3AC) = var_f1;
-            if (temp_v1_4 > 0) {
-                var_a0 = em;
-loop_16:
-                temp_f1 = EM_FIELD(var_a0, f32 *, 0x810);
-                if (EM_FIELD(em, f32 *, 0x3AC) <= temp_f1) {
-                    if (temp_f1 < 0.0f) {
-                        goto block_19;
+            i = 0;
+            EM_FIELD(em, f32 *, 0x3AC) = f;
+            if (n > 0) {
+                w = (f32 *)em;
+                for (;;) {
+                    v = EM_FIELD(w, f32 *, 0x810);
+                    if (EM_FIELD(em, f32 *, 0x3AC) <= v) {
+                        if (!(v < 0.0f)) {
+                            break;
+                        }
                     }
-                } else {
-block_19:
-                    var_a2 += 1;
-                    var_a0 += 4;
-                    if (var_a2 < temp_v1_4) {
-                        goto loop_16;
+                    i += 1;
+                    w += 1;
+                    if (!(i < n)) {
+                        break;
                     }
                 }
             }
         }
-        em->x82A = var_a2;
-        var_s1 = 0;
-        if ((s32) (u8) em->x82A > 0) {
+        em->x82A = i;
+        j = 0;
+        if ((u8)em->x82A > 0) {
             do {
-                var_a1_2 = cmd_end_search(em, next_cmd_search(em, var_a1_2), 0x83, 0xFF);
-                var_s1 += 1;
-            } while (var_s1 < (s32) (u8) em->x82A);
+                q = cmd_end_search(em, next_cmd_search(em, q), 0x83, 0xFF);
+                j += 1;
+            } while (j < (u8)em->x82A);
         }
-        var_a1 = next_cmd_search(em, var_a1_2);
+        q = next_cmd_search(em, q);
         break;
-    case 0x5:
-    case 0x4:
-    case 0x3:
-    case 0x2:
-    case 0x1:
-loop_25:
-        temp_v0 = cmd_end_search(em, var_a1, 0x83, 0xFF);
-        if (EM_FIELD(temp_v0, u8 *, 1) != 0xFF) {
-            var_a1 = temp_v0 + 2;
-            goto loop_25;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+        for (;;) {
+            r = cmd_end_search(em, q, 0x83, 0xFF);
+            if (r[1] != 0xFF) {
+                q = r + 2;
+                continue;
+            }
+            break;
         }
-        var_a1 = temp_v0 + 2;
+        q = r + 2;
+        break;
+    case 0xFF:
         break;
     }
-    return var_a1;
+    return q;
 }
 
 u8 *em_cmd_end_command(EMW *em, u8 *p) {
@@ -4086,20 +3704,22 @@ block_81:
 }
 
 u8 *em_cmd_position_set(EMW *em, u8 *p) {
-    void *temp_v1;
+    f32 (*row)[3];
+    f32 *v;
 
-    temp_v1 = *(&em_cmd_pos_tbl + (EM_FIELD(em, u8 *, 2) * 4)) + (*p * 0xC);
-    EM_FIELD(em, f32 *, 0xAC) = (f32) EM_FIELD(temp_v1, f32 *, 0);
-    EM_FIELD(em, f32 *, 0xB0) = (f32) EM_FIELD(temp_v1, f32 *, 4);
-    EM_FIELD(em, f32 *, 0xB4) = (f32) EM_FIELD(temp_v1, f32 *, 8);
-    EM_FIELD(em, f32 *, 0x5A0) = (f32) EM_FIELD(em, f32 *, 0xAC);
-    EM_FIELD(em, f32 *, 0x5A4) = (f32) EM_FIELD(em, f32 *, 0xB0);
-    EM_FIELD(em, f32 *, 0x5A8) = (f32) EM_FIELD(em, f32 *, 0xB4);
+    row = em_cmd_pos_tbl[em->kind];
+    v = row[*p];
+    em->pos[0] = v[0];
+    em->pos[1] = v[1];
+    em->pos[2] = v[2];
+    em->x5A0[0] = em->pos[0];
+    em->x5A0[1] = em->pos[1];
+    em->x5A0[2] = em->pos[2];
     return p + 1;
 }
 
 u8 *em_cmd_vec_set(EMW *em, u8 *p) {
-    EM_FIELD(em, s32 *, 0xA4) = (s32) (Em_Calc_angY(em + 0xAC, *(&em_cmd_pos_tbl + (EM_FIELD(em, u8 *, 2) * 4)) + (*p * 0xC)) & 0xFFFF);
+    em->ang[1] = Em_Calc_angY(em->pos, (f32 *)((u8 *)em_cmd_pos_tbl[em->kind] + *p * 0xC)) & 0xFFFF;
     return p + 1;
 }
 
@@ -4111,88 +3731,7 @@ u8 *em_cmd_wait_set(EMW *em, u8 *p) {
     return p;
 }
 
-u8 *em_cmd_em_atk_bit(EMW *em, u8 *p) {
-    s32 temp_v1_2;
-    s32 var_s0;
-    s32 var_s0_2;
-    s32 var_s1;
-    u8 *var_a1;
-    u8 temp_a0;
-    u8 temp_s0;
-    u8 temp_v0;
-    u8 temp_v1;
-    u8 temp_v1_3;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v0_4;
-
-    var_a1 = p + 1;
-    temp_v1 = EM_FIELD(p, u8 *, 0);
-    switch (temp_v1) {                              /* irregular */
-    case 3:
-        break;
-    case 0:
-        temp_s0 = EM_FIELD(p, u8 *, 1);
-        var_s1 = 0;
-        var_a1 += 3;
-        if ((s32) temp_s0 > 0) {
-loop_7:
-            temp_v0 = *var_a1;
-            temp_v1_2 = EM_FIELD(saved_reg_gp, s32 *, -0x4440);
-            var_a1 += 1;
-            if (temp_v1_2 != temp_v0) {
-                if ((s32) temp_v0 < temp_v1_2) {
-                    temp_v0_2 = cmd_end_search(em, var_a1, 0x94, 3);
-                    temp_v1_3 = EM_FIELD(temp_v0_2, u8 *, 1);
-                    if ((temp_v1_3 == 2) || (temp_v1_3 == 3)) {
-                        var_a1 = temp_v0_2 + 2;
-                    } else {
-                        var_a1 = temp_v0_2 + 2;
-                        var_s1 += 1;
-                        if (var_s1 >= (s32) temp_s0) {
-
-                        } else {
-                            goto loop_7;
-                        }
-                    }
-                } else {
-                    var_s0 = 1;
-                    do {
-                        temp_v0_3 = cmd_end_search(em, var_a1, 0x94, 3);
-                        temp_a0 = EM_FIELD(temp_v0_3, u8 *, 0);
-                        if (temp_a0 == 0x94) {
-                            if (EM_FIELD(temp_v0_3, u8 *, 1) != 2) {
-                                goto block_17;
-                            }
-                            goto block_20;
-                        }
-block_17:
-                        if ((temp_a0 == 0x94) && (EM_FIELD(temp_v0_3, u8 *, 1) == 3)) {
-block_20:
-                            var_s0 = 0;
-                        }
-                        var_a1 = next_cmd_search(em, temp_v0_3);
-                    } while (var_s0 != 0);
-                }
-            }
-        }
-        break;
-    case 1:
-        var_a1 += 1;
-        /* fallthrough */
-    case 2:
-        var_s0_2 = 1;
-        do {
-            temp_v0_4 = cmd_end_search(em, var_a1, 0x94, 3);
-            if ((EM_FIELD(temp_v0_4, u8 *, 0) == 0x94) && (EM_FIELD(temp_v0_4, u8 *, 1) == 3)) {
-                var_s0_2 = 0;
-            }
-            var_a1 = next_cmd_search(em, temp_v0_4);
-        } while (var_s0_2 != 0);
-        break;
-    }
-    return var_a1;
-}
+CMD_SEL_FUNC(em_cmd_em_atk_bit, 0x94, u8, s32, em_atk_bit)
 
 u8 *em_cmd_top(EMW *em) {
     EM_FIELD(em, s8 *, 0x826) = 0;
@@ -4200,39 +3739,31 @@ u8 *em_cmd_top(EMW *em) {
 }
 
 u8 *cmd_end_search(EMW *em, u8 *p, int a2, int a3) {
-    s32 temp_s1;
-    u8 temp_v0;
-    u8 temp_v1;
-    void *var_a1;
-    void *var_a1_2;
+    u8 c;
+    u8 m;
 
-    var_a1 = p;
-    temp_s1 = a2 & 0xFF;
-loop_3:
-    temp_v0 = EM_FIELD(var_a1, u8 *, 0);
-    if (temp_v0 != temp_s1) {
-        var_a1 = next_cmd_search(em, var_a1);
-        goto loop_3;
-    }
-    if ((temp_v0 == temp_s1) && (EM_FIELD(var_a1, u8 *, 1) == 0)) {
-        var_a1_2 = next_cmd_search(em, var_a1);
-loop_7:
-        temp_v1 = EM_FIELD(var_a1_2, u8 *, 0);
-        if (temp_v1 != temp_s1) {
-block_10:
-            if (temp_v1 == temp_s1) {
-                var_a1_2 = next_cmd_search(em, var_a1_2);
+    c = a2;
+    m = a3;
+    for (;;) {
+        while (p[0] != c) {
+            p = next_cmd_search(em, p);
+        }
+        if (!(p[0] == c && p[1] == 0)) {
+            break;
+        }
+        p = next_cmd_search(em, p);
+        for (;;) {
+            if (p[0] == c && p[1] == m) {
+                p = next_cmd_search(em, p);
+                break;
             }
-            var_a1_2 = cmd_end_search(em, var_a1_2, a2, a3);
-            goto loop_7;
+            if (p[0] == c) {
+                p = next_cmd_search(em, p);
+            }
+            p = cmd_end_search(em, p, a2, a3);
         }
-        if (EM_FIELD(var_a1_2, u8 *, 1) != (a3 & 0xFF)) {
-            goto block_10;
-        }
-        var_a1 = next_cmd_search(em, var_a1_2);
-        goto loop_3;
     }
-    return var_a1;
+    return p;
 }
 
 u8 *next_cmd_search(EMW *em, u8 *p) {
@@ -4278,704 +3809,673 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
 
     var_a1 = p;
     temp_v0 = *var_a1;
-    switch (temp_v0) {                              /* switch 1; irregular */
-    case 0x1:                                       /* switch 1 */
+    switch (temp_v0) {
+    case 0x1:
         var_a1 += 2;
         break;
-    case 0x2:                                       /* switch 1 */
+    case 0x2:
         var_a1 += 2;
         break;
-    case 0x3:                                       /* switch 1 */
+    case 0x3:
         var_a1 += 2;
         break;
-    case 0x4:                                       /* switch 1 */
+    case 0x4:
         var_a1 += 1;
         break;
-    case 0x5:                                       /* switch 1 */
+    case 0x5:
         var_a1 += 4;
         break;
-    case 0x6:                                       /* switch 1 */
+    case 0x6:
         var_a1 += 4;
         break;
-    case 0x7:                                       /* switch 1 */
+    case 0x7:
         var_a1 += 2;
         break;
-    case 0x8:                                       /* switch 1 */
+    case 0x8:
         var_a1 += 2;
         break;
-    case 0x9:                                       /* switch 1 */
+    case 0x9:
         var_a1 += 2;
         break;
-    case 0xA:                                       /* switch 1 */
+    case 0xA:
         var_a1 += 2;
         break;
-    case 0xB:                                       /* switch 1 */
+    case 0xB:
         var_a1 += 1;
         temp_v1 = *var_a1;
-        switch (temp_v1) {                          /* switch 2; irregular */
-        case 0:                                     /* switch 2 */
+        switch (temp_v1) {
+        case 0:
             var_a1 += 2;
             break;
-        case 2:                                     /* switch 2 */
-        case 1:                                     /* switch 2 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0xC:                                       /* switch 1 */
+    case 0xC:
         var_a1 += 3;
         break;
-    case 0xD:                                       /* switch 1 */
+    case 0xD:
         var_a1 += 2;
         break;
-    case 0xE:                                       /* switch 1 */
+    case 0xE:
         var_a1 += 1;
         temp_v1_2 = *var_a1;
-        switch (temp_v1_2) {                        /* switch 3; irregular */
-        case 0:                                     /* switch 3 */
+        switch (temp_v1_2) {
+        case 0:
             var_a1 += 2;
             break;
-        case 2:                                     /* switch 3 */
-        case 1:                                     /* switch 3 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0xF:                                       /* switch 1 */
+    case 0xF:
         var_a1 += 6;
         break;
-    case 0x10:                                      /* switch 1 */
+    case 0x10:
         var_a1 += 1;
         break;
-    case 0x11:                                      /* switch 1 */
+    case 0x11:
         var_a1 += 1;
         break;
-    case 0x12:                                      /* switch 1 */
+    case 0x12:
         var_a1 += 1;
         break;
-    case 0x13:                                      /* switch 1 */
+    case 0x13:
         var_a1 += 1;
         break;
-    case 0x14:                                      /* switch 1 */
+    case 0x14:
         var_a1 += 1;
         temp_v1_3 = *var_a1;
-        switch (temp_v1_3) {                        /* switch 4; irregular */
-        case 0:                                     /* switch 4 */
+        switch (temp_v1_3) {
+        case 0:
             var_a1 += 2;
             break;
-        case 2:                                     /* switch 4 */
-        case 1:                                     /* switch 4 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x15:                                      /* switch 1 */
-        temp_v1_4 = var_a1 + 1;
-        var_a1 = temp_v1_4 + 1;
-        temp_v1_5 = *temp_v1_4;
-        switch (temp_v1_5) {                        /* switch 5; irregular */
-        case 3:                                     /* switch 5 */
-        case 2:                                     /* switch 5 */
-            break;
-        case 0:                                     /* switch 5 */
+    case 0x15:
+        var_a1 += 1;
+        switch (*var_a1++) {
+        case 0:
             var_a1 += 3;
-            /* fallthrough */
-        case 1:                                     /* switch 5 */
+        case 1:
             var_a1 += 1;
+            break;
+        case 2:
+        case 3:
             break;
         }
         break;
-    case 0x16:                                      /* switch 1 */
+    case 0x16:
         var_a1 += 2;
         break;
-    case 0x17:                                      /* switch 1 */
+    case 0x17:
         var_a1 += 5;
         break;
-    case 0x18:                                      /* switch 1 */
+    case 0x18:
         var_a1 += 1;
         break;
-    case 0x19:                                      /* switch 1 */
+    case 0x19:
         var_a1 += 1;
         break;
-    case 0x1A:                                      /* switch 1 */
+    case 0x1A:
         var_a1 += 2;
         break;
-    case 0x1B:                                      /* switch 1 */
+    case 0x1B:
         var_a1 += 1;
         temp_v1_6 = *var_a1;
-        switch (temp_v1_6) {                        /* switch 6; irregular */
-        case 0:                                     /* switch 6 */
+        switch (temp_v1_6) {
+        case 0:
             var_a1 += 2;
             break;
-        case 2:                                     /* switch 6 */
-        case 1:                                     /* switch 6 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x1C:                                      /* switch 1 */
+    case 0x1C:
         var_a1 += 1;
         temp_v1_7 = *var_a1;
-        switch (temp_v1_7) {                        /* switch 7; irregular */
-        case 0:                                     /* switch 7 */
+        switch (temp_v1_7) {
+        case 0:
             var_a1 += 2;
             break;
-        case 2:                                     /* switch 7 */
-        case 1:                                     /* switch 7 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x1D:                                      /* switch 1 */
-        temp_v1_8 = var_a1 + 1;
-        var_a1 = temp_v1_8 + 1;
-        temp_v1_9 = *temp_v1_8;
-        switch (temp_v1_9) {                        /* switch 8; irregular */
-        case 3:                                     /* switch 8 */
-        case 2:                                     /* switch 8 */
-            break;
-        case 0:                                     /* switch 8 */
+    case 0x1D:
+        var_a1 += 1;
+        switch (*var_a1++) {
+        case 0:
             var_a1 += 3;
-            /* fallthrough */
-        case 1:                                     /* switch 8 */
+        case 1:
             var_a1 += 1;
+            break;
+        case 2:
+        case 3:
             break;
         }
         break;
-    case 0x1E:                                      /* switch 1 */
+    case 0x1E:
         var_a1 += 1;
         break;
-    case 0x20:                                      /* switch 1 */
-        temp_v1_10 = var_a1 + 1;
-        var_a1 = temp_v1_10 + 1;
-        temp_v1_11 = *temp_v1_10;
-        switch (temp_v1_11) {                       /* switch 9; irregular */
-        case 3:                                     /* switch 9 */
-        case 2:                                     /* switch 9 */
-            break;
-        case 0:                                     /* switch 9 */
+    case 0x20:
+        var_a1 += 1;
+        switch (*var_a1++) {
+        case 0:
             var_a1 += 3;
-            /* fallthrough */
-        case 1:                                     /* switch 9 */
+        case 1:
             var_a1 += 1;
+            break;
+        case 2:
+        case 3:
             break;
         }
         break;
-    case 0x21:                                      /* switch 1 */
+    case 0x21:
         var_a1 += 1;
         temp_v1_12 = *var_a1;
-        switch (temp_v1_12) {                       /* switch 10; irregular */
-        case 0:                                     /* switch 10 */
+        switch (temp_v1_12) {
+        case 0:
             var_a1 += 1;
             break;
-        case 2:                                     /* switch 10 */
-        case 1:                                     /* switch 10 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x22:                                      /* switch 1 */
+    case 0x22:
         var_a1 += 1;
         temp_v1_13 = *var_a1;
-        switch (temp_v1_13) {                       /* switch 11; irregular */
-        case 0:                                     /* switch 11 */
+        switch (temp_v1_13) {
+        case 0:
             var_a1 += 2;
             break;
-        case 2:                                     /* switch 11 */
-        case 1:                                     /* switch 11 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x23:                                      /* switch 1 */
+    case 0x23:
         var_a1 += 1;
         temp_v1_14 = *var_a1;
-        switch (temp_v1_14) {                       /* switch 12; irregular */
-        case 0:                                     /* switch 12 */
+        switch (temp_v1_14) {
+        case 0:
             var_a1 += 3;
             break;
-        case 2:                                     /* switch 12 */
-        case 1:                                     /* switch 12 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x24:                                      /* switch 1 */
+    case 0x24:
         var_a1 += 1;
         temp_v1_15 = *var_a1;
-        switch (temp_v1_15) {                       /* switch 13; irregular */
-        case 0:                                     /* switch 13 */
+        switch (temp_v1_15) {
+        case 0:
             var_a1 += 2;
             break;
-        case 1:                                     /* switch 13 */
+        case 1:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x25:                                      /* switch 1 */
+    case 0x25:
         var_a1 += 1;
         break;
-    case 0x26:                                      /* switch 1 */
+    case 0x26:
         var_a1 += 2;
         break;
-    case 0x27:                                      /* switch 1 */
-        temp_v1_16 = var_a1 + 1;
-        var_a1 = temp_v1_16 + 1;
-        temp_v1_17 = *temp_v1_16;
-        switch (temp_v1_17) {                       /* switch 14; irregular */
-        case 3:                                     /* switch 14 */
-        case 2:                                     /* switch 14 */
-            break;
-        case 0:                                     /* switch 14 */
+    case 0x27:
+        var_a1 += 1;
+        switch (*var_a1++) {
+        case 0:
             var_a1 += 3;
-            /* fallthrough */
-        case 1:                                     /* switch 14 */
+        case 1:
             var_a1 += 1;
+            break;
+        case 2:
+        case 3:
             break;
         }
         break;
-    case 0x28:                                      /* switch 1 */
+    case 0x28:
         var_a1 += 2;
         break;
-    case 0x29:                                      /* switch 1 */
+    case 0x29:
         var_a1 += 2;
         break;
-    case 0x2A:                                      /* switch 1 */
+    case 0x2A:
         var_a1 += 2;
         break;
-    case 0x2B:                                      /* switch 1 */
+    case 0x2B:
         var_a1 += 1;
         temp_v1_18 = *var_a1;
-        switch (temp_v1_18) {                       /* switch 15; irregular */
-        case 0:                                     /* switch 15 */
+        switch (temp_v1_18) {
+        case 0:
             var_a1 += 3;
             break;
-        case 2:                                     /* switch 15 */
-        case 1:                                     /* switch 15 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x2C:                                      /* switch 1 */
-        temp_v1_19 = var_a1 + 1;
-        var_a1 = temp_v1_19 + 1;
-        temp_v1_20 = *temp_v1_19;
-        switch (temp_v1_20) {                       /* switch 16; irregular */
-        case 3:                                     /* switch 16 */
-        case 2:                                     /* switch 16 */
-            break;
-        case 0:                                     /* switch 16 */
+    case 0x2C:
+        var_a1 += 1;
+        switch (*var_a1++) {
+        case 0:
             var_a1 += 3;
-            /* fallthrough */
-        case 1:                                     /* switch 16 */
+        case 1:
             var_a1 += 1;
+            break;
+        case 2:
+        case 3:
             break;
         }
         break;
-    case 0x2D:                                      /* switch 1 */
+    case 0x2D:
         var_a1 += 1;
         break;
-    case 0x2E:                                      /* switch 1 */
+    case 0x2E:
         var_a1 += 2;
         break;
-    case 0x2F:                                      /* switch 1 */
+    case 0x2F:
         var_a1 += 2;
         break;
-    case 0x30:                                      /* switch 1 */
+    case 0x30:
         var_a1 += 1;
         break;
-    case 0x31:                                      /* switch 1 */
+    case 0x31:
         var_a1 += 1;
         break;
-    case 0x32:                                      /* switch 1 */
+    case 0x32:
         var_a1 += 1;
         temp_v1_21 = *var_a1;
-        switch (temp_v1_21) {                       /* switch 17; irregular */
-        case 0:                                     /* switch 17 */
+        switch (temp_v1_21) {
+        case 0:
             var_a1 += 2;
             break;
-        case 2:                                     /* switch 17 */
-        case 1:                                     /* switch 17 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x33:                                      /* switch 1 */
-        temp_v1_22 = var_a1 + 1;
-        var_a1 = temp_v1_22 + 1;
-        temp_v1_23 = *temp_v1_22;
-        switch (temp_v1_23) {                       /* switch 18; irregular */
-        case 3:                                     /* switch 18 */
-        case 2:                                     /* switch 18 */
-            break;
-        case 0:                                     /* switch 18 */
+    case 0x33:
+        var_a1 += 1;
+        switch (*var_a1++) {
+        case 0:
             var_a1 += 3;
-            /* fallthrough */
-        case 1:                                     /* switch 18 */
+        case 1:
             var_a1 += 1;
+            break;
+        case 2:
+        case 3:
             break;
         }
         break;
-    case 0x34:                                      /* switch 1 */
+    case 0x34:
         var_a1 += 1;
         temp_v1_24 = *var_a1;
-        switch (temp_v1_24) {                       /* switch 19; irregular */
-        case 0:                                     /* switch 19 */
+        switch (temp_v1_24) {
+        case 0:
             var_a1 += 3;
             break;
-        case 2:                                     /* switch 19 */
-        case 1:                                     /* switch 19 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x35:                                      /* switch 1 */
+    case 0x35:
         var_a1 += 2;
         break;
-    case 0x38:                                      /* switch 1 */
+    case 0x38:
         var_a1 += 2;
         break;
-    case 0x39:                                      /* switch 1 */
+    case 0x39:
         var_a1 += 2;
         break;
-    case 0x3A:                                      /* switch 1 */
+    case 0x3A:
         var_a1 += 2;
         break;
-    case 0x3B:                                      /* switch 1 */
+    case 0x3B:
         var_a1 += 2;
         break;
-    case 0x3C:                                      /* switch 1 */
+    case 0x3C:
         var_a1 += 2;
         break;
-    case 0x3D:                                      /* switch 1 */
+    case 0x3D:
         var_a1 += 1;
         temp_v1_25 = *var_a1;
-        switch (temp_v1_25) {                       /* switch 20; irregular */
-        case 0:                                     /* switch 20 */
+        switch (temp_v1_25) {
+        case 0:
             var_a1 += 2;
             break;
-        case 2:                                     /* switch 20 */
-        case 1:                                     /* switch 20 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x3E:                                      /* switch 1 */
+    case 0x3E:
         var_a1 += 1;
         temp_v1_26 = *var_a1;
-        switch (temp_v1_26) {                       /* switch 21; irregular */
-        case 0:                                     /* switch 21 */
+        switch (temp_v1_26) {
+        case 0:
             var_a1 += 3;
-            /* fallthrough */
-        case 1:                                     /* switch 21 */
+        case 1:
             var_a1 += 2;
             break;
-        case 3:                                     /* switch 21 */
-        case 2:                                     /* switch 21 */
+        case 2:
+        case 3:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x3F:                                      /* switch 1 */
+    case 0x3F:
         var_a1 += 3;
         break;
-    case 0x40:                                      /* switch 1 */
+    case 0x40:
         var_a1 += 2;
         break;
-    case 0x41:                                      /* switch 1 */
+    case 0x41:
         var_a1 += 2;
         break;
-    case 0x42:                                      /* switch 1 */
+    case 0x42:
         var_a1 += 1;
         temp_v1_27 = *var_a1;
-        switch (temp_v1_27) {                       /* switch 22; irregular */
-        case 0:                                     /* switch 22 */
+        switch (temp_v1_27) {
+        case 0:
             var_a1 += 2;
             break;
-        case 2:                                     /* switch 22 */
-        case 1:                                     /* switch 22 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x44:                                      /* switch 1 */
+    case 0x44:
         var_a1 += 2;
         break;
-    case 0x45:                                      /* switch 1 */
+    case 0x45:
         var_a1 += 2;
         break;
-    case 0x46:                                      /* switch 1 */
+    case 0x46:
         var_a1 += 1;
         temp_v1_28 = *var_a1;
-        switch (temp_v1_28) {                       /* switch 23; irregular */
-        case 0:                                     /* switch 23 */
+        switch (temp_v1_28) {
+        case 0:
             var_a1 += 3;
             break;
-        case 2:                                     /* switch 23 */
-        case 1:                                     /* switch 23 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x47:                                      /* switch 1 */
+    case 0x47:
         var_a1 += 2;
         break;
-    case 0x48:                                      /* switch 1 */
+    case 0x48:
         var_a1 += 2;
         break;
-    case 0x49:                                      /* switch 1 */
+    case 0x49:
         var_a1 += 2;
         break;
-    case 0x4A:                                      /* switch 1 */
+    case 0x4A:
         var_a1 += 2;
         break;
-    case 0x4B:                                      /* switch 1 */
+    case 0x4B:
         var_a1 += 1;
         break;
-    case 0x4C:                                      /* switch 1 */
+    case 0x4C:
         var_a1 += 1;
         break;
-    case 0x4D:                                      /* switch 1 */
+    case 0x4D:
         var_a1 += 1;
         break;
-    case 0x50:                                      /* switch 1 */
-    case 0x4F:                                      /* switch 1 */
-    case 0x4E:                                      /* switch 1 */
+    case 0x4E:
+    case 0x4F:
+    case 0x50:
         var_a1 += 2;
         break;
-    case 0x51:                                      /* switch 1 */
+    case 0x51:
         var_a1 += 2;
         break;
-    case 0x52:                                      /* switch 1 */
+    case 0x52:
         var_a1 += 1;
         break;
-    case 0x53:                                      /* switch 1 */
+    case 0x53:
         var_a1 += 1;
         break;
-    case 0x54:                                      /* switch 1 */
+    case 0x54:
         var_a1 += 2;
         break;
-    case 0x55:                                      /* switch 1 */
+    case 0x55:
         var_a1 += 2;
         break;
-    case 0x56:                                      /* switch 1 */
+    case 0x56:
         var_a1 += 1;
         temp_v1_29 = *var_a1;
-        switch (temp_v1_29) {                       /* switch 24; irregular */
-        case 0:                                     /* switch 24 */
+        switch (temp_v1_29) {
+        case 0:
             var_a1 += 2;
             break;
-        case 2:                                     /* switch 24 */
-        case 1:                                     /* switch 24 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x57:                                      /* switch 1 */
+    case 0x57:
         var_a1 += 1;
         temp_v1_30 = *var_a1;
-        switch (temp_v1_30) {                       /* switch 25; irregular */
-        case 0:                                     /* switch 25 */
+        switch (temp_v1_30) {
+        case 0:
             var_a1 += 3;
-            /* fallthrough */
-        case 1:                                     /* switch 25 */
+        case 1:
             var_a1 += 2;
             break;
-        case 3:                                     /* switch 25 */
-        case 2:                                     /* switch 25 */
+        case 2:
+        case 3:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x58:                                      /* switch 1 */
+    case 0x58:
         var_a1 += 1;
         break;
-    case 0x59:                                      /* switch 1 */
+    case 0x59:
         var_a1 += 2;
         break;
-    case 0x5A:                                      /* switch 1 */
+    case 0x5A:
         var_a1 += 1;
         temp_v1_31 = *var_a1;
-        switch (temp_v1_31) {                       /* switch 26; irregular */
-        case 0:                                     /* switch 26 */
+        switch (temp_v1_31) {
+        case 0:
             var_a1 += 2;
             break;
-        case 2:                                     /* switch 26 */
-        case 1:                                     /* switch 26 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x5B:                                      /* switch 1 */
+    case 0x5B:
         var_a1 += 2;
         break;
-    case 0x5C:                                      /* switch 1 */
+    case 0x5C:
         var_a1 += 2;
         break;
-    case 0x5D:                                      /* switch 1 */
+    case 0x5D:
         var_a1 += 2;
         break;
-    case 0x5E:                                      /* switch 1 */
+    case 0x5E:
         var_a1 += 1;
         temp_v1_32 = *var_a1;
-        switch (temp_v1_32) {                       /* switch 27; irregular */
-        case 0:                                     /* switch 27 */
+        switch (temp_v1_32) {
+        case 0:
             var_a1 += 2;
             break;
-        case 2:                                     /* switch 27 */
-        case 1:                                     /* switch 27 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x5F:                                      /* switch 1 */
+    case 0x5F:
         var_a1 += 1;
         break;
-    case 0x60:                                      /* switch 1 */
+    case 0x60:
         var_a1 += 2;
         break;
-    case 0x61:                                      /* switch 1 */
+    case 0x61:
         var_a1 += 1;
         break;
-    case 0x62:                                      /* switch 1 */
+    case 0x62:
         var_a1 += 2;
         break;
-    case 0x63:                                      /* switch 1 */
+    case 0x63:
         var_a1 += 2;
         break;
-    case 0x64:                                      /* switch 1 */
+    case 0x64:
         var_a1 += 1;
         temp_v1_33 = *var_a1;
-        switch (temp_v1_33) {                       /* switch 28; irregular */
-        case 0:                                     /* switch 28 */
+        switch (temp_v1_33) {
+        case 0:
             var_a1 += 2;
             break;
-        case 2:                                     /* switch 28 */
-        case 1:                                     /* switch 28 */
+        case 1:
+        case 2:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x65:                                      /* switch 1 */
+    case 0x65:
         var_a1 += 1;
         break;
-    case 0x66:                                      /* switch 1 */
+    case 0x66:
         var_a1 += 2;
         break;
-    case 0x67:                                      /* switch 1 */
+    case 0x67:
         var_a1 += 2;
         break;
-    case 0x68:                                      /* switch 1 */
+    case 0x68:
         var_a1 += 1;
         break;
-    case 0x80:                                      /* switch 1 */
+    case 0x80:
         var_a1 += 1;
         temp_v1_34 = *var_a1;
-        switch (temp_v1_34) {                       /* switch 29; irregular */
-        case 0x0:                                   /* switch 29 */
+        switch (temp_v1_34) {
+        case 0x0:
             var_a1 += 3;
-            /* fallthrough */
-        case 0xA:                                   /* switch 29 */
-        case 0x9:                                   /* switch 29 */
-        case 0x8:                                   /* switch 29 */
-        case 0x7:                                   /* switch 29 */
-        case 0x6:                                   /* switch 29 */
-        case 0x5:                                   /* switch 29 */
-        case 0x4:                                   /* switch 29 */
-        case 0x3:                                   /* switch 29 */
-        case 0x2:                                   /* switch 29 */
-        case 0x1:                                   /* switch 29 */
+        case 0x1:
+        case 0x2:
+        case 0x3:
+        case 0x4:
+        case 0x5:
+        case 0x6:
+        case 0x7:
+        case 0x8:
+        case 0x9:
+        case 0xA:
             var_a1 += 2;
             break;
-        case 0xFF:                                  /* switch 29 */
+        case 0xFF:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x81:                                      /* switch 1 */
+    case 0x81:
         var_a1 += 2;
         break;
-    case 0x82:                                      /* switch 1 */
+    case 0x82:
         var_a1 += 3;
         break;
-    case 0x83:                                      /* switch 1 */
+    case 0x83:
         var_a1 += 1;
         temp_v1_35 = *var_a1;
-        switch (temp_v1_35) {                       /* switch 30; irregular */
-        case 0x0:                                   /* switch 30 */
+        switch (temp_v1_35) {
+        case 0x0:
             var_a1 += 4;
             break;
-        case 0xFF:                                  /* switch 30 */
-        case 0x5:                                   /* switch 30 */
-        case 0x4:                                   /* switch 30 */
-        case 0x3:                                   /* switch 30 */
-        case 0x2:                                   /* switch 30 */
-        case 0x1:                                   /* switch 30 */
+        case 0x1:
+        case 0x2:
+        case 0x3:
+        case 0x4:
+        case 0x5:
+        case 0xFF:
             var_a1 += 1;
             break;
         }
         break;
-    case 0x84:                                      /* switch 1 */
+    case 0x84:
         var_a1 += 1;
         break;
-    case 0xFF:                                      /* switch 1 */
+    case 0xFF:
         var_a1 += 2;
         break;
-    case 0x90:                                      /* switch 1 */
+    case 0x90:
         var_a1 += 2;
         break;
-    case 0x91:                                      /* switch 1 */
+    case 0x91:
         var_a1 += 2;
         break;
-    case 0x93:                                      /* switch 1 */
-    case 0x92:                                      /* switch 1 */
+    case 0x92:
+    case 0x93:
         var_a1 += 1;
         break;
-    case 0x94:                                      /* switch 1 */
-        temp_v1_36 = var_a1 + 1;
-        var_a1 = temp_v1_36 + 1;
-        temp_v1_37 = *temp_v1_36;
-        switch (temp_v1_37) {                       /* switch 31; irregular */
-        case 3:                                     /* switch 31 */
-        case 2:                                     /* switch 31 */
-            break;
-        case 0:                                     /* switch 31 */
+    case 0x94:
+        var_a1 += 1;
+        switch (*var_a1++) {
+        case 0:
             var_a1 += 2;
-            /* fallthrough */
-        case 1:                                     /* switch 31 */
+        case 1:
             var_a1 += 1;
+            break;
+        case 2:
+        case 3:
             break;
         }
         break;
-    default:                                        /* switch 1 */
+    default:
         EM_FIELD(em, s8 *, 0x9DA) = 4;
         break;
     }
     return var_a1;
 }
 
-u8 *else_ck(EMW *em, u8 *p, int a2) {
-    s32 temp_s0;
-    s32 var_a1;
-    void *var_a1_2;
+u8 *else_ck(EMW *em, u8 *p, int code) {
+    u8 c;
 
-    var_a1_2 = p;
-    temp_s0 = a2 & 0xFF;
-    if ((EM_FIELD(var_a1_2, u8 *, 0) == temp_s0) && (EM_FIELD(var_a1_2, u8 *, 1) == 2)) {
-        var_a1 = next_cmd_search();
-    } else {
-loop_3:
-        if (EM_FIELD(var_a1_2, u8 *, 0) != temp_s0) {
-block_7:
-            var_a1_2 = cmd_end_search(em, var_a1_2, a2, 2);
-            goto loop_3;
-        }
-        if (EM_FIELD(var_a1_2, u8 *, 1) != 2) {
-            goto block_7;
-        }
-        var_a1 = next_cmd_search(em, var_a1_2);
+    c = code;
+    if (p[0] == c && p[1] == 2) {
+        p = next_cmd_search(em, p);
+        return p;
     }
-    return var_a1;
+    for (;;) {
+        if (p[0] == c && p[1] == 2) {
+            p = next_cmd_search(em, p);
+            return p;
+        }
+        p = cmd_end_search(em, p, code, 2);
+    }
 }
 
 void em_cmd_reset(EMW *em) {
@@ -5229,39 +4729,34 @@ loop_13:
     }
 }
 
-u8 *area_route_rnd32(EMW *em, int a1) {
-    s32 var_t0;
-    s32 var_t1;
-    u8 temp_a0;
-    u8 temp_a2;
-    void *var_a1;
+u8 *area_route_rnd32(EMW *em, u8 *a) {
+    u8 n;
+    u8 cum;
+    u16 i;
+    u16 rnd;
+    u8 w;
+    u8 *q;
 
-    temp_a2 = EM_FIELD(a1, u8 *, 2);
-    var_t0 = 0;
-    var_t1 = 0;
-    var_a1 = a1 + 3;
-    if ((s32) temp_a2 > 0) {
-loop_2:
-        temp_a0 = EM_FIELD(var_a1, u8 *, 2);
-        var_a1 += 3;
-        if (temp_a0 == 0) {
-            goto block_7;
-        }
-        if ((temp_a0 & 0xFF) != 0xFF) {
-            var_t0 = (var_t0 + temp_a0) & 0xFF;
-            if ((em->x39A & 0x1F & 0xFFFF) >= var_t0) {
-block_7:
-                var_a1 += 1;
-                var_t1 = (var_t1 + 1) & 0xFFFF;
-                if (var_t1 >= (s32) temp_a2) {
-
-                } else {
-                    goto loop_2;
-                }
+    n = a[2];
+    cum = 0;
+    i = 0;
+    q = a + 3;
+    rnd = em->x39A & 0x1F;
+    for (; i < n; i++) {
+        w = q[2];
+        q += 3;
+        if (w != 0) {
+            if (w == 0xFF) {
+                break;
+            }
+            cum = cum + w;
+            if (rnd < cum) {
+                break;
             }
         }
+        q += 1;
     }
-    return var_a1;
+    return q;
 }
 
 u8 *set_cmd(EMW *em) {
@@ -5396,68 +4891,68 @@ u8 *unko_ptr_set(EMW *em) {
 }
 
 u8 *cancel_prog_ck(EMW *em) {
-    s32 var_s0;
-    u8 temp_v0;
+    u8 *r;
+    u8 f;
 
-    temp_v0 = em->x917;
-    if (temp_v0 == 0) {
+    f = em->x917;
+    if (f == 0) {
         return 0;
     }
-    var_s0 = 0;
-    if ((temp_v0 & 0xFF & 0x40) && (em_cancel_act_ck((void *)0x40) == 0)) {
-        var_s0 = unko_ptr_set(em);
-        em->x917 = 0U;
-        em->x83B = 0x40U;
+    r = 0;
+    if ((f & 0xFF & 0x40) && em_cancel_act_ck(em, 0x40) == 0) {
+        r = unko_ptr_set(em);
+        em->x917 = 0;
+        em->x83B = 0x40;
     }
-    if ((em->x917 & 0x80) && (em_cancel_act_ck(em, 0x80) == 0) && (var_s0 == 0)) {
-        var_s0 = no_floor_ptr_set(em);
-        em->x917 = 0U;
-        em->x83B = 0x80U;
+    if ((em->x917 & 0x80) && em_cancel_act_ck(em, 0x80) == 0 && r == 0) {
+        r = no_floor_ptr_set(em);
+        em->x917 = 0;
+        em->x83B = 0x80;
     }
-    if ((em->x917 & 0x20) && (em_cancel_act_ck(em, 0x20) == 0)) {
-        EM_FIELD(em, s32 *, 0x83C) = find_ptr_set(em, 0);
-        if (var_s0 == 0) {
-            var_s0 = EM_FIELD(em, s32 *, 0x83C);
+    if ((em->x917 & 0x20) && em_cancel_act_ck(em, 0x20) == 0) {
+        em->cmd_find = find_ptr_set(em, 0);
+        if (r == 0) {
+            r = em->cmd_find;
         }
-        em->x917 = (u8) (em->x917 & 0xCE);
-        em->x83B = (u8) (em->x83B | 0x20);
+        em->x917 &= 0xCE;
+        em->x83B |= 0x20;
     }
-    if ((em->x917 & 0x10) && (em_cancel_act_ck(em, 0x10) == 0)) {
-        EM_FIELD(em, s32 *, 0x834) = kehai_ptr_set(em, 0);
-        if (var_s0 == 0) {
-            var_s0 = EM_FIELD(em, s32 *, 0x834);
+    if ((em->x917 & 0x10) && em_cancel_act_ck(em, 0x10) == 0) {
+        em->cmd_kehai = kehai_ptr_set(em, 0);
+        if (r == 0) {
+            r = em->cmd_kehai;
         }
-        em->x917 = (u8) (em->x917 & 0xEF);
-        em->x83B = (u8) (em->x83B | 0x10);
+        em->x917 &= 0xEF;
+        em->x83B |= 0x10;
     }
-    if ((em->x917 & 8) && (em_cancel_act_ck(em, 8) == 0)) {
-        EM_FIELD(em, s32 *, 0x864) = ikari_ptr_set(em, 0);
-        if (var_s0 == 0) {
-            var_s0 = EM_FIELD(em, s32 *, 0x864);
+    if ((em->x917 & 8) && em_cancel_act_ck(em, 8) == 0) {
+        em->cmd_ikari = ikari_ptr_set(em, 0);
+        if (r == 0) {
+            r = em->cmd_ikari;
         }
-        em->x917 = (u8) (em->x917 & 0xF7);
-        em->x83B = (u8) (em->x83B | 8);
+        em->x917 &= 0xF7;
+        em->x83B |= 8;
     }
-    if ((em->x917 & 4) && (em_cancel_act_ck(em, 4) == 0)) {
-        EM_FIELD(em, s32 *, 0x860) = yobi_ptr_set(em, 0);
-        if (var_s0 == 0) {
-            var_s0 = EM_FIELD(em, s32 *, 0x860);
+    if ((em->x917 & 4) && em_cancel_act_ck(em, 4) == 0) {
+        em->cmd_yobi = yobi_ptr_set(em, 0);
+        if (r == 0) {
+            r = em->cmd_yobi;
         }
-        em->x917 = (u8) (em->x917 & 0xC8);
-        em->x83B = (u8) (em->x83B | 4);
+        em->x917 &= 0xC8;
+        em->x83B |= 4;
     }
-    if ((em->x917 & 2) && (em_cancel_act_ck(em, 2) == 0)) {
-        EM_FIELD(em, s32 *, 0x85C) = smell_ptr_set(em, 0);
-        if (var_s0 == 0) {
-            var_s0 = EM_FIELD(em, s32 *, 0x85C);
+    if ((em->x917 & 2) && em_cancel_act_ck(em, 2) == 0) {
+        em->cmd_smell = smell_ptr_set(em, 0);
+        if (r == 0) {
+            r = em->cmd_smell;
         }
-        em->x917 = (u8) (em->x917 & 0xCC);
-        em->x83B = (u8) (em->x83B | 2);
+        em->x917 &= 0xCC;
+        em->x83B |= 2;
     }
-    if (var_s0 != 0) {
-        EM_FIELD(em, s32 *, 0x870) = var_s0;
+    if (r != 0) {
+        em->cmd_top = r;
     }
-    return var_s0;
+    return r;
 }
 
 void reset_flag_ck(EMW *em) {

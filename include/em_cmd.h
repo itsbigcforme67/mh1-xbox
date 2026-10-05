@@ -30,6 +30,29 @@
         (q) = next_cmd_search(em, q);                              \
     }
 
+/* Same, but the condition was kept in the variable FLAG (re-tested by the compiled loop). */
+#define CMD_SKIPF(em, q, code, flag)                               \
+    if (flag) {                                                    \
+        if (flag) {                                                \
+            for (;;) {                                             \
+                if ((q)[0] == (code) && (q)[1] == 1) {             \
+                    break;                                         \
+                }                                                  \
+                if ((q)[0] == (code) && (q)[1] == 2) {             \
+                    break;                                         \
+                }                                                  \
+                (q) = cmd_end_search(em, q, code, 2);              \
+                if (!(flag)) {                                     \
+                    break;                                         \
+                }                                                  \
+            }                                                      \
+        }                                                          \
+        (q) = next_cmd_search(em, q);                              \
+        if ((q)[0] == (code) && (q)[1] == 2) {                     \
+            (q) = next_cmd_search(em, q);                          \
+        }                                                          \
+    }
+
 /* Select command (code CODE): n entries follow, each a value byte and a body; run the body
  * whose value equals CUR, else skip the whole command. Modes 1/2: skip to the end marker. */
 #define CMD_SEL_FUNC(name, code, vtype, ctype, cur)                                      \
@@ -161,11 +184,12 @@ u8 *name(EMW *em, u8 *p) {                                                     \
 extern u8 ***em_cmd0_tbl[], ***em_cmd1_tbl[], ***em_cmd2_tbl[], ***em_cmd3_tbl[];
 extern u8 ***em_cmd4_tbl[], ***em_cmd5_tbl[], ***em_cmd6_tbl[];
 extern u8 *em_area_mv_tbl[];
-extern u8 check_hate_tbl[];
+extern s32 check_hate_tbl[];
 extern u8 area_move_high_y_tbl[];
 extern s16 em02_runaway_timer_tbl[];
 extern s16 em_atk_mode_timer_tbl[];
 extern s32 em_atk_bit;
+extern f32 (*em_cmd_pos_tbl[])[3];
 
 u8 *em_cmd_kehai_ck(EMW *, u8 *);
 u8 *em_cmd_target_set(EMW *, u8 *);
@@ -301,7 +325,7 @@ u8 *option_route_ptr_set(EMW *, u8);
 u8 *ground_area_move_ptr_set(EMW *, u8);
 u8 *no_floor_ptr_set(EMW *);
 u8 *unko_ptr_set(EMW *);
-u8 *area_route_rnd32(EMW *, int);
+u8 *area_route_rnd32(EMW *, u8 *);
 
 f32 CalcDistanceXZ(f32 *, f32 *);
 void cmd_target_kind_set(EMW *, f32 *);
@@ -317,7 +341,7 @@ void em_search_data_set(EMW *, u8);
 void em_type_act_set(EMW *, int, u16, u16);
 void World_calc2(u8, f32 *, f32 *);
 void SetVector(f32 *, f32, f32, f32);
-u8 GetTenjoHit(f32 *, f32 *, u16 *);
+int GetTenjoHit(f32 *, f32 *, u16 *);
 int GetWallHitLine(f32 *, f32 *, f32 *, u16);
 int GetWaterData();
 int Pl_stg_ck_tw(EMW *, PLW *);
