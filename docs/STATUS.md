@@ -423,6 +423,20 @@ How it works (each step was checked, not assumed):
   - A C file with several jump tables needs ONE rodata slot in
     config/c_files.txt covering all of them (MWCC emits a data section per
     function and each slot line pulls in the whole object's data).
+- Effects started (include/eft.h, EFTW): eft00, eft07, eft09, eft19,
+  eft21 match; eft05, eft10, eft24 match apart from one function each
+  (split as before; *_nm.c holds the near-match). Findings:
+  - `if (flag != 0)` on an s16 local re-sign-extends before the test, as
+    the original does; a bare `if (flag)` does not (eft21 i and m).
+  - A clamp written `(t > 15) ? 15 : t` matched where `if (t > 15) t = 15;`
+    left an extra nop (eft19).
+  - eft24_m: another divide trap kept by the original after an explicit
+    `n == 0` check (compiler quirk, same family as set03/set22).
+  - Early `return`s and nested ifs compile differently: eft07_t needed the
+    nested form.
+  - Some functions get called with fewer arguments than elsewhere (eft09
+    calls Ext_pick_point_clr() bare), so those are declared without a
+    prototype.
   - CLAY: material count at +4 and 32 material indices at +8 (shell03_trans
     sets each material's colour to white before drawing).
 - set20 (stage 25 gate) matches apart from Set20_set. `++t > 180` and
