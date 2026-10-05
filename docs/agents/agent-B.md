@@ -295,3 +295,20 @@ Notes:
   stay static (MKRUNS_KEEP in tools/mkruns.py).
 - tools/mkruns.py recognises function-defining macros (#define NAME(NAME, ...)) automatically now.
 - `em->mode != 6 || em->x15 != 0` guards two cases of the em02 effect script (genef flags unknown branches with #error).
+
+# em07 AI (f_em_58F4A0, 0x58F4A0-0x599EC8, 75 functions): 70 linked
+src/game/em/em07_ai.c .. em07_aif.c (6 runs, rodata 0x6866F0-0x686710, 0x686710-0x6867D8, 0x686840-0x686860),
+em07_ai_nm.c = whole file. Rebuild OK. Near-matches (stay asm): em07_act_sub (21, branch layout of `x == 0 || idx == 0xFF`),
+em_mv02 (7, sltiu at/v0), em07_main (the `idx*8 + em` addu operand order), em_uvmove (61, same as em01/02), em07_effect_move (6).
+Notes:
+- The state functions take only (EMW *em); the second m2c argument is a jump-table address left in a1. Declare
+  `EM07W *w = (EM07W *)em->ex;` inside the function.
+- ef_move_sub here is a sparse switch compiled as a compare ladder, no jump table: tools/genef.py takes `-` as the table
+  label and reads `addiu $4,$0,CASE; beq $3,$4,.Lxxx` pairs. The empty case (0x42A) must sit in sorted position in the
+  source or the ladder loses a compare. SOUND5=1 makes genef pass the extra arguments of sound_call (frame, se, joint, vol)
+  and sound_call_mov/mov2 (frame, frame2, se, joint, vol). shell05_set4 takes 3 arguments, Shell22_set3(em, 4, w->x1A)
+  is followed by `x1A++; x1A &= 3`.
+- A shared tail (`goto blk41` in em07_main case 12) is needed so the same `em07_act_set(em, 4, 3, 2)` is emitted once.
+- `x == 0 || x == 1` style turn tests: see EM07_TURN; the +0x8000 variant turns away from the target.
+- sound_call_mov2 had to be global (called from a run file before it), the rest of the sound/effect helpers are static (KEEP).
+- Watch out for scripted file edits: `s.index('int em07_act_sub')` matched the prototype and cut 130 lines (recovered from the draft).
