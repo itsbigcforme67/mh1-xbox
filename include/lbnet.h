@@ -25,13 +25,14 @@ typedef struct CNET_BG {
 /* burst slot: 12 slots at CnetSys_w+0xE18, stride 0x24 */
 typedef struct CNET_BURST {
     void (*run)(int);   /* 0x00 job function, called each frame while state == 1 */
-    void *cb;           /* 0x04 completion callback of the request */
+    void (*cb)();       /* 0x04 completion callback of the request */
     u8 _pad08[0x10];
     s32 val;            /* 0x18 request argument (start index / count) */
     u8 _pad1C[4];
     u8 state;           /* 0x20 (CnetSys_w+0xE38) 1 = run */
     s8 x21;             /* 0x21 progress */
-    u8 _pad22[2];
+    s8 res;             /* 0x22 result: 1 ok, 2 failed */
+    u8 _pad23;
 } CNET_BURST;
 
 /* plaza / lobby / room table entries (0x164 bytes each), indexed from 0 as (id - 1) */
@@ -43,6 +44,21 @@ typedef struct CNET_PIECE {     /* plaza and room */
     char name[0x42];    /* 0x1A */
     char explain[0x108];/* 0x5C */
 } CNET_PIECE;
+
+/* personal data of the hunter (copied by value, 0x1D0 bytes) */
+typedef struct CNET_PDATA {
+    char name[0x41];    /* 0x00 */
+    char zip[0xB];      /* 0x41 */
+    char address[0x81]; /* 0x4C */
+    char tel[0x81];     /* 0xCD */
+    u8 age;             /* 0x14E */
+    char mail[0x81];    /* 0x14F */
+} CNET_PDATA;
+
+/* condition-search request (copied by value, 0x224 bytes) */
+typedef struct CNET_COND {
+    u8 b[0x224];
+} CNET_COND;
 
 typedef struct CNET_SYS {
     s32 active;  /* 0x000  */
@@ -65,7 +81,9 @@ typedef struct CNET_SYS {
     u16 rcnt;  /* 0x102C receive counter */
     u8 _pad102E[0x32];
     char tel[0x14];  /* 0x1060 telephone number (personal data) */
-    u8 _pad1074[0x502];
+    u8 _pad1074[0x86];
+    CNET_PDATA pdata;  /* 0x10FA personal data being registered */
+    u8 _pad12CA[0x2AC];
     char uid[8];  /* 0x1576 user id string */
     char uhandle[0x40];  /* 0x157E user handle string */
     u8 _pad15BE[0x70];

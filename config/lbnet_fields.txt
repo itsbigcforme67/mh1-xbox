@@ -34,3 +34,4 @@
 0x1008 s32 patch_ver patch information version
 0x1014 char patch_a[0x10] patch information string
 0x1024 char patch_b[8] patch information string 2
+0x10FA CNET_PDATA pdata size=0x1D0 personal data being registered

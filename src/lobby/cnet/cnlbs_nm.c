@@ -82,6 +82,12 @@ int __cnet_SendReq_SearchUser(int arg0) {
     return cmd;
 }
 
+void __cnet_Recv_SearchUser(void) {
+    int sp10;
+
+    GetRecvDataString(CNWP(0x30988), GetRecvData8(CNWP(0x30987), GetRecvData8(CNWP(0x30986), GetRecvData16(CNWP(0x30984), GetRecvData16(CNWP(0x30982), GetRecvData16(CNWP(0x30980), GetRecvDataString(&sp10, recv_work)))))));
+}
+
 void _cnet_RecvFromLbs_RequestAdminMessage(void) {
     GetRecvDataString(CNWP(0x30900), GetRecvDataString(CNWP(0x308EC), &recv_work));
     _cnetEvent_JumpCallBack(4, 0);
@@ -127,9 +133,54 @@ void _cnet_RecvFromLbs_AnswerPersonalDataChange(void) {
     _cnet_Return_CallBack(0);
 }
 
+void __cnet_SendSet_PersonalDataName(void) {
+    char *s0 = CnetSys_w.pdata.name;
+
+    SetSendCommand(&send_work, 0xB4);
+    SetSendEncodeStringData(&send_work, s0, strlen(s0) & 0xFFFF);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+void __cnet_SendSet_PersonalDataZip(void) {
+    char *s0 = CnetSys_w.pdata.name;
+
+    SetSendCommand(&send_work, 0xB5);
+    SetSendEncodeStringData(&send_work, s0 + 0x41, strlen(s0 + 0x41) & 0xFFFF);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+void __cnet_SendSet_PersonalDataAddress(void) {
+    char *s0 = CnetSys_w.pdata.name;
+
+    SetSendCommand(&send_work, 0xB6);
+    SetSendEncodeStringData(&send_work, s0 + 0x4C, strlen(s0 + 0x4C) & 0xFFFF);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+void __cnet_SendSet_PersonalDataTelephone(void) {
+    char *s0 = CnetSys_w.pdata.name;
+
+    SetSendCommand(&send_work, 0xB7);
+    SetSendEncodeStringData(&send_work, s0 + 0xCD, strlen(s0 + 0xCD) & 0xFFFF);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
 void __cnet_SendSet_PersonalDataAge(void) {
     SetSendCommand(&send_work, 0xB8);
-    SetSendData8(&send_work, CNW(u8, 0x1248));
+    SetSendData8(&send_work, CnetSys_w.pdata.age);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+void __cnet_SendSet_PersonalDataMailAddress(void) {
+    char *s0 = CnetSys_w.pdata.name;
+
+    SetSendCommand(&send_work, 0xB9);
+    SetSendEncodeStringData(&send_work, s0 + 0x14F, strlen(s0 + 0x14F) & 0xFFFF);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
 }
@@ -143,6 +194,59 @@ int __cnet_SendReq_PersonalDataRegisted(void) {
 
 void _cnet_RecvFromLbs_AnswerPersonalDataRegisted(void) {
     _cnet_Return_CallBack(0);
+}
+
+void _cnet_CallBack_Result_PersonalDataChange(CNET_RES res) {
+    if (res.val == 0) {
+        CNW(s8, 0xF7E) = 1;
+        return;
+    }
+    CNW(s8, 0xF7E) = 2;
+}
+
+void __cnet_KeepEntryFloorInfo(kind, val)
+int kind;
+s8 val;
+{
+    switch (kind & 0xFF) {
+    case 0:
+        CNW(s8, 0x4054) = val;
+        break;
+    case 1:
+        CNW(s8, 0x4055) = val;
+        break;
+    case 2:
+        CNW(s8, 0x4056) = val;
+        break;
+    }
+}
+
+void __cnet_ClearEntryFloorInfo(int kind) {
+    switch (kind & 0xFF) {
+    case 0:
+        CNW(s8, 0x405E) = 0;
+        break;
+    case 1:
+        CNW(s8, 0x405F) = 0;
+        break;
+    case 2:
+        CNW(s8, 0x4060) = 0;
+        break;
+    }
+}
+
+void __cnet_SetEntryFloorInfo(int kind) {
+    switch (kind & 0xFF) {
+    case 0:
+        CNW(u8, 0x405E) = CNW(u8, 0x4054);
+        break;
+    case 1:
+        CNW(u8, 0x405F) = CNW(u8, 0x4055);
+        break;
+    case 2:
+        CNW(u8, 0x4060) = CNW(u8, 0x4056);
+        break;
+    }
 }
 
 int cnLBS_Read_PlazaAllocation(int unused, int val, int cb) {
@@ -844,9 +948,96 @@ void _cnet_RecvFromLbs_NoticeRoomRemove(void) {
     _cnetEvent_JumpCallBack(0xB, 0);
 }
 
+void __cnet_CallBack_Result_Plaza_NumOfPlaza_005A6E20(CNET_RES res) {
+    if (res.val == 0) {
+        CnetSys_w.burst[2].res = 1;
+        return;
+    }
+    CnetSys_w.burst[2].res = 2;
+}
+
+void _cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60(CNET_RES res) {
+    CNET_RES r;
+
+    if (res.val == 0) {
+        r.val = 2;
+        r.id = 0xB;
+        CnetSys_w.burst[2].cb(r, &r);
+        CnetSys_w.burst[2].res = 1;
+        return;
+    }
+    CnetSys_w.burst[2].res = 2;
+}
+
+void _cnet_CallBack_Result_LobbyCount(CNET_RES res) {
+    if (res.val == 0) {
+        CnetSys_w.burst[3].res = 1;
+        return;
+    }
+    CnetSys_w.burst[3].res = 2;
+}
+
+void _cnet_CallBack_Result_LobbyAllocation(CNET_RES res) {
+    CNET_RES r;
+
+    if (res.val == 0) {
+        r.val = 2;
+        r.id = 0xB;
+        CnetSys_w.burst[3].cb(r, &r);
+        CnetSys_w.burst[3].res = 1;
+        return;
+    }
+    CnetSys_w.burst[3].res = 2;
+}
+
+void _cnet_CallBack_Result_Room_NumOfRoom(CNET_RES res) {
+    if (res.val == 0) {
+        CnetSys_w.burst[4].res = 1;
+        return;
+    }
+    CnetSys_w.burst[4].res = 2;
+}
+
+void _cnet_CallBack_Result_RoomJoinJoinUser(CNET_RES res) {
+    CNET_RES r;
+
+    if (res.val == 0) {
+        r.val = 2;
+        r.id = 0xB;
+        CnetSys_w.burst[4].cb(r, &r);
+        CnetSys_w.burst[4].res = 1;
+        return;
+    }
+    CnetSys_w.burst[4].res = 2;
+}
+
 int cnLBS_Get_AllocationProgressCount(u16 *arg0) {
     *arg0 = CNW(u16, 0x1032);
     return 0;
+}
+
+void _cnet_CallBack_Result_Rule_NumOfRule(CNET_RES res) {
+    if (res.val == 0) {
+        CnetSys_w.burst[5].res = 1;
+        return;
+    }
+    CnetSys_w.burst[5].res = 2;
+}
+
+void _cnet_CallBack_Result_RoomRuleCaption(void) {
+    CNET_RES r;
+
+    r.val = 2;
+    r.id = 0xB;
+    CnetSys_w.burst[5].cb(r, &r);
+}
+
+void _cnet_CallBack_Result_RoomSetFinish(CNET_RES res) {
+    if (res.val == 0) {
+        CnetSys_w.burst[6].res = 1;
+        return;
+    }
+    CnetSys_w.burst[6].res = 2;
 }
 
 int __cnet_SendReq_RoomEntry(int arg0, int arg1) {
