@@ -2,6 +2,7 @@
 #include "pl.h"
 #include "game.h"
 #include "plf.h"
+#include "flow.h"
 
 
 
@@ -162,6 +163,172 @@ void pl_mv084(PLW *pl, s32 arg1) {
         }
         if (pl->work194 == 0) {
             pl_to_normal(pl, 0, 2, 0);
+        }
+        break;
+    }
+}
+
+void pl_mv085(PLW *pl) {
+    u8 s;
+    u16 r;
+    s16 t;
+
+    ItemPickingDeclaration(pl, &pl->x8E6);
+    pl->work40E = 2;
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl->work39C = 0;
+        Pl_basic_flagset(pl, 0, 0, 0);
+        pl->flag12 = 0;
+        r = ran_suu(1);
+        pl_chr_set2(pl, 0x323, 4, r & 0x3F);
+        pl->work8CA = 0;
+        pl->work8D0 = 0;
+        adx_se_set(pl, 0xA);
+        break;
+    case 1:
+        pl->work8CA = pl->work8CA + 1;
+        t = pl->work8CA;
+        if (t >= 0x118) {
+            pl->work8D0 = 3;
+        } else if (t >= 0x10E) {
+            pl->work8D0 = 2;
+        } else if (t >= 0xB4) {
+            pl->work8D0 = 1;
+        } else {
+            pl->work8D0 = 0;
+        }
+        if (Pl_master_ck(pl) == 1) {
+            if (!(pl->sw.trg & 0x20)) {
+                if (pl->work8CA >= 0x12C) {
+                    goto go;
+                }
+            } else {
+go:
+                adx_se_stop(pl);
+                switch (pl->work8D0) {
+                case 0:
+                    if (Game_clear_ck(1) == 0) {
+                        set01_set(0, 0xB, 0);
+                    }
+                    Pl_act_set2(pl, 0, 0x4B, 0);
+                    break;
+                case 1:
+                    if (Game_clear_ck(1) == 0) {
+                        Pl_item_stack(pl, 0x12, -1);
+                        ItemStockRequest(pl, 0x13, pl->x8E6, 0);
+                        set01_set(1, 9, 0x13);
+                        adx_se_set(pl, 0xB);
+                    }
+                    Pl_act_set2(pl, 0, 0x4B, 0);
+                    break;
+                case 2:
+                    if (Game_clear_ck(1) == 0) {
+                        Pl_item_stack(pl, 0x12, -1);
+                        ItemStockRequest(pl, 0x14, pl->x8E6, 0);
+                        set01_set(1, 9, 0x14);
+                        switch (FLD8(system_w, 0x1A)) {
+                        case 0:
+                            adx_se_set(pl, 0xC);
+                            break;
+                        default:
+                        case 2:
+                        case 3:
+                            adx_se_set(pl, 0xE);
+                            break;
+                        }
+                    }
+                    Pl_act_set2(pl, 0, 0x4D, 0);
+                    break;
+                case 3:
+                    if (Game_clear_ck(1) == 0) {
+                        Pl_item_stack(pl, 0x12, -1);
+                        ItemStockRequest(pl, 0x15, pl->x8E6, 0);
+                        set01_set(1, 0xA, 0x15);
+                        adx_se_set(pl, 0xD);
+                    }
+                    Pl_act_set2(pl, 0, 0x4B, 0);
+                    break;
+                }
+            }
+        }
+        break;
+    }
+}
+
+void pl_mv086(PLW *pl) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl_chr_set2(pl, 0x19F, 0, 0);
+        Pile_on(pl);
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 6, 0);
+        }
+        break;
+    }
+}
+
+void pl_mv087(PLW *pl) {
+    u8 s;
+
+    pl->work40E = 2;
+    pl->work40C = 5;
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        if (pl->char0 != 1) {
+            pl_chr_set2(pl, 1, 6, 0);
+        }
+        pl->work8C2 = 1;
+        pl->work8F3 = 0;
+        if (Pl_master_ck(pl) == 1) {
+            adx_se_set(pl, 3);
+        }
+        break;
+    case 1:
+        if ((pl->work8C2 == 0) || (Game_clear_ck(1) == 1)) {
+            pl->work40C = 0;
+            pl_to_normal(pl, 0, 6, 0);
+        }
+        break;
+    }
+}
+
+void pl_mv088(PLW *pl, s32 arg1) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Pl_basic_flagset(pl, 0, 0, 0);
+        pl->flag12 = 0;
+        switch (arg1) {
+        case 0:
+            pl_chr_set2(pl, 0x196, 4, 0);
+            break;
+        case 1:
+            pl_chr_set2(pl, 0x1A0, 4, 0);
+            break;
+        }
+        pl->work39C = 0;
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            if (Pl_master_ck(pl) == 1) {
+                Pl_act_set2(pl, 0, 0x71, 0);
+            } else {
+                pl_to_normal(pl, 0, 4, 0);
+            }
         }
         break;
     }
