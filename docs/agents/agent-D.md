@@ -281,3 +281,43 @@ Lessons:
   first N declaration lines and keeps the best (same idea as tools/declbf.py
   but with a count limit; declbf over 7 lines is too slow).
 Shared header: include/cam.h area_chg is u8 (lbu in cam_sub_std).
+
+## f_weapon (0x163AB0-0x1678xx, display "trans" code) - started
+Built and byte-matching (main OK): src/main/weapon/trans.c (TransReset,
+TransSet, GameTrans, trans; 0x163AB0-0x163D20), weapon.c (SetPartsTrans,
+SetPartsTrans2, weapon_dat_make/2/3; 0x163E40-0x16440C), weapon2.c
+(sight_disp2, sight_disp_ballista; 0x164D60-0x164F68). Parked as near-match
+in src/main/weapon/weapon_nm.c: trans_pl_sub/Lb_trans_pl/Ed_trans_pl (10/23:
+the original keeps an empty then-block, call placed after `b end`),
+weapon_joint_calc (jump table ok, ~440/600 differ in layout; written as C).
+Not started: pl_item_trans_sub, pl_item_trans (3.8 KB), weapon_trans (5.4 KB),
+player_trans, lb_pl_item_trans, Lb_player_trans, Ed_player_trans,
+enemy_trans, player_mat_calc, player_modify, player_mk, get_tex_num,
+Material_set_sub, plplAdd2. These are display transforms (skeleton/weapon
+model draw for the PS2 renderer): low value for the Xbox port, which will
+redraw them on its own renderer.
+- `for (i = 0; i < 0x40; i++) trans_func[i] = 0;` compiles to the original's
+  8x unrolled loop (TransReset); do not hand-unroll.
+- ot4..ot8 are 4-byte objects in .sdata (declare `extern u8 ot4[4]`).
+- `if (a == 0) {} else {r = v}` kept as an empty then-block by the original
+  is reproduced by `switch (a) { case 0: r = v; break; default: break; }`
+  (weapon_joint_calc) but not for trans_pl_sub.
+- The jump table for a switch on a 0..5 value needs an explicit `case 0:`
+  before `default:` when the original table sends 0 to default.
+- Locals `f32 *vy = &v[1], *vz = &v[2];` reproduce the original's hoisted
+  element pointers (sight_disp2/ballista).
+
+## f_cam_223B50 (rail camera, spline, wall hit camera) - started
+Linked: camr1.c (vInnerProductXZ, vInnerProduct), camr3.c (dCnvComplex,
+dSubComplex, dMulComplex). Near-match in camr_nm.c: ZoomRateCalc (8/34),
+ZoomBaseAngleRail (1/10), RollAngleRail (11/28), dDivComplex (13/34),
+QuestClearCameraRequest (33/65; C complete). Not started: cam_rail_move_sub,
+cam_rail_move, cam_rail_move_0, CamRailMove, CamRailPoint, GetOrthogonalPoint
+(finds the t where the camera rail cubic is nearest to a point: builds the
+degree-5 polynomial of (P(t)-Q).P'(t), solves it with DKA5 (Durand-Kerner,
+complex roots, uses the d*Complex helpers) or Cardano/linear when the
+leading terms are below 1e-10; keeps roots with |im| < 0.001), tri_diag and
+Spline (natural cubic spline via tridiagonal solves, 0x30 bytes of
+coefficients per segment), DKA5, Cardano, k_HitWallCamera, k_HitEmCamera.
+m2c cannot read mula.s/madd.s: read the asm.
+- Float-last prototypes again: ScaleVector(f32 *out, f32 *in, f32 t).
