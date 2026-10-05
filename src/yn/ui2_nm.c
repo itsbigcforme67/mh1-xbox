@@ -377,8 +377,8 @@ s8 arg0;
 void yn_dialog_font_once(s32 arg0) {
     YMSG *m;
     int x;
-
-    m = &((YMSG *)yn_dialog_mes_tbl[M2C_FIELD(ynw, u8 *, 0x46)])[arg0];
+    m = (YMSG *)yn_dialog_mes_tbl[M2C_FIELD(ynw, u8 *, 0x46)];
+    m += arg0;
     x = m->x;
     if (x == -1) {
         x = (s16)yn_center_x(m->str, 0x16);
