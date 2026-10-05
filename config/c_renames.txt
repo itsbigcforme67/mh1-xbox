@@ -46,6 +46,9 @@ build/src/game/eft/eft18b.c.o .rodata .data
 build/src/game/eft/eft22.c.o .rodata .data
 build/src/game/eft/eft23.c.o .rodata .data
 build/src/game/em/em_taisei.c.o .rodata .data
+build/src/game/em/em_cmd_r01.c.o .rodata .data
+build/src/game/em/em_cmd_r21.c.o .rodata .data
+build/src/game/em/em_cmd_r24.c.o .rodata .data
 build/src/game/em/em01_aie.c.o .rodata .data
 build/src/game/em/em01_aif.c.o .rodata .data
 build/src/game/em/em01_aig.c.o .rodata .data
