@@ -1,5 +1,5 @@
-/* Game mode state machine, matching part 1: game0 .. game2 (SLPM_654.95 main
- * 0x0010FC70-0x001109D0). game_w+0 is the mode, +1 the step inside a mode,
+/* Game mode state machine, matching part 1: game0 .. game3 (SLPM_654.95 main
+ * 0x0010FC70-0x00110C30). game_w+0 is the mode, +1 the step inside a mode,
  * +2 a sub-step.  Names of fields are guesses (see docs/agents/agent-E.md). */
 #include "f_game.h"
 
@@ -378,4 +378,93 @@ void game2(void) {
             fade_set(2);
         }
     }
+}
+
+/* Sprite request passed to SpritePut: a full-screen fade quad (guess) */
+typedef struct SPRQ {
+    s32 x0, y0, z0, w0;
+    s32 w;              /* 0x10 640.0f */
+    s32 h;              /* 0x14 448.0f */
+    s32 one0;           /* 0x18 1.0f */
+    s32 one1;
+    u8 _pad20[0x10];
+    f32 alpha;          /* 0x30 */
+    s32 z;
+    s32 kind;           /* 0x38 */
+    u32 col;            /* 0x3C */
+    u8 _pad40[0x10];
+} SPRQ;
+
+/* Mode 4 (game3): fade-in then wait screen shown before the quest, ends by
+ * marking this player ready.  Guess. */
+void game3(void) {
+    SPRQ sp;
+    GAME_W *gw = &game_w;
+    s16 t;
+
+    swset();
+    switch (game_w.step) {
+    case 0:
+        gw->step++;
+        gw->x04 = 0;
+        break;
+    case 1:
+        t = gw->x04 + 1;
+        gw->x04 = t;
+        if (t >= 0xC0) {
+            gw->step++;
+            gw->x06 = 0;
+        }
+        break;
+    case 2:
+        t = gw->x06 + 1;
+        gw->x06 = t;
+        if (t >= 0x96) {
+            gw->step++;
+        }
+        break;
+    case 3:
+        gw->mode = 5;
+        gw->step = 0;
+        select_w.ready[game_w.master] = 1;
+        if (Online_ck() != 0) {
+            net_send_sys(2, game_w.master);
+        }
+        break;
+    }
+    if (gw->step >= 2) {
+        flfntSetSize(0x20, 0x20);
+        flfntLocate(0x80, 0xD0);
+        switch (GW8(0xD5)) {
+        case 4:
+            font_set_palette(5);
+            font_print(lit_778_00358160);
+            break;
+        case 6:
+            font_set_palette(2);
+            font_print(lit_779_00358180);
+            break;
+        default:
+        case 7:
+            font_set_palette(2);
+            font_print(lit_780_003581A0);
+            break;
+        }
+    }
+    sp.w = 0x44200000;
+    sp.h = 0x43E00000;
+    sp.x0 = 0;
+    sp.y0 = 0;
+    sp.z0 = 0;
+    sp.w0 = 0;
+    sp.one0 = 0x3F800000;
+    sp.one1 = 0x3F800000;
+    sp.alpha = gw->x04 / 255.0f;
+    sp.kind = 5;
+    sp.col = 0xFF010101;
+    sp.z = 0;
+    SpritePut(&sp);
+    Info_control();
+    move();
+    trans();
 }

@@ -59,7 +59,6 @@ segments:
       - [0x00EC18, asm, text/g_Fade_task]
       - [0x00F050, asm, text/f_game]
       - [0x00FC70, c, game/f_game]
-      - [0x0109D0, asm, text/game3]
       - [0x010C30, c, game/f_gameb]
       - [0x010F08, asm, text/g_game_init]
       - [0x011B20, c, hit/hit]

@@ -5,14 +5,14 @@ printing "main OK". Shared headers I touch: include/game.h (fields carved out of
 padding, see commit messages), include/pl.h (x73A), new include/flow.h and
 include/f_game.h.
 
-## f_game (0x10F050-0x110F08, Game_task + game0..game13, game_core) - 10/12 built
+## f_game (0x10F050-0x110F08, Game_task + game0..game13, game_core) - 11/12 built
 Game mode machine. `Game_task(tsk)` runs setup steps (tsk+8), then calls
 game0..game5 by `game_w.mode`; game_w.step (+1) and game_w.sub (+2) are the
 step inside a mode. game12 is the sound/model loading sequence.
-Built: f_game.c (game0, game10, game11, game12, game13, game1, game2, table
+Built: f_game.c (game0, game10..13, game1, game2, game3, table
 0x3580E0-0x35815C), f_gameb.c (game4, game5, game_core).
-Near-match (f_game_nm.c, not built): game3 (10/150 instructions off, order of
-the sprite-struct stores) and Game_task (the C is complete; ~90 of 788
+game3 MATCHES now: the sprite-struct stores must be in this order: w,h,x0,y0,z0,w0,one0,one1,alpha,kind,col,z (found by brute-forcing the permutations of the last six statements, ~1 s each with tools/align.py).
+Near-match (f_game_nm.c, not built): Game_task (the C is complete; ~90 of 788
 instructions differ in real terms: the original keeps tsk->step in a1 and has
 different delay-slot filling for the first switch).
 Strings (SJIS UI text) are left in the original rodata and referenced as
