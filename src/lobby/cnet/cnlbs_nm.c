@@ -1650,17 +1650,25 @@ int __cnetSub_Get_RestBgWork(void) {
 
 int __cnet_RecvFromLbs(int cmd, int from, int cat, int x) {
     int i;
-    int c16 = cmd & 0xFFFF;
-    int c8 = cat & 0xFF;
-    u8 *h = lbs_command_tbl_h;
-    u8 *l = lbs_command_tbl_l;
-    u8 *ft = lbs_fromto_tbl;
-    u8 *ct = lbs_category_tbl;
-    void (**jmp)() = lbs_command_jmp;
+    int c16;
+    int c8;
+    u8 *h;
+    u8 *l;
+    u8 *ft;
+    u8 *ct;
+    void (**jmp)();
     int hi;
     int full;
 
-    for (i = 0; i < 0x102; i++, h++, l++, ft++, ct++, jmp++) {
+    c16 = cmd & 0xFFFF;
+    c8 = cat & 0xFF;
+    i = 0;
+    h = lbs_command_tbl_h;
+    l = lbs_command_tbl_l;
+    ft = lbs_fromto_tbl;
+    ct = lbs_category_tbl;
+    jmp = lbs_command_jmp;
+    for (; i < 0x102; i++, h++, l++, ft++, ct++, jmp++) {
         hi = (*h << 8) & 0xFFFF;
         full = (hi | *l) & 0xFFFF;
         if (*ft != 8 && c16 == (full & 0xFFFF) && *ct == c8 && *jmp != 0) {
