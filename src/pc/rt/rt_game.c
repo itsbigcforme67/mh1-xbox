@@ -92,12 +92,26 @@ int rt_clay_claimed(int handle)
     return handle >= 0 && handle < nclays && claimed[handle];
 }
 
+/* a model's clays bound again (stage change): the handles of the previous
+ * model are reused, so handles kept by game C stay valid */
+static int rebind_clay(int old, gfx_clay *c)
+{
+    if (old >= 0 && old < nclays) {
+        clays[old] = c;
+        claimed[old] = 0;
+        return old;
+    }
+    return rt_register_clay(c);
+}
+
 int rt_bind_set_model(gfx_clay *const *c, const uint32_t *attr, int n)
 {
-    int i;
+    int i, old[64];
+    for (i = 0; i < 64; i++)
+        old[i] = set_mdl.flag && set_clay[i].handle >= 0 ? set_clay[i].handle : -1;
     memset(set_clay, 0, sizeof set_clay);
     for (i = 0; i < 64; i++) {
-        set_clay[i].handle = i < n ? rt_register_clay(c[i]) : -1;
+        set_clay[i].handle = i < n ? rebind_clay(old[i], c[i]) : -1;
         set_clay[i].attr = i < n && attr ? (s32)attr[i] : 0;
     }
     set_mdl.flag = 1;
@@ -109,12 +123,14 @@ int rt_bind_set_model(gfx_clay *const *c, const uint32_t *attr, int n)
 
 int rt_bind_stage_model(gfx_clay *const *c, const uint32_t *attr, int n)
 {
-    int i;
+    int i, old[64];
+    for (i = 0; i < 64; i++)
+        old[i] = stage_mdl.flag && stage_clay[i].handle >= 0 ? stage_clay[i].handle : -1;
     memset(stage_clay, 0, sizeof stage_clay);
     if (n > 64)
         n = 64;
     for (i = 0; i < 64; i++) {
-        stage_clay[i].handle = i < n ? rt_register_clay(c[i]) : -1;
+        stage_clay[i].handle = i < n ? rebind_clay(old[i], c[i]) : -1;
         stage_clay[i].attr = i < n && attr ? (s32)attr[i] : 0;
     }
     stage_mdl.flag = 1;
@@ -186,10 +202,11 @@ void push_set_work(SETW *sw)
  * this tick; rt_game_draw walks ot0..ot4 in order. Priority order inside a
  * table (low first) is a guess. */
 #define PRIM_MAX 256
-#define OT_N 5
+#define OT_N 9
 #define QUEUE_MAX 512
 u8 ot0[0x20], ot1[0x20], ot2[0x20], ot3[0x20], ot4[0x20];
-static u8 *const ots[OT_N] = { ot0, ot1, ot2, ot3, ot4 };   /* ot4: set13 glare, drawn last (guess) */
+u8 ot5[0x20], ot6[0x20], ot7[0x20], ot8[0x20];   /* screen layers: HUD / menus (rt_game_draw_2d) */
+static u8 *const ots[OT_N] = { ot0, ot1, ot2, ot3, ot4, ot5, ot6, ot7, ot8 };   /* ot4: set13 glare, drawn last (guess) */
 static union { PRIM p; u8 raw[0x40]; } prim_pool[PRIM_MAX];
 static unsigned char prim_used[PRIM_MAX];
 static struct { PRIM *p; int pri; } queue[OT_N][QUEUE_MAX];
@@ -261,9 +278,13 @@ void rt_eft_trace(void);
 
 void *Stage_data_get(int stg);
 
+extern u8 quest_w[];
 void rt_game_init(int stage)
 {
-    memset(&game_w, 0, sizeof game_w);
+    /* a quest (rt_quest_load: Quest_start) has already set game_w up, as
+     * game11 does before the stage is loaded */
+    if (*(s16 *)(quest_w + 8) == 0)
+        memset(&game_w, 0, sizeof game_w);
     game_w.stage = (u8)stage;
     game_w.master = 0;
     game_w.pl_num = 1;      /* one player, offline (monster sight/hate loops over pl_num) */
@@ -276,9 +297,19 @@ void rt_game_init(int stage)
     stage_set_set(stage);   /* the game's own spawn list (src/main/stage/stage_set.c) */
 }
 
+void rt_font_tick_begin(void);
+/* ot_init: the ordering tables are emptied at the start of every tick */
+void rt_prims_reset(void)
+{
+    int i;
+    for (i = 0; i < OT_N; i++)
+        nqueue[i] = 0;
+}
 void rt_game_move(void)
 {
     int i;
+    if (*(s16 *)(quest_w + 8) == 0)
+        rt_font_tick_begin();   /* text printed by the previous tick is replaced (quests: rt_flow_tick) */
     for (i = 0; i < OT_N; i++)
         nqueue[i] = 0;
     stage_work.timer++;
@@ -318,8 +349,8 @@ void rt_game_draw(void)
     }
     rt_eft_draw();          /* trans_shell, trans_eft, trans_eft_up (before the prims: a guess) */
     rt_fl_reset_states();
-    for (t = 0; t < OT_N; t++)
-        for (k = 0; k < nqueue[t]; k++) {
+    for (t = 0; t < 5; t++)
+        for (k = 0; k < (t == 2 ? 0 : nqueue[t]); k++) {   /* ot2: screen layer (rt_game_draw_2d) */
             PRIM *p = queue[t][k].p;
             static int skip = -2;
             if (skip == -2) skip = getenv("RT_SKIP_TYPE") ? atoi(getenv("RT_SKIP_TYPE")) : -1;
@@ -329,4 +360,48 @@ void rt_game_draw(void)
                 p->trans(p);
             rt_fl_reset_states();
         }
+}
+
+/* add_prim2 (0x169710): queue on a multi-entry ordering table; entry idx
+ * of n (drawn high idx first on the PS2: plplAdd(ot + n - 1 - idx)) */
+int add_prim2(void *ot, PRIM *p, int idx, int n)
+{
+    if (!(idx < n && idx >= 0))
+        return -1;
+    add_prim(ot, p, n - 1 - idx, 0);
+    return idx;
+}
+
+/* The screen layers in trans()'s order (main 0x163BC0): ot5, font stack
+ * 0, ot6, stack 1, ot7, stack 2, ot8, stack 4, ot2, stack 3. */
+void font_draw_stack_no(int n);
+void rt_font_frame_begin(void);
+void rt_font_frame_end(void);
+void rt_game_draw_2d(void)
+{
+    static const int order[5] = { 5, 6, 7, 8, 2 }, fstack[5] = { 0, 1, 2, 4, 3 };
+    int i, k;
+    void InitRenderState(int soft);
+    InitRenderState(1);     /* trans() ends with it: forgets the cached texture stage etc.
+                             * (the host's 3D draws bound other textures since) */
+    rt_font_frame_begin();
+    for (i = 0; i < 5; i++) {
+        int t = order[i];
+        for (k = 0; k < nqueue[t]; k++) {
+            PRIM *p = queue[t][k].p;
+            if (p->trans)
+                p->trans(p);
+            rt_fl_reset_states();
+        }
+        font_draw_stack_no(fstack[i]);
+        rt_fl_reset_states();
+    }
+    /* game3 / game4 / game5 call font_draw() after trans(): every stack
+     * again, with what the prims printed meanwhile */
+    if (game_w.mode >= 3 && game_w.mode <= 5)
+        for (i = 0; i < 5; i++) {
+            font_draw_stack_no(i);
+            rt_fl_reset_states();
+        }
+    rt_font_frame_end();
 }

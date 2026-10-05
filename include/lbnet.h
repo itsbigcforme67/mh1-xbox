@@ -26,13 +26,15 @@ typedef struct CNET_BG {
 typedef struct CNET_BURST {
     void (*run)(int);   /* 0x00 job function, called each frame while state == 1 */
     void (*cb)();       /* 0x04 completion callback of the request */
-    u8 _pad08[0x10];
+    s32 a08;            /* 0x08 */
+    s32 a0C;            /* 0x0C next index */
+    u8 _pad10[8];
     s32 val;            /* 0x18 request argument (start index / count) */
     u8 _pad1C[4];
     u8 state;           /* 0x20 (CnetSys_w+0xE38) 1 = run */
-    s8 x21;             /* 0x21 progress */
-    s8 res;             /* 0x22 result: 1 ok, 2 failed */
-    u8 _pad23;
+    u8 x21;             /* 0x21 progress */
+    u8 res;             /* 0x22 result: 1 ok, 2 failed */
+    u8 cnt;             /* 0x23 */
 } CNET_BURST;
 
 /* plaza / lobby / room table entries (0x164 bytes each); the entry of id n is table[n - 1] */
@@ -68,10 +70,23 @@ typedef struct CNET_COND {
 
 /* blobs copied by value out of CnetSys_w (struct assignment; the element type fixes the copy loop) */
 typedef struct CNET_B5C { u8 b[0x5C]; } CNET_B5C;
+typedef struct CNET_BATRES {    /* battle result being reported (0x24 bytes) */
+    char name[0x10];    /* 0x00 */
+    u8 flag;            /* 0x10 0 = nothing to report */
+    u8 _pad11[3];
+    u16 v[8];           /* 0x14 */
+    u8 _pad24[4];
+} CNET_BATRES;
+typedef struct CNET_CSEARCH {   /* condition search result (0x1CC4 bytes) */
+    u8 n;               /* 0x00 number of hits */
+    u8 _pad01[3];
+    CNET_B5C rec[0x50]; /* 0x04 hit records */
+} CNET_CSEARCH;
 typedef struct CNET_B308 { u8 b[0x308]; } CNET_B308;
 typedef struct CNET_B1004 { u8 b[0x1004]; } CNET_B1004;
 typedef struct CNET_H1004 { s16 h[0x802]; } CNET_H1004;
 typedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;
+typedef struct CNET_T3 { u8 a, b, c; } CNET_T3;
 typedef struct CNET_RULEENT {   /* one room rule (0x14A5 bytes) */
     u8 flags;           /* 0x00 which parts have been received */
     char head[0x41];    /* 0x01 head word */
@@ -79,13 +94,15 @@ typedef struct CNET_RULEENT {   /* one room rule (0x14A5 bytes) */
     u8 numof;           /* 0x43 number of choices */
     u8 now;             /* 0x44 current choice */
     u8 cflag[0x20];     /* 0x45 per-choice received flags */
-    char names[0x1440]; /* 0x65 choice names, 0x41 bytes each */
+    char names[0x820];  /* 0x65 choice names, 0x41 bytes each */
+    u8 tcnt[0x20];      /* 0x885 number of values of each choice */
+    CNET_T3 tri[32][32];/* 0x8A5 values of each choice, 3 bytes each */
 } CNET_RULEENT;
 typedef struct CNET_RULETBL {   /* room rule allocation table at CnetSys_w+0x6E48 */
     u8 name_perm;       /* 0x00 */
     u8 pw_perm;         /* 0x01 */
     u8 explain_perm;    /* 0x02 */
-    u8 _pad03;
+    u8 n;               /* 0x03 number of rules */
     CNET_RULEENT e[32]; /* 0x04 */
 } CNET_RULETBL;
 typedef struct CNET_CHAT {
@@ -114,7 +131,10 @@ typedef struct CNET_LUSER {     /* a user returned by the login server (0x5C byt
 
 /* room rule block (0x16B bytes) */
 typedef struct CNET_RULE {
-    u8 b[0x16B];
+    char name[0x41];    /* 0x00 room name */
+    char pw[9];         /* 0x41 password */
+    char explain[0x101];/* 0x4A explanation */
+    u8 sel[0x20];       /* 0x14B chosen value per rule */
 } CNET_RULE;
 
 typedef struct CNET_SYS {
@@ -156,7 +176,8 @@ typedef struct CNET_SYS {
     u8 _pad10F4[0x6];
     CNET_PDATA pdata;  /* 0x10FA personal data being registered */
     CNET_RULE rule;  /* 0x12CA room rule being set */
-    u8 _pad1435[0x29];
+    u8 _pad1435[0x1];
+    CNET_BATRES batres;  /* 0x1436 battle result being reported */
     u8 n_login_user;  /* 0x145E  */
     u8 _pad145F[0x3];
     CNET_LUSER login_users[4];  /* 0x1462 users returned by the login server (entry 3 is the account being logged in) */
@@ -177,7 +198,8 @@ typedef struct CNET_SYS {
     CNET_PIECE room[8];  /* 0x61C4 room table */
     u8 _pad6CE4[0x8];
     u16 last_id;  /* 0x6CEC id of the last received plaza/lobby/room item */
-    u8 _pad6CEE[0x12];
+    u16 last_ja;  /* 0x6CEE joined users of the last item */
+    u8 _pad6CF0[0x10];
     u8 last_status;  /* 0x6D00 status of the last item */
     u8 last_pwinfo;  /* 0x6D01  */
     char last_name[0x42];  /* 0x6D02 name of the last item */
@@ -199,7 +221,10 @@ typedef struct CNET_SYS {
     CNET_B308 chatbin;  /* 0x375B8 chat binary */
     char srvmsg[0x300];  /* 0x378C0 server message */
     CNET_BUF2000 loginbuf;  /* 0x37BC0  */
-    u8 _pad39BC0[0x1E98];
+    u8 _pad39BC0[0x1CC];
+    CNET_CSEARCH csearch;  /* 0x39D8C condition search result */
+    u16 cs_slot;  /* 0x3BA50 bg slot of the condition search in progress */
+    u8 _pad3BA52[0x6];
     s16 curplace[3];  /* 0x3BA58 current place (3 values) */
 } CNET_SYS;
 extern CNET_SYS CnetSys_w;

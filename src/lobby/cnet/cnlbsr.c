@@ -1,23 +1,30 @@
-/* cnlbs, run 18: _cnet_CallBack_Result_Room_NumOfRoom .. _cnet_CallBack_Result_RoomJoinJoinUser (lobby.bin 0x005A7660-0x005A7704): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 18: cnLBS_Init_LobbyBgProcess .. __cnetSub_Set_BgProcess (lobby.bin 0x005AD240-0x005AD308): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
-void _cnet_CallBack_Result_Room_NumOfRoom(CNET_RES res) {
-    if (res.val == 0) {
-        CnetSys_w.burst[4].res = 1;
-        return;
-    }
-    CnetSys_w.burst[4].res = 2;
+void cnLBS_Init_LobbyBgProcess(void) {
+    memset((u8 *)&CnetSys_w + 0x18, 0, 0xE00);
 }
 
-void _cnet_CallBack_Result_RoomJoinJoinUser(CNET_RES res) {
-    CNET_RES r;
+void cnLBS_Init_LobbyBgBurstProcess(void) {
+    memset((u8 *)&CnetSys_w + 0xE18, 0, 0x1B0);
+}
 
-    if (res.val == 0) {
-        r.val = 2;
-        r.id = 0xB;
-        CnetSys_w.burst[4].cb(r, &r);
-        CnetSys_w.burst[4].res = 1;
-        return;
+int __cnetSub_Set_BgProcess(kind, arg1, arg2)
+s8 kind;
+int arg1;
+int arg2;
+{
+    int i;
+
+    for (i = 0; i < 0x80; i++) {
+        if (CnetSys_w.bg[i].state == 0) {
+            CnetSys_w.bg[i].state = kind;
+            CnetSys_w.bg[i].x19 = 0;
+            CnetSys_w.bg[i].done = (void (*)())arg2;
+            CnetSys_w.bg[i].cb = (void (*)())arg1;
+            return i;
+        }
     }
-    CnetSys_w.burst[4].res = 2;
+    return -1;
 }

@@ -233,7 +233,7 @@ void DispFrameListA(void *fr, char *title, int cur, int alpha) {
             py += h;
         }
         tl = (s32 *)FS32(fr, 0xC);
-        for (j = F8(fr, 7); j > 0; j--, tl += 4) {
+        for (j = F8(fr, 7); j > 0; j--, tl++) {   /* asm: addiu 4 (one pointer) */
             if (*tl == 0) {
                 break;
             }
@@ -2204,7 +2204,6 @@ int Reibun_Edit_Start(int no) {
 int Reibun_Edit_Core(int no) {
     s8 buf[0x30];
     s8 r;
-    s8 SoftKeyboard_move();
 
     buf[0] = 0;
     r = SoftKeyboard_move(buf, *(s16 *)((u8 *)&Psw + 0), *(s16 *)((u8 *)&Psw + 4));

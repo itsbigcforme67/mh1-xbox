@@ -1,194 +1,461 @@
-/* cnlbs, run 7: __cnet_KeepEntryFloorInfo .. _cnet_RecvFromLbs_BothPlazaExplain (lobby.bin 0x005A39D0-0x005A4104): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 7: _cnet_CallBack_Result_RoomSetFinish .. __cnet_Recv_LobbyMember (lobby.bin 0x005A83A0-0x005A973C): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
-void __cnet_KeepEntryFloorInfo(kind, val)
+void _cnet_CallBack_Result_RoomSetFinish(CNET_RES res) {
+    if (res.val == 0) {
+        CnetSys_w.burst[6].res = 1;
+        return;
+    }
+    CnetSys_w.burst[6].res = 2;
+}
+
+void __cnet_bgProg_RoomSetRule(void) {
+    CNET_BURST *b = &CnetSys_w.burst[6];
+    CNET_RES res;
+    int i;
+
+    if (b->state != 0) {
+        switch (b->x21) {
+        case 0:
+            b->x21 = 2;
+            b->res = 0;
+            __cnet_SendReq_RoomSetName(CnetSys_w.rule.name);
+            if (CnetSys_w.rule.pw[0] != 0 && CnetSys_w.ruletbl.pw_perm == 1) {
+                __cnet_SendReq_RoomSetPassword(CnetSys_w.rule.pw);
+            }
+            break;
+        case 2:
+            b->x21 = 4;
+            for (i = 0; i < CnetSys_w.ruletbl.n; i++) {
+                if (CnetSys_w.ruletbl.e[i].perm == 1) {
+                    __cnet_SendReq_RoomSetRule(i & 0xFF, CnetSys_w.rule.sel[i]);
+                }
+            }
+            break;
+        case 4:
+            b->x21 = 6;
+            if (CnetSys_w.rule.explain[0] != 0 && CnetSys_w.ruletbl.explain_perm == 1) {
+                __cnet_SendReq_RoomSetExplain(CnetSys_w.rule.explain, strlen(CnetSys_w.rule.explain) & 0xFFFF);
+            }
+            break;
+        case 6:
+            b->x21++;
+            cnLBS_Set_RoomRuleFinish((int)_cnet_CallBack_Result_RoomSetFinish);
+            break;
+        case 7:
+            if (b->res == 1) {
+                res.val = 0;
+                b->state = 0;
+                b->x21 = 0;
+                b->cb(res, &res);
+            } else if (b->res == 2) {
+                res.val = -1;
+                b->state = 0;
+                b->x21 = 0;
+                b->cb(res, &res);
+            }
+            break;
+        case 1:
+        case 3:
+        case 5:
+            break;
+        }
+    }
+}
+
+int __cnet_SendReq_PieceCount(kind)
 int kind;
-s8 val;
 {
-    switch (kind & 0xFF) {
+    int cmd;
+
+    switch (kind & 0xFFFF) {
     case 0:
-        CNW(s8, 0x4054) = val;
+        cmd = SetSendCommand(&send_work, 0x32) & 0xFFFF;
         break;
     case 1:
-        CNW(s8, 0x4055) = val;
+        cmd = SetSendCommand(&send_work, 0x46) & 0xFFFF;
         break;
     case 2:
-        CNW(s8, 0x4056) = val;
+        cmd = SetSendCommand(&send_work, 0x7B) & 0xFFFF;
         break;
     }
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
 }
 
-void __cnet_ClearEntryFloorInfo(int kind) {
-    switch (kind & 0xFF) {
+int __cnet_SendReq_PieceName(kind, arg1)
+int kind;
+int arg1;
+{
+    int cmd;
+
+    switch (kind & 0xFFFF) {
     case 0:
-        CNW(s8, 0x405E) = 0;
+        cmd = SetSendCommand(&send_work, 0x34) & 0xFFFF;
         break;
     case 1:
-        CNW(s8, 0x405F) = 0;
+        cmd = SetSendCommand(&send_work, 0x48) & 0xFFFF;
         break;
     case 2:
-        CNW(s8, 0x4060) = 0;
+        cmd = SetSendCommand(&send_work, 0x7D) & 0xFFFF;
         break;
     }
+    SetSendData16(&send_work, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
 }
 
-void __cnet_SetEntryFloorInfo(int kind) {
-    switch (kind & 0xFF) {
+int __cnet_SendReq_PieceJoinUser(kind, arg1)
+int kind;
+int arg1;
+{
+    int cmd;
+
+    switch (kind & 0xFFFF) {
     case 0:
-        CNW(u8, 0x405E) = CNW(u8, 0x4054);
+        cmd = SetSendCommand(&send_work, 0x36) & 0xFFFF;
         break;
     case 1:
-        CNW(u8, 0x405F) = CNW(u8, 0x4055);
+        cmd = SetSendCommand(&send_work, 0x4A) & 0xFFFF;
         break;
     case 2:
-        CNW(u8, 0x4060) = CNW(u8, 0x4056);
+        cmd = SetSendCommand(&send_work, 0x80) & 0xFFFF;
         break;
     }
+    SetSendData16(&send_work, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
 }
 
-int cnLBS_Read_PlazaAllocation(int unused, int val, int cb) {
-    if (CnetSys_w.burst[2].state == 0) {
-        CnetSys_w.burst[2].cb = (void *)cb;
-        CnetSys_w.burst[2].val = val & 0xF;
-        CnetSys_w.burst[2].state = 1;
-        CnetSys_w.burst[2].run = __cnet_bgProg_ReadPlazaAllocation;
-        CnetSys_w.burst[2].x21 = 0;
-        return 0;
+int __cnet_SendReq_PieceStatus(kind, arg1)
+int kind;
+int arg1;
+{
+    int cmd;
+
+    switch (kind & 0xFFFF) {
+    case 0:
+        cmd = SetSendCommand(&send_work, 0x39) & 0xFFFF;
+        break;
+    case 1:
+        cmd = SetSendCommand(&send_work, 0x4D) & 0xFFFF;
+        break;
+    case 2:
+        cmd = SetSendCommand(&send_work, 0x83) & 0xFFFF;
+        break;
     }
-    return -1;
+    SetSendData16(&send_work, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
 }
 
-int cnLBS_Read_PlazaCount(int arg0) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
+int __cnet_SendReq_PieceExplain(kind, arg1)
+int kind;
+int arg1;
+{
+    int cmd;
 
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceCount(0);
-        return slot;
+    switch (kind & 0xFFFF) {
+    case 0:
+        cmd = SetSendCommand(&send_work, 0x3C) & 0xFFFF;
+        break;
+    case 1:
+        cmd = SetSendCommand(&send_work, 0x50) & 0xFFFF;
+        break;
+    case 2:
+        cmd = SetSendCommand(&send_work, 0x90) & 0xFFFF;
+        break;
     }
-    return -1;
+    SetSendData16(&send_work, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
 }
 
-int cnLBS_Get_PlazaCount(u16 *arg0) {
-    *arg0 = CNW(u16, 0x404E);
-    return 0;
+int __cnet_SendReq_PieceEntry(kind, arg1)
+int kind;
+int arg1;
+{
+    int cmd;
+
+    switch (kind & 0xFFFF) {
+    case 0:
+        cmd = SetSendCommand(&send_work, 0x30) & 0xFFFF;
+        break;
+    case 1:
+        cmd = SetSendCommand(&send_work, 0x42) & 0xFFFF;
+        break;
+    case 2:
+        cmd = SetSendCommand(&send_work, 0x73) & 0xFFFF;
+        break;
+    }
+    SetSendData16(&send_work, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
 }
 
-void _cnet_RecvFromLbs_AnswerPlazaNumOfPlaza(void) {
+int __cnet_SendReq_RoomEntry(int arg0, int arg1) {
+    int cmd = SetSendCommand(&send_work, 0x73) & 0xFFFF;
+    SetSendData16(&send_work, arg0);
+    SetSendStringData2(&send_work, arg1, strlen(arg1) & 0xFFFF);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_PieceExit(kind)
+int kind;
+{
+    int cmd;
+
+    switch (kind & 0xFFFF) {
+    case 0:
+        cmd = SetSendCommand(&send_work, 0x3F) & 0xFFFF;
+        break;
+    case 1:
+        cmd = SetSendCommand(&send_work, 0x44) & 0xFFFF;
+        break;
+    case 2:
+        cmd = SetSendCommand(&send_work, 0x75) & 0xFFFF;
+        break;
+    }
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_NumOfRule(int arg0) {
+    int cmd = SetSendCommand(&send_work, 0x59) & 0xFFFF;
+    SetSendData16(&send_work, arg0);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_RuleListHeadWord(int arg0, int arg1) {
+    int cmd = SetSendCommand(&send_work, 0x5B) & 0xFFFF;
+    SetSendData16(&send_work, arg0);
+    SetSendData8(&send_work, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_RuleNumOfChoice(int arg0, int arg1) {
+    int cmd = SetSendCommand(&send_work, 0x61) & 0xFFFF;
+    SetSendData16(&send_work, arg0);
+    SetSendData8(&send_work, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_RuleListNow(int arg0, int arg1) {
+    int cmd = SetSendCommand(&send_work, 0x5F) & 0xFFFF;
+    SetSendData16(&send_work, arg0);
+    SetSendData8(&send_work, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_RuleListPermission(int arg0, int arg1) {
+    int cmd = SetSendCommand(&send_work, 0x5D) & 0xFFFF;
+    SetSendData16(&send_work, arg0);
+    SetSendData8(&send_work, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_RuleListName(int arg0, int arg1, int arg2) {
+    int cmd = SetSendCommand(&send_work, 0x63) & 0xFFFF;
+    SetSendData16(&send_work, arg0);
+    SetSendData8(&send_work, arg1);
+    SetSendData8(&send_work, arg2);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_RuleControl(int arg0, int arg1, int arg2) {
+    int cmd = SetSendCommand(&send_work, 0x65) & 0xFFFF;
+    SetSendData16(&send_work, arg0);
+    SetSendData8(&send_work, arg1);
+    SetSendData8(&send_work, arg2);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+void __cnet_Recv_GameJoin(void) {
+
+}
+
+void __cnet_Recv_NumOfPiece(u16 *d) {
+    GetRecvData16(d, recv_work);
+}
+
+void __cnet_Recv_PieceName(void *a, void *b) {
+    GetRecvDataString(b, GetRecvData16(a, recv_work));
+}
+
+void __cnet_Recv_PieceJoinUser(void *a, void *b) {
+    GetRecvData16(b, GetRecvData16(a, recv_work));
+}
+
+void __cnet_Recv_PieceJoinUserMH(void *a, void *b, void *c) {
+    GetRecvData16(c, GetRecvData16(b, GetRecvData16(a, recv_work)));
+}
+
+void __cnet_Recv_PieceStatus(void *a, void *b) {
+    GetRecvData8(b, GetRecvData16(a, recv_work));
+}
+
+void __cnet_Recv_PieceExplain(void *a, void *b) {
+    GetRecvDataString(b, GetRecvData16(a, recv_work));
+}
+
+void __cnet_Recv_RuleControl(void *a, void *b, void *c) {
+    *(int *)c = GetRecvData8(b, GetRecvData8(a, recv_work));
+}
+
+int __cnet_SendReq_RoomCreate(int arg0) {
+    int cmd = SetSendCommand(&send_work, 0x53) & 0xFFFF;
+    SetSendData16(&send_work, arg0);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_RoomSetName(int arg0) {
+    int cmd = SetSendCommand(&send_work, 0x67) & 0xFFFF;
+    SetSendStringData2(&send_work, arg0, strlen(arg0) & 0xFFFF);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_RoomSetPassword(int arg0) {
+    int cmd = SetSendCommand(&send_work, 0x69) & 0xFFFF;
+    SetSendStringData2(&send_work, arg0, strlen(arg0) & 0xFFFF);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_RoomSetRule(int arg0, int arg1) {
+    int cmd = SetSendCommand(&send_work, 0x6B) & 0xFFFF;
+    SetSendData8(&send_work, arg0);
+    SetSendData8(&send_work, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_RoomSetFinish(void) {
+    int cmd = SetSendCommand(&send_work, 0x6D) & 0xFFFF;
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+void _cnet_RecvFromLbs_AnswerLobbyMatchEntry(void) {
+    _cnet_Return_CallBack(0);
+}
+
+void _cnet_RecvFromLbs_AnswerLobbyMatchEntryUser(void) {
     if (CNW(s8, 0xFEC) == 0) {
-        __cnet_Recv_NumOfPiece(CNWP(0x404E));
+        GetRecvData16(CNWP(0x302F4), GetRecvData16(CNWP(0x302F2), GetRecvData16(CNWP(0x302F0), &recv_work)));
+    }
+    _cnet_Return_CallBack(0x22);
+}
+
+void _cnet_RecvFromLbs_AnswerAnnexEntry(void) {
+    _cnet_Return_CallBack(0);
+}
+
+void _cnet_RecvFromLbs_AnswerAnnexExit(void) {
+    _cnet_Return_CallBack(0);
+}
+
+void _cnet_RecvFromLbs_BothAnnexJoinUser(void) {
+    if (CNW(s8, 0xFEC) == 0) {
+        __cnet_Recv_Word(CNWP(0x302FC));
+    }
+    _cnet_Return_CallBack(0x23);
+}
+
+void _cnet_RecvFromLbs_AnswerAnnexMember(void) {
+    if (CNW(s8, 0xFEC) == 0) {
+        __cnet_Recv_AnnexMember();
     }
     _cnet_Return_CallBack(0);
 }
 
-int cnLBS_Read_PlazaName(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
+void __cnet_Recv_AnnexMember(void) {
+    memset(CnetSys_w.annex_member, 0, 0x300);
+    __cnet_Recv_MemberSub(&CnetSys_w.n_annex_member, CnetSys_w.annex_member);
+}
+
+void _cnet_RecvFromLbs_NoticeAnnexLeaver(void) {
+    _sub_InOutRoomMember(5);
+}
+
+void _cnet_RecvFromLbs_NoticeAnnexCommer(void) {
+    _sub_InOutRoomMember(4);
+}
+
+int cnLBS_Read_LobbyMemberList(arg, cb)
+int arg;
+int cb;
+{
+    int slot = __cnetSub_Set_BgProcess(1, 0, cb);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceName(0, arg0);
+        memset(CnetSys_w.lobby_member, 0, 0x300);
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_LobbyMemberList(arg);
         return slot;
     }
     return -1;
 }
 
-int cnLBS_Get_PlazaName(idx, d)
+int cnLBS_Get_LobbyMemberList(idx, d1, d2, d3)
 int idx;
-char *d;
+char *d1;
+char *d2;
+void *d3;
 {
-    strcpy(d, (u8 *)&CnetSys_w + (((u16)idx - 1) * 0x164) + 0x4082);
+    u8 *t = (u8 *)&CnetSys_w + (u16)idx * 0x60;
+
+    strcpy(d1, t + 0x36EE);
+    strcpy(d2, t + 0x36F6);
+    memcpy(d3, t + 0x370A, 0x40);
     return 0;
 }
 
-void _cnet_RecvFromLbs_AnswerPlazaName(void) {
-    char buf[0x4E];
-    u16 id;
-
-    if (CnetSys_w.rres == 0) {
-        __cnet_Recv_PieceName(&id, buf);
-        CnetSys_w.plaza[id - 1].id = id;
-        strcpy((u8 *)&CnetSys_w + ((id - 1) * 0x164) + 0x4082, buf);
-        CnetSys_w.last_id = id;
-        strcpy(CnetSys_w.last_name, buf);
-        CnetSys_w.plaza[id - 1].flags |= 4;
-    }
-    _cnet_Return_CallBack(0xE);
+int __cnet_SendReq_LobbyMemberList(int arg0) {
+    int cmd = SetSendCommand(&send_work, 0xFE) & 0xFFFF;
+    SetSendData16(&send_work, arg0);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
 }
 
-int cnLBS_Read_PlazaJoinUser(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
-
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceJoinUser(0, arg0);
-        return slot;
-    }
-    return -1;
-}
-
-int cnLBS_Get_mhPlazaJoinUser(idx, a, b)
-int idx;
-u16 *a;
-u16 *b;
-{
-    *a = CnetSys_w.plaza[(u16)idx - 1].ja;
-    *b = CnetSys_w.plaza[(u16)idx - 1].jb;
-    return 0;
-}
-
-void _cnet_RecvFromLbs_BothPlazaJoinUser(void) {
+void _cnet_RecvFromLbs_AnswerLobbyMember(void) {
     if (CNW(s8, 0xFEC) == 0) {
-        _sub_ReceiveJoinUser(CNWP(0x4064));
+        __cnet_Recv_LobbyMember();
     }
-    _cnet_Return_CallBack(0xF);
+    _cnet_Return_CallBack(0);
 }
 
-int cnLBS_Read_PlazaStatus(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
-
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceStatus(0, arg0);
-        return slot;
-    }
-    return -1;
-}
-
-int cnLBS_Get_PlazaStatus(int idx, u8 *d) {
-    *d = CnetSys_w.plaza[(u16)idx - 1].status;
-    return 0;
-}
-
-void _cnet_RecvFromLbs_BothPlazaStatus(void) {
-    u8 st;
-    u16 id;
-
-    if (CnetSys_w.rres == 0) {
-        __cnet_Recv_PieceStatus(&id, &st);
-        CnetSys_w.plaza[id - 1].id = id;
-        CnetSys_w.plaza[id - 1].status = st;
-        CnetSys_w.last_id = id;
-        CnetSys_w.last_status = st;
-        CnetSys_w.plaza[id - 1].flags |= 2;
-    }
-    _cnet_Return_CallBack(0x10);
-}
-
-int cnLBS_Read_PlazaExplain(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
-
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceExplain(0, arg0);
-        return slot;
-    }
-    return -1;
-}
-
-void _cnet_RecvFromLbs_BothPlazaExplain(void) {
-    char buf[0x108];
-    u16 id;
-
-    if (CnetSys_w.rres == 0) {
-        __cnet_Recv_PieceExplain(&id, buf);
-        CnetSys_w.plaza[id - 1].id = id;
-        strcpy((u8 *)&CnetSys_w + ((id - 1) * 0x164) + 0x40C4, buf);
-        CnetSys_w.plaza[id - 1].flags |= 8;
-    }
-    _cnet_Return_CallBack(0x11);
+void __cnet_Recv_LobbyMember(void) {
+    memset(CnetSys_w.lobby_member, 0, 0x300);
+    __cnet_Recv_MemberSub(&CnetSys_w.n_lobby_member, CnetSys_w.lobby_member);
 }

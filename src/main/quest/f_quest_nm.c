@@ -961,8 +961,9 @@ s16 num;
     quest_w.xAD = 1;
 }
 
-void Item_regained(pl)
+void Item_regained(pl, unused)
 PLW *pl;
+int unused; /* plf.h: callers pass a second argument the body does not read */
 {
     int i;
     int found = 0;

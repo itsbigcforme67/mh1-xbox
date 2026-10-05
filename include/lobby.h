@@ -23,7 +23,7 @@ typedef struct LB_SYS {
     s32 x6C;            /* 0x6C */
     u8 _pad70[0x87 - 0x70];
     s8 x87;             /* 0x87 */
-    u8 _pad88[8];
+    u8 x88[8];          /* 0x88 per-stage flags, indexed by stage - 0x51 (up to 0x55: the object is larger than its declared size) */
 } LB_SYS;
 
 /* lobby NPC work: the per-monster area of an EMW at EMW+0x444 (EMW.ex) */

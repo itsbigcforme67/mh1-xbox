@@ -123,3 +123,72 @@ body_hit_sub_em keeps a quirk of the original: the target sphere-list pointer is
 monster. Fue_item_set calls Pl_master_ck(pl) (not the master slot). Still asm: Plsel_task..sel_default_set (online select screens),
 Pit_disp_pit_effect, pef_get_alpha. NOTE: tools/build.py compiles every src/**/*.c including pl_wip.c/pl_nm.c, so pl_wip.c must
 always compile (git checkout of an old wip with junk drafts broke a rebuild once).
+
+## Lobby overlay, 0x5C4E60 - end (online town), work log
+Setup: lobby C lives in src/lobby/, registered as `lobby START END lb_xNN` in config/c_files.txt; `tools/rebuild.sh lobby` must stay OK
+(all five OK). Shared lobby structs/prototypes in include/lobby.h (client work `cw` is `u8 *` = D_6DD7E0, accessed with CW8()/CWPLAYER(),
+lb_sys/lbCommer/lb_player/lastSend structs, many K&R prototypes). Working files `lb_a.c .. lb_k.c` hold the whole C of a region (not
+built as such: every .c is compiled but only registered ranges are linked); `tools/lbf_runs.py FILE PREFIX "comment"` splits the fully matching,
+not yet registered functions into contiguous runs PREFIXNN.c and appends the c_files lines (FORCE_OK=name for functions check.py cannot verify,
+e.g. a callee whose symbol carries an address suffix). Other helpers: tools/lbasm.py (compact asm), tools/lbd.py / lbf_conv.py (m2c drafts;
+drafts are made with draft.py into a scratch dir, see LBDRAFTS), tools/lbset.py (replace a function in a file from stdin).
+Reuse from main: only 11 lobby functions are byte-identical to main code (Lb_act_ck, Lb_stick_dir_set, Lb_Pl_adj_calc, Lb_Pl_pos_adj,
+lb_pl_flag_clr/set, Lb_hit_stop_calc, Lb_World_calc, lb_pl_chr_set_com, lb_pl_to_normal_clr2): src/lobby/lb_pl01-09.c. Many more are
+close copies of main player code (sw_set_sub, pl_timer_calc, to_normal_clr, action_timer_calc): copy the main C and edit.
+Map of the range (0x5C4E60-0x610300): 5C4E60-5C5E80 receive handlers (trade, status, chair, commer); 5C5F30 Lb_guild (4100 bytes, quest
+guild UI) .. 5CB0E0 guild/quest select screens; 5CB100-5CD0F0 room members, drawing helpers (Lb_put_*), 5CD0F0-5CDB00 member in/out checks and
+player load; 5CDBD0-5D3640 player code (sw_set_sub, act_set, to_normal, move dispatch lb_pl_mv000-099, Pl_to_chair, lb_pl_normal,
+lb_basic_master 4840 bytes, lb_pl_chat00-16); 5D58C0-5D6420 Lb_send_* network senders; 5D6420-5D7790 lb_check_status/Lb_move_common/stage load;
+5D7790-5D8460 misc lobby UI; 5D8470-5D93A0 vs_square; 5D93A0-5DB9C0 Bs*/HttpTask/http_test_NN; 5DBA80-5E2A90 browser drawing (draw*, stock*
+page objects); 5E2A90-5ED940 browser (Bs*, cache, URL, zlib/png glue); 5F2xxx-601xxx tagAct_NNN HTML tag handlers, 602xxx-605xxx table/text layout;
+609750-610300 item box, plaza chat, eft25. About 40 percent is GCC/library (crypto/SSL is in the lobby text before 0x5C4E60, B's range).
+Idioms learned here (all verified by matching):
+- `switch (x) { case 0: case 0xF: ... }` is how the original writes `x == 0 || x == 0xF` (compare chain beq/beq/b); a two-case switch
+  compare chain is in REVERSE source order; a single-case switch gives `beq; b else`. The LAST case must not end in `break;`/`return;`
+  (MWCC emits an infinite `b .` loop), but a middle case that ends `if (c) { ...; }` needs `break;` rather than `return;` twice.
+- A static leaf callee defined earlier in the same file (check_sender0/1 return 0) is IPA'd: its arguments are dropped and the caller
+  keeps temporaries in a3/t0/t1: write `static s8 check_sender1() { return 0; }` K&R, call it with ONE arg (Lb_send_pl_pos/Pl_status).
+- `F(T, p, off)` style raw field macros make MWCC hoist `p+off` into a register when the field is used twice (extra addiu); use the
+  PLW field names (pl->work81D ...) when they exist, `u8 *` locals, or a temp variable.
+- 5th+ args go in t0..t3 ($8..$11): `void Lb_put_status(int a0,int a1,int a2,int a3,int no)`; a K&R call `f();` leaves a0.. untouched.
+- A function ending a u8 local with `u8` return type returns without the andi: `u8 Lb_stick_pow_get(PLW *)` (this is also the 3-off cause of
+  main's stick_pow_get).
+- Struct copy of a local `u128` pair (lq/sq) needs `unsigned __int128`; copying 12-byte f32 triples as `*(LBV3 *)a = *(LBV3 *)b` gives the
+  load-3-then-store-3 pattern.
+- `Lb_Pl_act_set`, `Lb_act_set` take u8 params: define them K&R (`f(pl, a, b) PLW *pl; u8 a; u8 b; {`) because lobby.h declares them `()`.
+Near-matches (kept in the working files): lb_commer_message (s0/s1 swapped), lb_set_pl_status/pos/stage, lb_check_mini_data, lb_trade_result
+(2 insns), Lb_room_member, Lb_PlStatusSet, Lb_put_gold (struct copy of rodata), lb_pl_horm_sub (original re-reads the field), Lb_act_set
+(original calls Lb_act_ck without setting a0), Lb_check_chair (1 insn), Lb_player_load (2 insns).
+
+### Automatic pipeline for lobby functions (tools/lb*.py)
+1. Drafts: `python3 tools/draft.py lobby FUNC...` (40 per call) into a scratch dir `drafts/dNNN.c`; functions with jump tables need
+   `tools/lbdraft_jt.py OUT FUNC...` (reads the table words from disc/mh1/split/lobby.bin) and go into `drafts/djNNN.c`. LBDRAFTS names the dir.
+2. `tools/lbauto.py [-j3] [--out J] --all | NAME...`: converts a draft (F() fields, gp-relative globals via the main symbol table,
+   K&R externs, `int argN` params filled in), compiles it ALONE with `tools/check.py --module lobby`, adds `int f();`/`extern char x[];`
+   for undefined identifiers, and records OK / diff (d of n) / error / unsupported (M2C_ERROR: float mula/madd, unset registers) / nodraft.
+   About 12 percent of the lobby functions came out byte-identical with no hand work; many more are 1-3 instructions off.
+3. `tools/lbfix.py NAME...` repairs near misses: m2c drops pass-through arguments (a0 untouched), so it tries inserting `arg0,`/`arg1,`
+   as extra leading args at each call site.
+4. `tools/lbf_merge.py PREFIX "comment" NAME...` writes contiguous runs of the OK ones (sources in build/lbauto/NAME.c) to src/lobby/PREFIXNN.c,
+   verifies them and appends the c_files.txt lines. Always finish with `tools/rebuild.sh` (do NOT run it while lbauto/lbfix are running:
+   they create src/lobby/zz_*.c temp files that rebuild.sh would compile).
+Names whose lobby symbol carries an address suffix (trade_get_ck_005D0750 ...) are not found by check.py (it falls back to the game
+module at the same address): check them through a renamed copy (scratch lbchk.sh idea: sed the name to the csv name, `--module lobby`).
+
+### Lobby status at the end of this session (6-7 Oct 2026)
+335 of the 928 functions in 0x5C4E60-0x610300 are C (34.8 KB of 302 KB); `tools/rebuild.sh` prints OK for all five modules.
+All my lobby C lives in src/lobby/f/ (names f/lb_xNN in config/c_files.txt) and uses include/lobby_f.h (agent B has its own include/lobby.h
+and src/lobby/cnet etc.; the helper scripts are lbf_runs.py / lbf_merge.py / lbf_conv.py because main already had B's lbruns/lbmerge/lbconv).
+Per file: lb_a (receivers), lb_b (quest money), lb_c (small helpers), lb_d (senders), lb_e (members/icons/cockpit), lb_f (gold/player init),
+lb_g (player basics), lb_h (flags/stick/adjust), lb_i (move dispatch), lb_j (lb_pl_mvNNN), lb_k (chat handlers), lb_l (trade/sleep/guest room),
+lb_m (Bs*Trans helpers), lb_n (generic senders), lb_o (lb_pl_normal), lb_p (lb_move_common, near-match), lb_pl* (copies of main pl code),
+lb_zNNN (auto-drafted: m2c + tools/lbauto.py, see the pipeline section). The working files lb_a.c .. lb_p.c keep the near-matches.
+Jump tables: a function whose switch compiled to a jump table in the original needs its table data registered as
+`lobby:rodata START END f/NAME` (tools/lbf_jt.py prints the range from the asm BEFORE the function is registered; lbf_runs/lbf_merge do it
+automatically). tools/check.py cannot see this; the failure shows up only as `undefined reference to .Lxxxxxxxx` at the lobby link.
+Left (about 590 functions): browser (Bs*/draw*/stock*/tagAct_NNN and layout), guild UI (Lb_guild 4100, lb_rule_seet_set, lb_select_quest_level_trans,
+lb_questpage_trans), lb_basic_master (4840), lb_check_status (2316), Lb_stage_load (1852), Lb_put_help, lb_disp_name, vs_square*, http_test_*.
+Known stubborn classes: (1) `addu rd, idx*N, base` vs `addu rd, base, idx*N` (operand order of an indexed address: ~12 tagAct_/stock functions
+are exactly 1 instruction off for this reason; no source form found that flips it); (2) s0/s1 register order of two long-lived locals
+(lb_commer_message, lb_set_pl_status/pos/stage, Lb_move_common); (3) rodata struct copies (Lb_put_gold, pl_sleeping); (4) functions whose
+m2c draft needs hand work for stack arguments beyond 8 (AppendWork stock* wrappers, 13 args: reg args a0-a3,t0-t3 then 5 stack dwords).
