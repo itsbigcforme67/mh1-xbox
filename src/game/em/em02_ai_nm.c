@@ -1034,3 +1034,269 @@ static void em_fly10_00581040(EMW *em, EM02W *w) {
     }
     FLY_FLOOR(em);
 }
+
+#define ATK_SIMPLE(NAME, CH)                     \
+    static void NAME(EMW *em, EM02W *w) {        \
+        switch (em->x05) {                       \
+        case 0:                                  \
+            em->x05++;                           \
+            em->x388 = 0;                        \
+            em->x3F4 = 0;                        \
+            em_char_set(em, CH, 0, 0);           \
+            break;                               \
+        case 1:                                  \
+            if (em->x194 == 0) {                 \
+                em->x05++;                       \
+                em02_to_normal(em);              \
+            }                                    \
+            break;                               \
+        }                                        \
+    }
+
+ATK_SIMPLE(em_atk00_005811C0, 0x12)
+ATK_SIMPLE(em_atk01_00581240, 0x13)
+
+static void em_atk02_005812C0(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0xD, 0, 0);
+        break;
+    case 1:
+        if (em_frame_check(em, 102.0f, 0)) {
+            Eft17_set(em, 0x33, 1, 1);
+            Eft17_set(em, 0x33, 2, 1);
+            Shell08_set_ang(em, 0x33, 0xB, 0, 0, 0);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_atk03_005813A0(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0xE, 0, 0);
+        break;
+    case 1:
+        if (em_frame_check(em, 98.0f, 0)) {
+            Eft17_set(em, 0x33, 1, 1);
+            Eft17_set(em, 0x33, 2, 1);
+            Shell08_set_ang(em, 0x33, 0xB, 0, 0, 0);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+ATK_SIMPLE(em_atk04_00581480, 0xF)
+
+/* Shared by actions 5, 10 and 11: mode 0/1/2 picks the shell angle (move03 passes it as a third argument). */
+static void em_atk05_00581500(EMW *em, EM02W *w, int mode) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x1F, 0, 0);
+        em->work08 = 0x5A;
+        break;
+    case 1:
+        em02_senkai_player(em);
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 0x10, 0, 0);
+        }
+        break;
+    case 2:
+        em02_senkai_player(em);
+        if (em_frame_check(em, 30.0f, 0)) {
+            Eft17_set(em, 0x33, 1, 1);
+            Eft17_set(em, 0x33, 2, 1);
+            switch ((u8)mode) {
+            case 0:
+                Shell08_set_ang(em, 0x33, 0xB, 0, 0x38E4, 0);
+                break;
+            case 1:
+                Shell08_set_ang(em, 0x33, 0xB, 0, 0x2AAB, 0);
+                break;
+            case 2:
+                Shell08_set_ang(em, 0x33, 0xB, 0, 0x1E94, 0);
+                break;
+            }
+            w->x1A = w->x1A - 1;
+        }
+        if (w->x1A <= 0 && em_frame_check(em, 76.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0xA, 0xA, 0x1E);
+        }
+        if (em->x194 == 0) {
+            em_char_set(em, 0x10, 4, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_atk06_00581770(EMW *em, EM02W *w) {
+    f32 v[4];
+
+    em->x8BB = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 5, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 7, 0, 0);
+            shell04_set(em, 2);
+        }
+        break;
+    case 2:
+        if (w->has_tgt != 0) {
+            EM02_TURN(em);
+        }
+        mot_miration_ret(em, v);
+        w->dist = w->dist - v[2];
+        if (w->dist <= 0.0f) {
+            em->x05++;
+            em_char_set(em, 8, 0, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_atk07_00581930(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x21, 0, 0);
+        em02_fly_adjy2_init(em, 3);
+        break;
+    case 1:
+        if (em_frame_check(em, 70.0f, 0)) {
+            em->x05++;
+            em->x388 = 2;
+            em02_fly_adjy2(em);
+        }
+        break;
+    case 2:
+        if (em_frame_check(em, 94.0f, 0)) {
+            Eft17_set(em, 0x33, 1, 1);
+            Eft17_set(em, 0x33, 2, 1);
+            Shell08_set_ang(em, 0x33, 0xB, 0, 0x38E4, 0);
+        }
+        em02_fly_adjy2(em);
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_atk08_00581A90(EMW *em, EM02W *w) {
+    em->x8BB = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 5, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 8, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_atk09_00581B50(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x1F, 0, 0);
+        em->work08 = 0x5A;
+        break;
+    case 1:
+        em02_senkai_player(em);
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 0x10, 0, 0);
+        }
+        break;
+    case 2:
+        em02_senkai_player(em);
+        if (em_frame_check(em, 30.0f, 0)) {
+            Eft17_set(em, 0x33, 1, 1);
+            Eft17_set(em, 0x33, 2, 1);
+            w->x1A = w->x1A - 1;
+            switch (w->x1A) {
+            case 2:
+                Shell08_set_ang(em, 0x33, 0xB, 0, 0x38E4, 0);
+                break;
+            case 1:
+                Shell08_set_ang(em, 0x33, 0xB, 0, 0x2AAB, 0);
+                break;
+            case 0:
+                Shell08_set_ang(em, 0x33, 0xB, 0, 0x1E94, 0);
+                break;
+            }
+        }
+        if (w->x1A <= 0 && em_frame_check(em, 76.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0xA, 0xA, 0x1E);
+        }
+        if (em->x194 == 0) {
+            em_char_set(em, 0x10, 4, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
