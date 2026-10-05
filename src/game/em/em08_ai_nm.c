@@ -362,6 +362,23 @@ block_3:
     return 1;
 }
 
+#define EM08_TURN(em, tgt)                                                \
+    do {                                                                  \
+        int d;                                                            \
+        d = (u16)((u16)(tgt) - (em)->ang[1]);                             \
+        if (d <= 0x8000) {                                                \
+            if (d <= 0x3F) {                                              \
+                (em)->ang[1] += d;                                        \
+            } else {                                                      \
+                (em)->ang[1] += 0x40;                                     \
+            }                                                             \
+        } else if (d > 0xFFC0) {                                          \
+            (em)->ang[1] += d;                                            \
+        } else {                                                          \
+            (em)->ang[1] -= 0x40;                                         \
+        }                                                                 \
+    } while (0)
+
 static void em_act00_0059A7B0(EMW *em, EM08W *w) {
     int t;
 
@@ -1135,10 +1152,6 @@ static void em_act21_0059C140(EMW *em, EM08W *w) {
 
 static void em_mv00_0059C1D0(EMW *em, EM08W *w) {
     f32 v[4];
-    f32 temp_f1;
-    s32 temp_v0;
-    s32 temp_v1;
-    s32 var_v0;
 
     switch (em->x05) {
     case 0:
@@ -1149,25 +1162,11 @@ static void em_mv00_0059C1D0(EMW *em, EM08W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            temp_v1 = em->ang[1];
-            temp_v0 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - temp_v1) & 0xFFFF;
-            if (temp_v0 < 0x8001) {
-                if (temp_v0 < 0x40) {
-                    var_v0 = temp_v1 + temp_v0;
-                } else {
-                    var_v0 = temp_v1 + 0x40;
-                }
-            } else if (temp_v0 >= 0xFFC1) {
-                var_v0 = temp_v1 + temp_v0;
-            } else {
-                var_v0 = temp_v1 - 0x40;
-            }
-            em->ang[1] = var_v0;
+            EM08_TURN(em, Em_Calc_angY(em->pos, em->tgt_pos));
         }
         mot_miration_ret(em, v);
-        temp_f1 = w->dist - v[2];
-        w->dist = temp_f1;
-        if (temp_f1 <= 0.0f) {
+        w->dist = w->dist - v[2];
+        if (w->dist <= 0.0f) {
             em->x05++;
             em08_to_normal(em);
         }
@@ -1177,10 +1176,6 @@ static void em_mv00_0059C1D0(EMW *em, EM08W *w) {
 
 static void em_mv01_0059C310(EMW *em, EM08W *w) {
     f32 v[4];
-    f32 temp_f1;
-    s32 temp_v0;
-    s32 temp_v1;
-    s32 var_v0;
 
     switch (em->x05) {
     case 0:
@@ -1191,28 +1186,13 @@ static void em_mv01_0059C310(EMW *em, EM08W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            temp_v1 = em->ang[1];
-            temp_v0 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - temp_v1) & 0xFFFF;
-            if (temp_v0 < 0x8001) {
-                if (temp_v0 < 0x40) {
-                    var_v0 = temp_v1 + temp_v0;
-                } else {
-                    var_v0 = temp_v1 + 0x40;
-                }
-            } else if (temp_v0 >= 0xFFC1) {
-                var_v0 = temp_v1 + temp_v0;
-            } else {
-                var_v0 = temp_v1 - 0x40;
-            }
-            em->ang[1] = var_v0;
+            EM08_TURN(em, Em_Calc_angY(em->pos, em->tgt_pos));
         }
         mot_miration_ret(em, v);
-        temp_f1 = w->dist - v[2];
-        w->dist = temp_f1;
-        if (temp_f1 <= 0.0f) {
+        w->dist = w->dist - v[2];
+        if (w->dist <= 0.0f) {
             em->x05++;
             em_char_set(em, 0x85, 0, 0);
-            break;
         }
         break;
     case 2:
@@ -1225,10 +1205,7 @@ static void em_mv01_0059C310(EMW *em, EM08W *w) {
 }
 
 static void em_mv02_0059C480(EMW *em, EM08W *w) {
-    s32 temp_t0;
-    u16 temp_a2;
-    u32 temp_s0;
-    u32 temp_v1;
+    u32 d;
 
     switch (em->x05) {
     case 0:
@@ -1236,58 +1213,46 @@ static void em_mv02_0059C480(EMW *em, EM08W *w) {
         em->x3F4 = 0;
         em->x388 = 0;
         w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
-        temp_v1 = (w->dang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 >= 0xE39U) {
-            if (temp_v1 >= 0xF1C8U) {
-                goto block_7;
-            }
-            if (temp_v1 >= 0x8000U) {
-                em_char_set(em, 6, 0, 0);
-                return;
-            }
+        d = (u16)(w->dang - em->ang[1]);
+        if (d < 0xE39U || d >= 0xF1C8U) {
+            pl_flag_set((PLW *)em, 0x20000);
+            em_char_set(em, 3, 0, 0);
+        } else if (d >= 0x8000U) {
+            em_char_set(em, 6, 0, 0);
+        } else {
             em_char_set(em, 5, 0, 0);
-            break;
         }
-block_7:
-        pl_flag_set((PLW *)em, 0x20000);
-        em_char_set(em, 3, 0, 0);
         break;
     case 1:
         if (em->x1C4 == 0) {
-            temp_t0 = em->ang[1];
-            temp_a2 = w->dang;
-            temp_s0 = (temp_a2 - (temp_t0 & 0xFFFF)) & 0xFFFF;
+            d = (u16)(w->dang - (u16)em->ang[1]);
             if (em->x194 == 0) {
-                if ((u32) ((temp_s0 + 0x1D4) & 0xFFFF) < 0x3A8U) {
+                if ((u32)((d + 0x1D4) & 0xFFFF) < 0x3A8U) {
                     em->x05++;
                     pl_flag_clr((PLW *)em, 0x20000);
                     em08_to_normal(em);
                     return;
                 }
-                if ((temp_s0 < 0xE39U) || (temp_s0 >= 0xF1C8U)) {
+                if (d < 0xE39U || d >= 0xF1C8U) {
                     pl_flag_set((PLW *)em, 0x20000);
                     em_char_set(em, 3, 0, 0);
                     return;
                 }
                 pl_flag_clr((PLW *)em, 0x20000);
-                if (temp_s0 >= 0x8000U) {
+                if (d >= 0x8000U) {
                     em_char_set(em, 6, 0, 0);
-                    return;
+                } else {
+                    em_char_set(em, 5, 0, 0);
                 }
-                em_char_set(em, 5, 0, 0);
                 return;
             }
-            if ((u32) ((temp_s0 + 0x1D4) & 0xFFFF) < 0x3A8U) {
-                em->ang[1] = (s32) temp_a2;
-                return;
+            if ((u32)((d + 0x1D4) & 0xFFFF) < 0x3A8U) {
+                em->ang[1] = w->dang;
+            } else if (d < 0x8000U) {
+                em->ang[1] = (em->ang[1] + 0x1D4) & 0xFFFF;
+            } else {
+                em->ang[1] = (em->ang[1] - 0x1D4) & 0xFFFF;
             }
-            if (temp_s0 < 0x8000U) {
-                em->ang[1] = (temp_t0 + 0x1D4) & 0xFFFF;
-                return;
-            }
-            em->ang[1] = (temp_t0 - 0x1D4) & 0xFFFF;
-        } else {
-            break;
         }
         break;
     }
@@ -1295,10 +1260,6 @@ block_7:
 
 static void em_mv03_0059C6D0(EMW *em, EM08W *w) {
     f32 v[4];
-    f32 temp_f1;
-    s32 temp_v0;
-    s32 temp_v1;
-    s32 var_v0;
 
     switch (em->x05) {
     case 0:
@@ -1309,25 +1270,11 @@ static void em_mv03_0059C6D0(EMW *em, EM08W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            temp_v1 = em->ang[1];
-            temp_v0 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - temp_v1) & 0xFFFF;
-            if (temp_v0 < 0x8001) {
-                if (temp_v0 < 0x40) {
-                    var_v0 = temp_v1 + temp_v0;
-                } else {
-                    var_v0 = temp_v1 + 0x40;
-                }
-            } else if (temp_v0 >= 0xFFC1) {
-                var_v0 = temp_v1 + temp_v0;
-            } else {
-                var_v0 = temp_v1 - 0x40;
-            }
-            em->ang[1] = var_v0;
+            EM08_TURN(em, Em_Calc_angY(em->pos, em->tgt_pos));
         }
         mot_miration_ret(em, v);
-        temp_f1 = w->dist - v[2];
-        w->dist = temp_f1;
-        if (temp_f1 <= 0.0f) {
+        w->dist = w->dist - v[2];
+        if (w->dist <= 0.0f) {
             em->x05++;
             em08_to_normal(em);
         }
