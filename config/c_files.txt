@@ -686,3 +686,4 @@ main 0x00193150 0x00193344 fl/pv03
 main 0x0021D5E0 0x0021DBE0 sound/bgm01
 main 0x0021DDC0 0x0021DF74 sound/bgm02
 main:rodata 0x003674B0 0x003674E0 sound/bgm01
+main 0x0021E270 0x0021E304 sound/rev01

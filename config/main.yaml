@@ -975,6 +975,8 @@ segments:
       - [0x11DDC0, c, sound/bgm02]
       - [0x11DF74, asm, text/stage_bgm_set]
       - [0x11E268, asm, text/g_Init_rev_set]
+      - [0x11E270, c, sound/rev01]
+      - [0x11E304, asm, text/HdMerge]
       - [0x11F3D0, c, cam/cam]
       - [0x11F464, asm, text/SetCameraData]
       - [0x11F590, c, cam/camm]
