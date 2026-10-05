@@ -113,12 +113,12 @@ static void set17_trans(PRIM *pr) {
     FLMAT mat;
     f32 out[4];
     SPHERE sp;
+    u8 *tbl;
+    int base;
+    u8 id;
     SET_MDLW *mw = set_mdlw;
     CLAY *cl;
-    u8 *tbl;
-    u8 id;
     s16 rows, cols, i, j, n;
-    int base;
     f32 x0, z, step, x;
 
     if (mw != 0 && mw->flag != 0) {
