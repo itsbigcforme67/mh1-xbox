@@ -1,4 +1,5 @@
 # Decompiled code that replaces disassembly. One line per C file:
+game 0x0059A2C0 0x0059A674 em/em08_ai_r01
 #   MODULE START END NAME   (vram range; file is src/MODULE/NAME.c)
 # Functions must byte-match before they are listed here.
 main 0x00152030 0x00152044 pl/pl_stg_ck_tw
@@ -702,6 +703,7 @@ game 0x00564480 0x00565518 em/em_cmd_r23
 game 0x005655D0 0x00565840 em/em_cmd_r24
 game 0x00565F20 0x00566224 em/em_cmd_r25
 game 0x00566490 0x005664F8 em/em_cmd_r26
+game 0x00566230 0x0056648C em/em_cmd_r27
 game:rodata 0x00685A40 0x00685A60 em/em_cmd_r01
 game:rodata 0x00685AE0 0x00685B0C em/em_cmd_r21
 game:rodata 0x00685B10 0x00685B30 em/em_cmd_r24
