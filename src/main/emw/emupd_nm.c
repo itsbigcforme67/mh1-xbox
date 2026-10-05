@@ -3,8 +3,9 @@
  * primitive. EMX has only the fields used here (EMW in em.h has the rest). */
 #include "types.h"
 
-typedef struct PRIM_H { u8 _pad00[8]; f32 pos[3]; } PRIM_H;
+typedef struct PRIM_H { u8 _pad00[8]; f32 pos[3]; void (*trans)(struct PRIM_H *); struct EMX *owner; } PRIM_H;
 
+struct EMX;
 typedef struct EMX {
     u8 be_flag;                 /* 0x000 */
     u8 x01;                     /* 0x001 */
@@ -36,11 +37,14 @@ typedef struct EMX {
     u8 x388;                    /* 0x388 */
     u8 _pad389[0x3A8 - 0x389];
     s32 x3A8;                   /* 0x3A8 */
-    u8 _pad3AC[0x4E6 - 0x3AC];
+    u8 _pad3AC[0x3CC - 0x3AC];
+    void (**prog)(struct EMX *); /* 0x3CC per-monster program table */
+    u8 _pad3D0[0x4E6 - 0x3D0];
     u8 hagi[0x20];              /* 0x4E6 set to 1 by em_init */
     u8 _pad506[0x564 - 0x506];
     PRIM_H *prim;               /* 0x564 */
-    u8 _pad568[0x5A0 - 0x568];
+    s16 prim_no;                /* 0x568 */
+    u8 _pad56A[0x5A0 - 0x56A];
     f32 old_pos[3];             /* 0x5A0 */
     f32 floor;                  /* 0x5AC */
     u8 _pad5B0[0x70C - 0x5B0];
@@ -216,4 +220,148 @@ int enemy_mv(EMX *w) {
     }
     World_calc(w);
     return 0;
+}
+
+extern void (**em_prog_tbl[])(EMX *);
+extern u8 enemy_trans[];
+s16 get_prim(void);
+PRIM_H *get_prim_ptr(int);
+void func_566670(EMX *);
+void func_57EFA0(EMX *);
+void func_5873D0(EMX *);
+void func_58B850(EMX *);
+void func_58F8B0(EMX *);
+void func_59A2C0(EMX *);
+void func_5A7F70(EMX *);
+void func_5AD5A0(EMX *);
+void func_5AF530(EMX *);
+void func_5B52D0(EMX *);
+void func_5C2AC0(EMX *);
+void func_5D0610(EMX *);
+void func_5D9F20(EMX *);
+void func_5E6C80(EMX *);
+void func_5E7920(EMX *);
+void func_5EBA50(EMX *);
+void func_600010(EMX *);
+void func_60D450(EMX *);
+void func_6140B0(EMX *);
+void func_6147D0(EMX *);
+
+void em_init_sub(EMX *w) {
+    w->prog = em_prog_tbl[w->kind];
+    (*w->prog)(w);
+    if (w->x01 != 0) {
+        w->prim_no = get_prim();
+        if (w->prim_no != -1) {
+            w->prim = get_prim_ptr(w->prim_no);
+            w->prim->owner = w;
+            w->prim->trans = (void (*)(PRIM_H *))enemy_trans;
+        } else {
+            w->prim = 0;
+        }
+    }
+    switch (w->kind) {
+    case 1:
+        func_566670(w);
+        break;
+    case 2:
+        func_57EFA0(w);
+        break;
+    case 3:
+        func_5873D0(w);
+        break;
+    case 4:
+        func_58B850(w);
+        break;
+    case 5:
+        func_58B850(w);
+        break;
+    case 6:
+        func_5EBA50(w);
+        break;
+    case 7:
+        func_58F8B0(w);
+        break;
+    case 8:
+        func_59A2C0(w);
+        break;
+    case 9:
+        func_5A7F70(w);
+        break;
+    case 10:
+        func_5AD5A0(w);
+        break;
+    case 11:
+        func_566670(w);
+        break;
+    case 12:
+        func_5AF530(w);
+        break;
+    case 13:
+        func_5D0610(w);
+        break;
+    case 14:
+        func_5B52D0(w);
+        break;
+    case 15:
+        func_5C2AC0(w);
+        break;
+    case 16:
+        func_5D0610(w);
+        break;
+    case 17:
+        func_5D9F20(w);
+        break;
+    case 18:
+        func_5E6C80(w);
+        break;
+    case 19:
+        func_5E7920(w);
+        break;
+    case 20:
+        func_5EBA50(w);
+        break;
+    case 21:
+        func_600010(w);
+        break;
+    case 22:
+        func_5D9F20(w);
+        break;
+    case 23:
+        func_5A7F70(w);
+        break;
+    case 24:
+        func_5E7920(w);
+        break;
+    case 25:
+        func_5AF530(w);
+        break;
+    case 26:
+        func_5B52D0(w);
+        break;
+    case 27:
+        func_60D450(w);
+        break;
+    case 28:
+        func_60D450(w);
+        break;
+    case 29:
+        func_6140B0(w);
+        break;
+    case 30:
+        func_5D0610(w);
+        break;
+    case 31:
+        func_60D450(w);
+        break;
+    case 32:
+        func_58B850(w);
+        break;
+    case 33:
+        func_6147D0(w);
+        break;
+    case 34:
+        func_59A2C0(w);
+        break;
+    }
 }

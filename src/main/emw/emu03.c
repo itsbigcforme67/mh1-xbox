@@ -1,4 +1,4 @@
-/* emu01 - monster update 0x0010B7F0-0x0010BAD0: em_init_sub. Whole file in emupd_nm.c. */
+/* emu03 - monster update 0x0010C990-0x0010CD30: em_die, em_erase, enemy_mv. Whole file in emupd_nm.c. */
 #include "types.h"
 
 typedef struct PRIM_H { u8 _pad00[8]; f32 pos[3]; void (*trans)(struct PRIM_H *); struct EMX *owner; } PRIM_H;
@@ -130,121 +130,85 @@ void func_6140B0(EMX *);
 void func_6147D0(EMX *);
 
 
-void em_init_sub(EMX *w) {
-    w->prog = em_prog_tbl[w->kind];
-    (*w->prog)(w);
-    if (w->x01 != 0) {
-        w->prim_no = get_prim();
-        if (w->prim_no != -1) {
-            w->prim = get_prim_ptr(w->prim_no);
-            w->prim->owner = w;
-            w->prim->trans = (void (*)(PRIM_H *))enemy_trans;
-        } else {
-            w->prim = 0;
-        }
+void em_die(EMX *w) {
+    pl_timer_calc(w);
+    hit_stop_calc(w);
+    w->old_pos[0] = w->pos[0];
+    w->old_pos[1] = w->pos[1];
+    w->old_pos[2] = w->pos[2];
+    if (w->x884 != 0) {
+        w->x884--;
     }
-    switch (w->kind) {
+    if (w->x885 != 0) {
+        w->x885--;
+    }
+    w->state++;
+    w->x01 = 0;
+    w->ang[0] = (u16)w->ang[0];
+    w->ang[1] = (u16)w->ang[1];
+    w->ang[2] = (u16)w->ang[2];
+    cpRotMatrixYXZ2(w->ang, w->mat);
+    func_534680(w);
+    func_5363C0(w);
+    func_536530(w);
+    w->spd0 = 2.0f * w->act_spd;
+    w->spd1 = 2.0f * w->act_spd;
+    w->spd2 = 2.0f * w->act_spd;
+    w->spd3 = 2.0f * w->act_spd;
+    frame_move(w);
+    HitWallPlayer(w, 0);
+    GetGroundHitStatusAreaEm(w, w->pos, w->x70C, &w->floor, w->x7E4);
+    if (w->x388 != 2 && w->x388 != 4) {
+        w->pos[1] = w->floor;
+    }
+    GetEmMaterialData(w);
+}
+
+void em_erase(EMX *w) {
+    Quest_enemy_die(w);
+    Em_hagi_point_clr(w);
+    push_em_work(w);
+}
+
+int enemy_mv(EMX *w) {
+    switch (w->state) {
+    case 0:
+        em_init(w);
+        em_effect_move(w);
+        World_calc(w);
+        return 0;
     case 1:
-        func_566670(w);
+        em_move(w);
         break;
     case 2:
-        func_57EFA0(w);
+        em_die(w);
         break;
     case 3:
-        func_5873D0(w);
-        break;
-    case 4:
-        func_58B850(w);
-        break;
-    case 5:
-        func_58B850(w);
-        break;
-    case 6:
-        func_5EBA50(w);
-        break;
-    case 7:
-        func_58F8B0(w);
-        break;
-    case 8:
-        func_59A2C0(w);
-        break;
-    case 9:
-        func_5A7F70(w);
-        break;
-    case 10:
-        func_5AD5A0(w);
-        break;
-    case 11:
-        func_566670(w);
-        break;
-    case 12:
-        func_5AF530(w);
-        break;
-    case 13:
-        func_5D0610(w);
-        break;
-    case 14:
-        func_5B52D0(w);
-        break;
-    case 15:
-        func_5C2AC0(w);
-        break;
-    case 16:
-        func_5D0610(w);
-        break;
-    case 17:
-        func_5D9F20(w);
-        break;
-    case 18:
-        func_5E6C80(w);
-        break;
-    case 19:
-        func_5E7920(w);
-        break;
-    case 20:
-        func_5EBA50(w);
-        break;
-    case 21:
-        func_600010(w);
-        break;
-    case 22:
-        func_5D9F20(w);
-        break;
-    case 23:
-        func_5A7F70(w);
-        break;
-    case 24:
-        func_5E7920(w);
-        break;
-    case 25:
-        func_5AF530(w);
-        break;
-    case 26:
-        func_5B52D0(w);
-        break;
-    case 27:
-        func_60D450(w);
-        break;
-    case 28:
-        func_60D450(w);
-        break;
-    case 29:
-        func_6140B0(w);
-        break;
-    case 30:
-        func_5D0610(w);
-        break;
-    case 31:
-        func_60D450(w);
-        break;
-    case 32:
-        func_58B850(w);
-        break;
-    case 33:
-        func_6147D0(w);
-        break;
-    case 34:
-        func_59A2C0(w);
-        break;
+        em_erase(w);
+        return 1;
     }
+    em_effect_move(w);
+    if (w->x01 != 0 && w->stg == game_w.stage) {
+        w->x3A8 = ((u16)flConvertRtoS(flArcTan2(-(player_work.pos[2] - w->pos[2]), player_work.pos[0] - w->pos[0])) + 0x4000) - w->ang[1];
+        w->prim->pos[0] = w->pos[0];
+        w->prim->pos[1] = w->pos[1];
+        w->prim->pos[2] = w->pos[2];
+        if (w->prim != 0) {
+            if (w->draw_mode == 1.0f) {
+                if (w->kind == 2 || w->kind == 7) {
+                    add_prim(ot1, w->prim, 0x20, 1);
+                } else {
+                    add_prim(ot1, w->prim, 0x20, 0);
+                }
+            } else {
+                if (w->kind == 2 || w->kind == 7) {
+                    add_prim(ot0, w->prim, 0x40, 1);
+                } else {
+                    add_prim(ot0, w->prim, 0x40, 0);
+                }
+            }
+        }
+    }
+    World_calc(w);
+    return 0;
 }
