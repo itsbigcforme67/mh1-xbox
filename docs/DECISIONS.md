@@ -46,6 +46,14 @@ mwcps2-3.0b52-030722 -O4,p until bigger functions narrow it. The .comment
 Rejected alternative: non-matching, behaviour-checked decompilation.
 Kept as a fallback for any file that resists matching.
 
+- 2026-10-05, owner: priority is "playable and recognizable first, polished
+  afterwards". Byte-matching stays the correctness check, but agents cap time
+  on stubborn functions (~10 min) and park them as near-matches whose logic is
+  believed complete. Work on the platform layer (Capcom's fl graphics library
+  replacement, model format) starts now in parallel instead of after the
+  decomp. Whether to use static recompilation for not-yet-decompiled code to
+  reach "playable on PC" sooner is still open (see Open).
+
 ## Rejected
 
 **Porting the Wii version of Monster Hunter G instead.** (4 Oct 2026)
@@ -70,3 +78,7 @@ translation.
 
 **Server.** Ask MH Oldschool about an unofficial client, or build a private
 server. Their game server code did not appear to be public.
+- Hybrid build: recompile the remaining PS2 code mechanically (PS2Recomp or
+  our own) and link it with the native graphics/sound/input layer, swapping in
+  decompiled C as it lands. Faster to playable on PC; probably too slow for the
+  original Xbox, which still needs real C. Untested on this game.
