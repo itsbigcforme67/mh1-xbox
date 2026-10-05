@@ -2071,7 +2071,7 @@ static void em_fly12_005C6860(EMW *em, EM15W *w) {
         w->spd[1] = (s32) em->ang[1];
         speed_add(em, w->spd);
         em15_fly_adjy(em, 1);
-        temp_f1 = 20.0f + em->pos[1];
+        temp_f1 = em->pos[1] + 20.0f;
         em->pos[1] = temp_f1;
         if (!(temp_f1 < 10000.0f)) {
             em->x05 += 1;

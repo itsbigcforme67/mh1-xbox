@@ -3591,7 +3591,7 @@ static void em_die03_005E0B90(EMW *em, EM17W *w) {
 }
 
 void em17_soukou_dm_sel_set(EMW *em) {
-    if ((s32) em->hagi[6].cnt >= 2) {
+    if ((s32) em->hagi[6].cnt > 1) {
         em17_act_set(em, 4, 0, 2);
         return;
     }

@@ -4728,7 +4728,7 @@ u8 *cancel_prog_ck(EMW *em) {
         return 0;
     }
     r = 0;
-    if ((f & 0xFF & 0x40) && em_cancel_act_ck(em, 0x40) == 0) {
+    if (((u8)(f & 0xFF) & 0x40) && em_cancel_act_ck(em, 0x40) == 0) {
         r = unko_ptr_set(em);
         em->x917 = 0;
         em->x83B = 0x40;

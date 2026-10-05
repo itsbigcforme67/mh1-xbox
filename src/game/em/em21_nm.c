@@ -1350,7 +1350,7 @@ static void em_fly06_00602450(EMW *em, EM21W *w) {
         em21_fly_adjy2_init(em, 0);
         break;
     case 1:
-        if (em21_fly_adjy2(em) != 0) {
+        if (em21_fly_adjy2(em)) {
             em->x05 += 1;
             em21_to_swim(em);
         }
