@@ -25,6 +25,8 @@ void trans_pit_1_lb();
 void trans_pit_2_lb();
 void func_5B3D70();
 void func_609750();
+void font_print_uf(char *, int);
+u8 *func_5B4D30(u8);
 
 void PitWork_init(void) {
     lpPit = &pit_work;
@@ -213,9 +215,6 @@ void menu_exit(void) {
     PitMenu.x10 = 0;
     lpPit->x84 = 0;
 }
-
-extern void font_print_uf(char *, int);
-extern u8 *func_5B4D30(u8);
 
 /* Prints a player name, at most 11 characters, ending with a cut mark. */
 void player_name_print(char *name) {

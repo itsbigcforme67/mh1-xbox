@@ -1,4 +1,4 @@
-/* f_menu run 1 (SLPM_654.95 0x00127950-): select_yes_no, Cockpit_menu_chk*, enemy_mark_chk, menu_exit, player_name_print, player_name_id_print. Whole file in menu_nm.c. */
+/* f_menu run 1 (SLPM_654.95 0x00127950-0x00127C6C): select_yes_no, Cockpit_menu_chk*, enemy_mark_chk, menu_exit, player_name_print, player_name_id_print. Whole file in menu_nm.c. */
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -24,6 +24,8 @@ void trans_pit_1_lb();
 void trans_pit_2_lb();
 void func_5B3D70();
 void func_609750();
+void font_print_uf(char *, int);
+u8 *func_5B4D30(u8);
 
 void select_yes_no(int unused, u16 mask) {
     u16 k = FLD16(Psw, 4) & mask;
@@ -104,4 +106,17 @@ void player_name_print(char *name) {
     buf[9] = -0x5B;
     buf[10] = 0;
     font_print_uf(buf, n);
+}
+
+void player_name_id_print(PLW *pl) {
+    char *name = (char *)pl + 0x8D4;
+
+    if (Online_ck() == 1 && PitMenu.x14 != 0) {
+        if (game_w.x1DC == 0) {
+            name = (char *)room_member_id + *(u16 *)((u8 *)pl + 0xC) * 8;
+        } else {
+            name = (char *)func_5B4D30(*(u16 *)((u8 *)pl + 0xC));
+        }
+    }
+    player_name_print(name);
 }
