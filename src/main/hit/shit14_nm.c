@@ -19,12 +19,12 @@ void add_vec_sub2(f32 *, f32 *, f32);
 f32 flvecCalcLength(f32 *);
 f32 flvecInnerProduct(f32 *, f32 *);
 void flvecNormalize(f32 *);
-int hosei_sub(HSWEEP *, f32 *, s8, u8 *);
+s8 hosei_sub(HSWEEP *, f32 *, s8, u8 *);
 extern s8 hited_wall_no[];
 
 /* Edge-sharing test: do polygons pa and pb share two vertices? If so
  * *odd = the vertex of pb that is not shared; returns 1, else 0. */
-static int share_edge(HPOLY *pa, HPOLY *pb, f32 *odd) {
+static inline int share_edge(HPOLY *pa, HPOLY *pb, f32 *odd) {
     u8 idx[4];
     int n = 0;
     int i, j, k;
@@ -145,8 +145,7 @@ int PushAdjust3(HSWEEP *sw, f32 *pos, u8 *flagp) {
             }
         }
         if (nd > 0 && nd < nB) {
-            int n0 = nd;
-            for (k = 0; k < n0; k++) {
+            for (k = 0; k < nd; k++) {    /* nd grows inside: the bound is re-read */
                 if (why[k] == 1) {
                     for (j = 0; j < nB; j++) {
                         if (B[j] != cov[k]) {
