@@ -326,6 +326,52 @@ void _cnet_CallBack_Result_PersonalDataChange(CNET_RES res) {
     CNW(s8, 0xF7E) = 2;
 }
 
+void __cnet_bgProg_RegistPersonalData(void) {
+    CNET_BURST *b = &CnetSys_w.burst[9];
+    CNET_RES res;
+
+    if (b->state != 0) {
+        switch (b->x21) {
+        case 0:
+            b->x21++;
+            b->res = 0;
+            cnLBS_RequestPersonalDataChange((int)_cnet_CallBack_Result_PersonalDataChange);
+            break;
+        case 1:
+            if (b->res == 1) {
+                b->x21++;
+            } else if (b->res == 2) {
+                b->x21 = 5;
+            }
+            break;
+        case 2:
+            b->x21++;
+            b->res = 0;
+            cnLBS_Send_PersonalData((int)_cnet_CallBack_Result_PersonalDataChange);
+            break;
+        case 3:
+            if (b->res == 1) {
+                b->x21++;
+            } else if (b->res == 2) {
+                b->x21 = 5;
+            }
+            break;
+        case 4:
+            res.val = 0;
+            b->state = 0;
+            b->x21 = 0;
+            b->cb(res, &res);
+            break;
+        case 5:
+            res.val = -1;
+            b->state = 0;
+            b->x21 = 0;
+            b->cb(res, &res);
+            break;
+        }
+    }
+}
+
 static void __cnet_KeepEntryFloorInfo(kind, val)
 int kind;
 s8 val;
@@ -1547,6 +1593,122 @@ void _cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60(CNET_RES res) {
     CnetSys_w.burst[2].res = 2;
 }
 
+void __cnet_bgProg_ReadPlazaAllocation(void) {
+    CNET_BURST *b = &CnetSys_w.burst[2];
+    CNET_RES res;
+    int i;
+    int m;
+    int k;
+    int ok;
+    int n;
+
+    if (b->state != 0) {
+        switch (b->x21) {
+        case 0:
+            b->x21++;
+            b->a08 = 1;
+            b->a0C = 1;
+            b->res = 0;
+            m = b->val;
+            b->cnt = 0;
+            for (i = 0; i < 0x20; i++) {
+                if (m & 1) {
+                    b->cnt++;
+                }
+                m >>= 1;
+            }
+            CNW(u16, 0x1032) = 0;
+            CNW(u16, 0x404E) = 0;
+            memset(CnetSys_w.plaza, 0, 0xDE8);
+            cnLBS_Read_PlazaCount((int)__cnet_CallBack_Result_Plaza_NumOfPlaza_005A6E20);
+            break;
+        case 1:
+            if (b->res == 1) {
+                b->x21++;
+                b->res = 0;
+                CNW(u16, 0x1032) = CNW(u16, 0x404E) * b->cnt;
+                res.val = 2;
+                res.id = 0xA;
+                b->cb(res, &res);
+            } else if (b->res == 2) {
+                b->x21 = 6;
+            }
+            break;
+        case 2:
+            b->x21++;
+            b->res = 0;
+            if (CNW(u16, 0x404E) == 0) {
+                b->x21 = 5;
+            }
+            break;
+        case 3:
+            if (b->res == 2) {
+                b->x21 = 6;
+                cnLBS_Init_LobbyBgProcess();
+                break;
+            }
+            k = b->a0C;
+            if (__cnetSub_Get_RestBgWork() < b->cnt) {
+                break;
+            }
+            if (b->val & 1) {
+                cnLBS_Read_PlazaJoinUser((u16)k, (int)_cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60);
+            }
+            if (b->val & 2) {
+                cnLBS_Read_PlazaStatus((u16)k, (int)_cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60);
+            }
+            if (b->val & 4) {
+                cnLBS_Read_PlazaName((u16)k, (int)_cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60);
+            }
+            if (b->val & 8) {
+                cnLBS_Read_PlazaExplain((u16)k, (int)_cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60);
+            }
+            n = k + 1;
+            b->a0C++;
+            if (CNW(u16, 0x404E) < n || n > 0xA) {
+                b->x21++;
+            }
+            break;
+        case 4:
+            n = CNW(u16, 0x404E);
+            ok = 1;
+            for (k = 0, i = 0; ; ) {
+                k++;
+                if (n < k) {
+                    break;
+                }
+                if (b->val != (b->val & CnetSys_w.plaza[k - 1].flags)) {
+                    ok = 0;
+                    break;
+                }
+                i++;
+                if (i >= 10) {
+                    break;
+                }
+            }
+            if (b->res == 2) {
+                b->x21 = 6;
+                cnLBS_Init_LobbyBgProcess();
+            } else if (ok != 0) {
+                b->x21++;
+            }
+            break;
+        case 5:
+            res.val = 0;
+            b->state = 0;
+            b->x21 = 0;
+            b->cb(res, &res);
+            break;
+        case 6:
+            res.val = -1;
+            b->state = 0;
+            b->x21 = 0;
+            b->cb(res, &res);
+            break;
+        }
+    }
+}
+
 void _cnet_CallBack_Result_LobbyCount(CNET_RES res) {
     if (res.val == 0) {
         CnetSys_w.burst[3].res = 1;
@@ -1616,6 +1778,60 @@ void _cnet_CallBack_Result_RoomSetFinish(CNET_RES res) {
         return;
     }
     CnetSys_w.burst[6].res = 2;
+}
+
+void __cnet_bgProg_RoomSetRule(void) {
+    CNET_BURST *b = &CnetSys_w.burst[6];
+    CNET_RES res;
+    int i;
+
+    if (b->state != 0) {
+        switch (b->x21) {
+        case 0:
+            b->x21 = 2;
+            b->res = 0;
+            __cnet_SendReq_RoomSetName(CnetSys_w.rule.name);
+            if (CnetSys_w.rule.pw[0] != 0 && CnetSys_w.ruletbl.pw_perm == 1) {
+                __cnet_SendReq_RoomSetPassword(CnetSys_w.rule.pw);
+            }
+            break;
+        case 2:
+            b->x21 = 4;
+            for (i = 0; i < CnetSys_w.ruletbl.n; i++) {
+                if (CnetSys_w.ruletbl.e[i].perm == 1) {
+                    __cnet_SendReq_RoomSetRule(i & 0xFF, CnetSys_w.rule.sel[i]);
+                }
+            }
+            break;
+        case 4:
+            b->x21 = 6;
+            if (CnetSys_w.rule.explain[0] != 0 && CnetSys_w.ruletbl.explain_perm == 1) {
+                __cnet_SendReq_RoomSetExplain(CnetSys_w.rule.explain, strlen(CnetSys_w.rule.explain) & 0xFFFF);
+            }
+            break;
+        case 6:
+            b->x21++;
+            cnLBS_Set_RoomRuleFinish((int)_cnet_CallBack_Result_RoomSetFinish);
+            break;
+        case 7:
+            if (b->res == 1) {
+                res.val = 0;
+                b->state = 0;
+                b->x21 = 0;
+                b->cb(res, &res);
+            } else if (b->res == 2) {
+                res.val = -1;
+                b->state = 0;
+                b->x21 = 0;
+                b->cb(res, &res);
+            }
+            break;
+        case 1:
+        case 3:
+        case 5:
+            break;
+        }
+    }
 }
 
 int __cnet_SendReq_PieceCount(kind)

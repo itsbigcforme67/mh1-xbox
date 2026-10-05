@@ -26,13 +26,15 @@ typedef struct CNET_BG {
 typedef struct CNET_BURST {
     void (*run)(int);   /* 0x00 job function, called each frame while state == 1 */
     void (*cb)();       /* 0x04 completion callback of the request */
-    u8 _pad08[0x10];
+    s32 a08;            /* 0x08 */
+    s32 a0C;            /* 0x0C next index */
+    u8 _pad10[8];
     s32 val;            /* 0x18 request argument (start index / count) */
     u8 _pad1C[4];
     u8 state;           /* 0x20 (CnetSys_w+0xE38) 1 = run */
-    s8 x21;             /* 0x21 progress */
-    s8 res;             /* 0x22 result: 1 ok, 2 failed */
-    u8 _pad23;
+    u8 x21;             /* 0x21 progress */
+    u8 res;             /* 0x22 result: 1 ok, 2 failed */
+    u8 cnt;             /* 0x23 */
 } CNET_BURST;
 
 /* plaza / lobby / room table entries (0x164 bytes each); the entry of id n is table[n - 1] */
@@ -97,7 +99,7 @@ typedef struct CNET_RULETBL {   /* room rule allocation table at CnetSys_w+0x6E4
     u8 name_perm;       /* 0x00 */
     u8 pw_perm;         /* 0x01 */
     u8 explain_perm;    /* 0x02 */
-    u8 _pad03;
+    u8 n;               /* 0x03 number of rules */
     CNET_RULEENT e[32]; /* 0x04 */
 } CNET_RULETBL;
 typedef struct CNET_CHAT {
@@ -126,7 +128,10 @@ typedef struct CNET_LUSER {     /* a user returned by the login server (0x5C byt
 
 /* room rule block (0x16B bytes) */
 typedef struct CNET_RULE {
-    u8 b[0x16B];
+    char name[0x41];    /* 0x00 room name */
+    char pw[9];         /* 0x41 password */
+    char explain[0x101];/* 0x4A explanation */
+    u8 sel[0x20];       /* 0x14B chosen value per rule */
 } CNET_RULE;
 
 typedef struct CNET_SYS {
