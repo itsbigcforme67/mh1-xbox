@@ -15,7 +15,7 @@ info = {}
 for l in open(S):
     a, nm, sz = l.split(); info[nm] = (int(a, 16), int(sz))
 def src(nm):
-    for d in ('build/lbauto', 'src/lobby/_one'):
+    for d in ('src/lobby/_one', 'build/lbauto'):
         p = os.path.join(d, nm + '.c')
         if os.path.exists(p): return open(p).read()
     raise SystemExit('no source for ' + nm)
@@ -68,6 +68,7 @@ lines = []
 def emit(group):
     global num
     path = 'src/lobby/%s/%s%02d.c' % (LD, prefix, num)
+    if os.environ.get("DBG"): build(group, path); os.system("cp %s /tmp/dbg.c" % path)
     if build(group, path) and ok(path, group):
         lines.append('lobby 0x%08X 0x%08X %s/%s%02d' % (info[group[0]][0], info[group[-1]][0] + info[group[-1]][1], LD, prefix, num))
         for n in group:

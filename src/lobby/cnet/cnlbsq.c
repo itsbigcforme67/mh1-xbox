@@ -1,110 +1,59 @@
-/* cnlbs, run 17: _cnet_RecvFromLbs_ReqestPatchLineCheck .. _cnetEvent_JumpCallBack (lobby.bin 0x005ACDF0-0x005AD1AC): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 17: __cnetSub_Run_BgProcess .. __cnet_RecvFromLbs (lobby.bin 0x005AD440-0x005AD61C): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-void _cnet_RecvFromLbs_ReqestPatchLineCheck(void) {
-    u16 v;
+void __cnetSub_Run_BgProcess(void) {
+    int i;
 
-    if (CnetSys_w.burst[0].state != 0) {
-        __cnet_Recv_Word(&v);
-        __cnet_Send_PatchLineCheck(v);
-    }
-}
-
-int __cnet_Send_PatchLineCheck(int arg0) {
-    int cmd = SetSendCommand(&send_work, 0xC2) & 0xFFFF;
-    SetSendData16(&send_work, arg0);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-    return cmd;
-}
-
-void _cnet_RecvFromLbs_NoticePatchFooter(void) {
-
-}
-
-void _cnet_RecvFromLbs_RequestPatchFinish(void) {
-    CNET_RES res;
-
-    if (CnetSys_w.burst[0].state != 0) {
-        if (__cnet_CheckCheckSum(CNW(s32, 0x1054), CnetSys_w.patch_ver, CnetSys_w.patch_size) != 0) {
-            res.val = 0;
-            res.id = 3;
-            CnetSys_w.burst[0].cb(res, &res);
-            return;
+    for (i = 0; i < 0x80; i++) {
+        if (CnetSys_w.bg[i].state == 2) {
+            if (CnetSys_w.bg[i].cb != 0) CnetSys_w.bg[i].cb(i);
         }
-        res.val = -1;
-        res.id = 9;
-        CnetSys_w.burst[0].cb(res, &res);
+    }
+    for (i = 0; i < 12; i++) {
+        if (CnetSys_w.burst[i].state == 1) {
+            if (CnetSys_w.burst[i].run != 0) CnetSys_w.burst[i].run(i);
+        }
     }
 }
 
-int cnLBS_Answer_PatchFinish(void) {
-    __cnet_Send_PatchFinish();
-    return 0;
-}
+int __cnetSub_Get_RestBgWork(void) {
+    int n = 0;
+    int i;
 
-int __cnet_Send_PatchFinish(void) {
-    int cmd = SetSendCommand(&send_work, 0xC4) & 0xFFFF;
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-    return cmd;
-}
-
-int cnLBS_Get_PatchInformation(u8 *p) {
-    memset(p, 0, 0x1C);
-    strncpy(p + 4, CnetSys_w.patch_a, 0xA);
-    strncpy(p + 0x14, CnetSys_w.patch_b, 4);
-    *(int *)p = CnetSys_w.patch_ver;
-    return 0;
-}
-
-int __cnet_CheckCheckSum(p, size, sum)
-u8 *p;
-u32 size;
-int sum;
-{
-    u32 i;
-    int acc = 0;
-
-    for (i = 0; i < size; i++) {
-        acc += *p++;
+    for (i = 0; i < 0x80; i++) {
+        if (CnetSys_w.bg[i].state == 0) n++;
     }
-    return sum == acc;
+    return n;
 }
 
-void _cnet_RecvFromLbs_RequestRegurationVersion(void) {
+int __cnet_RecvFromLbs(int cmd, int from, int cat, int x) {
+    int i;
+    int c16;
+    int c8;
+    u8 *h;
+    u8 *l;
+    u8 *ft;
+    u8 *ct;
+    void (**jmp)();
+    int hi;
+    int full;
 
-}
-
-void _cnet_RecvFromLbs_NoticeRegurationAddress(void) {
-
-}
-
-void _cnet_RecvFromLbs_AnswerRegurationData(void) {
-    _cnet_RecvFromLbs_AnswerBrowserMethodGet();
-}
-
-void cnLBS_Send_RegurationAgree(void) {
-
-}
-
-void _cnet_RecvFromLbs_AnswerRegurationAgree(void) {
-
-}
-
-void cnLBS_Set_CallBackNoticeEvent(int idx, void (*fn)()) {
-    pFunc[idx] = fn;
-}
-
-void _cnetEvent_JumpCallBack(idx)
-int idx;
-{
-    CNET_RES r;
-    void (*fn)();
-
-    r.id = idx;
-    r.val = 1;
-    fn = pFunc[(u16)idx];
-    if (fn != 0) fn(r, 0);
+    c16 = cmd & 0xFFFF;
+    c8 = cat & 0xFF;
+    i = 0;
+    h = lbs_command_tbl_h;
+    l = lbs_command_tbl_l;
+    ft = lbs_fromto_tbl;
+    ct = lbs_category_tbl;
+    jmp = lbs_command_jmp;
+    for (; i < 0x102; i++, h++, l++, ft++, ct++, jmp++) {
+        hi = (*h << 8) & 0xFFFF;
+        full = (hi | *l) & 0xFFFF;
+        if (*ft != 8 && c16 == (full & 0xFFFF) && *ct == c8 && *jmp != 0) {
+            lbs_command_jmp[i](full, hi, c8, c16);
+            return 1;
+        }
+    }
+    return 0;
 }

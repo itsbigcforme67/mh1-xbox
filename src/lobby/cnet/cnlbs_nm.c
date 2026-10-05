@@ -84,7 +84,7 @@ int __cnet_SendReq_SearchUser(int arg0) {
 }
 
 void __cnet_Recv_SearchUser(void) {
-    char sp10[8];
+    char sp10[9];
 
     GetRecvDataString(CNWP(0x30988), GetRecvData8(CNWP(0x30987), GetRecvData8(CNWP(0x30986), GetRecvData16(CNWP(0x30984), GetRecvData16(CNWP(0x30982), GetRecvData16(CNWP(0x30980), GetRecvDataString(&sp10, recv_work)))))));
 }
@@ -3157,7 +3157,7 @@ void _cnet_RecvFromLbs_AnswerEchoPacket(void) {
         __cnet_SendReq_EchoPacket(t);
         return;
     }
-    CnetSys_w.firstdata.h[14] = (u16)CnetSys_w.echo_sum >> 2;
+    CnetSys_w.firstdata.h[14] = (u32)CnetSys_w.echo_sum >> 2;
     __cnet_SendSet_FirstData(t);
 }
 
@@ -3712,8 +3712,8 @@ int cnLBS_Read_MatchInfomation(int cb) {
 }
 
 void _cnet_RecvFromLbs_MatchJoin(void) {
-    u8 v;
     CNET_RES res;
+    u8 v;
 
     if (CnetSys_w.burst[7].state != 0) {
         if (CnetSys_w.rcat == 2) {
@@ -3732,8 +3732,8 @@ void _cnet_RecvFromLbs_MatchJoin(void) {
 }
 
 void _cnet_RecvFromLbs_MatchPlSide(void) {
-    u8 v;
     CNET_RES res;
+    u8 v;
 
     if (CnetSys_w.burst[7].state != 0) {
         if (CnetSys_w.rcat == 2) {

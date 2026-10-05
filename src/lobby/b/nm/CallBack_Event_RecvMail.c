@@ -1,4 +1,4 @@
-#include "lobby_a.h"
+#include "lobby_b.h"
 extern char RecvMailInfo[];
 extern char D_39F5EC[];
 extern char D_39F686[];
@@ -18,7 +18,7 @@ extern char D_39F251[];
 extern char D_39F259[];
 extern char D_39F26A[];
 extern char D_39F26A[];
-void CallBack_Event_RecvMail(void) {
+void CallBack_Event_RecvMail(CNET_RES res) {
     char sp3C[0x80];
     char sp28[0x10];
     char sp20[0x9C];

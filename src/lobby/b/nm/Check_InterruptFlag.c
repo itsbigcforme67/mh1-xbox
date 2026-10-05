@@ -8,7 +8,7 @@ s32 Check_InterruptFlag(void) {
     temp_a1 = (int)cw;
     if (F(s8, temp_a1, 0x2C08) != 0) {
         if (F(s8, temp_a1, 0x2C0C) != 0) {
-            To_ReadyBattle(temp_a1);
+            To_ReadyBattle();
             return 1;
         }
         temp_v1 = F(s8, temp_a1, 0x2C0D);

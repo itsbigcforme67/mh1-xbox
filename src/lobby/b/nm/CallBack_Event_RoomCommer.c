@@ -1,6 +1,6 @@
-#include "lobby_a.h"
+#include "lobby_b.h"
 extern char lit_4548[];
-void CallBack_Event_RoomCommer(void) {
+void CallBack_Event_RoomCommer(CNET_RES res) {
     char sp16C[0x40];
     s8 sp158;
     s8 sp150;

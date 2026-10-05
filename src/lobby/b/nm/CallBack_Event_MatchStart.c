@@ -1,8 +1,8 @@
-#include "lobby_a.h"
+#include "lobby_b.h"
 extern char room_member_id[];
 extern char room_member_handle[];
 extern char room_member_mini_data[];
-void CallBack_Event_MatchStart(void) {
+void CallBack_Event_MatchStart(CNET_RES res) {
     int var_s0;
     int var_s1;
     int var_s2;

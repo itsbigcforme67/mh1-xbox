@@ -1,59 +1,178 @@
-/* cnlbs, run 19: __cnetSub_Run_BgProcess .. __cnet_RecvFromLbs (lobby.bin 0x005AD440-0x005AD61C): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 19: __cnet_Recv_ServerMessage .. SetSendData32 (lobby.bin 0x005ADCE0-0x005AE160): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-void __cnetSub_Run_BgProcess(void) {
-    int i;
-
-    for (i = 0; i < 0x80; i++) {
-        if (CnetSys_w.bg[i].state == 2) {
-            if (CnetSys_w.bg[i].cb != 0) CnetSys_w.bg[i].cb(i);
-        }
-    }
-    for (i = 0; i < 12; i++) {
-        if (CnetSys_w.burst[i].state == 1) {
-            if (CnetSys_w.burst[i].run != 0) CnetSys_w.burst[i].run(i);
-        }
-    }
+void __cnet_Recv_ServerMessage(void) {
+    memset(CnetSys_w.srvmsg, 0, 0x300);
+    GetRecvDataOption3(CnetSys_w.srvmsg, 0x300, recv_work);
 }
 
-int __cnetSub_Get_RestBgWork(void) {
-    int n = 0;
-    int i;
-
-    for (i = 0; i < 0x80; i++) {
-        if (CnetSys_w.bg[i].state == 0) n++;
-    }
-    return n;
+void __cnet_Recv_Byte(a0)
+void *a0;
+{
+    GetRecvData8(a0, recv_work);
 }
 
-int __cnet_RecvFromLbs(int cmd, int from, int cat, int x) {
-    int i;
-    int c16;
-    int c8;
-    u8 *h;
-    u8 *l;
-    u8 *ft;
-    u8 *ct;
-    void (**jmp)();
-    int hi;
-    int full;
+void __cnet_Recv_Word(a0)
+void *a0;
+{
+    GetRecvData16(a0, recv_work);
+}
 
-    c16 = cmd & 0xFFFF;
-    c8 = cat & 0xFF;
-    i = 0;
-    h = lbs_command_tbl_h;
-    l = lbs_command_tbl_l;
-    ft = lbs_fromto_tbl;
-    ct = lbs_category_tbl;
-    jmp = lbs_command_jmp;
-    for (; i < 0x102; i++, h++, l++, ft++, ct++, jmp++) {
-        hi = (*h << 8) & 0xFFFF;
-        full = (hi | *l) & 0xFFFF;
-        if (*ft != 8 && c16 == (full & 0xFFFF) && *ct == c8 && *jmp != 0) {
-            lbs_command_jmp[i](full, hi, c8, c16);
-            return 1;
-        }
+void __cnet_Recv_Long(a0)
+void *a0;
+{
+    GetRecvData32(a0, recv_work);
+}
+
+void __cnet_Recv_ByteString(a0, a1)
+void *a0;
+void *a1;
+{
+    GetRecvDataString(a1, GetRecvData8(a0, recv_work));
+}
+
+void __cnet_Recv_ByteByte(a0, a1)
+void *a0;
+void *a1;
+{
+    GetRecvData8(a1, GetRecvData8(a0, recv_work));
+}
+
+void __cnet_Recv_WordByte(a0, a1)
+void *a0;
+void *a1;
+{
+    GetRecvData8(a1, GetRecvData16(a0, recv_work));
+}
+
+void __cnet_Recv_WordWord(a0, a1)
+void *a0;
+void *a1;
+{
+    GetRecvData16(a1, GetRecvData16(a0, recv_work));
+}
+
+void __cnet_Recv_WordLong(a0, a1)
+void *a0;
+void *a1;
+{
+    GetRecvData32(a1, GetRecvData16(a0, recv_work));
+}
+
+void __cnet_Recv_ByteByteString(a0, a1, a2)
+void *a0;
+void *a1;
+void *a2;
+{
+    GetRecvDataString(a2, GetRecvData8(a1, GetRecvData8(a0, recv_work)));
+}
+
+u16 SetSendCommand(w, cmd)
+SEND_WORK *w;
+int cmd;
+{
+    int c;
+
+    memset(w->data, 0, 0x300);
+    c = cmd & 0xFFFF;
+    w->cmd_h = lbs_command_tbl_h[c];
+    w->cmd_l = lbs_command_tbl_l[c];
+    w->cat = lbs_category_tbl[c];
+    w->total = 0;
+    w->len = 0;
+    w->magic = 0x81;
+    if (w->cat == 2) {
+        send_work.seq_h = recv_header[6];
+        send_work.seq_l = recv_header[7];
+    } else {
+        seq_no++;
+        w->seq_h = (int)seq_no >> 8;
+        w->seq_l = seq_no;
     }
-    return 0;
+    w->x0D = 0xFF;
+    w->x0E = 0xFF;
+    w->x0F = 0xFF;
+    w->x0C = 0;
+    return seq_no;
+}
+
+void Mcs_SetSendCommand(w, cmd)
+SEND_WORK *w;
+int cmd;
+{
+    int c;
+
+    memset(w->data, 0, 0x300);
+    c = cmd & 0xFFFF;
+    w->cmd_h = c >> 8;
+    w->cmd_l = c;
+    w->total = 0;
+    w->len = 0;
+    w->magic = 0x82;
+    w->x0D = 0xFF;
+    w->x0E = 0xFF;
+    w->x0F = 0xFF;
+    w->cat = 0;
+    w->x0C = 0;
+    memcpy(&w->seq_h, recv_header + 6, 2);
+}
+
+void SetSendCategory(w, v)
+SEND_WORK *w;
+s8 v;
+{
+    w->cat = v;
+}
+
+void SetSendResult(w, v)
+SEND_WORK *w;
+s8 v;
+{
+    w->x0C = v;
+}
+
+void SetSendCommandLen(w)
+SEND_WORK *w;
+{
+    w->len_h = (int)w->len >> 8;
+    w->len_l = w->len;
+}
+
+void SetSendData8(w, v)
+SEND_WORK *w;
+s8 v;
+{
+    *((u8 *)w + w->len + 0x10) = v;
+    w->total += 1;
+    w->len += 1;
+}
+
+void SetSendData16(w, v)
+SEND_WORK *w;
+int v;
+{
+    int b;
+    SEND_WORK *t;
+
+    b = v & 0xFFFF;
+    t = (SEND_WORK *)((u8 *)w + w->len);
+    t->data[0] = b >> 8;
+    t->data[1] = b;
+    w->total += 2;
+    w->len += 2;
+}
+
+void SetSendData32(w, v)
+SEND_WORK *w;
+u32 v;
+{
+    u8 *t = (u8 *)w + w->len;
+
+    t[0x10] = v >> 24;
+    t[0x11] = v >> 16;
+    t[0x12] = v >> 8;
+    t[0x13] = v;
+    w->total += 4;
+    w->len += 4;
 }

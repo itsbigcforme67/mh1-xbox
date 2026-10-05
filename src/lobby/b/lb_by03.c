@@ -1,6 +1,7 @@
-#include "lobby_a.h"
+/* lb_by03 - agent B promoted near-match 0x005C0AC0-0x005C0B04: CallBack_Event_MatchCancel (first drafted by tools/lbauto.py). */
+#include "lobby_b.h"
 
-void CallBack_Event_MatchCancel(void) {
+void CallBack_Event_MatchCancel(CNET_RES res) {
     u8 temp_a0;
     int temp_a1;
 

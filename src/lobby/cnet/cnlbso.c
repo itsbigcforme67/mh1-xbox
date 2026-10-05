@@ -1,72 +1,110 @@
-/* cnlbs, run 15: __cnet_Return_MatchInformation .. cnLBS_Get_MatchInfomation (lobby.bin 0x005AC860-0x005ACB84): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 15: _cnet_RecvFromLbs_ReqestPatchLineCheck .. _cnetEvent_JumpCallBack (lobby.bin 0x005ACDF0-0x005AD1AC): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-void __cnet_Return_MatchInformation(CNET_RES res) {
-    if (res.val == -1) {
-        __cnet_SendReq_MatchRejection(res.val);
-    }
-    if (CnetSys_w.burst[7].cb != 0) {
-        CnetSys_w.burst[7].state = 0;
-        CnetSys_w.burst[7].x21 = 0;
-        CnetSys_w.burst[7].cb(res, &res);
+void _cnet_RecvFromLbs_ReqestPatchLineCheck(void) {
+    u16 v;
+
+    if (CnetSys_w.burst[0].state != 0) {
+        __cnet_Recv_Word(&v);
+        __cnet_Send_PatchLineCheck(v);
     }
 }
 
-int __cnet_SendReq_MatchJoin(void) {
-    int cmd = SetSendCommand(&send_work, 0xA3) & 0xFFFF;
+int __cnet_Send_PatchLineCheck(int arg0) {
+    int cmd = SetSendCommand(&send_work, 0xC2) & 0xFFFF;
+    SetSendData16(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
 }
 
-void __cnet_SendReq_MatchPlSide(int arg0) {
-    SetSendCommand(&send_work, 0xA5);
-    SetSendData8(&send_work, arg0);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
+void _cnet_RecvFromLbs_NoticePatchFooter(void) {
+
 }
 
-void __cnet_SendReq_MatchOpponentInfo(int arg0) {
-    SetSendCommand(&send_work, 0xA9);
-    SetSendData8(&send_work, arg0);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
+void _cnet_RecvFromLbs_RequestPatchFinish(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.burst[0].state != 0) {
+        if (__cnet_CheckCheckSum(CNW(s32, 0x1054), CnetSys_w.patch_ver, CnetSys_w.patch_size) != 0) {
+            res.val = 0;
+            res.id = 3;
+            CnetSys_w.burst[0].cb(res, &res);
+            return;
+        }
+        res.val = -1;
+        res.id = 9;
+        CnetSys_w.burst[0].cb(res, &res);
+    }
 }
 
-void __cnet_SendReq_MatchOpponentStatus(int arg0) {
-    SetSendCommand(&send_work, 0xAB);
-    SetSendData8(&send_work, arg0);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-}
-
-void __cnet_SendReq_MatchGameRule(void) {
-    SetSendCommand(&send_work, 0xA7);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-}
-
-void __cnet_SendReq_MatchBattleCode(void) {
-    SetSendCommand(&send_work, 0xAE);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-}
-
-void __cnet_SendReq_MatchMcsIpAddr(void) {
-    SetSendCommand(&send_work, 0xB0);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-}
-
-int __cnet_SendReq_MatchRejection(void) {
-    int cmd = SetSendCommand(&send_work, 0xAD) & 0xFFFF;
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-    return cmd;
-}
-
-int cnLBS_Get_MatchInfomation(CNET_W5D4 *d) {
-    *d = CnetSys_w.matchinfo;
+int cnLBS_Answer_PatchFinish(void) {
+    __cnet_Send_PatchFinish();
     return 0;
+}
+
+int __cnet_Send_PatchFinish(void) {
+    int cmd = SetSendCommand(&send_work, 0xC4) & 0xFFFF;
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int cnLBS_Get_PatchInformation(u8 *p) {
+    memset(p, 0, 0x1C);
+    strncpy(p + 4, CnetSys_w.patch_a, 0xA);
+    strncpy(p + 0x14, CnetSys_w.patch_b, 4);
+    *(int *)p = CnetSys_w.patch_ver;
+    return 0;
+}
+
+int __cnet_CheckCheckSum(p, size, sum)
+u8 *p;
+u32 size;
+int sum;
+{
+    u32 i;
+    int acc = 0;
+
+    for (i = 0; i < size; i++) {
+        acc += *p++;
+    }
+    return sum == acc;
+}
+
+void _cnet_RecvFromLbs_RequestRegurationVersion(void) {
+
+}
+
+void _cnet_RecvFromLbs_NoticeRegurationAddress(void) {
+
+}
+
+void _cnet_RecvFromLbs_AnswerRegurationData(void) {
+    _cnet_RecvFromLbs_AnswerBrowserMethodGet();
+}
+
+void cnLBS_Send_RegurationAgree(void) {
+
+}
+
+void _cnet_RecvFromLbs_AnswerRegurationAgree(void) {
+
+}
+
+void cnLBS_Set_CallBackNoticeEvent(int idx, void (*fn)()) {
+    pFunc[idx] = fn;
+}
+
+void _cnetEvent_JumpCallBack(idx)
+int idx;
+{
+    CNET_RES r;
+    void (*fn)();
+
+    r.id = idx;
+    r.val = 1;
+    fn = pFunc[(u16)idx];
+    if (fn != 0) fn(r, 0);
 }
