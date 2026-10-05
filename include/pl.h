@@ -313,7 +313,8 @@ typedef struct PLW {
     u8    work8D1;           /* 0x8D1 */
     u8    work8D2;           /* 0x8D2 */
     u8 _pad8D3[0x8D4 - 0x8D3];
-    char  name[0x14];    /* 0x8D4 player name (set01_i) */
+    char  name[0x12];        /* 0x8D4 player name (set01_i), 0x12 bytes: 0x8E6 is an s16 (pick_set_sub) */
+    s16   x8E6;              /* 0x8E6 arg of ItemStockRequest (pick_set_sub) */
     u16   fish_time;     /* 0x8E8 time to land the hooked fish (eft23) */
     u16   x8EA;          /* 0x8EA non-zero: bait still on (eft23) */
     u8 _pad8EC[0x8ED - 0x8EC];

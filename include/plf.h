@@ -181,4 +181,12 @@ void kabe_hosei(PLW *, int);
 void Ana_item_set(PLW *);
 void func_637F60(PLW *, int);
 void kabe_com_ck(PLW *);
+void rate_clear_g(PLW *);
+u8 Check_hold_item(s32);
+long ItemStockRequest(PLW *, int, s16, int);
+extern u8 lit_3557[];
+void pick_set_sub(PLW *, u16);
+s32 Ext_pick_point_ck2(PLW *);
+s32 St_pick_ck2(PLW *);
+void adx_se_set(PLW *, int);
 #endif
