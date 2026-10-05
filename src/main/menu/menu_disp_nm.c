@@ -2004,3 +2004,206 @@ void lb_disp_chat_cnfg_sendpl(int sw, PIT_W *p) {
         } while (i < cnt);
     }
 }
+
+/* ===== wyvern ripple, data/option windows (0x132510-0x133A00) ===== */
+extern u8 pfl_menu_data[];
+extern u8 pf_mix_list_base[], pf_monster_list_base[];
+extern u8 lit_4947[], lit_4948[], lit_4949[], lit_4985[], lit_4986[], lit_4987[], lit_5012[], lit_5054[];
+extern u8 mix_level_color[];
+extern char *mix_level_str[];
+extern u8 monster_data[][8];
+extern u8 frame_status_main_002F0D70[];
+extern u8 pfl_option[];
+extern u8 option_list_str[];
+extern u8 option_val_str[];
+extern u8 opt_map_invalid_str[];
+int Item_preparation_list_num();
+u32 Monster_list_num();
+void disp_mix_list(int, PIT_W *);
+void disp_monster_list(int, PIT_W *);
+void EquipmentDescriptionWindow(int, int, int, u8);
+void PlayerEquipmentWindow(PLW *);
+void flps0004(void *);
+int menu_equip_get_equip(u8);
+void efct_circle(int, int, int, f32, f32);
+
+/* 0x132510 */
+void wyvn_efct_ripple(void) {
+    if (lpPit->x3F != 0) {
+        SetTrnslMode(4, 1);
+        SetFilterMode(1);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
+        efct_circle(0x199, 0xAC, 0xFFFFFF, 120.0f, (f32)lpPit->x3F);
+        SetTrnslMode(4, 5);
+    }
+}
+
+/* 0x1332F0 */
+void Pit_disp_data(void) {
+    switch (lpPit->x42) {
+    case 0:
+        disp_menu(1, lpPit);
+        DispFrameList(pfl_menu_data + game_w.x1DC * 0x18, 0, lpPit->x43);
+        return;
+    case 1:
+        switch (lpPit->x43) {
+        case 0:
+            disp_mix_list(1, lpPit);
+            return;
+        case 1:
+            disp_monster_list(1, lpPit);
+            return;
+        }
+        break;
+    }
+}
+
+/* 0x1333B0 */
+void disp_mix_list(int sw, PIT_W *p) {
+    DispFrameList(pf_mix_list_base, lit_4947, -1);
+    if ((u8)Item_preparation_list_num() >= 2) {
+        DispFrameListOptionArrow(pf_mix_list_base);
+    }
+    flfntSetSize(0x12, 0x12);
+    if (lpPit->x68 != 0) {
+        font_set_palette(3);
+        flfntLocate(0x1AF, 0x52);
+        font_print(lit_4948, lpPit->x81 + 1);
+        font_set_palette(0);
+        flfntLocate(0x1C1, 0x7A);
+        font_print_uf(item_str[*(s16 *)((u8 *)lpPit->x68 + 2)]);
+        flfntLocate(0x1C1, 0xA2);
+        font_print_uf(item_str[lpPit->x6C]);
+        flfntLocate(0x1C1, 0xB6);
+        font_print_uf(item_str[lpPit->x6E]);
+        font_set_palette(*(s32 *)(mix_level_color + *(s8 *)((u8 *)lpPit->x68 + 4) * 4));
+        flfntLocate(0x1C1, 0xDE);
+        font_print_uf(mix_level_str[*(s8 *)((u8 *)lpPit->x68 + 4)]);
+        return;
+    }
+    font_set_palette(2);
+    flfntLocate(0x1AF, 0x52);
+    font_print_uf(lit_4949);
+}
+
+/* 0x133550 */
+void disp_monster_list(int sw, PIT_W *p) {
+    PFLPS3 q;
+    u8 *m;
+    s8 sel;
+
+    DispFrameList(pf_monster_list_base, lit_4985, -1);
+    if (Monster_list_num() >= 2U) {
+        DispFrameListOptionArrow(pf_monster_list_base);
+    }
+    flfntSetSize(0x12, 0x12);
+    sel = lpPit->x82;
+    if (sel >= 0) {
+        m = monster_data[sel];
+        font_set_palette(3);
+        flfntLocate(0x167, 0x52);
+        font_print(lit_4948, lpPit->x82 + 1);
+        flfntLocate(0x167, 0x66);
+        font_print_sp(lit_4986, enemy_name[m[3]]);
+        flfntLocate(0x167, 0xD2);
+        font_print_uf(*(void **)(m + 4));
+        SetTrnslMode(4, 5);
+        SetFilterMode(1);
+        reload_tex(1, 0x157);
+        SetTextureStage(0x157);
+        q.s[0] = 0x15C;
+        q.s[2] = 0x50;
+        q.s[1] = 0x80;
+        q.s[3] = 0x48;
+        q.uv0 = 0x380008;
+        q.uv1 = 0xB80088;
+        q.col = -1;
+        flps0008(&q);
+        SetFilterMode(0);
+        reload_tex(1, 0x11B);
+        SetTextureStage(0x11B);
+        q.s[0] = 0x16A;
+        q.s[2] = 0x33;
+        q.s[1] = 0x84;
+        q.s[3] = 0x40;
+        ((s16 *)&q.uv0)[0] = m[1];
+        ((s16 *)&q.uv0)[1] = m[2];
+        ((s16 *)&q.uv1)[0] = m[1] + 0x33;
+        ((s16 *)&q.uv1)[1] = m[2] + 0x33;
+        q.col = -1;
+        flps0008(&q);
+        return;
+    }
+    flfntLocate(0x167, 0x52);
+    font_print_sp(lit_4987);
+}
+
+/* 0x1337A0 */
+void Pit_disp_menu_equipment(void) {
+    PFLPS1 q;
+    PLW *pl = lpPit->pl;
+    int e;
+    int v;
+
+    e = menu_equip_get_equip(lpPit->x43);
+    DispFrameList(frame_status_main_002F0D70, lit_5012, -1);
+    PlayerEquipmentWindow(pl);
+    q.s[2] = 0x1EB;
+    q.s[0] = 0x12C;
+    q.s[1] = (lpPit->x43 << 5) + 0x55;
+    v = ((System_timer & 0x3F) << 10) & 0xFFFF;
+    q.s[3] = q.s[1] + 0x20;
+    q.col = (((s8)(48.0f * flSin(0.0000958738f * (f32)v)) + 0xBF) << 24) | 0xA9182;
+    flps0004(&q);
+    EquipmentDescriptionWindow(e, 0x132, 0x12A, lpPit->x44);
+}
+
+/* 0x1338E0 */
+void disp_option(void) {
+    PFLPS3 q;
+    int y;
+    long long i;
+    u8 *vals;
+    int v;
+
+    SetTrnslMode(4, 5);
+    *(void **)(pfl_option + 0xC) = option_list_str + lpPit->x88 * 0x14;
+    DispFrameList(pfl_option, lit_5054, -1);
+    font_set_palette(5);
+    y = 0x54;
+    i = 0;
+    vals = option_val_str;
+    do {
+        flfntLocate(0x208, y);
+        if (lpPit->x88 != 0) {
+            if ((s16)i != 1) goto lab;
+            font_print_sp(opt_map_invalid_str);
+        } else {
+lab:
+            font_print_uf(*(void **)(vals + *((u8 *)lpPit + (s16)i + 0x88) * 4));
+        }
+        vals += 0xC;
+        i = (s16)(i + 1);
+        y = (s16)(y + 0x16);
+    } while (i < 5);
+    q.s[2] = 0xE;
+    q.s[3] = 0x12;
+    q.s[1] = lpPit->x43 * 0x16 + 0x54;
+    if (lpPit->x88 != 0) {
+        if (lpPit->x43 != 1) goto lab2;
+        q.col = 0xF0707070;
+    } else {
+lab2:
+        v = ((System_timer & 0x3F) << 10) & 0xFFFF;
+        q.col = (((s8)(48.0f * flSin(0.0000958738f * (f32)v)) + 0xAF) << 8) | 0xF0200020;
+    }
+    q.s[0] = 0x192;
+    q.uv0 = 0x1A00A6;
+    q.uv1 = 0x2E0094;
+    flps0008(&q);
+    q.s[0] = 0x1DC;
+    q.uv0 = 0x94;
+    q.uv1 = 0xA6;
+    flps0008(&q);
+}
