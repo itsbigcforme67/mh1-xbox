@@ -3878,22 +3878,23 @@ static void em_die03_005A1F70(EMW *em, EM08W *w) {
 }
 
 static void em_die04_005A21F0(EMW *em, EM08W *w) {
-    if (em->x05 != 0) {
-        return;
+    switch (em->x05) {
+    case 0:
+        if (Quest_enemy_revival_ck() == 1) {
+            Quest_enemy_revival_set(em);
+            em_status_init(em);
+            em08_init(em);
+            em_cmd_reset(em);
+            em->x839 = 0;
+            em->mode = 5;
+            em->x15 = 4;
+            em->x388 = 4;
+            em_act_set(em, 2, 0);
+        } else {
+            em->x04 += 1;
+        }
+        break;
     }
-    if (Quest_enemy_revival_ck() == 1) {
-        Quest_enemy_revival_set(em);
-        em_status_init(em);
-        em08_init(em);
-        em_cmd_reset(em);
-        em->x839 = 0;
-        em->mode = 5;
-        em->x15 = 4;
-        em->x388 = 4;
-        em_act_set(em, 2, 0);
-        return;
-    }
-    em->x04 += 1;
 }
 
 static void em_die05_005A22A0(EMW *em, EM08W *w) {
@@ -5320,20 +5321,16 @@ static void ef_move_sub_005A3E50(EMW *em, EM08W *w) {
 static void hire_move_sub2_005A69A0(EMW *em, EM08W *w, int i) {
     switch (w->st[i].b) {
     case 0:
-        switch (w->xF) {
-        case 2:
-        case 3:
+        if (w->xF == 2 || w->xF == 3) {
             if (w->ang[i].a != hire_down_angx_003887E8[i]) {
                 w->st[i].b = 2;
                 w->tmr[i] = 0x14;
             }
-            break;
-        case 1:
+        } else if (w->xF == 1) {
             if (w->ang[i].a != 0) {
                 w->st[i].b = 1;
                 w->tmr[i] = 0x14;
             }
-            break;
         }
         break;
     case 1:
