@@ -60,6 +60,15 @@ typedef struct LB_TXT {
     char *s;
 } LB_TXT;
 
+/* SearchCondition (lobby .bss, 0x110 bytes): condition search request (handle search) */
+typedef struct LB_SCOND {
+    u8 flag;            /* 0x00 */
+    u8 len;             /* 0x01 */
+    u8 _pad02[2];
+    char s[0x10C];      /* 0x04 */
+} LB_SCOND;
+extern LB_SCOND SearchCondition;
+extern u8 *SearchResult;
 extern LB_DIALOG dialogData;
 extern LB_NETW *pNet;
 /* chat / plaza work (pointer cw in main .sbss) */
@@ -72,7 +81,10 @@ typedef struct LB_CW {
     s8 x2BFE[8];        /* 0x2BFE per player flag */
     u8 _pad2C06[0x2F80 - 0x2C06];
     u8 x2F80[0x62];     /* 0x2F80 own comment */
-    u8 _pad2FE2[0x32BE - 0x2FE2];
+    u8 _pad2FE2[0x30B4 - 0x2FE2];
+    u16 x30B4;          /* 0x30B4 plaza of my status */
+    u16 x30B6;          /* 0x30B6 lobby of my status */
+    u8 _pad30B8[0x32BE - 0x30B8];
     u8 chatmode;        /* 0x32BE */
     u8 _pad32BF[0x35D5 - 0x32BF];
     u8 x35D5;           /* 0x35D5 */
@@ -126,6 +138,7 @@ int fade_set();
 int str_stop();
 int kb_chat_in_chk();
 int Name_ID_change();
+int Lbc_ConditionSearch();
 int set_dialog_square();
 int load_pit();
 int load_texlist();

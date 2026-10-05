@@ -419,6 +419,44 @@ int buf;
     return 0;
 }
 
+void plaza_checkMyStatus(void) {
+    int sw = Get_sw2(0) & 0xFFFF;
+    s16 *p;
+    int t;
+    s16 v;
+
+    switch (pNet->step) {
+    case 0:
+        pNet->x24 = 0;
+        pNet->step++;
+        CW->x30B4 = ClassInfo.plaza;
+        CW->x30B6 = ClassInfo.lobby;
+        break;
+    case 1:
+        pNet->x28 = Get_sw_on2(0);
+        t = sw & 0xFFFF;
+        if (t & 0x800) {
+            p = &pNet->x24;
+            if (*p == 0) {
+                *p = 2;
+            } else {
+                *p = *p - 1;
+            }
+            cnWrap_SoundRequest(1);
+        } else if (t & 0x400) {
+            v = pNet->x24 + 1;
+            pNet->x24 = v;
+            if (v > 2) {
+                pNet->x24 = 0;
+            }
+            cnWrap_SoundRequest(1);
+        } else if (t & 0x40) {
+            tl_exit_sub_menu(0);
+        }
+        break;
+    }
+}
+
 int plaza_req_input(a, buf)
 LB_NETW *a;
 int buf;
@@ -457,6 +495,37 @@ int buf;
         return 1;
     }
     return 0;
+}
+
+int getHandleFromID(a)
+LB_NETW *a;
+{
+    switch (a->x04) {
+    case 0:
+        a->x04++;
+        a->x06 = 0;
+    case 1:
+        a->x04++;
+        strcpy(SearchCondition.s, CW->x2F80);
+        SearchCondition.len = strlen(CW->x2F80);
+        SearchCondition.flag = 1;
+        break;
+    case 2:
+        switch (Lbc_ConditionSearch(&SearchCondition, 1)) {
+        case 0:
+            if (SearchResult[0] != 0) {
+                memcpy(CW->x2F80 + 8, SearchResult + 0xC, 0x11);
+                return 0;
+            }
+            SetDialogData(0x29, 3);
+            return 1;
+        case 1:
+            SetDialogData(0x29, 3);
+            return 1;
+        }
+        break;
+    }
+    return 2;
 }
 
 int Lb_checkChatID(id)
