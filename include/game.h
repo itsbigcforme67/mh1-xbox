@@ -24,7 +24,9 @@ typedef struct GAME_W {
     struct EFT_MDLW *area_mdlw[10]; /* 0x0A8 model sets by area (eft07_t, Em_area_ck) */
     u8 _pad0D0;
     u8 master;          /* 0x0D1 player number of the session master */
-    u8 _pad0D2[0x1B2 - 0xD2];
+    u8 _pad0D2[0xD3 - 0xD2];
+    u8 pl_num;          /* 0x0D3 number of players in the session */
+    u8 _pad0D4[0x1B2 - 0xD4];
     u8 x1B2;            /* 0x1B2 set05: kind-2 fixtures fire once set */
     u8 flag1B3;         /* 0x1B3 bit 0 hides set04 on stage 28 */
     u8 _pad1B4[0x1DC - 0x1B4];
@@ -34,11 +36,15 @@ typedef struct GAME_W {
     u8 info_now;        /* 0x1DF set01 message being shown, 0xFF = none */
     u8 _pad1E0[0x1E6 - 0x1E0];
     u8 gate_open;       /* 0x1E6 set20 gate state, set from the quest */
-    u8 _pad1E7[0x210 - 0x1E7];
+    u8 _pad1E7[0x208 - 0x1E7];
+    u8 pl_state[4];     /* 0x208 per player, 1 = in the session (Em_Master_Change) */
+    u8 _pad20C[0x210 - 0x20C];
     u8 shl10_num;       /* 0x210 live shell10s owned by the master player */
     u8 meat_num;        /* 0x211 meat on the spit owned by the master player (eft12) */
     u8 trap_num;        /* 0x212 traps set by the master player (shell12) */
-    u8 _pad213[0x21F - 0x213];
+    u8 _pad213[0x218 - 0x213];
+    s16 x218;           /* 0x218 monster hit points carried over (em02_init) */
+    u8 _pad21A[0x21F - 0x21A];
     u8 info_stop;       /* 0x21F set01 queue paused while set */
     u8 _pad220[0x224 - 0x220];
 } GAME_W;

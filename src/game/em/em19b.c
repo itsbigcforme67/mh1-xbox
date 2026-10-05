@@ -482,7 +482,7 @@ static void em_fly06(EMW *em) {
     case 0:
         em->x388 = 2;
         em->x05++;
-        em->x3B4 = 0.0f;
+        em->rate_x = 0.0f;
         em->adj_y = -5.0f;
         em->adj_z = 0.0f;
         em->x3C0[0] = 0.0f;
@@ -519,9 +519,9 @@ static void em_fly08(EMW *em) {
         em->x05++;
         em_rate_clear(em);
         if (em->x39A & 1) {
-            em->x3B4 = 8.0f;
+            em->rate_x = 8.0f;
         } else {
-            em->x3B4 = -8.0f;
+            em->rate_x = -8.0f;
         }
         em->adj_y = (em->x39A & 7) - 4;
         em->adj_z = ((em->x39A >> 4) & 7) - 4;
@@ -530,8 +530,8 @@ static void em_fly08(EMW *em) {
         } else {
             em_char_set(em, 3, 0, 0);
         }
-        flvecRotY(&em->x3B4, DEG2RAD(ANG2DEG(em->ang[1])));
-        flvecCopy(em->x3C0, &em->x3B4);
+        flvecRotY(&em->rate_x, DEG2RAD(ANG2DEG(em->ang[1])));
+        flvecCopy(em->x3C0, &em->rate_x);
         em->work08 = 3;
         w->x3C = em->work08;
         break;
@@ -651,13 +651,13 @@ static void em_atk01(EMW *em) {
         em->x388 = 2;
         em->x05++;
         em_char_set(em, 0xB, 0, 0);
-        em->x3B4 = 0.0f;
+        em->rate_x = 0.0f;
         em->adj_y = 0.0f;
         em->adj_z = 2.0f;
         em->x3C0[0] = 0.0f;
         em->x3C0[1] = 0.0f;
         em->x3C0[2] = 0.0f;
-        flvecRotY(&em->x3B4, DEG2RAD(ANG2DEG(em->ang[1])));
+        flvecRotY(&em->rate_x, DEG2RAD(ANG2DEG(em->ang[1])));
         break;
     case 1:
         em_rate_add_g(em);
@@ -744,13 +744,13 @@ static void em_atk04(EMW *em) {
         em->x388 = 2;
         em->x05++;
         em_char_set(em, 0xB, 0, 0);
-        em->x3B4 = 0.0f;
+        em->rate_x = 0.0f;
         em->adj_y = 0.0f;
         em->adj_z = 2.0f;
         em->x3C0[0] = 0.0f;
         em->x3C0[1] = 0.0f;
         em->x3C0[2] = 0.0f;
-        flvecRotY(&em->x3B4, DEG2RAD(ANG2DEG(em->ang[1])));
+        flvecRotY(&em->rate_x, DEG2RAD(ANG2DEG(em->ang[1])));
         break;
     case 1:
         em_rate_add_g(em);
