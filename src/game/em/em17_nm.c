@@ -834,7 +834,7 @@ static void em_act14_005DB510(EMW *em, EM17W *w) {
         em->x388 = 0;
         break;
     case 1:
-        if (em17_horm_main(temp_a1) != 0) {
+        if (em17_horm_main(em) != 0) {
             em->x05 += 1;
             em->x3F4 = 0;
             em_char_set(em, 0x6E, 0, 0);
@@ -2313,7 +2313,7 @@ static void em_atk00_005DE2C0(EMW *em, EM17W *w) {
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        if (em17_horm_main(temp_a1) != 0) {
+        if (em17_horm_main(em) != 0) {
             em->x05 += 1;
             em->x388 = 0;
             em->x3F4 = 0;
@@ -2365,7 +2365,7 @@ static void em_atk04_005DE3F0(EMW *em, EM17W *w) {
         em->x388 = 0;
         break;
     case 1:
-        if (em17_horm_main(temp_a1) != 0) {
+        if (em17_horm_main(em) != 0) {
             em->x05 += 1;
             em->x3F4 = 0;
             em_char_set(em, 0x6E, 0, 0);
@@ -2402,7 +2402,7 @@ static void em_atk05_005DE530(EMW *em, EM17W *w) {
         em->x388 = 0;
         break;
     case 1:
-        if (em17_horm_main(temp_a1) != 0) {
+        if (em17_horm_main(em) != 0) {
             em->x05 += 1;
             em->x3F4 = 0;
             em->work08 = 0x78;
@@ -2477,7 +2477,7 @@ static void em_atk07_005DE800(EMW *em, EM17W *w) {
         em->x388 = 0;
         break;
     case 1:
-        if (em17_horm_main(temp_a1) != 0) {
+        if (em17_horm_main(em) != 0) {
             em->x05 += 1;
             em->x3F4 = 0;
             em->work08 = 0x78;

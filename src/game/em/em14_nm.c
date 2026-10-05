@@ -2118,7 +2118,7 @@ static void em_atk00_005B8F00(EMW *em, EM14W *w) {
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        if (em14_horm_main(temp_a1) != 0) {
+        if (em14_horm_main(em) != 0) {
             em->x05 += 1;
             em->x388 = 0;
             em->x3F4 = 0;
@@ -2316,7 +2316,7 @@ static void em_atk26_005B94D0(EMW *em, EM14W *w) {
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        if (em14_horm_main(temp_a1) != 0) {
+        if (em14_horm_main(em) != 0) {
             em->x05 += 1;
             em->x388 = 0;
             em->x3F4 = 0;
@@ -2338,7 +2338,7 @@ static void em_atk27_005B9570(EMW *em, EM14W *w) {
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        if (em14_horm_main(temp_a1) != 0) {
+        if (em14_horm_main(em) != 0) {
             em->x05 += 1;
             em->x388 = 0;
             em->x3F4 = 0;
@@ -2380,7 +2380,7 @@ static void em_atk29_005B9690(EMW *em, EM14W *w) {
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        if (em14_horm_main(temp_a1) != 0) {
+        if (em14_horm_main(em) != 0) {
             em->x05 += 1;
             em->x388 = 0;
             em->x3F4 = 0;
