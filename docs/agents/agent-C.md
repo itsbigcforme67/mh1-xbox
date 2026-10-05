@@ -131,3 +131,14 @@ Fields used straight from EMW in the em files (so common to all monsters):
   - tossin_move: `a > 0xFFC0` / `a <= 0x3F` forms as in the original.
 - Coordinator note: helper functions with address-suffixed names in the
   split (fly_adjy2_subx_...) are file statics; keep them `static`.
+- em15 (0x5CF0F0-0x5D04EC, 13 functions): 12 match, built as em15.c
+  (0x5CF0F0-0x5D0358), rodata 0x688830-0x688940; em15_senkai_pos_no is
+  em08's code, same 2-instruction near-match (em15_nm.c). Lessons:
+  - A run of `==` tests on one byte that jump to the same place, ordered
+    high to low, is a `switch` with stacked case labels (fly 7, stg check).
+  - Address-taken local read after a byte store is reloaded each time in
+    the original when read through a pointer variable (`h = &hit[1]; *h`)
+    and the call result is held first (`d = CalcDistanceXZ(...)` before
+    the tests).
+  - `if ((d = ...) > 5000) ... else if (d < 2500)` with a local d (no reload
+    of the stored field).

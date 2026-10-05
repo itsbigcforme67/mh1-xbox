@@ -76,7 +76,9 @@ typedef struct EMW {
     u8 x388;            /* 0x388 non-zero keeps set20's gate shut */
     u8 _pad389[0x39A - 0x389];
     u16 x39A;           /* 0x39A em16 acts only when it is even */
-    u8 _pad39C[0x3B8 - 0x39C];
+    u8 _pad39C[0x3B0 - 0x39C];
+    struct PLW *x3B0;   /* 0x3B0 target player (em15 fly 33 / atk 2) */
+    u8 _pad3B4[4];
     f32 adj_y;          /* 0x3B8 fly height correction per frame (fly_adjy2_suby) */
     f32 adj_z;          /* 0x3BC (fly_adjy2_subz) */
     u8 _pad3C0[0x444 - 0x3C0];
@@ -106,7 +108,9 @@ typedef struct EMW {
     u8 x829;            /* 0x829 em08_senkai_pos_no result */
     u8 _pad82A[0x839 - 0x82A];
     u8 x839;            /* 0x839 set by em14 move action 1 */
-    u8 _pad83A[0x878 - 0x83A];
+    u8 _pad83A[0x84D - 0x83A];
+    u8 x84D;            /* 0x84D (em15 fly 11) */
+    u8 _pad84E[0x878 - 0x84E];
     struct EFTW *tail;  /* 0x878 cut-tail effect (eft09_set) */
     u8 _pad87C[0x881 - 0x87C];
     u8 x881;            /* 0x881 target kind, 0 none (1 and 7 seen; 0x934 = its position) */
@@ -129,7 +133,9 @@ typedef struct EMW {
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
     u8 _pad95A[0x9EA - 0x95A];
     s8 x9EA;            /* 0x9EA trap state (shell12_m) */
-    u8 _pad9EB[0xA10 - 0x9EB];
+    u8 _pad9EB[0x9F3 - 0x9EB];
+    u8 x9F3;            /* 0x9F3 0: em15 fly 24 falls back to act 0/7 */
+    u8 _pad9F4[0xA10 - 0x9F4];
 } EMW;
 
 extern EMW em_work[];
