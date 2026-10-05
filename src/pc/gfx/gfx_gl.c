@@ -27,7 +27,7 @@ static struct {
     SDL_Window *win;
     SDL_GLContext ctx;
     int w, h;
-    float view[16], proj[16], world[16];
+    float view[16], proj[16], world[16], texmat[16];
     uint32_t fade;               /* 0xAARRGGBB, 0xFFFFFFFF = none */
     gfx_texture *tex;
 } G;
@@ -61,6 +61,7 @@ int gfx_init(int width, int height, const char *title, int hidden)
     memcpy(G.view, ident, sizeof ident);
     memcpy(G.proj, ident, sizeof ident);
     memcpy(G.world, ident, sizeof ident);
+    memcpy(G.texmat, ident, sizeof ident);
     G.fade = 0xFFFFFFFFu;
 
     glViewport(0, 0, width, height);
@@ -167,6 +168,9 @@ void gfx_set_render_state(int state, uintptr_t v)
     case GFX_RS_VIEW:
         memcpy(G.view, (const float *)v, sizeof G.view);
         break;
+    case GFX_RS_TEXMAT:
+        memcpy(G.texmat, v ? (const float *)v : ident, sizeof G.texmat);
+        break;
     case GFX_RS_WORLD:
         memcpy(G.world, (const float *)v, sizeof G.world);
         break;
@@ -247,6 +251,8 @@ void gfx_execute_clay(gfx_clay *c)
                 c->drawcol[4 * i + k] = (uint8_t)(c->col[4 * i + k] * f[k] / 255);
         col = c->drawcol;
     }
+    glMatrixMode(GL_TEXTURE);
+    glLoadMatrixf(G.texmat);       /* fl 0x19: UV scroll (set14) */
     glMatrixMode(GL_PROJECTION);
     glLoadMatrixf(G.proj);
     glMatrixMode(GL_MODELVIEW);

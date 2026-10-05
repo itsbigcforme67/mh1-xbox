@@ -112,33 +112,19 @@ Still assembly:
 - graphics.md 7a: cpit1xb/cpit2xb decoded (cpit2xb = real Xbox buttons).
 - Wii FPK LZ: still not cracked (two short attempts).
 
-## Assignment 6: native host for game C (5 Oct 2026) - PAUSED by owner
-Where I stopped:
-- Build approach chosen: 32-bit native build (`gcc -m32`), same pointer
-  size as the PS2 game C and the original Xbox. No root needed:
-  tools/setup_pc32.sh `apt-get download`s libc6-dev-i386 + lib32gcc-13-dev
-  into build/sysroot32 (gitignored); the i386 runtime libs (libc6, SDL2,
-  libGL) are already installed here. With root this equals
-  `sudo apt install gcc-multilib`. Verified: the current viewer builds
-  32-bit with
-  `gcc -m32 -idirafter /usr/include/x86_64-linux-gnu -idirafter $SR/usr/include/x86_64-linux-gnu -B$SR/usr/lib32 -B$G -L$SR/usr/lib32 -L$G -L$SR/lib ... -lSDL2 -lGL -lm`
-  (SR=build/sysroot32, G=$SR/usr/lib/gcc/x86_64-linux-gnu/13/32) and
-  `--shot` renders the same stage-4 picture (build/show/pc32_test.png).
-  tools/build_pc.sh is not changed yet.
-- First game-logic slice picked: set14 (src/game/set/set14.c + set14_trans
-  from set14_nm.c). On stage 4 it scrolls the UVs of the st04_1 set-model
-  waterfall cards (layers 1 and 3 per set14_st04_mask_tbl, clays from
-  st04_mdl_tbl, placed at 11060,0,1566). Its data tables are main sdata
-  (0x389AD8.., config/symbols/main.txt) and game.bin data (overlay vram
-  0x533980, file disc/mh1/overlays/game.bin): plan is a host "data import"
-  table that fills host arrays from the ELF/overlay at start-up.
-  set09 spawns nothing on stage 4 (controller), so it is a second choice.
-Next:
-1. tools/build_pc.sh: add a 32-bit mode using the flags above.
-2. src/pc/rt/: flSetRenderState -> gfx states (0x19 texture matrix,
-   0x1A world, 0x60, 0x67, 0x6C), flExecuteClay over fl_model parts,
-   flmat*, prim pool + ordering tables (ot0..ot3) walking trans(),
-   pull/push_set_work, ran_suu, se_req* stubs, game_w/stage_work/set_mdlw.
-3. Compile set14 with the game's include/ and run it in the viewer;
-   two --shot frames should show the waterfalls scrolling.
-4. docs/pc.md + DECISIONS "Open" entry for the 32-bit choice.
+## Assignment 6: native host for game C (5 Oct 2026)
+Done (commit "PC port runtime: run decompiled set14 natively"):
+- 32-bit build: tools/build_pc.sh uses gcc-multilib if `gcc -m32` links,
+  else the build/sysroot32 from tools/setup_pc32.sh (relative paths: the
+  checkout path has spaces). DECISIONS "Open" entry written.
+- src/pc/rt/ (rt.h, rt_mem.c, rt_data.c, rt_game.c, rt_fl.c): see
+  docs/pc.md "Port runtime". set14_nm.c compiles unchanged with -Iinclude
+  and runs; st04 waterfalls scroll (shots build/show/rt_set14_1.0/1.5.png
+  differ only in the waterfall/mist pixels).
+- game.bin in AFS_DATA is stored raw (fmt_afs_read, not fmt_afs_load).
+- Static asserts confirm PLW 0xA00, GAME_W 0x224, CLAY 0x8C under -m32.
+Where I stopped / next ideas:
+1. More game C on the runtime: other set*.c for stage 4 (set09 controller
+   spawns nothing there), or eft/shell files with few dependencies.
+2. Real stage set spawn list instead of calling set14_set() by hand.
+3. clay_attr_set: map the 0xF0000 attribute chunk to gfx states.

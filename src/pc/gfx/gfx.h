@@ -44,6 +44,7 @@ enum {
     GFX_RS_FOG_END      = 0x11,  /* value: float* */
     GFX_RS_FOG_ENABLE   = 0x12,  /* value: 0 off, else on (fl: fog type) */
     GFX_RS_VIEW         = 0x17,  /* value: const float[16], row vectors */
+    GFX_RS_TEXMAT       = 0x19,  /* value: const float[16] applied to (s,t,0,1); NULL = identity */
     GFX_RS_WORLD        = 0x1A,  /* value: const float[16] (flMATRIX[0]) */
     GFX_RS_ALPHA_REF    = 0x60,  /* value: 0-255, alpha test GREATER ref */
     GFX_RS_FADE_COLOR   = 0x67,  /* value: 0xAARRGGBB multiplied into every vertex */
