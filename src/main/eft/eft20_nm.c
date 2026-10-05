@@ -3,7 +3,7 @@
  * drafts and the asm, believed equivalent; not yet register/order-matched,
  * see docs/agents/agent-D.md). Also holds copies of eft20_d/e (they match;
  * the built copies are in eft20b.c).
- eft20b - SLPM_654.95 0x0021A950-0x0021A9E8: eft20_d / eft20_e.
+ * eft20b - SLPM_654.95 0x0021A950-0x0021A9E8: eft20_d / eft20_e.
  * Part of eft20 (whole file 0x00218590-0x0021D464). Monster dust and debris (30
  * types, arg): up to eft20_num[arg] pieces (0x30 bytes) per effect, placed by
  * eft20_pos_set from the monster's kind and joints, or at a player's foot

@@ -135,3 +135,10 @@ jump tables, /tmp/claude-1000/agentD/jdraft_main.py) checked against the
 asm by hand, and compiles. Not verified at runtime. Calls into game.bin
 by address: func_628690 (shell01_set2), func_628750 (shell01_set3),
 func_629C20 (shell04_set2).
+eft13_nm.c (not built) holds C for the five eft13 functions still in asm:
+eft13_i (468/483 differ), eft13_m (608/672), eft13_set_pos (598/648),
+eft13_set_sub_em (269/349), eft13_set_pos_em (628/695). Notable: in
+eft13_m a piece marked 0xFF ends the whole update (`return`, not
+`continue`), and in set_sub_em / set_pos_em case 19 falls through into
+case 20 (both checked in the asm). game.bin calls by address:
+func_53FDF0 (Eft17_set_ex), func_628690, func_62A2C0 (shell05_set3).
