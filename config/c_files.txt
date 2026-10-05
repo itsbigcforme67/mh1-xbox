@@ -225,6 +225,8 @@ main 0x00134C20 0x00134E68 pl/pl01
 main 0x00134F30 0x00135078 pl/pl02
 main 0x001359C0 0x00135B00 pl/pl03
 main 0x0015C210 0x0015C6A4 stage/f_stage
+main 0x0015C6B0 0x0015C93C stage/f_stageb
+main 0x0015CCE0 0x0015CD84 stage/f_stagec
 main 0x00134950 0x00134A34 pl/pl04
 main 0x00135080 0x001359C0 pl/pl05
 main:rodata 0x0035A790 0x0035A7A8 pl/pl05
