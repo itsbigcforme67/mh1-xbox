@@ -225,7 +225,7 @@ segments:
       - [0x064D60, c, weapon/weapon2]
       - [0x064F68, asm, text/pl_item_trans_sub]
       - [0x068EA0, c, weapon/weapon3]
-      - [0x0691B4, asm, text/plplAdd2]
+      - [0x069228, asm, text/prim_init_sub]
       - [0x069230, c, prim/prim_init]
       - [0x069300, asm, text/g_get_prim_ptr]
       - [0x0698B0, c, sys/vib]

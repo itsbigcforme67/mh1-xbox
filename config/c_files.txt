@@ -316,7 +316,7 @@ main 0x002227A0 0x00222E20 cam/camg
 main 0x00163AB0 0x00163D20 weapon/trans
 main 0x00163E40 0x0016440C weapon/weapon
 main 0x00164D60 0x00164F68 weapon/weapon2
-main 0x00168EA0 0x001691B4 weapon/weapon3
+main 0x00168EA0 0x00169228 weapon/weapon3
 main 0x00223E90 0x00223F8C cam/camr2
 main 0x00223F90 0x00223FDC cam/camr1
 main 0x00224790 0x002248B8 cam/camr4

@@ -472,3 +472,29 @@ grid, 8 unit margin), BlockPlaceCgeck (quadrant of a cell), GetGroundTblAdrs /
 GetWallTblAdrs (cell list for a position).
 Sphere/capsule tests between entities (hit2*.c, hit_*_m) are separate: they
 take plain vectors and need no stage data.
+
+# Fourth assignment (drawing code: player_trans, enemy_trans, shell08_trans)
+
+Every function of 0x163D20-0x169228 already had C (weapon_nm.c, weapon3_nm.c,
+see above). This round:
+- plplAdd2 (0x1691C0) now MATCHES and is linked in weapon3.c (range extended to
+  0x169228, main OK). Lesson: write the list node as a struct (`PLN {u32 next;
+  f32 key;}`) and the two "insert" tails twice (`if (v == 0 || !(v & 1)) {ins;
+  return;}` then `if (w->key <= n->key) {ins; return;}`); with plain u32/f32
+  casts the compiler hoists n+4 out of the loop.
+- enemy_trans (weapon3_nm.c): declaration-order move search (greedy, script
+  in /tmp, not kept) took it from 165 to 129 of 228 differing; `int n` (not s16)
+  removes the extra sign extension. Rest is register allocation; parked.
+- trans_pl_sub/Lb_trans_pl/Ed_trans_pl: five more source shapes tried (empty
+  then, else, &&, goto, trailing return): all still 10/23. Parked.
+- shell08_trans (0x6309A0, game.bin, 6320 bytes): C written for the whole
+  function at the end of src/game/shell/shell08_nm.c (not built). Same size as
+  the original, 1544/1580 instructions differ (registers, block order). Read
+  from the asm because m2c needs the jump table (switch on sh->arg, 12 cases)
+  and drops float arguments. Meaning per sh->arg: 0/11 ring + glow (3 + 1
+  particles), 1 flash cone, 2/3/9 puffs, 4 smoke (3 particles, mode sh->x05),
+  5 billboard, 6 shards, 7 streaks (p is not advanced for p->no == 1), 8
+  thunder (its "loop" runs once). Guesses: the names. Clay offsets in the
+  original are byte offsets, here clay indices (offset / 0x8C).
+  Uninitialised-register reads in the original (clay index of kinds 6/7/8 in
+  rare modes) are given defaults (5, 1).
