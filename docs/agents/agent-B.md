@@ -523,3 +523,26 @@ Lessons (each confirmed by a match):
 - check.py ignores relocation addends: burst[7] vs burst[9] (0xF34 vs 0xF7C) and rseq vs rseq2 only showed in the rebuild.
 - Register colouring at the start of a function (em saved in s1 before the loads of player_work/x05, vs after in the original):
   npcPigSLEEP/TOPL/WALK2 and ReadXAllocation are still open; declaration order, scoped locals and extra K&R params did not help.
+
+# Lobby UI (agent B): src/lobby/lb/lbui_nm.c, include/lbui.h (0x590D40-0x59DB40, plaza/dialog UI)
+Started the UI region: ~55 functions written and linked (lbui*.c runs): dialog data/titles/help line setters, tl_menu cursors,
+plaza_backToServer/checkChatLog/logOut/ReibunEdit/checkMyStatus, chat id lists, mail/comment/request input, page numbers,
+scene titles, SetDialogData, plaza_selectMenu (5 instrs off, parked) ... Not started: Lb_eat/event_eat_* (0x590D40-0x591600), Draw_menu_square,
+draw_dialog_square, DispDialogData, DispButtonHelp/put_button_help, plaza_enterLobby/movePlaza (+Trans), plaza_searchAll/Member,
+plaza_mailBox(+Trans), plaza_setChatMode(+Trans), Plaza_add_friend, plaza_checkFriend (3.7 KB), disp_status, put_member_info, Lb_put_new_mail.
+Parked near-matches: set_dialog_square (36, op order), plaza_selectMenu (5, `addu` operand order), plaza_chatMain (1), plaza_setMyComment (14),
+Lb_addChatMember (56), Lb_clearChatMember (20).
+Data structs (guesses): LB_NETW (pNet window state: idx/depth 2/step 3/x04/x05/x06/sel 7/menu 8/cur 9/x0C/x10/x24/x26/x28), LB_CW (cw chat work, accessed
+through the CW macro because lobby.h declares cw as u8 *), LB_DIALOG, LB_TXT (x,y,string entries of text_lobby_msg), LB_SCOND, LB_PINFO.
+More lessons (each confirmed by a match):
+- A string literal shared by many functions of the original (lit_193_0065DBE8 "%s%s") must NOT be compiled into the run objects (each object
+  would get its own copy and everything after shifts): declare `extern char lit_...[]` and keep the string in the asm data.
+- Repeated `return 0;` in a switch is not in the source when the original has ONE `daddu v0,zero,zero` at the end: use `break` and a single
+  final `return 0;`, with only the special cases (`return 1;`) inside (mail_input, my_comment_input, getHandleFromID `return 2` after the switch).
+- A pointer loaded in each branch (`n = pNet;` repeated in the if and the else) is CSE'd at the merge point in the original; a single hoisted
+  `n = pNet` is scheduled too early (lb_chatMemberCheck).
+- `x >= 2` on a u8 global: write `x > 1`; `if ((u16)sw & 0x20)` gives andi 0xFFFF + andi; `s16 v = x24 + 1; x24 = v; if (v > 2)`.
+- Unprototyped callees take stale extra arguments (disp_status has 8 args: a4..a7 are my_user_mini_data, pNet->x24, 3, D_3C73B4); Draw_menu_square(x,y,w,h,flag,color)
+  ends with 1, 0xFF2A0000 (window) or 0, 0 (Tex variant).
+- Static (LOCAL in docs/survey/mh1_symbols.csv) helpers: tl_menu_cursor_up/down are static so plaza_selectMenu reads a stale t1 after calling them.
+- Integer arithmetic `master + (int)cw + 0x2BFE` fixes the operand order of the addu that `cw[...]` produces the other way round.
