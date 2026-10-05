@@ -35,6 +35,22 @@ static fmt_blob load(const char *name, uint8_t **keep)
     return b;
 }
 
+/* File of a stage from one of the per-stage AFS index tables in main
+ * (stage.md 1: 88 x s32, -1 = none), Meltw-decompressed. */
+static fmt_blob load_stage_file(uint32_t table, int stage, uint8_t **keep)
+{
+    fmt_blob none = { NULL, 0 };
+    const uint8_t *p = rt_addr(table + 4 * (uint32_t)stage, 4);
+    int32_t idx;
+    *keep = NULL;
+    if (!p || stage < 0 || stage >= 88)
+        return none;
+    memcpy(&idx, p, 4);
+    if (idx < 0 || (uint32_t)idx >= afs.count)
+        return none;
+    return load(afs.name[idx], keep);
+}
+
 /* PS2 addresses (ELF / overlay) are looked up through the runtime. */
 static const uint8_t *elf_addr(uint32_t va)
 {
@@ -299,7 +315,7 @@ int main(int argc, char **argv)
     static const int parts[HUNTER_PARTS] = { 1, 0, 1, 1, 1, 1 };
     float hx = 10900, hz = 7700, rx = 10000, rz = 6700, gy;
     Uint32 t0;
-    int set_h0 = -1, ticks = 0;
+    int set_h0 = -1, ticks = 0, stage_no = 4, cam_given = 0;
 
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shot") && i + 1 < argc) shot = argv[++i];
@@ -307,12 +323,13 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--time") && i + 1 < argc) fixed_time = (float)atof(argv[++i]);
         else if (!strcmp(argv[i], "--size") && i + 1 < argc) sscanf(argv[++i], "%dx%d", &W, &H);
         else if (!strcmp(argv[i], "--cam") && i + 1 < argc)
-            sscanf(argv[++i], "%f,%f,%f,%f,%f", &cam[0], &cam[1], &cam[2], &cam[3], &cam[4]);
+            cam_given = sscanf(argv[++i], "%f,%f,%f,%f,%f", &cam[0], &cam[1], &cam[2], &cam[3], &cam[4]) > 0;
+        else if (!strcmp(argv[i], "--stage") && i + 1 < argc) stage_no = (int)strtol(argv[++i], NULL, 0);
         else if (argv[i][0] != '-') disc = argv[i];
     }
     if (!disc) {
         fprintf(stderr, "usage: %s DISC_DIR [--shot out.png] [--frames N] [--time S] "
-                "[--size WxH] [--cam x,y,z,yaw,pitch]\n", argv[0]);
+                "[--size WxH] [--cam x,y,z,yaw,pitch] [--stage N]\n", argv[0]);
         return 1;
     }
     snprintf(path, sizeof path, "%s/AFS_DATA.AFS", disc);
@@ -332,12 +349,43 @@ int main(int argc, char **argv)
     if (gfx_init(W, H, "MH1 PC viewer", shot != NULL) != 0)
         return 1;
 
-    /* stage 4: area model + set model (stage.md 1), ground collision */
-    stage_link = load("st04_amh.bin", &keep[0]);
-    stage_tex = load("st04_tex.bin", &keep[1]);
-    set_link = load("st04_1_amh.bin", &keep[2]);
-    set_tex = load("st04_1_tex.bin", &keep[3]);
-    hit = load("lg004.bin", &keep[4]);
+    /* the stage's area model + set model (stage.md 1), ground collision,
+     * found through main's per-stage tables (stage 4 = st04, st04_1, lg004) */
+    stage_link = load_stage_file(0x2EC950, stage_no, &keep[0]);   /* stage_model_data */
+    stage_tex = load_stage_file(0x2EDB40, stage_no, &keep[1]);    /* STAGE_TEX */
+    set_link = load_stage_file(0x2ECD70, stage_no, &keep[2]);     /* set_model_data */
+    set_tex = load_stage_file(0x2EF130, stage_no, &keep[3]);      /* SET_TEX */
+    hit = load_stage_file(0x2ECAB0, stage_no, &keep[4]);          /* stage_hit_data_f */
+    if (stage_no != 4) {
+        /* no hand-picked spots: stand the actors and the camera at the
+         * middle of the walkable ground */
+        float sx = 0, sz = 0, x, z, y;
+        int cnt = 0;
+        for (x = -30000; x <= 30000; x += 500)
+            for (z = -30000; z <= 30000; z += 500)
+                if (fmt_hits_ground_y(hit, x, z, 1e6f, &y, FMT_LE)) {
+                    sx += x;
+                    sz += z;
+                    cnt++;
+                }
+        if (cnt) {
+            sx /= cnt;
+            sz /= cnt;
+        }
+        hx = sx;
+        hz = sz;
+        rx = sx - 900;
+        rz = sz - 1000;
+        if (!cam_given) {
+            y = 0;
+            fmt_hits_ground_y(hit, sx, sz + 2500, 1e6f, &y, FMT_LE);
+            cam[0] = sx;
+            cam[1] = y + 600;
+            cam[2] = sz + 2500;
+            cam[3] = 0;
+            cam[4] = -0.15f;
+        }
+    }
     if (!stage_link.p || fl_model_create(&stage, fmt_link_entry(stage_link, 0, FMT_LE),
                                          fmt_link_entry(stage_link, 1, FMT_LE), stage_tex, 0, FMT_LE) != 0) {
         fprintf(stderr, "stage load failed\n");
@@ -357,7 +405,7 @@ int main(int argc, char **argv)
         }
         set_h0 = rt_bind_set_model(c, at, nc);
     }
-    rt_game_init(4);
+    rt_game_init(stage_no);
 
     if (monster_load(&rathian, "em01_amh.bin", "em01_tex.bin", "em01_tbl.bin", 3) != 0)
         fprintf(stderr, "em01 load failed\n");
