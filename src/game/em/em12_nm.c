@@ -33,6 +33,13 @@ typedef struct QUEST_W {
 extern QUEST_W quest_w;
 extern GAME_W game_w;
 extern f32 em12_scale_tbl[];
+FLMAT *get_joint_wmat_em(EMW *, int);
+void flmatCopy(FLMAT *, FLMAT *);
+void flvecApplyMat33_2(f32 *, FLMAT *);
+f32 flSqrt(f32);
+f32 flArcTan2(f32, f32);
+void Eft02_set4(f32, int, int, int, f32 *);
+int Event_flag_ck(int);
 extern f32 st45_pos_tbl[][6];
 extern f32 st49_pos_tbl_0065BBC0[][6];
 extern f32 st51_pos_tbl_0065BC20[][6];
@@ -1357,5 +1364,258 @@ static void em_move05_005B2F10(EMW *em) {
     case 1: em_die00_005B24F0(em, 1); break;
     case 2: em_die01_005B2A60(em); break;
     case 3: em_die_rev_005B2B70(em); break;
+    }
+}
+
+void em12_blood_req(EMW *em, int unused, f32 f) {
+    f32 v[3];
+    f32 p[3];
+    FLMAT m;
+    int a;
+
+    v[0] = -55.0f * em->scale[0];
+    v[1] = em->scale[1] * (f * (f32)(((u16)ran_suu(1) & 0x3F) - 0x20));
+    v[2] = em->scale[2] * (f * (f32)(((u16)ran_suu(1) & 0x7F) - 0x20));
+    flmatCopy(&m, get_joint_wmat_em(em, 2));
+    flvecApplyMat33_2(v, &m);
+    p[0] = m[3][0] + v[0];
+    p[1] = m[3][1] + v[1];
+    p[2] = m[3][2] + v[2];
+    v[0] = -1.0f;
+    v[1] = -0.2f;
+    v[2] = 0.0f;
+    flvecApplyMat33_2(v, &m);
+    a = (u16)-(u16)(s32)(0.5f + 65536.0f * flArcTan2(v[1], flSqrt(v[0] * v[0] + v[2] * v[2])) / 6.2831855f);
+    Eft02_set4(f, a, (u16)(s32)(0.5f + 65536.0f * flArcTan2(v[0], v[2]) / 6.2831855f), 3, p);
+}
+
+static void em_demo00_005B3180(EMW *em) {
+    em->x40E = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        if (em->char0 != 0x425) {
+            em_char_set(em, 0x3D, 0, 0);
+        }
+        em->x8BD = 1;
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em_act_set(em, 6, 1);
+        }
+        break;
+    }
+}
+
+static void em_demo01_005B3220(EMW *em) {
+    f32 v[3];
+
+    if (!(*(u16 *)&game_w.x1E & 3)) {
+        em12_blood_req(em, 0, 0.8f);
+    }
+    em->x40E = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        if (em->char0 != 0x427) {
+            em_char_set(em, 0x3F, 0, 0);
+        }
+        em->x8BD = 1;
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 30.0f) == 0 && em->x1C4 == 0) {
+            EM12_WALK(em, v, 21.428572f);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+        }
+        break;
+    case 2:
+        break;
+    }
+}
+
+static void em_demo02_005B33B0(EMW *em) {
+    EMW *t;
+
+    em->x40E = 5;
+    if (!(*(u16 *)&game_w.x1E & 3)) {
+        em12_blood_req(em, 0, 0.6f);
+    }
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        if (em->char0 != 0x428) {
+            em_char_set(em, 0x40, 0, 0);
+        }
+        em->x8BD = 1;
+        break;
+    case 1:
+        t = em->x944;
+        if (t != 0) {
+            if (t->kind == 1 || t->kind == 0xB) {
+                if (t->mode != 6) {
+                    em_act_set(em, 6, 3);
+                }
+            }
+        }
+        break;
+    }
+}
+
+static void em_demo03_005B34A0(EMW *em) {
+    EMW *t;
+
+    em->x40E = 5;
+    em->x839 = 0;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        if (em->char0 != 0x429) {
+            em_char_set(em, 0x41, 0, 0);
+        }
+        em->x8BD = 1;
+        break;
+    case 1:
+        if (!(*(u16 *)&game_w.x1E & 3)) {
+            em12_blood_req(em, 0, 0.3f);
+        }
+        t = em->x944;
+        if (t != 0) {
+            if (t->kind == 1 || t->kind == 0xB) {
+                if (t->mode != 6) {
+                    em->act_spd = 0.0f;
+                }
+            }
+            if (Event_flag_ck(0xE) == 1) {
+                em->x05++;
+                em->x302 = 0;
+                em->act_spd = 1.0f;
+                em_act_set(em, 5, 0);
+            }
+        }
+        break;
+    }
+}
+
+static void em_demo04_005B35D0(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->act_spd = 1.0f;
+        em_char_set(em, 1, 0, 0);
+        break;
+    case 1:
+        if (Event_flag_ck(0xE) == 1) {
+            em12_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_demo05_005B3660(EMW *em) {
+    em->x40E = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->act_spd = 1.0f;
+        em_char_set(em, 1, 0, 0);
+        em->pos[0] = 17788.5f;
+        em->pos[1] = 0.0f;
+        em->pos[2] = 17468.301f;
+        em->ang[1] = 0x63FF;
+        break;
+    case 1:
+        break;
+    }
+}
+
+void em_demo06(EMW *em) {
+    em->x9E1 = 5;
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 1, 0, 0);
+        em->x01 = 0;
+        em->x839 = 0;
+        break;
+    case 1:
+        if (Event_flag_ck(0x10) == 1) {
+            em->x05++;
+            em->x01 = 1;
+            em12_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_move06_005B3790(EMW *em) {
+    switch (em->x15) {
+    case 0: em_demo00_005B3180(em); break;
+    case 1: em_demo01_005B3220(em); break;
+    case 2: em_demo02_005B33B0(em); break;
+    case 3: em_demo03_005B34A0(em); break;
+    case 4: em_demo04_005B35D0(em); break;
+    case 5: em_demo05_005B3660(em); break;
+    case 6: em_demo06(em); break;
+    }
+}
+
+static void em_revival00_005B3840(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em_char_set(em, 0xD, 0, 0);
+        em->work08 = 0x64;
+        break;
+    case 1:
+        em->x798 += 0.01f;
+        if (!(em->x798 <= 1.0f)) {
+            em->x798 = 1.0f;
+        }
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em12_next_act_set(em);
+            em->x9E1 = 0;
+            em->x798 = 1.0f;
+        }
+        break;
+    }
+}
+
+static void em_revival01_005B3910(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em_char_set(em, 0xB, 0, 0);
+        em->work08 = 0x64;
+        break;
+    case 1:
+        em->x798 += 0.01f;
+        if (!(em->x798 <= 1.0f)) {
+            em->x798 = 1.0f;
+        }
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em12_next_act_set(em);
+            em->x9E1 = 0;
+            em->x798 = 1.0f;
+        }
+        break;
+    }
+}
+
+static void em_move07_005B39E0(EMW *em) {
+    em->x40C = 10;
+    em->x40E = 10;
+    em->x9E1 = 5;
+    switch (em->x15) {
+    case 0: em_revival00_005B3840(em); break;
+    case 1: em_revival01_005B3910(em); break;
     }
 }

@@ -311,7 +311,7 @@ typedef struct EMW {
     f32 act_spd;        /* 0x930 animation speed, 1.0 set by every em*_act_set (guess) */
     f32 tgt_pos[3];     /* 0x934 target position (CalcDistanceXZ/Em_Calc_angY from pos) */
     struct EM_AREA *area; /* 0x940 per-stage data (em08_senkai_pos_no) */
-    u8 _pad944[0x948 - 0x944];
+    struct EMW *x944;   /* 0x944 (em12 demo: the monster / player it watches) */
     u8 x948;            /* 0x948 */
     u8 x949;            /* 0x949 */
     s16 stay_tm;        /* 0x94A from emNN_stay_timer_tbl[stg] (local_area_move_init) */
