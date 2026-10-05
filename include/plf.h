@@ -221,4 +221,5 @@ void tame_release(PLW *);
 void tame_cnt_up(PLW *);
 void tame_com_ck(PLW *);
 f32 flCos(f32);
+s32 lance_kan_ck(PLW *);
 #endif
