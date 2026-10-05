@@ -1,6 +1,8 @@
+/* lb_bz141 - lobby UI/client 0x005BB8D0-0x005BB994: Lbc_DownloadQuest (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern s32 mission_area;
 extern char CallBack_Result_ReadFileDownload[];
+
 s32 Lbc_DownloadQuest(void) {
     s32 temp_a0;
     u8 temp_v1_2;
@@ -16,12 +18,10 @@ s32 Lbc_DownloadQuest(void) {
         CallBackWaitInit(temp_a0);
         F(s8, (u8 *)cw, 0x2C45) = 0xC;
         cnLBS_Read_FileDownload(mission_area, &CallBack_Result_ReadFileDownload);
-block_12:
-    default:
-        return 2;
+        break;
     case 1:
         Check_CallBackWait(temp_a0);
-        goto block_12;
+        break;
     case 2:
         F(u8, temp_v1, 0x2C35) = 0U;
         return 0;
@@ -29,4 +29,5 @@ block_12:
         F(u8, temp_v1, 0x2C35) = 0U;
         return 1;
     }
+    return 2;
 }

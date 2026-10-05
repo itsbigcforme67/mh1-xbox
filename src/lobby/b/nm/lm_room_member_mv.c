@@ -84,9 +84,6 @@ block_11:
                 }
             }
         }
-block_49:
-    default:
-        return var_s2;
     case 1:
         temp_s0_2 = var_s2 & 0xFFFF;
         if ((temp_s0_2 & 0x40) || (F(u8, temp_a3, 0xC) == 0xFF)) {
@@ -112,7 +109,7 @@ block_49:
                 }
             }
         }
-        goto block_49;
+        break;
     case 2:
         if (F(u8, temp_a3, 0xC) == 0xFF) {
             F(u8, temp_a3, 9) = (u8) (temp_a0 + 1);
@@ -132,4 +129,5 @@ block_49:
         }
         return 0;
     }
+    return var_s2;
 }

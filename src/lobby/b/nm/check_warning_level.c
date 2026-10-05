@@ -15,9 +15,6 @@ s32 check_warning_level(s32 arg0) {
         if (F(u8, &CnetWork, 5) == 0) {
             return 1;
         }
-block_31:
-    default:                                        /* switch 1 */
-        return 0;
     case 2:                                         /* switch 1 */
         if (F(u8, &CnetWork, 5) == 0) {
             return 1;
@@ -25,7 +22,7 @@ block_31:
         if (F(u8, &CnetWork, 5) == 3) {
             return 1;
         }
-        goto block_31;
+        break;
     case 3:                                         /* switch 1 */
         switch (F(u8, &CnetWork, 5)) {    /* switch 2; irregular */
         case 0:                                     /* switch 2 */
@@ -49,4 +46,5 @@ block_31:
         }
         break;
     }
+    return 0;
 }

@@ -37,6 +37,5 @@ void lbc_login_reguration(void) {
         return;
     case 3:
         Check_CallBackWait(temp_a1, temp_a2, temp_a3);
-        return;
     }
 }

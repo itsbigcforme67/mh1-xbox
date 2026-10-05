@@ -1,10 +1,11 @@
+/* lb_bz137 - lobby UI/client 0x005B73D0-0x005B7430: Lbc_connect (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 
 void Lbc_connect(void) {
     s32 var_s0;
 
-    var_s0 = 0;
     if (Online_ck() == 1) {
+        var_s0 = 0;
 loop_2:
         if (cnLBS_RecvData(*(s32 *)0x4E36F4) == 1) {
             var_s0 += 1;

@@ -40,6 +40,5 @@ void server_select_sub_03(ARG_server_select_sub_03_arg0 *arg0) {
             str_play_vol(0, 0x47, 0x3C);
             *(u8 *)0x3F3415 = 0x47;
         }
-        return;
     }
 }

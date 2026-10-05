@@ -41,9 +41,6 @@ s32 getFriendNow(int arg0, u8 arg1, int arg2) {
             }
             F(s8, &SearchCondition, 1) = strlen(temp_s0 + (temp_a0 * 0x30));
             F(s8, &SearchCondition, 0) = 1;
-block_21:
-        default:
-            return 2;
         }
 block_8:
         F(u8, arg0, 4) = 0U;
@@ -51,7 +48,7 @@ block_8:
     case 2:
         temp_v0 = Lbc_ConditionSearch(&SearchCondition, 1, temp_a2, temp_a3_2);
         if ((temp_v0 != 1) && (temp_v0 != 0)) {
-            goto block_21;
+            break;
         }
         temp_v1_2 = (int)SearchResult;
         if ((*(u8 *)temp_v1_2) != 0) {
@@ -68,6 +65,7 @@ block_8:
             return 0;
         }
         F(u8, arg0, 4) = (u8) (F(u8, arg0, 4) - 1);
-        goto block_21;
+        break;
     }
+    return 2;
 }

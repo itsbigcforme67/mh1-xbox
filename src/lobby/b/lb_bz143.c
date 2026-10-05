@@ -1,6 +1,8 @@
+/* lb_bz143 - lobby UI/client 0x005C2180-0x005C2278: id_select_02 (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern s8 ret_stat_0038A900;
 typedef struct { u8 pad0000[0x2]; s8 x0002; u8 x0003; u8 pad0004[0x8]; s8 x000C; } ARG_id_select_02_arg0;
+
 void id_select_02(ARG_id_select_02_arg0 *arg0) {
     s32 temp_v0;
     u8 temp_a0;
@@ -32,6 +34,5 @@ void id_select_02(ARG_id_select_02_arg0 *arg0) {
         if ((Fade_busy_ck(temp_a0, 1) & 0xFF) != 1) {
             ret_stat_0038A900 = 0;
         }
-        return;
     }
 }

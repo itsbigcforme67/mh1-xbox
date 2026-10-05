@@ -12,6 +12,5 @@ void lb_npc_ef_move(int arg0) {
         return;
     case 1:
         ef_move_sub_005C49F0(temp_a1, temp_a2);
-        return;
     }
 }

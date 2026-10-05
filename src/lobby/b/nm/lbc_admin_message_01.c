@@ -32,6 +32,5 @@ void lbc_admin_message_01(void) {
             F(u8, temp_a0, 0x2F6E) = (u8) (F(u8, temp_a0, 0x2F6E) + 1);
             F(u8, (u8 *)cw, 0x2F6F) = 0U;
         }
-        return;
     }
 }

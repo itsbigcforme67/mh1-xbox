@@ -1,5 +1,7 @@
+/* lb_bz140 - lobby UI/client 0x005BA480-0x005BA544: lbc_in_plaza_00 (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern char CallBack_Result_Plaza_ReadLobbyAllocation[];
+
 void lbc_in_plaza_00(void) {
     s32 temp_a2;
     u8 temp_a0_2;
@@ -24,6 +26,5 @@ void lbc_in_plaza_00(void) {
             F(s8, (u8 *)cw, 0x2C33) = 1;
             F(u8, (u8 *)cw, 0x2C34) = 0U;
         }
-        return;
     }
 }

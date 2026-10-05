@@ -1,9 +1,11 @@
+/* lb_bz136 - lobby UI/client 0x005B5050-0x005B514C: connecting_20 (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern s16 Vs_Cnt_1;
 extern s8 PPP_ErrorStatus;
 extern s8 reset_NG_flag;
 extern u8 COM_R_No_2;
 extern u8 COM_R_No_5;
+
 s32 connecting_20(void) {
     s32 temp_v0;
     s32 var_s0;
@@ -20,9 +22,9 @@ s32 connecting_20(void) {
         }
     }
     if ((tk_sw_new_ck(0x8000) != 0) && (COM_R_No_5 == 0)) {
-        *(u8 *)0x4E4746 = (s16) (*(s16 *)0x4E4746 + 1);
+        *(s16 *)0x4E4746 = (s16) (*(s16 *)0x4E4746 + 1);
     } else {
-        *(u8 *)0x4E4746 = 0;
+        *(s16 *)0x4E4746 = 0;
     }
     temp_v0 = InetConnectAll();
     switch (temp_v0) {                              /* irregular */

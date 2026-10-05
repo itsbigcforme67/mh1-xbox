@@ -58,6 +58,5 @@ block_19:
             }
             cnLbc_EraseDialog(0x4C, temp_a1_2, temp_a2, temp_a3);
         }
-        return;
     }
 }

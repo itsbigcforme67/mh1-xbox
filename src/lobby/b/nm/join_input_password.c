@@ -14,13 +14,10 @@ s32 join_input_password(s32 arg0) {
         SoftKeyboard_set(0, 6, 8, arg0);
         *(s8 *)0x3F36AB = 0;
     case 3:                                         /* switch 2 */
-block_19:
-    default:                                        /* switch 1 */
-        return 2;
     case 1:                                         /* switch 1 */
         if ((sx1 = SoftKeyboard_move(arg0, *(s16 *)0x3F3710, *(s16 *)0x3F3714)) != 0) {
             F(s8, &lb_sys, 7) = (s8) (F(s8, &lb_sys, 7) + 1);
-            goto block_19;
+            break;
         }
         temp_v1 = F(u8, temp_s1, 0x10);
         switch (temp_v1) {                          /* switch 2; irregular */
@@ -42,4 +39,5 @@ block_15:
         *(u8 *)0x3F36AB = 1;
         return 0;
     }
+    return 2;
 }
