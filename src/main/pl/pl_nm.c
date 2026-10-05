@@ -2425,3 +2425,9 @@ s32 Sansai_talk_ck(PLW *pl) {
     }
     return 0;
 }
+
+#include "flow.h"
+void Pl_vital_calc_item(PLW *, int);
+void Pl_max_vital_calc(PLW *, int);
+void func_639DF0(PLW *, int);
+void set01_set(int, int, int);
