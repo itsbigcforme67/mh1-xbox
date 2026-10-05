@@ -228,3 +228,152 @@ Lessons: a `u16 d` local is re-masked at every use (andi), an `int d` is not (em
 extra zero args (em16_to_normal(em, 0, 0)); `case 4: ... /* fallthrough */ case 3:` with the jump table sending 3 into the
 middle of 4's code (demo00).
 Shared header edit: em.h x95B (u8, boss flag).
+
+# Sixth round: em01 AI (f_em_566630, 0x566630-0x57AB5C, monster kinds 1/6/8/11/14/15/17/21/22/26, 151 functions)
+141 of 151 functions are linked (rebuild OK, all five modules byte-identical): src/game/em/em01_ai.c .. em01_aih.c
+(8 matching runs, text 0x566630-0x57AB58, rodata 0x685B30-0x686078 for the jump tables of atk08, atk17/21/22, demo00-02,
+move00-06, main and ef_move_sub). em01_ai_nm.c holds the WHOLE file (all 151 functions, the C that the PC runtime should
+use). EM01W (per-monster work at EMW+0x444) is in that file (a superset of the one in em01.c).
+Near-matches (stay asm, C in em01_ai_nm.c, all logically complete):
+- em01_frame_reset (5 instrs, switch constants land in t0 instead of v1) and em01_reset_char_set (4, same): nothing tried
+  (K&R params, u8/s8/u16 switch variable, EMF macro) changes the register of the ladder constants.
+- em_mv03/em_mv05 (7/8: `sltiu at` vs v0 in the turn-window test and one nop before the final branch).
+- em_fly09 (12: the `work08 -= 1` store/reload order), em_atk11 (the last `slt at`/`sw` delay-slot pair of case 3: the
+  original uses `slt at` and keeps the work08 store in the delay slot, mine stores before the long float expression),
+  em01_effect_move (a2/v1 instead of v1/v0), ground_land_eff_set/takeoff_eff_set (the `&v[1]` address register),
+  em01_uvmove (61 instrs, same near-match as em16/em27_uvmove).
+Mapping: em_actNN = action steps, em_mvNN walk/turn, em_flyNN flight, em_atkNN attacks (atk08/21 = "kyusyu" pursuit,
+atk11 = dive), em_dmgNN damage, em_demoNN event demos (demo00/02 carry the partner x944), em_dieNN, em_moveNN dispatchers by
+mode, em01_main (damage system + dispatch), ef_move_sub (per-animation sound/effect script, 685 sound_call calls).
+Capcom bug kept: em_fly24 passes an uninitialized local to Em_Calc_angY.
+
+## New tools (all in /tmp-independent form under tools/)
+- `tools/draft.py` now resolves jump tables (jt_patch): m2c decompiles functions with switch tables.
+- `tools/status.py FILE` (noise-aware check): prints per function OK / NOISE (only "calls X, original calls Y" static-name
+  differences) / DIFF n; "true OK" = OK or NOISE. check.py itself reports NOISE functions as `--`, so genruns.py does not
+  see them as matching; use tools/mkruns_nm.py instead.
+- `tools/mkruns_nm.py NM.c PREFIX`: writes the matching runs (PREFIX.c, PREFIXb.c ...) of a near-match file (all true-OK
+  functions that are consecutive by address; every function becomes global except those in KEEP) and prints the
+  c_files.txt text lines. Rodata lines (jump tables) are still computed by hand: each run's tables are contiguous from the
+  first to the end of the last table (16-byte aligned in between), see tools/rodata.py.
+- `tools/genef.py`: asm -> C for the sound/effect script (ef_move_sub style: switch on the animation, sound_call/quake_call/
+  frame_check/Eft20_set calls with constants, if-chains rebuilt from the branch structure with a small Quine-McCluskey).
+  Its output for em01 matched on the first full build; reuse for em17/em20/em14/em15.
+
+## Lessons from em01 (each confirmed by a match)
+- m2c drops float arguments of calls (MWCC passes floats in $f12-14, m2c assumes the o32 registers): declare the
+  prototype WITHOUT the float parameters in the m2c context and read the constants from the asm (tools/f12.py in the notes of
+  this round lists f12/f13 and the integer constants of each jal, incl. delay slots).
+- `if (a < K)` and `if (K < a)` compile differently for floats: original `c.lt.s f1,f0` + `bc1t` came from `!(K < d)`
+  (atk12), `4000.0f < d` (demo00/02), `100.0f < x` (atk08); plain `d > K` / `!(d > K)` give `c.le` forms.
+- `em->w->dang -= em->ang[1]` must be written `w->dang = w->dang - em->ang[1]` to load dang first.
+- A one-case `switch (x734) { case 3: ...; default: break; }` reproduces `beq L; b end` (em01_main).
+- `t == 1 || t == 2 || t == 3` (not `(u32)(t-1) < 2 || t == 3`) gives the `sltiu at` form (em_act01).
+- Fields read through a struct member (`em->x2DE`) are loaded separately; a cast pointer (`EMF(em, u16, 0x2DE)`) gets CSE'd
+  into a pointer register (reset_char_set). x2DE/x2E0 added to em.h; x38E retyped u8 (lbu in em01_main).
+- `for (i = 0, t = em_work; i < 20; i++, t++) { if (...) goto found; } t = 0; found:` reproduces a search loop that sets
+  the pointer to NULL when the list ends (demo02).
+- Float local arrays for `em_sleep_eff_set(em, n, v, 1.6f)`: `v[1] = 10.0f; v[2] = 140.0f; v[0] = 0.0f;` in this order
+  (the last store lands in the jal delay slot); two such calls need two arrays (declaration order = address order).
+- A callee in the same file that is `static` keeps its callers' register use; if it must be global (called from asm or
+  another run) check the run file again with tools/status.py (em_act_search2 had to stay static, KEEP in mkruns_nm.py).
+- Shell08_set_ang takes 6 arguments (em, joint, a, b, ang1, ang2); the last two sit in $t0/$t1 and the delay slot.
+
+# em02 AI (f_em_57F1E0, 0x57F1E0-0x587390, 66 functions): 63 linked
+src/game/em/em02_ai.c .. em02_aid.c (4 runs, rodata 0x686270-0x686488), em02_ai_nm.c = whole file. Rebuild OK (all five modules).
+Near-matches (stay asm): em_mv01_005800C0 (7: same turn test as em01 mv03), em02_uvmove (61, same as em01; note em02's timer
+advances by 2), em02_effect_move (6, same a2/v1 register difference as em01_effect_move).
+Notes:
+- em_atk05 is shared by actions 5, 10, 11 and takes a third argument (0/1/2) that picks the shell angle; the dispatcher
+  em_move03 passes it. A switch whose compare ladder reads 0,1,2 means the source order is 2,1,0 (atk09), and 2,1,0 means 0,1,2.
+- em_uvset (static leaf called many times from ef_move_sub): the caller does NOT reload a2/a3 between calls, so the callee
+  must not modify them (write the index as `*(u8 *)((u16)idx + (u32)em + 0x5F8)` to keep a2 intact). tools/genef.py keeps
+  a2/a3 across em_uvset calls so the generated constants are right.
+- ef_move_sub_00583BF0 only matches as a file-static function but is called by asm (em02_effect_move): it is defined static
+  and config/game_aliases.txt (new, added to the link by tools/build.py when it exists) gives the asm its address.
+  Callees of ef_move_sub that precede or follow it in the file (move_default, quake_call, sound_call*, em_uvset) must also
+  stay static (MKRUNS_KEEP in tools/mkruns_nm.py).
+- tools/mkruns_nm.py recognises function-defining macros (#define NAME(NAME, ...)) automatically now.
+- `em->mode != 6 || em->x15 != 0` guards two cases of the em02 effect script (genef flags unknown branches with #error).
+
+# em07 AI (f_em_58F4A0, 0x58F4A0-0x599EC8, 75 functions): 70 linked
+src/game/em/em07_ai.c .. em07_aif.c (6 runs, rodata 0x6866F0-0x686710, 0x686710-0x6867D8, 0x686840-0x686860),
+em07_ai_nm.c = whole file. Rebuild OK. Near-matches (stay asm): em07_act_sub (21, branch layout of `x == 0 || idx == 0xFF`),
+em_mv02 (7, sltiu at/v0), em07_main (the `idx*8 + em` addu operand order), em_uvmove (61, same as em01/02), em07_effect_move (6).
+Notes:
+- The state functions take only (EMW *em); the second m2c argument is a jump-table address left in a1. Declare
+  `EM07W *w = (EM07W *)em->ex;` inside the function.
+- ef_move_sub here is a sparse switch compiled as a compare ladder, no jump table: tools/genef.py takes `-` as the table
+  label and reads `addiu $4,$0,CASE; beq $3,$4,.Lxxx` pairs. The empty case (0x42A) must sit in sorted position in the
+  source or the ladder loses a compare. SOUND5=1 makes genef pass the extra arguments of sound_call (frame, se, joint, vol)
+  and sound_call_mov/mov2 (frame, frame2, se, joint, vol). shell05_set4 takes 3 arguments, Shell22_set3(em, 4, w->x1A)
+  is followed by `x1A++; x1A &= 3`.
+- A shared tail (`goto blk41` in em07_main case 12) is needed so the same `em07_act_set(em, 4, 3, 2)` is emitted once.
+- `x == 0 || x == 1` style turn tests: see EM07_TURN; the +0x8000 variant turns away from the target.
+- sound_call_mov2 had to be global (called from a run file before it), the rest of the sound/effect helpers are static (KEEP).
+- Watch out for scripted file edits: `s.index('int em07_act_sub')` matched the prototype and cut 130 lines (recovered from the draft).
+
+# em08 AI (f_em_59A280, 0x59A280-0x5A7380, 122 functions): 109 linked
+src/game/em/em08_ai.c .. em08_ail.c (12 runs, rodata 0x686880-0x686898, 0x6868A0-0x6868E0, 0x686920-0x686A28, 0x686A90-0x686AB0),
+em08_ai_nm.c = whole file. Rebuild OK (all five modules). em.h: x7E0/x7E4 (f32) carved from padding (em08 water depth/surface).
+Near-matches (stay asm): em08_init (3: eft09_set arg in the delay slot), em08_act_sub (8), em_mv02 (7), em_fly03/09 (4, sltiu at/v0),
+em_dmg00 (1, addu operand order), em_demo00 (17, a2/a3 swap), em08_main (the `idx*8 + em` addu), em08_uvmove (61, same as
+em01/02/07), em08_effect_move (6), hire_move_sub1/sub2 (100/180, static callees with custom register convention) and hire_move
+(depends on them; excluded with MKRUNS_EXCLUDE), em21_target_ang_calc (29).
+Notes:
+- Conversion pipeline that worked (a 6900-line m2c draft -> 109/122 in one session): /tmp scripts patched the draft: arg0->em,
+  M2C_FIELD(arg1,..)->w->name via a struct, missing float args filled in from the asm with f12.py (em_frame_check, Eft20_set,
+  xang_calc_target ...), `temp = em->x05; switch (temp)` -> `switch (em->x05)`, `return;` -> `break;` when the switch is the last
+  statement of the function (that single change fixed ~55 functions), then hand-fixes of what the diff showed.
+- Compound conditions that m2c prints as goto soup (em08_main damage cases) are chains `else if (!(mode == 4 && x15 == 6) && ... && x388 == 1)`.
+- `x = a ? b : c` written as `if (cond) x = b; else x = c` stores constants directly (no movz/movn); the ternary gives movz/movn.
+  For constants stored to a float field MWCC uses lui+sw (no fp register).
+- Sparse `switch` with a final `beq; nop; b end`: a switch with one case plus default (stage 0x36) or a ladder (kind in 1,6,8,0xB,...).
+- A flag variable assigned 0/1 that is compiled with daddiu and tested without andi: `u8 flag` gives daddiu (but adds an andi on test).
+- A static function with custom register arguments (hire_move_sub1/2 take $t4-$t6): its caller can only be linked together with it.
+- `em08_fly_adjy2` returns u8 in em08.c but the asm tests v0 directly: declare it `int` where the caller does not mask.
+- genef.py: `-` as table label for ladder switches, Code_Make/hire_req_set/atk_shell_set/em08_vib_set handled, SOUND5 only for em07.
+
+# Porting tools for sibling AI files (handed over; agent D now owns em14/15/17/20/21)
+tools/port_em.py ASMNAME PFX OUT.c turns the m2c draft of one AI file into a first-pass C file (about 2 minutes; f12.py runs per
+function), tools/protos.py regenerates its forward prototypes, tools/fixlib.py has rep()/sub1()/ensure_spd() for hand-fix scripts
+that survive a re-run (never use s.index('name(') on a file that has prototypes: it hits the prototype), tools/mkruns_nm.py takes
+MKRUNS_EXCLUDE for functions that must stay asm (callers of static callees with custom register args). tools/sibcmp.py shows
+opcode-identical sibling functions (em20/em01 66, em17/em20 55, em21/em08 49, em14/em20 48). em14 was started and dropped.
+Hand fixes that were always needed: to_normal-like functions with extra args, the uvmove/sound_call helper block copied from
+em01/em08, ef_move_sub via genef.py, EMxxW field names (dang/has_tgt/dist) for the TURN macros.
+- Note: tools/mkruns.py is main's tool (fully matching runs by check.py); mkruns_nm.py is agent B's (split an NM file by status.py).
+
+# em10 AI (f_em_5ACC60, 0x5ACC60-0x5AF528, 26 functions): 24 linked
+em10.c, em10b.c (act00-02), em10c.c (act04..), rodata 0x688220-0x688248 (em10) and 0x688250-0x6882D4 (em10c); em10_nm.c = whole file.
+Stay asm: em10_turn_sub (10/42), em_act03_005AE060 (the original does not reload a0 after em10_msg_set(em, n) before em_act_set(em, 0, n);
+ours reloads it, +16 bytes). Lesson: tools/check.py status of em10_nm.c said 25/26 OK because the static em_act03/em_move00 share a name with
+globals elsewhere; give such statics an address suffix (em_act03_005AE060) before trusting OK. A C run that ends before a 4-byte function
+pad must end at the last function's real end (0x5AE05C), not at the next function.
+
+# uvmove solved (em01/02/07/08/16/27)
+The old "61 instrs off" near-match of every uvmove was the pointer form: MWCC only keeps the original induction-pointer layout when the arrays are
+real struct members of EMW (em.h now has f32 uv[4][3] at 0x5C0, u16 uvtm[4] at 0x5F0, u8 uvty[4] at 0x5F8). Write em->uv[i][0], em->uvtm[i], em->uvty[i];
+`((u32)em->uvtm[i] >> 1)` gives srl; the switch source order is 0,1,2,3,0xFF (ladder compares in reverse). Lesson: when the original keeps
+`lhu x(t2)` with an unfolded constant offset, the data is a struct field array, not a cast pointer. Linked as tiny runs em01_uv.c .. em27_uv.c
+(500 bytes each); do NOT regenerate runs from the *_nm.c files: the run files carry hand edits (static ef_move_sub etc.). em*_effect_move
+(6 instrs, eff register a2/v1 vs v1/v0) is still open.
+
+# em_taisei_nm.c (agent C's file, finished by B)
+Written: em_eye_dmg_act_set (matches; no `default:` label: a jump-table switch whose holes jump to the end needs `break` instead),
+Em_Dmg_Sys (10 instrs off), Em_Taisei_Damage_Check now matches (`u8 t = x & ~4; u8 u; u = t & 0xFF;` gives the extra andi).
+EMW.hagi is now EM_HAGI hagi[8] (hp s16, cnt u8): real struct member arrays keep the em+const offsets unfolded (same lesson as uvmove).
+Not linked yet because the file still has two near-matches inside (Em_Taisei_Ck, Em_Dmg_Sys); the matching ones could be split out with mkruns_nm.py.
+
+# sltiu at/v0 near-matches solved (em01 mv03/mv05, em02 mv01, em07/em08 mv02) + tools/appendfn.py
+`d < 0x11C8U || d >= 0xEE39U` gives `sltiu v0`; the original `sltiu at` comes from writing the first test as `d <= 0x11C7U` (second stays `>=`).
+The three `return;` in the turn function must be an if / else if / else chain ending in `break;` (a shared `return` stub adds a nop before the b).
+tools/appendfn.py RUN.c NM.c fname appends a function that now matches to its neighbouring run file; then extend that run's end in config/c_files.txt
+(end = function start + size). A function that is static in the nm file must become global (address-suffixed name) when asm callers remain.
+WARNING: align.py hides differences in lui constants (a float constant 110.0f vs 48.0f looked like a match); check.py or a rebuild is the arbiter.
+
+# Sixth round (post-outage)
+- Merged main (only config/c_files.txt conflicted; union + no duplicates); rebuild all five OK.
+- All unregistered em text left in game.yaml (f_em_55B060, 5B5290, 5C2A80, 5D9EE0, 5EBA10, 5FFFD0) is agent D's (em14/15/17/20/21).
+  Agent B's remaining em work is only the parked near-matches (em10_turn_sub, em04 act_set/ef_move_sub, em03 mv, em09, em12).
+- em10_turn_sub: four more declaration/type forms retried (u32/s32/u16 d, tgt as u32, no tgt local): still 10 instrs off (a1/a2/a3 colouring), parked.

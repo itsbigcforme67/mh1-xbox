@@ -145,8 +145,10 @@ def link_and_check(module):
                "-Map", "build/%s.map" % module,
                "-T", "build/%s.ld" % module,
                "-T", "config/%s_undefined_syms_auto.txt" % module,
-               "-T", "config/%s_undefined_funcs_auto.txt" % module,
-               "-o", elf])
+               "-T", "config/%s_undefined_funcs_auto.txt" % module]
+              + (["-T", "config/%s_aliases.txt" % module]
+                 if os.path.exists(os.path.join(ROOT, "config/%s_aliases.txt" % module)) else [])
+              + ["-o", elf])
     if err:
         print(err[:4000])
         print("%-7s link failed" % module)

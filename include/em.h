@@ -42,6 +42,13 @@ typedef struct EM_AREA {
     EM_STG_POS *x18;    /* 0x18 routes: pos is really an EM_ROUTE list */
 } EM_AREA;
 
+/* One hagitori (carve) slot of a monster (EMW+0x308, 8 entries). */
+typedef struct EM_HAGI {
+    s16 hp;             /* 0x0 remaining hit points of the part */
+    u8 cnt;             /* 0x2 times the part was broken, capped at 99 */
+    u8 _pad3[5];
+} EM_HAGI;
+
 typedef struct EMW {
     u8 be_flag;         /* 0x000 alive; shells end when it clears (shell11_m) */
     u8 x01;             /* 0x001 (set10_m) */
@@ -91,7 +98,9 @@ typedef struct EMW {
     u16 x2D8;           /* 0x2D8 em10: message number (row of talk_tbl) */
     u16 x2DA;           /* 0x2DA em10: message timer, capped at 300 */
     u16 char0;          /* 0x2DC current animation (as PLW) */
-    u8 _pad2DE[0x2E4 - 0x2DE];
+    u16 x2DE;           /* 0x2DE animation of layer 1 (char0 is layer 0; em01 reset_char_set) */
+    u16 x2E0;           /* 0x2E0 animation of layer 2 */
+    u8 _pad2E2[0x2E4 - 0x2E2];
     u16 act_tm0;        /* 0x2E4 */
     u16 act_tm1;        /* 0x2E6 */
     u8 _pad2E8[0x2EC - 0x2E8];
@@ -101,13 +110,14 @@ typedef struct EMW {
     u16 x300;           /* 0x300 number of animation layers (char0/act_tm0/blend0 are [0] of arrays) */
     s16 x302;           /* 0x302 compared with 10% of x792 (hit points? guess) */
     u8 _pad304[0x308 - 0x304];
-    u8 hagi[8][8];      /* 0x308 */
+    EM_HAGI hagi[8];    /* 0x308 */
     u8 _pad348[0x34F - 0x348];
     u8 mdl_no;          /* 0x34F model number (eft09_t: texture and matrix list) */
     u8 _pad350[0x388 - 0x350];
     u8 x388;            /* 0x388 non-zero keeps set20's gate shut */
-    u8 _pad389[0x38E - 0x389];
-    s8 x38E;            /* 0x38E */
+    u8 _pad389[0x38D - 0x389];
+    u8 dm_flag;         /* 0x38D set when hit this frame (as PLW; Em_Dmg_Sys) */
+    u8 x38E;            /* 0x38E (u8: lbu in em01_main, damage part index) */
     u8 _pad38F[0x390 - 0x38F];
     s32 x390;           /* 0x390 */
     s32 x394;           /* 0x394 */
@@ -144,7 +154,11 @@ typedef struct EMW {
     u8 _pad56B[0x5A0 - 0x56B];
     f32 x5A0[3];        /* 0x5A0 */
     f32 x5AC;           /* 0x5AC height used for set20's shell */
-    u8 _pad5B0[0x60C - 0x5B0];
+    u8 _pad5B0[0x5C0 - 0x5B0];
+    f32 uv[4][3];       /* 0x5C0 texture scroll per slot (x, y, unused) */
+    u16 uvtm[4];        /* 0x5F0 slot timer, 0xFFFF idle */
+    u8 uvty[4];         /* 0x5F8 slot type, 0xFF none */
+    u8 _pad5FC[0x60C - 0x5FC];
     u16 neck_tgt;       /* 0x60C neck target angle, relative (em_neck_move_sub) */
     u16 neck_ang;       /* 0x60E current neck angle */
     u8 _pad610[0x616 - 0x610];
@@ -221,7 +235,8 @@ typedef struct EMW {
     u8 _pad7D7[0x7D8 - 0x7D7];
     f32 x7D8;           /* 0x7D8 */
     f32 x7DC;           /* 0x7DC */
-    u8 _pad7E0[0x7E8 - 0x7E0];
+    f32 x7E0;           /* 0x7E0 em08: depth below the water surface (450 big / 250 small) */
+    f32 x7E4;           /* 0x7E4 em08: water surface height */
     u8 x7E8;            /* 0x7E8 0: em21 falls back to act 0/1 on its own stage */
     u8 x7E9;            /* 0x7E9 0: em14 fly action 0 becomes act 0/3 */
     u8 _pad7EA[0x7EE - 0x7EA];
@@ -286,7 +301,8 @@ typedef struct EMW {
     u8 _pad877;
     struct EFTW *tail;  /* 0x878 cut-tail effect (eft09_set) */
     u8 x87C;            /* 0x87C player id this monster holds/targets (pl_mv083 compares it with PLW.id) */
-    u8 _pad87D[0x87F - 0x87D];
+    u8 x87D;            /* 0x87D bit mask of the hagitori parts broken by this hit (Em_Dmg_Sys) */
+    u8 x87E;            /* 0x87E same, accumulated */
     s8 x87F;            /* 0x87F (s8) non-zero: monster state checked in basic_com_ck */
     u8 _pad880[0x881 - 0x880];
     u8 x881;            /* 0x881 target kind, 0 none (1 and 7 seen; 0x934 = its position) */
@@ -358,9 +374,10 @@ typedef struct EMW {
     u8 x950;            /* 0x950 */
     u8 x951;            /* 0x951 */
     u8 x952;            /* 0x952 */
-    u8 _pad953[0x954 - 0x953];
+    u8 x953;            /* 0x953 damage kind: 1, 8 or 9 selects the hagitori loop (Em_Dmg_Sys) */
     u16 x954;           /* 0x954 */
-    u8 _pad956[0x958 - 0x956];
+    u8 _pad956;
+    u8 x957;            /* 0x957 set when part 8 breaks (Em_Dmg_Sys) */
     s8 x958;            /* 0x958 */
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
     s8 x95A;            /* 0x95A */

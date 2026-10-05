@@ -983,7 +983,7 @@ void em_hagitori_lv_up(EMW *em, u8 bits) {
             }
             for (j = 0; j < 15; j++) {
                 if (em->kind == hagitori_eft_tbl[j].kind && i == hagitori_eft_tbl[j].part &&
-                    em->hagi[i][2] == hagitori_eft_tbl[j].lv) {
+                    em->hagi[i].cnt == hagitori_eft_tbl[j].lv) {
                     h = &hagitori_eft_tbl[j];
                     flmatCopy(&mat, get_joint_wmat_em(em, h->joint));
                     flvecCopy(v, h->ofs);

@@ -136,7 +136,7 @@ void em33_init(EMW *em) {
     em_act_set(em, 0, 1);
 }
 
-#define EM33_HAGI0(em) (*(s16 *)&(em)->hagi[0][0])
+#define EM33_HAGI0(em) ((em)->hagi[0].hp)
 
 void em33_main(EMW *em) {
     u8 dmg[4];
