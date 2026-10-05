@@ -445,8 +445,8 @@ game:rodata 0x00686840 0x00686860 em/em07_aid
 game 0x0059A280 0x0059A2B8 em/em08_ai
 game 0x0059A680 0x0059A74C em/em08_aib
 game 0x0059A7B0 0x0059C6C4 em/em08_aic
-game 0x0059C6D0 0x0059CA24 em/em08_aid
-game 0x0059CCE0 0x0059D414 em/em08_aie
+game 0x0059C6D0 0x0059CCDC em/em08_aid
+game 0x0059CCE0 0x0059D714 em/em08_aie
 game 0x0059D720 0x0059FAA4 em/em08_aif
 game 0x0059FB90 0x005A0FE8 em/em08_aig
 game 0x005A1700 0x005A2DDC em/em08_aih

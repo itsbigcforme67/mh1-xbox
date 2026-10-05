@@ -363,3 +363,66 @@ void em_fly02_0059C930(EMW *em, EM08W *w) {
         break;
     }
 }
+
+void em_fly03_0059CA30(EMW *em, EM08W *w) {
+    f32 temp_f1;
+    u32 spd;
+    s32 temp_a3;
+    u16 temp_a1;
+    u32 temp_a2;
+    u32 temp_v1;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 4;
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        temp_v1 = (w->dang - em->ang[1]) & 0xFFFF;
+        if ((temp_v1 <= 0x2AA8U) || (temp_v1 >= 0xD558U)) {
+            em_char_set(em, 0x65, 0, 0);
+        } else if (temp_v1 >= 0x8000U) {
+            em_char_set(em, 0x6A, 0, 0);
+        } else {
+            em_char_set(em, 0x6B, 0, 0);
+        }
+        swim_eff_set2_005A7120(8.0f, em);
+        break;
+    case 1:
+        if (em->x1C4 == 0) {
+            spd = (u32)((32768.0f / (em->x1A8 / 2.0f)) * em->act_spd);
+            temp_a3 = em->ang[1];
+            temp_a1 = w->dang;
+            temp_a2 = (temp_a1 - (temp_a3 & 0xFFFF)) & 0xFFFF;
+            if (em->x194 == 0) {
+                if ((u32) ((temp_a2 + spd) & 0xFFFF) < (u32) (spd * 2)) {
+                    em->x05++;
+                    em08_to_swim(em);
+                    return;
+                }
+                if ((temp_a2 <= 0x2AA8U) || (temp_a2 >= 0xD558U)) {
+                    em_char_set(em, 0x65, 0, 0);
+                    return;
+                }
+                if (temp_a2 >= 0x8000U) {
+                    em_char_set(em, 0x6A, 0, 0);
+                    return;
+                }
+                em_char_set(em, 0x6B, 0, 0);
+                return;
+            }
+            if ((u32) ((temp_a2 + spd) & 0xFFFF) < (u32) (spd * 2)) {
+                em->ang[1] = (s32) temp_a1;
+                return;
+            }
+            if (temp_a2 < 0x8000U) {
+                em->ang[1] = (temp_a3 + spd) & 0xFFFF;
+                return;
+            }
+            em->ang[1] = (temp_a3 - spd) & 0xFFFF;
+        } else {
+            break;
+        }
+        break;
+    }
+}
