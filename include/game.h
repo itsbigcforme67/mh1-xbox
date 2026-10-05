@@ -39,7 +39,11 @@ typedef struct GAME_W {
     u8 shl10_num;       /* 0x210 live shell10s owned by the master player */
     u8 meat_num;        /* 0x211 meat on the spit owned by the master player (eft12) */
     u8 trap_num;        /* 0x212 traps set by the master player (shell12) */
-    u8 _pad213[0x21F - 0x213];
+    s8 x213;            /* 0x213 copied to player work+0x6A4 for the master (pl_init_sub) */
+    s8 x214;            /* 0x214 copied to player work+0x6A8 for the master (pl_init_sub) */
+    s8 x215;            /* 0x215 added to max life (pl_init_sub) */
+    s16 x216;           /* 0x216 stamina bonus passed to Pl_max_stamina_calc (pl_init_sub) */
+    u8 _pad218[0x21F - 0x218];
     u8 info_stop;       /* 0x21F set01 queue paused while set */
     u8 _pad220[0x224 - 0x220];
 } GAME_W;

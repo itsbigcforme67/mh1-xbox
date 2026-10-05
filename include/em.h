@@ -102,7 +102,9 @@ typedef struct EMW {
     u8 _pad794[0x7E8 - 0x794];
     u8 x7E8;            /* 0x7E8 0: em21 falls back to act 0/1 on its own stage */
     u8 x7E9;            /* 0x7E9 0: em14 fly action 0 becomes act 0/3 */
-    u8 _pad7EA[0x818 - 0x7EA];
+    u8 _pad7EA[0x7EE - 0x7EA];
+    u8 x7EE;            /* 0x7EE bit per player that has noticed this monster (em_ninshiki_ck) */
+    u8 _pad7EF[0x818 - 0x7EF];
     f32 x818;           /* 0x818 compared with x8C4[x883] (em16_act_act_set) */
     u8 _pad81C[0x827 - 0x81C];
     u8 x827;            /* 0x827 */
@@ -122,7 +124,9 @@ typedef struct EMW {
     s8 x885;            /* 0x885 */
     u8 _pad886[0x888 - 0x886];
     u8 x888;            /* 0x888 */
-    u8 _pad889[0x8B6 - 0x889];
+    u8 _pad889[0x88F - 0x889];
+    u8 x88F;            /* 0x88F bit per player that can notice this monster (em_ninshiki_ck) */
+    u8 _pad890[0x8B6 - 0x890];
     u8 x8B6;            /* 0x8B6 eyes shown (eft07) */
     u8 _pad8B7[0x8C3 - 0x8B7];
     u8 x8C3;            /* 0x8C3 0: em_cdm_act_flag_ck runs before an action is set */
@@ -136,7 +140,9 @@ typedef struct EMW {
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
     u8 _pad95A[0x9EA - 0x95A];
     s8 x9EA;            /* 0x9EA trap state (shell12_m) */
-    u8 _pad9EB[0x9F3 - 0x9EB];
+    u8 _pad9EB[0x9EC - 0x9EB];
+    u8 x9EC;            /* 0x9EC non-zero: counts for em_ninshiki_ck */
+    u8 _pad9ED[0x9F3 - 0x9ED];
     u8 x9F3;            /* 0x9F3 0: em15 fly 24 falls back to act 0/7 */
     u8 _pad9F4[0xA10 - 0x9F4];
 } EMW;
