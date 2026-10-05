@@ -392,7 +392,7 @@ void free_node();
 u8 *alloc_record();
 void clear_entid_tmp();
 void clear_entid_tmpall();
-s16 tmpoffset();
+int tmpoffset();
 
 typedef struct PAGE PAGE;
 struct PAGE {
@@ -2985,7 +2985,7 @@ void page_gc(void)
     clear_entid_tmpall(temp_page);
 }
 
-s16 tmpoffset(u8 *p)
+int tmpoffset(u8 *p)
 {
     int d;
 
