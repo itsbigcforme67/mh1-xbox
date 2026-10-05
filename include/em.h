@@ -73,7 +73,9 @@ typedef struct EMW {
     u8 mdl_no;          /* 0x34F model number (eft09_t: texture and matrix list) */
     u8 _pad350[0x388 - 0x350];
     u8 x388;            /* 0x388 non-zero keeps set20's gate shut */
-    u8 _pad389[0x3B8 - 0x389];
+    u8 _pad389[0x39A - 0x389];
+    u16 x39A;           /* 0x39A em16 acts only when it is even */
+    u8 _pad39C[0x3B8 - 0x39C];
     f32 adj_y;          /* 0x3B8 fly height correction per frame (fly_adjy2_suby) */
     f32 adj_z;          /* 0x3BC (fly_adjy2_subz) */
     u8 _pad3C0[0x444 - 0x3C0];
@@ -86,9 +88,13 @@ typedef struct EMW {
     s8 x617;            /* 0x617 -1: no ... (em08_fly_act_set) */
     u8 _pad618[0x736 - 0x618];
     u8 stg;             /* 0x736 */
-    u8 _pad737[0x792 - 0x737];
+    u8 _pad737[0x74C - 0x737];
+    u32 x74C;           /* 0x74C flags; 0xF000000F stops fly_adjz2 (em16) */
+    u8 _pad750[0x792 - 0x750];
     s16 x792;           /* 0x792 maximum of x302? (guess) */
-    u8 _pad794[0x827 - 0x794];
+    u8 _pad794[0x818 - 0x794];
+    f32 x818;           /* 0x818 compared with x8C4[x883] (em16_act_act_set) */
+    u8 _pad81C[0x827 - 0x81C];
     u8 x827;            /* 0x827 */
     u8 x828;            /* 0x828 */
     u8 x829;            /* 0x829 em08_senkai_pos_no result */
@@ -97,14 +103,17 @@ typedef struct EMW {
     u8 _pad87C[0x881 - 0x87C];
     u8 x881;            /* 0x881 target kind, 0 none (1 and 7 seen; 0x934 = its position) */
     u8 x882;            /* 0x882 */
-    u8 _pad883;
+    u8 x883;            /* 0x883 index into x8C4, 0xFF none */
     s8 x884;            /* 0x884 state flags picking eft19's model */
     s8 x885;            /* 0x885 */
-    u8 _pad886[0x8B6 - 0x886];
+    u8 _pad886[0x888 - 0x886];
+    u8 x888;            /* 0x888 */
+    u8 _pad889[0x8B6 - 0x889];
     u8 x8B6;            /* 0x8B6 eyes shown (eft07) */
     u8 _pad8B7[0x8C3 - 0x8B7];
     u8 x8C3;            /* 0x8C3 0: em_cdm_act_flag_ck runs before an action is set */
-    u8 _pad8C4[0x930 - 0x8C4];
+    f32 x8C4[4];        /* 0x8C4 indexed by x883 (size a guess) */
+    u8 _pad8D4[0x930 - 0x8D4];
     f32 act_spd;        /* 0x930 animation speed, 1.0 set by every em*_act_set (guess) */
     f32 tgt_pos[3];     /* 0x934 target position (CalcDistanceXZ/Em_Calc_angY from pos) */
     struct EM_AREA *area; /* 0x940 per-stage data (em08_senkai_pos_no) */

@@ -80,3 +80,15 @@ Fields used straight from EMW in the em files (so common to all monsters):
   (three jump tables, the 12-byte gap between the 2nd and 3rd is the
   object's alignment). em08_senkai_pos_no is 2 instructions off (s0/s2
   swapped in the second loop's setup); whole file in em08_nm.c.
+- em16 (0x5E65D0-0x5E6C74, 10 functions): all match. Setters take
+  (em, no, arg) but call `em_act_set(em, group, no)` (3 args). The
+  fly_adjy2 sub-functions set adj_y/adj_z straight from the table's first
+  row at time 0 or 1, and subz zeroes adj_z when x74C & 0xF000000F.
+  rodata 0x688ED0-0x688F30.
+- em27 (0x6139D0-0x6140A4, 10 functions): all match; generated from em16.c
+  (em_act_set2 with 4 args instead of em_act_set, attack actions 0-13).
+  rodata 0x689C20-0x689C80.
+- Lesson (em16_act_act_set): a single `if (no == 1)` compiled as
+  `beq ==1 -> body; b end` is a one-case `switch (no) { case 1: ... }`.
+- Lesson: `em->x883 != -1` on a u8 field keeps the -1 compare (lbu then
+  li -1), as in the original; no cast needed.
