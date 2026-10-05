@@ -25,3 +25,9 @@ game_w+0x1DC is set).
   (the pointer version increments in the wrong order).
 - eft01_t: declbf found the saved-register order (mw, mats, chr, cl, tbl, i);
   stack matrices declared in reverse of their stack order.
+
+## set21 (0x225FC0-0x2267EC) - 12/12 match (first try)
+A model held between a monster's joints 6 and 9; thrown when animation 0x432
+hits frame 48, flies 10 frames to a per-stage spot (stages 0x51-0x55), Eft13
+puff, stays 300 frames. Small per-stage tables declared with their real
+sizes so the s16 angle tables are gp-relative.

@@ -598,7 +598,7 @@ segments:
       - [0x123870, asm, text/f_get_223870]
       - [0x123B50, asm, text/f_cam_223B50]
       - [0x125E84, asm, text/g_RedDragonEscapeCamera]
-      - [0x125FC0, asm, text/f_set21]
+      - [0x125FC0, c, set/set21]
       - [0x1267EC, asm, text/g_Modori_dama_ck]
       - [0x126C30, asm, text/f_quest]
       - [0x12C66C, asm, text/g_CnInetNetworkInitialize_online]
