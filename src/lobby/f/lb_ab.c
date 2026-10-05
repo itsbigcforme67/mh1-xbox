@@ -45,10 +45,10 @@ int lb_member_outCheck(void) {
             }
             if (cw[0x35D5] != 0 && (cw + off + 0x1334) != 0) {
                 memset(buf, 0, 0x120);
-                buf[0x1F] = 6;
-                buf[0x1E] = 6;
-                buf[0x1D] = 6;
-                sprintf((char *)sp, lit_236_00664CC0, cw + off + 0x1334);
+                buf[0x11F] = 6;
+                buf[0x11E] = 6;
+                buf[0x11D] = 6;
+                sprintf(buf + 0x1C, lit_236_00664CC0, cw + off + 0x1334);
                 Chat_log_add(0, buf);
             }
             memset(pl, 0, 0xA00);
