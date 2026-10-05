@@ -94,7 +94,9 @@ typedef struct PLW {
     u8 _pad3CC[0x4];
     s8    work3D0;       /* 0x3D0 */
     s8    work3D1;       /* 0x3D1 */
-    u8 _pad3D2[0x22];
+    u8 _pad3D2[0x1A];
+    u16   x3EC;          /* 0x3EC facing for eft02_set's effect (+0x8000) */
+    u8 _pad3EE[0x6];
     s8    work3F4;       /* 0x3F4 */
     u8 _pad3F5[0x15];
     u8    x40A;          /* 0x40A shell00 hits count while set (cont_add) */

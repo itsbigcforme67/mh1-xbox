@@ -31,3 +31,21 @@ A model held between a monster's joints 6 and 9; thrown when animation 0x432
 hits frame 48, flies 10 frames to a per-stage spot (stages 0x51-0x55), Eft13
 puff, stays 300 frames. Small per-stage tables declared with their real
 sizes so the s16 angle tables are gp-relative.
+
+## eft02 (0x27D6E0-0x27EF58) - 13/14 match
+Hit sparks and blood. eft02.c (move/i/m/d/e, 0x27D6E0-0x27DDB8, jump tables
+0x384170-0x3841F0 incl. alignment pad) and eft02b.c (8 spawners,
+0x27E940-0x27EF58, table 0x384220-0x384240) are built. eft02_t stays asm:
+src/main/eft/eft02_nm.c (whole file) is 12 instructions off, all in case
+9-11 (a1/a2 swap for the clay index temp and where `col = -1` is
+scheduled); 20 minutes of permuter found nothing better.
+- Float constants that are one ulp above the obvious literal come from
+  folded expressions: 0x39D1B718 = `0.4f / 1000.0f` (0.0004f gives ...717),
+  0x3C23D70B = `0.1f * 0.1f` (0.01f gives ...70A). Found by compiling the
+  candidates with MWCC.
+- `mw->clay + ew->timer / 2 + 97` (pointer + index, then constant), not
+  `&mw->clay[97 + t/2]`, matches the add order.
+- A u8 field read into a u32 local (`k = ew->arg` before a call) explains a
+  value kept in a saved register and converted with the unsigned sequence.
+- Eft_rendope_set takes a u16 (callers pass the u16 flags without andi).
+Shared header: pl.h carves PLW+0x3EC (u16 x3EC) from _pad3D2.
