@@ -111,7 +111,8 @@ typedef struct EMW {
     s32 x394;           /* 0x394 */
     u8 _pad398[0x39A - 0x398];
     u16 x39A;           /* 0x39A em16 acts only when it is even */
-    u8 _pad39C[0x3A4 - 0x39C];
+    s32 x39C;           /* 0x39C action timer (em04 act 3: waits until >= 240) */
+    u8 _pad3A0[0x3A4 - 0x3A0];
     s32 horm_ang;       /* 0x3A4 angle to turn toward (emNN_horm_init, em10 act 10) */
     u8 _pad3A8[0x3AC - 0x3A8];
     s32 x3AC;           /* 0x3AC cleared by em_eye_search_set */
