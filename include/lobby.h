@@ -9,7 +9,7 @@ extern u8 *cw;                 /* client work (D_6DD7E0, 0xBF40 bytes): u8 acces
 #define CW8(o)  (*(u8 *)(cw + (o)))
 #define CWPLAYER(i) (cw + (i) * 0x2FC)  /* per member records start at cw+0x1334 */
 
-typedef struct LBCOMMER { u8 mac[6]; u8 _pad06[2]; char name[0x10]; u8 _pad18[0x5C - 0x18]; } LBCOMMER; /* 0x5C bytes x8 at lbCommer */
+typedef struct LBCOMMER { s8 mac[6]; u8 _pad06[2]; char name[0x10]; u8 _pad18[0x5C - 0x18]; } LBCOMMER; /* 0x5C bytes x8 at lbCommer */
 extern LBCOMMER lbCommer[8];
 
 typedef struct LBPLAYER { u8 _pad00[4]; u8 x04[0x10]; u8 _pad14[0x38 - 0x14]; } LBPLAYER; /* lb_player 0x38 x8 */
@@ -167,4 +167,26 @@ void Lb_send_pl_status();
 void lb_pl_flag_clr();
 void Lb_pl_flag_set();
 int Lb_ck_target();
+void swset();
+void lb_pl_move_sub();
+void lb_pl_normal();
+void lb_pl_chat();
+void lb_pl_turn_sub();
+void lb_pl_horm_sub();
+void Lb_Pl_pos_adj();
+void Lb_pl_chr_sub();
+void HitWallPlayer();
+int GetGroundHitStatusAreaPl();
+int Pl_master_ck();
+u16 calc_vec_ang2();
+void Lb_St_unique_adr_set();
+void Lb_send_pl_pos();
+void lb_basic_com_ck();
+void Lb_pl_chr_set();
+extern u8 chat_act_tbl_0064E198[];
+void ItemPickingDeclaration();
+void pl_chr_set2();
+void Lbc_set_prim();
+extern LBCOMMER lbCommer[8];
+void action_timer_calc();
 #endif
