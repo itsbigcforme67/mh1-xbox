@@ -91,6 +91,13 @@ void em_hinshi_end(EMW *);
 int em_sleep_hp_add(EMW *, s16, s16, s16);
 void cmd_target_kind_set(EMW *, f32 *);
 void target_kind_set(EMW *, f32 *);
+void Em_Sleep2_Start(EMW *);
+void Em_Sleep2_End(EMW *);
+void Em_Sleep_End(EMW *);
+void Em_Mahi_End(EMW *);
+void em_suimin_end(EMW *);
+void em_hungry_end(EMW *);
+void em_sleep_eff_set(EMW *, int, f32 *, f32);
 void em01_to_normal();
 void em01_to_fly();
 void em01_frame_reset();
@@ -926,6 +933,357 @@ static void em_act19_005686B0(EMW *em, EM01W *w) {
             em_niku_eat_set(em);
             em_hungry_add(em, 0x2710);
             em01_act_set(em, 0, 0x28, 4);
+        }
+        break;
+    }
+}
+
+static void em_act40_00568830(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x762 = 0;
+        em_search_data_set(em, 0);
+        em_range_set(em, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x3B, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_act20_005688F0(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x26, 0, 0);
+        em_range_set(em, 1);
+        em->x88B = 0;
+        Em_Sleep_Start(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x22, 0, 0);
+        }
+        break;
+    case 2:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em01_act_set(em, 0, 0x18, 4);
+        }
+        break;
+    case 3:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 0, 0x18, 4);
+        }
+        break;
+    }
+}
+
+static void em_act21_00568A00(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x27, 0, 0);
+        em_range_set(em, 1);
+        em->x88B = 0;
+        Em_Sleep_Start(em);
+        if (em->kind == 1) {
+            em->work08 = 0x3138;
+        } else {
+            em->work08 = 0x2328;
+        }
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x22, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->kind == 1) {
+            em_sleep_hp_add(em, 1, (s16)(0.6f * (f32)em->x792), 3);
+        } else {
+            em_sleep_hp_add(em, 1, (s16)(0.7f * (f32)em->x792), 3);
+        }
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_hinshi_end(em);
+            em01_act_set(em, 0, 0x18, 4);
+        }
+        break;
+    case 3:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 0, 0x18, 4);
+        }
+        break;
+    }
+}
+
+static void em_act22_00568BB0(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x50, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_act23_00568C30(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 0x21, 0, 0);
+        em_range_set(em, 0);
+        em->x88B = 1;
+        em_suimin_end(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_act_set(em, 0, 0x19, 4);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 0, 0x19, 4);
+        }
+        break;
+    }
+}
+
+static void em_act24_00568D00(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 0x25, 0, 0);
+        em_range_set(em, 0);
+        em->x88B = 1;
+        Em_Sleep_End(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_act_set(em, 0, 0x19, 4);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 0, 0x19, 4);
+        }
+        break;
+    }
+}
+
+static void em_act25_00568DD0(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 0x3E, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_act26_00568E50(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x4F, 0, 0);
+        em->x762 = 3;
+        em_search_data_set(em, 1);
+        em_range_set(em, 1);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x3B, 0, 0);
+            em_hp_add(em, (s16)(0.05f * (f32)em->x792));
+            em_hungry_add(em, em->hungry_max);
+            em_hungry_end(em);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em->x762 = 0;
+            em_search_data_set(em, 0);
+            em_range_set(em, 0);
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_act27_00568F90(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x26, 0, 0);
+        em_range_set(em, 1);
+        em->x88B = 0;
+        Em_Sleep2_Start(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x22, 0, 0);
+        }
+        break;
+    case 2:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em01_act_set(em, 0, 0x1C, 4);
+        }
+        break;
+    case 3:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 0, 0x1C, 4);
+        }
+        break;
+    }
+}
+
+static void em_act28_005690A0(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 0x25, 0, 0);
+        em_range_set(em, 0);
+        em->x88B = 1;
+        Em_Sleep2_End(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_act_set(em, 0, 0x19, 4);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 0, 0x19, 4);
+        }
+        break;
+    }
+}
+
+static void em_act29_00569170(EMW *em, EM01W *w) {
+    f32 v[3];
+
+    em->x9EA = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x61, 0, 0);
+        em_range_set(em, 1);
+        em->x88B = 0;
+        Em_Sleep_Start(em);
+        break;
+    case 1:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em01_act_set(em, 4, 0x12, 3);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 4, 0x12, 3);
+        }
+        break;
+    }
+    v[1] = 10.0f;
+    v[2] = 140.0f;
+    v[0] = 0.0f;
+    em_sleep_eff_set(em, 0x22, v, 1.6f);
+    if (em->work08 % 135 == 0) {
+        sound_call_sub_00574CD0(em, 0x57, 0x23);
+    }
+}
+
+static void em_act31_005692B0(EMW *em, EM01W *w) {
+    f32 v[3];
+
+    em->x9EA = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x61, 0, 0);
+        em_range_set(em, 1);
+        em->x88B = 0;
+        Em_Sleep2_Start(em);
+        break;
+    case 1:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em01_act_set(em, 4, 0x13, 3);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 4, 0x13, 3);
+        }
+        break;
+    }
+    v[1] = 10.0f;
+    v[2] = 140.0f;
+    v[0] = 0.0f;
+    em_sleep_eff_set(em, 0x22, v, 1.6f);
+    if (em->work08 % 135 == 0) {
+        sound_call_sub_00574CD0(em, 0x57, 0x23);
+    }
+}
+
+static void em_act33_005693F0(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 0x3E, 0, 0);
+        Em_Mahi_End(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
         }
         break;
     }
