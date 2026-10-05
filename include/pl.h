@@ -157,7 +157,9 @@ typedef struct PLW {
     u8 _pad612[0x615 - 0x612];
     u8    work615;       /* 0x615 non-zero: weapon in the other hand (eft05) */
     u8    work616;           /* 0x616 */
-    u8 _pad617[0x720 - 0x617];
+    u8 _pad617[0x70E - 0x617];
+    u16   x70E;          /* 0x70E point number in the stage list (cmd_target_kind_set) */
+    u8 _pad710[0x720 - 0x710];
     s8    work720[4];    /* 0x720 */
     s16   work724[4];    /* 0x724 */
     u16   work72C[4];    /* 0x72C (u16: blend_set) */
@@ -197,7 +199,9 @@ typedef struct PLW {
     s16   work882;       /* 0x882 */
     u8 _pad884[0x88C - 0x884];
     u8    work88C;       /* 0x88C */
-    u8 _pad88D[0x8BF - 0x88D];
+    u8 _pad88D[0x890 - 0x88D];
+    f32   net_pos[3];    /* 0x890 position from the network (em_pl_pos_set, online) */
+    u8 _pad89C[0x8BF - 0x89C];
     u8    work8BF;           /* 0x8BF */
     u8 _pad8C0[0x8C2 - 0x8C0];
     u8    work8C2;       /* 0x8C2 */
