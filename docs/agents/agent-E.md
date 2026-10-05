@@ -196,3 +196,10 @@ Lessons:
   `x > 1` instead of `x >= 2` gives `slti at` (omake_play); extra call args that only look like args in m2c (decide_se(1,3)) are stale registers.
 - functions whose K&R header + params take >= 6 lines are not found by tools/split_runs.py: put `s16 x, y, w, h;` on one line.
 - globals sized <= 8 bytes (key_wait, key_timer) are gp-relative (`addiu v1,gp,-17760`): declare them with their real size (`s16 key_wait[2]`).
+
+### mc save image helpers (0x2814E0-0x281C00): 9 of 12 built (src/main/mc/mcsaveb/c/d.c), main OK
+Written in mcsave_nm.c (all 12). Built: check_sum_set/ck, mc_copy_opt_only, mc_copy_patch, user_data_clr, User_data_init, save_data_sub, card_data_init.
+Near-match: encode_data_002814E0 (38/48; original keeps buf in s0, advances it in place and has the checksum pointer in t0), decode_data (11/42;
+local declaration order found by permuting: sum? see the file), user_data_copy2 (35/51; original reads data_load_ptr before the `if` and
+keeps the raw slot in s1), decode_to_ck matches ONLY with `static decode_data` earlier in the file (the compiler then knows a0 survives the call), so
+it is not linked. Save image layout is described at the top of mcsave_nm.c (scrambled u16 stream, key = key*0xB0 % 65363).
