@@ -137,7 +137,7 @@ typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
     u8 lognum;          /* 0x1F chat log entries used */
     u8 logscr;          /* 0x20 chat log scroll */
     u8 x21;             /* 0x21 */
-    u8 _pad22;
+    u8 x22;             /* 0x22 chat log arrow flags (f_chat) */
     PIT_CHAT log[64];   /* 0x23 */
     u8 _pad1763;
 } PIT_MENU;

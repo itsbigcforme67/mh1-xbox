@@ -27,7 +27,8 @@ void font_set_palette(int);
 void font_print(void *, ...);
 void font_print_sp(void *, ...);
 void Put_sprite_rotate(void *, int);
-void DispFrameListA(void *, int, int, int);
+void DispFrameListA(void *, char *, int, int);
+void DispFrameList(void *, char *, int);
 void DispFrameListOptionArrowC(void *, int);
 void DispFrameMessageA(void *, void *, int);
 void DispFrameMessage(void *, void *);
@@ -108,13 +109,13 @@ u8 Equip_moji_color_rare(u8 a) {
     return moji_color_rare_2099[a];
 }
 
-void DispFrameList(void *a, int b, int c) {
+void DispFrameList(void *a, char *b, int c) {
     DispFrameListA(a, b, c, 0xB2);
 }
 
 extern u8 lit_2244[];
 
-void DispFrameListA(void *fr, int title, int cur, int alpha) {
+void DispFrameListA(void *fr, char *title, int cur, int alpha) {
     PFLP8 q;
     PFLP8 r;
     PFLP4 ln;
@@ -604,7 +605,7 @@ void Chat_init(void) {
 }
 
 int ChatKinsoku_chk(s8 *);
-void Menu_chatlog_i(void);
+int Menu_chatlog_i(void);
 void SoftKeyboard_exit(void);
 s8 SoftKeyboard_move(s8 *, u16, u16);
 void chat_log_add(u8, s8 *, PIT_CHAT *);
@@ -742,7 +743,6 @@ dbl:
     }
 }
 
-void KinshiYogo_chk(int);
 
 void Chat_log_add(int who, int msg) {
     KinshiYogo_chk(msg + 0x1C);
@@ -770,4 +770,620 @@ void Plaza_chat_log_add(int msg) {
             PitMenu.logscr = 0x3F;
         }
     }
+}
+
+extern u8 chat_font_color[];
+int sprintf(char *, const char *, ...);
+void font_print_uf(void *, ...);
+void font_print_double2(int, int, int, int);
+void Put_megaphone(int, int, int);
+void disp_chat_log_sub(int, s16, int);
+void Put_receive_mark(int);
+int Get_chat_line_num(void);
+int Plaza_get_chat_line_num(void);
+int KinshiYogo_chk();
+void PutArrow(s16, s16, s16, s16, int, int);
+int Online_ck();
+extern char room_member_id[][8];
+
+void ChatLogAdd_Q(int who, int mask, s8 *msg) {
+    struct { char uid[8]; char name[8]; u8 col[4]; } e;
+    int k;
+    int p = who & 0xFF;
+    u8 c;
+
+    KinshiYogo_chk(msg);
+    if ((mask & 0xFF) == 0xFF) {
+        k = 3;
+    } else if ((mask & 0xFF) == (1 << GW(0xD1))) {
+        k = 1;
+    } else {
+        k = 2;
+    }
+    e.col[3] = 0;
+    c = chat_font_color[p];
+    e.col[2] = c;
+    e.col[1] = c;
+    e.col[0] = chat_cnfg_font_color[k & 0xFF];
+    strcpy(e.uid, (char *)player_work + p * 0xA00 + 0x8D4);
+    strcpy(e.name, room_member_id[p]);
+    chat_log_add(who, msg, (PIT_CHAT *)&e);
+    if ((u32)Get_chat_line_num() >= 0xC) {
+        PitMenu.logscr++;
+        if (PitMenu.logscr >= 0x40) {
+            PitMenu.logscr = 0x3F;
+        }
+    }
+    PitMenu.x0E = 0;
+    PitMenu.x0F = 1;
+    PitMenu.x0C = 0x12C;
+    se_req(7, 0x18, 0);
+}
+
+int Menu_chatlog_i(void) {
+    if (Online_ck() == 0) {
+        return -1;
+    }
+    PitMenu.logscr = 0;
+    if ((u32)Get_chat_line_num() < 0xC) {
+        PitMenu.x21 = 1;
+    } else {
+        PitMenu.x21 = 0;
+    }
+    return 0;
+}
+
+u32 chat_log_disp_line(u8 top);
+
+int Menu_chatlog_mv(int sw) {
+    PitMenu.x10 = 0;
+    PitMenu.x22 = 0x80;
+    if ((u32)Get_chat_line_num() >= 0xC) {
+        if (PitMenu.logscr != 0) {
+            PitMenu.x22 |= 2;
+        }
+        if (chat_log_disp_line(PitMenu.logscr) >= 0xC) {
+            PitMenu.x22 |= 1;
+            if (((sw & 0xFFFF) & 0x2000) && PitMenu.logscr < PitMenu.lognum - 1) {
+                PitMenu.x21 = 0;
+                PitMenu.logscr++;
+                PitMenu.x22 |= 4;
+                se_req(7, 0x16, 0);
+                if (chat_log_disp_line(PitMenu.logscr) < 0xC) {
+                    PitMenu.x21 = 1;
+                }
+            }
+        } else {
+            PitMenu.x21 = 1;
+        }
+        if (((sw & 0xFFFF) & 0x1000) && PitMenu.logscr > 0) {
+            PitMenu.logscr--;
+            PitMenu.x22 |= 8;
+            se_req(7, 0x16, 0);
+            PitMenu.x21 = 0;
+        }
+    }
+    if (PitMenu.logscr == 0) {
+        PitMenu.x0C = 0;
+        PitMenu.x0F = 0;
+    }
+    return sw;
+}
+
+u32 chat_log_disp_line(u8 top) {
+    int n = 0;
+    int c = PitMenu.lognum - top;
+    int i = (PitMenu.logtop - 1) - top;
+
+    for (; c != 0; c--, i--) {
+        PIT_CHAT *l = &PitMenu.log[i & 0x3F];
+        n += l->nline;
+        if (l->uid[0] != 0) {
+            n++;
+        }
+    }
+    return n;
+}
+
+extern u8 pf_chat_log_base[];
+extern u8 lit_3171[];
+extern char *str_3166[];
+
+void Pit_disp_chat(void) {
+    DispFrameMessage(pf_chat_log_base, lit_3171);
+    Put_megaphone(0x97, 0xBB, PitMenu.x17);
+    flfntSetSize(0x15, 0x12);
+    font_set_palette(0);
+    flfntLocate(0xC6, 0xBE);
+    font_print_uf(str_3166[(u8)PitMenu.x17]);
+    disp_chat_log_sub(0, 0, 0);
+}
+
+extern char lit_3181_00383570[];
+
+void chat_log_name(char *buf, PIT_CHAT *l) {
+    if (PitMenu.x14 == 0) {
+        sprintf(lit_3181_00383570, l->name);
+        return;
+    }
+    sprintf(lit_3181_00383570, l->uid);
+}
+
+void disp_chat_log_sub(int top, s16 yofs, int a) {
+    char buf[0x40];
+    int cnt;
+    int i;
+    s16 y;
+    s16 k;
+    PIT_CHAT *l;
+
+    if (PitMenu.lognum != 0) {
+        flfntSetSize(0x15, 0x12);
+        if ((u32)Get_chat_line_num() >= 0xC && !(a & 0xFF)) {
+            top &= 0xFF;
+            y = 0x18F;
+            cnt = PitMenu.lognum - top;
+            i = (PitMenu.logtop - 1) - top;
+            for (; cnt != 0; cnt--, i = (i & 0x3F) - 1) {
+                l = &PitMenu.log[i & 0x3F];
+                font_set_palette(l->col[3]);
+                k = l->nline - 1;
+                for (; k >= 0; k--) {
+                    flfntLocate(0x1E, (s16)(y + yofs));
+                    font_print_uf(l->text[k]);
+                    y -= 0x13;
+                    if (y < 0xD1) {
+                        goto next;
+                    }
+                }
+                if (l->uid[0] != 0) {
+                    chat_log_name(buf, l);
+                    font_print_double2(0x1E, (s16)(y + yofs), 1, l->col[2]);
+                    y -= 0x13;
+                    if (y < 0xD1) {
+                        goto next;
+                    }
+                }
+next:
+                continue;
+            }
+        } else {
+            u8 c = PitMenu.lognum;
+            y = 0xD1;
+            i = PitMenu.logtop - c;
+            for (; c != 0; c--, i = (i & 0x3F) + 1) {
+                l = &PitMenu.log[i & 0x3F];
+                if (l->uid[0] != 0) {
+                    chat_log_name(buf, l);
+                    font_print_double2(0x1E, (s16)(y + yofs), 1, l->col[2]);
+                    y += 0x13;
+                    if (y >= 0x190) {
+                        continue;
+                    }
+                }
+                font_set_palette(l->col[3]);
+                for (k = 0; k < l->nline; k++) {
+                    flfntLocate(0x1E, (s16)(y + yofs));
+                    font_print_uf(l->text[k]);
+                    y += 0x13;
+                    if (y >= 0x190) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Pit_disp_chat_log(void) {
+    s16 t;
+    int col;
+    s16 a1;
+    s16 a2;
+
+    SetFilterMode(0);
+    DispFrameMessage(pf_chat_log_base, 0);
+    t = (System_timer & 0x1F) << 11;
+    a1 = 0xB6;
+    col = (((s8)(48.0f * flSin(0.0000958738f * (f32)t)) + 0xCF) << 24) | 0x1ACC8E;
+    if (PitMenu.x22 & 1) {
+        if (PitMenu.x22 & 4) {
+            a1 = 0xB4;
+        }
+    }
+    PutArrow(0x80, a1, 0x1B, 0xF, col, 0);
+    a2 = 0x198;
+    if (PitMenu.x22 & 2) {
+        if (PitMenu.x22 & 8) {
+            a2 = 0x19A;
+        }
+    }
+    PutArrow(0x80, a2, 0x1B, 0xF, col, 2);
+    disp_chat_log_sub(PitMenu.logscr, -0xA, PitMenu.x21);
+    Put_receive_mark(0);
+}
+
+void Receive_mess_move(void) {
+    if (PitMenu.x06 != 0) {
+        if (PitMenu.x0F == 0) {
+            PitMenu.x0C = 0;
+        }
+        return;
+    }
+    if (!(PitMenu.x22 & 0x80) && F8(&PitMenu, 0x1C) == 0) {
+        PitMenu.x0F = 0;
+        if (PitMenu.x0C > 0) {
+            PitMenu.x0C--;
+        }
+    }
+}
+
+extern void *receive_mes_str[];
+
+void Pit_disp_receive_mes(void) {
+    if (!(PitMenu.x22 & 0x80) && F8(&PitMenu, 0x1C) == 0 && PitMenu.x0C != 0) {
+        SetFilterMode(0);
+        DispFrameMessage(pf_chat_log_base, receive_mes_str[(u8)PitMenu.x0E]);
+        disp_chat_log_sub(0, 0, 0);
+    }
+}
+
+extern s16 receive_mark_pos[][2];
+extern u8 pf_receive_mark[];
+extern char lit_3351[];
+
+void Put_receive_mark(int n) {
+    if (PitMenu.x0F != 0) {
+        if ((n & 0xFF) == 1) {
+            DispFrameMessage(pf_receive_mark, 0);
+        }
+        if ((System_timer & 0x1F) >= 0xD) {
+            Put_megaphone(receive_mark_pos[n & 0xFF][0], receive_mark_pos[n & 0xFF][1], 0);
+        }
+        flfntSetSize(0x15, 0x12);
+        font_set_palette(2);
+        flfntLocate((s16)(receive_mark_pos[n & 0xFF][0] + 0x1A), (s16)(receive_mark_pos[n & 0xFF][1] + 3));
+        font_print_uf(lit_3351);
+    }
+}
+
+void SetMessageHaltFlag(void) {
+    PitMenu.x0C = 0;
+    FS8(&PitMenu, 0x1C) = 1;
+}
+
+void ClearMessageHaltFlag(void) {
+    FS8(&PitMenu, 0x1C) = 0;
+}
+
+int func_5D8370(s8);
+
+void Join_pl_chk(void) {
+    u32 i;
+    u8 *g;
+
+    PitMenu._pad1A = 0;
+    PitMenu.x19 = 0;
+    if (GW(0x1DC) == 0) {
+        g = (u8 *)&game_w;
+        for (i = 0; i < 4; i++, g++) {
+            if (GW(0xD1) != i && g[0x208] == 1) {
+                PitMenu.x19 |= (1 << i) & 0xFF;
+                PitMenu._pad1A++;
+            }
+        }
+    } else {
+        for (i = 0; i < 8; i++) {
+            if (GW(0xD1) != i && func_5D8370(i) == 0) {
+                PitMenu.x19 |= (1 << i) & 0xFF;
+                PitMenu._pad1A++;
+            }
+        }
+    }
+    if (PitMenu.x16 != 0) {
+        PitMenu.x16 &= PitMenu.x19;
+        if (PitMenu.x16 == 0) {
+            PitMenu.x16 = 0;
+            PitMenu.x15 = 1;
+            PitMenu.x17 = 3;
+            PitMenu.x18 = 1;
+        }
+    }
+}
+
+extern u8 lit_3439[];
+extern char lit_3440[];
+extern char lit_3441[];
+extern char lit_3442[];
+
+void Disp_NPC_message(void) {
+    char buf[0x20];
+    char *d;
+    s8 *s;
+    s16 left;
+    s16 y;
+    int room;
+
+    if (!(PitMenu.x06 & 0x10)) {
+        DispFrameMessage(pf_chat_log_base, lit_3439);
+        flfntSetSize(0x15, 0x12);
+        font_set_palette(0);
+        left = PitMenu.x04;
+        s = *(s8 **)&PitMenu.x00;
+        y = 0xD1;
+        while (left > 0) {
+            d = buf;
+            room = 0xB;
+            while (left > 0 && room > 0) {
+                s8 c = *s;
+                left--;
+                if (c == 0xA) {
+                    s++;
+                    break;
+                }
+                d[0] = c;
+                room--;
+                d[1] = s[1];
+                s += 2;
+                d += 2;
+            }
+            *d = 0;
+            flfntLocate(0x1E, y);
+            font_print_uf(buf);
+            y += 0x13;
+        }
+        if (PitMenu.x06 & 2) {
+            flfntLocate(0x1E, (s16)(y + 0x13));
+            if (PitMenu.x06 & 4) {
+                font_print_sp(lit_3440);
+            } else {
+                font_print_sp(lit_3441);
+            }
+        }
+        if (PitMenu.x06 & 8) {
+            font_set_palette(2);
+            flfntLocate(0xA2, (s16)(y + 0x13));
+            font_print_uf(lit_3442);
+        }
+        Put_receive_mark(0);
+    }
+}
+
+extern u8 item_list_frame[];
+extern char *item_list_title[];
+extern char lit_3511[];
+extern char lit_3512[];
+extern char lit_3513[];
+extern char lit_3514[];
+extern char *item_str[];
+extern u8 Item_data[][16];
+int Item_preparation_one_ck(s16);
+
+void ItemListWindow(int page, int cursel, int mode) {
+    char buf[0x40];
+    s16 base;
+    s16 i;
+    s16 sel;
+    s16 y;
+    s16 cnt;
+    s16 pal;
+    UD_ITEM *it;
+
+    base = (s16)(page / 10) * 10;
+    it = (UD_ITEM *)((u8 *)&player_work[GW(0xD1)] + 0x828) + base;
+    SetTrnslMode(4, 5);
+    if (cursel != 0) {
+        FS32(item_list_frame, 0x10) = cursel;
+        sel = page - base;
+    } else {
+        sel = -1;
+    }
+    sprintf(buf, lit_3511, item_list_title[mode & 1], (page / 10) + 1);
+    DispFrameList(item_list_frame, buf, sel);
+    if (mode & 8) {
+        DispFrameListOptionArrow(item_list_frame);
+    }
+    SetFilterMode(0);
+    flfntSetSize(0x12, 0x12);
+    y = 0x3E;
+    for (cnt = 10; cnt > 0; cnt--, it++) {
+        y += 0x16;
+        flfntLocate(0x1AF, y);
+        font_set_palette(0);
+        pal = 2;
+        if ((mode & 4) && Item_preparation_one_ck(it->id) == 0) {
+            font_set_palette(0xA);
+            pal = 0xD;
+        }
+        if (it->id == 0) {
+            font_print_uf(lit_3512);
+        } else {
+            font_print_uf(item_str[it->id]);
+            if (Item_data[it->id][3] >= 2) {
+                flfntLocate(0x24D, y);
+                if (Item_data[it->id][3] == 0xFF) {
+                    font_print_uf(lit_3513);
+                } else {
+                    if (it->num >= Item_data[it->id][3]) {
+                        font_set_palette(pal);
+                    }
+                    font_print(lit_3514, it->num);
+                }
+            }
+        }
+    }
+}
+
+extern u8 frame_status_main_00354770[][0x18];
+extern u8 frame_status_sub_003547A0[][0x10];
+extern char lit_3587[];
+extern char *menu_status_str_003546E0[][10];
+extern char *status_sub_str_00387C60[];
+extern char lit_3588_003837D0[];
+extern char lit_3589[];
+extern char lit_3590[];
+extern char lit_3591[];
+extern char lit_3592[];
+extern char lit_3593[];
+extern char lit_3594[];
+extern char *hunter_appellation[];
+extern f32 job_atk_adj_tbl[];
+extern char *Skill_name[];
+extern u8 my_user_id[];
+int Event_flag_ck(int);
+void Get_hunter_status(void *, u8 *, int *, int *);
+int Get_weapon_job2(u8, u16);
+void PrintPlayerJob(void *);
+void PlayerEquipmentWindow(void *);
+void Put_comment(int, int, int, void *);
+
+void PlayerStatusWindow(u8 *pl, int tab) {
+    char buf[0x40];
+    u8 rank;
+    int pt;
+    int nxt;
+    int t = tab & 0xFF;
+    int noRank = Event_flag_ck(4) != 1;
+    int i;
+    s16 y;
+
+    sprintf(buf, lit_3587, t + 1);
+    FS32(frame_status_main_00354770, 0xC) = (s32)menu_status_str_003546E0[noRank];
+    DispFrameList(frame_status_main_00354770[t], buf, -1);
+    DispFrameListOptionArrow(frame_status_main_00354770);
+    DispFrameMessage(frame_status_sub_003547A0[t], status_sub_str_00387C60[t]);
+    switch (t) {
+    case 0:
+        font_set_palette(0);
+        if (Online_ck() == 1) {
+            flfntLocate(0x17A, 0x52);
+            if (GW(0x1DC) == 0) {
+                font_print_uf((u8 *)&game_w + 0x1E8 + F16(pl, 0xC) * 8);
+            } else {
+                font_print_uf(my_user_id);
+            }
+        }
+        flfntLocate(0x17A, 0x66);
+        font_print_uf(pl + 0x8D4);
+        flfntLocate(0x17A, 0x7A);
+        PrintPlayerJob(pl);
+        if (noRank == 0) {
+            Get_hunter_status(&User_data, &rank, &pt, &nxt);
+            flfntLocate(0x17A, 0x8E);
+            font_print(lit_3588_003837D0, rank, hunter_appellation[rank]);
+            flfntLocate(0x17A, 0xA2);
+            if (rank < 0x14) {
+                font_print(lit_3589, (u8)pt, nxt);
+            } else {
+                font_print(lit_3590, (u8)pt);
+            }
+            flfntLocate(0x17A, 0xB6);
+        } else {
+            flfntLocate(0x17A, 0x8E);
+        }
+        font_print(lit_3591, (u8)F32(&User_data, 0x20));
+        flfntLocate(0x18C, 0xCA);
+        font_print(lit_3592, (u8)FS16(pl, 0x792));
+        flfntLocate(0x18C, 0xDE);
+        font_print(lit_3592, FS16(pl, 0x882) / 3);
+        flfntLocate(0x18C, 0xF2);
+        font_print(lit_3592, (u16)((f32)F16(pl, 0x6AC) * job_atk_adj_tbl[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF]));
+        flfntLocate(0x18C, 0x106);
+        font_print(lit_3592, (u8)F16(pl, 0x6AE));
+        flfntLocate(0x21C, 0xCA);
+        font_print(lit_3593, (u8)(s16)*(f32 *)(pl + 0x920));
+        flfntLocate(0x21C, 0xDE);
+        font_print(lit_3593, (u8)(s16)*(f32 *)(pl + 0x924));
+        flfntLocate(0x21C, 0xF2);
+        font_print(lit_3593, (u8)(s16)*(f32 *)(pl + 0x928));
+        flfntLocate(0x21C, 0x106);
+        font_print(lit_3593, (u8)(s16)*(f32 *)(pl + 0x92C));
+        Put_comment(0x132, 0x126, 0x14, (u8 *)&User_data + 0x3F4);
+        return;
+    case 1:
+        PlayerEquipmentWindow(pl);
+        if (F8(pl, 0x910) == 0) {
+            flfntLocate(0x132, 0x13A);
+            font_print_uf(Skill_name[0]);
+            return;
+        }
+        y = 0x13A;
+        for (i = 0; i < 5 && F8(pl, 0x910 + i) != 0; i++) {
+            flfntLocate(0x132, y);
+            font_print(lit_3594, (u8)(s32)Skill_name[F8(pl, 0x910 + i)]);
+            y += 0x14;
+        }
+        return;
+    }
+}
+
+extern u8 Armor_Head_Data[][0x14];
+extern u8 Armor_Body_Data[][0x14];
+extern u8 Armor_Arm_Data[][0x14];
+extern u8 Armor_Waist_Data[][0x14];
+extern u8 Armor_Leg_Data[][0x14];
+extern u8 menu_stat_icon_tbl1[5];
+extern u8 menu_stat_icon_tbl2[];
+extern char lit_3652[];
+int Get_equip_name(u8, u16);
+u8 Get_equip_rare(u8, u16);
+
+void PlayerEquipmentWindow(void *plv) {
+    u8 *pl = plv;
+    PFLP8 q;
+    u8 *eq[5];
+    s16 y;
+    s16 i;
+    s16 ty;
+
+    eq[0] = Armor_Head_Data[F8(pl, 0x354)];
+    eq[1] = Armor_Body_Data[F8(pl, 0x355)];
+    eq[2] = Armor_Arm_Data[F8(pl, 0x356)];
+    eq[3] = Armor_Waist_Data[F8(pl, 0x357)];
+    eq[4] = Armor_Leg_Data[F8(pl, 0x352)];
+    SetFilterMode(1);
+    reload_tex(1, 0x118);
+    SetTextureStage(0x118);
+    q.p[0] = 0xF8;
+    y = 0x55;
+    q.p[2] = 0x20;
+    q.p[3] = 0x20;
+    q.p[1] = 0x55;
+    q.uv[0] = menu_stat_icon_tbl2[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF];
+    q.uv[2] = q.uv[0] + 0x20;
+    q.uv[1] = 0xA0;
+    q.uv[3] = 0xC0;
+    q.col = Equip_icon_color_rare(Get_equip_rare(F8(pl, 0x35F), F16(pl, 0x360)), 0xFF, 0);
+    flps0008(&q);
+    q.uv[1] = 0xC0;
+    q.uv[3] = 0xE0;
+    for (i = 0; i < 5; i++) {
+        y += 0x20;
+        q.p[1] = y;
+        q.uv[0] = menu_stat_icon_tbl1[i];
+        q.uv[2] = q.uv[0] + 0x20;
+        q.col = Equip_icon_color_rare(eq[i][3], 0xFF, 0);
+        flps0008(&q);
+    }
+    flfntSetSize(0x12, 0x12);
+    flfntLocate(0x168, 0x5C);
+    font_print_sp(lit_3652, Get_equip_name(F8(pl, 0x35F), F16(pl, 0x360)));
+    ty = 0x7C;
+    for (i = 0; i < 5; i++) {
+        flfntLocate(0x168, ty);
+        font_print_sp(lit_3652, FS32(eq[i], 0x10));
+        ty += 0x20;
+    }
+}
+
+extern char *menu_stat_job_str[];
+
+void PrintPlayerJob(void *pl) {
+    font_print_uf(menu_stat_job_str[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF]);
+}
+
+int EquipmentDescriptionWindowA(void *, s16, s16, int);
+
+void EquipmentDescriptionWindow(void *a, s16 b, s16 c, int d) {
+    EquipmentDescriptionWindowA(a, b, c, d);
 }
