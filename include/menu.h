@@ -71,7 +71,7 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     s32 x68;          /* 0x68  */
     u16 x6C;          /* 0x6C  */
     u16 x6E;          /* 0x6E  */
-    s16 x70;          /* 0x70  */
+    u16 x70;          /* 0x70  */
     u8 _pad72[0x74 - 0x72];
     s16 x74;          /* 0x74  */
     s16 x76;          /* 0x76  */
