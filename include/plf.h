@@ -113,4 +113,6 @@ s16 stick_dir_set(PLW *, int);
 s32 stick_pow_get(PLW *, int);
 s32 trade_get_ck_00139680(PLW *);
 void unique_act_set(PLW *);
+typedef struct { u8 _00; u8 se_kind; u8 _02[2]; } PL_SHELL_DATA; /* see SHELL_DATA in shell06.h */
+extern PL_SHELL_DATA Shell_data[];
 #endif

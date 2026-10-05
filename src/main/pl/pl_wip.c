@@ -425,3 +425,131 @@ void ex_atk_ck(PLW *pl, s32 arg1) {
         }
     }
 }
+
+void basic_atack_ck(PLW *pl) {
+    s32 temp_v0;
+    s32 temp_v0_2;
+    u8 temp_a0;
+    u8 temp_v1;
+
+    if (((Pl_master_ck(pl) != 0) || (Online_ck() != 1)) && (pl->work88C == 0) && (Game_clear_ck(1) != 1)) {
+        temp_v1 = pl->kind;
+        switch (temp_v1) {
+        case 4:
+            if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
+                Pl_act_set(pl, 0, 0x1C, 4);
+            }
+            if (pl->sw.an_trg & 0x3C) {
+                temp_v0 = (pl->sw.ang[1] + 0x2AAB) & 0xFFFF;
+                if (temp_v0 < 0x4001) {
+                    Pl_act_set(pl, 1, 0x33, 4);
+                    return;
+                }
+                if (temp_v0 < 0x9556) {
+                    Pl_act_set(pl, 1, 0x30, 4);
+                    return;
+                }
+                if (temp_v0 < 0xD556) {
+                    Pl_act_set(pl, 1, 0x33, 4);
+                    return;
+                }
+                Pl_act_set(pl, 1, 0x31, 4);
+                return;
+            }
+            break;
+        case 0:
+        default:
+            if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
+                Pl_act_set(pl, 0, 0x1C, 4);
+            }
+            if (pl->sw.trg & 1) {
+                Pl_act_set(pl, 1, 0xE, 4);
+            }
+            if (pl->sw.an_trg & 0x3C) {
+                temp_v0_2 = (pl->sw.ang[1] + 0x4000) & 0xFFFF;
+                if (temp_v0_2 < 0x5555) {
+                    Pl_act_set(pl, 1, 1, 4);
+                    return;
+                }
+                if (temp_v0_2 < 0xAAAC) {
+                    Pl_act_set(pl, 1, 4, 4);
+                    return;
+                }
+                Pl_act_set(pl, 1, 0, 4);
+                return;
+            }
+            break;
+        case 3:
+            if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
+                Pl_act_set(pl, 0, 0x6D, 4);
+            }
+            if (pl->sw.trg & 1) {
+                Pl_act_set(pl, 1, 0x22, 0xC);
+            }
+            if (pl->sw.an_trg & 0x3C) {
+                if (((pl->sw.ang[1] + 0x1555) & 0xFFFF) < 0xAAAC) {
+                    Pl_act_set(pl, 1, 0x24, 0xC);
+                    return;
+                }
+                Pl_act_set(pl, 1, 0x2D, 0xC);
+                return;
+            }
+            break;
+        case 2:
+            if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
+                Pl_act_set(pl, 0, 0x1C, 4);
+            }
+            if (pl->sw.an_trg & 0x3C) {
+                if (((pl->sw.ang[1] + 0x1555) & 0xFFFF) < 0xAAAC) {
+                    Pl_act_set(pl, 1, 0x17, 4);
+                    return;
+                }
+                Pl_act_set(pl, 1, 0x16, 4);
+                return;
+            }
+            break;
+        case 1:
+        case 5:
+            if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
+                Pl_act_set(pl, 0, 0x1C, 4);
+            }
+            temp_a0 = pl->work01C;
+            if (temp_a0 != 0) {
+                if (((s32) temp_a0 < (s32) pl->work01D) && ((s32) temp_a0 < pl->work8BC)) {
+                    goto block_57;
+                }
+            } else {
+block_57:
+                if ((pl->sw.an_trg & 0x10) && (pl->work8BC > 0)) {
+                    Pl_act_set(pl, 1, 9, 5);
+                }
+            }
+            if ((pl->sw.an_trg & 0x20) && (pl->x763 == 0) && (pl->pch_on == 0)) {
+                Pl_act_set(pl, 1, 0x3D, 4);
+            }
+            if (pl->work01C == 0) {
+                if (pl->sw.trg & 1) {
+                    Pl_act_set(pl, 1, 0xC, 5);
+                    return;
+                }
+            } else {
+                pl->work8ED = 1;
+                if (pl->sw.trg & 1) {
+                    switch (Shell_data[pl->ammo_type].se_kind) {
+                    case 0:
+                        Pl_act_set(pl, 1, 2, 5);
+                        return;
+                    default:
+                    case 1:
+                        Pl_act_set(pl, 1, 8, 5);
+                        return;
+                    case 2:
+                        Pl_act_set(pl, 1, 0xA, 5);
+                        break;
+                    }
+                }
+            }
+            break;
+        }
+    }
+}
