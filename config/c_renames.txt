@@ -135,3 +135,4 @@ build/src/game/shell/shell22.c.o .rodata .data
 build/src/game/shell/shell22b.c.o .rodata .data
 build/src/game/shell/shell23.c.o .rodata .data
 build/src/game/pl/pl_damageb.c.o .rodata .data
+build/src/lobby/lb/lb_talk.c.o .rodata .data

@@ -71,8 +71,6 @@ void trans_stage_sub(int m, unsigned char *cl)
 /* Pl_stg_ck / Em_stg_ck (0x151FF0 / 0x152010): is this player / monster
  * (byte +0x736) on the current stage (game_w+0x14)? */
 #include "game.h"
-u8 Pl_stg_ck(void *p) { return ((u8 *)p)[0x736] == game_w.stage; }
-u8 Em_stg_ck(void *p) { return ((u8 *)p)[0x736] == game_w.stage; }
 
 /* frame_check2 now comes from the decompiled src/main/frame/f_frame_nm.c. */
 
@@ -120,15 +118,6 @@ u8 Em_max_parts_get(int em) { return em_parts_num[(s16)em]; }
  * at PLW+0x5B8, cleared while ~sw.now & for_pad_timer_tbl[0] is non-zero,
  * else counted up to 0xFFFF. */
 extern u16 for_pad_timer_tbl[];
-void pad_timer_calc(void *pl)
-{
-    u16 *t = (u16 *)((u8 *)pl + 0x5B8);
-    u16 now = *(u16 *)((u8 *)pl + 0x364);
-    if ((u16)~now & for_pad_timer_tbl[0])
-        *t = 0;
-    else if (*t < 0xFFFF)
-        (*t)++;
-}
 
 /* Online_ck (0x162D60): system_w+0x10 != 0. The port runs offline. */
 int Online_ck(void) { return 0; }

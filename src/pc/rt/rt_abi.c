@@ -49,3 +49,25 @@ int rtabi_GetGroundHitStatusAreaPl(void *ent, f32 *pos, void *at, f32 *out)
     f32 dummy;
     return GetGroundHitStatusAreaPl(ent, pos, at, out, &dummy);
 }
+
+/* Monster code (game.bin em_master_nm.c, agent B's em01_ai_nm.c): */
+/* em_frame_check: em01_ai_nm.c (EMW *, f32 f, int n); definition (w, n, f) */
+int em_frame_check(void *w, int n, f32 f);
+int rtabi_em_frame_check(void *w, f32 f, int n) { return em_frame_check(w, n, f); }
+/* Eft13_set_em_scl: em01_ai_nm.c (EMW *, int j, f32 scale, int arg);
+ * definition (src/main/eft/eft13e.c) (chr, s16 j, int arg, f32 scale) */
+void Eft13_set_em_scl(void *chr, s16 j, int arg, f32 scale);
+void rtabi_Eft13_set_em_scl(void *em, int j, f32 scale, int arg) { Eft13_set_em_scl(em, (s16)j, arg, scale); }
+/* Eft15_set3: em01_ai_nm.c (EMW *, int arg, f32 scale, int x07);
+ * definition (src/game/eft/eft15.c) (em, arg, x07, scale) */
+void Eft15_set3(void *em, int arg, int x07, f32 scale);
+void rtabi_Eft15_set3(void *em, int arg, f32 scale, int x07) { Eft15_set3(em, arg, x07, scale); }
+/* Eft02_set3: em_master_nm.c (f32 scale, EMW *, ang, arg, joint, f32 *pos);
+ * definition (src/main/eft/eft02_nm.c) (em, ang, arg, joint, pos, scale) */
+void Eft02_set3(void *em, int ang, int arg, int joint, f32 *pos, f32 scale);
+void rtabi_Eft02_set3(f32 scale, void *em, int ang, int arg, int joint, f32 *pos) { Eft02_set3(em, ang, arg, joint, pos, scale); }
+
+/* NextStage_No_Set: em_core_nm.c calls it with no arguments (a0 = em left
+ * over in the asm); the definition (agent D's em_cmd_nm.c) takes em. */
+void NextStage_No_Set(void *em);
+void rtabi_NextStage_No_Set(void *em) { NextStage_No_Set(em); }

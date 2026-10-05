@@ -480,7 +480,7 @@ int main(int argc, char **argv)
     static const int parts[HUNTER_PARTS] = { 1, 0, 1, 1, 1, 1 };
     float hx = 10900, hz = 7700, rx = 10000, rz = 6700, gy;
     Uint32 t0;
-    int set_h0 = -1, ticks = 0, stage_no = 4, cam_given = 0;
+    int set_h0 = -1, ticks = 0, stage_no = 4, cam_given = 0, stage_given = 0, quest_no = 0;
     float follow[3] = { 900.0f, 450.0f, -0.3f };
     float rathian_yoff = 0;
     int follow_given = 0, game_cam = 0, have_view = 0;
@@ -500,7 +500,8 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--size") && i + 1 < argc) sscanf(argv[++i], "%dx%d", &W, &H);
         else if (!strcmp(argv[i], "--cam") && i + 1 < argc)
             cam_given = sscanf(argv[++i], "%f,%f,%f,%f,%f", &cam[0], &cam[1], &cam[2], &cam[3], &cam[4]) > 0;
-        else if (!strcmp(argv[i], "--stage") && i + 1 < argc) stage_no = (int)strtol(argv[++i], NULL, 0);
+        else if (!strcmp(argv[i], "--stage") && i + 1 < argc) { stage_no = (int)strtol(argv[++i], NULL, 0); stage_given = 1; }
+        else if (!strcmp(argv[i], "--quest") && i + 1 < argc) quest_no = (int)strtol(argv[++i], NULL, 0);
         else if (!strcmp(argv[i], "--play")) play = 1;
         else if (!strcmp(argv[i], "--input") && i + 1 < argc) { script = argv[++i]; play = 1; }
         else if (!strcmp(argv[i], "--sw-trace")) sw_trace = 1;
@@ -538,6 +539,19 @@ int main(int argc, char **argv)
     if (play)
         pad_init();
 
+    rt_set_file_loader(afs_entry);
+    if (quest_no) {
+        /* --quest N: the mission file's monsters (rt_em.c); the hunt's
+         * stage is where the quest's own monster starts */
+        int k, st;
+        if (rt_quest_load(quest_no) != 0)
+            fprintf(stderr, "quest %d: no mission file\n", quest_no);
+        else if ((st = rt_quest_monster_stage(&k)) >= 0) {
+            fprintf(stderr, "quest %d: monster kind %d on stage %d\n", quest_no, k, st);
+            if (!stage_given)
+                stage_no = st;
+        }
+    }
     /* the stage's area model + set model (stage.md 1), ground collision,
      * found through main's per-stage tables (stage 4 = st04, st04_1, lg004) */
     stage_link = load_stage_file(0x2EC950, stage_no, &keep[0]);   /* stage_model_data */
@@ -658,7 +672,10 @@ int main(int argc, char **argv)
          * (walk loop 1003) and em_move's wall/ground collision keeps it on
          * the ground and inside the walls */
         float p[3] = { rx, gy, rz };
-        rt_monster_place(0, 1, p, (int)(0.6f * 65536.0f / 6.2831853f));
+        if (getenv("RT_EM_STANDIN"))     /* old host stand-in: root motion and collision only */
+            rt_monster_place(0, 1, p, (int)(0.6f * 65536.0f / 6.2831853f));
+        else                            /* the game's monster code: enemy_mv / em01 (rt_em.c) */
+            rt_monster_spawn(1, p, (int)(0.6f * 65536.0f / 6.2831853f));
         rathian.skel.root_lock = 1;
     }
     hunter_pose(&pl, 0, &light);
@@ -804,7 +821,10 @@ int main(int argc, char **argv)
                 rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
             }
             if (rathian.game && ticks >= 2) {
-                rt_monster_motion_tick(0);
+                if (getenv("RT_EM_STANDIN"))
+                    rt_monster_motion_tick(0);
+                else
+                    rt_monster_tick(0);
                 if (sw_trace && rathian.skel.root_lock) {
                     float p[3];
                     int a;
