@@ -172,6 +172,13 @@ void Em_Sleep_Flag_Ck(EMW *);
 void em_ana_loop_cnt_set(EMW *);
 void em_mahi_eff_set(EMW *, int);
 void em_tail_off_sub(EMW *);
+void wyvern_kill_cnt_up(u8 *, int);
+extern u8 User_data[];
+void Quest_enemy_capture();
+void Em_Mode_Chg(EMW *, int, int);
+void Quest_enemy_die(EMW *);
+void Em_hagi_point_set(EMW *, int);
+int Em_hagi_point_cnt_ck(EMW *);
 void em01_to_normal();
 void em01_to_fly();
 void em01_frame_reset();
@@ -271,7 +278,7 @@ void em01_init(EMW *em) {
         switch (k) {
         case 1: case 6: case 8: case 0xB: case 0xF: case 0xE:
         case 0x11: case 0x15: case 0x16: case 0x1A:
-            EMF(em, u8, 0x4E7) = 0;
+            em->ex[0xA3] = 0;
             eft09_set(em, k);
             break;
         }
@@ -4240,8 +4247,8 @@ static void em_dmg04_005707A0(EMW *em, EM01W *w) {
         Em_Sleep_Flag_Ck(em);
         break;
     case 1:
-        if (em_frame_check(em, 6.0f, 0) && EMF(em, s8, 0x4E7) != 0 && em->kind != 0x14) {
-            EMF(em, s8, 0x4E7) = 0;
+        if (em_frame_check(em, 6.0f, 0) && (s8)em->ex[0xA3] != 0 && em->kind != 0x14) {
+            em->ex[0xA3] = 0;
         }
         if (em_frame_check2(em, 0, 52.0f) && em_frame_check2(em, 0, 122.0f) == 0) {
             em->ang[1] -= (u16)(u32)(936.0f * em->act_spd);
@@ -4653,6 +4660,227 @@ static void em_dmg19_00571650(EMW *em, EM01W *w) {
         if (em->x8C3 == 0) {
             em01_act_set(em, 4, 0xD, 3);
         }
+        break;
+    }
+}
+
+static void em_demo04_00572FA0(EMW *em, EM01W *w) {
+    f32 v[3];
+
+    em->x40C = 5;
+    em->x9EA = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em_char_set(em, 0x61, 0, 0);
+        em_range_set(em, 1);
+        em->x88B = 0;
+        Em_Sleep2_Start(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            Quest_enemy_capture();
+        }
+        break;
+    case 2:
+        break;
+    }
+    v[1] = 10.0f;
+    v[2] = 140.0f;
+    v[0] = 0.0f;
+    em_sleep_eff_set(em, 0x22, v, 1.6f);
+    if (++em->work08 % 135 == 0) {
+        sound_call_sub_00574CD0(em, 0x57, 0x23);
+    }
+}
+
+static void em_die00_005730C0(EMW *em, EM01W *w) {
+    em->x40E = 5;
+    Em_Mode_Chg(em, 0, 0);
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x44, 0, 0);
+        em->x3F4 = 0;
+        em->x388 = 3;
+        Quest_enemy_die(em);
+        if (em->kind == 0xB) {
+            wyvern_kill_cnt_up(User_data, 1);
+        } else {
+            wyvern_kill_cnt_up(User_data, 0);
+        }
+        break;
+    case 1:
+        if (em_frame_check(em, 212.0f, 0)) {
+            Em_set_quake_sub(em, 2);
+        }
+        if (em->x194 == 0) {
+            em->work08 = 0x1C2;
+            em->x05++;
+            Em_hagi_point_set(em, 0);
+            em->ex[0x90] = 0;
+        }
+        break;
+    case 2:
+        Em_hagi_point_cnt_ck(em);
+        break;
+    case 3:
+        if (--em->work08 <= 0) {
+            em->x04++;
+            em->x01 = 0;
+        } else {
+            em->x798 = (f32)em->work08 / 150.0f;
+        }
+        break;
+    case 0x63:
+        if (em->x194 == 0) {
+            em->x388 = 0;
+            em01_to_normal(em, 0, 0);
+            em->mode_old = em->mode;
+            em->x15_old = em->x15;
+        }
+        break;
+    }
+}
+
+static void em_die01_00573290(EMW *em, EM01W *w) {
+    em->x40E = 5;
+    Em_Mode_Chg(em, 0, 0);
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x61, 0, 0);
+        em->x3F4 = 0;
+        em->x388 = 3;
+        Quest_enemy_die(em);
+        em->work08 = 0xE10;
+        em->x9EA = 5;
+        if (em->kind == 0xB) {
+            wyvern_kill_cnt_up(User_data, 1);
+        } else {
+            wyvern_kill_cnt_up(User_data, 0);
+        }
+        break;
+    case 1:
+        em->x9EA = 5;
+        em->work08 -= 1;
+        if (em->x194 == 0) {
+            em->x05++;
+            Em_hagi_point_set(em, 0);
+            em->ex[0x90] = 0;
+        }
+        break;
+    case 2:
+        Em_hagi_point_cnt_ck(em);
+        if (em->work08 != 0 && em->x9EA != 0) {
+            em->x9EA = 5;
+            if (--em->work08 <= 0) {
+                em->x9EA = 0;
+            }
+        }
+        break;
+    case 3:
+        if (--em->work08 <= 0) {
+            em->x04++;
+            em->x01 = 0;
+        } else {
+            em->x798 = (f32)em->work08 / 150.0f;
+        }
+        break;
+    case 0x63:
+        if (em->x194 == 0) {
+            em->x388 = 0;
+            em01_to_normal(em, 0, 0);
+            em->mode_old = em->mode;
+            em->x15_old = em->x15;
+        }
+        break;
+    }
+}
+
+static void em_die02_00573480(EMW *em, EM01W *w) {
+    em->x40E = 5;
+    Em_Mode_Chg(em, 0, 0);
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x4D, 0, 0);
+        if (!(em->adj_y <= -50.0f)) {
+            em->adj_y = -50.0f;
+        }
+        em->x3C0[1] = -10.0f;
+        w->spd[0] = 0;
+        w->spd[2] = 0;
+        break;
+    case 1:
+        w->spd[1] = em->ang[1];
+        speed_add_g(em, w->spd);
+        if (em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            em_char_set(em, 0x4E, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    case 2:
+        if (em_frame_check(em, 60.0f, 0)) {
+            em->x05++;
+            em->work08 = 0;
+            em_char_set(em, 0x52, 0, 0);
+            em->x388 = 3;
+            Quest_enemy_die(em);
+            if (em->kind == 0xB) {
+                wyvern_kill_cnt_up(User_data, 1);
+            } else {
+                wyvern_kill_cnt_up(User_data, 0);
+            }
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->work08 = 0x1C2;
+            em->x05++;
+            Em_hagi_point_set(em, 0);
+            em->ex[0x90] = 0;
+        }
+        break;
+    case 4:
+        Em_hagi_point_cnt_ck(em);
+        break;
+    case 5:
+        if (--em->work08 <= 0) {
+            em->x04++;
+            em->x01 = 0;
+        } else {
+            em->x798 = (f32)em->work08 / 150.0f;
+        }
+        break;
+    case 0x63:
+        if (em->x194 == 0) {
+            em->x388 = 0;
+            em01_to_normal(em, 0, 0);
+            em->mode_old = em->mode;
+            em->x15_old = em->x15;
+        }
+        break;
+    }
+}
+
+static void em_move05_00573F70(EMW *em, EM01W *w) {
+    switch (em->x15) {
+    case 0:
+        em_die00_005730C0(em, w);
+        break;
+    case 1:
+        em_die01_00573290(em, w);
+        break;
+    case 2:
+        em_die02_00573480(em, w);
         break;
     }
 }
