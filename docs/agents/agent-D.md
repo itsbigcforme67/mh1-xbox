@@ -125,3 +125,13 @@ eft13c.c is gone. eft13_t repeats one identical case body for several case
 groups (0, the big group, 5/10): MWCC does not merge identical blocks, so
 they are written out separately. Declaration order found with a greedy
 move search (/tmp/claude-1000/agentD/permsub.py).
+
+## Policy change (coordinator): cover whole files, park near-matches
+eft20_nm.c (not built) now holds C for every eft20 function still in asm:
+eft20_i (1032/1080 instructions differ), eft20_m (885/1150), eft20_t
+(1209/1287), eft20_pos_set (842/891). These counts are mostly register
+allocation and block order; the logic was written from m2c drafts (with
+jump tables, /tmp/claude-1000/agentD/jdraft_main.py) checked against the
+asm by hand, and compiles. Not verified at runtime. Calls into game.bin
+by address: func_628690 (shell01_set2), func_628750 (shell01_set3),
+func_629C20 (shell04_set2).
