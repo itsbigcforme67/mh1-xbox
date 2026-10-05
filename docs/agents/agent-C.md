@@ -165,3 +165,8 @@ em21 are now whole files (0x5A7380-0x5A7F6C, 0x5CF0F0-0x5D04EC,
 0x60C3A0-0x60D3FC); their _nm.c files are gone. Found while matching
 em20_ground_point_search, which has the same loop (there the pointer is
 also assigned before the em_pl_pos_set call).
+- em17_senkai_sub now matches: the bank value `b = em->ang[2]` is declared
+  in block scope inside each branch (`int b = em->ang[2];`), which changes
+  MWCC's register colouring (found by the permuter as an inline accessor,
+  then rewritten as block-scoped locals). em17 is one whole file again
+  (0x5D81A0-0x5D9BC4); em17b.c and em17_nm.c are gone.

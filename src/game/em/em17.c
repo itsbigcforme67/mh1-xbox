@@ -1,5 +1,4 @@
-/* em17 - game.bin 0x005D81A0-0x005D8C64 (setters; em17_senkai_sub is still
- * asm, near-match in em17_nm.c; the rest of the file is em17b.c). Action setters for monster 17,
+/* em17 - game.bin 0x005D81A0-0x005D9BC4. Action setters for monster 17,
  * its flying turn (senkai_sub: bank ang[2] toward the turn, turn ang[1]
  * by a rate taken from the bank, sink while banking and climb back toward
  * 1000-2100 above the stage floor, switching flight animations), plus
@@ -312,4 +311,404 @@ void em17_act_set(EMW *em, int kind, u16 no, u16 arg) {
         em_act_set2(em, kind, no, arg);
         break;
     }
+}
+
+void em17_senkai_sub(EMW *em, int flags, int mode) {
+    EM17W *w = (EM17W *)em->ex;
+    STAGE_DATA *sd = Stage_data_get(em->stg);
+    int a;
+    f32 r;
+
+    if (flags & 1) {
+        w->turn_left = w->dang;
+    }
+    switch (mode) {
+    case 0:
+        a = w->turn_left;
+        if (a >= 0x8000) {
+            a = 0x10000 - a;
+        }
+        if (a <= 0x2000) {
+            w->bank_max = 0x1000;
+        } else if (a <= 0x4000) {
+            w->bank_max = 0x1800;
+        } else if (a <= 0x6000) {
+            w->bank_max = 0x2000;
+        } else if (a <= 0x8000) {
+            w->bank_max = 0x3000;
+        }
+        if (em->adj_z <= 130.0f) {
+            break;
+        }
+    case 1:
+        a = w->turn_left;
+        if (a >= 0x8000) {
+            a = 0x10000 - a;
+        }
+        if (a <= 0x2000) {
+            w->bank_max = 0x1800;
+        } else if (a <= 0x4000) {
+            w->bank_max = 0x2000;
+        } else if (a <= 0x6000) {
+            w->bank_max = 0x2800;
+        } else if (a <= 0x8000) {
+            w->bank_max = 0x3000;
+        }
+        break;
+    }
+    if (w->turn_left != 0) {
+        if (w->turn_left <= 0x8000) {
+            int b = em->ang[2];
+            if (b <= 0x4000) {
+                em->ang[2] = b - w->bank_spd * 2;
+            } else if (b <= w->bank_max || b > 0x10000 - w->bank_max) {
+                em->ang[2] -= w->bank_spd;
+            } else if (b != 0x10000 - w->bank_max) {
+                em->ang[2] = b + w->bank_spd;
+            }
+        } else {
+            int b = em->ang[2];
+            if (b >= 0xC000) {
+                em->ang[2] = b + w->bank_spd * 2;
+            } else if (b < w->bank_max || b >= 0x10000 - w->bank_max) {
+                em->ang[2] += w->bank_spd;
+            } else if (b != w->bank_max) {
+                em->ang[2] = b - w->bank_spd;
+            }
+        }
+    } else {
+        int b = em->ang[2];
+        if (b != 0) {
+            if (b <= w->bank_max) {
+                em->ang[2] = b - w->bank_spd;
+            } else if (b >= 0x10000 - w->bank_max) {
+                em->ang[2] = b + w->bank_spd;
+            }
+        }
+    }
+    a = em->ang[2];
+    a = (a < 0x8000) ? a : (u16)(0x10000 - a);
+    if (a <= 0x1000) {
+        w->turn = 0x80;
+    } else {
+        w->turn = (a - 0x1000) / 16 + 0x80;
+    }
+    a = em->ang[2];
+    if (a != 0) {
+        if (a <= 0xF000 && a >= 0xC000) {
+            if (w->turn_left <= w->turn) {
+                em->ang[1] += w->turn_left;
+                w->turn_left = 0;
+            } else {
+                em->ang[1] += w->turn;
+                w->turn_left -= w->turn;
+            }
+        } else if (a >= 0x1000 && a <= 0x4000) {
+            if (w->turn_left >= 0x10000 - w->turn) {
+                em->ang[1] -= 0x10000 - w->turn_left;
+                w->turn_left += 0x10000 - w->turn_left;
+            } else {
+                em->ang[1] -= w->turn;
+                w->turn_left += w->turn;
+            }
+        }
+    }
+    em->ang[1] = (u16)em->ang[1];
+    w->turn_left = (u16)w->turn_left;
+    a = em->ang[2];
+    if (a >= 0x8000) {
+        a = 0x10000 - a;
+    }
+    if (a < 0x1000) {
+        r = 0.1f;
+    } else {
+        r = 2.0f * (3.1415927f * ((360.0f * a / 65536.0f) / 360.0f));
+    }
+    if (!(flags & 4)) {
+        em->pos[1] -= r;
+        if (!(em->adj_z < 50.0f) && r != 0.1f) {
+            em->adj_z = em->adj_z - r;
+        }
+    }
+    if (em->pos[1] < em->x5AC) {
+        em->pos[1] = em->x5AC;
+    }
+    if (!(flags & 4)) {
+        if (em->char0 == 0x3F4) {
+            if (em->x194 == 0) {
+                em_char_set(em, 14, 0, 0);
+            }
+            if (!(1000.0f + sd->floor_y < em->pos[1])) {
+                em->pos[1] += 5.0f;
+                if (em->adj_z < 120.0f) {
+                    em->adj_z += 1.0f;
+                }
+            } else if (!(1500.0f + sd->floor_y < em->pos[1])) {
+                em->pos[1] += 3.0f;
+                if (em->adj_z < 120.0f) {
+                    em->adj_z += 0.5f;
+                }
+            } else if (!(2000.0f + sd->floor_y < em->pos[1])) {
+                em->pos[1] += 2.0f;
+                if (em->adj_z < 120.0f) {
+                    em->adj_z += 0.5f;
+                }
+            } else {
+                if (!(2100.0f + sd->floor_y < em->pos[1])) {
+                    em->pos[1] += 1.0f;
+                }
+                if (em->adj_z < 120.0f) {
+                    em->adj_z += 1.0f;
+                }
+            }
+        } else if (!(2000.0f + sd->floor_y < em->pos[1]) || em->adj_z <= 60.0f) {
+            em_char_set(em, 12, 0, 0);
+        }
+    }
+    if (em->char0 != 0x3F4 && em->x194 == 0) {
+        int b = em->ang[2];
+        if (b <= 0x7FFF) {
+            if (b > 0x2000) {
+                if (em->char0 != 0x43E && em->x194 == 0) {
+                    em_char_set(em, 0x56, 0, 0);
+                }
+            } else if (b > 0x1000) {
+                if (em->char0 != 0x441 && em->x194 == 0) {
+                    em_char_set(em, 0x59, 0, 0);
+                }
+            } else if (em->char0 != 0x3F6 && em->x194 == 0) {
+                em_char_set(em, 14, 0, 0);
+            }
+        } else if (b <= 0xDFFF) {
+            if (em->char0 != 0x43D && em->x194 == 0) {
+                em_char_set(em, 0x55, 0, 0);
+            }
+        } else if (b <= 0xEFFF) {
+            if (em->char0 != 0x440 && em->x194 == 0) {
+                em_char_set(em, 0x58, 0, 0);
+            }
+        } else if (em->char0 != 0x3F6 && em->x194 == 0) {
+            em_char_set(em, 14, 0, 0);
+        }
+    }
+    if (!(flags & 2)) {
+        a = em->ang[0];
+        if (a != 0) {
+            if (a <= 0x7FFF) {
+                em->ang[0] = a - w->pitch_spd;
+            } else {
+                em->ang[0] = a + w->pitch_spd;
+            }
+            em->ang[0] = (u16)em->ang[0];
+        }
+    }
+}
+
+u16 em17_senkai_target(EMW *em) {
+    EM17W *w = (EM17W *)em->ex;
+    int a;
+    u16 ret = 0;
+
+    if (em->x881 == 0) {
+        return 1;
+    }
+    w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+    w->dang = w->dang - em->ang[1];
+    if (w->dang != 0) {
+        a = w->dang & 0xFFFF;
+        if (a <= 0x8000) {
+            if (a <= w->turn) {
+                ret = 1;
+                em->ang[1] += a;
+            } else {
+                em->ang[1] += w->turn;
+            }
+        } else {
+            if (a >= 0x10000 - w->turn) {
+                ret = 1;
+                em->ang[1] -= 0x10000 - a;
+            } else {
+                em->ang[1] -= w->turn;
+            }
+        }
+    }
+    em->ang[1] = (u16)em->ang[1];
+    return ret;
+}
+
+void em17_fly_adjy(EMW *em, int type) {
+    f32 (*tbl)[2] = fly_adjy_hosei_tbl_006646E0[type];
+    EM17W *w = (EM17W *)em->ex;
+    f32 t;
+    f32 v;
+    int i;
+
+    if (tbl != 0 && em->x1C4 == 0) {
+        t = em->x19C;
+        if (t == 0.0f || t == 1.0f) {
+            em->adj_y = tbl[0][1];
+        } else {
+            i = 1;
+            do {
+                v = tbl[i][0];
+                if (t > v && v != 0.0f) {
+                    i++;
+                } else if (v == 0.0f) {
+                    break;
+                } else {
+                    em->adj_y = (tbl[i][1] - tbl[i - 1][1]) / ((v - tbl[i - 1][0]) / em->chr_spd0);
+                    i = 0;
+                }
+            } while (i != 0);
+        }
+        w->spd[0] = 0;
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+    }
+}
+
+void em17_fly_adjy2_init(EMW *em, u8 type) {
+    EM17W *w = (EM17W *)em->ex;
+
+    w->adj_x = 0;
+    w->adj_y = 0;
+    w->adj_z = 0;
+    w->adj_type = type;
+    switch (w->adj_type) {
+    case 2:
+        w->adj_y = 1;
+        w->adj_tm = 0x60;
+        break;
+    case 3:
+        w->adj_y = 1;
+        w->adj_tm = 0x1E;
+        break;
+    case 5:
+        w->adj_y = 1;
+        w->adj_z = 1;
+        w->adj_tm = 0x3C;
+        break;
+    case 8:
+        w->adj_y = 1;
+        w->adj_z = 1;
+        w->adj_tm = 0x4C;
+        break;
+    case 9:
+        w->adj_y = 1;
+        w->adj_z = 1;
+        w->adj_tm = 0;
+        break;
+    case 10:
+        w->adj_y = 1;
+        w->adj_z = 1;
+        w->adj_tm = 0x5C;
+        break;
+    case 11:
+        w->adj_y = 1;
+        w->adj_tm = 0;
+        break;
+    case 12:
+        w->adj_y = 1;
+        w->adj_tm = 0x2C;
+        break;
+    case 13:
+        w->adj_y = 1;
+        w->adj_tm = 0;
+        break;
+    }
+    em_rate_clear(em);
+}
+
+static u8 fly_adjy2_subx(EMW *em, EM17W *w) {
+    return 0;
+}
+
+static u8 fly_adjy2_suby(EMW *em, EM17W *w) {
+    int i;
+    f32 (*tbl)[2] = fly_adjy2_hosei_tbl_00664AF0[w->adj_type];
+    u8 ret = 0;
+    f32 t;
+    f32 v;
+
+    if (tbl == 0) {
+        return ret;
+    }
+    t = w->adj_tm;
+    if (t != 0.0f && t != 1.0f) {
+        i = 1;
+        do {
+            v = tbl[i][0];
+            if (t > v && v > 0.0f) {
+                i++;
+            } else if (v == 0.0f) {
+                ret = 2;
+                if (em->adj_y > -50.0f) {
+                    em->adj_y -= 1.0f;
+                }
+                break;
+            } else if (v < 0.0f) {
+                w->adj_tm = 0;
+                ret = 2;
+                em->adj_y = 0.0f;
+                break;
+            } else {
+                em->adj_y = (tbl[i][1] - tbl[i - 1][1]) / ((v - tbl[i - 1][0]) / em->chr_spd0);
+                i = 0;
+            }
+        } while (i != 0);
+    }
+    return ret;
+}
+
+static u8 fly_adjy2_subz(EMW *em, EM17W *w) {
+    f32 (*tbl)[2] = fly_adjz2_hosei_tbl_00664CB0[w->adj_type];
+    u8 ret = 0;
+    f32 t;
+    f32 v;
+    int i;
+
+    if (tbl == 0) {
+        return ret;
+    }
+    t = w->adj_tm;
+    if (t != 0.0f && t != 1.0f) {
+        i = 1;
+        do {
+            v = tbl[i][0];
+            if (t > v && v != 0.0f) {
+                i++;
+            } else if (v == 0.0f) {
+                ret = 4;
+                break;
+            } else {
+                em->adj_z = (tbl[i][1] - tbl[i - 1][1]) / ((v - tbl[i - 1][0]) / em->chr_spd0);
+                i = 0;
+            }
+        } while (i != 0);
+    }
+    return ret;
+}
+
+u8 em17_fly_adjy2(EMW *em) {
+    EM17W *w = (EM17W *)em->ex;
+    u8 ret = 0;
+
+    if (w->adj_x != 0) {
+        ret = fly_adjy2_subx(em, w);
+    }
+    if (w->adj_y != 0) {
+        ret |= fly_adjy2_suby(em, w);
+    }
+    if (w->adj_z != 0) {
+        ret |= fly_adjy2_subz(em, w);
+    }
+    w->adj_tm += (s16)em->chr_spd0;
+    if (em->x388 == 2) {
+        w->spd[0] = 0;
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add_g(em, w->spd);
+    }
+    return ret;
 }

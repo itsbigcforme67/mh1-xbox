@@ -114,8 +114,6 @@ segments:
       - [0x09CB6C, asm, text/g_em15_senkai_target]
       - [0x09CC80, asm, text/f_em_5D0600]
       - [0x0A4820, c, em/em17]
-      - [0x0A52E4, asm, text/em17_senkai_sub]
-      - [0x0A5BF0, c, em/em17b]
       - [0x0A6244, asm, text/g_em17_horm_init]
       - [0x0A6560, asm, text/f_em_5D9EE0]
       - [0x0B2C50, c, em/em16]
