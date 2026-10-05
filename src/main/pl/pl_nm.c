@@ -360,7 +360,8 @@ s32 wall_act_ck(PLW *pl, s16 mode) {
     }
     if (pl->work74C != 0) {
         for (i = 0, off = 0; i < 20; i++, off += 12) {
-            w = (PL_WALL *)((u8 *)pl_wall_mat[pl->id] + off);
+            w = pl_wall_mat[pl->id];
+            w = (PL_WALL *)((u8 *)w + off);
             flag = w->flag;
             if (flag == 0) {
                 break;
@@ -399,7 +400,8 @@ s32 wall_vec_set(PLW *pl, s16 mode) {
     }
     if (pl->work74C & (mode == 0 ? 0xE0000007 : 0x3E000)) {
         for (i = 0, off = 0; i < 20; i++, off += 12) {
-            w = (PL_WALL *)((u8 *)pl_wall_mat[pl->id] + off);
+            w = pl_wall_mat[pl->id];
+            w = (PL_WALL *)((u8 *)w + off);
             flag = w->flag;
             if (flag == 0) {
                 break;

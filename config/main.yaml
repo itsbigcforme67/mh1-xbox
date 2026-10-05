@@ -238,7 +238,7 @@ segments:
       - [0x036D38, asm, text/stick_pow_get]
       - [0x036FB0, c, pl/pl08]
       - [0x0371B0, c, pl/pl09]
-      - [0x038900, asm, text/wall_act_ck]
+      - [0x038900, c, pl/pl_wall]
       - [0x038BE0, c, pl/pl10]
       - [0x0398F0, asm, text/basic_com_ck]
       - [0x03A5D0, c, pl/pl11]
