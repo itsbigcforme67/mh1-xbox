@@ -10,6 +10,7 @@ int Ud_u_item_stack(u16, u16);
 void Menu_select_mv();
 void itembox_cursor_mv();
 void PageSelect();
+void flps0008();
 void se_req();
 s32 Lb_ItemBox_open(u16 arg0, s32 arg1) {
     arg0 = 0;
@@ -375,4 +376,32 @@ s32 ib_select_sub(s32 pad) {
     }
 done:
     return pad;
+}
+
+typedef struct IBSPR { s16 x, y, w, h; s32 color; s32 z; s32 size; } IBSPR;
+
+/* quantity / slot cursor frame: mode 0 = decimal grid (10 per row), else 8 per row */
+void ItemboxWindowCursorX(f32 base, int idx, int color, int mode) {
+    IBSPR r;
+    int i;
+    SetFilterMode(0);
+    reload_tex(1, 0x118);
+    SetTextureStage(0x118);
+    if (!(mode & 0xFF)) {
+        i = (s16)idx;
+        r.w = 0x19;
+        r.h = 0x19;
+        r.y = i / 10 * 0x19 + 0x3B;
+        r.x = 0.8f * (153.0f + base - 146.0f + 28.8f * (f32)(i % 10));
+    } else {
+        i = (s16)idx;
+        r.y = (i >> 3 << 5) + 0x3B;
+        r.w = 0x20;
+        r.h = 0x20;
+        r.x = 0.8f * (153.0f + base - 146.0f + 36.0f * (f32)(i & 7));
+    }
+    r.size = 0x200020;
+    r.color = color;
+    r.z = 0;
+    flps0008(&r);
 }
