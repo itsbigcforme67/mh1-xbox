@@ -3,3 +3,9 @@
 ef_move_sub_00583BF0 = 0x00583BF0;
 ef_move_sub_00593B30 = 0x00593B30;
 ef_move_sub_005A3E50 = 0x005A3E50;
+sound_call_sub_005CBA30 = 0x005CBA30;
+sound_call_005CBAA0 = 0x005CBAA0;
+sound_call_parts_005CBB00 = 0x005CBB00;
+quake_call_005CBBA0 = 0x005CBBA0;
+move_default_005CBBF0 = 0x005CBBF0;
+ef_move_sub_005CBC40 = 0x005CBC40;

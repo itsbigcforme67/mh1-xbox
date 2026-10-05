@@ -332,7 +332,7 @@ segments:
       - [0x097DA0, c, em/em15_r11]
       - [0x097EA8, asm, text/em15_uvmove]
       - [0x0980B0, c, em/em15_r12]
-      - [0x0982BC, asm, text/ef_move_sub_005CBC40]
+      - [0x09B648, asm, text/em15_effect_move]
       - [0x09B6B0, c, em/em15_r13]
       - [0x09B768, asm, text/em15_act_act_set]
       - [0x09B770, c, em/em15]

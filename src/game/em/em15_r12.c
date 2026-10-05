@@ -1,4 +1,4 @@
-/* em15_r12 - monster 15 AI 0x005CBA30-0x005CBC3C: sound_call_sub_005CBA30, sound_call_005CBAA0, sound_call_parts_005CBB00, quake_call_005CBBA0, move_default_005CBBF0. Whole file in em15_nm.c. */
+/* em15_r12 - em15 0x005CBA30-0x005CEFC8: sound_call_sub_005CBA30, sound_call_005CBAA0, sound_call_parts_005CBB00, quake_call_005CBBA0, move_default_005CBBF0, ef_move_sub_005CBC40 (all file-static, aliased in config/game_aliases.txt). Whole file in em15_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -199,13 +199,13 @@ void em_move04_005CAC70(EMW *em, EM15W *w);
 void em_move05_005CAD90(EMW *em, EM15W *w);
 void em_move06_005CAE00(EMW *em, EM15W *w);
 void em15_uvmove(EMW *em);
-void sound_call_sub_005CBA30(EMW *em, int se, int joint);
-void sound_call_005CBAA0(EMW *em, int frame, int se, int joint);
-void sound_call_parts_005CBB00(EMW *em, int frame, int se, int joint, u8 layer);
-void quake_call_005CBBA0(EMW *em, int frame, int arg);
+static void sound_call_sub_005CBA30(EMW *em, int se, int joint);
+static void sound_call_005CBAA0(EMW *em, int frame, int se, int joint);
+static void sound_call_parts_005CBB00(EMW *em, int frame, int se, int joint, u8 layer);
+static void quake_call_005CBBA0(EMW *em, int frame, int arg);
 void Em_set_quake_sub(EMW *, int);
-void move_default_005CBBF0(EMW *em);
-void ef_move_sub_005CBC40(EMW *em, EM15W *w);
+static void move_default_005CBBF0(EMW *em);
+static void ef_move_sub_005CBC40(EMW *em, EM15W *w);
 void em15_effect_move(EMW *em);
 void ground_land_eff_set_005CF030(EMW *em);
 void dummy_em_prog_005CF0E0(void);
@@ -350,20 +350,20 @@ void em_cmd_ck(EMW *);
 
 
 
-void sound_call_sub_005CBA30(EMW *em, int se, int joint) {
+static void sound_call_sub_005CBA30(EMW *em, int se, int joint) {
     f32 pos[3];
 
     flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
     Em_se_req2(em, se, 0, pos, 3, 0);
 }
 
-void sound_call_005CBAA0(EMW *em, int frame, int se, int joint) {
+static void sound_call_005CBAA0(EMW *em, int frame, int se, int joint) {
     if (em_frame_check(em, 0, (f32)frame) != 0) {
         sound_call_sub_005CBA30(em, se, joint);
     }
 }
 
-void sound_call_parts_005CBB00(EMW *em, int frame, int se, int joint, u8 layer) {
+static void sound_call_parts_005CBB00(EMW *em, int frame, int se, int joint, u8 layer) {
     f32 pos[3];
 
     if (em_frame_check(em, layer, (f32)frame) != 0) {
@@ -372,13 +372,13 @@ void sound_call_parts_005CBB00(EMW *em, int frame, int se, int joint, u8 layer) 
     }
 }
 
-void quake_call_005CBBA0(EMW *em, int frame, int arg) {
+static void quake_call_005CBBA0(EMW *em, int frame, int arg) {
     if (em_frame_check(em, 0, (f32)frame) != 0) {
         Em_set_quake_sub(em, arg);
     }
 }
 
-void move_default_005CBBF0(EMW *em) {
+static void move_default_005CBBF0(EMW *em) {
     M2C_FIELD(em, s32 *, 0x5C0) = 0;
     M2C_FIELD(em, s32 *, 0x5C4) = 0;
     M2C_FIELD(em, u16 *, 0x5F0) = 0xFFFF;
@@ -395,4 +395,814 @@ void move_default_005CBBF0(EMW *em) {
     M2C_FIELD(em, s32 *, 0x5E8) = 0;
     M2C_FIELD(em, u16 *, 0x5F6) = 0xFFFF;
     M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
+}
+
+static void ef_move_sub_005CBC40(EMW *em, EM15W *w) {
+    f32 v[3];
+    f32 v2[3];
+    s16 temp_v1;
+    u16 temp_a0;
+
+    temp_a0 = em->char0;
+    if (temp_a0 != w->anim) {
+        w->anim = (s16) temp_a0;
+    }
+    temp_v1 = w->anim;
+    switch (temp_v1) {                              /* irregular */
+    case 0x3E9:
+        sound_call_005CBAA0(em, 0xFA, 0x34, 0x23);
+        sound_call_005CBAA0(em, 0x172, 0x57, 0x23);
+        break;
+    case 0x3EB:
+        sound_call_005CBAA0(em, 0x22, 0x35, 0x23);
+        sound_call_005CBAA0(em, 0x16, 1, 0x14);
+        sound_call_005CBAA0(em, 0x4C, 1, 0x1A);
+        sound_call_005CBAA0(em, 0x8A, 1, 0x14);
+        sound_call_005CBAA0(em, 0xBC, 1, 0x1A);
+        quake_call_005CBBA0(em, 0x34, 1);
+        quake_call_005CBBA0(em, 0x74, 1);
+        if (em_frame_check(em, 0, 2.0f) != 0) {
+            shell16_set(em, 0x14);
+        }
+        if (em_frame_check(em, 0, 50.0f) != 0) {
+            shell16_set(em, 0x15);
+        }
+        if (em_frame_check(em, 0, 104.0f) != 0) {
+            shell16_set(em, 0x16);
+        }
+        if (em_frame_check(em, 0, 162.0f) != 0) {
+            shell16_set(em, 0x15);
+        }
+        if (em_frame_check(em, 0, 218.0f) != 0) {
+            shell16_set(em, 0x17);
+        }
+        break;
+    case 0x3ED:
+        sound_call_005CBAA0(em, 0x18, 1, 0x14);
+        sound_call_005CBAA0(em, 0x38, 1, 0x1A);
+        quake_call_005CBBA0(em, 0x3C, 1);
+        if (em_frame_check(em, 0, 2.0f) != 0) {
+            shell16_set(em, 5);
+        }
+        if (em_frame_check(em, 0, 30.0f) != 0) {
+            shell16_set(em, 6);
+        }
+        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 2.0f, 78.0f) != 0) && !(*(u16 *)0x3F340E & 3)) {
+            Eft20_set(1.0f, em, 0x1A, 1);
+            return;
+        }
+        break;
+    case 0x3EE:
+        sound_call_005CBAA0(em, 0x18, 1, 0x1A);
+        sound_call_005CBAA0(em, 0x38, 1, 0x14);
+        quake_call_005CBBA0(em, 0x3C, 1);
+        if (em_frame_check(em, 0, 30.0f) != 0) {
+            shell16_set(em, 7);
+        }
+        if (em_frame_check(em, 0, 2.0f) != 0) {
+            shell16_set(em, 8);
+        }
+        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 2.0f, 78.0f) != 0) && !(GAME_X1E16 & 3)) {
+            Eft20_set(1.0f, em, 0x1A, 0);
+            return;
+        }
+        break;
+    case 0x3EF:
+        sound_call_005CBAA0(em, 6, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0xE, 1, 0x1A);
+        sound_call_005CBAA0(em, 0x26, 1, 0x14);
+        if (em_frame_check(em, 0, 18.0f) != 0) {
+            shell16_set(em, 9);
+        }
+        if (em_frame_check(em, 0, 2.0f) != 0) {
+            shell16_set(em, 0xA);
+        }
+        if (em->x8B6 != 0) {
+            if ((em_frame_check3(em, 0, 2.0f, 18.0f) != 0) && !(GAME_X1E16 & 3)) {
+                Eft20_set(1.0f, em, 0x1A, 1);
+            }
+            if ((em_frame_check3(em, 0, 20.0f, 70.0f) != 0) && !(GAME_X1E16 & 3)) {
+                Eft20_set(1.0f, em, 0x1A, 0);
+                return;
+            }
+        }
+        break;
+    case 0x3F0:
+        sound_call_005CBAA0(em, 6, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0xE, 1, 0x14);
+        sound_call_005CBAA0(em, 0x26, 1, 0x1A);
+        if (em_frame_check(em, 0, 2.0f) != 0) {
+            shell16_set(em, 0xB);
+        }
+        if (em_frame_check(em, 0, 18.0f) != 0) {
+            shell16_set(em, 0xC);
+        }
+        if (em->x8B6 != 0) {
+            if ((em_frame_check3(em, 0, 2.0f, 18.0f) != 0) && !(GAME_X1E16 & 3)) {
+                Eft20_set(1.0f, em, 0x1A, 0);
+            }
+            if ((em_frame_check3(em, 0, 20.0f, 70.0f) != 0) && !(GAME_X1E16 & 3)) {
+                Eft20_set(1.0f, em, 0x1A, 1);
+                return;
+            }
+        }
+        break;
+    case 0x3F2:
+        sound_call_005CBAA0(em, 6, 0x2A, 0x23);
+        sound_call_005CBAA0(em, 6, 4, 0x1A);
+        sound_call_005CBAA0(em, 0x4C, 0, 0x14);
+        sound_call_005CBAA0(em, 0x1C, 0x12, 0x14);
+        if (em_frame_check(em, 0, 42.0f) != 0) {
+            shell16_set(em, 0x19);
+        }
+        if (em_frame_check(em, 0, 2.0f) != 0) {
+            shell16_set(em, 0x1A);
+        }
+        if (em_frame_check(em, 0, 74.0f) != 0) {
+            shell16_set(em, 0x1A);
+            return;
+        }
+        break;
+    case 0x3F3:
+        sound_call_005CBAA0(em, 0xE, 0xB, 6);
+        sound_call_005CBAA0(em, 0x12, 0xB, 0xC);
+        sound_call_005CBAA0(em, 0x46, 0xB, 6);
+        sound_call_005CBAA0(em, 0x42, 0xB, 0xC);
+        sound_call_005CBAA0(em, 0x7A, 0xB, 6);
+        sound_call_005CBAA0(em, 0x7E, 0xB, 0xC);
+        if ((em_frame_check(em, 0, 52.0f) == 0) && (em_frame_check(em, 0, 104.0f) == 0)) {
+            if (em_frame_check(em, 0, 162.0f) != 0) {
+                goto block_137;
+            }
+        } else {
+block_137:
+            if (em->pos[1] <= (1000.0f + em->x5AC)) {
+                Eft13_set_em_scl(em, 2, 5.0f, 7);
+                return;
+            }
+        }
+        break;
+    case 0x3F7:
+        sound_call_005CBAA0(em, 4, 0xC, 6);
+        sound_call_005CBAA0(em, 8, 0xC, 0xC);
+        sound_call_005CBAA0(em, 0x3A, 0xB, 6);
+        sound_call_005CBAA0(em, 0x3E, 0xB, 0xC);
+        sound_call_005CBAA0(em, 0x8E, 0xB, 6);
+        sound_call_005CBAA0(em, 0x8A, 0xB, 0xC);
+        sound_call_005CBAA0(em, 0xD4, 0xB, 6);
+        sound_call_005CBAA0(em, 0xD8, 0xB, 0xC);
+        if ((em_frame_check(em, 0, 8.0f) == 0) && (em_frame_check(em, 0, 86.0f) == 0)) {
+            if (em_frame_check(em, 0, 160.0f) != 0) {
+                goto block_143;
+            }
+        } else {
+block_143:
+            if (em->pos[1] <= (1000.0f + em->x5AC)) {
+                Eft20_set(1.0f, em, 1, 0);
+            }
+        }
+        if (em->x8B6 != 0) {
+            if ((em_frame_check3(em, 0, 70.0f, 84.0f) == 0) && (em_frame_check3(em, 0, 146.0f, 156.0f) == 0)) {
+                if (em_frame_check3(em, 0, 220.0f, 234.0f) != 0) {
+                    goto block_150;
+                }
+            } else {
+block_150:
+                if (!(GAME_X1E16 & 3)) {
+                    Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
+                    return;
+                }
+            }
+        }
+        break;
+    case 0x3FA:
+        sound_call_005CBAA0(em, 0x28, 7, 0x1A);
+        sound_call_005CBAA0(em, 0x1A, 0xD, 6);
+        sound_call_005CBAA0(em, 0x1E, 0xD, 0xC);
+        sound_call_005CBAA0(em, 0x52, 0xB, 6);
+        sound_call_005CBAA0(em, 0x56, 0xB, 0xC);
+        sound_call_005CBAA0(em, 0x88, 0xB, 6);
+        sound_call_005CBAA0(em, 0x8C, 0xB, 0xC);
+        sound_call_005CBAA0(em, 0xB6, 0xB, 6);
+        sound_call_005CBAA0(em, 0xBA, 0xB, 0xC);
+        if (((em_frame_check(em, 0, 42.0f) != 0) || (em_frame_check(em, 0, 102.0f) != 0) || (em_frame_check(em, 0, 156.0f) != 0)) && (em->pos[1] <= (1000.0f + em->x5AC))) {
+            Eft20_set(1.0f, em, 1, 0);
+        }
+        if ((em->x8B6 != 0) && (em_frame_check(em, 0, 38.0f) != 0)) {
+            Eft20_set(1.0f, em, 0x19, 5);
+            Eft20_set(1.0f, em, 0x19, 4);
+            return;
+        }
+        break;
+    case 0x3FB:
+        sound_call_005CBAA0(em, 2, 0xB, 6);
+        sound_call_005CBAA0(em, 6, 0xB, 0xC);
+        sound_call_005CBAA0(em, 0xC, 4, 0x1A);
+        sound_call_005CBAA0(em, 4, 1, 0x14);
+        sound_call_005CBAA0(em, 0xE, 9, 0);
+        if (em_frame_check(em, 0, 2.0f) != 0) {
+            shell16_set(em, 0xD);
+        }
+        if (em_frame_check(em, 0, 16.0f) != 0) {
+            ground_land_eff_set_005CF030(em);
+        }
+        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 18.0f, 44.0f) != 0) && !(GAME_X1E16 & 3)) {
+            Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
+            return;
+        }
+        break;
+    case 0x407:
+        sound_call_005CBAA0(em, 2, 0x2D, 0x23);
+        sound_call_005CBAA0(em, 0xB6, 0x2D, 0x23);
+        sound_call_005CBAA0(em, 0x16C, 0x2D, 0x23);
+        v[1] = 10.0f;
+        v[2] = 140.0f;
+        v[0] = 0.0f;
+        em_sleep_eff_set(em, 0x22, v, 1.60000002f);
+        break;
+    case 0x408:
+        sound_call_005CBAA0(em, 4, 0x57, 0x23);
+        sound_call_005CBAA0(em, 0x46, 0, 0x1A);
+        sound_call_005CBAA0(em, 0x8E, 3, 0x14);
+        sound_call_005CBAA0(em, 4, 0x17, 0);
+        sound_call_005CBAA0(em, 4, 0x13, 0);
+        break;
+    case 0x409:
+        sound_call_005CBAA0(em, 4, 0x57, 0x23);
+        sound_call_005CBAA0(em, 0x46, 0x2D, 0x23);
+        sound_call_005CBAA0(em, 0x7E, 3, 0x1A);
+        sound_call_005CBAA0(em, 0xB6, 3, 0x14);
+        sound_call_005CBAA0(em, 0x38, 0x16, 0);
+        break;
+    case 0x40A:
+        sound_call_005CBAA0(em, 0x24, 0x57, 0x23);
+        v2[1] = 10.0f;
+        v2[2] = 140.0f;
+        v2[0] = 0.0f;
+        em_sleep_eff_set(em, 0x22, v2, 1.60000002f);
+        break;
+    case 0x40B:
+        sound_call_005CBAA0(em, 0x14, 0x24, 0x23);
+        sound_call_005CBAA0(em, 0x34, 0x22, 0x23);
+        sound_call_005CBAA0(em, 0x32, 0x15, 0x22);
+        sound_call_005CBAA0(em, 0x2C, 0, 0x14);
+        sound_call_005CBAA0(em, 0xA2, 0, 0x1A);
+        if (em_frame_check(em, 0, 40.0f) != 0) {
+            shell16_set(em, 0xE);
+        }
+        if (em->x8B6 != 0) {
+            if ((em_frame_check3(em, 0, 28.0f, 64.0f) != 0) && !(GAME_X1E16 & 3)) {
+                Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
+            }
+            if (em_frame_check3(em, 0, 98.0f, 102.0f) != 0) {
+                Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
+                return;
+            }
+        }
+        break;
+    case 0x40D:
+        sound_call_005CBAA0(em, 0x1E, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0xC, 0xC, 0x1A);
+        sound_call_005CBAA0(em, 0x1C, 2, 0x1A);
+        sound_call_005CBAA0(em, 0x2E, 3, 0x14);
+        sound_call_005CBAA0(em, 0x48, 1, 0x1A);
+        break;
+    case 0x40E:
+        sound_call_005CBAA0(em, 4, 0x57, 0x23);
+        sound_call_005CBAA0(em, 0x48, 0x16, 0);
+        sound_call_005CBAA0(em, 0xA4, 9, 0);
+        sound_call_005CBAA0(em, 0x90, 3, 0xC);
+        sound_call_005CBAA0(em, 0x88, 0xE, 6);
+        sound_call_005CBAA0(em, 0xB2, 4, 0x22);
+        if (em_frame_check(em, 0, 148.0f) != 0) {
+            shell16_set(em, 0xF);
+            return;
+        }
+        break;
+    case 0x40F:
+        sound_call_005CBAA0(em, 2, 0x57, 0x23);
+        sound_call_005CBAA0(em, 2, 0x17, 0);
+        sound_call_005CBAA0(em, 0x40, 3, 0x1A);
+        sound_call_005CBAA0(em, 0x66, 0x10, 0x1A);
+        break;
+    case 0x413:
+        sound_call_005CBAA0(em, 8, 0x23, 0x23);
+        sound_call_005CBAA0(em, 0xE, 0xF, 6);
+        sound_call_005CBAA0(em, 0x1E, 0x14, 0x2A);
+        sound_call_005CBAA0(em, 0x2A, 0, 0x1A);
+        sound_call_005CBAA0(em, 0x48, 1, 0x14);
+        quake_call_005CBBA0(em, 0x2C, 1);
+        quake_call_005CBBA0(em, 0x49, 1);
+        if (em_frame_check(em, 0, 30.0f) != 0) {
+            shell16_set(em, 0x11);
+        }
+        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 6.0f, 38.0f) != 0) && !(GAME_X1E16 & 3)) {
+            Eft20_set(1.0f, em, 0x1A, 1);
+            return;
+        }
+        break;
+    case 0x417:
+        sound_call_005CBAA0(em, 0x32, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0x74, 0x28, 0x23);
+        sound_call_005CBAA0(em, 0xA8, 0x29, 0x23);
+        sound_call_005CBAA0(em, 0xAC, 0x18, 0x23);
+        sound_call_005CBAA0(em, 0xAC, 0x37, 0x23);
+        sound_call_005CBAA0(em, 0x20, 1, 0x1A);
+        sound_call_005CBAA0(em, 0x32, 0x16, 0x14);
+        sound_call_005CBAA0(em, 0x38, 0x36, 0x23);
+        sound_call_005CBAA0(em, 0x38, 0x38, 0x23);
+        if (em_frame_check(em, 0, 160.0f) != 0) {
+            shell16_set(em, 0x25);
+        }
+        if (em_frame_check(em, 0, 58.0f) != 0) {
+            Eft04_set_time(em, 3, (s32)((114.0f / (2.0f * em->act_spd))), 1.0f);
+        }
+        if (em_frame_check(em, 0, 172.0f) != 0) {
+            Eft04_set(em, 4);
+        }
+        if (em_frame_check(em, 0, 176.0f) != 0) {
+            Shell08_set_ang(em, 0x22, 6, 0, 0, 0);
+            Shell08_set_ang(em, 0x22, 6, 0, 0, 0xE39);
+            Shell08_set_ang(em, 0x22, 6, 0, 0, 0xF1C8);
+            return;
+        }
+        break;
+    case 0x41B:
+        sound_call_005CBAA0(em, 4, 0x23, 0x23);
+        sound_call_005CBAA0(em, 0x72, 0x34, 0x23);
+        sound_call_005CBAA0(em, 0xBA, 0x34, 0x23);
+        sound_call_005CBAA0(em, 4, 0x17, 0);
+        if ((em->x8B6 != 0) && ((em_frame_check3(em, 0, 10.0f, 90.0f) != 0) || (em_frame_check3(em, 0, 122.0f, 260.0f) != 0) || (em_frame_check2(em, 0, 296.0f) != 0)) && !(GAME_X1E16 & 3)) {
+            Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
+            return;
+        }
+        break;
+    case 0x41E:
+        sound_call_005CBAA0(em, 0x4E, 0x5B, 0x23);
+        sound_call_005CBAA0(em, 8, 0, 0x14);
+        sound_call_005CBAA0(em, 0x28, 1, 0x1A);
+        sound_call_005CBAA0(em, 0x88, 0, 0x14);
+        sound_call_005CBAA0(em, 0xB6, 1, 0x1A);
+        sound_call_005CBAA0(em, 0xFA, 0x12, 0x14);
+        sound_call_005CBAA0(em, 0x138, 1, 0x1A);
+        sound_call_005CBAA0(em, 0x54, 0x16, 0);
+        sound_call_005CBAA0(em, 0xBE, 0x16, 0);
+        if (em_frame_check(em, 0, 78.0f) != 0) {
+            shell16_set(em, 0x13);
+            Eft15_set3(em, 5, 1.0f, 4);
+        }
+        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 86.0f, 298.0f) != 0) && !(GAME_X1E16 & 3)) {
+            Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
+            return;
+        }
+        break;
+    case 0x423:
+        sound_call_005CBAA0(em, 0xC, 0x16, 0);
+        sound_call_005CBAA0(em, 6, 0x22, 0x23);
+        sound_call_005CBAA0(em, 0x68, 3, 0x1A);
+        break;
+    case 0x424:
+        sound_call_005CBAA0(em, 6, 0x53, 0x23);
+        sound_call_005CBAA0(em, 0x48, 0x13, 0x2A);
+        sound_call_005CBAA0(em, 0x22, 6, 0x1A);
+        sound_call_005CBAA0(em, 0x32, 3, 0x14);
+        sound_call_005CBAA0(em, 0x90, 0, 0x14);
+        sound_call_005CBAA0(em, 0x16, 0xD, 6);
+        sound_call_005CBAA0(em, 0x2C, 0xC, 0xC);
+        if (em_frame_check(em, 0, 32.0f) != 0) {
+            Eft13_set_em(em, 0x1B, 7);
+        }
+        if (em_frame_check(em, 0, 54.0f) != 0) {
+            Eft13_set_em(em, 0x16, 7);
+            return;
+        }
+        break;
+    case 0x425:
+        sound_call_005CBAA0(em, 6, 0x53, 0x23);
+        sound_call_005CBAA0(em, 0xA, 0x12, 0x1A);
+        sound_call_005CBAA0(em, 0x26, 6, 0x1A);
+        sound_call_005CBAA0(em, 0x4E, 4, 0x14);
+        sound_call_005CBAA0(em, 0x6E, 3, 0x14);
+        sound_call_005CBAA0(em, 0x5A, 0x15, 0);
+        sound_call_005CBAA0(em, 0xAA, 3, 0x1A);
+        if (em_frame_check(em, 0, 24.0f) != 0) {
+            Eft13_set_em_scl(em, 0x1A, 1.0f, 7);
+            return;
+        }
+        break;
+    case 0x426:
+        sound_call_005CBAA0(em, 4, 0x4F, 0x23);
+        sound_call_005CBAA0(em, 0x56, 0x1F, 0x23);
+        sound_call_005CBAA0(em, 0x10, 3, 0x14);
+        sound_call_005CBAA0(em, 4, 0xD, 6);
+        sound_call_005CBAA0(em, 8, 0xD, 0xC);
+        sound_call_005CBAA0(em, 0x62, 0x13, 0x2A);
+        sound_call_005CBAA0(em, 0x7E, 3, 0x1A);
+        break;
+    case 0x427:
+        sound_call_005CBAA0(em, 4, 0x52, 0x23);
+        sound_call_005CBAA0(em, 4, 0x13, 0);
+        sound_call_005CBAA0(em, 0x4C, 0x1F, 0x23);
+        sound_call_005CBAA0(em, 0xE, 0, 0x1A);
+        break;
+    case 0x428:
+        sound_call_005CBAA0(em, 4, 0x52, 0x23);
+        sound_call_005CBAA0(em, 0x6C, 0x20, 0x23);
+        sound_call_005CBAA0(em, 4, 0x13, 0);
+        sound_call_005CBAA0(em, 4, 0x12, 0x1A);
+        sound_call_005CBAA0(em, 0x7A, 1, 0x1A);
+        sound_call_005CBAA0(em, 0x96, 0, 0x14);
+        break;
+    case 0x42B:
+        sound_call_005CBAA0(em, 0x46, 0x2D, 0x23);
+        sound_call_005CBAA0(em, 0x46, 0x17, 0);
+        break;
+    case 0x42C:
+        sound_call_005CBAA0(em, 0x1C, 2, 0x1A);
+        sound_call_005CBAA0(em, 0x30, 4, 0x14);
+        sound_call_005CBAA0(em, 0xDC, 0x10, 0x1A);
+        sound_call_005CBAA0(em, 0x1E, 0x16, 0);
+        sound_call_005CBAA0(em, 0x108, 9, 0);
+        sound_call_005CBAA0(em, 0x108, 7, 0);
+        sound_call_005CBAA0(em, 0x114, 0x17, 0);
+        sound_call_005CBAA0(em, 0x180, 0x16, 0);
+        sound_call_005CBAA0(em, 0x18, 0x52, 0x23);
+        sound_call_005CBAA0(em, 0x8C, 0x28, 0x23);
+        sound_call_005CBAA0(em, 0xB4, 0x2C, 0x23);
+        sound_call_005CBAA0(em, 0x192, 0x2F, 0x23);
+        sound_call_005CBAA0(em, 0x174, 0xF, 6);
+        sound_call_005CBAA0(em, 0x176, 0xE, 0xC);
+        if (em_frame_check(em, 0, 268.0f) != 0) {
+            Eft20_set(0.899999976f, em, 0, 0);
+            return;
+        }
+        break;
+    case 0x42D:
+        sound_call_005CBAA0(em, 4, 0x52, 0x23);
+        sound_call_005CBAA0(em, 4, 0x13, 0x2A);
+        sound_call_005CBAA0(em, 0x18, 9, 0);
+        sound_call_005CBAA0(em, 0x18, 0x11, 0);
+        quake_call_005CBBA0(em, 0x1A, 2);
+        if (em_frame_check(em, 0, 26.0f) != 0) {
+            Eft20_set(1.0f, em, 0x12, 0x80);
+            return;
+        }
+        break;
+    case 0x42E:
+    case 0x433:
+        sound_call_005CBAA0(em, 8, 0x16, 0);
+        sound_call_005CBAA0(em, 4, 0x1F, 0x23);
+        break;
+    case 0x42F:
+        sound_call_005CBAA0(em, 4, 0x16, 0x23);
+        sound_call_005CBAA0(em, 0x1E, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0x30, 1, 0x14);
+        sound_call_005CBAA0(em, 0x46, 1, 0x1A);
+        break;
+    case 0x430:
+        sound_call_005CBAA0(em, 4, 0x16, 0x23);
+        sound_call_005CBAA0(em, 0x1E, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0x30, 1, 0x1A);
+        sound_call_005CBAA0(em, 0x46, 1, 0x14);
+        break;
+    case 0x432:
+        sound_call_005CBAA0(em, 4, 0x52, 0x23);
+        sound_call_005CBAA0(em, 4, 0x13, 0x2A);
+        sound_call_005CBAA0(em, 0x18, 9, 0);
+        sound_call_005CBAA0(em, 0x18, 0x11, 0);
+        quake_call_005CBBA0(em, 0x1A, 2);
+        if (em_frame_check(em, 0, 26.0f) != 0) {
+            Eft20_set(1.0f, em, 0x12, 0x81);
+            return;
+        }
+        break;
+    case 0x434:
+        sound_call_005CBAA0(em, 0x10, 0x5A, 0x23);
+        sound_call_005CBAA0(em, 0x10, 0, 0x1A);
+        break;
+    case 0x435:
+        sound_call_005CBAA0(em, 4, 0x2B, 0x23);
+        sound_call_005CBAA0(em, 0x14, 0xB, 0xC);
+        sound_call_005CBAA0(em, 0x3A, 0x14, 0);
+        break;
+    case 0x436:
+        sound_call_005CBAA0(em, 0xA, 9, 0);
+        sound_call_005CBAA0(em, 0xA, 7, 0x2A);
+        sound_call_005CBAA0(em, 0xC, 0x11, 0);
+        sound_call_005CBAA0(em, 0x10, 0x2C, 0x23);
+        if (em_frame_check(em, 0, 8.0f) != 0) {
+            Eft20_set(1.0f, em, 0xB, 0);
+            return;
+        }
+        break;
+    case 0x437:
+        sound_call_005CBAA0(em, 0xC, 0x23, 0x23);
+        sound_call_005CBAA0(em, 0x24, 0x22, 0x23);
+        sound_call_005CBAA0(em, 0x66, 0x22, 0x23);
+        sound_call_005CBAA0(em, 0xA4, 0x22, 0x23);
+        if ((em_frame_check(em, 0, 48.0f) == 0) && (em_frame_check(em, 0, 106.0f) == 0)) {
+            if (em_frame_check(em, 0, 174.0f) != 0) {
+                goto block_252;
+            }
+        } else {
+block_252:
+            shell16_set(em, 0x10);
+            return;
+        }
+        break;
+    case 0x43A:
+        sound_call_005CBAA0(em, 0x2E, 0x2A, 0x23);
+        sound_call_005CBAA0(em, 4, 0x16, 0);
+        break;
+    case 0x43C:
+        sound_call_005CBAA0(em, 0x16, 0xD, 6);
+        sound_call_005CBAA0(em, 0x1A, 0xD, 0xC);
+        sound_call_005CBAA0(em, 0x34, 0xA, 6);
+        sound_call_005CBAA0(em, 0x38, 0xE, 0xC);
+        sound_call_005CBAA0(em, 0x4E, 0xE, 6);
+        sound_call_005CBAA0(em, 0x4A, 0xA, 0xC);
+        sound_call_005CBAA0(em, 0x58, 0xC, 6);
+        sound_call_005CBAA0(em, 0x5C, 0xC, 0xC);
+        sound_call_005CBAA0(em, 0x20, 5, 0x1A);
+        sound_call_005CBAA0(em, 0x1C, 0, 0x14);
+        if ((em_frame_check(em, 0, 42.0f) == 0) && (em_frame_check(em, 0, 60.0f) == 0)) {
+            if (em_frame_check(em, 0, 80.0f) != 0) {
+                goto block_259;
+            }
+        } else {
+block_259:
+            Eft20_set(1.0f, em, 1, 0);
+            return;
+        }
+        break;
+    case 0x442:
+        sound_call_005CBAA0(em, 0x28, 0x27, 0x23);
+        sound_call_005CBAA0(em, 0x20, 0xD, 6);
+        sound_call_005CBAA0(em, 0x24, 0xD, 0xC);
+        sound_call_005CBAA0(em, 0x4A, 0xD, 6);
+        sound_call_005CBAA0(em, 0x4E, 0xD, 0xC);
+        sound_call_005CBAA0(em, 0x7C, 0xB, 6);
+        sound_call_005CBAA0(em, 0x80, 0xB, 0xC);
+        if ((em_frame_check(em, 0, 50.0f) != 0) && (em->pos[1] <= (1000.0f + em->x5AC))) {
+            Eft20_set(1.0f, em, 9, 0);
+            Eft20_set(1.0f, em, 0xE, 0);
+        }
+        if ((em_frame_check(em, 0, 102.0f) != 0) && (em->pos[1] <= (1000.0f + em->x5AC))) {
+            Eft20_set(1.0f, em, 9, 0);
+            Eft20_set(1.0f, em, 0xE, 0);
+            return;
+        }
+        break;
+    case 0x447:
+        sound_call_005CBAA0(em, 4, 0x10, 0);
+        sound_call_005CBAA0(em, 0xA, 0x12, 0);
+        sound_call_005CBAA0(em, 0x14, 9, 0);
+        sound_call_005CBAA0(em, 4, 0x4F, 0x23);
+        sound_call_005CBAA0(em, 4, 0x2A, 0x23);
+        if (em_frame_check(em, 0, 10.0f) != 0) {
+            Eft20_set(1.0f, em, 0xB, 0x80);
+        }
+        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 4.0f, 60.0f) != 0) && !(GAME_X1E16 & 3)) {
+            Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
+            return;
+        }
+        break;
+    case 0x448:
+        sound_call_005CBAA0(em, 0x16, 0x12, 0);
+        sound_call_005CBAA0(em, 0x48, 0x12, 0);
+        sound_call_005CBAA0(em, 4, 0xC, 6);
+        sound_call_005CBAA0(em, 8, 0xC, 0xC);
+        sound_call_005CBAA0(em, 0x30, 0x13, 0);
+        sound_call_005CBAA0(em, 4, 0x28, 0x23);
+        sound_call_005CBAA0(em, 4, 0x16, 0);
+        if ((em->x8B6 != 0) && ((em_frame_check3(em, 0, 12.0f, 24.0f) != 0) || (em_frame_check3(em, 0, 46.0f, 90.0f) != 0)) && !(GAME_X1E16 & 3)) {
+            Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
+            return;
+        }
+        break;
+    case 0x449:
+        sound_call_005CBAA0(em, 0x22, 0x16, 6);
+        sound_call_005CBAA0(em, 0x26, 0x16, 0xC);
+        sound_call_005CBAA0(em, 0x62, 4, 0x22);
+        sound_call_005CBAA0(em, 0x6C, 3, 0x22);
+        sound_call_005CBAA0(em, 4, 0x2A, 0x23);
+        sound_call_005CBAA0(em, 4, 0x2B, 0x23);
+        break;
+    case 0x44A:
+        sound_call_005CBAA0(em, 4, 0x16, 6);
+        sound_call_005CBAA0(em, 8, 0x16, 0xC);
+        sound_call_005CBAA0(em, 0x6C, 3, 0x22);
+        sound_call_005CBAA0(em, 4, 0x21, 0x23);
+        sound_call_005CBAA0(em, 0x46, 0x20, 0x23);
+        break;
+    case 0x44C:
+        sound_call_005CBAA0(em, 4, 0x31, 0x23);
+        break;
+    case 0x44D:
+        sound_call_005CBAA0(em, 0x14, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0x16, 1, 0x1A);
+        sound_call_005CBAA0(em, 0x48, 1, 0x14);
+        sound_call_005CBAA0(em, 0x4A, 0x11, 0);
+        break;
+    case 0x44E:
+        sound_call_005CBAA0(em, 0x18, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0x62, 0x21, 0x23);
+        sound_call_005CBAA0(em, 0x16, 1, 0x1A);
+        sound_call_005CBAA0(em, 0x42, 1, 0x14);
+        sound_call_005CBAA0(em, 0x48, 0x16, 0);
+        break;
+    case 0x44F:
+        sound_call_005CBAA0(em, 0x10, 0x31, 0x23);
+        break;
+    case 0x450:
+        sound_call_005CBAA0(em, 0x18, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0x1C, 1, 0x1A);
+        sound_call_005CBAA0(em, 0x6E, 0x15, 0);
+        sound_call_005CBAA0(em, 0x5C, 0xD, 6);
+        sound_call_005CBAA0(em, 0x60, 0xD, 0xC);
+        sound_call_005CBAA0(em, 0x70, 6, 0x1A);
+        if (em_frame_check(em, 0, 110.0f) != 0) {
+            Eft13_set_em_scl(em, 2, 3.5f, 7);
+            return;
+        }
+        break;
+    case 0x451:
+        sound_call_005CBAA0(em, 0x40, 0x33, 0x23);
+        sound_call_005CBAA0(em, 0x2C, 0x16, 0);
+        if (em_frame_check(em, 0, 66.0f) != 0) {
+            shell16_set(em, 2);
+            Eft15_set3(em, 5, 1.0f, 5);
+            return;
+        }
+        break;
+    case 0x452:
+        sound_call_005CBAA0(em, 4, 0x28, 0x23);
+        sound_call_005CBAA0(em, 0x3C, 0x24, 0x23);
+        sound_call_005CBAA0(em, 0x40, 0x15, 0x22);
+        sound_call_005CBAA0(em, 0x42, 0x11, 0x1A);
+        sound_call_005CBAA0(em, 0x44, 6, 0x1A);
+        sound_call_005CBAA0(em, 0x3E, 0xD, 6);
+        sound_call_005CBAA0(em, 0x42, 0xD, 0xC);
+        if (em_frame_check(em, 0, 80.0f) != 0) {
+            shell16_set(em, 0x1D);
+        }
+        if (em_frame_check(em, 0, 70.0f) != 0) {
+            Eft20_set(1.0f, em, 2, 6);
+            return;
+        }
+        break;
+    case 0x453:
+        sound_call_005CBAA0(em, 4, 0x2C, 0x23);
+        sound_call_005CBAA0(em, 0x10, 8, 0x22);
+        sound_call_005CBAA0(em, 0x8C, 0x16, 0);
+        if (em_frame_check(em, 0, 2.0f) != 0) {
+            shell16_set(em, 0x1E);
+        }
+        if (em_frame_check(em, 0, 12.0f) != 0) {
+            Eft13_set_em_scl(em, 2, 3.5f, 7);
+            return;
+        }
+        break;
+    case 0x454:
+        sound_call_005CBAA0(em, 0xC, 0x24, 0x23);
+        sound_call_005CBAA0(em, 0x1A, 6, 0x22);
+        sound_call_005CBAA0(em, 0x16, 0x11, 0x1A);
+        sound_call_005CBAA0(em, 0x1A, 6, 0x14);
+        if (em_frame_check(em, 0, 32.0f) != 0) {
+            shell16_set(em, 0x1F);
+        }
+        if (em_frame_check(em, 0, 20.0f) != 0) {
+            Eft20_set(1.0f, em, 2, 6);
+            return;
+        }
+        break;
+    case 0x455:
+        sound_call_005CBAA0(em, 4, 0x24, 0x23);
+        sound_call_005CBAA0(em, 0xC, 0x15, 0);
+        if (em_frame_check(em, 0, 24.0f) != 0) {
+            shell16_set(em, 0x22);
+            return;
+        }
+        break;
+    case 0x456:
+        sound_call_005CBAA0(em, 4, 0x16, 0);
+        sound_call_005CBAA0(em, 0x32, 0x14, 0x22);
+        sound_call_005CBAA0(em, 0x44, 0x21, 0x23);
+        sound_call_005CBAA0(em, 0xF6, 0x31, 0x23);
+        if ((em_frame_check2(em, 0, 200.0f) != 0) && !(GAME_X1E16 & 0xF)) {
+            Shell08_set_ang(em, 0x22, 5, 0, 0, 0);
+            return;
+        }
+        break;
+    case 0x457:
+        sound_call_005CBAA0(em, 0x24, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0x32, 0x16, 0);
+        break;
+    case 0x458:
+        sound_call_005CBAA0(em, 0x28, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0x8C, 0x21, 0x23);
+        sound_call_005CBAA0(em, 0xB4, 0x27, 0x23);
+        sound_call_005CBAA0(em, 0xEC, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0xB2, 0x15, 0x22);
+        sound_call_005CBAA0(em, 0x40, 1, 0x1A);
+        sound_call_005CBAA0(em, 0x96, 1, 0x14);
+        sound_call_005CBAA0(em, 0xB0, 0x12, 0x1A);
+        if (em_frame_check(em, 0, 180.0f) != 0) {
+            shell16_set(em, 0x18);
+        }
+        if (em_frame_check(em, 0, 172.0f) != 0) {
+            Eft13_set_em_scl(em, 0x1A, 3.0f, 3);
+        }
+        if (em_frame_check(em, 0, 178.0f) != 0) {
+            Eft13_set_em_scl(em, 0x14, 3.0f, 3);
+            return;
+        }
+        break;
+    case 0x459:
+        sound_call_005CBAA0(em, 4, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0x40, 0x22, 0x23);
+        sound_call_005CBAA0(em, 0x64, 0x21, 0x23);
+        sound_call_005CBAA0(em, 0x40, 1, 0x14);
+        sound_call_005CBAA0(em, 0x88, 1, 0x14);
+        if (em_frame_check(em, 0, 66.0f) != 0) {
+            shell16_set(em, 1);
+        }
+        if (em->x8B6 != 0) {
+            if ((em_frame_check3(em, 0, 40.0f, 72.0f) != 0) && !(GAME_X1E16 & 3)) {
+                Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
+            }
+            if (em_frame_check3(em, 0, 102.0f, 106.0f) != 0) {
+                Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
+                return;
+            }
+        }
+        break;
+    case 0x45A:
+        sound_call_005CBAA0(em, 0x3A, 0x28, 0x23);
+        sound_call_005CBAA0(em, 0x70, 0x56, 0x23);
+        sound_call_005CBAA0(em, 0x14, 1, 0x1A);
+        sound_call_005CBAA0(em, 0x26, 0x14, 0x22);
+        sound_call_005CBAA0(em, 0x58, 0x15, 0x23);
+        sound_call_005CBAA0(em, 4, 0x36, 0);
+        sound_call_005CBAA0(em, 0x74, 0x37, 0);
+        sound_call_005CBAA0(em, 0xC2, 0x36, 0);
+        sound_call_005CBAA0(em, 0xC2, 0x37, 0);
+        if (em_frame_check(em, 0, 2.0f) != 0) {
+            Eft04_set(em, 0);
+        }
+        if (em_frame_check(em, 0, 114.0f) != 0) {
+            shell16_set(em, 0x1B);
+            return;
+        }
+        break;
+    case 0x45B:
+        sound_call_005CBAA0(em, 0x34, 1, 0x1A);
+        sound_call_005CBAA0(em, 4, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0xC, 0x16, 0x22);
+        break;
+    case 0x45D:
+        sound_call_005CBAA0(em, 4, 0x2C, 0x23);
+        sound_call_005CBAA0(em, 0x10, 8, 0x22);
+        sound_call_005CBAA0(em, 0x92, 0x16, 0);
+        if (em_frame_check(em, 0, 2.0f) != 0) {
+            shell16_set(em, 0x1C);
+        }
+        if (em_frame_check(em, 0, 12.0f) != 0) {
+            Eft13_set_em_scl(em, 2, 3.5f, 7);
+            return;
+        }
+        break;
+    case 0x45E:
+        sound_call_005CBAA0(em, 0xE, 0x1C, 0x1A);
+        sound_call_005CBAA0(em, 0x14, 0x1C, 0x14);
+        sound_call_005CBAA0(em, 0x62, 0x1C, 0x2A);
+        sound_call_005CBAA0(em, 0x44, 0x1B, 0xC);
+        sound_call_005CBAA0(em, 0x60, 0x1B, 6);
+        break;
+    case 0x45F:
+        sound_call_005CBAA0(em, 0x16, 0x1B, 6);
+        sound_call_005CBAA0(em, 2, 0x1B, 0xC);
+        sound_call_005CBAA0(em, 0x20, 0x1C, 0x1A);
+        sound_call_005CBAA0(em, 0xA, 0x1C, 0x14);
+        break;
+    case 0x460:
+        sound_call_005CBAA0(em, 0xA, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0xA, 0x1B, 0xC);
+        sound_call_005CBAA0(em, 0x38, 0x1B, 6);
+        sound_call_005CBAA0(em, 0x20, 0x1C, 0x14);
+        sound_call_005CBAA0(em, 0x2A, 0x1C, 0x1A);
+        sound_call_005CBAA0(em, 0x4C, 0x1C, 0x14);
+        break;
+    case 0x461:
+        sound_call_005CBAA0(em, 0xA, 0x20, 0x23);
+        sound_call_005CBAA0(em, 0xA, 0x1B, 0xC);
+        sound_call_005CBAA0(em, 0x38, 0x1B, 6);
+        sound_call_005CBAA0(em, 0x20, 0x1C, 0x14);
+        sound_call_005CBAA0(em, 0x2A, 0x1C, 0x1A);
+        sound_call_005CBAA0(em, 0x4C, 0x1C, 0x14);
+        break;
+    default:
+        move_default_005CBBF0(em);
+        break;
+    }
 }
