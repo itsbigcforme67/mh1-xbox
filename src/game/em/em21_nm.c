@@ -157,6 +157,10 @@ static void em_die00_00606C90(EMW *em, EM21W *w);
 static void em_die01_00606E20(EMW *em, EM21W *w);
 static void em_die02_00606F90(EMW *em, EM21W *w);
 static void em_die03_006073F0(EMW *em, EM21W *w);
+static void em_move00_006075D0(EMW *em, EM21W *w);
+static void em_move02_006077C0(EMW *em, EM21W *w);
+static void em_move03_006079A0(EMW *em, EM21W *w);
+static void em_move04_00607A60(EMW *em, EM21W *w);
 static void em_move01_00607730(EMW *em, EM21W *w);
 static void em_move05_00607C10(EMW *em, EM21W *w);
 static void em_move06_00607CA0(EMW *em, EM21W *w);
@@ -251,11 +255,20 @@ void em21_init(EMW *em) {
     em->x948 = temp_a0;
     if (temp_a0 == 0) {
         temp_a1 = em->kind;
-        if (temp_a1 != 0x14) {
-            if (temp_a1 == 0x16 || temp_a1 == 0x15 || temp_a1 == 0x11 || temp_a1 == 0xE || temp_a1 == 0xF || temp_a1 == 0xB || temp_a1 == 6 || temp_a1 == 1) {
-                em->ex[0xA3] = 0;
-                eft09_set(em, temp_a1, 0x100, 0x4000);
-            }
+        switch (temp_a1) {
+        case 1:
+        case 6:
+        case 0xB:
+        case 0xF:
+        case 0xE:
+        case 0x11:
+        case 0x15:
+        case 0x16:
+            em->ex[0xA3] = 0;
+            eft09_set(em, temp_a1, 0x100, 0x4000);
+            break;
+        case 0x14:
+            break;
         }
     }
 }
@@ -275,8 +288,8 @@ void em21_to_normal(EMW *em) {
 void em21_to_swim(EMW *em) {
     em->act_spd = 1.0f;
     em->x388 = 4;
-    em->x839 = 1;
     em->x3F4 = 0;
+    em->x839 = 1;
     em21_act_set(em, 2, 0, 0);
 }
 
@@ -3771,7 +3784,7 @@ static void em_die02_00606F90(EMW *em, EM21W *w) {
         case 0:                                     /* switch 2 */
             em->x06 = temp_v1 + 1;
             em->adj_y = -0.5f;
-            em->work08 = (ran_suu(0) & 0xFFFF & 3) * 0xA;
+            em->work08 = ((u16)ran_suu(0) & 3) * 10;
             break;
         case 1:                                     /* switch 2 */
             w->spd[1] = (s32) em->ang[1];
@@ -3876,14 +3889,64 @@ static void em_die03_006073F0(EMW *em, EM21W *w) {
     }
 }
 
-/*
-Decompilation failure in function em_move00_006075D0:
-
-Unable to determine jump table for jr instruction at tmp79gmwu9h.s line 17.
-
-There must be a read of a variable before the instruction
-which has a name starting with with "jtbl"/"jpt_"/"lbl_"/"jumptable_".
-*/
+static void em_move00_006075D0(EMW *em, EM21W *w) {
+    switch (em->x15) {
+    case 0:
+        em_act00_00600490(em, w);
+        break;
+    case 1:
+        em_act01_00600570(em, w);
+        break;
+    case 2:
+        em_act02_00600650(em, w);
+        break;
+    case 4:
+        em_act04_00600700(em, w);
+        break;
+    case 5:
+        em_act05_006007F0(em, w);
+        break;
+    case 6:
+        em_act06_00600900(em, w);
+        break;
+    case 7:
+        em_act07_006009D0(em, w);
+        break;
+    case 8:
+        em_act08_00600A50(em, w);
+        break;
+    case 10:
+        em_act10_00600B90(em, w);
+        break;
+    case 12:
+        em_act12_00600CD0(em, w);
+        break;
+    case 13:
+        em_act13_00600DE0(em, w);
+        break;
+    case 14:
+        em_act14_00600EB0(em, w);
+        break;
+    case 15:
+        em_act15_00601000(em, w);
+        break;
+    case 16:
+        em_act16_006010D0(em, w);
+        break;
+    case 17:
+        em_act17_00601220(em, w);
+        break;
+    case 18:
+        em_act18_006012F0(em, w);
+        break;
+    case 19:
+        em_act19_00601440(em, w);
+        break;
+    case 20:
+        em_act20_00601510(em, w);
+        break;
+    }
+}
 
 static void em_move01_00607730(EMW *em, EM21W *w) {
     u8 temp_a2;
@@ -3905,32 +3968,191 @@ static void em_move01_00607730(EMW *em, EM21W *w) {
     }
 }
 
-/*
-Decompilation failure in function em_move02_006077C0:
+static void em_move02_006077C0(EMW *em, EM21W *w) {
+    switch (em->x15) {
+    case 0:
+        em_fly00_00601C20(em, w);
+        break;
+    case 1:
+        em_fly01_00601CB0(em, w);
+        break;
+    case 2:
+        em_fly02_00601D80(em, w);
+        break;
+    case 3:
+        em_fly03_00601D90(em, w);
+        break;
+    case 4:
+        em_fly04_00602030(em, w);
+        break;
+    case 5:
+        em_fly05_00602280(em, w);
+        break;
+    case 6:
+        em_fly06_00602450(em, w);
+        break;
+    case 7:
+        em_fly07_006024F0(em, w);
+        break;
+    case 8:
+        em_fly08_00602640(em, w);
+        break;
+    case 9:
+        em_fly09_00602780(em, w);
+        break;
+    case 10:
+        em_fly10_00602A70(em, w);
+        break;
+    case 11:
+        em_fly11_00602CC0(em, w);
+        break;
+    case 12:
+        em_fly12_00602F10(em, w);
+        break;
+    case 13:
+        em_fly13_00603000(em, w);
+        break;
+    case 14:
+        em_fly14_006030F0(em, w);
+        break;
+    case 15:
+        em_fly15_006033A0(em, w);
+        break;
+    case 16:
+        em_fly16_00603460(em, w);
+        break;
+    case 17:
+        em_fly17_00603720(em, w);
+        break;
+    case 18:
+        em_fly18_006038C0(em, w);
+        break;
+    case 19:
+        em_fly19_00603B90(em, w);
+        break;
+    case 20:
+        em_fly20_00603E40(em, w);
+        break;
+    case 21:
+        em_fly21_00604110(em, w);
+        break;
+    case 22:
+        em_fly22_006041A0(em, w);
+        break;
+    case 23:
+        em_fly23_00604340(em, w);
+        break;
+    case 24:
+        em_fly24_00604440(em, w);
+        break;
+    case 25:
+        em_fly25_006044D0(em, w);
+        break;
+    }
+}
 
-Unable to determine jump table for jr instruction at tmpxwq5mxna.s line 17.
+static void em_move03_006079A0(EMW *em, EM21W *w) {
+    switch (em->x15) {
+    case 0:
+        em_atk00_00604560(em, w);
+        break;
+    case 1:
+        em_atk01_006045E0(em, w);
+        break;
+    case 2:
+        em_atk02_006046C0(em, w);
+        break;
+    case 3:
+        em_atk03_006047B0(em, w);
+        break;
+    case 4:
+        em_atk04_006048C0(em, w);
+        break;
+    case 5:
+        em_atk05_006049D0(em, w);
+        break;
+    case 6:
+        em_atk06_00604AE0(em, w);
+        break;
+    case 7:
+        em_atk07_00604DC0(em, w);
+        break;
+    }
+}
 
-There must be a read of a variable before the instruction
-which has a name starting with with "jtbl"/"jpt_"/"lbl_"/"jumptable_".
-*/
-
-/*
-Decompilation failure in function em_move03_006079A0:
-
-Unable to determine jump table for jr instruction at tmp0ng_b3fl.s line 17.
-
-There must be a read of a variable before the instruction
-which has a name starting with with "jtbl"/"jpt_"/"lbl_"/"jumptable_".
-*/
-
-/*
-Decompilation failure in function em_move04_00607A60:
-
-Unable to determine jump table for jr instruction at tmpywtmvlr7.s line 17.
-
-There must be a read of a variable before the instruction
-which has a name starting with with "jtbl"/"jpt_"/"lbl_"/"jumptable_".
-*/
+static void em_move04_00607A60(EMW *em, EM21W *w) {
+    switch (em->x15) {
+    case 0:
+        em_dmg00_00604E40(em, w);
+        break;
+    case 1:
+        em_dmg01_00604F20(em, w);
+        break;
+    case 2:
+        em_dmg02_00604FB0(em, w);
+        break;
+    case 3:
+        em_dmg03_00605040(em, w);
+        break;
+    case 4:
+        em_dmg04_006050D0(em, w);
+        break;
+    case 5:
+        em_dmg05_006051D0(em, w);
+        break;
+    case 6:
+        em_dmg06_00605370(em, w);
+        break;
+    case 7:
+        em_dmg07_006054D0(em, w);
+        break;
+    case 8:
+        em_dmg08_00605630(em, w);
+        break;
+    case 9:
+        em_dmg09_00605770(em, w);
+        break;
+    case 10:
+        em_dmg10_006058E0(em, w);
+        break;
+    case 11:
+        em_dmg11_00605970(em, w);
+        break;
+    case 12:
+        em_dmg12_00605A50(em, w);
+        break;
+    case 13:
+        em_dmg13_00605B70(em, w);
+        break;
+    case 14:
+        em_dmg14_00605CA0(em, w);
+        break;
+    case 15:
+        em_dmg15_00605DC0(em, w);
+        break;
+    case 16:
+        em_dmg16_006060F0(em, w);
+        break;
+    case 17:
+        em_dmg17_006061D0(em, w);
+        break;
+    case 18:
+        em_dmg18_006063E0(em, w);
+        break;
+    case 19:
+        em_dmg19_00606600(em, w);
+        break;
+    case 20:
+        em_dmg20_00606700(em, w);
+        break;
+    case 21:
+        em_dmg21(em, w);
+        break;
+    case 22:
+        em_dmg22(em, w);
+        break;
+    }
+}
 
 static void em_move05_00607C10(EMW *em, EM21W *w) {
     u8 temp_a2;
@@ -3960,23 +4182,324 @@ static void em_move06_00607CA0(EMW *em, EM21W *w) {
     }
 }
 
-/*
-Decompilation failure in function em21_main:
+#define M4(n) (em->mode == 4 && em->x15 == (n))
+#define M0(n) (em->mode == 0 && em->x15 == (n))
+#define M2(n) (em->mode == 2 && em->x15 == (n))
 
-Unable to determine jump table for jr instruction at tmpsdywydml.s line 159.
+void em21_main_sub(EMW *em, EM21W *w);
+void em_no_floor_ck(EMW *em);
+void em_no_battle_area_ck(EMW *, int, int);
+void em_sleep2_dmg_timer_set(EMW *em);
+void em_dur_set(EMW *, int);
+int em_hokaku_ck(EMW *em, f32 rate);
+void em_cmd_ck(EMW *);
 
-There must be a read of a variable before the instruction
-which has a name starting with with "jtbl"/"jpt_"/"lbl_"/"jumptable_".
-*/
+void em21_main(EMW *em) {
+    EM21W *w = (EM21W *)em->ex;
+    u8 dmg[4];
+    u8 var_s0;
+    int i;
+    int n;
+    u8 r;
+    PLW *pl;
 
-/*
-Decompilation failure in function em21_main_sub:
+    var_s0 = 0;
+    if (em->x8C3 == 0 && em->x04 == 1) {
+        if (game_w.x2E == 3) {
+            n = game_w.pl_num;
+            pl = player_work;
+            for (i = 0; i < n; i++, pl++) {
+                if (em->stg == pl->stg) {
+                    break;
+                }
+            }
+            if (i >= n) {
+                if (em->mode < 5) {
+                    if (em->x388 != 4) {
+                        if (!M2(0x16)) {
+                            em_cmd_reset(em);
+                            em->x839 = 0;
+                            em21_act_set(em, 2, 0x16, 2);
+                        }
+                    } else if (!M2(0)) {
+                        em_cmd_reset(em);
+                        em21_act_set(em, 2, 0, 2);
+                    }
+                }
+            }
+        } else if (game_w.x2E == 6) {
+            em_no_floor_ck(em);
+            if (em->x388 == 0) {
+                em_no_battle_area_ck(em, 0, 1);
+            } else if (em->x388 == 4) {
+                em_no_battle_area_ck(em, 0, 0);
+            }
+        }
+    } else if (em->stg == game_w.stage) {
+        switch (em->x388) {
+        case 0:
+            if (em->x7E8 != 0) {
+                em21_act_set(em, 2, 0, 0);
+            }
+            break;
+        case 4:
+            if (em->x7E8 == 0) {
+                em21_act_set(em, 0, 1, 0);
+            }
+            break;
+        }
+    }
+    em_mode_timer_sub(em);
+    r = Em_Dmg_Sys(em, dmg);
+    switch (r) {
+    case 1:
+    case 2:
+        if (em->x388 == 4) {
+            em21_act_set(em, 5, 2, 2);
+        } else if (em->x9EA != 0) {
+            em21_act_set(em, 5, 1, 2);
+        } else {
+            em21_act_set(em, 5, 0, 2);
+        }
+        break;
+    case 3:
+    case 4:
+        if (em->x9EA == 0) {
+            if (dmg[0] == 0) {
+                em->x95A = 0x10;
+            } else if (em->x8B6 == 0) {
+                em->x95A = 0xA;
+            } else {
+                em->x95A = 6;
+            }
+            em_ana_loop_cnt_set(em);
+            em21_act_set(em, 4, 0xC, 2);
+        }
+        break;
+    case 15:
+        if (em->x388 == 4) {
+            em21_act_set(em, 4, 0x11, 2);
+            em_ikari_add(em, em->x8B0);
+        }
+        break;
+    case 5:
+        if (!M4(6)) {
+            em21_act_set(em, 4, 6, 2);
+        }
+        break;
+    case 6:
+        var_s0 = 1;
+        if (em->x9EA != 0) {
+            em_mahi_dmg_timer_set(em);
+            em21_act_set(em, 4, 0xE, 2);
+        } else if (!M4(0xB) && !M4(6) && !M4(7) && em->x388 == 1) {
+            em_mahi_dmg_timer_set(em);
+            em21_act_set(em, 4, 7, 2);
+        } else if (!M4(0xB) && !M4(6) && !M4(7) && em->x388 == 0) {
+            em_mahi_dmg_timer_set(em);
+            em21_act_set(em, 4, 0xB, 2);
+        } else if (!M4(0xF) && !M4(6) && !M4(7) && em->x388 == 4) {
+            em_mahi_dmg_timer_set(em);
+            em21_act_set(em, 4, 0x12, 2);
+        }
+        break;
+    case 7:
+        if (em->x9EA != 0) {
+            em_sleep2_dmg_timer_set(em);
+            if ((u8)em_hokaku_ck(em, 0.3f) == 1) {
+                em21_act_set(em, 6, 0, 4);
+            } else {
+                em21_act_set(em, 0, 0xA, 2);
+            }
+        } else if (!M4(0x16) && !M4(6) && em->x388 == 4) {
+            em_sleep2_dmg_timer_set(em);
+            em21_act_set(em, 4, 0x16, 2);
+        } else if (!M0(0x10) && !M4(6) && em->x388 == 1) {
+            em_sleep2_dmg_timer_set(em);
+            em21_act_set(em, 0, 0x10, 2);
+        } else if (!M0(0xC) && !M4(6) && em->x388 == 0) {
+            em_sleep2_dmg_timer_set(em);
+            em21_act_set(em, 0, 0xC, 2);
+        }
+        break;
+    case 8:
+        if (em->x959 == 6) {
+            em_sleep_dmg_timer_set(em);
+            em21_act_set(em, 0, 8, 2);
+        } else if (!M2(0x13) && !M4(6) && em->x388 == 4) {
+            em_sleep_dmg_timer_set(em);
+            em21_act_set(em, 2, 0x13, 2);
+        } else if (!M0(0xE) && !M4(6) && em->x388 == 1) {
+            em_sleep_dmg_timer_set(em);
+            em21_act_set(em, 0, 0xE, 2);
+        } else if (!M0(5) && !M4(6) && em->x388 == 0) {
+            em_sleep_dmg_timer_set(em);
+            em21_act_set(em, 0, 5, 2);
+        }
+        break;
+    case 10:
+        if (em->mode == 0) {
+            switch (em->x15) {
+            case 5:
+                em21_act_set(em, 0, 6, 2);
+                em->x839 = 0;
+                break;
+            case 8:
+                em21_act_set(em, 4, 0x13, 2);
+                em->x839 = 0;
+                break;
+            case 10:
+                em21_act_set(em, 4, 0x14, 2);
+                em->x839 = 0;
+                break;
+            case 12:
+                em21_act_set(em, 0, 0xD, 2);
+                em->x839 = 0;
+                break;
+            case 14:
+                em21_act_set(em, 0, 0xF, 2);
+                em->x839 = 0;
+                break;
+            case 18:
+                em21_act_set(em, 0, 0x13, 2);
+                em->x839 = 0;
+                break;
+            }
+        } else if (em->mode == 2) {
+            switch (em->x15) {
+            case 19:
+                em21_act_set(em, 2, 0x18, 2);
+                em->x839 = 0;
+                break;
+            case 20:
+                em21_act_set(em, 2, 0x19, 2);
+                em->x839 = 0;
+                break;
+            }
+        } else if (em->mode == 4) {
+            if (em->x15 == 0x16) {
+                em21_act_set(em, 2, 0x19, 2);
+                em->x839 = 0;
+            }
+        }
+        break;
+    case 12:
+        var_s0 = 1;
+        switch (em->x388) {
+        case 3:
+        case 0:
+            switch ((u8)em->x38E) {
+            case 0:
+            case 7:
+                em21_act_set(em, 4, 0, 2);
+                break;
+            case 5:
+            case 6:
+                em21_act_set(em, 4, 2, 2);
+                break;
+            case 1:
+            case 2:
+                em21_act_set(em, 4, 3, 2);
+                break;
+            default:
+                if (em->hagi[(u8)em->x38E].cnt >= 2) {
+                    em21_act_set(em, 4, 5, 2);
+                    if ((u8)em->x38E != 3) {
+                        em->x07 = 0;
+                    } else {
+                        em->x07 = 1;
+                    }
+                } else {
+                    em21_act_set(em, 4, 1, 2);
+                }
+                break;
+            }
+            break;
+        case 1:
+            em21_act_set(em, 4, 4, 2);
+            break;
+        case 2:
+            em21_act_set(em, 4, 6, 2);
+            break;
+        case 4:
+            em21_act_set(em, 4, 0x11, 2);
+            break;
+        }
+        break;
+    case 13:
+        var_s0 = 1;
+        if (em->x388 != 2) {
+            em21_act_set(em, 4, 0, 2);
+            em->x839 = 0;
+        }
+        break;
+    case 14:
+        var_s0 = 1;
+        if (M2(0x12)) {
+            em->x839 = 0;
+        }
+        break;
+    }
+    if (var_s0 != 0 && em->x94E == 0) {
+        em->x88B = 1;
+    }
+    if (em->x839 != 0) {
+        em_cmd_ck(em);
+        em->x839 = 0;
+    }
+    em21_main_sub(em, w);
+    if (em->x6FF != 0) {
+        em21_main_sub(em, w);
+        em->x6FF = 0;
+    }
+    if (em->x388 == 4) {
+        f32 temp_f1;
+        f32 temp_f1_2;
 
-Unable to determine jump table for jr instruction at tmpk43qekzn.s line 23.
+        temp_f1 = em->x7E4;
+        if (!(em->pos[1] <= temp_f1)) {
+            em->pos[1] = temp_f1;
+        }
+        temp_f1_2 = em->x5AC;
+        if (em->pos[1] < temp_f1_2) {
+            em->pos[1] = temp_f1_2;
+        }
+    }
+}
 
-There must be a read of a variable before the instruction
-which has a name starting with with "jtbl"/"jpt_"/"lbl_"/"jumptable_".
-*/
+void em21_main_sub(EMW *em, EM21W *w) {
+    em->mode_old = em->mode;
+    em->x15_old = em->x15;
+    switch (em->mode) {
+    case 0:
+        em_move00_006075D0(em, w);
+        break;
+    case 1:
+        em_move01_00607730(em, w);
+        break;
+    case 2:
+        em_move02_006077C0(em, w);
+        break;
+    case 3:
+        em_move03_006079A0(em, w);
+        break;
+    case 4:
+        em_move04_00607A60(em, w);
+        break;
+    case 5:
+        em_move05_00607C10(em, w);
+        break;
+    case 6:
+        em_move06_00607CA0(em, w);
+        break;
+    case 7:
+        em_move06_00607CA0(em, w);
+        break;
+    }
+    if (em->pos[0] <= 0.0f || em->pos[2] <= 0.0f) {
+        em_dur_set(em, 0);
+    }
+}
 
 void em21_uvmove(EMW *em) {
     EMW *var_t1;
