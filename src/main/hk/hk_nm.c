@@ -457,8 +457,8 @@ void hk_key_eisuu(void) {
     u32 mask;
 
     switch (m) {
-    case 7:
     case 2:
+    case 7:
         if (!(SKB(0x33) & 1) && hk_shift_key_ck() != 0) {
             e = SKB(0x1E);
             if (!(SKS32(0x20) & (1 << (e + 8)))) {
@@ -466,9 +466,9 @@ void hk_key_eisuu(void) {
                 goto set;
             }
         }
-        return;
-    case 15:
+        break;
     case 10:
+    case 15:
         if (!(SKB(0x33) & 1) && hk_shift_key_ck() != 0) {
             e = SKB(0x1E);
             if (!(SKS32(0x20) & (1 << (e - 8)))) {
@@ -477,12 +477,12 @@ void hk_key_eisuu(void) {
             }
         }
         break;
-    case 14:
-    case 9:
-    case 8:
-    case 6:
-    case 1:
     case 0:
+    case 1:
+    case 6:
+    case 8:
+    case 9:
+    case 14:
         if (hk_shift_key_ck() == 0) {
             mask = SKS32(0x20);
             if (!(mask & 4)) {

@@ -1,4 +1,5 @@
 # Decompiled code that replaces disassembly. One line per C file:
+main 0x002246F0 0x00224718 cam/camr01
 main 0x0024A240 0x002542E0 pl/pl_snd01
 main:rodata 0x0036E0C0 0x0036E108 pl/pl_snd01
 game 0x0059A2C0 0x0059A674 em/em08_ai_r01
@@ -1466,6 +1467,8 @@ main 0x00232680 0x002328E8 net/mcsls_t02
 main 0x00232A90 0x00232C50 net/mcsls_t03
 main 0x002232A0 0x002233BC cam/camarea01
 main 0x00223500 0x00223754 cam/camarea02
+main 0x00222E20 0x00223070 cam/camarea03
+main 0x002233C0 0x00223410 cam/camarea04
 main 0x00223DE0 0x00223E8C cam/camr2n01
 main 0x0010A210 0x0010A44C hit/tri01
 main 0x001267C0 0x00127440 option/option01
@@ -1625,6 +1628,7 @@ main 0x0015A230 0x0015A51C sound/sndc04
 main 0x00226830 0x002268A0 quest/qstb01
 main 0x00226900 0x00226914 quest/qstb02
 main 0x002269E0 0x00226C24 quest/qstb03
+main 0x002267F0 0x00226830 quest/qstb04
 main 0x0027BF00 0x0027BF80 chat/chatc01
 main 0x00275230 0x00275290 menu/pitx01
 main 0x0022F650 0x0022F78C net/aqcmdx01

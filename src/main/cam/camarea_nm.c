@@ -45,54 +45,60 @@ static inline u32 f2u(f32 f) {
 /* 0x00222E20: one follow-the-player area covering everything, built in
  * cam_data_area; zoom entries 1-4 from the stage's rows of
  * stage_camera_data_tbl[0..3] (y, z, tar_y, gnd), entry 0 fixed. */
-static void default_area_data(CAMW *cw) {
-    u8 *d = cam_data_area;
-    int k;
+static void default_area_data(CAMW *cw)
+{
+  u8 *d = cam_data_area;
+  u8 *new_var;
+  int k;
+  u8 *new_var2;
+  new_var2 = (u8 *) (((u8 *) d) + 0x30);
+  *((u16 *) (((u8 *) d) + 0x00)) = 0x102;
+  *((u16 *) (((u8 *) d) + 0x02)) = 0;
+  *((u16 *) (((u8 *) d) + 0x04)) = 1;
+  *((u16 *) (((u8 *) d) + 0x06)) = 1;
+  *((u16 *) (((u8 *) d) + 0x08)) = 20000;
+  *((u16 *) (((u8 *) d) + 0x0A)) = 20000;
+  *((u32 *) (((u8 *) d) + 0x0C)) = 0;
+  *((u32 *) (((u8 *) d) + 0x10)) = 0;
+  *((u32 *) (((u8 *) d) + 0x14)) = 20000;
+  *((u32 *) (((u8 *) d) + 0x18)) = 20000;
+  *((u32 *) (((u8 *) d) + 0x1C)) = 0;
+  *((u32 *) (((u8 *) d) + 0x20)) = 0;
+  *((u32 *) (((u8 *) d) + 0x24)) = 0;
+  *((u8 **) (((u8 *) d) + 0x28)) = d + 0x30;
+  *new_var2 = 0;
+  *((u8 *) (((u8 *) d) + 0x31)) = 0;
+  *((u8 *) (((u8 *) d) + 0x32)) = 0;
+  *((u8 *) (((u8 *) d) + 0x33)) = 2;
+  *((u8 *) (((u8 *) d) + 0x34)) = 0;
+  new_var = (u8 *) d;
+  *((u8 *) (new_var + 0x35)) = 0;
+  *((f32 *) (new_var + 0x38)) = 400.0f;
+  *((f32 *) (new_var + 0x3C)) = 2400.0f;
+  *((f32 *) (new_var + 0x40)) = 1.0f;
+  *((f32 *) (new_var + 0x44)) = 0.75f;
+  *((u32 *) (new_var + 0x48)) = 0;
+  *((u32 *) (new_var + 0x4C)) = 0;
+  for (k = 0; k < 4; k++)
+  {
+    f32 *row = (f32 *) (((u8 *) stage_camera_data_tbl[k]) + (game_w.stage * 28));
+    u8 *e = (d + 0x90) + (k * 0x20);
+    *((f32 *) (((u8 *) e) + 0x04)) = row[1];
+    *((f32 *) (((u8 *) e) + 0x08)) = row[2];
+    *((f32 *) (((u8 *) e) + 0x10)) = row[4];
+    *((f32 *) (((u8 *) e) + 0x18)) = row[6];
+  }
 
-    EH(d, 0x00) = 0x102;
-    EH(d, 0x02) = 0;
-    EH(d, 0x04) = 1;
-    EH(d, 0x06) = 1;
-    EH(d, 0x08) = 20000;
-    EH(d, 0x0A) = 20000;
-    EW(d, 0x0C) = 0;
-    EW(d, 0x10) = 0;
-    EW(d, 0x14) = 20000;
-    EW(d, 0x18) = 20000;
-    EW(d, 0x1C) = 0;
-    EW(d, 0x20) = 0;
-    EW(d, 0x24) = 0;
-    EP(d, 0x28) = d + 0x30;
-    EB(d, 0x30) = 0;
-    EB(d, 0x31) = 0;
-    EB(d, 0x32) = 0;            /* area type 0: follow the player */
-    EB(d, 0x33) = 2;
-    EB(d, 0x34) = 0;
-    EB(d, 0x35) = 0;            /* no boxes */
-    EF(d, 0x38) = 400.0f;
-    EF(d, 0x3C) = 2400.0f;
-    EF(d, 0x40) = 1.0f;
-    EF(d, 0x44) = 0.75f;
-    EW(d, 0x48) = 0;
-    EW(d, 0x4C) = 0;
-    for (k = 0; k < 4; k++) {
-        f32 *row = (f32 *)((u8 *)stage_camera_data_tbl[k] + game_w.stage * 28);
-        u8 *e = d + 0x90 + k * 0x20;
-        EF(e, 0x04) = row[1];
-        EF(e, 0x08) = row[2];
-        EF(e, 0x10) = row[4];
-        EF(e, 0x18) = row[6];
-    }
-    EF(d, 0x74) = 300.0f;       /* zoom entry 0 */
-    EF(d, 0x78) = 160.0f;
-    EF(d, 0x80) = 184.0f;
-    EF(d, 0x88) = 80.0f;
-    EF(d, 0x50) = 0.87266463f;  /* fov 50 degrees */
-    EF(d, 0x54) = 0.0f;
-    EF(d, 0x58) = 0.0f;
-    EH(d, 0x5E) = 0;
-    EH(d, 0x5C) = 0;
-    cw->data = d;
+  *((f32 *) (new_var + 0x74)) = 300.0f;
+  *((f32 *) (new_var + 0x78)) = 160.0f;
+  *((f32 *) (new_var + 0x80)) = 184.0f;
+  *((f32 *) (new_var + 0x88)) = 80.0f;
+  *((f32 *) (new_var + 0x50)) = 0.87266463f;
+  *((f32 *) (new_var + 0x54)) = 0.0f;
+  *((f32 *) (new_var + 0x58)) = 0.0f;
+  *((u16 *) (new_var + 0x5E)) = 0;
+  *((u16 *) (new_var + 0x5C)) = 0;
+  cw->data = d;
 }
 
 /* 0x00223000 */
