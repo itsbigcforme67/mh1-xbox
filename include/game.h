@@ -13,7 +13,7 @@ typedef struct GAME_W {
     u8 x03;             /* 0x003 */
     s16 x04;            /* 0x004 counter (game3/game4) */
     s16 x06;            /* 0x006 counter (game3) */
-    u8 _pad008[0xA - 0x8];
+    s16 x08;            /* 0x008 timer (gold_main/gold_init) */
     s16 x0A;            /* 0x00A counter (game5) */
     u8 _pad00C[0xD - 0xC];
     u8 pad_on;          /* 0x00D read controllers this frame (swset) */
