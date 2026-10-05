@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -2421,7 +2421,8 @@ int close_dic(void)
     return 0;
 }
 
-int seek_dic(int pos)
+int seek_dic(pos)
+int pos;
 {
     if (d_seek(dic_fd, pos, 0) == -1) {
         if (open_dic() != 0) {
@@ -2463,19 +2464,27 @@ int read_head(void)
 
 int flush_head(void)
 {
+    u8 *p;
+
+    p = header + 0x30;
     if (temp_page == old_temp && suji_mode == old_suji && entry2upd == 0) {
         return 0;
     }
-    header[0x30] = temp_page % 256;
-    header[0x31] = temp_page / 256;
-    header[0x32] = gaku_mode % 256;
-    header[0x33] = gaku_mode / 256;
-    header[0x34] = suji_mode % 256;
-    header[0x35] = suji_mode / 256;
+    p[0] = temp_page % 256;
+    p[1] = temp_page / 256;
+    p += 2;
+    p[0] = gaku_mode % 256;
+    p[1] = gaku_mode / 256;
+    p += 2;
+    p[0] = suji_mode % 256;
+    p[1] = suji_mode / 256;
     if (seek_dic(0) == -1) {
         return -1;
     }
-    return -(d_write(dic_fd, header, 0x400) != 0x400);
+    if (d_write(dic_fd, header, 0x400) != 0x400) {
+        return -1;
+    }
+    return 0;
 }
 
 int read_index(void)
@@ -2483,7 +2492,10 @@ int read_index(void)
     if (seek_dic(0x400) == -1) {
         return -1;
     }
-    return -(d_read(dic_fd, mainindex, 0x1000) != 0x1000);
+    if (d_read(dic_fd, mainindex, 0x1000) != 0x1000) {
+        return -1;
+    }
+    return 0;
 }
 
 int chk_entry2(u8 *key, int len)
@@ -2606,15 +2618,18 @@ void init_page_tab(void)
 
 int write_page(PAGE *p)
 {
-    if (seek_dic((p->id << 10) + 0x3400) == -1) {
+    if (seek_dic(((s64)p->id << 10) + 0x3400) == -1) {
         return -1;
     }
-    return -(d_write(dic_fd, p->data, 0x400) != 0x400);
+    if (d_write(dic_fd, p->data, 0x400) != 0x400) {
+        return -1;
+    }
+    return 0;
 }
 
 int read_page(PAGE *p)
 {
-    if (seek_dic((p->id << 10) + 0x3400) == -1) {
+    if (seek_dic(((s64)p->id << 10) + 0x3400) == -1) {
         return -1;
     }
     d_read(dic_fd, p->data, 0x400);
@@ -3011,7 +3026,10 @@ int write_temp(void)
     if (seek_dic(0x1400) == -1) {
         return -1;
     }
-    return -(d_write(dic_fd, temp_pages, 0x2000) != 0x2000);
+    if (d_write(dic_fd, temp_pages, 0x2000) != 0x2000) {
+        return -1;
+    }
+    return 0;
 }
 
 int newwdlen(WD *w)
@@ -4875,7 +4893,7 @@ int is_shift(int c)
     if (is_kanji((c & 0xFFFF) >> 8 & 0xFF) == 0) {
         return 0;
     }
-    lo = c & 0xFF;
+    lo = c & 0xFF & 0xFF;
     if (lo < 0x40 || lo >= 0xFD || lo == 0x7F) {
         return 0;
     }
@@ -5352,8 +5370,10 @@ void bs_prefix(int pos)
 {
     BS *b;
     PW *pw;
+    HCHAR *h;
 
-    for (b = hchar[pos].bs; b != 0; b = b->next) {
+    h = &hchar[pos];
+    for (b = h->bs; b != 0; b = b->next) {
         b->x0A = 0;
         pw = b->pw;
         if (pw != 0 && pw->x02 == 0x19 && pw->x00 == 0) {
@@ -6025,10 +6045,10 @@ int api_funcent(int *req)
     int cmd;
 
     cmd = *req;
-    if (cmd > 0 && (u32)cmd < 0x40) {
-        return D_0034ABEC[cmd]((u8 *)req + 4);
+    if (cmd <= 0 || (u32)cmd >= 0x40) {
+        return -1;
     }
-    return -1;
+    return D_0034ABEC[cmd]((u8 *)req + 4);
 }
 
 int api_Rstrconv(int *a)
@@ -6099,8 +6119,8 @@ int api_henkan(int *a)
         return -1;
     }
     in = (u8 *)a[0];
-    kj = (u8 *)a[2];
     kana = (u8 *)a[1];
+    kj = (u8 *)a[2];
     if (in != 0) {
         if (func_mode >= 2) {
             init_edit0();
@@ -6139,8 +6159,8 @@ int api_movekh(int *a)
     if (func_mode != 3) {
         return 0;
     }
-    q = (u8 *)a[1];
     p = (u8 *)a[0];
+    q = (u8 *)a[1];
     switch (a[-1]) {
     case 20:
         if (gun_nkh > 0) {
@@ -6178,8 +6198,8 @@ int api_moveblk(int *a)
     if (func_mode != 3) {
         return 0;
     }
-    q = (u8 *)a[1];
     p = (u8 *)a[0];
+    q = (u8 *)a[1];
     switch (a[-1]) {
     case 22:
         if (back_gun(0, 0) == 0) {
@@ -6395,8 +6415,8 @@ int api_khshort(int *a)
     if (func_mode != 3) {
         return -1;
     }
-    q = (u8 *)a[1];
     p = (u8 *)a[0];
+    q = (u8 *)a[1];
     if (cur_len < 2) {
         return 0;
     }
@@ -6411,10 +6431,10 @@ int api_khshort(int *a)
 
 int api_backbunsetu(int *a)
 {
-    int len;
-    int pos;
     u8 *p;
     u8 *q;
+    int pos;
+    int len;
 
     len = 0;
     if (func_mode != 3) {
@@ -6471,8 +6491,8 @@ int api_khhenkan(int *a)
     if (func_mode != 3) {
         return -1;
     }
-    q = (u8 *)a[1];
     p = (u8 *)a[0];
+    q = (u8 *)a[1];
     switch (a[-1]) {
     case 37:
         mode = 2;
@@ -6490,7 +6510,7 @@ int api_khhenkan(int *a)
         mode = 4;
         break;
     }
-    khmem_raw(mode, 3);
+    khmem_raw(mode);
     if (hchar[cur_pos].kh == 0) {
         return -1;
     }
