@@ -172,7 +172,8 @@ typedef struct PLW {
     u32   work5FC;           /* 0x5FC */
     u8 _pad600[0x604 - 0x600];
     u8    flag604;       /* 0x604 */
-    u8 _pad605[0x608 - 0x605];
+    u8    work605;           /* 0x605 */
+    u8 _pad606[0x2];
     s16   work608;           /* 0x608 */
     s16   work60A;           /* 0x60A */
     u8 _pad60C[0x610 - 0x60C];

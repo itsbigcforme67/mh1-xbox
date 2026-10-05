@@ -135,4 +135,11 @@ long Pl_item_search_space(PLW *);
 f32 flvecCalcDistance(f32 *, f32 *);
 void set01_set2(void *);
 extern u8 lit_1830[];
+void WyvernFindPlayer(PLW *);
+void basic_atack_ck(PLW *);
+u8 basic_kabe_ck(PLW *);
+s32 em_ninshiki_ck2(PLW *);
+s32 func_639DD0(PLW *);
+int pl_ride_ck(PLW *);
+s32 shell_chg_ck(PLW *);
 #endif

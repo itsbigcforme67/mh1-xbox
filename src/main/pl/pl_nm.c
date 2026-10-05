@@ -414,3 +414,239 @@ s32 wall_vec_set(PLW *pl, s16 mode) {
     }
     return 0;
 }
+
+/* near-match (not built): ~592 instructions, 32 extra nops: original fills many branch delay slots with the
+   following call's `move a0,s2` (e.g. after Online_ck/bne), ours keeps nop and puts it in the jal slot. Logic believed equal. */
+void basic_com_ck(PLW *pl) {
+    EMW *var_s0;
+    s32 temp_s0;
+    s32 var_s1;
+    s16 var_a0;
+    u16 temp_v1_2;
+    u16 var_v0;
+    u32 temp_s0_2;
+    u32 temp_v1_6;
+    u8 temp_v0;
+    u8 temp_v1;
+    u8 temp_v1_3;
+    u8 temp_v1_4;
+    u8 temp_v1_5;
+
+    var_s0 = em_work;
+    if (Online_ck() == 0) {
+        if (Pl_master_ck(pl) == 0) {
+            return;
+        }
+    } else if (Pl_master_ck(pl) == 0) {
+        return;
+    }
+    {
+        var_s1 = 0;
+        if ((game_w.x0D5 == 4) && (pl->work88D == 0)) {
+            Pl_act_set2(pl, 4, 2, 0);
+            return;
+        }
+        pl->work8F0 = 1;
+        if (pl->flag604 != 0) {
+            for (var_a0 = 0; var_a0 < 0x14; var_a0++, var_s0++) {
+                if ((pl->work605 == var_s0->x13) && (var_s0->kind == 7)) {
+                    if (var_s0->x87F != 0) {
+                        Pl_act_set(pl, 2, 7, 0);
+                        return;
+                    }
+                    break;
+                }
+            }
+            {
+                if (((stick_pow_get(pl, 1) & 0xFF) > 0) && (pl->flag15 != 0x12)) {
+                    pl->ang_y = stick_dir_set(pl, 0);
+                    Pl_act_set(pl, 0, 0x12, 0);
+                }
+                pl_ride_ck(pl);
+                if ((Game_clear_ck(1) != 1) && (pl->sw.trg & 0x20) && (trade_get_ck_00139680(pl) == 0)) {
+                    unique_act_set(pl);
+                    search_act_set(pl, 0);
+                }
+            }
+        } else {
+            switch (game_w.x0D5) {
+            case 5:
+                /* fallthrough */
+            case 6:
+                Pl_act_set2(pl, 4, 3, 0);
+                return;
+            case 8:
+                /* fallthrough */
+            case 7:
+                Pl_act_set2(pl, 4, 5, 0);
+                return;
+            default:
+                if (pl->flag12 != 0) {
+                    temp_s0 = stick_pow_get(pl, 1) & 0xFF;
+                    switch (temp_s0) {
+                    case 4:
+                    case 0:
+                        break;
+                    case 3:
+                    case 2:
+                    case 1:
+                        temp_v1 = pl->flag15;
+                        if ((temp_v1 != 0x24) && (temp_v1 != 3) && (pl->x714 == 0)) {
+                            Pl_act_set(pl, 0, 3, 0);
+                        }
+                        break;
+                    }
+                    if ((temp_s0 != 0) && (pl->x714 != 0) && (pl->flag15 != 0x3B)) {
+                        Pl_act_set(pl, 0, 0x3B, 0);
+                    }
+                    if (Game_clear_ck(1) != 1) {
+                        if (pl->work8C4 != 0) {
+                            Pl_chat_act_set(pl);
+                        }
+                        temp_v1_2 = pl->sw.trg;
+                        if ((temp_v1_2 & 0x220) || ((temp_v1_2 & 0x10) && (pl->sw.pow[0] >= 0x28))) {
+                            if (pl_flag_ck(pl, 0x1200) == 0) {
+                                Pl_act_set(pl, 0, 5, 0);
+                            } else {
+                                Pl_act_set(pl, 0, 0xA, 0);
+                            }
+                        }
+                        job_special_com_ck(pl, 1);
+                        if (!(shell_chg_ck(pl) & 0xFF)) {
+                            basic_atack_ck(pl);
+                        }
+                        if (pl->work908 != 0) {
+                            pl->work90B = 1;
+                            Pl_act_set2(pl, 0, 0x67, 0x10);
+                        }
+                        if (func_639DD0(pl) & 0xFF) {
+                            Pl_act_set2(pl, 2, 0x13, 0);
+                            return;
+                        }
+                    }
+                } else {
+                    temp_s0_2 = stick_pow_get(pl, 0) & 0xFF;
+                    switch (temp_s0_2) {
+                    case 0:
+                    case 4:
+                        break;
+                    case 1:
+                        temp_v1_3 = pl->flag15;
+                        if ((temp_v1_3 != 0x49) && (temp_v1_3 != 0x24) && (pl->x714 == 0)) {
+                            Pl_act_set(pl, 0, 0x49, 0);
+                            pl->ang_y = stick_dir_set(pl, 0);
+                        }
+                        break;
+                    case 2:
+                        temp_v1_4 = pl->flag15;
+                        if ((temp_v1_4 != 2) && (temp_v1_4 != 0x24) && (pl->x714 == 0)) {
+                            pl->ang_y = stick_dir_set(pl, 0);
+                            Pl_act_set(pl, 0, 2, 0);
+                        }
+                        break;
+                    case 3:
+                        temp_v1_5 = pl->flag15;
+                        if ((temp_v1_5 != 1) && (temp_v1_5 != 0x3F) && (temp_v1_5 != 0x13) && (temp_v1_5 != 0x24) && (temp_v1_5 != 0x1F) && (pl->x714 == 0)) {
+                            pl->ang_y = stick_dir_set(pl, 0);
+                            temp_v1_6 = (((*(u16 *)&pl->ang_y) + 0x10000) - pl->ang[1]) & 0xFFFF;
+                            if ((temp_v1_6 >= 0x6000U) && (temp_v1_6 < 0xA001U)) {
+                                Pl_act_set(pl, 0, 0x3F, 0);
+                            } else {
+                                Pl_act_set(pl, 0, 1, 0);
+                            }
+                        }
+                        break;
+                    case 5:
+                        if (pl_flag_ck(pl, 0x200) == 0) {
+                            if ((pl->work81E != 0) && ((((pl->x3A8 - pl->ang[1]) + 0x2000) & 0xFFFF) >= 0x4001)) {
+                                Pl_act_set(pl, 0, 0x20, 0);
+                            } else {
+                                Pl_act_set(pl, 0, 0x1F, 0);
+                            }
+                            var_s1 = 1;
+                        }
+                        break;
+                    }
+                    if (pl->work8C4 != 0) {
+                        Pl_chat_act_set(pl);
+                    }
+                    if ((temp_s0_2 != 0) && (pl->x714 != 0) && (pl->flag15 != 0x3B)) {
+                        Pl_act_set(pl, 0, 0x3B, 0);
+                    }
+                    if (Game_clear_ck(1) != 1) {
+                        if (pl->sw.trg & 0x40) {
+                            if (pl->sw.pow[0] >= 0x55) {
+                                if (pl->stamina >= 0x4B) {
+                                    Pl_act_set(pl, 0, 0x1C, 4);
+                                }
+                            } else {
+                                Pl_act_set(pl, 0, 8, 0);
+                            }
+                        }
+                        if ((pl->sw.trg & 0x200) && (pl->work886 == 0)) {
+                            search_act_set(pl, 2);
+                            item_action_set(pl, 0);
+                            pl->work8F2 = (u8) (pl->work8F2 | 1);
+                        }
+                        job_special_com_ck(pl, 0);
+                        if (!(var_s1 & 0xFF)) {
+                            var_v0 = pl->sw.trg;
+                        } else {
+                            var_v0 = pl->sw.now;
+                        }
+                        if (var_v0 & 0xFFFF & 0x20) {
+                            basic_kabe_ck(pl);
+                        }
+                        if (pl->sw.an_trg & 0x3C) {
+                            if (pl_flag_ck(pl, 0x02000600) == 0) {
+                                Pl_act_set(pl, 0, 4, 0);
+                            } else {
+                                temp_v0 = pl->kind;
+                                switch (temp_v0) {
+                                default:
+                                    Pl_act_set(pl, 1, 3, 4);
+                                    break;
+                                case 1:
+                                    Pl_act_set(pl, 0, 4, 0);
+                                    break;
+                                case 5:
+                                    Pl_act_set(pl, 0, 0x17, 0);
+                                    break;
+                                case 4:
+                                    Pl_act_set(pl, 1, 0x3E, 4);
+                                    break;
+                                case 3:
+                                    Pl_act_set(pl, 1, 0x2E, 4);
+                                    break;
+                                case 2:
+                                    Pl_act_set(pl, 1, 0x20, 4);
+                                    break;
+                                }
+                            }
+                        }
+                        if (pl->sw.trg & 1) {
+                            Pl_act_set(pl, 1, 0x14, 4);
+                        }
+                        if (pl->sw.trg & 0x20) {
+                            if (trade_get_ck_00139680(pl) == 0) {
+                                unique_act_set(pl);
+                                search_act_set(pl, 0);
+                            }
+                        } else if (pl->work908 != 0) {
+                            pl->work90B = 1;
+                            Pl_act_set2(pl, 0, 0x67, 0x10);
+                        }
+                        if ((em_ninshiki_ck2(pl) & 0xFF) == 1) {
+                            Pl_act_set(pl, 0, 0x3E, 0);
+                            WyvernFindPlayer(pl);
+                        }
+                        if (func_639DD0(pl) & 0xFF) {
+                            Pl_act_set2(pl, 2, 0x13, 0);
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+}

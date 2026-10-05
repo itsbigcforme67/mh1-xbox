@@ -101,7 +101,7 @@ segments:
       - [0x0371B0, c, pl/pl09]
       - [0x038900, asm, text/wall_act_ck]
       - [0x038BE0, c, pl/pl10]
-      - [0x038D48, asm, text/item_action_set]
+      - [0x0398F0, asm, text/basic_com_ck]
       - [0x04D1C8, asm, text/g_pl_chr_sub]
       - [0x04E0C0, asm, text/f_disp]
       - [0x04EAFC, asm, text/g_act_set]
