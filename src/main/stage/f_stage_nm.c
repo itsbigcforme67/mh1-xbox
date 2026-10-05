@@ -313,7 +313,7 @@ void stage_m(STGW *w)
                     r = ran_suu(1);
                     pos[0] = it->pos[0] + (f32)((r & 0x3F) - 0x20);
                     r = ran_suu(1);
-                    pos[1] = 65.0f + it->pos[1] + (f32)((r & 0x3F) - 0x20);
+                    pos[1] = (f32)((r & 0x3F) - 0x20) + (65.0f + it->pos[1]);
                     r = ran_suu(1);
                     pos[2] = it->pos[2] + (f32)((r & 0x3F) - 0x20);
                     func_618F00(pos, 8);
@@ -974,448 +974,326 @@ void trans_stage(void)
     switch (game_w.stage) {
     case 0:
     case 0x1A:
-        {
-            f32 *p;
-            int k;
-            SCLAY *mdl;
-            p = (f32 *)st00_pos_tbl;
-            mdl = &m->clay[3];
-            for (k = 0; k < 4; k++, p += 3) {
-                MTP(p);
-                RS(0x1A, (u32)&mat);
-                EXC();
-            }
-            break;
-        }
-    case 4:
-        {
-            SCLAY *mdl;
-            mdl = &set_mdlw->clay[4];
-            MTP(set04_pos_tbl);
-            flmatRotY33(&mat, ANG((FRM & 0x3FF) << 6));
+        p = (f32 *)st00_pos_tbl;
+        mdl = &m->clay[3];
+        for (k = 0; k < 4; k++, p += 3) {
+            MTP(p);
             RS(0x1A, (u32)&mat);
             EXC();
-            break;
         }
+        break;
+    case 4:
+        mdl = &set_mdlw->clay[4];
+        MTP(set04_pos_tbl);
+        flmatRotY33(&mat, ANG((FRM & 0x3FF) << 6));
+        RS(0x1A, (u32)&mat);
+        EXC();
+        break;
     case 5:
-        {
-            SCLAY *mdl;
-            mdl = &set_mdlw->clay[0];
-            RS(0x60, 0);
-            w->x20 = 0.02f + 0.02f * flSin(2.0f * (3.1415927f * ((f32)(FRM % 360) / 360.0f)));
-            UVT(0.0f, w->x20);
-            RS(0x19, (u32)&mat2);
-            flmatInit(&mat);
-            trans_stage_sub((int)&mat, (u8 *)mdl);
-            RS(0x60, 0x80);
-            break;
-        }
+        mdl = &set_mdlw->clay[0];
+        RS(0x60, 0);
+        w->x20 = 0.02f + 0.02f * flSin(2.0f * (3.1415927f * ((f32)(FRM % 360) / 360.0f)));
+        UVT(0.0f, w->x20);
+        RS(0x19, (u32)&mat2);
+        flmatInit(&mat);
+        trans_stage_sub((int)&mat, (u8 *)mdl);
+        RS(0x60, 0x80);
+        break;
     case 9:
-        {
-            STG_MDLS *m;
-            int k;
-            f32 *p;
-            SCLAY *mdl;
-            m = set_mdlw;
-            p = (f32 *)set09_pos_tbl;
-            for (k = 0; k < 14; k++, p += 4) {
-                if (k < 5) {
-                    mdl = &m->clay[0];
-                } else if (k < 8) {
-                    mdl = &m->clay[1];
-                } else {
-                    mdl = &m->clay[2];
-                }
-                MTP(p);
-                flmatRotY33(&mat, p[3]);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
+        m = set_mdlw;
+        p = (f32 *)set09_pos_tbl;
+        for (k = 0; k < 14; k++, p += 4) {
+            if (k < 5) {
+                mdl = &m->clay[0];
+            } else if (k < 8) {
+                mdl = &m->clay[1];
+            } else {
+                mdl = &m->clay[2];
             }
-            break;
-        }
-    case 0x14:
-        {
-            int k;
-            STG_MDLS *m;
-            f32 *p;
-            SCLAY *mdl;
-            m = set_mdlw;
-            p = (f32 *)set20_pos_tbl;
-            for (k = 0; k < 2; k++, p += 3) {
-                mdl = &m->clay[k];
-                MTP(p);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
-            }
-            break;
-        }
-    case 0x1C:
-        {
-            f32 *p;
-            SCLAY *mdl;
-            p = set28_pos_tbl;
-            mdl = &set_mdlw->clay[0];
             MTP(p);
             flmatRotY33(&mat, p[3]);
             trans_stage_sub((int)&mat, (u8 *)mdl);
-            break;
         }
+        break;
+    case 0x14:
+        m = set_mdlw;
+        p = (f32 *)set20_pos_tbl;
+        for (k = 0; k < 2; k++, p += 3) {
+            mdl = &m->clay[k];
+            MTP(p);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
+        }
+        break;
+    case 0x1C:
+        p = set28_pos_tbl;
+        mdl = &set_mdlw->clay[0];
+        MTP(p);
+        flmatRotY33(&mat, p[3]);
+        trans_stage_sub((int)&mat, (u8 *)mdl);
+        break;
     case 0x1B:
     case 0x21:
-        {
-            STG_MDLS *m;
-            int k;
-            f32 *p;
-            SCLAY *mdl;
-            m = set_mdlw;
-            p = (f32 *)set33_pos_tbl;
-            for (k = 0; k < 9; k++, p += 4) {
-                switch (k) {
-                case 0:
-                case 1:
-                case 2:
-                    mdl = &m->clay[4];
-                    break;
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                    mdl = &m->clay[5];
-                    break;
-                case 7:
-                case 8:
-                    mdl = &m->clay[7];
-                    break;
-                }
-                MTP(p);
-                flmatRotY33(&mat, p[3]);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
+        m = set_mdlw;
+        p = (f32 *)set33_pos_tbl;
+        for (k = 0; k < 9; k++, p += 4) {
+            switch (k) {
+            case 0:
+            case 1:
+            case 2:
+                mdl = &m->clay[4];
+                break;
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+                mdl = &m->clay[5];
+                break;
+            case 7:
+            case 8:
+                mdl = &m->clay[7];
+                break;
             }
-            break;
+            MTP(p);
+            flmatRotY33(&mat, p[3]);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
         }
+        break;
     case 0x18:
     case 0x22:
-        {
-            STG_MDLS *m;
-            f32 *p;
-            int k;
-            SCLAY *mdl;
-            m = set_mdlw;
-            p = (f32 *)set34_pos_tbl;
-            for (k = 0; k < 9; k++, p += 4) {
-                switch (k) {
-                case 0:
-                case 1:
-                    mdl = &m->clay[3];
-                    break;
-                case 2:
-                case 3:
-                    mdl = &m->clay[4];
-                    break;
-                case 4:
-                case 5:
-                case 6:
-                    mdl = &m->clay[8];
-                    break;
-                case 7:
-                case 8:
-                    mdl = &m->clay[9];
-                    break;
-                }
-                MTP(p);
-                flmatRotY33(&mat, p[3]);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
-            }
-            break;
-        }
-    case 0x24:
-        {
-            STG_MDLS *m;
-            f32 *p;
-            SCLAY *mdl;
-            int k;
-            m = set_mdlw;
-            p = (f32 *)set36_pos_tbl;
-            for (k = 0; k < 2; k++, p += 4) {
+        m = set_mdlw;
+        p = (f32 *)set34_pos_tbl;
+        for (k = 0; k < 9; k++, p += 4) {
+            switch (k) {
+            case 0:
+            case 1:
+                mdl = &m->clay[3];
+                break;
+            case 2:
+            case 3:
+                mdl = &m->clay[4];
+                break;
+            case 4:
+            case 5:
+            case 6:
+                mdl = &m->clay[8];
+                break;
+            case 7:
+            case 8:
                 mdl = &m->clay[9];
-                MTP(p);
-                flmatRotY33(&mat, p[3]);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
+                break;
             }
-            break;
+            MTP(p);
+            flmatRotY33(&mat, p[3]);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
         }
+        break;
+    case 0x24:
+        m = set_mdlw;
+        p = (f32 *)set36_pos_tbl;
+        for (k = 0; k < 2; k++, p += 4) {
+            mdl = &m->clay[9];
+            MTP(p);
+            flmatRotY33(&mat, p[3]);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
+        }
+        break;
     case 0x26:
-        {
-            STG_MDLS *m;
-            f32 *p;
-            int k;
-            SCLAY *mdl;
-            m = set_mdlw;
-            p = (f32 *)set38_pos_tbl;
-            for (k = 0; k < 11; k++, p += 4) {
-                if (k < 3) {
-                    mdl = &m->clay[4];
-                } else if (k < 9) {
-                    mdl = &m->clay[5];
-                } else {
-                    mdl = &m->clay[7];
-                }
-                MTP(p);
-                flmatRotY33(&mat, p[3]);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
+        m = set_mdlw;
+        p = (f32 *)set38_pos_tbl;
+        for (k = 0; k < 11; k++, p += 4) {
+            if (k < 3) {
+                mdl = &m->clay[4];
+            } else if (k < 9) {
+                mdl = &m->clay[5];
+            } else {
+                mdl = &m->clay[7];
             }
-            break;
+            MTP(p);
+            flmatRotY33(&mat, p[3]);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
         }
+        break;
     case 0x1D:
     case 0x27:
-        {
-            STG_MDLS *m;
-            SCLAY *mdl;
-            f32 *p;
-            int k;
-            m = set_mdlw;
-            p = (f32 *)set39_pos_tbl;
-            for (k = 0; k < 2; k++, p += 3) {
-                mdl = &m->clay[1 + k];
-                MTP(p);
-                if (k == 0) {
-                    flmatRotY33(&mat, ANG((FRM & 0x3FF) << 6));
-                } else if (k == 1) {
-                    if (SFRM & 0x20) {
-                        flmatMakeTrans(&mat2, 0.25f * (f32)(SFRM & 3), 0.125f * (f32)((SFRM >> 2) & 7), 0.0f);
-                    } else {
-                        flmatMakeTrans(&mat2, 0.75f - 0.25f * (f32)(SFRM & 3), 0.875f - 0.125f * (f32)((SFRM >> 2) & 7), 0.0f);
-                    }
-                    RS(0x19, (u32)&mat2);
+        m = set_mdlw;
+        p = (f32 *)set39_pos_tbl;
+        for (k = 0; k < 2; k++, p += 3) {
+            mdl = &m->clay[1 + k];
+            MTP(p);
+            if (k == 0) {
+                flmatRotY33(&mat, ANG((FRM & 0x3FF) << 6));
+            } else if (k == 1) {
+                if (SFRM & 0x20) {
+                    flmatMakeTrans(&mat2, 0.25f * (f32)(SFRM & 3), 0.125f * (f32)((SFRM >> 2) & 7), 0.0f);
+                } else {
+                    flmatMakeTrans(&mat2, 0.75f - 0.25f * (f32)(SFRM & 3), 0.875f - 0.125f * (f32)((SFRM >> 2) & 7), 0.0f);
                 }
-                trans_stage_sub((int)&mat, (u8 *)mdl);
+                RS(0x19, (u32)&mat2);
             }
-            break;
+            trans_stage_sub((int)&mat, (u8 *)mdl);
         }
+        break;
     case 0x2B:
-        {
-            f32 *p;
-            int k;
-            SCLAY *mdl;
-            p = (f32 *)set43_pos_tbl;
-            mdl = &set_mdlw->clay[1];
-            for (k = 0; k < 2; k++, p += 4) {
-                if (k == 0) {
-                    flmatMakeScale(&mat, 0.6f, 0.6f, 0.6f);
-                    flmatSetTrans(&mat, p[0], p[1], p[2]);
-                } else {
-                    MTP(p);
-                }
-                flmatRotY33(&mat, p[3]);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
+        p = (f32 *)set43_pos_tbl;
+        mdl = &set_mdlw->clay[1];
+        for (k = 0; k < 2; k++, p += 4) {
+            if (k == 0) {
+                flmatMakeScale(&mat, 0.6f, 0.6f, 0.6f);
+                flmatSetTrans(&mat, p[0], p[1], p[2]);
+            } else {
+                MTP(p);
             }
-            break;
+            flmatRotY33(&mat, p[3]);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
         }
+        break;
     case 0x2D:
-        {
-            f32 *p;
-            int k;
-            SCLAY *mdl;
-            p = (f32 *)set45_pos_tbl;
-            mdl = &set_mdlw->clay[3];
-            for (k = 0; k < 4; k++, p += 4) {
-                MTP(p);
-                flmatRotY33(&mat, p[3]);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
-            }
-            break;
+        p = (f32 *)set45_pos_tbl;
+        mdl = &set_mdlw->clay[3];
+        for (k = 0; k < 4; k++, p += 4) {
+            MTP(p);
+            flmatRotY33(&mat, p[3]);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
         }
+        break;
     case 0x32:
-        {
-            SCLAY *mdl;
-            mdl = &set_mdlw->clay[1];
-            RS(0x60, 0);
-            flmatMakeTrans(&mat2, (f32)(X1E & 0x3F) / 64.0f, (f32)(X1E & 0x3F) / 64.0f, 0.0f);
-            RS(0x19, (u32)&mat2);
-            MTP(set50_pos_tbl);
-            trans_stage_sub((int)&mat, (u8 *)mdl);
-            RS(0x60, 0x80);
-            break;
-        }
+        mdl = &set_mdlw->clay[1];
+        RS(0x60, 0);
+        flmatMakeTrans(&mat2, (f32)(X1E & 0x3F) / 64.0f, (f32)(X1E & 0x3F) / 64.0f, 0.0f);
+        RS(0x19, (u32)&mat2);
+        MTP(set50_pos_tbl);
+        trans_stage_sub((int)&mat, (u8 *)mdl);
+        RS(0x60, 0x80);
+        break;
     case 0x36:
-        {
-            SCLAY *mdl;
-            mdl = &set_mdlw->clay[5];
-            flmatMakeTrans(&mat2, 0.0f, 1.0f - (f32)(X1E & 0x3F) / 64.0f, 0.0f);
-            RS(0x19, (u32)&mat2);
-            MTP(set54_pos_tbl);
-            trans_stage_sub((int)&mat, (u8 *)mdl);
-            break;
-        }
+        mdl = &set_mdlw->clay[5];
+        flmatMakeTrans(&mat2, 0.0f, 1.0f - (f32)(X1E & 0x3F) / 64.0f, 0.0f);
+        RS(0x19, (u32)&mat2);
+        MTP(set54_pos_tbl);
+        trans_stage_sub((int)&mat, (u8 *)mdl);
+        break;
     case 0x3A:
-        {
-            f32 *p;
-            int k;
-            SCLAY *mdl;
-            p = (f32 *)set58_pos_tbl;
-            mdl = &set_mdlw->clay[0];
-            for (k = 0; k < 6; k++, p += 4) {
-                MTP(p);
-                flmatRotY33(&mat, p[3]);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
-            }
-            break;
+        p = (f32 *)set58_pos_tbl;
+        mdl = &set_mdlw->clay[0];
+        for (k = 0; k < 6; k++, p += 4) {
+            MTP(p);
+            flmatRotY33(&mat, p[3]);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
         }
+        break;
     case 0x3E:
-        {
-            STG_MDLS *m;
-            f32 *p;
-            int k;
-            SCLAY *mdl;
-            m = set_mdlw;
-            mdl = &m->clay[0];
-            MT(10900.0f, 0.0f, -6560.0f);
-            flmatRotY33(&mat, ANG((X1E & 0x7F) << 9));
-            flmatMakeTrans(&mat2, 1.0f - (f32)(X1E & 0x1F) / 32.0f, 0.0f, 0.0f);
-            RS(0x19, (u32)&mat2);
+        m = set_mdlw;
+        mdl = &m->clay[0];
+        MT(10900.0f, 0.0f, -6560.0f);
+        flmatRotY33(&mat, ANG((X1E & 0x7F) << 9));
+        flmatMakeTrans(&mat2, 1.0f - (f32)(X1E & 0x1F) / 32.0f, 0.0f, 0.0f);
+        RS(0x19, (u32)&mat2);
+        trans_stage_sub((int)&mat, (u8 *)mdl);
+        p = (f32 *)set62_pos_tbl;
+        for (k = 0; k < 3; k++, p += 4) {
+            mdl = &m->clay[1];
+            MTP(p);
+            flmatRotX33(&mat, p[3]);
             trans_stage_sub((int)&mat, (u8 *)mdl);
-            p = (f32 *)set62_pos_tbl;
-            for (k = 0; k < 3; k++, p += 4) {
-                mdl = &m->clay[1];
-                MTP(p);
-                flmatRotX33(&mat, p[3]);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
-            }
-            RS(0x60, 0);
-            mdl = &m->clay[2];
-            MT(10900.0f, 0.0f, -6560.0f);
-            flmatMakeTrans(&mat2, 1.0f - (f32)(X1E & 0xF) / 16.0f, 0.0f, 0.0f);
-            RS(0x19, (u32)&mat2);
-            trans_stage_sub((int)&mat, (u8 *)mdl);
-            RS(0x60, 0x80);
-            mdl = &m->clay[4];
-            MT(11000.0f, -560.0f, 9500.0f);
-            flmatMakeTrans(&mat2, 0.0f, (f32)(X1E & 0x7F) / 128.0f, 0.0f);
-            RS(0x19, (u32)&mat2);
-            trans_stage_sub((int)&mat, (u8 *)mdl);
-            break;
         }
+        RS(0x60, 0);
+        mdl = &m->clay[2];
+        MT(10900.0f, 0.0f, -6560.0f);
+        flmatMakeTrans(&mat2, 1.0f - (f32)(X1E & 0xF) / 16.0f, 0.0f, 0.0f);
+        RS(0x19, (u32)&mat2);
+        trans_stage_sub((int)&mat, (u8 *)mdl);
+        RS(0x60, 0x80);
+        mdl = &m->clay[4];
+        MT(11000.0f, -560.0f, 9500.0f);
+        flmatMakeTrans(&mat2, 0.0f, (f32)(X1E & 0x7F) / 128.0f, 0.0f);
+        RS(0x19, (u32)&mat2);
+        trans_stage_sub((int)&mat, (u8 *)mdl);
+        break;
     case 0x3F:
-        {
-            STG_MDLS *m;
-            f32 *p;
-            int k;
-            SCLAY *mdl;
-            m = set_mdlw;
-            p = (f32 *)set63_pos_tbl;
-            for (k = 0; k < 5; k++, p += 4) {
-                mdl = &m->clay[0];
-                MTP(p);
-                flmatRotY33(&mat, p[3]);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
-            }
-            break;
+        m = set_mdlw;
+        p = (f32 *)set63_pos_tbl;
+        for (k = 0; k < 5; k++, p += 4) {
+            mdl = &m->clay[0];
+            MTP(p);
+            flmatRotY33(&mat, p[3]);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
         }
+        break;
     case 0x40:
-        {
-            STG_MDLS *m;
-            f32 *p;
-            int k;
-            SCLAY *mdl;
-            m = set_mdlw;
-            p = (f32 *)set64_pos_tbl;
-            for (k = 0; k < 3; k++, p += 4) {
-                mdl = &m->clay[0];
-                MTP(p);
-                flmatRotY33(&mat, p[3]);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
-            }
-            break;
+        m = set_mdlw;
+        p = (f32 *)set64_pos_tbl;
+        for (k = 0; k < 3; k++, p += 4) {
+            mdl = &m->clay[0];
+            MTP(p);
+            flmatRotY33(&mat, p[3]);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
         }
+        break;
     case 0x47:
-        {
-            STG_MDLS *m;
-            f32 *p;
-            int k;
-            SCLAY *mdl;
-            m = set_mdlw;
-            p = (f32 *)set71_pos_tbl;
-            for (k = 0; k < 11; k++, p += 4) {
-                if (k < 3) {
-                    mdl = &m->clay[0];
-                } else if (k < 5) {
-                    mdl = &m->clay[1];
-                } else {
-                    mdl = &m->clay[2];
-                }
-                MTP(p);
-                flmatRotY33(&mat, p[3]);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
+        m = set_mdlw;
+        p = (f32 *)set71_pos_tbl;
+        for (k = 0; k < 11; k++, p += 4) {
+            if (k < 3) {
+                mdl = &m->clay[0];
+            } else if (k < 5) {
+                mdl = &m->clay[1];
+            } else {
+                mdl = &m->clay[2];
             }
-            break;
+            MTP(p);
+            flmatRotY33(&mat, p[3]);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
         }
+        break;
     case 0x48:
     case 0x4A:
-        {
-            STG_MDLS *m;
-            f32 *p;
-            int k;
-            SCLAY *mdl;
-            m = set_mdlw;
-            p = (f32 *)set72_pos_tbl;
-            for (k = 0; k < 6; k++, p += 4) {
-                if (k < 2) {
-                    mdl = &m->clay[0];
-                } else if (k < 4) {
-                    mdl = &m->clay[1];
-                } else {
-                    mdl = &m->clay[2];
-                }
-                MTP(p);
-                flmatRotY33(&mat, p[3]);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
+        m = set_mdlw;
+        p = (f32 *)set72_pos_tbl;
+        for (k = 0; k < 6; k++, p += 4) {
+            if (k < 2) {
+                mdl = &m->clay[0];
+            } else if (k < 4) {
+                mdl = &m->clay[1];
+            } else {
+                mdl = &m->clay[2];
             }
-            break;
-        }
-    case 0x49:
-        {
-            f32 *p;
-            int k;
-            SCLAY *mdl;
-            p = (f32 *)set73_pos_tbl;
-            mdl = &set_mdlw->clay[0];
-            for (k = 0; k < 2; k++, p += 4) {
-                MTP(p);
-                flmatRotY33(&mat, p[3]);
-                flmatMakeTrans(&mat2, 0.0f, 1.0f - (f32)(X1E & 0x3F) / 64.0f, 0.0f);
-                RS(0x19, (u32)&mat2);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
-            }
-            break;
-        }
-    case 0x4B:
-        {
-            f32 *p;
-            int k;
-            SCLAY *mdl;
-            p = (f32 *)set75_pos_tbl;
-            mdl = &set_mdlw->clay[0];
-            for (k = 0; k < 2; k++, p += 4) {
-                MTP(p);
-                flmatRotY33(&mat, p[3]);
-                flmatMakeTrans(&mat2, 0.0f, 1.0f - (f32)(X1E & 0x3F) / 64.0f, 0.0f);
-                RS(0x19, (u32)&mat2);
-                trans_stage_sub((int)&mat, (u8 *)mdl);
-            }
-            break;
-        }
-    case 0x4F:
-        {
-            SCLAY *mdl;
-            u32 u;
-            mdl = &set_mdlw->clay[0];
-            RS(0x60, 0);
-            flmatInit(&mat);
-            u = (u32)(255.0f * (0.5f + 0.5f * flSin(ANG((X1E & 0x1F) << 11))));
-            RS(0x67, (u << 24) | 0xFFFFFF);
+            MTP(p);
+            flmatRotY33(&mat, p[3]);
             trans_stage_sub((int)&mat, (u8 *)mdl);
-            RS(0x67, -1);
-            RS(0x60, 0x80);
-            break;
         }
+        break;
+    case 0x49:
+        p = (f32 *)set73_pos_tbl;
+        mdl = &set_mdlw->clay[0];
+        for (k = 0; k < 2; k++, p += 4) {
+            MTP(p);
+            flmatRotY33(&mat, p[3]);
+            flmatMakeTrans(&mat2, 0.0f, 1.0f - (f32)(X1E & 0x3F) / 64.0f, 0.0f);
+            RS(0x19, (u32)&mat2);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
+        }
+        break;
+    case 0x4B:
+        p = (f32 *)set75_pos_tbl;
+        mdl = &set_mdlw->clay[0];
+        for (k = 0; k < 2; k++, p += 4) {
+            MTP(p);
+            flmatRotY33(&mat, p[3]);
+            flmatMakeTrans(&mat2, 0.0f, 1.0f - (f32)(X1E & 0x3F) / 64.0f, 0.0f);
+            RS(0x19, (u32)&mat2);
+            trans_stage_sub((int)&mat, (u8 *)mdl);
+        }
+        break;
+    case 0x4F:
+        mdl = &set_mdlw->clay[0];
+        RS(0x60, 0);
+        flmatInit(&mat);
+        u = (u32)(255.0f * (0.5f + 0.5f * flSin(ANG((X1E & 0x1F) << 11))));
+        RS(0x67, (u << 24) | 0xFFFFFF);
+        trans_stage_sub((int)&mat, (u8 *)mdl);
+        RS(0x67, -1);
+        RS(0x60, 0x80);
+        break;
     }
     clay_attr_reset();
     RS(0x60, 0);
