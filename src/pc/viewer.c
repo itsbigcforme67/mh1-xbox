@@ -685,9 +685,13 @@ int main(int argc, char **argv)
     {
         uint8_t *ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "game.bin"), &n);   /* stored raw */
         rt_set_overlay(ovl, ovl ? n : 0);
+        ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "lobby.bin"), &n);           /* the village overlay */
+        rt_set_lobby(ovl, ovl ? n : 0);
     }
     if (rt_import_data() != 0)
         fprintf(stderr, "some game data tables are missing\n");
+    if (rt_import_lobby() != 0)
+        fprintf(stderr, "some lobby data tables are missing\n");
     if (gfx_init(W, H, "MH1 PC viewer", shot != NULL) != 0)
         return 1;
     if (script && !pad_script_set(script)) {

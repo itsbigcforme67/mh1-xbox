@@ -30,6 +30,8 @@ void *rt_bss_shadow(uint32_t va);
 /* Fill the game's data tables (rt_data.c) from the loaded images.
  * Returns the number of tables that could not be found. */
 int rt_import_data(void);
+/* After rt_import_data and rt_set_lobby: the lobby tables (rt_data.c). */
+int rt_import_lobby(void);
 /* Pointer words (R_MIPS_32 relocations of the ELF) and symbols. */
 int rt_load_relocs(void);
 int rt_is_pointer(uint32_t va);
@@ -39,6 +41,16 @@ const char *rt_sym_at(uint32_t va, uint32_t *off, int *func);
 /* After rt_import_data: the host pointer stored at PS2 address va (a
  * pointer word of the images, already translated), or NULL. */
 const void *rt_ptr_at(uint32_t va);
+/* lobby.bin (village / lobby overlay, same vram as game.bin): its own
+ * image, pointer words and symbols (rt_mem.c), its tables (rt_data.c) */
+void rt_set_lobby(uint8_t *bin, size_t n);   /* takes ownership */
+const uint8_t *rt_lb_addr(uint32_t va, size_t n);
+int rt_lb_in_range(uint32_t va);
+void *rt_lb_bss_shadow(uint32_t va);
+const char *rt_lb_sym_at(uint32_t va, uint32_t *off, int *func);
+int rt_lb_is_pointer(uint32_t va);
+void rt_lb_relocate_range(uint32_t va, uint8_t *dst, size_t size, void *(*map)(uint32_t));
+void rt_lb_relocate_image(void *(*map)(uint32_t));
 
 /* ------------------------------------------------------------ clays */
 /* Register a host clay; the result is the handle the game passes to
