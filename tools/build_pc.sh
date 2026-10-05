@@ -78,6 +78,41 @@ EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c sr
 for f in src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c; do
     [ -f "$f" ] && EM="$EM $f"
 done
+# Monster C that is still on other agents' branches (not merged into main):
+# when this checkout has the branch and main does not have the file yet, the
+# file and that branch's include/ are exported to build/pc/ext/<branch>/
+# (gitignored) and compiled against those headers (same struct layouts, more
+# fields named). A file listed here that main also builds (em_taisei_nm.c)
+# is replaced by the branch's newer copy. Remove entries once merged.
+#   agent-B: em01_ai_nm.c (the whole Rathian AI), em_taisei_nm.c (Em_Dmg_Sys)
+#   agent-D: em_cmd_nm.c (the monster command interpreter)
+EXT="agent-B:src/game/em/em01_ai_nm.c agent-B:src/game/em/em_taisei_nm.c agent-D:src/game/em/em_cmd_nm.c"
+for e in $EXT; do
+    br=${e%%:*}; f=${e#*:}
+    git rev-parse -q --verify "$br" >/dev/null 2>&1 || continue
+    if [ -f "$f" ] && [ "$(git hash-object "$f")" = "$(git rev-parse "$br:$f" 2>/dev/null)" ]; then
+        continue                                  # main has the same file
+    fi
+    case " $EM " in *" $f "*) ;; *) [ -f "$f" ] && continue ;; esac   # main has its own (other) copy and does not build it
+    d="build/pc/ext/$br"
+    rm -rf "$d/include"; mkdir -p "$d/include" "$(dirname "$d/$f")"
+    git archive "$br" include | tar -x -C "$d"
+    # absolute PS2 addresses some m2c-based files still use (game_w
+    # 0x3F33F0, quest_w 0x3C7440) -> the host symbols (src/pc/rt/rt_ps2abs.h)
+    git show "$br:$f" | python3 -c '
+import re, sys
+B = {"game_w": (0x3F33F0, 0x224), "quest_w": (0x3C7440, 0x188)}
+def fix(m):
+    a = int(m.group(2), 16)
+    for n, (b, z) in B.items():
+        if b <= a < b + z:
+            return "(%s *)(rt_ps2_%s + 0x%X)" % (m.group(1), n, a - b)
+    return m.group(0)
+sys.stdout.write(re.sub(r"\(\s*(\w+)\s*\*\s*\)\s*0x([0-9A-Fa-f]{6,8})\b", fix, sys.stdin.read()))
+' > "$d/$f"
+    EM=$(echo " $EM " | sed "s# $f # #")
+    EM="$EM $d/$f"
+done
 WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM"
 
@@ -114,8 +149,18 @@ for f in $GAME; do
              -DEft06_set=rtabi_Eft06_set -DEft02_set6=rtabi_Eft02_set6 \
              -DGetGroundHitStatusAreaPl=rtabi_GetGroundHitStatusAreaPl" ;;
     src/main/stage/f_stage.c) ABI="-Dhit_point_cbd=rtabi_hit_point_cbd" ;;
+    */em_cmd_nm.c) ABI="-DGetWaterData()=GetWaterData(em)" ;;   # a0 = em left over
+    */em01_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
+             -DEft15_set3=rtabi_Eft15_set3" ;;
+    # em_sleep_eff_set: callers pass (em, joint, f32 *pos, f32 scale), the
+    # definition reads (em, a, b) and leaves the scale in f12 for
+    # Eft06_set2: the PC one is in rt_em.c
+    src/game/em/em_master_nm.c) ABI="-DEft02_set3=rtabi_Eft02_set3 -DEft06_set=rtabi_Eft06_set \
+             -Dem_sleep_eff_set=rtabi_em_sleep_eff_set_ps2" ;;
     esac
-    gcc $GAMEFLAGS $ABI $SYS -c "$f" -o "$o"
+    INC=""
+    case "$f" in build/pc/ext/*) INC="-I$(echo "$f" | cut -d/ -f1-4)/include -include src/pc/rt/rt_ps2abs.h" ;; esac
+    gcc $INC $GAMEFLAGS $ABI $SYS -c "$f" -o "$o"
     case " $WEAK " in *" $b "*) objcopy --weaken "$o" ;; esac
     OBJS="$OBJS $o"
 done

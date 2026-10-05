@@ -71,7 +71,7 @@ int Online_ck(void);
 void net_receive_em_act(EMW *);
 void pl_timer_calc(void *);
 void hit_stop_calc(void *);
-void GetGroundHitStatusAreaEm(EMW *, f32 *, void *, f32 *);
+int GetGroundHitStatusAreaEm(EMW *, f32 *, void *, f32 *, f32 *);
 void kehai_set(EMW *);
 void Stage_Hate_Add(EMW *);
 void kehai_ck(EMW *);
@@ -365,7 +365,7 @@ void em_move(EMW *em) {
     if (EB(0x877) == 0) {
         if (game_w.stage == em->stg) {
             EB(0x877) = 1;
-            GetGroundHitStatusAreaEm(em, em->pos, (u8 *)em + 0x70C, &EF(0x5AC));
+            GetGroundHitStatusAreaEm(em, em->pos, (u8 *)em + 0x70C, &EF(0x5AC), &EF(0x7E4));
             if (em->x388 == 0) {
                 em->pos[1] = EF(0x5AC);
             }
@@ -542,7 +542,7 @@ void em_move(EMW *em) {
         pl_flag_clr(em, 0x20000);
     }
     HitWallPlayer(em, 0);
-    GetGroundHitStatusAreaEm(em, em->pos, (u8 *)em + 0x70C, &EF(0x5AC));
+    GetGroundHitStatusAreaEm(em, em->pos, (u8 *)em + 0x70C, &EF(0x5AC), &EF(0x7E4));
     if (ESB(0x95C) == 0) {
         if (EB(0x7D7) != 0 || em->x388 == 4) {
             EB(0x7D6) = 1;
@@ -596,7 +596,7 @@ void em_die(EMW *em) {
     EF(0x290) = 2.0f * EF(0x930);
     frame_move(em);
     HitWallPlayer(em, 0);
-    GetGroundHitStatusAreaEm(em, em->pos, (u8 *)em + 0x70C, &EF(0x5AC));
+    GetGroundHitStatusAreaEm(em, em->pos, (u8 *)em + 0x70C, &EF(0x5AC), &EF(0x7E4));
     if (em->x388 != 2 && em->x388 != 4) {
         em->pos[1] = EF(0x5AC);
     }

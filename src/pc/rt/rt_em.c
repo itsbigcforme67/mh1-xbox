@@ -8,6 +8,7 @@
 #include "types.h"
 #include "em.h"
 #include "game.h"
+#include "quest.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,7 +24,6 @@ static void once(const char *n) { if (getenv("RT_TRACE")) fprintf(stderr, "rt_em
 #define PS32(p, o) (*(s32 *)((u8 *)(p) + (o)))
 #define PF(p, o) (*(f32 *)((u8 *)(p) + (o)))
 
-extern u8 player_work[];
 extern s16 *em_dur_tbl[];
 int ran_suu(int);
 int act_ck(void *, int, int);
@@ -205,7 +205,7 @@ WEAK int Em_Mode_Chg(EMW *em, int mode, int timer)
     if (PU8(em, 0x888) == 0) {
         PU8(em, 0x88C) = 0;
         PU8(em, 0x88F) = 0;
-        for (i = 0, pl = player_work; i < 4; i++, pl += 0xA00) {
+        for (i = 0, pl = (u8 *)player_work; i < 4; i++, pl += 0xA00) {
             PS32(em, 0x8F4 + 4 * i) = 0;
             PS32(em, 0x918 + 4 * i) = 0;
             PS16(em, 0x890 + 2 * i) = 0;
@@ -242,4 +242,180 @@ WEAK void em_cdm_act_flag_ck(EMW *em)
         if (PU8(em, 0x914) & (1 << i))
             break;
     PU8(em, 0x883) = (u8)i;
+}
+
+/* ------------------------------------------------ callees of em01 AI / em_cmd / Em_Dmg_Sys */
+/* em_dur_set (main 0x10A0F0): refill part n's durability (+0x308 of the
+ * 8-byte part slot) from em_dur_tbl[kind][n], if the part is on. */
+void em_dur_set(EMW *em, int n)
+{
+    u8 *e = (u8 *)em + 8 * n;
+    if ((unsigned)n >= 9 || e[0x304] == 0)
+        return;
+    *(s16 *)(e + 0x308) = em_dur_tbl[em->kind][n];
+}
+
+/* GetWaterData (main 0x16AB80): byte +0xC of the ground entry the work
+ * stands on (ground_tbl_add[stage +0x736][+0x70C]): non-zero = water.
+ * em_cmd_water_ck calls it with no arguments (a0 = em left over); its
+ * build passes em (build_pc.sh). */
+extern u8 *ground_tbl_add[];
+int GetWaterData(void *w)
+{
+    u8 *p = w, *t = ground_tbl_add[p[0x736]];
+    return t ? t[p[0x70C] * 16 + 0xC] : 0;
+}
+
+/* Quest side (main f_quest; f_quest_nm.c is not on the PC yet): carving
+ * points are not set up (no carving yet), so they report "none". */
+WEAK s8 Em_hagi_point_set(EMW *em, int n) { (void)n; PS8(em, 0x88D) = -1; return -1; }
+WEAK int Em_hagi_point_cnt_ck(EMW *em) { (void)em; return -1; }
+WEAK void Quest_enemy_capture(EMW *em) { fprintf(stderr, "rt_em: monster %d (kind %d) captured\n", em->id, em->kind); }
+/* Quest_enemy_hagi_set (main 0x2276C0): quest_w+0x13C |= b */
+WEAK void Quest_enemy_hagi_set(int a, int b) { (void)a; quest_w.x13C |= b; }
+/* Event_flag_ck: user-data event flags; no save data on the PC: none set. */
+WEAK int Event_flag_ck(int n) { (void)n; return 0; }
+/* WyvernAreaMove (menu16.c): the map's monster-moved marker; no map yet. */
+WEAK void WyvernAreaMove(void *em) { (void)em; }
+/* wyvern_kill_cnt_up (ud_nm.c): online-only kill counter. */
+WEAK void wyvern_kill_cnt_up(void *u, int n) { (void)u; (void)n; }
+
+/* ------------------------------------------------ quest monster set-up
+ * The parts of the quest start (main f_quest, Quest_init 0x2263xx /
+ * Em_direct_set) the PC needs to put a quest's monster on the stage:
+ * the mission file questName[no] (AFS_DATA, Meltw) is read into a host
+ * mission_area and quest_w's table pointers set from its header as
+ * Quest_init does (x64 header, x74 per-stage monster lists, x78 the
+ * quest's own (big) monsters, x80 stage data, x94 info, x14E). */
+uint8_t *rt_file_load(int idx, size_t *n);
+extern s16 questName[];
+static u8 *mission;
+
+int rt_quest_load(int no)
+{
+    size_t n = 0;
+    MISSION *m;
+    if (no <= 0 || no >= 0xB2)
+        return -1;
+    free(mission);
+    mission = rt_file_load(questName[no], &n);
+    if (!mission || n < sizeof(MISSION))
+        return -1;
+    m = (MISSION *)mission;
+    quest_w.no = (s16)no;
+    quest_w.x64 = m;
+    quest_w.x94 = (MISSION2 *)(mission + m->o[0]);
+    quest_w.x74 = (s32 *)(mission + m->o[5]);
+    quest_w.x78 = (s32 *)(mission + m->o[6]);
+    quest_w.x80 = (s32 *)(mission + m->o[8]);
+    quest_w.x14E = (s8)m->o[13];
+    quest_w.x3A = 0;
+    return 0;
+}
+
+/* Em_data_com_adrs_get (main 0x226A00): list `which` (0 model kinds,
+ * 1 QEM entries) of the quest's own monsters, NULL for none */
+static void *quest_com_list(int which)
+{
+    s32 off;
+    if (!mission || quest_w.no == 0)
+        return NULL;
+    off = quest_w.x78[which ? 3 : 2];
+    return off == 0 || off == -1 ? NULL : mission + off;
+}
+
+/* The quest's first own monster (QEM, 0x3C bytes): its stage (QEM+7)
+ * is where the hunt takes place; -1 without one. */
+int rt_quest_monster_stage(int *kind)
+{
+    QEM *q = quest_com_list(1);
+    if (!q || q->id < 0)
+        return -1;
+    if (kind)
+        *kind = q->id;
+    return (u8)q->x07;
+}
+
+/* Em_direct_set (main 0x2273xx, f_quest_nm.c) for one QEM entry: a free
+ * em_work, the entry's kind, variant, stage, hunger/thirst/sleep,
+ * position and angle, then enemy_mv's first step (em_init: em01_init sets
+ * the hit points). Model slot 0 (game_w+0x28[0]) is the host's em01 model. */
+int enemy_mv(EMW *em);
+EMW *rt_monster_spawn_qem(const QEM *q)
+{
+    EMW *em = rt_pull_enemy_work();
+    if (!em)
+        return NULL;
+    game_w.x28[0] = (u8)q->id;
+    em->mdl_no = 0;
+    em->kind = (u8)q->id;
+    em->type = (u8)q->x02;
+    PU8(em, 0x9EB) = (u8)q->x2C;
+    em->stg = game_w.stage;
+    em->hungry = q->x0C;
+    em->thirst = q->x10;
+    em->x8A0 = q->x14;
+    PU8(em, 0x95B) = (u8)q->x06;
+    em->pos[0] = q->pos[0];
+    em->pos[1] = q->pos[1];
+    em->pos[2] = q->pos[2];
+    em->ang[1] = q->x1C;
+    enemy_mv(em);
+    return em;
+}
+
+/* The quest's own monster on the current stage (quest loaded with
+ * rt_quest_load); without a quest, kind `kind` at pos facing ang_y.
+ * Returns the em_work index or -1. */
+int rt_monster_spawn(int kind, const float pos[3], int ang_y)
+{
+    QEM *q = quest_com_list(1), dflt;
+    EMW *em;
+    for (; q && q->id >= 0; q++)
+        if ((u8)q->x07 == game_w.stage)
+            break;
+    if (!q || q->id < 0) {
+        memset(&dflt, 0, sizeof dflt);
+        dflt.id = (s16)kind;
+        dflt.pos[0] = pos[0];
+        dflt.pos[1] = pos[1];
+        dflt.pos[2] = pos[2];
+        dflt.x1C = ang_y & 0xFFFF;
+        q = &dflt;
+    }
+    em = rt_monster_spawn_qem(q);
+    if (!em)
+        return -1;
+    if (quest_w.no == 0)            /* em_status_init zeroes the angle in free hunts */
+        em->ang[1] = q->x1C;
+    if (getenv("RT_EM_TRACE"))
+        fprintf(stderr, "rt_em: monster %d kind %d at %.0f %.0f %.0f ang %04X hp %d/%d\n",
+                em->id, em->kind, em->pos[0], em->pos[1], em->pos[2], em->ang[1] & 0xFFFF,
+                PS16(em, 0x302), PS16(em, 0x792));
+    return em->id;
+}
+
+/* One game tick of monster no: the game's enemy_mv (src/main/em/f_em_nm.c). */
+int rt_monster_tick(int no)
+{
+    EMW *em = &em_work[no];
+    if (!em->be_flag)
+        return 0;
+    if (getenv("RT_EM_TRACE"))
+        fprintf(stderr, "em%d: step %d act %d/%d char %d frame %.1f pos %.0f %.0f %.0f ang %04X hp %d mode %d\n",
+                no, em->x04, PU8(em, 0x14), PU8(em, 0x15), PS16(em, 0x2DC), PF(em, 0x19C),
+                em->pos[0], em->pos[1], em->pos[2], em->ang[1] & 0xFFFF, PS16(em, 0x302), PU8(em, 0x888));
+    return enemy_mv(em);
+}
+
+/* em_sleep_eff_set (game 0x53xxxx, em_master_nm.c): sleep bubbles at
+ * joint a every 90 ticks (3 puffs, 10 apart). Callers pass (em, joint,
+ * pos, scale); the PS2 definition reads two ints and leaves the scale in
+ * f12 for Eft06_set2, which x86 cannot do: this is the PC definition. */
+void Eft06_set2(f32 scale, void *chr, s16 arg, int joint, f32 *pos);
+void em_sleep_eff_set(EMW *em, int a, f32 *pos, f32 scale)
+{
+    u16 t = *(u16 *)((u8 *)&game_w + 0x1E) % 90;
+    if (t == 0 || t == 10 || t == 20)
+        Eft06_set2(scale, em, 4, a, pos);
 }

@@ -353,3 +353,8 @@ void Pl_poison_add(void *, int);
 void func_5496E0(void *pl, int a, int b) { Eft12_set4(pl, a, b); }
 void func_634460(void *pl, int a) { Shell12_set(pl, a); }
 void func_639DF0(void *pl, int a) { Pl_poison_add(pl, a); }
+/* eft20_nm.c calls game.bin by address: shell04_set2, shell01_set3 */
+void shell04_set2(void *src, int arg);
+void shell01_set3(void *em, f32 *pos, int arg);
+void func_629C20(void *ew, int a) { shell04_set2(ew, a); }
+void func_628750(void *em, f32 *pos, int a) { shell01_set3(em, pos, a); }
