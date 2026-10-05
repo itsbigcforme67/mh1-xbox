@@ -281,11 +281,9 @@ int mc_ok_ck(CARDW *w, s16 x, s16 y, int kind)
 int mc_remove_ck(port)
 int port;
 {
-    if (McActNewChk() != 0) {
-        return 1;
-    } else {
-        return McActConChk(port) == 0;
-    }
+    if (McActNewChk() != 0) return 1;
+    if (McActConChk(port) != 0) return 0;
+    return 1;
 }
 
 void McOperationSet(op)
