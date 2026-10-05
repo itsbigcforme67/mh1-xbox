@@ -33,7 +33,7 @@ int flfntPrintf();
 int flfntSetHalftype();
 int flfntSetPalette();
 int flfntSetSize();
-int flfntSetZ();
+void flfntSetZ(f32 z);
 int net_flps0008();
 int printf();
 int sceCdInit();
@@ -117,16 +117,16 @@ extern u8 lit_5208[];
 extern u8 lit_5209[];
 extern u8 lit_5387[];
 extern u8 yn_dialog_cnt_tbl[];
-extern u8 yn_dialog_mes_tbl[];
-extern u8 yn_hard_more_mes_tbl[];
+extern char *yn_dialog_mes_tbl[];
+extern char *yn_hard_more_mes_tbl[];
 extern u8 yn_help_cnt_tbl[];
-extern u8 yn_help_mes_tbl[];
-extern u8 yn_memcard_mes_tbl[];
+extern char *yn_help_mes_tbl[];
+extern char *yn_memcard_mes_tbl[];
 extern u8 yn_mess_cnt_tbl[];
-extern u8 yn_mess_mes_tbl[];
+extern char *yn_mess_mes_tbl[];
 extern u8 yn_parts_data[];
 extern u8 yn_spr_data[];
-extern u8 yn_title_mes_tbl[];
+extern char *yn_title_mes_tbl[];
 extern u8 yn_uv_data[];
 extern s8 BsProxyUseFlag;
 extern s8 MyDialType;
@@ -445,9 +445,9 @@ block_73:
 void yn_set_exit_sub(void) {
     yn_set_init(0);
     flReleaseTextureHandle(M2C_FIELD(ynw, u16 *, 0));
-    flReleasePaletteHandle((u32) ((s32) M2C_FIELD(ynw, u16 *, 0) & 0xFFFF0000) >> 0x10);
+    flReleasePaletteHandle((u32) (M2C_FIELD(ynw, s32 *, 0) & 0xFFFF0000) >> 0x10);
     flReleaseTextureHandle(M2C_FIELD(ynw, u16 *, 4));
-    flReleasePaletteHandle((u32) ((s32) M2C_FIELD(ynw, u16 *, 4) & 0xFFFF0000) >> 0x10);
+    flReleasePaletteHandle((u32) (M2C_FIELD(ynw, s32 *, 4) & 0xFFFF0000) >> 0x10);
     yn_netcnf_exit(ynw + 0x1180);
 }
 
@@ -1563,9 +1563,9 @@ which has a name starting with with "jtbl"/"jpt_"/"lbl_"/"jumptable_".
 */
 
 void yn_title_font(void) {
-    s32 temp_s0;
+    char *temp_s0;
 
-    temp_s0 = *(yn_title_mes_tbl + (M2C_FIELD(ynw, s8 *, 0x44) * 4));
+    temp_s0 = yn_title_mes_tbl[M2C_FIELD(ynw, s8 *, 0x44)];
     yn_printf(yn_center_x(temp_s0, 0x16), 0x20, temp_s0);
 }
 
@@ -1588,7 +1588,7 @@ void yn_message_font_sub(void) {
 
     temp_a1 = M2C_FIELD(ynw, s8 *, 0x45);
     temp_s1 = *(yn_mess_cnt_tbl + temp_a1);
-    var_s2 = *(yn_mess_mes_tbl + (temp_a1 * 4));
+    var_s2 = yn_mess_mes_tbl[temp_a1];
     var_s0 = 0;
     if (temp_s1 > 0) {
         do {
@@ -1708,7 +1708,7 @@ void yn_hard_more_font_sub(void) {
     var_s1 = 0;
     var_s0 = 0xC4;
     do {
-        yn_printf(0x65, (s64) (var_s0 << 0x30) >> 0x30, *(yn_hard_more_mes_tbl + ((M2C_FIELD(ynw, s8 *, 0x14) + ((s64) (var_s1 << 0x38) >> 0x38)) * 4)));
+        yn_printf(0x65, (s64) (var_s0 << 0x30) >> 0x30, yn_hard_more_mes_tbl[(M2C_FIELD(ynw, s8 *, 0x14) + ((s64) (var_s1 << 0x38) >> 0x38))]);
         var_s1 = (s64) ((var_s1 + 1) << 0x38) >> 0x38;
         var_s0 += 0x1C;
     } while (var_s1 < 3);
@@ -2095,7 +2095,7 @@ void yn_dialog_font_sub(void) {
 
     temp_a1 = M2C_FIELD(ynw, u8 *, 0x46);
     temp_s1 = *(yn_dialog_cnt_tbl + temp_a1);
-    var_s2 = *(yn_dialog_mes_tbl + (temp_a1 * 4));
+    var_s2 = yn_dialog_mes_tbl[temp_a1];
     var_s0 = 0;
     if (temp_s1 > 0) {
         do {
@@ -2120,7 +2120,7 @@ void yn_dialog_font_without_yesno(void) {
     u8 *var_s1;
 
     temp_a1 = M2C_FIELD(ynw, u8 *, 0x46);
-    var_s1 = *(yn_dialog_mes_tbl + (temp_a1 * 4));
+    var_s1 = yn_dialog_mes_tbl[temp_a1];
     temp_s2 = (s64) ((*(yn_dialog_cnt_tbl + temp_a1) - 3) << 0x38) >> 0x38;
     var_s0 = 0;
     if (temp_s2 > 0) {
@@ -2144,7 +2144,7 @@ void yn_dialog_font_once(s32 arg0) {
     u8 *temp_s0;
 
     temp_a2 = ynw;
-    temp_s0 = *(yn_dialog_mes_tbl + (M2C_FIELD(temp_a2, u8 *, 0x46) * 4)) + (arg0 * 8);
+    temp_s0 = yn_dialog_mes_tbl[M2C_FIELD(temp_a2, u8 *, 0x46)] + (arg0 * 8);
     var_a0 = M2C_FIELD(temp_s0, s16 *, 0);
     if (var_a0 == -1) {
         var_a0 = (s16) ((s64) (yn_center_x(M2C_FIELD(temp_s0, s32 *, 4), 0x16, temp_a2) << 0x30) >> 0x30);
@@ -2164,7 +2164,7 @@ void yn_dialog_font_memcard(s32 arg0) {
 
     temp_a1 = M2C_FIELD(ynw, u8 *, 0x46);
     temp_s0 = *(yn_dialog_cnt_tbl + temp_a1);
-    var_s3 = *(yn_dialog_mes_tbl + (temp_a1 * 4));
+    var_s3 = yn_dialog_mes_tbl[temp_a1];
     var_s2 = 0;
     if (temp_s0 > 0) {
         do {
@@ -2230,7 +2230,7 @@ void yn_dialog_font_setting(void) {
             var_s1 = 4;
             break;
         }
-        sprintf((u8 *)&sp250, lit_4681, *(yn_hard_more_mes_tbl + (var_s1 * 4)));
+        sprintf((u8 *)&sp250, lit_4681, yn_hard_more_mes_tbl[var_s1]);
         yn_strconv((u8 *)&sp50, (u8 *)&sp250, 0x2C);
         yn_printf(0x44, 0x9B, (u8 *)&sp50);
         var_s0 = 0xB4;
@@ -2381,7 +2381,7 @@ void yn_help_font(void) {
     temp_a2 = M2C_FIELD(temp_a1, s8 *, 0x48);
     temp_a1_2 = M2C_FIELD(temp_a1, s8 *, 0x47);
     temp_s1 = *(temp_a2 + (yn_help_cnt_tbl + temp_a1_2));
-    var_s2 = *(yn_help_mes_tbl + ((temp_a1_2 + temp_a2) * 4));
+    var_s2 = yn_help_mes_tbl[(temp_a1_2 + temp_a2)];
     var_s0 = 0;
     if (temp_s1 > 0) {
         do {
@@ -2397,17 +2397,26 @@ void yn_help_font(void) {
 }
 #endif
 
-void yn_printf(int arg2) {
-    flfntLocate();
-    flfntPrintf(arg2);
+void yn_printf(x, y, str)
+int x;
+int y;
+char *str;
+{
+    flfntLocate(x, y);
+    flfntPrintf(str);
 }
 
-void yn_set_pal(s64 arg0) {
-    flfntSetPalette(arg0 << 0x38);
+void yn_set_pal(pal)
+s8 pal;
+{
+    flfntSetPalette(pal);
 }
 
-void yn_set_size(s32 arg0) {
-    flfntSetSize(arg0 & 0xFF);
+void yn_set_size(w, h)
+u8 w;
+u8 h;
+{
+    flfntSetSize(w, h);
 }
 
 void yn_set_z(f32 z) {
