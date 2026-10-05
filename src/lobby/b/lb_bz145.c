@@ -1,3 +1,4 @@
+/* lb_bz145 - lobby UI/client 0x005B44B0-0x005B4538: skill_hp_calc_005B44B0 (first drafted by tools/lbauto.py). */
 #include "lobby_b.h"
 int Pl_Skill_ck();
 
