@@ -684,6 +684,11 @@ Done (all rebuilt byte-identical; `_nm.c` keeps the functions that still differ)
 - ud/udmisc_nm.c (0x271FB0-0x272400): Load/Save_userdata, ItemCopy_*, Gold_add, Get_hunter_rank/status linked (udmisc01/02);
   Set_equip_data (5 diffs) and Set_userdata (100 diffs, the original keeps &User_data and the player work in s0/s1) stay nm.
   include/ud.h: carved UDW.gold (0x20) out of the padding.
+- game/flow_nm.c (0x110F10-0x111B1C): game_init, stage_load, player_all_load, load_eft, st_model_load, swset_w_init, init_light_work,
+  the motion loaders linked (flow01/02). load_shadow (2 diffs, instruction order of a dsra32), init_pl_work (77: block layout of the
+  `be_flag = 1 / else be_flag = 0` test) and round_init (260: the original uses 6 saved registers, mine 9; the monster placement loops need
+  strength-reduced induction pointers) stay nm. include/flow.h: carved STGW.stage (0x02), x34, x38 out of the padding.
+  `STGW *sw = &stage_work;` as a local (declared after the int it is used with) is what makes MWCC keep the base in a saved register (st_model_load).
 - Near-match fixes linked: GetRailCamPos, cam_rail_move_0 (camarea02, camr2n01), tri_in_check (tri01).
 Unmatched but understood: wall_act_ck/wall_vec_set (pl_nm.c, 1 diff each: `addu v0,v0,s1` operand order of an index add), disp_needle
 (menu_disp_nm.c, 4 diffs: which float register holds the constant), pef_get_alpha (2), menu_data_mix_sub (4), menu_data_monster_sub (5).
