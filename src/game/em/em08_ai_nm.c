@@ -5478,10 +5478,10 @@ void em08_effect_move(EMW *em) {
 
 void hire_req_set_005A6F90(EMW *em, EM08W *w, u8 req) {
     w->xF = req;
-    if (w->xF == 1 && (s16)(0.1f * (f32)em->x792) >= em->x302) {
+    if (w->xF == 1 && em->x302 <= (s16)(0.1f * (f32)em->x792)) {
         w->xF = 2;
     }
-    if (w->xF == 3 && (s16)(0.1f * (f32)em->x792) < em->x302) {
+    if (w->xF == 3 && em->x302 > (s16)(0.1f * (f32)em->x792)) {
         w->xF = 0;
     }
 }
@@ -5514,25 +5514,22 @@ void em21_target_ang_calc(EMW *em, int arg1) {
     int d;
     int a;
     int t;
-    int v;
 
+    d = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
     a = em->ang[1];
-    d = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - a) & 0xFFFF;
+    d = (d - a) & 0xFFFF;
     t = arg1 & 0xFFFF;
     if (d < 0x8001) {
         if (d < t) {
-            v = a + d;
+            em->ang[1] = a + d;
         } else {
-            v = a + t;
+            em->ang[1] = a + t;
         }
+    } else if (0x10000 - t < d) {
+        em->ang[1] = a + d;
     } else {
-        v = a + d;
-        if (0x10000 - t < d) {
-        } else {
-            v = a - t;
-        }
+        em->ang[1] = a - t;
     }
-    em->ang[1] = v;
 }
 
 void atk_shell_set(EMW *em, int no) {
@@ -5549,7 +5546,7 @@ void em08_vib_set(EMW *em) {
 
     pl = player_work;
     i = 0;
-    if (*(u8 *)0x3F34C3 > 0) {
+    if (0 < *(u8 *)0x3F34C3) {
         do {
             if (i == *(u8 *)0x3F34C1 && pl->be_flag != 0 && Pl_stg_ck_tw(em, pl) != 0 && pl->be_flag != 0 &&
                 flvecCalcDistance(pl->pos, em->pos) <= 1000.0f) {
