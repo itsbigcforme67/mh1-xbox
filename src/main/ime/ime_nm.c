@@ -2257,21 +2257,22 @@ int dic_get1num(u8 *s, int len, u8 *out)
     return 1;
 }
 
-u8 *set_num(u8 *s, int n0, u8 *out, int kind)
+u8 *set_num(s, n, out, kind)
+u8 *s;
+s16 n;
+u8 *out;
+int kind;
 {
-    s16 n;
     u8 *p;
     u8 *q;
-    u8 *t;
     int i;
-    int d;
     int r;
-    int g;
-    int k;
+    int d;
     int idx;
+    int k;
+    int g;
 
-    n = n0;
-    if (kind >= 2 && n >= 0xE) {
+    if (kind >= 2 && n > 13) {
         return 0;
     }
     *(s16 *)out = kind;
@@ -2282,28 +2283,26 @@ u8 *set_num(u8 *s, int n0, u8 *out, int kind)
     for (i = 0; i < n; i++) {
         d = s[i] - 0x30;
         if (kind < 2) {
-            t = num_chars[kind] + d * 2;
-            p[0] = t[0];
-            p[1] = t[1];
+            p[0] = num_chars[kind][d * 2];
+            p[1] = num_chars[kind][d * 2 + 1];
             p += 2;
         } else {
             r = n - i - 1;
             g = r % 4;
-            if (d != 0 && (kind != 2 || d != 1 || (u32)(g - 1) >= 2)) {
-                k = 1;
-                if (d > 0) {
+            if (d != 0 && (kind != 2 || d != 1 || (u32)(g - 1) > 1)) {
+                if (d <= 0) {
+                    k = 1;
+                } else if (d < 4) {
                     k = kind - 1;
-                    if (d >= 4) {
-                        k = 1;
-                    }
+                } else {
+                    k = 1;
                 }
-                t = num_chars[k] + d * 2;
-                p[0] = t[0];
-                p[1] = t[1];
+                p[0] = num_chars[k][d * 2];
+                p[1] = num_chars[k][d * 2 + 1];
                 p += 2;
             }
             if (r != 0 && (g != 0 || q != p) && (g == 0 || d != 0)) {
-                idx = r >> 2;
+                idx = r / 4;
                 if (g == 0) {
                     idx = idx + 6;
                 } else if (g == 1) {
@@ -2314,9 +2313,8 @@ u8 *set_num(u8 *s, int n0, u8 *out, int kind)
                 } else {
                     idx = g + 3;
                 }
-                t = num_chars[2] + idx * 2;
-                p[0] = t[0];
-                p[1] = t[1];
+                p[0] = num_chars[2][idx * 2];
+                p[1] = num_chars[2][idx * 2 + 1];
                 p += 2;
                 if (g == 0) {
                     q = p;
