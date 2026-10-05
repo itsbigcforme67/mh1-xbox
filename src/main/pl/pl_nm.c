@@ -1069,3 +1069,24 @@ void pl_at009(PLW *pl) {
         break;
     }
 }
+
+/* near-match (not built): pl_at012 - calls blend_set (same IPA effect as gun_adj_sub: the original keeps a0 live across blend_set, which
+   MWCC only does for a static callee defined earlier in the same TU). Same cause for pl_at008/pl_at009's delay-slot differences. */
+void pl_at012(PLW *pl) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        blend_set(pl, 0x588, 0x589);
+        pl_chr_set2(pl, 0x584, 0, 0);
+        Pl_basic_flagset(pl, 0, 0, 0);
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            pl_to_normal_b(pl, 0, 0, 0);
+        }
+        break;
+    }
+}
