@@ -142,3 +142,15 @@ Fields used straight from EMW in the em files (so common to all monsters):
     the tests).
   - `if ((d = ...) > 5000) ... else if (d < 2500)` with a local d (no reload
     of the stored field).
+- em17 (0x5D81A0-0x5D9BC4, 13 functions): 12 match, built as em17.c
+  (setters, 0x5D81A0-0x5D8C64, rodata 0x688C30-0x688CAC) and em17b.c
+  (senkai_target .. fly_adjy2, 0x5D9570-0x5D9BC4). em17_senkai_sub (the
+  flying bank/turn/climb routine, 574 instructions; em20 and em01 have
+  near-identical copies) is 17 instructions off: only a0/a1 swapped for
+  ang[2] vs bank_max in the "turn_left > 0x8000" and "turn_left == 0"
+  branches. Whole file in em17_nm.c. Lessons:
+  - `a = (a < 0x8000) ? a : (u16)(0x10000 - a);` gives the original's
+    `slt at` + empty-then layout (an if-statement is 10 instructions off).
+  - act_set calls Online_ck/act_ck (s16) before the dispatch; `(u8)arg`.
+  - em17_act_act_set: small gp-relative tables st58_dir/st64_dir/st75_dir
+    are declared `u16 x[4]` (8 bytes) so MWCC uses gp addressing.

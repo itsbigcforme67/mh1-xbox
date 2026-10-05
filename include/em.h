@@ -55,7 +55,9 @@ typedef struct EMW {
     s32 ang[3];         /* 0x0A0 rotation, 0x10000 = 360 degrees (shell14_trans) */
     f32 pos[3];         /* 0x0AC world position (set20_m, as PLW) */
     f32 scale[3];       /* 0x0B8 model scale (eft09_t) */
-    u8 _pad0C4[0x19C - 0xC4];
+    u8 _pad0C4[0x194 - 0xC4];
+    s32 x194;           /* 0x194 0: em_char_set may start a new animation (em17_senkai_sub) */
+    u8 _pad198[0x19C - 0x198];
     f32 x19C;           /* 0x19C time used by em02_fly_adjy (0 or 1: start value) */
     f32 chr_spd0;       /* 0x1A0 frame step (as PLW); divides the fly_adjy2 tables */
     u8 _pad1A4[0x1C4 - 0x1A4];
