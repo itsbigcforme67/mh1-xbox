@@ -698,3 +698,6 @@ main 0x00262A90 0x00262D10 sk/cmd01
 main 0x00262E50 0x00263140 sk/cmd02
 main 0x00263910 0x002639BC sk/cmd03
 main 0x00263D20 0x002640B8 sk/cmd04
+main 0x002710A0 0x002712BC net/connect01
+main 0x00271880 0x00271E94 net/connect02
+main:rodata 0x003734B0 0x003734E8 net/connect02

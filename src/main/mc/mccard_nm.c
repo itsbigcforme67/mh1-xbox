@@ -1164,7 +1164,7 @@ CARDW *w;
     case 0:
         mc_r_no_set(w, 11);
         decode_to_ck(w);
-        check_sum_set(w);
+        check_sum_set();
         w->x33 = 1;
         se_req(7, 25, 0);
         break;
@@ -1360,7 +1360,7 @@ CARDW *w;
                 w->msg = 20;
                 return;
             }
-            check_sum_set(w);
+            check_sum_set();
             if (save_data_sub(0, 31) == 7) {
                 mc_r_no_set(w, 4);
                 w->msg = 26;
@@ -1551,7 +1551,7 @@ CARDW *w;
     case 0:
         McActNewClr();
         decode_to_ck(w);
-        check_sum_set(w);
+        check_sum_set();
         w->x33 = 1;
         mc_r_no_set(w, 5);
         w->msg = 41;
@@ -1996,7 +1996,7 @@ CARDW *w;
     case 0:
         mc_r_no_set(w, 11);
         decode_to_ck(w);
-        check_sum_set(w);
+        check_sum_set();
         w->x33 = 1;
         se_req(7, 25, 0);
         break;
