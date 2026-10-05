@@ -621,3 +621,49 @@ Lessons (function that shows it):
 
 - fl/pv01-03 (0x192E30 plFCVSetBaseAddress, 0x192FA0 plGetFcurveTime, 0x193150-0x193344 plvec length/normalize/inner/outer/plane): match.
   plmatCopy33 (in plvec_nm.c) sits inside another asm file's range and is not linked.
+
+## Fourth assignment: unowned main code 0x100000-0x1A0000, second pass (Sonnet worker C, 5-6 Oct 2026)
+Done this pass (all rebuilt byte-identical; nm = near-match file kept for the functions that still differ):
+- sound/bgm_nm.c: stage BGM server and setters (bgm01-02 + rev01 linked; em_status_ck, lobby_bgm_set, stage_bgm_set stay nm, 4-15 diffs).
+- aq/aq_nm.c: f_aq network session layer (aq01-06, 17 of 27 functions; AQ_init, get_AQdata, self_data_ctrl, set_other_data,
+  AQ_data_put, pl_data_put, pl_AQ_put, item_ans_send, host_change near-matches 1-18 diffs).
+- sk/cmd_nm.c: soft keyboard conversion commands (cmd01-04, 17 of 23).
+- net/connect_nm.c (f_connect), net/netbgm_nm.c (net bgm/MMBB menus), net/netwk_nm.c (g_network_work_init: step machines,
+  pad helpers, Ncm_spr_* request bits), net/ncmreq_nm.c (the five *_disp_req queues), net/netname_nm.c, net/ms_nm.c (f_ms),
+  menu/pit_nm.c (g_load_pit). New include/netcw.h (net_common_w) and include/main.h (m2c draft header).
+- mc/mccard_nm.c (the memory card screens, 0x281BC0-0x2860D0) is 95% byte-identical already (static-name noise only) but cannot be
+  linked in runs: mc_r_no_set is a file static called by every screen, and decode_to_ck/check_sum_ck are statics of the same
+  original object (their a0 preservation is why callers do not reload a0). It links only as one file with the mcsave range.
+New tool tools/linkruns.py NM.c DIR/PREFIX [--dry]: builds maximal runs of matching functions (OK or only call-name noise),
+writes PREFIXNN.c with mkrun2, registers them in config/c_files.txt together with one main:rodata line for the switch jump tables
+of the run (tables must be adjacent; two lines for one object do not link). Run `tools/rebuild.sh main` first so asm/ reflects
+c_files.txt (carved tables vanish from the data asm), then linkruns, then rebuild. mkrun2 cannot split empty bodies: put a comment.
+Lessons (function that showed it):
+- A jump table gives every case body: dump the table (asm/main/data/data/*.rodata.s, dlabel lit_N_ADDR), group labels by body, emit
+  `case N:` for every id of a label in address order. A 122-entry request switch (Ncm_mssage_disp_req) matched at once this way;
+  the parameter must be `u8 id` and `switch (id)`; holes and ids past the end need no label (netwk/ncmreq_nm.c is generated code).
+- A compare chain lists case labels in reverse source order; labels with identical bodies in two places (ms_network_net_file
+  cases 5 and 6) are two separate source cases, MWCC merges the bodies.
+- `if (n > 0)` gives blez but `if (0 < n)` gives `slt at,zero,n; beq` (Set_KouhoTable); `x >= 2` gives `slti v,` but `x > 1` gives
+  `slti at` (cmd_muhenkan; for unsigned `u32 c; c > 1` gives sltiu at); strlen is unsigned.
+- A one-test `if (f() == 1) { ... }` whose original is `beq v0,1,L; nop; b end; nop; L:` is a one-case `switch (f()) { case 1: ... break; }`
+  (cnnect_err_set, connect_error). `if (x == 0x4E || x == 0x6E) {...}` rather than a switch gives the original chain (cmd_henkan).
+- `x = x + 1` on a byte global reloads x when written `COM_R_No_0++` after other stores (connect_error) and uses the cached
+  switch value when written `x = x + 1`; try both.
+- Struct array element fields give `sym+4` as a relocation addend plus one `addu` for the index (net_swdata3: `Psw[i].x04`, with
+  34-byte elements); a byte-offset macro on a u8 array folds the offset into the load instead.
+- Passing a 0x2C-byte constant struct by value: copy it to a local first (`cfg = lit; f(&cfg)` gives the lq/sq copy then pointer).
+- K&R definition `int f(a, b, c) int a; ... {` keeps later calls with fewer arguments legal (send_my_data called with 2 args).
+- Locals: MWCC gives the lowest stack address to the LAST declared local; temps declared first end up higher (Net_disp_net_name:
+  declare the big buffer last). Saved registers: first declared gets the highest s-register in several functions; declperm.py tries
+  all orders but is slow (kill it with pkill -f "declperm.py src" if it hangs).
+- `if (a != 0) return; ...` vs `switch (a) { case 0: ...}` and `return c ? 1 : 2` vs `c == 0 ? 2 : 1` pick movz/movn.
+- Unprototyped callee with 5 args from m2c (flSndSetRev) needs the extra `0, 0`; m2c drops trailing zero arguments.
+Not done in this range (needs a vendor library or is huge): ADX/CRI (0x101000-0x117E50, SJ*, svm_*, sdr_*), sce*/libc (0x154000-0x160000),
+IME dictionary (g_dic_open 20 KB, f_kh, f_wd, f_api, Overlay_reset/kh_learn), f_flps2 graphics library, f_disp_26CD60 (13.6 KB),
+f_ncm text drawing, f_ms patch download (ms_net_patch_set 6.9 KB), f_mcsls/f_ave/f_wait/f_prot/CpInet network core.
+
+### Late additions (second pass, end)
+- Also linked: net/aqcmd01-03 (AQ command lists), plus fixed-and-linked nm files for plmem, amo2, netfile2, tex, staff and Scheduler.
+- mcsls_nm.c stays near-match only (not linked). The r0 state handlers and app queues (vram 0x230CD0-0x232494) are NOT done; the MCSLS player array sits at +0x4C with a 0x3C stride. m2c output needs hand typing with that struct.
+- tools/linkruns.py: always run tools/rebuild.sh first, otherwise carved jump tables vanish from asm and the link fails.
