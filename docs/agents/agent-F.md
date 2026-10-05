@@ -123,3 +123,39 @@ body_hit_sub_em keeps a quirk of the original: the target sphere-list pointer is
 monster. Fue_item_set calls Pl_master_ck(pl) (not the master slot). Still asm: Plsel_task..sel_default_set (online select screens),
 Pit_disp_pit_effect, pef_get_alpha. NOTE: tools/build.py compiles every src/**/*.c including pl_wip.c/pl_nm.c, so pl_wip.c must
 always compile (git checkout of an old wip with junk drafts broke a rebuild once).
+
+## Lobby overlay, 0x5C4E60 - end (online town), work log
+Setup: lobby C lives in src/lobby/, registered as `lobby START END lb_xNN` in config/c_files.txt; `tools/rebuild.sh lobby` must stay OK
+(all five OK). Shared lobby structs/prototypes in include/lobby.h (client work `cw` is `u8 *` = D_6DD7E0, accessed with CW8()/CWPLAYER(),
+lb_sys/lbCommer/lb_player/lastSend structs, many K&R prototypes). Working files `lb_a.c .. lb_k.c` hold the whole C of a region (not
+built as such: every .c is compiled but only registered ranges are linked); `tools/lbruns.py FILE PREFIX "comment"` splits the fully matching,
+not yet registered functions into contiguous runs PREFIXNN.c and appends the c_files lines (FORCE_OK=name for functions check.py cannot verify,
+e.g. a callee whose symbol carries an address suffix). Other helpers: tools/lbasm.py (compact asm), tools/lbd.py / lbconv.py (m2c drafts;
+drafts are made with draft.py into a scratch dir, see LBDRAFTS), tools/lbset.py (replace a function in a file from stdin).
+Reuse from main: only 11 lobby functions are byte-identical to main code (Lb_act_ck, Lb_stick_dir_set, Lb_Pl_adj_calc, Lb_Pl_pos_adj,
+lb_pl_flag_clr/set, Lb_hit_stop_calc, Lb_World_calc, lb_pl_chr_set_com, lb_pl_to_normal_clr2): src/lobby/lb_pl01-09.c. Many more are
+close copies of main player code (sw_set_sub, pl_timer_calc, to_normal_clr, action_timer_calc): copy the main C and edit.
+Map of the range (0x5C4E60-0x610300): 5C4E60-5C5E80 receive handlers (trade, status, chair, commer); 5C5F30 Lb_guild (4100 bytes, quest
+guild UI) .. 5CB0E0 guild/quest select screens; 5CB100-5CD0F0 room members, drawing helpers (Lb_put_*), 5CD0F0-5CDB00 member in/out checks and
+player load; 5CDBD0-5D3640 player code (sw_set_sub, act_set, to_normal, move dispatch lb_pl_mv000-099, Pl_to_chair, lb_pl_normal,
+lb_basic_master 4840 bytes, lb_pl_chat00-16); 5D58C0-5D6420 Lb_send_* network senders; 5D6420-5D7790 lb_check_status/Lb_move_common/stage load;
+5D7790-5D8460 misc lobby UI; 5D8470-5D93A0 vs_square; 5D93A0-5DB9C0 Bs*/HttpTask/http_test_NN; 5DBA80-5E2A90 browser drawing (draw*, stock*
+page objects); 5E2A90-5ED940 browser (Bs*, cache, URL, zlib/png glue); 5F2xxx-601xxx tagAct_NNN HTML tag handlers, 602xxx-605xxx table/text layout;
+609750-610300 item box, plaza chat, eft25. About 40 percent is GCC/library (crypto/SSL is in the lobby text before 0x5C4E60, B's range).
+Idioms learned here (all verified by matching):
+- `switch (x) { case 0: case 0xF: ... }` is how the original writes `x == 0 || x == 0xF` (compare chain beq/beq/b); a two-case switch
+  compare chain is in REVERSE source order; a single-case switch gives `beq; b else`. The LAST case must not end in `break;`/`return;`
+  (MWCC emits an infinite `b .` loop), but a middle case that ends `if (c) { ...; }` needs `break;` rather than `return;` twice.
+- A static leaf callee defined earlier in the same file (check_sender0/1 return 0) is IPA'd: its arguments are dropped and the caller
+  keeps temporaries in a3/t0/t1: write `static s8 check_sender1() { return 0; }` K&R, call it with ONE arg (Lb_send_pl_pos/Pl_status).
+- `F(T, p, off)` style raw field macros make MWCC hoist `p+off` into a register when the field is used twice (extra addiu); use the
+  PLW field names (pl->work81D ...) when they exist, `u8 *` locals, or a temp variable.
+- 5th+ args go in t0..t3 ($8..$11): `void Lb_put_status(int a0,int a1,int a2,int a3,int no)`; a K&R call `f();` leaves a0.. untouched.
+- A function ending a u8 local with `u8` return type returns without the andi: `u8 Lb_stick_pow_get(PLW *)` (this is also the 3-off cause of
+  main's stick_pow_get).
+- Struct copy of a local `u128` pair (lq/sq) needs `unsigned __int128`; copying 12-byte f32 triples as `*(LBV3 *)a = *(LBV3 *)b` gives the
+  load-3-then-store-3 pattern.
+- `Lb_Pl_act_set`, `Lb_act_set` take u8 params: define them K&R (`f(pl, a, b) PLW *pl; u8 a; u8 b; {`) because lobby.h declares them `()`.
+Near-matches (kept in the working files): lb_commer_message (s0/s1 swapped), lb_set_pl_status/pos/stage, lb_check_mini_data, lb_trade_result
+(2 insns), Lb_room_member, Lb_PlStatusSet, Lb_put_gold (struct copy of rodata), lb_pl_horm_sub (original re-reads the field), Lb_act_set
+(original calls Lb_act_ck without setting a0), Lb_check_chair (1 insn), Lb_player_load (2 insns).
