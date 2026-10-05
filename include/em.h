@@ -42,6 +42,13 @@ typedef struct EM_AREA {
     EM_STG_POS *x18;    /* 0x18 routes: pos is really an EM_ROUTE list */
 } EM_AREA;
 
+/* One hagitori (carve) slot of a monster (EMW+0x308, 8 entries). */
+typedef struct EM_HAGI {
+    s16 hp;             /* 0x0 remaining hit points of the part */
+    u8 cnt;             /* 0x2 times the part was broken, capped at 99 */
+    u8 _pad3[5];
+} EM_HAGI;
+
 typedef struct EMW {
     u8 be_flag;         /* 0x000 alive; shells end when it clears (shell11_m) */
     u8 x01;             /* 0x001 (set10_m) */
@@ -103,12 +110,13 @@ typedef struct EMW {
     u16 x300;           /* 0x300 number of animation layers (char0/act_tm0/blend0 are [0] of arrays) */
     s16 x302;           /* 0x302 compared with 10% of x792 (hit points? guess) */
     u8 _pad304[0x308 - 0x304];
-    u8 hagi[8][8];      /* 0x308 */
+    EM_HAGI hagi[8];    /* 0x308 */
     u8 _pad348[0x34F - 0x348];
     u8 mdl_no;          /* 0x34F model number (eft09_t: texture and matrix list) */
     u8 _pad350[0x388 - 0x350];
     u8 x388;            /* 0x388 non-zero keeps set20's gate shut */
-    u8 _pad389[0x38E - 0x389];
+    u8 _pad389[0x38D - 0x389];
+    u8 dm_flag;         /* 0x38D set when hit this frame (as PLW; Em_Dmg_Sys) */
     u8 x38E;            /* 0x38E (u8: lbu in em01_main, damage part index) */
     u8 _pad38F[0x390 - 0x38F];
     s32 x390;           /* 0x390 */
@@ -264,7 +272,8 @@ typedef struct EMW {
     u8 _pad877;
     struct EFTW *tail;  /* 0x878 cut-tail effect (eft09_set) */
     u8 x87C;            /* 0x87C player id this monster holds/targets (pl_mv083 compares it with PLW.id) */
-    u8 _pad87D[0x87F - 0x87D];
+    u8 x87D;            /* 0x87D bit mask of the hagitori parts broken by this hit (Em_Dmg_Sys) */
+    u8 x87E;            /* 0x87E same, accumulated */
     s8 x87F;            /* 0x87F (s8) non-zero: monster state checked in basic_com_ck */
     u8 _pad880[0x881 - 0x880];
     u8 x881;            /* 0x881 target kind, 0 none (1 and 7 seen; 0x934 = its position) */
@@ -332,9 +341,10 @@ typedef struct EMW {
     u8 x950;            /* 0x950 */
     u8 x951;            /* 0x951 */
     u8 x952;            /* 0x952 */
-    u8 _pad953[0x954 - 0x953];
+    u8 x953;            /* 0x953 damage kind: 1, 8 or 9 selects the hagitori loop (Em_Dmg_Sys) */
     u16 x954;           /* 0x954 */
-    u8 _pad956[0x958 - 0x956];
+    u8 _pad956;
+    u8 x957;            /* 0x957 set when part 8 breaks (Em_Dmg_Sys) */
     s8 x958;            /* 0x958 */
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
     s8 x95A;            /* 0x95A */

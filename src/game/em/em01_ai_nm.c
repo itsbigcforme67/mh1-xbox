@@ -5823,7 +5823,7 @@ void em01_main(EMW *em) {
                 em01_act_set(em, 4, 0, 2);
                 break;
             case 6:
-                if (em->hagi[d][2] >= 2) {
+                if (em->hagi[d].cnt >= 2) {
                     if (em->kind == 1) {
                         Quest_enemy_hagi_set(em, 1);
                     } else {
@@ -5839,7 +5839,7 @@ void em01_main(EMW *em) {
                 em01_act_set(em, 4, 3, 2);
                 break;
             default:
-                if (em->hagi[d & 0xFF][2] >= 2) {
+                if (em->hagi[d & 0xFF].cnt >= 2) {
                     if (d != 3) {
                         em01_act_set(em, 4, 5, 2);
                     } else {
