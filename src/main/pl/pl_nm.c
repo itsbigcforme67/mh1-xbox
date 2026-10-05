@@ -3,6 +3,7 @@
 #include "pl.h"
 #include "plf.h"
 #include "game.h"
+#include "plst.h"
 
 void player_init0(PLW *pl) {
     u32 i;
@@ -1985,4 +1986,199 @@ void atck_data_set_shl2(HSHL *sh, int idx) {
     }
     sh->x76 >>= 1;
     sh->hit_id = Get_hit_id();
+}
+
+ST_ITEM *Stage_item_data_get(u8);
+ST_UNIQ *Stage_unique_data_get(u8);
+u16 *Stage_item_probability_get(int);
+
+
+
+
+
+
+long Pl_item_num_ck2(PLW *pl, u16 id) {
+    s16 i;
+    for (i = 0; i < 20; i++) {
+        if (pl->item[i].id == id) {
+            if (Item_data[id][3] == 0xFF) {
+                return 0xFF;
+            }
+            return (s16)(Item_data[id][3] - pl->item[i].num);
+        }
+    }
+    return Item_data[id][3];
+}
+
+long Pl_item_num_ck3(PLW *pl, u16 id) {
+    s16 i;
+    s16 free = 0;
+    for (i = 0; i < 20; i++) {
+        if (pl->item[i].id == id) {
+            if (Item_data[id][3] == 0xFF) {
+                return 0xFF;
+            }
+            return (s16)(Item_data[id][3] - pl->item[i].num);
+        }
+        if (pl->item[i].id == 0) {
+            free++;
+        }
+    }
+    if (free == 0) {
+        return -1;
+    }
+    return Item_data[id][3];
+}
+
+
+s16 Get_Use_itemnum(PLW *pl) {
+    s16 i;
+    s16 n = 0;
+    for (i = 0; i < 20; i++) {
+        if (pl->item[i].num > 0 && (s16)pl->item[i].id != 0 && Item_data[(s16)pl->item[i].id][1] == 1) {
+            n++;
+        }
+    }
+    return n;
+}
+
+
+
+
+int Share_item_stack();
+
+int Pl_item_stack(PLW *pl, int id, int num) {
+    u8 *typ = Item_data[(u16)id];
+    u8 *mx;
+    int ret;
+    s16 i;
+    s16 j;
+    s16 cnt;
+    s16 m;
+    s16 sv;
+    if (typ[0] == 5) {
+        return Share_item_stack(pl, id, num);
+    }
+    mx = &Item_data[(u16)id][3];
+    if (*mx == 0xFF) {
+        num = (s16)0xFF;
+    }
+    if (Pl_item_num_ck(pl, id) == 0) {
+        ret = 5;
+        i = 0;
+        do {
+            if (pl->item[i].id == 0 && (s16)num > 0) {
+                pl->item[i].id = id;
+                if ((s16)*mx < (s16)num) {
+                    num = (s16)*mx;
+                }
+                pl->item[i].num = (s16)num;
+                if (typ[0] == 4) {
+                    sv = pl->work88E;
+                    if (i == sv) {
+                        pl->work88E = Pl_shell_set(pl, (u16)i, 2);
+                        Shell_type_set(pl, 1);
+                        pl->work8CE = pl->work8BC;
+                        pl->work8D2 = pl->work01D;
+                        pl->work8D1 = 0;
+                    } else if (pl->kind == 1 || pl->kind == 5) {
+                        if (sv == 0xFF) {
+                            pl->work88E = Pl_shell_set(pl, 0, 2);
+                            Shell_type_set(pl, 0);
+                        } else if (Item_data[pl->item[sv].id][0] != 4) {
+                            pl->work88E = Pl_shell_set(pl, sv, 0);
+                            Shell_type_set(pl, 0);
+                        }
+                    }
+                }
+                sv = pl->work888;
+                ret = 0;
+                if (Item_data[pl->item[sv].id][1] != 1) {
+                    pl->work888 = item_sel_sub(pl, sv, 0);
+                }
+                break;
+            }
+            i++;
+        } while (i < 20);
+    } else {
+        j = 0;
+        do {
+            if (pl->item[j].id == (u16)id) {
+                cnt = (s16)num;
+                m = *mx;
+                if (cnt > 0 && pl->item[j].num >= m) {
+                    pl->item[j].num = m;
+                    ret = 3;
+                    goto post;
+                }
+                if (cnt < 0 && *mx == 0xFF) {
+                    ret = 1;
+                    break;
+                }
+                i = j;
+                pl->item[i].num += (s16)num;
+                if (pl->item[i].num <= 0) {
+                    Pl_item_erase(pl, j);
+                    ret = 4;
+                    pl->item[i].id = 0;
+                    pl->item[i].num = 0;
+                } else if (m < pl->item[i].num) {
+                    pl->item[i].num = m;
+                    ret = 2;
+                } else {
+                    ret = 1;
+                }
+post:
+                if (typ[0] == 4 && i == pl->work88E) {
+                    pl->work8BC = pl->item[pl->work88E].num;
+                    pl->work8CE = pl->work8BC;
+                    if (pl->work8BC < pl->work01C) {
+                        pl->work01C = pl->work8BC;
+                        pl->work8D1 = pl->work01C;
+                    }
+                }
+                break;
+            }
+            j++;
+        } while (j < 20);
+    }
+    return ret;
+}
+
+int St_pick_ck2(PLW *pl) {
+    ST_ITEM *d = Stage_item_data_get(pl->stg);
+    f32 dx;
+    f32 dz;
+    int r;
+    u16 rn;
+    if (d == 0) {
+        return 0xFFFF;
+    }
+    while (d->pos[0] != -1.0f) {
+        if (!(pl->pos[1] < d->pos[1] - 200.0f) && pl->pos[1] < 100.0f + d->pos[1]) {
+            dx = pl->pos[0] - d->pos[0];
+            dz = pl->pos[2] - d->pos[2];
+            if (flSqrt(dx * dx + dz * dz) <= d->r) {
+                if (d->num > 0) {
+                    r = Item_get_ck(d->id & 0x7FFF);
+                    if (r != 0 && r != 0xFFFF && d->num != 0xFF) {
+                        rn = ran_suu(1);
+                        if (!(rn & 7)) {
+                            if (Pl_Skill_ck(pl, 0x2F) == 1) {
+                                goto dec;
+                            }
+                            d->num = 0;
+                        } else {
+dec:
+                            d->num--;
+                        }
+                    }
+                    return r;
+                }
+                return 0xFFFE;
+            }
+        }
+        d++;
+    }
+    return 0;
 }

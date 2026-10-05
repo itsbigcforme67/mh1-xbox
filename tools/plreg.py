@@ -15,7 +15,7 @@ for l in open("/tmp/claude-1000/pl_funcs_F.txt"):
     tab[n] = (int(a, 16), int(s))
 s = open("src/main/pl/pl_wip.c").read()
 def get(n):
-    m = re.search(r'^[a-z0-9_ ]+ \**%s\(.*?\n}\n' % n, s, re.M | re.S)
+    m = re.search(r'^[a-z0-9_ ]+ \**%s\([^;{]*\) \{\n.*?\n}\n' % n, s, re.M | re.S)
     return m.group(0)
 start = tab[funcs[0]][0]
 end = tab[funcs[-1]][0] + tab[funcs[-1]][1]

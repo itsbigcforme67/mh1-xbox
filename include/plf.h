@@ -28,7 +28,7 @@ extern f32 start_ofs[0x10];
 void trans_pl_sub(void);
 extern PLPROG *pl_prog_tbl[11];
 
-void Pl_item_supply(PLW *, int, u16, s16);
+s32 Pl_item_supply(PLW *, int, int, s16);
 int Pl_master_ck(PLW *);
 int ran_suu(int);
 int softdip_ck(int);
@@ -124,7 +124,7 @@ s32 Niku_ok_ck(void);
 s32 Nikuyaki_ck(PLW *);
 s32 Taru_ok_ck(void);
 void pl_to_normal(PLW *, int, int, int);
-long Get_Active_itemnum(void);
+long Get_Active_itemnum();
 s16 Pl_trap_use_ck(PLW *);
 long Pl_item_num_ck2(PLW *, u16);
 long Pl_item_search_space(PLW *);
