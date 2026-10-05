@@ -254,3 +254,156 @@ u8 *p;
     clay_attr_set(*(s32 *)(p + 0x88));
     flExecuteClay(*(s32 *)p, 0);
 }
+
+static u32 spr_disp_sub(f32 t, u32 a, u32 b)
+{
+    int c0, c1, c2, c3;
+    u32 x;
+    u32 r0, r1, r2, r3;
+
+    c2 = (a >> 16) & 0xFF;
+    x = (u32)(t * (f32)(s16)(((b >> 16) & 0xFF) - c2));
+    r2 = (c2 + (x & 0xFF)) & 0xFF;
+    c1 = (a >> 8) & 0xFF;
+    x = (u32)(t * (f32)(s16)(((b >> 8) & 0xFF) - c1));
+    r1 = (c1 + (x & 0xFF)) & 0xFF;
+    c0 = a & 0xFF;
+    c3 = (a >> 24) & 0xFF;
+    x = (u32)(t * (f32)(s16)(((b >> 24) & 0xFF) - c3));
+    r3 = (c3 + (x & 0xFF)) & 0xFF;
+    x = (u32)(t * (f32)(s16)((b & 0xFF) - c0));
+    r0 = (c0 + (x & 0xFF)) & 0xFF;
+    return r0 | ((r1 << 8) | ((r3 << 24) | (r2 << 16)));
+}
+
+extern f32 *sun_pos_tbl[];
+extern u8 *st_sun_rgba_tbl[];
+extern s16 *st_sun_tb_tbl[];
+extern f32 rview_mat[];
+f32 flArcTan2(f32, f32);
+f32 flSin(f32);
+void SetOpeMode();
+void SetTrnslMode();
+void flps0004();
+void flps0005();
+
+#define SUN_COL(c, o) ((c)[(o) + 2] | (((c)[(o) + 1] << 8) | (((c)[(o) + 3] << 24) | ((c)[(o)] << 16))))
+
+typedef struct SKYR {
+    s16 r[4];           /* x0, y0, x1, y1 */
+    u32 c[4];           /* corner colours */
+} SKYR;
+
+typedef struct FLR {
+    s16 r[4];
+    u32 c;
+} FLR;
+
+void stage_spr_disp(void)
+{
+    FLR fl;
+    SKYR sky;
+    f32 *sp;
+    u8 *c;
+    s16 *tb;
+    u32 v;
+    u32 sv;
+    u32 t8, t7, t6, t5, t4, t3, t2, t1;
+    f32 sx, sz;
+    int s0;
+    u32 u;
+
+    flSetRenderState(0x60, 0);
+    sp = sun_pos_tbl[game_w.stage];
+    sz = sp[2];
+    sx = sp[0];
+    switch (game_w.stage) {
+    case 0:
+    case 0x1A:
+        sky.r[2] = 0x280;
+        sky.r[0] = 0;
+        sky.r[3] = 0xE0;
+        sky.r[1] = 0;
+        sky.c[0] = 0x80FFFFA0;
+        sky.c[1] = 0x80FFFFA0;
+        sky.c[2] = 0xDCFF80;
+        sky.c[3] = 0xDCFF80;
+        flps0005(&sky);
+        break;
+    default:
+        sv = (u16)(int)(0.5f + 65536.0f * flArcTan2(-rview_mat[8], -rview_mat[10]) / 6.2831855f);
+        v = (u16)(int)(0.5f + 65536.0f * flArcTan2(sx, sz) / 6.2831855f);
+        c = st_sun_rgba_tbl[game_w.stage];
+        tb = st_sun_tb_tbl[game_w.stage];
+        sky.r[0] = 0;
+        sky.r[1] = tb[0];
+        sky.r[2] = 0x280;
+        sky.r[3] = tb[1];
+        t8 = SUN_COL(c, 0);
+        t7 = SUN_COL(c, 4);
+        t6 = SUN_COL(c, 8);
+        t5 = SUN_COL(c, 12);
+        t4 = SUN_COL(c, 16);
+        t3 = SUN_COL(c, 20);
+        t2 = SUN_COL(c, 24);
+        t1 = SUN_COL(c, 28);
+        v = (v - (u16)sv) & 0xFFFF;
+        if ((int)v < 0x4000) {
+            sky.c[0] = spr_disp_sub((f32)v / 16384.0f, t8, t6);
+            sky.c[1] = spr_disp_sub((f32)v / 16384.0f, t8, t5);
+            sky.c[2] = spr_disp_sub((f32)v / 16384.0f, t4, t2);
+            sky.c[3] = spr_disp_sub((f32)v / 16384.0f, t4, t1);
+        } else if ((int)v < 0x8000) {
+            sky.c[0] = spr_disp_sub((f32)(int)(v - 0x4000) / 16384.0f, t6, t7);
+            sky.c[1] = spr_disp_sub((f32)(int)(v - 0x4000) / 16384.0f, t5, t7);
+            sky.c[2] = spr_disp_sub((f32)(int)(v - 0x4000) / 16384.0f, t2, t3);
+            sky.c[3] = spr_disp_sub((f32)(int)(v - 0x4000) / 16384.0f, t1, t3);
+        } else if ((int)v < 0xC000) {
+            sky.c[0] = spr_disp_sub((f32)(int)(v - 0x8000) / 16384.0f, t7, t5);
+            sky.c[1] = spr_disp_sub((f32)(int)(v - 0x8000) / 16384.0f, t7, t6);
+            sky.c[2] = spr_disp_sub((f32)(int)(v - 0x8000) / 16384.0f, t3, t1);
+            sky.c[3] = spr_disp_sub((f32)(int)(v - 0x8000) / 16384.0f, t3, t2);
+        } else {
+            sky.c[0] = spr_disp_sub((f32)(int)(v - 0x8000 - 0x4000) / 16384.0f, t5, t8);
+            sky.c[1] = spr_disp_sub((f32)(int)(v - 0x8000 - 0x4000) / 16384.0f, t6, t8);
+            sky.c[2] = spr_disp_sub((f32)(int)(v - 0x8000 - 0x4000) / 16384.0f, t1, t4);
+            sky.c[3] = spr_disp_sub((f32)(int)(v - 0x8000 - 0x4000) / 16384.0f, t2, t4);
+        }
+        flps0005(&sky);
+        break;
+    }
+    if (flash_flag != 0) {
+        fl.r[0] = 0;
+        fl.r[2] = 0x280;
+        fl.r[3] = 0x1C0;
+        fl.r[1] = 0;
+        if (flash_flag == 1) {
+            SetTrnslMode(4, 5);
+            s0 = 0xFF;
+            SetTrnslMode(1, 1);
+            SetOpeMode(1);
+        } else if (flash_flag == 2) {
+            SetTrnslMode(4, 5);
+            u = (u32)(127.5f * (f32)flash_timer);
+            s0 = (0xFF - (u & 0xFF)) & 0xFF;
+            fl.c = s0 << 24;
+            flps0004(&fl);
+            SetTrnslMode(1, 1);
+            SetOpeMode(1);
+        } else {
+            u = (u32)(255.0f * (1.0f + flSin(2.0f * (3.1415927f * (360.0f * (f32)(flash_timer * 0xB6 + 0x7FFF + 0x4001) / 65536.0f / 360.0f)))));
+            s0 = u & 0xFF;
+            SetTrnslMode(4, 5);
+        }
+        if (flash_flag == 1 || flash_flag == 2) {
+            fl.c = -1;
+        } else {
+            fl.c = ((s0 & 0xFF) << 24) | 0xFFFFFF;
+        }
+        flps0004(&fl);
+        if (flash_flag == 1 || flash_flag == 2) {
+            SetOpeMode(0);
+        }
+    }
+    flSetRenderState(0x60, 0x80);
+}
