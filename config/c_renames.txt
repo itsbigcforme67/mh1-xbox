@@ -12,6 +12,19 @@ build/src/game/eft/eft18.c.o .rodata .data
 build/src/game/eft/eft18b.c.o .rodata .data
 build/src/game/eft/eft22.c.o .rodata .data
 build/src/game/eft/eft23.c.o .rodata .data
+build/src/game/em/em01.c.o .rodata .data
+build/src/game/em/em02.c.o .rodata .data
+build/src/game/em/em07.c.o .rodata .data
+build/src/game/em/em08.c.o .rodata .data
+build/src/game/em/em14.c.o .rodata .data
+build/src/game/em/em15.c.o .rodata .data
+build/src/game/em/em17.c.o .rodata .data
+build/src/game/em/em16.c.o .rodata .data
+build/src/game/em/em20.c.o .rodata .data
+build/src/game/em/em20b.c.o .rodata .data
+build/src/game/em/em21.c.o .rodata .data
+build/src/game/em/em27.c.o .rodata .data
+build/src/game/set/set09.c.o .rodata .data
 build/src/game/set/set15.c.o .rodata .data
 build/src/game/set/set22.c.o .rodata .data
 build/src/game/shell/shell16.c.o .rodata .data
@@ -20,7 +33,10 @@ build/src/game/shell/shell02.c.o .rodata .data
 build/src/game/shell/shell03.c.o .rodata .data
 build/src/game/shell/shell04.c.o .rodata .data
 build/src/game/shell/shell05.c.o .rodata .data
+build/src/game/shell/shell06.c.o .rodata .data
 build/src/game/shell/shell06b.c.o .rodata .data
+build/src/game/shell/shell08.c.o .rodata .data
+build/src/game/shell/shell08c.c.o .rodata .data
 build/src/game/shell/shell09.c.o .rodata .data
 build/src/game/shell/shell10.c.o .rodata .data
 build/src/game/shell/shell11.c.o .rodata .data
@@ -36,3 +52,4 @@ build/src/game/shell/shell21.c.o .rodata .data
 build/src/game/shell/shell22.c.o .rodata .data
 build/src/game/shell/shell22b.c.o .rodata .data
 build/src/game/shell/shell23.c.o .rodata .data
+build/src/game/pl/pl_damageb.c.o .rodata .data

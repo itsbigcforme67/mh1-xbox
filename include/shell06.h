@@ -14,7 +14,7 @@ typedef struct GROW_UP {
     f32 spd;            /* 0x04 added to the shot's base speed */
     f32 spread;         /* 0x08 scales the random part of the speed */
     f32 drop;           /* 0x0C scales the random part of the gravity */
-    u8 _pad10[4];
+    f32 wobble;         /* 0x10 scales the sideways wobble */
     f32 range;          /* 0x14 scales shell06_change_time (the fall-off steps) */
 } GROW_UP;
 
@@ -36,15 +36,19 @@ typedef struct SHELL_DATA {
 typedef struct SH06P {
     u8 kind;            /* 0x00 0/1/4: straight, 2: scattered (pellets) */
     u8 x01;             /* 0x01 0x62: has a muzzle flash that follows the shot */
-    u8 _pad02;
+    s8 col;             /* 0x02 row of col_type_tbl (draw colour mode) */
     u8 split;           /* 0x03 0xFF: splits (sets w->x16 to 2) */
     s16 time_no;        /* 0x04 row of shell06_change_time, -1 = no fall-off */
-    u8 _pad06[2];
+    u16 flash;          /* 0x06 non-zero: muzzle flash (shell06_eft_*) */
     f32 spd;            /* 0x08 */
     f32 spread;         /* 0x0C */
     f32 grav;           /* 0x10 */
     f32 drop;           /* 0x14 */
-    u8 _pad18[0x24 - 0x18];
+    f32 wobble_y;       /* 0x18 vertical wobble per frame */
+    f32 wobble_x;       /* 0x1C sideways wobble (first 20 frames) */
+    s16 grav_time;      /* 0x20 frames before gravity applies */
+    u8 special;         /* 0x22 what the shot does (sticks, explodes, splits...) */
+    u8 special_arg;     /* 0x23 */
 } SH06P;
 
 /* Muzzle-flash slot. */
@@ -76,6 +80,24 @@ typedef struct SH06W {
 
 #define SH06_W(sh) ((SH06W *)(sh)->senko)
 
+/* split_param_tbl row: the extra pellets of a scattered shot. */
+typedef struct SH06SPLIT {
+    u8 arg;
+    u8 _pad01;
+    s16 num;
+} SH06SPLIT;
+
+/* Where on the monster a sticking shot hit (sh->xA0). */
+typedef struct SH06JNT {
+    s16 joint;          /* 0x00 */
+    s16 type;           /* 0x02 0: at pos, 1: midway between pos and pos2 */
+    u8 _pad04[0x0C];
+    f32 pos[3];         /* 0x10 offset in the joint's space */
+    f32 pos2[3];        /* 0x1C */
+} SH06JNT;
+
+#define SH06_JNT(sh) ((SH06JNT *)(sh)->xA0)
+
 extern SH06P shell06_param_tbl[];
 extern GUN_DATA Gun_data[];
 extern SHELL_DATA Shell_data[];
@@ -102,6 +124,7 @@ u16 calc_rand(u16 a, u16 b, u16 c, u16 d);
 f32 rand_sub(u16 seed, u16 bits);
 f32 rand_sub2(u16 seed, u16 bits);
 void shell06_se_req(SHLW *sh, s16 kind);
+void shell06_set_split(SHLW *sh, SH06SPLIT *sp);
 void shell06_eft_i(SHLW *sh);
 void shell06_eft_m(SHLW *sh);
 void shell06_eft_d(SHLW *sh);

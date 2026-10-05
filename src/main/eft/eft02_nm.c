@@ -436,7 +436,7 @@ void eft02_set(PLW *pl, int arg, f32 *pos) {
             ew->pos[0] = pos[0];
             ew->pos[1] = pos[1];
             ew->pos[2] = pos[2];
-            ew->u0A.ang = pl->x3EC + 0x8000;
+            ew->u0A.ang = pl->dm_ang + 0x8000;
         }
     }
 }

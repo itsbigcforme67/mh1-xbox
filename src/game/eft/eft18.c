@@ -1,5 +1,5 @@
-/* eft18 - game.bin 0x00551830-0x0055216C: eft18_move to eft18_i00.
- * eft18_m00 and eft18_set_com are still assembly (near-matches in
+/* eft18 - game.bin 0x00551830-0x00552CF8: eft18_move to eft18_m00.
+ * eft18_set_com is still assembly (near-match in
  * eft18_nm.c, which also says what the effect does); the rest is in
  * eft18b.c and eft18c.c. */
 #include "eft.h"
@@ -74,7 +74,7 @@ extern void *fade_type8_data[];
 u32 ran_suu(int);
 u8 Pl_stg_ck(PLW *);
 void release_prim(s16);
-FLMAT *get_joint_wmat(PLW *, int);
+FLMAT *get_joint_wmat(PLW *, s16);
 void flvecCopy(f32 *, f32 *);
 void flvecRotX(f32 *, f32);
 void flvecRotY(f32 *, f32);
@@ -336,4 +336,234 @@ void eft18_i00(EFTW *ew) {
         p++;
     }
     eft18_m(ew);
+}
+
+void eft18_m00(EFTW *ew) {
+    f32 v[3];
+    f32 w[3];
+    FLMAT jm;
+    EFT18_WORK *wk;
+    EFT18_PIECE *p;
+    s16 i;
+    s16 num;
+    s16 all;
+    s16 idx;
+    s16 time;
+    s16 step;
+    void *d;
+
+    wk = ew->work;
+    p = wk->piece;
+    num = eft18_num[ew->arg];
+    all = eft18_all_time[ew->arg];
+    idx = eft18_index[ew->arg];
+    switch (ew->arg) {
+    case 0:
+    case 10:
+        time = 7;
+        step = 1;
+        break;
+    case 2:
+        time = 20;
+        step = 3;
+        break;
+    case 5:
+        step = 1;
+        break;
+    case 6:
+        time = 17;
+        step = 1;
+        break;
+    case 7:
+        if (ew->timer == 6) {
+            eft18_se_req(ew, ew->pos);
+        }
+        step = 1;
+        break;
+    case 8:
+        step = 1;
+        if (ew->timer == all - 1) {
+            Eft13_set_pos(1.0f, ew->pos, 0x1D);
+        }
+        break;
+    case 9:
+        time = 30;
+        step = 1;
+        break;
+    }
+    if (++ew->timer > all) {
+        ew->mode++;
+        ew->be_flag = 0;
+        return;
+    }
+    for (i = 0; i < num; i++) {
+        switch (ew->arg) {
+        case 1:
+        case 0xB:
+            if (p->no == 0) {
+                step = 1;
+            } else {
+                step = 3;
+            }
+            time = eft18_type1_time_tbl[i];
+            break;
+        case 2:
+            idx = 14;
+            break;
+        case 5:
+            time = eft18_type5_time_tbl[i];
+            break;
+        case 6:
+            idx = 24;
+            break;
+        case 7:
+            if (p->no == 0) {
+                time = 4;
+            } else {
+                time = 30;
+            }
+            break;
+        case 8:
+            time = eft18_type8_time[i];
+            break;
+        }
+        if (++p->lag <= 0) {
+            p++;
+            idx += step;
+            continue;
+        }
+        if (p->lag == 1) {
+            if ((ew->arg == 2 || ew->arg == 6) && p->prim != 0) {
+                v[0] = -10.0f;
+                v[1] = -15.0f;
+                v[2] = 87.0f;
+                flmatCopy(&jm, get_joint_wmat((PLW *)ew->owner, ew->u0A.joint));
+                flmatGetTrans(p->prim->pos, &jm);
+                RotateY(&jm, 3.1415927f);
+                flvecApplyMat33_2(v, &jm);
+                p->prim->pos[0] += v[0];
+                p->prim->pos[1] += v[1];
+                p->prim->pos[2] += v[2];
+            }
+        } else if (p->lag > time) {
+            p++;
+            idx += step;
+            continue;
+        }
+        switch (ew->arg) {
+        case 0:
+        case 5:
+        case 10:
+            d = eft18_data[idx++];
+            eft_vec_linear(p->lag, d, p->scale);
+            if (ew->arg == 5 && p->no == 1) {
+                p->scale[0] *= 0.75f;
+                p->scale[1] *= 0.75f;
+                p->scale[2] *= 0.75f;
+            }
+            if (p->prim != 0) {
+                p->prim->pos[0] = ew->pos[0];
+                p->prim->pos[1] = ew->pos[1];
+                p->prim->pos[2] = ew->pos[2];
+                add_prim(ot0, p->prim, 0x40, 0);
+            }
+            break;
+        case 1:
+        case 11:
+            d = eft18_data[idx++];
+            eft_vec_linear(p->lag, d, v);
+            flvecApplyMat33_2(v, &wk->mat);
+            p->rot += (u16)(s32)(0.5f + 65536.0f * eft18_type1_rot[i / 2] / 360.0f);
+            if (p->no == 0) {
+                p->uv++;
+            } else {
+                w[0] = 0.0f;
+                w[1] = 0.0f;
+                w[2] = (f32)(-5 * i);
+                flvecApplyMat33_2(w, &rview_mat);
+                v[0] += w[0];
+                v[1] += w[1];
+                v[2] += w[2];
+                d = eft18_data[idx++];
+                eft_vec_linear(p->lag, d, p->scale);
+                d = eft18_data[idx++];
+                eft_alpha_linear(p->lag, d, &p->alpha);
+            }
+            if (p->prim != 0) {
+                p->prim->pos[0] = ew->pos[0] + v[0];
+                p->prim->pos[1] = ew->pos[1] + v[1];
+                p->prim->pos[2] = ew->pos[2] + v[2];
+                add_prim(ot0, p->prim, 0x40, 0);
+            }
+            break;
+        case 2:
+            p->rot += p->no;
+            d = eft18_data[idx++];
+            eft_vec_linear(p->lag, d, v);
+            d = eft18_data[idx++];
+            eft_vec_linear(p->lag, d, p->scale);
+            d = eft18_data[idx++];
+            eft_alpha_linear(p->lag, d, &p->alpha);
+            if (p->prim != 0) {
+                p->prim->pos[1] += 0.5f;
+                add_prim(ot0, p->prim, 0x40, 0);
+            }
+            break;
+        case 6:
+            p->rot += 0xA1;
+            d = eft18_data[idx++];
+            eft_vec_linear(p->lag, d, p->scale);
+            p->scale[0] *= 1.4f - 0.2f * (f32)i;
+            p->scale[1] *= 1.4f - 0.2f * (f32)i;
+            p->scale[2] *= 1.4f - 0.2f * (f32)i;
+            v[0] = 0.0f;
+            v[1] = 0.0f;
+            v[2] = (100.0f - 20.0f * (f32)i) / (f32)time;
+            if (p->prim != 0) {
+                flvecApplyMat33_2(v, &wk->mat);
+                p->prim->pos[0] += v[0];
+                p->prim->pos[1] += v[1];
+                p->prim->pos[2] += v[2];
+                add_prim(ot0, p->prim, 0x40, 0);
+            }
+            break;
+        case 7:
+        case 9:
+            d = eft18_data[idx++];
+            eft_vec_linear(p->lag, d, p->scale);
+            if (p->prim != 0) {
+                if (p->no == 0) {
+                    v[0] = 0.0f;
+                    v[1] = 0.0f;
+                    v[2] = 30.0f;
+                    flvecApplyMat33_2(v, &rview_mat);
+                    p->prim->pos[0] = p->pos[0] + v[0];
+                    p->prim->pos[1] = p->pos[1] + v[1];
+                    p->prim->pos[2] = p->pos[2] + v[2];
+                } else {
+                    p->rot += p->drot;
+                    v[0] = 0.0f;
+                    v[1] = 0.0f;
+                    v[2] = 5.0f * (f32)i;
+                    p->pos[1] += 2.0f;
+                    p->prim->pos[0] = p->pos[0] + v[0];
+                    p->prim->pos[1] = p->pos[1] + v[1];
+                    p->prim->pos[2] = p->pos[2] + v[2];
+                }
+                add_prim(ot0, p->prim, 0x40, 0);
+            }
+            break;
+        case 8:
+            d = eft18_data[idx++];
+            eft_vec_linear(p->lag, d, p->scale);
+            if (p->prim != 0) {
+                p->prim->pos[0] = p->pos[0];
+                p->prim->pos[1] = p->pos[1];
+                p->prim->pos[2] = p->pos[2];
+                add_prim(ot0, p->prim, 0x40, 0);
+            }
+            break;
+        }
+        p++;
+    }
 }

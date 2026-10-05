@@ -1,5 +1,6 @@
-/* shell06 - game.bin 0x0062C4D0-0x0062D4C4: shell06_move to shell06_eft_t.
- * Bowgun shots: the mode machine, damage fall-off with range, firing
+/* shell06 - game.bin 0x0062BDA0-0x0062D4C4: shell06_hit to shell06_eft_t.
+ * shell06_move_sub (0x62B160) is still assembly; near-match in shell06_nm.c.
+ * Bowgun shots: hits, the mode machine, damage fall-off with range, firing
  * sounds, the sleeve (cartridge) model and the muzzle flash. */
 #include "shell06.h"
 #include "game.h"
@@ -19,6 +20,9 @@ typedef struct MDLW {
 
 extern MDLW *eft_mdlw[5];
 extern FLMAT rview_mat;
+extern u8 shell06_tbl[4];
+extern SH06SPLIT split_param_tbl[];
+extern u32 col_type_tbl[];
 extern s16 *shell06_change_time[];
 extern s16 shell06_hit_mark1[];
 extern s16 shell06_hit_mark2[];
@@ -28,6 +32,18 @@ extern f32 scale64_0067D2D0[][3];
 extern f32 scale66_1_0067D2F0[][3];
 extern f32 scale66_2_0067D310[][3];
 
+FLMAT *get_joint_wmat(PLW *, s16);
+void flmatCopy(FLMAT *, FLMAT *);
+void flmatGetTrans(f32 *, FLMAT *);
+void flmatInvert(FLMAT *, FLMAT *);
+void flmatRotZ33(FLMAT *, f32);
+void flvecApplyMat33(f32 *, f32 *, FLMAT *);
+void AddVector(f32 *, f32 *, f32 *);
+void ScaleVector(f32 *, f32 *, f32);
+f32 flSqrt(f32);
+f32 flArcTan2(f32, f32);
+void eft12_set_sh(SHLW *, int, int);
+void Eft18_set3(SHLW *sh, s16 arg, int x07);
 void release_prim(s16);
 void flvecCopy(void *, void *);
 void flvecNormalize(f32 *);
@@ -39,6 +55,166 @@ void se_req2(int, int, int, VEC3 *, int, int);
 int Pl_silencer_ck(void *);
 void Pl_se_req2(void *, int, int, VEC3 *, int, int);
 void Eft18_set2(f32 *, s16, int);
+
+void shell06_hit(SHLW *sh) {
+    f32 t[3];
+    f32 d[3];
+    f32 c[3];
+    FLMAT m;
+    FLMAT inv;
+    SH06W *w = SH06_W(sh);
+    SH06P *p = &shell06_param_tbl[sh->arg];
+
+    w->x02 = 0;
+    switch (w->x16) {
+    case 0:
+        w->x16++;
+        if (sh->stg == game_w.stage) {
+            Eft18_set3(sh, 4, 0);
+        }
+        break;
+    case 1:
+        w->x16++;
+        break;
+    }
+    switch (p->special) {
+    default:
+        sh->mode = 2;
+        break;
+    case 1:
+    case 3:
+    case 4:
+    case 5:
+        sh->char0 = 0;
+        sh->x06++;
+        sh->xB = 0;
+        w->x00++;
+        if (sh->x9C == 0) {
+            sh->mode = 2;
+            return;
+        }
+        if (sh->xA0 == 0 || sh->x9C->be_flag == 0) {
+            sh->mode = 2;
+            return;
+        }
+        sh->x7E = SH06_JNT(sh)->joint;
+        flmatCopy(&m, get_joint_wmat((PLW *)sh->x9C, sh->x7E));
+        flmatGetTrans(t, &m);
+        AddVector(c, &sh->pos2.x, &sh->pos0.x);
+        ScaleVector(c, c, 0.5f);
+        d[0] = c[0] - t[0];
+        d[1] = c[1] - t[1];
+        d[2] = c[2] - t[2];
+        flmatInvert(&inv, &m);
+        flvecApplyMat33(sh->rate, d, &inv);
+        sh->mode = 1;
+        break;
+    case 8:
+        if (++sh->x06 < p->special_arg) {
+            w->x03 = 2;
+        } else {
+            sh->xB = 0;
+        }
+        sh->mode = 1;
+        goto move;
+    case 7:
+        shell06_set_split(sh, &split_param_tbl[p->special_arg]);
+        sh->xB = 0;
+        sh->mode = 2;
+        break;
+    case 6:
+        if (++sh->x06 < p->special_arg) {
+            w->x03 = 4;
+        } else {
+            sh->xB = 0;
+        }
+        sh->mode = 1;
+        goto move;
+    case 9:
+        sh->mode = 1;
+        goto move;
+    case 10:
+        eft12_set_sh(sh, 1, 1);
+        sh->xB = 0;
+        sh->mode = 2;
+        break;
+    }
+    goto draw;
+move:
+    if (++sh->char0 > 0xFF) {
+        sh->x61 = 0;
+        sh->mode = 2;
+        return;
+    }
+    shell06_move_sub(sh);
+draw:
+    if (sh->prim != 0) {
+        if (p->x01 == 0x62) {
+            flvecCopy(sh->prim->pos, &w->pos);
+        } else {
+            flvecCopy(sh->prim->pos, &sh->pos2);
+        }
+        add_prim(ot1, sh->prim, 0x20, 0);
+    }
+}
+
+void shell06_trans_sub(PRIM *pr) {
+    FLMAT m;
+    FLMAT m0;
+    SHLW *sh = pr->owner;
+    SH06W *w = SH06_W(sh);
+    SH06P *p = &shell06_param_tbl[sh->arg];
+    MDLW *md;
+    void *mat;
+    CLAY *cl;
+    f32 ax, ay;
+
+    if (sh->stg != game_w.stage) {
+        return;
+    }
+    switch (w->x16) {
+    case 0:
+        sleeve_trans(sh);
+        return;
+    case 1:
+        sleeve_trans(sh);
+        break;
+    }
+    if (p->x01 != 0xFF && (md = eft_mdlw[0]) != 0 && md->flag != 0) {
+        mat = md->mat;
+        if (p->x01 == 0x62) {
+            if (sh->char0 >= 15) {
+                return;
+            }
+            flmatMakeTrans(&m0, 0.5f, 0.375f, 0.0f);
+            flSetRenderState(0x19, (u32)&m0);
+            flmatMakeScale(&m, 2.25f, 2.25f, 2.25f);
+            cl = &md->clay[p->x01] + sh->char0;
+            flmatRotZ33(&m, DEG2RAD(ANG2DEG(sh->ang[2])));
+        } else {
+            flmatInit(&m);
+            cl = &md->clay[p->x01];
+        }
+        if (w->x00 == 0) {
+            ax = flArcTan2(-sh->rate[1], flSqrt(sh->rate[0] * sh->rate[0] + sh->rate[2] * sh->rate[2]));
+            ay = flArcTan2(sh->rate[0], sh->rate[2]);
+            sh->ang[0] = (u16)(s32)(0.5f + 65536.0f * ax / 6.2831855f);
+            sh->ang[1] = (u16)(s32)(0.5f + 65536.0f * ay / 6.2831855f);
+        }
+        flmatRotX33(&m, DEG2RAD(ANG2DEG(sh->ang[0])));
+        flmatRotY33(&m, DEG2RAD(ANG2DEG(sh->ang[1])));
+        flmatSetTrans(&m, pr->pos[0], pr->pos[1], pr->pos[2]);
+        flSetRenderState(0x67, col_type_tbl[p->col]);
+        flSetRenderState(0x1A, (u32)&m);
+        flSetRenderState(0x60, 0x80);
+        if (cl != 0 && cl->handle != -1) {
+            Material_set_sub(mat, cl);
+            clay_attr_set(cl->attr);
+            flExecuteClay(cl->handle, 0);
+        }
+        clay_attr_reset();
+    }
+}
 
 void shell06_move(SHLW *sh) {
     switch (sh->mode) {
