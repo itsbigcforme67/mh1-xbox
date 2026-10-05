@@ -52,11 +52,12 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     s8 x4C;           /* 0x4C  */
     u8 x4D;           /* 0x4D  */
     u8 x4E;           /* 0x4E  */
-    u8 _pad4F;
+    u8 x4F;           /* 0x4F */
     s16 x50;          /* 0x50  */
     s16 x52;          /* 0x52  */
     u8 x54;           /* 0x54  */
-    u8 _pad55[0x57 - 0x55];
+    u8 x55;           /* 0x55 */
+    u8 x56;           /* 0x56 */
     s8 x57;           /* 0x57  */
     s8 x58;           /* 0x58  */
     s8 x59;           /* 0x59  */

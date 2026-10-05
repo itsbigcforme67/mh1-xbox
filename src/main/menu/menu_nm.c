@@ -692,8 +692,10 @@ int Pl_master_ck(void);
 int Check_hold_item(int);
 void Pl_item_get_se(PLW *, int);
 int Pl_item_stack(PLW *, int, int);
-void set01_set(int, int, s16);
+u8 set01_set(int, int, s16);
 int item_stock_mv(u16);
+int Info_stack_ck(void);
+
 void ItemCopy_Pl2Ud(PLW *);
 void net_send_sys(int, u8);
 f32 flSqrt(f32);
@@ -1003,6 +1005,123 @@ int ItemStockRequest(PLW *pl, int id, int code, int flags) {
         break;
     }
     return (s16)r;
+}
+
+/* Item box / stock request window: state x07 (0 idle, 1 wait for the info
+ * message, 2-3 open, 4 pick, 5 erase confirm, 6 close). */
+int item_stock_mv(u16 sw) {
+    PLW *pl;
+    PIT_W *p = lpPit;
+    u8 *st = &lpPit->x07;
+
+    switch (*st) {
+    case 0:
+        if (item_pick_declaration_timer != 0) {
+            item_pick_declaration_timer--;
+        }
+        return 0;
+    case 1:
+        if (p->x54 == 0xFF) {
+            lpPit->x54 = set01_set(1, 0, p->x52);
+            return 0;
+        }
+        if (p->x54 == game_w.info_now) {
+            (*st)++;
+            lpPit->x55 = 6;
+            return 1;
+        }
+        if (Info_stack_ck() == 0) {
+            lpPit->x07++;
+            return 1;
+        }
+        return 0;
+    case 2:
+        if (p->x55 != 0) {
+            p->x55--;
+        }
+        if (lpPit->x54 == game_w.info_now) {
+            return 1;
+        }
+        lpPit->x55 = 0;
+        lpPit->x4F = 0;
+        lpPit->x07++;
+    case 3:
+        lpPit->x55 = (lpPit->x55 + 1) & 0x7F;
+        if (lpPit->x55 < 0x40) {
+            lpPit->x50 = 0x14;
+        } else {
+            lpPit->x50 = (u16)lpPit->x52 + 0x18;
+        }
+        sw = sw & 0xFFFF;
+        Menu_select_mv(&lpPit->x49, sw & 0xC00, 0x14);
+        if (sw & 0x3000) {
+            lpPit->x4F = (lpPit->x4F + 1) & 1;
+            se_req(7, 0x16, 0);
+        }
+        if (sw & 0x20) {
+            if (lpPit->x4F == 0) {
+                lpPit->x50 = 0x15;
+                lpPit->x56 = 0;
+                lpPit->x07++;
+            } else if (lpPit->x4F == 1) {
+                lpPit->x07 = 6;
+            }
+            se_req(7, 0x13, 0);
+        }
+        break;
+    case 4:
+        if (lpPit->x56 != 0) {
+            if ((u16)sw & 0x240) {
+                lpPit->x56 = 0;
+                se_req(7, 0x14, 0);
+            }
+            sw = sw & 0xFFBF & 0xFFFF;
+        } else if ((u16)sw & 0x200) {
+            lpPit->x56 = 1;
+            se_req(7, 9, 0);
+        }
+        Menu_select_mv(&lpPit->x49, sw, 0x14);
+        if ((u16)sw & 0x20) {
+            lpPit->x50 = 0x16;
+            lpPit->x56 = 0;
+            lpPit->yn = 1;
+            lpPit->x07++;
+            se_req(7, 0x13, 0);
+        } else if ((u16)sw & 0x40) {
+            lpPit->x50 = 0x14;
+            lpPit->x55 = 0;
+            lpPit->x07 = 3;
+            se_req(7, 0x14, 0);
+        } else if (lpPit->x56 == 0) {
+            lpPit->x50 = 0x15;
+        } else {
+            lpPit->x50 = get_pl_item_type(lpPit->x49) + 0x18;
+        }
+        break;
+    case 5:
+        lpPit->x50 = 0x16;
+        select_yes_no(sw, 0x3000);
+        if ((u16)sw & 0x20) {
+            if (lpPit->yn == 0) {
+                pl = lpPit->pl;
+                Pl_item_erase(pl, lpPit->x49);
+                Pl_item_stack(pl, lpPit->x52, 1);
+                lpPit->x07 = 6;
+                se_req(7, 0x13, 0);
+            } else {
+                lpPit->x07 = 4;
+                se_req(7, 0x14, 0);
+            }
+        } else if ((u16)sw & 0x40) {
+            lpPit->x07 = 4;
+            se_req(7, 0x14, 0);
+        }
+        break;
+    case 6:
+        *st = 0;
+        return 0;
+    }
+    return 1;
 }
 
 int lb_item_stock_mv(u16 sw) {
