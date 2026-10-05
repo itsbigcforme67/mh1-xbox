@@ -139,6 +139,8 @@ segments:
       - [0x063D20, asm, text/trans_pl_sub]
       - [0x063E40, c, weapon/weapon]
       - [0x06440C, asm, text/weapon_joint_calc]
+      - [0x064D60, c, weapon/weapon2]
+      - [0x064F68, asm, text/pl_item_trans_sub]
       - [0x069230, c, prim/prim_init]
       - [0x069300, asm, text/g_get_prim_ptr]
       - [0x0698B0, c, sys/vib]
