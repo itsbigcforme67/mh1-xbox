@@ -3,7 +3,6 @@
  * (behind the player) camera init and update. */
 #include "cam.h"
 #include "game.h"
-#include "plf.h"
 #include "fl.h"
 
 #ifndef NULL
@@ -81,7 +80,23 @@ s32 Game_clear_ck(s32);
 void cam_plEX_fishing(CAMW *, CAMS *, CAMFISH *);
 void cam_plEX_zoom(CAMW *, CAMS *, CAMZOOM *);
 
+void cpRotMatrix(s32 *, f32 *);
+void flvecApplyMat33(f32 *, f32 *, f32 *);
+int act_ck(PLW *, int, int);
 f32 GetGroundHit(f32 *);
+f32 flArcTan2(f32, f32);
+f32 flArcCos(f32);
+f32 flSqrt(f32);
+extern CAMCNFE stage_camera_data_ex;
+extern CAMCNF cam_cnf_chs;
+void std_cam_sw_set_sub(CAMW *, CAMD_STD *);
+void k_HitEmCamera(f32 *, f32 *, s32);
+void k_HitWallCamera(f32 *, f32 *, f32 *);
+u8 GetWallHitLine(f32 *, f32 *, f32 *, s32);
+void PointToPoint(f32 *, f32 *, f32 *);
+f32 flvecCalcLength(f32 *);
+void cpInterVector(f32, f32 *, f32 *, f32 *);
+
 
 void CameraMove(void) {
     PLW *pl = CameraWork.pl;

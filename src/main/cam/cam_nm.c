@@ -6,6 +6,7 @@
  * copies the winning slot into lpView with the screen quake. */
 #include "cam.h"
 #include "game.h"
+#include "fl.h"
 
 #ifndef NULL
 #define NULL 0
@@ -837,4 +838,292 @@ s32 point_cam_sub(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
         d->cmd = cmd;
     } while (go != 0);
     return r;
+}
+
+/* cam_sub_std: complete, ~65 instructions off (angle smoothing registers,
+ * two stray alignment nops: the `k` switch and the blend-rate if). */
+void cpRotMatrix(s32 *, f32 *);
+void flvecApplyMat33(f32 *, f32 *, f32 *);
+int act_ck(PLW *, int, int);
+f32 GetGroundHit(f32 *);
+f32 flArcTan2(f32, f32);
+f32 flArcCos(f32);
+f32 flSqrt(f32);
+extern CAMCNFE stage_camera_data_ex;
+void std_cam_sw_set_sub(CAMW *, CAMD_STD *);
+void k_HitEmCamera(f32 *, f32 *, s32);
+void k_HitWallCamera(f32 *, f32 *, f32 *);
+u8 GetWallHitLine(f32 *, f32 *, f32 *, s32);
+void PointToPoint(f32 *, f32 *, f32 *);
+f32 flvecCalcLength(f32 *);
+
+void cam_sub_std(CAMW *cw, CAMS *cs) {
+    CAMD_STD *d;
+    PLW *pl;
+    CAMAREA *area;
+    CAMS *o2;
+    f32 in[3];
+    f32 o[3];
+    s32 a[3];
+    f32 hit[3];
+    f32 v[3];
+    FLMAT m;
+    f32 gnd;
+    f32 lim;
+    f32 g;
+    f32 g2;
+    f32 len;
+    f32 t;
+    s32 diff;
+    s32 ca;
+    s32 da;
+    s32 k;
+    s32 f;
+    u8 r;
+    u8 *p;
+    s32 n;
+
+    if (cw->cam_no != 0) {
+        cs->act = 0;
+        cs->step.b = 0;
+        return;
+    }
+    cs->act = 1;
+    d = &cs->d.std;
+    pl = cw->pl;
+    std_cam_sw_set_sub(cw, d);
+    flvecCopy(d->old, d->eye);
+    if (cw->reset != 0) {
+        d->wall = 0;
+        d->ang = pl->x3A8 + 0x7FFF + 1;
+    } else {
+        r = cs->req;
+        if (r != 0xFF) {
+            cs->req = 0xFF;
+            o2 = (CAMS *)((u8 *)cw + (r << 8) + 0x80);
+            cs->ang = d->ang = 10430.378f * flArcTan2(o2->eye[0] - o2->tar[0], o2->eye[2] - o2->tar[2]);
+        } else if (cw->cam_old != 0) {
+            cs->ang = d->ang = 10430.378f * flArcTan2(cw->eye[0] - cw->tar[0], cw->eye[2] - cw->tar[2]);
+        } else if ((d->trg & 8) || pl->x8C8 != 0 || d->wall != 0) {
+            d->wall = 0;
+            d->ang = pl->ang[1] + 0x7FFF + 1;
+        } else {
+            switch (game_w.x0F) {
+            default:
+                k = 0x3B6;
+                break;
+            case 2:
+                k = -0x3B6;
+                break;
+            }
+            if (d->on & 0x800) {
+                d->ang = d->ang + k;
+            }
+            if (d->on & 0x400) {
+                d->ang = d->ang - k;
+            }
+        }
+    }
+    a[0] = 0;
+    a[1] = cs->ang;
+    a[2] = 0;
+    cpRotMatrix(a, (f32 *)&m);
+    area = cw->area;
+    if (area->type != 0) {
+        d->cnf = &cam_cnf_chs;
+    } else {
+        d->cnf = &area->u.cnf;
+    }
+    if (pl->x714 != 0) {
+        d->cnfe = &stage_camera_data_ex;
+    } else {
+        if (game_w.x0F == 0) {
+            if (d->trg & 0x1000) {
+                if (cw->zoom > 0) {
+                    cw->zoom--;
+                }
+            }
+            if (d->trg & 0x2000) {
+                if (cw->zoom < 3) {
+                    cw->zoom++;
+                }
+            }
+        } else {
+            if (d->trg & 0x2000) {
+                if (cw->zoom > 0) {
+                    cw->zoom--;
+                }
+            }
+            if (d->trg & 0x1000) {
+                if (cw->zoom < 3) {
+                    cw->zoom++;
+                }
+            }
+        }
+        if (pl->st == 1 && cw->zoom == 2) {
+            d->cnfe = &d->cnf->e[4];
+        } else {
+            d->cnfe = &d->cnf->e[cw->zoom];
+        }
+    }
+    in[0] = 0;
+    in[1] = d->cnfe->y;
+    in[2] = d->cnfe->z;
+    gnd = d->cnfe->gnd;
+    if (pl->x10 == 0) {
+        d->tar_d[1] = pl->pos[1] + d->cnfe->tar_y;
+    } else {
+        d->tar_d[1] = 140.0f + pl->pos[1];
+    }
+    if (pl->flag604 != 3 && pl->flag604 != 0) {
+        in[0] = 0;
+        in[1] = 400.0f;
+        in[2] = 400.0f;
+        d->tar_d[1] = 100.0f + pl->pos[1];
+    } else if (pl->flag604 != 0 || act_ck(pl, 0, 0x11) != 0 || act_ck(pl, 0, 0x1B) != 0 || act_ck(pl, 0, 0x1E) != 0 || act_ck(pl, 0, 0x3A) != 0) {
+        in[0] = 0;
+        in[1] = 20.0f;
+        in[2] = d->cnfe->z;
+        d->tar_d[1] = 30.0f + pl->pos[1];
+    }
+    flvecApplyMat33(o, in, (f32 *)&m);
+    lim = 100.0f;
+    d->tar_d[0] = pl->pos[0];
+    d->tar_d[2] = pl->pos[2];
+    d->tar[0] = pl->pos[0];
+    d->tar[2] = pl->pos[2];
+    d->eye_d[0] = d->tar_d[0] + o[0];
+    d->eye_d[1] = pl->pos[1] + o[1];
+    d->eye_d[2] = d->tar_d[2] + o[2];
+    g = GetGroundHit(d->tar_d);
+    if (!(g - d->gnd <= -100.0f)) {
+        d->gflag = 0;
+        d->gnd = g;
+    } else {
+        switch (d->gflag) {
+        case 0:
+            d->gflag = 1;
+        case 1:
+            lim = 1000.0f;
+            break;
+        default:
+            d->gflag = 0;
+            d->gnd = g;
+            break;
+        }
+    }
+    g = GetGroundHit(d->eye_d);
+    if (g - d->eye_d[1] < lim) {
+        g = g + gnd;
+        if (!(g <= d->eye_d[1])) {
+            d->eye_d[1] = g;
+        } else {
+            d->gflag = -1;
+        }
+    }
+    ca = cs->ang;
+    da = d->ang;
+    diff = (u16)(da - ca);
+    if (diff >= 0x8001) {
+        cs->ang = ca - (s16)((u16)(ca + 0x10000 - da) / 6);
+    } else {
+        cs->ang = ca + (s16)(diff / 6);
+    }
+    d->tar[1] = d->tar[1] + 0.25f * (d->tar_d[1] - d->tar[1]);
+    d->eye[1] = d->eye[1] + 0.125f * (d->eye_d[1] - d->eye[1]);
+    d->eye[0] = d->eye[0] + (d->eye_d[0] - d->eye[0]);
+    d->eye[2] = d->eye[2] + (d->eye_d[2] - d->eye[2]);
+    k_HitEmCamera(d->eye, d->old, diff);
+    k_HitWallCamera(d->eye, d->old, &d->hit_h);
+    if (game_w.gate_open != 0) {
+        d->wall = GetWallHitLine(d->tar, d->eye, hit, 0xC009);
+    } else {
+        d->wall = GetWallHitLine(d->tar, d->eye, hit, 9);
+    }
+    g = GetGroundHit(d->eye);
+    g2 = g + gnd;
+    if (!(g2 <= d->eye[1])) {
+        d->eye[1] = g2;
+    }
+    if (d->x6E == 0) {
+        lim = 300.0f;
+    } else {
+        lim = 400.0f;
+        d->x6E = 0;
+    }
+    PointToPoint(v, d->tar, d->eye);
+    len = flvecCalcLength(v);
+    if (len < lim) {
+        f32 *vp = &v[1];
+        f32 x2, y2, z2;
+        x2 = v[0] * v[0];
+        y2 = *vp * *vp;
+        z2 = v[2] * v[2];
+        if (1.1780972f < flArcCos(flSqrt((x2 + z2) / (z2 + (x2 + y2))))) {
+            d->x6E = 1;
+            len = len * flSin(1.1780972f);
+            if (*vp < 0.0f) {
+                d->tar[1] = d->eye[1] - len;
+            } else {
+                d->tar[1] = d->eye[1] + len;
+            }
+        }
+    }
+    if (cw->area_chg != 0) {
+        f = 0xF;
+        if (area != NULL) {
+            p = area->blend;
+            if (p != NULL) {
+                n = 16;
+                do {
+                    if (p[0] == cw->area_old) {
+                        f = p[1];
+                        break;
+                    }
+                    p += 2;
+                    n--;
+                } while (n != 0);
+            }
+        }
+        if (f != 1) {
+            if (f != 0) {
+                cs->step.b = 1;
+                cs->cnt = f - 1;
+                d->rate = 1.0f / (f32)f;
+            } else {
+                cs->step.b = 0;
+            }
+        } else {
+            cs->step.b = 0;
+        }
+    }
+    if (!(d->hit_h <= 250.0f)) {
+        d->hit_h = 250.0f;
+    }
+    flvecCopy(cs->eye, d->eye);
+    flvecCopy(cs->tar, d->tar);
+    cs->eye[1] += d->hit_h;
+    switch (cs->step.b) {
+    case 0:
+        cs->roll = d->roll;
+        cs->fov = d->fov;
+        return;
+    case 1:
+        flvecCopy(cs->eye_f, cw->eye);
+        flvecCopy(cs->tar_f, cw->tar);
+        cs->roll_f = cw->roll;
+        cs->fov_f = cw->fov;
+        cs->step.b++;
+    case 2:
+        t = (f32)cs->cnt * d->rate;
+        cpInterVector(t, cs->eye, cs->eye_f, cs->eye);
+        cpInterVector(t, cs->tar, cs->tar_f, cs->tar);
+        cs->roll = cs->roll_f * t + d->roll * (1.0f - t);
+        cs->fov = cs->fov_f * t + d->fov * (1.0f - t);
+        cs->cnt--;
+        if (cs->cnt == 0) {
+            cs->step.b = 0;
+        }
+        return;
+    }
 }
