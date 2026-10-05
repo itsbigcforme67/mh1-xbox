@@ -53,7 +53,7 @@ typedef struct QUEST_W {
     s16 x36;            /* 0x36 condition program counter, -1 done */
     s16 x38;            /* 0x38 */
     s8 x3A;             /* 0x3A */
-    u8 _pad3B;
+    s8 x3B;             /* 0x3B number of pick points in stiem_stack_tbl */
     void *x3C;          /* 0x3C last monster (EMW) that counted */
     s32 x40;            /* 0x40 flags from the mission info (bit 1: ...) */
     u8 _pad44[0x64 - 0x44];
@@ -114,6 +114,22 @@ typedef struct QEM {
     s16 x2C;            /* 0x2C */
     s16 x2E;            /* 0x2E flags: 1 gone, 2, 4 dead, 8 captured */
 } QEM;
+
+/* One extra pick-up point (StiEM_data[20], 0x1C bytes): treasure/hagi spot
+ * with a radius, an item id (bit 15: ...) and a remaining count. Guesses. */
+typedef struct STIEM {
+    f32 pos[3];         /* 0x00 */
+    f32 rad;            /* 0x0C pick radius */
+    u16 id;             /* 0x10 item id, 0xFFFF = free */
+    u16 cnt;            /* 0x12 remaining picks (0xFF: endless) */
+    s16 x14;            /* 0x14 */
+    u8 _pad16[2];
+    u8 stg;             /* 0x18 stage */
+    u8 x19;             /* 0x19 flags */
+    s16 x1A;            /* 0x1A */
+} STIEM;
+extern STIEM StiEM_data[20];
+extern s8 stiem_stack_tbl[20];
 
 extern u8 *mission_area;
 #endif

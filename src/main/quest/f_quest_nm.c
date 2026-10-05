@@ -757,17 +757,17 @@ int n;
 }
 
 extern s8 item_regained_tbl[8];
-extern char func_5C5E20[];
+char *func_5C5E20();
 void adx_se_set();
-int Share_item_num_ck();
+s16 Share_item_num_ck();
 int share_item_ck_ck();
-int Quest_share_item_num_ck();
+s16 Quest_share_item_num_ck();
 int Share_item_stack();
 
 char *Quest_str_get(int n)
 {
     if (game_w.x1DC) {
-        return ((char *(*)())func_5C5E20)();
+        return func_5C5E20();
     }
     return (char *)(quest_w.x84[n] + (int)mission_area);
 }
@@ -840,7 +840,7 @@ int stolen_item_stack(int item, s16 num)
 
 void Item_stolen(pl, item, num)
 void *pl;
-s16 item;
+int item;
 s16 num;
 {
     game_w.xCC = item;
@@ -926,4 +926,537 @@ PLW *pl;
     if (Pl_master_ck(pl) == 1) {
         set01_set(0, 0, 0);
     }
+}
+
+int Share_item_stack(pl, item, num)
+PLW *pl;
+int item;
+s16 num;
+{
+    s16 room;
+    s16 i;
+    int have;
+    s16 base;
+
+    have = (s16)Share_item_num_ck(item, share_item_ck_ck());
+    room = quest_w.x24[Quest_share_item_num_ck(item)] - have;
+    if (room <= 0) {
+        return 0;
+    }
+    i = 0;
+    if (Share_item_num_ck(item, 1) == 0) {
+        for (i = 0; i < 4; i++) {
+            if (pl->share[i].id == 0) {
+                pl->share[i].id = item;
+                if (num >= room) {
+                    num = room;
+                }
+                pl->share[i].num = (s8)num;
+                Pl_item_stack(pl, item, -num);
+                return (u16)num;
+            }
+        }
+    } else {
+        for (i = 0; i < 4; i++) {
+            if (pl->share[i].id == (u16)item) {
+                if (num >= room) {
+                    num = room;
+                }
+                pl->share[i].num += (s8)num;
+                Pl_item_stack(pl, item, -num);
+                return (u16)num;
+            }
+        }
+    }
+    return (u16)num;
+}
+
+int Net_Share_item_stack(pl, item, num)
+PLW *pl;
+int item;
+s16 num;
+{
+    s16 room;
+    s16 i;
+    int have;
+    s16 cur;
+    int r;
+
+    have = (s16)Share_item_num_ck(item, share_item_ck_ck());
+    room = quest_w.x24[Quest_share_item_num_ck(item)] - have;
+    if (room <= 0) {
+        return 2;
+    }
+    cur = 0;
+    for (i = 0; i < 4; i++) {
+        if (pl->share[i].id == (u16)item) {
+            cur = pl->share[i].num;
+        }
+    }
+    r = 0;
+    if (cur == 0) {
+        for (i = 0; i < 4; i++) {
+            if (pl->share[i].id == 0) {
+                pl->share[i].id = item;
+                if (num >= room) {
+                    r = 2;
+                }
+                pl->share[i].num = (s8)num;
+                return r;
+            }
+        }
+        return 0;
+    }
+    r = 1;
+    for (i = 0; i < 4; i++) {
+        if (pl->share[i].id == (u16)item) {
+            if (num >= room) {
+                r = 2;
+            }
+            pl->share[i].num = (s8)num;
+            return r;
+        }
+    }
+    return 1;
+}
+
+s16 Share_item_num_ck(item, mode)
+int item;
+int mode;
+{
+    int i;
+    int j;
+    s16 sum = 0;
+    PLW *pl;
+
+    switch (mode) {
+    case 0:
+        for (i = 0; i < game_w.pl_num; i++) {
+            pl = &player_work[i];
+            for (j = 0; j < 4; j++) {
+                if (pl->share[j].id == (u16)item) {
+                    sum += pl->share[j].num;
+                }
+            }
+        }
+        return sum;
+    case 1:
+        pl = &player_work[game_w.master];
+        for (j = 0; j < 4; j++) {
+            if (pl->share[j].id == (u16)item) {
+                return pl->share[j].num;
+            }
+        }
+        return 0;
+    default:
+        pl = &player_work[mode - 2];
+        for (j = 0; j < 4; j++) {
+            if (pl->share[j].id == (u16)item) {
+                return pl->share[j].num;
+            }
+        }
+        return 0;
+    }
+}
+
+int share_item_ck_ck(void)
+{
+    return (quest_w.x40 & 0x100) != 0;
+}
+
+s16 Quest_share_item_num_ck(item)
+int item;
+{
+    s16 i;
+    u8 *q;
+
+    for (i = 0, q = (u8 *)&quest_w; i < 4; i++, q += 2) {
+        if (*(s16 *)(q + 0x1C) == (u16)item) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void Share_item_conv(pl)
+PLW *pl;
+{
+    int i;
+    int j;
+    int any;
+    u8 *q;
+
+    if (Quest_clear_ck(1) == 0) {
+        any = 0;
+        for (i = 0, q = (u8 *)&quest_w; i < 4; i++, q += 2) {
+            if (*(s16 *)(q + 0x1C) != 0) {
+                for (j = 0; j < 20; j++) {
+                    if (pl->item[j].id == *(s16 *)(q + 0x1C) && (u16)Share_item_stack(pl, pl->item[j].id, pl->item[j].num) > 0) {
+                        any = 1;
+                        quest_w.x182 = 0;
+                        quest_w.x181 = 9;
+                        quest_w.x184 = *(s16 *)(q + 0x1C);
+                        quest_w.x186 = Share_item_num_ck((u16) * (s16 *)(q + 0x1C), 1);
+                        net_send_sys(6, game_w.master);
+                        set01_set(1, 8, *(s16 *)(q + 0x1C));
+                    }
+                }
+            }
+        }
+        if (any != 0) {
+            adx_se_set(pl, 7);
+        }
+    }
+}
+
+void Ext_pick_point_init(void)
+{
+    s8 *t;
+    STIEM *s;
+    int i;
+
+    quest_w.x3B = 0;
+    s = StiEM_data;
+    t = stiem_stack_tbl;
+    for (i = 0; i < 20; i += 5) {
+        s[0].id = 0xFFFF;
+        t[0] = -1;
+        s[1].id = 0xFFFF;
+        t[1] = -1;
+        s += 2;
+        s[0].id = 0xFFFF;
+        t[2] = -1;
+        s[1].id = 0xFFFF;
+        t[3] = -1;
+        s += 2;
+        s[0].id = 0xFFFF;
+        t[4] = -1;
+        s += 1;
+        t += 5;
+    }
+}
+
+typedef struct HAGI {
+    u16 id;             /* 0x00 */
+    u16 cnt;            /* 0x02 */
+    f32 rad;            /* 0x04 */
+    s16 x08;            /* 0x08 */
+    u8 x0A;             /* 0x0A */
+    u8 joint;           /* 0x0B */
+} HAGI;
+extern HAGI *em_hagi_type_tbl[];
+void get_joint_pos_em();
+void ext_pick_point_fifo_ck();
+void ext_pick_point_tbl_set();
+void ext_pick_point_tbl_clr_ex();
+void ext_pick_point_tbl_clr();
+void Ext_pick_point_clr();
+void Ext_pick_point_pos();
+void Em_hagi_point_clr();
+f32 flSqrt(f32);
+int Item_get_ck();
+
+int Ext_pick_point_set(a, pos)
+STIEM *a;
+f32 *pos;
+{
+    int i;
+    STIEM *s = StiEM_data;
+
+    ext_pick_point_fifo_ck();
+    for (i = 0; i < 20; i++, s++) {
+        if (s->id == 0xFFFF) {
+            if (pos == 0) {
+                s->pos[0] = a->pos[0];
+                s->pos[1] = a->pos[1];
+                s->pos[2] = a->pos[2];
+            } else {
+                s->pos[0] = pos[0];
+                s->pos[1] = pos[1];
+                s->pos[2] = pos[2];
+            }
+            s->rad = a->rad;
+            s->id = a->id;
+            s->cnt = a->cnt;
+            s->x14 = 2;
+            s->stg = a->stg;
+            s->x19 = a->x19;
+            s->x1A = a->x1A;
+            ext_pick_point_tbl_set((s8)i);
+            return i;
+        }
+    }
+    return -1;
+}
+
+u16 Ext_pick_point_cnt_ck(n)
+int n;
+{
+    return StiEM_data[n].cnt;
+}
+
+void Ext_pick_point_clr(n)
+int n;
+{
+    if (n != -1) {
+        StiEM_data[n].id = 0xFFFF;
+        ext_pick_point_tbl_clr_ex((s8)n);
+    }
+}
+
+void Ext_pick_point_pos(n, p)
+int n;
+f32 *p;
+{
+    StiEM_data[n].pos[0] = p[0];
+    StiEM_data[n].pos[1] = p[1];
+    StiEM_data[n].pos[2] = p[2];
+}
+
+void Ext_pick_point_st(n, st)
+int n;
+s8 st;
+{
+    StiEM_data[n].stg = st;
+}
+
+u16 Ext_pick_point_ck(pl)
+PLW *pl;
+{
+    STIEM *s;
+    int i;
+    f32 dx, dz;
+    u16 r;
+
+    s = StiEM_data;
+    for (i = 0; i < 20; i++, s++) {
+        if (s->id != 0xFFFF && s->stg == pl->stg) {
+            if (!(pl->pos[1] < s->pos[1] - 200.0f) && pl->pos[1] < s->pos[1] + 100.0f) {
+                dx = pl->pos[0] - s->pos[0];
+                dz = pl->pos[2] - s->pos[2];
+                if (flSqrt(dx * dx + dz * dz) <= s->rad) {
+                    r = s->id;
+                    if (pl->pos[1] + 80.0f <= s->pos[1]) {
+                        r |= 0x8000;
+                    }
+                    return r;
+                }
+            }
+        }
+    }
+    return 0xFFFF;
+}
+
+int Ext_pick_point_ck2(pl)
+PLW *pl;
+{
+    STIEM *s;
+    int i;
+    f32 dx, dz;
+    int r;
+    u16 c;
+
+    s = StiEM_data;
+    for (i = 0; i < 20; i++, s++) {
+        if (s->id != 0xFFFF && s->stg == pl->stg) {
+            if (!(pl->pos[1] < s->pos[1] - 200.0f) && pl->pos[1] < s->pos[1] + 100.0f) {
+                dx = pl->pos[0] - s->pos[0];
+                dz = pl->pos[2] - s->pos[2];
+                if (flSqrt(dx * dx + dz * dz) <= s->rad) {
+                    if ((s32)s->cnt > 0) {
+                        c = s->cnt;
+                        r = Item_get_ck(s->id & 0x7FFF) & 0xFFFF;
+                        if (c != 0xFF) {
+                            s->cnt = c - 1;
+                        }
+                    } else {
+                        r = 0xFFFE & 0xFFFF;
+                    }
+                    return r;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+void ext_pick_point_fifo_ck(void)
+{
+    int n;
+    int i;
+    s8 *t;
+
+    n = quest_w.x3B - 1;
+    if (quest_w.x3B >= 20) {
+        i = 0;
+        if (n > 0) {
+            t = stiem_stack_tbl;
+            for (; i < n; i++, t++) {
+                if (!(StiEM_data[*t].x19 & 1)) {
+                    break;
+                }
+            }
+        }
+        Ext_pick_point_clr(stiem_stack_tbl[i]);
+    }
+}
+
+void ext_pick_point_tbl_clr(n)
+s8 n;
+{
+    int last;
+    s8 *t;
+
+    last = quest_w.x3B - 1;
+    if (n < last) {
+        t = stiem_stack_tbl + n;
+        do {
+            n++;
+            t[0] = t[1];
+            t++;
+        } while (n < last);
+    }
+    stiem_stack_tbl[n] = -1;
+    quest_w.x3B--;
+}
+
+void ext_pick_point_tbl_clr_ex(n)
+int n;
+{
+    int i;
+    s8 *t;
+
+    i = 0;
+    if (quest_w.x3B >= 1) {
+        t = stiem_stack_tbl;
+        do {
+            if ((s8)n == *t) {
+                ext_pick_point_tbl_clr((s8)i);
+                return;
+            }
+            i++;
+            t++;
+        } while (i < quest_w.x3B);
+    }
+}
+
+void Ext_pick_point_st_clr(void)
+{
+    int i;
+    s8 *t;
+
+    i = quest_w.x3B - 1;
+    if (i >= 0) {
+        t = stiem_stack_tbl + i;
+        do {
+            if (!(StiEM_data[*t].x19 & 1)) {
+                Ext_pick_point_clr(*t);
+            }
+            i--;
+            t--;
+        } while (i >= 0);
+    }
+}
+
+void ext_pick_point_tbl_set(n)
+s8 n;
+{
+    stiem_stack_tbl[quest_w.x3B] = n;
+    quest_w.x3B++;
+}
+
+s8 Em_hagi_point_set(em, n)
+EMW *em;
+int n;
+{
+    STIEM sp;
+    f32 jp[3];
+    u8 *h;
+    u8 kind;
+
+    kind = em->kind;
+    h = (u8 *)em_hagi_type_tbl[kind];
+    if (h == 0) {
+        em->x88D = -1;
+    } else {
+    if (quest_w.x14E > 0) {
+        h += 0xC;
+    }
+    if (kind == 3 && em->type == 1) {
+        h += 0x18;
+    }
+    h += n * 0xC;
+    sp.rad = *(f32 *)(h + 4);
+    sp.id = *(u16 *)h;
+    sp.cnt = *(u16 *)(h + 2);
+    sp.stg = em->stg;
+    sp.x1A = *(s16 *)(h + 8);
+    sp.x19 = h[0xA];
+    em->x876 = h[0xB];
+    if (em->x876 != 0) {
+        get_joint_pos_em(em, em->x876, jp);
+        jp[1] = em->x5AC;
+        em->x88D = Ext_pick_point_set(&sp, jp);
+    } else {
+        em->x88D = Ext_pick_point_set(&sp, em->pos);
+    }
+    }
+    return em->x88D;
+}
+
+int Em_tail_hagi_point_set(tail)
+u8 *tail;
+{
+    STIEM sp;
+    u8 *h;
+
+    h = (u8 *)em_hagi_type_tbl[(*(EMW **)(tail + 0x34))->kind];
+    if (h == 0) {
+        return -1;
+    }
+    h += 0x18;
+    if (quest_w.x14E > 0) {
+        h += 0xC;
+    }
+    sp.rad = *(f32 *)(h + 4);
+    sp.id = *(u16 *)h;
+    sp.cnt = *(u16 *)(h + 2);
+    sp.stg = tail[6];
+    sp.x1A = *(s16 *)(h + 8);
+    sp.x19 = h[0xA];
+    return Ext_pick_point_set(&sp, (f32 *)(tail + 0x24));
+}
+
+int Em_hagi_point_cnt_ck(em)
+EMW *em;
+{
+    s8 n;
+    f32 jp[3];
+    int r;
+
+    r = -1;
+    n = em->x88D;
+    if (n != -1) {
+        if ((s32)StiEM_data[n].cnt <= 0) {
+            Em_hagi_point_clr(em);
+            return -1;
+        }
+        if (em->x876 != 0) {
+            get_joint_pos_em(em->x876, jp);
+            jp[1] = em->x5AC;
+            Ext_pick_point_pos(em->x88D, jp);
+        } else {
+            Ext_pick_point_pos(n, em->pos);
+        }
+        r = StiEM_data[em->x88D].cnt;
+        return r;
+    }
+    return r;
+}
+
+void Em_hagi_point_clr(em)
+EMW *em;
+{
+    Ext_pick_point_clr(em->x88D);
+    em->x88D = -1;
 }
