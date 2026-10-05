@@ -1227,7 +1227,7 @@ static void em_mv02_005B71D0(EMW *em, EM14W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            em14_tossin_move(temp_a1);
+            em14_tossin_move(em);
             if (w->dist <= 0.0f) {
                 em->work08 = 1;
                 goto block_11;
@@ -1330,7 +1330,7 @@ static void em_mv04_005B75B0(EMW *em, EM14W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            em14_tossin_move(temp_a1);
+            em14_tossin_move(em);
             if (w->dist <= 0.0f) {
                 em->work08 = 1;
                 goto block_11;
@@ -2198,7 +2198,7 @@ static void em_atk15_005B9110(EMW *em, EM14W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            em14_tossin_move(temp_a1);
+            em14_tossin_move(em);
             if (w->dist <= 0.0f) {
                 em->work08 = 1;
                 goto block_11;
@@ -2240,7 +2240,7 @@ static void em_atk16_005B9250(EMW *em, EM14W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            em14_tossin_move(temp_a1);
+            em14_tossin_move(em);
             if (w->dist <= 0.0f) {
                 em->work08 = 1;
                 goto block_11;
@@ -2282,7 +2282,7 @@ static void em_atk17_005B9390(EMW *em, EM14W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            em14_tossin_move(temp_a1);
+            em14_tossin_move(em);
             if (w->dist <= 0.0f) {
                 em->work08 = 1;
                 goto block_11;

@@ -1832,7 +1832,7 @@ static void em_fly02_005DD310(EMW *em, EM17W *w) {
         w->x18 = 0;
         break;
     case 1:
-        em17_fly_adjy(1, temp_a2);
+        em17_fly_adjy(em, 1);
         temp_v0 = em->work08 - 1;
         em->work08 = temp_v0;
         if (temp_v0 <= 0) {
@@ -1845,7 +1845,7 @@ static void em_fly02_005DD310(EMW *em, EM17W *w) {
         }
         break;
     case 2:
-        em17_fly_adjy(1, temp_a2);
+        em17_fly_adjy(em, 1);
         em17_senkai_target(em);
         break;
     }

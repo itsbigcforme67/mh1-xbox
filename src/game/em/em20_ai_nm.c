@@ -2115,7 +2115,7 @@ static void em_fly02_005EF900(EMW *em, EM20W *w) {
         w->x18 = 0;
         break;
     case 1:
-        em20_fly_adjy(1, temp_a2);
+        em20_fly_adjy(em, 1);
         temp_v0 = em->work08 - 1;
         em->work08 = temp_v0;
         if (temp_v0 <= 0) {
@@ -2128,7 +2128,7 @@ static void em_fly02_005EF900(EMW *em, EM20W *w) {
         }
         break;
     case 2:
-        em20_fly_adjy(1, temp_a2);
+        em20_fly_adjy(em, 1);
         em20_senkai_target(em);
         break;
     }
@@ -3352,6 +3352,7 @@ static void em_atk00_005F2040(EMW *em, EM20W *w) {
 }
 
 static void em_atk02_005F20E0(EMW *em, EM20W *w) {
+    f32 dd;
     f32 temp_f1;
     u8 temp_a2;
     u8 temp_v1;
@@ -3366,7 +3367,7 @@ static void em_atk02_005F20E0(EMW *em, EM20W *w) {
             em->x388 = 0;
             /* fallthrough */
         case 1:                                     /* switch 2 */
-            if (em20_horm_main(em, 1, temp_a2) != 0) {
+            if (em20_horm_main(em) != 0) {
                 em->x3F4 = 0;
                 em->x05 += 1;
                 em_char_set(em, 0x28, 0, 0);
@@ -3386,8 +3387,9 @@ static void em_atk02_005F20E0(EMW *em, EM20W *w) {
         }
         break;
     case 2:                                         /* switch 1 */
-        w->dist = (f32) (w->dist - em->adj_z);
-        em20_fly_adjy2(1, temp_a2);
+        dd = em->adj_z;
+        w->dist = w->dist - dd;
+        em20_fly_adjy2(em);
         if (w->dist <= 0.0f) {
             em->x05 += 1;
             em->x3C0[1] = -10.0f;
