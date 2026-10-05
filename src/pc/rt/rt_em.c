@@ -273,8 +273,6 @@ WEAK int Em_hagi_point_cnt_ck(EMW *em) { (void)em; return -1; }
 WEAK void Quest_enemy_capture(EMW *em) { fprintf(stderr, "rt_em: monster %d (kind %d) captured\n", em->id, em->kind); }
 /* Quest_enemy_hagi_set (main 0x2276C0): quest_w+0x13C |= b */
 WEAK void Quest_enemy_hagi_set(int a, int b) { (void)a; quest_w.x13C |= b; }
-/* Event_flag_ck: user-data event flags; no save data on the PC: none set. */
-WEAK int Event_flag_ck(int n) { (void)n; return 0; }
 /* WyvernAreaMove (menu16.c): the map's monster-moved marker; no map yet. */
 WEAK void WyvernAreaMove(void *em) { (void)em; }
 /* wyvern_kill_cnt_up (ud_nm.c): online-only kill counter. */
@@ -287,41 +285,53 @@ WEAK void wyvern_kill_cnt_up(void *u, int n) { (void)u; (void)n; }
  * mission_area and quest_w's table pointers set from its header as
  * Quest_init does (x64 header, x74 per-stage monster lists, x78 the
  * quest's own (big) monsters, x80 stage data, x94 info, x14E). */
-uint8_t *rt_file_load(int idx, size_t *n);
-extern s16 questName[];
-static u8 *mission;
+void rt_quest_mem_init(void);
+void Quest_init(void);
+void Quest_start(void);
+void Quest_timer_reset(void);
+void Quest_em_init_set(int stage);
+s32 *Em_data_com_adrs_get(s32 *p, int which);
 
+/* --quest N: the game's own quest start. Quest_init (free-hunt tables),
+ * then Quest_start as game11 runs it (select_w+0xAC = quest number): it
+ * loads the mission file questName[no] into mission_area, points quest_w
+ * at its tables, sets the stage (Quest_pl_stage_init), the time limit and
+ * the monster states (quest_em_init). src/main/quest/f_quest*_nm.c. */
 int rt_quest_load(int no)
 {
-    size_t n = 0;
-    MISSION *m;
     if (no <= 0 || no >= 0xB2)
         return -1;
-    free(mission);
-    mission = rt_file_load(questName[no], &n);
-    if (!mission || n < sizeof(MISSION))
-        return -1;
-    m = (MISSION *)mission;
-    quest_w.no = (s16)no;
-    quest_w.x64 = m;
-    quest_w.x94 = (MISSION2 *)(mission + m->o[0]);
-    quest_w.x74 = (s32 *)(mission + m->o[5]);
-    quest_w.x78 = (s32 *)(mission + m->o[6]);
-    quest_w.x80 = (s32 *)(mission + m->o[8]);
-    quest_w.x14E = (s8)m->o[13];
-    quest_w.x3A = 0;
-    return 0;
+    rt_quest_mem_init();
+    Quest_init();
+    game_w.master = 0;
+    game_w.pl_num = 1;
+    game_w.pl_state[0] = 1;
+    *((u8 *)&select_w + 0xAC) = (u8)no;
+    *((u8 *)&select_w + 0xAD) = 0;
+    Quest_start();
+    /* game13's start of the hunt: mode 2 (game2), timers */
+    game_w.mode = 2;
+    game_w.step = 0;
+    Quest_timer_reset();
+    return quest_w.no == no && quest_w.x94 ? 0 : -1;
 }
 
-/* Em_data_com_adrs_get (main 0x226A00): list `which` (0 model kinds,
- * 1 QEM entries) of the quest's own monsters, NULL for none */
+/* no quest (free play in the viewer): Quest_init's free-hunt tables, so
+ * the HUD and quest helpers have their data */
+void rt_quest_free_hunt(void)
+{
+    rt_quest_mem_init();
+    Quest_init();
+}
+
+/* the quest's own monsters (QEM list 1 of quest_w.x78), NULL for none */
 static void *quest_com_list(int which)
 {
-    s32 off;
-    if (!mission || quest_w.no == 0)
+    s32 *p;
+    if (quest_w.no == 0)
         return NULL;
-    off = quest_w.x78[which ? 3 : 2];
-    return off == 0 || off == -1 ? NULL : mission + off;
+    p = Em_data_com_adrs_get(quest_w.x78, which);
+    return p == NULL || p == (s32 *)-1 ? NULL : p;
 }
 
 /* The quest's first own monster (QEM, 0x3C bytes): its stage (QEM+7)
@@ -369,30 +379,40 @@ EMW *rt_monster_spawn_qem(const QEM *q)
  * Returns the em_work index or -1. */
 int rt_monster_spawn(int kind, const float pos[3], int ang_y)
 {
-    QEM *q = quest_com_list(1), dflt;
+    QEM *q, dflt;
     EMW *em;
-    for (; q && q->id >= 0; q++)
-        if ((u8)q->x07 == game_w.stage)
-            break;
-    if (!q || q->id < 0) {
-        memset(&dflt, 0, sizeof dflt);
-        dflt.id = (s16)kind;
-        dflt.pos[0] = pos[0];
-        dflt.pos[1] = pos[1];
-        dflt.pos[2] = pos[2];
-        dflt.x1C = ang_y & 0xFFFF;
-        q = &dflt;
+    if (quest_w.no != 0) {
+        /* the quest's monsters, as the game sets them up when the stage
+         * is entered: station_em_set (the quest's own) + Quest_next_em_set
+         * (the stage's small monsters) -> Em_direct_set */
+        int i;
+        Quest_em_init_set(game_w.stage);
+        for (i = 0; i < 20; i++)
+            if (em_work[i].be_flag && getenv("RT_EM_TRACE"))
+                fprintf(stderr, "rt_em: quest monster %d kind %d stage %d at %.0f %.0f %.0f hp %d\n",
+                        i, em_work[i].kind, em_work[i].stg, em_work[i].pos[0], em_work[i].pos[1],
+                        em_work[i].pos[2], PS16(&em_work[i], 0x302));
+        em = &em_work[0];
+        if (!em->be_flag)
+            return -1;
+        if (getenv("RT_EM_POS")) {      /* test aid: monster 0 at the given x,z */
+            sscanf(getenv("RT_EM_POS"), "%f,%f", &em->pos[0], &em->pos[2]);
+        }
+        if (getenv("RT_EM_HP"))         /* test aid: monster 0's hit points */
+            PS16(em, 0x302) = (s16)atoi(getenv("RT_EM_HP"));
+        return 0;
     }
-    if (getenv("RT_EM_POS") && q != &dflt) {   /* test aid: the quest's monster at the given x,z */
-        dflt = *q;
-        sscanf(getenv("RT_EM_POS"), "%f,%f", &dflt.pos[0], &dflt.pos[2]);
-        q = &dflt;
-    }
+    q = &dflt;
+    memset(&dflt, 0, sizeof dflt);
+    dflt.id = (s16)kind;
+    dflt.pos[0] = pos[0];
+    dflt.pos[1] = pos[1];
+    dflt.pos[2] = pos[2];
+    dflt.x1C = ang_y & 0xFFFF;
     em = rt_monster_spawn_qem(q);
     if (!em)
         return -1;
-    if (quest_w.no == 0)            /* em_status_init zeroes the angle in free hunts */
-        em->ang[1] = q->x1C;
+    em->ang[1] = q->x1C;            /* em_status_init zeroes the angle in free hunts */
     if (getenv("RT_EM_TRACE"))
         fprintf(stderr, "rt_em: monster %d kind %d at %.0f %.0f %.0f ang %04X hp %d/%d\n",
                 em->id, em->kind, em->pos[0], em->pos[1], em->pos[2], em->ang[1] & 0xFFFF,
@@ -430,4 +450,19 @@ void em_sleep_eff_set(EMW *em, int a, f32 *pos, f32 scale)
     u16 t = *(u16 *)((u8 *)&game_w + 0x1E) % 90;
     if (t == 0 || t == 10 || t == 20)
         Eft06_set2(scale, em, 4, a, pos);
+}
+
+/* drawn by the host: the work is in use and on the current stage */
+int rt_monster_shown(int no)
+{
+    EMW *em = &em_work[no];
+    return em->be_flag && em->stg == game_w.stage;
+}
+
+/* all em_work slots free (the host's quest restart) */
+void rt_monster_clear_all(void)
+{
+    int i;
+    for (i = 0; i < 20; i++)
+        em_work[i].be_flag = 0;
 }
