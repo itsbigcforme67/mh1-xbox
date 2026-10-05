@@ -101,3 +101,9 @@ _set_sub_em, _set_pos_em.
   split, eft13_set/Eft13_set_scl need `int j` to keep the raw pass-through.
 - game_w+0x1E is read as a u16 here (`*(u16 *)&game_w.x1E`); game.h names
   it as a u8 (eft12), left unchanged.
+
+## eft20 (0x218590-0x21D464) - 9/13 match
+Monster dust/debris, sibling of eft13. Built: eft20.c (move, se_req),
+eft20b.c (d/e), eft20c.c (water_ck), eft20d.c (Eft20_set/_set2/_set_pl,
+water_set). Not attempted (big): eft20_i (4.3 KB), _m (4.6 KB), _t (5.1 KB),
+_pos_set (3.5 KB). Same lessons as eft13 (func_544C90 calls, `sc` local).

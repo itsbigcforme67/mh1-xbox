@@ -128,3 +128,7 @@ main 0x00107980 0x00107C50 eft/eft13c
 main 0x00108620 0x001087C0 eft/eft13d
 main 0x001097D0 0x00109E28 eft/eft13e
 main:rodata 0x00357D70 0x00357D98 eft/eft13e
+main 0x00218590 0x0021866C eft/eft20
+main 0x0021A950 0x0021A9E8 eft/eft20b
+main 0x0021BE10 0x0021BF50 eft/eft20c
+main 0x0021CD40 0x0021D464 eft/eft20d
