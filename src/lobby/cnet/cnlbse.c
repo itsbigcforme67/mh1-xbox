@@ -1,5 +1,6 @@
 /* cnlbs, run 5: cnLBS_RequestPersonalDataChange .. _cnet_RecvFromLbs_AnswerPersonalDataChange (lobby.bin 0x005A3400-0x005A34C8): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 int cnLBS_RequestPersonalDataChange(int arg0) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg0);

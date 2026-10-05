@@ -1,5 +1,6 @@
 /* cnlbs, run 19: cnLBS_Get_AllocationProgressCount .. _cnet_CallBack_Result_RoomRuleCaption (lobby.bin 0x005A7B00-0x005A7B98): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 int cnLBS_Get_AllocationProgressCount(u16 *arg0) {
     *arg0 = CNW(u16, 0x1032);

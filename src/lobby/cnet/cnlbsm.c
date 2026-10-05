@@ -1,5 +1,6 @@
 /* cnlbs, run 13: cnLBS_Set_RoomProperty .. _cnet_RecvFromLbs_NoticeRoomLeaver (lobby.bin 0x005A5740-0x005A5898): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 int cnLBS_Set_RoomProperty(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);

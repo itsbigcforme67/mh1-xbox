@@ -1,5 +1,6 @@
 /* cnlbs, run 22: __cnet_SendReq_PieceEntry .. __cnet_Recv_LobbyMember (lobby.bin 0x005A89C0-0x005A973C): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 int __cnet_SendReq_PieceEntry(kind, arg1)
 int kind;

@@ -1,5 +1,6 @@
 /* cnlbs, run 23: _cnet_RecvFromLbs_NoticeLobbyLeaver .. __cnet_SendReq_MatchEntryUser (lobby.bin 0x005A9860-0x005A9AE8): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 void _cnet_RecvFromLbs_NoticeLobbyLeaver(void) {
     _sub_InOutRoomMember(1);

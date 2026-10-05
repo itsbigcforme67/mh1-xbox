@@ -1,5 +1,6 @@
 /* cnlbs, run 10: _cnet_RecvFromLbs_AnswerRoomCreate .. _cnet_RecvFromLbs_AnswerRoomCreate (lobby.bin 0x005A5320-0x005A5354): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 void _cnet_RecvFromLbs_AnswerRoomCreate(void) {
     if (CNW(s8, 0xFEC) == 0) {

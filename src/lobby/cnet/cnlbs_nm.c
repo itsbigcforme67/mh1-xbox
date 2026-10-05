@@ -1,6 +1,7 @@
 /* cnlbs - lobby.bin network layer 0x005A2A20-0x005AE320: the protocol layer of the online lobby client.
  * cnLBS_* start a request, __cnet_SendReq_* build the packet, _cnet_RecvFromLbs_* handle replies. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 void _cnet_RecvFromLbs_NoticeMailMessage(void) {
     __cnet_Recv_MailMessage();

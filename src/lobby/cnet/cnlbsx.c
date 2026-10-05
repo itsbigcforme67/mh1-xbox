@@ -1,5 +1,6 @@
 /* cnlbs, run 24: _cnet_RecvFromLbs_NoticeRoomMatchEntryTypeList .. cnLBS_Read_CurrentPlace (lobby.bin 0x005A9C00-0x005AA008): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 void _cnet_RecvFromLbs_NoticeRoomMatchEntryTypeList(void) {
     u16 id;

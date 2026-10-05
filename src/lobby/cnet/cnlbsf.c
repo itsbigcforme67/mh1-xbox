@@ -1,5 +1,6 @@
 /* cnlbs, run 6: __cnet_SendSet_PersonalDataName .. _cnet_CallBack_Result_PersonalDataChange (lobby.bin 0x005A3570-0x005A3888): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 void __cnet_SendSet_PersonalDataName(void) {
     char *s0 = CnetSys_w.pdata.name;

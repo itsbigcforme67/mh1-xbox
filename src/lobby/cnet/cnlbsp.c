@@ -1,5 +1,6 @@
 /* cnlbs, run 16: _cnet_RecvFromLbs_AnswerRoomSetName .. _cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60 (lobby.bin 0x005A6CB0-0x005A6EC4): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 void _cnet_RecvFromLbs_AnswerRoomSetName(void) {
 

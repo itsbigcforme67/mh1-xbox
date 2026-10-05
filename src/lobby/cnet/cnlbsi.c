@@ -1,5 +1,6 @@
 /* cnlbs, run 9: _cnet_RecvFromLbs_AnswerLobbyEntry .. __cnet_SendReq_RoomJoinInfo (lobby.bin 0x005A4930-0x005A51D8): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 void _cnet_RecvFromLbs_AnswerLobbyEntry(void) {
     if (CNW(s8, 0xFEC) == 0) {

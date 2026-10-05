@@ -1,0 +1,3 @@
+# string/rodata slots of cnlbs functions: START END FUNCTION (tools/lbregister.sh puts the slot in the run file holding FUNCTION)
+0x0065E000 0x0065E008 cnLBS_Send_LoginUserAccount
+0x0065E008 0x0065E010 __cnet_SendReq_EchoPacket

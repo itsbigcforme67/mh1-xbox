@@ -1,5 +1,6 @@
 /* cnlbs, run 15: cnLBS_Read_RoomMemberList .. _cnet_RecvFromLbs_AnswerRuleListName (lobby.bin 0x005A5FD0-0x005A69BC): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 int cnLBS_Read_RoomMemberList(arg, cb)
 int arg;

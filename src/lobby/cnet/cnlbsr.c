@@ -1,5 +1,6 @@
 /* cnlbs, run 18: _cnet_CallBack_Result_Room_NumOfRoom .. _cnet_CallBack_Result_RoomJoinJoinUser (lobby.bin 0x005A7660-0x005A7704): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 void _cnet_CallBack_Result_Room_NumOfRoom(CNET_RES res) {
     if (res.val == 0) {

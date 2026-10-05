@@ -1,5 +1,6 @@
 /* cnlbs, run 7: __cnet_KeepEntryFloorInfo .. _cnet_RecvFromLbs_BothPlazaExplain (lobby.bin 0x005A39D0-0x005A4104): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 void __cnet_KeepEntryFloorInfo(kind, val)
 int kind;

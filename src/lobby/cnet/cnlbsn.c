@@ -1,5 +1,6 @@
 /* cnlbs, run 14: cnLBS_Read_RoomRuleAllocation .. __cnet_SendReq_RoomPasswordInfo (lobby.bin 0x005A5AD0-0x005A5F48): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 int cnLBS_Read_RoomRuleAllocation(int val, int cb) {
     if (CnetSys_w.burst[5].state == 0) {
