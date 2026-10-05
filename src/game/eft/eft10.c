@@ -1,5 +1,4 @@
-/* eft10 - game.bin 0x005454D0-0x00545E8C, split in two around eft10_m
- * (see eft10_nm.c). In the original all eft10_* functions are static. Dust puffs kicked up at a
+/* eft10 - game.bin 0x005454D0-0x00545E8C. Dust puffs kicked up at a
  * monster's foot: each puff grows, drifts and fades along keyframe tables
  * (eft10_data), tinted with the stage's dust colour (Eft_kemuri_rgb). */
 #include "eft.h"
@@ -27,7 +26,7 @@ typedef struct EFT10_PUFF {
     PRIM *prim;         /* 0x24 */
     s16 time;           /* 0x28 */
     u16 rot;            /* 0x2A */
-    s16 drot;           /* 0x2C */
+    u16 drot;           /* 0x2C */
 } EFT10_PUFF;
 
 typedef struct EFT10_POS {
@@ -65,14 +64,14 @@ void eft_alpha_linear(f32, void *, f32 *);
 void make_mat_srt(f32 *, f32 *, f32 *, int, FLMAT *);
 void eft_trans_sub_col(CLAY *, FLMAT *, u32, int, void *);
 
-void eft10_move(EFTW *ew);
+static void eft10_move(EFTW *ew);
 static void eft10_i(EFTW *ew);
-void eft10_m(EFTW *ew);
-void eft10_d(EFTW *ew);
-void eft10_e(EFTW *ew);
-void eft10_t(PRIM *pr);
+static void eft10_m(EFTW *ew);
+static void eft10_d(EFTW *ew);
+static void eft10_e(EFTW *ew);
+static void eft10_t(PRIM *pr);
 
-void eft10_move(EFTW *ew) {
+static void eft10_move(EFTW *ew) {
     switch (ew->mode) {
     case 0:
         eft10_i(ew);
@@ -130,6 +129,148 @@ static void eft10_i(EFTW *ew) {
             p->prim->trans = eft10_t;
         } else {
             p->prim = 0;
+        }
+    }
+}
+
+static void eft10_m(EFTW *ew) {
+    f32 v[3];
+    s16 *tt;
+    s32 n;
+    s16 num;
+    s16 all;
+    s16 step;
+    EFT10_PUFF *p = ew->work;
+    s16 i;
+    s16 time;
+    s16 idx;
+    void *d;
+
+    num = eft10_num[ew->arg];
+    all = eft10_all_time[ew->arg];
+    idx = eft10_index[ew->arg];
+    step = eft10_param[ew->arg];
+    time = eft10_time[ew->arg];
+    tt = eft10_time_tbl[ew->arg];
+    if (++ew->timer > all) {
+        ew->mode++;
+        ew->be_flag = 0;
+        return;
+    }
+    n = num;
+    for (i = 0; i < n; i++, p++) {
+        if (tt != 0) {
+            time = tt[i];
+        } else {
+            idx = eft10_index[ew->arg];
+        }
+        if (++p->time <= 0) {
+            idx += step;
+            continue;
+        }
+        if (p->time > time) {
+            idx += step;
+            continue;
+        }
+        switch (ew->arg) {
+        case 0:
+            d = eft10_data[idx++];
+            eft_vec_linear(p->time, d, p->scale);
+            d = eft10_data[idx++];
+            eft_vec_linear(p->time, d, v);
+            v[0] += eft10_type0_pos[ew->x07].ofs[0];
+            v[1] += eft10_type0_pos[ew->x07].ofs[1];
+            v[2] += eft10_type0_pos[ew->x07].ofs[2];
+            if (p->no != 0) {
+                v[0] = -v[0];
+            }
+            flvecRotY(v, DEG2RAD(ANG2DEG(ew->u0A.joint)));
+            d = eft10_data[idx++];
+            eft_alpha_linear(p->time, d, &p->alpha);
+            p->rot += p->drot;
+            break;
+        }
+        if (p->prim != 0) {
+            p->prim->pos[0] = p->pos[0] + v[0];
+            p->prim->pos[1] = p->pos[1] + v[1];
+            p->prim->pos[2] = p->pos[2] + v[2];
+            add_prim(ot0, p->prim, 0x40, 0);
+        }
+    }
+}
+
+static void eft10_d(EFTW *ew) {
+    EFT10_PUFF *p = ew->work;
+    s16 n;
+    s16 i;
+
+    ew->mode++;
+    n = eft10_num[ew->arg];
+    if (ew->prim != 0) {
+        release_prim(ew->prim_no);
+    }
+    for (i = 0; i < n; i++, p++) {
+        if (p->prim != 0) {
+            release_prim(p->prim_no);
+        }
+    }
+}
+
+static void eft10_e(EFTW *ew) {
+    push_eft_work(ew);
+}
+
+static void eft10_t(PRIM *pr) {
+    FLMAT m;
+    f32 sc[3];
+    f32 rot[3];
+    EFTW *ew = pr->owner;
+    EFT10_PUFF *p = &((EFT10_PUFF *)ew->work)[pr->no];
+    EFT_MDLW *mw = eft_mdlw[0];
+    void *mats;
+    CLAY *cl;
+    u32 col;
+    s16 st;
+    int flag;
+    u8 r, g, b, a;
+
+    if (mw != 0 && mw->flag != 0) {
+        st = Eft_stg_type[game_w.stage];
+        r = Eft_kemuri_rgb[st][0];
+        g = Eft_kemuri_rgb[st][1];
+        b = Eft_kemuri_rgb[st][2];
+        a = Eft_kemuri_rgb[st][3];
+        mats = mw->mat;
+        sc[0] = p->size * p->scale[0];
+        sc[1] = p->size * p->scale[1];
+        sc[2] = p->size * p->scale[2];
+        switch (ew->arg) {
+        case 0:
+            cl = &mw->clay[74];
+            rot[2] = DEG2RAD(ANG2DEG(p->rot));
+            flag = 2;
+            col = ((u8)(a * p->alpha) << 24) | (r << 16) | (g << 8) | b;
+            break;
+        }
+        make_mat_srt(sc, rot, pr->pos, (u16)flag, &m);
+        flmatMul33_2(&m, &rview_mat);
+        eft_trans_sub_col(cl, &m, col, 0, mats);
+    }
+}
+
+void Eft10_set(EMW *em, int arg, int x07, f32 scale) {
+    EFTW *ew;
+
+    if (Em_stg_ck(em) != 0) {
+        ew = pull_eft_work(1);
+        if (ew != 0) {
+            ew->type = 10;
+            ew->move = eft10_move;
+            ew->owner = em;
+            ew->arg = arg;
+            ew->x07 = x07;
+            ew->scale = scale;
+            ew->prim = 0;
         }
     }
 }

@@ -53,8 +53,6 @@ segments:
       - [0x011450, c, eft/eft09]
       - [0x011B48, asm, text/eft10_move]
       - [0x011B50, c, eft/eft10]
-      - [0x011D9C, asm, text/eft10_m]
-      - [0x012150, c, eft/eft10b]
       - [0x01250C, asm, text/eft11_move]
       - [0x012510, c, eft/eft11]
       - [0x012594, asm, text/eft11_i]

@@ -92,6 +92,11 @@ extracted to disc/mhg/ (gitignored). MH1 not yet supplied.
     matching one (`ew, p, mw` first, then `mats, cl, flag, order`).
   - A drot field read with `lhu` in `rot += drot` is still s16 (eft14 and
     eft15 both match only with s16).
+  - Those two fixes plus the eft15_m layout made eft10_m match (it had
+    been 191 instructions off). Its last 5 instructions were the order of
+    the six table reads at the top: a brute force over the 720 orders found
+    num, all, idx, step, time, tt. In eft10 `drot` is u16 (the original
+    loads rot first there).
 
 ### Next
 
@@ -484,7 +489,8 @@ How it works (each step was checked, not assumed):
   needs CSE), shell00_i or set05_m, so it is a workaround, not a claim
   about Capcom's settings.
 - Effects started (include/eft.h, EFTW): eft00, eft07, eft09, eft19,
-  eft21 match; eft05, eft10, eft24 match apart from one function each
+  eft21 match (eft10 too, see below); eft05, eft24 match apart from one
+  function each
   (split as before; *_nm.c holds the near-match). Findings:
   - `if (flag != 0)` on an s16 local re-sign-extends before the test, as
     the original does; a bare `if (flag)` does not (eft21 i and m).
