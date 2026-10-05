@@ -87,7 +87,9 @@ typedef struct GAME_W {
     s16 x218;           /* 0x218 monster hit points carried over (em02_init) */
     u8 x21A;            /* 0x21A result screen: nonzero in an online session? (result_prog) */
     u8 x21B;            /* 0x21B cleared by Game_task */
-    u8 _pad21C[0x21F - 0x21C];
+    u8 _pad21C;
+    s8 x21D;            /* 0x21D quest rule counter shown by font_print_Bdragon (f_menu, guess) */
+    u8 _pad21E;
     u8 info_stop;       /* 0x21F set01 queue paused while set */
     u8 _pad220[0x224 - 0x220];
 } GAME_W;

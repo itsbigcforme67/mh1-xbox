@@ -78,7 +78,7 @@ void disp_name(void) {
     font_set_palette(0);
     pl = player_work;
     for (i = 0; i < 4; i++, pl++) {
-        if (*(u16 *)((u8 *)pl + 0xC) != GW8(0xD1) && GW8(0x208 + i) == 1 &&
+        if (*(u16 *)((u8 *)pl + 0xC) != game_w.master && game_w.pl_state[i] == 1 &&
             *(u8 *)pl != 0 && *((u8 *)pl + 1) != 0 && (u8)Pl_stg_ck(pl)) {
             flmatInit((void *)mat);
             flSetRenderState(0x1A, (u32)mat);
@@ -128,7 +128,7 @@ void Pit_disp_quest(void) {
     font_print_uf(Quest_str_get(0));
     switch (lpPit->x43) {
     case 0:
-        if (GW8(0x1DC) == 0) {
+        if (game_w.x1DC == 0) {
             quest_condition_print(lpPit->x43);
         } else {
             func_5CB310(lpPit->x43);
@@ -247,7 +247,7 @@ void font_print_Bdragon(void) {
     u16 *o;
     char *p;
 
-    sprintf(buf, (char *)lit_2176, (10 - GWS8(0x21D)) * 10);
+    sprintf(buf, (char *)lit_2176, (10 - game_w.x21D) * 10);
     o = out;
     for (p = buf; *p != 0; p++, o++) {
         *o = ((*p + 0x1F) << 8) | 0x82;
@@ -349,7 +349,7 @@ void quest_condition_print(u8 unused) {
         flfntLocate(0x167, 0xB6);
         font_print_BBQquest(lpPit->pl, 0xB6);
         for (; i < 4; i++, pl++) {
-            if (i != GW8(0xD1) && GW8(0x208 + i) == 1) {
+            if (i != game_w.master && game_w.pl_state[i] == 1) {
                 font_print_BBQquest(pl, y);
                 y = (s16)(y + 0x14);
             }
@@ -414,13 +414,13 @@ void disp_item_list_present(int unused, void *unused2, void *unused3) {
 
     switch (lpPit->x4B) {
     case 1:
-        if (GW8(0x1DC) == 0) {
+        if (game_w.x1DC == 0) {
             n = 0;
             pl = player_work;
             rm = room_member_id;
             for (i = 0; i < 4; i++, pl++, rm += 8) {
-                if (GW8(0xD1) != i) {
-                    if (GW8(0x208 + i) == 1) {
+                if (game_w.master != i) {
+                    if (game_w.pl_state[i] == 1) {
                         names[n] = (char *)pl + 0x8D4;
                         if (Online_ck() == 1 && PitMenu.x14 != 0) {
                             names[n] = (char *)rm;
@@ -436,7 +436,7 @@ void disp_item_list_present(int unused, void *unused2, void *unused3) {
             u8 *d = D_6EAC80;
             n = 0;
             for (i = 0; i < 8; i++, d += 0x38) {
-                if (GW8(0xD1) != i) {
+                if (game_w.master != i) {
                     switch (func_5D8370(i)) {
                     case 0:
                         names[n] = (char *)d + 4;
@@ -457,11 +457,11 @@ void disp_item_list_present(int unused, void *unused2, void *unused3) {
             names[n] = 0;
         }
         sel = lpPit->x4C;
-        if (GW8(0xD1) < sel) {
+        if (game_w.master < sel) {
             sel -= 1;
         }
-        *(void **)(item_cmd_present + 0xC + GW8(0x1DC) * 0x18) = names;
-        DispFrameList(item_cmd_present + GW8(0x1DC) * 0x18, 0, sel, names);
+        *(void **)(item_cmd_present + 0xC + game_w.x1DC * 0x18) = names;
+        DispFrameList(item_cmd_present + game_w.x1DC * 0x18, 0, sel, names);
         return;
     case 0:
         sprintf(buf, (char *)lit_2439, lpPit->x4D);
@@ -610,7 +610,7 @@ void player_on_map(f32 x, f32 y, f32 scale, u16 ang, u16 id) {
     SetTrnslMode(4, 5);
     reload_tex(1, 0x119);
     SetTextureStage(0x119);
-    u = (id == GW8(0xD1)) ? 0 : 0x50;
+    u = (id == game_w.master) ? 0 : 0x50;
     u2 = u + 0xF;
     flmatInit(&mat);
     a = (0x18000 - ang) & 0xFFFF;
@@ -747,8 +747,8 @@ void disp_whole_map(int ofs, f32 x0, f32 scale) {
     {
     PLW *pl = player_work;
     s16 i;
-    for (i = 0; i < GW8(0xD3); i++, pl++) {
-        if (*(u8 *)pl != 0 && i != GW8(0xD1)) {
+    for (i = 0; i < game_w.pl_num; i++, pl++) {
+        if (*(u8 *)pl != 0 && i != game_w.master) {
             x = FX(pl, 0x754) * sx;
             y = FX(pl, 0x75C) * sy;
             x += x0;
@@ -837,9 +837,9 @@ void disp_partial_map(int ofs, f32 x0, f32 scale) {
     {
         PLW *pl = player_work;
         u32 i = 0;
-        if (GW8(0xD3) != 0) {
+        if (game_w.pl_num != 0) {
             do {
-                if (*(u8 *)pl != 0 && i != GW8(0xD1)) {
+                if (*(u8 *)pl != 0 && i != game_w.master) {
                     t2 = (240.0f * (FX(pl, 0x754) * lpPit->map_sx)) - lx;
                     if (!(t2 < 0.0f) && t2 <= w) {
                         t = (240.0f * (FX(pl, 0x75C) * lpPit->map_sy)) - ly;
@@ -850,7 +850,7 @@ void disp_partial_map(int ofs, f32 x0, f32 scale) {
                 }
                 i++;
                 pl++;
-            } while (i < GW8(0xD3));
+            } while (i < game_w.pl_num);
         }
     }
     me = lpPit->pl;
@@ -888,7 +888,7 @@ void PutSpriteDiv3(void *, int, int);
 int Item_valid_chk(u16, u8 *, PLW *);
 void Disp_help_mess(int, u16);
 void Put_shousai(u8, void *);
-void player_info_sub(f32, PLW *, int);
+void player_info_sub(f32, PLW *, s16);
 void disp_item_sub_normal(void);
 void disp_item_sub_select(void);
 int disp_shell_name(u8, int);
@@ -954,23 +954,23 @@ void disp_item_sub_normal(void) {
     reload_tex(1, 0x11A);
     SetTextureStage(0x11A);
     q.s[0] = 0x14F;
-    q.s[1] = 0x94;
-    q.s[2] = 0x18A;
+    q.s[2] = 0x94;
+    q.s[1] = 0x18A;
     q.s[3] = 0x18;
     q.col = -1;
     q.uv0 = 0x9A00C5;
     q.uv1 = 0xB000E5;
     PutSpriteDiv3(&q, 0xC, 0xF);
     q.s[0] = 0x170;
-    q.s[1] = 0x53;
-    q.s[2] = 0x156;
+    q.s[2] = 0x53;
+    q.s[1] = 0x156;
     q.s[3] = 0x36;
     q.uv0 = 0x700000;
     q.uv1 = 0xA60068;
     flps0008(&q);
     q.s[0] = 0x17E;
-    q.s[1] = 0x36;
-    q.s[2] = 0x147;
+    q.s[2] = 0x36;
+    q.s[1] = 0x147;
     q.s[3] = 0x44;
     q.uv0 = 0x31008F;
     q.uv1 = 0x6700C5;
@@ -983,22 +983,22 @@ void disp_item_sub_normal(void) {
     if (UseItemChk(pl, pl->work888) == 1) {
         reload_tex(1, 0x118);
         SetTextureStage(0x118);
-        disp_item_icon((u8)pl->work888, 0x185, 1, 0);
+        disp_item_icon(pl->work888, 0x185, 1, 0);
     }
     c = *((u8 *)pl + 2);
     if (c == 1 || c == 5) {
         q.col = 0xFF808080;
         if (pl->work8BC != 0) {
             flfntSetSize(0x14, 0x14);
-            if (disp_shell_name((u8)pl->work88E, 0x132) == 1) {
+            if (disp_shell_name(pl->work88E, 0x132) == 1) {
                 q.col = item_col_tbl[Item_data[pl->item[(u8)pl->work88E].id][6]];
             }
         }
         reload_tex(1, 0x11A);
         SetTextureStage(0x11A);
         q.s[0] = 0x14F;
-        q.s[1] = 0x94;
-        q.s[2] = 0x130;
+        q.s[2] = 0x94;
+        q.s[1] = 0x130;
         q.s[3] = 0x18;
         q.uv0 = 0x1A00E0;
         q.uv1 = 0x300100;
@@ -1024,8 +1024,8 @@ void disp_item_sub_select_ex(void) {
         reload_tex(1, 0x11A);
         SetTextureStage(0x11A);
         q.s[0] = 0x14B;
-        q.s[1] = 0x9C;
-        q.s[2] = 0x105;
+        q.s[2] = 0x9C;
+        q.s[1] = 0x105;
         q.s[3] = 0x1A;
         q.col = -1;
         q.uv0 = 0xAA0000;
@@ -1144,7 +1144,7 @@ void disp_item_stock(void) {
             return;
         }
         ItemListWindow(lpPit->x49, item_stock_color_tbl0[m], 8);
-        DispFrameMessage(pf_item_stock_name, item_str[lpPit->x52]);
+        DispFrameMessage(pf_item_stock_name, item_str[(u16)lpPit->x52]);
         Disp_help_mess(1, lpPit->x50);
         switch (lpPit->x07) {
         case 4:
@@ -1172,9 +1172,167 @@ void disp_others_info(void) {
     y = 0x6A;
     pl = player_work;
     for (i = 0; i < 4; i++, pl++) {
-        if (*(u8 *)pl != 0 && i != GW8(0xD1) && GW8(0x208 + i) == 1) {
+        if (*(u8 *)pl != 0 && i != game_w.master && game_w.pl_state[i] == 1) {
             player_info_sub(20.0f, pl, y);
             y = (s16)(y + 0x1A);
         }
+    }
+}
+
+extern u8 pl_type_uv[];
+extern u16 uv_tbl_3869[][4];
+void flps0002(void *);
+typedef struct PFLPS1 {
+    s16 s[4];
+    u32 col;
+} PFLPS1;
+
+/* 0x12FF70 */
+void player_info_sub(f32 x, PLW *pl, s16 y) {
+    PFLPS2 q;
+    PFLPS1 b;
+    s16 yy;
+    int n;
+    s16 yy2;
+    int i;
+    EMW *em;
+    u8 f;
+    s16 t;
+    u8 k;
+    int cnt;
+
+    SetFilterMode(1);
+    SetTrnslMode(4, 5);
+    reload_tex(1, 0x11A);
+    SetTextureStage(0x11A);
+    if (*(u16 *)((u8 *)pl + 0xC) == game_w.master) {
+        q.col = 0x80000000;
+    } else {
+        q.col = 0x80503108;
+    }
+    q.s[1] = y;
+    q.s[3] = 0x18;
+    q.s[0] = 0.8f * x;
+    q.s[2] = 0x13;
+    *(u32 *)&q.uv[0] = 0x1A00AA;
+    *(u32 *)&q.uv[2] = 0x2F00C2;
+    flps0008(&q);
+    q.s[0] += q.s[2];
+    q.s[2] = 0x48;
+    q.uv[0] = 0xC2;
+    q.uv[2] = 0xD2;
+    flps0008(&q);
+    q.s[0] += q.s[2];
+    q.s[2] = 6;
+    q.uv[0] = 0xD2;
+    q.uv[2] = 0xDA;
+    flps0008(&q);
+    yy = y;
+    yy2 = yy + 2;
+    q.s[0] = 0.8f * (2.0f + x);
+    q.s[1] = yy2;
+    q.s[2] = 0x10;
+    q.s[3] = 0x14;
+    q.col = disp_pl_rgb[*(u16 *)((u8 *)pl + 0xC) & 3];
+    q.uv[0] = pl_type_uv[*((u8 *)pl + 2)];
+    q.uv[2] = q.uv[0] + 0x14;
+    q.uv[1] = 0xED;
+    q.uv[3] = 0xFF;
+    flps0008(&q);
+    if (*(u16 *)((u8 *)pl + 0xC) != game_w.master) {
+        f32 t3 = 5.0f + x;
+        s16 v = yy + 0x15;
+        b.col = 0xFF00FF00;
+        b.s[3] = v;
+        b.s[1] = v;
+        b.s[0] = 0.8f * t3;
+        b.s[2] = 0.8f * (t3 + 112.0f * ((f32)*(s16 *)((u8 *)pl + 0x302) / (f32)*(s16 *)((u8 *)pl + 0x792)));
+        flps0002(&b);
+    }
+    flfntSetSize(0x12, 0x12);
+    font_set_palette(0);
+    {
+        f32 nx = 24.0f + x;
+        flfntLocate((int)nx, (s16)(yy + 1));
+        if (*(u16 *)((u8 *)pl + 0xC) == game_w.master) {
+            flfntLocate((int)nx, yy2);
+        }
+    }
+    player_name_id_print(pl);
+    q.s[2] = 0x10;
+    q.s[1] = yy2;
+    q.s[3] = 0x14;
+    q.col = -1;
+    q.uv[1] = 0xED;
+    q.uv[3] = 0xFF;
+    cnt = 0;
+    if (*((u8 *)pl + 0x81E) != 0) {
+        cnt = 1;
+    } else {
+        em = em_work;
+        for (i = 0; i < 20; i++, em++) {
+            if (*(u8 *)em != 0 && em->stg == ((EMW *)pl)->stg && *((u8 *)em + 2) != 0xF) {
+                if (em->x9E9 != 0 && *((u8 *)em + 0x881) == 1 && *((u8 *)em + 0x882) == 0 &&
+                    *(u16 *)((u8 *)pl + 0xC) == *((u8 *)em + 0x883) && *((u8 *)em + 0x888) == 1) {
+                    cnt = 1;
+                    break;
+                } else if (*((u8 *)em + 0x7EE) & (1 << *(u16 *)((u8 *)pl + 0xC))) {
+                    cnt = 1;
+                    break;
+                }
+            }
+        }
+    }
+    if (cnt > 0) {
+        q.s[0] = 0.8f * (122.0f + x);
+        q.uv[0] = cnt * 0x14 + 0x64;
+        q.uv[2] = cnt * 0x14 + 0x78;
+        flps0008(&q);
+    }
+    f = *((u8 *)pl + 0x4D5);
+    if ((f & 0x3F) != 0) {
+        u16 id = *(u16 *)((u8 *)pl + 0xC);
+        s16 *cd = (s16 *)((u8 *)lpPit + id * 2 + 0x10);
+        u8 *sel = (u8 *)lpPit + id + 0x18;
+        if (*cd < 0) {
+            for (k = 0; k < 6; k++) {
+                if (f & (1 << k)) {
+                    *sel = k;
+                    *cd = 0x14;
+                    break;
+                }
+            }
+        } else if ((f & (1 << *sel)) && *cd > 0) {
+            *cd -= 1;
+        } else {
+            int c2 = 6;
+            do {
+                (*sel)++;
+                if (*sel >= 6) *sel = 0;
+                if (*((u8 *)pl + 0x4D5) & (1 << *sel)) {
+                    *cd = 0x14;
+                    break;
+                }
+            } while (--c2 != 0);
+        }
+        q.s[0] = 0.8f * (142.0f + x);
+        q.s[1] = yy2;
+        q.s[2] = 0x10;
+        q.s[3] = 0x14;
+        q.uv[0] = uv_tbl_3869[*sel][0];
+        q.uv[1] = uv_tbl_3869[*sel][1];
+        q.uv[2] = uv_tbl_3869[*sel][2];
+        q.uv[3] = uv_tbl_3869[*sel][3];
+        flps0008(&q);
+    } else {
+        *(s16 *)((u8 *)lpPit + *(u16 *)((u8 *)pl + 0xC) * 2 + 0x10) = -1;
+    }
+    if (*(s16 *)((u8 *)lpPit + *(u16 *)((u8 *)pl + 0xC) * 2 + 0x34) >= 0) {
+        u16 id = *(u16 *)((u8 *)pl + 0xC);
+        SetTrnslMode(4, 1);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
+        disp_map_sign((s16)((s16)(int)(0.8f * (5.0f + x)) + 8), (s16)(yy + 0xC),
+                      *(s16 *)((u8 *)lpPit + id * 2 + 0x34), disp_pl_rgb[id & 3]);
     }
 }
