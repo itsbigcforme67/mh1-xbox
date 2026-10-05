@@ -224,3 +224,15 @@ reached from several exits = `break;` in every case and one `return -1;` after t
 and later cases `goto err` (mc_read_file/mc_write_file/mc_create_file). (3) <=8 byte globals are gp-relative: declare `u8 keep_rtc[8]`. (4) the weekday formula:
 `(day + (year + year/4 - year/100 + year/400 + (mon*13+8)/5)) % 7` with `u16 year` (McReadClock, found by trying ~20 parenthesisations with a loop).
 (5) Beware overlapping struct fields when sizing arrays: state[3]/info[3], not [4].
+
+### Status of assignment 3 (end of this pass) and what is left
+Done (built, main OK): staff (2/4 functions), movie (8/9), evdemo (6/6), omake/mode select (14/20), mc save helpers (9/12), npc (8/10), mc low level (13/15).
+Written but not built (near-match files): staff_nm.c, movie_nm.c (movie_draw), omake_nm.c (6 functions), mcsave_nm.c, npc_nm.c (npc_trans, npc_move), mclow_nm.c (mc_delete_dir).
+Not started (in order of usefulness): McAct*/mc_act_* (0x27FDF0-0x280EF0, drafts via tools/draft.py work, jump table mc_act_jmp), disp_savesel* (0x280EF0),
+mc_*_ck and trans_card_0 (0x281BC0-0x2822B0), the ~90 CardAtld/CardOptsv/CardCmsv/CardConld/CardOnsv/CardOfsv/CardEasysv step functions (0x2822B0-0x2860D0,
+mostly 100-400 bytes each), net file load/save (0x2869A0-0x28BEC0), player sound wrappers sound_call*/wall_sd_req/ashi_sd_req/yoroi_sd_req (0x24A2A0-0x24A790, 1.3K,
+frame_check takes a float in f12), the IME/dictionary engine (0x23E500-0x24A240, 258 functions, low value for the port), and all network code (0x22C670-0x23A0F0, 0x22F800
+on: AQ, Ave, mcsls, Inet; Sony/Capcom online stack, skipped on purpose because the port has no online mode).
+Library code 0x1A0000-0x218000 (newlib, libm, Sony sce*, CRI Sofdec/ADX) is GCC-built: not matchable with MWCC.
+Check list when continuing: always run `tools/rebuild.sh main` after registering: check.py masks relocation addends (wrong Psw index, wrong table symbol, gp-relative
+globals) and absolute calls into other modules.
