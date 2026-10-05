@@ -686,6 +686,9 @@ int Item_preparation_list_search(s8 *, s8, u16 *, u16 *);
 int Monster_list_search(s8, int);
 int Get_weapon_job2(u8, u16);
 void vib_set(int, int);
+int Reibun_Edit_Core(u8);
+int Reibun_Edit_Start(u8);
+u8 Reibun_select_mv(u8);
 extern u16 item_pick_declaration_code;
 extern s16 item_pick_declaration_timer;
 int Pl_master_ck(void);
@@ -1189,4 +1192,182 @@ void Item_box_get_item(s16 id, u8 slot) {
     d = (u32)(0.1f * flSqrt(dx * dx + dy * dy));
     lpPit->x64 = d;
     lpPit->x63 = d;
+}
+
+int Menu_chatcnfg_i(void) {
+    if (Online_ck() == 0) {
+        return -1;
+    }
+    lpPit->x7D = 0;
+    lpPit->x7E = 0;
+    PitMenu.x10 = 1;
+    PitMenu.x11 = 3;
+    PitMenu.x12 = lpPit->x7D;
+    PitMenu.x1B = 0;
+    return 0;
+}
+
+int menu_chcnfg_sendpl(int sw);
+int menu_chcnfg_reibun(int sw);
+
+int Menu_chatcnfg_mv(int sw) {
+    int r;
+    int t;
+
+    switch (lpPit->x7E) {
+    case 0:
+        t = sw & 0xFFFF;
+        if (t & 0x3000) {
+            lpPit->x7D = (lpPit->x7D + 1) & 1;
+            se_req(7, 0x16, 0);
+        }
+        r = sw & 0xFFFF;
+        PitMenu.x12 = lpPit->x7D;
+        if (t & 0x20) {
+            lpPit->x7E++;
+            lpPit->x7F = 0;
+            lpPit->x80 = -1;
+            se_req(7, 0x13, 0);
+        }
+        break;
+    case 1:
+        switch (lpPit->x7D) {
+        case 0:
+            r = menu_chcnfg_sendpl(sw) & 0xFFFF;
+            break;
+        case 1:
+            r = menu_chcnfg_reibun(sw) & 0xFFFF;
+            break;
+        }
+        if (r & 0x40) {
+            r = r & 0xFFBF & 0xFFFF;
+            lpPit->x7E = 0;
+            se_req(7, 0x14, 0);
+        }
+        break;
+    }
+    return r;
+}
+
+int menu_chcnfg_sendpl(int sw) {
+    int a = sw & 0xFFFF;
+    s8 n;
+    int mask;
+    int i;
+    int bit;
+    int v;
+
+    PitMenu.x18 = 0;
+    if (a & 0x40) {
+        return sw;
+    }
+    n = 4;
+    if (game_w.x1DC == 0) {
+        mask = 0xF;
+    } else {
+        n = 8;
+        mask = 0xFF;
+    }
+    PitMenu.x12 = 2;
+    if (a & 0x2000) {
+        if (lpPit->x80 < 0) {
+            lpPit->x80 = n;
+        }
+        lpPit->x80--;
+        if (game_w.master == lpPit->x80) {
+            lpPit->x80--;
+        }
+        se_req(7, 0x16, 0);
+    } else if (a & 0x1000) {
+        lpPit->x80++;
+        if (game_w.master == lpPit->x80) {
+            lpPit->x80++;
+        }
+        if ((u32)lpPit->x80 >= (u32)n) {
+            lpPit->x80 = -1;
+        }
+        se_req(7, 0x16, 0);
+    }
+    if (a & 0x20) {
+        s8 sel = lpPit->x80;
+
+        if (sel < 0) {
+            PitMenu.x16 = 0;
+            PitMenu.x15 = 1;
+            se_req(7, 0x13, 0);
+        } else {
+            if (game_w.x1DC == 0) {
+                v = game_w.pl_state[sel] ^ 1;
+            } else {
+                v = func_5D8370(sel) ^ 0;
+            }
+            if ((v == 0) == 1) {
+                PitMenu.x15 = 0;
+                PitMenu.x16 ^= (1 << lpPit->x80) & 0xFF;
+                PitMenu.x16 &= ((mask & 0xFF) - (1 << game_w.master)) & 0xFF;
+                if (PitMenu.x16 == 0) {
+                    PitMenu.x15 = 1;
+                }
+                se_req(7, 0x13, 0);
+            } else {
+                se_req(7, 0x15, 0);
+            }
+        }
+    }
+    if (n != 0) {
+        for (i = 0; i < (u32)n; i++) {
+            bit = 1 << i;
+            if (PitMenu.x16 & bit) {
+                if (game_w.x1DC == 0) {
+                    if (game_w.pl_state[i] == 1) {
+                        continue;
+                    }
+                } else if (func_5D8370((s8)i) == 0) {
+                    continue;
+                }
+                PitMenu.x16 &= ((mask & 0xFF) - bit) & 0xFF;
+            }
+        }
+    }
+    if (PitMenu.x16 == 0) {
+        PitMenu.x15 = 1;
+    }
+    if (PitMenu.x15 != 0) {
+        PitMenu.x17 = 3;
+    } else {
+        v = ((PitMenu.x16 & 0x55) + ((PitMenu.x16 & 0xAA) >> 1)) & 0xFF;
+        v = ((v & 0x33) + ((v & 0xCC) >> 2)) & 0xFF;
+        if ((((v & 0xF) + ((v & 0xF0) >> 4)) & 0xFF) >= 2) {
+            PitMenu.x17 = 2;
+        } else {
+            PitMenu.x17 = 1;
+        }
+    }
+    return sw;
+}
+
+int menu_chcnfg_reibun(int sw) {
+    int a;
+    int r = sw;
+
+    switch (lpPit->x7F) {
+    case 0:
+        a = r & 0xFFFF;
+        if (!(a & 0x40)) {
+            PitMenu.x12 = 3;
+            PitMenu.x1B = Reibun_select_mv(PitMenu.x1B);
+            if ((a & 0x20) && Reibun_Edit_Start(PitMenu.x1B) == 1) {
+                lpPit->x7F++;
+            }
+        }
+        break;
+    case 1:
+        PitMenu.x12 = 4;
+        r = r & 0x7FBF & 0xFFFF;
+        if ((s8)Reibun_Edit_Core(PitMenu.x1B) != 0) {
+            lpPit->x7F = 0;
+        }
+        break;
+    }
+    return r;
 }

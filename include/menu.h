@@ -113,11 +113,13 @@ typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
     u8 x11;             /* 0x11 */
     u16 x12;            /* 0x12 */
     u8 x14;             /* 0x14 */
-    s8 x15;             /* 0x15 */
-    s8 x16;             /* 0x16 */
+    u8 x15;             /* 0x15 */
+    u8 x16;             /* 0x16 */
     s8 x17;             /* 0x17 */
     s8 x18;             /* 0x18 */
-    u8 _pad19[4];
+    u8 _pad19[2];
+    u8 x1B;             /* 0x1B */
+    u8 _pad1C;
     u8 open;            /* 0x1D non-zero while the menu is open (Cockpit_menu_chk) */
     u8 _pad1E[0x1764 - 0x1E];
 } PIT_MENU;
