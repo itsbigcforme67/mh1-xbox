@@ -20,7 +20,9 @@ def get(n):
 start = tab[funcs[0]][0]
 end = tab[funcs[-1]][0] + tab[funcs[-1]][1]
 body = "\n".join(get(f) for f in funcs)
-incs = "".join(l + "\n" for l in s.split("\n") if l.startswith("#include"))
+import re as _re
+_pre = s[:_re.search(r'^[a-z0-9_ ]+ \**\w+\(.*\) \{$', s, _re.M).start()]
+incs = "".join(l + "\n" for l in _pre.split("\n") if l.startswith("#include") or l.startswith("extern ") or _re.match(r'^[A-Za-z0-9_ \*]+\(.*\);$', l))
 hdr = "/* Player code (SLPM_654.95 0x%08X-0x%08X): %s */\n%s\n" % (start, end, descr, incs)
 open("src/main/pl/%s.c" % name, "w").write(hdr + body)
 for f in funcs:

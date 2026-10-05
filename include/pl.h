@@ -129,7 +129,7 @@ typedef struct PLW {
     u8 _pad34D[0x350 - 0x34D];
     s8    work350;           /* 0x350 */
     s8    work351;           /* 0x351 */
-    s8    work352[6];        /* 0x352 parts/armor ids? */
+    u8    work352[6];        /* 0x352 parts/armor ids (u8: Skill_set_PL lbu) */
     u8 _pad358[0x360 - 0x358];
     u16   wpn_kind;      /* 0x360 gun type, row of D_3367B2 (shell06) */
     u16   wpn_ammo;      /* 0x362 loaded ammo; low nibble = Gun_Grow_Up_DATA row (shell06) */
@@ -222,7 +222,9 @@ typedef struct PLW {
     s8    work6A8;           /* 0x6A8 */
     s8    work6A9;           /* 0x6A9 */
     u16   work6AA;           /* 0x6AA */
-    u8 _pad6AC[0x53];
+    u16   work6AC;           /* 0x6AC 0x6AC (u16: Pl_atck_adj_calc lhu) */
+    u16   work6AE;           /* 0x6AE */
+    u8 _pad6B0[0x4F];
     u8    work6FF;           /* 0x6FF */
     u8 _pad700[0xE];
     u16   x70E;          /* 0x70E point number in the stage list (cmd_target_kind_set) */
@@ -350,14 +352,19 @@ typedef struct PLW {
     s8    work90B;           /* 0x90B */
     s16   work90C;           /* 0x90C */
     u8    work90E;           /* 0x90E */
-    u8 _pad90F[0x917 - 0x90F];
+    u8 _pad90F;
+    u8    skill[5];          /* 0x910 active skill ids (Skill_set_PL, Pl_Skill_ck) */
+    u8 _pad915[0x2];
     s8    work917;           /* 0x917 */
     u16   work918;           /* 0x918 */
     u16   work91A;           /* 0x91A */
     u16   work91C;           /* 0x91C */
     u8    work91E;           /* 0x91E (u8: lbu in result_init) */
     s8    work91F;           /* 0x91F */
-    u8 _pad920[0x930 - 0x920];
+    f32   work920;           /* 0x920 */
+    f32   work924;           /* 0x924 */
+    f32   work928;           /* 0x928 */
+    f32   work92C;           /* 0x92C */
     u16   work930;           /* 0x930 */
     u8 _pad932[0x934 - 0x932];
     s16   work934;           /* 0x934 */

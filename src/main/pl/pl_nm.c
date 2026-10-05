@@ -1859,3 +1859,33 @@ void to_normal(PLW *pl, s32 blend, s16 tm) {
         net_send_pl(pl, 1, 0);
     }
 }
+
+extern u8 Equip_Bonus[0x630];
+s16 Get_equip_value(u8 kind);
+s16 Pl_item_num_ck(PLW *, int);
+
+void Pl_basic_flagset(PLW *pl, int a, int b, int c) {
+    u16 w = a;
+    switch (a & 0xFF) {
+    case 2:
+        pl->st = 2;
+        break;
+    case 1:
+        pl->st = 1;
+        break;
+    default:
+        pl->st = 0;
+        break;
+    }
+    if (w & 0x8000) {
+        pl_flag_clr(pl, 8);
+    } else {
+        pl_flag_set(pl, 8);
+    }
+    pl_flag_clr(pl, 1);
+    if ((s16)c == 0) {
+        pl_flag_clr(pl, 2);
+    } else {
+        pl_flag_set(pl, 2);
+    }
+}
