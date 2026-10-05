@@ -46,12 +46,15 @@ typedef struct EMW {
     u16 id;             /* 0x00C */
     u8 _pad00E[2];
     u8 x10;             /* 0x010 */
-    u8 _pad011[0x14 - 0x11];
+    u8 _pad011[0x13 - 0x11];
+    u8 x13;             /* 0x013 spawn slot, picks the start position (emNN_init) */
     u8 mode;            /* 0x014 4/5 end attached shells (shell19_m) */
     u8 x15;             /* 0x015 sub-mode (eft09_m) */
     u8 _pad016[0x19 - 0x16];
     u8 x19;             /* 0x019 cleared when a shell is spawned */
-    u8 _pad01A[0xA0 - 0x1A];
+    u8 _pad01A;
+    u8 x1B;             /* 0x01B variant flags (bit 0 size, bit 7 big; emNN_init) */
+    u8 _pad01C[0xA0 - 0x1C];
     s32 ang[3];         /* 0x0A0 rotation, 0x10000 = 360 degrees (shell14_trans) */
     f32 pos[3];         /* 0x0AC world position (set20_m, as PLW) */
     f32 scale[3];       /* 0x0B8 model scale (eft09_t) */
@@ -88,26 +91,37 @@ typedef struct EMW {
     f32 adj_z;          /* 0x3BC (fly_adjy2_subz) */
     u8 _pad3C0[0x3F4 - 0x3C0];
     u8 x3F4;            /* 0x3F4 1 while a horm turn runs */
-    u8 _pad3F5[0x444 - 0x3F5];
+    u8 _pad3F5[0x40C - 0x3F5];
+    s16 x40C;           /* 0x40C (em09_init) */
+    s16 x40E;           /* 0x40E */
+    u8 _pad410[0x444 - 0x410];
     u8 ex[0x50C - 0x444]; /* 0x444 per-monster work: each emNN.c lays out its own
                          * struct here (EM07W...). The end is a guess. */
     struct EM_MDL *mdl; /* 0x50C model work */
-    u8 _pad510[0x5AC - 0x510];
+    u8 _pad510[0x56A - 0x510];
+    u8 x56A;            /* 0x56A cleared by em09_init */
+    u8 _pad56B[0x5AC - 0x56B];
     f32 x5AC;           /* 0x5AC height used for set20's shell */
     u8 _pad5B0[0x617 - 0x5B0];
     s8 x617;            /* 0x617 -1: no ... (em08_fly_act_set) */
-    u8 _pad618[0x736 - 0x618];
+    u8 _pad618[0x734 - 0x618];
+    u8 x734;            /* 0x734 3 after emNN_init */
+    u8 _pad735;
     u8 stg;             /* 0x736 */
     u8 _pad737[0x74C - 0x737];
     u32 x74C;           /* 0x74C flags; 0xF000000F stops fly_adjz2 (em16) */
     u8 _pad750[0x754 - 0x750];
     f32 x754[3];        /* 0x754 position the turn toward a player starts from (em02_senkai_player) */
-    u8 _pad760[0x792 - 0x760];
+    u8 _pad760[0x765 - 0x760];
+    u8 x765;            /* 0x765 (em02_init) */
+    u8 _pad766[0x792 - 0x766];
     s16 x792;           /* 0x792 maximum of x302? (guess) */
     u8 _pad794[0x7E8 - 0x794];
     u8 x7E8;            /* 0x7E8 0: em21 falls back to act 0/1 on its own stage */
     u8 x7E9;            /* 0x7E9 0: em14 fly action 0 becomes act 0/3 */
-    u8 _pad7EA[0x818 - 0x7EA];
+    u8 _pad7EA[0x7EE - 0x7EA];
+    u8 x7EE;            /* 0x7EE (em02_init: 15) */
+    u8 _pad7EF[0x818 - 0x7EF];
     f32 x818;           /* 0x818 compared with x8C4[x883] (em16_act_act_set) */
     u8 _pad81C[0x827 - 0x81C];
     u8 x827;            /* 0x827 */
@@ -127,7 +141,9 @@ typedef struct EMW {
     s8 x885;            /* 0x885 */
     u8 _pad886[0x888 - 0x886];
     u8 x888;            /* 0x888 */
-    u8 _pad889[0x8B6 - 0x889];
+    u8 _pad889[0x88B - 0x889];
+    u8 x88B;            /* 0x88B 1 after emNN_init */
+    u8 _pad88C[0x8B6 - 0x88C];
     u8 x8B6;            /* 0x8B6 eyes shown (eft07) */
     u8 _pad8B7[0x8C3 - 0x8B7];
     u8 x8C3;            /* 0x8C3 0: em_cdm_act_flag_ck runs before an action is set */
@@ -144,7 +160,9 @@ typedef struct EMW {
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
     u8 _pad95A[0x95D - 0x95A];
     s8 x95D;            /* 0x95D (em14_sasari_ck) */
-    u8 _pad95E[0x9EA - 0x95E];
+    u8 _pad95E[0x9E1 - 0x95E];
+    u8 x9E1;            /* 0x9E1 (em18_init: 5) */
+    u8 _pad9E2[0x9EA - 0x9E2];
     s8 x9EA;            /* 0x9EA trap state (shell12_m) */
     u8 _pad9EB[0x9F3 - 0x9EB];
     u8 x9F3;            /* 0x9F3 0: em15 fly 24 falls back to act 0/7 */

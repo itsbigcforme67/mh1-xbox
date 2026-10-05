@@ -222,3 +222,15 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
   code) all match. EMW 0x3B4 rate_x: rate vector x; with adj_y (0x3B8) and
   adj_z (0x3BC) it forms a f32[3] that em19_rate_add_calc copies and
   rotates by ang[1] before adding to pos.
+- Monster init files em02_init.c, em04_init.c, em09_init.c (+ Em09_item_sub),
+  em18_init.c, em19_init.c (+ em19_act_set): all match. Common pattern:
+  quest 0 places the monster by spawn slot em->x13 (stage 15: 3-bit grid
+  around (9500, 9200); otherwise a fixed spot or stage_start_pos[stage]),
+  then em_char_set(em, 1), x388 = 0, em_act_set(em, 0, 1), hit points via
+  em_hp_vital_set, and the work block's home position. New fields: EMW
+  x13, x1B, x40C/x40E, x56A, x734, x765, x7EE, x88B, x9E1; GAME_W x218
+  (carried-over hit points, em02). quest_w is declared file-locally
+  (QUEST_W {s16 no at +8}), as in tutorial.c.
+- Lessons: `(int)((u32)em->x13 >> 3)` for the original's srl (a u8 >> 3
+  is an int shift, sra); `((f32 *)stage_start_pos)[stage * 3]` for the
+  x term matched where `stage_start_pos[stage][0]` added an andi.

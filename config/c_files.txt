@@ -171,3 +171,8 @@ game 0x005EB3B0 0x005EB4A0 em/em19_flyinit
 game:rodata 0x00689060 0x0068907C em/em19_flyinit
 game 0x005EB780 0x005EBA08 em/em19_move
 game 0x005D04F0 0x005D05F8 em/em15_senkai
+game 0x0057EFA0 0x0057F1E0 em/em02_init
+game 0x0058B850 0x0058BA38 em/em04_init
+game 0x005A7F70 0x005A81A4 em/em09_init
+game 0x005E6C80 0x005E6E00 em/em18_init
+game 0x005E7920 0x005E805C em/em19_init

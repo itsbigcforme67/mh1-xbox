@@ -38,7 +38,9 @@ typedef struct GAME_W {
     u8 shl10_num;       /* 0x210 live shell10s owned by the master player */
     u8 meat_num;        /* 0x211 meat on the spit owned by the master player (eft12) */
     u8 trap_num;        /* 0x212 traps set by the master player (shell12) */
-    u8 _pad213[0x21F - 0x213];
+    u8 _pad213[0x218 - 0x213];
+    s16 x218;           /* 0x218 monster hit points carried over (em02_init) */
+    u8 _pad21A[0x21F - 0x21A];
     u8 info_stop;       /* 0x21F set01 queue paused while set */
     u8 _pad220[0x224 - 0x220];
 } GAME_W;
