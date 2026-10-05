@@ -2,8 +2,8 @@
 
 `build/pc/mhview` is a real-time viewer written in C99. It loads MH1 data
 straight from the user's disc files at run time, with nothing extracted to
-disk, and shows stage 4 (st04) with the Rathian (em01) and a hunter
-standing in it. Both play their motions in real time. Camera is free-fly.
+disk, and shows a stage (default 4, st04; `--stage N` for others) with the Rathian
+(em01) and a hunter standing in it. Both play their motions in real time. Camera is free-fly.
 
 ## Build
 
@@ -42,6 +42,7 @@ offscreen in a hidden window, reads the back buffer and writes a PNG.
 | `--frames N` | frames to render before the screenshot |
 | `--cam x,y,z,yaw,pitch` | camera position and angles (radians) |
 | `--size WxH` | window size |
+| `--stage N` | stage number (game_w.stage, 0-87, hex with 0x), default 4 |
 
 Verified 5 Oct 2026 with build/show/pc_viewer.png and
 pc_viewer_close_0.5.png / _2.0.png:
@@ -70,12 +71,15 @@ The decompiled game C is compiled unchanged with the game's own include/
 headers and linked into the viewer (list in tools/build_pc.sh, GAME=).
 Running natively now:
 
-| file | what it does on stage 4 |
+| file | what it does |
 |----|----|
 | src/main/stage/stage_set.c | stage_set_set, the per-stage spawn list (matches the PS2 code). For st04 it spawns set00, Set13_set(0) and set14 |
 | src/game/set/set00.c | light shafts: st04_1 clay 1, additive, scrolling, turned to the camera (rview_matY) at its two table positions |
 | src/main/set/set13*.c (+ set13_nm.c) | sun glare: st04_1 clay 0 drawn towards sun_pos_tbl[4], faded out when the stage_sphr_tbl spheres hide the sun |
 | src/game/set/set14_nm.c | UV-scrolled waterfalls (st04_1 clays 2 and 3 at 11060,0,1566) |
+| src/game/set/set09.c | ambient creatures (butterflies etc.) on stages 5, 0x10, 0x21, 0x33... |
+| src/game/set/set17.c | plant tiles on stages 1, 2, 3, 46 |
+| set03/04/05_nm/07/08/10/11/15/16/18/19/20_nm/22.c, main set12.c | every other set object the spawn list can start (see each file's header). Effects/shells they spawn are stubs |
 | src/main/hit/hit2.c, hit2c.c | sphere/capsule tests set13 uses |
 
 The `_nm.c` files are near-matches on the PS2 side (logic believed
@@ -105,15 +109,29 @@ src/pc/rt/:
   VU0 asm, and rview_mat / rview_matY (rt_set_camera, as View_move builds
   them: rview_mat = camera world matrix, rview_matY = Ry(camera yaw + 90°)).
 - `rt_main.c`: small main-program functions not decompiled yet, written
-  natively from the asm: clr_flash, hit_cap_pk; hit_point_cyl is a stub.
+  natively from the asm: clr_flash, hit_cap_pk, Pl_stg_ck/Em_stg_ck,
+  frame_check2, flvecApplyMat33_2. Stubs: hit_point_cyl, Create_FOV /
+  flCheckMeshFOV (everything counts as visible; the GPU clips),
+  reload_tex (textures stay resident), camera quake, monster sound,
+  Shell22_set2 / Eft17_set_ex / Eft13_set_pos.
 - `rt_overlay.c`: main C calls overlay functions by address
   (func_6229B0 = set14_set, ...). These names are routed to the ported
   function, or to a stub that prints "not ported yet" once.
-- `rt_data.c`: Capcom data tables are declared empty and filled at start-up
-  from the user's SLPM_654.95 / game.bin by address (nothing copied into
-  the repo). Pointer tables (sun_pos_tbl, stg_eft_mdl_no, stage_sphr_tbl)
+- `rt_data.c` + `tables.txt`: Capcom data tables are declared empty and
+  filled at start-up from the user's SLPM_654.95 / game.bin by address
+  (nothing copied into the repo). Most are listed by name in
+  src/pc/rt/tables.txt; tools/gen_rt_tables.py looks up their address and
+  size in config/symbols/ and writes build/pc/rt_tables.c (run by
+  build_pc.sh). `NAME work` lines are zeroed work areas (em_work,
+  quest_w). Tables in .bss (past the file data of the ELF or overlay)
+  start as zeros. Pointer tables (sun_pos_tbl, stg_eft_mdl_no, stage_sphr_tbl)
   get each PS2 pointer translated to the same bytes in the loaded image.
 - `rt_mem.c`: PS2 address lookup in the ELF and the overlay.
+
+The host's hunter is player_work[0] (rt_set_player: in use, on the stage,
+at its position), so set code that follows the master player works.
+`RT_TRACE=1` prints each set object as it starts (type, arg) and the prims
+queued in the first drawn frame.
 
 Game logic ticks at 30 per second; the host draws its own models (each
 part with its clay_attr_set state), then `rt_game_draw()` walks the
@@ -144,9 +162,11 @@ and ints use separate registers on the PS2, so it still matched). On x86
 the order matters: set13c.c's hit_cap_sphr_m declaration was fixed for this
 (still matches). Check prototypes against the definition when adding C.
 
-Adding more game C: put the file in GAME in tools/build_pc.sh, its data
-tables in rt_data.c, route func_XXXXXX calls in rt_overlay.c, and add
-whatever it calls into rt_*.c.
+Adding more game C: put the file in GAME in tools/build_pc.sh, the data
+tables it needs in src/pc/rt/tables.txt (the link errors name them), route
+func_XXXXXX calls in rt_overlay.c, and add whatever it calls into rt_*.c.
+For split files use the whole-file `_nm.c` (e.g. set05_nm.c), not the
+matching pieces.
 
 ## Design notes, for the port
 
@@ -197,5 +217,9 @@ whatever it calls into rt_*.c.
 - **Runtime:** fl fade alpha is passed as-is (PS2 0x80 = 1.0 is not
   handled). No players/monsters run as game C yet, so player_work is
   zero (set13 uses the master player's position on some stages).
-- **Hard-coded scene:** only stage 4, em01 and one armour set, chosen in
-  viewer.c.
+- **Scene:** `--stage N` loads any stage (files from main's per-stage
+  tables); em01 and one armour set are fixed. On stages other than 4 the
+  actors and camera stand at the middle of the ground collision. Some area
+  models do not line up with their collision (st05's model is centred on
+  the origin, its ground is not), so they need a placement offset that is
+  not found yet; a few stages show holes in the floor.
