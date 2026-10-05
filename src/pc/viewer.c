@@ -11,6 +11,7 @@
  * Shift fast, Esc quit. Docs: docs/pc.md.
  */
 #include "fl/fl.h"
+#include "rt/rt.h"
 
 #include <SDL.h>
 #include <stdio.h>
@@ -34,28 +35,12 @@ static fmt_blob load(const char *name, uint8_t **keep)
     return b;
 }
 
-/* Read bytes at a PS2 virtual address from the ELF (program headers). */
-static uint8_t *elf;
-static size_t elf_n;
-
+/* PS2 addresses (ELF / overlay) are looked up through the runtime. */
 static const uint8_t *elf_addr(uint32_t va)
 {
-    uint32_t phoff, i, n;
-    if (!elf || elf_n < 52)
-        return NULL;
-    phoff = fmt_u32(elf + 28, FMT_LE);
-    n = fmt_u16(elf + 44, FMT_LE);
-    for (i = 0; i < n; i++) {
-        const uint8_t *ph = elf + phoff + 32 * i;
-        uint32_t off = fmt_u32(ph + 4, FMT_LE), vaddr = fmt_u32(ph + 8, FMT_LE);
-        uint32_t filesz = fmt_u32(ph + 16, FMT_LE);
-        if (fmt_u32(ph, FMT_LE) == 1 && va >= vaddr && va < vaddr + filesz && off + (va - vaddr) < elf_n)
-            return elf + off + (va - vaddr);
-    }
-    return NULL;
+    return rt_addr(va, 4);
 }
 
-/* ------------------------------------------------------------ png */
 static uint32_t crc_table[256];
 
 static uint32_t crc32_update(uint32_t c, const uint8_t *p, size_t n)
@@ -295,6 +280,7 @@ int main(int argc, char **argv)
     static const int parts[HUNTER_PARTS] = { 1, 0, 1, 1, 1, 1 };
     float hx = 10900, hz = 7700, rx = 10000, rz = 6700, gy;
     Uint32 t0;
+    int set_h0 = -1, ticks = 0;
 
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shot") && i + 1 < argc) shot = argv[++i];
@@ -316,18 +302,14 @@ int main(int argc, char **argv)
         return 1;
     }
     snprintf(path, sizeof path, "%s/SLPM_654.95", disc);
+    if (rt_load_elf(path) != 0)
+        fprintf(stderr, "cannot read %s: no game data tables\n", path);
     {
-        FILE *f = fopen(path, "rb");
-        if (f) {
-            fseek(f, 0, SEEK_END);
-            elf_n = (size_t)ftell(f);
-            fseek(f, 0, SEEK_SET);
-            elf = malloc(elf_n);
-            if (fread(elf, 1, elf_n, f) != elf_n)
-                elf_n = 0;
-            fclose(f);
-        }
+        uint8_t *ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "game.bin"), &n);   /* stored raw */
+        rt_set_overlay(ovl, ovl ? n : 0);
     }
+    if (rt_import_data() != 0)
+        fprintf(stderr, "some game data tables are missing\n");
     if (gfx_init(W, H, "MH1 PC viewer", shot != NULL) != 0)
         return 1;
 
@@ -346,6 +328,14 @@ int main(int argc, char **argv)
     if (set_link.p)
         fl_model_create(&set, fmt_link_entry(set_link, 0, FMT_LE), fmt_link_entry(set_link, 1, FMT_LE),
                         set_tex, 0, FMT_LE);
+    if (set.npart) {            /* hand the set model to the game C (set_mdlw) */
+        gfx_clay *c[64];
+        int k, nc = set.npart < 64 ? set.npart : 64;
+        for (k = 0; k < nc; k++)
+            c[k] = set.part[k].clay;
+        set_h0 = rt_bind_set_model(c, nc);
+    }
+    rt_game_init(4);
 
     if (monster_load(&rathian, "em01_amh.bin", "em01_tex.bin", "em01_tbl.bin", 3) != 0)
         fprintf(stderr, "em01 load failed\n");
@@ -430,6 +420,12 @@ int main(int argc, char **argv)
         flmat_invert_affine(view, camw);
         flmat_perspective(proj, 1.0f, (float)W / H, 10.0f, 80000.0f);
 
+        /* game logic ticks at 30 per second (at least 2, so set objects
+         * have run their init and queued their prims) */
+        while (ticks < 2 + (int)fr) {
+            rt_game_move();
+            ticks++;
+        }
         fl_skel_update(&rathian.skel, fr);
         fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
         hunter_pose(&pl, fr, &light);
@@ -447,9 +443,14 @@ int main(int argc, char **argv)
             fl_model_draw(&stage, 1);
             gfx_set_render_state(GFX_RS_ZWRITE, 1);
             fl_model_draw(&stage, 0);
-            if (set.npart)
-                fl_model_draw(&set, -1);
+            {   /* set-model parts the game C draws itself are skipped here */
+                int k;
+                for (k = 0; k < set.npart; k++)
+                    if (set_h0 < 0 || k >= 64 || !rt_clay_claimed(set_h0 + k))
+                        gfx_execute_clay(set.part[k].clay);
+            }
         }
+        rt_game_draw();                 /* game C prims (set14 waterfalls) */
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)rathian.world);
         fl_model_draw(&rathian.model, -1);
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)pl.world);
