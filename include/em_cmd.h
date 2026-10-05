@@ -30,6 +30,133 @@
         (q) = next_cmd_search(em, q);                              \
     }
 
+/* Select command (code CODE): n entries follow, each a value byte and a body; run the body
+ * whose value equals CUR, else skip the whole command. Modes 1/2: skip to the end marker. */
+#define CMD_SEL_FUNC(name, code, vtype, ctype, cur)                                      \
+u8 *name(EMW *em, u8 *p) {                                                     \
+    u8 *q;                                                                     \
+    u8 *r;                                                                     \
+    u8 n;                                                                      \
+    vtype v;                                                                   \
+    ctype c;                                                                   \
+    s32 i;                                                                     \
+    u16 more;                                                                  \
+                                                                               \
+    q = p;                                                                     \
+    switch (*q++) {                                                            \
+    case 0:                                                                    \
+        n = *q;                                                                \
+        q += 3;                                                                \
+        for (i = 0; i < n; i++) {                                              \
+            v = *q;                                                            \
+            c = (cur);                                                         \
+            q += 1;                                                            \
+            if (c == v) {                                                      \
+                break;                                                         \
+            }                                                                  \
+            if (v < c) {                                                       \
+                r = cmd_end_search(em, q, code, 3);                            \
+                q = r;                                                         \
+                if (r[1] == 2 || r[1] == 3) {                                  \
+                    q = q + 2;                                                 \
+                    break;                                                     \
+                }                                                              \
+                q = q + 2;                                                     \
+            } else {                                                           \
+                more = 1;                                                      \
+                do {                                                           \
+                    r = cmd_end_search(em, q, code, 3);                        \
+                    if ((r[0] == (code) && r[1] == 2) ||                       \
+                        (r[0] == (code) && r[1] == 3)) {                       \
+                        more = 0;                                              \
+                    }                                                          \
+                    q = next_cmd_search(em, r);                                \
+                } while (more);                                                \
+                break;                                                         \
+            }                                                                  \
+        }                                                                      \
+        break;                                                                 \
+    case 1:                                                                    \
+        q += 1;                                                                \
+    case 2:                                                                    \
+        more = 1;                                                              \
+        do {                                                                   \
+            q = cmd_end_search(em, q, code, 3);                                \
+            if (q[0] == (code) && q[1] == 3) {                                 \
+                more = 0;                                                      \
+            }                                                                  \
+            q = next_cmd_search(em, q);                                        \
+        } while (more);                                                        \
+        break;                                                                 \
+    case 3:                                                                    \
+        break;                                                                 \
+    }                                                                          \
+    return q;                                                                  \
+}
+
+/* Same, but a current value of 0xFF (none) never matches. */
+#define CMD_SEL_FUNC_W(name, code, vtype, ctype, cur)                                      \
+u8 *name(EMW *em, u8 *p) {                                                     \
+    u8 *q;                                                                     \
+    u8 *r;                                                                     \
+    u8 n;                                                                      \
+    vtype v;                                                                   \
+    ctype c;                                                                   \
+    s32 i;                                                                     \
+    u16 more;                                                                  \
+                                                                               \
+    q = p;                                                                     \
+    switch (*q++) {                                                            \
+    case 0:                                                                    \
+        n = *q;                                                                \
+        q += 3;                                                                \
+        for (i = 0; i < n; i++) {                                              \
+            v = *q;                                                            \
+            c = (cur);                                                         \
+            q += 1;                                                            \
+            if (c == v && c != 0xFF) {                                                      \
+                break;                                                         \
+            }                                                                  \
+            if (v < c && c != 0xFF) {                                                       \
+                r = cmd_end_search(em, q, code, 3);                            \
+                q = r;                                                         \
+                if (r[1] == 2 || r[1] == 3) {                                  \
+                    q = q + 2;                                                 \
+                    break;                                                     \
+                }                                                              \
+                q = q + 2;                                                     \
+            } else {                                                           \
+                more = 1;                                                      \
+                do {                                                           \
+                    r = cmd_end_search(em, q, code, 3);                        \
+                    if ((r[0] == (code) && r[1] == 2) ||                       \
+                        (r[0] == (code) && r[1] == 3)) {                       \
+                        more = 0;                                              \
+                    }                                                          \
+                    q = next_cmd_search(em, r);                                \
+                } while (more);                                                \
+                break;                                                         \
+            }                                                                  \
+        }                                                                      \
+        break;                                                                 \
+    case 1:                                                                    \
+        q += 1;                                                                \
+    case 2:                                                                    \
+        more = 1;                                                              \
+        do {                                                                   \
+            q = cmd_end_search(em, q, code, 3);                                \
+            if (q[0] == (code) && q[1] == 3) {                                 \
+                more = 0;                                                      \
+            }                                                                  \
+            q = next_cmd_search(em, q);                                        \
+        } while (more);                                                        \
+        break;                                                                 \
+    case 3:                                                                    \
+        break;                                                                 \
+    }                                                                          \
+    return q;                                                                  \
+}
+
 /* tables of programs, one per monster kind (version picked by the byte at 0x3F341E) */
 extern u8 ***em_cmd0_tbl[], ***em_cmd1_tbl[], ***em_cmd2_tbl[], ***em_cmd3_tbl[];
 extern u8 ***em_cmd4_tbl[], ***em_cmd5_tbl[], ***em_cmd6_tbl[];
@@ -180,7 +307,7 @@ f32 CalcDistanceXZ(f32 *, f32 *);
 void cmd_target_kind_set(EMW *, f32 *);
 void em_area_move_init(EMW *);
 void em_g_init_flag_set(EMW *, u8);
-void em_hp_add(EMW *, s16);
+void em_hp_add(EMW *, int);
 void em_hungry_add(EMW *, s32);
 void em_thirst_add(EMW *, s32);
 void em_suimin_add(EMW *, s32);
