@@ -152,3 +152,7 @@ x88D now s8 as proved by lb in Em_hagi_point_cnt_ck).
 - Lesson (float add order): a redundant `(f32)(int)(...)` cast changed MWCC's evaluation order (stage_m).
 - Lesson: tools/align.py output lines are indented ("   - "); count real diffs with `grep -c '^   [-+]'`. For small files the
   permutation of N independent statements can be brute-forced with align.py (~1 s per try; game3).
+- quest_item_ck3, quest_supplies_get now match: reading consecutive u16/s16 fields of a pointer must be written `p++; id = *p; p++; num = *p;`
+  (or `*p++`), not `p[1]` / `p += 2` (the compiler then loads both before bumping p; the original bumps in between).
+- Still parked: Quest_retire_set (6 instr: `bne; nop` empty delay slot and -1/7 register order; switch form gets the -1 register right but wrong branch),
+  Quest_str_get, Em_hagi_point_cnt_ck, quest_em_init_sub2 (see above).

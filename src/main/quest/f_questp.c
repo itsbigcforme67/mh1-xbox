@@ -166,6 +166,20 @@ typedef struct REMI {
     u16 num;            /* 0x04 count */
 } REMI;
 
+int quest_item_ck3(unused, p)
+int unused;
+s16 *p;
+{
+    u16 id;
+    s16 num;
+
+    p++;
+    id = *p;
+    p++;
+    num = *p;
+    return (s16)Pl_item_num_ck(&player_work[game_w.master], id, id) >= num;
+}
+
 int quest_share_item_ck(q)
 QUEST_W *q;
 {

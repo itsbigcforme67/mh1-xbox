@@ -166,6 +166,20 @@ typedef struct REMI {
     u16 num;            /* 0x04 count */
 } REMI;
 
+u16 *quest_supplies_get(pl, p)
+PLW *pl;
+u16 *p;
+{
+    u16 a = *p;
+    s16 b;
+
+    p++;
+    b = *p;
+    p++;
+    Pl_item_stack(pl, a, b);
+    return p;
+}
+
 int quest_item_set(id, num)
 s16 id;
 s16 num;

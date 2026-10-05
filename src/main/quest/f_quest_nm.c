@@ -2570,10 +2570,12 @@ u16 *quest_supplies_get(pl, p)
 PLW *pl;
 u16 *p;
 {
-    u16 a = p[0];
-    s16 b = p[1];
+    u16 a = *p;
+    s16 b;
 
-    p += 2;
+    p++;
+    b = *p;
+    p++;
     Pl_item_stack(pl, a, b);
     return p;
 }
@@ -2680,8 +2682,9 @@ s16 *p;
     u16 id;
     s16 num;
 
-    id = p[1];
-    p += 2;
+    p++;
+    id = *p;
+    p++;
     num = *p;
     return (s16)Pl_item_num_ck(&player_work[game_w.master], id, id) >= num;
 }
