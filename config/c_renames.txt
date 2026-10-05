@@ -30,6 +30,7 @@ build/src/game/em/em04.c.o .rodata .data
 build/src/game/em/em04b.c.o .rodata .data
 build/src/game/em/em07.c.o .rodata .data
 build/src/game/em/em08.c.o .rodata .data
+build/src/game/em/em09c.c.o .rodata .data
 build/src/game/em/em14.c.o .rodata .data
 build/src/game/em/em15.c.o .rodata .data
 build/src/game/em/em17.c.o .rodata .data
