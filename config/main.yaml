@@ -336,6 +336,8 @@ segments:
       - [0x087C50, c, fl/fm01]
       - [0x087D10, asm, text/f_flps2_187D10]
       - [0x08B3A4, asm, text/g_flPS2VramInit]
+      - [0x08B3B0, c, fl/vr01]
+      - [0x08B9F8, asm, text/flPS2SearchVramSpace]
       - [0x08BD90, asm, text/f_flps2_18BD90]
       - [0x08D874, asm, text/g_flInitPhaseStarted]
       - [0x08D880, c, fl/fm02]
