@@ -707,6 +707,8 @@ lobby 0x005AD7E0 0x005ADBB8 cnet/cnlbst
 lobby 0x005ADCE0 0x005AE160 cnet/cnlbsu
 lobby 0x005AE300 0x005AE320 cnet/cnlbsv
 lobby 0x005AE5C0 0x005AE7E8 cnet/cnlbsw
+lobby 0x0059DB40 0x0059EEB4 lb/lbnpc
+lobby 0x0059F0F0 0x0059F6AC lb/lbnpcb
 lobby:rodata 0x0065E000 0x0065E008 cnet/cnlbsj
 lobby:rodata 0x0065E008 0x0065E010 cnet/cnlbsm
 lobby:rodata 0x0065DEF0 0x0065DF10 cnet/cnlbsc
