@@ -134,3 +134,29 @@ Lessons (each confirmed by a match):
   from adding andi at the call.
 - Statics called across a split need the suffixed global name (em_move00_0058C350 ...), and
   the jump-table order check is only done by rebuild.sh.
+
+# em03 (f_em_5873D0, 0x5873D0-0x58B84C, monster kind 3, 61 functions)
+57 of 61 match and are built (rebuild all OK): em03.c (0x5873D0-0x588344, rodata
+0x686490-0x686500), em03b.c (0x588760-0x588BEC), em03c.c (0x588E90-0x58B84C, rodata
+0x686500-0x686590); include/em03.h holds EM03W and the shared externs. em03_nm.c is the
+whole file. Near-matches (stay asm): em_mv01/02/03 (0x588350, the "turn by at most 0x40"
+block: the original keeps the angle difference in v0 and the old angle in v1 and uses `at`
+for the constants, mine puts them in v1/a0; no source form tried (single expression,
+locals, pointer, repeated expression) changes it) and em_mv12 (0x588BF0, 7 instructions,
+the same a1/a2 swap of the turn code as em10_turn_sub; declaration order permutations do
+not help).
+Lessons:
+- Functions called from a dispatcher with the monster work pointer in a1 (em_move00(em, w))
+  have that second parameter even when unused, and the callees too (em_act*(em, w)): it shows
+  as the jump-table base register being a2 instead of a1.
+- `if (a || (b && c))` over u8 locals needs `(a & 0xFF)` tests to match the original's andi
+  (em03_main); u8 locals alone are not re-masked.
+- `for (pn = 0; pn < game_w.pl_num; pn++)` with `s8 pn` gives the dsll32/dsra32 pair and
+  reloads pl_num every pass (em03_main); `if (pn == game_w.pl_num - 1) em->x839 = 1;` as the last
+  statement compiles with the store in the branch delay slot (executed on both paths).
+- A lone store before an if (`x8C3 = 0` in em03_init) belongs inside the preceding if when
+  the original shows it after the bne with a nop in the delay slot.
+- A generator (asm to C) is practical for the sound/effect script ef_move_sub: it tracks
+  a0-a3 and f12 constants through addiu/daddu/lui/ori/mtc1 and emits sound_call(...) lines;
+  the few blocks with control flow were then written by hand (per-animation switch with a
+  reverse-ordered compare ladder, `case 0x3E9: break;` for the empty first case).
