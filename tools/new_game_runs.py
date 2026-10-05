@@ -31,6 +31,7 @@ for l in out.split("\n"):
         bad = set(x.strip() for x in l.rsplit(":", 1)[1].split(",")) - {"none", ""}
 lines = [re.sub(r"\s+#.*", "", l).replace(" src/game/", " ") for l in out.split("\n") if l.startswith("game")]
 for rf in glob.glob("%s/%s[0-9][0-9].c" % (d, stem)):          # top-level macro invocations (CMD_SEL_FUNC) are copied into every run: keep only this run's
+    if int(re.search(r"(\d\d)\.c$", rf).group(1)) < nxt: continue
     t = open(rf).read()
     mh = re.match(r"/\*[^:]*: ([^*]*)\. Whole file", t)
     if mh and "CMD_SEL_FUNC" in t:
