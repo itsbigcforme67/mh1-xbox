@@ -75,7 +75,7 @@ base = score(src)
 print('base', base, 'sites', len(sites)); sys.stdout.flush()
 best = (base, src)
 try:
-    for n in (1, 2):
+    for n in ((1, 2) if len(sites) <= 14 else (1,)):
         for sel in itertools.combinations(range(len(sites)), n):
             s = score(apply([sites[k] for k in sel]))
             if s < best[0]:

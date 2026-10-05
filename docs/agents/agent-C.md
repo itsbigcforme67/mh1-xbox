@@ -731,3 +731,22 @@ Lessons (function that showed it):
 - flPS2 clay/dma/file (0x16AEC0-0x170000): flPS2ConvClayData 4536, flPS2SetMaterialData 1580, flPS2StoreImageB 1312, flPS2VIF1MakeLoadImage 1196 (35 functions, 19 KB, Capcom's own flPS2 layer)
 - not listed: ADX/CRI/sce/SJ/newlib/mpv (0x100008-0x117E50 front, 0x170000-0x21F000 vendor), IME (0x23E500-0x24A240, agent E), memory card (0x2814E0-0x2862F0, agent E).
 Written but not matching (`_nm.c`): see tools/ scan idea: `for f in src/main/*/*_nm.c; check.py -v` and sort by differing instructions; 95 functions are within 8 diffs.
+
+## Sixth assignment: main leftovers and small near-match sweep (Sonnet worker C)
+Linked (all rebuild OK): ud/udb01-02 (gun_check, Equip_ok_ck, Get_equip_bit, wyvern_kill_cnt_up, Gunner_wasure_ck, Ex_quest_ck),
+quest/qstb01-03, sound/sndb01-02 + sndc01-04 (Snd_init, se_req, Code_Make, Pl/Em/Npc_se_req2, snd_joint_load_pl, pack loaders),
+chat/chatb01 + chatc01, fl/plvecb01, em/femb01, menu/pitx01, sk/cmdy01 + skx01, net/aqcmdx01 + cngmsgx01, cam/camr2x01,
+plsel/plsel01-02 (player_sel, player_wait, em_select; debug player/monster select, plsel_nm.c).
+Near-match still: se_req2 (7: `vol` in v1 not a3), armor_sd_req (original 5 saved regs), snd_joint_load (15), disp_em_select (68, regs),
+sel_default_set (129, regs), wall_act_ck/wall_vec_set (1: index add operand order, not fixed by 15 variants), load_shadow (2).
+Lessons:
+- check.py cannot see switch case ORDER or the data a case uses: Equip_ok_ck/Get_equip_bit matched under check.py but the jump table
+  differed (case blocks in source order 2,3,5,4,0). Always rebuild before trusting a run.
+- Compare operand order picks the slt destination: `v[j]->time > pivot` gives `slt at` where `pivot < v[j]->time` gives v1 (AQQuickSortSub);
+  `rp->sec > target` (cam_rail_move_sub); `wr + n > m->cap` (CngNet_MSG_Write); `n*3+3 <= a` (cmd_next_kouho).
+- `(u8 *)(i * 4) + (int)ptr` swaps the addu operands (UseItemChk); `lpSKey[(n - x) + 0x358]` (cmd_prev_bun); `(v + (int)base)` (Em_data_com_adrs_get).
+- K&R definition `int f(p, f, e) int p;` + local `u8 q = p;` stops the re-mask of a u8 param passed on (palette_ng_sub2).
+- `u8 *m = mission_area;` declared first hoists the gp load into the branch delay slot (Start_item_data_adrs_get).
+- Calls whose callee takes s16 args load with lh: prototype SoftKeyboard_move(s8 *, s16, s16) (Reibun_Edit_Core).
+- Local `u8 *sw = select_w;` keeps the base in a saved register (player_sel/player_wait). tools/flipcmp.py tries operand flips per function.
+- The unnamed 0x24A240+ and 0x1C0000-0x230000 runs linked here are now agent D's range; all were committed before the hand-over.
