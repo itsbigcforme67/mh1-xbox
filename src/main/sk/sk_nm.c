@@ -183,7 +183,7 @@ void Softkey_free_1(void *, void *, int);
 void hk_key_f3(void *);
 void hk_key_f4(void *);
 void hk_key_space(int);
-void kbd_plt1_move(void *, int, void *);
+void kbd_plt1_move(u8 *, int, void *);
 void kbd_reibun_input_sub(int, int, void *);
 void sk_backspace(int, int, void *);
 void sk_cmd_input(u8 *);
@@ -1207,7 +1207,7 @@ int yn_mask_char_check(u8 *p) {
     return r;
 }
 
-int palette_ng_sub2(u8 a, u8 *b, int c);
+int palette_ng_sub2(u8 a, u8 *b, u8 *c);
 int palette_ng_sub(int, u8 *, u8 *);
 
 int key_mask_check(void *k) {
@@ -1253,4 +1253,177 @@ int mh_char_make_check(u8 *p) {
         return 0;
     }
     return 1;
+}
+
+s8 sk_zen_han_check(u8, int);
+void sk_yn_kigou_func(u8 *);
+
+int palette_ng_sub(int pal, u8 *f, u8 *e) {
+    u8 tmp;
+    u8 p = pal;
+    u8 a;
+    u8 b;
+    u8 c;
+    u8 d;
+    u32 m;
+
+    if (f == 0) {
+        f = &tmp;
+    } else if (p == *f) {
+        return 0;
+    }
+    if (e == 0) {
+        e = &tmp;
+    }
+    switch (p) {
+    case 0:
+        a = p | 8;
+        b = p;
+        c = p;
+        d = p;
+        break;
+    case 1:
+        b = p + 5;
+        a = p | 8;
+        c = p + 0xD;
+        d = b;
+        break;
+    case 2:
+        b = p + 5;
+        a = p | 8;
+        c = p + 0xD;
+        d = 0x10;
+        break;
+    case 3:
+        b = p + 8;
+        a = p;
+        c = p;
+        d = b;
+        break;
+    case 4:
+        if (*(s32 *)(SKP(0x10) + 0x20) == 0) {
+            return 1;
+        }
+        goto def;
+    case 5:
+        if (*(s32 *)(SKP(0x10) + 0x28) == 0) {
+            return 1;
+        }
+        goto def;
+    default:
+def:
+        c = p;
+        a = p;
+        d = p;
+        b = p;
+        break;
+    }
+    m = SKS32(0x20);
+    if (!(m & (1 << p))) {
+        *f = p;
+        *e = p;
+        return 0;
+    }
+    if (!(m & (1 << a))) {
+        *f = p;
+        *e = a;
+        return 0;
+    }
+    if (!(m & (1 << b))) {
+        *f = p;
+        *e = b;
+        return 0;
+    }
+    if (!(m & (1 << c))) {
+        *f = p;
+        *e = c;
+        return 0;
+    }
+    if (!(m & (1 << d))) {
+        *f = p;
+        *e = d;
+        return 0;
+    }
+    *f = p;
+    return 1;
+}
+
+int palette_ng_sub2(u8 p, u8 *f, u8 *e) {
+    u8 cur;
+
+    if (p < 6) {
+        return palette_ng_sub(p, f, e);
+    }
+    if (e == 0) {
+        cur = SKB(0x1E);
+    } else {
+        cur = *e;
+    }
+    switch (p) {
+    case 7:
+    case 6:
+        if (sk_zen_han_check(cur, 0) >= 0) {
+            return 0;
+        }
+        break;
+    case 8:
+        if (sk_daisyo_check(cur) >= 0 && !(SKB(0x1E) & 8)) {
+            return 0;
+        }
+        break;
+    case 9:
+        if (sk_daisyo_check(cur) >= 0 && (SKB(0x1E) & 8)) {
+            return 0;
+        }
+        break;
+    }
+    return 1;
+}
+
+void kbd_plt1_move(u8 *c, int a, void *b) {
+    if (palette_ng_sub2(c[3], lpSKey + 0x1F, lpSKey + 0x1E) != 0) {
+        se_req(7, 0x15, 0);
+        return;
+    }
+    SKS8(0x35) = 0;
+    sk_set_yn_kigou_f();
+    switch (c[3]) {
+    case 4:
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        kbd_free_set();
+        sk_set_etc_data(0);
+        break;
+    case 3:
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        if (SKS8(0x36) != 0) {
+            sk_yn_kigou_func(0);
+            sk_key_repeat(0, 0);
+        }
+        sk_set_etc_data(0);
+        break;
+    case 5:
+        cmd_kakutei_all();
+    case 0:
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        sk_set_etc_data(0);
+        break;
+    case 1:
+    case 2:
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        sk_set_etc_data(0);
+        break;
+    case 6:
+    case 7:
+        sk_zen_han_chg(lpSKey);
+        break;
+    case 8:
+    case 9:
+        sk_daisyo_chg(lpSKey);
+        break;
+    }
+    se_req(7, 0x16, 0);
 }
