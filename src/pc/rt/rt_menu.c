@@ -115,6 +115,6 @@ void func_63B470() {}
 NOP(Add_to_Item_preparation_list_0) NOP0(Get_hunter_status) NOP(ItemCopy_Pl2Ud)
 NOP0(Item_preparation) NOP0(Item_preparation_adrs) NOP0(Item_preparation_list_chk) NOP0(Item_preparation_list_chk_0)
 NOP0(Item_preparation_list_num) NOP0(Item_preparation_list_search) NOP0(Item_preparation_one_ck)
-NOP0(Item_preparation_rate_0) NOP0(ListSelect) NOP0(Menu_select_mv) NOP0(PageSelect) NOP(Put_sprite_rotate)
+NOP0(Item_preparation_rate_0) NOP(Put_sprite_rotate)
 NOP(set_viewproj) NOP(SetBlendingMode) NOP0(Get_bowgun_atk) NOP(Draw_square)
 /* fonts: rt_font.c */

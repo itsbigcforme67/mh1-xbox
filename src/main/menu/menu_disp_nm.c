@@ -1843,7 +1843,7 @@ void disp_gun_load_mess(int n) {
 
 /* 0x131D50 */
 void disp_menu(int sw, PIT_W *p) {
-    char buf[16];
+    char buf[48];   /* the title " ~C05menu  ~C00%01d/..." is longer than 16 bytes */
     int n, base, s3;
     u32 col;
     int v;
