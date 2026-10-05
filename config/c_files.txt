@@ -214,8 +214,10 @@ main:rodata 0x00358230 0x00358250 hit/hit
 main 0x00114280 0x00114318 hit/hitb
 main 0x00114880 0x00114A88 hit/hitc
 main 0x00114AE0 0x00114B50 hit/shit1
+main 0x00116940 0x001169F8 hit/shit15
 main 0x00117BA0 0x00117C98 hit/shit5
 main 0x00119010 0x00119210 hit/shit6
+main 0x0011B1E0 0x0011B298 hit/shit16
 main 0x0011C9F0 0x0011CA74 hit/shit7
 main 0x0028CE00 0x0028CEA4 hit/hit2
 main 0x0028CFB0 0x0028D098 hit/hit2b

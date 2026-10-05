@@ -39,9 +39,7 @@ int GroundFieldInCheck(f32 *p) {
         z = p[2];
         if (z < 8.0f) return 0;
         if (x < (f32)((u32)diorama_w.gcsx * (u32)diorama_w.gnx) - 8.0f) {
-            if (z < (f32)((u32)diorama_w.gcsz * (u32)diorama_w.gnz) - 8.0f) {
-                return 1;
-            }
+            if (z < (f32)((u32)diorama_w.gcsz * (u32)diorama_w.gnz) - 8.0f) return 1;
             return 0;
         }
         return 0;
@@ -57,9 +55,7 @@ int WallFieldInCheck(f32 *p) {
         z = p[2];
         if (z < 8.0f) return 0;
         if (x < (f32)((u32)diorama_w.wcsx * (u32)diorama_w.wnx) - 8.0f) {
-            if (z < (f32)((u32)diorama_w.wcsz * (u32)diorama_w.wnz) - 8.0f) {
-                return 1;
-            }
+            if (z < (f32)((u32)diorama_w.wcsz * (u32)diorama_w.wnz) - 8.0f) return 1;
             return 0;
         }
         return 0;
@@ -84,6 +80,8 @@ int AreaFieldInCheck(int stg, f32 *p) {
 s32 GetWallTblAdrs(f32 *p) {
     f32 csz = (u32)diorama_w.wcsz;
     f32 csx = (u32)diorama_w.wcsx;
+    int iz = (int)(p[2] / csz);
+    int ix = (int)(p[0] / csx);
 
-    return (s32)diorama_w.wtbl[(int)(p[2] / csz) + diorama_w.wnz * (int)(p[0] / csx)];
+    return (s32)diorama_w.wtbl[iz + ix * diorama_w.wnz];
 }
