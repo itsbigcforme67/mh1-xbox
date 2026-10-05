@@ -205,8 +205,6 @@ segments:
       - [0x05C210, c, stage/f_stage]
       - [0x05C6A4, asm, text/stage_se_move]
       - [0x05C6B0, c, stage/f_stageb]
-      - [0x05C93C, asm, text/stage_m]
-      - [0x05CCE0, c, stage/f_stagec]
       - [0x05CD84, asm, text/trans_stage]
       - [0x0611E4, asm, text/g_system_w_init]
       - [0x061480, asm, text/f_font]

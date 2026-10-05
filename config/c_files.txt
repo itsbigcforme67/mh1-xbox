@@ -232,8 +232,7 @@ main 0x00134C20 0x00134E68 pl/pl01
 main 0x00134F30 0x00135078 pl/pl02
 main 0x001359C0 0x00135B00 pl/pl03
 main 0x0015C210 0x0015C6A4 stage/f_stage
-main 0x0015C6B0 0x0015C93C stage/f_stageb
-main 0x0015CCE0 0x0015CD84 stage/f_stagec
+main 0x0015C6B0 0x0015CD84 stage/f_stageb
 main 0x00127950 0x00127C6C menu/menu01
 main 0x00133B40 0x00133FA4 menu/menu18
 main 0x00133790 0x001337A0 menu/menu17

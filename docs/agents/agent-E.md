@@ -34,13 +34,12 @@ Lessons:
 - `if (x > 0x22550FF)` instead of `>= 0x2255100` stops the compiler sharing
   the lui of two constants (Game_task).
 
-## f_stage (0x15C210-0x160E??): every function written, 5 of 11 built
-Built (main OK): f_stage.c (stage_mv_ck .. stage_i), f_stageb.c (stage_se_move), f_stagec.c (move_stage, trans_stage_sub).
+## f_stage (0x15C210-0x160E??): every function written, 6 of 11 built
+Built (main OK): f_stage.c (stage_mv_ck .. stage_i), f_stageb.c (stage_se_move, stage_m, move_stage, trans_stage_sub; f_stagec.c was merged into it).
 stage_set_set is in src/main/stage/stage_set.c (agent A). Source of truth for the rest: src/main/stage/f_stage_nm.c (functions in
 address order, brace on its own line so tools/split_runs.py can parse them; the file is compiled but not linked).
 Near-matches:
-- stage_m (0x15C940): 5 of 231 instructions off. The sum `65.0f + it->pos[1] + (f32)((r & 0x3F) - 0x20)` needs the cast
-  evaluated first but added second (`add.s f0,f0,f2`); I could only get `add.s f0,f2,f0`.
+- stage_m MATCHES now (main OK): `pos[1] = (65.0f + it->pos[1]) + (f32)(int)((r & 0x3F) - 0x20);` -- the extra `(int)` cast (a no-op) is what puts the cvt before the add and gives `add.s f0,f0,f2`. Lesson: a redundant `(f32)(int)` cast changes MWCC's float expression scheduling.
 - spr_disp_sub (colour lerp, 0x1608C0): 67/123. static (see lesson) helps stage_spr_disp, the byte shuffling schedule differs.
 - stage_spr_disp (sky gradient from the sun angle + flash overlay, 0x160AB0, 1844 bytes = same size): ~132/461, the colour table loads
   (8 packed colours built from bytes) use different temp registers.

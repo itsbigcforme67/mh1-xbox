@@ -162,6 +162,8 @@ f32 flSin(f32);
 #define SFRM ((s16)w->x08)
 #define X1E (*(u16 *)&game_w.x1E)
 
+/* trans_stage lives in trans_stage.c (single definition, also used by the PC runtime). */
+
 void stage_se_move(w)
 STGW *w;
 {
@@ -313,7 +315,7 @@ void stage_m(STGW *w)
                     r = ran_suu(1);
                     pos[0] = it->pos[0] + (f32)((r & 0x3F) - 0x20);
                     r = ran_suu(1);
-                    pos[1] = (f32)((r & 0x3F) - 0x20) + (65.0f + it->pos[1]);
+                    pos[1] = (65.0f + it->pos[1]) + (f32)(int)((r & 0x3F) - 0x20);
                     r = ran_suu(1);
                     pos[2] = it->pos[2] + (f32)((r & 0x3F) - 0x20);
                     func_618F00(pos, 8);
@@ -347,9 +349,6 @@ u8 *p;
     clay_attr_set(*(s32 *)(p + 0x88));
     flExecuteClay(*(s32 *)p, 0);
 }
-
-/* trans_stage lives in trans_stage.c (single definition, also used by the PC runtime). */
-
 
 static u32 spr_disp_sub(f32 t, u32 a, u32 b)
 {
