@@ -228,4 +228,6 @@ void armor_sd_req(PLW *, int);
 void func_546860(PLW *, f32 *, int);
 void get_joint_pos(PLW *, int, f32 *);
 void pl_dm003(PLW *, s32);
+void rate_add(PLW *);
+void pl_dm008(PLW *);
 #endif

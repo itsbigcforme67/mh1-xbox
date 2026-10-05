@@ -1157,3 +1157,31 @@ b:
         break;
     }
 }
+
+/* near-match (not built): pl_dm008 - same shape problem as pl_dm003: the original's kind compare chain keeps nops in the delay slots. */
+void pl_dm008(PLW *pl) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        switch (pl->kind) {
+        default:
+            pl_chr_set2(pl, 0x586, 2, 0);
+            break;
+        case 4:
+        case 3:
+            pl_chr_set2(pl, 0x3EF, 2, 0);
+            break;
+        }
+        pl_flag_set(pl, 0x8000);
+        Pl_basic_flagset(pl, 0, 0, 0);
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 2, 0);
+        }
+        break;
+    }
+}
