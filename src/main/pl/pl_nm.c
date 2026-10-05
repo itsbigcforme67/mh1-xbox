@@ -1928,3 +1928,61 @@ int rate_g_calc(PLW *pl, int t) {
 
 f32 *Stage_data_get(int stg);
 void flmatGetTrans(f32 *, u8 *);
+
+#include "hit.h"
+u8 Get_hit_id(void);
+typedef struct W24 { s32 a, b, c, d, e, f; } W24;
+
+
+void pl_atck_data_set_shl2(HSHL *sh, u16 *hd, int idx) {
+    int amask = sh->ailment & 0xF7;
+    int aval;
+    s32 *src;
+    s32 *dst;
+    if (amask == 0) {
+        aval = 0;
+    } else {
+        aval = sh->ailment_val;
+    }
+    aval = (u8)aval;
+    src = (s32 *)(**(u8 ***)((u8 *)sh + 0x90) + idx * 0x18);
+    dst = (s32 *)&sh->hit_time;
+    *(W24 *)dst = *(W24 *)src;
+    sh->x08 = hd[6];
+    sh->hit_mode = 1;
+    sh->x1E = 0;
+    sh->hit_chr = 0;
+    sh->hit_body = 0;
+    if (aval != 0) {
+        sh->ailment |= amask;
+        sh->ailment_val = aval;
+    }
+    sh->hit_time >>= 1;
+    sh->hit_wait >>= 1;
+    if (sh->x75 != 0xFF) {
+        sh->x75 >>= 1;
+    }
+    sh->x76 >>= 1;
+    sh->hit_id = Get_hit_id();
+}
+
+
+void atck_data_set_shl2(HSHL *sh, int idx) {
+    s32 *src;
+    s32 *dst;
+    src = (s32 *)(**(u8 ***)((u8 *)sh + 0x90) + idx * 0x18);
+    dst = (s32 *)&sh->hit_time;
+    *(W24 *)dst = *(W24 *)src;
+    sh->x08 = 0xFF;
+    sh->hit_mode = 1;
+    sh->x1E = 0;
+    sh->hit_chr = 0;
+    sh->hit_body = 0;
+    sh->hit_time >>= 1;
+    sh->hit_wait >>= 1;
+    if (sh->x75 != 0xFF) {
+        sh->x75 >>= 1;
+    }
+    sh->x76 >>= 1;
+    sh->hit_id = Get_hit_id();
+}
