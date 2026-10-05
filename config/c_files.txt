@@ -302,3 +302,4 @@ main 0x0012FD50 0x0012FEA4 menu/menu31
 main 0x00133550 0x00133788 menu/menu32
 main 0x001332F0 0x001333A4 menu/menu33
 main 0x00134280 0x0013435C menu/menu34
+main 0x001333B0 0x0013354C menu/menu35

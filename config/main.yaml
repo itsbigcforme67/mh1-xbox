@@ -134,6 +134,8 @@ segments:
       - [0x0332E4, asm, text/Pit_disp_data]
       - [0x0332F0, c, menu/menu33]
       - [0x0333A4, asm, text/disp_mix_list]
+      - [0x0333B0, c, menu/menu35]
+      - [0x03354C, asm, text/disp_monster_list]
       - [0x033550, c, menu/menu32]
       - [0x033788, asm, text/Pit_disp_menu_status]
       - [0x033790, c, menu/menu17]

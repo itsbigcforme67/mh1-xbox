@@ -1164,19 +1164,25 @@ void disp_item_stock(void) {
 
 /* 0x12FEB0 */
 void disp_others_info(void) {
-    int y;
+    s16 y;
     u32 i;
     PLW *pl;
+    u8 *g;
 
     player_info_sub(20.0f, lpPit->pl, 0x50);
     y = 0x6A;
     pl = player_work;
-    for (i = 0; i < 4; i++, pl++) {
-        if (*(u8 *)pl != 0 && i != game_w.master && game_w.pl_state[i] == 1) {
+    i = 0;
+    g = (u8 *)&game_w;
+    do {
+        if (*(u8 *)pl != 0 && i != game_w.master && g[0x208] == 1) {
             player_info_sub(20.0f, pl, y);
-            y = (s16)(y + 0x1A);
+            y = y + 0x1A;
         }
-    }
+        i++;
+        g++;
+        pl++;
+    } while (i < 4U);
 }
 
 extern u8 pl_type_uv[];
@@ -2009,7 +2015,7 @@ void lb_disp_chat_cnfg_sendpl(int sw, PIT_W *p) {
 extern u8 pfl_menu_data[];
 extern u8 pf_mix_list_base[], pf_monster_list_base[];
 extern u8 lit_4947[], lit_4948[], lit_4949[], lit_4985[], lit_4986[], lit_4987[], lit_5012[], lit_5054[];
-extern u8 mix_level_color[];
+extern u8 mix_level_color[8];
 extern char *mix_level_str[];
 extern u8 monster_data[][8];
 extern u8 frame_status_main_002F0D70[];
@@ -2062,14 +2068,14 @@ void Pit_disp_data(void) {
 /* 0x1333B0 */
 void disp_mix_list(int sw, PIT_W *p) {
     DispFrameList(pf_mix_list_base, lit_4947, -1);
-    if ((u8)Item_preparation_list_num() >= 2) {
+    if ((u8)Item_preparation_list_num() > 1) {
         DispFrameListOptionArrow(pf_mix_list_base);
     }
     flfntSetSize(0x12, 0x12);
     if (lpPit->x68 != 0) {
         font_set_palette(3);
         flfntLocate(0x1AF, 0x52);
-        font_print(lit_4948, lpPit->x81 + 1);
+        font_print(lit_4948, *(u8 *)&lpPit->x81 + 1);
         font_set_palette(0);
         flfntLocate(0x1C1, 0x7A);
         font_print_uf(item_str[*(s16 *)((u8 *)lpPit->x68 + 2)]);
@@ -2077,7 +2083,7 @@ void disp_mix_list(int sw, PIT_W *p) {
         font_print_uf(item_str[lpPit->x6C]);
         flfntLocate(0x1C1, 0xB6);
         font_print_uf(item_str[lpPit->x6E]);
-        font_set_palette(*(s32 *)(mix_level_color + *(s8 *)((u8 *)lpPit->x68 + 4) * 4));
+        font_set_palette(mix_level_color[*(s8 *)((u8 *)lpPit->x68 + 4)]);
         flfntLocate(0x1C1, 0xDE);
         font_print_uf(mix_level_str[*(s8 *)((u8 *)lpPit->x68 + 4)]);
         return;
