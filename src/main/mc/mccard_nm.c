@@ -59,7 +59,7 @@ void font_set_stack_no();
 void flSetRenderState();
 void SetTrnslMode();
 void se_req();
-void Disp_button();
+void Disp_button(float, int, int, int, int);
 void Sel_csr_disp();
 void DispFrameListA();
 void disp_savesel_waku();
@@ -195,11 +195,11 @@ int mc_yn_ck(CARDW *w, int x, s16 y, u8 *sel)
 
 int mc_sel_ck(CARDW *w, s16 x, s16 y, u8 *sel, int hide)
 {
-    int i;
-    int y0;
-    s16 y1;
     int py;
     int *t;
+    s16 y1;
+    int i;
+    int y0;
 
     if (hide == 0 && (w->pad & 0x3000)) {
         *sel ^= 1;
@@ -288,6 +288,7 @@ u8 op;
 {
     int i;
     u8 *p;
+    void *tc;
 
     i = 0;
     p = card_prim;
@@ -303,11 +304,15 @@ u8 op;
         p += 0x20;
     } while (i < 2);
     system_w[0x12] = 0;
-    *(void **)(card_prim + 0x14) = (void *)trans_card_0;
-    if (op != 8 && op != 7 && op != 6) {
-        return;
+    tc = (void *)trans_card_0;
+    *(void **)(card_prim + 0x14) = tc;
+    switch (op) {
+    case 6:
+    case 7:
+    case 8:
+        Quest_price_return(op, tc);
+        break;
     }
-    Quest_price_return(op, trans_card_0);
 }
 
 void trans_card_0(void)
@@ -323,6 +328,13 @@ void trans_card_0(void)
     p = (u8 *)w;
     do {
         switch (p[0x2C]) {
+        default:
+            if (card_w.op == 1) {
+                DispFrameListA(card_list_frame_tbl_00355430[p[0x2C]], 0, -1, 255);
+            } else {
+                DispFrameListA(card_list_frame_tbl_00355430[p[0x2C]], 0, -1, 128);
+            }
+            break;
         case 5:
             disp_savesel_waku(edit_w, 0, 0);
             break;
@@ -330,13 +342,6 @@ void trans_card_0(void)
             disp_savesel_waku(edit_w, 2, 0);
             break;
         case 0:
-            break;
-        default:
-            if (card_w.op == 1) {
-                DispFrameListA(card_list_frame_tbl_00355430[p[0x2C]], 0, -1, 255);
-            } else {
-                DispFrameListA(card_list_frame_tbl_00355430[p[0x2C]], 0, -1, 128);
-            }
             break;
         }
         i++;
@@ -1433,7 +1438,6 @@ CARDW *w;
         w->done = 1;
         break;
     case 7:
-    default:
         w->done = 2;
         break;
     }
@@ -1661,7 +1665,6 @@ CARDW *w;
         w->done = 1;
         break;
     case 9:
-    default:
         system_w[0x3C] = 0;
         w->done = 2;
         break;
