@@ -16,13 +16,18 @@ typedef struct LBPLAYER { u8 _pad00[4]; u8 x04[0x10]; u8 _pad14[0x38 - 0x14]; } 
 extern LBPLAYER lb_player[8];
 
 typedef struct LBSYS {         /* lb_sys 0x90 bytes */
-    u8 _pad00[0x64];
+    u8 _pad00[3];
+    s8 x03;                    /* 0x03 mode (4 = send positions) */
+    u8 _pad04[0x64 - 4];
     u16 chair_mask;            /* 0x64 bit per occupied chair */
-    u8 _pad66[2];
+    u16 x66;                   /* 0x66 chair number (sent as a packet) */
     s32 x68;                   /* 0x68 */
     s32 x6C;                   /* 0x6C */
-    u8 _pad70[0x90 - 0x70];
+    u8 _pad70[0x85 - 0x70];
+    s8 x85;                    /* 0x85 send interval counter */
+    u8 _pad86[0x90 - 0x86];
 } LBSYS;
+extern u8 lbSendInterval;
 extern LBSYS lb_sys;
 
 typedef struct LBPOS { f32 x, z; u16 ang; u16 stg; } LBPOS;   /* received position packet (0xC bytes) */
@@ -59,4 +64,38 @@ long Pl_item_num_ck();
 void set01_set(int, int, int);
 s16 act_ck(PLW *, int, int);
 extern u8 my_user_mini_data[];
+typedef struct LBQUEST { u8 _pad00[4]; s32 fee; u8 _pad08[0x10]; s32 str_ofs; } LBQUEST; /* quest record (get_quest_info) */
+extern LBQUEST *lb_quest_all[0xC8];
+extern int mission_area;
+typedef struct MHRULE { u8 _pad00[0x54]; u32 quest; u8 _pad58[0x68 - 0x58]; } MHRULE;
+extern MHRULE mhRule;
+extern s32 User_gold;          /* User_data + 0x20 */
+void Gold_add(int);
+void cnWrap_SoundRequest(int);
+void Lbc_init_network_work(int);
+void NPCZoomInCameraCancel();
+LBQUEST *get_quest_info(void);
+int Online_ck();
+int SoftKeyboard_alive_check();
+void font_set_stack_no(int);
+void DispSoftkeyboard(int);
+void flfntLocate();
+void font_print(char *, ...);
+int strlen_sp();
+void lb_pl_chr_set_com();
+void Lb_Pl_act_set();
+void lb_sw_set_sub(int);
+void Lbs_MatchStart(int);
+extern char lit_429_00664C38[];
+void lb_send_data();
+void lb_send_dataTU();
+void Lb_send_data_to_myself();
+s8 check_sender0();
+typedef struct LBPKPOS { f32 x, z; u16 ang; u16 stg; } LBPKPOS;
+typedef struct LBPKPOS2 { f32 x, z; u16 ang; u8 stg; u8 _pad; } LBPKPOS2;
+typedef struct LBPKTRD { s16 item; s16 num; u8 id[8]; } LBPKTRD;
+typedef struct LBLAST { f32 x; u8 _pad04[4]; f32 z; u16 ang; u8 stat; u8 x0F; u8 x10; u8 x11; u16 stg; } LBLAST; /* last sent packet (lastSend, 0x14 bytes) */
+extern LBLAST lastSend;
+extern u8 my_user_handle[0x10];
+extern u8 D_3F3404[];
 #endif

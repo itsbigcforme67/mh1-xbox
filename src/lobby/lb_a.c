@@ -125,18 +125,18 @@ void lb_set_pl_status(u8 id, u8 *src) {
     case 0x4D:
         lb_sys.chair_mask = lb_sys.chair_mask & ~(1 << st->chair);
         break;
-    case 0x2B:
-    case 0x29:
-    case 0x2A:
-    case 0x4E:
-    case 0x60:
-    case 0x5E:
-    case 0x5D:
-    case 0x5C:
-    case 0x5A:
-    case 0x59:
-    case 0x54:
     case 0x4C:
+    case 0x54:
+    case 0x59:
+    case 0x5A:
+    case 0x5C:
+    case 0x5D:
+    case 0x5E:
+    case 0x60:
+    case 0x4E:
+    case 0x2A:
+    case 0x29:
+    case 0x2B:
         if (st->chair > 0 && st->chair < 0xB) {
             lb_sys.chair_mask = lb_sys.chair_mask | (1 << st->chair);
         }
