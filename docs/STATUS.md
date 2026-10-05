@@ -676,3 +676,20 @@ row plus silencer/long-barrel rows. Matching notes:
 
 ### Not verified
 - That recompiled code runs: the runtime was not built or linked yet.
+
+## 2026-10-05 (later): pause point, handover
+
+- 1095/12585 functions match (10.3%); all five modules rebuild byte-identical
+  (verified with tools/rebuild.sh after the last merges). Everything merged is pushed.
+- PC viewer (src/pc/, tools/build_pc.sh, docs/pc.md) renders stage 4 + Rathian
+  + hunter in real time from disc/mh1; verified by offscreen screenshots only.
+- Paused by the owner. Agents were asked to commit what builds and record where
+  they stopped in docs/agents/agent-X.md. Their branches (agent-A..F in
+  ../mh1-wt/) may hold commits not yet merged into main: merge them first
+  (procedure in docs/agents/COORDINATOR.md, which also lists assignments).
+- The agent running as "A" was replaced by a fresh agent on the port-runtime
+  skeleton task (run decompiled game C natively on top of src/pc/gfx).
+- PS2Recomp runner build: last attempt was stopped by the app restart; rerun
+  `ninja -C tools/ps2recomp/out/build ps2EntryRunner` (the isnan fix is applied).
+- Usage pacing (hourly check, pause at ~88%) was a session-only cron; recreate it
+  when resuming agents.
