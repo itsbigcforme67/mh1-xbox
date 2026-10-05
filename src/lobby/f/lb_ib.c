@@ -11,6 +11,8 @@ void Menu_select_mv();
 void itembox_cursor_mv();
 void PageSelect();
 void flps0008();
+void ListSelect();
+u8 *sortup_idx_chk();
 void se_req();
 s32 Lb_ItemBox_open(u16 arg0, s32 arg1) {
     arg0 = 0;
@@ -404,4 +406,89 @@ void ItemboxWindowCursorX(f32 base, int idx, int color, int mode) {
     r.color = color;
     r.z = 0;
     flps0008(&r);
+}
+
+typedef struct SW4 { s16 a, b; } SW4;            /* pouch item (id, amount) */
+typedef struct SW6 { s16 a, b, c; } SW6;         /* equipment slot */
+
+/* item box "sort up" tab: pick an entry, then pick a second one and swap the two */
+s32 itembox_sortup(s32 pad) {
+    SW4 tmp4;
+    SW6 tmp6;
+    u8 *w;
+    u8 *i1;
+    u8 *i2;
+    u8 *u;
+    u8 first;
+    u8 second;
+    u8 col;
+    w = ib;
+    *(s16 *)0x39DAD2 = F(u8, w, 3) + 0x14;
+    switch (F(u8, w, 5)) {
+    case 0:
+        ListSelect(w + 3, pad, 2);
+        if ((u16)pad & 0x20) {
+            F(s8, ib, 0x1F) = 0;
+            F(u8, ib, 5) = F(u8, ib, 5) + 1;
+            F(u8, ib, 6) = 0;
+            se_req(7, 0x13, 0);
+        } else {
+            *(s8 *)0x39DAD0 = 0;
+        }
+        break;
+    case 1:
+        switch (F(u8, w, 6)) {
+        case 0:
+            pad = ib_select_sub(pad) & 0xFFFF;
+            if (pad & 0x40) {
+                pad = (u16)(pad & 0xFFBF);
+                *(u8 *)0x39DAD0 = 0;
+                F(u8, ib, 5) = 0;
+            } else if (pad & 0x20) {
+                F(u8, ib, 0xA) = F(u8, ib + F(u8, ib, 3), 8);
+                F(u8, ib, 6) = F(u8, ib, 6) + 1;
+                se_req(7, 0x25, 0);
+            }
+            break;
+        case 1:
+            pad = ib_select_sub(pad) & 0xFFFF;
+            if (pad & 0x40) {
+                pad = (u16)(pad & 0xFFBF);
+                F(u8, ib, 6) = 0;
+            } else if (pad & 0x20) {
+                w = ib;
+                second = F(u8, w, 0xA);
+                col = F(u8, w, 3);
+                first = *(w + 8 + col);
+                if (first != second) {
+                    if (col == 0) {
+                        u = User_data;
+                        tmp4 = *(SW4 *)(u + 0x1C4 + first * 4);
+                        *(SW4 *)(u + 0x1C4 + first * 4) = *(SW4 *)(u + 0x1C4 + second * 4);
+                        *(SW4 *)(u + 0x1C4 + F(u8, ib, 0xA) * 4) = tmp4;
+                    } else {
+                        i1 = sortup_idx_chk(first, second);
+                        i2 = sortup_idx_chk(F(u8, ib, 0xA));
+                        w = ib;
+                        tmp6 = *(SW6 *)(User_data + 0x44 + F(u8, w + F(u8, w, 3), 8) * 6);
+                        *(SW6 *)(User_data + 0x44 + F(u8, w + F(u8, w, 3), 8) * 6) = *(SW6 *)(User_data + 0x44 + F(u8, w, 0xA) * 6);
+                        *(SW6 *)(User_data + 0x44 + F(u8, w, 0xA) * 6) = tmp6;
+                        if (i1 != 0) {
+                            *i1 = F(u8, w, 0xA);
+                        }
+                        if (i2 != 0) {
+                            *i2 = F(u8, ib + F(u8, ib, 3), 8);
+                        }
+                    }
+                    F(u8, ib, 6) = 0;
+                    se_req(7, 0x26, 0);
+                } else {
+                    se_req(7, 0x15, 0);
+                }
+            }
+            break;
+        }
+        break;
+    }
+    return pad;
 }
