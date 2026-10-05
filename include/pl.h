@@ -74,7 +74,9 @@ typedef struct PLW {
     s8    work2F8;       /* 0x2F8 */
     u8 _pad2F9[0x3];
     s16   work2FC;       /* 0x2FC */
-    u8 _pad2FE[0x66];
+    u8 _pad2FE[0x360 - 0x2FE];
+    u16   wpn_kind;      /* 0x360 gun type, row of D_3367B2 (shell06) */
+    u16   wpn_ammo;      /* 0x362 loaded ammo; low nibble = Gun_Grow_Up_DATA row (shell06) */
     PLSW  sw;            /* 0x364 */
     u8    st;            /* 0x388 */
     u8 _pad389[0x1];
@@ -111,7 +113,8 @@ typedef struct PLW {
     s8    work4E3;       /* 0x4E3 */
     u8 _pad4E4[0x87];
     s8    work56B;       /* 0x56B */
-    u8 _pad56C[0x5AC - 0x56C];
+    u8    ammo_type;     /* 0x56C shot type fired (shell06_set) */
+    u8 _pad56D[0x5AC - 0x56D];
     f32   x5AC;          /* 0x5AC ground height (eft21_i, as EMW) */
     u8 _pad5B0[0x604 - 0x5B0];
     u8    flag604;       /* 0x604 */
@@ -125,7 +128,9 @@ typedef struct PLW {
     s16   work72C[4];    /* 0x72C */
     u8 _pad734[0x2];
     u8    stg;           /* 0x736 */
-    u8 _pad737[0x145];
+    u8 _pad737[0x7D8 - 0x737];
+    f32   atk_rate;      /* 0x7D8 shot power (shell06_get_weaopn_data) */
+    u8 _pad7DC[0x87C - 0x7DC];
     s16   work87C;       /* 0x87C */
     u8 _pad87E[0x3];
     u8    x881;          /* 0x881 bite timer (eft23 fishing) */

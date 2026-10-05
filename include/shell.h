@@ -35,12 +35,16 @@ typedef struct SHLW {
     f32 rate_g[3];      /* 0x54 acceleration, added by shell_rate_add_g */
     u8 x60;             /* 0x60 */
     u8 x61;             /* 0x61 */
-    u8 _pad62[0x6A - 0x62];
+    u8 x62;             /* 0x62 attack power (shell06 scales it by range) */
+    u8 x63;             /* 0x63 */
+    u8 _pad64[0x6A - 0x64];
     u8 body;            /* 0x6A */
     u8 _pad6B;
     u8 ailment;         /* 0x6C bits set from Get_atk_value 0-6 (shell00_i) */
     s8 ailment_val;     /* 0x6D */
-    u8 _pad6E[0x78 - 0x6E];
+    u8 x6E;             /* 0x6E hit sound (shell06) */
+    u8 x6F;             /* 0x6F hit mark (shell06) */
+    u8 _pad70[0x78 - 0x70];
     u16 flag;           /* 0x78 shell_flag_set/ck */
     u8 x7A;             /* 0x7A */
     u8 _pad7B;
@@ -57,7 +61,7 @@ typedef struct SHLW {
     u8 _padA4[0xB4 - 0xA4];
     u8 xB4;             /* 0xB4 */
     u8 _padB5[0xB8 - 0xB5];
-    s16 xB8;            /* 0xB8 shell00: owner's hit counter at spawn */
+    u16 xB8;            /* 0xB8 shell00: owner's hit counter at spawn; shell06: spread seed */
     u8 _padBA[2];
     struct PRIM *prim;  /* 0xBC */
     s16 prim_no;        /* 0xC0 */

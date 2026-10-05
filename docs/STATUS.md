@@ -617,3 +617,15 @@ How it works (each step was checked, not assumed):
 2. Infer Capcom's file boundaries in the big text blocks (needed before
    whole files can be compiled as C).
 3. Data typing per object (strings in .data vs .rodata) as C files appear.
+
+### shell06b (bowgun shots, second half) - 4 Oct 2026
+src/game/shell/shell06b.c, 0x62C4D0-0x62D4C4 (19 functions, all byte-match,
+checked with tools/check.py and `tools/rebuild.sh game` = game OK). Types in
+include/shell06.h: the shot keeps a work block at sh+0x18 (SH06W), and damage
+falls off in steps (shell06_time_ck/atck_data_calc) scaled by the gun's growth
+row plus silencer/long-barrel rows. Matching notes:
+- `x > 0xFF` gives `slti at`; `x >= 0x100` gives `slti v1` (shell06_m,
+  shell06_change_atck_data).
+- Constant-index table reads `tbl[k][0..2]` inside a loop get their addresses
+  hoisted and spilled (shell06_eft_t); a pointer `p = tbl[k]` does not.
+- Shell06 first half (set, init_sub, move_sub, hit, trans_sub) still to do.
