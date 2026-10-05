@@ -101,6 +101,10 @@ void rt_player_get(int no, float pos[3], int *ang_y);
  * layer g (ids >= 1000). */
 void rt_monster_motion_start(int no, int mdl_no, const uint8_t *tbl, int kind, const int *ids, int layers);
 int rt_monster_motion_tick(int no);
+/* Place em_work[no] on the stage (then each tick also runs em_move's wall
+ * and ground collision) and read back where it is. */
+void rt_monster_place(int no, int kind, const float pos[3], int ang_y);
+void rt_monster_get(int no, float pos[3], int *ang_y);
 void rt_monster_pose(int no, void *fl_skel_ptr);
 
 /* Host pad state for the next ticks (fl pad bits + sticks, see

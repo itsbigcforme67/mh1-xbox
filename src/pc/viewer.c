@@ -367,7 +367,8 @@ int main(int argc, char **argv)
     float hx = 10900, hz = 7700, rx = 10000, rz = 6700, gy;
     Uint32 t0;
     int set_h0 = -1, ticks = 0, stage_no = 4, cam_given = 0;
-    float follow[3] = { 900.0f, 450.0f, -0.3f };   /* --play camera: distance, height, pitch */
+    float follow[3] = { 900.0f, 450.0f, -0.3f };
+    float rathian_yoff = 0;   /* --play camera: distance, height, pitch */
     int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter */
     const char *script = NULL;
     float hunter_yoff = 0;
@@ -525,6 +526,15 @@ int main(int argc, char **argv)
     gy = 0;
     rt_ground_y(rx, rz, 1e6f, &gy);
     place(rathian.world, rx, gy - min_y_of(&rathian.model), rz, 0.6f);
+    rathian_yoff = -min_y_of(&rathian.model);
+    if (rathian.game && !getenv("RT_EM_FIXED")) {
+        /* em_work[0] on the stage: the game moves it by its root motion
+         * (walk loop 1003) and em_move's wall/ground collision keeps it on
+         * the ground and inside the walls */
+        float p[3] = { rx, gy, rz };
+        rt_monster_place(0, 1, p, (int)(0.6f * 65536.0f / 6.2831853f));
+        rathian.skel.root_lock = 1;
+    }
     hunter_pose(&pl, 0, &light);
     {
         float lo = 1e30f;
@@ -618,8 +628,15 @@ int main(int argc, char **argv)
             } else if (pl.game) {
                 rt_player_motion_tick(0);
             }
-            if (rathian.game && ticks >= 2)
+            if (rathian.game && ticks >= 2) {
                 rt_monster_motion_tick(0);
+                if (sw_trace && rathian.skel.root_lock) {
+                    float p[3];
+                    int a;
+                    rt_monster_get(0, p, &a);
+                    printf("tick %d: em0 pos %.0f %.0f %.0f ang %04X\n", ticks, p[0], p[1], p[2], a & 0xFFFF);
+                }
+            }
             ticks++;
         }
         if (pl.game && play) {          /* hunter from player_work[0]; camera follows */
@@ -631,6 +648,12 @@ int main(int argc, char **argv)
             cam[1] = p[1] + follow[1];
             cam[2] = p[2] + cosf(cam[3]) * follow[0];
             cam[4] = follow[2];
+        }
+        if (rathian.game && rathian.skel.root_lock) {   /* drawn where the game has it */
+            float p[3];
+            int a;
+            rt_monster_get(0, p, &a);
+            place(rathian.world, p[0], p[1] + rathian_yoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
         }
         if (rathian.game)
             rt_monster_pose(0, &rathian.skel);
