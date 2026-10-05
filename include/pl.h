@@ -290,8 +290,8 @@ typedef struct PLW {
     u8    work8C3;           /* 0x8C3 */
     s8    work8C4;           /* 0x8C4 */
     s8    work8C5;           /* 0x8C5 */
-    u8 x8C6;                 /* 0x8C6 non-zero: ignore pad for camera (cam_sw_set_sub) */
-    s8    work8C7;           /* 0x8C7 */
+    u8 x8C6;                 /* 0x8C6 non-zero: ignore pad for camera (cam_sw_set_sub); em10 talk flag (10 = new message) */
+    s8    work8C7;           /* 0x8C7 (em10 compares with 7) */
     u8 x8C8;                 /* 0x8C8 non-zero: camera resets behind player (cam_sub_std) */
     s8    work8C9;           /* 0x8C9 */
     u8 _pad8CA[0x8CC - 0x8CA];

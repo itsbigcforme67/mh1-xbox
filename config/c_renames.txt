@@ -25,6 +25,9 @@ build/src/game/eft/eft23.c.o .rodata .data
 build/src/game/em/em_taisei.c.o .rodata .data
 build/src/game/em/em01.c.o .rodata .data
 build/src/game/em/em02.c.o .rodata .data
+build/src/game/em/em03.c.o .rodata .data
+build/src/game/em/em04.c.o .rodata .data
+build/src/game/em/em04b.c.o .rodata .data
 build/src/game/em/em07.c.o .rodata .data
 build/src/game/em/em08.c.o .rodata .data
 build/src/game/em/em14.c.o .rodata .data
@@ -39,6 +42,7 @@ build/src/game/em/em20b.c.o .rodata .data
 build/src/game/em/em21.c.o .rodata .data
 build/src/game/em/em27.c.o .rodata .data
 build/src/game/em/em29.c.o .rodata .data
+build/src/game/em/em33.c.o .rodata .data
 build/src/game/set/set09.c.o .rodata .data
 build/src/game/set/set15.c.o .rodata .data
 build/src/game/set/set22.c.o .rodata .data
