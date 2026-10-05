@@ -191,7 +191,8 @@ typedef struct EMW {
     u8 _pad796[0x797 - 0x796];
     u8 x797;            /* 0x797 */
     f32 x798;           /* 0x798 fade 0..1 at the end of em18 mov03 (alpha?) */
-    u8 _pad79C[0x7A4 - 0x79C];
+    u8 _pad79C[0x7A0 - 0x79C];
+    struct EMW *x7A0;   /* 0x7A0 (em09 mov04 reads its x10) */
     struct EMW *x7A4;   /* 0x7A4 (em09_status_ck reads its kind) */
     u8 x7A8;            /* 0x7A8 */
     u8 x7A9;            /* 0x7A9 */
