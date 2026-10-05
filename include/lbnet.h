@@ -169,7 +169,8 @@ typedef struct CNET_SYS {
     u8 lobby_member[0x300];  /* 0x36EE  */
     u8 room_member[0x300];  /* 0x39EE  */
     u8 annex_member[0x300];  /* 0x3CEE  */
-    u8 _pad3FEE[0x76];
+    u8 extra_member[0x60];  /* 0x3FEE extra member entry */
+    u8 _pad404E[0x16];
     CNET_PIECE plaza[10];  /* 0x4064 plaza table (counts of plaza/lobby/room at 0x404E/0x4050/0x4052 just before) */
     CNET_PIECE lobby[14];  /* 0x4E4C lobby table */
     CNET_PIECE room[8];  /* 0x61C4 room table */

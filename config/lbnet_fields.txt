@@ -59,3 +59,4 @@
 0x37BC0 CNET_BUF2000 loginbuf size=0x2000
 0x15D2 char decide_id[8] decided user id
 0x15DA char decide_handle[0x10] decided user handle
+0x3FEE u8 extra_member[0x60] extra member entry

@@ -1,84 +1,53 @@
-/* cnlbs, run 25: __cnet_SendReq_RoomSetExplain .. cnLBS_Read_CurrentPlace (lobby.bin 0x005A9CA0-0x005AA008): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 25: _cnet_RecvFromLbs_AnswerCurrentPlace .. cnLBS_Set_LoginFirstData (lobby.bin 0x005AA040-0x005AA308): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 
-int __cnet_SendReq_RoomSetExplain(int arg0, int arg1) {
-    int cmd = SetSendCommand(&send_work, 0x71) & 0xFFFF;
-    SetSendStringData2(&send_work, arg0, arg1);
+void _cnet_RecvFromLbs_AnswerCurrentPlace(void) {
+    if (CNW(s8, 0xFEC) == 0) {
+        GetRecvData16(CNWP(0x3BA5C), GetRecvData16(CNWP(0x3BA5A), GetRecvData16(CNWP(0x3BA58), &recv_work)));
+    }
+    _cnet_Return_CallBack(0);
+}
+
+int __cnet_SendReq_CurrentPlace(void) {
+    int cmd = SetSendCommand(&send_work, 0xD6) & 0xFFFF;
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
 }
 
-void _cnet_RecvFromLbs_AnswerRoomSetExplain(void) {
-    _cnet_Return_CallBack(0);
+void cnLBS_Init_LoginLobbyServer(void) {
+    *(int *)((u8 *)CNWP(8)) = 0;
+    *(int *)((u8 *)CNWP(0)) = 0;
+    memset(CNWP(0x18), 0, 0xE00);
+    memset(CNWP(0xE18), 0, 0x1B0);
+    memset(CNWP(0x4058), 0, 0xA);
+    memset(CNWP(0x1436), 0, 0x28);
 }
 
-int cnLBS_Read_RoomExplainPermission(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
-
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomExplainPermission(arg0);
-        return slot;
+int cnLBS_LoginLobbyServer(CNET_LOGIN cfg, int cb) {
+    if (CnetSys_w.burst[0].state == 0) {
+        CnetSys_w.login = cfg;
+        CnetSys_w.x14 = 0;
+        CnetSys_w.active = 1;
+        CnetSys_w.echo_n = 0;
+        CnetSys_w.echo_sum = 0;
+        memset(&CnetSys_w.acct, 0, 0x5C);
+        memset(CnetSys_w.login_users, 0, 0x170);
+        CnetSys_w.xff0 = 0;
+        CnetSys_w.xff4 = 0x1000;
+        CnetSys_w.xff8 = CnetSys_w.loginbuf.b;
+        memset(&CnetSys_w.warnmsg, 0, 0x1004);
+        memset(&CnetSys_w.loginbuf, 0, 0x2000);
+        CnetSys_w.burst[0].cb = (void *)cb;
+        CnetSys_w.burst[0].state = 1;
+        CnetSys_w.burst[0].x21 = 0;
+        CnetSys_w.burst[0].run = 0;
+        return 0;
     }
     return -1;
 }
 
-void _cnet_RecvFromLbs_AnswerRoomExplainPermission(void) {
-    u8 v;
-
-    if (CnetSys_w.rres == 0) {
-        __cnet_Recv_Byte(&v);
-        CnetSys_w.ruletbl.explain_perm = v;
-    }
-    _cnet_Return_CallBack(0);
-}
-
-int __cnet_SendReq_RoomExplainPermission(int arg0) {
-    int cmd = SetSendCommand(&send_work, 0x6F) & 0xFFFF;
-    SetSendData16(&send_work, arg0);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-    return cmd;
-}
-
-int cnLBS_Read_TimingValue(int arg0) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
-
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_TimingValue();
-        return slot;
-    }
-    return -1;
-}
-
-int cnLBS_Get_TimingValue(int *arg0) {
-    *arg0 = CNW(int, 0x3BA54);
+int cnLBS_Set_LoginFirstData(CNET_FIRSTDATA *src) {
+    CnetSys_w.firstdata = *src;
     return 0;
-}
-
-void _cnet_RecvFromLbs_BothTimingValue(void) {
-    s32 v;
-
-    if (CnetSys_w.rres == 0) {
-        __cnet_Recv_Long(&v);
-        CNW(s32, 0x3BA54) = v;
-    }
-    _cnet_Return_CallBack(0x2B);
-}
-
-int __cnet_SendReq_TimingValue(void) {
-    int cmd = SetSendCommand(&send_work, 0xD3) & 0xFFFF;
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-    return cmd;
-}
-
-int cnLBS_Read_CurrentPlace(int arg0) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
-
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_CurrentPlace();
-        return slot;
-    }
-    return -1;
 }

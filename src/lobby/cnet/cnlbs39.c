@@ -1,58 +1,99 @@
-/* cnlbs, run 40: __cnetSub_Run_BgProcess .. __cnet_RecvFromLbs (lobby.bin 0x005AD440-0x005AD61C): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 40: cnLBS_LogoutLobbyServer .. _cnet_RecvFromLbs_NoticeLobbyFull (lobby.bin 0x005AD7E0-0x005ADB58): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 
-void __cnetSub_Run_BgProcess(void) {
-    int i;
+int cnLBS_LogoutLobbyServer(int arg0) {
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
-    for (i = 0; i < 0x80; i++) {
-        if (CnetSys_w.bg[i].state == 2) {
-            if (CnetSys_w.bg[i].cb != 0) CnetSys_w.bg[i].cb(i);
-        }
+    if (slot != -1) {
+        CnetSys_w.bg[slot].cmd = __cnet_SendSet_Logout();
+        return slot;
     }
-    for (i = 0; i < 12; i++) {
-        if (CnetSys_w.burst[i].state == 1) {
-            if (CnetSys_w.burst[i].run != 0) CnetSys_w.burst[i].run(i);
+    return -1;
+}
+
+int __cnet_SendSet_Logout(void) {
+    int cmd = SetSendCommand(&send_work, 2) & 0xFFFF;
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+void _cnet_RecvFromLbs_AnswerLogOut(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.rcat == 2) {
+        if (CnetSys_w.rres == 0) {
+            res.val = 0;
+        } else {
+            res.val = -1;
+            __cnet_Recv_ServerMessage(CnetSys_w.rcat);
         }
+        __cnetSub_Return_BgProcess(res, 1, 0);
     }
 }
 
-int __cnetSub_Get_RestBgWork(void) {
-    int n = 0;
-    int i;
+int cnLBS_ShutDownLobbyServer(int arg0) {
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
-    for (i = 0; i < 0x80; i++) {
-        if (CnetSys_w.bg[i].state == 0) n++;
+    if (slot != -1) {
+        CnetSys_w.bg[slot].cmd = __cnet_SendSet_ShutDown();
+        return slot;
     }
-    return n;
+    return -1;
 }
 
-int __cnet_RecvFromLbs(int cmd, int from, int cat, int x) {
-    int i;
-    int c16;
-    int c8;
-    u8 *h;
-    u8 *l;
-    u8 *ft;
-    u8 *ct;
-    void (**jmp)();
-    int hi;
-    int full;
+int __cnet_SendSet_ShutDown(void) {
+    int cmd = SetSendCommand(&send_work, 4) & 0xFFFF;
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
 
-    c16 = cmd & 0xFFFF;
-    c8 = cat & 0xFF;
-    i = 0;
-    h = lbs_command_tbl_h;
-    l = lbs_command_tbl_l;
-    ft = lbs_fromto_tbl;
-    ct = lbs_category_tbl;
-    jmp = lbs_command_jmp;
-    for (; i < 0x102; i++, h++, l++, ft++, ct++, jmp++) {
-        hi = (*h << 8) & 0xFFFF;
-        full = (hi | *l) & 0xFFFF;
-        if (*ft != 8 && c16 == (full & 0xFFFF) && *ct == c8 && *jmp != 0) {
-            lbs_command_jmp[i](full, hi, c8, c16);
-            return 1;
+void _cnet_RecvFromLbs_AnswerShutDown(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.rcat == 2) {
+        if (CnetSys_w.rres == 0) {
+            res.val = 0;
+        } else {
+            res.val = -1;
+            __cnet_Recv_ServerMessage(CnetSys_w.rcat);
         }
+        __cnetSub_Return_BgProcess(res, 1, 0);
     }
+}
+
+int cnLBS_Get_ServerMessage(char *d) {
+    strcpy(d, CNWP(0x378C0));
     return 0;
+}
+
+void _cnet_RecvFromLbs_RequestLineCheck(void) {
+    __cnet_SendSet_LineCheck();
+    CNW(s16, 0x10) = 1;
+}
+
+void __cnet_SendSet_LineCheck(void) {
+    SetSendCommand(&send_work, 1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+void _cnet_RecvFromLbs_NoticeShutDown(void) {
+    __cnet_Recv_ServerMessage();
+    _cnetEvent_JumpCallBack(2, 0);
+}
+
+void _cnet_RecvFromLbs_NoticeShutDownOpponent(void) {
+    _cnetEvent_JumpCallBack(6, 0);
+}
+
+void _cnet_RecvFromLbs_NoticeMatchCancel(void) {
+    __cnet_Recv_ServerMessage();
+    _cnetEvent_JumpCallBack(7, 0);
+}
+
+void _cnet_RecvFromLbs_NoticeLobbyFull(void) {
+    __cnet_Recv_ServerMessage();
+    _cnetEvent_JumpCallBack(8, 0);
 }

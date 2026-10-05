@@ -1704,12 +1704,91 @@ u16 *b;
     return 0;
 }
 
+void _cnet_RecvFromLbs_AnswerMatchEntryUser(void) {
+    u16 id;
+
+    if (CnetSys_w.rres == 0) {
+        GetRecvData16(&CnetSys_w.room[id - 1].mb, GetRecvData16(&CnetSys_w.room[id - 1].ma, GetRecvData16(&id, recv_work), id));
+        CnetSys_w.room[id - 1].flags |= 0x40;
+        CnetSys_w.last_id = id;
+    }
+    _cnet_Return_CallBack(0x21);
+}
+
+void _cnet_RecvFromLbs_NoticeMatchEntryUser(void) {
+    int id;
+    u8 *s0;
+
+    if (CnetSys_w.rres == 0) {
+        id = CNW(u8, 0x4060);
+        s0 = (u8 *)&CnetSys_w + ((id - 1) * 0x164);
+        GetRecvData16(s0 + 0x61DE, GetRecvData16(s0 + 0x61DC, recv_work));
+        CnetSys_w.last_id = id;
+    }
+    _cnet_Return_CallBack(0x21);
+}
+
 int __cnet_SendReq_MatchEntryUser(int arg0) {
     int cmd = SetSendCommand(&send_work, 0x9D) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
+}
+
+void _cnet_RecvFromLbs_AnswerRoomMatchEntryTypeList(void) {
+    u8 cnt;
+    u8 type;
+    int sp5C;
+    char name[8];
+    int i;
+    int p;
+    int k;
+    u8 *s2;
+
+    if (CnetSys_w.rres == 0) {
+        p = GetRecvData8(&cnt, GetRecvData16(&sp5C, recv_work));
+        if (cnt != 0) {
+            i = 0;
+            if ((cnt & 0xFF) > 0) {
+                do {
+                    memset(name, 0, 8);
+                    p = GetRecvData8(&type, GetRecvDataOption3(name, 8, p));
+                    k = 0;
+                    s2 = (u8 *)&CnetSys_w;
+                    do {
+                        if (memcmp(name, s2 + 0x39EE, 8) == 0) {
+                            s2[0x3A4A] = type;
+                        }
+                        k++;
+                        s2 += 0x60;
+                    } while (k < 8);
+                    i++;
+                } while (i < cnt);
+            }
+        }
+    }
+    _cnet_Return_CallBack(0);
+}
+
+void _cnet_RecvFromLbs_NoticeRoomMatchEntryTypeList(void) {
+    u16 id;
+    int p;
+    u8 *s0;
+
+    if (CnetSys_w.rres == 0) {
+        memset(CnetSys_w.extra_member, 0, 0x60);
+        p = GetRecvData16(&id, recv_work);
+        if (id == CNW(u8, 0x4060)) {
+            s0 = CnetSys_w.room_member;
+            CnetSys_w.n_room_member = 1;
+            GetRecvData8(s0 + 0x5C, GetRecvDataOption3(s0, 8, p));
+            goto cb;
+        }
+    } else {
+cb:
+        _cnet_Return_CallBack(0x28);
+    }
 }
 
 int __cnet_SendReq_RoomSetExplain(int arg0, int arg1) {
