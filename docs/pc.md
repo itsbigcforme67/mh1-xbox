@@ -25,10 +25,18 @@ game.bin overlay (an AFS_DATA entry, stored uncompressed) are read for the
 hunter's part-to-bone table (ptmat_tbl, 0x3018F0) and the game data tables
 the decompiled C uses (src/pc/rt/rt_data.c).
 
-Controls:
+Controls (free camera, the default):
 - WASD move, mouse look.
 - Space / C move up / down; Shift moves faster.
 - Esc quits.
+
+Controls with `--play` (the pad drives the hunter, camera follows):
+- An SDL game controller (Xbox layout: A cross, B circle, X square,
+  Y triangle, LB/RB L1/R1, LT/RT L2/R2, Back select, Start start), and the
+  keyboard: W/A/S/D left stick, arrow keys right stick (turns the camera),
+  K cross, L circle, J square, I triangle, Q L1, E R1, Z L2, C R2, Enter
+  start, Backspace select, T/F/G/H d-pad.
+- Only running and turning do anything yet (see "Player and pad" below).
 
 Screenshot mode, for checking without looking at the window: it renders
 offscreen in a hidden window, reads the back buffer and writes a PNG.
@@ -43,6 +51,9 @@ offscreen in a hidden window, reads the back buffer and writes a PNG.
 | `--cam x,y,z,yaw,pitch` | camera position and angles (radians) |
 | `--size WxH` | window size |
 | `--stage N` | stage number (game_w.stage, 0-87, hex with 0x), default 4 |
+| `--play` | the pad (controller + keyboard) drives the hunter; follow camera |
+| `--input SCRIPT` | scripted pad for tests, implies --play: `idle*10,up*50,left+cross*15` = ticks per step; names in src/pc/pad/pad.h |
+| `--sw-trace` | print, per tick, the pad state the game's sw_set_sub gave player 0 and the player's position/angle |
 
 Verified 5 Oct 2026 with build/show/pc_viewer.png and
 pc_viewer_close_0.5.png / _2.0.png:
@@ -158,6 +169,54 @@ src/pc/rt/:
 - `rt_mem.c`: PS2 address lookup in the ELF and the overlay; relocations
   and symbol lookup for the above.
 
+### Motion system (frame_init / frame_move)
+
+The hunter is animated by the game's own motion code: src/main/frame/
+f_frame_nm.c (main 0x125340-0x1267BC; 13 of its 18 functions match the PS2
+bytes, see docs/agents/agent-A.md) runs unchanged. create_plcom_motion
+turns every AAN in plcom_tbl.bin into a motion-set handle
+(motion_set_handle_tbl, com_mot_han_ofs); frame_init picks the handle from
+PLW.char0/char1, frame_move steps the layers, cross-fades, loops, and moves
+the player by the root motion (pl_velocity_sub). Below it, src/pc/rt/
+rt_motion.c implements the fl motion layer natively (read from the asm,
+main 0x173A50-0x1746A0): a motion-set handle is an index into a host table
+of parsed AANs; the two motion players at model work +0x44 / +0x54 are
+RT_MPLAYs that record per group the set, the frame and the blend, with the
++0xD0 word flCalcTransVelocity is given pointing back at the player.
+flCalcTransVelocity returns how far AAN bone 1 of group 0 (the root's
+child node on the PS2) moves between two frames: the run loop plcom 3 moves
+it 537 units forward over 78 frames. The host poses the hunter's skeleton
+from the player with rt_motion_pose (fl_skel_pose_groups: per-group frame,
+channel blend), keeping that bone's X/Z translation at its bind value
+because the game moves the actor instead (`root_lock`; how the PS2 cancels
+it at draw time is not traced yet [guess]).
+
+`RT_MOTION_SCAN=1` lists every common motion with its length, loop and root
+travel (how plcom 3 was found).
+
+### Player and pad
+
+- rt_pad.c is the PS2 pad driver step (ioRead_sub, main 0x11FAC0): it turns
+  the host pad (fl pad bits + sticks, src/pc/pad/pad.h; SDL backend
+  src/pc/pad/pad_sdl.c) into Psw[0] (buttons, triggers, stick direction
+  bits, stick angle and power with the 45 dead zone, repeat), then runs the
+  decompiled swset() (pad_get.c). pl_sw_set / sw_set_sub (pl_normal2.c)
+  then fill player_work[0].sw as on the PS2. fl bit meanings were read
+  from ps2pad_hard_to_soft_ds2 (0x306500) [inferred; the mapping to the
+  game's bits is ioRead_sub's and is exact]. Stick angle: 0 = right,
+  0x4000 = up.
+- rt_player.c is a host stand-in for the player's normal state (pl_normal
+  0x141BA0 and its ~70 pl_mv### actions are not decompiled; agent F's
+  area): it turns the hunter towards the left stick relative to the camera
+  (0x800 per tick), plays run 3/103 while the stick is pushed and idle
+  1/101 otherwise (4-tick cross-fade through frame_init), calls frame_move
+  and puts y on the ground (GetGroundHit). No walls, no actions: replace
+  it with the decompiled pl_move / pl_normal when they exist.
+- Verified 5 Oct 2026: `--input "idle*10,up*50,left*15" --sw-trace --time
+  2.5` prints sw.ang 0x4000 / pow 127 for "up" and 0x8000 for "left", the
+  hunter turns to the camera's forward direction and runs about 300 units
+  (build/show/A/play_run.png shows it mid-stride, turned left).
+
 ### Stage drawing (trans_stage)
 
 The PS2 draws the area model in trans_stage (main 0x15CD90), not as one
@@ -235,15 +294,18 @@ enemy_trans (0x168B10), prims (ported), effects/shells (ported).
 
 | piece | where | state |
 |----|----|----|
-| pad -> sw buffers | main pad_get.c, pl_normal2.c (sw_set_sub) | matched; needs a host pad backend that fills Psw (SDL game controller / keyboard) |
+| pad -> sw buffers | main pad_get.c, pl_normal2.c (sw_set_sub) | matched; runs on the PC with the host pad backend (rt_pad.c, src/pc/pad) |
 | player loop entry | pl01.c player_mv / pl_init | matched |
 | player states (walk, run, roll, weapon, items) | main 0x134000-0x15B000, 453 functions, 157 KB | ~10 % matched (pl0x.c, pl_normal*, pl_damage); the big weapon state machines are asm |
-| motion system | main frame_init/frame_move and friends, 36 functions, 8.5 KB | 0 %; the viewer has its own AAN player (src/pc/fl/fl_skel) that can stand in: motion ids decode the same way |
+| motion system | main f_frame 0x125340-0x1267BC (18 functions) + fl motion layer 0x173A50-0x1746A0 | f_frame: 13/18 match, all 18 run on the PC (f_frame_nm.c); fl layer native in rt_motion.c |
 | player/monster drawing | player_trans, enemy_trans, 45 functions | ~3 %; the viewer's hunter_pose / fl_model_pose do the same job natively |
 | collision | GetGroundHit, wall hits (main 0x111000-0x125000) | ~8 %; host HITS reader exists (fmt_hits_ground_y), wall test missing |
 | monster common (em_core, em_master, em_taisei) | game 0x533980-0x53A000 | ~65 % matched + near-matches |
 | Rathian/other monster AI | game em01.. (363 functions, 150 KB) | ~13 % matched; em01.c (Rathian action setters) partly |
 | camera | cam_t.c (main f_cam) | written, not built for the PS2 (near-match); could run on the PC as is |
+
+Done (agent A, 5 Oct 2026): steps 1 and 2 below, and a host stand-in for
+step 3 (rt_player.c) so the hunter runs and turns with the pad.
 
 Suggested order (each step ends in a screenshot or a short input replay):
 1. Host input: map an SDL controller to the PS2 pad bits and fill the
