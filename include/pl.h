@@ -127,14 +127,18 @@ typedef struct PLW {
     u8    stg;           /* 0x736 */
     u8 _pad737[0x145];
     s16   work87C;       /* 0x87C */
-    u8 _pad87E[0x4];
+    u8 _pad87E[0x3];
+    u8    x881;          /* 0x881 bite timer (eft23 fishing) */
     s16   work882;       /* 0x882 */
     u8 _pad884[0x8];
     u8    work88C;       /* 0x88C */
     u8 _pad88D[0x35];
     u8    work8C2;       /* 0x8C2 */
     u8 _pad8C3[0x11];
-    char  name[0x1C];    /* 0x8D4 player name (set01_i) */
+    char  name[0x14];    /* 0x8D4 player name (set01_i) */
+    u16   fish_time;     /* 0x8E8 time to land the hooked fish (eft23) */
+    u16   x8EA;          /* 0x8EA non-zero: bait still on (eft23) */
+    u8 _pad8EC[4];
     s8    work8F0;       /* 0x8F0 */
     u8 _pad8F1[0x10F];
 } PLW;
