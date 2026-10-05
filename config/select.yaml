@@ -60,6 +60,8 @@ segments:
       - [0x0046B8, asm, text/cmn_mongon_check_sub]
       - [0x004930, c, edit07]
       - [0x004BB8, asm, text/cmn_mongon_set]
+      - [0x004BC0, c, edit10]
+      - [0x004D40, asm, text/text]
       - [0x004D80, data, data/select_data]
       - [0x0079B0, .data, demo]
       - [0x0079CC, data, data/select_data_53B34C]

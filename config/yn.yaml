@@ -118,6 +118,7 @@ segments:
       - [0x006850, c, ui26]
       - [0x006970, c, ui05]
       - [0x006B08, asm, text/yn_sprite_draw_sub]
+      - [0x006CF0, c, ui32]
       - [0x006F40, c, ui27]
       - [0x0071DC, asm, text/yn_backup_allwork]
       - [0x0071E0, c, ui08]
