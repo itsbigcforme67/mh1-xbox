@@ -24,6 +24,7 @@ DEFAULT = int(DEFS, 16)
 GPR = {'$0': 0}
 def f32(h): return struct.unpack('>f', struct.pack('>I', h))[0]
 def fl(v):
+    if v is None: return '/*?*/0.0f'
     s = repr(round(v, 7))
     if 'e' in s: s = '%.9g' % v
     if '.' not in s and 'e' not in s: s += '.0'
@@ -389,6 +390,14 @@ def run_case(start, stop):
                 emit('em_sleep_eff_set(em, %s, %s, %s);' % (argstr(a1), 'va' if a2 == 'sp+48' else 'vb', fl(F12)))
             elif fn == 'em_mahi_eff_set':
                 emit('em_mahi_eff_set(em, %s);' % argstr(a1))
+            elif fn == 'Code_Make':
+                r['$2'] = 'Code_Make(%s, %s, %s, %s)' % (argstr(r.get('$4')), argstr(a1), argstr(a2), argstr(a3))
+            elif fn == 'hire_req_set_005A6F90':
+                emit('hire_req_set_005A6F90(em, w, %s);' % argstr(a2))
+            elif fn == 'atk_shell_set':
+                emit('atk_shell_set(em, %s);' % argstr(a1))
+            elif fn == 'em08_vib_set':
+                emit('em08_vib_set(em);')
             elif fn.startswith('ground_land'):
                 emit('%s(em);' % fn)
             elif fn.startswith('move_default'):
