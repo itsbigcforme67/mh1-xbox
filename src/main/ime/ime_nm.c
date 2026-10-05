@@ -1119,7 +1119,7 @@ int n;
     if (n < len) {
         len = n;
     }
-    memcpy(gAskRom.cur, buf, len);
+    memcpy(gAskRom.cur, buf, n);
     gAskRom.rest = gAskRom.rest - len;
     gAskRom.cur = gAskRom.cur + len;
     return len;
@@ -3139,8 +3139,7 @@ int tmp_touroku(u8 *key, WD *w, int rt)
         free_node(nd);
     }
     n = alloc_node();
-    need = newwdlen(w);
-    rec = alloc_record(need);
+    rec = alloc_record(need = newwdlen(w));
     set_record(rec, need, w, rt);
     link = srch_node(key, w->len, &nd);
     n->rec = rec;
@@ -4540,8 +4539,7 @@ void kh_mergesort(int pos, KL *list)
     while ((k = (KH *)kh_merge_getone(list)) != 0) {
         kh_append(pos, &head, &tail, k);
     }
-    k = null_kouho(cur_len);
-    if (k != 0) {
+    if ((k = null_kouho(cur_len)) != 0) {
         kh_append(pos, &head, &tail, k);
     }
     h->kh = head;
@@ -4915,12 +4913,12 @@ int is_kanji(int c)
 
 int is_shift(int c)
 {
-    int lo;
+    u8 lo;
 
+    lo = c;
     if (is_kanji((c & 0xFFFF) >> 8 & 0xFF) == 0) {
         return 0;
     }
-    lo = c & 0xFF & 0xFF;
     if (lo < 0x40 || lo >= 0xFD || lo == 0x7F) {
         return 0;
     }
