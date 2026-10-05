@@ -372,3 +372,102 @@ void pl_at070(PLW *pl, s32 arg1) {
         break;
     }
 }
+
+void pl_at074(PLW *pl) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl_chr_set2(pl, 0x584, 2, 0);
+        Pl_basic_flagset(pl, 0, 1, 0);
+        pl->x43E = 0x3C;
+        func_6362B0(pl, 0x1F);
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            pl->x43E = 0;
+            pl_to_normal(pl, 0, 6, 0);
+            break;
+        }
+        if (frame_check3(72.0f, 102.0f, pl, 0) != 0) {
+            ex_atk_ck(pl, 0);
+        }
+        break;
+    }
+}
+
+void pl_at077(PLW *pl) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl_chr_set2(pl, 0x583, 0, 0);
+        Pl_basic_flagset(pl, 0, 1, 0);
+        pl->x43E = 0x1C;
+        func_6362B0(pl, 0x20);
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 6, 0);
+            break;
+        }
+        if (frame_check(40.0f, pl, 0) != 0) {
+            vib_set_pl(pl, 2);
+            Pl_set_quake_sub(pl, 1);
+        }
+        if (frame_check3(102.0f, 132.0f, pl, 0) != 0) {
+            ex_atk_ck(pl, 0);
+        }
+        break;
+    }
+}
+
+void pl_at078(PLW *pl, s32 arg1) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl->x07 = 0;
+        pl_chr_set2(pl, 0x584, 2, 0);
+        Pl_basic_flagset(pl, 0, 1, 0);
+        pl->x43E = 0;
+        func_6362B0(pl, 0x21);
+        pl->work08 = 0;
+        break;
+    case 1:
+        if (we02_hit_sub(pl) != 1) {
+            if (pl->work194 == 0) {
+                if ((Pl_master_ck(pl) == 1) && (pl->work08 != 0) && (arg1 == 0)) {
+                    Pl_act_set(pl, 1, 0x4F, 4);
+                    break;
+                }
+                pl->x05++;
+                pl_chr_set2(pl, 0x57A, 4, 0x4A);
+                break;
+            }
+            if ((Pl_master_ck(pl) == 1) && (frame_check3(30.0f, 60.0f, pl, 0) != 0) && (pl->sw.an_trg & 0x3C) && (((pl->sw.ang[1] + 0x1555) & 0xFFFF) < 0xAAAC)) {
+                pl->work08 = 1;
+            }
+            if (frame_check(52.0f, pl, 0) != 0) {
+                vib_set_pl(pl, 2);
+                Pl_set_quake_sub(pl, 2);
+            }
+        }
+        break;
+    case 2:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 6, 0);
+            break;
+        }
+        if (frame_check3(80.0f, 120.0f, pl, 0) != 0) {
+            ex_atk_ck(pl, 2);
+        }
+        break;
+    }
+}
