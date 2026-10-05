@@ -993,6 +993,8 @@ main 0x00267FD0 0x002685B4 net/ms01
 main 0x002687C0 0x002687E0 net/ms02
 main 0x002685C0 0x002687B4 net/ms03
 main:rodata 0x003706E0 0x00370700 net/ms03
+main 0x002687E0 0x0026A2E8 net/ms04
+main:rodata 0x00370700 0x003707E0 net/ms04
 main 0x0022C6A0 0x0022C760 net/cngmsg01
 main 0x0022C7D0 0x0022C944 net/cngmsg02
 main 0x0022C9B0 0x0022C9E0 net/cngmsg03

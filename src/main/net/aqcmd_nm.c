@@ -202,34 +202,44 @@ void AQQuickSort(AQNODE **v, int n) {
     }
 }
 
-void AQQuickSortSub(AQNODE **v, int lo, int hi) {
-    int i = lo;
-    int j = hi;
-    u32 pivot = v[(lo + hi) / 2]->time;
+void AQQuickSortSub(AQNODE **v, int lo, int hi)
+{
+  int i = lo;
+  int j = hi;
+  u32 pivot = v[(lo + hi) / 2]->time;
+  for (;;)
+  {
+    while (v[i]->time < pivot)
+    {
+      i++;
+    }
 
-    for (;;) {
-        while (v[i]->time < pivot) {
-            i++;
-        }
-        if (pivot < v[j]->time) {
-            do {
-                j--;
-            } while (pivot < v[j]->time);
-        }
-        if (i < j) {
-            AQSwap(&v[i], &v[j]);
-            i++;
-            j--;
-            continue;
-        }
-        break;
+    if (pivot < v[j]->time)
+    {
+      do
+      {
+        j--;
+      }
+      while (v[j]->time > pivot);
     }
-    if (lo < i - 1) {
-        AQQuickSortSub(v, lo, i - 1);
+    if (i < j)
+    {
+      AQSwap(&v[i], &v[j]);
+      i++;
+      j--;
+      continue;
     }
-    if (j + 1 < hi) {
-        AQQuickSortSub(v, j + 1, hi);
-    }
+    break;
+  }
+
+  if (lo < (i - 1))
+  {
+    AQQuickSortSub(v, lo, i - 1);
+  }
+  if ((j + 1) < hi)
+  {
+    AQQuickSortSub(v, j + 1, hi);
+  }
 }
 
 void AQSwap(AQNODE **a, AQNODE **b) {

@@ -2,3 +2,4 @@
  * frame_check_001263F0: frame_check under a second name so that one C file can call it with its real (float-last)
  * prototype next to the float-first one declared in plf.h (see src/main/pl/pl_snd_nm.c, ef_move_sub loops). */
 frame_check_001263F0 = 0x001263F0;
+D_6E9700 = 0x006E9700;   /* lobby/overlay word read by ms_net_patch_set (patch size); the auto list only holds +4 and +0x14 */

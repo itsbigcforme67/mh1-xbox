@@ -50,12 +50,16 @@ typedef struct NETCW {
     u8 kb[8];           /* 0x58 kinds */
     u8 pad60[0x79 - 0x60];
     s8 x79;
-    u8 pad7A[0x80 - 0x7A];
+    u8 pad7A[0x7E - 0x7A];
+    s8 x7E;             /* 0x7E patch menu: message index base */
+    s8 x7F;             /* 0x7F patch menu: 0 = new patch, 1 = other message */
     s32 x80;
-    u8 x84[0x89 - 0x84];
-    s8 x89;
-    s8 x8A;
-    u8 pad8B[0x94 - 0x8B];
+    s32 x84;            /* 0x84 patch size */
+    u8 pad88;
+    u8 x89;             /* 0x89 ms_net_patch_set state (u8: lbu) */
+    u8 x8A;             /* 0x8A its sub step (u8: lbu) */
+    s8 x8B;             /* 0x8B */
+    u8 pad8C[0x94 - 0x8C];
 } NETCW;
 extern NETCW net_common_w;
 #endif

@@ -127,18 +127,24 @@ u16 CngNet_MSG_ReadU16(CNGMSG *m) {
     return v;
 }
 
-void CngNet_MSG_WriteFloat32(CNGMSG *m, f32 v) {
-    f32 t = v;
-    CngNet_MSG_Write(m, (u8 *)&t, 4);
+void CngNet_MSG_WriteFloat32(CNGMSG *m, f32 v)
+{
+  u8 *new_var;
+  u8 *new_var2;
+  if ((v && v) && v)
+  {
+  }
+  v = v;
+  new_var2 = (u8 *) (&v);
+  CngNet_MSG_Write(m, new_var = new_var2, (unsigned long long) 4);
 }
 
-f32 CngNet_MSG_ReadFloat32(CNGMSG *m) {
-    f32 v;
-    f32 r;
-
-    CngNet_MSG_Read(m, (u8 *)&v, 4);
-    r = v;
-    return r;
+f32 CngNet_MSG_ReadFloat32(CNGMSG *m)
+{
+  f32 r;
+  CngNet_MSG_Read(m, (u8 *) (&r), 4);
+  r = r;
+  return r;
 }
 
 u16 CngNet_MSGBOB_ReadU16(CNGMSG *m) {
