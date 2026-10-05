@@ -371,6 +371,7 @@ int rt_monster_motion_tick(int no)
     if (!((FRW *)em)->be_flag)
         return frame_move((FRW *)em);
     rt_monster_save_old(em);
+    rt_snd_monster_motion(no);      /* walk sounds (em01 ef_move_sub's list), before the frame steps */
     r = frame_move((FRW *)em);
     if (Em_stg_ck(em) & 0xFF)
         rt_monster_collide(em);

@@ -127,6 +127,7 @@ int  rt_snd_init(const char *disc, int device);
 void rt_snd_stage(int stage, const int *em_kinds, int nem);
 void rt_snd_tick(void);
 void rt_snd_player_motion(int no);
+void rt_snd_monster_motion(int no);
 void rt_snd_shutdown(void);
 
 /* The game camera (src/main/cam CameraMove, rt_cam.c): init for a stage

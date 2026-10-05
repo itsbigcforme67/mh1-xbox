@@ -28,6 +28,7 @@
 #include "pl.h"
 #include "fl.h"
 #include "frame.h"
+#include "em.h"
 #include "../fmt/fmt.h"
 #include "../audio/audio.h"
 
@@ -650,6 +651,29 @@ void rt_snd_player_motion(int no)
         ashi_sd_req(pl, 8.0f, 2);
         ashi_sd_req(pl, 30.0f, 2);
         ashi_sd_req(pl, 54.0f, 2);
+        break;
+    }
+}
+
+/* Monster sounds: em01's per-motion list is ef_move_sub (game 0x574EE0,
+ * a switch on chr[0] - 1001 through the table at 0x685EF0). For the walk
+ * loop 1003 it calls sound_call(em, frame, 1, joint) at frames 52 (joint
+ * 20) and 116 (joint 26): em_frame_check(em, 0, frame), then
+ * Em_se_req2(em, 1, 0, joint position, 3, 0) [read from the asm]. The
+ * joint matrices (em+0x50C) are not built on the PC: the host passes the
+ * monster's position. Other kinds/motions: not done. */
+int em_frame_check(FRW *w, int n, f32 f);
+void rt_snd_monster_motion(int no)
+{
+    FRW *w = (FRW *)&em_work[no];
+    if (!w->be_flag || ((u8 *)w)[2] != 1)
+        return;
+    switch (w->chr[0]) {
+    case 1003:
+        if (em_frame_check(w, 0, 52.0f))
+            Em_se_req2(w, 1, 0, w->pos, 3, 0);
+        if (em_frame_check(w, 0, 116.0f))
+            Em_se_req2(w, 1, 0, w->pos, 3, 0);
         break;
     }
 }
