@@ -218,3 +218,13 @@ Lessons:
   (em27_main Em_Dmg_Sys).
 - Writing `x05++; x388 = 0; em_char_set(...)` (both stores before the call) puts the second store in the delay slot.
 - check.py "move0x" noise: do not grep it away, one real diff hid there (em27 move06 is a one-case switch).
+
+## em16 (f_em_5D0600, 0x5D0600-0x5D8198, monsters 16/13/30, 81 functions): 79 match
+Sibling of em27 (same templates; em16_nm.c was written from em27_nm.c). em16a.c (0x5D0600-0x5D7404, rodata
+0x688940-0x688B50), em16b.c (0x5D7610-0x5D8130, rodata 0x688B50-0x688C24), em16c.c (dummy). em16_nm.c = whole file.
+Rebuild OK. Near-matches (stay asm): em16_uvmove and em16_effect_move (same two as em27, same diffs).
+Lessons: a `u16 d` local is re-masked at every use (andi), an `int d` is not (em16 demo00); small tables
+(`u16 st51_ang_tbl[3]`) need their size for gp-relative access (die04); K&R `void f(em) EMW *em; {}` lets callers pass
+extra zero args (em16_to_normal(em, 0, 0)); `case 4: ... /* fallthrough */ case 3:` with the jump table sending 3 into the
+middle of 4's code (demo00).
+Shared header edit: em.h x95B (u8, boss flag).
