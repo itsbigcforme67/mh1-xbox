@@ -334,7 +334,7 @@ sound/effect script is the game's (em_prog_tbl[1][3] = em01_effect_move).
   used; em01 then starts with a fly-in.
 - Quests with the Rathian (kind 1) as their own monster: 10 (stage 40),
   12 (52), 21/24/27 (9), 44/45 (19), 60 (40); kind 11 (em01 code too) in
-  6-9 and 46. Read from the mission files with a throw-away script; stage
+  6-9, 46 and 56-59. Read from the mission files with a throw-away script; stage
   numbers are QEM+7.
 - x86 fixes needed on the way (none touch PS2-built code): game_w.pl_num
   = 1 (sight/hate loop over it); Em_Master_Change and NextStage_No_Set get
