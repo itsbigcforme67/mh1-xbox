@@ -2,7 +2,9 @@
 """lbruns.py NM.c PREFIX "comment": split the fully matching, not yet registered functions of a lobby working file
 (NM.c, whole file in address order or not) into address-contiguous runs PREFIXNN.c in src/lobby/ and append their
 'lobby START END NAME' lines to config/c_files.txt. Run tools/rebuild.sh afterwards."""
-import os, re, subprocess, sys, glob
+import os, re, subprocess, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lbf_jt, glob
 nm, prefix, cmt = sys.argv[1:4]
 reg = []
 for l in open('config/c_files.txt'):
@@ -37,6 +39,9 @@ for run in runs:
     hdr = '%s - %s 0x%08X-0x%08X: %s. Whole file in %s.' % (name, cmt, s, e, ', '.join(r[0] for r in run), os.path.basename(nm))
     subprocess.run(['python3', 'tools/mkrun2.py', nm, 'src/lobby/f/%s.c' % name, hdr] + [r[0] for r in run], check=True)
     lines.append('lobby 0x%08X 0x%08X f/%s' % (s, e, name))
+    for r in run:
+        for a, e2 in lbf_jt.ranges(r[0]):
+            lines.append('lobby:rodata 0x%08X 0x%08X f/%s' % (a, e2, name)); print('  jump table', r[0], lines[-1])
     print(lines[-1], '#', ', '.join(r[0] for r in run))
 with open('config/c_files.txt', 'a') as f:
     f.write('\n'.join(lines) + ('\n' if lines else ''))

@@ -4,6 +4,8 @@ src/lobby/_one/NAME.c, build contiguous runs PREFIXNN.c in src/lobby/ (merging t
 tools/check.py --module lobby, split a run that fails to compile or match into single-function files, register all with
 'lobby START END NAME' lines in config/c_files.txt."""
 import sys, os, re, subprocess
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__))))
+import lbf_jt
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ROOT)
 S = '/tmp/claude-1000/-home-james-claude-projects/6db1702a-235b-4025-a34e-ca6b5540767b/scratchpad/fl.txt'
@@ -61,6 +63,9 @@ def emit(group):
     path = 'src/lobby/f/%s%02d.c' % (prefix, num)
     if build(group, path) and ok(path, group):
         lines.append('lobby 0x%08X 0x%08X f/%s%02d' % (info[group[0]][0], info[group[-1]][0] + info[group[-1]][1], prefix, num))
+        for n in group:
+            for a, e in lbf_jt.ranges(n):
+                lines.append('lobby:rodata 0x%08X 0x%08X f/%s%02d' % (a, e, prefix, num)); print('  jump table', n, lines[-1])
         print(lines[-1], '#', ', '.join(group)); num += 1
     else:
         if os.path.exists(path): os.remove(path)

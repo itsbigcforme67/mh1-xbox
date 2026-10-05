@@ -995,3 +995,9 @@ lobby 0x005AD7E0 0x005ADBB8 cnet/cnlbs39
 lobby 0x005ADCE0 0x005AE160 cnet/cnlbs40
 lobby 0x005AE300 0x005AE320 cnet/cnlbs41
 lobby 0x005AE5C0 0x005AE7E8 cnet/cnlbs42
+lobby 0x00604520 0x006045AC f/lb_z131
+lobby 0x00609300 0x0060938C f/lb_z132
+lobby 0x005D78C0 0x005D7950 f/lb_z133
+lobby 0x005D5750 0x005D58B4 f/lb_z134
+lobby 0x005E88A0 0x005E88CC f/lb_z135
+lobby:rodata 0x00664E50 0x00664E94 f/lb_z134

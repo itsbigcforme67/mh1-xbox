@@ -94,6 +94,23 @@ def fix(fn):
                     best = r; cur = s2
                     if r == 0: break
             if best == 0: break
+        # operand order of additions/products/bit ops
+        PAR = r'\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\)'
+        OPD = '([A-Za-z_]\\w*(?:\\[[^\\]]*\\])?|0x[0-9A-Fa-f]+|\\d+|F' + PAR + '|' + PAR + ')'
+        bodypos = cur.index('{', cur.index(fn)) if fn in cur else 0
+        for opch in ('+', '*', '&', '|'):
+            pat = re.compile(OPD + ' ' + re.escape(opch) + ' ' + OPD)
+            k = 0
+            while True:
+                ms = [mm for mm in pat.finditer(cur) if mm.start() > bodypos]
+                if k >= len(ms) or k > 12: break
+                mm = ms[k]; k += 1
+                s2 = cur[:mm.start()] + mm.group(2) + ' ' + opch + ' ' + mm.group(1) + cur[mm.end():]
+                r = run(fn, s2, 'o%d' % k)
+                if r is not None and r < best:
+                    best = r; cur = s2
+                    if r == 0: break
+            if best == 0: break
         bestsrc = cur
     if bestsrc is not src: open(p, 'w').write(bestsrc)
     return fn, 'OK' if best == 0 else 'd%d' % best
