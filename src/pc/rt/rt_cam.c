@@ -103,13 +103,7 @@ s32 Game_clear_ck(s32 a)
 /* Cockpit_chat_chk (0x275220): the online chat menu is open; never here */
 s32 Cockpit_chat_chk(void) { return 0; }
 
-/* hit_data_expand (0x151A60) / body_ptr_ck2 (0x111D70): a monster's body
- * capsules for k_HitEmCamera; not ported, so it sees no parts. */
-int hit_data_expand(void *em, void *body, void *cap, void *sph)
-{
-    (void)em; (void)body; (void)cap; (void)sph;
-    return 0;
-}
+/* hit_data_expand: src/pc/rt/rt_eft.c (joint matrices from the viewer) */
 /* body_ptr_ck2: src/main/hit/hit_nm.c (built) */
 
 /* View_move: the host builds its camera from lpView (rt_cam_view). */

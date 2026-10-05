@@ -579,6 +579,43 @@ FLMAT *get_joint_wmat(void *chr, int joint)
     return &joint_m;
 }
 
+void flvecApplyMat33(f32 *out, f32 *v, FLMAT *m);
+/* hit_data_expand (0x151A60): one body entry {s16 joint, s16 type, ..,
+ * f32 r at +0xC, offsets at +0x10 / +0x1C} around the joint's world
+ * matrix (on the PS2 node j of chr+0x50C -> +0x24, 0x190 bytes a node):
+ * type 0 sphere, type 1 capsule; radius times the actor scale (+0xB8).
+ * Joint 0x7F (and actors without host joints) give -1, no part. */
+int hit_data_expand(void *chr, void *body, f32 *cap, f32 *sph)
+{
+    const u8 *e = body;
+    s16 j = *(const s16 *)e;
+    const f32 *m;
+    f32 o[3];
+    if (j == 0x7F || !(m = joint_mat(chr, j)))
+        return -1;
+    switch (*(const s16 *)(e + 2)) {
+    case 0:
+        sph[3] = *(const f32 *)(e + 0xC) * *(const f32 *)((u8 *)chr + 0xB8);
+        flvecApplyMat33(o, (f32 *)(e + 0x10), (FLMAT *)m);
+        sph[0] = m[12] + o[0];
+        sph[1] = m[13] + o[1];
+        sph[2] = m[14] + o[2];
+        return 0;
+    case 1:
+        cap[6] = *(const f32 *)(e + 0xC) * *(const f32 *)((u8 *)chr + 0xB8);
+        flvecApplyMat33(o, (f32 *)(e + 0x10), (FLMAT *)m);
+        cap[0] = m[12] + o[0];
+        cap[1] = m[13] + o[1];
+        cap[2] = m[14] + o[2];
+        flvecApplyMat33(o, (f32 *)(e + 0x1C), (FLMAT *)m);
+        cap[3] = m[12] + o[0];
+        cap[4] = m[13] + o[1];
+        cap[5] = m[14] + o[2];
+        return 1;
+    }
+    return -1;
+}
+
 FLMAT *get_joint_wmat_em(void *chr, int joint) { return get_joint_wmat(chr, joint); }
 
 /* ------------------------------------------------------------ ground */
@@ -590,16 +627,51 @@ typedef struct {                     /* MDLW (get_mdlw_ptr) as the eft code sees
     u8 flag;                         /* 0x00 */
     u8 _pad01[0x0F];
     void *mat;                       /* 0x10 material table (unused by the port) */
-    u8 _pad14[0x1C];
+    u8 _pad14[0x10];
+    u8 *skin;                        /* 0x24 skeleton nodes, 0x190 bytes each, world
+                                        matrix first; +0xC2 s16 node count (eft05_t) */
+    u8 _pad28[0x8];
     CLAY *clay;                      /* 0x30 */
 } RT_MDLW;
 _Static_assert(offsetof(RT_MDLW, clay) == 0x30, "MDLW layout");
+_Static_assert(offsetof(RT_MDLW, skin) == 0x24, "MDLW layout");
 
 extern RT_MDLW *eft_mdlw[5];         /* 0x3C8DC0, data table work area */
 static RT_MDLW eft_mdl[5];
 
 /* eft_mdlw[k] (load_eft / load_shadow, 0x111110): k 0 ef_00, 1-3 kage04-06,
  * 4 ef_01 */
+static void (*eft_skin_cb)(int k, const float *mats, int n);
+
+/* skinned effect models (ef_01: eft05 slash trails): the game writes the
+ * node matrices into mdlw->skin and calls flSetSkinTrans(skin); the host
+ * then re-skins the model's clays with them (callback from the viewer)
+ * before the flExecuteClay that follows. */
+void rt_bind_eft_skin(int k, int nbone, void (*cb)(int k, const float *mats, int n))
+{
+    if (k < 0 || k >= 5 || nbone <= 0)
+        return;
+    eft_mdl[k].skin = calloc((size_t)nbone, 0x190);
+    *(s16 *)(eft_mdl[k].skin + 0xC2) = (s16)nbone;
+    eft_skin_cb = cb;
+}
+
+void flSetSkinTrans(void *skin)
+{
+    int k, i, n;
+    static f32 mats[64][16];
+    for (k = 0; k < 5; k++)
+        if (eft_mdl[k].skin && eft_mdl[k].skin == skin)
+            break;
+    if (k == 5 || !eft_skin_cb)
+        return;             /* player/weapon hierarchies: drawn by the host */
+    n = *(s16 *)(eft_mdl[k].skin + 0xC2);
+    if (n > 64) n = 64;
+    for (i = 0; i < n; i++)
+        memcpy(mats[i], eft_mdl[k].skin + 0x190 * i, 64);
+    eft_skin_cb(k, &mats[0][0], n);
+}
+
 void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n)
 {
     CLAY *cl;
@@ -717,13 +789,7 @@ u16 Em_Calc_angY(f32 *a, f32 *b)
 
 /* frame_check* come from the decompiled src/main/frame/f_frame_nm.c */
 
-/* atck_data_set_shl (0x151A50): stores the data pointer at +0x90, then
- * atck_data_set_shl2 fills the attack data (stub: no hits yet). */
-void atck_data_set_shl(SHLW *sh, int a, u8 *data)
-{
-    (void)a;
-    *(u8 **)((u8 *)sh + 0x90) = data;
-}
+/* atck_data_set_shl / pl_atck_data_set_shl: src/pc/rt/rt_pl.c */
 
 /* shell_flag_set: src/main/pl/pl_normal.c (built). shell_rate_add/_g
  * (0x151660, 0x1516A0): velocity integration */
@@ -745,7 +811,6 @@ void shell_rate_add_g(SHLW *sh)
 
 int softdip_ck(void) { return 0; }   /* 0x1593D0: returns 0 */
 
-STUB_V(pl_atck_data_set_shl, (SHLW *sh, void *em, int a, u8 *d))
 STUB_V(vib_set_pl, (void *pl, int a))
 STUB_V(pl_light_change, (void *em, int a))
 STUB_V(Pl_light_set, (void *em))
@@ -762,7 +827,6 @@ STUB_V(flCalcTrans, (void *h, FLMAT *m))
 STUB_V(flCalcTransSI, (void *h, FLMAT *m))
 STUB_V(flSetMatrixList, (void *a, void *b))
 STUB_V(flSetSkinTransMatrixList, (void *a, void *b))
-STUB_V(flSetSkinTrans, (void *a))
 /* shell08_trans (game 0x6309A0) is not decompiled yet: the shell is not drawn */
 STUB_V(shell08_trans, (void *pr))
 

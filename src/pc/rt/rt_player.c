@@ -303,3 +303,57 @@ int rt_weapon_afs(int model, int tex)
         return -1;
     return tex ? WEAPON_TEX[model] : weapon_model_data[model];
 }
+
+void rt_actor_joints(const void *chr, const float *mats, int n);
+extern u8 em_work[];
+void rt_monster_joints(int no, const float *world, int n)
+{
+    rt_actor_joints(em_work + 0xA10 * no, world, n);
+}
+
+void hit_check(void);
+void rt_hit_check(void)
+{
+    static int tr = -1;
+    u8 *e = em_work;
+    hit_check();
+    if (tr < 0) tr = getenv("RT_HIT_DM") != NULL;
+    if (tr > 1 || (tr && getenv("RT_HIT_DM")[0] == '2')) {   /* RT_HIT_DM=2: live shells each tick */
+        extern u8 *shell_w_top;
+        u8 *sh;
+        tr = 2;
+        for (sh = shell_w_top; sh; sh = *(u8 **)(sh + 0x10)) {
+            if (sh[0] && sh[0xB] == 2 && *(u8 **)(sh + 0x88)) {
+                extern u8 *em_body_tbl[];
+                int hit_data_expand(void *chr, void *body, f32 *cap, f32 *sph);
+                u8 *b = *(u8 **)(sh + 0x88);
+                f32 cap[8], sph[4];
+                int k;
+                for (; *(s16 *)b != -1; b += 0x28) {
+                    k = hit_data_expand(&player_work[sh[0xA]], b, cap, sph);
+                    printf("  sb j %d t %d -> %d cap %.0f %.0f %.0f - %.0f %.0f %.0f r %.0f sph %.0f %.0f %.0f r %.0f\n",
+                           *(s16 *)b, *(s16 *)(b + 2), k, cap[0], cap[1], cap[2], cap[3], cap[4], cap[5], cap[6],
+                           sph[0], sph[1], sph[2], sph[3]);
+                }
+                for (b = em_body_tbl[e[2]]; b && *(s16 *)b != -1; b += 0x28) {
+                    k = hit_data_expand(e, b, cap, sph);
+                    printf("  eb j %d t %d -> %d cap %.0f %.0f %.0f - %.0f %.0f %.0f r %.0f sph %.0f %.0f %.0f r %.0f\n",
+                           *(s16 *)b, *(s16 *)(b + 2), k, cap[0], cap[1], cap[2], cap[3], cap[4], cap[5], cap[6],
+                           sph[0], sph[1], sph[2], sph[3]);
+                }
+            }
+            if (sh[0])
+                printf("shl: type %d arg %d mode %d hit_mode %d x08 %d no %d atk %d body %p x7B %d stg %d pos2 %.0f %.0f %.0f\n",
+                       sh[2], sh[3], sh[4], sh[0xB], sh[8], sh[0xA], sh[0x63], *(void **)(sh + 0x88), sh[0x7B], sh[0xCA],
+                       PF(sh, f32, 0x30), PF(sh, f32, 0x34), PF(sh, f32, 0x38));
+        }
+    }
+    if (tr && e[0x38D]) {
+        int k;
+        printf("hit: em0 dm_flag %d part %d pos %.0f %.0f %.0f ang %04X vals", e[0x38D], e[0x38E],
+               PF(e, f32, 0x430), PF(e, f32, 0x434), PF(e, f32, 0x438), PF(e, u16, 0x3EC));
+        for (k = 0; k < 8; k++)
+            printf(" %d", PF(e, s16, 0x766 + 2 * k));
+        printf("\n");
+    }
+}

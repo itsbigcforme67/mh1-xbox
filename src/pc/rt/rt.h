@@ -59,6 +59,7 @@ int rt_clay_claimed(int handle);
 /* Hand effect model k (eft_mdlw[k]: 0 ef_00, 1-3 kage04-06, 4 ef_01) to
  * the game C; attr as for rt_bind_set_model. */
 void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n);
+void rt_bind_eft_skin(int k, int nbone, void (*cb)(int k, const float *mats, int n));
 /* Files the game C loads by AFS index (load_file_mdl): fn returns the
  * Meltw-decompressed entry (malloc'd, the caller frees) and its size. */
 void rt_set_file_loader(uint8_t *(*fn)(int idx, size_t *n));
@@ -116,6 +117,8 @@ void rt_pad_set(uint16_t fl_bits, int lx, int ly, int rx, int ry);
  * game's frame_init/frame_move) and ground following. */
 void rt_player_tick(int no);
 void rt_player_game_init(int no);
+void rt_monster_joints(int no, const float *world, int n);  /* em_work[no] joint world matrices */
+void rt_hit_check(void);                /* the game's hit_check (shells vs monsters/players) */
 int rt_player_weapon(int no, float *root0, float *root1);   /* weapon root matrices (weapon_trans) */
 int rt_player_weapon_model(int no);     /* PLW+0x34C */
 int rt_weapon_afs(int model, int tex);  /* weapon_model_data / WEAPON_TEX entry */

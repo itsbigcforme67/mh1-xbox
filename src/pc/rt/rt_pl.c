@@ -896,6 +896,39 @@ void pl_atck_data_set_shl2(void *sh, void *b, int n)
     PU8(sh, 0xB5) = (u8)Get_hit_id();
 }
 
+/* pl_atck_data_set_shl (0x151960): the player's attack table, element
+ * cleared, then pl_atck_data_set_shl2 */
+void pl_atck_data_set_shl(void *sh, void *pl, int n, u8 *tbl)
+{
+    PU32(sh, 0x90) = (u32)(uintptr_t)tbl;
+    PU8(sh, 0x6D) = 0;
+    PU8(sh, 0x6C) = 0;
+    pl_atck_data_set_shl2(sh, pl, n);
+}
+
+/* atck_data_set_shl2 (0x151970) / atck_data_set_shl (0x151A50): the same
+ * for shells with no owner (+8 = 0xFF), power bytes halved */
+void atck_data_set_shl2(void *sh, int n)
+{
+    u8 *row = *(u8 **)PU32(sh, 0x90) + n * 0x18;
+    memcpy((u8 *)sh + 0x60, row, 0x18);
+    PU8(sh, 8) = 0xFF;
+    PU8(sh, 0xB) = 1;
+    PU8(sh, 0x1E) = 0;
+    PU32(sh, 0x9C) = 0;
+    PU32(sh, 0xA0) = 0;
+    PU8(sh, 0x60) >>= 1;
+    PU8(sh, 0x61) >>= 1;
+    if (PU8(sh, 0x75) != 0xFF) PU8(sh, 0x75) >>= 1;
+    PU8(sh, 0x76) >>= 1;
+    PU8(sh, 0xB5) = (u8)Get_hit_id();
+}
+void atck_data_set_shl(void *sh, int n, u8 *tbl)
+{
+    PU32(sh, 0x90) = (u32)(uintptr_t)tbl;
+    atck_data_set_shl2(sh, n);
+}
+
 /* hit_data_expand2 (0x151C70): one body/attack entry (s16 type at +2) to a
  * sphere (type 0: centre + radius at +0xC) or capsule (type 1) around
  * the base position */

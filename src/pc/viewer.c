@@ -83,6 +83,17 @@ static void draw_model_attr(fl_model *m, int sky)
  * ef_00, kage04-06, ef_01), handed to the game C. */
 static fl_model eft_models[5];
 static uint8_t *eft_keep[10];
+static void eft_skin(int k, const float *mats, int n)
+{
+    static fl_light none;
+    static flmat id;
+    (void)n;
+    fl_model_pose(&eft_models[k], (const flmat *)mats, &none);
+    /* the node matrices are in world space (the PS2 skin program uses
+     * them directly): draw the skinned clay with an identity world */
+    flmat_identity(id);
+    gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
+}
 static void load_eft_models(void)
 {
     int k;
@@ -104,6 +115,8 @@ static void load_eft_models(void)
             at[i] = part_attr(&eft_models[k], i);
         }
         rt_bind_eft_model(k, c, at, eft_models[k].npart);
+        if (eft_models[k].skel.nbone > 0)
+            rt_bind_eft_skin(k, eft_models[k].skel.nbone, eft_skin);
         free(c);
         free(at);
     }
@@ -401,6 +414,36 @@ static void place(flmat w, float x, float y, float z, float yaw)
     flmat_srt(w, s, r, t);
 }
 
+/* Joint world matrices of the hunter (player_work[0]) and the Rathian
+ * (em_work[0]) for the game C: parts, get_joint_pos, hit_data_expand.
+ * On the PS2 they come from the draw (trans) that runs between move()
+ * and hit_check(), so this runs once per game tick, before hit_check. */
+static void sync_joints(hunter *h, float hyoff, monster *e, float eyoff)
+{
+    static flmat jw[128], ew[128];
+    float p[3];
+    int a, nb, j;
+    if (h->game) {
+        rt_player_pose(0, &h->master);
+        rt_player_get(0, p, &a);
+        place(h->world, p[0], p[1] + hyoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
+        nb = h->master.skel.nbone < 128 ? h->master.skel.nbone : 128;
+        for (j = 0; j < nb; j++)
+            flmat_mul(jw[j], h->master.world[j], h->world);
+        rt_player_parts(0, &jw[0][0], nb);
+    }
+    if (e->game && e->skel.root_lock) {
+        rt_monster_get(0, p, &a);
+        place(e->world, p[0], p[1] + eyoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
+        rt_monster_pose(0, &e->skel);
+        nb = e->skel.skel.nbone < 128 ? e->skel.skel.nbone : 128;
+        for (j = 0; j < nb; j++)
+            flmat_mul(ew[j], e->skel.world[j], e->world);
+        rt_monster_joints(0, &ew[0][0], nb);
+    }
+}
+
+
 /* ------------------------------------------------------------ main */
 /* 48 kHz stereo s16 wav (--audio-dump) */
 static void write_wav(const char *path, const int16_t *pcm, size_t frames)
@@ -604,6 +647,8 @@ int main(int argc, char **argv)
      * the collision floor */
     fl_skel_update(&rathian.skel, 0);
     fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
+    if (getenv("RT_EM_POS"))            /* test placement of the Rathian: "x,z" */
+        sscanf(getenv("RT_EM_POS"), "%f,%f", &rx, &rz);
     gy = 0;
     rt_ground_y(rx, rz, 1e6f, &gy);
     place(rathian.world, rx, gy - min_y_of(&rathian.model), rz, 0.6f);
@@ -754,6 +799,10 @@ int main(int argc, char **argv)
             } else if (pl.game) {
                 rt_player_motion_tick(0);
             }
+            if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
+                sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
+                rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
+            }
             if (rathian.game && ticks >= 2) {
                 rt_monster_motion_tick(0);
                 if (sw_trace && rathian.skel.root_lock) {
@@ -804,13 +853,8 @@ int main(int argc, char **argv)
             fl_skel_update(&rathian.skel, fr);
         fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
         hunter_pose(&pl, fr, &light);
-        if (pl.game && play) {          /* joint world matrices for the game C (parts, get_joint_pos) */
-            static flmat jw[128];
-            int nb = pl.master.skel.nbone < 128 ? pl.master.skel.nbone : 128, j;
-            for (j = 0; j < nb; j++)
-                flmat_mul(jw[j], pl.master.world[j], pl.world);
-            rt_player_parts(0, &jw[0][0], nb);
-        }
+        if (pl.game && play)            /* joint world matrices for the game C (parts, get_joint_pos) */
+            sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
         if (weapon.game && pl.game && play)
             weapon_pose(&light);
 
