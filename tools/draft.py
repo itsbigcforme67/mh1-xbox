@@ -46,6 +46,33 @@ def blocks(module):
     return out
 
 
+def jump_tables(module, fn_text):
+    """Switch tables referenced by lit_NNN_ADDR in the function: rename to jtbl_* and emit a
+    .rodata block with .L labels so m2c can see the switch (select/yn/game data files)."""
+    names = sorted(set(re.findall(r"%hi\((lit_\d+_[0-9A-F]+)\)", fn_text)))
+    labels = set(re.findall(r"^\s*\.L([0-9A-F]{8}):", fn_text, re.M))
+    out = ""
+    for n in names:
+        for path in glob.glob(os.path.join(ROOT, "asm", module, "data", "data", "*.s")):
+            text = open(path).read()
+            m = re.search(r"^dlabel %s\n(.*?)^enddlabel" % n, text, re.M | re.S)
+            if not m:
+                continue
+            words = re.findall(r"\.word 0x([0-9A-Fa-f]{8})\s*$", m.group(1), re.M)
+            if words:
+                for w in set(x.upper() for x in words):
+                    if w not in labels:   # case target without a label: add one before that instruction
+                        fn_text, cnt = re.subn(r"^(\s*/\* [0-9A-F]+ %s )" % w, ".L%s:\n\\1" % w, fn_text, count=1, flags=re.M)
+                        if cnt:
+                            labels.add(w)
+            if words and all(w.upper() in labels for w in words):
+                jt = n.replace("lit_", "jtbl_")
+                fn_text = fn_text.replace(n, jt)
+                out += ".section .rodata\nglabel %s\n" % jt + "".join("    .word .L%s\n" % w.upper() for w in words) + "\n"
+            break
+    return fn_text, out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("module")
@@ -61,9 +88,10 @@ def main():
         if name not in bl:
             print("/* %s: not found in asm/%s (already C?) */" % (name, args.module))
             continue
+        body, jt = jump_tables(args.module, bl[name][1])
         with tempfile.NamedTemporaryFile("w", suffix=".s", delete=False) as t:
             t.write('.include "macro.inc"\n.set noat\n.set noreorder\n'
-                    '.section .text, "ax"\n\n' + named_regs(bl[name][1]))
+                    '.section .text, "ax"\n\n' + named_regs(body) + jt)
         p = subprocess.run([PY, M2C, "-t", "mips-mwcc-c", "--valid-syntax"] + (["--context", os.environ["DRAFT_CTX"]] if os.environ.get("DRAFT_CTX") else []) + [t.name],
                            capture_output=True, text=True)
         os.unlink(t.name)

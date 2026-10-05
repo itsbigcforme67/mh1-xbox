@@ -1886,7 +1886,8 @@ void disp_menu(int sw, PIT_W *p) {
 /* 0x131FB0 */
 void Pit_disp_chat_cnfg(void) {
     char buf[32];
-    u32 i; int y;
+    u32 i;
+    int y;
     u8 *e;
     s8 k;
 
