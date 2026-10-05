@@ -215,4 +215,5 @@ void pl_at012(PLW *);
 s32 Get_string_pow(PLW *, u8);
 typedef struct { s16 chr; u16 a; u16 b; } PL_AT008_ENT;
 extern PL_AT008_ENT at008_tbl[3];
+s32 we02_hit_sub(PLW *);
 #endif
