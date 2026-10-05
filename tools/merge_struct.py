@@ -14,7 +14,7 @@ import re
 import sys
 
 SIZES = {"u8": 1, "s8": 1, "char": 1, "u16": 2, "s16": 2, "u32": 4, "s32": 4,
-         "f32": 4, "int": 4, "VEC3": 12, "FLMAT": 64}
+         "f32": 4, "int": 4, "VEC3": 12, "FLMAT": 64, "V3S": 6}
 
 FIELD = re.compile(r"^(\s*)((?:struct\s+)?\w+)\s*(\*?)\s*(\w+)((?:\[[^\]]+\])*)\s*;\s*(/\*.*)?$")
 
@@ -95,6 +95,9 @@ def main():
     if end > pos:
         out.append("    u8 _pad%03X[0x%X - 0x%X];" % (pos, end, pos))
     res = ot[:om.start(1)] + "\n".join(out) + ot[om.end(1):]
+    for ln in tt.split("\n"):
+        if ln.strip() and ln not in ot and not (tm.start() <= tt.find(ln) < tm.end()):
+            print("only in THEIRS, outside the struct (add by hand if needed): %s" % ln)
     open(a.out or a.ours, "w").write(res)
     for t, o in renames:
         print("rename in THEIRS' code: %s -> %s" % (t, o))

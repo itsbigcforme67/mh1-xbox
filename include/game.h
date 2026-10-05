@@ -4,6 +4,8 @@
  * Offsets from matched code: master (Pl_master_ck, pl_sw_set). */
 #include "types.h"
 
+typedef struct V3S { s16 x, y, z; } V3S;
+
 typedef struct GAME_W {
     u8 mode;            /* 0x000 game mode (Game_task jumps on it) */
     u8 step;            /* 0x001 step inside the mode */
