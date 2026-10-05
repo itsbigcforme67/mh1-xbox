@@ -65,15 +65,13 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
-- A (Opus): PC runtime (src/pc). Done: stages, effects, motion, pad, collision, camera, audio.
-  Next (after F's player code lands in main): player actions/weapons on the runtime.
-- B (Sonnet): monster AI f_em_*/em*, em01 (Rathian) first.
+- A (Opus): PC runtime (src/pc): Rathian as a real opponent (em loop, damage both ways).
+- B (Sonnet): lobby overlay 0x533980-0x5C4E60 (reuse matched game/main C where identical).
 - C (Sonnet): unowned main files below 0x1A0000.
-- D (Sonnet): unmatched non-monster game files (eft*, shell*, set*).
-- E (Sonnet): unowned main files from 0x1A0000 up.
-- F (Sonnet): merge main into agent-F and fix the plf.h/pl.h clashes (its merge broke
-  main once: prototypes changed matched em/quest code), then player code.
-- Later: lobby (online), parked near-matches.
+- D (Sonnet): monster AI em14/15/17/20/21, f_em_55B060.
+- E (Sonnet): memory-card helper blockers, then IME/dictionary (0x23E500-0x24A240).
+- F (Sonnet): lobby overlay 0x5C4E60-end.
+- Parked: near-matches everywhere (register allocation); online code in main.
 
 ## Other running threads
 
