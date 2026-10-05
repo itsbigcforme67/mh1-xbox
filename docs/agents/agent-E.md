@@ -33,3 +33,18 @@ Lessons:
   jumps straight to the end (game2).
 - `if (x > 0x22550FF)` instead of `>= 0x2255100` stops the compiler sharing
   the lui of two constants (Game_task).
+
+## f_stage (0x15C210-0x15F...): partly done; PAUSED here
+Built (f_stage.c, 0x15C210-0x15C6A4, main OK): stage_mv_ck, clr_stg_work, clr_flash,
+Stage_env_ck, Pile_on, stage_i. Functions in a file must be in address order
+(stage_mv_ck first) or the build mismatches.
+f_stage_nm.c (not built): stage_se_move (~100 instr off, register allocation: original
+has p=s0.., cnt=s2, n=s1, pl=s3; declbf takes >15 min, run in background), plus
+stage_m and move_stage written from the asm but NEVER compiled against the original.
+Not started: trans_stage_sub, trans_stage (0x3B30 bytes, huge), spr_disp_sub,
+stage_spr_disp (m2c draft via `python3 tools/draft.py main --file f_stage`).
+Also not started: f_reward.s (24 fns), f_quest.s (83 fns).
+Lessons: prototype float-argument callees (`f32 flSqrt(f32);`) or the arg goes to a0;
+`dx=..; dz=..; flSqrt(dx*dx+dz*dz)` gives mula.s/madd.s; stage_mv_ck: use named PLW
+fields (macros cast pointers and the compiler hoists addresses). After merging, GAME_W
+x208 is pl_state, PLW 0x570 is work570 (s16, cast (u16) for lhu).

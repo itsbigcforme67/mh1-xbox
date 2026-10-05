@@ -122,6 +122,8 @@ segments:
       - [0x05AED0, asm, text/f_trans]
       - [0x05B300, asm, text/g_Put_sprite_rotate]
       - [0x05BBE0, asm, text/f_stage]
+      - [0x05C210, c, stage/f_stage]
+      - [0x05C6A4, asm, text/stage_se_move]
       - [0x0611E4, asm, text/g_system_w_init]
       - [0x061480, asm, text/f_font]
       - [0x062634, asm, text/g_font_set_stack_no]
