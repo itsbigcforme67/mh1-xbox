@@ -140,7 +140,9 @@ typedef struct PLW {
     u8    stg;           /* 0x736 */
     u8 _pad737[0x1];
     u8    x738;          /* 0x738 cleared on death (Pl_die_set) */
-    u8 _pad739[0x748 - 0x739];
+    u8 _pad739;
+    u16   x73A;          /* 0x73A next stage number? (game2) */
+    u8 _pad73C[0x748 - 0x73C];
     s16   stamina;       /* 0x748 guarding needs 75 or more (pl_guard_ck); a guess */
     u8 _pad74A[0x766 - 0x74A];
     s16   dm_vital;      /* 0x766 damage to take (Pl_damage_sub) */
