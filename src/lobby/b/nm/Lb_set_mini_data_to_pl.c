@@ -14,27 +14,23 @@ typedef struct LBMINI {            /* mini data (0x18 bytes) sent to / received 
 } LBMINI;
 extern s16 D_3C738C[];
 
-void Lb_set_mini_data(dst)
-u8 *dst;
+void Lb_set_mini_data_to_pl(idx, data)
+s8 idx;
+u8 *data;
 {
     LBMINI m;
     u8 *pl;
 
-    pl = (u8 *)&player_work + game_w.master * 0xA00;
-    m.x04 = *(s32 *)(pl + 0x5FC);
-    memcpy(m.name6, pl + 0x352, 6);
-    m.x03 = *(u8 *)(pl + 0x11);
-    m.x02 = *(u8 *)(pl + 0x915);
-    m.x15 = *(u8 *)(pl + 0x916);
-    m.rank = *(u8 *)0x3C733B;
-    m.wp[0] = D_3C738C[0];
-    m.wp[1] = D_3C738C[1];
-    m.wp[2] = D_3C738C[2];
-    m.job = Get_weapon_job(D_3C738C, D_3C738C[0], m.wp);
-    if (m.job == 5) {
-        m.job = 1;
-    }
-    m.x14 = *(u8 *)0x3C6FC3;
-    m.x16 = *(u8 *)0x3C7397;
-    memcpy(dst, &m, 0x18);
+    pl = (u8 *)&player_work + idx * 0xA00;
+    memcpy(&m, data, 0x18);
+    *(s32 *)(pl + 0x5FC) = m.x04;
+    *(u8 *)(pl + 0x11) = m.x03;
+    *(u8 *)(pl + 0x34E) = m.x14;
+    *(u8 *)(pl + 0x8D3) = m.x16;
+    *(u8 *)(pl + 0x915) = m.x02;
+    *(u8 *)(pl + 0x916) = m.x15;
+    *(s16 *)(pl + 0x35E) = m.wp[0];
+    *(s16 *)(pl + 0x360) = m.wp[1];
+    *(s16 *)(pl + 0x362) = m.wp[2];
+    memcpy(pl + 0x352, m.name6, 6);
 }

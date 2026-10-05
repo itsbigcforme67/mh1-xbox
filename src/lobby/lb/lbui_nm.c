@@ -1477,3 +1477,18 @@ void Lbs_load(void) {
 void Lbc_release(void) {
     release_texture(0x118, 0x15);
 }
+
+char *GetRoomRule(void) {
+    return RoomRule;
+}
+
+int Lbs_MatchStart(void) {
+    cnLBS_MatchStart();
+    return 1;
+}
+
+void lb_npc_effect_move(em)
+void *em;
+{
+    (*(void (**)())(*(int *)((u8 *)em + 0x3CC) + 0xC))(em);
+}
