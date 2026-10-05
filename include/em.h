@@ -55,7 +55,9 @@ typedef struct EMW {
     s32 ang[3];         /* 0x0A0 rotation, 0x10000 = 360 degrees (shell14_trans) */
     f32 pos[3];         /* 0x0AC world position (set20_m, as PLW) */
     f32 scale[3];       /* 0x0B8 model scale (eft09_t) */
-    u8 _pad0C4[0x19C - 0xC4];
+    u8 _pad0C4[0x194 - 0xC4];
+    s32 x194;           /* 0x194 0: em_char_set may start a new animation (em17_senkai_sub) */
+    u8 _pad198[0x19C - 0x198];
     f32 x19C;           /* 0x19C time used by em02_fly_adjy (0 or 1: start value) */
     f32 chr_spd0;       /* 0x1A0 frame step (as PLW); divides the fly_adjy2 tables */
     u8 _pad1A4[0x1C4 - 0x1A4];
@@ -76,7 +78,9 @@ typedef struct EMW {
     u8 x388;            /* 0x388 non-zero keeps set20's gate shut */
     u8 _pad389[0x39A - 0x389];
     u16 x39A;           /* 0x39A em16 acts only when it is even */
-    u8 _pad39C[0x3B8 - 0x39C];
+    u8 _pad39C[0x3B0 - 0x39C];
+    struct PLW *x3B0;   /* 0x3B0 target player (em15 fly 33 / atk 2) */
+    u8 _pad3B4[4];
     f32 adj_y;          /* 0x3B8 fly height correction per frame (fly_adjy2_suby) */
     f32 adj_z;          /* 0x3BC (fly_adjy2_subz) */
     u8 _pad3C0[0x444 - 0x3C0];
@@ -97,13 +101,18 @@ typedef struct EMW {
     s16 x792;           /* 0x792 maximum of x302? (guess) */
     u8 _pad794[0x7E8 - 0x794];
     u8 x7E8;            /* 0x7E8 0: em21 falls back to act 0/1 on its own stage */
-    u8 _pad7E9[0x818 - 0x7E9];
+    u8 x7E9;            /* 0x7E9 0: em14 fly action 0 becomes act 0/3 */
+    u8 _pad7EA[0x818 - 0x7EA];
     f32 x818;           /* 0x818 compared with x8C4[x883] (em16_act_act_set) */
     u8 _pad81C[0x827 - 0x81C];
     u8 x827;            /* 0x827 */
     u8 x828;            /* 0x828 */
     u8 x829;            /* 0x829 em08_senkai_pos_no result */
-    u8 _pad82A[0x878 - 0x82A];
+    u8 _pad82A[0x839 - 0x82A];
+    u8 x839;            /* 0x839 set by em14 move action 1 */
+    u8 _pad83A[0x84D - 0x83A];
+    u8 x84D;            /* 0x84D (em15 fly 11) */
+    u8 _pad84E[0x878 - 0x84E];
     struct EFTW *tail;  /* 0x878 cut-tail effect (eft09_set) */
     u8 _pad87C[0x881 - 0x87C];
     u8 x881;            /* 0x881 target kind, 0 none (1 and 7 seen; 0x934 = its position) */
@@ -118,7 +127,8 @@ typedef struct EMW {
     u8 _pad8B7[0x8C3 - 0x8B7];
     u8 x8C3;            /* 0x8C3 0: em_cdm_act_flag_ck runs before an action is set */
     f32 x8C4[4];        /* 0x8C4 indexed by x883 (size a guess) */
-    u8 _pad8D4[0x930 - 0x8D4];
+    f32 x8D4[4];        /* 0x8D4 per player (indexed by x617; em01 atk 4), size a guess */
+    u8 _pad8E4[0x930 - 0x8E4];
     f32 act_spd;        /* 0x930 animation speed, 1.0 set by every em*_act_set (guess) */
     f32 tgt_pos[3];     /* 0x934 target position (CalcDistanceXZ/Em_Calc_angY from pos) */
     struct EM_AREA *area; /* 0x940 per-stage data (em08_senkai_pos_no) */
@@ -126,7 +136,9 @@ typedef struct EMW {
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
     u8 _pad95A[0x9EA - 0x95A];
     s8 x9EA;            /* 0x9EA trap state (shell12_m) */
-    u8 _pad9EB[0xA10 - 0x9EB];
+    u8 _pad9EB[0x9F3 - 0x9EB];
+    u8 x9F3;            /* 0x9F3 0: em15 fly 24 falls back to act 0/7 */
+    u8 _pad9F4[0xA10 - 0x9F4];
 } EMW;
 
 extern EMW em_work[];

@@ -119,3 +119,84 @@ Fields used straight from EMW in the em files (so common to all monsters):
   - suby: `int i;` declared before the table pointer fixed an a2/a3 swap.
   - suby variant: the loop test uses `v > 0.0f` and a `v < 0` branch
     (`w->adj_tm = 0; ret = 2; em->adj_y = 0.0f; break;`).
+- em14 (0x5C1260-0x5C2634, 13 functions): all match. rodata
+  0x688610-0x68869C. senkai_target / fly_adjy / fly_adjy2 subs are em02's
+  code with a different EMNNW layout (fly_adjy table here is a normal
+  global, not small data). Lessons:
+  - Jump-table switches: every case that shares the "just call" target must
+    be listed (`case 1: case 2: ... break;`), or MWCC builds a compare
+    chain instead of a table.
+  - `em->work08 = (int)((w->dist = CalcDistanceXZ(...)) / 30.0f) + 30;`
+    (assignment used as a value) avoids reloading w->dist (atk 15-17).
+  - tossin_move: `a > 0xFFC0` / `a <= 0x3F` forms as in the original.
+- Coordinator note: helper functions with address-suffixed names in the
+  split (fly_adjy2_subx_...) are file statics; keep them `static`.
+- em15 (0x5CF0F0-0x5D04EC, 13 functions): 12 match, built as em15.c
+  (0x5CF0F0-0x5D0358), rodata 0x688830-0x688940; em15_senkai_pos_no is
+  em08's code, same 2-instruction near-match (em15_nm.c). Lessons:
+  - A run of `==` tests on one byte that jump to the same place, ordered
+    high to low, is a `switch` with stacked case labels (fly 7, stg check).
+  - Address-taken local read after a byte store is reloaded each time in
+    the original when read through a pointer variable (`h = &hit[1]; *h`)
+    and the call result is held first (`d = CalcDistanceXZ(...)` before
+    the tests).
+  - `if ((d = ...) > 5000) ... else if (d < 2500)` with a local d (no reload
+    of the stored field).
+- em17 (0x5D81A0-0x5D9BC4, 13 functions): 12 match, built as em17.c
+  (setters, 0x5D81A0-0x5D8C64, rodata 0x688C30-0x688CAC) and em17b.c
+  (senkai_target .. fly_adjy2, 0x5D9570-0x5D9BC4). em17_senkai_sub (the
+  flying bank/turn/climb routine, 574 instructions; em20 and em01 have
+  near-identical copies) is 17 instructions off: only a0/a1 swapped for
+  ang[2] vs bank_max in the "turn_left > 0x8000" and "turn_left == 0"
+  branches. Whole file in em17_nm.c. Lessons:
+  - `a = (a < 0x8000) ? a : (u16)(0x10000 - a);` gives the original's
+    `slt at` + empty-then layout (an if-statement is 10 instructions off).
+  - act_set calls Online_ck/act_ck (s16) before the dispatch; `(u8)arg`.
+  - em17_act_act_set: small gp-relative tables st58_dir/st64_dir/st75_dir
+    are declared `u16 x[4]` (8 bytes) so MWCC uses gp addressing.
+
+## Update: senkai_pos_no solved
+
+The 2-instruction senkai_pos_no near-match (em08/em15/em21) is fixed by
+walking the four points with a pointer in the distance loop:
+`for (q2 = pos, i = 0; i < 4; i++, q2++) dist[i] = CalcDistanceXZ(em->pos, *q2);`
+(the original sets the walking pointer before the counter). em08, em15 and
+em21 are now whole files (0x5A7380-0x5A7F6C, 0x5CF0F0-0x5D04EC,
+0x60C3A0-0x60D3FC); their _nm.c files are gone. Found while matching
+em20_ground_point_search, which has the same loop (there the pointer is
+also assigned before the em_pl_pos_set call).
+- em17_senkai_sub now matches: the bank value `b = em->ang[2]` is declared
+  in block scope inside each branch (`int b = em->ang[2];`), which changes
+  MWCC's register colouring (found by the permuter as an inline accessor,
+  then rewritten as block-scoped locals). em17 is one whole file again
+  (0x5D81A0-0x5D9BC4); em17b.c and em17_nm.c are gone.
+- em20 (0x5FCDC0-0x5FFCB4, 18 functions): 17 match, built as em20.c
+  (0x5FCDC0-0x5FD898, rodata 0x6894E0-0x689600) and em20b.c
+  (0x5FDA10-0x5FFCB4, rodata 0x689620-0x68965C). em20_act_set is 1
+  instruction off (`kind = 3` loads with daddiu in the original, i.e. a
+  16-bit type, but a u16 `kind` makes MWCC reuse the masked switch value
+  for the em_act_set2 call); whole file in em20_nm.c. senkai_sub2/sub3 are
+  senkai_sub with parts removed (turn base 0x100, no sinking, climb toward
+  tgt_pos[1]). New: GAME_W x2E (include/game.h). Lessons:
+  - ground_point_search: same pointer-walk loop as senkai_pos_no, with the
+    pointer assigned before the em_pl_pos_set call; reading em->x617 twice
+    instead of keeping it in a local fixed the register choice; `q = pos[n]`
+    taken before the stores.
+  - xang_set_pl: `a = 0x10000 - calc_vec_ang(...); a = (u16)(a - ang[0]);`
+- em01 (0x57AB60-0x57DE24, 19 functions): all match, rodata
+  0x686080-0x6861EC. Generated from em20's code: senkai_sub* add
+  `if (!(flags & 8))` around the turn-rate update (and sub1
+  `!(flags & 0x10)` before the animation change), em01_demo_senkai_target
+  is senkai_target without the "no target" exit. New EMW field x8D4[4]
+  (per-player value, em01 atk 4). Lesson (atk 4): a plain
+  `if (A) no = 0x18; else if (B) no = 4; else no = 0x19;` chain puts each
+  `no = ...` in the branch delay slot (overwritten anyway on the other
+  path), so it looks like "statement before the if" but is not.
+
+## Summary (end of assignment)
+
+All 11 assigned files decompiled: em07, em08, em16, em27, em21, em02, em14,
+em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
+1 instruction off, em20_nm.c, a 15-minute permuter run found nothing).
+153 of 154 functions byte-match; every registered file passes
+`tools/rebuild.sh game` (game OK).
