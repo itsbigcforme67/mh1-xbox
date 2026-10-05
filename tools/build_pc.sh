@@ -118,7 +118,10 @@ GAME="$GAME $HIT $CAM $EFT $PL $EM"
 
 SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
 CFLAGS="-m32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
-GAMEFLAGS="-m32 -std=gnu99 -O2 -g -fno-strict-aliasing -Iinclude -w"
+# -fno-aggressive-loop-optimizations: decompiled loops index past declared
+# array ends (EMW.hagi[8] read with i == 8 in Em_Dmg_Sys): without it gcc
+# drops the loop exit
+GAMEFLAGS="-m32 -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -Iinclude -w"
 LIBS="-lSDL2 -lGL -lm -ldl -rdynamic"   # -rdynamic: rt_data.c finds host symbols with dlsym
 # unnamed PS2 data the game C refers to as D_<addr>: rows of rview_mat
 # (0x3F2060) and two game.bin tables

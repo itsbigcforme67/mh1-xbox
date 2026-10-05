@@ -66,7 +66,7 @@ void eft01_set(void *, int);
 void Quest_enemy_die(EMW *);
 void push_em_work(EMW *);
 
-void Em_Master_Change(void);
+void Em_Master_Change(EMW *);   /* a0 = em still (func_5395F0 in the asm) */
 int Online_ck(void);
 void net_receive_em_act(EMW *);
 void pl_timer_calc(void *);
@@ -356,7 +356,7 @@ void em_move(EMW *em) {
     f32 pos[3];
     f32 *ikari;
 
-    Em_Master_Change();
+    Em_Master_Change(em);
     if (Online_ck() == 1 && EB(0x9E2) != 0) {
         net_receive_em_act(em);
     }

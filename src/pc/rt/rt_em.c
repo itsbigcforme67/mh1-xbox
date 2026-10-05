@@ -383,6 +383,11 @@ int rt_monster_spawn(int kind, const float pos[3], int ang_y)
         dflt.x1C = ang_y & 0xFFFF;
         q = &dflt;
     }
+    if (getenv("RT_EM_POS") && q != &dflt) {   /* test aid: the quest's monster at the given x,z */
+        dflt = *q;
+        sscanf(getenv("RT_EM_POS"), "%f,%f", &dflt.pos[0], &dflt.pos[2]);
+        q = &dflt;
+    }
     em = rt_monster_spawn_qem(q);
     if (!em)
         return -1;
@@ -392,6 +397,13 @@ int rt_monster_spawn(int kind, const float pos[3], int ang_y)
         fprintf(stderr, "rt_em: monster %d kind %d at %.0f %.0f %.0f ang %04X hp %d/%d\n",
                 em->id, em->kind, em->pos[0], em->pos[1], em->pos[2], em->ang[1] & 0xFFFF,
                 PS16(em, 0x302), PS16(em, 0x792));
+    if (getenv("RT_EM_TRACE")) {
+        int i;
+        fprintf(stderr, "rt_em: part durability (kind %d):", PU8(em, 0x953));
+        for (i = 0; i < 9; i++)
+            fprintf(stderr, " %d", PU8(em, 0x304 + 8 * i) ? PS16(em, 0x308 + 8 * i) : -1);
+        fprintf(stderr, "\n");
+    }
     return em->id;
 }
 
@@ -402,7 +414,7 @@ int rt_monster_tick(int no)
     if (!em->be_flag)
         return 0;
     if (getenv("RT_EM_TRACE"))
-        fprintf(stderr, "em%d: step %d act %d/%d char %d frame %.1f pos %.0f %.0f %.0f ang %04X hp %d mode %d\n",
+        printf("em%d: step %d act %d/%d char %d frame %.1f pos %.0f %.0f %.0f ang %04X hp %d mode %d\n",
                 no, em->x04, PU8(em, 0x14), PU8(em, 0x15), PS16(em, 0x2DC), PF(em, 0x19C),
                 em->pos[0], em->pos[1], em->pos[2], em->ang[1] & 0xFFFF, PS16(em, 0x302), PU8(em, 0x888));
     return enemy_mv(em);
