@@ -1,67 +1,74 @@
-/* lbui, run 10: put_plaza_menu .. put_mainWindowTex (lobby.bin 0x00599CB0-0x00599F54): the matching functions of lbui_nm.c. */
+/* lbui, run 10: plaza_req_input .. getHandleFromID (lobby.bin 0x00597B10-0x00597D9C): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
-void put_plaza_menu(a)
+int plaza_req_input(a, buf)
+LB_NETW *a;
+int buf;
+{
+    s8 r;
+
+    Get_sw(0);
+    switch (a->x05) {
+    case 0:
+        a->x05++;
+        SoftKeyboard_pos_set(100.0f, 0x140);
+        if (a->x04 == 1) {
+            SoftKeyboard_set(0, 6, 6, buf);
+        } else {
+            SoftKeyboard_set(3, 0xF, 8, buf);
+        }
+        break;
+    case 1:
+        r = SoftKeyboard_move(buf, *(s16 *)0x3F3710, *(s16 *)0x3F3714);
+        switch (r) {
+        case 0:
+            break;
+        case 1:
+            a->x05++;
+            a->x06 = 0;
+            break;
+        case -1:
+            a->x05++;
+            a->x06 = 0;
+            break;
+        }
+        break;
+    case 2:
+        SoftKeyboard_exit();
+        a->x05 = 0;
+        return 1;
+    }
+    return 0;
+}
+
+int getHandleFromID(a)
 LB_NETW *a;
 {
-    u8 *p;
-    int y;
-
-    y = 0x56;
-    p = plazaMenuTbl[a->menu];
-
-    flfntSetSize(0x12, 0x12);
-    if (p[0] != 2) {
-        do {
-            if (a->depth == 2) {
-                Lb_put_msg2(0x10, y, p + 4);
-            } else {
-                font_print_double(0x10, y, 1, 0, p + 4);
+    switch (a->x04) {
+    case 0:
+        a->x04++;
+        a->x06 = 0;
+    case 1:
+        a->x04++;
+        strcpy(SearchCondition.s, CW->x2F80);
+        SearchCondition.len = strlen(CW->x2F80);
+        SearchCondition.flag = 1;
+        break;
+    case 2:
+        switch (Lbc_ConditionSearch(&SearchCondition, 1)) {
+        case 0:
+            if (SearchResult[0] != 0) {
+                memcpy(CW->x2F80 + 8, SearchResult + 0xC, 0x11);
+                return 0;
             }
-            p += 0x24;
-            y = (s16)(y + 0x16);
-        } while (p[0] != 2);
+            SetDialogData(0x29, 3);
+            return 1;
+        case 1:
+            SetDialogData(0x29, 3);
+            return 1;
+        }
+        break;
     }
-}
-
-void put_titles(a, b, c)
-int a;
-int b;
-int c;
-{
-    flfntSetSize(0x12, 0x12);
-    font_print_double(a, b, 1, 5, c);
-}
-
-void put_titles2(a)
-u8 *a;
-{
-    put_titles(*(s16 *)a, *(s16 *)(a + 2), *(int *)(a + 4));
-}
-
-void put_mainWindow(x, y)
-int x;
-int y;
-{
-    int xs = (s16)x;
-    int ys;
-
-    Draw_menu_square((s16)(xs - 6), y, 0x1A0, 0x110, 1, 0xFF2A0000);
-    ys = (s16)y;
-    Draw_square(x, (s16)(ys + 0x26), 0x192, 1, 0xFF602020);
-    Draw_square(x, (s16)(ys + 0xEC), 0x192, 1, 0xFF602020);
-}
-
-void put_mainWindowTex(x, y)
-int x;
-int y;
-{
-    int xs = (s16)x;
-    int ys;
-
-    Draw_menu_square((s16)(xs - 6), y, 0x1A0, 0x110, 0, 0);
-    ys = (s16)y;
-    Draw_square(x, (s16)(ys + 0x26), 0x192, 1, 0xFF602020);
-    Draw_square(x, (s16)(ys + 0xEC), 0x192, 1, 0xFF602020);
+    return 2;
 }

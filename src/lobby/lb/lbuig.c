@@ -1,21 +1,28 @@
-/* lbui, run 7: Lb_checkChatID .. Lb_checkChatID (lobby.bin 0x00598D30-0x00598DB0): the matching functions of lbui_nm.c. */
+/* lbui, run 7: getUserInfo .. Lb_get_comment (lobby.bin 0x00594FD0-0x005950B8): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
-int Lb_checkChatID(id)
-u8 *id;
-{
-    s8 i;
-    u8 *p = (u8 *)chatIDList;
-
-    for (i = 0; ; ) {
-        if (memcmp(p, id, 8) == 0) {
-            return 1;
-        }
-        i++;
-        p += 8;
-        if (i >= 7) {
-            return 0;
-        }
+int getUserInfo(void) {
+    switch (Lbs_SeekId()) {
+    case 0:
+        Lbc_RequestNetComment(CW->x2F80);
+        return 0;
+    case 1:
+        return 1;
+    default:
+        return 2;
     }
+}
+
+int Lb_get_comment(a)
+int a;
+{
+    int id = Lb_get_plID() & 0xFF;
+
+    if (id != 0xFF) {
+        memset(CW->comment[id], 0, 0x62);
+        Lbc_RequestNetComment(a);
+        return 1;
+    }
+    return 0;
 }

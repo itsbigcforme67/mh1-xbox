@@ -457,6 +457,43 @@ void plaza_checkMyStatus(void) {
     }
 }
 
+int plaza_setMyComment(void) {
+    LB_NETW *n = pNet;
+    int sw;
+    int t;
+    u8 *stp;
+
+    sw = Get_sw2(0) & 0xFFFF;
+    stp = &n->step;
+
+    switch (*stp) {
+    case 0:
+        (*stp)++;
+        memcpy(CW->comment[game_w.master], D_3C73B4, 0x62);
+        break;
+    case 1:
+        t = sw & 0xFFFF;
+        if (t & 0x20) {
+            (*stp)++;
+            cnWrap_SoundRequest(0);
+            break;
+        }
+        if (t & 0x40) {
+            memcpy(D_3C73B4, CW->comment[game_w.master], 0x62);
+            return 3;
+        }
+        break;
+    case 2:
+        if (my_comment_input(CW->comment[game_w.master]) == 1) {
+            KinshiYogo_chk(CW->comment[game_w.master]);
+            memcpy(D_3C73B4, CW->comment[game_w.master], 0x62);
+            pNet->step--;
+        }
+        break;
+    }
+    return 2;
+}
+
 int plaza_req_input(a, buf)
 LB_NETW *a;
 int buf;
@@ -593,6 +630,80 @@ u8 *id;
     }
 }
 
+int Lb_addChatMember(id, handle)
+u8 *id;
+u8 *handle;
+{
+    s8 i;
+    s8 j;
+    u8 *p;
+    s8 k;
+
+    p = (u8 *)chatIDList;
+    for (i = 0; ; ) {
+        if (memcmp(p, id, 8) == 0) {
+            return 1;
+        }
+        i = (s8)(i + 1);
+        p += 8;
+        if (i >= 7) {
+            break;
+        }
+    }
+    j = 0;
+    p = (u8 *)chatIDList;
+    for (;;) {
+        if (*(s8 *)p == 0) {
+            k = j;
+            CW->chatmode++;
+            memcpy((u8 *)chatIDList + k * 8, id, 8);
+            memcpy((u8 *)chatHandleList + k * 0x10, handle, 0x10);
+            return 0;
+        }
+        j = (s8)(j + 1);
+        p += 8;
+        if (j >= 7) {
+            return -1;
+        }
+    }
+}
+
+void Lb_clearChatMember(n)
+s8 n;
+{
+    int i = n;
+    u8 *hp;
+    u8 *ip;
+    int j;
+    u8 *hp2;
+    u8 *ip2;
+
+    ip = (u8 *)chatIDList + i * 8;
+    if (*(s8 *)ip != 0) {
+        CW->chatmode--;
+        if (i + 1 < 8) {
+            hp = (u8 *)chatHandleList + i * 0x10;
+            do {
+                j = (s8)i + 1;
+                if (j == 7) {
+                    memset(ip, 0, 8);
+                    memset(hp, 0, 0x10);
+                } else {
+                    ip2 = (u8 *)chatIDList + j * 8;
+                    memcpy(ip, ip2, 8);
+                    hp2 = (u8 *)chatHandleList + j * 0x10;
+                    memcpy(hp, hp2, 0x10);
+                    memset(ip2, 0, 8);
+                    memset(hp2, 0, 0x10);
+                }
+                ip += 8;
+                i = (s8)(i + 1);
+                hp += 0x10;
+            } while (i + 1 < 8);
+        }
+    }
+}
+
 void Lb_clearChatID(id)
 u8 *id;
 {
@@ -660,6 +771,66 @@ void plaza_checkChatLog(void) {
             break;
         }
         Plaza_chatlog_mv(sw);
+        break;
+    }
+}
+
+void plaza_logOut(a)
+LB_NETW *a;
+{
+    int sw = Get_sw2(0) & 0xFFFF;
+    int t;
+
+    switch (a->step) {
+    case 0:
+        a->step++;
+        SetDialogData(0x27, 2);
+        SetDialogYesNo(1);
+        return;
+    case 1:
+        t = sw & 0xFFFF;
+        a->x0C = 1;
+        if (t & 0x20) {
+            a->step++;
+            return;
+        }
+        if (t & 0x800) {
+            if (a->yesno != 0) {
+                SetDialogYesNo(0);
+                cnWrap_SoundRequest(1);
+                return;
+            }
+        } else if (t & 0x400) {
+            if (a->yesno != 1) {
+                SetDialogYesNo(1);
+                cnWrap_SoundRequest(1);
+                return;
+            }
+        } else {
+            if (t & 0x40) {
+                if (a->yesno != 1) {
+                    SetDialogYesNo(1);
+                    cnWrap_SoundRequest(1);
+                    return;
+                }
+                a->step++;
+                return;
+            }
+        }
+        break;
+    case 2:
+        if (a->yesno == 0) {
+            a->step++;
+            cnWrap_SoundRequest(0);
+            fade_set(1);
+            return;
+        }
+        tl_exit_sub_menu(0);
+        return;
+    case 3:
+        if ((Fade_busy_ck() & 0xFF) != 1) {
+            To_LogOut(1);
+        }
         break;
     }
 }

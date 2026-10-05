@@ -1,24 +1,67 @@
-/* lbui, run 15: Get_PlazaName .. Lbc_release (lobby.bin 0x0059DA40-0x0059DB3C): the matching functions of lbui_nm.c. */
+/* lbui, run 15: put_plaza_menu .. put_mainWindowTex (lobby.bin 0x00599CB0-0x00599F54): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
-void Get_PlazaName(dst)
-char *dst;
+void put_plaza_menu(a)
+LB_NETW *a;
 {
-    sprintf(dst, lit_193_0065DBE8, Get_ServerName(), PlazaInfo[ClassInfo.plaza - 1].name);
+    u8 *p;
+    int y;
+
+    y = 0x56;
+    p = plazaMenuTbl[a->menu];
+
+    flfntSetSize(0x12, 0x12);
+    if (p[0] != 2) {
+        do {
+            if (a->depth == 2) {
+                Lb_put_msg2(0x10, y, p + 4);
+            } else {
+                font_print_double(0x10, y, 1, 0, p + 4);
+            }
+            p += 0x24;
+            y = (s16)(y + 0x16);
+        } while (p[0] != 2);
+    }
 }
 
-void Get_LobbyName(dst)
-char *dst;
+void put_titles(a, b, c)
+int a;
+int b;
+int c;
 {
-    sprintf(dst, lit_193_0065DBE8, Get_ServerName(), LobbyInfo[ClassInfo.lobby - 1].name);
+    flfntSetSize(0x12, 0x12);
+    font_print_double(a, b, 1, 5, c);
 }
 
-void Lbs_load(void) {
-    load_pit();
-    load_texlist(*(int *)0x3876A8, 0x14D, 0);
+void put_titles2(a)
+u8 *a;
+{
+    put_titles(*(s16 *)a, *(s16 *)(a + 2), *(int *)(a + 4));
 }
 
-void Lbc_release(void) {
-    release_texture(0x118, 0x15);
+void put_mainWindow(x, y)
+int x;
+int y;
+{
+    int xs = (s16)x;
+    int ys;
+
+    Draw_menu_square((s16)(xs - 6), y, 0x1A0, 0x110, 1, 0xFF2A0000);
+    ys = (s16)y;
+    Draw_square(x, (s16)(ys + 0x26), 0x192, 1, 0xFF602020);
+    Draw_square(x, (s16)(ys + 0xEC), 0x192, 1, 0xFF602020);
+}
+
+void put_mainWindowTex(x, y)
+int x;
+int y;
+{
+    int xs = (s16)x;
+    int ys;
+
+    Draw_menu_square((s16)(xs - 6), y, 0x1A0, 0x110, 0, 0);
+    ys = (s16)y;
+    Draw_square(x, (s16)(ys + 0x26), 0x192, 1, 0xFF602020);
+    Draw_square(x, (s16)(ys + 0xEC), 0x192, 1, 0xFF602020);
 }

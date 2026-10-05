@@ -1,7 +1,74 @@
-/* lbui, run 12: plaza_checkMyStatusTrans .. plaza_checkMyStatusTrans (lobby.bin 0x0059C2F0-0x0059C324): the matching functions of lbui_nm.c. */
+/* lbui, run 12: Lb_clearChatID .. plaza_checkChatLog (lobby.bin 0x00599020-0x00599278): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
-void plaza_checkMyStatusTrans(void) {
-    disp_status(0xD8, 0x50, CW->x440, CW->x448, my_user_mini_data, *(s8 *)((u8 *)pNet + 0x24), 3, D_3C73B4);
+void Lb_clearChatID(id)
+u8 *id;
+{
+    int i;
+    u8 *p = (u8 *)chatIDList;
+
+    for (i = 0; ; ) {
+        if (memcmp(p, id, 8) == 0) {
+            Lb_clearChatMember(i);
+            return;
+        }
+        i = (s8)(i + 1);
+        p += 8;
+        if (i >= 7) {
+            return;
+        }
+    }
+}
+
+void Lb_clearChatList(void) {
+    s8 i = 0;
+    u8 *a = (u8 *)chatIDList;
+    u8 *b = (u8 *)chatHandleList;
+
+    CW->chatmode = 0;
+    do {
+        memset(a, 0, 8);
+        memset(b, 0, 0x10);
+        i++;
+        a += 8;
+        b += 0x10;
+    } while (i < 7);
+}
+
+void plaza_ReibunEdit(void) {
+    int sw = Get_sw2(0) & 0xFFFF;
+
+    switch (pNet->step) {
+    case 0:
+        Plaza_ReibunEdit_i();
+        pNet->step++;
+        break;
+    case 1:
+        pNet->x28 = Get_sw_on2(0);
+        if ((u16)Plaza_ReibunEdit_mv(sw) & 0x40) {
+            tl_exit_sub_menu(0);
+        }
+        break;
+    }
+}
+
+void plaza_checkChatLog(void) {
+    int sw = Get_sw2(0) & 0xFFFF;
+
+    switch (pNet->step) {
+    case 0:
+        Plaza_chatlog_i();
+        pNet->step++;
+        break;
+    case 1:
+        pNet->x28 = Get_sw_on2(0);
+        if ((u16)sw & 0x40) {
+            Plaza_chatlog_i();
+            tl_exit_sub_menu(0);
+            break;
+        }
+        Plaza_chatlog_mv(sw);
+        break;
+    }
 }
