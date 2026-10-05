@@ -16,7 +16,16 @@
  *     bone 1 537 units forward over 78 frames, and pl_mv001, which uses it,
  *     is the first action pl_normal calls), else idle 1/101 (as
  *     normal_char_set picks on a plain stage); 4-tick cross-fade;
- *   - y follows the ground (GetGroundHit). No walls yet.
+ * Collision is the game's own C (src/main/hit/, rt_hit.c), called in
+ * pl_move_sub's order (main 0x14C500, read from the asm): the old position
+ * is saved to +0x5A0 first; after the move HitWallPlayer(pl, 0) pushes the
+ * hunter out of the walls (spheres push00 swept from the old position),
+ * GetFloorSlide(pl, v, 1) slides it down steep slopes (pl_move_sub does
+ * this in the normal state, flag14 == 0), GetGroundHitStatusAreaPl gives
+ * the ground height (+0x5AC), and y snaps to it when the hunter is below it
+ * or less than 30 above it. Higher up the PS2 starts the fall action
+ * (Pl_act_set(pl, 0, 9)); the stand-in just drops with a constant gravity
+ * [guess] until it lands.
  */
 #include "rt.h"
 #include "types.h"
@@ -26,13 +35,21 @@
 #include "frame.h"
 
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 extern FLMAT rview_mat;
 void pl_sw_set(void);
 void rt_pad_tick(void);
-f32 GetGroundHit(f32 *pos);
+void HitWallPlayer(void *ent, int keep);
+int GetFloorSlide(void *ent, f32 *out, int flag);
+int GetGroundHitStatusAreaPl(void *ent, f32 *pos, void *attr, f32 *out, f32 *flag);
+u8 Pl_stg_ck(void *);
+
+#define PF(pl, T, o) (*(T *)((u8 *)(pl) + (o)))
 
 static int moving[8];
+static float fall_v[8];
 
 static void set_motion(PLW *pl, int legs, int upper, int blend)
 {
@@ -51,11 +68,57 @@ static int ang_diff(int a, int b)
     return (s16)(u16)(b - a);
 }
 
+/* The collision part of pl_move_sub (see the header). */
+static void rt_player_collide(PLW *pl)
+{
+    f32 v[4], gy;
+    int no = pl->id & 7;
+    if (Pl_stg_ck(pl) & 0xFF) {
+        static int tr = -1;
+        float b[3] = { pl->pos[0], pl->pos[1], pl->pos[2] };
+        HitWallPlayer(pl, 0);
+        if (tr < 0) tr = getenv("RT_HIT_TRACE") != NULL;
+        if (tr) {
+            extern s8 hit_poly_num;
+            void rt_hit_dump(f32 *);
+            static int dumped;
+            if (!dumped++) rt_hit_dump(pl->pos);      /* wall polygons of the start cell */
+            extern f32 push00[][4];
+            fprintf(stderr, "wall: old %.0f %.0f %.0f new %.0f %.0f %.0f -> %.1f %.1f %.1f contacts %d push00 %.0f %.0f %.0f %.0f 4d4 %d\n",
+                    PF(pl, f32, 0x5A0), PF(pl, f32, 0x5A4), PF(pl, f32, 0x5A8), b[0], b[1], b[2],
+                    pl->pos[0], pl->pos[1], pl->pos[2], hit_poly_num, push00[0][0], push00[0][1], push00[0][2], push00[0][3], pl->work4D4);
+        }
+    }
+    if (pl->flag14 == 0 && (Pl_stg_ck(pl) & 0xFF))
+        GetFloorSlide(pl, v, 1);
+    if (GetGroundHitStatusAreaPl(pl, pl->pos, (u8 *)pl + 0x70C, &gy, (f32 *)((u8 *)pl + 0x7E4)) == 1)
+        pl->x5AC = gy;
+    if (!(Pl_stg_ck(pl) & 0xFF))
+        return;
+    gy = pl->x5AC;
+    if (pl->pos[1] < gy || pl->pos[1] - gy < 30.0f) {
+        pl->pos[1] = gy;
+        pl->flag604 = 0;
+        fall_v[no] = 0;
+    } else {                        /* host stand-in for the fall action */
+        fall_v[no] -= 3.0f;
+        pl->pos[1] += fall_v[no];
+        if (pl->pos[1] < gy) {
+            pl->pos[1] = gy;
+            fall_v[no] = 0;
+        }
+    }
+}
+
 void rt_player_tick(int no)
 {
     PLW *pl = &player_work[no];
     int pow, want;
 
+    /* pl_move_sub: remember where the move starts (wall sweeps) */
+    PF(pl, f32, 0x5A0) = pl->pos[0];
+    PF(pl, f32, 0x5A4) = pl->pos[1];
+    PF(pl, f32, 0x5A8) = pl->pos[2];
     rt_pad_tick();
     pl_sw_set();
     pow = pl->sw.pow[0];
@@ -82,7 +145,7 @@ void rt_player_tick(int no)
             set_motion(pl, 1, 101, 4);
     }
     frame_move((FRW *)pl);
-    pl->pos[1] = GetGroundHit(pl->pos);
+    rt_player_collide(pl);
 }
 
 /* Read back what the game code saw (for tests): buttons, stick. */

@@ -53,6 +53,7 @@ offscreen in a hidden window, reads the back buffer and writes a PNG.
 | `--stage N` | stage number (game_w.stage, 0-87, hex with 0x), default 4 |
 | `--play` | the pad (controller + keyboard) drives the hunter; follow camera |
 | `--input SCRIPT` | scripted pad for tests, implies --play: `idle*10,up*50,left+cross*15` = ticks per step; names in src/pc/pad/pad.h |
+| `--follow D,H,P` | `--play` camera: distance D behind, H above the hunter, pitch P (default 900,450,-0.3); the yaw is `--cam`'s |
 | `--sw-trace` | print, per tick, the pad state the game's sw_set_sub gave player 0 and the player's position/angle |
 
 Verified 5 Oct 2026 with build/show/pc_viewer.png and

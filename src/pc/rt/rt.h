@@ -24,6 +24,9 @@ void rt_set_overlay(uint8_t *bin, size_t n);   /* takes ownership */
 const uint8_t *rt_addr(uint32_t va, size_t n);
 /* 1 if the range is .bss (zero at start) of the ELF or the overlay. */
 int rt_in_bss(uint32_t va, size_t n);
+/* Zeroed host memory standing in for PS2 .bss at va (pointers in data
+ * tables that point there), or NULL if va is not .bss. */
+void *rt_bss_shadow(uint32_t va);
 /* Fill the game's data tables (rt_data.c) from the loaded images.
  * Returns the number of tables that could not be found. */
 int rt_import_data(void);
@@ -56,9 +59,15 @@ int rt_clay_claimed(int handle);
 /* Hand effect model k (eft_mdlw[k]: 0 ef_00, 1-3 kage04-06, 4 ef_01) to
  * the game C; attr as for rt_bind_set_model. */
 void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n);
-/* Ground height for GetGroundHit: fn returns 1 and the highest ground y at
- * (x, z) not above ymax, or 0. */
-void rt_set_ground(int (*fn)(float x, float z, float ymax, float *y));
+/* Files the game C loads by AFS index (load_file_mdl): fn returns the
+ * Meltw-decompressed entry (malloc'd, the caller frees) and its size. */
+void rt_set_file_loader(uint8_t *(*fn)(int idx, size_t *n));
+/* Load a stage's wall and ground collision (the game's load_stage_hit:
+ * stage_hit_data_w/_f files, WallHitInit/GroundHitInit). 0 on success. */
+int rt_load_stage_hit(int stage);
+/* The game's GetGroundHit at (x, z) from above ymax: 1 and the highest
+ * ground y not above ymax, or 0 if there is no ground polygon there. */
+int rt_ground_y(float x, float z, float ymax, float *y);
 
 /* CLAY+0x88 attribute word from an AMO part's 0xF0000 chunk (18 words, as
  * amo_part.attr; NULL = no chunk -> 0), like Attribute_from_amo. */

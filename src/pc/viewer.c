@@ -108,10 +108,12 @@ static void load_eft_models(void)
     }
 }
 
-static fmt_blob ground_hit;
-static int ground_y(float x, float z, float ymax, float *y)
+/* load_file_mdl for the game C: AFS entry by index, Meltw-decompressed */
+static uint8_t *afs_entry(int idx, size_t *n)
 {
-    return fmt_hits_ground_y(ground_hit, x, z, ymax, y, FMT_LE);
+    if (idx < 0 || (uint32_t)idx >= afs.count)
+        return NULL;
+    return fmt_afs_load(&afs, afs.name[idx], n);
 }
 
 static uint32_t crc_table[256];
@@ -355,7 +357,7 @@ int main(int argc, char **argv)
     float fixed_time = -1;
     char path[1024];
     size_t n;
-    fmt_blob stage_link, stage_tex, set_link, set_tex, hit;
+    fmt_blob stage_link, stage_tex, set_link, set_tex;
     uint8_t *keep[8];
     fl_model stage, set;
     monster rathian;
@@ -365,6 +367,7 @@ int main(int argc, char **argv)
     float hx = 10900, hz = 7700, rx = 10000, rz = 6700, gy;
     Uint32 t0;
     int set_h0 = -1, ticks = 0, stage_no = 4, cam_given = 0;
+    float follow[3] = { 900.0f, 450.0f, -0.3f };   /* --play camera: distance, height, pitch */
     int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter */
     const char *script = NULL;
     float hunter_yoff = 0;
@@ -380,6 +383,8 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--play")) play = 1;
         else if (!strcmp(argv[i], "--input") && i + 1 < argc) { script = argv[++i]; play = 1; }
         else if (!strcmp(argv[i], "--sw-trace")) sw_trace = 1;
+        else if (!strcmp(argv[i], "--follow") && i + 1 < argc)
+            sscanf(argv[++i], "%f,%f,%f", &follow[0], &follow[1], &follow[2]);
         else if (argv[i][0] != '-') disc = argv[i];
     }
     if (!disc) {
@@ -416,7 +421,10 @@ int main(int argc, char **argv)
     stage_tex = load_stage_file(0x2EDB40, stage_no, &keep[1]);    /* STAGE_TEX */
     set_link = load_stage_file(0x2ECD70, stage_no, &keep[2]);     /* set_model_data */
     set_tex = load_stage_file(0x2EF130, stage_no, &keep[3]);      /* SET_TEX */
-    hit = load_stage_file(0x2ECAB0, stage_no, &keep[4]);          /* stage_hit_data_f */
+    /* collision: the game's load_stage_hit (wall + ground HITS files) */
+    rt_set_file_loader(afs_entry);
+    if (rt_load_stage_hit(stage_no) != 0)
+        fprintf(stderr, "stage %d: no ground collision\n", stage_no);
     if (stage_no != 4) {
         /* no hand-picked spots: the hunter at the stage's start position
          * (stage_start_pos, main 0x2F2620, also used by set09/em19), else
@@ -427,7 +435,7 @@ int main(int argc, char **argv)
         if (sx == 0.0f && sz == 0.0f) {
             for (x = -30000; x <= 30000; x += 500)
                 for (z = -30000; z <= 30000; z += 500)
-                    if (fmt_hits_ground_y(hit, x, z, 1e6f, &y, FMT_LE)) {
+                    if (rt_ground_y(x, z, 1e6f, &y)) {
                         sx += x;
                         sz += z;
                         cnt++;
@@ -443,7 +451,7 @@ int main(int argc, char **argv)
         rz = sz - 1000;
         if (!cam_given) {
             y = 0;
-            fmt_hits_ground_y(hit, sx, sz + 2500, 1e6f, &y, FMT_LE);
+            rt_ground_y(sx, sz + 2500, 1e6f, &y);
             cam[0] = sx;
             cam[1] = y + 600;
             cam[2] = sz + 2500;
@@ -481,8 +489,6 @@ int main(int argc, char **argv)
         set_h0 = rt_bind_set_model(c, at, nc);
     }
     load_eft_models();
-    ground_hit = hit;
-    rt_set_ground(ground_y);
     rt_game_init(stage_no);
 
     if (monster_load(&rathian, "em01_amh.bin", "em01_tex.bin", "em01_tbl.bin", 3) != 0)
@@ -517,7 +523,7 @@ int main(int argc, char **argv)
     fl_skel_update(&rathian.skel, 0);
     fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
     gy = 0;
-    fmt_hits_ground_y(hit, rx, rz, 1e6f, &gy, FMT_LE);
+    rt_ground_y(rx, rz, 1e6f, &gy);
     place(rathian.world, rx, gy - min_y_of(&rathian.model), rz, 0.6f);
     hunter_pose(&pl, 0, &light);
     {
@@ -529,7 +535,7 @@ int main(int argc, char **argv)
                 lo = y;
         }
         gy = 0;
-        fmt_hits_ground_y(hit, hx, hz, 1e6f, &gy, FMT_LE);
+        rt_ground_y(hx, hz, 1e6f, &gy);
         place(pl.world, hx, gy - lo, hz, 2.6f);
         {   /* the hunter is the master player (player_work[0]) for the game C */
             float p[3] = { hx, gy, hz };
@@ -621,10 +627,10 @@ int main(int argc, char **argv)
             int a;
             rt_player_get(0, p, &a);
             place(pl.world, p[0], p[1] + hunter_yoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
-            cam[0] = p[0] + sinf(cam[3]) * 900.0f;
-            cam[1] = p[1] + 450.0f;
-            cam[2] = p[2] + cosf(cam[3]) * 900.0f;
-            cam[4] = -0.3f;
+            cam[0] = p[0] + sinf(cam[3]) * follow[0];
+            cam[1] = p[1] + follow[1];
+            cam[2] = p[2] + cosf(cam[3]) * follow[0];
+            cam[4] = follow[2];
         }
         if (rathian.game)
             rt_monster_pose(0, &rathian.skel);

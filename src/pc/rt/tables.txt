@@ -366,3 +366,29 @@ Plan_pow work
 swset_w work
 for_pad_timer_tbl
 em_parts_num
+# stage collision (src/main/hit/shit*.c, rt_hit.c)
+diorama_w work
+hit_decision work
+hit_hosei_base work
+hit_near_point work
+hit_kouten work
+hit_side work
+hit_area_out work
+hit_poly_num work
+hited_poly_num work
+hit_wall work
+hited_wall_no work
+pl_wall_mat work
+sys_old_mat work
+sys_old_pos work
+push00
+slide_tbl
+ground_tbl_add
+wall_tbl_add
+lit_180_002E85D0
+lit_425_002E85F0
+lit_638_002E8610
+stage_hit_data_w
+stage_hit_data_f
+St_data
+em_hit_push_tbl

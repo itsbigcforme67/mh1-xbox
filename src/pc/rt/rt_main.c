@@ -87,7 +87,6 @@ void Em_se_req2(void *em, int a, int b, f32 *pos, int c, int d) { (void)em; (voi
  * linked in. move() itself is not called by the host loop yet. */
 #define WEAK __attribute__((weak))
 WEAK void player_mv(void) {}
-WEAK void old_pos_save(void *w) { (void)w; }
 WEAK int enemy_mv(void *w) { (void)w; return 1; }
 WEAK void enemy_mk(void *w) { (void)w; }
 WEAK void em_ride_sub(void *w) { (void)w; }
@@ -96,7 +95,6 @@ WEAK void npc_mk(void *w) { (void)w; }
 WEAK void item_check(void) {}
 WEAK void body_hit(void) {}
 WEAK void bgm_server(void) {}
-WEAK void HitWallPlayer(void *w, int a) { (void)w; (void)a; }
 WEAK void player_mk(void) {}
 WEAK void yure_move(void) {}
 WEAK void CameraMove(void) {}
