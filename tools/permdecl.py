@@ -43,8 +43,8 @@ def score(order):
     m=re.search(r'\((\d+)/',l[0]); return int(m.group(1))
 import math
 best=None
-if len(decl)<=7 or maxp<=0:
-    perms=list(itertools.permutations(decl)) if len(decl)<=7 else []
+if len(decl)<=7 and maxp>0:
+    perms=list(itertools.permutations(decl))
     if len(perms)>maxp:
         random.seed(1); orig=tuple(decl); rest=random.sample(perms,maxp-1); perms=[orig]+rest
     for p in perms:
@@ -66,7 +66,7 @@ else:
                     best=(sc,tuple(t)); cur=t; improved=True; print(sc,[x.strip() for x in t]); sys.stdout.flush()
                     if sc==0: break
             if best[0]==0: break
-os.remove(tmp)
+if os.path.exists(tmp): os.remove(tmp)
 nl=lines[:start+1]+list(best[1])+lines[start+1+len(decl):]
 open(nm,'w').write('\n'.join(nl))
 print('best',best[0])
