@@ -1,4 +1,4 @@
-/* eft17 - game.bin 0x0053E??? (see config/c_files.txt). Monster breath and
+/* eft17 - game.bin 0x0053BA50-0x0053FFC4. Monster breath and
  * dust effects with 21 types (arg). Type 8 throws ten tumbling rocks that
  * bounce on the ground (eft17_i08/m08/t08, one model); every other type
  * spawns up to eft17_num sprites that grow and fade along keyframe tables
@@ -458,25 +458,23 @@ static void eft17_i00(EFTW *ew) {
 }
 
 static void eft17_m00(EFTW *ew) {
+    s16 step;
     FLMAT m;
     f32 v[3];
-    s32 n;
-    s32 nstep;
     s16 num;
-    s16 idx;
-    s16 step;
     u16 all;
-    u16 time;
     u16 *tt;
+    EFT17_PIECE *p = ew->work;
     s16 i;
     EMW *em;
     void *d;
-    EFT17_PIECE *p = ew->work;
+    s16 idx;
+    u16 time;
 
     num = eft17_num[ew->arg];
+    all = eft17_all_time[ew->arg];
     idx = eft17_index[ew->arg];
     step = eft17_param[ew->arg];
-    all = eft17_all_time[ew->arg];
     tt = eft17_time[ew->arg];
     switch (ew->arg) {
     case 1:
@@ -537,9 +535,7 @@ static void eft17_m00(EFTW *ew) {
         ew->be_flag = 0;
         return;
     }
-    n = num;
-    nstep = step;
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < num; i++) {
         switch (ew->arg) {
         case 1:
         case 4:
@@ -555,14 +551,16 @@ static void eft17_m00(EFTW *ew) {
             time = tt[i];
             break;
         case 3:
-            time = 10;
-            if (i != 0) {
+            if (i == 0) {
+                time = 10;
+            } else {
                 time = 35;
             }
             break;
         case 9:
-            time = 15;
-            if (i != 0) {
+            if (i == 0) {
+                time = 15;
+            } else {
                 time = 20;
             }
             break;
@@ -651,7 +649,7 @@ static void eft17_m00(EFTW *ew) {
             p->rot[2] = ran_suu(1);
             p->u28.size = ew->scale * (1.0f + 0.2f * eft17_ran_suu_sub());
             flvecCopy(p->pos, ew->pos);
-            if (p->lag >= 0x18) {
+            if (p->lag > 0x17) {
                 p->alpha = (f32)(time - p->lag) / 13.0f;
             }
             break;
@@ -705,8 +703,8 @@ static void eft17_m00(EFTW *ew) {
             p->pos[2] = 5.0f * (f32)i;
             flvecApplyMat33_2(p->pos, &rview_mat);
             p->pos[0] += ew->pos[0] + v[0];
-            p->pos[1] += ew->pos[1] + v[1];
-            p->pos[2] += ew->pos[2] + v[2];
+            p->pos[1] += ew->pos[1] + v[0];
+            p->pos[2] += ew->pos[2] + v[0];
             break;
         case 18:
             p->rot[2] += (u16)(ew->stg - 0x100);
@@ -725,34 +723,324 @@ static void eft17_m00(EFTW *ew) {
             flvecApplyMat33_2(v, &rview_mat);
             break;
         }
-        if (nstep >= 2 && ew->arg != 0xF) {
+        if (step > 1 && ew->arg != 0xF) {
             d = eft17_data[idx++];
             eft_alpha_linear(p->lag, d, &p->alpha);
         }
         if (p->prim != 0) {
-            switch (ew->arg) {
-            case 5:
-            case 16:
+            if (ew->arg == 5 || ew->arg == 16) {
                 p->prim->pos[0] = ew->pos[0] + (f32)p->lag * p->pos[0];
                 p->prim->pos[1] = ew->pos[1] + (f32)p->lag * p->pos[1];
                 p->prim->pos[2] = ew->pos[2] + (f32)p->lag * p->pos[2];
-                break;
-            case 4:
-            case 19:
-            case 20:
+            } else if (ew->arg == 4 || ew->arg == 19 || ew->arg == 20) {
                 p->prim->pos[0] = ew->pos[0] + v[0];
                 p->prim->pos[1] = ew->pos[1] + v[1];
                 p->prim->pos[2] = ew->pos[2] + v[2];
-                break;
-            default:
+            } else {
                 p->prim->pos[0] = p->pos[0];
                 p->prim->pos[1] = p->pos[1];
                 p->prim->pos[2] = p->pos[2];
-                break;
             }
             add_prim(ot0, p->prim, 0x40, 0);
         }
         p++;
+    }
+}
+
+#define T00_AREA()                              \
+    area = Em_area_ck(ew->x07);                 \
+    if (area == -1) {                           \
+        return;                                 \
+    }                                           \
+    mw = game_w.area_mdlw[area];                \
+    if (mw == 0) {                              \
+        return;                                 \
+    }                                           \
+    if (mw->flag == 0) {                        \
+        return;                                 \
+    }                                           \
+    mats = mw->mat;
+
+static void eft17_t00(PRIM *pr) {
+    FLMAT m;
+    FLMAT uv;
+    f32 rot[3];
+    f32 sc[3];
+    f32 pos[3];
+    u32 col;
+    EFTW *ew = pr->owner;
+    EFT17_PIECE *p = &((EFT17_PIECE *)ew->work)[pr->no];
+    EFT_MDLW *mw = eft_mdlw[0];
+    void *mats;
+    CLAY *cl;
+    u8 *fade;
+    u16 flag = 0;
+    s16 area;
+    s32 k;
+
+    if (mw != 0 && mw->flag != 0) {
+        mats = mw->mat;
+        switch (ew->arg) {
+        case 0:
+            T00_AREA();
+            flSetRenderState(0x6C, 0);
+            flag |= 2;
+            cl = &mw->clay[4];
+            rot[2] = ANG2RAD(p->rot[2]);
+            sc[0] = ew->scale * p->scale[0];
+            sc[1] = ew->scale * p->scale[1];
+            sc[2] = ew->scale * p->scale[2];
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            col = ((u8)(255.0f * p->alpha) << 24) | 0xFFFFFF;
+            break;
+        case 1:
+            T00_AREA();
+            flag |= 2;
+            cl = &mw->clay[2];
+            flmatMakeTrans(&uv, 0.0f, 0.0f, 0.0f);
+            flSetRenderState(0x19, (u32)&uv);
+            rot[2] = ANG2RAD(p->rot[2]);
+            sc[0] = p->u28.size * p->scale[0];
+            sc[1] = p->u28.size * p->scale[1];
+            sc[2] = p->u28.size * p->scale[2];
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            col = ((u8)(255.0f * p->alpha) << 24) | 0xF4902E;
+            break;
+        case 2:
+            if (p->no == 0) {
+                cl = &mw->clay[66];
+            } else {
+                cl = &mw->clay[80];
+            }
+            flag |= 2;
+            rot[2] = ANG2RAD(p->rot[2]);
+            sc[0] = ew->scale * p->scale[0];
+            sc[1] = ew->scale * p->scale[1];
+            sc[2] = ew->scale * p->scale[2];
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            col = ((u8)(255.0f * p->alpha) << 24) | 0xFFFFFF;
+            break;
+        case 3:
+            if (p->no == 0) {
+                area = Em_area_ck(ew->x07);
+                if (area == -1) {
+                    return;
+                }
+                mw = game_w.area_mdlw[area];
+                if (mw == 0) {
+                    return;
+                }
+                if (mw->flag == 0) {
+                    return;
+                }
+                cl = &mw->clay[2];
+                mats = mw->mat;
+                flag |= 2;
+                flmatMakeTrans(&uv, 0.0f, 0.0f, 0.0f);
+                flSetRenderState(0x19, (u32)&uv);
+                if (ew->x07 == 2) {
+                    fade = fade_type3_em02_2;
+                } else {
+                    fade = fade_type3_em02_00643DC0;
+                }
+                eft_rgba_linear(fade, p->lag, &col);
+            } else {
+                cl = &mw->clay[72];
+                eft_rgba_linear(fade_type3_72, p->lag, &col);
+            }
+            rot[2] = ANG2RAD(p->rot[2]);
+            sc[0] = p->scale[0] * p->u28.size;
+            sc[1] = p->scale[1] * p->u28.size;
+            sc[2] = p->scale[2] * p->u28.size;
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            break;
+        case 4:
+            sc[0] = p->scale[0] * p->u28.size;
+            sc[1] = p->scale[1] * p->u28.size;
+            sc[2] = p->scale[2] * p->u28.size;
+            cl = &mw->clay[74];
+            rot[2] = ANG2RAD(p->rot[2]);
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            col = ((u8)(255.0f * p->alpha) << 24) | 0x111111;
+            break;
+        case 5:
+        case 16:
+            cl = &mw->clay[74];
+            rot[2] = ANG2RAD(p->rot[2]);
+            sc[0] = p->u28.size * p->scale[0];
+            sc[1] = p->u28.size * p->scale[1];
+            sc[2] = p->u28.size * p->scale[2];
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            if (ew->arg == 0) {
+                col = ((u8)(255.0f * p->alpha) << 24) | 0x333333;
+            } else {
+                if (ew->arg == 5) {
+                    fade = fade_type5_74;
+                } else {
+                    fade = fade_type16_74;
+                }
+                eft_rgba_linear(fade, p->lag, &col);
+            }
+            break;
+        case 6:
+            T00_AREA();
+            flSetRenderState(0x6C, 0);
+            flag |= 2;
+            cl = &mw->clay[8];
+            sc[0] = p->u28.size * p->scale[0];
+            sc[1] = p->u28.size * p->scale[1];
+            sc[2] = p->u28.size * p->scale[2];
+            make_mat_srt(sc, rot, pr->pos, 0, &m);
+            col = ((u8)(255.0f * p->alpha) << 24) | 0xFFFFFF;
+            break;
+        case 7:
+            T00_AREA();
+            flSetRenderState(0x6C, 0);
+            flag |= 2;
+            cl = &mw->clay[2];
+            sc[0] = p->u28.size * p->scale[0];
+            sc[1] = p->u28.size * p->scale[1];
+            sc[2] = p->u28.size * p->scale[2];
+            rot[2] = ANG2RAD(p->rot[2]);
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            col = ((u8)(255.0f * p->alpha) << 24) | 0xFFFFFF;
+            break;
+        case 9:
+            flag |= 2;
+            if (pr->no == 0) {
+                cl = &mw->clay[59];
+            } else {
+                cl = &mw->clay[81];
+            }
+            sc[0] = 5.0f * ew->scale * p->scale[0];
+            sc[1] = 5.0f * ew->scale * p->scale[1];
+            sc[2] = 5.0f * ew->scale * p->scale[2];
+            rot[2] = ANG2RAD(p->rot[2]);
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            col = ((u8)(255.0f * p->alpha) << 24) | 0xFFFFFF;
+            break;
+        case 10:
+            flag |= 2;
+            sc[0] = ew->scale * p->scale[0];
+            sc[1] = ew->scale * p->scale[1];
+            sc[2] = ew->scale * p->scale[2];
+            cl = &mw->clay[42];
+            pos[0] = ew->pos[0];
+            pos[1] = 2.0f + ew->pos[1];
+            pos[2] = ew->pos[2];
+            flSetRenderState(0x6C, 0);
+            make_mat_srt(sc, rot, pos, 0, &m);
+            col = ((u8)(255.0f * p->alpha) << 24) | 0xFFFFFF;
+            break;
+        case 11:
+            flSetRenderState(0x6C, 0);
+            cl = &mw->clay[35];
+            sc[0] = p->u28.size * p->scale[0];
+            sc[1] = p->u28.size * p->scale[1];
+            sc[2] = p->u28.size * p->scale[2];
+            make_mat_srt(sc, rot, pr->pos, 0, &m);
+            col = ((u8)(255.0f * p->alpha) << 24) | 0x111111;
+            break;
+        case 12:
+        case 19:
+            T00_AREA();
+            flSetRenderState(0x6C, 0);
+            if (ew->x07 == 0x15) {
+                flag |= 2;
+                col = ((u8)(255.0f * p->alpha) << 24) | 0xFFFFFF;
+            } else {
+                col = ((u8)(255.0f * p->alpha) << 24) | 0xD8B68A;
+            }
+            cl = &mw->clay[4];
+            rot[2] = ANG2RAD(p->rot[2]);
+            sc[0] = ew->scale * p->scale[0];
+            sc[1] = ew->scale * p->scale[1];
+            sc[2] = ew->scale * p->scale[2];
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            break;
+        case 13:
+        case 20:
+            T00_AREA();
+            flSetRenderState(0x6C, 0);
+            if (ew->x07 == 0x15) {
+                flag |= 2;
+                col = ((u8)(255.0f * p->alpha) << 24) | 0xFFFFFF;
+            } else {
+                col = ((u8)(255.0f * p->alpha) << 24) | 0xD8B68A;
+            }
+            cl = &mw->clay[p->no];
+            rot[2] = ANG2RAD(p->rot[2]);
+            sc[0] = p->u28.size * p->scale[0];
+            sc[1] = p->u28.size * p->scale[1];
+            sc[2] = p->u28.size * p->scale[2];
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            break;
+        case 14:
+            T00_AREA();
+            cl = mw->clay;
+            rot[2] = ANG2RAD(p->rot[2]);
+            sc[0] = p->u28.size * p->scale[0];
+            sc[1] = p->u28.size * p->scale[1];
+            sc[2] = p->u28.size * p->scale[2];
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            col = ((u8)(255.0f * p->alpha) << 24) | 0xF8D197;
+            break;
+        case 15:
+            T00_AREA();
+            rot[2] = ANG2RAD(p->rot[2]);
+            sc[0] = p->u28.size * p->scale[0];
+            sc[1] = p->u28.size * p->scale[1];
+            sc[2] = p->u28.size * p->scale[2];
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            if (p->no == 0) {
+                fade = fade_type15_em03;
+                cl = &mw->clay[3];
+            } else {
+                k = p->no % 3;
+                cl = &mw->clay[k] + 4;
+                if (ew->x07 == 0x14) {
+                    fade = fade_type15_em04_em06;
+                } else {
+                    fade = fade_type15_em04_em06_2;
+                }
+                if (p->no & 1) {
+                    RotateY(&m, 3.1415927f);
+                }
+            }
+            eft_rgba_linear(fade, p->lag, &col);
+            break;
+        case 17:
+            flag |= 2;
+            cl = &mw->clay[81];
+            sc[0] = ew->scale * p->scale[0];
+            sc[1] = ew->scale * p->scale[1];
+            sc[2] = ew->scale * p->scale[2];
+            rot[2] = ANG2RAD(p->rot[2]);
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            col = ((u8)(255.0f * p->alpha) << 24) | 0xFFFFFF;
+            break;
+        case 18:
+            T00_AREA();
+            cl = mw->clay;
+            sc[0] = p->u28.size * p->scale[0];
+            sc[1] = p->u28.size * p->scale[1];
+            sc[2] = p->u28.size * p->scale[2];
+            rot[2] = ANG2RAD(p->rot[2]);
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            if (ew->x07 == 0x14) {
+                fade = fade_type18_em00;
+            } else {
+                fade = fade_type18_em00_2;
+            }
+            eft_rgba_linear(fade, p->lag, &col);
+            break;
+        }
+        if (ew->arg != 0xA) {
+            flmatMul33_2(&m, &rview_mat);
+        }
+        eft_trans_sub_col(cl, &m, col, flag, mats);
+        flSetRenderState(0x6C, 1);
+        clay_attr_reset();
     }
 }
 

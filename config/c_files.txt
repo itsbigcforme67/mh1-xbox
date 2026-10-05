@@ -114,3 +114,5 @@ game:rodata 0x00685730 0x00685760 eft/eft16b
 game 0x0053FFD0 0x005412A8 eft/eft04
 game:rodata 0x006853B0 0x00685404 eft/eft04
 game 0x00542680 0x00542D34 eft/eft04b
+game 0x0053BA50 0x0053FFC4 eft/eft17
+game:rodata 0x00685230 0x006853A4 eft/eft17
