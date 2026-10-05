@@ -81,7 +81,7 @@ EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c sr
 QUEST="src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c \
        src/main/game/f_game.c src/main/game/f_gameb.c src/main/font/dsp01.c \
        src/main/menu/menu_nm.c src/main/menu/menu_disp_nm.c \
-       src/main/chat/chat_nm.c src/main/font/fontst_nm.c \
+       src/main/chat/chat_nm.c src/main/chat/dispframe_nm.c src/main/font/fontst_nm.c \
        src/main/font/fontst2_nm.c src/main/font/gfs_nm.c src/main/set/set01.c src/main/sys/vib.c \
        src/main/sprite/putspr.c src/main/sprite/putspr2.c src/main/sprite/calcpoint.c src/main/sprite/trans2.c src/main/sprite/sysw.c \
        src/main/load/mkmap.c \

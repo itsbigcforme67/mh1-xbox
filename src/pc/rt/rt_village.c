@@ -44,6 +44,7 @@ void rt_village_enter(void)
     memset(em_work, 0, 0xA10 * 20);     /* the quest's monsters are gone (all_reset) */
     rt_cam_init(game_w[0x14]);          /* camera work (also with the host's own camera) */
     Clear_lobby_ram();
+    game_w[0x1DC] = 1;                  /* in the lobby overlay (Game_task step 1): lobby HUD prims, NPC talk sounds */
     if (getenv("RT_VILLAGE_SKIP_INTRO")) {  /* test aid (no save data): the first-visit event seen */
         void Event_flag_set(int);
         Event_flag_set(2);
@@ -122,6 +123,7 @@ int rt_village_tick(void)
     if (r == 1 || r == -1) {
         void com_motion_load(int n);
         active = 0;
+        game_w[0x1DC] = 0;
         com_motion_load(0);             /* the quest's common motions (plcom_tbl) again */
         return r == 1 ? *(s16 *)(select_w + 0xAC) : -1;
     }

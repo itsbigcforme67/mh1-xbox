@@ -4110,6 +4110,11 @@ void lb_guild_talk(void) {
         case 0:
             NPC_Message(NULL, M2C_FIELD(lb_pit, s32 *, 0), 3U, M2C_FIELD(lb_pit, s8 *, 9));
             return;
+        case 2:     /* the start message, the level / quest lists and the rule sheet draw their own */
+        case 3:
+        case 5:
+        case 8:
+            return;
         default:
             M2C_FIELD(lb_pit, s8 *, 0xB) = NPC_Message(M2C_FIELD(temp_s0, int **, 4), M2C_FIELD(lb_pit, s32 *, 0), M2C_FIELD(temp_s0, u16 *, 0), M2C_FIELD(lb_pit, s8 *, 9));
             break;

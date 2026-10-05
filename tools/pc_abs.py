@@ -8,8 +8,10 @@ inside a sized main symbol (config/symbols/main.txt) reads the host's
 symbol instead: `(T *)(rt_abs_<sym> + off)`, with
 `extern unsigned char rt_abs_<sym>[] __asm__("<sym>");` declared at the
 top (a byte view under another C name, so it never clashes with the
-file's own typed declaration). Addresses outside main symbols are left
-alone.
+file's own typed declaration). An address in a lobby.bin data symbol
+(config/symbols/lobby.txt, e.g. lb_sys 0x6EAE50 from main's eft26.c) reads
+rt_lb_mem, the host copy of the whole overlay (src/pc/rt/rt_data.c).
+Other addresses are left alone.
 
     python3 tools/pc_abs.py in.c out.c     # exit status 1: nothing to rewrite
 
@@ -32,6 +34,12 @@ def main():
             va, size = int(m.group(2), 16), int(m.group(4), 16)
             if 0x100000 <= va < 0x533980 and size:
                 syms.append((va, size, m.group(1)))
+    for line in open("config/symbols/lobby.txt"):
+        m = LINE.match(line)
+        if m and m.group(3) != "func" and m.group(4):
+            va, size = int(m.group(2), 16), int(m.group(4), 16)
+            if va >= 0x533980 and size:
+                syms.append((va, size, "@lb"))
     syms.sort()
     starts = [s[0] for s in syms]
     used = {}
@@ -42,6 +50,9 @@ def main():
         while i >= 0:   # the nearest symbol below a that contains it
             va, size, name = syms[i]
             if va <= a < va + size:
+                if name == "@lb":
+                    used["rt_lb_mem"] = 1
+                    return "(%s)(rt_lb_mem + 0x%X)" % (m.group(1), a - 0x533980)
                 used[name] = 1
                 return "(%s)(rt_abs_%s + 0x%X)" % (m.group(1), name, a - va)
             if a - va > 0x10000:
@@ -52,7 +63,9 @@ def main():
     out = CAST.sub(fix, src)
     if not used:
         sys.exit(1)
-    head = "".join('extern unsigned char rt_abs_%s[] __asm__("%s");\n' % (n, n) for n in sorted(used))
+    head = "".join('extern unsigned char rt_abs_%s[] __asm__("%s");\n' % (n, n) for n in sorted(used) if n != "rt_lb_mem")
+    if "rt_lb_mem" in used:
+        head += "extern unsigned char rt_lb_mem[];\n"
     open(sys.argv[2], "w").write(head + out)
 
 

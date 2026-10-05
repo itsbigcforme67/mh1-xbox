@@ -1027,6 +1027,20 @@ int main(int argc, char **argv)
         if (weapon.game && pl.game && play)
             weapon_pose(&light);
 
+        /* the view of this frame, from the camera the ticks above left
+         * (the game camera or the follow camera moved with the hunter) */
+        if (game_cam && have_view) {
+            lookat_world(camw, gc_eye, gc_tar);
+        } else {
+            float s3[3] = { 1, 1, 1 }, r3[3], t3[3];
+            r3[0] = cam[4]; r3[1] = cam[3]; r3[2] = 0;
+            t3[0] = cam[0]; t3[1] = cam[1]; t3[2] = cam[2];
+            flmat_srt(camw, s3, r3, t3);
+        }
+        flmat_invert_affine(view, camw);
+        rt_set_camera(camw);
+        flmat_perspective(proj, game_cam && have_view ? gc_fov : 1.0f, (float)W / H, 10.0f, 80000.0f);
+
         gfx_begin_frame(0x8098B8);
         gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);
         gfx_set_render_state(GFX_RS_VIEW, (uintptr_t)view);
