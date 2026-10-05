@@ -5486,3 +5486,151 @@ found:
     }
     FLY_FLOOR(em);
 }
+
+static void em_move00_00573730(EMW *em, EM01W *w) {
+    switch (em->x15) {
+    case 0: em_act00_00567280(em, w); break;
+    case 1: em_act01_00567350(em, w); break;
+    case 2: em_act02_00567470(em, w); break;
+    case 3: em_act03_00567530(em, w); break;
+    case 4: em_act04_00567600(em, w); break;
+    case 5: em_act05_005676C0(em, w); break;
+    case 6: em_act06_005677B0(em, w); break;
+    case 7: em_act07_005678A0(em, w); break;
+    case 8: em_act08_00567970(em, w); break;
+    case 9: em_act09_00567A90(em, w); break;
+    case 10: em_act10_00567B30(em, w); break;
+    case 11: em_act11_00567C40(em, w); break;
+    case 12: em_act12_00567D30(em, w); break;
+    case 13: em_act13_00567DB0(em, w); break;
+    case 14: em_act14_00567EA0(em, w); break;
+    case 15: em_act15_00568220(em, w); break;
+    case 16: em_act16_00568350(em, w); break;
+    case 17: em_act17_00568480(em, w); break;
+    case 18: em_act18_00568500(em, w); break;
+    case 19: em_act19_005686B0(em, w); break;
+    case 20: em_act20_005688F0(em, w); break;
+    case 21: em_act21_00568A00(em, w); break;
+    case 22: em_act22_00568BB0(em, w); break;
+    case 23: em_act23_00568C30(em, w); break;
+    case 24: em_act24_00568D00(em, w); break;
+    case 25: em_act25_00568DD0(em, w); break;
+    case 26: em_act26_00568E50(em, w); break;
+    case 27: em_act27_00568F90(em, w); break;
+    case 28: em_act28_005690A0(em, w); break;
+    case 29: em_act29_00569170(em, w); break;
+    case 31: em_act31_005692B0(em, w); break;
+    case 33: em_act33_005693F0(em, w); break;
+    case 40: em_act40_00568830(em, w); break;
+    }
+}
+
+static void em_move01_00573980(EMW *em, EM01W *w) {
+    switch (em->x15) {
+    case 0: em_mv00_00569480(em, w); break;
+    case 1: em_mv01_005695C0(em, w); break;
+    case 2: em_mv02_005695D0(em, w); break;
+    case 3: em_mv03_005695E0(em, w); break;
+    case 4: em_mv04_005698F0(em, w); break;
+    case 5: em_mv05_00569A50(em, w); break;
+    case 6: em_mv06_00569D60(em, w); break;
+    case 7: em_mv07_00569EC0(em, w); break;
+    case 8: em_mv04_005698F0(em, w); break;
+    }
+}
+
+static void em_move02_00573A50(EMW *em, EM01W *w) {
+    switch (em->x15) {
+    case 0: em_fly00_0056A000(em, w); break;
+    case 1: em_fly01_0056A100(em, w); break;
+    case 2: em_fly02_0056A340(em, w); break;
+    case 3: em_fly03_0056A450(em, w); break;
+    case 4: em_fly04_0056A6E0(em, w); break;
+    case 5: em_fly05_0056A850(em, w); break;
+    case 6: em_fly06_0056A9C0(em, w); break;
+    case 7: em_fly07_0056ABE0(em, w); break;
+    case 8: em_fly08_0056AD20(em, w); break;
+    case 9: em_fly09_0056AFC0(em, w); break;
+    case 10: em_fly10_0056B190(em, w); break;
+    case 11: em_fly11_0056B390(em, w); break;
+    case 12: em_fly12_0056B5E0(em, w); break;
+    case 13: em_fly13_0056B740(em, w); break;
+    case 14: em_fly14_0056BAC0(em, w); break;
+    case 15: em_fly15_0056BB80(em, w); break;
+    case 16: em_fly16_0056BC40(em, w); break;
+    case 17: em_fly17_0056BD50(em, w); break;
+    case 18: em_fly18_0056BF90(em, w); break;
+    case 19: em_fly19_0056C160(em, w); break;
+    case 20: em_fly20_0056C340(em, w); break;
+    case 21: em_fly21_0056C490(em, w); break;
+    case 22: em_fly22_0056C5D0(em, w); break;
+    case 23: em_fly23_0056C740(em, w); break;
+    case 24: em_fly24_0056C980(em, w); break;
+    }
+}
+
+static void em_move03_00573C20(EMW *em, EM01W *w) {
+    switch (em->x15) {
+    case 0: em_atk00_0056CAA0(em, w); break;
+    case 2: em_atk02_0056CB40(em, w); break;
+    case 3: em_atk03_0056CDC0(em, w); break;
+    case 4: em_atk04_0056CE50(em, w); break;
+    case 5: em_atk05_0056D040(em, w); break;
+    case 6: em_atk06_0056D0F0(em, w); break;
+    case 7: em_atk07_0056D1E0(em, w); break;
+    case 8: em_atk08_0056D300(em, w); break;
+    case 9: em_atk09_0056DD30(em, w); break;
+    case 10: em_atk10_0056DF20(em, w); break;
+    case 11: em_atk11_0056E160(em, w); break;
+    case 12: em_atk12_0056E6F0(em, w); break;
+    case 13: em_atk13_0056E860(em, w); break;
+    case 14: em_atk14(em, w); break;
+    case 15: em_atk15_0056E970(em, w); break;
+    case 16: em_atk16_0056EAD0(em, w); break;
+    case 17: em_atk17_0056EC80(em, w); break;
+    case 18: em_atk18_0056EF60(em, w); break;
+    case 19: em_atk19(em, w); break;
+    case 20: em_atk20(em, w); break;
+    case 21: em_atk21_0056F340(em, w); break;
+    case 22: em_atk22(em, w); break;
+    case 23: em_atk23(em, w); break;
+    case 24: em_atk24(em, w); break;
+    case 25: em_atk25(em, w); break;
+    }
+}
+
+static void em_move04_00573DF0(EMW *em, EM01W *w) {
+    switch (em->x15) {
+    case 0: em_dmg00_00570530(em, w); break;
+    case 1: em_dmg01_005705C0(em, w); break;
+    case 2: em_dmg02_00570650(em, w); break;
+    case 3: em_dmg03_005706E0(em, w); break;
+    case 4: em_dmg04_005707A0(em, w); break;
+    case 5: em_dmg05_00570970(em, w); break;
+    case 6: em_dmg06_00570A90(em, w); break;
+    case 7: em_dmg07_00570AA0(em, w); break;
+    case 8: em_dmg08_00570AB0(em, w); break;
+    case 9: em_dmg09_00570C30(em, w); break;
+    case 10: em_dmg10_00570DC0(em, w); break;
+    case 11: em_dmg11_00570E50(em, w); break;
+    case 12: em_dmg12_00570F20(em, w); break;
+    case 13: em_dmg13_00571050(em, w); break;
+    case 14: em_dmg14_00571180(em, w); break;
+    case 15: em_dmg15_00571290(em, w); break;
+    case 16: em_dmg16_00571310(em, w); break;
+    case 17: em_dmg17_00571430(em, w); break;
+    case 18: em_dmg18_00571550(em, w); break;
+    case 19: em_dmg19_00571650(em, w); break;
+    }
+}
+
+static void em_move06_00573FE0(EMW *em, EM01W *w) {
+    switch (em->x15) {
+    case 0: em_demo00_00571750(em, w); break;
+    case 1: em_demo01_005720E0(em, w); break;
+    case 2: em_demo02_00572660(em, w); break;
+    case 3: em_demo00_00571750(em, w); break;
+    case 4: em_demo04_00572FA0(em, w); break;
+    case 5: em_demo02_00572660(em, w); break;
+    }
+}
