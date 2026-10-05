@@ -143,7 +143,8 @@ typedef struct PLW {
     s8    work350;           /* 0x350 */
     s8    work351;           /* 0x351 */
     u8    work352[6];        /* 0x352 parts/armor ids (u8: Skill_set_PL lbu) */
-    u8 _pad358[0x360 - 0x358];
+    u8 _pad358[0x7];
+    u8    work35F;           /* 0x35F */
     u16   wpn_kind;      /* 0x360 gun type, row of D_3367B2 (shell06) */
     u16   wpn_ammo;      /* 0x362 loaded ammo; low nibble = Gun_Grow_Up_DATA row (shell06) */
     PLSW  sw;            /* 0x364 */
@@ -307,9 +308,11 @@ typedef struct PLW {
     f32   work800;           /* 0x800 */
     f32   work804;           /* 0x804 */
     f32   work808;           /* 0x808 */
-    u8 _pad80C[0x818 - 0x80C];
+    f32   work80C;           /* 0x80C */
+    f32   work810;           /* 0x810 */
+    f32   work814;           /* 0x814 */
     s16   work818;           /* 0x818 */
-    u16   work81A;           /* 0x81A */
+    s16   work81A;           /* 0x81A */
     u8    work81C;           /* 0x81C */
     s8    work81D;           /* 0x81D */
     u8    work81E;           /* 0x81E */

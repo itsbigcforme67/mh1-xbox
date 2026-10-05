@@ -2182,3 +2182,176 @@ dec:
     }
     return 0;
 }
+
+#include "flow.h"
+#define ANG2RAD(a) (2.0f * (3.1415927f * (((360.0f * (f32)(a)) / 65536.0f) / 360.0f)))
+void *get_joint_mat(PLW *, int, int);
+void flmatRotY33(void *, f32);
+void flmatRotZ33(void *, f32);
+int Ana_ok_ck();
+extern s16 *stg_eft_mdl_no[0x58];
+
+void Pl_horm_adj(PLW *pl, int part) {
+    void *mat;
+    switch ((s16)part) {
+    case 9:
+        flmatRotY33(mat = get_joint_mat(pl, 9, pl->work81A), 0.3f * ANG2RAD(pl->work81A));
+        flmatRotZ33(mat, ANG2RAD(pl->work750));
+        break;
+    case 10:
+        flmatRotY33(get_joint_mat(pl, 10, pl->work81A), 0.3f * ANG2RAD(pl->work81A));
+        break;
+    case 19:
+        flmatRotY33(get_joint_mat(pl, 19, pl->work81A), 0.3f * ANG2RAD(pl->work81A));
+        break;
+    case 20:
+        flmatRotY33(get_joint_mat(pl, 20, pl->work81A), 0.1f * ANG2RAD(pl->work81A));
+        break;
+    }
+}
+
+
+
+
+
+
+void Pl_vital_calc_item(PLW *pl, int dv) {
+    int n;
+    s16 v;
+    if (Pl_Skill_ck(pl, 0x1A) == 1 && (n = (s16)dv, n > 0)) {
+        v = (s16)(n + n / 4);
+    } else {
+        v = (s16)dv;
+    }
+    Pl_vital_calc(pl, v);
+}
+
+
+extern s16 *Pl_slash_tbl[6];
+extern char lit_1805_0035B1B0[];
+extern char lit_1806_0035B1D0[];
+extern char lit_1807_0035B1F0[];
+
+u8 Pl_slash_lv_ck(PLW *pl) {
+    s16 *t;
+    s16 cur;
+    u8 k = pl->kind;
+    if (k == 1 || k == 5) {
+        return 0;
+    }
+    cur = pl->work87E;
+    t = (s16 *)((u8 *)Pl_slash_tbl[k] + Ken_data[pl->wpn_kind][2] * 8);
+    if (t[0] >= cur) {
+        return 0;
+    }
+    if (t[1] >= cur) {
+        return 1;
+    }
+    if (t[2] >= cur) {
+        return 2;
+    }
+    return 3;
+}
+
+void Pl_slash_calc(PLW *pl, int dv) {
+    u8 up = 0;
+    u8 lv;
+    if (Pl_master_ck(pl) != 0) {
+        if (pl->kind != 1) {
+            if (pl->kind == 5) {
+            } else {
+                pl->work87E = pl->work87E + dv;
+                if (pl->work87E <= 0) {
+                    pl->work87E = 0;
+                }
+                if (pl->work884 < pl->work87E) {
+                    pl->work87E = pl->work884;
+                    up = 1;
+                }
+                lv = Pl_slash_lv_ck(pl);
+                if (lv != pl->work887) {
+                    if (lv < pl->work887) {
+                        set01_set2(lit_1805_0035B1B0);
+                    } else {
+                        set01_set2(lit_1806_0035B1D0);
+                    }
+                    pl->work887 = lv;
+                }
+                if (up != 0) {
+                    set01_set2(lit_1807_0035B1F0);
+                }
+            }
+        }
+    }
+}
+
+extern s32 Gun_data[26][5];
+
+u16 Pl_shell_set(PLW *pl, int slot, int dir) {
+    s16 n;
+    u16 s;
+    u8 d;
+    if (pl->kind != 1 && pl->kind != 5) {
+        return 0xFF;
+    }
+    if (pl->work35F != 7) {
+        return 0xFF;
+    }
+    s = slot;
+    if (s >= 20) {
+        s = 0;
+    }
+    d = dir;
+    switch (d) {
+    case 0:
+        s = (s + 1) % 20;
+        break;
+    case 1:
+        if (s == 0) {
+            s = 19;
+        } else {
+            s = s - 1;
+        }
+        break;
+    case 3:
+    case 2:
+        break;
+    }
+    for (n = 0; n < 20; n++) {
+        if (pl->item[s].id != 0 && pl->item[s].num > 0 && Item_data[pl->item[s].id][1] == 2
+            && (Gun_data[pl->wpn_kind][4] & (1 << *(s16 *)&Item_data[pl->item[s].id][8]))) {
+            return s;
+        }
+        switch (d) {
+        case 2:
+        case 0:
+            s = (s + 1) % 20;
+            break;
+        case 3:
+        case 1:
+            if (s == 0) {
+                s = 19;
+            } else {
+                s = s - 1;
+            }
+            break;
+        }
+    }
+    return 0xFF;
+}
+
+void Shell_type_set(PLW *pl, int flag) {
+    if (pl->work88E != 0xFF) {
+        pl->ammo_type = *(s16 *)&Item_data[pl->item[pl->work88E].id][8];
+        if (Item_data[pl->item[pl->work88E].id][3] == 0xFF) {
+            pl->work8BC = 0xFF;
+        } else {
+            pl->work8BC = pl->item[pl->work88E].num;
+        }
+        pl->work01D = Shell_data[pl->ammo_type]._00;
+        pl->work01C = 0;
+    }
+}
+
+extern u8 chat_act_tbl_002F1860[0xD];
+void Pl_se_req2(PLW *, int, int, f32 *, int, int);
