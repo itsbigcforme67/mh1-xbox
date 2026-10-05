@@ -1,11 +1,13 @@
 # Agent F notes: player code (asm/main/text/f_pl.s, 0x134950-0x14D1C8, 224 functions)
 
-Status (6 Oct 2026, evening): ~120 functions byte-matching and registered (src/main/pl/pl01..pl25.c,
+Status (6 Oct 2026, night): ~210 functions byte-matching and registered (src/main/pl/pl01..pl39.c,
 `tools/rebuild.sh main` = main OK). Everything else written so far is in src/main/pl/pl_nm.c
-(compiles, not built). Registered this round (all in address order): pl09 0x1371B0-0x138900, pl10 0x138BE0-0x1398F0,
-pl11 scope_add, pl12..pl25 = the PLPROG state handlers pl_mv000..pl_mv112 (0x13A9F0-0x141BA0) except the near-matches
-pl_mv021/pl_mv060 and wall_act_ck/wall_vec_set/basic_com_ck/gun_adj_sub/sougun_adj_sub (see below).
-NEXT: pl_normal (0x141BA0, 1884 bytes), then pl_at000.. (attacks), pl_dm*, pl_demo*, pl_egg*, pl_chat*, pl_move*.
+(compiles, not built). Registered in this and the previous round: pl09 .. pl39 = 0x1371B0 .. 0x149E2C, i.e. unique_act_set ..
+pl_die (item/attack/damage/death handlers and their dispatchers pl_normal, pl_attack, pl_damage). Near-matches parked in pl_nm.c:
+basic_com_ck, gun_adj_sub, sougun_adj_sub, wall_act_ck, wall_vec_set, pl_mv021, pl_mv060, pl_at008, pl_at009, pl_at012, pl_dm003,
+pl_dm008.
+NEXT (0x149E30 on): pl_demo000..005/pl_demo, egg_set, egg_com_ck, pl_egg*, pl_chat00..16/pl_chat, pl_move*, pl_turn_sub, pl_horm_sub...
+(list: /tmp/claude-1000/pl_funcs_F.txt is regenerated from config/symbols/main.txt: address, name, size for f_pl.s functions).
 Workflow (about 2 minutes per small function): `tools/plnext.sh F1 F2 ..` drafts into pl_wip.c, `python3 tools/pl_asm.py F`
 shows the asm without the noise, write the C by hand (the m2c output is only a guide: arg counts, switch order, locals),
 `python3 tools/check.py src/main/pl/pl_wip.c -v | grep '>>'`, then `python3 tools/plreg.py plNN "descr" F1 F2 ... [RODATA=a-b]`
@@ -26,6 +28,18 @@ moves them into src/main/pl/plNN.c and registers the range; `tools/rebuild.sh ma
 - vt.py (try function variants), hexf.py (hex float literals), pl_asm.py (compact asm listing).
 
 ## Lessons
+- MWCC IPA again: a `static` callee defined earlier in the same file lets the compiler keep a0 (and other temps) alive across the call.
+  piyo_reset (leaf, 20 bytes) made pl_dm019/pl_dm021/pl_dm022 match only when it is `static` in the same plNN.c. A static function
+  cannot be referenced from other files, so the file must contain all of its callers (here pl_dm022 was the last asm user: the link
+  failed with `undefined reference to piyo_reset` until pl_dm022 was moved into the file; then it linked).
+- Small constant tables: `extern s8 piyo_ret_tbl[6];` (size known) gives gp-relative `addiu v0,gp,off` like the original; an
+  unsized extern gives lui/addiu. Always declare data with the size from config/symbols (size:0x6 -> [6]).
+- check.py does not compare jump-table DATA: only the full `tools/rebuild.sh main` does. A jump table needs its own `main:rodata`
+  range in c_files.txt; the first mismatch offset 0x25xxxx (= address 0x35xxxx) points at it; a mismatch in the table contents
+  means the case bodies are laid out differently (e.g. `case 0:` merged into case 1/2 instead of pointing at the default).
+- Dispatchers (pl_normal/pl_attack/pl_damage): `switch (flag15) { case N: fn(pl, mode); break; ... default: pl_to_normal(...); }`
+  with K&R declarations (`void pl_mv000();`) because the handlers are called with and without a mode argument; the LAST case body
+  must not end in `break;`/`return;` (an extra `b end` appears).
 - `p == 1 || p == 2 || p == 3` is merged into a range test by MWCC, `!= && != &&` chains too; the original used `switch` (compare
   chain with separate beq, last one `b end`) in kabe_com_ck, pick_set_sub (q), pl_mv052 (h) and others: if the asm shows
   `beq a,1 / beq a,2 / beqz a / b end` write a switch with those labels (case order = reverse of the chain).
