@@ -63,17 +63,14 @@ typedef struct PLW {
     u8    work01D;           /* 0x01D */
     s8    work01E;           /* 0x01E */
     u8 _pad01F[0x60 - 0x1F];
-    u8    rot[0x18];     /* 0x060 rotation matrix (start; extent unknown), used
-                            with flvecApplyMat33 (shell00_i) */
+    u8    rot[0x18];     /* 0x060 rotation matrix (start; extent unknown) */
     u8 _pad078[0xA0 - 0x78];
     s32   ang[3];        /* 0x0A0 rotation, 0x10000 = 360 degrees (set05_m, as EMW) */
     f32   pos[3];        /* 0x0AC world position (set16_m, shell00_set) */
     f32   scl[3];            /* 0x0B8 scale (pl_init_sub: 1.0 each) */
     u8 _pad0C4[0x110 - 0xC4];
     void *part[2];           /* 0x110 matrix blocks, part[i]+0x40 is a world matrix (cmd_set_pos) */
-    u8 _pad118[0x148 - 0x118];
-    u8 *mdl148;              /* 0x148 +0x40 is a matrix (cam_sub_pchngr) */
-    u8 _pad14C[0x158 - 0x14C];
+    u8 _pad118[0x40];
     struct PL_HAND *hand;  /* 0x158 thrown items start from hand->pos (shell03_set) */
     u8 _pad15C[0x198 - 0x15C];
     s32   chr_no0;       /* 0x198 */
@@ -249,9 +246,9 @@ typedef struct PLW {
     u8    work7ED;           /* 0x7ED */
     u8    work7EE;           /* 0x7EE */
     u8 _pad7EF[0x800 - 0x7EF];
-    s32   work800;           /* 0x800 */
-    s32   work804;           /* 0x804 */
-    s32   work808;           /* 0x808 */
+    f32   work800;           /* 0x800 */
+    f32   work804;           /* 0x804 */
+    f32   work808;           /* 0x808 */
     u8 _pad80C[0x818 - 0x80C];
     s16   work818;           /* 0x818 */
     s16   work81A;           /* 0x81A */

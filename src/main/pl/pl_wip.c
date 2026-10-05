@@ -2,3 +2,66 @@
 #include "pl.h"
 #include "game.h"
 #include "plf.h"
+
+
+
+void unique_act_set(PLW *pl) {
+    f32 sp90[3];
+    u16 sp9C;
+    u8 sp9F;
+    f32 sp80[4];
+    f32 sp70[4];
+    s32 sp60[4];
+    f32 sp20[16];
+    int r;
+
+    r = St_unique_ck(pl, sp90, &sp9C, &sp9F) & 0xFFFF;
+    switch (r) {
+    default:
+        if (Sansai_talk_ck(pl) & 0xFF) {
+            Pl_act_set2(pl, 0, 0x5B, 0);
+        }
+        return;
+    case 1:
+        flvecCopy(&pl->work800, sp90);
+        Pl_adj_calc(pl, 0x14);
+        pl->ang_y = sp9C;
+        Pl_act_set2(pl, 0, 0x4C, 0);
+        return;
+    case 3:
+        if (pl->work88C == 0) {
+            Pl_act_set2(pl, 0, 0x57, 0);
+            return;
+        }
+        break;
+    case 4:
+        pl->ang_y = sp9C;
+        Pl_act_set2(pl, 0, 0x5C, 0);
+        return;
+    case 16:
+        flvecCopy(&pl->work800, sp90);
+        sp60[0] = 0;
+        sp60[2] = 0;
+        sp60[1] = sp9C;
+        cpRotMatrix(sp60, sp20);
+        SetVector(120.0f * bed_ofs[pl->id], 0, 0, sp70);
+        flvecApplyMat33(sp80, sp70, sp20);
+        pl->work800 = pl->work800 + sp80[0];
+        pl->work804 = pl->work804 + sp80[1];
+        pl->work808 = pl->work808 + sp80[2];
+        pl->ang_y = sp9C;
+        Pl_adj_calc(pl, 0x14);
+        Pl_act_set2(pl, 0, 0x33, 0);
+        return;
+    case 25:
+        if (game_w.x1B2 == 0) {
+            pl->ang_y = (u16)((calc_vec_ang2(pl->pos, sp90) & 0xFFFF) - 0x4000);
+            Pl_act_set2(pl, 0, 0x56, 0);
+            return;
+        }
+        break;
+    case 21:
+        Share_item_conv(pl);
+        break;
+    }
+}

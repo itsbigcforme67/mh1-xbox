@@ -94,4 +94,11 @@ s32 Get_view_dir();
 extern u8 Item_data[327][16];
 int calc_vec_ang2(f32 *, f32 *);
 f32 flvecCalcLength(f32 *);
+void Pl_act_set2(PLW *, int, int, int);
+void Pl_adj_calc(PLW *, int);
+s32 Sansai_talk_ck(PLW *);
+void SetVector(f32, f32, f32, f32 *);
+extern f32 bed_ofs[];
+void Share_item_conv(PLW *);
+s32 St_unique_ck(PLW *, f32 *, u16 *, u8 *);
 #endif
