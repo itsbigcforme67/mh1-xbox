@@ -664,7 +664,7 @@ int em_mode_timer_sub(EMW *em) {
             if (em->x388 == 2) {
                 em->x886 = 0;
             } else {
-                Em_Mode_Chg(em, 0, 0);
+                Em_Mode_Chg(em, 0, 0, 0); /* 4th argument unused (prototype above) */
                 return 1;
             }
         }

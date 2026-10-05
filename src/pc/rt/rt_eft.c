@@ -308,33 +308,40 @@ void release_prim2(s16 no)
 /* push_senko/smoke/smell (0x16A570, 0x16A3D0, 0x16A2B0): up to 32 pointers
  * each, for the screen-flash, smoke and smell renderers. Those renderers are
  * not ported: the entries are kept, nothing draws them yet. */
-static void *senko_stack[32], *smoke_stack[32], *smell_stack[32];
+void *senko_stack[32], *smoke_stack[32], *smell_stack[32];   /* the game's (em_core reads them) */
+s8 senko_cnt, smoke_cnt, smell_cnt;
 
-static int stack_push(void **st, void *p)
+/* as 0x16A2B0: full at 32 (count), first free slot, count up */
+static int stack_push(void **st, s8 *cnt, void *p)
 {
     int i;
+    if (*cnt >= 32)
+        return 0;
     for (i = 0; i < 32; i++)
         if (!st[i]) {
             st[i] = p;
+            (*cnt)++;
             return 1;
         }
     return 0;
 }
 
-static void stack_pull(void **st, void *p)
+static void stack_pull(void **st, s8 *cnt, void *p)
 {
     int i;
     for (i = 0; i < 32; i++)
-        if (st[i] == p)
+        if (st[i] == p) {
             st[i] = NULL;
+            (*cnt)--;
+        }
 }
 
-int push_senko(void *p) { return stack_push(senko_stack, p); }
-void pull_senko(void *p) { stack_pull(senko_stack, p); }
-int push_smoke(void *p) { return stack_push(smoke_stack, p); }
-void pull_smoke(void *p) { stack_pull(smoke_stack, p); }
-int push_smell(void *p) { return stack_push(smell_stack, p); }
-void pull_smell(void *p) { stack_pull(smell_stack, p); }
+int push_senko(void *p) { return stack_push(senko_stack, &senko_cnt, p); }
+void pull_senko(void *p) { stack_pull(senko_stack, &senko_cnt, p); }
+int push_smoke(void *p) { return stack_push(smoke_stack, &smoke_cnt, p); }
+void pull_smoke(void *p) { stack_pull(smoke_stack, &smoke_cnt, p); }
+int push_smell(void *p) { return stack_push(smell_stack, &smell_cnt, p); }
+void pull_smell(void *p) { stack_pull(smell_stack, &smell_cnt, p); }
 
 /* ------------------------------------------------------------ eft helpers */
 /* eft_vec_linear (0x1013B0): keyframes {t, x, y, z} ending with t = -1;
@@ -698,6 +705,7 @@ void rt_eft_init(void)
     memset(senko_stack, 0, sizeof senko_stack);
     memset(smoke_stack, 0, sizeof smoke_stack);
     memset(smell_stack, 0, sizeof smell_stack);
+    senko_cnt = smoke_cnt = smell_cnt = 0;
 }
 
 void rt_eft_move(void)
@@ -779,13 +787,7 @@ int Em_area_ck(int a)
     return -1;
 }
 
-/* Em_Calc_angY (em_core_g.c: calc_vec_ang(a.x, a.z, b.x, b.z) - 0x4000).
- * calc_vec_ang is not ported: atan2 stand-in [guess at its convention]. */
-u16 Em_Calc_angY(f32 *a, f32 *b)
-{
-    f32 r = flArcTan2(b[0] - a[0], b[2] - a[2]);
-    return (u16)(s32)(r * 65536.0f / 6.2831855f);
-}
+/* Em_Calc_angY: game.bin em_core (src/game/em/em_core_nm.c, built). */
 
 /* frame_check* come from the decompiled src/main/frame/f_frame_nm.c */
 
@@ -827,8 +829,7 @@ STUB_V(flCalcTrans, (void *h, FLMAT *m))
 STUB_V(flCalcTransSI, (void *h, FLMAT *m))
 STUB_V(flSetMatrixList, (void *a, void *b))
 STUB_V(flSetSkinTransMatrixList, (void *a, void *b))
-/* shell08_trans (game 0x6309A0) is not decompiled yet: the shell is not drawn */
-STUB_V(shell08_trans, (void *pr))
+/* shell08_trans: src/game/shell/shell08_nm.c (near-match C, built). */
 
 /* ------------------------------------------------------------ test spawns
  * RT_SPAWN="eft13:N,eft17:N,shell22:N,eft14:N,eft08:N" spawns those effects
