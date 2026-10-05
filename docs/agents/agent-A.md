@@ -240,3 +240,19 @@ Lessons:
   itself). Viewer fix: hunter.game was uninitialised.
 - trans_stage: not edited in this assignment (coordinator note: agent E
   consolidates src/main/stage/trans_stage_nm.c and f_stage_nm.c).
+
+## Assignment 10: game collision on the PC, em_frame_check (5 Oct 2026)
+- Stage collision C (agent D's src/main/hit/shit*) runs in the PC port:
+  ground, walls (HitWallPlayer -> GetWallHitBitPl/Em -> sphr_face_o3/o4 ->
+  PushAdjust3), floor slide. Details and checks in docs/pc.md "Collision".
+  rt_hit.c holds load_file_mdl / rt_load_stage_hit and helpers written
+  from the asm (NormalClipF3/CheckF3, PointHitCheckF3, UnitNormalVectorCCW,
+  NvecFloatAdjust, cpRotMatrixYXZ2, flConvertRtoS, Stage_data_get).
+- Hunter: pl_move_sub's collision order in rt_player.c. Rathian:
+  em_move's collision tail; em_work[0] placed on the stage and drawn
+  where the game moves it.
+- Bugs found: host PointToPoint had the operands swapped (it is a - b);
+  data-table pointers into PS2 .bss were NULL (now zeroed host memory).
+- em_frame_check: em03.c, em33.c, em04*.c, em04_nm.c, include/em04.h now
+  declare/call (EMW *, int n, f32 frame) like the definition. check.py
+  output unchanged for each file, tools/rebuild.sh all OK.

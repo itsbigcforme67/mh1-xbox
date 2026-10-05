@@ -95,6 +95,7 @@ Running natively now:
 | src/main/stage/trans_stage_nm.c | trans_stage: draws the area model and the set-model parts the stage places (see "Stage drawing") |
 | all decompiled eft*/shell* (game and main), list EFT= in build_pc.sh | effects and shells: what set objects and stage_set_set spawn (Eft14_set2 camp fire on st21, Shell10_set barrels on stage 0x11, Shell22_set2, Eft17_set_ex, Eft13_set_pos ...) now run as the real C |
 | src/main/hit/hit2.c, hit2c.c | sphere/capsule tests set13 uses |
+| src/main/hit/shit*_nm.c, shit2.c, tri_nm.c, hitw_nm.c | the stage collision (f_sphr, agent D): load_stage_hit, GetGroundHit*, GetWaterHit, GetFloorSlide, HitWallPlayer -> GetWallHitBitPl/Em -> sphr_face_o3/o4 -> PushAdjust3, GetWallHitLine/GetEyeHitLine (see "Collision" below) |
 
 The `_nm.c` files are near-matches on the PS2 side (logic believed
 equivalent), so they run here too. For split files the whole-file `_nm.c`
@@ -219,12 +220,62 @@ travel (how plcom 3 was found).
   area): it turns the hunter towards the left stick relative to the camera
   (0x800 per tick), plays run 3/103 while the stick is pushed and idle
   1/101 otherwise (4-tick cross-fade through frame_init), calls frame_move
-  and puts y on the ground (GetGroundHit). No walls, no actions: replace
-  it with the decompiled pl_move / pl_normal when they exist.
+  and then the game's wall and ground collision (see "Collision"). No
+  actions: replace it with the decompiled pl_move / pl_normal when they
+  exist.
 - Verified 5 Oct 2026: `--input "idle*10,up*50,left*15" --sw-trace --time
   2.5` prints sw.ang 0x4000 / pow 127 for "up" and 0x8000 for "left", the
   hunter turns to the camera's forward direction and runs about 300 units
   (build/show/A/play_run.png shows it mid-stride, turned left).
+
+### Collision (stage HITS, game C)
+
+The game's own collision C (agent D's f_sphr near-matches, list HIT= in
+build_pc.sh) runs on the PC; the host reader fmt_hits_ground_y is no
+longer used by the viewer.
+- Loading: rt_load_stage_hit(stage) runs the game's load_stage_hit
+  (shit1_nm.c): load_file_mdl (rt_hit.c) asks the host for the AFS entry
+  of stage_hit_data_w / _f[stage] (Meltw-decompressed) and copies it into
+  a 4 MB host area (stage_hit_area_w / _f); WallHitInit / GroundHitInit
+  then turn the file offsets into pointers (fine in the 32-bit build).
+- rt_hit.c also has the small main helpers that are not decompiled,
+  written from the asm: NormalClipF3 / NormalClipCheckF3 /
+  PointHitCheckF3 (2D point-in-triangle with the original's quirks: one-ulp
+  products count as equal, the orientation test truncates to int),
+  UnitNormalVectorCCW, NvecFloatAdjust, cpRotMatrixYXZ2, flConvertRtoS,
+  Stage_data_get (quest_w+0x80 = St_data, as the default quest setup at
+  0x226BD0 sets it; stage_work+0x48 = Stage_data_get(stage) as stage_w_init).
+- Player (rt_player.c): pl_move_sub's order (main 0x14C500): old position
+  to +0x5A0, move, HitWallPlayer(pl, 0) (one sphere push00: y 60, r 48),
+  GetFloorSlide(pl, v, 1), GetGroundHitStatusAreaPl -> +0x5AC; y snaps to
+  it when below or less than 30 above, else a host fall (the PS2 starts
+  the fall action Pl_act_set(pl, 0, 9)).
+- Monster (rt_hit.c rt_monster_collide, from em_move 0x10BF30): old
+  position, frame_move (root motion), HitWallPlayer (spheres
+  em_hit_push_tbl[kind]: the Rathian, kind 1, has one sphere of radius 500
+  at y 160), GetGroundHitStatusAreaEm, y = ground. rt_monster_place puts
+  em_work[0] on the stage; the viewer draws the Rathian where the game has
+  it (RT_EM_FIXED=1 keeps the old fixed placement).
+- Fixes found on the way: PointToPoint is d = a - b (the host had b - a,
+  which also affected effect code that uses it); table pointers into PS2
+  .bss (wall_tbl_add -> stNN_wall_tbl) now point at zeroed host memory
+  (rt_bss_shadow) instead of NULL.
+- Verified 5 Oct 2026 (scripted --input, `--sw-trace`, shots in
+  build/show/A/hit/): st04 "right" from the start: the hunter runs into the
+  invisible wall at the cliff edge (polygon 10919,7513 - 11252,7689) and
+  slides along it 48 units (the sphere radius) away instead of dropping to
+  y -487 as before (wall_right_top.png); "left": walks up the stone path,
+  y 7 -> 306, feet on the ground (st04_slope.png); stage 1 "up": stops at
+  the river bank (z 8651, st01_wall.png); stage 5 / 0x21 runs stop or slide
+  at walls. Rathian: on stage 0x21 it walks its 1003 loop along its facing
+  (34 degrees, matches the angle) on the ground (em_st21_walk.png); on st04
+  its 500-radius sphere is pushed out of the camp walls and it stops at the
+  cliff wall; on stage 16 it stops at a wall after ~250 units.
+- `RT_HIT_TRACE=1` prints the wall polygons of the start cell and, per
+  tick, the player's wall sweep (old/new/pushed position, contacts).
+  `--follow D,H,P` sets the play camera for such shots.
+- Not done: water (GetWaterHit runs but nothing reacts), the fall action,
+  the player's pl_wall_mat use (wall-facing actions), monster states 2/4.
 
 ### Stage drawing (trans_stage)
 
@@ -308,7 +359,7 @@ enemy_trans (0x168B10), prims (ported), effects/shells (ported).
 | player states (walk, run, roll, weapon, items) | main 0x134000-0x15B000, 453 functions, 157 KB | ~10 % matched (pl0x.c, pl_normal*, pl_damage); the big weapon state machines are asm |
 | motion system | main f_frame 0x125340-0x1267BC (18 functions) + fl motion layer 0x173A50-0x1746A0 | f_frame: 16/18 match, all 18 run on the PC (f_frame_nm.c); fl layer native in rt_motion.c |
 | player/monster drawing | player_trans, enemy_trans, 45 functions | ~3 %; the viewer's hunter_pose / fl_model_pose do the same job natively |
-| collision | GetGroundHit, wall hits (main 0x111000-0x125000) | ~8 %; host HITS reader exists (fmt_hits_ground_y), wall test missing |
+| collision | GetGroundHit, wall hits (main 0x111000-0x125000) | f_sphr all in C (agent D, near-matches); runs on the PC for the hunter and the Rathian (see "Collision") |
 | monster common (em_core, em_master, em_taisei) | game 0x533980-0x53A000 | ~65 % matched + near-matches |
 | Rathian/other monster AI | game em01.. (363 functions, 150 KB) | ~13 % matched; em01.c (Rathian action setters) partly |
 | camera | cam_t.c (main f_cam) | written, not built for the PS2 (near-match); could run on the PC as is |
@@ -370,8 +421,9 @@ would be the shortcut if steps 3 and 5 turn out too slow.
   as in frame_init: bank = (id % 1000) / 100, slot = id % 100.
   - The hunter plays plcom ids 1 (legs, char0) and 101 (upper body, char1).
   - The Rathian plays slot 3 in banks 0/2/4 (body, head, tail).
-- **Placement:** each actor is posed at frame 0, then moved so its lowest
-  vertex sits on the ground height from `lg004.bin`.
+- **Placement:** each actor is posed at frame 0; its lowest vertex gives
+  the offset from the game position (on the ground, GetGroundHit) to the
+  model origin.
 
 ## Known gaps
 
