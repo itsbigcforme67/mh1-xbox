@@ -830,7 +830,7 @@ int Menu_data_mv(int sw) {
         }
     case 1:
         if ((u16)sw & 0x40) {
-            sw = sw & 0xFFBF & 0xFFFF;
+            sw = (u16)(sw & 0xFFBF);
             PitMenu.x10 = 1;
             PitMenu.x11 = 2;
             PitMenu.x12 = lpPit->x43;
@@ -1166,7 +1166,7 @@ int item_stock_mv(int sw) {
                 lpPit->x56 = 0;
                 se_req(7, 0x14, 0);
             }
-            sw = sw & 0xFFBF & 0xFFFF;
+            sw = (u16)(sw & 0xFFBF);
         } else if ((u16)sw & 0x200) {
             lpPit->x56 = 1;
             se_req(7, 9, 0);

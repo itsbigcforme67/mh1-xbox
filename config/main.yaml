@@ -95,6 +95,8 @@ segments:
       - [0x0296A4, asm, text/Menu_mix_mv]
       - [0x029F00, c, menu/menu07]
       - [0x029F4C, asm, text/Menu_data_mv]
+      - [0x029F50, c, menu/menu27]
+      - [0x02A104, asm, text/menu_data_mix_sub]
       - [0x02A270, c, menu/menu08]
       - [0x02A2E8, asm, text/menu_equip_get_equip]
       - [0x02A2F0, c, menu/menu26]
