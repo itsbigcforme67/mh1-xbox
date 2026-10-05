@@ -1347,3 +1347,131 @@ go:
         }
     }
 }
+
+/* near-matches (not built): pl_egg03 (the original keeps `mtc1 v0,f0` right after the constant load and fills the bne/jal slots differently, 19 lines)
+   and pl_egg05 (20 lines: scheduling of the a0 setup after egg_set; same pattern as pl_at009/012). */
+void pl_egg03(PLW *pl, s32 arg1) {
+    s32 v;
+    s32 id;
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        if (arg1 == 1) {
+            pl_chr_set2(pl, 0x37, 4, 0);
+        } else {
+            pl_chr_set2(pl, 0x36, 4, 0);
+        }
+        action_timer_calc(pl, 0);
+        Pl_basic_flagset(pl, 0, 0, 0);
+        break;
+    case 1:
+        v = 0x72;
+        if (arg1 == 1) {
+            v = 4;
+        }
+        if (frame_check((f32)v, pl, 0) != 0) {
+            pl->x05++;
+            pl->work56B = pl->work56B & 0xF0;
+            if (arg1 != 2) {
+                func_549200(pl, 4);
+            }
+            if ((arg1 == 0) && (Pl_master_ck(pl) == 1)) {
+                id = Pl_hold_item_ck(pl) & 0xFFFF;
+                if (id != 0xFFFF) {
+                    set01_set(1, 0xC, (s16)id);
+                    Pl_item_stack(pl, id, -0x64);
+                }
+            }
+            break;
+        }
+        egg_set(pl);
+        break;
+    case 2:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 8, 0);
+        }
+        break;
+    }
+}
+
+void pl_egg05(PLW *pl, s32 arg1) {
+    f32 sp40[3];
+    f32 sp30[3];
+    f32 f;
+    s32 w;
+    u8 s;
+
+    egg_set(pl);
+    pl->work08++;
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl->st = 2;
+        if (arg1 != 1) {
+            pl_chr_set2(pl, 0x38, 0, 0);
+            pl->vel[0] = 0.0f;
+            pl->vel[2] = 20.0f;
+            pl->vel[1] = 18.0f;
+            pl->acc[0] = 0.0f;
+            pl->acc[2] = -(pl->vel[2] / 80.0f);
+            rate_g_calc(pl, 0x13);
+        } else {
+            pl_chr_set2(pl, 0x38, 8, 0x20);
+            pl->flag604 = 0;
+            pl->vel[0] = 0.0f;
+            pl->vel[2] = 8.0f;
+            pl->vel[1] = -10.0f;
+            pl->acc[2] = 0.0f;
+            pl->acc[0] = 0.0f;
+            pl->acc[1] = -0.72727275f;
+        }
+        action_timer_calc(pl, 0);
+        Pl_basic_flagset(pl, 2, 0, 0);
+        pl->work08 = 0;
+        pl->x07 = 0;
+        break;
+    case 1:
+        pl->vel[0] = pl->vel[0] + pl->acc[0];
+        pl->vel[1] = pl->vel[1] + pl->acc[1];
+        pl->vel[2] = pl->vel[2] + pl->acc[2];
+        if (pl->vel[0] < 0.0f) {
+            pl->vel[0] = 0.0f;
+        }
+        if (pl->vel[2] < 0.0f) {
+            pl->vel[2] = 0.0f;
+        }
+        sp40[0] = pl->vel[0];
+        sp40[1] = pl->vel[1];
+        sp40[2] = pl->vel[2];
+        flvecApplyMat33(sp30, sp40, (f32 *)((u8 *)pl + 0x20));
+        pl->pos[0] = pl->pos[0] + sp30[0];
+        pl->pos[1] = pl->pos[1] + sp30[1];
+        pl->pos[2] = pl->pos[2] + sp30[2];
+        if (pl->vel[1] < 0.0f) {
+            pl->work08++;
+            f = pl->x5AC;
+            if (!(f < pl->pos[1])) {
+                pl->pos[1] = f;
+                pl->st = 0;
+                pl->flag604 = 0;
+                w = pl->work08;
+                if (w >= 0x32) {
+                    pl->work56B = pl->work56B & 0xF0;
+                    func_549200(pl, 4);
+                    Pl_act_set2(pl, 0, 0x26, 0);
+                    break;
+                }
+                if (w >= 0x1E) {
+                    Pl_act_set2(pl, 5, 7, 2);
+                    break;
+                }
+                Pl_act_set2(pl, 5, 8, 2);
+            }
+        }
+        break;
+    }
+}

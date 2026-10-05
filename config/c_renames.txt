@@ -17,6 +17,7 @@ build/src/main/pl/pl29.c.o .rodata .data
 build/src/main/pl/pl32.c.o .rodata .data
 build/src/main/pl/pl38.c.o .rodata .data
 build/src/main/pl/pl41.c.o .rodata .data
+build/src/main/pl/pl45.c.o .rodata .data
 build/src/game/eft/eft17.c.o .rodata .data
 build/src/game/eft/eft04.c.o .rodata .data
 build/src/game/eft/eft08.c.o .rodata .data
