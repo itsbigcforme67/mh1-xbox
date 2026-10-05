@@ -48,6 +48,7 @@ typedef struct EM01W {
     s16 x52;            /* 0x52 cooldown frames (atk 8) */
 } EM01W;
 
+/* The effect flag at ex+0xA3 (EMW+0x4E7) is read as xA3 in em01_ai. */
 typedef struct QUEST_W {
     u8 _pad00[8];
     s16 x08;            /* 0x08 quest number (0: free play) */
@@ -165,6 +166,12 @@ void xang_set_pl(EMW *, int, f32);
 int Pl_stg_ck_tw(EMW *, PLW *);
 int em_target_pl_samestage_ck(EMW *);
 void World_calc2(u8, f32 *, f32 *);
+void em_cmd_reset(EMW *);
+void Quest_enemy_hagi_set(EMW *, int);
+void Em_Sleep_Flag_Ck(EMW *);
+void em_ana_loop_cnt_set(EMW *);
+void em_mahi_eff_set(EMW *, int);
+void em_tail_off_sub(EMW *);
 void em01_to_normal();
 void em01_to_fly();
 void em01_frame_reset();
@@ -4171,4 +4178,481 @@ void em_atk21(EMW *em, EM01W *w) {
         break;
     }
     FLY_FLOOR(em);
+}
+
+#define DMG_SIMPLE(NAME, CH)                     \
+    static void NAME(EMW *em, EM01W *w) {        \
+        switch (em->x05) {                       \
+        case 0:                                  \
+            em->x05++;                           \
+            em->x388 = 0;                        \
+            em->x3F4 = 0;                        \
+            em_cmd_reset(em);                    \
+            em_char_set(em, CH, 0, 0);           \
+            break;                               \
+        case 1:                                  \
+            if (em->x194 == 0) {                 \
+                em->x05++;                       \
+                em01_to_normal(em, 0, 0);        \
+            }                                    \
+            break;                               \
+        }                                        \
+    }
+
+DMG_SIMPLE(em_dmg00_00570530, 0x3C)
+DMG_SIMPLE(em_dmg01_005705C0, 0x42)
+DMG_SIMPLE(em_dmg02_00570650, 0x3F)
+
+static void em_dmg03_005706E0(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x40, 0, 0);
+        if (em->kind == 1) {
+            Quest_enemy_hagi_set(em, 2);
+        } else {
+            Quest_enemy_hagi_set(em, 8);
+        }
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_dmg04_005707A0(EMW *em, EM01W *w) {
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x41, 0, 0);
+        em->x948 |= 1;
+        em->x958 += 1;
+        Em_Sleep_Flag_Ck(em);
+        break;
+    case 1:
+        if (em_frame_check(em, 6.0f, 0) && EMF(em, s8, 0x4E7) != 0 && em->kind != 0x14) {
+            EMF(em, s8, 0x4E7) = 0;
+        }
+        if (em_frame_check2(em, 0, 52.0f) && em_frame_check2(em, 0, 122.0f) == 0) {
+            em->ang[1] -= (u16)(u32)(936.0f * em->act_spd);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em->ang[1] -= 8;
+            em01_act_set(em, 4, 0xF, 3);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 4, 0xF, 3);
+        }
+        break;
+    }
+}
+
+static void em_dmg05_00570970(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x45, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em->work08 = 0;
+            em_char_set(em, 0x46, 0, 0);
+        }
+        break;
+    case 2:
+        em->work08++;
+        if (em->work08 >= 0x78) {
+            em->x05++;
+            em_char_set(em, 0x47, 0, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+            em->mode_old = em->mode;
+            em->x15_old = em->x15;
+        }
+        break;
+    }
+}
+
+static void em_dmg06_00570A90(EMW *em, EM01W *w) {
+    em01_to_fly(em, 1);
+}
+
+static void em_dmg07_00570AA0(EMW *em, EM01W *w) {
+    em01_to_fly(em, 1);
+}
+
+static void em_dmg08_00570AB0(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x4D, 0, 0);
+        if (!(em->adj_y <= -50.0f)) {
+            em->adj_y = -50.0f;
+        }
+        em->x3C0[0] = 0.0f;
+        em->x3C0[1] = -10.0f;
+        em->x3C0[2] = 0.0f;
+        w->spd[0] = 0;
+        w->spd[2] = 0;
+        break;
+    case 1:
+        w->spd[1] = em->ang[1];
+        speed_add_g(em, w->spd);
+        if (em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            em_char_set(em, 0x4E, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x47, 0, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    }
+}
+
+static void em_dmg09_00570C30(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x4D, 0, 0);
+        em->x88B = 0;
+        if (!(em->adj_y <= -50.0f)) {
+            em->adj_y = -50.0f;
+        }
+        em->x3C0[0] = 0.0f;
+        em->x3C0[1] = -10.0f;
+        em->x3C0[2] = 0.0f;
+        w->spd[0] = 0;
+        w->spd[2] = 0;
+        break;
+    case 1:
+        w->spd[1] = em->ang[1];
+        speed_add_g(em, w->spd);
+        if (em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            em_char_set(em, 0x4E, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x47, 0, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    }
+}
+
+DMG_SIMPLE(em_dmg10_00570DC0, 0x3D)
+
+static void em_dmg11_00570E50(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x4C, 0, 0);
+        Em_Mahi_Start(em);
+        break;
+    case 1:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em01_act_set(em, 0, 0x21, 4);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 0, 0x21, 4);
+        }
+        break;
+    }
+}
+
+static void em_dmg12_00570F20(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x5F, 0, 0);
+        em->x762 = 3;
+        em->x8BD = 1;
+        em->x9EA = 0x32;
+        em->x88B = 1;
+        Em_Sleep_Flag_Ck(em);
+        break;
+    case 1:
+        if (em->x9EA < 5) {
+            em->x9EA = 5;
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_act_set(em, 4, 0xD, 3);
+        }
+        break;
+    case 2:
+        if (em->x9EA < 5) {
+            em->x9EA = 5;
+        }
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 4, 0xD, 3);
+        }
+        break;
+    }
+}
+
+static void em_dmg13_00571050(EMW *em, EM01W *w) {
+    em->x9EA = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 0x60, 0, 0);
+        em->x8BD = 1;
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            if (--em->x95A <= 0) {
+                em->x05++;
+                em_char_set(em, 0x60, 0, 0);
+                em01_act_set(em, 2, 0x17, 4);
+            } else {
+                em_char_set(em, 0x60, 0, 0);
+            }
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 2, 0x17, 4);
+        }
+        if (em->x194 == 0) {
+            em_char_set(em, 0x60, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_dmg14_00571180(EMW *em, EM01W *w) {
+    em->x9EA = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 0x61, 0, 0);
+        em_cmd_reset(em);
+        Em_Mahi_Start(em);
+        em->x8BD = 1;
+        break;
+    case 1:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            if (em->x8B6 != 0) {
+                em->x95A = 4;
+            } else {
+                em->x95A = 6;
+            }
+            em_ana_loop_cnt_set(em);
+            em01_act_set(em, 4, 0x11, 3);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 4, 0x11, 3);
+        }
+        break;
+    }
+    em_mahi_eff_set(em, 2);
+}
+
+static void em_dmg15_00571290(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_cmd_reset(em);
+        em_tail_off_sub(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_dmg16_00571310(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x4A, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em->work08 = 0;
+            em_char_set(em, 0x4B, 0, 0);
+        }
+        break;
+    case 2:
+        em->work08++;
+        if (em->work08 >= 0x78) {
+            em->x05++;
+            em_char_set(em, 0x48, 0, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+            em->mode_old = em->mode;
+            em->x15_old = em->x15;
+        }
+        break;
+    }
+}
+
+static void em_dmg17_00571430(EMW *em, EM01W *w) {
+    em->x9EA = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 0x60, 0, 0);
+        Em_Mahi_End(em);
+        em->x8BD = 1;
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            if (--em->x95A <= 0) {
+                em->x05++;
+                em01_act_set(em, 2, 0x17, 4);
+            } else {
+                em_char_set(em, 0x60, 0, 0);
+            }
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 2, 0x17, 4);
+        }
+        if (em->x194 == 0) {
+            em_char_set(em, 0x60, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_dmg18_00571550(EMW *em, EM01W *w) {
+    em->x9EA = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x62, 0, 0);
+        em->x88B = 1;
+        Em_Sleep_End(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            if (em->x8B6 != 0) {
+                em->x95A = 4;
+            } else {
+                em->x95A = 6;
+            }
+            em_ana_loop_cnt_set(em);
+            em01_act_set(em, 4, 0xD, 3);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 4, 0xD, 3);
+        }
+        break;
+    }
+}
+
+static void em_dmg19_00571650(EMW *em, EM01W *w) {
+    em->x9EA = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x62, 0, 0);
+        em->x88B = 1;
+        Em_Sleep2_End(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            if (em->x8B6 != 0) {
+                em->x95A = 4;
+            } else {
+                em->x95A = 6;
+            }
+            em_ana_loop_cnt_set(em);
+            em01_act_set(em, 4, 0xD, 3);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em01_act_set(em, 4, 0xD, 3);
+        }
+        break;
+    }
 }
