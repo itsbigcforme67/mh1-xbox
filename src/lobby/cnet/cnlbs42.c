@@ -1,7 +1,7 @@
 /* cnlbs, run 43: write_col_numeric .. write_col_numeric (lobby.bin 0x005AE5C0-0x005AE7E8): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 
-static int write_col_numeric(buf, val, n)
+int write_col_numeric(buf, val, n)
 char *buf;
 int val;
 int n;

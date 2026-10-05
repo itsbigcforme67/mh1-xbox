@@ -48,7 +48,7 @@ for k, run in enumerate(runs):
     a0 = st[run[0]][1]; a1 = st[run[-1]][1] + st[run[-1]][2]
     h = re.sub(r'\A/\*.*?\*/\n', '', header, count=1, flags=re.S)
     cm = '/* %s, run %d: %s .. %s (lobby.bin 0x%08X-0x%08X): the matching functions of %s. */\n' % (os.path.basename(prefix), k + 1, run[0], run[-1], a0, a1, os.path.basename(nm))
-    open(path, 'w').write(cm + h.rstrip('\n') + '\n\n' + '\n'.join(text[n] for n in run))
+    open(path, 'w').write(cm + h.rstrip('\n') + '\n\n' + '\n'.join(re.sub(r'^static ', '', text[n]) for n in run))
     lines.append('lobby 0x%08X 0x%08X %s' % (a0, a1, os.path.relpath(path[:-2], 'src/lobby')))
     print('%s: %d functions' % (path, len(run)), file=sys.stderr)
 print('\n'.join(lines))

@@ -473,3 +473,11 @@ RuleControl, MemberSub/InOut/ReceiveJoinUser), and everything below:
 - 0x5B1E74-0x5C4E60: login/browser/plaza/lobby state machines (lbc_*, lm_*, CallBack_*).
 - The lb_* near-match files (lb_mix_nm.c, lb_shop_nm.c, lb_em*_nm.c) still need one more tuning
   round; K&R definitions (see lessons) were not yet tried on all of them.
+- Static helpers (LOCAL symbols in docs/survey/mh1_symbols.csv, e.g. write_col_numeric/read_col_numeric)
+  must be `static` in the near-match file: MWCC then does inter-procedural register allocation for
+  their callers (mmbbc_encode keeps values in t0/t1 across the calls). tools/lbruns.py strips `static` in
+  the run files (asm callers need the symbol); modifying the parameter itself (`buf += n - 1;`)
+  instead of a new pointer variable fixed write_col_numeric's register allocation.
+- `tools/lbfieldcheck.py`: tools/check.py ignores relocation addends, so a mistyped field in
+  config/lbnet_fields.txt (e.g. `u8 *name` parsed as 1 byte) only shows in the rebuild; the checker
+  compiles the header and verifies every CnetSys_w field offset (lbregister.sh runs it).
