@@ -61,12 +61,14 @@ typedef struct GAME_W {
     u8 gate_open;       /* 0x1E6 set20 gate state, set from the quest */
     u8 _pad1E7[0x1E8 - 0x1E7];
     u8 x1E8[4][8];      /* 0x1E8 per player flags, cleared by game0 */
-    u8 pl_state[8];     /* 0x208 per player slot: 1 in use (Game_task, Em_Master_Change), 0xFF = not
-                         * joined (player_init0, pl_work_clr); size 8 is a guess */
+    u8 pl_state[8];       /* 0x208 per player: 0xFF = not joined? (player_init0, pl_work_clr); guess */
     u8 shl10_num;       /* 0x210 live shell10s owned by the master player */
     u8 meat_num;        /* 0x211 meat on the spit owned by the master player (eft12) */
     u8 trap_num;        /* 0x212 traps set by the master player (shell12) */
-    u8 _pad213[0x218 - 0x213];
+    s8 x213;            /* 0x213 copied to player work+0x6A4 for the master (pl_init_sub) */
+    s8 x214;            /* 0x214 copied to player work+0x6A8 for the master (pl_init_sub) */
+    s8 x215;            /* 0x215 added to max life (pl_init_sub) */
+    s16 x216;           /* 0x216 stamina bonus passed to Pl_max_stamina_calc (pl_init_sub) */
     s16 x218;           /* 0x218 monster hit points carried over (em02_init) */
     u8 _pad21A[0x21B - 0x21A];
     u8 x21B;            /* 0x21B cleared by Game_task */

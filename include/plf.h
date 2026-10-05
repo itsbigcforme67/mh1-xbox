@@ -17,6 +17,7 @@
 
 #include "pl.h"
 #include "game.h"
+#include "em.h"
 extern s8 pl_cnt_w[16];
 extern PLW player_work[];
 extern s16 *pl_supp_tbl[36];
@@ -47,4 +48,50 @@ void Eft06_set(f32, PLW *, int, int, int);
 void cpRotMatrix(s32 *, f32 *);
 void flvecApplyMat33(f32 *, f32 *, f32 *);
 void pl_work_clr(PLW *, u8, PLPROG *);
+void Pl_act_set(PLW *, int, int, int);
+void Pl_item_charge(PLW *);
+void Pl_item_idx_calc(PLW *);
+void Pl_light_init(PLW *);
+void Pl_max_stamina_calc(PLW *, s16);
+void Pl_ofs_set(PLW *, f32 *, int);
+void Pl_reg_calc(PLW *);
+u16 Pl_shell_set(PLW *, int, int);
+s8 Pl_slash_lv_ck(PLW *, u16);
+void Pl_view_reset(PLW *, int, int, int);
+void Shell_type_set(PLW *, int);
+void World_calc(PLW *);
+void flvecCopy(f32 *, f32 *);
+void frame_init(PLW *, u16, s16, int);
+void normal_char_set(PLW *, int, int);
+void parts_init(PLW *);
+void pl_to_normal_clr(PLW *);
+s32 skill_hp_calc_00134FF0(PLW *);
+extern u8 Ken_data[234][0x18];
+extern f32 stage_start_pos[88][3];
+extern u16 stage_start_ang[88];
+s32 Game_clear_ck(int);
+s32 Pl_Skill_ck(PLW *, int);
+s32 Pl_hold_item_ck(PLW *);
+void Pl_item_stack(PLW *, int, int);
+void Pl_stamina_calc(PLW *, int);
+void Pl_stamina_reduce(PLW *);
+void Pl_vital_calc(PLW *, s16);
+s16 Stage_env_ck(u8);
+s16 act_ck(PLW *, int, int);
+s32 pl_flag_ck(PLW *, int);
+void set01_set(int, int, int);
+void unmei_se(PLW *);
+void pl_flag_clr(PLW *, int);
+void pl_flag_set(PLW *, int);
+void timer_calc_sub_em(PLW *);
+void timer_calc_sub_pl(PLW *);
+void Eft06_set2(f32, PLW *, int, int, f32 *);
+void func_639F20(PLW *);
+s32 item_blank_ck(PLW *);
+u16 item_sel_sub(PLW *, u16, int);
+void se_req(int, int, int);
+s32 Get_view_dir();
+extern u8 Item_data[327][16];
+int calc_vec_ang2(f32 *, f32 *);
+f32 flvecCalcLength(f32 *);
 #endif

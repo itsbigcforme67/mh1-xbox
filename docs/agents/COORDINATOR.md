@@ -10,7 +10,7 @@ the end of docs/STATUS.md first.
   written from scratch for PC and Xbox; game logic and look stay faithful to the original.
   Byte-matching is a correctness check, never a blocker (docs/DECISIONS.md, 5 Oct 2026).
 - Token efficiency matters as much as speed (owner, 5 Oct 2026). Plan: Max 20x.
-  Keep about 10% of each 5-hour window in reserve; spread the weekly limit evenly.
+  Start a sensible number of agents; no hourly pacing checks.
 
 ## Token efficiency rules
 
@@ -25,7 +25,8 @@ the end of docs/STATUS.md first.
 3. Decomp workers run on Sonnet (`model: "sonnet"`); the renderer/format work and the
    coordinator use Opus. Matching is self-verifying, so Sonnet's mistakes get caught.
 4. Agents report rarely (when a whole assignment is done), in a few lines.
-5. Usage check once an hour (get_usage), not more: pause everyone at ~88%, resume after reset.
+5. No scheduled usage checks (owner, 5 Oct 2026: a waste). Agents commit small, building
+   steps often, so hitting the limit loses little; after a reset, merge and start fresh agents.
 
 ## Setup
 
@@ -37,6 +38,8 @@ the end of docs/STATUS.md first.
 - Machine: 8 cores, 7 GB RAM: at most 6-7 agents, one permuter each with -j2.
 
 ## Merging an agent branch
+
+Note: tools/build.py skips src/pc/ (native platform code, built by tools/build_pc.sh).
 
     git merge --no-edit agent-X
     # config/c_files.txt conflicts: python3 tools/merge_union.py config/c_files.txt
