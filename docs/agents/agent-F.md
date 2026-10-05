@@ -1,13 +1,15 @@
 # Agent F notes: player code (asm/main/text/f_pl.s, 0x134950-0x14D1C8, 224 functions)
 
-Status (6 Oct 2026): ~50 functions byte-matching and registered (src/main/pl/pl01..pl13.c,
+Status (6 Oct 2026, evening): ~120 functions byte-matching and registered (src/main/pl/pl01..pl25.c,
 `tools/rebuild.sh main` = main OK). Everything else written so far is in src/main/pl/pl_nm.c
-(compiles, not built). Done in this round: pl09 (unique_act_set .. guard_atk_ck, 0x1371B0-0x138900),
-pl10 (basic_kabe_ck, item_action_set, trade_get_ck, 0x138BE0-0x1398F0), pl11 scope_add, pl12
-(pl_mv000/001/004/006), pl13 (pl_mv008, pl_mv013). Next in address order: pl_mv014 (0x13BF20), pl_mv017 ...
-(pl_mv* are the PLPROG state handlers; draft with tools/pl_draft.py FUNC --add, then plconv.py + plclean.py).
-Near-matches added to pl_nm.c: basic_com_ck (many branch delay slots filled differently), gun_adj_sub and
-sougun_adj_sub (see IPA lesson), wall_act_ck/wall_vec_set (one commutated addu), pl_mv021 (prologue register shift).
+(compiles, not built). Registered this round (all in address order): pl09 0x1371B0-0x138900, pl10 0x138BE0-0x1398F0,
+pl11 scope_add, pl12..pl25 = the PLPROG state handlers pl_mv000..pl_mv112 (0x13A9F0-0x141BA0) except the near-matches
+pl_mv021/pl_mv060 and wall_act_ck/wall_vec_set/basic_com_ck/gun_adj_sub/sougun_adj_sub (see below).
+NEXT: pl_normal (0x141BA0, 1884 bytes), then pl_at000.. (attacks), pl_dm*, pl_demo*, pl_egg*, pl_chat*, pl_move*.
+Workflow (about 2 minutes per small function): `tools/plnext.sh F1 F2 ..` drafts into pl_wip.c, `python3 tools/pl_asm.py F`
+shows the asm without the noise, write the C by hand (the m2c output is only a guide: arg counts, switch order, locals),
+`python3 tools/check.py src/main/pl/pl_wip.c -v | grep '>>'`, then `python3 tools/plreg.py plNN "descr" F1 F2 ... [RODATA=a-b]`
+moves them into src/main/pl/plNN.c and registers the range; `tools/rebuild.sh main` must print OK.
 
 ## Near-matches in pl_nm.c
 - Pl_item_charge OK in nm too (registered pl04). player_init0 8 off (register choice for work616 load), pl_work_clr 15 off
@@ -24,6 +26,17 @@ sougun_adj_sub (see IPA lesson), wall_act_ck/wall_vec_set (one commutated addu),
 - vt.py (try function variants), hexf.py (hex float literals), pl_asm.py (compact asm listing).
 
 ## Lessons
+- `p == 1 || p == 2 || p == 3` is merged into a range test by MWCC, `!= && != &&` chains too; the original used `switch` (compare
+  chain with separate beq, last one `b end`) in kabe_com_ck, pick_set_sub (q), pl_mv052 (h) and others: if the asm shows
+  `beq a,1 / beq a,2 / beqz a / b end` write a switch with those labels (case order = reverse of the chain).
+- `ran_suu(1) & 0xFFFF & 3` in m2c = `u16 r; ... ((r = ran_suu(1)) & 3)` (two andi); a plain `(u16)` cast or one expression merges them.
+- `daddiu rX,zero,N` for a local means a u16 (not s32/s8) local: `u16 n = 1` in pl_mv095. A local that is both set to constants
+  in a switch and passed on unextended is int; an s16-cast chain (`n = (s16)(t + t / 4)`, t = (s16)n) is m2c's `<< 0x30 >> 0x30`.
+- Stack frame order: locals declared LATER get LOWER stack addresses (pl_mv030, pl_mv068): declare the one that sits at the
+  highest sp offset first.
+- Calls like ItemPickingDeclaration(pl, &pl->x8E6): the second arg is the address of a PLW field; the 0x8D4 name is 0x12 bytes.
+- frame_check(f32, pl, 0) / frame_check2 / frame_check3(f32, f32, pl, 0) / front_land_ck2(f32, f32, pl, 0): the extra float args are
+  real (f13 loaded); leftover a1/a2/a3 values in m2c are NOT arguments unless the callee reads them.
 - IPA register preservation: gun_adj_sub keeps a value in a3/t0 ACROSS calls to blend_set/blend_calc/scope_add. MWCC only does
   that when the callee is a `static` function defined EARLIER IN THE SAME TU (it then knows the callee's clobber set; a global
   callee, or one in another .c, gives normal saved-register code). The original f_pl.c is one TU, so such functions cannot match

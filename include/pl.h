@@ -330,7 +330,7 @@ typedef struct PLW {
     s16   work906;           /* 0x906 */
     u8    work908;           /* 0x908 */
     u8    work909;           /* 0x909 = id of the player being traded to (trade_get_ck) */
-    u8 _pad90A;
+    u8    work90A;           /* 0x90A */
     s8    work90B;           /* 0x90B */
     s16   work90C;           /* 0x90C */
     s8    work90E;           /* 0x90E */

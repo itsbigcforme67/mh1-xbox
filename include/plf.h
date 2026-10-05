@@ -201,4 +201,5 @@ void Pile_on(PLW *);
 void Basic_item_set(PLW *);
 void Fue_item_set(PLW *);
 void Pl_slash_calc(PLW *, int);
+void Taru_item_set(PLW *);
 #endif
