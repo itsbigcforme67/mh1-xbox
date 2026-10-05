@@ -36,6 +36,15 @@ void flvecApplyMat33(f32 *, f32 *, FLMAT *);
 int em_frame_check(EMW *, f32, int);
 void em_rate_clear_g(EMW *);
 int rate_add_g2(EMW *);
+void Em_Mahi_Start(EMW *);
+void Em_Mahi_End(EMW *);
+void em_mahi_eff_set(EMW *);
+void Em_Mode_Chg(EMW *, int, int);
+void Quest_enemy_die(EMW *);
+void em_rate_clear(EMW *);
+void Em_hagi_point_set(EMW *, int);
+int Em_hagi_point_cnt_ck(EMW *);
+void Em_hagi_point_clr(EMW *);
 
 extern u8 em04_act_tbl[];
 extern f32 em05_rev_set_tbl_st69[][6];
@@ -578,7 +587,7 @@ static void em_move03_0058CF10(EMW *em) {
     }
 }
 
-static void em_dm00(EMW *em) {
+static void em_dm00_0058CFB0(EMW *em) {
     s32 a;
 
     switch (em->x05) {
@@ -603,7 +612,7 @@ static void em_dm00(EMW *em) {
     }
 }
 
-static void em_dm01(EMW *em) {
+static void em_dm01_0058D0A0(EMW *em) {
     FLMAT mat;
     f32 in[3];
     f32 out[3];
@@ -666,7 +675,7 @@ static void em_dm01(EMW *em) {
     }
 }
 
-static void em_dm02(EMW *em) {
+static void em_dm02_0058D2E0(EMW *em) {
     FLMAT mat;
     f32 in[3];
     f32 out[3];
@@ -718,6 +727,160 @@ static void em_dm02(EMW *em) {
     case 3:
         if (em->x194 == 0) {
             em04_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_dm03_0058D4E0(EMW *em) {
+    if (em->work08 > 0) {
+        em->work08--;
+    }
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 71, 0, 0);
+        em->ang[1] = em->dm_ang + 0x8000;
+        Em_Mahi_Start(em);
+        em->x8BD = 1;
+        em_cmd_reset(em);
+        break;
+    case 1:
+        em_mahi_eff_set(em);
+        if (em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 72, 0, 0);
+            em->ang[1] = em->ang[1] + 0x8000;
+            Em_Mahi_End(em);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x8BD = 0;
+            em04_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_dm04_0058D600(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 71, 0, 0);
+        em_cmd_reset(em);
+        break;
+    case 1:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 72, 0, 0);
+            em->ang[1] = em->ang[1] + 0x8000;
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em04_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_move04_0058D6D0(EMW *em) {
+    switch (em->x15) {
+    case 0: em_dm00_0058CFB0(em); break;
+    case 1: em_dm01_0058D0A0(em); break;
+    case 2: em_dm02_0058D2E0(em); break;
+    case 3: em_dm03_0058D4E0(em); break;
+    case 4: em_dm04_0058D600(em); break;
+    }
+}
+
+static void em_die00_0058D770(EMW *em) {
+    FLMAT mat;
+    f32 in[3];
+    f32 out[3];
+    s32 ang[3];
+
+    em->x40C = 10;
+    em->x40E = 10;
+    Em_Mode_Chg(em, 0, 0);
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        ang[0] = (u16)(em->dm_ang - em->ang[1]);
+        if (ang[0] < 0x8000) {
+            em_char_set(em, 62, 0, 0);
+        } else {
+            em_char_set(em, 67, 0, 0);
+        }
+        Quest_enemy_die(em);
+        break;
+    case 1:
+        if (em_frame_check(em, 10.0f, 0)) {
+            em->x05++;
+            ang[0] = 0;
+            ang[1] = em->dm_ang + 0x8000;
+            ang[2] = 0;
+            cpRotMatrix(ang, mat);
+            in[0] = 0.0f;
+            in[1] = 8.0f;
+            in[2] = -21.0f;
+            flvecApplyMat33(out, in, &mat);
+            em_rate_clear_g(em);
+            em->rate_x = out[0];
+            em->adj_y = out[1];
+            em->adj_z = out[2];
+            em->x3C0[1] = -1.09f;
+            em->x3C0[2] = 0.28f;
+            em->x388 = 2;
+        }
+        break;
+    case 2:
+        if (em->adj_z * em->x3C0[2] >= 0.0f) {
+            em->x3C0[2] = 0.0f;
+        }
+        if (rate_add_g2(em)) {
+            em->x05++;
+            em->x388 = 0;
+            em_char_set(em, 63, 6, 0);
+            em->work08 = 150;
+            em_rate_clear(em);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 64, 0, 0);
+            em->work08 = 60;
+            Em_hagi_point_set(em, 0);
+            em->ex[0x90] = 0;
+        }
+        break;
+    case 4:
+        Em_hagi_point_cnt_ck(em);
+        if (em->x194 == 0) {
+            em->x05++;
+            if (em->kind == 4) {
+                em->work08 = 2400;
+            } else {
+                em->work08 = 900;
+            }
+        }
+        break;
+    case 5:
+        if (--em->work08 <= 0 || Em_hagi_point_cnt_ck(em) <= 0) {
+            em->x05++;
+            Em_hagi_point_clr(em);
+        }
+        break;
+    case 6:
+        em->x798 -= 0.016666668f;
+        if (em->x798 <= 0.0f) {
+            em->x01 = 0;
+            em_act_set(em, 5, 2);
         }
         break;
     }
