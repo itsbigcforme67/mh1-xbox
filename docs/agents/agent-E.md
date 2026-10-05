@@ -48,3 +48,32 @@ Lessons: prototype float-argument callees (`f32 flSqrt(f32);`) or the arg goes t
 `dx=..; dz=..; flSqrt(dx*dx+dz*dz)` gives mula.s/madd.s; stage_mv_ck: use named PLW
 fields (macros cast pointers and the compiler hoists addresses). After merging, GAME_W
 x208 is pl_state, PLW 0x570 is work570 (s16, cast (u16) for lhu).
+
+## f_reward (0x290E80-0x293B68): 19 of 24 functions built, 2 near-matches
+Built (main OK): f_reward.c (key_quest_ck .. gold_main, tables 0x3865A0/0x3865D0), f_reward2.c
+(gold_disp, result_init, result_main, tables 0x3866F0/0x386710), f_reward3.c (result_disp, error_disp,
+add_disp, reward_init, table 0x3868F0), f_rewardb.c (reward_cursor_mv), f_rewardc.c (disp_reward).
+Shared declarations are in include/reward.h (REWARD_W, QUEST_WR, RESULT_W, string externs).
+Near-matches (not built, still compile): reward_mv in f_reward_nm.c (9 of 351 instr off: the original keeps
+the constant 2 in a2 and the masked key-repeat value in a0), reward_key_repeat in f_rewardb_nm.c (all 29
+diffs are register names: original keeps the work pointer in a2), reward_itembox in f_rewardd_nm.c
+(~115 of 314 off, register allocation of hoisted sprite-field addresses; logic believed complete).
+Shared header edits: game.h (x08, x0D5, x21A, reward_item[16] of PL_ITEM at 0x128; PL_ITEM typedef
+guarded by PL_ITEM_DEFINED, same guard in pl.h), pl.h (work91E now u8: lbu in result_init), plf.h
+(Pl_item_stack now returns int).
+Lessons:
+- A C file may contain only ONE contiguous rodata range per `main:rodata` pair of lines; jump tables that
+  have strings between them in the original must live in different C files (the linker packs a file's
+  tables together). Tables separated only by alignment padding (e.g. 0x3865CC-0x3865D0) can share a range.
+  Symptom was a MISMATCH with later data shifted by 0x20.
+- The END in `main START END file` is the next function's start (end of last instruction), not the last
+  instruction address; a wrong END shifts every later function by the alignment (0x10).
+- Old-style (K&R) definitions give the callee-side narrowing of u8/s16/s8 params (`andi a1,0xFF`),
+  and are the way to call a function with fewer arguments than it defines (movie_add_ck(no) leaves a1
+  untouched): `int f(no, set) int no; int set; {` plus `int f();` earlier in the file.
+- `n * -10` gives neg;sll;subu (original) while `-n * 10` does not (result_disp).
+- Global struct array element field `game_w.reward_item[i].num` folds the field offset into the symbol
+  (lui game_w+0x12A), a cast pointer does not: use a real array of structs in the global struct.
+- Case blocks that end in `se_req(...)` where the original fills the delay slot with a store: write
+  the store BEFORE the call (reward_mv).
+- An empty `case 2: break;` forces the extra compare in a switch whose original has it (disp_reward).

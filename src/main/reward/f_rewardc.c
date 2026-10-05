@@ -14,7 +14,7 @@ void PutButtonICON();
 void ItemListWindow();
 void DispFrameList();
 void DispFrameMessage();
-void reward_itembox(int, int, int);
+void reward_itembox();
 int sprintf(char *, const char *, ...);
 
 void disp_reward(void)
