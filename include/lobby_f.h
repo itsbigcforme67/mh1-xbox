@@ -18,7 +18,8 @@ extern LBPLAYER lb_player[8];
 typedef struct LBSYS {         /* lb_sys 0x90 bytes */
     u8 _pad00[3];
     s8 x03;                    /* 0x03 mode (4 = send positions) */
-    u8 _pad04[2];
+    s8 x04;                    /* 0x04 phase counter of vs_square_* */
+    s8 x05;                    /* 0x05 */
     s8 x06;                    /* 0x06 guild screen state */
     s8 x07;                    /* 0x07 guild/quest sub state */
     s8 x08;                    /* 0x08 rule sheet/quest sub state */
