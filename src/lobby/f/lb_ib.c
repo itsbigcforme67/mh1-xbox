@@ -84,6 +84,10 @@ s32 Lb_ItemBox_mv(int arg0) {
 extern char frame_itembox_cmd[];
 extern u32 D_3C733C[];
 extern char *yes_or_no[2];
+extern char lit_2148[];
+extern char lit_2149[];
+extern char lit_2150[];
+int sprintf(char *, const char *, ...);
 int DispFrameList();
 int Disp_help_mess();
 int Put_shousai();
@@ -145,4 +149,40 @@ void kosuu_disp_sub(void) {
             PutArrow(0x234, 0x18E, 0x18, 0x12, 0xFF20FF28, 3);
         }
     }
+}
+
+/* selling price (value + two-byte full-width digits) and the yes/no label */
+void selling_price_disp_sub(void) {
+    u16 wide[16];
+    s8 txt[16];
+    u16 *d;
+    s8 *s;
+    int c;
+    int price;
+    flfntSetSize(0x12, 0x12);
+    flfntLocate(0x132, 0x166);
+    price = F(s32, ib, 0xC);
+    if (price != 0) {
+        sprintf((char *)txt, lit_2148, price);
+        c = txt[0];
+        d = wide;
+        s = txt;
+        if (c != 0) {
+            do {
+                s += 1;
+                *d = ((c + 0x1F) << 8) | 0x82;
+                c = *s;
+                d += 1;
+            } while (c != 0);
+        }
+        d[0] = 0x9A82;
+        d[1] = 0;
+        font_set_palette(5);
+        font_print_sp(lit_2149, wide);
+    } else {
+        font_set_palette(0);
+        font_print_uf(lit_2150);
+    }
+    flfntLocate(0x1B0, 0x18E);
+    font_print_sp(yes_or_no[F(u8, ib, 0x21)]);
 }
