@@ -15,12 +15,14 @@ for l in open("/tmp/claude-1000/pl_funcs_F.txt"):
     tab[n] = (int(a, 16), int(s))
 s = open("src/main/pl/pl_wip.c").read()
 def get(n):
-    m = re.search(r'^[a-z0-9_ ]+ \**%s\(.*?\n}\n' % n, s, re.M | re.S)
+    m = re.search(r'^[a-z0-9_ ]+ \**%s\([^;{]*\) \{\n.*?\n}\n' % n, s, re.M | re.S)
     return m.group(0)
 start = tab[funcs[0]][0]
 end = tab[funcs[-1]][0] + tab[funcs[-1]][1]
 body = "\n".join(get(f) for f in funcs)
-incs = "".join(l + "\n" for l in s.split("\n") if l.startswith("#include"))
+import re as _re
+_pre = s[:_re.search(r'^[a-z0-9_ ]+ \**\w+\(.*\) \{$', s, _re.M).start()]
+incs = "".join(l + "\n" for l in _pre.split("\n") if l.startswith("#include") or l.startswith("extern ") or _re.match(r'^[A-Za-z0-9_ \*]+\(.*\);$', l))
 hdr = "/* Player code (SLPM_654.95 0x%08X-0x%08X): %s */\n%s\n" % (start, end, descr, incs)
 open("src/main/pl/%s.c" % name, "w").write(hdr + body)
 for f in funcs:

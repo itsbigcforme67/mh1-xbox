@@ -13,7 +13,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLH = os.path.join(ROOT, "include/pl.h")
 SIZES = {"u8": 1, "s8": 1, "char": 1, "u16": 2, "s16": 2, "u32": 4, "s32": 4, "f32": 4,
          "void *": 4, "PLSW": 0x24, "PL_ITEM": 4}
-FIELD = re.compile(r'\s*(u8|s8|u16|s16|u32|s32|f32|char|PLSW|PL_ITEM|struct \w+ \*|void \*)\s*(\w+)(\[[^\]]*\])?;\s*(?:/\*\s*(0x[0-9A-Fa-f]+)\s*(.*?)\s*(\*/)?)?\s*$')
+FIELD = re.compile(r'\s*(u8|s8|u16|s16|u32|s32|f32|char|PLSW|PL_ITEM|struct \w+ \*|void \*|u8 \*)\s*(\w+)(\[[^\]]*\])?;\s*(?:/\*\s*(0x[0-9A-Fa-f]+)\s*(.*?)\s*(\*/)?)?\s*$')
 
 PADS = {}
 UNION04 = '''    union {
@@ -24,6 +24,11 @@ UNION04 = '''    union {
             u8 x06;      /* 0x006 timer/counter of the current action */
             u8 x07;      /* 0x007 */
         };
+    };'''
+
+UNION2FC = '''    union {
+        s16   work2FC;   /* 0x2FC */
+        u8    x2FC[2];   /* 0x2FC, 0x2FD per-slot init flags of frame_init (pl_chr_sub) */
     };'''
 
 def tsize(t):
@@ -54,6 +59,11 @@ def load():
         for e in ents:
             if e[2] == "work04":
                 e[5] = UNION04
+    if any(e[2] == "work2FC" for e in ents):
+        ents[:] = [e for e in ents if e[2] != "x2FC"]
+        for e in ents:
+            if e[2] == "work2FC":
+                e[5] = UNION2FC
     # multi-line comment continuation lines are dropped on purpose
     # (raw lines are kept for fields, so a rewrite only touches pad lines)
     pads = {}

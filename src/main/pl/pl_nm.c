@@ -3,6 +3,9 @@
 #include "pl.h"
 #include "plf.h"
 #include "game.h"
+#include "plst.h"
+f32 flSqrt(f32);
+extern u8 Gun_data[26][0x14];
 
 void player_init0(PLW *pl) {
     u32 i;
@@ -1805,5 +1808,1043 @@ void pl_move_sub(PLW *pl) {
         if (pl->work90E != 0) pl->work90E--;
         if (pl->work90E == 0 && System_timer % 20 == PU8(&game_w, 0xD1)) net_send_pl(pl, 2, 0);
     }
+    }
+}
+
+#include "flow.h"
+
+
+
+
+
+s32 pl_flag_ck(PLW *pl, int f) {
+    if (!(f & 0x80000000)) {
+        return pl->act_flag & f;
+    }
+    return pl->work394 & (f & 0x7FFFFFFF);
+}
+
+
+
+void to_normal(PLW *pl, s32 blend, s16 tm) {
+    int e;
+    if (pl->flag604 != 0) {
+        pl->char0 = 0x18;
+        pl->char1 = 0x7C;
+    } else if (pl->flag12 != 0) {
+        pl->char0 = 0x3E9;
+        pl->char1 = 0x44D;
+    } else if (pl->work882 < 0x4C) {
+        pl->char0 = 0x193;
+        pl->char1 = 0x1F7;
+    } else {
+        e = Stage_env_ck(pl->stg);
+        switch (e) {
+        default:
+            pl->char0 = 1;
+            pl->char1 = 0x65;
+            break;
+        case 1:
+            pl->char0 = 0x15;
+            pl->char1 = 0x79;
+            break;
+        case 2:
+            pl->char0 = 0x1AF;
+            pl->char1 = 0x213;
+            break;
+        }
+    }
+    pl->blend0 = blend / 2;
+    pl->blend1 = blend / 2;
+    pl->act_tm0 = tm;
+    pl->act_tm1 = tm;
+    pl->flag14 = 0;
+    pl->flag15 = 0;
+    if (Pl_master_ck(pl) == 1) {
+        net_send_pl(pl, 1, 0);
+    }
+}
+
+extern u8 Equip_Bonus[0x630];
+s16 Get_equip_value(u8 kind);
+s16 Pl_item_num_ck(PLW *, int);
+
+void Pl_basic_flagset(PLW *pl, int a, int b, int c) {
+    u16 w = a;
+    switch (a & 0xFF) {
+    case 2:
+        pl->st = 2;
+        break;
+    case 1:
+        pl->st = 1;
+        break;
+    default:
+        pl->st = 0;
+        break;
+    }
+    if (w & 0x8000) {
+        pl_flag_clr(pl, 8);
+    } else {
+        pl_flag_set(pl, 8);
+    }
+    pl_flag_clr(pl, 1);
+    if ((s16)c == 0) {
+        pl_flag_clr(pl, 2);
+    } else {
+        pl_flag_set(pl, 2);
+    }
+}
+
+void pad_timer_calc_sub(PLW *pl, int mask);
+f32 GetGroundHit(f32 *);
+extern u16 for_pad_timer_tbl[4];
+
+
+
+
+
+void pad_timer_calc_sub(PLW *pl, int mask) {
+    u16 *t = &pl->work5B8;
+    u16 *tbl = for_pad_timer_tbl;
+    if ((u16)mask & *tbl) {
+        *t = 0;
+    } else if (*t < 0xFFFF) {
+        (*t)++;
+    }
+}
+
+
+int rate_g_calc(PLW *pl, int t) {
+    int n;
+    f32 v;
+    f32 a;
+    n = (s16)t;
+    n = (s16)(n / 2);
+    v = pl->vel[1];
+    a = -1.0f * v;
+    if (n < 2 || v < 0.0f) {
+        pl->acc[1] = a;
+        return 1;
+    }
+    a /= (f32)n;
+    pl->acc[1] = a;
+    return 0;
+}
+
+f32 *Stage_data_get(int stg);
+void flmatGetTrans(f32 *, u8 *);
+
+#include "hit.h"
+u8 Get_hit_id(void);
+typedef struct W24 { s32 a, b, c, d, e, f; } W24;
+
+
+void pl_atck_data_set_shl2(HSHL *sh, u16 *hd, int idx) {
+    int amask = sh->ailment & 0xF7;
+    int aval;
+    s32 *src;
+    s32 *dst;
+    if (amask == 0) {
+        aval = 0;
+    } else {
+        aval = sh->ailment_val;
+    }
+    aval = (u8)aval;
+    src = (s32 *)(**(u8 ***)((u8 *)sh + 0x90) + idx * 0x18);
+    dst = (s32 *)&sh->hit_time;
+    *(W24 *)dst = *(W24 *)src;
+    sh->x08 = hd[6];
+    sh->hit_mode = 1;
+    sh->x1E = 0;
+    sh->hit_chr = 0;
+    sh->hit_body = 0;
+    if (aval != 0) {
+        sh->ailment |= amask;
+        sh->ailment_val = aval;
+    }
+    sh->hit_time >>= 1;
+    sh->hit_wait >>= 1;
+    if (sh->x75 != 0xFF) {
+        sh->x75 >>= 1;
+    }
+    sh->x76 >>= 1;
+    sh->hit_id = Get_hit_id();
+}
+
+
+void atck_data_set_shl2(HSHL *sh, int idx) {
+    s32 *src;
+    s32 *dst;
+    src = (s32 *)(**(u8 ***)((u8 *)sh + 0x90) + idx * 0x18);
+    dst = (s32 *)&sh->hit_time;
+    *(W24 *)dst = *(W24 *)src;
+    sh->x08 = 0xFF;
+    sh->hit_mode = 1;
+    sh->x1E = 0;
+    sh->hit_chr = 0;
+    sh->hit_body = 0;
+    sh->hit_time >>= 1;
+    sh->hit_wait >>= 1;
+    if (sh->x75 != 0xFF) {
+        sh->x75 >>= 1;
+    }
+    sh->x76 >>= 1;
+    sh->hit_id = Get_hit_id();
+}
+
+ST_ITEM *Stage_item_data_get(u8);
+ST_UNIQ *Stage_unique_data_get(u8);
+u16 *Stage_item_probability_get(int);
+
+
+
+
+
+
+long Pl_item_num_ck2(PLW *pl, u16 id) {
+    s16 i;
+    for (i = 0; i < 20; i++) {
+        if (pl->item[i].id == id) {
+            if (Item_data[id][3] == 0xFF) {
+                return 0xFF;
+            }
+            return (s16)(Item_data[id][3] - pl->item[i].num);
+        }
+    }
+    return Item_data[id][3];
+}
+
+long Pl_item_num_ck3(PLW *pl, u16 id) {
+    s16 i;
+    s16 free = 0;
+    for (i = 0; i < 20; i++) {
+        if (pl->item[i].id == id) {
+            if (Item_data[id][3] == 0xFF) {
+                return 0xFF;
+            }
+            return (s16)(Item_data[id][3] - pl->item[i].num);
+        }
+        if (pl->item[i].id == 0) {
+            free++;
+        }
+    }
+    if (free == 0) {
+        return -1;
+    }
+    return Item_data[id][3];
+}
+
+
+s16 Get_Use_itemnum(PLW *pl) {
+    s16 i;
+    s16 n = 0;
+    for (i = 0; i < 20; i++) {
+        if (pl->item[i].num > 0 && (s16)pl->item[i].id != 0 && Item_data[(s16)pl->item[i].id][1] == 1) {
+            n++;
+        }
+    }
+    return n;
+}
+
+
+
+
+int Share_item_stack();
+
+int Pl_item_stack(PLW *pl, int id, int num) {
+    u8 *typ = Item_data[(u16)id];
+    u8 *mx;
+    int ret;
+    s16 i;
+    s16 j;
+    s16 cnt;
+    s16 m;
+    s16 sv;
+    if (typ[0] == 5) {
+        return Share_item_stack(pl, id, num);
+    }
+    mx = &Item_data[(u16)id][3];
+    if (*mx == 0xFF) {
+        num = (s16)0xFF;
+    }
+    if (Pl_item_num_ck(pl, id) == 0) {
+        ret = 5;
+        i = 0;
+        do {
+            if (pl->item[i].id == 0 && (s16)num > 0) {
+                pl->item[i].id = id;
+                if ((s16)*mx < (s16)num) {
+                    num = (s16)*mx;
+                }
+                pl->item[i].num = (s16)num;
+                if (typ[0] == 4) {
+                    sv = pl->work88E;
+                    if (i == sv) {
+                        pl->work88E = Pl_shell_set(pl, (u16)i, 2);
+                        Shell_type_set(pl, 1);
+                        pl->work8CE = pl->work8BC;
+                        pl->work8D2 = pl->work01D;
+                        pl->work8D1 = 0;
+                    } else if (pl->kind == 1 || pl->kind == 5) {
+                        if (sv == 0xFF) {
+                            pl->work88E = Pl_shell_set(pl, 0, 2);
+                            Shell_type_set(pl, 0);
+                        } else if (Item_data[pl->item[sv].id][0] != 4) {
+                            pl->work88E = Pl_shell_set(pl, sv, 0);
+                            Shell_type_set(pl, 0);
+                        }
+                    }
+                }
+                sv = pl->work888;
+                ret = 0;
+                if (Item_data[pl->item[sv].id][1] != 1) {
+                    pl->work888 = item_sel_sub(pl, sv, 0);
+                }
+                break;
+            }
+            i++;
+        } while (i < 20);
+    } else {
+        j = 0;
+        do {
+            if (pl->item[j].id == (u16)id) {
+                cnt = (s16)num;
+                m = *mx;
+                if (cnt > 0 && pl->item[j].num >= m) {
+                    pl->item[j].num = m;
+                    ret = 3;
+                    goto post;
+                }
+                if (cnt < 0 && *mx == 0xFF) {
+                    ret = 1;
+                    break;
+                }
+                i = j;
+                pl->item[i].num += (s16)num;
+                if (pl->item[i].num <= 0) {
+                    Pl_item_erase(pl, j);
+                    ret = 4;
+                    pl->item[i].id = 0;
+                    pl->item[i].num = 0;
+                } else if (m < pl->item[i].num) {
+                    pl->item[i].num = m;
+                    ret = 2;
+                } else {
+                    ret = 1;
+                }
+post:
+                if (typ[0] == 4 && i == pl->work88E) {
+                    pl->work8BC = pl->item[pl->work88E].num;
+                    pl->work8CE = pl->work8BC;
+                    if (pl->work8BC < pl->work01C) {
+                        pl->work01C = pl->work8BC;
+                        pl->work8D1 = pl->work01C;
+                    }
+                }
+                break;
+            }
+            j++;
+        } while (j < 20);
+    }
+    return ret;
+}
+
+int St_pick_ck2(PLW *pl) {
+    ST_ITEM *d = Stage_item_data_get(pl->stg);
+    f32 dx;
+    f32 dz;
+    int r;
+    u16 rn;
+    if (d == 0) {
+        return 0xFFFF;
+    }
+    while (d->pos[0] != -1.0f) {
+        if (!(pl->pos[1] < d->pos[1] - 200.0f) && pl->pos[1] < 100.0f + d->pos[1]) {
+            dx = pl->pos[0] - d->pos[0];
+            dz = pl->pos[2] - d->pos[2];
+            if (flSqrt(dx * dx + dz * dz) <= d->r) {
+                if (d->num > 0) {
+                    r = Item_get_ck(d->id & 0x7FFF);
+                    if (r != 0 && r != 0xFFFF && d->num != 0xFF) {
+                        rn = ran_suu(1);
+                        if (!(rn & 7)) {
+                            if (Pl_Skill_ck(pl, 0x2F) == 1) {
+                                goto dec;
+                            }
+                            d->num = 0;
+                        } else {
+dec:
+                            d->num--;
+                        }
+                    }
+                    return r;
+                }
+                return 0xFFFE;
+            }
+        }
+        d++;
+    }
+    return 0;
+}
+
+#include "flow.h"
+#define ANG2RAD(a) (2.0f * (3.1415927f * (((360.0f * (f32)(a)) / 65536.0f) / 360.0f)))
+void *get_joint_mat(PLW *, int, int);
+void flmatRotY33(void *, f32);
+void flmatRotZ33(void *, f32);
+int Ana_ok_ck();
+extern s16 *stg_eft_mdl_no[0x58];
+
+void Pl_horm_adj(PLW *pl, int part) {
+    void *mat;
+    switch ((s16)part) {
+    case 9:
+        flmatRotY33(mat = get_joint_mat(pl, 9, pl->work81A), 0.3f * ANG2RAD(pl->work81A));
+        flmatRotZ33(mat, ANG2RAD(pl->work750));
+        break;
+    case 10:
+        flmatRotY33(get_joint_mat(pl, 10, pl->work81A), 0.3f * ANG2RAD(pl->work81A));
+        break;
+    case 19:
+        flmatRotY33(get_joint_mat(pl, 19, pl->work81A), 0.3f * ANG2RAD(pl->work81A));
+        break;
+    case 20:
+        flmatRotY33(get_joint_mat(pl, 20, pl->work81A), 0.1f * ANG2RAD(pl->work81A));
+        break;
+    }
+}
+
+
+
+
+
+
+void Pl_vital_calc_item(PLW *pl, int dv) {
+    int n;
+    s16 v;
+    if (Pl_Skill_ck(pl, 0x1A) == 1 && (n = (s16)dv, n > 0)) {
+        v = (s16)(n + n / 4);
+    } else {
+        v = (s16)dv;
+    }
+    Pl_vital_calc(pl, v);
+}
+
+
+extern s16 *Pl_slash_tbl[6];
+extern char lit_1805_0035B1B0[];
+extern char lit_1806_0035B1D0[];
+extern char lit_1807_0035B1F0[];
+
+u8 Pl_slash_lv_ck(PLW *pl) {
+    s16 *t;
+    s16 cur;
+    u8 k = pl->kind;
+    if (k == 1 || k == 5) {
+        return 0;
+    }
+    cur = pl->work87E;
+    t = (s16 *)((u8 *)Pl_slash_tbl[k] + Ken_data[pl->wpn_kind][2] * 8);
+    if (t[0] >= cur) {
+        return 0;
+    }
+    if (t[1] >= cur) {
+        return 1;
+    }
+    if (t[2] >= cur) {
+        return 2;
+    }
+    return 3;
+}
+
+void Pl_slash_calc(PLW *pl, int dv) {
+    u8 up = 0;
+    u8 lv;
+    if (Pl_master_ck(pl) != 0) {
+        if (pl->kind != 1) {
+            if (pl->kind == 5) {
+            } else {
+                pl->work87E = pl->work87E + dv;
+                if (pl->work87E <= 0) {
+                    pl->work87E = 0;
+                }
+                if (pl->work884 < pl->work87E) {
+                    pl->work87E = pl->work884;
+                    up = 1;
+                }
+                lv = Pl_slash_lv_ck(pl);
+                if (lv != pl->work887) {
+                    if (lv < pl->work887) {
+                        set01_set2(lit_1805_0035B1B0);
+                    } else {
+                        set01_set2(lit_1806_0035B1D0);
+                    }
+                    pl->work887 = lv;
+                }
+                if (up != 0) {
+                    set01_set2(lit_1807_0035B1F0);
+                }
+            }
+        }
+    }
+}
+
+
+u16 Pl_shell_set(PLW *pl, int slot, int dir) {
+    s16 n;
+    u16 s;
+    u8 d;
+    if (pl->kind != 1 && pl->kind != 5) {
+        return 0xFF;
+    }
+    if (pl->work35F != 7) {
+        return 0xFF;
+    }
+    s = slot;
+    if (s >= 20) {
+        s = 0;
+    }
+    d = dir;
+    switch (d) {
+    case 0:
+        s = (s + 1) % 20;
+        break;
+    case 1:
+        if (s == 0) {
+            s = 19;
+        } else {
+            s = s - 1;
+        }
+        break;
+    case 3:
+    case 2:
+        break;
+    }
+    for (n = 0; n < 20; n++) {
+        if (pl->item[s].id != 0 && pl->item[s].num > 0 && Item_data[pl->item[s].id][1] == 2
+            && (*(s32 *)&Gun_data[pl->wpn_kind][0x10] & (1 << *(s16 *)&Item_data[pl->item[s].id][8]))) {
+            return s;
+        }
+        switch (d) {
+        case 2:
+        case 0:
+            s = (s + 1) % 20;
+            break;
+        case 3:
+        case 1:
+            if (s == 0) {
+                s = 19;
+            } else {
+                s = s - 1;
+            }
+            break;
+        }
+    }
+    return 0xFF;
+}
+
+extern u8 chat_act_tbl_002F1860[0xD];
+void Pl_se_req2(PLW *, int, int, f32 *, int, int);
+
+#include "flow.h"
+
+s32 Pl_hold_item_ck(PLW *pl) {
+    s16 i;
+    u16 r = 0xFFFF;
+    for (i = 0; i < 20; i++) {
+        if (pl->item[i].num != 0) {
+            switch (pl->item[i].id) {
+            case 0x91:
+            case 0x92:
+            case 0xA3:
+            case 0x94:
+            case 0x93:
+            case 0x95:
+                r = pl->item[i].id;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+    return r;
+}
+
+typedef struct TUTO_REC {
+    u16 id;     /* 0x00 */
+    u16 _02;
+    f32 x;      /* 0x04 */
+    f32 y;      /* 0x08 */
+    f32 z;      /* 0x0C */
+    f32 r;      /* 0x10 */
+} TUTO_REC;
+s16 Pl_item_num_ck(PLW *, int);
+void adx_se_set(PLW *, int);
+void init_set_work();
+void init_eft_work();
+void init_shell_work();
+void init_item_work();
+void clr_set_work();
+void clr_eft_work();
+void clr_shell_work();
+void clr_item_work();
+void clr_used_heap(int, int);
+
+s32 Pl_scope_ck(PLW *pl) {
+    if (pl->work35F != 7) {
+        return 0;
+    }
+    return (pl->wpn_ammo & 0x40) != 0;
+}
+
+s32 Pl_silencer_ck(PLW *pl) {
+    if (pl->work35F != 7) {
+        return 0;
+    }
+    return (pl->wpn_ammo & 0x10) != 0;
+}
+
+s32 Pl_barrel_ck(PLW *pl) {
+    if (pl->work35F != 7) {
+        return 0;
+    }
+    return (pl->wpn_ammo & 0x20) != 0;
+}
+
+
+
+
+
+s32 Sansai_talk_ck(PLW *pl) {
+    s16 i;
+    EMW *e = em_work;
+    for (i = 0; i < 20; i++, e++) {
+        if (e->kind == 0xA && flvecCalcDistance(pl->pos, e->pos) <= 300.0f) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+#include "flow.h"
+void Pl_vital_calc_item(PLW *, int);
+void Pl_max_vital_calc(PLW *, int);
+void func_639DF0(PLW *, int);
+void set01_set(int, int, int);
+
+#include "flow.h"
+void flmatGetTrans(f32 *, u8 *);
+void RotMatVec(f32 *, f32 *, int);
+f32 flSqrt(f32);
+void Pl_se_req2(PLW *, int, int, f32 *, int, int);
+
+
+void pl_light_ck(PLW *pl) {
+    int i;
+    EMW *e;
+    f32 d;
+    f32 dx;
+    f32 dz;
+    f32 lim;
+    f32 hlim;
+    if (pl->flag604 != 0 || !(pl->pos[1] - pl->x5AC <= 100.0f)) {
+        pl->work613 = 0;
+        return;
+    }
+    e = em_work;
+    for (i = 0; i < 20; i++, e++) {
+        if (e->be_flag != 0 && e->x01 != 0 && PU8(e, 0x612) >= 2) {
+            dx = pl->pos[0] - e->pos[0];
+            dz = pl->pos[2] - e->pos[2];
+            d = flSqrt(dx * dx + dz * dz);
+            if (PU8(e, 0x612) == 2) {
+                lim = 300.0f;
+                hlim = 300.0f;
+            } else {
+                lim = 500.0f;
+                hlim = 300.0f;
+            }
+            if (d <= lim && pl->pos[1] - e->pos[2] < hlim) {
+                pl->work613 = 1;
+                return;
+            }
+        }
+    }
+    pl->work613 = 0;
+}
+
+#include "flow.h"
+void pl_body_make(PLW *pl, f32 *out, f32 radius);
+void hit_cap_pk(void *, void *);
+int hit_cap_cap3_m(void *, void *, f32 *);
+
+
+extern f32 *D_63FC50[];
+extern f32 *D_6103A0[];
+void flvecNormalize(f32 *);
+int hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb);
+
+/* Pushes two monsters apart (sphere lists from the per-kind push tables). The inner list pointer is
+ * never rewound for the 2nd and later spheres of the first monster: faithful to the original. */
+void body_hit_sub_em(PLW *pl, PLW *o) {
+    f32 pa[3];
+    f32 pb[3];
+    f32 len[2];
+    f32 v[2][3];
+    f32 *s4;
+    f32 *s3;
+    s16 n = 0;
+    s16 k;
+    int cnt;
+    f32 ra;
+    f32 *pv;
+    f32 *pl_len;
+    if (game_w.x1DC == 0) {
+        s3 = D_63FC50[o->kind];
+        s4 = D_63FC50[pl->kind];
+    } else {
+        s3 = D_6103A0[o->kind];
+        s4 = D_6103A0[pl->kind];
+    }
+    pv = v[0];
+    pl_len = len;
+    while (s4[3] != -1.0f) {
+        pa[0] = pl->pos[0] + s4[0] * pl->scl[0];
+        pa[1] = pl->pos[1] + s4[1] * pl->scl[1];
+        pa[2] = pl->pos[2] + s4[2] * pl->scl[2];
+        ra = s4[3] * pl->scl[0];
+        if (s3[3] != -1.0f) {
+            do {
+                pb[0] = o->pos[0] + s3[0] * pl->scl[0];
+                pb[1] = o->pos[1] + s3[1] * pl->scl[1];
+                pb[2] = o->pos[2] + s3[2] * pl->scl[2];
+                if (hit_sphr_sphr3(pa, pb, pv, ra, s3[3] * o->scl[0]) != 0) {
+                    *pl_len = flvecCalcLength(pv);
+                    pv += 3;
+                    pl_len++;
+                    n++;
+                }
+                if (n >= 2) {
+                    goto done;
+                }
+                s3 += 4;
+            } while (s3[3] != -1.0f);
+        }
+        s4 += 4;
+    }
+done:
+    cnt = n;
+    if (cnt != 0) {
+        for (k = 1; k < cnt; k++) {
+            v[0][0] += v[k][0];
+            v[0][1] += v[k][1];
+            v[0][2] += v[k][2];
+            if (len[0] < len[k]) {
+                len[0] = len[k];
+            }
+        }
+        if (pl->st != 2) {
+            v[0][1] = 0;
+        }
+        flvecNormalize(v[0]);
+        v[0][0] *= len[0];
+        v[0][1] *= len[0];
+        v[0][2] *= len[0];
+        if (pl->work612 == o->work612) {
+            pl->pos[0] += 0.5f * v[0][0];
+            if (pl->st == 2) {
+                pl->pos[1] += 0.5f * v[0][1];
+            }
+            pl->pos[2] += 0.5f * v[0][2];
+            o->pos[0] += -0.5f * v[0][0];
+            if (o->st == 2) {
+                o->pos[1] += -0.5f * v[0][1];
+            }
+            o->pos[2] += -0.5f * v[0][2];
+            pl->work7EC = 1;
+            o->work7EC = 1;
+        } else if (pl->work612 < o->work612) {
+            pl->pos[0] += v[0][0];
+            if (pl->st == 2) {
+                pl->pos[1] += v[0][1];
+            }
+            pl->pos[2] += v[0][2];
+            pl->work7EC = 1;
+        } else {
+            o->pos[0] -= v[0][0];
+            if (o->st == 2) {
+                o->pos[1] -= v[0][1];
+            }
+            o->pos[2] -= v[0][2];
+            o->work7EC = 1;
+        }
+    }
+}
+
+extern s16 *D_63FA10[];
+extern s16 *D_610370[];
+void body_ptr_ck2(PLW *, s16 **);
+int hit_data_expand(PLW *, s16 *, f32 *, f32 *);
+int hit_data_expand2(f32 *, s16 *, f32 *, f32 *);
+int hit_cap_sphr_m(void *, f32 *, f32 *, f32);
+
+/* Pushes the player against one monster's body list (capsule/sphere hit data, 0x28 bytes per entry). */
+void body_hit_sub_new(PLW *pl, PLW *o) {
+    s16 *rec;
+    f32 len[2];
+    u8 pkp[0x40];
+    u8 pkb[0x40];
+    f32 body[8];
+    f32 cap[8];
+    f32 sph[4];
+    f32 v[2][3];
+    f32 *pv;
+    f32 *plen;
+    f32 *prad;
+    s16 n = 0;
+    int cnt;
+    s16 k;
+    int r;
+    pl_body_make(pl, body, 40.0f);
+    hit_cap_pk(body, pkp);
+    if (game_w.x1DC == 0) {
+        rec = D_63FA10[o->kind];
+    } else {
+        rec = D_610370[o->kind];
+    }
+    pv = v[0];
+    plen = len;
+    prad = &sph[3];
+    goto test;
+    for (;;) {
+        switch (*rec) {
+        case 126:
+        case 127:
+            r = (s16)hit_data_expand2(o->pos, rec, cap, sph);
+            goto got;
+        case 125:
+            body_ptr_ck2(o, &rec);
+            goto test;
+        default:
+            r = (s16)hit_data_expand(o, rec, cap, sph);
+got:
+            if (r == 0) {
+                r = (u8)hit_cap_sphr_m(pkp, sph, pv, *prad);
+            } else {
+                hit_cap_pk(cap, pkb);
+                r = (u8)hit_cap_cap3_m(pkb, pkp, pv);
+            }
+            if ((u8)r != 0) {
+                *plen = flvecCalcLength(pv);
+                if (pl->st != 2) {
+                    pv[1] = 0;
+                }
+                n++;
+                pv += 3;
+                plen++;
+            }
+            if (n >= 2) {
+                goto done;
+            }
+            rec += 0x14;
+test:
+            if (*rec == -1) {
+                goto done;
+            }
+            break;
+        }
+    }
+done:
+    cnt = n;
+    if (cnt != 0) {
+        for (k = 1; k < cnt; k++) {
+            v[0][0] += v[k][0];
+            v[0][1] += v[k][1];
+            v[0][2] += v[k][2];
+            if (len[0] < len[k]) {
+                len[0] = len[k];
+            }
+        }
+        flvecNormalize(v[0]);
+        v[0][0] *= len[0];
+        v[0][1] *= len[0];
+        v[0][2] *= len[0];
+        if (o->work612 <= 0) {
+            pl->pos[0] += 0.5f * v[0][0];
+            pl->pos[1] += 0.5f * v[0][1];
+            pl->pos[2] += 0.5f * v[0][2];
+            o->pos[0] += -0.5f * v[0][0];
+            o->pos[1] += -0.5f * v[0][1];
+            o->pos[2] += -0.5f * v[0][2];
+            pl->work7EC = 1;
+            o->work7EC = 1;
+        } else {
+            pl->pos[0] += v[0][0];
+            pl->pos[1] += v[0][1];
+            pl->pos[2] += v[0][2];
+            pl->work7EC = 1;
+        }
+    }
+}
+
+s32 Pl_stg_ck_tw(PLW *, PLW *);
+
+/* Per-frame body pushing: players vs players (when softdip 0xA9), players vs monsters, monsters vs monsters. */
+void body_hit(void) {
+    f32 d[3];
+    int i;
+    int j;
+    int k;
+    PLW *pl;
+    PLW *p2;
+    PLW *e;
+    PLW *f;
+    int busy;
+    for (i = 0; i < 4; i++) {
+        player_work[i].work7EC = 0;
+    }
+    for (i = 0; i < 20; i++) {
+        ((PLW *)&em_work[i])->work7EC = 0;
+    }
+    for (i = 0; i < 4; i++) {
+        pl = &player_work[i];
+        if (pl->be_flag != 0 && pl->x01 != 0 && Pl_master_ck(pl) != 0 && pl->work40E == 0 && (u8)Pl_stg_ck(pl)) {
+            if (softdip_ck(0xA9) != 0) {
+                for (j = 0; j < 4; j++) {
+                    p2 = &player_work[j];
+                    if (p2->be_flag != 0 && p2->x01 != 0 && p2->work40E == 0 && (u8)Pl_stg_ck_tw(pl, p2)) {
+                        body_hit_sub_pl(pl, p2);
+                    }
+                }
+            }
+            for (j = 0; j < 20; j++) {
+                e = (PLW *)&em_work[j];
+                if (e->be_flag != 0 && e->x01 != 0 && e->work40E == 0 && (u8)Pl_stg_ck_tw(pl, e)) {
+                    body_hit_sub_new(pl, e);
+                    d[0] = pl->pos[0] - e->pos[0];
+                    d[1] = pl->pos[1] - e->pos[1];
+                    d[2] = pl->pos[2] - e->pos[2];
+                    PF32(pl, 0x3AC) = flvecCalcLength(d);
+                }
+            }
+        }
+    }
+    for (i = 0; i < 19; i++) {
+        e = (PLW *)&em_work[i];
+        if (e->be_flag != 0 && e->x01 != 0 && e->work40E == 0 && (u8)Pl_stg_ck(e)) {
+            busy = PU16(e, 0x7EA) != 0;
+            for (k = i + 1; k < 20; k++) {
+                f = (PLW *)&em_work[k];
+                if (f->be_flag != 0 && f->x01 != 0) {
+                    if (!(e->kind != 0x1D && f->kind != 0x1D) || (PU8(e, 0x8C3) == 0 && PU8(f, 0x8C3) == 0)) {
+                        if (f->work40E == 0 && (u8)Pl_stg_ck_tw(e, f)) {
+                            if ((busy == 0 && PU16(f, 0x7EA) == 0) || e->kind == 0x1D || f->kind == 0x1D) {
+                                body_hit_sub_em(e, f);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+#include "flow.h"
+extern u16 Psw[];
+void Item_box_get_efct();
+void Item_box_get_item(u16, u8);
+void net_send_host(int, u8);
+s16 Pl_item_num_ck(PLW *, int);
+
+/* Item box (village storage): game_w+0x128 holds {u16 item, s16 count} per slot (32 slots), game_w+0x1A8 a taken-bitmask. */
+void box_get(PLW *pl) {
+    pl->work8F3 = 0x1E;
+    Item_box_get_efct();
+    if (Online_ck() == 1) {
+        pl->work932 = 0x384;
+        pl->work91F = 1;
+        net_send_host(1, game_w.master);
+        return;
+    }
+    pl->work932 = 0;
+    pl->work91F = 0;
+    Pl_item_stack(pl, PU16(&game_w, 0x128 + pl->work8C3 * 4), PS16(&game_w, 0x12A + pl->work8C3 * 4));
+    PU32(&game_w, 0x1A8 + (pl->work8C3 >> 5) * 4) |= 1 << (pl->work8C3 % 32);
+    Item_box_get_item(PU16(&game_w, 0x128 + pl->work8C3 * 4), pl->work8C3);
+}
+
+void Pl_box_select(PLW *pl) {
+    s16 trg;
+    s16 pad;
+    int a;
+    u8 idx;
+    int bit;
+    if (Pl_master_ck(pl) != 0) {
+        trg = Psw[2];
+        pad = Psw[2] | Psw[12];
+        if (pl->work8F3 != 0) {
+            pl->work8F3--;
+        }
+        if (pl->work932 != 0) {
+            pl->work932--;
+            if (pl->work932 == 0) {
+                pl->work91F = 0;
+            }
+        }
+        if (pl->work91F != 0 || pl->work8F3 != 0) {
+            return;
+        }
+        a = pad;
+        if (a & 0x40) {
+            se_req(7, 0x14, 0);
+            pl->work8C2 = 0;
+            return;
+        }
+        if (a & 0x800) {
+            se_req(7, 0x16, 0);
+            if (pl->work8C3 & 7) {
+                pl->work8C3 = pl->work8C3 - 1;
+            } else {
+                pl->work8C3 = pl->work8C3 + 7;
+            }
+        }
+        if (a & 0x400) {
+            se_req(7, 0x16, 0);
+            if ((pl->work8C3 & 7) != 7) {
+                pl->work8C3 = pl->work8C3 + 1;
+            } else {
+                pl->work8C3 = pl->work8C3 - 7;
+            }
+        }
+        if (a & 0x2000) {
+            se_req(7, 0x16, 0);
+            if (pl->work8C3 < 8) {
+                pl->work8C3 = pl->work8C3 + 0x18;
+            } else {
+                pl->work8C3 = pl->work8C3 - 8;
+            }
+        }
+        if (a & 0x1000) {
+            se_req(7, 0x16, 0);
+            if (pl->work8C3 >= 0x18) {
+                pl->work8C3 = pl->work8C3 - 0x18;
+            } else {
+                pl->work8C3 = pl->work8C3 + 8;
+            }
+        }
+        idx = pl->work8C3;
+        bit = 1 << (idx % 32);
+        if (!(PU32(&game_w, 0x1A8 + (idx >> 5) * 4) & bit) && (trg & 0x20) && PU16(&game_w, 0x128 + idx * 4) != 0 && pl->work8F3 == 0) {
+            if (Pl_item_num_ck(pl, PU16(&game_w, 0x128 + idx * 4)) == 0) {
+                if (Pl_item_search_space(pl) != 0) {
+                    se_req(7, 0x19, 0);
+                    box_get(pl);
+                }
+            } else if (Pl_item_num_ck2(pl, PU16(&game_w, 0x128 + pl->work8C3 * 4)) >= PS16(&game_w, 0x12A + pl->work8C3 * 4)) {
+                se_req(7, 0x19, 0);
+                box_get(pl);
+            }
+        }
     }
 }
