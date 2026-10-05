@@ -96,7 +96,7 @@ server. Their game server code did not appear to be public.
   decompiled C as it lands. Faster to playable on PC; probably too slow for the
   original Xbox, which still needs real C. Untested on this game.
 
-**PC host is a 32-bit build (proposed 5 Oct 2026, agent A).**
+**PC host is a 32-bit build (decided 5 Oct 2026).**
 The decompiled game C keeps pointers in u32 fields (e.g.
 `flSetRenderState(0x19, (u32)&uv)`) and its structs (SETW, PRIM, CLAY,
 PLW...) must keep their PS2 offsets. Building the PC port with `gcc -m32`
@@ -106,4 +106,4 @@ src/pc/rt/rt_game.c check the struct sizes (PLW 0xA00, GAME_W 0x224, CLAY
 goes there. Cost: a modern 64-bit PC needs 32-bit libraries (gcc-multilib,
 or tools/setup_pc32.sh without root). Alternative, not taken yet: a 64-bit
 build with the pointer-holding fields widened (game C edited for the port).
-Open until the owner confirms.
+Confirmed by the owner, 5 Oct 2026: 32-bit it is.
