@@ -100,3 +100,65 @@ void pl_mv014(PLW *pl, s32 arg1) {
         break;
     }
 }
+
+void pl_mv017(PLW *pl, s32 arg1) {
+    f32 spCC;
+    s32 spC0[3];
+    f32 spB0[3];
+    f32 spA0[3];
+    f32 sp90[3];
+    f32 sp50[16];
+    u8 s;
+    s32 w;
+
+    pl->work40E = 2;
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl->work39C = 0;
+        pl->ang_y = pl->ang[1];
+        pl_chr_set2(pl, 0x11, 0, 0);
+        pl->work08 = 0x1E;
+        Pl_basic_flagset(pl, 0, 0, 0);
+        if (arg1 == 1) {
+            spC0[0] = 0;
+            spC0[1] = pl->ang[1];
+            spC0[2] = 0;
+            cpRotMatrix(spC0, sp50);
+            spB0[0] = 0.0f;
+            spB0[1] = 0.0f;
+            spB0[2] = 55.0f;
+            flvecApplyMat33(sp90, spB0, sp50);
+            spA0[0] = pl->pos[0] + sp90[0];
+            spA0[1] = pl->pos[1] + sp90[1];
+            spA0[2] = pl->pos[2] + sp90[2];
+            if (GetGroundHitAreaUpper(pl, spA0, &spCC) == 1) {
+                pl->pos[1] = spCC;
+            }
+            spB0[2] = 55.0f;
+            flvecApplyMat33(sp90, spB0, (f32 *)((u8 *)pl + 0x60));
+            pl->pos[0] = pl->pos[0] + sp90[0];
+            pl->pos[1] = pl->pos[1] + sp90[1];
+            pl->pos[2] = pl->pos[2] + sp90[2];
+        }
+        if ((act_ck(pl, 0, 0x1B) == 1) && (pl->work016 == 0) && (pl->work017 == 9)) {
+            pl->work937++;
+        }
+        break;
+    case 1:
+        w = pl->work08;
+        if (w != 0) {
+            pl->work08 = w - 1;
+            if (pl->work08 <= 0) {
+                pl->work08 = 0;
+            }
+        }
+        if (pl->work194 == 0 || (pl->sw.trg & 0x20) || (pl->sw.an_now & 0x2000)) {
+            Pl_act_set2(pl, 0, 0x3A, 0xC);
+        } else if ((Pl_master_ck(pl) == 1) && (pl->sw.an_trg & 0x1000) && (pl->work08 == 0)) {
+            Pl_act_set2(pl, 0, 0x38, 4);
+        }
+        break;
+    }
+}
