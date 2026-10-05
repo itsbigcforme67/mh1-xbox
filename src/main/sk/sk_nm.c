@@ -10,6 +10,9 @@ extern u8 *lpSKey;
 #define SKS16(o) (*(s16 *)(lpSKey + (o)))
 #define SKS32(o) (*(s32 *)(lpSKey + (o)))
 #define SKP(o) (*(u8 **)(lpSKey + (o)))
+#define F8(p, o) (*(u8 *)((u8 *)(p) + (o)))
+#define F16(p, o) (*(u16 *)((u8 *)(p) + (o)))
+#define FS16(p, o) (*(s16 *)((u8 *)(p) + (o)))
 
 void se_req();
 void *memset(void *, int, int);
@@ -429,7 +432,7 @@ void sk_cmd_input(u8 *key) {
 }
 
 void cmd_kakutei_all(void);
-int dakuten_ck(int);
+int dakuten_ck(char *);
 int dakuten_ck_sub(u8 *);
 int kbd_insert(void *, void *, u16, u16);
 int mh_char_make_check(u8 *);
@@ -437,8 +440,8 @@ int sk_yn_check(void);
 int sk_zenkaku_ck(u8 *);
 int yn_mask_char_check(u8 *);
 extern char lit_628_0036E5C0[];
-extern int maru_moji;
-extern int ten_moji;
+extern char maru_moji[];
+extern char ten_moji[];
 
 void sk_moji_input(u8 *key) {
     char buf[4];
@@ -600,4 +603,654 @@ void sk_zen_han_chg(void *a) {
         SKB(0x25) = y;
     }
     se_req(7, 0x16, 0);
+}
+
+void sk_speaking(int, int, void *);
+int sk_letlenB(void *, u16);
+
+void sk_backspace(int a, int b, void *c) {
+    u8 m = SKB(0x1D);
+    u8 *s;
+    u16 n;
+    int len;
+
+    if (m != 0xC && m != 0xD && SKB(0x158) == 0 && SKB(0x44) == 0) {
+        SKS8(0x32) = 1;
+        se_req(7, 0x14, 0);
+        return;
+    }
+    if (SKB(0x2F) == 0) {
+        s = lpSKey + 0x158;
+        if (SKB(0x158) != 0) {
+            n = SKU16(0x2C);
+            if (n != 0) {
+                s8 *t = (s8 *)(s + n);
+                t[-2] = 0;
+                strcat((char *)s, (char *)t);
+                SKU16(0x2C) -= 2;
+                if (SKU16(0x2C) == 0) {
+                    sk_key_repeat(0, 0);
+                }
+                goto done;
+            }
+        } else {
+            n = SKU16(0x2A);
+            s = lpSKey + 0x44;
+            if (n != 0) {
+                len = sk_letlenB(s, n);
+                *(s + n - len) = 0;
+                strcat((char *)s, (char *)s + n);
+                SKU16(0x2A) -= len;
+                if (SKU16(0x2A) == 0) {
+                    sk_key_repeat(0, 0);
+                }
+done:
+                SKS8(0x28) = 0;
+                se_req(7, 0x16, 0);
+            }
+        }
+    } else {
+        SKB(0x2F) = 0;
+        SKS8(0x28) = 0;
+        SKS8(0x26) = 0;
+        if (SKS8(0x36) != 0) {
+            SKU16(0x2C) = 0;
+            SKB(0x158) = 0;
+        }
+        se_req(7, 0x16, 0);
+    }
+}
+
+void sk_speaking(int a, int b, void *c) {
+    if (SKB(0x158) != 0) {
+        cmd_kakutei_all();
+        se_req(7, 0x16, 0);
+        return;
+    }
+    SKS8(0x32) = 1;
+    if (SKB(0x158) == 0 && SKB(0x44) == 0) {
+        se_req(7, 0x15, 0);
+        return;
+    }
+    se_req(7, 0x18, 0);
+}
+
+void kbd_free_set(void);
+int palette_ng_sub(int, u8 *, u8 *);
+void sk_henkan_sub();
+
+void sk_pltchange(int back) {
+    int tries = 0;
+    int ok = 0;
+    u8 f = SKB(0x1F);
+    u8 e = SKB(0x1E);
+    s8 p = f;
+    int v;
+
+    while (1) {
+        if (back != 0) {
+            p--;
+        } else {
+            p++;
+        }
+        v = (p + 4) % 4;
+        p = v;
+        if (palette_ng_sub(p & 0xFF, lpSKey + 0x1F, lpSKey + 0x1E) == 0) {
+            ok = 1;
+        } else {
+            tries++;
+            if (tries < 4) {
+                continue;
+            }
+        }
+        break;
+    }
+    if (ok == 0) {
+        SKB(0x1E) = e;
+        SKB(0x1F) = f;
+        se_req(7, 0x15, 0);
+    } else {
+        SKS8(0x35) = 0;
+        se_req(7, 0x16, 0);
+    }
+    if (SKB(0x1E) == 4) {
+        kbd_free_set();
+    }
+    sk_disp_palette_set();
+    sk_palette_cursor_set();
+    sk_set_etc_data(0);
+    sk_set_yn_kigou_f();
+    if (SKS8(0x36) != 0) {
+        sk_henkan_sub();
+        sk_key_repeat(0, 0);
+    }
+}
+
+extern u8 board_tbl[][0x14];
+extern s32 free_rw_tbl[][3];
+extern s32 reibun_rw_tbl[][3];
+
+void setup_rw_sub(int n) {
+    s32 *a = (s32 *)board_tbl[n + 4];
+    s32 *b = (s32 *)board_tbl[n + 5];
+    u8 *e = SKP(0x10);
+
+    a[1] = free_rw_tbl[*(s32 *)(e + 0x20)][0];
+    a[2] = free_rw_tbl[*(s32 *)(e + 0x20)][1];
+    a[3] = *(s32 *)(e + 0x24);
+    b[1] = reibun_rw_tbl[*(s32 *)(e + 0x28)][0];
+    b[2] = reibun_rw_tbl[*(s32 *)(e + 0x28)][1];
+    b[3] = *(s32 *)(e + 0x2C);
+}
+
+extern u8 moji_tbl_abn[], moji_tbl_abn_h[], moji_tbl_abn_s[], moji_tbl_abn_sh[], moji_tbl_free[];
+extern u8 moji_tbl_hira[], moji_tbl_hira_s[], moji_tbl_illust[], moji_tbl_kata[], moji_tbl_kata_h[];
+extern u8 moji_tbl_kata_s[], moji_tbl_kata_sh[], moji_tbl_mark[];
+
+#define RW16(t, o, v0, v1) (*(s16 *)((t) + (o)) = (v0), *(s16 *)((t) + (o) + 2) = (v1))
+
+void setup_rw_moji(void) {
+    s16 *f = (s16 *)((u8 *)free_rw_tbl + 8 + *(s32 *)(SKP(0x10) + 0x20) * 0xC);
+    s16 *r;
+
+    RW16(moji_tbl_illust, 0x10, f[0], f[1]);
+    RW16(moji_tbl_mark, 0x10, f[0], f[1]);
+    RW16(moji_tbl_abn_sh, 0x10, f[0], f[1]);
+    RW16(moji_tbl_abn_h, 0x10, f[0], f[1]);
+    RW16(moji_tbl_abn_s, 0x10, f[0], f[1]);
+    RW16(moji_tbl_abn, 0x10, f[0], f[1]);
+    RW16(moji_tbl_kata_sh, 0x10, f[0], f[1]);
+    RW16(moji_tbl_kata_h, 0x10, f[0], f[1]);
+    RW16(moji_tbl_kata_s, 0x10, f[0], f[1]);
+    RW16(moji_tbl_kata, 0x10, f[0], f[1]);
+    RW16(moji_tbl_hira_s, 0x10, f[0], f[1]);
+    RW16(moji_tbl_hira, 0x10, f[0], f[1]);
+    r = (s16 *)((u8 *)reibun_rw_tbl + 8 + *(s32 *)(SKP(0x10) + 0x28) * 0xC);
+    RW16(moji_tbl_free, 0x14, r[0], r[1]);
+    RW16(moji_tbl_mark, 0x14, r[0], r[1]);
+    RW16(moji_tbl_abn_sh, 0x14, r[0], r[1]);
+    RW16(moji_tbl_abn_h, 0x14, r[0], r[1]);
+    RW16(moji_tbl_abn_s, 0x14, r[0], r[1]);
+    RW16(moji_tbl_abn, 0x14, r[0], r[1]);
+    RW16(moji_tbl_kata_sh, 0x14, r[0], r[1]);
+    RW16(moji_tbl_kata_s, 0x14, r[0], r[1]);
+    RW16(moji_tbl_kata_h, 0x14, r[0], r[1]);
+    RW16(moji_tbl_kata, 0x14, r[0], r[1]);
+    RW16(moji_tbl_hira_s, 0x14, r[0], r[1]);
+    RW16(moji_tbl_hira, 0x14, r[0], r[1]);
+}
+
+int dakuten_ck(char *tbl) {
+    u16 n = SKU16(0x2C);
+    u8 *p;
+    u16 key;
+    int cnt;
+    int i;
+    char *t = tbl;
+
+    if ((s16)n < 2) {
+        return 0;
+    }
+    p = lpSKey + (n - 2) + 0x158;
+    key = (p[0] << 8) | p[1];
+    cnt = strlen(tbl) >> 2;
+    for (i = 0; i < cnt; i++, t += 2) {
+        if ((((t[0] << 8) & 0xFFFF) | (u8)t[1]) == key) {
+            p[0] = t[2];
+            p[1] = t[3];
+            SKS8(0x28) = 0;
+            return 1;
+        }
+        t += 2;
+    }
+    return 0;
+}
+
+void Han2zen(s8 *src, s8 *dst) {
+    s8 c = *src++;
+
+    while (c != 0) {
+        if (c >= 0x41 && c < 0x5B) {
+            dst[0] = 0x82;
+            dst[1] = c + 0x1F;
+            src++;
+            dst += 2;
+        } else if (c >= 0x61 && c < 0x7B) {
+            dst[0] = 0x82;
+            dst[1] = c + 0x20;
+            src++;
+            dst += 2;
+        } else {
+            dst[0] = c;
+            dst[1] = *src;
+            src++;
+            dst += 2;
+        }
+        c = *src;
+        src++;
+    }
+    *dst = 0;
+}
+
+void flps0004(void *);
+extern s32 key_size_tbl[][2];
+
+void disp_keybase(s16 y, int col) {
+    struct { s16 p[4]; int col; } q;
+    u8 *k = SKP(4);
+    f32 sc = *(f32 *)(lpSKey + 0x14);
+
+    q.col = col;
+    q.p[0] = (f32)y + *(f32 *)k * sc;
+    q.p[2] = (f32)y + sc * (*(f32 *)k + (f32)key_size_tbl[F16(k, 6)][0]);
+    q.p[1] = y + FS16(k, 4);
+    q.p[3] = y + FS16(k, 4) + key_size_tbl[F16(k, 6)][1];
+    flps0004(&q);
+}
+
+extern u8 palette_set_tbl[];
+
+void disp_keybase2(s16 y, int col) {
+    struct { s16 p[4]; int col; } q;
+    u8 a = palette_set_tbl[SKB(0x1F) * 2];
+    u8 b = palette_set_tbl[SKB(0x1F) * 2 + 1];
+    u8 *k;
+    s8 idx;
+    f32 sc;
+
+    if (SKS8(0x30) == 1 && SKB(0x26) == 0 && a == SKB(0x24)) {
+        if (b != SKB(0x25)) {
+            goto draw;
+        }
+    } else {
+draw:
+        idx = *(s8 *)(*(u8 **)(SKP(0) + 8) + a * 4 + b);
+        q.col = col;
+        k = *(u8 **)(SKP(0) + 4) + idx * 8;
+        sc = *(f32 *)(lpSKey + 0x14);
+        q.p[0] = (f32)y + *(f32 *)k * sc;
+        q.p[2] = (f32)y + sc * (*(f32 *)k + (f32)key_size_tbl[F16(k, 6)][0]);
+        q.p[1] = y + FS16(k, 4);
+        q.p[3] = y + FS16(k, 4) + key_size_tbl[F16(k, 6)][1];
+        flps0004(&q);
+    }
+}
+
+void SetBlendingMode(int);
+void SoftkeyTextureSet(void);
+void kbd_Disp_KouhoGun(f32);
+void kbd_disp_input(f32, s16);
+int hk_cursor_check();
+int key_mask_check(void *);
+extern u8 moji_size[][4];
+extern char lit_1221_0036E5C8[];
+void flps0008(void *);
+void flfntLocate(f32, int);
+void flfntSetSize(int, int);
+void font_set_palette(int);
+void font_print(void *, ...);
+void SetFilterMode(int);
+f32 flSin(f32);
+
+void DispSoftkeyboard(int scale) {
+    struct { s16 p[4]; int col; } q;
+    struct { s16 p[4]; int col; s16 uv[4]; } k;
+    f32 s;
+    f32 ox;
+    s16 y;
+    int i;
+    u8 *e;
+    u8 *kk;
+    u8 *ent;
+    int n;
+    s16 t;
+    f32 sn;
+
+    y = SKS16(0x38);
+    if (scale == 0) {
+        *(f32 *)(lpSKey + 0x14) = 1.0f;
+    } else {
+        *(f32 *)(lpSKey + 0x14) = 0.8f;
+    }
+    s = *(f32 *)(lpSKey + 0x14);
+    ox = *(f32 *)(lpSKey + 0x40) * s;
+    q.p[0] = s;
+    q.p[2] = ox + 488.0f * *(f32 *)(lpSKey + 0x14);
+    q.p[1] = y - 4;
+    q.p[3] = q.p[1] + 0x68;
+    q.col = **(s32 **)(lpSKey + 0x10);
+    flps0004(&q);
+    q.p[0] += 6.0f * *(f32 *)(lpSKey + 0x14);
+    q.p[2] -= 6.0f * *(f32 *)(lpSKey + 0x14);
+    q.p[1] = y;
+    q.p[3] = y + 0x14;
+    q.col = *(s32 *)(SKP(0x10) + 8);
+    if (SKS8(0x30) == 1 && SKB(0x26) == 1 && SKB(0x2F) == 0) {
+        q.col = *(s32 *)(SKP(0x10) + 0x14);
+        q.col |= 0xF0000000;
+    }
+    flps0004(&q);
+    q.col = *(s32 *)(SKP(0x10) + 4);
+    e = SKP(0);
+    n = e[0x11];
+    kk = *(u8 **)(e + 4);
+    for (; n != 0; n--, kk += 8) {
+        q.p[0] = ox + *(f32 *)kk * *(f32 *)(lpSKey + 0x14);
+        q.p[2] = ox + *(f32 *)(lpSKey + 0x14) * (*(f32 *)kk + (f32)key_size_tbl[F16(kk, 6)][0]);
+        q.p[1] = y + FS16(kk, 4);
+        q.p[3] = y + FS16(kk, 4) + key_size_tbl[F16(kk, 6)][1];
+        flps0004(&q);
+    }
+    SoftkeyTextureSet();
+    SetFilterMode(1);
+    e = SKP(0);
+    kk = *(u8 **)(e + 4);
+    ent = *(u8 **)e;
+    for (i = 0; i < e[0x12]; i++, kk += 8, ent += 4) {
+        u8 c;
+        int g;
+        u8 *m;
+
+        if (key_mask_check(ent) == 1) {
+            c = 0xC5;
+            g = 0;
+            k.col = *(s32 *)(SKP(0x10) + 0x10);
+        } else {
+            k.col = *(s32 *)(SKP(0x10) + 0xC);
+            c = ent[0];
+            g = ent[1] & 0xF;
+        }
+        m = moji_size[g];
+        k.uv[0] = ((c & 0xF) * 0x10) + 1;
+        k.uv[1] = (c & 0xF0) + 1;
+        k.p[2] = ((s8)m[0] * (s8)m[1]) >> 4;
+        k.p[3] = m[2];
+        k.p[0] = (((s16)((f32)*(f32 *)(lpSKey + 0x14) * (f32)key_size_tbl[F16(kk, 6)][0]) - k.p[2]) >> 1) + (s16)(ox + *(f32 *)kk * *(f32 *)(lpSKey + 0x14));
+        k.p[1] = (y + FS16(kk, 4) + 0x10) - m[2];
+        k.uv[2] = (k.uv[0] + (s8)m[0]) - 1;
+        k.uv[3] = k.uv[1] + 0xF;
+        flps0008(&k);
+        e = SKP(0);
+    }
+    n = *(s32 *)(e + 0xC);
+    if (n != 0 && SKB(0x35) == 0) {
+        u8 *p = *(u8 **)(e + 4) + 0x60;
+        flfntSetSize(0x14, 0x10);
+        font_set_palette(0);
+        for (i = 0; i < 0xC; i++, p += 8, n += 0x10) {
+            flfntLocate(*(f32 *)p + ox / *(f32 *)(lpSKey + 0x14), (s16)(y + FS16(p, 4)));
+            font_print(lit_1221_0036E5C8, n);
+        }
+    }
+    SetFilterMode(0);
+    if (SKB(0x26) != 0) {
+        if (hk_cursor_check() == 1) {
+            goto cur;
+        }
+    } else {
+cur:
+        e = SKP(8);
+        SetBlendingMode(1);
+        t = (SKU16(0x18) & 0x3F) << 10;
+        sn = flSin(0.0000958738f * (f32)t);
+        if (key_mask_check(e) == 1) {
+            n = *(s32 *)(SKP(0x10) + 0x18);
+        } else {
+            n = *(s32 *)(SKP(0x10) + 0x14);
+        }
+        disp_keybase(y, n | (((s8)(64.0f * sn) + 0xBF) << 24));
+    }
+    SetBlendingMode(1);
+    disp_keybase2(y, *(s32 *)(SKP(0x10) + 0x14) | 0xD0000000);
+    SetBlendingMode(0);
+    kbd_disp_input(2.0f + (14.0f + ox) / *(f32 *)(lpSKey + 0x14), y);
+    kbd_Disp_KouhoGun(2.0f + (14.0f + ox) / *(f32 *)(lpSKey + 0x14));
+}
+
+void sk_set_etc_data(u8 a) {
+    sk_board_ptr_replace();
+    sk_get_key_code();
+}
+
+extern u8 dakuten_1257[];
+extern u8 handakuten_1258[];
+
+int dakuten_ck_sub(u8 *p) {
+    u8 c = p[3];
+
+    if (c == dakuten_1257[1] && p[2] == dakuten_1257[0]) {
+        return 1;
+    }
+    if (c == handakuten_1258[1] && p[2] == handakuten_1258[0]) {
+        return 2;
+    }
+    return 0;
+}
+
+void dakuten_ck_ten(char *t) {
+    dakuten_ck(t);
+}
+
+void dakuten_ck_han(char *t) {
+    dakuten_ck(t);
+}
+
+s8 SoftKeyboard_alive_check(void) {
+    return SKS8(0x31);
+}
+
+void SoftKeyboard_exit(void) {
+    if (SoftKeyboard_alive_check() != 0) {
+        sk_kbd_act_kill(0);
+        sk_skb_kill();
+        SKS8(0x32) = -1;
+    }
+}
+
+void SoftKeyboard_pos_set(f32 x, int y) {
+    *(f32 *)(lpSKey + 0x40) = x;
+    SKS16(0x38) = x;
+}
+
+void sk_skb_exec(void) {
+    SKS8(0x30) = 1;
+    SKS8(0x26) = 0;
+}
+
+void sk_skb_kill(void) {
+    SKS8(0x30) = 0;
+    SKS8(0x26) = 1;
+}
+
+void sk_kbd_act_exec(void) {
+    SKS8(0x31) = 1;
+}
+
+void sk_kbd_act_kill(int a) {
+    SKS8(0x31) = 0;
+}
+
+s8 sk_daisyo_check(u8);
+extern s8 disp_plt_tbl_1413[];
+extern s8 daisyo_tbl_1423[];
+
+void sk_disp_palette_set(void) {
+    SKB(0x1F) = disp_plt_tbl_1413[SKB(0x1E)];
+}
+
+s8 sk_daisyo_check(u8 a) {
+    s8 t = daisyo_tbl_1423[a];
+
+    if (t >= 0 && !(SKS32(0x20) & (1 << t))) {
+        return t;
+    }
+    return -1;
+}
+
+void sk_daisyo_chg(void *a) {
+    int snd = 0x15;
+    s8 t = sk_daisyo_check(SKB(0x1E));
+    u8 x;
+    u8 y;
+
+    if (t >= 0) {
+        x = SKB(0x24);
+        y = SKB(0x25);
+        SKB(0x1E) = t;
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        sk_set_etc_data(0);
+        sk_set_yn_kigou_f();
+        snd = 0x16;
+        SKS8(0x29) = *(SKP(0) + 0x10) & 0x7F;
+        SKB(0x24) = x;
+        SKB(0x25) = y;
+        sk_get_key_code();
+    }
+    se_req(7, snd, 0);
+}
+
+void sk_palette_cursor_set(void) {
+    u8 f = SKB(0x1F);
+
+    if (f != 4) {
+        if (f == 5) {
+            goto set;
+        }
+    } else {
+set:
+        SKB(0x24) = palette_set_tbl[f * 2];
+        SKB(0x25) = palette_set_tbl[SKB(0x1F) * 2 + 1];
+    }
+}
+
+void sk_board_ptr_replace(void) {
+    u8 *b;
+    u8 m = SKB(0x1D);
+    u8 e;
+
+    switch (m) {
+    case 7:
+        b = board_tbl[0] + 0x154;
+        break;
+    case 10:
+    case 9:
+    case 8:
+        e = SKB(0x1E);
+        switch (e) {
+        case 2:
+            b = board_tbl[0] + 0x168;
+            break;
+        case 10:
+            b = board_tbl[0] + 0x17C;
+            break;
+        case 7:
+            b = board_tbl[0] + 0x190;
+            break;
+        case 15:
+            b = board_tbl[0] + 0x1A4;
+            break;
+        case 3:
+            SKB(0x1E) = 0xB;
+        case 11:
+            b = board_tbl[0] + 0x1B8;
+            break;
+        default:
+            b = board_tbl[e];
+            break;
+        }
+        break;
+    case 6:
+        b = board_tbl[0] + 0x1CC;
+        break;
+    default:
+        b = board_tbl[SKB(0x1E)];
+        break;
+    }
+    *(u8 **)lpSKey = b;
+    if (SKB(0x1F) == 4 && (SKB(0x35) & 0xF)) {
+        *(u8 **)lpSKey = board_tbl[0];
+    }
+}
+
+int Softkey_free_0(void *, void *);
+
+void kbd_free_set(void) {
+    cmd_kakutei_all();
+    if (Softkey_free_0(lpSKey + 0x44, lpSKey + 0x2A) < 0) {
+        SKB(0x35) |= 0xF;
+    }
+}
+
+void kbdExecServer_flag_clear(void) {
+    softkeyboard[0x37] = 0;
+}
+
+int yn_mask_char_check(u8 *p) {
+    char buf[4];
+    int r = 0;
+    u8 m = SKB(0x1E);
+    u8 c;
+
+    if (m == 0 || m == 1) {
+        c = *p;
+        if (c != 0xF3 && c != 0xE1 && c != 0xE0 && c != 0xB9 && c != 0xB8 && c != 0xB7 && c != 0xB6 && c != 0xB5 && c != 0xA8 && c != 0x99 && c != 0x98) {
+        } else {
+            r = 1;
+        }
+    }
+    strncpy(buf, (char *)p + 2, 2);
+    buf[3] = 0;
+    if (strncmp(buf, lit_628_0036E5C0, 2) == 0) {
+        r = 1;
+    }
+    return r;
+}
+
+int palette_ng_sub2(u8 a, u8 *b, int c);
+int palette_ng_sub(int, u8 *, u8 *);
+
+int key_mask_check(void *k) {
+    int r = 0;
+    u8 m;
+
+    if (F16(k, 2) == 0) {
+        r = 1;
+    } else if ((u8)F16(k, 2) == 1) {
+        if (palette_ng_sub2(F8(k, 3), 0, 0) != 0) {
+            r = 1;
+        }
+    } else if (sk_yn_check() == 1) {
+        if ((u8)F16(k, 2) == 2 && F8(k, 3) == 1) {
+            r = 1;
+        } else if (yn_mask_char_check(k) != 0) {
+            r = 1;
+        }
+    } else {
+        m = SKB(0x1D);
+        switch (m) {
+        case 15:
+            if (mh_char_make_check(k) != 0) {
+                r = 1;
+            }
+            break;
+        case 2:
+        case 5:
+        case 1:
+            if (F8(k, 0) == 0xE3) {
+                r = 1;
+            }
+            break;
+        }
+    }
+    return r;
+}
+
+int mh_char_make_check(u8 *p) {
+    u8 c = *p;
+
+    if (c != 0xF1 && c != 0xB9 && c != 0xB6 && c != 0xB5 && c != 0xE3) {
+        return 0;
+    }
+    return 1;
 }
