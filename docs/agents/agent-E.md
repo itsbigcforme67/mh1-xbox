@@ -77,3 +77,20 @@ Lessons:
 - Case blocks that end in `se_req(...)` where the original fills the delay slot with a store: write
   the store BEFORE the call (reward_mv).
 - An empty `case 2: break;` forces the extra compare in a switch whose original has it (disp_reward).
+
+## f_quest (0x226C30-...): started, 14 of 83 built
+Source of truth is src/main/quest/f_quest_nm.c (all functions written so far, in address order);
+matching runs are extracted into f_quest.c, f_questb.c .. f_queste.c with `python3 tools/split_runs.py
+f_quest_nm.c src/main/quest/f_quest ':A-B' 'b:C-D' ...` and registered in config/c_files.txt (END = next
+function's start). Types in include/quest.h (QUEST_W, QEM mission enemy entry (0x3C bytes), MISSION).
+Built: Quest_error_set2/error_set, Quest_restart .. Quest_remuneration_calc, Quest_condition_judging,
+Quest_next_em_clr. Near-matches (nm only): Quest_start (16 off, schedule/reg), Quest_retire_set (15),
+Quest_pl_stage_init (11), Em_direct_set (53, register numbering), Quest_next_em_set (written, never
+matched: first diff is loop pointer/register shape; not registered). Next: Quest_str_get onward
+(asm is in asm/main/text/Quest_next_em_set.s after the rebuild).
+Lessons: `if ((q = f()) != 0 && ...)` tests v0 directly (plain `q = f(); if (q ...)` copies first);
+a prototype with an s8 last parameter changes argument evaluation order to left-to-right
+(Em_data_st_adrs_get); `x > 2` gives slti $at where `x >= 3` does not; `(u8 *)arr + i*2` folds the
+array offset into the symbol, `&arr[i].f` does not; `v == 5 || v == 6 || v == 7` reproduces the
+original sltiu range test; check.py shows "1/N differ" for functions whose only difference is a
+relocation: trust `tools/rebuild.sh main` OK.
