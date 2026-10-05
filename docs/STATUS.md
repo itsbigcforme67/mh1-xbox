@@ -144,6 +144,24 @@ extracted to disc/mhg/ (gitignored). MH1 not yet supplied.
   set14_m repeats the same mask-timer code for stages 51, 52 and 53; it
   matched written out three times.
 
+- shell22 (cannon rounds, stage cannons on stages 12/25, debris, and rocks
+  dropped on stages 11/28/30) matches except shell22_i and shell22_h.
+  Split into shell22.c / shell22b.c / shell22c.c, near-match in
+  shell22_nm.c. Findings, each checked with tools/check.py:
+  - shell22_trans matched only with `goto end;` for its model checks: the
+    original branches straight to the function end there, while its
+    switch defaults (`return`) go through their own jump blocks.
+  - Confirmed again across several switches: compare chains test the cases
+    in reverse source order, and the bodies are laid out in source order.
+  - A shell spawner's `u16` angle argument shows up as lhu at the call
+    (Eft18_set5 is declared with u16 angles here).
+  - The landing test `g = 50 + GetGroundShellHit(); if (y <= g) { y = g;
+    ...}` keeps the store inside the branch.
+  - Small gp tables need their real sizes declared (shell22_tbl is 4
+    bytes).
+  - check.py reports one difference in shell22_trans only because the
+    original names its draw helper disp_sub; the built bytes match.
+
 ### Next
 
 1. Owner supplies Japanese MH1. Survey it the same way. The plan's base

@@ -28,4 +28,6 @@ build/src/game/shell/shell18.c.o .rodata .data
 build/src/game/shell/shell19.c.o .rodata .data
 build/src/game/shell/shell20.c.o .rodata .data
 build/src/game/shell/shell21.c.o .rodata .data
+build/src/game/shell/shell22.c.o .rodata .data
+build/src/game/shell/shell22b.c.o .rodata .data
 build/src/game/shell/shell23.c.o .rodata .data
