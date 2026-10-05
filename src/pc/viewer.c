@@ -440,6 +440,7 @@ int main(int argc, char **argv)
             if (keys[SDL_SCANCODE_C]) cam[1] -= spd;
         }
         flmat_invert_affine(view, camw);
+        rt_set_camera(camw);            /* rview_mat / rview_matY for game billboards */
         flmat_perspective(proj, 1.0f, (float)W / H, 10.0f, 80000.0f);
 
         /* game logic ticks at 30 per second (at least 2, so set objects

@@ -47,6 +47,10 @@ uint32_t rt_clay_attr_word(const int32_t *attr);
 void rt_clay_attr_set(uint32_t attr);
 void rt_clay_attr_reset(void);
 
+/* The camera's world matrix (fl layout, rows right/up/back/eye): sets the
+ * game's rview_mat and rview_matY like View_move. Call once per frame. */
+void rt_set_camera(const float cam_world[16]);
+
 /* ------------------------------------------------------------ game loop */
 /* Set up the game globals for a stage and spawn its set objects. */
 void rt_game_init(int stage);

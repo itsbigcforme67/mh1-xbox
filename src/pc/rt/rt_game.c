@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* The game C stores pointers in u32 fields: only a 32-bit build works. */
@@ -110,19 +111,31 @@ u32 ran_suu(int ch)
 }
 
 /* ------------------------------------------------------------ set objects */
-/* set_work (0x396A00) is 0x2000 bytes; 64 entries of 0x80 is a guess. */
+/* set_work (0x396A00) is 0x2000 bytes; 64 entries of 0x80 is a guess.
+ * pull_set_work(n) (0x155290) also hands out n 512-byte blocks of the work
+ * heap as sw->u.work (-1 when n <= 0) and notes them at +0x1C (first
+ * block) / +0x1D (count); here each entry gets its own zeroed buffer. */
 #define SET_MAX 64
+#define SET_HEAP_BLOCK 0x200
 static union { SETW w; u8 raw[0x80]; } set_pool[SET_MAX];
 static unsigned char set_used[SET_MAX];
+static void *set_heap[SET_MAX];
 
-SETW *pull_set_work(int pri)
+SETW *pull_set_work(int n)
 {
     int i;
-    (void)pri;
     for (i = 0; i < SET_MAX; i++)
         if (!set_used[i]) {
             memset(&set_pool[i], 0, sizeof set_pool[i]);
             set_used[i] = 1;
+            set_pool[i].raw[0] = 1;
+            if (n > 0) {
+                set_heap[i] = calloc((size_t)n, SET_HEAP_BLOCK);
+                set_pool[i].w.u.work = set_heap[i];
+            } else {
+                set_pool[i].w.u.work = (void *)-1;
+            }
+            set_pool[i].raw[0x1D] = (u8)n;
             return &set_pool[i].w;
         }
     return NULL;
@@ -131,8 +144,11 @@ SETW *pull_set_work(int pri)
 void push_set_work(SETW *sw)
 {
     int i = (int)((u8 *)sw - (u8 *)set_pool) / (int)sizeof set_pool[0];
-    if (i >= 0 && i < SET_MAX)
+    if (i >= 0 && i < SET_MAX) {
         set_used[i] = 0;
+        free(set_heap[i]);
+        set_heap[i] = NULL;
+    }
 }
 
 void se_req2(int a, int b, int c, f32 *pos, int d, int e)
@@ -188,6 +204,7 @@ void add_prim(void *ot, PRIM *p, int pri, int kind)
 
 /* ------------------------------------------------------------ game loop */
 void set14_set(void);
+void set00_set(void);
 void rt_fl_reset_states(void);
 
 void rt_game_init(int stage)
@@ -201,6 +218,11 @@ void rt_game_init(int stage)
     switch (stage) {
     case 0: case 1: case 3: case 4: case 0x1A: case 0x2A: case 0x33: case 0x34: case 0x35:
         set14_set();
+        break;
+    }
+    switch (stage) {   /* set00: translucent scrolling billboards */
+    case 4: case 8: case 0x1A: case 0x29: case 0x2A: case 0x2B:
+        set00_set();
         break;
     }
 }

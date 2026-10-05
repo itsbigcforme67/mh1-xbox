@@ -25,6 +25,14 @@ f32 uv_pos00_00678370[16][2];
 u32 src_mode_00300620[12], dst_mode_00300650[10], ope_mode_00300678[4], filter_mode_00387900[2];
 u32 aa_alpha_src[10], aa_alpha_ope[4], aa_filt[2], aa_addr[4];
 
+/* set00 (src/game/set/set00.c). The pos tables are read with an 8-byte
+ * stride but 3 floats per entry (see set00.c), so they keep their full size. */
+f32 set00_st04_pos_tbl[3][2], set00_st08_pos_tbl[9][2], set00_st26_pos_tbl[3][2];
+f32 set00_st41_pos_tbl[2][2], set00_st42_pos_tbl[3][2], set00_st43_pos_tbl[3][2];
+s16 set00_st04_dir_tbl[2], set00_st08_dir_tbl[6], set00_st26_dir_tbl[2];
+s16 set00_st41_dir_tbl[1][2], set00_st42_dir_tbl[2], set00_st43_dir_tbl[2];
+f32 set00_st26_scale_tbl[2], set00_st41_scale_tbl[1][3], set00_st42_scale_tbl[2];
+
 static const struct {
     const char *name;
     uint32_t va;
@@ -40,6 +48,21 @@ static const struct {
     T(aa_alpha_ope, 0x2EF738, 0x10),
     T(aa_filt, 0x3876F8, 8),
     T(aa_addr, 0x2EF748, 0x10),
+    T(set00_st04_pos_tbl, 0x678160, 0x18),
+    T(set00_st08_pos_tbl, 0x678180, 0x48),
+    T(set00_st08_dir_tbl, 0x6781C8, 0xC),
+    T(set00_st26_pos_tbl, 0x6781E0, 0x18),
+    T(set00_st41_pos_tbl, 0x6781F8, 0xC),
+    T(set00_st41_scale_tbl, 0x678208, 0xC),
+    T(set00_st42_pos_tbl, 0x678220, 0x18),
+    T(set00_st43_pos_tbl, 0x678240, 0x18),
+    T(set00_st04_dir_tbl, 0x389AA0, 4),
+    T(set00_st26_dir_tbl, 0x389AA4, 4),
+    T(set00_st26_scale_tbl, 0x389AA8, 8),
+    T(set00_st41_dir_tbl, 0x389AB0, 4),
+    T(set00_st42_dir_tbl, 0x389AB4, 4),
+    T(set00_st42_scale_tbl, 0x389AB8, 8),
+    T(set00_st43_dir_tbl, 0x389AC0, 4),
     T(st00_mdl_tbl, 0x389AC8, 8),
     T(st01_mdl_tbl, 0x389AD0, 8),
     T(st04_mdl_tbl, 0x389AD8, 8),
