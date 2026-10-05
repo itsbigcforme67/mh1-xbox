@@ -1,7 +1,4 @@
-/* Render state cache and font setup. SLPM_654.95 0x00161480-0x001619A0 (f_font, first half):
- * SetTrnslMode/SetFilterMode/SetOpeMode/SetTextureStage keep the last value in system_w and only
- * call flSetRenderState on a change; InitRenderState resets all of it; ot_init sets up the
- * ordering tables; font_set loads the font and its palettes. */
+/* fs1_01 - render state cache 0x00161480-0x00161770: SetTrnslMode, SetFilterMode, SetTextureStage, InitRenderState, SetOpeMode, ot_init. Whole file in fontst_nm.c. */
 #include "types.h"
 #include "sysw.h"
 
@@ -31,6 +28,12 @@ void flfntInit(void);
 void flfntSetHalftype(int);
 void flfntSetPalData(int, u32, u32, u32, u32);
 int load_file_mdl(void *, int);
+
+
+
+
+
+
 
 void SetTrnslMode(int src, int dst) {
     if (system_w.src_mode != src || system_w.dst_mode != dst) {

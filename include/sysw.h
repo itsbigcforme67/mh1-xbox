@@ -31,7 +31,7 @@ typedef struct SYSW {
     u8 _pad23;
     u8 x24;             /* 0x24 */
     u8 _pad25[5];
-    s16 tex_stage;      /* 0x2A texture stage of the last SetTextureStage (-1 none) */
+    u16 tex_stage;      /* 0x2A texture stage of the last SetTextureStage (0xFFFF none) */
     u8 src_mode;        /* 0x2C blend source (src_mode_255 index), SetTrnslMode */
     u8 dst_mode;        /* 0x2D blend destination */
     u8 filter;          /* 0x2E texture filter (filter_mode_265 index) */

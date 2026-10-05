@@ -261,7 +261,7 @@ segments:
       - [0x0611E4, asm, text/g_system_w_init]
       - [0x0611F0, c, sprite/sysw]
       - [0x061478, asm, text/SetTrnslMode]
-      - [0x061480, asm, text/f_font]
+      - [0x061480, c, font/fs1_01]
       - [0x061770, c, font/fs2_01]
       - [0x061968, asm, text/font_print]
       - [0x061C20, c, font/fs2_02]
