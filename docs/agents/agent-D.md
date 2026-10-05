@@ -231,3 +231,13 @@ GetPachingerInfo take an unused first argument; 0x3F75BE0B is 55 degrees
 in radians (0.9599311f); `if (a == 1 || b) {zero} else {copy}` order
 (cam_sw_set_sub); statement order pl/npc/src in cam_plEX_zoom was found by
 permuting (scratch tools: /tmp/claude-1000/agentD/tryv.py, rep.py, carve.py).
+
+### f_cam update
+cam_t.c is split and linked (main OK): cam.c (0x21F3D0-0x21F464), camb.c
+(0x220420-0x2206A4), camc.c (0x221460-0x221700), camd.c (0x221820-
+0x221D28), came.c (0x221F90-0x2220C0), camf.c (point_cam_hit), camg.c
+(0x2227A0-0x222E20): 38 functions. cam_nm.c (not built) holds the whole
+file incl. near-matches SetCameraData, cam_init_sub_pchngr, pch_lock_chk,
+fish_cam_sub. Still no C for: CameraMove, cam_init_sub_std, cam_sub_std,
+cam_sub_stg, cam_sub_pchngr, cmd_set_pos, cmd_set_tar, cmd_cam_move,
+point_cam_sub (jump tables 0x36B0D0-0x36B178 still need main:rodata lines).
