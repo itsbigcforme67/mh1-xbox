@@ -425,7 +425,7 @@ main 0x00134280 0x0013435C menu/menu34
 main 0x001333B0 0x0013354C menu/menu35
 main 0x00134710 0x00134950 menu/menu36
 main 0x00125340 0x00125730 frame/f_frame
-main 0x001257D0 0x00125F08 frame/f_frameb
+main 0x001257D0 0x001263EC frame/f_frameb
 main 0x001263F0 0x001267BC frame/f_framec
 game 0x00566630 0x005670A4 em/em01_ai
 game 0x00567280 0x005698E4 em/em01_aib
@@ -1324,3 +1324,11 @@ main 0x001004D0 0x0010089C sys/adxs02
 main 0x00100910 0x00100E18 sys/adxs03
 main 0x00100E20 0x00101508 sys/adxs04
 main 0x001018C0 0x00101E38 sys/adxs05
+main 0x0010A070 0x0010A0F0 em/emsrch01
+main 0x0010A150 0x0010A208 em/emsrch02
+main 0x0010B6C0 0x0010B7E8 em/emsrch03
+main 0x0010AEB0 0x0010B054 em/emmk01
+main 0x00161970 0x00161C18 font/fprint01
+main 0x00169990 0x00169A7C sys/view201
+main 0x00114A90 0x00114AD8 hit/hitid01
+main 0x0012A110 0x0012A1CC menu/menu39

@@ -861,6 +861,8 @@ void menu_data_mix_sub(int sw) {
 
     if (a & 0xC00) {
         d = (a & 0x800) ? -1 : 1;
+        if (lpPit && lpPit) { /* permuter no-op: changes only instruction scheduling */
+        }
         p = Item_preparation_list_search(&lpPit->x81, d, &lpPit->x6C, &lpPit->x6E);
         if (lpPit->x68 != p) {
             lpPit->x68 = p;

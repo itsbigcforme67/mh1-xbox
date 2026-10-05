@@ -153,7 +153,7 @@ char *strcat(char *, const char *);
 void font_print_sp(char *fmt, ...) {
     va_list ap;
     BUFS2 bufs = lit_565_00387908;
-    s16 cur = 0;
+    s16 cur;
     s16 pos;
     s16 cnt;
     s16 x0;
@@ -165,6 +165,7 @@ void font_print_sp(char *fmt, ...) {
     u8 *b;
     u8 c;
 
+    cur = 0;
     if (font_reset_flag == 0) {
         va_start(ap, fmt);
         vsprintf(tmpstr_562, fmt, ap);
@@ -200,7 +201,7 @@ void font_print_sp(char *fmt, ...) {
                 }
             } else {
                 bufs.p[cur ^ 1][pos++] = c;
-                if ((*p >= 0x80 && *p < 0xA0) || (*p >= 0xE0 && *p < 0x100)) {
+                if ((*p >= 0x80 && *p <= 0x9F) || (*p >= 0xE0 && *p < 0x100)) {
                     p++;
                     bufs.p[cur ^ 1][pos++] = *p;
                     w = 0;
