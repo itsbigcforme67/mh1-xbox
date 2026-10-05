@@ -26,11 +26,12 @@ s32 *GetWallTblAdrs(f32 *);
 s32 *GetGroundTblAdrs(f32 *);
 extern HKIND *ground_tbl_add[];
 
+/* The original only compares against the first remembered polygon (the asm
+ * keeps the list base in a stack slot), not the whole list. */
+#define csx ((u32)diorama_w.gcsx)
+#define csz ((u32)diorama_w.gcsz)
 #define SEEN(poly, n, seen, found)           \
-    found = 0;                               \
-    for (k = 0; k < (n); k++) {              \
-        if ((poly) == (seen)[k]) found = 1;  \
-    }
+    found = ((n) > 0 && (poly) == (seen)[0]);
 
 int GetWallHitLine(f32 *a, f32 *b, f32 *out, int mask) {
     HPOLY *seen[20];
@@ -41,7 +42,7 @@ int GetWallHitLine(f32 *a, f32 *b, f32 *out, int mask) {
     f32 cen[3];
     f32 q[3];
     f32 best;
-    f32 cx, cz;
+    int cx, cz;
     f32 margin;
     f32 t;
     int nx, nz, sx, sz;
@@ -51,8 +52,6 @@ int GetWallHitLine(f32 *a, f32 *b, f32 *out, int mask) {
     int found;
     s32 *cp;
     HPOLY *pl;
-    u32 csx = (u32)diorama_w.gcsx;
-    u32 csz = (u32)diorama_w.gcsz;
 
     best = flvecCalcDistance(a, b);
     if (WallFieldInCheck(a) == 0) {
@@ -63,10 +62,10 @@ int GetWallHitLine(f32 *a, f32 *b, f32 *out, int mask) {
         SetVector(out, b[0], b[1], b[2]);
         return 1;
     }
-    cx = a[0] / (f32)csx;
-    cz = a[2] / (f32)csz;
-    nx = (int)(b[0] / (f32)csx) - (int)cx;
-    nz = (int)(b[2] / (f32)csz) - (int)cz;
+    cx = (int)(a[0] / (f32)csx);
+    cz = (int)(a[2] / (f32)csz);
+    nx = (int)(b[0] / (f32)csx) - cx;
+    nz = (int)(b[2] / (f32)csz) - cz;
     if (nx < 0) {
         sx = -1;
         nx = 1 - nx;
@@ -91,8 +90,8 @@ int GetWallHitLine(f32 *a, f32 *b, f32 *out, int mask) {
     margin = (f32)(int)(csz / 10) + ((f32)(int)(csx / 10) + flSqrt((f32)csx * (f32)csx + (f32)(csz * csz)));
     for (ix = 0, i = 0; ix < nx; ix++, i += sx) {
         for (iz = 0, j = 0; iz < nz; iz++, j += sz) {
-            cen[0] = (f32)(csx >> 1) + (f32)csx * (f32)((int)cx + i);
-            cen[2] = (f32)(csz >> 1) + (f32)csz * (f32)((int)cz + j);
+            cen[0] = (f32)(csx >> 1) + (f32)csx * (f32)(cx + i);
+            cen[2] = (f32)(csz >> 1) + (f32)csz * (f32)(cz + j);
             cen[1] = 0.0f;
             if (dir[0] == 0.0f && dir[2] == 0.0f) {
                 t = (-dir[0] * (a[0] - cen[0])) - (dir[2] * (a[2] - cen[2]));
@@ -146,7 +145,7 @@ int GetEyeHitLine(void *ent, f32 *a, f32 *b, f32 *out, int mask) {
     f32 cen[3];
     f32 q[3];
     f32 best;
-    f32 cx, cz;
+    int cx, cz;
     f32 margin;
     f32 t;
     int nx, nz, sx, sz;
@@ -158,8 +157,6 @@ int GetEyeHitLine(void *ent, f32 *a, f32 *b, f32 *out, int mask) {
     s32 *cp;
     HPOLY *pl;
     HKIND *hk;
-    u32 csx = (u32)diorama_w.gcsx;
-    u32 csz = (u32)diorama_w.gcsz;
 
     best = flvecCalcDistance(a, b);
     if (GroundFieldInCheck(a) == 0) {
@@ -178,10 +175,10 @@ int GetEyeHitLine(void *ent, f32 *a, f32 *b, f32 *out, int mask) {
         SetVector(out, b[0], b[1], b[2]);
         return 1;
     }
-    cx = a[0] / (f32)csx;
-    cz = a[2] / (f32)csz;
-    nx = (int)(b[0] / (f32)csx) - (int)cx;
-    nz = (int)(b[2] / (f32)csz) - (int)cz;
+    cx = (int)(a[0] / (f32)csx);
+    cz = (int)(a[2] / (f32)csz);
+    nx = (int)(b[0] / (f32)csx) - cx;
+    nz = (int)(b[2] / (f32)csz) - cz;
     if (nx < 0) {
         sx = -1;
         nx = 1 - nx;
@@ -206,8 +203,8 @@ int GetEyeHitLine(void *ent, f32 *a, f32 *b, f32 *out, int mask) {
     margin = (f32)(int)(csz / 10) + ((f32)(int)(csx / 10) + flSqrt((f32)csx * (f32)csx + (f32)(csz * csz)));
     for (ix = 0, i = 0; ix < nx; ix++, i += sx) {
         for (iz = 0, j = 0; iz < nz; iz++, j += sz) {
-            cen[0] = (f32)(csx >> 1) + (f32)csx * (f32)((int)cx + i);
-            cen[2] = (f32)(csz >> 1) + (f32)csz * (f32)((int)cz + j);
+            cen[0] = (f32)(csx >> 1) + (f32)csx * (f32)(cx + i);
+            cen[2] = (f32)(csz >> 1) + (f32)csz * (f32)(cz + j);
             cen[1] = 0.0f;
             if (dir[0] == 0.0f && dir[2] == 0.0f) {
                 t = (-dir[0] * (a[0] - cen[0])) - (dir[2] * (a[2] - cen[2]));
