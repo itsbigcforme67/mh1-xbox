@@ -13,6 +13,7 @@
 #include "fl/fl.h"
 #include "rt/rt.h"
 #include "pad/pad.h"
+#include "audio/audio.h"
 
 #include <SDL.h>
 #include <stdio.h>
@@ -349,6 +350,24 @@ static void place(flmat w, float x, float y, float z, float yaw)
 }
 
 /* ------------------------------------------------------------ main */
+/* 48 kHz stereo s16 wav (--audio-dump) */
+static void write_wav(const char *path, const int16_t *pcm, size_t frames)
+{
+    FILE *f = fopen(path, "wb");
+    uint32_t data = (uint32_t)(frames * 4), v;
+    uint16_t h;
+    if (!f)
+        return;
+    fwrite("RIFF", 1, 4, f); v = 36 + data; fwrite(&v, 4, 1, f);
+    fwrite("WAVEfmt ", 1, 8, f); v = 16; fwrite(&v, 4, 1, f);
+    h = 1; fwrite(&h, 2, 1, f); h = 2; fwrite(&h, 2, 1, f);
+    v = 48000; fwrite(&v, 4, 1, f); v = 48000 * 4; fwrite(&v, 4, 1, f);
+    h = 4; fwrite(&h, 2, 1, f); h = 16; fwrite(&h, 2, 1, f);
+    fwrite("data", 1, 4, f); fwrite(&data, 4, 1, f);
+    fwrite(pcm, 4, frames, f);
+    fclose(f);
+}
+
 int main(int argc, char **argv)
 {
     const char *disc = NULL, *shot = NULL;
@@ -369,7 +388,11 @@ int main(int argc, char **argv)
     int set_h0 = -1, ticks = 0, stage_no = 4, cam_given = 0;
     float follow[3] = { 900.0f, 450.0f, -0.3f };
     float rathian_yoff = 0;
-    int follow_given = 0, game_cam = 0, have_view = 0;   /* game_cam: the game's CameraMove drives the view */
+    int follow_given = 0, game_cam = 0, have_view = 0;
+    const char *audio_dump = NULL;      /* --audio-dump out.wav: mix each game tick into a wav */
+    int mute = 0, snd = -1;
+    int16_t *dump_pcm = NULL;
+    size_t dump_n = 0, dump_cap = 0;   /* game_cam: the game's CameraMove drives the view */
     float gc_eye[3] = { 0 }, gc_tar[3] = { 0 }, gc_roll = 0, gc_fov = 1.0f;   /* --play camera: distance, height, pitch */
     int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter */
     const char *script = NULL;
@@ -386,6 +409,8 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--play")) play = 1;
         else if (!strcmp(argv[i], "--input") && i + 1 < argc) { script = argv[++i]; play = 1; }
         else if (!strcmp(argv[i], "--sw-trace")) sw_trace = 1;
+        else if (!strcmp(argv[i], "--audio-dump") && i + 1 < argc) audio_dump = argv[++i];
+        else if (!strcmp(argv[i], "--mute")) mute = 1;
         else if (!strcmp(argv[i], "--follow") && i + 1 < argc)
             follow_given = sscanf(argv[++i], "%f,%f,%f", &follow[0], &follow[1], &follow[2]) > 0;
         else if (argv[i][0] != '-') disc = argv[i];
@@ -493,6 +518,8 @@ int main(int argc, char **argv)
     }
     load_eft_models();
     rt_game_init(stage_no);
+    if (!mute)
+        snd = rt_snd_init(disc, audio_dump == NULL && shot == NULL);
 
     if (monster_load(&rathian, "em01_amh.bin", "em01_tex.bin", "em01_tbl.bin", 3) != 0)
         fprintf(stderr, "em01 load failed\n");
@@ -567,6 +594,10 @@ int main(int argc, char **argv)
         }
     }
 
+    if (snd == 0) {                     /* packs + stage stream; the Rathian (kind 1) is the stage's monster */
+        static const int em_kinds[1] = { 1 };
+        rt_snd_stage(stage_no, em_kinds, 1);
+    }
     if (!shot)
         SDL_SetRelativeMouseMode(SDL_TRUE);
     t0 = SDL_GetTicks();
@@ -670,6 +701,17 @@ int main(int argc, char **argv)
                     printf("tick %d: em0 pos %.0f %.0f %.0f ang %04X\n", ticks, p[0], p[1], p[2], a & 0xFFFF);
                 }
             }
+            if (snd == 0) {
+                rt_snd_tick();
+                if (audio_dump) {           /* 1/30 s of mixer output per tick */
+                    if (dump_n + 1600 * 2 > dump_cap) {
+                        dump_cap = dump_cap ? dump_cap * 2 : 1 << 20;
+                        dump_pcm = realloc(dump_pcm, dump_cap * sizeof *dump_pcm);
+                    }
+                    audio_mix(dump_pcm + dump_n, 1600);
+                    dump_n += 1600 * 2;
+                }
+            }
             ticks++;
         }
         if (game_cam) {
@@ -735,6 +777,12 @@ int main(int argc, char **argv)
         gfx_end_frame();
     }
     (void)n;
+    if (audio_dump && dump_pcm) {
+        write_wav(audio_dump, dump_pcm, dump_n / 2);
+        printf("wrote %s (%.2fs)\n", audio_dump, dump_n / 2 / 48000.0);
+    }
+    if (snd == 0)
+        rt_snd_shutdown();
     gfx_shutdown();
     fmt_afs_close(&afs);
     return 0;

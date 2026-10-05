@@ -144,6 +144,7 @@ void rt_player_tick(int no)
         else
             set_motion(pl, 1, 101, 4);
     }
+    rt_snd_player_motion(no);       /* footsteps (ef_move_sub's list), before the frame steps */
     frame_move((FRW *)pl);
     rt_player_collide(pl);
 }

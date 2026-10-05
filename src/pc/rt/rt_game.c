@@ -179,10 +179,7 @@ void push_set_work(SETW *sw)
     }
 }
 
-void se_req2(int a, int b, int c, f32 *pos, int d, int e)
-{
-    (void)a; (void)b; (void)c; (void)pos; (void)d; (void)e;   /* no sound yet */
-}
+/* se_req2 and the other sound calls: rt_snd.c */
 
 /* ------------------------------------------------------------ prims */
 /* get_prim hands out slots, add_prim queues one on an ordering table for

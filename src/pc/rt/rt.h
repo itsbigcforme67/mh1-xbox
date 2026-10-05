@@ -119,6 +119,16 @@ void rt_player_set_ang(int no, int ang_y);
 /* What the game's sw_set_sub gave player no: buttons, left stick. */
 void rt_player_sw(int no, int *now, int *ang, int *pow);
 
+/* Sound (rt_snd.c, docs/pc.md "Sound"): open AFS00/AFS01 in disc and the
+ * output device (device = 0: mixer only, for --audio-dump); load a stage's
+ * packs and start its stream; one tick per game tick; footsteps of the
+ * host player stand-in (call before frame_move). */
+int  rt_snd_init(const char *disc, int device);
+void rt_snd_stage(int stage, const int *em_kinds, int nem);
+void rt_snd_tick(void);
+void rt_snd_player_motion(int no);
+void rt_snd_shutdown(void);
+
 /* The game camera (src/main/cam CameraMove, rt_cam.c): init for a stage
  * once the master player is set, one tick per game tick after the player,
  * and the resulting view (eye, target, roll, fov in radians). */

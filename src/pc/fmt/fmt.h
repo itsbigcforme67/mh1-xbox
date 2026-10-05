@@ -11,6 +11,8 @@
  *   apx     paletted textures                  (graphics.md 7)
  *   ahi     bone hierarchy                     (motion.md 1)
  *   aan     motions in *_tbl.bin               (motion.md 3-4)
+ *   snd     sound packs: SCEI HD/BD + TSBD, PS2 ADPCM (audio.md 2-4)
+ *   adx     CRI ADX 4-bit streams              (audio.md 5)
  */
 #ifndef MH_FMT_H
 #define MH_FMT_H
@@ -160,5 +162,55 @@ void fmt_aan_eval(const aan_motion *m, int bone, float t, float chan[9]);
  * Height of the highest upward-facing ground polygon under (x, z) that is
  * at or below y_max; returns 1 if found. */
 int fmt_hits_ground_y(fmt_blob f, float x, float z, float y_max, float *y, int be);
+
+/* ------------------------------------------------------------ afs (partial) */
+/* Read n bytes at off inside entry idx into buf; returns bytes read. */
+size_t fmt_afs_read_at(const fmt_afs *a, int idx, uint32_t off, void *buf, size_t n);
+
+/* ------------------------------------------------------------ snd */
+/* A "MOMO" sound pack (AFS01 .snd/.snp, audio.md 2). Pointers into the
+ * caller's buffer, which must outlive the pack. Always little-endian. */
+typedef struct {
+    const uint8_t *hd, *bd;
+    uint32_t bd_size;
+    const uint8_t *prog, *sset, *smpl, *vagi;   /* SCEI chunk starts */
+    int nprog, nsset, nsmpl, nvagi;
+    const uint8_t *tsbd;                        /* 16-byte SE entries, NULL in .snp */
+    int ntsbd;
+} snd_pack;
+
+typedef struct {
+    int vag;                /* VAG index in the pack */
+    float ratio;            /* playback rate multiplier (note vs base note) */
+    float vol;              /* program/split/sample volume product, 0..1 */
+    float pan;              /* -1 left .. 1 right (split + sample pan) */
+} snd_note;
+
+int fmt_snd_open(snd_pack *p, const uint8_t *d, size_t n);
+/* TSBD entry of an SE code, NULL if out of range or empty (byte 0 = 0xFF). */
+const uint8_t *fmt_snd_tsbd(const snd_pack *p, int code);
+int fmt_snd_has_prog(const snd_pack *p, int prog);
+/* program + note -> sample; 0 on success. */
+int fmt_snd_resolve(const snd_pack *p, int prog, int note, snd_note *out);
+/* BD offset and sample rate of a VAG; 0 on success. */
+int fmt_snd_vag(const snd_pack *p, int vag, uint32_t *off, int *rate);
+/* PS2 SPU ADPCM -> malloc'd s16 mono until the end flag (max bytes);
+ * *loop = loop start sample or -1. */
+int16_t *fmt_vag_decode(const uint8_t *src, size_t max, int *nsamples, int *loop);
+
+/* ------------------------------------------------------------ adx */
+typedef struct {
+    int ch, rate, block;                /* block = bytes per channel frame (18) */
+    uint32_t total;                     /* samples per channel */
+    uint32_t data;                      /* offset of the first frame */
+    int c1, c2;                         /* prediction coefficients (x4096) */
+    int loop;                           /* loop present */
+    uint32_t loop_start, loop_start_byte, loop_end, loop_end_byte;
+} adx_info;
+
+int fmt_adx_header(adx_info *h, const uint8_t *p, size_t n);
+/* Decode one row (h->ch frames of h->block bytes) into 32 interleaved
+ * frames; hist[ch][2] carries the predictor state. */
+void fmt_adx_row(const adx_info *h, const uint8_t *in, int32_t (*hist)[2], int16_t *out);
 
 #endif

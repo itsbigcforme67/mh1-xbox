@@ -410,3 +410,22 @@ dka_init_tbl
 dka_j_tbl
 quest_clear_camera_tbl
 em_body_tbl
+# sound (rt_snd.c)
+vol_tbl
+vol_dist_tbl
+se_cnfvol_tbl
+adx_vol_tbl
+adx_cnfvol_tbl
+Snd_bgm_tbl
+Snd_steft_tbl
+Snd_weapon_tbl
+Snd_em_id_file_conv_tbl
+stage_bgm_etc_tbl
+st01_se_pos
+st03_se_pos
+st03_se_pos2
+st26_se_pos
+st48_se_pos
+st52_se_pos
+st54_se_pos
+st62_se_pos

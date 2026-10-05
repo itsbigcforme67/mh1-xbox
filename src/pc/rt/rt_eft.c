@@ -723,7 +723,6 @@ int softdip_ck(void) { return 0; }   /* 0x1593D0: returns 0 */
 
 STUB_V(pl_atck_data_set_shl, (SHLW *sh, void *em, int a, u8 *d))
 STUB_V(vib_set_pl, (void *pl, int a))
-STUB_V(Pl_se_req2, (void *pl, int a, int b, f32 *pos, int c, int d))
 STUB_V(pl_light_change, (void *em, int a))
 STUB_V(Pl_light_set, (void *em))
 STUB_I(Get_atk_value, (void *pl, int a))
