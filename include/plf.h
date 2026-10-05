@@ -170,4 +170,5 @@ void rate_add_g(PLW *);
 void rate_clear(PLW *);
 void func_628FB0(PLW *, int, int);
 s32 GetGroundHitAreaUpper(PLW *, f32 *, f32 *);
+void Oki_item_set(PLW *);
 #endif
