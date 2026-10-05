@@ -638,6 +638,8 @@ segments:
       - [0x11F9A8, asm, text/cam_sub_std]
       - [0x120420, c, cam/camb]
       - [0x1206A4, asm, text/cam_sub_stg]
+      - [0x120F30, c, cam/camp]
+      - [0x1213F4, asm, text/pch_lock_chk]
       - [0x121460, c, cam/camc]
       - [0x121700, asm, text/fish_cam_sub]
       - [0x121820, c, cam/camd]

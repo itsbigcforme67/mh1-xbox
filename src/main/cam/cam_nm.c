@@ -1127,3 +1127,345 @@ void cam_sub_std(CAMW *cw, CAMS *cs) {
         return;
     }
 }
+
+/* cam_sub_stg (0x2206B0-0x220EDC): stage (fixed / rail / pan) camera. Written
+ * from the m2c draft and the asm; not yet compared with check.py. */
+typedef struct CAMSPL { u8 b[0x30]; } CAMSPL;
+extern CAMSPL SplineRvalue[];
+void CamRailMove(CAMW *, CAMSPL *, f32 *, s32);
+void CamRailPoint(f32, f32 *, CAMSPL *);
+void GetPanTarget(CAMW *, f32 *, CAMAREA *);
+void GetRailTarget(CAMW *, f32 *, CAMAREA *, f32 *);
+void GetRailCamPos(f32 *, CAMW *, CAMAREA *, CAMSPL *);
+f32 ZoomBaseAngleRail(f32, void *, u8);
+f32 RollAngleRail(f32, void *, u8);
+f32 ZoomRateCalc(f32, CAMAREA *);
+void SubVector(f32 *, f32 *, f32 *);
+s16 AarcTan2(f32, f32);
+f32 CalcDistanceXZ(f32 *, f32 *);
+void flvecRotX(f32, f32 *);
+f32 flvecCalcDistance(f32 *, f32 *);
+
+void cam_sub_stg(CAMW *cw, CAMS *cs) {
+    CAMSPL *spl = SplineRvalue;
+    CAMAREA *area;
+    CAMD_STG *d;
+    PLW *pl;
+    f32 v[3];
+    f32 base;
+    f32 sc;
+    f32 t;
+    s16 tx, ty, ax, ay;
+    s16 lim, spd, df;
+    s32 f;
+    u8 *p;
+    s32 n;
+
+    cs->act = 0;
+    area = cw->area;
+    if (area->type == 0) {
+        cs->mode.w = 0;
+        cw->cam_no = 0;
+        return;
+    }
+    pl = cw->pl;
+    d = &cs->d.stg;
+    switch (cs->mode.b) {
+    case 0:
+        cs->mode.b++;
+        cs->act = 1;
+        cs->step.b = 0;
+        switch (area->type) {
+        case 1:
+            flvecCopy(d->eye, area->u.fix.pos);
+            GetPanTarget(cw, d->tar, area);
+            break;
+        case 3:
+            AddVector(d->eye, pl->pos, area->u.fix.pos);
+            GetPanTarget(cw, d->tar, area);
+            break;
+        case 2:
+            CamRailMove(cw, spl, pl->pos, 0);
+            CamRailPoint(cw->rail_t, v, &spl[cw->rail_no]);
+            GetRailTarget(cw, d->tar, area, v);
+            GetRailCamPos(d->eye, cw, area, spl);
+            break;
+        }
+        SubVector(cs->vec, d->tar, d->eye);
+        cs->ay = AarcTan2(cs->vec[0], cs->vec[2]);
+        cs->ax = AarcTan2(-cs->vec[1], CalcDistanceXZ(d->tar, d->eye));
+        d->vy = 0;
+        d->vx = 0;
+        break;
+    case 1:
+        cs->act = 1;
+        switch (area->type) {
+        case 1:
+            flvecCopy(d->eye, area->u.fix.pos);
+            GetPanTarget(cw, d->tar, area);
+            base = area->u.fix.fov;
+            d->roll = area->u.fix.roll;
+            break;
+        case 3:
+            AddVector(d->eye, pl->pos, area->u.fix.pos);
+            GetPanTarget(cw, d->tar, area);
+            base = area->u.fix.fov;
+            d->roll = area->u.fix.roll;
+            break;
+        case 2:
+            if (cw->area_chg == 0) {
+                CamRailMove(cw, spl, pl->pos, 1);
+            } else {
+                CamRailMove(cw, spl, pl->pos, 0);
+            }
+            CamRailPoint(cw->rail_t, v, &spl[cw->rail_no]);
+            base = ZoomBaseAngleRail(cw->rail_u, &area->u, cw->rail_no);
+            d->roll = RollAngleRail(cw->rail_u, &area->u, cw->rail_no);
+            GetRailTarget(cw, d->tar, area, v);
+            GetRailCamPos(d->eye, cw, area, spl);
+            break;
+        }
+        SubVector(cs->vec, d->tar, d->eye);
+        if (cw->area_chg != 0) {
+            cs->ay = AarcTan2(cs->vec[0], cs->vec[2]);
+            cs->ax = AarcTan2(-cs->vec[1], CalcDistanceXZ(d->tar, d->eye));
+            d->vy = 0;
+            d->vx = 0;
+        } else {
+            ty = AarcTan2(cs->vec[0], cs->vec[2]);
+            sc = CalcDistanceXZ(d->tar, d->eye);
+            tx = AarcTan2(-cs->vec[1], sc);
+            sc = d->fov;
+            ax = cs->ax;
+            lim = 521.5189f * sc;
+            spd = 52.15189f * sc;
+            df = tx - ax;
+            if (lim < df) {
+                cs->ax = tx - lim;
+                d->vx = spd;
+            } else if (df < -lim) {
+                cs->ax = tx + lim;
+                d->vx = -spd / 2;
+            } else if (d->vx != 0) {
+                cs->ax = ax + d->vx;
+                n = (s16)(d->vx >> 3);
+                if (n == 0) {
+                    d->vx = 0;
+                } else {
+                    d->vx = d->vx - n;
+                }
+            }
+            ay = cs->ay;
+            lim = 1.4285715f * (651.8986f * d->fov);
+            df = ty - ay;
+            if (lim < df) {
+                d->vy = ay;
+                cs->ay = ty - lim;
+                d->vy = cs->ay - d->vy;
+                d->vy = d->vy - (s16)(d->vy >> 2);
+            } else if (df < -lim) {
+                d->vy = ay;
+                cs->ay = ty + lim;
+                d->vy = cs->ay - d->vy;
+                d->vy = d->vy - (s16)(d->vy >> 2);
+            } else if (d->vy != 0) {
+                cs->ay = ay + d->vy;
+                n = (s16)(d->vy * 20 / 100);
+                if (n == 0) {
+                    d->vy = 0;
+                } else {
+                    d->vy = d->vy - n;
+                }
+            }
+        }
+        v[0] = 0;
+        v[1] = 0;
+        v[2] = flvecCalcLength(cs->vec);
+        flvecRotX(0.000095873799f * cs->ax, v);
+        flvecRotY(0.000095873799f * cs->ay, v);
+        AddVector(d->tar, d->eye, v);
+        d->fov = base * ZoomRateCalc(flvecCalcDistance(d->tar, d->eye), area);
+        break;
+    }
+    if (cw->area_chg != 0) {
+        p = area->blend;
+        f = 0xF;
+        if (p != NULL) {
+            n = 16;
+            do {
+                if (p[0] == cw->area_old) {
+                    f = p[1];
+                    break;
+                }
+                p += 2;
+                n--;
+            } while (n != 0);
+        }
+        if (f != 1) {
+            if (f != 0) {
+                cs->step.b = 1;
+                d->cnt = f - 1;
+                d->rate = 1.0f / (f32)f;
+            } else {
+                cs->step.b = 0;
+            }
+        } else {
+            cs->step.b = 0;
+        }
+    }
+    switch (cs->step.b) {
+    case 0:
+        flvecCopy(cs->eye, d->eye);
+        flvecCopy(cs->tar, d->tar);
+        cs->roll = d->roll;
+        cs->fov = d->fov;
+        return;
+    case 1:
+        flvecCopy(d->eye_f, cw->eye);
+        flvecCopy(d->tar_f, cw->tar);
+        d->roll_f = cw->roll;
+        d->fov_f = cw->fov;
+        cs->step.b++;
+    case 2:
+        t = (f32)d->cnt * d->rate;
+        cpInterVector(t, cs->eye, d->eye_f, d->eye);
+        cpInterVector(t, cs->tar, d->tar_f, d->tar);
+        cs->roll = d->roll_f * t + d->roll * (1.0f - t);
+        cs->fov = d->fov_f * t + d->fov * (1.0f - t);
+        d->cnt--;
+        if (d->cnt == 0) {
+            cs->step.b = 0;
+        }
+        return;
+    }
+}
+
+/* cam_sub_pchngr (0x220F40-0x2213F8): pachinger cannon camera: the camera
+ * sits on the cannon matrix and the stick zooms the angle of view. Written
+ * from the m2c draft and the asm; not yet compared with check.py. */
+extern f32 pch_pos[][6];
+s32 Pl_scope_ck(PLW *);
+s32 pch_lock_chk(PLW *);
+void flmatCopy(f32 *, f32 *);
+void flmatGetTrans(f32 *, f32 *);
+void flmatInit(FLMAT *);
+void flmatRotXYZ33(FLMAT *, f32, f32, f32);
+void flvecApplyMat33(f32 *, f32 *, f32 *);
+
+void cam_sub_pchngr(CAMW *cw, CAMS *cs) {
+    CAMD_PCH *d;
+    PLW *pl;
+    f32 *fp;
+    f32 v[3];
+    f32 t[3];
+    f32 w[3];
+
+    pl = cw->pl;
+    cs->act = 0;
+    if (pl->pch_on == 0) {
+        cs->mode.w = 0;
+        return;
+    }
+    d = &cs->d.pch;
+    d->type = PachiTypeCheck(pl);
+    switch (d->type) {
+    case 0:
+        d->x63 = 1;
+        if (Pl_scope_ck(pl) == 1) {
+            d->zoom = 1;
+            d->min = 0.17453294f;
+            d->max = 1.0471976f;
+            d->range = d->max - d->min;
+        } else {
+            d->zoom = 0;
+        }
+        break;
+    case 1:
+        d->x63 = 0;
+        d->zoom = 1;
+        d->min = 0.17453294f;
+        d->max = 1.0471976f;
+        d->range = d->max - d->min;
+        break;
+    case 2:
+        d->x63 = 0x11;
+        d->zoom = 0;
+        break;
+    }
+    switch (cs->mode.b) {
+    case 0:
+        switch (d->type) {
+        case 0:
+            if (pch_lock_chk(pl) == 1) {
+                return;
+            }
+            break;
+        case 1:
+            break;
+        case 2:
+            cs->fov = 0.7853982f;
+            break;
+        }
+        cs->mode.b++;
+    case 1:
+        if (d->zoom != 0 && cw->an_pow > 0x60) {
+            fp = d->type == 0 ? &d->fov0 : &d->fov1;
+            if ((u16)(cw->an_ang - 0x4000) < 0x6001) {
+                *fp -= 0.022340214f;
+                if (*fp < d->min) {
+                    *fp = d->min;
+                }
+            }
+            if ((u16)(cw->an_ang - 0x8000 - 0x6000) < 0x6001) {
+                *fp += 0.022340214f;
+                if (!(*fp <= d->max)) {
+                    *fp = d->max;
+                }
+            }
+        }
+        switch (d->type) {
+        case 0:
+            cs->fov = d->fov0;
+            break;
+        case 1:
+            cs->fov = d->fov1;
+            break;
+        case 2:
+            break;
+        }
+        switch (d->type) {
+        case 0:
+            if (pch_lock_chk(pl) == 0) {
+                flvecCopy(d->pos, pl->pos);
+                flmatCopy((f32 *)d->m, (f32 *)((u8 *)pl->mdl148 + 0x40));
+            } else {
+                SubVector(v, pl->pos, d->pos);
+                flvecCopy(d->pos, pl->pos);
+                AddVector(d->m[3], d->m[3], v);
+            }
+            cs->fov = d->fov0;
+            break;
+        case 1:
+            flmatInit(&d->m);
+            flmatRotXYZ33(&d->m, 0.000095873799f * pl->x8EE, 0.000095873799f * (s32)(u16)(pl->ang[1] + 0x7FFF + 1), 0.0f);
+            flvecCopy(d->m[3], pl->pos);
+            cs->fov = d->fov1;
+            break;
+        case 2:
+            flmatInit(&d->m);
+            flmatRotXYZ33(&d->m, 0.0f, 0.000095873799f * (s32)(u16)(pl->ang[1] + 0x7FFF + 1), 0.0f);
+            flvecCopy(d->m[3], pl->pos);
+            break;
+        }
+    default:
+        flmatGetTrans(w, (f32 *)d->m);
+        flvecApplyMat33(t, pch_pos[d->type], (f32 *)d->m);
+        AddVector(cs->eye, w, t);
+        flvecApplyMat33(t, &pch_pos[d->type][3], (f32 *)d->m);
+        AddVector(cs->tar, w, t);
+        cs->ang = pl->ang[1] + 0x7FFF + 1;
+        d->ang = pl->ang[1] + 0x7FFF + 1;
+        cs->act = 1;
+        return;
+    }
+}

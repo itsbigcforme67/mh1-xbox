@@ -233,6 +233,7 @@ main 0x00136FB0 0x001371B0 pl/pl08
 main 0x0021F3D0 0x0021F464 cam/cam
 main 0x0021F590 0x0021F9A8 cam/camm
 main 0x00220420 0x002206A4 cam/camb
+main 0x00220F30 0x002213F4 cam/camp
 main 0x00221460 0x00221700 cam/camc
 main 0x00221820 0x00222408 cam/camd
 main:rodata 0x0036B0D0 0x0036B108 cam/camd
