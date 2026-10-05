@@ -60,7 +60,7 @@ void cam_rail_move_sub(f32 goal, RAILPOS *rp, u8 *rail, int target) {
                 rp->t = len - rem;
                 return;
             }
-        } while (target < rp->sec);
+        } while (rp->sec > target);
         t = rp->t;
         if (t - goal <= rem) {
             rp->t = goal;

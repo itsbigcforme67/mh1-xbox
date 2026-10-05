@@ -454,7 +454,7 @@ void cmd_prev_bun(void) {
         kata_kouho_set();
         if (r != 0) {
             n = strlen((char *)lpSKey + 0x358);
-            *((s8 *)(lpSKey + (n - strlen((char *)lpSKey + 0x458))) + 0x358) = 0;
+            lpSKey[(n - strlen((char *)lpSKey + 0x458)) + 0x358] = 0;
             SKS32(0x150) = get_kouho_suu();
             Set_KouhoTable();
         }
