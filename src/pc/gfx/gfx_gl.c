@@ -323,6 +323,50 @@ void gfx_execute_clay(gfx_clay *c)
     glDisableClientState(GL_VERTEX_ARRAY);
 }
 
+void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, const uint8_t *col)
+{
+    gfx_texture *t = st ? G.tex : NULL;
+    GLboolean dt = glIsEnabled(GL_DEPTH_TEST);
+    GLboolean dm;
+    glGetBooleanv(GL_DEPTH_WRITEMASK, &dm);
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+    glMatrixMode(GL_TEXTURE);
+    glLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, w, h, 0, -1, 1);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(2, GL_FLOAT, 0, pos);
+    if (col) {
+        glEnableClientState(GL_COLOR_ARRAY);
+        glColorPointer(4, GL_UNSIGNED_BYTE, 0, col);
+    } else {
+        glColor4ub(255, 255, 255, 255);
+    }
+    if (t) {
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        glTexCoordPointer(2, GL_FLOAT, 0, st);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, t->id);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, G.filter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, G.filter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, G.wrap);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, G.wrap);
+    } else {
+        glDisable(GL_TEXTURE_2D);
+    }
+    glDrawArrays(GL_TRIANGLES, 0, nvert);
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    if (dt)
+        glEnable(GL_DEPTH_TEST);
+    glDepthMask(dm);
+}
+
 void gfx_release_clay(gfx_clay *c)
 {
     if (!c)

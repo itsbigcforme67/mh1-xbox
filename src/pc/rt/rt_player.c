@@ -185,9 +185,29 @@ void rt_player_tick(int no)
         if (em_work[0] && (p->flag14 == 0 || p->flag14 == 1) && (p->flag15 == 0 || p->flag15 == 2 || p->flag15 == 3 || p->flag15 == 4))
             p->ang[1] = Em_Calc_angY(p->pos, (f32 *)(em_work + 0xAC));
     }
+    if (getenv("RT_PL_WARP_EM")) {  /* test aid: at tick N, next to monster 0's carve point (or body), facing it */
+        static int tk;
+        extern u8 em_work[], StiEM_data[];
+        u16 Em_Calc_angY(f32 *a, f32 *b);
+        if (++tk == atoi(getenv("RT_PL_WARP_EM")) && em_work[0]) {
+            PLW *p = &player_work[no];
+            s8 hp = (s8)em_work[0x88D];
+            f32 *t = hp >= 0 ? (f32 *)(StiEM_data + 0x1C * hp) : (f32 *)(em_work + 0xAC);
+            f32 d[2] = { p->pos[0] - t[0], p->pos[2] - t[2] }, l = sqrtf(d[0] * d[0] + d[1] * d[1]);
+            if (l < 1) { d[0] = 1; l = 1; }
+            p->pos[0] = t[0] + d[0] / l * 120.0f;
+            p->pos[2] = t[2] + d[1] / l * 120.0f;
+            p->pos[1] = t[1];
+            p->ang[1] = Em_Calc_angY(p->pos, t);
+            fprintf(stderr, "rt_player: warped to %.0f %.0f (carve point %d at %.0f %.0f %.0f)\n",
+                    p->pos[0], p->pos[2], hp, t[0], t[1], t[2]);
+        }
+    }
     pl_move();
-    if (getenv("RT_PL_GOD"))        /* test aid: the hunter's vital (+0x302) back to 100 each tick */
+    if (getenv("RT_PL_GOD")) {      /* test aid: the hunter's vital (+0x302) back to 100 each tick, no stun gauge (+0x7AA) */
         PF(&player_work[no], s16, 0x302) = 100;
+        PF(&player_work[no], s16, 0x7AA) = 0;
+    }
     if (getenv("RT_PL_TRACE")) {
         PLW *pl = &player_work[no];
         printf("pl: act %d/%d step %d chr %d/%d fr %.1f spd %.1f pos %.0f %.0f %.0f ang %04X st %d sw %04X/%04X hp %d\n",

@@ -288,6 +288,7 @@ WEAK void wyvern_kill_cnt_up(void *u, int n) { (void)u; (void)n; }
 void rt_quest_mem_init(void);
 void Quest_init(void);
 void Quest_start(void);
+void Quest_timer_reset(void);
 void Quest_em_init_set(int stage);
 s32 *Em_data_com_adrs_get(s32 *p, int which);
 
@@ -308,6 +309,10 @@ int rt_quest_load(int no)
     *((u8 *)&select_w + 0xAC) = (u8)no;
     *((u8 *)&select_w + 0xAD) = 0;
     Quest_start();
+    /* game13's start of the hunt: mode 2 (game2), timers */
+    game_w.mode = 2;
+    game_w.step = 0;
+    Quest_timer_reset();
     return quest_w.no == no && quest_w.x94 ? 0 : -1;
 }
 
@@ -385,6 +390,8 @@ int rt_monster_spawn(int kind, const float pos[3], int ang_y)
         if (getenv("RT_EM_POS")) {      /* test aid: monster 0 at the given x,z */
             sscanf(getenv("RT_EM_POS"), "%f,%f", &em->pos[0], &em->pos[2]);
         }
+        if (getenv("RT_EM_HP"))         /* test aid: monster 0's hit points */
+            PS16(em, 0x302) = (s16)atoi(getenv("RT_EM_HP"));
         return 0;
     }
     q = &dflt;

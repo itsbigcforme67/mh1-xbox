@@ -463,36 +463,108 @@ static void write_wav(const char *path, const int16_t *pcm, size_t frames)
     fclose(f);
 }
 
+/* main()'s state (file scope so the game tick can run as game_core) */
+static const char *disc = NULL, *shot = NULL;
+static int frames = 1, W = 1280, H = 720, i, running = 1, frame_no = 0;
+static float cam[5] = { 11900, 700, 8900, 0.75f, -0.2f };   /* x y z yaw pitch */
+static float fixed_time = -1;
+static char path[1024];
+static size_t n;
+static fmt_blob stage_link, stage_tex, set_link, set_tex;
+static uint8_t *keep[8];
+static fl_model stage, set;
+static monster rathian;
+static hunter pl;
+static fl_light light;
+static const int parts[HUNTER_PARTS] = { 1, 0, 1, 1, 1, 1 };
+static float hx = 10900, hz = 7700, rx = 10000, rz = 6700, gy;
+static Uint32 t0;
+static int set_h0 = -1, ticks = 0, stage_no = 4, cam_given = 0, stage_given = 0, quest_no = 0;
+static float follow[3] = { 900.0f, 450.0f, -0.3f };
+static float rathian_yoff = 0;
+static int follow_given = 0, game_cam = 0, have_view = 0;
+static const char *audio_dump = NULL;      /* --audio-dump out.wav: mix each game tick into a wav */
+static int mute = 0, snd = -1;
+static int16_t *dump_pcm = NULL;
+static size_t dump_n = 0, dump_cap = 0;   /* game_cam: the game's CameraMove drives the view */
+static float gc_eye[3] = { 0 }, gc_tar[3] = { 0 }, gc_roll = 0, gc_fov = 1.0f;   /* --play camera: distance, height, pitch */
+static int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter */
+static const char *script = NULL;
+static float hunter_yoff = 0;
+
+
+/* ------------------------------------------------------------ one game tick
+ * What game_core does on the PS2 (swset, move, trans, hit_check), done by
+ * the host pieces in the PS2 order. With --quest it runs inside the game's
+ * own mode loop (game2 -> game_core, src/main/game/f_game.c; rt_flow.c). */
+static void sim_tick(void)
+{
+    rt_game_move();
+    if (pl.game && play && ticks >= 2) {
+        pad_state ps;
+        if (script)
+            pad_script_next(&ps);
+        else
+            pad_read(&ps, 1);
+        rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
+        rt_player_tick(0);
+        if (game_cam) {
+            flmat cw;
+            rt_cam_tick();      /* CameraMove (src/main/cam) */
+            /* rview_mat follows the game camera every tick (sound
+             * distances, billboards), also when several ticks run
+             * in one drawn frame */
+            rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
+            lookat_world(cw, gc_eye, gc_tar);
+            rt_set_camera(cw);
+        }
+        /* right stick turns the follow camera */
+        cam[3] -= ps.rx * (0.04f / 127.0f);
+        if (sw_trace) {
+            int now, ang, pw;
+            float p[3];
+            int a;
+            rt_player_sw(0, &now, &ang, &pw);
+            rt_player_get(0, p, &a);
+            printf("tick %d: sw %04X stick ang %04X pow %d -> pos %.0f %.0f %.0f ang %04X\n",
+                   ticks, now, ang, pw, p[0], p[1], p[2], a & 0xFFFF);
+        }
+    } else if (pl.game) {
+        rt_player_motion_tick(0);
+    }
+    if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
+        sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
+        rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
+    }
+    if (rathian.game && ticks >= 2) {
+        if (getenv("RT_EM_STANDIN"))
+            rt_monster_motion_tick(0);
+        else
+            rt_monster_tick(0);
+        if (sw_trace && rathian.skel.root_lock) {
+            float p[3];
+            int a;
+            rt_monster_get(0, p, &a);
+            printf("tick %d: em0 pos %.0f %.0f %.0f ang %04X\n", ticks, p[0], p[1], p[2], a & 0xFFFF);
+        }
+    }
+    if (quest_no)
+        rt_hud_tick();                  /* Pit_mv: HUD layers (last step of move()) */
+    if (snd == 0) {
+        rt_snd_tick();
+        if (audio_dump) {           /* 1/30 s of mixer output per tick */
+            if (dump_n + 1600 * 2 > dump_cap) {
+                dump_cap = dump_cap ? dump_cap * 2 : 1 << 20;
+                dump_pcm = realloc(dump_pcm, dump_cap * sizeof *dump_pcm);
+            }
+            audio_mix(dump_pcm + dump_n, 1600);
+            dump_n += 1600 * 2;
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
-    const char *disc = NULL, *shot = NULL;
-    int frames = 1, W = 1280, H = 720, i, running = 1, frame_no = 0;
-    float cam[5] = { 11900, 700, 8900, 0.75f, -0.2f };   /* x y z yaw pitch */
-    float fixed_time = -1;
-    char path[1024];
-    size_t n;
-    fmt_blob stage_link, stage_tex, set_link, set_tex;
-    uint8_t *keep[8];
-    fl_model stage, set;
-    monster rathian;
-    hunter pl;
-    fl_light light;
-    static const int parts[HUNTER_PARTS] = { 1, 0, 1, 1, 1, 1 };
-    float hx = 10900, hz = 7700, rx = 10000, rz = 6700, gy;
-    Uint32 t0;
-    int set_h0 = -1, ticks = 0, stage_no = 4, cam_given = 0, stage_given = 0, quest_no = 0;
-    float follow[3] = { 900.0f, 450.0f, -0.3f };
-    float rathian_yoff = 0;
-    int follow_given = 0, game_cam = 0, have_view = 0;
-    const char *audio_dump = NULL;      /* --audio-dump out.wav: mix each game tick into a wav */
-    int mute = 0, snd = -1;
-    int16_t *dump_pcm = NULL;
-    size_t dump_n = 0, dump_cap = 0;   /* game_cam: the game's CameraMove drives the view */
-    float gc_eye[3] = { 0 }, gc_tar[3] = { 0 }, gc_roll = 0, gc_fov = 1.0f;   /* --play camera: distance, height, pitch */
-    int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter */
-    const char *script = NULL;
-    float hunter_yoff = 0;
-
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shot") && i + 1 < argc) shot = argv[++i];
         else if (!strcmp(argv[i], "--frames") && i + 1 < argc) frames = atoi(argv[++i]);
@@ -627,6 +699,8 @@ int main(int argc, char **argv)
     }
     load_eft_models();
     rt_game_init(stage_no);
+    if (quest_no)
+        rt_hud_init();                  /* load_pit, Pit_init, info banner */
     if (!mute)
         snd = rt_snd_init(disc, audio_dump == NULL && shot == NULL);
 
@@ -738,6 +812,7 @@ int main(int argc, char **argv)
     }
     if (!shot)
         SDL_SetRelativeMouseMode(SDL_TRUE);
+    rt_flow_set_core(sim_tick);
     t0 = SDL_GetTicks();
     while (running) {
         SDL_Event ev;
@@ -783,66 +858,10 @@ int main(int argc, char **argv)
         /* game logic ticks at 30 per second (at least 2, so set objects
          * have run their init and queued their prims) */
         while (ticks < 2 + (int)fr) {
-            rt_game_move();
-            if (pl.game && play && ticks >= 2) {
-                pad_state ps;
-                if (script)
-                    pad_script_next(&ps);
-                else
-                    pad_read(&ps, 1);
-                rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
-                rt_player_tick(0);
-                if (game_cam) {
-                    flmat cw;
-                    rt_cam_tick();      /* CameraMove (src/main/cam) */
-                    /* rview_mat follows the game camera every tick (sound
-                     * distances, billboards), also when several ticks run
-                     * in one drawn frame */
-                    rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
-                    lookat_world(cw, gc_eye, gc_tar);
-                    rt_set_camera(cw);
-                }
-                /* right stick turns the follow camera */
-                cam[3] -= ps.rx * (0.04f / 127.0f);
-                if (sw_trace) {
-                    int now, ang, pw;
-                    float p[3];
-                    int a;
-                    rt_player_sw(0, &now, &ang, &pw);
-                    rt_player_get(0, p, &a);
-                    printf("tick %d: sw %04X stick ang %04X pow %d -> pos %.0f %.0f %.0f ang %04X\n",
-                           ticks, now, ang, pw, p[0], p[1], p[2], a & 0xFFFF);
-                }
-            } else if (pl.game) {
-                rt_player_motion_tick(0);
-            }
-            if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
-                sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
-                rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
-            }
-            if (rathian.game && ticks >= 2) {
-                if (getenv("RT_EM_STANDIN"))
-                    rt_monster_motion_tick(0);
-                else
-                    rt_monster_tick(0);
-                if (sw_trace && rathian.skel.root_lock) {
-                    float p[3];
-                    int a;
-                    rt_monster_get(0, p, &a);
-                    printf("tick %d: em0 pos %.0f %.0f %.0f ang %04X\n", ticks, p[0], p[1], p[2], a & 0xFFFF);
-                }
-            }
-            if (snd == 0) {
-                rt_snd_tick();
-                if (audio_dump) {           /* 1/30 s of mixer output per tick */
-                    if (dump_n + 1600 * 2 > dump_cap) {
-                        dump_cap = dump_cap ? dump_cap * 2 : 1 << 20;
-                        dump_pcm = realloc(dump_pcm, dump_cap * sizeof *dump_pcm);
-                    }
-                    audio_mix(dump_pcm + dump_n, 1600);
-                    dump_n += 1600 * 2;
-                }
-            }
+            if (quest_no)
+                rt_flow_tick();         /* game2 / game3 / game5 (f_game.c): game_core = sim_tick */
+            else
+                sim_tick();
             ticks++;
         }
         if (game_cam) {
@@ -905,6 +924,7 @@ int main(int argc, char **argv)
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)wid);
             draw_model_attr(&weapon.model, -1);
         }
+        rt_game_draw_2d();              /* screen layers: HUD, info banner, text (after the 3D scene) */
 
         frame_no++;
         if (shot && frame_no >= frames) {

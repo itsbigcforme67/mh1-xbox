@@ -78,7 +78,13 @@ EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c sr
 # Quest flow (agent C/E): f_quest (whole file near-match) and its first
 # part f_quest0_nm.c (accessors, Quest_init; written from the asm), the
 # tutorial checks it calls (game.bin tutorial.c)
-QUEST="src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c"
+QUEST="src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c \
+       src/main/game/f_game.c src/main/game/f_gameb.c src/main/font/dsp01.c \
+       src/main/menu/menu_nm.c src/main/menu/menu_disp_nm.c \
+       src/main/chat/chat_nm.c src/main/font/fontst_nm.c \
+       src/main/font/fontst2_nm.c src/main/font/gfs_nm.c src/main/set/set01.c src/main/sys/vib.c \
+       src/main/sprite/putspr.c src/main/sprite/putspr2.c src/main/sprite/calcpoint.c src/main/sprite/trans2.c src/main/sprite/sysw.c \
+       src/main/load/mkmap.c"
 for f in src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c; do
     [ -f "$f" ] && EM="$EM $f"
 done
@@ -100,7 +106,7 @@ for e in $EXT; do
     git show "$br:$f" > "$d/$f"
     EM="$EM $d/$f"
 done
-WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm"
+WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm fontst_nm gfs_nm sysw vib"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST"
 
 SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
@@ -139,6 +145,8 @@ for f in $GAME; do
              -DEft06_set=rtabi_Eft06_set -DEft02_set6=rtabi_Eft02_set6 \
              -DGetGroundHitStatusAreaPl=rtabi_GetGroundHitStatusAreaPl" ;;
     src/main/stage/f_stage.c) ABI="-Dhit_point_cbd=rtabi_hit_point_cbd" ;;
+    # game_core (swset, move, trans, hit_check) is the host tick (rt_quest.c)
+    src/main/game/f_gameb.c) ABI="-Dgame_core=ps2_game_core" ;;
     */em_cmd_nm.c) ABI="-DGetWaterData()=GetWaterData(em)" ;;   # a0 = em left over
     src/game/em/em_core_nm.c) ABI="-DNextStage_No_Set(...)=rtabi_NextStage_No_Set(em)" ;;   # a0 = em left over
     */em01_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
@@ -188,7 +196,7 @@ python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 gcc $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d; do
     # shellcheck disable=SC2086
     gcc $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"

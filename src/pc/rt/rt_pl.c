@@ -208,10 +208,6 @@ void Ed_player_trans(void *pl, int a) { (void)pl; (void)a; }
 /* lighting from the ground material (GetGroundCameraData ...) */
 void GetPlayerMaterialData(void *pl) { (void)pl; }
 /* messages, sounds not ported */
-void set01_set(int a, int b, int c) { (void)a; (void)b; (void)c; }
-void set01_set2(void *msg) { (void)msg; }
-void set01_set2_use_mem(void *msg) { (void)msg; }
-void unmei_se(void *pl) { (void)pl; STUB("unmei_se") }
 void adx_se_set(void *pl, int a) { (void)pl; (void)a; STUB("adx_se_set") }
 void adx_se_stop(void *pl) { (void)pl; }
 void die_bgm_set(void) { STUB("die_bgm_set") }
@@ -220,8 +216,6 @@ void armor_sd_req(void *pl, int a) { (void)pl; (void)a; }
 void PlayerDieCameraRequest(void) {}
 void PlComebackCameraRequest(void) {}
 void PilebunkerCameraRequest(void) {}
-void ItemPickingDeclaration(void *pl, void *p) { (void)pl; (void)p; }
-long ItemStockRequest(void *pl, int a, int b, int c) { (void)pl; (void)a; (void)b; (void)c; return 0; }
 /* Item_regained: f_quest_nm.c */
 void *rt_pull_enemy_work(void);
 void *pull_enemy_work(void) { return rt_pull_enemy_work(); }   /* rt_em.c */
@@ -333,8 +327,6 @@ void init_eft_work(void) { STUB("init_eft_work") }
 void init_item_work(void) { STUB("init_item_work") }
 void init_set_work(void) { STUB("init_set_work") }
 void init_shell_work(void) { STUB("init_shell_work") }
-int Item_box_get_efct(void) { STUB("Item_box_get_efct") return 0; }
-int Item_box_get_item(void) { STUB("Item_box_get_item") return 0; }
 void net_send_host(void) { STUB("net_send_host") }
 /* overlay calls by address (as rt_overlay.c): Eft12_set4, Shell12_set, Pl_poison_add */
 void Eft12_set4(void *, int, int);

@@ -186,10 +186,11 @@ void push_set_work(SETW *sw)
  * this tick; rt_game_draw walks ot0..ot4 in order. Priority order inside a
  * table (low first) is a guess. */
 #define PRIM_MAX 256
-#define OT_N 5
+#define OT_N 9
 #define QUEUE_MAX 512
 u8 ot0[0x20], ot1[0x20], ot2[0x20], ot3[0x20], ot4[0x20];
-static u8 *const ots[OT_N] = { ot0, ot1, ot2, ot3, ot4 };   /* ot4: set13 glare, drawn last (guess) */
+u8 ot5[0x20], ot6[0x20], ot7[0x20], ot8[0x20];   /* screen layers: HUD / menus (rt_game_draw_2d) */
+static u8 *const ots[OT_N] = { ot0, ot1, ot2, ot3, ot4, ot5, ot6, ot7, ot8 };   /* ot4: set13 glare, drawn last (guess) */
 static union { PRIM p; u8 raw[0x40]; } prim_pool[PRIM_MAX];
 static unsigned char prim_used[PRIM_MAX];
 static struct { PRIM *p; int pri; } queue[OT_N][QUEUE_MAX];
@@ -261,9 +262,13 @@ void rt_eft_trace(void);
 
 void *Stage_data_get(int stg);
 
+extern u8 quest_w[];
 void rt_game_init(int stage)
 {
-    memset(&game_w, 0, sizeof game_w);
+    /* a quest (rt_quest_load: Quest_start) has already set game_w up, as
+     * game11 does before the stage is loaded */
+    if (*(s16 *)(quest_w + 8) == 0)
+        memset(&game_w, 0, sizeof game_w);
     game_w.stage = (u8)stage;
     game_w.master = 0;
     game_w.pl_num = 1;      /* one player, offline (monster sight/hate loops over pl_num) */
@@ -318,8 +323,8 @@ void rt_game_draw(void)
     }
     rt_eft_draw();          /* trans_shell, trans_eft, trans_eft_up (before the prims: a guess) */
     rt_fl_reset_states();
-    for (t = 0; t < OT_N; t++)
-        for (k = 0; k < nqueue[t]; k++) {
+    for (t = 0; t < 5; t++)
+        for (k = 0; k < (t == 2 ? 0 : nqueue[t]); k++) {   /* ot2: screen layer (rt_game_draw_2d) */
             PRIM *p = queue[t][k].p;
             static int skip = -2;
             if (skip == -2) skip = getenv("RT_SKIP_TYPE") ? atoi(getenv("RT_SKIP_TYPE")) : -1;
@@ -329,4 +334,38 @@ void rt_game_draw(void)
                 p->trans(p);
             rt_fl_reset_states();
         }
+}
+
+/* add_prim2 (0x169710): queue on a multi-entry ordering table; entry idx
+ * of n (drawn high idx first on the PS2: plplAdd(ot + n - 1 - idx)) */
+int add_prim2(void *ot, PRIM *p, int idx, int n)
+{
+    if (!(idx < n && idx >= 0))
+        return -1;
+    add_prim(ot, p, n - 1 - idx, 0);
+    return idx;
+}
+
+/* The screen layers in trans()'s order (main 0x163BC0): ot5, font stack
+ * 0, ot6, stack 1, ot7, stack 2, ot8, stack 4, ot2, stack 3. */
+void font_draw_stack_no(int n);
+void rt_font_frame_begin(void);
+void rt_font_frame_end(void);
+void rt_game_draw_2d(void)
+{
+    static const int order[5] = { 5, 6, 7, 8, 2 }, fstack[5] = { 0, 1, 2, 4, 3 };
+    int i, k;
+    rt_font_frame_begin();
+    for (i = 0; i < 5; i++) {
+        int t = order[i];
+        for (k = 0; k < nqueue[t]; k++) {
+            PRIM *p = queue[t][k].p;
+            if (p->trans)
+                p->trans(p);
+            rt_fl_reset_states();
+        }
+        font_draw_stack_no(fstack[i]);
+        rt_fl_reset_states();
+    }
+    rt_font_frame_end();
 }

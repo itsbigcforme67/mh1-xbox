@@ -96,3 +96,28 @@ void func_5A8170(void *e) { (void)e; }
 /* Lb_get_quest_str2 (lobby 0x5C5E20): online quest names */
 static char empty_str[1];
 char *func_5C5E20(void) { return empty_str; }
+
+/* ------------------------------------------------ the HUD ("pit", main f_menu)
+ * Set-up as the game does when a quest's stage is entered: load_pit (HUD
+ * textures, rt_2d.c), PitWork_init / Pit_init (menu_nm.c), the info
+ * banner (Info_Initialization, set01.c). Each tick Pit_mv (the last step
+ * of move(), 0x1265E0) queues the three HUD layers; rt_game_draw_2d draws
+ * them. */
+void rt_2d_init(void);
+void load_pit(void);
+void PitWork_init(void);
+void Pit_init(void);
+void Pit_mv(void);
+void Info_Initialization(void);
+void rt_hud_init(void)
+{
+    rt_2d_init();
+    load_pit();
+    PitWork_init();
+    Pit_init();
+    Info_Initialization();
+}
+void rt_hud_tick(void)
+{
+    Pit_mv();
+}
