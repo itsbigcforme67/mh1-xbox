@@ -1457,3 +1457,10 @@ lobby 0x0060D810 0x0060D918 f/lb_gpc02
 lobby 0x0060DFA0 0x0060E180 f/lb_gpc03
 lobby 0x0060E330 0x0060E444 f/lb_ge2501
 lobby 0x0060F8C0 0x0060F8C8 f/lb_ge2502
+lobby 0x005D59E0 0x005D5B0C f/lb_gad04
+lobby 0x005D7790 0x005D78C0 f/lb_gad05
+lobby:rodata 0x00665D40 0x00665D5C f/lb_gad05
+lobby 0x005D8680 0x005D875C f/lb_gaf02
+lobby 0x005D8C10 0x005D903C f/lb_gaf03
+lobby:rodata 0x00665DA0 0x00665DD0 f/lb_gaf03
+lobby 0x005D91A0 0x005D93A0 f/lb_gaf04
