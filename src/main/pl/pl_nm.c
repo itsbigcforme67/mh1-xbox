@@ -1185,3 +1185,75 @@ void pl_dm008(PLW *pl) {
         break;
     }
 }
+
+/* near-match (not built): pl_demo000 - 1 instruction differs (`addu s0,v1,a0` vs ours `addu s0,a0,v1`: operand order of base+index for the game_w.x28 slot pointer q). */
+typedef struct { u8 _pad00[0x14]; s32 x14; } PL_QUEST_W_UNUSED;
+EMW *pull_enemy_work(void);
+void enemy_mv(EMW *);
+void get_joint_pos_em(EMW *, int, f32 *);
+void PlComebackCameraRequest(void);
+void pl_demo000(PLW *pl) {
+    EMW *e;
+    u8 *q;
+    s16 i;
+    s16 k;
+    u8 *g;
+    u8 s;
+
+    pl->work40E = 0xA;
+    pl->work40C = 0xA;
+    pl->x01 = 1;
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        k = -1;
+        pl->x06 = 0;
+        i = 0;
+        g = (u8 *)&game_w;
+        do {
+            if ((g[0x28] == 0x12) && ((e = pull_enemy_work()) != 0)) {
+                q = (u8 *)(i + (int)game_w.x28);
+                e->mdl_no = i;
+                e->kind = *q;
+                e->stg = game_w.stage;
+                e->type = 0;
+                e->type = 0xFF;
+                e->x616 = pl->id;
+                enemy_mv(e);
+                e->pos[0] = pl->pos[0];
+                e->pos[1] = pl->pos[1];
+                e->pos[2] = pl->pos[2];
+                e->ang[1] = pl->ang[1];
+                pl->em_demo = e;
+                k = *q;
+                break;
+            }
+            i++;
+            g++;
+        } while (i < 4);
+        if (k != 0x12) {
+            pl_to_normal(pl, 0, 4, 0);
+        } else {
+            pl->x07 = 0;
+            pl_chr_set2(pl, 0xDD, 0, 0);
+        }
+        if (Pl_master_ck(pl) == 1) {
+            PlComebackCameraRequest();
+        }
+        break;
+    case 1:
+        e = pl->em_demo;
+        if (e == 0) {
+            pl_to_normal(pl, 0, 4, 0);
+            break;
+        }
+        get_joint_pos_em(e, 0x1D, pl->pos);
+        if (e->char0 == 0x3EB) {
+            Pl_act_set2(pl, 4, 1, 2);
+        }
+        pl->ang[1] = e->ang[1];
+        pl->ang_y = pl->ang[1];
+        break;
+    }
+}
