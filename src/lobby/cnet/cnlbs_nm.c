@@ -1416,8 +1416,8 @@ int __cnet_SendReq_TopPageJump(void) {
     return cmd;
 }
 
-int cnLBS_Read_RoomRuleCaption(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0);
+int cnLBS_Read_RoomRuleCaption(int arg0, int arg1, int arg2) {
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg2);
 
     if (slot != -1) {
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_RuleListHeadWord(arg0, arg1);
@@ -1426,8 +1426,8 @@ int cnLBS_Read_RoomRuleCaption(int arg0, int arg1) {
     return -1;
 }
 
-int cnLBS_Read_RoomRuleChoiceCount(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0);
+int cnLBS_Read_RoomRuleChoiceCount(int arg0, int arg1, int arg2) {
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg2);
 
     if (slot != -1) {
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_RuleNumOfChoice(arg0, arg1);
@@ -1436,8 +1436,8 @@ int cnLBS_Read_RoomRuleChoiceCount(int arg0, int arg1) {
     return -1;
 }
 
-int cnLBS_Read_RoomRuleNow(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0);
+int cnLBS_Read_RoomRuleNow(int arg0, int arg1, int arg2) {
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg2);
 
     if (slot != -1) {
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_RuleListNow(arg0, arg1);
@@ -1446,8 +1446,8 @@ int cnLBS_Read_RoomRuleNow(int arg0, int arg1) {
     return -1;
 }
 
-int cnLBS_Read_RoomRuleChoicePermission(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0);
+int cnLBS_Read_RoomRuleChoicePermission(int arg0, int arg1, int arg2) {
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg2);
 
     if (slot != -1) {
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_RuleListPermission(arg0, arg1);
