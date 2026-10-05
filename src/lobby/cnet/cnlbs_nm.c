@@ -100,9 +100,69 @@ void cnLBS_AnswerAdminMessage(void) {
     Write_Socket(&send_work);
 }
 
+int cnLBS_ConditionSearchUser(cond, cb)
+CNET_COND *cond;
+int cb;
+{
+    CNET_COND c;
+    int slot;
+
+    c = *cond;
+    memset(&CnetSys_w.csearch, 0, 0x1CC4);
+    slot = __cnetSub_Set_BgProcess(1, 0, cb);
+    if (slot != -1) {
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_ConditionSearchUser(c);
+        CnetSys_w.cs_slot = slot;
+        return slot;
+    }
+    return -1;
+}
+
 int cnLBS_Get_ConditionSearchUser(void **arg0) {
     *arg0 = CNWP(0x39D8C);
     return 0;
+}
+
+int __cnet_SendReq_ConditionSearchUser(CNET_COND c) {
+    int cmd;
+    int n;
+    int i;
+    u8 *e;
+
+    cmd = SetSendCommand(&send_work, 0xEC) & 0xFFFF;
+    SetSendData8(&send_work, c.b[0]);
+    n = c.b[1];
+    SetSendData8(&send_work, n);
+    n &= 0xFF;
+    for (i = 0, e = c.b; i < n; i++, e += 0x44) {
+        int t = e[4];
+        SetSendData8(&send_work, t);
+        switch (t & 0xFF) {
+        case 1:
+            SetSendStringData2(&send_work, e + 8, 6);
+            break;
+        case 2:
+            SetSendStringData2(&send_work, e + 8, e[5]);
+            break;
+        case 3:
+            SetSendData8(&send_work, e[8]);
+            break;
+        case 4:
+            SetSendData8(&send_work, e[8]);
+            break;
+        case 5:
+            SetSendData8(&send_work, e[8]);
+            break;
+        case 6:
+            SetSendData8(&send_work, e[8]);
+            SetSendData8(&send_work, e[9]);
+            break;
+        }
+        
+    }
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
 }
 
 int __cnet_Send_ConditionSearchUserCertify(int arg0) {
@@ -111,6 +171,49 @@ int __cnet_Send_ConditionSearchUserCertify(int arg0) {
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
+}
+
+void _cnet_RecvFromLbs_AnswerConditionSearchUser(void) {
+    u8 sp3F;
+    u8 sp3E;
+    u8 sp3D;
+    u8 sp3C;
+    int r;
+    int i;
+    CNET_B5C *p;
+
+    if (CnetSys_w.rres == 0) {
+        r = GetRecvData8(&sp3C, GetRecvData8(&sp3D, GetRecvData8(&sp3E, GetRecvData8(&sp3F, recv_work))));
+        p = &CnetSys_w.csearch.rec[sp3E];
+        for (i = 0; i < sp3D; i++) {
+            r = GetRecvDataOption3(p->b + 0x1C, 0x40, GetRecvDataOption3(p->b + 8, 0x10, GetRecvDataOption3(p->b, 8, r)));
+            p++;
+        }
+        if (sp3C == 0) {
+            CnetSys_w.bg[CnetSys_w.cs_slot].cmd = __cnet_Send_ConditionSearchUserCertify((sp3D + sp3E) & 0xFF);
+            return;
+        }
+        CnetSys_w.csearch.n = sp3F;
+    }
+    _cnet_Return_CallBack(0);
+}
+
+int cnLBS_RegistPersonalData(pd, cb)
+CNET_PDATA *pd;
+int cb;
+{
+    CNET_PDATA tmp;
+
+    tmp = *pd;
+    if (CnetSys_w.burst[9].state == 0) {
+        CnetSys_w.pdata = tmp;
+        CnetSys_w.burst[9].cb = (void *)cb;
+        CnetSys_w.burst[9].state = 1;
+        CnetSys_w.burst[9].run = __cnet_bgProg_RegistPersonalData;
+        CnetSys_w.burst[9].x21 = 0;
+        return 0;
+    }
+    return -1;
 }
 
 int cnLBS_RequestPersonalDataChange(int arg0) {
@@ -132,6 +235,24 @@ int __cnet_SendReq_PersonalDataChange(void) {
 
 void _cnet_RecvFromLbs_AnswerPersonalDataChange(void) {
     _cnet_Return_CallBack(0);
+}
+
+int cnLBS_Send_PersonalData(cb)
+int cb;
+{
+    int slot = __cnetSub_Set_BgProcess(1, 0, cb);
+
+    if (slot != -1) {
+        __cnet_SendSet_PersonalDataName();
+        __cnet_SendSet_PersonalDataZip();
+        __cnet_SendSet_PersonalDataAddress();
+        __cnet_SendSet_PersonalDataTelephone();
+        __cnet_SendSet_PersonalDataAge();
+        __cnet_SendSet_PersonalDataMailAddress();
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PersonalDataRegisted();
+        return slot;
+    }
+    return -1;
 }
 
 void __cnet_SendSet_PersonalDataName(void) {
@@ -813,6 +934,19 @@ int __cnet_SendReq_RoomJoinInfo(int arg0) {
     return cmd;
 }
 
+void _cnet_RecvFromLbs_BothRoomJoinInfo(void) {
+    u16 id;
+    CNET_PIECE *p;
+
+    if (CnetSys_w.rres == 0) {
+        int r = GetRecvData16(&id, recv_work);
+        p = &CnetSys_w.room[id - 1];
+        GetRecvData16(&p->ri[4], GetRecvData16(&p->ri[2], GetRecvData16(&p->ri[3], GetRecvData16(&p->ri[1], GetRecvData16(&p->ri[0], r)))));
+        p->flags |= 0x20;
+    }
+    _cnet_Return_CallBack(0x1D);
+}
+
 int cnLBS_RoomCreate(arg0, arg1)
 int arg0;
 int arg1;
@@ -917,6 +1051,20 @@ int __cnet_SendReq_RoomProperty(int arg0) {
     return cmd;
 }
 
+void _cnet_RecvFromLbs_BothRoomProperty(void) {
+    u16 id;
+    s32 prop;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_WordLong(&id, &prop);
+        CnetSys_w.room[id - 1].id = id;
+        CnetSys_w.room[id - 1].prop = prop;
+        CnetSys_w.last_id = id;
+        CnetSys_w.room[id - 1].flags |= 0x80;
+    }
+    _cnet_Return_CallBack(0x29);
+}
+
 int cnLBS_Set_RoomProperty(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
@@ -950,6 +1098,35 @@ void _cnet_RecvFromLbs_NoticeRoomCommer(void) {
 
 void _cnet_RecvFromLbs_NoticeRoomLeaver(void) {
     _sub_InOutRoomMember(3);
+}
+
+void _sub_ReceiveJoinUser(tbl)
+CNET_PIECE *tbl;
+{
+    u16 id;
+    u16 ja;
+    u16 jb;
+    CNET_PIECE *p;
+
+    if (CnetSys_w.rres == 0) {
+        p = tbl;
+        if (CNW(u8, 0x10D2) != 4) {
+            __cnet_Recv_PieceJoinUser(&id, &ja);
+            p += id - 1;
+            p->id = id;
+            p->ja = ja;
+            p->flags |= 1;
+        } else if (CNW(u8, 0x10D2) == 4) {
+            __cnet_Recv_PieceJoinUserMH(&id, &ja, &jb);
+            p += id - 1;
+            p->id = id;
+            p->ja = ja;
+            p->jb = jb;
+            p->flags |= 1;
+        }
+        CnetSys_w.last_id = id;
+        CnetSys_w.last_ja = ja;
+    }
 }
 
 int cnLBS_Read_RoomRuleAllocation(int val, int cb) {
@@ -1051,6 +1228,20 @@ int __cnet_SendReq_RoomPasswordInfo(int arg0) {
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
+}
+
+void _cnet_RecvFromLbs_BothRoomPasswordInfo(void) {
+    u8 pw;
+    u16 id;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_WordByte(&id, &pw);
+        CnetSys_w.room[id - 1].pwinfo = pw;
+        CnetSys_w.room[id - 1].flags |= 0x10;
+        CnetSys_w.last_id = id;
+        CnetSys_w.last_pwinfo = pw;
+    }
+    _cnet_Return_CallBack(0x1E);
 }
 
 int cnLBS_Read_RoomMemberList(arg, cb)
@@ -1509,6 +1700,29 @@ int arg1;
         break;
     case 2:
         cmd = SetSendCommand(&send_work, 0x83) & 0xFFFF;
+        break;
+    }
+    SetSendData16(&send_work, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_PieceExplain(kind, arg1)
+int kind;
+int arg1;
+{
+    int cmd;
+
+    switch (kind & 0xFFFF) {
+    case 0:
+        cmd = SetSendCommand(&send_work, 0x3C) & 0xFFFF;
+        break;
+    case 1:
+        cmd = SetSendCommand(&send_work, 0x50) & 0xFFFF;
+        break;
+    case 2:
+        cmd = SetSendCommand(&send_work, 0x90) & 0xFFFF;
         break;
     }
     SetSendData16(&send_work, arg1);

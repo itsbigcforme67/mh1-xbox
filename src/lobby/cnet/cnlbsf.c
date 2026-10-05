@@ -1,74 +1,73 @@
-/* cnlbs, run 6: __cnet_SendSet_PersonalDataName .. _cnet_CallBack_Result_PersonalDataChange (lobby.bin 0x005A3570-0x005A3888): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 6: _cnet_RecvFromLbs_AnswerRoomSetName .. _cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60 (lobby.bin 0x005A6CB0-0x005A6EC4): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-void __cnet_SendSet_PersonalDataName(void) {
-    char *s0 = CnetSys_w.pdata.name;
+void _cnet_RecvFromLbs_AnswerRoomSetName(void) {
 
-    SetSendCommand(&send_work, 0xB4);
-    SetSendEncodeStringData(&send_work, s0, strlen(s0) & 0xFFFF);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
 }
 
-void __cnet_SendSet_PersonalDataZip(void) {
-    char *s0 = CnetSys_w.pdata.name;
+void _cnet_RecvFromLbs_AnswerRoomSetRule(void) {
 
-    SetSendCommand(&send_work, 0xB5);
-    SetSendEncodeStringData(&send_work, s0 + 0x41, strlen(s0 + 0x41) & 0xFFFF);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
 }
 
-void __cnet_SendSet_PersonalDataAddress(void) {
-    char *s0 = CnetSys_w.pdata.name;
-
-    SetSendCommand(&send_work, 0xB6);
-    SetSendEncodeStringData(&send_work, s0 + 0x4C, strlen(s0 + 0x4C) & 0xFFFF);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-}
-
-void __cnet_SendSet_PersonalDataTelephone(void) {
-    char *s0 = CnetSys_w.pdata.name;
-
-    SetSendCommand(&send_work, 0xB7);
-    SetSendEncodeStringData(&send_work, s0 + 0xCD, strlen(s0 + 0xCD) & 0xFFFF);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-}
-
-void __cnet_SendSet_PersonalDataAge(void) {
-    SetSendCommand(&send_work, 0xB8);
-    SetSendData8(&send_work, CnetSys_w.pdata.age);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-}
-
-void __cnet_SendSet_PersonalDataMailAddress(void) {
-    char *s0 = CnetSys_w.pdata.name;
-
-    SetSendCommand(&send_work, 0xB9);
-    SetSendEncodeStringData(&send_work, s0 + 0x14F, strlen(s0 + 0x14F) & 0xFFFF);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-}
-
-int __cnet_SendReq_PersonalDataRegisted(void) {
-    int cmd = SetSendCommand(&send_work, 0xBA) & 0xFFFF;
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-    return cmd;
-}
-
-void _cnet_RecvFromLbs_AnswerPersonalDataRegisted(void) {
+void _cnet_RecvFromLbs_AnswerRoomSetFinish(void) {
     _cnet_Return_CallBack(0);
 }
 
-void _cnet_CallBack_Result_PersonalDataChange(CNET_RES res) {
+void _cnet_RecvFromLbs_BothRoomExit(void) {
+    if (CNW(s8, 0xFEC) == 0) {
+        __cnet_ClearEntryFloorInfo(2);
+    }
+    _cnet_Return_CallBack(0);
+}
+
+void _cnet_RecvFromLbs_NoticePlazaRemove(void) {
+    if (CNW(s8, 0xFEC) == 0) {
+        __cnet_Recv_ServerMessage();
+    }
+    _cnetEvent_JumpCallBack(9, 0);
+}
+
+void _cnet_RecvFromLbs_NoticeLobbyRemove(void) {
+    if (CNW(s8, 0xFEC) == 0) {
+        __cnet_Recv_ServerMessage();
+    }
+    _cnetEvent_JumpCallBack(0xA, 0);
+}
+
+void _cnet_RecvFromLbs_NoticeRoomRemove(void) {
+    if (CNW(s8, 0xFEC) == 0) {
+        __cnet_Recv_ServerMessage();
+    }
+    _cnetEvent_JumpCallBack(0xB, 0);
+}
+
+void _cnet_RecvFromLbs_AnswerRoomRestTime(void) {
+    u16 t;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_WordWord(&t, CNWP(0x302FE));
+    }
+    _cnet_Return_CallBack(0);
+}
+
+void __cnet_CallBack_Result_Plaza_NumOfPlaza_005A6E20(CNET_RES res) {
     if (res.val == 0) {
-        CNW(s8, 0xF7E) = 1;
+        CnetSys_w.burst[2].res = 1;
         return;
     }
-    CNW(s8, 0xF7E) = 2;
+    CnetSys_w.burst[2].res = 2;
+}
+
+void _cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60(CNET_RES res) {
+    CNET_RES r;
+
+    if (res.val == 0) {
+        r.val = 2;
+        r.id = 0xB;
+        CnetSys_w.burst[2].cb(r, &r);
+        CnetSys_w.burst[2].res = 1;
+        return;
+    }
+    CnetSys_w.burst[2].res = 2;
 }

@@ -1,104 +1,105 @@
-/* cnlbs, run 13: cnLBS_Read_RoomRuleAllocation .. __cnet_SendReq_RoomPasswordInfo (lobby.bin 0x005A5AD0-0x005A5F48): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 13: _cnet_RecvFromLbs_NoticeRoomMatchEntryTypeList .. cnLBS_Read_CurrentPlace (lobby.bin 0x005A9C00-0x005AA008): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-int cnLBS_Read_RoomRuleAllocation(int val, int cb) {
-    if (CnetSys_w.burst[5].state == 0) {
-        CnetSys_w.burst[5].cb = (void *)cb;
-        CNW(s32, 0xEE0) = val & 0xFFFF;
-        CnetSys_w.burst[5].state = 1;
-        CnetSys_w.burst[5].run = __cnet_bgProg_ReadRoomRule;
-        CnetSys_w.burst[5].x21 = 0;
-        return 0;
+void _cnet_RecvFromLbs_NoticeRoomMatchEntryTypeList(void) {
+    u16 id;
+    int p;
+    u8 *s0;
+
+    if (CnetSys_w.rres == 0) {
+        memset(CnetSys_w.extra_member, 0, 0x60);
+        p = GetRecvData16(&id, recv_work);
+        if (id == CNW(u8, 0x4060)) {
+            s0 = CnetSys_w.room_member;
+            CnetSys_w.n_room_member = 1;
+            GetRecvData8(s0 + 0x5C, GetRecvDataOption3(s0, 8, p));
+            goto cb;
+        }
+    } else {
+cb:
+        _cnet_Return_CallBack(0x28);
     }
-    return -1;
 }
 
-int cnLBS_Read_RoomRuleCount(int arg0, int arg1) {
+int __cnet_SendReq_RoomSetExplain(int arg0, int arg1) {
+    int cmd = SetSendCommand(&send_work, 0x71) & 0xFFFF;
+    SetSendStringData2(&send_work, arg0, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+void _cnet_RecvFromLbs_AnswerRoomSetExplain(void) {
+    _cnet_Return_CallBack(0);
+}
+
+int cnLBS_Read_RoomExplainPermission(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_NumOfRule(arg0);
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomExplainPermission(arg0);
         return slot;
     }
     return -1;
 }
 
-int cnLBS_Read_RoomNamePermission(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
-
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomNamePermission(arg0);
-        return slot;
-    }
-    return -1;
-}
-
-void _cnet_RecvFromLbs_AnswerRoomNamePermission(void) {
+void _cnet_RecvFromLbs_AnswerRoomExplainPermission(void) {
     u8 v;
 
     if (CnetSys_w.rres == 0) {
         __cnet_Recv_Byte(&v);
-        CnetSys_w.ruletbl.name_perm = v;
+        CnetSys_w.ruletbl.explain_perm = v;
     }
     _cnet_Return_CallBack(0);
 }
 
-int __cnet_SendReq_RoomNamePermission(int arg0) {
-    int cmd = SetSendCommand(&send_work, 0x55) & 0xFFFF;
+int __cnet_SendReq_RoomExplainPermission(int arg0) {
+    int cmd = SetSendCommand(&send_work, 0x6F) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
 }
 
-int cnLBS_Read_RoomPasswordPermission(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
+int cnLBS_Read_TimingValue(int arg0) {
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
     if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomPasswordPermission(arg0 & 0xFFFF);
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_TimingValue();
         return slot;
     }
     return -1;
 }
 
-void _cnet_RecvFromLbs_AnswerRoomPasswordPermission(void) {
-    u8 v;
-
-    if (CnetSys_w.rres == 0) {
-        __cnet_Recv_Byte(&v);
-        CnetSys_w.ruletbl.pw_perm = v;
-    }
-    _cnet_Return_CallBack(0);
-}
-
-int __cnet_SendReq_RoomPasswordPermission(int arg0) {
-    int cmd = SetSendCommand(&send_work, 0x57) & 0xFFFF;
-    SetSendData16(&send_work, arg0);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-    return cmd;
-}
-
-int cnLBS_Read_RoomPasswordInfo(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
-
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomPasswordInfo(arg0);
-        return slot;
-    }
-    return -1;
-}
-
-int cnLBS_Get_RoomPasswordInfo(int idx, u8 *d) {
-    *d = CnetSys_w.room[(u16)idx - 1].pwinfo;
+int cnLBS_Get_TimingValue(int *arg0) {
+    *arg0 = CNW(int, 0x3BA54);
     return 0;
 }
 
-int __cnet_SendReq_RoomPasswordInfo(int arg0) {
-    int cmd = SetSendCommand(&send_work, 0x86) & 0xFFFF;
-    SetSendData16(&send_work, arg0);
+void _cnet_RecvFromLbs_BothTimingValue(void) {
+    s32 v;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_Long(&v);
+        CNW(s32, 0x3BA54) = v;
+    }
+    _cnet_Return_CallBack(0x2B);
+}
+
+int __cnet_SendReq_TimingValue(void) {
+    int cmd = SetSendCommand(&send_work, 0xD3) & 0xFFFF;
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
+}
+
+int cnLBS_Read_CurrentPlace(int arg0) {
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
+
+    if (slot != -1) {
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_CurrentPlace();
+        return slot;
+    }
+    return -1;
 }

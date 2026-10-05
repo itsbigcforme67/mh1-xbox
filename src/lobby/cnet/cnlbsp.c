@@ -1,24 +1,32 @@
-/* cnlbs, run 16: _cnet_CallBack_Result_LobbyCount .. _cnet_CallBack_Result_LobbyAllocation (lobby.bin 0x005A7240-0x005A72E4): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 16: cnLBS_Get_LoginWarningMessage .. _cnet_RecvFromLbs_AnswerUserBinary (lobby.bin 0x005AAA40-0x005AAB38): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-void _cnet_CallBack_Result_LobbyCount(CNET_RES res) {
-    if (res.val == 0) {
-        CnetSys_w.burst[3].res = 1;
-        return;
-    }
-    CnetSys_w.burst[3].res = 2;
+void cnLBS_Get_LoginWarningMessage(CNET_H1004 *d) {
+    *d = CnetSys_w.warnmsg;
 }
 
-void _cnet_CallBack_Result_LobbyAllocation(CNET_RES res) {
-    CNET_RES r;
+int cnLBS_Answer_LoginWarningMessage(void) {
+    __cnet_SendAns_WarningMessage();
+    return 0;
+}
 
-    if (res.val == 0) {
-        r.val = 2;
-        r.id = 0xB;
-        CnetSys_w.burst[3].cb(r, &r);
-        CnetSys_w.burst[3].res = 1;
-        return;
-    }
-    CnetSys_w.burst[3].res = 2;
+void __cnet_SendAns_WarningMessage(int arg0) {
+    SetSendCommand(&send_work, 0x14);
+    SetSendData8(&send_work, arg0);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+int cnLBS_Send_LoginFinish(void) {
+    __cnet_SendSet_LoginFinish();
+    return 0;
+}
+
+void _cnet_RecvFromLbs_AnswerBillEstimate(void) {
+
+}
+
+void _cnet_RecvFromLbs_AnswerUserBinary(void) {
+    _cnet_Return_CallBack(0);
 }

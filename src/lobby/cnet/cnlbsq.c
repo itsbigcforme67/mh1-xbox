@@ -1,24 +1,15 @@
-/* cnlbs, run 17: _cnet_CallBack_Result_Room_NumOfRoom .. _cnet_CallBack_Result_RoomJoinJoinUser (lobby.bin 0x005A7660-0x005A7704): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 17: cnLBS_Get_TopInformation .. __cnet_SendReq_TopInformation (lobby.bin 0x005AAC40-0x005AACCC): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-void _cnet_CallBack_Result_Room_NumOfRoom(CNET_RES res) {
-    if (res.val == 0) {
-        CnetSys_w.burst[4].res = 1;
-        return;
-    }
-    CnetSys_w.burst[4].res = 2;
+int cnLBS_Get_TopInformation(CNET_B1004 *d) {
+    *d = CnetSys_w.topinfo;
+    return 0;
 }
 
-void _cnet_CallBack_Result_RoomJoinJoinUser(CNET_RES res) {
-    CNET_RES r;
-
-    if (res.val == 0) {
-        r.val = 2;
-        r.id = 0xB;
-        CnetSys_w.burst[4].cb(r, &r);
-        CnetSys_w.burst[4].res = 1;
-        return;
-    }
-    CnetSys_w.burst[4].res = 2;
+int __cnet_SendReq_TopInformation(void) {
+    int cmd = SetSendCommand(&send_work, 0x1F) & 0xFFFF;
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
 }

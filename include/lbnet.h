@@ -68,6 +68,11 @@ typedef struct CNET_COND {
 
 /* blobs copied by value out of CnetSys_w (struct assignment; the element type fixes the copy loop) */
 typedef struct CNET_B5C { u8 b[0x5C]; } CNET_B5C;
+typedef struct CNET_CSEARCH {   /* condition search result (0x1CC4 bytes) */
+    u8 n;               /* 0x00 number of hits */
+    u8 _pad01[3];
+    CNET_B5C rec[0x50]; /* 0x04 hit records */
+} CNET_CSEARCH;
 typedef struct CNET_B308 { u8 b[0x308]; } CNET_B308;
 typedef struct CNET_B1004 { u8 b[0x1004]; } CNET_B1004;
 typedef struct CNET_H1004 { s16 h[0x802]; } CNET_H1004;
@@ -177,7 +182,8 @@ typedef struct CNET_SYS {
     CNET_PIECE room[8];  /* 0x61C4 room table */
     u8 _pad6CE4[0x8];
     u16 last_id;  /* 0x6CEC id of the last received plaza/lobby/room item */
-    u8 _pad6CEE[0x12];
+    u16 last_ja;  /* 0x6CEE joined users of the last item */
+    u8 _pad6CF0[0x10];
     u8 last_status;  /* 0x6D00 status of the last item */
     u8 last_pwinfo;  /* 0x6D01  */
     char last_name[0x42];  /* 0x6D02 name of the last item */
@@ -199,7 +205,10 @@ typedef struct CNET_SYS {
     CNET_B308 chatbin;  /* 0x375B8 chat binary */
     char srvmsg[0x300];  /* 0x378C0 server message */
     CNET_BUF2000 loginbuf;  /* 0x37BC0  */
-    u8 _pad39BC0[0x1E98];
+    u8 _pad39BC0[0x1CC];
+    CNET_CSEARCH csearch;  /* 0x39D8C condition search result */
+    u16 cs_slot;  /* 0x3BA50 bg slot of the condition search in progress */
+    u8 _pad3BA52[0x6];
     s16 curplace[3];  /* 0x3BA58 current place (3 values) */
 } CNET_SYS;
 extern CNET_SYS CnetSys_w;

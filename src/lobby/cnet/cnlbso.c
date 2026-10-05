@@ -1,73 +1,67 @@
-/* cnlbs, run 15: _cnet_RecvFromLbs_AnswerRoomSetName .. _cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60 (lobby.bin 0x005A6CB0-0x005A6EC4): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 15: _cnet_RecvFromLbs_NoticeUserId .. _cnet_RecvFromLbs_NoticeLoginOk (lobby.bin 0x005AA690-0x005AA8FC): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-void _cnet_RecvFromLbs_AnswerRoomSetName(void) {
+void _cnet_RecvFromLbs_NoticeUserId(void) {
+    CNET_RES res;
 
+    if (CnetSys_w.burst[0].state != 0) {
+        __cnet_Recv_UserIDandHandle();
+        res.val = 0;
+        res.id = 1;
+        CnetSys_w.burst[0].cb(res, &res);
+    }
 }
 
-void _cnet_RecvFromLbs_AnswerRoomSetRule(void) {
+void _cnet_RecvFromLbs_AnswerUserId(void) {
+    CNET_RES res;
 
+    if (CnetSys_w.burst[0].state != 0) {
+        if (CnetSys_w.rres == 0) {
+            __cnet_Recv_UserID();
+            cnetGet_Login_DecideUserID(CnetSys_w.decide_id);
+            cnetGet_Login_DecideUserHandle(CnetSys_w.decide_handle);
+            res.val = 0;
+            res.id = 2;
+            CnetSys_w.burst[0].cb(res, &res);
+            return;
+        }
+        __cnet_Recv_ServerMessage();
+        res.val = -1;
+        res.id = 7;
+        CnetSys_w.burst[0].cb(res, &res);
+    }
 }
 
-void _cnet_RecvFromLbs_AnswerRoomSetFinish(void) {
+int cnLBS_Send_UserMiniData(int arg0, int arg1) {
+    int slot = __cnetSub_Set_BgProcess(1, 0);
+
+    if (slot != -1) {
+        CnetSys_w.bg[slot].cmd = __cnet_SendSet_MiniDataRegist(arg0, arg1);
+        return slot;
+    }
+    return -1;
+}
+
+void _cnet_RecvFromLbs_AnswerMiniDataRegist(void) {
     _cnet_Return_CallBack(0);
 }
 
-void _cnet_RecvFromLbs_BothRoomExit(void) {
-    if (CNW(s8, 0xFEC) == 0) {
-        __cnet_ClearEntryFloorInfo(2);
-    }
-    _cnet_Return_CallBack(0);
+int cnLBS_Get_NoticeUserMiniData(CNET_B5C *d) {
+    *d = CnetSys_w.minidata;
+    return 0;
 }
 
-void _cnet_RecvFromLbs_NoticePlazaRemove(void) {
-    if (CNW(s8, 0xFEC) == 0) {
-        __cnet_Recv_ServerMessage();
-    }
-    _cnetEvent_JumpCallBack(9, 0);
-}
-
-void _cnet_RecvFromLbs_NoticeLobbyRemove(void) {
-    if (CNW(s8, 0xFEC) == 0) {
-        __cnet_Recv_ServerMessage();
-    }
-    _cnetEvent_JumpCallBack(0xA, 0);
-}
-
-void _cnet_RecvFromLbs_NoticeRoomRemove(void) {
-    if (CNW(s8, 0xFEC) == 0) {
-        __cnet_Recv_ServerMessage();
-    }
-    _cnetEvent_JumpCallBack(0xB, 0);
-}
-
-void _cnet_RecvFromLbs_AnswerRoomRestTime(void) {
-    u16 t;
-
+void _cnet_RecvFromLbs_NoticeMiniData(void) {
     if (CnetSys_w.rres == 0) {
-        __cnet_Recv_WordWord(&t, CNWP(0x302FE));
+        memset(&CnetSys_w.minidata, 0, 0x5C);
+        GetRecvDataOption3(&CnetSys_w.minidata.b[0x1C], 0x40, GetRecvDataOption3(&CnetSys_w.minidata, 8, recv_work));
     }
-    _cnet_Return_CallBack(0);
+    _cnet_Return_CallBack(0x2C);
 }
 
-void __cnet_CallBack_Result_Plaza_NumOfPlaza_005A6E20(CNET_RES res) {
-    if (res.val == 0) {
-        CnetSys_w.burst[2].res = 1;
-        return;
+void _cnet_RecvFromLbs_NoticeLoginOk(void) {
+    if (CNW(u8, 0xE38) != 0) {
+        __cnet_Login_Return();
     }
-    CnetSys_w.burst[2].res = 2;
-}
-
-void _cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60(CNET_RES res) {
-    CNET_RES r;
-
-    if (res.val == 0) {
-        r.val = 2;
-        r.id = 0xB;
-        CnetSys_w.burst[2].cb(r, &r);
-        CnetSys_w.burst[2].res = 1;
-        return;
-    }
-    CnetSys_w.burst[2].res = 2;
 }
