@@ -662,3 +662,8 @@ Lessons (function that showed it):
 Not done in this range (needs a vendor library or is huge): ADX/CRI (0x101000-0x117E50, SJ*, svm_*, sdr_*), sce*/libc (0x154000-0x160000),
 IME dictionary (g_dic_open 20 KB, f_kh, f_wd, f_api, Overlay_reset/kh_learn), f_flps2 graphics library, f_disp_26CD60 (13.6 KB),
 f_ncm text drawing, f_ms patch download (ms_net_patch_set 6.9 KB), f_mcsls/f_ave/f_wait/f_prot/CpInet network core.
+
+### Late additions (second pass, end)
+- Also linked: net/aqcmd01-03 (AQ command lists), plus fixed-and-linked nm files for plmem, amo2, netfile2, tex, staff and Scheduler.
+- mcsls_nm.c stays near-match only (not linked). The r0 state handlers and app queues (vram 0x230CD0-0x232494) are NOT done; the MCSLS player array sits at +0x4C with a 0x3C stride. m2c output needs hand typing with that struct.
+- tools/linkruns.py: always run tools/rebuild.sh first, otherwise carved jump tables vanish from asm and the link fails.
