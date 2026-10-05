@@ -4,8 +4,11 @@ build/src/main/eft/eft06.c.o .rodata .data
 build/src/main/eft/eft06b.c.o .rodata .data
 build/src/main/eft/eft13b.c.o .rodata .data
 build/src/main/eft/eft13e.c.o .rodata .data
+build/src/main/emw/emu01.c.o .rodata .data
+build/src/main/emw/emt01.c.o .rodata .data
 build/src/main/game/f_game.c.o .rodata .data
 build/src/main/hit/hit.c.o .rodata .data
+build/src/main/load/mkmap.c.o .rodata .data
 build/src/main/menu/menu03.c.o .rodata .data
 build/src/main/menu/menu26.c.o .rodata .data
 build/src/main/pl/pl05.c.o .rodata .data
@@ -24,6 +27,8 @@ build/src/main/pl/pl47.c.o .rodata .data
 build/src/main/pl/pl48.c.o .rodata .data
 build/src/main/pl/pl71.c.o .rodata .data
 build/src/main/stage/stage_set.c.o .rodata .data
+build/src/main/font/dsp01.c.o .rodata .data
+build/src/main/font/dsp02.c.o .rodata .data
 build/src/select/demo.c.o .rodata .data
 build/src/select/edit03.c.o .rodata .data
 build/src/select/edit04.c.o .rodata .data
