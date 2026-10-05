@@ -102,3 +102,20 @@ Fields used straight from EMW in the em files (so common to all monsters):
   fly/attack cases is a macro in em21.c (EM21_STAGE_CK). A `goto` from
   move case 0 into case 3 (laid out after case 1) matched. `x / 7` on an
   int from a float shows up as the 0x92492493 multiply.
+- em02 (0x57E120-0x57EF94, 13 functions): all match. rodata
+  0x6861F0-0x68626C. Adds senkai_player / senkai_target (turn ang[1]
+  toward a player / the target by at most w->turn, angle left in w->dang)
+  and fly_adjy (table fly_adjy_hosei_tbl in main's small data, timed by
+  EMW+0x19C, applies speed_add). Lessons:
+  - `if (arg)` on a u16 param tests the register as is; `arg != 0` adds
+    an andi (em02_act_act_set).
+  - `a = w->dang & 0xFFFF;` (explicit mask on a u16 field) gives the
+    original's andi in the delay slot (senkai_*); `a <= w->turn` gives the
+    `slt at` form.
+  - `((PLW *)player_work)[n].stg` keeps the 0x736 offset in the load; plain
+    `player_work[n].stg` folds it into the symbol address.
+  - `u16` return type + `u16 ret` local avoids a sign extension
+    (senkai_target).
+  - suby: `int i;` declared before the table pointer fixed an a2/a3 swap.
+  - suby variant: the loop test uses `v > 0.0f` and a `v < 0` branch
+    (`w->adj_tm = 0; ret = 2; em->adj_y = 0.0f; break;`).

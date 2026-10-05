@@ -55,7 +55,8 @@ typedef struct EMW {
     s32 ang[3];         /* 0x0A0 rotation, 0x10000 = 360 degrees (shell14_trans) */
     f32 pos[3];         /* 0x0AC world position (set20_m, as PLW) */
     f32 scale[3];       /* 0x0B8 model scale (eft09_t) */
-    u8 _pad0C4[0x1A0 - 0xC4];
+    u8 _pad0C4[0x19C - 0xC4];
+    f32 x19C;           /* 0x19C time used by em02_fly_adjy (0 or 1: start value) */
     f32 chr_spd0;       /* 0x1A0 frame step (as PLW); divides the fly_adjy2 tables */
     u8 _pad1A4[0x1C4 - 0x1A4];
     s32 x1C4;           /* 0x1C4 non-zero: fly_adjy2 uses time 0 */
@@ -90,7 +91,9 @@ typedef struct EMW {
     u8 stg;             /* 0x736 */
     u8 _pad737[0x74C - 0x737];
     u32 x74C;           /* 0x74C flags; 0xF000000F stops fly_adjz2 (em16) */
-    u8 _pad750[0x792 - 0x750];
+    u8 _pad750[0x754 - 0x750];
+    f32 x754[3];        /* 0x754 position the turn toward a player starts from (em02_senkai_player) */
+    u8 _pad760[0x792 - 0x760];
     s16 x792;           /* 0x792 maximum of x302? (guess) */
     u8 _pad794[0x7E8 - 0x794];
     u8 x7E8;            /* 0x7E8 0: em21 falls back to act 0/1 on its own stage */
