@@ -2431,3 +2431,321 @@ void Pl_vital_calc_item(PLW *, int);
 void Pl_max_vital_calc(PLW *, int);
 void func_639DF0(PLW *, int);
 void set01_set(int, int, int);
+
+#include "flow.h"
+void flmatGetTrans(f32 *, u8 *);
+void RotMatVec(f32 *, f32 *, int);
+f32 flSqrt(f32);
+void Pl_se_req2(PLW *, int, int, f32 *, int, int);
+
+
+void pl_light_ck(PLW *pl) {
+    int i;
+    EMW *e;
+    f32 d;
+    f32 dx;
+    f32 dz;
+    f32 lim;
+    f32 hlim;
+    if (pl->flag604 != 0 || !(pl->pos[1] - pl->x5AC <= 100.0f)) {
+        pl->work613 = 0;
+        return;
+    }
+    e = em_work;
+    for (i = 0; i < 20; i++, e++) {
+        if (e->be_flag != 0 && e->x01 != 0 && PU8(e, 0x612) >= 2) {
+            dx = pl->pos[0] - e->pos[0];
+            dz = pl->pos[2] - e->pos[2];
+            d = flSqrt(dx * dx + dz * dz);
+            if (PU8(e, 0x612) == 2) {
+                lim = 300.0f;
+                hlim = 300.0f;
+            } else {
+                lim = 500.0f;
+                hlim = 300.0f;
+            }
+            if (d <= lim && pl->pos[1] - e->pos[2] < hlim) {
+                pl->work613 = 1;
+                return;
+            }
+        }
+    }
+    pl->work613 = 0;
+}
+
+#include "flow.h"
+void pl_body_make(PLW *pl, f32 *out, f32 radius);
+void hit_cap_pk(void *, void *);
+int hit_cap_cap3_m(void *, void *, f32 *);
+
+
+extern f32 *D_63FC50[];
+extern f32 *D_6103A0[];
+void flvecNormalize(f32 *);
+int hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb);
+
+/* Pushes two monsters apart (sphere lists from the per-kind push tables). The inner list pointer is
+ * never rewound for the 2nd and later spheres of the first monster: faithful to the original. */
+void body_hit_sub_em(PLW *pl, PLW *o) {
+    f32 pa[3];
+    f32 pb[3];
+    f32 len[2];
+    f32 v[2][3];
+    f32 *s4;
+    f32 *s3;
+    s16 n = 0;
+    s16 k;
+    int cnt;
+    f32 ra;
+    f32 *pv;
+    f32 *pl_len;
+    if (game_w.x1DC == 0) {
+        s3 = D_63FC50[o->kind];
+        s4 = D_63FC50[pl->kind];
+    } else {
+        s3 = D_6103A0[o->kind];
+        s4 = D_6103A0[pl->kind];
+    }
+    pv = v[0];
+    pl_len = len;
+    while (s4[3] != -1.0f) {
+        pa[0] = pl->pos[0] + s4[0] * pl->scl[0];
+        pa[1] = pl->pos[1] + s4[1] * pl->scl[1];
+        pa[2] = pl->pos[2] + s4[2] * pl->scl[2];
+        ra = s4[3] * pl->scl[0];
+        if (s3[3] != -1.0f) {
+            do {
+                pb[0] = o->pos[0] + s3[0] * pl->scl[0];
+                pb[1] = o->pos[1] + s3[1] * pl->scl[1];
+                pb[2] = o->pos[2] + s3[2] * pl->scl[2];
+                if (hit_sphr_sphr3(pa, pb, pv, ra, s3[3] * o->scl[0]) != 0) {
+                    *pl_len = flvecCalcLength(pv);
+                    pv += 3;
+                    pl_len++;
+                    n++;
+                }
+                if (n >= 2) {
+                    goto done;
+                }
+                s3 += 4;
+            } while (s3[3] != -1.0f);
+        }
+        s4 += 4;
+    }
+done:
+    cnt = n;
+    if (cnt != 0) {
+        for (k = 1; k < cnt; k++) {
+            v[0][0] += v[k][0];
+            v[0][1] += v[k][1];
+            v[0][2] += v[k][2];
+            if (len[0] < len[k]) {
+                len[0] = len[k];
+            }
+        }
+        if (pl->st != 2) {
+            v[0][1] = 0;
+        }
+        flvecNormalize(v[0]);
+        v[0][0] *= len[0];
+        v[0][1] *= len[0];
+        v[0][2] *= len[0];
+        if (pl->work612 == o->work612) {
+            pl->pos[0] += 0.5f * v[0][0];
+            if (pl->st == 2) {
+                pl->pos[1] += 0.5f * v[0][1];
+            }
+            pl->pos[2] += 0.5f * v[0][2];
+            o->pos[0] += -0.5f * v[0][0];
+            if (o->st == 2) {
+                o->pos[1] += -0.5f * v[0][1];
+            }
+            o->pos[2] += -0.5f * v[0][2];
+            pl->work7EC = 1;
+            o->work7EC = 1;
+        } else if (pl->work612 < o->work612) {
+            pl->pos[0] += v[0][0];
+            if (pl->st == 2) {
+                pl->pos[1] += v[0][1];
+            }
+            pl->pos[2] += v[0][2];
+            pl->work7EC = 1;
+        } else {
+            o->pos[0] -= v[0][0];
+            if (o->st == 2) {
+                o->pos[1] -= v[0][1];
+            }
+            o->pos[2] -= v[0][2];
+            o->work7EC = 1;
+        }
+    }
+}
+
+extern s16 *D_63FA10[];
+extern s16 *D_610370[];
+void body_ptr_ck2(PLW *, s16 **);
+int hit_data_expand(PLW *, s16 *, f32 *, f32 *);
+int hit_data_expand2(f32 *, s16 *, f32 *, f32 *);
+int hit_cap_sphr_m(void *, f32 *, f32 *, f32);
+
+/* Pushes the player against one monster's body list (capsule/sphere hit data, 0x28 bytes per entry). */
+void body_hit_sub_new(PLW *pl, PLW *o) {
+    s16 *rec;
+    f32 len[2];
+    u8 pkp[0x40];
+    u8 pkb[0x40];
+    f32 body[8];
+    f32 cap[8];
+    f32 sph[4];
+    f32 v[2][3];
+    f32 *pv;
+    f32 *plen;
+    f32 *prad;
+    s16 n = 0;
+    int cnt;
+    s16 k;
+    int r;
+    pl_body_make(pl, body, 40.0f);
+    hit_cap_pk(body, pkp);
+    if (game_w.x1DC == 0) {
+        rec = D_63FA10[o->kind];
+    } else {
+        rec = D_610370[o->kind];
+    }
+    pv = v[0];
+    plen = len;
+    prad = &sph[3];
+    goto test;
+    for (;;) {
+        switch (*rec) {
+        case 126:
+        case 127:
+            r = (s16)hit_data_expand2(o->pos, rec, cap, sph);
+            goto got;
+        case 125:
+            body_ptr_ck2(o, &rec);
+            goto test;
+        default:
+            r = (s16)hit_data_expand(o, rec, cap, sph);
+got:
+            if (r == 0) {
+                r = (u8)hit_cap_sphr_m(pkp, sph, pv, *prad);
+            } else {
+                hit_cap_pk(cap, pkb);
+                r = (u8)hit_cap_cap3_m(pkb, pkp, pv);
+            }
+            if ((u8)r != 0) {
+                *plen = flvecCalcLength(pv);
+                if (pl->st != 2) {
+                    pv[1] = 0;
+                }
+                n++;
+                pv += 3;
+                plen++;
+            }
+            if (n >= 2) {
+                goto done;
+            }
+            rec += 0x14;
+test:
+            if (*rec == -1) {
+                goto done;
+            }
+            break;
+        }
+    }
+done:
+    cnt = n;
+    if (cnt != 0) {
+        for (k = 1; k < cnt; k++) {
+            v[0][0] += v[k][0];
+            v[0][1] += v[k][1];
+            v[0][2] += v[k][2];
+            if (len[0] < len[k]) {
+                len[0] = len[k];
+            }
+        }
+        flvecNormalize(v[0]);
+        v[0][0] *= len[0];
+        v[0][1] *= len[0];
+        v[0][2] *= len[0];
+        if (o->work612 <= 0) {
+            pl->pos[0] += 0.5f * v[0][0];
+            pl->pos[1] += 0.5f * v[0][1];
+            pl->pos[2] += 0.5f * v[0][2];
+            o->pos[0] += -0.5f * v[0][0];
+            o->pos[1] += -0.5f * v[0][1];
+            o->pos[2] += -0.5f * v[0][2];
+            pl->work7EC = 1;
+            o->work7EC = 1;
+        } else {
+            pl->pos[0] += v[0][0];
+            pl->pos[1] += v[0][1];
+            pl->pos[2] += v[0][2];
+            pl->work7EC = 1;
+        }
+    }
+}
+
+s32 Pl_stg_ck_tw(PLW *, PLW *);
+
+/* Per-frame body pushing: players vs players (when softdip 0xA9), players vs monsters, monsters vs monsters. */
+void body_hit(void) {
+    f32 d[3];
+    int i;
+    int j;
+    int k;
+    PLW *pl;
+    PLW *p2;
+    PLW *e;
+    PLW *f;
+    int busy;
+    for (i = 0; i < 4; i++) {
+        player_work[i].work7EC = 0;
+    }
+    for (i = 0; i < 20; i++) {
+        ((PLW *)&em_work[i])->work7EC = 0;
+    }
+    for (i = 0; i < 4; i++) {
+        pl = &player_work[i];
+        if (pl->be_flag != 0 && pl->x01 != 0 && Pl_master_ck(pl) != 0 && pl->work40E == 0 && (u8)Pl_stg_ck(pl)) {
+            if (softdip_ck(0xA9) != 0) {
+                for (j = 0; j < 4; j++) {
+                    p2 = &player_work[j];
+                    if (p2->be_flag != 0 && p2->x01 != 0 && p2->work40E == 0 && (u8)Pl_stg_ck_tw(pl, p2)) {
+                        body_hit_sub_pl(pl, p2);
+                    }
+                }
+            }
+            for (j = 0; j < 20; j++) {
+                e = (PLW *)&em_work[j];
+                if (e->be_flag != 0 && e->x01 != 0 && e->work40E == 0 && (u8)Pl_stg_ck_tw(pl, e)) {
+                    body_hit_sub_new(pl, e);
+                    d[0] = pl->pos[0] - e->pos[0];
+                    d[1] = pl->pos[1] - e->pos[1];
+                    d[2] = pl->pos[2] - e->pos[2];
+                    PF32(pl, 0x3AC) = flvecCalcLength(d);
+                }
+            }
+        }
+    }
+    for (i = 0; i < 19; i++) {
+        e = (PLW *)&em_work[i];
+        if (e->be_flag != 0 && e->x01 != 0 && e->work40E == 0 && (u8)Pl_stg_ck(e)) {
+            busy = PU16(e, 0x7EA) != 0;
+            for (k = i + 1; k < 20; k++) {
+                f = (PLW *)&em_work[k];
+                if (f->be_flag != 0 && f->x01 != 0) {
+                    if (!(e->kind != 0x1D && f->kind != 0x1D) || (PU8(e, 0x8C3) == 0 && PU8(f, 0x8C3) == 0)) {
+                        if (f->work40E == 0 && (u8)Pl_stg_ck_tw(e, f)) {
+                            if ((busy == 0 && PU16(f, 0x7EA) == 0) || e->kind == 0x1D || f->kind == 0x1D) {
+                                body_hit_sub_em(e, f);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
