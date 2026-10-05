@@ -1007,137 +1007,90 @@ u8 *em_cmd_area_route_ck(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_escape_area_set(EMW *em, u8 *p) {
-    f32 sp164;
-    f32 sp15C;
-    f32 sp158;
-    f32 sp150;
-    f32 spF0;
-    u16 spE0;
-    u16 spD0;
-    u16 spC0;
-    u8 *spBC;
-    u8 spA0;
-    f32 *var_s1;
-    f32 *var_s4;
-    s32 temp_s6;
-    s32 temp_v0;
-    s32 var_a1;
-    s32 var_s0;
-    int temp_s1;
-    int var_s0_2;
-    int var_s2;
-    int var_s5;
-    int var_s5_2;
-    s8 temp_a0;
-    s8 temp_v1_4;
-    u16 *var_s2_2;
-    u16 *var_s3;
-    u16 temp_v1_2;
-    u16 temp_v1_3;
-    u16 var_s7;
-    u8 temp_v1;
-    u8 temp_v1_5;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v0_4;
+    f32 cur[3];
+    f32 tgt[3];
+    f32 vec[8][3];
+    u16 ang0;
+    u16 ang[8];
+    u16 diff[8];
+    s8 *conn;
+    EM_STG_BOX *b;
+    s32 i;
+    s32 n;
+    s32 best;
+    u16 bestd;
+    s8 id;
+    u8 target;
+    u8 v;
 
-    var_s7 = saved_reg_s7;
-    spBC = p;
-    spA0 = *p;
-    EM_FIELD(em, s8 *, 0x827) = 3;
-    temp_v0 = st_mv_ptr_ck();
-    if (temp_v0 == 0) {
-
-    } else {
-        var_a1 = 0;
-loop_4:
-        if (spA0 == *(temp_v0 + var_a1)) {
-
-        } else {
-            var_a1 += 1;
-            if (var_a1 >= 8) {
-                temp_v0_2 = Stage_data_get(em->stg, var_a1);
-                sp150 = EM_FIELD(temp_v0_2, f32 *, 0) + (EM_FIELD(temp_v0_2, f32 *, 0x10) / 2.0f);
-                sp158 = EM_FIELD(temp_v0_2, f32 *, 4) + (EM_FIELD(temp_v0_2, f32 *, 0x14) / 2.0f);
-                temp_v0_3 = Stage_data_get(spA0);
-                sp15C = EM_FIELD(temp_v0_3, f32 *, 0) + (EM_FIELD(temp_v0_3, f32 *, 0x10) / 2.0f);
-                sp164 = EM_FIELD(temp_v0_3, f32 *, 4) + (EM_FIELD(temp_v0_3, f32 *, 0x14) / 2.0f);
-                var_s4 = &spF0;
-                temp_s6 = st_mv_ptr_ck(em);
-                var_s0 = 0;
-                var_s2 = 0;
-                var_s1 = var_s4;
-loop_9:
-                temp_a0 = *(temp_s6 + var_s0);
-                if (temp_a0 != -1) {
-                    temp_v0_4 = Stage_data_get((u8) temp_a0);
-                    var_s0 += 1;
-                    var_s2 = (s8)(var_s2 + 1);
-                    EM_FIELD(var_s1, f32 *, 0) = EM_FIELD(temp_v0_4, f32 *, 0) + (EM_FIELD(temp_v0_4, f32 *, 0x10) / 2.0f);
-                    EM_FIELD(var_s1, f32 *, 8) = (f32) (EM_FIELD(temp_v0_4, f32 *, 4) + (EM_FIELD(temp_v0_4, f32 *, 0x14) / 2.0f));
-                    var_s1 += 0xC;
-                    if (var_s0 < 8) {
-                        goto loop_9;
+    target = *p;
+    em->x827 = 3;
+    conn = st_mv_ptr_ck(em);
+    if (conn != 0) {
+        i = 0;
+        for (;;) {
+            if (target == conn[i]) {
+                break;
+            }
+            i += 1;
+            if (i >= 8) {
+                b = Stage_data_get(em->stg);
+                cur[0] = b->x + b->w / 2.0f;
+                cur[2] = b->z + b->d / 2.0f;
+                b = Stage_data_get(target);
+                tgt[0] = b->x + b->w / 2.0f;
+                tgt[2] = b->z + b->d / 2.0f;
+                conn = st_mv_ptr_ck(em);
+                i = 0;
+                n = 0;
+                for (;;) {
+                    id = conn[i];
+                    if (id == -1) {
+                        break;
+                    }
+                    b = Stage_data_get(id);
+                    i += 1;
+                    n = (s8)(n + 1);
+                    vec[n - 1][0] = b->x + b->w / 2.0f;
+                    vec[n - 1][2] = b->z + b->d / 2.0f;
+                    if (i >= 8) {
+                        break;
                     }
                 }
-                temp_s1 = (s8)(var_s2);
-                if (temp_s1 == 1) {
-
-                } else {
-                    var_s5 = -1;
-                    spE0 = Em_Calc_angY(&sp150, &sp15C);
-                    var_s0_2 = 0;
-                    if (temp_s1 > 0) {
-                        var_s3 = &spD0;
-                        var_s2_2 = &spC0;
-                        do {
-                            temp_v1 = em->x92E;
-                            if (temp_v1 != 0xFF) {
-                                if (temp_v1 != *(temp_s6 + var_s0_2)) {
-                                    goto block_18;
-                                }
-                            } else {
-block_18:
-                                *var_s3 = Em_Calc_angY(&sp150, var_s4);
-                                *var_s2_2 = *var_s3 - spE0;
-                                temp_v1_2 = *var_s2_2;
-                                if ((s32) temp_v1_2 >= 0x8001) {
-                                    *var_s2_2 = 0x10000 - temp_v1_2;
-                                }
-                                if (((s8)(var_s5)) == -1) {
-                                    var_s7 = *var_s2_2;
-                                    var_s5_2 = var_s0_2 << 0x38;
-                                    goto block_25;
-                                }
-                                temp_v1_3 = *var_s2_2;
-                                if ((s32) temp_v1_3 < (var_s7 & 0xFFFF)) {
-                                    var_s5_2 = var_s0_2 << 0x38;
-                                    var_s7 = temp_v1_3;
-block_25:
-                                    var_s5 = var_s5_2 >> 0x38;
-                                }
-                            }
-                            var_s0_2 += 1;
-                            var_s4 += 0xC;
-                            var_s3 += 2;
-                            var_s2_2 += 2;
-                        } while (var_s0_2 < temp_s1);
+                if (n != 1) {
+                    best = -1;
+                    ang0 = Em_Calc_angY(cur, tgt);
+                    for (i = 0; i < n; i++) {
+                        if (em->x92E != 0xFF && em->x92E == conn[i]) {
+                            continue;
+                        }
+                        ang[i] = Em_Calc_angY(cur, vec[i]);
+                        diff[i] = ang[i] - ang0;
+                        if (diff[i] >= 0x8001) {
+                            diff[i] = 0x10000 - diff[i];
+                        }
+                        if ((s8)best == -1) {
+                            bestd = diff[i];
+                            best = (s8)i;
+                        } else if (diff[i] < bestd) {
+                            best = (s8)i;
+                            bestd = diff[i];
+                        }
                     }
-                    temp_v1_4 = *(temp_s6 + ((s8)(var_s5)));
-                    if (temp_v1_4 != -1) {
-                        spA0 = temp_v1_4 & 0xFF;
+                    id = conn[(s8)best];
+                    if (id != -1) {
+                        target = id;
                     }
                 }
-            } else {
-                goto loop_4;
+                break;
             }
         }
     }
-    em->x92F = spA0;
-    temp_v1_5 = em->x92F;
-    em->x829 = temp_v1_5;
-    em->x828 = temp_v1_5;
-    return spBC + 1;
+    em->x92F = target;
+    v = em->x92F;
+    em->x829 = v;
+    em->x828 = v;
+    return p + 1;
 }
 
 u8 *em_cmd_mind_ck(EMW *em, u8 *p) {
@@ -1875,163 +1828,153 @@ block_15:
 CMD_SEL_FUNC_W(em_cmd_before_stage_sel, 0x3E, u8, u8, em->x92E)
 
 u8 *em_cmd_ground_area_move(EMW *em, u8 *p) {
-    int spC0;
-    int spAC;
-    int spA0;
-    f32 temp_f0;
-    f32 var_f20;
-    s16 *temp_s6_2;
-    s16 *var_s0;
-    s16 temp_a0;
-    s32 temp_s7;
-    s32 var_a0;
-    s32 var_s1_3;
-    s32 var_s2;
-    int var_s0_2;
-    int var_s1;
-    int var_s1_2;
-    int var_s2_2;
-    int var_v1;
-    u16 temp_a1;
-    u8 temp_a2;
-    u8 temp_s6;
-    void *temp_v0;
-    void *temp_v0_2;
-    void *var_s3;
+    f32 v0[3];
+    f32 v1[3];
+    f32 hit[3];
+    f32 dist;
+    f32 best;
+    EM_STG_POS *g;
+    EM_ROUTE *rt;
+    EM_ROUTE *wk;
+    EM_ROUTE_PT *pt;
+    u8 *next;
+    s32 found;
+    s32 sel;
+    s32 bestidx;
+    s32 i;
+    s32 idx;
+    s32 j;
+    u16 stage;
+    u8 target;
+    u8 gs;
 
-    var_s1 = saved_reg_s1;
-    var_s3 = saved_reg_s3;
-    temp_s7 = p + 2;
+    next = p + 2;
     em->x8BE = 0;
-    temp_s6 = EM_FIELD(p, u8 *, 0);
-    EM_FIELD(em, u8 *, 0x9F0) = (u8) EM_FIELD(p, u8 *, 1);
-    var_s2 = 0;
-    if ((s32) EM_FIELD(em, u8 *, 0x9F0) >= 0) {
-
+    target = p[0];
+    EM_FIELD(em, u8 *, 0x9F0) = p[1];
+    sel = 0;
+    gs = em->stg;
+    if (gs == target) {
+        return next;
     }
-    temp_a2 = em->stg;
-    if (temp_a2 == (temp_s6 & 0xFF)) {
-        return temp_s7;
+    g = gp_ck(em, em->area->x18, gs);
+    wk = (EM_ROUTE *)g->pos;
+    if (wk == NULL) {
+        return next;
     }
-    temp_v0 = gp_ck(em, EM_FIELD(em->area, s32 *, 0x18), temp_a2);
-    var_s0 = EM_FIELD(temp_v0, s16 **, 4);
-    if (var_s0 == NULL) {
-        return temp_s7;
-    }
-    EM_FIELD(em, u16 *, 0x73A) = (u16) (temp_s6 & 0xFF);
-    temp_a1 = EM_FIELD(em, u16 *, 0x73A);
-    if (temp_a1 == 0xFF) {
-        var_f20 = -1.0f;
-        var_s2_2 = 0;
-        if (EM_FIELD(temp_v0, s16 *, 2) > 0) {
+    rt = wk;
+    em->x73A = target;
+    stage = em->x73A;
+    if (stage == 0xFF) {
+        best = -1.0f;
+        i = 0;
+        bestidx = 0;
+        if (g->num > 0) {
 loop_11:
-            var_s3 = EM_FIELD(var_s0, void **, 4);
-            if (var_s3 == NULL) {
-                var_s0_2 = 0;
-                em->x9DB = 7U;
+            pt = wk->pt;
+            if (pt == NULL) {
+                j = 0;
+                em->x9DB = 7;
             } else {
-                temp_f0 = CalcDistanceXZ(em + 0xAC, var_s3);
-                if (var_f20 == -1.0f) {
-                    var_s1_2 = var_s2_2 << 0x30;
-                    var_f20 = temp_f0;
+                dist = CalcDistanceXZ(em->pos, pt->pos);
+                if (best == -1.0f) {
+                    bestidx = (s16)i;
+                    best = dist;
                     goto block_18;
                 }
-                if (!(var_f20 <= temp_f0)) {
-                    var_s1_2 = var_s2_2 << 0x30;
-                    var_f20 = temp_f0;
+                if (!(best <= dist)) {
+                    bestidx = (s16)i;
+                    best = dist;
 block_18:
-                    var_s1 = var_s1_2 >> 0x30;
+                    ;
                 }
-                var_s2_2 = (s16)(var_s2_2 + 1);
-                var_s0 += 0x18;
-                if (var_s2_2 >= EM_FIELD(temp_v0, s16 *, 2)) {
+                i = (s16)(i + 1);
+                wk += 1;
+                if (i >= g->num) {
                     goto block_21;
                 }
                 goto loop_11;
             }
         } else {
 block_21:
-            var_v1 = (s16)(var_s1);
+            idx = (s16)bestidx;
             goto block_31;
         }
     } else {
-        temp_a0 = EM_FIELD(temp_v0, s16 *, 2);
-        var_v1 = 0;
-        if (temp_a0 > 0) {
+        i = 0;
+        if (g->num > 0) {
 loop_24:
-            if (*var_s0 == temp_a1) {
-                var_s2 = 1;
+            if (wk->stg == stage) {
+                sel = 1;
             } else {
-                var_v1 = (s16)(var_v1 + 1);
-                var_s0 += 0x18;
-                if (var_v1 < temp_a0) {
+                i = (s16)(i + 1);
+                wk += 1;
+                if (i < g->num) {
                     goto loop_24;
                 }
             }
         }
-        if (var_s2 == 0) {
-            var_s0_2 = 0;
-            em->x9DB = 1U;
+        idx = i;
+        if (sel == 0) {
+            j = 0;
+            em->x9DB = 1;
         } else {
 block_31:
-            em->x86D = (u8) var_v1;
-            var_s1_3 = 0;
-            temp_s6_2 = EM_FIELD(temp_v0, s16 **, 4);
-            var_a0 = em->x86D * 0x18;
-            temp_v0_2 = var_a0 + temp_s6_2;
-            var_s3 = EM_FIELD(temp_v0_2, void **, 4);
-            var_s0_2 = 0;
-            if (EM_FIELD(temp_v0_2, s16 *, 2) > 0) {
+            em->x86D = idx;
+            found = 0;
+            rt = (EM_ROUTE *)g->pos;
+            pt = rt[em->x86D].pt;
+            j = 0;
+            if (rt[em->x86D].num > 0) {
 loop_33:
-                if (EM_FIELD(var_s3, u16 *, 0x10) != 0) {
+                if (pt->move != 0) {
                     if (*(u8 *)0x3F3404 != em->stg) {
-                        var_s1_3 = 1;
-                        var_s0_2 = (s16)(EM_FIELD((var_a0 + temp_s6_2), s16 *, 2) - 1);
+                        found = 1;
+                        j = (s16)(rt[em->x86D].num - 1);
                     } else {
-                        SetVector(EM_FIELD(em, f32 *, 0xAC), EM_FIELD(em, f32 *, 0xB4), &spA0);
-                        SetVector(EM_FIELD(var_s3, f32 *, 0), EM_FIELD(var_s3, f32 *, 8), &spAC);
-                        if (GetWallHitLine(&spA0, &spAC, &spC0, em->x95E) == 0) {
-                            var_s1_3 = 1;
+                        SetVector(v0, em->pos[0], em->pos[2], 0.0f);
+                        SetVector(v1, pt->pos[0], pt->pos[2], 0.0f);
+                        if (GetWallHitLine(v0, v1, hit, em->x95E) == 0) {
+                            found = 1;
                         } else {
                             goto block_40;
                         }
                     }
                 } else {
 block_40:
-                    var_s0_2 = (s16)(var_s0_2 + 1);
-                    var_a0 = em->x86D * 0x18;
-                    var_s3 += 0x14;
-                    if (var_s0_2 < EM_FIELD((temp_s6_2 + var_a0), s16 *, 2)) {
+                    j = (s16)(j + 1);
+                    pt += 1;
+                    if (j < rt[em->x86D].num) {
                         goto loop_33;
                     }
                 }
             }
-            if (var_s1_3 == 0) {
-                var_s3 -= 0x14;
-                em->x9DB = 2U;
-                var_s0_2 = (s16)(EM_FIELD(((em->x86D * 0x18) + temp_s6_2), s16 *, 2) - 1);
+            if (found == 0) {
+                pt -= 1;
+                em->x9DB = 2;
+                j = (s16)(rt[em->x86D].num - 1);
             }
         }
     }
-    if ((em->x9DB != 0) && (em->x8C3 != 0)) {
-        em->x9DB = 0U;
-        var_s0_2 = 0;
-        em->x86D = 0U;
-        em->x86E = 0U;
-        var_s3 = EM_FIELD(((em->x86D * 0x18) + EM_FIELD(temp_v0, s16 **, 4)), void **, 4);
+    if (em->x9DB != 0 && em->x8C3 != 0) {
+        em->x9DB = 0;
+        j = 0;
+        em->x86D = 0;
+        em->x86E = 0;
+        pt = ((EM_ROUTE *)g->pos)[em->x86D].pt;
     }
     if (em->x9DB != 0) {
-        em->x9DB = 0U;
+        em->x9DB = 0;
     }
-    em->x86E = (u8) var_s0_2;
-    em->x827 = 9U;
-    em->x828 = (u8) em->x86D;
-    em->x829 = (u8) em->x86E;
-    em->x881 = (u8) em->x827;
-    em->x882 = (u8) em->x828;
-    em->x883 = (u8) em->x829;
-    EM_FIELD(em, s32 *, 0x868) = temp_s7;
-    em->x86C = (u8) EM_FIELD(var_s3, u16 *, 0x12);
+    em->x86E = j;
+    em->x827 = 9;
+    em->x828 = em->x86D;
+    em->x829 = em->x86E;
+    em->x881 = em->x827;
+    em->x882 = em->x828;
+    em->x883 = em->x829;
+    em->cmd_p868 = next;
+    em->x86C = pt->move;
     return ground_area_move_ptr_set(em, em->x86C);
 }
 
@@ -2357,367 +2300,221 @@ u8 *em_cmd_swim_ck(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_all_pl_target_sel(EMW *em, u8 *p) {
-    u8 spD;
-    u8 spC;
-    s32 var_a2;
-    s32 var_a3_2;
-    s32 var_t0;
-    s32 var_t0_2;
-    s32 var_t0_3;
-    s32 var_t1_4;
-    s32 var_t3_4;
-    s32 var_v1;
-    u8 *var_t1;
-    u8 *var_t1_2;
-    u8 *var_t2;
-    u8 *var_t2_2;
-    u8 *var_t2_3;
-    u8 *var_t2_4;
-    u8 *var_t3_3;
-    u8 temp_a2;
-    u8 temp_a3;
-    u8 temp_a3_2;
-    u8 temp_t0;
-    u8 temp_t1;
-    u8 temp_t1_2;
-    u8 temp_t2;
-    u8 var_a3;
-    u8 var_a3_3;
-    u8 var_t1_3;
-    u8 var_t4;
-    u8 var_v0;
-    void *var_t3;
-    void *var_t3_2;
+    u8 list[4];
+    u8 v;
+    u8 pn;
+    u8 i;
+    u8 k;
+    s32 n;
+    s32 flag;
 
     if (em->x88F != 0) {
-        var_t4 = 0;
-        temp_t1 = *(u8 *)0x3F34C3;
-        var_v1 = 0;
-        if ((s32) temp_t1 > 0) {
-            var_t3 = em;
-            var_t2 = &spC;
-            do {
-                if ((EM_FIELD(var_t3, s32 *, 0x918) >= 0xC350) && (em->x88F & (1 << var_t4))) {
-                    *var_t2 = var_t4;
-                    var_v1 += 1;
-                    var_t2 += 1;
-                }
-                var_t4 += 1;
-                var_t3 += 4;
-            } while ((s32) var_t4 < (s32) temp_t1);
-        }
-        if (var_v1 >= 2) {
-            var_v0 = spC;
-            var_t0 = 1;
-            if (var_v1 >= 2) {
-                var_t1 = &spD;
-                do {
-                    temp_a3 = *var_t1;
-                    if (EM_FIELD((em + ((var_v0 & 0xFF) * 4)), f32 *, 0x8C4) < EM_FIELD((em + (temp_a3 * 4)), f32 *, 0x8C4)) {
-                        var_v0 = temp_a3;
-                    }
-                    var_t0 += 1;
-                    var_t1 += 1;
-                } while (var_t0 < var_v1);
+        /* players that hate us a lot (>= 50000) */
+        i = 0;
+        pn = *(u8 *)0x3F34C3;
+        n = 0;
+        for (i = 0; (s32)i < (s32)pn; i++) {
+            if (em->x918[i] >= 0xC350 && (em->x88F & (1 << i))) {
+                list[n] = i;
+                n += 1;
             }
-        } else if (var_v1 == 1) {
-            var_v0 = spC;
+        }
+        if (n >= 2) {
+            v = list[0];
+            for (k = 1; k < n; k++) {
+                if (em->x8C4[v] < em->x8C4[list[k]]) {
+                    v = list[k];
+                }
+            }
+        } else if (n == 1) {
+            v = list[0];
         } else {
-            temp_t1_2 = *(void *)0x3F34C3;
-            var_a3 = 0;
-            var_t0_2 = 0;
-            if ((s32) temp_t1_2 > 0) {
-                var_t3_2 = em;
-                var_t2_2 = &spC;
-                do {
-                    if ((EM_FIELD(var_t3_2, s32 *, 0x918) >= 0x7530) && (em->x88F & (1 << var_a3))) {
-                        *var_t2_2 = var_a3;
-                        var_t0_2 += 1;
-                        var_t2_2 += 1;
-                    }
-                    var_a3 += 1;
-                    var_t3_2 += 4;
-                } while ((s32) var_a3 < (s32) temp_t1_2);
+            pn = *(u8 *)0x3F34C3;
+            n = 0;
+            for (i = 0; (s32)i < (s32)pn; i++) {
+                if (em->x918[i] >= 0x7530 && (em->x88F & (1 << i))) {
+                    list[n] = i;
+                    n += 1;
+                }
             }
-            var_v0 = 0xFF;
-            if (var_t0_2 >= 2) {
-                var_v0 = spC;
-                var_a3_2 = 1;
-                if (var_t0_2 >= 2) {
-                    var_t1_2 = &spD;
-                    do {
-                        temp_a2 = *var_t1_2;
-                        if (EM_FIELD((em + ((var_v0 & 0xFF) * 4)), f32 *, 0x8C4) < EM_FIELD((em + (temp_a2 * 4)), f32 *, 0x8C4)) {
-                            var_v0 = temp_a2;
-                        }
-                        var_a3_2 += 1;
-                        var_t1_2 += 1;
-                    } while (var_a3_2 < var_t0_2);
+            v = 0xFF;
+            if (n >= 2) {
+                v = list[0];
+                for (k = 1; k < n; k++) {
+                    if (em->x8C4[v] < em->x8C4[list[k]]) {
+                        v = list[k];
+                    }
                 }
-            } else if (var_t0_2 == 1) {
-                var_v0 = spC;
+            } else if (n == 1) {
+                v = list[0];
             } else {
-                temp_t2 = *(void *)0x3F34C3;
-                var_t1_3 = 0;
-                var_t0_3 = 0;
-                if ((s32) temp_t2 > 0) {
-                    var_t3_3 = &spC;
-                    do {
-                        if (em->x88F & (1 << var_t1_3)) {
-                            *var_t3_3 = var_t1_3;
-                            var_t0_3 += 1;
-                            var_t3_3 += 1;
-                        }
-                        var_t1_3 += 1;
-                    } while ((s32) var_t1_3 < (s32) temp_t2);
+                pn = *(u8 *)0x3F34C3;
+                n = 0;
+                for (i = 0; (s32)i < (s32)pn; i++) {
+                    if (em->x88F & (1 << i)) {
+                        list[n] = i;
+                        n += 1;
+                    }
                 }
-                if (var_t0_3 == 1) {
-                    var_v0 = spC;
-                } else if (var_t0_3 != 0) {
-                    var_v0 = spC;
-                    var_t3_4 = 0;
-                    if (EM_FIELD(((var_v0 * 4) + em), s32 *, 0x918) == 0) {
-                        var_t3_4 = 1 & 0xFF;
+                if (n == 1) {
+                    v = list[0];
+                } else if (n != 0) {
+                    v = list[0];
+                    flag = 0;
+                    if (em->x918[v] == 0) {
+                        flag = 1;
                     }
-                    var_t1_4 = 1;
-                    if (var_t0_3 >= 2) {
-                        var_t2_3 = &spD;
-                        do {
-                            temp_a3_2 = *var_t2_3;
-                            if (EM_FIELD((em + ((var_v0 & 0xFF) * 4)), s32 *, 0x918) < EM_FIELD((em + (temp_a3_2 * 4)), s32 *, 0x918)) {
-                                var_v0 = temp_a3_2;
-                                var_t3_4 = 0;
-                            }
-                            var_t1_4 += 1;
-                            var_t2_3 += 1;
-                        } while (var_t1_4 < var_t0_3);
+                    for (k = 1; k < n; k++) {
+                        if (em->x918[v] < em->x918[list[k]]) {
+                            v = list[k];
+                            flag = 0;
+                        }
                     }
-                    if ((var_t3_4 & 0xFF) == 1) {
-                        var_v0 = 0xFF;
+                    if ((flag & 0xFF) == 1) {
+                        v = 0xFF;
                     }
                 }
             }
         }
-        if ((var_v0 & 0xFF) == 0xFF) {
-            var_a3_3 = 0;
-            temp_t0 = *(void *)0x3F34C3;
-            var_a2 = 0;
-            if ((s32) temp_t0 > 0) {
-                var_t2_4 = &spC;
-                do {
-                    if (em->x88F & (1 << var_a3_3)) {
-                        *var_t2_4 = var_a3_3;
-                        var_a2 += 1;
-                        var_t2_4 += 1;
-                    }
-                    var_a3_3 += 1;
-                } while ((s32) var_a3_3 < (s32) temp_t0);
-            }
-            if (var_a2 != 0) {
-                if (var_a2 == 0) {
-                    M2C_BREAK(0);
+        if (v == 0xFF) {
+            i = 0;
+            pn = *(u8 *)0x3F34C3;
+            n = 0;
+            for (; (s32)i < (s32)pn; i++) {
+                if (em->x88F & (1 << i)) {
+                    list[n] = i;
+                    n += 1;
                 }
-                var_v0 = EM_FIELD((((s32) em->x39A % var_a2) + sp), u8 *, 0xC);
+            }
+            if (n != 0) {
+                v = list[em->x39A % n];
             } else {
-                var_v0 = 0;
+                v = 0;
             }
         }
     } else {
-        var_v0 = -1U;
+        v = 0xFF;
     }
-    EM_FIELD(em, u8 *, 0x844) = var_v0;
+    em->x844 = v;
     return p;
 }
 
 u8 *em_cmd_samestage_pl_target_sel(EMW *em, u8 *p) {
-    u8 sp7D;
-    u8 sp7C;
-    s32 temp_s2;
-    s32 temp_v0;
-    s32 var_a0;
-    s32 var_a1;
-    s32 var_a1_2;
-    s32 var_a2;
-    s32 var_a2_2;
-    s32 var_a3_4;
-    s32 var_s4;
-    s32 var_s5;
-    s32 var_t0_2;
-    s32 var_t2_2;
-    u8 *var_a3_2;
-    u8 *var_a3_3;
-    u8 *var_s3;
-    u8 *var_t0;
-    u8 *var_t0_3;
-    u8 *var_t1;
-    u8 *var_t1_3;
-    u8 *var_t1_4;
-    u8 temp_a0;
-    u8 temp_a1;
-    u8 temp_a2;
-    u8 temp_a3;
-    u8 temp_a3_2;
-    u8 temp_t0;
-    u8 var_a0_2;
-    u8 var_a2_3;
-    u8 var_a2_4;
-    u8 var_a3;
-    u8 var_v1;
-    void *var_t1_2;
-    void *var_t2;
+    u8 list[4];
+    u8 v;
+    u8 pn;
+    u8 i;
+    u8 k;
+    s32 n;
+    s32 flag;
+    s32 m;
+    s32 j;
+    s32 bit;
 
     if (em->x88F != 0) {
-        var_s4 = 0;
-        var_s5 = 0;
-        if ((s32) *(u8 *)0x3F34C3 > 0) {
-            var_s3 = &player_work;
+        m = 0;
+        j = 0;
+        if ((s32) * (u8 *)0x3F34C3 > 0) {
             do {
-                temp_s2 = 1 << var_s5;
-                if ((em->x88F & temp_s2) && (Pl_stg_ck_tw(em, var_s3) != 0) && (*var_s3 != 0)) {
-                    var_s4 = (var_s4 | (temp_s2 & 0xFF)) & 0xFF;
+                bit = 1 << j;
+                if ((em->x88F & bit) && Pl_stg_ck_tw(em, &player_work[j]) != 0 && player_work[j].be_flag != 0) {
+                    m = (m | (bit & 0xFF)) & 0xFF;
                 }
-                var_s5 += 1;
-                var_s3 += 0xA00;
-            } while (var_s5 < (s32) *(void *)0x3F34C3);
+                j += 1;
+            } while (j < (s32) * (u8 *)0x3F34C3);
         }
-        temp_v0 = var_s4 & 0xFF;
-        if (temp_v0 == 0) {
-            EM_FIELD(em, u8 *, 0x844) = -1U;
+        if ((m & 0xFF) == 0) {
+            em->x844 = 0xFF;
             return p;
         }
-        var_a3 = 0;
-        var_a0 = 0;
-        if ((s32) *(void *)0x3F34C3 > 0) {
-            var_t2 = em;
-            var_t1 = &sp7C;
+        /* players that hate us a lot (>= 50000) */
+        i = 0;
+        n = 0;
+        if ((s32) * (u8 *)0x3F34C3 > 0) {
             do {
-                if ((EM_FIELD(var_t2, s32 *, 0x918) >= 0xC350) && (temp_v0 & (1 << var_a3))) {
-                    *var_t1 = var_a3;
-                    var_a0 += 1;
-                    var_t1 += 1;
+                if (em->x918[i] >= 0xC350 && (m & (1 << i))) {
+                    list[n] = i;
+                    n += 1;
                 }
-                var_a3 += 1;
-                var_t2 += 4;
-            } while ((s32) var_a3 < (s32) *(void *)0x3F34C3);
+                i += 1;
+            } while ((s32)i < (s32) * (u8 *)0x3F34C3);
         }
-        if (var_a0 >= 2) {
-            var_v1 = sp7C;
-            var_a2 = 1;
-            if (var_a0 >= 2) {
-                var_a3_2 = &sp7D;
-                do {
-                    temp_a1 = *var_a3_2;
-                    if (EM_FIELD((em + ((var_v1 & 0xFF) * 4)), f32 *, 0x8C4) < EM_FIELD((em + (temp_a1 * 4)), f32 *, 0x8C4)) {
-                        var_v1 = temp_a1;
-                    }
-                    var_a2 += 1;
-                    var_a3_2 += 1;
-                } while (var_a2 < var_a0);
+        if (n >= 2) {
+            v = list[0];
+            for (k = 1; k < n; k++) {
+                if (em->x8C4[v] < em->x8C4[list[k]]) {
+                    v = list[k];
+                }
             }
-        } else if (var_a0 == 1) {
-            var_v1 = sp7C;
+        } else if (n == 1) {
+            v = list[0];
         } else {
-            temp_a3 = *(void *)0x3F34C3;
-            var_a0_2 = 0;
-            var_a2_2 = 0;
-            if ((s32) temp_a3 > 0) {
-                var_t1_2 = em;
-                var_t0 = &sp7C;
-                do {
-                    if ((EM_FIELD(var_t1_2, s32 *, 0x918) >= 0x7530) && (temp_v0 & (1 << var_a0_2))) {
-                        *var_t0 = var_a0_2;
-                        var_a2_2 += 1;
-                        var_t0 += 1;
-                    }
-                    var_a0_2 += 1;
-                    var_t1_2 += 4;
-                } while ((s32) var_a0_2 < (s32) temp_a3);
+            pn = *(u8 *)0x3F34C3;
+            i = 0;
+            n = 0;
+            for (; (s32)i < (s32)pn; i++) {
+                if (em->x918[i] >= 0x7530 && (m & (1 << i))) {
+                    list[n] = i;
+                    n += 1;
+                }
             }
-            var_v1 = 0xFF;
-            if (var_a2_2 >= 2) {
-                var_v1 = sp7C;
-                var_a1 = 1;
-                if (var_a2_2 >= 2) {
-                    var_a3_3 = &sp7D;
-                    do {
-                        temp_a0 = *var_a3_3;
-                        if (EM_FIELD((em + ((var_v1 & 0xFF) * 4)), f32 *, 0x8C4) < EM_FIELD((em + (temp_a0 * 4)), f32 *, 0x8C4)) {
-                            var_v1 = temp_a0;
-                        }
-                        var_a1 += 1;
-                        var_a3_3 += 1;
-                    } while (var_a1 < var_a2_2);
+            v = 0xFF;
+            if (n >= 2) {
+                v = list[0];
+                for (k = 1; k < n; k++) {
+                    if (em->x8C4[v] < em->x8C4[list[k]]) {
+                        v = list[k];
+                    }
                 }
-            } else if (var_a2_2 == 1) {
-                var_v1 = sp7C;
+            } else if (n == 1) {
+                v = list[0];
             } else {
-                temp_t0 = *(void *)0x3F34C3;
-                var_a2_3 = 0;
-                var_a3_4 = 0;
-                if ((s32) temp_t0 > 0) {
-                    var_t1_3 = &sp7C;
-                    do {
-                        if (temp_v0 & (1 << var_a2_3)) {
-                            *var_t1_3 = var_a2_3;
-                            var_a3_4 += 1;
-                            var_t1_3 += 1;
-                        }
-                        var_a2_3 += 1;
-                    } while ((s32) var_a2_3 < (s32) temp_t0);
+                pn = *(u8 *)0x3F34C3;
+                i = 0;
+                n = 0;
+                for (; (s32)i < (s32)pn; i++) {
+                    if (m & (1 << i)) {
+                        list[n] = i;
+                        n += 1;
+                    }
                 }
-                if (var_a3_4 == 1) {
-                    var_v1 = sp7C;
-                } else if (var_a3_4 != 0) {
-                    var_v1 = sp7C;
-                    var_t2_2 = 0;
-                    if (EM_FIELD(((var_v1 * 4) + em), s32 *, 0x918) == 0) {
-                        var_t2_2 = 1 & 0xFF;
+                if (n == 1) {
+                    v = list[0];
+                } else if (n != 0) {
+                    v = list[0];
+                    flag = 0;
+                    if (em->x918[v] == 0) {
+                        flag = 1;
                     }
-                    var_t0_2 = 1;
-                    if (var_a3_4 >= 2) {
-                        var_t1_4 = &sp7D;
-                        do {
-                            temp_a2 = *var_t1_4;
-                            if (EM_FIELD((em + ((var_v1 & 0xFF) * 4)), s32 *, 0x918) < EM_FIELD((em + (temp_a2 * 4)), s32 *, 0x918)) {
-                                var_v1 = temp_a2;
-                                var_t2_2 = 0;
-                            }
-                            var_t0_2 += 1;
-                            var_t1_4 += 1;
-                        } while (var_t0_2 < var_a3_4);
-                    }
-                    if ((var_t2_2 & 0xFF) == 1) {
-                        var_a2_4 = 0;
-                        temp_a3_2 = *(void *)0x3F34C3;
-                        var_a1_2 = 0;
-                        if ((s32) temp_a3_2 > 0) {
-                            var_t0_3 = &sp7C;
-                            do {
-                                if (temp_v0 & (1 << var_a2_4)) {
-                                    *var_t0_3 = var_a2_4;
-                                    var_a1_2 += 1;
-                                    var_t0_3 += 1;
-                                }
-                                var_a2_4 += 1;
-                            } while ((s32) var_a2_4 < (s32) temp_a3_2);
+                    for (k = 1; k < n; k++) {
+                        if (em->x918[v] < em->x918[list[k]]) {
+                            v = list[k];
+                            flag = 0;
                         }
-                        if (var_a1_2 != 0) {
-                            if (var_a1_2 == 0) {
-                                M2C_BREAK(0);
+                    }
+                    if ((flag & 0xFF) == 1) {
+                        i = 0;
+                        pn = *(u8 *)0x3F34C3;
+                        n = 0;
+                        for (; (s32)i < (s32)pn; i++) {
+                            if (m & (1 << i)) {
+                                list[n] = i;
+                                n += 1;
                             }
-                            var_v1 = EM_FIELD((((s32) em->x39A % var_a1_2) + sp), u8 *, 0x7C);
+                        }
+                        if (n != 0) {
+                            v = list[em->x39A % n];
                         } else {
-                            var_v1 = 0xFF;
+                            v = 0xFF;
                         }
                     }
                 }
             }
         }
-        EM_FIELD(em, u8 *, 0x844) = var_v1;
-        goto block_71;
+        em->x844 = v;
+    } else {
+        em->x844 = 0xFF;
     }
-    EM_FIELD(em, u8 *, 0x844) = -1U;
-block_71:
     return p;
 }
 
@@ -2939,199 +2736,123 @@ u8 *em_cmd_my_floor_ck(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_st25_pl_target_sel(EMW *em, u8 *p) {
-    u8 sp7D;
-    u8 sp7C;
-    s32 temp_a2;
-    s32 temp_a3;
-    s32 temp_s4;
-    s32 var_a1;
-    s32 var_a1_2;
-    s32 var_a2;
-    s32 var_a2_2;
-    s32 var_a2_3;
-    s32 var_a2_4;
-    s32 var_a3_5;
-    s32 var_s0;
-    s32 var_s1;
-    s32 var_v1;
-    u16 temp_a0;
-    u16 temp_v1;
-    u16 temp_v1_2;
-    u8 *var_a3;
-    u8 *var_a3_3;
-    u8 *var_a3_4;
-    u8 *var_s5;
-    u8 *var_t0;
-    u8 *var_t0_2;
-    u8 *var_t0_3;
-    u8 *var_t1;
-    u8 *var_t1_3;
-    u8 temp_a0_2;
-    u8 temp_a1;
-    u8 temp_a1_2;
-    u8 temp_a2_2;
-    u8 temp_a3_2;
-    u8 var_a1_3;
-    u8 var_a3_2;
-    u8 var_v0;
-    u8 var_v1_2;
-    void *var_t1_2;
-    void *var_t2;
+    u8 list[4];
+    u8 v;
+    u8 pn;
+    u8 i;
+    u8 k;
+    s32 n;
+    s32 m;
+    s32 j;
+    s32 bit;
+    u16 t;
 
     if (em->x88F != 0) {
-        var_s0 = 0;
-        var_s1 = 0;
-        if ((s32) *(u8 *)0x3F34C3 > 0) {
-            var_s5 = &player_work;
+        m = 0;
+        j = 0;
+        if ((s32) * (u8 *)0x3F34C3 > 0) {
             do {
-                temp_s4 = 1 << var_s1;
-                if ((em->x88F & temp_s4) && (Pl_stg_ck_tw(em, var_s5) != 0) && (*var_s5 != 0)) {
-                    var_s0 = (var_s0 | (temp_s4 & 0xFF)) & 0xFF;
+                bit = 1 << j;
+                if ((em->x88F & bit) && Pl_stg_ck_tw(em, &player_work[j]) != 0 && player_work[j].be_flag != 0) {
+                    m = (m | (bit & 0xFF)) & 0xFF;
                 }
-                var_s1 += 1;
-                var_s5 += 0xA00;
-            } while (var_s1 < (s32) *(void *)0x3F34C3);
+                j += 1;
+            } while (j < (s32) * (u8 *)0x3F34C3);
         }
-        if (!(var_s0 & 0xFF) || (temp_v1 = em->x70E, (temp_v1 == 0))) {
-            EM_FIELD(em, u8 *, 0x844) = -1U;
+        if (!(m & 0xFF) || (t = em->x70E, (t == 0))) {
+            em->x844 = 0xFF;
             return p;
         }
-        if (((s32) temp_v1 > 0) && ((s32) temp_v1 < 4)) {
-            var_a1 = 0;
-            if ((s32) *(void *)0x3F34C3 > 0) {
-                var_a3 = &player_work;
+        if ((s32)t > 0 && (s32)t < 4) {
+            j = 0;
+            if ((s32) * (u8 *)0x3F34C3 > 0) {
                 do {
-                    temp_a2 = 1 << var_a1;
-                    if (!(var_s0 & 0xFF & temp_a2) || (temp_v1_2 = EM_FIELD(var_a3, u16 *, 0x70E), ((s32) temp_v1_2 <= 0)) || ((s32) temp_v1_2 >= 4)) {
-                        var_s0 = var_s0 & (~temp_a2 & 0xFF) & 0xFF;
+                    bit = 1 << j;
+                    if (!(m & 0xFF & bit) || (t = player_work[j].x70E, ((s32)t <= 0)) || ((s32)t >= 4)) {
+                        m = m & (~bit & 0xFF) & 0xFF;
                     }
-                    var_a1 += 1;
-                    var_a3 += 0xA00;
-                } while (var_a1 < (s32) *(void *)0x3F34C3);
+                    j += 1;
+                } while (j < (s32) * (u8 *)0x3F34C3);
             }
         } else {
-            var_a2 = 0;
-            if ((s32) *(void *)0x3F34C3 > 0) {
-                var_t0 = &player_work;
+            j = 0;
+            if ((s32) * (u8 *)0x3F34C3 > 0) {
                 do {
-                    temp_a3 = 1 << var_a2;
-                    if ((var_s0 & 0xFF & temp_a3) && (temp_a0 = EM_FIELD(var_t0, u16 *, 0x70E), (((s32) temp_a0 < 4) == 0))) {
-                        if ((s32) temp_a0 >= 0xB) {
-                            goto block_27;
-                        }
+                    bit = 1 << j;
+                    if ((m & 0xFF & bit) && (t = player_work[j].x70E, !((s32)t < 4)) && (s32)t < 0xB) {
                     } else {
-block_27:
-                        var_s0 = var_s0 & (~temp_a3 & 0xFF) & 0xFF;
+                        m = m & (~bit & 0xFF) & 0xFF;
                     }
-                    var_a2 += 1;
-                    var_t0 += 0xA00;
-                } while (var_a2 < (s32) *(void *)0x3F34C3);
+                    j += 1;
+                } while (j < (s32) * (u8 *)0x3F34C3);
             }
         }
-        var_a3_2 = 0;
-        var_v1 = 0;
-        if ((s32) *(void *)0x3F34C3 > 0) {
-            var_t2 = em;
-            var_t1 = &sp7C;
+        i = 0;
+        n = 0;
+        if ((s32) * (u8 *)0x3F34C3 > 0) {
             do {
-                if ((EM_FIELD(var_t2, s32 *, 0x918) == 0xC350) && (var_s0 & 0xFF & (1 << var_a3_2))) {
-                    *var_t1 = var_a3_2;
-                    var_v1 += 1;
-                    var_t1 += 1;
+                if (em->x918[i] == 0xC350 && (m & 0xFF & (1 << i))) {
+                    list[n] = i;
+                    n += 1;
                 }
-                var_a3_2 += 1;
-                var_t2 += 4;
-            } while ((s32) var_a3_2 < (s32) *(void *)0x3F34C3);
+                i += 1;
+            } while ((s32)i < (s32) * (u8 *)0x3F34C3);
         }
-        if (var_v1 >= 2) {
-            var_v0 = sp7C;
-            var_a2_2 = 1;
-            if (var_v1 >= 2) {
-                var_a3_3 = &sp7D;
-                do {
-                    temp_a1 = *var_a3_3;
-                    if (EM_FIELD((em + ((var_v0 & 0xFF) * 4)), f32 *, 0x8C4) < EM_FIELD((em + (temp_a1 * 4)), f32 *, 0x8C4)) {
-                        var_v0 = temp_a1;
-                    }
-                    var_a2_2 += 1;
-                    var_a3_3 += 1;
-                } while (var_a2_2 < var_v1);
+        if (n >= 2) {
+            v = list[0];
+            for (k = 1; k < n; k++) {
+                if (em->x8C4[v] < em->x8C4[list[k]]) {
+                    v = list[k];
+                }
             }
-        } else if (var_v1 == 1) {
-            var_v0 = sp7C;
+        } else if (n == 1) {
+            v = list[0];
         } else {
-            temp_a2_2 = *(void *)0x3F34C3;
-            var_v1_2 = 0;
-            var_a1_2 = 0;
-            if ((s32) temp_a2_2 > 0) {
-                var_t1_2 = em;
-                var_t0_2 = &sp7C;
-                do {
-                    if ((EM_FIELD(var_t1_2, s32 *, 0x918) >= 0x7530) && (var_s0 & 0xFF & (1 << var_v1_2))) {
-                        *var_t0_2 = var_v1_2;
-                        var_a1_2 += 1;
-                        var_t0_2 += 1;
-                    }
-                    var_v1_2 += 1;
-                    var_t1_2 += 4;
-                } while ((s32) var_v1_2 < (s32) temp_a2_2);
+            pn = *(u8 *)0x3F34C3;
+            i = 0;
+            n = 0;
+            for (; (s32)i < (s32)pn; i++) {
+                if (em->x918[i] >= 0x7530 && (m & 0xFF & (1 << i))) {
+                    list[n] = i;
+                    n += 1;
+                }
             }
-            var_v0 = 0xFF;
-            if (var_a1_2 >= 2) {
-                var_v0 = sp7C;
-                var_a2_3 = 1;
-                if (var_a1_2 >= 2) {
-                    var_a3_4 = &sp7D;
-                    do {
-                        temp_a0_2 = *var_a3_4;
-                        if (EM_FIELD((em + ((var_v0 & 0xFF) * 4)), f32 *, 0x8C4) < EM_FIELD((em + (temp_a0_2 * 4)), f32 *, 0x8C4)) {
-                            var_v0 = temp_a0_2;
-                        }
-                        var_a2_3 += 1;
-                        var_a3_4 += 1;
-                    } while (var_a2_3 < var_a1_2);
+            v = 0xFF;
+            if (n >= 2) {
+                v = list[0];
+                for (k = 1; k < n; k++) {
+                    if (em->x8C4[v] < em->x8C4[list[k]]) {
+                        v = list[k];
+                    }
                 }
-            } else if (var_a1_2 == 1) {
-                var_v0 = sp7C;
+            } else if (n == 1) {
+                v = list[0];
             } else {
-                temp_a3_2 = *(void *)0x3F34C3;
-                var_a1_3 = 0;
-                var_a2_4 = 0;
-                if ((s32) temp_a3_2 > 0) {
-                    var_t1_3 = &sp7C;
-                    do {
-                        if (var_s0 & 0xFF & (1 << var_a1_3)) {
-                            *var_t1_3 = var_a1_3;
-                            var_a2_4 += 1;
-                            var_t1_3 += 1;
-                        }
-                        var_a1_3 += 1;
-                    } while ((s32) var_a1_3 < (s32) temp_a3_2);
+                pn = *(u8 *)0x3F34C3;
+                i = 0;
+                n = 0;
+                for (; (s32)i < (s32)pn; i++) {
+                    if (m & 0xFF & (1 << i)) {
+                        list[n] = i;
+                        n += 1;
+                    }
                 }
-                var_a3_5 = 1;
-                if (var_a2_4 == 1) {
-                    var_v0 = sp7C;
-                } else if (var_a2_4 != 0) {
-                    var_v0 = sp7C;
-                    if (var_a2_4 >= 2) {
-                        var_t0_3 = &sp7D;
-                        do {
-                            temp_a1_2 = *var_t0_3;
-                            if (EM_FIELD((em + ((var_v0 & 0xFF) * 4)), s32 *, 0x918) < EM_FIELD((em + (temp_a1_2 * 4)), s32 *, 0x918)) {
-                                var_v0 = temp_a1_2;
-                            }
-                            var_a3_5 += 1;
-                            var_t0_3 += 1;
-                        } while (var_a3_5 < var_a2_4);
+                if (n == 1) {
+                    v = list[0];
+                } else if (n != 0) {
+                    v = list[0];
+                    for (k = 1; k < n; k++) {
+                        if (em->x918[v] < em->x918[list[k]]) {
+                            v = list[k];
+                        }
                     }
                 }
             }
         }
-        goto block_77;
+        em->x844 = v;
+    } else {
+        em->x844 = 0xFF;
     }
-    var_v0 = -1U;
-block_77:
-    EM_FIELD(em, u8 *, 0x844) = var_v0;
     return p;
 }
 
@@ -3160,6 +2881,76 @@ u8 *em_cmd_st25_gate_ck(EMW *em, u8 *p) {
 u8 *em_cmd_runaway_timer_set(EMW *em, u8 *p) {
     em->runaway_tm = em02_runaway_timer_tbl[em->stg];
     return p;
+}
+
+u8 *em_cmd_dansa_sel(EMW *em, u8 *p) {
+    u8 *q;
+    PLW *pl;
+    s8 t;
+    u8 r;
+    u8 more;
+
+    q = p + 1;
+    switch (*p) {
+    case 0xFF:
+        break;
+    case 1:
+    case 2:
+    case 3:
+        for (;;) {
+            q = cmd_end_search(em, q, 0x62, 0xFF);
+            if (q[1] == 0xFF) {
+                q += 2;
+                break;
+            }
+            q += 2;
+        }
+        break;
+    case 0:
+        t = em->x844;
+        q += 2;
+        more = 1;
+        if (t == -1) {
+            r = 3;
+        } else {
+            pl = &player_work[t & 0xF];
+            if (em->x70E == 1) {
+                if (pl->x70E == 3 || pl->x70E == 2) {
+                    r = 2;
+                } else {
+                    r = 3;
+                }
+            } else {
+                switch (pl->x70E - 4) {
+                case 0:
+                case 1:
+                case 3:
+                case 5:
+                    r = 2;
+                    break;
+                case 2:
+                case 4:
+                    r = 1;
+                    break;
+                default:
+                    r = 3;
+                    break;
+                }
+            }
+            if (r == 1) {
+                break;
+            }
+        }
+        while (more) {
+            q = cmd_end_search(em, q, 0x62, 0xFF);
+            if ((q[0] == 0x62 && q[1] == r) || (q[0] == 0x62 && q[1] == 0xFF)) {
+                more = 0;
+            }
+            q = next_cmd_search(em, q);
+        }
+        break;
+    }
+    return q;
 }
 
 u8 *em_cmd_male_ck(EMW *em, u8 *p) {
@@ -3352,6 +3143,60 @@ u8 *em_cmd_sub_contents(EMW *em, u8 *p) {
     return p;
 }
 
+u8 *em_cmd_target_set(EMW *em, u8 *p) {
+    em->x827 = *p;
+    switch (em->x827) {
+    case 0:
+        em->x827 = 0;
+        p++;
+        em->x828 = *p++;
+        em->x829 = *p++;
+        break;
+    case 1:
+        em->x827 = 1;
+        p++;
+        em->x828 = *p++;
+        em->x829 = *p++;
+        break;
+    case 2:
+    case 4:
+    case 5:
+    case 6:
+        p++;
+        em->x828 = *p++;
+        em->x829 = *p++;
+        break;
+    case 3:
+        p++;
+        em->x828 = *p++;
+        em->x829 = *p++;
+        em->x828 = em->x829;
+        em->x73A = em->x829;
+        em->x92F = 0xFF;
+        break;
+    case 10:
+        em->x827 = 3;
+        p++;
+        em->x828 = *p++;
+        em->x829 = *p++;
+        if (em->x844 == -1) {
+            em->x829 = em->stg;
+        } else {
+            em->x829 = player_work[em->x844].stg;
+        }
+        em->x828 = em->x829;
+        em->x73A = em->x829;
+        em->x92F = 0xFF;
+        break;
+    default:
+        p++;
+        em->x828 = *p++;
+        em->x829 = *p++;
+        break;
+    }
+    return p;
+}
+
 u8 *em_cmd_range_ck(EMW *em, u8 *p) {
     f32 f;
     f32 v;
@@ -3428,188 +3273,178 @@ u8 *em_cmd_range_ck(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_end_command(EMW *em, u8 *p) {
-    s8 sp60;
-    int sp50;
-    f32 temp_f0;
-    f32 var_f1;
-    s16 temp_v1_2;
-    s16 temp_v1_3;
-    s32 temp_a2;
-    s32 temp_s0;
-    int temp_v1_8;
-    int var_a1;
-    int var_a2;
-    s8 *var_a0;
-    s8 temp_v0_2;
-    s8 temp_v1_5;
-    u8 *var_s2;
-    u8 temp_a1;
-    u8 temp_v1;
-    u8 temp_v1_4;
-    u8 temp_v1_6;
-    u8 temp_v1_7;
-    void *temp_s1;
-    void *temp_v0;
-    void *temp_v0_3;
+    u8 list[16];
+    f32 tgt[3];
+    f32 d;
+    f32 lim;
+    EM_STG_POS *g;
+    EM_ROUTE *rt;
+    EM_ROUTE_PT *pt;
+    u8 *r;
+    s8 *w;
+    s32 a;
+    s32 b;
+    s8 c;
+    s8 i;
+    s8 n;
+    u8 idx;
+    s16 num;
 
-    temp_v1 = *p;
-    var_s2 = p;
-    switch (temp_v1) {                              /* switch 1; irregular */
-    case 0x0:                                       /* switch 1 */
-        EM_FIELD(em, s16 *, 0x820) = 0;
-        var_s2 = em_cmd_top(em);
-        em->x83B = 0U;
+    r = p;
+    switch (*p) {
+    case 0x0:
+        em->cmd_idx = 0;
+        r = em_cmd_top(em);
+        em->x83B = 0;
         em_g_init_flag_set(em, 2);
         break;
-    case 0x1:                                       /* switch 1 */
-        EM_FIELD(em, s8 *, 0x826) = 0;
-        var_s2 = em->cmd_p808;
+    case 0x1:
+        em->x826 = 0;
+        r = em->cmd_p808;
         break;
-    case 0x2:                                       /* switch 1 */
-        EM_FIELD(em, s8 *, 0x826) = 1;
-        var_s2 = em->cmd_p80C;
+    case 0x2:
+        em->x826 = 1;
+        r = em->cmd_p80C;
         break;
-    case 0x3:                                       /* switch 1 */
-        var_s2 = em->cmd_p840;
+    case 0x3:
+        r = em->cmd_p840;
         break;
-    case 0x4:                                       /* switch 1 */
-        temp_v0 = gp_ck(EM_FIELD(em->area, s32 *, 0x18), em->stg);
-        temp_s1 = EM_FIELD(temp_v0, void **, 4);
-        if (temp_s1 == NULL) {
-            var_s2 = em->cmd_p868;
+    case 0x4:
+        g = gp_ck(em, em->area->x18, em->stg);
+        rt = (EM_ROUTE *)g->pos;
+        if (rt == NULL) {
+            r = em->cmd_p868;
             em->cmd_p868 = NULL;
-            em->x827 = 0U;
-            em->x881 = 0U;
+            em->x827 = 0;
+            em->x881 = 0;
         } else {
-            temp_v1_2 = EM_FIELD(temp_v0, s16 *, 2);
-            if ((s32) em->x86D >= temp_v1_2) {
-                em->x86D = (u8) (temp_v1_2 - 1);
+            if (em->x86D >= g->num) {
+                em->x86D = g->num - 1;
             }
-            temp_a1 = em->x86D;
-            temp_v1_3 = EM_FIELD(temp_s1, s16 *, 2);
-            temp_s0 = EM_FIELD(((temp_a1 * 0x18) + temp_s1), s32 *, 4);
-            if ((s32) em->x86E >= temp_v1_3) {
-                em->x86E = (u8) (temp_v1_3 - 1);
+            idx = em->x86D;
+            num = rt->num;
+            pt = rt[idx].pt;
+            if (em->x86E >= num) {
+                em->x86E = num - 1;
             }
             if (em->x8C3 != 0) {
                 if (em->x881 == 9) {
-                    em->x86C = (u8) EM_FIELD(((em->x86E * 0x14) + temp_s0), u16 *, 0x12);
-                    var_s2 = ground_area_move_ptr_set(em, em->x86C);
+                    em->x86C = pt[em->x86E].move;
+                    r = ground_area_move_ptr_set(em, em->x86C);
                 } else {
-                    EM_FIELD(em, s16 *, 0x820) = 0;
-                    var_s2 = em_cmd_top(em, temp_a1);
+                    em->cmd_idx = 0;
+                    r = em_cmd_top(em);
                 }
             } else {
-                temp_v1_4 = em->x86E;
-                if (!(CalcDistanceXZ(em + 0xAC, temp_s0 + (em->x86E * 0x14)) <= EM_FIELD(((temp_v1_4 * 0x14) + temp_s0), f32 *, 0xC))) {
-                    temp_v0_2 = em->x8BE + 1;
-                    em->x8BE = temp_v0_2;
-                    if (((s8)(temp_v0_2)) >= 0xA) {
-                        em->x86E = (u8) (EM_FIELD(temp_s1, s16 *, 2) - 1);
+                idx = em->x86E;
+                if (!(CalcDistanceXZ(em->pos, pt[em->x86E].pos) <= pt[idx].radius)) {
+                    c = em->x8BE + 1;
+                    em->x8BE = c;
+                    if (c >= 0xA) {
+                        em->x86E = rt->num - 1;
                     } else {
-                        em->x827 = 9U;
-                        em->x828 = (u8) em->x86D;
-                        em->x829 = (u8) em->x86E;
-                        em->x881 = (u8) em->x827;
-                        em->x882 = (u8) em->x828;
-                        em->x883 = (u8) em->x829;
-                        em->x86C = (u8) EM_FIELD(((em->x86E * 0x14) + temp_s0), u16 *, 0x12);
-                        var_s2 = ground_area_move_ptr_set(em, em->x86C);
-                        em->cmd_top = var_s2;
+                        em->x827 = 9;
+                        em->x828 = em->x86D;
+                        em->x829 = em->x86E;
+                        em->x881 = em->x827;
+                        em->x882 = em->x828;
+                        em->x883 = em->x829;
+                        em->x86C = pt[em->x86E].move;
+                        r = ground_area_move_ptr_set(em, em->x86C);
+                        em->cmd_top = r;
                     }
-                } else if (temp_v1_4 == 0) {
-                    var_s2 = em->cmd_p868;
+                } else if (idx == 0) {
+                    r = em->cmd_p868;
                     em->cmd_p868 = NULL;
-                    if ((*(temp_s1 + (em->x882 * 0x18)) != -1) && (em->x9E2 != 0)) {
-                        EM_FIELD(em, f32 *, 0xAC) = (f32) EM_FIELD(((em->x86D * 0x18) + temp_s1), f32 *, 8);
-                        EM_FIELD(em, f32 *, 0xB0) = (f32) EM_FIELD(((em->x86D * 0x18) + temp_s1), f32 *, 0xC);
-                        EM_FIELD(em, f32 *, 0xB4) = (f32) EM_FIELD(((em->x86D * 0x18) + temp_s1), f32 *, 0x10);
-                        EM_FIELD(em, s32 *, 0xA4) = (s32) ((EM_FIELD(((em->x882 * 0x18) + temp_s1), u16 *, 0x14) + 0x4000) & 0xFFFF);
-                        em->x92E = (u8) em->stg;
-                        em->stg = (u8) *(temp_s1 + (em->x882 * 0x18));
+                    if (rt[em->x882].stg != -1 && em->x9E2 != 0) {
+                        em->pos[0] = rt[em->x86D].pos[0];
+                        em->pos[1] = rt[em->x86D].pos[1];
+                        em->pos[2] = rt[em->x86D].pos[2];
+                        em->ang[1] = (rt[em->x882].ang + 0x4000) & 0xFFFF;
+                        em->x92E = em->stg;
+                        em->stg = rt[em->x882].stg;
                         em_area_move_init(em);
                         em_g_init_flag_set(em, 1);
                     }
-                    em->x827 = 0U;
-                    em->x881 = 0U;
+                    em->x827 = 0;
+                    em->x881 = 0;
                 } else {
                     em->x8BE = 0;
-                    em->x86E = (u8) (em->x86E - 1);
-                    em->x827 = 9U;
-                    em->x828 = (u8) em->x86D;
-                    em->x829 = (u8) em->x86E;
-                    em->x881 = (u8) em->x827;
-                    em->x882 = (u8) em->x828;
-                    em->x883 = (u8) em->x829;
-                    em->x86C = (u8) EM_FIELD(((em->x86E * 0x14) + temp_s0), u16 *, 0x12);
-                    var_s2 = ground_area_move_ptr_set(em, em->x86C);
+                    em->x86E = em->x86E - 1;
+                    em->x827 = 9;
+                    em->x828 = em->x86D;
+                    em->x829 = em->x86E;
+                    em->x881 = em->x827;
+                    em->x882 = em->x828;
+                    em->x883 = em->x829;
+                    em->x86C = pt[em->x86E].move;
+                    r = ground_area_move_ptr_set(em, em->x86C);
                 }
             }
         }
         break;
-    case 0xF5:                                      /* switch 1 */
-        EM_FIELD(em, s16 *, 0x820) = 0;
-        var_s2 = em_cmd_top(em);
-        em->x83B = 0U;
+    case 0xF5:
+        em->cmd_idx = 0;
+        r = em_cmd_top(em);
+        em->x83B = 0;
         em_g_init_flag_set(em, 2);
         break;
-    case 0xF6:                                      /* switch 1 */
-        EM_FIELD(em, s16 *, 0x820) = 0;
-        var_s2 = em_cmd_top(em);
-        em->x83B = 0U;
+    case 0xF6:
+        em->cmd_idx = 0;
+        r = em_cmd_top(em);
+        em->x83B = 0;
         em_g_init_flag_set(em, 2);
         break;
-    case 0xF7:                                      /* switch 1 */
-        EM_FIELD(em, s16 *, 0x820) = 0;
-        var_s2 = em_cmd_top(em);
-        em->x83B = 0U;
+    case 0xF7:
+        em->cmd_idx = 0;
+        r = em_cmd_top(em);
+        em->x83B = 0;
         em_g_init_flag_set(em, 2);
-        temp_v1_5 = em->x844;
-        if (temp_v1_5 != -1) {
-            temp_a2 = temp_v1_5 & 0xF;
-            em->x88F = (u8) (em->x88F & (~(1 << temp_a2) & 0xFF));
-            temp_v0_3 = (temp_a2 * 4) + em;
-            EM_FIELD(((temp_a2 * 2) + em), s16 *, 0x890) = 0;
-            EM_FIELD(temp_v0_3, s32 *, 0x8F4) = 0;
-            EM_FIELD(temp_v0_3, s32 *, 0x918) = 0;
+        c = em->x844;
+        if (c != -1) {
+            a = c & 0xF;
+            em->x88F = em->x88F & (~(1 << a) & 0xFF);
+            em->x890[a] = 0;
+            em->x8F4[a] = 0;
+            em->x918[a] = 0;
         }
         break;
-    case 0xF8:                                      /* switch 1 */
-        em->x83B = (u8) (em->x83B & 0xF7);
+    case 0xF8:
+        em->x83B = em->x83B & 0xF7;
         if (em->x83B & 1) {
-            var_s2 = route_ptr_set(em->x833);
+            r = route_ptr_set(em, em->x833);
         } else {
-            EM_FIELD(em, s16 *, 0x820) = 0;
-            var_s2 = em_cmd_top(em);
+            em->cmd_idx = 0;
+            r = em_cmd_top(em);
             em_g_init_flag_set(em, 2);
         }
         break;
-    case 0xF9:                                      /* switch 1 */
-        em->x83B = (u8) (em->x83B & 0xFB);
+    case 0xF9:
+        em->x83B = em->x83B & 0xFB;
         if (em->x83B & 1) {
-            var_s2 = route_ptr_set(em->x833);
+            r = route_ptr_set(em, em->x833);
         } else {
-            EM_FIELD(em, s16 *, 0x820) = 0;
-            var_s2 = em_cmd_top(em);
+            em->cmd_idx = 0;
+            r = em_cmd_top(em);
             em_g_init_flag_set(em, 2);
         }
         break;
-    case 0xFA:                                      /* switch 1 */
+    case 0xFA:
         em_cmd_top(em);
-        em->x83B = (u8) (em->x83B & 0xFD);
+        em->x83B = em->x83B & 0xFD;
         em_search_data_set(em, 0);
         if (em->x83B & 1) {
-            var_s2 = route_ptr_set((u8) em, em->x833);
+            r = route_ptr_set(em, em->x833);
         } else {
-            EM_FIELD(em, s16 *, 0x820) = 0;
-            var_s2 = em_cmd_top(em);
+            em->cmd_idx = 0;
+            r = em_cmd_top(em);
             em_g_init_flag_set(em, 2);
         }
         break;
-    case 0xFB:                                      /* switch 1 */
-        EM_FIELD(em, s8 *, 0x84D) = 0;
-        var_s2 = em->cmd_p848;
-        em->x92D = (s8) (em->x92D + 1);
+    case 0xFB:
+        em->x84D = 0;
+        r = em->cmd_p848;
+        em->x92D = em->x92D + 1;
         if (em->x92D >= em->x92C) {
             if (em->x84C == 0) {
                 em->x92D = -1;
@@ -3619,88 +3454,82 @@ u8 *em_cmd_end_command(EMW *em, u8 *p) {
             }
         }
         break;
-    case 0xFC:                                      /* switch 1 */
+    case 0xFC:
         if (em->x8C3 == 0) {
-            Em_Mode_Chg(1, *(&em_atk_mode_timer_tbl + (EM_FIELD(em, u8 *, 2) * 2)));
-            em->x838 = (u8) em->x888;
+            Em_Mode_Chg(em, 1, em_atk_mode_timer_tbl[em->kind]);
+            em->x838 = em->x888;
         }
-        EM_FIELD(em, s16 *, 0x820) = 0;
-        var_s2 = em_cmd_top(em);
-        em->x83B = 0U;
+        em->cmd_idx = 0;
+        r = em_cmd_top(em);
+        em->x83B = 0;
         em_g_init_flag_set(em, 2);
         break;
-    case 0xFD:                                      /* switch 1 */
-        em->x83B = (u8) (em->x83B & 0xEF);
+    case 0xFD:
+        em->x83B = em->x83B & 0xEF;
         if (em->x83B & 1) {
-            var_s2 = route_ptr_set(em->x833);
+            r = route_ptr_set(em, em->x833);
         } else {
-            EM_FIELD(em, s16 *, 0x820) = 0;
-            var_s2 = em_cmd_top(em);
-            EM_FIELD(em, s8 *, 0x86F) = 2;
+            em->cmd_idx = 0;
+            r = em_cmd_top(em);
+            em->x86F = 2;
         }
         break;
-    case 0xFE:                                      /* switch 1 */
-        cmd_target_kind_set(&sp50);
-        temp_f0 = CalcDistanceXZ(&sp50, em + 0xAC);
-        temp_v1_6 = EM_FIELD(em, u8 *, 2);
-        if (temp_v1_6 != 2) {
-            if (temp_v1_6 == 7) {
-                goto block_81;
+    case 0xFE:
+        cmd_target_kind_set(em, tgt);
+        d = CalcDistanceXZ(tgt, em->pos);
+        if (em->kind != 2) {
+            if (em->kind == 7) {
+                lim = 1000.0f;
+            } else {
+                lim = 500.0f;
             }
-            var_f1 = 500.0f;
         } else {
-block_81:
-            var_f1 = 1000.0f;
+            lim = 1000.0f;
         }
-        if (temp_f0 <= var_f1) {
-            em->x92A = (s8) (em->x92A + 1);
-            temp_v1_7 = em->x830;
-            switch (temp_v1_7) {                    /* switch 2; irregular */
-            case 0:                                 /* switch 2 */
-                var_a1 = 0;
-                var_a2 = 0;
+        if (d <= lim) {
+            em->x92A = em->x92A + 1;
+            switch (em->x830) {
+            case 0:
+                i = 0;
+                n = 0;
                 if (em->x92B > 0) {
-                    var_a0 = &sp60;
+                    w = (s8 *)list;
                     do {
-                        if (em->x928 != ((s8)(var_a1))) {
-                            *var_a0 = (s8) var_a1;
-                            var_a0 += 1;
-                            var_a2 = (s8)(var_a2 + 1);
+                        if (em->x928 != i) {
+                            *w = i;
+                            w++;
+                            n++;
                         }
-                        var_a1 = (s8)(var_a1 + 1);
-                    } while (var_a1 < em->x92B);
+                        i++;
+                    } while (i < em->x92B);
                 }
-                temp_v1_8 = (s8)(var_a2);
-                if (temp_v1_8 == 0) {
+                if (n == 0) {
                     em->x928 = 0;
                 } else {
-                    if (temp_v1_8 == 0) {
-                        M2C_BREAK(0);
-                    }
-                    em->x928 = (s8) EM_FIELD((((s8)(((s32) em->x39A % temp_v1_8))) + sp), u8 *, 0x60);
+                    em->x928 = list[em->x39A % n];
                 }
                 break;
-            case 1:                                 /* switch 2 */
-                em->x928 = (s8) *(option_route_ptr_set(em, em->x831) + em->x92A);
+            case 1:
+                em->x928 = option_route_ptr_set(em, em->x831)[em->x92A];
                 break;
-            case 2:                                 /* switch 2 */
-                em->x928 = (s8) (em->x928 + 1);
+            case 2:
+                em->x928 = em->x928 + 1;
                 break;
             }
         }
-        var_s2 = route_ptr_set((u8) em, em->x833);
+        r = route_ptr_set(em, em->x833);
         break;
-    case 0xFF:                                      /* switch 1 */
+    case 0xFF:
         if (em->x92A < em->x929) {
-            var_s2 = route_ptr_set(em->x832);
+            r = route_ptr_set(em, em->x832);
         } else {
-            em->x83B = (u8) (em->x83B & 0xFE);
-            var_s2 = set_cmd();
+            em->x83B = em->x83B & 0xFE;
+            r = set_cmd(em);
         }
         break;
     }
-    em->cmd_top = var_s2;
-    return var_s2;
+    em->cmd_top = r;
+    return r;
 }
 
 u8 *em_cmd_position_set(EMW *em, u8 *p) {
@@ -4486,245 +4315,245 @@ void em_cmd_reset(EMW *em) {
     reset_flag_ck(em);
 }
 
-void NextStage_No_Set(void *arg0) {
-    s8 sp148;
-    f32 sp144;
-    f32 sp13C;
-    f32 sp138;
-    f32 sp130;
-    f32 spD0;
-    u16 spC0;
-    u16 spB0;
-    u16 spA0;
-    f32 *var_s1;
-    f32 *var_s4;
-    s32 temp_s6;
-    s32 temp_v0;
-    s32 var_a2;
-    int temp_s1;
-    int var_a3;
-    int var_s0;
-    int var_s0_2;
-    int var_s3;
-    int var_s5;
-    int var_s5_2;
-    s8 *temp_s5;
-    s8 *var_s2;
-    s8 temp_a0;
-    s8 temp_a0_5;
-    s8 temp_v1;
-    u16 *var_s2_2;
-    u16 *var_s3_2;
-    u16 temp_a0_3;
-    u16 temp_a0_4;
-    u16 var_s7;
-    u8 temp_a0_2;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v0_4;
+void Em_Next_Stage_Pos(EMW *em) {
+    EM_STG_BOX *from;
+    EM_STG_BOX *to;
+    f32 v[6];
+    f32 x;
+    f32 z;
 
-    var_s7 = saved_reg_s7;
-    if (EM_FIELD(arg0, u8 *, 0x92F) == 0xFF) {
-        EM_FIELD(arg0, u8 *, 0x92F) = (u8) EM_FIELD(arg0, u16 *, 0x73A);
+    em->x92E = em->stg;
+    em->stg = (u16)em->x73A;
+    from = Stage_data_get(em->x92E);
+    to = Stage_data_get(em->stg);
+    v[0] = from->x + from->w / 2.0f;
+    v[2] = from->z + from->d / 2.0f;
+    v[3] = to->x + to->w / 2.0f;
+    v[5] = to->z + to->d / 2.0f;
+    switch ((u16)((((Em_Calc_angY(v, v + 3) & 0xFFFF) + 0x1000) & 0xFFFF) >> 13)) {
+    case 4:
+        x = to->w / 2.0f;
+        z = to->d;
+        break;
+    case 5:
+        x = to->w;
+        z = to->d;
+        break;
+    case 6:
+        x = to->w;
+        z = to->d / 2.0f;
+        break;
+    case 7:
+        x = to->w;
+        z = 0.0f;
+        break;
+    case 0:
+        x = to->w / 2.0f;
+        z = 0.0f;
+        break;
+    case 1:
+        x = 0.0f;
+        z = x;
+        break;
+    case 2:
+        x = 0.0f;
+        z = to->d / 2.0f;
+        break;
+    case 3:
+        x = 0.0f;
+        z = to->d;
+        break;
     }
-    temp_v0 = st_mv_ptr_ck(arg0);
-    var_a2 = 0;
-    if (temp_v0 != 0) {
-        var_a3 = 0;
-loop_4:
-        temp_v1 = *(temp_v0 + ((s8)(var_a3)));
-        if (EM_FIELD(arg0, u16 *, 0x73A) == temp_v1) {
-            var_a2 = 1;
-        } else if (temp_v1 != -1) {
-            var_a3 = (s8)(var_a3 + 1);
-            if (var_a3 >= 8) {
+    em->pos[0] = x;
+    em->pos[2] = z;
+    em->x5A0[0] = x;
+    em->x5A0[2] = z;
+    em->adj_z = 50.0f;
+    em->x5A0[1] = area_move_high_y_tbl[em->stg];
+    em->pos[1] = em->x5A0[1];
+    em_area_move_init(em);
+}
 
+void NextStage_No_Set(EMW *em) {
+    s8 ids[8];
+    f32 cur[3];
+    f32 tgt[3];
+    f32 vec[8][3];
+    u16 ang0;
+    u16 ang[8];
+    u16 diff[8];
+    s8 *conn;
+    EM_STG_BOX *b;
+    s32 i;
+    s32 n;
+    s32 ok;
+    s32 best;
+    u16 bestd;
+    s8 id;
+
+    if (em->x92F == 0xFF) {
+        em->x92F = em->x73A;
+    }
+    conn = st_mv_ptr_ck(em);
+    ok = 0;
+    if (conn != 0) {
+        i = 0;
+        for (;;) {
+            id = conn[i];
+            if (em->x73A == id) {
+                ok = 1;
+                break;
+            }
+            if (id != -1) {
+                i = (s8)(i + 1);
+                if (i >= 8) {
+                    break;
+                }
             } else {
-                goto loop_4;
+                break;
             }
         }
     } else {
-        var_a2 = 1;
+        ok = 1;
     }
-    if (var_a2 == 0) {
-        temp_v0_2 = Stage_data_get(EM_FIELD(arg0, u8 *, 0x736));
-        sp130 = EM_FIELD(temp_v0_2, f32 *, 0) + (EM_FIELD(temp_v0_2, f32 *, 0x10) / 2.0f);
-        sp138 = EM_FIELD(temp_v0_2, f32 *, 4) + (EM_FIELD(temp_v0_2, f32 *, 0x14) / 2.0f);
-        temp_v0_3 = Stage_data_get((u8) EM_FIELD(arg0, u16 *, 0x73A));
-        sp13C = EM_FIELD(temp_v0_3, f32 *, 0) + (EM_FIELD(temp_v0_3, f32 *, 0x10) / 2.0f);
-        sp144 = EM_FIELD(temp_v0_3, f32 *, 4) + (EM_FIELD(temp_v0_3, f32 *, 0x14) / 2.0f);
-        var_s4 = &spD0;
-        temp_s6 = st_mv_ptr_ck(arg0);
-        var_s0 = 0;
-        var_s3 = 0;
-        var_s2 = &sp148;
-        var_s1 = var_s4;
-loop_12:
-        temp_s5 = temp_s6 + ((s8)(var_s0));
-        temp_a0 = *temp_s5;
-        if (temp_a0 != -1) {
-            temp_v0_4 = Stage_data_get((u8) temp_a0);
-            var_s3 = (s8)(var_s3 + 1);
-            *var_s2 = *temp_s5;
-            var_s0 = (s8)(var_s0 + 1);
-            var_s2 += 1;
-            EM_FIELD(var_s1, f32 *, 0) = EM_FIELD(temp_v0_4, f32 *, 0) + (EM_FIELD(temp_v0_4, f32 *, 0x10) / 2.0f);
-            EM_FIELD(var_s1, f32 *, 8) = (f32) (EM_FIELD(temp_v0_4, f32 *, 4) + (EM_FIELD(temp_v0_4, f32 *, 0x14) / 2.0f));
-            var_s1 += 0xC;
-            if (var_s0 >= 8) {
-
-            } else {
-                goto loop_12;
+    if (ok == 0) {
+        b = Stage_data_get(em->stg);
+        cur[0] = b->x + b->w / 2.0f;
+        cur[2] = b->z + b->d / 2.0f;
+        b = Stage_data_get(em->x73A);
+        tgt[0] = b->x + b->w / 2.0f;
+        tgt[2] = b->z + b->d / 2.0f;
+        conn = st_mv_ptr_ck(em);
+        i = 0;
+        n = 0;
+        for (;;) {
+            id = conn[i];
+            if (id == -1) {
+                break;
+            }
+            b = Stage_data_get(id);
+            n = (s8)(n + 1);
+            ids[n - 1] = conn[i];
+            i = (s8)(i + 1);
+            vec[n - 1][0] = b->x + b->w / 2.0f;
+            vec[n - 1][2] = b->z + b->d / 2.0f;
+            if (i >= 8) {
+                break;
             }
         }
-        temp_s1 = (s8)(var_s3);
-        if (temp_s1 == 1) {
-            EM_FIELD(arg0, u16 *, 0x73A) = (u16) sp148;
+        if (n == 1) {
+            em->x73A = ids[0];
             return;
         }
-        var_s5 = -1;
-        spC0 = Em_Calc_angY(&sp130, &sp13C);
-        var_s0_2 = 0;
-        if (temp_s1 > 0) {
-            var_s3_2 = &spB0;
-            var_s2_2 = &spA0;
-            do {
-                temp_a0_2 = EM_FIELD(arg0, u8 *, 0x92E);
-                if (temp_a0_2 != 0xFF) {
-                    if (temp_a0_2 != *(temp_s6 + ((s8)(var_s0_2)))) {
-                        goto block_22;
-                    }
-                } else {
-block_22:
-                    *var_s3_2 = Em_Calc_angY(&sp130, var_s4);
-                    *var_s2_2 = *var_s3_2 - spC0;
-                    temp_a0_3 = *var_s2_2;
-                    if ((s32) temp_a0_3 >= 0x8001) {
-                        *var_s2_2 = 0x10000 - temp_a0_3;
-                    }
-                    if (((s8)(var_s5)) == -1) {
-                        var_s7 = *var_s2_2;
-                        var_s5_2 = var_s0_2 << 0x38;
-                        goto block_29;
-                    }
-                    temp_a0_4 = *var_s2_2;
-                    if ((s32) temp_a0_4 < (var_s7 & 0xFFFF)) {
-                        var_s5_2 = var_s0_2 << 0x38;
-                        var_s7 = temp_a0_4;
-block_29:
-                        var_s5 = var_s5_2 >> 0x38;
-                    }
-                }
-                var_s4 += 0xC;
-                var_s0_2 = (s8)(var_s0_2 + 1);
-                var_s3_2 += 2;
-                var_s2_2 += 2;
-            } while (var_s0_2 < temp_s1);
+        best = -1;
+        ang0 = Em_Calc_angY(cur, tgt);
+        for (i = 0; i < n; i = (s8)(i + 1)) {
+            if (em->x92E != 0xFF && em->x92E == conn[i]) {
+                continue;
+            }
+            ang[i] = Em_Calc_angY(cur, vec[i]);
+            diff[i] = ang[i] - ang0;
+            if (diff[i] >= 0x8001) {
+                diff[i] = 0x10000 - diff[i];
+            }
+            if ((s8)best == -1) {
+                bestd = diff[i];
+                best = (s8)i;
+            } else if (diff[i] < bestd) {
+                best = (s8)i;
+                bestd = diff[i];
+            }
         }
-        temp_a0_5 = *(temp_s6 + ((s8)(var_s5)));
-        if (temp_a0_5 != -1) {
-            EM_FIELD(arg0, u16 *, 0x73A) = (u16) temp_a0_5;
+        id = conn[(s8)best];
+        if (id != -1) {
+            em->x73A = id;
         }
     }
 }
 
-void NextStage_Dir_Set(void *arg0, void *arg1) {
-    f32 temp_f10;
-    f32 temp_f1;
-    f32 temp_f1_2;
-    f32 temp_f3;
-    f32 temp_f4;
-    f32 temp_f5;
-    f32 temp_f9;
-    int var_a0;
-    void *temp_s2;
-    void *temp_v0;
+void NextStage_Dir_Set(EMW *em, f32 *out) {
+    EM_STG_BOX *to;
+    EM_STG_BOX *cur;
+    f32 dx;
+    f32 dz;
+    s8 flag;
 
-    temp_s2 = Stage_data_get(EM_FIELD(arg0, u16 *, 0x73A));
-    temp_v0 = Stage_data_get((u16) EM_FIELD(arg0, u8 *, 0x736));
-    var_a0 = 0;
-    temp_f10 = EM_FIELD(temp_v0, f32 *, 0x10);
-    temp_f9 = temp_f10 / 2.0f;
-    temp_f4 = (EM_FIELD(temp_s2, f32 *, 4) + (EM_FIELD(temp_s2, f32 *, 0x14) / 2.0f)) - (EM_FIELD(temp_v0, f32 *, 4) + (EM_FIELD(temp_v0, f32 *, 0x14) / 2.0f));
-    temp_f5 = (EM_FIELD(temp_s2, f32 *, 0) + (EM_FIELD(temp_s2, f32 *, 0x10) / 2.0f)) - (EM_FIELD(temp_v0, f32 *, 0) + temp_f9);
-    if (temp_f5 <= (temp_f10 / 3.0f)) {
-        EM_FIELD(arg1, f32 *, 0) = 0.0f;
-    } else if (temp_f5 <= ((2.0f * temp_f10) / 3.0f)) {
-        EM_FIELD(arg1, f32 *, 0) = temp_f9;
-        var_a0 = 1;
+    to = Stage_data_get(em->x73A);
+    cur = Stage_data_get(em->stg);
+    flag = 0;
+    dz = (to->z + to->d / 2.0f) - (cur->z + cur->d / 2.0f);
+    dx = (to->x + to->w / 2.0f) - (cur->x + cur->w / 2.0f);
+    if (dx <= cur->w / 3.0f) {
+        out[0] = 0.0f;
+    } else if (dx <= (2.0f * cur->w) / 3.0f) {
+        out[0] = cur->w / 2.0f;
+        flag = 1;
     } else {
-        EM_FIELD(arg1, f32 *, 0) = temp_f10;
+        out[0] = cur->w;
     }
-    temp_f3 = EM_FIELD(temp_v0, f32 *, 0x14);
-    if (temp_f4 <= (temp_f3 / 3.0f)) {
-        EM_FIELD(arg1, f32 *, 8) = 0.0f;
-    } else if (temp_f4 <= ((2.0f * temp_f3) / 3.0f)) {
-        var_a0 = (s8)(var_a0 | 2);
-        EM_FIELD(arg1, f32 *, 8) = (f32) (temp_f3 / 2.0f);
+    if (dz <= cur->d / 3.0f) {
+        out[2] = 0.0f;
+    } else if (dz <= (2.0f * cur->d) / 3.0f) {
+        flag = flag | 2;
+        out[2] = cur->d / 2.0f;
     } else {
-        EM_FIELD(arg1, f32 *, 8) = temp_f3;
+        out[2] = cur->d;
     }
-    if (((s8)(var_a0)) == 3) {
-        temp_f1 = EM_FIELD(temp_v0, f32 *, 0x10);
-        if (temp_f5 <= (temp_f1 / 2.0f)) {
-            EM_FIELD(arg1, f32 *, 0) = 0.0f;
+    if (flag == 3) {
+        if (dx <= cur->w / 2.0f) {
+            out[0] = 0.0f;
         } else {
-            EM_FIELD(arg1, f32 *, 0) = temp_f1;
+            out[0] = cur->w;
         }
-        temp_f1_2 = EM_FIELD(temp_v0, f32 *, 0x14);
-        if (temp_f4 <= (temp_f1_2 / 2.0f)) {
-            EM_FIELD(arg1, f32 *, 8) = 0.0f;
+        if (dz <= cur->d / 2.0f) {
+            out[2] = 0.0f;
         } else {
-            EM_FIELD(arg1, f32 *, 8) = temp_f1_2;
+            out[2] = cur->d;
         }
     }
-    EM_FIELD(arg1, f32 *, 4) = (f32) *(&area_move_high_y_tbl + (EM_FIELD(arg0, u8 *, 0x736) * 4));
+    out[1] = area_move_high_y_tbl[em->stg];
 }
 
-void em_cdm_act_flag_ck(void *arg0) {
-    s32 var_t0;
-    s32 var_t1;
-    s8 var_a2;
-    u8 temp_a2;
-    u8 temp_a3;
-    u8 temp_v1;
+void em_cdm_act_flag_ck(EMW *em) {
+    s32 cnt;
+    s32 i;
+    s8 j;
+    u8 n;
 
-    temp_v1 = EM_FIELD(arg0, u8 *, 0x82B);
-    switch (temp_v1) {                              /* irregular */
+    switch (em->x82B) {
     case 0:
-        EM_FIELD(arg0, s8 *, 0x880) = 0;
+        EM_FIELD(em, s8 *, 0x880) = 0;
         return;
     case 1:
-        temp_a2 = *(u8 *)0x3F34C3;
-        var_t1 = 0;
-        var_t0 = 0;
-        if ((s32) temp_a2 > 0) {
-            do {
-                if (EM_FIELD(arg0, u8 *, 0x914) & (1 << var_t1)) {
-                    var_t0 += 1;
-                }
-                var_t1 += 1;
-            } while (var_t1 < (s32) temp_a2);
+        n = *(u8 *)0x3F34C3;
+        i = 0;
+        cnt = 0;
+        for (; i < n; i++) {
+            if (em->x914 & (1 << i)) {
+                cnt += 1;
+            }
         }
-        if (var_t0 == 0) {
-            EM_FIELD(arg0, s8 *, 0x880) = 0;
+        if (cnt == 0) {
+            EM_FIELD(em, s8 *, 0x880) = 0;
             return;
         }
-        EM_FIELD(arg0, s8 *, 0x880) = 1;
-        EM_FIELD(arg0, s8 *, 0x881) = 1;
-        EM_FIELD(arg0, s8 *, 0x882) = 0;
-        temp_a3 = *(void *)0x3F34C3;
-        var_a2 = 0;
-        if ((s32) temp_a3 > 0) {
-loop_13:
-            if (!(EM_FIELD(arg0, u8 *, 0x914) & (1 << var_a2))) {
-                var_a2 += 1;
-                if (var_a2 < (s32) temp_a3) {
-                    goto loop_13;
+        EM_FIELD(em, s8 *, 0x880) = 1;
+        em->x881 = 1;
+        em->x882 = 0;
+        n = *(u8 *)0x3F34C3;
+        j = 0;
+        if (n > 0) {
+            for (;;) {
+                if (em->x914 & (1 << j)) {
+                    break;
+                }
+                j += 1;
+                if (!(j < n)) {
+                    break;
                 }
             }
         }
-        EM_FIELD(arg0, s8 *, 0x883) = var_a2;
+        em->x883 = j;
         return;
     }
 }
