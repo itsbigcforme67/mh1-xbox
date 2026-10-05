@@ -219,7 +219,7 @@ loop:
     return 0;
 }
 
-void roll_move(PLW *w) {
+void roll_move(PLW *w, s16 unused) {
     if (*(volatile u16 *)&Psw[4] & 8) {
         w->ang[1] -= 0x400;
     }
@@ -859,4 +859,333 @@ int cmn_mongon_check_sub(s8 *str) {
         } while (*f != 0);
     }
     return 1;
+}
+
+/* Near-match: edit screen task (steps: 0 init, 1 load, 2 menu, 3 name/colour edit, 4 confirm,
+   5 save, 6-8 fade out and start the game, 9 cancel confirm, 10 back to the select task). */
+void Edit_task(STASK *t) {
+    EDIT_W *e = &edit_w;
+    u32 btn;
+    u8 old;
+    s16 i;
+    PLW *pl;
+    f32 *v;
+    f32 *ev;
+    u8 prev;
+    u8 r5;
+
+    e->x3E = 0;
+    btn = (Psw[2] | Psw[12]) & 0xFFFF;
+    if (Psw[1] == Psw[0]) {
+        e->x40++;
+        if (e->x40 >= 0xB) {
+            e->x40 = 0xA;
+            e->x3E = Psw[0];
+        }
+    } else {
+        e->x40 = 0;
+    }
+    e->x3E |= Psw[2];
+    if (e->x3D != 0) {
+        e->x3D--;
+    }
+    SetTrnslMode(4, 5);
+    switch (t->step) {
+    case 0:
+        t->step++;
+        all_model_free(t->step - 1);
+        all_motion_free();
+        model_work_init();
+        init_move_work();
+        init_view_work();
+        init_light_work();
+        clr_pl_work();
+        flFlip(0);
+        flCompact();
+        fade_reset();
+        Disp_NowLoading();
+        char_make_init();
+        release_texture(0xA, 0x14C);
+        *(void **)(demo_prim + 0x18) = t;
+        *(void **)(demo_prim + 0x14) = (void *)edit_trans;
+        View_init();
+        CameraInit();
+        CameraWorkInit();
+        game_w.stage = 0x11;
+        light_init(game_w.stage);
+        system_w.x35 = 1;
+        stage_w_init();
+        edit_create_model();
+        for (i = 0, pl = player_work; i < 2; i++, pl++) {
+            edit_pl_init_new(pl, 0, i);
+            pl->x01 = 1;
+            if (i == 1) {
+                pl->work011 = 1;
+                pl_chr_set2(pl, 0x32B, 0, 0);
+            } else {
+                pl->work011 = 0;
+                pl_chr_set2(pl, 1, 0, 0);
+            }
+        }
+        com_motion_load(2);
+        load_pit();
+        system_w.x35 = 0;
+        ed_view_set(player_work, 0, 0);
+        B32(lpView, 0x2C) = 0x3F5F66F4;
+        B32(lpView, 0x34) = 0;
+        Disp_NowLoading2(0);
+        return;
+    case 1:
+        if (edit_se_load(t) != 0) {
+            t->step++;
+            B8(t, 9) = 0;
+            se_req_bgm_vol(1, 0, 0);
+            se_req_bgm_vol(1, 1, 0);
+            fade_set(2);
+            goto common;
+        }
+        Disp_NowLoading2(0);
+        return;
+    case 2:
+        for (i = 0, pl = player_work; i < 2; i++, pl++) {
+            roll_move(pl, i);
+        }
+        prev = e->x0[2];
+        if (Psw[2] & 0x20) {
+            switch (prev) {
+            case 0:
+                SoftKeyboard_set(3, 0xF, 8, e->name);
+                /* fall through */
+            case 4:
+                t->step++;
+                ed_decide_se();
+                break;
+            case 5:
+                if (e->x3D == 0) {
+                    e->x3D = 0xF;
+                    se_req(6, e->x3C + 1 + e->x0[4] * 6, e->x0[6]);
+                    e->x3C++;
+                    if (e->x3C >= 5) {
+                        e->x3C = 0;
+                    }
+                }
+                break;
+            case 6:
+                ed_decide_se();
+                t->step = 4;
+                e->x0[3] = 1;
+                break;
+            }
+            if (e->x0[2] != prev) {
+                ed_view_set(player_work, view_type[e->x0[2]], 1);
+            }
+        } else if (Psw[2] & 0x40) {
+            ed_cancel_se();
+            t->step = 9;
+            e->x0[3] = 1;
+        } else {
+            if (Psw[2] & 0x2000) {
+                if (prev == 0) {
+                    e->x0[2] = 6;
+                } else {
+                    e->x0[2] = prev - 1;
+                }
+                se_req(7, 0x12, 0);
+            }
+            if (Psw[2] & 0x1000) {
+                if (e->x0[2] >= 6) {
+                    e->x0[2] = 0;
+                } else {
+                    e->x0[2]++;
+                }
+                se_req(7, 0x12, 0);
+            }
+            param_change_00536280((u8 *)e);
+            if (e->x0[2] != prev) {
+                ed_view_set(player_work, view_type[e->x0[2]], 1);
+            }
+        }
+        goto common;
+    case 3:
+        for (i = 0, pl = player_work; i < 2; i++, pl++) {
+            roll_move(pl, i);
+        }
+        switch (e->x0[2]) {
+        case 0:
+            if (SoftKeyboard_move(e->name, Psw[0], Psw[2]) != 0) {
+                t->step = 2;
+                SoftKeyboard_exit();
+            }
+            break;
+        case 4:
+            if (Psw[2] & 0x40) {
+                ed_cancel_se();
+                t->step = 2;
+            } else {
+                ed_color_sel(e, player_work, btn);
+                B32(&player_work[1], 0x5FC) = e->col;
+            }
+            break;
+        }
+        goto common;
+    case 4:
+        for (i = 0, pl = player_work; i < 2; i++, pl++) {
+            roll_move(pl, i);
+        }
+        if (name_str_check((u8 *)e) == 0 || NG_name_chk((u8 *)e->name) == 0) {
+            if (Psw[2] & 0x60) {
+                t->step = 2;
+                ed_cancel_se();
+            }
+        } else if ((Psw[2] & 0x20) && e->x0[3] == 0) {
+            ed_decide_se2();
+            e->x0[1] = 0;
+            t->step++;
+            McOperationSet(3);
+        } else if (!(Psw[2] & 0x20) || e->x0[3] != 1) {
+            if (Psw[2] & 0x40) {
+                t->step = 2;
+                ed_cancel_se();
+            } else {
+                if ((btn & 0x800) && e->x0[3] != 0) {
+                    se_req(7, 0x12, 0);
+                    e->x0[3] = 0;
+                }
+                if ((btn & 0x400) && e->x0[3] == 0) {
+                    se_req(7, 0x12, 0);
+                    e->x0[3] = 1;
+                }
+            }
+        } else {
+            t->step = 2;
+            ed_cancel_se();
+        }
+        goto common;
+    case 5:
+        for (i = 0, pl = player_work; i < 2; i++, pl++) {
+            roll_move(pl, i);
+        }
+        r5 = McCardOperation(pl, i) & 0xFF;
+        if (r5 != 0) {
+            if (r5 == 2) {
+                e->x3B = 0;
+                se_req(7, 0x2E, 0);
+            } else {
+                e->x3B = 1;
+            }
+            user_data_copy((void *)e, 0xFF);
+            t->step++;
+            ((SEL_GW *)&select_w)->xF6 = e->x0[1];
+            e->x38 = 0;
+            ed_view_set(player_work, 2, 1);
+            for (i = 0, pl = player_work; i < 2; i++, pl++) {
+                pl->ang[1] = 0;
+                decide_chr_set(pl, e->x0[4], e->x0[6]);
+            }
+            se_req_bgm_vol(1, 2, 0);
+            se_req_bgm_vol(1, 3, 0);
+        }
+        goto common;
+    case 6:
+        e->x38++;
+        if (e->x38 >= 0x3C) {
+            t->step++;
+            fade_set(5);
+        }
+        goto common;
+    case 7:
+        if (Fade_busy_ck() != 1) {
+            t->step++;
+            e->x38 = 4;
+        }
+        goto common;
+    case 8:
+        e->x38--;
+        if (e->x38 <= 0) {
+            Tsk_Exit(t);
+            system_w.x10 = 0;
+            system_w.x03 = 1;
+            system_w.x02 = 0;
+            system_w.x05 = 0;
+            Tsk_Execute(Game_task, 5);
+            fade_set(2);
+            return;
+        }
+        goto common;
+    case 9:
+        for (i = 0, pl = player_work; i < 2; i++, pl++) {
+            roll_move(pl, i);
+        }
+        if ((Psw[2] & 0x20) && e->x0[3] == 0) {
+            t->step++;
+            ed_cancel_se();
+            se_req_bgm_vol(1, 2, 0);
+            se_req_bgm_vol(1, 3, 0);
+            fade_set(1);
+        } else if (!(Psw[2] & 0x20) || e->x0[3] != 1) {
+            if (Psw[2] & 0x40) {
+                t->step = 2;
+                ed_cancel_se();
+            } else {
+                if ((btn & 0x800) && e->x0[3] != 0) {
+                    se_req(7, 0x12, 0);
+                    e->x0[3] = 0;
+                }
+                if ((btn & 0x400) && e->x0[3] == 0) {
+                    se_req(7, 0x12, 0);
+                    e->x0[3] = 1;
+                }
+            }
+        } else {
+            t->step = 2;
+            ed_cancel_se();
+        }
+        goto common;
+    case 10:
+        if (Fade_busy_ck() != 1) {
+            Tsk_Exit(t);
+            Select_Tsk_Execute();
+            fade_set(2);
+            return;
+        }
+        goto common;
+    default:
+    common:
+        if (t->step >= 2) {
+            for (i = 0, pl = player_work; i < 2; i++, pl++) {
+                pl_timer_calc(pl);
+                hit_stop_calc(pl);
+                pl_chr_sub(pl);
+            }
+        }
+        player_mk();
+        light_move();
+        e->x36++;
+        ev = e->eye;
+        v = (f32 *)((u8 *)lpView + 0xC);
+        v[0] = v[0] + (ev[0] - v[0]) / 10.0f;
+        v[1] = v[1] + (ev[1] - v[1]) / 10.0f;
+        v[2] = v[2] + (ev[2] - v[2]) / 10.0f;
+        v = (f32 *)lpView;
+        ev = e->at;
+        v[0] = v[0] + (ev[0] - v[0]) / 10.0f;
+        v[1] = v[1] + (ev[1] - v[1]) / 10.0f;
+        v[2] = v[2] + (ev[2] - v[2]) / 10.0f;
+        View_move();
+        if (t->step != 8) {
+            if (t->step >= 2) {
+                pl = &player_work[e->x0[4]];
+                BF(BP(pl, 0x564), 8) = pl->pos[0];
+                BF(BP(pl, 0x564), 0xC) = pl->pos[1];
+                BF(BP(pl, 0x564), 0x10) = pl->pos[2];
+                add_prim(ot1, BP(pl, 0x564), 0x20, 0);
+            }
+            add_prim2(ot0, demo_prim, 0, 0x40);
+            flSetRenderState(0x6C, 0);
+            Sel_back_disp(0xFF);
+            flSetRenderState(0x6C, 1);
+            trans();
+        }
+        return;
+    }
 }

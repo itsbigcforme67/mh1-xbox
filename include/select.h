@@ -9,13 +9,22 @@
 /* select.bin sees these main-module globals with its own (partial) layouts; do not
  * include flow.h / f_game.h in the same file. */
 typedef struct SYS_W {
-    u8 _pad00[0xB];
+    u8 _pad00[2];
+    u8 x02;             /* 0x02 cleared when leaving the edit screen */
+    u8 x03;             /* 0x03 set to 1 when going to the game */
+    u8 _pad04;
+    u8 x05;             /* 0x05 */
+    u8 _pad06[5];
     u8 x0B;             /* 0x0B set once the card init ran (guess) */
-    u8 _pad0C[0x1A - 0xC];
+    u8 _pad0C[4];
+    u8 x10;             /* 0x10 */
+    u8 _pad11[0x1A - 0x11];
     u8 x1A;             /* 0x1A (title: value 0, 2, 3 vs others picks the text) */
     u8 _pad1B[0x31 - 0x1B];
     u8 x31;             /* 0x31 0 = 640 wide title picture */
-    u8 _pad32[0x80 - 0x32];
+    u8 _pad32[3];
+    u8 x35;             /* 0x35 set while loading */
+    u8 _pad36[0x80 - 0x36];
 } SYS_W;
 extern SYS_W system_w;
 typedef struct SEL_W { u8 _pad00[0xAC]; u16 xAC; /* 0xAC selected quest number */ u8 _padAE[0xC0 - 0xAE]; } SEL_W;
@@ -101,7 +110,8 @@ typedef struct EDIT_W {
     s8 x3C;             /* 0x3C */
     s8 x3D;             /* 0x3D */
     u16 x3E;            /* 0x3E button state used by ed_color_sel (guess) */
-    u8 _pad40[0x4C - 0x40];
+    u16 x40;            /* 0x40 button repeat counter */
+    u8 _pad42[0x4C - 0x42];
 } EDIT_W;
 extern EDIT_W edit_w;
 extern s32 sample_col[];
@@ -179,4 +189,50 @@ void flfntLocate();
 void waku_disp(f32, f32, f32, f32, f32);
 extern u8 color_mess[];
 extern char lit_656_0053B8C8[], lit_657_0053B8D0[], lit_658_0053B8D8[];
+extern u8 ot0[], ot1[], demo_prim[];
+extern u16 Psw[];
+typedef struct SEL_GW { u8 _pad00[0x14]; u8 stage; u8 _pad15[0xF6 - 0x15]; u8 xF6; } SEL_GW;
+void SetTrnslMode();
+void all_model_free();
+void all_motion_free();
+void init_move_work();
+void init_view_work();
+void init_light_work();
+void clr_pl_work();
+void flFlip();
+void flCompact();
+void fade_reset();
+void Disp_NowLoading();
+void Disp_NowLoading2();
+void release_texture();
+void View_init();
+void CameraInit();
+void CameraWorkInit();
+void light_init();
+void stage_w_init();
+void edit_create_model();
+void com_motion_load();
+void load_pit();
+void se_req_bgm_vol();
+int edit_se_load();
+void pl_timer_calc();
+void hit_stop_calc();
+void pl_chr_sub();
+void player_mk();
+void light_move();
+void View_move();
+void add_prim();
+void add_prim2();
+void cursor_se();
+void cancel_se();
+void SoftKeyboard_set();
+int SoftKeyboard_move();
+void SoftKeyboard_exit();
+void McOperationSet();
+int McCardOperation();
+void Tsk_Execute();
+void Tsk_Exit();
+void Select_Tsk_Execute();
+extern u8 Game_task[];
+extern s16 view_type[];
 #endif
