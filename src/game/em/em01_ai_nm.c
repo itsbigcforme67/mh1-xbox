@@ -3888,3 +3888,287 @@ static void em_atk08_0056D300(EMW *em, EM01W *w) {
     }
     FLY_FLOOR(em);
 }
+
+/* A file static in the original. */
+void em_atk22(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x31, 0, 0);
+        em01_fly_adjy2_init(em, 0xD);
+        break;
+    case 1:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (EMF(em, s32, 0x1E4) == 0) {
+            if (--w->x1A <= 0) {
+                em->x05++;
+            }
+        }
+        break;
+    case 2:
+        em01_fly_adjy2(em);
+        sound_call_00574D40(em, 0x78, 0x20, 0x23);
+        senkai_player(em);
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x2E, 0, 0);
+        }
+        break;
+    case 3:
+    case 4:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 6.0f, 1)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x1E94, 0);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x2E, 4, 0);
+        }
+        break;
+    case 5:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 6.0f, 1)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x1E94, 0);
+        }
+        if (em_frame_check(em, 40.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0xF, 2, 0x22);
+        }
+        break;
+    case 6:
+        em01_fly_adjy2(em);
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em->x05++;
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+/* A file static in the original. Variant of atk 8 that lands (ground contact after the pursuit). */
+void em_atk21(EMW *em, EM01W *w) {
+    STAGE_DATA *sd;
+    s8 r;
+    PLW *pl;
+    f32 p2[4];
+    f32 p1[4];
+    f32 p3[4];
+    f32 adj;
+    s16 t;
+
+    sd = Stage_data_get(em->stg);
+    t = w->x52;
+    if (t != 0) {
+        t = t - 1;
+        w->x52 = t;
+        if (t <= 0) {
+            w->x52 = 0;
+        }
+    }
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        w->x52 = 0;
+        break;
+    case 1:
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        em01_senkai_sub(em, 3, 1);
+        if (100.0f < em->adj_z) {
+            em->adj_z -= 2.0f;
+        } else if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 3000.0f) {
+            em->x05++;
+            em->work08 = 0x258;
+        }
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (--em->work08 <= 0) {
+            kyusyu_senkai_ret_0057AB40(em, w);
+        }
+        break;
+    case 2:
+        if (em->x617 == -1) {
+            kyusyu_senkai_ret_0057AB40(em, w);
+        } else {
+            if (80.0f < em->adj_z) {
+                em->adj_z -= 1.0f;
+            }
+            r = em->x617;
+            em_pl_pos_set(em, r, p1);
+            pl = &player_work[r];
+            World_calc2(pl->stg, p1, p2);
+            w->dang = Em_Calc_angY(em->x754, p2);
+            w->dang = w->dang - em->ang[1];
+            em01_senkai_sub(em, 3, 1);
+            if (w->dang <= 0x800 || w->dang >= 0xF800) {
+                if (4000.0f >= CalcDistanceXZ(em->pos, p1)) {
+                    kyusyu_senkai_ret_0057AB40(em, w);
+                } else {
+                    em->x05++;
+                    w->turn = 0x100;
+                    em_char_set(em, 0x2C, 0, 0);
+                    em->work08 = 0x258;
+                }
+            }
+            w->spd[0] = em->ang[0];
+            w->spd[1] = em->ang[1];
+            w->spd[2] = 0;
+            speed_add(em, w->spd);
+            if (--em->work08 <= 0 || !(em_target_pl_samestage_ck(em) & 0xFF)) {
+                kyusyu_senkai_ret_0057AB40(em, w);
+            }
+        }
+        break;
+    case 3:
+        if (em->ang[2] != 0) {
+            if (em->ang[2] <= 0x8000) {
+                em->ang[2] = em->ang[2] - w->bank_spd;
+            } else {
+                em->ang[2] = em->ang[2] + w->bank_spd;
+            }
+        }
+        if (em_frame_check2(em, 0, 46.0f)) {
+            xang_set_pl(em, 0, -200.0f);
+            if (50.0f < em->adj_z) {
+                em->adj_z -= 0.1f;
+            }
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x57, 0, 0);
+            em->adj_z = 100.0f;
+            em->work08 = 0x258;
+        }
+        senkai_player(em);
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0xF;
+        speed_add(em, w->spd);
+        em->pos[1] -= 0.1f;
+        if (--em->work08 <= 0 || !(em_target_pl_samestage_ck(em) & 0xFF)) {
+            kyusyu_senkai_ret_0057AB40(em, w);
+        }
+        break;
+    case 4:
+        if (em->pos[1] <= 1000.0f + sd->floor_y) {
+            em->x05++;
+            em->work08 = 0x258;
+        }
+        if (kyusyu_char_set_0057A9F0(em)) {
+            if (em->x05 == 4) {
+                em->x05++;
+                em->work08 = 0x258;
+            }
+        }
+        if (em->char0 == 0x415) {
+            xang_set_pl(em, 2, 0.0f);
+        } else {
+            xang_set_pl(em, 0, -200.0f);
+        }
+        senkai_player(em);
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        if (w->x52 == 0) {
+            xang_calc_pl(em, w->spd, -3000.0f, 0.0f);
+        }
+        if (em->x74C != 0) {
+            w->spd[0] = 0;
+            w->x52 = 0x1E;
+        }
+        speed_add(em, w->spd);
+        if (em->x74C != 0) {
+            w->spd[0] = 0;
+            adj = em->adj_y;
+            if (adj < 0.0f) {
+                em->pos[1] -= adj;
+            }
+            em->pos[1] += 30.0f;
+        }
+        if (--em->work08 <= 0 || !(em_target_pl_samestage_ck(em) & 0xFF)) {
+            kyusyu_senkai_ret_0057AB40(em, w);
+        }
+        break;
+    case 5:
+        kyusyu_char_set_0057A9F0(em);
+        if (em->char0 == 0x415 && em->x194 == 0) {
+            em->x05 = 6;
+            em->x3C0[0] = 0.0f;
+            em->x3C0[2] = -10.0f;
+            em->x3C0[1] = -10.0f;
+        }
+        senkai_player(em);
+        if (w->x52 == 0) {
+            xang_set_pl(em, 2, 100.0f);
+            if (em->char0 == 0x415 && em_frame_check2(em, 0, 76.0f)) {
+                xang_calc_pl(em, w->spd, 50.0f, 0.0f);
+            } else if (em->x617 != -1) {
+                em_pl_pos_set(em, em->x617, p3);
+                if (!(200.0f + p3[1] < em->pos[1])) {
+                    xang_calc_pl(em, w->spd, 50.0f, 0.0f);
+                } else {
+                    xang_calc_pl(em, w->spd, -2000.0f, 0.0f);
+                }
+            } else {
+                xang_calc_pl(em, w->spd, -2000.0f, 0.0f);
+            }
+        }
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        if (em->x74C != 0) {
+            w->spd[0] = 0;
+            w->x52 = 0x1E;
+        }
+        speed_add(em, w->spd);
+        if (em->x74C != 0) {
+            w->spd[0] = 0;
+            adj = em->adj_y;
+            if (adj < 0.0f) {
+                em->pos[1] -= adj;
+            }
+            em->pos[1] += 30.0f;
+        }
+        if (--em->work08 <= 0 || !(em_target_pl_samestage_ck(em) & 0xFF)) {
+            kyusyu_senkai_ret_0057AB40(em, w);
+        }
+        break;
+    case 6:
+        if (em->adj_z < 0.0f) {
+            em->adj_z = 0.0f;
+            em->x3C0[2] = 0.0f;
+        }
+        w->spd[0] = 0;
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add_g(em, w->spd);
+        if (em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em->ang[0] = 0;
+            em->ang[2] = 0;
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            em_char_set(em, 0x29, 0, 0);
+        }
+        break;
+    case 7:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
