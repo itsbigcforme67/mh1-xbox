@@ -44,7 +44,7 @@ Near-matches:
 - spr_disp_sub (colour lerp, 0x1608C0): 67/123. static (see lesson) helps stage_spr_disp, the byte shuffling schedule differs.
 - stage_spr_disp (sky gradient from the sun angle + flash overlay, 0x160AB0, 1844 bytes = same size): ~132/461, the colour table loads
   (8 packed colours built from bytes) use different temp registers.
-- trans_stage (0x15CD90, 15152 bytes = EXACTLY the original size): written as two passes (stage clays with per-stage UV scroll
+- trans_stage now lives in src/main/stage/trans_stage.c (the ONE definition; it replaced agent A's trans_stage_nm.c, and the PC runtime links it via tools/build_pc.sh; the helpers light_set/get_tex_num/trans_stage_sub are stubs/copies in src/pc/rt/rt_main.c). A call-trace comparison of both versions (32-bit freestanding harness, mocked fl*/flmat* that hash every matrix op, all 88 stages x 5 timer values) was identical except stage 0x28, where the asm falls through from the case-0x28 body into the 0x3B code (layer drawn twice), so mine is kept. The 32-bit sysroot (build/sysroot32) does not exist in this worktree, so tools/build_pc.sh was NOT run; only syntax/-m32 -c checks of the changed files. trans_stage (0x15CD90, 15152 bytes = EXACTLY the original size): written as two passes (stage clays with per-stage UV scroll
   / rotation, then the set objects from the setNN_pos_tbl tables). The first pass (0x15CE90-0x15F700) is instruction-identical except
   registers of the prologue; the second pass differs only in which s-register each per-case local lives in (the original has
   block-local variables per case; mine are function-level). The two jump tables lit_1784_0035B9D0 / lit_1785_0035B9A0

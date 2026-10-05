@@ -63,6 +63,23 @@ int flCheckMeshFOV(f32 r, f32 *c, f32 *out, f32 (*view)[4], void *planes)
  * host keeps every texture resident, so nothing to do. */
 void reload_tex(int num, int id) { (void)num; (void)id; }
 
+/* light_set (stage light setup) and get_tex_num (texture lookup): trans_stage
+ * (src/main/stage/trans_stage.c) calls them; nothing to do on the host. */
+void light_set(int n) { (void)n; }
+void get_tex_num(int n) { (void)n; }
+
+/* trans_stage_sub (0x15CD40, matches in f_stagec.c): world matrix, clay
+ * attribute word (CLAY+0x88), draw clay handle (CLAY+0). */
+void flSetRenderState(int, unsigned);
+void clay_attr_set(int);
+void flExecuteClay(int, int);
+void trans_stage_sub(int m, unsigned char *cl)
+{
+    flSetRenderState(0x1A, (unsigned)m);
+    clay_attr_set(*(int *)(cl + 0x88));
+    flExecuteClay(*(int *)cl, 0);
+}
+
 /* Pl_stg_ck / Em_stg_ck (0x151FF0 / 0x152010): is this player / monster
  * (byte +0x736) on the current stage (game_w+0x14)? */
 #include "game.h"
