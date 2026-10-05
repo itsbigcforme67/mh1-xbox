@@ -979,3 +979,4 @@ main 0x002232A0 0x002233BC cam/camarea01
 main 0x00223500 0x00223754 cam/camarea02
 main 0x00223DE0 0x00223E8C cam/camr2n01
 main 0x0010A210 0x0010A44C hit/tri01
+main 0x001267C0 0x00127440 option/option01

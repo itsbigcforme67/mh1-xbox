@@ -148,7 +148,7 @@ segments:
       - [0x0263EC, asm, text/g_frame_check]
       - [0x0263F0, c, frame/f_framec]
       - [0x0267BC, asm, text/option_default_set]
-      - [0x026800, asm, text/f_option]
+      - [0x0267C0, c, option/option01]
       - [0x027440, c, menu/menu02]
       - [0x02749C, asm, text/Pit_init]
       - [0x027950, c, menu/menu01]
