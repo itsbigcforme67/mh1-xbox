@@ -6,15 +6,24 @@ whose callees and data are not all ported. tools/build_pc.sh links once
 with unresolved symbols allowed, collects the names the linker reports,
 and this tool writes a C file that defines each one:
 
-- data (a sized symbol of config/symbols/main.txt or lobby.txt, or an
-  unnamed D_<addr> / lit_<n>_<addr>): an empty array of the symbol's size
-  plus an entry in rt_gen_main_tables / rt_gen_lb_tables; rt_data.c fills
-  it at start-up from the user's own SLPM_654.95 / lobby.bin (zeros for
-  .bss) and turns its pointer words into host pointers;
+- main data (a sized symbol of config/symbols/main.txt, or an unnamed
+  D_<addr>): an empty array of the symbol's size plus an entry in
+  rt_gen_main_tables; rt_data.c fills it at start-up from the user's own
+  SLPM_654.95 (zeros for .bss) and turns its pointer words into host
+  pointers;
+- lobby.bin data (lobby.txt symbols, D_ / lit_ names in its range): a
+  linker alias into rt_lb_mem, the host copy of the whole overlay (image +
+  .bss, filled from lobby.bin by rt_import_lobby), so tables the code reads
+  past their symbol's end see the same neighbours as on the PS2;
 - functions: a weak stand-in that returns 0 and, with RT_TRACE=1, says
   once that it ran ("rt: <name> not ported").
 
-    python3 tools/gen_rt_auto.py undefined.txt out.c
+An unnamed D_<addr> that lies inside a sized symbol (D_3E55F0 =
+player_work + 0xA00) becomes a linker alias of that symbol instead
+(out.defsym, one `--defsym` option per line), and that symbol is defined
+here too when nothing else defines it.
+
+    python3 tools/gen_rt_auto.py undefined.txt defined.txt out.c out.defsym
 
 Only names, addresses and sizes are involved; the output holds no game
 data. Standard library only.
@@ -43,14 +52,35 @@ def gap_size(addrs, va, cap=0x1000):
 
 
 def main():
-    if len(sys.argv) != 3:
-        sys.exit("usage: gen_rt_auto.py undefined.txt out.c")
+    if len(sys.argv) != 5:
+        sys.exit("usage: gen_rt_auto.py undefined.txt defined.txt out.c out.defsym")
+    defined = set(l.strip() for l in open(sys.argv[2]))
     main_s = load("config/symbols/main.txt")
     lb_s = load("config/symbols/lobby.txt")
     main_addrs = sorted(v[0] for v in main_s.values())
     lb_addrs = sorted(v[0] for v in lb_s.values() if v[0] >= OVL)
-    names = sorted(set(l.strip() for l in open(sys.argv[1]) if l.strip()))
-    data, funcs = [], []
+    names = set(l.strip() for l in open(sys.argv[1]) if l.strip())
+    # D_<addr> inside a sized symbol: alias (defsym) to that symbol + offset
+    sized = sorted((v[0], v[2], k, "main" if v[0] < OVL else "lb")
+                   for src in (main_s, lb_s) for k, v in src.items() if v[1] != "func" and v[2])
+    alias = {}
+    for n in sorted(names):
+        m = re.match(r"^D_([0-9A-Fa-f]{6,8})$", n)
+        if not m:
+            continue
+        va = int(m.group(1), 16)
+        if va >= OVL:
+            continue        # lobby.bin: an alias into rt_lb_mem below
+        for a, size, k, img in sized:
+            if a <= va < a + size and k != n and (img == "main") == (va < OVL):
+                alias[n] = (k, va - a)
+                break
+    for n, (k, off) in alias.items():
+        names.discard(n)
+        if k not in defined:
+            names.add(k)
+    names = sorted(names)
+    data, funcs, lbalias = [], [], {}
     for n in names:
         ent = None
         if n in main_s and main_s[n][0] < OVL:
@@ -66,6 +96,9 @@ def main():
             funcs.append(n)
             continue
         img, va, _, size = ent
+        if img == "lb":
+            lbalias[n] = va - OVL
+            continue
         if not size:
             size = gap_size(main_addrs if img == "main" else lb_addrs, va)
         data.append((img, n, va, size))
@@ -74,7 +107,7 @@ def main():
            "struct rt_table { const char *name; uint32_t va; void *dst; size_t size; };", ""]
     for img, n, va, size in data:
         out.append("uint8_t %s[0x%X] __attribute__((aligned(16)));   /* %s 0x%08X */" % (n, size, img, va))
-    for img in ("main", "lb"):
+    for img in ("main",):
         out += ["", "const struct rt_table rt_gen_%s_tables[] = {" % img]
         for i, n, va, size in data:
             if i == img:
@@ -85,8 +118,10 @@ def main():
             "        fprintf(stderr, \"rt: %s not ported (stand-in returns 0)\\n\", n);", "}"]
     for n in funcs:
         out.append("__attribute__((weak)) int %s() { static int o; if (!o++) note(\"%s\"); return 0; }" % (n, n))
-    open(sys.argv[2], "w").write("\n".join(out) + "\n")
-    print("gen_rt_auto: %d data, %d function stand-ins" % (len(data), len(funcs)))
+    open(sys.argv[3], "w").write("\n".join(out) + "\n")
+    open(sys.argv[4], "w").write("".join("-Wl,--defsym,%s=%s+0x%X\n" % (n, k, off) for n, (k, off) in sorted(alias.items())) +
+                                 "".join("-Wl,--defsym,%s=rt_lb_mem+0x%X\n" % (n, off) for n, off in sorted(lbalias.items())))
+    print("gen_rt_auto: %d data, %d function stand-ins, %d aliases, %d lobby.bin symbols" % (len(data), len(funcs), len(alias), len(lbalias)))
 
 
 if __name__ == "__main__":

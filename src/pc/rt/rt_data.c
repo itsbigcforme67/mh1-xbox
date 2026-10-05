@@ -136,7 +136,6 @@ extern const struct rt_table rt_auto_tables[];
 /* data the linked overlay C needs that nothing else defines
  * (build/pc/rt_gen.c from tools/gen_rt_auto.py): main and lobby.bin */
 extern const struct rt_table rt_gen_main_tables[];
-extern const struct rt_table rt_gen_lb_tables[];
 
 /* PS2 address -> host pointer (see the header comment) */
 static int map_tables;     /* 1 while relocating the host tables (for RT_TRACE) */
@@ -254,54 +253,59 @@ int rt_import_data(void)
 }
 
 /* ------------------------------------------------------------ lobby.bin
- * Tables of the lobby/village overlay (rt_gen_lb_tables): copied from the
- * lobby image (zeros for its .bss), then their pointer words
- * (.rellobby.bin) and the image's own are turned into host pointers. A
- * pointer into the lobby range goes to a host table, else to the host
- * symbol of that lobby name (dlsym), else to the image bytes; anything
- * else is a main address (map_ptr). Call after rt_import_data. */
+ * The lobby/village overlay's data: one host block, rt_lb_mem, holds the
+ * whole overlay (image + .bss) at its PS2 layout, and every lobby data
+ * symbol the C uses is a linker alias into it (tools/gen_rt_auto.py), so a
+ * table read past its end sees its PS2 neighbours. rt_import_lobby copies
+ * the image in and turns its pointer words (.rellobby.bin) into host
+ * pointers: lobby functions to the host function of that name (dlsym),
+ * lobby data into rt_lb_mem, main addresses as for the ELF (map_ptr).
+ * Call after rt_import_data. */
+#define LB_VRAM 0x533980u
+#define LB_SPAN 0x220000u       /* lobby.bin 0x134E00 + .bss 0xEA680, rounded up */
+uint8_t rt_lb_mem[LB_SPAN] __attribute__((aligned(16)));
+
 static void *map_lb(uint32_t v)
 {
-    const struct rt_table *t;
     uint32_t off;
     int func = 0;
     const char *name;
     void *h;
     if (!rt_lb_in_range(v))
         return map_ptr(v);
-    for (t = rt_gen_lb_tables; t->name; t++)
-        if (v >= t->va && v < t->va + t->size)
-            return (uint8_t *)t->dst + (v - t->va);
     name = rt_lb_sym_at(v, &off, &func);
-    if (name && (h = dlsym(RTLD_DEFAULT, name)) != NULL)
-        return (uint8_t *)h + off;
-    if (func) {
+    if (func && name) {
+        if ((h = dlsym(RTLD_DEFAULT, name)) != NULL)
+            return (uint8_t *)h + off;
+        {   /* em10_local_init_0053DCE0: the C has the plain name */
+            size_t n = strlen(name);
+            char plain[128];
+            if (n > 9 && n < sizeof plain && name[n - 9] == '_' && strspn(name + n - 8, "0123456789ABCDEF") == 8) {
+                memcpy(plain, name, n - 9);
+                plain[n - 9] = 0;
+                if ((h = dlsym(RTLD_DEFAULT, plain)) != NULL)
+                    return (uint8_t *)h + off;
+            }
+        }
         if (getenv("RT_TRACE"))
             fprintf(stderr, "rt: lobby pointer to unported function %s+0x%X\n", name, (unsigned)off);
         return NULL;
     }
-    if ((h = rt_lb_bss_shadow(v)) != NULL)
-        return h;
-    return (void *)rt_lb_addr(v, 1);
+    return v - LB_VRAM < LB_SPAN ? rt_lb_mem + (v - LB_VRAM) : NULL;
 }
 
 int rt_import_lobby(void)
 {
-    const struct rt_table *t;
-    int missing = 0;
-    for (t = rt_gen_lb_tables; t->name; t++) {
-        const uint8_t *p = rt_lb_addr(t->va, t->size);
-        if (p)
-            memcpy(t->dst, p, t->size);
-        else if (rt_lb_in_range(t->va))
-            memset(t->dst, 0, t->size);
-        else {
-            fprintf(stderr, "rt: lobby table %s (0x%X) not found\n", t->name, (unsigned)t->va);
-            missing++;
-        }
-    }
-    for (t = rt_gen_lb_tables; t->name; t++)
-        rt_lb_relocate_range(t->va, t->dst, t->size, map_lb);
-    rt_lb_relocate_image(map_lb);
-    return missing;
+    const uint8_t *img = rt_lb_addr(LB_VRAM, 4);
+    uint32_t n = 0;
+    if (!img)
+        return 1;
+    while (n + 0x1000 <= LB_SPAN && rt_lb_addr(LB_VRAM + n, 0x1000))
+        n += 0x1000;
+    while (n < LB_SPAN && rt_lb_addr(LB_VRAM + n, 1))
+        n++;
+    memcpy(rt_lb_mem, img, n);
+    memset(rt_lb_mem + n, 0, LB_SPAN - n);
+    rt_lb_relocate_range(LB_VRAM, rt_lb_mem, n, map_lb);
+    return 0;
 }

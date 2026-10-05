@@ -43,6 +43,9 @@ PATCHES = {
     # lb_npc_old_guild: a2 is whatever the caller left [guess: 0, the
     # normal action]
     "src/lobby/lb/lbnpc_nm.c": [
+        # the NPC move tables are called with a0 = em left over
+        ("        npc_move_func_190[em->type]();", "        npc_move_func_190[em->type](em);"),
+        ("        npc_move_func2_191[em->type]();", "        npc_move_func2_191[em->type](em);"),
         ("            if (--em->work08 <= 0) {\n                Lb_act_set(em, 0);",
          "            if (--em->work08 <= 0) {\n                Lb_act_set(em, 0, 0);"),
     ],

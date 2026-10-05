@@ -240,7 +240,7 @@ python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 gcc $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village; do
     # shellcheck disable=SC2086
     gcc $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"
@@ -251,7 +251,7 @@ done
 : > build/pc/rt_gen.c
 echo '#include <stddef.h>
 struct rt_table { const char *name; unsigned va; void *dst; size_t size; };
-const struct rt_table rt_gen_main_tables[1], rt_gen_lb_tables[1];' > build/pc/rt_gen.c
+const struct rt_table rt_gen_main_tables[1];' > build/pc/rt_gen.c
 gcc $CFLAGS $SYS -c build/pc/rt_gen.c -o build/pc/rt_gen.o
 # shellcheck disable=SC2086
 gcc $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview.tmp $LIBS \

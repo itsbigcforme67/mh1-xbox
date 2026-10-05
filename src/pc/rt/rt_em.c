@@ -456,7 +456,8 @@ void em_sleep_eff_set(EMW *em, int a, f32 *pos, f32 scale)
 int rt_monster_shown(int no)
 {
     EMW *em = &em_work[no];
-    return em->be_flag && em->stg == game_w.stage;
+    /* +0x1E: a village NPC (Lb_npc_set), not the quest's monster */
+    return em->be_flag && !((u8 *)em)[0x1E] && em->stg == game_w.stage;
 }
 
 /* all em_work slots free (the host's quest restart) */

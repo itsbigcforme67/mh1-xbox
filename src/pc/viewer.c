@@ -649,6 +649,30 @@ static void quest_back(void)
         rt_cam_init(stage_no);
 }
 
+/* After the reward screen (game mode 6): the village, as on the PS2
+ * (rt_village.c runs lobby.bin's Local_main); a quest accepted at the
+ * counter starts when the hunter leaves through the gate. RT_NO_VILLAGE=1
+ * restarts the same quest instead (the old stand-in). */
+static void village_step(void)
+{
+    int q;
+    if (getenv("RT_NO_VILLAGE")) {
+        quest_back();
+        return;
+    }
+    if (!rt_village_active())
+        rt_village_enter();
+    q = rt_village_tick();
+    if (q > 0) {
+        if (getenv("RT_QUEST_TRACE"))
+            fprintf(stderr, "village: quest %d accepted, leaving the village\n", q);
+        quest_no = q;
+        quest_back();
+    } else if (q < 0) {
+        quest_back();
+    }
+}
+
 int main(int argc, char **argv)
 {
     for (i = 1; i < argc; i++) {
@@ -871,6 +895,9 @@ int main(int argc, char **argv)
     rt_flow_set_core(sim_tick);
     rt_set_stage_loader(load_stage_models);
     rt_flow_set_back(quest_back);
+    rt_flow_set_village(village_step);
+    if (quest_no && getenv("RT_VILLAGE_START"))   /* test aid: straight to the village (game mode 6) */
+        rt_flow_set_mode(6);
     t0 = SDL_GetTicks();
     while (running) {
         SDL_Event ev;
@@ -908,6 +935,9 @@ int main(int argc, char **argv)
             if (keys[SDL_SCANCODE_SPACE]) cam[1] += spd;
             if (keys[SDL_SCANCODE_C]) cam[1] -= spd;
         }
+        if (getenv("RT_CAM_DEBUG"))
+            fprintf(stderr, "frame %d: eye %.0f %.0f %.0f fwd %.2f %.2f %.2f game_cam %d have_view %d\n", frame_no,
+                    camw[12], camw[13], camw[14], -camw[8], -camw[9], -camw[10], game_cam, have_view);
         flmat_invert_affine(view, camw);
         rt_set_camera(camw);            /* rview_mat / rview_matY for game billboards */
         /* the game's angle of view taken as the vertical fov [guess] */
@@ -926,7 +956,10 @@ int main(int argc, char **argv)
                     else
                         pad_read(&ps, 1);
                     rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
-                    rt_pad_tick();
+                    if (rt_flow_mode() == 6)
+                        rt_pad_read();      /* the village's Lb_pl_move runs swset */
+                    else
+                        rt_pad_tick();
                 }
                 rt_flow_tick();         /* game2 / game3 / game5 (f_game.c): game_core = sim_tick */
             }

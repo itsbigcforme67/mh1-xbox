@@ -1,0 +1,118 @@
+/*
+ * rt_village.c - the village (Kokoto, lobby.bin offline) on the port
+ * runtime.
+ *
+ * On the PS2 the offline Game_task (src/main/game/f_game_nm.c) ends a quest
+ * in game mode 6: all_reset, Load_overlay(3) = lobby.bin, Clear_lobby_ram,
+ * then Local_main every tick until it returns 1 (a quest was accepted at
+ * the counter and the hunter left through the village gate), then game
+ * mode 0 starts that quest (select_w+0xAC).
+ *
+ * The PC does the same with the lobby C (agent F's src/lobby/f, agent B's
+ * src/lobby/lb, and src/lobby/f/lb_village_nm.c for what was not
+ * decompiled): rt_village_enter = Clear_lobby_ram + step 0, rt_village_tick
+ * = the host's per-tick work the PS2 does in move()/trans() around it (set
+ * objects and effects, prim queues) + Local_main. The stage, the hunter and
+ * the HUD are drawn by the host as in a quest.
+ */
+#include "rt.h"
+#include "types.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+extern u8 lb_sys[];
+extern u8 player_work[];
+extern u8 em_work[];
+extern u8 select_w[];
+extern u8 game_w[];
+extern u8 stage_work[];
+void Clear_lobby_ram(void);
+s32 Local_main(void);
+void rt_game_move(void);
+void rt_font_tick_begin(void);
+void rt_prims_reset(void);
+
+static int active, tick, last_step = -1, last_x68 = -1;
+
+int rt_village_active(void) { return active; }
+
+/* Game_task mode 6 (offline): what the PS2 does before Local_main runs */
+void rt_village_enter(void)
+{
+    memset(em_work, 0, 0xA10 * 20);     /* the quest's monsters are gone (all_reset) */
+    rt_cam_init(game_w[0x14]);          /* camera work (also with the host's own camera) */
+    Clear_lobby_ram();
+    if (getenv("RT_VILLAGE_SKIP_INTRO")) {  /* test aid (no save data): the first-visit event seen */
+        void Event_flag_set(int);
+        Event_flag_set(2);
+    }
+    lb_sys[3] = 0;                      /* vs_square_init_pre */
+    lb_sys[4] = 0;
+    active = 1;
+    tick = 0;
+    if (getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "rt_village: enter (Clear_lobby_ram, Local_main from step 0)\n");
+}
+
+/* One village tick. Returns the quest number when Local_main reports an
+ * accepted quest (1), -1 when it leaves the village another way, else 0. */
+int rt_village_tick(void)
+{
+    s32 r;
+    tick++;
+    rt_font_tick_begin();
+    rt_prims_reset();
+    rt_game_move();                     /* set objects and effects (move_set / move_eft) */
+    r = Local_main();
+    if (getenv("RT_VILLAGE_TRACE") && tick % 30 == 0) {
+        float *p = (float *)(player_work + 0xAC), e[3], t[3], roll, fov;
+        rt_cam_view(e, t, &roll, &fov);
+        fprintf(stderr, "rt_village: stage_work %d %d mdls %p\n", stage_work[0], stage_work[1], *(void **)(stage_work + 0x3C));
+        fprintf(stderr, "rt_village: tick %d pl %.0f %.0f %.0f ang %04X act %d/%d char %d | cam %.0f %.0f %.0f -> %.0f %.0f %.0f fov %.2f roll %.2f\n",
+                tick, p[0], p[1], p[2], *(u16 *)(player_work + 0xE), player_work[0x14], player_work[0x15],
+                *(u16 *)(player_work + 0x2DC), e[0], e[1], e[2], t[0], t[1], t[2], fov, roll);
+    }
+    if (getenv("RT_QUEST_TRACE") && (lb_sys[3] != last_step || *(s32 *)(lb_sys + 0x68) != last_x68)) {
+        float *p = (float *)(player_work + 0xAC);
+        fprintf(stderr, "rt_village: tick %d step %d sub %d x68 %d stage %d pl %.0f %.0f %.0f act %d/%d\n",
+                tick, (s8)lb_sys[3], (s8)lb_sys[4], *(s32 *)(lb_sys + 0x68), game_w[0x14],
+                p[0], p[1], p[2], player_work[0x14], player_work[0x15]);
+        last_step = lb_sys[3];
+        last_x68 = *(s32 *)(lb_sys + 0x68);
+    }
+    if (r == 1 || r == -1) {
+        void com_motion_load(int n);
+        active = 0;
+        com_motion_load(0);             /* the quest's common motions (plcom_tbl) again */
+        return r == 1 ? *(s16 *)(select_w + 0xAC) : -1;
+    }
+    return 0;
+}
+
+/* Disp_NowLoading (disp1_nm.c, weak there): the "now loading" screen the
+ * PS2 draws while it streams files; the PC loads at once, nothing to show */
+void Disp_NowLoading(void) {}
+
+/* com_motion_load (main 0x111A80): the common motion set n
+ * (common_motion_data, 0x2EBC70: 0 plcom_tbl, 1 lbcom_tbl the village's,
+ * 2 selcom_tbl) through load_plcom_motion + create_plcom_motion. The files
+ * stay loaded (the motion handles point into them). */
+uint8_t *rt_file_load(int idx, size_t *n);
+void rt_motion_load_plcom(const uint8_t *tbl);
+void com_motion_load(int n)
+{
+    static uint8_t *keep[3];
+    const uint8_t *p = rt_addr(0x2EBC70 + 4 * (uint32_t)n, 4);
+    int32_t idx;
+    size_t sz;
+    if (n < 0 || n > 2 || !p)
+        return;
+    memcpy(&idx, p, 4);
+    if (!keep[n] && !(keep[n] = rt_file_load(idx, &sz))) {
+        fprintf(stderr, "rt_village: common motions %d (AFS %d) not loaded\n", n, idx);
+        return;
+    }
+    rt_motion_load_plcom(keep[n]);
+}

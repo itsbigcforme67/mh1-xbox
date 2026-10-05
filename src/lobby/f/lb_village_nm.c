@@ -146,7 +146,7 @@ int SetDialogData_HTML();
 int SetDialogYesNo();
 int SetFilterMode();
 int SetTextureStage();
-int SetVector();
+void SetVector(void *, f32, f32, f32);
 int Set_userdata();
 int SoftKeyboard_alive_check();
 int SoftKeyboard_exit();
@@ -171,7 +171,7 @@ int fade_reset();
 int fade_set();
 int flCalcTransSI();
 int flCompact();
-int flConvertStoR();
+f32 flConvertStoR(int);
 int flExecuteClay();
 int flMemset();
 int flSetRenderState();
@@ -179,19 +179,19 @@ int flSetSkinTrans();
 int flSndPackLoadBG();
 int flSndPackLoadStatus();
 int flSndPortStop();
-int flSqrt();
+f32 flSqrt(f32);
 int flfntLocate();
 int flfntSetSize();
 int flmatCopy();
 int flmatInit();
-int flmatMakeScale();
+void flmatMakeScale(void *, f32, f32, f32);
 int flmatMul33_2();
-int flmatRotY33();
-int flmatSetTrans();
+void flmatRotY33(void *, f32);
+void flmatSetTrans(void *, f32, f32, f32);
 int flps0002();
 int flps0008();
 int flvecApplyMat33();
-int flvecCalcDistance();
+f32 flvecCalcDistance(void *, void *);
 int flvecCopy();
 int flvecrRotTransPers();
 int font_print();
@@ -2506,6 +2506,9 @@ void Lb_npc_mk(u8 *em) {
     flmatSetTrans(m, M2C_FIELD(em, f32 *, 0xAC), M2C_FIELD(em, f32 *, 0xB0), M2C_FIELD(em, f32 *, 0xB4));
     flmatMul33_2(m, scl);
     flmatCopy(em + 0x60, m);
+    if (mdl == NULL) {
+        return;     /* PC: no NPC model work yet (npc_create_model) */
+    }
     c = M2C_FIELD(em, u16 *, 0x2DC);
     if (c != 0x284 && c != 0x286 && M2C_FIELD(w, u8 *, 0xE) != 5) {
         if (M2C_FIELD(em, u8 *, 2) != 0) {
@@ -2527,7 +2530,9 @@ void Lb_npc_mk(u8 *em) {
             }
             cur = M2C_FIELD(w, f32 *, 4);
             n = cur + 0.2f * (a - cur);
-            flmatRotY33(jm, (3.1415927f * n) / 180.0f);
+            if (jm != NULL) {   /* PC: no NPC joints yet */
+                flmatRotY33(jm, (3.1415927f * n) / 180.0f);
+            }
             M2C_FIELD(w, f32 *, 4) = n;
         }
     }
@@ -2743,7 +2748,7 @@ void lb_npc_init(u8 *arg0) {
                 break;
             }
         }
-        Lb_pl_chr_set0(arg0, var_a1_3, 0, 0);
+        Lb_pl_chr_set0(arg0, var_a1_3, 0, 0, 0);
         frame_init(arg0, M2C_FIELD(arg0, u16 *, 0x2E4), M2C_FIELD(arg0, s16 *, 0x2EC), 0);
     }
     frame_move(arg0);
@@ -5134,4 +5139,23 @@ void Lb_put_2TF(u8 *rec, s32 scale_w) {
         M2C_FIELD(q, s16 *, 4) = (s16)(s32)(0.8f * (f32)M2C_FIELD(q, s16 *, 4));
     }
     flps0008(q);
+}
+
+/* lb_npc_adr_tbl's entries for the village people (0x5C48A0-0x5C4D40):
+ * empty init and program, and the effect hook: +0x46E 0 -> 1 on the first
+ * tick, then ef_move_sub (per-motion sounds / dust, not ported) */
+void lb_common_local_init(u8 *em) {
+}
+
+void lb_dummy_em_prog(u8 *em) {
+}
+
+void ef_move_sub_005C49F0();
+void lb_npc_ef_move(u8 *em) {
+    s8 k = M2C_FIELD(em, s8 *, 0x46E);
+    if (k == 1) {
+        ef_move_sub_005C49F0(em, em + 0x444);
+    } else if (k == 0) {
+        M2C_FIELD(em, s8 *, 0x46E) = 1;
+    }
 }
