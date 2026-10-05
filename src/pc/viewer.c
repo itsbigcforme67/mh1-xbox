@@ -563,6 +563,7 @@ static int load_stage_models(int st)
  * What game_core does on the PS2 (swset, move, trans, hit_check), done by
  * the host pieces in the PS2 order. With --quest it runs inside the game's
  * own mode loop (game2 -> game_core, src/main/game/f_game.c; rt_flow.c). */
+static void monsters_sync(int draw, const fl_light *L);
 static void sim_tick(void)
 {
     rt_game_move();
@@ -600,7 +601,13 @@ static void sim_tick(void)
     }
     if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
         sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
+        monsters_sync(0, &light);
         rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
+    }
+    if (ticks >= 2 && !getenv("RT_EM_STANDIN")) {
+        int i;
+        for (i = 1; i < 20; i++)        /* move()'s monster loop: the others (em_work[0] below) */
+            rt_monster_tick(i);
     }
     if (rathian.game && ticks >= 2) {
         if (getenv("RT_EM_STANDIN"))
@@ -647,6 +654,72 @@ static void quest_back(void)
     rt_player_game_init(0);
     if (game_cam)
         rt_cam_init(stage_no);
+}
+
+/* Quest monsters other than the Rathian of the host's own set-up (the
+ * game's em_create_model -> here): the model of kind `kind` (cached by
+ * kind) and the motions of model slot `slot` (create_em_motion from
+ * em<kind>_tbl.bin, as the PS2 loads them with the model). */
+static monster em_mdl[40];
+static int em_have[40];
+static void em_model_load(int slot, int kind)
+{
+    char a[32], t[32], b[32];
+    monster *e;
+    if (kind <= 0 || kind >= 40)
+        return;
+    e = &em_mdl[kind];
+    if (!em_have[kind]) {
+        snprintf(a, sizeof a, "em%02d_amh.bin", kind);
+        snprintf(t, sizeof t, "em%02d_tex.bin", kind);
+        snprintf(b, sizeof b, "em%02d_tbl.bin", kind);
+        if (monster_load(e, a, t, b, 0) != 0) {
+            fprintf(stderr, "monster kind %d: model %s not loaded\n", kind, a);
+            return;
+        }
+        em_have[kind] = 1;
+    }
+    if (e->tbl.p)
+        rt_em_motion_create(slot, kind, e->tbl.p);
+}
+
+/* every monster in use on this stage but the host's Rathian (em_work[0]
+ * with the em01 set-up above), posed by the game's motion player; also
+ * their joint matrices for the game's hit checks */
+static void monsters_sync(int draw, const fl_light *L)
+{
+    extern uint8_t em_work[];
+    static flmat jw[128];
+    int i, j, nb;
+    for (i = 0; i < 20; i++) {
+        uint8_t *em = em_work + 0xA10 * i;
+        monster *m;
+        flmat w;
+        float s[3], r[3], t[3];
+        int kind = em[2];
+        if (!em[0] || em[0x1E] || (i == 0 && rathian.game && kind == 1) || kind <= 0 || kind >= 40 || !em_have[kind])
+            continue;
+        if (em[0x736] != (uint8_t)rt_game_stage())
+            continue;
+        m = &em_mdl[kind];
+        rt_monster_pose(i, &m->skel);
+        memcpy(s, em + 0xB8, sizeof s);
+        if (s[0] == 0.0f) s[0] = s[1] = s[2] = 1.0f;
+        r[0] = 0;
+        r[1] = (float)(*(int32_t *)(em + 0xA4) & 0xFFFF) * (6.2831853f / 65536.0f);
+        r[2] = 0;
+        memcpy(t, em + 0xAC, sizeof t);
+        flmat_srt(w, s, r, t);
+        nb = m->skel.skel.nbone < 128 ? m->skel.skel.nbone : 128;
+        for (j = 0; j < nb; j++)
+            flmat_mul(jw[j], m->skel.world[j], w);
+        rt_monster_joints(i, &jw[0][0], nb);
+        if (draw) {
+            fl_model_pose(&m->model, (const flmat *)m->skel.world, L);
+            gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
+            draw_model_attr(&m->model, -1);
+        }
+    }
 }
 
 /* Village NPC models (npc_create_model -> here): slot = NPC kind. */
@@ -812,6 +885,7 @@ int main(int argc, char **argv)
         pad_init();
 
     rt_set_file_loader(afs_entry);
+    rt_set_em_model_loader(em_model_load);  /* before the quest's em_create_model calls */
     if (quest_no) {
         /* --quest N: the mission file's monsters (rt_em.c); the hunt's
          * stage is where the quest's own monster starts */
@@ -1126,6 +1200,8 @@ int main(int argc, char **argv)
         }
         if (rt_village_active())
             npc_draw(&light);
+        else
+            monsters_sync(1, &light);
         if (weapon.game && pl.game && play) {
             static flmat wid;
             flmat_identity(wid);

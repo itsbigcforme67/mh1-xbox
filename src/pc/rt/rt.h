@@ -136,6 +136,10 @@ void rt_village_enter(void);
 int rt_village_tick(void);
 int rt_village_active(void);
 void rt_set_npc_model_loader(void (*fn)(int slot, int amh, int tex));
+void rt_set_em_model_loader(void (*fn)(int slot, int kind));
+void rt_monster_joints(int no, const float *world, int n);
+/* create_em_motion for model slot `slot` from a monster's *_tbl.bin */
+void rt_em_motion_create(int slot, int kind, const uint8_t *tbl);
 void rt_monster_pose(int no, void *fl_skel_ptr);
 void rt_flow_set_village(void (*fn)(void));
 void rt_flow_set_mode(int mode);   /* test aid: jump to a game mode */
