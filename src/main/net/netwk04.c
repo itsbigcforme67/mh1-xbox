@@ -39,7 +39,9 @@ typedef struct NETCW {
     u8 x3D;
     u8 x3E;
     u8 x3F;
-    u8 pad40[0x94 - 0x40];
+    u8 pad40[0x79 - 0x40];
+    s8 x79;
+    u8 pad7A[0x94 - 0x7A];
 } NETCW;
 extern NETCW net_common_w;
 extern u8 system_w[];
@@ -51,6 +53,42 @@ extern PSW Psw[];
 extern u8 SoftKeyWork[];
 extern u8 CNFile[];
 extern s8 MMBB_LOGIN;
+extern int (*ms_network_jp_142[])();
+void cnnect_err_set();
+void Net_work_move();
+void Net_trans_set();
+extern u8 COM_R_No_0;
+extern u8 COM_R_No_1;
+extern u8 COM_R_No_2;
+extern u8 COM_R_No_3;
+extern u8 COM_R_No_4;
+extern u8 COM_R_No_5;
+extern u8 COM_R_No_Disconnect;
+extern s16 Vs_Cnt_0;
+int dcon_task_init();
+int session_connect_init();
+int session_connect();
+int func_5B5380();
+extern u8 card_w[];
+int func_59DB00();
+int Lbs_se_load();
+int net_bgm_set();
+int Ncm_mmbb_spr_load();
+int Ncm_mmbb_spr_create();
+int Ncm_mssage_disp_req();
+int Ncm_menu_disp_req();
+void Ncm_spr_kill(int m);
+void Net_McWorkInit();
+int Net_fade_execute();
+void Net_work_init_all();
+void Net_setBGcolor();
+void Net_all_reset();
+void Ncm_spr_BG_set(void);
+void Ncm_spr_TITLE_set(void);
+void Ncm_spr_set_diarog_m(void);
+void Ncm_spr_SVAE_GAME_set(void);
+void Ncm_spr_kill_all(void);
+int Net_fade_check(void);
 
 void *memset(void *, int, int);
 char *strcpy(char *, const char *);
@@ -71,6 +109,13 @@ int load_file_mdl();
 
 void SoftKey_onoff(int on);
 void Ncm_spr_kill_all(void);
+
+
+
+
+
+
+
 
 
 
@@ -192,11 +237,11 @@ int net_yesno_operation_move(void) {
     return -(net_shot_ng_ck() != 0);
 }
 
-void Net_work_move(void) {
+void Net_work_move() {
     /* empty */
 }
 
-void Net_trans_set(void) {
+void Net_trans_set() {
     net_connect_draw();
 }
 
@@ -224,20 +269,20 @@ int Net_fade_execute(int a, int b, int mode) {
     return 1;
 }
 
-void Net_all_reset(void) {
+void Net_all_reset() {
     Ncm_spr_kill_all();
     release_texture(0x14D, 8);
 }
 
-void Net_work_init_all(void) {
+void Net_work_init_all() {
     /* empty */
 }
 
-void Net_setBGcolor(void) {
+void Net_setBGcolor() {
     /* empty */
 }
 
-void Net_McWorkInit(void) {
+void Net_McWorkInit() {
     McActInit();
 }
 

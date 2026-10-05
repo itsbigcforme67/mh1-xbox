@@ -43,7 +43,9 @@ typedef struct NETCW {
     u8 x3D;
     u8 x3E;
     u8 x3F;
-    u8 pad40[0x94 - 0x40];
+    u8 pad40[0x79 - 0x40];
+    s8 x79;
+    u8 pad7A[0x94 - 0x7A];
 } NETCW;
 extern NETCW net_common_w;
 extern u8 system_w[];
@@ -55,6 +57,42 @@ extern PSW Psw[];
 extern u8 SoftKeyWork[];
 extern u8 CNFile[];
 extern s8 MMBB_LOGIN;
+extern int (*ms_network_jp_142[])();
+void cnnect_err_set();
+void Net_work_move();
+void Net_trans_set();
+extern u8 COM_R_No_0;
+extern u8 COM_R_No_1;
+extern u8 COM_R_No_2;
+extern u8 COM_R_No_3;
+extern u8 COM_R_No_4;
+extern u8 COM_R_No_5;
+extern u8 COM_R_No_Disconnect;
+extern s16 Vs_Cnt_0;
+int dcon_task_init();
+int session_connect_init();
+int session_connect();
+int func_5B5380();
+extern u8 card_w[];
+int func_59DB00();
+int Lbs_se_load();
+int net_bgm_set();
+int Ncm_mmbb_spr_load();
+int Ncm_mmbb_spr_create();
+int Ncm_mssage_disp_req();
+int Ncm_menu_disp_req();
+void Ncm_spr_kill(int m);
+void Net_McWorkInit();
+int Net_fade_execute();
+void Net_work_init_all();
+void Net_setBGcolor();
+void Net_all_reset();
+void Ncm_spr_BG_set(void);
+void Ncm_spr_TITLE_set(void);
+void Ncm_spr_set_diarog_m(void);
+void Ncm_spr_SVAE_GAME_set(void);
+void Ncm_spr_kill_all(void);
+int Net_fade_check(void);
 
 void *memset(void *, int, int);
 char *strcpy(char *, const char *);
@@ -75,6 +113,360 @@ int load_file_mdl();
 
 void SoftKey_onoff(int on);
 void Ncm_spr_kill_all(void);
+
+int ms_network_sub(void) {
+    int ret = 0;
+    int r;
+
+    r = ms_network_jp_142[net_common_w.x00]();
+    if (r != 0) {
+        switch (net_common_w.x00) {
+        case 0:
+            net_common_w.x11 = 1;
+            net_common_w.x00 = 1;
+            break;
+        case 1:
+            if (r == 1) {
+                net_common_w.step = 0;
+                net_common_w.x00 = 2;
+                net_common_w.x11 = 0;
+            } else {
+                net_common_w.step = 0;
+                ret = -1;
+                net_common_w.x11 = 0;
+                net_common_w.x00 = 0xE;
+            }
+            break;
+        case 2:
+            if (r == 1) {
+                net_common_w.step = 0;
+                net_common_w.x00 = 3;
+                net_common_w.x11 = 0;
+            } else {
+                net_common_w.step = 0;
+                ret = -1;
+                net_common_w.x11 = 0;
+                net_common_w.x00 = 0xE;
+            }
+            break;
+        case 3:
+            switch (r) {
+            case 1:
+                net_common_w.step = 0;
+                net_common_w.x11 = 0;
+                net_common_w.x00 = 4;
+                net_common_w.x10 = 0;
+                break;
+            case 2:
+                net_common_w.step = 0;
+                net_common_w.x11 = 0;
+                net_common_w.x00 = 8;
+                break;
+            case 3:
+                net_common_w.step = 0;
+                net_common_w.x11 = 0;
+                net_common_w.x00 = 7;
+                break;
+            default:
+                net_common_w.step = 0;
+                net_common_w.x11 = 0;
+                net_common_w.x00 = 0xE;
+                break;
+            }
+            break;
+        case 4:
+            switch (r) {
+            case 1:
+                net_common_w.step = 0;
+                net_common_w.x11 = 0;
+                net_common_w.x00 = 5;
+                net_common_w.x0E = 3;
+                break;
+            default:
+                net_common_w.step = 0;
+                net_common_w.x11 = 0;
+                net_common_w.x00 = 3;
+                break;
+            }
+            break;
+        case 5:
+            if (r == 1) {
+                net_common_w.x11 = 1;
+                net_common_w.x00 = 6;
+                net_common_w.step = 0;
+                net_common_w.sub = 0;
+                net_common_w.x0E = 0;
+            } else {
+                net_common_w.x11 = 1;
+                net_common_w.step = 0;
+                net_common_w.x00 = 3;
+                net_common_w.x0E = 0;
+            }
+            break;
+        case 6:
+            if (r == 1) {
+                net_common_w.x11 = 1;
+                net_common_w.x00 = 9;
+                net_common_w.step = 0;
+            } else {
+                cnnect_err_set(0);
+            }
+            break;
+        case 7:
+            net_common_w.step = 0;
+            net_common_w.x11 = 0;
+            net_common_w.x00 = 3;
+            break;
+        case 8:
+            net_common_w.step = 0;
+            net_common_w.x11 = 0;
+            net_common_w.x00 = 4;
+            break;
+        case 9:
+            net_common_w.step = 0;
+            net_common_w.x00 = 0xA;
+            net_common_w.x11 = 1;
+            break;
+        case 10:
+            if (r == 1) {
+                net_common_w.x11 = 1;
+                net_common_w.x00 = 0xB;
+                net_common_w.step = 0;
+            } else {
+                net_common_w.x11 = 1;
+                net_common_w.step = 0;
+                net_common_w.x00 = 0xC;
+            }
+            break;
+        case 11:
+            ret = 1;
+            break;
+        case 12:
+            net_common_w.step = 0;
+            net_common_w.x00 = 0xE;
+            break;
+        case 13:
+            net_common_w.step = 0;
+            net_common_w.x00 = 0xE;
+            break;
+        case 14:
+            ret = -1;
+            break;
+        }
+    }
+    if ((net_common_w.x0E & 1) == 0) {
+        Net_work_move(0);
+    }
+    if ((net_common_w.x0E & 2) == 0) {
+        Net_trans_set(0);
+    }
+    return ret;
+}
+
+int ms_network_init(void) {
+    int ret = 0;
+
+    switch (net_common_w.step) {
+    case 0:
+        net_common_w.step++;
+        Net_all_reset(0);
+        Net_work_init_all();
+        Net_setBGcolor(0);
+        net_common_w.x11 = 1;
+        func_59DB00();
+        Lbs_se_load();
+        break;
+    case 1:
+        if (Ncm_mmbb_spr_load() != 0) {
+            net_common_w.x2C = 0;
+            net_common_w.step++;
+        }
+        break;
+    case 2:
+        if (Ncm_mmbb_spr_create() != 0) {
+            net_common_w.step = 0;
+            net_common_w.sub = 0;
+            net_common_w.x03 = 0;
+            net_common_w.x12 = 0;
+            net_common_w.x28 = 0;
+            net_common_w.x15 = 0;
+            net_common_w.x0C = 0;
+            Net_work_init_all();
+            Net_setBGcolor(0);
+            net_bgm_set();
+            ret = 1;
+        }
+        break;
+    }
+    return ret;
+}
+
+int ms_network_save_game(void) {
+    int ret = 0;
+
+    switch (net_common_w.step) {
+    case 0:
+        net_common_w.step++;
+        Ncm_spr_BG_set();
+        Ncm_spr_TITLE_set();
+        Ncm_spr_set_diarog_m();
+        net_common_w.x06 = 5;
+        Net_McWorkInit(2);
+        system_w[0x3C] = 1;
+        net_common_w.x79 = *(s32 *)(card_w + 0x18);
+        Net_fade_execute(0, 0x1E, 0);
+        break;
+    case 1:
+        if (net_common_w.x06 > 0) {
+            net_common_w.x06 = net_common_w.x06 - 1;
+            if (net_common_w.x06 == 0) {
+                Ncm_spr_SVAE_GAME_set();
+            }
+        } else {
+            Ncm_mssage_disp_req(0x1F);
+            Ncm_mssage_disp_req(1);
+            Ncm_menu_disp_req(3);
+            if (net_shot_ok_ck(1) != 0) {
+                net_common_w.step = 3;
+                Ncm_spr_kill(0x8000);
+                Net_McWorkInit(2);
+                net_common_w.timer = 0xA;
+            } else if (net_shot_ng_ck() != 0) {
+                Ncm_spr_kill(0x8000);
+                net_common_w.timer = 0xA;
+                net_common_w.step = 0xA;
+                Net_fade_execute(0, 0x1E, 1);
+            }
+        }
+        break;
+    case 3:
+        Ncm_mssage_disp_req(0x1F);
+        if (net_common_w.timer > 0) {
+            net_common_w.timer = net_common_w.timer - 1;
+        }
+        net_common_w.step++;
+    case 4:
+        system_w[0x3C] = 0;
+        ret = 1;
+        break;
+    case 10:
+        Ncm_mssage_disp_req(0x1F);
+        if (Net_fade_check() == 0) {
+            net_common_w.step++;
+            Ncm_spr_kill_all();
+    case 11:
+            system_w[0x3C] = 0;
+            ret = -1;
+        }
+        break;
+    }
+    return ret;
+}
+
+int ms_network_bb_connect_driver(void) {
+    int ret = 0;
+
+    switch (net_common_w.step) {
+    case 0:
+        switch (net_common_w.sub) {
+        case 0:
+            if (Ncm_mmbb_spr_load() != 0) {
+                net_common_w.sub++;
+            }
+            break;
+        case 1:
+            if (Ncm_mmbb_spr_create() != 0) {
+                net_common_w.sub = 0;
+                net_common_w.step++;
+                dcon_task_init();
+                session_connect_init();
+                COM_R_No_0 = 0;
+                COM_R_No_1 = 0;
+                COM_R_No_2 = 0;
+                COM_R_No_3 = 0;
+                COM_R_No_5 = 0;
+            }
+            break;
+        }
+        break;
+    case 1:
+        switch (session_connect()) {
+        case 1:
+            net_common_w.step = 2;
+            break;
+        case -1:
+            net_common_w.step = 3;
+            break;
+        case -2:
+            net_common_w.step = 4;
+            break;
+        }
+        break;
+    case 2:
+        ret = 1;
+        break;
+    case 3:
+        COM_R_No_0 = 0;
+        COM_R_No_1 = 0;
+        ret = -1;
+        COM_R_No_2 = 0;
+        COM_R_No_3 = 0;
+        COM_R_No_4 = 0;
+        break;
+    case 4:
+        COM_R_No_1 = 0;
+        ret = -2;
+        COM_R_No_2 = 0;
+        COM_R_No_3 = 0;
+        COM_R_No_0 = 1;
+        COM_R_No_4 = 0;
+        break;
+    }
+    return ret;
+}
+
+s8 ms_network_connect_last_setting(void) {
+    int v = ((s8 *)CNFile)[0xC80];
+
+    if (v == 1) {
+        net_common_w.x0C = 1;
+    }
+    net_common_w.x10 = 1;
+    return v;
+}
+
+int ms_network_matching(void) {
+    return 1;
+}
+
+int ms_network_end(void) {
+    int ret = 0;
+
+    switch (net_common_w.step) {
+    case 0:
+        if (Net_fade_execute(0, 0x14, 1) != 0) {
+            net_common_w.step++;
+        }
+        break;
+    case 1:
+        if ((s8)Net_fade_check() == 0) {
+            Net_work_init_all();
+            COM_R_No_Disconnect = 0;
+            Vs_Cnt_0 = 0;
+            net_common_w.step++;
+        }
+        break;
+    case 2:
+        if (func_5B5380() == 0) {
+            return 0;
+        }
+        net_common_w.step++;
+    case 3:
+        ret = 1;
+        break;
+    }
+    return ret;
+}
 
 void network_work_init(void) {
     memset(&net_common_w, 0, 0x94);
@@ -202,11 +594,11 @@ int net_yesno_operation_move(void) {
     return -(net_shot_ng_ck() != 0);
 }
 
-void Net_work_move(void) {
+void Net_work_move() {
     /* empty */
 }
 
-void Net_trans_set(void) {
+void Net_trans_set() {
     net_connect_draw();
 }
 
@@ -234,20 +626,20 @@ int Net_fade_execute(int a, int b, int mode) {
     return 1;
 }
 
-void Net_all_reset(void) {
+void Net_all_reset() {
     Ncm_spr_kill_all();
     release_texture(0x14D, 8);
 }
 
-void Net_work_init_all(void) {
+void Net_work_init_all() {
     /* empty */
 }
 
-void Net_setBGcolor(void) {
+void Net_setBGcolor() {
     /* empty */
 }
 
-void Net_McWorkInit(void) {
+void Net_McWorkInit() {
     McActInit();
 }
 
