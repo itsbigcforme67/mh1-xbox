@@ -2559,7 +2559,7 @@ static void em_fly10_005F0730(EMW *em, EM20W *w) {
         w->x18 = 1;
         break;
     case 1:
-        em20_senkai_target(temp_a1, 2);
+        em20_senkai_target(em, 2);
         em20_fly_adjy(em, 1);
         temp_f1 = em->pos[1] + 100.0f;
         em->pos[1] = temp_f1;

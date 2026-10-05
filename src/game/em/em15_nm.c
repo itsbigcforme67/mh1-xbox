@@ -1820,7 +1820,7 @@ static void em_fly08_005C6000(EMW *em, EM15W *w) {
     case 2:
         em->x05 = temp_a2 + 1;
         temp_v1 = em->thirst;
-        if (temp_v1 >= 0xBB9) {
+        if (temp_v1 > 0xBB8) {
             em->thirst = temp_v1 - 0xBB8;
         } else {
             em->thirst = 0;
@@ -1838,10 +1838,10 @@ static void em_fly08_005C6000(EMW *em, EM15W *w) {
         em->work08 = 0x258;
         Em_Next_Stage_Pos(em);
         temp_v1_3 = em->x92F;
-        if ((u16) em->x73A != temp_v1_3) {
-            if (temp_v1_3 == 0xFF) {
-                goto block_21;
-            }
+        if ((u16) em->x73A == temp_v1_3 || temp_v1_3 == 0xFF) {
+            WyvernAreaMove(em);
+            em15_act_set(em, 2, 9, 1);
+        } else {
             if (em->x8C3 == 0) {
                 em->x73A = (s16) temp_v1_3;
                 em->x829 = temp_v1_3 & 0xFFFF;
@@ -1850,10 +1850,6 @@ static void em_fly08_005C6000(EMW *em, EM15W *w) {
             }
             em15_act_set(em, 2, 0xD, 1);
             WyvernAreaMove(em);
-        } else {
-block_21:
-            WyvernAreaMove(em);
-            em15_act_set(em, 2, 9, 1);
         }
         break;
     case 4:
@@ -1940,10 +1936,10 @@ static void em_fly10_005C6430(EMW *em, EM15W *w) {
         NextStage_Dir_Set(em, em->tgt_pos);
         break;
     case 1:
-        em15_senkai_target(temp_a1, 2);
+        em15_senkai_target(em, 2);
         em15_fly_adjy(em, 1);
-        temp_f1 = em->pos[1] + 100.0f;
-        em->pos[1] = temp_f1;
+        em->pos[1] += 100.0f;
+        temp_f1 = em->pos[1];
         if (!(temp_f1 < em->tgt_pos[1])) {
             em->x05 += 1;
         }
