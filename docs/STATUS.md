@@ -629,3 +629,9 @@ row plus silencer/long-barrel rows. Matching notes:
 - Constant-index table reads `tbl[k][0..2]` inside a loop get their addresses
   hoisted and spilled (shell06_eft_t); a pointer `p = tbl[k]` does not.
 - Shell06 first half (set, init_sub, move_sub, hit, trans_sub) still to do.
+- shell06.c: shell06_set .. shell06_init_sub (0x62A6C0-0x62B154) match too
+  (check.py + game OK). Lessons: when every call re-extends an s16 argument
+  (no CSE of dsll32/dsra32), the source passed `(s16)joint` of an int
+  parameter to an s16 prototype (shell06_set). Load order of three struct
+  fields picked the float registers in shell06_init_sub (spd, spread, drop).
+  Still to do: shell06_move_sub, shell06_hit, shell06_trans_sub.
