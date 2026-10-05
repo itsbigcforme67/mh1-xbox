@@ -87,7 +87,7 @@ game 0x00555A90 0x00556D98 eft/eft22
 game 0x00556FE0 0x00557474 eft/eft22b
 game:rodata 0x00685840 0x00685858 eft/eft22
 game 0x00557480 0x005587F8 eft/eft23
-game 0x00558960 0x005589EC eft/eft23b
+game 0x00558960 0x00558A74 eft/eft23b
 game:rodata 0x00685860 0x00685884 eft/eft23
 game 0x0054BB60 0x0054D654 eft/eft15
 game:rodata 0x00685650 0x00685724 eft/eft15
@@ -389,7 +389,7 @@ main 0x002227A0 0x00222E20 cam/camg
 main 0x00163AB0 0x00163D20 weapon/trans
 main 0x00163E40 0x0016440C weapon/weapon
 main 0x00164D60 0x00164F68 weapon/weapon2
-main 0x00168EA0 0x001691B4 weapon/weapon3
+main 0x00168EA0 0x00169228 weapon/weapon3
 main 0x00223E90 0x00223F8C cam/camr2
 main 0x00223F90 0x00223FDC cam/camr1
 main 0x00224790 0x002248B8 cam/camr4
@@ -491,3 +491,7 @@ select:rodata 0x0053B8E0 0x0053B90C edit04
 select 0x00537460 0x005375EC edit05
 select 0x00538030 0x00538038 edit06
 select 0x005382B0 0x00538538 edit07
+game 0x006362B0 0x00636918 shell/shell00
+game:rodata 0x0068A3B0 0x0068A3D0 shell/shell00
+game 0x0063A010 0x0063A0E4 pl/pl_guard
+game 0x00625630 0x00625838 set/set17
