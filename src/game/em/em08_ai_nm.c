@@ -346,6 +346,7 @@ void em08_to_swim(EMW *em) {
     EMF(em, s32, 0x930) = 0x3F800000;
     EMF(em, s8, 0x388) = 4;
     EMF(em, s8, 0x3F4) = 0;
+    em->x839 = 1;
     em08_act_set(em, 2, 0, 0);
 }
 
@@ -4121,73 +4122,73 @@ static void em_move00_005A25C0(EMW *em, EM08W *w) {
     switch (temp_v1) {
     case 0:
         em_act00_0059A7B0(em, w);
-        return;
+        break;
     case 1:
         em_act01_0059A880(em, w);
-        return;
+        break;
     case 2:
         em_act02_0059A960(em, w);
-        return;
+        break;
     case 3:
         em_act03_0059AA10(em, w);
-        return;
+        break;
     case 4:
         em_act04_0059AD80(em, w);
-        return;
+        break;
     case 5:
         em_act05_0059AE70(em, w);
-        return;
+        break;
     case 6:
         em_act06_0059AF80(em, w);
-        return;
+        break;
     case 7:
         em_act07_0059B050(em, w);
-        return;
+        break;
     case 8:
         em_act08_0059B0D0(em, w);
-        return;
+        break;
     case 9:
         em_act09_0059B210(em, w);
-        return;
+        break;
     case 10:
         em_act10_0059B300(em, w);
-        return;
+        break;
     case 11:
         em_act11_0059B440(em, w);
-        return;
+        break;
     case 12:
         em_act12_0059B530(em, w);
-        return;
+        break;
     case 13:
         em_act13_0059B640(em, w);
-        return;
+        break;
     case 14:
         em_act14_0059B710(em, w);
-        return;
+        break;
     case 15:
         em_act15_0059B920(em, w);
-        return;
+        break;
     case 16:
         em_act16_0059B9F0(em, w);
-        return;
+        break;
     case 17:
         em_act17_0059BC00(em, w);
-        return;
+        break;
     case 18:
         em_act18_0059BCD0(em, w);
-        return;
+        break;
     case 19:
         em_act19_0059BE30(em, w);
-        return;
+        break;
     case 20:
         em_act20_0059BF00(em, w);
-        return;
+        break;
     case 21:
         em_act21_0059C140(em, w);
-        return;
+        break;
     case 40:
         em_act40_0059C080(em, w);
-        return;
+        break;
     }
 }
 
@@ -4198,16 +4199,16 @@ static void em_move01_005A2830(EMW *em, EM08W *w) {
     switch (temp_a2) {
     case 0:
         em_mv00_0059C1D0(em, w);
-        return;
+        break;
     case 1:
         em_mv01_0059C310(em, w);
-        return;
+        break;
     case 2:
         em_mv02_0059C480(em, w);
-        return;
+        break;
     case 3:
         em_mv03_0059C6D0(em, w);
-        return;
+        break;
     }
 }
 
@@ -4218,83 +4219,83 @@ static void em_move02_005A28C0(EMW *em, EM08W *w) {
     switch (temp_v1) {
     case 0:
         em_fly00_0059C810(em, w);
-        return;
+        break;
     case 1:
         em_fly01_0059C8A0(em, w);
-        return;
+        break;
     case 2:
         em_fly02_0059C930(em, w);
-        return;
+        break;
     case 3:
         em_fly03_0059CA30(em, w);
-        return;
+        break;
     case 4:
         em_fly04_0059CCE0(em, w);
-        return;
+        break;
     case 5:
         em_fly05_0059CF30(em, w);
-        return;
+        break;
     case 6:
         em_fly06_0059D0F0(em, w);
-        return;
+        break;
     case 7:
         em_fly07_0059D190(em, w);
-        return;
+        break;
     case 8:
         em_fly08_0059D2E0(em, w);
-        return;
+        break;
     case 9:
         em_fly09_0059D420(em, w);
-        return;
+        break;
     case 10:
         em_fly10_0059D720(em, w);
-        return;
+        break;
     case 11:
         em_fly11_0059D960(em, w);
-        return;
+        break;
     case 12:
         em_fly12_0059DBA0(em, w);
-        return;
+        break;
     case 13:
         em_fly13_0059DCA0(em, w);
-        return;
+        break;
     case 14:
         em_fly14_0059DDA0(em, w);
-        return;
+        break;
     case 15:
         em_fly15_0059DF70(em, w);
-        return;
+        break;
     case 16:
         em_fly16_0059E020(em, w);
-        return;
+        break;
     case 17:
         em_fly17_0059E400(em, w);
-        return;
+        break;
     case 18:
         em_fly18_0059E820(em, w);
-        return;
+        break;
     case 19:
         em_fly19_0059E9C0(em, w);
-        return;
+        break;
     case 20:
         em_fly20_0059EA90(em, w);
-        return;
+        break;
     case 21:
         em_fly21_0059EB70(em, w);
-        return;
+        break;
     case 22:
         em_fly22_0059EC00(em, w);
-        return;
+        break;
     case 23:
         em_fly23_0059EDA0(em, w);
-        return;
+        break;
     case 24:
         em_fly24_0059EFD0(em, w);
-        return;
+        break;
     case 25:
         em_fly25_0059F070(em, w);
     default:
-        return;
+        break;
     }
 }
 
@@ -4305,32 +4306,32 @@ static void em_move03_005A2AA0(EMW *em, EM08W *w) {
     switch (temp_v1) {
     case 0:
         em_atk00_0059F110(em, w);
-        return;
+        break;
     case 1:
         em_atk01_0059F190(em, w);
-        return;
+        break;
     case 2:
         em_atk02_0059F2F0(em, w);
-        return;
+        break;
     case 3:
         em_atk03_0059F3E0(em, w);
-        return;
+        break;
     case 4:
         em_atk04_0059F3F0(em, w);
-        return;
+        break;
     case 5:
         em_atk05_0059F400(em, w);
-        return;
+        break;
     case 6:
         em_atk06_0059F5C0(em, w);
-        return;
+        break;
     case 7:
         em_atk07_0059F890(em, w);
-        return;
+        break;
     case 8:
         em_atk08_0059F910(em, w);
     default:
-        return;
+        break;
     }
 }
 
@@ -4341,65 +4342,65 @@ static void em_move04_005A2B70(EMW *em, EM08W *w) {
     switch (temp_v1) {
     case 0:
         em_dmg00_0059FAB0(em, w);
-        return;
+        break;
     case 1:
         em_dmg01_0059FB90(em, w);
-        return;
+        break;
     case 2:
         em_dmg02_0059FC20(em, w);
-        return;
+        break;
     case 3:
         em_dmg03_0059FCB0(em, w);
-        return;
+        break;
     case 4:
         em_dmg04_0059FD40(em, w);
-        return;
+        break;
     case 5:
         em_dmg05_0059FE40(em, w);
-        return;
+        break;
     case 6:
         em_dmg06_0059FFE0(em, w);
-        return;
+        break;
     case 7:
         em_dmg07_005A00F0(em, w);
-        return;
+        break;
     case 8:
         em_dmg08_005A0250(em, w);
-        return;
+        break;
     case 9:
         em_dmg09_005A0350(em, w);
-        return;
+        break;
     case 10:
         em_dmg10_005A0470(em, w);
-        return;
+        break;
     case 11:
         em_dmg11_005A0500(em, w);
-        return;
+        break;
     case 12:
         em_dmg12_005A05E0(em, w);
-        return;
+        break;
     case 13:
         em_dmg13_005A06C0(em, w);
-        return;
+        break;
     case 14:
         em_dmg14_005A07B0(em, w);
-        return;
+        break;
     case 15:
         em_dmg15_005A08C0(em, w);
-        return;
+        break;
     case 16:
         em_dmg16_005A0B60(em, w);
-        return;
+        break;
     case 17:
         em_dmg17_005A0C40(em, w);
-        return;
+        break;
     case 18:
         em_dmg18_005A0E60(em, w);
-        return;
+        break;
     case 19:
         em_dmg19_005A0F50(em, w);
     default:
-        return;
+        break;
     }
 }
 
@@ -4410,23 +4411,23 @@ static void em_move05_005A2CF0(EMW *em, EM08W *w) {
     switch (temp_v1) {
     case 0:
         em_die00_005A17A0(em, w);
-        return;
+        break;
     case 1:
         em_die01_005A19D0(em, w);
-        return;
+        break;
     case 2:
         em_die02_005A1BD0(em, w);
-        return;
+        break;
     case 3:
         em_die03_005A1F70(em, w);
-        return;
+        break;
     case 4:
         em_die04_005A21F0(em, w);
-        return;
+        break;
     case 5:
         em_die05_005A22A0(em, w);
     default:
-        return;
+        break;
     }
 }
 
@@ -4437,10 +4438,10 @@ static void em_move06_005A2D90(EMW *em, EM08W *w) {
     switch (temp_a2) {
     case 0:
         em_demo00_005A0FF0(em, w);
-        return;
+        break;
     case 1:
         em_demo01_005A1700(em, w);
-        return;
+        break;
     }
 }
 
