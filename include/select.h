@@ -104,7 +104,7 @@ typedef struct EDIT_W {
     f32 at[3];          /* 0x18 camera target */
     s8 name[0x12];      /* 0x24 character name (SJIS bytes, 0 = end) */
     u16 x36;            /* 0x36 */
-    s16 x38;            /* 0x38 */
+    u16 x38;            /* 0x38 */
     u8 x3A;             /* 0x3A colour index */
     u8 x3B;             /* 0x3B */
     s8 x3C;             /* 0x3C */

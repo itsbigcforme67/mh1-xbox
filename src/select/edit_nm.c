@@ -191,9 +191,17 @@ void arrow_disp(u8 *w) {
     SetFilterMode(1);
 }
 
-void ed_decide_se(void) { se_req(7, 0x13, 0); }
-void ed_decide_se2(void) { se_req(1, 0x73, 0); }
-void ed_cancel_se(void) { se_req(7, 0x14, 0); }
+void ed_decide_se(void) {
+    se_req(7, 0x13, 0);
+}
+
+void ed_decide_se2(void) {
+    se_req(1, 0x73, 0);
+}
+
+void ed_cancel_se(void) {
+    se_req(7, 0x14, 0);
+}
 
 int NG_name_chk(u8 *s);
 
@@ -1444,18 +1452,18 @@ void cont_trans(TSKH *tk) {
     STASK *s = tk->work;
     u8 *e = (u8 *)&edit_w;
     flSetRenderState(0x60, 0);
-    switch (s->step) {
-    case 3:
-        disp_save_info(e, 1);
-        break;
-    case 4:
-        disp_check(e, 2);
-        break;
-    }
-    if (s->step >= 2) {
-        disp_savesel(e, 1, s->step);
-        Disp_button(1.0f, 0x12, 0x206, 0x60, 8);
-        font_print_ex(0x220, 0x60, 0, lit_322_0053B658);
+    if (s->step < 5) {
+        if (s->step == 4) {
+            disp_check(e, 2);
+        }
+        if (s->step == 3) {
+            disp_save_info(e, 1);
+        }
+        if (s->step >= 2) {
+            disp_savesel(e, 1, s->step);
+            Disp_button(1.0f, 0x12, 0x206, 0x60, 8);
+            font_print_ex(0x220, 0x60, 0, lit_322_0053B658);
+        }
     }
     if (s->step == 5) {
         Mem_mes_disp(0x160, 0x28);

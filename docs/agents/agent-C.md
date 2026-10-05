@@ -479,3 +479,40 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
 - Not done: f_menu quick pass beyond pef_get_alpha (2, float temp reg), Pit_disp_chat_cnfg (2, lui/ori register of the /3
   magic number after PitMenu.x1B became s8), disp_needle (4), Pit_mv/Pit_mv_lb. Float-literal functions (most of the f_chat
   UI) cannot be linked until the literals are read from the original pool (`extern f32 lit_NNNN[]` with the right NNNN).
+
+# select.bin and yn.bin overlays (agent C, 5 Oct 2026, second assignment)
+
+Both overlays are built through config/c_files.txt like game: `select START END NAME` is
+src/select/NAME.c, `yn START END NAME` is src/yn/NAME.c; jump tables need a
+`select:rodata START END NAME` line (exact table end, no padding). Strings and other data stay as
+asm (declared `extern char lit_NNN_ADDR[]`). Shared declarations: include/select.h (select only;
+it carries its own partial SYS_W / SEL_W / EDIT_W / DEMO_W layouts, so do not include flow.h or
+f_game.h in the same file).
+
+## select.bin (0x533A00-0x538580): 44 functions
+- select00.c Init_task, demo.c (title/logo/opening movie: Demo_task, demo_task_sub, violence_logo,
+  capcom_logo, middle_logo, c_disp, title_disp, opening_demo) all match.
+- edit_nm.c holds the whole f_disp.s file (character edit + continue screens); matching runs are
+  split out as edit00..edit08.c (tools/mkruns_mod.py does the split) and linked. What stays asm
+  is listed in the status table at the end of this section.
+- Lessons (function that shows it):
+  - Unused leading arguments: callers pass leftover registers. `McCardOperation()` and
+    `system_w_set()` with no arguments matched (Init_task); `param_change_sub(w, btn, p, max, se)`
+    is called with w as an unused first argument (param_change_00536280).
+  - Float parameter order: `SoftKeyboard_pos_set(int, f32)` needs a real prototype, otherwise a
+    float passed to an unprototyped call is promoted to double (edit_trans).
+  - A global that the original reloads after a store through a pointer: `*(volatile u16 *)&Psw[4]`
+    gave the two loads (roll_move).
+  - `u32` in the cast `(f32)(u32)x` produces the bltz/srl unsigned-to-float sequence (arrow_disp).
+  - `if (0 <= n)` gives slt+bne instead of bltz (cmn_mongon_check_filter); switch with cases
+    written in ascending order is tested in descending order (demo_task_sub, disp_check).
+  - Statement order of struct stores can be brute forced: permute lines with itertools and
+    keep the one that compares OK (title_disp, ~40k compiles at 0.05 s each, found in seconds).
+  - tools/draft.py now resolves switch tables (lit_NNN_ADDR in the same overlay) so m2c
+    drafts functions with jump tables (Edit_task, Cont_task).
+- Not linked (near-match, logic complete, in edit_nm.c): edit_pl_init_new / edit_pl_init (original
+  reads stage_start_pos x/y/z through three separate symbols D_2F2620/24/28 that only exist as
+  auto-generated undefined symbols; our C uses stage_start_pos[n][i] = one base register),
+  disp_edit_spr (register allocation, 4 saved regs vs 6), disp_edinfo (6 instructions: register
+  choice for 640-len*10), disp_color, Edit_task, Cont_task (big state machines, only drafted from
+  m2c and cleaned, not tuned), cmn_mongon_check_sub, cmn_mongon_set (hand unrolled copy loops).
