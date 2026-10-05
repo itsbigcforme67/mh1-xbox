@@ -217,3 +217,50 @@ void station_em_set(void)
         }
     }
 }
+
+QEM *em_work_serch(em)
+EMW *em;
+{
+    int i;
+    s32 *l0;
+    QEM *e;
+
+    i = 0;
+    if (0 > quest_w.x3A) {
+    } else {
+        do {
+            l0 = Em_data_st_adrs_get(quest_w.x74, em->stg, 0, (s8)i);
+            e = (QEM *)Em_data_st_adrs_get(quest_w.x74, em->stg, 1, (s8)i);
+            if (l0 != 0) {
+                for (;;) {
+                    if (e->id < 0) {
+                        break;
+                    }
+                    if (em->id == e->x0A) {
+                        return e;
+                    }
+                    e++;
+                }
+            }
+            i++;
+        } while (quest_w.x3A >= i);
+    }
+    l0 = Em_data_com_adrs_get(quest_w.x78, 0);
+    e = (QEM *)Em_data_com_adrs_get(quest_w.x78, 1);
+    if (l0 == 0) {
+        return 0;
+    }
+    if (e == 0) {
+        return 0;
+    }
+    for (;;) {
+        if (e->id < 0) {
+            break;
+        }
+        if (em->id == e->x0A) {
+            return e;
+        }
+        e++;
+    }
+    return 0;
+}

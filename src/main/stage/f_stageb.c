@@ -162,6 +162,8 @@ f32 flSin(f32);
 #define SFRM ((s16)w->x08)
 #define X1E (*(u16 *)&game_w.x1E)
 
+/* trans_stage lives in trans_stage.c (single definition, also used by the PC runtime). */
+
 void stage_se_move(w)
 STGW *w;
 {
@@ -238,4 +240,112 @@ STGW *w;
     } else {
         se_req2(7, 0x21, 0, pos, n, 1);
     }
+}
+
+void stage_m(STGW *w)
+{
+    STG_ITEM *it;
+    f32 pos[3];
+    s16 t;
+    u16 r;
+
+    w->x08++;
+    if (flash_flag == 0) {
+    } else if (flash_flag == 1) {
+        t = flash_timer - 1;
+        flash_timer = t;
+        if (t <= 0) {
+            flash_flag = 2;
+            flash_timer = 2;
+        }
+    } else if (flash_flag == 2) {
+        t = flash_timer - 1;
+        flash_timer = t;
+        if (t <= 0) {
+            flash_flag = 3;
+            flash_timer = 0x5A;
+        }
+    } else {
+        t = flash_timer - 1;
+        flash_timer = t;
+        if (t <= 0) {
+            flash_flag = 0;
+            flash_timer = 0;
+        }
+    }
+    switch (game_w.stage) {
+    case 0x4F:
+        if (game_w.x1DC != 0) {
+            switch (*(u16 *)&game_w.x1E % 10) {
+            case 0:
+                pos[0] = 1575.0f;
+                pos[1] = 100.0f;
+                pos[2] = 1740.0f;
+                func_60E330(3.0f, pos, 2, 2);
+                break;
+            case 3:
+                pos[0] = 1950.0f;
+                pos[1] = 50.0f;
+                pos[2] = 1825.0f;
+                func_60E330(1.5f, pos, 2, 2);
+                break;
+            case 6:
+                pos[0] = 1337.5f;
+                pos[1] = 50.0f;
+                pos[2] = 1892.5f;
+                func_60E330(2.0f, pos, 2, 1);
+                break;
+            }
+        }
+        break;
+    }
+    it = Stage_item_data_get(game_w.stage);
+    if (it != 0) {
+        for (; it->pos[0] != -1.0f; it++) {
+            if (it->num > 0) {
+                if (it->kind == 0x1A || it->kind == 0x52) {
+                    if ((*(u16 *)&game_w.x1E & 0x7F) == 0) {
+                        pos[0] = it->pos[0];
+                        pos[1] = 65.0f + it->pos[1];
+                        pos[2] = it->pos[2];
+                        Eft13_set_pos(0.7f, pos, 0x15);
+                    }
+                }
+                if (it->sub == 4 && (*(u16 *)&game_w.x1E & 0x7F) == 0) {
+                    r = ran_suu(1);
+                    pos[0] = it->pos[0] + (f32)((r & 0x3F) - 0x20);
+                    r = ran_suu(1);
+                    pos[1] = (65.0f + it->pos[1]) + (f32)(int)((r & 0x3F) - 0x20);
+                    r = ran_suu(1);
+                    pos[2] = it->pos[2] + (f32)((r & 0x3F) - 0x20);
+                    func_618F00(pos, 8);
+                }
+            }
+        }
+    }
+    stage_se_move(w);
+    stage_mv_ck();
+}
+
+void move_stage(void)
+{
+    STGW *w = &stage_work;
+
+    switch (stage_work.step) {
+    case 0:
+        stage_i(w);
+        break;
+    case 1:
+        stage_m(w);
+        break;
+    }
+}
+
+void trans_stage_sub(a, p)
+int a;
+u8 *p;
+{
+    flSetRenderState(0x1A, a);
+    clay_attr_set(*(s32 *)(p + 0x88));
+    flExecuteClay(*(s32 *)p, 0);
 }

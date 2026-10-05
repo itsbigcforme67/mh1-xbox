@@ -45,7 +45,7 @@ typedef struct {                     /* model work (MDLW, get_mdlw_ptr; SET_MDLW
 _Static_assert(offsetof(RT_SET_MDLW, clay) == 0x30, "SET_MDLW layout");
 
 typedef struct {                     /* stage_work, 0x64 bytes (set14_nm.c STAGE_WORK,
-                                      * trans_stage_nm.c STAGE_W) */
+                                      * trans_stage.c STAGE_W) */
     u8 flag;                         /* 0x00 trans_stage draws while flag and x01 are set */
     u8 x01;                          /* 0x01 */
     u8 _pad02[6];

@@ -330,7 +330,7 @@ uv78_00646630
 uv78_00647180
 enemy_shadow_size
 enemy_mahi_size
-# trans_stage (src/main/stage/trans_stage_nm.c)
+# trans_stage (src/main/stage/trans_stage.c)
 st00_pos_tbl
 set04_pos_tbl
 set05_pos_tbl1

@@ -91,7 +91,7 @@ Running natively now:
 | src/game/set/set09.c | ambient creatures (butterflies etc.) on stages 5, 0x10, 0x21, 0x33... |
 | src/game/set/set17.c | plant tiles on stages 1, 2, 3, 46 |
 | set03/04/05_nm/07/08/10/11/15/16/18/19/20_nm/22.c, main set12.c | every other set object the spawn list can start (see each file's header) |
-| src/main/stage/trans_stage_nm.c | trans_stage: draws the area model and the set-model parts the stage places (see "Stage drawing") |
+| src/main/stage/trans_stage.c | trans_stage: draws the area model and the set-model parts the stage places (see "Stage drawing") |
 | all decompiled eft*/shell* (game and main), list EFT= in build_pc.sh | effects and shells: what set objects and stage_set_set spawn (Eft14_set2 camp fire on st21, Shell10_set barrels on stage 0x11, Shell22_set2, Eft17_set_ex, Eft13_set_pos ...) now run as the real C |
 | src/main/hit/hit2.c, hit2c.c | sphere/capsule tests set13 uses |
 

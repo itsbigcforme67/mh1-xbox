@@ -176,7 +176,7 @@ Done (each step committed; details in docs/pc.md "Port runtime"):
 - Floor holes: the area model is drawn by trans_stage (main 0x15CD90),
   which places/spins/scrolls per-stage parts (st05 parts 2/3 are modelled
   at the origin). C written from an m2c draft + asm in
-  src/main/stage/trans_stage_nm.c (not matched, not in c_files). All 88
+  src/main/stage/trans_stage.c (was trans_stage_nm.c) (not matched, not in c_files). All 88
   stages shot: build/show/A/stages/sheet0/1.png.
 - Plan for player + monster with input: docs/pc.md "Plan".
 Lessons:
