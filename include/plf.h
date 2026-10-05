@@ -222,4 +222,6 @@ void tame_cnt_up(PLW *);
 void tame_com_ck(PLW *);
 f32 flCos(f32);
 s32 lance_kan_ck(PLW *);
+void pl_voice_req(PLW *, s32);
+void Pl_se_req2_com(PLW *, int, int, f32 *, int, int);
 #endif
