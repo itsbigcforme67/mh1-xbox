@@ -205,3 +205,62 @@ int kind;
     }
     return 0;
 }
+
+int quest_enemy_ck_sub(q, kind)
+QUEST_W *q;
+int kind;
+{
+    int i;
+    s16 t;
+    s16 v;
+
+    for (i = 0; i < 2; i++) {
+        v = q->x2C[i];
+        switch (v) {
+        case 0x63:
+            t = q->x30[i] - 1;
+            q->x30[i] = t;
+            if (t <= 0) {
+                q->x2C[i] = 0;
+                return 1;
+            }
+            break;
+        default:
+            if (v == (kind & 0xFF)) {
+                t = q->x30[i] - 1;
+                q->x30[i] = t;
+                if (t <= 0) {
+                    q->x2C[i] = 0;
+                    return 1;
+                }
+            }
+            break;
+        }
+    }
+    return 0;
+}
+
+int quest_enemy_ck_sub2(q, kind)
+QUEST_W *q;
+int kind;
+{
+    int i;
+    s16 v;
+
+    for (i = 0; i < 2; i++) {
+        v = q->x2C[i];
+        switch (v) {
+        case 0x63:
+            if (q->x30[i] < 2) {
+                return 1;
+            }
+            break;
+        default:
+            if (v == (kind & 0xFF) && q->x30[i] < 2) {
+                return 1;
+            }
+            break;
+        }
+    }
+    return 0;
+}

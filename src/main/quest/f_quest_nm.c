@@ -1418,7 +1418,7 @@ int n;
     s8 *t;
 
     i = 0;
-    if (quest_w.x3B >= 1) {
+    if (0 < quest_w.x3B) {
         t = stiem_stack_tbl;
         do {
             if ((s8)n == *t) {
@@ -1801,7 +1801,7 @@ EMW *em;
     QEM *e;
 
     i = 0;
-    if (quest_w.x3A < 0) {
+    if (0 > quest_w.x3A) {
     } else {
         do {
             l0 = Em_data_st_adrs_get(quest_w.x74, em->stg, 0, (s8)i);
@@ -2736,14 +2736,16 @@ int kind;
 
     for (i = 0; i < 2; i++) {
         v = q->x2C[i];
-        if (v == 0x63) {
+        switch (v) {
+        case 0x63:
             t = q->x30[i] - 1;
             q->x30[i] = t;
             if (t <= 0) {
                 q->x2C[i] = 0;
                 return 1;
             }
-        } else {
+            break;
+        default:
             if (v == (kind & 0xFF)) {
                 t = q->x30[i] - 1;
                 q->x30[i] = t;
@@ -2752,6 +2754,7 @@ int kind;
                     return 1;
                 }
             }
+            break;
         }
     }
     return 0;
@@ -2766,12 +2769,17 @@ int kind;
 
     for (i = 0; i < 2; i++) {
         v = q->x2C[i];
-        if (v != 0x63) {
+        switch (v) {
+        case 0x63:
+            if (q->x30[i] < 2) {
+                return 1;
+            }
+            break;
+        default:
             if (v == (kind & 0xFF) && q->x30[i] < 2) {
                 return 1;
             }
-        } else if (q->x30[i] < 2) {
-            return 1;
+            break;
         }
     }
     return 0;

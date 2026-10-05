@@ -140,3 +140,15 @@ New lessons (function that shows it):
 Shared header edits: include/pl.h (PL_ITEM share[4] at 0x8F4), include/game.h (area_mdlw[10] -> [9] because Item_stolen
 stores at game_w+0xCC/0xCE: new fields xCC, xCE; reward_item[16] -> [32] and x1A8/x1AC), include/em.h (x876 u8 at 0x876,
 x88D now s8 as proved by lb in Em_hagi_point_cnt_ck).
+
+## Update 5 Oct 2026 (second pass): newly matched, main OK
+- stage_m, game3 (see above); f_quest: em_work_serch, ext_pick_point_tbl_clr_ex, quest_enemy_ck_sub, quest_enemy_ck_sub2
+  (now in f_questj/m/p, config ranges widened). Game_task: still 690 diffs (a local copy of tsk->step does not change the a1/a0 choice).
+- Lesson (slt vs bltz): `if (0 > x)` gives the original `slt at,x,zero; bne`, while `x < 0` gives `bltz`; likewise `if (0 < n)` gives
+  `slt at,zero,n; beq`, `n >= 1` gives `blez` (em_work_serch, ext_pick_point_tbl_clr_ex). Write the constant on the left.
+- Lesson (`beq X; nop; b Y` pairs): an `if (v == K) {A} else {if (v == k2) {B}}` whose original has the two bodies out of line is a
+  one-case switch: `switch (v) { case K: A; break; default: B; }` (quest_enemy_ck_sub/_sub2). Not yet working for quest_em_init_sub2
+  (`bne v0,zero; nop; b` for `if (quest_w.no == 0) {} else {...}`; tried switch forms, `;` in the then part).
+- Lesson (float add order): a redundant `(f32)(int)(...)` cast changed MWCC's evaluation order (stage_m).
+- Lesson: tools/align.py output lines are indented ("   - "); count real diffs with `grep -c '^   [-+]'`. For small files the
+  permutation of N independent statements can be brute-forced with align.py (~1 s per try; game3).
