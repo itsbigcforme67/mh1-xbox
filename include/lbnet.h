@@ -72,7 +72,22 @@ typedef struct CNET_B308 { u8 b[0x308]; } CNET_B308;
 typedef struct CNET_B1004 { u8 b[0x1004]; } CNET_B1004;
 typedef struct CNET_H1004 { s16 h[0x802]; } CNET_H1004;
 typedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;
-typedef struct CNET_RULETBL { u8 b[0x294A4]; } CNET_RULETBL;
+typedef struct CNET_RULEENT {   /* one room rule (0x14A5 bytes) */
+    u8 flags;           /* 0x00 which parts have been received */
+    char head[0x41];    /* 0x01 head word */
+    u8 perm;            /* 0x42 permission */
+    u8 numof;           /* 0x43 number of choices */
+    u8 now;             /* 0x44 current choice */
+    u8 cflag[0x20];     /* 0x45 per-choice received flags */
+    char names[0x1440]; /* 0x65 choice names, 0x41 bytes each */
+} CNET_RULEENT;
+typedef struct CNET_RULETBL {   /* room rule allocation table at CnetSys_w+0x6E48 */
+    u8 name_perm;       /* 0x00 */
+    u8 pw_perm;         /* 0x01 */
+    u8 explain_perm;    /* 0x02 */
+    u8 _pad03;
+    CNET_RULEENT e[32]; /* 0x04 */
+} CNET_RULETBL;
 typedef struct CNET_CHAT {
     char from[8];       /* 0x00 sender */
     char x[0x14];       /* 0x08 */
@@ -135,7 +150,8 @@ typedef struct CNET_SYS {
     u8 n_lobby_member;  /* 0x302EC  */
     u8 n_room_member;  /* 0x302ED  */
     u8 n_annex_member;  /* 0x302EE  */
-    u8 _pad302EF[0x11];
+    u8 _pad302EF[0xF];
+    u16 resttime;  /* 0x302FE room rest time */
     u8 gsaddr[4];  /* 0x30300 game server address bytes */
     u8 _pad30304[0x4];
     u8 gsport[2];  /* 0x30308 game server port bytes */

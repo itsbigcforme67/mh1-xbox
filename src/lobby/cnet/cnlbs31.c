@@ -1,42 +1,31 @@
-/* cnlbs, run 32: _cnet_RecvFromLbs_AnswerRoomSetName .. _cnet_RecvFromLbs_NoticeRoomRemove (lobby.bin 0x005A6CB0-0x005A6DD8): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 32: __cnet_SendReq_UserID .. __cnet_SendSet_MiniDataRegist (lobby.bin 0x005AB600-0x005AB798): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 
-void _cnet_RecvFromLbs_AnswerRoomSetName(void) {
-
+void __cnet_SendReq_UserID(void) {
+    SetSendCommand(&send_work, 0x16);
+    SetSendStringData2(&send_work, CnetSys_w.uid, 6);
+    SetSendStringData2(&send_work, CnetSys_w.uhandle, strlen(CnetSys_w.uhandle) & 0xFFFF);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
 }
 
-void _cnet_RecvFromLbs_AnswerRoomSetRule(void) {
-
+void __cnet_SendSet_LoginFinish(void) {
+    SetSendCommand(&send_work, 0x1A);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
 }
 
-void _cnet_RecvFromLbs_AnswerRoomSetFinish(void) {
-    _cnet_Return_CallBack(0);
+void __cnet_SendSet_TelephoneNumber(void) {
+    SetSendCommand(&send_work, 0xF);
+    SetSendStringData2(&send_work, CnetSys_w.tel, strlen(CnetSys_w.tel) & 0xFFFF);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
 }
 
-void _cnet_RecvFromLbs_BothRoomExit(void) {
-    if (CNW(s8, 0xFEC) == 0) {
-        __cnet_ClearEntryFloorInfo(2);
-    }
-    _cnet_Return_CallBack(0);
-}
-
-void _cnet_RecvFromLbs_NoticePlazaRemove(void) {
-    if (CNW(s8, 0xFEC) == 0) {
-        __cnet_Recv_ServerMessage();
-    }
-    _cnetEvent_JumpCallBack(9, 0);
-}
-
-void _cnet_RecvFromLbs_NoticeLobbyRemove(void) {
-    if (CNW(s8, 0xFEC) == 0) {
-        __cnet_Recv_ServerMessage();
-    }
-    _cnetEvent_JumpCallBack(0xA, 0);
-}
-
-void _cnet_RecvFromLbs_NoticeRoomRemove(void) {
-    if (CNW(s8, 0xFEC) == 0) {
-        __cnet_Recv_ServerMessage();
-    }
-    _cnetEvent_JumpCallBack(0xB, 0);
+int __cnet_SendSet_MiniDataRegist(int arg0, int arg1) {
+    int cmd = SetSendCommand(&send_work, 0x21) & 0xFFFF;
+    SetSendStringData2(&send_work, arg0, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
 }

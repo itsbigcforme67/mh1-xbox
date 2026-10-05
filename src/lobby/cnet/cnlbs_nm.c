@@ -904,6 +904,16 @@ int cnLBS_Read_RoomNamePermission(int arg0, int arg1) {
     return -1;
 }
 
+void _cnet_RecvFromLbs_AnswerRoomNamePermission(void) {
+    u8 v;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_Byte(&v);
+        CnetSys_w.ruletbl.name_perm = v;
+    }
+    _cnet_Return_CallBack(0);
+}
+
 int __cnet_SendReq_RoomNamePermission(int arg0) {
     int cmd = SetSendCommand(&send_work, 0x55) & 0xFFFF;
     SetSendData16(&send_work, arg0);
@@ -920,6 +930,16 @@ int cnLBS_Read_RoomPasswordPermission(int arg0, int arg1) {
         return slot;
     }
     return -1;
+}
+
+void _cnet_RecvFromLbs_AnswerRoomPasswordPermission(void) {
+    u8 v;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_Byte(&v);
+        CnetSys_w.ruletbl.pw_perm = v;
+    }
+    _cnet_Return_CallBack(0);
 }
 
 int __cnet_SendReq_RoomPasswordPermission(int arg0) {
@@ -1125,6 +1145,67 @@ void _cnet_RecvFromLbs_AnswerRoomNumOfRule(void) {
     _cnet_Return_CallBack(0);
 }
 
+void _cnet_RecvFromLbs_AnswerRuleListHeadWord(void) {
+    u8 n;
+    char buf[0x4E];
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_ByteString(&n, buf);
+        strcpy(CnetSys_w.ruletbl.e[n].head, buf);
+        CnetSys_w.ruletbl.e[n].flags |= 1;
+    }
+    _cnet_Return_CallBack(0);
+}
+
+void _cnet_RecvFromLbs_AnswerRuleListPermission(void) {
+    u8 n;
+    u8 v;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_ByteByte(&n, &v);
+        CnetSys_w.ruletbl.e[n].perm = v;
+        CnetSys_w.ruletbl.e[n].flags |= 8;
+    }
+    _cnet_Return_CallBack(0);
+}
+
+void _cnet_RecvFromLbs_AnswerRuleListNow(void) {
+    u8 n;
+    u8 v;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_ByteByte(&n, &v);
+        CnetSys_w.ruletbl.e[n].now = v;
+        CnetSys_w.ruletbl.e[n].flags |= 2;
+    }
+    _cnet_Return_CallBack(0);
+}
+
+void _cnet_RecvFromLbs_AnswerRuleListNumOf(void) {
+    u8 n;
+    u8 v;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_ByteByte(&n, &v);
+        CnetSys_w.ruletbl.e[n].numof = v;
+        CnetSys_w.ruletbl.e[n].flags |= 4;
+    }
+    _cnet_Return_CallBack(0);
+}
+
+void _cnet_RecvFromLbs_AnswerRuleListName(void) {
+    u8 n;
+    u8 c;
+    char buf[0x4E];
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_ByteByteString(&n, &c, buf);
+        strcpy(CnetSys_w.ruletbl.e[n].names + c * 0x41, buf);
+        CnetSys_w.ruletbl.e[n].cflag[c] |= 1;
+    }
+    _cnet_Return_CallBack(0);
+}
+
 void _cnet_RecvFromLbs_AnswerRoomSetName(void) {
 
 }
@@ -1163,6 +1244,15 @@ void _cnet_RecvFromLbs_NoticeRoomRemove(void) {
         __cnet_Recv_ServerMessage();
     }
     _cnetEvent_JumpCallBack(0xB, 0);
+}
+
+void _cnet_RecvFromLbs_AnswerRoomRestTime(void) {
+    u16 t;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_WordWord(&t, CNWP(0x302FE));
+    }
+    _cnet_Return_CallBack(0);
 }
 
 void __cnet_CallBack_Result_Plaza_NumOfPlaza_005A6E20(CNET_RES res) {
@@ -1644,6 +1734,16 @@ int cnLBS_Read_RoomExplainPermission(int arg0, int arg1) {
     return -1;
 }
 
+void _cnet_RecvFromLbs_AnswerRoomExplainPermission(void) {
+    u8 v;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_Byte(&v);
+        CnetSys_w.ruletbl.explain_perm = v;
+    }
+    _cnet_Return_CallBack(0);
+}
+
 int __cnet_SendReq_RoomExplainPermission(int arg0) {
     int cmd = SetSendCommand(&send_work, 0x6F) & 0xFFFF;
     SetSendData16(&send_work, arg0);
@@ -1665,6 +1765,16 @@ int cnLBS_Read_TimingValue(int arg0) {
 int cnLBS_Get_TimingValue(int *arg0) {
     *arg0 = CNW(int, 0x3BA54);
     return 0;
+}
+
+void _cnet_RecvFromLbs_BothTimingValue(void) {
+    s32 v;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_Long(&v);
+        CNW(s32, 0x3BA54) = v;
+    }
+    _cnet_Return_CallBack(0x2B);
 }
 
 int __cnet_SendReq_TimingValue(void) {

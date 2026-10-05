@@ -1,34 +1,59 @@
-/* cnlbs, run 27: cnLBS_Read_RoomRuleAllocation .. cnLBS_Read_RoomNamePermission (lobby.bin 0x005A5AD0-0x005A5C24): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 27: cnetGet_Login_NoOfUserAccount .. _cnet_RecvFromLbs_RequestFirstData (lobby.bin 0x005AA430-0x005AA5FC): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 
-int cnLBS_Read_RoomRuleAllocation(int val, int cb) {
-    if (CnetSys_w.burst[5].state == 0) {
-        CnetSys_w.burst[5].cb = (void *)cb;
-        CNW(s32, 0xEE0) = val & 0xFFFF;
-        CnetSys_w.burst[5].state = 1;
-        CnetSys_w.burst[5].run = __cnet_bgProg_ReadRoomRule;
-        CnetSys_w.burst[5].x21 = 0;
-        return 0;
-    }
-    return -1;
+u8 cnetGet_Login_NoOfUserAccount(void) {
+    return CNW(u8, 0x145E);
 }
 
-int cnLBS_Read_RoomRuleCount(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
+int cnetGet_Login_UserID(idx, d)
+int idx;
+char *d;
+{
+    int k = idx & 0xFF;
 
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_NumOfRule(arg0);
-        return slot;
-    }
-    return -1;
+    strcpy(d, (u8 *)&CnetSys_w + k * 0x5C + 0x1462);
+    return 0;
 }
 
-int cnLBS_Read_RoomNamePermission(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
+int cnetGet_Login_UserHandle(idx, d)
+int idx;
+char *d;
+{
+    int k = idx & 0xFF;
 
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomNamePermission(arg0);
-        return slot;
+    strcpy(d, (u8 *)&CnetSys_w + k * 0x5C + 0x146A);
+    return 0;
+}
+
+int cnetGet_Login_UserMiniData(idx, d)
+int idx;
+void *d;
+{
+    int k = idx & 0xFF;
+
+    memcpy(d, (u8 *)&CnetSys_w + k * 0x5C + 0x147E, 0x40);
+    return 0;
+}
+
+int cnetGet_Login_DecideUserID(char *d) {
+    strcpy(d, CNWP(0x1576));
+    return 0;
+}
+
+int cnetGet_Login_DecideUserHandle(char *d) {
+    strcpy(d, CNWP(0x157E));
+    return 0;
+}
+
+void _cnet_RecvFromLbs_RequestConnectionPair(void) {
+    GetRecvData16(CNWP(0xFEE), &recv_work);
+    __cnet_SendSet_ConnectionPair();
+}
+
+void _cnet_RecvFromLbs_RequestFirstData(void) {
+    if (CNW(u8, 0x1034) != 0) {
+        __cnet_SendReq_EchoPacket();
+        return;
     }
-    return -1;
+    __cnet_SendSet_FirstData();
 }

@@ -1,24 +1,23 @@
-/* cnlbs, run 17: _cnet_RecvFromLbs_BothRoomJoinUser .. cnLBS_Get_RoomStatus (lobby.bin 0x005A4C10-0x005A4CF8): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 17: _cnet_CallBack_Result_LobbyCount .. _cnet_CallBack_Result_LobbyAllocation (lobby.bin 0x005A7240-0x005A72E4): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 
-void _cnet_RecvFromLbs_BothRoomJoinUser(void) {
-    if (CNW(s8, 0xFEC) == 0) {
-        _sub_ReceiveJoinUser(CNWP(0x61C4));
+void _cnet_CallBack_Result_LobbyCount(CNET_RES res) {
+    if (res.val == 0) {
+        CnetSys_w.burst[3].res = 1;
+        return;
     }
-    _cnet_Return_CallBack(0x19);
+    CnetSys_w.burst[3].res = 2;
 }
 
-int cnLBS_Read_RoomStatus(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
+void _cnet_CallBack_Result_LobbyAllocation(CNET_RES res) {
+    CNET_RES r;
 
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceStatus(2, arg0);
-        return slot;
+    if (res.val == 0) {
+        r.val = 2;
+        r.id = 0xB;
+        CnetSys_w.burst[3].cb(r, &r);
+        CnetSys_w.burst[3].res = 1;
+        return;
     }
-    return -1;
-}
-
-int cnLBS_Get_RoomStatus(int idx, u8 *d) {
-    *d = CnetSys_w.room[(u16)idx - 1].status;
-    return 0;
+    CnetSys_w.burst[3].res = 2;
 }

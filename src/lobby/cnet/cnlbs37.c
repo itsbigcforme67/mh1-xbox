@@ -1,10 +1,38 @@
-/* cnlbs, run 38: __cnet_SendReq_MatchEntryUser .. __cnet_SendReq_MatchEntryUser (lobby.bin 0x005A9A80-0x005A9AE8): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 38: _cnet_RecvFromLbs_RequestRegurationVersion .. _cnetEvent_JumpCallBack (lobby.bin 0x005AD0F0-0x005AD1AC): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 
-int __cnet_SendReq_MatchEntryUser(int arg0) {
-    int cmd = SetSendCommand(&send_work, 0x9D) & 0xFFFF;
-    SetSendData16(&send_work, arg0);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-    return cmd;
+void _cnet_RecvFromLbs_RequestRegurationVersion(void) {
+
+}
+
+void _cnet_RecvFromLbs_NoticeRegurationAddress(void) {
+
+}
+
+void _cnet_RecvFromLbs_AnswerRegurationData(void) {
+    _cnet_RecvFromLbs_AnswerBrowserMethodGet();
+}
+
+void cnLBS_Send_RegurationAgree(void) {
+
+}
+
+void _cnet_RecvFromLbs_AnswerRegurationAgree(void) {
+
+}
+
+void cnLBS_Set_CallBackNoticeEvent(int idx, void (*fn)()) {
+    pFunc[idx] = fn;
+}
+
+void _cnetEvent_JumpCallBack(idx)
+int idx;
+{
+    CNET_RES r;
+    void (*fn)();
+
+    r.id = idx;
+    r.val = 1;
+    fn = pFunc[(u16)idx];
+    if (fn != 0) fn(r, 0);
 }

@@ -42,3 +42,4 @@
 0x6D00 u8 last_status status of the last item
 0x6D01 u8 last_pwinfo
 0x6D02 char last_name[0x42] name of the last item
+0x302FE u16 resttime room rest time

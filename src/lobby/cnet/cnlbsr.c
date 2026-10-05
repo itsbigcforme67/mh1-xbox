@@ -1,20 +1,23 @@
-/* cnlbs, run 18: cnLBS_Read_RoomName .. cnLBS_Get_RoomName (lobby.bin 0x005A4D90-0x005A4E50): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 18: _cnet_CallBack_Result_Room_NumOfRoom .. _cnet_CallBack_Result_RoomJoinJoinUser (lobby.bin 0x005A7660-0x005A7704): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 
-int cnLBS_Read_RoomName(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
-
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceName(2, arg0);
-        return slot;
+void _cnet_CallBack_Result_Room_NumOfRoom(CNET_RES res) {
+    if (res.val == 0) {
+        CnetSys_w.burst[4].res = 1;
+        return;
     }
-    return -1;
+    CnetSys_w.burst[4].res = 2;
 }
 
-int cnLBS_Get_RoomName(idx, d)
-int idx;
-char *d;
-{
-    strcpy(d, (u8 *)&CnetSys_w + (((u16)idx - 1) * 0x164) + 0x61E2);
-    return 0;
+void _cnet_CallBack_Result_RoomJoinJoinUser(CNET_RES res) {
+    CNET_RES r;
+
+    if (res.val == 0) {
+        r.val = 2;
+        r.id = 0xB;
+        CnetSys_w.burst[4].cb(r, &r);
+        CnetSys_w.burst[4].res = 1;
+        return;
+    }
+    CnetSys_w.burst[4].res = 2;
 }

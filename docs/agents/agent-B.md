@@ -411,3 +411,40 @@ from game.bin. What does repeat is *inside* the lobby network layer: 335 of the
   - 0x5AE320-0x5B1E74 lbs_encode_ex and friends, 0x5B1E74-0x5C4E60 lobby client state
     machine: lm_* menus, lbc_* (login/browser/top menu/in plaza/in lobby), CallBack_Result_*,
     Split_TagCode, server_select_*. Agent F takes 0x5C4E60 to the end.
+
+## Lobby status and lessons (agent B)
+Source layout: `src/lobby/lb/` (town game logic) and `src/lobby/cnet/` (network layer).
+Shared lobby headers: `include/lobby.h` (lb_pit/lb_sys/lbShop/LB_NPCW...), `include/lbnet.h`
+(CnetSys_w, send_work, burst/bg slots), `include/lbnet_proto.h` (generated K&R declarations).
+- lb_talk.c (0x533A00-0x535238): whole file matches, rodata jump table 0x654AD0.
+- cnlbs (0x5A2A20-0x5AE320 network protocol): `src/lobby/cnet/cnlbs_nm.c` holds all ~300 functions
+  written so far in address order; `tools/lbregister.sh` (uses tools/lbruns.py) cuts it into runs
+  of contiguous matching functions (cnlbs.c, cnlbsb.c, ...) and registers them in c_files.txt.
+  Add new functions with `tools/lbmerge.py src/lobby/cnet/cnlbs_nm.c NEW.c` (sorts by address,
+  refreshes lbnet_proto.h). CnetSys_w fields live in `config/lbnet_fields.txt`
+  (`tools/lbfields.py` regenerates the struct in lbnet.h).
+- Near-match files (not built): src/lobby/lb/lb_mix_nm.c (forge shop, 0x535240-0x536708),
+  lb_shop_nm.c (shop engine, Lb_shop_move is 4 instructions off), lb_em10_nm.c / lb_em09_nm.c /
+  lb_em04_nm.c (NPC sound scripts, only the effect_move wrappers are 6 instructions off).
+- tools: lbconv.py (m2c -> closer-to-C draft with lobby struct names), check.py now infers the
+  module from the path (src/lobby/..) and has `--at NAME=ADDR` for functions whose name exists
+  several times (static `sound_call` etc.).
+
+Lessons that were each confirmed by a match:
+- The lobby code uses K&R function definitions (`int f(idx, d) int idx; char *d; {`). With an ANSI
+  prototype definition `(int idx)` the same body compiles differently (e.g. cnLBS_Get_PlazaName:
+  `base + (u16)(idx-1)*0x164` is only produced by the K&R form). Params narrower than int
+  (`s8 val`) must also be K&R-declared, and calls through unprototyped declarations pass
+  nothing for forgotten arguments (stale registers in the original: m2c shows them as junk).
+- `(u8 *)&CnetSys_w + 0x1234` arithmetic is common-subexpression-eliminated by MWCC (one address
+  register kept across calls); the original did not, because it used struct members. Name the
+  field in CNET_SYS instead (`&CnetSys_w.field`).
+- A struct copy `*dst = CnetSys_w.field;` generates the original's copy loops; the element type
+  decides the loop (u8 blob = byte pairs, s16 blob = halfword pairs, s32 blob = words).
+- `switch (x) { case 0: case 3: ... }` (labels ascending) gives the compare order 3 then 0 that the
+  original has (Lb_event_market); a trailing `return;`/`break;` in the last case adds a jump the
+  original lacks (drop it).
+- A by-value struct param (`CNET_RES res`, 8 bytes in a0) is spilled and read in place; do not
+  copy it to a local first.
+- Compare chains of a switch are in REVERSE source order of the case labels (lb_em* ef_move_sub).
+- Statics with the same name in several files (sound_call): check with `--at`.

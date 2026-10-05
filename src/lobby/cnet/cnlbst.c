@@ -1,12 +1,10 @@
-/* cnlbs, run 20: cnLBS_Read_RoomJoinInfo .. cnLBS_Read_RoomJoinInfo (lobby.bin 0x005A5070-0x005A50E4): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 20: _cnet_CallBack_Result_RoomSetFinish .. _cnet_CallBack_Result_RoomSetFinish (lobby.bin 0x005A83A0-0x005A83D8): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 
-int cnLBS_Read_RoomJoinInfo(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
-
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomJoinInfo(arg0);
-        return slot;
+void _cnet_CallBack_Result_RoomSetFinish(CNET_RES res) {
+    if (res.val == 0) {
+        CnetSys_w.burst[6].res = 1;
+        return;
     }
-    return -1;
+    CnetSys_w.burst[6].res = 2;
 }
