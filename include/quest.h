@@ -29,6 +29,14 @@ typedef struct MISSION2 {
     s32 x18;            /* 0x18 */
 } MISSION2;
 
+/* One command of the quest condition program (quest_w.x6C): 8 bytes. */
+typedef struct QCMD {
+    s16 cmd;            /* 0x00 */
+    s16 a;              /* 0x02 */
+    s16 b;              /* 0x04 */
+    s16 c;              /* 0x06 */
+} QCMD;
+
 typedef struct QUEST_W {
     s8 x00;             /* 0x00 condition type */
     s8 x01;             /* 0x01 step */
@@ -39,9 +47,9 @@ typedef struct QUEST_W {
     s8 x06;             /* 0x06 state: 4 clear, 6, 7 retire, 8 error */
     u8 _pad07;
     s16 no;             /* 0x08 quest number (0: free hunt) */
-    u8 _pad0A;
+    s8 x0A;             /* 0x0A section number (quest_condition_prog case 0x1B) */
     s8 x0B;             /* 0x0B */
-    u8 _pad0C[4];
+    s32 x0C;            /* 0x0C wait counter (condition program cmd 5/6) */
     s32 x10;            /* 0x10 time left */
     s32 x14;            /* 0x14 reward money */
     s32 x18;            /* 0x18 fee (subtracted from the reward) */

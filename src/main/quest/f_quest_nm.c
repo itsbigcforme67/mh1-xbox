@@ -766,14 +766,10 @@ int Share_item_stack();
 
 char *Quest_str_get(int n)
 {
-    char *r;
-
     if (game_w.x1DC) {
-        r = func_5C5E20();
-    } else {
-        r = (char *)(quest_w.x84[n] + (int)mission_area);
+        return func_5C5E20();
     }
-    return r;
+    return (char *)(mission_area + quest_w.x84[n]);
 }
 
 s16 stolen_item_num_ck(item)
@@ -1902,35 +1898,42 @@ QEM *em;
     PLW *pl;
     int i;
     s16 n;
-    s16 *p;
+    s16 id;
+    u8 *p;
+    s16 *a;
+    s16 *b;
 
     pl = &player_work[game_w.master];
     if (pl->stg == em->x02) {
-        for (i = 0; i < 4; i++) {
-            if (q->x1C[i] != 0 && (n = Pl_item_num_ck(pl, (u16)q->x1C[i])) != 0) {
-                if (q->x24[i] < n) {
-                    n = q->x24[i];
+        for (i = 0, p = (u8 *)q; i < 4; i++, p += 2) {
+            id = *(s16 *)(p + 0x1C);
+            if (id != 0 && (n = Pl_item_num_ck(pl, id & 0xFFFF)) != 0) {
+                a = &q->x24[i];
+                if (*a < n) {
+                    n = *a;
                 }
-                q->x24[i] -= n;
-                Pl_item_stack(pl, (u16)q->x1C[i], -n);
-                if (((u8 *)Item_data)[(s16)q->x1C[i] * 0x10 + 8] != 0) {
-                    Share_item_stack(pl, ((u8 *)Item_data)[(s16)q->x1C[i] * 0x10 + 8], n);
+                *a -= n;
+                b = &q->x1C[i];
+                Pl_item_stack(pl, (u16)*b, -n);
+                id = *(s16 *)&Item_data[*b][8];
+                if (id != 0) {
+                    Share_item_stack(pl, id & 0xFFFF, n);
                 }
-                set01_set(1, 8, q->x1C[i]);
+                set01_set(1, 8, *b);
                 quest_w.x182 = 0;
                 quest_w.x181 = 1;
-                quest_w.x184 = q->x1C[i];
+                quest_w.x184 = *b;
                 quest_w.x186 = n;
                 net_send_sys(6, game_w.master);
-                if (q->x24[i] <= 0) {
-                    q->x1C[i] = 0;
+                if (*a <= 0) {
+                    *b = 0;
                 }
                 break;
             }
         }
     }
-    for (i = 0; i < 4; i++) {
-        if (q->x1C[i] != 0) {
+    for (i = 0, p = (u8 *)q; i < 4; i++, p += 2) {
+        if (*(s16 *)(p + 0x1C) != 0) {
             return 0;
         }
     }
@@ -2209,5 +2212,423 @@ void quest_em_die(void)
             e->x2E = 1;
             e->x0A = -1;
         }
+    }
+}
+
+extern s32 quest_timer_disp_tbl[][2];
+extern char lit_2393[];
+extern char lit_2394[];
+extern char lit_2395[];
+extern char lit_2396[];
+void set01_set2();
+void QuestClearCameraRequest();
+int func_53B5C0();
+
+s16 quest_condition_prog(pl, i)
+PLW *pl;
+s16 i;
+{
+    QCMD *p;
+    QCMD *q;
+    char buf[0x20];
+    int n;
+
+    if (game_w.x0D5 == 2 && quest_w.x10 >= 0) {
+        if (quest_w.xAF > 0) {
+            s32 t;
+            t = quest_timer_disp_tbl[quest_w.xAF][0];
+            if (!(t < quest_w.x10)) {
+                str_gattai(buf, lit_2393, t / 1800);
+                n = strlen(buf);
+                if (n & 1) {
+                    buf[n] = 0x20;
+                    buf[n + 1] = 0;
+                }
+                buf[0x1F] = 0;
+                set01_set2_use_mem(buf);
+                quest_w.xAF--;
+            }
+        }
+        Quest_timer_calc(1);
+        if (quest_w.x10 <= 0) {
+            s32 t;
+            quest_w.x10 = 0;
+            q = (QCMD *)quest_w.x6C;
+            i = 0;
+            quest_timer_send();
+            quest_w.x10 = -1;
+            t = quest_w.x0A;
+            for (;;) {
+                if (q->cmd == 0x1A && t == q->a) {
+                    i++;
+                    break;
+                }
+                i++;
+                q++;
+            }
+        } else if (quest_w.x10 % 9000 == 0) {
+            quest_timer_send();
+        }
+    }
+    for (;;) {
+again:
+        if (quest_w.x0B != 0 && quest_share_item_ck(&quest_w)) {
+            s32 t;
+            i = 0;
+            q = (QCMD *)quest_w.x6C;
+            t = quest_w.x0B;
+            for (;;) {
+                if (q->cmd == 0x1A && t == q->a) {
+                    i++;
+                    break;
+                }
+                i++;
+                q++;
+            }
+            quest_w.x0B = 0;
+        }
+        if (quest_w.x14F != 0 && quest_w.x150 != 0) {
+            s32 t;
+            t = (s16)quest_w.x14F;
+            q = (QCMD *)quest_w.x6C;
+            i = 0;
+            for (;;) {
+                if (q->cmd == 0x1A && t == q->a) {
+                    i++;
+                    break;
+                }
+                i++;
+                q++;
+            }
+            quest_w.x14F = 0;
+        }
+        q = (QCMD *)quest_w.x6C;
+        p = q + i;
+        switch (p->cmd) {
+        case 5:
+            quest_w.x0C = p->a;
+            i++;
+            break;
+        case 6: {
+            s32 t;
+            t = quest_w.x0C - 1;
+            quest_w.x0C = t;
+            if (t > 0) {
+                break;
+            }
+            i++;
+            break;
+        }
+        case 7:
+            set01_set2(quest_w.x70[p->a] + (int)mission_area);
+            i++;
+            break;
+        case 0:
+            if (quest_w.x34 > 0) {
+                break;
+            }
+            i++;
+            goto again;
+        case 1:
+            if (quest_enemy_ck(&quest_w) == 0) {
+                break;
+            }
+            i++;
+            goto again;
+        case 0x24: {
+            s16 r;
+            r = quest_enemy_ck2(&quest_w, *((u8 *)p + 2));
+            if (p->b < r) {
+                break;
+            }
+            i++;
+            goto again;
+        }
+        case 2:
+            quest_enemy_set(p->a, p->b);
+            i++;
+            break;
+        case 0x1D:
+            if (quest_item_ck2(&quest_w, p) == 0) {
+                break;
+            }
+            i++;
+            goto again;
+        case 3:
+            if (quest_item_ck(&quest_w) == 0) {
+                break;
+            }
+            i++;
+            goto again;
+        case 8:
+            if (quest_item_ck(&quest_w) == 0) {
+                i = quest_w.x38;
+                break;
+            }
+            if (pl->stg != p->a) {
+                break;
+            }
+            i++;
+            goto again;
+        case 4:
+            quest_item_set(p->a, p->b);
+            i++;
+            break;
+        case 0xA: {
+            s32 t;
+            t = p->a;
+            p = (QCMD *)((u8 *)p + 4);
+            switch (t) {
+            case -1:
+                quest_supplies_get(pl, p);
+                break;
+            case -3:
+                if (pl->kind == 1 || pl->kind == 5) {
+                    quest_supplies_get(pl, p);
+                }
+                break;
+            default:
+                if (pl->kind == t) {
+                    quest_supplies_get(pl, p);
+                }
+                break;
+            }
+            i++;
+            break;
+        }
+        case 0xB:
+            quest_w.x38 = i + 1;
+            i++;
+            break;
+        case 0xD:
+            quest_w.x10 = (u16)p->a;
+            i++;
+            break;
+        case 0xE:
+            quest_w.x10 += (u16)p->a;
+            i++;
+            break;
+        case 0xF:
+            i++;
+            p++;
+            quest_w.x04++;
+            for (;;) {
+                if (p->a == game_w.master || p->a == -4 || p->cmd == 0x12) {
+                    i++;
+                    goto again;
+                }
+                i++;
+                p++;
+            }
+        case 0x10:
+            quest_w.x04++;
+            i++;
+            p++;
+            for (;;) {
+                if (p->cmd == 0x12) {
+                    break;
+                }
+                if (p->cmd == 0x11) {
+                    s32 t;
+                    t = p->a;
+                    if (t == -3) {
+                        if (pl->kind == 1 || pl->kind == 5) {
+                            break;
+                        }
+                    } else if (t == -2) {
+                        if (pl->kind == 0 || (u8)(pl->kind - 2) < 2 || pl->kind == 4) {
+                            break;
+                        }
+                    } else if (t == -4 || pl->kind == t) {
+                        break;
+                    }
+                }
+                i++;
+                p++;
+            }
+            i++;
+            goto again;
+        case 0x11:
+        case 0x12:
+            quest_w.x04--;
+            for (;;) {
+                if (p->cmd == 0x12) {
+                    i++;
+                    goto again;
+                }
+                i++;
+                p++;
+            }
+        case -1:
+            if (Quest_f_dra_ck(*(u8 *)&quest_w.no) != 0 && quest_w.xB0 != 0 && ((EMW *)quest_w.xB0)->kind == 2) {
+                quest_w.x14C = ((EMW *)quest_w.xB0)->x302;
+            }
+            QuestClearCameraRequest();
+            quest_w.x182 = 0;
+            i++;
+            quest_w.x06 = 3;
+            game_w.x0D5 = 3;
+            quest_w.x184 = 0;
+            quest_w.x186 = 0;
+            quest_w.x181 = 2;
+            quest_w.x140 |= 1 << (game_w.master + 8);
+            net_send_sys(6, game_w.master);
+            goto again;
+        case 0x2D:
+            if ((quest_w.x140 & 0xF00) != 0xF00 && game_w.pl_state[game_w.master] == 1) {
+                break;
+            }
+            i++;
+            break;
+        case 0x1E:
+            quest_w.x01 = 0;
+            i = -1;
+            quest_w.x00++;
+            break;
+        case 0x17:
+            i = quest_w.x38;
+            quest_w.x36 = i;
+            goto again;
+        case 0x18:
+            if ((s16)act_ck(pl, 4, 0) == 0) {
+                break;
+            }
+            i++;
+            goto again;
+        case -2:
+            quest_w.x182 = 0;
+            i++;
+            quest_w.x184 = 0;
+            game_w.x0D5 = 5;
+            quest_w.x06 = 5;
+            quest_w.x186 = 0;
+            quest_w.x181 = 4;
+            net_send_sys(6, game_w.master);
+            goto again;
+        case 0x1F:
+            quest_w.x06 = 6;
+            game_w.x0D5 = 6;
+            i = -1;
+            set01_set2(lit_2394);
+            set01_set(0, 0xF, 0);
+            break;
+        case 0x1B:
+            quest_w.x0A = p->a;
+            n = Quest_time_get(1);
+            str_gattai(buf, lit_2395, n / 1800);
+            n = strlen(buf);
+            if (n & 1) {
+                buf[n] = 0x20;
+                buf[n + 1] = 0;
+            }
+            buf[0x1F] = 0;
+            set01_set2_use_mem(buf);
+            i++;
+            break;
+        case 0x20:
+            quest_w.x3A = p->a;
+            quest_w.x182 = 0;
+            quest_w.x181 = 6;
+            quest_w.x186 = 0;
+            quest_w.x184 = quest_w.x3A;
+            net_send_sys(6, game_w.master);
+            i++;
+            goto again;
+        case 0x21:
+            if (quest_item_ck3(&quest_w, p) == 0) {
+                break;
+            }
+            i++;
+            goto again;
+        case 0x22:
+            if (quest_share_item_ck(&quest_w) == 0) {
+                break;
+            }
+            i++;
+            goto again;
+        case 0x23:
+            quest_w.x0B = p->a;
+            i++;
+            break;
+        case 0x2C:
+            quest_w.x14F = p->a;
+            i++;
+            break;
+        case 0x25:
+            game_w.x0D5 = 5;
+            quest_w.x06 = 5;
+            set01_set2(lit_2396);
+            i++;
+            quest_w.x182 = 0;
+            quest_w.x181 = 0xA;
+            quest_w.x184 = 0;
+            quest_w.x186 = 0;
+            net_send_sys(6, game_w.master);
+            goto again;
+        case 0x26:
+            quest_w.x182 = 0;
+            i++;
+            quest_w.x184 = 0;
+            quest_w.x06 = 3;
+            game_w.x0D5 = 3;
+            quest_w.x186 = 0;
+            quest_w.x181 = 0xB;
+            quest_w.x140 |= 1 << (game_w.master + 8);
+            net_send_sys(6, game_w.master);
+            goto again;
+        case 0x28: {
+            s32 t;
+            t = ((EMW *)quest_w.xB0)->x302;
+            if (quest_w.x14C - p->a < t) {
+                i++;
+                p++;
+                for (;;) {
+                    if (p->cmd == 0x29) {
+                        i++;
+                        goto again;
+                    }
+                    i++;
+                    p++;
+                }
+            }
+            quest_w.x14C = t;
+            i++;
+            goto again;
+        }
+        case 0x2A:
+            if ((u8)func_53B5C0() == 1) {
+                i++;
+                goto again;
+            }
+            i++;
+            p++;
+            for (;;) {
+                if (p->cmd == 0x2B) {
+                    i++;
+                    goto again;
+                }
+                i++;
+                p++;
+            }
+        case 0x1C: {
+            s32 t;
+            t = p->a;
+            i = 0;
+            for (;;) {
+                if (q->cmd == 0x1A && t == q->a) {
+                    i++;
+                    goto again;
+                }
+                i++;
+                q++;
+            }
+        }
+        case 0x1A:
+            i++;
+            goto again;
+        default:
+            break;
+        }
+        return i;
     }
 }
