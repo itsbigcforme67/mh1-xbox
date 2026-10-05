@@ -362,58 +362,51 @@ block_3:
 }
 
 static void em_act00_0059A7B0(EMW *em, EM08W *w) {
-    s32 temp_v1_2;
-    u8 temp_v1;
+    int t;
 
-    temp_v1 = EMF(em, u8, 5);
-    switch (temp_v1) {
+    switch (em->x05) {
     case 0:
-        EMF(em, u8, 5) = (u8) (temp_v1 + 1);
-        EMF(em, s8, 0x3F4) = 0;
-        if (EMF(em, u16, 0x2DC) != 0x3E9) {
-            em_char_set2((void *)0x3E9, 0xA, 0);
+        em->x05++;
+        em->x3F4 = 0;
+        if (em->char0 != 0x3E9) {
+            em_char_set2(em, 0x3E9, 0xA, 0, 0);
         }
-        if (EMF(em, u16, 0x2DE) != 0x4B1) {
-            em_char_set2(em, 0x4B1, 0xA, 0);
+        if (em->x2DE != 0x4B1) {
+            em_char_set2(em, 0x4B1, 0xA, 0, 1);
         }
-        if (EMF(em, u16, 0x2E0) != 0x579) {
-            em_char_set2(em, 0x579, 0xA, 0);
-            break;
+        if (em->x2E0 != 0x579) {
+            em_char_set2(em, 0x579, 0xA, 0, 2);
         }
         break;
     case 1:
-        temp_v1_2 = EMF(em, s32, 8) - 1;
-        EMF(em, s32, 8) = temp_v1_2;
-        if (temp_v1_2 <= 0) {
-            EMF(em, s8, 0x839) = 1;
+        t = em->work08 - 1;
+        em->work08 = t;
+        if (t <= 0) {
+            em->x839 = 1;
         }
         break;
     }
 }
 
 static void em_act01_0059A880(EMW *em, EM08W *w) {
-    u8 temp_a1;
-
-    temp_a1 = EMF(em, u8, 5);
-    switch (temp_a1) {
+    switch (em->x05) {
     case 0:
-        EMF(em, u8, 5) = (u8) (temp_a1 + 1);
-        EMF(em, s8, 0x388) = 0;
-        EMF(em, s8, 0x3F4) = 0;
-        if (EMF(em, u16, 0x2DC) != 0x3E9) {
-            em_char_set2((void *)0x3E9, 0, 0);
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        if (em->char0 != 0x3E9) {
+            em_char_set2(em, 0x3E9, 0, 0, 0);
         }
-        if (EMF(em, u16, 0x2DE) != 0x4B1) {
-            em_char_set2(em, 0x4B1, 0, 0);
+        if (em->x2DE != 0x4B1) {
+            em_char_set2(em, 0x4B1, 0, 0, 1);
         }
-        if (EMF(em, u16, 0x2E0) != 0x579) {
-            em_char_set2(em, 0x579, 0, 0);
-            break;
+        if (em->x2E0 != 0x579) {
+            em_char_set2(em, 0x579, 0, 0, 2);
         }
         break;
     case 1:
-        if ((EMF(em, u8, 0x8C3) == 0) && (EMF(em, s32, 0x194) == 0)) {
-            EMF(em, u8, 5) = (u8) (temp_a1 + 1);
+        if (em->x8C3 == 0 && em->x194 == 0) {
+            em->x05++;
             em08_to_normal(em);
         }
         break;
@@ -652,7 +645,6 @@ static void em_act08_0059B0D0(EMW *em, EM08W *w) {
 }
 
 static void em_act09_0059B210(EMW *em, EM08W *w) {
-    s8 var_v0;
 
     switch (em->x05) {
     case 0:
@@ -666,13 +658,11 @@ static void em_act09_0059B210(EMW *em, EM08W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05++;
-            var_v0 = 4;
             if (em->x8B6 != 0) {
-
+                em->x95A = 4;
             } else {
-                var_v0 = 6;
+                em->x95A = 6;
             }
-            em->x95A = var_v0;
             em_ana_loop_cnt_set(em);
             em08_act_set(em, 4, 0xD, 3);
             break;
@@ -724,7 +714,6 @@ static void em_act10_0059B300(EMW *em, EM08W *w) {
 }
 
 static void em_act11_0059B440(EMW *em, EM08W *w) {
-    s8 var_v0;
 
     switch (em->x05) {
     case 0:
@@ -738,13 +727,11 @@ static void em_act11_0059B440(EMW *em, EM08W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05++;
-            var_v0 = 4;
             if (em->x8B6 != 0) {
-
+                em->x95A = 4;
             } else {
-                var_v0 = 6;
+                em->x95A = 6;
             }
-            em->x95A = var_v0;
             em_ana_loop_cnt_set(em);
             em08_act_set(em, 4, 0xD, 3);
             break;
@@ -3223,7 +3210,6 @@ static void em_dmg13_005A06C0(EMW *em, EM08W *w) {
 
 static void em_dmg14_005A07B0(EMW *em, EM08W *w) {
     s32 temp_v0;
-    s8 var_v0;
 
     switch (em->x05) {
     case 0:
@@ -3239,13 +3225,11 @@ static void em_dmg14_005A07B0(EMW *em, EM08W *w) {
         em->work08 = temp_v0;
         if (temp_v0 <= 0) {
             em->x05++;
-            var_v0 = 4;
             if (em->x8B6 != 0) {
-
+                em->x95A = 4;
             } else {
-                var_v0 = 6;
+                em->x95A = 6;
             }
-            em->x95A = var_v0;
             em_ana_loop_cnt_set(em);
             em08_act_set(em, 4, 8, 3);
         }
