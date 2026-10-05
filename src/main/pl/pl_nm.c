@@ -858,3 +858,106 @@ void sougun_adj_sub(PLW *pl, u16 id) {
         }
     }
 }
+
+/* near-match (not built): pl_mv021 - same instructions, but the original keeps x05 in a3 and moves arg1 into s0 later
+   (register naming/schedule shift of the prologue; 230/247 lines differ because of it). */
+void pl_mv021(PLW *pl, s32 arg1) {
+    int sp4C;
+    f32 sp40[3];
+    f32 sp30[3];
+    f32 f;
+    u8 s;
+
+    pl->work08++;
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        switch (arg1) {
+        default:
+            pl->x05++;
+            pl->x06 = 0;
+            pl_chr_set2(pl, 0xB, 2, 0);
+            Pl_basic_flagset(pl, 0, 0, 0);
+            break;
+        case 2:
+            pl->pos[1] = pl->pos[1] - 195.0f;
+            sp40[2] = -30.0f;
+            sp40[0] = 0.0f;
+            sp40[1] = 0.0f;
+            flvecApplyMat33(sp30, sp40, (f32 *)((u8 *)pl + 0x60));
+            pl->pos[0] = pl->pos[0] + sp30[0];
+            pl->pos[2] = pl->pos[2] + sp30[2];
+        case 1:
+            pl->x05 = 2;
+            pl->x06 = 0;
+            Pl_basic_flagset(pl, 2, 0, 0);
+            rate_clear(pl);
+            pl->vel[1] = -9.0f;
+            pl->acc[1] = -0.72727275f;
+            if (arg1 == 1) {
+                pl_chr_set2(pl, 0xC, 4, 0x16);
+            } else {
+                pl_chr_set2(pl, 0xC, 0, 0x16);
+            }
+            break;
+        }
+        Pl_view_reset(pl);
+        action_timer_calc(pl, 0);
+        pl->work08 = 0;
+        break;
+    case 1:
+        if (pl->work194 == 0 || (pl->x06 < 6 && pl->x06 != 0)) {
+            pl->x05++;
+            rate_clear(pl);
+            if (pl->flag12 != 0) {
+                f = 0.8f;
+            } else {
+                f = 1.0f;
+            }
+            pl->vel[1] = 2.0f * (15.0f * f);
+            if (pl->x06 != 0) {
+                pl->vel[1] = 50.0f;
+            }
+            rate_g_calc(pl, 0x14);
+            pl_chr_set2(pl, 0xC, 2, 0);
+            pl->st = 2;
+            if (pl->flag604 != 0) {
+                pl->flag604 = 2;
+            }
+            action_timer_calc(pl, 0);
+            pl->work08 = 0;
+        }
+        break;
+    case 2:
+        rate_add_g(pl);
+        if (pl->vel[1] < 0.0f) {
+            if ((arg1 != 2) && (front_land_ck(55.0f, 180.0f, 30.0f, pl, &sp4C) != 0) && (pl->vital > 0)) {
+                pl->ang_y = pl->ang[1];
+                Pl_act_set2(pl, 0, 0x1B, 0xC);
+                break;
+            }
+            f = pl->x5AC;
+            if (!(f < pl->pos[1])) {
+                pl->pos[1] = f;
+                pl->st = 0;
+                pl->flag604 = 0;
+                if ((pl->vital <= 0) && (Pl_master_ck(pl) == 1)) {
+                    func_639F20(pl);
+                    break;
+                }
+                if (pl->work08 >= 0x1E) {
+                    Pl_act_set(pl, 0, 0x26, 0);
+                    break;
+                }
+                pl->x05++;
+                pl_chr_set2(pl, 0xD, 0, 0);
+            }
+        }
+        break;
+    case 3:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 3, 0);
+        }
+        break;
+    }
+}

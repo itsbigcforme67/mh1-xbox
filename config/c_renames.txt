@@ -8,6 +8,7 @@ build/src/main/game/f_game.c.o .rodata .data
 build/src/main/hit/hit.c.o .rodata .data
 build/src/main/pl/pl05.c.o .rodata .data
 build/src/main/pl/pl09.c.o .rodata .data
+build/src/main/pl/pl12.c.o .rodata .data
 build/src/game/eft/eft17.c.o .rodata .data
 build/src/game/eft/eft04.c.o .rodata .data
 build/src/game/eft/eft08.c.o .rodata .data
