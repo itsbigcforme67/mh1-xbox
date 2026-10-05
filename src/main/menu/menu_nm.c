@@ -1670,9 +1670,9 @@ void camp_disp_sub(f32 x, f32 y) {
 }
 
 void Pit_mv_lb(void) {
+    int now;
     int sw;
     int r;
-    int now;
 
     now = FLD16(Psw, 4);
     sw = (now | pit_key_repeat(now, FLD16(Psw, 0))) & 0xFFFF;
@@ -1713,9 +1713,9 @@ void Pit_mv_lb(void) {
 /* Per-frame pit menu: HP/stamina bars, item stock window, chat, main menu. */
 void Pit_mv(void) {
     PLW *pl;
-    int now;
-    int hold;
     int sw;
+    int hold;
+    int now;
     u32 i;
     int r;
 
