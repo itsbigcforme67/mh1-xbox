@@ -84,6 +84,8 @@ segments:
       - [0x0263EC, asm, text/g_frame_check]
       - [0x026800, asm, text/f_option]
       - [0x027440, asm, text/f_menu]
+      - [0x027950, c, menu/menu01]
+      - [0x027BDC, asm, text/player_name_id_print]
       - [0x034950, c, pl/pl04]
       - [0x034A34, asm, text/player_init0]
       - [0x034C20, c, pl/pl01]
