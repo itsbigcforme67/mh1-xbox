@@ -60,16 +60,18 @@ static void decode_data(out, buf)
 u16 *out;
 u16 *buf;
 {
-    int i = 0;
+    int i;
     u16 key;
     u16 stored;
-    int sum = 0;
+    int sum;
 
-    out[8] = buf[0] != 0x100;
-    key = buf[1];
-    buf += 2;
-    stored = buf[0];
-    buf += 2;
+    sum = 0;
+    i = 0;
+    out[8] = *buf != 0x100;
+    buf++;
+    key = *buf++;
+    stored = *buf++;
+    buf++;
     do {
         *buf ^= key;
         sum = (sum + *buf) & 0xFFFF;
@@ -77,8 +79,8 @@ u16 *buf;
         if ((key & 0xFFFF) == 0) {
             key = 1;
         }
-        i++;
         key = ((key & 0xFFFF) * 0xB0) % 65363 & 0xFFFF;
+        i++;
     } while (i < 0x8A20);
     out[9] = (stored & 0xFFFF) != (sum & 0xFFFF);
 }
