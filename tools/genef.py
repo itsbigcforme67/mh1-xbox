@@ -348,7 +348,12 @@ def run_case(start, stop):
             delay(i)
             a1, a2, a3, a4 = r.get('$5'), r.get('$6'), r.get('$7'), r.get('$8')
             F12, F13 = f.get('$f12'), f.get('$f13')
-            if fn.startswith('sound_call'):
+            if fn.startswith('sound_call') and os.environ.get('SOUND5'):
+                if fn.endswith('mov') or fn.endswith('mov2'):
+                    emit('%s(em, %s, %s, %s, %s, %s);' % (fn, argstr(a1), argstr(a2), argstr(a3), argstr(a4), argstr(r.get('$9'))))
+                else:
+                    emit('%s(em, %s, %s, %s, %s);' % (fn, argstr(a1), argstr(a2), argstr(a3), argstr(a4)))
+            elif fn.startswith('sound_call'):
                 emit('%s(em, %s, %s, %s);' % (fn, argstr(a1), argstr(a2), argstr(a3)))
             elif fn.startswith('quake_call'):
                 emit('%s(em, %s, %s);' % (fn, argstr(a1), argstr(a2)))
@@ -362,8 +367,16 @@ def run_case(start, stop):
                 ctx.cond = c
             elif fn == 'ran_suu':
                 r['$2'] = '(u16)ran_suu(1)' if r.get('$4') == 1 else '(u16)ran_suu()'
+            elif fn == 'shell05_set4':
+                emit('shell05_set4(em, %s, %s);' % (argstr(a1), argstr(a2)))
             elif fn.startswith('shell0') and fn.endswith('_set'):
                 emit('%s(em, %s);' % (fn, argstr(a1)))
+            elif fn == 'Shell22_set3':
+                emit('Shell22_set3(em, %s, w->x1A);' % argstr(a1))
+                emit('w->x1A++;')
+                emit('w->x1A &= 3;')
+            elif fn == 'Eft10_set':
+                emit('Eft10_set(%s, em, %s, %s);' % (fl(F12), argstr(a1), argstr(a2)))
             elif fn == 'em_uvset':
                 emit('em_uvset(em, %s, %s, %s);' % (argstr(a1), argstr(a2), argstr(a3)))
             elif fn == 'Eft20_set':
@@ -385,7 +398,7 @@ def run_case(start, stop):
             for k in ('$2', ):
                 pass
             # clobber temporaries (but keep a0 etc. conservative)
-            for k in (('$5',) if fn == 'em_uvset' else ('$4', '$5', '$6', '$7', '$8')):   # em_uvset (static leaf) keeps a2/a3
+            for k in (('$5',) if fn == 'em_uvset' else ('$4', '$5', '$6', '$7', '$8', '$9')):   # em_uvset (static leaf) keeps a2/a3
                 if k in r: del r[k]
             f.clear()
             i += 2
@@ -519,6 +532,19 @@ def run_case(start, stop):
 cases = {}
 for idx, tgt in enumerate(tbl_words):
     cases.setdefault(tgt, []).append(0x3E9 + idx)
+if TABLE == '-':
+    # sparse switch compiled as a compare ladder: addiu $4,$0,CASE ... beq $3,$4,.Lxxxx
+    _cur = None
+    for _l in RAW:
+        _m = re.search(r'addiu\s+\$4, \$0, (0x[0-9A-Fa-f]+)', _l)
+        if _m:
+            _cur = int(_m.group(1), 16)
+            continue
+        _m = re.search(r'beq\s+\$3, \$4, \.L([0-9A-Fa-f]{8})', _l)
+        if _m and _cur is not None:
+            cases.setdefault(int(_m.group(1), 16), []).append(_cur)
+        if re.search(r'\bb\s+\.L%08X' % DEFAULT, _l):
+            break
 starts = sorted(a for a in cases if a not in (END, DEFAULT))
 lines = []
 lines.append('static void %s(EMW *em, %s *w) {' % (FUNC, os.environ.get('WTYPE', 'EM01W')))
