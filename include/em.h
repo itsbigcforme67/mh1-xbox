@@ -247,7 +247,8 @@ typedef struct EMW {
     u8 x86F;            /* 0x86F */
     u8 _pad870[0x878 - 0x870];
     struct EFTW *tail;  /* 0x878 cut-tail effect (eft09_set) */
-    u8 _pad87C[0x87F - 0x87C];
+    u8 x87C;            /* 0x87C player id this monster holds/targets (pl_mv083 compares it with PLW.id) */
+    u8 _pad87D[0x87F - 0x87D];
     s8 x87F;            /* 0x87F (s8) non-zero: monster state checked in basic_com_ck */
     u8 _pad880[0x881 - 0x880];
     u8 x881;            /* 0x881 target kind, 0 none (1 and 7 seen; 0x934 = its position) */
@@ -277,7 +278,7 @@ typedef struct EMW {
     u8 x8B6;            /* 0x8B6 eyes shown (eft07) */
     u8 x8B7;            /* 0x8B7 */
     u8 x8B8;            /* 0x8B8 */
-    u8 _pad8B9[0x8BA - 0x8B9];
+    u8 x8B9;            /* 0x8B9 non-zero: monster is grabbing a player (pl_mv083) */
     s8 x8BA;            /* 0x8BA */
     s8 x8BB;            /* 0x8BB (s8: Em_Damage_Stock) set to 10 while ex+4 is non-zero (em29_main) */
     u8 x8BC;            /* 0x8BC */

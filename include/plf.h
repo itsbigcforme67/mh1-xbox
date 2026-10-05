@@ -195,6 +195,5 @@ void adx_se_set(PLW *, int);
 void Item_regained(PLW *, int);
 void egg_set(PLW *);
 void BBQcamera_set(PLW *);
-void fish_com_ck(PLW *);
 void func_555A90(PLW *, int);
 #endif
