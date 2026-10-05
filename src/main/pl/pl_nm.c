@@ -1889,3 +1889,39 @@ void Pl_basic_flagset(PLW *pl, int a, int b, int c) {
         pl_flag_set(pl, 2);
     }
 }
+
+void pad_timer_calc_sub(PLW *pl, int mask);
+f32 GetGroundHit(f32 *);
+extern u16 for_pad_timer_tbl[4];
+
+
+
+
+
+void pad_timer_calc_sub(PLW *pl, int mask) {
+    u16 *t = &pl->work5B8;
+    u16 *tbl = for_pad_timer_tbl;
+    if ((u16)mask & *tbl) {
+        *t = 0;
+    } else if (*t < 0xFFFF) {
+        (*t)++;
+    }
+}
+
+
+int rate_g_calc(PLW *pl, int t) {
+    int n;
+    f32 v;
+    f32 a;
+    n = (s16)t;
+    n = (s16)(n / 2);
+    v = pl->vel[1];
+    a = -1.0f * v;
+    if (n < 2 || v < 0.0f) {
+        pl->acc[1] = a;
+        return 1;
+    }
+    a /= (f32)n;
+    pl->acc[1] = a;
+    return 0;
+}

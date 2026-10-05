@@ -159,7 +159,7 @@ void pl_mv060(PLW *);
 extern s16 mv001_tbl[];
 int frame_check(f32, PLW *, int);
 void pl_mv001(PLW *, u32);
-void rate_g_calc(PLW *, int);
+s32 rate_g_calc(PLW *, int);
 void rate_add_g(PLW *);
 void rate_clear(PLW *);
 void func_628FB0(PLW *, int, int);

@@ -77,7 +77,17 @@ typedef struct PLW {
     u8    work01C;           /* 0x01C */
     u8    work01D;           /* 0x01D */
     u8    work01E;           /* 0x01E */
-    u8 _pad01F[0x60 - 0x1F];
+    u8 _pad01F[0x11];
+    f32   work030;           /* 0x030 */
+    f32   work034;           /* 0x034 */
+    f32   work038;           /* 0x038 */
+    u8 _pad03C[0xC];
+    f32   work048;           /* 0x048 */
+    f32   work04C;           /* 0x04C */
+    f32   work050;           /* 0x050 */
+    f32   work054;           /* 0x054 */
+    f32   work058;           /* 0x058 */
+    f32   work05C;           /* 0x05C */
     u8    rot[0x18];     /* 0x060 rotation matrix (start; extent unknown) */
     u8 _pad078[0xA0 - 0x78];
     s32   ang[3];        /* 0x0A0 rotation, 0x10000 = 360 degrees (set05_m, as EMW) */
@@ -122,7 +132,7 @@ typedef struct PLW {
         u8    x2FC[2];   /* 0x2FC, 0x2FD per-slot init flags of frame_init (pl_chr_sub) */
     };
     u8 _pad2FE[0x300 - 0x2FE];
-    s16   work300;           /* 0x300 */
+    u16   work300;           /* 0x300 */
     s16   vital;         /* 0x302 hit points (Pl_damage_sub) */
     u8 _pad304[0x34C - 0x304];
     u8    work34C;           /* 0x34C */
@@ -154,7 +164,7 @@ typedef struct PLW {
     f32   vel[3];            /* 0x3B4 velocity applied in the air/jump actions (pl_mv006/021) */
     f32   acc[3];            /* 0x3C0 per-frame change of vel (rate_g_calc) */
     struct PLPROG *prog; /* 0x3CC table of state handlers (pl_work_clr); see PLPROG */
-    s8    work3D0;       /* 0x3D0 */
+    u8    work3D0;           /* 0x3D0 */
     s8    work3D1;       /* 0x3D1 */
     u8 _pad3D2[0x3EC - 0x3D2];
     u16   dm_ang;        /* 0x3EC direction the hit came from (Guard_dir_ck) */
@@ -198,7 +208,9 @@ typedef struct PLW {
     f32   work5A4;           /* 0x5A4 */
     f32   work5A8;           /* 0x5A8 */
     f32   x5AC;          /* 0x5AC ground height (eft21_i, as EMW) */
-    u8 _pad5B0[0x5FC - 0x5B0];
+    u8 _pad5B0[0x8];
+    u16   work5B8;           /* 0x5B8 */
+    u8 _pad5BA[0x42];
     u32   work5FC;           /* 0x5FC */
     u8 _pad600;
     s8    work601;           /* 0x601 */
@@ -291,7 +303,7 @@ typedef struct PLW {
     s16   work818;           /* 0x818 */
     u16   work81A;           /* 0x81A */
     u8    work81C;           /* 0x81C */
-    u8 _pad81D[0x81E - 0x81D];
+    s8    work81D;           /* 0x81D */
     u8    work81E;           /* 0x81E */
     u8    work81F;           /* 0x81F */
     u8 _pad820[0x824 - 0x820];
