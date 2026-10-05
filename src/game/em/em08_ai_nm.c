@@ -379,6 +379,23 @@ block_3:
         }                                                                 \
     } while (0)
 
+#define EM08_TURNN(em, tgt, st)                                           \
+    do {                                                                  \
+        int d;                                                            \
+        d = (u16)((u16)(tgt) - (em)->ang[1]);                             \
+        if (d <= 0x8000) {                                                \
+            if (d < (st)) {                                               \
+                (em)->ang[1] += d;                                        \
+            } else {                                                      \
+                (em)->ang[1] += (st);                                     \
+            }                                                             \
+        } else if (d > 0x10000 - (st)) {                                  \
+            (em)->ang[1] += d;                                            \
+        } else {                                                          \
+            (em)->ang[1] -= (st);                                         \
+        }                                                                 \
+    } while (0)
+
 static void em_act00_0059A7B0(EMW *em, EM08W *w) {
     int t;
 
@@ -1725,20 +1742,7 @@ block_9:
                 em_act_set(em, 2, 0xA);
             }
         }
-        temp_v1 = em->ang[1];
-        temp_v0_3 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - temp_v1) & 0xFFFF;
-        if (temp_v0_3 < 0x8001) {
-            if (temp_v0_3 < 0x200) {
-                var_v0 = temp_v1 + temp_v0_3;
-            } else {
-                var_v0 = temp_v1 + 0x200;
-            }
-        } else if (temp_v0_3 >= 0xFE01) {
-            var_v0 = temp_v1 + temp_v0_3;
-        } else {
-            var_v0 = temp_v1 - 0x200;
-        }
-        em->ang[1] = var_v0;
+        EM08_TURNN(em, Em_Calc_angY(em->pos, em->tgt_pos), 0x200);
         xang_calc_target(em, w->vel, 0.0f, 0.0f);
         w->vel[1] = (s32) em->ang[1];
         w->vel[2] = 0;
@@ -1792,20 +1796,7 @@ block_9:
                 em_act_set(em, 2, 0xB);
             }
         }
-        temp_v1 = em->ang[1];
-        temp_v0_3 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - temp_v1) & 0xFFFF;
-        if (temp_v0_3 < 0x8001) {
-            if (temp_v0_3 < 0x200) {
-                var_v0 = temp_v1 + temp_v0_3;
-            } else {
-                var_v0 = temp_v1 + 0x200;
-            }
-        } else if (temp_v0_3 >= 0xFE01) {
-            var_v0 = temp_v1 + temp_v0_3;
-        } else {
-            var_v0 = temp_v1 - 0x200;
-        }
-        em->ang[1] = var_v0;
+        EM08_TURNN(em, Em_Calc_angY(em->pos, em->tgt_pos), 0x200);
         xang_calc_target(em, w->vel, 0.0f, 0.0f);
         w->vel[1] = (s32) em->ang[1];
         w->vel[2] = 0;
@@ -1996,13 +1987,7 @@ static void em_fly16_0059E020(EMW *em, EM08W *w) {
                         em_char_set(em, 0x67, 0xA, 0);
                         w->dist = 1000.0f;
                         em->work08 = 0x3C;
-                        temp_v0 = em->work08;
-                        temp_v1 = temp_v0 * temp_v0;
-                        var_v0 = temp_v1 >> 1;
-                        if (temp_v1 < 0) {
-                            var_v0 = (s32) (temp_v1 + 1) >> 1;
-                        }
-                        em->x3C0[2] = (w->dist - ((f32) temp_v0 * em->adj_z)) / (f32) var_v0;
+                        em->x3C0[2] = (w->dist - ((f32)em->work08 * em->adj_z)) / (f32)((em->work08 * em->work08) / 2);
                         swim_eff_set2_005A7120(8.0f, em);
                         return;
                     }
@@ -2022,13 +2007,7 @@ static void em_fly16_0059E020(EMW *em, EM08W *w) {
                 em_char_set(em, 0x67, 0xA, 0);
                 w->dist = 1000.0f;
                 em->work08 = 0x3C;
-                temp_v0_2 = em->work08;
-                temp_v1_2 = temp_v0_2 * temp_v0_2;
-                var_v0_2 = temp_v1_2 >> 1;
-                if (temp_v1_2 < 0) {
-                    var_v0_2 = (s32) (temp_v1_2 + 1) >> 1;
-                }
-                em->x3C0[2] = (w->dist - ((f32) temp_v0_2 * em->adj_z)) / (f32) var_v0_2;
+                em->x3C0[2] = (w->dist - ((f32)em->work08 * em->adj_z)) / (f32)((em->work08 * em->work08) / 2);
                 swim_eff_set2_005A7120(8.0f, em);
                 return;
             }
@@ -2106,13 +2085,7 @@ static void em_fly17_0059E400(EMW *em, EM08W *w) {
                         em_char_set(em, 0x67, 0xA, 0);
                         w->dist = 1000.0f;
                         em->work08 = 0x3C;
-                        temp_v0 = em->work08;
-                        temp_v1 = temp_v0 * temp_v0;
-                        var_v0 = temp_v1 >> 1;
-                        if (temp_v1 < 0) {
-                            var_v0 = (s32) (temp_v1 + 1) >> 1;
-                        }
-                        em->x3C0[2] = (w->dist - ((f32) temp_v0 * em->adj_z)) / (f32) var_v0;
+                        em->x3C0[2] = (w->dist - ((f32)em->work08 * em->adj_z)) / (f32)((em->work08 * em->work08) / 2);
                         swim_eff_set2_005A7120(8.0f, em);
                         return;
                     }
@@ -2132,13 +2105,7 @@ static void em_fly17_0059E400(EMW *em, EM08W *w) {
                 em_char_set(em, 0x67, 0xA, 0);
                 w->dist = 1000.0f;
                 em->work08 = 0x3C;
-                temp_v0_2 = em->work08;
-                temp_v1_2 = temp_v0_2 * temp_v0_2;
-                var_v0_2 = temp_v1_2 >> 1;
-                if (temp_v1_2 < 0) {
-                    var_v0_2 = (s32) (temp_v1_2 + 1) >> 1;
-                }
-                em->x3C0[2] = (w->dist - ((f32) temp_v0_2 * em->adj_z)) / (f32) var_v0_2;
+                em->x3C0[2] = (w->dist - ((f32)em->work08 * em->adj_z)) / (f32)((em->work08 * em->work08) / 2);
                 swim_eff_set2_005A7120(8.0f, em);
                 return;
             }
