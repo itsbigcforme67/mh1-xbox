@@ -2,7 +2,7 @@
  * - shell08_m (0x0062EA20): logic believed complete, ~1000/1898
  *   instructions differ, nearly all register allocation (the original keeps
  *   flag in fp and spills w->p / em to the stack differently).
- * - shell08_rgba (0x00632AC0): colour-key blend, 48/236 differ (channel
+ * - shell08_rgba (0x00632AC0): colour-key blend, 43/236 differ (channel
  *   extraction order / registers).
  * - shell08_trans (0x006309A0, appended at the end of this file): C written from
  *   the asm, same size as the original (1580 instructions), 1544 differ
@@ -788,15 +788,17 @@ void shell08_rgba(RGBA_KEY *k, int t, u32 *out) {
     f32 rate;
     u32 c1;
     u8 g0, r0, b0, a0;
+    int kt;
 
     while (1) {
-        if (k->time == -1) return;
-        if (t == k->time) {
+        kt = k->time;
+        if (kt == -1) return;
+        if (t == kt) {
             *out = k->rgba;
             return;
         }
-        if (k->time < t && t < k[1].time) {
-            rate = (f32)(t - k->time) / (f32)(k[1].time - k->time);
+        if (kt < t && t < k[1].time) {
+            rate = (f32)(t - kt) / (f32)(k[1].time - kt);
             b0 = k->rgba >> 16;
             a0 = k->rgba >> 24;
             g0 = k->rgba >> 8;
