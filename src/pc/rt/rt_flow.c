@@ -18,6 +18,9 @@ extern u8 game_w[];   /* +0: mode (no game header here: the no-ops below are K&R
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+void rt_font_tick_begin(void);
+void rt_prims_reset(void);
 
 #define WEAK __attribute__((weak))
 static void once(const char *n) { if (getenv("RT_TRACE")) fprintf(stderr, "rt_flow: %s not ported (no-op)\n", n); }
@@ -38,6 +41,7 @@ void game2(void); void game3(void); void game4(void); void game5(void);
 /* One tick of the game modes past loading (game_w.mode 2..5), as
  * Game_task's step 4 dispatches them. Returns the mode it ran. */
 extern u8 quest_w[];
+int rt_flow_mode(void) { return game_w[0]; }
 int rt_flow_tick(void)
 {
     static u32 last = 0xFFFFFFFF;
@@ -45,6 +49,31 @@ int rt_flow_tick(void)
     int m = game_w[0];
     u32 st = game_w[0] | game_w[1] << 8 | game_w[0xD5] << 16 | (u32)(quest_w[0] | quest_w[1] << 4 | (quest_w[6] & 0xF) << 8) << 24;
     tick++;
+    rt_font_tick_begin();       /* the text of the previous tick is replaced */
+    rt_prims_reset();           /* ot_init */
+    if (getenv("RT_QUEST_TRACE")) {     /* the master player's pouch (PLW+0x828, 24 x {id, n}) when it changes */
+        extern u8 player_work[];
+        static s16 old[48];
+        s16 *it = (s16 *)(player_work + 0x828);
+        int i;
+        if (memcmp(old, it, sizeof old)) {
+            memcpy(old, it, sizeof old);
+            fprintf(stderr, "rt_flow: tick %d pouch:", tick);
+            for (i = 0; i < 24; i++)
+                if (it[2 * i])
+                    fprintf(stderr, " %d:%d", it[2 * i], it[2 * i + 1]);
+            fprintf(stderr, "\n");
+        }
+    }
+    if (getenv("RT_QUEST_TRACE") && game_w[0] == 5 && game_w[1] == 1 && st != last) {   /* the reward list (game_w+0x128) */
+        s16 *r = (s16 *)(game_w + 0x128);
+        int i;
+        fprintf(stderr, "rt_flow: rewards:");
+        for (i = 0; i < 32; i++)
+            if (r[2 * i])
+                fprintf(stderr, " %d:%d", r[2 * i], r[2 * i + 1]);
+        fprintf(stderr, "\n");
+    }
     if (getenv("RT_QUEST_TRACE") && st != last) {   /* mode, step, game_w+0xD5, quest_w x00/x01/x06 */
         fprintf(stderr, "rt_flow: tick %d mode %d step %d D5 %d quest x00 %d x01 %d x06 %d time %d monsters %d\n",
                 tick, game_w[0], game_w[1], game_w[0xD5], (s8)quest_w[0], (s8)quest_w[1], (s8)quest_w[6],

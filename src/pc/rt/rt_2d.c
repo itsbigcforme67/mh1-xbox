@@ -51,6 +51,15 @@ void *flCreateTextureFromApx_mem(void *p, int type)
     }
     if (getenv("RT_TRACE"))
         fprintf(stderr, "rt_2d: texture %d: %dx%d\n", ntex, img.w, img.h);
+    if (getenv("RT_TEX_DUMP")) {        /* raw RGBA of each texture, for checking */
+        char fn[512];
+        FILE *f;
+        snprintf(fn, sizeof fn, "%s/tex%03d_%dx%d.rgba", getenv("RT_TEX_DUMP"), ntex, img.w, img.h);
+        if ((f = fopen(fn, "wb"))) {
+            fwrite(img.rgba, 4, (size_t)img.w * img.h, f);
+            fclose(f);
+        }
+    }
     tex[ntex].t = gfx_create_texture(img.w, img.h, img.rgba);
     tex[ntex].w = img.w;
     tex[ntex].h = img.h;
@@ -64,6 +73,14 @@ void rt_2d_set_texture(u32 h)
     if (getenv("RT_TEX_TRACE"))
         fprintf(stderr, "rt_2d: texture state %X\n", h);
     cur_tex = (h & 0xFFFF) < (u32)ntex ? (int)(h & 0xFFFF) : 0;
+    gfx_set_render_state(GFX_RS_TEXTURE, (uintptr_t)tex[cur_tex].t);
+}
+
+/* back to the current fl texture after host draws that bound their own
+ * (font glyphs): the game caches the texture stage (SetTextureStage only
+ * calls flSetRenderState on a change) */
+void rt_2d_restore_texture(void)
+{
     gfx_set_render_state(GFX_RS_TEXTURE, (uintptr_t)tex[cur_tex].t);
 }
 

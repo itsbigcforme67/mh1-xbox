@@ -84,7 +84,10 @@ QUEST="src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tu
        src/main/chat/chat_nm.c src/main/font/fontst_nm.c \
        src/main/font/fontst2_nm.c src/main/font/gfs_nm.c src/main/set/set01.c src/main/sys/vib.c \
        src/main/sprite/putspr.c src/main/sprite/putspr2.c src/main/sprite/calcpoint.c src/main/sprite/trans2.c src/main/sprite/sysw.c \
-       src/main/load/mkmap.c"
+       src/main/load/mkmap.c \
+       src/main/reward/f_reward.c src/main/reward/f_reward2.c src/main/reward/f_reward3.c src/main/reward/f_rewardb.c \
+       src/main/reward/f_rewardc.c src/main/reward/f_reward_nm.c src/main/reward/f_rewardb_nm.c src/main/reward/f_rewardd_nm.c \
+       src/main/ud/ud_nm.c src/main/font/disp2_nm.c src/main/font/disp1_nm.c"
 for f in src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c; do
     [ -f "$f" ] && EM="$EM $f"
 done
@@ -106,7 +109,7 @@ for e in $EXT; do
     git show "$br:$f" > "$d/$f"
     EM="$EM $d/$f"
 done
-WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm"
+WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST"
 
 SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
@@ -165,6 +168,11 @@ for f in $GAME; do
     src/main/quest/f_quest_nm.c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/^typedef char \*va_list;/#include <stdarg.h>/' "$f" > "$src"
+        INC="$INC -I$(dirname "$f")" ;;
+    # ItemPickingDeclaration calls Pl_master_ck() with its own a0 (arg) left over
+    src/main/menu/menu_nm.c)
+        src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
+        sed 's/^int Pl_master_ck(void);/int Pl_master_ck();/; s/Pl_master_ck() == 0/Pl_master_ck((void *)arg) == 0/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
     esac
     # absolute PS2 addresses some m2c-based files still use (game_w

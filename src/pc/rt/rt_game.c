@@ -282,10 +282,18 @@ void rt_game_init(int stage)
 }
 
 void rt_font_tick_begin(void);
+/* ot_init: the ordering tables are emptied at the start of every tick */
+void rt_prims_reset(void)
+{
+    int i;
+    for (i = 0; i < OT_N; i++)
+        nqueue[i] = 0;
+}
 void rt_game_move(void)
 {
     int i;
-    rt_font_tick_begin();   /* text printed by the previous tick is replaced */
+    if (*(s16 *)(quest_w + 8) == 0)
+        rt_font_tick_begin();   /* text printed by the previous tick is replaced (quests: rt_flow_tick) */
     for (i = 0; i < OT_N; i++)
         nqueue[i] = 0;
     stage_work.timer++;
@@ -357,6 +365,9 @@ void rt_game_draw_2d(void)
 {
     static const int order[5] = { 5, 6, 7, 8, 2 }, fstack[5] = { 0, 1, 2, 4, 3 };
     int i, k;
+    void InitRenderState(int soft);
+    InitRenderState(1);     /* trans() ends with it: forgets the cached texture stage etc.
+                             * (the host's 3D draws bound other textures since) */
     rt_font_frame_begin();
     for (i = 0; i < 5; i++) {
         int t = order[i];
@@ -369,5 +380,12 @@ void rt_game_draw_2d(void)
         font_draw_stack_no(fstack[i]);
         rt_fl_reset_states();
     }
+    /* game3 / game4 / game5 call font_draw() after trans(): every stack
+     * again, with what the prims printed meanwhile */
+    if (game_w.mode >= 3 && game_w.mode <= 5)
+        for (i = 0; i < 5; i++) {
+            font_draw_stack_no(i);
+            rt_fl_reset_states();
+        }
     rt_font_frame_end();
 }

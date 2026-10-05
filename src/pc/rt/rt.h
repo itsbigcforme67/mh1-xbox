@@ -180,5 +180,7 @@ void rt_flow_set_core(void (*fn)(void));
 /* one tick of game_w.mode 2..5 (game2 quest, game3 clear screen, game5
  * result); returns the mode that ran */
 int rt_flow_tick(void);
+int rt_flow_mode(void);         /* game_w.mode */
+void rt_pad_tick(void);         /* Psw from the host pad + swset (rt_pad.c) */
 
 #endif

@@ -58,6 +58,7 @@ static int in_draw;
 extern int font_reset_flag;
 
 uint8_t *rt_file_load(int idx, size_t *n);
+void rt_2d_restore_texture(void);
 
 /* ------------------------------------------------------------ set-up */
 void flfntCacheFlush(void)
@@ -306,6 +307,7 @@ void flfntDraw(int n)
     for (i = 0; i < nstack[n]; i++)
         font_puts(strbuf + stack[n][i].str, &stack[n][i]);
     gfx_set_render_state(GFX_RS_TEX_CLAMP, 0);
+    rt_2d_restore_texture();
 }
 
 void flfntDrawAll(void)

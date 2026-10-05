@@ -233,7 +233,7 @@ void DispFrameListA(void *fr, char *title, int cur, int alpha) {
             py += h;
         }
         tl = (s32 *)FS32(fr, 0xC);
-        for (j = F8(fr, 7); j > 0; j--, tl += 4) {
+        for (j = F8(fr, 7); j > 0; j--, tl++) {   /* asm: addiu 4 (one pointer) */
             if (*tl == 0) {
                 break;
             }

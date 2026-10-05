@@ -123,3 +123,24 @@ void rt_hud_tick(void)
 {
     Pit_mv();
 }
+
+/* ------------------------------------------------ money (main ud / f_reward) */
+extern s32 quest_price;
+/* Gold_add (0x2722C0): User_data+0x20 money, clamped to 0..9999999 */
+void Gold_add(int n)
+{
+    s32 *g = (s32 *)((u8 *)&User_data + 0x20);
+    *g += n;
+    if (*g >= 10000000)
+        *g = 9999999;
+    if (*g < 0)
+        *g = 0;
+}
+/* Quest_price_return (0x290E50): give back the quest fee once */
+void Quest_price_return(void)
+{
+    if (quest_price != 0) {
+        Gold_add(quest_price);
+        quest_price = 0;
+    }
+}

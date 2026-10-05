@@ -858,8 +858,20 @@ int main(int argc, char **argv)
         /* game logic ticks at 30 per second (at least 2, so set objects
          * have run their init and queued their prims) */
         while (ticks < 2 + (int)fr) {
-            if (quest_no)
+            if (quest_no) {
+                /* outside game2 the host tick (sim_tick) does not run: the
+                 * pad is still read every tick (result / reward screens) */
+                if (rt_flow_mode() != 2 && play) {
+                    pad_state ps;
+                    if (script)
+                        pad_script_next(&ps);
+                    else
+                        pad_read(&ps, 1);
+                    rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
+                    rt_pad_tick();
+                }
                 rt_flow_tick();         /* game2 / game3 / game5 (f_game.c): game_core = sim_tick */
+            }
             else
                 sim_tick();
             ticks++;
