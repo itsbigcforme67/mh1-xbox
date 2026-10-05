@@ -281,9 +281,11 @@ void rt_game_init(int stage)
     stage_set_set(stage);   /* the game's own spawn list (src/main/stage/stage_set.c) */
 }
 
+void rt_font_tick_begin(void);
 void rt_game_move(void)
 {
     int i;
+    rt_font_tick_begin();   /* text printed by the previous tick is replaced */
     for (i = 0; i < OT_N; i++)
         nqueue[i] = 0;
     stage_work.timer++;

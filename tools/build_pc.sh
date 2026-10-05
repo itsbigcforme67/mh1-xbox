@@ -106,7 +106,7 @@ for e in $EXT; do
     git show "$br:$f" > "$d/$f"
     EM="$EM $d/$f"
 done
-WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm fontst_nm gfs_nm sysw vib"
+WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST"
 
 SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
@@ -196,7 +196,7 @@ python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 gcc $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font; do
     # shellcheck disable=SC2086
     gcc $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"

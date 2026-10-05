@@ -44,8 +44,13 @@ void *flCreateTextureFromApx_mem(void *p, int type)
     (void)type;
     b.p = p;
     b.n = *(u32 *)p;            /* +0: total size */
-    if (ntex >= TEX_MAX || fmt_apx_decode(&img, b, FMT_LE) != 0)
+    if (ntex >= TEX_MAX || fmt_apx_decode(&img, b, FMT_LE) != 0) {
+        if (getenv("RT_TRACE"))
+            fprintf(stderr, "rt_2d: APX not decoded (size %u)\n", (unsigned)b.n);
         return 0;
+    }
+    if (getenv("RT_TRACE"))
+        fprintf(stderr, "rt_2d: texture %d: %dx%d\n", ntex, img.w, img.h);
     tex[ntex].t = gfx_create_texture(img.w, img.h, img.rgba);
     tex[ntex].w = img.w;
     tex[ntex].h = img.h;
@@ -56,6 +61,8 @@ void *flCreateTextureFromApx_mem(void *p, int type)
 /* flSetRenderState(4, handle): the current texture (rt_fl.c routes it) */
 void rt_2d_set_texture(u32 h)
 {
+    if (getenv("RT_TEX_TRACE"))
+        fprintf(stderr, "rt_2d: texture state %X\n", h);
     cur_tex = (h & 0xFFFF) < (u32)ntex ? (int)(h & 0xFFFF) : 0;
     gfx_set_render_state(GFX_RS_TEXTURE, (uintptr_t)tex[cur_tex].t);
 }
@@ -106,7 +113,16 @@ void mkTexture(int file, int idx, int type)
  * 0x11A-0x11C (online: 7 at 0x119, 5 at 0x11A) */
 void load_pit(void)
 {
+    static int boot;
     rt_2d_init();
+    if (!boot) {        /* loaded once at boot on the PS2: the select overlay's
+                         * Init_task (PIT_TEX[0] list at mem_tex 2..) and
+                         * all_reset (filedef_sys 5 / 6 at 0x157 / 0x156) */
+        boot = 1;
+        load_texlist(PIT_TEX[0], 2, 0);
+        mkTexture(5, 0x157, 0);
+        mkTexture(6, 0x156, 0);
+    }
     load_texlist(PIT_TEX[1], 0x118, 0);
     if (game_w[0x1DC] == 0) {
         mkmapTexture(game_w[0x2E], *(u16 *)(game_w + 0x2C), 0x119, 0);

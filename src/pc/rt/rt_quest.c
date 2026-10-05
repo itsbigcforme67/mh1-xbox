@@ -109,9 +109,11 @@ void PitWork_init(void);
 void Pit_init(void);
 void Pit_mv(void);
 void Info_Initialization(void);
+void rt_font_init(void);
 void rt_hud_init(void)
 {
     rt_2d_init();
+    rt_font_init();
     load_pit();
     PitWork_init();
     Pit_init();

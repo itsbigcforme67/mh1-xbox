@@ -69,6 +69,19 @@ void rt_player_game_init(int no)
     PF(User_data, u16, 0x3CE) = (u16)wid;
     game_w.pl_state[no] = 1;
     pl_init(0);
+    if (getenv("RT_PL_ITEMS")) {    /* no save data: pouch "id:n,id:n" (slots at +0x828, 4 bytes) */
+        const char *q = getenv("RT_PL_ITEMS");
+        int k = 0, id, num, used;
+        while (k < 24 && sscanf(q, "%i:%i%n", &id, &num, &used) == 2) {
+            PF(pl, s16, 0x828 + 4 * k) = (s16)id;
+            PF(pl, s16, 0x82A + 4 * k) = (s16)num;
+            k++;
+            q += used;
+            if (*q != ',')
+                break;
+            q++;
+        }
+    }
     if (getenv("RT_PL_TRACE"))
         fprintf(stderr, "rt_player: weapon %d model %d job %d at %.0f %.0f %.0f act %d/%d chr %d/%d\n",
                 wid, pl->work34C, pl->kind, pl->pos[0], pl->pos[1], pl->pos[2], pl->flag14, pl->flag15,

@@ -116,9 +116,4 @@ NOP0(Item_preparation) NOP0(Item_preparation_adrs) NOP0(Item_preparation_list_ch
 NOP0(Item_preparation_list_num) NOP0(Item_preparation_list_search) NOP0(Item_preparation_one_ck)
 NOP0(Item_preparation_rate_0) NOP0(ListSelect) NOP0(Menu_select_mv) NOP0(PageSelect) NOP(Put_sprite_rotate)
 NOP(set_viewproj) NOP(SetBlendingMode) NOP(Put_comment) NOP0(Get_bowgun_atk) NOP(Draw_square)
-/* fonts (rt_font.c replaces these) */
-NOP(flfntCreate) NOP(flfntDraw) NOP0(flfntGetSystemMemorySize) NOP(flfntInit) NOP(flfntSetHalftype)
-NOP(flfntSetPalData) NOP(flfntStackReset) NOP0(flAllocMemory) NOP(font_print_double2) NOP(font_print_ex)
-NOP(font_print_sp) NOP(font_print_uf) NOP(flfntSetZ) NOP(flfntSetPalette)
-void rt_font_frame_begin(void) {}
-void rt_font_frame_end(void) {}
+/* fonts: rt_font.c */

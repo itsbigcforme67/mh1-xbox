@@ -74,5 +74,4 @@ NOP(EvDemoInitialize) NOP(em_yobi_init) NOP(em_effect_pull) NOP(ear_init) NOP(Di
 NOP(Copy_user_id) NOP(Disp_NowLoading2) NOP(Start_item_init)
 
 /* ------------------------------------------------ 2D (replaced as it is ported) */
-NOP(font_print) NOP(font_draw) NOP(font_set_palette) NOP(flfntLocate) NOP(flfntSetSize)
 NOP(SpritePut) NOP(trans) NOP(result_prog) NOP(Info_control) NOP(Info_Initialization)
