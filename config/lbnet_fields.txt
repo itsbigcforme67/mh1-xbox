@@ -10,9 +10,9 @@
 0xFEA u16 rseq2
 0xFEC s8 rres result byte
 0x102C u16 rcnt receive counter
-0x4068 CNET_PIECE plaza[10] size=0xDE8 plaza table, entry for id n is plaza[n - 1] (counts of plaza/lobby/room at 0x404E/0x4050/0x4052 just before it)
-0x4E50 CNET_PIECE lobby[14] size=0x1378 lobby table
-0x61C8 CNET_PIECE room[8] size=0xB20 room table
+0x4064 CNET_PIECE plaza[10] size=0xDE8 plaza table (counts of plaza/lobby/room at 0x404E/0x4050/0x4052 just before)
+0x4E4C CNET_PIECE lobby[14] size=0x1378 lobby table
+0x61C4 CNET_PIECE room[8] size=0xB20 room table
 0x1060 char tel[0x14] telephone number (personal data)
 0x1576 char uid[8] user id string
 0x157E char uhandle[0x40] user handle string
@@ -38,3 +38,7 @@
 0x3BA58 s16 curplace[3] current place (3 values)
 0x30300 u8 gsaddr[4] game server address bytes
 0x30308 u8 gsport[2] game server port bytes
+0x6CEC u16 last_id id of the last received plaza/lobby/room item
+0x6D00 u8 last_status status of the last item
+0x6D01 u8 last_pwinfo
+0x6D02 char last_name[0x42] name of the last item

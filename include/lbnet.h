@@ -35,19 +35,20 @@ typedef struct CNET_BURST {
     u8 _pad23;
 } CNET_BURST;
 
-/* plaza / lobby / room table entries (0x164 bytes each), indexed from 0 as (id - 1) */
-typedef struct CNET_PIECE {     /* plaza, lobby and room */
-    s32 prop;           /* 0x00 room property */
-    u16 _pad04;
-    u16 ja;             /* 0x06 joined users (mh) */
-    u16 jb;             /* 0x08 */
-    u16 ri[5];          /* 0x0A room join info */
-    u16 ma;             /* 0x14 match entry users */
-    u16 mb;             /* 0x16 */
-    u8 status;          /* 0x18 */
-    u8 pwinfo;          /* 0x19 password info */
-    char name[0x42];    /* 0x1A */
-    char explain[0x108];/* 0x5C */
+/* plaza / lobby / room table entries (0x164 bytes each); the entry of id n is table[n - 1] */
+typedef struct CNET_PIECE {
+    u32 flags;          /* 0x00 which parts have been received (bit 2 name, 2 status, 8 explain, ...) */
+    s32 prop;           /* 0x04 room property */
+    u16 id;             /* 0x08 */
+    u16 ja;             /* 0x0A joined users (mh) */
+    u16 jb;             /* 0x0C */
+    u16 ri[5];          /* 0x0E room join info */
+    u16 ma;             /* 0x18 match entry users */
+    u16 mb;             /* 0x1A */
+    u8 status;          /* 0x1C */
+    u8 pwinfo;          /* 0x1D password info */
+    char name[0x42];    /* 0x1E */
+    char explain[0x104];/* 0x60 */
 } CNET_PIECE;
 
 /* personal data of the hunter (copied by value, 0x1D0 bytes) */
@@ -119,11 +120,17 @@ typedef struct CNET_SYS {
     u8 lobby_member[0x300];  /* 0x36EE  */
     u8 room_member[0x300];  /* 0x39EE  */
     u8 annex_member[0x300];  /* 0x3CEE  */
-    u8 _pad3FEE[0x7A];
-    CNET_PIECE plaza[10];  /* 0x4068 plaza table, entry for id n is plaza[n - 1] (counts of plaza/lobby/room at 0x404E/0x4050/0x4052 just before it) */
-    CNET_PIECE lobby[14];  /* 0x4E50 lobby table */
-    CNET_PIECE room[8];  /* 0x61C8 room table */
-    u8 _pad6CE8[0x160];
+    u8 _pad3FEE[0x76];
+    CNET_PIECE plaza[10];  /* 0x4064 plaza table (counts of plaza/lobby/room at 0x404E/0x4050/0x4052 just before) */
+    CNET_PIECE lobby[14];  /* 0x4E4C lobby table */
+    CNET_PIECE room[8];  /* 0x61C4 room table */
+    u8 _pad6CE4[0x8];
+    u16 last_id;  /* 0x6CEC id of the last received plaza/lobby/room item */
+    u8 _pad6CEE[0x12];
+    u8 last_status;  /* 0x6D00 status of the last item */
+    u8 last_pwinfo;  /* 0x6D01  */
+    char last_name[0x42];  /* 0x6D02 name of the last item */
+    u8 _pad6D44[0x104];
     CNET_RULETBL ruletbl;  /* 0x6E48 room rule allocation table */
     u8 n_lobby_member;  /* 0x302EC  */
     u8 n_room_member;  /* 0x302ED  */

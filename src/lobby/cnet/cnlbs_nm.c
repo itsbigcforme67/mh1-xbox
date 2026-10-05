@@ -301,6 +301,21 @@ char *d;
     return 0;
 }
 
+void _cnet_RecvFromLbs_AnswerPlazaName(void) {
+    char buf[0x4E];
+    u16 id;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_PieceName(&id, buf);
+        CnetSys_w.plaza[id - 1].id = id;
+        strcpy((u8 *)&CnetSys_w + ((id - 1) * 0x164) + 0x4082, buf);
+        CnetSys_w.last_id = id;
+        strcpy(CnetSys_w.last_name, buf);
+        CnetSys_w.plaza[id - 1].flags |= 4;
+    }
+    _cnet_Return_CallBack(0xE);
+}
+
 int cnLBS_Read_PlazaJoinUser(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
@@ -343,6 +358,21 @@ int cnLBS_Get_PlazaStatus(int idx, u8 *d) {
     return 0;
 }
 
+void _cnet_RecvFromLbs_BothPlazaStatus(void) {
+    u8 st;
+    u16 id;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_PieceStatus(&id, &st);
+        CnetSys_w.plaza[id - 1].id = id;
+        CnetSys_w.plaza[id - 1].status = st;
+        CnetSys_w.last_id = id;
+        CnetSys_w.last_status = st;
+        CnetSys_w.plaza[id - 1].flags |= 2;
+    }
+    _cnet_Return_CallBack(0x10);
+}
+
 int cnLBS_Read_PlazaExplain(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
@@ -351,6 +381,19 @@ int cnLBS_Read_PlazaExplain(int arg0, int arg1) {
         return slot;
     }
     return -1;
+}
+
+void _cnet_RecvFromLbs_BothPlazaExplain(void) {
+    char buf[0x108];
+    u16 id;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_PieceExplain(&id, buf);
+        CnetSys_w.plaza[id - 1].id = id;
+        strcpy((u8 *)&CnetSys_w + ((id - 1) * 0x164) + 0x40C4, buf);
+        CnetSys_w.plaza[id - 1].flags |= 8;
+    }
+    _cnet_Return_CallBack(0x11);
 }
 
 void _cnet_RecvFromLbs_AnswerPlazaEntry(void) {
@@ -429,6 +472,21 @@ char *d;
     return 0;
 }
 
+void _cnet_RecvFromLbs_AnswerLobbyName(void) {
+    char buf[0x4E];
+    u16 id;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_PieceName(&id, buf);
+        CnetSys_w.lobby[id - 1].id = id;
+        strcpy((u8 *)&CnetSys_w + ((id - 1) * 0x164) + 0x4E6A, buf);
+        CnetSys_w.last_id = id;
+        strcpy(CnetSys_w.last_name, buf);
+        CnetSys_w.lobby[id - 1].flags |= 4;
+    }
+    _cnet_Return_CallBack(0x13);
+}
+
 int cnLBS_Read_LobbyJoinUser(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
@@ -471,6 +529,21 @@ int cnLBS_Get_LobbyStatus(int idx, u8 *d) {
     return 0;
 }
 
+void _cnet_RecvFromLbs_BothLobbyStatus(void) {
+    u8 st;
+    u16 id;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_PieceStatus(&id, &st);
+        CnetSys_w.lobby[id - 1].id = id;
+        CnetSys_w.lobby[id - 1].status = st;
+        CnetSys_w.last_id = id;
+        CnetSys_w.last_status = st;
+        CnetSys_w.lobby[id - 1].flags |= 2;
+    }
+    _cnet_Return_CallBack(0x15);
+}
+
 int cnLBS_Read_LobbyExplain(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
@@ -479,6 +552,19 @@ int cnLBS_Read_LobbyExplain(int arg0, int arg1) {
         return slot;
     }
     return -1;
+}
+
+void _cnet_RecvFromLbs_AnswerLobbyExplain(void) {
+    char buf[0x108];
+    u16 id;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_PieceExplain(&id, buf);
+        CnetSys_w.lobby[id - 1].id = id;
+        strcpy((u8 *)&CnetSys_w + ((id - 1) * 0x164) + 0x4EAC, buf);
+        CnetSys_w.lobby[id - 1].flags |= 8;
+    }
+    _cnet_Return_CallBack(0x16);
 }
 
 void _cnet_RecvFromLbs_AnswerLobbyEntry(void) {
@@ -581,6 +667,21 @@ int cnLBS_Get_RoomStatus(int idx, u8 *d) {
     return 0;
 }
 
+void _cnet_RecvFromLbs_BothRoomStatus(void) {
+    u8 st;
+    u16 id;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_PieceStatus(&id, &st);
+        CnetSys_w.room[id - 1].id = id;
+        CnetSys_w.room[id - 1].status = st;
+        CnetSys_w.last_id = id;
+        CnetSys_w.last_status = st;
+        CnetSys_w.room[id - 1].flags |= 2;
+    }
+    _cnet_Return_CallBack(0x1A);
+}
+
 int cnLBS_Read_RoomName(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
@@ -599,6 +700,21 @@ char *d;
     return 0;
 }
 
+void _cnet_RecvFromLbs_BothRoomName(void) {
+    char buf[0x108];
+    u16 id;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_PieceName(&id, buf);
+        CnetSys_w.room[id - 1].id = id;
+        strcpy((u8 *)&CnetSys_w + ((id - 1) * 0x164) + 0x61E2, buf);
+        CnetSys_w.last_id = id;
+        strcpy(CnetSys_w.last_name, buf);
+        CnetSys_w.room[id - 1].flags |= 4;
+    }
+    _cnet_Return_CallBack(0x18);
+}
+
 int cnLBS_Read_RoomExplain(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
@@ -615,6 +731,19 @@ char *d;
 {
     strcpy(d, (u8 *)&CnetSys_w + (((u16)idx - 1) * 0x164) + 0x6224);
     return 0;
+}
+
+void _cnet_RecvFromLbs_BothRoomExplain(void) {
+    char buf[0x108];
+    u16 id;
+
+    if (CnetSys_w.rres == 0) {
+        __cnet_Recv_PieceExplain(&id, buf);
+        CnetSys_w.room[id - 1].id = id;
+        strcpy((u8 *)&CnetSys_w + ((id - 1) * 0x164) + 0x6224, buf);
+        CnetSys_w.room[id - 1].flags |= 8;
+    }
+    _cnet_Return_CallBack(0x1B);
 }
 
 int cnLBS_Read_RoomJoinInfo(int arg0, int arg1) {
