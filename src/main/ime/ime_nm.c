@@ -101,7 +101,7 @@ typedef struct HCHAR {
 extern HCHAR hchar[80];
 extern u8 overlay_no[2];
 extern u8 Arrangement[4];
-extern int overlay_addr[];          /* 0x386B00 */
+extern int D_00386B00[];          /* 0x386B00 */
 extern s16 *name_tbl[3];
 extern int cur_len, cur_pos, func_mode, gun_nkh, sel_job, im_state, learn_on;
 extern KH *top_kh;
@@ -149,7 +149,6 @@ extern u8 offsetmap[256];
 extern ASKROM gAskRom;
 extern u8 *ask_load_adrs;
 extern int dic_rw, dic_fd;
-
 
 int PatchExecCS();
 int afs_file_length();
@@ -468,6 +467,8 @@ typedef struct SRCH {
 
 extern SYNR entbuf;
 
+/* learn the chosen candidate (pos, len unused) */
+
 void Overlay_reset(void)
 {
     overlay_no[0] = 0;
@@ -482,7 +483,7 @@ int Load_overlay(int arg0, int arg1)
     if ((u8)arg1 != 2 && (u8)arg0 == Arrangement[(u8)arg1 + 3]) {
         return 1;
     }
-    addr = overlay_addr[(u8)arg1];
+    addr = D_00386B00[(u8)arg1];
     len = afs_file_length(name_tbl[(u8)arg1][(u8)arg0] | 0x20000);
     load_bin(name_tbl[(u8)arg1][(u8)arg0] | 0x20000, addr);
     if (len > 0) {
@@ -599,7 +600,6 @@ u8 *select_subtostr(int arg0, int n)
     return outbuf;
 }
 
-/* learn the chosen candidate (pos, len unused) */
 void kh_learn(int pos, int len, KH *kh, BS *list)
 {
     s64 *out;
@@ -5515,79 +5515,6 @@ int base;
     return base;
 }
 
-int setu_match(a, b, c, base, extra)
-int a;
-int b;
-int c;
-int base;
-int extra;
-{
-    int r;
-
-    r = 0;
-    b = b & 0xFF;
-    switch (a & 0xFF) {
-    case 0:
-        if ((b >= 0x14 && b < 0x1A) || b == 0x32) {
-            r = 0xF;
-        }
-        break;
-    case 1:
-        if (b == 0x1A) {
-            r = 0xF;
-        }
-        break;
-    case 2:
-        if (b == 0x1B || b == 0x1C) {
-            r = 0x14;
-        }
-        break;
-    case 3:
-        if (b == 0x1F || b == 0x38) {
-            r = 0x14;
-        }
-        break;
-    case 4:
-        if (b == 0x16) {
-            r = 0x14;
-        }
-        break;
-    case 5:
-        c = c & 0xFF;
-        if (c == 0xFF) {
-            if (b > 0 && b < 0xE) {
-                r = 0xF;
-            }
-        } else if (b >= 0x80 && b < 0x8C && c == 4) {
-            r = 0xF;
-        } else if (b == 0xD && c == 0) {
-            r = 0xF;
-        }
-        break;
-    case 6:
-        if (b >= 0x14 && b < 0x1A) {
-            r = 0xF;
-        } else if (b == 0x1F || b == 0x38) {
-            r = 0x14;
-        }
-        break;
-    case 7:
-        if (b == 0x1D) {
-            r = 0xF;
-        }
-        break;
-    case 8:
-        if ((b >= 0x14 && b < 0x1A) || (b > 0 && b < 0xE)) {
-            r = 0x14;
-        }
-        break;
-    }
-    if (r == 0) {
-        return base;
-    }
-    return extra + (base + r);
-}
-
 int syn_match(a, b, base)
 int a;
 int b;
@@ -5705,6 +5632,79 @@ int base;
             return base;
         }
     }
+}
+
+int setu_match(a, b, c, base, extra)
+int a;
+int b;
+int c;
+int base;
+int extra;
+{
+    int r;
+
+    r = 0;
+    b = b & 0xFF;
+    switch (a & 0xFF) {
+    case 0:
+        if ((b >= 0x14 && b < 0x1A) || b == 0x32) {
+            r = 0xF;
+        }
+        break;
+    case 1:
+        if (b == 0x1A) {
+            r = 0xF;
+        }
+        break;
+    case 2:
+        if (b == 0x1B || b == 0x1C) {
+            r = 0x14;
+        }
+        break;
+    case 3:
+        if (b == 0x1F || b == 0x38) {
+            r = 0x14;
+        }
+        break;
+    case 4:
+        if (b == 0x16) {
+            r = 0x14;
+        }
+        break;
+    case 5:
+        c = c & 0xFF;
+        if (c == 0xFF) {
+            if (b > 0 && b < 0xE) {
+                r = 0xF;
+            }
+        } else if (b >= 0x80 && b < 0x8C && c == 4) {
+            r = 0xF;
+        } else if (b == 0xD && c == 0) {
+            r = 0xF;
+        }
+        break;
+    case 6:
+        if (b >= 0x14 && b < 0x1A) {
+            r = 0xF;
+        } else if (b == 0x1F || b == 0x38) {
+            r = 0x14;
+        }
+        break;
+    case 7:
+        if (b == 0x1D) {
+            r = 0xF;
+        }
+        break;
+    case 8:
+        if ((b >= 0x14 && b < 0x1A) || (b > 0 && b < 0xE)) {
+            r = 0x14;
+        }
+        break;
+    }
+    if (r == 0) {
+        return base;
+    }
+    return extra + (base + r);
 }
 
 u16 kh_priority(BS *b, int v)

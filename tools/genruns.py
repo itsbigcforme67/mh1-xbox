@@ -8,6 +8,7 @@ python3 tools/genruns.py src/main/stage/f_stage_nm.c src/main/stage/f_stage b 15
 nm,prefix,first,minaddr=sys.argv[1:5]
 minaddr=int(minaddr,16)
 extra=set(sys.argv[5:])
+skip=set(x for x in os.environ.get('GENRUNS_SKIP','').split(',') if x)
 ns={}
 exec(open('tools/split_runs.py').read().split('def main')[0],ns)
 parse=ns['parse']
@@ -18,7 +19,7 @@ addr={};ok={};size={}
 for l in out.split('\n'):
     m=re.match(r'(OK|--)\s+(\S+)\s+main\s+0x([0-9A-F]+)\s+(\d+) bytes',l)
     if m:
-        addr[m.group(2)]=int(m.group(3),16); ok[m.group(2)]=(m.group(1)=='OK') or m.group(2) in extra; size[m.group(2)]=int(m.group(4))
+        addr[m.group(2)]=int(m.group(3),16); ok[m.group(2)]=((m.group(1)=='OK') or m.group(2) in extra) and m.group(2) not in skip; size[m.group(2)]=int(m.group(4))
 # reorder functions by address
 inbody=set()
 for f in funcs: inbody.update(range(f[1],f[2]+1))
@@ -35,7 +36,7 @@ for a,s,n in rows:
         if cur: runs.append(cur)
         cur=[]
 if cur: runs.append(cur)
-letters='bcdefghijklmnopqrstuvwxyz'
+letters=list('bcdefghijklmnopqrstuvwxyz')+[a+b for a in 'abcdefghijklmnopqrstuvwxyz' for b in 'abcdefghijklmnopqrstuvwxyz']
 if first!='-': letters=letters[letters.index(first):]
 args=[];cfg=[]
 for k,run in enumerate(runs):

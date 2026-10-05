@@ -16,7 +16,7 @@ def parse(src):
             j = i
             while j < n and lines[j] != '{':
                 j += 1
-            if j - i < 6 and all(';' not in lines[k] or k > i for k in range(i, j)):
+            if j - i < 12 and all(';' not in lines[k] or k > i for k in range(i, j)):
                 k = j
                 while lines[k] != '}':
                     k += 1
