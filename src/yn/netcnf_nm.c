@@ -23,7 +23,7 @@ int sceSifLoadStartModule();
 int sceSifSearchModuleByName();
 int sceSifStopModule();
 int sceSifUnloadModule();
-extern u8 CurDevice[];
+extern s32 CurDevice;
 extern u8 DeviceWork[];
 extern u8 lit_1349_0053E398[];
 extern u8 lit_135_0053E300[];
@@ -63,12 +63,12 @@ s32 yn_hard_type_check();
 s32 yn_hard_select_set();
 void yn_utf8_to_sjis();
 void yn_sjis_to_utf8();
-void module_unload_00535090();
+void module_unload_00535090(s32 id);
 void module_load_00535140();
 
 s32 yn_netcnf_init1(void) {
-    module_load_00535140(lit_135_0053E300, 0x7F, netcnf_arg, 0);
-    module_load_00535140(lit_136_0053E330, 0x16, netcnfif_arg, 0);
+    module_load_00535140(lit_135_0053E300, 0x7F, netcnf_arg, 0, 0);
+    module_load_00535140(lit_136_0053E330, 0x16, netcnfif_arg, 0, 0);
     sceNetcnfifInit();
     do {
 
@@ -104,11 +104,11 @@ s32 yn_netcnf_exit(void) {
 
     } while (sceNetcnfifCheck() != 0);
     temp_v0 = sceSifSearchModuleByName(lit_203_0053E360);
-    if (temp_v0 >= 0) {
+    if (0 <= temp_v0) {
         module_unload_00535090(temp_v0);
     }
     temp_v0_2 = sceSifSearchModuleByName(lit_204_0053E380);
-    if (temp_v0_2 >= 0) {
+    if (0 <= temp_v0_2) {
         module_unload_00535090(temp_v0_2);
     }
     return 0;
@@ -196,7 +196,7 @@ void yn_netcnf_work_to_ifc(u8 *arg0, u8 *arg1, s8 *arg2) {
 void yn_netcnf_ifc_to_work(u8 *arg0, u8 *arg1, s8 *arg2) {
     u8 temp_v1;
 
-    memset(0, 0xA20);
+    memset(arg0, 0, 0xA20);
     M2C_FIELD(arg0, s32 *, 0) = (s32) M2C_FIELD(arg1, s32 *, 0x1300);
     if (M2C_FIELD(arg1, u8 *, 0x1325) == 1) {
         strcpy(arg0 + 0xC, arg1 + 0xB00);
@@ -547,7 +547,7 @@ s32 yn_netcnf_magicno_check_sub(u8 *arg0) {
     return -(M2C_FIELD(arg0, s32 *, 0x197C0) == -0xF);
 }
 
-void yn_netcnf_get_filename(s32 arg0, int arg1) {
+void yn_netcnf_get_filename(u8 *arg0, int arg1) {
     sprintf(arg0 + 0x19AF4, lit_1846_0053E3A0, arg1, lit_1847_0053E3B0);
 }
 
@@ -577,75 +577,74 @@ void yn_netcnf_ip_to_num(u8 *arg0, s8 *arg1) {
     *var_a1 = var_a2;
 }
 
-void yn_netcnf_num_to_ip(u8 *arg1) {
-    sprintf(lit_1903, M2C_FIELD(arg1, u8 *, 0), M2C_FIELD(arg1, u8 *, 1));
+void yn_netcnf_num_to_ip(char *dst, u8 *ip) {
+    sprintf(dst, lit_1903, ip[0], ip[1], ip[2], ip[3]);
 }
 
 void yn_hard_init(void) {
-    if ((*(s32 *)CurDevice) != 0) {
+    if (CurDevice != 0) {
         DeviceRollbackDriver();
     }
     DeviceSelectInitialize();
     DeviceUpdateStatus();
 }
 
-s32 yn_hard_status_check(s32 arg0, s32 arg1) {
-    s32 *var_s0;
-    s32 var_s1;
+typedef struct DEVW {
+    s32 state;          /* 0x00 -1 = unused slot, 1 = ... (guess) */
+    u8 _pad04[0x10];
+    char *name;         /* 0x14 */
+    char *vendor;       /* 0x18 */
+} DEVW;                 /* 0x1C */
 
-    var_s1 = 0;
-    var_s0 = (s32 *)DeviceWork;
-loop_1:
-    if ((M2C_FIELD(var_s0, s32 *, 0) != -1) && (strcmp(M2C_FIELD(var_s0, s32 *, 0x14), arg0) == 0) && (strcmp(M2C_FIELD(var_s0, s32 *, 0x18), arg1) == 0)) {
-        return var_s1;
-    }
-    var_s1 += 1;
-    var_s0 += 0x1C;
-    if (var_s1 >= 0x23) {
-        return -1;
-    }
-    goto loop_1;
-}
+s32 yn_hard_status_check(char *name, char *vendor) {
+    s32 i;
+    DEVW *d;
 
-s32 yn_hard_type_check(s32 arg0, s32 arg1) {
-    s32 *var_s0;
-    s32 var_s1;
-    s32 var_v0;
-
-    var_s1 = 0;
-    var_s0 = (s32 *)DeviceWork;
-loop_1:
-    if ((M2C_FIELD(var_s0, s32 *, 0) != -1) && (strcmp(M2C_FIELD(var_s0, s32 *, 0x14), arg0) == 0) && (strcmp(M2C_FIELD(var_s0, s32 *, 0x18), arg1) == 0)) {
-        var_v0 = 1;
-        if (*(DeviceWork + (var_s1 * 0x1C)) == 1) {
-
-        } else {
-            var_v0 = 2;
+    i = 0;
+    d = (DEVW *)DeviceWork;
+    do {
+        if (d->state != -1 && strcmp(d->name, name) == 0 && strcmp(d->vendor, vendor) == 0) {
+            return i;
         }
-        return var_v0;
-    }
-    var_s1 += 1;
-    var_s0 += 0x1C;
-    if (var_s1 >= 0x23) {
-        return 0;
-    }
-    goto loop_1;
+        i++;
+        d++;
+    } while (i < 0x23);
+    return -1;
 }
 
-s32 yn_hard_select_set(s32 arg0) {
-    s32 *temp_a1;
-    s32 temp_a0;
+s32 yn_hard_type_check(char *name, char *vendor) {
+    s32 i;
+    DEVW *d;
 
-    temp_a0 = (*(s32 *)CurDevice);
-    temp_a1 = (s32 *)(DeviceWork + (arg0 * 0x1C));
-    if (temp_a0 != 0) {
-        return -(temp_a0 != (s32) temp_a1);
+    i = 0;
+    d = (DEVW *)DeviceWork;
+    do {
+        if (d->state != -1 && strcmp(d->name, name) == 0 && strcmp(d->vendor, vendor) == 0) {
+            if (((DEVW *)DeviceWork)[i].state == 1) {
+                return 1;
+            }
+            return 2;
+        }
+        i++;
+        d++;
+    } while (i < 0x23);
+    return 0;
+}
+
+s32 yn_hard_select_set(s32 n) {
+    s32 cur;
+    DEVW *d;
+
+    d = &((DEVW *)DeviceWork)[n];
+    cur = CurDevice;
+    if (cur != 0) {
+        return -(cur != (s32)d);
     }
-    if (*temp_a1 != 1) {
+    if (d->state != 1) {
         return -2;
     }
-    (*(s32 *)CurDevice) = (s32) temp_a1;
-    DeviceLoadDriver(temp_a0, temp_a1);
+    CurDevice = (s32)d;
+    DeviceLoadDriver(cur, d);
     DeviceLoadDriver2();
     return 1;
 }
@@ -751,64 +750,45 @@ block_25:
     *var_a0 = 0;
 }
 
-void module_unload_00535090(s32 arg0) {
-    int sp2C;
-    s32 temp_v0;
+/* Stop and unload an IOP module (retries until the IOP accepts the request). */
+void module_unload_00535090(s32 id) {
+    int result;
+    s32 r;
 
-loop_3:
-    temp_v0 = sceSifStopModule(arg0, 0, 0, (u8 *)&sp2C);
-    if (temp_v0 < 0) {
-        goto loop_3;
+    while ((r = sceSifStopModule(id, 0, 0, &result)) < 0) {
     }
-    if (temp_v0 >= 0) {
-loop_8:
-        if (sceSifUnloadModule(arg0) < 0) {
-            goto loop_8;
+    if (r >= 0) {
+        while (sceSifUnloadModule(id) < 0) {
         }
     }
 }
 
-void module_load_00535140(s32 arg0, int arg1, int arg2, s32 arg3) {
-    s32 temp_s4;
-    s32 var_s3;
-    s32 var_s3_2;
+/* Load an IOP module; with start != 0 also start it. retry = 0 means retry until it works,
+   otherwise at most retry attempts. */
+void module_load_00535140(char *name, int len, char *args, int start, int retry) {
+    int i;
 
-    temp_s4 = M2C_ERROR(/* Read from unset register $t0 */);
-    if (arg3 == 0) {
-        if (temp_s4 == 0) {
-loop_4:
-            if (sceSifLoadModule(arg0, arg1, arg2) < 0) {
-                goto loop_4;
+    if (start == 0) {
+        if (retry == 0) {
+            while (sceSifLoadModule(name, len, args) < 0) {
             }
             return;
         }
-        var_s3 = 0;
-loop_11:
-        if (var_s3 >= temp_s4) {
+        for (i = 0; i < retry; i++) {
+            if (sceSifLoadModule(name, len, args) >= 0) {
+                return;
+            }
+        }
+        return;
+    }
+    if (retry == 0) {
+        while (sceSifLoadStartModule(name, len, args, start) < 0) {
+        }
+        return;
+    }
+    for (i = 0; i < retry; i++) {
+        if (sceSifLoadStartModule(name, len, args, start) >= 0) {
             return;
         }
-        if (sceSifLoadModule(arg0, arg1, arg2) >= 0) {
-            return;
-        }
-        var_s3 += 1;
-        goto loop_11;
     }
-    if (temp_s4 == 0) {
-loop_17:
-        if (sceSifLoadStartModule(arg0, arg1, arg2, arg3) < 0) {
-            goto loop_17;
-        }
-        return;
-    }
-    var_s3_2 = 0;
-loop_24:
-    if (var_s3_2 >= temp_s4) {
-        return;
-    }
-    if (sceSifLoadStartModule(arg0, arg1, arg2, arg3) >= 0) {
-        return;
-    }
-    var_s3_2 += 1;
-    goto loop_24;
 }
-
