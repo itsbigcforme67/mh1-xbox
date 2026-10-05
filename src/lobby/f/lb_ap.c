@@ -97,10 +97,9 @@ int BsUrlEncode(s8 *dst, u8 *src) {
     i = 0;
     if (*src != 0) {
         do {
-            dst[0] = 0x25;
+            *dst++ = 0x25;
             i += 3;
-            dst[1] = lit_928_00666260[(*src & 0xF0) >> 4];
-            dst += 2;
+            *dst++ = lit_928_00666260[(*src & 0xF0) >> 4];
             *dst++ = lit_928_00666260[*src++ & 0xF];
         } while (*src != 0);
     }
