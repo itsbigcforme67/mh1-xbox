@@ -124,7 +124,10 @@ typedef struct PLW {
     u8 _pad4E4[0x87];
     s8    work56B;       /* 0x56B */
     u8    ammo_type;     /* 0x56C shot type fired (shell06_set) */
-    u8 _pad56D[0x5AC - 0x56D];
+    u8 _pad56D[2];
+    u8    x56F;          /* 0x56F (stage_mv_ck: zone check only while 0) */
+    u16   x570;          /* 0x570 facing after a stage change (stage_mv_ck) */
+    u8 _pad572[0x5AC - 0x572];
     f32   x5AC;          /* 0x5AC ground height (eft21_i, as EMW) */
     u8 _pad5B0[0x604 - 0x5B0];
     u8    flag604;       /* 0x604 */
@@ -142,7 +145,7 @@ typedef struct PLW {
     u8    x738;          /* 0x738 cleared on death (Pl_die_set) */
     u8 _pad739;
     u16   x73A;          /* 0x73A next stage number? (game2) */
-    u8 _pad73C[0x748 - 0x73C];
+    f32   x73C[3];       /* 0x73C position in the next stage (stage_mv_ck) */
     s16   stamina;       /* 0x748 guarding needs 75 or more (pl_guard_ck); a guess */
     u8 _pad74A[0x766 - 0x74A];
     s16   dm_vital;      /* 0x766 damage to take (Pl_damage_sub) */
