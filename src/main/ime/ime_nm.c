@@ -2229,15 +2229,10 @@ int isnum(u8 *p)
 {
     u8 v;
 
-    v = *p;
-    if (v != 0) {
-        do {
-            if (v <= 0x2F || v >= 0x3A) {
-                return 0;
-            }
-            p++;
-            v = *p;
-        } while (v != 0);
+    for (v = *p; v != 0; v = *++p) {
+        if ((v & 0xFF) < 0x30 || (v & 0xFF) > 0x39) {
+            return 0;
+        }
     }
     return 1;
 }
