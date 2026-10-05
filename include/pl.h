@@ -207,7 +207,7 @@ typedef struct PLW {
     f32   work744;           /* 0x744 */
     s16   stamina;       /* 0x748 guarding needs 75 or more (pl_guard_ck); a guess */
     s16   work74A;           /* 0x74A */
-    u8 _pad74C[0x750 - 0x74C];
+    s32   work74C;           /* 0x74C */
     s16   work750;           /* 0x750 */
     u8 _pad752[0x760 - 0x752];
     s16   work760;           /* 0x760 */

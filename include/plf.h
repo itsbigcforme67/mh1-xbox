@@ -109,10 +109,17 @@ void Pl_chat_act_set(PLW *);
 void item_action_set(PLW *, int);
 void job_special_com_ck(PLW *, u8);
 void search_act_set(PLW *, u8);
-s16 stick_dir_set(PLW *, int);
+int stick_dir_set(PLW *, int);
 s32 stick_pow_get(PLW *, int);
 s32 trade_get_ck_00139680(PLW *);
 void unique_act_set(PLW *);
 typedef struct { u8 _00; u8 se_kind; u8 _02[2]; } PL_SHELL_DATA; /* see SHELL_DATA in shell06.h */
 extern PL_SHELL_DATA Shell_data[];
+u16 calc_vec_ang(f32, f32, f32, f32);
+s32 front_land_ck(f32, f32, f32, PLW *, int *);
+s32 Pl_stg_ck(PLW *);
+s32 wall_act_ck(PLW *, s16);
+s32 wall_vec_set(PLW *, s16);
+typedef struct { u16 flag; u16 _02; f32 *vec; u8 _08[4]; } PL_WALL; /* 12 bytes, 21 per player (guess) */
+extern PL_WALL pl_wall_mat[][21];
 #endif
