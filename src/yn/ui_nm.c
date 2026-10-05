@@ -2583,6 +2583,25 @@ void yn_port_init(u16 *arg0) {
     M2C_FIELD(ynw, s8 *, 0x38) = 0;
 }
 
+typedef struct { s32 a; s32 b; } PR8;
+
+/* Copy the 0x41 pairs of proxy settings (0x208 bytes) in the work area. */
+#define PROXY_COPY(dst, src) \
+    do { \
+        PR8 *d_ = (PR8 *)(dst); \
+        PR8 *s_ = (PR8 *)(src); \
+        int n_ = 0x41; \
+        s32 t_; \
+        do { \
+            n_--; \
+            t_ = s_->b; \
+            d_->a = s_->a; \
+            s_++; \
+            d_->b = t_; \
+            d_++; \
+        } while (n_ > 0); \
+    } while (0)
+
 typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
 
 /* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
@@ -2850,72 +2869,22 @@ block_22:
     }
 }
 
-#if 0 /* yn_backup_allwork: m2c draft, does not compile yet */
-void yn_backup_allwork(s32 arg0) {
-    s8 sp2C;
-    int *var_a2;
-    s32 temp_v1;
-    s32 var_a1;
-    u8 *var_a3;
+void yn_backup_allwork(u8 *ifc) {
+    s8 name;
 
-    sp2C = 0;
-    yn_netcnf_ifc_to_work(D_5306B0, arg0, (u8 *)&sp2C);
-    yn_netcnf_dev_to_work(D_5306B0, arg0);
-    var_a2 = D_5310D0;
-    var_a1 = 0x41;
-    var_a3 = ynw + 0xEC8;
-    do {
-        var_a1 -= 1;
-        temp_v1 = M2C_FIELD(var_a3, s32 *, 4);
-        M2C_FIELD(var_a2, s32 *, 0) = (s32) M2C_FIELD(var_a3, s32 *, 0);
-        var_a3 += 8;
-        M2C_FIELD(var_a2, s32 *, 4) = temp_v1;
-        var_a2 += 8;
-    } while (var_a1 > 0);
+    name = 0;
+    yn_netcnf_ifc_to_work(D_5306B0, ifc, &name);
+    yn_netcnf_dev_to_work(D_5306B0, ifc);
+    PROXY_COPY(D_5310D0, ynw + 0xEC8);
 }
-#endif
 
-#if 0 /* yn_proxy_wk_load: m2c draft, does not compile yet */
 void yn_proxy_wk_load(void) {
-    int *var_a3;
-    s32 temp_v1;
-    s32 var_a1;
-    u8 *var_a2;
-
-    var_a3 = D_530394;
-    var_a1 = 0x41;
-    var_a2 = ynw + 0xEC8;
-    do {
-        var_a1 -= 1;
-        temp_v1 = M2C_FIELD(var_a3, s32 *, 4);
-        M2C_FIELD(var_a2, s32 *, 0) = (s32) M2C_FIELD(var_a3, s32 *, 0);
-        var_a3 += 8;
-        M2C_FIELD(var_a2, s32 *, 4) = temp_v1;
-        var_a2 += 8;
-    } while (var_a1 > 0);
+    PROXY_COPY(ynw + 0xEC8, D_530394);
 }
-#endif
 
-#if 0 /* yn_proxy_wk_save: m2c draft, does not compile yet */
 void yn_proxy_wk_save(void) {
-    int *var_a2;
-    s32 temp_v1;
-    s32 var_a1;
-    u8 *var_a3;
-
-    var_a2 = D_530394;
-    var_a1 = 0x41;
-    var_a3 = ynw + 0xEC8;
-    do {
-        var_a1 -= 1;
-        temp_v1 = M2C_FIELD(var_a3, s32 *, 4);
-        M2C_FIELD(var_a2, s32 *, 0) = (s32) M2C_FIELD(var_a3, s32 *, 0);
-        var_a3 += 8;
-        M2C_FIELD(var_a2, s32 *, 4) = temp_v1;
-        var_a2 += 8;
-    } while (var_a1 > 0);
+    PROXY_COPY(D_530394, ynw + 0xEC8);
 }
-#endif
 
 int yn_load_texfile(int file, int size) {
     YnFile_Data_load(file, Yn_temp);
