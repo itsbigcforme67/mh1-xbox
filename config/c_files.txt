@@ -443,3 +443,10 @@ main 0x001611F0 0x00161478 sprite/sysw
 main 0x0015B930 0x0015BBDC sprite/putspr2
 main 0x0015B650 0x0015B810 sprite/putspr
 main 0x00169300 0x001698A4 prim/prim2
+main 0x00169DA0 0x0016A004 emw/emw01
+main 0x0016A2B0 0x0016A378 emw/emw02
+main 0x0016A3D0 0x0016A514 emw/emw03
+main 0x0016A570 0x0016A6E4 emw/emw04
+main 0x0016A790 0x0016A858 emw/emw05
+main 0x0016A860 0x0016A890 emw/gmat01
+main 0x0016AAE0 0x0016ABAC emw/gmat02

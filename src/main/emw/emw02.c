@@ -1,7 +1,4 @@
-/* View helpers and monster work slots. SLPM_654.95 0x00169DA0-0x0016A848 (g_RollView):
- * lpView accessors, em_work[0x14] allocation (pull_enemy_work) and release (push_em_work),
- * and the small pointer stacks (smell, smoke, senko, ear, em_yobi: 32 entries of work
- * pointers each, with a count). Field names guessed from use; offsets are exact. */
+/* emw02 - view and monster work 0x0016A2B0-0x0016A378: push_smell, pull_smell. Whole file in emwork_nm.c. */
 #include "types.h"
 
 #define B8(p, o)   (*(u8 *)((u8 *)(p) + (o)))
@@ -76,7 +73,7 @@ typedef struct GWL {
 } GWL;
 extern GWL game_w;
 extern u8 mdlw_heap[];
-extern u32 smell_stack[0x20], smoke_stack[0x20], senko_stack[0x20], ear_stack[0x20], em_yobi_stack[0x20];
+extern void *smell_stack[0x20], *smoke_stack[0x20], *senko_stack[0x20], *ear_stack[0x20], *em_yobi_stack[0x20];
 extern s8 smell_cnt, smoke_cnt, senko_cnt, ear_cnt, em_yobi_cnt;
 
 void *memset(void *, int, unsigned);
@@ -93,144 +90,34 @@ void set_used_mdlw(int, int);
 int get_start_hierarchy(int);
 void *get_hierarchy_ptr(int);
 void set_used_hierarchy(int, int);
-void Em_Senko_Ck(void *);
+void func_539340(void *);
 
-void RollView(f32 r) {
-    *(f32 *)(lpView + 0x34) = r;
-}
 
-void SetAngleOfView(f32 a) {
-    *(f32 *)(lpView + 0x2C) = a;
-}
 
-f32 Get_dist_to_view(f32 *p) {
-    return flvecCalcDistance(p, (f32 *)lpView);
-}
 
-/* Heading from the camera target to the eye, as a 16 bit angle. */
-u16 Get_view_dir(void) {
-    f32 *v = (f32 *)lpView;
-    f32 dz = v[5] - v[2];
-    f32 dx = v[3] - v[0];
 
-    return (s32)(0.5f + 65536.0f * flArcTan2(-dz, dx) / 6.2831855f);
-}
 
-void clr_em_work(void) {
-    s16 i;
-    u8 *w = em_work;
 
-    for (i = 0; i < 0x14; i++) {
-        memset(w, 0, 0xA00);
-        w += EMW_SIZE;
-    }
-}
 
-void push_em_work(EWK *w) {
-    s16 i;
 
-    if (w->prim != 0) {
-        release_prim(w->prim_no);
-    }
-    if (w->mdl != 0) {
-        for (i = w->mdl_start; i < w->mdl_start + w->mdl_num; i++) {
-            model_work_free2(i);
-            if (mdlw_heap[i] != 0) {
-                clr_used_mdlw(i, 1);
-            }
-            w->mdl = 0;
-            w->mdl_start = 0;
-            w->mdl_num = 0;
-        }
-    }
-    memset(w, 0, 0x12);
-}
 
-void push_em_work_all(void) {
-    s16 i;
-    EWK *w = (EWK *)em_work;
 
-    for (i = 0; i < 0x14; i++) {
-        if (w->be_flag != 0) {
-            push_em_work(w);
-        }
-        w++;
-    }
-}
 
-void em_work_set(EWK *w) {
-    int i;
-    MDLW *m;
-    int h;
-    GWL *g = &game_w;
-    int idx;
-    int acc;
 
-    idx = get_start_mdlw(1);
-    if (idx >= 0) {
-        w->mdl_start = idx;
-        w->mdl_num = 1;
-        w->mdl = get_mdlw_ptr(idx);
-        set_used_mdlw(idx, 1);
-        m = get_mdlw_ptr(idx);
-        memcpy(m, g->mdl_tmpl[w->x34F], 0x80);
-        m->flag = 1;
-        m->x74 = 2;
-        m->x75 = 1;
-        h = get_start_hierarchy(m->hier_n);
-        m->hier_no = h;
-        m->hier0 = get_hierarchy_ptr(h);
-        m->hier1 = get_hierarchy_ptr(h + m->hier_n / 2);
-        set_used_hierarchy(h, m->hier_n);
-        acc = 0;
-        for (i = 0; i < m->num; i++) {
-            int ofs = acc * 400;
-            flGetHierarchySI(m->hier0 + ofs, m->si[i]);
-            flGetHierarchySI(m->hier1 + ofs, m->si[i]);
-            m->a[i] = m->hier0 + ofs;
-            m->b[i] = m->hier1 + ofs;
-            acc += S16(m->hier0, 0xC2);
-        }
-    }
-}
 
-EWK *pull_enemy_work(void) {
-    u32 i;
-    EWK *w = (EWK *)em_work;
 
-    for (i = 0; i < 0x14; i++) {
-        if (w->be_flag == 0) {
-            memset(w, 0, EMW_SIZE);
-            w->slot = i;
-            w->be_flag = 1;
-            w->x10 = 1;
-            w->x88D = -1;
-            w->id = i;
-            w->mdl = 0;
-            w->x8C3 = game_w.master;
-            w->x798 = 1.0f;
-            w->x3F8[i] = 0;
-            w->x410 = 0;
-            return w;
-        }
-        w++;
-    }
-    return 0;
-}
 
-void smell_init(void) {
-    int i;
-    u32 *p = smell_stack;
 
-    for (i = 0; i < 0x20; i += 8) {
-        p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0;
-        p[4] = 0; p[5] = 0; p[6] = 0; p[7] = 0;
-        p += 8;
-    }
-    smell_cnt = 0;
-}
 
-int push_smell(u32 p) {
+
+
+
+
+
+
+
+
+int push_smell(void *p) {
     int i;
 
     if (smell_cnt >= 0x20) {
@@ -246,13 +133,15 @@ int push_smell(u32 p) {
     return 0;
 }
 
-void pull_smell(u32 p) {
+void pull_smell(void *p) {
     int i;
+    void **q = smell_stack;
 
     for (i = 0; i < 0x20; i++) {
-        if (smell_stack[i] == p) {
-            smell_stack[i] = 0;
+        if (*q == p) {
+            *q = 0;
             smell_cnt--;
         }
+        q++;
     }
 }
