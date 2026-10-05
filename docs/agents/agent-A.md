@@ -90,3 +90,9 @@ Still assembly:
   as halves with `sh` in another needs `*(s16 *)&spr.uv0` (DispTutorial).
 - Statement order of plain stores matters even with no dependencies
   (DispTutorial's second sprite: w, y, h, col, x).
+
+## Assignment 3: fl graphics library (5 Oct 2026)
+- docs/formats/graphics.md: Meltw, link files, AMO chunk tree, MLCLAY,
+  clay handles, shader params, VU1 programs, flSetRenderState map.
+- tools/clay_dump.py (AFS -> .obj, em01 renders as Rathalos) and
+  tools/vu_dis.py (VU1 microcode disassembler, output only to build/vu1).
