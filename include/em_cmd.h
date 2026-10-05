@@ -11,6 +11,33 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+/* Area-move route data (EM_AREA.x18 lists, cmd_tbl[7]): a point of a route (0x14 bytes) and a
+ * route (0x18 bytes; num = number of points). Field meanings are guesses. */
+typedef struct EM_ROUTE_PT {
+    f32 pos[3];         /* 0x00 */
+    f32 radius;         /* 0x0C distance at which the point counts as reached */
+    u8 _pad10[2];
+    u16 move;           /* 0x12 ground_area_move_ptr_set index */
+} EM_ROUTE_PT;
+
+typedef struct EM_ROUTE {
+    s16 stg;            /* 0x00 stage the route leads to, -1 none */
+    s16 num;            /* 0x02 */
+    EM_ROUTE_PT *pt;    /* 0x04 */
+    f32 pos[3];         /* 0x08 where the monster appears in the new stage */
+    u16 ang;            /* 0x14 */
+    u8 _pad16[2];
+} EM_ROUTE;
+
+/* Start of the stage data (Stage_data_get): position and size of the stage rectangle. */
+typedef struct EM_STG_BOX {
+    f32 x;              /* 0x00 */
+    f32 z;              /* 0x04 */
+    u8 _pad08[8];
+    f32 w;              /* 0x10 width (x) */
+    f32 d;              /* 0x14 depth (z) */
+} EM_STG_BOX;
+
 #define EM_FIELD(p, T, o) (*(T)((u8 *)(p) + (o)))
 
 /* Condition failed: skip to the matching else (mode 1) or end (mode 2) marker of command
@@ -185,11 +212,11 @@ extern u8 ***em_cmd0_tbl[], ***em_cmd1_tbl[], ***em_cmd2_tbl[], ***em_cmd3_tbl[]
 extern u8 ***em_cmd4_tbl[], ***em_cmd5_tbl[], ***em_cmd6_tbl[];
 extern u8 *em_area_mv_tbl[];
 extern s32 check_hate_tbl[];
-extern u8 area_move_high_y_tbl[];
 extern s16 em02_runaway_timer_tbl[];
 extern s16 em_atk_mode_timer_tbl[];
 extern s32 em_atk_bit;
 extern f32 (*em_cmd_pos_tbl[])[3];
+extern f32 area_move_high_y_tbl[];
 
 u8 *em_cmd_kehai_ck(EMW *, u8 *);
 u8 *em_cmd_target_set(EMW *, u8 *);
@@ -300,6 +327,11 @@ u8 *em_cmd_demo_start(EMW *, u8 *);
 u8 *em_cmd_wait_set(EMW *, u8 *);
 u8 *em_cmd_em_atk_bit(EMW *, u8 *);
 
+void NextStage_No_Set(EMW *);
+void NextStage_Dir_Set(EMW *, f32 *);
+void em_cdm_act_flag_ck(EMW *);
+void Em_Next_Stage_Pos(EMW *);
+
 void em_cmd_init(EMW *);
 void em_cmd_ck(EMW *);
 u8 *em_cmd_top(EMW *);
@@ -346,10 +378,10 @@ int GetWallHitLine(f32 *, f32 *, f32 *, u16);
 int GetWaterData();
 int Pl_stg_ck_tw(EMW *, PLW *);
 int pl_flag_ck(PLW *, int);
-int st_mv_ptr_ck(EMW *);
+s8 *st_mv_ptr_ck(EMW *);
 s16 act_ck(EMW *, u16, u16);
 EM_STG_POS *gp_ck(EMW *, EM_STG_POS *, s16);
-void *Stage_data_get(u8);
+EM_STG_BOX *Stage_data_get(u8);
 int em_cancel_act_ck(EMW *, u8);
 u16 Em_Calc_angY(f32 *, f32 *);
 u32 ran_suu(int);
