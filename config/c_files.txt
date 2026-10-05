@@ -538,3 +538,8 @@ game 0x006362B0 0x00636918 shell/shell00
 game:rodata 0x0068A3B0 0x0068A3D0 shell/shell00
 game 0x0063A010 0x0063A0E4 pl/pl_guard
 game 0x00625630 0x00625838 set/set17
+game 0x005ACC60 0x005ADB98 em/em10
+game 0x005ADC50 0x005AE05C em/em10b
+game 0x005AE280 0x005AF528 em/em10c
+game:rodata 0x00688220 0x00688248 em/em10
+game:rodata 0x00688250 0x006882D4 em/em10c

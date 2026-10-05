@@ -343,3 +343,10 @@ opcode-identical sibling functions (em20/em01 66, em17/em20 55, em21/em08 49, em
 Hand fixes that were always needed: to_normal-like functions with extra args, the uvmove/sound_call helper block copied from
 em01/em08, ef_move_sub via genef.py, EMxxW field names (dang/has_tgt/dist) for the TURN macros.
 - Note: tools/mkruns.py is main's tool (fully matching runs by check.py); mkruns_nm.py is agent B's (split an NM file by status.py).
+
+# em10 AI (f_em_5ACC60, 0x5ACC60-0x5AF528, 26 functions): 24 linked
+em10.c, em10b.c (act00-02), em10c.c (act04..), rodata 0x688220-0x688248 (em10) and 0x688250-0x6882D4 (em10c); em10_nm.c = whole file.
+Stay asm: em10_turn_sub (10/42), em_act03_005AE060 (the original does not reload a0 after em10_msg_set(em, n) before em_act_set(em, 0, n);
+ours reloads it, +16 bytes). Lesson: tools/check.py status of em10_nm.c said 25/26 OK because the static em_act03/em_move00 share a name with
+globals elsewhere; give such statics an address suffix (em_act03_005AE060) before trusting OK. A C run that ends before a 4-byte function
+pad must end at the last function's real end (0x5AE05C), not at the next function.
