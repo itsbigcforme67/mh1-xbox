@@ -1639,3 +1639,166 @@ void pl_horm_sub(PLW *pl) {
         }
     }
 }
+
+
+/* pl_move_sub (0x14C500, 2144 bytes): near-match, 469/536 insns differ only through delay slots.
+ * The original never hoists the `daddu a0,s0,zero` argument copy into a branch delay slot (we do:
+ * `bne; daddu a0,s0` vs original `bne; nop; jal; daddu a0,s0`), same effect as timer_calc_sub_pl.
+ * Stack layout also differs (original: slide at sp+32, pos[3] at sp+48, gy at sp+60). Tried K&R
+ * prototypes, switch form of the work8C2 test: no change. Prototypes below are K&R-style guesses. */
+void em_ninshiki_ck();
+void pl_timer_calc();
+void pl_item_sel();
+void pl_shell_sel();
+void func_63A260();
+u8 pl_status_ck();
+void Pl_atck_adj_calc();
+void Pl_def_adj_calc();
+void pl_dm_value_sub();
+void pl_move_sub_sub();
+void Pl_pos_adj();
+void Pl_status_set();
+void hit_stop_calc();
+void pl_chr_sub();
+void hit_timer_calc();
+void HitWallPlayer();
+void GetFloorSlide();
+void St_unique_adr_set();
+int GetGroundHitStatusAreaPl();
+void GetPlayerMaterialData();
+void pl_light_ck();
+f32 Get_dist_to_view();
+void Pl_act_set();
+void Pl_view_reset();
+void pl_move_sub(PLW *pl) {
+    int pad[3];
+    f32 gy;
+    f32 pos[3];
+    int slide;
+    u8 a, b;
+
+    if (PU8(pl, 0) != 0) {
+    em_ninshiki_ck();
+    pl_timer_calc(pl);
+    pl->work8F2 = 0;
+    pl->work90B = 0;
+    if (pl->work8C2 == 0) {
+        pl_item_sel(pl);
+        pl_shell_sel(pl);
+    }
+    pl->work5A0 = pl->pos[0];
+    pl->work5A4 = pl->pos[1];
+    pl->work5A8 = pl->pos[2];
+    pl->work608 = -1;
+    pl->work60A = -1;
+    pl->work601 = 0;
+    pl->work3F4 = 0;
+    pl->work8ED = 0;
+    pl->work8F0 = 0;
+    pl->work917 = 0;
+    if (Pl_master_ck(pl) == 1) {
+        if (act_ck(pl, 0, 9) == 0 && act_ck(pl, 0, 0x1B) == 0) pl->work937 = 0;
+    } else {
+        pl->work937 = 0;
+    }
+    func_63A260(pl);
+    switch (pl_status_ck(pl)) {
+    case 1:
+        Pl_act_set2(pl, 2, 0x15, 0);
+        break;
+    case 2:
+        if (act_ck(pl, 2, 0x16) == 0 && act_ck(pl, 2, 0x18) == 0) Pl_act_set2(pl, 2, 0x16, 0);
+        break;
+    }
+    Pl_atck_adj_calc(pl);
+    Pl_def_adj_calc(pl);
+    if (pl->x40A == 0) {
+        pl_dm_value_sub(pl);
+        pl_move_sub_sub(pl);
+        if (pl->work6FF != 0) {
+            pl_move_sub_sub(pl);
+            pl->work6FF = 0;
+        }
+        pl_turn_sub(pl);
+        pl_horm_sub(pl);
+        if (pl->flag14 != 4) Pl_pos_adj(pl);
+    }
+    Pl_status_set(pl);
+    pl->work8C4 = 0;
+    pl->work908 = 0;
+    hit_stop_calc(pl);
+    if (act_ck(pl, 0, 0x27) == 0) pl_chr_sub(pl);
+    hit_timer_calc(pl);
+    pl->prog->init2(pl);
+    if ((act_ck(pl, 0, 0x1B) == 0 || act_ck(pl, 0, 0x1E) == 0) && (Pl_stg_ck(pl) & 0xFF)) HitWallPlayer(pl, 0);
+    if (pl->flag14 == 0) {
+        if ((u32)(pl->flag15 - 1) < 3U || pl->flag15 == 0x13) {
+            if (Pl_stg_ck(pl) & 0xFF) GetFloorSlide(pl, &slide, 1);
+        }
+    }
+    St_unique_adr_set(pl);
+    if (GetGroundHitStatusAreaPl(pl, pl->pos, (f32 *)((u8 *)pl + 0x70C), &gy) == 1 && act_ck(pl, 4, 0) == 0) pl->x5AC = gy;
+    if (Pl_stg_ck(pl) & 0xFF) GetPlayerMaterialData(pl);
+    if (pl->st != 2 && pl->flag604 == 0 && act_ck(pl, 0, 0x3A) == 0 && pl->flag14 != 4 && (Pl_stg_ck(pl) & 0xFF)) {
+        f32 fy = pl->x5AC;
+        f32 py = pl->pos[1];
+        if (py < fy) {
+            pl->pos[1] = fy;
+            pl->flag604 = 0;
+        } else if (py - fy < 30.0f) {
+            pl->pos[1] = fy;
+            pl->flag604 = 0;
+        } else if (pl->vital > 0) {
+            if (pl->flag14 != 5) Pl_act_set(pl, 0, 9, 0);
+            else Pl_act_set(pl, 5, 6, 0);
+        }
+    }
+    pl->work615 = 1;
+    World_calc(pl);
+    a = pl->flag14;
+    if (a != 2 && a != 3) {
+        b = pl->flag12;
+        if (b != 0 && (pl->kind == 1 || pl->kind == 5)) {
+            if (pl->sw.trg & 0x80) {
+                if (a == 0) {
+                    u8 f = pl->flag15;
+                    if (f != 0x6A && f != 0x69 && f != 0x68 && f != 0x67 && f != 0x1C) pl->pch_on ^= 1;
+                } else if (act_ck(pl, 1, 0x3D) == 0) {
+                    pl->pch_on ^= 1;
+                }
+            }
+        } else if (b == 0) {
+            if (act_ck(pl, 0, 0x36) == 0 && act_ck(pl, 0, 0x48) == 0) {
+                if (act_ck(pl, 0, 0x65) != 0 || act_ck(pl, 0, 0x66) != 0) pl->pch_on = 1;
+                else Pl_view_reset(pl);
+            } else if (pl->sw.trg & 0x80) {
+                pl->pch_on ^= 1;
+            }
+        } else if (pl->kind != 1 && pl->kind != 5) {
+            Pl_view_reset(pl);
+        }
+    }
+    if (pl->pch_on == 0) pl->x763 = 0;
+    if (pl->stg == game_w.stage) {
+        pl_light_ck(pl);
+        PF32(pl->work564, 8) = pl->pos[0];
+        PF32(pl->work564, 0xC) = pl->pos[1];
+        PF32(pl->work564, 0x10) = pl->pos[2];
+        if (Pl_master_ck(pl) == 1) {
+            pl->work739 = 0;
+        } else {
+            pos[0] = pl->pos[0];
+            pos[1] = pl->pos[1] + 80.0f;
+            pos[2] = pl->pos[2];
+            if (Get_dist_to_view(pos) <= 200.0f || act_ck(pl, 4, 4) != 0) pl->work739 = 1;
+            else pl->work739 = 0;
+        }
+        if (Pl_master_ck(pl) == 0 && pl_flag_ck(pl, 0x02001600) != 0)
+            pl->ang[1] = ((calc_vec_ang2(pl->pos, &pl->work5A0) & 0xFFFF) + 0x4000) & 0xFFFF;
+        if (pl->work739 == 0) add_prim(ot1, pl->work564, 0x20, 0);
+        else add_prim(ot0, pl->work564, 0x40, 0);
+        if (pl->work90E != 0) pl->work90E--;
+        if (pl->work90E == 0 && System_timer % 20 == PU8(&game_w, 0xD1)) net_send_pl(pl, 2, 0);
+    }
+    }
+}

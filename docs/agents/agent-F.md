@@ -14,6 +14,7 @@ shows the asm without the noise, write the C by hand (the m2c output is only a g
 moves them into src/main/pl/plNN.c and registers the range; `tools/rebuild.sh main` must print OK.
 
 ## Near-matches in pl_nm.c
+- pl_move_sub 469/536 insns differ, only delay-slot hoisting of `move a0,s0` (see pl_nm.c); all else matches.
 - Pl_item_charge OK in nm too (registered pl04). player_init0 8 off (register choice for work616 load), pl_work_clr 15 off
   (u8 arg `no`: original keeps raw a1 in s1 and re-masks), timer_calc_sub_pl 367/425 (original keeps `move a0,s0`
   in the jal delay slot, we hoist it into the bne slot; structure otherwise equal), pl_dm_value_sub 23 off
