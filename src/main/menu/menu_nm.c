@@ -60,12 +60,23 @@ void trans_box(void);
 extern void (*disp_menu_jmp[])(int, PIT_W *);
 f32 flSin(f32);
 extern u16 System_timer;
+void Chat_init(void);
+void Chat_move(int);
+void Join_pl_chk(void);
+void Pit_effect_move(void);
+void Receive_mess_move(void);
+void add_prim2(void *, void *, int, int);
+void func_5B3ED0(int);
+int kb_chat_in_chk(void);
+int softkey_ck(void);
+extern int ot6;
+extern int ot7;
 void Chat_log_clear(void);
 void pit_prim_init(void);
 u16 pit_key_repeat(u16, u16);
 void SoftKeyboard_exit(void);
 int Quest_time_get(int);
-int Online_ck(void);
+int Online_ck();
 int Pl_Skill_ck(PLW *, int);
 void trans_pit_0(void);
 void trans_pit_1(void);
@@ -1616,4 +1627,45 @@ void camp_disp_sub(f32 x, f32 y) {
     q.s[2] = 12.8f;
     q.s[3] = 16.0f;
     flps0008(&q);
+}
+
+void Pit_mv_lb(void) {
+    int sw;
+    int r;
+    int now;
+
+    now = FLD16(Psw, 4);
+    sw = (now | pit_key_repeat(now, FLD16(Psw, 0))) & 0xFFFF;
+    switch (lpPit->x04) {
+    case 0:
+        lpPit->x04++;
+        FLDS8(*lpPit, 0) = 1;
+        GWS8(0xE) = 0;
+    case 1:
+        if (Online_ck() == 1) {
+            Join_pl_chk();
+            FLDS8(PitMenu, 0x22) = 0;
+        }
+        switch (PitMenu.open) {
+        case 0:
+            if (PitMenu.x06 == 0) {
+                if (Online_ck() == 1 && softkey_ck() == 1 && ((r = kb_chat_in_chk(), ((sw & 0xFFFF) & 0x100) != 0) || r == 1)) {
+                    Chat_init();
+                } else {
+                    if (lb_item_stock_mv(sw) == 0) {
+                        func_5B3ED0(sw);
+                    }
+                    Pit_effect_move();
+                }
+            }
+            break;
+        case 1:
+            Chat_move(sw);
+            break;
+        }
+        break;
+    }
+    Receive_mess_move();
+    add_prim2(&ot6, &pit_prim[1], 0, 1);
+    add_prim2(&ot7, &pit_prim[2], 0, 1);
 }
