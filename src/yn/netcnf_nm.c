@@ -671,48 +671,39 @@ s32 yn_hard_select_set(s32 n) {
     return 1;
 }
 
-void yn_utf8_to_sjis(s8 *arg0, u8 *arg1) {
-    s32 temp_t4;
-    s32 var_t4_2;
-    s8 *var_a0;
-    s8 temp_t4_2;
-    u8 *var_a1;
-    u8 var_t4;
+void yn_utf8_to_sjis(s8 *dst, u8 *src) {
+    int c;
+    u16 code;
 
-    var_a0 = arg0;
-    var_a1 = arg1;
-    var_t4 = *var_a1;
-    if (var_t4 != 0) {
-        do {
-            if ((s32) var_t4 >= 0x80) {
-                temp_t4 = ((M2C_FIELD(var_a1, u8 *, 1) << 8) + M2C_FIELD(var_a1, u8 *, 2)) & 0xFFFF;
-                var_a1 = var_a1 + 2 + 1;
-                if ((temp_t4 >= 0x8181) && (temp_t4 < 0x81C0)) {
-                    var_t4_2 = (temp_t4 + 0x11E) & 0xFFFF;
-                } else if ((temp_t4 >= 0x8280) && (temp_t4 < 0x8294)) {
-                    var_t4_2 = (temp_t4 + 0x5E) & 0xFFFF;
-                } else if ((temp_t4 >= 0x82A1) && (temp_t4 < 0x82C0)) {
-                    var_t4_2 = (temp_t4 + 0x9F) & 0xFFFF;
-                } else if ((temp_t4 >= 0x8380) && (temp_t4 < 0x83A0)) {
-                    var_t4_2 = (temp_t4 - 0x21) & 0xFFFF;
-                } else if ((temp_t4 >= 0x83A0) && (temp_t4 < 0x83B7)) {
-                    var_t4_2 = (temp_t4 - 0x20) & 0xFFFF;
-                } else {
-                    var_t4_2 = 0x815B & 0xFFFF;
-                }
-                temp_t4_2 = var_t4_2 & 0xFFFF;
-                M2C_FIELD(var_a0, u8 *, 0) = (u8) (temp_t4_2 >> 8);
-                M2C_FIELD(var_a0, s8 *, 1) = temp_t4_2;
-                var_a0 += 2;
+    while ((c = *src) != 0) {
+        if (c >= 0x80) {
+            code = src[1] << 8;
+            src += 2;
+            code += *src;
+            src += 1;
+            if (code >= 0x8181 && code < 0x81C0) {
+                code = code + 0x11E;
+            } else if (code >= 0x8280 && code < 0x8294) {
+                code = code + 0x5E;
+            } else if (code >= 0x82A1 && code < 0x82C0) {
+                code = code + 0x9F;
+            } else if (code >= 0x8380 && code < 0x83A0) {
+                code = code - 0x21;
+            } else if (code >= 0x83A0 && code < 0x83B7) {
+                code = code - 0x20;
             } else {
-                M2C_FIELD(var_a0, u8 *, 0) = var_t4;
-                var_a1 += 1;
-                var_a0 += 1;
+                code = 0x815B;
             }
-            var_t4 = *var_a1;
-        } while (var_t4 != 0);
+            dst[0] = code >> 8;
+            dst[1] = code;
+            dst += 2;
+        } else {
+            *dst = c;
+            src++;
+            dst++;
+        }
     }
-    *var_a0 = 0;
+    *dst = 0;
 }
 
 void yn_sjis_to_utf8(s8 *arg0, u8 *arg1) {

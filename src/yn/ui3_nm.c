@@ -299,3 +299,620 @@ s32 yn_auto_connect(void) {
     }
     return 0;
 }
+
+#define YS32(o) M2C_FIELD(ynw, s32 *, o)
+#define YU16(o) M2C_FIELD(ynw, u16 *, o)
+#define CURSOR_UD(o, n) \
+    do { \
+        if (pad & 0x2000) { \
+            YS8(o) = YS8(o) - 1; \
+        } \
+        if (PAD & 0x1000) { \
+            YS8(o) = YS8(o) + 1; \
+        } \
+        t = ynw; \
+        p = (s8 *)(t + (o)); \
+        *p = (M2C_FIELD(t, s8 *, o) + (n)) % (n); \
+        yn_cur2_sd(p); \
+    } while (0)
+
+/* Provider selection screens (memory card network setting list, proxy, port, id/password): one
+   state per ynw+0x18 value. Returns 0 while running, 1 = chosen, 2 = back, negative = cancel/error. */
+s32 yn_select_provider(void) {
+    s8 st;
+    s8 q;
+    s8 q2;
+    s8 *nm;
+    s32 r2;
+    u8 *t;
+    s8 *p;
+    s32 r;
+    s32 n;
+    int off;
+    int v;
+    int a;
+    u16 *tp;
+    u16 d;
+    u16 d1;
+    s32 old;
+    s32 bits;
+    s32 up;
+    s32 dn;
+    s32 dig;
+    u32 nv;
+
+    v = YS8(0x18);
+    if ((v >= 6 && v <= 8) || (v >= 0xC && v < 0xE)) {
+        if (yn_common_memcard_out() != 0) {
+            YS8(0x18) = 0xF;
+            YS8(0x46) = 7;
+            yn_log_sd(0xF);
+        }
+    }
+    st = YS8(0x18);
+    switch (st) {
+    case 0:
+        YS8(0x18) = st + 1;
+        v = 1;
+        do {
+            M2C_FIELD(ynw + v, s8 *, 8) = 0;
+            M2C_FIELD(ynw + v, s8 *, 9) = 0;
+            M2C_FIELD(ynw + v, s8 *, 0xA) = 0;
+            M2C_FIELD(ynw + v, s8 *, 0xB) = 0;
+            M2C_FIELD(ynw + v, s8 *, 0xC) = 0;
+            v += 5;
+        } while (v < 0x10);
+        yn_mc_init(ynw + 0x10D0);
+        yn_proxy_wk_load();
+    case 1: {
+        u16 pad;
+        YS8(0x42) = 1;
+        YS8(0x43) = (YS8(8) >= 2) ? 4 : 2;
+        YS8(0x44) = 1;
+        YS8(0x45) = 1;
+        YS8(0x47) = 1;
+        YS8(0x48) = (YS8(8) >= 2) ? 2 : YS8(8);
+        if (yn_common_memcard_out() != 0) {
+            return -2;
+        }
+        pad = PAD;
+        if (pad & 0x40) {
+            return -1;
+        }
+        if (pad & 0x20) {
+            yn_dec_sd();
+            switch (YS8(8)) {
+            case 0:
+                YS8(0x18) = 0x13;
+                YS8(0x46) = 0x37;
+                YS8(0x17) = 0;
+                break;
+            case 1:
+                YS8(0x18) = 2;
+                break;
+            default:
+                YS8(0x18) = 0x12;
+                break;
+            }
+            break;
+        }
+        if (pad & 0x100) {
+            if (YS8(8) >= 2) {
+                YS8(0x19) = YS8(0x18);
+                YS8(0x18) = 0xD;
+                YS8(0x46) = 0x19;
+                yn_dec_sd();
+            }
+            break;
+        }
+        if (pad & 8) {
+            YU8(0x1E) = YU8(0x1E) + 1;
+            YU8(0x1E) = YU8(0x1E) & 1;
+            yn_cur1_sd();
+            return -2;
+        }
+        if (pad & 0x3000) {
+            if (YS8(8) >= 2) {
+                v = YS8(0xB);
+                if (v > 0 && (pad & 0x2000)) {
+                    YS8(0xB) = v - 1;
+                }
+                v = YS8(0xB);
+                if (v < YS8(0x1C) - 1 && (PAD & 0x1000)) {
+                    YS8(0xB) = v + 1;
+                }
+                v = YS8(0xC);
+                if (YS8(0xB) - v < 0 && v > 0 && (PAD & 0x2000)) {
+                    YS8(0xC) = v - 1;
+                }
+                if (YS8(0xB) >= 2) {
+                    v = YS8(0xC);
+                    if (v < YS8(0x1C) - 2 && (PAD & 0x1000)) {
+                        YS8(0xC) = v + 1;
+                    }
+                }
+            }
+            t = ynw;
+            p = (s8 *)(t + 8);
+            v = *p;
+            if (v > 0 && (PAD & 0x2000)) {
+                *p = v - 1;
+                yn_cur2_sd(p);
+            }
+            t = ynw;
+            p = (s8 *)(t + 8);
+            v = *p;
+            if (v < M2C_FIELD(t, s8 *, 0x1C) + 1 && (PAD & 0x1000)) {
+                *p = v + 1;
+                yn_cur2_sd(p);
+            }
+        }
+        break;
+    }
+    case 2:
+        YS8(0x18) = st + 1;
+        a = 0;
+        do {
+            if (a != 0 && a != 3 && a != 4) {
+                M2C_FIELD(ynw + a, s8 *, 8) = 0;
+            }
+            a += 1;
+        } while (a < 0x10);
+        YS8(0x18) = 0xD;
+        YS8(0x19) = 6;
+        YS8(0x46) = 0x17;
+        yn_proxy_wk_load();
+        break;
+    case 3:
+        YS8(0x42) = 3;
+        YS8(0x43) = 2;
+        YS8(0x44) = 0x13;
+        YS8(0x45) = 0x15;
+        YS8(0x47) = 0x1E;
+        YS8(0x48) = 0;
+        if (yn_mc_device_check_all(ynw + 0x10D0) >= 0) {
+            YU8(0x1D) = YU8(0x1D) | (((YU8(0x10D2) | YU8(0x10D3)) >> 1) & 3);
+            if (YU8(0x1D) != 0) {
+                u8 *t3;
+                a = 0;
+                YS8(0x18) = YS8(0x18) + 1;
+                t3 = ynw;
+            loop69:
+                if (!(M2C_FIELD(t3, u8 *, 0x1D) & (1 << a))) {
+                    a += 1;
+                    if (a < 2) {
+                        goto loop69;
+                    }
+                }
+                if (a == 2) {
+                    a = 0;
+                }
+                M2C_FIELD(t3, s8 *, 9) = a;
+            } else {
+                YS8(0x18) = 0xF;
+                YS8(0x46) = 6;
+                yn_log_sd();
+            }
+        }
+        break;
+    case 4: {
+        u16 pad;
+        pad = PAD;
+        if (pad & 0x40) {
+            yn_common_shot_cancel(0xE);
+        } else {
+            if (pad & 0x20) {
+                YS8(0x18) = st + 1;
+                yn_dec_sd();
+                yn_mc_set_current(ynw + 0x10D0, YS8(9));
+                yn_mc_gmfile_current_set(ynw + 0x10D0);
+            } else if (pad & 0x3000) {
+                s8 cur = YS8(9);
+                u8 f = YU8(0x1D);
+                int s = cur;
+                do {
+                    if (pad & 0x2000) {
+                        s -= 1;
+                    }
+                    if (pad & 0x1000) {
+                        s += 1;
+                    }
+                    s = (s + 2) % 2;
+                    if (f & (1 << s)) {
+                        break;
+                    }
+                } while (s != YS8(9));
+                if (cur != s) {
+                    yn_cur2_sd();
+                }
+                YS8(9) = s;
+            }
+        }
+        break;
+    }
+    case 5:
+        r = yn_mc_gmfile_check(ynw + 0x10D0);
+        if (r != -2) {
+            r2 = r;
+            yn_log_sd();
+            switch (r2) {
+            case -1:
+                YS8(0x18) = 0xD;
+                YS8(0x19) = 6;
+                YS8(0x46) = 0x17;
+                break;
+            case -7:
+                YS8(0x18) = 0xF;
+                YS8(0x46) = 0x2C;
+                break;
+            case -5:
+                YS8(0x18) = 0x10;
+                YS8(0x46) = 0xA;
+                YS8(0x17) = 0;
+                yn_log_sd(0x10);
+                break;
+            default:
+                YS8(0x18) = 0xF;
+                YS8(0x46) = 0x22;
+                break;
+            }
+        }
+        break;
+    case 6: {
+        u16 pad;
+        YS8(0x42) = 0xF;
+        YS8(0x43) = 2;
+        YS8(0x44) = 0x13;
+        YS8(0x45) = 0x16;
+        YS8(0x47) = 0x1F;
+        YS8(0x48) = 0;
+        pad = PAD;
+        if (pad & 0x40) {
+            yn_common_shot_cancel(0xE);
+        } else if (pad & 0x20) {
+            YS32(0xEC8) = 1 - YS8(0xD);
+            yn_dec_sd();
+        } else if (pad & 0x400) {
+            yn_cur1_sd();
+            if (YS32(0xEC8) != 0) {
+                YS8(0x18) = 7;
+                YS8(0x19) = YS8(0x18);
+            } else {
+                YS8(0x19) = YS8(0x18);
+                YS8(0x18) = 8;
+                YS8(0x46) = 0x18;
+            }
+        } else if (pad & 0x3000) {
+            CURSOR_UD(0xD, 2);
+        }
+        break;
+    }
+    case 7: {
+        u16 pad;
+        YS8(0x42) = 0x10;
+        YS8(0x43) = 2;
+        YS8(0x44) = 0x13;
+        YS8(0x45) = 0x17;
+        YS8(0x47) = 0x20;
+        YS8(0x48) = YS8(0xE);
+        pad = PAD;
+        if (pad & 0x40) {
+            yn_common_shot_cancel(0xE);
+        } else if (pad & 0x20) {
+            yn_dec_sd();
+            switch (YS8(0xE)) {
+            case 0:
+                YS8(0x18) = 0xB;
+                yn_keyboard_init(1, ynw + 0xED0);
+                break;
+            case 1:
+                YS8(0x18) = 0xC;
+                yn_port_init(ynw + 0xECC);
+                break;
+            case 2:
+                YS8(0x18) = 0xB;
+                yn_keyboard_init(1, ynw + 0xFD0);
+                break;
+            case 3:
+                YS8(0x18) = 0xC;
+                yn_port_init(ynw + 0xECE);
+                break;
+            }
+        } else if (pad & 0x800) {
+            YS8(0x18) = 6;
+            yn_cur1_sd();
+        } else if (pad & 0x400) {
+            if (YU8(0xED0) == 0 || YU16(0xECC) == 0) {
+                yn_ng_sd();
+            } else {
+                YS8(0x18) = 8;
+                YS8(0x46) = 0x18;
+                yn_cur1_sd();
+            }
+        } else if (pad & 0x3000) {
+            CURSOR_UD(0xE, 4);
+        }
+        break;
+    }
+    case 8: {
+        u16 pad;
+        pad = PAD;
+        if (pad & 0x40) {
+            YS8(0x18) = 6;
+            YS8(0x46) = 0;
+            yn_can_sd();
+        } else {
+            if (pad & 0x20) {
+                if (YS8(0x17) != 0) {
+                    YS8(0x18) = st + 1;
+                    yn_dec_sd();
+                    YS8(0x18) = 0xA;
+                    YS8(0x46) = 0x32;
+                    yn_proxy_wk_save();
+                } else {
+                    YS8(0x18) = 6;
+                    YS8(0x46) = 0;
+                    yn_can_sd();
+                }
+            } else if (pad & 0x3000) {
+                CURSOR_UD(0x17, 2);
+            }
+        }
+        break;
+    }
+    case 9:
+        r = yn_mc_gmfile_save(ynw + 0x10D0);
+        if (r != -2) {
+            r2 = r;
+            yn_log_sd();
+            switch (r2) {
+            case -1:
+                YS8(0x18) = 0xA;
+                YS8(0x46) = 0x13;
+                break;
+            case -7:
+            case -3:
+                YS8(0x18) = 0xD;
+                YS8(0x46) = 0x14;
+                break;
+            case -6:
+                YS8(0x18) = 0xD;
+                YS8(0x46) = 0x1F;
+                break;
+            case -5:
+                YS8(0x18) = 0xD;
+                YS8(0x46) = 9;
+                break;
+            default:
+                YS8(0x18) = 0xD;
+                YS8(0x46) = 0x22;
+                break;
+            }
+        }
+        break;
+    case 10:
+        if (PAD & 0x20) {
+            YS8(0x18) = 0;
+            YS8(0x46) = 0;
+            yn_dec_sd();
+            return -2;
+        }
+        break;
+    case 11:
+        if (yn_keyboard_sub() != 0) {
+            YS8(0x18) = YS8(0x19);
+        }
+        break;
+    case 12: {
+        u16 pad;
+        YS8(0x39) = 2;
+        pad = PAD;
+        if (pad & 0x40) {
+            YS8(0x18) = YS8(0x19);
+            *M2C_FIELD(ynw, u16 **, 0x3C) = YU16(0x3A);
+            YS8(0x38) = 0;
+            yn_can_sd();
+        } else if (pad & 0x20) {
+            YS8(0x18) = YS8(0x19);
+            YS8(0x38) = 0;
+            yn_dec_sd();
+        } else if (pad & 0xC00) {
+            if (pad & 0x800) {
+                d = YU16(0x40);
+                if (d != 0x2710) {
+                    YU16(0x40) = d * 10;
+                    YS8(0x38) = YS8(0x38) + 1;
+                }
+            }
+            if (PAD & 0x400) {
+                if (YU16(0x40) != 1) {
+                    YU16(0x40) = (u32)YU16(0x40) / 10;
+                    YS8(0x38) = YS8(0x38) - 1;
+                }
+            }
+            yn_cur2_sd();
+        } else {
+            if ((pad | YS32(0x28)) & 0x3000) {
+                tp = M2C_FIELD(ynw, u16 **, 0x3C);
+                d1 = YU16(0x40);
+                old = *tp;
+                dig = (s32)(old / d1) % 10;
+                bits = pad | YS32(0x28);
+                d = YU16(0x40);
+                up = bits & 0x2000;
+                dn = bits & 0x1000;
+                v = old - d1 * dig;
+                do {
+                    if (up != 0) {
+                        dig = (u32)(dig + 9) % 10U;
+                    }
+                    if (dn != 0) {
+                        dig = (u32)(dig + 0xB) % 10U;
+                    }
+                    nv = v + dig * d;
+                } while (nv >= 0x10000U);
+                *tp = nv;
+                yn_cur2_sd();
+            }
+        }
+        break;
+    }
+    case 13: {
+        u16 pad;
+        pad = PAD;
+        if ((pad & 0x20) || (pad & 0x40)) {
+            YS8(0x18) = YS8(0x19);
+            YS8(0x46) = 0;
+            yn_dec_sd();
+        }
+        break;
+    }
+    case 14: {
+        u16 pad;
+        pad = PAD;
+        if (pad & 0x40) {
+            YS8(0x18) = YS8(0x19);
+            YS8(0x46) = 0;
+            yn_can_sd();
+            break;
+        }
+        if (pad & 0x20) {
+            if (YS8(0x17) != 0) {
+                YS8(0x18) = 0;
+                yn_dec_sd();
+                YS8(0x46) = 0;
+                return -2;
+            }
+            YS8(0x18) = YS8(0x19);
+            YS8(0x46) = 0;
+            yn_can_sd();
+            break;
+        }
+        if (pad & 0x3000) {
+            CURSOR_UD(0x17, 2);
+        }
+        break;
+    }
+    case 15:
+        if (PAD & 0x20) {
+            YS8(0x18) = 0;
+            YS8(0x46) = 0;
+            yn_dec_sd();
+            return -2;
+        }
+        break;
+    case 16: {
+        u16 pad;
+        pad = PAD;
+        if (pad & 0x40) {
+            YS8(0x18) = 2;
+            YS8(0x46) = 0;
+            yn_can_sd();
+        } else {
+            if (pad & 0x20) {
+                if (YS8(0x17) != 0) {
+                    YS8(0x18) = 0x11;
+                    YS8(0x46) = 0xB;
+                    yn_dec_sd();
+                    yn_mc_init(ynw + 0x10D0);
+                } else {
+                    YS8(0x18) = 2;
+                    YS8(0x46) = 0;
+                    yn_can_sd();
+                }
+            } else if (pad & 0x3000) {
+                CURSOR_UD(0x17, 2);
+            }
+        }
+        break;
+    }
+    case 17:
+        r = yn_mc_format(ynw + 0x10D0);
+        switch (r) {
+        case -2:
+            break;
+        case -1:
+            YS8(0x18) = 0xD;
+            YS8(0x19) = 5;
+            YS8(0x46) = 0xC;
+            yn_mc_init(ynw + 0x10D0);
+            yn_log_sd();
+            break;
+        default:
+            YS8(0x18) = 0xD;
+            YS8(0x19) = 2;
+            YS8(0x46) = 0xD;
+            yn_mc_init(ynw + 0x10D0);
+            yn_log_sd();
+            break;
+        }
+        break;
+    case 18:
+        yn_strcpy(ynw + 0x1ACB4, yn_netcnf_search_usr_name(ynw + 0x1180, ynw + YS8(0xB) * 0x1340 + 0xAF00));
+        nm = (s8 *)(ynw + 0x1ACB4);
+        if (nm == 0 || *nm == 0) {
+            YS8(0x18) = 0xF;
+            YS8(0x46) = 0x33;
+            yn_log_sd();
+            break;
+        }
+        if (yn_netcnf_magicno_check(ynw + 0x1180) != 0) {
+            YS8(0x18) = 0xF;
+            YS8(0x46) = 0x1D;
+            yn_log_sd(0xF);
+            break;
+        }
+        off = YS8(0xB) * 0x14;
+        r = M2C_FIELD(off + (int)ynw, s32 *, 0x254);
+        if (r < 0) {
+            YS8(0x18) = 0xF;
+            YS8(0x46) = 5;
+            yn_log_sd();
+            break;
+        }
+        if (yn_hard_select_set(r) < 0) {
+            YS8(0x18) = 0xF;
+            YS8(0x46) = 5;
+            yn_log_sd(0xF);
+            break;
+        }
+        if (yn_netcnf_pastproxy_check(ynw + 0xEC8, D_5310D0) < 0) {
+            YS8(0x26) = 1;
+        }
+        if (yn_netcnf_pastdata_check(D_5306B0, ynw + YS8(0xB) * 0x14 + 0x250, 1) < 0) {
+            YS8(0x26) = 1;
+        }
+        off = YS8(0xB) * 0x14;
+        yn_backup_allwork(M2C_FIELD(off + (int)ynw, s32 *, 0x260));
+        off = YS8(0xB) * 0x14;
+        yn_setup_allwork(M2C_FIELD(off + (int)ynw, s32 *, 0x260));
+        return 1;
+    case 19: {
+        u16 pad;
+        pad = PAD;
+        if (pad & 0x40) {
+            YS8(0x18) = 1;
+            YS8(0x46) = 0;
+            yn_can_sd();
+            break;
+        }
+        if (pad & 0x20) {
+            if (YS8(0x17) != 0) {
+                YS8(0x18) = 0;
+                YS8(0x46) = 0;
+                yn_dec_sd();
+                return 2;
+            }
+            YS8(0x18) = 1;
+            YS8(0x46) = 0;
+            yn_can_sd();
+            break;
+        }
+        if (pad & 0x3000) {
+            CURSOR_UD(0x17, 2);
+        }
+        break;
+    }
+    }
+    return 0;
+}

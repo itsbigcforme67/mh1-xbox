@@ -1,5 +1,4 @@
-/* yn.bin 0x0053AD50-0x0053AF00 and 0x0053530C-0x00535340: memory card init / device check and
-   yn_set_init (near-match: yn_mc_device_check_all is not tuned). */
+/* misc02 - yn.bin 0x0053AD70-0x0053AEF8: yn_mc_device_check_all (poll both memory cards; returns bit mask of cards present/formatted, -1 while waiting). Whole file in misc_nm.c. */
 #include "yn.h"
 
 void McActInit(int);
@@ -21,14 +20,6 @@ extern MCW MemcardWork;
 
 extern s32 yn_r_no;
 extern s32 yn_type;
-
-/* work: +0 state, +1 ?, +2 / +3 bitmasks of cards (bit n+1 = card n), +4 flag */
-void yn_mc_init(u8 *work) {
-    M2C_FIELD(work, s8 *, 0) = 0;
-    M2C_FIELD(work, s8 *, 1) = 0;
-    M2C_FIELD(work, s8 *, 4) = 0;
-    McActInit(2);
-}
 
 typedef struct MCD {
     s8 st;          /* 0 state */
@@ -87,11 +78,4 @@ s32 yn_mc_device_check_all(MCD *w) {
         break;
     }
     return -1;
-}
-
-s32 yn_set_init(s32 type) {
-    yn_type = type;
-    yn_r_no = 0;
-    flfntInit();
-    return 0;
 }
