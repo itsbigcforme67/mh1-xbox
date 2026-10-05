@@ -156,3 +156,11 @@ x88D now s8 as proved by lb in Em_hagi_point_cnt_ck).
   (or `*p++`), not `p[1]` / `p += 2` (the compiler then loads both before bumping p; the original bumps in between).
 - Still parked: Quest_retire_set (6 instr: `bne; nop` empty delay slot and -1/7 register order; switch form gets the -1 register right but wrong branch),
   Quest_str_get, Em_hagi_point_cnt_ck, quest_em_init_sub2 (see above).
+
+## Assignment 3 (6 Oct): unowned main code from 0x1A0000 (candidate list)
+0x1A0000-0x218000 is Sony/CRI/newlib library code (skipped, GCC). 0x22C670-0x22F7A0 AQ/net, 0x22F800-0x24A0F0
+network/inet/Ave/mcsls (online; skipped for now). Candidates (vram, bytes of uncovered code):
+staff 0x2907C0 (1.6K), movie_* 0x22F7B0 (1.5K), evdemo 0x2862F0 (1.7K), npc 0x23D870 (3.2K), Select_task/omake 0x23A0F0 (7.4K),
+mc* memory card 0x27EF60-0x2862F0 (28K, ~135 functions), IME dictionary 0x23E500-0x24A240 (47K, Japanese input, low priority),
+f_sound 0x24A250 (41K, sound requests), net file load/save 0x2869A0-0x28BEC0 (21K, online-ish).
+Order: staff, movie, evdemo, npc, select/omake, mc.
