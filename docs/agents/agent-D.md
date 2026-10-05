@@ -403,3 +403,72 @@ Lessons: struct/array offsets from the asm are exact but m2c drops the middle
 float argument of calls (flmatMakeScale, SetVector, flmatSetTrans: read the
 asm); `if (0 < n) for (i = 0; ...)` becomes `for (i = 0; i < n; i++)` with
 the original's sltu form (WallHitInit).
+
+## Stage collision API (for the PC runtime, agent A)
+Status 5 Oct 2026 (second pass): everything below has C in src/main/hit/
+(shit*.c built or *_nm.c near-match; none is exact except the helpers listed
+at "Built" above). The logic of GetWallHitLine, GetEyeHitLine, PushAdjust3,
+GetWallHitBit2 and sphr_face_o4's y override was re-read against the asm in
+this pass. Fixes found: the "seen" list of GetWallHitLine / GetEyeHitLine only
+compares the polygon with the FIRST remembered entry (a quirk of the original,
+kept), and PushAdjust3's third pass re-reads its loop bound because nd grows
+inside it. The remaining diffs are register allocation and frame size.
+
+Data. load_stage_hit(stg) loads lwNNN.bin (wall) and lgNNN.bin (ground) and
+WallHitInit / GroundHitInit turn file offsets into ABSOLUTE 32-bit POINTERS
+inside the file image (cell lists are -1 terminated arrays of s32 pointers to
+56-byte HPOLY). On a 64-bit PC build those casts (`(HPOLY *)*cell`) are wrong:
+either load the HITS images into the low 4 GB (mmap MAP_32BIT) or change the
+cell list type to a 32-bit offset from the image base. The grid lives in
+diorama_w (include/hit3.h); ground_tbl_add[stage][kind] (0x10-byte HKIND)
+gives per-kind flags (water at +0xC, lava +0xB, special +0xE); game_w.stage
+selects the row. Format: docs/formats/stage.md.
+NOTE: GetWallHitLine / GetEyeHitLine take their cell size from the GROUND
+grid (gcsx/gcsz) even for the wall cells; the stages use equal sizes.
+
+Ground questions (pos = f32[3] {x, y, z}; all return the height of the floor):
+- GetGroundHit(pos) -> f32 y. Polygons whose triangle (xz) contains the
+  point and whose normal.y > 0, up to 5; takes the highest not above
+  pos.y + 50, else the lowest; pos.y if none. GetGroundShellHit: same for
+  shells (+100, skips water/lava kinds).
+- GetWaterHit(pos, &y) -> 1 and the water surface height when a polygon of a
+  water kind is under pos (the last such polygon).
+- GetTenjoHit(pos, &y, HPOLY *attr) -> 1 and the ceiling height (normal.y < 0)
+  with its kind/b1/h2 copied to attr.
+- GetYouganHit(pos) -> 1 when a lava polygon is under pos.
+- GetGroundHitArea / GetGroundHitAreaUpper(ent, pos, out): same with the
+  stage area's floor as fallback (ent+0x736 = stage); returns 1 on the
+  ground file, 0 outside it (floor height used), -1 entity not on the stage.
+  GetGroundHitStatusAreaPl / ...Em(ent, pos, GATTR *at, out, flag): as above
+  plus polygon attribute word and water / special surface height (players /
+  monsters, monsters use +100 on special kinds).
+- GetFloorSlide(ent, out, flag): ent pos at +0xAC; out = slide push vector on
+  slopes of at least 0x1500 (check_angle), flag != 0 also applies it. Returns
+  0 sliding, 1 stands, -1 off the ground file.
+Wall questions:
+- HitWallPlayer(ent, keep) (0x11CA80): the per-frame entry for players AND
+  monsters (ent+0x10 != 0 is a monster). Builds the segment old pos (ent+0x5A0)
+  -> new pos (ent+0xAC) for every collision sphere of the entity and calls
+  GetWallHitBitPl / GetWallHitBitEm, which push ent+0xAC out of the walls and
+  record what was touched (players: pl_wall_mat[id][] with angle / kind /
+  normal; monsters: bit mask ent+0x74C and special-wall flag ent+0x95D).
+  keep != 0 keeps the previous mask.
+- GetWallHitBit2(r, a, b, pos, mask) (0x115EB0): generic sphere sweep (camera
+  and effects use it): sphere radius r from a to b; pushes `pos` out of the
+  walls; mask = polygon h2 bits to ignore (0x8001 / 0xC001 for the camera).
+  Returns hit_poly_num (number of contacts) or -1 when b is outside the wall
+  grid. Contacts remain in hit_decision / hit_near_point / hit_side arrays.
+- GetWallHitLine(a, b, out, mask) -> 1 and the crossing point (wall polygons
+  only; a point outside the grid counts as the hit), 0 and b when free.
+  GetEyeHitLine(ent, a, b, out, mask): same against ground polygons (not
+  water / special) and walls: line of sight / camera collision.
+Building blocks: sphr_face_o3 / o4 (sphere vs polygon for players / monsters:
+face test, then edges / corners), hosei_sub (contact -> push vector),
+PushAdjust3 (combine contacts, move pos, limit push to 1.8 * sweep length),
+FaceLinePos (edge vs plane), NormalClipFace (point inside triangle),
+tri_in_check / VectorHitCheck (angle-sum triangle test, segment vs triangle),
+GroundFieldInCheck / WallFieldInCheck / AreaFieldInCheck (inside the loaded
+grid, 8 unit margin), BlockPlaceCgeck (quadrant of a cell), GetGroundTblAdrs /
+GetWallTblAdrs (cell list for a position).
+Sphere/capsule tests between entities (hit2*.c, hit_*_m) are separate: they
+take plain vectors and need no stage data.
