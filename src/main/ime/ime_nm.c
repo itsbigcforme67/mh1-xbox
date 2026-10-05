@@ -1267,14 +1267,12 @@ int can_handaku(int c)
 int srch_ucode(int code)
 {
     u8 *p;
-    int c;
 
-    c = code & 0xFFFF;
     for (p = btoudata; p < btoudata + 180; p += 4) {
-        if (*(u16 *)p == c) {
+        if (*(u16 *)p == (u16)code) {
             return p[2];
         }
-        if (c < *(u16 *)p) {
+        if (*(u16 *)p > (u16)code) {
             break;
         }
     }
@@ -2593,10 +2591,9 @@ int calc_pulen(int page, u8 *key)
         return n;
     }
     if (key[n] == 0) {
-    } else {
-        n++;
+        return n;
     }
-    return n;
+    return n + 1;
 }
 
 int prefix(u8 *a, u8 *b, int n)
