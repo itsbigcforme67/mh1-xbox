@@ -8,6 +8,8 @@ typedef struct IBS4 { u16 w[2]; } IBS4;
 extern u8 User_data[];
 int Ud_u_item_stack(u16, u16);
 void Menu_select_mv();
+void itembox_cursor_mv();
+void PageSelect();
 void se_req();
 s32 Lb_ItemBox_open(u16 arg0, s32 arg1) {
     arg0 = 0;
@@ -315,5 +317,62 @@ s32 itembox_stock(s32 pad) {
         pad = 0;
         break;
     }
+    return pad;
+}
+
+/* number / page selection sub-state shared by the item box tabs (returns the pad with consumed bits cleared, 0x40 = cancel) */
+s32 ib_select_sub(s32 pad) {
+    s32 p;
+    u8 *w;
+    w = ib;
+    if (F(u8, w, 3) == 0) {
+        if (F(u8, w, 0x1F) != 0) {
+            if ((u16)pad & 0x240) {
+                F(u8, w, 0x1F) = 0;
+                se_req(7, 0x14, 0);
+            }
+            pad = (u16)(pad & 0xFFBF);
+        } else {
+            p = (u16)pad;
+            if (p & 0x200) {
+                F(u8, w, 0x1F) = 1;
+                se_req(7, 9, 0);
+            }
+            if (p & 0x40) {
+                se_req(7, 0x14, 0);
+                return 0x40;
+            }
+        }
+        itembox_cursor_mv(ib + 8, pad, 0);
+        goto done;
+    }
+    if (F(u8, w, 0x1F) != 0) {
+        if ((u16)pad & 0x240) {
+            F(u8, w, 0x1F) = 0;
+            se_req(7, 0x14, 0);
+        } else {
+            PageSelect(w + 0x18, pad, F(u8, w, 0x19));
+        }
+        return 0;
+    }
+    p = (u16)pad;
+    if (p & 0x40) {
+        se_req(7, 0x14, 0);
+        return 0x40;
+    }
+    itembox_cursor_mv(w + 9, pad, 1);
+    if (!(p & 0x20) && (p & 0x200)) {
+        F(u8 *, ib, 0x14) = User_data + F(u8, ib, 9) * 6 + 0x44;
+        if (*F(u8 *, ib, 0x14) != 0) {
+            F(u8, ib, 0x1F) = 2;
+            F(s8, ib, 0x18) = 0;
+            F(u8, ib, 0x19) = 4;
+            se_req(7, 0x11, 0);
+        } else {
+            se_req(7, 0x15, 0);
+        }
+        return 0;
+    }
+done:
     return pad;
 }
