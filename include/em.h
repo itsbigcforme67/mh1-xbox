@@ -97,13 +97,16 @@ typedef struct EMW {
     s16 x792;           /* 0x792 maximum of x302? (guess) */
     u8 _pad794[0x7E8 - 0x794];
     u8 x7E8;            /* 0x7E8 0: em21 falls back to act 0/1 on its own stage */
-    u8 _pad7E9[0x818 - 0x7E9];
+    u8 x7E9;            /* 0x7E9 0: em14 fly action 0 becomes act 0/3 */
+    u8 _pad7EA[0x818 - 0x7EA];
     f32 x818;           /* 0x818 compared with x8C4[x883] (em16_act_act_set) */
     u8 _pad81C[0x827 - 0x81C];
     u8 x827;            /* 0x827 */
     u8 x828;            /* 0x828 */
     u8 x829;            /* 0x829 em08_senkai_pos_no result */
-    u8 _pad82A[0x878 - 0x82A];
+    u8 _pad82A[0x839 - 0x82A];
+    u8 x839;            /* 0x839 set by em14 move action 1 */
+    u8 _pad83A[0x878 - 0x83A];
     struct EFTW *tail;  /* 0x878 cut-tail effect (eft09_set) */
     u8 _pad87C[0x881 - 0x87C];
     u8 x881;            /* 0x881 target kind, 0 none (1 and 7 seen; 0x934 = its position) */

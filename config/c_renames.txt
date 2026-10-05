@@ -11,6 +11,7 @@ build/src/game/eft/eft23.c.o .rodata .data
 build/src/game/em/em02.c.o .rodata .data
 build/src/game/em/em07.c.o .rodata .data
 build/src/game/em/em08.c.o .rodata .data
+build/src/game/em/em14.c.o .rodata .data
 build/src/game/em/em16.c.o .rodata .data
 build/src/game/em/em21.c.o .rodata .data
 build/src/game/em/em27.c.o .rodata .data

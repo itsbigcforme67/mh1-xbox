@@ -119,3 +119,15 @@ Fields used straight from EMW in the em files (so common to all monsters):
   - suby: `int i;` declared before the table pointer fixed an a2/a3 swap.
   - suby variant: the loop test uses `v > 0.0f` and a `v < 0` branch
     (`w->adj_tm = 0; ret = 2; em->adj_y = 0.0f; break;`).
+- em14 (0x5C1260-0x5C2634, 13 functions): all match. rodata
+  0x688610-0x68869C. senkai_target / fly_adjy / fly_adjy2 subs are em02's
+  code with a different EMNNW layout (fly_adjy table here is a normal
+  global, not small data). Lessons:
+  - Jump-table switches: every case that shares the "just call" target must
+    be listed (`case 1: case 2: ... break;`), or MWCC builds a compare
+    chain instead of a table.
+  - `em->work08 = (int)((w->dist = CalcDistanceXZ(...)) / 30.0f) + 30;`
+    (assignment used as a value) avoids reloading w->dist (atk 15-17).
+  - tossin_move: `a > 0xFFC0` / `a <= 0x3F` forms as in the original.
+- Coordinator note: helper functions with address-suffixed names in the
+  split (fly_adjy2_subx_...) are file statics; keep them `static`.
