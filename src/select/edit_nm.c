@@ -498,3 +498,75 @@ void ed_view_set(PLW *pl, s16 mode, s16 flag) {
         flvecCopy(lpView->at, e->at);
     }
 }
+
+void param_change_sub(void *unused, u16 btn, u8 *p, u16 max, u16 se) {
+    if (btn & 0x800) {
+        if (*p == 0) {
+            *p = max - 1;
+        } else {
+            *p = *p - 1;
+        }
+        se_req(7, se, 0);
+    }
+    if (btn & 0x400) {
+        if (*p >= max - 1) {
+            *p = 0;
+        } else {
+            *p = *p + 1;
+        }
+        se_req(7, se, 0);
+    }
+}
+
+void param_change_sub2(void *unused, u16 btn, u8 *p, u16 max, u16 se) {
+    if (btn & 0x800) {
+        if (*p > 0) {
+            *p = *p - 1;
+            se_req(7, se, 0);
+        } else {
+            *p = 0;
+        }
+    }
+    if (btn & 0x400) {
+        if (*p < max - 1) {
+            *p = *p + 1;
+            se_req(7, se, 0);
+        } else {
+            *p = max - 1;
+        }
+    }
+}
+
+void param_change_00536280(u8 *w) {
+    u8 *pa = (u8 *)&player_work[0];
+    u8 *pb = (u8 *)&player_work[1];
+    u16 btn = Psw[2] | Psw[12];
+    u8 old;
+    switch (w[2]) {
+    case 1:
+        if (btn & 0xC00) {
+            w[4] ^= 1;
+            se_req(7, 0x12, 0);
+        }
+        break;
+    case 2:
+        old = w[5];
+        param_change_sub(w, btn, &w[5], 0x18, 0x12);
+        if (old != w[5]) {
+            B8(pa, 0x353) = w[5] + 1;
+            B8(pb, 0x353) = w[5] + 1;
+        }
+        break;
+    case 3:
+        old = w[7];
+        param_change_sub(w, btn, &w[7], 0xA, 0x12);
+        if (old != w[7]) {
+            B8(pa, 0x354) = w[7] + 1;
+            B8(pb, 0x354) = w[7] + 1;
+        }
+        break;
+    case 5:
+        param_change_sub(w, btn, &w[6], 0xA, 0x12);
+        break;
+    }
+}
