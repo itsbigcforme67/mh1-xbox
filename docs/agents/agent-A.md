@@ -256,3 +256,14 @@ Lessons:
 - em_frame_check: em03.c, em33.c, em04*.c, em04_nm.c, include/em04.h now
   declare/call (EMW *, int n, f32 frame) like the definition. check.py
   output unchanged for each file, tools/rebuild.sh all OK.
+- Camera: the game's CameraMove + camera slots run on the PC in --play
+  (docs/pc.md "Camera"). New src/main/cam/camarea_nm.c (main
+  0x222E20-0x223B50, 13 functions, written from the asm, not built for the
+  PS2): check.py OK for CameraAreaCheck, GetPanTarget, GetRailTarget,
+  nlCalcPoint; GetRailCamPos 1/33 off, default_area_data 7/117,
+  SetAreaData 12/71, get_near_point_sub 18/66, GetNearSection 28/67;
+  StageCamInit, Get_cam_grid_XZ, CamAreaAttribChk, Area_XZ_Check,
+  GetNearPoint mostly off (not worked on). cam_nm.c (not built for the
+  PS2) now calls cpInterVector / CamRailPoint in their real argument order.
+- Lesson (x86): float-returning callees declared void leak x87 stack
+  slots; prototypes must match the definition's return type too.

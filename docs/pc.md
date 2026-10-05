@@ -37,6 +37,8 @@ Controls with `--play` (the pad drives the hunter, camera follows):
   K cross, L circle, J square, I triangle, Q L1, E R1, Z L2, C R2, Enter
   start, Backspace select, T/F/G/H d-pad.
 - Only running and turning do anything yet (see "Player and pad" below).
+  The camera is the game's: d-pad left/right turn it, up/down zoom, L1
+  resets it behind the hunter.
 
 Screenshot mode, for checking without looking at the window: it renders
 offscreen in a hidden window, reads the back buffer and writes a PNG.
@@ -277,6 +279,48 @@ longer used by the viewer.
 - Not done: water (GetWaterHit runs but nothing reacts), the fall action,
   the player's pl_wall_mat use (wall-facing actions), monster states 2/4.
 
+### Camera (game C)
+
+With `--play` the view comes from the game's own camera: CameraMove
+(src/main/cam/camm.c) and the five camera slots (cam_nm.c / camd.c,
+agent D; cam_sub_std, cam_sub_stg are near-matches) run every tick after
+the player; cam2view writes eye / target / roll / fov into lpView, and the
+viewer builds its look-at camera from that (roll ignored; the game's angle
+of view is used as the vertical fov [guess]). `--follow D,H,P` or
+`RT_HOST_CAM=1` keep the old host follow camera.
+- Stage camera files: LoadCameraData (rt_cam.c, from 0x11F1E0) loads
+  camera_data_tbl[stage] (26 stages have one, st04 included) into
+  cam_data_area and SetCameraData fixes its pointers; without a file
+  default_area_data builds one follow area from stage_camera_data_tbl.
+- Camera areas: src/main/cam/camarea_nm.c (main 0x222E20-0x223B50, the
+  g_SetAreaData file) written from the asm for this: default_area_data,
+  StageCamInit, SetAreaData, Get_cam_grid_XZ, CameraAreaCheck,
+  CamAreaAttribChk, Area_XZ_Check, GetPanTarget, GetRailTarget,
+  GetRailCamPos, GetNearSection, get_near_point_sub, GetNearPoint. Not
+  built for the PS2; check.py: CameraAreaCheck, GetPanTarget,
+  GetRailTarget and nlCalcPoint already match, GetRailCamPos 1/33,
+  default_area_data 7/117, SetAreaData 12/71 off, the rest further.
+- Controls as on the PS2 (read from cam_sub_std): d-pad left/right turn
+  the camera, d-pad up/down zoom (4 levels), L1 puts it behind the hunter.
+  When the eye-to-target line crosses a wall (GetWallHitLine) the camera
+  goes back behind the hunter every tick, so it cannot be turned there
+  (the st04 start spot has a wall right behind the camera).
+- Verified 5 Oct 2026 (build/show/A/cam/): st04 idle (gc_idle.png, behind
+  the hunter, waterfalls ahead); run left, camera follows round the camp
+  (gc_run_left.png); after moving off the wall, d-pad left 40 ticks turns
+  the camera to the hunter's front (gc_turn_dleft.png); d-pad up zooms in
+  (gc_zoom_dup.png); stage 20 (indoor, fov 1.15 from its camera file) and
+  stage 5 (jungle) follow without clipping into walls (gc_st20.png,
+  gc_st05.png). `RT_CAM_TRACE=1` prints per tick the slot, area, zoom,
+  buttons, wanted/current yaw, wall flag and the view.
+- Not ported: k_HitEmCamera finds no monster body parts (hit_data_expand
+  stub), Game_clear_ck (quest end camera), cockpit chat. Rail / fixed
+  stage cameras (area types 1-3) run the near-match cam_sub_stg but were
+  not seen in the tested spots.
+- x86 hazard found: a callee returning float that a caller declares void
+  (k_HitWallCamera in cam_nm.c) leaves a value on the x87 stack; after
+  eight calls the FPU stack overflows. Such declarations must match.
+
 ### Stage drawing (trans_stage)
 
 The PS2 draws the area model in trans_stage (main 0x15CD90), not as one
@@ -362,7 +406,7 @@ enemy_trans (0x168B10), prims (ported), effects/shells (ported).
 | collision | GetGroundHit, wall hits (main 0x111000-0x125000) | f_sphr all in C (agent D, near-matches); runs on the PC for the hunter and the Rathian (see "Collision") |
 | monster common (em_core, em_master, em_taisei) | game 0x533980-0x53A000 | ~65 % matched + near-matches |
 | Rathian/other monster AI | game em01.. (363 functions, 150 KB) | ~13 % matched; em01.c (Rathian action setters) partly |
-| camera | cam_t.c (main f_cam) | written, not built for the PS2 (near-match); could run on the PC as is |
+| camera | main f_cam, f_cam_223B50 (agent D), g_SetAreaData (camarea_nm.c) | runs on the PC in --play (see "Camera") |
 
 Done (agent A, 5 Oct 2026): steps 1 and 2 below, and a host stand-in for
 step 3 (rt_player.c) so the hunter runs and turns with the pad.
