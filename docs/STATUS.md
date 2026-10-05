@@ -119,6 +119,25 @@ extracted to disc/mhg/ (gitignored). MH1 not yet supplied.
   - Six u8 colour locals had to be declared bone r,g,b then meat r,g,b to
     get the saved-register order.
 
+- eft18 (blasts and debris, twelve types; type 4 throws rocks that fall
+  to the ground) matches except eft18_m00 (2 instructions: the owner and
+  joint loads for get_joint_wmat come out in the other order) and
+  eft18_set_com (7: the original leaves the delay slot after `beqz ew`
+  empty). Split into eft18.c / eft18b.c / eft18c.c, near-match in
+  eft18_nm.c. Findings, each checked with tools/check.py:
+  - A `p++` at the end of the loop body is emitted before the compiler's
+    own induction variables; in the for-expression it comes after them
+    (eft18_i00 matched only with `p++;` as the last statement).
+  - Reading a table entry through a pointer (`sp = &tbl[k]; a = *sp;
+    b = *sp;`) reloads it after each store, as the original does;
+    `tbl[k]` three times is loaded once.
+  - Ternary conditions test the variable itself: `(i ? -0x4000 : 0x4000)`
+    gave the original's movz on i; `i == 0 ? ... : ...` did not.
+  - eft18_i02 adds the rock's sideways offset to its velocity, not its
+    position (checked: the stores go to +0x08..0x10, the velocity).
+  - New SHLW field pos0 (0x3C), used by Eft18_set3 to size the effect by
+    the distance from pos2.
+
 ### Next
 
 1. Owner supplies Japanese MH1. Survey it the same way. The plan's base

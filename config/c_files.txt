@@ -95,3 +95,8 @@ game 0x005498E0 0x0054BB54 eft/eft14
 game:rodata 0x00685560 0x00685648 eft/eft14
 game 0x005468F0 0x005498E0 eft/eft12
 game:rodata 0x006854A0 0x00685558 eft/eft12
+game 0x00551830 0x00552170 eft/eft18
+game:rodata 0x00685760 0x00685790 eft/eft18
+game 0x00552D00 0x005546DC eft/eft18b
+game:rodata 0x006857F0 0x00685838 eft/eft18b
+game 0x00554750 0x0055497C eft/eft18c

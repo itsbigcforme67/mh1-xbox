@@ -30,7 +30,7 @@ typedef struct SHLW {
     void (*move)(struct SHLW *);    /* 0x20 */
     s32 ang[3];         /* 0x24 owner's rotation at spawn */
     VEC3 pos2;          /* 0x30 */
-    u8 _pad3C[0x48 - 0x3C];
+    VEC3 pos0;          /* 0x3C start position (Eft18_set3 sizes its effect by the distance) */
     f32 rate[3];        /* 0x48 velocity (shell03); shell14 keeps its scale in rate[0] */
     f32 rate_g[3];      /* 0x54 acceleration, added by shell_rate_add_g */
     u8 x60;             /* 0x60 */
