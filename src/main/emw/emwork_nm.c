@@ -222,11 +222,13 @@ void smell_init(void) {
     int i;
     void **p = smell_stack;
 
-    for (i = 0; i < 0x20; i += 8) {
+    i = 0;
+    do {
         p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0;
         p[4] = 0; p[5] = 0; p[6] = 0; p[7] = 0;
+        i += 8;
         p += 8;
-    }
+    } while (i < 0x20);
     smell_cnt = 0;
 }
 
@@ -263,11 +265,13 @@ void smoke_init(void) {
     int i;
     void **p = smoke_stack;
 
-    for (i = 0; i < 0x20; i += 8) {
+    i = 0;
+    do {
         p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0;
         p[4] = 0; p[5] = 0; p[6] = 0; p[7] = 0;
+        i += 8;
         p += 8;
-    }
+    } while (i < 0x20);
     smoke_cnt = 0;
 }
 
@@ -322,11 +326,13 @@ void senko_init(void) {
     int i;
     void **p = senko_stack;
 
-    for (i = 0; i < 0x20; i += 8) {
+    i = 0;
+    do {
         p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0;
         p[4] = 0; p[5] = 0; p[6] = 0; p[7] = 0;
+        i += 8;
         p += 8;
-    }
+    } while (i < 0x20);
     senko_cnt = 0;
 }
 
@@ -382,11 +388,13 @@ void ear_init(void) {
     int i;
     void **p = ear_stack;
 
-    for (i = 0; i < 0x20; i += 8) {
+    i = 0;
+    do {
         p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0;
         p[4] = 0; p[5] = 0; p[6] = 0; p[7] = 0;
+        i += 8;
         p += 8;
-    }
+    } while (i < 0x20);
     ear_cnt = 0;
 }
 
@@ -394,11 +402,13 @@ void em_yobi_init(void) {
     int i;
     void **p = em_yobi_stack;
 
-    for (i = 0; i < 0x20; i += 8) {
+    i = 0;
+    do {
         p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0;
         p[4] = 0; p[5] = 0; p[6] = 0; p[7] = 0;
+        i += 8;
         p += 8;
-    }
+    } while (i < 0x20);
     em_yobi_cnt = 0;
 }
 

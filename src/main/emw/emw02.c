@@ -1,4 +1,4 @@
-/* emw02 - view and monster work 0x0016A2B0-0x0016A378: push_smell, pull_smell. Whole file in emwork_nm.c. */
+/* emw02 - view and monster work 0x0016A260-0x0016A858: smell_init, push_smell, pull_smell, smoke_init, push_smoke, pull_smoke, move_smoke, senko_init, push_senko, pull_senko, move_senko, ear_init, em_yobi_init, push_em_yobi, pull_em_yobi. Whole file in emwork_nm.c. */
 #include "types.h"
 
 #define B8(p, o)   (*(u8 *)((u8 *)(p) + (o)))
@@ -117,6 +117,20 @@ void func_539340(void *);
 
 
 
+void smell_init(void) {
+    int i;
+    void **p = smell_stack;
+
+    i = 0;
+    do {
+        p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0;
+        p[4] = 0; p[5] = 0; p[6] = 0; p[7] = 0;
+        i += 8;
+        p += 8;
+    } while (i < 0x20);
+    smell_cnt = 0;
+}
+
 int push_smell(void *p) {
     int i;
 
@@ -141,6 +155,186 @@ void pull_smell(void *p) {
         if (*q == p) {
             *q = 0;
             smell_cnt--;
+        }
+        q++;
+    }
+}
+
+void smoke_init(void) {
+    int i;
+    void **p = smoke_stack;
+
+    i = 0;
+    do {
+        p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0;
+        p[4] = 0; p[5] = 0; p[6] = 0; p[7] = 0;
+        i += 8;
+        p += 8;
+    } while (i < 0x20);
+    smoke_cnt = 0;
+}
+
+int push_smoke(void *p) {
+    int i;
+
+    if (smoke_cnt >= 0x20) {
+        return 0;
+    }
+    for (i = 0; i < 0x20; i++) {
+        if (smoke_stack[i] == 0) {
+            smoke_stack[i] = p;
+            smoke_cnt++;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void pull_smoke(void *p) {
+    int i;
+    void **q = smoke_stack;
+
+    for (i = 0; i < 0x20; i++) {
+        if (*q == p) {
+            *q = 0;
+            smoke_cnt--;
+        }
+        q++;
+    }
+}
+
+void move_smoke(void) {
+    int i;
+    void **p = smoke_stack;
+
+    for (i = 0; i < 0x20; i++) {
+        u8 *q = *p;
+
+        if (q != 0) {
+            s8 v = (s8)q[0x15] - 1;
+            q[0x15] = v;
+            if (v <= 0) {
+                pull_smoke(q);
+            }
+        }
+        p++;
+    }
+}
+
+void senko_init(void) {
+    int i;
+    void **p = senko_stack;
+
+    i = 0;
+    do {
+        p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0;
+        p[4] = 0; p[5] = 0; p[6] = 0; p[7] = 0;
+        i += 8;
+        p += 8;
+    } while (i < 0x20);
+    senko_cnt = 0;
+}
+
+int push_senko(void *p) {
+    int i;
+
+    if (senko_cnt >= 0x20) {
+        return 0;
+    }
+    for (i = 0; i < 0x20; i++) {
+        if (senko_stack[i] == 0) {
+            func_539340(p);
+            senko_stack[i] = p;
+            senko_cnt++;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void pull_senko(void *p) {
+    int i;
+    void **q = senko_stack;
+
+    for (i = 0; i < 0x20; i++) {
+        if (*q == p) {
+            *q = 0;
+            senko_cnt--;
+        }
+        q++;
+    }
+}
+
+void move_senko(void) {
+    int i;
+    void **p = senko_stack;
+
+    for (i = 0; i < 0x20; i++) {
+        u8 *q = *p;
+
+        if (q != 0) {
+            s8 v = (s8)q[0x15] - 1;
+            q[0x15] = v;
+            if (v <= 0) {
+                pull_senko(q);
+            }
+        }
+        p++;
+    }
+}
+
+void ear_init(void) {
+    int i;
+    void **p = ear_stack;
+
+    i = 0;
+    do {
+        p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0;
+        p[4] = 0; p[5] = 0; p[6] = 0; p[7] = 0;
+        i += 8;
+        p += 8;
+    } while (i < 0x20);
+    ear_cnt = 0;
+}
+
+void em_yobi_init(void) {
+    int i;
+    void **p = em_yobi_stack;
+
+    i = 0;
+    do {
+        p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0;
+        p[4] = 0; p[5] = 0; p[6] = 0; p[7] = 0;
+        i += 8;
+        p += 8;
+    } while (i < 0x20);
+    em_yobi_cnt = 0;
+}
+
+int push_em_yobi(void *p) {
+    int i;
+
+    if (em_yobi_cnt >= 0x20) {
+        return 0;
+    }
+    for (i = 0; i < 0x20; i++) {
+        if (em_yobi_stack[i] == 0) {
+            em_yobi_stack[i] = p;
+            em_yobi_cnt++;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void pull_em_yobi(void *p) {
+    int i;
+    void **q = em_yobi_stack;
+
+    for (i = 0; i < 0x20; i++) {
+        if (*q == p) {
+            *q = 0;
+            em_yobi_cnt--;
         }
         q++;
     }
