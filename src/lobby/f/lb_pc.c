@@ -26,6 +26,10 @@ void font_set_palette();
 void flfntLocate();
 void Reibun_print();
 int put_main_cursor();
+f32 flSin(f32);
+void PutArrow();
+extern u16 System_timer;
+void SetFilterMode();
 void font_print_uf();
 void font_print_double2();
 void Name_ID_change();
@@ -334,4 +338,36 @@ void plaza_disp_chat_log_sub(int first, int sel, int kind) {
             }
         }
     }
+}
+
+/* chat log window: arrows blink with a sine on the system timer */
+void Plaza_disp_chatlog(void) {
+    u32 ang;
+    u32 col;
+    int y;
+    u8 fl;
+    SetFilterMode(0);
+    plaza_disp_chat_log_sub(PZ_TOP, PZ_ATEND, *(u8 *)0x39DAD4);
+    ang = ((System_timer & 0x1F) << 11) & 0xFFFF;
+    col = ((((s8)(int)(48.0f * flSin(0.0000958738f * (f32)ang))) + 0xCF) << 24) | 0x1ACC8E;
+    y = 0x6F;
+    fl = PZ_ARROWS;
+    if (fl & 1) {
+        if (fl & 4) {
+            y = (s16)(y - 2);
+        }
+    } else {
+        col = 0xC0606060;
+    }
+    PutArrow(0xFC, y, 0x16, 0xC, col, 2);
+    y = 0x138;
+    fl = PZ_ARROWS;
+    if (fl & 2) {
+        if (fl & 8) {
+            y = (s16)(y + 2);
+        }
+    } else {
+        col = 0xC0606060;
+    }
+    PutArrow(0xFC, y, 0x16, 0xC, col, 3);
 }
