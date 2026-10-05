@@ -279,7 +279,8 @@ typedef struct PLW {
     u8 _pad81D[0x81E - 0x81D];
     u8    work81E;           /* 0x81E */
     u8    work81F;           /* 0x81F */
-    u8 _pad820[0x828 - 0x820];
+    u8 _pad820[0x4];
+    void *em_demo;           /* 0x824 monster that grabs the player in pl_demo000 (EMW *) */
     PL_ITEM item[20];        /* 0x828 item pouch, 20 slots (Pl_item_charge, item_sel_sub); the ammo slot is picked by Pl_shell_set */
     void *fish878;           /* 0x878 hooked fish? +0x14 u16 angle (cam_plEX_fishing) */
     s16   work87C;       /* 0x87C */
