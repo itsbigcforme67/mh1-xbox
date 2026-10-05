@@ -2720,3 +2720,274 @@ void Quest_net_sub(void)
         break;
     }
 }
+
+extern u16 rem_item_calc_tbl[];
+extern s8 *rem_item_exit_sel_tbl[];
+
+/* quest_w.x88 entry (8 bytes): kind, unused, offset of its item table in mission_area. */
+typedef struct QREM {
+    u16 id;             /* 0x00 condition kind, 0xFFFF ends the list */
+    u16 x02;            /* 0x02 */
+    s32 tbl;            /* 0x04 offset of the REMI table */
+} QREM;
+
+/* Reward item table entry (6 bytes), table ends with weight 0xFFFF. */
+typedef struct REMI {
+    u16 w;              /* 0x00 weight */
+    u16 id;             /* 0x02 item */
+    u16 num;            /* 0x04 count */
+} REMI;
+
+void remuneration_item_set(void)
+{
+    PLW *pl;
+    int n;
+    QREM *e;
+    REMI *tbl;
+    u8 *out;
+    int i;
+    int th;
+    int j;
+    u8 *a;
+    u8 *b;
+    u8 *g;
+    REMI *q;
+    u16 *q16;
+    s8 *sel;
+    int r;
+    int acc;
+    u16 *tb;
+    int ck;
+    u16 cnt;
+
+    game_w.x1A8 = 0;
+    game_w.x1AC = 0;
+    pl = &player_work[game_w.master];
+    g = (u8 *)&game_w;
+    for (i = 0; i < 0x20; i += 8) {
+        *(s16 *)(g + 0x128) = 0;
+        *(s16 *)(g + 0x12A) = 0;
+        *(s16 *)(g + 0x12C) = 0;
+        *(s16 *)(g + 0x12E) = 0;
+        *(s16 *)(g + 0x130) = 0;
+        *(s16 *)(g + 0x132) = 0;
+        *(s16 *)(g + 0x134) = 0;
+        *(s16 *)(g + 0x136) = 0;
+        *(s16 *)(g + 0x138) = 0;
+        *(s16 *)(g + 0x13A) = 0;
+        *(s16 *)(g + 0x13C) = 0;
+        *(s16 *)(g + 0x13E) = 0;
+        *(s16 *)(g + 0x140) = 0;
+        *(s16 *)(g + 0x142) = 0;
+        *(s16 *)(g + 0x144) = 0;
+        *(s16 *)(g + 0x146) = 0;
+        g += 0x20;
+    }
+    e = (QREM *)quest_w.x88;
+    n = 0;
+    out = (u8 *)&game_w;
+    for (; e->id != 0xFFFF; e++) {
+        switch (e->id) {
+        case 0x8000:
+            break;
+        case 1:
+            if (!(quest_w.x13C != 0)) {
+                continue;
+            }
+            break;
+        case 2:
+            if (!(quest_w.x13C & 1)) {
+                continue;
+            }
+            break;
+        case 3:
+            if (!(quest_w.x13C & 2)) {
+                continue;
+            }
+            break;
+        case 4:
+            if (!(quest_w.x13C & 4)) {
+                continue;
+            }
+            break;
+        case 5:
+            if (!(quest_w.x13C & 8)) {
+                continue;
+            }
+            break;
+        case 6:
+            if (!(quest_w.x13C & 0x10)) {
+                continue;
+            }
+            break;
+        case 7:
+            if (!(quest_w.x13C & 0x20)) {
+                continue;
+            }
+            break;
+        case 8:
+            if (!(quest_w.x13C & 0x40)) {
+                continue;
+            }
+            break;
+        case 9:
+            if (!(quest_w.x13C & 0x80)) {
+                continue;
+            }
+            break;
+        case 0xA:
+            if (!(quest_w.x13C & 0x100)) {
+                continue;
+            }
+            break;
+        case 0x10:
+            if (!(quest_w.x13C & 0x4000)) {
+                continue;
+            }
+            break;
+        case 0x11:
+            if (!(quest_w.x13C & 0x8000)) {
+                continue;
+            }
+            break;
+        case 0x12:
+            if (!(quest_w.x13C & 0x10000)) {
+                continue;
+            }
+            break;
+        case 0x13:
+            if (!(quest_w.x13C & 0x20000)) {
+                continue;
+            }
+            break;
+        case 0x14:
+            if (!(quest_w.x13C & 0x40000)) {
+                continue;
+            }
+            break;
+        case 0xB:
+            if (game_w.x218 > 0x6400) {
+                if (quest_w.x14C > 0x6400) {
+                    continue;
+                }
+                break;
+            }
+            continue;
+        case 0xC:
+            if (game_w.x218 > 0x4B00) {
+                if (quest_w.x14C > 0x4B00) {
+                    continue;
+                }
+                break;
+            }
+            continue;
+        case 0xD:
+            if (game_w.x218 > 0x3200) {
+                if (quest_w.x14C > 0x3200) {
+                    continue;
+                }
+                break;
+            }
+            continue;
+        case 0xE:
+            if (game_w.x218 > 0x1900) {
+                if (quest_w.x14C > 0x1900) {
+                    continue;
+                }
+                break;
+            }
+            continue;
+        case 0xF:
+            if (game_w.x218 > 0x1900) {
+                if (quest_w.x14C > 0x1900) {
+                    continue;
+                }
+                break;
+            }
+            continue;
+        case 0x15:
+        case 0x16:
+        case 0x17:
+        case 0x18:
+        case 0x19:
+            tb = &rem_item_calc_tbl[e->id - 0x15];
+            ck = share_item_ck_ck();
+            cnt = Share_item_num_ck((u16)quest_w.x1C[0], ck);
+            if (cnt < tb[0]) {
+                continue;
+            }
+            if (!(cnt < tb[1])) {
+                continue;
+            }
+            break;
+        default:
+            break;
+        }
+        tbl = (REMI *)(e->tbl + (int)mission_area);
+        for (i = 0;; i++) {
+            if (e->id == 0x8000) {
+                if (Pl_Skill_ck(pl, 0x34) == 1) {
+                    sel = rem_item_exit_sel_tbl[2];
+                } else if (Pl_Skill_ck(pl, 0x35) == 1) {
+                    sel = rem_item_exit_sel_tbl[3];
+                } else {
+                    sel = rem_item_exit_sel_tbl[0];
+                }
+            } else {
+                sel = rem_item_exit_sel_tbl[1];
+            }
+            th = sel[i];
+            if (!(((u16)ran_suu(0) & 0x1F) < th)) {
+                break;
+            }
+            th = 0;
+            if (tbl->w != 0xFFFF) {
+                q = tbl;
+                do {
+                    th = (th + q->w) & 0xFFFF;
+                    q = (REMI *)((u8 *)q + 6);
+                } while (q->w != 0xFFFF);
+            }
+            r = (u16)ran_suu(0) % (u16)th;
+            if (e->id == 0x8000 && i == 0) {
+                r = 0;
+            }
+            acc = 0;
+            q16 = (u16 *)tbl;
+            if (*q16 != 0xFFFF) {
+                do {
+                    acc = (acc + *q16) & 0xFFFF;
+                    q16 += 1;
+                    if (r < acc) {
+                        break;
+                    }
+                    q16 += 2;
+                } while (*q16 != 0xFFFF);
+            }
+            n++;
+            *(u16 *)(out + 0x128) = q16[0];
+            *(u16 *)(out + 0x12A) = q16[1];
+            if (n >= 0x20) {
+                break;
+            }
+            out += 4;
+        }
+    }
+    a = (u8 *)&game_w;
+    for (i = 0; i < 0x20; i++) {
+        b = (u8 *)&game_w + (i + 1) * 4;
+        for (j = i + 1; j < 0x20; j++) {
+            u16 bi = *(u16 *)(b + 0x128);
+            u16 ai = *(u16 *)(a + 0x128);
+            if (bi < ai && bi != 0) {
+                s16 an = *(s16 *)(a + 0x12A);
+                *(u16 *)(a + 0x128) = bi;
+                *(s16 *)(a + 0x12A) = *(s16 *)(b + 0x12A);
+                *(u16 *)(b + 0x128) = ai;
+                *(s16 *)(b + 0x12A) = an;
+            }
+            b += 4;
+        }
+        a += 4;
+    }
+}
