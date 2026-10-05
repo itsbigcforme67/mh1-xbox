@@ -14,7 +14,7 @@ import re
 import sys
 
 SIZES = {"u8": 1, "s8": 1, "char": 1, "u16": 2, "s16": 2, "u32": 4, "s32": 4,
-         "f32": 4, "int": 4, "VEC3": 12, "FLMAT": 64, "V3S": 6}
+         "f32": 4, "int": 4, "VEC3": 12, "FLMAT": 64, "V3S": 6, "PLSW": 0x24}
 
 FIELD = re.compile(r"^(\s*)((?:struct\s+)?\w+)\s*(\*?)\s*(\w+)((?:\[[^\]]+\])*)\s*;\s*(/\*.*)?$")
 

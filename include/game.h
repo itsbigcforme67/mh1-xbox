@@ -61,8 +61,8 @@ typedef struct GAME_W {
     u8 gate_open;       /* 0x1E6 set20 gate state, set from the quest */
     u8 _pad1E7[0x1E8 - 0x1E7];
     u8 x1E8[4][8];      /* 0x1E8 per player flags, cleared by game0 */
-    u8 x208[4];         /* 0x208 per player: 1 while the player slot is in use (Game_task) */
-    u8 _pad20C[0x210 - 0x20C];
+    u8 pl_ent[8];       /* 0x208 per player slot: 1 while in use (Game_task), 0xFF = not
+                         * joined (player_init0, pl_work_clr); size 8 is a guess */
     u8 shl10_num;       /* 0x210 live shell10s owned by the master player */
     u8 meat_num;        /* 0x211 meat on the spit owned by the master player (eft12) */
     u8 trap_num;        /* 0x212 traps set by the master player (shell12) */

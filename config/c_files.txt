@@ -221,3 +221,6 @@ main 0x00290420 0x00290560 hit/hit2e
 main 0x0010FC70 0x001109D0 game/f_game
 main:rodata 0x003580E0 0x0035815C game/f_game
 main 0x00110C30 0x00110F08 game/f_gameb
+main 0x00134C20 0x00134E68 pl/pl01
+main 0x00134F30 0x00135078 pl/pl02
+main 0x001359C0 0x00135B00 pl/pl03
