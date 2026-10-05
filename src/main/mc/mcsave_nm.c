@@ -31,24 +31,23 @@ int user_data_clr();
 void encode_data_002814E0(buf)
 u16 *buf;
 {
-    int r = ran_suu(0);
-    int key = r & 0xFFFF;
+    int r;
     int i;
-    u16 *p;
+    u16 key;
     u16 *sum;
 
-    buf[0] = 0x100;
-    buf[1] = r;
-    buf += 2;
+    r = ran_suu(0);
+    key = r & 0xFFFF;
+    i = 0;
+    *buf++ = 0x100;
+    *buf++ = r;
     *buf = 0;
-    sum = buf;
-    buf[1] = 0x5963;
-    buf += 2;
-    p = buf;
+    sum = buf++;
+    *buf++ = 0x5963;
     for (i = 0; i < 0x8A20; i++) {
-        *sum = *sum + *p;
-        *p ^= key;
-        p++;
+        *sum = *sum + *buf;
+        *buf ^= key;
+        buf++;
         if ((key & 0xFFFF) == 0) {
             key = 1;
         }
