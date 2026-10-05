@@ -204,3 +204,89 @@ block_24:
         }
     }
 }
+
+s32 sit_com_ck(PLW *pl) {
+    u8 temp_v1;
+
+    if ((Pl_master_ck(pl) == 0) && (Online_ck() == 1)) {
+        return 0;
+    }
+    switch (game_w.x0D5) {
+    case 4:
+        if (pl->work88D == 0) {
+            Pl_act_set2(pl, 4, 2, 0);
+            return 0;
+        }
+    case 6:
+    case 5:
+        Pl_act_set2(pl, 4, 3, 0);
+        return 0;
+    case 7:
+    case 8:
+        Pl_act_set2(pl, 4, 5, 0);
+        return 0;
+    default:
+        pl->work8F0 = 1;
+        temp_v1 = stick_pow_get(pl, 0);
+        switch (temp_v1) {
+        case 1:
+        case 2:
+            pl->ang_y = stick_dir_set(pl, 0);
+            if (act_ck(pl, 0, 0x3B) == 0) {
+                if (act_ck(pl, 0, 0x3D) != 0) {
+                    Pl_act_set2(pl, 0, 0x3C, 0);
+                } else {
+                    Pl_act_set(pl, 0, 0x3B, 0);
+                }
+            }
+            break;
+        case 3:
+            pl->ang_y = stick_dir_set(pl, 0);
+            if (act_ck(pl, 0, 0x3D) == 0) {
+                Pl_act_set(pl, 0, 0x3D, 0);
+            }
+            break;
+        default:
+        case 0:
+            if (act_ck(pl, 0, 0x3B) == 0) {
+                if (act_ck(pl, 0, 0x3D) != 0) {
+                    goto block_31;
+                }
+            } else {
+block_31:
+                if (pl->work08 == 0) {
+                    Pl_act_set2(pl, 0, 0x3C, 0);
+                }
+            }
+            break;
+        }
+        if ((pl->sw.trg & 0x40) && (pl->x714 == 0)) {
+            Pl_act_set2(pl, 0, 0x39, 0);
+        }
+        if (Game_clear_ck(1) == 1) {
+            return 0;
+        }
+        if (pl->work8C4 != 0) {
+            Pl_chat_act_set(pl);
+        }
+        if (pl->sw.an_trg & 0x3C) {
+            Pl_act_set(pl, 0, 4, 0);
+        }
+        job_special_com_ck(pl, 0);
+        if ((pl->sw.trg & 0x200) && (pl->work886 == 0)) {
+            search_act_set(pl, 2);
+            item_action_set(pl, 0);
+            pl->work8F2 = (u8) (pl->work8F2 | 1);
+        }
+        if (pl->sw.trg & 0x20) {
+            if (trade_get_ck_00139680(pl) == 0) {
+                unique_act_set(pl);
+                search_act_set(pl, 1);
+            }
+        } else if (pl->work908 != 0) {
+            pl->work90B = 1;
+            Pl_act_set2(pl, 0, 0x67, 0x10);
+        }
+        return 0;
+    }
+}

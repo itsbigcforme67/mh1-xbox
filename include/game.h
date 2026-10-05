@@ -49,7 +49,9 @@ typedef struct GAME_W {
     u8 master;          /* 0x0D1 player number of the session master */
     u8 x0D2;            /* 0x0D2 set to 1 by Game_task, passed to AQ_init */
     u8 pl_num;          /* 0x0D3 players in the session (shell_hit_ck loops over them) */
-    u8 _pad0D4[0x1B2 - 0xD4];
+    u8 _pad0D4[0xD5 - 0xD4];
+    u8 x0D5;            /* 0x0D5 stage/session state switch in sit_com_ck (4..8 handled); guess */
+    u8 _pad0D6[0x1B2 - 0xD6];
     u8 x1B2;            /* 0x1B2 set05: kind-2 fixtures fire once set */
     u8 flag1B3;         /* 0x1B3 bit 0 hides set04 on stage 28 */
     u8 _pad1B4[0x1DC - 0x1B4];

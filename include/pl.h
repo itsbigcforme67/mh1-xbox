@@ -270,7 +270,7 @@ typedef struct PLW {
     u16   work888;           /* 0x888 */
     s16   work88A;           /* 0x88A */
     u8    work88C;       /* 0x88C */
-    s8    work88D;           /* 0x88D */
+    u8    work88D;           /* 0x88D */
     u16   work88E;           /* 0x88E */
     f32   net_pos[3];    /* 0x890 position from the network (em_pl_pos_set, online) */
     u8 _pad89C[0x8BC - 0x89C];
@@ -280,7 +280,7 @@ typedef struct PLW {
     s16   work8C0;           /* 0x8C0 */
     u8    work8C2;       /* 0x8C2 */
     u8    work8C3;           /* 0x8C3 */
-    s8    work8C4;           /* 0x8C4 */
+    u8    work8C4;           /* 0x8C4 */
     s8    work8C5;           /* 0x8C5 */
     u8 x8C6;                 /* 0x8C6 non-zero: ignore pad for camera (cam_sw_set_sub) */
     s8    work8C7;           /* 0x8C7 */
@@ -304,8 +304,9 @@ typedef struct PLW {
     u8    work8F2;           /* 0x8F2 */
     s8    work8F3;           /* 0x8F3 */
     u8 _pad8F4[0x908 - 0x8F4];
-    s8    work908;           /* 0x908 */
-    u8 _pad909[0x90C - 0x909];
+    u8    work908;           /* 0x908 */
+    u8 _pad909[0x2];
+    s8    work90B;           /* 0x90B */
     s16   work90C;           /* 0x90C */
     s8    work90E;           /* 0x90E */
     u8 _pad90F[0x917 - 0x90F];

@@ -104,4 +104,13 @@ s32 St_unique_ck(PLW *, f32 *, u16 *, u8 *);
 void func_549200(PLW *, int);
 s32 Ext_pick_point_ck(PLW *);
 s32 St_pick_ck(PLW *, u16 *, f32 *);
+s32 Online_ck(void);
+void Pl_chat_act_set(PLW *);
+void item_action_set(PLW *, int);
+void job_special_com_ck(PLW *, u8);
+void search_act_set(PLW *, u8);
+s16 stick_dir_set(PLW *, int);
+s32 stick_pow_get(PLW *, int);
+s32 trade_get_ck_00139680(PLW *);
+void unique_act_set(PLW *);
 #endif
