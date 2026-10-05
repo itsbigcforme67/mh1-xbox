@@ -328,7 +328,7 @@ typedef struct { s16 x, y, w, h; u32 col[4]; } SPR5;
 void disp_edit_spr(STASK *t, u8 *w) {
     SPR5 s;
     f32 sn;
-    s16 i;
+    int i;
     char **m;
     s16 y;
     flSetRenderState(0x6C, 0);
@@ -363,16 +363,16 @@ void disp_edit_spr(STASK *t, u8 *w) {
             font_print_ex(0xE4, y, 5, lit_320_0053B630, w[5] + 1);
             break;
         case 3:
+            font_print_ex(0xE4, y, 5, lit_320_0053B630, w[6] + 1);
+            break;
+        case 4:
             font_print_ex(0xE4, y, 5, lit_320_0053B630, w[7] + 1);
             break;
-        case 4: {
-            u32 c = B32(w, 8);
+        case 5: {
+            u32 c = *(u32 *)(w + 8);
             font_print_ex(0xBC, y, 5, lit_321_0053B640, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF);
             break;
         }
-        case 5:
-            font_print_ex(0xE4, y, 5, lit_320_0053B630, w[6] + 1);
-            break;
         }
     }
     Disp_button(1.0f, 0x12, 0x206, 0x60, 8);
@@ -757,10 +757,10 @@ void cmn_mongon_check_filter(s8 *out, s8 *str, int n) {
 /* Expand one entry of check_mongon (16-byte records, 14 chars + length at +0xF; a record whose
    next record has -1 at +0xF continues) into out. Returns the length, or -1 if it is longer than max. */
 int cmn_mongon_set(s8 *e, s8 *out, int max) {
-    s8 len = e[0xF];
-    s8 rem;
+    int rem;
     int k = 0;
     int i = 0;
+    s8 len = e[0xF];
     int j;
     if (max < len) {
         return -1;
