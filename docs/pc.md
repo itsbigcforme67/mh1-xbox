@@ -172,7 +172,7 @@ src/pc/rt/:
 ### Motion system (frame_init / frame_move)
 
 The hunter is animated by the game's own motion code: src/main/frame/
-f_frame_nm.c (main 0x125340-0x1267BC; 13 of its 18 functions match the PS2
+f_frame_nm.c (main 0x125340-0x1267BC; 16 of its 18 functions match the PS2
 bytes, see docs/agents/agent-A.md) runs unchanged. create_plcom_motion
 turns every AAN in plcom_tbl.bin into a motion-set handle
 (motion_set_handle_tbl, com_mot_han_ofs); frame_init picks the handle from
@@ -297,7 +297,7 @@ enemy_trans (0x168B10), prims (ported), effects/shells (ported).
 | pad -> sw buffers | main pad_get.c, pl_normal2.c (sw_set_sub) | matched; runs on the PC with the host pad backend (rt_pad.c, src/pc/pad) |
 | player loop entry | pl01.c player_mv / pl_init | matched |
 | player states (walk, run, roll, weapon, items) | main 0x134000-0x15B000, 453 functions, 157 KB | ~10 % matched (pl0x.c, pl_normal*, pl_damage); the big weapon state machines are asm |
-| motion system | main f_frame 0x125340-0x1267BC (18 functions) + fl motion layer 0x173A50-0x1746A0 | f_frame: 13/18 match, all 18 run on the PC (f_frame_nm.c); fl layer native in rt_motion.c |
+| motion system | main f_frame 0x125340-0x1267BC (18 functions) + fl motion layer 0x173A50-0x1746A0 | f_frame: 16/18 match, all 18 run on the PC (f_frame_nm.c); fl layer native in rt_motion.c |
 | player/monster drawing | player_trans, enemy_trans, 45 functions | ~3 %; the viewer's hunter_pose / fl_model_pose do the same job natively |
 | collision | GetGroundHit, wall hits (main 0x111000-0x125000) | ~8 %; host HITS reader exists (fmt_hits_ground_y), wall test missing |
 | monster common (em_core, em_master, em_taisei) | game 0x533980-0x53A000 | ~65 % matched + near-matches |

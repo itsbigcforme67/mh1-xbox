@@ -187,16 +187,16 @@ Lessons:
 
 ## Assignment 9: motion system, pad, hunter on the runtime (5 Oct 2026)
 ### main f_frame (0x125340-0x1267BC), 18 functions
-- src/main/frame/f_frame.c 0x1257D0-0x125F08 (aan_ctr_get, calc_ofs_velocity,
-  calc_velocity, pl_velocity_sub, frame_init, frame_init_b) and f_frameb.c
+- 16 of 18 match: src/main/frame/f_frame.c 0x125340-0x125730
+  (create_plcom_motion, create_pl_motion, create_em_motion), f_frameb.c
+  0x1257D0-0x125F08 (aan_ctr_get, calc_ofs_velocity, calc_velocity,
+  pl_velocity_sub, frame_init, frame_init_b) and f_framec.c
   0x1263F0-0x1267BC (frame_check, em_frame_check, frame_check2/3,
-  em_frame_check2/3, move) match. check.py OK; `tools/rebuild.sh` all OK.
+  em_frame_check2/3, move). check.py OK; `tools/rebuild.sh` all OK.
 - Near-matches, whole file in f_frame_nm.c:
   - frame_move 12/311 off: only `end` (fp vs s7) and the address of
     sub_on[n] (s7 vs fp) swap registers, plus the f20/f21 restore order.
     Declaration-order search and a 15-minute permuter run found nothing.
-  - create_plcom_motion 21/73, create_pl_motion 30/83, create_em_motion
-    36/92: saved-register assignment of the loop counters (logic equal).
   - aan_ofs_calc 35/40: the original keeps `aan` in v0 early (return value
     set before the second test); permuter found nothing usable.
 - New header include/frame.h (FRW: the motion part of PLW/EMW, FRMT: one
@@ -214,6 +214,13 @@ Lessons:
   - A u16 loop counter passed to a u16 parameter is passed unmasked; to
     an int parameter it is masked (andi) - frame_move's calls show which
     callees take u16.
+  - create_*_motion: found by a scripted search over declaration order
+    (random + local moves) and then the order of the init statements.
+    create_em_motion only matched once its per-bank pointer and bank*100
+    were written as `em_mot_han_ofs[no][bank]` / `bank * 100` (the
+    compiler makes the induction variables itself, inside the loop
+    guard) and `em` was an int passed to Em_max_parts_get(s16) (the
+    caller sign-extends).
   - pl_velocity_sub: stack order of FLMAT/vec locals follows declaration
     order (declare v[4] first to get it at the top).
 ### PC runtime

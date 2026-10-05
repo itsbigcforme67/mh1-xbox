@@ -296,5 +296,6 @@ main 0x00163E40 0x0016440C weapon/weapon
 main 0x00164D60 0x00164F68 weapon/weapon2
 main 0x00223F90 0x00223FDC cam/camr1
 main 0x00224CB0 0x00224D38 cam/camr3
-main 0x001257D0 0x00125F08 frame/f_frame
-main 0x001263F0 0x001267BC frame/f_frameb
+main 0x00125340 0x00125730 frame/f_frame
+main 0x001257D0 0x00125F08 frame/f_frameb
+main 0x001263F0 0x001267BC frame/f_framec

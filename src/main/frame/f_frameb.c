@@ -1,152 +1,131 @@
-/* Motion system, matching part 2 (SLPM_654.95 0x001263F0-0x001267BC):
- * frame_check .. em_frame_check3 and move(). See f_frame_nm.c. */
+/* Motion system, matching part 2 (SLPM_654.95 0x001257D0-0x00125F08):
+ * aan_ctr_get .. frame_init_b. See f_frame_nm.c for the whole file and
+ * what the motion system does. */
 #include "types.h"
 #include "game.h"
 #include "pl.h"
 #include "em.h"
 #include "frame.h"
 
-/* 1 if frame f is reached during this tick's step of layer n. */
-int frame_check(FRW *w, int n, f32 f) {
-    int loop = 0;
-    f32 cur;
-    f32 next;
-    f32 end;
+int aan_ctr_get(u8 *aan, int bank) {
+    return *(s32 *)(aan + bank * 8);
+}
 
-    if (w->mt[0].b_dir != 0) {
-        return 0;
+void calc_ofs_velocity(f32 start, f32 end, f32 *vel, s32 mot) {
+    if (start < 0.0f) {
+        flCalcTransVelocity(0.0f, end - start, vel, mot);
+    } else {
+        flCalcTransVelocity(start, end, vel, mot);
     }
-    cur = w->mt[n].frame;
-    next = cur + w->mt[n].spd;
-    end = w->mt[n].end;
-    if (next > end) {
-        if (w->mt[n].loop != 0) {
-            loop = 1;
-            next = w->mt[n].loopfr + (next - end);
+}
+
+void calc_velocity(f32 *out, f32 *a, f32 *b, f32 ra, f32 rb) {
+    out[0] = a[0] * ra + b[0] * rb;
+    out[1] = a[1] * ra + b[1] * rb;
+    out[2] = a[2] * ra + b[2] * rb;
+}
+
+/* Turns a root-motion step into world space and moves the actor by it. */
+void pl_velocity_sub(FRW *w, f32 *vel) {
+    f32 v[4];
+    FLMAT m;
+    FLMAT s;
+
+    cpRotMatrix(w->ang, &m);
+    flmatMakeScale(&s, w->scl[0], w->scl[1], w->scl[2]);
+    flmatMul(&m, &m, &s);
+    cpApplyMatrix(&m, vel, v);
+    if (pl_flag_ck(w, 0x20000) == 0) {
+        w->pos[0] += v[0];
+        w->pos[1] += v[1];
+        w->pos[2] += v[2];
+    }
+}
+
+/* Starts motion chr[n] on layer n at `frame`; blend != 0 cross-fades into it
+ * over |blend| + 1 ticks (negative: without root motion during the blend). */
+void frame_init(FRW *w, int frame, int blend, int n) {
+    u16 id = w->chr[n];
+    FRMDL *mdl = w->mdl;
+    u32 *han;
+    int no = id % 1000;
+
+    if (w->x10 == 0 || (w->x1E != 0 && w->x1F != 0)) {
+        if (id >= 1000) {
+            han = &motion_set_handle_tbl[w->id * 300 + 500];
+            han += pl_mot_han_ofs[w->id][no / 100];
         } else {
-            next = end;
+            han = motion_set_handle_tbl;
+            han += com_mot_han_ofs[no / 100];
         }
+    } else if (id >= 1000) {
+        han = &motion_set_handle_tbl[w->mdl_no * 600 + 1700];
+        han += em_mot_han_ofs[w->mdl_no][no / 100];
+    } else {
+        system_error(lit_277_003584C0, (s16)id, 0, 0);
     }
-    if (loop == 0) {
-        if (f >= cur && f < next) {
-            return 1;
+    if (w->x10 == 0 || w->x1E != 0) {
+        han += no % 100;
+    } else {
+        han = (u32 *)((u8 *)han + (no % 100) * 4);
+    }
+    if (blend != 0) {
+        if (blend < 0) {
+            blend = -blend;
+            w->mt[n].b_dir = -1;
+        } else {
+            w->mt[n].b_dir = 1;
         }
-    } else if (f >= cur && next < end) {
-        return 1;
+        flSetMotionEx(mdl->mot1, *han, n);
+        w->mt[n].b_end = flGetMotionSetTime(*han);
+        w->mt[n].b_loop = flGetMotionSetLoopInfo(*han, &w->mt[n].b_loopfr);
+        w->mt[n].b_frame = frame;
+        w->mt[n].b_cnt = blend + 1;
+        w->mt[n].b_rate = w->mt[n].b_step = 1.0f / (blend + 1);
+        w->mt[n].b_han = han;
+    } else {
+        flSetMotionEx(mdl->mot0, *han, n);
+        w->mt[n].end = flGetMotionSetTime(*han);
+        w->mt[n].loop = flGetMotionSetLoopInfo(*han, &w->mt[n].loopfr);
+        w->mt[n].frame = frame;
+        w->mt[n].b_cnt = 0;
+        w->mt[n].b_dir = 0;
+        w->mt[n].b_han = han;
     }
-    return 0;
+    w->mt[n].stat = 1;
+    if (n == 0) {
+        w->mt[0].ofs[0] = 0.0f;
+        w->mt[0].ofs[1] = 0.0f;
+        w->mt[0].ofs[2] = 0.0f;
+    }
 }
 
-/* Monsters: frame 2 is scaled by the animation speed (act_spd at +0x930). */
-int em_frame_check(FRW *w, int n, f32 f) {
-    f32 spd = *(f32 *)((u8 *)w + 0x930);
+/* Loads the second motion sub_chr[n] of layer n into the blend player. */
+void frame_init_b(FRW *w, int n) {
+    u16 id = w->sub_chr[n];
+    FRMDL *mdl = w->mdl;
+    u32 *han;
+    int no = id % 1000;
 
-    if (spd != 1.0f && f == 2.0f) {
-        f *= spd;
-    }
-    return frame_check(w, n, f);
-}
-
-/* 1 once layer n is at or past frame f. */
-int frame_check2(FRW *w, int n, f32 f) {
-    if (w->mt[0].b_dir != 0) {
-        return 0;
-    }
-    if (f <= w->mt[n].frame) {
-        return 1;
-    }
-    return 0;
-}
-
-int em_frame_check2(FRW *w, int n, f32 f) {
-    return frame_check2(w, n, f);
-}
-
-/* 1 while layer n is between frames a and b. */
-int frame_check3(FRW *w, int n, f32 a, f32 b) {
-    if (frame_check2(w, n, a) != 0 && frame_check2(w, n, b) == 0) {
-        return 1;
-    }
-    return 0;
-}
-
-int em_frame_check3(FRW *w, int n, f32 a, f32 b) {
-    return frame_check3(w, n, a, b);
-}
-
-void player_mv(void);
-void old_pos_save(EMW *);
-int enemy_mv(EMW *);
-void enemy_mk(EMW *);
-void em_ride_sub(EMW *);
-int npc_mv(EMW *);
-void npc_mk(EMW *);
-void item_check(void);
-void body_hit(void);
-void bgm_server(void);
-void HitWallPlayer(void *, int);
-void player_mk(void);
-void yure_move(void);
-void CameraMove(void);
-void light_move(void);
-void move_eft(void);
-void move_shell(void);
-void move_set(void);
-void move_item(void);
-void move_senko(void);
-void move_smoke(void);
-void move_stage(void);
-void Pit_mv(void);
-
-/* One game tick: players, monsters/NPCs (20 slots), hits, then the
- * camera, effects, shells, set objects, items and the cockpit. */
-void move(void) {
-    int i;
-    EMW *em;
-    PLW *pl;
-
-    em = em_work;
-    if (game_w.info_stop == 0) {
-        player_mv();
-    }
-    for (i = 0; i < 20; i++, em++) {
-        if (em->be_flag != 0) {
-            old_pos_save(em);
-            if (((u8 *)em)[0x1E] == 0) {
-                if (enemy_mv(em) == 0) {
-                    enemy_mk(em);
-                    em_ride_sub(em);
-                }
-            } else if (npc_mv(em) == 0) {
-                npc_mk(em);
-            }
+    if (w->x10 == 0 || (w->x1E != 0 && w->x1F != 0)) {
+        if (id >= 1000) {
+            han = &motion_set_handle_tbl[w->id * 300 + 500];
+            han += pl_mot_han_ofs[w->id][no / 100];
+        } else {
+            han = motion_set_handle_tbl;
+            han += com_mot_han_ofs[no / 100];
         }
+    } else if (id >= 1000) {
+        han = &motion_set_handle_tbl[w->mdl_no * 600 + 1700];
+        han += em_mot_han_ofs[w->mdl_no][no / 100];
+    } else {
+        system_error(lit_277_003584C0, (s16)id, 0, 0);
     }
-    if (game_w.info_stop == 0) {
-        item_check();
-        body_hit();
+    if (w->x10 == 0 || w->x1E != 0) {
+        han += no % 100;
+    } else {
+        han = (u32 *)((u8 *)han + (no % 100) * 4);
     }
-    bgm_server();
-    for (i = 0, pl = player_work; i < 8; i++, pl++) {
-        if (pl->be_flag != 0 && (game_w.x2E == 1 || ((u8 *)pl)[0x7EC] != 0)) {
-            HitWallPlayer(pl, 1);
-        }
-    }
-    for (i = 0, em = em_work; i < 20; i++, em++) {
-        if (em->be_flag != 0 && ((u8 *)em)[0x7EC] != 0) {
-            HitWallPlayer(em, 1);
-        }
-    }
-    player_mk();
-    yure_move();
-    CameraMove();
-    light_move();
-    move_eft();
-    move_shell();
-    move_set();
-    move_item();
-    move_senko();
-    move_smoke();
-    move_stage();
-    Pit_mv();
+    flSetMotionEx(mdl->mot1, *han, n);
 }
+

@@ -25,16 +25,16 @@
 void create_plcom_motion(void) {
     u8 tmp[0x28];
     u8 frame[8];
-    u8 *aan;
-    u32 *han;
     int idx;
+    u8 *aan;
+    int num;
     s32 *ofs;
+    int i;
     u8 *p;
+    u32 *han;
     u32 h;
     int base;
     int bank;
-    int num;
-    int i;
 
     idx = 0;
     han = motion_set_handle_tbl;
@@ -42,10 +42,10 @@ void create_plcom_motion(void) {
     bank = 0;
     aan = pl_area_top;
     base = 0;
-    do {
+    for (; bank < 10; bank++, ofs++, base += 100) {
         *ofs = idx;
         num = aan_ctr_get(aan, bank);
-        for (i = 0; i < num; i++) {
+        for (i = 0; i < num; i++, han++, idx++) {
             p = aan_ofs_calc(aan, i + base);
             if (p != 0) {
                 flGetFrame(frame);
@@ -56,39 +56,34 @@ void create_plcom_motion(void) {
             } else {
                 *han = 0;
             }
-            han++;
-            idx++;
         }
-        bank++;
-        ofs++;
-        base += 100;
-    } while (bank < 10);
+    }
 }
 
 void create_pl_motion(int pl) {
     u8 tmp[0x28];
     u8 frame[8];
-    u8 *aan;
-    u32 *han;
     int idx;
+    u8 *aan;
+    int num;
     s32 *ofs;
+    int i;
     u8 *p;
+    u32 *han;
     u32 h;
     int base;
     int bank;
-    int num;
-    int i;
 
+    han = &motion_set_handle_tbl[pl * 300 + 500];
     aan = pl_area_top;
     idx = 0;
     bank = 0;
-    han = &motion_set_handle_tbl[pl * 300 + 500];
     ofs = pl_mot_han_ofs[pl];
     base = 0;
-    do {
+    for (; bank < 6; bank++, ofs++, base += 100) {
         *ofs = idx;
         num = aan_ctr_get(aan, bank);
-        for (i = 0; i < num; i++) {
+        for (i = 0; i < num; i++, han++, idx++) {
             p = aan_ofs_calc(aan, i + base);
             if (p != 0) {
                 flGetFrame(frame);
@@ -99,39 +94,32 @@ void create_pl_motion(int pl) {
             } else {
                 *han = 0;
             }
-            han++;
-            idx++;
         }
-        bank++;
-        ofs++;
-        base += 100;
-    } while (bank < 6);
+    }
 }
 
-void create_em_motion(int no, s16 em) {
+void create_em_motion(int no, int em) {
     u8 *aan;
     u8 tmp[0x28];
     u8 frame[8];
-    u32 *han;
-    s32 *ofs;
-    int idx;
     int bank;
-    int base;
-    int i;
+    int idx;
     int num;
-    int banks;
+    int i;
     u8 *p;
+    u32 *han;
     u32 h;
+    int banks;
 
     han = &motion_set_handle_tbl[no * 600 + 1700];
     aan = pl_area_top;
-    idx = 0;
     banks = Em_max_parts_get(em) * 2;
-    for (bank = 0, base = 0, ofs = em_mot_han_ofs[no]; bank < banks; bank++, ofs++, base += 100) {
-        *ofs = idx;
+    idx = 0;
+    for (bank = 0; bank < banks; bank++) {
+        em_mot_han_ofs[no][bank] = idx;
         num = aan_ctr_get(aan, bank);
-        for (i = 0; i < num; i++) {
-            p = aan_ofs_calc(aan, i + base);
+        for (i = 0; i < num; i++, han++, idx++) {
+            p = aan_ofs_calc(aan, i + bank * 100);
             if (p != 0) {
                 flGetFrame(frame);
                 plCreateMotionSetFromAAN(tmp, data_load_ptr, p);
@@ -141,8 +129,6 @@ void create_em_motion(int no, s16 em) {
             } else {
                 *han = 0;
             }
-            han++;
-            idx++;
         }
     }
 }

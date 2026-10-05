@@ -111,6 +111,6 @@ void frame_init(FRW *w, int frame, int blend, int n);
 int frame_move(FRW *w);
 void create_plcom_motion(void);
 void create_pl_motion(int pl);
-void create_em_motion(int no, s16 em);
+void create_em_motion(int no, int em);
 
 #endif
