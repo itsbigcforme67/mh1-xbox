@@ -169,6 +169,11 @@ for f in $GAME; do
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/^typedef char \*va_list;/#include <stdarg.h>/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
+    # item_action_set calls Get_Active_itemnum() with a0 = pl left over
+    src/main/pl/pl10.c)
+        src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
+        sed 's/(s16)Get_Active_itemnum()/(s16)Get_Active_itemnum(pl)/' "$f" > "$src"
+        INC="$INC -I$(dirname "$f")" ;;
     # ItemPickingDeclaration calls Pl_master_ck() with its own a0 (arg) left over
     src/main/menu/menu_nm.c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
