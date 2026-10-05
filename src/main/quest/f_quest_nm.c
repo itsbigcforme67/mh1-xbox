@@ -766,10 +766,14 @@ int Share_item_stack();
 
 char *Quest_str_get(int n)
 {
+    char *r;
+
     if (game_w.x1DC) {
-        return func_5C5E20();
+        r = func_5C5E20();
+    } else {
+        r = (char *)(quest_w.x84[n] + (int)mission_area);
     }
-    return (char *)(quest_w.x84[n] + (int)mission_area);
+    return r;
 }
 
 s16 stolen_item_num_ck(item)
@@ -1459,4 +1463,258 @@ EMW *em;
 {
     Ext_pick_point_clr(em->x88D);
     em->x88D = -1;
+}
+
+typedef char *va_list;
+int strlen();
+int vsprintf();
+void set01_set2_use_mem();
+
+void str_gattai(char *dst, char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    vsprintf(dst, fmt, ap);
+}
+
+extern char lit_1730_0036B290[];
+
+void Quest_forfeit_message(void)
+{
+    char buf[0x20];
+    int n;
+
+    str_gattai(buf, lit_1730_0036B290, quest_w.x18);
+    n = strlen(buf);
+    if (n & 1) {
+        buf[n] = 0x20;
+        buf[n + 1] = 0;
+    }
+    buf[0x1F] = 0;
+    set01_set2_use_mem(buf);
+}
+
+void enemy_insurance_sub(n)
+int n;
+{
+    QEM *e;
+
+    if (Em_data_st_adrs_get(quest_w.x74, n, 0, quest_w.x3A) != 0) {
+        e = (QEM *)Em_data_st_adrs_get(quest_w.x74, n, 1, quest_w.x3A);
+        for (;;) {
+            if (e->id < 0) {
+                break;
+            }
+            if (e->x2E & 4) {
+                e->x2E = 2;
+                e->x08 = -1;
+            }
+            e++;
+        }
+    }
+}
+
+void em_data_st_adrs_set();
+
+void em_next_tbl_ck(n)
+int n;
+{
+    s32 *l0;
+    QEM *e;
+    int any;
+
+    l0 = Em_data_st_adrs_get(quest_w.x74, n, 0, quest_w.x3A);
+    if (l0 != 0) {
+        e = (QEM *)Em_data_st_adrs_get(quest_w.x74, n, 1, quest_w.x3A);
+        any = 0;
+        for (;;) {
+            if (e->id < 0) {
+                break;
+            }
+            if (!(e->x2E & 5)) {
+                any = 1;
+            }
+            e++;
+        }
+        if (any == 0 && e->id == -2) {
+            em_data_st_adrs_set(quest_w.x74, n, e + 1, 1);
+            em_data_st_adrs_set(quest_w.x74, n, (int)l0 + 0x10, 0);
+        }
+    }
+}
+
+void em_data_st_adrs_set(tbl, n, val, k)
+s32 *tbl;
+int n;
+int val;
+int k;
+{
+    s32 *p;
+    s32 base;
+    s32 v;
+    s32 w;
+
+    tbl += quest_w.x3A;
+    base = *tbl;
+    if (base != 0 && quest_w.no != 0) {
+        p = (s32 *)(base + (int)mission_area);
+loop:
+        v = *p;
+        if (v != 0) {
+            if (v != n) {
+                p += 4;
+                goto loop;
+            }
+            p += k + 2;
+            w = *p;
+            if (w == 0 || w == -1) {
+                return;
+            }
+            *p = val - (int)mission_area;
+        }
+    }
+}
+
+void quest_em_init_sub();
+void quest_em_init_sub2();
+
+void quest_em_init(void)
+{
+    int n;
+
+    n = 0;
+    quest_em_init_sub(quest_w.x78, &n);
+    quest_em_init_sub2(quest_w.x74, &n);
+}
+
+void quest_em_init_sub(p, cnt)
+s32 *p;
+int *cnt;
+{
+    s32 *l0;
+    QEM *e;
+
+    for (;;) {
+        l0 = Em_data_com_adrs_get(p, 0);
+        e = (QEM *)Em_data_com_adrs_get(p, 1);
+        if (l0 == 0) {
+            break;
+        }
+        if (e != 0) {
+            for (;;) {
+                if (e->id == -1) {
+                    break;
+                }
+                e->x2E = 2;
+                e->x08 = -1;
+                e->x0A = -1;
+                e->x2C = *cnt;
+                if (e->x05 != 0) {
+                    quest_w.x34 += e->x04;
+                }
+                e++;
+                (*cnt)++;
+            }
+        }
+        p += 4;
+    }
+}
+
+void quest_em_init_sub2(p, cnt)
+s32 *p;
+int *cnt;
+{
+    s32 *l0;
+    QEM *e;
+    s32 *q;
+
+    for (;;) {
+        q = (s32 *)*p;
+        if (q == 0) {
+            break;
+        }
+        if (quest_w.no == 0) {
+        } else {
+            q = (s32 *)((int)q + (int)mission_area);
+        }
+        for (;;) {
+            l0 = Em_data_com_adrs_get(q, 0);
+            e = (QEM *)Em_data_com_adrs_get(q, 1);
+            q += 4;
+            if (l0 == 0) {
+                break;
+            }
+            if (e != 0) {
+                for (;;) {
+                if (e->id == -1) {
+                    break;
+                }
+                    e->x2E = 2;
+                    e->x08 = -1;
+                    e->x0A = -1;
+                    e->x2C = *cnt;
+                    if (e->x05 != 0) {
+                        quest_w.x34 += e->x04;
+                    }
+                    e++;
+                    (*cnt)++;
+                }
+            }
+        }
+        p++;
+    }
+}
+
+int Quest_f_dra_ck();
+
+void station_em_set(void)
+{
+    s16 *l0;
+    int i;
+    QEM *e;
+    EMW *em;
+    u8 *g;
+    s32 *l;
+    s32 v;
+
+    l = Em_data_com_adrs_get(quest_w.x78, 0);
+    e = (QEM *)Em_data_com_adrs_get(quest_w.x78, 1);
+    if (l != 0 && e != 0) {
+        for (;;) {
+            v = *l;
+            if (v == -1) {
+                break;
+            }
+            for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
+                if (g[0x28] == v) {
+                    break;
+                }
+            }
+            if (i < 4) {
+                l++;
+                continue;
+            }
+            for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
+                if (g[0x28] <= 0) {
+                    ((u8 *)&game_w)[0x28 + i] = v;
+                    em_create_model(i);
+                    break;
+                }
+            }
+            l++;
+        }
+        for (;;) {
+            if (e->id < 0) {
+                break;
+            }
+            if ((em = Em_direct_set(e)) != 0) {
+                if (em->kind == 2 && Quest_f_dra_ck(*(u8 *)&quest_w.no) != 0) {
+                    quest_w.x14C = em->x302;
+                }
+                em->stg = e->x07;
+            }
+            e++;
+        }
+    }
 }

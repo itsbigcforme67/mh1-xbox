@@ -113,6 +113,7 @@ typedef struct QEM {
     f32 pos[3];         /* 0x20 */
     s16 x2C;            /* 0x2C */
     s16 x2E;            /* 0x2E flags: 1 gone, 2, 4 dead, 8 captured */
+    u8 _pad30[0xC];     /* 0x30 (entry size is 0x3C) */
 } QEM;
 
 /* One extra pick-up point (StiEM_data[20], 0x1C bytes): treasure/hagi spot
