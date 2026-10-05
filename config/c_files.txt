@@ -713,8 +713,14 @@ lobby 0x005A19D0 0x005A1B3C lb/lbnpcc
 lobby 0x005A1F30 0x005A22D8 lb/lbnpcd
 lobby 0x005A2410 0x005A26C8 lb/lbnpce
 lobby 0x005A2900 0x005A2A1C lb/lbnpcf
+lobby 0x005910E0 0x00591120 lb/lbui
+lobby 0x00591B90 0x00591BD4 lb/lbuib
+lobby 0x00591E30 0x00591EF8 lb/lbuic
+lobby 0x00593E60 0x00593F78 lb/lbuid
+lobby 0x0059DA40 0x0059DB3C lb/lbuie
 lobby:rodata 0x0065E000 0x0065E008 cnet/cnlbsj
 lobby:rodata 0x0065E008 0x0065E010 cnet/cnlbsm
 lobby:rodata 0x0065DEF0 0x0065DF10 cnet/cnlbsc
 lobby:rodata 0x0065DFE0 0x0065E000 cnet/cnlbsg
 lobby:rodata 0x0065DF10 0x0065DF30 cnet/cnlbsc
+lobby:rodata 0x0065DBE8 0x0065DBF0 lb/lbuie
