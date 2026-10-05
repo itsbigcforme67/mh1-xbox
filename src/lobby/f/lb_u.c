@@ -9,6 +9,7 @@ extern u8 key_quest;
 extern s32 guildPrice;
 extern s32 quest_price;
 extern u8 D_3E5505[];
+extern u8 D_3E4FA0[];
 extern u8 D_3E5506[];
 extern u8 lb_quest_exp[];
 extern u8 *pNet;
@@ -43,7 +44,6 @@ int Quest_clear_bit_ck();
 s8 lb_set_key_quest_local();
 void flMemset();
 extern u8 User_data[];
-extern u16 *D_3F3714;
 void Lb_guild(void) {
     PLW *pl;
     u8 *em;
@@ -53,7 +53,7 @@ void Lb_guild(void) {
     int a;
     u8 *pm;
     pl = &player_work[game_w.master];
-    em = (u8 *)pl->x3B0 + 0x444;
+    em = *(u8 **)(D_3E4FA0 + game_w.master * 0xA00) + 0x444;
     q = get_quest_info();
     Get_sw2(0);
     switch (lb_sys.x06) {
@@ -68,7 +68,7 @@ void Lb_guild(void) {
         if (*(s8 *)(cw + 0x2C2F) != 0) {
             lb_quest_info[0x23] = *((u8 *)q + 0x1D);
         }
-        lb_sys._pad07[0] = 0;
+        lb_sys.x07 = 0;
         lb_sys.x06 = lb_sys.x06 + 1;
         if (Online_ck(a) == 0) {
             if (Quest_clear_bit_ck(0xAA) == 1 && Event_flag_ck(0x52) == 0) {
@@ -90,10 +90,7 @@ void Lb_guild(void) {
             return;
         }
         cw[0x2C08] = 0;
-talk:
-    default:
-        lb_guild_talk();
-        return;
+        break;
     case 1:
         Lbc_init_network_work();
         cnWrap_SoundRequest(0xC);
@@ -122,7 +119,7 @@ talk:
             mhRule.quest = *(u16 *)0x3F341C;
             lb_set_questpage_info();
         }
-        goto talk;
+        break;
     case 2:
         if (lb_guild_startMsg() == 1) {
             if (Online_ck() == 0) {
@@ -140,7 +137,7 @@ talk:
             cnWrap_SoundRequest(9);
             if (key_quest_num == 0) {
                 pNet[8] = lb_get_quest_level(0);
-            } else if (Online_ck(0) == 1) {
+            } else if (Online_ck() == 1) {
                 pNet[8] = 6;
             } else {
                 pNet[8] = 5;
@@ -151,7 +148,7 @@ talk:
             lb_sys.x06 = lb_sys.x06 + 1;
             Gunner_wasure_ck(User_data);
         }
-        goto talk;
+        break;
     case 3:
         v = lb_select_quest_level();
         switch (v) {
@@ -166,14 +163,14 @@ talk:
             lb_sys.x06 = 0xD;
             break;
         }
-        goto talk;
+        break;
     case 4:
         if (Lb_talk_check_default(2) != 0) {
             lb_sys.x06 = lb_sys.x06 + 1;
             lb_set_questpage_info();
             cnWrap_SoundRequest(9);
         }
-        goto talk;
+        break;
     case 5:
         v = lb_select_quest();
         switch (v) {
@@ -193,10 +190,10 @@ talk:
             pNet[8] = pNet[0x13];
             break;
         }
-        goto talk;
+        break;
     case 6:
         if (Lb_talk_check_default(2) != 0) {
-            if (lb_pit[9] == 0) {
+            if (*(s8 *)(lb_pit + 9) == 0) {
                 if (Lb_check_money(mhRule.quest) == 0) {
                     if (Online_ck() == 0) {
                         cw[0x35D3] = 1;
@@ -210,8 +207,8 @@ talk:
                         qq = lb_quest_all[mhRule.quest];
                         quest_price = qq->fee;
                         Lb_menu_quest_info(qq);
-                        a = game_w.master;
                         v = Lb_get_quest_type(qq) | 0x40;
+                        a = game_w.master;
                         D_3E5506[a * 0xA00] = v;
                         Lb_set_mini_data(cw + a * 0x2FC + 0x1346, v, a);
                         a = game_w.master;
@@ -235,10 +232,10 @@ talk:
                 cnWrap_SoundRequest(3);
             }
         }
-        goto talk;
+        break;
     case 7:
         if (Lb_talk_check_default(2) != 0) {
-            if (lb_pit[9] == 0) {
+            if (*(s8 *)(lb_pit + 9) == 0) {
                 lb_sys.x06 = lb_sys.x06 + 1;
                 cnWrap_SoundRequest(9);
             } else {
@@ -246,18 +243,18 @@ talk:
                 cnWrap_SoundRequest(3);
             }
         }
-        goto talk;
+        break;
     case 8:
         if (lb_rule_seet_set() == 1) {
-            lb_sys._pad07[0] = 0;
+            lb_sys.x07 = 0;
             lb_sys.x06 = lb_sys.x06 + 1;
         }
-        goto talk;
+        break;
     case 9:
         v = lb_guild_make_room();
         switch (v) {
         case 0:
-            a = mhRule._pad58[0];
+            a = mhRule.x58;
             if (a == (s8)get_questLevelNum() + 1) {
                 qq = get_quest_info();
             } else {
@@ -270,7 +267,7 @@ talk:
             Lbc_SendMiniData(a, v);
             Lb_set_mini_data(cw + game_w.master * 0x2FC + 0x1346);
             Lb_set_mini_data((u8 *)&lbCommer + game_w.master * 0x5C + 0x1C);
-            if (*(s8 *)&mhRule == 0) {
+            if (mhRule.x00 == 0) {
                 *(s32 *)lb_pit = 0;
                 lb_pit[8] = 8;
             } else {
@@ -278,8 +275,9 @@ talk:
                 lb_pit[8] = 4;
             }
             lb_sys.x06 = lb_sys.x06 + 1;
-            *(s16 *)0x3F33DC = mhRule.quest;
-            *(u16 *)0x3F341C = mhRule.quest;
+            a = mhRule.quest;
+            *(s16 *)0x3F33DC = a;
+            *(u16 *)0x3F341C = a;
             quest_price = qq->fee;
             break;
         case 1:
@@ -288,7 +286,7 @@ talk:
             lb_sys.x06 = 0xD;
             break;
         }
-        goto talk;
+        break;
     case 10:
         if (Lb_talk_check_default(0) != 0) {
             if (Online_ck() == 0) {
@@ -300,10 +298,10 @@ talk:
             }
             lb_guild_end();
         }
-        goto talk;
+        break;
     case 15:
         if (Lb_talk_check_default(2) != 0) {
-            if (lb_pit[9] == 0) {
+            if (*(s8 *)(lb_pit + 9) == 0) {
                 if (Online_ck() == 0) {
                     *(s32 *)lb_pit = 0;
                     lb_pit[8] = 3;
@@ -341,7 +339,7 @@ talk:
             }
         } else {
 b111:
-            if (*D_3F3714 & 0x200) {
+            if (*(u16 *)0x3F3714 & 0x200) {
                 v = pNet[8] + 1;
                 pNet[8] = v;
                 if ((v & 0xFF) >= 3) {
@@ -351,10 +349,10 @@ b111:
                 cnWrap_SoundRequest(6);
             }
         }
-        goto talk;
+        break;
     case 16:
         if (Lb_talk_check_default(0) != 0) {
-            if (lb_pit[9] == 0) {
+            if (*(s8 *)(lb_pit + 9) == 0) {
                 *(s32 *)lb_pit = 0;
                 lb_pit[8] = 0xB;
                 lb_pit[9] = 1;
@@ -365,7 +363,7 @@ b111:
                 lb_sys.x06 = 0xD;
             }
         }
-        goto talk;
+        break;
     case 17:
         if (Lbs_RoomExit() == 1) {
             if (cw[0x32C5] == 1) {
@@ -377,7 +375,7 @@ b111:
             lb_pit[8] = 0xC;
             lb_sys.x06 = 0x12;
         }
-        goto talk;
+        break;
     case 18:
         if (Lb_talk_check_default(0) != 0) {
             a = game_w.master;
@@ -392,10 +390,9 @@ b111:
             lb_sys.x68 = 0;
             Lbc_init_network_work();
             NPCZoomInCameraCancel();
-b136:
-            cw[0x2C08] = 1;
+            goto b136;
         }
-        goto talk;
+        break;
     case 11:
         if (Lb_talk_check_default(0) != 0) {
             *(s32 *)lb_pit = 0;
@@ -403,10 +400,10 @@ b136:
             lb_sys.x06 = 0xC;
             lb_pit[9] = 0;
         }
-        goto talk;
+        break;
     case 12:
         if (Lb_talk_check_default(2) != 0) {
-            if (lb_pit[9] == 0) {
+            if (*(s8 *)(lb_pit + 9) == 0) {
                 lb_sys.x06 = 5;
                 cnWrap_SoundRequest(9);
                 Lbc_set_prim(0, Lb_guild_trans, 0);
@@ -418,7 +415,7 @@ b136:
                 cnWrap_SoundRequest(3);
             }
         }
-        goto talk;
+        break;
     case 13:
         if (Lb_talk_check_default(0) != 0) {
             lb_sys.x6C = 0;
@@ -429,6 +426,12 @@ b136:
             NPCZoomInCameraCancel();
             goto b136;
         }
-        goto talk;
+        break;
+b136:
+        cw[0x2C08] = 1;
+        break;
+    default:
+        break;
     }
+    lb_guild_talk();
 }

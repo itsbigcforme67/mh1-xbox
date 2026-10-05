@@ -21,7 +21,9 @@ typedef struct LBSYS {         /* lb_sys 0x90 bytes */
     s8 x03;                    /* 0x03 mode (4 = send positions) */
     u8 _pad04[2];
     s8 x06;                    /* 0x06 guild screen state */
-    u8 _pad07[0x64 - 7];
+    s8 x07;                    /* 0x07 guild/quest sub state */
+    s8 x08;                    /* 0x08 rule sheet/quest sub state */
+    u8 _pad09[0x64 - 9];
     u16 chair_mask;            /* 0x64 bit per occupied chair */
     u16 x66;                   /* 0x66 chair number (sent as a packet) */
     s32 x68;                   /* 0x68 */
@@ -87,7 +89,7 @@ extern u8 my_user_mini_data[];
 typedef struct LBQUEST { u8 _pad00[4]; s32 fee; u8 _pad08[0x10]; s32 str_ofs; } LBQUEST; /* quest record (get_quest_info) */
 extern LBQUEST *lb_quest_all[0xC8];
 extern int mission_area;
-typedef struct MHRULE { u8 _pad00[0x54]; u32 quest; u8 _pad58[0x68 - 0x58]; } MHRULE;
+typedef struct MHRULE { s8 x00; u8 _pad01[6]; s8 x07; char pass[9]; s8 x11; char msg[0x3D]; s8 x4F; u8 _pad50[4]; u32 quest; u8 x58; u8 _pad59[3]; u32 x5C; u8 _pad60[8]; } MHRULE; /* guild room rule 0x68 bytes */
 extern MHRULE mhRule;
 extern s32 User_gold;          /* User_data + 0x20 */
 void Gold_add();
