@@ -109,7 +109,7 @@ typedef struct CNET_SYS {
     s32 sock;  /* 0xFDC socket handle */
     s32 rlen;  /* 0xFE0 bytes read by the last select */
     s16 rcmd;  /* 0xFE4 command of the last packet */
-    s16 rcat;  /* 0xFE6 category of the last packet */
+    u16 rcat;  /* 0xFE6 category of the last packet */
     u16 rseq;  /* 0xFE8 sequence of the last packet */
     u16 rseq2;  /* 0xFEA  */
     s8 rres;  /* 0xFEC result byte */

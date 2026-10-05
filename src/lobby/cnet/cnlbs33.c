@@ -1,5 +1,16 @@
-/* cnlbs, run 34: __cnet_SendReq_MatchJoin .. cnLBS_Get_MatchInfomation (lobby.bin 0x005AC8D0-0x005ACB84): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 34: __cnet_Return_MatchInformation .. cnLBS_Get_MatchInfomation (lobby.bin 0x005AC860-0x005ACB84): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+
+void __cnet_Return_MatchInformation(CNET_RES res) {
+    if (res.val == -1) {
+        __cnet_SendReq_MatchRejection(res.val);
+    }
+    if (CnetSys_w.burst[7].cb != 0) {
+        CnetSys_w.burst[7].state = 0;
+        CnetSys_w.burst[7].x21 = 0;
+        CnetSys_w.burst[7].cb(res, &res);
+    }
+}
 
 int __cnet_SendReq_MatchJoin(void) {
     int cmd = SetSendCommand(&send_work, 0xA3) & 0xFFFF;

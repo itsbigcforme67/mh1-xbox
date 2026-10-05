@@ -83,7 +83,7 @@ int __cnet_SendReq_SearchUser(int arg0) {
 }
 
 void __cnet_Recv_SearchUser(void) {
-    int sp10;
+    char sp10[8];
 
     GetRecvDataString(CNWP(0x30988), GetRecvData8(CNWP(0x30987), GetRecvData8(CNWP(0x30986), GetRecvData16(CNWP(0x30984), GetRecvData16(CNWP(0x30982), GetRecvData16(CNWP(0x30980), GetRecvDataString(&sp10, recv_work)))))));
 }
@@ -2151,6 +2151,99 @@ int cnLBS_Read_MatchInfomation(int cb) {
     return -1;
 }
 
+void _cnet_RecvFromLbs_MatchJoin(void) {
+    u8 v;
+    CNET_RES res;
+
+    if (CnetSys_w.burst[7].state != 0) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                __cnet_Recv_Byte(&v);
+                CNW(u8, 0x30310) = v;
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        __cnet_SendReq_MatchPlSide(0);
+    }
+}
+
+void _cnet_RecvFromLbs_MatchPlSide(void) {
+    u8 v;
+    CNET_RES res;
+
+    if (CnetSys_w.burst[7].state != 0) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                __cnet_Recv_Byte(&v);
+                if (v != 0) v -= 1;
+                CNW(u8, 0x30311) = v;
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        pl_infoget_ctr = 1;
+        __cnet_SendReq_MatchOpponentInfo(1);
+    }
+}
+
+void _cnet_RecvFromLbs_MatchBattleCode(void) {
+    CNET_RES res;
+    u8 *p;
+
+    if (CnetSys_w.burst[7].state != 0 && CnetSys_w.rcat != 0x10) {
+        if (CnetSys_w.rcat == 2) {
+            p = CNWP(0x30312);
+            if (CnetSys_w.rres == 0) {
+                GetRecvDataString(p, recv_work);
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        __cnet_SendReq_MatchGameRule();
+    }
+}
+
+void _cnet_RecvFromLbs_MatchGameRule(void) {
+    CNET_RES res;
+    u8 *p;
+
+    if (CnetSys_w.burst[7].state != 0 && CnetSys_w.rcat != 0x10) {
+        if (CnetSys_w.rcat == 2) {
+            p = CNWP(0x30323);
+            if (CnetSys_w.rres == 0) {
+                GetRecvDataString(p, recv_work);
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        __cnet_SendReq_MatchMcsIpAddr();
+    }
+}
+
+void __cnet_Return_MatchInformation(CNET_RES res) {
+    if (res.val == -1) {
+        __cnet_SendReq_MatchRejection(res.val);
+    }
+    if (CnetSys_w.burst[7].cb != 0) {
+        CnetSys_w.burst[7].state = 0;
+        CnetSys_w.burst[7].x21 = 0;
+        CnetSys_w.burst[7].cb(res, &res);
+    }
+}
+
 int __cnet_SendReq_MatchJoin(void) {
     int cmd = SetSendCommand(&send_work, 0xA3) & 0xFFFF;
     SetSendCommandLen(&send_work);
@@ -2223,6 +2316,23 @@ void _cnet_RecvFromLbs_NoticePatchData(void) {
     }
 }
 
+void __cnet_Recv_PatchData(void) {
+    u16 a = 0;
+    u16 b = 0;
+
+    GetRecvDataOption(CNW(s32, 0xFFC), GetRecvData16(&a, GetRecvData16(&b, recv_work)), a);
+    CNW(s32, 0xFFC) += a;
+}
+
+void _cnet_RecvFromLbs_ReqestPatchLineCheck(void) {
+    u16 v;
+
+    if (CnetSys_w.burst[0].state != 0) {
+        __cnet_Recv_Word(&v);
+        __cnet_Send_PatchLineCheck(v);
+    }
+}
+
 int __cnet_Send_PatchLineCheck(int arg0) {
     int cmd = SetSendCommand(&send_work, 0xC2) & 0xFFFF;
     SetSendData16(&send_work, arg0);
@@ -2291,6 +2401,26 @@ int idx;
     if (fn != 0) fn(r, 0);
 }
 
+void _cnet_Return_CallBack(arg)
+int arg;
+{
+    CNET_RES res;
+
+    if (CnetSys_w.rcat == 0x10) {
+        if (arg != 0) {
+            _cnetEvent_JumpCallBack(arg, 0);
+        }
+    } else if (CnetSys_w.rcat == 2) {
+        if (CnetSys_w.rres == 0) {
+            res.val = 0;
+        } else {
+            res.val = -1;
+            __cnet_Recv_ServerMessage();
+        }
+        __cnetSub_Return_BgProcess(res, 1, 0);
+    }
+}
+
 void cnLBS_Init_LobbyBgProcess(void) {
     memset((u8 *)&CnetSys_w + 0x18, 0, 0xE00);
 }
@@ -2319,7 +2449,7 @@ int arg2;
 }
 
 int __cnetSub_Return_BgProcess(CNET_RES res, int mode, int slot) {
-    CNET_RES r = res;
+    CNET_RES sp28 = res;
     int i;
 
     switch (mode) {
@@ -2328,7 +2458,7 @@ int __cnetSub_Return_BgProcess(CNET_RES res, int mode, int slot) {
             if (mode == 1 && CnetSys_w.rseq == CnetSys_w.bg[i].cmd) {
                 CnetSys_w.bg[i].state = 0;
                 CnetSys_w.bg[i].x19 = 0;
-                if (CnetSys_w.bg[i].done != 0) CnetSys_w.bg[i].done(r, &r, &CnetSys_w.bg[i]);
+                if (CnetSys_w.bg[i].done != 0) CnetSys_w.bg[i].done(sp28, &sp28, &CnetSys_w.bg[i]);
                 return i;
             }
         }
@@ -2336,7 +2466,7 @@ int __cnetSub_Return_BgProcess(CNET_RES res, int mode, int slot) {
     case 2:
         CnetSys_w.bg[slot].state = 0;
         CnetSys_w.bg[slot].x19 = 0;
-        if (CnetSys_w.bg[slot].done != 0) CnetSys_w.bg[slot].done(r, &r);
+        if (CnetSys_w.bg[slot].done != 0) CnetSys_w.bg[slot].done(sp28, &sp28);
         return slot;
     default:
         return -1;
@@ -2450,6 +2580,20 @@ int __cnet_SendSet_Logout(void) {
     return cmd;
 }
 
+void _cnet_RecvFromLbs_AnswerLogOut(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.rcat == 2) {
+        if (CnetSys_w.rres == 0) {
+            res.val = 0;
+        } else {
+            res.val = -1;
+            __cnet_Recv_ServerMessage(CnetSys_w.rcat);
+        }
+        __cnetSub_Return_BgProcess(res, 1, 0);
+    }
+}
+
 int cnLBS_ShutDownLobbyServer(int arg0) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
@@ -2465,6 +2609,20 @@ int __cnet_SendSet_ShutDown(void) {
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
+}
+
+void _cnet_RecvFromLbs_AnswerShutDown(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.rcat == 2) {
+        if (CnetSys_w.rres == 0) {
+            res.val = 0;
+        } else {
+            res.val = -1;
+            __cnet_Recv_ServerMessage(CnetSys_w.rcat);
+        }
+        __cnetSub_Return_BgProcess(res, 1, 0);
+    }
 }
 
 int cnLBS_Get_ServerMessage(char *d) {
