@@ -188,9 +188,13 @@ extern u8 lit_3557[];
 void pick_set_sub(PLW *, u16);
 void ItemPickingDeclaration(PLW *, void *);
 void pl_mv071(PLW *, u32);
+void fish_com_ck(PLW *);
 s32 Ext_pick_point_ck2(PLW *);
 s32 St_pick_ck2(PLW *);
 void adx_se_set(PLW *, int);
 void Item_regained(PLW *, int);
 void egg_set(PLW *);
+void BBQcamera_set(PLW *);
+void fish_com_ck(PLW *);
+void func_555A90(PLW *, int);
 #endif

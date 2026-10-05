@@ -282,7 +282,7 @@ typedef struct PLW {
     s16   work87C;       /* 0x87C */
     s16   work87E;           /* 0x87E */
     u8 _pad880[0x881 - 0x880];
-    u8    x881;          /* 0x881 bite timer (eft23 fishing) */
+    s8    x881;              /* 0x881 bite timer (eft23 fishing); s8: signed loads in fish_com_ck */
     s16   work882;       /* 0x882 */
     s16   work884;           /* 0x884 */
     u8    work886;           /* 0x886 */
@@ -306,10 +306,10 @@ typedef struct PLW {
     s8    work8C7;           /* 0x8C7 */
     u8 x8C8;                 /* 0x8C8 non-zero: camera resets behind player (cam_sub_std) */
     s8    work8C9;           /* 0x8C9 */
-    u8 _pad8CA[0x8CC - 0x8CA];
+    s16   work8CA;           /* 0x8CA */
     s16   work8CC;           /* 0x8CC */
     s16   work8CE;           /* 0x8CE */
-    u8 _pad8D0[0x8D1 - 0x8D0];
+    s8    work8D0;           /* 0x8D0 */
     u8    work8D1;           /* 0x8D1 */
     u8    work8D2;           /* 0x8D2 */
     u8 _pad8D3[0x8D4 - 0x8D3];
