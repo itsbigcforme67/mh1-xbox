@@ -54,7 +54,7 @@ void net_receive_pl_pos_set();
 void EvDemoMove();
 int game_core();
 void Info_control();
-void Quest_condition_judging();
+int Quest_condition_judging();
 int Game_clear_ck();
 void se_stop_all();
 void Zero_rev_set();

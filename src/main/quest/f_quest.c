@@ -23,6 +23,18 @@ void em_capture_conv();
 void quest_failed_ptr_set();
 int Quest_clear_ck();
 
+extern char lit_656_0036B1F0[];
+extern char lit_657_0036B210[];
+extern char lit_658_0036B230[];
+extern char lit_659_0036B250[];
+extern char lit_660_0036B270[];
+s16 quest_condition_prog();
+void Quest_timer_calc();
+
+void func_63ACA0();
+void set01_set();
+void set01_set2();
+
 void Quest_error_set2(void)
 {
     game_w.x0D5 = 8;
