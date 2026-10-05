@@ -1,7 +1,4 @@
-/* Player sound/effect wrappers (SLPM_654.95 main 0x24A240-0x24A790): pl_local_init (empty), pl01_effect_move,
- * sound_call* (play a sound once when the current motion reaches a frame), wall_sd_req/ashi_sd_req/yoroi_sd_req
- * (footstep, wall and armor sounds: the sound id is base*2 + random bit), ashi_eft_req (foot effect by kind),
- * move_default. pl01_effect_move drives ef_move_sub (the big per-motion effect/sound script at 0x24A790). */
+/* pl_snd01 - pl_snd: player sound/effect script 0x0024A240-0x002542E0: pl_local_init, pl01_effect_move, sound_call_0024A2A0, sound_call_h, sound_call2, wall_sd_req, ashi_sd_req_0024A510, ashi_eft_req, yoroi_sd_req, move_default_0024A750, ef_move_sub_0024A790. Whole file in pl_snd_nm.c. */
 #include "pl.h"
 #include "game.h"
 #include "plf.h"
@@ -36,6 +33,34 @@ int frame_check2(f32, PLW *, int);
 static void sound_call_0024A2A0(PLW *pl, int frame, int se);
 static void sound_call_h(PLW *pl, int frame, int se);
 static void sound_call2(PLW *pl, int frame, int se);
+
+
+
+
+
+
+
+
+
+
+
+/* Per-motion sound and effect script of player kind 1 (pl01_effect_move). pl is the player, w the effect work
+ * (PL01EX at pl+0x444): w->anim is the current motion (pl->char0), w->tmr a cool-down for the skill effects
+ * of other players. First the common motions (footsteps ashi_sd_req/ashi_eft_req, armor rattle yoroi_sd_req,
+ * sound_call* one-shot sounds at a frame), then a switch on the weapon kind (pl->kind) with the weapon
+ * specific motions 1002..1427. Generated from the disassembly (see docs/agents/agent-E.md); the Code_Make
+ * calls show `Code_Make(X, n, Y, m)`: with probability n/8 sound X, else Y with m/8, else none; where the
+ * original leaves a register argument unset the value is written as STALE. */
+typedef struct PL01EX {
+    u8 _00;
+    u8 step;            /* 0x01 */
+    u8 _02[4];
+    s16 anim;           /* 0x06 motion number of the last frame */
+    s8 x08;             /* 0x08 */
+    u8 _09[9];
+    u16 tmr;            /* 0x12 */
+} PL01EX;
+
 
 void pl_local_init(void) {
 }
@@ -150,23 +175,6 @@ static void move_default_0024A750(PLW *pl, struct PL01EX *w) {
     parts_chg(pl, 0x12, 0);
     parts_chg(pl, 0xE, 0);
 }
-
-/* Per-motion sound and effect script of player kind 1 (pl01_effect_move). pl is the player, w the effect work
- * (PL01EX at pl+0x444): w->anim is the current motion (pl->char0), w->tmr a cool-down for the skill effects
- * of other players. First the common motions (footsteps ashi_sd_req/ashi_eft_req, armor rattle yoroi_sd_req,
- * sound_call* one-shot sounds at a frame), then a switch on the weapon kind (pl->kind) with the weapon
- * specific motions 1002..1427. Generated from the disassembly (see docs/agents/agent-E.md); the Code_Make
- * calls show `Code_Make(X, n, Y, m)`: with probability n/8 sound X, else Y with m/8, else none; where the
- * original leaves a register argument unset the value is written as STALE. */
-typedef struct PL01EX {
-    u8 _00;
-    u8 step;            /* 0x01 */
-    u8 _02[4];
-    s16 anim;           /* 0x06 motion number of the last frame */
-    s8 x08;             /* 0x08 */
-    u8 _09[9];
-    u16 tmr;            /* 0x12 */
-} PL01EX;
 
 void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
 {

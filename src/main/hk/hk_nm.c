@@ -676,22 +676,31 @@ void hk_key_home(void) {
     se_req(7, 0x16, 0);
 }
 
-void hk_key_delete(void) {
-    int snd = 0x15;
-
-    if (SKB(0x2F) == 0) {
-        snd = 0x16;
-        if (hk_ctrl_key_ck() == 0) {
-            cmd_delete();
-        } else if (SKB(0x158) != 0) {
-            char *s = (char *)lpSKey + 0x158;
-            delete_all(s, SKU16(0x2C));
-        } else {
-            u8 *k = lpSKey;
-            delete_all((char *)k + 0x44, *(u16 *)(k + 0x2A));
-        }
+void hk_key_delete(void)
+{
+  int snd = 0x15;
+  if ((*((u8 *) (lpSKey + 0x2F))) == 0)
+  {
+    snd = 0x16;
+    if (hk_ctrl_key_ck() == 0)
+    {
+      cmd_delete();
     }
-    se_req(7, snd, 0);
+    else
+    {
+      char *s = ((char *) lpSKey) + 0x158;
+      if ((*((u8 *) (lpSKey + 0x158))) != 0)
+      {
+        delete_all(s, *((u16 *) (lpSKey + 0x2C)));
+      }
+      else
+      {
+        u8 *k = lpSKey;
+        delete_all(((char *) k) + 0x44, *((u16 *) (k + 0x2A)));
+      }
+    }
+  }
+  se_req(7, snd, 0);
 }
 
 void delete_all(char *s, int n) {

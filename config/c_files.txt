@@ -1,4 +1,6 @@
 # Decompiled code that replaces disassembly. One line per C file:
+main 0x0024A240 0x002542E0 pl/pl_snd01
+main:rodata 0x0036E0C0 0x0036E108 pl/pl_snd01
 game 0x0059A2C0 0x0059A674 em/em08_ai_r01
 #   MODULE START END NAME   (vram range; file is src/MODULE/NAME.c)
 # Functions must byte-match before they are listed here.

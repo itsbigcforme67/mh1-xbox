@@ -31,7 +31,7 @@ for l in chk.split('\n'):
     m = re.search(r'\(calls (\S+), original calls (\S+)\)', l)
     if m and cur:
         a, b = m.group(1), m.group(2)
-        ok = any(strip(a) == strip(x) or a == x for x in b.split('/'))
+        ok = b == '?' or any(strip(a) == strip(x) or a == x for x in b.split('/'))   # '?' = target without a symbol (overlay by address): the build links it
         if not ok: cur[3] = False
 rows = [r for r in rows if real.get(r[0], 1) == 0 and r[3] and (only is None or r[0] in only) and (skip is None or r[0] not in skip)]
 rows.sort(key=lambda r: r[1])
@@ -95,7 +95,7 @@ def func_tables(fa, fsz):
                     a = (hi << 16) + lo
                     if (0x340000 <= a < 0x3C0000 if mod == 'main' else 0x680000 <= a < 0x6C0000) and a % 4 == 0:
                         n = 0
-                        while n < 600:
+                        while n < 600 and a - _vram + 4 * n + 4 <= len(_img):
                             t = _w(a + 4 * n)
                             if fa <= t < fa + fsz and t % 4 == 0: n += 1
                             else: break
