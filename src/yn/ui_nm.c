@@ -1605,63 +1605,49 @@ void yn_message_font_sub(void) {
 #endif
 
 void yn_connect_font_sub(void) {
-    int sp130;
-    int sp30;
-    s32 temp_v0;
-    s32 var_s1;
-    s64 var_s0;
-    u8 *temp_a0;
-    u8 *temp_a0_2;
-    u8 *temp_a1;
-    u8 *temp_a1_2;
-    u8 *temp_a2;
-    u8 *temp_v1;
+    u8 sp130[0x100];
+    u8 sp30[0x100];
+    int i;
+    int y;
+    u8 *p;
+    u8 *r;
+    u8 *q;
 
     yn_set_pal(0);
-    yn_printf(0x2C, 0x53, *(yn_memcard_mes_tbl + 4 + (yn_mc_get_current(ynw + 0x10D0) * 4)));
-    var_s1 = 0;
-    var_s0 = 0xCB;
-loop_1:
-    temp_a1 = ynw;
-    if ((M2C_FIELD(temp_a1, s8 *, 0x16) + var_s1) < M2C_FIELD(temp_a1, s8 *, 0x1C)) {
-        temp_a0 = temp_a1 + ((M2C_FIELD(temp_a1, s8 *, 0xC) + var_s1) * 0x14);
-        if (M2C_FIELD(temp_a0, s32 *, 0x254) == -1) {
-            yn_set_pal(2, temp_a1);
-        } else if (M2C_FIELD(temp_a0, s32 *, 0x250) == 2) {
-            yn_set_pal(9, temp_a1);
+    yn_printf(0x2C, 0x53, yn_memcard_mes_tbl[1 + yn_mc_get_current(ynw + 0x10D0)]);
+    i = 0;
+    y = 0xCB;
+    for (; i < 2; i++, y += 0x1C) {
+        if (M2C_FIELD(ynw, s8 *, 0x16) + i >= M2C_FIELD(ynw, s8 *, 0x1C)) {
+            break;
         }
-        temp_a1_2 = ynw;
-        temp_v0 = yn_netcnf_search_usr_name(temp_a1_2 + 0x1180, temp_a1_2 + ((M2C_FIELD(temp_a1_2, s8 *, 0xC) + var_s1) * 0x1340) + 0xAF00);
-        if (temp_v0 != 0) {
-            temp_a2 = ynw;
-            if (M2C_FIELD((temp_a2 + ((M2C_FIELD(temp_a2, s8 *, 0xC) + var_s1) * 0x14)), s32 *, 0x250) == 2) {
-                goto block_10;
-            }
-            yn_strconv2((u8 *)&sp30, temp_v0, 0x2C);
-            yn_utf8_to_sjis((u8 *)&sp130, (u8 *)&sp30);
-        } else {
-block_10:
+        p = ynw + (M2C_FIELD(ynw, s8 *, 0xC) + i) * 0x14;
+        if (M2C_FIELD(p, s32 *, 0x254) == -1) {
             yn_set_pal(2);
-            strcpy((u8 *)&sp130, lit_4084);
+        } else if (M2C_FIELD(p, s32 *, 0x250) == 2) {
+            yn_set_pal(9);
         }
-        sprintf((u8 *)&sp30, lit_4085, var_s1 + 1 + M2C_FIELD(ynw, s8 *, 0xC), (u8 *)&sp130);
-        yn_printf(0x2C, (s64) (var_s0 << 0x30) >> 0x30, (u8 *)&sp30);
-        yn_set_pal(0);
-        var_s1 += 1;
-        var_s0 += 0x1C;
-        if (var_s1 < 2) {
-            goto loop_1;
-        }
-    }
-    temp_a0_2 = ynw;
-    if (M2C_FIELD(temp_a0_2, s8 *, 8) >= 2) {
-        temp_v1 = (M2C_FIELD(temp_a0_2, s8 *, 0xB) * 0x14) + temp_a0_2;
-        if (M2C_FIELD(temp_v1, s32 *, 0x250) == 0) {
-            strcpy((u8 *)&sp130, lit_4086);
+        r = (u8 *)yn_netcnf_search_usr_name(ynw + 0x1180, ynw + (M2C_FIELD(ynw, s8 *, 0xC) + i) * 0x1340 + 0xAF00);
+        if (r == 0 || M2C_FIELD(ynw + (M2C_FIELD(ynw, s8 *, 0xC) + i) * 0x14, s32 *, 0x250) == 2) {
+            yn_set_pal(2);
+            strcpy(sp130, lit_4084);
         } else {
-            sprintf((u8 *)&sp130, lit_4087, M2C_FIELD(temp_v1, s32 *, 0x258), M2C_FIELD(temp_v1, int **, 0x25C));
+            yn_strconv2(sp30, r, 0x2C);
+            yn_utf8_to_sjis(sp130, sp30);
         }
-        yn_printf(0x2C, 0x108, (u8 *)&sp130);
+        sprintf(sp30, lit_4085, M2C_FIELD(ynw, s8 *, 0xC) + (i + 1), sp130);
+        yn_printf(0x2C, (s16)y, sp30);
+        yn_set_pal(0);
+    }
+    q = ynw;
+    if (M2C_FIELD(q, s8 *, 8) >= 2) {
+        p = M2C_FIELD(q, s8 *, 0xB) * 0x14 + q;
+        if (M2C_FIELD(p, s32 *, 0x250) == 0) {
+            strcpy(sp130, lit_4086);
+        } else {
+            sprintf(sp130, lit_4087, M2C_FIELD(p, s32 *, 0x258), M2C_FIELD(p, s32 *, 0x25C));
+        }
+        yn_printf(0x2C, 0x108, sp130);
     }
 }
 
@@ -2832,25 +2818,23 @@ void yn_setup_allwork(u8 *arg0) {
     if (M2C_FIELD(arg0, s8 *, 0x700) != 0) {
         MyDns2 = InetIPAddrFromString(arg0 + 0x700);
     }
-    temp_v1 = M2C_FIELD(arg0, s32 *, 0x1310);
-    switch (temp_v1) {                              /* irregular */
+    switch (M2C_FIELD(arg0, s32 *, 0x1310)) {
+    case 1:
     default:
         NdgNegoMode = 0;
         break;
     case 2:
-        var_v0 = 1;
-block_22:
-        NdgNegoMode = var_v0;
+        NdgNegoMode = 1;
         break;
     case 3:
         NdgNegoMode = 0;
         break;
     case 5:
-        var_v0 = 3;
-        goto block_22;
+        NdgNegoMode = 3;
+        break;
     case 6:
-        var_v0 = 4;
-        goto block_22;
+        NdgNegoMode = 4;
+        break;
     }
     BsProxyUseFlag = 0;
     memset(BsProxyUrlstr, 0, 0x100);

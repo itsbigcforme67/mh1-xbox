@@ -247,9 +247,6 @@ void yn_netcnf_ifc_to_work(u8 *arg0, u8 *arg1, s8 *arg2) {
 }
 
 void yn_netcnf_work_to_dev(u8 *arg0, u8 *arg1) {
-    s32 var_v1;
-    u8 temp_a1;
-
     sceNetcnfifDataInit(arg1);
     strcpy(arg1 + 0xE00, arg0 + 0x820);
     strcpy(arg1 + 0xF00, arg0 + 0x920);
@@ -258,26 +255,23 @@ void yn_netcnf_work_to_dev(u8 *arg0, u8 *arg1) {
     } else {
         M2C_FIELD(arg1, s32 *, 0x130C) = 1;
     }
-    temp_a1 = M2C_FIELD(arg0, u8 *, 8);
-    if (temp_a1 != 4) {
-        var_v1 = 3;
-        switch (temp_a1) {                          /* irregular */
-        default:
-            var_v1 = 1;
-            goto block_15;
-        case 1:
-            M2C_FIELD(arg1, s32 *, 0x1310) = 2;
-            return;
-        case 2:
-            goto block_15;
-        case 3:
-            var_v1 = 5;
-            goto block_15;
-        }
-    } else {
-        var_v1 = 6;
-block_15:
-        M2C_FIELD(arg1, s32 *, 0x1310) = var_v1;
+    switch (M2C_FIELD(arg0, u8 *, 8)) {
+    case 0:
+    default:
+        M2C_FIELD(arg1, s32 *, 0x1310) = 1;
+        break;
+    case 1:
+        M2C_FIELD(arg1, s32 *, 0x1310) = 2;
+        break;
+    case 2:
+        M2C_FIELD(arg1, s32 *, 0x1310) = 3;
+        break;
+    case 3:
+        M2C_FIELD(arg1, s32 *, 0x1310) = 5;
+        break;
+    case 4:
+        M2C_FIELD(arg1, s32 *, 0x1310) = 6;
+        break;
     }
 }
 
@@ -288,24 +282,23 @@ void yn_netcnf_dev_to_work(u8 *arg0, u8 *arg1) {
     strcpy(arg0 + 0x820, arg1 + 0xE00);
     strcpy(arg0 + 0x920, arg1 + 0xF00);
     temp_a0 = M2C_FIELD(arg1, s32 *, 0x1310);
-    switch (temp_a0) {                              /* irregular */
+    switch (M2C_FIELD(arg1, s32 *, 0x1310)) {
+    case 1:
     default:
         M2C_FIELD(arg0, s8 *, 8) = 0;
-        return;
+        break;
     case 2:
-        var_v1 = 1;
-block_12:
-        M2C_FIELD(arg0, s8 *, 8) = var_v1;
-        return;
+        M2C_FIELD(arg0, s8 *, 8) = 1;
+        break;
     case 3:
-        var_v1 = 2;
-        goto block_12;
+        M2C_FIELD(arg0, s8 *, 8) = 2;
+        break;
     case 5:
-        var_v1 = 3;
-        goto block_12;
+        M2C_FIELD(arg0, s8 *, 8) = 3;
+        break;
     case 6:
-        var_v1 = 4;
-        goto block_12;
+        M2C_FIELD(arg0, s8 *, 8) = 4;
+        break;
     }
 }
 
