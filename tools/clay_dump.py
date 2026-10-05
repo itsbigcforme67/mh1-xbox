@@ -36,6 +36,7 @@ T_INDEXLISTS = 0x5     # children: T_STRIPS
 T_MATERIALS = 0x9
 T_TEXTURES = 0xA
 T_VERSION = 0x20000
+T_STRIPS1 = 0x30000    # strips whose vertices hang on one bone (guess: VU "_100" path)
 T_STRIPS = 0x40000     # count prims; each u32 n (bit 31 flag) + n u32 indices
 T_MATLIST = 0x50000    # material numbers used by this model
 T_PRIMMAT = 0x60000    # material slot per primitive (index into T_MATLIST)
@@ -49,7 +50,7 @@ T_MATRIX = 0x100000    # bone (matrix) numbers used by this part
 
 NAMES = {T_ROOT: "root", T_MODELS: "models", T_MODEL: "model", T_INDEXLISTS: "indexlists",
          T_MATERIALS: "materials", T_TEXTURES: "textures", T_VERSION: "version",
-         T_STRIPS: "strips", T_MATLIST: "matlist", T_PRIMMAT: "primmat",
+         T_STRIPS: "strips", T_STRIPS1: "strips1", T_MATLIST: "matlist", T_PRIMMAT: "primmat",
          T_VERTEX: "vertex", T_NORMAL: "normal", T_ST: "st", T_COLOR: "color",
          T_WEIGHT: "weight", T_ATTR: "attr", T_MATRIX: "matrix"}
 CONTAINERS = (T_ROOT, T_MODELS, T_MODEL, T_INDEXLISTS, T_MATERIALS, T_TEXTURES)
@@ -114,18 +115,21 @@ def child(d, off, size, typ):
     return None
 
 
-def tree(d, off, end, depth=0):
+def tree(d, off, end, depth=0, parent=None):
     for o, t, c, s in chunks(d, off, end):
+        if parent in (T_MATERIALS, T_TEXTURES):
+            print("%s%06X entry %d size=0x%X" % ("  " * depth, o, t, s))
+            continue
         print("%s%06X %-10s type=%06X count=%d size=0x%X"
               % ("  " * depth, o, NAMES.get(t, "?"), t, c, s))
-        if t in CONTAINERS and depth < 2 or t == T_INDEXLISTS:
-            tree(d, o + 12, o + s, depth + 1)
+        if t in CONTAINERS:
+            tree(d, o + 12, o + s, depth + 1, t)
 
 
 def strips(d, off, size):
     """Yield (flag, [indices]) for every primitive of a T_INDEXLISTS chunk."""
     for o, t, c, s in chunks(d, off + 12, off + size):
-        if t != T_STRIPS:
+        if t not in (T_STRIPS, T_STRIPS1):
             continue
         p = o + 12
         for _ in range(c):
