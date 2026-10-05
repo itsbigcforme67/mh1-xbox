@@ -3,6 +3,8 @@
 /* Declarations for the select.bin overlay (title / demo / character select).
  * Functions without a prototype: argument types not known yet. */
 #include "types.h"
+#include "game.h"
+#include "pl.h"
 
 /* select.bin sees these main-module globals with its own (partial) layouts; do not
  * include flow.h / f_game.h in the same file. */
@@ -85,4 +87,71 @@ typedef struct DEMO_W {
 } DEMO_W;
 extern DEMO_W demo_w;
 extern u8 Select_task[];
+/* edit_w (main 0x3F32E0, 0x4C bytes): character edit work (layout partly guessed) */
+typedef struct EDIT_W {
+    s8 x0[8];           /* 0x00 cleared by char_make_init */
+    s32 col;            /* 0x08 current colour (from sample_col) */
+    u8 _pad0C[0x24 - 0xC];
+    s8 name[0x12];      /* 0x24 character name (SJIS bytes, 0 = end) */
+    u8 _pad36[2];
+    s16 x38;            /* 0x38 */
+    u8 x3A;             /* 0x3A colour index */
+    u8 x3B;             /* 0x3B */
+    s8 x3C;             /* 0x3C */
+    s8 x3D;             /* 0x3D */
+    u8 _pad3E[0x4C - 0x3E];
+} EDIT_W;
+extern EDIT_W edit_w;
+extern s32 sample_col[];
+extern s16 voice_idx[];
+extern s16 decide_chr_tbl[];
+extern u16 Psw[];       /* pad state, Psw[4] = pressed buttons */
+void se_req();
+int ran_suu();
+void pl_chr_set2();
+void flSetRenderState();
+void Sel_back_disp();
+void Sel_menu_disp();
+void cmn_mongon_check_sub();
+void Set_equip_data();
+void DispFrameMessageA();
+int strlen();
+int strncmp();
+extern u8 help_mess_005387B0[];
+
+/* Raw access by byte offset into player_work-style blocks (identical code to a struct field). */
+#define B8(p, o)   (*(u8 *)((u8 *)(p) + (o)))
+#define BS8(p, o)  (*(s8 *)((u8 *)(p) + (o)))
+#define B16(p, o)  (*(u16 *)((u8 *)(p) + (o)))
+#define BS16(p, o) (*(s16 *)((u8 *)(p) + (o)))
+#define B32(p, o)  (*(s32 *)((u8 *)(p) + (o)))
+#define BF(p, o)   (*(f32 *)((u8 *)(p) + (o)))
+#define BP(p, o)   (*(void **)((u8 *)(p) + (o)))
+s8 Get_hunter_rank();
+void Set_equip_idx();
+void Warehouse_equip();
+int Warehouse_equip_stack();
+void flMemset();
+extern u8 User_data[];
+extern u8 option_w[];
+extern f32 stage_start_pos[][3];
+extern s32 edit_top[];
+void Ed_trans_pl();
+int get_mdlw_ptr();
+s16 get_prim();
+void *get_prim_ptr();
+void parts_init();
+void pl_create_model();
+void weapon_create_model();
+void armor_create_model();
+void yure_init();
+void trans_pl_sub();
+void Put_sprite_rotate();
+f32 flSin(f32);
+extern s16 arr_id_tbl[];
+extern u8 _ctype_[];
+extern s8 check_mongon[];
+int cmn_mongon_set();
+void font_print_ex();
+extern char lit_501_0053B820[], lit_502_0053B840[], lit_503_0053B870[], lit_504_0053B8A0[];
 #endif
