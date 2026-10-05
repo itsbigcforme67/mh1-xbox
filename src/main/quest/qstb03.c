@@ -1,11 +1,4 @@
-/* f_quest, first part (SLPM_654.95 main 0x002267F0-0x00226C24, the
- * g_Modori_dama_ck asm file): mission-data accessors and Quest_init.
- * Written from the asm for the PC port (agent A); NOT built for the PS2 and
- * not compared with check.py. Field meanings are guesses.
- *
- * With a quest loaded (quest_w.no != 0) the tables hold offsets into
- * mission_area (0 / -1 = none); in free hunts (no == 0) they come from
- * quest_data_tbl and hold pointers. */
+/* SLPM_654.95 0x002269E0-0x00226C24: Stage_item_probability_get .. Quest_init. See f_quest0_nm.c. */
 #include "quest.h"
 
 extern u8 *mission_area;
@@ -13,89 +6,19 @@ extern s32 *quest_data_tbl[];
 extern s32 Item_get_tbl[];
 void *memset(void *, int, unsigned int);
 
-/* 0x2267F0: can the return ball (modori dama) be used here: not in the
- * base camp stage of the area (game_w+0x2F == +0x14) and the mission
- * does not forbid it (flag 0x1000). */
-int Modori_dama_ck(void)
-{
-    if (*((u8 *)&game_w + 0x2F) == *((u8 *)&game_w + 0x14)) {
-        return 0;
-    }
-    return (quest_w.x40 & 0x1000) == 0;
-}
 
-/* 0x226830 */
-void Quest_failed_set(void)
-{
-    *((u8 *)&quest_w + 0x150) = 1;
-}
 
-/* 0x226840: quests 0x66-0x6A (the "f_dra" quests) */
-int Quest_f_dra_ck(int unused)
-{
-    switch (quest_w.no) {
-    case 0x66:
-    case 0x67:
-    case 0x68:
-    case 0x69:
-    case 0x6A:
-        return 1;
-    }
-    return 0;
-}
 
 #define QOFS(off) ((off) != 0 ? (void *)((off) + (int)mission_area) : 0)
 
-/* 0x2268A0: the exits list of stage n */
-void *Stage_mv_data_get(int n)
-{
-    if (quest_w.no == 0) {
-        return (void *)quest_w.x7C[n];
-    }
-    {
-        s32 v = quest_w.x7C[n];
-        if (v == 0) {
-            return 0;
-        }
-        return (void *)(v + (int)mission_area);
-    }
-}
 
-/* 0x226900: stage n's 32-byte entry */
-void *Stage_data_get(int n)
-{
-    return (u8 *)quest_w.x80 + n * 32;
-}
 
-/* 0x226920 */
-void *Stage_item_data_get(int n)
-{
-    if (quest_w.no == 0) {
-        return (void *)quest_w.x8C[n + 1];
-    }
-    {
-        s32 v = quest_w.x8C[n + 1];
-        if (v == 0) {
-            return 0;
-        }
-        return (void *)(v + (int)mission_area);
-    }
-}
 
-/* 0x226980 */
-void *Stage_unique_data_get(int n)
-{
-    if (quest_w.no == 0) {
-        return (void *)quest_w.x90[n];
-    }
-    {
-        s32 v = quest_w.x90[n];
-        if (v == 0) {
-            return 0;
-        }
-        return (void *)(v + (int)mission_area);
-    }
-}
+
+
+
+
+
 
 /* 0x2269E0 */
 s32 Stage_item_probability_get(int n)

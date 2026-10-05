@@ -428,7 +428,7 @@ void cmd_next_kouho(void) {
             Set_KouhoTableSub(0, 0);
         } else {
             n = SKS32(0x148);
-            if (a > n * 3 + 2) {
+            if (n * 3 + 3 <= a) {
                 SKS32(0x148) = n + 1;
                 Set_KouhoTableSub(SKS32(0x144), 0);
             } else {
@@ -454,7 +454,7 @@ void cmd_prev_bun(void) {
         kata_kouho_set();
         if (r != 0) {
             n = strlen((char *)lpSKey + 0x358);
-            *((s8 *)(lpSKey + (n - strlen((char *)lpSKey + 0x458))) + 0x358) = 0;
+            lpSKey[(n - strlen((char *)lpSKey + 0x458)) + 0x358] = 0;
             SKS32(0x150) = get_kouho_suu();
             Set_KouhoTable();
         }
