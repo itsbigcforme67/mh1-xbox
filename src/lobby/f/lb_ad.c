@@ -216,10 +216,10 @@ char *s;
     }
 }
 void CallBack_Result_SendChatMessageTU(a)
-int a;
+long a;
 {
     char buf[0x120];
-    if ((s8)a == -1) {
+    if (*(s8 *)&a == -1) {
         sprintf(buf + 0x1C, lit_220_00664EA0);
         strcpy(buf, lit_221_00664ED0);
         strcpy(buf + 8, lit_221_00664ED0);
