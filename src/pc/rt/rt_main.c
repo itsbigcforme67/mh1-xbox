@@ -11,13 +11,8 @@
 f32 flvecCalcDistance(f32 *a, f32 *b);
 void flvecCopy(f32 *dst, f32 *src);
 
-/* clr_flash (0x15C4B0, f_stage): clears the screen-flash state. */
+/* clr_flash (0x15C4B0): src/main/stage/f_stage.c (built). */
 s16 flash_flag, flash_timer;
-void clr_flash(void)
-{
-    flash_flag = 0;
-    flash_timer = 0;
-}
 
 /* hit_cap_pk (0x28CD20): packs a capsule {p0, p1, r} for the hit tests:
  * +0 p0, +0xC p1, +0x18 r, +0x1C p1 - p0 (not normalised), +0x28 centre,
@@ -37,14 +32,7 @@ void hit_cap_pk(f32 *cap, f32 *pk)
     pk[13] = pk[13] + cap[6];
 }
 
-/* hit_point_cyl (0x290560): not ported yet (only set13 kind 4, stage 0x15). */
-int hit_point_cyl(f32 *p, f32 *c, f32 r, f32 y0, f32 y1)
-{
-    static int once;
-    if (!once++)
-        fprintf(stderr, "rt: hit_point_cyl not ported yet (returns 0)\n");
-    return 0;
-}
+/* hit_point_cyl / hit_point_cbd: src/main/hit/hit3_nm.c (built). */
 
 /* View-frustum culling (Create_FOV builds the clip planes in fov from the
  * camera; flCheckMeshFOV tests a sphere). Not ported: everything counts as

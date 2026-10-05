@@ -52,3 +52,50 @@ void func_544C90(f32 *pos, int arg, int x07, f32 scale) { Eft08_set(pos, arg, x0
 void func_544D20(void *pl, int arg, int x07, f32 scale, f32 y) { Eft08_set2(pl, arg, x07, scale, y); }
 void func_628690(void *src, int arg) { shell01_set2(src, arg); }
 void func_62A2C0(void *src, int arg) { shell05_set3(src, arg); }
+
+/* Player code (src/main/pl, src/main/hit/hit_nm.c) -> game.bin effects,
+ * shells and the player damage file (src/game/pl). */
+struct EMW;
+void shell00_set(struct PLW *pl, int arg);
+void eft12_set(struct PLW *pl, s16 arg);
+void shell03_set(struct PLW *pl, int arg, int x07);
+void Eft18_set2(f32 *pos, s16 arg, int x07);
+void Eft16_set(struct PLW *pl, int arg, s16 hit, f32 *pos, f32 scale);
+void Eft05_set(struct PLW *pl, int timer, int arg);
+void Eft15_set(f32 *pos, int arg, int ang, struct PLW *pl, f32 scale);
+void Pl_die_set(struct PLW *pl);
+int Guard_dir_ck(u16 ang, u16 dm_ang);
+void Shell22_set(struct PLW *pl, u8 arg);
+void Eft22_set(struct PLW *pl, int arg);
+void eft00_set(struct EMW *em, int arg, f32 *pos, int x07);
+void Eft16_set_impact(struct PLW *pl, f32 *pos, int arg, s16 hit, s16 wpn, f32 scale);
+void eft11_set(struct EMW *em, f32 *pos, int arg);
+void Pl_damage_sub(struct PLW *pl);
+void shell06_set(struct PLW *pl, int unused, int joint);
+void Eft24_set(struct PLW *pl, int arg);
+void eft14_set(f32 *pos, s16 arg, f32 scale);
+void func_6362B0(struct PLW *pl, int a) { shell00_set(pl, a); }
+void func_549200(struct PLW *pl, int a) { eft12_set(pl, (s16)a); }
+void func_628FB0(struct PLW *pl, int a, int b) { shell03_set(pl, a, b); }
+void func_5547B0(f32 *pos, int a, int b) { Eft18_set2(pos, (s16)a, b); }
+void func_5508F0(struct PLW *pl, int a, int hit, f32 *pos, f32 scale) { Eft16_set(pl, a, (s16)hit, pos, scale); }
+void func_543690(struct PLW *pl, int t, int a) { Eft05_set(pl, t, a); }
+void func_54D480(f32 *pos, int a, int ang, struct PLW *pl, f32 scale) { Eft15_set(pos, a, ang, pl, scale); }
+void func_639F20(struct PLW *pl) { Pl_die_set(pl); }
+int func_639FC0(u16 ang, u16 dm) { return Guard_dir_ck(ang, dm); }
+void func_637F60(struct PLW *pl, int a) { Shell22_set(pl, (u8)a); }
+void func_555A90(struct PLW *pl, int a) { Eft22_set(pl, a); }
+void func_551790(struct PLW *pl, int a, f32 *pos, int b) { eft00_set((struct EMW *)pl, a, pos, b); }
+void func_550DD0(struct PLW *pl, f32 *pos, int a, int hit, int wpn, f32 scale) { Eft16_set_impact(pl, pos, a, (s16)hit, (s16)wpn, scale); }
+void func_546860(struct PLW *pl, f32 *pos, int a) { eft11_set((struct EMW *)pl, pos, a); }
+void func_63A260(struct PLW *pl) { Pl_damage_sub(pl); }
+void func_62A6C0(struct PLW *pl, int a, int joint) { shell06_set(pl, a, joint); }
+void func_558A80(struct PLW *pl, int a) { Eft24_set(pl, a); }
+void func_54B7E0(f32 *pos, int a, f32 scale) { eft14_set(pos, (s16)a, scale); }
+/* Pl_piyo_ck (game 0x639DD0, 5 instructions): stun gauge +0x7AA >= 50 */
+int Pl_piyo_ck(struct PLW *pl) { return *(s16 *)((u8 *)pl + 0x7AA) >= 50; }
+int func_639DD0(struct PLW *pl) { return Pl_piyo_ck(pl); }
+void Eft14_set4(struct PLW *pl, int arg);
+void Eft21_set(struct PLW *pl, int arg);
+void func_54BA40(struct PLW *pl, int a) { Eft14_set4(pl, a); }
+void func_555020(struct PLW *pl, int a) { Eft21_set(pl, a); }

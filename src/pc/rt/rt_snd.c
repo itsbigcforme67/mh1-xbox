@@ -650,9 +650,16 @@ static void ashi_sd_req(PLW *pl, f32 frame, int kind)
         se_req2(7, kind * 2 + (rnd() & 1), ((u8 *)pl)[0x70D], pl->pos, 1, 0);
 }
 
+void rt_snd_player_motion_pl(void *w);
 void rt_snd_player_motion(int no)
 {
-    PLW *pl = &player_work[no];
+    rt_snd_player_motion_pl(&player_work[no]);
+}
+
+/* called by pl01_effect_move (rt_pl.c) each tick, like ef_move_sub */
+void rt_snd_player_motion_pl(void *w)
+{
+    PLW *pl = w;
     switch (pl->char0) {
     case 3:                                     /* run */
         ashi_sd_req(pl, 8.0f, 2);

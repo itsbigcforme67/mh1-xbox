@@ -83,6 +83,17 @@ static void draw_model_attr(fl_model *m, int sky)
  * ef_00, kage04-06, ef_01), handed to the game C. */
 static fl_model eft_models[5];
 static uint8_t *eft_keep[10];
+static void eft_skin(int k, const float *mats, int n)
+{
+    static fl_light none;
+    static flmat id;
+    (void)n;
+    fl_model_pose(&eft_models[k], (const flmat *)mats, &none);
+    /* the node matrices are in world space (the PS2 skin program uses
+     * them directly): draw the skinned clay with an identity world */
+    flmat_identity(id);
+    gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
+}
 static void load_eft_models(void)
 {
     int k;
@@ -104,6 +115,8 @@ static void load_eft_models(void)
             at[i] = part_attr(&eft_models[k], i);
         }
         rt_bind_eft_model(k, c, at, eft_models[k].npart);
+        if (eft_models[k].skel.nbone > 0)
+            rt_bind_eft_skin(k, eft_models[k].skel.nbone, eft_skin);
         free(c);
         free(at);
     }
@@ -225,6 +238,58 @@ typedef struct {
     int game;                        /* 1: posed by the game's motion code (player_work[0]) */
     uint8_t *mem[HUNTER_PARTS * 2 + 1];
 } hunter;
+
+/* camera world matrix looking from eye to target (up = +Y, roll ignored) */
+static void lookat_world(flmat camw, const float *eye, const float *tar)
+{
+    float b[3], r[3], u[3], len;
+    int k;
+    for (k = 0; k < 3; k++)
+        b[k] = eye[k] - tar[k];
+    len = sqrtf(b[0] * b[0] + b[1] * b[1] + b[2] * b[2]);
+    if (len < 1e-3f) { b[0] = 0; b[1] = 0; b[2] = 1; len = 1; }
+    for (k = 0; k < 3; k++)
+        b[k] /= len;
+    r[0] = b[2]; r[1] = 0; r[2] = -b[0];          /* up (0,1,0) x back */
+    len = sqrtf(r[0] * r[0] + r[2] * r[2]);
+    if (len < 1e-3f) { r[0] = 1; r[2] = 0; len = 1; }
+    r[0] /= len; r[2] /= len;
+    u[0] = b[1] * r[2] - b[2] * r[1];               /* back x right */
+    u[1] = b[2] * r[0] - b[0] * r[2];
+    u[2] = b[0] * r[1] - b[1] * r[0];
+    memset(camw, 0, sizeof(flmat));
+    for (k = 0; k < 3; k++) {
+        camw[k] = r[k];
+        camw[4 + k] = u[k];
+        camw[8 + k] = b[k];
+        camw[12 + k] = eye[k];
+    }
+    camw[15] = 1;
+}
+
+static monster weapon;              /* the hunter's weapon (--play with the game's player code) */
+
+/* weapon bones: hierarchy roots from rt_player_weapon (weapon_trans's
+ * placement), the rest from their bind pose under the parent */
+static void weapon_pose(const fl_light *L)
+{
+    float r0[16], r1[16];
+    int i, roots = 0;
+    ahi_skel *k = &weapon.skel.skel;
+    if (rt_player_weapon(0, r0, r1) < 0)
+        return;
+    for (i = 0; i < k->nbone; i++) {
+        const ahi_bone *b = &k->bone[i];
+        if (b->parent < 0 || b->parent >= i) {
+            memcpy(weapon.skel.world[i], roots++ == 0 ? r0 : r1, sizeof(flmat));
+        } else {
+            flmat loc;
+            flmat_srt(loc, b->s, b->r, b->t);
+            flmat_mul(weapon.skel.world[i], loc, weapon.skel.world[b->parent]);
+        }
+    }
+    fl_model_pose(&weapon.model, (const flmat *)weapon.skel.world, L);
+}
 
 static float min_y_of(const fl_model *m)
 {
@@ -348,6 +413,36 @@ static void place(flmat w, float x, float y, float z, float yaw)
     t[0] = x; t[1] = y; t[2] = z;
     flmat_srt(w, s, r, t);
 }
+
+/* Joint world matrices of the hunter (player_work[0]) and the Rathian
+ * (em_work[0]) for the game C: parts, get_joint_pos, hit_data_expand.
+ * On the PS2 they come from the draw (trans) that runs between move()
+ * and hit_check(), so this runs once per game tick, before hit_check. */
+static void sync_joints(hunter *h, float hyoff, monster *e, float eyoff)
+{
+    static flmat jw[128], ew[128];
+    float p[3];
+    int a, nb, j;
+    if (h->game) {
+        rt_player_pose(0, &h->master);
+        rt_player_get(0, p, &a);
+        place(h->world, p[0], p[1] + hyoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
+        nb = h->master.skel.nbone < 128 ? h->master.skel.nbone : 128;
+        for (j = 0; j < nb; j++)
+            flmat_mul(jw[j], h->master.world[j], h->world);
+        rt_player_parts(0, &jw[0][0], nb);
+    }
+    if (e->game && e->skel.root_lock) {
+        rt_monster_get(0, p, &a);
+        place(e->world, p[0], p[1] + eyoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
+        rt_monster_pose(0, &e->skel);
+        nb = e->skel.skel.nbone < 128 ? e->skel.skel.nbone : 128;
+        for (j = 0; j < nb; j++)
+            flmat_mul(ew[j], e->skel.world[j], e->world);
+        rt_monster_joints(0, &ew[0][0], nb);
+    }
+}
+
 
 /* ------------------------------------------------------------ main */
 /* 48 kHz stereo s16 wav (--audio-dump) */
@@ -552,6 +647,8 @@ int main(int argc, char **argv)
      * the collision floor */
     fl_skel_update(&rathian.skel, 0);
     fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
+    if (getenv("RT_EM_POS"))            /* test placement of the Rathian: "x,z" */
+        sscanf(getenv("RT_EM_POS"), "%f,%f", &rx, &rz);
     gy = 0;
     rt_ground_y(rx, rz, 1e6f, &gy);
     place(rathian.world, rx, gy - min_y_of(&rathian.model), rz, 0.6f);
@@ -585,6 +682,30 @@ int main(int argc, char **argv)
                 pl.game = 1;
                 pl.master.root_lock = 1;    /* the game moves the actor by the root motion */
                 rt_player_set_ang(0, (int)(2.6f * 65536.0f / 6.2831853f));
+                if (play && rt_player_uses_game()) {
+                    /* the weapon class's own motions (ids >= 1000): wNN_tbl.bin,
+                     * NN = job (PLW+2), like create_pl_motion's table */
+                    static uint8_t *wmem;
+                    char wname[32];
+                    fmt_blob wt;
+                    rt_player_game_init(0);     /* the game's pl_init: start position, idle */
+                    snprintf(wname, sizeof wname, "w%02d_tbl.bin", rt_player_job(0));
+                    wt = load(wname, &wmem);
+                    if (wt.p)
+                        rt_motion_load_pl(0, wt.p);
+                    else
+                        fprintf(stderr, "no %s: weapon motions missing\n", wname);
+                    {   /* the weapon model: weapon_model_data / WEAPON_TEX[PLW+0x34C] (AFS indices) */
+                        int mi = rt_weapon_afs(rt_player_weapon_model(0), 0), ti = rt_weapon_afs(rt_player_weapon_model(0), 1);
+                        if (mi > 0 && mi < (int)afs.count && ti > 0 && ti < (int)afs.count) {
+                            fmt_blob link = load(afs.name[mi], &weapon.mem[0]), tx = load(afs.name[ti], &weapon.mem[1]);
+                            if (link.p && fl_model_create(&weapon.model, fmt_link_entry(link, 0, FMT_LE),
+                                                          fmt_link_entry(link, 1, FMT_LE), tx, 1, FMT_LE) == 0
+                                && fl_skel_create(&weapon.skel, fmt_link_entry(link, 1, FMT_LE), FMT_LE) == 0)
+                                weapon.game = 1;
+                        }
+                    }
+                }
             }
             hunter_yoff = -lo;
             if (play && pl.game && !follow_given && !getenv("RT_HOST_CAM")) {
@@ -620,29 +741,7 @@ int main(int argc, char **argv)
             }
         }
         if (game_cam && have_view) {    /* look-at from the game camera's eye/target (roll ignored) */
-            float b[3], r[3], u[3], len;
-            int k;
-            for (k = 0; k < 3; k++)
-                b[k] = gc_eye[k] - gc_tar[k];
-            len = sqrtf(b[0] * b[0] + b[1] * b[1] + b[2] * b[2]);
-            if (len < 1e-3f) { b[0] = 0; b[1] = 0; b[2] = 1; len = 1; }
-            for (k = 0; k < 3; k++)
-                b[k] /= len;
-            r[0] = b[2]; r[1] = 0; r[2] = -b[0];          /* up (0,1,0) x back */
-            len = sqrtf(r[0] * r[0] + r[2] * r[2]);
-            if (len < 1e-3f) { r[0] = 1; r[2] = 0; len = 1; }
-            r[0] /= len; r[2] /= len;
-            u[0] = b[1] * r[2] - b[2] * r[1];               /* back x right */
-            u[1] = b[2] * r[0] - b[0] * r[2];
-            u[2] = b[0] * r[1] - b[1] * r[0];
-            memset(camw, 0, sizeof(flmat));
-            for (k = 0; k < 3; k++) {
-                camw[k] = r[k];
-                camw[4 + k] = u[k];
-                camw[8 + k] = b[k];
-                camw[12 + k] = gc_eye[k];
-            }
-            camw[15] = 1;
+            lookat_world(camw, gc_eye, gc_tar);
         } else {   /* camera: rotate pitch then yaw, looking down -Z like GL */
             float s[3] = { 1, 1, 1 }, r[3], tr[3];
             r[0] = cam[4]; r[1] = cam[3]; r[2] = 0;
@@ -676,8 +775,16 @@ int main(int argc, char **argv)
                     pad_read(&ps, 1);
                 rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
                 rt_player_tick(0);
-                if (game_cam)
+                if (game_cam) {
+                    flmat cw;
                     rt_cam_tick();      /* CameraMove (src/main/cam) */
+                    /* rview_mat follows the game camera every tick (sound
+                     * distances, billboards), also when several ticks run
+                     * in one drawn frame */
+                    rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
+                    lookat_world(cw, gc_eye, gc_tar);
+                    rt_set_camera(cw);
+                }
                 /* right stick turns the follow camera */
                 cam[3] -= ps.rx * (0.04f / 127.0f);
                 if (sw_trace) {
@@ -691,6 +798,10 @@ int main(int argc, char **argv)
                 }
             } else if (pl.game) {
                 rt_player_motion_tick(0);
+            }
+            if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
+                sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
+                rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
             }
             if (rathian.game && ticks >= 2) {
                 rt_monster_motion_tick(0);
@@ -742,6 +853,10 @@ int main(int argc, char **argv)
             fl_skel_update(&rathian.skel, fr);
         fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
         hunter_pose(&pl, fr, &light);
+        if (pl.game && play)            /* joint world matrices for the game C (parts, get_joint_pos) */
+            sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
+        if (weapon.game && pl.game && play)
+            weapon_pose(&light);
 
         gfx_begin_frame(0x8098B8);
         gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);
@@ -763,6 +878,12 @@ int main(int argc, char **argv)
             int s;
             for (s = 0; s < HUNTER_PARTS; s++)
                 draw_model_attr(&pl.part[s], -1);
+        }
+        if (weapon.game && pl.game && play) {
+            static flmat wid;
+            flmat_identity(wid);
+            gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)wid);
+            draw_model_attr(&weapon.model, -1);
         }
 
         frame_no++;
