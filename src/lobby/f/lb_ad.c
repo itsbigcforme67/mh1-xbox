@@ -20,8 +20,8 @@ int Quest_clear_bit_ck();
 int Event_flag_ck();
 int Get_sw2();
 u8 *pull_enemy_work();
-void cnLBS_Send_ChatMessage();
-void cnLBS_Send_ChatMessageTU();
+void cnLBS_Send_ChatMessage(char *, u16);
+void cnLBS_Send_ChatMessageTU(u8 *, char *, u16, void *);
 void CallBack_Result_SendChatMessageTU();
 void Lb_chat_receipt();
 void Plaza_chat_log_add();
@@ -190,14 +190,14 @@ char *s;
             len = 0x3F;
         }
         if (cw[0x32BE] == 0) {
-            cnLBS_Send_ChatMessage(s, len & 0xFFFF);
+            cnLBS_Send_ChatMessage(s, len);
             return;
         }
         i = 0;
         id = chatIDList;
         do {
             if (*(s8 *)id != 0) {
-                cnLBS_Send_ChatMessageTU(id, s, len & 0xFFFF, CallBack_Result_SendChatMessageTU);
+                cnLBS_Send_ChatMessageTU(id, s, len, CallBack_Result_SendChatMessageTU);
             }
             i += 1;
             id += 8;
