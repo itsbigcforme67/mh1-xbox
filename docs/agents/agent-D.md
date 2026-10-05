@@ -142,3 +142,5 @@ eft13_m a piece marked 0xFF ends the whole update (`return`, not
 `continue`), and in set_sub_em / set_pos_em case 19 falls through into
 case 20 (both checked in the asm). game.bin calls by address:
 func_53FDF0 (Eft17_set_ex), func_628690, func_62A2C0 (shell05_set3).
+eft06_nm.c (not built) holds C for eft06_m (1097/1212 differ); with it
+every eft06 function now has C.
