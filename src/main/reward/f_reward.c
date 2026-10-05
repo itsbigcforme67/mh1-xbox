@@ -12,7 +12,9 @@ typedef struct QUEST_WR {
     s32 x14;            /* 0x14 reward money (gold_init) */
     u8 _pad18[0x34 - 0x18];
     s16 x34;            /* 0x34 */
-    u8 _pad36[0x94 - 0x36];
+    u8 _pad36[0x64 - 0x36];
+    s32 *x64;           /* 0x64 quest data pointer (result_init) */
+    u8 _pad68[0x94 - 0x68];
     s32 *x94;           /* 0x94 */
     u8 _pad98[0x14C - 0x98];
     s16 x14C;           /* 0x14C */
@@ -400,7 +402,15 @@ void result_prog(void)
     }
 }
 
-extern s32 result_w;            /* money left to hand out on the result screen (small data) */
+typedef struct RESULT_W {
+    s32 gold;           /* 0x00 points/money left to hand out on the result screen */
+    u8 rank_new;        /* 0x04 hunter rank now */
+    u8 rank_old;        /* 0x05 rank when the screen started */
+    u8 _pad06[2];
+} RESULT_W;
+extern RESULT_W result_w;       /* small data */
+int Get_hunter_rank();
+int Hunter_point_add();
 void Gold_add();
 int sprintf(char *, const char *, ...);
 int strlen();
@@ -427,20 +437,20 @@ int gold_init(GAME_W *t)
     t->sub = 0;
     t->x03 = 0;
     t->x08 = 0xE10;
-    result_w = 0;
+    result_w.gold = 0;
     t->x06 = 0x14;
     p = card_prim;
     for (i = 0; i < 2; i++, p += 0x20) {
         memset(p, 0, 0x20);
     }
     if (Quest_clear_ck(1) == 1) {
-        result_w = quest_w.x14;
+        result_w.gold = quest_w.x14;
         if (Online_ck() == 1) {
             if (game_w.x21A != 0) {
-                result_w += quest_w.x94[1] * 2;
+                result_w.gold += quest_w.x94[1] * 2;
             }
         } else {
-            result_w += quest_w.x94[1];
+            result_w.gold += quest_w.x94[1];
         }
     }
     *(void **)(card_prim + 0x14) = trans_result_1;
@@ -491,24 +501,24 @@ int gold_main(GAME_W *t)
         }
         break;
     case 5:
-        if (result_w != 0) {
+        if (result_w.gold != 0) {
             amt = 1;
             if (Psw[0] & 0x20) {
                 amt += 0x4D8;
             }
-            if (result_w > 0) {
-                if (result_w < amt) {
-                    amt = result_w;
+            if (result_w.gold > 0) {
+                if (result_w.gold < amt) {
+                    amt = result_w.gold;
                 }
             } else {
                 amt = -amt;
-                if (amt < result_w) {
-                    amt = result_w;
+                if (amt < result_w.gold) {
+                    amt = result_w.gold;
                 }
             }
             se_req(7, 8, 0);
             Gold_add(amt);
-            result_w -= amt;
+            result_w.gold -= amt;
         } else {
             t->sub++;
             se_req(7, 0x19, 0);
@@ -538,7 +548,7 @@ void gold_disp(GAME_W *t)
         font_print_sp(lit_465_003865F0);
     case 4:
     case 5:
-        sprintf(buf, lit_466_00386610, result_w);
+        sprintf(buf, lit_466_00386610, result_w.gold);
         flfntLocate((s16)(0x140 - strlen_sp(buf) * 18 / 4), 0x103);
         font_print_sp(lit_467_00386620, buf);
     case 3:
@@ -587,4 +597,125 @@ void gold_disp(GAME_W *t)
         font_print_sp(lit_467_00386620, buf);
         break;
     }
+}
+
+int result_init(GAME_W *t)
+{
+    int i;
+    u8 *p;
+    int n;
+
+    if (Online_ck() != 1) {
+        return movie_add_check(t, 1) != 0;
+    }
+    t->sub = 0;
+    t->x03 = 0;
+    t->x08 = 0xE10;
+    result_w.gold = 0;
+    t->x06 = 0x14;
+    result_w.rank_new = result_w.rank_old = Get_hunter_rank(&User_data);
+    for (i = 0, p = card_prim; i < 2; i++, p += 0x20) {
+        memset(p, 0, 0x20);
+    }
+    if (Quest_clear_ck(1) == 1) {
+        result_w.gold = quest_w.x64[0xE];
+    } else {
+        result_w.gold = quest_w.x64[0xF];
+    }
+    n = player_work[game_w.master].work91E;
+    if (n > 0) {
+        result_w.gold -= n * 10;
+    }
+    *(void **)(card_prim + 0x14) = trans_result_1;
+    fade_set(2);
+    return 0;
+}
+
+int result_main(GAME_W *t)
+{
+    int amt;
+    int r;
+
+    if (t->x08 > 0) {
+        t->x08--;
+    }
+    switch (t->sub) {
+    case 0:
+        if (--t->x06 < 0) {
+            t->sub++;
+            t->x06 = 0x14;
+            se_req(7, 0x10, 0);
+        }
+        break;
+    case 1:
+        if (--t->x06 < 0) {
+            t->sub++;
+            t->x06 = 0x14;
+            se_req(7, 0x11, 0);
+        }
+        break;
+    case 2:
+        if (--t->x06 < 0) {
+            t->sub++;
+            t->x06 = 0x14;
+            se_req(7, 0x11, 0);
+        }
+        break;
+    case 3:
+        if (--t->x06 < 0) {
+            t->sub++;
+            t->x06 = 0x14;
+            se_req(7, 0x13, 0);
+        }
+        break;
+    case 4:
+        if (--t->x06 < 0) {
+            t->sub++;
+            t->x06 = 0x14;
+        }
+        break;
+    case 5:
+        if (result_w.gold != 0) {
+            amt = 1;
+            if (Psw[0] & 0x20) {
+                amt += 0x14;
+            }
+            if (result_w.gold > 0) {
+                if (result_w.gold < amt) {
+                    amt = result_w.gold;
+                }
+            } else {
+                amt = -amt;
+                if (amt < result_w.gold) {
+                    amt = result_w.gold;
+                }
+            }
+            se_req(7, 8, 0);
+            r = Hunter_point_add(amt);
+            if (t->x03 == 0) {
+                t->x03 = r;
+            }
+            result_w.rank_new = Get_hunter_rank(&User_data);
+            if (result_w.rank_new != result_w.rank_old) {
+                if (result_w.rank_old < result_w.rank_new) {
+                    str_play(1, 0xF);
+                } else {
+                    se_req(7, 0xD, 0);
+                }
+                result_w.rank_old = result_w.rank_new;
+            }
+            result_w.gold -= amt;
+        } else {
+            t->sub++;
+            se_req(7, 0x19, 0);
+        }
+        break;
+    case 6:
+        if (t->x08 <= 0 || ((Psw[2] & 0x20) && t->x08 < 0xDB7)) {
+            se_req(7, 0x13, 0);
+            return 1;
+        }
+        break;
+    }
+    return 0;
 }

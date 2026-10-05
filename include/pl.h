@@ -316,7 +316,7 @@ typedef struct PLW {
     u16   work918;           /* 0x918 */
     u16   work91A;           /* 0x91A */
     u16   work91C;           /* 0x91C */
-    s8    work91E;           /* 0x91E */
+    u8    work91E;           /* 0x91E (u8: lbu in result_init) */
     s8    work91F;           /* 0x91F */
     u8 _pad920[0x930 - 0x920];
     u16   work930;           /* 0x930 */
