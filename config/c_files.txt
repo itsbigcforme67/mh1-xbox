@@ -256,3 +256,5 @@ main:rodata 0x0035A9F0 0x0035ABBC pl/pl26
 main 0x00142300 0x00143420 pl/pl27
 main:rodata 0x0035ABC0 0x0035AC1C pl/pl27
 main 0x00143790 0x00144538 pl/pl28
+main 0x00144540 0x00145330 pl/pl29
+main:rodata 0x0035AC20 0x0035AC38 pl/pl29

@@ -289,7 +289,7 @@ typedef struct PLW {
     s16   work882;       /* 0x882 */
     s16   work884;           /* 0x884 */
     u8    work886;           /* 0x886 */
-    s8    work887;           /* 0x887 */
+    u8    work887;           /* 0x887 */
     u16   work888;           /* 0x888 */
     u16   work88A;           /* 0x88A */
     u8    work88C;       /* 0x88C */
