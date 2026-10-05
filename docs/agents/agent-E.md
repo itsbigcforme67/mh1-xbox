@@ -180,3 +180,19 @@ Event demo slots (3 per quest): EvDemoInitialize/evdemo_init_sub/EvDemoMove/chec
 the original data. Lessons: `EVENT_DEMO *e = &event_demo;` local base pointer again gives the original lui s0 (EvDemoInitialize, EvDemoMove);
 `*(int *)slot = 0` is the original's word clear of {active, step, timer}; a store that sits in the delay slot after a `jal` in the asm listing
 (check.py -v hides nops: look at the other column) was written AFTER the call in the source (event000 case 2).
+
+### omake / mode select (0x23A0F0-0x23BE10): 14 of 20 built (omakeb/c/d/e.c, rodata lit_727_0036D1E0), main OK
+Built: Select_task, csub00, ck_start_sw, init_mode_sel, sel_sel_sub, mode_sel_end, mode_sel_exit, Sel_csr_disp, omake_check, omake_init, omake_main,
+omake_play, omake_exit, Omake_task. Near-match (omake_nm.c holds all 20 in address order): mode_sel 182/206 (nested sel compares: original keeps
+the constant 1 in v0 not a0, block layout differs), key_rept_du (gp-relative key_timer/key_wait: check.py cannot verify, tried as KT{on,cnt}[2] struct,
+31/60 off), disp_mode_menu 223/248, Sel_menu_disp 144/206 and Sel_back_disp 14/36 (original keeps &spr.field addresses in registers = separate local
+variables, not a struct), disp_omake_menu 153/164.
+Lessons:
+- check.py masks relocation ADDENDS: `Psw[4]` vs `Psw[2]` looked identical. Psw = 0x3F3710: Psw[0] = held, Psw[2] = pressed (byte 4); only the rebuild
+  catches it (omake_play case 2 needed Psw[0]). (staff_nm.c had the same mistake: fixed to Psw[2].)
+- `r = 0; if (c) r |= 1;` gives `ori v0,v0,1` (ck_start_sw); `if (--x <= 0)` on an s16 gives the dsll32/dsra32 re-sign-extension (csub00);
+  hoisted locals `int held = Psw[0]; int st = tsk->step; int push = Psw[2];` give the lhu/lbu/lhu order and leave `st` in a3 (Select_task);
+  `u8 Fade_busy_ck();` prototype gives the andi 0xFF; a K&R `u16 a; int k = a & 0xFFFF;` keeps both masks (omake_main);
+  `x > 1` instead of `x >= 2` gives `slti at` (omake_play); extra call args that only look like args in m2c (decide_se(1,3)) are stale registers.
+- functions whose K&R header + params take >= 6 lines are not found by tools/split_runs.py: put `s16 x, y, w, h;` on one line.
+- globals sized <= 8 bytes (key_wait, key_timer) are gp-relative (`addiu v1,gp,-17760`): declare them with their real size (`s16 key_wait[2]`).

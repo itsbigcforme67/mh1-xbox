@@ -293,6 +293,11 @@ main 0x002907C0 0x002907FC staff/staff
 main 0x002909C0 0x00290AD8 staff/staffb
 main 0x0022F7B0 0x0022FC50 movie/movie
 main 0x002862F0 0x0028699C evdemo/evdemo
+main 0x0023A0F0 0x0023A4AC omake/omakeb
+main 0x0023A7F0 0x0023AA60 omake/omakec
+main 0x0023B2E0 0x0023B4F4 omake/omaked
+main 0x0023B790 0x0023BE10 omake/omakee
+main:rodata 0x0036D1E0 0x0036D1F8 omake/omakee
 main 0x00290E80 0x00291D30 reward/f_reward
 main:rodata 0x003865A0 0x003865EC reward/f_reward
 main 0x00291D30 0x0029250C reward/f_reward2

@@ -70,7 +70,7 @@ int Staff_main(void)
         if (w->timer >= 0xD2) {
             w->step++;
             fade_set(1);
-        } else if (Psw[4] & 0x8000) {
+        } else if (Psw[2] & 0x8000) {
             w->step = 4;
             fade_set(1);
         }
@@ -85,7 +85,7 @@ int Staff_main(void)
             }
             w->step = 0;
             w->timer = 0;
-        } else if (Psw[4] & 0x8000) {
+        } else if (Psw[2] & 0x8000) {
             w->step = 4;
         }
         break;
