@@ -18,9 +18,9 @@ u8 **list;
 u8 *tgt;
 {
     s16 ang;
+    u8 *c;
     u8 *cur;
     u8 *prev;
-    u8 *c;
     if (list == 0) {
         *(u8 **)list = tgt;
         return;
