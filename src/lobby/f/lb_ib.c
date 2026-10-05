@@ -17,6 +17,10 @@ void itembox_cursor_mv();
 void PageSelect();
 void flps0008();
 void ListSelect();
+extern u8 D_3396DE[];
+int u_equip_chk();
+int Get_equip_kaitori();
+void Gold_add();
 u8 *Get_equip_data_ptr();
 int Warehouse_equip_out();
 int Warehouse_equip();
@@ -1120,4 +1124,178 @@ set4:
         pad = (u16)(pad & 0xFFBF);
         return pad;
     }
+}
+
+/* item box "sell" tab: pick an item or equipment, choose the amount, confirm and add the gold */
+s32 itembox_sellout(s32 pad) {
+    u8 *w;
+    u8 *s;
+    int ok;
+    int r;
+    int sel;
+    int mx;
+    w = ib;
+    switch (F(u8, w, 5)) {
+    case 0:
+        ListSelect(w + 3, pad, 2);
+        if ((u16)pad & 0x20) {
+            w = ib;
+            *(s16 *)0x39DAD2 = F(u8, w, 3) + 0x16;
+            F(s8, w, 0x1D) = -1;
+            F(u8, ib, 5) = F(u8, ib, 5) + 1;
+            F(u8, ib, 6) = 0;
+            se_req(7, 0x13, 0);
+        } else {
+            *(s8 *)0x39DAD0 = 0;
+        }
+    default:
+        return pad;
+    case 1:
+        switch (F(u8, w, 6)) {
+        case 0:
+            if (F(s8, w, 0x1D) >= 0) {
+                if ((u16)pad & 0x20) {
+                    F(s8, w, 0x1D) = -1;
+                    pad = 0;
+                    F(u8, ib, 0x20) = 0xFF;
+                    se_req(7, 9, 0);
+                    goto sel;
+                }
+                F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
+                *(u8 *)0x39DAD2 = F(s8, ib, 0x1D);
+                return 0;
+            }
+sel:
+            pad = ib_select_sub(pad) & 0xFFFF;
+            if (pad & 0x40) {
+                *(u8 *)0x39DAD0 = 0;
+                pad = 0;
+                F(u8, ib, 5) = 0;
+            } else {
+                w = ib;
+                *(u8 *)0x39DAD2 = F(u8, w, 3) + 0x16;
+                if (pad & 0x20) {
+                    if (F(u8, w, 3) == 0) {
+                        ok = u_item_chk(F(u8, w, 8));
+                        if (ok == 1) {
+                            if (item_kosuu_sel_chk() == 0) {
+                                *(u8 *)0x39DAD2 = 0x19;
+                                F(u8, ib, 6) = 2;
+                                F(u8, ib, 0x21) = 0;
+                                w = ib;
+                                F(s32, w, 0xC) = *(s32 *)(D_3396DE + UPID(F(u8, w + F(u8, w, 3), 8)) * 0x10);
+                            } else {
+                                F(s16, ib, 0x1A) = 1;
+                                *(u8 *)0x39DAD2 = 0x18;
+                                F(u8, ib, 6) = 1;
+                            }
+                        }
+                    } else {
+                        r = (s8)u_equip_chk(F(u8, w, 9));
+                        if (r > 0) {
+                            *(u8 *)0x39DAD2 = 0x19;
+                            F(u8, ib, 6) = 2;
+                            F(u8, ib, 0x21) = 0;
+                            w = ib;
+                            s = User_data + F(u8, w + F(u8, w, 3), 8) * 6;
+                            ok = 1;
+                            F(s32, ib, 0xC) = Get_equip_kaitori(F(u8, s, 0x45), F(u16, s, 0x46));
+                        } else {
+                            ok = 0;
+                            if (r == 0) {
+                                F(s8, ib, 0x1D) = 0x1A;
+                            }
+                        }
+                    }
+                    if (ok == 1) {
+                        F(s8, ib, 0x1F) = 0;
+                        F(s16, ib, 0x1A) = 1;
+                        F(s8, ib, 0x1C) = 0;
+                        se_req(7, 0x13, 0);
+                    } else {
+                        se_req(7, 0x15, 0);
+                    }
+                }
+            }
+            return pad;
+        case 1:
+            sel = (u16)pad;
+            if (sel & 0x40) {
+                *(u8 *)0x39DAD2 = 0x16;
+                pad = (u16)(pad & 0xFFBF);
+                F(u8, w, 6) = 0;
+                se_req(7, 0x14, 0);
+            } else {
+                *(u8 *)0x39DAD2 = 0x18;
+                kosuu_select(1);
+                if (sel & 0x20) {
+                    w = ib;
+                    pad = 0;
+                    mx = UPID(F(u8, w + F(u8, w, 3), 8)) * 0x10;
+                    F(s32, w, 0xC) = F(s16, w, 0x1A) * *(s32 *)(D_3396DE + mx);
+                    F(u8, ib, 6) = F(u8, ib, 6) + 1;
+                    F(u8, ib, 0x21) = 0;
+                    se_req(7, 0x13, 0);
+    case 2:
+                    sel = (u16)pad;
+                    if (sel & 0x40) {
+                        if (F(u8, ib, 3) == 0 && item_kosuu_sel_chk() == 1) {
+                            *(u8 *)0x39DAD2 = 0x18;
+                            F(u8, ib, 6) = 1;
+                        } else {
+                            w = ib;
+                            *(u8 *)0x39DAD2 = F(u8, w, 3) + 0x16;
+                            F(u8, w, 6) = 0;
+                        }
+                        pad = (u16)(pad & 0xFFBF);
+                        se_req(7, 0x14, 0);
+                    } else {
+                        *(u8 *)0x39DAD2 = 0x19;
+                        yes_no_select(pad);
+                        if (sel & 0x20) {
+                            w = ib;
+                            if (F(u8, w, 0x21) != 0) {
+                                if (F(u8, w, 3) == 0 && item_kosuu_sel_chk() == 1) {
+                                    *(u8 *)0x39DAD2 = 0x18;
+                                    F(u8, ib, 6) = 1;
+                                } else {
+                                    w = ib;
+                                    *(u8 *)0x39DAD2 = F(u8, w, 3) + 0x16;
+                                    F(u8, w, 6) = 0;
+                                }
+                                se_req(7, 0x14, 0);
+                            } else {
+                                if (F(u8, w, 3) == 0) {
+                                    s = User_data + F(u8, w + F(u8, w, 3), 8) * 4;
+                                    if (*(D_3396D3 + F(u16, s, 0x1C4) * 0x10) == 0xFF) {
+                                        F(u16, s, 0x1C4) = 0;
+                                        w = ib;
+                                        UPNUM(F(u8, w + F(u8, w, 3), 8)) = 0;
+                                    } else {
+                                        F(s16, s, 0x1C6) = F(s16, s, 0x1C6) - F(s16, w, 0x1A);
+                                        w = ib;
+                                        if (UPNUM(F(u8, w + F(u8, w, 3), 8)) == 0) {
+                                            UPID(F(u8, w + F(u8, w, 3), 8)) = 0;
+                                        }
+                                    }
+                                } else {
+                                    F(s16, User_data + F(u8, w + F(u8, w, 3), 8) * 6, 0x46) = 0;
+                                    w = ib;
+                                    F(s8, User_data + F(u8, w + F(u8, w, 3), 8) * 6, 0x44) = 0;
+                                }
+                                Gold_add(F(s32, ib, 0xC));
+                                w = ib;
+                                *(u8 *)0x39DAD2 = F(u8, w, 3) + 0x16;
+                                F(u8, w, 6) = 0;
+                                se_req(7, 0x1A, 0);
+                            }
+                        }
+                    }
+                }
+            }
+            return pad;
+        }
+        break;
+    }
+    return pad;
 }
