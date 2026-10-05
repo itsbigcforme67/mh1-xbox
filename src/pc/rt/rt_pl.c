@@ -813,7 +813,11 @@ void net_send_pl(void *pl, int a, int b) { (void)pl; (void)a; (void)b; }
 void weapon_create_model(int a, int b, int c) { (void)a; (void)b; (void)c; }
 void armor_create_model(void *pl) { (void)pl; }
 void yure_init(void *pl) { (void)pl; }        /* hair/cloth sway */
-void trans_pl_sub(void) {}
+/* the player's draw callbacks (trans_pl_sub, weapon_nm.c, calls these):
+ * the viewer draws the hunter and the weapon itself */
+void player_trans(void *pl, int a) { (void)pl; (void)a; }
+void Lb_player_trans(void *pl, int a) { (void)pl; (void)a; }
+void Ed_player_trans(void *pl, int a) { (void)pl; (void)a; }
 /* lighting from the ground material (GetGroundCameraData ...) */
 void GetPlayerMaterialData(void *pl) { (void)pl; }
 /* messages, sounds not ported */

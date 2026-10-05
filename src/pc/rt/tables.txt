@@ -475,3 +475,8 @@ lit_951_00358250
 lit_952_00358270
 lit_953_00358290
 lit_954_003582B0
+weapon_disp_tbl_r
+weapon_disp_tbl_l
+weapon_disp_tbl_b
+weapon_model_data
+WEAPON_TEX

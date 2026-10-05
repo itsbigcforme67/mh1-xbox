@@ -226,6 +226,30 @@ typedef struct {
     uint8_t *mem[HUNTER_PARTS * 2 + 1];
 } hunter;
 
+static monster weapon;              /* the hunter's weapon (--play with the game's player code) */
+
+/* weapon bones: hierarchy roots from rt_player_weapon (weapon_trans's
+ * placement), the rest from their bind pose under the parent */
+static void weapon_pose(const fl_light *L)
+{
+    float r0[16], r1[16];
+    int i, roots = 0;
+    ahi_skel *k = &weapon.skel.skel;
+    if (rt_player_weapon(0, r0, r1) < 0)
+        return;
+    for (i = 0; i < k->nbone; i++) {
+        const ahi_bone *b = &k->bone[i];
+        if (b->parent < 0 || b->parent >= i) {
+            memcpy(weapon.skel.world[i], roots++ == 0 ? r0 : r1, sizeof(flmat));
+        } else {
+            flmat loc;
+            flmat_srt(loc, b->s, b->r, b->t);
+            flmat_mul(weapon.skel.world[i], loc, weapon.skel.world[b->parent]);
+        }
+    }
+    fl_model_pose(&weapon.model, (const flmat *)weapon.skel.world, L);
+}
+
 static float min_y_of(const fl_model *m)
 {
     float y = 1e30f;
@@ -585,8 +609,30 @@ int main(int argc, char **argv)
                 pl.game = 1;
                 pl.master.root_lock = 1;    /* the game moves the actor by the root motion */
                 rt_player_set_ang(0, (int)(2.6f * 65536.0f / 6.2831853f));
-                if (play && rt_player_uses_game())
+                if (play && rt_player_uses_game()) {
+                    /* the weapon class's own motions (ids >= 1000): wNN_tbl.bin,
+                     * NN = job (PLW+2), like create_pl_motion's table */
+                    static uint8_t *wmem;
+                    char wname[32];
+                    fmt_blob wt;
                     rt_player_game_init(0);     /* the game's pl_init: start position, idle */
+                    snprintf(wname, sizeof wname, "w%02d_tbl.bin", rt_player_job(0));
+                    wt = load(wname, &wmem);
+                    if (wt.p)
+                        rt_motion_load_pl(0, wt.p);
+                    else
+                        fprintf(stderr, "no %s: weapon motions missing\n", wname);
+                    {   /* the weapon model: weapon_model_data / WEAPON_TEX[PLW+0x34C] (AFS indices) */
+                        int mi = rt_weapon_afs(rt_player_weapon_model(0), 0), ti = rt_weapon_afs(rt_player_weapon_model(0), 1);
+                        if (mi > 0 && mi < (int)afs.count && ti > 0 && ti < (int)afs.count) {
+                            fmt_blob link = load(afs.name[mi], &weapon.mem[0]), tx = load(afs.name[ti], &weapon.mem[1]);
+                            if (link.p && fl_model_create(&weapon.model, fmt_link_entry(link, 0, FMT_LE),
+                                                          fmt_link_entry(link, 1, FMT_LE), tx, 1, FMT_LE) == 0
+                                && fl_skel_create(&weapon.skel, fmt_link_entry(link, 1, FMT_LE), FMT_LE) == 0)
+                                weapon.game = 1;
+                        }
+                    }
+                }
             }
             hunter_yoff = -lo;
             if (play && pl.game && !follow_given && !getenv("RT_HOST_CAM")) {
@@ -751,6 +797,8 @@ int main(int argc, char **argv)
                 flmat_mul(jw[j], pl.master.world[j], pl.world);
             rt_player_parts(0, &jw[0][0], nb);
         }
+        if (weapon.game && pl.game && play)
+            weapon_pose(&light);
 
         gfx_begin_frame(0x8098B8);
         gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);
@@ -772,6 +820,12 @@ int main(int argc, char **argv)
             int s;
             for (s = 0; s < HUNTER_PARTS; s++)
                 draw_model_attr(&pl.part[s], -1);
+        }
+        if (weapon.game && pl.game && play) {
+            static flmat wid;
+            flmat_identity(wid);
+            gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)wid);
+            draw_model_attr(&weapon.model, -1);
         }
 
         frame_no++;

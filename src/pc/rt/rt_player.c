@@ -75,6 +75,11 @@ void rt_player_game_init(int no)
                 PF(pl, u16, 0x2DC), PF(pl, u16, 0x2DE));
 }
 
+int rt_player_job(int no)
+{
+    return player_work[no].kind;
+}
+
 /* ---------------------------------------------- old host stand-in */
 void HitWallPlayer(void *ent, int keep);
 int GetFloorSlide(void *ent, f32 *out, int flag);
@@ -196,4 +201,105 @@ void rt_player_set_ang(int no, int ang_y)
 {
     player_work[no].ang[1] = ang_y & 0xFFFF;
     player_work[no].ang_y = (s16)ang_y;
+}
+
+/* ---------------------------------------------- weapon placement */
+/* Where the weapon model's root bones go this frame, as weapon_trans
+ * (main 0x167FE0? f_weapon; C in src/main/weapon/weapon3_nm.c) places them:
+ * weapon_joint_calc (weapon_nm.c) says right hand (0), left hand (1) or
+ * sheathed (2); the base is that part's world matrix (part 0x12 / 0xE;
+ * sheathed: part 9 for sword and shield, else part 10) moved by the
+ * weapon_disp_tbl_r/l/b[job] offset turned by the part (part 10 when
+ * sheathed), and the root node gets the table's XYZ rotation and scale
+ * (0.8, SnS 1.0, lance 0.9). For sword and shield the shield bones (the
+ * second hierarchy, AHI group 1) follow joint 0x11 (left forearm) with a
+ * fixed rotation and offset. Per-motion node scaling of the great sword,
+ * lance, hammer and bowguns (weapon_dat_make tables) is not done.
+ * Out: root0 / root1 = world matrices of the two hierarchy roots (row
+ * vectors); returns the joint mode, -1 when the parts are not set. */
+typedef struct { f32 p[3]; f32 r[3]; } RT_WDISP;
+extern RT_WDISP weapon_disp_tbl_r[], weapon_disp_tbl_l[], weapon_disp_tbl_b[];
+s16 weapon_joint_calc(PLW *pl);
+void flmatInit(FLMAT *m);
+void flmatCopy(FLMAT *d, FLMAT *s);
+void flmatSetXYZ33(FLMAT *m, f32 x, f32 y, f32 z);
+void flmatMakeScale(FLMAT *m, f32 x, f32 y, f32 z);
+void flmatMul33_2(FLMAT *a, FLMAT *b);
+void flmatMul(FLMAT *d, FLMAT *a, FLMAT *b);
+void flvecApplyMat33(f32 *out, f32 *v, FLMAT *m);
+FLMAT *get_joint_wmat(void *chr, int joint);
+
+static FLMAT *part_w(PLW *pl, int i)
+{
+    u8 *b = (u8 *)(uintptr_t)PF(pl, u32, 0x110 + i * 4);
+    return b ? (FLMAT *)(b + 0x40) : NULL;
+}
+
+int rt_player_weapon(int no, float *root0, float *root1)
+{
+    PLW *pl = &player_work[no];
+    FLMAT m0, nd, m2, w;
+    f32 p[3], r[3], o[3], sc = 1.0f;
+    RT_WDISP *tb;
+    int jt, k = pl->kind;
+    if (!part_w(pl, 9) || k > 5)
+        return -1;
+    jt = weapon_joint_calc(pl);
+    if (jt != 2) {
+        int pi = jt == 0 ? 0x12 : 0xE;
+        flmatCopy(&m0, part_w(pl, pi));
+        tb = jt == 0 ? &weapon_disp_tbl_r[k] : &weapon_disp_tbl_l[k];
+        memcpy(p, tb->p, sizeof p);
+        memcpy(r, tb->r, sizeof r);
+        flvecApplyMat33(o, p, part_w(pl, pi));
+    } else {
+        flmatCopy(&m0, part_w(pl, k == 4 ? 9 : 10));
+        tb = &weapon_disp_tbl_b[k];
+        memcpy(p, tb->p, sizeof p);
+        memcpy(r, tb->r, sizeof r);
+        flvecApplyMat33(o, p, part_w(pl, 10));
+        sc = k == 4 || k == 5 ? 1.0f : k == 3 ? 0.9f : 0.8f;
+    }
+    m0[3][0] += o[0];
+    m0[3][1] += o[1];
+    m0[3][2] += o[2];
+    flmatInit(&nd);
+    flmatSetXYZ33(&nd, r[0], r[1], r[2]);
+    flmatMakeScale(&m2, sc, sc, sc);
+    flmatMul33_2(&nd, &m2);
+    flmatMul(&w, &nd, &m0);
+    memcpy(root0, w, sizeof w);
+    if (k == 3 || k == 4) {     /* shield (lance / sword and shield) */
+        FLMAT n2;
+        flmatCopy(&m0, get_joint_wmat(pl, 0x11));
+        flmatInit(&n2);
+        if (k == 4) {
+            flmatSetXYZ33(&n2, -0.453785628f, -0.0523598827f, 0.139626354f);
+            p[0] = -21.0f; p[1] = 2.2f; p[2] = 5.0f;
+        } else {
+            flmatSetXYZ33(&n2, 0.366519153f, -3.00196648f, -0.0436332338f);
+            p[0] = -18.0f; p[1] = 2.0f; p[2] = -14.0f;
+        }
+        flvecApplyMat33(o, p, &m0);
+        m0[3][0] += o[0];
+        m0[3][1] += o[1];
+        m0[3][2] += o[2];
+        flmatMul(&w, &n2, &m0);
+        memcpy(root1, w, sizeof w);
+    } else
+        memcpy(root1, root0, sizeof w);
+    return jt;
+}
+
+int rt_player_weapon_model(int no)
+{
+    return player_work[no].work34C;
+}
+
+int rt_weapon_afs(int model, int tex)
+{
+    extern s32 weapon_model_data[], WEAPON_TEX[];
+    if (model < 0 || model >= 124)
+        return -1;
+    return tex ? WEAPON_TEX[model] : weapon_model_data[model];
 }

@@ -116,6 +116,11 @@ void rt_pad_set(uint16_t fl_bits, int lx, int ly, int rx, int ry);
  * game's frame_init/frame_move) and ground following. */
 void rt_player_tick(int no);
 void rt_player_game_init(int no);
+int rt_player_weapon(int no, float *root0, float *root1);   /* weapon root matrices (weapon_trans) */
+int rt_player_weapon_model(int no);     /* PLW+0x34C */
+int rt_weapon_afs(int model, int tex);  /* weapon_model_data / WEAPON_TEX entry */
+int rt_player_job(int no);              /* weapon class PLW+2 (0 GS, 1/5 bowgun, 2 hammer, 3 lance, 4 SnS) */
+void rt_motion_load_pl(int no, const uint8_t *tbl);   /* create_pl_motion on wNN_tbl.bin */
 void rt_player_parts(int no, const float *world, int n);   /* joint world matrices from the host skeleton */   /* equipment + the game's pl_init (rt_player.c) */
 int rt_player_uses_game(void);       /* 0 with RT_PL_STANDIN=1 */
 void rt_player_set_ang(int no, int ang_y);

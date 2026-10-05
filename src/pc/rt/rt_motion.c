@@ -204,6 +204,14 @@ void rt_motion_load_plcom(const uint8_t *tbl)
     create_plcom_motion();
 }
 
+/* the player's own motions (ids >= 1000) through create_pl_motion */
+void create_pl_motion(int pl);
+void rt_motion_load_pl(int no, const uint8_t *tbl)
+{
+    pl_area_top = (u8 *)tbl;
+    create_pl_motion(no);
+}
+
 void *rt_motion_attach(void *work)
 {
     rt_actor_motion *am = calloc(1, sizeof *am);
