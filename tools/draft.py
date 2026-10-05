@@ -92,7 +92,7 @@ def main():
         with tempfile.NamedTemporaryFile("w", suffix=".s", delete=False) as t:
             t.write('.include "macro.inc"\n.set noat\n.set noreorder\n'
                     '.section .text, "ax"\n\n' + named_regs(body) + jt)
-        p = subprocess.run([PY, M2C, "-t", "mips-mwcc-c", "--valid-syntax"] + (["--context", os.environ["DRAFT_CTX"]] if os.environ.get("DRAFT_CTX") else []) + [t.name],
+        p = subprocess.run([PY, M2C, "-t", os.environ.get("DRAFT_T","mips-mwcc-c"), "--valid-syntax"] + (["--context", os.environ["DRAFT_CTX"]] if os.environ.get("DRAFT_CTX") else []) + [t.name],
                            capture_output=True, text=True)
         os.unlink(t.name)
         print(p.stdout.strip() or p.stderr.strip())
