@@ -17,7 +17,7 @@ extern f32 *stage_sphr_tbl[];
 
 void flvecCopy(f32 *, f32 *);
 void hit_cap_pk(SET13_CAP *, void *);
-int hit_cap_sphr_m(f32, void *, f32 *, void *);
+u8 hit_cap_sphr_m(void *k, f32 *c, void *out, f32 r);   /* hit2c.c */
 
 int set13_hit_calc(f32 *pos) {
     f32 c[3];
@@ -39,7 +39,7 @@ int set13_hit_calc(f32 *pos) {
             c[1] = *p++;
             c[2] = *p;
             p++;
-            if (hit_cap_sphr_m(r, pk, c, res)) {
+            if (hit_cap_sphr_m(pk, c, res, r)) {
                 return 1;
             }
         }

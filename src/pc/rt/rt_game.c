@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* The game C stores pointers in u32 fields: only a 32-bit build works. */
@@ -82,12 +83,14 @@ int rt_clay_claimed(int handle)
     return handle >= 0 && handle < nclays && claimed[handle];
 }
 
-int rt_bind_set_model(gfx_clay *const *c, int n)
+int rt_bind_set_model(gfx_clay *const *c, const uint32_t *attr, int n)
 {
     int i;
     memset(set_clay, 0, sizeof set_clay);
-    for (i = 0; i < 64; i++)
+    for (i = 0; i < 64; i++) {
         set_clay[i].handle = i < n ? rt_register_clay(c[i]) : -1;
+        set_clay[i].attr = i < n && attr ? (s32)attr[i] : 0;
+    }
     set_mdl.flag = 1;
     set_mdl.clay = set_clay;
     set_mdlw = &set_mdl;
@@ -108,19 +111,33 @@ u32 ran_suu(int ch)
 }
 
 /* ------------------------------------------------------------ set objects */
-/* set_work (0x396A00) is 0x2000 bytes; 64 entries of 0x80 is a guess. */
+/* set_work (0x396A00) is 0x2000 bytes; 64 entries of 0x80 is a guess.
+ * pull_set_work(n) (0x155290) also hands out n 512-byte blocks of the work
+ * heap as sw->u.work (-1 when n <= 0) and notes them at +0x1C (first
+ * block) / +0x1D (count); here each entry gets its own zeroed buffer. */
 #define SET_MAX 64
+#define SET_HEAP_BLOCK 0x200
 static union { SETW w; u8 raw[0x80]; } set_pool[SET_MAX];
 static unsigned char set_used[SET_MAX];
+static void *set_heap[SET_MAX];
+static unsigned char set_seen[SET_MAX];     /* RT_TRACE: reported once */
 
-SETW *pull_set_work(int pri)
+SETW *pull_set_work(int n)
 {
     int i;
-    (void)pri;
     for (i = 0; i < SET_MAX; i++)
         if (!set_used[i]) {
             memset(&set_pool[i], 0, sizeof set_pool[i]);
             set_used[i] = 1;
+            set_seen[i] = 0;
+            set_pool[i].raw[0] = 1;
+            if (n > 0) {
+                set_heap[i] = calloc((size_t)n, SET_HEAP_BLOCK);
+                set_pool[i].w.u.work = set_heap[i];
+            } else {
+                set_pool[i].w.u.work = (void *)-1;
+            }
+            set_pool[i].raw[0x1D] = (u8)n;
             return &set_pool[i].w;
         }
     return NULL;
@@ -129,8 +146,11 @@ SETW *pull_set_work(int pri)
 void push_set_work(SETW *sw)
 {
     int i = (int)((u8 *)sw - (u8 *)set_pool) / (int)sizeof set_pool[0];
-    if (i >= 0 && i < SET_MAX)
+    if (i >= 0 && i < SET_MAX) {
         set_used[i] = 0;
+        free(set_heap[i]);
+        set_heap[i] = NULL;
+    }
 }
 
 void se_req2(int a, int b, int c, f32 *pos, int d, int e)
@@ -140,13 +160,13 @@ void se_req2(int a, int b, int c, f32 *pos, int d, int e)
 
 /* ------------------------------------------------------------ prims */
 /* get_prim hands out slots, add_prim queues one on an ordering table for
- * this tick; rt_game_draw walks ot0..ot3 in order. Priority order inside a
+ * this tick; rt_game_draw walks ot0..ot4 in order. Priority order inside a
  * table (low first) is a guess. */
 #define PRIM_MAX 256
-#define OT_N 4
+#define OT_N 5
 #define QUEUE_MAX 512
-u8 ot0[0x20], ot1[0x20], ot2[0x20], ot3[0x20];
-static u8 *const ots[OT_N] = { ot0, ot1, ot2, ot3 };
+u8 ot0[0x20], ot1[0x20], ot2[0x20], ot3[0x20], ot4[0x20];
+static u8 *const ots[OT_N] = { ot0, ot1, ot2, ot3, ot4 };   /* ot4: set13 glare, drawn last (guess) */
 static union { PRIM p; u8 raw[0x40]; } prim_pool[PRIM_MAX];
 static unsigned char prim_used[PRIM_MAX];
 static struct { PRIM *p; int pri; } queue[OT_N][QUEUE_MAX];
@@ -162,6 +182,12 @@ int get_prim(void)
             return i;
         }
     return -1;
+}
+
+void release_prim(s16 no)
+{
+    if (no >= 0 && no < PRIM_MAX)
+        prim_used[no] = 0;
 }
 
 PRIM *get_prim_ptr(s16 no)
@@ -184,8 +210,23 @@ void add_prim(void *ot, PRIM *p, int pri, int kind)
     nqueue[t]++;
 }
 
+/* ------------------------------------------------------------ players */
+void rt_set_player(int no, const float pos[3])
+{
+    PLW *pl;
+    if (no < 0 || no >= 8)
+        return;
+    pl = &player_work[no];
+    pl->be_flag = 1;
+    pl->id = (u16)no;
+    pl->stg = game_w.stage;
+    pl->pos[0] = pos[0];
+    pl->pos[1] = pos[1];
+    pl->pos[2] = pos[2];
+}
+
 /* ------------------------------------------------------------ game loop */
-void set14_set(void);
+void stage_set_set(int stage);
 void rt_fl_reset_states(void);
 
 void rt_game_init(int stage)
@@ -194,13 +235,7 @@ void rt_game_init(int stage)
     game_w.stage = (u8)stage;
     game_w.master = 0;
     stage_work.timer = 0;
-    /* The stage's own set spawn list is not decompiled yet: spawn set14
-     * (UV-scrolled waterfalls/water) by hand on the stages it handles. */
-    switch (stage) {
-    case 0: case 1: case 3: case 4: case 0x1A: case 0x2A: case 0x33: case 0x34: case 0x35:
-        set14_set();
-        break;
-    }
+    stage_set_set(stage);   /* the game's own spawn list (src/main/stage/stage_set.c) */
 }
 
 void rt_game_move(void)
@@ -210,13 +245,28 @@ void rt_game_move(void)
         nqueue[i] = 0;
     stage_work.timer++;
     for (i = 0; i < SET_MAX; i++)
-        if (set_used[i] && set_pool[i].w.move)
+        if (set_used[i] && set_pool[i].w.move) {
+            if (!set_seen[i] && getenv("RT_TRACE")) {
+                set_seen[i] = 1;
+                fprintf(stderr, "rt: set object %d: type %d arg %d\n", i, set_pool[i].w.type, set_pool[i].w.arg);
+            }
             set_pool[i].w.move(&set_pool[i].w);
+        }
 }
 
 void rt_game_draw(void)
 {
     int t, k;
+    static int traced;
+    if (!traced && getenv("RT_TRACE")) {
+        traced = 1;
+        for (t = 0; t < OT_N; t++)
+            for (k = 0; k < nqueue[t]; k++) {
+                SETW *o = (SETW *)queue[t][k].p->owner;
+                fprintf(stderr, "rt: ot%d prim pri %d owner type %d arg %d pos %.0f,%.0f,%.0f\n", t, queue[t][k].pri,
+                        o ? o->type : -1, o ? o->arg : -1, queue[t][k].p->pos[0], queue[t][k].p->pos[1], queue[t][k].p->pos[2]);
+            }
+    }
     for (t = 0; t < OT_N; t++)
         for (k = 0; k < nqueue[t]; k++) {
             PRIM *p = queue[t][k].p;

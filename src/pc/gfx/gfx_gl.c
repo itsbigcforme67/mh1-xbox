@@ -30,7 +30,20 @@ static struct {
     float view[16], proj[16], world[16], texmat[16];
     uint32_t fade;               /* 0xAARRGGBB, 0xFFFFFFFF = none */
     gfx_texture *tex;
+    GLint filter, wrap;          /* fl 0x63 / 0x64, applied when a texture is bound */
+    void (APIENTRY *blend_eq)(GLenum);   /* glBlendEquation (GL 1.4), may be NULL */
 } G;
+
+#ifndef GL_FUNC_ADD
+#define GL_FUNC_ADD 0x8006
+#define GL_FUNC_SUBTRACT 0x800A
+#define GL_FUNC_REVERSE_SUBTRACT 0x800B
+#endif
+
+/* fl blend factor codes (GFX_BF_*) */
+static const GLenum blend_factor[6] = {
+    GL_ZERO, GL_ONE, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA
+};
 
 static const float ident[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
 
@@ -73,6 +86,9 @@ int gfx_init(int width, int height, const char *title, int hidden)
     glDisable(GL_LIGHTING);
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glFogi(GL_FOG_MODE, GL_LINEAR);
+    G.filter = GL_LINEAR;
+    G.wrap = GL_REPEAT;
+    G.blend_eq = (void (APIENTRY *)(GLenum))SDL_GL_GetProcAddress("glBlendEquation");
     return 0;
 }
 
@@ -189,6 +205,25 @@ void gfx_set_render_state(int state, uintptr_t v)
     case GFX_RS_ZTEST:
         if (v) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
         break;
+    case GFX_RS_BLEND_FUNC: {
+        unsigned src = v & 15, dst = (v >> 4) & 15;
+        if (src < 6 && dst < 6) {        /* others have no GS form: ignored like fl does */
+            glEnable(GL_BLEND);
+            glBlendFunc(blend_factor[src], blend_factor[dst]);
+        }
+        break;
+    }
+    case GFX_RS_BLEND_OP:
+        if (G.blend_eq)
+            G.blend_eq((v & 0xC00) == 0x400 ? GL_FUNC_SUBTRACT
+                       : (v & 0xC00) == 0x800 ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD);
+        break;
+    case GFX_RS_FILTER:
+        G.filter = (v & 0x10000) ? GL_NEAREST : GL_LINEAR;
+        break;
+    case GFX_RS_TEX_CLAMP:
+        G.wrap = v ? GL_CLAMP_TO_EDGE : GL_REPEAT;
+        break;
     case GFX_RS_BLEND:
         if (v) {
             glEnable(GL_BLEND);
@@ -274,6 +309,10 @@ void gfx_execute_clay(gfx_clay *c)
         if (t && c->st) {
             glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, t->id);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, G.filter);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, G.filter);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, G.wrap);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, G.wrap);
         } else {
             glDisable(GL_TEXTURE_2D);
         }
