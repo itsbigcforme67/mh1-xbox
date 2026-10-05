@@ -451,125 +451,107 @@ void yn_set_exit_sub(void) {
 }
 
 s32 yn_file_search(void) {
-    s32 temp_v0_3;
-    s32 var_s0;
-    s64 temp_v0_4;
-    u8 temp_a0;
-    u8 var_a1;
-    u8 *temp_a1;
-    u8 *temp_a1_2;
-    u8 *temp_a2;
-    u8 *temp_a2_2;
-    u8 *temp_v0;
-    u8 *temp_v0_2;
-    u8 *temp_v0_5;
-    u8 *temp_v1;
-    u8 *temp_v1_2;
-    u8 *temp_v1_3;
-    u8 *temp_v1_4;
-    u8 *temp_v1_5;
+    u8 st;
+    u8 a;
+    u8 *w;
+    u8 *sp;
+    s32 r;
+    s32 none;
+    s32 n;
 
-    temp_a2 = ynw;
-    temp_a0 = M2C_FIELD(temp_a2, u8 *, 0x24);
-    temp_a1 = temp_a2 + 0x24;
-    switch (temp_a0) {
+    w = ynw;
+    st = M2C_FIELD(w, u8 *, 0x24);
+    sp = w + 0x24;
+    switch (st) {
     case 0:
-        M2C_FIELD(temp_a2, u8 *, 0x24) = (u8) (temp_a0 + 1);
-        M2C_FIELD(ynw, u8 *, 0x1D) = 0U;
+        *sp = st + 1;
+        M2C_FIELD(ynw, u8 *, 0x1D) = 0;
         M2C_FIELD(ynw, s8 *, 0x1C) = 0;
         M2C_FIELD(ynw, s8 *, 0x1F) = 0;
-        temp_v1 = ynw;
-        M2C_FIELD(temp_v1, u8 *, 0x27) = (u8) M2C_FIELD(temp_v1, u8 *, 0x1E);
-        yn_mc_init(ynw + 0x10D0, temp_a1, temp_a2);
+        M2C_FIELD(ynw, u8 *, 0x27) = M2C_FIELD(ynw, u8 *, 0x1E);
+        yn_mc_init(ynw + 0x10D0);
         memset(ynw + 0x1180, 0, 0x19D40);
         memset(ynw + 0x250, 0, 0x258);
-        /* fallthrough */
     case 1:
         if (yn_mc_device_check_all(ynw + 0x10D0) >= 0) {
-            temp_a1_2 = ynw;
-            M2C_FIELD(temp_a1_2, u8 *, 0x1D) = (u8) (M2C_FIELD(temp_a1_2, u8 *, 0x1D) | (((s32) (M2C_FIELD(temp_a1_2, u8 *, 0x10D2) | M2C_FIELD(temp_a1_2, u8 *, 0x10D3)) >> 1) & 3));
-            temp_v1_2 = ynw;
-            if (M2C_FIELD(temp_v1_2, u8 *, 0x1D) != 0) {
-                M2C_FIELD(temp_v1_2, u8 *, 0x24) = 2U;
-                goto block_34;
+            M2C_FIELD(ynw, u8 *, 0x1D) = M2C_FIELD(ynw, u8 *, 0x1D) | (((M2C_FIELD(ynw, u8 *, 0x10D2) | M2C_FIELD(ynw, u8 *, 0x10D3)) >> 1) & 3);
+            if (M2C_FIELD(ynw, u8 *, 0x1D) != 0) {
+                M2C_FIELD(ynw, u8 *, 0x24) = 2;
+                break;
             }
-            M2C_FIELD(temp_v1_2, u8 *, 0x24) = 0U;
+            M2C_FIELD(ynw, u8 *, 0x24) = 0;
             return -2;
         }
+        break;
     default:
-block_34:
-        return 0;
+        break;
     case 2:
     case 3:
-loop_9:
-        temp_v1_3 = ynw;
-        var_a1 = M2C_FIELD(temp_v1_3, u8 *, 0x27);
-        if (!(M2C_FIELD(temp_v1_3, u8 *, 0x1D) & (1 << var_a1))) {
-            M2C_FIELD(temp_v1_3, u8 *, 0x27) = (u8) ((s32) (var_a1 + 1) % 2);
-            temp_a2_2 = ynw;
-            var_a1 = M2C_FIELD(temp_a2_2, u8 *, 0x27);
-            if (var_a1 != M2C_FIELD(temp_a2_2, u8 *, 0x1E)) {
-                goto loop_9;
+        for (;;) {
+            a = M2C_FIELD(ynw, u8 *, 0x27);
+            if (M2C_FIELD(ynw, u8 *, 0x1D) & (1 << a)) {
+                break;
+            }
+            M2C_FIELD(ynw, u8 *, 0x27) = (a + 1) % 2;
+            a = M2C_FIELD(ynw, u8 *, 0x27);
+            if (a == M2C_FIELD(ynw, u8 *, 0x1E)) {
+                break;
             }
         }
-        if ((M2C_FIELD(ynw, u8 *, 0x24) == 3) && (var_a1 == M2C_FIELD(ynw, u8 *, 0x1E))) {
-            M2C_FIELD(ynw, u8 *, 0x24) = 0U;
-            temp_v1_4 = ynw;
-            M2C_FIELD(temp_v1_4, u8 *, 0x1E) = (u8) M2C_FIELD(temp_v1_4, u8 *, 0x27);
-            temp_v0 = ynw;
-            yn_mc_set_current(temp_v0 + 0x10D0, M2C_FIELD(temp_v0, u8 *, 0x27), ynw);
+        if (M2C_FIELD(ynw, u8 *, 0x24) == 3 && a == M2C_FIELD(ynw, u8 *, 0x1E)) {
+            M2C_FIELD(ynw, u8 *, 0x24) = 0;
+            M2C_FIELD(ynw, u8 *, 0x1E) = M2C_FIELD(ynw, u8 *, 0x27);
+            yn_mc_set_current(ynw + 0x10D0, M2C_FIELD(ynw, u8 *, 0x27));
             return -1;
         }
-        M2C_FIELD(ynw, u8 *, 0x24) = 4U;
-        temp_v1_5 = ynw;
-        M2C_FIELD(temp_v1_5, u8 *, 0x1E) = (u8) M2C_FIELD(temp_v1_5, u8 *, 0x27);
-        temp_v0_2 = ynw;
-        yn_mc_set_current(temp_v0_2 + 0x10D0, M2C_FIELD(temp_v0_2, u8 *, 0x27), ynw);
-        goto block_34;
+        M2C_FIELD(ynw, u8 *, 0x24) = 4;
+        M2C_FIELD(ynw, u8 *, 0x1E) = M2C_FIELD(ynw, u8 *, 0x27);
+        yn_mc_set_current(ynw + 0x10D0, M2C_FIELD(ynw, u8 *, 0x27));
+        break;
     case 4:
-        temp_v0_3 = yn_mc_ynfile_check(temp_a2 + 0x10D0, temp_a1, temp_a2);
-        if (temp_v0_3 != -2) {
-            if (temp_v0_3 != -1) {
-                M2C_FIELD(ynw, u8 *, 0x24) = 3U;
+        r = yn_mc_ynfile_check(ynw + 0x10D0);
+        if (r != -2) {
+            if (r != -1) {
+                M2C_FIELD(ynw, u8 *, 0x24) = 3;
             } else {
-                M2C_FIELD(ynw, u8 *, 0x24) = 5U;
+                M2C_FIELD(ynw, u8 *, 0x24) = 5;
             }
         }
-        goto block_34;
+        break;
     case 5:
-        yn_netcnf_get_filename(ynw + 0x1180, yn_mc_get_current(temp_a2 + 0x10D0, temp_a1, temp_a2));
+        yn_netcnf_get_filename(ynw + 0x1180, yn_mc_get_current(ynw + 0x10D0));
         M2C_FIELD(ynw, s8 *, 0x1C) = 0;
         if (yn_netcnf_magicno_check(ynw + 0x1180) != 0) {
             return -3;
         }
-        var_s0 = 0;
+        none = 0;
         yn_netcnf_set_current(ynw + 0x1180, 0);
-        temp_v0_4 = yn_netcnf_get_num(ynw + 0x1180);
-        M2C_FIELD(ynw, s8 *, 0x1C) = (s8) temp_v0_4;
-        if (((s64) (temp_v0_4 << 0x38) >> 0x38) == 0) {
-            var_s0 = 1;
+        n = yn_netcnf_get_num(ynw + 0x1180);
+        M2C_FIELD(ynw, s8 *, 0x1C) = n;
+        if ((s8)n == 0) {
+            none = 1;
         }
         yn_netcnf_get_list(ynw + 0x1180);
         yn_netcnf_set_current(ynw + 0x1180, 2);
         if (yn_netcnf_get_num(ynw + 0x1180) == 0) {
-            var_s0 = 1;
+            none = 1;
         }
         yn_netcnf_get_list(ynw + 0x1180);
         yn_netcnf_set_current(ynw + 0x1180, 1);
         if (yn_netcnf_get_num(ynw + 0x1180) == 0) {
-            var_s0 = 1;
+            none = 1;
         }
         yn_netcnf_get_list(ynw + 0x1180);
-        if (var_s0 == 0) {
+        if (none == 0) {
             yn_netcnf_net_allload(ynw + 0x1180);
-            temp_v0_5 = ynw;
-            yn_netcnf_setup_devwork(temp_v0_5 + 0x1180, temp_v0_5 + 0x250);
-            M2C_FIELD(ynw, u8 *, 0x24) = 0U;
+            yn_netcnf_setup_devwork(ynw + 0x1180, ynw + 0x250);
+            M2C_FIELD(ynw, u8 *, 0x24) = 0;
             return 1;
         }
-        M2C_FIELD(ynw, u8 *, 0x24) = 0U;
+        M2C_FIELD(ynw, u8 *, 0x24) = 0;
         return -1;
     }
+    return 0;
 }
 
 #if 0 /* yn_auto_connect: m2c draft, does not compile yet */
