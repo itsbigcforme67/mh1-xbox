@@ -259,6 +259,34 @@ void em01_reset_char_set();
         ty[i] = 0xFF; \
     } while (0)
 
+void ground_land_eff_set_0057A7E0(EMW *em) {
+    VEC3 v;
+
+    if (game_w.stage == 0) {
+        get_joint_pos_em(em, 0x14, &v.x);
+        v.y = em->x5AC;
+        if (v.y <= 46.0f) {
+            eft11_set(em, &v.x, 1);
+            get_joint_pos_em(em, 0x1A, &v.x);
+            eft11_set(em, &v.x, 1);
+        }
+    } else {
+        Eft20_set(1.0f, em, 0xB, 0);
+    }
+}
+
+void takeoff_eff_set_0057A890(EMW *em) {
+    f32 v[3];
+
+    if (game_w.stage == 0) {
+        get_joint_pos_em(em, 0, v);
+        v[1] = em->x5AC;
+        if (v[1] <= 46.0f) {
+            eft11_set(em, v, 1);
+        }
+    }
+}
+
 void takeon_eff_set_0057A900(EMW *em) {
     f32 v[3];
     f32 y;

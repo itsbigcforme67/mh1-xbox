@@ -133,7 +133,7 @@ segments:
       - [0x041344, asm, text/sound_call_sub_00574CD0]
       - [0x041350, c, em/em01_aig]
       - [0x046DF8, asm, text/em01_effect_move]
-      - [0x046F80, c, em/em01_aih]
+      - [0x046E60, c, em/em01_aih]
       - [0x0471D8, asm, text/em01_act_act_set]
       - [0x0471E0, c, em/em01]
       - [0x04A4A4, asm, text/g_em01_horm_init]

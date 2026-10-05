@@ -419,7 +419,7 @@ void em01_to_fly(em, mode) EMW *em; int mode; {
 }
 
 void em01_frame_reset(em, i) EMW *em; int i; {
-    if (*(s32 *)((u8 *)em + i * 0x50 + 0x194) == 0) {
+    if (((s32 (*)[20])&em->x194)[i][0] == 0) {
         switch (i) {
         case 0:
             em_char_set2(em, 0x3E9, 0xA, 0, 0);
@@ -2414,9 +2414,8 @@ static void ground_land_eff_set_0057A7E0(EMW *em) {
 
     if (game_w.stage == 0) {
         get_joint_pos_em(em, 0x14, &v.x);
-        y = em->x5AC;
-        v.y = y;
-        if (y <= 46.0f) {
+        v.y = em->x5AC;
+        if (v.y <= 46.0f) {
             eft11_set(em, &v.x, 1);
             get_joint_pos_em(em, 0x1A, &v.x);
             eft11_set(em, &v.x, 1);
@@ -2432,9 +2431,8 @@ static void takeoff_eff_set_0057A890(EMW *em) {
 
     if (game_w.stage == 0) {
         get_joint_pos_em(em, 0, v);
-        y = em->x5AC;
-        v[1] = y;
-        if (y <= 46.0f) {
+        v[1] = em->x5AC;
+        if (v[1] <= 46.0f) {
             eft11_set(em, v, 1);
         }
     }
