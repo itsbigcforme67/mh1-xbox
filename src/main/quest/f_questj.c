@@ -166,6 +166,26 @@ typedef struct REMI {
     u16 num;            /* 0x04 count */
 } REMI;
 
+void ext_pick_point_tbl_clr_ex(n)
+int n;
+{
+    int i;
+    s8 *t;
+
+    i = 0;
+    if (0 < quest_w.x3B) {
+        t = stiem_stack_tbl;
+        do {
+            if ((s8)n == *t) {
+                ext_pick_point_tbl_clr((s8)i);
+                return;
+            }
+            i++;
+            t++;
+        } while (i < quest_w.x3B);
+    }
+}
+
 void Ext_pick_point_st_clr(void)
 {
     int i;

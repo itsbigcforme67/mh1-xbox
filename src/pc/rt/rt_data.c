@@ -158,6 +158,8 @@ static void *map_ptr(uint32_t v)
             fprintf(stderr, "rt: pointer to unported function %s+0x%X\n", name, (unsigned)off);
         return NULL;
     }
+    if (rt_in_bss(v, 1))
+        return rt_bss_shadow(v);
     return (void *)rt_addr(v, 1);
 }
 

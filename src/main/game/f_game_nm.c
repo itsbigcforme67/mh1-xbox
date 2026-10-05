@@ -453,17 +453,17 @@ void game3(void) {
         }
     }
     sp.w = 0x44200000;
-    sp.one1 = 0x3F800000;
     sp.h = 0x43E00000;
     sp.x0 = 0;
     sp.y0 = 0;
-    sp.w0 = 0;
-    sp.alpha = gw->x04 / 255.0f;
     sp.z0 = 0;
-    sp.kind = 5;
-    sp.z = 0;
+    sp.w0 = 0;
     sp.one0 = 0x3F800000;
+    sp.one1 = 0x3F800000;
+    sp.alpha = gw->x04 / 255.0f;
+    sp.kind = 5;
     sp.col = 0xFF010101;
+    sp.z = 0;
     SpritePut(&sp);
     Info_control();
     move();
@@ -950,3 +950,5 @@ void Game_task(TSK *tsk) {
         return;
     }
 }
+
+

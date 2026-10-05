@@ -20,7 +20,8 @@ lib32gcc-13-dev into build/sysroot32). No other libraries.
 
     build/pc/mhview disc/mh1
 
-`disc/mh1` must contain `AFS_DATA.AFS` and `SLPM_654.95`. The ELF and the
+`disc/mh1` must contain `AFS_DATA.AFS` and `SLPM_654.95` (and `AFS00.AFS` /
+`AFS01.AFS` for sound; without them the viewer runs silent). The ELF and the
 game.bin overlay (an AFS_DATA entry, stored uncompressed) are read for the
 hunter's part-to-bone table (ptmat_tbl, 0x3018F0) and the game data tables
 the decompiled C uses (src/pc/rt/rt_data.c).
@@ -37,6 +38,8 @@ Controls with `--play` (the pad drives the hunter, camera follows):
   K cross, L circle, J square, I triangle, Q L1, E R1, Z L2, C R2, Enter
   start, Backspace select, T/F/G/H d-pad.
 - Only running and turning do anything yet (see "Player and pad" below).
+  The camera is the game's: d-pad left/right turn it, up/down zoom, L1
+  resets it behind the hunter.
 
 Screenshot mode, for checking without looking at the window: it renders
 offscreen in a hidden window, reads the back buffer and writes a PNG.
@@ -53,6 +56,9 @@ offscreen in a hidden window, reads the back buffer and writes a PNG.
 | `--stage N` | stage number (game_w.stage, 0-87, hex with 0x), default 4 |
 | `--play` | the pad (controller + keyboard) drives the hunter; follow camera |
 | `--input SCRIPT` | scripted pad for tests, implies --play: `idle*10,up*50,left+cross*15` = ticks per step; names in src/pc/pad/pad.h |
+| `--follow D,H,P` | `--play` camera: distance D behind, H above the hunter, pitch P (default 900,450,-0.3); the yaw is `--cam`'s |
+| `--audio-dump FILE.wav` | no audio device; mix 1/30 s per game tick into a 48 kHz stereo wav (for checking sound offscreen) |
+| `--mute` | no sound at all |
 | `--sw-trace` | print, per tick, the pad state the game's sw_set_sub gave player 0 and the player's position/angle |
 
 Verified 5 Oct 2026 with build/show/pc_viewer.png and
@@ -70,6 +76,8 @@ pc_viewer_close_0.5.png / _2.0.png:
 | `src/pc/gfx/gfx.h` | the graphics interface: textures, render states, clays |
 | `src/pc/gfx/gfx_gl.c` | its OpenGL 1.x fixed-function implementation (SDL2 window) |
 | `src/pc/fl/` | the port's "fl" layer: `fl_model` (AMO → clays, CPU skinning, VU1-style lighting), `fl_skel` (AHI + AAN motions → bone matrices), `flmat.h` (fl row-vector matrices) |
+| `src/pc/audio/` | the audio interface: `audio.h`, `audio_mix.c` (portable mixer: 48 voices + 2 streams, 48 kHz stereo), `audio_sdl.c` (SDL2 device) |
+| `src/pc/fmt/snd.c` | sound packs (SCEI HD/BD + TSBD, PS2 ADPCM) and ADX decoding (docs/formats/audio.md) |
 | `src/pc/rt/` | the port runtime: what decompiled game C expects from the PS2 side (see below) |
 | `src/pc/viewer.c` | the app: scene setup, hunter assembly (SetPartsTrans), camera, screenshot PNG writer |
 | `tools/build_pc.sh` | build script; output in build/pc/ (gitignored) |
@@ -91,9 +99,10 @@ Running natively now:
 | src/game/set/set09.c | ambient creatures (butterflies etc.) on stages 5, 0x10, 0x21, 0x33... |
 | src/game/set/set17.c | plant tiles on stages 1, 2, 3, 46 |
 | set03/04/05_nm/07/08/10/11/15/16/18/19/20_nm/22.c, main set12.c | every other set object the spawn list can start (see each file's header) |
-| src/main/stage/trans_stage_nm.c | trans_stage: draws the area model and the set-model parts the stage places (see "Stage drawing") |
+| src/main/stage/trans_stage.c | trans_stage: draws the area model and the set-model parts the stage places (see "Stage drawing") |
 | all decompiled eft*/shell* (game and main), list EFT= in build_pc.sh | effects and shells: what set objects and stage_set_set spawn (Eft14_set2 camp fire on st21, Shell10_set barrels on stage 0x11, Shell22_set2, Eft17_set_ex, Eft13_set_pos ...) now run as the real C |
 | src/main/hit/hit2.c, hit2c.c | sphere/capsule tests set13 uses |
+| src/main/hit/shit*_nm.c, shit2.c, tri_nm.c, hitw_nm.c | the stage collision (f_sphr, agent D): load_stage_hit, GetGroundHit*, GetWaterHit, GetFloorSlide, HitWallPlayer -> GetWallHitBitPl/Em -> sphr_face_o3/o4 -> PushAdjust3, GetWallHitLine/GetEyeHitLine (see "Collision" below) |
 
 The `_nm.c` files are near-matches on the PS2 side (logic believed
 equivalent), so they run here too. For split files the whole-file `_nm.c`
@@ -218,12 +227,147 @@ travel (how plcom 3 was found).
   area): it turns the hunter towards the left stick relative to the camera
   (0x800 per tick), plays run 3/103 while the stick is pushed and idle
   1/101 otherwise (4-tick cross-fade through frame_init), calls frame_move
-  and puts y on the ground (GetGroundHit). No walls, no actions: replace
-  it with the decompiled pl_move / pl_normal when they exist.
+  and then the game's wall and ground collision (see "Collision"). No
+  actions: replace it with the decompiled pl_move / pl_normal when they
+  exist.
 - Verified 5 Oct 2026: `--input "idle*10,up*50,left*15" --sw-trace --time
   2.5` prints sw.ang 0x4000 / pow 127 for "up" and 0x8000 for "left", the
   hunter turns to the camera's forward direction and runs about 300 units
   (build/show/A/play_run.png shows it mid-stride, turned left).
+
+### Collision (stage HITS, game C)
+
+The game's own collision C (agent D's f_sphr near-matches, list HIT= in
+build_pc.sh) runs on the PC; the host reader fmt_hits_ground_y is no
+longer used by the viewer.
+- Loading: rt_load_stage_hit(stage) runs the game's load_stage_hit
+  (shit1_nm.c): load_file_mdl (rt_hit.c) asks the host for the AFS entry
+  of stage_hit_data_w / _f[stage] (Meltw-decompressed) and copies it into
+  a 4 MB host area (stage_hit_area_w / _f); WallHitInit / GroundHitInit
+  then turn the file offsets into pointers (fine in the 32-bit build).
+- rt_hit.c also has the small main helpers that are not decompiled,
+  written from the asm: NormalClipF3 / NormalClipCheckF3 /
+  PointHitCheckF3 (2D point-in-triangle with the original's quirks: one-ulp
+  products count as equal, the orientation test truncates to int),
+  UnitNormalVectorCCW, NvecFloatAdjust, cpRotMatrixYXZ2, flConvertRtoS,
+  Stage_data_get (quest_w+0x80 = St_data, as the default quest setup at
+  0x226BD0 sets it; stage_work+0x48 = Stage_data_get(stage) as stage_w_init).
+- Player (rt_player.c): pl_move_sub's order (main 0x14C500): old position
+  to +0x5A0, move, HitWallPlayer(pl, 0) (one sphere push00: y 60, r 48),
+  GetFloorSlide(pl, v, 1), GetGroundHitStatusAreaPl -> +0x5AC; y snaps to
+  it when below or less than 30 above, else a host fall (the PS2 starts
+  the fall action Pl_act_set(pl, 0, 9)).
+- Monster (rt_hit.c rt_monster_collide, from em_move 0x10BF30): old
+  position, frame_move (root motion), HitWallPlayer (spheres
+  em_hit_push_tbl[kind]: the Rathian, kind 1, has one sphere of radius 500
+  at y 160), GetGroundHitStatusAreaEm, y = ground. rt_monster_place puts
+  em_work[0] on the stage; the viewer draws the Rathian where the game has
+  it (RT_EM_FIXED=1 keeps the old fixed placement).
+- Fixes found on the way: PointToPoint is d = a - b (the host had b - a,
+  which also affected effect code that uses it); table pointers into PS2
+  .bss (wall_tbl_add -> stNN_wall_tbl) now point at zeroed host memory
+  (rt_bss_shadow) instead of NULL.
+- Verified 5 Oct 2026 (scripted --input, `--sw-trace`, shots in
+  build/show/A/hit/): st04 "right" from the start: the hunter runs into the
+  invisible wall at the cliff edge (polygon 10919,7513 - 11252,7689) and
+  slides along it 48 units (the sphere radius) away instead of dropping to
+  y -487 as before (wall_right_top.png); "left": walks up the stone path,
+  y 7 -> 306, feet on the ground (st04_slope.png); stage 1 "up": stops at
+  the river bank (z 8651, st01_wall.png); stage 5 / 0x21 runs stop or slide
+  at walls. Rathian: on stage 0x21 it walks its 1003 loop along its facing
+  (34 degrees, matches the angle) on the ground (em_st21_walk.png); on st04
+  its 500-radius sphere is pushed out of the camp walls and it stops at the
+  cliff wall; on stage 16 it stops at a wall after ~250 units.
+- `RT_HIT_TRACE=1` prints the wall polygons of the start cell and, per
+  tick, the player's wall sweep (old/new/pushed position, contacts).
+  `--follow D,H,P` sets the play camera for such shots.
+- Not done: water (GetWaterHit runs but nothing reacts), the fall action,
+  the player's pl_wall_mat use (wall-facing actions), monster states 2/4.
+
+### Camera (game C)
+
+With `--play` the view comes from the game's own camera: CameraMove
+(src/main/cam/camm.c) and the five camera slots (cam_nm.c / camd.c,
+agent D; cam_sub_std, cam_sub_stg are near-matches) run every tick after
+the player; cam2view writes eye / target / roll / fov into lpView, and the
+viewer builds its look-at camera from that (roll ignored; the game's angle
+of view is used as the vertical fov [guess]). `--follow D,H,P` or
+`RT_HOST_CAM=1` keep the old host follow camera.
+- Stage camera files: LoadCameraData (rt_cam.c, from 0x11F1E0) loads
+  camera_data_tbl[stage] (26 stages have one, st04 included) into
+  cam_data_area and SetCameraData fixes its pointers; without a file
+  default_area_data builds one follow area from stage_camera_data_tbl.
+- Camera areas: src/main/cam/camarea_nm.c (main 0x222E20-0x223B50, the
+  g_SetAreaData file) written from the asm for this: default_area_data,
+  StageCamInit, SetAreaData, Get_cam_grid_XZ, CameraAreaCheck,
+  CamAreaAttribChk, Area_XZ_Check, GetPanTarget, GetRailTarget,
+  GetRailCamPos, GetNearSection, get_near_point_sub, GetNearPoint. Not
+  built for the PS2; check.py: CameraAreaCheck, GetPanTarget,
+  GetRailTarget and nlCalcPoint already match, GetRailCamPos 1/33,
+  default_area_data 7/117, SetAreaData 12/71 off, the rest further.
+- Controls as on the PS2 (read from cam_sub_std): d-pad left/right turn
+  the camera, d-pad up/down zoom (4 levels), L1 puts it behind the hunter.
+  When the eye-to-target line crosses a wall (GetWallHitLine) the camera
+  goes back behind the hunter every tick, so it cannot be turned there
+  (the st04 start spot has a wall right behind the camera).
+- Verified 5 Oct 2026 (build/show/A/cam/): st04 idle (gc_idle.png, behind
+  the hunter, waterfalls ahead); run left, camera follows round the camp
+  (gc_run_left.png); after moving off the wall, d-pad left 40 ticks turns
+  the camera to the hunter's front (gc_turn_dleft.png); d-pad up zooms in
+  (gc_zoom_dup.png); stage 20 (indoor, fov 1.15 from its camera file) and
+  stage 5 (jungle) follow without clipping into walls (gc_st20.png,
+  gc_st05.png). `RT_CAM_TRACE=1` prints per tick the slot, area, zoom,
+  buttons, wanted/current yaw, wall flag and the view.
+- Not ported: k_HitEmCamera finds no monster body parts (hit_data_expand
+  stub), Game_clear_ck (quest end camera), cockpit chat. Rail / fixed
+  stage cameras (area types 1-3) run the near-match cam_sub_stg but were
+  not seen in the tested spots.
+- x86 hazard found: a callee returning float that a caller declares void
+  (k_HitWallCamera in cam_nm.c) leaves a value on the x87 stack; after
+  eight calls the FPU stack overflows. Such declarations must match.
+
+### Sound
+
+docs/formats/audio.md has the formats and the game's sound calls;
+`tools/snd_dump.py` decodes packs and ADX to .wav (build/audio/).
+- src/pc/rt/rt_snd.c: se_req / se_req2 / Pl_se_req2 / Em_se_req2 /
+  Pl_se_req2_com and flSndRequest / flSndChange written from the asm
+  (distance volume curves, screen pan, random volume/pitch, chained
+  codes); host code then does the IOP driver's part (TSBD program + id,
+  note -> split -> sample -> VAG, decoded once, played on a mixer voice).
+  str_* (ADX streams from AFS00 into mixer streams, fades and str_volume's
+  dB table) are host versions of main 0x100910-0x100E18.
+- rt_snd_stage loads the ports as game12 does (common00/01, the map pack,
+  player 0's weapon + voice, em_blank + snd_em01) and starts the stage
+  stream like stage_bgm_set: st04 plays the camp theme S_M6CAMP (its
+  stage_bgm_etc_tbl entry, first entry into the stage), other stages
+  Snd_bgm_tbl[stage] (ambience such as M6_MORI1, M2_KAZE1).
+  `RT_SND_AMBIENT=1` skips the first-entry theme; `RT_SND_MAP=n` forces the
+  map pack.
+- stage_se_move (from f_stage_nm.c) runs every tick: river / waterfall
+  loops on stages 1, 3, 0x1A, 0x30, 0x34, 0x36, 0x3E.
+- Footsteps: the host player stand-in calls rt_snd_player_motion before
+  frame_move: the run loop's entries of the player's per-motion sound
+  list (ef_move_sub, main 0x24A790: ashi_sd_req kind 2 at frames 8, 30,
+  54), with the ground material the game's collision wrote to pl+0x70D.
+  The Rathian's walk (1003) plays em01's list entries (code 1 at frames 52,
+  116) from rt_snd_monster_motion, at the monster's position (no joints).
+- `RT_SND_TRACE=1` prints each pack loaded, stream started and sound
+  played (port, code, program, note, VAG, volume, pan).
+- Verified 5 Oct 2026 (offscreen, `--audio-dump`, nobody listened):
+  st04 idle 4 s: the dump equals the Python ADX decode of S_M6CAMP
+  sample for sample from 1 s to 4 s (after the 0.5 s fade-in); `--input
+  "idle*10,left*110"`: footsteps at ticks 24, 46, 70, 95, 119 (22-25
+  ticks apart = the 8/30/54 frames of the 78-frame run loop), programs 3
+  then 1 as the hunter crosses from one ground material to another;
+  stage 3: waterfall (code 0x22, 3.7 s loop) and river (0x21) start on
+  tick 4 and keep playing; stage 0x21: Rathian steps every 64 ticks. The
+  SDL device path was checked with a test program (a 1 s tone is consumed
+  in real time).
+- Not done: attack / weapon / voice sounds (the player has no actions
+  yet), other monsters' and motions' lists, joint positions for sound
+  sources, reverb, ADSR envelopes, the quest BGM changes (fight,
+  clear), menus.
 
 ### Stage drawing (trans_stage)
 
@@ -307,10 +451,10 @@ enemy_trans (0x168B10), prims (ported), effects/shells (ported).
 | player states (walk, run, roll, weapon, items) | main 0x134000-0x15B000, 453 functions, 157 KB | ~10 % matched (pl0x.c, pl_normal*, pl_damage); the big weapon state machines are asm |
 | motion system | main f_frame 0x125340-0x1267BC (18 functions) + fl motion layer 0x173A50-0x1746A0 | f_frame: 16/18 match, all 18 run on the PC (f_frame_nm.c); fl layer native in rt_motion.c |
 | player/monster drawing | player_trans, enemy_trans, 45 functions | ~3 %; the viewer's hunter_pose / fl_model_pose do the same job natively |
-| collision | GetGroundHit, wall hits (main 0x111000-0x125000) | ~8 %; host HITS reader exists (fmt_hits_ground_y), wall test missing |
+| collision | GetGroundHit, wall hits (main 0x111000-0x125000) | f_sphr all in C (agent D, near-matches); runs on the PC for the hunter and the Rathian (see "Collision") |
 | monster common (em_core, em_master, em_taisei) | game 0x533980-0x53A000 | ~65 % matched + near-matches |
 | Rathian/other monster AI | game em01.. (363 functions, 150 KB) | ~13 % matched; em01.c (Rathian action setters) partly |
-| camera | cam_t.c (main f_cam) | written, not built for the PS2 (near-match); could run on the PC as is |
+| camera | main f_cam, f_cam_223B50 (agent D), g_SetAreaData (camarea_nm.c) | runs on the PC in --play (see "Camera") |
 
 Done (agent A, 5 Oct 2026): steps 1 and 2 below, and a host stand-in for
 step 3 (rt_player.c) so the hunter runs and turns with the pad.
@@ -369,8 +513,9 @@ would be the shortcut if steps 3 and 5 turn out too slow.
   as in frame_init: bank = (id % 1000) / 100, slot = id % 100.
   - The hunter plays plcom ids 1 (legs, char0) and 101 (upper body, char1).
   - The Rathian plays slot 3 in banks 0/2/4 (body, head, tail).
-- **Placement:** each actor is posed at frame 0, then moved so its lowest
-  vertex sits on the ground height from `lg004.bin`.
+- **Placement:** each actor is posed at frame 0; its lowest vertex gives
+  the offset from the game position (on the ground, GetGroundHit) to the
+  model origin.
 
 ## Known gaps
 

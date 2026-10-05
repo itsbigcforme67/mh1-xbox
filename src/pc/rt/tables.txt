@@ -330,7 +330,7 @@ uv78_00646630
 uv78_00647180
 enemy_shadow_size
 enemy_mahi_size
-# trans_stage (src/main/stage/trans_stage_nm.c)
+# trans_stage (src/main/stage/trans_stage.c)
 st00_pos_tbl
 set04_pos_tbl
 set05_pos_tbl1
@@ -366,3 +366,66 @@ Plan_pow work
 swset_w work
 for_pad_timer_tbl
 em_parts_num
+# stage collision (src/main/hit/shit*.c, rt_hit.c)
+diorama_w work
+hit_decision work
+hit_hosei_base work
+hit_near_point work
+hit_kouten work
+hit_side work
+hit_area_out work
+hit_poly_num work
+hited_poly_num work
+hit_wall work
+hited_wall_no work
+pl_wall_mat work
+sys_old_mat work
+sys_old_pos work
+push00
+slide_tbl
+ground_tbl_add
+wall_tbl_add
+lit_180_002E85D0
+lit_425_002E85F0
+lit_638_002E8610
+stage_hit_data_w
+stage_hit_data_f
+St_data
+em_hit_push_tbl
+# game camera (src/main/cam, rt_cam.c)
+CameraWork work
+SplineRvalue work
+cam_init_sub_jmp
+cam_sub_jmp
+cam_cnf_chs
+stage_camera_data_ex
+stage_camera_data_tbl
+camera_data_tbl
+quake_time_tbl
+fishcam_ofs_tbl
+Demo_cam_tbl
+pch_pos
+push01
+dka_init_tbl
+dka_j_tbl
+quest_clear_camera_tbl
+em_body_tbl
+# sound (rt_snd.c)
+vol_tbl
+vol_dist_tbl
+se_cnfvol_tbl
+adx_vol_tbl
+adx_cnfvol_tbl
+Snd_bgm_tbl
+Snd_steft_tbl
+Snd_weapon_tbl
+Snd_em_id_file_conv_tbl
+stage_bgm_etc_tbl
+st01_se_pos
+st03_se_pos
+st03_se_pos2
+st26_se_pos
+st48_se_pos
+st52_se_pos
+st54_se_pos
+st62_se_pos

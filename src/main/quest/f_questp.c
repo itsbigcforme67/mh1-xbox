@@ -166,6 +166,20 @@ typedef struct REMI {
     u16 num;            /* 0x04 count */
 } REMI;
 
+int quest_item_ck3(unused, p)
+int unused;
+s16 *p;
+{
+    u16 id;
+    s16 num;
+
+    p++;
+    id = *p;
+    p++;
+    num = *p;
+    return (s16)Pl_item_num_ck(&player_work[game_w.master], id, id) >= num;
+}
+
 int quest_share_item_ck(q)
 QUEST_W *q;
 {
@@ -201,6 +215,65 @@ int kind;
     for (i = 0; i < 2; i++) {
         if (q->x2C[i] == (kind & 0xFF)) {
             return q->x30[i];
+        }
+    }
+    return 0;
+}
+
+int quest_enemy_ck_sub(q, kind)
+QUEST_W *q;
+int kind;
+{
+    int i;
+    s16 t;
+    s16 v;
+
+    for (i = 0; i < 2; i++) {
+        v = q->x2C[i];
+        switch (v) {
+        case 0x63:
+            t = q->x30[i] - 1;
+            q->x30[i] = t;
+            if (t <= 0) {
+                q->x2C[i] = 0;
+                return 1;
+            }
+            break;
+        default:
+            if (v == (kind & 0xFF)) {
+                t = q->x30[i] - 1;
+                q->x30[i] = t;
+                if (t <= 0) {
+                    q->x2C[i] = 0;
+                    return 1;
+                }
+            }
+            break;
+        }
+    }
+    return 0;
+}
+
+int quest_enemy_ck_sub2(q, kind)
+QUEST_W *q;
+int kind;
+{
+    int i;
+    s16 v;
+
+    for (i = 0; i < 2; i++) {
+        v = q->x2C[i];
+        switch (v) {
+        case 0x63:
+            if (q->x30[i] < 2) {
+                return 1;
+            }
+            break;
+        default:
+            if (v == (kind & 0xFF) && q->x30[i] < 2) {
+                return 1;
+            }
+            break;
         }
     }
     return 0;

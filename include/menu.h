@@ -101,14 +101,24 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     u8 _pad8E[0x90 - 0x8E];
 } PIT_W;
 
+/* One chat log entry (PitMenu.log[64], 0x5D bytes; f_chat). */
+typedef struct PIT_CHAT {
+    char text[2][0x1F]; /* 0x00 message split into two display lines */
+    u8 nline;           /* 0x3E number of display lines used */
+    u8 who;             /* 0x3F player number (0xFF: plaza) */
+    u8 col[4];          /* 0x40 colours */
+    char uid[8];        /* 0x44 user id */
+    char name[0x11];    /* 0x4C handle */
+} PIT_CHAT;
+
 typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
     s32 x00;            /* 0x00 */
-    u8 _pad04[2];
+    s16 x04;            /* 0x04 (f_chat NPC_Message char count) */
     s8 x06;             /* 0x06 */
-    u8 _pad07;
+    s8 x07;             /* 0x07 (f_chat) */
     s32 x08;            /* 0x08 */
     s16 x0C;            /* 0x0C */
-    u8 _pad0E;
+    s8 x0E;             /* 0x0E (f_chat) */
     s8 x0F;             /* 0x0F */
     u8 x10;             /* 0x10 */
     u8 x11;             /* 0x11 */
@@ -118,11 +128,18 @@ typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
     u8 x16;             /* 0x16 */
     s8 x17;             /* 0x17 */
     s8 x18;             /* 0x18 */
-    u8 _pad19[2];
-    u8 x1B;             /* 0x1B */
+    u8 x19;             /* 0x19 (f_chat) */
+    u8 _pad1A;
+    s8 x1B;             /* 0x1B (s8: lb in Pit_disp_chat_cnfg) */
     u8 _pad1C;
     u8 open;            /* 0x1D non-zero while the menu is open (Cockpit_menu_chk) */
-    u8 _pad1E[0x1764 - 0x1E];
+    u8 logtop;          /* 0x1E chat log write index (f_chat) */
+    u8 lognum;          /* 0x1F chat log entries used */
+    u8 logscr;          /* 0x20 chat log scroll */
+    u8 x21;             /* 0x21 */
+    u8 x22;             /* 0x22 chat log arrow flags (f_chat) */
+    PIT_CHAT log[64];   /* 0x23 */
+    u8 _pad1763;
 } PIT_MENU;
 
 typedef struct PIT_PRIM {           /* pit_prim: three display layers */

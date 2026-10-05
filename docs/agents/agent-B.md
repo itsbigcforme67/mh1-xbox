@@ -168,3 +168,63 @@ Lessons:
 - check.py compares plain static names against the first matching address of any file: give statics their address suffix before trusting "OK" (em33 had hidden mismatches).
 - em09 (f_em_5A81B0): src/game/em/em09.c WIP, not registered; first 7 functions done except em09_act_set (same unfolded-pointer-copy problem as em04_act_set), em09_status_ck/em09_dir_calc 2-8 instrs off (signed/unsigned compare forms).
 - em04 near-matches left: act_set, ef_move_sub. em10_turn_sub still parked.
+
+# Fifth round (policy: breadth first, park after ~10 min)
+## em09 (f_em_5A81B0, 0x5A81B0-0x5ACC60, item thief, 52 functions): 47 match
+em09.c (oikake_ck), em09b.c (next_act_set), em09c.c (item_theft ... ef_move_sub, 0x5A8540-0x5AC938, rodata
+0x686B60-0x686C40), em09d.c (local_init, dummy). em09_nm.c = whole file. Rebuild OK.
+Near-matches (stay asm): em09_act_set (same unfolded pointer copy as em04_act_set), em09_status_ck (6 instrs,
+sltiu vs slti/andi on `(u8)(mode-4) < 3`), em09_dir_calc (4 instrs, register of the second temporary),
+em09_effect_move (5 instrs, `mode == 4 || mode == 5` layout; `switch (mode) { case 5: case 4: ...}` is closest),
+em09_material_sub (loop/pointer layout, ~90 instrs).
+Lessons (each confirmed by a match):
+- `a = b = x` stores b first: `em->ang[1] = ang[1] = expr;` fixed the store order (em09 dm01/die00).
+- check.py prints "original calls em_act00" for address-suffixed statics (name noise only); only rebuild.sh
+  tells. Statics that the asm of unmatched functions or other runs call must be global (ef_move_sub_005AB750).
+- Per-case constant tests with `||` chains that come out as separate beq's need `switch (i) { case 2: case 3: ...}`
+  (ladder = reverse source order).
+- `if (r != -1) { B } else { A }` gives the layout `beq r,-1 -> A; B; b end; A:` (em12 mov01 case 1/3).
+- `(f32)(u32)u8` gives the bltz unsigned fix-up (em12_init); `(u16)(u32)(f / 66.0f)` the 0x4F000000 test.
+- calc_vec_ang(f32,f32,f32,f32) takes (x1, z1, x2, z2); its result needs `(u16)` then `+ 0x4000` then `(u16)`.
+- A static empty function called only from one place stays a real `j` call only if it is global (em12 move02).
+- Em_Yobi_Ck result: `int yobi = (u8)Em_Yobi_Ck(...)` gives andi then a direct test (em09_main).
+- struct fields addressed as `w->yobi` (array member) are recomputed from w each time, a cast `(f32 *)((u8 *)w + 0x24)`
+  is CSE'd into a saved register (em12_main).
+
+## em12 (f_em_5AF530, 0x5AF530-0x5B5290, 66 functions): 64 match
+em12.c (0x5AF530-0x5B06E0), em12b.c (0x5B0AE0-0x5B3A44), em12c.c (0x5B40D0-0x5B5248); rodata 0x6882E0-0x688318,
+0x688340-0x6883CC, 0x688410-0x688430. em12_nm.c = whole file. Rebuild OK.
+Near-matches (stay asm): em_mov01_005B06E0 (the first angle test `(u16)(horm_ang - ang[1]) < 0x3000` is in v0 with an
+unfilled delay slot in the original; mine uses v1 and fills it; locals/casts/expression forms tried) and em12_main
+(registers: the original keeps hit/idle/revived/boss_hit in s7/s6/s5/s0 and reads em_boss_tbl once into v0;
+all 720 orders of the flag declarations tried with declbf, best 316 instrs off; logic complete).
+Shared header edits: em.h x7A0 (struct PLW *), x94E (s16), x944 (struct EMW *).
+
+## em27 (f_em_60D440, 0x60D440-0x6139D0, monsters 27/28/31, 70 functions): 68 match
+em27a.c (0x60D440-0x612B94, rodata 0x689980-0x689B40), em27b.c (0x612DA0-0x613958, rodata 0x689B40-0x689C14),
+em27c.c (dummy). em27_nm.c = whole file. Rebuild OK. The action setters/fly_adjy2 are in the older em27.c.
+Near-matches (stay asm): em27_uvmove (0x612BA0: the original walks two induction pointers rooted at em with
+constant 0x5F0/0x5C0 offsets; every form tried keeps the offsets folded into the pointers, 61 instrs off) and
+em27_effect_move (7 instrs: eff in a2/v1 instead of v1/v0 around the trailing em27_uvmove call).
+Lessons:
+- `if (u8var != 0 && ...)` adds an andi, `if (u8var && ...)` does not (em27 atk02, `daddiu s0,zero,1` for u8).
+- `if (a >= 2)` on a u16 result gives slti v1; `if (a > 1)` gives the original `slti at` (em27 act01).
+- A `for`-less per-slot loop that touches the same field twice wants separate stores per branch (mv00: each
+  branch stores ang[1] itself, a merged `v` variable adds a store).
+- `(u16)x < 0x8001` must be `(u32)(u16)x < 0x8001` for sltu (em12 act02).
+- Dispatchers that pass `w` along (jal without touching a1) are written `(EMW *em, EMW_W *w)` and call
+  `em_actNN(em, w)`; the acts take (em, w) too, even when unused.
+- Sparse empty `case`s listed first (`case 0: case 3: ... break;`) force the jump table the original has
+  (em27_main Em_Dmg_Sys).
+- Writing `x05++; x388 = 0; em_char_set(...)` (both stores before the call) puts the second store in the delay slot.
+- check.py "move0x" noise: do not grep it away, one real diff hid there (em27 move06 is a one-case switch).
+
+## em16 (f_em_5D0600, 0x5D0600-0x5D8198, monsters 16/13/30, 81 functions): 79 match
+Sibling of em27 (same templates; em16_nm.c was written from em27_nm.c). em16a.c (0x5D0600-0x5D7404, rodata
+0x688940-0x688B50), em16b.c (0x5D7610-0x5D8130, rodata 0x688B50-0x688C24), em16c.c (dummy). em16_nm.c = whole file.
+Rebuild OK. Near-matches (stay asm): em16_uvmove and em16_effect_move (same two as em27, same diffs).
+Lessons: a `u16 d` local is re-masked at every use (andi), an `int d` is not (em16 demo00); small tables
+(`u16 st51_ang_tbl[3]`) need their size for gp-relative access (die04); K&R `void f(em) EMW *em; {}` lets callers pass
+extra zero args (em16_to_normal(em, 0, 0)); `case 4: ... /* fallthrough */ case 3:` with the jump table sending 3 into the
+middle of 4's code (demo00).
+Shared header edit: em.h x95B (u8, boss flag).

@@ -13,6 +13,7 @@
 #include "fl/fl.h"
 #include "rt/rt.h"
 #include "pad/pad.h"
+#include "audio/audio.h"
 
 #include <SDL.h>
 #include <stdio.h>
@@ -108,10 +109,12 @@ static void load_eft_models(void)
     }
 }
 
-static fmt_blob ground_hit;
-static int ground_y(float x, float z, float ymax, float *y)
+/* load_file_mdl for the game C: AFS entry by index, Meltw-decompressed */
+static uint8_t *afs_entry(int idx, size_t *n)
 {
-    return fmt_hits_ground_y(ground_hit, x, z, ymax, y, FMT_LE);
+    if (idx < 0 || (uint32_t)idx >= afs.count)
+        return NULL;
+    return fmt_afs_load(&afs, afs.name[idx], n);
 }
 
 static uint32_t crc_table[256];
@@ -347,6 +350,24 @@ static void place(flmat w, float x, float y, float z, float yaw)
 }
 
 /* ------------------------------------------------------------ main */
+/* 48 kHz stereo s16 wav (--audio-dump) */
+static void write_wav(const char *path, const int16_t *pcm, size_t frames)
+{
+    FILE *f = fopen(path, "wb");
+    uint32_t data = (uint32_t)(frames * 4), v;
+    uint16_t h;
+    if (!f)
+        return;
+    fwrite("RIFF", 1, 4, f); v = 36 + data; fwrite(&v, 4, 1, f);
+    fwrite("WAVEfmt ", 1, 8, f); v = 16; fwrite(&v, 4, 1, f);
+    h = 1; fwrite(&h, 2, 1, f); h = 2; fwrite(&h, 2, 1, f);
+    v = 48000; fwrite(&v, 4, 1, f); v = 48000 * 4; fwrite(&v, 4, 1, f);
+    h = 4; fwrite(&h, 2, 1, f); h = 16; fwrite(&h, 2, 1, f);
+    fwrite("data", 1, 4, f); fwrite(&data, 4, 1, f);
+    fwrite(pcm, 4, frames, f);
+    fclose(f);
+}
+
 int main(int argc, char **argv)
 {
     const char *disc = NULL, *shot = NULL;
@@ -355,7 +376,7 @@ int main(int argc, char **argv)
     float fixed_time = -1;
     char path[1024];
     size_t n;
-    fmt_blob stage_link, stage_tex, set_link, set_tex, hit;
+    fmt_blob stage_link, stage_tex, set_link, set_tex;
     uint8_t *keep[8];
     fl_model stage, set;
     monster rathian;
@@ -365,6 +386,14 @@ int main(int argc, char **argv)
     float hx = 10900, hz = 7700, rx = 10000, rz = 6700, gy;
     Uint32 t0;
     int set_h0 = -1, ticks = 0, stage_no = 4, cam_given = 0;
+    float follow[3] = { 900.0f, 450.0f, -0.3f };
+    float rathian_yoff = 0;
+    int follow_given = 0, game_cam = 0, have_view = 0;
+    const char *audio_dump = NULL;      /* --audio-dump out.wav: mix each game tick into a wav */
+    int mute = 0, snd = -1;
+    int16_t *dump_pcm = NULL;
+    size_t dump_n = 0, dump_cap = 0;   /* game_cam: the game's CameraMove drives the view */
+    float gc_eye[3] = { 0 }, gc_tar[3] = { 0 }, gc_roll = 0, gc_fov = 1.0f;   /* --play camera: distance, height, pitch */
     int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter */
     const char *script = NULL;
     float hunter_yoff = 0;
@@ -380,6 +409,10 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--play")) play = 1;
         else if (!strcmp(argv[i], "--input") && i + 1 < argc) { script = argv[++i]; play = 1; }
         else if (!strcmp(argv[i], "--sw-trace")) sw_trace = 1;
+        else if (!strcmp(argv[i], "--audio-dump") && i + 1 < argc) audio_dump = argv[++i];
+        else if (!strcmp(argv[i], "--mute")) mute = 1;
+        else if (!strcmp(argv[i], "--follow") && i + 1 < argc)
+            follow_given = sscanf(argv[++i], "%f,%f,%f", &follow[0], &follow[1], &follow[2]) > 0;
         else if (argv[i][0] != '-') disc = argv[i];
     }
     if (!disc) {
@@ -416,7 +449,10 @@ int main(int argc, char **argv)
     stage_tex = load_stage_file(0x2EDB40, stage_no, &keep[1]);    /* STAGE_TEX */
     set_link = load_stage_file(0x2ECD70, stage_no, &keep[2]);     /* set_model_data */
     set_tex = load_stage_file(0x2EF130, stage_no, &keep[3]);      /* SET_TEX */
-    hit = load_stage_file(0x2ECAB0, stage_no, &keep[4]);          /* stage_hit_data_f */
+    /* collision: the game's load_stage_hit (wall + ground HITS files) */
+    rt_set_file_loader(afs_entry);
+    if (rt_load_stage_hit(stage_no) != 0)
+        fprintf(stderr, "stage %d: no ground collision\n", stage_no);
     if (stage_no != 4) {
         /* no hand-picked spots: the hunter at the stage's start position
          * (stage_start_pos, main 0x2F2620, also used by set09/em19), else
@@ -427,7 +463,7 @@ int main(int argc, char **argv)
         if (sx == 0.0f && sz == 0.0f) {
             for (x = -30000; x <= 30000; x += 500)
                 for (z = -30000; z <= 30000; z += 500)
-                    if (fmt_hits_ground_y(hit, x, z, 1e6f, &y, FMT_LE)) {
+                    if (rt_ground_y(x, z, 1e6f, &y)) {
                         sx += x;
                         sz += z;
                         cnt++;
@@ -443,7 +479,7 @@ int main(int argc, char **argv)
         rz = sz - 1000;
         if (!cam_given) {
             y = 0;
-            fmt_hits_ground_y(hit, sx, sz + 2500, 1e6f, &y, FMT_LE);
+            rt_ground_y(sx, sz + 2500, 1e6f, &y);
             cam[0] = sx;
             cam[1] = y + 600;
             cam[2] = sz + 2500;
@@ -481,9 +517,9 @@ int main(int argc, char **argv)
         set_h0 = rt_bind_set_model(c, at, nc);
     }
     load_eft_models();
-    ground_hit = hit;
-    rt_set_ground(ground_y);
     rt_game_init(stage_no);
+    if (!mute)
+        snd = rt_snd_init(disc, audio_dump == NULL && shot == NULL);
 
     if (monster_load(&rathian, "em01_amh.bin", "em01_tex.bin", "em01_tbl.bin", 3) != 0)
         fprintf(stderr, "em01 load failed\n");
@@ -517,8 +553,17 @@ int main(int argc, char **argv)
     fl_skel_update(&rathian.skel, 0);
     fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
     gy = 0;
-    fmt_hits_ground_y(hit, rx, rz, 1e6f, &gy, FMT_LE);
+    rt_ground_y(rx, rz, 1e6f, &gy);
     place(rathian.world, rx, gy - min_y_of(&rathian.model), rz, 0.6f);
+    rathian_yoff = -min_y_of(&rathian.model);
+    if (rathian.game && !getenv("RT_EM_FIXED")) {
+        /* em_work[0] on the stage: the game moves it by its root motion
+         * (walk loop 1003) and em_move's wall/ground collision keeps it on
+         * the ground and inside the walls */
+        float p[3] = { rx, gy, rz };
+        rt_monster_place(0, 1, p, (int)(0.6f * 65536.0f / 6.2831853f));
+        rathian.skel.root_lock = 1;
+    }
     hunter_pose(&pl, 0, &light);
     {
         float lo = 1e30f;
@@ -529,7 +574,7 @@ int main(int argc, char **argv)
                 lo = y;
         }
         gy = 0;
-        fmt_hits_ground_y(hit, hx, hz, 1e6f, &gy, FMT_LE);
+        rt_ground_y(hx, hz, 1e6f, &gy);
         place(pl.world, hx, gy - lo, hz, 2.6f);
         {   /* the hunter is the master player (player_work[0]) for the game C */
             float p[3] = { hx, gy, hz };
@@ -542,9 +587,17 @@ int main(int argc, char **argv)
                 rt_player_set_ang(0, (int)(2.6f * 65536.0f / 6.2831853f));
             }
             hunter_yoff = -lo;
+            if (play && pl.game && !follow_given && !getenv("RT_HOST_CAM")) {
+                rt_cam_init(stage_no);  /* the game camera follows player_work[0] */
+                game_cam = 1;
+            }
         }
     }
 
+    if (snd == 0) {                     /* packs + stage stream; the Rathian (kind 1) is the stage's monster */
+        static const int em_kinds[1] = { 1 };
+        rt_snd_stage(stage_no, em_kinds, 1);
+    }
     if (!shot)
         SDL_SetRelativeMouseMode(SDL_TRUE);
     t0 = SDL_GetTicks();
@@ -566,7 +619,31 @@ int main(int argc, char **argv)
                 if (cam[4] < -1.5f) cam[4] = -1.5f;
             }
         }
-        {   /* camera: rotate pitch then yaw, looking down -Z like GL */
+        if (game_cam && have_view) {    /* look-at from the game camera's eye/target (roll ignored) */
+            float b[3], r[3], u[3], len;
+            int k;
+            for (k = 0; k < 3; k++)
+                b[k] = gc_eye[k] - gc_tar[k];
+            len = sqrtf(b[0] * b[0] + b[1] * b[1] + b[2] * b[2]);
+            if (len < 1e-3f) { b[0] = 0; b[1] = 0; b[2] = 1; len = 1; }
+            for (k = 0; k < 3; k++)
+                b[k] /= len;
+            r[0] = b[2]; r[1] = 0; r[2] = -b[0];          /* up (0,1,0) x back */
+            len = sqrtf(r[0] * r[0] + r[2] * r[2]);
+            if (len < 1e-3f) { r[0] = 1; r[2] = 0; len = 1; }
+            r[0] /= len; r[2] /= len;
+            u[0] = b[1] * r[2] - b[2] * r[1];               /* back x right */
+            u[1] = b[2] * r[0] - b[0] * r[2];
+            u[2] = b[0] * r[1] - b[1] * r[0];
+            memset(camw, 0, sizeof(flmat));
+            for (k = 0; k < 3; k++) {
+                camw[k] = r[k];
+                camw[4 + k] = u[k];
+                camw[8 + k] = b[k];
+                camw[12 + k] = gc_eye[k];
+            }
+            camw[15] = 1;
+        } else {   /* camera: rotate pitch then yaw, looking down -Z like GL */
             float s[3] = { 1, 1, 1 }, r[3], tr[3];
             r[0] = cam[4]; r[1] = cam[3]; r[2] = 0;
             tr[0] = cam[0]; tr[1] = cam[1]; tr[2] = cam[2];
@@ -584,7 +661,8 @@ int main(int argc, char **argv)
         }
         flmat_invert_affine(view, camw);
         rt_set_camera(camw);            /* rview_mat / rview_matY for game billboards */
-        flmat_perspective(proj, 1.0f, (float)W / H, 10.0f, 80000.0f);
+        /* the game's angle of view taken as the vertical fov [guess] */
+        flmat_perspective(proj, game_cam && have_view ? gc_fov : 1.0f, (float)W / H, 10.0f, 80000.0f);
 
         /* game logic ticks at 30 per second (at least 2, so set objects
          * have run their init and queued their prims) */
@@ -598,6 +676,8 @@ int main(int argc, char **argv)
                     pad_read(&ps, 1);
                 rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
                 rt_player_tick(0);
+                if (game_cam)
+                    rt_cam_tick();      /* CameraMove (src/main/cam) */
                 /* right stick turns the follow camera */
                 cam[3] -= ps.rx * (0.04f / 127.0f);
                 if (sw_trace) {
@@ -612,19 +692,49 @@ int main(int argc, char **argv)
             } else if (pl.game) {
                 rt_player_motion_tick(0);
             }
-            if (rathian.game && ticks >= 2)
+            if (rathian.game && ticks >= 2) {
                 rt_monster_motion_tick(0);
+                if (sw_trace && rathian.skel.root_lock) {
+                    float p[3];
+                    int a;
+                    rt_monster_get(0, p, &a);
+                    printf("tick %d: em0 pos %.0f %.0f %.0f ang %04X\n", ticks, p[0], p[1], p[2], a & 0xFFFF);
+                }
+            }
+            if (snd == 0) {
+                rt_snd_tick();
+                if (audio_dump) {           /* 1/30 s of mixer output per tick */
+                    if (dump_n + 1600 * 2 > dump_cap) {
+                        dump_cap = dump_cap ? dump_cap * 2 : 1 << 20;
+                        dump_pcm = realloc(dump_pcm, dump_cap * sizeof *dump_pcm);
+                    }
+                    audio_mix(dump_pcm + dump_n, 1600);
+                    dump_n += 1600 * 2;
+                }
+            }
             ticks++;
+        }
+        if (game_cam) {
+            rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
+            have_view = 1;
         }
         if (pl.game && play) {          /* hunter from player_work[0]; camera follows */
             float p[3];
             int a;
             rt_player_get(0, p, &a);
             place(pl.world, p[0], p[1] + hunter_yoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
-            cam[0] = p[0] + sinf(cam[3]) * 900.0f;
-            cam[1] = p[1] + 450.0f;
-            cam[2] = p[2] + cosf(cam[3]) * 900.0f;
-            cam[4] = -0.3f;
+            if (!game_cam) {
+            cam[0] = p[0] + sinf(cam[3]) * follow[0];
+            cam[1] = p[1] + follow[1];
+            cam[2] = p[2] + cosf(cam[3]) * follow[0];
+            cam[4] = follow[2];
+            }
+        }
+        if (rathian.game && rathian.skel.root_lock) {   /* drawn where the game has it */
+            float p[3];
+            int a;
+            rt_monster_get(0, p, &a);
+            place(rathian.world, p[0], p[1] + rathian_yoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
         }
         if (rathian.game)
             rt_monster_pose(0, &rathian.skel);
@@ -667,6 +777,12 @@ int main(int argc, char **argv)
         gfx_end_frame();
     }
     (void)n;
+    if (audio_dump && dump_pcm) {
+        write_wav(audio_dump, dump_pcm, dump_n / 2);
+        printf("wrote %s (%.2fs)\n", audio_dump, dump_n / 2 / 48000.0);
+    }
+    if (snd == 0)
+        rt_snd_shutdown();
     gfx_shutdown();
     fmt_afs_close(&afs);
     return 0;

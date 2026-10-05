@@ -1,0 +1,187 @@
+/*
+ * rt_cam.c - what the game camera C (src/main/cam/: CameraMove and the
+ * std / stage / demo cameras, agent D; camarea_nm.c camera areas) needs
+ * from the PS2 side, and the host entry points rt_cam_init / rt_cam_tick.
+ *
+ * Written from the asm: LoadCameraData (0x11F1E0), RollView /
+ * SetAngleOfView (0x169DA0, lpView +0x34 / +0x2C), cpInterVector
+ * (0x120E30), SubVector (0x120860), AarcTan2 (0x120E80), Pl_scope_ck
+ * (0x154D00), Pl_bari_ck (0x14FC40), flPow (powf), flMemset.
+ * View_move (0x169A80) is replaced by the host: it reads lpView (eye,
+ * target, roll, fov) and builds its own camera from it (rt_cam_view).
+ * Not ported (stubs, see each): Game_clear_ck (quest-clear states),
+ * Cockpit_chat_chk (online chat menu), hit_data_expand / body_ptr_ck2
+ * (monster body capsules: k_HitEmCamera finds no monster parts yet).
+ */
+#include "rt.h"
+#include "types.h"
+#include "game.h"
+#include "pl.h"
+#include "cam.h"
+
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* ------------------------------------------------------------ data */
+/* cam_data_area (0x38A204): where LoadCameraData puts the stage camera
+ * file (or default_area_data builds its one area). */
+#define CAM_AREA_SIZE (1u << 20)
+u8 *cam_data_area;
+
+/* lpView (0x38A110): the view the camera writes: eye 0x00, target 0x0C,
+ * up 0x18, fov 0x2C (last fov 0x30), roll 0x34. */
+static f32 view[16];
+f32 *lpView = view;
+
+/* em_body_tbl of lobby.bin (monsters in the lobby, not loaded): none */
+void *D_610370[64];
+
+/* ------------------------------------------------------------ helpers */
+void RollView(f32 r) { lpView[0x34 / 4] = r; }
+void SetAngleOfView(f32 a) { lpView[0x2C / 4] = a; }
+
+/* out = a * t + b * (1 - t) */
+void cpInterVector(f32 *out, f32 *a, f32 *b, f32 t)
+{
+    f32 u = 1.0f - t;
+    out[0] = a[0] * t + b[0] * u;
+    out[1] = a[1] * t + b[1] * u;
+    out[2] = a[2] * t + b[2] * u;
+}
+
+void SubVector(f32 *d, f32 *a, f32 *b)
+{
+    d[0] = a[0] - b[0];
+    d[1] = a[1] - b[1];
+    d[2] = a[2] - b[2];
+}
+
+f32 flArcTan2(f32, f32);
+/* AarcTan2: flArcTan2 in 0x10000-per-turn units (10430.378 = 0x8000/pi) */
+s16 AarcTan2(f32 y, f32 x)
+{
+    return (s16)(s32)(10430.378f * flArcTan2(y, x));
+}
+
+f32 flPow(f32 a, f32 b) { return powf(a, b); }
+void flMemset(void *p, s32 v, s32 n) { memset(p, v, (size_t)n); }
+
+/* Pl_scope_ck: holding a scope (item kind 7 with flag 0x40) */
+s32 Pl_scope_ck(PLW *pl)
+{
+    u8 *p = (u8 *)pl;
+    if (p[0x35F] != 7)
+        return 0;
+    return (*(u16 *)(p + 0x362) & 0x40) != 0;
+}
+
+int act_ck(void *chr, int a, int b);
+/* Pl_bari_ck: in action 0/0x36 or 0/0x48 */
+s32 Pl_bari_ck(PLW *pl)
+{
+    if ((s16)act_ck(pl, 0, 0x36) != 0)
+        return 1;
+    return (s16)act_ck(pl, 0, 0x48) != 0;
+}
+
+/* Game_clear_ck (0x162DB0): only states 3-8 of game_w+0xD5 (quest end)
+ * can give 1; quests do not run on the PC yet, so it is 0 there. */
+s32 Game_clear_ck(s32 a)
+{
+    u8 st = ((u8 *)&game_w)[0xD5];
+    (void)a;
+    if ((u8)(st - 3) < 6) {
+        static int once;
+        if (!once++)
+            fprintf(stderr, "rt: Game_clear_ck state %d not ported (0)\n", st);
+    }
+    return 0;
+}
+
+/* Cockpit_chat_chk (0x275220): the online chat menu is open; never here */
+s32 Cockpit_chat_chk(void) { return 0; }
+
+/* hit_data_expand (0x151A60) / body_ptr_ck2 (0x111D70): a monster's body
+ * capsules for k_HitEmCamera; not ported, so it sees no parts. */
+int hit_data_expand(void *em, void *body, void *cap, void *sph)
+{
+    (void)em; (void)body; (void)cap; (void)sph;
+    return 0;
+}
+void body_ptr_ck2(void *em, void *body) { (void)em; (void)body; }
+
+/* View_move: the host builds its camera from lpView (rt_cam_view). */
+void View_move(void) {}
+
+/* ------------------------------------------------------------ loading */
+extern s32 camera_data_tbl[];
+int load_file_mdl(s32 dst, s32 idx);
+void SetCameraData(void *d);
+
+/* LoadCameraData (0x11F1E0): the stage's camera file (camera_data_tbl,
+ * 0 = none) into cam_data_area and SetCameraData (NULL when none). */
+void LoadCameraData(int stage)
+{
+    s32 idx = camera_data_tbl[stage];
+    void *d = NULL;
+    if (idx != 0) {
+        load_file_mdl((s32)cam_data_area, idx);
+        d = cam_data_area;
+    }
+    SetCameraData(d);
+}
+
+/* ------------------------------------------------------------ host side */
+extern CAMW CameraWork;
+void CameraWorkInit(void);
+void Q_camera_init(void);
+void CameraInit(void);
+void CameraMove(void);
+
+/* Camera for the current stage, following player_work[game_w.master]:
+ * CameraWorkInit, Q_camera_init, LoadCameraData, CameraInit (the order of
+ * the game's stage start is a guess). */
+void rt_cam_init(int stage)
+{
+    if (!cam_data_area && !(cam_data_area = calloc(1, CAM_AREA_SIZE)))
+        return;
+    memset(cam_data_area, 0, CAM_AREA_SIZE);
+    CameraWorkInit();
+    Q_camera_init();
+    LoadCameraData(stage);
+    CameraInit();
+    lpView[0x2C / 4] = lpView[0x30 / 4] = 0.87266463f;
+}
+
+/* One tick of the game camera (CameraMove: pad, area, the five slots,
+ * cam2view -> lpView). */
+void rt_cam_tick(void)
+{
+    static int tr = -1;
+    CameraMove();
+    if (tr < 0)
+        tr = getenv("RT_CAM_TRACE") != NULL;
+    if (tr) {
+        CAMS *cs = &CameraWork.sl[0];
+        CAMD_STD *d = &cs->d.std;
+        fprintf(stderr, "cam: no %d area %p type %d zoom %d sw %04X | std ang %04X want %04X wall %d | eye %.0f %.0f %.0f tar %.0f %.0f %.0f fov %.2f\n",
+                CameraWork.cam_no, (void *)CameraWork.area, CameraWork.area ? CameraWork.area->type : -1,
+                CameraWork.zoom, CameraWork.sw_on, cs->ang & 0xFFFF, d->ang & 0xFFFF, d->wall,
+                lpView[0], lpView[1], lpView[2], lpView[3], lpView[4], lpView[5], lpView[0x2C / 4]);
+    }
+}
+
+/* The view the game camera produced: eye, target, roll and fov
+ * (radians). */
+void rt_cam_view(float eye[3], float tar[3], float *roll, float *fov)
+{
+    int k;
+    for (k = 0; k < 3; k++) {
+        eye[k] = lpView[k];
+        tar[k] = lpView[3 + k];
+    }
+    *roll = lpView[0x34 / 4];
+    *fov = lpView[0x2C / 4];
+}

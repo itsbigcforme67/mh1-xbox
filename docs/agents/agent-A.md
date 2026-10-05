@@ -176,7 +176,7 @@ Done (each step committed; details in docs/pc.md "Port runtime"):
 - Floor holes: the area model is drawn by trans_stage (main 0x15CD90),
   which places/spins/scrolls per-stage parts (st05 parts 2/3 are modelled
   at the origin). C written from an m2c draft + asm in
-  src/main/stage/trans_stage_nm.c (not matched, not in c_files). All 88
+  src/main/stage/trans_stage.c (was trans_stage_nm.c) (not matched, not in c_files). All 88
   stages shot: build/show/A/stages/sheet0/1.png.
 - Plan for player + monster with input: docs/pc.md "Plan".
 Lessons:
@@ -240,3 +240,55 @@ Lessons:
   itself). Viewer fix: hunter.game was uninitialised.
 - trans_stage: not edited in this assignment (coordinator note: agent E
   consolidates src/main/stage/trans_stage_nm.c and f_stage_nm.c).
+
+## Assignment 10: game collision on the PC, em_frame_check (5 Oct 2026)
+- Stage collision C (agent D's src/main/hit/shit*) runs in the PC port:
+  ground, walls (HitWallPlayer -> GetWallHitBitPl/Em -> sphr_face_o3/o4 ->
+  PushAdjust3), floor slide. Details and checks in docs/pc.md "Collision".
+  rt_hit.c holds load_file_mdl / rt_load_stage_hit and helpers written
+  from the asm (NormalClipF3/CheckF3, PointHitCheckF3, UnitNormalVectorCCW,
+  NvecFloatAdjust, cpRotMatrixYXZ2, flConvertRtoS, Stage_data_get).
+- Hunter: pl_move_sub's collision order in rt_player.c. Rathian:
+  em_move's collision tail; em_work[0] placed on the stage and drawn
+  where the game moves it.
+- Bugs found: host PointToPoint had the operands swapped (it is a - b);
+  data-table pointers into PS2 .bss were NULL (now zeroed host memory).
+- em_frame_check: em03.c, em33.c, em04*.c, em04_nm.c, include/em04.h now
+  declare/call (EMW *, int n, f32 frame) like the definition. check.py
+  output unchanged for each file, tools/rebuild.sh all OK.
+- Camera: the game's CameraMove + camera slots run on the PC in --play
+  (docs/pc.md "Camera"). New src/main/cam/camarea_nm.c (main
+  0x222E20-0x223B50, 13 functions, written from the asm, not built for the
+  PS2): check.py OK for CameraAreaCheck, GetPanTarget, GetRailTarget,
+  nlCalcPoint; GetRailCamPos 1/33 off, default_area_data 7/117,
+  SetAreaData 12/71, get_near_point_sub 18/66, GetNearSection 28/67;
+  StageCamInit, Get_cam_grid_XZ, CamAreaAttribChk, Area_XZ_Check,
+  GetNearPoint mostly off (not worked on). cam_nm.c (not built for the
+  PS2) now calls cpInterVector / CamRailPoint in their real argument order.
+- Lesson (x86): float-returning callees declared void leak x87 stack
+  slots; prototypes must match the definition's return type too.
+
+## Assignment 11: audio platform layer (5 Oct 2026)
+Done (each step committed; details docs/formats/audio.md, docs/pc.md "Sound"):
+- Formats: AFS01 "MOMO" packs = SCEI HD + BD (PS2 ADPCM) + Capcom Tseq +
+  TSBD (SE code -> program, note, volume, pan, randomness, chain); AFS00
+  = CRI ADX (48 kHz stereo, loops in the header). BGM id = AFS00 index;
+  load_bin_req 0x10000|n = AFS01 entry n.
+- Key finding: the third argument of se_req/se_req2 is a program offset
+  (Em_se_req2 passes Snd_em_id_conv_tbl[kind] = the snd_emNN program;
+  footsteps pass the ground material pl+0x70D = map program 1..7).
+- tools/snd_dump.py: --list, --pack N [--vags], --adx N, --adx-list
+  (wav to build/audio/).
+- src/pc/audio/ (audio.h, audio_mix.c, audio_sdl.c), src/pc/fmt/snd.c,
+  src/pc/rt/rt_snd.c (se_req*, flSndRequest/Change from the asm; str_*;
+  stage packs + stream; stage_se_move; player run and Rathian walk
+  footsteps). Viewer: --audio-dump, --mute.
+- Removed stubs: se_req2 (rt_game.c), Em_se_req2 (rt_main.c),
+  Pl_se_req2 (rt_eft.c). No include/ headers or PS2-built C touched (the
+  PS2 rebuild is unaffected).
+- Checked by numbers only (cannot listen): C stream == Python decode,
+  footstep timing, loops start/persist, SDL device consumes samples.
+Next ideas: the player's ef_move_sub lists for other motions (needs
+actions), joint positions for em sounds, quest BGM switching (fight /
+clear), TSNDDRV.IRX disassembly to replace the [guess] parts (slot,
+priority, SdrSeChg semantics, pitch bend).
