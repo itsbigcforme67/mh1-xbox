@@ -18,7 +18,7 @@ h = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "include", "p
 lines = open(h).read().split("\n")
 seen, out = set(), []
 for l in lines:
-    if "M2C_UNK" in l or "TODO type" in l or re.match(r"^s64 ", l):
+    if "M2C_UNK" in l or "TODO type" in l or re.match(r"^s64 ", l) or re.match(r"^void pl_\w+\(int\);", l):
         continue
     m = re.match(r"^[A-Za-z_][\w\s\*]*?\b(\w+)\(", l)
     if m and l.rstrip().endswith(");") and not l.startswith("typedef"):
