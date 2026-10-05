@@ -32,11 +32,20 @@ int rt_import_data(void);
 int rt_register_clay(gfx_clay *c);
 /* Point the game's set_mdlw/stage_work.mdl at a CLAY array made of these
  * clays (the stage's set model, e.g. st04_1). Returns the handle of
- * clays[0]; the others follow in order. */
-int rt_bind_set_model(gfx_clay *const *clays, int n);
+ * clays[0]; the others follow in order. attr: CLAY+0x88 word per clay
+ * (rt_clay_attr_word) or NULL. */
+int rt_bind_set_model(gfx_clay *const *clays, const uint32_t *attr, int n);
 /* 1 if game code drew this handle at least once (the host's generic model
  * draw skips such parts so they are not drawn twice). */
 int rt_clay_claimed(int handle);
+
+/* CLAY+0x88 attribute word from an AMO part's 0xF0000 chunk (18 words, as
+ * amo_part.attr; NULL = no chunk -> 0), like Attribute_from_amo. */
+uint32_t rt_clay_attr_word(const int32_t *attr);
+/* The game's clay_attr_set / clay_attr_reset, for host draws: blend mode,
+ * blend operation, filter and clamp of one part. */
+void rt_clay_attr_set(uint32_t attr);
+void rt_clay_attr_reset(void);
 
 /* ------------------------------------------------------------ game loop */
 /* Set up the game globals for a stage and spawn its set objects. */

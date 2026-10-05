@@ -41,6 +41,25 @@ static const uint8_t *elf_addr(uint32_t va)
     return rt_addr(va, 4);
 }
 
+/* CLAY+0x88 word of part k (Attribute_from_amo), 0 if it has no 0xF0000 chunk */
+static uint32_t part_attr(const fl_model *m, int k)
+{
+    const amo_part *p = &m->amo.part[k];
+    return p->has_attr ? rt_clay_attr_word(p->attr) : 0;
+}
+
+/* fl_model_draw with each part's own blend/filter/clamp (clay_attr_set) */
+static void draw_model_attr(fl_model *m, int sky)
+{
+    int i;
+    for (i = 0; i < m->npart; i++)
+        if (sky < 0 || sky == m->part[i].is_sky) {
+            rt_clay_attr_set(part_attr(m, i));
+            gfx_execute_clay(m->part[i].clay);
+            rt_clay_attr_reset();
+        }
+}
+
 static uint32_t crc_table[256];
 
 static uint32_t crc32_update(uint32_t c, const uint8_t *p, size_t n)
@@ -330,10 +349,13 @@ int main(int argc, char **argv)
                         set_tex, 0, FMT_LE);
     if (set.npart) {            /* hand the set model to the game C (set_mdlw) */
         gfx_clay *c[64];
+        uint32_t at[64];
         int k, nc = set.npart < 64 ? set.npart : 64;
-        for (k = 0; k < nc; k++)
+        for (k = 0; k < nc; k++) {
             c[k] = set.part[k].clay;
-        set_h0 = rt_bind_set_model(c, nc);
+            at[k] = part_attr(&set, k);
+        }
+        set_h0 = rt_bind_set_model(c, at, nc);
     }
     rt_game_init(4);
 
@@ -440,24 +462,27 @@ int main(int argc, char **argv)
             flmat_identity(id);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
             gfx_set_render_state(GFX_RS_ZWRITE, 0);       /* sky first, behind everything */
-            fl_model_draw(&stage, 1);
+            draw_model_attr(&stage, 1);
             gfx_set_render_state(GFX_RS_ZWRITE, 1);
-            fl_model_draw(&stage, 0);
+            draw_model_attr(&stage, 0);
             {   /* set-model parts the game C draws itself are skipped here */
                 int k;
                 for (k = 0; k < set.npart; k++)
-                    if (set_h0 < 0 || k >= 64 || !rt_clay_claimed(set_h0 + k))
+                    if (set_h0 < 0 || k >= 64 || !rt_clay_claimed(set_h0 + k)) {
+                        rt_clay_attr_set(part_attr(&set, k));
                         gfx_execute_clay(set.part[k].clay);
+                        rt_clay_attr_reset();
+                    }
             }
         }
         rt_game_draw();                 /* game C prims (set14 waterfalls) */
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)rathian.world);
-        fl_model_draw(&rathian.model, -1);
+        draw_model_attr(&rathian.model, -1);
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)pl.world);
         {
             int s;
             for (s = 0; s < HUNTER_PARTS; s++)
-                fl_model_draw(&pl.part[s], -1);
+                draw_model_attr(&pl.part[s], -1);
         }
 
         frame_no++;

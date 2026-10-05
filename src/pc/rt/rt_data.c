@@ -21,6 +21,10 @@ f32 set14_st42_pos_tbl[4][3];   /* the symbol is 0x24 bytes: only 3 rows are use
 f32 set14_st51_pos_tbl[5][3], set14_st52_pos_tbl[5][3], set14_st53_pos_tbl[5][3];
 f32 uv_pos00_00678370[16][2];
 
+/* main: blend/filter tables (clay_attr_set, SetTrnslMode, ... in rt_fl.c) */
+u32 src_mode_00300620[12], dst_mode_00300650[10], ope_mode_00300678[4], filter_mode_00387900[2];
+u32 aa_alpha_src[10], aa_alpha_ope[4], aa_filt[2], aa_addr[4];
+
 static const struct {
     const char *name;
     uint32_t va;
@@ -28,6 +32,14 @@ static const struct {
     size_t size;
 } tables[] = {
 #define T(sym, va, size) { #sym, va, sym, size }
+    T(src_mode_00300620, 0x300620, 0x30),
+    T(dst_mode_00300650, 0x300650, 0x28),
+    T(ope_mode_00300678, 0x300678, 0x10),
+    T(filter_mode_00387900, 0x387900, 8),
+    T(aa_alpha_src, 0x2EF710, 0x28),
+    T(aa_alpha_ope, 0x2EF738, 0x10),
+    T(aa_filt, 0x3876F8, 8),
+    T(aa_addr, 0x2EF748, 0x10),
     T(st00_mdl_tbl, 0x389AC8, 8),
     T(st01_mdl_tbl, 0x389AD0, 8),
     T(st04_mdl_tbl, 0x389AD8, 8),

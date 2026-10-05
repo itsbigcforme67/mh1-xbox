@@ -82,12 +82,14 @@ int rt_clay_claimed(int handle)
     return handle >= 0 && handle < nclays && claimed[handle];
 }
 
-int rt_bind_set_model(gfx_clay *const *c, int n)
+int rt_bind_set_model(gfx_clay *const *c, const uint32_t *attr, int n)
 {
     int i;
     memset(set_clay, 0, sizeof set_clay);
-    for (i = 0; i < 64; i++)
+    for (i = 0; i < 64; i++) {
         set_clay[i].handle = i < n ? rt_register_clay(c[i]) : -1;
+        set_clay[i].attr = i < n && attr ? (s32)attr[i] : 0;
+    }
     set_mdl.flag = 1;
     set_mdl.clay = set_clay;
     set_mdlw = &set_mdl;
