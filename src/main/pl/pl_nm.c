@@ -986,3 +986,86 @@ void pl_mv060(PLW *pl) {
         break;
     }
 }
+
+/* near-matches (not built): pl_at008 (original keeps arg1 in s1/pl in s0 and the idx*6 offset in a3 with three separate lui/addiu bases for
+   at008_tbl+0/+2/+4; ours CSEs the base) and pl_at009 (x05 store sits in the blend_set jal delay slot in the original, before the argument setup in ours). */
+void pl_at008(PLW *pl, s32 arg1) {
+    u8 s;
+    s32 o;
+
+    if (pl->x763 != 0) {
+        pl->x763 = 5;
+    }
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Pl_basic_flagset(pl, 0, 1, 0);
+        o = arg1 * 6;
+        blend_set(pl, *(u16 *)((u8 *)at008_tbl + 2 + o), *(u16 *)((u8 *)at008_tbl + 4 + o));
+        pl_chr_set2(pl, *(s16 *)((u8 *)at008_tbl + o), 0, 0);
+        break;
+    case 1:
+        if (frame_check(8.0f, pl, 1) != 0) {
+            vib_set_pl(pl, 0);
+            Pachinger_set_quake_sub(pl, 1);
+            func_62A6C0(pl, 0, 0xE);
+            pl->work01C = pl->work01C - 1;
+            if (Game_clear_ck(1) == 0) {
+                Pl_item_stack(pl, pl->item[pl->work88E].id, -1);
+            }
+            if (pl->work8BC == 0) {
+                pl->work01C = 0;
+            }
+            pl->work8CE = pl->work8BC;
+            pl->work8D2 = pl->work01D;
+            pl->work8D1 = pl->work01C;
+        }
+        if (pl->work194 == 0) {
+            blend_set(pl, 0x3ED, 0x3EE);
+            pl_to_normal_b(pl, 0, 0, 0);
+        }
+        break;
+    }
+}
+
+void pl_at009(PLW *pl) {
+    u8 s;
+
+    if (pl->x763 != 0) {
+        pl->x763 = 5;
+    }
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        blend_set(pl, 0x586, 0x587);
+        pl_chr_set2(pl, 0x57C, 0, 0);
+        pl->work01C = pl->work01D;
+        if (pl->work8BC < pl->work01C) {
+            pl->work01C = pl->work8BC;
+        }
+        Pl_basic_flagset(pl, 0, 0, 0);
+        switch (Get_string_pow(pl, pl->ammo_type) & 0xFF) {
+        case 0:
+            pl->chr_spd0 = 2.5f;
+            pl->chr_spd1 = 2.5f;
+            break;
+        default:
+        case 1:
+            pl->chr_spd0 = 2.0f;
+            pl->chr_spd1 = 2.0f;
+            break;
+        case 2:
+            pl->chr_spd0 = 1.5f;
+            pl->chr_spd1 = 1.5f;
+            break;
+        }
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            pl_to_normal_b(pl, 0, 0, 0);
+        }
+        break;
+    }
+}

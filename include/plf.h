@@ -202,4 +202,16 @@ void Basic_item_set(PLW *);
 void Fue_item_set(PLW *);
 void Pl_slash_calc(PLW *, int);
 void Taru_item_set(PLW *);
+void ex_atk_ck(PLW *, int);
+void func_543690(PLW *, int, int);
+void func_6362B0(PLW *, int);
+void func_551790(PLW *, int, f32 *, int);
+void Pachinger_set_quake_sub(PLW *, int);
+void func_62A6C0(PLW *, int, int);
+void pl_to_normal_b(PLW *, int, int, int);
+void pl_at008(PLW *, s32);
+void pl_at009(PLW *);
+s32 Get_string_pow(PLW *, u8);
+typedef struct { s16 chr; u16 a; u16 b; } PL_AT008_ENT;
+extern PL_AT008_ENT at008_tbl[3];
 #endif
