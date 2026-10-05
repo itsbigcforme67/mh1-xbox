@@ -5220,8 +5220,8 @@ block_150:
             return;
         }
         break;
-    case 0x433:
     case 0x42E:
+    case 0x433:
         sound_call_005CBAA0(em, 8, 0x16, 0);
         sound_call_005CBAA0(em, 4, 0x1F, 0x23);
         break;

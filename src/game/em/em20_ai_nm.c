@@ -6166,6 +6166,8 @@ static void ef_move_sub_005F7800(EMW *em, EM20W *w) {
     }
     temp_v1 = w->anim;
     switch (temp_v1) {
+    case 0x3E9:
+        break;
     case 0x3EB:
         sound_call_005F7660(em, 0x34, 1, 0x14);
         sound_call_005F7660(em, 0x74, 1, 0x1A);

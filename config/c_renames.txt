@@ -93,6 +93,7 @@ build/src/game/em/em19b.c.o .rodata .data
 build/src/game/em/em19_flyinit.c.o .rodata .data
 build/src/game/em/em20_r19.c.o .rodata .data
 build/src/game/em/em20_r20.c.o .rodata .data
+build/src/game/em/em20_r21.c.o .rodata .data
 build/src/game/em/em20.c.o .rodata .data
 build/src/game/em/em20b.c.o .rodata .data
 build/src/game/em/em21_r07.c.o .rodata .data
