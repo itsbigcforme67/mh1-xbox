@@ -36,6 +36,7 @@ typedef struct LBTRADE2 { u16 item; s16 num; u8 plid[6]; u8 _pad0A[2]; u8 result
 typedef struct LBTRADE { u16 item; u16 num; u8 plid[6]; u8 _pad0A[2]; u8 result; u8 _pad0D; } LBTRADE; /* trade packet (0xE bytes) */
 typedef struct LBS16x2 { s16 a, b; } LBS16x2;
 typedef struct LBV3 { f32 x, y, z; } LBV3;
+#define F(T, p, o) (*(T *)((u8 *)(p) + (o)))
 #define PLU8(p, o) (*(u8 *)((u8 *)(p) + (o)))
 #define PLS8(p, o) (*(s8 *)((u8 *)(p) + (o)))
 
@@ -144,4 +145,23 @@ extern char lit_688_00664CB8[];
 extern char lit_695_00664CB8[];
 extern char lit_688_00664CB0[];
 extern u8 lit_693_0064E180[0x14];
+int Cockpit_menu_chk();
+int Cockpit_menu_chk_lobby();
+void pad_timer_calc();
+void cpRotMatrix();
+void frame_init();
+void frame_move();
+s16 ran_suu();
+extern s16 Plsw_buff[2][2];
+extern u16 Plan_buff[2][2];
+extern u16 Plan_ang[2][2];
+extern u16 Plan_pow[2][2];
+int Lb_act_ck();
+void lb_pl_to_normal_clr();
+void lb_pl_to_normal_clr2();
+void lb_to_normal();
+void lb_action_timer_calc();
+int ck_pl_send();
+void Lb_pl_to_normal();
+void Lb_send_pl_status();
 #endif

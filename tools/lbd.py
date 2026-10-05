@@ -12,8 +12,10 @@ for fn in sys.argv[1:]:
     if i is None:
         print('/* no draft for', fn, '*/'); continue
     j = txt.index('\n}\n', i) + 3
-    k = txt.rfind('\n\n\n', 0, i); k2 = txt.rfind('\n\n', 0, i)
-    print(txt[max(k2, 0):j])
+    k2 = txt.rfind('\n}\n', 0, i)
+    hdr = txt[k2 + 3:i]
+    hdr = '\n'.join(l for l in hdr.split('\n') if l.strip() and not l.startswith('M2C_UNK') or l.startswith('extern'))
+    print(hdr + '\n' + txt[i:j])
     if os.environ.get("ASM"):
         print("--- asm")
         print(subprocess.run(['python3', 'tools/lbasm.py', fn], capture_output=True, text=True).stdout)
