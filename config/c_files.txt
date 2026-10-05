@@ -241,11 +241,7 @@ main 0x00117BA0 0x00117C98 hit/shit5
 main 0x00119010 0x00119210 hit/shit6
 main 0x0011B1E0 0x0011B298 hit/shit16
 main 0x0011C9F0 0x0011CA74 hit/shit7
-main 0x0028CE00 0x0028CEA4 hit/hit2
-main 0x0028CFB0 0x0028D098 hit/hit2b
-main 0x0028E440 0x0028EE3C hit/hit2c
-main 0x00290140 0x00290274 hit/hit2d
-main 0x00290420 0x00290560 hit/hit2e
+main 0x0028CE00 0x00290560 hit/hit2all
 main 0x00290560 0x002905E8 hit/hit3
 main 0x0010FC70 0x00110C30 game/f_game
 main:rodata 0x003580E0 0x0035815C game/f_game
