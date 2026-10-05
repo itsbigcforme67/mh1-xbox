@@ -222,7 +222,7 @@ void em17_init(EMW *em) {
     EM17W *w = (EM17W *)em->ex;
     s16 temp_v0;
     u8 temp_a0;
-    u8 temp_a1;
+    u32 temp_a1;
 
     if (quest_w.no == 0) {
         em->ang[1] = 0x8000;
@@ -517,14 +517,14 @@ static void em_act01_005DAAD0(EMW *em, EM17W *w) {
     case 2:
         if (em->x8C3 == 0) {
             temp_a0 = em->x734;
-            if (((u32) (temp_a0 - 1) < 2) || (temp_a0 == 3)) {
+            if (temp_a0 == 1 || temp_a0 == 2 || temp_a0 == 3) {
                 if (em->x194 == 0) {
                     em->x05 += 1;
                     act_dist_select_005DA5C0(em);
                     return;
                 }
             } else {
-                temp_a2_2 = em_act_search(*(&em17_act_add + (em->_pad735[0] * 4))) & 0xFFFF;
+                temp_a2_2 = em_act_search(em17_act_add[M2C_FIELD(em, u8 *, 0x735)]) & 0xFFFF;
                 if (temp_a2_2 != 1) {
                     em17_act_set(em, 0, temp_a2_2, 0);
                 }
@@ -834,7 +834,7 @@ static void em_act14_005DB510(EMW *em, EM17W *w) {
         em->x388 = 0;
         break;
     case 1:
-        if (em17_horm_main(temp_a1) != 0) {
+        if (em17_horm_main(em) != 0) {
             em->x05 += 1;
             em->x3F4 = 0;
             em_char_set(em, 0x6E, 0, 0);
@@ -1474,7 +1474,7 @@ static void em_mv03_005DC740(EMW *em, EM17W *w) {
         em->x3F4 = 0;
         w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->dang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 < 0xE39 || temp_v1 >= 0xF1C8) {
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
             pl_flag_set((PLW *)em, 0x20000);
             em_char_set(em, 2, 0, 0);
         } else if (temp_v1 >= 0x8000) {
@@ -1497,7 +1497,7 @@ static void em_mv03_005DC740(EMW *em, EM17W *w) {
                     em17_to_normal(em, 0, 0);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 2, 0, 0);
                     return;
@@ -1519,8 +1519,6 @@ static void em_mv03_005DC740(EMW *em, EM17W *w) {
                 return;
             }
             em->ang[1] = (temp_a2 - var_a3) & 0xFFFF;
-        } else {
-            return;
         }
         break;
     }
@@ -1686,9 +1684,9 @@ static void em_mv06_005DCD30(EMW *em, EM17W *w) {
 }
 
 static void em_mv07_005DCE90(EMW *em, EM17W *w) {
-    s32 temp_a0;
     u16 temp_v1;
     u32 temp_a1_2;
+    s32 temp_a0;
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -1834,7 +1832,7 @@ static void em_fly02_005DD310(EMW *em, EM17W *w) {
         w->x18 = 0;
         break;
     case 1:
-        em17_fly_adjy(1, temp_a2);
+        em17_fly_adjy(em, 1);
         temp_v0 = em->work08 - 1;
         em->work08 = temp_v0;
         if (temp_v0 <= 0) {
@@ -1847,7 +1845,7 @@ static void em_fly02_005DD310(EMW *em, EM17W *w) {
         }
         break;
     case 2:
-        em17_fly_adjy(1, temp_a2);
+        em17_fly_adjy(em, 1);
         em17_senkai_target(em);
         break;
     }
@@ -2063,6 +2061,7 @@ block_9:
 }
 
 static void em_fly09_005DDAF0(EMW *em, EM17W *w) {
+    f32 dd;
     u8 temp_a2;
 
     temp_a2 = em->x05;
@@ -2089,8 +2088,9 @@ static void em_fly09_005DDAF0(EMW *em, EM17W *w) {
         w->spd[1] = (s32) em->ang[1];
         w->spd[2] = 0;
         speed_add(em, w->spd);
+        dd = CalcDistanceXZ(em->pos, em->tgt_pos);
         em->work08 -= 1;
-        if ((CalcDistanceXZ(em->pos, em->tgt_pos) <= 1000.0f) || (em->work08 < 0)) {
+        if ((dd <= 1000.0f) || (em->work08 < 0)) {
             em->x05 += 1;
             em17_act_set(em, 2, 1, 1);
         }
@@ -2259,13 +2259,13 @@ static void em_fly23_005DE080(EMW *em, EM17W *w) {
         em->x8BD = 1;
         break;
     case 1:
-        em17_fly_adjy2(temp_a2);
+        em17_fly_adjy2(em);
         if (em->x194 == 0) {
             em->x05 += 1;
         }
         break;
     case 2:
-        if ((em17_fly_adjy2(temp_a2) & 0xFF) && (em->pos[1] <= (800.0f + em->x5AC))) {
+        if ((em17_fly_adjy2(em) & 0xFF) && (em->pos[1] <= (800.0f + em->x5AC))) {
             em->x05 += 1;
             em_char_set(em, 0xB, 0, 0);
             em_rate_clear(em);
@@ -2313,7 +2313,7 @@ static void em_atk00_005DE2C0(EMW *em, EM17W *w) {
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        if (em17_horm_main(temp_a1) != 0) {
+        if (em17_horm_main(em) != 0) {
             em->x05 += 1;
             em->x388 = 0;
             em->x3F4 = 0;
@@ -2365,7 +2365,7 @@ static void em_atk04_005DE3F0(EMW *em, EM17W *w) {
         em->x388 = 0;
         break;
     case 1:
-        if (em17_horm_main(temp_a1) != 0) {
+        if (em17_horm_main(em) != 0) {
             em->x05 += 1;
             em->x3F4 = 0;
             em_char_set(em, 0x6E, 0, 0);
@@ -2402,7 +2402,7 @@ static void em_atk05_005DE530(EMW *em, EM17W *w) {
         em->x388 = 0;
         break;
     case 1:
-        if (em17_horm_main(temp_a1) != 0) {
+        if (em17_horm_main(em) != 0) {
             em->x05 += 1;
             em->x3F4 = 0;
             em->work08 = 0x78;
@@ -2477,7 +2477,7 @@ static void em_atk07_005DE800(EMW *em, EM17W *w) {
         em->x388 = 0;
         break;
     case 1:
-        if (em17_horm_main(temp_a1) != 0) {
+        if (em17_horm_main(em) != 0) {
             em->x05 += 1;
             em->x3F4 = 0;
             em->work08 = 0x78;
@@ -3418,7 +3418,7 @@ static void em_demo04_005E06F0(EMW *em, EM17W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
-            Quest_enemy_capture(temp_a1);
+            Quest_enemy_capture(em);
         }
         /* fallthrough */
     case 2:
@@ -3591,7 +3591,7 @@ static void em_die03_005E0B90(EMW *em, EM17W *w) {
 }
 
 void em17_soukou_dm_sel_set(EMW *em) {
-    if ((s32) em->hagi[6].cnt >= 2) {
+    if ((s32) em->hagi[6].cnt > 1) {
         em17_act_set(em, 4, 0, 2);
         return;
     }
@@ -4289,17 +4289,12 @@ static void sound_call_sub_005E1F80(EMW *em, int se, int joint) {
 }
 
 static void sound_call_005E1FF0(EMW *em, int frame, int se, int joint) {
-    EM17W *w = (EM17W *)em->ex;
     int add;
 
     add = 0;
     if (em_frame_check(em, 0, (f32)frame) != 0) {
-        if (w->x1B == 1) {
-            if (joint != 0x14) {
-                if (joint == 0x1A) {
-                    add = 0x35;
-                }
-            } else {
+        if (em->ex[0x1B] == 1) {
+            if (joint == 0x14 || joint == 0x1A) {
                 add = 0x35;
             }
         }
@@ -4356,6 +4351,7 @@ static void ef_move_sub_005E21D0(EMW *em, EM17W *w) {
     temp_v1_2 = w->anim;
     switch (temp_v1_2) {                            /* irregular */
     case 0x3E9:
+        break;
     case 0x3EA:
         sound_call_005E1FF0(em, 0x2C, 1, 0x14);
         sound_call_005E1FF0(em, 0x74, 1, 0x1A);
@@ -4446,7 +4442,6 @@ block_115:
         }
         break;
     case 0x3F7:
-    case 0x3F8:
         sound_call_005E1FF0(em, 4, 0xC, 6);
         sound_call_005E1FF0(em, 8, 0xC, 0xC);
         sound_call_005E1FF0(em, 0x3A, 0xB, 6);
@@ -4478,6 +4473,8 @@ block_130:
                 }
             }
         }
+        break;
+    case 0x3F8:
         break;
     case 0x3F9:
         sound_call_005E1FF0(em, 6, 0x27, 0x23);
@@ -4547,11 +4544,12 @@ block_130:
         }
         break;
     case 0x405:
-    case 0x406:
         sound_call_005E1FF0(em, 0x1E, 0x13, 0);
         sound_call_005E1FF0(em, 2, 0x20, 0x23);
         sound_call_005E1FF0(em, 4, 0xE, 0xC);
         sound_call_005E1FF0(em, 8, 0xE, 6);
+        break;
+    case 0x406:
         break;
     case 0x407:
         sound_call_005E1FF0(em, 2, 0x55, 0x23);

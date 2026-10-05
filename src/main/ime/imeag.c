@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,27 +469,17 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void free_kouholists(KL *l)
+int jiritu_makedisp(KH *k, u16 *buf)
 {
-    while (l != 0) {
-        free_mem(l->kh);
-        l = l->next;
-    }
-}
+    int n;
 
-KH *null_kouho(int len)
-{
-    KH *k;
-
-    k = alloc_khmem();
-    if (k != 0) {
-        k->flag = 0x80;
-        k->str[0] = 0;
-        k->x06 = len;
-        k->x07 = 0;
-        k->pw = 0;
-        k->x0C = 0xFFFF;
-        k->next = 0;
+    n = 0;
+    for (;;) {
+        n += sstrtom(buf + n, k->str, 6);
+        if (!(k->flag & 1)) {
+            break;
+        }
+        k = k->next;
     }
-    return k;
+    return n;
 }

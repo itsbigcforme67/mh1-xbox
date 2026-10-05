@@ -134,7 +134,7 @@ extern u16 em_wall_val_tbl[];
 
 f32 flvecCalcDistance(f32 *, f32 *);
 void SetVector(f32 *, f32, f32, f32);
-void Em_Mode_Chg(EMW *, int, int, s32);
+void Em_Mode_Chg();
 void Em_Sleep_End(EMW *em);
 void Em_Sleep2_End(EMW *em);
 void Em_Mahi_End(EMW *em);
@@ -664,7 +664,7 @@ int em_mode_timer_sub(EMW *em) {
             if (em->x388 == 2) {
                 em->x886 = 0;
             } else {
-                Em_Mode_Chg(em, 0, 0, 0); /* 4th argument unused (prototype above) */
+                Em_Mode_Chg(em, 0, 0);
                 return 1;
             }
         }

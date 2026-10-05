@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -1267,14 +1267,12 @@ int can_handaku(int c)
 int srch_ucode(int code)
 {
     u8 *p;
-    int c;
 
-    c = code & 0xFFFF;
     for (p = btoudata; p < btoudata + 180; p += 4) {
-        if (*(u16 *)p == c) {
+        if (*(u16 *)p == (u16)code) {
             return p[2];
         }
-        if (c < *(u16 *)p) {
+        if (*(u16 *)p > (u16)code) {
             break;
         }
     }
@@ -2259,21 +2257,22 @@ int dic_get1num(u8 *s, int len, u8 *out)
     return 1;
 }
 
-u8 *set_num(u8 *s, int n0, u8 *out, int kind)
+u8 *set_num(s, n, out, kind)
+u8 *s;
+s16 n;
+u8 *out;
+int kind;
 {
-    s16 n;
     u8 *p;
     u8 *q;
-    u8 *t;
     int i;
-    int d;
     int r;
-    int g;
-    int k;
+    int d;
     int idx;
+    int k;
+    int g;
 
-    n = n0;
-    if (kind >= 2 && n >= 0xE) {
+    if (kind >= 2 && n > 13) {
         return 0;
     }
     *(s16 *)out = kind;
@@ -2284,28 +2283,26 @@ u8 *set_num(u8 *s, int n0, u8 *out, int kind)
     for (i = 0; i < n; i++) {
         d = s[i] - 0x30;
         if (kind < 2) {
-            t = num_chars[kind] + d * 2;
-            p[0] = t[0];
-            p[1] = t[1];
+            p[0] = num_chars[kind][d * 2];
+            p[1] = num_chars[kind][d * 2 + 1];
             p += 2;
         } else {
             r = n - i - 1;
             g = r % 4;
-            if (d != 0 && (kind != 2 || d != 1 || (u32)(g - 1) >= 2)) {
-                k = 1;
-                if (d > 0) {
+            if (d != 0 && (kind != 2 || d != 1 || (u32)(g - 1) > 1)) {
+                if (d <= 0) {
+                    k = 1;
+                } else if (d < 4) {
                     k = kind - 1;
-                    if (d >= 4) {
-                        k = 1;
-                    }
+                } else {
+                    k = 1;
                 }
-                t = num_chars[k] + d * 2;
-                p[0] = t[0];
-                p[1] = t[1];
+                p[0] = num_chars[k][d * 2];
+                p[1] = num_chars[k][d * 2 + 1];
                 p += 2;
             }
             if (r != 0 && (g != 0 || q != p) && (g == 0 || d != 0)) {
-                idx = r >> 2;
+                idx = r / 4;
                 if (g == 0) {
                     idx = idx + 6;
                 } else if (g == 1) {
@@ -2316,9 +2313,8 @@ u8 *set_num(u8 *s, int n0, u8 *out, int kind)
                 } else {
                     idx = g + 3;
                 }
-                t = num_chars[2] + idx * 2;
-                p[0] = t[0];
-                p[1] = t[1];
+                p[0] = num_chars[2][idx * 2];
+                p[1] = num_chars[2][idx * 2 + 1];
                 p += 2;
                 if (g == 0) {
                     q = p;
@@ -2593,10 +2589,9 @@ int calc_pulen(int page, u8 *key)
         return n;
     }
     if (key[n] == 0) {
-    } else {
-        n++;
+        return n;
     }
-    return n;
+    return n + 1;
 }
 
 int prefix(u8 *a, u8 *b, int n)
@@ -2792,11 +2787,13 @@ int update_entid_rtime(int *ids, int n, int rt)
 int free_entid_tab(unsigned int id)
 {
     ENTID *e;
+    s64 i;
 
     if (id >= 0x80) {
         return -1;
     }
-    e = &entid_tab[id];
+    i = (int)id;
+    e = &entid_tab[i];
     if (e->cnt == 0) {
         return -1;
     }
@@ -3419,16 +3416,16 @@ void henkan(int start, int end, int mode, int pref)
     HCHAR *h;
     HCHAR *hs;
     BS *b;
-    s8 sel;
-    s8 cur;
+    int sel;
+    int cur;
 
     henkan_mode = mode;
     fl_check();
-    if (henkan_mode != 3 || ikkatsu_mode != 0) {
+    if (henkan_mode != 3 || ikkatsu_mode == 0) {
         pos = start;
         if (start < end) {
             top = start + pref;
-            while (pos < end) {
+            do {
                 h = &hchar[pos];
                 if (h->x15 > 0) {
                     pos += h->x15;
@@ -3473,16 +3470,17 @@ void henkan(int start, int end, int mode, int pref)
                         bs_prefix(pos);
                     }
 prefer:
-                    sel = bs_prefer(pos, end, -1);
-                    if (sel == -1) {
+                    a = bs_prefer(pos, end, -1);
+                    if (a == -1) {
                         break;
                     }
+                    sel = a;
                 }
                 unify_bsmem(pos, sel);
                 first_kouho(pos, sel);
                 h->x15 = sel;
                 pos += sel;
-            }
+            } while (pos < end);
         }
         pos = start;
         while (pos < end) {
@@ -4484,8 +4482,8 @@ int kstrncpy(u8 *dst, u8 *src, int n)
     int total;
 
     total = n;
-    while (*src != 0 && n > 0) {
-        if (is_kanji(*src) != 0) {
+    while (*src && n > 0) {
+            if (is_kanji(*src) != 0) {
             if (n <= 1) {
                 break;
             }
@@ -4956,8 +4954,11 @@ two:
 
 void change_kind(u16 *p, int n, int kind)
 {
+    u16 k;
+
+    k = (kind & 0xFFFF) << 12;
     while (n-- != 0) {
-        *p = (*p & 0xFFF) | (((kind & 0xFFFF) << 12) & 0xFFFF);
+        *p = (*p & 0xFFF) | k;
         p++;
     }
 }
@@ -5310,7 +5311,7 @@ void free_klmemlist(KL *l)
     }
 }
 
-s16 bs_prefer(int pos, int end, int len)
+int bs_prefer(int pos, int end, int len)
 {
     BS *b;
     BS *best;

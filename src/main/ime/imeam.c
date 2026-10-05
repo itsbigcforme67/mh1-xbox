@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,22 +469,35 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int shiftlen(int x)
+void free_bsmemlist(BS *b)
 {
-    int c;
-    int h;
+    BS *n;
 
-    c = x & 0xFFFF;
-    h = c & 0xFF00;
-    switch (h) {
-    case 0x8000:
-    case 0x8500:
-        return 1;
-    case 0x8600:
-        if ((c & 0xFF) < 0x9E) {
-            return 1;
-        }
-    default:
-        return 2;
+    while (b != 0) {
+        n = b->next;
+        free_mem(b);
+        b = n;
+    }
+}
+
+void free_khmemlist(KH *k)
+{
+    KH *n;
+
+    while (k != 0) {
+        n = k->next;
+        free_mem(k);
+        k = n;
+    }
+}
+
+void free_klmemlist(KL *l)
+{
+    KL *n;
+
+    while (l != 0) {
+        n = l->next;
+        free_mem(l);
+        l = n;
     }
 }

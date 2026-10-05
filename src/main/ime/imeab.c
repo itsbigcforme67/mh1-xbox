@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,31 +469,56 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int tmp_touroku(u8 *key, WD *w, int rt)
+int bs_check(int pos, int end)
 {
-    NODE *nd;
-    NODE **link;
-    NODE *n;
-    u8 *rec;
-    int need;
-    int len;
+    HCHAR *h;
+    CH *c;
+    BS *r;
+    BS *r2;
+    BS *b;
 
-    temp_updated = 1;
-    link = srch_node(key, w->len, &nd);
-    len = w->len;
-    rec = nd->rec;
-    if (rec[2] == len && ask_strncmp(key, rec + 3, len) == 0) {
-        rec[2] = 0;
-        *link = nd->next;
-        clear_entid_tmp(tmpoffset(nd->rec));
-        free_node(nd);
+    h = &hchar[pos];
+    c = h->ch;
+    if (c != (CH *)-1 && c != 0) {
+        do {
+            r = make_bsmem(pos, end, c);
+            if (r == (BS *)-1) {
+                if (h->bs != 0) {
+                    free_bsmemlist(h->bs);
+                    h->bs = 0;
+                }
+                return 0;
+            }
+            if (r != 0) {
+                hchar_addbsmem(pos, r);
+            }
+            c = c->next;
+        } while (c != 0);
     }
-    n = alloc_node();
-    rec = alloc_record(need = newwdlen(w));
-    set_record(rec, need, w, rt);
-    link = srch_node(key, w->len, &nd);
-    n->rec = rec;
-    n->next = nd;
-    *link = n;
-    return 0;
+    r2 = make_bsmem(pos, end, &null_chmem);
+    if (r2 == (BS *)-1) {
+        if (h->bs != 0) {
+            free_bsmemlist(h->bs);
+            h->bs = 0;
+        }
+        return 0;
+    }
+    if (r2 != 0) {
+        hchar_addbsmem(pos, r2);
+    }
+    if (h->bs == 0) {
+        if ((b = alloc_bsmem()) == 0) {
+            return -1;
+        }
+        b->len = muhenkan(pos, end);
+        b->x02 = 0x28;
+        b->x03 = 0;
+        b->pw = 0;
+        b->x08 = 0;
+        b->x0A = 0;
+        b->next = 0;
+        h->bs = b;
+        return 1;
+    }
+    return 1;
 }

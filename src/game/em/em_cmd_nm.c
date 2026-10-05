@@ -1163,51 +1163,49 @@ u8 *em_cmd_mind_move_end(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_pl_ang_sel(EMW *em, u8 *p) {
-    u8 *q;
     u32 v;
     u8 n;
     s8 t;
     s32 more;
 
-    q = p;
-    switch (*q++) {
+    switch (*p++) {
     case 0:
-        n = *q;
-        q += 3;
+        n = *p;
+        p += 3;
         if (!(n > 0)) {
         } else {
-            v = *q;
+            v = *p;
             t = em->x844;
-            q += 1;
+            p += 1;
             if (((s32)(0.5f + ((65536.0f * v) / 360.0f)) & 0xFFFF) >= em->x904[t] && t != -1) {
             } else {
                 more = 1;
                 do {
-                    q = cmd_end_search(em, q, 0x20, 3);
-                    if ((q[0] == 0x20 && q[1] == 2) || (q[0] == 0x20 && q[1] == 3)) {
+                    p = cmd_end_search(em, p, 0x20, 3);
+                    if ((p[0] == 0x20 && p[1] == 2) || (p[0] == 0x20 && p[1] == 3)) {
                         more = 0;
                     }
-                    q = next_cmd_search(em, q);
+                    p = next_cmd_search(em, p);
                 } while (more != 0);
             }
         }
         break;
     case 1:
-        q += 1;
+        p += 1;
     case 2:
         more = 1;
         do {
-            q = cmd_end_search(em, q, 0x20, 3);
-            if (q[0] == 0x20 && q[1] == 3) {
+            p = cmd_end_search(em, p, 0x20, 3);
+            if (p[0] == 0x20 && p[1] == 3) {
                 more = 0;
             }
-            q = next_cmd_search(em, q);
+            p = next_cmd_search(em, p);
         } while (more != 0);
         break;
     case 3:
         break;
     }
-    return q;
+    return p;
 }
 
 u8 *em_cmd_thirst_ck(EMW *em, u8 *p) {
@@ -1558,46 +1556,45 @@ u8 *em_cmd_body_status_ck(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_body_status_sel(EMW *em, u8 *p) {
-    u8 *q;
     u8 n;
     s32 i;
     u16 more;
 
-    q = p;
-    switch (*q++) {
+    switch (*p++) {
     case 0:
-        n = *q;
-        q += 3;
+        n = *p;
+        p += 3;
         for (i = 0; i < n; i++) {
-            q += 1;
-            if (*q != (u8)em->x762) {
-                q = cmd_end_search(em, q, 0x33, 3);
-                if (q[1] == 2 || q[1] == 3) {
-                    q = q + 2;
+            u8 vv = *p;
+            p += 1;
+            if ((u8)em->x762 != vv) {
+                p = cmd_end_search(em, p, 0x33, 3);
+                if (p[1] == 2 || p[1] == 3) {
+                    p = p + 2;
                     break;
                 }
-                q = q + 2;
+                p = p + 2;
             } else {
                 break;
             }
         }
         break;
     case 1:
-        q += 1;
+        p += 1;
     case 2:
         more = 1;
         do {
-            q = cmd_end_search(em, q, 0x33, 3);
-            if (q[0] == 0x33 && q[1] == 3) {
+            p = cmd_end_search(em, p, 0x33, 3);
+            if (p[0] == 0x33 && p[1] == 3) {
                 more = 0;
             }
-            q = next_cmd_search(em, q);
+            p = next_cmd_search(em, p);
         } while (more);
         break;
     case 3:
         break;
     }
-    return q;
+    return p;
 }
 
 u8 *em_cmd_act_st_ck(EMW *em, u8 *p) {
@@ -4728,7 +4725,7 @@ u8 *cancel_prog_ck(EMW *em) {
         return 0;
     }
     r = 0;
-    if ((f & 0xFF & 0x40) && em_cancel_act_ck(em, 0x40) == 0) {
+    if (((u8)(f & 0xFF) & 0x40) && em_cancel_act_ck(em, 0x40) == 0) {
         r = unko_ptr_set(em);
         em->x917 = 0;
         em->x83B = 0x40;

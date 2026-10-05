@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,63 +469,27 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void init_hchar(void)
+void free_kouholists(KL *l)
 {
-    HCHAR *h;
-
-    for (h = hchar; (u8 *)h < (u8 *)wdsbuf; h++) {
-        clear_hchar(h);
+    while (l != 0) {
+        free_mem(l->kh);
+        l = l->next;
     }
 }
 
-void clear_hchar(HCHAR *h)
+KH *null_kouho(int len)
 {
-    h->x00 = -1;
-    h->ch = 0;
-    h->bs = 0;
-    h->kh = 0;
-    h->x10 = 0;
-    h->x14 = 0;
-    h->x15 = 0;
-    h->x16 = 0;
-    h->x17 = -1;
-    h->x18 = -1;
-    h->x19 = -1;
-}
+    KH *k;
 
-void free_hchar(int from, int to, int keep)
-{
-    HCHAR *h;
-    HCHAR *end;
-
-    end = hchar + to;
-    for (h = hchar + from; h < end; h++) {
-        free_hchar_one(h, keep);
+    k = alloc_khmem();
+    if (k != 0) {
+        k->flag = 0x80;
+        k->str[0] = 0;
+        k->x06 = len;
+        k->x07 = 0;
+        k->pw = 0;
+        k->x0C = 0xFFFF;
+        k->next = 0;
     }
-}
-
-void free_hchar_one(HCHAR *h, int keep)
-{
-    if (keep == 0) {
-        h->x00 = -1;
-        h->x18 = -1;
-        if (h->ch != (void *)-1) {
-            free_chmemlist(h->ch);
-        }
-        h->ch = 0;
-        h->x17 = -1;
-        h->x19 = -1;
-        h->x16 = 0;
-    }
-    if (h->bs != 0 && h->bs != (BS *)-1) {
-        free_bsmemlist(h->bs);
-    }
-    h->bs = 0;
-    if (h->kh != 0) {
-        free_khmemlist(h->kh);
-    }
-    h->kh = 0;
-    h->x10 = 0;
-    h->x14 = 0;
-    h->x15 = 0;
+    return k;
 }

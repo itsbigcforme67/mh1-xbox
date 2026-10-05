@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,25 +469,100 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int is_kanji(int c)
+void init_univmem(void)
 {
-    c = c & 0xFF;
-    if (c < 0x81 || c >= 0xFD || (c >= 0xA0 && c < 0xE0)) {
-        return 0;
+    u8 *p;
+
+    free_univ = mem;
+    for (p = mem; p < mem + 0x11928; p += 0x18) {
+        *(u8 **)p = p + 0x18;
     }
-    return 1;
+    *(u8 **)p = 0;
+    first_init_5 = 0;
 }
 
-int is_shift(int c)
+void *alloc_mem(void)
 {
-    u8 lo;
+    void *r;
 
-    lo = c;
-    if (is_kanji((c & 0xFFFF) >> 8 & 0xFF) == 0) {
+    r = free_univ;
+    if (r == 0) {
         return 0;
     }
-    if (lo < 0x40 || lo >= 0xFD || lo == 0x7F) {
-        return 0;
+    free_univ = *(void **)r;
+    return r;
+}
+
+void free_mem(void *p)
+{
+    if (p != 0) {
+        *(void **)p = free_univ;
+        free_univ = p;
     }
-    return 1;
+}
+
+CH *alloc_chmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+BS *alloc_bsmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+PWM *alloc_pwmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+KH *alloc_khmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+KL *alloc_klmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+void free_pwmemlist(PWM *p)
+{
+    PWM *n;
+
+    while (p != 0) {
+        n = p->next;
+        free_mem(p);
+        p = n;
+    }
 }

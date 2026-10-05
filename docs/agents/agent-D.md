@@ -600,3 +600,64 @@ else loop, equivalent).
   rebuilt from the compare ladders), but the exact branch layout is not matched.
 - em_cmd: *_sel family (7 functions, 18/117 off each, one shared macro), end_command, the pl_target_sel group.
 - The m2c-based pipeline scripts lived in /tmp and are not committed; the steps are listed above.
+
+# Seventh assignment: game overlay near-matches (agent D, 5 Oct 2026)
+Goal: push the game overlay from 82% toward 100%. Workflow tools added:
+- `tools/new_game_runs.py NM.c STEM "comment" [--skip a,b] [--dry]`: finds functions of a game near-match file that now
+  match but are not in any linked run, emits only those into new run files (STEM<next>.c, via mkruns3 --only --verify)
+  and appends the config/c_files.txt lines. Existing runs stay untouched. Skip functions that fail "inside their run".
+  em_cmd runs must not contain the top-level CMD_SEL_FUNC lines (delete them from the new run by hand).
+- `tools/greedy_sub.py FILE REGEX REPL`: applies a substitution to each match one at a time and keeps it when no function
+  gets worse and the total drops (`py:` prefix = Python lambda on the match).
+- `tools/regen_game_runs.py`: whole-file regeneration (NOT used: it turns statics global and breaks ef_move_sub).
+- Statics that must stay `static` for codegen but are called from asm or other runs: keep them `static` in the run and
+  add `name = 0xADDR;` to config/game_aliases.txt (em15 ef_move_sub_005CBC40 + its 5 helpers: sound_call*, quake_call,
+  move_default). With the helpers global the 13 KB ef_move_sub is 333 instructions off; static it links byte-identical.
+
+## Matching lessons (each confirmed by a match)
+- `if (u8_returning_call() != 0)` gives an extra `andi 0xFF`; `if (u8_returning_call())` does not (em21 fly06).
+- `x >= 2` -> `x > 1`, `x < K` -> `x <= K-1` (and `slti at` / `sltiu at` forms): em17_soukou_dm_sel_set, em21 fly03/05/09,
+  em_mv03/05 `d <= 0xE38` in all five monster files.
+- A trailing `else { return; } break;` in a switch case: delete the else (the compiler then falls into the epilogue
+  instead of emitting extra `b` pairs). Fixed em_mv02/03/05, em_fly03 in em14/15/17/20/21.
+- `u8 kind = em->kind; switch (kind) ... eft09_set(em, kind)`: declare the local `u32` (not u8) to avoid an `andi` on the
+  argument (em15_init, em17_init). A callee whose extra arguments are stale registers in the original is declared with
+  fewer parameters (em08_init: `void eft09_set(EMW *)`; em21_init: two args; em_mode_timer_sub: unprototyped
+  `void Em_Mode_Chg();` called with 3 arguments although other callers pass 4).
+- `x = a - b` where the original loads b first: `t = b; x = a - t;` (em21 fly05, `temp_f1 = em->adj_z; temp_f1 = w->dist - temp_f1`).
+- `pos[1] = pos[1] + 20.0f` compiles as `20 + pos` (add.s operands swapped); `pos[1] += 20.0f; t = pos[1];` gives the original
+  `pos + 20` order (em15 fly12).
+- `f & 0xFF & 0x40` on a u8 compiles without the extra `andi 0xFF` of the original; `(u8)(f & 0xFF) & 0x40` has it
+  (em_cmd cancel_prog_ck).
+- tools/declbf.py found the declaration order for em_mv07 (all four monsters).
+- tools/alignall.py ignores branch-address shifts, so a "2 off" function can still have a different tail layout
+  (Em_Taisei_Ck, shell06_move_sub): look at check.py -v before trusting a small count.
+
+## Unmatched game-overlay functions after this pass (139; size in instructions / real instruction distance, smallest distance first)
+Distance = tools/alignall.py differing instructions (ignores branch-address shifts; rebuild.sh is the judge). Files are src/game/em/<file>.c etc.
+
+em_atk04_005DE3F0 79/1 (em17_nm); em20_act_set 92/1 (em20_nm); em_cmd_sub_contents 22/2 (em_cmd_nm); eft18_set_com 26/2 (eft18_nm); takeoff_eff_set_005FC910 26/2 (em20_ai_nm); Em_Taisei_Ck 414/2 (em_taisei_nm); set05_m 450/2 (set05_nm); shell06_move_sub 783/2 (shell06_nm); em01_frame_reset 39/4 (em01_ai_nm); shell22_h 64/4 (shell22_nm); em01_reset_char_set 76/4 (em01_ai_nm); eft22_end_init 141/4 (eft22_nm); else_ck 43/5 (em_cmd_nm); em_fly18_005F1530 117/5 (em20_ai_nm); em04_act_set 158/5 (em04_nm); eft04_t 1266/5 (eft04_nm); em01_effect_move 24/6 (em01_ai_nm); em02_effect_move 24/6 (em02_ai_nm); em07_effect_move 24/6 (em07_ai_nm); em14_effect_move 24/6 (em14_nm); em15_effect_move 24/6 (em15_nm); em16_effect_move 24/6 (em16_nm); em17_effect_move 24/6 (em17_nm); em20_effect_move 24/6 (em20_ai_nm); em27_effect_move 24/6 (em27_nm); em_cmd_position_set 25/6 (em_cmd_nm); em08_effect_move 31/6 (em08_ai_nm); em21_effect_move 31/6 (em21_nm); fish_type_set 85/6 (eft23_nm); em_fly22_005F1B80 87/6 (em20_ai_nm); em_fly22_006041A0 101/7 (em21_nm); em_dmg15_00605DC0 201/7 (em21_nm); em_atk11_0056E160 356/7 (em01_ai_nm); print_tuto_message 40/8 (tuto_nm); Set20_set 58/8 (set20_nm); em_cmd_ninshiki_timer_sub 32/10 (em_cmd_nm); em10_turn_sub 42/10 (em10_nm); em_act_search 51/10 (em_core_nm); em_atk30_005F4090 80/10 (em20_ai_nm); em_cmd_area_move_ck 93/10 (em_cmd_nm); em_eye_search_set 345/10 (em_core_nm); eft16_m 1758/10 (eft16_nm); em_fly15_005F1120 49/11 (em20_ai_nm); em_cmd_pl_ride_ck 88/11 (em_cmd_nm); shell22_i 297/11 (shell22_nm); Em_Dmg_Sys 489/11 (em_taisei_nm); em_atk26_005F3CE0 103/12 (em20_ai_nm); item_theft_005EC560 73/14 (em20_ai_nm); em_mov01_005B06E0 254/14 (em12_nm); em09_effect_move_005AC940 78/15 (em09_nm); set14_trans 787/15 (set14_nm); em20_material_sub 126/17 (em20_ai_nm); em20_init 403/17 (em20_ai_nm); em_demo00_005A0FF0 449/17 (em08_ai_nm); em_fly10_005C6430 125/18 (em15_nm); hire_req_set_0060C0C0 48/19 (em21_nm); em_atk11_005F3170 74/19 (em20_ai_nm); em_cmd_before_stage_ck 80/19 (em_cmd_nm); em_hagitori_lv_up 116/19 (em_master_nm); em_fly10_005F0730 129/19 (em20_ai_nm); em_dmg07_005B9ED0 155/19 (em14_nm); em14_init 223/19 (em14_nm); em07_main 317/20 (em07_ai_nm); em21_target_ang_calc 43/21 (em08_ai_nm); em_cmd_range_ck 112/21 (em_cmd_nm); em17_main 461/21 (em17_nm); em_range_set 45/23 (em_core_nm); em15_main 543/23 (em15_nm); em_fly14_006030F0 169/24 (em21_nm); em_fly16_00603460 173/24 (em21_nm); em_atk06_00604AE0 183/24 (em21_nm); Em_Taisei_Set 27/26 (em_master_nm); em_cmd_boss_atk_ck 84/26 (em_cmd_nm); em_cmd_flag_clear 68/27 (em_cmd_nm); em_cmd_boss_same_stage_ck 80/27 (em_cmd_nm); em_fly03_005B7EE0 105/27 (em14_nm); em21_main 834/27 (em21_nm); em_cmd_rnd32 101/28 (em_cmd_nm); em_fly29 109/28 (em15_nm); em_fly30 109/28 (em15_nm); senko_ck 100/29 (em_core_nm); em_cdm_act_flag_ck 54/30 (em_cmd_nm); em_cmd_near_pos_ck 93/30 (em_cmd_nm); NextStage_Dir_Set 135/30 (em_cmd_nm); area_route_rnd32 32/31 (em_cmd_nm); em_fly13_005C6970 193/31 (em15_nm); smell_ck 161/35 (em_core_nm); em_fly27 163/38 (em15_nm); em_fly33 183/38 (em15_nm); em_fly34 183/38 (em15_nm); em_fly13_005F0CF0 216/38 (em20_ai_nm); em09_material_sub 120/40 (em09_nm); em_fly08_005F02E0 165/41 (em20_ai_nm); em_fly31 179/41 (em15_nm); em_fly10_00602A70 144/42 (em21_nm); em_fly11_00602CC0 144/42 (em21_nm); shell08_rgba 236/43 (shell08_nm); em09_act_set 102/45 (em09_nm); em_demo00_005DFDF0 573/46 (em17_nm); em_cmd_pl_ang_sel 130/49 (em_cmd_nm); em_cmd_flag_set 72/50 (em_cmd_nm); em_hate_suu_set 88/52 (em_core_nm); em_mv00_005DC550 84/54 (em17_nm); em_atk21_005F3440 534/59 (em20_ai_nm); em_atk08_005F2680 584/61 (em20_ai_nm); em20_main 621/61 (em20_ai_nm); eft05_t 290/65 (eft05_nm); set17_trans 218/73 (set17_nm); em_fly04_00602030 146/76 (em21_nm); ef_move_sub_0058E500 950/76 (em04_nm); em_cmd_angle_ck 175/80 (em_cmd_nm); em_char_set 234/85 (em_core_nm); em14_uvmove 125/88 (em14_nm); em15_uvmove 125/88 (em15_nm); em17_uvmove 125/88 (em17_nm); em20_uvmove 125/88 (em20_ai_nm); em21_uvmove 125/88 (em21_nm); em_cmd_horm_pos_ang_ck 146/94 (em_cmd_nm); em_cmd_flag_ck 152/101 (em_cmd_nm); hire_move_sub1_0060BCA0 142/103 (em21_nm); em14_main 747/112 (em14_nm); NextStage_No_Set 214/114 (em_cmd_nm); em_cmd_escape_area_set 203/115 (em_cmd_nm); em_cmd_dansa_sel 130/118 (em_cmd_nm); hire_move_sub2_0060BAD0 112/128 (em21_nm); hire_move_sub2_005A69A0 110/129 (em08_ai_nm); Em_Master_Change 306/158 (em_master_nm); eft11_i 168/165 (eft11_nm); em_cmd_ground_area_move 253/171 (em_cmd_nm); em12_main 415/183 (em12_nm); hire_move_sub1_005A6B70 204/184 (em08_ai_nm); em_cmd_all_pl_target_sel 225/213 (em_cmd_nm); shell08_m 1896/240 (shell08_nm); em_cmd_samestage_pl_target_sel 263/250 (em_cmd_nm); neck_ang_set 348/251 (em_core_nm); em_cmd_st25_pl_target_sel 283/276 (em_cmd_nm); em_cmd_end_command 569/289 (em_cmd_nm); shell08_trans 1580/561 (shell08_nm); em_neck_move_sub 489/642 (em_core_nm)
+
+## More lessons from the second half of this pass (each confirmed by a match)
+- Stale-argument calls: m2c writes `fn(temp_a1)` / `fn(1, temp_a2)` / `em20_horm_main(em, 1, temp_a2)` where the original passes
+  only `em` (or `em, 1`): em14/17/20 horm_main, tossin_move, fly_adjy, fly_adjy2, senkai_target. The switch variable then no
+  longer lives in a0 and the whole function's register allocation falls into place (about 25 functions).
+- CMD_SEL_FUNC (include/em_cmd.h, 7 functions + body_status_sel): use the parameter `p` directly instead of a copy `q = p`
+  (the original keeps the script pointer in the parameter register). tools/q2p.py does it per function. `*p++ != x` compiled
+  differently from `vv = *p; p += 1; x != vv`; the latter matched with the operands as `(u8)em->x762 != vv`.
+- `dd = CalcDistanceXZ(...); em->work08 -= 1; if (dd <= 500.0f || em->work08 < 0)` (em15/17/20 fly09): a float temp before
+  the decrement.
+- Case order matters twice: the compare ladder is emitted in the REVERSE of the source order of the case labels, and a case
+  that only breaks (`case 0x406: break;`) must be written AFTER the body of its neighbour 0x405 (em17 ef_move_sub: three branch
+  targets differed although alignall said 0; only rebuild.sh caught it). A `goto block_N` pair from m2c is usually
+  `if (a == b || b == 0xFF) { equal block } else { other }` (em15 fly08).
+- `if (x == 1 || x == 2 || x == 3)` instead of `(u32)(x - 1) < 2 || x == 3` (em14 act01) and removing a trailing
+  `else { return; }` before `break;` (act01).
+- A static callee must stay static for codegen: a whole group (sound_call*, quake_call, move_default, ef_move_sub) goes into ONE
+  run as static functions with aliases (tools/static_group_run.py, em15 and em17 done). It only works when every function in the
+  group matches by itself (em17 sound_call needed `em->ex[0x1B]` and `joint == 0x14 || joint == 0x1A`).
+- Tried without success (left as is): the *_effect_move family (12 functions, 6 off each: the original keeps the eff byte in
+  a2 and the constant 1 in v1, mine uses v1/v0; 10 source forms, declbf and a permuter run found nothing; the permuter scores
+  a version 0 that differs only in branch targets, do not trust it for branch shape), em20_act_set (addiu vs daddiu on
+  `kind = 3`), Set20_set (delay-slot nops), eft04_t (colour packing order), em_cmd_sub_contents, print_tuto_message
+  (s1/s2 swap of loop variables), fish_type_set, em_fly22 (float register numbers), em15 fly10 (copy of w to s0 first).

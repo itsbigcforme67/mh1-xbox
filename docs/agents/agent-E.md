@@ -352,3 +352,22 @@ with K&R definitions (it turns them into declarations), so run it on a small sta
   (original hoists the shifted kind out of the loop), free_entid_tab (sign-extended index), clear_allrtime. The bigger ones (henkan 74 real diffs,
   ch_check 219, setu_point 74, josi_match 67, to_roman 99, set_num 61) were not attempted.
 - Tool pitfall: a variant-testing script that rewrites the source file must compute the new text BEFORE opening the file for writing.
+
+### Session notes (mc chain fully linked; IME retries)
+- Memory card chain 0x2814E0-0x2862E4 is now ONE C file, src/main/mc/mccomb.c (rodata slot 0x384EF0-0x38506C), all 90 Card* steps linked.
+  mc_sel_ck still does not match as C (best near-match 31/116 in mccomb_nm.c: only the s0-s4 allocation differs; the original shares y's
+  register with the loop counter i and keeps y1 separate in s4; ~30 min of variants: chain assignment `y1 = y0 = y + 0x12`, statement orders,
+  for/do/while, declaration order permutations, none moved it). What worked instead: a new INCLUDE_ASM equivalent. config/c_rawfuncs.txt
+  (`main VRAM SIZE NAME`) makes tools/build.py write build/raw/NAME.inc (.word lines of the ORIGINAL bytes read from disc/, never committed)
+  and mccomb.c has `asm int mc_sel_ck(...) { #include "mc_sel_ck.inc" }`. mwccps2 accepts `.word` inside `asm` functions. Raw words need no
+  relocations because the link is byte-identical. tools/check.py does not generate the .inc: run tools/build.py (or rebuild.sh) first if you
+  compile mccomb.c by hand. To un-asm it later, replace the asm body with C and delete the c_rawfuncs.txt line.
+- IME matches this pass (linked): srch_ucode (`*(u16*)p > (u16)code` as the break test, no `c` variable), calc_pulen (`if (key[n]==0) return n;
+  return n + 1;`), change_kind (`u16 k = (kind & 0xFFFF) << 12` hoisted out of the loop), free_entid_tab (`s64 i = (int)id; &entid_tab[i]`).
+- Closer but not matching: henkan 97/260 (sel/cur are `int`, `bs_prefer` returns `int` NOT s16, top-level test is `mode != 3 || ikkatsu == 0`,
+  first loop must be do/while; rest is register allocation of h/cur/len in the second loop, original h=s1 cur=s5 len=s0),
+  set_num 42/139 (K&R head with `s16 n`, direct `num_chars[k][d*2]` indexing (reloads the table pointer after each store), `n > 13`,
+  `(u32)(g-1) > 1`, `r / 4`, k chosen with `if (d <= 0) k=1; else if (d < 4) k=kind-1; else k=1`), kstrncpy 3/47 (`while (*src && n > 0)`;
+  original loads *src straight into a0 for is_kanji), not_bhead 7/50 (layout only), setu_point (original: u8 `a`, `p->id == (u32)-1`
+  is addiu+dsrl32 not ori/dsll/ori), josi_match, ch_check, to_roman untouched beyond a look (all control-flow/allocation differences).
+- tools/relink_runs.py takes 3-4 minutes on ime_nm.c; run it in the background.

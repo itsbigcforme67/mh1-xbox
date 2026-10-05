@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,34 +469,114 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int srch_page(u8 *key)
+int get_maxtime(int *ids, int n)
 {
-    int hi;
-    int lo;
-    int mid;
-    int c;
+    int i;
+    int m;
+    int id;
 
-    lo = mainlower;
-    hi = mainupper;
-    while (lo + 1 < hi) {
-        mid = (hi + lo) / 2;
-        c = ask_strncmp(key, mainindex + mid * 4, 4);
-        if (c == 0) {
-            return mid;
-        }
-        if (c > 0) {
-            lo = mid;
-        } else {
-            hi = mid;
+    m = 0;
+    for (i = 0; i < n; i++) {
+        id = ids[i * 2];
+        if (id >= 0 && id < 0x80) {
+            if (entid_tab[id].cnt > 0) {
+                if (m < entid_tab[id].rtime) {
+                    m = entid_tab[id].rtime;
+                }
+            }
         }
     }
-    if (ask_strncmp(key, mainindex + lo * 4, 4) < 0) {
-        lo--;
-    }
-    return lo;
+    return m;
 }
 
-int page_fix(int page, u8 *key)
+int update_entid_rtime(int *ids, int n, int rt)
 {
-    return key[prefix(mainindex + (page + 1) * 4, key, 4)] != 0;
+    int i;
+    int id;
+
+    for (i = 0; i < n; i++) {
+        id = ids[i * 2];
+        if (id >= 0 && id < 0x80) {
+            if (entid_tab[id].cnt > 0) {
+                entid_tab[id].rtime = rt;
+            }
+        }
+    }
+    return 0;
+}
+
+int free_entid_tab(unsigned int id)
+{
+    ENTID *e;
+    s64 i;
+
+    if (id >= 0x80) {
+        return -1;
+    }
+    i = (int)id;
+    e = &entid_tab[i];
+    if (e->cnt == 0) {
+        return -1;
+    }
+    e->cnt--;
+    return 0;
+}
+
+void clear_entid_tmpall(int pg)
+{
+    int i;
+
+    for (i = 0; i < 128; i++) {
+        if (pg == (s16)(entid_tab[i].c >> 12)) {
+            entid_tab[i].c = -1;
+        }
+    }
+}
+
+void clear_entid_tmp(int v)
+{
+    int i;
+
+    for (i = 0; i < 128; i++) {
+        if (v == entid_tab[i].c) {
+            entid_tab[i].c = -1;
+        }
+    }
+}
+
+void init_temp(void)
+{
+    init_node_tab();
+    init_hash_tab();
+    if (read_temp() == -1) {
+        reset_temp();
+    }
+    temp_updated = 0;
+}
+
+void flush_temp(void)
+{
+    if (temp_updated != 0) {
+        write_temp();
+    }
+}
+
+void init_node_tab(void)
+{
+    NODE *n;
+
+    for (n = node_tab; n < node_tab + 511; n++) {
+        n->next = n + 1;
+    }
+    n->next = 0;
+    freelist = node_tab;
+}
+
+void init_hash_tab(void)
+{
+    int i;
+
+    for (i = 0; i < 80; i++) {
+        hash_tab[i] = 0;
+    }
 }
