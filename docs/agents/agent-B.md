@@ -60,3 +60,41 @@ All checked with `tools/check.py` per function and `tools/rebuild.sh game`
   pattern for halving a colour byte (eft16_t).
 - An `||` of two equality tests compiled as beq/beq/b came from
   `switch ((s16)arg) { case 1: case 2: ...; default: ... }` (Eft17_set).
+
+# Second assignment: per-monster AI files (game overlay)
+
+All checked with check.py and `tools/rebuild.sh` (all modules OK).
+- em29 (f_em_6140B0, 0x6140B0-0x6147C8): whole file matches, src/game/em/em29.c.
+- em18 (f_em_5E6E00, 0x5E6E00-0x5E7918): whole file matches, em18b.c (b because
+  g_em18_init belongs to agent C's em18).
+- em19 (f_em_5E8060, 0x5E8060-0x5EB3A8): whole file matches, em19b.c.
+- em10 (f_em_5ACC60, village NPC/trader, 26 functions): parked in
+  src/game/em/em10_nm.c (not built). Everything matches except em10_turn_sub,
+  10 instructions off (only temporaries a1/a2/a3 coloured differently; a
+  search over decl order and types and a permuter run did not fix it). A split
+  around it does not work: em_act00/02/03 call em10_search_set / em10_msg_set,
+  and with those in another file MWCC reloads a0 (it only skips that for
+  callees defined in the same file), so three more functions stop matching.
+  Next: fix em10_turn_sub, then register em10 as one file
+  (0x5ACC60-0x5AF528, rodata 0x688220-0x688248 and 0x688250-0x6882D4).
+- Not started: f_em_58BA40 (em04, 42 functions), f_em_5873D0 (em03, 61).
+
+Shared header edits (since the first assignment): em.h x05, x06, x13,
+mode_old/x15_old, type, mat, x0E, x2D4-x2DA, x3C0, x3F4, x40C/x40E, x56A,
+x616, x6E0/x6E2, x6FF, x734, home, x798, x7D6, x88B, x8BB, x8BD, x95C, x9E1
+(some renamed by the coordinator since); pl.h talk (0x8C6), x8C7.
+
+Lessons from this round (each confirmed by a match):
+- Data tables point at some "static" functions (dummy_em_prog_ADDR, emNN_effect_move_ADDR);
+  define those globally with the address-suffixed name or the link fails.
+- A static callee in the same file lets the caller keep using a0; when the original
+  doesn't reload a0 after a call, the callee was in the same file (em10_msg_set).
+- `NPC_Message` had to be called without a prototype to get the original argument load order.
+- Calls with an extra unused or constant argument show as a register set before the
+  jal (em_act_search takes one argument; em_mahi_eff_set(em, 2); em_sleep_eff_set(em, 8, v, f)).
+- One-case `switch` again and again where the original has beq/b instead of bne
+  (em19 main, talk_move x2D6, to_normal flag).
+- Loading table fields with separate symbol+offset addressing means each field is
+  indexed separately, not through a pointer (em10_init); em10_init reads angle/act/pose
+  from em10_start_pos41 for every stage (a Capcom bug kept as is).
+- `(s32)((u32)u8 >> 3)` gives srl + plain cvt (em29_init).

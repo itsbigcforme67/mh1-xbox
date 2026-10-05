@@ -201,7 +201,10 @@ typedef struct PLW {
     u8    work8BF;           /* 0x8BF */
     u8 _pad8C0[0x8C2 - 0x8C0];
     u8    work8C2;       /* 0x8C2 */
-    u8 _pad8C3[0x8C9 - 0x8C3];
+    u8 _pad8C3[0x8C6 - 0x8C3];
+    u8    talk;          /* 0x8C6 non-zero while talking to an NPC (em10); 10 = new message */
+    u8    x8C7;          /* 0x8C7 em10 compares it with 7 (trade count?) */
+    u8 _pad8C8;
     s8    work8C9;           /* 0x8C9 */
     u8 _pad8CA[0x8D4 - 0x8CA];
     char  name[0x14];    /* 0x8D4 player name (set01_i) */
