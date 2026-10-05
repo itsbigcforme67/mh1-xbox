@@ -1,194 +1,153 @@
-/* lbnpc, run 2: npcMvDRUNKDOWN .. npc_move_common (lobby.bin 0x0059F0F0-0x0059F6AC): the matching functions of lbnpc_nm.c. */
+/* lbnpc, run 2: npcCatSLEEP .. npcCatHELLO (lobby.bin 0x005A0A50-0x005A1040): the matching functions of lbnpc_nm.c. */
 #include "lbnpc_proto.h"
 
-void npcMvDRUNKDOWN(em)
+void npcCatSLEEP(em)
 EMW *em;
 {
+    LB_NPCMV *mv = (LB_NPCMV *)em->ex;
+
+    mv->x28 = 2;
     switch (em->x05) {
     case 0:
         em->x05++;
-        if (em->char0 != 0x2A6) {
-            Lb_pl_chr_set(em, 0x2A6, 0, 0);
+        mv->f0F = 1;
+        if (em->char0 != 0x431) {
+            Lb_pl_chr_set0(em, 0x431, 4, 0, 0);
         }
         break;
     }
 }
 
-void npcMvTOPL2(em)
+void npcCatFOOTWORK(em)
 EMW *em;
 {
-    switch (em->x05) {
-    case 0:
-        em->work08 = 8;
-        em->x05++;
-        break;
-    case 1:
-        if (--em->work08 <= 0) {
-            Lb_act_set(em, 0, 0x64);
-        }
-        break;
-    }
-}
+    LB_NPCMV *mv = (LB_NPCMV *)em->ex;
 
-void npcMvRANDWAIT(em)
-EMW *em;
-{
     switch (em->x05) {
     case 0:
         em->x05++;
+        mv->x28 = 0;
+        mv->f0F = 0;
         em->work08 = ((ran_suu(1) & 0xFFFF) + 0xFF) & 0xFF;
-        Lb_pl_chr_set(em, 1, 0x14, 0);
+        Lb_pl_chr_set0(em, 0x3E9, 0x14, 0, 0);
+        return;
+    case 1:
+        if (mv->kind == 0x53) {
+            if (lb_sys.x68 == 0x11 && LBS8(9) == 0 && LBS8(6) == 2 && mv->x26 == 0) {
+                Lb_act_set(em, 0, 0x85);
+                return;
+            }
+        } else if (flvecCalcDistance(em->pos, (u8 *)&player_work[game_w.master] + 0xAC) < 130.0f) {
+            if (mv->x26 == 0) {
+                Lb_act_set(em, 0, 0x84);
+                mv->x26 = 1;
+                em->work08 = (ran_suu(1) & 0xFF) + 0xFF;
+                return;
+            }
+        } else {
+            if (--em->work08 <= 0) {
+                Lb_act_set(em, 0, 0x83);
+                return;
+            }
+            mv->x26 = 0;
+        }
+        break;
+    }
+}
+
+void npcCatRUN(em)
+EMW *em;
+{
+    LB_NPCMV *mv = (LB_NPCMV *)em->ex;
+    LB_ROUTE *r;
+    f32 d;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        if (em->char0 != 0x3F3) {
+            Lb_pl_chr_set0(em, 0x3F3, 4, 0, 0);
+            return;
+        }
         break;
     case 1:
-        if (--em->work08 <= 0) {
+        r = &mv->route[mv->idx];
+        em->x0E = (s16)(u16)Lb_get_angle(em, r) / 10;
+        em->ang[1] += em->x0E;
+        d = flvecCalcDistance(em->pos, r);
+        if (d < 0.0f) {
+            d *= -1.0f;
+        }
+        if (d <= 130.0f) {
+            mv->idx++;
+            if (mv->route[mv->idx].wait == -1) {
+                mv->idx = 0;
+            }
+            r = &mv->route[mv->idx];
+            if (em->x15 != r->act) {
+                em->x05++;
+                Lb_act_set(em, 0, (u16)r->act);
+                mv->cnt = 0;
+                return;
+            }
+            em->x05 = 0;
+        }
+        break;
+    }
+}
+
+void npcCatKYORO(em)
+EMW *em;
+{
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        Lb_pl_chr_set0(em, 0x3EC, 4, 0, 0);
+        return;
+    case 1:
+        if (em->x194 <= 0) {
+            em->x05++;
+            Lb_pl_chr_set0(em, 0x3E9, 8, 0, 0);
+            return;
+        }
+        break;
+    case 2:
+        if (em->x194 <= 0) {
             Lb_act_set(em, 0, 0);
         }
         break;
     }
 }
 
-void npcMvWALL(em)
+void npcCatHELLO(em)
 EMW *em;
 {
-    LB_NPCMV *mv = (LB_NPCMV *)em->ex;
-
     switch (em->x05) {
     case 0:
-        mv->f0F = 1;
-        if (em->char0 != 0x27E) {
-            if (em->char0 == 0x281) {
-                if (em->x194 <= 0) {
-                    Lb_pl_chr_set(em, 0x27E, 2, 0);
-                    em->x05++;
-                }
-            } else {
-                Lb_pl_chr_set(em, 0x27E, 2, 0);
-                em->x05++;
-            }
-        } else {
+        em->x05++;
+        em->x0E = (s16)(u16)Lb_get_angle(em, (u8 *)&player_work[game_w.master] + 0xAC) / 10;
+        em->work08 = 0xA;
+        Lb_pl_chr_set0(em, 0x42F, 8, 0, 0);
+        return;
+    case 1:
+        if (--em->work08 <= 0) {
+            em->ang[1] += em->x0E;
             em->x05++;
         }
         break;
-    }
-}
-
-void npcMvKEGA(em, kind)
-EMW *em;
-s8 kind;
-{
-    LB_NPCMV *mv = (LB_NPCMV *)em->ex;
-
-    switch (em->x05) {
-    case 0:
-        mv->f0F = 1;
-        em->x05++;
-        switch (kind) {
-        case 0:
-            if (em->char0 != 0x285) {
-                Lb_pl_chr_set(em, 0x285, 0, 0);
-                return;
-            }
-            break;
-        case 1:
-            if (em->char0 != 0x284) {
-                Lb_pl_chr_set(em, 0x284, 0, 0);
-            }
-            break;
+    case 2:
+        if (em->x194 <= 0) {
+            Lb_pl_chr_set0(em, 0x3E9, 0xA, 0, 0);
+            em->work08 = 0xA;
+            em->x05++;
+            return;
         }
         break;
-    }
-}
-
-void npc_move_common(em)
-EMW *em;
-{
-    switch (em->x15) {
-    case 0x00:
-        npcMvFOOTWORK(em, 0);
-        return;
-    case 0x75:
-        npcMvFOOTWORK(em, 1);
-        return;
-    case 0x8E:
-        npcMvFOOTWORK(em, 2);
-        return;
-    case 0x76:
-        npcMvFOOTWORK(em, 3);
-        return;
-    case 0x02:
-        npcMvWALK(em, 0);
-        return;
-    case 0x77:
-        npcMvWALK(em, 1);
-        return;
-    case 0x8D:
-        npcMvWALK(em, 2);
-        return;
-    case 0x78:
-        npcMvWALK(em, 3);
-        return;
-    case 0x6A:
-        npcMvENJOY(em, 0);
-        return;
-    case 0x6B:
-        npcMvENJOY(em, 1);
-        return;
-    case 0x79:
-        npcMvTALK(em, 0);
-        return;
-    case 0x7A:
-        npcMvTALK(em, 1);
-        return;
-    case 0x7B:
-        npcMvTALK(em, 2);
-        return;
-    case 0x6C:
-        npcMvDOWN(em, 0);
-        return;
-    case 0x6D:
-        npcMvDOWN(em, 1);
-        return;
-    case 0x6E:
-        npcMvDOWN(em, 3);
-        return;
-    case 0x64:
-        npcMvTOPL(em);
-        return;
-    case 0x7C:
-        npcMvBOARD(em, 0);
-        return;
-    case 0x7D:
-        npcMvBOARD(em, 1);
-        return;
-    case 0x6F:
-        npcMvSHOP(em, 0);
-        return;
-    case 0x70:
-        npcMvSHOP(em, 1);
-        return;
-    case 0x73:
-        npcMvBEER(em);
-        return;
-    case 0x7E:
-        npcMvDRUNKDOWN(em);
-        return;
-    case 0x74:
-        npcMvTOPL2(em);
-        return;
-    case 0x7F:
-        npcMvWALL(em);
-        return;
-    case 0x80:
-        npcMvKEGA(em, 0);
-        return;
-    case 0x81:
-        npcMvKEGA(em, 1);
-        return;
-    case 0x90:
-        npcMvWARP(em);
-        return;
-    case 0x91:
-        npcMvRANDWAIT(em);
+    case 3:
+        if (--em->work08 <= 0) {
+            em->ang[1] -= em->x0E;
+            Lb_act_set(em, 0, 0);
+        }
         break;
     }
 }

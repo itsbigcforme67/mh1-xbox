@@ -28,5 +28,20 @@ void lb_npc_father_move();
 void lb_npc_old_material();
 void lb_npc_old_mix();
 void lb_npc_old_guild();
+void npcCatSLEEP();
+void npcCatFOOTWORK();
+void npcCatRUN();
+void npcCatKYORO();
+void npcCatHELLO();
+void lb_npc_cat_move();
+void npcPigFOOTWORK();
+void npcPigSLEEP();
+void npcPigTOPL();
+void npcPigATACK();
+void npcPigJOY();
+void npcPigEXIT();
+void npcPigWALK();
+void npcPigWALK2();
+void lb_npc_pig_move();
 
 #endif

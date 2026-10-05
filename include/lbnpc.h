@@ -21,10 +21,15 @@ typedef struct LB_NPCMV {
     u8 kind;            /* 0x0E npc kind (as LB_NPCW.kind) */
     s8 f0F;
     s32 cnt;            /* 0x10 frames waited at the waypoint */
-    u8 _pad14[0x2D - 0x14];
+    u8 _pad14[0x26 - 0x14];
+    u16 x26;            /* 0x26 (LB_NPCW.item) */
+    s16 x28;            /* 0x28 (LB_NPCW.num) */
+    u8 _pad2A[0x2D - 0x2A];
     s8 x2D;             /* 0x2D */
 } LB_NPCMV;
 
+#define LBS8(o) (*((s8 *)&lb_sys + (o)))
+#define EM_F32(em, o) (*(f32 *)((u8 *)(em) + (o)))
 #define EM_S32(em, o) (*(s32 *)((u8 *)(em) + (o)))
 int Lb_act_set();
 int Lb_Pl_basic_flagset();
@@ -34,9 +39,17 @@ s32 Lb_get_angle();
 f32 flvecCalcDistance();
 s32 ran_suu();
 s32 frame_check2(EMW *, f32, int);
+extern f32 *St_unique_tbl[88];
+extern u8 D_3E4C05[];
 extern VEC3 old_pos_tbl[2];
 extern VEC3 old_dir_tbl[2];
 int Eft02_set_pos();
+int flvecNormalize();
+int Lb_Em_adj_calc();
+int Eft25_set();
+int NPCZoomInCameraCancel();
+void pl_flag_set(PLW *, int);
+void pl_flag_clr(PLW *, int);
 int cnWrap_SoundRequest();
 extern void (*npc_move_func_190[])();
 extern void (*npc_move_func2_191[])();
