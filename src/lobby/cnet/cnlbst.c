@@ -1,9 +1,19 @@
-/* cnlbs, run 20: Write_Socket .. Write_Socket (lobby.bin 0x005AE300-0x005AE320): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 20: write_col_numeric .. write_col_numeric (lobby.bin 0x005AE5C0-0x005AE7E8): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-void Write_Socket(w)
-u16 *w;
+int write_col_numeric(buf, val, n)
+char *buf;
+int val;
+int n;
 {
-    CpInetTcpSend(CnetSys_w.sock, (u8 *)w + 4, (*w + 0xC) << 16 >> 16);
+    int i;
+
+    buf += n - 1;
+    for (i = 0; i < n; i++) {
+        *buf = val % 10 + 0x30;
+        buf--;
+        val /= 10;
+    }
+    return 0;
 }

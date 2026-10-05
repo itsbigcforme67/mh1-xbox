@@ -2873,7 +2873,7 @@ int __cnet_SendReq_MatchEntryUser(int arg0) {
 void _cnet_RecvFromLbs_AnswerRoomMatchEntryTypeList(void) {
     u8 cnt;
     u8 type;
-    int sp5C;
+    u16 sp5C;
     char name[8];
     int i;
     int p;
@@ -2884,7 +2884,7 @@ void _cnet_RecvFromLbs_AnswerRoomMatchEntryTypeList(void) {
         p = GetRecvData8(&cnt, GetRecvData16(&sp5C, recv_work));
         if (cnt != 0) {
             i = 0;
-            if ((cnt & 0xFF) > 0) {
+            if (i < (cnt & 0xFF)) {
                 do {
                     memset(name, 0, 8);
                     p = GetRecvData8(&type, GetRecvDataOption3(name, 8, p));

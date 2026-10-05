@@ -1323,7 +1323,7 @@ LB_NETW *a;
         break;
     case 3:
         tl_exit_sub_menu(1);
-        SetHelpLineMsg(2, *(u16 *)(a->cur * 0x24 + tbl + 2) + 2);
+        SetHelpLineMsg(2, *(u16 *)(tbl + a->cur * 0x24 + 2) + 2);
         break;
     }
 }

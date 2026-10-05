@@ -27,7 +27,7 @@ void server_select_sub_03(ARG_server_select_sub_03_arg0 *arg0) {
             arg0->x0002 = 2;
             arg0->x0003 = 0U;
             Lbc_set_prim(&test_server_sel_disp, 0, &ss_text_lobby_trans_ot);
-            F(s32, &netr_sub01_tbl, 0x1C) = *((u8 *)&netr_sub01_col + (arg0->x0008 * 4));
+            F(s32, &netr_sub01_tbl, 0x1C) = *(s32 *)((u8 *)&netr_sub01_col + (arg0->x0008 * 4));
             str_play_vol(0, 0x47, 0x3C);
             *(s8 *)0x3F3415 = 0x47;
             return;
@@ -36,7 +36,7 @@ void server_select_sub_03(ARG_server_select_sub_03_arg0 *arg0) {
             arg0->x0002 = 2;
             arg0->x0003 = 0U;
             Lbc_set_prim(&test_server_sel_disp, 0, &ss_text_lobby_trans_ot);
-            F(s32, &netr_sub01_tbl, 0x1C) = *((u8 *)&netr_sub01_col + (arg0->x0008 * 4));
+            F(s32, &netr_sub01_tbl, 0x1C) = *(s32 *)((u8 *)&netr_sub01_col + (arg0->x0008 * 4));
             str_play_vol(0, 0x47, 0x3C);
             *(u8 *)0x3F3415 = 0x47;
         }
