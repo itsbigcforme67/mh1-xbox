@@ -140,19 +140,18 @@ int Local_main(void) {
     if (pNet[0x11] == 0) {
         lbc_text_lobby_trans(network_work);
     }
-    switch (lb_sys.x68) {
-    case 37:
-        Pit_reset();
-        Lbc_set_prim(0, 0, 0);
-        return -1;
-    case 32:
+    if (lb_sys.x68 == 32) {
         *(s8 *)0x3F35CC = 0;
         Pit_reset();
         Lbc_set_prim(0, 0, 0);
         return 1;
-    default:
-        return 0;
     }
+    if (lb_sys.x68 == 37) {
+        Pit_reset();
+        Lbc_set_prim(0, 0, 0);
+        return -1;
+    }
+    return 0;
 }
 void vs_square(void) {
     vs_square_func_227[lb_sys.x03]();
@@ -351,10 +350,10 @@ int c;
         }
         return;
     case 9: {
-        u8 *c2 = cw;
-        int t = *(s32 *)(c2 + 0x2C4C);
+        s32 *c2 = (s32 *)(cw + 0x2C4C);
+        int t = *c2;
         if (t != 0) {
-            *(s32 *)(c2 + 0x2C4C) = t - 1;
+            *c2 = t - 1;
             return;
         }
         str_pause(0, 1);
@@ -381,7 +380,7 @@ int c;
             lobby_bgm_set(game_w.stage);
             lb_sys.x04 = 0;
             lb_sys.x03 = lb_sys.x03 + 2;
-            Lb_send_commer(a);
+            Lb_send_commer();
         }
     default:
         return;
@@ -393,12 +392,14 @@ int a;
     int a0;
     u8 m;
     u8 st;
+    u8 *pl;
     m = game_w.master;
-    cw[0x2C08] = 0;
     a0 = m * 0xA00;
+    cw[0x2C08] = 0;
+    pl = (u8 *)player_work + a0;
     lb_sys.x04 = lb_sys.x04 + 1;
     Disp_NowLoading(a0, m);
-    Lb_stage_load();
+    Lb_stage_load(*(u16 *)(pl + 0x73A));
     if (Online_ck() == 0) {
         str_pause(0, 0);
         str_volume(0, 0);
@@ -411,12 +412,12 @@ int a;
             lobby_bgm_set(st);
         }
     }
-    Lb_npc_set(*(u16 *)((u8 *)player_work + a0 + 0x73A));
+    Lb_npc_set(*(u16 *)(pl + 0x73A));
     fade_set(2);
     lb_sys.x04 = 0;
     lb_sys.x87 = 0x14;
     lb_sys.x03 = lb_sys.x03 + 1;
-    Lb_check_newCommer(a);
+    Lb_check_newCommer();
     cw[0x2C08] = 1;
 }
 void vs_square_exit(a)
@@ -436,14 +437,14 @@ int a;
         } else {
 b8:
             if (lb_sys.x78 != 0 && pl->x73A == 0x4C) {
-                Lbc_SendMiniData(lb_sys.x04, player_work);
+                Lbc_SendMiniData();
             }
         }
         lb_sys.x04 = lb_sys.x04 + 1;
     case 1:
         fade_set(1);
         str_fadeout(0, 0x10);
-        Lb_move_common(a);
+        Lb_move_common();
         if (pl->x73A == 0x4E) {
             lb_sys.x04 = lb_sys.x04 + 1;
             return;
@@ -452,18 +453,19 @@ b8:
         return;
     case 2:
         v = Lbc_getDate();
-        if (v != 1 && v != 0) {
-        } else {
+        switch (v) {
+        case 0:
+        case 1:
             lb_sys.x04 = lb_sys.x04 + 1;
         }
-        Lb_move_common(a);
+        Lb_move_common();
         return;
     case 3:
-        if ((Fade_busy_ck(lb_sys.x04, player_work) & 0xFF) != 1) {
+        if ((Fade_busy_ck() & 0xFF) != 1) {
             if (Online_ck() == 0) {
                 str_pause(0, 1);
             } else {
-                str_stop_all(0);
+                str_stop_all();
             }
             Lb_reset();
             if (pl->x73A == 0x63) {
@@ -474,7 +476,6 @@ b8:
             lb_sys.x03 = 3;
             return;
         }
-        Lb_move_common(a);
-        return;
+        Lb_move_common();
     }
 }
