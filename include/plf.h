@@ -233,4 +233,5 @@ void pl_dm008(PLW *);
 void eft13_set(PLW *, int, int);
 void func_558A80(PLW *, int);
 extern s8 piyo_ret_tbl[6];
+void egg_com_ck(PLW *, int);
 #endif
