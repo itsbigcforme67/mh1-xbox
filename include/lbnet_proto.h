@@ -13,6 +13,7 @@ extern u8 recv_header[];
 extern u8 recv_work[];
 extern s8 pl_infoget_ctr;
 extern u16 seq_no;
+extern u8 *encrypt_str;
 
 void _cnet_RecvFromLbs_NoticeMailMessage();
 int cnLBS_SendMessage();
@@ -371,6 +372,8 @@ void SetSendStringData();
 void SetSendStringData2();
 void SetSendEncodeStringData();
 void Write_Socket();
+int lbs_encode_ex();
+int mmbbc_encode();
 int CpInetTcpSend();
 int __cnet_Recv_MemberSub();
 int __cnet_SendAns_BattleResult();

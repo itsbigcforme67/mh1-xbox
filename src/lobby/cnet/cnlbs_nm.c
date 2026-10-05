@@ -3197,3 +3197,73 @@ u16 *w;
 {
     CpInetTcpSend(CnetSys_w.sock, (u8 *)w + 4, (*w + 0xC) << 16 >> 16);
 }
+
+int lbs_encode_ex(out, in, key, len, extra)
+u8 *out;
+u8 *in;
+int key;
+int len;
+int extra;
+{
+    int sum = 0;
+    int i;
+
+    if (out == 0 || in == 0) return -1;
+    for (i = 0; i < len; i++) {
+        out[i] = in[i] ^ encrypt_str[i & 7] ^ (extra + (key & 0xFF) + i);
+        sum += in[i];
+    }
+    return sum & 0x7FFF;
+}
+
+static int write_col_numeric(buf, val, n)
+char *buf;
+int val;
+int n;
+{
+    int i;
+
+    buf += n - 1;
+    for (i = 0; i < n; i++) {
+        *buf = val % 10 + 0x30;
+        buf--;
+        val /= 10;
+    }
+    return 0;
+}
+
+static int read_col_numeric(str, n)
+char *str;
+int n;
+{
+    int v = 0;
+    int i;
+
+    for (i = 0; i < n; i++) {
+        char c = *str;
+        if (c >= 0x30 && c < 0x3A) {
+            v = (c - 0x30) + v * 10;
+        }
+        str++;
+    }
+    return v;
+}
+
+int mmbbc_encode(out, str, seq)
+char *out;
+char *str;
+int seq;
+{
+    int a;
+    int v1;
+    int v2;
+
+    if (out == 0 || str == 0) return -1;
+    a = seq & 0xFFFF;
+    v1 = a + read_col_numeric(str, 4);
+    v2 = a + read_col_numeric(str + 4);
+    write_col_numeric(out, v1, 5);
+    write_col_numeric(out + 5, v2);
+    out[10] = 0;
+    return 0;
+}

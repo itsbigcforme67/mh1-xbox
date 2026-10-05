@@ -42,7 +42,7 @@ def sig(k):
     m = re.match(r'^([\w \*]+?)\s*(\*?)\b%s\(' % re.escape(k), h)
     rt = m.group(1).strip()
     return '%s %s%s();' % (rt, m.group(2), k)
-fwd = [sig(k) for k in order]
+fwd = [sig(k) for k in order if not cur[k].startswith('static ')]
 # keep forward declarations of functions defined elsewhere (other files / not yet written)
 old = [l for l in p.split('\n') if re.match(r'^[\w \*]+\(\);$', l) and not l.startswith('extern ')]
 oldnames = {re.match(r'^[\w \*]*?(\w+)\(\);$', l).group(1): l for l in old}

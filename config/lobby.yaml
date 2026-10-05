@@ -814,6 +814,8 @@ segments:
       - [0x07A7E0, asm, text/SetSendStringData]
       - [0x07A980, c, cnet/cnlbs41]
       - [0x07A9A0, asm, text/lbs_encode_ex]
+      - [0x07AC40, c, cnet/cnlbs42]
+      - [0x07AE68, asm, text/read_col_numeric]
       - [0x0914E0, asm, text/f_lb_5C4E60]
       - [0x0923CC, asm, text/g_Lb_check_money]
       - [0x092500, asm, text/f_lb_5C5E80]
