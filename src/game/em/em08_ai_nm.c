@@ -2680,8 +2680,7 @@ static void em_dmg00_0059FAB0(EMW *em, EM08W *w) {
         em_char_set(em, 0x3C, 0, 0);
         break;
     case 1:
-        temp_a2 = em->x07;
-        if (*(s32 *)(temp_a2 * 0x50 + (char *)em + 0x194) == 0) {
+        if (((s32 (*)[20])&em->x194)[em->x07][0] == 0) {
             em->x05++;
             em08_to_normal(em);
             break;
@@ -4484,7 +4483,7 @@ void em08_main(EMW *em) {
                 em08_act_set(em, 4, 3, 2);
                 break;
             default:
-                if (*(u8 *)((k & 0xFF) * 8 + (u8 *)em + 0x30A) >= 2) {
+                if (em->hagi[k & 0xFF].cnt >= 2) {
                     em08_act_set(em, 4, 5, 2);
                     if (em->x38E != 3) {
                         em->x07 = 0;
@@ -4519,7 +4518,7 @@ void em08_main(EMW *em) {
         flag = 1;
         break;
     }
-    if (flag != 0 && em->x94E == 0) {
+    if (flag && em->x94E == 0) {
         em->x88B = 1;
     }
     if ((*(s16 *)0x3C7448 == 0x9A) && (em->stg == 0x38) && (Event_flag_ck(0x11) == 0)) {

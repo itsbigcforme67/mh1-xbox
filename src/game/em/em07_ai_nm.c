@@ -1918,10 +1918,10 @@ void em07_main(EMW *em) {
         } else {
             switch (em->x38E) {
             case 0:
-                if (*(u8 *)(em->x38E * 8 + (u8 *)em + 0x30A) > 0) {
+                if (em->hagi[em->x38E].cnt > 0) {
                     Quest_enemy_hagi_set(em, 0x4000);
                 }
-                if (*(u8 *)(em->x38E * 8 + (u8 *)em + 0x30A) >= 2) {
+                if (em->hagi[em->x38E].cnt >= 2) {
                     Quest_enemy_hagi_set(em, 0x8000);
                 }
             case 1:
@@ -1930,29 +1930,29 @@ void em07_main(EMW *em) {
                 em07_act_set(em, 4, 3, 2);
                 break;
             case 4:
-                if (*(u8 *)(em->x38E * 8 + (u8 *)em + 0x30A) >= 3) {
+                if (em->hagi[em->x38E].cnt >= 3) {
                     Quest_enemy_hagi_set(em, 0x10000);
                 }
                 goto blk41;
             case 5:
-                if (*(u8 *)(em->x38E * 8 + (u8 *)em + 0x30A) >= 2) {
+                if (em->hagi[em->x38E].cnt >= 2) {
                     Quest_enemy_hagi_set(em, 0x20000);
                 }
                 goto blk41;
             case 6:
-                if (*(u8 *)(em->x38E * 8 + (u8 *)em + 0x30A) >= 2) {
+                if (em->hagi[em->x38E].cnt >= 2) {
                     Quest_enemy_hagi_set(em, 0x40000);
                 }
                 goto blk41;
             case 2:
-                if (*(u8 *)(em->x38E * 8 + (u8 *)em + 0x30A) >= 2) {
+                if (em->hagi[em->x38E].cnt >= 2) {
                     em07_act_set(em, 4, 0, 2);
                 } else {
                     em07_act_set(em, 4, 3, 2);
                 }
                 break;
             case 3:
-                if (*(u8 *)(em->x38E * 8 + (u8 *)em + 0x30A) >= 2) {
+                if (em->hagi[em->x38E].cnt >= 2) {
                     em07_act_set(em, 4, 6, 2);
                 } else {
                     em07_act_set(em, 4, 3, 2);

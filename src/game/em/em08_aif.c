@@ -1244,3 +1244,29 @@ void em_atk08_0059F910(EMW *em, EM08W *w) {
         break;
     }
 }
+
+void em_dmg00_0059FAB0(EMW *em, EM08W *w) {
+    u8 temp_a2;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x3C, 0, 0);
+        break;
+    case 1:
+        if (((s32 (*)[20])&em->x194)[em->x07][0] == 0) {
+            em->x05++;
+            em08_to_normal(em);
+            break;
+        }
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em_char_set(em, 1, 0, 0);
+        }
+        if (EMF(em, s32, 0x234) == 0) {
+            em_char_set(em, 1, 0, 0);
+        }
+        break;
+    }
+}
