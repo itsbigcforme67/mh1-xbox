@@ -230,3 +230,12 @@ main:rodata 0x0035A790 0x0035A7A8 pl/pl05
 main 0x001361B0 0x00136378 pl/pl06
 main 0x001365F0 0x00136D38 pl/pl07
 main 0x00136FB0 0x001371B0 pl/pl08
+game 0x00534100 0x005341FC em/em_core
+game 0x005345B0 0x00534728 em/em_core_b
+game 0x00535450 0x005355A0 em/em_core_c
+game 0x00535830 0x0053603C em/em_core_d
+game:rodata 0x00685080 0x0068510C em/em_core_d
+game 0x00536110 0x00536440 em/em_core_e
+game 0x00536530 0x00536BB4 em/em_core_f
+game 0x00536C80 0x0053948C em/em_core_g
+game:rodata 0x00685110 0x00685224 em/em_core_g
