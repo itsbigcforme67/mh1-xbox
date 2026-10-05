@@ -40,6 +40,107 @@ s8 v;
     pNet->yesno = v;
 }
 
+void SetDialogData(id, kind)
+int id;
+s8 kind;
+{
+    int lines;
+    int maxw = 0;
+    char *p;
+    char *line;
+    int w;
+
+    if (dialogData.id != id || dialogData.html != kind) {
+        dialogData.id = id;
+        lines = 0;
+        dialogData.msg = netDialogMessage[id];
+        dialogData.html = kind;
+        dialogData.x04 = 0;
+        dialogData.x06 = 0;
+        p = dialogData.msg;
+        line = p;
+        if (*p != 0) {
+            do {
+                p = (char *)strchr(p, 0xA);
+                lines++;
+                if (p != 0) {
+                    w = p - line;
+                    line = p;
+                } else {
+                    w = strlen_sp(line);
+                }
+                if (w < 0) {
+                    w = -w;
+                }
+                if (maxw < w) {
+                    maxw = w;
+                }
+                if (p == 0) {
+                    break;
+                }
+                p++;
+            } while (*p != 0);
+        }
+        switch (kind) {
+        case 2:
+        case 4:
+            dialogData.yesno = 0;
+        case 3:
+            lines += 2;
+            break;
+        }
+        dialogData.lines = lines;
+        set_dialog_square(maxw * 10 + 0x3C, lines * 20 + 0x3C);
+    }
+}
+
+void set_dialog_square(w, h)
+int w;
+int h;
+{
+    int hh;
+    int ww;
+    int y0;
+    int x0;
+    int w2;
+    int h8;
+    u8 *t;
+    u8 *t2;
+    u8 *t3;
+
+    hh = h >> 1;
+    if (h < 0) {
+        hh = (h + 1) >> 1;
+    }
+    t = (u8 *)helpLineTbl + 0x28;
+    y0 = 0xE0 - hh;
+    ww = w >> 1;
+    if (w < 0) {
+        ww = (w + 1) >> 1;
+    }
+    w2 = ww * 2;
+    x0 = 0x140 - ww;
+    *(s16 *)((u8 *)helpLineTbl + 0x28) = x0;
+    *(s16 *)(t + 4) = w2;
+    *(s16 *)(t + 2) = y0;
+    h8 = h + 8;
+    *(s16 *)(t + 6) = h;
+    *(s16 *)(t + 0x16) = y0;
+    *(s16 *)(t + 0x14) = x0;
+    *(s16 *)(t + 0x18) = w2;
+    t2 = t + 0x28;
+    *(s16 *)(t2 + 2) = y0 + h;
+    *(s16 *)(t + 0x28) = *(s16 *)((u8 *)helpLineTbl + 0x3C);
+    *(s16 *)(t2 + 4) = *(s16 *)((u8 *)helpLineTbl + 0x40);
+    *(s16 *)(t2 + 0x16) = y0;
+    *(s16 *)(t2 + 0x1A) = h8;
+    *(s16 *)(t2 + 0x14) = 0x138 - ww;
+    t3 = t2 + 0x28;
+    *(s16 *)(t3 + 2) = y0;
+    *(s16 *)(t3 + 6) = h8;
+    *(s16 *)(t2 + 0x28) = ww + 0x140;
+}
+
 void SetSceneTitle(a, b)
 int a;
 int b;

@@ -733,7 +733,7 @@ segments:
       - [0x05D760, c, lb/lbui]
       - [0x05D7A0, asm, text/event_eat_rcpt]
       - [0x05E210, c, lb/lbuib]
-      - [0x05E254, asm, text/SetDialogData]
+      - [0x05E3F8, asm, text/set_dialog_square]
       - [0x05E4B0, c, lb/lbuic]
       - [0x05E578, asm, text/draw_dialog_square]
       - [0x05F6F0, c, lb/lbuid]

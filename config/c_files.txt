@@ -714,7 +714,7 @@ lobby 0x005A1F30 0x005A22D8 lb/lbnpcd
 lobby 0x005A2410 0x005A26C8 lb/lbnpce
 lobby 0x005A2900 0x005A2A1C lb/lbnpcf
 lobby 0x005910E0 0x00591120 lb/lbui
-lobby 0x00591B90 0x00591BD4 lb/lbuib
+lobby 0x00591B90 0x00591D78 lb/lbuib
 lobby 0x00591E30 0x00591EF8 lb/lbuic
 lobby 0x00593070 0x005931AC lb/lbuid
 lobby 0x00593CB0 0x00593F78 lb/lbuie

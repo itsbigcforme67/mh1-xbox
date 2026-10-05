@@ -12,6 +12,8 @@ void Lb_eat_to_end();
 void event_eat_trans_ot1();
 void SetDialogData_HTML();
 void SetDialogYesNo();
+void SetDialogData();
+void set_dialog_square();
 void SetSceneTitle();
 void SetSceneSubTitle();
 void SetSceneSubTitleColor();

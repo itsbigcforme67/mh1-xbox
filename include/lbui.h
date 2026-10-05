@@ -6,8 +6,14 @@
 
 /* dialogData (lobby .bss, 0x14 bytes) */
 typedef struct LB_DIALOG {
-    u8 _pad00[0x12];
-    u8 html;            /* 0x12 1 = HTML dialog */
+    int id;             /* 0x00 message number */
+    s16 x04;            /* 0x04 */
+    s16 x06;            /* 0x06 */
+    u8 _pad08[4];
+    char *msg;          /* 0x0C message text */
+    s8 lines;           /* 0x10 number of text lines */
+    u8 _pad11;
+    s8 html;            /* 0x12 dialog kind (SetDialogData's second argument) */
     u8 yesno;           /* 0x13 */
 } LB_DIALOG;
 
@@ -70,6 +76,7 @@ typedef struct LB_SCOND {
 extern LB_SCOND SearchCondition;
 extern u8 *SearchResult;
 extern LB_DIALOG dialogData;
+extern char *netDialogMessage[];
 extern LB_NETW *pNet;
 /* chat / plaza work (pointer cw in main .sbss) */
 typedef struct LB_CW {
@@ -114,7 +121,6 @@ int SetTextureStage();
 int SetFilterMode();
 int flSetRenderState();
 int Put_2TF();
-int SetDialogData();
 int Lbc_set_prim();
 int lobby_bgm_set2();
 int plaza_moveMain();
@@ -143,7 +149,8 @@ int Lbc_ConditionSearch();
 int Fade_busy_ck();
 int To_LogOut();
 int KinshiYogo_chk();
-int set_dialog_square();
+int strchr();
+int strlen_sp();
 int load_pit();
 int load_texlist();
 int release_texture();
