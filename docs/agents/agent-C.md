@@ -154,3 +154,14 @@ Fields used straight from EMW in the em files (so common to all monsters):
   - act_set calls Online_ck/act_ck (s16) before the dispatch; `(u8)arg`.
   - em17_act_act_set: small gp-relative tables st58_dir/st64_dir/st75_dir
     are declared `u16 x[4]` (8 bytes) so MWCC uses gp addressing.
+
+## Update: senkai_pos_no solved
+
+The 2-instruction senkai_pos_no near-match (em08/em15/em21) is fixed by
+walking the four points with a pointer in the distance loop:
+`for (q2 = pos, i = 0; i < 4; i++, q2++) dist[i] = CalcDistanceXZ(em->pos, *q2);`
+(the original sets the walking pointer before the counter). em08, em15 and
+em21 are now whole files (0x5A7380-0x5A7F6C, 0x5CF0F0-0x5D04EC,
+0x60C3A0-0x60D3FC); their _nm.c files are gone. Found while matching
+em20_ground_point_search, which has the same loop (there the pointer is
+also assigned before the em_pl_pos_set call).

@@ -1,5 +1,4 @@
-/* em08 - game.bin 0x005A7380-0x005A7DDC (em08_senkai_pos_no, the last
- * function of the file, is still asm: near-match in em08_nm.c). Action setters for monster 8
+/* em08 - game.bin 0x005A7380-0x005A7F6C. Action setters for monster 8
  * (a flying monster: it has fly_adjy2 height correction and senkai
  * turning points). Same layout as em07 (see docs/agents/agent-C.md), plus:
  * - move: action 0 becomes 3 when x302 < 10% of x792 (low health? guess);
@@ -373,4 +372,50 @@ u8 em08_fly_adjy2(EMW *em) {
         speed_add_g(em, w->spd);
     }
     return ret;
+}
+
+u8 em08_senkai_pos_no(EMW *em, f32 *out) {
+    u32 i;
+    EM_STG_POS *p;
+    f32 (*pos)[3];
+    f32 (*q2)[3];
+    f32 dist[4];
+    f32 min;
+    u8 n;
+
+    pos = 0;
+    p = em->area->stg_pos;
+    for (i = 0; i < 88; p++, i++) {
+        if (p->stg == -1 || em->area->stg_pos[i].stg == em->stg) {
+            pos = em->area->stg_pos[i].pos;
+            break;
+        }
+    }
+    if (pos == 0) {
+        out[0] = 1000.0f;
+        out[1] = 0.0f;
+        out[2] = 1000.0f;
+        return 0;
+    }
+    for (q2 = pos, i = 0; i < 4; i++, q2++) {
+        dist[i] = CalcDistanceXZ(em->pos, *q2);
+    }
+    n = 0;
+    min = dist[0];
+    if (min > dist[1]) {
+        min = dist[1];
+        n = 1;
+    }
+    if (min > dist[2]) {
+        min = dist[2];
+        n = 2;
+    }
+    if (min > dist[3]) {
+        n = 3;
+    }
+    i = (n + 1) & 3;
+    out[0] = pos[i][0];
+    out[1] = pos[i][1];
+    out[2] = pos[i][2];
+    return n;
 }
