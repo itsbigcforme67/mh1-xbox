@@ -191,7 +191,8 @@ typedef struct EMW {
     u8 _pad796[0x797 - 0x796];
     u8 x797;            /* 0x797 */
     f32 x798;           /* 0x798 fade 0..1 at the end of em18 mov03 (alpha?) */
-    u8 _pad79C[0x7A4 - 0x79C];
+    u8 _pad79C[0x7A0 - 0x79C];
+    struct PLW *x7A0;   /* 0x7A0 player the monster follows (em09 mov04, atk01) */
     struct EMW *x7A4;   /* 0x7A4 (em09_status_ck reads its kind) */
     u8 x7A8;            /* 0x7A8 */
     u8 x7A9;            /* 0x7A9 */
@@ -312,12 +313,12 @@ typedef struct EMW {
     f32 act_spd;        /* 0x930 animation speed, 1.0 set by every em*_act_set (guess) */
     f32 tgt_pos[3];     /* 0x934 target position (CalcDistanceXZ/Em_Calc_angY from pos) */
     struct EM_AREA *area; /* 0x940 per-stage data (em08_senkai_pos_no) */
-    u8 _pad944[0x948 - 0x944];
+    struct EMW *x944;   /* 0x944 (em12 demo: the monster / player it watches) */
     u8 x948;            /* 0x948 */
     u8 x949;            /* 0x949 */
     s16 stay_tm;        /* 0x94A from emNN_stay_timer_tbl[stg] (local_area_move_init) */
     s16 runaway_tm;     /* 0x94C from emNN_runaway_timer_tbl[stg] */
-    u8 _pad94E[0x950 - 0x94E];
+    s16 x94E;           /* 0x94E (em12 dm04 copies it to work08) */
     u8 x950;            /* 0x950 */
     u8 x951;            /* 0x951 */
     u8 x952;            /* 0x952 */
@@ -327,7 +328,7 @@ typedef struct EMW {
     s8 x958;            /* 0x958 */
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
     s8 x95A;            /* 0x95A */
-    u8 _pad95B[0x95C - 0x95B];
+    u8 x95B;            /* 0x95B 1: boss (em16 init sets x9E1 and the boss work) */
     u8 x95C;            /* 0x95C 2 while dying (em19) */
     s8 x95D;            /* 0x95D (em14_sasari_ck) */
     u16 x95E;           /* 0x95E */

@@ -1,6 +1,4 @@
-/* em09 (part 1) - game.bin 0x005A81B0-0x005A8210: oikake_ck (clamps the chase timer when the target
- * player left the stage). Monster kind 9, the item thief; see em09_nm.c for the whole
- * file and em09c.c for the main part. Meanings are guesses. */
+/* em09 (part 4) - game.bin 0x005ACC40-0x005ACC58: em09_local_init and the dummy program. */
 #include "em.h"
 #include "game.h"
 #include "pl.h"
@@ -98,14 +96,9 @@ int em09_dir_calc(s32 *, s32 *, int);
 void oikake_ck(EMW *em);
 void em09_act_set();
 
-void oikake_ck(EMW *em) {
-    if (em->work08 > 15) {
-        s8 n = em->x617;
+void em09_local_init_005ACC40(EMW *em) {
+    eft01_set((PLW *)em, 0);
+}
 
-        if (n == -1) {
-            em->work08 = 15;
-        } else if (em->stg != ((PLW *)player_work)[n].stg) {
-            em->work08 = 15;
-        }
-    }
+void dummy_em_prog_005ACC50(void) {
 }
