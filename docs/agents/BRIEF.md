@@ -78,6 +78,15 @@ rename or retype an existing field unless it is required and you checked every u
 header named after your file (like include/shell06.h). Mention every shared-header edit in
 the commit message.
 
+## Shared struct fields (EMW, PLW, GAME_W, SHLW)
+Several agents add fields to the same structs, and merges have produced duplicate
+names and wrong signedness. Before naming a field, grep include/ and src/ (after
+`git merge main`) for its offset: if it already exists, use that name. Only change a
+field's type when a load in a function you match proves it (lb vs lbu, lh vs lhu), and
+say so in the comment, e.g. `/* 0x8BB (s8: Em_Damage_Stock) */`. Keep the
+`/* 0xOFFSET ...` comment on every field: the coordinator merges structs by offset with
+tools/merge_struct.py.
+
 ## Notes
 - Don't append to docs/STATUS.md (everyone would conflict). Put what you learned in
   `docs/agents/agent-X.md` (create it): per file, what matched, how verified
