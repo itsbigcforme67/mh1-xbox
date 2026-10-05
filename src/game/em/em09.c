@@ -16,7 +16,7 @@ typedef struct EM09W {
     u16 chase;          /* 0x0E non-zero: chasing a target */
     u8 _pad10[4];
     f32 home[3];        /* 0x14 home position */
-    u8 _pad20[4];
+    s32 shell;          /* 0x20 shell02_set result */
     PLW *pl;            /* 0x24 player the item was stolen from */
     u8 x28[0x46 - 0x28]; /* 0x28 yobi work (pull_em_yobi) */
     s16 item;           /* 0x46 stolen item, -1 none */
@@ -46,9 +46,14 @@ void Eft24_set_em(EMW *, int, int, int, f32, f32);
 void shell14_set(EMW *, int);
 int em_frame_check(EMW *, f32, int);
 void Quest_enemy_escape(EMW *);
-void shell02_set(EMW *, int);
+int shell02_set(EMW *, int);
 void em_rate_add_g(EMW *);
-void flvecRotY();
+void flvecRotY(f32 *, f32);
+void em09_act_set();
+void em_escape_mind_set(EMW *, u8, u8);
+void em_cmd_reset(EMW *);
+#define ANG2DEG(a) (360.0f * (f32)(a) / 65536.0f)
+#define DEG2RAD(d) (2.0f * (3.1415927f * ((d) / 360.0f)))
 void pull_em_yobi(void *);
 void Item_stolen(s32, u16, s16);
 u16 Em_Calc_angY(f32 *, f32 *);
@@ -68,7 +73,7 @@ void oikake_ck(EMW *em) {
     }
 }
 
-void em09_act_set(EMW *em, int kind, u16 no) {
+void em09_act_set(em, kind, no) EMW *em; int kind; u16 no; {
     EM09W *w = (EM09W *)em->ex;
     f32 *p = (f32 *)kind;
 
@@ -801,5 +806,184 @@ static void em_move02_005A9F30(EMW *em) {
     case 0:
         em_fly00_005A9E90(em);
         break;
+    }
+}
+
+#define ATK_FLY_START(em) \
+    do { \
+        em->x388 = 2; \
+        em->rate_x = 0.0f; \
+        em->adj_y = 16.0f; \
+        em->adj_y = 30.0f; \
+        em->adj_z = 5.0f; \
+        flvecRotY(&em->rate_x, DEG2RAD(ANG2DEG(em->ang[1]))); \
+        em->x3C0[0] = 0.0f; \
+        em->x3C0[1] = -1.0f; \
+        em->x3C0[1] = -3.0f; \
+        em->x3C0[2] = 0.0f; \
+    } while (0)
+
+static void em_atk00_005A9F70(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x15, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            ATK_FLY_START(em);
+            em_char_set(em, 0x16, 0, 0);
+            shell02_set(em, 1);
+            em->x19 = 0;
+            em->x06 = 0;
+        }
+        break;
+    case 2:
+        em_rate_add_g(em);
+        if (em->x194 == 0 && em->pos[1] - 50.0f <= em->x5AC) {
+            if (em->x19 == 0) {
+                em->x05++;
+                em_char_set(em, 0x18, 0, 0);
+                em->adj_y *= 0.5f;
+                em->x3C0[1] = -0.5f;
+                em->x07 = 0;
+            } else {
+                em->x05++;
+                em_char_set(em, 0x17, 0, 0);
+                em->x07 = 1;
+            }
+        }
+        break;
+    case 3:
+        if (em->x388 != 0) {
+            if (em->pos[1] <= em->x5AC && em->x388 != 0) {
+                em->pos[1] = em->x5AC;
+                em->x388 = 0;
+            } else {
+                em_rate_add_g(em);
+            }
+        }
+        if (em->x194 == 0) {
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            if (em->x07 != 0) {
+                em->x07 = 0;
+                em09_next_act_set(em);
+            } else {
+                em09_act_set(em, 0, 3, 0);
+            }
+        }
+        break;
+    }
+}
+
+static void em_atk01_005AA1F0(EMW *em) {
+    EM09W *w = (EM09W *)em->ex;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0xF, 0, 0);
+        em->horm_ang = (u16)Em_Calc_angY(em->pos, em->tgt_pos);
+        if (em->x15 == 3) {
+            em->work08 = 0x78;
+            w->shell = shell02_set(em, 7);
+            em->act_spd = 1.2f;
+        } else {
+            em->work08 = 0x3C;
+            w->shell = shell02_set(em, 2);
+            em->act_spd = 1.0f;
+        }
+        break;
+    case 1: {
+        PLW *pl;
+
+        if (em->x19 != 0) {
+            pl = em->x7A0;
+            if (pl != 0 && pl->id < 4 && pl == &player_work[pl->id] && em->x7A4->kind == 2 && pl->be_flag != 0) {
+                item_theft_005A8540(em, pl, w);
+                em_escape_mind_set(em, 1, 0x90);
+                em->x05++;
+                em_char_set(em, 0x17, 0, 0);
+                break;
+            }
+        }
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 3, 0, 0);
+        } else {
+            if (em->x15 == 3) {
+                em->horm_ang = (u16)Em_Calc_angY(em->pos, em->tgt_pos);
+            }
+            em09_dir_calc(&em->ang[1], &em->horm_ang, 0x800);
+            cpRotMatrix(em->ang, (f32 *)em->mat);
+            oikake_ck(em);
+        }
+        break;
+    }
+    case 2:
+        if (em->x194 == 0) {
+            em09_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_atk02_005AA420(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        ATK_FLY_START(em);
+        em_char_set(em, 0x16, 0, 0);
+        shell02_set(em, 1);
+        em->x19 = 0;
+        em->x06 = 0;
+        break;
+    case 1:
+        em_rate_add_g(em);
+        if (em->x194 == 0 && em->pos[1] - 50.0f <= em->x5AC) {
+            if (em->x19 == 0) {
+                em->x05++;
+                em_char_set(em, 0x18, 0, 0);
+                em->adj_y *= 0.5f;
+                em->x3C0[1] = -0.5f;
+                em->x07 = 0;
+            } else {
+                em->x05++;
+                em_char_set(em, 0x18, 0, 0);
+                em->x07 = 1;
+            }
+        }
+        break;
+    case 2:
+        if (em->x388 != 0) {
+            if (em->pos[1] <= em->x5AC && em->x388 != 0) {
+                em->pos[1] = em->x5AC;
+                em->x388 = 0;
+            } else {
+                em_rate_add_g(em);
+            }
+        }
+        if (em->x194 == 0) {
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            if (em->x07 != 0) {
+                em->x07 = 0;
+                em09_next_act_set(em);
+            } else {
+                em09_act_set(em, 0, 3, 0);
+            }
+        }
+        break;
+    }
+}
+
+static void em_move03_005AA670(EMW *em) {
+    switch (em->x15) {
+    case 0: em_atk00_005A9F70(em); break;
+    case 1: em_atk01_005AA1F0(em); break;
+    case 2: em_atk02_005AA420(em); break;
+    case 3: em_atk01_005AA1F0(em); break;
     }
 }
