@@ -137,7 +137,7 @@ int Get_weapon_job2(u8, u16);
 void vib_set(int, int);
 int Reibun_Edit_Core(u8);
 int Reibun_Edit_Start(u8);
-u8 Reibun_select_mv(u8);
+u8 Reibun_select_mv(int, u8);
 extern u16 item_pick_declaration_code;
 extern s16 item_pick_declaration_timer;
 int Pl_master_ck(void);
@@ -379,22 +379,26 @@ void player_name_id_print(PLW *pl) {
 u16 pit_key_repeat(u16 now, u16 hold) {
     u16 k = now & 0x3C00;
     u16 h;
+    u16 r;
 
     if (k != 0) {
         lpPit->key = k;
         lpPit->rep = 8;
-        return (s16)k;
+        r = (s16)k;
+    } else {
+        h = hold & 0x3C00;
+        if (h == 0) {
+            r = lpPit->key = 0;
+        } else {
+            lpPit->rep--;
+            r = 0;
+            if (lpPit->rep <= 0) {
+                lpPit->rep = 3;
+                r = lpPit->key &= h;
+            }
+        }
     }
-    h = hold & 0x3C00;
-    if (h == 0) {
-        return lpPit->key = 0;
-    }
-    lpPit->rep--;
-    if (lpPit->rep <= 0) {
-        lpPit->rep = 3;
-        return lpPit->key &= h;
-    }
-    return 0;
+    return r;
 }
 
 void menu_init(void) {
@@ -434,9 +438,10 @@ int menu_retire_mv(int sw) {
             }
             return 0x40;
         }
-        return sw;
+    } else {
+        return 0;
     }
-    return 0;
+    return sw;
 }
 
 int juchu_chk(void) {
@@ -829,7 +834,7 @@ int Menu_data_mv(int sw) {
         }
     case 1:
         if ((u16)sw & 0x40) {
-            sw = sw & 0xFFBF & 0xFFFF;
+            sw = (u16)(sw & 0xFFBF);
             PitMenu.x10 = 1;
             PitMenu.x11 = 2;
             PitMenu.x12 = lpPit->x43;
@@ -851,11 +856,11 @@ int Menu_data_mv(int sw) {
 
 void menu_data_mix_sub(int sw) {
     int a = sw & 0xFFFF;
+    s8 d;
     int p;
-    int d;
 
     if (a & 0xC00) {
-        d = !(a & 0x800) ? 1 : -1;
+        d = (a & 0x800) ? -1 : 1;
         p = Item_preparation_list_search(&lpPit->x81, d, &lpPit->x6C, &lpPit->x6E);
         if (lpPit->x68 != p) {
             lpPit->x68 = p;
@@ -872,21 +877,21 @@ void menu_data_mix_sub(int sw) {
 }
 
 void menu_data_monster_sub(int sw) {
-    int a = sw & 0xFFFF;
+    int a;
     s8 m;
-    int d;
 
     PitMenu.x10 = 0;
     if (FLD32(*User_data, 0x3F0) != 0) {
+        a = sw & 0xFFFF;
         if (a & 0xC00) {
-            m = Monster_list_search(FLDS8(*lpPit, 0x82), !(a & 0x800) ? 1 : -1);
-            if (FLDS8(*lpPit, 0x82) != m) {
-                FLDS8(*lpPit, 0x82) = m;
+            m = Monster_list_search(lpPit->x82, !(a & 0x800) ? 1 : -1);
+            if (m != lpPit->x82) {
+                lpPit->x82 = m;
                 se_req(7, 0x16, 0);
             }
         }
     } else {
-        FLDS8(*lpPit, 0x82) = -1;
+        lpPit->x82 = -1;
     }
 }
 
@@ -929,10 +934,10 @@ u8 *menu_equip_get_equip(u8 no) {
     default:
         return 0;
     }
-    if (idx == 0xFF) {
-        return 0;
+    if (idx != 0xFF) {
+        return u + idx * 6 + 0x44;
     }
-    return &u[0x44 + idx * 6];
+    return 0;
 }
 
 void Menu_equipment_i(void) {
@@ -1165,7 +1170,7 @@ int item_stock_mv(int sw) {
                 lpPit->x56 = 0;
                 se_req(7, 0x14, 0);
             }
-            sw = sw & 0xFFBF & 0xFFFF;
+            sw = (u16)(sw & 0xFFBF);
         } else if ((u16)sw & 0x200) {
             lpPit->x56 = 1;
             se_req(7, 9, 0);
@@ -1242,14 +1247,14 @@ void map_sign_move(int sw) {
         if (SIGN(o) >= 0) {
             SIGN(o)++;
         }
-        if (SIGN(o) >= 0x6A) {
+        if (SIGN(o) > 105) {
             SIGN(o) = -1;
         }
     }
-    if (SIGN(game_w.master * 2) < 0 && ((u16)sw & 2)) {
+    if ((((s16 *)((u8 *)lpPit + 0x34))[game_w.master]) < 0 && ((u16)sw & 2)) {
         lpPit->x3C--;
         if (lpPit->x3C <= 0) {
-            SIGN(game_w.master * 2) = 0;
+            (((s16 *)((u8 *)lpPit + 0x34))[game_w.master]) = 0;
             net_send_sys(9, game_w.master);
         }
         return;
@@ -1439,7 +1444,7 @@ int menu_chcnfg_reibun(int sw) {
         a = r & 0xFFFF;
         if (!(a & 0x40)) {
             PitMenu.x12 = 3;
-            PitMenu.x1B = Reibun_select_mv(PitMenu.x1B);
+            PitMenu.x1B = Reibun_select_mv(sw, PitMenu.x1B);
             if ((a & 0x20) && Reibun_Edit_Start(PitMenu.x1B) == 1) {
                 lpPit->x7F++;
             }
@@ -1447,7 +1452,7 @@ int menu_chcnfg_reibun(int sw) {
         break;
     case 1:
         PitMenu.x12 = 4;
-        r = r & 0x7FBF & 0xFFFF;
+        r = (u16)(r & 0x7FBF);
         if ((s8)Reibun_Edit_Core(PitMenu.x1B) != 0) {
             lpPit->x7F = 0;
         }
@@ -1631,20 +1636,23 @@ u32 boss_icon_color(EMW *em) {
 
 void maru_disp_sub(int col, f32 x, f32 y, f32 r) {
     PFLPS q;
+    f32 w;
 
     SetFilterMode(1);
+    q.b = 0xF00010;
     q.a = col;
     q.c = 0x1000020;
-    q.b = 0xF00010;
     q.s[0] = 0.8f * (x - r);
     q.s[1] = y - r;
-    q.s[2] = 0.8f * (2.0f * r);
-    q.s[3] = 2.0f * r;
+    w = r + r;
+    q.s[2] = 0.8f * w;
+    q.s[3] = w;
     flps0008(&q);
 }
 
 void camp_disp_sub(f32 x, f32 y) {
     PFLPS q;
+    f32 w, h;
 
     reload_tex(1, 0x119);
     SetTextureStage(0x119);
@@ -1654,15 +1662,17 @@ void camp_disp_sub(f32 x, f32 y) {
     q.c = 0xFF002F;
     q.s[0] = 0.8f * (x - 8.0f);
     q.s[1] = y - 8.0f;
-    q.s[2] = 12.8f;
-    q.s[3] = 16.0f;
+    w = 12.8f;
+    h = 16.0f;
+    q.s[2] = w;
+    q.s[3] = h;
     flps0008(&q);
 }
 
 void Pit_mv_lb(void) {
+    int now;
     int sw;
     int r;
-    int now;
 
     now = FLD16(Psw, 4);
     sw = (now | pit_key_repeat(now, FLD16(Psw, 0))) & 0xFFFF;
@@ -1703,9 +1713,9 @@ void Pit_mv_lb(void) {
 /* Per-frame pit menu: HP/stamina bars, item stock window, chat, main menu. */
 void Pit_mv(void) {
     PLW *pl;
-    int now;
-    int hold;
     int sw;
+    int hold;
+    int now;
     u32 i;
     int r;
 

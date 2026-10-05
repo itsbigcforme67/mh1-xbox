@@ -90,7 +90,8 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     s8 x82;           /* 0x82  */
     u8 x83;           /* 0x83  */
     s8 x84;           /* 0x84  */
-    u8 _pad85[0x88 - 0x85];
+    s8 x85;           /* 0x85 mix effect kind (mix_effect_set) */
+    s16 x86;          /* 0x86 mix effect frame counter */
     u8 x88;           /* 0x88  */
     u8 lb;            /* 0x89 1 in the lobby */
     u8 x8A;           /* 0x8A game_w+0x1DD */

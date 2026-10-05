@@ -358,3 +358,60 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
   * Pointer + index order of an addu (`(s32 *)em->x918 + pl` vs `&x[n]`).
   * `max = cond == 0 ? 3 : 7;` picks movn vs movz (Menu_item_mv).
 - Near-match status: see menu_nm.c per function (check.py).
+
+
+## f_menu display half (fifth session, worker C on Sonnet)
+- All 87 functions of f_menu (main 0x127440-0x134950) now have C. The display half
+  (map, item, vital, chat, quest text, effects: ~60 functions) is in
+  src/main/menu/menu_disp_nm.c (near-match, not built); the first half stays in menu_nm.c.
+  Runs are made from them with `tools/mkrun.py` (menu_nm.c) or the new `tools/mkrun2.py`
+  (keeps declarations/#defines that sit between functions, needed for menu_disp_nm.c).
+  A run file must also be checked with `tools/check.py` on its own: helpers defined earlier
+  in the same TU get inlined by MWCC, so a run that only has a prototype can differ.
+- Linked this session (all five modules OK): menu19 disp_map_sign; menu20 font_print_quest_
+  money/lv/target/Bdragon/BBQquest; menu21 Pit_disp_item_mix + put_mix_material; menu22
+  wyvn_efct_ripple; menu05 extended to include Menu_item_mv; menu24 menu_retire_mv; menu25
+  map_sign_move; menu26 menu_equip_get_equip (+ jump table 0x35A3A0); menu27 Menu_data_mv;
+  menu28 pit_key_repeat; menu29 disp_item_sub_normal; menu30 disp_item_sub_select_ex; menu31
+  disp_item_stock; menu32 disp_monster_list; menu33 Pit_disp_data; menu34 Pit_effect_move;
+  menu35 disp_mix_list; menu36 pef_get_scale.
+- Near-match, how far off (check.py counts; many "reloc" lines are not real):
+  disp_needle 4 (float reg order of one constant), Pit_disp_chat_cnfg 3, Pit_mv 4 / Pit_mv_lb 3
+  (needs `int pit_key_repeat(u16,u16)` prototype and decl order sw,hold,now; remaining diff is
+  `lhu a0` + move-to-saved-reg order), menu_chcnfg_reibun 3 (s0 copy of sw kept by the original),
+  menu_data_monster_sub 5, menu_data_mix_sub 4, maru_disp_sub 11 (store order of the struct),
+  camp_disp_sub (float vs constant folding of 12.8f/16.0f: original does not fold),
+  font_print_quest_time 29 (original does /30 then /60 as two divides, MWCC fuses mine),
+  disp_map 41, disp_others_info 25, Pit_disp_item_list 85, player_on_map 92, trans_box,
+  disp_item_sub_select (968 insns, jump table 0x35A5B0; structure transcribed from the asm),
+  disp_whole_map/disp_partial_map (one extra saved register), player_info_sub, mix_effect_set,
+  Pit_disp_pit_effect (madd.s chains are plain `a*b + c*d` in C), gage_disp, bar_disp (66),
+  disp_timer, disp_pl_vital, disp_pachinger, disp_cannon, disp_item, disp_item_icon, disp_name.
+  Written from the asm but only checked for compiling: lb_disp_chat_cnfg_sendpl, disp_menu,
+  disp_option, Pit_disp_menu_equipment, pef_get_scale/alpha, disp_slash_level, disp_gun_load_mess.
+- Shared-header / tool edits: include/game.h (GAME_W x21D carved from pad), include/menu.h
+  (PIT_W x85 s8, x86 s16 carved from pad), tools/draft.py (DRAFT_CTX=file passes m2c
+  --context so float/int args are typed), tools/setup_split.py (`$` in static data names such as
+  btn_item_sel$3617 is now `_`, so C can name them; config/symbols/*.txt regenerated).
+- Lessons (function that shows it):
+  * `x >= N` compiles `slti v1,...`; `x > N-1` compiles `slti at,...` (map_sign_move,
+    disp_item_stock, disp_monster_list, disp_mix_list): use the form the original has.
+  * Repeated float subexpressions: write them inline, not via temporaries (pef_get_scale matched
+    only with `(f32)(t - ta)` spelled out twice; `-(f32)x` vs `(f32)(-x)` also matters).
+  * A `return` in each switch case vs `break` changes code layout (Pit_disp_data: breaks).
+  * `if (a != X) { return value; } return 0;` order vs `if (a == X) return 0; return value;`
+    changes where the delay-slot addiu lands; `u + idx*6 + 0x44` vs `&u[0x44 + idx*6]`
+    (menu_equip_get_equip).
+  * One `r` result variable assigned in each branch gives the shared epilogue that the
+    original has when `return 0` sits in a branch delay slot (pit_key_repeat).
+  * `(u16)(sw & 0xFFBF)` keeps the second andi; `sw & 0xFFBF & 0xFFFF` merges to one (Menu_data_mv).
+  * Compute a masked copy of the argument inside the branch that uses it (not at the top) to
+    avoid it being hoisted into the first delay slot (menu_data_monster_sub).
+  * Typed u8/s16 field widths show as lbu/lhu in single instructions: if the original has lhu,
+    do not cast to (u8) (disp_item_sub_normal); a `u32 k` loop counter gives bne instead of bgtz.
+  * Struct with two views of the same words (PFLPS2 with u16 uv[4]) instead of casting
+    `((s16 *)&q.uv0)[1]` avoids extra pointer registers (disp_monster_list).
+  * A function parameter may be passed through untouched (a0) when the callee takes two
+    args (Reibun_select_mv(sw, idx)); check prototype arity from the asm.
+  * MWCC emits `madd.s/msub.s/adda.s/mula.s` for `a*b + c*d`; flSinCos(ang, &sin, &cos) with
+    sin at the higher stack address (declare `f32 s, c;` in that order).

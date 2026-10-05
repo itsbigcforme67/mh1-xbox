@@ -7,6 +7,7 @@ build/src/main/eft/eft13e.c.o .rodata .data
 build/src/main/game/f_game.c.o .rodata .data
 build/src/main/hit/hit.c.o .rodata .data
 build/src/main/menu/menu03.c.o .rodata .data
+build/src/main/menu/menu26.c.o .rodata .data
 build/src/main/pl/pl05.c.o .rodata .data
 build/src/main/stage/stage_set.c.o .rodata .data
 build/src/game/em/em_core_d.c.o .rodata .data
