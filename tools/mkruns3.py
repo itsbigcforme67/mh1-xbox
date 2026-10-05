@@ -93,7 +93,7 @@ def func_tables(fa, fsz):
                     lo = v & 0xFFFF
                     if (v >> 26) == 0x09 and lo & 0x8000: lo -= 0x10000
                     a = (hi << 16) + lo
-                    if 0x680000 <= a < 0x6C0000 and a % 4 == 0:
+                    if (0x340000 <= a < 0x3C0000 if mod == 'main' else 0x680000 <= a < 0x6C0000) and a % 4 == 0:
                         n = 0
                         while n < 600:
                             t = _w(a + 4 * n)
