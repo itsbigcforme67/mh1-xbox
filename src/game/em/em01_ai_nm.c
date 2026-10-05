@@ -13,7 +13,8 @@
 
 /* em01's part of the per-monster work at EMW+0x444 (em01.c has the same start). */
 typedef struct EM01W {
-    u8 _pad00[5];
+    u8 eff;             /* 0x00 effect script step (em01_effect_move) */
+    u8 _pad01[4];
     u8 x05;             /* 0x05 fly mode (4 circling, 1 fly 19) */
     s16 x06;            /* 0x06 (150 set after a landing) */
     u8 x08;             /* 0x08 cleared by every em01_act_set */
@@ -121,6 +122,29 @@ typedef struct FLYNEED {
 } FLYNEED;
 extern FLYNEED *em_thirst_tbl[];
 extern FLYNEED *em_hungry_tbl[];
+typedef struct STAGE_DATA {
+    u8 _pad00[0x10];
+    f32 width;          /* 0x10 */
+    f32 depth;          /* 0x14 */
+    f32 floor_y;        /* 0x18 */
+} STAGE_DATA;
+typedef f32 (*EM_POSP)[3];
+STAGE_DATA *Stage_data_get(u8);
+EM_POSP gp_ptr_ck(EMW *em, EM_STG_POS *p);
+void em_area_move_init(EMW *);
+static void ground_land_eff_set_0057A7E0(EMW *em);
+void get_joint_pos_em(EMW *, int, f32 *);
+void eft11_set(EMW *, f32 *, int);
+int em_pl_pos_set(EMW *, u8, f32 *);
+f32 flvecCalcDistance(f32 *, f32 *);
+static void takeoff_eff_set_0057A890(EMW *em);
+static void takeon_eff_set_0057A900(EMW *em);
+static void hover_eff_set2_0057A9A0(EMW *em);
+static int kyusyu_char_set_0057A9F0(EMW *em);
+static int kyusyu_char_set2_0057AAA0(EMW *em);
+static void kyusyu_senkai_ret_0057AB40(EMW *em);
+static void ef_move_sub_00574EE0(EMW *em);
+static void em01_uvmove(EMW *em);
 void em01_to_normal();
 void em01_to_fly();
 void em01_frame_reset();
@@ -1964,4 +1988,459 @@ static void em_fly08_0056AD20(EMW *em, EM01W *w) {
     if (em->pos[1] < em->x5AC) {
         em->pos[1] = em->x5AC;
     }
+}
+
+#define FLY_FLOOR(em)                    \
+    if ((em)->pos[1] < (em)->x5AC) {     \
+        (em)->pos[1] = (em)->x5AC;       \
+    }
+
+static void em_fly09_0056AFC0(EMW *em, EM01W *w) {
+    int t;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        w->turn = 0x100;
+        em_char_set(em, 0xF, 0, 0);
+        em_rate_clear(em);
+        em->adj_z = 80.0f;
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        em->ang[1] = w->dang;
+        em->x92F = 0xFF;
+        w->x18 = 1;
+        em_area_move_init(em);
+        break;
+    case 1:
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        em01_senkai_sub(em, 5, 0);
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        t = em->work08 - 1;
+        em->work08 = t;
+        if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 1000.0f || t < 0) {
+            em->x05++;
+            em->work08 = 0x258;
+            em01_act_set(em, 2, 1, 1);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            if (--em->work08 <= 0) {
+                em->work08 = 0x258;
+                em01_act_set(em, 2, 1, 1);
+            }
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly10_0056B190(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 2;
+        w->turn = 0x100;
+        em_char_set(em, 0xF, 0, 0);
+        em->x388 = 2;
+        em_rate_clear(em);
+        NextStage_Dir_Set(em, em->tgt_pos);
+        w->x18 = 1;
+        break;
+    case 1:
+        senkai_target(em);
+        em01_fly_adjy(em, 1);
+        em->pos[1] = em->pos[1] + 100.0f;
+        if (!(em->pos[1] < em->tgt_pos[1])) {
+            em->x05++;
+        }
+        break;
+    case 2:
+        em->x05++;
+        em->adj_z = 50.0f;
+        em_char_set(em, 0xC, 0, 0);
+        /* fallthrough */
+    case 3:
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        em01_senkai_sub(em, 1, 0);
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (AreaFieldInCheck(em->stg, em->pos) == 0) {
+            em->x05++;
+        }
+        break;
+    case 4:
+        em->x05++;
+        Em_Next_Stage_Pos();
+        WyvernAreaMove((PLW *)em);
+        if (em->stg == 0xF) {
+            em->stg = 0x13;
+        } else {
+            em->stg = 0xF;
+        }
+        em01_to_fly(em, 1);
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly11_0056B390(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0xC, 0, 0);
+        if (!(em->adj_z <= 100.0f)) {
+            em->adj_z = 100.0f;
+        }
+        w->x18 = 1;
+        break;
+    case 1:
+        if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 1000.0f) {
+            if (!(em->adj_z <= 50.0f)) {
+                em->adj_z = 50.0f;
+            }
+            em->x05++;
+            em->work08 = 0x12C;
+            em01_act_set(em, 2, 1, 1);
+        } else {
+            w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+            w->dang = w->dang - em->ang[1];
+            em01_senkai_sub(em, 1, 0);
+            w->spd[0] = em->ang[0];
+            w->spd[1] = em->ang[1];
+            w->spd[2] = 0;
+            speed_add(em, w->spd);
+            if (--em->work08 <= 0) {
+                em->x05++;
+                em->work08 = 0x12C;
+                em01_act_set(em, 2, 1, 1);
+            }
+        }
+        break;
+    case 2:
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        em01_senkai_sub(em, 1, 0);
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (--em->work08 <= 0) {
+            em->work08 = 0x12C;
+            if (em->x8C3 == 0) {
+                em01_act_set(em, 2, 1, 1);
+            }
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly12_0056B5E0(EMW *em, EM01W *w) {
+    int done = 0;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x34, 0, 0);
+        em01_fly_adjy2_init(em, 0xE);
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 76.0f)) {
+            em->x388 = 2;
+            done = em01_fly_adjy2(em);
+        }
+        if (done != 0 && em->pos[1] <= em->x5AC) {
+            em_char_set(em, 0x39, 0, 0);
+            em->x05++;
+            em->x388 = 0;
+            em->pos[1] = em->x5AC;
+            ground_land_eff_set_0057A7E0(em);
+            Em_set_quake_sub(em, 2);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly13_0056B740(EMW *em, EM01W *w) {
+    STAGE_DATA *sd;
+    EM_POSP p;
+    f32 z;
+    u8 ar;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        w->turn = 0x100;
+        em_char_set(em, 0xF, 0, 0);
+        em_rate_clear(em);
+        em->adj_z = 80.0f;
+        sd = Stage_data_get(em->stg);
+        em->tgt_pos[1] = sd->floor_y;
+        p = gp_ptr_ck(em, em->area->x0);
+        if (p == 0) {
+            em->tgt_pos[0] = sd->width / 2.0f;
+            z = sd->depth / 2.0f;
+        } else {
+            em->tgt_pos[0] = p[0][0];
+            z = p[0][2];
+        }
+        em->tgt_pos[2] = z;
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        em->ang[1] = w->dang;
+        w->x18 = 1;
+        em->work08 = 0x384;
+        em_area_move_init(em);
+        break;
+    case 1:
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        em01_senkai_sub(em, 5, 0);
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 1000.0f || --em->work08 <= 0) {
+            em->x05++;
+            em->work08 = 0x384;
+            NextStage_Dir_Set(em, em->tgt_pos);
+        }
+        break;
+    case 2:
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        em01_senkai_sub(em, 1, 0);
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (AreaFieldInCheck(em->stg, em->pos) == 0 || --em->work08 <= 0) {
+            em->x05++;
+        }
+        break;
+    case 3:
+        em->x05++;
+        em->work08 = 0x258;
+        Em_Next_Stage_Pos();
+        ar = em->x92F;
+        if ((u16)em->x73A == ar || ar == 0xFF) {
+            WyvernAreaMove((PLW *)em);
+            em01_act_set(em, 2, 9, 1);
+        } else {
+            if (em->x8C3 == 0) {
+                em->x73A = ar;
+                em->x829 = ar & 0xFFFF;
+                em->x827 = 3;
+                cmd_target_kind_set(em, em->tgt_pos);
+            }
+            em01_act_set(em, 2, 0xD, 1);
+            WyvernAreaMove((PLW *)em);
+        }
+        break;
+    case 4:
+        if (em->x8C3 == 0) {
+            if (--em->work08 <= 0) {
+                em->x05 = 3;
+            }
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly14_0056BAC0(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 2;
+        em_char_set(em, 0xF, 0, 0);
+        w->x18 = 0;
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly15_0056BB80(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 2;
+        em_char_set(em, 0xC, 0, 0);
+        em_rate_clear_g(em);
+        em->adj_y = 0.0f;
+        em->rate_x = 0.0f;
+        w->x18 = 1;
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_fly(em, 1);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly16_0056BC40(EMW *em, EM01W *w) {
+    int t;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 2;
+        em_char_set(em, 0xF, 0, 0);
+        w->turn = 0x100;
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        w->x18 = 0;
+        em->work08 = 0x96;
+        break;
+    case 1:
+        em01_fly_adjy(em, 1);
+        t = senkai_target(em) & 0xFF;
+        if (--em->work08 <= 0 || t != 0) {
+            em->x05++;
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+void em01_effect_move(EMW *em) {
+    EM01W *w = (EM01W *)em->ex;
+
+    switch (w->eff) {
+    case 0:
+        w->eff++;
+        break;
+    case 1:
+        ef_move_sub_00574EE0(em);
+        break;
+    }
+    em01_uvmove(em);
+}
+
+static void ground_land_eff_set_0057A7E0(EMW *em) {
+    VEC3 v;
+    f32 y;
+
+    if (game_w.stage == 0) {
+        get_joint_pos_em(em, 0x14, &v.x);
+        y = em->x5AC;
+        v.y = y;
+        if (y <= 46.0f) {
+            eft11_set(em, &v.x, 1);
+            get_joint_pos_em(em, 0x1A, &v.x);
+            eft11_set(em, &v.x, 1);
+        }
+    } else {
+        Eft20_set(1.0f, em, 0xB, 0);
+    }
+}
+
+static void takeoff_eff_set_0057A890(EMW *em) {
+    f32 v[3];
+    f32 y;
+
+    if (game_w.stage == 0) {
+        get_joint_pos_em(em, 0, v);
+        y = em->x5AC;
+        v[1] = y;
+        if (y <= 46.0f) {
+            eft11_set(em, v, 1);
+        }
+    }
+}
+
+static void takeon_eff_set_0057A900(EMW *em) {
+    f32 v[3];
+    f32 y;
+
+    if (game_w.stage == 0 && *(u16 *)&game_w.x1E % 10 == 0) {
+        get_joint_pos_em(em, 0, v);
+        y = em->x5AC;
+        if (v[1] - y < 400.0f && y <= 46.0f) {
+            eft11_set(em, v, 1);
+        }
+    }
+}
+
+static void hover_eff_set2_0057A9A0(EMW *em) {
+    if (*(u16 *)&game_w.x1E % 5 == 0) {
+        Eft20_set(1.0f, em, 0xA, 0);
+    }
+}
+
+static int kyusyu_char_set_0057A9F0(EMW *em) {
+    f32 v[3];
+    f32 d;
+
+    if (em->x617 == -1) {
+        return 0;
+    }
+    em_pl_pos_set(em, em->x617, v);
+    d = flvecCalcDistance(em->pos, v);
+    if (em->char0 == 0x415) {
+        return 1;
+    }
+    if (d <= 4.5f + 30.0f * em->adj_z) {
+        em_char_set(em, 0x2D, 0xA, 0);
+        return 1;
+    }
+    return 0;
+}
+
+static int kyusyu_char_set2_0057AAA0(EMW *em) {
+    f32 d;
+
+    d = flvecCalcDistance(em->pos, em->tgt_pos);
+    if (em->char0 == 0x415) {
+        return 1;
+    }
+    if (d <= 2.4199998f + 22.0f * em->adj_z) {
+        em_char_set(em, 0x2D, 0xA, 0);
+        return 1;
+    }
+    return 0;
+}
+
+static void kyusyu_senkai_ret_0057AB40(EMW *em) {
+    ((EM01W *)em->ex)->x05 = 0x63;
+    em01_to_fly(em, 1);
+}
+
+/* A file static in the original; data tables point at it. */
+void dummy_em_prog_0057AB50(void) {
 }
