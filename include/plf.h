@@ -129,4 +129,10 @@ s32 Taru_ok_ck(void);
 void pl_to_normal(PLW *, int, int, int);
 long Get_Active_itemnum(void);
 s16 Pl_trap_use_ck(PLW *);
+long Pl_item_num_ck(PLW *, u16);
+long Pl_item_num_ck2(PLW *, u16);
+long Pl_item_search_space(PLW *);
+f32 flvecCalcDistance(f32 *, f32 *);
+void set01_set2(void *);
+extern u8 lit_1830[];
 #endif

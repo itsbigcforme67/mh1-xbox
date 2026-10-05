@@ -228,3 +228,55 @@ void item_action_set(PLW *pl, u8 mode) {
         break;
     }
 }
+
+s32 trade_get_ck_00139680(PLW *pl) {
+    s16 i;
+    PLW *p;
+    u16 id;
+
+    if (Online_ck() == 0) {
+        return 0;
+    }
+    if (pl->work936 != 0) {
+        return 0;
+    }
+    p = player_work;
+    for (i = 0; i < game_w.pl_num; i++, p++) {
+        {
+            if (i != pl->id && p->be_flag != 0 && (s16)act_ck(p, 0, 0x67) != 0 && p->work909 == pl->id
+                && flvecCalcDistance(pl->pos, p->pos) <= 300.0f) {
+                id = p->work904;
+                if (Item_data[id][2] < 3) {
+                    if ((s16)Pl_item_num_ck(pl, id) == 0) {
+                        if ((s16)Pl_item_search_space(pl) != 0) {
+                            pl->work904 = p->work904;
+                            pl->work906 = p->work906;
+                            if (Pl_master_ck(pl) == 1) {
+                                net_send_pl(pl, 7, p->id);
+                            }
+                            Pl_act_set2(pl, 0, 0x68, 0);
+                            return 1;
+                        }
+                        set01_set2(lit_1830);
+                        pl->work936 = 0x5A;
+                        goto ret0;
+                    }
+                    if ((s16)Pl_item_num_ck2(pl, p->work904) >= p->work906) {
+                        pl->work904 = p->work904;
+                        pl->work906 = p->work906;
+                        if (Pl_master_ck(pl) == 1) {
+                            net_send_pl(pl, 7, p->id);
+                        }
+                        Pl_act_set2(pl, 0, 0x68, 0);
+                        return 1;
+                    }
+                    set01_set(1, 0xF, (s16)p->work904);
+                    pl->work936 = 0x5A;
+ret0:
+                    return 0;
+                }
+            }
+        }
+    }
+    return 0;
+}
