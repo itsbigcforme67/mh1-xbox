@@ -12,7 +12,7 @@
 #define PM ((u8 *)&PitMenu)
 void KinshiYogo_chk(char *);
 struct PIT_CHAT;
-void chat_log_add(u8, s8 *, struct PIT_CHAT *);
+void chat_log_add(int, s8 *, struct PIT_CHAT *);
 int Get_chat_line_num(void);
 int Plaza_get_chat_line_num(void);
 
@@ -103,7 +103,7 @@ int ChatKinsoku_chk(u8 *);
 int Menu_chatlog_i(void);
 void SoftKeyboard_exit(void);
 s8 SoftKeyboard_move(s8 *, u16, u16);
-void chat_log_add(u8, s8 *, PIT_CHAT *);
+void chat_log_add(int, s8 *, PIT_CHAT *);
 void func_5CB100(u8, s8 *, u8);
 void net_send_chat(u8, int, s8 *, int);
 void set01_set(int, int, int);
@@ -149,7 +149,7 @@ extern char lit_3181_00383570[];
 
 
 
-extern void *receive_mes_str[];
+extern void *receive_mes_str[2];
 
 
 extern s16 receive_mark_pos[][2];

@@ -1,4 +1,4 @@
-/* chat16 - f_chat 0x0027BD00-0x0027BD34: Default_reibun_set. Whole file in chat_nm.c. */
+/* chat16 - f_chat 0x0027BA00-0x0027BA7C: KinshiYogo_chk. Whole file in chat_nm.c. */
 #include "types.h"
 #include "menu.h"
 #include "ud.h"
@@ -12,7 +12,7 @@
 #define PM ((u8 *)&PitMenu)
 void KinshiYogo_chk(char *);
 struct PIT_CHAT;
-void chat_log_add(u8, s8 *, struct PIT_CHAT *);
+void chat_log_add(int, s8 *, struct PIT_CHAT *);
 int Get_chat_line_num(void);
 int Plaza_get_chat_line_num(void);
 
@@ -103,7 +103,7 @@ int ChatKinsoku_chk(u8 *);
 int Menu_chatlog_i(void);
 void SoftKeyboard_exit(void);
 s8 SoftKeyboard_move(s8 *, u16, u16);
-void chat_log_add(u8, s8 *, PIT_CHAT *);
+void chat_log_add(int, s8 *, PIT_CHAT *);
 void func_5CB100(u8, s8 *, u8);
 void net_send_chat(u8, int, s8 *, int);
 void set01_set(int, int, int);
@@ -149,7 +149,7 @@ extern char lit_3181_00383570[];
 
 
 
-extern void *receive_mes_str[];
+extern void *receive_mes_str[2];
 
 
 extern s16 receive_mark_pos[][2];
@@ -329,7 +329,17 @@ int softkey_ck();
 
 
 
-void Default_reibun_set(void) {
-    memcpy((u8 *)&option_w + 0xDB0, default_reibun, 0x21C);
-    Init_reibun();
+void KinshiYogo_chk(char *s) {
+    char **p;
+
+    p = ng_word_tbl_0;
+    do {
+        ng_word_sub(s, *p, 0);
+        p++;
+    } while (*p != 0);
+    p = ng_word_tbl_2;
+    do {
+        ng_word_sub(s, *p, 2);
+        p++;
+    } while (*p != 0);
 }

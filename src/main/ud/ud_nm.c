@@ -212,7 +212,7 @@ s16 Ud_item_num_ck3(u16 id) {
             n++;
         }
     }
-    return n == 0 ? (u8)-1 : Item_data[id][3];
+    return n == 0 ? -1 : Item_data[id][3];
 }
 
 int Ud_item_search_space(void) {

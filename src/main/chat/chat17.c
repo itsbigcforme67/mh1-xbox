@@ -1,4 +1,4 @@
-/* chat17 - f_chat 0x0027BE70-0x0027BEF8: Reibun_Edit_Start. Whole file in chat_nm.c. */
+/* chat17 - f_chat 0x0027BD00-0x0027BDD0: Default_reibun_set, init_reibun_sub, Init_reibun. Whole file in chat_nm.c. */
 #include "types.h"
 #include "menu.h"
 #include "ud.h"
@@ -12,7 +12,7 @@
 #define PM ((u8 *)&PitMenu)
 void KinshiYogo_chk(char *);
 struct PIT_CHAT;
-void chat_log_add(u8, s8 *, struct PIT_CHAT *);
+void chat_log_add(int, s8 *, struct PIT_CHAT *);
 int Get_chat_line_num(void);
 int Plaza_get_chat_line_num(void);
 
@@ -103,7 +103,7 @@ int ChatKinsoku_chk(u8 *);
 int Menu_chatlog_i(void);
 void SoftKeyboard_exit(void);
 s8 SoftKeyboard_move(s8 *, u16, u16);
-void chat_log_add(u8, s8 *, PIT_CHAT *);
+void chat_log_add(int, s8 *, PIT_CHAT *);
 void func_5CB100(u8, s8 *, u8);
 void net_send_chat(u8, int, s8 *, int);
 void set01_set(int, int, int);
@@ -149,7 +149,7 @@ extern char lit_3181_00383570[];
 
 
 
-extern void *receive_mes_str[];
+extern void *receive_mes_str[2];
 
 
 extern s16 receive_mark_pos[][2];
@@ -329,12 +329,40 @@ int softkey_ck();
 
 
 
-int Reibun_Edit_Start(int no) {
-    if (softkey_ck() == 0) {
-        return 0;
+void Default_reibun_set(void) {
+    memcpy((u8 *)&option_w + 0xDB0, default_reibun, 0x21C);
+    Init_reibun();
+}
+
+static void init_reibun_sub(s8 *d, s8 *s) {
+    u32 n;
+    s8 *top = d;
+
+    n = 6;
+    while (1) {
+        d[0] = s[0];
+        if (s[0] == 0) {
+            break;
+        }
+        n--;
+        d[1] = s[1];
+        s += 2;
+        d += 2;
+        if (n == 0) {
+            top[8] = 0x81;
+            top[9] = 0x64;
+            top[10] = 0;
+            break;
+        }
     }
-    SoftKeyboard_pos_set(80.0f, 0x50);
-    SoftKeyboard_set(2, 0, 0x2C, (int)str_tbl_reibun0[no & 0xFF].edit);
-    se_req(7, 0x11, 0);
-    return 1;
+}
+
+void Init_reibun(void) {
+    REIBUN *r = str_tbl_reibun0;
+    int n = 12;
+
+    do {
+        init_reibun_sub((s8 *)r, r->edit);
+        r++;
+    } while (--n != 0);
 }

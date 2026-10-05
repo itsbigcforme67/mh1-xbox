@@ -1,4 +1,4 @@
-/* chat07 - f_chat 0x00277600-0x00277628: Chat_log_clear. Whole file in chat_nm.c. */
+/* chat07 - f_chat 0x00277600-0x00277700: Chat_log_clear, Get_chat_line_num, Plaza_get_chat_line_num. Whole file in chat_nm.c. */
 #include "types.h"
 #include "menu.h"
 #include "ud.h"
@@ -12,7 +12,7 @@
 #define PM ((u8 *)&PitMenu)
 void KinshiYogo_chk(char *);
 struct PIT_CHAT;
-void chat_log_add(u8, s8 *, struct PIT_CHAT *);
+void chat_log_add(int, s8 *, struct PIT_CHAT *);
 int Get_chat_line_num(void);
 int Plaza_get_chat_line_num(void);
 
@@ -103,7 +103,7 @@ int ChatKinsoku_chk(u8 *);
 int Menu_chatlog_i(void);
 void SoftKeyboard_exit(void);
 s8 SoftKeyboard_move(s8 *, u16, u16);
-void chat_log_add(u8, s8 *, PIT_CHAT *);
+void chat_log_add(int, s8 *, PIT_CHAT *);
 void func_5CB100(u8, s8 *, u8);
 void net_send_chat(u8, int, s8 *, int);
 void set01_set(int, int, int);
@@ -149,7 +149,7 @@ extern char lit_3181_00383570[];
 
 
 
-extern void *receive_mes_str[];
+extern void *receive_mes_str[2];
 
 
 extern s16 receive_mark_pos[][2];
@@ -334,4 +334,30 @@ void Chat_log_clear(void) {
     PitMenu.lognum = 0;
     PitMenu.x21 = 1;
     PitMenu.logscr = 0;
+}
+
+int Get_chat_line_num(void) {
+    int n = 0;
+    int i = PitMenu.logtop - 1;
+    int c = PitMenu.lognum;
+
+    for (; c > 0; c--, i--) {
+        PIT_CHAT *l = &PitMenu.log[i & 0x3F];
+        n += l->nline;
+        if (l->uid[0] != 0) {
+            n++;
+        }
+    }
+    return n;
+}
+
+int Plaza_get_chat_line_num(void) {
+    int n = 0;
+    int i = PitMenu.logtop - 1;
+    int c = PitMenu.lognum;
+
+    for (; c > 0; c--, i--) {
+        n += PitMenu.log[i & 0x3F].nline;
+    }
+    return n;
 }

@@ -1,4 +1,4 @@
-/* chat01 - f_chat 0x002756C0-0x0027573C: Name_ID_change, Disp_name_or_id. Whole file in chat_nm.c. */
+/* chat18 - f_chat 0x0027BE70-0x0027BEF8: Reibun_Edit_Start. Whole file in chat_nm.c. */
 #include "types.h"
 #include "menu.h"
 #include "ud.h"
@@ -329,14 +329,12 @@ int softkey_ck();
 
 
 
-void Name_ID_change(void) {
-    PitMenu.x14 ^= 1;
+int Reibun_Edit_Start(int no) {
+    if (softkey_ck() == 0) {
+        return 0;
+    }
+    SoftKeyboard_pos_set(80.0f, 0x50);
+    SoftKeyboard_set(2, 0, 0x2C, (int)str_tbl_reibun0[no & 0xFF].edit);
     se_req(7, 0x11, 0);
-}
-
-void Disp_name_or_id(s16 v) {
-    FS16(pf_menu_sub, 2) = v;
-    DispFrameMessage(pf_menu_sub, lit_2047);
-    FS16(btn_menu_sub, 2) = v;
-    PutButtonICON(btn_menu_sub, 1);
+    return 1;
 }

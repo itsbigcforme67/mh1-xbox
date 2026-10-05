@@ -1,4 +1,4 @@
-/* chat12 - f_chat 0x002799B0-0x002799F8: PrintPlayerJob, EquipmentDescriptionWindow. Whole file in chat_nm.c. */
+/* chat12 - f_chat 0x00278C20-0x00278C4C: SetMessageHaltFlag, ClearMessageHaltFlag. Whole file in chat_nm.c. */
 #include "types.h"
 #include "menu.h"
 #include "ud.h"
@@ -12,7 +12,7 @@
 #define PM ((u8 *)&PitMenu)
 void KinshiYogo_chk(char *);
 struct PIT_CHAT;
-void chat_log_add(u8, s8 *, struct PIT_CHAT *);
+void chat_log_add(int, s8 *, struct PIT_CHAT *);
 int Get_chat_line_num(void);
 int Plaza_get_chat_line_num(void);
 
@@ -103,7 +103,7 @@ int ChatKinsoku_chk(u8 *);
 int Menu_chatlog_i(void);
 void SoftKeyboard_exit(void);
 s8 SoftKeyboard_move(s8 *, u16, u16);
-void chat_log_add(u8, s8 *, PIT_CHAT *);
+void chat_log_add(int, s8 *, PIT_CHAT *);
 void func_5CB100(u8, s8 *, u8);
 void net_send_chat(u8, int, s8 *, int);
 void set01_set(int, int, int);
@@ -149,7 +149,7 @@ extern char lit_3181_00383570[];
 
 
 
-extern void *receive_mes_str[];
+extern void *receive_mes_str[2];
 
 
 extern s16 receive_mark_pos[][2];
@@ -329,10 +329,11 @@ int softkey_ck();
 
 
 
-void PrintPlayerJob(void *pl) {
-    font_print_uf(menu_stat_job_str[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF]);
+void SetMessageHaltFlag(void) {
+    PitMenu.x0C = 0;
+    FS8(&PitMenu, 0x1C) = 1;
 }
 
-void EquipmentDescriptionWindow(u8 *a, s16 b, s16 c, int d, u8 *e) {
-    EquipmentDescriptionWindowA(a, b, c, d, e, 0xB2);
+void ClearMessageHaltFlag(void) {
+    FS8(&PitMenu, 0x1C) = 0;
 }

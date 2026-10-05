@@ -14,7 +14,7 @@
 #define PM ((u8 *)&PitMenu)
 void KinshiYogo_chk(char *);
 struct PIT_CHAT;
-void chat_log_add(u8, s8 *, struct PIT_CHAT *);
+void chat_log_add(int, s8 *, struct PIT_CHAT *);
 int Get_chat_line_num(void);
 int Plaza_get_chat_line_num(void);
 
@@ -463,8 +463,8 @@ void Chat_log_clear(void) {
 
 int Get_chat_line_num(void) {
     int n = 0;
-    u8 c = PitMenu.lognum;
     int i = PitMenu.logtop - 1;
+    int c = PitMenu.lognum;
 
     for (; c > 0; c--, i--) {
         PIT_CHAT *l = &PitMenu.log[i & 0x3F];
@@ -478,8 +478,8 @@ int Get_chat_line_num(void) {
 
 int Plaza_get_chat_line_num(void) {
     int n = 0;
-    u8 c = PitMenu.lognum;
     int i = PitMenu.logtop - 1;
+    int c = PitMenu.lognum;
 
     for (; c > 0; c--, i--) {
         n += PitMenu.log[i & 0x3F].nline;
@@ -596,6 +596,7 @@ void Chat_move(int);
 
 void Chat_init(void) {
     int k = 0;
+    u16 z = 0;
 
     if (GW(0x1DC) != 0 && NPCZoomInCameraCheck() == 1) {
         k = 4;
@@ -604,7 +605,7 @@ void Chat_init(void) {
     SoftKeyboard_pos_set(80.0f, 0x50);
     SoftKeyboard_set(k, 0xE, 0x2C, 0);
     PitMenu.x0C = 0;
-    PitMenu.x0F = 0;
+    PitMenu.x0F = z;
     se_req(7, 0x11, 0);
     Chat_move(0);
 }
@@ -613,7 +614,7 @@ int ChatKinsoku_chk(u8 *);
 int Menu_chatlog_i(void);
 void SoftKeyboard_exit(void);
 s8 SoftKeyboard_move(s8 *, u16, u16);
-void chat_log_add(u8, s8 *, PIT_CHAT *);
+void chat_log_add(int, s8 *, PIT_CHAT *);
 void func_5CB100(u8, s8 *, u8);
 void net_send_chat(u8, int, s8 *, int);
 void set01_set(int, int, int);
@@ -666,7 +667,7 @@ extern u8 chat_font_color[];
 extern u8 chat_cnfg_font_color[];
 extern u8 my_user_id[];
 
-void chat_log_add(u8 who, s8 *s, PIT_CHAT *src) {
+void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
     PIT_CHAT *l;
     s8 *o;
     int i;
@@ -752,9 +753,9 @@ dbl:
 void Chat_log_add(int who, int msg) {
     KinshiYogo_chk((char *)(msg + 0x1C));
     chat_log_add(who, (s8 *)(msg + 0x1C), (PIT_CHAT *)msg);
-    if ((u32)Get_chat_line_num() >= 0xC) {
+    if ((u32)Get_chat_line_num() > 0xB) {
         PitMenu.logscr++;
-        if (PitMenu.logscr >= 0x40) {
+        if (PitMenu.logscr > 0x3F) {
             PitMenu.logscr = 0x3F;
         }
     }
@@ -768,10 +769,10 @@ void Chat_log_add(int who, int msg) {
 
 void Plaza_chat_log_add(int msg) {
     KinshiYogo_chk((char *)(msg + 0x1C));
-    chat_log_add(0xFF, (s8 *)(msg + 0x1C), (PIT_CHAT *)msg);
-    if ((u32)Plaza_get_chat_line_num() >= 0xA) {
+    chat_log_add(255, (s8 *)(msg + 0x1C), (PIT_CHAT *)msg);
+    if ((u32)Plaza_get_chat_line_num() > 9) {
         PitMenu.logscr++;
-        if (PitMenu.logscr >= 0x40) {
+        if (PitMenu.logscr > 0x3F) {
             PitMenu.logscr = 0x3F;
         }
     }
@@ -876,8 +877,8 @@ int Menu_chatlog_mv(int sw) {
 
 u32 chat_log_disp_line(u8 top) {
     int n = 0;
-    int c = PitMenu.lognum - top;
     int i = (PitMenu.logtop - 1) - top;
+    int c = PitMenu.lognum - top;
 
     for (; c != 0; c--, i--) {
         PIT_CHAT *l = &PitMenu.log[i & 0x3F];
@@ -1022,12 +1023,12 @@ void Receive_mess_move(void) {
     }
 }
 
-extern void *receive_mes_str[];
+extern void *receive_mes_str[2];
 
 void Pit_disp_receive_mes(void) {
-    if (!(PitMenu.x22 & 0x80) && F8(&PitMenu, 0x1C) == 0 && PitMenu.x0C != 0) {
+    if (!(PitMenu.x22 & 0x80) && F8(&PitMenu, 0x1C) == 0 && F16(&PitMenu, 0xC) != 0) {
         SetFilterMode(0);
-        DispFrameMessage(pf_chat_log_base, receive_mes_str[(u8)PitMenu.x0E]);
+        DispFrameMessage(pf_chat_log_base, receive_mes_str[F8(&PitMenu, 0xE)]);
         disp_chat_log_sub(0, 0, 0);
     }
 }
@@ -2110,10 +2111,11 @@ void Default_reibun_set(void) {
     Init_reibun();
 }
 
-void init_reibun_sub(s8 *d, s8 *s) {
+static void init_reibun_sub(s8 *d, s8 *s) {
+    u32 n;
     s8 *top = d;
-    int n = 6;
 
+    n = 6;
     while (1) {
         d[0] = s[0];
         if (s[0] == 0) {
@@ -2137,7 +2139,7 @@ extern REIBUN str_tbl_reibun0[];
 
 void Init_reibun(void) {
     REIBUN *r = str_tbl_reibun0;
-    int n = 0x21;
+    int n = 12;
 
     do {
         init_reibun_sub((s8 *)r, r->edit);
@@ -2147,27 +2149,29 @@ void Init_reibun(void) {
 
 void chcnfg_reibun_set(s8 *src, int no) {
     REIBUN *r = &str_tbl_reibun0[no & 0xFF];
+    u32 n = 0x16;
     s8 *d = r->edit;
     s8 *s = src;
     s8 *t;
-    int n = 0x16;
-    int m;
+    u32 m;
+    s8 c;
 
-    while (*s != 0) {
-        *d = *s;
+    do {
+        c = *s;
+        if (c == 0) {
+            break;
+        }
+        *d = c;
         n--;
         d[1] = s[1];
         s += 2;
         d += 2;
-        if (n == 0) {
-            break;
-        }
-    }
+    } while (n != 0);
     *d = 0;
     t = (s8 *)r;
     s = src;
     m = 6;
-    while (1) {
+    do {
         t[0] = s[0];
         if (s[0] == 0) {
             break;
@@ -2182,7 +2186,7 @@ void chcnfg_reibun_set(s8 *src, int no) {
             ((s8 *)r)[10] = 0;
             break;
         }
-    }
+    } while (1);
 }
 
 int softkey_ck();

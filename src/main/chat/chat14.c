@@ -1,4 +1,4 @@
-/* chat14 - f_chat 0x0027B8F0-0x0027B934: Put_shousai. Whole file in chat_nm.c. */
+/* chat14 - f_chat 0x0027B1F0-0x0027B1F8: EquipmentCompareWindow. Whole file in chat_nm.c. */
 #include "types.h"
 #include "menu.h"
 #include "ud.h"
@@ -12,7 +12,7 @@
 #define PM ((u8 *)&PitMenu)
 void KinshiYogo_chk(char *);
 struct PIT_CHAT;
-void chat_log_add(u8, s8 *, struct PIT_CHAT *);
+void chat_log_add(int, s8 *, struct PIT_CHAT *);
 int Get_chat_line_num(void);
 int Plaza_get_chat_line_num(void);
 
@@ -103,7 +103,7 @@ int ChatKinsoku_chk(u8 *);
 int Menu_chatlog_i(void);
 void SoftKeyboard_exit(void);
 s8 SoftKeyboard_move(s8 *, u16, u16);
-void chat_log_add(u8, s8 *, PIT_CHAT *);
+void chat_log_add(int, s8 *, PIT_CHAT *);
 void func_5CB100(u8, s8 *, u8);
 void net_send_chat(u8, int, s8 *, int);
 void set01_set(int, int, int);
@@ -149,7 +149,7 @@ extern char lit_3181_00383570[];
 
 
 
-extern void *receive_mes_str[];
+extern void *receive_mes_str[2];
 
 
 extern s16 receive_mark_pos[][2];
@@ -329,8 +329,6 @@ int softkey_ck();
 
 
 
-void Put_shousai(void) {
-    flfntSetSize(0x12, 0x12);
-    font_print_ex(0x22E, 0x18A, 0, lit_4374);
-    PutButtonICON(setumei_shousai_4372, 1);
+void EquipmentCompareWindow(u8 *cur, u8 *other, s16 x, s16 y, int page) {
+    EquipmentCompareWindowA(cur, other, x, y, page, 0xB2);
 }

@@ -130,7 +130,7 @@ typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
     s8 x18;             /* 0x18 */
     u8 x19;             /* 0x19 (f_chat) */
     u8 _pad1A;
-    u8 x1B;             /* 0x1B */
+    s8 x1B;             /* 0x1B (s8: lb in Pit_disp_chat_cnfg) */
     u8 _pad1C;
     u8 open;            /* 0x1D non-zero while the menu is open (Cockpit_menu_chk) */
     u8 logtop;          /* 0x1E chat log write index (f_chat) */
