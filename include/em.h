@@ -27,7 +27,9 @@ typedef struct EMW {
     u8 kind;            /* 0x002 monster kind (set10_m checks 7) */
     u8 _pad003;
     u8 x04;             /* 0x004 shells end when >= 2 (shell02_m) */
-    u8 _pad005[0x0C - 0x05];
+    u8 _pad005[2];
+    u8 x07;             /* 0x007 3 ends attached effects (eft07_m) */
+    u8 _pad008[0x0C - 0x08];
     u16 id;             /* 0x00C */
     u8 _pad00E[2];
     u8 x10;             /* 0x010 */
@@ -63,7 +65,9 @@ typedef struct EMW {
     u8 _pad87C[0x884 - 0x87C];
     s8 x884;            /* 0x884 state flags picking eft19's model */
     s8 x885;            /* 0x885 */
-    u8 _pad886[0x959 - 0x886];
+    u8 _pad886[0x8B6 - 0x886];
+    u8 x8B6;            /* 0x8B6 eyes shown (eft07) */
+    u8 _pad8B7[0x959 - 0x8B7];
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
     u8 _pad95A[0x9EA - 0x95A];
     s8 x9EA;            /* 0x9EA trap state (shell12_m) */

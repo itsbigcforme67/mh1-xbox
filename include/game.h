@@ -13,7 +13,9 @@ typedef struct GAME_W {
     u8 port[2];         /* 0x020 controller port per player (get_sw) */
     u8 _pad022[2];
     u8 sw_mask;         /* 0x024 buttons ignored until released (get_sw) */
-    u8 _pad025[0xD1 - 0x25];
+    u8 _pad025[0xA8 - 0x25];
+    struct EFT_MDLW *area_mdlw[10]; /* 0x0A8 model sets by area (eft07_t, Em_area_ck) */
+    u8 _pad0D0;
     u8 master;          /* 0x0D1 player number of the session master */
     u8 _pad0D2[0x1B2 - 0xD2];
     u8 x1B2;            /* 0x1B2 set05: kind-2 fixtures fire once set */

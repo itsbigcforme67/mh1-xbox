@@ -26,7 +26,7 @@ typedef struct EFTW {
     u8 _pad18[0x20 - 0x18];
     void (*move)(struct EFTW *);    /* 0x20 */
     f32 pos[3];         /* 0x24 */
-    u8 _pad30[4];
+    f32 scale;          /* 0x30 eft07: glow size */
     EMW *owner;         /* 0x34 */
     struct PRIM *prim;  /* 0x38 */
     s16 prim_no;        /* 0x3C */
