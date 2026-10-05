@@ -17,6 +17,11 @@ void itembox_cursor_mv();
 void PageSelect();
 void flps0008();
 void ListSelect();
+u8 *Get_equip_data_ptr();
+int Warehouse_equip_out();
+int Warehouse_equip();
+void Lb_equip_set();
+void armor_set_myArmor();
 extern u8 D_3396D3[];
 int u_item_chk();
 int pick_kosuu_sel_chk();
@@ -898,4 +903,221 @@ menu:
         break;
     }
     return pad;
+}
+
+/* item box "equipment change" tab: move equipment between the equipment box (User_data + 0x44, 6 byte slots) and the character */
+s32 itembox_equipchange(s32 pad) {
+    u8 eq;
+    u8 *w;
+    u8 *e1;
+    u8 *e2;
+    u8 st;
+    u8 kind;
+    int ok;
+    int r;
+    int mask;
+    w = ib;
+    switch (F(u8, w, 5)) {
+    case 0:
+        if (F(s8, w, 0x1D) >= 0) {
+            if ((u16)pad & 0x20) {
+                F(s8, w, 0x1D) = -1;
+                pad = 0;
+                F(u8, ib, 0x20) = 0xFF;
+                se_req(7, 9, 0);
+                goto select;
+            }
+            F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
+            *(s16 *)0x39DAD2 = F(s8, ib, 0x1D);
+            return 0;
+        }
+select:
+        w = ib;
+        *(u8 *)0x39DAD2 = 0xA;
+        if (F(u8, w, 0x1F) != 0) {
+            if ((u16)pad & 0x240) {
+                F(u8, w, 0x1F) = 0;
+                se_req(7, 0x14, 0);
+            } else {
+                PageSelect(w + 0x18, pad, F(u8, w, 0x19));
+            }
+            pad = 0;
+        }
+        itembox_cursor_mv(ib + 9, pad, 1);
+        r = (u16)pad;
+        if (r & 0x20) {
+            w = ib;
+            F(u8 *, w, 0x14) = User_data + F(u8, w, 9) * 6 + 0x44;
+            w = ib;
+            ok = 0;
+            if (*F(u8 *, w, 0x14) != 0) {
+                F(s8, w, 0x18) = 0;
+                F(u8, ib, 0x19) = 2;
+                F(u8, ib, 1) = 0;
+                w = ib;
+                kind = F(u8 *, w, 0x14)[1];
+                ok = 1;
+                switch (kind) {
+                case 0:
+                    eq = User_data[0x457];
+                    break;
+                case 2:
+                    eq = User_data[0x458];
+                    break;
+                case 3:
+                    eq = User_data[0x459];
+                    break;
+                case 4:
+                    eq = User_data[0x45A];
+                    break;
+                case 5:
+                    eq = User_data[0x45B];
+                    break;
+                case 6:
+                case 7:
+                    eq = User_data[0x456];
+                    F(u8, w, 1) = 1;
+                    break;
+                }
+                if ((eq & 0xFF) != 0xFF) {
+                    F(u8 *, ib, 0x10) = User_data + (eq & 0xFF) * 6 + 0x44;
+                } else {
+                    F(u8 *, ib, 0x10) = 0;
+                }
+                w = ib;
+                e2 = F(u8 *, w, 0x14);
+                e1 = F(u8 *, w, 0x10);
+                if (e1 == e2) {
+                    if (F(u8, w, 1) != 0) {
+                        ok = 0;
+                        F(s8, w, 0x1D) = 0xC;
+                        F(u8, ib, 0x1E) = F(u8, ib, 9);
+                    }
+                    F(u8 *, ib, 0x14) = 0;
+                } else if (F(u8, w, 1) == 0) {
+                    st = Get_equip_data_ptr(e2, w)[2];
+                    if (!(st & ((User_data[1] != 0 ? 2 : 1) & 0xFF))) {
+                        ok = 0;
+                        F(s8, ib, 0x1D) = 0xE;
+                        F(u8, ib, 0x1E) = F(u8, ib, 9);
+                    } else {
+                        mask = 8;
+                        if (User_data[User_data[0x456] * 6 + 0x45] == 6) {
+                            mask = 4;
+                        }
+                        if (!(st & (mask & 0xFF))) {
+                            ok = 0;
+                            F(s8, ib, 0x1D) = 0xD;
+                            F(u8, ib, 0x1E) = F(u8, ib, 9);
+                        }
+                    }
+                } else {
+                    if (e1[1] != 7) {
+                        if (e2[1] == 7) {
+                            goto set4;
+                        }
+                    } else {
+set4:
+                        F(u8, w, 0x19) = 4;
+                    }
+                    w = ib;
+                    if (F(u8 *, w, 0x10)[1] != F(u8 *, w, 0x14)[1]) {
+                        F(u8, w, 1) = 2;
+                    }
+                }
+            }
+            if (ok == 1) {
+                F(u8, ib, 5) = F(u8, ib, 5) + 1;
+                se_req(7, 0x13, 0);
+            } else {
+                se_req(7, 0x15, 0);
+            }
+        } else if (r & 0x200) {
+            w = ib;
+            F(u8 *, w, 0x14) = User_data + F(u8, w, 9) * 6 + 0x44;
+            w = ib;
+            if (*F(u8 *, w, 0x14) != 0) {
+                *(u8 *)0x39DAD2 = 0xA;
+                F(u8, w, 0x1F) = 2;
+                F(s8, ib, 0x18) = 0;
+                F(u8, ib, 0x19) = 4;
+                se_req(7, 0x11, 0);
+            } else {
+                se_req(7, 0x15, 0);
+            }
+        }
+    default:
+        return pad;
+    case 1:
+        r = (u16)pad;
+        if (r & 0x40) {
+            *(u8 *)0x39DAD2 = 0xA;
+            F(u8, w, 5) = 0;
+            pad = (u16)(pad & 0xFFBF);
+            se_req(7, 0x14, 0);
+        } else {
+            if (F(u8 *, w, 0x14) == 0) {
+                *(u8 *)0x39DAD2 = 0x10;
+            } else if (F(u8 *, w, 0x10) == 0) {
+                *(u8 *)0x39DAD2 = 0x11;
+            } else if (F(u8, w, 1) != 2) {
+                *(u8 *)0x39DAD2 = 0xF;
+            } else {
+                *(u8 *)0x39DAD2 = 0xB;
+            }
+            w = ib;
+            PageSelect(w + 0x18, pad, F(u8, w, 0x19));
+            if (r & 0x20) {
+                w = ib;
+                if (F(u8 *, w, 0x14) == 0) {
+                    r = Warehouse_equip_out(User_data, F(u8 *, w, 0x10)[1]);
+                } else {
+                    r = Warehouse_equip(User_data, F(u8, w, 9));
+                }
+                if (r == 1) {
+                    *(u8 *)0x39DAD2 = 0x12;
+                    F(s8, ib, 0x18) = 0;
+                    F(u8, ib, 5) = F(u8, ib, 5) + 1;
+                    F(u8, ib, 6) = 0;
+                    se_req(7, 0x2D, 0);
+                    se_req(7, 0x13, 0);
+                } else {
+                    se_req(7, 0x15, 0);
+                }
+            }
+        }
+        return pad;
+    case 2:
+        *(u8 *)0x39DAD2 = 0x12;
+        switch (F(u8, w, 6)) {
+        case 0:
+            if (!(F(u8, w, 1) & 1)) {
+                F(u8, w, 6) = F(u8, w, 6) + 1;
+            } else {
+                Lb_equip_set((u8 *)player_work + game_w.master * 0xA00, User_data, w + 6);
+                F(u8, ib, 6) = 2;
+            }
+            break;
+        case 1:
+            armor_set_myArmor(2, w, w + 6);
+            F(u8, ib, 6) = F(u8, ib, 6) + 1;
+            break;
+        case 2:
+            *(u8 *)0x39DAD2 = 0x13;
+            F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
+            w = ib;
+            if (F(u8 *, w, 0x14) != 0) {
+                PageSelect(w + 0x18, pad, F(u8, w, 0x19));
+            }
+            if ((u16)pad & 0x20) {
+                F(u8, ib, 0x20) = 0xFF;
+                *(u8 *)0x39DAD2 = 0xA;
+                F(u8, ib, 5) = 0;
+                se_req(7, 9, 0, 0xFF);
+            }
+            break;
+        }
+        pad = (u16)(pad & 0xFFBF);
+        return pad;
+    }
 }
