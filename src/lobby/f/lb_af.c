@@ -74,14 +74,14 @@ int b;
     PLW *pl;
     int v;
     u8 m;
-    s8 a1;
+    int a1;
     int a0;
     m = game_w.master;
     pl = &player_work[m];
     Lb_move_common(m, b);
     switch (lb_sys.x04) {
     case 0:
-        DemoCameraRequest(0xB);
+        DemoCameraRequest(0xB, 0);
         adx_se_set(pl, 0x41);
         lb_sys.x6C = 1;
         lb_sys.x68 = 0x21;
@@ -90,44 +90,46 @@ int b;
     case 1:
         pl->x01 = 0;
         v = DemoCameraCheck();
-        if (v != -1 && v != 0) {
+        switch (v) {
+        case 0:
+        case -1:
+            a1 = lb_sys.x04 + 1;
+            lb_sys.x04 = a1;
+            pl->x73A = 0x56;
+            lb_sys.x71 = -1;
+            fade_set(0xA, a1);
             return;
         }
-        a1 = lb_sys.x04 + 1;
-        lb_sys.x04 = a1;
-        pl->x73A = 0x56;
-        lb_sys.x71 = -1;
-        fade_set(0xA, a1);
         return;
     case 2:
         pl->x01 = 0;
-        a0 = Fade_busy_ck(lb_sys.x04) & 0xFF;
-        if (a0 != 1) {
-            Disp_NowLoading(a0);
-            str_stop_all();
-            Lb_reset();
-            Lb_stage_load();
-            lb_sys.x6C = 1;
-            lb_sys.x68 = 0x21;
-            Lb_npc_set(pl->x73A);
-            fade_set(2);
-            lb_sys.x04 = lb_sys.x04 + 1;
-            lobby_bgm_set(game_w.stage);
-            DemoCameraRequest(0xC);
+        a0 = Fade_busy_ck() & 0xFF;
+        if (a0 == 1) {
             return;
         }
+        Disp_NowLoading(a0);
+        str_stop_all();
+        Lb_reset();
+        Lb_stage_load(pl->x73A);
+        lb_sys.x6C = 1;
+        lb_sys.x68 = 0x21;
+        Lb_npc_set(pl->x73A);
+        fade_set(2);
+        lb_sys.x04 = lb_sys.x04 + 1;
+        lobby_bgm_set(game_w.stage);
+        DemoCameraRequest(0xC, 0);
         return;
     case 3:
         pl->x01 = 1;
         v = DemoCameraCheck();
-        if (v != -1 && v != 0) {
-            return;
+        switch (v) {
+        case 0:
+        case -1:
+            lb_sys.x04 = 0;
+            lb_sys.x6C = 0;
+            lb_sys.x03 = 4;
+            Event_flag_set(2);
         }
-        lb_sys.x04 = 0;
-        lb_sys.x6C = 0;
-        lb_sys.x03 = 4;
-        Event_flag_set(2);
-        break;
     }
 }
 int Local_main(void) {

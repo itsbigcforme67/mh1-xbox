@@ -205,12 +205,7 @@ void Lb_St_unique_adr_set(PLW *pl) {
         pl->fish878 = 0;
         return;
     }
-    for (;; p += 0x18) {
-        if (*(f32 *)(p + 4) == -1.0f) {
-            Lb_put_unique_act_hint(pl, -1);
-            pl->fish878 = 0;
-            return;
-        }
+    while (*(f32 *)(p + 4) != -1.0f) {
         z = *(f32 *)(p + 8);
         y = pl->pos[1];
         if (!(y < z - 50.0f) && y < 50.0f + z) {
@@ -228,5 +223,8 @@ void Lb_St_unique_adr_set(PLW *pl) {
                 return;
             }
         }
+        p += 0x18;
     }
+    Lb_put_unique_act_hint(pl, -1);
+    pl->fish878 = 0;
 }
