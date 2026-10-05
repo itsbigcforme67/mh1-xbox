@@ -1061,10 +1061,10 @@ void trans_stage(void)
     case 0x1B:
     case 0x21:
         {
-            SCLAY *mdl;
             STG_MDLS *m;
-            f32 *p;
             int k;
+            f32 *p;
+            SCLAY *mdl;
             m = set_mdlw;
             p = (f32 *)set33_pos_tbl;
             for (k = 0; k < 9; k++, p += 4) {
@@ -1130,8 +1130,8 @@ void trans_stage(void)
         {
             STG_MDLS *m;
             f32 *p;
-            int k;
             SCLAY *mdl;
+            int k;
             m = set_mdlw;
             p = (f32 *)set36_pos_tbl;
             for (k = 0; k < 2; k++, p += 4) {
@@ -1168,9 +1168,9 @@ void trans_stage(void)
     case 0x27:
         {
             STG_MDLS *m;
+            SCLAY *mdl;
             f32 *p;
             int k;
-            SCLAY *mdl;
             m = set_mdlw;
             p = (f32 *)set39_pos_tbl;
             for (k = 0; k < 2; k++, p += 3) {

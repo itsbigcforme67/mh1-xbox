@@ -805,8 +805,8 @@ int arg1;
 void Quest_next_em_set(n)
 int n;
 {
-    s32 *l0;
     QEM *l1;
+    s32 *l0;
     int i;
     int v;
     u8 *g;
@@ -834,8 +834,11 @@ int n;
     l0 = Em_data_st_adrs_get(quest_w.x74, n, 0, quest_w.x3A);
     l1 = (QEM *)Em_data_st_adrs_get(quest_w.x74, n, 1, quest_w.x3A);
     if (l0 != 0) {
-        while (*l0 != -1) {
+        for (;;) {
             v = *l0;
+            if (v == -1) {
+                break;
+            }
             for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
                 if (g[0x28] == v) {
                     break;
@@ -854,12 +857,15 @@ int n;
             }
             l0++;
         }
-        while (l1->id >= 0) {
+        for (;;) {
+            if (l1->id < 0) {
+                break;
+            }
             if (!(l1->x2E & 1)) {
                 Em_direct_set(l1);
                 l1->x07 = game_w.stage;
             }
-            l1 = (QEM *)((u8 *)l1 + 0x3C);
+            l1++;
         }
     }
     if (n == 5 || n == 0x10 || n == 0x29) {
