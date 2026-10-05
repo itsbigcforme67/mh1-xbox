@@ -118,3 +118,7 @@ tools/merge_struct.py.
 Make sure everything good is committed on your branch, then reply with a short report:
 files done (fully matching / near-match + how far off), shared headers you edited,
 anything the coordinator must know to merge. Then stop.
+- One stubborn function no longer blocks a file: list it in config/c_rawfuncs.txt and write
+  `asm` + the generated build/raw/NAME.inc in its place (see mc_sel_ck in src/main/mc/mccomb.c;
+  the .inc comes from the disc at build time and is never committed). It still counts as
+  unmatched; use it only after a real attempt, so the rest of the file can link.

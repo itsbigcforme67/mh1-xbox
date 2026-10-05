@@ -1,4 +1,4 @@
-/* em17_r16 - monster 17 AI 0x005E1F80-0x005E1FF0: sound_call_sub_005E1F80. Whole file in em17_nm.c. */
+/* em17_r31 - monster AI 0x005DD310-0x005DD41C: em_fly02_005DD310. Whole file in em17_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -94,7 +94,7 @@ extern s16 em17_runaway_timer_tbl[];
 
 void em17_local_init(EMW *em);
 void em17_init(EMW *em);
-static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
+u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
 void act_dist_select_005DA5C0(EMW *em);
 void em17_to_normal(EMW *em, s16 a, s16 b);
 void em17_to_fly(EMW *em, int flag);
@@ -339,9 +339,41 @@ extern u8 *em17_act_add[3];
 
 
 
-void sound_call_sub_005E1F80(EMW *em, int se, int joint) {
-    f32 pos[3];
+void em_fly02_005DD310(EMW *em, EM17W *w) {
+    f32 temp_f1;
+    s32 temp_v0;
+    u8 temp_a2;
 
-    flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
-    Em_se_req2(em, se, 0, pos, 3, 0);
+    temp_a2 = em->x05;
+    switch (temp_a2) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a2 + 1;
+        em->x3F4 = 0;
+        em->x388 = 2;
+        w->turn = 0x100;
+        em_char_set(em, 0xF, 0, 0);
+        w->x18 = 0;
+        break;
+    case 1:
+        em17_fly_adjy(em, 1);
+        temp_v0 = em->work08 - 1;
+        em->work08 = temp_v0;
+        if (temp_v0 <= 0) {
+            em->x05 += 1;
+            em17_act_set(em, 2, 1, 1);
+        }
+        em17_senkai_target(em);
+        if (em->work08 == 0x12C) {
+            em17_to_fly(em, 0);
+        }
+        break;
+    case 2:
+        em17_fly_adjy(em, 1);
+        em17_senkai_target(em);
+        break;
+    }
+    temp_f1 = em->x5AC;
+    if (em->pos[1] < temp_f1) {
+        em->pos[1] = temp_f1;
+    }
 }

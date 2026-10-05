@@ -1,4 +1,4 @@
-/* em17_r17 - monster 17 AI 0x005E2090-0x005E21CC: sound_call_parts_005E2090, quake_call_005E2130, move_default_005E2180. Whole file in em17_nm.c. */
+/* em17_r19 - monster 17 AI 0x005D9F20-0x005DA57C: em17_init. Whole file in em17_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -94,7 +94,7 @@ extern s16 em17_runaway_timer_tbl[];
 
 void em17_local_init(EMW *em);
 void em17_init(EMW *em);
-static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
+u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
 void act_dist_select_005DA5C0(EMW *em);
 void em17_to_normal(EMW *em, s16 a, s16 b);
 void em17_to_fly(EMW *em, int flag);
@@ -339,36 +339,120 @@ extern u8 *em17_act_add[3];
 
 
 
-void sound_call_parts_005E2090(EMW *em, int frame, int se, int joint, u8 layer) {
-    f32 pos[3];
+void em17_init(EMW *em) {
+    EM17W *w = (EM17W *)em->ex;
+    s16 temp_v0;
+    u8 temp_a0;
+    u32 temp_a1;
 
-    if (em_frame_check(em, layer, (f32)frame) != 0) {
-        flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
-        Em_se_req2(em, se, 0, pos, 3, 0);
+    if (quest_w.no == 0) {
+        em->ang[1] = 0x8000;
+        switch (game_w.stage) {
+        case 0:
+            em->pos[0] = 8000.0f + 1500.0f * (f32)(u32)em->x13;
+            em->pos[1] = 0.0f;
+            em->pos[2] = 6000.0f;
+            break;
+        case 15:
+            em->pos[0] = 7900.0f + 1500.0f * (f32)(u32)em->x13;
+            em->pos[1] = 1050.0f;
+            em->pos[2] = 13900.0f;
+            break;
+        case 18:
+            em->pos[0] = 10000.0f + 1500.0f * (f32)(u32)em->x13;
+            em->pos[1] = 200.0f;
+            em->pos[2] = 8000.0f;
+            break;
+        case 22:
+            em->pos[0] = 9900.0f + 1500.0f * (f32)(u32)em->x13;
+            em->pos[1] = 300.0f;
+            em->pos[2] = 10350.0f;
+            break;
+        case 24:
+            em->pos[0] = 10000.0f + 1500.0f * (f32)(u32)em->x13;
+            em->pos[1] = 0.0f;
+            em->pos[2] = 5700.0f;
+            em->ang[1] = 0x4000;
+            break;
+        case 27:
+            em->pos[0] = 14300.0f + 1500.0f * (f32)(u32)em->x13;
+            em->pos[1] = 0.0f;
+            em->pos[2] = 7100.0f;
+            break;
+        case 37:
+            em->pos[0] = 9750.0f + 1500.0f * (f32)(u32)em->x13;
+            em->pos[1] = 300.0f;
+            em->pos[2] = 7750.0f;
+            break;
+        case 40:
+            em->pos[0] = 10500.0f + 1500.0f * (f32)(u32)em->x13;
+            em->pos[1] = 0.0f;
+            em->pos[2] = 9500.0f;
+            break;
+        default:
+            em->pos[0] = 5000.0f + 1500.0f * (f32)(u32)em->x13;
+            em->pos[1] = 0.0f;
+            em->pos[2] = 9000.0f;
+            break;
+        }
     }
-}
-
-void quake_call_005E2130(EMW *em, int frame, int arg) {
-    if (em_frame_check(em, 0, (f32)frame) != 0) {
-        Em_set_quake_sub(em, arg);
+    em->mode = 0;
+    em->x15 = 0;
+    if (em->kind == 0x11) {
+        em_char_set(em, 1, 0, 0);
+        em->x388 = 0;
+        em17_act_set(em, 0, 1, 0);
+        temp_v0 = em_hp_vital_set2(em, 0x4EC, 0x4D8);
+        em->x302 = temp_v0;
+        em->x792 = temp_v0;
+        em->x839 = 1;
+    } else {
+        em_char_set(em, 0x6B, 0, 0);
+        em->x388 = 0;
+        em17_act_set(em, 0, 0x16, 0);
+        temp_v0 = em_hp_vital_set2(em, 0x2A8, 0x334);
+        em->x302 = temp_v0;
+        em->x792 = temp_v0;
+        em->x839 = 0;
     }
-}
-
-void move_default_005E2180(EMW *em) {
-    M2C_FIELD(em, s32 *, 0x5C0) = 0;
-    M2C_FIELD(em, s32 *, 0x5C4) = 0;
-    M2C_FIELD(em, u16 *, 0x5F0) = 0xFFFF;
-    M2C_FIELD(em, u8 *, 0x5F8) = 0xFF;
-    M2C_FIELD(em, s32 *, 0x5CC) = 0;
-    M2C_FIELD(em, s32 *, 0x5D0) = 0;
-    M2C_FIELD(em, u16 *, 0x5F2) = 0xFFFF;
-    M2C_FIELD(em, u8 *, 0x5F9) = 0xFF;
-    M2C_FIELD(em, s32 *, 0x5D8) = 0;
-    M2C_FIELD(em, s32 *, 0x5DC) = 0;
-    M2C_FIELD(em, u16 *, 0x5F4) = 0xFFFF;
-    M2C_FIELD(em, u8 *, 0x5FA) = 0xFF;
-    M2C_FIELD(em, s32 *, 0x5E4) = 0;
-    M2C_FIELD(em, s32 *, 0x5E8) = 0;
-    M2C_FIELD(em, u16 *, 0x5F6) = 0xFFFF;
-    M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
+    w->x06 = 0;
+    em->x88B = 1;
+    em->x765 = 1;
+    em->x8C2 = 0;
+    em->x56A = 0;
+    em->stay_tm = em17_stay_timer_tbl[em->stg];
+    em->runaway_tm = em17_runaway_timer_tbl[em->stg];
+    w->dang = 0x4000;
+    w->pitch_spd = 0x100;
+    w->turn = 0x200;
+    w->bank_spd = 0x100;
+    w->bank_max = 0x2000;
+    w->turn_left = 0;
+    em->x734 = 3;
+    M2C_FIELD(em, u8 *, 0x735) = 0;
+    w->x48 = 0;
+    w->x49 = 0;
+    w->x4A = 0;
+    temp_a0 = em->x948 & 1;
+    em->x948 = temp_a0;
+    if (temp_a0 == 0) {
+        temp_a1 = em->kind;
+        switch (temp_a1) {
+        case 1:
+        case 6:
+        case 8:
+        case 0xB:
+        case 0xF:
+        case 0xE:
+        case 0x11:
+        case 0x15:
+        case 0x16:
+        case 0x1A:
+            em->ex[0xA3] = 0;
+            eft09_set(em, temp_a1);
+            break;
+        case 0x14:
+            break;
+        }
+    }
 }
