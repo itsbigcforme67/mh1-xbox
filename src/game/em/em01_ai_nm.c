@@ -82,6 +82,7 @@ static void sound_call_sub_00574CD0(EMW *em, int se, int joint);
 static void sound_call_00574D40(EMW *em, int frame, int se, int joint);
 static void sound_call_parts_00574DA0(EMW *em, int frame, int se, int joint, u8 mode);
 static void quake_call_00574E40(EMW *em, int frame, int v);
+static void move_default_00574E90(EMW *em);
 void Em_set_quake_sub(EMW *, int);
 void Em_se_req2(EMW *, int, int, f32 *, int, int);
 void flmatGetTrans(f32 *, void *);
@@ -505,7 +506,7 @@ static void em_act01_00567350(EMW *em, EM01W *w) {
     case 2:
         if (em->x8C3 == 0) {
             t = em->x734;
-            if ((u32)(t - 1) < 2U || t == 3) {
+            if (t == 1 || t == 2 || t == 3) {
                 if (em->x194 == 0) {
                     em->x05++;
                     act_dist_select_00566CD0(em);
@@ -3995,8 +3996,8 @@ void em_atk22(EMW *em, EM01W *w) {
     FLY_FLOOR(em);
 }
 
-/* A file static in the original. Variant of atk 8 that lands (ground contact after the pursuit). */
-void em_atk21(EMW *em, EM01W *w) {
+/* Variant of atk 8 that lands (ground contact after the pursuit). */
+static void em_atk21_0056F340(EMW *em, EM01W *w) {
     STAGE_DATA *sd;
     s8 r;
     PLW *pl;
@@ -5969,6 +5970,29 @@ void em01_uvmove(EMW *em) {
             break;
         }
     }
+}
+
+static void move_default_00574E90(EMW *em) {
+    f32 (*uv)[3] = (f32 (*)[3])((u8 *)em + 0x5C0);
+    u16 *tm = (u16 *)((u8 *)em + 0x5F0);
+    u8 *ty = (u8 *)em + 0x5F8;
+
+    uv[0][0] = 0.0f;
+    uv[0][1] = 0.0f;
+    tm[0] = 0xFFFF;
+    ty[0] = 0xFF;
+    uv[1][0] = 0.0f;
+    uv[1][1] = 0.0f;
+    tm[1] = 0xFFFF;
+    ty[1] = 0xFF;
+    uv[2][0] = 0.0f;
+    uv[2][1] = 0.0f;
+    tm[2] = 0xFFFF;
+    ty[2] = 0xFF;
+    uv[3][0] = 0.0f;
+    uv[3][1] = 0.0f;
+    tm[3] = 0xFFFF;
+    ty[3] = 0xFF;
 }
 
 /* Sound and effect script per animation (sound_call(em, frame, se, joint) plays a sound at the joint once the

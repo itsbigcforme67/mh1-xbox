@@ -363,3 +363,15 @@ main 0x00134710 0x00134858 menu/menu36
 main 0x00125340 0x00125730 frame/f_frame
 main 0x001257D0 0x00125F08 frame/f_frameb
 main 0x001263F0 0x001267BC frame/f_framec
+game 0x00566630 0x005670A4 em/em01_ai
+game 0x00567280 0x00567348 em/em01_aib
+game 0x00567470 0x005695DC em/em01_aic
+game 0x005698F0 0x00569A4C em/em01_aid
+game 0x00569D60 0x0056AFB4 em/em01_aie
+game 0x0056B190 0x0056E15C em/em01_aif
+game 0x0056E6F0 0x00574AC8 em/em01_aig
+game 0x00574CD0 0x0057A778 em/em01_aih
+game 0x0057A900 0x0057AB58 em/em01_aii
+game:rodata 0x00685B30 0x00685B50 em/em01_aif
+game:rodata 0x00685B50 0x00685EF0 em/em01_aig
+game:rodata 0x00685EF0 0x00686078 em/em01_aih
