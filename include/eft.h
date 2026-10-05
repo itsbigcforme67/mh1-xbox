@@ -19,11 +19,14 @@ typedef struct EFTW {
     s16 timer;          /* 0x08 */
     union {
         u16 ang;        /* 0x0A eft09: facing */
-        s16 joint;      /* 0x0A eft19: owner's joint */
+        s16 joint;      /* 0x0A eft19: owner's joint; eft24: joint, then spin angle */
     } u0A;
     u8 _pad0C[0x14 - 0x0C];
     s32 work14;         /* 0x14 */
-    u8 _pad18[0x20 - 0x18];
+    void *work;         /* 0x18 per-effect work area (eft24) */
+    u8 _pad1C[2];
+    u8 x1E;             /* 0x1E owner's id (eft24) */
+    u8 _pad1F;
     void (*move)(struct EFTW *);    /* 0x20 */
     f32 pos[3];         /* 0x24 */
     f32 scale;          /* 0x30 eft07: glow size */
