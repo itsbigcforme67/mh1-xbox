@@ -1741,12 +1741,13 @@ int *cnt;
 
 void station_em_set(void)
 {
-    s16 *l0;
-    int i;
     QEM *e;
     EMW *em;
-    u8 *g;
     s32 *l;
+    u8 *h;
+    int i;
+    u8 *g;
+    int j;
     s32 v;
 
     l = Em_data_com_adrs_get(quest_w.x78, 0);
@@ -1766,10 +1767,10 @@ void station_em_set(void)
                 l++;
                 continue;
             }
-            for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
-                if (g[0x28] <= 0) {
-                    ((u8 *)&game_w)[0x28 + i] = v;
-                    em_create_model(i);
+            for (j = 0, h = (u8 *)&game_w; j < 4; j++, h++) {
+                if (h[0x28] <= 0) {
+                    ((u8 *)&game_w)[0x28 + j] = v;
+                    em_create_model(j);
                     break;
                 }
             }
