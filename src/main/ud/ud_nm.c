@@ -696,7 +696,7 @@ int Seisan_ok_ck(u16 kind, s16 idx, int mode) {
     return 0;
 }
 
-static int gun_check(UDW *u, s16 i) {
+int gun_check(UDW *u, s16 i) {
     return u->ware[i].kind == 7;
 }
 
@@ -768,11 +768,11 @@ int Equip_ok_ck(UDW *u, UD_WARE *w) {
     if (u->x01 == 0) { m |= 1; } else { m |= 2; }
     if (u->wkind == 7) { m |= 8; } else { m |= 4; }
     switch (w->kind) {
-    case 0: if (m == (m & Armor_Leg_Data[w->id][2])) { break; } return 0;
     case 2: if (m == (m & Armor_Head_Data[w->id][2])) { break; } return 0;
     case 3: if (m == (m & Armor_Body_Data[w->id][2])) { break; } return 0;
-    case 4: if (m == (m & Armor_Arm_Data[w->id][2])) { break; } return 0;
     case 5: if (m == (m & Armor_Waist_Data[w->id][2])) { break; } return 0;
+    case 4: if (m == (m & Armor_Arm_Data[w->id][2])) { break; } return 0;
+    case 0: if (m == (m & Armor_Leg_Data[w->id][2])) { break; } return 0;
     case 6:
     case 7:
     default: break;
@@ -782,11 +782,11 @@ int Equip_ok_ck(UDW *u, UD_WARE *w) {
 
 int Get_equip_bit(UDW *u, UD_WARE *w) {
     switch (w->kind) {
-    case 0: return Armor_Leg_Data[w->id][2];
     case 2: return Armor_Head_Data[w->id][2];
     case 3: return Armor_Body_Data[w->id][2];
-    case 4: return Armor_Arm_Data[w->id][2];
     case 5: return Armor_Waist_Data[w->id][2];
+    case 4: return Armor_Arm_Data[w->id][2];
+    case 0: return Armor_Leg_Data[w->id][2];
     case 6:
     case 7: return 0xF;
     default: return 0;

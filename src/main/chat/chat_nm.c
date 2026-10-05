@@ -233,7 +233,7 @@ void DispFrameListA(void *fr, char *title, int cur, int alpha) {
             py += h;
         }
         tl = (s32 *)FS32(fr, 0xC);
-        for (j = F8(fr, 7); j > 0; j--, tl += 4) {
+        for (j = F8(fr, 7); j > 0; j--, tl++) {   /* asm: addiu 4 (one pointer) */
             if (*tl == 0) {
                 break;
             }
@@ -613,7 +613,7 @@ void Chat_init(void) {
 int ChatKinsoku_chk(u8 *);
 int Menu_chatlog_i(void);
 void SoftKeyboard_exit(void);
-s8 SoftKeyboard_move(s8 *, u16, u16);
+s8 SoftKeyboard_move(s8 *, s16, s16);
 void chat_log_add(int, s8 *, PIT_CHAT *);
 void func_5CB100(u8, s8 *, u8);
 void net_send_chat(u8, int, s8 *, int);
@@ -2204,7 +2204,6 @@ int Reibun_Edit_Start(int no) {
 int Reibun_Edit_Core(int no) {
     s8 buf[0x30];
     s8 r;
-    s8 SoftKeyboard_move();
 
     buf[0] = 0;
     r = SoftKeyboard_move(buf, *(s16 *)((u8 *)&Psw + 0), *(s16 *)((u8 *)&Psw + 4));

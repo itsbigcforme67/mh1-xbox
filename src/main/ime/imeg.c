@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -493,6 +493,23 @@ int n;
         len = n;
     }
     memcpy(buf, gAskRom.cur, len);
+    gAskRom.rest = gAskRom.rest - len;
+    gAskRom.cur = gAskRom.cur + len;
+    return len;
+}
+
+int FAskRom_Write(fd, buf, n)
+int fd;
+void *buf;
+int n;
+{
+    int len;
+
+    len = gAskRom.rest;
+    if (n < len) {
+        len = n;
+    }
+    memcpy(gAskRom.cur, buf, n);
     gAskRom.rest = gAskRom.rest - len;
     gAskRom.cur = gAskRom.cur + len;
     return len;

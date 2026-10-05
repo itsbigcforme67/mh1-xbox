@@ -557,7 +557,7 @@ Where the C lives:
   `((int *)&TBL)[i]`, call tables -> `((int (**)())&TBL)[i]()`, s64 -> long long, redeclared externs dropped), `tools/lbcb.py`
   (CallBack_Result_*: by-value `CNET_RES res` parameter spilled to the stack, stale temp args dropped), `tools/lbcws.py` (cw accessed through a
   per-function struct), `tools/lbfld.py/lbfld2.py` (F(T,&lb_sys,off) -> typed members of include/lobby_b.h), `tools/lbvar.py` (`>= C` -> `> C-1`),
-  `tools/lbtail.py` (drop the `return;` m2c puts at the end of the last case), `tools/lbfix2.py` (`block_N: default: return X;` -> break + return).
+  `tools/lbtail.py` (drop the `return;` m2c puts at the end of the last case), `tools/lbblock.py` (`block_N: default: return X;` -> break + return).
   `tools/lbf_merge.py` now takes LBFL (function list file), LBDIR (output dir under src/lobby), FORCE_OK (names check.py cannot verify).
 - `src/lobby/b/nm/NAME.c`: one near-match draft per function (compiles, not linked). Many are still m2c "int mode" code (pointers as int);
   measure closeness with `python3 tools/align.py FILE FUNC | grep -c '^replace\|^insert\|^delete'` (hunks), the instruction count

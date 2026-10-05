@@ -60,7 +60,7 @@ void cam_rail_move_sub(f32 goal, RAILPOS *rp, u8 *rail, int target) {
                 rp->t = len - rem;
                 return;
             }
-        } while (target < rp->sec);
+        } while (rp->sec > target);
         t = rp->t;
         if (t - goal <= rem) {
             rp->t = goal;
@@ -102,7 +102,7 @@ int cam_rail_move(RAILPOS *rp, u8 *rail, void *a2, void *a3) {
 int cam_rail_move_0(RAILPOS *rp, u8 *rail, void *a2, void *a3) {
     rp->sec = GetNearSection(rail, a3);
     if (GetNearPoint(&rp->t, a2, rail, a3) != 0) {
-        rp->u = rp->t / SEC_LEN2(rail, rp->sec);
+        rp->u = rp->t / *(f32 *)((u8 *)(rp->sec * 0x10) + (int)rail + 0x10C);
         return 0;
     }
     rp->u = 0.0f;

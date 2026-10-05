@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,26 +469,33 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int next_gun(int disp, int wrap)
+void change_kind(u16 *p, int n, int kind)
 {
-    KH *old;
-    int n;
+    u16 k;
 
-    old = top_kh;
-    top_kh = take_kouho(old, gun_num);
-    n = inc_gun(top_kh);
-    if (n == 0) {
-        if (wrap == 0) {
-            top_kh = old;
-            return 0;
+    k = (kind & 0xFFFF) << 12;
+    while (n-- != 0) {
+        *p = (*p & 0xFFF) | k;
+        p++;
+    }
+}
+
+int shiftlen(int x)
+{
+    int c;
+    int h;
+
+    c = x & 0xFFFF;
+    h = c & 0xFF00;
+    switch (h) {
+    case 0x8000:
+    case 0x8500:
+        return 1;
+    case 0x8600:
+        if ((c & 0xFF) < 0x9E) {
+            return 1;
         }
-        init_kouho(0, 0);
-    } else {
-        gun_num = n;
+    default:
+        return 2;
     }
-    gun_nkh = 0;
-    if (disp == 1) {
-        disp_kouho();
-    }
-    return 1;
 }

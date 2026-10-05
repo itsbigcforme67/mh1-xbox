@@ -214,7 +214,7 @@ void AQQuickSortSub(AQNODE **v, int lo, int hi) {
         if (pivot < v[j]->time) {
             do {
                 j--;
-            } while (pivot < v[j]->time);
+            } while (v[j]->time > pivot);
         }
         if (i < j) {
             AQSwap(&v[i], &v[j]);

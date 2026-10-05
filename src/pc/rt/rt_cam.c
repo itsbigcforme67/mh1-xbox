@@ -9,8 +9,7 @@
  * (0x154D00), Pl_bari_ck (0x14FC40), flPow (powf), flMemset.
  * View_move (0x169A80) is replaced by the host: it reads lpView (eye,
  * target, roll, fov) and builds its own camera from it (rt_cam_view).
- * Not ported (stubs, see each): Game_clear_ck (quest-clear states),
- * Cockpit_chat_chk (online chat menu), hit_data_expand / body_ptr_ck2
+ * Not ported (stubs, see each): Cockpit_chat_chk (online chat menu), hit_data_expand / body_ptr_ck2
  * (monster body capsules: k_HitEmCamera finds no monster parts yet).
  */
 #include "rt.h"
@@ -71,19 +70,7 @@ void flMemset(void *p, s32 v, s32 n) { memset(p, v, (size_t)n); }
 
 int act_ck(void *chr, int a, int b);
 
-/* Game_clear_ck (0x162DB0): only states 3-8 of game_w+0xD5 (quest end)
- * can give 1; quests do not run on the PC yet, so it is 0 there. */
-s32 Game_clear_ck(s32 a)
-{
-    u8 st = ((u8 *)&game_w)[0xD5];
-    (void)a;
-    if ((u8)(st - 3) < 6) {
-        static int once;
-        if (!once++)
-            fprintf(stderr, "rt: Game_clear_ck state %d not ported (0)\n", st);
-    }
-    return 0;
-}
+/* Game_clear_ck (0x162DB0): src/main/font/dsp01.c (matched) */
 
 /* Cockpit_chat_chk (0x275220): the online chat menu is open; never here */
 s32 Cockpit_chat_chk(void) { return 0; }

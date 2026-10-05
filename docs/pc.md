@@ -367,6 +367,81 @@ sound/effect script is the game's (em_prog_tbl[1][3] = em01_effect_move).
   hunter dies (stub), other quests' small monsters (QEM lists per stage at
   x74) and stage changes.
 
+### Quest loop (game modes, f_quest, HUD, reward)
+
+With `--quest N` the PC runs the game's own quest flow (6 Oct 2026, agent A):
+- Start: rt_quest_load does Quest_init + Quest_start (select_w+0xAC = N)
+  as game11 does: mission file questName[N] into mission_area, quest_w
+  tables, stage, time limit, monster states (quest_em_init). The quest's
+  monsters come from station_em_set / Quest_next_em_set -> Em_direct_set
+  (src/main/quest/f_quest_nm.c; f_quest0_nm.c holds main
+  0x2267F0-0x226C24, written from the asm). Kinds whose program
+  (em_prog_tbl) is not ported get no model slot and are not spawned.
+- Game modes: rt_flow.c runs game_w.mode each tick through the matched
+  f_game.c / f_gameb.c: game2 (quest: game_core, Info_control,
+  Quest_condition_judging, Game_clear_ck, stage change steps 2-6), game3
+  (the "quest clear" wait), game5 (result_prog). game_core is the viewer's
+  host tick (sim_tick: pad, player, camera, hit_check, monsters, HUD).
+  Outside game2 the pad is still read every tick.
+- Clear: Quest_enemy_die -> quest_condition_prog -> x00 1 (150-tick wait,
+  then 60 s to carve, info banner) -> x00 2 -> game_w+0xD5 = 4 ->
+  Game_clear_ck(2) -> game3 -> game5 -> result_prog -> remuneration ->
+  reward screen (reward_mv/disp_reward, f_reward*): items picked with the
+  pad go into the pouch.
+- Carving: the hunter's own carve action (0/0x4A, circle at the carcass)
+  -> Ext_pick_point_ck2 (Em_hagi_point_set made the point at death) ->
+  ItemStockRequest (menu_nm.c) -> Pl_item_stack.
+- Hunter faints: Pl_die_set -> death action 3/0 -> pl+0x738 -> game2
+  steps 2-6: Quest_next_em_clr, st_model_load (the viewer's
+  load_stage_models: area/set models, collision, camera file, sound),
+  stage_set_set, Quest_next_em_set (the cart, em18), pl_init(1): the hunter
+  is back at the base camp (stage 21 for quest 10).
+- HUD ("pit", main f_menu): load_pit (textures), PitWork_init / Pit_init,
+  Pit_mv each tick; trans_pit_0/1/2 draw the clock, vital/stamina bars,
+  sharpness, map, item bar and its text through the game's own
+  menu_disp_nm.c. The info banner is set01.c.
+- 2D (src/pc/rt/rt_2d.c): flps0002/4/5/8/9/C screen prims read from the
+  asm (layouts in the file header), PS2 frame 512 x 448 stretched over the
+  window; textures by handle in mem_tex[] (flCreateTextureFromApx_mem on
+  host APX decoding); gfx_draw_2d in the gfx interface. Screen layers in
+  trans()'s order: ot5, font 0, ot6, font 1, ot7, font 2, ot8, font 4,
+  ot2, font 3 (rt_game_draw_2d).
+- Fonts (src/pc/rt/rt_font.c): AFS_DATA 0x6D2, 7808 glyphs of 20 x 20 at
+  2 bits (MSB first) in JIS order; flfntPrintf's five stacks by z,
+  FontPuts advance rules, Ascii2Sjis (the font's own half-width row
+  0x85), palettes from flfntSetPalData; font_print / _ex / _sp (~C / ~A
+  codes) / _double / _uf from the asm.
+- Test aids (scripted runs only): `RT_QUEST_TRACE=1` (mode/step/clear
+  state changes, the pouch when it changes, the reward list),
+  `RT_FONT_TRACE=1` (each text drawn), `RT_TEX_TRACE=1`,
+  `RT_TEX_DUMP=dir` (raw RGBA of every 2D texture), `RT_EM_HP=n` (monster
+  0's hit points), `RT_PL_WARP_EM=tick` (put the hunter at monster 0 at
+  that tick), `RT_PL_ITEMS="id:n,..."` (pouch; no save data),
+  `RT_PL_GOD` also clears the stun gauge.
+- Verified 6 Oct 2026 (quest 10, scripted --input, traces + shots in
+  build/show/A/quest/): HUD with items (hud_items.png); kill with
+  RT_EM_HP=30 + RT_DMG_MUL=40, carve three times -> Rathian Scale, Spike,
+  Flame Sac into the pouch; clear banner (clear_banner.png); 60 s later
+  game3 -> game5; reward menu (reward_menu.png) and item grid
+  (reward_items.png, icons checked against the decoded icon sheet),
+  circle takes a reward into the pouch; potion use 10 -> 9 (drink motion
+  406); death -> carted to the base camp, stage 21 loaded
+  (carted_to_camp.png); after the reward the money screen (result_prog
+  steps 2-3: fee, reward, total, money counted into User_data,
+  gold_result.png), then game mode 6, where the host starts the quest
+  again (back_to_quest.png; the PS2 goes back to the village, which is not
+  ported). Free play (`--play` without `--quest`) runs Quest_init's
+  free-hunt tables and shows the HUD too (free_play_hud.png). Nobody
+  compared any of it with the PS2 side by side.
+- Not done: SpritePut and the sprite prims flps0D00/0F00/1300/1400/1600
+  (game3's darkening quad), the cart's and other small monsters' models
+  (they run but are not drawn), quest failure after three faints (not
+  tested), map markers (flvecrRotTransPers), menu list/page selection
+  (ListSelect/PageSelect/Menu_select_mv: the pause menu), item combining
+  (Item_preparation*), the village after the reward (mode 6: the host
+  restarts the quest instead), game3's quest-clear text sits under the
+  missing darkening quad.
+
 ### Collision (stage HITS, game C)
 
 The game's own collision C (agent D's f_sphr near-matches, list HIT= in

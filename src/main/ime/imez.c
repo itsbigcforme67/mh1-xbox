@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,13 +469,73 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int write_temp(void)
+void update_nowtmp(void)
 {
-    if (seek_dic(0x1400) == -1) {
-        return -1;
+    temp_updated = 1;
+}
+
+int setkbuflen(u8 *p)
+{
+    int n;
+
+    n = 0;
+    while (*p != 0) {
+        if (iskanji(*p) != 0) {
+            p += 2;
+        } else {
+            p += 1;
+        }
+        n += 2;
     }
-    if (d_write(dic_fd, temp_pages, 0x2000) != 0x2000) {
-        return -1;
+    return n;
+}
+
+void setkbuf(u8 *src, u8 *dst)
+{
+    while (*src != 0) {
+        if (iskanji(*src) != 0) {
+            *dst = *src;
+            src++;
+            dst++;
+        } else {
+            *dst = 0xFF;
+            dst++;
+        }
+        *dst = *src;
+        src++;
+        dst++;
     }
-    return 0;
+}
+
+int getkbuflen(u8 *p, u8 *end)
+{
+    int n;
+
+    n = 0;
+    while (p < end && *p >= 0x39) {
+        if (*p == 0xFF) {
+            n++;
+        } else {
+            n += 2;
+        }
+        p += 2;
+    }
+    return n;
+}
+
+void getkbuf(u8 *dst, u8 *src, u8 *end)
+{
+    while (src < end && *src >= 0x39) {
+        if (*src == 0xFF) {
+            src++;
+        } else {
+            *dst = *src;
+            src++;
+            dst++;
+        }
+        *dst = *src;
+        src++;
+        dst++;
+    }
+    *dst = 0;
 }

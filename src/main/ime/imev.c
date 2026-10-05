@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,38 +469,7 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int get_maxtime(int *ids, int n)
+u8 *load_temp(int off)
 {
-    int i;
-    int m;
-    int id;
-
-    m = 0;
-    for (i = 0; i < n; i++) {
-        id = ids[i * 2];
-        if (id >= 0 && id < 0x80) {
-            if (entid_tab[id].cnt > 0) {
-                if (m < entid_tab[id].rtime) {
-                    m = entid_tab[id].rtime;
-                }
-            }
-        }
-    }
-    return m;
-}
-
-int update_entid_rtime(int *ids, int n, int rt)
-{
-    int i;
-    int id;
-
-    for (i = 0; i < n; i++) {
-        id = ids[i * 2];
-        if (id >= 0 && id < 0x80) {
-            if (entid_tab[id].cnt > 0) {
-                entid_tab[id].rtime = rt;
-            }
-        }
-    }
-    return 0;
+    return temp_pages[(s16)(off >> 12)] + (s16)(off & 0xFFF);
 }

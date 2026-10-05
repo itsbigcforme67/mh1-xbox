@@ -264,6 +264,7 @@ def attempt(fn, mode=''):
             for mm in re.finditer(r"'?(\w+)\(\.\.\.\)'? redeclared|identifier '(\w+)\(\.\.\.\)' redeclared", out):
                 pass
             if not added:
+                open(os.path.join(OUT, fn + '.err.c'), 'w').write(src)
                 res = {'status': 'error', 'msg': out.strip().split('\n')[3:6]}
                 os.makedirs(OUT + '_err', exist_ok=True)
                 open(os.path.join(OUT + '_err', fn + '.c'), 'w').write(src)

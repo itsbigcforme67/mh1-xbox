@@ -168,5 +168,26 @@ void rt_stage_draw(void);
  * trans(). VIEW/PROJECTION must already be set; render states touched by
  * game code are restored afterwards. */
 void rt_game_draw(void);
+/* the quest HUD (rt_quest.c): set-up after rt_game_init, Pit_mv per tick */
+void rt_hud_init(void);
+void rt_hud_tick(void);
+/* the screen layers (HUD, menus, info banner, text) after the 3D scene */
+void rt_game_draw_2d(void);
+
+/* ------------------------------------------------------------ game modes (rt_flow.c) */
+/* fn = the host's game tick, called as game_core (swset/move/trans/hit_check) */
+void rt_flow_set_core(void (*fn)(void));
+/* one tick of game_w.mode 2..5 (game2 quest, game3 clear screen, game5
+ * result); returns the mode that ran */
+int rt_flow_tick(void);
+int rt_flow_mode(void);         /* game_w.mode */
+/* mode 6 (after the result screen): the host's "back" (village not ported) */
+void rt_flow_set_back(void (*fn)(void));
+void rt_monster_clear_all(void);
+void rt_quest_free_hunt(void);  /* no --quest: Quest_init only */
+/* the host's stage (re)load, called by st_model_load in a stage change */
+void rt_set_stage_loader(int (*fn)(int));
+int rt_monster_shown(int no);   /* em_work[no] in use and on the current stage */
+void rt_pad_tick(void);         /* Psw from the host pad + swset (rt_pad.c) */
 
 #endif
