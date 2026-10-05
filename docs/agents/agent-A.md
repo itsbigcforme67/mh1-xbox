@@ -128,3 +128,24 @@ Where I stopped / next ideas:
    spawns nothing there), or eft/shell files with few dependencies.
 2. Real stage set spawn list instead of calling set14_set() by hand.
 3. clay_attr_set: map the 0xF0000 attribute chunk to gfx states.
+
+## Assignment 7: grow the port runtime (5 Oct 2026)
+Done (each step committed, details in docs/pc.md "Port runtime"):
+- Render states: clay_attr_set/reset, SetTrnslMode/SetOpeMode/SetFilterMode
+  ported to src/pc/rt/rt_fl.c; new gfx states 0x0D/0x5E/0x63/0x64. Blend
+  factor codes decoded from flPS2SendRenderState_ALPHA. Host draws apply
+  each part's attribute word too (st04_1 parts 0/1 are additive).
+- stage_set_set matched: src/main/stage/stage_set.c, main
+  0x15BBE0-0x15C210 + rodata 0x35B870-0x35B9A0, `tools/rebuild.sh` all OK.
+  Signature is `void stage_set_set(int stage)` with `switch ((u8)stage)`:
+  a u8 parameter gave a masked copy in a0 instead of passing s0 through.
+  Agent E has f_stage.c (WIP, not linked) for the rest of f_stage; it must
+  not define stage_set_set again.
+- Runtime runs stage_set_set, set00 (light shafts), set13 (sun glare,
+  with hit2/hit2c) and set14 on stage 4. Shots in build/show/rt_set00_*.png,
+  rt_set13_sun.png, rt_spawn_set14.png.
+- Shared code edited: src/main/set/set13c.c and set13_nm.c declare
+  hit_cap_sphr_m with its real argument order (check.py still OK). No
+  include/ headers touched.
+Ideas next: a --stage option in the viewer so other stages' set code
+(set09, set17, Set19...) can run; port hit_point_cyl; fade alpha scale.

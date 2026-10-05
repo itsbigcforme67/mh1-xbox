@@ -67,41 +67,86 @@ pc_viewer_close_0.5.png / _2.0.png:
 ## Port runtime (game C running natively)
 
 The decompiled game C is compiled unchanged with the game's own include/
-headers and linked into the viewer. First file: set14 (stage UV-scroll
-overlay), from src/game/set/set14_nm.c (whole file; set14_trans is a
-near-match on the PS2 side, believed equivalent). On stage 4 it scrolls the
-two waterfall layers of the st04_1 set model (clays 2 and 3, placed at
-11060,0,1566).
+headers and linked into the viewer (list in tools/build_pc.sh, GAME=).
+Running natively now:
+
+| file | what it does on stage 4 |
+|----|----|
+| src/main/stage/stage_set.c | stage_set_set, the per-stage spawn list (matches the PS2 code). For st04 it spawns set00, Set13_set(0) and set14 |
+| src/game/set/set00.c | light shafts: st04_1 clay 1, additive, scrolling, turned to the camera (rview_matY) at its two table positions |
+| src/main/set/set13*.c (+ set13_nm.c) | sun glare: st04_1 clay 0 drawn towards sun_pos_tbl[4], faded out when the stage_sphr_tbl spheres hide the sun |
+| src/game/set/set14_nm.c | UV-scrolled waterfalls (st04_1 clays 2 and 3 at 11060,0,1566) |
+| src/main/hit/hit2.c, hit2c.c | sphere/capsule tests set13 uses |
+
+The `_nm.c` files are near-matches on the PS2 side (logic believed
+equivalent), so they run here too.
 
 src/pc/rt/:
 - `rt_game.c`: game_w, player_work, stage_work (timer counts up each tick),
   set_mdlw; the set object pool (pull/push_set_work, 64 entries of 0x80: a
-  guess); prims and ordering tables ot0..ot3 (get_prim, add_prim; prims are
-  drawn in table order, low priority first: a guess); ran_suu (same
-  generator as 0x161230); rt_game_init/move/draw. Static asserts check the
-  struct layouts.
-- `rt_fl.c`: flSetRenderState (0x19 texture matrix, 0x1A world, 0x60 alpha
-  ref, 0x67 fade, 0x6C z-write; others print a one-time warning),
-  flmatMakeTrans, flFloor, flExecuteClay (handle -> gfx clay). Stubs:
-  clay_attr_set/reset, SetFilterMode, se_req2.
+  guess; pull_set_work(n) also gives n 512-byte heap blocks as sw->u.work,
+  like 0x155290); prims and ordering tables ot0..ot4 (get_prim,
+  release_prim, add_prim; drawn ot0 first, ot4 last, low priority first
+  inside a table: a guess); ran_suu (same generator as 0x161230);
+  rt_game_init (calls stage_set_set) / move / draw. Static asserts check
+  the struct layouts.
+- `rt_fl.c`: flSetRenderState (0x0D blend op, 0x19 texture matrix, 0x1A
+  world, 0x5E blend factors, 0x60 alpha ref, 0x63 filter, 0x64 texture
+  clamp, 0x67 fade, 0x6C z-write; 0x6D accepted and ignored; others print
+  a one-time warning), flExecuteClay (handle -> gfx clay), and the clay
+  attribute path, ported from the asm: clay_attr_set (0x121E20),
+  clay_attr_reset, SetTrnslMode, SetOpeMode, SetFilterMode. Their tables
+  (src_mode, dst_mode, ope_mode, filter_mode, aa_alpha_src, aa_alpha_ope,
+  aa_filt, aa_addr) are read from the ELF. rt_clay_attr_word() packs the
+  CLAY+0x88 word from an AMO part's 0xF0000 chunk like Attribute_from_amo,
+  so set-model clays and the host's own draws use the game's blend modes.
+- `rt_flmat.c`: fl matrix/vector/maths helpers (flmatRot*33, Mul33_2,
+  ScaleFactor33, SetXYZ33, flvec*, flSqrt, flArcCos...) written from the
+  VU0 asm, and rview_mat / rview_matY (rt_set_camera, as View_move builds
+  them: rview_mat = camera world matrix, rview_matY = Ry(camera yaw + 90°)).
+- `rt_main.c`: small main-program functions not decompiled yet, written
+  natively from the asm: clr_flash, hit_cap_pk; hit_point_cyl is a stub.
+- `rt_overlay.c`: main C calls overlay functions by address
+  (func_6229B0 = set14_set, ...). These names are routed to the ported
+  function, or to a stub that prints "not ported yet" once.
 - `rt_data.c`: Capcom data tables are declared empty and filled at start-up
   from the user's SLPM_654.95 / game.bin by address (nothing copied into
-  the repo).
+  the repo). Pointer tables (sun_pos_tbl, stg_eft_mdl_no, stage_sphr_tbl)
+  get each PS2 pointer translated to the same bytes in the loaded image.
 - `rt_mem.c`: PS2 address lookup in the ELF and the overlay.
 
-Game logic ticks at 30 per second; the host draws its own models, then
-`rt_game_draw()` walks the ordering tables. Set-model parts the game C has
-drawn are skipped by the host's generic draw so they are not drawn twice.
-The stage's set spawn list is not decompiled yet, so rt_game_init calls
-set14_set() by hand.
+Game logic ticks at 30 per second; the host draws its own models (each
+part with its clay_attr_set state), then `rt_game_draw()` walks the
+ordering tables. Set-model parts the game C has drawn are skipped by the
+host's generic draw so they are not drawn twice.
 
-Verified 5 Oct 2026: `build/pc/mhview disc/mh1 --shot X.png --size 640x480
---frames 3 --time T --cam 11060,700,5000,0,-0.1` at T = 1.0 and 1.5: the
-waterfalls are drawn, and between the two shots only the waterfall and
-mist pixels change (the textures scroll).
+Blend modes (fl state 0x5E, read from flPS2SendRenderState_ALPHA and the
+tables above): factor codes 0 zero, 1 one, 2 src alpha, 3 1-src alpha,
+4 dst alpha, 5 1-dst alpha; codes 6-9 have no GS form and are ignored, as
+on the PS2. Default (clay_attr_reset) is src alpha / 1-src alpha. Blend op
+0x400 is subtract (GS A-B with A=Cs); 0x800 is taken as reverse subtract
+[guess]. Filter: 0x10000 = point, 0 = bilinear (TEX1 MMAG/MMIN). Clamp:
+0 = repeat, else GS REGION_CLAMP (drawn as clamp-to-edge).
+
+Verified 5 Oct 2026 (offscreen shots, `--size 640x480 --frames 3`):
+- `--time 1.0 --cam 11060,700,5000,0,-0.1`: identical to the earlier
+  hand-spawned set14 shot (build/show/rt_set14_1.0.png), so the spawn list
+  reproduces it; between T = 1.0 and 1.5 only waterfall/mist pixels move.
+- `--cam 12300,500,8200,4.71,-0.1`: set00's light shafts through the ruin
+  arch (build/show/rt_set00_1.0.png); T = 1.0 vs 2.0 differ inside the
+  shafts (texture scroll).
+- `--cam 11000,500,8000,2.23,0.3`: the sun glare (build/show/rt_set13_sun.png).
+  Whether its size and brightness equal the PS2's is not checked.
+
+Porting hazard found: main C sometimes declares a callee with its
+arguments in a different order than the callee's own definition (floats
+and ints use separate registers on the PS2, so it still matched). On x86
+the order matters: set13c.c's hit_cap_sphr_m declaration was fixed for this
+(still matches). Check prototypes against the definition when adding C.
 
 Adding more game C: put the file in GAME in tools/build_pc.sh, its data
-tables in rt_data.c, and whatever it calls into rt_*.c.
+tables in rt_data.c, route func_XXXXXX calls in rt_overlay.c, and add
+whatever it calls into rt_*.c.
 
 ## Design notes, for the port
 
@@ -140,16 +185,17 @@ tables in rt_data.c, and whatever it calls into rt_*.c.
 
 ## Known gaps
 
-- **Render states:** no per-part attribute states yet (the 0xF0000 chunk:
-  cull, UV scroll, fog, blend modes). Everything is drawn with alpha test >
-  0x40 plus alpha blending and no culling. The sky is drawn first with
-  z-write off.
+- **Render states:** per-part blend, filter and clamp come from the
+  0xF0000 chunk (clay_attr_set). Cull, UV-scroll flag, fog and lighting
+  type from the same chunk (states 0x00, 0x62, 0x12, 0x01, baked into the
+  clay on the PS2) are not applied. Alpha test is > 0x40 for host draws.
+  The sky is drawn first with z-write off.
 - **Rathian:** the tail tip (AHI tree 1) is not attached, so it lies on the
   ground. No blending between motions.
 - **Hunter:** no weapon. Hair and cloth bones (ptmat ≥ 64) keep their bind
   offset.
-- **Runtime:** clay attributes (0xF0000 chunk) are not applied for game
-  draws either; fl fade alpha is passed as-is (PS2 0x80 = 1.0 is not
-  handled).
+- **Runtime:** fl fade alpha is passed as-is (PS2 0x80 = 1.0 is not
+  handled). No players/monsters run as game C yet, so player_work is
+  zero (set13 uses the master player's position on some stages).
 - **Hard-coded scene:** only stage 4, em01 and one armour set, chosen in
   viewer.c.
