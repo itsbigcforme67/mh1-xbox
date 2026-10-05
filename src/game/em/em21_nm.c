@@ -1044,8 +1044,6 @@ static void em_mv02_00601870(EMW *em, EM21W *w) {
             } else {
                 em->ang[1] = (temp_t0 - 0x1D4) & 0xFFFF;
             }
-        } else {
-            return;
         }
         break;
     }
@@ -1203,8 +1201,6 @@ static void em_fly03_00601D90(EMW *em, EM21W *w) {
                 return;
             }
             em->ang[1] = (temp_a3 - var_t0) & 0xFFFF;
-        } else {
-            return;
         }
         break;
     }
@@ -1778,8 +1774,6 @@ static void em_fly14_006030F0(EMW *em, EM21W *w) {
                 em21_act_set(em, 0, 4, 4);
                 return;
             }
-        } else {
-            return;
         }
         break;
     case 0x2:

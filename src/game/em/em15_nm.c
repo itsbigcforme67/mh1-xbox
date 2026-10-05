@@ -1227,7 +1227,7 @@ static void em_mv03_005C4BD0(EMW *em, EM15W *w) {
         em->x3F4 = 0;
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 < 0xE39 || temp_v1 >= 0xF1C8) {
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
             pl_flag_set((PLW *)em, 0x20000);
             em_char_set(em, 3, 0, 0);
         } else if (temp_v1 >= 0x8000) {
@@ -1248,7 +1248,7 @@ static void em_mv03_005C4BD0(EMW *em, EM15W *w) {
                     em15_to_normal(em);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 3, 0, 0);
                     return;
@@ -1268,8 +1268,6 @@ static void em_mv03_005C4BD0(EMW *em, EM15W *w) {
             } else {
                 em->ang[1] = (em->ang[1] - var_s1) & 0xFFFF;
             }
-        } else {
-            return;
         }
         break;
     }
@@ -1290,7 +1288,7 @@ static void em_mv05_005C4ED0(EMW *em, EM15W *w) {
         em->x3F4 = 0;
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 < 0xE39 || temp_v1 >= 0xF1C8) {
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
             pl_flag_set((PLW *)em, 0x20000);
             em_char_set(em, 3, 0, 0);
         } else if (temp_v1 >= 0x8000) {
@@ -1311,7 +1309,7 @@ static void em_mv05_005C4ED0(EMW *em, EM15W *w) {
                     em15_to_normal(em);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 3, 0, 0);
                     return;
@@ -1331,8 +1329,6 @@ static void em_mv05_005C4ED0(EMW *em, EM15W *w) {
             } else {
                 em->ang[1] = (em->ang[1] - var_s1) & 0xFFFF;
             }
-        } else {
-            return;
         }
         break;
     }
@@ -1388,9 +1384,9 @@ static void em_mv06_005C51D0(EMW *em, EM15W *w) {
 }
 
 static void em_mv07_005C5330(EMW *em, EM15W *w) {
-    s32 temp_a0;
     u16 temp_v1;
     u32 temp_a1_2;
+    s32 temp_a0;
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2607,7 +2603,7 @@ block_7:
                     em15_to_tenjo(em);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 0x77, 0, 0);
                     return;
@@ -2629,8 +2625,6 @@ block_7:
                 return;
             }
             em->ang[1] = (temp_a2_2 - 0x2C8) & 0xFFFF;
-        } else {
-            return;
         }
         break;
     }
@@ -2847,7 +2841,7 @@ block_8:
                     em15_act_set(em, 2, 0x1D, 1);
                     return;
                 }
-                if ((temp_a0 < 0xE39) || (temp_a0 >= 0xF1C8)) {
+                if ((temp_a0 <= 0xE38) || (temp_a0 >= 0xF1C8)) {
                     em_char_set(em, 0x77, 0, 0);
                     return;
                 }
@@ -2994,7 +2988,7 @@ block_8:
                     em15_act_set(em, 2, 0x20, 1);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 0x77, 0, 0);
                     return;
@@ -3079,7 +3073,7 @@ block_8:
                     em15_act_set(em, 2, 0x1C, 1);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 0x77, 0, 0);
                     return;

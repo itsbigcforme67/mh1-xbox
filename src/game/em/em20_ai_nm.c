@@ -629,8 +629,6 @@ static void em_act01_005EC820(EMW *em, EM20W *w) {
                     em20_act_set(em, 0, temp_a2, 0);
                 }
             }
-        } else {
-            return;
         }
         break;
     }
@@ -1694,7 +1692,7 @@ static void em_mv03_005EEA80(EMW *em, EM20W *w) {
         em->x3F4 = 0;
         w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->dang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 < 0xE39 || temp_v1 >= 0xF1C8) {
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
             pl_flag_set((PLW *)em, 0x20000);
             em_char_set(em, 3, 0, 0);
         } else if (temp_v1 >= 0x8000) {
@@ -1717,7 +1715,7 @@ static void em_mv03_005EEA80(EMW *em, EM20W *w) {
                     em20_to_normal(em, 0, 0);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 3, 0, 0);
                     return;
@@ -1739,8 +1737,6 @@ static void em_mv03_005EEA80(EMW *em, EM20W *w) {
                 return;
             }
             em->ang[1] = (temp_a2 - var_a3) & 0xFFFF;
-        } else {
-            return;
         }
         break;
     }
@@ -1812,7 +1808,7 @@ static void em_mv05_005EEEB0(EMW *em, EM20W *w) {
         em->x3F4 = 0;
         w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->dang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 < 0xE39 || temp_v1 >= 0xF1C8) {
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
             pl_flag_set((PLW *)em, 0x20000);
             em_char_set(em, 3, 0, 0);
         } else if (temp_v1 >= 0x8000) {
@@ -1835,7 +1831,7 @@ static void em_mv05_005EEEB0(EMW *em, EM20W *w) {
                     em20_to_normal(em, 0, 0);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 3, 0, 0);
                     return;
@@ -1857,8 +1853,6 @@ static void em_mv05_005EEEB0(EMW *em, EM20W *w) {
                 return;
             }
             em->ang[1] = (temp_a2 - var_a3) & 0xFFFF;
-        } else {
-            return;
         }
         break;
     }
@@ -1914,9 +1908,9 @@ static void em_mv06_005EF180(EMW *em, EM20W *w) {
 }
 
 static void em_mv07_005EF2E0(EMW *em, EM20W *w) {
-    s32 temp_a0;
     u16 temp_v1;
     u32 temp_a1_2;
+    s32 temp_a0;
     u8 temp_a1;
 
     temp_a1 = em->x05;
