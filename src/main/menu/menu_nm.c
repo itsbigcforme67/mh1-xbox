@@ -678,3 +678,246 @@ int Menu_item_mv(int sw) {
     }
     return sw;
 }
+
+extern u8 User_data[];
+int Item_preparation_list_search(s8 *, s8, u16 *, u16 *);
+int Monster_list_search(s8, int);
+int Get_weapon_job2(u8, u16);
+void vib_set(int, int);
+void menu_data_mix_sub(int);
+void menu_data_monster_sub(int);
+
+void Menu_data_i(void) {
+    lpPit->x42 = 0;
+    lpPit->x43 = 0;
+    lpPit->x81 = 0;
+    lpPit->x68 = 0;
+    lpPit->x82 = 0;
+    PitMenu.x10 = 1;
+    PitMenu.x11 = 2;
+    PitMenu.x12 = 0;
+}
+
+int Menu_data_mv(int sw) {
+    int a;
+
+    switch (lpPit->x42) {
+    case 0:
+        PitMenu.x10 = 1;
+        ListSelect(&lpPit->x43, sw, 2);
+        PitMenu.x12 = lpPit->x43;
+        a = sw & 0xFFFF;
+        if (!(a & 0x40) && (a & 0x20)) {
+            switch (lpPit->x43) {
+            case 0:
+                lpPit->x68 = Item_preparation_list_search(&lpPit->x81, 0, &lpPit->x6C, &lpPit->x6E);
+                break;
+            case 1:
+                lpPit->x82 = Monster_list_search(lpPit->x82, 0);
+                break;
+            }
+            sw = (u16)(sw & 0x8000);
+            lpPit->x42++;
+            se_req(7, 0x13, 0);
+        } else {
+            break;
+        }
+    case 1:
+        if ((u16)sw & 0x40) {
+            sw = sw & 0xFFBF & 0xFFFF;
+            PitMenu.x10 = 1;
+            PitMenu.x11 = 2;
+            PitMenu.x12 = lpPit->x43;
+            lpPit->x42 = 0;
+            se_req(7, 0x14, 0);
+        } else {
+            switch (lpPit->x43) {
+            case 0:
+                menu_data_mix_sub(sw);
+                break;
+            case 1:
+                menu_data_monster_sub(sw);
+                break;
+            }
+        }
+    }
+    return (u16)((u16)sw & 0x8040);
+}
+
+void menu_data_mix_sub(int sw) {
+    int a = sw & 0xFFFF;
+    int p;
+    int d;
+
+    if (a & 0xC00) {
+        d = !(a & 0x800) ? 1 : -1;
+        p = Item_preparation_list_search(&lpPit->x81, d, &lpPit->x6C, &lpPit->x6E);
+        if (lpPit->x68 != p) {
+            lpPit->x68 = p;
+            se_req(7, 0x16, 0);
+        }
+    }
+    PitMenu.x10 = 1;
+    PitMenu.x11 = 1;
+    if (lpPit->x68 != 0) {
+        PitMenu.x12 = *(s16 *)(lpPit->x68 + 2) + 0x18;
+        return;
+    }
+    PitMenu.x12 = 0xFFFF;
+}
+
+void menu_data_monster_sub(int sw) {
+    int a = sw & 0xFFFF;
+    s8 m;
+    int d;
+
+    PitMenu.x10 = 0;
+    if (FLD32(*User_data, 0x3F0) != 0) {
+        if (a & 0xC00) {
+            m = Monster_list_search(FLDS8(*lpPit, 0x82), !(a & 0x800) ? 1 : -1);
+            if (FLDS8(*lpPit, 0x82) != m) {
+                FLDS8(*lpPit, 0x82) = m;
+                se_req(7, 0x16, 0);
+            }
+        }
+    } else {
+        FLDS8(*lpPit, 0x82) = -1;
+    }
+}
+
+void Menu_status_i(void) {
+    lpPit->x43 = 0;
+    PitMenu.x10 = 0;
+}
+
+int Menu_status_mv(int sw) {
+    if ((u16)sw & 0xC00) {
+        lpPit->x43 = (lpPit->x43 + 1) & 1;
+        se_req(7, 0x11, 0);
+    }
+    return (u16)((u16)sw & 0x8040);
+}
+
+u8 *menu_equip_get_equip(u8 no) {
+    u16 idx;
+    u8 *u = User_data;
+
+    switch (no) {
+    case 0:
+        idx = u[0x456];
+        break;
+    case 1:
+        idx = u[0x458];
+        break;
+    case 2:
+        idx = u[0x459];
+        break;
+    case 3:
+        idx = u[0x45A];
+        break;
+    case 4:
+        idx = u[0x45B];
+        break;
+    case 5:
+        idx = u[0x457];
+        break;
+    default:
+        return 0;
+    }
+    if (idx == 0xFF) {
+        return 0;
+    }
+    return &u[0x44 + idx * 6];
+}
+
+void Menu_equipment_i(void) {
+    lpPit->x43 = 0;
+    lpPit->x44 = 0;
+    PitMenu.x10 = 0;
+}
+
+int Menu_equipment_mv(int sw) {
+    PLW *pl = lpPit->pl;
+    u8 sel;
+    int job;
+
+    sel = lpPit->x43;
+    ListSelect(&sel, sw, 6);
+    if (sel != lpPit->x43) {
+        lpPit->x43 = sel;
+        lpPit->x44 = 0;
+    }
+    if (menu_equip_get_equip(lpPit->x43) != 0) {
+        lpPit->x45 = 2;
+        if (lpPit->x43 == 0 && ((job = Get_weapon_job2(FLD8(*pl, 0x35F), FLD16(*pl, 0x360)) & 0xFF) == 1 || job == 5)) {
+            lpPit->x45 = 4;
+        }
+        PageSelect(&lpPit->x44, sw, lpPit->x45);
+    }
+    return sw;
+}
+
+void menu_option_i(void) {
+    lpPit->x43 = 0;
+    PitMenu.x10 = 0;
+}
+
+#define OPT(i) (((i) + (u8 *)lpPit)[0x88])
+int menu_option_mv(int sw) {
+    u8 c;
+
+    ListSelect(&lpPit->x43, sw, 5);
+    if ((u16)sw & 0xC00) {
+        c = lpPit->x43;
+        switch (c) {
+        case 1:
+            if (lpPit->x88 != 0) {
+                se_req(7, 0x15, 0);
+            } else {
+        case 0:
+                OPT(c) ^= 1;
+                se_req(7, 0x16, 0);
+            }
+            break;
+        case 2:
+        case 3:
+            if ((u16)sw & 0x800) {
+                if (OPT(c) == 0) {
+                    OPT(c) = 2;
+                } else {
+                    OPT(c)--;
+                }
+            } else {
+                OPT(c)++;
+                if (OPT(lpPit->x43) >= 3) {
+                    OPT(lpPit->x43) = 0;
+                }
+            }
+            se_req(7, 0x16, 0);
+            break;
+        case 4:
+            if (FLD16(Psw, 4) & 0xC00) {
+                lpPit->x8C ^= 1;
+                se_req(7, 0x16, 0);
+            }
+            break;
+        }
+    }
+    c = lpPit->x8A;
+    FLD8(option_w, 4) = c;
+    GW8(0x1DD) = c;
+    c = lpPit->x8B;
+    FLD8(option_w, 7) = c;
+    GW8(0xF) = c;
+    c = lpPit->x8C;
+    if (c != FLDS8(option_w, 3)) {
+        FLDS8(option_w, 3) = c;
+        if (FLDS8(option_w, 3) != 0) {
+            vib_set(0, 1);
+            vib_set(1, 1);
+        }
+    }
+    return (u16)((u16)sw & 0x8040);
+}
+
+#undef OPT

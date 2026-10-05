@@ -16,7 +16,7 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     s8 rep;           /* 0x0E key repeat countdown */
     u8 yn;            /* 0x0F yes/no cursor (select_yes_no) */
     s16 x10;          /* 0x10  */
-    s16 x12;          /* 0x12  */
+    u16 x12;          /* 0x12  */
     s16 x14;          /* 0x14  */
     s16 x16;          /* 0x16  */
     u8 _pad18[0x1C - 0x18];
@@ -41,7 +41,7 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     u8 x41;           /* 0x41  */
     u8 x42;           /* 0x42  */
     u8 x43;           /* 0x43  */
-    s8 x44;           /* 0x44  */
+    u8 x44;           /* 0x44  */
     u8 x45;           /* 0x45  */
     u8 x46;           /* 0x46  */
     u8 x47;           /* 0x47  */
@@ -92,7 +92,7 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     s8 lb;            /* 0x89 1 in the lobby */
     u8 x8A;           /* 0x8A game_w+0x1DD */
     u8 x8B;           /* 0x8B game_w+0x0F */
-    s8 x8C;           /* 0x8C option_w+3 */
+    u8 x8C;           /* 0x8C option_w+3 */
     s8 x8D;           /* 0x8D  */
     u8 _pad8E[0x90 - 0x8E];
 } PIT_W;
@@ -108,7 +108,7 @@ typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
     s8 x0F;             /* 0x0F */
     s8 x10;             /* 0x10 */
     u8 x11;             /* 0x11 */
-    s16 x12;            /* 0x12 */
+    u16 x12;            /* 0x12 */
     u8 x14;             /* 0x14 */
     s8 x15;             /* 0x15 */
     s8 x16;             /* 0x16 */
