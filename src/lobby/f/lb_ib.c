@@ -12,6 +12,18 @@ void itembox_cursor_mv();
 void PageSelect();
 void flps0008();
 void ListSelect();
+int Chk_lb_status();
+void Disp_menu_help();
+void PutButtonICON();
+void ItemListWindow();
+void ItemboxWindow();
+void EquipmentCompareWindow();
+void EquipmentDescriptionWindow();
+void ItemboxWindowCursor();
+extern char verify_button_0038A008[8];
+extern char frame_itembox_item_equip[];
+extern u16 System_timer;
+f32 flSin(f32);
 u8 *sortup_idx_chk();
 void se_req();
 s32 Lb_ItemBox_open(u16 arg0, s32 arg1) {
@@ -122,7 +134,11 @@ int disp_itembox_cmd(int a) {
     return DispFrameList(frame_itembox_cmd, 0, F(u8, ib, 2));
 }
 
-void item_explanation(int a, int b, int c) {
+void item_explanation(a, b, c)
+int a;
+int b;
+int c;
+{
     if ((a & 0xFF) == 1) {
         Disp_help_mess(1, (u16)(*(u16 *)&D_3C733C[b & 0xFF] + 0x18));
     } else {
@@ -491,4 +507,171 @@ s32 itembox_sortup(s32 pad) {
         break;
     }
     return pad;
+}
+
+/* item box screen: tab frames, item lists, help text and the blinking cursor */
+void Disp_lb_item_box(void) {
+    f32 fa;
+    u32 ang;
+    int pos;
+    u8 *w;
+    u8 a;
+    if (F(u8, ib, 0) != 0 && Chk_lb_status(0x1C) != 0) {
+        if (*(u8 *)0x39DAD0 != 0) {
+            a = F(u8, ib, 0x1F);
+            if (a != 1) {
+                Disp_menu_help(a);
+                if ((F(u8, ib, 0x20) & 0x1F) < 0x14) {
+                    PutButtonICON(verify_button_0038A008, 1);
+                }
+            }
+        }
+        switch (F(u8, ib, 4)) {
+        case 0:
+            disp_itembox_cmd(0);
+            return;
+        case 1:
+            disp_itembox_cmd(1);
+            w = ib;
+            pos = 4;
+            switch (F(u8, w, 2)) {
+            case 0:
+                switch (F(u8, w, 5)) {
+                case 0:
+                    ItemListWindow(F(u8, w, 0xB), 0xA9182, 8, 3);
+                    item_explanation(F(u8, ib, 0x1F), F(u8, ib, 0xB));
+                    return;
+                case 1:
+                    ItemboxWindow(-1, 0, 2, 3);
+                    return;
+                }
+                break;
+            case 1:
+                switch (F(u8, w, 5)) {
+                case 0:
+                    if (F(u8, w, 0x1F) != 0) {
+                    } else {
+                        pos = 0;
+                        Put_shousai(F(u8, w, 5), 1, 2, 3);
+                    }
+                    ItemboxWindow(F(u8, ib, 8), pos);
+                    return;
+                case 1:
+                    ItemboxWindow(F(u8, w, 8), 0x10, 2, 3);
+                    ItemListWindow(F(u8, ib, 0xB), 0xA9182, 8);
+                    item_explanation(F(u8, ib, 0x1F), F(u8, ib, 0xB));
+                    return;
+                case 2:
+                    kosuu_disp_sub();
+                    ItemboxWindow(F(u8, ib, 8), 0x10);
+                    ItemListWindow(F(u8, ib, 0xB), 0x808080, 0);
+                    return;
+                case 3:
+                    yes_no_disp_sub();
+                case 4:
+                    ItemboxWindow(F(u8, ib, 8), 0x10);
+                    ItemListWindow(F(u8, ib, 0xB), 0x808080, 0);
+                    return;
+                }
+                break;
+            case 2:
+                a = F(u8, w, 5);
+                switch (a) {
+                case 0:
+                    if (F(u8, w, 0x1F) != 0) {
+                        pos = (F(u8, w, 0x18) & 3) | 0x21C;
+                    } else {
+                        pos = 0x208;
+                        if (F(s8, w, 0x1D) < 0) {
+                            Put_shousai(1, a, 2, 3);
+                        }
+                    }
+                    ItemboxWindow(F(u8, ib, 9), pos);
+                    return;
+                case 1:
+                    EquipmentCompareWindow(F(s32, w, 0x10), F(s32, w, 0x14), 0x132, 0x38);
+                    return;
+                case 2:
+                    EquipmentDescriptionWindow(F(s32, w, 0x14), 0x132, 0x38, F(u8, w, 0x18));
+                    return;
+                }
+                break;
+            case 3:
+                a = F(u8, w, 5);
+                switch (a) {
+                case 0:
+                    *(s16 *)(frame_itembox_item_equip + 2) = 0x74;
+                    DispFrameList(frame_itembox_item_equip, 0, F(u8, w, 3), 3);
+                    return;
+                case 1:
+                    if (F(u8, w, 0x1F) != 0) {
+                        if (F(u8, w, 3) == 0) {
+                        } else {
+                            pos = (F(u8, w, 0x18) & 3) | 0x1C;
+                        }
+                    } else {
+                        pos = (F(u8, w, 3) & 1) * 8;
+                        Put_shousai(1, a, 2, 3);
+                    }
+                    w = ib;
+                    ItemboxWindow(F(u8, w + F(u8, w, 3), 8), pos);
+                    w = ib;
+                    if (F(u8, w, 0x1F) != 0) {
+                        if (F(u8, w, 3) == 0) {
+                            goto cursor;
+                        }
+                    } else {
+cursor:
+                        a = F(u8, w, 6);
+                        if (a == 1) {
+                            ang = ((System_timer & 0x1F) << 11) & 0xFFFF;
+                            fa = (f32)ang;
+                            w = ib;
+                            ItemboxWindowCursor(F(u8, w, 0xA), (((((s8)(int)(96.0f * flSin(0.0000958738f * fa))) + 0x9F) & 0xFF) << 24) | 0xFF0000, F(u8, w, 3));
+                            return;
+                        }
+                    }
+                    break;
+                }
+                break;
+            case 4:
+                a = F(u8, w, 5);
+                switch (a) {
+                case 0:
+                    *(s16 *)(frame_itembox_item_equip + 2) = 0x8A;
+                    DispFrameList(frame_itembox_item_equip, 0, F(u8, w, 3), 1);
+                    return;
+                case 1: {
+                    u8 col = F(u8, w, 3);
+                    u8 st = F(u8, w, 6);
+                    pos = col != 0 ? 0xE8 : 0x60;
+                    switch (st) {
+                    case 0:
+                        if (F(u8, w, 0x1F) != 0) {
+                            pos = 0x64;
+                            if (col == 0) {
+                            } else {
+                                pos = (F(u8, w, 0x18) & 3) | 0xFC;
+                            }
+                        } else if (F(s8, w, 0x1D) < 0) {
+                            Put_shousai(st, 0xE8, col, 1);
+                        }
+                        break;
+                    case 1:
+                        kosuu_disp_sub();
+                        break;
+                    case 2:
+                        selling_price_disp_sub();
+                        break;
+                    }
+                    w = ib;
+                    ItemboxWindow(F(u8, w + F(u8, w, 3), 8), pos);
+                    break;
+                }
+                }
+                break;
+            }
+            break;
+        }
+    }
 }
