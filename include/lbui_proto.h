@@ -21,6 +21,7 @@ extern s8 eatResult;
 extern EATRES *pRes;
 extern char lit_216_0065B900[];
 extern EATENT *eat_data[];
+extern char RoomRule[];
 
 void Lb_eat();
 void lb_eat_set();
@@ -80,5 +81,8 @@ void Get_PlazaName();
 void Get_LobbyName();
 void Lbs_load();
 void Lbc_release();
+char *GetRoomRule();
+int Lbs_MatchStart();
+void lb_npc_effect_move();
 
 #endif
