@@ -25,7 +25,7 @@ typedef struct EM01W {
     u8 has_tgt;         /* 0x17 */
     u8 x18;             /* 0x18 1 while flying (set by fly 6 and 8) */
     u8 x19;             /* 0x19 row counter of em_act_search2 */
-    u8 x1A;             /* 0x1A attack variant */
+    s8 x1A;             /* 0x1A attack repeat counter */
     u8 _pad1B;
     s32 turn_left;      /* 0x1C */
     s32 bank_max;       /* 0x20 bank limit for senkai_sub */
@@ -147,6 +147,12 @@ static void ef_move_sub_00574EE0(EMW *em);
 static void em01_uvmove(EMW *em);
 void em01_senkai_sub2(EMW *, int, int);
 void em01_senkai_sub3(EMW *, int, int);
+int em01_horm_main(EMW *);
+void em01_horm_init(EMW *);
+void Eft17_set(EMW *, int, int, int);
+void Shell08_set_ang(EMW *, s16, u8, u8, u16, u16);
+int ran_suu(int);
+void em_action_timer_calc(EMW *, int);
 void em01_to_normal();
 void em01_to_fly();
 void em01_frame_reset();
@@ -2765,4 +2771,222 @@ static void em_fly24_0056C980(EMW *em, EM01W *w) {
         break;
     }
     FLY_FLOOR(em);
+}
+
+static void em_atk00_0056CAA0(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        if (em01_horm_main(em)) {
+            em->x05++;
+            em->x388 = 0;
+            em->x3F4 = 0;
+            em_char_set(em, 0x24, 0, 0);
+        }
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_atk02_0056CB40(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        switch (em->x06) {
+        case 0:
+            em->x06++;
+            em->x388 = 0;
+            /* fallthrough */
+        case 1:
+            if (em01_horm_main(em)) {
+                em->x3F4 = 0;
+                em->x05++;
+                em_char_set(em, 0x28, 0, 0);
+                em01_fly_adjy2_init(em, 5);
+            }
+            break;
+        }
+        break;
+    case 1:
+        if (em_frame_check(em, 58.0f, 0)) {
+            takeoff_eff_set_0057A890(em);
+        }
+        if (em_frame_check2(em, 0, 60.0f)) {
+            em->x388 = 2;
+            em01_fly_adjy2(em);
+            em->x05++;
+        }
+        break;
+    case 2:
+        w->dist -= em->adj_z;
+        em01_fly_adjy2(em);
+        if (w->dist <= 0.0f) {
+            em->x05++;
+            em->x3C0[1] = -10.0f;
+        }
+        if (w->dist <= 500.0f) {
+            hover_eff_set2_0057A9A0(em);
+        }
+        break;
+    case 3:
+        w->spd[0] = 0;
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add_g(em, w->spd);
+        if (w->dist <= 500.0f) {
+            hover_eff_set2_0057A9A0(em);
+        }
+        if (em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em->x388 = 0;
+            em->pos[1] = em->x5AC;
+            em_char_set(em, 0x29, 0, 0);
+            takeon_eff_set_0057A900(em);
+        }
+        break;
+    case 4:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_atk03_0056CDC0(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 1;
+        em_char_set(em, 0x24, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_atk04_0056CE50(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        break;
+    case 1:
+        if (em01_horm_main(em)) {
+            em->x05++;
+            em->x3F4 = 0;
+            em_char_set(em, 0x2F, 0, 0);
+        }
+        break;
+    case 2:
+        if (em_frame_check2(em, 0, 154.0f) && em_frame_check2(em, 0, 276.0f) == 0) {
+            if (!(*(u16 *)&game_w.x1E & 3)) {
+                Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
+            }
+        } else if (em_frame_check(em, 78.0f, 0)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 0, 0, 0);
+        }
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
+            em->x05++;
+            if (--w->x1A <= 0) {
+                em01_to_normal(em, 0, 0);
+            } else {
+                em01_horm_init(em);
+                em_act_set(em, 3, 4);
+            }
+        }
+        break;
+    }
+}
+
+static void em_atk05_0056D040(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x23, 0, 0);
+        em_action_timer_calc(em, 0);
+        em->x3F4 = 1;
+        shell01_set(em, 1);
+        break;
+    case 1:
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_atk06_0056D0F0(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x2B, 0, 0);
+        em_action_timer_calc(em, 0);
+        break;
+    case 1:
+        em->ang[1] -= 0x200;
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em->x05++;
+            em_char_set(em, 0x2B, 0, 0);
+        }
+        break;
+    case 2:
+        em->ang[1] -= 0x200;
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_atk07_0056D1E0(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        switch (em->x06) {
+        case 0:
+            em->x06++;
+            em->x388 = 0;
+            em->x3F4 = 0;
+            /* fallthrough */
+        case 1:
+            if (em01_horm_main(em)) {
+                em->x05++;
+                em->x3F4 = 0;
+                em_char_set(em, 0x1F, 0, 0);
+            }
+            break;
+        }
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 30.0f)) {
+            em->x05++;
+            em_char_set(em, 0x30, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
 }
