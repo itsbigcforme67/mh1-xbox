@@ -210,6 +210,21 @@ void add_prim(void *ot, PRIM *p, int pri, int kind)
     nqueue[t]++;
 }
 
+/* ------------------------------------------------------------ players */
+void rt_set_player(int no, const float pos[3])
+{
+    PLW *pl;
+    if (no < 0 || no >= 8)
+        return;
+    pl = &player_work[no];
+    pl->be_flag = 1;
+    pl->id = (u16)no;
+    pl->stg = game_w.stage;
+    pl->pos[0] = pos[0];
+    pl->pos[1] = pos[1];
+    pl->pos[2] = pos[2];
+}
+
 /* ------------------------------------------------------------ game loop */
 void stage_set_set(int stage);
 void rt_fl_reset_states(void);

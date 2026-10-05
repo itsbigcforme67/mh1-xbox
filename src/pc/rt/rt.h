@@ -53,6 +53,11 @@ void rt_clay_attr_reset(void);
  * game's rview_mat and rview_matY like View_move. Call once per frame. */
 void rt_set_camera(const float cam_world[16]);
 
+/* Put the host's hunter into player_work[no] (in use, on this stage, at
+ * pos), so game code that follows or tests the master player sees it.
+ * Call after rt_game_init. */
+void rt_set_player(int no, const float pos[3]);
+
 /* ------------------------------------------------------------ game loop */
 /* Set up the game globals for a stage and spawn its set objects. */
 void rt_game_init(int stage);
