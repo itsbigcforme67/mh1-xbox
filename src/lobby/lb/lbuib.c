@@ -1,6 +1,49 @@
-/* lbui, run 2: event_eat_trans_ot1 .. SetDialogData (lobby.bin 0x00591B90-0x00591D78): the matching functions of lbui_nm.c. */
+/* lbui, run 2: event_eat_set_msg .. SetDialogData (lobby.bin 0x005919E0-0x00591D78): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
+
+void event_eat_set_msg(void) {
+    char sp10[0x100];
+    s16 v;
+
+    set01_set2(pRes->msg);
+    v = Status_add_tbl[pRes->idx].s0;
+    if (v != 0) {
+        if (v > 0) {
+            sprintf(sp10, lit_520_0065B990);
+        } else if (v < 0) {
+            sprintf(sp10, lit_521_0065B9B0);
+        }
+        set01_set2_use_mem(sp10);
+    }
+    v = Status_add_tbl[pRes->idx].s1;
+    if (v != 0) {
+        if (v > 0) {
+            sprintf(sp10, lit_522_0065B9D0);
+        } else if (v < 0) {
+            sprintf(sp10, lit_523_0065B9F0);
+        }
+        set01_set2_use_mem(sp10);
+    }
+    v = Status_add_tbl[pRes->idx].s2;
+    if (v != 0) {
+        if (v > 0) {
+            sprintf(sp10, lit_524_0065BA10);
+        } else if (v < 0) {
+            sprintf(sp10, lit_525_0065BA30);
+        }
+        set01_set2_use_mem(sp10);
+    }
+    v = Status_add_tbl[pRes->idx].s3;
+    if (v != 0) {
+        if (v > 0) {
+            sprintf(sp10, lit_526_0065BA50);
+        } else if (v < 0) {
+            sprintf(sp10, lit_527_0065BA70);
+        }
+        set01_set2_use_mem(sp10);
+    }
+}
 
 void event_eat_trans_ot1(a)
 u8 *a;

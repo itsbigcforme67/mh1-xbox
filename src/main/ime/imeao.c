@@ -469,13 +469,35 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int ignore_syn(BS *b)
+void free_bsmemlist(BS *b)
 {
-    PW *pw;
+    BS *n;
 
-    pw = b->pw;
-    if (pw != 0 && (pw->x02 == 0x28 || pw->x02 == 0x29)) {
-        return 1;
+    while (b != 0) {
+        n = b->next;
+        free_mem(b);
+        b = n;
     }
-    return 0;
+}
+
+void free_khmemlist(KH *k)
+{
+    KH *n;
+
+    while (k != 0) {
+        n = k->next;
+        free_mem(k);
+        k = n;
+    }
+}
+
+void free_klmemlist(KL *l)
+{
+    KL *n;
+
+    while (l != 0) {
+        n = l->next;
+        free_mem(l);
+        l = n;
+    }
 }

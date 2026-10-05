@@ -3,7 +3,8 @@
 #define LBNPC_PROTO_H
 #include "lbnpc.h"
 
-
+extern f32 *waiter_tbl[];
+extern s32 *waiter_tbl_03[];
 
 void Lb_npc_move_sub();
 void npcMvFOOTWORK();
@@ -33,6 +34,7 @@ void npcCatFOOTWORK();
 void npcCatRUN();
 void npcCatKYORO();
 void npcCatHELLO();
+void npcCatWAITER();
 void lb_npc_cat_move();
 void npcPigFOOTWORK();
 void npcPigSLEEP();

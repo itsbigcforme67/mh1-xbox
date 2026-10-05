@@ -1416,8 +1416,8 @@ int __cnet_SendReq_TopPageJump(void) {
     return cmd;
 }
 
-int cnLBS_Read_RoomRuleCaption(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0);
+int cnLBS_Read_RoomRuleCaption(int arg0, int arg1, int arg2) {
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg2);
 
     if (slot != -1) {
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_RuleListHeadWord(arg0, arg1);
@@ -1426,8 +1426,8 @@ int cnLBS_Read_RoomRuleCaption(int arg0, int arg1) {
     return -1;
 }
 
-int cnLBS_Read_RoomRuleChoiceCount(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0);
+int cnLBS_Read_RoomRuleChoiceCount(int arg0, int arg1, int arg2) {
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg2);
 
     if (slot != -1) {
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_RuleNumOfChoice(arg0, arg1);
@@ -1436,8 +1436,8 @@ int cnLBS_Read_RoomRuleChoiceCount(int arg0, int arg1) {
     return -1;
 }
 
-int cnLBS_Read_RoomRuleNow(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0);
+int cnLBS_Read_RoomRuleNow(int arg0, int arg1, int arg2) {
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg2);
 
     if (slot != -1) {
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_RuleListNow(arg0, arg1);
@@ -1446,8 +1446,8 @@ int cnLBS_Read_RoomRuleNow(int arg0, int arg1) {
     return -1;
 }
 
-int cnLBS_Read_RoomRuleChoicePermission(int arg0, int arg1) {
-    int slot = __cnetSub_Set_BgProcess(1, 0);
+int cnLBS_Read_RoomRuleChoicePermission(int arg0, int arg1, int arg2) {
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg2);
 
     if (slot != -1) {
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_RuleListPermission(arg0, arg1);
@@ -2096,6 +2096,231 @@ void _cnet_CallBack_Result_RoomRuleCaption(void) {
     r.val = 2;
     r.id = 0xB;
     CnetSys_w.burst[5].cb(r, &r);
+}
+
+void __cnet_bgProg_ReadRoomRule(void) {
+    CNET_BURST *b = &CnetSys_w.burst[5];
+    CNET_RES res;
+
+    if (b->state == 0) {
+        return;
+    }
+    switch (b->x21) {
+    case 0:
+        b->x21++;
+        CNW(u16, 0x1032) = 0;
+        CnetSys_w.ruletbl.n = 0;
+        memset(&CnetSys_w.ruletbl, 0, 0x294A4);
+        b->a08 = 1;
+        b->a0C = 1;
+        b->res = 0;
+        cnLBS_Read_RoomRuleCount((u16)b->x14, (int)_cnet_CallBack_Result_Rule_NumOfRule);
+        return;
+    case 1:
+        if (b->res == 1) {
+            b->x21++;
+            b->res = 0;
+            if (CnetSys_w.ruletbl.n == 0) {
+                b->x21 = 5;
+                return;
+            }
+        } else if (b->res == 2) {
+            b->x21 = 0x12;
+            return;
+        }
+        break;
+    case 2:
+        b->x21++;
+        b->a08 = 0;
+        b->a0C = 0;
+    case 3: {
+        int k;
+        k = b->a0C;
+        if (__cnetSub_Get_RestBgWork() > 0) {
+            cnLBS_Read_RoomRuleChoiceCount((u16)b->x14, k & 0xFF, (int)_cnet_CallBack_Result_RoomRuleCaption);
+            b->a0C++;
+            if (k + 1 >= CnetSys_w.ruletbl.n) {
+                b->x21++;
+                return;
+            }
+        }
+        break;
+    }
+    case 4: {
+        int i;
+        int all;
+        int n;
+        n = CnetSys_w.ruletbl.n;
+        all = 1;
+        for (i = 0; i < n; i++) {
+            if ((CnetSys_w.ruletbl.e[i].flags & 0xF) != 4) {
+                all = 0;
+                break;
+            }
+        }
+        if (all != 0) {
+            b->x21++;
+            b->a08 = 0;
+            for (i = 0; i < 0x20; i++) {
+                CnetSys_w.ruletbl.e[i].flags = 0;
+            }
+            return;
+        }
+        break;
+    }
+    case 5: {
+        int i;
+        int sum;
+        b->x21++;
+        sum = 0;
+        for (i = 0; i < CnetSys_w.ruletbl.n; i++) {
+            sum += CnetSys_w.ruletbl.e[i].numof;
+        }
+        res.val = 2;
+        res.id = 0xA;
+        CNW(s16, 0x1032) = CnetSys_w.ruletbl.n * 3 + 2 + sum * 2;
+        b->cb(res, &res);
+        cnLBS_Read_RoomNamePermission((u16)b->x14, (int)_cnet_CallBack_Result_Rule_NumOfRule);
+        return;
+    }
+    case 6:
+        if (b->res != 0) {
+            b->x21++;
+            b->res = 0;
+            res.val = 2;
+            res.id = 0xB;
+            b->cb(res, &res);
+            return;
+        }
+        break;
+    case 7:
+        b->x21++;
+        cnLBS_Read_RoomPasswordPermission((u16)b->x14, (int)_cnet_CallBack_Result_Rule_NumOfRule);
+        return;
+    case 8:
+        if (b->res != 0) {
+            b->x21++;
+            b->res = 0;
+            res.val = 2;
+            res.id = 0xB;
+            b->cb(res, &res);
+            return;
+        }
+        break;
+    case 9:
+        b->x21++;
+        cnLBS_Read_RoomExplainPermission((u16)b->x14, (int)_cnet_CallBack_Result_Rule_NumOfRule);
+        return;
+    case 10:
+        if (b->res != 0) {
+            b->res = 0;
+            if (CnetSys_w.ruletbl.n == 0) {
+                b->x21 = 0x11;
+                return;
+            }
+            b->x21++;
+            res.val = 2;
+            res.id = 0xB;
+            b->cb(res, &res);
+            return;
+        }
+        break;
+    case 11:
+        b->x21++;
+        b->a08 = 0;
+        b->a0C = 0;
+    case 12: {
+        int k;
+        k = b->a0C;
+        if (__cnetSub_Get_RestBgWork() >= 3) {
+            cnLBS_Read_RoomRuleCaption((u16)b->x14, k & 0xFF, (int)_cnet_CallBack_Result_RoomRuleCaption);
+            cnLBS_Read_RoomRuleNow((u16)b->x14, k & 0xFF, (int)_cnet_CallBack_Result_RoomRuleCaption);
+            cnLBS_Read_RoomRuleChoicePermission((u16)b->x14, k & 0xFF, (int)_cnet_CallBack_Result_RoomRuleCaption);
+            b->a0C++;
+            if (k + 1 >= CnetSys_w.ruletbl.n) {
+                b->x21++;
+                return;
+            }
+        }
+        break;
+    }
+    case 13: {
+        int i;
+        int all;
+        int n;
+        n = CnetSys_w.ruletbl.n;
+        all = 1;
+        for (i = 0; i < n; i++) {
+            if ((CnetSys_w.ruletbl.e[i].flags & 0xF) != 0xB) {
+                all = 0;
+                break;
+            }
+        }
+        if (all != 0) {
+            b->x21++;
+            b->a08 = 0;
+            for (i = 0; i < 0x20; i++) {
+                memset(CnetSys_w.ruletbl.e[i].cflag, 0, 0x20);
+            }
+            return;
+        }
+        break;
+    }
+    case 14:
+        b->x21++;
+        b->a0C = 0;
+        return;
+    case 15: {
+        int k;
+        k = b->a0C;
+        if (CnetSys_w.ruletbl.e[(u32)b->a08].numof == 0) {
+            b->x21++;
+            return;
+        }
+        if (__cnetSub_Get_RestBgWork() >= 2) {
+            cnLBS_Read_RoomRuleChoiceName((u16)b->x14, (u8)b->a08, k & 0xFF, (int)_cnet_CallBack_Result_RoomRuleCaption);
+            cnLBS_Read_RoomRuleChoiceControl((u16)b->x14, (u8)b->a08, k & 0xFF, (int)_cnet_CallBack_Result_RoomRuleCaption);
+            b->a0C++;
+            if (k + 1 >= CnetSys_w.ruletbl.e[(u32)b->a08].numof) {
+                b->x21++;
+                return;
+            }
+        }
+        break;
+    }
+    case 16: {
+        int i;
+        int all;
+        all = 1;
+        for (i = 0; i < CnetSys_w.ruletbl.e[(u32)b->a08].numof; i++) {
+            if ((CnetSys_w.ruletbl.e[(u32)b->a08].cflag[i] & 3) != 3) {
+                all = 0;
+            }
+        }
+        if (all != 0) {
+            b->a08++;
+            if ((u32)b->a08 >= CnetSys_w.ruletbl.n) {
+                b->x21++;
+                return;
+            }
+            b->x21 = 0xE;
+            return;
+        }
+        break;
+    }
+    case 17:
+        res.val = 0;
+        b->state = 0;
+        b->x21 = 0;
+        b->cb(res, &res);
+        return;
+    case 18:
+        res.val = -1;
+        b->state = 0;
+        b->x21 = 0;
+        b->cb(res, &res);
+        break;
+    }
 }
 
 void _cnet_CallBack_Result_RoomSetFinish(CNET_RES res) {
