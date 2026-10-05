@@ -180,4 +180,5 @@ int ex_kabe_ck(PLW *);
 void kabe_hosei(PLW *, int);
 void Ana_item_set(PLW *);
 void func_637F60(PLW *, int);
+void kabe_com_ck(PLW *);
 #endif
