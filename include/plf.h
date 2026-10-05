@@ -150,4 +150,11 @@ void blend_set(PLW *, s16, s16);
 void scope_add(PLW *, int);
 void gun_adj_sub(PLW *);
 void sougun_adj_sub(PLW *, u16);
+void basic_com_ck(PLW *);
+s32 sit_com_ck(PLW *);
+void Eft02_set6(f32, PLW *, int, int);
+void pl_chr_set2(PLW *, int, int, int);
+void Pl_basic_flagset(PLW *, int, int, int);
+int frame_check2(f32, PLW *, int);
+void action_timer_calc(PLW *, int);
 #endif

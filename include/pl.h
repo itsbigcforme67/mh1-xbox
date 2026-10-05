@@ -48,7 +48,15 @@ typedef struct PLW {
     u8    x01;           /* 0x001 (set05_m) */
     u8    kind;          /* 0x002 0/3/4 can guard (pl_guard_ck) */
     u8 _pad003[0x4 - 0x3];
-    s32   work04;        /* 0x004 */
+    union {
+        s32   work04;    /* 0x004 */
+        struct {
+            u8 x04;      /* 0x004 */
+            u8 x05;      /* 0x005 step within the current action (pl_mv*, as EMW) */
+            u8 x06;      /* 0x006 timer/counter of the current action */
+            u8 x07;      /* 0x007 */
+        };
+    };
     s32   work08;        /* 0x008 */
     u16   id;            /* 0x00C */
     s16   ang_y;         /* 0x00E copy of ang[1] (Pl_damage_sub) */
@@ -72,7 +80,8 @@ typedef struct PLW {
     void *part[2];           /* 0x110 matrix blocks, part[i]+0x40 is a world matrix (cmd_set_pos) */
     u8 _pad118[0x40];
     struct PL_HAND *hand;  /* 0x158 thrown items start from hand->pos (shell03_set) */
-    u8 _pad15C[0x198 - 0x15C];
+    u8 _pad15C[0x38];
+    s32   work194;           /* 0x194 */
     s32   chr_no0;       /* 0x198 */
     u8 _pad19C[0x1A0 - 0x19C];
     f32   chr_spd0;      /* 0x1A0 */
@@ -172,7 +181,10 @@ typedef struct PLW {
     f32   x5AC;          /* 0x5AC ground height (eft21_i, as EMW) */
     u8 _pad5B0[0x5FC - 0x5B0];
     u32   work5FC;           /* 0x5FC */
-    u8 _pad600[0x604 - 0x600];
+    u8 _pad600;
+    s8    work601;           /* 0x601 */
+    u8 _pad602;
+    s8    work603;           /* 0x603 */
     u8    flag604;       /* 0x604 */
     u8    work605;           /* 0x605 */
     u8 _pad606[0x2];
