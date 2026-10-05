@@ -124,7 +124,7 @@ segments:
       - [0x035F70, c, em/em01_aic]
       - [0x0363D4, asm, text/em_mv06_00569D60]
       - [0x0363E0, c, em/em01_aid]
-      - [0x037634, asm, text/em_fly09_0056AFC0]
+      - [0x037804, asm, text/em_fly10_0056B190]
       - [0x037810, c, em/em01_aie]
       - [0x03A7DC, asm, text/em_atk11_0056E160]
       - [0x03AD70, c, em/em01_aif]

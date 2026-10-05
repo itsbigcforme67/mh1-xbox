@@ -418,7 +418,7 @@ main 0x001263F0 0x001267BC frame/f_framec
 game 0x00566630 0x005670A4 em/em01_ai
 game 0x00567280 0x005698E4 em/em01_aib
 game 0x005698F0 0x00569D54 em/em01_aic
-game 0x00569D60 0x0056AFB4 em/em01_aid
+game 0x00569D60 0x0056B184 em/em01_aid
 game 0x0056B190 0x0056E15C em/em01_aie
 game 0x0056E6F0 0x00574AC8 em/em01_aif
 game 0x00574CD0 0x0057A778 em/em01_aig

@@ -2053,7 +2053,7 @@ static void em_fly08_0056AD20(EMW *em, EM01W *w) {
     }
 
 static void em_fly09_0056AFC0(EMW *em, EM01W *w) {
-    int t;
+    f32 d;
     switch (em->x05) {
     case 0:
         em->x05++;
@@ -2077,9 +2077,9 @@ static void em_fly09_0056AFC0(EMW *em, EM01W *w) {
         w->spd[1] = em->ang[1];
         w->spd[2] = 0;
         speed_add(em, w->spd);
-        t = em->work08 - 1;
-        em->work08 = t;
-        if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 1000.0f || t < 0) {
+        d = CalcDistanceXZ(em->pos, em->tgt_pos);
+        em->work08--;
+        if (d <= 1000.0f || em->work08 < 0) {
             em->x05++;
             em->work08 = 0x258;
             em01_act_set(em, 2, 1, 1);

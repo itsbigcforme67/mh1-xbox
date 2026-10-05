@@ -722,3 +722,48 @@ void em_fly08_0056AD20(EMW *em, EM01W *w) {
         em->pos[1] = em->x5AC;
     }
 }
+
+void em_fly09_0056AFC0(EMW *em, EM01W *w) {
+    f32 d;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        w->turn = 0x100;
+        em_char_set(em, 0xF, 0, 0);
+        em_rate_clear(em);
+        em->adj_z = 80.0f;
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        em->ang[1] = w->dang;
+        em->x92F = 0xFF;
+        w->x18 = 1;
+        em_area_move_init(em);
+        break;
+    case 1:
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        em01_senkai_sub(em, 5, 0);
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        d = CalcDistanceXZ(em->pos, em->tgt_pos);
+        em->work08--;
+        if (d <= 1000.0f || em->work08 < 0) {
+            em->x05++;
+            em->work08 = 0x258;
+            em01_act_set(em, 2, 1, 1);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            if (--em->work08 <= 0) {
+                em->work08 = 0x258;
+                em01_act_set(em, 2, 1, 1);
+            }
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
