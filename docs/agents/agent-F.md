@@ -159,3 +159,18 @@ Idioms learned here (all verified by matching):
 Near-matches (kept in the working files): lb_commer_message (s0/s1 swapped), lb_set_pl_status/pos/stage, lb_check_mini_data, lb_trade_result
 (2 insns), Lb_room_member, Lb_PlStatusSet, Lb_put_gold (struct copy of rodata), lb_pl_horm_sub (original re-reads the field), Lb_act_set
 (original calls Lb_act_ck without setting a0), Lb_check_chair (1 insn), Lb_player_load (2 insns).
+
+### Automatic pipeline for lobby functions (tools/lb*.py)
+1. Drafts: `python3 tools/draft.py lobby FUNC...` (40 per call) into a scratch dir `drafts/dNNN.c`; functions with jump tables need
+   `tools/lbdraft_jt.py OUT FUNC...` (reads the table words from disc/mh1/split/lobby.bin) and go into `drafts/djNNN.c`. LBDRAFTS names the dir.
+2. `tools/lbauto.py [-j3] [--out J] --all | NAME...`: converts a draft (F() fields, gp-relative globals via the main symbol table,
+   K&R externs, `int argN` params filled in), compiles it ALONE with `tools/check.py --module lobby`, adds `int f();`/`extern char x[];`
+   for undefined identifiers, and records OK / diff (d of n) / error / unsupported (M2C_ERROR: float mula/madd, unset registers) / nodraft.
+   About 12 percent of the lobby functions came out byte-identical with no hand work; many more are 1-3 instructions off.
+3. `tools/lbfix.py NAME...` repairs near misses: m2c drops pass-through arguments (a0 untouched), so it tries inserting `arg0,`/`arg1,`
+   as extra leading args at each call site.
+4. `tools/lbmerge.py PREFIX "comment" NAME...` writes contiguous runs of the OK ones (sources in build/lbauto/NAME.c) to src/lobby/PREFIXNN.c,
+   verifies them and appends the c_files.txt lines. Always finish with `tools/rebuild.sh` (do NOT run it while lbauto/lbfix are running:
+   they create src/lobby/zz_*.c temp files that rebuild.sh would compile).
+Names whose lobby symbol carries an address suffix (trade_get_ck_005D0750 ...) are not found by check.py (it falls back to the game
+module at the same address): check them through a renamed copy (scratch lbchk.sh idea: sed the name to the csv name, `--module lobby`).
