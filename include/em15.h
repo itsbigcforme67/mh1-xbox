@@ -26,9 +26,12 @@ typedef struct EM15W {
     s32 x2C;            /* 0x2C */
     s32 x30;            /* 0x30 maximum turn per call */
     s32 x34;            /* 0x34 */
-    u8 _pad38[0xC];
+    u8 _pad38[8];
+    u16 x40;            /* 0x40 passed to GetTenjoHit (ceiling area) */
+    u16 x42;            /* 0x42 */
     u8 x44;             /* 0x44 */
-    u8 _pad45[0x5E];
+    u8 x45;             /* 0x45 */
+    u8 _pad46[0x5D];
     u8 xA3;             /* 0xA3 cleared at init */
 } EM15W;
 

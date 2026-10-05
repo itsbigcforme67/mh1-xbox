@@ -27,6 +27,10 @@ void speed_add(EMW *, s32 *);
 void speed_add_g(EMW *, s32 *);
 int em_frame_check2(EMW *, int, f32);
 void em_act_set(EMW *, int, u16);
+void Shell08_set_ang_time(EMW *, s16, u8, u8, u16, u16, int);
+void em21_fly_adjy2_init(EMW *, u8);
+u8 em21_fly_adjy2(EMW *);
+u8 em21_senkai_pos_no(EMW *em, f32 *out);
 void Eft19_set(EMW *, int, int);
 void em_cmd_reset(EMW *);
 int Pl_stg_ck_tw(EMW *, PLW *);
@@ -65,6 +69,7 @@ void em_suimin_end(EMW *em);
 void em_ana_loop_cnt_set(EMW *em);
 void Eft08_set(f32 *, int, int, f32);
 void Quest_enemy_capture();
+extern s16 em_atk_mode_timer_tbl[35];
 extern s16 em21_stay_timer_tbl[];
 extern s16 em21_runaway_timer_tbl[];
 
@@ -891,11 +896,9 @@ static void em_act20_00601510(EMW *em, EM21W *w) {
 
 static void em_mv00_006015A0(EMW *em, EM21W *w) {
     f32 sp30[3];
+    int d;
     f32 temp_f1;
-    s32 temp_v0;
-    s32 temp_v1;
     s32 temp_v1_2;
-    s32 var_v0;
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -908,20 +911,18 @@ static void em_mv00_006015A0(EMW *em, EM21W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            temp_v1 = em->ang[1];
-            temp_v0 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - temp_v1) & 0xFFFF;
-            if (temp_v0 < 0x8001) {
-                if (temp_v0 < 0x40) {
-                    var_v0 = temp_v1 + temp_v0;
+            d = (u16)((u16)Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
+            if (d <= 0x8000) {
+                if (d <= 0x3F) {
+                    em->ang[1] += d;
                 } else {
-                    var_v0 = temp_v1 + 0x40;
+                    em->ang[1] += 0x40;
                 }
-            } else if (temp_v0 >= 0xFFC1) {
-                var_v0 = temp_v1 + temp_v0;
+            } else if (d > 0xFFC0) {
+                em->ang[1] += d;
             } else {
-                var_v0 = temp_v1 - 0x40;
+                em->ang[1] -= 0x40;
             }
-            em->ang[1] = var_v0;
             mot_miration_ret(em, sp30);
             temp_f1 = w->dist - sp30[2];
             w->dist = temp_f1;
@@ -941,10 +942,8 @@ static void em_mv00_006015A0(EMW *em, EM21W *w) {
 
 static void em_mv01_00601700(EMW *em, EM21W *w) {
     f32 sp30[3];
+    int d;
     f32 temp_f1;
-    s32 temp_v0;
-    s32 temp_v1;
-    s32 var_v0;
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -957,20 +956,18 @@ static void em_mv01_00601700(EMW *em, EM21W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            temp_v1 = em->ang[1];
-            temp_v0 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - temp_v1) & 0xFFFF;
-            if (temp_v0 < 0x8001) {
-                if (temp_v0 < 0x40) {
-                    var_v0 = temp_v1 + temp_v0;
+            d = (u16)((u16)Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
+            if (d <= 0x8000) {
+                if (d <= 0x3F) {
+                    em->ang[1] += d;
                 } else {
-                    var_v0 = temp_v1 + 0x40;
+                    em->ang[1] += 0x40;
                 }
-            } else if (temp_v0 >= 0xFFC1) {
-                var_v0 = temp_v1 + temp_v0;
+            } else if (d > 0xFFC0) {
+                em->ang[1] += d;
             } else {
-                var_v0 = temp_v1 - 0x40;
+                em->ang[1] -= 0x40;
             }
-            em->ang[1] = var_v0;
         }
         mot_miration_ret(em, sp30);
         temp_f1 = w->dist - sp30[2];
@@ -1004,20 +1001,14 @@ static void em_mv02_00601870(EMW *em, EM21W *w) {
         em->x388 = 0;
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 >= 0xE39) {
-            if (temp_v1 >= 0xF1C8) {
-                goto block_7;
-            }
-            if (temp_v1 >= 0x8000) {
-                em_char_set(em, 6, 0, 0);
-                return;
-            }
+        if (temp_v1 < 0xE39 || temp_v1 >= 0xF1C8) {
+            pl_flag_set((PLW *)em, 0x20000);
+            em_char_set(em, 3, 0, 0);
+        } else if (temp_v1 >= 0x8000) {
+            em_char_set(em, 6, 0, 0);
+        } else {
             em_char_set(em, 5, 0, 0);
-            return;
         }
-block_7:
-        pl_flag_set((PLW *) em, 0x20000);
-        em_char_set(em, 3, 0, 0);
         break;
     case 1:
         if (em->x1C4 == 0) {
@@ -1062,11 +1053,9 @@ block_7:
 
 static void em_mv03_00601AC0(EMW *em, EM21W *w) {
     f32 sp30[3];
+    int d;
     f32 temp_f1;
-    s32 temp_v0;
-    s32 temp_v1;
     s32 temp_v1_2;
-    s32 var_v0;
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -1079,20 +1068,18 @@ static void em_mv03_00601AC0(EMW *em, EM21W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            temp_v1 = em->ang[1];
-            temp_v0 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - temp_v1) & 0xFFFF;
-            if (temp_v0 < 0x8001) {
-                if (temp_v0 < 0x40) {
-                    var_v0 = temp_v1 + temp_v0;
+            d = (u16)((u16)Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
+            if (d <= 0x8000) {
+                if (d <= 0x3F) {
+                    em->ang[1] += d;
                 } else {
-                    var_v0 = temp_v1 + 0x40;
+                    em->ang[1] += 0x40;
                 }
-            } else if (temp_v0 >= 0xFFC1) {
-                var_v0 = temp_v1 + temp_v0;
+            } else if (d > 0xFFC0) {
+                em->ang[1] += d;
             } else {
-                var_v0 = temp_v1 - 0x40;
+                em->ang[1] -= 0x40;
             }
-            em->ang[1] = var_v0;
             mot_miration_ret(em, sp30);
             temp_f1 = w->dist - sp30[2];
             w->dist = temp_f1;
@@ -1296,6 +1283,7 @@ static void em_fly04_00602030(EMW *em, EM21W *w) {
 }
 
 static void em_fly05_00602280(EMW *em, EM21W *w) {
+    int d;
     f32 temp_f1;
     s32 temp_v0;
     s32 temp_v1;
@@ -1323,20 +1311,18 @@ static void em_fly05_00602280(EMW *em, EM21W *w) {
                 em->adj_z = 100.0f;
             }
             if (w->has_tgt != 0) {
-                temp_v1 = em->ang[1];
-                temp_v0 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - temp_v1) & 0xFFFF;
-                if (temp_v0 < 0x8001) {
-                    if (temp_v0 < 0x40) {
-                        var_v0 = temp_v1 + temp_v0;
+                d = (u16)((u16)Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
+                if (d <= 0x8000) {
+                    if (d <= 0x3F) {
+                        em->ang[1] += d;
                     } else {
-                        var_v0 = temp_v1 + 0x40;
+                        em->ang[1] += 0x40;
                     }
-                } else if (temp_v0 >= 0xFFC1) {
-                    var_v0 = temp_v1 + temp_v0;
+                } else if (d > 0xFFC0) {
+                    em->ang[1] += d;
                 } else {
-                    var_v0 = temp_v1 - 0x40;
+                    em->ang[1] -= 0x40;
                 }
-                em->ang[1] = var_v0;
             }
             temp_f1 = w->dist - em->adj_z;
             w->dist = temp_f1;
@@ -1364,7 +1350,7 @@ static void em_fly06_00602450(EMW *em, EM21W *w) {
         em21_fly_adjy2_init(em, 0);
         break;
     case 1:
-        if (em21_fly_adjy2(temp_a1) != 0) {
+        if (em21_fly_adjy2(em) != 0) {
             em->x05 += 1;
             em21_to_swim(em);
         }
@@ -2379,7 +2365,7 @@ static void em_atk01_006045E0(EMW *em, EM21W *w) {
         break;
     case 1:
         if (em_frame_check(em, 0, 78.0f) != 0) {
-            Shell08_set_ang_time(em, 0x22, 1, 0);
+            Shell08_set_ang_time(em, 0x22, 1, 0, 0x71C, 0xF1C8, (s32)(11.0f * em->act_spd));
         }
         if (em->x194 == 0) {
             em->x05 += 1;
@@ -2431,7 +2417,7 @@ static void em_atk03_006047B0(EMW *em, EM21W *w) {
         break;
     case 1:
         if (em_frame_check(em, 0, 114.0f) != 0) {
-            Shell08_set_ang_time(em, 0x22, 1, 0);
+            Shell08_set_ang_time(em, 0x22, 1, 0, 0x71C, 0, (s32)(46.0f * em->act_spd));
         }
         if (em_frame_check(em, 0, 30.0f) != 0) {
             swim_eff_set2_0060C260(8.0f, em);
@@ -2457,7 +2443,7 @@ static void em_atk04_006048C0(EMW *em, EM21W *w) {
         break;
     case 1:
         if (em_frame_check(em, 0, 114.0f) != 0) {
-            Shell08_set_ang_time(em, 0x22, 1, 0);
+            Shell08_set_ang_time(em, 0x22, 1, 0, 0x71C, 0, (s32)(46.0f * em->act_spd));
         }
         if (em_frame_check(em, 0, 30.0f) != 0) {
             swim_eff_set2_0060C260(8.0f, em);
@@ -2483,7 +2469,7 @@ static void em_atk05_006049D0(EMW *em, EM21W *w) {
         break;
     case 1:
         if (em_frame_check(em, 0, 118.0f) != 0) {
-            Shell08_set_ang_time(em, 0x22, 1, 1);
+            Shell08_set_ang_time(em, 0x22, 1, 1, 0x71C, 0, (s32)(30.0f * em->act_spd));
         }
         if (em_frame_check(em, 0, 30.0f) != 0) {
             swim_eff_set2_0060C260(8.0f, em);
@@ -3106,7 +3092,6 @@ static void em_dmg14_00605CA0(EMW *em, EM21W *w) {
     em_mahi_eff_set(em, 2);
 }
 
-extern int em_atk_mode_timer_tbl;
 
 static void em_dmg15_00605DC0(EMW *em, EM21W *w) {
     f32 temp_f3;
@@ -3130,7 +3115,7 @@ static void em_dmg15_00605DC0(EMW *em, EM21W *w) {
         temp_f3 = (f32) em->work08;
         em->adj_y = ((em->tgt_pos[1] - em->pos[1]) / temp_f3) - ((em->x3C0[1] * temp_f3) / 2.0f);
         em->adj_z = CalcDistanceXZ(em->pos, em->tgt_pos) / (f32) em->work08;
-        Em_Mode_Chg(em, 1, (s32) *(&em_atk_mode_timer_tbl + (em->kind * 2)));
+        Em_Mode_Chg(em, 1, em_atk_mode_timer_tbl[em->kind]);
         w->spd[0] = 0;
         w->spd[2] = 0;
         em->x762 = 3;
@@ -5340,16 +5325,16 @@ static void hire_move_sub2_0060BAD0(EMW *em, EM21W *w, int i) {
     switch (w->hire_st[i][1]) {
     case 0:
         switch (w->hire_mode) {
-        case 2:
-        case 3:
-            if (w->hire_ang[i][0] != hire_down_angx_003893F0[i]) {
-                w->hire_st[i][1] = 2;
-                w->hire_cnt2[i] = 20;
-            }
-            break;
         case 1:
             if (w->hire_ang[i][0] != 0) {
                 w->hire_st[i][1] = 1;
+                w->hire_cnt2[i] = 20;
+            }
+            break;
+        case 3:
+        case 2:
+            if (w->hire_ang[i][0] != hire_down_angx_003893F0[i]) {
+                w->hire_st[i][1] = 2;
                 w->hire_cnt2[i] = 20;
             }
             break;
@@ -5382,13 +5367,13 @@ static void hire_move_sub1_0060BCA0(EMW *em, EM21W *w, int i) {
     switch (w->hire_st[i][0]) {
     case 0:
         switch (w->hire_mode) {
-        case 2:
-            w->hire_st[i][0]++;
-            w->hire_tm[i] = hire_start_timer_tbl1_003893D8[i];
-            break;
         case 1:
             w->hire_st[i][0]++;
             w->hire_tm[i] = hire_start_timer_tbl0_003893D0[i];
+            break;
+        case 2:
+            w->hire_st[i][0]++;
+            w->hire_tm[i] = hire_start_timer_tbl1_003893D8[i];
             break;
         }
         break;
