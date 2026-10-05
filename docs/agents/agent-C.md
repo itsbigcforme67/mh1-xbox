@@ -24,6 +24,15 @@ Prototypes that matched:
 
 ## EMW fields added (include/em.h)
 
+Fields used straight from EMW in the em files (so common to all monsters):
+- 0x008 work08 (s32, em08 stores a turn time), 0x1A0 chr_spd0 (frame step,
+  as in PLW), 0x1C4 x1C4, 0x302 x302 / 0x792 x792 (s16; em08 tests
+  x302 < 10% of x792, maybe hit points, a guess), 0x388 x388 (cleared by
+  act setters), 0x3B8 adj_y / 0x3BC adj_z (fly height/depth step),
+  0x617 x617 (s8, -1 = none), 0x827/0x828/0x829 (bytes),
+  0x882 x882, 0x940 area (EM_AREA*, +8 = per-stage point list
+  EM_STG_POS {s16 stg; f32 (*pos)[3];}).
+
 - 0x444 `ex[]`: per-monster work area. Its layout differs per monster
   (em07 keeps a distance float at +0x10 and a flag at +0x16; em08 uses +0xD
   and +0x34). Each emNN.c defines its own `EMNNW` struct and casts
@@ -40,7 +49,34 @@ Prototypes that matched:
 - em07_act_set: `kind` is an int param switched as `(u16)kind`; with a u16
   param MWCC reuses the masked value for the em_act_set2 call.
 
+- Statics in em files keep their original names (fly_adjy2_suby...). The
+  split names them with an address suffix only because several files have
+  one; tools/check.py tries every candidate address, so the plain name
+  matches. Use suffixed names temporarily if you want -v to diff against
+  the right copy.
+- fly_adjy2_suby: a statement before an `if` can show up in the delay slot
+  of the if's branch (`ret = 2;` before `if (adj_y > -50) adj_y -= 1;`),
+  so a delay-slot assignment on a plain (non-likely) branch runs on both
+  paths and belongs before the if.
+- Loops that are written `if (t > v && v != 0) i++; else ...` inside a
+  do/while(i != 0) (flag loop, fly_adjy2_suby/subz).
+- `w->adj_tm += (s16)f;` (s16 field, float) matched; `(int)f` adds a
+  sign-extension, `(int)f + x` swaps the addu operands.
+- em08_senkai_pos_no: three induction forms for one index in the original
+  (pointer, byte offset, i*8) came from `for (i...; p++, i++)` with
+  `p->stg == -1 || em->area->stg_pos[i].stg == em->stg` (base re-read in
+  the source, hoisted by the compiler). Unsigned loop counters (sltiu)
+  mean `u32 i`.
+- Switches with `default: return;` and a call after the switch: put the
+  default last when the original's out-of-range branch goes to a
+  `b epilogue` stub just before the call.
+
 ## Files
 
 - em07 (0x599ED0-0x59A23C, 5 functions): all match. src/game/em/em07.c,
   jump table slot 0x686860-0x68687C.
+- em08 (0x5A7380-0x5A7F68, 11 functions): 10 match, built as
+  src/game/em/em08.c (0x5A7380-0x5A7DDC) with rodata 0x686AB0-0x686B5C
+  (three jump tables, the 12-byte gap between the 2nd and 3rd is the
+  object's alignment). em08_senkai_pos_no is 2 instructions off (s0/s2
+  swapped in the second loop's setup); whole file in em08_nm.c.
