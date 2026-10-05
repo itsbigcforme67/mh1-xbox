@@ -1314,3 +1314,8 @@ main 0x0014E680 0x0014E8D8 plsel/plsel02
 main 0x00131FB0 0x00132160 menu/menu37
 main 0x0012B5A0 0x0012B688 menu/menu38
 main 0x00152C70 0x00152D48 pl/pl_itemck
+main 0x00100230 0x00100238 sys/adx_err
+main 0x0011E9D0 0x0011E9D8 tex/reltex
+main 0x00162E20 0x00162F08 font/dsp03
+main 0x00161DE0 0x00162014 font/fsp01
+main 0x001623F0 0x00162634 font/fsp02
