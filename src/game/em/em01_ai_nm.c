@@ -98,6 +98,7 @@ void Em_Mahi_End(EMW *);
 void em_suimin_end(EMW *);
 void em_hungry_end(EMW *);
 void em_sleep_eff_set(EMW *, int, f32 *, f32);
+void mot_miration_ret(EMW *, f32 *);
 void em01_to_normal();
 void em01_to_fly();
 void em01_frame_reset();
@@ -1282,6 +1283,260 @@ static void em_act33_005693F0(EMW *em, EM01W *w) {
         break;
     case 1:
         if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+/* Turn toward the target by at most 0x40 per frame (same as em03). */
+#define EM01_TURN(em)                                                     \
+    do {                                                                  \
+        int d;                                                            \
+        d = (u16)((u16)Em_Calc_angY((em)->pos, (em)->tgt_pos) - (em)->ang[1]); \
+        if (d <= 0x8000) {                                                \
+            if (d <= 0x3F) {                                              \
+                (em)->ang[1] += d;                                        \
+            } else {                                                      \
+                (em)->ang[1] += 0x40;                                     \
+            }                                                             \
+        } else if (d > 0xFFC0) {                                          \
+            (em)->ang[1] += d;                                            \
+        } else {                                                          \
+            (em)->ang[1] -= 0x40;                                         \
+        }                                                                 \
+    } while (0)
+
+static void em_mv00_00569480(EMW *em, EM01W *w) {
+    f32 v[4];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 3, 0, 0);
+        break;
+    case 1:
+        if (w->has_tgt != 0) {
+            EM01_TURN(em);
+        }
+        mot_miration_ret(em, v);
+        w->dist = w->dist - v[2];
+        if (w->dist <= 0.0f) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_mv01_005695C0(EMW *em, EM01W *w) {
+    em01_to_normal(em, 0, 0);
+}
+
+static void em_mv02_005695D0(EMW *em, EM01W *w) {
+    em01_to_normal(em, 0, 0);
+}
+
+/* Walk-turn toward the target; mode 0 turns left (anims 5/6), mode 1 right (7/8). */
+static void em_mv03_005695E0(EMW *em, EM01W *w) {
+    u32 spd;
+    u32 d;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        d = (w->dang - em->ang[1]) & 0xFFFF;
+        if (d < 0xE39U || d >= 0xF1C8U) {
+            pl_flag_set((PLW *)em, 0x20000);
+            em_char_set(em, 3, 0, 0);
+        } else if (d >= 0x8000U) {
+            em_char_set(em, 6, 0, 0);
+        } else {
+            em_char_set(em, 5, 0, 0);
+        }
+        break;
+    case 1:
+        if (em->x1C4 == 0) {
+            spd = (u32)((16384.0f / (em->x1A8 / 2.0f)) * em->act_spd);
+            d = (w->dang - (u16)em->ang[1]) & 0xFFFF;
+            if (em->x194 == 0 || em_frame_check2(em, 0, 110.0f)) {
+                if ((u32)((d + spd) & 0xFFFF) < spd * 2) {
+                    em->x05++;
+                    pl_flag_clr((PLW *)em, 0x20000);
+                    em01_to_normal(em, 0, 0);
+                    return;
+                }
+                if (d < 0xE39U || d >= 0xF1C8U) {
+                    pl_flag_set((PLW *)em, 0x20000);
+                    em_char_set(em, 3, 0, 0);
+                    return;
+                }
+                pl_flag_clr((PLW *)em, 0x20000);
+                if (d >= 0x8000U) {
+                    em_char_set(em, 6, 0, 0);
+                } else {
+                    em_char_set(em, 5, 0, 0);
+                }
+                return;
+            }
+            if ((u32)((d + spd) & 0xFFFF) < spd * 2) {
+                em->ang[1] = (u16)w->dang;
+            } else if (d < 0x8000U) {
+                em->ang[1] = (em->ang[1] + spd) & 0xFFFF;
+            } else {
+                em->ang[1] = (em->ang[1] - spd) & 0xFFFF;
+            }
+        }
+        break;
+    }
+}
+
+static void em_mv04_005698F0(EMW *em, EM01W *w) {
+    f32 v[4];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x11, 0, 0);
+        break;
+    case 1:
+        if (w->has_tgt != 0) {
+            EM01_TURN(em);
+            mot_miration_ret(em, v);
+            w->dist = w->dist - v[2];
+            if (w->dist <= 0.0f) {
+                em->work08 = 1;
+            }
+        }
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_mv05_00569A50(EMW *em, EM01W *w) {
+    u32 spd;
+    u32 d;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        d = (w->dang - em->ang[1]) & 0xFFFF;
+        if (d < 0xE39U || d >= 0xF1C8U) {
+            pl_flag_set((PLW *)em, 0x20000);
+            em_char_set(em, 3, 0, 0);
+        } else if (d >= 0x8000U) {
+            em_char_set(em, 7, 0, 0);
+        } else {
+            em_char_set(em, 8, 0, 0);
+        }
+        break;
+    case 1:
+        if (em->x1C4 == 0) {
+            spd = (u32)((16384.0f / (em->x1A8 / 2.0f)) * em->act_spd);
+            d = (w->dang - (u16)em->ang[1]) & 0xFFFF;
+            if (em->x194 == 0 || em_frame_check2(em, 0, 110.0f)) {
+                if ((u32)((d + spd) & 0xFFFF) < spd * 2) {
+                    em->x05++;
+                    pl_flag_clr((PLW *)em, 0x20000);
+                    em01_to_normal(em, 0, 0);
+                    return;
+                }
+                if (d < 0xE39U || d >= 0xF1C8U) {
+                    pl_flag_set((PLW *)em, 0x20000);
+                    em_char_set(em, 3, 0, 0);
+                    return;
+                }
+                pl_flag_clr((PLW *)em, 0x20000);
+                if (d >= 0x8000U) {
+                    em_char_set(em, 7, 0, 0);
+                } else {
+                    em_char_set(em, 8, 0, 0);
+                }
+                return;
+            }
+            if ((u32)((d + spd) & 0xFFFF) < spd * 2) {
+                em->ang[1] = (u16)w->dang;
+            } else if (d < 0x8000U) {
+                em->ang[1] = (em->ang[1] + spd) & 0xFFFF;
+            } else {
+                em->ang[1] = (em->ang[1] - spd) & 0xFFFF;
+            }
+        }
+        break;
+    }
+}
+
+static void em_mv06_00569D60(EMW *em, EM01W *w) {
+    f32 v[4];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0xA, 0, 0);
+        break;
+    case 1:
+        if (w->has_tgt != 0) {
+            EM01_TURN(em);
+            mot_miration_ret(em, v);
+            w->dist = w->dist - v[2];
+            if (w->dist <= 0.0f) {
+                em->work08 = 1;
+            }
+        }
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_mv07_00569EC0(EMW *em, EM01W *w) {
+    u16 v;
+    u32 d;
+    int a;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x36, 0, 0);
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        break;
+    case 1:
+        a = em->ang[1];
+        v = w->dang;
+        d = (v - (a & 0xFFFF)) & 0xFFFF;
+        if ((u32)((d + 0x200) & 0xFFFF) < 0x400U) {
+            em->ang[1] = v;
+        } else if (d < 0x8000U) {
+            em->ang[1] = (a + 0x200) & 0xFFFF;
+        } else {
+            em->ang[1] = (a - 0x200) & 0xFFFF;
+        }
+        if (em_frame_check2(em, 0, 60.0f)) {
+            em->x05++;
+        }
+        break;
+    case 2:
+        if (EMF(em, s32, 0x1E4) == 0) {
             em->x05++;
             em01_to_normal(em, 0, 0);
         }
