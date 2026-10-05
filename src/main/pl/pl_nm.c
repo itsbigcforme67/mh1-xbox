@@ -650,3 +650,211 @@ void basic_com_ck(PLW *pl) {
         }
     }
 }
+
+/* near-matches gun_adj_sub / sougun_adj_sub (not built). Both only match their register use if the callees
+   (blend_set/blend_calc, scope_add) are `static` functions defined earlier in the SAME translation unit:
+   MWCC then knows the callee's clobber set and keeps `step` in a3/t0 across the call. Separate plNN.c files
+   cannot give that. Remaining known diffs: `v = -v` is constant-folded here (original negates at run time via
+   dsll32/dsra32/negu), and `if (kind == 1 || kind == 5)` instead of a switch (gun_adj_sub). */
+void gun_adj_sub(PLW *pl) {
+    s8 v;
+    u16 step;
+    u16 now;
+    u16 an;
+    s16 pw;
+
+    if (Pl_master_ck(pl) != 0) {
+        switch (pl->kind) {
+        case 5:
+        case 1:
+            if (pl->char0 == 0x3E9) {
+                if (pl->x763 != 0 || pl->pch_on != 0) {
+                    pl->x763 = 10;
+                }
+                blend_set(pl, 0x3ED, 0x3EE);
+                if (pl->x763 != 0 || pl->pch_on != 0 || ((now = pl->sw.now, (now & 4) == 0) && (now & 8))) {
+                    now = pl->sw.now;
+                    if (now & 0x3000) {
+                        v = 5;
+                        if (pl->pch_on != 0 && game_w.x1DD != 0) {
+                            v = -v;
+                        }
+                        if (now & 0x2000) {
+                            blend_calc(pl, v);
+                        } else {
+                            blend_calc(pl, -v);
+                        }
+                        pl->x763 = 5;
+                    }
+                    if (pl->sw.now & 0x800) {
+                        pl->x763 = 10;
+                        if (pl->pch_on != 0 && game_w.x1DD == 2) {
+                            pl->ang_y -= 0x240;
+                        } else {
+                            pl->ang_y += 0x240;
+                        }
+                    }
+                    if (pl->sw.now & 0x400) {
+                        pl->x763 = 10;
+                        if (pl->pch_on != 0 && game_w.x1DD == 2) {
+                            pl->ang_y += 0x240;
+                        } else {
+                            pl->ang_y -= 0x240;
+                        }
+                    }
+                    blend_set(pl, 0x3ED, 0x3EE);
+                    if (pl->x763 != 0 || pl->pch_on != 0) {
+                        an = pl->sw.an_now;
+                        if (!(an & 0x3C00) || (pw = pl->sw.pow[0]) < 0x28) {
+                            return;
+                        }
+                        v = 1;
+                        step = 0x4C;
+                        if (pw >= 0x78) {
+                            v = 8;
+                            step = 0x200;
+                        } else if (pw >= 0x5A) {
+                            v = 4;
+                            step = 0xC0;
+                        } else if (pw >= 0x3C) {
+                            v = 2;
+                            step = 0x80;
+                        }
+                        if (an & 0x3000) {
+                            if (game_w.x1DD != 0) {
+                                v = -v;
+                            }
+                            if (an & 0x2000) {
+                                blend_calc(pl, v);
+                            } else {
+                                blend_calc(pl, -v);
+                            }
+                            pl->x763 = 5;
+                            blend_set(pl, 0x3ED, 0x3EE);
+                        }
+                        if (pl->sw.an_now & 0x800) {
+                            pl->x763 = 10;
+                            if (game_w.x1DD == 2) {
+                                pl->ang_y -= step;
+                            } else {
+                                pl->ang_y += step;
+                            }
+                        }
+                        if (pl->sw.an_now & 0x400) {
+                            pl->x763 = 10;
+                            if (game_w.x1DD == 2) {
+                                pl->ang_y += step;
+                            } else {
+                                pl->ang_y -= step;
+                            }
+                        }
+                    }
+                    blend_set(pl, 0x3ED, 0x3EE);
+                }
+            }
+            break;
+        }
+    }
+}
+
+void sougun_adj_sub(PLW *pl, u16 id) {
+    s8 v;
+    u16 step;
+    u16 now;
+    u16 an;
+    s16 pw;
+    u16 t;
+    u16 d;
+
+    if (Pl_master_ck(pl) != 0) {
+        if (pl->char0 == id) {
+            if (pl->x763 != 0 || pl->pch_on != 0) {
+                pl->x763 = 10;
+            }
+            if (pl->x763 != 0 || pl->pch_on != 0 || ((now = pl->sw.now, (now & 4) == 0) && (now & 8))) {
+                now = pl->sw.now;
+                if ((now & 0x3000) && id != 0x19E) {
+                    v = 4;
+                    if (pl->pch_on != 0 && game_w.x1DD != 0) {
+                        v = -v;
+                    }
+                    if (now & 0x2000) {
+                        scope_add(pl, (s16)(v << 8));
+                    } else {
+                        scope_add(pl, (s16)(-v << 8));
+                    }
+                    pl->x763 = 5;
+                }
+                if (pl->sw.now & 0x800) {
+                    pl->x763 = 10;
+                    if (game_w.x1DD == 2) {
+                        pl->ang_y -= 0x180;
+                    } else {
+                        pl->ang_y += 0x180;
+                    }
+                }
+                if (pl->sw.now & 0x400) {
+                    pl->x763 = 10;
+                    if (game_w.x1DD == 2) {
+                        pl->ang_y += 0x180;
+                    } else {
+                        pl->ang_y -= 0x180;
+                    }
+                }
+                if (pl->x763 != 0 || pl->pch_on != 0) {
+                    an = pl->sw.an_now;
+                    if ((an & 0x3C00) && (pw = pl->sw.pow[0]) >= 0x28) {
+                        v = 1;
+                        step = 0x4C;
+                        if (pw >= 0x78) {
+                            v = 8;
+                            step = 0x200;
+                        } else if (pw >= 0x5A) {
+                            v = 4;
+                            step = 0xC0;
+                        } else if (pw >= 0x3C) {
+                            v = 2;
+                            step = 0x80;
+                        }
+                        if ((an & 0x3000) && id != 0x19E) {
+                            if (game_w.x1DD != 0) {
+                                v = -v;
+                            }
+                            if (an & 0x2000) {
+                                scope_add(pl, (s16)(v << 8));
+                            } else {
+                                scope_add(pl, (s16)(-v << 8));
+                            }
+                            pl->x763 = 5;
+                        }
+                        if (pl->sw.an_now & 0x800) {
+                            pl->x763 = 10;
+                            if (game_w.x1DD == 2) {
+                                pl->ang_y -= step;
+                            } else {
+                                pl->ang_y += step;
+                            }
+                        }
+                        if (pl->sw.an_now & 0x400) {
+                            pl->x763 = 10;
+                            if (game_w.x1DD == 2) {
+                                pl->ang_y += step;
+                            } else {
+                                pl->ang_y -= step;
+                            }
+                        }
+                    }
+                }
+                if (id == 0x19E) {
+                    t = pl->work2D4;
+                    d = pl->ang_y - t;
+                    if (d < 0x8001 && d >= 0x4001) {
+                        pl->ang_y = t + 0x4000;
+                    } else if (d >= 0x8000 && d < 0xC000) {
+                        pl->ang_y = t - 0x4000;
+                    }
+                }
+            }
+        }
+    }
+}
