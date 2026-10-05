@@ -53,7 +53,9 @@ typedef struct PLX {
     s32     x1C4;        /* 0x1C4  */
     u8  _pad1C8[0x114];
     u16     char0;       /* 0x2DC  */
-    u8  _pad2DE[0x74];
+    u8  _pad2DE[0x34F - 0x2DE];
+    u8      x34F;        /* 0x34F */
+    u8  _pad350[2];
     u8      armor[0x12]; /* 0x352 (+6+i: armor id of part i) */
     u16     sw_now;      /* 0x364  */
     u8  _pad366[0x22];
