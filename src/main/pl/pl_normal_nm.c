@@ -1,4 +1,6 @@
-/* NONMATCHING: normal_char_set (0x0014F0D0) and to_normal (0x0014F1E0).
+/* NONMATCHING: to_normal (0x0014F1E0); normal_char_set now matches and
+ * is built from normal_char_set.c (see there).
+ * Old note for both:
  * Not built; the asm is used. Both are one instruction short of matching:
  * in the switch's default case our compiler builds reuse the constant 1
  * left in a register by the `case 1` comparison (andi v0,v0,0xFFFF / an

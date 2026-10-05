@@ -430,6 +430,11 @@ How it works (each step was checked, not assumed):
   was unknown. tools/check.py and tools/build.py now pass
   `-pragma "divbyzerocheck on"`; every registered file still matches, and
   set03_m and set22_m now match, so set03 and set22 are whole files again.
+- `#pragma opt_common_subs off` scoped to normal_char_set makes it match
+  (the old "constant reuse" quirk). Found by sweeping the compiler's opt_*
+  pragmas over the near-matches. It does not help to_normal (its last call
+  needs CSE), shell00_i or set05_m, so it is a workaround, not a claim
+  about Capcom's settings.
 - Effects started (include/eft.h, EFTW): eft00, eft07, eft09, eft19,
   eft21 match; eft05, eft10, eft24 match apart from one function each
   (split as before; *_nm.c holds the near-match). Findings:

@@ -74,6 +74,8 @@ segments:
       - [0x04EAFC, asm, text/g_act_set]
       - [0x04F030, c, pl/pl_normal]
       - [0x04F0C4, asm, text/normal_char_set]
+      - [0x04F0D0, c, pl/normal_char_set]
+      - [0x04F1DC, asm, text/to_normal]
       - [0x04F330, c, pl/pl_normal2]
       - [0x04F850, asm, text/g_pl_voice_req]
       - [0x04FC20, c, pl/pl_master_ck]

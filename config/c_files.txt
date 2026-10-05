@@ -81,3 +81,4 @@ game:rodata 0x00689F10 0x00689F28 set/set22
 game 0x00558A80 0x0055925C eft/eft24
 game 0x00545E90 0x00545F14 eft/eft11
 game 0x005461C0 0x005468E8 eft/eft11b
+main 0x0014F0D0 0x0014F1DC pl/normal_char_set
