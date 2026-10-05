@@ -96,3 +96,9 @@ Still assembly:
   clay handles, shader params, VU1 programs, flSetRenderState map.
 - tools/clay_dump.py (AFS -> .obj, em01 renders as Rathalos) and
   tools/vu_dis.py (VU1 microcode disassembler, output only to build/vu1).
+
+## Assignment 4: textures, skeletons, motions, Wii MHG (5 Oct 2026)
+- APX texture format + material->texture chain in docs/formats/graphics.md
+  section 7; Wii MHG fpk notes in 7b.
+- docs/formats/motion.md: AHI bones, skinning, *_tbl.bin banks, AAN curves.
+- tools/clay_dump.py: PNG/.mtl/UV export, --motion/--frame posing.
