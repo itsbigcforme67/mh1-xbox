@@ -24,6 +24,7 @@ import argparse
 import os
 import struct
 import sys
+import zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from afs_extract import read_table  # noqa: E402
@@ -108,6 +109,14 @@ def chunks(d, off, end):
         off += s
 
 
+def root_chunk(d):
+    """The root chunk, with its size widened to the whole file: in cube.amo
+    the root's size field is 0x3C short of its last child (the game walks
+    children by count, so it never notices)."""
+    o, t, c, s = next(chunks(d, 0, len(d)))
+    return o, t, c, len(d) - o
+
+
 def child(d, off, size, typ):
     for o, t, c, s in chunks(d, off + 12, off + size):
         if t == typ:
@@ -139,13 +148,101 @@ def strips(d, off, size):
             p += 4 + 4 * n
 
 
-def dump_obj(d, out):
-    root = next(chunks(d, 0, len(d)))
+def apx_decode(d, off):
+    """Decode one APX texture (flCreateTextureFromApx_mem, main 0x16FA00;
+    header readers in f_plapxgetmipmaptexturenum.s). Header, 0x20 bytes:
+      +0x00 u32 total size  +0x04 u32 pixel bytes (all mips)  +0x08 u32 palette bytes
+      +0x0C u16 bits per pixel (4, 8, 16, 24, 32)  +0x0E u16 width  +0x10 u16 height
+      +0x12 u16 mip count  +0x14 u16 palette bits (16, 24, 32)  +0x16 u16 palette count
+    Pixels follow at +0x20, linear (not GS-swizzled), mip 0 first; the
+    palette follows the pixels, in linear order. Returns (w, h, rgba bytes)
+    of mip 0. 32-bit alpha is stored 0-255 (the PS2 code halves it)."""
+    tot, pix, pal, bpp, w, h, mips, pbpp, npal = struct.unpack_from("<3I6H", d, off)
+    px = off + 0x20
+    out = bytearray()
+    if bpp in (4, 8):
+        n = 16 if bpp == 4 else 256
+        cl = []
+        p = px + pix
+        for i in range(n):
+            if pbpp == 32:
+                cl.append(bytes(d[p + 4 * i:p + 4 * i + 4]))
+            elif pbpp == 24:
+                cl.append(bytes(d[p + 3 * i:p + 3 * i + 3]) + b"\xff")
+            else:
+                v = struct.unpack_from("<H", d, p + 2 * i)[0]
+                cl.append(bytes(((v & 31) << 3, ((v >> 5) & 31) << 3, ((v >> 10) & 31) << 3,
+                                 255 if v & 0x8000 else 0)))
+        for i in range(w * h):
+            if bpp == 8:
+                v = d[px + i]
+            else:
+                v = (d[px + (i >> 1)] >> (4 * (i & 1))) & 15
+            out += cl[v]
+    elif bpp == 32:
+        out += d[px:px + 4 * w * h]
+    elif bpp == 24:
+        for i in range(w * h):
+            out += d[px + 3 * i:px + 3 * i + 3] + b"\xff"
+    else:
+        for i in range(w * h):
+            v = struct.unpack_from("<H", d, px + 2 * i)[0]
+            out += bytes(((v & 31) << 3, ((v >> 5) & 31) << 3, ((v >> 10) & 31) << 3,
+                          255 if v & 0x8000 else 0))
+    return w, h, bytes(out)
+
+
+def write_png(path, w, h, rgba):
+    raw = b"".join(b"\0" + rgba[y * w * 4:(y + 1) * w * 4] for y in range(h))
+
+    def chunk(t, data):
+        return (struct.pack(">I", len(data)) + t + data
+                + struct.pack(">I", zlib.crc32(t + data) & 0xFFFFFFFF))
+    with open(path, "wb") as f:
+        f.write(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 6, 0, 0, 0))
+                + chunk(b"IDAT", zlib.compress(raw, 6)) + chunk(b"IEND", b""))
+
+
+def material_textures(d):
+    """material number -> APX index in the model's *_tex.bin.
+    Material chunk payload +0x100 = texture slot; texture slot payload +0 =
+    APX index (+4/+8 = width/height)."""
+    root = root_chunk(d)
+    mats = child(d, root[0], root[3], T_MATERIALS)
+    texs = child(d, root[0], root[3], T_TEXTURES)
+    if not mats or not texs:
+        return {}
+    slots = [struct.unpack_from("<I", d, o + 12)[0] for o, t, c, s in chunks(d, texs[0] + 12, texs[0] + texs[2])]
+    res = {}
+    for k, (o, t, c, s) in enumerate(chunks(d, mats[0] + 12, mats[0] + mats[2])):
+        has_tex, = struct.unpack_from("<I", d, o + 12 + 0x34)
+        slot, = struct.unpack_from("<I", d, o + 12 + 0x100)
+        if has_tex and slot < len(slots):
+            res[k] = slots[slot]
+    return res
+
+
+def dump_obj(d, out, texdata=None):
+    root = root_chunk(d)
     models = child(d, root[0], root[3], T_MODELS)
     if not models:
         sys.exit("no model list in this AMO")
     base = 1
     lines = ["# MH1 AMO dump by tools/clay_dump.py (triangle strips -> triangles)"]
+    stem = os.path.splitext(out)[0]
+    mat2apx = material_textures(d)
+    if texdata is not None:
+        lines.append("mtllib %s.mtl" % os.path.basename(stem))
+        mtl = []
+        apxs = link_entries(texdata)
+        for k, (ao, asz) in enumerate(apxs):
+            w, h, rgba = apx_decode(texdata, ao)
+            write_png("%s_tex%d.png" % (stem, k), w, h, rgba)
+        for m, a in sorted(mat2apx.items()):
+            mtl += ["newmtl mat%d" % m, "Kd 1 1 1", "map_Kd %s_tex%d.png" % (os.path.basename(stem), a), ""]
+        with open(stem + ".mtl", "w") as f:
+            f.write("\n".join(mtl))
+    vtbase = 1
     nparts = ntris = 0
     for k, (o, t, c, s) in enumerate(chunks(d, models[0] + 12, models[0] + models[2])):
         if t != T_MODEL:
@@ -159,20 +256,54 @@ def dump_obj(d, out):
         for j in range(nv):
             x, y, z = struct.unpack_from("<3f", d, v[0] + 12 + 12 * j)
             lines.append("v %f %f %f" % (x, y, z))
-        for flag, idx in strips(d, il[0], il[2]):
+        st = child(d, o, s, T_ST)
+        if texdata is not None and st:
+            for j in range(nv):
+                u, w = struct.unpack_from("<2f", d, st[0] + 12 + 8 * j)
+                lines.append("vt %f %f" % (u, 1.0 - w))
+        ml = child(d, o, s, T_MATLIST)
+        pm = child(d, o, s, T_PRIMMAT)
+        matnums = struct.unpack_from("<%dI" % ml[1], d, ml[0] + 12) if ml else ()
+        primmat = struct.unpack_from("<%dI" % pm[1], d, pm[0] + 12) if pm else ()
+        cur = None
+        for pn, (flag, idx) in enumerate(strips(d, il[0], il[2])):
+            if texdata is not None and pn < len(primmat) and primmat[pn] < len(matnums):
+                m = matnums[primmat[pn]]
+                if m != cur:
+                    lines.append("usemtl mat%d" % m)
+                    cur = m
             for j in range(len(idx) - 2):
                 a, b, cc = idx[j], idx[j + 1], idx[j + 2]
                 if j & 1:
                     a, b = b, a
                 if a == b or b == cc or a == cc:
                     continue
-                lines.append("f %d %d %d" % (a + base, b + base, cc + base))
+                if texdata is not None and st:
+                    lines.append("f %d/%d %d/%d %d/%d" % (a + base, a + vtbase, b + base, b + vtbase,
+                                                          cc + base, cc + vtbase))
+                else:
+                    lines.append("f %d %d %d" % (a + base, b + base, cc + base))
                 ntris += 1
         base += nv
+        if texdata is not None and st:
+            vtbase += nv
         nparts += 1
     with open(out, "w") as f:
         f.write("\n".join(lines) + "\n")
     print("%s: %d parts, %d vertices, %d triangles" % (out, nparts, base - 1, ntris))
+
+
+def read_entry(afs, name):
+    """Return (name, raw bytes) of one AFS entry, by name or index."""
+    with open(afs, "rb") as f:
+        f.seek(0, 2)
+        fsize = f.tell()
+        f.seek(0)
+        entries, names = read_table(f, fsize)
+        idx = int(name) if name.isdigit() else names.index(name)
+        off, size = entries[idx]
+        f.seek(off)
+        return names[idx], f.read(size)
 
 
 def main():
@@ -181,27 +312,29 @@ def main():
     ap.add_argument("name", help="entry name (e.g. cube.amo, em01_amh.bin) or index")
     ap.add_argument("-o", "--out", help="output .obj (put it under build/)")
     ap.add_argument("--tree", action="store_true", help="print the chunk tree")
+    ap.add_argument("--tex", help="texture entry (default: NAME with _amh.bin -> _tex.bin); "
+                    "writes .mtl, UVs and one PNG per APX next to the .obj; 'none' to skip")
     args = ap.parse_args()
-    with open(args.afs, "rb") as f:
-        f.seek(0, 2)
-        fsize = f.tell()
-        f.seek(0)
-        entries, names = read_table(f, fsize)
-        if args.name.isdigit():
-            idx = int(args.name)
-        else:
-            idx = names.index(args.name)
-        off, size = entries[idx]
-        f.seek(off)
-        raw = f.read(size)
+    name, raw = read_entry(args.afs, args.name)
     d = melt(raw)
-    if names[idx] and names[idx].endswith("_amh.bin"):
+    if name and name.endswith("_amh.bin"):
         lo, ls = link_entries(d)[0]
         d = d[lo:lo + ls]
     if args.tree:
-        tree(d, 0, len(d))
+        o, t, c, sz = root_chunk(d)
+        print("%06X root       type=%06X count=%d size=0x%X" % (o, t, c, struct.unpack_from("<I", d, 8)[0]))
+        tree(d, 12, len(d), 1, t)
     if args.out:
-        dump_obj(d, args.out)
+        texname = args.tex
+        if texname is None and name and name.endswith("_amh.bin"):
+            texname = name[:-len("_amh.bin")] + "_tex.bin"
+        texdata = None
+        if texname and texname != "none":
+            try:
+                texdata = melt(read_entry(args.afs, texname)[1])
+            except ValueError:
+                print("no texture entry %s" % texname)
+        dump_obj(d, args.out, texdata)
 
 
 if __name__ == "__main__":
