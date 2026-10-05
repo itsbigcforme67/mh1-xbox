@@ -406,6 +406,19 @@ How it works (each step was checked, not assumed):
   set17 (set17_trans: 10 off; a full search of case 1's statement order
   found nothing better), set22_m (trap), Set20_set (original leaves the
   delay slots of its quest-number compare chain empty; cause unknown).
+- set00, set11, set15, shell03 match; set05 matches apart from set05_m
+  (2 instructions, split into set05.c / set05b.c, near-match in
+  set05_nm.c). Findings, checked with tools/check.py:
+  - A table read earlier than a call that precedes it in the source means
+    the source read it into a local first (set00_trans, stage 41).
+  - `(u16)(s32)(f)` converts float to a 16-bit angle with a plain cvt.w;
+    `(u16)f` goes through the unsigned conversion.
+  - Pl_stg_ck returns u8 (callers mask with 0xFF).
+  - set05_m: u16 kind + u8 n moves every temporary; u8 kind + int n is
+    2 off. Type changes to small locals reshuffle temporaries, not just
+    saved registers.
+  - CLAY: material count at +4 and 32 material indices at +8 (shell03_trans
+    sets each material's colour to white before drawing).
 - set20 (stage 25 gate) matches apart from Set20_set. `++t > 180` and
   `++t >= 181` compile differently (slti into at vs v0); the original used
   the first.
