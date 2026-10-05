@@ -302,7 +302,7 @@ KH *alloc_khmem();
 KL *alloc_klmem();
 void free_klmemlist();
 BS *make_bsmem();
-BS *ins_bsmem();
+static BS *ins_bsmem();
 void hchar_addbsmem();
 int dic_get1num();
 int dic_getallnum();
@@ -333,7 +333,7 @@ void khmem_raw();
 void kh_append_init();
 void kh_append();
 int kh_merge_getone();
-int exist_kouho();
+static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
@@ -392,7 +392,7 @@ void free_node();
 u8 *alloc_record();
 void clear_entid_tmp();
 void clear_entid_tmpall();
-s16 tmpoffset();
+int tmpoffset();
 
 typedef struct PAGE PAGE;
 struct PAGE {
@@ -469,7 +469,49 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int exist_kouho(u8 *s, int n)
+void kh_append_init(int pos, KH *k)
+{
+    int n;
+
+    e_khstr = (u8 *)wdsbuf;
+    while (k != 0) {
+        n = meantosjis(meanbuf, e_khstr + 1, kouho_makedisp(pos, cur_len, k, meanbuf));
+        *e_khstr = n;
+        e_khstr++;
+        e_khstr += n;
+        k = kh_followed(k);
+    }
+}
+
+void kh_append(pos, head, tail, k)
+int pos;
+KH **head;
+KH **tail;
+KH *k;
+{
+    int n;
+
+    n = meantosjis(meanbuf, outbuf, kouho_makedisp(pos, cur_len, k, meanbuf));
+    if (exist_kouho(outbuf, n) != 0) {
+        free_khmemlist(k);
+        return;
+    }
+    if ((u32)(e_khstr + n + 1) <= (u32)mem) {
+        *e_khstr = n;
+        e_khstr++;
+        strncpy(e_khstr, outbuf, n);
+        e_khstr += n;
+    }
+    if (*head == 0) {
+        *tail = k;
+        *head = k;
+    } else {
+        (*tail)->next = k;
+    }
+    *tail = kh_endof(k);
+}
+
+static int exist_kouho(u8 *s, int n)
 {
     u8 *p;
     int len;

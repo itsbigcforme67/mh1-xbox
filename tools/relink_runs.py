@@ -12,13 +12,14 @@ os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 nm, prefix, minaddr = sys.argv[1:4]
 first = sys.argv[4] if len(sys.argv) > 4 else 'b'
 skip = set()
+keep = sorted(set(re.findall(r'^static [^\n;]*?\b(\w+)\(', open(nm).read(), re.M)))   # LOCAL functions stay static in the run files (callers in the same run)
 rel = os.path.relpath(prefix, 'src/main')            # e.g. ime/ime
 pat = re.compile(r'^main 0x[0-9A-Fa-f]+ 0x[0-9A-Fa-f]+ %s[a-z]+$' % re.escape(rel))
 for it in range(8):
     for f in glob.glob(prefix + '[a-z]*.c'):
         if not f.endswith('_nm.c'):
             os.remove(f)
-    env = dict(os.environ, GENRUNS_SKIP=','.join(sorted(skip)))
+    env = dict(os.environ, GENRUNS_SKIP=','.join(sorted(skip)), GENRUNS_KEEP_STATIC=','.join(keep))
     out = subprocess.run(['python3', 'tools/genruns.py', nm, prefix, first, minaddr], capture_output=True, text=True, env=env).stdout
     cfg = [l for l in out.split('\n') if l.startswith('main 0x')]
     bad = set()

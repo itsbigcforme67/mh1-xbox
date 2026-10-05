@@ -45,7 +45,13 @@ for k,run in enumerate(runs):
     cfg.append('main 0x%08X 0x%08X %s%s'%(f[0],l[0]+l[1],os.path.relpath(prefix+letters[k],'src/main'),''))
 subprocess.run(['python3','tools/split_runs.py',nm,prefix]+args,check=True,capture_output=True)
 # strip static: the near-match file needs `static` helpers (callers keep values in temp registers), the linked run files must export them
+keep_=set(x for x in os.environ.get('GENRUNS_KEEP_STATIC','').split(',') if x)   # LOCAL functions whose callers are in the same run
+def fix_static(m):
+    mm=re.search(r'\b(\w+)\(',m.group(0))
+    return 'static ' if mm and mm.group(1) in keep_ else ''
 for a_ in args:
     fn_=prefix+a_.split(':')[0]+'.c'
-    t_=open(fn_).read(); open(fn_,'w').write(re.sub(r'^static ','',t_,flags=re.M))  # strip static
+    t_=open(fn_).read()
+    t_=re.sub(r'^static [^\n]*',lambda m: fix_static(m)+m.group(0)[len('static '):],t_,flags=re.M)
+    open(fn_,'w').write(t_)
 print('\n'.join(args)); print('\n'.join(cfg))

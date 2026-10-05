@@ -302,7 +302,7 @@ KH *alloc_khmem();
 KL *alloc_klmem();
 void free_klmemlist();
 BS *make_bsmem();
-BS *ins_bsmem();
+static BS *ins_bsmem();
 void hchar_addbsmem();
 int dic_get1num();
 int dic_getallnum();
@@ -333,7 +333,7 @@ void khmem_raw();
 void kh_append_init();
 void kh_append();
 int kh_merge_getone();
-int exist_kouho();
+static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
@@ -392,7 +392,7 @@ void free_node();
 u8 *alloc_record();
 void clear_entid_tmp();
 void clear_entid_tmpall();
-s16 tmpoffset();
+int tmpoffset();
 
 typedef struct PAGE PAGE;
 struct PAGE {
@@ -469,31 +469,13 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-u16 kh_priority(BS *b, int v)
+int ignore_syn(BS *b)
 {
-    v = v & 0xFFFF;
-    if (v != 0) {
-        return (v + 0x3E8) & 0xFFFF;
+    PW *pw;
+
+    pw = b->pw;
+    if (pw != 0 && (pw->x02 == 0x28 || pw->x02 == 0x29)) {
+        return 1;
     }
-    return b->x08;
-}
-
-int is_alphanum(int c)
-{
-    return rmtype[c & 0xFF] & 0xC0;
-}
-
-int is_num(int c)
-{
-    return rmtype[c & 0xFF] & 0x80;
-}
-
-int is_alpha(int c)
-{
-    return rmtype[c & 0xFF] & 0x40;
-}
-
-int is_paren(int c)
-{
-    return rmtype[c & 0xFF] & 0x20;
+    return 0;
 }

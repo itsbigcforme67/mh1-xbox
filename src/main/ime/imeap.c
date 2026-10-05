@@ -302,7 +302,7 @@ KH *alloc_khmem();
 KL *alloc_klmem();
 void free_klmemlist();
 BS *make_bsmem();
-BS *ins_bsmem();
+static BS *ins_bsmem();
 void hchar_addbsmem();
 int dic_get1num();
 int dic_getallnum();
@@ -333,7 +333,7 @@ void khmem_raw();
 void kh_append_init();
 void kh_append();
 int kh_merge_getone();
-int exist_kouho();
+static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
@@ -392,7 +392,7 @@ void free_node();
 u8 *alloc_record();
 void clear_entid_tmp();
 void clear_entid_tmpall();
-s16 tmpoffset();
+int tmpoffset();
 
 typedef struct PAGE PAGE;
 struct PAGE {
@@ -469,18 +469,35 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void bs_prefix(int pos)
+void free_bsmemlist(BS *b)
 {
-    BS *b;
-    PW *pw;
-    HCHAR *h;
+    BS *n;
 
-    h = &hchar[pos];
-    for (b = h->bs; b != 0; b = b->next) {
-        b->x0A = 0;
-        pw = b->pw;
-        if (pw != 0 && pw->x02 == 0x19 && pw->x00 == 0) {
-            b->x0A = 0xA;
-        }
+    while (b != 0) {
+        n = b->next;
+        free_mem(b);
+        b = n;
+    }
+}
+
+void free_khmemlist(KH *k)
+{
+    KH *n;
+
+    while (k != 0) {
+        n = k->next;
+        free_mem(k);
+        k = n;
+    }
+}
+
+void free_klmemlist(KL *l)
+{
+    KL *n;
+
+    while (l != 0) {
+        n = l->next;
+        free_mem(l);
+        l = n;
     }
 }

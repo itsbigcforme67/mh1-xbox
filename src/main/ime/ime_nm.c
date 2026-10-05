@@ -302,7 +302,7 @@ KH *alloc_khmem();
 KL *alloc_klmem();
 void free_klmemlist();
 BS *make_bsmem();
-BS *ins_bsmem();
+static BS *ins_bsmem();
 void hchar_addbsmem();
 int dic_get1num();
 int dic_getallnum();
@@ -333,7 +333,7 @@ void khmem_raw();
 void kh_append_init();
 void kh_append();
 int kh_merge_getone();
-int exist_kouho();
+static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
@@ -1333,14 +1333,14 @@ int setu_end(int a0, int flag)
     if (c >= 0xC0) {
         return 1;
     }
-    if (c < 0x80) {
-        if (c < 0x2D && (flag & 0xFF)) {
+    if (c <= 0x7F) {
+        if (c <= 0x2C && (flag & 0xFF)) {
             c = g2jodo(a0) & 0xFF;
             if (c == 0) {
                 return 0;
             }
         } else {
-            if (c == 0xD || (c >= 0x13 && c < 0x35) || c == 0x38) {
+            if (c == 0xD || (c >= 0x13 && c <= 0x34) || c == 0x38) {
                 return 1;
             }
             return 0;
@@ -1361,7 +1361,7 @@ int setu_end(int a0, int flag)
     case 0xA7:
     case 0xA8:
     case 0xB1:
-        if ((b >= 5 && b < 9) || b >= 0xA) {
+        if ((b > 4 && b < 9) || b >= 0xA) {
             return 1;
         }
         return 0;
@@ -1375,12 +1375,12 @@ int setu_end(int a0, int flag)
     case 0x95:
     case 0x98:
     case 0xA0:
-        if (b >= 5) {
+        if (b > 4) {
             return 1;
         }
         return 0;
     default:
-        if (b == 4 || (u32)(b - 7) < 2 || b >= 0xA) {
+        if (b == 4 || (u32)(b - 7) < 2 || b > 0x9) {
             return 1;
         }
         return 0;
@@ -2232,7 +2232,7 @@ int isnum(u8 *p)
     v = *p;
     if (v != 0) {
         do {
-            if (v < 0x30 || v >= 0x3A) {
+            if (v <= 0x2F || v >= 0x3A) {
                 return 0;
             }
             p++;
@@ -3961,7 +3961,7 @@ BS *make_bsmem(int pos, int end, CH *ch)
     return first;
 }
 
-BS *ins_bsmem(BS *list, BS *n)
+static BS *ins_bsmem(BS *list, BS *n)
 {
     s16 len;
     BS *prev;
@@ -4492,7 +4492,7 @@ int kstrncpy(u8 *dst, u8 *src, int n)
     total = n;
     while (*src != 0 && n > 0) {
         if (is_kanji(*src) != 0) {
-            if (n < 2) {
+            if (n <= 1) {
                 break;
             }
             n--;
@@ -4577,7 +4577,7 @@ int kh_merge_getone(KL *list)
 
 void kh_append_init(int pos, KH *k)
 {
-    s8 n;
+    int n;
 
     e_khstr = (u8 *)wdsbuf;
     while (k != 0) {
@@ -4595,14 +4595,14 @@ KH **head;
 KH **tail;
 KH *k;
 {
-    s8 n;
+    int n;
 
     n = meantosjis(meanbuf, outbuf, kouho_makedisp(pos, cur_len, k, meanbuf));
     if (exist_kouho(outbuf, n) != 0) {
         free_khmemlist(k);
         return;
     }
-    if ((u32)mem >= (u32)(e_khstr + n + 1)) {
+    if ((u32)(e_khstr + n + 1) <= (u32)mem) {
         *e_khstr = n;
         e_khstr++;
         strncpy(e_khstr, outbuf, n);
@@ -4617,7 +4617,7 @@ KH *k;
     *tail = kh_endof(k);
 }
 
-int exist_kouho(u8 *s, int n)
+static int exist_kouho(u8 *s, int n)
 {
     u8 *p;
     int len;
@@ -4813,7 +4813,7 @@ int inc_gun(KH *k)
     w = 0;
     n = 0;
     room = kwin_len - 0xA;
-    while (n < 9) {
+    while (n <= 8) {
         if (p == 0) {
             break;
         }
@@ -5016,7 +5016,7 @@ int to_ucode(int x)
     int c;
 
     c = x & 0xFFFF;
-    if (c >= 0x21 && c < 0x7F) {
+    if (c > 0x20 && c < 0x7F) {
         return 0;
     }
     switch (c & 0xFF00) {

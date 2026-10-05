@@ -302,7 +302,7 @@ KH *alloc_khmem();
 KL *alloc_klmem();
 void free_klmemlist();
 BS *make_bsmem();
-BS *ins_bsmem();
+static BS *ins_bsmem();
 void hchar_addbsmem();
 int dic_get1num();
 int dic_getallnum();
@@ -333,7 +333,7 @@ void khmem_raw();
 void kh_append_init();
 void kh_append();
 int kh_merge_getone();
-int exist_kouho();
+static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
@@ -392,7 +392,7 @@ void free_node();
 u8 *alloc_record();
 void clear_entid_tmp();
 void clear_entid_tmpall();
-s16 tmpoffset();
+int tmpoffset();
 
 typedef struct PAGE PAGE;
 struct PAGE {
@@ -469,18 +469,22 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int is_jisknj(int c)
-{
-    return (c & 0xFFFF) >= 0x3020;
-}
-
-int is_jiskig(int x)
+int to_ucode(int x)
 {
     int c;
 
     c = x & 0xFFFF;
-    if (c >= 0x2120 && c < 0x3020) {
-        return is_kata(x, 0) ? 0 : 1;
+    if (c > 0x20 && c < 0x7F) {
+        return 0;
     }
-    return 0;
+    switch (c & 0xFF00) {
+    case 0x2300:
+        return c & 0x7F;
+    case 0x2400:
+        return ((c & 0x7F) | 0x80) & 0xFF;
+    case 0x2500:
+        return 0;
+    default:
+        return srch_ucode(x);
+    }
 }
