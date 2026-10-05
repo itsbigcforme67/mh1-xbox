@@ -351,7 +351,7 @@ main 0x0023A7F0 0x0023AA60 omake/omakec
 main 0x0023B2E0 0x0023B4F4 omake/omaked
 main 0x0023B790 0x0023BE10 omake/omakee
 main:rodata 0x0036D1E0 0x0036D1F8 omake/omakee
-main 0x00281660 0x002816E8 mc/mcsaveb
+main 0x002814E0 0x00281740 mc/mcsaveb
 main 0x00281740 0x002818E4 mc/mcsaved
 main 0x002819C0 0x00281BC0 mc/mcsavec
 main 0x0023DAB0 0x0023DEA8 npc/npcb
