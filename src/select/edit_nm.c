@@ -281,7 +281,7 @@ int cmn_mongon_look(s8 *a) {
 }
 
 int cmn_mongon_look_sub(s8 *str, s8 *tbl) {
-    u8 buf[0x60];
+    s8 buf[0x60];
     int len = strlen(str);
     if (*tbl != 0) {
         do {
@@ -713,4 +713,150 @@ void disp_color(u8 *w) {
         flps0004(&q);
         fx += 22.0f;
     }
+}
+
+/* Name filter: copy str to out (n+1 bytes incl. terminator), upper-case it and fold look-alike
+   characters (@ -> A, $/5 -> S, </( -> C, !/1 -> I, 2 -> Z, 0 -> O). */
+void cmn_mongon_check_filter(s8 *out, s8 *str, int n) {
+    int i = 0;
+    s8 *src;
+    s8 *dst;
+    if (0 <= n) {
+        do {
+            src = str + i;
+            dst = out + i;
+            *dst = *src;
+            if (_ctype_[1 + *src] & 2) {
+                *dst -= 0x20;
+            }
+            if (*dst == 0x40) { *dst = 0x41; }
+            if (*dst == 0x24) { *dst = 0x53; }
+            if (*dst == 0x35) { *dst = 0x53; }
+            if (*dst == 0x3C) { *dst = 0x43; }
+            if (*dst == 0x28) { *dst = 0x43; }
+            if (*dst == 0x21) { *dst = 0x49; }
+            if (*dst == 0x31) { *dst = 0x49; }
+            if (*dst == 0x32) { *dst = 0x5A; }
+            if (*dst == 0x30) { *dst = 0x4F; }
+            i++;
+        } while (n >= i);
+    }
+}
+
+/* Expand one entry of check_mongon (16-byte records, 14 chars + length at +0xF; a record whose
+   next record has -1 at +0xF continues) into out. Returns the length, or -1 if it is longer than max. */
+int cmn_mongon_set(s8 *e, s8 *out, int max) {
+    s8 len = e[0xF];
+    s8 rem;
+    int k = 0;
+    int i = 0;
+    int j;
+    if (max < len) {
+        return -1;
+    }
+    rem = len;
+    if (e[0x1F] == -1) {
+        do {
+            for (j = 0; j < 14; j++) {
+                out[k * 14 + j] = e[j];
+            }
+            e += 0x10;
+            k++;
+            rem -= 14;
+        } while (e[0x1F] == -1);
+    }
+    if (rem > 0) {
+        for (; i < rem; i++) {
+            out[k * 14 + i] = e[i];
+        }
+    }
+    out[i + k * 14] = 0;
+    return len;
+}
+
+/* Near-match: bad-word check of a name. Returns 0 if a word of check_mongon was found, else 1. */
+int cmn_mongon_check_sub(s8 *str) {
+    s8 flt[0x50];
+    s8 buf[0x50];
+    s8 *f;
+    s8 *tbl;
+    s8 *p;
+    s8 *q;
+    s8 *sp2;
+    int len = strlen(str);
+    int pos = 0;
+    int found;
+    int n;
+    int r;
+    s8 c;
+    cmn_mongon_check_filter(flt, str, len);
+    f = flt;
+    if (*f != 0) {
+        do {
+            found = 0;
+            tbl = check_mongon;
+            if (*tbl != 0) {
+                do {
+                    r = cmn_mongon_set(tbl, buf, len);
+                    if (r != -1) {
+                        p = buf;
+                        q = flt + pos;
+                        n = 0;
+                        sp2 = str + pos;
+                        while (*p != 0 && *sp2 != 0) {
+                            if (_ctype_[1 + *q] & 7) {
+                                if (*q != *p) {
+                                    if (*sp2 == 0x31 || *sp2 == 0x21) {
+                                        if (*p != 0x4C) break;
+                                    } else if (*sp2 == 0x28 || *sp2 == 0x3C) {
+                                        if (n != 0) break;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                n++;
+                                p++;
+                                if (n == r) {
+                                    found = 1;
+                                    sp2++;
+                                    break;
+                                }
+                            }
+                            q++;
+                            sp2++;
+                        }
+                        if (found == 1) {
+                            if (_ctype_[1 + *sp2] & 7) {
+                                found = 0;
+                                if (cmn_mongon_look(sp2) != 0) {
+                                    return 0;
+                                }
+                            } else {
+                                return 0;
+                            }
+                        }
+                    }
+                    tbl += 0x10;
+                } while (*tbl != 0);
+            }
+            c = *f;
+            if (c != 0) {
+                while (found == 0) {
+                    f++;
+                    pos++;
+                    if (!(_ctype_[1 + str[pos]] & 7)) {
+                        c = *f;
+                        if (!(_ctype_[1 + c] & 7)) {
+                            c = *f;
+                            if (c == 0) break;
+                            continue;
+                        }
+                    }
+                    c = *f;
+                    if (c == 0) break;
+                }
+            }
+        } while (*f != 0);
+    }
+    return 1;
 }
