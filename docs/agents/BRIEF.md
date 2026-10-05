@@ -35,6 +35,11 @@ equivalent), note how far off it is, and move on. Cover whole files before perfe
 single functions.
 
 ## Lessons from earlier agents (read before starting)
+- tools/check.py ignores relocation addends: a wrong array index into a global, a wrong
+  table symbol or a gp-relative global still shows OK. Only `tools/rebuild.sh` (byte compare
+  of the linked module) proves a match; run it before registering a file. (agent E)
+- Before you report back: `git merge main` once more, `tools/rebuild.sh` (all five OK),
+  commit. Never refer to padding by name (`_padXXX`); fields get carved out by others.
 - tools/check.py can report OK against the wrong address for a static whose name also
   exists in another file: give statics their address suffix (e.g. `foo_5341A0`). (agent B)
 docs/agents/agent-A.md, agent-B.md, agent-C.md, agent-D.md hold dozens of MWCC matching
