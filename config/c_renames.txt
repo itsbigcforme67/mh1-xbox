@@ -75,6 +75,8 @@ build/src/game/em/em10c.c.o .rodata .data
 build/src/game/em/em12.c.o .rodata .data
 build/src/game/em/em12b.c.o .rodata .data
 build/src/game/em/em12c.c.o .rodata .data
+build/src/game/em/em14_r11.c.o .rodata .data
+build/src/game/em/em14_r12.c.o .rodata .data
 build/src/game/em/em14.c.o .rodata .data
 build/src/game/em/em15_r11.c.o .rodata .data
 build/src/game/em/em15_r12.c.o .rodata .data
