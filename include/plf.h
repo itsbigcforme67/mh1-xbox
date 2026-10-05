@@ -246,4 +246,5 @@ void pl_demo(PLW *);
 void pl_egg(PLW *);
 void pl_chat(PLW *);
 void pl_turn_sub(PLW *);
+void pl_horm_sub(PLW *);
 #endif

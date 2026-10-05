@@ -1558,3 +1558,84 @@ other:
         }
     }
 }
+
+/* near-match (not built): pl_horm_sub - 93 lines differ (register naming: original keeps em pointer in s0 and the index in s2, ours the reverse;
+   declaration permutations did not fix it). */
+void pl_horm_sub(PLW *pl) {
+    f32 dmin;
+    f32 d;
+    u32 best;
+    u32 i;
+    EMW *e;
+    s32 t;
+    u16 v;
+    u16 ang;
+
+    best = 0xFF;
+    pl->work81C = 0;
+    dmin = 1500.0f;
+    e = em_work;
+    if (pl->char0 == 0x26) {
+        i = 0;
+        do {
+            if ((e->be_flag != 0) && (e->x01 != 0)) {
+                d = flvecCalcDistance(pl->pos, e->pos);
+                if (!(dmin < d)) {
+                    best = i;
+                    dmin = d;
+                    pl->work81C = 1;
+                }
+            }
+            i++;
+            e++;
+        } while (i < 0x14);
+    }
+    if (pl->work81C == 0) {
+        v = pl->work81A;
+        t = v + 0x400;
+        if (v != 0) {
+            if ((t < 0x801) && (t >= 0)) {
+                pl->work81A = 0;
+                return;
+            }
+            if ((s16)v >= 0) {
+                pl->work81A = pl->work81A - 0x400;
+            } else {
+                pl->work81A = pl->work81A + 0x400;
+            }
+        }
+    } else {
+        ang = (((calc_vec_ang2(em_work[best].pos, pl->pos) & 0xFFFF) + 0x4000) & 0xFFFF) + 0x10000 - pl->ang[1];
+        if (ang >= 0x8000) {
+            if (ang < 0xD556) {
+                ang = 0xD556;
+            }
+            v = pl->work81A;
+            if (v >= 0x8000) {
+                t = v - 0x800;
+                if (ang >= t) {
+                    pl->work81A = ang;
+                    return;
+                }
+                pl->work81A = t;
+                return;
+            }
+            pl->work81A = v - 0x800;
+        } else {
+            if (ang >= 0x2AAC) {
+                ang = 0x2AAB;
+            }
+            v = pl->work81A;
+            t = v + 0x800;
+            if (v < 0x8000) {
+                if (t >= ang) {
+                    pl->work81A = ang;
+                    return;
+                }
+                pl->work81A = t;
+                return;
+            }
+            pl->work81A = v + 0x800;
+        }
+    }
+}
