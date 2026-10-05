@@ -1925,3 +1925,6 @@ int rate_g_calc(PLW *pl, int t) {
     pl->acc[1] = a;
     return 0;
 }
+
+f32 *Stage_data_get(int stg);
+void flmatGetTrans(f32 *, u8 *);

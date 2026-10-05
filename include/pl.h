@@ -89,7 +89,10 @@ typedef struct PLW {
     f32   work058;           /* 0x058 */
     f32   work05C;           /* 0x05C */
     u8    rot[0x18];     /* 0x060 rotation matrix (start; extent unknown) */
-    u8 _pad078[0xA0 - 0x78];
+    u8 _pad078[0x18];
+    s32   work090;           /* 0x090 */
+    u8 _pad094[0x8];
+    s32   work09C;           /* 0x09C */
     s32   ang[3];        /* 0x0A0 rotation, 0x10000 = 360 degrees (set05_m, as EMW) */
     f32   pos[3];        /* 0x0AC world position (set16_m, shell00_set) */
     f32   scl[3];            /* 0x0B8 scale (pl_init_sub: 1.0 each) */
@@ -192,7 +195,9 @@ typedef struct PLW {
     s16   work4E0;       /* 0x4E0 */
     u8 _pad4E2[0x4E3 - 0x4E2];
     s8    work4E3;       /* 0x4E3 */
-    u8 _pad4E4[0x564 - 0x4E4];
+    u8 _pad4E4[0x28];
+    u8 *mdl50C;              /* 0x50C model; +0x24 = joint matrix array (0x190 bytes each), hit_data_expand */
+    u8 _pad510[0x54];
     void *work564;           /* 0x564 */
     s16   work568;           /* 0x568 */
     u8    work56A;           /* 0x56A */
@@ -259,7 +264,10 @@ typedef struct PLW {
     s16   work74A;           /* 0x74A */
     s32   work74C;           /* 0x74C */
     u16   work750;           /* 0x750 */
-    u8 _pad752[0x760 - 0x752];
+    u8 _pad752[0x2];
+    f32   work754;           /* 0x754 */
+    f32   work758;           /* 0x758 */
+    f32   work75C;           /* 0x75C */
     s16   work760;           /* 0x760 */
     u8 _pad762[0x763 - 0x762];
     u8 x763;                 /* 0x763 non-zero: no manual camera (manual_cam_chk) */
