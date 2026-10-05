@@ -2064,13 +2064,13 @@ static void em_fly23_005B8CD0(EMW *em, EM14W *w) {
         em->x8BD = 1;
         break;
     case 1:
-        em14_fly_adjy2(temp_a2);
+        em14_fly_adjy2(em);
         if (em->x194 == 0) {
             em->x05 += 1;
         }
         break;
     case 2:
-        if ((em14_fly_adjy2(temp_a2) & 0xFF) && (em->pos[1] <= (800.0f + em->x5AC))) {
+        if ((em14_fly_adjy2(em) & 0xFF) && (em->pos[1] <= (800.0f + em->x5AC))) {
             em->x05 += 1;
             em_char_set(em, 0xB, 0, 0);
             em_rate_clear(em);
