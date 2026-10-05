@@ -1,4 +1,4 @@
-/* em18 - game.bin 0x005E6E00-0x005E7918. Monster kind 18: a small
+/* em18b - game.bin 0x005E6E00-0x005E7918. Monster kind 18: a small
  * creature that idles, turns in place, follows a player (while that player
  * is in mode 4), spins and fades out. Its action program comes from the
  * shared em code (em_cmd_ck / em_act_search over em18_act_tbl); animations

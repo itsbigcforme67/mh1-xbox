@@ -162,5 +162,7 @@ game 0x0053BA50 0x0053FFC4 eft/eft17
 game:rodata 0x00685230 0x006853A4 eft/eft17
 game 0x006140B0 0x006147C8 em/em29
 game:rodata 0x00689C80 0x00689CE0 em/em29
-game 0x005E6E00 0x005E7918 em/em18
-game:rodata 0x00688F30 0x00688F50 em/em18
+game 0x005E6E00 0x005E7918 em/em18b
+game:rodata 0x00688F30 0x00688F50 em/em18b
+game 0x005E8060 0x005EB3A8 em/em19b
+game:rodata 0x00688F50 0x00689058 em/em19b
