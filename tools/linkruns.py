@@ -97,7 +97,7 @@ for i, r in enumerate(runs):
     print("run %s: %s-%s %d functions%s" % (outc, hex(a), hex(e), len(r), (" rodata %s-%s" % (hex(rod[0]), hex(rod[1]))) if rod else ""))
     if not dry:
         subprocess.run(["python3", "tools/mkrun2.py", nm, outc, hdr] + r, check=True)
-        chk = subprocess.run(["python3", "tools/check.py", outc], capture_output=True, text=True).stdout
+        r_ = subprocess.run(["python3", "tools/check.py", outc], capture_output=True, text=True); chk = r_.stdout + r_.stderr
         if "Error" in chk:
             print("  run file does not compile:", chk[:300]); os.remove(outc); continue
         lines.append("main 0x%08X 0x%08X %s%02d" % (a, e, prefix, n0))
