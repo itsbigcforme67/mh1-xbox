@@ -124,6 +124,8 @@ segments:
       - [0x0072E0, c, ui06]
       - [0x0073D0, c, misc01]
       - [0x0073E4, asm, text/yn_mc_device_check_all]
+      - [0x0073F0, c, misc02]
+      - [0x007578, asm, text/yn_mc_format]
       - [0x007580, c, yn_mc]
       - [0x0078D8, asm, text/g_yn_cur1_sd]
       - [0x0078E0, c, yn_sd]
