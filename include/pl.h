@@ -76,20 +76,39 @@ typedef struct PLW {
     u8 _pad01A[0x2];
     u8    work01C;           /* 0x01C */
     u8    work01D;           /* 0x01D */
-    s8    work01E;           /* 0x01E */
-    u8 _pad01F[0x60 - 0x1F];
+    u8    work01E;           /* 0x01E */
+    u8 _pad01F[0x11];
+    f32   work030;           /* 0x030 */
+    f32   work034;           /* 0x034 */
+    f32   work038;           /* 0x038 */
+    u8 _pad03C[0xC];
+    f32   work048;           /* 0x048 */
+    f32   work04C;           /* 0x04C */
+    f32   work050;           /* 0x050 */
+    f32   work054;           /* 0x054 */
+    f32   work058;           /* 0x058 */
+    f32   work05C;           /* 0x05C */
     u8    rot[0x18];     /* 0x060 rotation matrix (start; extent unknown) */
-    u8 _pad078[0xA0 - 0x78];
+    u8 _pad078[0x18];
+    s32   work090;           /* 0x090 */
+    u8 _pad094[0x8];
+    s32   work09C;           /* 0x09C */
     s32   ang[3];        /* 0x0A0 rotation, 0x10000 = 360 degrees (set05_m, as EMW) */
     f32   pos[3];        /* 0x0AC world position (set16_m, shell00_set) */
     f32   scl[3];            /* 0x0B8 scale (pl_init_sub: 1.0 each) */
     u8 _pad0C4[0x110 - 0xC4];
     void *part[2];           /* 0x110 matrix blocks, part[i]+0x40 is a world matrix (cmd_set_pos) */
-    u8 _pad118[0x148 - 0x118];
+    u8 _pad118[0xC];
+    s32   work124;           /* 0x124 */
+    u8 _pad128[0x8];
+    s32   work130;           /* 0x130 */
+    u8 _pad134[0x14];
     u8 *mdl148;              /* 0x148 +0x40 is a matrix (cam_sub_pchngr) */
-    u8 _pad14C[0x158 - 0x14C];
+    u8 _pad14C[0xC];
     struct PL_HAND *hand;  /* 0x158 thrown items start from hand->pos (shell03_set) */
-    u8 _pad15C[0x194 - 0x15C];
+    u8 _pad15C[0x4];
+    s32   work160;           /* 0x160 */
+    u8 _pad164[0x30];
     s32   work194;           /* 0x194 */
     s32   chr_no0;       /* 0x198 */
     f32   work19C;           /* 0x19C */
@@ -117,17 +136,21 @@ typedef struct PLW {
     u8 _pad2F6[0x2F8 - 0x2F6];
     s8    work2F8;       /* 0x2F8 */
     u8 _pad2F9[0x2FC - 0x2F9];
-    s16   work2FC;       /* 0x2FC */
+    union {
+        s16   work2FC;   /* 0x2FC */
+        u8    x2FC[2];   /* 0x2FC, 0x2FD per-slot init flags of frame_init (pl_chr_sub) */
+    };
     u8 _pad2FE[0x300 - 0x2FE];
-    s16   work300;           /* 0x300 */
+    u16   work300;           /* 0x300 */
     s16   vital;         /* 0x302 hit points (Pl_damage_sub) */
     u8 _pad304[0x34C - 0x304];
     u8    work34C;           /* 0x34C */
     u8 _pad34D[0x350 - 0x34D];
     s8    work350;           /* 0x350 */
     s8    work351;           /* 0x351 */
-    s8    work352[6];        /* 0x352 parts/armor ids? */
-    u8 _pad358[0x360 - 0x358];
+    u8    work352[6];        /* 0x352 parts/armor ids (u8: Skill_set_PL lbu) */
+    u8 _pad358[0x7];
+    u8    work35F;           /* 0x35F */
     u16   wpn_kind;      /* 0x360 gun type, row of D_3367B2 (shell06) */
     u16   wpn_ammo;      /* 0x362 loaded ammo; low nibble = Gun_Grow_Up_DATA row (shell06) */
     PLSW  sw;            /* 0x364 */
@@ -151,7 +174,7 @@ typedef struct PLW {
     f32   vel[3];            /* 0x3B4 velocity applied in the air/jump actions (pl_mv006/021) */
     f32   acc[3];            /* 0x3C0 per-frame change of vel (rate_g_calc) */
     struct PLPROG *prog; /* 0x3CC table of state handlers (pl_work_clr); see PLPROG */
-    s8    work3D0;       /* 0x3D0 */
+    u8    work3D0;           /* 0x3D0 */
     s8    work3D1;       /* 0x3D1 */
     u8 _pad3D2[0x3EC - 0x3D2];
     u16   dm_ang;        /* 0x3EC direction the hit came from (Guard_dir_ck) */
@@ -179,7 +202,9 @@ typedef struct PLW {
     s16   work4E0;       /* 0x4E0 */
     u8 _pad4E2[0x4E3 - 0x4E2];
     s8    work4E3;       /* 0x4E3 */
-    u8 _pad4E4[0x564 - 0x4E4];
+    u8 _pad4E4[0x28];
+    u8 *mdl50C;              /* 0x50C model; +0x24 = joint matrix array (0x190 bytes each), hit_data_expand */
+    u8 _pad510[0x54];
     void *work564;           /* 0x564 */
     s16   work568;           /* 0x568 */
     u8    work56A;           /* 0x56A */
@@ -195,7 +220,9 @@ typedef struct PLW {
     f32   work5A4;           /* 0x5A4 */
     f32   work5A8;           /* 0x5A8 */
     f32   x5AC;          /* 0x5AC ground height (eft21_i, as EMW) */
-    u8 _pad5B0[0x5FC - 0x5B0];
+    u8 _pad5B0[0x8];
+    u16   work5B8;           /* 0x5B8 */
+    u8 _pad5BA[0x42];
     u32   work5FC;           /* 0x5FC */
     u8 _pad600;
     s8    work601;           /* 0x601 */
@@ -208,8 +235,9 @@ typedef struct PLW {
     s16   work60A;           /* 0x60A */
     u8 _pad60C[0x610 - 0x60C];
     s16   x610;          /* 0x610 shell00 hits count while set (cont_add) */
-    s8    work612;           /* 0x612 */
-    u8 _pad613[0x615 - 0x613];
+    u8    work612;           /* 0x612 */
+    u8    work613;           /* 0x613 0x613 near-monster light flag (pl_light_ck) */
+    u8 _pad614;
     u8    work615;       /* 0x615 non-zero: weapon in the other hand (eft05) */
     u8    work616;           /* 0x616 */
     u8 _pad617[0x6A4 - 0x617];
@@ -219,7 +247,9 @@ typedef struct PLW {
     s8    work6A8;           /* 0x6A8 */
     s8    work6A9;           /* 0x6A9 */
     u16   work6AA;           /* 0x6AA */
-    u8 _pad6AC[0x53];
+    u16   work6AC;           /* 0x6AC 0x6AC (u16: Pl_atck_adj_calc lhu) */
+    u16   work6AE;           /* 0x6AE */
+    u8 _pad6B0[0x4F];
     u8    work6FF;           /* 0x6FF */
     u8 _pad700[0xE];
     u16   x70E;          /* 0x70E point number in the stage list (cmd_target_kind_set) */
@@ -242,7 +272,10 @@ typedef struct PLW {
     s16   work74A;           /* 0x74A */
     s32   work74C;           /* 0x74C */
     u16   work750;           /* 0x750 */
-    u8 _pad752[0x760 - 0x752];
+    u8 _pad752[0x2];
+    f32   work754;           /* 0x754 */
+    f32   work758;           /* 0x758 */
+    f32   work75C;           /* 0x75C */
     s16   work760;           /* 0x760 */
     u8 _pad762[0x763 - 0x762];
     u8 x763;                 /* 0x763 non-zero: no manual camera (manual_cam_chk) */
@@ -275,18 +308,21 @@ typedef struct PLW {
     u8 _pad7D7[0x7D8 - 0x7D7];
     f32   atk_rate;      /* 0x7D8 shot power (shell06_get_weaopn_data) */
     f32   work7DC;           /* 0x7DC */
-    u8 _pad7E0[0x7ED - 0x7E0];
+    u8 _pad7E0[0xC];
+    s8    work7EC;           /* 0x7EC */
     u8    work7ED;           /* 0x7ED */
     u8    work7EE;           /* 0x7EE */
     u8 _pad7EF[0x800 - 0x7EF];
     f32   work800;           /* 0x800 */
     f32   work804;           /* 0x804 */
     f32   work808;           /* 0x808 */
-    u8 _pad80C[0x818 - 0x80C];
+    f32   work80C;           /* 0x80C */
+    f32   work810;           /* 0x810 */
+    f32   work814;           /* 0x814 */
     s16   work818;           /* 0x818 */
-    u16   work81A;           /* 0x81A */
+    s16   work81A;           /* 0x81A */
     u8    work81C;           /* 0x81C */
-    u8 _pad81D[0x81E - 0x81D];
+    s8    work81D;           /* 0x81D */
     u8    work81E;           /* 0x81E */
     u8    work81F;           /* 0x81F */
     u8 _pad820[0x824 - 0x820];
@@ -337,7 +373,7 @@ typedef struct PLW {
     s8    work8F0;       /* 0x8F0 */
     u8 _pad8F1[0x8F2 - 0x8F1];
     u8    work8F2;           /* 0x8F2 */
-    s8    work8F3;           /* 0x8F3 */
+    u8    work8F3;           /* 0x8F3 */
     PL_ITEM share[4];        /* 0x8F4 shared items carried (Share_item_stack, quest.c) */
     u16   work904;           /* 0x904 */
     s16   work906;           /* 0x906 */
@@ -347,16 +383,21 @@ typedef struct PLW {
     s8    work90B;           /* 0x90B */
     s16   work90C;           /* 0x90C */
     u8    work90E;           /* 0x90E */
-    u8 _pad90F[0x917 - 0x90F];
+    u8 _pad90F;
+    u8    skill[5];          /* 0x910 active skill ids (Skill_set_PL, Pl_Skill_ck) */
+    u8 _pad915[0x2];
     s8    work917;           /* 0x917 */
     u16   work918;           /* 0x918 */
     u16   work91A;           /* 0x91A */
     u16   work91C;           /* 0x91C */
     u8    work91E;           /* 0x91E (u8: lbu in result_init) */
-    s8    work91F;           /* 0x91F */
-    u8 _pad920[0x930 - 0x920];
+    u8    work91F;           /* 0x91F */
+    f32   work920;           /* 0x920 */
+    f32   work924;           /* 0x924 */
+    f32   work928;           /* 0x928 */
+    f32   work92C;           /* 0x92C */
     u16   work930;           /* 0x930 */
-    u8 _pad932[0x934 - 0x932];
+    u16   work932;           /* 0x932 */
     s16   work934;           /* 0x934 */
     u8    work936;           /* 0x936 */
     s8    work937;           /* 0x937 */

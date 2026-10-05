@@ -59,6 +59,7 @@ int rt_clay_claimed(int handle);
 /* Hand effect model k (eft_mdlw[k]: 0 ef_00, 1-3 kage04-06, 4 ef_01) to
  * the game C; attr as for rt_bind_set_model. */
 void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n);
+void rt_bind_eft_skin(int k, int nbone, void (*cb)(int k, const float *mats, int n));
 /* Files the game C loads by AFS index (load_file_mdl): fn returns the
  * Meltw-decompressed entry (malloc'd, the caller frees) and its size. */
 void rt_set_file_loader(uint8_t *(*fn)(int idx, size_t *n));
@@ -115,6 +116,16 @@ void rt_pad_set(uint16_t fl_bits, int lx, int ly, int rx, int ry);
  * stand-in for the normal state (rt_player.c: turn/run/idle with the
  * game's frame_init/frame_move) and ground following. */
 void rt_player_tick(int no);
+void rt_player_game_init(int no);
+void rt_monster_joints(int no, const float *world, int n);  /* em_work[no] joint world matrices */
+void rt_hit_check(void);                /* the game's hit_check (shells vs monsters/players) */
+int rt_player_weapon(int no, float *root0, float *root1);   /* weapon root matrices (weapon_trans) */
+int rt_player_weapon_model(int no);     /* PLW+0x34C */
+int rt_weapon_afs(int model, int tex);  /* weapon_model_data / WEAPON_TEX entry */
+int rt_player_job(int no);              /* weapon class PLW+2 (0 GS, 1/5 bowgun, 2 hammer, 3 lance, 4 SnS) */
+void rt_motion_load_pl(int no, const uint8_t *tbl);   /* create_pl_motion on wNN_tbl.bin */
+void rt_player_parts(int no, const float *world, int n);   /* joint world matrices from the host skeleton */   /* equipment + the game's pl_init (rt_player.c) */
+int rt_player_uses_game(void);       /* 0 with RT_PL_STANDIN=1 */
 void rt_player_set_ang(int no, int ang_y);
 /* What the game's sw_set_sub gave player no: buttons, left stick. */
 void rt_player_sw(int no, int *now, int *ang, int *pow);

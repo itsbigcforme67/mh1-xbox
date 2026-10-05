@@ -37,9 +37,13 @@ Controls with `--play` (the pad drives the hunter, camera follows):
   keyboard: W/A/S/D left stick, arrow keys right stick (turns the camera),
   K cross, L circle, J square, I triangle, Q L1, E R1, Z L2, C R2, Enter
   start, Backspace select, T/F/G/H d-pad.
-- Only running and turning do anything yet (see "Player and pad" below).
-  The camera is the game's: d-pad left/right turn it, up/down zoom, L1
-  resets it behind the hunter.
+- The hunter is driven by the game's own player code (see "Player"
+  below), with the PS2 controls: left stick move (push lightly to walk),
+  right stick draw / attack (flick direction picks the attack), cross
+  roll, R1 guard, circle sheathe (weapon out), square use item. The camera
+  is the game's: d-pad left/right turn it, up/down zoom, L1 resets it
+  behind the hunter. Note: the arrow keys are the right stick, so they
+  attack as on the PS2.
 
 Screenshot mode, for checking without looking at the window: it renders
 offscreen in a hidden window, reads the back buffer and writes a PNG.
@@ -60,6 +64,14 @@ offscreen in a hidden window, reads the back buffer and writes a PNG.
 | `--audio-dump FILE.wav` | no audio device; mix 1/30 s per game tick into a 48 kHz stereo wav (for checking sound offscreen) |
 | `--mute` | no sound at all |
 | `--sw-trace` | print, per tick, the pad state the game's sw_set_sub gave player 0 and the player's position/angle |
+
+Environment variables for the player: `RT_WEAPON=id` (Ken_data id, default
+156, the first sword and shield; 1 = the first great sword), `RT_PL_TRACE=1`
+(action, step, motions, frame, position per tick), `RT_PL_STANDIN=1` (the
+old host stand-in), `RT_EM_POS=x,z` (put the Rathian there, for hit tests),
+`RT_HIT_DM=1` (print damage the Rathian takes; `2` also lists live attack
+shells and their hit volumes), `RT_SKIP_TYPE=n` (do not draw prims of
+effects/sets of type n).
 
 Verified 5 Oct 2026 with build/show/pc_viewer.png and
 pc_viewer_close_0.5.png / _2.0.png:
@@ -222,18 +234,77 @@ travel (how plcom 3 was found).
   from ps2pad_hard_to_soft_ds2 (0x306500) [inferred; the mapping to the
   game's bits is ioRead_sub's and is exact]. Stick angle: 0 = right,
   0x4000 = up.
-- rt_player.c is a host stand-in for the player's normal state (pl_normal
-  0x141BA0 and its ~70 pl_mv### actions are not decompiled; agent F's
-  area): it turns the hunter towards the left stick relative to the camera
-  (0x800 per tick), plays run 3/103 while the stick is pushed and idle
-  1/101 otherwise (4-tick cross-fade through frame_init), calls frame_move
-  and then the game's wall and ground collision (see "Collision"). No
-  actions: replace it with the decompiled pl_move / pl_normal when they
-  exist.
+- rt_player.c runs the game's player code (see "Player"); with
+  RT_PL_STANDIN=1 the old host stand-in (turn and run only) is used.
 - Verified 5 Oct 2026: `--input "idle*10,up*50,left*15" --sw-trace --time
   2.5` prints sw.ang 0x4000 / pow 127 for "up" and 0x8000 for "left", the
   hunter turns to the camera's forward direction and runs about 300 units
   (build/show/A/play_run.png shows it mid-stride, turned left).
+
+### Player (game C)
+
+Since 6 Oct 2026 the hunter is run by the decompiled player code (agent
+F's src/main/pl, see docs/agents/agent-F.md); rt_player.c only sets it
+up and calls it:
+- Set-up (rt_player_game_init) does init_pl_work's offline-master part
+  (main 0x1116E0): equipment type/id at PLW+0x35F/+0x360, +0x34C =
+  Ken_data[id][0], job PLW+2 = Battle_type[+0x34C] (0 great sword, 1/5
+  bowguns, 2 hammer, 3 lance, 4 sword and shield, from menu_stat_job_str),
+  User_data +0x3CD/+0x3CE for Get_equip_value; then the game's pl_init(0):
+  start position from stage_start_pos, idle motion. The weapon class's
+  motion table w<job>_tbl.bin goes through create_pl_motion (ids >= 1000).
+- Each tick: rt_pad_tick, then pl_move (pl48.c: pl_sw_set, pl_move_sub
+  for 8 players, hit_timer_calc_shl). pl_move_sub (pl_nm.c near-match)
+  runs timers, Pl_damage_sub (game.bin pl_damage), the action state
+  machines (pl_normal / pl_attack / pl_damage ... through their jump
+  tables), pl_turn_sub, the motion step pl_chr_sub (frame_init /
+  frame_move at speed 2: the 30 Hz tick plays 60 fps motion data), the
+  per-motion hook pl01_effect_move -> ef_move_sub (src/main/sound/
+  f_sound_nm.c: footsteps, swing and voice sounds, dust), wall, floor
+  and ground collision, World_calc.
+- Then (viewer, per tick) sync_joints poses the host skeletons and gives
+  the joint world matrices to the game C (part blocks PLW+0x110.. for
+  parts_init's 32 slots = skeleton nodes, get_joint_pos, hit_data_expand),
+  and rt_hit_check runs hit_check (hit_nm.c), the order of game_core
+  (move, trans, hit_check).
+- src/pc/rt/rt_pl.c: helpers not decompiled yet, written from the asm with
+  their addresses (Pl_act_set and friends, flags, motion requests,
+  stamina/vital/sharpness, rates, front_land_ck, item counts, attack data,
+  Code_Make ...); network, items picked from the stage, quest and message
+  functions are stubs. Get_Active_itemnum reads its player from a0 on the
+  PS2 (its caller passes nothing): the host uses the master player.
+- Weapon model: weapon_model_data / WEAPON_TEX[PLW+0x34C] (AFS entries,
+  weNNN_amh / _tex), posed like weapon_trans (weapon3_nm.c): hand part
+  0x12 / 0xE or sheathed part 9 (sword and shield) / 10 with the
+  weapon_disp_tbl_r/l/b[job] offset and XYZ rotation; the shield bones
+  (AHI group 1) on joint 0x11. Per-motion node scaling of great sword,
+  lance, hammer and bowguns (weapon_dat_make) is not done.
+- Hits: shell00 (game.bin) is the sword's attack shell; its body volumes
+  are expanded on the player's joints, the Rathian's from em_body_tbl on
+  hers. A hit fills the monster's damage fields, plays the hit sounds,
+  starts the 2-tick hit stop (PLW+0x610: motion speed 0.2) and the hit
+  marks (eft16, eft05 slash trail via the skinned ef_01 model). The
+  Rathian's HP (+0x302) is a stand-in 2000 [guess]; she does not react:
+  her AI (enemy_mv, em_move, em01) is not on the PC yet.
+- x86 hazards: several matched files declare a callee with the float
+  argument in another position than the definition (fine on the PS2,
+  where floats use their own registers). build_pc.sh compiles those files
+  with -DNAME=rtabi_NAME and src/pc/rt/rt_abi.c re-orders (frame_check,
+  frame_check2/3, Eft06_set, Eft02_set6 from plf.h; hit_point_cbd in
+  f_stage.c; pl_move_sub's four-argument GetGroundHitStatusAreaPl). They
+  were found with an LTO build: copy tools/build_pc.sh, add -flto to
+  CFLAGS/GAMEFLAGS and read the -Wlto-type-mismatch warnings whose
+  declarations differ in where the f32 arguments are.
+- Verified 6 Oct 2026 (scripted --input, RT_PL_TRACE, shots in
+  build/show/A/pl/): run 0/1 with the run loop moving ~11 units a tick;
+  roll 0/0x1C (cross); draw 0/4 (right stick) -> attack 1/0x30 -> combo
+  1/0x37 (motions 1401/1402 of w04_tbl); weapon-out walk 0/3 (1004);
+  guard 2/3 (R1); sword in hand and shield on the arm (ws_sheet.png),
+  great sword overhead swing (gs_2.6.png); stages 1, 5, 0x10, 0x21
+  (stages_play.png); sound trace: weapon draw (snd_weapon07 code 1), swing
+  (code 4) with voice (snd_vo_m00 0x24), footsteps on the ground
+  material; hit on the Rathian (hit_sheet2.png, RT_HIT_DM output).
+  Nobody has compared any of it with the PS2 side by side.
 
 ### Collision (stage HITS, game C)
 
@@ -448,7 +519,7 @@ enemy_trans (0x168B10), prims (ported), effects/shells (ported).
 |----|----|----|
 | pad -> sw buffers | main pad_get.c, pl_normal2.c (sw_set_sub) | matched; runs on the PC with the host pad backend (rt_pad.c, src/pc/pad) |
 | player loop entry | pl01.c player_mv / pl_init | matched |
-| player states (walk, run, roll, weapon, items) | main 0x134000-0x15B000, 453 functions, 157 KB | ~10 % matched (pl0x.c, pl_normal*, pl_damage); the big weapon state machines are asm |
+| player states (walk, run, roll, weapon, items) | main 0x134950-0x14D1C8 (f_pl) + helpers to 0x155000 | f_pl ~260 functions matched + pl_nm.c (agent F); all of it runs on the PC, the helpers from rt_pl.c (see "Player") |
 | motion system | main f_frame 0x125340-0x1267BC (18 functions) + fl motion layer 0x173A50-0x1746A0 | f_frame: 16/18 match, all 18 run on the PC (f_frame_nm.c); fl layer native in rt_motion.c |
 | player/monster drawing | player_trans, enemy_trans, 45 functions | ~3 %; the viewer's hunter_pose / fl_model_pose do the same job natively |
 | collision | GetGroundHit, wall hits (main 0x111000-0x125000) | f_sphr all in C (agent D, near-matches); runs on the PC for the hunter and the Rathian (see "Collision") |

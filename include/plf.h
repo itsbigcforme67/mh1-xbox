@@ -28,7 +28,7 @@ extern f32 start_ofs[0x10];
 void trans_pl_sub(void);
 extern PLPROG *pl_prog_tbl[11];
 
-void Pl_item_supply(PLW *, int, u16, s16);
+s32 Pl_item_supply(PLW *, int, int, s16);
 int Pl_master_ck(PLW *);
 int ran_suu(int);
 int softdip_ck(int);
@@ -52,11 +52,11 @@ void Pl_act_set(PLW *, int, int, int);
 void Pl_item_charge(PLW *);
 void Pl_item_idx_calc(PLW *);
 void Pl_light_init(PLW *);
-void Pl_max_stamina_calc(PLW *, s16);
+void Pl_max_stamina_calc(PLW *, int);
 void Pl_ofs_set(PLW *, f32 *, int);
 void Pl_reg_calc(PLW *);
 u16 Pl_shell_set(PLW *, int, int);
-s8 Pl_slash_lv_ck(PLW *, u16);
+u8 Pl_slash_lv_ck();
 void Pl_view_reset();
 void Shell_type_set(PLW *, int);
 void World_calc(PLW *);
@@ -75,7 +75,7 @@ s32 Pl_hold_item_ck(PLW *);
 int Pl_item_stack(PLW *, int, int);   /* result: 0/1 emptied, 2 partly, 3 full, 5 new slot (reward_mv) */
 void Pl_stamina_calc(PLW *, int);
 void Pl_stamina_reduce(PLW *);
-void Pl_vital_calc(PLW *, s16);
+void Pl_vital_calc(PLW *, int);
 s16 Stage_env_ck(u8);
 s16 act_ck(PLW *, int, int);
 s32 pl_flag_ck(PLW *, int);
@@ -124,7 +124,7 @@ s32 Niku_ok_ck(void);
 s32 Nikuyaki_ck(PLW *);
 s32 Taru_ok_ck(void);
 void pl_to_normal(PLW *, int, int, int);
-long Get_Active_itemnum(void);
+long Get_Active_itemnum();
 s16 Pl_trap_use_ck(PLW *);
 long Pl_item_num_ck2(PLW *, u16);
 long Pl_item_search_space(PLW *);
@@ -155,11 +155,11 @@ typedef struct { s16 chr; s16 mot; s16 flag12; s16 next; } PL_MV_ENT;
 extern PL_MV_ENT mv004_chr_tbl0[7], mv004_chr_tbl1[7], mv004_chr_tbl2[7], mv004_chr_tbl3[7];
 void pl_mv004(PLW *, u32);
 void pl_mv021(PLW *, s32);
-void pl_mv060(PLW *);
+void pl_mv060(); /* K&R: pl_normal calls it as (pl, 0) */
 extern s16 mv001_tbl[];
 int frame_check(f32, PLW *, int);
 void pl_mv001(PLW *, u32);
-void rate_g_calc(PLW *, int);
+s32 rate_g_calc(PLW *, int);
 void rate_add_g(PLW *);
 void rate_clear(PLW *);
 void func_628FB0(PLW *, int, int);
@@ -203,8 +203,8 @@ void Pachinger_set_quake_sub(PLW *, int);
 void func_62A6C0(PLW *, int, int);
 void pl_to_normal_b(PLW *, int, int, int);
 void pl_at008(PLW *, s32);
-void pl_at009(PLW *);
-void pl_at012(PLW *);
+void pl_at009(); /* K&R: pl_attack calls it as (pl, 0) */
+void pl_at012(); /* K&R: pl_attack calls it as (pl, 0) */
 s32 Get_string_pow(PLW *, u8);
 typedef struct { s16 chr; u16 a; u16 b; } PL_AT008_ENT;
 extern PL_AT008_ENT at008_tbl[3];
@@ -240,4 +240,9 @@ void pl_egg(PLW *);
 void pl_chat(PLW *);
 void pl_turn_sub(PLW *);
 void pl_horm_sub(PLW *);
+void frame_move(PLW *);
+void Pl_item_cnt_up(PLW *);
+void func_5496E0(PLW *, int, int);   /* Eft12_set4 (game overlay) */
+void func_633B50(f32 *, int, int, PLW *);   /* Shell10_set (game overlay) */
+void func_634460(PLW *, int);   /* Shell12_set (game overlay) */
 #endif

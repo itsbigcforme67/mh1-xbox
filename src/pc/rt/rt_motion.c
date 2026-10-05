@@ -204,6 +204,14 @@ void rt_motion_load_plcom(const uint8_t *tbl)
     create_plcom_motion();
 }
 
+/* the player's own motions (ids >= 1000) through create_pl_motion */
+void create_pl_motion(int pl);
+void rt_motion_load_pl(int no, const uint8_t *tbl)
+{
+    pl_area_top = (u8 *)tbl;
+    create_pl_motion(no);
+}
+
 void *rt_motion_attach(void *work)
 {
     rt_actor_motion *am = calloc(1, sizeof *am);
@@ -397,6 +405,10 @@ void rt_monster_place(int no, int kind, const float pos[3], int ang_y)
     w->ang[1] = ang_y & 0xFFFF;
     w->scl[0] = w->scl[1] = w->scl[2] = 1.0f;
     *(f32 *)(b + 0x5AC) = pos[1];
+    /* hit points +0x302 / max +0x792: the quest's monster set-up is not
+     * ported; 2000 is a stand-in [guess] so hit_check counts it alive */
+    *(s16 *)(b + 0x302) = 2000;
+    *(s16 *)(b + 0x792) = 2000;
 }
 
 void rt_monster_get(int no, float pos[3], int *ang_y)
