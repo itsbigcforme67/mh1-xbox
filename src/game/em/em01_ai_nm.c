@@ -2204,12 +2204,11 @@ static void em_fly13_0056B740(EMW *em, EM01W *w) {
         p = gp_ptr_ck(em, em->area->x0);
         if (p == 0) {
             em->tgt_pos[0] = sd->width / 2.0f;
-            z = sd->depth / 2.0f;
+            em->tgt_pos[2] = sd->depth / 2.0f;
         } else {
             em->tgt_pos[0] = p[0][0];
-            z = p[0][2];
+            em->tgt_pos[2] = p[0][2];
         }
-        em->tgt_pos[2] = z;
         w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
         em->ang[1] = w->dang;
         w->x18 = 1;
