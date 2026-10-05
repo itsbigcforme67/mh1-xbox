@@ -600,3 +600,35 @@ else loop, equivalent).
   rebuilt from the compare ladders), but the exact branch layout is not matched.
 - em_cmd: *_sel family (7 functions, 18/117 off each, one shared macro), end_command, the pl_target_sel group.
 - The m2c-based pipeline scripts lived in /tmp and are not committed; the steps are listed above.
+
+# Seventh assignment: game overlay near-matches (agent D, 5 Oct 2026)
+Goal: push the game overlay from 82% toward 100%. Workflow tools added:
+- `tools/new_game_runs.py NM.c STEM "comment" [--skip a,b] [--dry]`: finds functions of a game near-match file that now
+  match but are not in any linked run, emits only those into new run files (STEM<next>.c, via mkruns3 --only --verify)
+  and appends the config/c_files.txt lines. Existing runs stay untouched. Skip functions that fail "inside their run".
+  em_cmd runs must not contain the top-level CMD_SEL_FUNC lines (delete them from the new run by hand).
+- `tools/greedy_sub.py FILE REGEX REPL`: applies a substitution to each match one at a time and keeps it when no function
+  gets worse and the total drops (`py:` prefix = Python lambda on the match).
+- `tools/regen_game_runs.py`: whole-file regeneration (NOT used: it turns statics global and breaks ef_move_sub).
+- Statics that must stay `static` for codegen but are called from asm or other runs: keep them `static` in the run and
+  add `name = 0xADDR;` to config/game_aliases.txt (em15 ef_move_sub_005CBC40 + its 5 helpers: sound_call*, quake_call,
+  move_default). With the helpers global the 13 KB ef_move_sub is 333 instructions off; static it links byte-identical.
+
+## Matching lessons (each confirmed by a match)
+- `if (u8_returning_call() != 0)` gives an extra `andi 0xFF`; `if (u8_returning_call())` does not (em21 fly06).
+- `x >= 2` -> `x > 1`, `x < K` -> `x <= K-1` (and `slti at` / `sltiu at` forms): em17_soukou_dm_sel_set, em21 fly03/05/09,
+  em_mv03/05 `d <= 0xE38` in all five monster files.
+- A trailing `else { return; } break;` in a switch case: delete the else (the compiler then falls into the epilogue
+  instead of emitting extra `b` pairs). Fixed em_mv02/03/05, em_fly03 in em14/15/17/20/21.
+- `u8 kind = em->kind; switch (kind) ... eft09_set(em, kind)`: declare the local `u32` (not u8) to avoid an `andi` on the
+  argument (em15_init, em17_init). A callee whose extra arguments are stale registers in the original is declared with
+  fewer parameters (em08_init: `void eft09_set(EMW *)`; em21_init: two args; em_mode_timer_sub: unprototyped
+  `void Em_Mode_Chg();` called with 3 arguments although other callers pass 4).
+- `x = a - b` where the original loads b first: `t = b; x = a - t;` (em21 fly05, `temp_f1 = em->adj_z; temp_f1 = w->dist - temp_f1`).
+- `pos[1] = pos[1] + 20.0f` compiles as `20 + pos` (add.s operands swapped); `pos[1] += 20.0f; t = pos[1];` gives the original
+  `pos + 20` order (em15 fly12).
+- `f & 0xFF & 0x40` on a u8 compiles without the extra `andi 0xFF` of the original; `(u8)(f & 0xFF) & 0x40` has it
+  (em_cmd cancel_prog_ck).
+- tools/declbf.py found the declaration order for em_mv07 (all four monsters).
+- tools/alignall.py ignores branch-address shifts, so a "2 off" function can still have a different tail layout
+  (Em_Taisei_Ck, shell06_move_sub): look at check.py -v before trusting a small count.
