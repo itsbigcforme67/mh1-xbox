@@ -78,7 +78,7 @@ typedef struct GAME_W {
     u8 info_now;        /* 0x1DF set01 message being shown, 0xFF = none */
     u8 _pad1E0[0x1E6 - 0x1E0];
     u8 gate_open;       /* 0x1E6 set20 gate state, set from the quest */
-    u8 x1E7;            /* 0x1E7 from func_63AF40(quest) (Quest_start) */
+    u8 x1E7;            /* 0x1E7 from func_63AF40(quest) (Quest_start); non-zero: pit menu shows func_63B470 instead of the map (trans_pit_1) */
     u8 x1E8[4][8];      /* 0x1E8 per player flags, cleared by game0 */
     u8 pl_state[8];       /* 0x208 per player: 0xFF = not joined? (player_init0, pl_work_clr); guess */
     u8 shl10_num;       /* 0x210 live shell10s owned by the master player */
@@ -91,7 +91,9 @@ typedef struct GAME_W {
     s16 x218;           /* 0x218 monster hit points carried over (em02_init) */
     u8 x21A;            /* 0x21A result screen: nonzero in an online session? (result_prog) */
     u8 x21B;            /* 0x21B cleared by Game_task */
-    u8 _pad21C[0x21F - 0x21C];
+    u8 _pad21C;
+    s8 x21D;            /* 0x21D quest rule counter shown by font_print_Bdragon (f_menu, guess) */
+    u8 _pad21E;
     u8 info_stop;       /* 0x21F set01 queue paused while set */
     u8 _pad220[0x224 - 0x220];
 } GAME_W;

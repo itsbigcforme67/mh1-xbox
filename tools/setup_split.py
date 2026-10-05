@@ -103,7 +103,9 @@ segments:
 def clean(name):
     """Make a symbol name safe for GNU as. '@1234' are MWCC literal labels."""
     name = name.replace("@", "lit_")
-    return re.sub(r"[^A-Za-z0-9_.$]", "_", name)
+    # '$' is not legal in MWCC identifiers, so MWCC's per-function static names
+    # (btn_item_sel$3617) become btn_item_sel_3617 and C code can name them.
+    return re.sub(r"[^A-Za-z0-9_.]", "_", name)
 
 
 def elf_section(name):

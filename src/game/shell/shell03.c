@@ -47,7 +47,7 @@ void release_prim(s16);
 void release_prim2(s16);
 void shell_rate_add_g(SHLW *);
 f32 GetGroundShellHit(VEC3 *);
-void Eft14_set3(VEC3 *, int, PLW *, f32);
+void Eft14_set3(VEC3 *, int, f32, PLW *);
 void Eft15_set2(VEC3 *, int, int, f32);
 void Eft16_set_ex3(f32 *, int, int, int, f32);
 void Eft12_set3(VEC3 *, int, int, int);
@@ -243,7 +243,7 @@ static void shell03_m00(SHLW *sh) {
     if (sh->arg == 1) {
         if (sh->char0 >= 13) {
             if (Pl_stg_ck(pl) != 0) {
-                Eft14_set3(&sh->pos2, 4, pl, 1.0f);
+                Eft14_set3(&sh->pos2, 4, 1.0f, pl);
                 se_req2(1, 0x47, 0, &sh->pos2.x, 4, 0);
             }
             sh->mode++;

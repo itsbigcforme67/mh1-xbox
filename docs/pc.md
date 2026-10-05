@@ -79,11 +79,17 @@ Running natively now:
 | src/game/set/set14_nm.c | UV-scrolled waterfalls (st04_1 clays 2 and 3 at 11060,0,1566) |
 | src/game/set/set09.c | ambient creatures (butterflies etc.) on stages 5, 0x10, 0x21, 0x33... |
 | src/game/set/set17.c | plant tiles on stages 1, 2, 3, 46 |
-| set03/04/05_nm/07/08/10/11/15/16/18/19/20_nm/22.c, main set12.c | every other set object the spawn list can start (see each file's header). Effects/shells they spawn are stubs |
+| set03/04/05_nm/07/08/10/11/15/16/18/19/20_nm/22.c, main set12.c | every other set object the spawn list can start (see each file's header) |
+| src/main/stage/trans_stage_nm.c | trans_stage: draws the area model and the set-model parts the stage places (see "Stage drawing") |
+| all decompiled eft*/shell* (game and main), list EFT= in build_pc.sh | effects and shells: what set objects and stage_set_set spawn (Eft14_set2 camp fire on st21, Shell10_set barrels on stage 0x11, Shell22_set2, Eft17_set_ex, Eft13_set_pos ...) now run as the real C |
 | src/main/hit/hit2.c, hit2c.c | sphere/capsule tests set13 uses |
 
 The `_nm.c` files are near-matches on the PS2 side (logic believed
-equivalent), so they run here too.
+equivalent), so they run here too. For split files the whole-file `_nm.c`
+is used when it holds every function; otherwise the matching pieces plus
+the `_nm.c` (eft06, eft13, eft20, shell06, shell08). Files in WEAK=
+(shell06_nm, eft20_nm) repeat some matching functions, so their symbols are
+made weak (objcopy --weaken) and the matching copies win.
 
 src/pc/rt/:
 - `rt_game.c`: game_w, player_work, stage_work (timer counts up each tick),
@@ -112,11 +118,25 @@ src/pc/rt/:
   natively from the asm: clr_flash, hit_cap_pk, Pl_stg_ck/Em_stg_ck,
   frame_check2, flvecApplyMat33_2. Stubs: hit_point_cyl, Create_FOV /
   flCheckMeshFOV (everything counts as visible; the GPU clips),
-  reload_tex (textures stay resident), camera quake, monster sound,
-  Shell22_set2 / Eft17_set_ex / Eft13_set_pos.
+  reload_tex (textures stay resident), camera quake, monster sound.
+- `rt_eft.c`: effects and shells. The effect list (eft_work, 128 x 0x40,
+  free stack + linked list from eft_w_top: pull_eft_work/2, push_eft_work,
+  move_eft, trans_eft/trans_eft_up), the shell list (64 x 0xD4,
+  pull/push_shell_work, move_shell with the +0x7B hit-stop counter,
+  trans_shell), the second prim pool (get_prim2), the senko/smoke/smell
+  stacks (kept, not drawn), the effect models eft_mdlw[0..4] (ef_00,
+  kage04-06, ef_01 from main's effect_model_data/EFT_TEX tables, loaded by
+  the viewer) and the helpers the eft C calls: eft_vec/alpha/rgba_linear,
+  make_mat_srt, eft_trans_sub(_col/_opa), Eft_rendope_set, shell_rate_add,
+  vectors, GetGroundHit (host collision callback; GetWaterHit says "no
+  water"). Joint queries (get_joint_pos/wmat) return the actor's position:
+  no skeletons run as game C yet. Player/monster-only helpers (sound,
+  vibration, attack data, skinned-model drawing flCalcTrans/flSetSkinTrans,
+  shell08_trans) are stubs; RT_TRACE lists them.
+  `RT_SPAWN="eft17:4,eft14:3,..."` spawns test effects at the hunter.
 - `rt_overlay.c`: main C calls overlay functions by address
-  (func_6229B0 = set14_set, ...). These names are routed to the ported
-  function, or to a stub that prints "not ported yet" once.
+  (func_6229B0 = set14_set, func_54B8C0 = Eft14_set2, ...). Each is routed
+  to the ported function in the definition's argument order.
 - `rt_data.c` + `tables.txt`: Capcom data tables are declared empty and
   filled at start-up from the user's SLPM_654.95 / game.bin by address
   (nothing copied into the repo). Most are listed by name in
@@ -124,9 +144,39 @@ src/pc/rt/:
   size in config/symbols/ and writes build/pc/rt_tables.c (run by
   build_pc.sh). `NAME work` lines are zeroed work areas (em_work,
   quest_w). Tables in .bss (past the file data of the ELF or overlay)
-  start as zeros. Pointer tables (sun_pos_tbl, stg_eft_mdl_no, stage_sphr_tbl)
-  get each PS2 pointer translated to the same bytes in the loaded image.
-- `rt_mem.c`: PS2 address lookup in the ELF and the overlay.
+  start as zeros. **Pointers inside tables:** the ELF keeps its link
+  relocations (.relmain, .relgame.bin); every R_MIPS_32 entry is a data
+  word holding an address. After the copy, each such word in a host table
+  is turned into a host pointer: into the host copy of a table if it points
+  into one, else to the host symbol of that name (dlsym; the viewer is
+  linked -rdynamic; the ELF's .symtab names the target), else to the same
+  bytes in the loaded image. The images themselves are relocated the same
+  way, so pointer chains (eft*_data keyframe lists, fade tables) work.
+  Pointers to code that is not ported become NULL. `rt_ptr_at(va)` reads a
+  relocated pointer (the viewer's ptmat_tbl). Unnamed data (D_3F2090 =
+  rview_mat row 3, ...) is defined with --defsym in build_pc.sh.
+- `rt_mem.c`: PS2 address lookup in the ELF and the overlay; relocations
+  and symbol lookup for the above.
+
+### Stage drawing (trans_stage)
+
+The PS2 draws the area model in trans_stage (main 0x15CD90), not as one
+static mesh: world = Trans(stage_work.pos) * Rxyz(stage_work.rot) (both
+zero, stage_w_init), but part 0 (sky) and many per-stage parts are
+special. Examples [read from the asm]: st04 part 2 (a ring of clouds
+around the origin) is drawn at 13200,0,5190 and slowly turned; st05 draws
+part 2 twice at set05_pos_tbl1 (10000,0,11500 / 10000,0,14500) and part 3
+at 10000,0,8500 - these parts are modelled around the origin, which is why
+st05 had "holes" before; skies of stages 0x19/0x3A/0x40-0x42 turn around
+a centre point; water and lava parts get UV scrolls from stage_work.timer
+or game_w+0x1E (a u16 counter that counts up every tick). After the area
+model it draws set-model parts at set??_pos_tbl rows (x, y, z, angle Y).
+Set-model parts are no longer drawn by the host at all: on the PS2 only
+trans_stage and the set objects draw them. Verified with shots of all 88
+stages (build/show/A/stages/sheet0.png, sheet1.png): st05 is a closed
+jungle floor (ts_st05_low.png), st04 now shows the camp tent and ruin
+wall, which the host's old "background parts first, z-write off" pass had
+hidden.
 
 The host's hunter is player_work[0] (rt_set_player: in use, on the stage,
 at its position), so set code that follows the master player works.
@@ -168,6 +218,55 @@ func_XXXXXX calls in rt_overlay.c, and add whatever it calls into rt_*.c.
 For split files use the whole-file `_nm.c` (e.g. set05_nm.c), not the
 matching pieces.
 
+## Plan: a player and a monster on the runtime with real input
+
+Written 5 Oct 2026 (agent A), not started. Coverage numbers are matched
+bytes from config/c_files.txt by address range; near-match `_nm.c` files
+add more logic that already runs on the PC.
+
+What the game's own loop does each tick (read from the asm): pad read
+(pad_get.c, matched) -> player_mv (pl01.c, matched) -> pl_move (0x14C3E0:
+pl_sw_set, pl_move_sub, hit_timer_calc_shl) -> per-weapon state machine
+through pl_prog_tbl (0x2F1590) -> motion update (frame_init / frame_move,
+0x125920 / 0x125F10) -> enemy_mv (0x10CB20) -> em_move (0x10BF30) ->
+per-monster em_prog_tbl (0x2E8330) programs in game.bin -> CameraMove
+(0x21F590) -> draw: trans_stage (ported), player_trans (0x1678C0),
+enemy_trans (0x168B10), prims (ported), effects/shells (ported).
+
+| piece | where | state |
+|----|----|----|
+| pad -> sw buffers | main pad_get.c, pl_normal2.c (sw_set_sub) | matched; needs a host pad backend that fills Psw (SDL game controller / keyboard) |
+| player loop entry | pl01.c player_mv / pl_init | matched |
+| player states (walk, run, roll, weapon, items) | main 0x134000-0x15B000, 453 functions, 157 KB | ~10 % matched (pl0x.c, pl_normal*, pl_damage); the big weapon state machines are asm |
+| motion system | main frame_init/frame_move and friends, 36 functions, 8.5 KB | 0 %; the viewer has its own AAN player (src/pc/fl/fl_skel) that can stand in: motion ids decode the same way |
+| player/monster drawing | player_trans, enemy_trans, 45 functions | ~3 %; the viewer's hunter_pose / fl_model_pose do the same job natively |
+| collision | GetGroundHit, wall hits (main 0x111000-0x125000) | ~8 %; host HITS reader exists (fmt_hits_ground_y), wall test missing |
+| monster common (em_core, em_master, em_taisei) | game 0x533980-0x53A000 | ~65 % matched + near-matches |
+| Rathian/other monster AI | game em01.. (363 functions, 150 KB) | ~13 % matched; em01.c (Rathian action setters) partly |
+| camera | cam_t.c (main f_cam) | written, not built for the PS2 (near-match); could run on the PC as is |
+
+Suggested order (each step ends in a screenshot or a short input replay):
+1. Host input: map an SDL controller to the PS2 pad bits and fill the
+   buffers pad_get.c reads; record/replay pad logs for offscreen tests.
+2. Motion bridge: implement frame_init/frame_move/frame_check natively on
+   top of fl_skel (same motion ids and frame counters in PLW/EMW), so game
+   C that sets char0/char1 animates the viewer's models.
+3. Player locomotion first: decompile only the "normal" state family
+   (to_normal, walk/run/turn, roll) of f_pl plus pl_move_sub, with
+   GetGroundHit on the host collision. Weapons later, one at a time
+   (sword and shield first: smallest table).
+4. Camera: build cam_t.c into the PC port (CameraMove behind the player)
+   instead of the free-fly camera.
+5. Monster: em_core/em_master already run; add the Rathian's (em01)
+   program table and its action setters, its motion bank, and the
+   joint queries (get_joint_pos/wmat) from fl_skel so effects attach.
+6. Hits and damage last (pl_damage is matched; attack data tables are
+   imported by rt_data already).
+No big rewrite is needed: the runtime pattern (decompiled C + rt_* stand-ins
++ imported tables) scales; the work is decompiling the player state and
+motion code. Static recompilation of the remaining asm (DECISIONS "Open")
+would be the shortcut if steps 3 and 5 turn out too slow.
+
 ## Design notes, for the port
 
 - **Small, fixed-function gfx interface.** The original Xbox GPU (NV2A)
@@ -208,18 +307,19 @@ matching pieces.
 - **Render states:** per-part blend, filter and clamp come from the
   0xF0000 chunk (clay_attr_set). Cull, UV-scroll flag, fog and lighting
   type from the same chunk (states 0x00, 0x62, 0x12, 0x01, baked into the
-  clay on the PS2) are not applied. Alpha test is > 0x40 for host draws.
-  The sky is drawn first with z-write off.
+  clay on the PS2) are not applied. Alpha test is > 0x40 for host draws;
+  the stage uses the game's own state 0x60 values (0x80 / 0).
 - **Rathian:** the tail tip (AHI tree 1) is not attached, so it lies on the
   ground. No blending between motions.
 - **Hunter:** no weapon. Hair and cloth bones (ptmat ≥ 64) keep their bind
   offset.
-- **Runtime:** fl fade alpha is passed as-is (PS2 0x80 = 1.0 is not
-  handled). No players/monsters run as game C yet, so player_work is
+- **Runtime:** fade colour (state 0x67) is 0xAARRGGBB with alpha 0xFF =
+  1.0 (eft05 packs r << 16, eft_trans_sub sends 255 * a). No players/monsters run as game C yet, so player_work is
   zero (set13 uses the master player's position on some stages).
 - **Scene:** `--stage N` loads any stage (files from main's per-stage
   tables); em01 and one armour set are fixed. On stages other than 4 the
-  actors and camera stand at the middle of the ground collision. Some area
-  models do not line up with their collision (st05's model is centred on
-  the origin, its ground is not), so they need a placement offset that is
-  not found yet; a few stages show holes in the floor.
+  hunter stands at stage_start_pos[stage] (main 0x2F2620), the camera 2500
+  behind it (on a few room stages, e.g. 20, the camera is then inside a
+  wall: use --cam). Stage 0x11 (st11 files) has barrels (Shell10) at
+  1400..4100 where the area model has no geometry: probably an unused
+  stage [guess].

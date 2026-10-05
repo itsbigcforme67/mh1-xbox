@@ -35,6 +35,8 @@ equivalent), note how far off it is, and move on. Cover whole files before perfe
 single functions.
 
 ## Lessons from earlier agents (read before starting)
+- tools/check.py can report OK against the wrong address for a static whose name also
+  exists in another file: give statics their address suffix (e.g. `foo_5341A0`). (agent B)
 docs/agents/agent-A.md, agent-B.md, agent-C.md, agent-D.md hold dozens of MWCC matching
 tricks and struct conventions. Monster (em) code: follow agent-C.md (per-monster struct
 cast from EMW.ex at EMW+0x444, file-static helpers with address-suffixed names are

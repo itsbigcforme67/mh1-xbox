@@ -49,13 +49,14 @@ typedef struct EMW {
     u8 _pad003[0x4 - 0x3];
     u8 x04;             /* 0x004 shells end when >= 2 (shell02_m) */
     u8 x05;             /* 0x005 step within the current action (em29 dm00/move05) */
-    u8 _pad006[0x7 - 0x6];
+    u8 x06;             /* 0x006 cleared when em10 starts talking (act 4) */
     u8 x07;             /* 0x007 3 ends attached effects (eft07_m) */
     s32 work08;         /* 0x008 (as PLW; em08 stores a turn time here) */
     u16 id;             /* 0x00C */
     s16 x0E;            /* 0x00E facing the monster turns toward (em10_turn_sub) */
     u8 x10;             /* 0x010 */
-    u8 _pad011[0x13 - 0x11];
+    u8 x11;             /* 0x011 small-size variant flag (em03_init: scale 0.85) */
+    u8 _pad012[0x13 - 0x12];
     u8 x13;             /* 0x013 spawn slot (em29_init places the monster by it) */
     u8 mode;            /* 0x014 4/5 end attached shells (shell19_m) */
     u8 x15;             /* 0x015 sub-mode (eft09_m) */
@@ -76,7 +77,8 @@ typedef struct EMW {
     u8 _pad198[0x19C - 0x198];
     f32 x19C;           /* 0x19C time used by em02_fly_adjy (0 or 1: start value) */
     f32 chr_spd0;       /* 0x1A0 frame step (as PLW); divides the fly_adjy2 tables */
-    u8 _pad1A4[0x1AC - 0x1A4];
+    u8 _pad1A4[0x1A8 - 0x1A4];
+    f32 x1A8;           /* 0x1A8 (em04 turn: frame count of the current motion?) */
     s32 x1AC;           /* 0x1AC */
     f32 x1B0;           /* 0x1B0 */
     u8 _pad1B4[0x1C4 - 0x1B4];
@@ -111,7 +113,8 @@ typedef struct EMW {
     s32 x394;           /* 0x394 */
     u8 _pad398[0x39A - 0x398];
     u16 x39A;           /* 0x39A em16 acts only when it is even */
-    u8 _pad39C[0x3A4 - 0x39C];
+    s32 x39C;           /* 0x39C action timer (em04 act 3: waits until >= 240) */
+    u8 _pad3A0[0x3A4 - 0x3A0];
     s32 horm_ang;       /* 0x3A4 angle to turn toward (emNN_horm_init, em10 act 10) */
     u8 _pad3A8[0x3AC - 0x3A8];
     s32 x3AC;           /* 0x3AC cleared by em_eye_search_set */
@@ -121,7 +124,9 @@ typedef struct EMW {
     f32 adj_y;          /* 0x3B8 fly height correction per frame (fly_adjy2_suby) */
     f32 adj_z;          /* 0x3BC (fly_adjy2_subz) */
     f32 x3C0[3];        /* 0x3C0 em19: copy of the 0x3B4 vector, flipped to wobble */
-    u8 _pad3CC[0x3F0 - 0x3CC];
+    u8 _pad3CC[0x3EC - 0x3CC];
+    u16 dm_ang;         /* 0x3EC direction the hit came from (as PLW, em04 dm00) */
+    u8 _pad3EE[0x3F0 - 0x3EE];
     u16 x3F0;           /* 0x3F0 */
     u8 _pad3F2[0x3F4 - 0x3F2];
     u8 x3F4;            /* 0x3F4 cleared by em19 demo/revival */
@@ -186,7 +191,8 @@ typedef struct EMW {
     u8 _pad796[0x797 - 0x796];
     u8 x797;            /* 0x797 */
     f32 x798;           /* 0x798 fade 0..1 at the end of em18 mov03 (alpha?) */
-    u8 _pad79C[0x7A8 - 0x79C];
+    u8 _pad79C[0x7A4 - 0x79C];
+    struct EMW *x7A4;   /* 0x7A4 (em09_status_ck reads its kind) */
     u8 x7A8;            /* 0x7A8 */
     u8 x7A9;            /* 0x7A9 */
     u8 _pad7AA[0x7B0 - 0x7AA];

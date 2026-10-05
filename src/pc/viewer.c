@@ -76,6 +76,43 @@ static void draw_model_attr(fl_model *m, int sky)
         }
 }
 
+/* The effect models (eft_mdlw, load_eft / load_shadow at 0x111110): AFS
+ * entries from main's effect_model_data / EFT_TEX tables (5 x s32 each:
+ * ef_00, kage04-06, ef_01), handed to the game C. */
+static fl_model eft_models[5];
+static uint8_t *eft_keep[10];
+static void load_eft_models(void)
+{
+    int k;
+    for (k = 0; k < 5; k++) {
+        fmt_blob link = load_stage_file(0x2ECEE0, k, &eft_keep[2 * k]);    /* effect_model_data */
+        fmt_blob tex = load_stage_file(0x2EF2A0, k, &eft_keep[2 * k + 1]); /* EFT_TEX */
+        gfx_clay **c;
+        uint32_t *at;
+        int i;
+        if (!link.p || fl_model_create(&eft_models[k], fmt_link_entry(link, 0, FMT_LE),
+                                       fmt_link_entry(link, 1, FMT_LE), tex, 0, FMT_LE) != 0) {
+            fprintf(stderr, "effect model %d: load failed\n", k);
+            continue;
+        }
+        c = calloc((size_t)eft_models[k].npart + 1, sizeof *c);
+        at = calloc((size_t)eft_models[k].npart + 1, sizeof *at);
+        for (i = 0; i < eft_models[k].npart; i++) {
+            c[i] = eft_models[k].part[i].clay;
+            at[i] = part_attr(&eft_models[k], i);
+        }
+        rt_bind_eft_model(k, c, at, eft_models[k].npart);
+        free(c);
+        free(at);
+    }
+}
+
+static fmt_blob ground_hit;
+static int ground_y(float x, float z, float ymax, float *y)
+{
+    return fmt_hits_ground_y(ground_hit, x, z, ymax, y, FMT_LE);
+}
+
 static uint32_t crc_table[256];
 
 static uint32_t crc32_update(uint32_t c, const uint8_t *p, size_t n)
@@ -276,7 +313,7 @@ static int hunter_load(hunter *h, const int *num, int legs_id, int upper_id)
         if (s == 0 && fl_skel_create(&h->master, ahi, FMT_LE) != 0)
             return -1;
         h->pw[s] = calloc(h->part[s].skel.nbone + 1, sizeof(flmat));
-        h->ptmat[s] = tbl ? elf_addr(fmt_u32(tbl + 4 * s, FMT_LE)) : NULL;
+        h->ptmat[s] = tbl ? rt_ptr_at(0x3018F0 + 4 * (uint32_t)s) : NULL;   /* relocated by rt_import_data */
     }
     if (!tbl)
         fprintf(stderr, "warning: no SLPM_654.95, armour parts will not follow the skeleton\n");
@@ -357,20 +394,24 @@ int main(int argc, char **argv)
     set_tex = load_stage_file(0x2EF130, stage_no, &keep[3]);      /* SET_TEX */
     hit = load_stage_file(0x2ECAB0, stage_no, &keep[4]);          /* stage_hit_data_f */
     if (stage_no != 4) {
-        /* no hand-picked spots: stand the actors and the camera at the
-         * middle of the walkable ground */
-        float sx = 0, sz = 0, x, z, y;
+        /* no hand-picked spots: the hunter at the stage's start position
+         * (stage_start_pos, main 0x2F2620, also used by set09/em19), else
+         * at the middle of the walkable ground */
+        extern float stage_start_pos[88][3];
+        float sx = stage_start_pos[stage_no][0], sz = stage_start_pos[stage_no][2], x, z, y;
         int cnt = 0;
-        for (x = -30000; x <= 30000; x += 500)
-            for (z = -30000; z <= 30000; z += 500)
-                if (fmt_hits_ground_y(hit, x, z, 1e6f, &y, FMT_LE)) {
-                    sx += x;
-                    sz += z;
-                    cnt++;
-                }
-        if (cnt) {
-            sx /= cnt;
-            sz /= cnt;
+        if (sx == 0.0f && sz == 0.0f) {
+            for (x = -30000; x <= 30000; x += 500)
+                for (z = -30000; z <= 30000; z += 500)
+                    if (fmt_hits_ground_y(hit, x, z, 1e6f, &y, FMT_LE)) {
+                        sx += x;
+                        sz += z;
+                        cnt++;
+                    }
+            if (cnt) {
+                sx /= cnt;
+                sz /= cnt;
+            }
         }
         hx = sx;
         hz = sz;
@@ -395,6 +436,16 @@ int main(int argc, char **argv)
     if (set_link.p)
         fl_model_create(&set, fmt_link_entry(set_link, 0, FMT_LE), fmt_link_entry(set_link, 1, FMT_LE),
                         set_tex, 0, FMT_LE);
+    {                           /* the area model to the game C (stage_work.mdl) */
+        gfx_clay *c[64];
+        uint32_t at[64];
+        int k, nc = stage.npart < 64 ? stage.npart : 64;
+        for (k = 0; k < nc; k++) {
+            c[k] = stage.part[k].clay;
+            at[k] = part_attr(&stage, k);
+        }
+        rt_bind_stage_model(c, at, nc);
+    }
     if (set.npart) {            /* hand the set model to the game C (set_mdlw) */
         gfx_clay *c[64];
         uint32_t at[64];
@@ -405,6 +456,9 @@ int main(int argc, char **argv)
         }
         set_h0 = rt_bind_set_model(c, at, nc);
     }
+    load_eft_models();
+    ground_hit = hit;
+    rt_set_ground(ground_y);
     rt_game_init(stage_no);
 
     if (monster_load(&rathian, "em01_amh.bin", "em01_tex.bin", "em01_tbl.bin", 3) != 0)
@@ -451,6 +505,7 @@ int main(int argc, char **argv)
         {   /* the hunter is the master player (player_work[0]) for the game C */
             float p[3] = { hx, gy, hz };
             rt_set_player(0, p);
+            rt_debug_spawn(p);          /* RT_SPAWN test effects at the hunter */
         }
     }
 
@@ -514,19 +569,8 @@ int main(int argc, char **argv)
             flmat id;
             flmat_identity(id);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
-            gfx_set_render_state(GFX_RS_ZWRITE, 0);       /* sky first, behind everything */
-            draw_model_attr(&stage, 1);
             gfx_set_render_state(GFX_RS_ZWRITE, 1);
-            draw_model_attr(&stage, 0);
-            {   /* set-model parts the game C draws itself are skipped here */
-                int k;
-                for (k = 0; k < set.npart; k++)
-                    if (set_h0 < 0 || k >= 64 || !rt_clay_claimed(set_h0 + k)) {
-                        rt_clay_attr_set(part_attr(&set, k));
-                        gfx_execute_clay(set.part[k].clay);
-                        rt_clay_attr_reset();
-                    }
-            }
+            rt_stage_draw();            /* trans_stage: area model + placed set parts */
         }
         rt_game_draw();                 /* game C prims (set14 waterfalls) */
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)rathian.world);

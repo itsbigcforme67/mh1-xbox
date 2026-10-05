@@ -90,7 +90,7 @@ void flvecApplyMat33(f32 *, f32 *, FLMAT *);
 void flmatRotZXY33(FLMAT *, f32, f32, f32);
 void vib_set_pl(void *, int);
 f32 Eft22_suimen_ck(EFTW *);
-void Eft20_set2(f32 *, int, int, f32);
+void Eft20_set2(f32, f32 *, int, int);
 
 void eft23_move(EFTW *ew);
 

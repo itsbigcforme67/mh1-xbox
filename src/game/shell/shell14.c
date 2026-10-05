@@ -28,7 +28,7 @@ void get_joint_pos_em(EMW *, int, VEC3 *);
 int em09_status_ck(EMW *);
 void flvecCopy(void *, void *);
 void se_req2(int, int, int, VEC3 *, int, int);
-void eft14_set(f32, VEC3 *, int);
+void eft14_set(VEC3 *, int, f32);
 void Shell09_set(VEC3 *, int, int);
 void Eft02_set2(int, int, int, VEC3 *);
 void release_prim(s16);
@@ -138,7 +138,7 @@ static void shell14_m00(SHLW *sh) {
     case 2:
         if (++sh->char0 >= 340 || em09_status_ck(em) != 1) {
             if (sh->stg == game_w.stage) {
-                eft14_set(1.0f, &sh->pos2, 0);
+                eft14_set(&sh->pos2, 0, 1.0f);
                 Shell09_set(&sh->pos2, 0, sh->stg);
             }
             sh->be_flag ^= 1;
