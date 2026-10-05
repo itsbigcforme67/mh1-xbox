@@ -469,12 +469,27 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void khmem_raw(mode)
-int mode;
+void free_kouholists(KL *l)
 {
-    HCHAR *h;
+    while (l != 0) {
+        free_mem(l->kh);
+        l = l->next;
+    }
+}
 
-    h = &hchar[cur_pos];
-    free_khmemlist(h->kh);
-    h->kh = raw_kouho(cur_pos, cur_len, mode);
+KH *null_kouho(int len)
+{
+    KH *k;
+
+    k = alloc_khmem();
+    if (k != 0) {
+        k->flag = 0x80;
+        k->str[0] = 0;
+        k->x06 = len;
+        k->x07 = 0;
+        k->pw = 0;
+        k->x0C = 0xFFFF;
+        k->next = 0;
+    }
+    return k;
 }

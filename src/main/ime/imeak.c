@@ -469,11 +469,26 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int is_kanji(int c)
+int next_gun(int disp, int wrap)
 {
-    c = c & 0xFF;
-    if (c < 0x81 || c >= 0xFD || (c >= 0xA0 && c < 0xE0)) {
-        return 0;
+    KH *old;
+    int n;
+
+    old = top_kh;
+    top_kh = take_kouho(old, gun_num);
+    n = inc_gun(top_kh);
+    if (n == 0) {
+        if (wrap == 0) {
+            top_kh = old;
+            return 0;
+        }
+        init_kouho(0, 0);
+    } else {
+        gun_num = n;
+    }
+    gun_nkh = 0;
+    if (disp == 1) {
+        disp_kouho();
     }
     return 1;
 }

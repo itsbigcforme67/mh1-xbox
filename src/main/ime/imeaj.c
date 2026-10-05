@@ -469,26 +469,17 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int next_gun(int disp, int wrap)
+int jiritu_makedisp(KH *k, u16 *buf)
 {
-    KH *old;
     int n;
 
-    old = top_kh;
-    top_kh = take_kouho(old, gun_num);
-    n = inc_gun(top_kh);
-    if (n == 0) {
-        if (wrap == 0) {
-            top_kh = old;
-            return 0;
+    n = 0;
+    for (;;) {
+        n += sstrtom(buf + n, k->str, 6);
+        if (!(k->flag & 1)) {
+            break;
         }
-        init_kouho(0, 0);
-    } else {
-        gun_num = n;
+        k = k->next;
     }
-    gun_nkh = 0;
-    if (disp == 1) {
-        disp_kouho();
-    }
-    return 1;
+    return n;
 }

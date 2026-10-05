@@ -469,56 +469,63 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int bs_check(int pos, int end)
+void init_hchar(void)
 {
     HCHAR *h;
-    CH *c;
-    BS *r;
-    BS *r2;
-    BS *b;
 
-    h = &hchar[pos];
-    c = h->ch;
-    if (c != (CH *)-1 && c != 0) {
-        do {
-            r = make_bsmem(pos, end, c);
-            if (r == (BS *)-1) {
-                if (h->bs != 0) {
-                    free_bsmemlist(h->bs);
-                    h->bs = 0;
-                }
-                return 0;
-            }
-            if (r != 0) {
-                hchar_addbsmem(pos, r);
-            }
-            c = c->next;
-        } while (c != 0);
+    for (h = hchar; (u8 *)h < (u8 *)wdsbuf; h++) {
+        clear_hchar(h);
     }
-    r2 = make_bsmem(pos, end, &null_chmem);
-    if (r2 == (BS *)-1) {
-        if (h->bs != 0) {
-            free_bsmemlist(h->bs);
-            h->bs = 0;
+}
+
+void clear_hchar(HCHAR *h)
+{
+    h->x00 = -1;
+    h->ch = 0;
+    h->bs = 0;
+    h->kh = 0;
+    h->x10 = 0;
+    h->x14 = 0;
+    h->x15 = 0;
+    h->x16 = 0;
+    h->x17 = -1;
+    h->x18 = -1;
+    h->x19 = -1;
+}
+
+void free_hchar(int from, int to, int keep)
+{
+    HCHAR *h;
+    HCHAR *end;
+
+    end = hchar + to;
+    for (h = hchar + from; h < end; h++) {
+        free_hchar_one(h, keep);
+    }
+}
+
+void free_hchar_one(HCHAR *h, int keep)
+{
+    if (keep == 0) {
+        h->x00 = -1;
+        h->x18 = -1;
+        if (h->ch != (void *)-1) {
+            free_chmemlist(h->ch);
         }
-        return 0;
+        h->ch = 0;
+        h->x17 = -1;
+        h->x19 = -1;
+        h->x16 = 0;
     }
-    if (r2 != 0) {
-        hchar_addbsmem(pos, r2);
+    if (h->bs != 0 && h->bs != (BS *)-1) {
+        free_bsmemlist(h->bs);
     }
-    if (h->bs == 0) {
-        if ((b = alloc_bsmem()) == 0) {
-            return -1;
-        }
-        b->len = muhenkan(pos, end);
-        b->x02 = 0x28;
-        b->x03 = 0;
-        b->pw = 0;
-        b->x08 = 0;
-        b->x0A = 0;
-        b->next = 0;
-        h->bs = b;
-        return 1;
+    h->bs = 0;
+    if (h->kh != 0) {
+        free_khmemlist(h->kh);
     }
-    return 1;
+    h->kh = 0;
+    h->x10 = 0;
+    h->x14 = 0;
+    h->x15 = 0;
 }

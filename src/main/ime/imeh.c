@@ -469,6 +469,28 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
+u16 to_zenkaku_spec(int c)
+{
+    u8 *k;
+    u16 *t;
+    u16 r;
+
+    k = spec_key_19;
+    t = spec_tran_20;
+    while (*k != 0) {
+        if ((*k & 0xFF) == (c & 0xFF)) {
+            r = *t;
+            if ((r & 0xFF00) == 0x2500 && !((u16)c & 0x100)) {
+                return (r & 0xFF) | 0x2400;
+            }
+            return r;
+        }
+        k++;
+        t++;
+    }
+    return 0;
+}
+
 int ext_jis(int c, u16 hi)
 {
     return ((c & 0xFF) | ((hi & 0x100) + 0x2400)) & 0xFFFF;
