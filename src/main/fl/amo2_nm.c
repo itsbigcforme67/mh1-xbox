@@ -16,10 +16,10 @@ int ConvertModelMeshAMO_WeightModel(void *, void *);
 int GetIndexListNumAMOModelMesh(u8 *mesh) {
     u8 *d = GetSubDataAMO(mesh, 5, 0);
 
-    if (d != 0) {
-        return *(int *)(d + 4);
+    if (d == 0) {
+        return -1;
     }
-    return -1;
+    return *(int *)(d + 4);
 }
 
 int GetIndexListDescAMOModelMesh(u8 *mesh, int idx) {
@@ -72,12 +72,12 @@ int GetAllPrimitiveNumAMOModelMesh(u8 *mesh) {
 }
 
 int GetVertexNumAMOModelMesh(u8 *mesh) {
-    u8 *d = GetSubDataAMO(mesh, 7, 0);
+    u8 *d = GetSubDataAMO(mesh, 0x70000, 0);
 
-    if (d != 0) {
-        return *(int *)(d + 4);
+    if (d == 0) {
+        return -1;
     }
-    return -1;
+    return *(int *)(d + 4);
 }
 
 int GetMaterialIndexAMOModelMesh(u8 *mesh, int list, int prim) {

@@ -65,11 +65,11 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
-- A (Opus): PC runtime (src/pc): Rathian as a real opponent (em loop, damage both ways).
-- B (Sonnet): lobby overlay 0x533980-0x5C4E60 (reuse matched game/main C where identical).
-- C (Sonnet): unowned main files below 0x1A0000.
-- D (Sonnet): monster AI em14/15/17/20/21, f_em_55B060.
-- E (Sonnet): memory-card helper blockers, then IME/dictionary (0x23E500-0x24A240).
+- A (Opus): PC runtime: full quest loop (carve, clear, reward, death/restart, HUD).
+- B (Sonnet): lobby overlay 0x533980-0x5C4E60 (no code shared with game; ~330 KB GCC libs skipped).
+- C (Sonnet): all Capcom code in main except E's regions; fix menu03/menu04 range overlap.
+- D (Sonnet): game overlay to 100% (near-matches by distance, permuter -j1).
+- E (Sonnet): memory card 0x2814E0-0x2862F0 (mc_sel_ck last blocker) and IME 0x23E500-0x24A240.
 - F (Sonnet): lobby overlay 0x5C4E60-end.
 - Parked: near-matches everywhere (register allocation); online code in main.
 

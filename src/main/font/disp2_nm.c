@@ -129,7 +129,7 @@ void Put_comment(int x, int y, int dy, char *msg) {
             }
             len = strlen(p);
             strcpy(buf, p);
-            if (len >= 0x20) {
+            if (len > 0x1F) {
                 if (Ck_hankaku((u8 *)buf, 0x1F) == 0) {
                     buf[0x20] = 0;
                     p += 0x20;

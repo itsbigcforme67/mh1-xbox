@@ -11,7 +11,7 @@ pos=0
 for m in pat.finditer(s):
     name=m.group(1)
     if m.start()<pos: continue
-    end=s.index('\n}\n',m.end())+3
+    end=(m.end()+2) if s[m.end():m.end()+2]=='}\n' else s.index('\n}\n',m.end())+3
     start=m.start()
     pre=s[pos:start]
     t=pre.rstrip('\n')
