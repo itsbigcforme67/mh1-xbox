@@ -434,9 +434,10 @@ int menu_retire_mv(int sw) {
             }
             return 0x40;
         }
-        return sw;
+    } else {
+        return 0;
     }
-    return 0;
+    return sw;
 }
 
 int juchu_chk(void) {
@@ -851,11 +852,11 @@ int Menu_data_mv(int sw) {
 
 void menu_data_mix_sub(int sw) {
     int a = sw & 0xFFFF;
+    s8 d;
     int p;
-    int d;
 
     if (a & 0xC00) {
-        d = !(a & 0x800) ? 1 : -1;
+        d = (a & 0x800) ? -1 : 1;
         p = Item_preparation_list_search(&lpPit->x81, d, &lpPit->x6C, &lpPit->x6E);
         if (lpPit->x68 != p) {
             lpPit->x68 = p;
@@ -1242,14 +1243,14 @@ void map_sign_move(int sw) {
         if (SIGN(o) >= 0) {
             SIGN(o)++;
         }
-        if (SIGN(o) >= 0x6A) {
+        if (SIGN(o) > 105) {
             SIGN(o) = -1;
         }
     }
-    if (SIGN(game_w.master * 2) < 0 && ((u16)sw & 2)) {
+    if ((((s16 *)((u8 *)lpPit + 0x34))[game_w.master]) < 0 && ((u16)sw & 2)) {
         lpPit->x3C--;
         if (lpPit->x3C <= 0) {
-            SIGN(game_w.master * 2) = 0;
+            (((s16 *)((u8 *)lpPit + 0x34))[game_w.master]) = 0;
             net_send_sys(9, game_w.master);
         }
         return;

@@ -290,3 +290,5 @@ main 0x0012D5E0 0x0012D6F4 menu/menu19
 main 0x0012BCA0 0x0012BF48 menu/menu20
 main 0x0012C780 0x0012CAE8 menu/menu21
 main 0x00132510 0x001325B4 menu/menu22
+main 0x00128850 0x00128900 menu/menu24
+main 0x0012AE60 0x0012AFC0 menu/menu25
