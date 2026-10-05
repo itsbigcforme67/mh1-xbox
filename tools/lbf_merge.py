@@ -21,7 +21,8 @@ def src(nm):
     raise SystemExit('no source for ' + nm)
 def split(nm):
     s = src(nm)
-    s = s.replace('#include "lobby.h"\n', '').replace('#include "lobby_f.h"\n', '').replace('#include "lobby_a.h"\n', '')
+    s = s.replace('#include "lobby.h"\n', '')
+    s = re.sub(r'#include "lobby_[a-z]\.h"\n', '', s)
     m = re.search(r'^[\w\*\s]+\b%s\([^;{]*\)(?:\n(?:[\w \*]+;\n)+)?\s*\{\n' % re.escape(nm), s, re.M)
     return [l.strip() for l in s[:m.start()].split('\n') if l.strip()], s[m.start():].strip() + '\n'
 reg = []
@@ -41,18 +42,22 @@ if cur: runs.append(cur)
 num = 1
 while os.path.exists('src/lobby/%s/%s%02d.c' % (LD, prefix, num)): num += 1
 def hdr_of(nm):
-    return 'lobby_a.h' if '#include "lobby_a.h"' in src(nm) else 'lobby_f.h'
+    m = re.search(r'#include "(lobby_[a-z]\.h)"', src(nm))
+    return m.group(1) if m else 'lobby_f.h'
 def build(group, path):
     decls = []; bodies = []
-    if len(set(hdr_of(n) for n in group)) > 1:
+    hs = set(hdr_of(n) for n in group)
+    if hs == {'lobby_a.h', 'lobby_b.h'}: hs = {'lobby_b.h'}
+    if len(hs) > 1:
         return False
+    H = hs.pop()
     for n in group:
         d, b = split(n)
         for l in d:
             if l not in decls: decls.append(l)
         bodies.append(b)
     hdr = '/* %s%02d - %s 0x%08X-0x%08X: %s (first drafted by tools/lbauto.py). */\n' % (prefix, num, cmt, info[group[0]][0], info[group[-1]][0] + info[group[-1]][1], ', '.join(group))
-    open(path, 'w').write(hdr + '#include "%s"\n' % hdr_of(group[0]) + '\n'.join(decls) + ('\n' if decls else '') + '\n' + '\n'.join(bodies))
+    open(path, 'w').write(hdr + '#include "%s"\n' % H + '\n'.join(decls) + ('\n' if decls else '') + '\n' + '\n'.join(bodies))
     return True
 def ok(path, group):
     out = subprocess.run(['python3', 'tools/check.py', path, '--module', 'lobby'], capture_output=True, text=True).stdout
