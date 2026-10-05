@@ -231,4 +231,6 @@ void pl_dm003(PLW *, s32);
 void rate_add(PLW *);
 void pl_dm008(PLW *);
 void eft13_set(PLW *, int, int);
+void func_558A80(PLW *, int);
+extern s8 piyo_ret_tbl[6];
 #endif
