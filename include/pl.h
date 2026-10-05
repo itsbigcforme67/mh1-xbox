@@ -98,11 +98,17 @@ typedef struct PLW {
     f32   scl[3];            /* 0x0B8 scale (pl_init_sub: 1.0 each) */
     u8 _pad0C4[0x110 - 0xC4];
     void *part[2];           /* 0x110 matrix blocks, part[i]+0x40 is a world matrix (cmd_set_pos) */
-    u8 _pad118[0x30];
+    u8 _pad118[0xC];
+    s32   work124;           /* 0x124 */
+    u8 _pad128[0x8];
+    s32   work130;           /* 0x130 */
+    u8 _pad134[0x14];
     u8 *mdl148;              /* 0x148 +0x40 is a matrix (cam_sub_pchngr) */
     u8 _pad14C[0xC];
     struct PL_HAND *hand;  /* 0x158 thrown items start from hand->pos (shell03_set) */
-    u8 _pad15C[0x194 - 0x15C];
+    u8 _pad15C[0x4];
+    s32   work160;           /* 0x160 */
+    u8 _pad164[0x30];
     s32   work194;           /* 0x194 */
     s32   chr_no0;       /* 0x198 */
     f32   work19C;           /* 0x19C */
@@ -229,7 +235,7 @@ typedef struct PLW {
     s16   work60A;           /* 0x60A */
     u8 _pad60C[0x610 - 0x60C];
     s16   x610;          /* 0x610 shell00 hits count while set (cont_add) */
-    s8    work612;           /* 0x612 */
+    u8    work612;           /* 0x612 */
     u8 _pad613[0x615 - 0x613];
     u8    work615;       /* 0x615 non-zero: weapon in the other hand (eft05) */
     u8    work616;           /* 0x616 */
@@ -301,7 +307,8 @@ typedef struct PLW {
     u8 _pad7D7[0x7D8 - 0x7D7];
     f32   atk_rate;      /* 0x7D8 shot power (shell06_get_weaopn_data) */
     f32   work7DC;           /* 0x7DC */
-    u8 _pad7E0[0x7ED - 0x7E0];
+    u8 _pad7E0[0xC];
+    s8    work7EC;           /* 0x7EC */
     u8    work7ED;           /* 0x7ED */
     u8    work7EE;           /* 0x7EE */
     u8 _pad7EF[0x800 - 0x7EF];
@@ -365,7 +372,7 @@ typedef struct PLW {
     s8    work8F0;       /* 0x8F0 */
     u8 _pad8F1[0x8F2 - 0x8F1];
     u8    work8F2;           /* 0x8F2 */
-    s8    work8F3;           /* 0x8F3 */
+    u8    work8F3;           /* 0x8F3 */
     PL_ITEM share[4];        /* 0x8F4 shared items carried (Share_item_stack, quest.c) */
     u16   work904;           /* 0x904 */
     s16   work906;           /* 0x906 */
@@ -383,13 +390,13 @@ typedef struct PLW {
     u16   work91A;           /* 0x91A */
     u16   work91C;           /* 0x91C */
     u8    work91E;           /* 0x91E (u8: lbu in result_init) */
-    s8    work91F;           /* 0x91F */
+    u8    work91F;           /* 0x91F */
     f32   work920;           /* 0x920 */
     f32   work924;           /* 0x924 */
     f32   work928;           /* 0x928 */
     f32   work92C;           /* 0x92C */
     u16   work930;           /* 0x930 */
-    s16   work932;           /* 0x932 */
+    u16   work932;           /* 0x932 */
     s16   work934;           /* 0x934 */
     u8    work936;           /* 0x936 */
     s8    work937;           /* 0x937 */

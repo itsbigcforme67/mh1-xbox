@@ -83,3 +83,29 @@ moves them into src/main/pl/plNN.c and registers the range; `tools/rebuild.sh ma
 ## Shared header edits
 include/pl.h (PLPROG, PL_ITEM, many work fields, flag14/15 u8, work72C u16, x73A merged), include/game.h (pl_state, x213-x216),
 include/em.h (x7EE/x88F/x9EC comments). Struct merge done with tools/merge_struct.py.
+
+## Session 7 Oct 2026 (second player pass): 0x14D1D0-0x154F14 region
+Registered new: pl49..pl78 (pl_chr_sub, Oki/Taru/Ana_item_set, act_set family + pl_flag_set/clr, status/atk/def adjust + skills
++ resistances (pl53), chr_set family (pl54), rate helpers + action timers (pl56), hit_data_expand/front_land_ck (pl57),
+World_calc, St_unique_ck/Item_get_ck/item pouch search/erase/supply (pl62-66), Pl_adj_calc/pos_adj, vital/stamina/chat act (pl67-70),
+equipment accessors Get_equip_* (pl71, jump tables 0x35B210-0x35B2B0), Shell_type_set + Pl_item_get_se (pl73/74, plitem.h), misc).
+New headers: include/plst.h (stage item/unique records), include/plequip.h (equipment row structs; pl71 only, must not be
+included with plf.h), include/plitem.h (Item_data as struct array; pl73/pl74 only). Reason: the original folds 16-bit member
+offsets into the symbol (`lhu` from `Item_data+0xA`), which only a struct-array declaration produces; casts on the u8[][16] array
+declared in plf.h never fold. Such functions go into a file that includes pl.h + the struct header instead of plf.h.
+Near-matches added to pl_nm.c (logic believed equal): St_pick_ck2 (15 off, tail of the if chain), Pl_item_stack (241 off: logic
+complete, uses an extra saved register; read the asm before trusting it; returns an uninitialised ret if no slot is found like
+the original), Pl_item_num_ck2/3 (reloc only + one delay slot), Get_Use_itemnum (2), Pl_vital_calc_item (16), Pl_horm_adj (float temp
+order: the original keeps 0.3*angle in f20 across the get_joint_mat call, we call first), Pl_slash_lv_ck/Pl_slash_calc,
+Pl_shell_set (36, chain/regs), Pl_basic_flagset, pl_flag_ck, to_normal, Pl_scope/silencer/barrel_ck (nop only), Pl_hold_item_ck,
+Sansai_talk_ck (register swap), pl_atck_data_set_shl2 / atck_data_set_shl2 (original copies the 0x18-byte record as three
+word pairs with pointer increments; we emit a struct copy), rate_g_calc, pad_timer_calc_sub (gp-relative table).
+Still not written: Pl_box_select/box_get (item box UI), body_hit family, pl_body_make, pl_light_ck, pl_voice_req, Basic_item_set,
+Fue_item_set, Plsel_task..em_select (online player/monster select screens), Pit_disp_pit_effect, pef_get_alpha, the
+set/shell work (0x155xxx-0x15A) and sound (se_req..) functions further down (not player code).
+Lessons: (1) always `tools/check.py src/main/pl/plNN.c` after tools/plreg.py: a function that matches inside pl_wip.c can
+differ once split (implicit prototypes of callees that used to be defined in the same file: add `s16 Pl_item_num_ck(PLW *, int);`).
+(2) plreg only copies preamble lines before the first function: extern/typedef lines further down must be added by hand.
+(3) A callee defined earlier in the same file as `static` (pl_chr_set_com) gives the IPA register behaviour; params passed as `int`
+and masked at the use site (`(u16)slot`, `(s16)num`) reproduce the raw-register + repeated dsll32/dsra32 pattern.
+(4) switch case order: when the chain compares 3,2,1,0 the source usually lists cases in ascending order (Get_weapon_job2 used if/else).
