@@ -64,7 +64,7 @@ s32 Cockpit_chat_chk(void);
 s32 fishing_cam_chk(PLW *);
 s32 Pl_bari_ck(PLW *);
 s32 pl_flag_ck(PLW *, s32);
-void flvecRotY(f32, f32 *);
+void flvecRotY(f32 *, f32);
 void AddVector(f32 *, f32 *, f32 *);
 void cpInterVector(f32, f32 *, f32 *, f32 *);
 s32 fish_cam_sub(CAMW *, CAMS *, CAMFISH *);
@@ -152,4 +152,28 @@ void cam_plEX_fishing(CAMW *cw, CAMS *cs, CAMFISH *f) {
 
 s32 fishing_cam_chk(PLW *pl) {
     return pl_flag_ck(pl, 0x80000) != 0;
+}
+
+s32 fish_cam_sub(CAMW *cw, CAMS *cs, CAMFISH *f) {
+    f32 v[3];
+    PLW *pl;
+    f32 *ofs;
+    f32 a;
+
+    pl = cw->pl;
+    if (f->fish == NULL) {
+        return -1;
+    }
+    ofs = fishcam_ofs_tbl[game_w.stage];
+    if (ofs == NULL) {
+        return -1;
+    }
+    a = 0.0000958738f * *(u16 *)((u8 *)f->fish + 0x14);
+    flvecCopy(v, ofs);
+    flvecRotY(v, a);
+    AddVector(cs->eye, pl->pos, v);
+    flvecCopy(v, ofs + 3);
+    flvecRotY(v, a);
+    AddVector(cs->tar, pl->pos, v);
+    return 0;
 }

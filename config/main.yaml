@@ -640,7 +640,7 @@ segments:
       - [0x1206A4, asm, text/cam_sub_stg]
       - [0x120EE0, c, cam/camp]
       - [0x121460, c, cam/camc]
-      - [0x121700, asm, text/fish_cam_sub]
+      - [0x121814, asm, text/NPCZoomInCameraRequest]
       - [0x121820, c, cam/camd]
       - [0x122408, asm, text/point_cam_sub]
       - [0x1227A0, c, cam/camg]

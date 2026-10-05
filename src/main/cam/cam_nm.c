@@ -65,7 +65,7 @@ s32 Cockpit_chat_chk(void);
 s32 fishing_cam_chk(PLW *);
 s32 Pl_bari_ck(PLW *);
 s32 pl_flag_ck(PLW *, s32);
-void flvecRotY(f32, f32 *);
+void flvecRotY(f32 *, f32);
 void AddVector(f32 *, f32 *, f32 *);
 void cpInterVector(f32, f32 *, f32 *, f32 *);
 s32 fish_cam_sub(CAMW *, CAMS *, CAMFISH *);
@@ -343,10 +343,10 @@ s32 fish_cam_sub(CAMW *cw, CAMS *cs, CAMFISH *f) {
     }
     a = 0.0000958738f * *(u16 *)((u8 *)f->fish + 0x14);
     flvecCopy(v, ofs);
-    flvecRotY(a, v);
+    flvecRotY(v, a);
     AddVector(cs->eye, pl->pos, v);
     flvecCopy(v, ofs + 3);
-    flvecRotY(a, v);
+    flvecRotY(v, a);
     AddVector(cs->tar, pl->pos, v);
     return 0;
 }
@@ -1145,7 +1145,7 @@ f32 ZoomRateCalc(f32, CAMAREA *);
 void SubVector(f32 *, f32 *, f32 *);
 s16 AarcTan2(f32, f32);
 f32 CalcDistanceXZ(f32 *, f32 *);
-void flvecRotX(f32, f32 *);
+void flvecRotX(f32 *, f32);
 f32 flvecCalcDistance(f32 *, f32 *);
 
 void cam_sub_stg(CAMW *cw, CAMS *cs) {
@@ -1283,8 +1283,8 @@ void cam_sub_stg(CAMW *cw, CAMS *cs) {
         v[0] = 0;
         v[1] = 0;
         v[2] = flvecCalcLength(cs->vec);
-        flvecRotX(0.000095873799f * cs->ax, v);
-        flvecRotY(0.000095873799f * cs->ay, v);
+        flvecRotX(v, 0.000095873799f * cs->ax);
+        flvecRotY(v, 0.000095873799f * cs->ay);
         AddVector(d->tar, d->eye, v);
         d->fov = base * ZoomRateCalc(flvecCalcDistance(d->tar, d->eye), area);
         break;
