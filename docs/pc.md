@@ -426,14 +426,21 @@ With `--quest N` the PC runs the game's own quest flow (6 Oct 2026, agent A):
   (reward_items.png, icons checked against the decoded icon sheet),
   circle takes a reward into the pouch; potion use 10 -> 9 (drink motion
   406); death -> carted to the base camp, stage 21 loaded
-  (carted_to_camp.png). Nobody compared it with the PS2 side by side.
+  (carted_to_camp.png); after the reward the money screen (result_prog
+  steps 2-3: fee, reward, total, money counted into User_data,
+  gold_result.png), then game mode 6, where the host starts the quest
+  again (back_to_quest.png; the PS2 goes back to the village, which is not
+  ported). Free play (`--play` without `--quest`) runs Quest_init's
+  free-hunt tables and shows the HUD too (free_play_hud.png). Nobody
+  compared any of it with the PS2 side by side.
 - Not done: SpritePut and the sprite prims flps0D00/0F00/1300/1400/1600
   (game3's darkening quad), the cart's and other small monsters' models
   (they run but are not drawn), quest failure after three faints (not
   tested), map markers (flvecrRotTransPers), menu list/page selection
   (ListSelect/PageSelect/Menu_select_mv: the pause menu), item combining
-  (Item_preparation*), the return to the village after the reward
-  (mode 6: all_reset; the PC stops there).
+  (Item_preparation*), the village after the reward (mode 6: the host
+  restarts the quest instead), game3's quest-clear text sits under the
+  missing darkening quad.
 
 ### Collision (stage HITS, game C)
 
