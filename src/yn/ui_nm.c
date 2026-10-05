@@ -1702,16 +1702,16 @@ void yn_hard_font_sub(void) {
 #endif
 
 void yn_hard_more_font_sub(void) {
-    s64 var_s0;
-    s64 var_s1;
+    int i;
+    int y;
 
-    var_s1 = 0;
-    var_s0 = 0xC4;
+    i = 0;
+    y = 0xC4;
     do {
-        yn_printf(0x65, (s64) (var_s0 << 0x30) >> 0x30, yn_hard_more_mes_tbl[(M2C_FIELD(ynw, s8 *, 0x14) + ((s64) (var_s1 << 0x38) >> 0x38))]);
-        var_s1 = (s64) ((var_s1 + 1) << 0x38) >> 0x38;
-        var_s0 += 0x1C;
-    } while (var_s1 < 3);
+        yn_printf(0x65, (s16)y, yn_hard_more_mes_tbl[M2C_FIELD(ynw, s8 *, 0x14) + (s8)i]);
+        i = (s8)(i + 1);
+        y += 0x1C;
+    } while (i < 3);
 }
 
 #if 0 /* yn_memcard_font_sub: m2c draft, does not compile yet */
@@ -1965,33 +1965,33 @@ block_13:
 }
 #endif
 
-void yn_prname_font_sub(s32 arg0, s32 arg1, int arg2, int arg3) {
-    int sp140;
-    int sp40;
+void yn_prname_font_sub(u8 *arg0, s32 arg1, int arg2, int arg3, int arg4) {
+    u8 sp140[0x100];
+    u8 sp40[0x100];
 
     if (arg0 == 0) {
         yn_set_pal(2);
-        strcpy((u8 *)&sp140, lit_4372);
-        sprintf((u8 *)&sp40, lit_4085, arg1 + 1, (u8 *)&sp140);
-        yn_printf(arg2, arg3, (u8 *)&sp40);
+        strcpy(sp140, lit_4372);
+        sprintf(sp40, lit_4085, arg1 + 1, sp140);
+        yn_printf(arg2, arg3, sp40);
         yn_set_pal(0);
         return;
     }
-    yn_strconv((u8 *)&sp40, arg0, M2C_ERROR(/* Read from unset register $t0 */));
-    yn_utf8_to_sjis((u8 *)&sp140, (u8 *)&sp40);
-    sprintf((u8 *)&sp40, lit_4085, arg1 + 1, (u8 *)&sp140);
-    yn_printf(arg2, arg3, (u8 *)&sp40);
+    yn_strconv(sp40, arg0, arg4);
+    yn_utf8_to_sjis(sp140, sp40);
+    sprintf(sp40, lit_4085, arg1 + 1, sp140);
+    yn_printf(arg2, arg3, sp40);
 }
 
-void yn_adname_font_sub(u8 *arg0, int *arg1, int arg2, int arg3) {
-    int sp30;
+void yn_adname_font_sub(u8 *arg0, u8 *arg1, int arg2, int arg3, int arg4) {
+    u8 buf[0x40];
 
     if (*arg0 == 0) {
         yn_printf(arg2, arg3, arg1);
         return;
     }
-    yn_strconv((u8 *)&sp30, arg0, M2C_ERROR(/* Read from unset register $t0 */));
-    yn_printf(arg2, arg3, (u8 *)&sp30);
+    yn_strconv(buf, arg0, arg4);
+    yn_printf(arg2, arg3, buf);
 }
 
 void yn_dialog_draw(void) {
@@ -2051,7 +2051,7 @@ void yn_dialog_draw(void) {
     case 0x37:
     case 0x38:
         yn_sprite_draw_sub(0x1B, 0, 2);
-        yn_sprite_draw_sub(0x1A, 0, (s64) ((M2C_FIELD(ynw, s8 *, 0x17) * -0x1E) << 0x30) >> 0x30);
+        yn_sprite_draw_sub(0x1A, 0, (s16)(-M2C_FIELD(ynw, s8 *, 0x17) * 0x1E));
         return;
     case 0x10:
     case 0x11:
@@ -2064,11 +2064,11 @@ void yn_dialog_draw(void) {
         yn_sprite_draw_sub(0x1B, 0, 2);
         temp_a1 = ynw;
         if (M2C_FIELD(temp_a1, s8 *, 0x1B) != 3) {
-            yn_sprite_draw_sub(0x1A, 0, (s64) ((M2C_FIELD(temp_a1, s8 *, 0x17) * -0x1E) << 0x30) >> 0x30);
+            yn_sprite_draw_sub(0x1A, 0, (s16)(-M2C_FIELD(temp_a1, s8 *, 0x17) * 0x1E));
             return;
         }
     default:
-        return;
+        break;
     case 0x23:
         yn_sprite_draw_sub(0x1B, 0, 2);
         yn_sprite_draw_sub(0x1E, 0, 0x24);
@@ -2431,12 +2431,18 @@ s32 yn_get_halftype(void) {
     return 1;
 }
 
+/* matched as s16 in uc00.c */
 int yn_center_x(u8 *str, int w) {
+    int i;
     int half = 0;
     int full = 0;
-    int i = 0;
     int total;
-    while (*str != 0) {
+
+    i = 0;
+    do {
+        if (*str == 0) {
+            break;
+        }
         if (*str >= 0x80) {
             str++;
             full++;
@@ -2445,10 +2451,7 @@ int yn_center_x(u8 *str, int w) {
         }
         i++;
         str++;
-        if (i >= 0x100) {
-            break;
-        }
-    }
+    } while (i < 0x100);
     total = 0x280 - w * full - w * half / 2;
     return total / 2;
 }
@@ -2457,59 +2460,51 @@ int yn_strlen(char *s) {
     return strlen(s);
 }
 
-void yn_strconv(u8 *arg0, u8 *arg1, u32 arg2) {
-    s32 var_a3;
-    s32 var_s0;
-    u8 *var_s2;
-    u8 *var_s3;
-    u8 var_a2;
+void yn_strconv(u8 *arg0, u8 *arg1, int arg2) {
+    s32 n;
+    s32 trunc;
+    u8 c;
 
-    var_s3 = arg0;
-    var_s2 = arg1;
-    if (var_s2 != NULL) {
-        var_s0 = 0;
-        if (arg2 < strlen(var_s2)) {
-            var_s0 = 1;
+    if (arg1 != NULL) {
+        trunc = 0;
+        if ((u32)arg2 < strlen(arg1)) {
+            trunc = 1;
         }
-        var_a2 = *var_s2;
-        var_a3 = 0;
-        if (var_a2 != 0) {
-loop_5:
-            if ((s32) var_a2 >= 0x80) {
-                M2C_FIELD(var_s3, u8 *, 0) = var_a2;
-                var_a3 += 2;
-                M2C_FIELD(var_s3, u8 *, 1) = (u8) M2C_FIELD(var_s2, u8 *, 1);
-                var_s2 += 2;
-                var_s3 += 2;
-            } else {
-                if (var_a2 == 0x25) {
-                    M2C_FIELD(var_s3, u8 *, 0) = 0x25;
-                    var_s3 += 1;
-                }
-                var_a3 += 1;
-                *var_s3 = M2C_FIELD(var_s2, u8 *, 0);
-                var_s2 += 1;
-                var_s3 += 1;
-            }
-            if ((var_s0 != 0) && ((arg2 - 3) < var_a3)) {
-                if (var_a3 < (s32) arg2) {
-                    do {
-                        var_a3 += 1;
-                        *var_s3 = 0x2E;
-                        var_s3 += 1;
-                    } while (var_a3 < (s32) arg2);
-                }
-            } else {
-                var_a2 = *var_s2;
-                if (var_a2 == 0) {
-
+        c = *arg1;
+        n = 0;
+        if (c != 0) {
+            do {
+                if (c >= 0x80) {
+                    arg0[0] = c;
+                    n += 2;
+                    arg0[1] = arg1[1];
+                    arg1 += 2;
+                    arg0 += 2;
                 } else {
-                    goto loop_5;
+                    if (c == 0x25) {
+                        arg0[0] = 0x25;
+                        arg0++;
+                    }
+                    n++;
+                    *arg0 = arg1[0];
+                    arg1++;
+                    arg0++;
                 }
-            }
+                if (trunc != 0 && arg2 - 3 < n) {
+                    if (n < arg2) {
+                        do {
+                            n++;
+                            *arg0 = 0x2E;
+                            arg0++;
+                        } while (n < arg2);
+                    }
+                    break;
+                }
+                c = *arg1;
+            } while (c != 0);
         }
     }
-    *var_s3 = 0;
+    *arg0 = 0;
 }
 
 void yn_strconv2(u8 *arg0, u8 *arg1, u32 arg2) {
