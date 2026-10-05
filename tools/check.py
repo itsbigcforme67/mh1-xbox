@@ -30,7 +30,9 @@ from mips_dis import dis  # noqa: E402
 
 WIBO = os.path.join(ROOT, "tools/compilers/wibo")
 MWCC = os.path.join(ROOT, "tools/compilers/mwcps2-3.0b52-030722/mwccps2.exe")
-CFLAGS = ["-c", "-O4,p", "-nostdinc", "-stderr", "-Iinclude"]
+CFLAGS = ["-c", "-O4,p", "-nostdinc", "-stderr", "-Iinclude", "-pragma", "divbyzerocheck on"]
+# Capcom built with divide-by-zero checks on (bne/break after every
+# division by a non-constant); see docs/STATUS.md.
 SECTIONS = {"main": "main", "select": "select.bin", "game": "game.bin",
             "yn": "yn.bin", "lobby": "lobby.bin"}
 

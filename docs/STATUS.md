@@ -423,6 +423,13 @@ How it works (each step was checked, not assumed):
   - A C file with several jump tables needs ONE rodata slot in
     config/c_files.txt covering all of them (MWCC emits a data section per
     function and each slot line pulls in the whole object's data).
+- **The "divide trap quirk" was a compiler setting.** Capcom built with
+  `#pragma divbyzerocheck on` (bne/break after every division by a
+  non-constant). Found by searching the compiler binary for pragma names
+  after eft11_m showed our build skipping the check even where the divisor
+  was unknown. tools/check.py and tools/build.py now pass
+  `-pragma "divbyzerocheck on"`; every registered file still matches, and
+  set03_m and set22_m now match, so set03 and set22 are whole files again.
 - Effects started (include/eft.h, EFTW): eft00, eft07, eft09, eft19,
   eft21 match; eft05, eft10, eft24 match apart from one function each
   (split as before; *_nm.c holds the near-match). Findings:

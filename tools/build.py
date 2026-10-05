@@ -29,7 +29,9 @@ AS_FLAGS = ["-EL", "-march=r5900", "-mabi=eabi", "-G0", "-no-pad-sections",
 # Compiler identified 4 Oct 2026 (docs/DECISIONS.md). Run through wibo.
 WIBO = os.path.join(ROOT, "tools/compilers/wibo")
 MWCC = os.path.join(ROOT, "tools/compilers/mwcps2-3.0b52-030722/mwccps2.exe")
-CFLAGS = ["-c", "-O4,p", "-nostdinc", "-stderr"]
+CFLAGS = ["-c", "-O4,p", "-nostdinc", "-stderr", "-pragma", "divbyzerocheck on"]
+# Capcom built with divide-by-zero checks on (bne/break after every
+# division by a non-constant); see docs/STATUS.md.
 MODULES = ["main", "select", "game", "yn", "lobby"]
 
 
