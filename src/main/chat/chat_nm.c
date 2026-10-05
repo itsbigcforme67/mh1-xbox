@@ -12,6 +12,11 @@
 #define F32(p, o) (*(u32 *)((u8 *)(p) + (o)))
 #define FS32(p, o) (*(s32 *)((u8 *)(p) + (o)))
 #define PM ((u8 *)&PitMenu)
+void KinshiYogo_chk(char *);
+struct PIT_CHAT;
+void chat_log_add(u8, s8 *, struct PIT_CHAT *);
+int Get_chat_line_num(void);
+int Plaza_get_chat_line_num(void);
 
 extern u16 System_timer;
 f32 flSin(f32);
@@ -604,7 +609,7 @@ void Chat_init(void) {
     Chat_move(0);
 }
 
-int ChatKinsoku_chk(s8 *);
+int ChatKinsoku_chk(u8 *);
 int Menu_chatlog_i(void);
 void SoftKeyboard_exit(void);
 s8 SoftKeyboard_move(s8 *, u16, u16);
@@ -630,7 +635,7 @@ void Chat_move(int a) {
     buf[0] = 0;
     r = SoftKeyboard_move(buf, sw0, sw1);
     if (r != 0) {
-        if (buf[0] != 0 && r > 0 && ChatKinsoku_chk(buf) != 0) {
+        if (buf[0] != 0 && r > 0 && ChatKinsoku_chk((u8 *)buf) != 0) {
             pl = (u8 *)&player_work[GW(0xD1)];
             if (GW(0x1DC) == 0) {
                 if (PitMenu.x15 != 0) {
@@ -745,7 +750,7 @@ dbl:
 
 
 void Chat_log_add(int who, int msg) {
-    KinshiYogo_chk(msg + 0x1C);
+    KinshiYogo_chk((char *)(msg + 0x1C));
     chat_log_add(who, (s8 *)(msg + 0x1C), (PIT_CHAT *)msg);
     if ((u32)Get_chat_line_num() >= 0xC) {
         PitMenu.logscr++;
@@ -762,7 +767,7 @@ void Chat_log_add(int who, int msg) {
 }
 
 void Plaza_chat_log_add(int msg) {
-    KinshiYogo_chk(msg + 0x1C);
+    KinshiYogo_chk((char *)(msg + 0x1C));
     chat_log_add(0xFF, (s8 *)(msg + 0x1C), (PIT_CHAT *)msg);
     if ((u32)Plaza_get_chat_line_num() >= 0xA) {
         PitMenu.logscr++;
@@ -781,7 +786,6 @@ void disp_chat_log_sub(int, s16, int);
 void Put_receive_mark(int);
 int Get_chat_line_num(void);
 int Plaza_get_chat_line_num(void);
-int KinshiYogo_chk();
 void PutArrow(s16, s16, s16, s16, int, int);
 int Online_ck();
 extern char room_member_id[][8];
@@ -792,7 +796,7 @@ void ChatLogAdd_Q(int who, int mask, s8 *msg) {
     int p = who & 0xFF;
     u8 c;
 
-    KinshiYogo_chk(msg);
+    KinshiYogo_chk((char *)msg);
     if ((mask & 0xFF) == 0xFF) {
         k = 3;
     } else if ((mask & 0xFF) == (1 << GW(0xD1))) {
@@ -1382,8 +1386,463 @@ void PrintPlayerJob(void *pl) {
     font_print_uf(menu_stat_job_str[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF]);
 }
 
-int EquipmentDescriptionWindowA(void *, s16, s16, int);
+int EquipmentDescriptionWindowA(u8 *, s16, s16, int);
 
-void EquipmentDescriptionWindow(void *a, s16 b, s16 c, int d) {
+void EquipmentDescriptionWindow(u8 *a, s16 b, s16 c, int d) {
     EquipmentDescriptionWindowA(a, b, c, d);
+}
+
+extern char lit_3701[];
+extern char lit_3702[];
+void Put_PageArrow(s16, s16, int, int);
+void equip_exp_core(void *, s16, s16, int);
+void Get_equip_icon_uv(u8 *, s16 *, s16 *);
+
+int EquipmentDescriptionWindowA(u8 *eq, s16 x, s16 y, int page) {
+    struct { s16 x; s16 y; s16 sp0; s16 sp1; u8 w; u8 h; u8 a; u8 b; } fr;
+    PFLP8 q;
+    s16 uv[2];
+    s16 uv2[2];
+    int pages;
+    int pg;
+
+    fr.w = 0x12;
+    fr.h = 0x12;
+    fr.x = x;
+    fr.y = y;
+    fr.a = 0x11;
+    fr.b = 6;
+    fr.sp0 = 0;
+    fr.sp1 = 0;
+    DispFrameMessageA(&fr, 0, 0xB2);
+    if (eq != 0 && eq[0] != 0) {
+        if (F16(eq, 2) != 0x3E7) {
+            if (eq[1] != 7) {
+                pages = 2;
+                pg = page & 1;
+            } else {
+                pages = 4;
+                pg = page & 3;
+            }
+            if (!(page & 0xFF & 0x80)) {
+                Put_PageArrow(x + 0xE1, y + 0x64, ((pg & 0xFF) + 1) & 0xFF, pages);
+            }
+            if ((pg & 0xFF) < 2) {
+                SetFilterMode(1);
+                reload_tex(1, 0x118);
+                SetTextureStage(0x118);
+                q.p[2] = 0x20;
+                q.p[3] = 0x20;
+                q.p[0] = 0.8f * (5.0f + (f32)x);
+                q.col = Equip_icon_color_rare(Get_equip_rare(eq[1], F16(eq, 2)), 0xFF, 0);
+                Get_equip_icon_uv(eq, uv, uv2);
+                q.p[1] = y;
+                if ((pg & 0xFF) == 1) {
+                    q.p[1] += 0xE;
+                }
+                *(s16 *)&q.uv[0] = uv[0];
+                flps0008(&q);
+            }
+            equip_exp_core(eq, x, y, pg);
+            return pages;
+        }
+        font_set_palette(0);
+        flfntLocate(x + 0x36, y + 0xA);
+        font_print_uf(lit_3701);
+        return 0;
+    }
+    font_set_palette(0);
+    flfntLocate(x + 0x36, y + 0xA);
+    font_print_uf(lit_3702);
+    return 0;
+}
+
+extern char *equip_exp_str_sw_attr[];
+extern char lit_4221[];
+extern char lit_4222[];
+
+void sword_zokusei(u8 *w, int x, s16 y) {
+    int k;
+
+    flfntSetSize(0x12, 0x12);
+    font_set_palette(0);
+    k = -1;
+    if (w[0xB] != 0) {
+        k = 0;
+    } else if (w[0xC] != 0) {
+        k = 1;
+    } else if (w[0xD] != 0) {
+        k = 2;
+    } else if (w[0xE] != 0) {
+        k = 3;
+    } else if (w[0xF] != 0) {
+        k = 4;
+    } else if (w[0x10] != 0) {
+        k = 5;
+    } else if (w[0x11] != 0) {
+        k = 6;
+    }
+    if (k >= 0) {
+        flfntLocate(x, y);
+        font_print(lit_4221, equip_exp_str_sw_attr[k]);
+        y += 0x14;
+    }
+    if (w[0xA] != 0) {
+        flfntLocate(x, y);
+        font_print(lit_4222, (int)w[0xA]);
+    }
+}
+
+void EquipmentCompareWindowA(int a, s16 b, s16 c, s16 d, int e);
+
+void EquipmentCompareWindow(int a, s16 b, s16 c, s16 d) {
+    EquipmentCompareWindowA(a, b, c, d, 0xB2);
+}
+
+void EquipmentCompareWindowA(int a, s16 b, s16 c, s16 d, int alpha) {
+    s16 t;
+
+    EquipmentDescriptionWindowA((u8 *)c, d, alpha, 0);
+    EquipmentDescriptionWindowA((u8 *)b, c, d + 0x90, alpha);
+    SetFilterMode(1);
+    reload_tex(1, 0x11A);
+    SetTextureStage(0x11A);
+    t = (System_timer & 0x1F) << 11;
+    flSin(0.0000958738f * (f32)t);
+    PutArrow(c + 0x89, d + 0x7A, 0x20, 0x10, 0, 0);
+}
+
+extern u8 Battle_type[];
+extern s16 *Pl_slash_tbl[];
+extern int slash_bar_color[];
+f32 flps0009(void *);
+
+void slash_level_bar(u8 *pl, s16 y) {
+    PFLP4 a;
+    PFLP4 b;
+    f32 xr;
+    f32 xs;
+    s16 *seg;
+    int *col;
+    s16 yy;
+    int i;
+
+    yy = y - 3;
+    xr = (f32)(s32)pl - 36.0f;
+    a.col = 0xFF968A63;
+    a.p[3] = yy + 0xB;
+    a.p[0] = 0.8f * xr;
+    a.p[2] = 0x40A00000;
+    a.p[1] = yy;
+    flps0009(&a);
+    a.p[0] = 0.8f * (140.0f + xr);
+    a.p[2] = 0.8f * (135.0f + xr);
+    flps0009(&a);
+    b.p[0] = 0.8f * (140.0f + xr);
+    b.p[2] = 0.8f * (130.0f + (5.0f + xr));
+    b.p[1] = yy;
+    b.p[3] = b.p[1] + 0x15;
+    b.col = 0xFF968A63;
+    flps0004(&b);
+    b.p[0] = 0.8f * (6.0f + xr);
+    b.p[2] = 0.8f * (128.0f + (6.0f + xr));
+    b.p[1] = yy + 2;
+    b.p[3] = b.p[1] + 0x11;
+    b.col = 0xFF000000;
+    flps0004(&b);
+    xs = 8.0f + xr;
+    col = slash_bar_color;
+    seg = Pl_slash_tbl[Battle_type[F8(pl, 0)]] + F8(pl, 2) * 4;
+    b.p[1] = yy + 4;
+    b.p[3] = yy + 0x11;
+    b.p[2] = 0.8f * xs;
+    for (i = 0; i < 4; i++, seg += 2, col++) {
+        b.p[0] = b.p[2];
+        b.p[2] = 0.8f * (xs + 0.41333333f * (f32)*seg);
+        b.col = *col;
+        flps0004(&b);
+    }
+    if (F8(pl, 3) < 3) {
+        b.p[0] = 0.8f * (xs + 0.41333333f * (150.0f + (f32)(F8(pl, 3) * 0x32)));
+        b.p[2] = 0.8f * (124.0f + xs);
+        b.col = 0xFF000000;
+        flps0004(&b);
+    }
+}
+
+extern char lit_4368[];
+
+void Put_PageArrow(s16 x, s16 y, int a, int b) {
+    PFLP8 q;
+
+    q.p[3] = 0x12;
+    q.p[2] = 0xE;
+    q.p[1] = y;
+    q.col = 0xFF20FF30;
+    q.p[0] = 0.8f * (f32)(x - 0x18);
+    *(u32 *)&q.uv[0] = 0x1A00A6;
+    *(u32 *)&q.uv[2] = 0x2E0094;
+    flps0008(&q);
+    q.p[0] = 0.8f * (f32)(x + 0x36);
+    *(u32 *)&q.uv[0] = 0x94;
+    *(u32 *)&q.uv[2] = 0xA6;
+    flps0008(&q);
+    flfntSetSize(0x12, 0x12);
+    font_set_palette(0);
+    flfntLocate(x, y);
+    font_print(lit_4368, a & 0xFF, b & 0xFF);
+}
+
+extern u8 lit_4374[];
+extern u8 setumei_shousai_4372[];
+void font_print_ex(int, int, int, void *);
+
+void Put_shousai(void) {
+    flfntSetSize(0x12, 0x12);
+    font_print_ex(0x22E, 0x18A, 0, lit_4374);
+    PutButtonICON(setumei_shousai_4372, 1);
+}
+
+extern s16 equip_icon_u_tbl[];
+extern s16 weapon_icon_u_tbl[];
+int Get_weapon_job(u8);
+
+void Get_equip_icon_uv(u8 *eq, s16 *a, s16 *b) {
+    s16 v;
+    u8 k = eq[1];
+
+    if (k == 6 || k == 7) {
+        v = 0xBF;
+        a[0] = weapon_icon_u_tbl[Get_weapon_job(k) & 0xFF] + 1;
+        b[0] = a[0] + 0x1E;
+        a[1] = 0xA1;
+    } else {
+        v = 0xDF;
+        a[0] = equip_icon_u_tbl[k] + 1;
+        b[0] = a[0] + 0x1E;
+        a[1] = 0xC1;
+    }
+    b[1] = v;
+}
+
+extern s32 ng_word_tbl_0[][2];
+extern s32 ng_word_tbl_2[][2];
+int ng_word_sub(char *, char *, s8);
+
+void KinshiYogo_chk(char *s) {
+    s32 (*p)[2];
+
+    p = ng_word_tbl_0;
+    do {
+        ng_word_sub(s, (char *)p[0][0], 0);
+        p += 2;
+    } while (p[0][0] != 0);
+    p = ng_word_tbl_2;
+    do {
+        ng_word_sub(s, (char *)p[0][0], 2);
+        p += 2;
+    } while (p[0][0] != 0);
+}
+
+u32 strlen(const char *);
+char *strstr(const char *, const char *);
+int zen_kigou_suuji_chk(u8 *);
+
+int ng_word_sub(char *text, char *ng, s8 mode) {
+    char *p;
+    char *rest;
+    int len;
+    int hit;
+
+    p = strstr(text, ng);
+    rest = text;
+    if (p != 0) {
+        do {
+            switch (mode) {
+            case 0:
+                len = strlen(ng);
+                hit = 1;
+                break;
+            case 1:
+                len = strlen(ng);
+                hit = 1;
+                break;
+            case 2:
+                hit = 0;
+                len = strlen(ng);
+                if (p == text) {
+                    hit = 1;
+                } else {
+                    if (zen_kigou_suuji_chk((u8 *)p - 2) == 1) {
+                        goto set;
+                    }
+                    if (p + len == rest + strlen(rest)) {
+                        hit = 1;
+                    } else if (zen_kigou_suuji_chk((u8 *)(p + len)) == 1) {
+set:
+                        hit = 1;
+                    }
+                }
+                break;
+            }
+            rest = p + 1;
+            if (hit != 0) {
+                len >>= 1;
+                while (len > 0) {
+                    p[0] = 0x81;
+                    p[1] = 0x96;
+                    len--;
+                    p += 2;
+                }
+                rest = p;
+            }
+            p = strstr(rest, ng);
+        } while (p != 0);
+    }
+    return 0;
+}
+
+int zen_kigou_suuji_chk(u8 *p) {
+    u8 c = p[0];
+
+    switch (c) {
+    case 0x81:
+        if (p[1] >= 0x40 && p[1] < 0xED) {
+            return 1;
+        }
+        break;
+    case 0x82:
+        if (p[1] >= 0x4F && p[1] < 0x59) {
+            return 1;
+        }
+        break;
+    }
+    return 0;
+}
+
+int ChatKinsoku_chk(u8 *s) {
+    u8 *p = s;
+    u8 c = *p;
+
+    while (c != 0) {
+        if (c == 0x81 && p[1] == 0x40) {
+            p += 2;
+            c = *p;
+        } else {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+extern u8 default_reibun[];
+void *memcpy(void *, const void *, int);
+void Init_reibun(void);
+
+void Default_reibun_set(void) {
+    memcpy((u8 *)&option_w + 0xDB0, default_reibun, 0x21C);
+    Init_reibun();
+}
+
+void init_reibun_sub(s8 *d, s8 *s) {
+    s8 *top = d;
+    int n = 6;
+
+    while (1) {
+        d[0] = s[0];
+        if (s[0] == 0) {
+            break;
+        }
+        n--;
+        d[1] = s[1];
+        s += 2;
+        d += 2;
+        if (n == 0) {
+            top[8] = 0x81;
+            top[9] = 0x64;
+            top[10] = 0;
+            break;
+        }
+    }
+}
+
+typedef struct REIBUN { s8 *s[3]; s8 *edit; } REIBUN;
+extern REIBUN str_tbl_reibun0[];
+
+void Init_reibun(void) {
+    REIBUN *r = str_tbl_reibun0;
+    int n = 0x21;
+
+    do {
+        init_reibun_sub((s8 *)r, r->edit);
+        r++;
+    } while (--n != 0);
+}
+
+void chcnfg_reibun_set(s8 *src, int no) {
+    REIBUN *r = &str_tbl_reibun0[no & 0xFF];
+    s8 *d = r->edit;
+    s8 *s = src;
+    s8 *t;
+    int n = 0x16;
+    int m;
+
+    while (*s != 0) {
+        *d = *s;
+        n--;
+        d[1] = s[1];
+        s += 2;
+        d += 2;
+        if (n == 0) {
+            break;
+        }
+    }
+    *d = 0;
+    t = (s8 *)r;
+    s = src;
+    m = 6;
+    while (1) {
+        t[0] = s[0];
+        if (s[0] == 0) {
+            break;
+        }
+        m--;
+        t[1] = s[1];
+        s += 2;
+        t += 2;
+        if (m == 0) {
+            ((s8 *)r)[8] = 0x81;
+            ((s8 *)r)[9] = 0x64;
+            ((s8 *)r)[10] = 0;
+            break;
+        }
+    }
+}
+
+int softkey_ck();
+
+int Reibun_Edit_Start(int no) {
+    if (softkey_ck() == 0) {
+        return 0;
+    }
+    SoftKeyboard_pos_set(80.0f, 0x50);
+    SoftKeyboard_set(2, 0, 0x2C, (int)str_tbl_reibun0[no & 0xFF].edit);
+    se_req(7, 0x11, 0);
+    return 1;
+}
+
+int Reibun_Edit_Core(int no) {
+    s8 buf[0x30];
+    s8 r;
+
+    buf[0] = 0;
+    r = SoftKeyboard_move(buf, (s16)Psw.x0, (s16)Psw.x4);
+    if (r != 0) {
+        if (buf[0] != 0 && r > 0) {
+            chcnfg_reibun_set(buf, no);
+        }
+        SoftKeyboard_exit();
+        return 1;
+    }
+    return 0;
 }
