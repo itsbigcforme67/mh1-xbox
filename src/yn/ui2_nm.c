@@ -25,7 +25,7 @@ int flPS2DmaWait();
 int flReleasePaletteHandle();
 int flReleaseTextureHandle();
 int flSetRenderState();
-int flSin();
+f32 flSin(f32 x);
 int flfntDraw();
 int flfntInit();
 int flfntLocate();
@@ -130,7 +130,8 @@ extern char *yn_memcard_mes_tbl[];
 extern u8 yn_mess_cnt_tbl[];
 extern char *yn_mess_mes_tbl[];
 extern u8 yn_parts_data[];
-extern u8 yn_spr_data[];
+typedef struct SPR { u8 b[12]; } SPR;
+extern SPR yn_spr_data[];
 extern char *yn_title_mes_tbl[];
 extern u8 yn_uv_data[];
 extern s8 BsProxyUseFlag;
@@ -1005,5 +1006,23 @@ void yn_dialog_font_setting(void) {
         }
         sprintf(sp50, lit_4688, sp250);
         yn_printf(0x44, (s16)(y + 0x19), sp50);
+    }
+}
+
+void yn_sprite_draw_sub(int arg0, int arg1, int arg2) {
+    u8 *part;
+    u8 sel;
+    u32 t;
+    f32 a;
+
+    part = yn_parts_data + arg0 * 4;
+    yn_sprite_draw_each(yn_spr_data + part[0] * 12, part[1], arg1, arg2, -1);
+    sel = part[3];
+    if (sel != 0) {
+        flSetRenderState(0x5E, 0x12);
+        t = M2C_FIELD(ynw, u8 *, 0x21);
+        a = 128.0f + 127.0f * flSin(3.1415927f * (f32)t / 2.0f / 16.0f);
+        yn_sprite_draw_each(yn_spr_data + part[2] * 12, sel, arg1, arg2, ((u8)(int)a << 24) | 0xFFFFFF);
+        flSetRenderState(0x5E, 0x32);
     }
 }

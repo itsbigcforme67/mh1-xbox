@@ -371,3 +371,42 @@ with K&R definitions (it turns them into declarations), so run it on a small sta
   original loads *src straight into a0 for is_kanji), not_bhead 7/50 (layout only), setu_point (original: u8 `a`, `p->id == (u32)-1`
   is addiu+dsrl32 not ori/dsll/ori), josi_match, ch_check, to_roman untouched beyond a look (all control-flow/allocation differences).
 - tools/relink_runs.py takes 3-4 minutes on ime_nm.c; run it in the background.
+
+### Session notes (IME leftovers, yn overlay 11.5% -> about 55%)
+Workflow that worked (yn): scratch copy of an nm file with only the target function (tools/check.py runs in under a second on it), try several
+source forms in one go, `tools/align.py FILE FUNC` for the real differences, then link as a small run file `src/yn/ncNN.c/uiNN.c`
+(`yn START END name` in config/c_files.txt, END = START + size from check.py; one `yn:rodata START END name` line per jump table, the table symbol
+sizes are in config/symbols/yn.txt). `tools/rebuild.sh yn` takes about 30 s and must print OK. New near-match drafts for yn live in
+src/yn/ui2_nm.c (UI text/draw functions, own header) next to ui_nm.c and netcnf_nm.c; the linked run files are generated from them.
+IME (src/main/ime): kstrncpy (`int c; while ((c = *src) && n > 0) ... is_kanji(c)`), not_bhead (it is a `switch (c & 0xFF)` with 13 case labels
+returning 1; the ladder of beq in the asm was a switch, not an if chain). Still near-match: set_num (42/139: the k selection layout; original has
+`k = 1` hoisted into the delay slot of the first branch and keeps kind-1 in the delay slot of the second), henkan, ch_check (u32 n, u32 e, `*(s8 *)p`
+instead of a char variable, register assignment differs: orig pos=s5 end=s0 n=s3 p=s2 h=s4 kind=s6 k=s1), setu_point (u8 a/c/t, `p->id == (u32)-1`),
+josi_match (c in v1/k in t0 in the original; a1/d reloaded with andi at each use), to_roman. A 15 minute permuter run on josi_match only found
+cosmetic rewrites (best 435 of base 1115, not a match).
+yn lessons (each shown by the named function):
+- A `switch` whose ladder leaves a stray `addiu reg,zero,N` (a dead constant load) has an extra `case N:` merged with `default:` in the source:
+  yn_netcnf_dev_to_work, yn_netcnf_work_to_dev (`case 0: default:`), yn_setup_allwork (`case 1: default:`).
+- Strength reduction: write `arg0 + i * 0x1340 + K` indexing and let MWCC build the pointer induction variables (net_allload, search_usr_name);
+  hand-written running pointers give different registers.
+- Big offsets (> 0x7FFF) from a work pointer: use a struct with the field at that offset (`NCW`, `IFCW`, `WRKW` in netcnf_nm.c); M2C_FIELD with
+  the same offset makes lui/ori/addu instead of lui/addu/lw.
+- Early returns that share the epilogue: `break` out of the switch and `return 0;` after it (file_search, set_main); `||` for the two button tests
+  (`if ((pad & 0x20) || (pad & 0x40))`) gives the shared block that m2c prints as a goto.
+- `-(a != b)` is `if (a != b) return -1; return 0;` (pastproxy_check). A copy of a 520 byte block is a struct assignment of `struct { s32 w[130]; }`.
+- A 16-bit compare of an int local needs the ints, not s64: write m2c's `(s64)(x << 0x30) >> 0x30` as `(s16)x`, keep the loop counter an `int` and
+  cast with `(s8)(i + 1)` where m2c shows the 0x38 shifts (hard_more_font_sub, help_font).
+- Table switch vs ladder: yn_button_font only became a jump table once the table pointer was a local (`char **tbl = yn_button_mes_tbl`).
+- Locals that are not used must still be sized to match the frame: ifc/dev/name in pastdata_check (`struct { IFCW x; u8 pad[0x30]; }`, `name[0x200]`).
+- yn_center_x returns s16 in its own file (uc00.c) but its callers do not sign-extend, so every other file declares it `int`.
+- The yn SCE library functions (sceNetcnfif*, sce_*) were built by gcc (sd/ld saves, absolute addressing): they cannot match with MWCC.
+Linked in yn: netcnf (init1/exit, pastproxy, ip_check, set_current, get_num, get_list, net_allload, magicno_check_sub, ip_to_num, search_usr_name,
+setup_devwork, work_to_dev, dev_to_work, work_to_ifc, pastdata_check), ui (title_font, backup_allwork, proxy_wk_load/save, center_x, strconv, hard_more/
+prname/adname font subs, dialog_draw, shot_cancel, button_draw/font, message_font_sub, hard_font_sub, memcard_font_sub, dialog_font_sub/without_yesno/
+memcard/ip_sub/font/setting, help_font, id_pw_font_sub, ipadrs_font_sub, keyboard_init, setup_allwork, file_search, set_main).
+Near-match / open in yn (check.py differing instructions): message_font 23/170 (arg0 pointer lands in a0 instead of a1), port_font_sub 51/151
+(registers), dialog_font_once 9/29 (arg0*8 register), connect_font_sub 4/141 (operand order of one addu), sprite_draw_sub (argument evaluation order;
+the draft in ui2_nm.c is complete), strconv2 45/78 (the third byte copy is not merged in the original), utf8_to_sjis/sjis_to_utf8 (~45 diffs, registers),
+module_load/unload (empty loops with 8 nops in the original), mc_device_check_all, auto_connect (no draft), sprite_draw/sprite_draw_each (no draft),
+select_provider (5.5 KB; the m2c draft keeps `ynw` in callee-saved temps, the original reloads it everywhere: replace every `temp = ynw` alias by `ynw`
+and rewrite case by case).
