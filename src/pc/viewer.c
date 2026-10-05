@@ -629,6 +629,26 @@ static void sim_tick(void)
     }
 }
 
+/* After the reward screen (game mode 6) the PS2 goes back to the village,
+ * which is not ported: start the same quest again (stand-in). */
+static void quest_back(void)
+{
+    int k, st;
+    float p[3] = { rx, 0, rz };
+    rt_monster_clear_all();
+    if (rt_quest_load(quest_no) != 0)
+        return;
+    st = rt_quest_monster_stage(&k);
+    if (st >= 0 && st != stage_no)
+        load_stage_models(st);
+    rt_game_init(stage_no);
+    rt_hud_init();
+    rt_monster_spawn(1, p, (int)(0.6f * 65536.0f / 6.2831853f));
+    rt_player_game_init(0);
+    if (game_cam)
+        rt_cam_init(stage_no);
+}
+
 int main(int argc, char **argv)
 {
     for (i = 1; i < argc; i++) {
@@ -845,6 +865,7 @@ int main(int argc, char **argv)
         SDL_SetRelativeMouseMode(SDL_TRUE);
     rt_flow_set_core(sim_tick);
     rt_set_stage_loader(load_stage_models);
+    rt_flow_set_back(quest_back);
     t0 = SDL_GetTicks();
     while (running) {
         SDL_Event ev;

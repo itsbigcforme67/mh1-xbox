@@ -450,3 +450,11 @@ int rt_monster_shown(int no)
     EMW *em = &em_work[no];
     return em->be_flag && em->stg == game_w.stage;
 }
+
+/* all em_work slots free (the host's quest restart) */
+void rt_monster_clear_all(void)
+{
+    int i;
+    for (i = 0; i < 20; i++)
+        em_work[i].be_flag = 0;
+}

@@ -132,12 +132,13 @@ void rt_font_init(void)
 {
     size_t n = 0;
     int i;
-    if (!font_data)
+    if (!font_data) {
         font_data = rt_file_load(0x6D2, &n);
-    if (font_data && n < NGLYPH * 100) {
-        fprintf(stderr, "rt_font: font file too small (%zu)\n", n);
-        free(font_data);
-        font_data = NULL;
+        if (font_data && n < NGLYPH * 100) {
+            fprintf(stderr, "rt_font: font file too small (%zu)\n", n);
+            free(font_data);
+            font_data = NULL;
+        }
     }
     flfntCreate(NULL);
     flfntInit();
@@ -170,6 +171,8 @@ void flfntPrintf(const char *fmt, ...)
     FNT_ENT *e;
     if (s < 0) s = 0;
     if (s > 4) s = 4;
+    if (getenv("RT_FONT_TRACE") && atoi(getenv("RT_FONT_TRACE")) > 1)
+        fprintf(stderr, "font: print z %.1f stack %d n %d pos %u draw %d\n", cur_z, s, nstack[s], strpos, in_draw);
     if (nstack[s] >= STACK_MAX || strpos >= STRBUF - 2)
         return;
     e = &stack[s][nstack[s]++];
