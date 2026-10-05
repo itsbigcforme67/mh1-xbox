@@ -683,3 +683,6 @@ main 0x001593C0 0x00159408 pl/shell_work2
 main 0x00192E30 0x00192E38 fl/pv01
 main 0x00192FA0 0x00192FA8 fl/pv02
 main 0x00193150 0x00193344 fl/pv03
+main 0x0021D5E0 0x0021DBE0 sound/bgm01
+main 0x0021DDC0 0x0021DF74 sound/bgm02
+main:rodata 0x003674B0 0x003674E0 sound/bgm01
