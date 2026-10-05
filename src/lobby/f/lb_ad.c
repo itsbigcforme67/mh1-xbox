@@ -248,13 +248,15 @@ void Lb_put_chat(int a) {
     Plaza_chat_log_add(buf);
 }
 void Lb_npc_set(int a) {
-    s16 j;
     int i;
+    int j;
     u8 *e;
     u8 *p;
     int v;
-    u8 n;
-    p = npc_dialog_table + 0x174 + a;
+    int n;
+    u8 *tb;
+    tb = npc_dialog_table + 0x174;
+    p = tb + a;
     n = *p;
     switch (a) {
     case 0x57:
@@ -268,11 +270,7 @@ void Lb_npc_set(int a) {
     case 0x54:
     case 0x55:
         v = (s16)(game_w.stage - 0x51);
-        if (v >= 0) {
-            if (v > 0x55) {
-                v = 0;
-            }
-        } else {
+        if (v < 0 || v > 0x55) {
             v = 0;
         }
         if ((&lb_sys.x87)[1 + (s16)v] == 1) {
@@ -282,19 +280,15 @@ void Lb_npc_set(int a) {
     }
     i = 0;
     j = 0;
-    if (n > 0) {
-        do {
-            e = pull_enemy_work();
-            if (e != 0) {
-                *(s8 *)(e + 0x1E) = 1;
-                *(s8 *)(e + 0x34F) = 0;
-                *(s16 *)(e + 0xC) = j;
-                *(s8 *)(e + 0x1B) = j;
-                e[0x736] = game_w.stage;
-            }
-            i += 1;
-            j += 1;
-        } while (i < n);
+    for (; i < n; i++, j++) {
+        e = pull_enemy_work();
+        if (e != 0) {
+            *(s8 *)(e + 0x1E) = 1;
+            *(s8 *)(e + 0x34F) = 0;
+            *(s16 *)(e + 0xC) = j;
+            *(s8 *)(e + 0x1B) = j;
+            e[0x736] = game_w.stage;
+        }
     }
 }
 int Lb_check_hotel(int a) {
