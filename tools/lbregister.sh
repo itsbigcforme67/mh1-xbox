@@ -8,7 +8,10 @@ lb/lbnpc_nm.c lb/lbnpc lb/lbnpc
 lb/lbui_nm.c lb/lbui lb/lbui
 lb/lbshop2_nm.c lb/lbshop2 lb/lbshop2
 lb/lb_mix_nm.c lb/lbmix lb/lbmix
-lb/lb_shop_nm.c lb/lbshp lb/lbshp"
+lb/lb_shop_nm.c lb/lbshp lb/lbshp
+lb/lb_em04_nm.c lb/lbem04 lb/lbem04
+lb/lb_em09_nm.c lb/lbem09 lb/lbem09
+lb/lb_em10_nm.c lb/lbem10 lb/lbem10"
 : > /tmp/c_files.add
 grep -v '^$' config/c_files.txt > /tmp/c_files.new
 echo "$FAMILIES" | while read nm prefix regdir; do
@@ -43,11 +46,11 @@ import lbf_jt
 have = set(l.strip() for l in open('config/c_files.txt'))
 for l in open('config/c_files.txt'):
     p = l.split()
-    if len(p) == 4 and p[0] == 'lobby' and re.match(r'lb/lb(npc|ui|mix|shp|shop2)|cnet/cnlbs', p[3]):
+    if len(p) == 4 and p[0] == 'lobby' and re.match(r'lb/lb(npc|ui|mix|shp|shop2|em)|cnet/cnlbs', p[3]):
         for fn in re.findall(r'^[A-Za-z_][\w \*]*?\b(\w+)\([^;{]*\)(?:\n[^;{\n]*;)*\s*\{', open('src/lobby/' + p[3] + '.c').read(), re.M):
             for a, e in lbf_jt.ranges(fn):
                 ln = 'lobby:rodata 0x%08X 0x%08X %s' % (a, e, p[3])
                 if ln not in have: out.append(ln); have.add(ln); print('jump table', fn, ln)
 open('config/c_files.txt', 'a').write('\n'.join(out) + '\n')
 PY
-echo "registered $(grep -c '^lobby 0x.* \(cnet/cnlbs\|lb/lbnpc\|lb/lbui\|lb/lbshop2\|lb/lbmix\|lb/lbshp\)' config/c_files.txt) runs"
+echo "registered $(grep -c '^lobby 0x.* \(cnet/cnlbs\|lb/lbnpc\|lb/lbui\|lb/lbshop2\|lb/lbmix\|lb/lbshp\|lb/lbem\)' config/c_files.txt) runs"

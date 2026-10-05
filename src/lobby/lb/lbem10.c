@@ -1,6 +1,4 @@
-/* lb_em10 - lobby.bin 0x0053D7D0-0x0053DCF8. Sound-effect script of lobby NPC
- * model em10: per animation id (EMW.char0) play Npc_se_req at animation
- * frames (sound_call_0053D7D0). Near-match from m2c. */
+/* lbem10, run 1: sound_call_0053D7D0 .. dummy_em_prog_0053DCF0 (lobby.bin 0x0053D7D0-0x0053DCF8): the matching functions of lb_em10_nm.c. */
 #include "lobby.h"
 #include "em.h"
 

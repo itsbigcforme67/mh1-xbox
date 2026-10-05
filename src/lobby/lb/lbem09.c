@@ -1,4 +1,4 @@
-/* lb_em09 - lobby.bin 0x0053DD00-0x0053E348. Same for lobby NPC model em09. */
+/* lbem09, run 1: move_default_0053DD00 .. dummy_em_prog_0053E340 (lobby.bin 0x0053DD00-0x0053E348): the matching functions of lb_em09_nm.c. */
 #include "lobby.h"
 #include "em.h"
 

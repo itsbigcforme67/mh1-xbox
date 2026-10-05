@@ -1577,6 +1577,10 @@ lobby 0x00535C00 0x00535C80 lb/lbmixb
 lobby 0x00536620 0x00536708 lb/lbmixc
 lobby 0x00536E20 0x00536F1C lb/lbshp
 lobby 0x005376C0 0x00537854 lb/lbshpb
+lobby 0x0053E350 0x0053E358 lb/lbem04
+lobby 0x0053E790 0x0053E848 lb/lbem04b
+lobby 0x0053DD00 0x0053E348 lb/lbem09
+lobby 0x0053D7D0 0x0053DCF8 lb/lbem10
 lobby:rodata 0x0065E000 0x0065E008 cnet/cnlbsh
 lobby:rodata 0x0065E008 0x0065E010 cnet/cnlbsj
 lobby:rodata 0x0065DEF0 0x0065DF10 cnet/cnlbsb
