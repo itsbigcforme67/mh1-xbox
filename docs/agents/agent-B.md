@@ -160,3 +160,11 @@ Lessons:
   a0-a3 and f12 constants through addiu/daddu/lui/ori/mtc1 and emits sound_call(...) lines;
   the few blocks with control flow were then written by hand (per-animation switch with a
   reverse-ordered compare ladder, `case 0x3E9: break;` for the empty first case).
+
+# Fourth round (em33, em09 started)
+- em03 now one file (61/61, em03.c) and em33 one file (60/60, em33.c, written from em03 by renaming and fixing diffs).
+  em03 turn block: `int d; d=(u16)((u16)Em_Calc_angY()-ang[1]); if (d<=0x8000){if(d<=0x3F)ang+=d;else ang+=0x40;}else if(d>0xFFC0)ang+=d;else ang-=0x40;` matches; mv12 needed decl order spd,fr,d,dd,h,ang with a local h=horm_ang.
+- em_mahi_eff_set(em, 2) (2 args) fixes the a1/v1 constant-register swap in em04 dm03 (a compare constant is shared with a later call argument).
+- check.py compares plain static names against the first matching address of any file: give statics their address suffix before trusting "OK" (em33 had hidden mismatches).
+- em09 (f_em_5A81B0): src/game/em/em09.c WIP, not registered; first 7 functions done except em09_act_set (same unfolded-pointer-copy problem as em04_act_set), em09_status_ck/em09_dir_calc 2-8 instrs off (signed/unsigned compare forms).
+- em04 near-matches left: act_set, ef_move_sub. em10_turn_sub still parked.
