@@ -1418,7 +1418,7 @@ static void em_fly02_0059C930(EMW *em, EM08W *w) {
             em08_to_swim(em);
         }
         em->ang[1] += 0x1F0;
-        xang_calc_target(em, w->vel, /*?*/0.0f, /*?*/0.0f);
+        xang_calc_target(em, w->vel, 0.0f, 0.0f);
         w->vel[1] = (s32) em->ang[1];
         w->vel[2] = 0;
         speed_add(em, w->vel);
@@ -1508,7 +1508,7 @@ static void em_fly04_0059CCE0(EMW *em, EM08W *w) {
         em->x3C0[2] = 1.0f;
         break;
     case 1:
-        xang_calc_target(em, w->vel, /*?*/0.0f, /*?*/0.0f);
+        xang_calc_target(em, w->vel, 0.0f, 0.0f);
         w->vel[1] = (s32) em->ang[1];
         w->vel[2] = 0;
         speed_add(em, w->vel);
@@ -1544,7 +1544,7 @@ static void em_fly04_0059CCE0(EMW *em, EM08W *w) {
         }
         break;
     case 2:
-        xang_calc_target(em, w->vel, /*?*/0.0f, /*?*/0.0f);
+        xang_calc_target(em, w->vel, 0.0f, 0.0f);
         w->vel[1] = (s32) em->ang[1];
         w->vel[2] = 0;
         speed_add(em, w->vel);
@@ -1579,7 +1579,7 @@ static void em_fly05_0059CF30(EMW *em, EM08W *w) {
         break;
     case 1:
         if (em_frame_check2(em, 0, 30.0f) != 0) {
-            xang_calc_target(em, w->vel, /*?*/0.0f, /*?*/0.0f);
+            xang_calc_target(em, w->vel, 0.0f, 0.0f);
             w->vel[1] = (s32) em->ang[1];
             w->vel[2] = 0;
             speed_add(em, w->vel);
@@ -1847,7 +1847,7 @@ block_9:
             var_v0 = temp_v1 - 0x200;
         }
         em->ang[1] = var_v0;
-        xang_calc_target(em, w->vel, /*?*/0.0f, /*?*/0.0f);
+        xang_calc_target(em, w->vel, 0.0f, 0.0f);
         w->vel[1] = (s32) em->ang[1];
         w->vel[2] = 0;
         speed_add(em, w->vel);
@@ -1914,7 +1914,7 @@ block_9:
             var_v0 = temp_v1 - 0x200;
         }
         em->ang[1] = var_v0;
-        xang_calc_target(em, w->vel, /*?*/0.0f, /*?*/0.0f);
+        xang_calc_target(em, w->vel, 0.0f, 0.0f);
         w->vel[1] = (s32) em->ang[1];
         w->vel[2] = 0;
         speed_add(em, w->vel);
@@ -1945,7 +1945,7 @@ static void em_fly12_0059DBA0(EMW *em, EM08W *w) {
         }
         em->ang[1] += 0x1F0;
         em->ang[1] = (s32) (u16) EMF(em, s32, 0xA4);
-        xang_calc_target(em, w->vel, /*?*/0.0f, /*?*/0.0f);
+        xang_calc_target(em, w->vel, 0.0f, 0.0f);
         w->vel[1] = (s32) em->ang[1];
         w->vel[2] = 0;
         speed_add(em, w->vel);
@@ -1976,7 +1976,7 @@ static void em_fly13_0059DCA0(EMW *em, EM08W *w) {
         }
         em->ang[1] -= 0x1F0;
         em->ang[1] = (s32) (u16) EMF(em, s32, 0xA4);
-        xang_calc_target(em, w->vel, /*?*/0.0f, /*?*/0.0f);
+        xang_calc_target(em, w->vel, 0.0f, 0.0f);
         w->vel[1] = (s32) em->ang[1];
         w->vel[2] = 0;
         speed_add(em, w->vel);
@@ -4817,6 +4817,7 @@ static void move_default_005A3E00(EMW *em) {
 static void ef_move_sub_005A3E50(EMW *em, EM08W *w) {
     f32 va[4];
     f32 vb[4];
+    f32 vc[4];
 
     if (em->char0 != w->anim) {
         w->anim = em->char0;
@@ -4977,10 +4978,10 @@ static void ef_move_sub_005A3E50(EMW *em, EM08W *w) {
         sound_call_005A3D10(em, 2, 0x2d, 0x23);
         sound_call_005A3D10(em, 0xb6, 0x2d, 0x23);
         sound_call_005A3D10(em, 0x16c, 0x2d, 0x23);
-        va[9] = 10.0f;
-        va[10] = 140.0f;
-        va[8] = 0.0f;
-        em_sleep_eff_set(em, 0x22, vb, 1.6f);
+        va[1] = 10.0f;
+        va[2] = 140.0f;
+        va[0] = 0.0f;
+        em_sleep_eff_set(em, 0x22, va, 1.6f);
         break;
     case 0x408:
         sound_call_005A3D10(em, 4, 0x2f, 0x23);
@@ -4999,9 +5000,9 @@ static void ef_move_sub_005A3E50(EMW *em, EM08W *w) {
     case 0x40A:
         sound_call_005A3D10(em, 0x24, 0x2f, 0x23);
         hire_req_set_005A6F90(em, w, 3);
-        va[5] = 10.0f;
-        va[6] = 140.0f;
-        va[4] = 0.0f;
+        vb[1] = 10.0f;
+        vb[2] = 140.0f;
+        vb[0] = 0.0f;
         em_sleep_eff_set(em, 0x22, vb, 1.6f);
         break;
     case 0x40C:
@@ -5036,10 +5037,10 @@ static void ef_move_sub_005A3E50(EMW *em, EM08W *w) {
         if (em_frame_check(em, 148.0f, 0)) {
             atk_shell_set(em, 0xf);
         }
-        va[1] = 10.0f;
-        va[2] = 140.0f;
-        va[0] = 0.0f;
-        em_sleep_eff_set(em, 0x22, va, 1.6f);
+        vc[1] = 10.0f;
+        vc[2] = 140.0f;
+        vc[0] = 0.0f;
+        em_sleep_eff_set(em, 0x22, vc, 1.6f);
         if (em_frame_check(em, 156.0f, 0)) {
             Eft20_set(1.0f, em, 0, 0);
         }
@@ -5368,10 +5369,10 @@ static void ef_move_sub_005A3E50(EMW *em, EM08W *w) {
             atk_shell_set(em, 0x17);
         }
         if (em_frame_check(em, 24.0f, 0) || em_frame_check(em, 42.0f, 0) || em_frame_check(em, 62.0f, 0) || em_frame_check(em, 82.0f, 0)) {
-            Eft13_set_em_scl(em, 6, /*?*/0.0f, 3);
+            Eft13_set_em_scl(em, 6, 8.0f + (f32)((u16)ran_suu(1) & 0x3FF) * 0.0005f, 3);
         }
         if (em_frame_check(em, 10.0f, 0) || em_frame_check(em, 32.0f, 0) || em_frame_check(em, 52.0f, 0) || em_frame_check(em, 74.0f, 0)) {
-            Eft13_set_em_scl(em, 0xc, /*?*/0.0f, 3);
+            Eft13_set_em_scl(em, 0xc, 8.0f + (f32)((u16)ran_suu(1) & 0x3FF) * 0.0005f, 3);
         }
         break;
     case 0x464:
