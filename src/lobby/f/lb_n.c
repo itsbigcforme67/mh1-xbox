@@ -172,14 +172,17 @@ int Lb_guild_check_requireF(void) {
 
 int Lb_get_pl_stat2(int a0) {
     s8 i;
+    int r;
     if (Online_ck() == 0) {
         return 0;
     }
     i = a0;
     if (lbCommer[i].mac[0] != 0) {
-        return PLU8(&player_work[i], 0x736) == 0;
+        r = PLU8(&player_work[i], 0x736) == 0;
+    } else {
+        r = 2;
     }
-    return 2;
+    return r;
 }
 
 extern u8 D_3E55F0[], D_3E5FF0[], D_3E69F0[], D_3E73F0[], D_3E7DF0[], D_3E87F0[], D_3E91F0[];

@@ -57,9 +57,10 @@ char *bs_url_extension(char *base, char *p) {
     return 0;
 }
 char *bs_url_slash(char *p, char *end) {
+    int c = 0x2F;
     if ((u32)p < (u32)end) {
         do {
-            if (*p == 0x2F) {
+            if (*p == c) {
                 return p;
             }
             p += 1;

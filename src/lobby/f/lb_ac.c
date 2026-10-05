@@ -90,7 +90,7 @@ int Lb_ck_target(u8 *p, int unused, int a) {
     int v;
     d = (((*(s32 *)(p + 0xA4) - (((calc_vec_ang2(p + 0xAC) & 0xFFFF) + 0x4000) & 0xFFFF)) & 0xFFFF) - 0x8000) & 0xFFFF;
     v = (int)(0.5f + 65536.0f * (f32)a / 360.0f) & 0xFFFF;
-    if (0xFFFF - v < d || d < v) {
+    if (d > 0xFFFF - v || d < v) {
         return 1;
     }
     return 0;

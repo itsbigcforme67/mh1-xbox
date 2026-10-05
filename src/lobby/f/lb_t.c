@@ -60,6 +60,7 @@ void http_test_14(u8 *p) {
         *(s8 *)(p + 0x3D) = 0x11;
         *(s8 *)(p + 0x3C) = 0;
         *(s8 *)(p + 0x40) = 0x10;
+        return;
     }
 }
 void fillRect(f32, f32, f32, f32, u32);
@@ -70,25 +71,21 @@ extern s16 BsTimer0;
 extern u8 *bsSys;
 char *strcpy(char *, const char *);
 void stockMetaRefresh(int a, char *s) {
-    int t;
     memset(bsSys + 0x3B, 0, 0x100);
     strcpy((char *)bsSys + 0x3B, s);
     if (a == 0) {
-        t = 0x3C;
+        BsTimer0 = 0x3C;
     } else {
-        t = a * 0x3C;
+        BsTimer0 = a * 0x3C;
     }
-    BsTimer0 = t;
 }
 char *receiveID(char *a, int b) {
     char *r;
     r = strcpy((char *)bsSys + 0x55D, a);
-    if (a != 0) {
-        if (*(u8 *)a != 0) {
-            return strcpy((char *)bsSys + 0x5A1, a);
-        }
+    if (a == 0 || *(u8 *)a == 0) {
+        return r;
     }
-    return r;
+    return strcpy((char *)bsSys + 0x5A1, a);
 }
 int skipShadowImage(void) {
     switch (bsSys[0x30]) {

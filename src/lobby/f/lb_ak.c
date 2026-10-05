@@ -45,16 +45,11 @@ int stockTitle(char *s, int b, int c) {
 }
 int stockPlainText(int x, int y, int a2, int a3, int x2, int y2, char *text, int t3) {
     int v;
-    v = strcmp(text, lit_288_00665FB8);
-    if (v != 0) {
-        v = strcmp(text, lit_289_00665FC0);
-        if (v == 0) {
-            return v;
-        }
-        UpdateEndpoint(x2 & 0xFFFF, y2 & 0xFFFF);
-        return AppendWork(1, 1, x, y, x2, y2, a2, a3, t3, 0, text, lit_270_00665FB0, lit_270_00665FB0);
+    if ((v = strcmp(text, lit_288_00665FB8)) == 0 || (v = strcmp(text, lit_289_00665FC0)) == 0) {
+        return v;
     }
-    return v;
+    UpdateEndpoint(x2 & 0xFFFF, y2 & 0xFFFF);
+    return AppendWork(1, 1, x, y, x2, y2, a2, a3, t3, 0, text, lit_270_00665FB0, lit_270_00665FB0);
 }
 int stockLinkText(int x, int y, int c1, int c2, int x2, int y2, char *s6, char *s7, u8 a8) {
     UpdateEndpoint(x2 & 0xFFFF, y2 & 0xFFFF);

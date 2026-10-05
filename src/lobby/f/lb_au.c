@@ -103,11 +103,9 @@ void BsPushPageWork(void) {
     }
 }
 void BsBody00_ReqSrc(void) {
-    u8 a0;
     MoveAndTransSet();
     if (bsGoHidePage != 0) {
-        a0 = MMBB_LOGIN;
-        switch (a0) {
+        switch (MMBB_LOGIN) {
         case 2:
         case 1:
             break;
@@ -227,9 +225,8 @@ void BsPoster05_RcvData(void) {
     r = (u8 *)BsRequestCheck(bsUrl);
     if (r != 0) {
         bsIsOnRequesting = 0;
-        if (*(s8 *)(r + 4) != 0) {
-            bsSys->x01 = 2;
-        } else {
+        switch (*(s8 *)(r + 4)) {
+        case 0:
             if (*(s8 *)(r + 5) == 9) {
                 v = bsRetryCtr + 1;
                 bsRetryCtr = v;
@@ -242,6 +239,9 @@ void BsPoster05_RcvData(void) {
                 bsSys->x01 = 2;
                 return;
             }
+            bsSys->x01 = 2;
+            break;
+        default:
             bsSys->x01 = 2;
         }
     }

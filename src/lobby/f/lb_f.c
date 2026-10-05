@@ -52,7 +52,7 @@ void Lb_player_load(PLW *pl) {
     pl_chr_set3(pl, 0x65, 0, 0, 1);
     parts_init(pl);
     CW8(0x2C07) = 0;
-    ((u8 *)(pl->id + (int)cw))[0x2BFE] = 1;
+    cw[pl->id + 0x2BFE] = 1;
 }
 
 void Lb_player_release(PLW *pl) {

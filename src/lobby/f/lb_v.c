@@ -209,8 +209,7 @@ int lb_guild_startMsg(void) {
             }
         }
         lb_pit[8] = 0;
-    default:
-        return 0;
+        break;
     case 1:
         if (Online_ck() == 0) {
             if (Event_flag_ck(1) == 0 && Quest_clear_bit_ck(0x8B) == 1) {
@@ -236,8 +235,8 @@ int lb_guild_startMsg(void) {
             lb_sys.x07 = 0;
             return 1;
         }
-        return 0;
     }
+    return 0;
 }
 int lb_guild_make_room(void) {
     int var_s0;

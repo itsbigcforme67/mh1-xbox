@@ -181,15 +181,13 @@ int c;
     case 1:
         if ((Fade_busy_ck(lb_sys.x04) & 0xFF) != 1) {
             lb_sys.x04 = lb_sys.x04 + 1;
-            return;
         }
-        return;
+        break;
     case 2:
         if ((Fade_busy_ck(lb_sys.x04) & 0xFF) != 1) {
             lb_sys.x04 = 0;
             lb_sys.x03 = lb_sys.x03 + 1;
         }
-        break;
     }
 }
 void vs_square_init_init(void) {

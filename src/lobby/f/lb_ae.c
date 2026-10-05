@@ -195,9 +195,8 @@ void lb_pl_mv076(PLW *pl, int a1) {
             pl->work08 = 0x3C;
             if (*(u16 *)((u8 *)pl + 0x2DC) != 0x261) {
                 Lb_pl_chr_set(pl, 0x261, 6, 0);
-                return;
             }
-            return;
+            break;
         }
         Lb_pl_chr_set(pl, 0x260, -4, 0);
         return;
@@ -243,6 +242,7 @@ void lb_pl_mv076(PLW *pl, int a1) {
             }
             if (t & 0x400) {
                 Lb_act_set(pl, 0, 0x54);
+                return;
             }
         }
         break;

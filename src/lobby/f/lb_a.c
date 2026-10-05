@@ -51,6 +51,7 @@ void lb_trade_check(int a0, u8 *data) {
 void lb_trade_result(u8 *data) {
     PLW *pl = &player_work[game_w.master];
     LBTRADE2 t;
+    void Ud_item_stack();
     if ((s16)act_ck(pl, 0, 0x2E) != 0) {
         memcpy(&t, data, 0xE);
         if (t.result == 0) {

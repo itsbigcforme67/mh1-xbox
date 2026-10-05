@@ -135,10 +135,12 @@ void bs_route_commit(BSNODE *head, BSNODE *req, void *c) {
     }
 }
 void bs_page_status_flag_set(u8 *p, int bit, int on) {
+    u8 m;
     if (on != 0) {
         p[1] = p[1] | bit;
     } else {
-        p[1] = p[1] & (u8)(~(bit & 0xFF));
+        m = bit;
+        p[1] &= ~m;
     }
 }
 BSNODE *bs_cache_queue_check(BSNODE *head, char *url) {

@@ -1,5 +1,9 @@
-/* Lobby: trade, sleep, exit (SLPM_654.95 lobby overlay 0x5D0750-). Whole file; runs split into lb_lNN.c */
+/* lb_gl01 - near-match fixes 0x005D0750-0x005D09DC: trade_get_ck_005D0750. Whole file in lb_l.c. */
 #include "lobby_f.h"
+
+
+
+
 
 int trade_get_ck_005D0750(PLW *pl) {
     s16 i;
@@ -49,71 +53,4 @@ int trade_get_ck_005D0750(PLW *pl) {
         o++;
     } while (i < 8);
     return 0;
-}
-
-void pl_sleeping(PLW *pl) {
-    s32 q[3];
-    int t;
-    u8 *src = lit_584_0064E1A8;
-    *(long *)q = *(long *)src;
-    q[2] = *(s32 *)(src + 8);
-    if (pl->char0 == 0x1AB && (ran_suu(1) & 0xFFFF & 0x3F) == 0) {
-        Lb_pl_chr_set(pl, 0x1AC, 0, 0);
-    } else if (pl->char0 == 0x1AC && F(s32, pl, 0x194) == 0) {
-        Lb_pl_chr_set(pl, 0x1AB, 0, 0);
-    }
-    t = *(u16 *)0x3F340E % 60;
-    switch (t) {
-    case 0:
-    case 0xA:
-    case 0x14:
-        Eft06_set2(0.6f, pl, 4, 0x14, q);
-    }
-}
-
-void lb_exit_save(PLW *pl) {
-    pl_flag_clr(pl, 0x20000);
-    Lb_Pl_act_set2(pl, 0, 0x35, 0);
-    CW8(0x2C08) = 1;
-    *(s8 *)0x3F36AB = 1;
-    str_pause(0, 0);
-    str_volume(0, 0);
-    str_fadein_vol(0, 0x1E, D_32D471[game_w.stage * 2]);
-}
-
-void lb_goto_guest_room(PLW *pl, int no) {
-    u8 *p;
-    u8 v;
-    u16 r;
-    s32 *t;
-    u8 m;
-    u8 *c;
-    switch (Lb_check_hotel(no)) {
-    case 1:
-        if (no == 0x55) {
-            r = ran_suu(1);
-            CW8(0x35D8) = (r % 27) * 2;
-        }
-        t = &lbs_command_jmp[0xB3];
-        Gold_add(-t[no]);
-        cnWrap_SoundRequest(8);
-        p = D_3C7357 + no;
-        v = *p;
-        if (v < 0x96) {
-            *p = v + 1;
-        }
-    case 2:
-        ((u8 *)&lb_sys)[0x71] = 0;
-        lb_sys.x03 = 5;
-        F(s16, pl, 0x73A) = no;
-        c = cw;
-        m = (1 << (no - 0x51)) & 0xFF;
-        c[0x35D7] = c[0x35D7] | m;
-        lb_sys.x68 = 0x14;
-        break;
-    case 0:
-        break;
-    case 3:
-        Lb_put_set01(0xA);
-    }
 }
