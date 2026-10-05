@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,63 +469,14 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void init_hchar(void)
+int updwdlen(WD *w)
 {
-    HCHAR *h;
+    int extra;
 
-    for (h = hchar; (u8 *)h < (u8 *)wdsbuf; h++) {
-        clear_hchar(h);
+    if (w->x08 != 0 || w->x07 >= 0x2D) {
+        extra = 3;
+    } else {
+        extra = 2;
     }
-}
-
-void clear_hchar(HCHAR *h)
-{
-    h->x00 = -1;
-    h->ch = 0;
-    h->bs = 0;
-    h->kh = 0;
-    h->x10 = 0;
-    h->x14 = 0;
-    h->x15 = 0;
-    h->x16 = 0;
-    h->x17 = -1;
-    h->x18 = -1;
-    h->x19 = -1;
-}
-
-void free_hchar(int from, int to, int keep)
-{
-    HCHAR *h;
-    HCHAR *end;
-
-    end = hchar + to;
-    for (h = hchar + from; h < end; h++) {
-        free_hchar_one(h, keep);
-    }
-}
-
-void free_hchar_one(HCHAR *h, int keep)
-{
-    if (keep == 0) {
-        h->x00 = -1;
-        h->x18 = -1;
-        if (h->ch != (void *)-1) {
-            free_chmemlist(h->ch);
-        }
-        h->ch = 0;
-        h->x17 = -1;
-        h->x19 = -1;
-        h->x16 = 0;
-    }
-    if (h->bs != 0 && h->bs != (BS *)-1) {
-        free_bsmemlist(h->bs);
-    }
-    h->bs = 0;
-    if (h->kh != 0) {
-        free_khmemlist(h->kh);
-    }
-    h->kh = 0;
-    h->x10 = 0;
-    h->x14 = 0;
-    h->x15 = 0;
+    return extra + setkbuflen(w->tango);
 }

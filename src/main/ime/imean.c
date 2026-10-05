@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,13 +469,35 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int ToUpper(int c)
+void free_bsmemlist(BS *b)
 {
-    int u;
+    BS *n;
 
-    u = c & 0xFF;
-    if (u >= 0x61 && u < 0x7B) {
-        return (u - 0x20) & 0xFF;
+    while (b != 0) {
+        n = b->next;
+        free_mem(b);
+        b = n;
     }
-    return c;
+}
+
+void free_khmemlist(KH *k)
+{
+    KH *n;
+
+    while (k != 0) {
+        n = k->next;
+        free_mem(k);
+        k = n;
+    }
+}
+
+void free_klmemlist(KL *l)
+{
+    KL *n;
+
+    while (l != 0) {
+        n = l->next;
+        free_mem(l);
+        l = n;
+    }
 }

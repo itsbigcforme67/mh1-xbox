@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,16 +469,28 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int getbit(s16 n)
+int can_daku(int c)
 {
-    return bitpool[n >> 3] & power[n & 7];
+    u8 buf[4];
+
+    if (is_shift() != 0) {
+        c = ask_sjis2jis(c) & 0xFFFF;
+    }
+    if (to_hankaku(buf, c) != 1) {
+        return 0;
+    }
+    return (rmtype[buf[0]] & 0xF) == 0xA;
 }
 
-int g2jodo(int c)
+int can_handaku(int c)
 {
-    c = c & 0xFF;
-    if (c > 0 && c < 0xE) {
-        return (c + 0x7F) & 0xFF;
+    u8 buf[4];
+
+    if (is_shift() != 0) {
+        c = ask_sjis2jis(c) & 0xFFFF;
     }
-    return 0;
+    if (to_hankaku(buf, c) != 1) {
+        return 0;
+    }
+    return (rmtype[buf[0]] & 0xF) == 0xB;
 }

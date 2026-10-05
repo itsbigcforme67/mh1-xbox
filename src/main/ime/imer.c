@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,33 +469,13 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int prefix(u8 *a, u8 *b, int n)
+int read_index(void)
 {
-    int i;
-
-    i = 0;
-    while (i < n) {
-        if (*a != *b || *a == 0) {
-            break;
-        }
-        i++;
-        a++;
-        b++;
+    if (seek_dic(0x400) == -1) {
+        return -1;
     }
-    return i;
-}
-
-void init_page_tab(void)
-{
-    PAGE *p;
-
-    page_top = page_tab;
-    for (p = page_tab; p < page_tab + 9; p++) {
-        p->id = -1;
-        p->dirty = 0;
-        p->next = p + 1;
+    if (d_read(dic_fd, mainindex, 0x1000) != 0x1000) {
+        return -1;
     }
-    p->id = -1;
-    p->dirty = 0;
-    p->next = 0;
+    return 0;
 }

@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,30 +469,13 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int apis_dicname(int *a)
+int ToUpper(int c)
 {
-    strcpy(dic_name, a[0]);
-    return 0;
-}
+    int u;
 
-int api_khlong(int *a)
-{
-    u8 *p;
-    u8 *q;
-
-    if (func_mode != 3) {
-        return -1;
+    u = c & 0xFF;
+    if (u >= 0x61 && u < 0x7B) {
+        return (u - 0x20) & 0xFF;
     }
-    p = (u8 *)a[0];
-    q = (u8 *)a[1];
-    if (cur_pos + cur_len >= kana_len) {
-        return 0;
-    }
-    save_fst_bslen(cur_pos);
-    free_hchar(cur_pos, kana_len, 1);
-    cur_len++;
-    henkan(cur_pos, kana_len, 1, cur_len);
-    init_kouho(0, 1);
-    get_kouhostr(p, q);
-    return kh_count(hchar[cur_pos].kh);
+    return c;
 }

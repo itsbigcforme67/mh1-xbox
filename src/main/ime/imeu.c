@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,50 +469,38 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void clear_entid_tmp(int v)
+int get_maxtime(int *ids, int n)
 {
     int i;
+    int m;
+    int id;
 
-    for (i = 0; i < 128; i++) {
-        if (v == entid_tab[i].c) {
-            entid_tab[i].c = -1;
+    m = 0;
+    for (i = 0; i < n; i++) {
+        id = ids[i * 2];
+        if (id >= 0 && id < 0x80) {
+            if (entid_tab[id].cnt > 0) {
+                if (m < entid_tab[id].rtime) {
+                    m = entid_tab[id].rtime;
+                }
+            }
         }
     }
+    return m;
 }
 
-void init_temp(void)
-{
-    init_node_tab();
-    init_hash_tab();
-    if (read_temp() == -1) {
-        reset_temp();
-    }
-    temp_updated = 0;
-}
-
-void flush_temp(void)
-{
-    if (temp_updated != 0) {
-        write_temp();
-    }
-}
-
-void init_node_tab(void)
-{
-    NODE *n;
-
-    for (n = node_tab; n < node_tab + 511; n++) {
-        n->next = n + 1;
-    }
-    n->next = 0;
-    freelist = node_tab;
-}
-
-void init_hash_tab(void)
+int update_entid_rtime(int *ids, int n, int rt)
 {
     int i;
+    int id;
 
-    for (i = 0; i < 80; i++) {
-        hash_tab[i] = 0;
+    for (i = 0; i < n; i++) {
+        id = ids[i * 2];
+        if (id >= 0 && id < 0x80) {
+            if (entid_tab[id].cnt > 0) {
+                entid_tab[id].rtime = rt;
+            }
+        }
     }
+    return 0;
 }

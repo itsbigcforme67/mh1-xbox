@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,12 +469,56 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void khmem_raw(mode)
-int mode;
+int bs_check(int pos, int end)
 {
     HCHAR *h;
+    CH *c;
+    BS *r;
+    BS *r2;
+    BS *b;
 
-    h = &hchar[cur_pos];
-    free_khmemlist(h->kh);
-    h->kh = raw_kouho(cur_pos, cur_len, mode);
+    h = &hchar[pos];
+    c = h->ch;
+    if (c != (CH *)-1 && c != 0) {
+        do {
+            r = make_bsmem(pos, end, c);
+            if (r == (BS *)-1) {
+                if (h->bs != 0) {
+                    free_bsmemlist(h->bs);
+                    h->bs = 0;
+                }
+                return 0;
+            }
+            if (r != 0) {
+                hchar_addbsmem(pos, r);
+            }
+            c = c->next;
+        } while (c != 0);
+    }
+    r2 = make_bsmem(pos, end, &null_chmem);
+    if (r2 == (BS *)-1) {
+        if (h->bs != 0) {
+            free_bsmemlist(h->bs);
+            h->bs = 0;
+        }
+        return 0;
+    }
+    if (r2 != 0) {
+        hchar_addbsmem(pos, r2);
+    }
+    if (h->bs == 0) {
+        if ((b = alloc_bsmem()) == 0) {
+            return -1;
+        }
+        b->len = muhenkan(pos, end);
+        b->x02 = 0x28;
+        b->x03 = 0;
+        b->pw = 0;
+        b->x08 = 0;
+        b->x0A = 0;
+        b->next = 0;
+        h->bs = b;
+        return 1;
+    }
+    return 1;
 }

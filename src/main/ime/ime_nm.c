@@ -1187,7 +1187,7 @@ u16 to_zenkaku_spec(int c)
     return 0;
 }
 
-int ext_jis(int c, int hi)
+int ext_jis(int c, u16 hi)
 {
     return ((c & 0xFF) | ((hi & 0x100) + 0x2400)) & 0xFFFF;
 }
@@ -1597,8 +1597,13 @@ u8 *next_wd(p, end)
 u8 *p;
 u8 *end;
 {
-    while (p < end && *p >= 0x39) {
-        p += 2;
+    if (p < end) {
+        do {
+            if ((int)(*p) <= 0x38) {
+                break;
+            }
+            p += 2;
+        } while (p < end);
     }
     return p;
 }
@@ -1755,7 +1760,7 @@ int tag;
     w[1] = rec[1];
     p = rec + 2;
     ((u8 *)w)[4] = 0;
-    if (rec[2] < 0xC) {
+    if (p[0] < 0xC) {
         p++;
     }
     getkbuf(p);
@@ -2215,11 +2220,17 @@ int dic_newlearn(WD *w, s64 *list, int n)
 
 int isnum(u8 *p)
 {
-    while (*p != 0) {
-        if (*p < 0x30 || *p >= 0x3A) {
-            return 0;
-        }
-        p++;
+    u8 v;
+
+    v = *p;
+    if (v != 0) {
+        do {
+            if (v < 0x30 || v >= 0x3A) {
+                return 0;
+            }
+            p++;
+            v = *p;
+        } while (v != 0);
     }
     return 1;
 }
@@ -3036,9 +3047,13 @@ int newwdlen(WD *w)
 {
     int extra;
 
-    if (w->x08 == 0 && w->x07 < 0x2D) {
+    if (w->x08 == 0) {
+        if (w->x07 >= 0x2D) {
+            goto three;
+        }
         extra = 2;
     } else {
+three:
         extra = 3;
     }
     return w->len + 3 + extra + setkbuflen(w->tango);
@@ -3825,6 +3840,7 @@ int bs_check(int pos, int end)
     HCHAR *h;
     CH *c;
     BS *r;
+    BS *r2;
     BS *b;
 
     h = &hchar[pos];
@@ -3845,20 +3861,19 @@ int bs_check(int pos, int end)
             c = c->next;
         } while (c != 0);
     }
-    r = make_bsmem(pos, end, &null_chmem);
-    if (r == (BS *)-1) {
+    r2 = make_bsmem(pos, end, &null_chmem);
+    if (r2 == (BS *)-1) {
         if (h->bs != 0) {
             free_bsmemlist(h->bs);
             h->bs = 0;
         }
         return 0;
     }
-    if (r != 0) {
-        hchar_addbsmem(pos, r);
+    if (r2 != 0) {
+        hchar_addbsmem(pos, r2);
     }
     if (h->bs == 0) {
-        b = alloc_bsmem();
-        if (b == 0) {
+        if ((b = alloc_bsmem()) == 0) {
             return -1;
         }
         b->len = muhenkan(pos, end);
@@ -4982,9 +4997,11 @@ int sstrtom(u16 *out, u8 *s, int kind)
     return out - start;
 }
 
-int to_ucode(int c)
+int to_ucode(int x)
 {
-    c = c & 0xFFFF;
+    int c;
+
+    c = x & 0xFFFF;
     if (c >= 0x21 && c < 0x7F) {
         return 0;
     }
@@ -4996,7 +5013,7 @@ int to_ucode(int c)
     case 0x2500:
         return 0;
     default:
-        return srch_ucode(c);
+        return srch_ucode(x);
     }
 }
 

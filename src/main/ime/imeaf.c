@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,17 +469,12 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int jiritu_makedisp(KH *k, u16 *buf)
+void khmem_raw(mode)
+int mode;
 {
-    int n;
+    HCHAR *h;
 
-    n = 0;
-    for (;;) {
-        n += sstrtom(buf + n, k->str, 6);
-        if (!(k->flag & 1)) {
-            break;
-        }
-        k = k->next;
-    }
-    return n;
+    h = &hchar[cur_pos];
+    free_khmemlist(h->kh);
+    h->kh = raw_kouho(cur_pos, cur_len, mode);
 }

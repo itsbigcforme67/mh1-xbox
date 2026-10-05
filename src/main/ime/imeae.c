@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,14 +469,27 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int kh_count(KH *k)
+void free_kouholists(KL *l)
 {
-    int n;
-
-    n = 0;
-    while (k != 0) {
-        k = kh_followed(k);
-        n++;
+    while (l != 0) {
+        free_mem(l->kh);
+        l = l->next;
     }
-    return n;
+}
+
+KH *null_kouho(int len)
+{
+    KH *k;
+
+    k = alloc_khmem();
+    if (k != 0) {
+        k->flag = 0x80;
+        k->str[0] = 0;
+        k->x06 = len;
+        k->x07 = 0;
+        k->pw = 0;
+        k->x0C = 0xFFFF;
+        k->next = 0;
+    }
+    return k;
 }

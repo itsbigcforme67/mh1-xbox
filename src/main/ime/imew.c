@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,7 +469,28 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-u8 *load_temp(int off)
+int hashfunc(u8 *key)
 {
-    return temp_pages[(s16)(off >> 12)] + (s16)(off & 0xFFF);
+    if (key[0] >= 0xA0 && key[0] < 0xF0) {
+        return key[0] - 0xA0;
+    }
+    return 0;
+}
+
+NODE *alloc_node(void)
+{
+    NODE *n;
+
+    if (freelist == 0) {
+        page_gc();
+    }
+    n = freelist;
+    freelist = n->next;
+    return n;
+}
+
+void free_node(NODE *n)
+{
+    n->next = freelist;
+    freelist = n;
 }

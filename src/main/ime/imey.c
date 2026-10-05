@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,73 +469,13 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void update_nowtmp(void)
+int write_temp(void)
 {
-    temp_updated = 1;
-}
-
-int setkbuflen(u8 *p)
-{
-    int n;
-
-    n = 0;
-    while (*p != 0) {
-        if (iskanji(*p) != 0) {
-            p += 2;
-        } else {
-            p += 1;
-        }
-        n += 2;
+    if (seek_dic(0x1400) == -1) {
+        return -1;
     }
-    return n;
-}
-
-void setkbuf(u8 *src, u8 *dst)
-{
-    while (*src != 0) {
-        if (iskanji(*src) != 0) {
-            *dst = *src;
-            src++;
-            dst++;
-        } else {
-            *dst = 0xFF;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
+    if (d_write(dic_fd, temp_pages, 0x2000) != 0x2000) {
+        return -1;
     }
-}
-
-int getkbuflen(u8 *p, u8 *end)
-{
-    int n;
-
-    n = 0;
-    while (p < end && *p >= 0x39) {
-        if (*p == 0xFF) {
-            n++;
-        } else {
-            n += 2;
-        }
-        p += 2;
-    }
-    return n;
-}
-
-void getkbuf(u8 *dst, u8 *src, u8 *end)
-{
-    while (src < end && *src >= 0x39) {
-        if (*src == 0xFF) {
-            src++;
-        } else {
-            *dst = *src;
-            src++;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
-    }
-    *dst = 0;
+    return 0;
 }

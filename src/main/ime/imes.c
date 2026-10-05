@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,61 +469,7 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-u8 *load_page(int id)
+int page_fix(int page, u8 *key)
 {
-    PAGE *p;
-    PAGE *prev;
-
-    prev = 0;
-    p = page_top;
-    for (;;) {
-        if (p->id == id) {
-            if (prev != 0) {
-                prev->next = p->next;
-                p->next = page_top;
-                page_top = p;
-            }
-            return p->data;
-        }
-        if (p->next == 0) {
-            break;
-        }
-        prev = p;
-        p = p->next;
-    }
-    prev->next = 0;
-    p->next = page_top;
-    page_top = p;
-    if (p->dirty == 1) {
-        write_page(p);
-    }
-    p->id = id;
-    p->dirty = 0;
-    read_page(p);
-    return p->data;
-}
-
-void update_nowpage(void)
-{
-    page_top->dirty = 1;
-}
-
-void flush_pages(void)
-{
-    PAGE *p;
-
-    for (p = page_top; p != 0; p = p->next) {
-        if (p->dirty == 1) {
-            write_page(p);
-        }
-    }
-}
-
-void init_entid_tab(void)
-{
-    int i;
-
-    for (i = 0; i < 128; i++) {
-        entid_tab[i].cnt = 0;
-    }
+    return key[prefix(mainindex + (page + 1) * 4, key, 4)] != 0;
 }

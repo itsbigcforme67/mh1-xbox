@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,15 +469,16 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int exist_synref(SYN *p, SYN *e)
+int dic_close(void)
 {
-    for (; p < e; p++) {
-        if (p->x00 == e->x00 && p->x01 == e->x01) {
-            if (p->x04 < e->x04) {
-                p->x04 = e->x04;
-            }
-            return 1;
-        }
+    if (dic_fd == -1) {
+        return -3;
     }
-    return 0;
+    flush_head();
+    flush_temp();
+    flush_pages();
+    if (close_dic() == -1) {
+        return -2;
+    }
+    return 3;
 }

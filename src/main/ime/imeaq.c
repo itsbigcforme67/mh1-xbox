@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,26 +469,31 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int api_dicopen(void)
+u16 kh_priority(BS *b, int v)
 {
-    if (lock_mode == 0) {
-        return -1;
+    v = v & 0xFFFF;
+    if (v != 0) {
+        return (v + 0x3E8) & 0xFFFF;
     }
-    if (dic_open(dic_name) == -7) {
-        return 1;
-    }
-    into_editing(0);
-    func_mode = 1;
-    return 0;
+    return b->x08;
 }
 
-int api_dicclose(void)
+int is_alphanum(int c)
 {
-    if (lock_mode == 0) {
-        return -1;
-    }
-    init_edit0();
-    dic_close();
-    func_mode = 0;
-    return 0;
+    return rmtype[c & 0xFF] & 0xC0;
+}
+
+int is_num(int c)
+{
+    return rmtype[c & 0xFF] & 0x80;
+}
+
+int is_alpha(int c)
+{
+    return rmtype[c & 0xFF] & 0x40;
+}
+
+int is_paren(int c)
+{
+    return rmtype[c & 0xFF] & 0x20;
 }

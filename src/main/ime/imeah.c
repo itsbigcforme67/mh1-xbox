@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,11 +469,31 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int is_kanji(int c)
+int kh_count(KH *k)
 {
-    c = c & 0xFF;
-    if (c < 0x81 || c >= 0xFD || (c >= 0xA0 && c < 0xE0)) {
-        return 0;
+    int n;
+
+    n = 0;
+    while (k != 0) {
+        k = kh_followed(k);
+        n++;
     }
-    return 1;
+    return n;
+}
+
+int kh_length(KH *k)
+{
+    int n;
+    int len;
+
+    if (k->flag == 0x80) {
+        return cur_len * 2;
+    }
+    n = (cur_len - k->x06) * 2;
+    while (k->flag & 1) {
+        len = strlen(k->str);
+        k = k->next;
+        n += len;
+    }
+    return n + strlen(k->str);
 }

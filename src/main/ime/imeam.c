@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,31 +469,100 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-u16 kh_priority(BS *b, int v)
+void init_univmem(void)
 {
-    v = v & 0xFFFF;
-    if (v != 0) {
-        return (v + 0x3E8) & 0xFFFF;
+    u8 *p;
+
+    free_univ = mem;
+    for (p = mem; p < mem + 0x11928; p += 0x18) {
+        *(u8 **)p = p + 0x18;
     }
-    return b->x08;
+    *(u8 **)p = 0;
+    first_init_5 = 0;
 }
 
-int is_alphanum(int c)
+void *alloc_mem(void)
 {
-    return rmtype[c & 0xFF] & 0xC0;
+    void *r;
+
+    r = free_univ;
+    if (r == 0) {
+        return 0;
+    }
+    free_univ = *(void **)r;
+    return r;
 }
 
-int is_num(int c)
+void free_mem(void *p)
 {
-    return rmtype[c & 0xFF] & 0x80;
+    if (p != 0) {
+        *(void **)p = free_univ;
+        free_univ = p;
+    }
 }
 
-int is_alpha(int c)
+CH *alloc_chmem(void)
 {
-    return rmtype[c & 0xFF] & 0x40;
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
 }
 
-int is_paren(int c)
+BS *alloc_bsmem(void)
 {
-    return rmtype[c & 0xFF] & 0x20;
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+PWM *alloc_pwmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+KH *alloc_khmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+KL *alloc_klmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+void free_pwmemlist(PWM *p)
+{
+    PWM *n;
+
+    while (p != 0) {
+        n = p->next;
+        free_mem(p);
+        p = n;
+    }
 }

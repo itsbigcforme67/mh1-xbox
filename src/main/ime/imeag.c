@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,26 +469,22 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int next_gun(int disp, int wrap)
+KH *kh_skip(KH *k)
 {
-    KH *old;
-    int n;
+    KH *r;
 
-    old = top_kh;
-    top_kh = take_kouho(old, gun_num);
-    n = inc_gun(top_kh);
-    if (n == 0) {
-        if (wrap == 0) {
-            top_kh = old;
-            return 0;
-        }
-        init_kouho(0, 0);
-    } else {
-        gun_num = n;
+    while (k->flag & 1) {
+        k = k->next;
     }
-    gun_nkh = 0;
-    if (disp == 1) {
-        disp_kouho();
+    r = k->next;
+    k->next = 0;
+    return r;
+}
+
+KH *kh_followed(KH *k)
+{
+    while (k->flag & 1) {
+        k = k->next;
     }
-    return 1;
+    return k->next;
 }

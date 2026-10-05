@@ -12,7 +12,7 @@ typedef struct BS BS;
 typedef struct KH KH;
 
 typedef struct PW {
-    u16 x00;
+    s16 x00;
     u8 x02;
     u8 x03;
     s32 x04;
@@ -22,7 +22,7 @@ typedef struct PW {
 struct KH {
     u8 flag;        /* 0x00 bit0 = continued, 0x80 = none */
     u8 str[5];      /* 0x01 */
-    s8 x06;
+    u8 x06;
     u8 x07;
     PW *pw;         /* 0x08 */
     u16 x0C;
@@ -469,8 +469,18 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int get_kouhostr(u8 *a, u8 *b)
+void bs_prefix(int pos)
 {
-    strcpy(a, select_subtostr(cur_pos, cur_len));
-    strcpy(b, select_subtostr(cur_pos + cur_len, kana_len - cur_pos - cur_len));
+    BS *b;
+    PW *pw;
+    HCHAR *h;
+
+    h = &hchar[pos];
+    for (b = h->bs; b != 0; b = b->next) {
+        b->x0A = 0;
+        pw = b->pw;
+        if (pw != 0 && pw->x02 == 0x19 && pw->x00 == 0) {
+            b->x0A = 0xA;
+        }
+    }
 }
