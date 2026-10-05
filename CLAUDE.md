@@ -29,9 +29,10 @@ render posed, textured monsters (docs/formats/, tools/clay_dump.py).
 PS2Recomp (static recompiler) is being tested as a stop-gap for code not yet
 decompiled (docs/STATUS.md).
 
-- Work is split between worker agents in git worktrees (../mh1-wt/A..D,
-  branches agent-A..D) and a coordinating session that merges into main.
-  Agents follow docs/agents/BRIEF.md and keep notes in docs/agents/.
+- Work is split between worker agents in git worktrees (../mh1-wt/A..F,
+  branches agent-A..F) and a coordinating session that merges into main.
+  Agents follow docs/agents/BRIEF.md and keep notes in docs/agents/; the
+  coordinating session follows docs/agents/COORDINATOR.md.
 - The owner's discs live in disc/ (gitignored): mh1 (base), mhg (PS2 G),
   mhg_wii (Wii MH G), mhp (PSP Portable), mhf (Frontier 1.0 installer).
 - The owner describes their reverse-engineering experience as "so-so" and

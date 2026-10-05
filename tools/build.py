@@ -123,6 +123,8 @@ def main():
     sources += glob.glob(os.path.join(ROOT, "src/**/*.s"), recursive=True)
     bins = glob.glob(os.path.join(ROOT, "assets/**/*.bin"), recursive=True)
     csrc = glob.glob(os.path.join(ROOT, "src/**/*.c"), recursive=True)
+    # src/pc is the native PC/Xbox platform layer (tools/build_pc.sh), not PS2 code
+    csrc = [c for c in csrc if "/src/pc/" not in c]
     with ThreadPoolExecutor(args.j) as pool:
         errors = [e for e in pool.map(compile_c, csrc) if e]
         errors += [e for e in pool.map(assemble, sources) if e]

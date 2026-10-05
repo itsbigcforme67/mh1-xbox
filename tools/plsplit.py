@@ -46,6 +46,7 @@ def main():
     dry = "--dry" in sys.argv
     out = subprocess.run(["python3", "tools/check.py", NM], capture_output=True, text=True).stdout
     ok = set(re.findall(r'^OK\s+(\w+)\s', out, re.M))
+    ok |= set(a for a in sys.argv[1:] if not a.startswith("--"))
     src = open(NM).read()
     lines, fl = parse_nm(src)
     have = {n: (k, e) for n, k, e in fl}

@@ -265,3 +265,28 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
     declare it as an initialised local (`EM_TAISEI_DATA *d = tbl[kind];`).
   - game_w+0x1E is read as a u16 frame counter here; the existing u8 x1E
     field (eft12) was left alone and read through `*(u16 *)&game_w.x1E`.
+
+## f_em (em_core_nm.c) - paused here
+- src/game/em/em_core_nm.c holds the whole f_em file (0x533A00-0x5395F0),
+  not registered yet. 52 of 53 functions written, 43 match (incl.
+  cmd_target_kind_set and target_kind_set, 2464/2288 bytes, jump tables
+  lit_1844/1845/1846_00685110, lit_2001-2003; em_type_act_set uses
+  lit_1223_00685080).
+- Near-matches: em_eye_search_set 9 off, senko_ck 32, smell_ck 57,
+  em_act_search 13, Em_Hate_Add 1, em_range_set 38, em_char_set 206,
+  em_hate_suu_set (u8 params kept raw, needs conflicting prototypes),
+  neck_ang_set just written (350 off, first draft).
+- Not written: em_neck_move_sub (0x534730, 1952 bytes; m2c draft via
+  `tools/draft.py game em_neck_move_sub`; fields neck_tgt/neck_ang/neck[4]/
+  neck_spd/neck_lock/neck_st and EM_NECK are already in place).
+- Next: write em_neck_move_sub, then split em_core_nm.c into matching runs
+  (em_core.c, em_core_b.c ...), register in config/c_files.txt (plus the
+  rodata jump tables), rebuild, commit. Then em_eye_dmg_act_set and
+  Em_Dmg_Sys in em_taisei_nm.c.
+- Lessons from this file: `switch (flag) { case 0: ... }` reproduces the
+  beqz/b-stub shape of `if (flag == 0)` tests (em_hungry_ck, case 1 of the
+  target functions); u16 action params must stay u16 down the chain
+  (em_act_set -> em_act_set_sub -> act_set) or andi masks appear; a cross-
+  case fallback is a `goto` to a label inside case 0 of the inner switch;
+  `- -b` gave the add.s operand order in xang_calc_*; `*nest++ == stg` in the
+  nest-stage loops; block-scoped VEC/FLMAT locals per case set the frame.

@@ -12,8 +12,8 @@ import re, sys, os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLH = os.path.join(ROOT, "include/pl.h")
 SIZES = {"u8": 1, "s8": 1, "char": 1, "u16": 2, "s16": 2, "u32": 4, "s32": 4, "f32": 4,
-         "void *": 4, "PLSW": 0x24}
-FIELD = re.compile(r'\s*(u8|s8|u16|s16|u32|s32|f32|char|PLSW|struct \w+ \*|void \*)\s*(\w+)(\[[^\]]*\])?;\s*(?:/\*\s*(0x[0-9A-Fa-f]+)\s*(.*?)\s*(\*/)?)?\s*$')
+         "void *": 4, "PLSW": 0x24, "PL_ITEM": 4}
+FIELD = re.compile(r'\s*(u8|s8|u16|s16|u32|s32|f32|char|PLSW|PL_ITEM|struct \w+ \*|void \*)\s*(\w+)(\[[^\]]*\])?;\s*(?:/\*\s*(0x[0-9A-Fa-f]+)\s*(.*?)\s*(\*/)?)?\s*$')
 
 PADS = {}
 
@@ -102,6 +102,23 @@ def main():
             if e[2] == n:
                 raise SystemExit("name exists: " + n)
         ents.append([off, t, n, arr, cm])
+        gen(head, tail, ents)
+    elif a[0] == "rm":
+        for o in a[1:]:
+            off = int(o, 0)
+            ents[:] = [e for e in ents if e[0] != off]
+        gen(head, tail, ents)
+    elif a[0] == "set":   # set OFF TYPE NAME [COMMENT]: replace the field at OFF
+        off = int(a[1], 0)
+        ents[:] = [e for e in ents if e[0] != off]
+        t = a[2]
+        arr = ""
+        if "[" in t:
+            t, arr = t.split("[", 1)
+            arr = "[" + arr
+        if t == "ptr":
+            t = "void *"
+        ents.append([off, t, a[3], arr, " ".join(a[4:])])
         gen(head, tail, ents)
     elif a[0] == "at":
         off = int(a[1], 0)
