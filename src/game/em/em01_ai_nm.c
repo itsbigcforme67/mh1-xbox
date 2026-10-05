@@ -181,6 +181,7 @@ void Em_hagi_point_set(EMW *, int);
 int Em_hagi_point_cnt_ck(EMW *);
 void cpRotMatrixYXZ2(s32 *, FLMAT *);
 void Eft13_set_em(EMW *, int, int);
+int Event_flag_ck(int);
 void em01_to_normal();
 void em01_to_fly();
 void em01_frame_reset();
@@ -5114,6 +5115,145 @@ static void em_demo00_00571750(EMW *em, EM01W *w) {
     case 11:
         if (em->x194 == 0) {
             em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+/* Demo: the monster arrives over the village/stage, lands and roars. */
+static void em_demo01_005720E0(EMW *em, EM01W *w) {
+    f32 d;
+
+    em->x9E1 = 5;
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05 = 2;
+        em->x3F4 = 0;
+        em->x388 = 2;
+        em->pos[0] = 0.0f;
+        em->pos[1] = 3500.0f;
+        em->pos[2] = 14500.0f;
+        em->tgt_pos[0] = 13000.0f;
+        em->tgt_pos[1] = 5700.0f;
+        em->tgt_pos[2] = 23000.0f;
+        em->ang[0] = 0;
+        em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+        em->ang[2] = 0;
+        em_char_set(em, 0xE, 0, 0);
+        em_rate_clear(em);
+        em->adj_z = 100.0f;
+        w->turn = 0x100;
+        w->spd[2] = 0;
+        em->work08 = 0x12C;
+        em->ex[0x90] = 0;
+        break;
+    case 1:
+    case 2:
+    case 3:
+        if (em->x194 == 0) {
+            if (em->char0 == 0x3F4) {
+                em_char_set(em, 0xE, 0, 0);
+            } else {
+                em_char_set(em, 0xC, 0, 0);
+            }
+        }
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        em01_senkai_sub(em, 0x1F, 1);
+        xang_calc_target(em, w->spd, 0.0f, 0.0f);
+        w->spd[1] = em->ang[1];
+        speed_add(em, w->spd);
+        d = CalcDistanceXZ(em->pos, em->tgt_pos);
+        if (--em->work08 <= 0 || d <= 1000.0f) {
+            em->x05++;
+            switch (em->x05) {
+            case 2:
+                em->work08 = 0x12C;
+                em->tgt_pos[0] = 13000.0f;
+                em->tgt_pos[1] = 5700.0f;
+                em->tgt_pos[2] = 23000.0f;
+                break;
+            case 3:
+                em->work08 = 0x12C;
+                em->tgt_pos[0] = 20800.0f;
+                em->tgt_pos[1] = 8000.0f;
+                em->tgt_pos[2] = 23000.0f;
+                break;
+            case 4:
+                em->ex[0x90] = 1;
+                em->pos[0] = 11800.0f;
+                em->pos[1] = 2000.0f;
+                em->pos[2] = 10330.0f;
+                em->ang[0] = 0;
+                em->ang[1] = 0xB000;
+                em->ang[2] = 0;
+                em_char_set(em, 0x5A, 0, 0);
+                em01_fly_adjy2_init(em, 9);
+                break;
+            }
+        }
+        break;
+    case 4:
+        if (em01_fly_adjy2(em) & 0xFF) {
+            em->x05++;
+            em_rate_clear(em);
+            em_char_set(em, 0xF, 0, 0);
+            em->adj_y = -10.0f;
+            em->tgt_pos[0] = 9550.0f;
+            em->tgt_pos[1] = 0.0f;
+            em->tgt_pos[2] = 9840.0f;
+            em->adj_z = CalcDistanceXZ(em->pos, em->tgt_pos) / 167.0f;
+        }
+        break;
+    case 5:
+        w->spd[1] = em->ang[1];
+        speed_add(em, w->spd);
+        if (!(630.0f + em->x5AC <= em->pos[1]) &&
+            (em_frame_check(em, 10.0f, 0) || em_frame_check(em, 86.0f, 0) || em_frame_check(em, 160.0f, 0))) {
+            em->x05++;
+            em_char_set(em, 0xB, 0, 0);
+            em->adj_y = (em->x5AC - em->pos[1]) / 30.0f;
+            if (!(em->adj_y < 0.0f)) {
+                em->adj_y = -10.0f;
+            }
+            em->work08 = 0x1E;
+        }
+        break;
+    case 6:
+        w->spd[0] = 0;
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (--em->work08 < 0) {
+            em->x05++;
+            em_char_set(em, 0x13, 0, 0);
+            em->pos[1] = em->x5AC;
+            em->ang[0] = 0;
+            em->ang[2] = 0;
+            em->x388 = 0;
+            Em_set_quake_sub(em, 1);
+        }
+        break;
+    case 7:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x36, 0, 0);
+        }
+        break;
+    case 8:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 1, 0, 0);
+        }
+        break;
+    case 9:
+        if (Event_flag_ck(0xD) == 1) {
+            em->x05++;
+            em->x9E1 = 0;
+            em->x40C = 0;
             em01_to_normal(em, 0, 0);
         }
         break;
