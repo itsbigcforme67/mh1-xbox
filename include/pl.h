@@ -32,11 +32,12 @@ typedef struct PL_HAND {
 typedef struct PLW {
     u8    be_flag;       /* 0x000 in use (set05_m) */
     u8    x01;           /* 0x001 (set05_m) */
-    u8 _pad002[0x2];
+    u8    kind;          /* 0x002 0/3/4 can guard (pl_guard_ck) */
+    u8 _pad003[0x1];
     s32   work04;        /* 0x004 */
     s32   work08;        /* 0x008 */
     u16   id;            /* 0x00C */
-    u8 _pad00E[0x2];
+    s16   ang_y;         /* 0x00E copy of ang[1] (Pl_damage_sub) */
     u8    x10;           /* 0x010 copied to shells (shell03_set) */
     u8 _pad011;
     u8    flag12;        /* 0x012 */
@@ -74,14 +75,18 @@ typedef struct PLW {
     s8    work2F8;       /* 0x2F8 */
     u8 _pad2F9[0x3];
     s16   work2FC;       /* 0x2FC */
-    u8 _pad2FE[0x360 - 0x2FE];
+    u8 _pad2FE[0x302 - 0x2FE];
+    s16   vital;         /* 0x302 hit points (Pl_damage_sub) */
+    u8 _pad304[0x360 - 0x304];
     u16   wpn_kind;      /* 0x360 gun type, row of D_3367B2 (shell06) */
     u16   wpn_ammo;      /* 0x362 loaded ammo; low nibble = Gun_Grow_Up_DATA row (shell06) */
     PLSW  sw;            /* 0x364 */
     u8    st;            /* 0x388 */
     u8 _pad389[0x1];
     s8    work38A;       /* 0x38A */
-    u8 _pad38B[0x4];
+    u8 _pad38B[0x2];
+    u8    dm_flag;       /* 0x38D set when hit this frame (Pl_damage_sub) */
+    u8 _pad38E[0x1];
     u8    sw_cfg;        /* 0x38F bit 0: swap buttons 0xC00 (get_sw) */
     s32   act_flag;      /* 0x390 */
     s32   work394;       /* 0x394 */
@@ -94,7 +99,11 @@ typedef struct PLW {
     u8 _pad3CC[0x4];
     s8    work3D0;       /* 0x3D0 */
     s8    work3D1;       /* 0x3D1 */
-    u8 _pad3D2[0x22];
+    u8 _pad3D2[0x3EC - 0x3D2];
+    u16   dm_ang;        /* 0x3EC direction the hit came from (Guard_dir_ck) */
+    u16   dm_pow;        /* 0x3EE hit strength (pl_guard_set, Pl_damage_sub) */
+    u16   dm_type;       /* 0x3F0 kind of hit, 10 = no knockback (Pl_damage_sub) */
+    u8 _pad3F2[0x2];
     s8    work3F4;       /* 0x3F4 */
     u8 _pad3F5[0x15];
     u8    x40A;          /* 0x40A shell00 hits count while set (cont_add) */
@@ -102,7 +111,7 @@ typedef struct PLW {
     s16   work40C;       /* 0x40C */
     u8 _pad40E[0x2E];
     s16   work43C;       /* 0x43C */
-    u8 _pad43E[0x2];
+    s16   x43E;          /* 0x43E stun ("piyo") gauge (Pl_damage_sub) */
     s8    work440;       /* 0x440 */
     u8 _pad441[0x95];
     s16   work4D6;       /* 0x4D6 */
@@ -129,7 +138,28 @@ typedef struct PLW {
     s16   work72C[4];    /* 0x72C */
     u8 _pad734[0x2];
     u8    stg;           /* 0x736 */
-    u8 _pad737[0x7D8 - 0x737];
+    u8 _pad737[0x1];
+    u8    x738;          /* 0x738 cleared on death (Pl_die_set) */
+    u8 _pad739[0x748 - 0x739];
+    s16   stamina;       /* 0x748 guarding needs 75 or more (pl_guard_ck); a guess */
+    u8 _pad74A[0x766 - 0x74A];
+    s16   dm_vital;      /* 0x766 damage to take (Pl_damage_sub) */
+    u8 _pad768[0x790 - 0x768];
+    s16   vital_red;     /* 0x790 red part of the life bar (Pl_damage_sub) */
+    u8 _pad792[0x7AA - 0x792];
+    s16   x7AA;          /* 0x7AA ailment gauges: x7AA/x7AC/x7AE sleep?, */
+    s16   x7AC;          /* 0x7AC  x7B2/x7B4, x7BA/x7BC poison, x7C4/x7C6 */
+    s16   x7AE;          /* 0x7AE  (Pl_damage_sub, Pl_die_set); names are guesses */
+    u8 _pad7B0[0x2];
+    s16   x7B2;          /* 0x7B2 */
+    s16   x7B4;          /* 0x7B4 */
+    u8 _pad7B6[0x4];
+    s16   x7BA;          /* 0x7BA */
+    s16   x7BC;          /* 0x7BC */
+    u8 _pad7BE[0x6];
+    s16   x7C4;          /* 0x7C4 */
+    s16   x7C6;          /* 0x7C6 */
+    u8 _pad7C8[0x7D8 - 0x7C8];
     f32   atk_rate;      /* 0x7D8 shot power (shell06_get_weaopn_data) */
     u8 _pad7DC[0x87C - 0x7DC];
     s16   work87C;       /* 0x87C */
