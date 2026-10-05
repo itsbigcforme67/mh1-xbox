@@ -11,7 +11,8 @@
 typedef struct CARDW {
     u8 rno;         /* 0x00 step (mc_r_no_set) */
     u8 sub;         /* 0x01 sub step */
-    u8 _pad02[2];
+    u8 x02;         /* 0x02 mode flag (Cmsv: 1 = save to a slot that may be used) */
+    u8 _pad03;
     s16 timer;      /* 0x04 */
     u8 _pad06[0x12];
     s32 port;       /* 0x18 selected memory card port / slot */
@@ -20,7 +21,7 @@ typedef struct CARDW {
     u8 csr_on;      /* 0x30 selection cursor shown */
     u8 sel;         /* 0x31 yes/no or slot selection */
     u8 btn_on;      /* 0x32 button icon shown */
-    u8 _pad33;
+    u8 x33;         /* 0x33 */
     s32 op;         /* 0x34 operation (McOperationSet) */
     s32 done;       /* 0x38 finished flag */
     u16 pad;        /* 0x3C pressed buttons */
@@ -39,6 +40,7 @@ extern CARDW card_w;
 extern u8 card_prim[];
 extern u8 system_w[];
 extern u8 edit_w[];
+extern u8 option_w[];
 extern u8 *data_load_ptr;
 extern u8 **McardMsgTbl[];
 extern int yn_tbl[2];
@@ -58,6 +60,9 @@ void Disp_button();
 void Sel_csr_disp();
 void DispFrameListA();
 void disp_savesel_waku();
+void disp_savesel_moji();
+void func_534650();
+void check_sum_set();
 void Quest_price_return();
 void *memset();
 int strlen_sp();
@@ -79,7 +84,7 @@ void PatchLoadinDNAS_Init();
 int PatchLoadinDNAS_Main();
 
 void trans_card_0();
-void mc_r_no_set();
+static void mc_r_no_set();
 int mc_yn_ck(struct CARDW *, int, s16, u8 *);
 int mc_sel_ck(struct CARDW *, s16, s16, u8 *, int);
 int mc_ok_ck(struct CARDW *, s16, s16, int);
@@ -114,7 +119,7 @@ s16 mc_mes_disp(int x, s16 y, int idx)
     return y - 0x12;
 }
 
-void mc_r_no_set(w, n)
+static void mc_r_no_set(w, n)
 CARDW *w;
 s8 n;
 {
@@ -518,6 +523,716 @@ CARDW *w;
         break;
     case 7:
         w->done = 1;
+        break;
+    }
+}
+
+void CardOptsv00(w)
+CARDW *w;
+{
+    mc_r_no_set(w, 1);
+    w->sel = 1;
+    w->port = 0;
+}
+
+void CardOptsv01(w)
+CARDW *w;
+{
+    switch (mc_yn_ck(w, 203, mc_mes_disp(221, 136, 9) + 0x24, &w->sel)) {
+    case 1:
+        mc_r_no_set(w, 12);
+        break;
+    case 0:
+        mc_r_no_set(w, 2);
+        w->sub = 0;
+        w->port = 0;
+        break;
+    }
+}
+
+void CardOptsv02(w)
+CARDW *w;
+{
+    mc_mes_disp(40, 352, 8);
+    switch (w->sub) {
+    case 0:
+        switch (mc_sel_ck(w, 221, 136, (u8 *)&w->port, 0)) {
+        case 0:
+        case 1:
+            w->sub++;
+            w->timer = 4;
+            break;
+        case 2:
+            mc_r_no_set(w, 1);
+            break;
+        }
+        break;
+    case 1:
+        ((int (*)())mc_sel_ck)(w, 221, 136, (u8 *)&w->port);
+        w->timer--;
+        if (w->timer <= 0) {
+            mc_r_no_set(w, 3);
+            w->timer = 30;
+            user_data_clr(0);
+            user_data_clr(1);
+            user_data_clr(2);
+            card_data_init(w);
+            McActSave0Set(w->port, data_load_ptr, 0);
+        }
+        break;
+    }
+}
+
+void CardOptsv03(w)
+CARDW *w;
+{
+    int r;
+
+    mc_mes_disp(40, 352, 10);
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    if (w->timer <= 0) {
+        r = McActResult();
+        w->res[w->port] = r;
+        switch (r) {
+        case 0:
+            mc_r_no_set(w, 6);
+            w->timer = 30;
+            McActNewClr();
+            McActLoadSet(w->port, data_load_ptr);
+            break;
+        case -1:
+            break;
+        case -253:
+            mc_r_no_set(w, 8);
+            break;
+        case -252:
+            mc_r_no_set(w, 11);
+            w->msg = 12;
+            break;
+        case -255:
+            mc_r_no_set(w, 11);
+            w->msg = 11;
+            break;
+        case -254:
+            mc_r_no_set(w, 4);
+            w->sel = 1;
+            McActNewClr();
+            McActCheckSet();
+            break;
+        default:
+            mc_r_no_set(w, 11);
+            w->msg = 20;
+            break;
+        }
+    }
+}
+
+void CardOptsv04(w)
+CARDW *w;
+{
+    s16 y;
+
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    y = mc_mes_disp(40, 352, 13);
+    if (mc_remove_ck(w->port) != 0) {
+        mc_r_no_set(w, 11);
+        w->msg = 38;
+        return;
+    }
+    switch (mc_yn_ck(w, 22, y + 0x12, &w->sel)) {
+    case 1:
+        mc_r_no_set(w, 2);
+        break;
+    case 0:
+        mc_r_no_set(w, 5);
+        w->timer = 30;
+        McActFormatSet(w->port);
+        break;
+    }
+}
+
+void CardOptsv05(w)
+CARDW *w;
+{
+    int r;
+
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    mc_mes_disp(40, 352, 14);
+    if (w->timer <= 0) {
+        r = McActResult();
+        w->res[w->port] = r;
+        switch (r) {
+        case 0:
+            mc_r_no_set(w, 8);
+            break;
+        case -1:
+            break;
+        case -256:
+        default:
+            mc_r_no_set(w, 11);
+            w->msg = 15;
+            break;
+        }
+    }
+}
+
+void CardOptsv06(w)
+CARDW *w;
+{
+    int r;
+
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    mc_mes_disp(40, 352, 10);
+    if (w->timer <= 0) {
+        r = McActResult();
+        w->res[w->port] = r;
+        switch (r) {
+        case 0:
+            if (decode_to_ck(w) != 0) {
+                mc_r_no_set(w, 11);
+                w->msg = 20;
+                return;
+            }
+            mc_r_no_set(w, 7);
+            w->sel = 1;
+            McActCheckSet();
+            return;
+        case -1:
+            break;
+        case -253:
+        case -252:
+        case -255:
+        default:
+            mc_r_no_set(w, 11);
+            w->msg = 20;
+            break;
+        }
+    }
+}
+
+void CardOptsv07(w)
+CARDW *w;
+{
+    s16 y;
+
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    y = mc_mes_disp(40, 352, 16);
+    if (mc_remove_ck(w->port) != 0) {
+        mc_r_no_set(w, 11);
+        w->msg = 38;
+        return;
+    }
+    switch (mc_yn_ck(w, 22, y + 0x12, &w->sel)) {
+    case 1:
+        mc_r_no_set(w, 2);
+        break;
+    case 0:
+        mc_r_no_set(w, 8);
+        save_data_sub(0, 14);
+        break;
+    }
+}
+
+void CardOptsv08(w)
+CARDW *w;
+{
+    mc_r_no_set(w, 9);
+    w->timer = 30;
+    save_data_sub(1, 31);
+    encode_data_002814E0(data_load_ptr);
+    McActSaveSet(w->port, data_load_ptr);
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    mc_mes_disp(40, 352, 17);
+}
+
+void CardOptsv09(w)
+CARDW *w;
+{
+    int r;
+
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    mc_mes_disp(40, 352, 17);
+    r = McActResult();
+    w->res[w->port] = r;
+    switch (r) {
+    case 0:
+        mc_r_no_set(w, 10);
+        se_req(7, 25, 0);
+        break;
+    case -1:
+        break;
+    case -253:
+    case -252:
+    case -255:
+    default:
+        mc_r_no_set(w, 11);
+        w->msg = 19;
+        break;
+    }
+}
+
+void CardOptsv10(w)
+CARDW *w;
+{
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    mc_mes_disp(40, 352, 18);
+    if (mc_ok_ck(w, 562, 388, 0) != 0) {
+        mc_r_no_set(w, 12);
+    }
+}
+
+void CardOptsv11(w)
+CARDW *w;
+{
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    mc_mes_disp(40, 352, w->msg);
+    if (mc_ok_ck(w, 562, 388, 1) != 0) {
+        mc_r_no_set(w, 2);
+    }
+}
+
+void CardOptsv(w)
+CARDW *w;
+{
+    switch (w->rno) {
+    case 0:
+        CardOptsv00(w);
+        break;
+    case 1:
+        CardOptsv01(w);
+        break;
+    case 2:
+        CardOptsv02(w);
+        break;
+    case 3:
+        CardOptsv03(w);
+        break;
+    case 4:
+        CardOptsv04(w);
+        break;
+    case 5:
+        CardOptsv05(w);
+        break;
+    case 6:
+        CardOptsv06(w);
+        break;
+    case 7:
+        CardOptsv07(w);
+        break;
+    case 8:
+        CardOptsv08(w);
+        break;
+    case 9:
+        CardOptsv09(w);
+        break;
+    case 10:
+        CardOptsv10(w);
+        break;
+    case 11:
+        CardOptsv11(w);
+        break;
+    case 12:
+        w->done = 1;
+        break;
+    }
+}
+
+void CardCmsv00(w)
+CARDW *w;
+{
+    mc_r_no_set(w, 2);
+    w->sel = 0;
+    w->port = 0;
+    w->x33 = 0;
+    user_data_clr(0);
+    user_data_clr(1);
+    user_data_clr(2);
+}
+
+void CardCmsv12(w)
+CARDW *w;
+{
+    switch (mc_yn_ck(w, 82, mc_mes_disp(40, 352, 44) + 0x12, &w->sel)) {
+    case 1:
+        mc_r_no_set(w, 14);
+        break;
+    case 0:
+        mc_r_no_set(w, 1);
+        break;
+    }
+}
+
+void CardCmsv01(w)
+CARDW *w;
+{
+    int t;
+
+    mc_mes_disp(40, 352, 8);
+    switch (w->sub) {
+    case 0:
+        switch (mc_sel_ck(w, 221, 136, (u8 *)&w->port, 0)) {
+        case 0:
+        case 1:
+            w->sub++;
+            w->timer = 4;
+            break;
+        case 2:
+            mc_r_no_set(w, 2);
+            w->sel = 0;
+            break;
+        }
+        break;
+    case 1:
+        mc_sel_ck(w, 221, 136, (u8 *)&w->port, 0);
+        t = w->timer - 1;
+        w->timer = t;
+        if ((s16)t <= 0) {
+            mc_r_no_set(w, 3);
+            w->timer = 30;
+            user_data_clr(0);
+            user_data_clr(1);
+            user_data_clr(2);
+            card_data_init(w);
+            McActSave0Set(w->port, data_load_ptr, 0);
+        }
+        break;
+    }
+}
+
+void CardCmsv02(w)
+CARDW *w;
+{
+    int r;
+
+    mc_mes_disp(40, 352, 10);
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    if (w->timer <= 0) {
+        r = McActResult();
+        w->res[w->port] = r;
+        switch (r) {
+        case 0:
+            mc_r_no_set(w, 4);
+            w->timer = 30;
+            McActNewClr();
+            McActLoadSet(w->port, data_load_ptr);
+            break;
+        case -1:
+            break;
+        case -253:
+        case -254:
+            mc_r_no_set(w, 5);
+            w->x02 = 0;
+            edit_w[1] = 0;
+            McActNewClr();
+            McActCheckSet();
+            break;
+        case -252:
+            mc_r_no_set(w, 12);
+            w->msg = 12;
+            break;
+        case -255:
+            mc_r_no_set(w, 12);
+            w->msg = 11;
+            break;
+        default:
+            mc_r_no_set(w, 12);
+            w->msg = 20;
+            break;
+        }
+    }
+}
+
+void CardCmsv03(w)
+CARDW *w;
+{
+    int r;
+
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    mc_mes_disp(40, 352, 28);
+    if (w->timer <= 0) {
+        r = McActResult();
+        w->res[w->port] = r;
+        switch (r) {
+        case 0:
+            if (decode_to_ck(w) != 0) {
+                mc_r_no_set(w, 12);
+                w->msg = 20;
+                return;
+            }
+            mc_r_no_set(w, 5);
+            w->x02 = 1;
+            w->sel = 1;
+            edit_w[1] = 0;
+            save_data_sub(0, 14);
+            McActCheckSet();
+            return;
+        case -1:
+            break;
+        case -255:
+            mc_r_no_set(w, 12);
+            w->msg = 11;
+            break;
+        case -253:
+        case -252:
+        default:
+            mc_r_no_set(w, 12);
+            w->msg = 20;
+            break;
+        }
+    }
+}
+
+void CardCmsv04(w)
+CARDW *w;
+{
+    if (w->pad & 0x2000) {
+        se_req(7, 22, 0);
+        edit_w[1]--;
+        if ((s8)edit_w[1] < 0) {
+            edit_w[1] = 2;
+        }
+    }
+    if (w->pad & 0x1000) {
+        se_req(7, 22, 0);
+        edit_w[1]++;
+        if (!(edit_w[1] < 3)) {
+            edit_w[1] = 0;
+        }
+    }
+    mc_mes_disp(40, 352, 42);
+    if (mc_remove_ck(w->port) != 0) {
+        mc_r_no_set(w, 12);
+        w->msg = 38;
+        return;
+    }
+    if (w->pad & 0x20) {
+        se_req(7, 19, 0);
+        mc_r_no_set(w, 6);
+        w->sel = 1;
+        if (w->x02 == 1) {
+            if (option_w[0x10 + edit_w[1] * 0x480] == 0) {
+                w->msg = 23;
+            } else {
+                w->msg = 22;
+            }
+        } else {
+            w->msg = 43;
+        }
+    } else if (w->pad & 0x40) {
+        se_req(7, 20, 0);
+        mc_r_no_set(w, 1);
+    }
+    w->frame[1] = 5;
+    disp_savesel_moji(edit_w, 0, 0);
+}
+
+void CardCmsv05(w)
+CARDW *w;
+{
+    s16 y;
+
+    y = mc_mes_disp(221, 136, w->msg);
+    mc_mes_disp(40, 352, 42);
+    if (mc_remove_ck(w->port) != 0) {
+        mc_r_no_set(w, 12);
+        w->msg = 38;
+        return;
+    }
+    switch (mc_yn_ck(w, 203, y + 0x24, &w->sel)) {
+    case 1:
+        mc_r_no_set(w, 5);
+        break;
+    case 0:
+        se_req(1, 115, 0);
+        switch (w->res[w->port]) {
+        case 0:
+        case -253:
+            mc_r_no_set(w, 9);
+            break;
+        case -254:
+            mc_r_no_set(w, 7);
+            w->sel = 1;
+            break;
+        default:
+            mc_r_no_set(w, 12);
+            w->msg = 19;
+            break;
+        }
+        break;
+    }
+}
+
+void CardCmsv06(w)
+CARDW *w;
+{
+    s16 y;
+
+    y = mc_mes_disp(40, 352, 13);
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    if (mc_remove_ck(w->port) != 0) {
+        mc_r_no_set(w, 12);
+        w->msg = 38;
+        return;
+    }
+    switch (mc_yn_ck(w, 22, y + 0x12, &w->sel)) {
+    case 1:
+        mc_r_no_set(w, 1);
+        break;
+    case 0:
+        mc_r_no_set(w, 8);
+        w->timer = 30;
+        McActFormatSet(w->port);
+        break;
+    }
+}
+
+void CardCmsv07(w)
+CARDW *w;
+{
+    int r;
+
+    mc_mes_disp(40, 352, 14);
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    if (w->timer <= 0) {
+        r = McActResult();
+        w->res[w->port] = r;
+        switch (r) {
+        case 0:
+            mc_r_no_set(w, 9);
+            break;
+        case -1:
+            break;
+        case -256:
+        default:
+            mc_r_no_set(w, 12);
+            w->msg = 15;
+            break;
+        }
+    }
+}
+
+void CardCmsv08(w)
+CARDW *w;
+{
+    mc_r_no_set(w, 10);
+    w->timer = 30;
+    func_534650(edit_w, edit_w[1]);
+    option_w[0xFCE] = edit_w[1];
+    save_data_sub(1, 31);
+    encode_data_002814E0(data_load_ptr);
+    McActNewClr();
+    McActSaveSet(w->port, data_load_ptr);
+    mc_mes_disp(40, 352, 17);
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+}
+
+void CardCmsv09(w)
+CARDW *w;
+{
+    int r;
+
+    mc_mes_disp(40, 352, 17);
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    r = McActResult();
+    w->res[w->port] = r;
+    switch (r) {
+    case 0:
+        mc_r_no_set(w, 11);
+        decode_to_ck(w);
+        check_sum_set(w);
+        w->x33 = 1;
+        se_req(7, 25, 0);
+        break;
+    case -1:
+        break;
+    case -253:
+    case -252:
+    case -255:
+    default:
+        mc_r_no_set(w, 12);
+        w->msg = 19;
+        break;
+    }
+}
+
+void CardCmsv10(w)
+CARDW *w;
+{
+    mc_mes_disp(40, 352, 24);
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    if (mc_ok_ck(w, 562, 388, 3) != 0) {
+        mc_r_no_set(w, 13);
+    }
+}
+
+void CardCmsv11(w)
+CARDW *w;
+{
+    mc_mes_disp(40, 352, w->msg);
+    mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+    if (mc_ok_ck(w, 562, 388, 1) != 0) {
+        mc_r_no_set(w, 1);
+    }
+}
+
+void CardCmsv(w)
+CARDW *w;
+{
+    switch (w->rno) {
+    case 0:
+        CardCmsv00(w);
+        break;
+    case 1:
+        CardCmsv12(w);
+        break;
+    case 2:
+        CardCmsv01(w);
+        w->frame[1] = 2;
+        break;
+    case 3:
+        CardCmsv02(w);
+        w->frame[1] = 2;
+        break;
+    case 4:
+        CardCmsv03(w);
+        w->frame[1] = 2;
+        break;
+    case 5:
+        CardCmsv04(w);
+        break;
+    case 6:
+        CardCmsv05(w);
+        w->frame[1] = 2;
+        break;
+    case 7:
+        CardCmsv06(w);
+        w->frame[1] = 2;
+        break;
+    case 8:
+        CardCmsv07(w);
+        w->frame[1] = 2;
+        break;
+    case 9:
+        CardCmsv08(w);
+        w->frame[1] = 2;
+        break;
+    case 10:
+        CardCmsv09(w);
+        w->frame[1] = 2;
+        break;
+    case 11:
+        CardCmsv10(w);
+        w->frame[1] = 2;
+        break;
+    case 12:
+        CardCmsv11(w);
+        w->frame[1] = 2;
+        break;
+    case 13:
+        w->done = 1;
+        break;
+    case 14:
+        w->done = 2;
         break;
     }
 }
