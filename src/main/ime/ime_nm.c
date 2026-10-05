@@ -7,12 +7,14 @@
 #include "types.h"
 
 typedef long long s64;
+typedef struct NODE NODE;
 
 typedef struct PW {
-    s32 x00;
-    u8 x04;
-    u8 x05;
-    s32 x08pad;
+    u16 x00;
+    u8 x02;
+    u8 x03;
+    s32 x04;
+    s64 id;         /* 0x08 dictionary word id */
 } PW;
 
 typedef struct KH {
@@ -34,15 +36,33 @@ typedef struct WD {
     u8 *tango;      /* 0x0C */
 } WD;
 
+/* bunsetu candidate (bsmem) */
+typedef struct BS BS;
+struct BS {
+    s16 len;        /* 0x00 */
+    u8 x02;
+    u8 x03;
+    PW *pw;         /* 0x04 */
+    s16 x08;
+    s16 x0A;
+    BS *next;       /* 0x0C */
+};
+
 /* 0x1C-byte edit character / bunsetu record, hchar[80] */
 typedef struct HCHAR {
     s32 x00;
-    s32 x04;
-    void *x08;      /* 0x08 */
+    void *ch;       /* 0x04 chmem list */
+    BS *bs;         /* 0x08 bsmem list */
     KH *kh;         /* 0x0C candidate list */
     s32 x10;
-    s32 x14;
-    s32 x18;
+    s8 x14;
+    s8 x15;         /* bunsetu length */
+    s8 x16;
+    s8 x17;
+    s8 x18;
+    s8 x19;
+    s8 x1A;
+    s8 x1B;
 } HCHAR;
 
 extern HCHAR hchar[80];
@@ -192,7 +212,7 @@ int prefix();
 int free_entid_tab();
 int chk_entry2();
 int delwd();
-extern int gaku_mode, suji_mode;
+extern int gaku_mode, suji_mode, henkan_mode, ikkatsu_mode;
 int strcpy();
 int d_open();
 int d_close();
@@ -216,6 +236,29 @@ void init_node_tab();
 void init_hash_tab();
 void page_gc();
 int hashfunc();
+void setkbuf();
+int setkbuflen();
+int iskanji();
+void clear_hchar();
+void free_hchar_one();
+void free_chmemlist();
+void free_bsmemlist();
+BS *alloc_bsmem();
+int bs_check();
+int ch_check();
+void fl_check();
+int bs_prefer();
+void bs_prefix();
+void unify_bsmem();
+void first_kouho();
+int concat_bslen();
+NODE **srch_node();
+NODE *alloc_node();
+void free_node();
+u8 *alloc_record();
+void clear_entid_tmp();
+void clear_entid_tmpall();
+s16 tmpoffset();
 
 typedef struct PAGE PAGE;
 struct PAGE {
@@ -233,7 +276,6 @@ typedef struct ENTID {
     s16 c;          /* 0x06 */
 } ENTID;
 
-typedef struct NODE NODE;
 struct NODE {
     u8 *rec;        /* 0x00 */
     NODE *next;     /* 0x04 */
@@ -421,37 +463,34 @@ u8 *select_subtostr(int arg0, int n)
 }
 
 /* learn the chosen candidate (pos, len unused) */
-void kh_learn(int pos, int len, KH *kh, void **list)
+void kh_learn(int pos, int len, KH *kh, BS *list)
 {
     s64 *out;
     PW *pw;
     s64 last;
     s64 first;
     int n;
-    void **node;
 
     pw = 0;
     if (kh->x0C == 0xFFFF || (pw = kh->pw) != 0) {
         out = wdsbuf;
-        if (list == 0 || list == (void **)-1) {
+        if (list == 0 || list == (BS *)-1) {
             if (pw != 0) {
-                wdsbuf[0] = *(s64 *)((u8 *)pw + 8);
+                wdsbuf[0] = pw->id;
                 out = wdsbuf + 1;
             }
         } else {
             first = 0;
             last = first;
             do {
-                node = *(void ***)((u8 *)list + 4);
-                if (node != 0) {
-                    s64 id = *(s64 *)((u8 *)node + 8);
-                    if (id != last && id != first) {
-                        *out = id;
-                        first = id;
+                if (list->pw != 0) {
+                    if (list->pw->id != last && list->pw->id != first) {
+                        *out = list->pw->id;
+                        first = list->pw->id;
                         out++;
                     }
                 }
-                list = *(void ***)((u8 *)list + 0xC);
+                list = list->next;
             } while (list != 0);
         }
         if (pw == 0) {
@@ -460,7 +499,7 @@ void kh_learn(int pos, int len, KH *kh, void **list)
             return;
         }
         n = out - wdsbuf;
-        dic_learn(*(s64 *)((u8 *)pw + 8), kh->x0C, wdsbuf, n);
+        dic_learn(pw->id, kh->x0C, wdsbuf, n);
     }
 }
 
@@ -474,8 +513,8 @@ void prev_learn(KH *kh)
         wd.len = strlen(prev_yomi);
         wd.x06 = 0;
         if (kh != 0 && (pw = kh->pw) != 0) {
-            wd.x07 = pw->x04;
-            wd.x08 = pw->x05;
+            wd.x07 = pw->x02;
+            wd.x08 = pw->x03;
         } else {
             wd.x08 = 0;
             wd.x07 = 0x28;
@@ -503,13 +542,13 @@ void wd_learn(int pos, int end)
             kh = take_kouho(h->kh, 0);
         }
         if (im_state != 3 && func_mode < 3) {
-            kh_learn(pos, len, kh, h->x08);
+            kh_learn(pos, len, kh, h->bs);
             pos += len;
             continue;
         }
-        if (((s8 *)h)[0x16] != 0 && ((s8 *)h)[0x16] != ((s8 *)h)[0x15]) {
+        if (h->x16 != 0 && h->x16 != h->x15) {
             add_prevwd(pos, len, kh, 1);
-            kh_learn(pos, len, kh, h->x08);
+            kh_learn(pos, len, kh, h->bs);
             pos += len;
             continue;
         }
@@ -519,7 +558,7 @@ void wd_learn(int pos, int end)
             clear_prevwd();
             pos += len;
         } else {
-            kh_learn(pos, len, kh, h->x08);
+            kh_learn(pos, len, kh, h->bs);
             pos += len;
         }
     }
@@ -2601,4 +2640,617 @@ NODE **srch_node(u8 *key, int len, NODE **found)
         return &hash_tab[h];
     }
     return &prev->next;
+}
+
+void page_gc(void)
+{
+    NODE *nd;
+    NODE **link;
+    u8 *p;
+    s16 klen;
+    u8 key[0x50];
+
+    *temp_top = 0;
+    temp_top++;
+    *temp_top = 0;
+    temp_page = (temp_page + 1) % 8;
+    temp_top = temp_pages[temp_page];
+    p = temp_top;
+    temp_end = p + 0x400;
+    while (ELEN(p) != 0) {
+        klen = p[2];
+        if (klen != 0) {
+            strncpy(key, p + 3, klen);
+            key[klen] = 0;
+            link = srch_node(key, klen, &nd);
+            if (nd->rec == p) {
+                *link = nd->next;
+                free_node(nd);
+            }
+        }
+        p += ELEN(p);
+    }
+    clear_entid_tmpall(temp_page);
+}
+
+s16 tmpoffset(u8 *p)
+{
+    int d;
+
+    d = p - temp_pages[0];
+    return ((d >> 10) << 12) | (d % 1024);
+}
+
+u8 *load_temp(int off)
+{
+    return temp_pages[(s16)(off >> 12)] + (s16)(off & 0xFFF);
+}
+
+int read_temp(void)
+{
+    NODE *nd;
+    NODE **link;
+    NODE *n;
+    u8 *pg;
+    u8 *p;
+    int i;
+    s16 klen;
+    u8 key[0x50];
+
+    if (seek_dic(0x1400) == -1) {
+        return -1;
+    }
+    if (d_read(dic_fd, temp_pages, 0x2000) != 0x2000) {
+        return -1;
+    }
+    pg = temp_pages[0];
+    for (i = 0; i < 8; i++) {
+        p = pg;
+        while (ELEN(p) != 0) {
+            klen = p[2];
+            if (klen != 0) {
+                strncpy(key, p + 3, klen);
+                key[klen] = 0;
+                link = srch_node(key, klen, &nd);
+                n = alloc_node();
+                n->rec = p;
+                n->next = nd;
+                *link = n;
+            }
+            p += ELEN(p);
+        }
+        if (temp_page == i) {
+            temp_top = p;
+            temp_end = pg + 0x400;
+        }
+        pg += 0x400;
+    }
+    return 0;
+}
+
+int write_temp(void)
+{
+    if (seek_dic(0x1400) == -1) {
+        return -1;
+    }
+    return -(d_write(dic_fd, temp_pages, 0x2000) != 0x2000);
+}
+
+int newwdlen(WD *w)
+{
+    int extra;
+
+    if (w->x08 == 0 && w->x07 < 0x2D) {
+        extra = 2;
+    } else {
+        extra = 3;
+    }
+    return w->len + 3 + extra + setkbuflen(w->tango);
+}
+
+int updwdlen(WD *w)
+{
+    int extra;
+
+    if (w->x08 != 0 || w->x07 >= 0x2D) {
+        extra = 3;
+    } else {
+        extra = 2;
+    }
+    return extra + setkbuflen(w->tango);
+}
+
+void set_record(u8 *r, int len, WD *w, int rt)
+{
+    u8 *p;
+    u8 *q;
+
+    r[0] = len % 256;
+    r[1] = len / 256;
+    r[2] = w->len;
+    p = r + 3;
+    strncpy(p, w->yomi, w->len);
+    q = p + w->len;
+    q[0] = w->x07;
+    q[1] = rt;
+    p = q + 2;
+    if (w->x08 != 0 || w->x07 >= 0x2D) {
+        q[2] = w->x08;
+        p++;
+    }
+    setkbuf(w->tango, p);
+}
+
+void upd_record(u8 *r, int add, WD *w, int rt)
+{
+    int old;
+    int total;
+    u8 *q;
+
+    old = ELEN(r);
+    total = add + old;
+    r[0] = total % 256;
+    r[1] = total / 256;
+    q = r + old;
+    q[0] = w->x07;
+    q[1] = rt;
+    if (w->x08 != 0 || w->x07 >= 0x2D) {
+        q[2] = w->x08;
+    }
+    setkbuf(w->tango, q + 2 + ((w->x08 != 0 || w->x07 >= 0x2D) ? 1 : 0));
+}
+
+int tmp_touroku(u8 *key, WD *w, int rt)
+{
+    NODE *nd;
+    NODE **link;
+    NODE *n;
+    u8 *rec;
+    int need;
+    int len;
+
+    temp_updated = 1;
+    link = srch_node(key, w->len, &nd);
+    len = w->len;
+    rec = nd->rec;
+    if (rec[2] == len && ask_strncmp(key, rec + 3, len) == 0) {
+        rec[2] = 0;
+        *link = nd->next;
+        clear_entid_tmp(tmpoffset(nd->rec));
+        free_node(nd);
+    }
+    n = alloc_node();
+    need = newwdlen(w);
+    rec = alloc_record(need);
+    set_record(rec, need, w, rt);
+    link = srch_node(key, w->len, &nd);
+    n->rec = rec;
+    n->next = nd;
+    *link = n;
+    return 0;
+}
+
+int tmp_snssyn(u8 *key, int len0, SRCH *r)
+{
+    s16 len;
+    NODE *n;
+    u8 *e;
+    u8 *hit;
+    s16 best;
+    s16 maxp;
+    s16 klen;
+    s16 pre;
+    int c;
+
+    hit = 0;
+    maxp = 0;
+    best = 0;
+    len = len0;
+    r->x06 = 0;
+    r->x04 = 0;
+    n = hash_tab[hashfunc(key)];
+    while (n != 0) {
+        e = n->rec;
+        klen = e[2];
+        pre = prefix(e + 3, key, klen);
+        if (pre >= maxp) {
+            maxp = pre + 1;
+        }
+        c = ask_strncmp(e + 3, key, klen);
+        if (c == 0) {
+            best = klen;
+            if (best == len) {
+                return 2;
+            }
+            hit = e;
+        } else if (c > 0) {
+            if (ask_strncmp(e + 3, key, len) == 0) {
+                return 2;
+            }
+            break;
+        }
+        n = n->next;
+    }
+    if (best == 0) {
+        r->off = -1;
+        return 0;
+    }
+    r->page = 0;
+    r->off = tmpoffset(hit);
+    r->x04 = best;
+    r->x06 = maxp;
+    r->ent = hit;
+    return 1;
+}
+
+int tmp_getsyn(u8 *key, int len, SRCH *r)
+{
+    NODE *n;
+    u8 *e;
+    s16 klen;
+    int c;
+
+    e = 0;
+    n = hash_tab[hashfunc(key)];
+    while (n != 0) {
+        e = n->rec;
+        klen = e[2];
+        c = ask_strncmp(e + 3, key, klen);
+        if (c == 0) {
+            if (klen == (s16)len) {
+                break;
+            }
+        } else if (c > 0) {
+            r->off = -1;
+            return 0;
+        }
+        n = n->next;
+    }
+    if (n == 0) {
+        r->off = -1;
+        return 0;
+    }
+    r->page = 0;
+    r->off = tmpoffset(e);
+    r->ent = e;
+    return 1;
+}
+
+void shift_temp(int off)
+{
+    NODE *nd;
+    u8 key[0x50];
+    u8 *src;
+    u8 *dst;
+    u8 *old;
+    int len;
+    s16 pg;
+    s16 klen;
+
+    pg = off >> 12;
+    if (temp_page != pg) {
+        old = load_temp(temp_page);
+        src = old;
+        len = ELEN(old);
+        dst = alloc_record(len);
+        if (pg != temp_page) {
+            klen = src[2];
+            strncpy(key, src + 3, klen);
+            key[klen] = 0;
+            srch_node(key, klen, &nd);
+            if (nd->rec == src) {
+                nd->rec = dst;
+                len--;
+                while (len-- != 0) {
+                    *dst++ = *src++;
+                }
+                old[2] = 0;
+                clear_entid_tmp(off);
+            }
+        }
+    }
+}
+
+void update_nowtmp(void)
+{
+    temp_updated = 1;
+}
+
+int setkbuflen(u8 *p)
+{
+    int n;
+
+    n = 0;
+    while (*p != 0) {
+        if (iskanji(*p) != 0) {
+            p += 2;
+        } else {
+            p += 1;
+        }
+        n += 2;
+    }
+    return n;
+}
+
+void setkbuf(u8 *src, u8 *dst)
+{
+    while (*src != 0) {
+        if (iskanji(*src) != 0) {
+            *dst = *src;
+            src++;
+            dst++;
+        } else {
+            *dst = 0xFF;
+            dst++;
+        }
+        *dst = *src;
+        src++;
+        dst++;
+    }
+}
+
+int getkbuflen(u8 *p, u8 *end)
+{
+    int n;
+
+    n = 0;
+    while (p < end && *p >= 0x39) {
+        if (*p == 0xFF) {
+            n++;
+        } else {
+            n += 2;
+        }
+        p += 2;
+    }
+    return n;
+}
+
+void getkbuf(u8 *dst, u8 *src, u8 *end)
+{
+    while (src < end && *src >= 0x39) {
+        if (*src == 0xFF) {
+            src++;
+        } else {
+            *dst = *src;
+            src++;
+            dst++;
+        }
+        *dst = *src;
+        src++;
+        dst++;
+    }
+    *dst = 0;
+}
+
+int iskanji(int c)
+{
+    c = c & 0xFF;
+    if (c >= 0x80 && c < 0xA0) {
+        return 1;
+    }
+    if (c >= 0xE0 && c < 0xFD) {
+        return 1;
+    }
+    return 0;
+}
+
+void init_hchar(void)
+{
+    HCHAR *h;
+
+    for (h = hchar; (u8 *)h < (u8 *)wdsbuf; h++) {
+        clear_hchar(h);
+    }
+}
+
+void clear_hchar(HCHAR *h)
+{
+    h->x00 = -1;
+    h->ch = 0;
+    h->bs = 0;
+    h->kh = 0;
+    h->x10 = 0;
+    h->x14 = 0;
+    h->x15 = 0;
+    h->x16 = 0;
+    h->x17 = -1;
+    h->x18 = -1;
+    h->x19 = -1;
+}
+
+void free_hchar(int from, int to, int keep)
+{
+    HCHAR *h;
+    HCHAR *end;
+
+    end = hchar + to;
+    for (h = hchar + from; h < end; h++) {
+        free_hchar_one(h, keep);
+    }
+}
+
+void free_hchar_one(HCHAR *h, int keep)
+{
+    if (keep == 0) {
+        h->x00 = -1;
+        h->x18 = -1;
+        if (h->ch != (void *)-1) {
+            free_chmemlist(h->ch);
+        }
+        h->ch = 0;
+        h->x17 = -1;
+        h->x19 = -1;
+        h->x16 = 0;
+    }
+    if (h->bs != 0 && h->bs != (BS *)-1) {
+        free_bsmemlist(h->bs);
+    }
+    h->bs = 0;
+    if (h->kh != 0) {
+        free_khmemlist(h->kh);
+    }
+    h->kh = 0;
+    h->x10 = 0;
+    h->x14 = 0;
+    h->x15 = 0;
+}
+
+void henkan(int start, int end, int mode, int pref)
+{
+    int pos;
+    int p;
+    int total;
+    int a;
+    int len;
+    int top;
+    HCHAR *h;
+    HCHAR *hs;
+    BS *b;
+    s8 sel;
+    s8 cur;
+
+    henkan_mode = mode;
+    fl_check();
+    if (henkan_mode != 3 || ikkatsu_mode != 0) {
+        pos = start;
+        if (start < end) {
+            top = start + pref;
+            while (pos < end) {
+                h = &hchar[pos];
+                if (h->x15 > 0) {
+                    pos += h->x15;
+                    continue;
+                }
+                if (h->ch == 0 && ch_check(pos, end) == 0) {
+                    break;
+                }
+                if (h->bs == 0 && bs_check(pos, end) == 0) {
+                    break;
+                }
+                for (b = h->bs; b != 0; b = b->next) {
+                    p = pos + b->len;
+                    if (p >= end) {
+                        if (henkan_mode >= 3) {
+                            if (b->x02 == 0xFF) {
+                                henkan_mode = 0;
+                            }
+                        }
+                        continue;
+                    }
+                    if (hchar[p].ch == 0 && ch_check(p, end) == 0) {
+                        break;
+                    }
+                    if (hchar[p].bs == 0 && bs_check(p, end) == 0) {
+                        break;
+                    }
+                }
+                if (pos == start) {
+                    if (henkan_mode == 1) {
+                        bs_prefer(pos, end, pref);
+                        sel = pref;
+                        hchar[start].x14 = 1;
+                    } else if (henkan_mode == 2) {
+                        hchar[start].x14 = 1;
+                        sel = pref;
+                    } else {
+                        goto prefer;
+                    }
+                } else {
+                    if (pos == top && henkan_mode == 2) {
+                        bs_prefix(pos);
+                    }
+prefer:
+                    sel = bs_prefer(pos, end, -1);
+                    if (sel == -1) {
+                        break;
+                    }
+                }
+                unify_bsmem(pos, sel);
+                first_kouho(pos, sel);
+                h->x15 = sel;
+                pos += sel;
+            }
+        }
+        pos = start;
+        while (pos < end) {
+            hs = &hchar[pos];
+            h = hs;
+            cur = hs->x15;
+            if (hs->x14 != 0) {
+                len = cur;
+            } else {
+                len = concat_bslen(pos, end);
+                if (len < 0) {
+                    break;
+                }
+                if (len == 0) {
+                    len = cur;
+                }
+                if (len == cur) {
+                    hs->x14 = 1;
+                } else {
+                    while (cur < len) {
+                        if (h->bs != (BS *)-1) {
+                            free_bsmemlist(h->bs);
+                        }
+                        h->bs = 0;
+                        h->x15 = 0;
+                        free_khmemlist(h->kh);
+                        h->kh = 0;
+                        h = &hchar[pos + cur];
+                        cur += h->x15;
+                    }
+                    if (h->bs != (BS *)-1) {
+                        free_bsmemlist(h->bs);
+                    }
+                    h->bs = 0;
+                    h->x15 = 0;
+                    free_khmemlist(h->kh);
+                    h->kh = 0;
+                    hs->x15 = len;
+                    b = alloc_bsmem();
+                    if (b != 0) {
+                        b->len = len;
+                        b->x02 = 0x28;
+                        b->x03 = 0;
+                        b->pw = 0;
+                        b->x08 = 0;
+                        b->x0A = 0;
+                        b->next = 0;
+                        hs->bs = b;
+                        hs->x14 = 1;
+                        first_kouho(pos, len);
+                    }
+                }
+            }
+            pos += len;
+        }
+    }
+}
+
+int concat_bslen(int pos, int end)
+{
+    int n;
+    s8 c;
+    HCHAR *h;
+
+    c = 0;
+    n = 0;
+    h = &hchar[pos];
+    while (pos < end) {
+        c = h->x15;
+        if (c == 0) {
+            return -1;
+        }
+        if (h->bs != 0 && h->bs != (BS *)-1 && h->bs->x02 != 0x28) {
+            break;
+        }
+        pos += c;
+        n += c;
+        h += c;
+    }
+    if (n == 0 || pos >= end) {
+        return n;
+    }
+    return n + c;
 }
