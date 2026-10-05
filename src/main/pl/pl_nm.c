@@ -1820,10 +1820,11 @@ void pl_move_sub(PLW *pl) {
 
 
 s32 pl_flag_ck(PLW *pl, int f) {
-    if (!(f & 0x80000000)) {
+    if ((f & 0x80000000) == 0) {
         return pl->act_flag & f;
+    } else {
+        return pl->work394 & (f & 0x7FFFFFFF);
     }
-    return pl->work394 & (f & 0x7FFFFFFF);
 }
 
 
@@ -2396,21 +2397,33 @@ void clr_used_heap(int, int);
 
 s32 Pl_scope_ck(PLW *pl) {
     if (pl->work35F != 7) {
-        return 0;
+        if (pl) { /* permuter no-op: gives the original's extra branch stub */
+            return 0;
+        } else {
+            return 0;
+        }
     }
     return (pl->wpn_ammo & 0x40) != 0;
 }
 
 s32 Pl_silencer_ck(PLW *pl) {
     if (pl->work35F != 7) {
-        return 0;
+        if (pl) { /* permuter no-op: gives the original's extra branch stub */
+            return 0;
+        } else {
+            return 0;
+        }
     }
     return (pl->wpn_ammo & 0x10) != 0;
 }
 
 s32 Pl_barrel_ck(PLW *pl) {
     if (pl->work35F != 7) {
-        return 0;
+        if (pl) { /* permuter no-op: gives the original's extra branch stub */
+            return 0;
+        } else {
+            return 0;
+        }
     }
     return (pl->wpn_ammo & 0x20) != 0;
 }

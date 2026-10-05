@@ -242,7 +242,7 @@ main 0x00119010 0x00119210 hit/shit6
 main 0x0011B1E0 0x0011B298 hit/shit16
 main 0x0011C9F0 0x0011CA74 hit/shit7
 main 0x0028CE00 0x00290560 hit/hit2all
-main 0x00290560 0x002905E8 hit/hit3
+main 0x00290560 0x002907B4 hit/hit3
 main 0x0010FC70 0x00110C30 game/f_game
 main:rodata 0x003580E0 0x0035815C game/f_game
 main 0x00110C30 0x00110F08 game/f_gameb
@@ -710,7 +710,7 @@ game:rodata 0x00685AE0 0x00685B0C em/em_cmd_r21
 game:rodata 0x00685B10 0x00685B30 em/em_cmd_r24
 game 0x0055F460 0x0055F59C em/em_cmd_r35
 main 0x00155000 0x00155138 set/setwork
-main 0x00155240 0x001554D8 set/setwork2
+main 0x00155140 0x001554D8 set/setwork2
 main 0x00158F20 0x00159378 pl/shell_work
 main 0x001593C0 0x00159408 pl/shell_work2
 main 0x00192E30 0x00192E38 fl/pv01
@@ -1338,3 +1338,7 @@ main 0x0028CC40 0x0028CE00 hit/hitpk01
 main 0x00290E50 0x00290E7C reward/rwkey01
 main 0x00293370 0x00293418 reward/rwkey02
 main 0x0014E0C0 0x0014E2C4 plsel/plsel00
+main 0x00154D00 0x00154D90 pl/pl_ammo
+main 0x0011F9E0 0x0011FA24 sys/ior01
+main 0x00163D20 0x00163E3C weapon/wtrans01
+main 0x0014EF60 0x0014EF94 pl/pl_flagck
