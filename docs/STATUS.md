@@ -635,3 +635,14 @@ row plus silencer/long-barrel rows. Matching notes:
   parameter to an s16 prototype (shell06_set). Load order of three struct
   fields picked the float registers in shell06_init_sub (spd, spread, drop).
   Still to do: shell06_move_sub, shell06_hit, shell06_trans_sub.
+- shell06_hit and shell06_trans_sub match and now head shell06b.c
+  (0x62BDA0-0x62D4C4; its rodata slot 0x68A060-0x68A0D0 spans a 4-byte gap
+  between jump tables and still builds identically). shell06_move_sub is
+  one branch off (a compare-chain `beq` to the next instruction that my
+  switch drops); full near-match in shell06_nm.c, permuter running.
+  Lessons: `x > 0xFF` / `x > 2` / `a > b` (not `>=`/`<`) give the `slti at`
+  forms; Shell09_set_pl2's stg is `u8` (fixes argument load order).
+- get_joint_wmat's joint parameter is `s16`: with that prototype the
+  owner/joint load order comes out right. This fixed eft18_m00 (was 2 off),
+  which is now in eft18.c (0x551830-0x552CF8, rodata to 0x6857EC).
+  Verified: check.py OK and `tools/rebuild.sh game` = game OK.

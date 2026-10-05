@@ -5,9 +5,9 @@
  * tumble and fall until they hit the ground (GetGroundHit). Placed at a
  * player joint (Eft18_set, Eft18_set4), a point (Eft18_set2, Eft18_set5)
  * or a shell (Eft18_set3).
- * Near-match for the whole file: eft18_m00 is 2 instructions off (the
- * owner and joint loads for get_joint_wmat come out in the other order)
- * and eft18_set_com 7 (the original leaves one delay slot empty). */
+ * Near-match for the whole file: eft18_set_com is 7 instructions off (the
+ * original leaves one delay slot empty). eft18_m00 matches once
+ * get_joint_wmat is declared with an s16 joint (it now lives in eft18.c). */
 #include "eft.h"
 #include "pl.h"
 #include "shell.h"
@@ -80,7 +80,7 @@ extern void *fade_type8_data[];
 u32 ran_suu(int);
 u8 Pl_stg_ck(PLW *);
 void release_prim(s16);
-FLMAT *get_joint_wmat(PLW *, int);
+FLMAT *get_joint_wmat(PLW *, s16);
 void flvecCopy(f32 *, f32 *);
 void flvecRotX(f32 *, f32);
 void flvecRotY(f32 *, f32);

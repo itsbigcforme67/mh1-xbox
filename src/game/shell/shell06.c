@@ -7,17 +7,51 @@
 #include "shell06.h"
 #include "game.h"
 #include "fl.h"
+#include "clay.h"
+
+typedef struct MDLW {
+    u8 flag;            /* 0x00 */
+    u8 _pad01[0x0F];
+    void *mat;          /* 0x10 material table */
+    u8 _pad14[0x1C];
+    CLAY *clay;         /* 0x30 */
+} MDLW;
+
 
 extern s32 shell06_flag_tbl[];
 extern s32 shell06_body_tbl[];
 extern u8 shell06_tbl[4];
+extern u16 sleeve_param_tbl0[3];
+extern MDLW *eft_mdlw[5];
+extern u32 col_type_tbl[];
+extern SH06SPLIT split_param_tbl[];
+
+#define ANG2DEG(a) (360.0f * (f32)(a) / 65536.0f)
+#define DEG2RAD(d) (2.0f * (3.1415927f * ((d) / 360.0f)))
 
 int PachingerCamChk(void);
+void flvecApplyMat33(f32 *, f32 *, FLMAT *);
+void flvecApplyMat33_2(f32 *, FLMAT *);
+void flvecNormalize(f32 *);
+f32 flvecInnerProduct(f32 *, f32 *);
+void AddVector(f32 *, f32 *, f32 *);
+void ScaleVector(f32 *, f32 *, f32);
+void flmatInvert(FLMAT *, FLMAT *);
+void flmatRotX33(FLMAT *, f32);
+void flmatRotZ33(FLMAT *, f32);
+void Material_set_sub(void *, CLAY *);
+f32 GetGroundShellHit(VEC3 *);
+void shell_rate_add(SHLW *);
+void shell_rate_add_g(SHLW *);
+void eft14_set(f32 *pos, s16 arg, f32 scale);
+void eft12_set_sh(SHLW *, int, int);
+void Shell09_set_pl2(PLW *pl, f32 *pos, int arg, u8 stg);
+void Eft18_set3(SHLW *sh, s16 arg, int x07);
 void Eft18_set(PLW *pl, s16 joint, s16 arg);
 void Eft18_set4(PLW *pl, s16 joint, s16 arg, int x07);
 void shell06_set_sub(PLW *pl, u8 arg, int joint);
 void pl_atck_data_set_shl(SHLW *, void *, int, u8 *);
-FLMAT *get_joint_wmat(PLW *, int);
+FLMAT *get_joint_wmat(PLW *, s16);
 void flmatCopy(FLMAT *, FLMAT *);
 void flmatGetTrans(f32 *, FLMAT *);
 f32 flSqrt(f32);
@@ -99,11 +133,6 @@ void shell06_set_sub(PLW *pl, u8 arg, int joint) {
     }
 }
 
-typedef struct SH06SPLIT {
-    u8 arg;
-    u8 _pad01;
-    s16 num;
-} SH06SPLIT;
 
 void shell06_set_split(SHLW *sh, SH06SPLIT *sp) {
     SHLW *nw;
