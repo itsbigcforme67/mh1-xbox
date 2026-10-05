@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -493,4 +493,33 @@ int can_handaku(int c)
         return 0;
     }
     return (rmtype[buf[0]] & 0xF) == 0xB;
+}
+
+int srch_ucode(int code)
+{
+    u8 *p;
+
+    for (p = btoudata; p < btoudata + 180; p += 4) {
+        if (*(u16 *)p == (u16)code) {
+            return p[2];
+        }
+        if (*(u16 *)p > (u16)code) {
+            break;
+        }
+    }
+    return 0;
+}
+
+int getbit(s16 n)
+{
+    return bitpool[n >> 3] & power[n & 7];
+}
+
+int g2jodo(int c)
+{
+    c = c & 0xFF;
+    if (c > 0 && c < 0xE) {
+        return (c + 0x7F) & 0xFF;
+    }
+    return 0;
 }

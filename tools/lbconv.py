@@ -24,4 +24,40 @@ t = t.replace('M2C_UNK', 'int').replace('s64', 'long long')
 # prototypes with /* extern */: K&R
 t = re.sub(r'^(\S[^\n(]*?\b(\w+))\((.*)\);\s*/\* extern \*/', lambda m: re.sub(r'^s32|^s16|^s8|^u\d+|^long long|^int', 'int', m.group(1).split()[0]) + ' ' + m.group(2) + '();' if False else m.group(1) + '();', t, flags=re.M)
 t = re.sub(r'^extern int (\w+);', r'extern u8 \1[];', t, flags=re.M)
+
+# gp-relative globals of main.bin (lobby gp = 0x38EB70): name them from config/symbols/main.txt
+GP = 0x38EB70
+_msyms = {}
+for _l in open(os.path.join(ROOT, 'config/symbols/main.txt')):
+    _m = re.match(r'(\w+) = 0x([0-9A-F]+); // (?:type:\w+ )?size:0x([0-9A-F]+)', _l)
+    if _m:
+        _msyms[int(_m.group(2), 16)] = (_m.group(1), int(_m.group(3), 16))
+_ext = {}
+def _gpsub(m):
+    ty = m.group(1).strip()
+    off = int(m.group(2), 16) if m.group(2).lower().startswith(('0x', '-0x')) or True else 0
+    addr = GP + off
+    for a in (addr, ):
+        if a in _msyms:
+            nm = _msyms[a][0]
+            base = ty[:-1].strip() if ty.endswith('*') else ty
+            _ext[nm] = base
+            return nm
+    return m.group(0)
+_out = open('/dev/stdin') if False else None
+
+def _gpsub2(m):
+    ty = m.group(1).strip()
+    off = int(m.group(2), 16)
+    addr = GP + off
+    if addr in _msyms:
+        nm = _msyms[addr][0]
+        base = ty[:-1].strip() if ty.endswith('*') else ty
+        _ext[nm] = base
+        return nm
+    return m.group(0)
+t = re.sub(r'M2C_FIELD\(saved_reg_gp, ([^,]*), (-?0x[0-9A-Fa-f]+)\)', _gpsub2, t)
+if _ext:
+    decl = ''.join('extern %s %s;\n' % ({'s32': 'int', 'void *': 'void *'}.get(ty, ty), nm) for nm, ty in sorted(_ext.items()))
+    t = decl + t
 sys.stdout.write(t)

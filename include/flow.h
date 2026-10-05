@@ -46,7 +46,8 @@ struct STG_MDLS;
 typedef struct STGW {
     u8 x00;             /* 0x00 stage drawn (trans_stage) */
     u8 x01;             /* 0x01 set to 1 by game13/game2 */
-    u8 _pad02[2];
+    u8 stage;           /* 0x02 stage number (st_model_load) */
+    u8 _pad03;
     u8 step;            /* 0x04 0 = init (stage_i), 1 = run (stage_m) */
     u8 _pad05[3];
     s16 x08;            /* 0x08 frame counter */
@@ -56,7 +57,10 @@ typedef struct STGW {
     f32 x20;            /* 0x20 UV scroll v */
     u8 _pad24[0x28 - 0x24];
     f32 rot[3];         /* 0x28 stage model rotation */
-    u8 _pad34[0x3C - 0x34];
+    s16 x34;            /* 0x34 set to 1 by st_model_load */
+    u8 _pad36[2];
+    s16 x38;            /* 0x38 start mdlw index (st_model_load) */
+    u8 _pad3A[2];
     struct STG_MDLS *mdls; /* 0x3C stage model set (flag byte at +0, count s16 at +0x2C, CLAY array at +0x30) */
     u8 _pad40[0x64 - 0x40];
 } STGW;

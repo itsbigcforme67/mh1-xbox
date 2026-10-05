@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,14 +469,36 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-u8 *end_page(u8 *p)
+int isnum(u8 *p)
 {
-    int n;
+    u8 v;
 
-    n = ELEN(p);
-    while (n != 0) {
-        p += n;
-        n = ELEN(p);
+    for (v = *p; v != 0; v = *++p) {
+        if ((v & 0xFF) < 0x30 || (v & 0xFF) > 0x39) {
+            return 0;
+        }
     }
-    return p;
+    return 1;
+}
+
+int dic_freeentid()
+{
+    free_entid_tab();
+    return 3;
+}
+
+int dic_getgaku(void)
+{
+    return gaku_mode;
+}
+
+int dic_get1num(u8 *s, int len, u8 *out)
+{
+    if (dic_fd == -1) {
+        return -3;
+    }
+    if (set_num(s, len, out, suji_mode) == 0) {
+        set_num(s, len, out, 0);
+    }
+    return 1;
 }

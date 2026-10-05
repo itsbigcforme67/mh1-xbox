@@ -12,7 +12,7 @@ typedef struct UDW {
     u8 x01;                  /* 0x001 (selects armor bit 1 or 2: sex, a guess) */
     u8 _pad02[0x1C - 0x2];
     u32 point;               /* 0x01C hunter points */
-    u8 _pad20[0x4];
+    s32 gold;                /* 0x020 gold (zeni), clamped to 0..9999998 by Gold_add */
     u16 evflag[0x10];        /* 0x024 event flags */
     UD_WARE ware[64];        /* 0x044 warehouse equipment */
     UD_ITEM stock[100];      /* 0x1C4 item box */

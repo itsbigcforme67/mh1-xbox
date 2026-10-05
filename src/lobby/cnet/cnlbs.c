@@ -1,5 +1,6 @@
 /* cnlbs, run 1: _cnet_RecvFromLbs_NoticeMailMessage .. __cnet_SendReq_SearchUser (lobby.bin 0x005A2A20-0x005A2DBC): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
 void _cnet_RecvFromLbs_NoticeMailMessage(void) {
     __cnet_Recv_MailMessage();

@@ -90,12 +90,7 @@ int rt_load_stage_hit(int stage)
 }
 
 /* ------------------------------------------------------------ helpers */
-/* Stage_data_get (0x226900): the stage's 32-byte entry of the quest's
- * stage table (quest_w+0x80, St_data by default). */
-void *Stage_data_get(int stg)
-{
-    return (u8 *)quest_w.x80 + stg * 32;
-}
+/* Stage_data_get (0x226900): src/main/quest/f_quest0_nm.c */
 
 /* NormalClipF3 (0x120950): z of the 2D cross product (b - a) x (c - a);
  * points are (x, y) pairs (callers pass x/z). When the two products are

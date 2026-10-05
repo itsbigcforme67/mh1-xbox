@@ -229,13 +229,3 @@ void menu_move(int sw) {
         break;
     }
 }
-
-int menu_retire_i(void) {
-    if (Game_clear_ck(0) == 1) {
-        return 1;
-    }
-    lpPit->x42 = 0;
-    lpPit->yn = 1;
-    PitMenu.x10 = 0;
-    return 0;
-}

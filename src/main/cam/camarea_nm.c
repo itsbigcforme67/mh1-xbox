@@ -294,7 +294,7 @@ void GetRailCamPos(f32 *out, CAMW *cw, CAMAREA *a, f32 *spl) {
 
     Spline(spl, (f32 *)((u8 *)a + 0x20), EB(a, 0x280));
     sec = EB(cw, 0x5B4);
-    CamRailPoint(out, spl + sec * 12, EF(cw, 0x5B0) * EF((u8 *)a + sec * 16, 0x2C));
+    CamRailPoint(out, spl + sec * 12, EF(cw, 0x5B0) * EF((u8 *)(sec * 16) + (int)a, 0x2C));
 }
 
 /* 0x00223760: rail point (+0x100, 12-byte stride, +0x260 points) nearest to

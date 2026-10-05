@@ -55,6 +55,11 @@ void flSetRenderState(int state, u32 value)
                   * Alpha 0xFF = 1.0 (eft_trans_sub sends 255 * a). */
         gfx_set_render_state(GFX_RS_FADE_COLOR, value);
         break;
+    case 0x04: { /* texture (mem_tex handle from flCreateTextureFromApx_mem, rt_2d.c) */
+        void rt_2d_set_texture(u32 h);
+        rt_2d_set_texture(value);
+        break;
+    }
     case 0x6D:   /* alpha test method (GS TEST 0x7000 bits): 3 normal, 7 set13 glare [not traced] */
         break;
     default:

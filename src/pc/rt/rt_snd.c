@@ -473,6 +473,9 @@ void str_play_vol(int ch, int id, int vol)
         str_start(ch, id);
 }
 
+/* str_play (0x100980): stream id at the channel's full volume (str_w+4) */
+void str_play(int ch, int id) { str_play_vol(ch, id, strw[ch].max); }
+
 static void str_feed(int ch)
 {
     rt_str *s = &strw[ch];

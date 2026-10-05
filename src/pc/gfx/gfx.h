@@ -87,6 +87,14 @@ typedef struct {
     int dynamic;               /* positions/colours change every frame */
 } gfx_clay_desc;
 
+/* Immediate 2D triangle list (screen prims of the game's menus / HUD):
+ * nvert vertices, pos 2 floats in a virtual screen of w x h (origin top
+ * left; the PS2 frame is 512 x 448) stretched over the window, st 2 floats
+ * in 0..1 (or NULL: untextured, else the current GFX_RS_TEXTURE), col RGBA8
+ * (or NULL = white). No depth test or write; blend/filter/clamp/alpha
+ * states apply. Matrices are left as they were. */
+void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, const uint8_t *col);
+
 gfx_clay *gfx_create_clay(const gfx_clay_desc *d);
 /* Replace positions and/or colours (either may be NULL). */
 void gfx_update_clay(gfx_clay *c, const float *pos, const uint8_t *col);

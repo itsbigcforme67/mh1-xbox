@@ -45,6 +45,15 @@ single functions.
   commit. Never refer to padding by name (`_padXXX`); fields get carved out by others.
 - tools/check.py can report OK against the wrong address for a static whose name also
   exists in another file: give statics their address suffix (e.g. `foo_5341A0`). (agent B)
+- SHORT STRING LITERALS (<= 8 bytes, MWCC puts them in .sdata with gp-relative access, the original has them in .rodata
+  with lui/addiu): put `#pragma readonly_strings on` in the file (after the includes). Strings then go to .rodata and are
+  addressed with lui/addiu; check.py shows OK. Give the object a rodata slot in c_files.txt
+  (`lobby:rodata START END name`, one slot per object; each literal is 8-aligned). Long strings default to .data
+  (c_renames.txt handles that); the pragma moves those to .rodata too, so use it only where the original has rodata. (agent B)
+- MWCC unrolls simple counted loops 8x itself (`for (i = 0; i < n; i++) acc += *p++;`): never write an unrolled body. A shared string
+  literal used by several original functions: keep it in the asm data and `extern` the literal's symbol. `x >= C` vs `x > C-1` flips
+  whether the compare result goes to `at`. m2c sorts switch labels; the compare ladder in the asm is the REVERSE source order of the
+  labels. (agent B, details in agent-B.md "Lobby round 2" / "Lobby UI")
 docs/agents/agent-A.md, agent-B.md, agent-C.md, agent-D.md hold dozens of MWCC matching
 tricks and struct conventions. Monster (em) code: follow agent-C.md (per-monster struct
 cast from EMW.ex at EMW+0x444, file-static helpers with address-suffixed names are

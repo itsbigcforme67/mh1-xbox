@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,31 +469,26 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-u16 kh_priority(BS *b, int v)
+int api_dicopen(void)
 {
-    v = v & 0xFFFF;
-    if (v != 0) {
-        return (v + 0x3E8) & 0xFFFF;
+    if (lock_mode == 0) {
+        return -1;
     }
-    return b->x08;
+    if (dic_open(dic_name) == -7) {
+        return 1;
+    }
+    into_editing(0);
+    func_mode = 1;
+    return 0;
 }
 
-int is_alphanum(int c)
+int api_dicclose(void)
 {
-    return rmtype[c & 0xFF] & 0xC0;
-}
-
-int is_num(int c)
-{
-    return rmtype[c & 0xFF] & 0x80;
-}
-
-int is_alpha(int c)
-{
-    return rmtype[c & 0xFF] & 0x40;
-}
-
-int is_paren(int c)
-{
-    return rmtype[c & 0xFF] & 0x20;
+    if (lock_mode == 0) {
+        return -1;
+    }
+    init_edit0();
+    dic_close();
+    func_mode = 0;
+    return 0;
 }

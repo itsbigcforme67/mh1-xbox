@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,45 +469,32 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void unify_bsmem(int pos, int len)
-{
-    BS **pp;
-    BS *b;
-
-    pp = &hchar[pos].bs;
-    b = *pp;
-    while (b != 0) {
-        if (b->len == len) {
-            pp = &b->next;
-        } else {
-            *pp = b->next;
-            free_mem(b);
-        }
-        b = *pp;
-    }
-}
-
-int bunsetu_len(pos)
-int pos;
+void khmem_raw(mode)
+int mode;
 {
     HCHAR *h;
 
-    if (pos >= kana_len) {
-        return 0;
-    }
-    h = &hchar[pos];
-    if (im_state == 2 && h->x14 == 0) {
-        return 0;
-    }
-    return h->x15;
+    h = &hchar[cur_pos];
+    free_khmemlist(h->kh);
+    h->kh = raw_kouho(cur_pos, cur_len, mode);
 }
 
-void save_fst_bslen(int pos)
+void kh_mergesort(int pos, KL *list)
 {
+    KH *head;
+    KH *tail;
+    KH *k;
     HCHAR *h;
 
     h = &hchar[pos];
-    if (h->x16 == 0 && h->x14 != 0) {
-        h->x16 = h->x15;
+    head = h->kh;
+    tail = kh_endof(head);
+    kh_append_init(pos, head);
+    while ((k = (KH *)kh_merge_getone(list)) != 0) {
+        kh_append(pos, &head, &tail, k);
     }
+    if ((k = null_kouho(cur_len)) != 0) {
+        kh_append(pos, &head, &tail, k);
+    }
+    h->kh = head;
 }
