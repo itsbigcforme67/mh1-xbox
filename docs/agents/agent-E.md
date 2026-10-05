@@ -214,3 +214,13 @@ with named fields at the right offsets fixes it (npc_chr_sub 6/44 -> OK). Genera
 bit pattern to an f32 field converts it: write 2.0f/1.0f (npc_init). (3) pointer tables of u16 are walked with `q++` (2 bytes), a `[][2]` s16 table gives
 `sll 2; lh` (npc_init). (4) a struct field 0x18 that is a pointer covers 0x18-0x1B: check overlapping field offsets before building a view struct.
 (5) the first call arg of K&R-declared callees may carry stale registers in m2c output (npc_init_sub(p, 1) was really npc_init_sub(p)); a 5th pl_chr_set arg (t0) is real.
+
+### mc low level (0x27EF60-0x27FDF0): 13 of 15 built (mclowb/d/c.c), main OK
+PS2 memory card step machines (MCW work struct in mclow_nm.c). Built: MemcardInit, McReadClock, mc_sync, mc_check_file, mc_read_file, mc_mkdir, mc_create_file,
+mc_write_file, mc_attr_file, mc_format, mc_unformat, mc_get_dir. Not written yet: mc_check_card (0x27F1C0). Near-match: mc_delete_dir (58/116, block layout of the
+shared error exit). Lessons: (1) m2c drops trailing call args: sceMcGetDir takes 6 (port,0,path,0,1,table), sceMcSetFileInfo 5; check the asm for t0/t1 setup, and look
+at which symbol the last arg is (mc_attr_file passes info_attr, the others mc_dir: the rebuild caught it, check.py cannot). (2) the original `default: return -1;`
+reached from several exits = `break;` in every case and one `return -1;` after the switch; the shared error block lives INSIDE case 0 as a label (`err:`)
+and later cases `goto err` (mc_read_file/mc_write_file/mc_create_file). (3) <=8 byte globals are gp-relative: declare `u8 keep_rtc[8]`. (4) the weekday formula:
+`(day + (year + year/4 - year/100 + year/400 + (mon*13+8)/5)) % 7` with `u16 year` (McReadClock, found by trying ~20 parenthesisations with a loop).
+(5) Beware overlapping struct fields when sizing arrays: state[3]/info[3], not [4].

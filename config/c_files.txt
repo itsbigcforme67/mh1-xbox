@@ -303,6 +303,9 @@ main 0x00281740 0x002818E4 mc/mcsaved
 main 0x002819C0 0x00281BC0 mc/mcsavec
 main 0x0023DAB0 0x0023DEA8 npc/npcb
 main 0x0023E260 0x0023E4E0 npc/npcc
+main 0x0027EF60 0x0027F1BC mc/mclowb
+main 0x0027F400 0x0027FB38 mc/mclowd
+main 0x0027FD10 0x0027FDE8 mc/mclowc
 main 0x00290E80 0x00291D30 reward/f_reward
 main:rodata 0x003865A0 0x003865EC reward/f_reward
 main 0x00291D30 0x0029250C reward/f_reward2
