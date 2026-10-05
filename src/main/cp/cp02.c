@@ -27,6 +27,7 @@ void flvecCopy(f32 *, f32 *);
 f32 flvecCalcLength(f32 *);
 f32 flvecCalcDistance(f32 *, f32 *);
 f32 flAbs(f32);
+void SetVector(f32 *, f32, f32, f32);
 void flmatRotX33(void *, f32);
 void flmatRotY33(void *, f32);
 void flmatRotZ33(void *, f32);
