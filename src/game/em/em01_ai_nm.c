@@ -158,6 +158,7 @@ void em_action_timer_calc(EMW *, int);
 f32 flSqrt(f32);
 void SetVector(f32 *, f32, f32, f32);
 void senkai_player(EMW *);
+s8 smell_search(EMW *, int, f32 *);
 void em01_to_normal();
 void em01_to_fly();
 void em01_frame_reset();
@@ -3216,4 +3217,161 @@ static void em_atk11_0056E160(EMW *em, EM01W *w) {
         }
         break;
     }
+}
+
+static void em_atk12_0056E6F0(EMW *em, EM01W *w) {
+    f32 v[3];
+    int r;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 1;
+        em->x6FD = 1;
+        break;
+    case 1:
+        r = smell_search(em, 0x23, em->x700);
+        get_joint_pos_em(em, 0x23, v);
+        if (!(flvecCalcDistance(v, em->x700) > 150.0f)) {
+            em->x05++;
+            em_char_set(em, 0x23, 0, 0);
+            break;
+        }
+        if (r == 0) {
+            em->x3F4 = 0;
+            em->x6FD = 0;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    case 2:
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em->x05++;
+            em_char_set(em, 0x30, 0, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em->x3F4 = 0;
+            em->x6FD = 0;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_atk13_0056E860(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x53, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+/* A file static in the original. */
+void em_atk14(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x38, 0, 0);
+        /* fallthrough */
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_atk15_0056E970(EMW *em, EM01W *w) {
+    f32 v[4];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x11, 0, 0);
+        break;
+    case 1:
+        if (w->has_tgt != 0) {
+            int d;
+
+            d = (u16)((u16)Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
+            if (d <= 0x8000) {
+                if (d <= 0x3F) {
+                    em->ang[1] += d;
+                } else {
+                    em->ang[1] += 0x80;
+                }
+            } else if (d > 0xFFC0) {
+                em->ang[1] += d;
+            } else {
+                em->ang[1] -= 0x80;
+            }
+            mot_miration_ret(em, v);
+            w->dist = w->dist - v[2];
+            if (w->dist <= 0.0f) {
+                em->work08 = 1;
+            }
+        }
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+static void em_atk16_0056EAD0(EMW *em, EM01W *w) {
+    int done = 0;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x34, 0, 0);
+        em01_fly_adjy2_init(em, 8);
+        break;
+    case 1:
+        if (em_frame_check(em, 90.0f, 0)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x2222, 0);
+        }
+        if (em_frame_check2(em, 0, 76.0f)) {
+            em->x388 = 2;
+            done = em01_fly_adjy2(em);
+        }
+        if (done != 0 && em->pos[1] <= em->x5AC) {
+            em_char_set(em, 0x39, 0, 0);
+            em->x05++;
+            em->x388 = 0;
+            em->pos[1] = em->x5AC;
+            ground_land_eff_set_0057A7E0(em);
+            Em_set_quake_sub(em, 2);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
 }
