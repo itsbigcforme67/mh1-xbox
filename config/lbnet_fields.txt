@@ -11,7 +11,7 @@
 0xFEC s8 rres result byte
 0x102C u16 rcnt receive counter
 0x4068 CNET_PIECE plaza[10] size=0xDE8 plaza table, entry for id n is plaza[n - 1] (counts of plaza/lobby/room at 0x404E/0x4050/0x4052 just before it)
-0x4E50 CNET_LOBBY lobby[14] size=0x1378 lobby table
+0x4E50 CNET_PIECE lobby[14] size=0x1378 lobby table
 0x61C8 CNET_PIECE room[8] size=0xB20 room table
 0x1060 char tel[0x14] telephone number (personal data)
 0x1576 char uid[8] user id string
