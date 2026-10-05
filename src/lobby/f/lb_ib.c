@@ -1,6 +1,13 @@
 /* Lobby item box UI and plaza chat log (SLPM_654.95 lobby overlay 0x609770-0x60E330). Whole file; runs split into lb_ibNN.c */
 #include "lobby_f.h"
 extern u8 *ib;
+/* item box slots: 4 bytes per slot at User_data + 0x37C (u16 item id, s16 amount) */
+typedef struct IBS4 { u16 w[2]; } IBS4;
+#define IBID(u, i) (((IBS4 *)(u))[i].w[0x37C / 2])
+#define IBNUM(u, i) (((IBS4 *)(u))[i].w[0x37E / 2])
+extern u8 User_data[];
+int Ud_u_item_stack(u16, u16);
+void Menu_select_mv();
 void se_req();
 s32 Lb_ItemBox_open(u16 arg0, s32 arg1) {
     arg0 = 0;
@@ -251,4 +258,62 @@ void itembox_cursor_mv(u8 *val, int pad, int mode) {
         *val = nv;
         se_req(7, 0x16, 0);
     }
+}
+
+/* item box "stock" tab: take the item under the cursor into the pouch */
+s32 itembox_stock(s32 pad) {
+    u16 left;
+    u8 *w;
+    u8 *u;
+    u = User_data;
+    w = ib;
+    switch (F(u8, w, 5)) {
+    case 0:
+        *(s16 *)0x39DAD2 = 0;
+        if (F(u8, w, 0x1F) != 0) {
+            if ((u16)pad & 0x240) {
+                F(u8, w, 0x1F) = 0;
+                se_req(7, 0x14, 0);
+            }
+            pad = (u16)(pad & 0xFFBF);
+        } else if ((u16)pad & 0x200) {
+            F(u8, w, 0x1F) = 1;
+            se_req(7, 9, 0);
+        }
+        Menu_select_mv(ib + 0xB, pad, 0x14);
+        if ((u16)pad & 0x20) {
+            if (IBID(u, F(u8, ib, 0xB)) != 0) {
+                left = Ud_u_item_stack(IBID(u, F(u8, ib, 0xB)), IBNUM(u, F(u8, ib, 0xB))) & 0xFFFF;
+                if (left == 0) {
+                    IBNUM(u, F(u8, ib, 0xB)) = 0;
+                    IBID(u, F(u8, ib, 0xB)) = 0;
+                    F(s8, ib, 0x1D) = 1;
+                    se_req(7, 0x2C, 0, left);
+                } else {
+                    IBNUM(u, F(u8, ib, 0xB)) = left;
+                    F(s8, ib, 0x1D) = 2;
+                    se_req(7, 0x15, 0, left);
+                }
+                *(s16 *)0x39DAD2 = F(s8, ib, 0x1D);
+                F(u8, ib, 0x1F) = 0;
+                F(u8, ib, 5) = F(u8, ib, 5) + 1;
+            } else {
+                se_req(7, 0x15, 0);
+            }
+        }
+        break;
+    case 1:
+        *(s16 *)0x39DAD2 = F(s8, ib, 0x1D);
+        F(u8, ib, 0x20) = F(u8, ib, 0x20) + 1;
+        if ((u16)pad & 0x20) {
+            *(s16 *)0x39DAD2 = 0;
+            F(u8, ib, 5) = 0;
+            F(u8, ib, 0x1F) = 0;
+            F(u8, ib, 0x20) = 0xFF;
+            se_req(7, 9, 0);
+        }
+        pad = 0;
+        break;
+    }
+    return pad;
 }
