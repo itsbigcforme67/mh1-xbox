@@ -34,6 +34,7 @@ typedef struct LBPOS { f32 x, z; u16 ang; u16 stg; } LBPOS;   /* received positi
 typedef struct LBSTAT { f32 x, z; u16 ang; u8 chair; u8 act14; u8 act15; u8 x0D; u8 _pad0E[2]; } LBSTAT; /* received status packet (0x10 bytes) */
 typedef struct LBTRADE2 { u16 item; s16 num; u8 plid[6]; u8 _pad0A[2]; u8 result; u8 _pad0D; } LBTRADE2;
 typedef struct LBTRADE { u16 item; u16 num; u8 plid[6]; u8 _pad0A[2]; u8 result; u8 _pad0D; } LBTRADE; /* trade packet (0xE bytes) */
+typedef struct LBS16x2 { s16 a, b; } LBS16x2;
 typedef struct LBV3 { f32 x, y, z; } LBV3;
 #define PLU8(p, o) (*(u8 *)((u8 *)(p) + (o)))
 #define PLS8(p, o) (*(s8 *)((u8 *)(p) + (o)))
@@ -98,4 +99,24 @@ typedef struct LBLAST { f32 x; u8 _pad04[4]; f32 z; u16 ang; u8 stat; u8 x0F; u8
 extern LBLAST lastSend;
 extern u8 my_user_handle[0x10];
 extern u8 D_3F3404[];
+void font_set_palette();
+void font_print_uf();
+void lb_put_room_member_005CB220();
+void cnLBS_Get_ConditionSearchUser();
+extern u8 *pNet;
+extern u8 *SearchResult;
+void Skill_set_PL();
+void Lb_get_comment();
+void Set_equip_idx();
+void Set_userdata();
+void Lb_set_mini_data();
+void flSetRenderState();
+void InitRenderState();
+void Lbc_set_prim();
+void Lb_put_help();
+void lb_disp_name();
+void flps0008();
+void Lb_put_icon_free();
+extern s16 lb_icon_tbl[];
+extern char lit_254_00664B00[];
 #endif

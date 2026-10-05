@@ -10,10 +10,11 @@ for l in open('config/c_files.txt'):
     if len(p) >= 4 and p[0] == 'lobby':
         reg.append((int(p[1], 16), int(p[2], 16)))
 out = subprocess.run(['python3', 'tools/check.py', nm], capture_output=True, text=True).stdout
+force = set(filter(None, os.environ.get('FORCE_OK', '').split(',')))
 rows = []
 for l in out.split('\n'):
-    m = re.match(r'^OK\s+(\S+)\s+lobby\s+0x([0-9A-F]+)\s+(\d+) bytes', l)
-    if m:
+    m = re.match(r'^(?:OK|--)\s+(\S+)\s+lobby\s+0x([0-9A-F]+)\s+(\d+) bytes', l)
+    if m and (l.startswith('OK') or m.group(1) in force):
         a = int(m.group(2), 16); sz = int(m.group(3))
         if any(s <= a < e for s, e in reg):
             continue
