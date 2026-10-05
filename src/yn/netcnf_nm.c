@@ -148,61 +148,114 @@ u8 *yn_netcnf_search_usr_name(u8 *arg0, char *arg1) {
     return NULL;
 }
 
-void yn_netcnf_work_to_ifc(u8 *arg0, u8 *arg1, s8 *arg2) {
-    sceNetcnfifDataInit(arg1);
-    M2C_FIELD(arg1, s8 *, 0x1324) = 0;
-    if (M2C_FIELD(arg0, u8 *, 9) == 1) {
-        M2C_FIELD(arg1, s32 *, 0x1300) = 3;
+typedef struct IFCW {
+    u8 _p0[0x200];
+    s8 a200[0x100];
+    s8 a300[0x100];
+    s8 a400[0x100];
+    s8 a500[0x100];
+    s8 a600[0x100];
+    s8 a700[0x100];
+    u8 _p1[0x300];
+    s8 b00[0x100];
+    s8 c00[0x100];
+    s8 d00[0x100];
+    s8 aE00[0x100];
+    s8 aF00[0x100];
+    u8 _p2[0x300];
+    s32 x1300;
+    s32 x1304;
+    s32 x1308;
+    s32 x130C;
+    s32 x1310;
+    u8 _p3[0xC];
+    u8 x1320;
+    s8 x1321;
+    s8 x1322;
+    s8 x1323;
+    s8 x1324;
+    u8 x1325;
+    s8 x1326;
+    s8 x1327;
+    s8 x1328;
+    u8 _p4[0x17];
+} IFCW;
+
+typedef struct WRKW {
+    u8 _p0[5];
+    u8 x5;
+    u8 x6;
+    u8 x7;
+    u8 _p1;
+    u8 x9;
+    u8 _p2[2];
+    u8 a0C[0x200];
+    u8 a20C[0x200];
+    u8 a40C[0x200];
+    u8 a60C[4];
+    u8 a610[4];
+    u8 a614[4];
+    u8 a618[4];
+    u8 a61C[4];
+    u8 a620[4];
+} WRKW;
+
+void yn_netcnf_work_to_ifc(WRKW *w, IFCW *f, s8 *arg2) {
+
+    sceNetcnfifDataInit(f);
+    f->x1324 = 0;
+    if (w->x9 == 1) {
+        f->x1300 = 3;
     } else {
-        M2C_FIELD(arg1, s32 *, 0x1300) = 1;
+        f->x1300 = 1;
     }
-    if (M2C_FIELD(arg0, u8 *, 5) == 0) {
-        M2C_FIELD(arg1, s8 *, 0x1325) = 1;
-        M2C_FIELD(arg1, u8 *, 0x1320) = 0U;
-        strcpy(arg1 + 0xB00, arg0 + 0xC);
-        strcpy(arg1 + 0xC00, arg0 + 0x20C);
-        strcpy(arg1 + 0xD00, lit_1349_0053E398);
-        M2C_FIELD(arg1, s8 *, 0x1323) = 1;
-        M2C_FIELD(arg1, s8 *, 0x1324) = 4;
-        M2C_FIELD(arg1, s8 *, 0x1326) = 0;
-        M2C_FIELD(arg1, s8 *, 0x1327) = 0;
-        M2C_FIELD(arg1, s8 *, 0x1328) = 0;
-        M2C_FIELD(arg1, s32 *, 0x1304) = 0x5AE;
-        M2C_FIELD(arg1, s32 *, 0x1300) = 2;
-        M2C_FIELD(arg1, s32 *, 0x1308) = 0;
+    if (w->x5 == 0) {
+        f->x1325 = 1;
+        f->x1320 = 0;
+        strcpy(f->b00, w->a0C);
+        strcpy(f->c00, w->a20C);
+        strcpy(f->d00, lit_1349_0053E398);
+        f->x1323 = 1;
+        f->x1324 = 4;
+        f->x1326 = 0;
+        f->x1327 = 0;
+        f->x1328 = 0;
+        f->x1304 = 0x5AE;
+        f->x1300 = 2;
+        f->x1308 = 0;
     } else {
-        M2C_FIELD(arg1, s8 *, 0x1325) = 0xFF;
-        if (M2C_FIELD(arg0, u8 *, 6) == 0) {
-            M2C_FIELD(arg1, u8 *, 0x1320) = 1U;
-            strcpy(arg1 + 0x200, arg0 + 0x40C);
+        f->x1325 = 0xFF;
+        if (w->x6 == 0) {
+            f->x1320 = 1;
+            strcpy(f->a200, w->a40C);
         } else {
-            M2C_FIELD(arg1, u8 *, 0x1320) = 0U;
-            yn_netcnf_num_to_ip(arg1 + 0x300, arg0 + 0x60C);
-            yn_netcnf_num_to_ip(arg1 + 0x400, arg0 + 0x610);
-            yn_netcnf_num_to_ip(arg1 + 0x500, arg0 + 0x614);
+            f->x1320 = 0;
+            yn_netcnf_num_to_ip(f->a300, w->a60C);
+            yn_netcnf_num_to_ip(f->a400, w->a610);
+            yn_netcnf_num_to_ip(f->a500, w->a614);
         }
     }
-    if (M2C_FIELD(arg0, u8 *, 7) != 0) {
-        if (yn_netcnf_ip_check(arg0 + 0x618) != 0) {
-            yn_netcnf_num_to_ip(arg1 + 0x600, arg0 + 0x618);
+    if (w->x7 != 0) {
+        if (yn_netcnf_ip_check(w->a618) != 0) {
+            yn_netcnf_num_to_ip(f->a600, w->a618);
         }
-        if (yn_netcnf_ip_check(arg0 + 0x61C) != 0) {
-            yn_netcnf_num_to_ip(arg1 + 0x700, arg0 + 0x61C);
+        if (yn_netcnf_ip_check(w->a61C) != 0) {
+            yn_netcnf_num_to_ip(f->a700, w->a61C);
         }
-        if (M2C_FIELD(arg1, s8 *, 0x600) == 0) {
-            memset(arg1 + 0x600, 0, 0x100);
-            memset(arg1 + 0x700, 0, 0x100);
-            M2C_FIELD(arg1, s8 *, 0x1321) = 1;
-            M2C_FIELD(arg1, s8 *, 0x1322) = 1;
+        if (f->a600[0] == 0) {
+            memset(f->a600, 0, 0x100);
+            memset(f->a700, 0, 0x100);
+            f->x1321 = 1;
+            f->x1322 = 1;
         }
-        if (M2C_FIELD(arg1, s8 *, 0x700) == 0) {
-            memset(arg1 + 0x700, 0, 0x100);
+        if (f->a700[0] == 0) {
+            memset(f->a700, 0, 0x100);
         }
-    } else if (M2C_FIELD(arg1, u8 *, 0x1320) != 1) {
-        M2C_FIELD(arg1, s8 *, 0x1321) = 1;
-        M2C_FIELD(arg1, s8 *, 0x1322) = 1;
+    } else if (f->x1320 != 1) {
+        f->x1321 = 1;
+        f->x1322 = 1;
     }
-    yn_sjis_to_utf8(arg2, arg0 + 0x620);
+    yn_sjis_to_utf8(arg2, w->a620);
 }
 
 void yn_netcnf_ifc_to_work(u8 *arg0, u8 *arg1, s8 *arg2) {
@@ -325,38 +378,37 @@ void yn_netcnf_setup_devwork(u8 *arg0, u8 *arg1) {
 
 /* Returns the index of the past entry (0x14-byte records, ifc pointer at +0x10) that has the same
    settings as the work area, or -1. The two big locals are the ifc and dev structures built from it. */
-s32 yn_netcnf_pastdata_check(u8 *work, u8 *list, s32 num) {
-    u8 dev[0x1320];
-    u8 ifc[0x1330];
-    s8 name[0x100];
+s32 yn_netcnf_pastdata_check(WRKW *work, u8 *list, s32 num) {
+    s8 name[0x200];
+    struct { IFCW x; u8 pad[0x30]; } ifcx; /* the original frame leaves 0x30 more bytes after the ifc struct */
+    IFCW dev;
+    IFCW *e;
     s32 ip;
     s32 i;
-    u8 *e;
-    u8 *rec = list;
+    u8 *rec;
 
     name[0] = 0;
-    yn_netcnf_work_to_ifc(work, ifc, name);
-    yn_netcnf_work_to_dev(work, dev);
-    i = 0;
-    if (num > 0) {
-loop_2:
-        e = M2C_FIELD(rec, u8 **, 0x10);
-        if ((e != NULL) && (strcmp(e + 0xE00, dev + 0xE00) == 0) && (strcmp(e + 0xF00, dev + 0xF00) == 0) && (M2C_FIELD(e, u8 *, 0x1320) == ifc[0x1320]) && (strcmp(e + 0x200, ifc + 0x200) == 0) && (M2C_FIELD(e, u8 *, 0x1325) == ifc[0x1325]) && (strcmp(e + 0xB00, ifc + 0xB00) == 0) && (strcmp(e + 0xC00, ifc + 0xC00) == 0)) {
+    yn_netcnf_work_to_ifc(work, &ifcx.x, name);
+    yn_netcnf_work_to_dev((u8 *)work, (u8 *)&dev);
+    rec = list;
+    for (i = 0; i < num; i++, rec += 0x14) {
+        e = M2C_FIELD(rec, IFCW **, 0x10);
+        if (e != NULL && strcmp(e->aE00, dev.aE00) == 0 && strcmp(e->aF00, dev.aF00) == 0 && e->x1320 == ifcx.x.x1320 && strcmp(e->a200, ifcx.x.a200) == 0 && e->x1325 == ifcx.x.x1325 && strcmp(e->b00, ifcx.x.b00) == 0 && strcmp(e->c00, ifcx.x.c00) == 0) {
             ip = 0;
-            yn_netcnf_ip_to_num(e + 0x300, (u8 *)&ip);
-            if (ip == M2C_FIELD(work, s32 *, 0x60C)) {
+            yn_netcnf_ip_to_num(e->a300, &ip);
+            if (ip == *(s32 *)work->a60C) {
                 ip = 0;
-                yn_netcnf_ip_to_num(e + 0x400, (u8 *)&ip);
-                if (ip == M2C_FIELD(work, s32 *, 0x610)) {
+                yn_netcnf_ip_to_num(e->a400, &ip);
+                if (ip == *(s32 *)work->a610) {
                     ip = 0;
-                    yn_netcnf_ip_to_num(e + 0x500, (u8 *)&ip);
-                    if (ip == M2C_FIELD(work, s32 *, 0x614)) {
+                    yn_netcnf_ip_to_num(e->a500, &ip);
+                    if (ip == *(s32 *)work->a614) {
                         ip = 0;
-                        yn_netcnf_ip_to_num(e + 0x600, (u8 *)&ip);
-                        if (ip == M2C_FIELD(work, s32 *, 0x618)) {
+                        yn_netcnf_ip_to_num(e->a600, &ip);
+                        if (ip == *(s32 *)work->a618) {
                             ip = 0;
-                            yn_netcnf_ip_to_num(e + 0x700, (u8 *)&ip);
-                            if (ip == M2C_FIELD(work, s32 *, 0x61C)) {
+                            yn_netcnf_ip_to_num(e->a700, &ip);
+                            if (ip == *(s32 *)work->a61C) {
                                 return i;
                             }
                         }
@@ -364,14 +416,7 @@ loop_2:
                 }
             }
         }
-        i += 1;
-        rec += 0x14;
-        if (i >= num) {
-            goto block_18;
-        }
-        goto loop_2;
     }
-block_18:
     return -1;
 }
 
