@@ -512,3 +512,7 @@ game 0x006362B0 0x00636918 shell/shell00
 game:rodata 0x0068A3B0 0x0068A3D0 shell/shell00
 game 0x0063A010 0x0063A0E4 pl/pl_guard
 game 0x00625630 0x00625838 set/set17
+main 0x0027FDF0 0x002804CC mc/mcactb
+main 0x00280890 0x00280940 mc/mcactc
+main 0x002809B0 0x00280D48 mc/mcactd
+main 0x00280E50 0x00280EE4 mc/mcacte
