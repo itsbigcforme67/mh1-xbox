@@ -82,6 +82,14 @@ Community pages change, so recheck anything a decision depends on.
 - PS2Recomp (static recompiler) is still experimental; its author says the GS
   (graphics) side is the main thing that does not work yet.
 
+## A planned Xbox version (owner, 5 Oct 2026)
+
+- The owner says an Xbox version of Monster Hunter was planned. Not checked
+  against a source here. Possibly related: agent A found paired cockpit (HUD)
+  textures in AFS_DATA such as cpit1ps.apx and cpit1xb.apx (docs/formats/
+  graphics.md); "xb" may mean Xbox. Unverified until the xb textures are
+  looked at.
+
 ## Tooling
 
 - nxdk, the open-source original Xbox SDK: pbkit, lwIP, SDL2, USB, vertex
