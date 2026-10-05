@@ -706,3 +706,11 @@ main 0x00267290 0x00267348 net/netbgm02
 main 0x00274E10 0x00274EBC menu/pit01
 main 0x00275020 0x00275230 menu/pit02
 main 0x00275540 0x002755C8 menu/pit03
+main 0x0026A2F0 0x0026A304 net/netwk01
+main 0x0026BB40 0x0026BB48 net/netwk02
+main 0x0026BBB0 0x0026BBC0 net/netwk03
+main 0x0026BCC0 0x0026C0F8 net/netwk04
+main 0x0026C3E0 0x0026C400 net/netwk05
+main 0x0026C490 0x0026C768 net/netwk06
+main 0x0026CB60 0x0026CBDC net/netwk07
+main 0x0026CC90 0x0026CD60 net/netwk08
