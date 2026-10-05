@@ -2207,3 +2207,233 @@ lab2:
     q.uv1 = 0xA6;
     flps0008(&q);
 }
+
+/* ===== mix / pit effects (0x133FB0-0x134950) ===== */
+typedef struct PEF_DATA {
+    s16 ang;        /* 0x00 */
+    u16 blend;      /* 0x02 */
+    u32 col;        /* 0x04 */
+    s16 u, v;       /* 0x08 */
+    s16 w, h;       /* 0x0C */
+    s16 ox, oy;     /* 0x10 origin inside the cell */
+    int *scale_tbl; /* 0x14 */
+    int *alpha_tbl; /* 0x18 */
+} PEF_DATA;
+typedef struct PEF {                /* pit_efct[6], 0x20 bytes each */
+    s8 on;          /* 0x00 */
+    s8 show;        /* 0x01 */
+    u8 alpha;       /* 0x02 */
+    s8 delay;       /* 0x03 */
+    f32 l, r, t, b; /* 0x04 corners, set by pef_get_scale */
+    f32 x;          /* 0x14 */
+    s16 y;          /* 0x18 */
+    u8 _pad1A[2];
+    PEF_DATA *d;    /* 0x1C */
+} PEF;
+extern PEF pit_efct[6];
+extern PEF_DATA *ef1_tbl[];
+extern PEF_DATA ef2_efct_tbl0, ef2_efct_tbl1;
+extern PEF_DATA *ef3_tbl[];
+extern s16 ofs_5159[][3][2];
+void SetBlendingMode(u16);
+int pef_get_scale(PEF *, int *, s16);
+int pef_get_alpha(PEF *, int *, s16);
+
+/* 0x133FB0 */
+void mix_effect_set(s8 kind) {
+    PEF *e;
+    u32 i;
+    s8 d;
+    s16 (*o)[2];
+
+    lpPit->x84 = 1;
+    lpPit->x86 = 1;
+    lpPit->x85 = kind;
+    switch (kind) {
+    case 0:
+        pit_efct[0].on = 1; pit_efct[0].show = 0; pit_efct[0].delay = 0;
+        pit_efct[0].x = 319.0f; pit_efct[0].y = 0xD2; pit_efct[0].d = ef1_tbl[0];
+        pit_efct[1].on = 1; pit_efct[1].show = 0; pit_efct[1].delay = 5;
+        pit_efct[1].x = 319.0f; pit_efct[1].y = 0xD2; pit_efct[1].d = ef1_tbl[1];
+        pit_efct[2].on = 1; pit_efct[2].show = 0; pit_efct[2].delay = 10;
+        pit_efct[2].x = 319.0f; pit_efct[2].y = 0xD2; pit_efct[2].d = ef1_tbl[2];
+        pit_efct[3].on = 1; pit_efct[3].show = 0; pit_efct[3].delay = 15;
+        pit_efct[3].x = 319.0f; pit_efct[3].y = 0xD2; pit_efct[3].d = ef1_tbl[3];
+        pit_efct[4].on = 1; pit_efct[4].show = 0; pit_efct[4].delay = 20;
+        pit_efct[4].x = 319.0f; pit_efct[4].y = 0xD2; pit_efct[4].d = ef1_tbl[0];
+        pit_efct[5].on = 1; pit_efct[5].show = 0; pit_efct[5].delay = 25;
+        pit_efct[5].x = 319.0f; pit_efct[5].y = 0xD2; pit_efct[5].d = ef1_tbl[1];
+        return;
+    case 1:
+        e = pit_efct;
+        i = 0;
+        d = 0;
+        o = ofs_5159[(System_timer * 3) >> 8];
+        do {
+            e[0].on = 1;
+            e[0].show = 0;
+            i++;
+            e[0].delay = d;
+            e[0].x = 269.0f + (f32)o[0][0];
+            e[0].y = o[0][1] + 0xD2;
+            e[0].d = &ef2_efct_tbl0;
+            e[1].on = 1;
+            e[1].show = 0;
+            e[1].delay = d;
+            d += 3;
+            e[1].x = 269.0f + (f32)o[0][0];
+            e[1].y = o[0][1] + 0xD2;
+            o++;
+            e[1].d = &ef2_efct_tbl1;
+            e += 2;
+        } while (i < 3U);
+        return;
+    case 2:
+        pit_efct[0].on = 1; pit_efct[0].show = 0; pit_efct[0].delay = 0;
+        pit_efct[0].x = 319.0f; pit_efct[0].y = 0xD2; pit_efct[0].d = ef3_tbl[0];
+        pit_efct[1].on = 1; pit_efct[1].show = 0; pit_efct[1].delay = 0;
+        pit_efct[1].x = 319.0f; pit_efct[1].y = 0xD2; pit_efct[1].d = ef3_tbl[1];
+        pit_efct[2].on = 1; pit_efct[2].show = 0; pit_efct[2].delay = 0;
+        pit_efct[2].x = 319.0f; pit_efct[2].y = 0xD2; pit_efct[2].d = ef3_tbl[2];
+        pit_efct[3].on = 1; pit_efct[3].show = 0; pit_efct[3].delay = 0;
+        pit_efct[3].x = 319.0f; pit_efct[3].y = 0xD2; pit_efct[3].d = ef3_tbl[3];
+        pit_efct[4].on = 0;
+        pit_efct[5].on = 0;
+        return;
+    }
+}
+
+/* 0x134280 */
+void Pit_effect_move(void) {
+    PEF *e = pit_efct;
+    int n = 0;
+    int k = 6;
+
+    do {
+        if (e->on != 0) {
+            e->show = 0;
+            n++;
+            if (e->delay < lpPit->x86) {
+                s16 t = lpPit->x86 - e->delay;
+                e->show = 1;
+                pef_get_scale(e, e->d->scale_tbl, t);
+                pef_get_alpha(e, e->d->alpha_tbl, t);
+            }
+        }
+        k--;
+        e++;
+    } while (k != 0);
+    if (n != 0) {
+        lpPit->x86++;
+        return;
+    }
+    lpPit->x84 = 0;
+}
+
+/* 0x134360 */
+void Pit_disp_pit_effect(void) {
+    PFLP12 q;
+    f32 s, c;
+    PEF *e;
+    int k;
+
+    if (lpPit->x84 != 0) {
+        SetFilterMode(1);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
+        k = 6;
+        e = pit_efct;
+        do {
+            if (e->on != 0 && e->show != 0) {
+                SetBlendingMode(e->d->blend);
+                q.col = e->d->col | (e->alpha << 24);
+                q.uv[4] = q.uv[0] = e->d->u + 1;
+                q.uv[5] = q.uv[1] = e->d->v + 1;
+                q.uv[2] = e->d->u + e->d->w - 1;
+                q.uv[5] = e->d->v + e->d->h - 1;
+                flSinCos((6.2831855f * (f32)e->d->ang) / 65536.0f, &s, &c);
+                q.p[0] = 0.8f * (e->x + e->l * c - e->t * s);
+                q.p[1] = e->y + (s16)(e->l * s + e->t * c);
+                q.p[2] = 0.8f * (e->x + e->r * c - e->t * s);
+                q.p[3] = e->y + (s16)(e->r * s + e->t * c);
+                q.p[4] = 0.8f * (e->x + e->l * c - e->b * s);
+                q.p[5] = e->y + (s16)(e->l * s + e->b * c);
+                flps000C(&q);
+                q.uv[0] = e->d->u + e->d->w - 1;
+                q.uv[1] = e->d->v + e->d->h - 1;
+                q.p[0] = 0.8f * (e->x + e->r * c - e->b * s);
+                q.p[1] = e->y + (s16)(e->r * s + e->b * c);
+                flps000C(&q);
+            }
+            k--;
+            e++;
+        } while (k != 0);
+    }
+}
+
+/* 0x134710 */
+int pef_get_scale(PEF *e, int *tbl, s16 t) {
+    int *cur = tbl;
+    int *nx = tbl + 3;
+    int t1;
+    int ta;
+    f32 a, b, f, g, dt, dd;
+
+    if (t < tbl[0]) {
+        return 1;
+    }
+    t1 = tbl[3];
+    if (t1 > 0) {
+        for (;;) {
+            if (t1 >= t) {
+                ta = cur[0];
+                a = *(f32 *)&cur[1];
+                b = *(f32 *)&cur[2];
+                dt = (f32)(t - ta);
+                dd = (f32)(t1 - ta);
+                f = a + ((*(f32 *)&nx[1] - a) * dt) / dd;
+                g = b + ((*(f32 *)&nx[2] - b) * dt) / dd;
+                e->l = -(f32)e->d->ox * f;
+                e->r = f * (f32)(e->d->w - e->d->ox);
+                e->t = -(f32)e->d->oy * g;
+                e->b = g * (f32)(e->d->h - e->d->oy);
+                return 0;
+            }
+            cur = nx;
+            nx += 3;
+            t1 = *nx;
+            if (t1 <= 0) break;
+        }
+    }
+    e->on = 0;
+    return -1;
+}
+
+/* 0x134860 */
+int pef_get_alpha(PEF *e, int *tbl, s16 t) {
+    int *cur = tbl;
+    int *nx = tbl + 2;
+    int t1;
+    f32 a, f;
+
+    if (t < tbl[0]) {
+        return 1;
+    }
+    t1 = tbl[2];
+    if (t1 > 0) {
+        for (;;) {
+            if (t1 >= t) {
+                a = *(f32 *)&cur[1];
+                f = 255.0f * (a + ((*(f32 *)&nx[1] - a) * (f32)(t - cur[0])) / (f32)(t1 - cur[0]));
+                e->alpha = (u8)f;
+                return 0;
+            }
+            cur = nx;
+            nx += 2;
+            t1 = *nx;
+            if (t1 <= 0) break;
+        }
+    }
+    e->on = 0;
+    return -1;
+}
