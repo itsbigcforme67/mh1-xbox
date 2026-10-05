@@ -107,3 +107,14 @@ Monster dust/debris, sibling of eft13. Built: eft20.c (move, se_req),
 eft20b.c (d/e), eft20c.c (water_ck), eft20d.c (Eft20_set/_set2/_set_pl,
 water_set). Not attempted (big): eft20_i (4.3 KB), _m (4.6 KB), _t (5.1 KB),
 _pos_set (3.5 KB). Same lessons as eft13 (func_544C90 calls, `sc` local).
+
+eft06 update: eft06_t matches too (18/19); it is merged with d/e and the
+spawners into eft06b.c (0x104D30-0x105B10, table 0x357A70-0x357A98),
+eft06c.c is gone. Lessons from eft06_t:
+- A switch whose default only returns, with the original branching to the
+  epilogue right after the compares: write `default: return;` FIRST.
+- An address the original loads into a saved register before an unrelated
+  call is a local pointer assigned there (`fa = fade_type7_61_4;`).
+- `col &= 0xFFFFFF` compiles to dsll32/dsrl32 by 8 (u32 local in memory).
+- eft_rgba_linear's time argument is an int here (callers pass lhu/lh as
+  loaded); an s16 prototype turned the u16 load into lh.

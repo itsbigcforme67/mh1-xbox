@@ -1,10 +1,10 @@
 /* eft06 - SLPM_654.95 0x00102BD0-0x00103A38 (first matching run; eft06_m
- * and eft06_t are still asm, the rest is in eft06b.c / eft06c.c). Whole
+ * is still asm, the rest is in eft06b.c). Whole
  * file 0x00102BD0-0x00105B10. Hit sparks on players and
  * monsters with ten types (arg): each spawns up to eft06_num[arg] sprites
  * (0x38-byte pieces in ew->work) placed on a joint of the owner (ew->stg),
  * with per-type start values (eft06_i) and keyframe animation (eft06_m,
- * eft06_t, still asm). Type 7 uses the second prim pool. Spawned by
+ * still asm; eft06_t draws). Type 7 uses the second prim pool. Spawned by
  * Eft06_set (on a joint), Eft06_set2 (at a point) and Eft06_set_hit (on a
  * hit monster, sized by enemy_shadow/mahi tables of game.bin). Names of the
  * types are not known. */
