@@ -106,7 +106,7 @@ s32 Ext_pick_point_ck(PLW *);
 s32 St_pick_ck(PLW *, u16 *, f32 *);
 s32 Online_ck(void);
 void Pl_chat_act_set(PLW *);
-void item_action_set(PLW *, int);
+void item_action_set(PLW *, u8);
 void job_special_com_ck(PLW *, u8);
 void search_act_set(PLW *, u8);
 int stick_dir_set(PLW *, int);
@@ -122,4 +122,11 @@ s32 wall_act_ck(PLW *, s16);
 s32 wall_vec_set(PLW *, s16);
 typedef struct { u16 flag; u16 _02; f32 *vec; u8 _08[4]; } PL_WALL; /* 12 bytes, 21 per player (guess) */
 extern PL_WALL pl_wall_mat[][21];
+s32 Modori_dama_ck(void);
+s32 Niku_ok_ck(void);
+s32 Nikuyaki_ck(PLW *);
+s32 Taru_ok_ck(void);
+void pl_to_normal(PLW *, int, int, int);
+long Get_Active_itemnum(void);
+s16 Pl_trap_use_ck(PLW *);
 #endif
