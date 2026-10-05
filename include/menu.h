@@ -55,7 +55,7 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     u8 _pad4F;
     s16 x50;          /* 0x50  */
     s16 x52;          /* 0x52  */
-    s8 x54;           /* 0x54  */
+    u8 x54;           /* 0x54  */
     u8 _pad55[0x57 - 0x55];
     s8 x57;           /* 0x57  */
     s8 x58;           /* 0x58  */
@@ -65,9 +65,11 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     s8 x5D;           /* 0x5D  */
     u16 x5E;          /* 0x5E  */
     s16 x60;          /* 0x60  */
-    u8 _pad62[0x64 - 0x62];
+    u8 x62;           /* 0x62 */
+    u8 x63;           /* 0x63 */
     u8 x64;           /* 0x64  */
-    u8 _pad65[0x68 - 0x65];
+    u8 x65;           /* 0x65 */
+    s16 x66;          /* 0x66 */
     s32 x68;          /* 0x68  */
     u16 x6C;          /* 0x6C  */
     u16 x6E;          /* 0x6E  */
@@ -89,7 +91,7 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     s8 x84;           /* 0x84  */
     u8 _pad85[0x88 - 0x85];
     u8 x88;           /* 0x88  */
-    s8 lb;            /* 0x89 1 in the lobby */
+    u8 lb;            /* 0x89 1 in the lobby */
     u8 x8A;           /* 0x8A game_w+0x1DD */
     u8 x8B;           /* 0x8B game_w+0x0F */
     u8 x8C;           /* 0x8C option_w+3 */

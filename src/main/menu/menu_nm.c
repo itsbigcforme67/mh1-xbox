@@ -3,13 +3,15 @@
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
-#include "plf.h"
 
 extern u8 Psw[];
 extern u8 enemy_icon_tbl[];
 extern f32 map_size[][2];
 extern u8 room_member_id[];
 
+void *memset(void *, int, int);
+void se_req(int, int, int);
+extern u8 Item_data[327][16];
 void Chat_log_clear(void);
 void pit_prim_init(void);
 u16 pit_key_repeat(u16, u16);
@@ -684,6 +686,17 @@ int Item_preparation_list_search(s8 *, s8, u16 *, u16 *);
 int Monster_list_search(s8, int);
 int Get_weapon_job2(u8, u16);
 void vib_set(int, int);
+extern u16 item_pick_declaration_code;
+extern s16 item_pick_declaration_timer;
+int Pl_master_ck(void);
+int Check_hold_item(int);
+void Pl_item_get_se(PLW *, int);
+int Pl_item_stack(PLW *, int, int);
+void set01_set(int, int, s16);
+int item_stock_mv(u16);
+void ItemCopy_Pl2Ud(PLW *);
+void net_send_sys(int, u8);
+f32 flSqrt(f32);
 void menu_data_mix_sub(int);
 void menu_data_monster_sub(int);
 
@@ -921,3 +934,140 @@ int menu_option_mv(int sw) {
 }
 
 #undef OPT
+int ItemPickingDeclaration(int arg, s16 *code) {
+    u16 c;
+
+    if (arg != 0 && Pl_master_ck() == 0) {
+        return -1;
+    }
+    if (lpPit->x07 != 0) {
+        return -1;
+    }
+    if (item_pick_declaration_timer <= 0) {
+        c = item_pick_declaration_code + 1;
+        item_pick_declaration_code = c;
+        *code = c;
+        item_pick_declaration_timer = 4;
+        return 0;
+    }
+    if ((s16)*code == item_pick_declaration_code) {
+        item_pick_declaration_timer = 4;
+        return 0;
+    }
+    return -1;
+}
+
+int ItemStockRequest(PLW *pl, int id, int code, int flags) {
+    int r;
+    int t;
+
+    if (lpPit->x07 != 0) {
+        return -1;
+    }
+    if (item_pick_declaration_timer > 0 && (s16)code != item_pick_declaration_code) {
+        return -1;
+    }
+    r = Pl_item_stack(pl, id, 1) & 0xFFFF;
+    lpPit->x52 = 0;
+    switch (r) {
+    case 0:
+    case 1:
+        t = flags & 0xFF;
+        if (t & 2) {
+            Pl_item_get_se(pl, id);
+        }
+        if (t & 1) {
+            set01_set(1, 0, id);
+        }
+        break;
+    case 2:
+    case 3:
+        if ((u8)flags & 1) {
+            set01_set(1, 3, id);
+        }
+        break;
+    case 5:
+        if (Check_hold_item(id) & 0xFF) {
+            if ((u8)flags & 1) {
+                set01_set(0, 12, 0);
+            }
+            return 5;
+        }
+        lpPit->x52 = id;
+        lpPit->x07 = 1;
+        lpPit->x50 = id;
+        if ((u8)flags & 2) {
+            Pl_item_get_se(pl, id);
+        }
+        lpPit->x54 = 0xFF;
+        break;
+    }
+    return (s16)r;
+}
+
+int lb_item_stock_mv(u16 sw) {
+    int r = item_stock_mv(sw);
+
+    if (r != 0) {
+        ItemCopy_Pl2Ud(lpPit->pl);
+    }
+    return r;
+}
+
+void map_move(int sw) {
+    if (lpPit->lb == 0 && lpPit->x83 == 0 && ((u16)sw & 0x4000)) {
+        lpPit->x3E ^= 1;
+    }
+}
+
+#define SIGN(o) (*(s16 *)((u8 *)lpPit + (o) + 0x34))
+void map_sign_move(int sw) {
+    int i;
+    int o;
+
+    o = 0;
+    for (i = 0; i < 4; i++, o += 2) {
+        if (SIGN(o) < 100 && SIGN(o) % 20 == 0) {
+            se_req(1, SIGN(o) / 20 + 0x7B, 0);
+        }
+        if (SIGN(o) >= 0) {
+            SIGN(o)++;
+        }
+        if (SIGN(o) >= 0x6A) {
+            SIGN(o) = -1;
+        }
+    }
+    if (SIGN(game_w.master * 2) < 0 && ((u16)sw & 2)) {
+        lpPit->x3C--;
+        if (lpPit->x3C <= 0) {
+            SIGN(game_w.master * 2) = 0;
+            net_send_sys(9, game_w.master);
+        }
+        return;
+    }
+    lpPit->x3C = 10;
+}
+#undef SIGN
+
+void MapSignRequest(int no) {
+    (&lpPit->x34)[no] = 0;
+}
+
+void Item_box_get_efct(EMW *em) {
+    lpPit->x60 = 0x1F;
+    lpPit->x62 = FLD8(*em, 0x8C3);
+}
+
+void Item_box_get_item(s16 id, u8 slot) {
+    f32 dx;
+    f32 dy;
+    u8 d;
+
+    lpPit->x66 = id;
+    lpPit->x65 = slot;
+    dx = 0.8f * (313.0f + 36.0f * (lpPit->x65 & 7)) - 252.0f;
+    dy = (lpPit->x65 >> 3) * 32 - 162;
+    d = (u32)(0.1f * flSqrt(dx * dx + dy * dy));
+    lpPit->x64 = d;
+    lpPit->x63 = d;
+}
