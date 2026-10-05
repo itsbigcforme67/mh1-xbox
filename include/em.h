@@ -230,29 +230,58 @@ typedef struct EMW {
     u8 x7F0;            /* 0x7F0 */
     u8 x7F1;            /* 0x7F1 */
     u8 x7F2;            /* 0x7F2 */
-    u8 _pad7F3[0x810 - 0x7F3];
+    u8 _pad7F3[0x800 - 0x7F3];
+    u8 *** cmd_tbl;     /* 0x800 *cmd_tbl = list of this monster's programs (em_cmdN_tbl[kind]) */
+    u8 * cmd_pc;        /* 0x804 command program pointer */
+    u8 * cmd_p808;      /* 0x808 jump target of end code 1 */
+    u8 * cmd_p80C;      /* 0x80C jump target of end code 2 */
     f32 x810;           /* 0x810 */
     f32 x814;           /* 0x814 */
     f32 x818;           /* 0x818 compared with x8C4[x883] (em16_act_act_set) */
     f32 x81C;           /* 0x81C */
-    u8 _pad820[0x827 - 0x820];
+    u16 cmd_idx;        /* 0x820 program number within cmd_tbl */
+    s16 x822;           /* 0x822 (command interpreter state) */
+    s16 x824;           /* 0x824 (command interpreter state) */
+    u8 x826;            /* 0x826 (command interpreter state) */
     u8 x827;            /* 0x827 */
     u8 x828;            /* 0x828 */
     u8 x829;            /* 0x829 em08_senkai_pos_no result */
-    u8 _pad82A[0x839 - 0x82A];
+    s8 x82A;            /* 0x82A (command interpreter state) */
+    u8 x82B;            /* 0x82B (command interpreter state) */
+    u8 * cmd_route;     /* 0x82C pc inside a route command */
+    u8 x830;            /* 0x830 (command interpreter state) */
+    u8 x831;            /* 0x831 (command interpreter state) */
+    u8 x832;            /* 0x832 (command interpreter state) */
+    u8 x833;            /* 0x833 (command interpreter state) */
+    u8 * cmd_kehai;     /* 0x834 pc inside a kehai (sense) command */
+    u8 x838;            /* 0x838 (command interpreter state) */
     u8 x839;            /* 0x839 set by em14 move action 1 */
-    u8 _pad83A[0x83B - 0x83A];
+    u8 x83A;            /* 0x83A (command interpreter state) */
     u8 x83B;            /* 0x83B */
-    u8 _pad83C[0x844 - 0x83C];
+    u8 * cmd_find;      /* 0x83C pc inside a find command */
+    u8 * cmd_p840;      /* 0x840 jump target of end code 3 */
     s8 x844;            /* 0x844 */
-    u8 _pad845[0x84D - 0x845];
+    u8 x845;            /* 0x845 (command interpreter state) */
+    u8 x846;            /* 0x846 (command interpreter state) */
+    u8 x847;            /* 0x847 (command interpreter state) */
+    u8 * cmd_p848;      /* 0x848  */
+    u8 x84C;            /* 0x84C (command interpreter state) */
     u8 x84D;            /* 0x84D (em15 fly 11) */
     s8 x84E;            /* 0x84E */
-    u8 _pad84F[0x86D - 0x84F];
+    u8 x84F;            /* 0x84F (command interpreter state) */
+    u8 _pad850[0x854 - 0x850];
+    s32 x854;           /* 0x854 (command interpreter state) */
+    u8 * cmd_p858;      /* 0x858  */
+    u8 * cmd_smell;     /* 0x85C pc inside a smell command */
+    u8 * cmd_yobi;      /* 0x860 pc inside a call-for-help command */
+    u8 * cmd_ikari;     /* 0x864 pc inside an anger command */
+    u8 * cmd_p868;      /* 0x868  */
+    u8 x86C;            /* 0x86C (command interpreter state) */
     u8 x86D;            /* 0x86D */
     u8 x86E;            /* 0x86E */
     u8 x86F;            /* 0x86F */
-    u8 _pad870[0x876 - 0x870];
+    u8 * cmd_top;       /* 0x870 start of the running program */
+    s16 cmd_ofs;        /* 0x874 cmd_pc - cmd_top (debug) */
     u8 x876;            /* 0x876 joint of the hagi pick point (Em_hagi_point_set), 0 = none */
     u8 _pad877;
     struct EFTW *tail;  /* 0x878 cut-tail effect (eft09_set) */
@@ -292,7 +321,7 @@ typedef struct EMW {
     s8 x8BB;            /* 0x8BB (s8: Em_Damage_Stock) set to 10 while ex+4 is non-zero (em29_main) */
     u8 x8BC;            /* 0x8BC */
     u8 x8BD;            /* 0x8BD 1 while paralysed (em19 dm02) */
-    u8 _pad8BE[0x8BF - 0x8BE];
+    s8 x8BE;            /* 0x8BE (command interpreter state) */
     u8 x8BF;            /* 0x8BF */
     s8 x8C0;            /* 0x8C0 */
     s8 x8C1;            /* 0x8C1 */
@@ -311,7 +340,11 @@ typedef struct EMW {
     s32 x918[4];        /* 0x918 */
     s8 x928;            /* 0x928 */
     s8 x929;            /* 0x929 */
-    u8 _pad92A[0x92F - 0x92A];
+    s8 x92A;            /* 0x92A (command interpreter state) */
+    s8 x92B;            /* 0x92B (command interpreter state) */
+    s8 x92C;            /* 0x92C (command interpreter state) */
+    s8 x92D;            /* 0x92D (command interpreter state) */
+    u8 x92E;            /* 0x92E (command interpreter state) */
     u8 x92F;            /* 0x92F */
     f32 act_spd;        /* 0x930 animation speed, 1.0 set by every em*_act_set (guess) */
     f32 tgt_pos[3];     /* 0x934 target position (CalcDistanceXZ/Em_Calc_angY from pos) */
@@ -340,7 +373,9 @@ typedef struct EMW {
     struct EMW * boss;  /* 0x9D4 */
     u8 _pad9D8[0x9D9 - 0x9D8];
     u8 x9D9;            /* 0x9D9 */
-    u8 _pad9DA[0x9E1 - 0x9DA];
+    u8 x9DA;            /* 0x9DA (command interpreter state) */
+    u8 x9DB;            /* 0x9DB (command interpreter state) */
+    u8 _pad9DC[0x9E1 - 0x9DC];
     s8 x9E1;            /* 0x9E1 (em18/em29_init: 5; Em_Yobi_Ck: non-zero = no call for help) */
     u8 x9E2;            /* 0x9E2 */
     u8 x9E3;            /* 0x9E3 (u8: em_escape_action_ck) */
