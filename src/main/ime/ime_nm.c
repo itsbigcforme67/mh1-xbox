@@ -175,7 +175,7 @@ void clear_prevwd();
 void kh_learn();
 void prev_learn();
 void add_prevwd();
-void api_funcent();
+int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
 int ask_sjis2jis();
@@ -309,7 +309,7 @@ int dic_get1num();
 int dic_getallnum();
 int dic_get1wd();
 int dic_getallwd();
-int kh_priority();
+u16 kh_priority();
 KH *null_kouho();
 KH *create_kouho();
 KH *get_kouholist();
@@ -352,6 +352,32 @@ void bs_ctd();
 int calc_point();
 int ignore_syn();
 int setu_point();
+void bs_prefix();
+int ktu_match();
+int syn_match();
+int josi_match();
+int setu_match();
+int to_roman();
+int ToUpper();
+u8 *getrda1();
+u8 *getrda2();
+int add_kana_buf();
+int bytesin_kana_buf();
+int count_byte_kana_buf();
+int api_funcent();
+int get_kouhostr();
+int syn_2to3();
+void wd_learn();
+u8 *select_tostr();
+u8 *select_subtostr();
+void init_kouho();
+extern u8 rmspec[39];
+extern u8 rmtab[528];
+extern u8 prmtab[108];
+extern u8 tab_2to3[30];
+extern int roman_japan, lock_mode;
+extern u8 dic_name[128];
+extern int (*D_0034ABEC[])();
 extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
@@ -1957,7 +1983,7 @@ int max_rtime(u8 *ent)
     return (u8)m;
 }
 
-int dic_touroku(SYNR *w)
+int dic_touroku(WD *w)
 {
     int isnew;
     int need;
@@ -3809,7 +3835,8 @@ void unify_bsmem(int pos, int len)
     }
 }
 
-int bunsetu_len(int pos)
+int bunsetu_len(pos)
+int pos;
 {
     HCHAR *h;
 
@@ -4307,7 +4334,8 @@ KH *raw_kouho(int pos, int len, int mode)
     return create_kouho((u8 *)wdsbuf, 0, len, &out);
 }
 
-void khmem_raw(int mode)
+void khmem_raw(mode)
+int mode;
 {
     HCHAR *h;
 
@@ -5177,4 +5205,1160 @@ int bs_point(BS *b, int pos, int end)
     }
     b->x08 = best;
     return 0;
+}
+
+void bs_prefix(int pos)
+{
+    BS *b;
+    PW *pw;
+
+    for (b = hchar[pos].bs; b != 0; b = b->next) {
+        b->x0A = 0;
+        pw = b->pw;
+        if (pw != 0 && pw->x02 == 0x19 && pw->x00 == 0) {
+            b->x0A = 0xA;
+        }
+    }
+}
+
+void bs_ctd(BS *b, int pos, int end)
+{
+    BS *n;
+    s16 pt;
+    int p;
+
+    if (b->x02 == 0xFF || (p = pos + b->len) >= end) {
+        return;
+    }
+    n = hchar[p].bs;
+    if (n == 0) {
+        return;
+    }
+    while (n != 0) {
+        n->x0A = 0;
+        if (ignore_syn(n) == 0) {
+            pt = setu_point(b, n);
+            if (pt > 0) {
+                n->x0A = pt;
+            }
+        }
+        n = n->next;
+    }
+}
+
+int ignore_syn(BS *b)
+{
+    PW *pw;
+
+    pw = b->pw;
+    if (pw != 0 && (pw->x02 == 0x28 || pw->x02 == 0x29)) {
+        return 1;
+    }
+    return 0;
+}
+
+int setu_point(BS *b, BS *n)
+{
+    int pt;
+    int a;
+    int c;
+    int t;
+    int u;
+    int k;
+    PW *p;
+
+    pt = 0;
+    u = 0;
+    a = b->x02;
+    c = 0;
+    if (a >= 0x2D && a < 0x39) {
+        u = b->x03;
+    } else {
+        c = b->x03;
+    }
+    t = 0;
+    if (n != 0) {
+        p = n->pw;
+        t = 0;
+        if (p != 0) {
+            t = p->x02;
+            if (t == 0x28) {
+                return 0;
+            }
+            if (t == 0x29 || (t == 0x19 && p->x00 > 0) || (t == 0x1F && p->id == 0xFFFFFFFF)) {
+                pt += 0x14;
+            }
+        }
+    }
+    p = b->pw;
+    if (p != 0) {
+        k = p->x02;
+        if (k == 0x19 && p->x00 == 0) {
+            pt += 0xA;
+        } else if (k == 0x1B || k == 0x1C) {
+            pt += 3;
+        } else if (k == 0x1A) {
+            pt += 2;
+        } else if (k < 0x1A || k >= 0x1F) {
+            pt += 1;
+        }
+    }
+    if ((c & 0xFF) != 0 || a == 0xD) {
+        return ktu_match(a, c, t, pt);
+    }
+    if (a == 0x2D) {
+        return setu_match(u, t, 0xFF, pt, 0);
+    }
+    k = t & 0xFF;
+    if (k >= 0x32 && k < 0x39) {
+        p = n->pw;
+        if (p != 0) {
+            u = p->x03;
+        } else {
+            u = 0;
+        }
+        return setu_match(u & 0xFF, a, c, pt, 0);
+    }
+    if (a >= 0x14 && a < 0xC0) {
+        return syn_match(a, t, pt, pt);
+    }
+    if (a >= 0xC0) {
+        return josi_match(a, t, pt);
+    }
+    return pt;
+}
+
+int ktu_match(a, b, c, base)
+int a;
+int b;
+int c;
+int base;
+{
+    a = a & 0xFF;
+    if (a == 0xD && !(b & 0xFF)) {
+        c = c & 0xFF;
+        if (c > 0 && c < 0x18) {
+            return base + 3;
+        }
+        return base;
+    }
+    b = b & 0xFF;
+    if (b >= 4 && b < 7 && (c & 0xFF) > 0 && (c & 0xFF) < 0x18) {
+        switch (a) {
+        case 0x8E:
+            if (b == 6) {
+                return base + 0xA;
+            }
+            return base;
+        case 0x8D:
+            return base + 0xA;
+        default:
+            return base + 3;
+        }
+    }
+    if (b == 8) {
+        c = c & 0xFF;
+        if (c >= 0x14 && c < 0x19) {
+            if (a >= 0x80 && a < 0x8F) {
+                return base + 0xF;
+            }
+            if (a == 0x92 || a == 0x94 || a == 0xA0 || a == 0xA2 || (u32)(a - 0xAE) < 2 || a == 0xB1 || a == 1) {
+                return base + 0xF;
+            }
+            if (a >= 0xA && a < 0xD) {
+                return base + 0xF;
+            }
+            return base + 3;
+        }
+    }
+    return base;
+}
+
+int setu_match(a, b, c, base, extra)
+int a;
+int b;
+int c;
+int base;
+int extra;
+{
+    int r;
+
+    r = 0;
+    b = b & 0xFF;
+    switch (a & 0xFF) {
+    case 0:
+        if ((b >= 0x14 && b < 0x1A) || b == 0x32) {
+            r = 0xF;
+        }
+        break;
+    case 1:
+        if (b == 0x1A) {
+            r = 0xF;
+        }
+        break;
+    case 2:
+        if (b == 0x1B || b == 0x1C) {
+            r = 0x14;
+        }
+        break;
+    case 3:
+        if (b == 0x1F || b == 0x38) {
+            r = 0x14;
+        }
+        break;
+    case 4:
+        if (b == 0x16) {
+            r = 0x14;
+        }
+        break;
+    case 5:
+        c = c & 0xFF;
+        if (c == 0xFF) {
+            if (b > 0 && b < 0xE) {
+                r = 0xF;
+            }
+        } else if (b >= 0x80 && b < 0x8C && c == 4) {
+            r = 0xF;
+        } else if (b == 0xD && c == 0) {
+            r = 0xF;
+        }
+        break;
+    case 6:
+        if (b >= 0x14 && b < 0x1A) {
+            r = 0xF;
+        } else if (b == 0x1F || b == 0x38) {
+            r = 0x14;
+        }
+        break;
+    case 7:
+        if (b == 0x1D) {
+            r = 0xF;
+        }
+        break;
+    case 8:
+        if ((b >= 0x14 && b < 0x1A) || (b > 0 && b < 0xE)) {
+            r = 0x14;
+        }
+        break;
+    }
+    if (r == 0) {
+        return base;
+    }
+    return extra + (base + r);
+}
+
+int syn_match(a, b, base)
+int a;
+int b;
+int base;
+{
+    a = a & 0xFF;
+    b = b & 0xFF;
+    if (a >= 0x14 && a < 0x19) {
+        if (b >= 0x14 && b < 0x19) {
+            return base + 3;
+        }
+        return base;
+    }
+    switch (a) {
+    case 0x1F:
+        if (b == 0x1F) {
+            return base + 0xF;
+        }
+        break;
+    case 0x21:
+    case 0x26:
+    case 0x27:
+        return base + 0x14;
+    case 0x20:
+    case 0x22:
+        return base + 0xF;
+    case 0x1B:
+        if (b == 0x1C) {
+            return base + 0x14;
+        }
+        break;
+    case 0x1A:
+        if (b == 0x1A) {
+            return base + 5;
+        }
+        break;
+    }
+    return base;
+}
+
+int josi_match(b, c, d, base)
+BS *b;
+int c;
+int d;
+int base;
+{
+    PW *p;
+    int k;
+    int t;
+    int v;
+
+    k = 0;
+    p = b->pw;
+    if (p != 0) {
+        t = p->x02;
+        if ((t >= 0x14 && t < 0x1A) || t == 0x32) {
+            k = 1;
+            if (p->x00 + 1 == b->len) {
+                k = 2;
+            }
+        }
+    }
+    c = c & 0xFF;
+    d = d & 0xFF;
+    switch (c) {
+    case 0xC7:
+        v = 0;
+        if (d > 0 && d < 0xE) {
+            v = 1;
+        }
+        if (v != 0) {
+            return base + 0x1E;
+        }
+        return base + 0x19;
+    case 0xC8:
+        if (d == 0) {
+            return base;
+        }
+        if (k == 2) {
+            return base + 0x14;
+        }
+        return base + 5;
+    case 0xE1:
+    case 0xC1:
+        if (k == 2) {
+            base += 5;
+        }
+        return base;
+    default:
+        if ((u32)(c - 0xC4) < 2 || (c >= 0xCE && c < 0xD2)) {
+            if ((d > 0 && d < 0xE) || (d >= 0x16 && d < 0x18)) {
+                return base + 5;
+            }
+            return base;
+        }
+        if (c == 0xC2) {
+            if (d == 0) {
+                return base;
+            }
+            if (k == 2) {
+                base += 3;
+            }
+            return base;
+        }
+        if (c >= 0xFC && c < 0xFE && d > 0 && d < 0x18) {
+            return base + 0x12;
+        }
+        switch (c) {
+        case 0xFE:
+        case 0xFA:
+            if (d >= 0x14 && d < 0x19) {
+                return base + 0x12;
+            }
+        default:
+            return base;
+        }
+    }
+}
+
+u16 kh_priority(BS *b, int v)
+{
+    v = v & 0xFFFF;
+    if (v != 0) {
+        return (v + 0x3E8) & 0xFFFF;
+    }
+    return b->x08;
+}
+
+int is_alphanum(int c)
+{
+    return rmtype[c & 0xFF] & 0xC0;
+}
+
+int is_num(int c)
+{
+    return rmtype[c & 0xFF] & 0x80;
+}
+
+int is_alpha(int c)
+{
+    return rmtype[c & 0xFF] & 0x40;
+}
+
+int is_paren(int c)
+{
+    return rmtype[c & 0xFF] & 0x20;
+}
+
+int to_roman(u16 *src, int n, u16 *out, int *cnt)
+{
+    int kind;
+    int step;
+    int sub;
+    int t;
+    int v;
+    u16 *p;
+    u8 *e;
+    int c;
+    u8 *r;
+
+    step = 1;
+    kind = rmtype[src[0] & 0xFF] & 0xF;
+    *cnt = 1;
+    if (kind < 0xA) {
+        if (kind < 6) {
+            p = src;
+            e = rmtab + 1;
+            goto got;
+        }
+        if (kind < 9 || roman_japan == 0) {
+            out[0] = to_zenkaku(src[0] & 0xFF);
+        } else {
+            out[0] = to_zenkaku_spec(src[0] & 0xFF);
+        }
+        return 1;
+    }
+    v = 0;
+    if (kind < 0xD) {
+        if (kind == 0xC) {
+            out[0] = ext_jis(0x73, src[0] & 0xFF);
+            v = 1;
+        } else {
+            out[0] = to_zenkaku(src[0] & 0xFF);
+            v = 2;
+            if (kind != 0xA) {
+                v = 3;
+            }
+        }
+    }
+    if (n == 1) {
+        return -((v & 0xFFFF) != 0);
+    }
+    t = src[1];
+    c = t & 0xFF;
+    p = src + 1;
+    if (src[0] == c) {
+        if (kind == 0xC) {
+            return 2;
+        }
+        if (kind >= 0xD) {
+            out[0] = ext_jis(0x43, t);
+            return 1;
+        }
+    }
+    sub = v & 0xFFFF;
+    if (sub == 1 && c == 0x27) {
+        return 2;
+    }
+    kind = rmtype[c & 0xFF] & 0xF;
+    if (kind == 7 && sub == 3) {
+        out[0] = out[0] + 2;
+        return 2;
+    }
+    if (kind == 6 && sub >= 2) {
+        out[0] = out[0] + 1;
+        if (src[0] == 0xB3) {
+            out[0] = ext_jis(0x74, src[1]);
+        }
+        return 2;
+    }
+    if (sub >= 2 || (kind >= 6 && kind < 0xF && sub == 1)) {
+        return 1;
+    }
+    step = 2;
+    for (;;) {
+        if (kind < 6) {
+            r = getrda2(src, p + 1);
+            e = r;
+            if (r == 0) {
+                r = getrda1(src, p);
+                e = r;
+                if (r == 0) {
+                    return -2;
+                }
+got:
+                e = e + (kind - 1) * 2;
+            }
+            out[0] = ext_jis(e[0], *p);
+            if (e[1] != 0) {
+                out[1] = ext_jis(e[1], *p);
+                *cnt = 2;
+            }
+            return step;
+        }
+        step++;
+        if (step >= n) {
+            return 0;
+        }
+        p++;
+        kind = rmtype[*p] & 0xF;
+        if (kind >= 6 && kind < 0xD) {
+            return -2;
+        }
+        if (step >= 5) {
+            return -2;
+        }
+    }
+}
+
+int ToUpper(int c)
+{
+    int u;
+
+    u = c & 0xFF;
+    if (u >= 0x61 && u < 0x7B) {
+        return (u - 0x20) & 0xFF;
+    }
+    return c;
+}
+
+u8 *getrda2(u16 *a, u16 *b)
+{
+    int n;
+    u8 *p;
+    u16 *q;
+    int k;
+    int len;
+    u8 key;
+
+    n = b - a;
+    p = rmspec;
+    while (*p != 0) {
+        len = *p;
+        p++;
+        if (n == len) {
+            q = a;
+            k = n;
+            while (k > 0) {
+                key = *p;
+                if (key != (ToUpper(*q) & 0xFF)) {
+                    break;
+                }
+                q++;
+                k--;
+                p++;
+            }
+            if (k == 0) {
+                return p;
+            }
+            p += k;
+        } else {
+            p += len;
+        }
+        while (*p++ != 0) {
+        }
+    }
+    return 0;
+}
+
+u8 *getrda1(u16 *a, u16 *b)
+{
+    int n;
+    int c;
+    int idx;
+    u32 *tp;
+    u8 *e;
+    u8 *end;
+    int up;
+
+    n = b - a;
+    switch (n) {
+    case 0:
+        return rmtab + 1;
+    case 2:
+    case 1:
+        c = a[0] & 0xFF;
+        if (c >= 0x61 && c < 0x7B) {
+            idx = c - 0x61;
+        } else if (c >= 0x41 && c < 0x5B) {
+            idx = c - 0x41;
+        } else {
+            return 0;
+        }
+        tp = (u32 *)prmtab + idx;
+        e = (u8 *)*tp;
+        if (n == 1) {
+            return e + 1;
+        }
+        do {
+            tp++;
+            end = (u8 *)*tp;
+        } while (end == 0);
+        e += 0xB;
+        up = ToUpper(a[1]) & 0xFF;
+        while (e < end) {
+            if (*e == up) {
+                return e + 1;
+            }
+            e += 0xB;
+        }
+        return 0;
+    default:
+        return 0;
+    }
+}
+
+int add_kana_buf(u8 *s)
+{
+    KANA *kb;
+    u8 *us;
+    int len;
+    int bytes;
+    int lead;
+    int c;
+    int code;
+
+    kb = pkana_buf;
+    lead = 0;
+    us = p_ustr;
+    len = kana_len;
+    c = *s;
+    bytes = bytesin_kana_buf(kana_buf, kb);
+    while (c != 0) {
+        if (lead != 0) {
+            code = ask_sjis2jis(((lead & 0xFFFF) << 8) | (c & 0xFF)) & 0xFFFF;
+            if (code != 0) {
+                if (len >= 0x24 || bytes >= 0x4E) {
+                    return -1;
+                }
+                kb->ch = code;
+                kb->n = 2;
+                kb++;
+                *us = to_ucode(code);
+                len++;
+                us++;
+                bytes += 2;
+            }
+            lead = 0;
+        } else if (is_kanji(c) != 0) {
+            lead = *s;
+        } else {
+            c = *s;
+            if ((c >= 0x20 && c < 0x7F) || (c >= 0xA0 && c < 0xE0)) {
+                if (len >= 0x24 || bytes >= 0x4F) {
+                    return -1;
+                }
+                kb->ch = c;
+                len++;
+                bytes++;
+                kb->n = 1;
+                lead = 0;
+                *us = 0;
+                kb++;
+                us++;
+            }
+        }
+        s++;
+        c = *s;
+    }
+    pkana_buf = kb;
+    ekana_buf = kb;
+    kana_len = len;
+    p_ustr = us;
+    e_ustr = us;
+    return len;
+}
+
+int bytesin_kana_buf(KANA *a, KANA *b)
+{
+    for (; a < b; a++) {
+        if (a->ch & 0xFF00) {
+        }
+    }
+}
+
+int count_byte_kana_buf(int a, int n)
+{
+    while (n > 0) {
+        n--;
+    }
+}
+
+int api_funcent(int *req)
+{
+    int cmd;
+
+    cmd = *req;
+    if (cmd > 0 && (u32)cmd < 0x40) {
+        return D_0034ABEC[cmd]((u8 *)req + 4);
+    }
+    return -1;
+}
+
+int api_Rstrconv(int *a)
+{
+    u16 out[2];
+    int cnt;
+    u16 *src;
+    u16 *p;
+    u16 *q;
+    u8 *in;
+    u8 *dst;
+    int n;
+    int kind;
+    int r;
+    int d;
+    u16 v;
+    int j;
+
+    dst = (u8 *)a[1];
+    in = (u8 *)a[0];
+    if (a[-1] == 0xF) {
+        kind = 0x4100;
+    } else {
+        kind = 0x4000;
+    }
+    p = (u16 *)wdsbuf;
+    n = 0;
+    while (*in != 0 && (u32)p < (u32)mem) {
+        *p = *in | (kind & 0xFFFF);
+        in++;
+        n++;
+        p++;
+    }
+    src = (u16 *)wdsbuf;
+    while (n > 0) {
+        r = to_roman(src, n, out, &cnt);
+        if (r <= 0) {
+            if (r != -1) {
+                return (src - (u16 *)wdsbuf) + 1;
+            }
+            r = 1;
+        }
+        src += r;
+        n -= r;
+        q = out;
+        for (j = cnt; j != 0; j--) {
+            d = ask_jis2sjis(*q);
+            q++;
+            if (d == 0x82F2) {
+                d = 0x8394;
+            }
+            dst[0] = d >> 8;
+            dst[1] = d;
+            dst += 2;
+        }
+    }
+    *dst = 0;
+    return 0;
+}
+
+int api_henkan(int *a)
+{
+    u8 *in;
+    u8 *kana;
+    u8 *kj;
+
+    if (func_mode == 0) {
+        return -1;
+    }
+    in = (u8 *)a[0];
+    kj = (u8 *)a[2];
+    kana = (u8 *)a[1];
+    if (in != 0) {
+        if (func_mode >= 2) {
+            init_edit0();
+        }
+        if (add_kana_buf(in) < 0) {
+            return -1;
+        }
+    }
+    if (kana_len <= 0) {
+        *kana = 0;
+        *kj = 0;
+        return 0;
+    }
+    henkan(0, kana_len, 0, -1);
+    cur_pos = 0;
+    cur_len = bunsetu_len(0);
+    init_kouho(0, 1);
+    get_kouhostr(kana, kj);
+    func_mode = 3;
+    return kh_count(hchar[0].kh);
+}
+
+int get_kouhostr(u8 *a, u8 *b)
+{
+    strcpy(a, select_subtostr(cur_pos, cur_len));
+    strcpy(b, select_subtostr(cur_pos + cur_len, kana_len - cur_pos - cur_len));
+}
+
+int api_movekh(int *a)
+{
+    int cnt;
+    u8 *p;
+    u8 *q;
+    int n;
+
+    if (func_mode != 3) {
+        return 0;
+    }
+    q = (u8 *)a[1];
+    p = (u8 *)a[0];
+    switch (a[-1]) {
+    case 20:
+        if (gun_nkh > 0) {
+            gun_nkh--;
+        } else if (back_gun(0, 0) == 0) {
+            init_kouho(0, 1);
+            n = gun_num;
+            while (next_gun(0, 0) != 0) {
+                n += gun_num;
+            }
+            init_kouho(n - 1, 1);
+        } else {
+            gun_nkh = gun_num - 1;
+        }
+        break;
+    case 21:
+        if (gun_nkh < gun_num - 1) {
+            gun_nkh++;
+        } else if (next_gun(0, 0) == 0) {
+            init_kouho(0, 1);
+        }
+        break;
+    }
+    get_kouhostr(p, q);
+    return gun_nkh + 1;
+}
+
+int api_moveblk(int *a)
+{
+    int fail;
+    u8 *p;
+    u8 *q;
+
+    fail = 0;
+    if (func_mode != 3) {
+        return 0;
+    }
+    q = (u8 *)a[1];
+    p = (u8 *)a[0];
+    switch (a[-1]) {
+    case 22:
+        if (back_gun(0, 0) == 0) {
+            fail = 1;
+        }
+        break;
+    case 23:
+        if (next_gun(0, 0) == 0) {
+            fail = 1;
+        }
+        break;
+    }
+    get_kouhostr(p, q);
+    if (fail != 0) {
+        return 0;
+    }
+    return gun_num;
+}
+
+int api_allfix(int *a)
+{
+    u8 *out;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    out = (u8 *)a[0];
+    wd_learn(0, kana_len);
+    strcpy(out, select_tostr());
+    init_edit0();
+    func_mode = 1;
+    return 0;
+}
+
+int api_select(int *a)
+{
+    s16 *cnt;
+    u8 *k1;
+    u8 *k2;
+    u8 *out;
+    int r;
+    int n;
+    int pos;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    n = a[0];
+    if (n > 0 && gun_num >= n) {
+        out = (u8 *)a[1];
+        k1 = (u8 *)a[2];
+        k2 = (u8 *)a[3];
+        cnt = (s16 *)a[4];
+        gun_nkh = n - 1;
+        strcpy(out, select_subtostr(cur_pos, cur_len));
+        unify_khmem(cur_pos, 1);
+        r = count_byte_kana_buf(cur_pos, cur_len);
+        pos = cur_pos;
+        cur_pos = pos + cur_len;
+        if (cur_pos >= kana_len) {
+            *k1 = 0;
+            *k2 = 0;
+            *cnt = 0;
+            return r;
+        }
+        cur_len = bunsetu_len(cur_pos, pos);
+        init_kouho(0, 1);
+        get_kouhostr(k1, k2);
+        *cnt = kh_count(hchar[cur_pos].kh);
+        return r;
+    }
+    return 0;
+}
+
+int api_dicopen(void)
+{
+    if (lock_mode == 0) {
+        return -1;
+    }
+    if (dic_open(dic_name) == -7) {
+        return 1;
+    }
+    into_editing(0);
+    func_mode = 1;
+    return 0;
+}
+
+int api_dicclose(void)
+{
+    if (lock_mode == 0) {
+        return -1;
+    }
+    init_edit0();
+    dic_close();
+    func_mode = 0;
+    return 0;
+}
+
+int api_touroku(int *a)
+{
+    WD wd;
+    u8 *s;
+    u8 *d;
+    int cmd;
+    int kind;
+    int pri;
+    int len;
+    int c;
+    int u;
+    int r;
+
+    if (im_state >= 2) {
+        return 4;
+    }
+    if (func_mode >= 2) {
+        return 4;
+    }
+    kind = a[0];
+    cmd = a[-1];
+    if (kind != 1 && kind != 0) {
+        return 1;
+    }
+    s = (u8 *)a[1];
+    pri = a[2];
+    u = syn_2to3(a[3]);
+    if ((s8)u < 0) {
+        return 2;
+    }
+    len = 0;
+    d = yomi_buf;
+    while (*s != 0) {
+        c = ((*s << 8) | s[1]) & 0xFFFF;
+        if (is_shift(c) == 0) {
+            return 3;
+        }
+        u = to_ucode(ask_sjis2jis(c) & 0xFFFF) & 0xFF;
+        if (u == 0) {
+            return 3;
+        }
+        *d = u;
+        s += 2;
+        d++;
+        len++;
+    }
+    *d = 0;
+    wd.yomi = yomi_buf;
+    wd.len = len;
+    wd.x07 = u;
+    wd.tango = (u8 *)pri;
+    wd.x06 = 0;
+    wd.x08 = 0;
+    switch (cmd) {
+    case 30:
+        if (dic_touroku(&wd) == 3) {
+            return 0;
+        }
+        return 4;
+    case 31:
+        r = dic_delete(&wd);
+        if (r == 3) {
+            return 0;
+        }
+        if (r == 0) {
+            return -1;
+        }
+    default:
+        return 4;
+    }
+}
+
+int syn_2to3(int n)
+{
+    n--;
+    if (n >= 0 && n < 0x1E) {
+        return tab_2to3[n];
+    }
+    return -1;
+}
+
+int apis_dicname(int *a)
+{
+    strcpy(dic_name, a[0]);
+    return 0;
+}
+
+int api_khlong(int *a)
+{
+    u8 *p;
+    u8 *q;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    if (cur_pos + cur_len >= kana_len) {
+        return 0;
+    }
+    save_fst_bslen(cur_pos);
+    free_hchar(cur_pos, kana_len, 1);
+    cur_len++;
+    henkan(cur_pos, kana_len, 1, cur_len);
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
+    return kh_count(hchar[cur_pos].kh);
+}
+
+int api_khshort(int *a)
+{
+    u8 *p;
+    u8 *q;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    q = (u8 *)a[1];
+    p = (u8 *)a[0];
+    if (cur_len < 2) {
+        return 0;
+    }
+    save_fst_bslen(cur_pos);
+    free_hchar(cur_pos, kana_len, 1);
+    cur_len--;
+    henkan(cur_pos, kana_len, 1, cur_len);
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
+    return kh_count(hchar[cur_pos].kh);
+}
+
+int api_backbunsetu(int *a)
+{
+    int len;
+    int pos;
+    u8 *p;
+    u8 *q;
+
+    len = 0;
+    if (func_mode != 3) {
+        return -1;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    if (cur_pos == 0) {
+        return 0;
+    }
+    unify_khmem(cur_pos, 0);
+    pos = 0;
+    while (pos < cur_pos) {
+        len = bunsetu_len(pos);
+        if (pos + len >= cur_pos) {
+            break;
+        }
+        pos += len;
+    }
+    cur_pos = pos;
+    cur_len = len;
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
+    return kh_count(hchar[cur_pos].kh);
+}
+
+int api_nextbunsetu(int *a)
+{
+    u8 *p;
+    u8 *q;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    if (cur_pos + cur_len >= kana_len) {
+        return 0;
+    }
+    unify_khmem(cur_pos, 0);
+    cur_pos += cur_len;
+    cur_len = bunsetu_len(cur_pos);
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
+    return kh_count(hchar[cur_pos].kh);
+}
+
+int api_khhenkan(int *a)
+{
+    int mode;
+    u8 *p;
+    u8 *q;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    q = (u8 *)a[1];
+    p = (u8 *)a[0];
+    switch (a[-1]) {
+    case 37:
+        mode = 2;
+        break;
+    case 38:
+        mode = 1;
+        break;
+    case 39:
+        mode = 3;
+        break;
+    case 40:
+        mode = 4;
+        break;
+    default:
+        mode = 4;
+        break;
+    }
+    khmem_raw(mode, 3);
+    if (hchar[cur_pos].kh == 0) {
+        return -1;
+    }
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
+    return 0;
+}
+
+int api_none(void)
+{
+    return -1;
 }
