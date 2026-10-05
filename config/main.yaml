@@ -649,6 +649,8 @@ segments:
       - [0x127764, asm, text/Quest_condition_judging]
       - [0x127770, c, quest/f_questc]
       - [0x127CEC, asm, text/Em_direct_set]
+      - [0x127E30, c, quest/f_queste]
+      - [0x128124, asm, text/Quest_next_em_set]
       - [0x12C66C, asm, text/g_CnInetNetworkInitialize_online]
       - [0x12CB80, asm, text/f_aq]
       - [0x12DF28, asm, text/g_CpInetTcpSelect2]

@@ -509,3 +509,177 @@ int Quest_condition_judging(void)
     }
     return 0;
 }
+
+#define EM8(e, o) (*(s8 *)((u8 *)(e) + (o)))
+void *pull_enemy_work();
+void enemy_mv();
+
+EMW *Em_direct_set(q)
+QEM *q;
+{
+    EMW *em;
+    int i;
+    u8 *p;
+
+    for (i = 0, p = (u8 *)&game_w; i < 4; i++, p++) {
+        if (q->id == p[0x28]) {
+            break;
+        }
+    }
+    if (i >= 4) {
+        return 0;
+    }
+    em = pull_enemy_work(p);
+    if (em != 0) {
+        em->mdl_no = i;
+        em->kind = q->id;
+        em->type = q->x02;
+        EM8(em, 0x9EB) = q->x2C;
+        em->stg = game_w.stage;
+        em->hungry = q->x0C;
+        em->thirst = q->x10;
+        em->x8A0 = q->x14;
+        EM8(em, 0x95B) = q->x06;
+        em->pos[0] = q->pos[0];
+        em->pos[1] = q->pos[1];
+        em->pos[2] = q->pos[2];
+        em->ang[1] = q->x1C;
+        enemy_mv(em);
+        q->x0A = em->id;
+        if (q->x08 == -1) {
+            q->x08 = em->x302;
+            if (q->x05 != 0) {
+                quest_w.xB0 = em;
+            }
+        } else {
+            em->x302 = q->x08;
+        }
+    }
+    return em;
+}
+
+s32 *Em_data_com_adrs_get();
+s32 *Em_data_st_adrs_get(s32 *, int, int, s8);
+void func_5A8170();
+void push_em_work();
+void release_enemy_model();
+void enemy_insurance_sub();
+#define PL8(p, o) (*(u8 *)((u8 *)(p) + (o)))
+#define PL32(p, o) (*(s32 *)((u8 *)(p) + (o)))
+
+void Quest_next_em_clr(arg0, arg1)
+int arg0;
+int arg1;
+{
+    s32 *list;
+    EMW *e;
+    PLW *pl;
+    int i;
+    int found;
+    QEM *q;
+    s32 *p;
+    int j;
+    int v;
+    u8 *g;
+    s32 *p2;
+    int v2;
+    s32 *t74;
+
+    e = em_work;
+    pl = player_work;
+    list = Em_data_com_adrs_get(quest_w.x78, 0);
+    for (i = 0; i < 20; i++, e++) {
+        if (e->be_flag != 0) {
+            if (list != 0) {
+                p = list;
+                for (;;) {
+                    v = *p;
+                    if (v == -1) {
+                        found = 0;
+                        break;
+                    }
+                    if (e->x765 != 0) {
+                        found = 1;
+                        break;
+                    }
+                    if (e->kind == v) {
+                        found = 1;
+                        break;
+                    }
+                    p++;
+                }
+            } else {
+                found = 0;
+            }
+            if ((q = em_work_serch(e)) != 0 && q->x2E != 1 && found == 0) {
+                if (e->kind == 0x17) {
+                    func_5A8170(e);
+                }
+                if (e->x04 >= 2 || e->mode == 5) {
+                    Quest_enemy_die(e);
+                    if (q->x2E & 4) {
+                        q->x2E = 2;
+                        q->x08 = -1;
+                    }
+                } else {
+                    q->x08 = e->x302;
+                }
+                q->x0A = -1;
+            }
+            if (found == 0) {
+                if (e->kind == 0x12) {
+                    for (j = 0; j < game_w.pl_num; j++, pl++) {
+                        if (pl->be_flag != 0 && pl->x824 == e) {
+                            pl->x824 = 0;
+                        }
+                    }
+                }
+                push_em_work(e);
+            }
+        }
+    }
+    enemy_insurance_sub(arg0);
+    for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
+        v = g[0x28];
+        if (v > 0) {
+            if (list != 0) {
+                p2 = list;
+                for (;;) {
+                    v2 = *p2;
+                    if (v2 == -1) {
+                        found = 0;
+                        break;
+                    }
+                    if (v == v2) {
+                        found = 1;
+                        break;
+                    }
+                    p2++;
+                }
+                if (found != 0) {
+                    continue;
+                }
+            }
+            t74 = quest_w.x74;
+            list = Em_data_st_adrs_get(t74, arg1, 0, quest_w.x3A);
+            if (list != 0) {
+                for (;;) {
+                    if (*list == -1) {
+                        found = 0;
+                        break;
+                    }
+                    if (g[0x28] == *list) {
+                        found = 1;
+                        break;
+                    }
+                    list++;
+                }
+                if (found != 0) {
+                    continue;
+                }
+            }
+            release_enemy_model((s16)i);
+            g[0x28] = 0;
+        }
+    }
+}

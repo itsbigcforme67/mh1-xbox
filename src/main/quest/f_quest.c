@@ -35,6 +35,19 @@ void func_63ACA0();
 void set01_set();
 void set01_set2();
 
+#define EM8(e, o) (*(s8 *)((u8 *)(e) + (o)))
+void *pull_enemy_work();
+void enemy_mv();
+
+s32 *Em_data_com_adrs_get();
+s32 *Em_data_st_adrs_get();
+void func_5A8170();
+void push_em_work();
+void release_enemy_model();
+void enemy_insurance_sub();
+#define PL8(p, o) (*(u8 *)((u8 *)(p) + (o)))
+#define PL32(p, o) (*(s32 *)((u8 *)(p) + (o)))
+
 void Quest_error_set2(void)
 {
     game_w.x0D5 = 8;

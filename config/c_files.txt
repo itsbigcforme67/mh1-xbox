@@ -242,3 +242,4 @@ main 0x00293420 0x00293684 reward/f_rewardc
 main 0x00227100 0x0022715C quest/f_quest
 main 0x00227240 0x00227764 quest/f_questb
 main 0x00227770 0x00227CEC quest/f_questc
+main 0x00227E30 0x00228124 quest/f_queste
