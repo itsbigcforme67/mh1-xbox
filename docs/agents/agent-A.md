@@ -321,3 +321,18 @@ Done (each step committed; details in docs/pc.md "Player"):
 - Get_Active_itemnum relies on a0 = pl left by its caller (pl10.c calls it
   without arguments): the host version uses the master player.
 Shared header edit: include/plf.h pl_mv060/pl_at009/pl_at012 now K&R.
+- Hits: hit_check (hit_nm.c) now runs each tick after sync_joints (host
+  skeletons -> joint matrices for parts / get_joint_pos / hit_data_expand).
+  The SnS sword shell (shell00) hits the Rathian: damage, hit stop, hit
+  sounds, eft16 marks, eft05 slash trail (skinned ef_01 via
+  flSetSkinTrans). She does not react: needs enemy_mv / em_move (main,
+  not decompiled) and em01's damage states (agent B) on the PC.
+- Requests: agent F - main 0x14D1D0-0x155000 helpers (see rt_pl.c list),
+  parts_chg, Get_equip_value, Get_atk_value (stub returns 0: no element /
+  ailment on hits). Agent B/C - enemy_mv, em_move, em01 damage handling so
+  the Rathian can react. Anyone: f_sound (src/main/sound/f_sound_nm.c) is
+  a fresh m2c-based file, nothing compared with check.py yet.
+- Not done: items (square), gathering, carving, the quest's own monster
+  set-up (Rathian HP is a stand-in), pad vibration, parts_chg (hand model
+  swaps), weapon_dat_make node scaling (great sword / lance / hammer /
+  bowgun blade extension during some motions).
