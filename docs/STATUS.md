@@ -45,6 +45,21 @@ extracted to disc/mhg/ (gitignored). MH1 not yet supplied.
 - The LZSS decoder matches sizes but has not been compared with the game's
   own decompression routine.
 
+- eft22 (the fishing float, include/uki.h) matches except eft22_end_init
+  (4 instructions: the 35.0f/27.0f flight-time constant lands in v1 where
+  ours uses v0; an 8k-candidate permuter run found nothing). Split into
+  eft22.c / eft22b.c, near-match in eft22_nm.c. The 2956-byte eft22_m
+  matched. Findings, each checked with tools/check.py:
+  - MWCC tests switch cases in reverse source order: the original's
+    0x60, 0x63, 0x62 sequence comes from `case 0x62: case 0x63: case 0x60:`.
+  - A two-way pick written `if (c == 0) lim = 50; else lim = 20;` matched;
+    every ternary spelling gave movz instead of movn.
+  - A `switch` with one case plus default compiles differently from the
+    same `if`/`else` (eft22_t, eft22_line_sub).
+  - eft22_se_req ignores its first argument and passes 1 to se_req2.
+  - PLW +0x8E8 holds the bait kind here (0x60/0x62/0x63 make the float drift
+    gently), so the "fish_time" name from eft23 is unverified.
+
 ### Next
 
 1. Owner supplies Japanese MH1. Survey it the same way. The plan's base
