@@ -20,7 +20,7 @@ RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_gam
 GAME="src/game/set/set14_nm.c src/game/set/set00.c src/main/stage/stage_set.c \
       src/main/set/set13.c src/main/set/set13b.c src/main/set/set13c.c src/main/set/set13_nm.c \
       src/main/hit/hit2.c src/main/hit/hit2c.c \
-      src/game/set/set09.c src/game/set/set17.c \
+      src/game/set/set09.c src/game/set/set17.c src/game/set/set17_nm.c \
       src/game/set/set03.c src/game/set/set04.c src/game/set/set05_nm.c src/game/set/set07.c src/game/set/set08.c src/game/set/set10.c src/game/set/set11.c src/game/set/set15.c src/game/set/set16.c src/game/set/set18.c src/game/set/set19.c src/game/set/set20_nm.c src/game/set/set22.c \
       src/main/set/set12.c src/main/pl/pl_master_ck.c src/main/stage/trans_stage.c \
       src/main/frame/f_frame_nm.c src/main/pad/pad_get.c src/main/pl/pl_normal2.c"
@@ -67,17 +67,49 @@ PL="$(ls src/main/pl/pl[0-9][0-9].c | tr '\n' ' ') src/main/pl/pl_nm.c src/main/
     src/game/pl/pl_damage.c src/game/pl/pl_damageb.c src/game/pl/pl_damage_nm.c \
     src/main/hit/hit_nm.c src/main/hit/hit2_nm.c src/main/hit/hit3_nm.c src/main/stage/f_stage.c \
     src/main/weapon/weapon_nm.c src/main/sound/f_sound_nm.c"
-WEAK="shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm"
-GAME="$GAME $HIT $CAM $EFT $PL"
+# Monsters: the monster loop (enemy_mv / em_move, main f_em, src/main/em/
+# f_em_nm.c) and game.bin's shared monster code (em_core, em_master,
+# em_taisei: whole-file near-matches) plus em01 (the Rathian). Per-monster
+# AI files are added when they exist (agent B's em01_ai_nm.c; agent D's
+# em_cmd_nm.c, the command interpreter); src/pc/rt/rt_em.c has weak
+# stand-ins for what is missing.
+EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c src/game/em/em_taisei_nm.c \
+    src/game/em/em01.c src/game/em/em01_horm.c"
+for f in src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c; do
+    [ -f "$f" ] && EM="$EM $f"
+done
+# Monster C that is still on other agents' branches (not merged into main):
+# when this checkout has the branch and main does not have the file yet, the
+# file and that branch's include/ are exported to build/pc/ext/<branch>/
+# (gitignored) and compiled against those headers (same struct layouts, more
+# fields named). Remove entries once merged (agent B's em01_ai_nm.c and
+# em_taisei_nm.c were, 6 Oct 2026).
+#   agent-D: em_cmd_nm.c (the monster command interpreter)
+EXT="agent-D:src/game/em/em_cmd_nm.c"
+for e in $EXT; do
+    br=${e%%:*}; f=${e#*:}
+    [ -f "$f" ] && continue                       # main has it
+    git rev-parse -q --verify "$br" >/dev/null 2>&1 || continue
+    d="build/pc/ext/$br"
+    rm -rf "$d/include"; mkdir -p "$d/include" "$(dirname "$d/$f")"
+    git archive "$br" include | tar -x -C "$d"
+    git show "$br:$f" > "$d/$f"
+    EM="$EM $d/$f"
+done
+WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm"
+GAME="$GAME $HIT $CAM $EFT $PL $EM"
 
 SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
 CFLAGS="-m32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
-GAMEFLAGS="-m32 -std=gnu99 -O2 -g -fno-strict-aliasing -Iinclude -w"
+# -fno-aggressive-loop-optimizations: decompiled loops index past declared
+# array ends (EMW.hagi[8] read with i == 8 in Em_Dmg_Sys): without it gcc
+# drops the loop exit
+GAMEFLAGS="-m32 -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -Iinclude -w"
 LIBS="-lSDL2 -lGL -lm -ldl -rdynamic"   # -rdynamic: rt_data.c finds host symbols with dlsym
 # unnamed PS2 data the game C refers to as D_<addr>: rows of rview_mat
 # (0x3F2060) and two game.bin tables
 LIBS="$LIBS -Wl,--defsym,D_3F2080=rview_mat+0x20 -Wl,--defsym,D_3F2090=rview_mat+0x30 \
-      -Wl,--defsym,D_63BC40=enemy_shadow_size -Wl,--defsym,D_63BD60=enemy_mahi_size -Wl,--defsym,D_63FC50=em_hit_push_tbl -Wl,--defsym,D_63FA10=em_body_tbl"
+      -Wl,--defsym,D_63BC40=enemy_shadow_size -Wl,--defsym,D_63BD60=enemy_mahi_size -Wl,--defsym,D_63FC50=em_hit_push_tbl -Wl,--defsym,D_63FA10=em_body_tbl -Wl,--defsym,D_3E4C9C=player_work+0xAC"
 
 if echo 'int main(void){return 0;}' | gcc -m32 -x c - -o build/pc/.m32test $LIBS 2>/dev/null; then
     SYS=""                                   # gcc-multilib installed
@@ -103,8 +135,39 @@ for f in $GAME; do
              -DEft06_set=rtabi_Eft06_set -DEft02_set6=rtabi_Eft02_set6 \
              -DGetGroundHitStatusAreaPl=rtabi_GetGroundHitStatusAreaPl" ;;
     src/main/stage/f_stage.c) ABI="-Dhit_point_cbd=rtabi_hit_point_cbd" ;;
+    */em_cmd_nm.c) ABI="-DGetWaterData()=GetWaterData(em)" ;;   # a0 = em left over
+    src/game/em/em_core_nm.c) ABI="-DNextStage_No_Set(...)=rtabi_NextStage_No_Set(em)" ;;   # a0 = em left over
+    */em01_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
+             -DEft15_set3=rtabi_Eft15_set3" ;;
+    # em_sleep_eff_set: callers pass (em, joint, f32 *pos, f32 scale), the
+    # definition reads (em, a, b) and leaves the scale in f12 for
+    # Eft06_set2: the PC one is in rt_em.c
+    src/game/em/em_master_nm.c) ABI="-DEft02_set3=rtabi_Eft02_set3 -DEft06_set=rtabi_Eft06_set \
+             -Dem_sleep_eff_set=rtabi_em_sleep_eff_set_ps2" ;;
     esac
-    gcc $GAMEFLAGS $ABI $SYS -c "$f" -o "$o"
+    INC=""
+    src="$f"
+    case "$f" in build/pc/ext/*) INC="-I$(echo "$f" | cut -d/ -f1-4)/include" ;; esac
+    # absolute PS2 addresses some m2c-based files still use (game_w
+    # 0x3F33F0, quest_w 0x3C7440): compile a copy that reads the host's
+    # game_w / quest_w instead (src/pc/rt/rt_ps2abs.h)
+    if grep -qE '\(\s*\w+\s*\*\s*\)\s*0x(3F3|3C74)[0-9A-Fa-f]{3}' "$f"; then
+        src="build/pc/abs/$b.c"
+        mkdir -p build/pc/abs
+        python3 -c '
+import re, sys
+B = {"game_w": (0x3F33F0, 0x224), "quest_w": (0x3C7440, 0x188)}
+def fix(m):
+    a = int(m.group(2), 16)
+    for n, (b, z) in B.items():
+        if b <= a < b + z:
+            return "(%s *)(rt_ps2_%s + 0x%X)" % (m.group(1), n, a - b)
+    return m.group(0)
+sys.stdout.write(re.sub(r"\(\s*(\w+)\s*\*\s*\)\s*0x([0-9A-Fa-f]{6,8})\b", fix, open(sys.argv[1]).read()))
+' "$f" > "$src"
+        INC="$INC -I$(dirname "$f") -include src/pc/rt/rt_ps2abs.h"
+    fi
+    gcc $INC $GAMEFLAGS $ABI $SYS -c "$src" -o "$o"
     case " $WEAK " in *" $b "*) objcopy --weaken "$o" ;; esac
     OBJS="$OBJS $o"
 done
@@ -114,7 +177,7 @@ python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 gcc $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em; do
     # shellcheck disable=SC2086
     gcc $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"

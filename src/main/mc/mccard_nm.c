@@ -234,7 +234,7 @@ int mc_sel_ck(CARDW *w, s16 x, s16 y, u8 *sel, int hide)
         if (*sel == 0) {
             w->csr[1] = y0;
         } else {
-            w->csr[1] = y1 + 0x24;
+            w->csr[1] = (y0 = y1) + 0x24;
         }
         w->csr[1] -= 2;
         w->csr[2] = 306;
@@ -281,11 +281,9 @@ int mc_ok_ck(CARDW *w, s16 x, s16 y, int kind)
 int mc_remove_ck(port)
 int port;
 {
-    if (McActNewChk() != 0) {
-        return 1;
-    } else {
-        return McActConChk(port) == 0;
-    }
+    if (McActNewChk() != 0) return 1;
+    if (McActConChk(port) != 0) return 0;
+    return 1;
 }
 
 void McOperationSet(op)
@@ -578,6 +576,8 @@ CARDW *w;
 void CardOptsv02(w)
 CARDW *w;
 {
+    int t;
+
     mc_mes_disp(40, 352, 8);
     switch (w->sub) {
     case 0:
@@ -593,9 +593,10 @@ CARDW *w;
         }
         break;
     case 1:
-        ((int (*)())mc_sel_ck)(w, 221, 136, (u8 *)&w->port);
-        w->timer--;
-        if (w->timer <= 0) {
+        mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
+        t = w->timer - 1;
+        w->timer = t;
+        if ((s16)t <= 0) {
             mc_r_no_set(w, 3);
             w->timer = 30;
             user_data_clr(0);
@@ -908,7 +909,7 @@ CARDW *w;
         }
         break;
     case 1:
-        mc_sel_ck(w, 221, 136, (u8 *)&w->port, 0);
+        mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
         t = w->timer - 1;
         w->timer = t;
         if ((s16)t <= 0) {
@@ -1020,7 +1021,7 @@ CARDW *w;
     if (w->pad & 0x1000) {
         se_req(7, 22, 0);
         edit_w[1]++;
-        if (!(edit_w[1] < 3)) {
+        if (edit_w[1] > 2) {
             edit_w[1] = 0;
         }
     }
@@ -1292,7 +1293,7 @@ CARDW *w;
         }
         break;
     case 1:
-        mc_sel_ck(w, 221, 136, (u8 *)&w->port, 0);
+        mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
         if (w->timer <= 0) {
             mc_r_no_set(w, 2);
             w->timer = 30;
@@ -1741,7 +1742,7 @@ CARDW *w;
         }
         break;
     case 1:
-        mc_sel_ck(w, 221, 136, (u8 *)&w->port, 0);
+        mc_sel_ck(w, 221, 136, (u8 *)&w->port, 1);
         t = w->timer - 1;
         w->timer = t;
         if ((s16)t <= 0) {
@@ -1853,7 +1854,7 @@ CARDW *w;
     if (w->pad & 0x1000) {
         se_req(7, 22, 0);
         edit_w[1]++;
-        if (!(edit_w[1] < 3)) {
+        if (edit_w[1] > 2) {
             edit_w[1] = 0;
         }
     }
@@ -2230,7 +2231,7 @@ u8 McCardOperation(void)
         break;
     case 1:
         CardOptsv(w);
-        if (!(w->rno < 2) && w->rno != 12) {
+        if (w->rno > 1 && w->rno != 12) {
             w->frame[0] = 1;
         }
         w->frame[1] = 2;

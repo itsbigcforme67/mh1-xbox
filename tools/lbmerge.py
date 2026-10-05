@@ -1,71 +1,54 @@
 #!/usr/bin/env python3
-"""lbmerge.py PREFIX "comment" NAME... : for functions whose standalone source is build/lbauto/NAME.c (tools/lbauto.py) or
-src/lobby/_one/NAME.c, build contiguous runs PREFIXNN.c in src/lobby/ (merging the declarations), verify each run with
-tools/check.py --module lobby, split a run that fails to compile or match into single-function files, register all with
-'lobby START END NAME' lines in config/c_files.txt."""
-import sys, os, re, subprocess
+"""lbmerge.py NM.c NEW.c [PROTO.h]: insert the function definitions of NEW.c into NM.c (replacing same-named
+ones), keep them sorted by lobby symbol address, and refresh the unprototyped forward declarations in the
+proto header (include/lbnet_proto.h): extern/data lines are kept, new ones can be put in NEW.c as lines
+starting with 'extern '; functions never need a manual declaration."""
+import re, sys, os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ROOT)
-S = '/tmp/claude-1000/-home-james-claude-projects/6db1702a-235b-4025-a34e-ca6b5540767b/scratchpad/fl.txt'
-prefix, cmt = sys.argv[1:3]; names = sys.argv[3:]
-info = {}
-for l in open(S):
-    a, nm, sz = l.split(); info[nm] = (int(a, 16), int(sz))
-def src(nm):
-    for d in ('build/lbauto', 'src/lobby/_one'):
-        p = os.path.join(d, nm + '.c')
-        if os.path.exists(p): return open(p).read()
-    raise SystemExit('no source for ' + nm)
-def split(nm):
-    s = src(nm)
-    s = s.replace('#include "lobby.h"\n', '').replace('#include "lobby_f.h"\n', '').replace('#include "lobby_a.h"\n', '')
-    m = re.search(r'^[\w\*\s]+\b%s\([^;{]*\)(?:\n(?:[\w \*]+;\n)+)?\s*\{\n' % re.escape(nm), s, re.M)
-    return [l.strip() for l in s[:m.start()].split('\n') if l.strip()], s[m.start():].strip() + '\n'
-reg = []
-for l in open('config/c_files.txt'):
-    p = l.split()
-    if len(p) >= 4 and p[0] == 'lobby': reg.append((int(p[1], 16), int(p[2], 16)))
-names = [n for n in names if not any(x <= info[n][0] < y for x, y in reg)]
-names.sort(key=lambda n: info[n][0])
-runs = []; cur = []
-for n in names:
-    a, sz = info[n]
-    if cur and 0 <= a - (info[cur[-1]][0] + info[cur[-1]][1]) < 16: cur.append(n)
-    else:
-        if cur: runs.append(cur)
-        cur = [n]
-if cur: runs.append(cur)
-num = 1
-while os.path.exists('src/lobby/f/%s%02d.c' % (prefix, num)): num += 1
-def hdr_of(nm):
-    return 'lobby_a.h' if '#include "lobby_a.h"' in src(nm) else 'lobby_f.h'
-def build(group, path):
-    decls = []; bodies = []
-    if len(set(hdr_of(n) for n in group)) > 1:
-        return False
-    for n in group:
-        d, b = split(n)
-        for l in d:
-            if l not in decls: decls.append(l)
-        bodies.append(b)
-    hdr = '/* %s%02d - %s 0x%08X-0x%08X: %s (first drafted by tools/lbauto.py). */\n' % (prefix, num, cmt, info[group[0]][0], info[group[-1]][0] + info[group[-1]][1], ', '.join(group))
-    open(path, 'w').write(hdr + '#include "%s"\n' % hdr_of(group[0]) + '\n'.join(decls) + ('\n' if decls else '') + '\n' + '\n'.join(bodies))
-    return True
-def ok(path, group):
-    out = subprocess.run(['python3', 'tools/check.py', path, '--module', 'lobby'], capture_output=True, text=True).stdout
-    got = [l for l in out.split('\n') if l.startswith('OK')]
-    return len(got) == len(group)
-lines = []
-def emit(group):
-    global num
-    path = 'src/lobby/f/%s%02d.c' % (prefix, num)
-    if build(group, path) and ok(path, group):
-        lines.append('lobby 0x%08X 0x%08X f/%s%02d' % (info[group[0]][0], info[group[-1]][0] + info[group[-1]][1], prefix, num))
-        print(lines[-1], '#', ', '.join(group)); num += 1
-    else:
-        if os.path.exists(path): os.remove(path)
-        if len(group) == 1: print('FAILED', group[0]); return
-        for n in group: emit([n])
-for g in runs: emit(g)
-with open('config/c_files.txt', 'a') as f:
-    f.write('\n'.join(lines) + ('\n' if lines else ''))
+nm, new = sys.argv[1:3]
+proto = sys.argv[3] if len(sys.argv) > 3 else 'include/lbnet_proto.h'
+sym = {}
+for l in open('config/symbols/lobby.txt'):
+    m = re.match(r'(\w+) = 0x([0-9A-F]+); // type:func', l)
+    if m:
+        sym[m.group(1)] = int(m.group(2), 16)
+HEAD = re.compile(r'^([A-Za-z_][\w \*]*?\b(\w+)\([^;{]*\)(?:\n[^;{\n]*;)*\s*\{)\n', re.M)
+def defs(t):
+    out = {}
+    for m in HEAD.finditer(t):
+        e = t.index('\n}\n', m.end()) + 3
+        out[m.group(2)] = t[m.start():e]
+    return out
+t = open(nm).read()
+cur = defs(t)
+n = open(new).read()
+upd = defs(n)
+cur.update(upd)
+hdr = t[:HEAD.search(t).start()]
+miss = [k for k in cur if k not in sym]
+if miss:
+    print('no symbol address for', miss, file=sys.stderr)
+order = sorted(cur, key=lambda k: sym.get(k, 1 << 40))
+open(nm, 'w').write(hdr + '\n'.join(cur[k] for k in order))
+# proto header
+p = open(proto).read()
+ext = [l for l in p.split('\n') if l.startswith('extern ')]
+for l in n.split('\n'):
+    if l.startswith('extern ') and l not in ext:
+        ext.append(l)
+def sig(k):
+    h = cur[k].split('\n')[0]
+    m = re.match(r'^([\w \*]+?)\s*(\*?)\b%s\(' % re.escape(k), h)
+    rt = m.group(1).strip()
+    return '%s %s%s();' % (rt, m.group(2), k)
+fwd = [sig(k) for k in order if not cur[k].startswith('static ')]
+# keep forward declarations of functions defined elsewhere (other files / not yet written)
+old = [l for l in p.split('\n') if re.match(r'^[\w \*]+\(\);$', l) and not l.startswith('extern ')]
+oldnames = {re.match(r'^[\w \*]*?(\w+)\(\);$', l).group(1): l for l in old}
+for k in cur:
+    oldnames.pop(k, None)
+fwd_all = fwd + sorted(oldnames.values())
+body = '/* lbnet_proto.h - extern data and unprototyped declarations for the lobby network layer (cnlbs). */\n#ifndef LBNET_PROTO_H\n#define LBNET_PROTO_H\n#include "lbnet.h"\n\n' + '\n'.join(ext) + '\n\n' + '\n'.join(fwd_all) + '\n\n#endif\n'
+open(proto, 'w').write(body)
+print(len(cur), 'functions in', nm)

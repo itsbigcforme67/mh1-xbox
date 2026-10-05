@@ -128,9 +128,9 @@ always compile (git checkout of an old wip with junk drafts broke a rebuild once
 Setup: lobby C lives in src/lobby/, registered as `lobby START END lb_xNN` in config/c_files.txt; `tools/rebuild.sh lobby` must stay OK
 (all five OK). Shared lobby structs/prototypes in include/lobby.h (client work `cw` is `u8 *` = D_6DD7E0, accessed with CW8()/CWPLAYER(),
 lb_sys/lbCommer/lb_player/lastSend structs, many K&R prototypes). Working files `lb_a.c .. lb_k.c` hold the whole C of a region (not
-built as such: every .c is compiled but only registered ranges are linked); `tools/lbruns.py FILE PREFIX "comment"` splits the fully matching,
+built as such: every .c is compiled but only registered ranges are linked); `tools/lbf_runs.py FILE PREFIX "comment"` splits the fully matching,
 not yet registered functions into contiguous runs PREFIXNN.c and appends the c_files lines (FORCE_OK=name for functions check.py cannot verify,
-e.g. a callee whose symbol carries an address suffix). Other helpers: tools/lbasm.py (compact asm), tools/lbd.py / lbconv.py (m2c drafts;
+e.g. a callee whose symbol carries an address suffix). Other helpers: tools/lbasm.py (compact asm), tools/lbd.py / lbf_conv.py (m2c drafts;
 drafts are made with draft.py into a scratch dir, see LBDRAFTS), tools/lbset.py (replace a function in a file from stdin).
 Reuse from main: only 11 lobby functions are byte-identical to main code (Lb_act_ck, Lb_stick_dir_set, Lb_Pl_adj_calc, Lb_Pl_pos_adj,
 lb_pl_flag_clr/set, Lb_hit_stop_calc, Lb_World_calc, lb_pl_chr_set_com, lb_pl_to_normal_clr2): src/lobby/lb_pl01-09.c. Many more are
@@ -169,7 +169,7 @@ Near-matches (kept in the working files): lb_commer_message (s0/s1 swapped), lb_
    About 12 percent of the lobby functions came out byte-identical with no hand work; many more are 1-3 instructions off.
 3. `tools/lbfix.py NAME...` repairs near misses: m2c drops pass-through arguments (a0 untouched), so it tries inserting `arg0,`/`arg1,`
    as extra leading args at each call site.
-4. `tools/lbmerge.py PREFIX "comment" NAME...` writes contiguous runs of the OK ones (sources in build/lbauto/NAME.c) to src/lobby/PREFIXNN.c,
+4. `tools/lbf_merge.py PREFIX "comment" NAME...` writes contiguous runs of the OK ones (sources in build/lbauto/NAME.c) to src/lobby/PREFIXNN.c,
    verifies them and appends the c_files.txt lines. Always finish with `tools/rebuild.sh` (do NOT run it while lbauto/lbfix are running:
    they create src/lobby/zz_*.c temp files that rebuild.sh would compile).
 Names whose lobby symbol carries an address suffix (trade_get_ck_005D0750 ...) are not found by check.py (it falls back to the game

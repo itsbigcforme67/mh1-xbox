@@ -308,33 +308,40 @@ void release_prim2(s16 no)
 /* push_senko/smoke/smell (0x16A570, 0x16A3D0, 0x16A2B0): up to 32 pointers
  * each, for the screen-flash, smoke and smell renderers. Those renderers are
  * not ported: the entries are kept, nothing draws them yet. */
-static void *senko_stack[32], *smoke_stack[32], *smell_stack[32];
+void *senko_stack[32], *smoke_stack[32], *smell_stack[32];   /* the game's (em_core reads them) */
+s8 senko_cnt, smoke_cnt, smell_cnt;
 
-static int stack_push(void **st, void *p)
+/* as 0x16A2B0: full at 32 (count), first free slot, count up */
+static int stack_push(void **st, s8 *cnt, void *p)
 {
     int i;
+    if (*cnt >= 32)
+        return 0;
     for (i = 0; i < 32; i++)
         if (!st[i]) {
             st[i] = p;
+            (*cnt)++;
             return 1;
         }
     return 0;
 }
 
-static void stack_pull(void **st, void *p)
+static void stack_pull(void **st, s8 *cnt, void *p)
 {
     int i;
     for (i = 0; i < 32; i++)
-        if (st[i] == p)
+        if (st[i] == p) {
             st[i] = NULL;
+            (*cnt)--;
+        }
 }
 
-int push_senko(void *p) { return stack_push(senko_stack, p); }
-void pull_senko(void *p) { stack_pull(senko_stack, p); }
-int push_smoke(void *p) { return stack_push(smoke_stack, p); }
-void pull_smoke(void *p) { stack_pull(smoke_stack, p); }
-int push_smell(void *p) { return stack_push(smell_stack, p); }
-void pull_smell(void *p) { stack_pull(smell_stack, p); }
+int push_senko(void *p) { return stack_push(senko_stack, &senko_cnt, p); }
+void pull_senko(void *p) { stack_pull(senko_stack, &senko_cnt, p); }
+int push_smoke(void *p) { return stack_push(smoke_stack, &smoke_cnt, p); }
+void pull_smoke(void *p) { stack_pull(smoke_stack, &smoke_cnt, p); }
+int push_smell(void *p) { return stack_push(smell_stack, &smell_cnt, p); }
+void pull_smell(void *p) { stack_pull(smell_stack, &smell_cnt, p); }
 
 /* ------------------------------------------------------------ eft helpers */
 /* eft_vec_linear (0x1013B0): keyframes {t, x, y, z} ending with t = -1;
@@ -399,7 +406,10 @@ void eft_rgba_linear(s32 *key, s32 t, u32 *out)
 }
 
 /* make_mat_srt (0x1018C0): scale, then rotation picked by the flag bits
- * (2 X, 4 Y, 8 Z, 0xE XYZ), then translation. */
+ * (flag & 0xE: 2 Z (rot[2]), 4 Y (rot[1]), 8 X (rot[0]), 0xE XYZ; checked
+ * against the asm 6 Oct 2026: the host had X and Z swapped, which turned
+ * eft16's blood streak (flag 2, only rot[2] set) by an uninitialised X
+ * angle into a screen-wide smear), then translation. */
 void make_mat_srt(f32 *scale, f32 *rot, f32 *trans, u16 flag, FLMAT *m)
 {
     f32 tx = trans[0], ty = trans[1], tz = trans[2];
@@ -409,13 +419,13 @@ void make_mat_srt(f32 *scale, f32 *rot, f32 *trans, u16 flag, FLMAT *m)
         flmatRotXYZ33(m, rot[0], rot[1], rot[2]);
         break;
     case 2:
-        flmatRotX33(m, rot[0]);
+        flmatRotZ33(m, rot[2]);
         break;
     case 4:
         flmatRotY33(m, rot[1]);
         break;
     case 8:
-        flmatRotZ33(m, rot[2]);
+        flmatRotX33(m, rot[0]);
         break;
     }
     flmatSetTrans(m, tx, ty, tz);
@@ -530,6 +540,7 @@ void flvecRotX(f32 *v, f32 a)
 static FLMAT joint_m;
 static struct { const void *chr; const f32 *m; int n; } joints[8];
 
+u8 *rt_actor_nodes(const void *work, int *max);
 void rt_actor_joints(const void *chr, const float *mats, int n)
 {
     int i, f = -1;
@@ -541,6 +552,13 @@ void rt_actor_joints(const void *chr, const float *mats, int n)
     joints[f].chr = chr;
     joints[f].m = mats;
     joints[f].n = n;
+    {   /* also where the game reads them: node j of mdl+0x24, +0 */
+        int max, j;
+        u8 *nodes = rt_actor_nodes(chr, &max);
+        if (nodes)
+            for (j = 0; j < n && j < max; j++)
+                memcpy(nodes + j * 0x190, mats + 16 * j, 64);
+    }
 }
 
 static const f32 *joint_mat(const void *chr, int j)
@@ -563,6 +581,21 @@ void get_joint_pos(void *chr, int joint, f32 *out)
 
 void get_joint_pos_em(void *chr, int joint, f32 *out) { get_joint_pos(chr, joint, out); }
 
+/* get_joint_mat (0x10A1D0): node joint's local matrix (mdl+0x24 nodes,
+ * 0x190 bytes each, +0x40), which callers turn in place (the player's
+ * waist/neck twist). The host poses its skeleton from the motion alone, so
+ * those edits are not shown yet [gap]. */
+FLMAT *get_joint_mat(void *chr, int joint, int arg)
+{
+    static FLMAT scratch;
+    int max;
+    u8 *nodes = rt_actor_nodes(chr, &max);
+    (void)arg;
+    if (!nodes || (s16)joint < 0 || (s16)joint >= max)
+        return &scratch;
+    return (FLMAT *)(nodes + (s16)joint * 0x190 + 0x40);
+}
+
 FLMAT *get_joint_wmat(void *chr, int joint)
 {
     const f32 *m = joint_mat(chr, (s16)joint);
@@ -580,41 +613,6 @@ FLMAT *get_joint_wmat(void *chr, int joint)
 }
 
 void flvecApplyMat33(f32 *out, f32 *v, FLMAT *m);
-/* hit_data_expand (0x151A60): one body entry {s16 joint, s16 type, ..,
- * f32 r at +0xC, offsets at +0x10 / +0x1C} around the joint's world
- * matrix (on the PS2 node j of chr+0x50C -> +0x24, 0x190 bytes a node):
- * type 0 sphere, type 1 capsule; radius times the actor scale (+0xB8).
- * Joint 0x7F (and actors without host joints) give -1, no part. */
-int hit_data_expand(void *chr, void *body, f32 *cap, f32 *sph)
-{
-    const u8 *e = body;
-    s16 j = *(const s16 *)e;
-    const f32 *m;
-    f32 o[3];
-    if (j == 0x7F || !(m = joint_mat(chr, j)))
-        return -1;
-    switch (*(const s16 *)(e + 2)) {
-    case 0:
-        sph[3] = *(const f32 *)(e + 0xC) * *(const f32 *)((u8 *)chr + 0xB8);
-        flvecApplyMat33(o, (f32 *)(e + 0x10), (FLMAT *)m);
-        sph[0] = m[12] + o[0];
-        sph[1] = m[13] + o[1];
-        sph[2] = m[14] + o[2];
-        return 0;
-    case 1:
-        cap[6] = *(const f32 *)(e + 0xC) * *(const f32 *)((u8 *)chr + 0xB8);
-        flvecApplyMat33(o, (f32 *)(e + 0x10), (FLMAT *)m);
-        cap[0] = m[12] + o[0];
-        cap[1] = m[13] + o[1];
-        cap[2] = m[14] + o[2];
-        flvecApplyMat33(o, (f32 *)(e + 0x1C), (FLMAT *)m);
-        cap[3] = m[12] + o[0];
-        cap[4] = m[13] + o[1];
-        cap[5] = m[14] + o[2];
-        return 1;
-    }
-    return -1;
-}
 
 FLMAT *get_joint_wmat_em(void *chr, int joint) { return get_joint_wmat(chr, joint); }
 
@@ -698,6 +696,7 @@ void rt_eft_init(void)
     memset(senko_stack, 0, sizeof senko_stack);
     memset(smoke_stack, 0, sizeof smoke_stack);
     memset(smell_stack, 0, sizeof smell_stack);
+    senko_cnt = smoke_cnt = smell_cnt = 0;
 }
 
 void rt_eft_move(void)
@@ -736,37 +735,8 @@ static void once(const char *name)
 #define STUB_V(name, args) void name args { static int o; if (!o++) once(#name); }
 #define STUB_I(name, args) int name args { static int o; if (!o++) once(#name); return 0; }
 
-/* act_ck (0x14EF20): the object's action pair (+0x14, +0x15) is (a, b) */
-int act_ck(void *chr, int a, int b)
-{
-    const u8 *p = chr;
-    return p[0x14] == (u8)a && p[0x15] == (u8)b;
-}
 
-/* pl_flag_ck (0x14EF60): bit test in the flag words +0x390 / +0x394 (bit
- * 31 of the argument picks the second) */
-int pl_flag_ck(void *pl, u32 flag)
-{
-    const u8 *p = pl;
-    u32 w;
-    if (flag & 0x80000000u) {
-        memcpy(&w, p + 0x394, 4);
-        return (int)(w & (flag & 0x7FFFFFFFu));
-    }
-    memcpy(&w, p + 0x390, 4);
-    return (int)(w & flag);
-}
 
-/* Pl_silencer_ck (0x154D30): gun type 7 with option bit 0x10 */
-int Pl_silencer_ck(void *pl)
-{
-    const u8 *p = pl;
-    u16 o;
-    if (p[0x35F] != 7)
-        return 0;
-    memcpy(&o, p + 0x362, 2);
-    return (o & 0x10) != 0;
-}
 
 /* Em_area_ck (0x10B790): index (0-3) of area a in game_w+0x28, else -1 */
 int Em_area_ck(int a)
@@ -779,13 +749,7 @@ int Em_area_ck(int a)
     return -1;
 }
 
-/* Em_Calc_angY (em_core_g.c: calc_vec_ang(a.x, a.z, b.x, b.z) - 0x4000).
- * calc_vec_ang is not ported: atan2 stand-in [guess at its convention]. */
-u16 Em_Calc_angY(f32 *a, f32 *b)
-{
-    f32 r = flArcTan2(b[0] - a[0], b[2] - a[2]);
-    return (u16)(s32)(r * 65536.0f / 6.2831855f);
-}
+/* Em_Calc_angY: game.bin em_core (src/game/em/em_core_nm.c, built). */
 
 /* frame_check* come from the decompiled src/main/frame/f_frame_nm.c */
 
@@ -794,27 +758,23 @@ u16 Em_Calc_angY(f32 *a, f32 *b)
 /* shell_flag_set: src/main/pl/pl_normal.c (built). shell_rate_add/_g
  * (0x151660, 0x1516A0): velocity integration */
 
-void shell_rate_add(SHLW *sh)
-{
-    sh->pos2.x += sh->rate[0];
-    sh->pos2.y += sh->rate[1];
-    sh->pos2.z += sh->rate[2];
-}
 
-void shell_rate_add_g(SHLW *sh)
-{
-    sh->rate[0] += sh->rate_g[0];
-    sh->rate[1] += sh->rate_g[1];
-    sh->rate[2] += sh->rate_g[2];
-    shell_rate_add(sh);
-}
 
 int softdip_ck(void) { return 0; }   /* 0x1593D0: returns 0 */
 
 STUB_V(vib_set_pl, (void *pl, int a))
 STUB_V(pl_light_change, (void *em, int a))
 STUB_V(Pl_light_set, (void *em))
-STUB_I(Get_atk_value, (void *pl, int a))
+/* Get_atk_value (f_ud, src/main/ud/ud_nm.c): element/ailment value kind
+ * (0-6) of the weapon, Ken_data[PLW+0x360][0xB + kind] when PLW+0x35F == 6 */
+extern unsigned char Ken_data[][0x18];
+s16 Get_atk_value(void *pl, int kind)
+{
+    unsigned char *p = pl;
+    if ((unsigned)(kind & 0xFF) > 6 || p[0x35F] != 6)
+        return 0;
+    return Ken_data[*(u16 *)(p + 0x360)][0xB + (kind & 0xFF)];
+}
 STUB_I(em09_status_ck, (void *em))
 STUB_V(em09_dir_calc, (s32 *a, s32 *b, s32 c))
 STUB_V(em_material_sub, (void *em, int a, CLAY *c))
@@ -827,8 +787,7 @@ STUB_V(flCalcTrans, (void *h, FLMAT *m))
 STUB_V(flCalcTransSI, (void *h, FLMAT *m))
 STUB_V(flSetMatrixList, (void *a, void *b))
 STUB_V(flSetSkinTransMatrixList, (void *a, void *b))
-/* shell08_trans (game 0x6309A0) is not decompiled yet: the shell is not drawn */
-STUB_V(shell08_trans, (void *pr))
+/* shell08_trans: src/game/shell/shell08_nm.c (near-match C, built). */
 
 /* ------------------------------------------------------------ test spawns
  * RT_SPAWN="eft13:N,eft17:N,shell22:N,eft14:N,eft08:N" spawns those effects

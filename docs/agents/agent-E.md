@@ -277,3 +277,62 @@ on: AQ, Ave, mcsls, Inet; Sony/Capcom online stack, skipped on purpose because t
 Library code 0x1A0000-0x218000 (newlib, libm, Sony sce*, CRI Sofdec/ADX) is GCC-built: not matchable with MWCC.
 Check list when continuing: always run `tools/rebuild.sh main` after registering: check.py masks relocation addends (wrong Psw index, wrong table symbol, gp-relative
 globals) and absolute calls into other modules.
+
+## Update 5 Oct 2026 (third pass): IME engine, memory card chain
+
+### IME / dictionary engine (0x23E500-0x24A240), src/main/ime/ime_nm.c: all 264 functions written, 142 linked
+"Ask" Japanese input method used by the name entry (kana to kanji: roman input, bunsetu segmentation, candidate lists, dictionary
+pages read from disc through FAskRom_*, learning). Source of truth is src/main/ime/ime_nm.c (every function, address order, brace on its
+own line); the matching runs are extracted into ime<letters>.c (imeb.c .. imeau.c) and registered in config/c_files.txt by
+`python3 tools/relink_runs.py src/main/ime/ime_nm.c src/main/ime/ime 23E500` followed by `tools/rebuild.sh main` (main OK, 47 runs).
+Data structures (all named by offset, guesses): HCHAR (28-byte edit character, hchar[80]), BS (bunsetu candidate), KH (kanji candidate
+chain), CH (dictionary entry hit), PWM/KL (temporary lists), PAGE (dictionary page cache, 10 pages of 0x400), ENTID, NODE (temp word hash),
+SYNR/SRCH (search results), WD (word record). Dictionary entry format: u16 little-endian length, u8 key length, key, then word records
+(attr, rtime, kind[, extra], kanji bytes). api_* functions take a pointer to the request body; the command id is a[-1]
+(api_funcent dispatches through the table D_0034ABEC).
+Not matching yet (near-matches, logic believed complete): the long ones (henkan, ch_check, setu_point, josi_match, to_roman, set_num,
+trans_roman, dic_snssyn/main_snssyn, pword_list ...) and many small ones that differ by one scheduling detail (see tools/check.py -v).
+Lessons (function that shows it):
+- `slti at,x,K; bne at` (the compare lands in `at`) is what MWCC emits for `x <= K-1` / `x > K-1`; `slti v0` is `x < K` / `x >= K`.
+  m2c always prints `< K`/`>= K`, so when the original has `at`, write `<=`/`>` with K-1 (next_wd: `(int)(*p) <= 0x38`, McCardOperation
+  `w->rno > 1`, CardCmsv04 `edit_w[1] > 2`).
+- `if ((b = f()) == 0) return -1;` (assignment inside the condition) gives the original `bne v0,..; daddu s3,v0` (bs_check).
+- `while (n-- != 0) { ... }` is the original shape of the count-down loops (take_kouho); `-(x != N)` in m2c output is really
+  `if (x != N) return -1; return 0;` (write_temp, write_page, read_index, 3 functions fixed by that).
+- Loop-invariant `if (p < end) { do {...} while (p < end); }` is how MWCC compiles `while`; the shape with the exit test at the top is
+  `for (;;) { n = k->next; if (n == 0) break; k = n; }` (kh_endof).
+- Walking records: keep ONE pointer and advance it in place (`p[1] = 0; p += 2; if (*p < 0xC) p++; p = next_wd(p, end);`) instead of a
+  second `q = p + 2` variable (clear_rtime, max_rtime).
+- Loads of the arguments of an `int *a` request: the compiler emits them in the REVERSE order of the source statements: write `p = a[0];
+  q = a[1];` to get `lw 4(a0)` first (api_khshort, api_movekh, api_moveblk, api_khhenkan, api_henkan).
+- Using the unmodified parameter later (`return srch_ucode(x)` after `c = x & 0xFFFF`) keeps the register (to_ucode).
+- ANSI `u16` second parameter gives `andi 0xFFFF` at the use (ext_jis); `int ret` of a u8-looking function: do not cast (`return m;`).
+- check.py judges the whole nm file, but callees defined EARLIER in the same file change the callers' register allocation, so a function
+  can be OK in the nm file and wrong in its own run file (tmp_getsyn: hashfunc defined above it). tools/relink_runs.py checks every run
+  file separately and drops those functions; always use it (and rebuild) instead of genruns alone. genruns/split_runs now accept K&R
+  heads up to 12 lines and two-letter run suffixes (GENRUNS_SKIP env var = names to treat as not matching).
+- Names with only a symbol difference in check.py (`calls encode_data_002814E0, original calls encode_data`, `func_534650`) are fine for the
+  rebuild; they count as 1 differing instruction.
+
+### Memory card chain: one translation unit 0x2814E0-0x2862F0
+The save helpers (0x2814E0-0x281C00), mc_* UI helpers, all 90 Card* step functions and McCardOperation are ONE original source file:
+decode_data, decode_to_ck and mc_r_no_set are LOCAL (static) in the symbol table. The Card* callers only match when `decode_to_ck` and
+`mc_r_no_set` are `static` and defined above them in the SAME file (the compiler then knows a0 survives the call), so the region can
+only be linked as a single C file in which EVERY function matches. src/main/mc/mccomb_nm.c is the experiment (mcsave_nm.c + mccard_nm.c
+concatenated, static decode_to_ck): all functions match except mc_sel_ck (68/118, see below) and five that only differ by symbol name
+(CardOptsv08, CardCmsv08, CardOnsv103, CardOfsv008, CardEasysv01: fine for the rebuild).
+This pass: mc_remove_ck, encode_data, decode_data, user_data_copy2 now match (mcsaveb.c now links 0x2814E0-0x281740 with encode_data,
+static decode_data, check_sum_*, decode_to_ck: it must become part of the big file later). Fixes found on the way: a stale-register call
+`mc_sel_ck(w,221,136,&port)` with an unset t0 is really `..., 1)` when a constant 1 is already in t0 for a compare (CardOptsv02, Cmsv01,
+Conld01, Ofsv001); `t = w->timer - 1; w->timer = t; if ((s16)t <= 0)` (Optsv02); user_data_copy2 needs `(u8)slot` in the offset but
+`(slot & 0xFF)` in the shift; `seek_dic` is K&R so a 64-bit argument is passed unchanged (read_page: `((s64)p->id << 10) + 0x3400`).
+mc_sel_ck: tried declaration order, K&R/ANSI, int vs s16 params, an explicit/implicit y0, for/do loops. The original keeps hide in s7, the
+y+18 value in fp and w,x,sel,y in s3..s0 (y shares s0 with the loop counter); mine puts y first. Permuter: tools/perm.py cannot read files
+with K&R definitions (it turns them into declarations), so run it on a small standalone file (header + the one ANSI function).
+- mc_sel_ck update: the permuter found `w->csr[1] = (y0 = y1) + 0x24;` (68 -> 35 of 116 differing); now only the callee-saved register
+  assignment differs (original: y0 in fp, hide in s7, w/x/sel/y in s3..s0). A 25 minute permuter run on top of that found nothing better.
+  Once mc_sel_ck matches, build ONE run file from src/main/mc/mccomb_nm.c (regenerate: mcsave_nm.c + mccard_nm.c, static decode_to_ck)
+  for 0x2814E0-0x2862F0 and drop the mcsaveb/c/d lines from config/c_files.txt.
+- Tools added: tools/relink_runs.py (verify runs per file + rewrite config), GENRUNS_SKIP / GENRUNS_KEEP_STATIC in genruns.py. Comparison form
+  brute force (`<`/`<=`, `>=`/`>` with K+-1) found to_ucode; a LOCAL helper may only stay `static` in a run file when ALL its callers are C in the
+  same run (ins_bsmem, exist_kouho); the others (getbit, kh_append...) are called from asm and give undefined references.
