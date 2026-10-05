@@ -221,7 +221,7 @@ void em15_init(EMW *em) {
     s16 temp_a3;
     s16 temp_v0;
     u8 temp_a0;
-    u8 temp_a1;
+    u32 temp_a1;
     u8 temp_v1;
 
     em_char_set(em, 1, 0, 0);

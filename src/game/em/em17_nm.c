@@ -222,7 +222,7 @@ void em17_init(EMW *em) {
     EM17W *w = (EM17W *)em->ex;
     s16 temp_v0;
     u8 temp_a0;
-    u8 temp_a1;
+    u32 temp_a1;
 
     if (quest_w.no == 0) {
         em->ang[1] = 0x8000;

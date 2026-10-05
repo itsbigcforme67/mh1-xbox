@@ -60,7 +60,7 @@ extern GAME_W game_w;
 
 
 void Eft19_set(EMW *, int, int);
-void eft09_set(EMW *, int);
+void eft09_set(EMW *);
 void Eft20_set(f32, EMW *, int, int);
 void shell01_set(EMW *, int);
 s16 em_hp_vital_set2(EMW *, s16, s16);
@@ -326,7 +326,7 @@ void em08_init(EMW *em) {
         case 0x16:
         case 0x22:
             em->ex[0xA3] = 0;
-            eft09_set(em, 0x200);
+            eft09_set(em);
             break;
         }
     }
