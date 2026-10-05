@@ -58,6 +58,8 @@ void disp_item(void);
 void disp_item_sub_select_ex(void);
 void trans_box(void);
 extern void (*disp_menu_jmp[])(int, PIT_W *);
+f32 flSin(f32);
+extern u16 System_timer;
 void Chat_log_clear(void);
 void pit_prim_init(void);
 u16 pit_key_repeat(u16, u16);
@@ -1566,4 +1568,52 @@ void trans_pit_2(void) {
         SetTrnslMode(4, 5);
         DispSoftkeyboard(FLD8(system_w, 0x31));
     }
+}
+
+/* Colour of a boss icon on the map: pulses with System_timer. */
+u32 boss_icon_color(EMW *em) {
+    u32 t;
+    int c;
+
+    if (em->mode == 5) {
+        t = (*(u8 *)&System_timer << 8) & 0xFFFF;
+        c = ((s8)(int)(32.0f * flSin(0.0000958738f * (f32)t)) + 0x80) & 0xFF;
+        return c | ((c << 16) | 0xC0000000 | (c << 8));
+    }
+    if (FLD8(*em, 0x888) == 1) {
+        t = ((System_timer & 0xF) << 12) & 0xFFFF;
+        return (((s8)(int)(64.0f * flSin(0.0000958738f * (f32)t)) + 0x48) << 8) | 0xFFF00000;
+    }
+    t = ((System_timer & 0x3F) << 10) & 0xFFFF;
+    return (((s8)(int)(48.0f * flSin(0.0000958738f * (f32)t)) + 0x80) << 8) | 0xFF1000E0;
+}
+
+void maru_disp_sub(int col, f32 x, f32 y, f32 r) {
+    PFLPS q;
+
+    SetFilterMode(1);
+    q.a = col;
+    q.c = 0x1000020;
+    q.b = 0xF00010;
+    q.s[0] = 0.8f * (x - r);
+    q.s[1] = y - r;
+    q.s[2] = 0.8f * (2.0f * r);
+    q.s[3] = 2.0f * r;
+    flps0008(&q);
+}
+
+void camp_disp_sub(f32 x, f32 y) {
+    PFLPS q;
+
+    reload_tex(1, 0x119);
+    SetTextureStage(0x119);
+    SetFilterMode(0);
+    q.b = 0xF00020;
+    q.a = -1;
+    q.c = 0xFF002F;
+    q.s[0] = 0.8f * (x - 8.0f);
+    q.s[1] = y - 8.0f;
+    q.s[2] = 12.8f;
+    q.s[3] = 16.0f;
+    flps0008(&q);
 }
