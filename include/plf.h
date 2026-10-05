@@ -102,4 +102,6 @@ extern f32 bed_ofs[];
 void Share_item_conv(PLW *);
 s32 St_unique_ck(PLW *, f32 *, u16 *, u8 *);
 void func_549200(PLW *, int);
+s32 Ext_pick_point_ck(PLW *);
+s32 St_pick_ck(PLW *, u16 *, f32 *);
 #endif

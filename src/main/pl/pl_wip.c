@@ -118,3 +118,89 @@ void job_special_com_ck(PLW *pl, u8 mode) {
         }
     }
 }
+
+void search_act_set(PLW *pl, u8 mode) {
+    u16 sp3E;
+    f32 sp30[3];
+    u16 id;
+
+    if (Sansai_talk_ck(pl) & 0xFF) {
+        if (mode == 2) {
+            goto block_3;
+        }
+    } else {
+block_3:
+        if ((St_pick_ck(pl, &sp3E, sp30) & 0xFFFF) != 0xFFFF) {
+            switch (sp3E) {
+            case 0:
+                if (mode != 2) {
+                    if (mode == 0) {
+                        Pl_act_set(pl, 0, 0x47, 0);
+                    } else {
+                        Pl_act_set(pl, 0, 0x5D, 0);
+                    }
+                } else {
+                    goto block_24;
+                }
+                break;
+            case 3:
+                if (mode == 2) {
+                    switch (pl->item[pl->work888].id) {
+                    case 0x83:
+                    case 0x84:
+                    case 0x85:
+                        pl->ang_y = (s16)((calc_vec_ang2(pl->pos, sp30) & 0xFFFF) - 0x4000);
+                        pl->work88A = pl->item[pl->work888].id;
+                        Pl_act_set(pl, 0, 0x51, 0);
+                        break;
+                    case 0x86:
+                    case 0x87:
+                    case 0x88:
+                        se_req(7, 0x15, 0);
+                        break;
+                    }
+                }
+                break;
+            case 4:
+                if (mode == 2) {
+                    id = pl->item[pl->work888].id;
+                    switch (id) {
+                    case 0x86:
+                    case 0x87:
+                    case 0x88:
+                        pl->work88A = id;
+                        Pl_act_set(pl, 0, 0x52, 0);
+                        break;
+                    case 0x83:
+                    case 0x84:
+                    case 0x85:
+                        se_req(7, 0x15, 0);
+                        break;
+                    }
+                }
+                break;
+            }
+        } else {
+block_24:
+            switch (pl->item[pl->work888].id) {
+            case 0x83:
+            case 0x84:
+            case 0x85:
+            case 0x86:
+            case 0x87:
+            case 0x88:
+                if (mode == 2) {
+                    se_req(7, 0x15, 0);
+                }
+                break;
+            }
+        }
+        if (mode != 2 && (Ext_pick_point_ck(pl) & 0xFFFF) != 0xFFFF) {
+            if (mode == 0) {
+                Pl_act_set(pl, 0, 0x4A, 0);
+                return;
+            }
+            Pl_act_set(pl, 0, 0x60, 0);
+        }
+    }
+}
