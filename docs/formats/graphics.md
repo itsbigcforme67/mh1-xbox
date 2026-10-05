@@ -419,7 +419,11 @@ The owner's Wii MHG (disc/mhg_wii) packs all data in
 - 3437 entries are compressed (stored < unpacked) with a byte-oriented LZ
   that is **not** Meltw and not zlib; I did not crack it. Partial reading
   against the known output: flag bytes plus 1-2 byte back-reference tokens,
-  e.g. 0xFC = "copy 3 bytes from 4 back" [guess].
+  e.g. 0xFC = "copy 3 bytes from 4 back" [guess]. A second short attempt (5 Oct) tried classic
+  LZSS variants (flag byte in either bit order, 12/4-bit tokens, ring
+  buffer or sliding window) against the known output; none got past 4 bytes.
+  Single-byte tokens look like signed offsets (0xFC = -4, 0xFF = -1), with the
+  length coming from somewhere else (flag bits?) [guess].
 - The unpacked sizes of model files equal the PS2 Meltw output exactly
   (em01_amh.bin 339172, em01_tex.bin 266404) [verified]. The 39 stored
   (uncompressed) entries show the format is the **same, with every 32-bit

@@ -102,3 +102,12 @@ Still assembly:
   section 7; Wii MHG fpk notes in 7b.
 - docs/formats/motion.md: AHI bones, skinning, *_tbl.bin banks, AAN curves.
 - tools/clay_dump.py: PNG/.mtl/UV export, --motion/--frame posing.
+
+## Assignment 5: hunters, stages, Xbox HUD art (5 Oct 2026)
+- docs/formats/player.md + tools/pl_dump.py: six armour parts bound to the
+  legs skeleton through ptmat_tbl (read from main.bin at run time); motion
+  ids (bank = id%1000/100, slot = id%100; >=1000 own table).
+- docs/formats/stage.md + tools/stage_dump.py: stage tables, attribute
+  chunk -> render states, HITS collision. st04 = base camp (render).
+- graphics.md 7a: cpit1xb/cpit2xb decoded (cpit2xb = real Xbox buttons).
+- Wii FPK LZ: still not cracked (two short attempts).
