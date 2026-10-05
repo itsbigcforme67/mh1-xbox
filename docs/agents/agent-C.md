@@ -511,7 +511,7 @@ f_game.h in the same file).
   - tools/draft.py now resolves switch tables (lit_NNN_ADDR in the same overlay) so m2c
     drafts functions with jump tables (Edit_task, Cont_task).
 - disp_edinfo matched with `(0x280u - len * 10) >> 1` (unsigned constant, not a (u32) cast of the
-  whole difference); status: select 36 of 44 functions linked (tools/progress.py: 47% by bytes).
+  whole difference); status: select 38 of 44 functions linked (tools/progress.py: 50% by bytes; the 44th is a nop).
 - Not linked (near-match, logic complete, in edit_nm.c): edit_pl_init_new / edit_pl_init (original
   reads stage_start_pos x/y/z through three separate symbols D_2F2620/24/28 that only exist as
   auto-generated undefined symbols; our C uses stage_start_pos[n][i] = one base register),
