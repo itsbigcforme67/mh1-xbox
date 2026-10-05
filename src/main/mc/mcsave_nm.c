@@ -166,11 +166,11 @@ int save;
     u8 *b;
 
     if (save == 0) {
-        off = (slot & 0xFF) * 0x480;
+        off = (u8)slot * 0x480;
         a = option_w + off + 0x10;
         b = d + off + 0x10260;
     } else {
-        off = (slot & 0xFF) * 0x480;
+        off = (u8)slot * 0x480;
         b = option_w + off + 0x10;
         a = d + off + 0x10260;
     }
