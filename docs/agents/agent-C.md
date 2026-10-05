@@ -234,3 +234,34 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
 - Lessons: `(int)((u32)em->x13 >> 3)` for the original's srl (a u8 >> 3
   is an int shift, sra); `((f32 *)stage_start_pos)[stage * 3]` for the
   x term matched where `stage_start_pos[stage][0]` added an andi.
+- g_Em_Master_Change (0x5395F0-0x53BA4C, 48 functions): 45 match, built as
+  em_master.c (0x539AC0-0x539C90), em_master_b.c (0x539D00-0x53B6D0),
+  em_master_c.c (0x53B8A0-0x53BA4C); whole file in em_master_nm.c.
+  Near-matches: Em_Master_Change (network master hand-over; logic written,
+  register allocation far off, a permuter run did not help), Em_Taisei_Set
+  (23 off: the original loads all four table pointers before storing),
+  em_hagitori_lv_up (19 off, register choice).
+- g_Em_Taisei_Damage_Check (0x559260-0x55B054, 14 functions): 10 written,
+  9 built as em_taisei.c (em_eye_dmg_reset_act_set) and em_taisei_b.c
+  (stock/timer functions, Em_Damage_Stock); em_taisei_nm.c holds the file.
+  Em_Taisei_Ck is 2 off (two saved registers swapped), Em_Taisei_Damage_Check
+  10 off; em_eye_dmg_act_set (per-monster reaction to eye damage, 0xA10)
+  and Em_Dmg_Sys (0x7A4) are not written yet.
+- New shared header include/em_sys.h (EM_TAISEI_DATA, EM_SMELL, status
+  tables). Many EMW fields added through a carve script (gen/carve.py in my
+  scratchpad, not committed): mostly xNNN names for flags and counters used
+  by this code; named ones: boss (0x9D4), taisei (0x7D3 status bits),
+  *_tol tolerances, hungry/thirst (+max), dmg[8] (0x766), hagi[8][8]
+  (0x308). GAME_W: pl_num (0xD3), pl_state[4] (0x208).
+- Lessons:
+  - `x = x + n` with an int n leaves n alone; `x += n` on an s16 field
+    sign-extends n first (*_stock_set).
+  - Early `return` inside an if-body gives a `b epilogue` stub; the outer
+    test written as a nested if branches straight to the end
+    (em_no_floor_ck).
+  - `pl = &player_work[i];` inside the loop body (not a walking pointer in
+    the for header) for player loops (em_no_battle_area_ck).
+  - A struct table pointer used once at the end is still loaded at the top:
+    declare it as an initialised local (`EM_TAISEI_DATA *d = tbl[kind];`).
+  - game_w+0x1E is read as a u16 frame counter here; the existing u8 x1E
+    field (eft12) was left alone and read through `*(u16 *)&game_w.x1E`.
