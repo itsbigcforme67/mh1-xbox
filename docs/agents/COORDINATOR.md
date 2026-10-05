@@ -67,9 +67,9 @@ always been a struct field type or a lost field.
 
 - A (Opus): PC runtime: village hub + quest counter, pause menu, small monsters, quest failure.
 - B (Sonnet): lobby overlay 0x533980-0x5C4E60 (no code shared with game; ~330 KB GCC libs skipped).
-- C (Sonnet): all Capcom code in main except E's regions; fix menu03/menu04 range overlap.
+- C (Sonnet): all Capcom code in main except E's regions (round 6: last round's unlinked list first).
 - D (Sonnet): game overlay to 100% (near-matches by distance, permuter -j1).
-- E (Sonnet): memory card 0x2814E0-0x2862F0 (mc_sel_ck last blocker) and IME 0x23E500-0x24A240.
+- E (Sonnet): memory card 0x2814E0-0x2862F0 (mc_sel_ck: one try, else link Card* around it as asm) and IME big functions.
 - F (Sonnet): lobby overlay 0x5C4E60-end.
 - Parked: near-matches everywhere (register allocation); online code in main.
 
@@ -79,3 +79,11 @@ always been a struct field type or a lost field.
   code; the runner build needed `std::isnan` in ps2_runtime_macros.h. Plan: replace disc,
   pad, memory card and sound at the library-call level (no IOP emulation), then boot.
   Overlays all load at 0x533980 and need per-overlay function tables.
+
+## Gameplay clips for the owner
+
+Build the PC host in main: `ln -sfn "$(cd ../mh1-wt/A/build/sysroot32 && pwd)" build/sysroot32`
+then `tools/build_pc.sh`. Run `build/pc/mhview disc/mh1 --quest 10 --size 960x720 --input ...`
+windowed (env RT_PL_WARP_EM=160 RT_PL_GOD=1 RT_DMG_MUL=3) and record the window with ffmpeg
+x11grab at its xwininfo position. Clips stay in build/ (Capcom imagery, never committed).
+Stop it with `pkill -x mhview` (not -f: that matches the shell running it).
