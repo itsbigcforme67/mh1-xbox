@@ -20,7 +20,7 @@ QEM *em_work_serch();
 void q_net_send_em_die();
 void q_net_send_em_capture();
 int quest_enemy_ck_sub();
-void em_capture_conv();
+int em_capture_conv();
 void quest_failed_ptr_set();
 int Quest_clear_ck();
 
@@ -1766,9 +1766,7 @@ EMW *em;
     return 0;
 }
 
-QEM *em_work_serch2(no, stg)
-s16 no;
-s16 stg;
+QEM *em_work_serch2(s16 no, s16 stg)
 {
     int i;
     s32 *l0;
@@ -1829,4 +1827,387 @@ int n;
 void Quest_timer_reset(void)
 {
     quest_w.x10 = Quest_time_get(1);
+}
+
+extern u16 capture_type_tbl[];
+int Pl_item_num_ck();
+void em_herb_set();
+int quest_enemy_ck_sub2();
+void func_535D20();
+
+u16 *quest_supplies_get(pl, p)
+PLW *pl;
+u16 *p;
+{
+    u16 a;
+    s16 b;
+
+    a = p[0];
+    b = p[1];
+    p += 2;
+    Pl_item_stack(pl, a, b);
+    return p;
+}
+
+int quest_item_set(id, num)
+s16 id;
+s16 num;
+{
+    int i;
+    u8 *q;
+    int t;
+
+    for (i = 0, q = (u8 *)&quest_w; i < 4; i++, q += 2) {
+        if (*(s16 *)(q + 0x1C) == 0) {
+            t = i * 2;
+            *(s16 *)((u8 *)quest_w.x1C + t) = id;
+            *(s16 *)((u8 *)quest_w.x24 + t) = num;
+            return 0;
+        }
+    }
+    return -1;
+}
+
+int quest_enemy_set(id, num)
+s16 id;
+s16 num;
+{
+    int i;
+    u8 *q;
+    int t;
+
+    for (i = 0, q = (u8 *)&quest_w; i < 2; i++, q += 2) {
+        if (*(s16 *)(q + 0x2C) == 0) {
+            t = i * 2;
+            *(s16 *)((u8 *)quest_w.x2C + t) = id;
+            *(s16 *)((u8 *)quest_w.x144 + t) = id;
+            *(s16 *)((u8 *)quest_w.x30 + t) = num;
+            *(s16 *)((u8 *)quest_w.x148 + t) = num;
+            return 0;
+        }
+    }
+    return -1;
+}
+
+int quest_item_ck(q)
+QUEST_W *q;
+{
+    return (s16)Pl_item_num_ck(&player_work[game_w.master], q->x1C[0]) >= q->x24[0];
+}
+
+int quest_item_ck2(q, em)
+QUEST_W *q;
+QEM *em;
+{
+    PLW *pl;
+    int i;
+    s16 n;
+    s16 *p;
+
+    pl = &player_work[game_w.master];
+    if (pl->stg == em->x02) {
+        for (i = 0; i < 4; i++) {
+            if (q->x1C[i] != 0 && (n = Pl_item_num_ck(pl, (u16)q->x1C[i])) != 0) {
+                if (q->x24[i] < n) {
+                    n = q->x24[i];
+                }
+                q->x24[i] -= n;
+                Pl_item_stack(pl, (u16)q->x1C[i], -n);
+                if (((u8 *)Item_data)[(s16)q->x1C[i] * 0x10 + 8] != 0) {
+                    Share_item_stack(pl, ((u8 *)Item_data)[(s16)q->x1C[i] * 0x10 + 8], n);
+                }
+                set01_set(1, 8, q->x1C[i]);
+                quest_w.x182 = 0;
+                quest_w.x181 = 1;
+                quest_w.x184 = q->x1C[i];
+                quest_w.x186 = n;
+                net_send_sys(6, game_w.master);
+                if (q->x24[i] <= 0) {
+                    q->x1C[i] = 0;
+                }
+                break;
+            }
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        if (q->x1C[i] != 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int quest_item_ck3(unused, p)
+int unused;
+s16 *p;
+{
+    u16 id;
+    s16 num;
+
+    id = p[1];
+    p += 2;
+    num = *p;
+    return (s16)Pl_item_num_ck(&player_work[game_w.master], id, id) >= num;
+}
+
+int quest_share_item_ck(q)
+QUEST_W *q;
+{
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        if (q->x1C[i] != 0 && quest_w.x24[i] - (s16)Share_item_num_ck((u16)q->x1C[i], share_item_ck_ck()) > 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int quest_enemy_ck(q)
+QUEST_W *q;
+{
+    int i;
+
+    for (i = 0; i < 2; i++) {
+        if (q->x2C[i] != 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+s16 quest_enemy_ck2(q, kind)
+QUEST_W *q;
+int kind;
+{
+    int i;
+
+    for (i = 0; i < 2; i++) {
+        if (q->x2C[i] == (kind & 0xFF)) {
+            return q->x30[i];
+        }
+    }
+    return 0;
+}
+
+int quest_enemy_ck_sub(q, kind)
+QUEST_W *q;
+int kind;
+{
+    int i;
+    s16 t;
+    s16 v;
+
+    for (i = 0; i < 2; i++) {
+        v = q->x2C[i];
+        if (v == 0x63) {
+            t = q->x30[i] - 1;
+            q->x30[i] = t;
+            if (t <= 0) {
+                q->x2C[i] = 0;
+                return 1;
+            }
+        } else {
+            if (v == (kind & 0xFF)) {
+                t = q->x30[i] - 1;
+                q->x30[i] = t;
+                if (t <= 0) {
+                    q->x2C[i] = 0;
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+int quest_enemy_ck_sub2(q, kind)
+QUEST_W *q;
+int kind;
+{
+    int i;
+    s16 v;
+
+    for (i = 0; i < 2; i++) {
+        v = q->x2C[i];
+        if (v != 0x63) {
+            if (v == (kind & 0xFF) && q->x30[i] < 2) {
+                return 1;
+            }
+        } else if (q->x30[i] < 2) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int em_capture_conv(kind)
+int kind;
+{
+    u16 *p;
+
+    p = capture_type_tbl;
+    while (*p != 0xFF) {
+        if ((kind & 0xFF) == (s8)*p) {
+            Share_item_stack(&player_work[game_w.master], p[1], 1);
+            return 1;
+        }
+        p += 2;
+    }
+    return 0;
+}
+
+void quest_failed_ptr_set(flag)
+int flag;
+{
+    s16 *p;
+    s16 i;
+    s16 k;
+
+    k = flag == 0 ? -2 : 0x25;
+    p = (s16 *)quest_w.x6C;
+    i = 0;
+    for (;;) {
+        if (*p == k) {
+            break;
+        }
+        p += 8;
+        i++;
+    }
+    quest_w.x36 = i;
+}
+
+void quest_presuccess_ptr_set(flag)
+int flag;
+{
+    s16 *p;
+    s16 i;
+    s16 k;
+
+    k = flag == 0 ? -1 : 0x26;
+    p = (s16 *)quest_w.x6C;
+    i = 0;
+    for (;;) {
+        if (*p == k) {
+            break;
+        }
+        p += 8;
+        i++;
+    }
+    quest_w.x36 = i;
+}
+
+void em_herb_set(void)
+{
+    QEM q;
+
+    q.id = 0xA;
+    q.x02 = 0;
+    q.x08 = -1;
+    q.pos[0] = 0;
+    q.pos[1] = 0;
+    q.pos[2] = 0;
+    q.x1C = 0;
+    Em_direct_set(&q);
+}
+
+void quest_timer_send(void)
+{
+    if (game_w.info_stop == 0) {
+        quest_w.x182 = 0;
+        quest_w.x181 = 5;
+        quest_w.x186 = quest_w.x10;
+        quest_w.x184 = (u32)quest_w.x10 >> 16;
+        net_send_sys(6, game_w.master);
+    }
+}
+
+void q_net_send_em_die(e, em)
+QEM *e;
+EMW *em;
+{
+    quest_w.x182 = 0;
+    quest_w.x181 = 7;
+    quest_w.x184 = e->x2C;
+    quest_w.x186 = em->stg | (u16)(e->x04 << 8);
+    net_send_sys(6, game_w.master);
+}
+
+void q_net_send_em_capture(e, em)
+QEM *e;
+EMW *em;
+{
+    quest_w.x182 = 0;
+    quest_w.x181 = 8;
+    quest_w.x184 = e->x2C;
+    quest_w.x186 = em->stg;
+    net_send_sys(6, game_w.master);
+}
+
+void quest_em_die(void)
+{
+    QEM *e;
+    EMW *em;
+    int hp;
+    int i;
+    int fl;
+    int no;
+
+    em = em_work;
+    hp = (u16)quest_w.x186 >> 8 & 0xFF;
+    if ((e = em_work_serch2(quest_w.x184, quest_w.x186 & 0xFF)) != 0 && ((fl = e->x2E) & 6) != 0) {
+        no = e->x0A;
+        i = 0;
+        for (;;) {
+            if (em->id == no && *(u8 *)((u8 *)em + 0x9EB) == *(u8 *)&e->x2C) {
+                if (em->kind != e->id) {
+                    return;
+                }
+                if (em->be_flag == 0) {
+                    return;
+                }
+                if (!(fl & 4)) {
+                    if (em->x04 >= 2) {
+                        return;
+                    }
+                    if (em->mode == 5) {
+                        return;
+                    }
+                } else if (!(e->x04 > (u16)hp)) {
+                    return;
+                }
+                {
+                    if (em->x04 >= 2 || em->mode == 5) {
+                        Em_hagi_point_clr(em, fl, no, i);
+                    }
+                    func_535D20(em, 5, 0);
+                    *(s32 *)((u8 *)em + 0x798) = 0x3F800000;
+                    e->x2E = 2;
+                    em->x302 = 0;
+                    if (quest_enemy_ck_sub2(&quest_w, em->kind) != 0) {
+                        quest_w.x3C = em;
+                    }
+                }
+                return;
+            }
+            i++;
+            em++;
+            if (i >= 20) {
+                break;
+            }
+        }
+        if (e->x04 > (u16)hp) {
+            quest_enemy_ck_sub(&quest_w, (u8)e->id, no, i);
+            if (e->x05 != 0) {
+                quest_w.x34--;
+            }
+            e->x04--;
+            if (e->x04 > 0) {
+                e->x2E = 2;
+                return;
+            }
+            e->x2E = 1;
+            e->x0A = -1;
+        }
+    }
 }

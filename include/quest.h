@@ -80,8 +80,8 @@ typedef struct QUEST_W {
     QPAIR xBC[32];      /* 0xBC */
     s32 x13C;           /* 0x13C */
     s32 x140;           /* 0x140 */
-    s32 x144;           /* 0x144 */
-    s32 x148;           /* 0x148 */
+    s16 x144[2];        /* 0x144 copy of x2C (quest_enemy_set) */
+    s16 x148[2];        /* 0x148 copy of x30 */
     s16 x14C;           /* 0x14C */
     s8 x14E;            /* 0x14E */
     s8 x14F;            /* 0x14F */
