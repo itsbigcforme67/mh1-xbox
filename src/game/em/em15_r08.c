@@ -1,4 +1,4 @@
-/* em15_r08 - monster 15 AI 0x005C7440-0x005C77C4: em_fly24_005C7440, em_fly25_005C75D0, em_fly26. Whole file in em15_nm.c. */
+/* em15_r08 - monster 15 AI 0x005C7A60-0x005C7BAC: em_fly28. Whole file in em15_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -350,53 +350,13 @@ void em_cmd_ck(EMW *);
 
 
 
-void em_fly24_005C7440(EMW *em, EM15W *w) {
-    u8 temp_a1;
-
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
-    case 0:
-        em->x05 = temp_a1 + 1;
-        em_char_set(em, 0x68, 0, 0);
-        em->x388 = 0;
-        break;
-    case 1:
-        if (em_frame_check(em, 0, 112.0f) != 0) {
-            em->x05 += 1;
-            em->x388 = 2;
-            em_rate_clear(em);
-            em->adj_y = 100.0f;
-            em->x3C0[1] = -5.0f;
-            w->spd[0] = 0;
-            w->spd[2] = 0;
-        }
-        break;
-    case 2:
-        w->spd[1] = (s32) em->ang[1];
-        speed_add_g(em, w->spd);
-        if (em->adj_y < 50.0f) {
-            em->adj_y = 50.0f;
-            em->x3C0[1] = 0.0f;
-        }
-        if (!(em->pos[1] <= (em->x7E4 - 580.0f))) {
-            em->x05 += 1;
-            em->pos[1] = em->x7E4;
-            em_char_set(em, 0x76, 0, 0);
-            em->_pad9EF[0] = 5;
-            return;
-        }
-        break;
-    case 3:
-        em->_pad9EF[0] = 5;
-        if (em->x194 == 0) {
-            em->x05 += 1;
-            em15_to_tenjo(em);
-        }
-        break;
-    }
-}
-
-void em_fly25_005C75D0(EMW *em, EM15W *w) {
+void em_fly28(EMW *em, EM15W *w) {
+    int d;
+    f32 sp30[3];
+    f32 temp_f1;
+    s32 temp_v0;
+    s32 temp_v1;
+    s32 var_v0;
     u8 temp_a1;
 
     em->_pad9EF[0] = 5;
@@ -406,59 +366,30 @@ void em_fly25_005C75D0(EMW *em, EM15W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x388 = 2;
-        em_char_set(em, 0x67, 0, 0);
-        break;
-    case 1:
-        if (em->x194 == 0) {
-            em->x05 = temp_a1 + 1;
-            em15_to_tenjo(em);
-        }
-        break;
-    }
-}
-
-void em_fly26(EMW *em, EM15W *w) {
-    f32 temp_f1;
-    u8 temp_a1;
-
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
-    case 0:
-        em->x05 = temp_a1 + 1;
         em->x3F4 = 0;
-        em->x388 = 2;
-        em_char_set(em, 0x6D, 0, 0);
-        em_rate_clear(em);
-        em->adj_y = -50.0f;
-        em->x3C0[1] = -5.0f;
-        w->spd[0] = 0;
-        w->spd[2] = 0;
-        em->_pad9EF[0] = 5;
+        em_char_set(em, 0x77, 0, 0);
         break;
     case 1:
-        em->_pad9EF[0] = 5;
-        if (em_frame_check(em, 0, 12.0f) != 0) {
-            em->x05 += 1;
-            em->pos[1] -= 580.0f;
-            em->_pad9EF[0] = 0;
+        if (w->has_tgt != 0) {
+            d = (u16)((u16)Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
+            if (d <= 0x8000) {
+                if (d <= 0x3F) {
+                    em->ang[1] += d;
+                } else {
+                    em->ang[1] += 0x40;
+                }
+            } else if (d > 0xFFC0) {
+                em->ang[1] += d;
+            } else {
+                em->ang[1] -= 0x40;
+            }
         }
-        break;
-    case 2:
-        w->spd[1] = (s32) em->ang[1];
-        speed_add_g(em, w->spd);
-        temp_f1 = em->x5AC;
-        if (em->pos[1] <= temp_f1) {
-            em->pos[1] = temp_f1;
+        mot_miration_ret(em, sp30);
+        temp_f1 = w->dist - sp30[2];
+        w->dist = temp_f1;
+        if (temp_f1 <= 0.0f) {
             em->x05 += 1;
-            em->x388 = 0;
-            em_char_set(em, 0x75, 0, 0);
-            return;
-        }
-        break;
-    case 3:
-        if (em->x194 == 0) {
-            em->x05 = temp_a1 + 1;
-            em15_to_normal(em);
+            em15_to_tenjo(em);
         }
         break;
     }

@@ -1,4 +1,4 @@
-/* em15_r12 - monster 15 AI 0x005CB720-0x005CB828: em15_main_sub. Whole file in em15_nm.c. */
+/* em15_r12 - monster 15 AI 0x005CBA30-0x005CBC3C: sound_call_sub_005CBA30, sound_call_005CBAA0, sound_call_parts_005CBB00, quake_call_005CBBA0, move_default_005CBBF0. Whole file in em15_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -350,36 +350,49 @@ void em_cmd_ck(EMW *);
 
 
 
-void em15_main_sub(EMW *em, EM15W *w) {
-    em->mode_old = em->mode;
-    em->x15_old = em->x15;
-    switch (em->mode) {
-    case 0:
-        em_move00_005CA5B0(em, w);
-        break;
-    case 1:
-        em_move01_005CA890(em, w);
-        break;
-    case 2:
-        em_move02_005CA930(em, w);
-        break;
-    case 3:
-        em_move03_005CABA0(em, w);
-        break;
-    case 4:
-        em_move04_005CAC70(em, w);
-        break;
-    case 5:
-        em_move05_005CAD90(em, w);
-        break;
-    case 6:
-        em_move06_005CAE00(em, w);
-        break;
-    case 7:
-        em_move06_005CAE00(em, w);
-        break;
+void sound_call_sub_005CBA30(EMW *em, int se, int joint) {
+    f32 pos[3];
+
+    flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
+    Em_se_req2(em, se, 0, pos, 3, 0);
+}
+
+void sound_call_005CBAA0(EMW *em, int frame, int se, int joint) {
+    if (em_frame_check(em, 0, (f32)frame) != 0) {
+        sound_call_sub_005CBA30(em, se, joint);
     }
-    if (em->pos[0] <= 0.0f || em->pos[2] <= 0.0f) {
-        em_dur_set(em, 0);
+}
+
+void sound_call_parts_005CBB00(EMW *em, int frame, int se, int joint, u8 layer) {
+    f32 pos[3];
+
+    if (em_frame_check(em, layer, (f32)frame) != 0) {
+        flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
+        Em_se_req2(em, se, 0, pos, 3, 0);
     }
+}
+
+void quake_call_005CBBA0(EMW *em, int frame, int arg) {
+    if (em_frame_check(em, 0, (f32)frame) != 0) {
+        Em_set_quake_sub(em, arg);
+    }
+}
+
+void move_default_005CBBF0(EMW *em) {
+    M2C_FIELD(em, s32 *, 0x5C0) = 0;
+    M2C_FIELD(em, s32 *, 0x5C4) = 0;
+    M2C_FIELD(em, u16 *, 0x5F0) = 0xFFFF;
+    M2C_FIELD(em, u8 *, 0x5F8) = 0xFF;
+    M2C_FIELD(em, s32 *, 0x5CC) = 0;
+    M2C_FIELD(em, s32 *, 0x5D0) = 0;
+    M2C_FIELD(em, u16 *, 0x5F2) = 0xFFFF;
+    M2C_FIELD(em, u8 *, 0x5F9) = 0xFF;
+    M2C_FIELD(em, s32 *, 0x5D8) = 0;
+    M2C_FIELD(em, s32 *, 0x5DC) = 0;
+    M2C_FIELD(em, u16 *, 0x5F4) = 0xFFFF;
+    M2C_FIELD(em, u8 *, 0x5FA) = 0xFF;
+    M2C_FIELD(em, s32 *, 0x5E4) = 0;
+    M2C_FIELD(em, s32 *, 0x5E8) = 0;
+    M2C_FIELD(em, u16 *, 0x5F6) = 0xFFFF;
+    M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
 }

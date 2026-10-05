@@ -1,4 +1,4 @@
-/* em21_r08 - monster 21 AI 0x00604340-0x006045D4: em_fly23_00604340, em_fly24_00604440, em_fly25_006044D0, em_atk00_00604560. Whole file in em21_nm.c. */
+/* em21_r08 - monster 21 AI 0x00604340-0x00604AD8: em_fly23_00604340, em_fly24_00604440, em_fly25_006044D0, em_atk00_00604560, em_atk01_006045E0, em_atk02_006046C0, em_atk03_006047B0, em_atk04_006048C0, em_atk05_006049D0. Whole file in em21_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -27,6 +27,10 @@ void speed_add(EMW *, s32 *);
 void speed_add_g(EMW *, s32 *);
 int em_frame_check2(EMW *, int, f32);
 void em_act_set(EMW *, int, u16);
+void Shell08_set_ang_time(EMW *, s16, u8, u8, u16, u16, int);
+void em21_fly_adjy2_init(EMW *, u8);
+u8 em21_fly_adjy2(EMW *);
+u8 em21_senkai_pos_no(EMW *em, f32 *out);
 void Eft19_set(EMW *, int, int);
 void em_cmd_reset(EMW *);
 int Pl_stg_ck_tw(EMW *, PLW *);
@@ -65,6 +69,7 @@ void em_suimin_end(EMW *em);
 void em_ana_loop_cnt_set(EMW *em);
 void Eft08_set(f32 *, int, int, f32);
 void Quest_enemy_capture();
+extern s16 em_atk_mode_timer_tbl[35];
 extern s16 em21_stay_timer_tbl[];
 extern s16 em21_runaway_timer_tbl[];
 
@@ -259,7 +264,6 @@ void dummy_em_prog_0060C390(void);
 
 
 
-extern int em_atk_mode_timer_tbl;
 
 
 
@@ -420,6 +424,136 @@ void em_atk00_00604560(EMW *em, EM21W *w) {
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
             em21_to_normal(em);
+        }
+        break;
+    }
+}
+
+void em_atk01_006045E0(EMW *em, EM21W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 0x2F, 0, 0);
+        break;
+    case 1:
+        if (em_frame_check(em, 0, 78.0f) != 0) {
+            Shell08_set_ang_time(em, 0x22, 1, 0, 0x71C, 0xF1C8, (s32)(11.0f * em->act_spd));
+        }
+        if (em->x194 == 0) {
+            em->x05 += 1;
+            em21_to_normal(em);
+        }
+        break;
+    }
+}
+
+void em_atk02_006046C0(EMW *em, EM21W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x2B, 0, 0);
+        em_action_timer_calc(em, 0);
+        break;
+    case 1:
+        em->ang[1] -= 0x200;
+        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
+            em->x05 += 1;
+            em_char_set(em, 0x2B, 0, 0);
+        }
+        break;
+    case 2:
+        em->ang[1] -= 0x200;
+        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
+            em->x05 += 1;
+            em21_to_normal(em);
+        }
+        break;
+    }
+}
+
+void em_atk03_006047B0(EMW *em, EM21W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x3F4 = 0;
+        em_char_set(em, 0x74, 0, 0);
+        em->x388 = 4;
+        break;
+    case 1:
+        if (em_frame_check(em, 0, 114.0f) != 0) {
+            Shell08_set_ang_time(em, 0x22, 1, 0, 0x71C, 0, (s32)(46.0f * em->act_spd));
+        }
+        if (em_frame_check(em, 0, 30.0f) != 0) {
+            swim_eff_set2_0060C260(8.0f, em);
+        }
+        if (em->x194 == 0) {
+            em->x05 += 1;
+            em21_to_swim(em);
+        }
+        break;
+    }
+}
+
+void em_atk04_006048C0(EMW *em, EM21W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x3F4 = 0;
+        em_char_set(em, 0x75, 0, 0);
+        em->x388 = 4;
+        break;
+    case 1:
+        if (em_frame_check(em, 0, 114.0f) != 0) {
+            Shell08_set_ang_time(em, 0x22, 1, 0, 0x71C, 0, (s32)(46.0f * em->act_spd));
+        }
+        if (em_frame_check(em, 0, 30.0f) != 0) {
+            swim_eff_set2_0060C260(8.0f, em);
+        }
+        if (em->x194 == 0) {
+            em->x05 += 1;
+            em21_to_swim(em);
+        }
+        break;
+    }
+}
+
+void em_atk05_006049D0(EMW *em, EM21W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x3F4 = 0;
+        em_char_set(em, 0x70, 0, 0);
+        em->x388 = 4;
+        break;
+    case 1:
+        if (em_frame_check(em, 0, 118.0f) != 0) {
+            Shell08_set_ang_time(em, 0x22, 1, 1, 0x71C, 0, (s32)(30.0f * em->act_spd));
+        }
+        if (em_frame_check(em, 0, 30.0f) != 0) {
+            swim_eff_set2_0060C260(8.0f, em);
+        }
+        if (em->x194 == 0) {
+            em->x05 += 1;
+            em21_to_swim(em);
         }
         break;
     }

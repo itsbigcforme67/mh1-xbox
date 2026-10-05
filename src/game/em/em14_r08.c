@@ -1,4 +1,4 @@
-/* em14_r08 - monster 14 AI 0x005B8FA0-0x005B9108: em_atk03_005B8FA0, em_atk06_005B9020. Whole file in em14_nm.c. */
+/* em14_r08 - monster 14 AI 0x005B9610-0x005B968C: em_atk28_005B9610. Whole file in em14_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -178,7 +178,7 @@ static void em_dmg15_005BA800(EMW *em, EM14W *w);
 static void em_dmg16_005BA880(EMW *em, EM14W *w);
 static void em_dmg17_005BA9A0(EMW *em, EM14W *w);
 static void em_dmg18_005BAA90(EMW *em, EM14W *w);
-void em_demo00_005BAB80(EMW *em, EM14W *w);
+static void em_demo00_005BAB80(EMW *em, EM14W *w);
 static void em_die00_005BAEF0(EMW *em, EM14W *w);
 static void em_die01_005BB090(EMW *em, EM14W *w);
 static void em_die02_005BB290(EMW *em, EM14W *w);
@@ -324,51 +324,21 @@ extern u8 *em14_act_add[3];
 
 
 
-void em_atk03_005B8FA0(EMW *em, EM14W *w) {
-    u8 temp_a2;
+void em_atk28_005B9610(EMW *em, EM14W *w) {
+    u8 temp_a1;
 
-    temp_a2 = em->x05;
-    switch (temp_a2) {                              /* irregular */
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
     case 0:
-        em->x05 = temp_a2 + 1;
+        em->x05 = temp_a1 + 1;
         em->x388 = 0;
-        em->x3F4 = 1;
-        em_char_set(em, 0x24, 0, 0);
+        em->x3F4 = 0;
+        em_char_set(em, 0x6C, 0, 0);
         break;
     case 1:
         if (em->x194 == 0) {
-            em->x3F4 = 0;
-            em->x05 += 1;
-            em14_atk_end_sel(em, w);
-        }
-        break;
-    }
-}
-
-void em_atk06_005B9020(EMW *em, EM14W *w) {
-    u8 temp_a2;
-
-    temp_a2 = em->x05;
-    switch (temp_a2) {                              /* irregular */
-    case 0:
-        em->x05 = temp_a2 + 1;
-        em->x388 = 0;
-        em->x3F4 = 0;
-        em_char_set(em, 0x2B, 0, 0);
-        em_action_timer_calc(em, 0);
-        break;
-    case 1:
-        em->ang[1] -= 0x200;
-        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
-            em->x05 += 1;
-            em_char_set(em, 0x2B, 0, 0);
-        }
-        break;
-    case 2:
-        em->ang[1] -= 0x200;
-        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
-            em->x05 += 1;
-            em14_atk_end_sel(em, w);
+            em->x05 = temp_a1 + 1;
+            em14_to_normal(em, 0, 0);
         }
         break;
     }

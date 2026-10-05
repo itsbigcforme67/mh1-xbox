@@ -61,9 +61,10 @@ void em_action_timer_calc(EMW *, int);
 void em_dur_set(EMW *, int);
 void em_ikari_add(EMW *, s16);
 void Eft20_set(f32, EMW *, int, int);
+void Eft15_set3(EMW *, int, f32, int);
 void Eft13_set_em(EMW *, int, int);
 int em_frame_check3(EMW *, int, f32, f32);
-u8 Em_stg_ck(EMW *);
+int Em_stg_ck(EMW *);
 void em17_horm_init(EMW *);
 s16 em_hp_vital_set2(EMW *, s16, s16);
 void em_no_battle_area_ck(EMW *, int, int);
@@ -2161,7 +2162,7 @@ static void em_fly16_005DDD20(EMW *em, EM17W *w) {
 }
 
 static void em_fly20_005DDE20(EMW *em, EM17W *w) {
-    f32 sp30;
+    f32 sp30[3];
     f32 temp_f1;
     s32 temp_v1;
     u8 temp_a1;
@@ -2180,7 +2181,7 @@ static void em_fly20_005DDE20(EMW *em, EM17W *w) {
         em->adj_y = 20.0f;
         break;
     case 1:
-        w->spd[1] = (s32) (Em_Calc_angY(em->pos, &sp30) & 0xFFFF);
+        w->spd[1] = (s32) (Em_Calc_angY(em->pos, sp30) & 0xFFFF);
         speed_add(em, w->spd);
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
@@ -4341,10 +4342,9 @@ static void move_default_005E2180(EMW *em) {
 }
 
 static void ef_move_sub_005E21D0(EMW *em, EM17W *w) {
+    f32 sp50[3];
     f32 v[3];
     f32 v2[3];
-    f32 sp54;
-    f32 sp50;
     s16 temp_v1_2;
     u16 temp_v1;
 
@@ -4355,6 +4355,7 @@ static void ef_move_sub_005E21D0(EMW *em, EM17W *w) {
     w->x1B = GetYouganHit(em->pos);
     temp_v1_2 = w->anim;
     switch (temp_v1_2) {                            /* irregular */
+    case 0x3E9:
     case 0x3EA:
         sound_call_005E1FF0(em, 0x2C, 1, 0x14);
         sound_call_005E1FF0(em, 0x74, 1, 0x1A);
@@ -4445,6 +4446,7 @@ block_115:
         }
         break;
     case 0x3F7:
+    case 0x3F8:
         sound_call_005E1FF0(em, 4, 0xC, 6);
         sound_call_005E1FF0(em, 8, 0xC, 0xC);
         sound_call_005E1FF0(em, 0x3A, 0xB, 6);
@@ -4545,6 +4547,7 @@ block_130:
         }
         break;
     case 0x405:
+    case 0x406:
         sound_call_005E1FF0(em, 0x1E, 0x13, 0);
         sound_call_005E1FF0(em, 2, 0x20, 0x23);
         sound_call_005E1FF0(em, 4, 0xE, 0xC);
@@ -4771,7 +4774,7 @@ block_130:
         }
         if (em_frame_check(em, 0, 110.0f) != 0) {
             shell19_set(em, 0x12);
-            Eft15_set3(0x3F800000, em, 5, 4);
+            Eft15_set3(em, 5, 1.0f, 4);
             return;
         }
         break;
@@ -4876,8 +4879,8 @@ block_130:
             return;
         }
         break;
-    case 0x432:
     case 0x42D:
+    case 0x432:
         sound_call_005E1FF0(em, 4, 0x52, 0);
         sound_call_005E1FF0(em, 0x16, 6, 0x2A);
         sound_call_005E1FF0(em, 4, 0x12, 0x1A);
@@ -4913,8 +4916,8 @@ block_130:
             return;
         }
         break;
-    case 0x433:
     case 0x42E:
+    case 0x433:
         sound_call_005E1FF0(em, 8, 0x16, 0);
         sound_call_005E1FF0(em, 4, 0x1F, 0x23);
         break;
@@ -5157,7 +5160,7 @@ block_304:
         sound_call_005E1FF0(em, 0x196, 0, 0x1A);
         if (em_frame_check(em, 0, 110.0f) != 0) {
             shell19_set(em, 0x12);
-            Eft15_set3(0x3F800000, em, 5, 0xE);
+            Eft15_set3(em, 5, 1.0f, 0xE);
         }
         if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 64.0f, 468.0f) != 0) && !(GAME_X1E16 & 3)) {
             Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
@@ -5183,9 +5186,9 @@ block_304:
         if (em_frame_check(em, 0, 74.0f) != 0) {
             Eft13_set_em_scl(em, 2, 1.39999998f, 0x13);
             if (Em_stg_ck(em) != 0) {
-                get_joint_pos_em(em, 2, &sp50);
-                sp54 = em->x5AC;
-                Eft17_set_ex(&sp50, (s32) M2C_FIELD(em, u16 *, 0xA4), 8, 1.0f);
+                get_joint_pos_em(em, 2, sp50);
+                sp50[1] = em->x5AC;
+                Eft17_set_ex(sp50, (u16)em->ang[1], 8, 1.0f);
             }
         }
         if (em_frame_check(em, 0, 14.0f) != 0) {

@@ -1,4 +1,4 @@
-/* em15_r13 - monster 15 AI 0x005CBA30-0x005CBC3C: sound_call_sub_005CBA30, sound_call_005CBAA0, sound_call_parts_005CBB00, quake_call_005CBBA0, move_default_005CBBF0. Whole file in em15_nm.c. */
+/* em15_r13 - monster 15 AI 0x005CF030-0x005CF0E8: ground_land_eff_set_005CF030, dummy_em_prog_005CF0E0. Whole file in em15_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -350,49 +350,22 @@ void em_cmd_ck(EMW *);
 
 
 
-void sound_call_sub_005CBA30(EMW *em, int se, int joint) {
+void ground_land_eff_set_005CF030(EMW *em) {
     f32 pos[3];
 
-    flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
-    Em_se_req2(em, se, 0, pos, 3, 0);
-}
-
-void sound_call_005CBAA0(EMW *em, int frame, int se, int joint) {
-    if (em_frame_check(em, 0, (f32)frame) != 0) {
-        sound_call_sub_005CBA30(em, se, joint);
+    if (game_w.stage == 0) {
+        get_joint_pos_em(em, 0x14, pos);
+        pos[1] = em->x5AC;
+        if (pos[1] <= 46.0f) {
+            eft11_set(em, pos, 1);
+            get_joint_pos_em(em, 0x1A, pos);
+            eft11_set(em, pos, 1);
+        }
+    } else {
+        Eft20_set(1.0f, em, 0xB, 0);
     }
 }
 
-void sound_call_parts_005CBB00(EMW *em, int frame, int se, int joint, u8 layer) {
-    f32 pos[3];
+void dummy_em_prog_005CF0E0(void) {
 
-    if (em_frame_check(em, layer, (f32)frame) != 0) {
-        flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
-        Em_se_req2(em, se, 0, pos, 3, 0);
-    }
-}
-
-void quake_call_005CBBA0(EMW *em, int frame, int arg) {
-    if (em_frame_check(em, 0, (f32)frame) != 0) {
-        Em_set_quake_sub(em, arg);
-    }
-}
-
-void move_default_005CBBF0(EMW *em) {
-    M2C_FIELD(em, s32 *, 0x5C0) = 0;
-    M2C_FIELD(em, s32 *, 0x5C4) = 0;
-    M2C_FIELD(em, u16 *, 0x5F0) = 0xFFFF;
-    M2C_FIELD(em, u8 *, 0x5F8) = 0xFF;
-    M2C_FIELD(em, s32 *, 0x5CC) = 0;
-    M2C_FIELD(em, s32 *, 0x5D0) = 0;
-    M2C_FIELD(em, u16 *, 0x5F2) = 0xFFFF;
-    M2C_FIELD(em, u8 *, 0x5F9) = 0xFF;
-    M2C_FIELD(em, s32 *, 0x5D8) = 0;
-    M2C_FIELD(em, s32 *, 0x5DC) = 0;
-    M2C_FIELD(em, u16 *, 0x5F4) = 0xFFFF;
-    M2C_FIELD(em, u8 *, 0x5FA) = 0xFF;
-    M2C_FIELD(em, s32 *, 0x5E4) = 0;
-    M2C_FIELD(em, s32 *, 0x5E8) = 0;
-    M2C_FIELD(em, u16 *, 0x5F6) = 0xFFFF;
-    M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
 }

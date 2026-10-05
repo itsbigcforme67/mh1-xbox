@@ -1858,7 +1858,7 @@ static void em_fly08_005B85D0(EMW *em, EM14W *w) {
 }
 
 static void em_fly09_005B86E0(EMW *em, EM14W *w) {
-    f32 sp30;
+    f32 sp30[3];
     f32 temp_f1;
     s32 temp_v1;
     u8 temp_a1;
@@ -1877,7 +1877,7 @@ static void em_fly09_005B86E0(EMW *em, EM14W *w) {
         em->adj_y = 20.0f;
         break;
     case 1:
-        w->spd[1] = (s32) (Em_Calc_angY(em->pos, &sp30) & 0xFFFF);
+        w->spd[1] = (s32) (Em_Calc_angY(em->pos, sp30) & 0xFFFF);
         speed_add(em, w->spd);
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
@@ -4286,10 +4286,7 @@ static void ef_move_sub_005BCD40(EMW *em, EM14W *w) {
             }
             if (em_frame_check(em, 0, 120.0f) != 0) {
                 shell18_set(em, 4);
-                return;
             }
-        } else {
-            return;
         }
         break;
     case 0x3ED:

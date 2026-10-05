@@ -1,4 +1,4 @@
-/* em17_r10 - monster 17 AI 0x005DDF40-0x005DE074: em_fly21_005DDF40. Whole file in em17_nm.c. */
+/* em17_r10 - monster 17 AI 0x005DE360-0x005DE3EC: em_atk02_005DE360, em_atk03_005DE370. Whole file in em17_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -61,9 +61,10 @@ void em_action_timer_calc(EMW *, int);
 void em_dur_set(EMW *, int);
 void em_ikari_add(EMW *, s16);
 void Eft20_set(f32, EMW *, int, int);
+void Eft15_set3(EMW *, int, f32, int);
 void Eft13_set_em(EMW *, int, int);
 int em_frame_check3(EMW *, int, f32, f32);
-u8 Em_stg_ck(EMW *);
+int Em_stg_ck(EMW *);
 void em17_horm_init(EMW *);
 s16 em_hp_vital_set2(EMW *, s16, s16);
 void em_no_battle_area_ck(EMW *, int, int);
@@ -338,44 +339,27 @@ extern u8 *em17_act_add[3];
 
 
 
-void em_fly21_005DDF40(EMW *em, EM17W *w) {
-    f32 temp_f0;
-    f32 temp_f1;
-    s32 temp_v1;
-    u8 temp_a1;
+void em_atk02_005DE360(EMW *em, EM17W *w) {
 
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
+}
+
+void em_atk03_005DE370(EMW *em, EM17W *w) {
+    u8 temp_a2;
+
+    temp_a2 = em->x05;
+    switch (temp_a2) {                              /* irregular */
     case 0:
-        em->x05 = temp_a1 + 1;
-        em->x388 = 2;
-        em->x3F4 = 0;
-        w->turn = 0x100;
-        em_char_set(em, 0xF, 0, 0);
-        w->x18 = 0;
+        em->x05 = temp_a2 + 1;
+        em->x388 = 0;
+        em->x3F4 = 1;
+        em_char_set(em, 0x24, 0, 0);
         break;
     case 1:
-        w->spd[1] = (s32) (Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF);
-        w->spd[2] = 0;
-        xang_calc_target(em, w->spd, 0.0f, 0.0f);
-        speed_add(em, w->spd);
-        temp_f0 = flvecCalcDistance(em->pos, em->tgt_pos);
-        temp_v1 = em->work08 - 1;
-        em->work08 = temp_v1;
-        if (temp_v1 > 0) {
-            if (temp_f0 <= (10.0f * em->adj_z)) {
-                goto block_9;
-            }
-        } else {
-block_9:
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
             em->x05 += 1;
-            em_rate_clear(em);
-            em17_to_fly(em, 0);
+            em17_atk_end_sel(em, w);
         }
         break;
-    }
-    temp_f1 = em->x5AC;
-    if (em->pos[1] < temp_f1) {
-        em->pos[1] = temp_f1;
     }
 }

@@ -1,4 +1,4 @@
-/* em21_r03 - monster 21 AI 0x00601C20-0x00601D88: em_fly00_00601C20, em_fly01_00601CB0, em_fly02_00601D80. Whole file in em21_nm.c. */
+/* em21_r03 - monster 21 AI 0x00601AC0-0x00601D88: em_mv03_00601AC0, em_fly00_00601C20, em_fly01_00601CB0, em_fly02_00601D80. Whole file in em21_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -27,6 +27,10 @@ void speed_add(EMW *, s32 *);
 void speed_add_g(EMW *, s32 *);
 int em_frame_check2(EMW *, int, f32);
 void em_act_set(EMW *, int, u16);
+void Shell08_set_ang_time(EMW *, s16, u8, u8, u16, u16, int);
+void em21_fly_adjy2_init(EMW *, u8);
+u8 em21_fly_adjy2(EMW *);
+u8 em21_senkai_pos_no(EMW *em, f32 *out);
 void Eft19_set(EMW *, int, int);
 void em_cmd_reset(EMW *);
 int Pl_stg_ck_tw(EMW *, PLW *);
@@ -65,6 +69,7 @@ void em_suimin_end(EMW *em);
 void em_ana_loop_cnt_set(EMW *em);
 void Eft08_set(f32 *, int, int, f32);
 void Quest_enemy_capture();
+extern s16 em_atk_mode_timer_tbl[35];
 extern s16 em21_stay_timer_tbl[];
 extern s16 em21_runaway_timer_tbl[];
 
@@ -259,7 +264,6 @@ void dummy_em_prog_0060C390(void);
 
 
 
-extern int em_atk_mode_timer_tbl;
 
 
 
@@ -324,6 +328,52 @@ extern HIRE_ADD *hire_down_add_tbl_0066EE40[4];
 
 
 
+
+void em_mv03_00601AC0(EMW *em, EM21W *w) {
+    f32 sp30[3];
+    int d;
+    f32 temp_f1;
+    s32 temp_v1_2;
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 0xA, 0, 0);
+        break;
+    case 1:
+        if (w->has_tgt != 0) {
+            d = (u16)((u16)Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
+            if (d <= 0x8000) {
+                if (d <= 0x3F) {
+                    em->ang[1] += d;
+                } else {
+                    em->ang[1] += 0x40;
+                }
+            } else if (d > 0xFFC0) {
+                em->ang[1] += d;
+            } else {
+                em->ang[1] -= 0x40;
+            }
+            mot_miration_ret(em, sp30);
+            temp_f1 = w->dist - sp30[2];
+            w->dist = temp_f1;
+            if (temp_f1 <= 0.0f) {
+                em->work08 = 1;
+            }
+        }
+        temp_v1_2 = em->work08 - 1;
+        em->work08 = temp_v1_2;
+        if (temp_v1_2 <= 0) {
+            em->x05 += 1;
+            em21_to_normal(em);
+        }
+        break;
+    }
+}
 
 void em_fly00_00601C20(EMW *em, EM21W *w) {
     u8 temp_a1;

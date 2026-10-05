@@ -1,4 +1,4 @@
-/* em17_r16 - monster 17 AI 0x005E1C70-0x005E1D78: em17_main_sub. Whole file in em17_nm.c. */
+/* em17_r16 - monster 17 AI 0x005E1F80-0x005E1FF0: sound_call_sub_005E1F80. Whole file in em17_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -61,9 +61,10 @@ void em_action_timer_calc(EMW *, int);
 void em_dur_set(EMW *, int);
 void em_ikari_add(EMW *, s16);
 void Eft20_set(f32, EMW *, int, int);
+void Eft15_set3(EMW *, int, f32, int);
 void Eft13_set_em(EMW *, int, int);
 int em_frame_check3(EMW *, int, f32, f32);
-u8 Em_stg_ck(EMW *);
+int Em_stg_ck(EMW *);
 void em17_horm_init(EMW *);
 s16 em_hp_vital_set2(EMW *, s16, s16);
 void em_no_battle_area_ck(EMW *, int, int);
@@ -338,39 +339,9 @@ extern u8 *em17_act_add[3];
 
 
 
-void em17_main_sub(EMW *em, EM17W *w) {
-    u8 temp_v1;
+void sound_call_sub_005E1F80(EMW *em, int se, int joint) {
+    f32 pos[3];
 
-    em->mode_old = em->mode;
-    em->x15_old = em->x15;
-    temp_v1 = em->mode;
-    switch (temp_v1) {
-    case 0:
-        em_move00_005E0D20(em, w);
-        break;
-    case 1:
-        em_move01_005E0F60(em, w);
-        break;
-    case 2:
-        em_move02_005E1030(em, w);
-        break;
-    case 3:
-        em_move03_005E11A0(em, w);
-        break;
-    case 4:
-        em_move04_005E1270(em, w);
-        break;
-    case 5:
-        em_move05_005E1400(em, w);
-        break;
-    case 6:
-        em_move06_005E1490(em, w);
-        break;
-    case 7:
-        em_move06_005E1490(em, w);
-        break;
-    }
-    if ((em->pos[0] <= 0.0f) || (em->pos[2] <= 0.0f)) {
-        em_dur_set(em, 0);
-    }
+    flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
+    Em_se_req2(em, se, 0, pos, 3, 0);
 }

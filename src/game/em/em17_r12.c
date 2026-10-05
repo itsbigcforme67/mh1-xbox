@@ -1,4 +1,4 @@
-/* em17_r12 - monster 17 AI 0x005DE710-0x005DE7F8: em_atk06_005DE710. Whole file in em17_nm.c. */
+/* em17_r12 - monster 17 AI 0x005DE9E0-0x005DFDE8: em_atk08_005DE9E0, em_atk09_005DEAA0, em_dmg00_005DEB30, em_dmg01_005DEBD0, em_dmg02_005DEC60, em_dmg03_005DECF0, em_dmg04_005DED80, em_dmg05_005DEF50, em_dmg06_005DEFF0, em_dmg07_005DF090, em_dmg08_005DF180, em_dmg09_005DF2A0, em_dmg10_005DF3D0, em_dmg11_005DF460, em_dmg12_005DF540, em_dmg13_005DF670, em_dmg14_005DF7A0, em_dmg15_005DF8C0, em_dmg16_005DF950, em_dmg17_005DFA40, em_dmg18_005DFAC0, em_dmg19_005DFBF0, em_dmg20_005DFCF0. Whole file in em17_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -61,9 +61,10 @@ void em_action_timer_calc(EMW *, int);
 void em_dur_set(EMW *, int);
 void em_ikari_add(EMW *, s16);
 void Eft20_set(f32, EMW *, int, int);
+void Eft15_set3(EMW *, int, f32, int);
 void Eft13_set_em(EMW *, int, int);
 int em_frame_check3(EMW *, int, f32, f32);
-u8 Em_stg_ck(EMW *);
+int Em_stg_ck(EMW *);
 void em17_horm_init(EMW *);
 s16 em_hp_vital_set2(EMW *, s16, s16);
 void em_no_battle_area_ck(EMW *, int, int);
@@ -338,30 +339,659 @@ extern u8 *em17_act_add[3];
 
 
 
-void em_atk06_005DE710(EMW *em, EM17W *w) {
-    u8 temp_a2;
+void em_atk08_005DE9E0(EMW *em, EM17W *w) {
+    u8 temp_a1;
 
-    temp_a2 = em->x05;
-    switch (temp_a2) {                              /* irregular */
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
     case 0:
-        em->x05 = temp_a2 + 1;
+        em->x05 = temp_a1 + 1;
         em->x388 = 0;
-        em->x3F4 = 0;
-        em_char_set(em, 0x2B, 0, 0);
-        em_action_timer_calc(em, 0);
-        break;
+        /* fallthrough */
     case 1:
-        em->ang[1] -= 0x200;
-        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
+        if (em17_horm_main(em, temp_a1) != 0) {
             em->x05 += 1;
-            em_char_set(em, 0x2B, 0, 0);
+            em->x3F4 = 0;
+            em_char_set(em, 0x6D, 0, 0);
         }
         break;
     case 2:
-        em->ang[1] -= 0x200;
-        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
             em->x05 += 1;
-            em17_atk_end_sel(em, w);
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void em_atk09_005DEAA0(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x70, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
+            em->x05 += 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void em_dmg00_005DEB30(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x3C, 0, 0);
+        em->x762 = 3;
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void em_dmg01_005DEBD0(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x42, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void em_dmg02_005DEC60(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x3F, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void em_dmg03_005DECF0(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x40, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void em_dmg04_005DED80(EMW *em, EM17W *w) {
+    f32 temp_f1;
+    u32 var_a0;
+    u8 temp_a1;
+
+    em->x40C = 5;
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x41, 0, 0);
+        em->x948 |= 1;
+        em->x958 += 1;
+        Em_Sleep_Flag_Ck(em);
+        break;
+    case 1:
+        if ((em_frame_check(em, 0, 6.0f) != 0) && ((s8) em->ex[0xA3] != 0) && (em->kind != 0x14)) {
+            em->ex[0xA3] = 0;
+        }
+        if ((em_frame_check2(em, 0, 52.0f) != 0) && (em_frame_check2(em, 0, 122.0f) == 0)) {
+            temp_f1 = 936.0f * em->act_spd;
+            var_a0 = (u32)temp_f1;
+            em->ang[1] -= var_a0 & 0xFFFF;
+        }
+        if (em->x194 == 0) {
+            em->x05 += 1;
+            em->ang[1] -= 8;
+            em17_act_set(em, 4, 0x11, 3);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em17_act_set(em, 4, 0x11, 3);
+        }
+        break;
+    }
+}
+
+void em_dmg05_005DEF50(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x4A, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em17_to_normal(em, 0, 0);
+            em->mode_old = em->mode;
+            em->x15_old = em->x15;
+        }
+        break;
+    }
+}
+
+void em_dmg06_005DEFF0(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x45, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em17_to_normal(em, 0, 0);
+            em->mode_old = em->mode;
+            em->x15_old = em->x15;
+        }
+        break;
+    }
+}
+
+void em_dmg07_005DF090(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x4D, 0, 0);
+        if (!(em->adj_y <= -50.0f)) {
+            em->adj_y = -50.0f;
+        }
+        em_cmd_reset(em);
+        break;
+    case 1:
+        if (em_frame_check(em, 0, 14.0f) != 0) {
+            em->x05 += 1;
+            em17_to_fly(em, 1);
+            em->adj_y = 0.0f;
+        }
+        speed_add(em, w->spd);
+        break;
+    }
+}
+
+void em_dmg08_005DF180(EMW *em, EM17W *w) {
+    u8 temp_a3;
+
+    temp_a3 = em->x05;
+    switch (temp_a3) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a3 + 1;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x4D, 0, 0);
+        if (!(em->adj_y <= -50.0f)) {
+            em->adj_y = -50.0f;
+        }
+        em->x3C0[1] = -10.0f;
+        break;
+    case 1:
+        speed_add_g(em, w->spd);
+        if (em->pos[1] <= em->x5AC) {
+            em->x05 += 1;
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            em_char_set(em, 0x4E, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05 = temp_a3 + 1;
+            em17_to_normal(em, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    }
+}
+
+void em_dmg09_005DF2A0(EMW *em, EM17W *w) {
+    u8 temp_a3;
+
+    temp_a3 = em->x05;
+    switch (temp_a3) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a3 + 1;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em->x88B = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x4D, 0, 0);
+        if (!(em->adj_y <= -50.0f)) {
+            em->adj_y = -50.0f;
+        }
+        em->x3C0[1] = -10.0f;
+        break;
+    case 1:
+        speed_add_g(em, w->spd);
+        if (em->pos[1] <= em->x5AC) {
+            em->x05 += 1;
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            em_char_set(em, 0x4E, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05 = temp_a3 + 1;
+            em17_to_normal(em, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    }
+}
+
+void em_dmg10_005DF3D0(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x3D, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void em_dmg11_005DF460(EMW *em, EM17W *w) {
+    s32 temp_v1;
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x4C, 0, 0);
+        Em_Mahi_Start(em);
+        break;
+    case 1:
+        temp_v1 = em->work08 - 1;
+        em->work08 = temp_v1;
+        if (temp_v1 <= 0) {
+            em->x05 += 1;
+            Em_Mahi_End(em);
+            em17_act_set(em, 0, 0x21, 4);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em17_act_set(em, 0, 0x21, 4);
+        }
+        break;
+    }
+}
+
+void em_dmg12_005DF540(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x5F, 0, 0);
+        em->x762 = 3;
+        em->x8BD = 1;
+        em->x9EA = 0x32;
+        em->x88B = 1;
+        Em_Sleep_Flag_Ck(em);
+        break;
+    case 1:
+        if (em->x9EA < 5) {
+            em->x9EA = 5;
+        }
+        if (em->x194 == 0) {
+            em->x05 += 1;
+            em17_act_set(em, 4, 0xD, 3);
+        }
+        break;
+    case 2:
+        if (em->x9EA < 5) {
+            em->x9EA = 5;
+        }
+        if (em->x8C3 == 0) {
+            em17_act_set(em, 4, 0xD, 3);
+        }
+        break;
+    }
+}
+
+void em_dmg13_005DF670(EMW *em, EM17W *w) {
+    s8 temp_v0;
+    u8 temp_a1;
+
+    em->x9EA = 5;
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em_char_set(em, 0x60, 0, 0);
+        em->x8BD = 1;
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            temp_v0 = em->x95A - 1;
+            em->x95A = temp_v0;
+            if ((s8)temp_v0 <= 0) {
+                em->x05 += 1;
+                em_char_set(em, 0x60, 0, 0);
+                em17_act_set(em, 2, 0x17, 4);
+                return;
+            }
+            em_char_set(em, 0x60, 0, 0);
+        }
+        break;
+    case 2:
+        if ((em->x194 == 0) && (em->x8C3 == 0)) {
+            em_char_set(em, 0x60, 0, 0);
+            em17_act_set(em, 2, 0x17, 4);
+        }
+        break;
+    }
+}
+
+void em_dmg14_005DF7A0(EMW *em, EM17W *w) {
+    s32 temp_v0;
+    u8 temp_v1;
+
+    em->x9EA = 5;
+    temp_v1 = em->x05;
+    switch (temp_v1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_v1 + 1;
+        em->x388 = 0;
+        em_char_set(em, 0x61, 0, 0);
+        Em_Mahi_Start(em);
+        em->x8BD = 1;
+        em_cmd_reset(em);
+        break;
+    case 1:
+        temp_v0 = em->work08 - 1;
+        em->work08 = temp_v0;
+        if (temp_v0 <= 0) {
+            em->x05 += 1;
+            if (em->x8B6 != 0) {
+                em->x95A = 4;
+            } else {
+                em->x95A = 6;
+            }
+            em_ana_loop_cnt_set(em);
+            em17_act_set(em, 4, 0x12, 3);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em17_act_set(em, 4, 0x12, 3);
+        }
+        break;
+    }
+    em_mahi_eff_set(em, 2);
+}
+
+void em_dmg15_005DF8C0(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x73, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void em_dmg16_005DF950(EMW *em, EM17W *w) {
+    s32 temp_v1;
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x74, 0, 0);
+        em->x762 = 3;
+        em->work08 = 0x258;
+        break;
+    case 1:
+        temp_v1 = em->work08 - 1;
+        em->work08 = temp_v1;
+        if (temp_v1 <= 0) {
+            em->x05 += 1;
+            em_char_set(em, 0x76, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em->x762 = 0;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void em_dmg17_005DFA40(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em_cmd_reset(em);
+        em_tail_off_sub(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void em_dmg18_005DFAC0(EMW *em, EM17W *w) {
+    s8 temp_v0;
+    u8 temp_a1;
+
+    em->x9EA = 5;
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em_char_set(em, 0x60, 0, 0);
+        Em_Mahi_End(em);
+        em->x8BD = 1;
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            temp_v0 = em->x95A - 1;
+            em->x95A = temp_v0;
+            if ((s8)temp_v0 <= 0) {
+                em->x05 += 1;
+                em_char_set(em, 0x60, 0, 0);
+                em17_act_set(em, 2, 0x17, 4);
+                return;
+            }
+            em_char_set(em, 0x60, 0, 0);
+        }
+        break;
+    case 2:
+        if ((em->x194 == 0) && (em->x8C3 == 0)) {
+            em_char_set(em, 0x60, 0, 0);
+            em17_act_set(em, 2, 0x17, 4);
+        }
+        break;
+    }
+}
+
+void em_dmg19_005DFBF0(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    em->x9EA = 5;
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x62, 0, 0);
+        em->x88B = 1;
+        Em_Sleep_End(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            if (em->x8B6 != 0) {
+                em->x95A = 4;
+            } else {
+                em->x95A = 6;
+            }
+            em_ana_loop_cnt_set(em);
+            em17_act_set(em, 4, 0xD, 3);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em17_act_set(em, 4, 0xD, 3);
+        }
+        break;
+    }
+}
+
+void em_dmg20_005DFCF0(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    em->x9EA = 5;
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x62, 0, 0);
+        em->x88B = 1;
+        Em_Sleep2_End(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            if (em->x8B6 != 0) {
+                em->x95A = 4;
+            } else {
+                em->x95A = 6;
+            }
+            em_ana_loop_cnt_set(em);
+            em17_act_set(em, 4, 0xD, 3);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em17_act_set(em, 4, 0xD, 3);
         }
         break;
     }

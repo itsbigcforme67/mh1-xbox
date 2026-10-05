@@ -1,4 +1,4 @@
-/* em14_r07 - monster 14 AI 0x005B8800-0x005B8CC4: em_fly10_005B8800, em_fly11_005B8890, em_fly12_005B89D0, em_fly14_005B8C10. Whole file in em14_nm.c. */
+/* em14_r07 - monster 14 AI 0x005B8FA0-0x005B9108: em_atk03_005B8FA0, em_atk06_005B9020. Whole file in em14_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -178,7 +178,7 @@ static void em_dmg15_005BA800(EMW *em, EM14W *w);
 static void em_dmg16_005BA880(EMW *em, EM14W *w);
 static void em_dmg17_005BA9A0(EMW *em, EM14W *w);
 static void em_dmg18_005BAA90(EMW *em, EM14W *w);
-void em_demo00_005BAB80(EMW *em, EM14W *w);
+static void em_demo00_005BAB80(EMW *em, EM14W *w);
 static void em_die00_005BAEF0(EMW *em, EM14W *w);
 static void em_die01_005BB090(EMW *em, EM14W *w);
 static void em_die02_005BB290(EMW *em, EM14W *w);
@@ -324,161 +324,52 @@ extern u8 *em14_act_add[3];
 
 
 
-void em_fly10_005B8800(EMW *em, EM14W *w) {
-    s32 temp_v1_2;
-    u8 temp_v1;
+void em_atk03_005B8FA0(EMW *em, EM14W *w) {
+    u8 temp_a2;
 
-    temp_v1 = em->x05;
-    switch (temp_v1) {                              /* irregular */
+    temp_a2 = em->x05;
+    switch (temp_a2) {                              /* irregular */
     case 0:
-        em->x05 = temp_v1 + 1;
-        em->x388 = 4;
-        em->x3F4 = 0;
-        em_char_set(em, 1, 0, 0);
-        em->work08 = 0x5A;
+        em->x05 = temp_a2 + 1;
+        em->x388 = 0;
+        em->x3F4 = 1;
+        em_char_set(em, 0x24, 0, 0);
         break;
     case 1:
-        temp_v1_2 = em->work08 - 1;
-        em->work08 = temp_v1_2;
-        if (temp_v1_2 <= 0) {
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
             em->x05 += 1;
-            em14_to_swim(em);
+            em14_atk_end_sel(em, w);
         }
         break;
     }
 }
 
-void em_fly11_005B8890(EMW *em, EM14W *w) {
-    f32 temp_f0;
-    f32 temp_f1;
-    s32 temp_v1;
-    u8 temp_a1;
+void em_atk06_005B9020(EMW *em, EM14W *w) {
+    u8 temp_a2;
 
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
+    temp_a2 = em->x05;
+    switch (temp_a2) {                              /* irregular */
     case 0:
-        em->x05 = temp_a1 + 1;
-        em->x388 = 2;
+        em->x05 = temp_a2 + 1;
+        em->x388 = 0;
         em->x3F4 = 0;
-        w->turn = 0x100;
-        em_char_set(em, 0xF, 0, 0);
-        w->x18 = 0;
+        em_char_set(em, 0x2B, 0, 0);
+        em_action_timer_calc(em, 0);
         break;
     case 1:
-        em14_senkai_target(em);
-        w->spd[1] = (s32) em->ang[1];
-        w->spd[2] = 0;
-        xang_calc_target(em, w->spd, 0.0f, 0.0f);
-        speed_add(em, w->spd);
-        em14_fly_adjy(em, 1);
-        temp_f0 = CalcDistanceXZ(em->pos, em->tgt_pos);
-        temp_v1 = em->work08 - 1;
-        em->work08 = temp_v1;
-        if (temp_v1 > 0) {
-            if (temp_f0 <= (10.0f * em->adj_z)) {
-                goto block_9;
-            }
-        } else {
-block_9:
+        em->ang[1] -= 0x200;
+        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
             em->x05 += 1;
-            em_rate_clear(em);
-            em14_to_fly(em, 0);
-        }
-        break;
-    }
-    temp_f1 = em->x5AC;
-    if (em->pos[1] < temp_f1) {
-        em->pos[1] = temp_f1;
-    }
-}
-
-void em_fly12_005B89D0(EMW *em, EM14W *w) {
-    f32 temp_f1;
-    f32 temp_f1_2;
-    s32 temp_v1;
-    u8 temp_a1;
-
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
-    case 0:
-        em->x05 = temp_a1 + 1;
-        em->x388 = 2;
-        em->x3F4 = 0;
-        em->ang[0] = 0;
-        em->ang[2] = 0;
-        em_char_set(em, 0xF, 0, 0);
-        em_rate_clear(em);
-        em->adj_y = -10.0f;
-        w->x18 = 0;
-        break;
-    case 1:
-        w->spd[0] = 0;
-        w->spd[1] = (s32) em->ang[1];
-        w->spd[2] = 0;
-        speed_add(em, w->spd);
-        if (!((630.0f + em->x5AC) <= em->pos[1]) && ((em_frame_check(em, 0, 10.0f) != 0) || (em_frame_check(em, 0, 86.0f) != 0) || (em_frame_check(em, 0, 160.0f) != 0))) {
-            em->x05 += 1;
-            em_char_set(em, 0xB, 0, 0);
-            temp_f1 = (em->x5AC - em->pos[1]) / 30.0f;
-            em->adj_y = temp_f1;
-            if (!(temp_f1 < 0.0f)) {
-                em->adj_y = -10.0f;
-            }
-            em->work08 = 0x1E;
+            em_char_set(em, 0x2B, 0, 0);
         }
         break;
     case 2:
-        w->spd[0] = 0;
-        w->spd[1] = (s32) em->ang[1];
-        w->spd[2] = 0;
-        speed_add(em, w->spd);
-        temp_v1 = em->work08 - 1;
-        em->work08 = temp_v1;
-        if (temp_v1 < 0) {
+        em->ang[1] -= 0x200;
+        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
             em->x05 += 1;
-            em_char_set(em, 0x13, 0, 0);
-            em->pos[1] = em->x5AC;
-            em->ang[0] = 0;
-            em->ang[2] = 0;
-            em->x388 = 0;
-            Em_set_quake_sub(em, 1);
+            em14_atk_end_sel(em, w);
         }
         break;
-    case 3:
-        if (em->x194 == 0) {
-            em->x05 = temp_a1 + 1;
-            em14_to_normal(em, 0, 0);
-        }
-        break;
-    }
-    temp_f1_2 = em->x5AC;
-    if (em->pos[1] < temp_f1_2) {
-        em->pos[1] = temp_f1_2;
-    }
-}
-
-void em_fly14_005B8C10(EMW *em, EM14W *w) {
-    f32 temp_f1;
-    u8 temp_a1;
-
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
-    case 0:
-        em->x05 = temp_a1 + 1;
-        em->x3F4 = 0;
-        em->x388 = 2;
-        em_char_set(em, 0xF, 0, 0);
-        w->x18 = 0;
-        break;
-    case 1:
-        if (em->x194 == 0) {
-            em->x05 = temp_a1 + 1;
-            em14_to_fly(em, 0);
-        }
-        break;
-    }
-    temp_f1 = em->x5AC;
-    if (em->pos[1] < temp_f1) {
-        em->pos[1] = temp_f1;
     }
 }

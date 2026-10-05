@@ -27,6 +27,10 @@ void speed_add(EMW *, s32 *);
 void speed_add_g(EMW *, s32 *);
 int em_frame_check2(EMW *, int, f32);
 void em_act_set(EMW *, int, u16);
+void Shell08_set_ang_time(EMW *, s16, u8, u8, u16, u16, int);
+void em21_fly_adjy2_init(EMW *, u8);
+u8 em21_fly_adjy2(EMW *);
+u8 em21_senkai_pos_no(EMW *em, f32 *out);
 void Eft19_set(EMW *, int, int);
 void em_cmd_reset(EMW *);
 int Pl_stg_ck_tw(EMW *, PLW *);
@@ -65,6 +69,7 @@ void em_suimin_end(EMW *em);
 void em_ana_loop_cnt_set(EMW *em);
 void Eft08_set(f32 *, int, int, f32);
 void Quest_enemy_capture();
+extern s16 em_atk_mode_timer_tbl[35];
 extern s16 em21_stay_timer_tbl[];
 extern s16 em21_runaway_timer_tbl[];
 
@@ -259,7 +264,6 @@ void dummy_em_prog_0060C390(void);
 
 
 
-extern int em_atk_mode_timer_tbl;
 
 
 

@@ -1,4 +1,4 @@
-/* em14_r13 - monster 14 AI 0x005BCB30-0x005BCD3C: sound_call_sub_005BCB30, sound_call_005BCBA0, sound_call_parts_005BCC00, quake_call_005BCCA0, move_default_005BCCF0. Whole file in em14_nm.c. */
+/* em14_r13 - monster 14 AI 0x005C1120-0x005C1258: ground_land_eff_set_005C1120, em14_atk_end_sel, dummy_em_prog_005C1250. Whole file in em14_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -178,7 +178,7 @@ static void em_dmg15_005BA800(EMW *em, EM14W *w);
 static void em_dmg16_005BA880(EMW *em, EM14W *w);
 static void em_dmg17_005BA9A0(EMW *em, EM14W *w);
 static void em_dmg18_005BAA90(EMW *em, EM14W *w);
-void em_demo00_005BAB80(EMW *em, EM14W *w);
+static void em_demo00_005BAB80(EMW *em, EM14W *w);
 static void em_die00_005BAEF0(EMW *em, EM14W *w);
 static void em_die01_005BB090(EMW *em, EM14W *w);
 static void em_die02_005BB290(EMW *em, EM14W *w);
@@ -324,49 +324,34 @@ extern u8 *em14_act_add[3];
 
 
 
-void sound_call_sub_005BCB30(EMW *em, int se, int joint) {
+void ground_land_eff_set_005C1120(EMW *em) {
     f32 pos[3];
 
-    flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
-    Em_se_req2(em, se, 0, pos, 3, 0);
-}
-
-void sound_call_005BCBA0(EMW *em, int frame, int se, int joint) {
-    if (em_frame_check(em, 0, (f32)frame) != 0) {
-        sound_call_sub_005BCB30(em, se, joint);
+    if (game_w.stage == 0) {
+        get_joint_pos_em(em, 0x14, pos);
+        pos[1] = em->x5AC;
+        if (pos[1] <= 46.0f) {
+            eft11_set(em, pos, 1);
+            get_joint_pos_em(em, 0x1A, pos);
+            eft11_set(em, pos, 1);
+        }
+    } else {
+        Eft20_set(1.0f, em, 0xB, 0);
     }
 }
 
-void sound_call_parts_005BCC00(EMW *em, int frame, int se, int joint, u8 layer) {
-    f32 pos[3];
-
-    if (em_frame_check(em, layer, (f32)frame) != 0) {
-        flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
-        Em_se_req2(em, se, 0, pos, 3, 0);
+void em14_atk_end_sel(EMW *em, EM14W *w) {
+    if (em->x734 == 3) {
+        em14_to_normal(em, 0, 0);
+        return;
     }
+    if (((s32) em->x39A % 10) == 0) {
+        em14_act_set(em, 0, 1, 1);
+        return;
+    }
+    em14_to_normal(em, 0, 0);
 }
 
-void quake_call_005BCCA0(EMW *em, int frame, int arg) {
-    if (em_frame_check(em, 0, (f32)frame) != 0) {
-        Em_set_quake_sub(em, arg);
-    }
-}
+void dummy_em_prog_005C1250(void) {
 
-void move_default_005BCCF0(EMW *em) {
-    M2C_FIELD(em, s32 *, 0x5C0) = 0;
-    M2C_FIELD(em, s32 *, 0x5C4) = 0;
-    M2C_FIELD(em, u16 *, 0x5F0) = 0xFFFF;
-    M2C_FIELD(em, u8 *, 0x5F8) = 0xFF;
-    M2C_FIELD(em, s32 *, 0x5CC) = 0;
-    M2C_FIELD(em, s32 *, 0x5D0) = 0;
-    M2C_FIELD(em, u16 *, 0x5F2) = 0xFFFF;
-    M2C_FIELD(em, u8 *, 0x5F9) = 0xFF;
-    M2C_FIELD(em, s32 *, 0x5D8) = 0;
-    M2C_FIELD(em, s32 *, 0x5DC) = 0;
-    M2C_FIELD(em, u16 *, 0x5F4) = 0xFFFF;
-    M2C_FIELD(em, u8 *, 0x5FA) = 0xFF;
-    M2C_FIELD(em, s32 *, 0x5E4) = 0;
-    M2C_FIELD(em, s32 *, 0x5E8) = 0;
-    M2C_FIELD(em, u16 *, 0x5F6) = 0xFFFF;
-    M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
 }

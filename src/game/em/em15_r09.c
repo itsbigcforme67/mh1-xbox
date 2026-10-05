@@ -1,4 +1,4 @@
-/* em15_r09 - monster 15 AI 0x005C7A60-0x005C7BAC: em_fly28. Whole file in em15_nm.c. */
+/* em15_r09 - monster 15 AI 0x005C8200-0x005C83D4: em_fly32. Whole file in em15_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -350,21 +350,22 @@ void em_cmd_ck(EMW *);
 
 
 
-void em_fly28(EMW *em, EM15W *w) {
+void em_fly32(EMW *em, EM15W *w) {
     int d;
     f32 sp30[3];
     f32 temp_f1;
     s32 temp_v0;
     s32 temp_v1;
+    s32 temp_v1_2;
     s32 var_v0;
-    u8 temp_a1;
+    u8 temp_a2;
 
     em->_pad9EF[0] = 5;
     em->pos[1] = em->x7E4;
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
+    temp_a2 = em->x05;
+    switch (temp_a2) {                              /* irregular */
     case 0:
-        em->x05 = temp_a1 + 1;
+        em->x05 = temp_a2 + 1;
         em->x388 = 2;
         em->x3F4 = 0;
         em_char_set(em, 0x77, 0, 0);
@@ -389,7 +390,25 @@ void em_fly28(EMW *em, EM15W *w) {
         w->dist = temp_f1;
         if (temp_f1 <= 0.0f) {
             em->x05 += 1;
-            em15_to_tenjo(em);
+            em->x827 = 1;
+            em->x828 = 0;
+            em->x829 = (u8) em->x617;
+            em->x881 = em->x827;
+            em->x882 = em->x828;
+            em->x883 = em->x829;
+            cmd_target_kind_set(em, em->tgt_pos);
+            em->work08 = 0x12C;
+            em15_act_set(em, 2, 0x21, 1);
+        }
+        break;
+    case 2:
+        temp_v1_2 = em->work08 - 1;
+        em->work08 = temp_v1_2;
+        if (temp_v1_2 <= 0) {
+            em->work08 = 0x12C;
+            if (em->x8C3 == 0) {
+                em15_act_set(em, 2, 0x21, 1);
+            }
         }
         break;
     }

@@ -178,7 +178,7 @@ static void em_dmg15_005BA800(EMW *em, EM14W *w);
 static void em_dmg16_005BA880(EMW *em, EM14W *w);
 static void em_dmg17_005BA9A0(EMW *em, EM14W *w);
 static void em_dmg18_005BAA90(EMW *em, EM14W *w);
-void em_demo00_005BAB80(EMW *em, EM14W *w);
+static void em_demo00_005BAB80(EMW *em, EM14W *w);
 static void em_die00_005BAEF0(EMW *em, EM14W *w);
 static void em_die01_005BB090(EMW *em, EM14W *w);
 static void em_die02_005BB290(EMW *em, EM14W *w);

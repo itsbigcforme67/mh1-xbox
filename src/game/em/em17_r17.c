@@ -1,4 +1,4 @@
-/* em17_r17 - monster 17 AI 0x005E1F80-0x005E1FF0: sound_call_sub_005E1F80. Whole file in em17_nm.c. */
+/* em17_r17 - monster 17 AI 0x005E2090-0x005E21CC: sound_call_parts_005E2090, quake_call_005E2130, move_default_005E2180. Whole file in em17_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -61,9 +61,10 @@ void em_action_timer_calc(EMW *, int);
 void em_dur_set(EMW *, int);
 void em_ikari_add(EMW *, s16);
 void Eft20_set(f32, EMW *, int, int);
+void Eft15_set3(EMW *, int, f32, int);
 void Eft13_set_em(EMW *, int, int);
 int em_frame_check3(EMW *, int, f32, f32);
-u8 Em_stg_ck(EMW *);
+int Em_stg_ck(EMW *);
 void em17_horm_init(EMW *);
 s16 em_hp_vital_set2(EMW *, s16, s16);
 void em_no_battle_area_ck(EMW *, int, int);
@@ -338,9 +339,36 @@ extern u8 *em17_act_add[3];
 
 
 
-void sound_call_sub_005E1F80(EMW *em, int se, int joint) {
+void sound_call_parts_005E2090(EMW *em, int frame, int se, int joint, u8 layer) {
     f32 pos[3];
 
-    flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
-    Em_se_req2(em, se, 0, pos, 3, 0);
+    if (em_frame_check(em, layer, (f32)frame) != 0) {
+        flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
+        Em_se_req2(em, se, 0, pos, 3, 0);
+    }
+}
+
+void quake_call_005E2130(EMW *em, int frame, int arg) {
+    if (em_frame_check(em, 0, (f32)frame) != 0) {
+        Em_set_quake_sub(em, arg);
+    }
+}
+
+void move_default_005E2180(EMW *em) {
+    M2C_FIELD(em, s32 *, 0x5C0) = 0;
+    M2C_FIELD(em, s32 *, 0x5C4) = 0;
+    M2C_FIELD(em, u16 *, 0x5F0) = 0xFFFF;
+    M2C_FIELD(em, u8 *, 0x5F8) = 0xFF;
+    M2C_FIELD(em, s32 *, 0x5CC) = 0;
+    M2C_FIELD(em, s32 *, 0x5D0) = 0;
+    M2C_FIELD(em, u16 *, 0x5F2) = 0xFFFF;
+    M2C_FIELD(em, u8 *, 0x5F9) = 0xFF;
+    M2C_FIELD(em, s32 *, 0x5D8) = 0;
+    M2C_FIELD(em, s32 *, 0x5DC) = 0;
+    M2C_FIELD(em, u16 *, 0x5F4) = 0xFFFF;
+    M2C_FIELD(em, u8 *, 0x5FA) = 0xFF;
+    M2C_FIELD(em, s32 *, 0x5E4) = 0;
+    M2C_FIELD(em, s32 *, 0x5E8) = 0;
+    M2C_FIELD(em, u16 *, 0x5F6) = 0xFFFF;
+    M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
 }

@@ -1,4 +1,4 @@
-/* em20_r16 - monster 20 AI 0x005F3E70-0x005F4090: em_atk27_005F3E70, em_atk28_005F3F30, em_atk29_005F3FF0. Whole file in em20_ai_nm.c. */
+/* em20_r16 - monster 20 AI 0x005F32A0-0x005F343C: em_atk18_005F32A0. Whole file in em20_ai_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -430,59 +430,14 @@ extern FLYNEED *em_hungry_tbl[];
 
 
 
-void em_atk27_005F3E70(EMW *em, EM20W *w) {
-    u8 temp_a1;
-
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
-    case 0:
-        em->x05 = temp_a1 + 1;
-        em->x388 = 0;
-        /* fallthrough */
-    case 1:
-        if (em20_horm_main(em, temp_a1) != 0) {
-            em->x05 += 1;
-            em->x3F4 = 0;
-            em_char_set(em, 0x69, 0, 0);
-        }
-        break;
-    case 2:
-        if (em->x194 == 0) {
-            em->x3F4 = 0;
-            em->x05 += 1;
-            em20_to_normal(em, 0, 0);
-        }
-        break;
-    }
-}
-
-void em_atk28_005F3F30(EMW *em, EM20W *w) {
-    u8 temp_a1;
-
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
-    case 0:
-        em->x05 = temp_a1 + 1;
-        em->x388 = 0;
-        /* fallthrough */
-    case 1:
-        if (em20_horm_main(em, temp_a1) != 0) {
-            em->x05 += 1;
-            em->x3F4 = 0;
-            em_char_set(em, 0x6A, 0, 0);
-        }
-        break;
-    case 2:
-        if (em->x194 == 0) {
-            em->x3F4 = 0;
-            em->x05 += 1;
-            em20_to_normal(em, 0, 0);
-        }
-        break;
-    }
-}
-
-void em_atk29_005F3FF0(EMW *em, EM20W *w) {
+void em_atk18_005F32A0(EMW *em, EM20W *w) {
+    int d;
+    f32 sp30[3];
+    f32 temp_f1;
+    s32 temp_v0;
+    s32 temp_v1;
+    s32 temp_v1_2;
+    s32 var_v0;
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -491,14 +446,40 @@ void em_atk29_005F3FF0(EMW *em, EM20W *w) {
         em->x05 = temp_a1 + 1;
         em->x388 = 0;
         em->x3F4 = 0;
-        em_char_set(em, 0x6B, 0, 0);
-        w->x08 = 1;
+        em_char_set(em, 0x11, 0, 0);
         break;
     case 1:
-        if (em->x194 == 0) {
-            em->x3F4 = 0;
+        if (w->has_tgt != 0) {
+            d = (u16)((u16)Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
+            if (d <= 0x8000) {
+                if (d <= 0x3F) {
+                    em->ang[1] += d;
+                } else {
+                    em->ang[1] += 0x40;
+                }
+            } else if (d > 0xFFC0) {
+                em->ang[1] += d;
+            } else {
+                em->ang[1] -= 0x40;
+            }
+            mot_miration_ret(em, sp30);
+            temp_f1 = w->dist - sp30[2];
+            w->dist = temp_f1;
+            if (temp_f1 <= 500.0f) {
+                em->work08 = 1;
+            }
+        }
+        temp_v1_2 = em->work08 - 1;
+        em->work08 = temp_v1_2;
+        if (temp_v1_2 <= 0) {
             em->x05 += 1;
-            w->x08 = 0;
+            em_char_set(em, 0x5B, 0, 0);
+            shell17_set(em, 0x24);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
             em20_to_normal(em, 0, 0);
         }
         break;

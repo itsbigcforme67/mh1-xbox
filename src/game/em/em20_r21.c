@@ -1,4 +1,4 @@
-/* em20_r21 - monster 20 AI 0x005FC980-0x005FCA6C: takeon_eff_set_005FC980, hover_eff_set2_005FCA20. Whole file in em20_ai_nm.c. */
+/* em20_r21 - monster 20 AI 0x005FC860-0x005FC908: ground_land_eff_set_005FC860. Whole file in em20_ai_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -430,21 +430,18 @@ extern FLYNEED *em_hungry_tbl[];
 
 
 
-void takeon_eff_set_005FC980(EMW *em) {
+void ground_land_eff_set_005FC860(EMW *em) {
     f32 pos[3];
-    f32 temp_f2;
 
-    if (game_w.stage == 0 && GAME_X1E16 % 10 == 0) {
-        get_joint_pos_em(em, 0, pos);
-        temp_f2 = em->x5AC;
-        if (pos[1] - temp_f2 < 400.0f && temp_f2 <= 46.0f) {
+    if (game_w.stage == 0) {
+        get_joint_pos_em(em, 0x14, pos);
+        pos[1] = em->x5AC;
+        if (pos[1] <= 46.0f) {
+            eft11_set(em, pos, 1);
+            get_joint_pos_em(em, 0x1A, pos);
             eft11_set(em, pos, 1);
         }
-    }
-}
-
-void hover_eff_set2_005FCA20(EMW *em) {
-    if (GAME_X1E16 % 5 == 0) {
-        Eft20_set(1.0f, em, 0xA, 0);
+    } else {
+        Eft20_set(1.0f, em, 0xB, 0);
     }
 }

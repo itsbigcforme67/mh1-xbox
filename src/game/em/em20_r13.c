@@ -1,4 +1,4 @@
-/* em20_r13 - monster 20 AI 0x005F2350-0x005F2680: em_atk03_005F2350, em_atk04_005F23D0, em_atk06_005F24F0, em_atk07_005F25E0. Whole file in em20_ai_nm.c. */
+/* em20_r13 - monster 20 AI 0x005F1F20-0x005F203C: em_fly24_005F1F20. Whole file in em20_ai_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -430,119 +430,39 @@ extern FLYNEED *em_hungry_tbl[];
 
 
 
-void em_atk03_005F2350(EMW *em, EM20W *w) {
-    u8 temp_a2;
-
-    temp_a2 = em->x05;
-    switch (temp_a2) {                              /* irregular */
-    case 0:
-        em->x05 = temp_a2 + 1;
-        em->x388 = 0;
-        em->x3F4 = 1;
-        em_char_set(em, 0x24, 0, 0);
-        break;
-    case 1:
-        if (em->x194 == 0) {
-            em->x3F4 = 0;
-            em->x05 += 1;
-            em20_atk_end_sel(em, w);
-        }
-        break;
-    }
-}
-
-void em_atk04_005F23D0(EMW *em, EM20W *w) {
+void em_fly24_005F1F20(EMW *em, EM20W *w) {
+    f32 sp30[3];
+    f32 temp_f1;
     s32 temp_v1;
-    s32 temp_v1_2;
-    u8 temp_a2;
-
-    temp_a2 = em->x05;
-    switch (temp_a2) {                              /* irregular */
-    case 0:
-        em->x05 = temp_a2 + 1;
-        em->x388 = 0;
-        em->x3F4 = 0;
-        em_char_set(em, 0x44, 0, 0);
-        em->x40C = 5;
-        break;
-    case 1:
-        em->x40C = 5;
-        if (em_frame_check(em, 0, 350.0f) != 0) {
-            em->x05 += 1;
-        }
-        break;
-    case 2:
-        temp_v1 = em->work08 - 1;
-        em->work08 = temp_v1;
-        if (temp_v1 <= 0) {
-            em->x05 += 1;
-            em->work08 = 0x12C;
-            em20_act_set(em, 3, 9, 1);
-            return;
-        }
-        break;
-    case 3:
-        temp_v1_2 = em->work08 - 1;
-        em->work08 = temp_v1_2;
-        if (temp_v1_2 <= 0) {
-            em->work08 = 0x12C;
-            if (em->x8C3 == 0) {
-                em20_act_set(em, 3, 9, 1);
-            }
-        }
-        break;
-    }
-}
-
-void em_atk06_005F24F0(EMW *em, EM20W *w) {
-    u8 temp_a2;
-
-    temp_a2 = em->x05;
-    switch (temp_a2) {                              /* irregular */
-    case 0:
-        em->x05 = temp_a2 + 1;
-        em->x388 = 0;
-        em->x3F4 = 0;
-        em_char_set(em, 0x2B, 0, 0);
-        em_action_timer_calc(em, 0);
-        break;
-    case 1:
-        em->ang[1] -= 0x200;
-        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
-            em->x05 += 1;
-            em_char_set(em, 0x2B, 0, 0);
-        }
-        break;
-    case 2:
-        em->ang[1] -= 0x200;
-        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
-            em->x05 += 1;
-            em20_atk_end_sel(em, w);
-        }
-        break;
-    }
-}
-
-void em_atk07_005F25E0(EMW *em, EM20W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
         em->x3F4 = 0;
-        em_char_set(em, 0x6D, 0, 0);
-        em->x88B = 1;
-        em->x839 = 0;
-        em_cmd_reset(em);
-        em->x8BD = 1;
+        em->x388 = 2;
+        em_char_set(em, 0xF, 0, 0);
+        w->x18 = 0;
+        w->spd[0] = 0;
+        w->spd[2] = 0;
+        em_rate_clear(em);
+        em->adj_y = 20.0f;
         break;
     case 1:
-        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
-            em->x05 = temp_a1 + 1;
-            em20_to_normal(em, 0, 0);
+        w->spd[1] = (s32) (Em_Calc_angY(em->pos, sp30) & 0xFFFF);
+        speed_add(em, w->spd);
+        temp_v1 = em->work08 - 1;
+        em->work08 = temp_v1;
+        if ((temp_v1 <= 0) || !(em->pos[1] <= (1000.0f + em->tgt_pos[1]))) {
+            em->x05 += 1;
+            em_rate_clear(em);
+            em20_to_fly(em, 0);
         }
         break;
+    }
+    temp_f1 = em->x5AC;
+    if (em->pos[1] < temp_f1) {
+        em->pos[1] = temp_f1;
     }
 }

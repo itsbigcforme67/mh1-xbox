@@ -2071,7 +2071,7 @@ static void em_fly12_005C6860(EMW *em, EM15W *w) {
         w->spd[1] = (s32) em->ang[1];
         speed_add(em, w->spd);
         em15_fly_adjy(em, 1);
-        temp_f1 = em->pos[1] + 20.0f;
+        temp_f1 = 20.0f + em->pos[1];
         em->pos[1] = temp_f1;
         if (!(temp_f1 < 10000.0f)) {
             em->x05 += 1;
@@ -2204,7 +2204,7 @@ static void em_fly14_005C6C80(EMW *em, EM15W *w) {
 }
 
 static void em_fly15_005C6D30(EMW *em, EM15W *w) {
-    f32 sp30;
+    f32 sp30[3];
     f32 temp_f1;
     s32 temp_v1;
     u8 temp_a1;
@@ -2222,7 +2222,7 @@ static void em_fly15_005C6D30(EMW *em, EM15W *w) {
         em->adj_y = 20.0f;
         break;
     case 1:
-        w->spd[1] = (s32) (Em_Calc_angY(em->pos, &sp30) & 0xFFFF);
+        w->spd[1] = (s32) (Em_Calc_angY(em->pos, sp30) & 0xFFFF);
         speed_add(em, w->spd);
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;

@@ -3297,7 +3297,7 @@ static void em_fly23_005F1CE0(EMW *em, EM20W *w) {
 }
 
 static void em_fly24_005F1F20(EMW *em, EM20W *w) {
-    f32 sp30;
+    f32 sp30[3];
     f32 temp_f1;
     s32 temp_v1;
     u8 temp_a1;
@@ -3316,7 +3316,7 @@ static void em_fly24_005F1F20(EMW *em, EM20W *w) {
         em->adj_y = 20.0f;
         break;
     case 1:
-        w->spd[1] = (s32) (Em_Calc_angY(em->pos, &sp30) & 0xFFFF);
+        w->spd[1] = (s32) (Em_Calc_angY(em->pos, sp30) & 0xFFFF);
         speed_add(em, w->spd);
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
@@ -3547,8 +3547,8 @@ static void em_atk07_005F25E0(EMW *em, EM20W *w) {
 }
 
 static void em_atk08_005F2680(EMW *em, EM20W *w) {
-    f32 sp60;
-    f32 sp50;
+    f32 sp60[3];
+    f32 sp50[3];
     f32 sp40[3];
     f32 temp_f1;
     f32 temp_f1_2;
@@ -3608,14 +3608,14 @@ static void em_atk08_005F2680(EMW *em, EM20W *w) {
                 em->adj_z = temp_f1_2 - 1.0f;
             }
             temp_s0_2 = em->x617;
-            em_pl_pos_set(em, temp_s0_2 & 0xFF, &sp50);
-            World_calc2(player_work[(s8)temp_s0_2].stg, &sp50, &sp60);
-            w->dang = Em_Calc_angY(em->x754, &sp60);
+            em_pl_pos_set(em, temp_s0_2 & 0xFF, sp50);
+            World_calc2(player_work[(s8)temp_s0_2].stg, sp50, sp60);
+            w->dang = Em_Calc_angY(em->x754, sp60);
             w->dang = (u16) (w->dang - em->ang[1]);
             em20_senkai_sub(em, 3, 1);
             temp_v1_2 = w->dang;
             if (((s32) temp_v1_2 < 0x801) || ((s32) temp_v1_2 >= 0xF800)) {
-                if (!(CalcDistanceXZ(em->pos, &sp50) > 4000.0f)) {
+                if (!(CalcDistanceXZ(em->pos, sp50) > 4000.0f)) {
                     kyusyu_senkai_ret_005FCBA0(em);
                 } else {
                     em->x05 += 1;
@@ -3963,8 +3963,8 @@ static void em_atk18_005F32A0(EMW *em, EM20W *w) {
 }
 
 static void em_atk21_005F3440(EMW *em, EM20W *w) {
-    f32 sp60;
-    f32 sp50;
+    f32 sp60[3];
+    f32 sp50[3];
     f32 sp40[3];
     f32 temp_f1;
     f32 temp_f1_2;
@@ -4023,14 +4023,14 @@ static void em_atk21_005F3440(EMW *em, EM20W *w) {
                 em->adj_z = temp_f1_2 - 1.0f;
             }
             temp_s2 = em->x617;
-            em_pl_pos_set(em, temp_s2 & 0xFF, &sp50);
-            World_calc2(player_work[(s8)temp_s2].stg, &sp50, &sp60);
-            w->dang = Em_Calc_angY(em->x754, &sp60);
+            em_pl_pos_set(em, temp_s2 & 0xFF, sp50);
+            World_calc2(player_work[(s8)temp_s2].stg, sp50, sp60);
+            w->dang = Em_Calc_angY(em->x754, sp60);
             w->dang = (u16) (w->dang - em->ang[1]);
             em20_senkai_sub(em, 3, 1);
             temp_v1_2 = w->dang;
             if (((s32) temp_v1_2 < 0x801) || ((s32) temp_v1_2 >= 0xF800)) {
-                if (!(CalcDistanceXZ(em->pos, &sp50) > 4000.0f)) {
+                if (!(CalcDistanceXZ(em->pos, sp50) > 4000.0f)) {
                     kyusyu_senkai_ret_005FCBA0(em);
                 } else {
                     em->x05 += 1;
@@ -7461,7 +7461,7 @@ static void hover_eff_set2_005FCA20(EMW *em) {
 }
 
 static s32 kyusyu_char_set_005FCA70(EMW *em) {
-    f32 sp20;
+    f32 sp20[3];
     f32 temp_f0;
     s8 temp_v1;
 
@@ -7469,8 +7469,8 @@ static s32 kyusyu_char_set_005FCA70(EMW *em) {
     if (temp_v1 == -1) {
         return 0;
     }
-    em_pl_pos_set(em, temp_v1 & 0xFF, &sp20);
-    temp_f0 = flvecCalcDistance(em->pos, &sp20);
+    em_pl_pos_set(em, temp_v1 & 0xFF, sp20);
+    temp_f0 = flvecCalcDistance(em->pos, sp20);
     if (em->char0 == 0x415) {
         return 1;
     }

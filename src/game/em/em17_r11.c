@@ -1,4 +1,4 @@
-/* em17_r11 - monster 17 AI 0x005DE360-0x005DE3EC: em_atk02_005DE360, em_atk03_005DE370. Whole file in em17_nm.c. */
+/* em17_r11 - monster 17 AI 0x005DE710-0x005DE7F8: em_atk06_005DE710. Whole file in em17_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -61,9 +61,10 @@ void em_action_timer_calc(EMW *, int);
 void em_dur_set(EMW *, int);
 void em_ikari_add(EMW *, s16);
 void Eft20_set(f32, EMW *, int, int);
+void Eft15_set3(EMW *, int, f32, int);
 void Eft13_set_em(EMW *, int, int);
 int em_frame_check3(EMW *, int, f32, f32);
-u8 Em_stg_ck(EMW *);
+int Em_stg_ck(EMW *);
 void em17_horm_init(EMW *);
 s16 em_hp_vital_set2(EMW *, s16, s16);
 void em_no_battle_area_ck(EMW *, int, int);
@@ -338,11 +339,7 @@ extern u8 *em17_act_add[3];
 
 
 
-void em_atk02_005DE360(EMW *em, EM17W *w) {
-
-}
-
-void em_atk03_005DE370(EMW *em, EM17W *w) {
+void em_atk06_005DE710(EMW *em, EM17W *w) {
     u8 temp_a2;
 
     temp_a2 = em->x05;
@@ -350,12 +347,20 @@ void em_atk03_005DE370(EMW *em, EM17W *w) {
     case 0:
         em->x05 = temp_a2 + 1;
         em->x388 = 0;
-        em->x3F4 = 1;
-        em_char_set(em, 0x24, 0, 0);
+        em->x3F4 = 0;
+        em_char_set(em, 0x2B, 0, 0);
+        em_action_timer_calc(em, 0);
         break;
     case 1:
-        if (em->x194 == 0) {
-            em->x3F4 = 0;
+        em->ang[1] -= 0x200;
+        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
+            em->x05 += 1;
+            em_char_set(em, 0x2B, 0, 0);
+        }
+        break;
+    case 2:
+        em->ang[1] -= 0x200;
+        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
             em->x05 += 1;
             em17_atk_end_sel(em, w);
         }
