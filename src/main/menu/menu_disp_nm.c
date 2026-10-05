@@ -2594,3 +2594,347 @@ none:
         }
     }
 }
+
+/* ===== item window, select mode (0x12E910-0x12F830) ===== */
+extern u8 item_select_base[];
+extern u8 btn_item_sel_3360[];
+extern s16 sy_tbl_3417[];
+int Get_Use_itemnum(PLW *);
+u16 item_sel_sub(PLW *, u16, int);
+int Pl_shell_set(PLW *, u16, int);
+
+/* 0x12E910 */
+void disp_item_sub_select(void) {
+    PFLPS3 q;
+    PFLPS3 q2;
+    PLW *pl = lpPit->pl;
+    s16 n;
+    s16 a0, b0, c0, d0, e0, f0, g0;
+    u16 s18;
+    u8 c;
+    u8 sl[4];
+
+    if (*((u8 *)pl + 2) == 1 || *((u8 *)pl + 2) == 5) {
+        DispFrameMessage(item_select_base + 0x10, 0);
+    } else {
+        DispFrameMessage(item_select_base, 0);
+    }
+    reload_tex(1, 0x11A);
+    SetTextureStage(0x11A);
+    q.s[0] = 0x14F;
+    q.s[2] = 0x94;
+    q.s[1] = 0x18A;
+    q.s[3] = 0x18;
+    q.col = -1;
+    q.uv0 = 0x9A00C5;
+    q.uv1 = 0xB000E5;
+    PutSpriteDiv3(&q, 0xC, 0xF);
+    q.s[0] = 0x170;
+    q.s[2] = 0x53;
+    q.s[1] = 0x156;
+    q.s[3] = 0x36;
+    q.uv0 = 0x700000;
+    q.uv1 = 0xA60068;
+    flps0008(&q);
+    if (lpPit->x58 != 0) {
+        n = Get_Use_itemnum(pl);
+        a0 = 0xFF;
+        g0 = a0;
+        f0 = a0;
+        e0 = a0;
+        d0 = a0;
+        s18 = a0;
+        if (lpPit->x59 < 0) {
+            if (UseItemChk(pl, pl->work888) == 0) {
+                n++;
+            } else {
+                s18 = pl->work888;
+            }
+            if (n >= 2) {
+                d0 = item_sel_sub(pl, pl->work888, 0);
+            }
+        } else {
+            if (UseItemChk(pl, pl->work888) == 0) {
+                d0 = a0;
+                n++;
+            } else {
+                d0 = pl->work888;
+            }
+            if (n >= 2) {
+                s18 = item_sel_sub(pl, pl->work888, 1) & 0xFFFF;
+            }
+        }
+        switch (n) {
+        case 0:
+        case 1:
+        case 2:
+            break;
+        case 4:
+            f0 = item_sel_sub(pl, s18, 1);
+            e0 = item_sel_sub(pl, d0, 0);
+            break;
+        case 3:
+            e0 = item_sel_sub(pl, d0, 0);
+            f0 = item_sel_sub(pl, s18, 1);
+            g0 = item_sel_sub(pl, e0, 0);
+            break;
+        case 5:
+            e0 = item_sel_sub(pl, d0, 0);
+            f0 = item_sel_sub(pl, s18, 1);
+            g0 = item_sel_sub(pl, e0, 0);
+            a0 = item_sel_sub(pl, f0, 1) & 0xFFFF;
+            break;
+        }
+        q2.s[2] = 0x15;
+        q2.s[1] = 0x147;
+        q2.col = 0xFF808080;
+        q2.s[3] = 0x36;
+        ((s16 *)&q2.uv0)[1] = 0x31;
+        ((s16 *)&q2.uv1)[0] = 0xC5;
+        ((s16 *)&q2.uv1)[1] = 0x67;
+        q2.s[0] = 0x14E;
+        ((s16 *)&q2.uv0)[0] = 0xAA;
+        flps0008(&q2);
+        q2.s[0] = 0x1CF;
+        ((s16 *)&q2.uv0)[0] = 0x8F;
+        ((s16 *)&q2.uv1)[0] = 0xAA;
+        flps0008(&q2);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
+        if ((u16)g0 != 0xFF) disp_item_icon((u8)g0, 0x1D4, 0, 1);
+        if ((u16)a0 != 0xFF) disp_item_icon((u8)a0, 0x13E, 0, -1);
+        reload_tex(1, 0x11A);
+        SetTextureStage(0x11A);
+        q2.s[2] = 0x2B;
+        ((s16 *)&q2.uv1)[0] = 0xC5;
+        q2.s[0] = 0x151;
+        flps0008(&q2);
+        q2.s[0] = 0x1B6;
+        flps0008(&q2);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
+        if ((u16)e0 != 0xFF) disp_item_icon((u8)e0, 0x1BC, 0, 0);
+        if ((u16)f0 != 0xFF) disp_item_icon((u8)f0, 0x157, 0, 0);
+        reload_tex(1, 0x11A);
+        SetTextureStage(0x11A);
+        q2.s[0] = 0x171;
+        flps0008(&q2);
+        q2.s[0] = 0x197;
+        flps0008(&q2);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
+        if ((u16)d0 != 0xFF) disp_item_icon((u8)d0, 0x19C, 0, 0);
+        if (s18 != 0xFF) disp_item_icon((u8)s18, 0x176, 0, 0);
+    } else {
+        s16 cur = pl->work888;
+        s16 hh = 0xFF;
+        u16 s17 = 0xFF;
+        s18 = 0xFF;
+        a0 = cur;
+        c0 = hh;
+        b0 = hh;
+        n = Get_Use_itemnum(pl);
+        if (UseItemChk(pl, pl->work888) == 0) {
+            a0 = hh;
+            n++;
+        }
+        if (n == 4) {
+            s18 = item_sel_sub(pl, pl->work888, 1) & 0xFFFF;
+            b0 = item_sel_sub(pl, pl->work888, 0);
+            c0 = item_sel_sub(pl, s18, 1);
+        } else if (n == 2) {
+            s18 = item_sel_sub(pl, pl->work888, 1) & 0xFFFF;
+        } else if (n == 3) {
+            b0 = item_sel_sub(pl, pl->work888, 0);
+        } else if (n == 1 || n == 0) {
+        } else {
+            s18 = item_sel_sub(pl, pl->work888, 1) & 0xFFFF;
+            b0 = item_sel_sub(pl, pl->work888, 0);
+            c0 = item_sel_sub(pl, s18, 1);
+            s17 = item_sel_sub(pl, b0, 0) & 0xFFFF;
+        }
+        q2.s[2] = 0x2B;
+        q2.s[1] = 0x147;
+        q2.s[3] = 0x36;
+        q2.col = 0xFF808080;
+        q2.uv0 = 0x31008F;
+        q2.uv1 = 0x6700C5;
+        q2.s[0] = 0x148;
+        flps0008(&q2);
+        q2.s[0] = 0x1BF;
+        flps0008(&q2);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
+        if (s17 != 0xFF) disp_item_icon((u8)s17, 0x1C4, 0, 0);
+        if ((u16)c0 != 0xFF) disp_item_icon((u8)c0, 0x14E, 0, 0);
+        reload_tex(1, 0x11A);
+        SetTextureStage(0x11A);
+        q2.s[0] = 0x161;
+        flps0008(&q2);
+        q2.s[0] = 0x1A6;
+        flps0008(&q2);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
+        if ((u16)b0 != 0xFF) disp_item_icon((u8)b0, 0x1AC, 0, 0);
+        if (s18 != 0xFF) disp_item_icon((u8)s18, 0x167, 0, 0);
+        reload_tex(1, 0x11A);
+        SetTextureStage(0x11A);
+        q2.s[0] = 0x17E;
+        q2.s[2] = 0x36;
+        q2.s[3] = 0x44;
+        q2.col = -1;
+        flps0008(&q2);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
+        if ((u16)a0 != 0xFF) disp_item_icon((u8)a0, 0x185, 1, 0);
+    }
+    reload_tex(1, 0x11A);
+    SetTextureStage(0x11A);
+    *(s16 *)(btn_item_sel_3360 + 2) = 0x16F;
+    if (pl->work8F2 & 4) {
+        *(s16 *)(btn_item_sel_3360 + 2) += 2;
+    }
+    *(s16 *)(btn_item_sel_3360 + 0xA) = 0x16F;
+    if (pl->work8F2 & 2) {
+        *(s16 *)(btn_item_sel_3360 + 0xA) += 2;
+    }
+    PutButtonICON(btn_item_sel_3360, 2);
+    c = *((u8 *)pl + 2);
+    if (c == 1 || c == 5) {
+        reload_tex(1, 0x11A);
+        SetTextureStage(0x11A);
+        q.s[3] = 0x18;
+        ((s16 *)&q.uv0)[1] = 0x1A;
+        ((s16 *)&q.uv1)[1] = 0x30;
+        if (lpPit->x5C != 0) {
+            if (lpPit->x5D < 0) {
+                sl[1] = Pl_shell_set(pl, pl->work88E, 1);
+                sl[3] = 0xFF;
+                sl[2] = 0xFF;
+                sl[0] = 0xFF;
+                if (sl[1] != 0xFF) {
+                    if (pl->item[sl[1]].id == pl->item[pl->work88E].id) {
+                        sl[1] = 0xFF;
+                    } else {
+                        flfntSetSize(0x14, 0x14);
+                        if (disp_shell_name(sl[1], 0x116) == 0) {
+                            sl[1] = 0xFF;
+                        } else {
+                            u8 v = Pl_shell_set(pl, sl[1], 1);
+                            if (pl->item[v].id != pl->item[sl[1]].id) {
+                                if (pl->item[v].id != pl->item[pl->work88E].id) {
+                                    flfntSetSize(0x14, 0xA);
+                                    if (disp_shell_name(v, 0x12D) == 1) {
+                                        sl[0] = v;
+                                        v = Pl_shell_set(pl, pl->work88E, 0);
+                                        if (pl->item[v].id != pl->item[sl[0]].id) {
+                                            if (disp_shell_name(v, 0xF1) == 1) sl[3] = v;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                flfntSetSize(0x14, 0x14);
+                if (disp_shell_name(pl->work88E, 0xFE) == 1) {
+                    sl[2] = pl->work88E;
+                }
+            } else {
+                sl[0] = Pl_shell_set(pl, pl->work88E, 1);
+                sl[3] = 0xFF;
+                sl[2] = 0xFF;
+                sl[1] = 0xFF;
+                if (sl[0] != 0xFF) {
+                    if (pl->item[sl[0]].id == pl->item[pl->work88E].id) {
+                        sl[0] = 0xFF;
+                    } else {
+                        flfntSetSize(0x14, 0xA);
+                        if (disp_shell_name(sl[0], 0x12D) == 0) {
+                            sl[0] = 0xFF;
+                        } else {
+                            u8 v = Pl_shell_set(pl, pl->work88E, 0);
+                            if (pl->item[v].id != pl->item[sl[0]].id) {
+                                flfntSetSize(0x14, 0x14);
+                                if (disp_shell_name(v, 0xFE) == 1) {
+                                    sl[2] = v;
+                                    v = Pl_shell_set(pl, sl[2], 0);
+                                    if (pl->item[v].id != pl->item[sl[0]].id) {
+                                        flfntSetSize(0x14, 0xA);
+                                        if (disp_shell_name(v, 0xF1) == 1) sl[3] = v;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                flfntSetSize(0x14, 0x14);
+                if (disp_shell_name(pl->work88E, 0x116) == 1) {
+                    sl[1] = pl->work88E;
+                }
+            }
+            q.s[1] = 0xEE;
+            {
+                int k = 3;
+                s16 *sy = sy_tbl_3417 + 3;
+                u8 *p = &sl[3];
+                do {
+                    if (*p != 0xFF) {
+                        q.col = item_col_tbl[Item_data[pl->item[*p].id][6]];
+                    } else {
+                        q.col = 0xFF707070;
+                    }
+                    q.s[0] = 0x14F;
+                    q.s[2] = 0x94;
+                    q.s[3] = *sy;
+                    ((s16 *)&q.uv0)[0] = 0xE0;
+                    ((s16 *)&q.uv1)[0] = 0x100;
+                    PutSpriteDiv3(&q, 9, 0xC);
+                    q.s[1] += *sy;
+                    k--;
+                    p--;
+                    sy--;
+                } while (k >= 0);
+            }
+        } else {
+            sl[0] = Pl_shell_set(pl, pl->work88E, 1);
+            sl[2] = 0xFF;
+            sl[1] = 0xFF;
+            if (sl[0] != 0xFF) {
+                u8 v;
+                flfntSetSize(0x14, 0x14);
+                v = Pl_shell_set(pl, pl->work88E, 0);
+                if (pl->item[v].id != pl->item[sl[0]].id) {
+                    if (disp_shell_name(v, 0xF0) == 1) sl[2] = v;
+                }
+                if (pl->item[sl[0]].id == pl->item[pl->work88E].id) {
+                    sl[0] = 0xFF;
+                } else if (disp_shell_name(sl[0], 0x120) == 0) {
+                    sl[0] = 0xFF;
+                }
+            }
+            if (disp_shell_name(pl->work88E, 0x108) == 1) {
+                sl[1] = pl->work88E;
+            }
+            q.s[1] = 0xEE;
+            {
+                int k = 2;
+                u8 *p = &sl[2];
+                do {
+                    if (*p != 0xFF) {
+                        q.col = item_col_tbl[Item_data[pl->item[*p].id][6]];
+                    } else {
+                        q.col = 0xFF707070;
+                    }
+                    q.s[0] = 0x14F;
+                    q.s[2] = 0x94;
+                    PutSpriteDiv3(&q, 9, 0xC);
+                    q.s[1] += 0x18;
+                    k--;
+                    p--;
+                } while (k >= 0);
+            }
+        }
+        lpPit->x57 = 1;
+    }
+}
