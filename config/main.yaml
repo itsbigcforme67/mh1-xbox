@@ -972,7 +972,7 @@ segments:
       - [0x17EF58, asm, text/MemcardInit]
       - [0x17EF60, asm, text/f_mc]
       - [0x180EF0, asm, text/f_mc_280EF0]
-      - [0x1862F0, asm, text/f_evdemo]
+      - [0x1862F0, c, evdemo/evdemo]
       - [0x18699C, asm, text/g_NetFileLoad]
       - [0x189120, asm, text/f_savenetfile]
       - [0x18B578, asm, text/g_NetAutoLoad]

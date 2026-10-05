@@ -174,3 +174,9 @@ Order: staff, movie, evdemo, npc, select/omake, mc.
   (2) `memset(p, 0, (u32)n)`: the cast changes arg load order (movie_start). (3) a K&R `s8 no` param gives dsll32/dsra32 but the original used the raw
   register: use `int no`. (4) struct-copy loop of 19 words = assignment of a 19-word local struct (movie_server, local frame 0x50).
   (5) END of a `main` range in c_files.txt: use the exact end of the last function (size from symbols), 0x290AE0 vs 0x290AD8 gave MISMATCH.
+
+### evdemo (0x2862F0-0x28699C): 6/6 built (src/main/evdemo/evdemo.c), main OK
+Event demo slots (3 per quest): EvDemoInitialize/evdemo_init_sub/EvDemoMove/check000/event000/evdemo_camera_request. The demo tables evdemo_NN stay in
+the original data. Lessons: `EVENT_DEMO *e = &event_demo;` local base pointer again gives the original lui s0 (EvDemoInitialize, EvDemoMove);
+`*(int *)slot = 0` is the original's word clear of {active, step, timer}; a store that sits in the delay slot after a `jal` in the asm listing
+(check.py -v hides nops: look at the other column) was written AFTER the call in the source (event000 case 2).
