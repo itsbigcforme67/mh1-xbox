@@ -877,21 +877,21 @@ void menu_data_mix_sub(int sw) {
 }
 
 void menu_data_monster_sub(int sw) {
-    int a = sw & 0xFFFF;
+    int a;
     s8 m;
-    int d;
 
     PitMenu.x10 = 0;
     if (FLD32(*User_data, 0x3F0) != 0) {
+        a = sw & 0xFFFF;
         if (a & 0xC00) {
-            m = Monster_list_search(FLDS8(*lpPit, 0x82), !(a & 0x800) ? 1 : -1);
-            if (FLDS8(*lpPit, 0x82) != m) {
-                FLDS8(*lpPit, 0x82) = m;
+            m = Monster_list_search(lpPit->x82, !(a & 0x800) ? 1 : -1);
+            if (m != lpPit->x82) {
+                lpPit->x82 = m;
                 se_req(7, 0x16, 0);
             }
         }
     } else {
-        FLDS8(*lpPit, 0x82) = -1;
+        lpPit->x82 = -1;
     }
 }
 
