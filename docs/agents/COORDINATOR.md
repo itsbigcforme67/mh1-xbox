@@ -69,7 +69,7 @@ always been a struct field type or a lost field.
 - B (Sonnet): lobby overlay 0x533980-0x5C4E60 (no code shared with game; ~330 KB GCC libs skipped).
 - C (Sonnet): all Capcom code in main except E's regions (round 6: last round's unlinked list first).
 - D (Sonnet): game overlay to 100% (near-matches by distance, permuter -j1).
-- E (Sonnet): memory card 0x2814E0-0x2862F0 (mc_sel_ck: one try, else link Card* around it as asm) and IME big functions.
+- E (Sonnet): IME leftovers (bounded), then the yn overlay (11.5%, nobody else on it).
 - F (Sonnet): lobby overlay 0x5C4E60-end.
 - Parked: near-matches everywhere (register allocation); online code in main.
 
