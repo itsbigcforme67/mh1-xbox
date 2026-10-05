@@ -97,8 +97,8 @@ done
 # (gitignored) and compiled against those headers (same struct layouts, more
 # fields named). Remove entries once merged (agent B's em01_ai_nm.c and
 # em_taisei_nm.c were, 6 Oct 2026).
-#   agent-D: em_cmd_nm.c (the monster command interpreter)
-EXT="agent-D:src/game/em/em_cmd_nm.c"
+# (agent D's em_cmd_nm.c was merged into main on 6 Oct 2026; none left)
+EXT=""
 for e in $EXT; do
     br=${e%%:*}; f=${e#*:}
     [ -f "$f" ] && continue                       # main has it

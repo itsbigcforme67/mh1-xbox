@@ -2204,7 +2204,6 @@ int Reibun_Edit_Start(int no) {
 int Reibun_Edit_Core(int no) {
     s8 buf[0x30];
     s8 r;
-    s8 SoftKeyboard_move();
 
     buf[0] = 0;
     r = SoftKeyboard_move(buf, *(s16 *)((u8 *)&Psw + 0), *(s16 *)((u8 *)&Psw + 4));
