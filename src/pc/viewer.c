@@ -276,7 +276,7 @@ static int hunter_load(hunter *h, const int *num, int legs_id, int upper_id)
         if (s == 0 && fl_skel_create(&h->master, ahi, FMT_LE) != 0)
             return -1;
         h->pw[s] = calloc(h->part[s].skel.nbone + 1, sizeof(flmat));
-        h->ptmat[s] = tbl ? elf_addr(fmt_u32(tbl + 4 * s, FMT_LE)) : NULL;
+        h->ptmat[s] = tbl ? rt_ptr_at(0x3018F0 + 4 * (uint32_t)s) : NULL;   /* relocated by rt_import_data */
     }
     if (!tbl)
         fprintf(stderr, "warning: no SLPM_654.95, armour parts will not follow the skeleton\n");

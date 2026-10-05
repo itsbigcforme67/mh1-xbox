@@ -27,6 +27,15 @@ int rt_in_bss(uint32_t va, size_t n);
 /* Fill the game's data tables (rt_data.c) from the loaded images.
  * Returns the number of tables that could not be found. */
 int rt_import_data(void);
+/* Pointer words (R_MIPS_32 relocations of the ELF) and symbols. */
+int rt_load_relocs(void);
+int rt_is_pointer(uint32_t va);
+void rt_relocate_range(uint32_t va, uint8_t *dst, size_t size, void *(*map)(uint32_t));
+void rt_relocate_images(void *(*map)(uint32_t));
+const char *rt_sym_at(uint32_t va, uint32_t *off, int *func);
+/* After rt_import_data: the host pointer stored at PS2 address va (a
+ * pointer word of the images, already translated), or NULL. */
+const void *rt_ptr_at(uint32_t va);
 
 /* ------------------------------------------------------------ clays */
 /* Register a host clay; the result is the handle the game passes to
