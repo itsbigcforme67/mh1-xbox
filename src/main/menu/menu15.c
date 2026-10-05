@@ -1,4 +1,4 @@
-/* f_menu run (SLPM_654.95 0x001284D0-0x00128844): menu_init, menu_move, menu_retire_i. Whole file in menu_nm.c. */
+/* f_menu run (SLPM_654.95 0x0012DD20-0x0012DDF4): wyvern_area, DispWholeMap. Whole file in menu_nm.c. */
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -22,7 +22,7 @@ extern f32 wyvern_area_tbl[][4];
 void SetFilterMode(int);
 void SetTextureStage(int);
 void reload_tex(int, int);
-void disp_whole_map(f32, f32);
+void disp_whole_map(int, f32, f32);
 typedef struct PFLPS {
     s16 s[4];
     u32 a;
@@ -137,105 +137,25 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
-void menu_init(void) {
-    lpPit->x05 = 1;
-    lpPit->x40 = 0;
-    GWS8(0xE) = 1;
-    PitMenu.x10 = 1;
-    PitMenu.x11 = 0;
-    PitMenu.x12 = lpPit->x41;
-    if (Online_ck() == 1 && lpPit->x41 == 9) {
-        PitMenu.x12 = 10;
-    }
-    lpPit->x84 = 0;
+void wyvern_area(f32 *x, f32 *y, f32 *z, int no) {
+    *x = wyvern_area_tbl[no][0];
+    *y = wyvern_area_tbl[no][1];
+    *z = wyvern_area_tbl[no][2];
 }
 
-/* Main pit menu: x40 0 = choose entry, 1 = run the entry's move function. */
-void menu_move(int sw) {
-    int r;
-    int a;
+void DispWholeMap(void) {
+    PFLPS q;
 
-    switch (lpPit->x40) {
-    case 0:
-        Menu_select_mv(&lpPit->x41, sw, 10);
-        PitMenu.x12 = lpPit->x41;
-        if (Online_ck() == 1) {
-            if (((u16)sw & 0x200) != 0) {
-                Name_ID_change();
-            }
-            if (lpPit->x41 == 9) {
-                PitMenu.x12 = 10;
-            }
-        }
-        a = (u16)sw;
-        if (a & 0x20) {
-            r = 0;
-            switch (lpPit->x41) {
-            case 0:
-                Menu_item_i();
-                break;
-            case 1:
-                r = Menu_mix_i();
-                break;
-            case 2:
-                Menu_data_i();
-                break;
-            case 3:
-                Menu_quest_i();
-                break;
-            case 4:
-                menu_option_i();
-                break;
-            case 5:
-                Menu_status_i();
-                break;
-            case 6:
-                Menu_equipment_i();
-                break;
-            case 7:
-                r = Menu_chatcnfg_i();
-                break;
-            case 8:
-                r = Menu_chatlog_i();
-                break;
-            case 9:
-                r = menu_retire_i();
-                break;
-            default:
-                r = 1;
-                break;
-            }
-            if (r == 0) {
-                lpPit->x40++;
-                lpPit->x48 = 0;
-                se_req(7, 0x13, 0);
-            } else {
-                se_req(7, 0x15, 0);
-            }
-        } else if (a & 0x8040) {
-            menu_exit();
-            se_req(7, 0x14, 0);
-        }
-        break;
-    case 1:
-        r = (u16)menu_mv_jmp[lpPit->x41]((u16)sw);
-        if (r & 0x8000) {
-            menu_exit();
-            se_req(7, 0x14, 0);
-        } else if (r & 0x40) {
-            menu_init();
-            se_req(7, 0x14, 0);
-        }
-        break;
-    }
-}
-
-int menu_retire_i(void) {
-    if (Game_clear_ck(0) == 1) {
-        return 1;
-    }
-    lpPit->x42 = 0;
-    lpPit->yn = 1;
-    PitMenu.x10 = 0;
-    return 0;
+    SetFilterMode(1);
+    reload_tex(1, 0x156);
+    SetTextureStage(0x156);
+    q.s[2] = 0x200;
+    q.s[0] = 0;
+    q.s[3] = 0x1C0;
+    q.s[1] = 0;
+    q.b = 0;
+    q.c = 0xE000FF;
+    q.a = 0xFF606060;
+    flps0008(&q);
+    disp_whole_map(0x40, 160.0f, 1.0f);
 }

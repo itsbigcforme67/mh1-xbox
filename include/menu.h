@@ -37,7 +37,7 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     s16 x3C;          /* 0x3C  */
     u8 x3E;           /* 0x3E  */
     u8 x3F;           /* 0x3F  */
-    s8 x40;           /* 0x40  */
+    u8 x40;           /* 0x40  */
     u8 x41;           /* 0x41  */
     u8 x42;           /* 0x42  */
     u8 x43;           /* 0x43  */
@@ -109,7 +109,7 @@ typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
     s16 x0C;            /* 0x0C */
     u8 _pad0E;
     s8 x0F;             /* 0x0F */
-    s8 x10;             /* 0x10 */
+    u8 x10;             /* 0x10 */
     u8 x11;             /* 0x11 */
     u16 x12;            /* 0x12 */
     u8 x14;             /* 0x14 */

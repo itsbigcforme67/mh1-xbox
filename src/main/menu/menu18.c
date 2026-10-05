@@ -1,4 +1,4 @@
-/* f_menu run (SLPM_654.95 0x001284D0-0x00128844): menu_init, menu_move, menu_retire_i. Whole file in menu_nm.c. */
+/* f_menu run (SLPM_654.95 0x00133B40-0x00133FA4): disp_retire, trans_pit_0, trans_pit_1, trans_pit_2, trans_pit_1_lb, trans_pit_2_lb. Whole file in menu_nm.c. */
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -22,7 +22,7 @@ extern f32 wyvern_area_tbl[][4];
 void SetFilterMode(int);
 void SetTextureStage(int);
 void reload_tex(int, int);
-void disp_whole_map(f32, f32);
+void disp_whole_map(int, f32, f32);
 typedef struct PFLPS {
     s16 s[4];
     u32 a;
@@ -137,105 +137,122 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
-void menu_init(void) {
-    lpPit->x05 = 1;
-    lpPit->x40 = 0;
-    GWS8(0xE) = 1;
-    PitMenu.x10 = 1;
-    PitMenu.x11 = 0;
-    PitMenu.x12 = lpPit->x41;
-    if (Online_ck() == 1 && lpPit->x41 == 9) {
-        PitMenu.x12 = 10;
-    }
-    lpPit->x84 = 0;
+void disp_retire(void) {
+    DispFrameMessage(frame_retire, retire_str);
+    flfntLocate(0x18F, 0x106);
+    font_print_sp(retire_yesno_str[lpPit->yn]);
 }
 
-/* Main pit menu: x40 0 = choose entry, 1 = run the entry's move function. */
-void menu_move(int sw) {
-    int r;
-    int a;
+void trans_pit_0(void) {
+    flSetRenderState(0x60, 0);
+    SetTrnslMode(4, 5);
+    font_set_stack_no(0);
+    if (lpPit->x83 == 0) {
+        disp_timer();
+        disp_pl_vital();
+        disp_slash_level();
+        disp_pachinger();
+        disp_cannon();
+        disp_others_info();
+        disp_name();
+        return;
+    }
+    disp_pachinger();
+    if (lpPit->x2A == 0) {
+        disp_cannon();
+    }
+}
 
-    switch (lpPit->x40) {
-    case 0:
-        Menu_select_mv(&lpPit->x41, sw, 10);
-        PitMenu.x12 = lpPit->x41;
-        if (Online_ck() == 1) {
-            if (((u16)sw & 0x200) != 0) {
-                Name_ID_change();
-            }
-            if (lpPit->x41 == 9) {
-                PitMenu.x12 = 10;
-            }
+void trans_pit_1(void) {
+    u8 c;
+
+    SetTrnslMode(4, 5);
+    font_set_stack_no(1);
+    if (game_w.x1E7 != 0) {
+        func_63B470();
+    }
+    if (PitMenu.open != 0) {
+        if (game_w.x1E7 == 0) {
+            Pit_disp_chat();
+            disp_map();
         }
-        a = (u16)sw;
-        if (a & 0x20) {
-            r = 0;
-            switch (lpPit->x41) {
+    } else {
+        if (lpPit->x07 != 0) {
+            disp_item_stock();
+            return;
+        }
+        if (lpPit->x05 != 0) {
+            c = lpPit->x40;
+            switch (c) {
             case 0:
-                Menu_item_i();
+                disp_menu(0, lpPit);
                 break;
             case 1:
-                r = Menu_mix_i();
-                break;
-            case 2:
-                Menu_data_i();
-                break;
-            case 3:
-                Menu_quest_i();
-                break;
-            case 4:
-                menu_option_i();
-                break;
-            case 5:
-                Menu_status_i();
-                break;
-            case 6:
-                Menu_equipment_i();
-                break;
-            case 7:
-                r = Menu_chatcnfg_i();
-                break;
-            case 8:
-                r = Menu_chatlog_i();
-                break;
-            case 9:
-                r = menu_retire_i();
-                break;
-            default:
-                r = 1;
+                disp_menu_jmp[lpPit->x41](c, lpPit);
                 break;
             }
-            if (r == 0) {
-                lpPit->x40++;
-                lpPit->x48 = 0;
-                se_req(7, 0x13, 0);
-            } else {
-                se_req(7, 0x15, 0);
+            if (PitMenu.x10 != 0) {
+                Disp_menu_help();
             }
-        } else if (a & 0x8040) {
-            menu_exit();
-            se_req(7, 0x14, 0);
+        } else {
+            disp_map();
+            if (FLD8(*lpPit->pl, 0x8C2) == 0) {
+                disp_item();
+            }
         }
-        break;
-    case 1:
-        r = (u16)menu_mv_jmp[lpPit->x41]((u16)sw);
-        if (r & 0x8000) {
-            menu_exit();
-            se_req(7, 0x14, 0);
-        } else if (r & 0x40) {
-            menu_init();
-            se_req(7, 0x14, 0);
-        }
-        break;
     }
 }
 
-int menu_retire_i(void) {
-    if (Game_clear_ck(0) == 1) {
-        return 1;
+void trans_pit_2(void) {
+    font_set_stack_no(2);
+    disp_item_sub_select_ex();
+    if (PitMenu.open == 0 && lpPit->x07 == 0 && lpPit->x05 == 0) {
+        trans_box();
     }
-    lpPit->x42 = 0;
-    lpPit->yn = 1;
-    PitMenu.x10 = 0;
-    return 0;
+    if (PitMenu.x06 != 0) {
+        Disp_NPC_message();
+        PitMenu.x06 = 0;
+    } else {
+        Pit_disp_receive_mes();
+    }
+    if (PitMenu.open == 0) {
+        Pit_disp_pit_effect();
+    }
+    if ((s8)SoftKeyboard_alive_check() != 0) {
+        SetTrnslMode(4, 5);
+        DispSoftkeyboard(FLD8(system_w, 0x31));
+    }
+}
+
+void trans_pit_1_lb(void) {
+    flSetRenderState(0x60, 0);
+    SetTrnslMode(4, 5);
+    font_set_stack_no(1);
+    if (PitMenu.open != 0) {
+        Pit_disp_chat();
+        return;
+    }
+    if (lpPit->x07 != 0) {
+        disp_item_stock();
+    } else if (GW8(0xE) != 0) {
+        func_5B4980();
+    }
+    func_60CE50();
+}
+
+void trans_pit_2_lb(void) {
+    font_set_stack_no(2);
+    if (PitMenu.x06 != 0) {
+        Disp_NPC_message();
+        PitMenu.x06 = 0;
+    } else {
+        Pit_disp_receive_mes();
+    }
+    if (PitMenu.open == 0) {
+        Pit_disp_pit_effect();
+    }
+    if ((s8)SoftKeyboard_alive_check() != 0) {
+        SetTrnslMode(4, 5);
+        DispSoftkeyboard(FLD8(system_w, 0x31));
+    }
 }

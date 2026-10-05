@@ -23,7 +23,7 @@ extern f32 wyvern_area_tbl[][4];
 void SetFilterMode(int);
 void SetTextureStage(int);
 void reload_tex(int, int);
-void disp_whole_map(f32, f32);
+void disp_whole_map(int, f32, f32);
 typedef struct PFLPS {
     s16 s[4];
     u32 a;
@@ -79,6 +79,9 @@ int func_63B0C0(int);
 void menu_init(void);
 void menu_move(int);
 extern int ot5;
+void Name_ID_change(void);
+int Menu_chatlog_i(void);
+extern int (*menu_mv_jmp[])(int);
 void Chat_log_clear(void);
 void pit_prim_init(void);
 u16 pit_key_repeat(u16, u16);
@@ -1466,7 +1469,7 @@ void DispWholeMap(void) {
     q.c = 0xE000FF;
     q.a = 0xFF606060;
     flps0008(&q);
-    disp_whole_map(160.0f, 64.0f);
+    disp_whole_map(0x40, 160.0f, 1.0f);
 }
 
 void WyvernAreaMove(PLW *em) {
@@ -1593,18 +1596,20 @@ void trans_pit_2(void) {
 u32 boss_icon_color(EMW *em) {
     u32 t;
     int c;
+    u32 r;
 
     if (em->mode == 5) {
         t = (*(u8 *)&System_timer << 8) & 0xFFFF;
         c = ((s8)(int)(32.0f * flSin(0.0000958738f * (f32)t)) + 0x80) & 0xFF;
-        return c | ((c << 16) | 0xC0000000 | (c << 8));
-    }
-    if (FLD8(*em, 0x888) == 1) {
+        r = c | ((c << 16) | 0xC0000000 | (c << 8));
+    } else if (FLD8(*em, 0x888) == 1) {
         t = ((System_timer & 0xF) << 12) & 0xFFFF;
-        return (((s8)(int)(64.0f * flSin(0.0000958738f * (f32)t)) + 0x48) << 8) | 0xFFF00000;
+        r = (((s8)(int)(64.0f * flSin(0.0000958738f * (f32)t)) + 0x48) << 8) | 0xFFF00000;
+    } else {
+        t = ((System_timer & 0x3F) << 10) & 0xFFFF;
+        r = (((s8)(int)(48.0f * flSin(0.0000958738f * (f32)t)) + 0x80) << 8) | 0xFF1000E0;
     }
-    t = ((System_timer & 0x3F) << 10) & 0xFFFF;
-    return (((s8)(int)(48.0f * flSin(0.0000958738f * (f32)t)) + 0x80) << 8) | 0xFF1000E0;
+    return r;
 }
 
 void maru_disp_sub(int col, f32 x, f32 y, f32 r) {
@@ -2038,3 +2043,83 @@ int Menu_mix_mv(int sw) {
 }
 #undef MIX70
 #undef MIX71
+
+/* Main pit menu: x40 0 = choose entry, 1 = run the entry's move function. */
+void menu_move(int sw) {
+    int r;
+    int a;
+
+    switch (lpPit->x40) {
+    case 0:
+        Menu_select_mv(&lpPit->x41, sw, 10);
+        PitMenu.x12 = lpPit->x41;
+        if (Online_ck() == 1) {
+            if (((u16)sw & 0x200) != 0) {
+                Name_ID_change();
+            }
+            if (lpPit->x41 == 9) {
+                PitMenu.x12 = 10;
+            }
+        }
+        a = (u16)sw;
+        if (a & 0x20) {
+            r = 0;
+            switch (lpPit->x41) {
+            case 0:
+                Menu_item_i();
+                break;
+            case 1:
+                r = Menu_mix_i();
+                break;
+            case 2:
+                Menu_data_i();
+                break;
+            case 3:
+                Menu_quest_i();
+                break;
+            case 4:
+                menu_option_i();
+                break;
+            case 5:
+                Menu_status_i();
+                break;
+            case 6:
+                Menu_equipment_i();
+                break;
+            case 7:
+                r = Menu_chatcnfg_i();
+                break;
+            case 8:
+                r = Menu_chatlog_i();
+                break;
+            case 9:
+                r = menu_retire_i();
+                break;
+            default:
+                r = 1;
+                break;
+            }
+            if (r == 0) {
+                lpPit->x40++;
+                lpPit->x48 = 0;
+                se_req(7, 0x13, 0);
+            } else {
+                se_req(7, 0x15, 0);
+            }
+        } else if (a & 0x8040) {
+            menu_exit();
+            se_req(7, 0x14, 0);
+        }
+        break;
+    case 1:
+        r = (u16)menu_mv_jmp[lpPit->x41]((u16)sw);
+        if (r & 0x8000) {
+            menu_exit();
+            se_req(7, 0x14, 0);
+        } else if (r & 0x40) {
+            menu_init();
+            se_req(7, 0x14, 0);
+        }
+        break;
+    }
+}

@@ -1,4 +1,4 @@
-/* f_menu run (SLPM_654.95 0x001284D0-0x00128844): menu_init, menu_move, menu_retire_i. Whole file in menu_nm.c. */
+/* f_menu run (SLPM_654.95 0x0012CAF0-0x0012CCCC): boss_icon_color. Whole file in menu_nm.c. */
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -137,105 +137,22 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
-void menu_init(void) {
-    lpPit->x05 = 1;
-    lpPit->x40 = 0;
-    GWS8(0xE) = 1;
-    PitMenu.x10 = 1;
-    PitMenu.x11 = 0;
-    PitMenu.x12 = lpPit->x41;
-    if (Online_ck() == 1 && lpPit->x41 == 9) {
-        PitMenu.x12 = 10;
-    }
-    lpPit->x84 = 0;
-}
+/* Colour of a boss icon on the map: pulses with System_timer. */
+u32 boss_icon_color(EMW *em) {
+    u32 t;
+    int c;
+    u32 r;
 
-/* Main pit menu: x40 0 = choose entry, 1 = run the entry's move function. */
-void menu_move(int sw) {
-    int r;
-    int a;
-
-    switch (lpPit->x40) {
-    case 0:
-        Menu_select_mv(&lpPit->x41, sw, 10);
-        PitMenu.x12 = lpPit->x41;
-        if (Online_ck() == 1) {
-            if (((u16)sw & 0x200) != 0) {
-                Name_ID_change();
-            }
-            if (lpPit->x41 == 9) {
-                PitMenu.x12 = 10;
-            }
-        }
-        a = (u16)sw;
-        if (a & 0x20) {
-            r = 0;
-            switch (lpPit->x41) {
-            case 0:
-                Menu_item_i();
-                break;
-            case 1:
-                r = Menu_mix_i();
-                break;
-            case 2:
-                Menu_data_i();
-                break;
-            case 3:
-                Menu_quest_i();
-                break;
-            case 4:
-                menu_option_i();
-                break;
-            case 5:
-                Menu_status_i();
-                break;
-            case 6:
-                Menu_equipment_i();
-                break;
-            case 7:
-                r = Menu_chatcnfg_i();
-                break;
-            case 8:
-                r = Menu_chatlog_i();
-                break;
-            case 9:
-                r = menu_retire_i();
-                break;
-            default:
-                r = 1;
-                break;
-            }
-            if (r == 0) {
-                lpPit->x40++;
-                lpPit->x48 = 0;
-                se_req(7, 0x13, 0);
-            } else {
-                se_req(7, 0x15, 0);
-            }
-        } else if (a & 0x8040) {
-            menu_exit();
-            se_req(7, 0x14, 0);
-        }
-        break;
-    case 1:
-        r = (u16)menu_mv_jmp[lpPit->x41]((u16)sw);
-        if (r & 0x8000) {
-            menu_exit();
-            se_req(7, 0x14, 0);
-        } else if (r & 0x40) {
-            menu_init();
-            se_req(7, 0x14, 0);
-        }
-        break;
+    if (em->mode == 5) {
+        t = (*(u8 *)&System_timer << 8) & 0xFFFF;
+        c = ((s8)(int)(32.0f * flSin(0.0000958738f * (f32)t)) + 0x80) & 0xFF;
+        r = c | ((c << 16) | 0xC0000000 | (c << 8));
+    } else if (FLD8(*em, 0x888) == 1) {
+        t = ((System_timer & 0xF) << 12) & 0xFFFF;
+        r = (((s8)(int)(64.0f * flSin(0.0000958738f * (f32)t)) + 0x48) << 8) | 0xFFF00000;
+    } else {
+        t = ((System_timer & 0x3F) << 10) & 0xFFFF;
+        r = (((s8)(int)(48.0f * flSin(0.0000958738f * (f32)t)) + 0x80) << 8) | 0xFF1000E0;
     }
-}
-
-int menu_retire_i(void) {
-    if (Game_clear_ck(0) == 1) {
-        return 1;
-    }
-    lpPit->x42 = 0;
-    lpPit->yn = 1;
-    PitMenu.x10 = 0;
-    return 0;
+    return r;
 }
