@@ -406,7 +406,10 @@ void eft_rgba_linear(s32 *key, s32 t, u32 *out)
 }
 
 /* make_mat_srt (0x1018C0): scale, then rotation picked by the flag bits
- * (2 X, 4 Y, 8 Z, 0xE XYZ), then translation. */
+ * (flag & 0xE: 2 Z (rot[2]), 4 Y (rot[1]), 8 X (rot[0]), 0xE XYZ; checked
+ * against the asm 6 Oct 2026: the host had X and Z swapped, which turned
+ * eft16's blood streak (flag 2, only rot[2] set) by an uninitialised X
+ * angle into a screen-wide smear), then translation. */
 void make_mat_srt(f32 *scale, f32 *rot, f32 *trans, u16 flag, FLMAT *m)
 {
     f32 tx = trans[0], ty = trans[1], tz = trans[2];
@@ -416,13 +419,13 @@ void make_mat_srt(f32 *scale, f32 *rot, f32 *trans, u16 flag, FLMAT *m)
         flmatRotXYZ33(m, rot[0], rot[1], rot[2]);
         break;
     case 2:
-        flmatRotX33(m, rot[0]);
+        flmatRotZ33(m, rot[2]);
         break;
     case 4:
         flmatRotY33(m, rot[1]);
         break;
     case 8:
-        flmatRotZ33(m, rot[2]);
+        flmatRotX33(m, rot[0]);
         break;
     }
     flmatSetTrans(m, tx, ty, tz);
