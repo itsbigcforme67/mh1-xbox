@@ -63,6 +63,25 @@ Community pages change, so recheck anything a decision depends on.
   https://mholdschool.com/viewtopic.php?t=1205
   https://mholdschool.com/viewtopic.php?t=205
 
+## Other decompilation work on the same game (checked 5 Oct 2026)
+
+- 2Tie/mh1j: a matching decompilation of the same Japanese release
+  (SLPM_654.95), also MetroWerks + splat, using decomp.me presets. Its README
+  (read via a summarising fetch, not checked line by line) puts it at about
+  1% of the main ELF and ~0.5% overall, and says it does not accept code
+  produced by AI/LLMs. So we cannot contribute to it, and we should not copy
+  its C into this repo; at most use it as a reference for names, with credit,
+  and ideally after asking its author. The tcrf page User:2Tie/monhun above is
+  probably the same person (unverified).
+  https://github.com/2Tie/mh1j
+- GReinoso96/MH1Plus: a control/balance patch for the US release
+  (SLUS_208.96) by armips injection; documents AFS and PZZ compression.
+  https://github.com/GReinoso96/MH1Plus
+- No public model viewer or Blender/Noesis importer for the PS2 games' model
+  format turned up in a web search (only later games: MHFU, MHGU, MHW, MHRise).
+- PS2Recomp (static recompiler) is still experimental; its author says the GS
+  (graphics) side is the main thing that does not work yet.
+
 ## Tooling
 
 - nxdk, the open-source original Xbox SDK: pbkit, lwIP, SDL2, USB, vertex
