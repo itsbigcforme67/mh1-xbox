@@ -3,12 +3,14 @@
 switch on w->anim through a jump table) from asm into C. Run it BEFORE the file is registered in c_files.txt (it reads
 asm/game/text/ASMFILE.s and the table from asm/game/data/data/*.s). Example (em01):
   python3 tools/genef.py f_em_566630 ef_move_sub_00574EE0 lit_4394_00685EF0 0x57A768 0x57A760 /tmp/ef_gen.c
-The output is the function body; fix up by hand what it flags with #error."""
+The output is the function body (env WTYPE = name of the monster work struct, default EM01W); fix up by hand what it
+flags with #error."""
 import re, struct, sys
 import os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASMFILE, FUNC, TABLE, ENDS, DEFS, OUTC = sys.argv[1:7]
 _asm = open(os.path.join(ROOT, 'asm/game/text/%s.s' % ASMFILE)).read()
+_asm_func = re.search(r'^glabel %s\n(.*?)^endlabel %s\n' % (re.escape(FUNC), re.escape(FUNC)), _asm, re.M | re.S).group(0)
 RAW = re.search(r'^glabel %s\n(.*?)^endlabel %s\n' % (re.escape(FUNC), re.escape(FUNC)), _asm, re.M | re.S).group(0).split('\n')
 tbl_words = []
 import glob
@@ -360,8 +362,10 @@ def run_case(start, stop):
                 ctx.cond = c
             elif fn == 'ran_suu':
                 r['$2'] = '(u16)ran_suu(1)' if r.get('$4') == 1 else '(u16)ran_suu()'
-            elif fn == 'shell01_set':
-                emit('shell01_set(em, %s);' % argstr(a1))
+            elif fn.startswith('shell0') and fn.endswith('_set'):
+                emit('%s(em, %s);' % (fn, argstr(a1)))
+            elif fn == 'em_uvset':
+                emit('em_uvset(em, %s, %s, %s);' % (argstr(a1), argstr(a2), argstr(a3)))
             elif fn == 'Eft20_set':
                 emit('Eft20_set(%s, em, %s, %s);' % (fl(F12), argstr(a1), argstr(a2)))
             elif fn == 'Eft13_set_em_scl':
@@ -381,7 +385,7 @@ def run_case(start, stop):
             for k in ('$2', ):
                 pass
             # clobber temporaries (but keep a0 etc. conservative)
-            for k in ('$4', '$5', '$6', '$7', '$8'):
+            for k in (('$5',) if fn == 'em_uvset' else ('$4', '$5', '$6', '$7', '$8')):   # em_uvset (static leaf) keeps a2/a3
                 if k in r: del r[k]
             f.clear()
             i += 2
@@ -501,6 +505,8 @@ def run_case(start, stop):
                 emit('%s[%s] = %s;' % (arr, idx, val))
             i += 1
             continue
+        if re.match(r'(beq|bne|beqz|bnez|bgez|bltz|blez|bgtz|bc1t|bc1f)\b', t):
+            emit('#error unhandled branch: %s' % t)
         step(t)
         i += 1
     if stack and not all(x == END or x == stop for x in stack):
@@ -515,18 +521,20 @@ for idx, tgt in enumerate(tbl_words):
     cases.setdefault(tgt, []).append(0x3E9 + idx)
 starts = sorted(a for a in cases if a not in (END, DEFAULT))
 lines = []
-lines.append('static void %s(EMW *em, EM01W *w) {' % FUNC)
-lines.append('    f32 va[4];')
-lines.append('    f32 vb[4];')
+lines.append('static void %s(EMW *em, %s *w) {' % (FUNC, os.environ.get('WTYPE', 'EM01W')))
+if 'em_sleep_eff_set' in _asm_func:
+    lines.append('    f32 va[4];')
+    lines.append('    f32 vb[4];')
 lines.append('')
 lines.append('    if (em->char0 != w->anim) {')
 lines.append('        w->anim = em->char0;')
 lines.append('    }')
 lines.append('    switch (w->anim) {')
-lines.append('    case 0x3E9:')
-lines.append('    case 0x3F8:')
-lines.append('    case 0x406:')
-lines.append('        break;')
+_empt = sorted(cases.get(END, []))
+if _empt:
+    for _c in _empt:
+        lines.append('    case 0x%X:' % _c)
+    lines.append('        break;')
 # empty cases (table -> END)
 empties = sorted(cases.get(END, []))
 allc = sorted([(c[0], a) for a, c in cases.items() if a not in (END, DEFAULT)] , key=lambda x: x[1])
