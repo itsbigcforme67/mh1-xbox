@@ -3279,7 +3279,7 @@ static void em_atk12_0056E6F0(EMW *em, EM01W *w) {
     case 1:
         r = smell_search(em, 0x23, em->x700);
         get_joint_pos_em(em, 0x23, v);
-        if (!(flvecCalcDistance(v, em->x700) > 150.0f)) {
+        if (!(150.0f < flvecCalcDistance(v, em->x700))) {
             em->x05++;
             em_char_set(em, 0x23, 0, 0);
             break;
@@ -3542,12 +3542,12 @@ void em_atk23(EMW *em, EM01W *w) {
         if (em_frame_check(em, 120.0f, 0)) {
             Eft17_set(em, 0x24, 1, 0);
             Eft17_set(em, 0x24, 2, 0);
-            Shell08_set_ang(em, 0x22, 0, 0, 0x4FA, 0);
+            Shell08_set_ang(em, 0x22, 0, 0, 0x4FA, 0xF1C8);
         }
         if (em_frame_check(em, 164.0f, 0)) {
             Eft17_set(em, 0x24, 1, 0);
             Eft17_set(em, 0x24, 2, 0);
-            Shell08_set_ang(em, 0x22, 0, 0, 0x444, 0);
+            Shell08_set_ang(em, 0x22, 0, 0, 0x444, 0x9F5);
         }
         if (em->x194 == 0) {
             em->x05++;
