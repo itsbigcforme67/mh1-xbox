@@ -231,9 +231,10 @@ main:rodata 0x0035A790 0x0035A7A8 pl/pl05
 main 0x001361B0 0x00136378 pl/pl06
 main 0x001365F0 0x00136D38 pl/pl07
 main 0x00136FB0 0x001371B0 pl/pl08
-main 0x00290E80 0x002932B8 reward/f_reward
+main 0x00290E80 0x00292D34 reward/f_reward
 main:rodata 0x003865A0 0x003865CC reward/f_reward
 main:rodata 0x003865D0 0x003865EC reward/f_reward
 main:rodata 0x003866F0 0x0038670C reward/f_reward
 main:rodata 0x00386710 0x0038672C reward/f_reward
 main:rodata 0x003868F0 0x0038690C reward/f_reward
+main 0x002932C0 0x00293364 reward/f_rewardb
