@@ -481,3 +481,7 @@ main 0x0010B7F0 0x0010BAD0 emw/emu01
 main:rodata 0x00357DA0 0x00357E2C emw/emu01
 main 0x0010BE30 0x0010BF28 emw/emu02
 main 0x0010C990 0x0010CD30 emw/emu03
+main 0x00162DB0 0x00162E20 font/dsp01
+main:rodata 0x0035BB20 0x0035BB38 font/dsp01
+main 0x001631A0 0x0016341C font/dsp02
+main:rodata 0x0035BBC0 0x0035BBD8 font/dsp02
