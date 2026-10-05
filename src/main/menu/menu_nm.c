@@ -1835,3 +1835,206 @@ void Pit_mv(void) {
     add_prim2(&ot6, &pit_prim[1], 0, 1);
     add_prim2(&ot7, &pit_prim[2], 0, 1);
 }
+
+#define MIX70 FLD8(*lpPit, 0x70)
+#define MIX71 FLD8(*lpPit, 0x71)
+/* Item mixing window: state x7A 0 pick first item, 1 pick second, 2 confirm,
+ * 3 waiting, 4 result, 5 show result, 6 re-check items. */
+int Menu_mix_mv(int sw) {
+    int r = (u16)sw;
+    PLW *pl = lpPit->pl;
+    int n;
+
+    if (lpPit->x49 >= 0x14) {
+        lpPit->x49 = 0;
+    }
+    switch (lpPit->x7A) {
+    case 0:
+        PitMenu.x10 = 0;
+        Menu_select_mv(&lpPit->x49, sw, 0x14);
+        if ((u16)sw & 0x20) {
+            if (mix_item_chk(lpPit->x49, pl->item[lpPit->x49].id) == 1) {
+                MIX70 = lpPit->x49;
+                lpPit->x6C = pl->item[MIX70].id;
+                lpPit->x6E = 0xFFFF;
+                se_req(7, 0x13, 0);
+                lpPit->x7A++;
+            } else {
+                se_req(7, 0x15, 0);
+            }
+        }
+        break;
+    case 1:
+        PitMenu.x10 = 0;
+        r = (u16)(r & 0xFFBF);
+        if (mix_item_chk(MIX70, lpPit->x6C) == 1) {
+            Menu_select_mv(&lpPit->x49, sw, 0x14);
+            if ((u16)sw & 0x40) {
+                se_req(7, 0x14, 0);
+            } else {
+                if ((u16)sw & 0x20) {
+                    if (mix_item_2_chk(lpPit->x49, MIX70) == 1) {
+                        se_req(7, 0x13, 0);
+                        MIX71 = lpPit->x49;
+                        lpPit->x6E = pl->item[MIX71].id;
+                        lpPit->x7B = 0;
+                        lpPit->x7A++;
+                    } else {
+                        se_req(7, 0x15, 0);
+                    }
+                }
+                break;
+            }
+        }
+        MIX70 = 0xFF;
+        lpPit->x6C = 0xFFFF;
+        lpPit->x7A = 0;
+        break;
+    case 2:
+        PitMenu.x10 = 1;
+        ListSelect(&lpPit->x7B, sw, 2);
+        sw = (u16)sw;
+        Menu_select_mv(&lpPit->x49, sw & 0xC00, 0x14);
+        lpPit->x7C = 0;
+        if (mix_item_chk(MIX70, lpPit->x6C) == 0) {
+            MIX70 = 0xFF;
+            lpPit->x7C |= 4;
+        }
+        if (mix_item_chk(MIX71, lpPit->x6E) == 0) {
+            MIX71 = 0xFF;
+            lpPit->x7C |= 4;
+        }
+        if (lpPit->x7C == 0) {
+            if (Item_preparation_list_chk(lpPit->x6C, lpPit->x6E)) {
+                n = (s16)Pl_item_num_ck3(pl, lpPit->x74);
+                if (n == 0) {
+                    lpPit->x7C |= 1;
+                    PitMenu.x12 = 12;
+                } else if (n < 0) {
+                    if (pl->item[MIX70].num >= 2 && pl->item[MIX71].num >= 2) {
+                        lpPit->x7C |= 2;
+                        PitMenu.x12 = 13;
+                    }
+                }
+            }
+        } else {
+            PitMenu.x12 = 11;
+        }
+        if (lpPit->x7C == 0) {
+            if (lpPit->x74 == -1) {
+                PitMenu.x12 = 10;
+            } else {
+                PitMenu.x12 = lpPit->x74 + 0x18;
+            }
+        } else {
+            lpPit->x7B = 1;
+        }
+        if (sw & 0x20) {
+            r = (u16)(r & 0x7FBF);
+            switch (lpPit->x7B) {
+            case 0:
+                if (lpPit->x7C == 0) {
+                    se_req(7, 0xF, 0);
+                    lpPit->x7A++;
+                    lpPit->x72 = 30;
+                    lpPit->x78 = Item_preparation(pl, pl->item[MIX70].id, pl->item[MIX71].id, 0);
+                    mix_effect_set(0);
+                    lpPit->x8D = 1;
+                } else {
+                    se_req(7, 0x15, 0);
+                }
+                break;
+            case 1:
+                menu_mix_clear();
+                return 0x40;
+            }
+        } else if (sw & 0x8000) {
+            menu_mix_clear();
+            se_req(7, 0x14, 0);
+            return 0x8000;
+        } else if (sw & 0x40) {
+            r = (u16)(r & 0xFFBF);
+            if (MIX71 < 0x14) {
+                lpPit->x49 = MIX71;
+            } else {
+                lpPit->x49 = 0;
+            }
+            MIX71 = 0xFF;
+            lpPit->x6E = 0xFFFF;
+            lpPit->x74 = -1;
+            lpPit->x7A = 1;
+            se_req(7, 0x14, 0);
+        }
+        break;
+    case 3:
+        r = (u16)(r & 0x7FBF);
+        lpPit->x72--;
+        if (lpPit->x72 > 0) {
+            break;
+        }
+        if (lpPit->x78 > 0) {
+            Add_to_Item_preparation_list_0(lpPit->x68);
+            lpPit->x74 = lpPit->x78;
+            mix_effect_set(1);
+            se_req(7, 0xE, 0);
+        } else {
+            lpPit->x78 = 0x8F;
+            mix_effect_set(2);
+            se_req(7, 0xD, 0);
+        }
+        if (pl->item[MIX70].id == 0) {
+            MIX70 = 0xFF;
+        }
+        if (pl->item[MIX71].id == 0) {
+            MIX71 = 0xFF;
+        }
+        PitMenu.x12 = lpPit->x78 + 0x18;
+        lpPit->x7A++;
+    case 4:
+        switch ((s16)ItemStockRequest(pl, (u16)lpPit->x78, lpPit->x76, 1)) {
+        case 0:
+        case 1:
+            if (lpPit->x78 == 0x8F) {
+                adx_se_set(pl, 8);
+            } else {
+                Pl_item_get_se(pl, (u16)lpPit->x78);
+            }
+        case 2:
+        case 3:
+            lpPit->x72 = 30;
+            lpPit->x7A++;
+            lpPit->x8D = 0;
+            break;
+        case 5:
+            lpPit->x49 = 0;
+            lpPit->x7A = 6;
+            lpPit->x8D = 0;
+            break;
+        }
+        break;
+    case 5:
+        r = (u16)(r & 0xFFBF);
+        if (lpPit->x72 != 0) {
+            lpPit->x72--;
+            break;
+        }
+        if ((u16)sw & 0x3FFF) {
+            lpPit->x7A = 2;
+        }
+        break;
+    case 6:
+        r = (u16)(r & 0xFFBF);
+        if (lpPit->x07 == 0) {
+            if (lpPit->x6C != pl->item[MIX70].id) {
+                MIX70 = 0xFF;
+            } else if (lpPit->x6E != pl->item[MIX71].id) {
+                MIX71 = 0xFF;
+            }
+            lpPit->x7A = 2;
+        }
+        break;
+    }
+    return r;
+}
+#undef MIX70
+#undef MIX71
