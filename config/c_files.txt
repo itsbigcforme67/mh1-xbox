@@ -703,3 +703,6 @@ main 0x00271880 0x00271E94 net/connect02
 main:rodata 0x003734B0 0x003734E8 net/connect02
 main 0x002671A0 0x002671D4 net/netbgm01
 main 0x00267290 0x00267348 net/netbgm02
+main 0x00274E10 0x00274EBC menu/pit01
+main 0x00275020 0x00275230 menu/pit02
+main 0x00275540 0x002755C8 menu/pit03
