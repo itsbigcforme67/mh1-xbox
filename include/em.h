@@ -91,7 +91,9 @@ typedef struct EMW {
     u16 x2D8;           /* 0x2D8 em10: message number (row of talk_tbl) */
     u16 x2DA;           /* 0x2DA em10: message timer, capped at 300 */
     u16 char0;          /* 0x2DC current animation (as PLW) */
-    u8 _pad2DE[0x2E4 - 0x2DE];
+    u16 x2DE;           /* 0x2DE animation of layer 1 (char0 is layer 0; em01 reset_char_set) */
+    u16 x2E0;           /* 0x2E0 animation of layer 2 */
+    u8 _pad2E2[0x2E4 - 0x2E2];
     u16 act_tm0;        /* 0x2E4 */
     u16 act_tm1;        /* 0x2E6 */
     u8 _pad2E8[0x2EC - 0x2E8];
