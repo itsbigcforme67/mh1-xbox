@@ -68,6 +68,13 @@ typedef struct CNET_COND {
 
 /* blobs copied by value out of CnetSys_w (struct assignment; the element type fixes the copy loop) */
 typedef struct CNET_B5C { u8 b[0x5C]; } CNET_B5C;
+typedef struct CNET_BATRES {    /* battle result being reported (0x24 bytes) */
+    char name[0x10];    /* 0x00 */
+    u8 flag;            /* 0x10 0 = nothing to report */
+    u8 _pad11[3];
+    u16 v[8];           /* 0x14 */
+    u8 _pad24[4];
+} CNET_BATRES;
 typedef struct CNET_CSEARCH {   /* condition search result (0x1CC4 bytes) */
     u8 n;               /* 0x00 number of hits */
     u8 _pad01[3];
@@ -161,7 +168,8 @@ typedef struct CNET_SYS {
     u8 _pad10F4[0x6];
     CNET_PDATA pdata;  /* 0x10FA personal data being registered */
     CNET_RULE rule;  /* 0x12CA room rule being set */
-    u8 _pad1435[0x29];
+    u8 _pad1435[0x1];
+    CNET_BATRES batres;  /* 0x1436 battle result being reported */
     u8 n_login_user;  /* 0x145E  */
     u8 _pad145F[0x3];
     CNET_LUSER login_users[4];  /* 0x1462 users returned by the login server (entry 3 is the account being logged in) */

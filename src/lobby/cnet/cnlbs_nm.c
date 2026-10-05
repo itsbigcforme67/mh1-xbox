@@ -2014,6 +2014,33 @@ void __cnet_Recv_LobbyMember(void) {
     __cnet_Recv_MemberSub(&CnetSys_w.n_lobby_member, CnetSys_w.lobby_member);
 }
 
+void __cnet_Recv_MemberSub(arg0, arg1)
+u8 *arg0;
+u8 *arg1;
+{
+    u8 sp4F;
+    u8 sp4E;
+    u16 sp4C;
+    int r;
+    int i;
+    int j;
+
+    r = GetRecvData8(&sp4E, GetRecvData8(&sp4F, GetRecvData16(&sp4C, recv_work)));
+    if (sp4E > 8) {
+        sp4E = 8;
+    }
+    *arg0 = sp4E;
+    for (i = 0; i < sp4E; i++) {
+        r = GetRecvDataOption3(arg1 + 0x1C, 0x40, GetRecvDataOption3(arg1 + 8, 0x10, GetRecvDataOption3(arg1, 8, r)));
+        arg1 += 0x60;
+        if (sp4F > 3) {
+            for (j = 0; j < sp4F - 3; j++) {
+                r = sp4C + GetRecvData16(&sp4C, r);
+            }
+        }
+    }
+}
+
 void _cnet_RecvFromLbs_NoticeLobbyLeaver(void) {
     _sub_InOutRoomMember(1);
 }
@@ -2431,6 +2458,37 @@ void _cnet_RecvFromLbs_NoticeLoginOk(void) {
     }
 }
 
+void _cnet_RecvFromLbs_RequestWarningMessage(void) {
+    CNET_RES res;
+    u16 n;
+    int s;
+    u32 t;
+    int r;
+
+    if (CnetSys_w.burst[0].state != 0) {
+        if ((u32)CnetSys_w.rlen >= 2) {
+            n = 0x600;
+        } else {
+            n = (((((recv_header[4] << 8) & 0xFFFF) + recv_header[5]) & 0xFFFF) - CNW(u16, 0xFF0)) & 0xFFFF;
+        }
+        t = CnetSys_w.xff4 - CnetSys_w.xff0;
+        if ((n & 0xFFFF) >= t) {
+            n = (t - 1) & 0xFFFF;
+        }
+        s = n & 0xFFFF;
+        memcpy(CnetSys_w.xff8 + CnetSys_w.xff0, recv_work, s);
+        CnetSys_w.xff0 += s;
+        if (CnetSys_w.rlen == 1) {
+            r = GetRecvData8(&CnetSys_w.warnmsg, &CnetSys_w.loginbuf);
+            r = GetRecvData16((u8 *)&CnetSys_w.warnmsg + 2, r);
+            GetRecvDataString((u8 *)&CnetSys_w.warnmsg + 4, GetRecvDataString((u8 *)&CnetSys_w.warnmsg + 4, r));
+            res.val = 0;
+            res.id = 4;
+            CnetSys_w.burst[0].cb(res, &res);
+        }
+    }
+}
+
 void cnLBS_Get_LoginWarningMessage(CNET_H1004 *d) {
     *d = CnetSys_w.warnmsg;
 }
@@ -2460,6 +2518,28 @@ void _cnet_RecvFromLbs_AnswerUserBinary(void) {
     _cnet_Return_CallBack(0);
 }
 
+int cnLBS_Read_TopInformation(cb)
+int cb;
+{
+    int slot = __cnetSub_Set_BgProcess(1, 0, cb);
+
+    CnetSys_w.xff0 = 0;
+    CnetSys_w.xff4 = 0x1000;
+    CnetSys_w.xff8 = CnetSys_w.loginbuf.b;
+    memset(&CnetSys_w.topinfo, 0, 0x1004);
+    memset(&CnetSys_w.loginbuf, 0, 0x2000);
+    CnetSys_w.xff0 = 0;
+    CnetSys_w.xff4 = 0x1000;
+    CnetSys_w.xff8 = CnetSys_w.loginbuf.b;
+    memset(&CnetSys_w.topinfo, 0, 0x1004);
+    memset(&CnetSys_w.loginbuf, 0, 0x2000);
+    if (slot != -1) {
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_TopInformation();
+        return slot;
+    }
+    return -1;
+}
+
 int cnLBS_Get_TopInformation(CNET_B1004 *d) {
     *d = CnetSys_w.topinfo;
     return 0;
@@ -2470,6 +2550,37 @@ int __cnet_SendReq_TopInformation(void) {
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
+}
+
+void _cnet_RecvFromLbs_AnswerTopInformation(void) {
+    u16 n;
+    int s;
+    u32 t;
+    int r;
+    u8 *tp;
+
+    if (CnetSys_w.rres == 0) {
+        if ((u32)CnetSys_w.rlen >= 2) {
+            n = 0x600;
+        } else {
+            n = (((((recv_header[4] << 8) & 0xFFFF) + recv_header[5]) & 0xFFFF) - CNW(u16, 0xFF0)) & 0xFFFF;
+        }
+        t = CnetSys_w.xff4 - CnetSys_w.xff0;
+        if ((n & 0xFFFF) >= t) {
+            n = (t - 1) & 0xFFFF;
+        }
+        s = n & 0xFFFF;
+        memcpy(CnetSys_w.xff8 + CnetSys_w.xff0, recv_work, s);
+        CnetSys_w.xff0 += s;
+        if (CnetSys_w.rlen == 1) {
+            tp = (u8 *)&CnetSys_w.topinfo;
+            r = GetRecvData8(tp, &CnetSys_w.loginbuf);
+            GetRecvDataString(tp + 4, r);
+            _cnet_Return_CallBack(0);
+        }
+    } else {
+        _cnet_Return_CallBack(0);
+    }
 }
 
 void __cnet_Login_Return(void) {
@@ -2495,6 +2606,99 @@ void _cnet_RecvFromLbs_RequestPersonalDataRegist(void) {
 void _cnet_RecvFromLbs_RequestBattleResult(void) {
     if (CNW(u8, 0xE38) != 0) {
         __cnet_SendAns_BattleResult();
+    }
+}
+
+void __cnet_SendAns_BattleResult(void) {
+    CNET_BATRES *b = &CnetSys_w.batres;
+
+    SetSendCommand(&send_work, 0x19);
+    if (b->flag != 0) {
+        SetSendData16(&send_work, 0x5678);
+        SetSendStringData2(&send_work, b, 0xF);
+        SetSendData8(&send_work, 0);
+        SetSendData8(&send_work, 0);
+        SetSendData8(&send_work, b->flag);
+        SetSendData16(&send_work, b->v[0]);
+        SetSendData16(&send_work, b->v[1]);
+        SetSendData16(&send_work, b->v[2]);
+        SetSendData16(&send_work, b->v[3]);
+        SetSendData16(&send_work, b->v[4]);
+        SetSendData16(&send_work, b->v[5]);
+        SetSendData16(&send_work, b->v[6]);
+        SetSendData16(&send_work, b->v[7]);
+    } else {
+        SetSendResult(&send_work, 0xFF);
+    }
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+void _cnet_RecvFromLbs_AnswerPersonalRecordHeader(void) {
+    u8 n;
+    int r;
+    int i;
+
+    if (CNW(u8, 0xF58) != 0) {
+        if (CnetSys_w.rcat == 2 && CnetSys_w.rres == 0) {
+            r = GetRecvData8(&n, recv_work);
+            if (n > 2) {
+                CNW(u8, 0x30CAC) = n;
+                for (i = 0; i < n; i++) {
+                    r = GetRecvData8(CNWP(0x30CAD) + i, r);
+                }
+            } else {
+                CNW(u8, 0x30CAC) = 2;
+            }
+            CNW(s8, 0x30CAD) = 1;
+            CNW(s8, 0x30CAE) = 0x11;
+        }
+        CNW(s8, 0xF5A) = 1;
+    }
+}
+
+void _cnet_RecvFromLbs_AnswerPersonalRecordData(void) {
+    u8 a;
+    u8 b;
+    int r;
+    int i;
+    u8 *p;
+
+    if (CNW(u8, 0xF58) != 0) {
+        if (CnetSys_w.rcat == 2 && CnetSys_w.rres == 0) {
+            r = GetRecvData8(&b, GetRecvData8(&a, recv_work));
+            p = CNWP(0x30CB8) + a * 0x3480 + b * 0x118;
+            p[0] = a;
+            p[1] = b;
+            r = GetRecvData32(p + 0x28, GetRecvData32(p + 0x24, GetRecvData32(p + 0x20, GetRecvData32(p + 0x1C, GetRecvData32(p + 0x18, GetRecvData32(p + 0x14, GetRecvData8(p + 0xC, GetRecvData32(p + 8, GetRecvData32(p + 4, GetRecvData32(p + 0x10, r))))))))));
+            if (a == 1) {
+                if (CnetSys_w.rseq2 > 0x27) {
+                    for (i = 0; i < 3; i++) {
+                        r = GetRecvDataOption3(p + 0x91 + i * 0x11, 0x10, GetRecvDataOption3(p + 0x79 + i * 8, 8, GetRecvData8(p + 0x76 + i, GetRecvData8(p + 0x73 + i, r))));
+                    }
+                    for (i = 0; i < 3; i++) {
+                        r = GetRecvDataOption3(p + 0xE2 + i * 0x11, 0x10, GetRecvDataOption3(p + 0xCA + i * 8, 8, GetRecvData8(p + 0xC7 + i, GetRecvData8(p + 0xC4 + i, r))));
+                    }
+                }
+            }
+        }
+        CNW(u8, 0xF5A)++;
+    }
+}
+
+void _cnet_RecvFromLbs_AnswerPersonalRecordVide(void) {
+    u8 a;
+    u8 b;
+    int r;
+    u8 *p;
+
+    if (CNW(u8, 0xF58) != 0) {
+        if (CnetSys_w.rcat == 2 && CnetSys_w.rres == 0) {
+            r = GetRecvData8(&b, GetRecvData8(&a, recv_work));
+            p = CNWP(0x30CB8) + a * 0x3480 + b * 0x118;
+            GetRecvData8(p + 0x72, GetRecvData8(p + 0x71, GetRecvData8(p + 0x70, GetRecvData8(p + 0x6F, GetRecvData8(p + 0x6E, GetRecvData8(p + 0x6D, GetRecvDataString(p + 0x2C, r)))))));
+        }
+        CNW(u8, 0xF5A)++;
     }
 }
 
@@ -2822,6 +3026,28 @@ void _cnet_RecvFromLbs_MatchGameRule(void) {
     }
 }
 
+void _cnet_RecvFromLbs_MatchGameServerAddr(void) {
+    CNET_RES res;
+    u8 *a;
+
+    if (CNW(u8, 0xF34) != 0) {
+        if (CnetSys_w.rcat == 2) {
+            a = CNWP(0x30300);
+            if (CnetSys_w.rres == 0) {
+                res.val = 0;
+                GetRecvDataString(CNWP(0x30308), GetRecvDataString(a, recv_work));
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage(a);
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        res.val = 0;
+        __cnet_Return_MatchInformation(res);
+    }
+}
+
 void __cnet_Return_MatchInformation(CNET_RES res) {
     if (res.val == -1) {
         __cnet_SendReq_MatchRejection(res.val);
@@ -2899,6 +3125,32 @@ void cnLBS_Get_GameServerAddress(u32 *addr, u16 *port) {
     *port = (p << 8 & 0xFF00) | (p >> 8 & 0xFF);
 }
 
+void _cnet_RecvFromLbs_NoticePatchStart(void) {
+    if (CnetSys_w.burst[0].state != 0) {
+        switch (CnetSys_w.rcat) {
+        case 16:
+            __cnet_Recv_PatchStart(CnetSys_w.rcat);
+            CnetSys_w.patch_cnt = 0;
+            CnetSys_w.x1004 = 0;
+            CnetSys_w.patch_ptr = CNW(s32, 0x1054);
+            return;
+        case 2:
+            break;
+        }
+    }
+}
+
+void __cnet_Recv_PatchStart(void) {
+    char b[0x18];
+
+    memset(b, 0, 0x18);
+    GetRecvData32(&CnetSys_w.patch_size, GetRecvData32(&CnetSys_w.patch_ver, GetRecvData16(&CnetSys_w.patch_x, GetRecvDataString(b, recv_work))));
+    memset(&CnetSys_w.patch_b, 0, 8);
+    memcpy(&CnetSys_w.patch_b, b, 4);
+    memset(&CnetSys_w.patch_a, 0, 0x10);
+    memcpy(&CnetSys_w.patch_a, b + 4, 0xA);
+}
+
 void _cnet_RecvFromLbs_NoticePatchData(void) {
     if (CNW(u8, 0xE38) != 0) {
         __cnet_Recv_PatchData();
@@ -2934,6 +3186,22 @@ void _cnet_RecvFromLbs_NoticePatchFooter(void) {
 
 }
 
+void _cnet_RecvFromLbs_RequestPatchFinish(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.burst[0].state != 0) {
+        if (__cnet_CheckCheckSum(CNW(s32, 0x1054), CnetSys_w.patch_ver, CnetSys_w.patch_size) != 0) {
+            res.val = 0;
+            res.id = 3;
+            CnetSys_w.burst[0].cb(res, &res);
+            return;
+        }
+        res.val = -1;
+        res.id = 9;
+        CnetSys_w.burst[0].cb(res, &res);
+    }
+}
+
 int cnLBS_Answer_PatchFinish(void) {
     __cnet_Send_PatchFinish();
     return 0;
@@ -2952,6 +3220,39 @@ int cnLBS_Get_PatchInformation(u8 *p) {
     strncpy(p + 0x14, CnetSys_w.patch_b, 4);
     *(int *)p = CnetSys_w.patch_ver;
     return 0;
+}
+
+int __cnet_CheckCheckSum(p, size, sum)
+u8 *p;
+u32 size;
+int sum;
+{
+    u32 i = 0;
+    int acc = 0;
+
+    if (size > 0) {
+        if (size > 8) {
+            do {
+                i += 8;
+                acc += *p++;
+                acc += *p++;
+                acc += *p++;
+                acc += *p++;
+                acc += *p++;
+                acc += *p++;
+                acc += *p++;
+                acc += *p++;
+            } while (i < size - 8);
+        }
+        if (i < size) {
+            do {
+                i++;
+                acc += *p;
+                p++;
+            } while (i < size);
+        }
+    }
+    return sum == acc;
 }
 
 void _cnet_RecvFromLbs_RequestRegurationVersion(void) {

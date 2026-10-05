@@ -65,3 +65,4 @@
 0x39D8C CNET_CSEARCH csearch size=0x1CC4 condition search result
 0x3BA50 u16 cs_slot bg slot of the condition search in progress
 0x6CEE u16 last_ja joined users of the last item
+0x1436 CNET_BATRES batres size=0x28 battle result being reported

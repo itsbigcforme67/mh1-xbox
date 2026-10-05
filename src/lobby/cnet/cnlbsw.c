@@ -1,24 +1,30 @@
-/* cnlbs, run 23: _cnet_RecvFromLbs_ReqestPatchLineCheck .. _cnet_RecvFromLbs_NoticePatchFooter (lobby.bin 0x005ACDF0-0x005ACEA8): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 23: cnLBS_Init_LobbyBgProcess .. __cnetSub_Set_BgProcess (lobby.bin 0x005AD240-0x005AD308): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-void _cnet_RecvFromLbs_ReqestPatchLineCheck(void) {
-    u16 v;
+void cnLBS_Init_LobbyBgProcess(void) {
+    memset((u8 *)&CnetSys_w + 0x18, 0, 0xE00);
+}
 
-    if (CnetSys_w.burst[0].state != 0) {
-        __cnet_Recv_Word(&v);
-        __cnet_Send_PatchLineCheck(v);
+void cnLBS_Init_LobbyBgBurstProcess(void) {
+    memset((u8 *)&CnetSys_w + 0xE18, 0, 0x1B0);
+}
+
+int __cnetSub_Set_BgProcess(kind, arg1, arg2)
+s8 kind;
+int arg1;
+int arg2;
+{
+    int i;
+
+    for (i = 0; i < 0x80; i++) {
+        if (CnetSys_w.bg[i].state == 0) {
+            CnetSys_w.bg[i].state = kind;
+            CnetSys_w.bg[i].x19 = 0;
+            CnetSys_w.bg[i].done = (void (*)())arg2;
+            CnetSys_w.bg[i].cb = (void (*)())arg1;
+            return i;
+        }
     }
-}
-
-int __cnet_Send_PatchLineCheck(int arg0) {
-    int cmd = SetSendCommand(&send_work, 0xC2) & 0xFFFF;
-    SetSendData16(&send_work, arg0);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-    return cmd;
-}
-
-void _cnet_RecvFromLbs_NoticePatchFooter(void) {
-
+    return -1;
 }
