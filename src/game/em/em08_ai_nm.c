@@ -149,6 +149,8 @@ void em_mahi_eff_set(EMW *, int);
 void em_tail_off_sub(EMW *);
 void wyvern_kill_cnt_up(void *, int);
 extern EMW em_work[];
+int em08_fly_adjy2(EMW *);
+void em08_fly_adjy2_init(EMW *, int);
 void Eft08_set(f32 *, int, int, f32);
 void shell21_set(EMW *, int);
 void shell23_set(EMW *, int);
@@ -1535,7 +1537,7 @@ static void em_fly06_0059D0F0(EMW *em, EM08W *w) {
         em08_fly_adjy2_init(em, 0);
         break;
     case 1:
-        if (em08_fly_adjy2(temp_a1) != 0) {
+        if (em08_fly_adjy2(em) != 0) {
             em->x05++;
             em08_to_swim(em);
         }
@@ -2315,13 +2317,13 @@ static void em_fly23_0059EDA0(EMW *em, EM08W *w) {
         swim_eff_set2_005A7120(8.0f, em);
         break;
     case 1:
-        em08_fly_adjy2(temp_a2);
+        em08_fly_adjy2(em);
         if (em->x194 == 0) {
             em->x05++;
         }
         break;
     case 2:
-        if ((em08_fly_adjy2(temp_a2) & 0xFF) && (em->pos[1] <= (800.0f + em->x5AC))) {
+        if ((em08_fly_adjy2(em) & 0xFF) && (em->pos[1] <= (800.0f + em->x5AC))) {
             em->x05++;
             em_char_set(em, 0xB, 0, 0);
             em_rate_clear(em);
