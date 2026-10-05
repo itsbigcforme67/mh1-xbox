@@ -16,7 +16,7 @@ int Online_ck();
 void net_send_sys();
 void station_em_set();
 void Quest_next_em_set();
-void *em_work_serch();
+QEM *em_work_serch();
 void q_net_send_em_die();
 void q_net_send_em_capture();
 int quest_enemy_ck_sub();
@@ -1717,4 +1717,116 @@ void station_em_set(void)
             e++;
         }
     }
+}
+
+QEM *em_work_serch(em)
+EMW *em;
+{
+    int i;
+    s32 *l0;
+    QEM *e;
+
+    i = 0;
+    if (quest_w.x3A < 0) {
+    } else {
+        do {
+            l0 = Em_data_st_adrs_get(quest_w.x74, em->stg, 0, (s8)i);
+            e = (QEM *)Em_data_st_adrs_get(quest_w.x74, em->stg, 1, (s8)i);
+            if (l0 != 0) {
+                for (;;) {
+                    if (e->id < 0) {
+                        break;
+                    }
+                    if (em->id == e->x0A) {
+                        return e;
+                    }
+                    e++;
+                }
+            }
+            i++;
+        } while (quest_w.x3A >= i);
+    }
+    l0 = Em_data_com_adrs_get(quest_w.x78, 0);
+    e = (QEM *)Em_data_com_adrs_get(quest_w.x78, 1);
+    if (l0 == 0) {
+        return 0;
+    }
+    if (e == 0) {
+        return 0;
+    }
+    for (;;) {
+        if (e->id < 0) {
+            break;
+        }
+        if (em->id == e->x0A) {
+            return e;
+        }
+        e++;
+    }
+    return 0;
+}
+
+QEM *em_work_serch2(no, stg)
+s16 no;
+s16 stg;
+{
+    int i;
+    s32 *l0;
+    QEM *e;
+    s8 k;
+
+    i = 0;
+    k = quest_w.x3A;
+    if (k >= 0) {
+        do {
+            l0 = Em_data_st_adrs_get(quest_w.x74, stg, 0, k);
+            e = (QEM *)Em_data_st_adrs_get(quest_w.x74, stg, 1, quest_w.x3A);
+            if (l0 != 0) {
+                for (;;) {
+                    if (e->id < 0) {
+                        break;
+                    }
+                    if (no == e->x2C) {
+                        return e;
+                    }
+                    e++;
+                }
+            }
+            i++;
+        } while (quest_w.x3A >= i);
+    }
+    l0 = Em_data_com_adrs_get(quest_w.x78, 0);
+    e = (QEM *)Em_data_com_adrs_get(quest_w.x78, 1);
+    if (l0 == 0) {
+        return 0;
+    }
+    if (e == 0) {
+        return 0;
+    }
+    for (;;) {
+        if (e->id < 0) {
+            break;
+        }
+        if (no == e->x2C) {
+            return e;
+        }
+        e++;
+    }
+    return 0;
+}
+
+void Quest_timer_calc(n)
+int n;
+{
+    if (game_w.info_stop == 0 && quest_w.x10 > 0) {
+        quest_w.x10 -= n;
+        if (quest_w.x10 < 0) {
+            quest_w.x10 = 0;
+        }
+    }
+}
+
+void Quest_timer_reset(void)
+{
+    quest_w.x10 = Quest_time_get(1);
 }
