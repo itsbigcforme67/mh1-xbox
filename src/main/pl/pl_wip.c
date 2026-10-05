@@ -38,3 +38,110 @@
 
 
 
+
+void pl_at048(PLW *pl, s32 arg1) {
+    f32 a;
+    f32 b;
+    s32 t;
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl->x07 = 0;
+        Pl_basic_flagset(pl, 0, 1, 0);
+        switch (arg1) {
+        case 0:
+            pl_chr_set2(pl, 0x579, 4, 0);
+            func_6362B0(pl, 0x15);
+            break;
+        case 1:
+            pl_chr_set2(pl, 0x57A, 2, 0);
+            func_6362B0(pl, 0x19);
+            break;
+        case 2:
+            pl_chr_set2(pl, 0x57B, 2, 0);
+            func_6362B0(pl, 0x1A);
+            break;
+        case 3:
+            pl_chr_set2(pl, 0x579, 0xC, 0);
+            func_6362B0(pl, 0x15);
+            break;
+        case 4:
+            pl_chr_set2(pl, 0x579, 2, 0xA);
+            func_6362B0(pl, 0x15);
+            func_543690(pl, 8, 1);
+            break;
+        }
+        break;
+    case 1:
+        if (pl->x06 == 0) {
+            a = 10.0f;
+            b = 50.0f;
+            if (arg1 == 2) {
+                a = 30.0f;
+                b = 70.0f;
+            }
+            if ((frame_check2(a, pl, 0) != 0) && (frame_check2(b, pl, 0) == 0) && (pl->sw.an_trg & 0x3C)) {
+                t = (pl->sw.ang[1] + 0x2AAB) & 0xFFFF;
+                if (t < 0x4001) {
+                    pl->x06 = 2;
+                } else if (t < 0x9556) {
+                    pl->x06 = 1;
+                } else if (t < 0xD556) {
+                    pl->x06 = 2;
+                }
+            }
+        }
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 6, 0);
+            break;
+        }
+        if (we04_hit_sub(pl) != 1) {
+            switch (arg1) {
+            case 0:
+            case 3:
+            case 4:
+                if (frame_check2(24.0f, pl, 0) != 0) {
+                    if (pl->x06 != 0) {
+                        if (pl->x06 == 1) {
+                            Pl_act_set(pl, 1, 0x37, 4);
+                        } else {
+                            Pl_act_set(pl, 1, 0x33, 4);
+                        }
+                    } else if (frame_check2(50.0f, pl, 0) == 0) {
+                        ex_atk_ck(pl, 0);
+                    }
+                }
+                break;
+            case 1:
+                if (frame_check2(20.0f, pl, 0) != 0) {
+                    if (pl->x06 != 0) {
+                        if (pl->x06 == 1) {
+                            Pl_act_set(pl, 1, 0x38, 4);
+                        } else {
+                            Pl_act_set(pl, 1, 0x33, 4);
+                        }
+                    } else if (frame_check2(50.0f, pl, 0) == 0) {
+                        ex_atk_ck(pl, 0);
+                    }
+                }
+                break;
+            case 2:
+                if (frame_check2(64.0f, pl, 0) != 0) {
+                    if (pl->x06 == 2) {
+                        Pl_act_set(pl, 1, 0x33, 4);
+                    } else if (frame_check2(92.0f, pl, 0) == 0) {
+                        ex_atk_ck(pl, 0);
+                    }
+                }
+                break;
+            }
+            if ((frame_check(52.0f, pl, 0) != 0) && (arg1 == 2)) {
+                func_6362B0(pl, 0x1B);
+            }
+        }
+        break;
+    }
+}
