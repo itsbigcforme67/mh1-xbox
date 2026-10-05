@@ -55,7 +55,9 @@ typedef struct GAME_W {
     u8 _pad07C[0x80 - 0x7C];
     u8 x80[4];          /* 0x080 per player, copied into the cooking smell (Eft12_set4) */
     u8 _pad084[0xA8 - 0x84];
-    struct EFT_MDLW *area_mdlw[10]; /* 0x0A8 model sets by area (eft07_t, Em_area_ck) */
+    struct EFT_MDLW *area_mdlw[9]; /* 0x0A8 model sets by area (eft07_t, Em_area_ck) */
+    s16 xCC;            /* 0x0CC stolen item id (Item_stolen) */
+    s16 xCE;            /* 0x0CE stolen item count */
     u8 x0D0;            /* 0x0D0 cleared by Quest_start */
     u8 master;          /* 0x0D1 player number of the session master */
     u8 x0D2;            /* 0x0D2 set to 1 by Game_task, passed to AQ_init */

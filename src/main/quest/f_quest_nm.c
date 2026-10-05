@@ -2,6 +2,7 @@
  * quest (Quest_start), the retire/error state, remaining monsters and the
  * reward. Meanings are guesses. */
 #include "quest.h"
+#include "plf.h"
 
 extern s16 questName[];
 int func_63AF40();
@@ -752,5 +753,177 @@ int n;
     }
     if (n == 5 || n == 0x10 || n == 0x29) {
         em_herb_set();
+    }
+}
+
+extern s8 item_regained_tbl[8];
+extern char func_5C5E20[];
+void adx_se_set();
+int Share_item_num_ck();
+int share_item_ck_ck();
+int Quest_share_item_num_ck();
+int Share_item_stack();
+
+char *Quest_str_get(int n)
+{
+    if (game_w.x1DC) {
+        return ((char *(*)())func_5C5E20)();
+    }
+    return (char *)(quest_w.x84[n] + (int)mission_area);
+}
+
+s16 stolen_item_num_ck(item)
+u16 item;
+{
+    s16 i;
+    u8 *q;
+
+    for (i = 0, q = (u8 *)&quest_w; i < 5; i++, q += 4) {
+        if (*(u16 *)(q + 0x98) == item) {
+            return quest_w.x98[i].f;
+        }
+    }
+    return 0;
+}
+
+int stolen_item_stack(int item, s16 num)
+{
+    s16 i;
+    u16 r;
+    s8 mx;
+    u8 *q;
+
+    if (stolen_item_num_ck(item) == 0) {
+        r = 5;
+        for (i = 0, q = (u8 *)&quest_w; i < 5; i++, q += 4) {
+            if (*(u16 *)(q + 0x98) == 0 && num > 0) {
+                quest_w.x98[i].v = item;
+                quest_w.x98[i].f = num;
+                r = 0;
+                break;
+            }
+        }
+        if (r == 5) {
+            quest_w.x98[quest_w.xAC].v = item;
+            quest_w.x98[quest_w.xAC].f = num;
+            quest_w.xAC++;
+            if (quest_w.xAC >= 5) {
+                quest_w.xAC = 0;
+            }
+        }
+    } else {
+        for (i = 0, q = (u8 *)&quest_w; i < 5; i++, q += 4) {
+            if (*(u16 *)(q + 0x98) == (u16)item) {
+                mx = ((s8 *)Item_data)[((u16)item << 4) + 3];
+                if (num > 0 && quest_w.x98[i].f >= mx) {
+                    quest_w.x98[i].f = mx;
+                    r = 3;
+                } else {
+                    quest_w.x98[i].f += (s8)num;
+                    if (quest_w.x98[i].f <= 0) {
+                        r = 4;
+                        quest_w.x98[i].v = 0;
+                        quest_w.x98[i].f = 0;
+                    } else if (mx < quest_w.x98[i].f) {
+                        quest_w.x98[i].f = mx;
+                        r = 2;
+                    } else {
+                        r = 1;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    return r;
+}
+
+void Item_stolen(pl, item, num)
+void *pl;
+s16 item;
+s16 num;
+{
+    game_w.xCC = item;
+    game_w.xCE = num;
+    game_w.x0D0 = 1;
+    stolen_item_stack(item, -num);
+    quest_w.xAD = 1;
+}
+
+void Item_regained(pl)
+PLW *pl;
+{
+    int i;
+    int found = 0;
+    int r;
+    u8 *p;
+
+    if (quest_w.xAD != 0) {
+    r = item_regained_tbl[(u16)ran_suu(0) & 7];
+    if (r != 2) {
+        if (r != 1) {
+            for (i = 0, p = (u8 *)&quest_w; i < 5; i++, p += 4) {
+                if (*(u16 *)(p + 0x98) != 0) {
+                    switch ((u16)Pl_item_stack(pl, *(u16 *)(p + 0x98), *(s8 *)(p + 0x9A))) {
+                    case 0:
+                    case 1:
+                    case 2:
+                        if (Pl_master_ck(pl) == 1) {
+                            set01_set(1, 0, *(s16 *)(p + 0x98));
+                        }
+                        found = 1;
+                        break;
+                    case 3:
+                        if (Pl_master_ck(pl) == 1) {
+                            set01_set(1, 3, *(s16 *)(p + 0x98));
+                        }
+                        found = 1;
+                        break;
+                    }
+                }
+            }
+            if (found == 0 && Pl_master_ck(pl) == 1) {
+                set01_set(0, 0, 0);
+            }
+        } else {
+            switch ((u16)Pl_item_stack(pl, 0x59, 1)) {
+            case 0:
+            case 1:
+            case 2:
+                if (Pl_master_ck(pl) == 1) {
+                    set01_set(1, 0, 0x59);
+                }
+                break;
+            case 3:
+                if (Pl_master_ck(pl) == 1) {
+                    set01_set(1, 3, 0x59);
+                }
+                break;
+            default:
+                if (Pl_master_ck(pl) == 1) {
+                    set01_set(0, 0, 0);
+                }
+                break;
+            }
+        }
+    } else if (Pl_master_ck(pl) == 1) {
+        set01_set(0, 0, 0);
+    }
+    quest_w.x98[0].v = 0;
+    quest_w.x98[0].f = 0;
+    quest_w.x98[1].v = 0;
+    quest_w.x98[1].f = 0;
+    quest_w.x98[2].v = 0;
+    quest_w.x98[2].f = 0;
+    quest_w.x98[3].v = 0;
+    quest_w.x98[3].f = 0;
+    quest_w.x98[4].v = 0;
+    quest_w.x98[4].f = 0;
+    quest_w.xAC = 0;
+    quest_w.xAD = 0;
+    return;
+    }
+    if (Pl_master_ck(pl) == 1) {
+        set01_set(0, 0, 0);
     }
 }
