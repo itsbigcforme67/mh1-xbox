@@ -66,23 +66,24 @@ int lb_check_target(f32 range, PLW *pl, u8 *tgt, u8 **list, int ang, int x) {
     int a;
     *(s32 *)(tgt + 0x3B0) = 0;
     *(s8 *)(tgt + 0x3D0) = 0;
-    dir = Lb_get_angle(tgt + 0xAC) & 0xFFFF;
+    dir = Lb_get_angle(pl, tgt + 0xAC) & 0xFFFF;
     a = ang & 0xFFFF;
     if (dir >= a) {
-        if (0xFFFF - a < dir) {
-            goto inrange;
+        if (!(dir > 0xFFFF - a)) {
+            goto outside;
         }
-        *(s16 *)(tgt + 0x302) = -1;
-        return 0;
     }
-inrange:
-    d = flvecCalcDistance((f32 *)(pl + 0xAC), (f32 *)(tgt + 0xAC));
+    d = flvecCalcDistance((f32 *)((u8 *)pl + 0xAC), (f32 *)(tgt + 0xAC));
     if (d < range) {
         *(f32 *)(tgt + 0x4C4) = d;
         lb_target_angle(pl, tgt, dir, ang, x);
         lb_insert_target_list(list);
         return 1;
     }
+    goto done;
+outside:
+    *(s16 *)(tgt + 0x302) = -1;
+done:
     return 0;
 }
 int Lb_ck_target(u8 *p, int unused, int a) {
