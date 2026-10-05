@@ -199,3 +199,22 @@ unfilled delay slot in the original; mine uses v1 and fills it; locals/casts/exp
 (registers: the original keeps hit/idle/revived/boss_hit in s7/s6/s5/s0 and reads em_boss_tbl once into v0;
 all 720 orders of the flag declarations tried with declbf, best 316 instrs off; logic complete).
 Shared header edits: em.h x7A0 (struct PLW *), x94E (s16), x944 (struct EMW *).
+
+## em27 (f_em_60D440, 0x60D440-0x6139D0, monsters 27/28/31, 70 functions): 68 match
+em27a.c (0x60D440-0x612B94, rodata 0x689980-0x689B40), em27b.c (0x612DA0-0x613958, rodata 0x689B40-0x689C14),
+em27c.c (dummy). em27_nm.c = whole file. Rebuild OK. The action setters/fly_adjy2 are in the older em27.c.
+Near-matches (stay asm): em27_uvmove (0x612BA0: the original walks two induction pointers rooted at em with
+constant 0x5F0/0x5C0 offsets; every form tried keeps the offsets folded into the pointers, 61 instrs off) and
+em27_effect_move (7 instrs: eff in a2/v1 instead of v1/v0 around the trailing em27_uvmove call).
+Lessons:
+- `if (u8var != 0 && ...)` adds an andi, `if (u8var && ...)` does not (em27 atk02, `daddiu s0,zero,1` for u8).
+- `if (a >= 2)` on a u16 result gives slti v1; `if (a > 1)` gives the original `slti at` (em27 act01).
+- A `for`-less per-slot loop that touches the same field twice wants separate stores per branch (mv00: each
+  branch stores ang[1] itself, a merged `v` variable adds a store).
+- `(u16)x < 0x8001` must be `(u32)(u16)x < 0x8001` for sltu (em12 act02).
+- Dispatchers that pass `w` along (jal without touching a1) are written `(EMW *em, EMW_W *w)` and call
+  `em_actNN(em, w)`; the acts take (em, w) too, even when unused.
+- Sparse empty `case`s listed first (`case 0: case 3: ... break;`) force the jump table the original has
+  (em27_main Em_Dmg_Sys).
+- Writing `x05++; x388 = 0; em_char_set(...)` (both stores before the call) puts the second store in the delay slot.
+- check.py "move0x" noise: do not grep it away, one real diff hid there (em27 move06 is a one-case switch).

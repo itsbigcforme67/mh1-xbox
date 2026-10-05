@@ -44,6 +44,8 @@ build/src/game/em/em19_flyinit.c.o .rodata .data
 build/src/game/em/em20.c.o .rodata .data
 build/src/game/em/em20b.c.o .rodata .data
 build/src/game/em/em21.c.o .rodata .data
+build/src/game/em/em27a.c.o .rodata .data
+build/src/game/em/em27b.c.o .rodata .data
 build/src/game/em/em27.c.o .rodata .data
 build/src/game/em/em29.c.o .rodata .data
 build/src/game/em/em33.c.o .rodata .data
