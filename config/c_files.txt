@@ -108,5 +108,5 @@ game:rodata 0x0068A4B0 0x0068A4C8 shell/shell22b
 game 0x00638E50 0x006399C4 shell/shell22c
 game 0x0062C4D0 0x0062D4C4 shell/shell06b
 game:rodata 0x0068A090 0x0068A0D0 shell/shell06b
-game 0x00618CA0 0x0061BD84 set/set09
+game 0x00618CA0 0x0061ED08 set/set09
 game:rodata 0x00689E00 0x00689EC8 set/set09

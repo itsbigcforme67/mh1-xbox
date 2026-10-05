@@ -135,7 +135,7 @@ segments:
       - [0x0E0730, asm, text/f_em_6140B0]
       - [0x0E0E50, asm, text/f_em_6147D0]
       - [0x0E5320, c, set/set09]
-      - [0x0E8404, asm, text/set09_i05]
+      - [0x0EB388, asm, text/Set03_set]
       - [0x0EB390, c, set/set03]
       - [0x0EB938, asm, text/Set04_set]
       - [0x0EB940, c, set/set04]
