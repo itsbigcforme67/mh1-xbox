@@ -225,6 +225,47 @@ and later cases `goto err` (mc_read_file/mc_write_file/mc_create_file). (3) <=8 
 `(day + (year + year/4 - year/100 + year/400 + (mon*13+8)/5)) % 7` with `u16 year` (McReadClock, found by trying ~20 parenthesisations with a loop).
 (5) Beware overlapping struct fields when sizing arrays: state[3]/info[3], not [4].
 
+### Assignment 4 (this pass): memory card UI, McAct layer, player sound script, net file code
+
+New lessons (function that shows it):
+- `mc_r_no_set` must be `static` and defined before its callers (CardAtld00/01, CardOptsv00/03 only match then: the compiler keeps a0/a1
+  alive across the call and even reuses the constant argument register for the following store, `w->msg = 5`). Because of that the Card*
+  functions cannot be linked until EVERY function between the helper and the callers matches (mc_sel_ck 68/118 and mc_remove_ck are the
+  blockers; Atld11/Optsv06/Cmsv03/Cmsv09/Conld03/Onsv102/Onsv104 additionally need `decode_to_ck` defined in the same file).
+- A float-first prototype `void Disp_button(float, int, int, int, int)` is needed to get f12 and the integer args right (K&R puts the float in a0/a1 as double).
+- ANSI definitions with `s16` params (`mc_mes_disp(int, s16 y, int)`, `mc_ok_ck`) do NOT narrow in the callee and make the CALLER narrow int expressions
+  (`mc_mes_disp(...) + 0x12` passed as y); K&R definitions narrow in the callee. `flfntLocate(s16, s16)` prototype gives raw s16 locals without re-extension.
+- Case bodies in a `switch` are laid out in SOURCE order, the compare chain in reverse order: `case 2` before `case 1` in the dispatcher source
+  reproduces a jump table whose labels are not monotonic (CardCmsv/CardOfsv0); a `default:` that shares the body of the last case is written
+  `case N: default:`; `switch (x) {default: ...; case 5: ...; case 6: ...; case 0: break;}` reproduces `beq 0; beq 6; beq 5; <default code first>` (trans_card_0).
+- `if (a) {x; break} else {y; break}` style: `if (xA0 == 0) {step++;} else {step += 2; break;} case 0xB:` (fall-through from an if) gives the original layout (mc_act_save).
+- `switch (op) {case 6: case 7: case 8: call(); break;}` stops MWCC from turning `==8||==7||==6` into a range check (McOperationSet); keep the
+  `&trans_card_0` address in a local so the lui/addiu is shared.
+- `(s16)(timer-1)` pattern: `t = w->timer - 1; w->timer = t; if ((s16)t <= 0)` (CardCmsv01).
+- mc_act_* with a single `case 0:` switch (`switch (w->astep) {case 0: ...}`) gives the `beq; b end` pair of the original (mc_act_format).
+- Calls to a function with fewer args than its definition (mc_sel_ck 4 args, 5th = stale t0) cannot be written when a prototype is in scope;
+  the C uses 0 for the missing arg (near-matches CardOptsv02/Cmsv01/Ofsv001/Conld01).
+
+What was done in this pass:
+- McAct* layer (0x27FDF0-0x280EF0), include/mcw.h (MCW work struct, MCFILE tables). Built: mcactb/c/d/e.c (24 of 27 functions, main OK).
+  Near-matches in mcact_nm.c: mc_act_save (4 instr: addu operand order of f+slot*16), mc_act_unformat (original calls mc_unformat() without
+  args and keeps a0 alive), McActAvailSet (50/63, register allocation). mc_check_card is in mclow_nm.c (29/142).
+- disp_savesel* (0x280EF0): mcdisp_nm.c, near-match (font_print_ex takes extra printf args: slot number, name, sex string, play time h:m).
+- Card screens (0x281BC0-0x2860D0): src/main/mc/mccard_nm.c, ALL 87 functions written (CARDW struct documented at the top): 63 match
+  instruction for instruction, the rest are near-matches (listed in the commit message / by tools/check.py). NOT linked (see the lesson above).
+  McCardOperation(op) 2 instr off. Messages ids are numbers; the flow is: Atld = auto load, Optsv = options save, Cmsv = common save,
+  Conld = continue load, Onsv1/Ofsv0 = online/offline save, Easysv = easy save; results of McActResult: 0 ok, -255 no card, -254 unformatted,
+  -253 no file, -252 not enough space, -256/-251 other errors.
+- Player sound wrappers (0x24A240-0x24A790): src/main/pl/pl_snd_nm.c. sound_call*/yoroi_sd_req/move_default/pl_local_init match; wall_sd_req
+  (48/73, induction variable layout), ashi_sd_req (static, unused: not checkable), ashi_eft_req (jump table lit_178_0036E0C0) near-match.
+- ef_move_sub_0024A790 (0x9B50 bytes, the per-motion sound/effect script of the player: ~140 motions x footstep/armor/sound_call calls, then a
+  switch on pl->kind with weapon motions 1002..1427): written by a generator script from the disassembly (case bodies are regular), then
+  hand-fixed (Code_Make with unset register arguments is written `Code_Make(STALE...)`, STALE = -1 = no sound). Same TU as the wrappers.
+- Net file code (0x2869A0-0x28BEC0, online-only): netfile_nm.c (NetFileLoad by hand, 3124 of 3136 bytes) and netfile2_nm.c (everything else,
+  cleaned m2c output; sizes within 1% of the original). Not linked.
+- Method for the long tail: `tools/draft.py` (m2c) + a cleaner (types, remove stray args, `(s64)..<<0x30>>0x30` -> `(s16)`), then compile with
+  tools/check.py. m2c's pointer increments on typed pointers are in BYTES: rewrite them with a (u8 *) cast.
+
 ### Status of assignment 3 (end of this pass) and what is left
 Done (built, main OK): staff (2/4 functions), movie (8/9), evdemo (6/6), omake/mode select (14/20), mc save helpers (9/12), npc (8/10), mc low level (13/15).
 Written but not built (near-match files): staff_nm.c, movie_nm.c (movie_draw), omake_nm.c (6 functions), mcsave_nm.c, npc_nm.c (npc_trans, npc_move), mclow_nm.c (mc_delete_dir).

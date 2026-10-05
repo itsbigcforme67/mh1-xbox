@@ -17,13 +17,18 @@ typedef struct SETW {
     u8 se1;             /* 0x07 */
     s16 timer;          /* 0x08 counts down; -1 = forever */
     s16 cnt;            /* 0x0A */
-    u8 padC[0x14 - 0x0C];
-    s32 work14;         /* 0x14 */
+    struct SETW *prev;  /* 0x0C live list (set_w_top is the head) */
+    struct SETW *next;  /* 0x10 */
+    union {
+        s32 work14;     /* 0x14 */
+        void (*trans)(struct SETW *);  /* 0x14 draw callback, 0 = none (trans_set) */
+    };
     union {
         char **str;     /* 0x18 set01: points at the message string slot */
         void *work;     /* 0x18 per-object work area (set07) */
     } u;
-    u8 pad1C[2];
+    u8 heap_pos;        /* 0x1C work heap block (pull_set_work) */
+    u8 heap_n;          /* 0x1D blocks of 512 bytes, 0 = none */
     u8 x1E;             /* 0x1E set05: player who last turned it */
     u8 pad1F;
     void (*move)(struct SETW *);  /* 0x20 */

@@ -548,3 +548,76 @@ ui00-ui06 (string/draw helpers, key repeat, scecom reboot), misc00/01. Counts (p
   fewer arguments than expected; a gp global holding a work pointer (`ynw`) is accessed as
   `((STRUCT *)ynw)->field` with the cast repeated at each use to get the original reloads
   (yn_key_repeat).
+
+# Third assignment: unowned main code 0x100000-0x1A0000
+
+Candidates (asm files still without C; sizes are the whole asm file; owned elsewhere are skipped:
+player f_pl 0x134000-0x15B000 (F), hit 0x111000-0x125000 and camera/weapon (D), f_game/f_stage/f_quest (E)):
+- 0x15AED0 f_trans (sprite list, 0x430), 0x1611F0 g_system_w_init (0x290), g_Put_sprite_rotate (0x8E0), f_calcpoint (0x9B0),
+  g_get_prim_ptr (0x5B0), g_RollView (0xEF8: view, em_work, smell/smoke/senko stacks, ground data, fms), f_set (0x318)
+- f_font (0x11B4), g_font_set_stack_no (0x77C, softreset/Get_sw...), f_disp_162DB0 (0xA60 loading screens)
+- 0x11E910 f_release (0xC8), g_load_texlist (0x348), f_load (0x6D0), f_ioread (0xE44), g_cpAng2Rad (0x114C vector math),
+  f_yure (0x7F0), f_get (0x1ED0 model work), set_used_clay (0xC74), g_armor_model_free (0xC6C incl. Scheduler/Tsk_*)
+- f_option (0xC40), Pit_* leftovers of the menu pass (menu_* near-matches), g_Fade_task (0x438), f_em (0x3428), f_tri (0x14B0)
+- 0x16B060.. f_flps2 / flib graphics library (0x2890+, ~0x28000 total, probably Capcom/Sony mix: left for last),
+  0x18D9D0.. pl* AHI/AMO model loader library, 0x196390.. sceCd*/libc (GCC or Sony libs, not Capcom: skip).
+Status per file below as it is done.
+
+## Sprite/system/prim files (src/main/sprite, src/main/prim)
+- sprite/trans2.c (f_trans 0x15AED0, 4/4 match): sort_sub must be `static` and defined before its caller:
+  MWCC then keeps the caller's loop variable in a0/t3 across the call (it knows the leaf callee's register use).
+  `(*s & 8) / 8` (signed divide) gives the bgez/addiu 7/sra sequence; flSetRenderState(int, int) with `(int)m` fixed an a0/a1 order diff.
+  Statement-level locals: `u8 *p = s + sort_no[i]*0x50;` before the flag test fixed the delay-slot placement.
+- sprite/sysw.c (0x1611F0, 11/11): ran_suu needs `u32 v` locals declared r, v, p order; init_std_rate wants the constant in a local `g`.
+- sprite/putspr.c, putspr2.c (Put_2TF, Put_F, Paint_square, Put_megaphone, stage_w_init, stage_fog_set match):
+  struct copy of 12/20 bytes compiles to lwc1/swc1 pairs; Paint_square statement order found with tools/stperm.py
+  (new tool: brute-forces the order of N single-line statements); stage_w_init needs its own struct with real fields
+  (a FLD macro with a base pointer makes the compiler CSE `&stage_work` and emit different code).
+  Not matched: Put_sprite_rotate (0x15B300, big, 4 temp pointers), Draw_square (src/main/sprite/putspr_nm.c, 76/78 differ).
+- prim/prim2.c (0x169300, 10/10): get_prim_ptr takes int here (header says s16; callers extend). add_prim returns the slot
+  (header says void; not changed, prim2.c has its own PRIM typedef).
+
+## Progress, third assignment (main 0x100000-0x1A0000)
+Linked (all verified with a full `tools/rebuild.sh main` OK; main went from 124108 to ~150000 bytes matched):
+- sprite/trans2 (0x15AED0 sprite list draw), sprite/sysw (system work helpers, ran_suu, gauss table), sprite/putspr+putspr2
+  (Put_2TF, Put_F, Paint_square, Put_megaphone, stage_w_init, stage_fog_set), sprite/calcpoint
+- prim/prim2 (prim pools, add_prim, draw_prim, SetDiffuseColor)
+- emw/emw01-02, gmat01-02 (view accessors, em_work push/pull, smell/smoke/senko/ear/yobi stacks, ground material data),
+  emw/emu01-02 (em_init, em_die, em_erase, enemy_mv in f_em)
+- cp/cp01-02 (vector/angle math: 24 functions), load/lf01-03 (file/model loaders, Meltw LZ decompressor, link file accessors),
+  model/hp01-04 (model slot heaps), model/gm01-05 (model work setup/free, Attribute_from_amo), fade/fd01-02 (screen fade),
+  font/fs1_01, fs2_01-03, gfs01 (render state cache, font setup, all_reset/softreset, pad accessors), sys/io01-04
+  (ACRMain main loop, system_w_set, InitSystemData), sys/tsk01-02 (task scheduler), sys/vw01-02 (View_move, set_aov)
+- New headers: include/mdlw.h (model work), include/sysw.h (system_w fields). prim.h/em.h not changed.
+Near-matches kept in *_nm.c (not built), with the reason:
+- sprite/putspr_nm.c Draw_square (76/78; saved-reg pointer temps); Put_sprite_rotate (0x15B300) not attempted (big).
+- emw/emwork_nm.c em_work_set (48/100 register allocation), pull_enemy_work (29/45 block layout);
+  emw/groundmat_nm.c GetPlayerDiffuseData (reg alloc), GetPlayerShagamiData, fmsInitialize/fmsAllocMemory (scheduling).
+- cp/cpmath_nm.c NormalClipCheckF3 (64/101), PointHitCheckF3 (41/55, original keeps st non-constant), parts_chg, parts_init (not done).
+- load/loadf_nm.c load_armor_model (17/32), load_texlist/load_texlist_pl (reg alloc 18/51, 16/58); mkMaterial/mkModel*/Sethierarchy
+  and the f_get functions with string literals (system_error calls) not done.
+- model/heap_nm.c get_start_material/hierarchy/clay/mdlw (19/54: the summing loop and the exit shape differ).
+- model/getm_nm.c model_work_set2 (41/64), release_model, model_work_free (21/49, odd (s16) extension of tex_n).
+- font/disp1_nm.c disp_load_msg (16/50), Ck_hankaku (5/34); disp2_nm.c Start_item_init (10/58), Disp_button (6/110), Put_comment (2/77);
+  font/fontst2_nm.c han2zen (2/38: slti into at); sys/ioread_nm.c ioread_sub (original keeps a dead load), ioRead, setBGcolor, InitCommonWork (25/109);
+  sys/tsk_nm.c Scheduler (2/94), sys/view_nm.c set_viewproj (43/53, the original keeps a stack copy of the proj_tbl row).
+Not attempted (jump tables, varargs or string literals): Game_clear_ck, Disp_NowLoading2, font_print/font_print2/font_print_ex, MakeMediaVersion,
+  ioRead_sub/ioRead2, SpritePut, Pl_model_id_set/armor_create_model (PLW offsets), the f_flps2/flib graphics library (MWCC, ~0x28000 bytes, left for last),
+  sceCd*/libc (Sony/GCC).
+Lessons (function that shows it):
+- check.py masks relocation addends: two stores `sb v, system_w+0x2E` / `+0x3E` with the same value compare equal even when the order is wrong;
+  ALWAYS run tools/rebuild.sh main before committing a run (InitRenderState).
+- MWCC unrolls constant-trip `for` loops (full unroll when the count is small, 8x otherwise). `i = 0; do { ... i += 8; } while (i < 0x20);` gives the
+  plain loop of the original (em_init hagi loop, smell_init stacks). A one-case `switch` (case X: return 1; default: return 0;) gives the
+  original's branchy code (kb_input_ck_enter).
+- A static leaf defined before its caller in the same file lets MWCC keep caller values in a0/t3 across the call (trans2.c sort_sub).
+- `long` is 64 bit in this compiler (GetLinkFileSize returning long gives the dsll32/dsra32 truncation at the caller).
+- 20/0x1C byte struct copies of s16/float structs compile to lwc1/swc1 pairs (Put_2TF).
+- Statement order of single-line stores: tools/stperm.py FILE FUNC FIRST LAST (new; brute force, max ~7 lines) and the random sampler idea
+  (shuffle N orders) when the line count is too big.
+- mkruns_mod.py: FORCE_OK=name,name env marks functions whose only diffs are jal targets in another module (overlay calls such as func_53A190);
+  mkrun2.py cannot split empty function bodies (put a comment inside) nor macro-generated functions.
+- After splitting a *_nm.c into runs, run check.py on every run file: sibling functions need prototypes (cp02 SetVector lost its float prototype).
+
+- fl/pv01-03 (0x192E30 plFCVSetBaseAddress, 0x192FA0 plGetFcurveTime, 0x193150-0x193344 plvec length/normalize/inner/outer/plane): match.
+  plmatCopy33 (in plvec_nm.c) sits inside another asm file's range and is not linked.

@@ -2,7 +2,8 @@
 """mkruns_mod.py MODULE NM.c OUTDIR PREFIX FIRSTNUM "comment": like mkruns.py but for any module
 (select, yn, ...). Splits the fully matching address-contiguous runs of NM.c into
 OUTDIR/PREFIXNN.c and prints the c_files.txt lines (name = file name without src/MODULE/)."""
-import re, subprocess, sys
+import os, re, subprocess, sys
+FORCE_OK = set(filter(None, os.environ.get('FORCE_OK', '').split(',')))  # functions check.py cannot verify (calls into another module)
 mod, nm, outdir, prefix, first, cmt = sys.argv[1:7]
 first = int(first)
 out = subprocess.run(['python3', 'tools/check.py', nm], capture_output=True, text=True).stdout
@@ -10,7 +11,7 @@ rows = []
 for l in out.split('\n'):
     m = re.match(r'^(OK|--)\s+(\S+)\s+%s\s+0x([0-9A-F]+)\s+(\d+) bytes' % mod, l)
     if m:
-        rows.append((m.group(2), int(m.group(3), 16), int(m.group(4)), m.group(1) == 'OK'))
+        rows.append((m.group(2), int(m.group(3), 16), int(m.group(4)), m.group(1) == 'OK' or m.group(2) in FORCE_OK))
 rows.sort(key=lambda r: r[1])
 runs = []; cur = []
 for r in rows:
