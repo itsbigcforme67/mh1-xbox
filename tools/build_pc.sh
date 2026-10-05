@@ -147,7 +147,7 @@ rm -f build/pc/.m32test
 # Incremental: a game object is kept when it is newer than its source,
 # every include/ header and this script (FULL=1 rebuilds everything).
 STAMP=build/pc/.hdr_stamp
-NEWEST=$(ls -t include/*.h src/pc/rt/rt_ps2abs.h tools/build_pc.sh tools/pc_abs.py | head -1)
+NEWEST=$(ls -t include/*.h src/pc/rt/rt_ps2abs.h tools/build_pc.sh tools/pc_abs.py tools/pc_patch.py | head -1)
 [ -f "$STAMP" ] && [ "$STAMP" -nt "$NEWEST" ] || touch "$STAMP"
 [ -n "$FULL" ] && touch "$STAMP"
 # shellcheck disable=SC2086
@@ -209,6 +209,14 @@ for f in $GAME; do
         sed 's/^int Pl_master_ck(void);/int Pl_master_ck();/; s/Pl_master_ck() == 0/Pl_master_ck((void *)arg) == 0/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
     esac
+    # PC-only source fixes (tools/pc_patch.py: register pass-through calls)
+    mkdir -p build/pc/abs
+    if python3 tools/pc_patch.py "$src" "build/pc/abs/$b.patch.c" "$f"; then
+        src="build/pc/abs/$b.patch.c"
+        INC="$INC -I$(dirname "$f")"
+    elif [ $? -eq 2 ]; then
+        exit 1
+    fi
     # absolute PS2 addresses some m2c-based files still use (game_w
     # 0x3F33F0, User_data ...): compile a copy that reads the host's symbol
     # instead (tools/pc_abs.py)
@@ -250,8 +258,11 @@ gcc $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o b
     -Wl,--warn-unresolved-symbols 2> build/pc/link1.log || { cat build/pc/link1.log; exit 1; }
 sed -n "s/.*undefined reference to \`\([^']*\)'.*/\1/p" build/pc/link1.log | sort -u > build/pc/undefined.txt
 rm -f build/pc/mhview.tmp
-python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/rt_gen.c
+# shellcheck disable=SC2086
+nm --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined.txt
+python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
 gcc $CFLAGS $SYS -w -c build/pc/rt_gen.c -o build/pc/rt_gen.o
 # shellcheck disable=SC2086
-gcc $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview $LIBS
+gcc $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview $LIBS \
+    $(cat build/pc/rt_gen.defsym)
 echo "built build/pc/mhview (32-bit)"

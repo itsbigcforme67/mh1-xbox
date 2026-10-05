@@ -3,14 +3,18 @@
 asm/MODULE/text/FILE.s turned into plain compilable C: K&R extern declarations, M2C_FIELD macros,
 u8[] data externs, gp-relative globals named. The result is a first near-match to be cleaned by
 hand (types are guesses); it goes to stdout.
-Usage: python3 tools/draft2c.py yn f_yn > src/yn/foo_nm.c"""
+Usage: python3 tools/draft2c.py yn f_yn > src/yn/foo_nm.c
+       python3 tools/draft2c.py lobby -f Local_main,Lb_stage_load   (named functions only)"""
 import bisect, os, re, subprocess, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 module = sys.argv[1]
 funcs = []
-for f in sys.argv[2:]:
-    funcs += re.findall(r"^glabel (\S+)$", open(os.path.join(ROOT, "asm", module, "text", f + ".s")).read(), re.M)
+if sys.argv[2] == "-f":
+    funcs = sys.argv[3].split(",")
+else:
+    for f in sys.argv[2:]:
+        funcs += re.findall(r"^glabel (\S+)$", open(os.path.join(ROOT, "asm", module, "text", f + ".s")).read(), re.M)
 
 LIBC = {"strcmp", "strcpy", "strlen", "memset", "sprintf", "strncmp", "memcpy"}
 GP = 0x38EB70
@@ -28,6 +32,14 @@ gpdecl = {}
 for fn in funcs:
     out = subprocess.run(["python3", os.path.join(ROOT, "tools/draft.py"), module, fn],
                          capture_output=True, text=True, cwd=ROOT).stdout
+    if "Unable to determine jump table" in out and module == "lobby":   # tables read from lobby.bin
+        import tempfile
+        with tempfile.NamedTemporaryFile("r", suffix=".c") as tf:
+            subprocess.run(["python3", os.path.join(ROOT, "tools/lbdraft_jt.py"), tf.name, fn],
+                           capture_output=True, text=True, cwd=ROOT)
+            jt = open(tf.name).read()
+        if jt.strip() and "Decompilation failure" not in jt:
+            out = jt
     body = []
     for l in out.split("\n"):
         m = re.match(r"^[\w \*]+?\**\s*(\w+)\(.*\);\s*/\* extern \*/", l)
