@@ -481,3 +481,45 @@ RuleControl, MemberSub/InOut/ReceiveJoinUser), and everything below:
 - `tools/lbfieldcheck.py`: tools/check.py ignores relocation addends, so a mistyped field in
   config/lbnet_fields.txt (e.g. `u8 *name` parsed as 1 byte) only shows in the rebuild; the checker
   compiles the header and verifies every CnetSys_w field offset (lbregister.sh runs it).
+
+# Lobby round 2 (agent B, 5 Oct 2026): net layer finished, town NPC scripts, tools
+New/changed tools: `tools/lbregister.sh` now handles two families (cnet/cnlbs_nm.c -> cnlbs*.c runs, lb/lbnpc_nm.c -> lbnpc*.c runs).
+`tools/lbruns.py` verifies every generated run file with check.py (a function that stops matching inside its run, e.g. because a
+`static` helper is not in the same run, is demoted and left in asm) and keeps `static` helpers static when all callers are in the run.
+`tools/lbmerge.py NM.c NEW.c include/lbnpc_proto.h lbnpc.h` merges functions into any near-match file (proto header + base include).
+`config/lbnet_rodata.txt` (START END FUNCTION) gives string literals / jump tables a rodata slot in the run file that holds FUNCTION.
+`tools/lbconv.py` now names gp-relative globals of main.bin from config/symbols/main.txt (lobby gp = 0x38EB70).
+Net layer (0x5A2A20-0x5AE320) status: all functions written except __cnet_bgProg_ReadRoomRule (2 KB, 19-state job with 8x-unrolled
+table clears; asm read, not written). Matching and linked: condition search, personal data (bgProg_RegistPersonalData), room rule
+set job (bgProg_RoomSetRule), InOutRoomMember, RuleControl, CheckCheckSum, personal record, patch, top information BattleResult etc.
+Near-match (cnlbs_nm.c, not linked): bgProg_Read{Plaza,Lobby,Room}Allocation (19-23 instrs: register colouring in the check loop),
+MatchOpponentInfo/Status (3), Warning/TopInformation recv (stack/regs), SendReq_ConditionSearchUser (3: loop init order).
+Town NPC scripts (0x59DB40-0x5A2A20, src/lobby/lb/lbnpc_nm.c, headers include/lbnpc.h): all npcMv*, npc_move_common, lb_npc_*_move,
+npcCat*, npcPig* written; linked in lbnpc*.c runs: all except npcPigSLEEP/TOPL/EXIT/WALK2 and lb_npc_old_guild (2 instrs, register
+of a constant), npcCatWAITER (2.4 KB, jump table, not written). Pig/cat helpers use em.h names (x05 step, x15 action, work08 timer,
+x194 anim wait) and LB_NPCMV (ex area: route list, idx, f0F, kind 0x0E, x26/x28, x2D).
+Lessons (each confirmed by a match):
+- SHORT STRING LITERALS (see BRIEF.md): `#pragma readonly_strings on` fixes the .sdata/.rodata mismatch.
+- MWCC unrolls a plain counted loop 8x: do not write the unrolled body by hand (CheckCheckSum `for (i = 0; i < size; i++) acc += *p++;`,
+  RuleControl 3-byte element copy, table clears). The preheader test `slt at,zero,n` is the loop's own, so write no outer `if (n > 0)`.
+- `x >= C` vs `x > C-1`: the compare result goes to `at` (original) or into the value register; `if (n > 2)` instead of `n >= 3` fixed
+  PersonalRecordHeader/Data and MemberSub (and `i = k + 1; if (count < i || i > 10)` style tests).
+- m2c lists the labels of a ladder switch sorted by value; the asm compare ladder (beq chain) runs in REVERSE source order, so read the
+  `addiu t,0,imm; beq x,t,L` sequence (script: /tmp ladder.py idea) and write the labels reversed. A group of case labels whose block
+  is shared must be written in that reversed order too (npcMvTOPL: 14 empty cases that `break` come first).
+- A `return;` that m2c shows after the last statement of a case is usually not in the source: the original branches threaded straight
+  to the epilogue (bgtz -> end). If the compare ladder / bgtz goes to the epilogue use `break` / nothing; an extra `b end; nop` in
+  your output means one `return;` too many.
+- `if (a == 2 || a == 0)` gives `beq a,2,L; bnez a,else` (father_move); a `switch` with the same labels gives `beq zero..; b default`.
+- One-case switches again (`switch (em->x05) { case 0: ... }`) give the `beqz / b end` shape; `case 1: break;` after case 0 when the
+  original ladder tests 1 first.
+- A local `LB_NPCMV *mv = (LB_NPCMV *)em->ex;` at the top makes the original's early `addiu a2,s0,0x444`.
+- Functions called with an extra constant argument (Lb_pl_chr_set0 has 5 args, Lb_Pl_basic_flagset(em, 1, 0, 0), Lb_act_set(em, 0, act,
+  idx)) show the extra zero registers; m2c drops a0 (em) and shifts the others.
+- A float argument needs a prototype (frame_check2(EMW *, f32, int)); the f32 goes in $f12 regardless of position.
+- Struct member arrays keep the `symbol+const` base (lb_sys.x88[idx] = 1 gives lui/addiu of lb_sys+0x88 plus idx); a separate extern
+  symbol (D_3E4C05, in config/lobby_undefined_syms_auto.txt) is needed where the original loads `0(reg)` from symbol+0x15 plus offset.
+- `u16 t = x - 1; x = t; if ((s16)t <= 0)` gives andi + dsll32/dsra32 (pig ATACK).
+- check.py ignores relocation addends: burst[7] vs burst[9] (0xF34 vs 0xF7C) and rseq vs rseq2 only showed in the rebuild.
+- Register colouring at the start of a function (em saved in s1 before the loads of player_work/x05, vs after in the original):
+  npcPigSLEEP/TOPL/WALK2 and ReadXAllocation are still open; declaration order, scoped locals and extra K&R params did not help.
