@@ -183,4 +183,4 @@ Lessons:
 - m2c drops a float argument it thinks unused (f13 when 0 or computed in a
   delay slot): check every flmat call's f12/f13/f14 in the asm.
 - m2c needs jump-table targets labelled (.L%08X:) and the table renamed
-  jtbl_* in a .rodata section (build/pc/try/m2c_ts.py pattern).
+  jtbl_* in a .rodata section of the temporary .s that draft.py feeds it.
