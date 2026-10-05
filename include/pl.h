@@ -185,7 +185,10 @@ typedef struct PLW {
     u8    x56F;          /* 0x56F (stage_mv_ck: zone check only while 0) */
     u16   work570;           /* 0x570 */
     s16   work572;           /* 0x572 */
-    u8 _pad574[0x5AC - 0x574];
+    u8 _pad574[0x2C];
+    f32   work5A0;           /* 0x5A0 */
+    f32   work5A4;           /* 0x5A4 */
+    f32   work5A8;           /* 0x5A8 */
     f32   x5AC;          /* 0x5AC ground height (eft21_i, as EMW) */
     u8 _pad5B0[0x5FC - 0x5B0];
     u32   work5FC;           /* 0x5FC */
@@ -211,7 +214,9 @@ typedef struct PLW {
     s8    work6A8;           /* 0x6A8 */
     s8    work6A9;           /* 0x6A9 */
     u16   work6AA;           /* 0x6AA */
-    u8 _pad6AC[0x70E - 0x6AC];
+    u8 _pad6AC[0x53];
+    u8    work6FF;           /* 0x6FF */
+    u8 _pad700[0xE];
     u16   x70E;          /* 0x70E point number in the stage list (cmd_target_kind_set) */
     u8 _pad710[0x714 - 0x710];
     u8 x714;                 /* 0x714 non-zero: stage_camera_data_ex (cam_sub_std) */
@@ -223,7 +228,7 @@ typedef struct PLW {
     u8    stg;           /* 0x736 */
     u8 _pad737[0x738 - 0x737];
     u8    x738;          /* 0x738 cleared on death (Pl_die_set) */
-    u8 _pad739[0x73A - 0x739];
+    u8    work739;           /* 0x739 */
     u16   x73A;          /* 0x73A next stage number? (game2) */
     f32   work73C;           /* 0x73C */
     f32   work740;           /* 0x740 */
@@ -336,7 +341,7 @@ typedef struct PLW {
     u8    work90A;           /* 0x90A */
     s8    work90B;           /* 0x90B */
     s16   work90C;           /* 0x90C */
-    s8    work90E;           /* 0x90E */
+    u8    work90E;           /* 0x90E */
     u8 _pad90F[0x917 - 0x90F];
     s8    work917;           /* 0x917 */
     u16   work918;           /* 0x918 */

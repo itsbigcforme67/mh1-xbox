@@ -1,13 +1,13 @@
 # Agent F notes: player code (asm/main/text/f_pl.s, 0x134950-0x14D1C8, 224 functions)
 
-Status (6 Oct 2026, night): ~210 functions byte-matching and registered (src/main/pl/pl01..pl39.c,
-`tools/rebuild.sh main` = main OK). Everything else written so far is in src/main/pl/pl_nm.c
-(compiles, not built). Registered in this and the previous round: pl09 .. pl39 = 0x1371B0 .. 0x149E2C, i.e. unique_act_set ..
-pl_die (item/attack/damage/death handlers and their dispatchers pl_normal, pl_attack, pl_damage). Near-matches parked in pl_nm.c:
-basic_com_ck, gun_adj_sub, sougun_adj_sub, wall_act_ck, wall_vec_set, pl_mv021, pl_mv060, pl_at008, pl_at009, pl_at012, pl_dm003,
-pl_dm008.
-NEXT (0x149E30 on): pl_demo000..005/pl_demo, egg_set, egg_com_ck, pl_egg*, pl_chat00..16/pl_chat, pl_move*, pl_turn_sub, pl_horm_sub...
-(list: /tmp/claude-1000/pl_funcs_F.txt is regenerated from config/symbols/main.txt: address, name, size for f_pl.s functions).
+Status (6 Oct 2026, late night): ~260 functions byte-matching and registered (src/main/pl/pl01..pl48.c,
+`tools/rebuild.sh main` = main OK). Everything else written so far is in src/main/pl/pl_nm.c (compiles, not built). Registered since the
+last summary: pl09 .. pl48 = 0x1371B0 .. 0x14C4F4 (item/attack/damage/death/demo/egg/chat handlers and the dispatchers pl_normal, pl_attack,
+pl_damage, pl_die, pl_demo, pl_egg, pl_chat, pl_move, pl_move_sub_sub with their jump tables). What is left in f_pl.s as asm (all in
+pl_nm.c as near-matches, or not yet written): pl_move_sub (0x14C500, 2144 bytes, drafted but not written), pl_turn_sub, pl_horm_sub,
+basic_com_ck, gun_adj_sub, sougun_adj_sub, wall_act_ck, wall_vec_set, stick_pow_get, em_ninshiki_ck, pl_work_clr, player_init0,
+timer_calc_sub_pl, pl_dm_value_sub, pl_mv021, pl_mv060, pl_at008/009/012, pl_dm003/008, pl_demo000, pl_egg03/05, egg_com_ck.
+Typical causes of the near-matches (see Lessons): IPA with static callees, delay-slot scheduling after calls, register naming of locals.
 Workflow (about 2 minutes per small function): `tools/plnext.sh F1 F2 ..` drafts into pl_wip.c, `python3 tools/pl_asm.py F`
 shows the asm without the noise, write the C by hand (the m2c output is only a guide: arg counts, switch order, locals),
 `python3 tools/check.py src/main/pl/pl_wip.c -v | grep '>>'`, then `python3 tools/plreg.py plNN "descr" F1 F2 ... [RODATA=a-b]`
