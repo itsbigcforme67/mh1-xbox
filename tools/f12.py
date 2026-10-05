@@ -2,15 +2,7 @@
 """f12.py FUNC: per jal, print float consts in f12-f14 and int consts a1..a4 (incl. delay slot)."""
 import sys,re,subprocess,struct
 fn=sys.argv[1]
-import glob, os
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-txt = []
-for p in glob.glob(os.path.join(ROOT, 'asm/*/text/*.s')):
-    t = open(p).read()
-    m = re.search(r'^glabel %s\n(.*?)^endlabel %s\n' % (re.escape(fn), re.escape(fn)), t, re.M | re.S)
-    if m:
-        txt = [re.sub(r'/\* [0-9A-F]+ [0-9A-F]+ [0-9A-F]+ \*/', '', l) for l in m.group(1).split('\n')]
-        break
+txt=subprocess.run(['tools/fa.sh',fn],capture_output=True,text=True).stdout.split('\n')
 txt=[l.strip() for l in txt]
 def f(h): return struct.unpack('>f',struct.pack('>I',h))[0]
 regs={};fl={};ints={}
@@ -35,7 +27,7 @@ while i<len(txt):
     m=re.match(r'jal\s+(\S+)',l)
     if m:
         if i+1<len(txt): step(txt[i+1])
-        a=' '.join('a%d=%s'%(int(r)-4,ints[r]) for r in ('5','6','7','8') if ints.get(r))
+        a=' '.join('a%d=%s'%(int(r)-4,ints[r]) for r in ('5','6','7','8','9') if ints.get(r))
         print(m.group(1),{k:v for k,v in fl.items() if k in('f12','f13','f14')},a)
         fl={};ints={}
     else: step(l)

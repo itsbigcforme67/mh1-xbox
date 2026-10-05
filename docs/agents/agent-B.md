@@ -333,3 +333,12 @@ Notes:
 - A static function with custom register arguments (hire_move_sub1/2 take $t4-$t6): its caller can only be linked together with it.
 - `em08_fly_adjy2` returns u8 in em08.c but the asm tests v0 directly: declare it `int` where the caller does not mask.
 - genef.py: `-` as table label for ladder switches, Code_Make/hire_req_set/atk_shell_set/em08_vib_set handled, SOUND5 only for em07.
+
+# Porting tools for sibling AI files (handed over; agent D now owns em14/15/17/20/21)
+tools/port_em.py ASMNAME PFX OUT.c turns the m2c draft of one AI file into a first-pass C file (about 2 minutes; f12.py runs per
+function), tools/protos.py regenerates its forward prototypes, tools/fixlib.py has rep()/sub1()/ensure_spd() for hand-fix scripts
+that survive a re-run (never use s.index('name(') on a file that has prototypes: it hits the prototype), tools/mkruns.py takes
+MKRUNS_EXCLUDE for functions that must stay asm (callers of static callees with custom register args). tools/sibcmp.py shows
+opcode-identical sibling functions (em20/em01 66, em17/em20 55, em21/em08 49, em14/em20 48). em14 was started and dropped.
+Hand fixes that were always needed: to_normal-like functions with extra args, the uvmove/sound_call helper block copied from
+em01/em08, ef_move_sub via genef.py, EMxxW field names (dang/has_tgt/dist) for the TURN macros.
