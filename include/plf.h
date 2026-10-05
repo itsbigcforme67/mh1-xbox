@@ -53,7 +53,7 @@ void Pl_item_charge(PLW *);
 void Pl_item_idx_calc(PLW *);
 void Pl_light_init(PLW *);
 void Pl_max_stamina_calc(PLW *, s16);
-void Pl_ofs_set(PLW *, void *, u16);
+void Pl_ofs_set(PLW *, f32 *, int);
 void Pl_reg_calc(PLW *);
 u16 Pl_shell_set(PLW *, int, int);
 s8 Pl_slash_lv_ck(PLW *, u16);

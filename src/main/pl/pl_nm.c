@@ -100,7 +100,7 @@ void pl_init_sub(PLW *pl) {
         pl->ang[0] = 0;
         pl->ang[2] = 0;
         cpRotMatrix(pl->ang, (f32 *)((u8 *)pl + 0x20));
-        Pl_ofs_set(pl, ((u8 *)pl + 0xAC), (u16) pl->ang[1]);
+        Pl_ofs_set(pl, pl->pos, (u16)pl->ang[1]);
         pl->work792 = 0x64;
         pl->work882 = 0x12C;
         pl->work6A4 = 0;
@@ -150,7 +150,7 @@ void pl_init_sub(PLW *pl) {
         pl->work01D = 0;
         pl->work56F = 0;
         parts_init(pl);
-        if (game_w.pl_ent[pl->id] == 1 || Pl_master_ck(pl) == 1) {
+        if (game_w.pl_state[pl->id] == 1 || Pl_master_ck(pl) == 1) {
             pl->flag14 = 0;
             pl->flag15 = 0;
         } else {
@@ -199,7 +199,7 @@ void pl_init_sub(PLW *pl) {
         cpRotMatrix(pl->ang, (f32 *)((u8 *)pl + 0x20));
         pl->x738 = 0U;
         pl->work56F = 0;
-        if ((game_w.pl_ent[pl->id] == 1) || (Pl_master_ck(pl) == 1)) {
+        if ((game_w.pl_state[pl->id] == 1) || (Pl_master_ck(pl) == 1)) {
             pl->flag14 = 0;
             pl->flag15 = 0;
         } else {
@@ -267,7 +267,7 @@ void pl_init_sub(PLW *pl) {
             pl->ang[1] = pl->work570;
             break;
         }
-        Pl_ofs_set(pl, ((u8 *)pl + 0xAC), (u16) pl->ang[1]);
+        Pl_ofs_set(pl, pl->pos, (u16)pl->ang[1]);
         cpRotMatrix(pl->ang, (f32 *)((u8 *)pl + 0x20));
         pl->x5AC = pl->pos[1];
         pl->ang_y = (s16) pl->ang[1];
