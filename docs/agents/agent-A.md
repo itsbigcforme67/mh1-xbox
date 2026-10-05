@@ -292,3 +292,32 @@ Next ideas: the player's ef_move_sub lists for other motions (needs
 actions), joint positions for em sounds, quest BGM switching (fight /
 clear), TSNDDRV.IRX disassembly to replace the [guess] parts (slot,
 priority, SdrSeChg semantics, pitch bend).
+
+## Assignment 12: the game's player code on the PC (6 Oct 2026)
+Done (each step committed; details in docs/pc.md "Player"):
+- All of agent F's src/main/pl (plNN.c + pl_nm.c + pl_normal_nm.c), the
+  game.bin damage files, hit_nm.c, weapon_nm.c (weapon_joint_calc) run on
+  the PC: rt_player_tick = rt_pad_tick + pl_move (pl48.c). Walk/run (0/1,
+  0/3), roll (cross, 0/0x1C), draw (right stick, 0/4), attacks and combos
+  (right stick, 1/0x30 -> 1/0x37 for sword and shield), guard (R1, 2/3),
+  sheathe (circle) all come from the decompiled state machines.
+- src/pc/rt/rt_pl.c: the helpers that are not decompiled yet, written from
+  the asm (Pl_act_set, pl_flag_*, pl_chr_set*/pl_chr_sub, stamina, vital,
+  sharpness, rates, front_land_ck*, World_calc, item counts, parts_init,
+  attack-data helpers, Code_Make, Pl_poison_add ...) plus stubs (network,
+  items/gathering, quest, messages, parts_chg). Request for agent F: these
+  are main 0x14D1D0-0x155000 (g_act_set, g_pl_voice_req, Pl_bari_ck,
+  World_calc, f_pl's 0x1510xx tail, g_Pl_hold_item_ck); rt_pl.c can be
+  the starting point.
+- src/main/sound/f_sound_nm.c: pl01_effect_move / ef_move_sub (per-motion
+  sounds and dust), from an m2c draft with call arguments cleaned.
+- Weapon: w<job>_tbl.bin motions via create_pl_motion; the weapon model
+  (weapon_model_data[PLW+0x34C]) placed like weapon_trans.
+- x86 porting hazards fixed without touching matched files: rt_abi.c +
+  per-file -D renames in build_pc.sh (frame_check*, Eft06_set, Eft02_set6
+  declared with the float first in plf.h; hit_point_cbd in f_stage.c;
+  pl_move_sub's 4-argument GetGroundHitStatusAreaPl call). Found with an
+  -flto build (-Wlto-type-mismatch); script in docs/pc.md.
+- Get_Active_itemnum relies on a0 = pl left by its caller (pl10.c calls it
+  without arguments): the host version uses the master player.
+Shared header edit: include/plf.h pl_mv060/pl_at009/pl_at012 now K&R.
