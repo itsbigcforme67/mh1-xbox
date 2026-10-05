@@ -1880,8 +1880,8 @@ void disp_menu(int sw, PIT_W *p) {
 
 /* 0x131FB0 */
 void Pit_disp_chat_cnfg(void) {
-    char buf[16];
-    int i, y;
+    char buf[32];
+    u32 i; int y;
     u8 *e;
     s8 k;
 
@@ -1889,12 +1889,12 @@ void Pit_disp_chat_cnfg(void) {
     case 0:
         disp_menu(1, lpPit);
         DispFrameList(pf_chat_cnfg + game_w.x1DC * 0x18, 0, lpPit->x7D);
-        return;
+        break;
     case 1:
         switch (lpPit->x7D) {
         case 0:
             lb_disp_chat_cnfg_sendpl(1, lpPit);
-            return;
+            break;
         case 1:
             k = PitMenu.x1B;
             sprintf(buf, (char *)lit_4493_0035A620, k / 6 + 1);
@@ -1912,7 +1912,7 @@ void Pit_disp_chat_cnfg(void) {
                 e += 0x10;
                 y = (s16)(y + 0x16);
             } while (i != 0);
-            return;
+            break;
         }
         break;
     }
@@ -2045,15 +2045,15 @@ void Pit_disp_data(void) {
     case 0:
         disp_menu(1, lpPit);
         DispFrameList(pfl_menu_data + game_w.x1DC * 0x18, 0, lpPit->x43);
-        return;
+        break;
     case 1:
         switch (lpPit->x43) {
         case 0:
             disp_mix_list(1, lpPit);
-            return;
+            break;
         case 1:
             disp_monster_list(1, lpPit);
-            return;
+            break;
         }
         break;
     }
@@ -2220,10 +2220,10 @@ typedef struct PEF_DATA {
     int *alpha_tbl; /* 0x18 */
 } PEF_DATA;
 typedef struct PEF {                /* pit_efct[6], 0x20 bytes each */
-    s8 on;          /* 0x00 */
-    s8 show;        /* 0x01 */
+    u8 on;          /* 0x00 */
+    u8 show;        /* 0x01 */
     u8 alpha;       /* 0x02 */
-    s8 delay;       /* 0x03 */
+    u8 delay;       /* 0x03 */
     f32 l, r, t, b; /* 0x04 corners, set by pef_get_scale */
     f32 x;          /* 0x14 */
     s16 y;          /* 0x18 */
@@ -2305,9 +2305,13 @@ void mix_effect_set(s8 kind) {
 
 /* 0x134280 */
 void Pit_effect_move(void) {
-    PEF *e = pit_efct;
-    int n = 0;
-    int k = 6;
+    PEF *e;
+    u32 k;
+    int n;
+
+    e = pit_efct;
+    n = 0;
+    k = 6;
 
     do {
         if (e->on != 0) {
