@@ -320,6 +320,10 @@ void rt_game_draw(void)
     for (t = 0; t < OT_N; t++)
         for (k = 0; k < nqueue[t]; k++) {
             PRIM *p = queue[t][k].p;
+            static int skip = -2;
+            if (skip == -2) skip = getenv("RT_SKIP_TYPE") ? atoi(getenv("RT_SKIP_TYPE")) : -1;
+            if (skip >= 0 && p->owner && ((SETW *)p->owner)->type == skip)
+                continue;           /* RT_SKIP_TYPE=n: debugging, skip prims of owner type n */
             if (p->trans)
                 p->trans(p);
             rt_fl_reset_states();
