@@ -17,7 +17,10 @@ typedef struct EFTW {
     u8 stg;             /* 0x06 */
     u8 x07;             /* 0x07 */
     s16 timer;          /* 0x08 */
-    u16 ang;            /* 0x0A */
+    union {
+        u16 ang;        /* 0x0A eft09: facing */
+        s16 joint;      /* 0x0A eft19: owner's joint */
+    } u0A;
     u8 _pad0C[0x14 - 0x0C];
     s32 work14;         /* 0x14 */
     u8 _pad18[0x20 - 0x18];

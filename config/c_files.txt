@@ -71,3 +71,4 @@ game 0x00620260 0x006206C4 set/set05b
 game 0x00634460 0x0063523C shell/shell12
 game:rodata 0x0068A2F0 0x0068A34C shell/shell12
 game 0x00544DD0 0x005454C8 eft/eft09
+game 0x00554980 0x00555020 eft/eft19

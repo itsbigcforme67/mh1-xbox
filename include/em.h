@@ -60,7 +60,10 @@ typedef struct EMW {
     u8 stg;             /* 0x736 */
     u8 _pad737[0x878 - 0x737];
     struct EFTW *tail;  /* 0x878 cut-tail effect (eft09_set) */
-    u8 _pad87C[0x959 - 0x87C];
+    u8 _pad87C[0x884 - 0x87C];
+    s8 x884;            /* 0x884 state flags picking eft19's model */
+    s8 x885;            /* 0x885 */
+    u8 _pad886[0x959 - 0x886];
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
     u8 _pad95A[0x9EA - 0x95A];
     s8 x9EA;            /* 0x9EA trap state (shell12_m) */

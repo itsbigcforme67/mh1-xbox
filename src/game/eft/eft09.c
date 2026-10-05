@@ -116,7 +116,7 @@ void tail_off(EFTW *ew) {
     ew->arg = 1;
     bone = em->mdl->bone;
     flmatGetTrans(ew->pos, bone + 0x4330);
-    ew->ang = calc_mat_angY(bone + 0x4330);
+    ew->u0A.ang = calc_mat_angY(bone + 0x4330);
 }
 
 static void eft09_m(EFTW *ew) {
@@ -212,7 +212,7 @@ static void eft09_t(PRIM *pr) {
         } else {
             flmatMakeScale(&sc, em->scale[0], em->scale[1], em->scale[2]);
             flmatMakeTrans(&mat, ew->pos[0], ew->pos[1], ew->pos[2]);
-            flmatRotY33(&mat, DEG2RAD(ANG2DEG(ew->ang + 0x4000)));
+            flmatRotY33(&mat, DEG2RAD(ANG2DEG(ew->u0A.ang + 0x4000)));
             flmatMul33_2(&mat, &sc);
             flCalcTransSI(mtx, &mat);
         }

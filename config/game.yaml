@@ -55,7 +55,7 @@ segments:
       - [0x019CE0, asm, text/f_eft16]
       - [0x01D5F0, asm, text/f_eft00]
       - [0x01DEB0, asm, text/f_eft18]
-      - [0x021000, asm, text/f_eft19]
+      - [0x021000, c, eft/eft19]
       - [0x0216A0, asm, text/f_eft21]
       - [0x022110, asm, text/f_eft22]
       - [0x023B00, asm, text/f_eft23]
