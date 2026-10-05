@@ -17,6 +17,26 @@ void itembox_cursor_mv();
 void PageSelect();
 void flps0008();
 void ListSelect();
+extern char lb_item_box_base[];
+extern u32 item_col_tbl[];
+extern char *item_str[];
+extern char *category_name_str[2];
+extern char lit_1923_00668480[];
+extern char lit_1924[];
+extern char lit_1925[];
+extern char lit_1926[];
+extern char lit_1927[];
+extern char lit_1928[];
+void DispFrameMessageA();
+void flps0004();
+void Get_equip_icon_uv();
+int Now_equip_ck();
+int Equip_icon_color_rare();
+int equip_ok_chk();
+int Get_equip_rare();
+char *Get_equip_name();
+void Lb_put_gold();
+void flfntLocate();
 extern u8 D_3396DE[];
 int u_equip_chk();
 int Get_equip_kaitori();
@@ -1298,4 +1318,246 @@ sel:
         break;
     }
     return pad;
+}
+
+typedef struct IBQUAD { s16 x, y, x2, y2; s32 color; } IBQUAD;   /* flps0004 filled rectangle */
+typedef struct IBICON { s16 x, y, w, h; s32 color; s16 u0, v0, u1, v1; } IBICON;   /* flps0008 textured icon */
+
+/* item box window: the slot grid (100 pouch slots or 64 equipment slots), the cursor and the name/price line.
+   cur = cursor slot (negative: none), flags: 4 help, 8 equipment grid, 0x10 dimmed, 0x20 gold, 0x40 price, 0x80/0x100/0x200 equipment modes */
+void ItemboxWindowX(int cur, int flags, f32 base) {
+    IBQUAD q;
+    IBICON ic;
+    char text[0x40];
+    int equip;
+    int dim;
+    int alpha;
+    int i;
+    f32 x0;
+    s16 xx;
+    u16 *p;
+    u8 *d;
+    u8 *e;
+    int k;
+    int rare;
+    int price;
+    int amount;
+    int col;
+    int mode80;
+    int mode100;
+    int mode200;
+    int cat;
+    u8 kd;
+    s16 cs;
+    equip = (flags & 8) != 0;
+    dim = flags & 0x10;
+    alpha = (dim != 0 ? 0x60 : 0xFF) & 0xFF;
+    *(s16 *)lb_item_box_base = base;
+    DispFrameMessageA(lb_item_box_base, 0, alpha);
+    SetFilterMode(1);
+    reload_tex(1, 0x118);
+    SetTextureStage(0x118);
+    x0 = 153.0f + base;
+    if (!equip) {
+        for (i = 0; i < 100; i = (s16)(i + 1)) {
+            xx = 0.8f * ((x0 - 146.0f) + 28.8f * (f32)(i % 10)) + 3;
+            q.x = xx;
+            q.x2 = 20.48f + (f32)xx;
+            q.y = i / 10 * 0x19 + 0x3D;
+            q.y2 = q.y + 0x15;
+            q.color = (alpha << 24) | 0x200000;
+            flps0004(&q);
+        }
+        ic.w = 0x19;
+        ic.h = 0x19;
+        p = (u16 *)(User_data + 0x1C4);
+        for (i = 0; i < 100; i = (s16)(i + 1), p += 2) {
+            if (*p != 0) {
+                d = (u8 *)Item_data + *p * 0x10;
+                cat = d[5];
+                k = cat + 1;
+                if (cat != 0xFF) {
+                    ic.x = 0.8f * ((x0 - 146.0f) + 28.8f * (f32)(i % 10));
+                    ic.y = i / 10 * 0x19 + 0x3B;
+                    ic.u0 = ((k & 7) << 5) + 1;
+                    ic.v0 = ((k >> 3) << 5) + 1;
+                    ic.u1 = ((k & 7) << 5) + 0x1F;
+                    ic.v1 = ((k >> 3) << 5) + 0x1F;
+                    ic.color = item_col_tbl[d[6]];
+                    ic.color = (ic.color & 0xFFFFFF) | (alpha << 24);
+                    flps0008(&ic);
+                }
+            }
+        }
+    } else {
+        for (i = 0; i < 0x40; i = (s16)(i + 1)) {
+            q.color = (alpha << 24) | 0x200000;
+            if (equip && Now_equip_ck(User_data, (s16)i) == 1) {
+                q.color = (alpha << 24) | 0x83C6A;
+            }
+            xx = 0.8f * ((x0 - 146.0f) + 36.0f * (f32)(i & 7)) + 4;
+            q.x = xx;
+            q.x2 = 25.6f + (f32)xx;
+            q.y = (i >> 3 << 5) + 0x3D;
+            q.y2 = q.y + 0x1C;
+            flps0004(&q);
+        }
+        ic.w = 0x20;
+        ic.h = 0x20;
+        mode80 = flags & 0x80;
+        mode100 = flags & 0x100;
+        mode200 = flags & 0x200;
+        e = User_data + 0x44;
+        for (i = 0; i < 0x40; i = (s16)(i + 1), e += 6) {
+            if (e[0] != 0) {
+                ic.x = 0.8f * ((x0 - 146.0f) + 36.0f * (f32)(i & 7));
+                ic.y = (i >> 3 << 5) + 0x3B;
+                Get_equip_icon_uv(e, &ic.u0, &ic.u1, 0.8f);
+                rare = Get_equip_rare(e[1], *(u16 *)(e + 2)) & 0xFF;
+                if (mode80 != 0) {
+                    if (Now_equip_ck(User_data, (s16)i) == 1) {
+                        ic.color = Equip_icon_color_rare(rare, alpha, 1);
+                        flps0008(&ic);
+                        ic.u0 = 0xC0;
+                        ic.v0 = 0xE0;
+                        ic.u1 = 0xE0;
+                        ic.v1 = 0x100;
+                        ic.color = (alpha << 24) | 0x909010;
+                    } else {
+                        ic.color = Equip_icon_color_rare(rare, alpha, 0);
+                    }
+                } else if (mode100 != 0) {
+                    kd = 0;
+                    if (e[1] != 6 && e[1] != 7) {
+                        kd = 1;
+                    }
+                    ic.color = Equip_icon_color_rare(rare, alpha, kd);
+                    if (Now_equip_ck(User_data, (s16)i) == 1) {
+                        flps0008(&ic);
+                        ic.u0 = 0xC0;
+                        ic.v0 = 0xE0;
+                        ic.u1 = 0xE0;
+                        ic.v1 = 0x100;
+                        if (kd == 0) {
+                            ic.color = (alpha << 24) | 0xFFFF00;
+                        } else {
+                            ic.color = (alpha << 24) | 0x808010;
+                        }
+                    }
+                } else if (mode200 != 0) {
+                    ic.color = Equip_icon_color_rare(rare, alpha, 0);
+                    if (Now_equip_ck(User_data, (s16)i) == 1) {
+                        if (e[1] == 6 || e[1] == 7) {
+                            ic.color = Equip_icon_color_rare(rare, alpha, 1);
+                            flps0008(&ic);
+                            ic.color = (alpha << 24) | 0x808010;
+                        } else {
+                            flps0008(&ic);
+                            ic.color = (alpha << 24) | 0xFFFF00;
+                        }
+                        ic.u0 = 0xC0;
+                        ic.v0 = 0xE0;
+                        ic.u1 = 0xE0;
+                        ic.v1 = 0x100;
+                    } else if (equip_ok_chk(e) == 0) {
+                        ic.color = Equip_icon_color_rare(rare, alpha, 1);
+                    }
+                } else {
+                    ic.color = Equip_icon_color_rare(rare, alpha, 0);
+                    if (Now_equip_ck(User_data, (s16)i) == 1) {
+                        flps0008(&ic);
+                        ic.u0 = 0xC0;
+                        ic.v0 = 0xE0;
+                        ic.u1 = 0xE0;
+                        ic.v1 = 0x100;
+                        ic.color = (alpha << 24) | 0xFFFF00;
+                    }
+                }
+                flps0008(&ic);
+            }
+        }
+    }
+    if (cur >= 0) {
+        if (!equip) {
+            cs = cur / 10 * 0x19 + 0x3B;
+            ic.x = 0.8f * ((x0 - 146.0f) + 28.8f * (f32)(cur % 10));
+        } else {
+            cs = (cur >> 3 << 5) + 0x3B;
+            ic.x = 0.8f * ((x0 - 146.0f) + 36.0f * (f32)(cur & 7));
+        }
+        ic.y = cs;
+        ic.u0 = 0;
+        ic.u1 = 0x20;
+        ic.v1 = 0x20;
+        ic.color = (alpha << 24) | 0xFFFFFF;
+        flps0008(&ic);
+        flfntSetSize(0x12, 0x12);
+        col = 0;
+        if (dim == 0) {
+            amount = 2;
+        } else {
+            col = 0xA;
+            amount = 0xD;
+        }
+        font_set_palette(col);
+        if (!equip) {
+            d = User_data + cur * 4;
+            if (*(u16 *)(d + 0x1C4) == 0) {
+                sprintf(text, lit_1923_00668480, *(s32 *)0x33AB40);
+                price = -1;
+            } else {
+                k = *(u16 *)(d + 0x1C4);
+                switch (D_3396D3[k * 0x10]) {
+                case 1:
+                    sprintf(text, lit_1923_00668480, item_str[k]);
+                    break;
+                case 0xFF:
+                    sprintf(text, lit_1924, item_str[k]);
+                    break;
+                default:
+                    cs = *(s16 *)(d + 0x1C6);
+                    if (cs >= D_3396D3[k * 0x10]) {
+                        sprintf(text, lit_1925, item_str[k], (s16)amount);
+                    } else {
+                        sprintf(text, lit_1926, item_str[k], cs);
+                    }
+                    break;
+                }
+                price = *(s32 *)(D_3396DE + *(u16 *)(d + 0x1C4) * 0x10);
+            }
+        } else {
+            e = User_data + cur * 6;
+            if (e[0x44] == 0) {
+                sprintf(text, lit_1923_00668480, *(s32 *)0x33AB40);
+                price = -1;
+            } else {
+                sprintf(text, lit_1923_00668480, Get_equip_name(e[0x45], *(u16 *)(e + 0x46)));
+                price = Get_equip_kaitori(e[0x45], *(u16 *)(e + 0x46));
+            }
+        }
+        flfntLocate(5.0f + base, 0x13F);
+        if (!(flags & 0x40)) {
+            font_print_sp(lit_1927, category_name_str[equip], text);
+        } else {
+            font_print_sp(lit_1923_00668480, text);
+            if (price >= 0) {
+                flfntSetSize(0x18, 0x12);
+                flfntLocate(198.0f + base, 0x13F);
+                font_print(lit_1928, price);
+                flfntSetSize(0x12, 0x12);
+            }
+        }
+        if (flags & 4) {
+            if (!equip) {
+                Disp_help_mess(1, (u16)(*(u16 *)(User_data + cur * 4 + 0x1C4) + 0x18));
+            } else {
+                if (*(User_data + cur * 6 + 0x44) != 0) {
+                    EquipmentDescriptionWindow(User_data + cur * 6 + 0x44, 0xB8, flags & 3);
+                }
+            }
+        }
+    }
+    if (flags & 0x20) {
+        Lb_put_gold();
+    }
 }
