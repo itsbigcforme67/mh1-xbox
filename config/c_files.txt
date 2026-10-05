@@ -109,3 +109,4 @@ game 0x00638E50 0x006399C4 shell/shell22c
 game 0x0062C4D0 0x0062D4C4 shell/shell06b
 game:rodata 0x0068A090 0x0068A0D0 shell/shell06b
 main 0x0027CA50 0x0027CF10 eft/eft26
+main 0x00101E40 0x00102BC8 eft/eft01
