@@ -166,9 +166,9 @@ KH *kh_followed();
 KH *kh_skip();
 int meantosjis();
 int dic_learn();
-void dic_newlearn();
+int dic_newlearn();
 struct WD *raw_newwd();
-void dic_tmptouroku();
+int dic_tmptouroku();
 int strlen();
 void strncpy();
 void clear_prevwd();
@@ -2070,6 +2070,147 @@ void shiftpage(u8 *from, u8 *end, int d)
             from++;
         }
     }
+}
+
+int dic_delete(WD *w)
+{
+    int none;
+    int c;
+    int d;
+    int r;
+    s16 klen;
+    u8 buf[0x30];
+    u8 *e;
+    u8 *end;
+
+    none = 1;
+    if (dic_fd == -1) {
+        return -3;
+    }
+    if (dic_rw == 0x8000) {
+        return -6;
+    }
+    strncpy(buf, w->yomi, w->len);
+    buf[w->len] = 0;
+    e = load_page(srch_page(buf));
+    end = end_page(e);
+    while (e < end) {
+        klen = e[2];
+        c = ask_strncmp(e + 3, buf, klen);
+        if (c == 0) {
+            if (klen == w->len) {
+                none = 0;
+                break;
+            }
+        } else if (c > 0) {
+            break;
+        }
+        e += ELEN(e);
+    }
+    if (none != 0) {
+        return 0;
+    }
+    r = delwd(e, w);
+    if (r == 0) {
+        return 0;
+    }
+    if (r == -1) {
+        d = ELEN(e);
+        shiftpage(e + d, end + 2, -d);
+    } else {
+        shiftpage(e + ELEN(e) + r, end + 2, -r);
+    }
+    init_entid_tab();
+    update_nowpage();
+    return 3;
+}
+
+int delwd(u8 *ent, WD *w)
+{
+    u8 buf[0x30];
+    int len;
+    int tot;
+    int n;
+    int cl;
+    u8 *end;
+    u8 *p;
+    u8 *q;
+    u8 *start;
+
+    setkbuf(w->tango, buf);
+    len = setkbuflen(w->tango);
+    buf[len] = 0;
+    tot = ELEN(ent);
+    end = ent + tot;
+    p = ent + ent[2] + 3;
+    start = p;
+    while (p < end) {
+        q = p + 2;
+        if (p[2] < 0xC) {
+            q++;
+        }
+        p = next_wd(q, end);
+        cl = p - q;
+        if (*start == w->x07 && cl == len && ask_strncmp(q, buf, cl) == 0) {
+            break;
+        }
+        start = p;
+    }
+    n = p - start;
+    if (n > 0) {
+        if (start == ent + ent[2] + 3 && p == end) {
+            return -1;
+        }
+        shiftpage(p, end, -n);
+        tot -= n;
+        ent[0] = tot % 256;
+        ent[1] = tot / 256;
+    }
+    return n;
+}
+
+int dic_tmptouroku(WD *w)
+{
+    u8 buf[0x30];
+
+    if (gaku_mode != 0) {
+        if (dic_fd == -1) {
+            return -3;
+        }
+        strncpy(buf, w->yomi, w->len);
+        if (w->x07 == 0x28 || w->x07 == 0x29) {
+            w->x07 = 0x27;
+        }
+        buf[w->len] = 0;
+        tmp_touroku(buf, w, 1);
+    }
+    return 3;
+}
+
+int dic_newlearn(WD *w, s64 *list, int n)
+{
+    u8 buf[0x30];
+    int rt;
+
+    if (gaku_mode == 0) {
+        return 3;
+    }
+    if (dic_fd == -1) {
+        return -3;
+    }
+    strncpy(buf, w->yomi, w->len);
+    buf[w->len] = 0;
+    if (isnum(buf) != 0) {
+        w->x07 = 0x1F;
+    }
+    rt = get_maxtime(list, n) + 1;
+    if (rt == 0xFF) {
+        clear_allrtime(list, n);
+        rt = 1;
+    }
+    tmp_touroku(buf, w, rt);
+    update_entid_rtime(list, n, rt);
+    return 3;
 }
 
 int isnum(u8 *p)
