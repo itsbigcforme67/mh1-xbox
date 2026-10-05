@@ -1577,3 +1577,430 @@ void bar_disp(void *gp, int sel) {
         }
     }
 }
+
+/* ===== slash level, pachinger, cannon, menu list (0x1313A0-0x1324B0) ===== */
+extern u8 slash_lev_tbl[];
+typedef struct PACHISIGHT {
+    s16 x, y, w, h;     /* 0x00 */
+    s8 rot;             /* 0x08 */
+    u8 axis;            /* 0x09 */
+    s16 a, b;           /* 0x0A */
+} PACHISIGHT;
+extern PACHISIGHT pachisight_tbl[4];
+extern s16 gun_load_mess[][8];
+extern u8 menu_str_002EF860[];
+extern u8 pfl_menu[];
+extern u8 lit_4454_0035A600[], lit_4493_0035A620[], lit_136_00358B70[];
+extern u8 pf_chat_cnfg[], pf_chcnfg_reibun[], pf_lb_chcnfg_sendpl[];
+extern u8 str_tbl_reibun0[];
+extern void *q_sendpl_list[];
+extern void *lb_sendpl_list[];
+int Pl_slash_lv_ck(PLW *);
+int PachingerCamChk(PLW *);
+s8 GetPachingerInfo(PLW *, u8 *, u8 *, f32 *);
+void Put_sprite_rotate(void *, s8, ...);
+f32 flCos(f32);
+int Pl_shell_set(PLW *, u16, int);
+void disp_gun_load_mess(int);
+void func_5B4B20();
+int Game_clear_ck(int);
+void DispFrameListOptionArrowC(void *, u32);
+void Disp_name_or_id(int);
+void Reibun_print(int, int);
+void lb_disp_chat_cnfg_sendpl(int, PIT_W *);
+void font_print_strings(s16, s16, void *, int);
+void disp_menu(int, PIT_W *);
+
+/* 0x1313A0 */
+void disp_slash_level(void) {
+    PFLPS2 q;
+    PLW *pl = lpPit->pl;
+    u8 c = *((u8 *)pl + 2);
+    u32 lv;
+    int v;
+
+    if (c == 1 || c == 5) return;
+    SetFilterMode(0);
+    reload_tex(1, 0x11A);
+    SetTextureStage(0x11A);
+    lv = (u8)Pl_slash_lv_ck(pl);
+    q.s[0] = 0x53;
+    q.s[1] = 0x2B;
+    q.s[2] = 0x2F;
+    q.s[3] = 0x1A;
+    q.col = -1;
+    q.uv[0] = 0xC5;
+    q.uv[2] = 0xFF;
+    q.uv[1] = slash_lev_tbl[lv];
+    q.uv[3] = q.uv[1] + 0x1A;
+    flps0008(&q);
+    if (lv < 3U) {
+        if (lv == 0) goto lab;
+    } else {
+lab:
+        SetFilterMode(1);
+        SetTrnslMode(4, 1);
+        v = ((System_timer & 0x7F) << 9) & 0xFFFF;
+        q.col = (((s8)(127.0f * flSin(0.0000958738f * (f32)v)) + 0x7F) << 24) | 0xFFFFFF;
+        if (lv == 0) {
+            q.col &= 0xFFFF0000;
+        }
+        q.uv[1] = 0x31;
+        q.uv[3] = 0x4B;
+        flps0008(&q);
+        SetTrnslMode(4, 5);
+    }
+}
+
+/* 0x131580 */
+void disp_pachinger(void) {
+    PFLPS3 q;
+    u8 a, b;
+    f32 f;
+    PLW *pl = lpPit->pl;
+    s8 st;
+    int i;
+    f32 x;
+
+    if (PachingerCamChk(pl) == 0) {
+        lpPit->x2A = -1;
+        return;
+    }
+    SetFilterMode(1);
+    reload_tex(1, 0x11A);
+    SetTextureStage(0x11A);
+    lpPit->x2A = GetPachingerInfo(pl, &a, &b, &f);
+    if (b != 0) {
+        q.col = -1;
+        q.s[1] = 0x14A;
+        q.s[2] = 0x10;
+        q.s[3] = 0x14;
+        q.s[0] = 0xBC;
+        q.uv0 = 0xC40014;
+        q.uv1 = 0xD80028;
+        flps0008(&q);
+        q.s[0] = 0x136;
+        q.uv0 = 0x28;
+        q.uv1 = 0x14;
+        flps0008(&q);
+        q.uv0 = 0;
+        x = 263.0f;
+        q.uv1 = 0x14;
+        for (i = 5; i != 0; i--) {
+            q.s[0] = 0.8f * x;
+            flps0008(&q);
+            x += 24.0f;
+        }
+        q.s[0] = 242.0f + 142.0f * f;
+        q.s[1] = 0x15D;
+        q.s[2] = 0x14;
+        q.s[3] = 0x14;
+        q.uv0 = 0xD800B4;
+        q.uv1 = 0xEC00C8;
+        Put_sprite_rotate(&q, 2, 0x14, 0x15D);
+    }
+    if (a != 0) {
+        st = lpPit->x28;
+        if (st < 4) {
+            int s2 = st;
+            int s3;
+            PACHISIGHT *p;
+            int n;
+            if (st == 0) {
+                int v = ((lpPit->x29 & 0x1F) << 11) & 0xFFFF;
+                q.col = (((s8)(94.0f * flCos(0.0000958738f * (f32)v)) + 0xA0) << 24) | 0xFFFFFF;
+                lpPit->x29++;
+            } else {
+                q.col = -1;
+                lpPit->x29 = 0;
+            }
+            s3 = (s16)(4 - s2);
+            q.s[3] = 0x14;
+            q.s[2] = 0x14;
+            p = pachisight_tbl;
+            q.uv0 = 0xD800B4;
+            q.uv1 = 0xEC00C8;
+            for (n = 4; n != 0; n--, p++) {
+                if (p->axis == 0) {
+                    q.s[0] = (p->a * s2 + p->b * s3) >> 2;
+                    q.s[1] = p->y;
+                } else {
+                    q.s[0] = p->x;
+                    q.s[1] = (p->a * s2 + p->b * s3) >> 2;
+                }
+                Put_sprite_rotate(&q, p->rot);
+            }
+            if (lpPit->x2B != 0) {
+                se_req(1, 0x7A, 0);
+            }
+        }
+        q.col = -1;
+        ((s16 *)&q.uv0)[0] = 0xD8;
+        q.uv1 = 0x100;
+        ((s16 *)&q.uv1)[1] = 0xEC;
+        {
+            PACHISIGHT *p = pachisight_tbl;
+            int n;
+            for (n = 4; n != 0; n--, p++) {
+                q.s[0] = p->x;
+                q.s[1] = p->y;
+                q.s[2] = p->w;
+                q.s[3] = p->h;
+                *(s16 *)&q.uv0 = (s16)(*(s16 *)&q.uv1 - q.s[2]);
+                Put_sprite_rotate(&q, p->rot);
+            }
+        }
+    }
+}
+
+/* 0x1319D0 */
+void disp_cannon(void) {
+    PFLP12 q;
+    PLW *pl = lpPit->pl;
+    f32 x;
+    u32 i;
+
+    switch (*((u8 *)pl + 2)) {
+    case 5:
+    case 1:
+        SetFilterMode(0);
+        reload_tex(1, 0x11A);
+        SetTextureStage(0x11A);
+        if (pl->work8BC == 0) {
+            if (*((u8 *)pl + 0x12) != 0 && (u16)Pl_shell_set(pl, pl->work88E, 1) != 0xFF) {
+                disp_gun_load_mess(2);
+            }
+            return;
+        }
+        if (lpPit->x2A != 0) {
+            x = 120.0f;
+            q.p[1] = 0x32;
+        } else {
+            q.p[1] = 0x123;
+            x = 320.0f - 6.0f * (f32)*((u8 *)pl + 0x1D);
+        }
+        q.p[2] = 9;
+        q.p[3] = 0x14;
+        q.col = -1;
+        q.uv[1] = 0xEC;
+        q.uv[5] = 0xFF;
+        i = 0;
+        if (*((u8 *)pl + 0x1D) != 0) {
+            do {
+                if (i < *((u8 *)pl + 0x1C)) {
+                    q.uv[3] = 0xD8;
+                    q.uv[0] = 0xCC;
+                } else {
+                    q.uv[0] = 0xE0;
+                    q.uv[3] = 0xEC;
+                }
+                q.p[0] = 0.8f * x;
+                flps0008(&q);
+                i++;
+                x += 12.0f;
+            } while (i < *((u8 *)pl + 0x1D));
+        }
+        if (*((u8 *)pl + 0x1C) <= 0 && *((u8 *)pl + 0x12) != 0) {
+            disp_gun_load_mess(0);
+        }
+        if (*(u16 *)((u8 *)pl + 0x2DC) == 0x57C) {
+            disp_gun_load_mess(1);
+        }
+        return;
+    }
+}
+
+/* 0x131C00 */
+void disp_gun_load_mess(int n) {
+    PFLP12 q;
+    s16 *m = gun_load_mess[n];
+    int v = ((System_timer & 0x1F) << 11) & 0xFFFF;
+    int a = ((s8)(96.0f * flSin(0.0000958738f * (f32)v)) + 0x9F) & 0xFF;
+
+    if (lpPit->x2A != 0) {
+        q.col = ((a & 0xFF) << 24) | 0xFFFFFF;
+        q.p[0] = m[0];
+        q.p[1] = 0x3A;
+    } else {
+        int b = a & 0xFF;
+        q.col = b | ((b << 16) | 0xFF000000 | (b << 8));
+        q.p[0] = m[7];
+        q.p[1] = 0xD5;
+    }
+    q.p[2] = m[1];
+    q.p[3] = m[2];
+    q.uv[0] = m[3];
+    q.uv[1] = m[4];
+    q.uv[2] = m[5];
+    q.uv[3] = m[6];
+    flps0008(&q);
+}
+
+/* 0x131D50 */
+void disp_menu(int sw, PIT_W *p) {
+    char buf[16];
+    int n, base, s3;
+    u32 col;
+    int v;
+
+    if (game_w.x1DC != 0) {
+        func_5B4B20();
+        return;
+    }
+    n = lpPit->x41 / 5;
+    base = (s16)(n * 5);
+    SetTrnslMode(4, 5);
+    if (n == 0) {
+        *(void **)(pfl_menu + 0xC) = menu_str_002EF860;
+    } else {
+        s3 = 1;
+        if (Online_ck() == 0) {
+            s3 = (s16)2;
+        }
+        if (Game_clear_ck(0) == 1) {
+            s3 = (s16)(s3 + 2);
+        }
+        *(void **)(pfl_menu + 0xC) = menu_str_002EF860 + (s16)s3 * 0x14;
+    }
+    if ((s8)sw == 0) {
+        v = ((System_timer & 0x3F) << 10) & 0xFFFF;
+        *(u32 *)(pfl_menu + 0x10) = 0xA9182;
+        col = (((s8)(48.0f * flSin(0.0000958738f * (f32)v)) + 0xAF) << 8) | 0xF0200020;
+    } else {
+        *(u32 *)(pfl_menu + 0x10) = 0x808080;
+        col = 0xA0207020;
+    }
+    sprintf(buf, (char *)lit_4454_0035A600, n + 1);
+    DispFrameList(pfl_menu, buf, lpPit->x41 - (s16)base);
+    DispFrameListOptionArrowC(pfl_menu, col);
+    if (Online_ck() == 1 && (s8)sw == 0) {
+        Disp_name_or_id(0xD1);
+    }
+}
+
+/* 0x131FB0 */
+void Pit_disp_chat_cnfg(void) {
+    char buf[16];
+    int i, y;
+    u8 *e;
+    s8 k;
+
+    switch (lpPit->x7E) {
+    case 0:
+        disp_menu(1, lpPit);
+        DispFrameList(pf_chat_cnfg + game_w.x1DC * 0x18, 0, lpPit->x7D);
+        return;
+    case 1:
+        switch (lpPit->x7D) {
+        case 0:
+            lb_disp_chat_cnfg_sendpl(1, lpPit);
+            return;
+        case 1:
+            k = PitMenu.x1B;
+            sprintf(buf, (char *)lit_4493_0035A620, k / 6 + 1);
+            DispFrameList(pf_chcnfg_reibun, buf, k % 6);
+            DispFrameListOptionArrow(pf_chcnfg_reibun);
+            flfntSetSize(0x12, 0x12);
+            font_set_palette(0);
+            i = 6;
+            y = 0x54;
+            e = str_tbl_reibun0 + (PitMenu.x1B / 6) * 0x60;
+            do {
+                flfntLocate(0x1AF, y);
+                Reibun_print(10, *(s32 *)(e + 0xC));
+                i--;
+                e += 0x10;
+                y = (s16)(y + 0x16);
+            } while (i != 0);
+            return;
+        }
+        break;
+    }
+}
+
+/* 0x132160 */
+void lb_disp_chat_cnfg_sendpl(int sw, PIT_W *p) {
+    PFLPS3 q;
+    u32 cnt = (game_w.x1DC != 0) ? 8U : 4U;
+    s8 sel;
+    u32 i;
+    int bit;
+
+    flfntSetSize(0x12, 0x12);
+    if (game_w.x1DC == 0) {
+        void **out = q_sendpl_list + 1;
+        PLW *pl = player_work;
+        u8 *rm = room_member_id;
+        for (i = 0; i < 4; i++, pl++, rm += 8) {
+            if (game_w.master != i) {
+                if (game_w.pl_state[i] == 1) {
+                    *out = (u8 *)pl + 0x8D4;
+                    if (Online_ck() == 1 && PitMenu.x14 != 0) {
+                        *out = rm;
+                    }
+                } else {
+                    *out = lb_no_player;
+                }
+                out++;
+            }
+        }
+    } else {
+        void **out = lb_sendpl_list + 1;
+        u8 *d = D_6EAC80;
+        unsigned long long j;
+        for (j = 0; j < 8; j++, d += 0x38) {
+            if (game_w.master != j) {
+                if (func_5D8370((s8)j) == 0) {
+                    *out = d + 4;
+                    if (Online_ck() == 1) {
+                        if (PitMenu.x14 != 0) {
+                            *out = d + 0x24;
+                        }
+                    }
+                } else {
+                    *out = lb_no_player;
+                }
+                out++;
+            }
+        }
+    }
+    sel = lpPit->x80;
+    if (sel < 0) {
+        sel = 0;
+    } else if (sel < game_w.master) {
+        sel += 1;
+    }
+    DispFrameList(pf_lb_chcnfg_sendpl + game_w.x1DC * 0x18, lit_136_00358B70, sel);
+    font_set_palette(0);
+    if (game_w.x1DC == 0) {
+        font_print_strings(*(s16 *)pf_lb_chcnfg_sendpl + 0x24, *(s16 *)(pf_lb_chcnfg_sendpl + 2) + 0x16, q_sendpl_list, 0x16);
+    } else {
+        font_print_strings(*(s16 *)(pf_lb_chcnfg_sendpl + 0x18) + 0x24, *(s16 *)(pf_lb_chcnfg_sendpl + 0x1A) + 0x16, lb_sendpl_list, 0x16);
+    }
+    q.s[0] = 0x17C;
+    q.s[2] = 0x10;
+    q.s[3] = 0x14;
+    q.col = -1;
+    q.uv1 = 0x010000F0;
+    q.uv0 = 0xEC00DC;
+    if (PitMenu.x15 != 0) {
+        q.s[1] = 0x53;
+        flps0008(&q);
+        return;
+    }
+    i = 0;
+    q.s[1] = 0x69;
+    bit = 1;
+    if (cnt != 0) {
+        do {
+            if (i != game_w.master) {
+                if (PitMenu.x16 & bit) {
+                    flps0008(&q);
+                }
+                q.s[1] += 0x16;
+            }
+            i++;
+            bit *= 2;
+        } while (i < cnt);
+    }
+}
