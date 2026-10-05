@@ -80,7 +80,7 @@ void eft_rgba_linear(void *, s16, u32 *);
 void make_mat_srt(f32 *, f32 *, f32 *, u16, FLMAT *);
 void eft_trans_sub_col(CLAY *, FLMAT *, u32, u16, void *);
 void eft_trans_sub_opa(CLAY *, FLMAT *, void *);
-void Eft13_set_pos(f32 *, int, f32);
+void Eft13_set_pos(f32, f32 *, int);
 
 void eft04_move(EFTW *ew);
 void eft04_i(EFTW *ew);

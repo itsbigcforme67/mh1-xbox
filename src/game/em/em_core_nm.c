@@ -31,6 +31,9 @@ void cpRotMatrix(s32 *, void *);
 void frame_init(EMW *, u16, s16, int);
 int em_pl_pos_set(EMW *, u8, f32 *);
 void em_neck_move_sub(EMW *em, f32 *tgt, int on);
+u16 calc_vec_ang(f32, f32, f32, f32);
+void neck_ang_set(EMW *em, u16 spd, u16 ang);
+void flvecApplyMat33(f32 *, f32 *, FLMAT *);
 
 FLMAT *get_joint_wmat_em(EMW *, int);
 u16 calc_mat_angY(FLMAT *);
@@ -118,9 +121,9 @@ s8 em_eye_search_set(EMW *em) {
         break;
     }
     s = em->search;
-    e.pos = eye;
     dist = s->dist;
     fov = s->fov;
+    e.pos = eye;
     up = s->up;
     down = s->down;
     xC = s->xC;
@@ -383,6 +386,194 @@ void em_neck_move(EMW *em) {
         em_pl_pos_set(em, em->x617, p);
         em_neck_move_sub(em, p, 1);
     }
+}
+
+/* Turns the head toward tgt (on != 0) or back to the front (on == 0): works out
+ * neck_tgt (angle to tgt relative to the body), runs a small state machine in
+ * neck_st (0 idle, 1 start, 2 turning, 3 settled) that ramps neck_spd up and
+ * down, then calls neck_ang_set. The wrap-around side tests are a guess at
+ * the intent; some of them are dead in the original. */
+void em_neck_move_sub(EMW *em, f32 *tgt, int on) {
+    EM_NECK *n;
+    u16 spd_add;
+    u16 spd_max;
+    u16 spd0;
+    u16 t;
+    u16 spd;
+    int side;
+    u16 diff;
+    u16 d;
+    f32 r[3];
+    int flag;
+    f32 v[3];
+
+    n = em_neck_tbl[em->kind];
+    spd0 = n->spd;
+    spd_max = n->spd_max;
+    spd_add = n->spd_add;
+    if (on == 0) {
+        em->neck_tgt = 0;
+        em->neck_lock = 0;
+        em->neck_st = 0;
+    } else {
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = n->fwd;
+        flvecApplyMat33(r, v, (FLMAT *)em->mat);
+        v[0] = em->pos[0] + r[0];
+        v[2] = em->pos[2] + r[2];
+        em->neck_tgt = (u16)calc_vec_ang(v[0], v[2], tgt[0], tgt[2]) - 0x4000 - em->ang[1];
+        if (em->neck_st == 0) {
+            em->neck_st = 1;
+        }
+    }
+    t = em->neck_tgt;
+    diff = t - em->neck_ang;
+    flag = 0;
+    switch (em->neck_st) {
+    case 3:
+        em->neck_lock = t;
+        em->neck_spd = spd0;
+        if (diff == 0) {
+            em->neck_st = 1;
+            spd = 0;
+        } else {
+            d = diff;
+            if (d >= 0x8001) {
+                d = 0x10000 - d;
+            }
+            spd = spd0;
+            if (!(d < (n->range >> 2))) {
+                em->neck_st = 2;
+            }
+        }
+        break;
+    case 0:
+        em->neck_lock = t;
+        em->neck_spd = spd0;
+        spd = spd0;
+        break;
+    case 1:
+        em->neck_lock = t;
+        em->neck_spd = spd0;
+        d = diff;
+        if (d >= 0x8001) {
+            d = 0x10000 - d;
+        }
+        spd = spd0;
+        if (!(d < (n->range >> 2))) {
+            em->neck_st = 2;
+        } else if (!(d < (n->range >> 3))) {
+            em->neck_st = 3;
+        }
+        break;
+    case 2: {
+        u16 lk = em->neck_lock;
+        u16 ldiff = lk - em->neck_ang;
+        int s1 = 0;
+        int s2 = 0;
+        u16 ang = em->neck_ang;
+
+        if (lk < 0x8001 && !(ang < 0x8000)) {
+            s1 = 1;
+        }
+        if (ang < 0x8001 && !(lk < 0x8000)) {
+            s1 = 2;
+        }
+        if (t < 0x8001 && !(ang < 0x8000)) {
+            s2 = 1;
+        }
+        if (ang < 0x8001 && !(t < 0x8000)) {
+            s2 = 2;
+        }
+        if (s2 == s1) {
+            em->neck_lock = t;
+        } else {
+            t = lk;
+            diff = ldiff;
+            flag = 1;
+        }
+        d = diff;
+        if (d >= 0x8001) {
+            d = 0x10000 - d;
+        }
+        if (!flag) {
+            u16 rg = n->range;
+            if (d >= rg) {
+                if (em->neck_spd < spd_max) {
+                    em->neck_spd += spd_add;
+                }
+            } else if (d >= (rg >> 1)) {
+                if (em->neck_spd < (spd_max >> 1)) {
+                    em->neck_spd += spd_add;
+                } else if ((spd_max >> 1) < em->neck_spd) {
+                    em->neck_spd -= spd_add;
+                }
+            } else if (d >= (rg >> 2)) {
+                if (em->neck_spd < (spd_max >> 3) * 3) {
+                    em->neck_spd += spd_add;
+                } else if ((spd_max >> 3) * 3 < em->neck_spd) {
+                    em->neck_spd -= spd_add;
+                }
+            } else if ((spd_max >> 2) < em->neck_spd) {
+                em->neck_spd -= spd_add;
+            } else {
+                em->neck_spd = spd0;
+                em->neck_st = 3;
+                em->neck_lock = em->neck_tgt;
+                t = em->neck_tgt;
+            }
+        } else if ((spd_max >> 2) < em->neck_spd) {
+            em->neck_spd -= spd_add;
+        } else {
+            em->neck_spd = spd0;
+            em->neck_st = 3;
+            em->neck_lock = em->neck_tgt;
+            t = em->neck_tgt;
+        }
+        spd = em->neck_spd;
+        break;
+    }
+    }
+    {
+        u16 a = flag ? em->neck_lock : em->neck_tgt;
+        u16 ang = em->neck_ang;
+
+        side = 0;
+        if (a < 0x8001 && !(ang < 0x8000)) {
+            side = 1;
+        }
+        if (ang < 0x8001 && !(a < 0x8000)) {
+            side = 2;
+        }
+        if (side == 0) {
+            if ((u16)(diff + spd) < spd * 2) {
+                em->neck_ang = em->neck_tgt;
+            } else if (diff < 0x8000) {
+                em->neck_ang = ang + spd;
+            } else {
+                em->neck_ang = ang - spd;
+            }
+            neck_ang_set(em, spd, t);
+        } else {
+            if (((a < n->range && ang > 0x10000 - n->range) ||
+                 (ang < n->range && a > 0x10000 - n->range)) &&
+                (u16)(diff + spd) < spd * 2) {
+                em->neck_ang = em->neck_tgt;
+                neck_ang_set(em, spd, t);
+            } else if (side == 1) {
+                em->neck_ang = ang + spd;
+                neck_ang_set(em, spd, t);
+            } else {
+                em->neck_ang = ang - spd;
+                neck_ang_set(em, spd, t);
+            }
+        }
+    }
+    em->neck[0] = (u16)em->neck[0];
+    em->neck[1] = (u16)em->neck[1];
+    em->neck[2] = (u16)em->neck[2];
+    em->neck[3] = (u16)em->neck[3];
 }
 
 /* Spreads the neck turn ang over the four neck joints (EMW.neck[]), moving
@@ -903,15 +1094,16 @@ u16 em_act_search(EM_ACTRATE *tbl) {
     u16 sum = 0;
     u16 r;
     u16 n;
+    u16 x;
 
-    while (p->rate != 0xFFFF) {
-        sum += p->rate;
+    while ((x = p->rate) != 0xFFFF) {
+        sum += x;
         p++;
     }
     r = ran_suu(0) % sum;
     n = 0;
-    while (tbl->rate != 0xFFFF) {
-        n += tbl->rate;
+    while ((x = tbl->rate) != 0xFFFF) {
+        n += x;
         if (r < n) {
             return tbl->act;
         }
@@ -1019,7 +1211,7 @@ void Em_Hate_Add(EMW *em, s32 add, s32 max, u8 pl) {
     s32 *h;
 
     if (p->be_flag != 0 && *(u8 *)&p->flag14 != 3) {
-        h = &em->x918[n];
+        h = (s32 *)em->x918 + pl;
         if (*h + add < max) {
             *h += add;
         }

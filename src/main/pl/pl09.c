@@ -5,6 +5,8 @@
 #include "pl.h"
 #include "game.h"
 #include "plf.h"
+s32 Ext_pick_point_ck(PLW *);
+void SetVector(f32 *, f32, f32, f32);
 
 void unique_act_set(PLW *pl) {
     f32 sp90[3];
@@ -45,7 +47,7 @@ void unique_act_set(PLW *pl) {
         sp60[2] = 0;
         sp60[1] = sp9C;
         cpRotMatrix(sp60, sp20);
-        SetVector(120.0f * bed_ofs[pl->id], 0, 0, sp70);
+        SetVector(sp70, 120.0f * bed_ofs[pl->id], 0, 0);
         flvecApplyMat33(sp80, sp70, sp20);
         pl->work800 = pl->work800 + sp80[0];
         pl->work804 = pl->work804 + sp80[1];

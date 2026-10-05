@@ -693,3 +693,14 @@ row plus silencer/long-barrel rows. Matching notes:
   `ninja -C tools/ps2recomp/out/build ps2EntryRunner` (the isnan fix is applied).
 - Usage pacing (hourly check, pause at ~88%) was a session-only cron; recreate it
   when resuming agents.
+
+## 2026-10-05 (evening): agents resumed, merges
+
+- Owner: no scheduled usage checks; keep going until told to stop; 32-bit PC host confirmed.
+- Merged all branches (A twice more, B, C twice, D, E, F); all five modules byte-identical
+  after each merge. tools/build.py now skips src/pc/. Progress: total         12585    3481696   456520 13.112% 1467 of 12585 functions decompiled 
+- PC runtime (agent A): all decompiled set/eft/shell C runs natively; trans_stage written
+  (near-match C) fixes the floor holes; all 88 stages render (contact sheets in
+  ../mh1-wt/A/build/show/A/stages/). Plan for player+monster with input: docs/pc.md "Plan".
+- Running: A motion system + pad backend; B f_em_*; C f_menu display code; D weapon/rail cam/hit;
+  E f_quest/f_stage; F f_pl.

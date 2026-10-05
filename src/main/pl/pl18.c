@@ -2,6 +2,7 @@
 #include "pl.h"
 #include "game.h"
 #include "plf.h"
+long Pl_item_num_ck(PLW *, u16);
 
 void pl_mv054(PLW *pl) {
     f32 sp20[3];

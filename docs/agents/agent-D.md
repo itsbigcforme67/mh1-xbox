@@ -231,3 +231,244 @@ GetPachingerInfo take an unused first argument; 0x3F75BE0B is 55 degrees
 in radians (0.9599311f); `if (a == 1 || b) {zero} else {copy}` order
 (cam_sw_set_sub); statement order pl/npc/src in cam_plEX_zoom was found by
 permuting (scratch tools: /tmp/claude-1000/agentD/tryv.py, rep.py, carve.py).
+
+### f_cam update
+cam_t.c is split and linked (main OK): cam.c (0x21F3D0-0x21F464), camb.c
+(0x220420-0x2206A4), camc.c (0x221460-0x221700), camd.c (0x221820-
+0x221D28), came.c (0x221F90-0x2220C0), camf.c (point_cam_hit), camg.c
+(0x2227A0-0x222E20): 38 functions. cam_nm.c (not built) holds the whole
+file incl. near-matches SetCameraData, cam_init_sub_pchngr, pch_lock_chk,
+fish_cam_sub. Still no C for: CameraMove, cam_init_sub_std, cam_sub_std,
+cam_sub_stg, cam_sub_pchngr, cmd_set_pos, cmd_set_tar, cmd_cam_move,
+point_cam_sub (jump tables 0x36B0D0-0x36B178 still need main:rodata lines).
+
+f_cam update 2 (final state of this pass): built and byte-matching (main OK):
+cam.c, camm.c (CameraMove, cam_init_sub_std 0x21F590-0x21F9A8), camb.c,
+camp.c (cam_init_sub_pchngr, cam_sub_pchngr, pch_lock_chk 0x220EE0-0x221460),
+camc.c (PachiTypeCheck .. fish_cam_sub 0x221460-0x221814), camd.c
+(0x221820-0x222408: NPC zoom, demo camera, static get_em_local, cmd_set_pos,
+cmd_set_tar, cmd_copy, get_angle, cmd_cam_move, point_cam_hit; jump tables
+0x36B0D0-0x36B108), camg.c (cam2view .. cam_sw_set_sub). 46 of 51 functions.
+Still asm: SetCameraData (66/72; C in cam_nm.c, 65 diffs whatever the
+declaration order: the original loop shape differs), cam_sub_std (65/668:
+angle smoothing registers ca/da, two stray nops after the k switch and the
+blend-rate if), cam_sub_stg (written, 409/524: register assignment of
+cw/cs/area/d/spl and the smoothing blocks, not worked through), point_cam_sub
+(28/225: command pointer a2 vs a3). All in src/main/cam/cam_nm.c.
+Lessons:
+- get_em_local must be `static` and defined BEFORE its callers in the same
+  file: MWCC then knows its clobber set and keeps `out` in a temp register
+  across the call (cmd_set_pos/tar). Otherwise a saved register is used.
+- Float-last prototypes: cpInterVector(f32 *out, f32 *a, f32 *b, f32 t) and
+  flvecRotY(f32 *v, f32 a) (flvecRotX likewise); with the float first the
+  `mov.s $f12` is scheduled too early. act_ck returns int here (an s16
+  prototype adds a sign-extend; PachiTypeCheck casts, cam_sub_std does not).
+- A 6-entry switch with an empty `case 5:` gets a jump table (sltiu 6);
+  without it, an if-chain. Source case order = body order; the compare chain
+  of a small switch comes out reversed from the source order (pch_lock_chk:
+  write the cases in reverse of the original's compare order).
+- `if (a <= 0 || b >= 0) {loop} else {finish}` gave the original layout where
+  `if (a > 0 && b < 0) {finish} else {loop}` did not (point_cam_sub case 21).
+- `if (f != 1) { if (f != 0) {A} else {B} } else {B}` (B duplicated) gives
+  the original's code for `f != 1 && f != 0`; `&&` gave a different layout.
+- `switch (x) { default: k = 950; break; case 2: k = -950; break; }` gave the
+  original's unfilled-delay-slot layout for a two-way constant choice.
+- `a > 0x60` (u16 field) compiled with `slti at`; `a >= 0x61` did not.
+- A global pointer hoisted into a local (`spl = SplineRvalue`) is how the
+  original gets a saved register for it (cam_sub_stg).
+- cmd_cam_move constant 0x38C90FDB = 0.000095873799f (2*pi/65536).
+- Frame/ordering tool: /tmp/claude-1000/.../scratchpad/dperm2.py permutes the
+  first N declaration lines and keeps the best (same idea as tools/declbf.py
+  but with a count limit; declbf over 7 lines is too slow).
+Shared header: include/cam.h area_chg is u8 (lbu in cam_sub_std).
+
+## f_weapon (0x163AB0-0x1678xx, display "trans" code) - started
+Built and byte-matching (main OK): src/main/weapon/trans.c (TransReset,
+TransSet, GameTrans, trans; 0x163AB0-0x163D20), weapon.c (SetPartsTrans,
+SetPartsTrans2, weapon_dat_make/2/3; 0x163E40-0x16440C), weapon2.c
+(sight_disp2, sight_disp_ballista; 0x164D60-0x164F68). Parked as near-match
+in src/main/weapon/weapon_nm.c: trans_pl_sub/Lb_trans_pl/Ed_trans_pl (10/23:
+the original keeps an empty then-block, call placed after `b end`),
+weapon_joint_calc (jump table ok, ~440/600 differ in layout; written as C).
+Not started: pl_item_trans_sub, pl_item_trans (3.8 KB), weapon_trans (5.4 KB),
+player_trans, lb_pl_item_trans, Lb_player_trans, Ed_player_trans,
+enemy_trans, player_mat_calc, player_modify, player_mk, get_tex_num,
+Material_set_sub, plplAdd2. These are display transforms (skeleton/weapon
+model draw for the PS2 renderer): low value for the Xbox port, which will
+redraw them on its own renderer.
+- `for (i = 0; i < 0x40; i++) trans_func[i] = 0;` compiles to the original's
+  8x unrolled loop (TransReset); do not hand-unroll.
+- ot4..ot8 are 4-byte objects in .sdata (declare `extern u8 ot4[4]`).
+- `if (a == 0) {} else {r = v}` kept as an empty then-block by the original
+  is reproduced by `switch (a) { case 0: r = v; break; default: break; }`
+  (weapon_joint_calc) but not for trans_pl_sub.
+- The jump table for a switch on a 0..5 value needs an explicit `case 0:`
+  before `default:` when the original table sends 0 to default.
+- Locals `f32 *vy = &v[1], *vz = &v[2];` reproduce the original's hoisted
+  element pointers (sight_disp2/ballista).
+
+## f_cam_223B50 (rail camera, spline, wall hit camera) - started
+Linked: camr1.c (vInnerProductXZ, vInnerProduct), camr3.c (dCnvComplex,
+dSubComplex, dMulComplex). Near-match in camr_nm.c: ZoomRateCalc (8/34),
+ZoomBaseAngleRail (1/10), RollAngleRail (11/28), dDivComplex (13/34),
+QuestClearCameraRequest (33/65; C complete). Not started: cam_rail_move_sub,
+cam_rail_move, cam_rail_move_0, CamRailMove, CamRailPoint, GetOrthogonalPoint
+(finds the t where the camera rail cubic is nearest to a point: builds the
+degree-5 polynomial of (P(t)-Q).P'(t), solves it with DKA5 (Durand-Kerner,
+complex roots, uses the d*Complex helpers) or Cardano/linear when the
+leading terms are below 1e-10; keeps roots with |im| < 0.001), tri_diag and
+Spline (natural cubic spline via tridiagonal solves, 0x30 bytes of
+coefficients per segment), DKA5, Cardano, k_HitWallCamera, k_HitEmCamera.
+m2c cannot read mula.s/madd.s: read the asm.
+- Float-last prototypes again: ScaleVector(f32 *out, f32 *in, f32 t).
+
+# Third assignment: rest of f_weapon, f_cam_223B50, stage hit (f_sphr)
+
+Policy: breadth first; every function has C now except pl_item_trans (below).
+"Not built" = lives in an `X_nm.c` file (compiles, logic believed equivalent,
+byte-different). Counts are "instructions differing / total" from check.py.
+
+## f_weapon part 4 (0x164F70-0x1692C0), include/trans_pl.h
+New header trans_pl.h: PLX is an overlay of PLW with the display fields
+(armor model pointers at +0x534, model at +0x50C, weapon model +0x514, ...),
+PLMDL (clay list +0x30, skin +0x24, materials +0x10), WNODE (skeleton node,
+0x190 bytes, matrix at +0x40). It does not touch pl.h.
+- Built (main OK): weapon3.c: player_mat_calc, player_modify, player_mk,
+  get_tex_num, Material_set_sub (0x168EA0-0x1691B4).
+- weapon3_nm.c (not built, all compile at the original size): plplAdd2 (22/26:
+  the original does not hoist the load of the key's +4), player_trans (272/391),
+  Lb_player_trans (275/387), lb_pl_item_trans (129/137), Ed_player_trans
+  (257/260), enemy_trans (165/228), pl_item_trans_sub (300/322), weapon_trans
+  (1287/1360; the 0x10-0x13 byte constants of the weapon placement tables
+  are real, the decompiler dropped middle float arguments, read from the asm).
+- pl_item_trans (0x165480, 3.8 KB, 887/960): written too, in weapon3_nm.c: a
+  hand-placement table written out as code (clay offset, joint 0xE/0x12,
+  offset vector, rotation, scale for ~20 action ids with frame_check2
+  windows, plus the item-in-use cases of x56B). Float constants are the exact
+  values from the asm; the meaning of each action id is a guess.
+- Lesson: a small helper that returns a float and is defined earlier in the
+  same file (vInnerProduct) keeps float temporaries in caller-saved registers
+  only if it is `static` (GetOrthogonalPoint, camr6_nm.c).
+
+## f_cam_223B50 (rail camera), 0x223B50-0x225200
+Built: camr1.c, camr2.c (CamRailMove, CamRailPoint 0x223E90-0x223F8C), camr3.c,
+camr4.c (tri_diag). camr2_nm.c: cam_rail_move_sub (2/80), cam_rail_move (83/84:
+the original keeps the section byte in a stack slot), cam_rail_move_0 (1/43).
+camr4_nm.c: Spline (259/262). camr5_nm.c: DKA5 (153/158), Cardano (99/203),
+k_HitWallCamera (46/104), k_HitEmCamera (446/538). camr6_nm.c:
+GetOrthogonalPoint (234/413, saved register choice). camr_nm.c (older):
+ZoomRateCalc, ZoomBaseAngleRail, RollAngleRail, dDivComplex,
+QuestClearCameraRequest. Every function of the file now has C.
+Notes: the double constant 1e-10 / 1e-6 compares are `(double)x < 1.0e-6`
+(soft-float _dpflt/_dpfgt); tri_diag(x, a, b, c, d, n) (Thomas algorithm, 64
+unknowns, scratch g[] on the stack) matched first try; DKA5 relies on the
+d*Complex helpers being defined before it in the same file (a2 survives).
+A scratch tool that expands the PS2 FPU mula/madd/msub/adda ops for m2c:
+/tmp/claude-1000/agentD/draft2.py (copy it into tools/ if wanted).
+
+## Stage hit (f_sphr, 0x114AE0-0x11CA74, 33 functions; hit/shit*.c)
+Previously no C. include/hit3.h: DIORAMA (diorama_w: wall grid at +8..+0x1C,
+ground grid at +0x20..+0x34: cell size x/z, cell counts, cell table, polygon
+area), HPOLY (56-byte polygon: kind, flags, 3 vertices, normal, plane d),
+HKIND (per-kind flags: lava +0xB, water +0xC, +0xE special), HSWEEP (swept
+sphere), and the result arrays hit_decision/hit_near_point/hit_hosei_base/
+hit_kouten/hit_side/hit_area_out/hit_poly_num.
+Built (main OK): shit1.c load_stage_hit, shit15.c GetWallTblAdrs, shit5.c
+NormalClipFace, shit6.c add_vec_sub2, shit16.c GetGroundTblAdrs, shit7.c
+check_angle; hit3.c hit_point_cyl (0x290560).
+Also in hit/: hit3_nm.c hit_point_cbd (5/113), tri_nm.c tri_in_check (1/143),
+VectorHitCheck (54/182), old_pos_save (41/52), hitw_nm.c HitWallPlayer
+(104/217).
+Not built (all compile at the original instruction counts):
+- shit1_nm.c WallHitInit / GroundHitInit (6/70 each; a register swap of the
+  -1 constant and the cell pointer, 400 s permuter found nothing).
+- shit2.c (registered nowhere, near): BlockPlaceCgeck (74/80), Ground/Wall
+  FieldInCheck (51/72), AreaFieldInCheck (13/40), GetWallTblAdrs (1/46, mult
+  operand order).
+- shit3_nm.c ground heights: GetGroundHit (186/204), GetGroundShellHit
+  (200/218), GetWaterHit, GetTenjoHit, GetYouganHit (GetGroundTblAdrs matches, shit16.c).
+- shit4_nm.c FaceLinePos (25/140), check_slide (6/52) + the three matching
+  helpers; shit8_nm.c GetGroundHitArea/Upper/StatusAreaPl/Em; shit9_nm.c
+  GetFloorSlide; shit10_nm.c sphr_face_o3/o4 + GetWallHitBit2; shit11_nm.c
+  GetWallHitBitPl/Em; shit12_nm.c GetWallHitLine/GetEyeHitLine; shit13_nm.c
+  hosei_sub; shit14_nm.c PushAdjust3.
+Semantics worth knowing: ground queries collect up to 5 polygon heights under
+the point and take the highest not above y+50 (the lowest if none); the wall
+tests sweep a sphere (HSWEEP) over a 2x2 or n x n block of cells, test every
+polygon with a face test, then edge/corner tests, and PushAdjust3 combines the
+pushes. A few places where the decompiler lost data are commented in the C
+(the "seen" loops of GetWallHitLine/GetEyeHitLine, the A[k]/cov[k] pairing in
+PushAdjust3, the y override of face contacts in sphr_face_o4).
+Lessons: struct/array offsets from the asm are exact but m2c drops the middle
+float argument of calls (flmatMakeScale, SetVector, flmatSetTrans: read the
+asm); `if (0 < n) for (i = 0; ...)` becomes `for (i = 0; i < n; i++)` with
+the original's sltu form (WallHitInit).
+
+## Stage collision API (for the PC runtime, agent A)
+Status 5 Oct 2026 (second pass): everything below has C in src/main/hit/
+(shit*.c built or *_nm.c near-match; none is exact except the helpers listed
+at "Built" above). The logic of GetWallHitLine, GetEyeHitLine, PushAdjust3,
+GetWallHitBit2 and sphr_face_o4's y override was re-read against the asm in
+this pass. Fixes found: the "seen" list of GetWallHitLine / GetEyeHitLine only
+compares the polygon with the FIRST remembered entry (a quirk of the original,
+kept), and PushAdjust3's third pass re-reads its loop bound because nd grows
+inside it. The remaining diffs are register allocation and frame size.
+
+Data. load_stage_hit(stg) loads lwNNN.bin (wall) and lgNNN.bin (ground) and
+WallHitInit / GroundHitInit turn file offsets into ABSOLUTE 32-bit POINTERS
+inside the file image (cell lists are -1 terminated arrays of s32 pointers to
+56-byte HPOLY). On a 64-bit PC build those casts (`(HPOLY *)*cell`) are wrong:
+either load the HITS images into the low 4 GB (mmap MAP_32BIT) or change the
+cell list type to a 32-bit offset from the image base. The grid lives in
+diorama_w (include/hit3.h); ground_tbl_add[stage][kind] (0x10-byte HKIND)
+gives per-kind flags (water at +0xC, lava +0xB, special +0xE); game_w.stage
+selects the row. Format: docs/formats/stage.md.
+NOTE: GetWallHitLine / GetEyeHitLine take their cell size from the GROUND
+grid (gcsx/gcsz) even for the wall cells; the stages use equal sizes.
+
+Ground questions (pos = f32[3] {x, y, z}; all return the height of the floor):
+- GetGroundHit(pos) -> f32 y. Polygons whose triangle (xz) contains the
+  point and whose normal.y > 0, up to 5; takes the highest not above
+  pos.y + 50, else the lowest; pos.y if none. GetGroundShellHit: same for
+  shells (+100, skips water/lava kinds).
+- GetWaterHit(pos, &y) -> 1 and the water surface height when a polygon of a
+  water kind is under pos (the last such polygon).
+- GetTenjoHit(pos, &y, HPOLY *attr) -> 1 and the ceiling height (normal.y < 0)
+  with its kind/b1/h2 copied to attr.
+- GetYouganHit(pos) -> 1 when a lava polygon is under pos.
+- GetGroundHitArea / GetGroundHitAreaUpper(ent, pos, out): same with the
+  stage area's floor as fallback (ent+0x736 = stage); returns 1 on the
+  ground file, 0 outside it (floor height used), -1 entity not on the stage.
+  GetGroundHitStatusAreaPl / ...Em(ent, pos, GATTR *at, out, flag): as above
+  plus polygon attribute word and water / special surface height (players /
+  monsters, monsters use +100 on special kinds).
+- GetFloorSlide(ent, out, flag): ent pos at +0xAC; out = slide push vector on
+  slopes of at least 0x1500 (check_angle), flag != 0 also applies it. Returns
+  0 sliding, 1 stands, -1 off the ground file.
+Wall questions:
+- HitWallPlayer(ent, keep) (0x11CA80): the per-frame entry for players AND
+  monsters (ent+0x10 != 0 is a monster). Builds the segment old pos (ent+0x5A0)
+  -> new pos (ent+0xAC) for every collision sphere of the entity and calls
+  GetWallHitBitPl / GetWallHitBitEm, which push ent+0xAC out of the walls and
+  record what was touched (players: pl_wall_mat[id][] with angle / kind /
+  normal; monsters: bit mask ent+0x74C and special-wall flag ent+0x95D).
+  keep != 0 keeps the previous mask.
+- GetWallHitBit2(r, a, b, pos, mask) (0x115EB0): generic sphere sweep (camera
+  and effects use it): sphere radius r from a to b; pushes `pos` out of the
+  walls; mask = polygon h2 bits to ignore (0x8001 / 0xC001 for the camera).
+  Returns hit_poly_num (number of contacts) or -1 when b is outside the wall
+  grid. Contacts remain in hit_decision / hit_near_point / hit_side arrays.
+- GetWallHitLine(a, b, out, mask) -> 1 and the crossing point (wall polygons
+  only; a point outside the grid counts as the hit), 0 and b when free.
+  GetEyeHitLine(ent, a, b, out, mask): same against ground polygons (not
+  water / special) and walls: line of sight / camera collision.
+Building blocks: sphr_face_o3 / o4 (sphere vs polygon for players / monsters:
+face test, then edges / corners), hosei_sub (contact -> push vector),
+PushAdjust3 (combine contacts, move pos, limit push to 1.8 * sweep length),
+FaceLinePos (edge vs plane), NormalClipFace (point inside triangle),
+tri_in_check / VectorHitCheck (angle-sum triangle test, segment vs triangle),
+GroundFieldInCheck / WallFieldInCheck / AreaFieldInCheck (inside the loaded
+grid, 8 unit margin), BlockPlaceCgeck (quadrant of a cell), GetGroundTblAdrs /
+GetWallTblAdrs (cell list for a position).
+Sphere/capsule tests between entities (hit2*.c, hit_*_m) are separate: they
+take plain vectors and need no stage data.

@@ -52,7 +52,7 @@ f32 flvecCalcDistance(f32 *, f32 *);
 int pl_flag_ck(PLW *, int);
 int frame_check(PLW *, int, f32);
 u8 Pl_stg_ck(PLW *);
-void Eft20_set2(f32 *, int, int, f32);
+void Eft20_set2(f32, f32 *, int, int);
 void Eft08_set(f32 *, int, int, f32);
 void eft22_end_init(EFTW *ew, UKI *w);
 void eft22_line_sub(EFTW *ew, UKI *w);

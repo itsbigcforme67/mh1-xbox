@@ -1225,7 +1225,7 @@ void pl_demo000(PLW *pl) {
                 e->pos[1] = pl->pos[1];
                 e->pos[2] = pl->pos[2];
                 e->ang[1] = pl->ang[1];
-                pl->em_demo = e;
+                pl->x824 = e;
                 k = *q;
                 break;
             }
@@ -1243,7 +1243,7 @@ void pl_demo000(PLW *pl) {
         }
         break;
     case 1:
-        e = pl->em_demo;
+        e = pl->x824;
         if (e == 0) {
             pl_to_normal(pl, 0, 4, 0);
             break;

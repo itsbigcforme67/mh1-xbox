@@ -49,13 +49,14 @@ typedef struct EMW {
     u8 _pad003[0x4 - 0x3];
     u8 x04;             /* 0x004 shells end when >= 2 (shell02_m) */
     u8 x05;             /* 0x005 step within the current action (em29 dm00/move05) */
-    u8 _pad006[0x7 - 0x6];
+    u8 x06;             /* 0x006 cleared when em10 starts talking (act 4) */
     u8 x07;             /* 0x007 3 ends attached effects (eft07_m) */
     s32 work08;         /* 0x008 (as PLW; em08 stores a turn time here) */
     u16 id;             /* 0x00C */
     s16 x0E;            /* 0x00E facing the monster turns toward (em10_turn_sub) */
     u8 x10;             /* 0x010 */
-    u8 _pad011[0x13 - 0x11];
+    u8 x11;             /* 0x011 small-size variant flag (em03_init: scale 0.85) */
+    u8 _pad012[0x13 - 0x12];
     u8 x13;             /* 0x013 spawn slot (em29_init places the monster by it) */
     u8 mode;            /* 0x014 4/5 end attached shells (shell19_m) */
     u8 x15;             /* 0x015 sub-mode (eft09_m) */
@@ -76,7 +77,8 @@ typedef struct EMW {
     u8 _pad198[0x19C - 0x198];
     f32 x19C;           /* 0x19C time used by em02_fly_adjy (0 or 1: start value) */
     f32 chr_spd0;       /* 0x1A0 frame step (as PLW); divides the fly_adjy2 tables */
-    u8 _pad1A4[0x1AC - 0x1A4];
+    u8 _pad1A4[0x1A8 - 0x1A4];
+    f32 x1A8;           /* 0x1A8 (em04 turn: frame count of the current motion?) */
     s32 x1AC;           /* 0x1AC */
     f32 x1B0;           /* 0x1B0 */
     u8 _pad1B4[0x1C4 - 0x1B4];
@@ -111,7 +113,8 @@ typedef struct EMW {
     s32 x394;           /* 0x394 */
     u8 _pad398[0x39A - 0x398];
     u16 x39A;           /* 0x39A em16 acts only when it is even */
-    u8 _pad39C[0x3A4 - 0x39C];
+    s32 x39C;           /* 0x39C action timer (em04 act 3: waits until >= 240) */
+    u8 _pad3A0[0x3A4 - 0x3A0];
     s32 horm_ang;       /* 0x3A4 angle to turn toward (emNN_horm_init, em10 act 10) */
     u8 _pad3A8[0x3AC - 0x3A8];
     s32 x3AC;           /* 0x3AC cleared by em_eye_search_set */
@@ -121,7 +124,9 @@ typedef struct EMW {
     f32 adj_y;          /* 0x3B8 fly height correction per frame (fly_adjy2_suby) */
     f32 adj_z;          /* 0x3BC (fly_adjy2_subz) */
     f32 x3C0[3];        /* 0x3C0 em19: copy of the 0x3B4 vector, flipped to wobble */
-    u8 _pad3CC[0x3F0 - 0x3CC];
+    u8 _pad3CC[0x3EC - 0x3CC];
+    u16 dm_ang;         /* 0x3EC direction the hit came from (as PLW, em04 dm00) */
+    u8 _pad3EE[0x3F0 - 0x3EE];
     u16 x3F0;           /* 0x3F0 */
     u8 _pad3F2[0x3F4 - 0x3F2];
     u8 x3F4;            /* 0x3F4 cleared by em19 demo/revival */
@@ -186,7 +191,9 @@ typedef struct EMW {
     u8 _pad796[0x797 - 0x796];
     u8 x797;            /* 0x797 */
     f32 x798;           /* 0x798 fade 0..1 at the end of em18 mov03 (alpha?) */
-    u8 _pad79C[0x7A8 - 0x79C];
+    u8 _pad79C[0x7A0 - 0x79C];
+    struct PLW *x7A0;   /* 0x7A0 player the monster follows (em09 mov04, atk01) */
+    struct EMW *x7A4;   /* 0x7A4 (em09_status_ck reads its kind) */
     u8 x7A8;            /* 0x7A8 */
     u8 x7A9;            /* 0x7A9 */
     u8 _pad7AA[0x7B0 - 0x7AA];
@@ -245,7 +252,9 @@ typedef struct EMW {
     u8 x86D;            /* 0x86D */
     u8 x86E;            /* 0x86E */
     u8 x86F;            /* 0x86F */
-    u8 _pad870[0x878 - 0x870];
+    u8 _pad870[0x876 - 0x870];
+    u8 x876;            /* 0x876 joint of the hagi pick point (Em_hagi_point_set), 0 = none */
+    u8 _pad877;
     struct EFTW *tail;  /* 0x878 cut-tail effect (eft09_set) */
     u8 x87C;            /* 0x87C player id this monster holds/targets (pl_mv083 compares it with PLW.id) */
     u8 _pad87D[0x87F - 0x87D];
@@ -262,7 +271,7 @@ typedef struct EMW {
     u8 x88A;            /* 0x88A */
     u8 x88B;            /* 0x88B */
     u8 x88C;            /* 0x88C */
-    u8 x88D;            /* 0x88D */
+    s8 x88D;            /* 0x88D (s8: lb in Em_hagi_point_cnt_ck) hagi pick point index, -1 none */
     u8 x88E;            /* 0x88E */
     u8 x88F;            /* 0x88F */
     s16 x890[4];        /* 0x890 */
@@ -307,12 +316,12 @@ typedef struct EMW {
     f32 act_spd;        /* 0x930 animation speed, 1.0 set by every em*_act_set (guess) */
     f32 tgt_pos[3];     /* 0x934 target position (CalcDistanceXZ/Em_Calc_angY from pos) */
     struct EM_AREA *area; /* 0x940 per-stage data (em08_senkai_pos_no) */
-    u8 _pad944[0x948 - 0x944];
+    struct EMW *x944;   /* 0x944 (em12 demo: the monster / player it watches) */
     u8 x948;            /* 0x948 */
     u8 x949;            /* 0x949 */
     s16 stay_tm;        /* 0x94A from emNN_stay_timer_tbl[stg] (local_area_move_init) */
     s16 runaway_tm;     /* 0x94C from emNN_runaway_timer_tbl[stg] */
-    u8 _pad94E[0x950 - 0x94E];
+    s16 x94E;           /* 0x94E (em12 dm04 copies it to work08) */
     u8 x950;            /* 0x950 */
     u8 x951;            /* 0x951 */
     u8 x952;            /* 0x952 */
@@ -322,7 +331,7 @@ typedef struct EMW {
     s8 x958;            /* 0x958 */
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
     s8 x95A;            /* 0x95A */
-    u8 _pad95B[0x95C - 0x95B];
+    u8 x95B;            /* 0x95B 1: boss (em16 init sets x9E1 and the boss work) */
     u8 x95C;            /* 0x95C 2 while dying (em19) */
     s8 x95D;            /* 0x95D (em14_sasari_ck) */
     u16 x95E;           /* 0x95E */

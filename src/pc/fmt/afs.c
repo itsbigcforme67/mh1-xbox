@@ -111,3 +111,13 @@ uint8_t *fmt_afs_load(const fmt_afs *a, const char *name, size_t *len)
     free(raw);
     return out;
 }
+
+size_t fmt_afs_read_at(const fmt_afs *a, int idx, uint32_t off, void *buf, size_t n)
+{
+    if (idx < 0 || (uint32_t)idx >= a->count || off >= a->size[idx])
+        return 0;
+    if (n > a->size[idx] - off)
+        n = a->size[idx] - off;
+    fseek(a->fp, (long)a->off[idx] + (long)off, SEEK_SET);
+    return fread(buf, 1, n, a->fp);
+}

@@ -44,7 +44,7 @@ PRIM *get_prim_ptr2(s16);
 void release_prim2(s16);
 void Material_set_sub(void *, CLAY *);
 void Eft02_set2(int, int, int, VEC3 *);
-void Eft20_set2(VEC3 *, int, int, f32);
+void Eft20_set2(f32, VEC3 *, int, int);
 void Eft17_set_ex(VEC3 *, int, int, f32);
 void se_req2(int, int, int, f32 *, int, int);
 
@@ -154,9 +154,9 @@ static void shell12_m(SHLW *sh) {
                 }
             }
         } else if (t == 55 && sh->stg == game_w.stage) {
-            Eft20_set2(&sh->pos2, 0xC, ran_suu(1), 0.8f);
+            Eft20_set2(0.8f, &sh->pos2, 0xC, ran_suu(1));
             Eft17_set_ex(&sh->pos2, ran_suu(1), 0xA, 0.4f);
-            Eft20_set2(&sh->pos2, 0x14, ran_suu(1), 2.0f);
+            Eft20_set2(2.0f, &sh->pos2, 0x14, ran_suu(1));
             shell12_se_req(sh, 1);
         }
         if (sh->char0 >= 60) {

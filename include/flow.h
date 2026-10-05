@@ -27,7 +27,8 @@ extern SYSTEM_W system_w;
 extern OPTION_W option_w;
 /* select_w: character select results (only what game11 and game3/4 read) */
 typedef struct SELECT_W {
-    u8 _pad00[0x0C];
+    u8 _pad00[0x0A];
+    s16 x0A;            /* 0x0A stage number (Quest_start) */
     u8 x0C[4];
     u8 _pad10[0x54 - 0x10];
     u8 x54[4];
@@ -37,16 +38,27 @@ typedef struct SELECT_W {
     s8 ready[4];        /* 0x8C per player ready flag (game3/game4) */
     u8 _pad90[0x94 - 0x90];
     s8 x94[4];
+    u8 _pad98[0xAC - 0x98];
+    u16 xAC;            /* 0xAC selected quest number (Quest_start) */
 } SELECT_W;
 extern SELECT_W select_w;
+struct STG_MDLS;
 typedef struct STGW {
-    u8 _pad00;
+    u8 x00;             /* 0x00 stage drawn (trans_stage) */
     u8 x01;             /* 0x01 set to 1 by game13/game2 */
     u8 _pad02[2];
     u8 step;            /* 0x04 0 = init (stage_i), 1 = run (stage_m) */
     u8 _pad05[3];
     s16 x08;            /* 0x08 frame counter */
-    u8 _pad0A[0x64 - 0x0A];
+    u8 _pad0A[0x10 - 0x0A];
+    f32 pos[3];         /* 0x10 stage model position (trans_stage) */
+    f32 x1C;            /* 0x1C UV scroll u of the last scrolled layer */
+    f32 x20;            /* 0x20 UV scroll v */
+    u8 _pad24[0x28 - 0x24];
+    f32 rot[3];         /* 0x28 stage model rotation */
+    u8 _pad34[0x3C - 0x34];
+    struct STG_MDLS *mdls; /* 0x3C stage model set (flag byte at +0, count s16 at +0x2C, CLAY array at +0x30) */
+    u8 _pad40[0x64 - 0x40];
 } STGW;
 extern STGW stage_work;
 extern u8 Plsel_task[];

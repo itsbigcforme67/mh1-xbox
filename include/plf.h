@@ -72,7 +72,7 @@ extern u16 stage_start_ang[88];
 s32 Game_clear_ck(int);
 s32 Pl_Skill_ck(PLW *, int);
 s32 Pl_hold_item_ck(PLW *);
-void Pl_item_stack(PLW *, int, int);
+int Pl_item_stack(PLW *, int, int);   /* result: 0/1 emptied, 2 partly, 3 full, 5 new slot (reward_mv) */
 void Pl_stamina_calc(PLW *, int);
 void Pl_stamina_reduce(PLW *);
 void Pl_vital_calc(PLW *, s16);
@@ -97,12 +97,10 @@ f32 flvecCalcLength(f32 *);
 void Pl_act_set2(PLW *, int, int, int);
 void Pl_adj_calc(PLW *, int);
 s32 Sansai_talk_ck(PLW *);
-void SetVector(f32, f32, f32, f32 *);
 extern f32 bed_ofs[];
 void Share_item_conv(PLW *);
 s32 St_unique_ck(PLW *, f32 *, u16 *, u8 *);
 void func_549200(PLW *, int);
-s32 Ext_pick_point_ck(PLW *);
 s32 St_pick_ck(PLW *, u16 *, f32 *);
 s32 Online_ck(void);
 void Pl_chat_act_set(PLW *);
@@ -115,7 +113,6 @@ s32 trade_get_ck_00139680(PLW *);
 void unique_act_set(PLW *);
 typedef struct { u8 _00; u8 se_kind; u8 _02[2]; } PL_SHELL_DATA; /* see SHELL_DATA in shell06.h */
 extern PL_SHELL_DATA Shell_data[];
-u16 calc_vec_ang(f32, f32, f32, f32);
 s32 front_land_ck(f32, f32, f32, PLW *, int *);
 s32 Pl_stg_ck(PLW *);
 s32 wall_act_ck(PLW *, s16);
@@ -129,7 +126,6 @@ s32 Taru_ok_ck(void);
 void pl_to_normal(PLW *, int, int, int);
 long Get_Active_itemnum(void);
 s16 Pl_trap_use_ck(PLW *);
-long Pl_item_num_ck(PLW *, u16);
 long Pl_item_num_ck2(PLW *, u16);
 long Pl_item_search_space(PLW *);
 f32 flvecCalcDistance(f32 *, f32 *);
@@ -144,9 +140,6 @@ int pl_ride_ck(PLW *);
 s32 shell_chg_ck(PLW *);
 void blend_calc(PLW *, int);
 void blend_set(PLW *, s16, s16);
-
-
-
 void scope_add(PLW *, int);
 void gun_adj_sub(PLW *);
 void sougun_adj_sub(PLW *, u16);

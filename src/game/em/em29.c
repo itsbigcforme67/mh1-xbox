@@ -44,7 +44,7 @@ void em_cmd_ck(EMW *);
 u8 Em_Dmg_Sys(EMW *, void *);
 void Em_se_req2(EMW *, int, int, f32 *, int, int);
 void Eft02_set3(EMW *, u16, int, int, f32 *, f32);
-void Eft13_set_pos2(EMW *, f32 *, int, f32);
+void Eft13_set_pos2(f32, EMW *, f32 *, int);
 void eft14_set(f32 *, int, f32);
 void Shell09_set(f32 *, int, u8);
 
@@ -178,7 +178,7 @@ static void em_move05(EMW *em) {
         Em_se_req2(em, t->se, 0, em->pos, 1, 0);
         Eft02_set3(em, 0, 9, 0, em->pos, em->scale[0]);
         Eft02_set3(em, 0, 9, 1, em->pos, em->scale[0]);
-        Eft13_set_pos2(em, em->pos, 0x22, 5.0f * em->scale[0]);
+        Eft13_set_pos2(5.0f * em->scale[0], em, em->pos, 0x22);
         if (em->type == 4) {
             if (em->stg == game_w.stage) {
                 eft14_set(em->pos, 0, 3.0f);

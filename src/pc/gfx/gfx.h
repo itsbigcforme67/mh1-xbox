@@ -39,13 +39,20 @@ void gfx_release_texture(gfx_texture *t);
 enum {
     /* fl numbers (flSetRenderState 0x177720, graphics.md section 5) */
     GFX_RS_TEXTURE      = 0x04,  /* value: gfx_texture* (NULL = untextured) */
+    GFX_RS_BLEND_OP     = 0x0D,  /* value: fl RenderOperation 0xC00 bits: 0 add (src + dst),
+                                    0x400 subtract (src - dst), 0x800 reverse (dst - src) [guess] */
     GFX_RS_FOG_COLOR    = 0x0F,  /* value: 0xRRGGBB */
     GFX_RS_FOG_START    = 0x10,  /* value: float* */
     GFX_RS_FOG_END      = 0x11,  /* value: float* */
     GFX_RS_FOG_ENABLE   = 0x12,  /* value: 0 off, else on (fl: fog type) */
     GFX_RS_VIEW         = 0x17,  /* value: const float[16], row vectors */
+    GFX_RS_TEXMAT       = 0x19,  /* value: const float[16] applied to (s,t,0,1); NULL = identity */
     GFX_RS_WORLD        = 0x1A,  /* value: const float[16] (flMATRIX[0]) */
+    GFX_RS_BLEND_FUNC   = 0x5E,  /* value: fl blend factors, src | dst << 4, each
+                                    GFX_BF_*; also turns blending on */
     GFX_RS_ALPHA_REF    = 0x60,  /* value: 0-255, alpha test GREATER ref */
+    GFX_RS_FILTER       = 0x63,  /* value: 0 bilinear, 0x10000 point (fl/GS TEX1) */
+    GFX_RS_TEX_CLAMP    = 0x64,  /* value: 0 repeat, else clamp (fl/GS CLAMP: 0x20000, 0x40000) */
     GFX_RS_FADE_COLOR   = 0x67,  /* value: 0xAARRGGBB multiplied into every vertex */
     GFX_RS_ZWRITE       = 0x6C,  /* value: 0/1 */
     /* port-only states */
@@ -53,6 +60,11 @@ enum {
     GFX_RS_BLEND        = 0x101, /* value: 0 off, 1 src-alpha/inv-src-alpha */
     GFX_RS_ZTEST        = 0x102  /* value: 0/1 */
 };
+/* Blend factor codes of fl state 0x5E, read from flPS2SendRenderState_ALPHA
+ * (graphics.md 5a). The GS can only blend Cs and Cd with As, Ad or a fixed
+ * value, so 6-9 (colour factors) have no GS form and are drawn as 0/1. */
+enum { GFX_BF_ZERO, GFX_BF_ONE, GFX_BF_SRC_ALPHA, GFX_BF_INV_SRC_ALPHA,
+       GFX_BF_DST_ALPHA, GFX_BF_INV_DST_ALPHA };
 void gfx_set_render_state(int state, uintptr_t value);
 /* convenience for float-valued states */
 void gfx_set_render_state_f(int state, float value);

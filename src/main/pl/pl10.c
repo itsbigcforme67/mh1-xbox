@@ -4,6 +4,7 @@
 #include "pl.h"
 #include "game.h"
 #include "plf.h"
+long Pl_item_num_ck(PLW *, u16);
 
 u8 basic_kabe_ck(PLW *pl) {
     int sp3C;

@@ -38,10 +38,13 @@ typedef struct PLPROG {
 } PLPROG;
 
 /* One slot of the item pouch (PLW.item[20]): item id (index into Item_data) and count. */
+#ifndef PL_ITEM_DEFINED
+#define PL_ITEM_DEFINED
 typedef struct PL_ITEM {
     u16 id;
     s16 num;
 } PL_ITEM;
+#endif
 
 typedef struct PLW {
     u8    be_flag;       /* 0x000 in use (set05_m) */
@@ -82,16 +85,18 @@ typedef struct PLW {
     f32   scl[3];            /* 0x0B8 scale (pl_init_sub: 1.0 each) */
     u8 _pad0C4[0x110 - 0xC4];
     void *part[2];           /* 0x110 matrix blocks, part[i]+0x40 is a world matrix (cmd_set_pos) */
-    u8 _pad118[0x40];
+    u8 _pad118[0x148 - 0x118];
+    u8 *mdl148;              /* 0x148 +0x40 is a matrix (cam_sub_pchngr) */
+    u8 _pad14C[0x158 - 0x14C];
     struct PL_HAND *hand;  /* 0x158 thrown items start from hand->pos (shell03_set) */
-    u8 _pad15C[0x38];
+    u8 _pad15C[0x194 - 0x15C];
     s32   work194;           /* 0x194 */
     s32   chr_no0;       /* 0x198 */
     f32   work19C;           /* 0x19C */
     f32   chr_spd0;      /* 0x1A0 */
     u8 _pad1A4[0x4];
     f32   work1A8;           /* 0x1A8 */
-    u8 _pad1AC[0x3C];
+    u8 _pad1AC[0x1E8 - 0x1AC];
     s32   chr_no1;       /* 0x1E8 */
     u8 _pad1EC[0x1F0 - 0x1EC];
     f32   chr_spd1;      /* 0x1F0 */
@@ -284,8 +289,8 @@ typedef struct PLW {
     u8 _pad81D[0x81E - 0x81D];
     u8    work81E;           /* 0x81E */
     u8    work81F;           /* 0x81F */
-    u8 _pad820[0x4];
-    void *em_demo;           /* 0x824 monster that grabs the player in pl_demo000 (EMW *) */
+    u8 _pad820[0x824 - 0x820];
+    void *x824;              /* 0x824 monster that holds/targets this player (pl_demo000: EMW *); cleared by Quest_next_em_clr */
     PL_ITEM item[20];        /* 0x828 item pouch, 20 slots (Pl_item_charge, item_sel_sub); the ammo slot is picked by Pl_shell_set */
     void *fish878;           /* 0x878 hooked fish? +0x14 u16 angle (cam_plEX_fishing) */
     s16   work87C;       /* 0x87C */
@@ -311,8 +316,8 @@ typedef struct PLW {
     u8    work8C3;           /* 0x8C3 */
     u8    work8C4;           /* 0x8C4 */
     s8    work8C5;           /* 0x8C5 */
-    u8 x8C6;                 /* 0x8C6 non-zero: ignore pad for camera (cam_sw_set_sub) */
-    u8    work8C7;           /* 0x8C7 */
+    u8 x8C6;                 /* 0x8C6 non-zero: ignore pad for camera (cam_sw_set_sub); em10 talk flag (10 = new message) */
+    u8    work8C7;           /* 0x8C7 (u8: lbu in pl_mv091; em10_nm compares with 7, believed signed there) */
     u8 x8C8;                 /* 0x8C8 non-zero: camera resets behind player (cam_sub_std) */
     s8    work8C9;           /* 0x8C9 */
     s16   work8CA;           /* 0x8CA */
@@ -333,7 +338,7 @@ typedef struct PLW {
     u8 _pad8F1[0x8F2 - 0x8F1];
     u8    work8F2;           /* 0x8F2 */
     s8    work8F3;           /* 0x8F3 */
-    u8 _pad8F4[0x10];
+    PL_ITEM share[4];        /* 0x8F4 shared items carried (Share_item_stack, quest.c) */
     u16   work904;           /* 0x904 */
     s16   work906;           /* 0x906 */
     u8    work908;           /* 0x908 */
@@ -347,7 +352,7 @@ typedef struct PLW {
     u16   work918;           /* 0x918 */
     u16   work91A;           /* 0x91A */
     u16   work91C;           /* 0x91C */
-    u8    work91E;           /* 0x91E */
+    u8    work91E;           /* 0x91E (u8: lbu in result_init) */
     s8    work91F;           /* 0x91F */
     u8 _pad920[0x930 - 0x920];
     u16   work930;           /* 0x930 */

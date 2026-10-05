@@ -88,7 +88,7 @@ void eft_rgba_linear(void *, s16, u32 *);
 void make_mat_srt(f32 *, f32 *, f32 *, u16, FLMAT *);
 void eft_trans_sub_col(CLAY *, FLMAT *, u32, u16, void *);
 void eft_trans_sub_opa(CLAY *, FLMAT *, void *);
-void Eft13_set_pos(f32 *, int, f32);
+void Eft13_set_pos(f32, f32 *, int);
 
 static void eft04_move(EFTW *ew);
 static void eft04_i(EFTW *ew);
@@ -344,7 +344,7 @@ static void eft04_m(EFTW *ew) {
         eft04_pos_calc(ew->pos, em, v, 0x22);
     case 7:
         if (ew->timer == all) {
-            Eft13_set_pos(ew->pos, 0x1B, 1.0f);
+            Eft13_set_pos(1.0f, ew->pos, 0x1B);
         }
         break;
     case 8:
