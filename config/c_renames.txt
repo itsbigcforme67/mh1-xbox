@@ -75,6 +75,7 @@ build/src/game/shell/shell12.c.o .rodata .data
 build/src/game/shell/shell13.c.o .rodata .data
 build/src/game/shell/shell14.c.o .rodata .data
 build/src/game/shell/shell15.c.o .rodata .data
+build/src/game/shell/shell00.c.o .rodata .data
 build/src/game/shell/shell17.c.o .rodata .data
 build/src/game/shell/shell18.c.o .rodata .data
 build/src/game/shell/shell19.c.o .rodata .data
