@@ -58,6 +58,16 @@ void GetGroundHitArea(EMW *, f32 *, f32 *);
 void Eft04_set_time(EMW *, int, int, f32);
 void Shell08_set_ang(EMW *, s16, u8, u8, u16, u16);
 void Em_Mahi_Start(EMW *);
+void Em_Mode_Chg(EMW *, int, int);
+void Quest_enemy_die(EMW *);
+void Em_hagi_point_set(EMW *, int);
+int Em_hagi_point_cnt_ck(EMW *);
+void Em_hagi_point_clr(EMW *);
+int Quest_enemy_revival_ck(EMW *);
+void Quest_enemy_revival_set(EMW *);
+void em_status_init(EMW *);
+void Quest_enemy_escape(EMW *);
+void em03_init(EMW *);
 void em_mahi_eff_set(EMW *, int);
 
 void em03_init(EMW *em) {
@@ -1126,5 +1136,131 @@ static void em_move04_00589E00(EMW *em, EM03W *w) {
     case 2: em_dmg02(em, w); break;
     case 3: em_dmg03(em); break;
     case 4: em_dmg04(em); break;
+    }
+}
+
+static void em_die00_00589EA0(EMW *em, EM03W *w) {
+    em->x40C = 10;
+    em->x40E = 10;
+    Em_Mode_Chg(em, 0, 0);
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em03_char_set(em, 62, 0, 0);
+        em->act_spd = 1.0f;
+        em_rate_clear(em);
+        em->rate_x = 0.0f;
+        em->adj_y = 17.0f;
+        em->adj_z = -23.0f;
+        em->x3C0[1] = -3.15f;
+        em->x3C0[2] = 0.08f;
+        em->x388 = 2;
+        Quest_enemy_die(em);
+        w->spd[0] = 0;
+        w->spd[2] = 0;
+        break;
+    case 1:
+        w->spd[1] = em->ang[1];
+        speed_add_g(em, w->spd);
+        if (em->adj_z * em->x3C0[2] >= 0.0f) {
+            em->x3C0[2] = 0.0f;
+        }
+        if (em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em->x388 = 0;
+            em03_char_set(em, 63, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em->work08 = 2400;
+            em->act_spd = 0.0f;
+            Em_hagi_point_set(em, 0);
+            em->ex[0x90] = 0;
+        }
+        break;
+    case 3:
+        if (--em->work08 <= 0 || Em_hagi_point_cnt_ck(em) <= 0) {
+            em->x05++;
+            Em_hagi_point_clr(em);
+        }
+        break;
+    case 4:
+        em->x798 -= 0.016666668f;
+        if (em->x798 <= 0.0f) {
+            em->x01 = 0;
+            em_act_set(em, 5, 4);
+        }
+        break;
+    }
+    if (em->pos[1] < em->x5AC) {
+        em->pos[1] = em->x5AC;
+    }
+}
+
+static void em_die04_0058A0E0(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        if (Quest_enemy_revival_ck(em) == 1) {
+            em_status_init(em);
+            em03_init(em);
+            Quest_enemy_revival_set(em);
+            Quest_enemy_escape(em);
+        }
+        em->x04++;
+        em->x01 = 0;
+        break;
+    }
+}
+
+static void em_die05_0058A160(EMW *em) {
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->work08 = 100;
+        break;
+    case 1:
+        em->work08--;
+        em->x798 = (f32)em->work08 / 100.0f;
+        if (em->work08 <= 0) {
+            Quest_enemy_escape(em);
+            em->x04++;
+            em->x01 = 0;
+        }
+        break;
+    }
+}
+
+static void em_move05_0058A210(EMW *em, EM03W *w) {
+    switch (em->x15) {
+    case 0: em_die00_00589EA0(em, w); break;
+    case 4: em_die04_0058A0E0(em); break;
+    case 5: em_die05_0058A160(em); break;
+    }
+}
+
+static void em_demo00_0058A280(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        break;
+    case 1:
+        em->x798 -= 0.016666668f;
+        if (em->x798 <= 0.0f) {
+            Quest_enemy_escape(em);
+            em->x04++;
+            em->x01 = 0;
+        }
+        break;
+    }
+}
+
+static void em_move06_0058A310(EMW *em) {
+    switch (em->x15) {
+    case 0:
+        em_demo00_0058A280(em);
+        break;
     }
 }
