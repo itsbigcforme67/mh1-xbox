@@ -972,3 +972,10 @@ lobby 0x005AE300 0x005AE320 cnet/cnlbs41
 lobby 0x005AE5C0 0x005AE7E8 cnet/cnlbs42
 main 0x00230C10 0x00230CCC net/mcsls_r01
 main 0x00231050 0x00231D40 net/mcsls_r02
+main 0x002324A0 0x00232524 net/mcsls_t01
+main 0x00232680 0x002328E8 net/mcsls_t02
+main 0x00232A90 0x00232C50 net/mcsls_t03
+main 0x002232A0 0x002233BC cam/camarea01
+main 0x00223500 0x00223754 cam/camarea02
+main 0x00223DE0 0x00223E8C cam/camr2n01
+main 0x0010A210 0x0010A44C hit/tri01
