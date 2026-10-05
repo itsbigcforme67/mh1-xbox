@@ -265,6 +265,8 @@ def attempt(fn, mode=''):
                 pass
             if not added:
                 res = {'status': 'error', 'msg': out.strip().split('\n')[3:6]}
+                os.makedirs(OUT + '_err', exist_ok=True)
+                open(os.path.join(OUT + '_err', fn + '.c'), 'w').write(src)
                 break
     finally:
         if os.path.exists(path): os.remove(path)

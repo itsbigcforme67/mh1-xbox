@@ -17,4 +17,9 @@ typedef struct LBSYS_B {          /* lb_sys, 0x90 bytes (same object as LBSYS) *
 } LBSYS_B;
 extern LBSYS_B lb_sys;
 #define LBS (&lb_sys)
+typedef struct CNET_RES {         /* result/event record passed by value (8 bytes, spilled to the stack) */
+    s8 val;                       /* 0x00 result (0 ok, -1 error) */
+    s8 id;                        /* 0x01 */
+    u8 _pad02[6];
+} CNET_RES;
 #endif
