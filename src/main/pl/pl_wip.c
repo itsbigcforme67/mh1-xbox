@@ -65,3 +65,56 @@ void unique_act_set(PLW *pl) {
         break;
     }
 }
+
+void job_special_com_ck(PLW *pl, u8 mode) {
+    u8 t;
+
+    if (pl->sw.now & 0x80) {
+        if (mode == 0 || mode == 2) {
+            switch (pl->kind) {
+            case 0:
+                if (mode == 2) {
+                    t = pl->work56B;
+                    if (t & 0xF) {
+                        pl->work56B = t & 0xF0;
+                        func_549200(pl, 4);
+                    }
+                }
+                Pl_act_set2(pl, 2, 3, 0);
+                return;
+            case 4:
+            case 3:
+                if (mode == 2) {
+                    t = pl->work56B;
+                    if (t & 0xF) {
+                        pl->work56B = t & 0xF0;
+                        func_549200(pl, 4);
+                    }
+                }
+                Pl_act_set2(pl, 2, 0x17, 0);
+                return;
+            case 2:
+                if (mode == 2) {
+                    t = pl->work56B;
+                    if (t & 0xF) {
+                        pl->work56B = t & 0xF0;
+                        func_549200(pl, 4);
+                    }
+                }
+                Pl_act_set2(pl, 1, 0x18, 0);
+                return;
+            }
+        } else {
+            switch (pl->kind) {
+            case 0:
+            case 4:
+            case 3:
+                Pl_act_set2(pl, 2, 3, 0);
+                return;
+            case 2:
+                Pl_act_set2(pl, 1, 0x18, 0);
+                break;
+            }
+        }
+    }
+}

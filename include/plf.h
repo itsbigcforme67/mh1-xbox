@@ -101,4 +101,5 @@ void SetVector(f32, f32, f32, f32 *);
 extern f32 bed_ofs[];
 void Share_item_conv(PLW *);
 s32 St_unique_ck(PLW *, f32 *, u16 *, u8 *);
+void func_549200(PLW *, int);
 #endif

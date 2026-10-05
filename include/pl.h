@@ -159,7 +159,7 @@ typedef struct PLW {
     void *work564;           /* 0x564 */
     s16   work568;           /* 0x568 */
     u8    work56A;           /* 0x56A */
-    s8    work56B;       /* 0x56B */
+    u8    work56B;           /* 0x56B */
     u8    ammo_type;     /* 0x56C shot type fired (shell06_set) */
     u8    work56D;           /* 0x56D */
     u8 x56E;                 /* 0x56E non-zero: no manual camera (manual_cam_chk) */
