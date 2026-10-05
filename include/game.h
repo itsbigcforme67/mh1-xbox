@@ -15,7 +15,9 @@ typedef struct GAME_W {
     u8 port[2];         /* 0x020 controller port per player (get_sw) */
     u8 _pad022[2];
     u8 sw_mask;         /* 0x024 buttons ignored until released (get_sw) */
-    u8 _pad025[0x80 - 0x25];
+    u8 _pad025[0x2C - 0x25];
+    u16 quest;          /* 0x02C quest number (SonchoInit: 0x83.. tutorials) */
+    u8 _pad02E[0x80 - 0x2E];
     u8 x80[4];          /* 0x080 per player, copied into the cooking smell (Eft12_set4) */
     u8 _pad084[0xA8 - 0x84];
     struct EFT_MDLW *area_mdlw[10]; /* 0x0A8 model sets by area (eft07_t, Em_area_ck) */
