@@ -65,13 +65,13 @@ void InitRenderState(int soft) {
         flSetRenderState(0x11, *(u32 *)&near_);
         flSetRenderState(0x5F, 4);
     }
-    system_w.dst_mode = 5;
-    system_w.x3E = 1;
     system_w.x3D = 0x80;
     system_w.src_mode = 4;
-    system_w.ope = 0;
     system_w.filter = 1;
+    system_w.dst_mode = 5;
     system_w.tex_stage = 0xFFFF;
+    system_w.ope = 0;
+    system_w.x3E = 1;
     flSetRenderState(0x5E, 0x32);
     flSetRenderState(0x63, 0);
     flSetRenderState(0xD, 0);
