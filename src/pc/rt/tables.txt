@@ -392,3 +392,21 @@ stage_hit_data_w
 stage_hit_data_f
 St_data
 em_hit_push_tbl
+# game camera (src/main/cam, rt_cam.c)
+CameraWork work
+SplineRvalue work
+cam_init_sub_jmp
+cam_sub_jmp
+cam_cnf_chs
+stage_camera_data_ex
+stage_camera_data_tbl
+camera_data_tbl
+quake_time_tbl
+fishcam_ofs_tbl
+Demo_cam_tbl
+pch_pos
+push01
+dka_init_tbl
+dka_j_tbl
+quest_clear_camera_tbl
+em_body_tbl

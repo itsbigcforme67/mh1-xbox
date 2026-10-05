@@ -119,6 +119,13 @@ void rt_player_set_ang(int no, int ang_y);
 /* What the game's sw_set_sub gave player no: buttons, left stick. */
 void rt_player_sw(int no, int *now, int *ang, int *pow);
 
+/* The game camera (src/main/cam CameraMove, rt_cam.c): init for a stage
+ * once the master player is set, one tick per game tick after the player,
+ * and the resulting view (eye, target, roll, fov in radians). */
+void rt_cam_init(int stage);
+void rt_cam_tick(void);
+void rt_cam_view(float eye[3], float tar[3], float *roll, float *fov);
+
 /* RT_SPAWN="eft13:N,eft17:N,shell22:N,eft14:N,eft08:N": spawn test effects at pos. */
 void rt_debug_spawn(const float pos[3]);
 

@@ -368,7 +368,9 @@ int main(int argc, char **argv)
     Uint32 t0;
     int set_h0 = -1, ticks = 0, stage_no = 4, cam_given = 0;
     float follow[3] = { 900.0f, 450.0f, -0.3f };
-    float rathian_yoff = 0;   /* --play camera: distance, height, pitch */
+    float rathian_yoff = 0;
+    int follow_given = 0, game_cam = 0, have_view = 0;   /* game_cam: the game's CameraMove drives the view */
+    float gc_eye[3] = { 0 }, gc_tar[3] = { 0 }, gc_roll = 0, gc_fov = 1.0f;   /* --play camera: distance, height, pitch */
     int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter */
     const char *script = NULL;
     float hunter_yoff = 0;
@@ -385,7 +387,7 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--input") && i + 1 < argc) { script = argv[++i]; play = 1; }
         else if (!strcmp(argv[i], "--sw-trace")) sw_trace = 1;
         else if (!strcmp(argv[i], "--follow") && i + 1 < argc)
-            sscanf(argv[++i], "%f,%f,%f", &follow[0], &follow[1], &follow[2]);
+            follow_given = sscanf(argv[++i], "%f,%f,%f", &follow[0], &follow[1], &follow[2]) > 0;
         else if (argv[i][0] != '-') disc = argv[i];
     }
     if (!disc) {
@@ -558,6 +560,10 @@ int main(int argc, char **argv)
                 rt_player_set_ang(0, (int)(2.6f * 65536.0f / 6.2831853f));
             }
             hunter_yoff = -lo;
+            if (play && pl.game && !follow_given && !getenv("RT_HOST_CAM")) {
+                rt_cam_init(stage_no);  /* the game camera follows player_work[0] */
+                game_cam = 1;
+            }
         }
     }
 
@@ -582,7 +588,31 @@ int main(int argc, char **argv)
                 if (cam[4] < -1.5f) cam[4] = -1.5f;
             }
         }
-        {   /* camera: rotate pitch then yaw, looking down -Z like GL */
+        if (game_cam && have_view) {    /* look-at from the game camera's eye/target (roll ignored) */
+            float b[3], r[3], u[3], len;
+            int k;
+            for (k = 0; k < 3; k++)
+                b[k] = gc_eye[k] - gc_tar[k];
+            len = sqrtf(b[0] * b[0] + b[1] * b[1] + b[2] * b[2]);
+            if (len < 1e-3f) { b[0] = 0; b[1] = 0; b[2] = 1; len = 1; }
+            for (k = 0; k < 3; k++)
+                b[k] /= len;
+            r[0] = b[2]; r[1] = 0; r[2] = -b[0];          /* up (0,1,0) x back */
+            len = sqrtf(r[0] * r[0] + r[2] * r[2]);
+            if (len < 1e-3f) { r[0] = 1; r[2] = 0; len = 1; }
+            r[0] /= len; r[2] /= len;
+            u[0] = b[1] * r[2] - b[2] * r[1];               /* back x right */
+            u[1] = b[2] * r[0] - b[0] * r[2];
+            u[2] = b[0] * r[1] - b[1] * r[0];
+            memset(camw, 0, sizeof(flmat));
+            for (k = 0; k < 3; k++) {
+                camw[k] = r[k];
+                camw[4 + k] = u[k];
+                camw[8 + k] = b[k];
+                camw[12 + k] = gc_eye[k];
+            }
+            camw[15] = 1;
+        } else {   /* camera: rotate pitch then yaw, looking down -Z like GL */
             float s[3] = { 1, 1, 1 }, r[3], tr[3];
             r[0] = cam[4]; r[1] = cam[3]; r[2] = 0;
             tr[0] = cam[0]; tr[1] = cam[1]; tr[2] = cam[2];
@@ -600,7 +630,8 @@ int main(int argc, char **argv)
         }
         flmat_invert_affine(view, camw);
         rt_set_camera(camw);            /* rview_mat / rview_matY for game billboards */
-        flmat_perspective(proj, 1.0f, (float)W / H, 10.0f, 80000.0f);
+        /* the game's angle of view taken as the vertical fov [guess] */
+        flmat_perspective(proj, game_cam && have_view ? gc_fov : 1.0f, (float)W / H, 10.0f, 80000.0f);
 
         /* game logic ticks at 30 per second (at least 2, so set objects
          * have run their init and queued their prims) */
@@ -614,6 +645,8 @@ int main(int argc, char **argv)
                     pad_read(&ps, 1);
                 rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
                 rt_player_tick(0);
+                if (game_cam)
+                    rt_cam_tick();      /* CameraMove (src/main/cam) */
                 /* right stick turns the follow camera */
                 cam[3] -= ps.rx * (0.04f / 127.0f);
                 if (sw_trace) {
@@ -639,15 +672,21 @@ int main(int argc, char **argv)
             }
             ticks++;
         }
+        if (game_cam) {
+            rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
+            have_view = 1;
+        }
         if (pl.game && play) {          /* hunter from player_work[0]; camera follows */
             float p[3];
             int a;
             rt_player_get(0, p, &a);
             place(pl.world, p[0], p[1] + hunter_yoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
+            if (!game_cam) {
             cam[0] = p[0] + sinf(cam[3]) * follow[0];
             cam[1] = p[1] + follow[1];
             cam[2] = p[2] + cosf(cam[3]) * follow[0];
             cam[4] = follow[2];
+            }
         }
         if (rathian.game && rathian.skel.root_lock) {   /* drawn where the game has it */
             float p[3];
