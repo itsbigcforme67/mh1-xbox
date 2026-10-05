@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -3419,16 +3419,16 @@ void henkan(int start, int end, int mode, int pref)
     HCHAR *h;
     HCHAR *hs;
     BS *b;
-    s8 sel;
-    s8 cur;
+    int sel;
+    int cur;
 
     henkan_mode = mode;
     fl_check();
-    if (henkan_mode != 3 || ikkatsu_mode != 0) {
+    if (henkan_mode != 3 || ikkatsu_mode == 0) {
         pos = start;
         if (start < end) {
             top = start + pref;
-            while (pos < end) {
+            do {
                 h = &hchar[pos];
                 if (h->x15 > 0) {
                     pos += h->x15;
@@ -3473,16 +3473,17 @@ void henkan(int start, int end, int mode, int pref)
                         bs_prefix(pos);
                     }
 prefer:
-                    sel = bs_prefer(pos, end, -1);
-                    if (sel == -1) {
+                    a = bs_prefer(pos, end, -1);
+                    if (a == -1) {
                         break;
                     }
+                    sel = a;
                 }
                 unify_bsmem(pos, sel);
                 first_kouho(pos, sel);
                 h->x15 = sel;
                 pos += sel;
-            }
+            } while (pos < end);
         }
         pos = start;
         while (pos < end) {
@@ -5310,7 +5311,7 @@ void free_klmemlist(KL *l)
     }
 }
 
-s16 bs_prefer(int pos, int end, int len)
+int bs_prefer(int pos, int end, int len)
 {
     BS *b;
     BS *best;
