@@ -315,7 +315,35 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
   named functions). include/menu.h has PIT_W (lpPit, 0x90 bytes) and PIT_MENU
   (PitMenu); field names are guesses, offsets are exact. Unknown parts of
   game_w/option_w/quest_w are reached with the FLD macros of include/flow.h.
-- Linked: menu01.c (select_yes_no .. player_name_id_print), main OK.
+- Linked (main OK, all five modules OK): menu01..menu18.c, 40 functions: select_yes_no..
+  player_name_id_print, PitWork_init, menu_init/menu_move/menu_retire_i (+ jump table
+  0x35A330), juchu_chk..Menu_item_i, mix_item_chk..Menu_mix_i, Menu_data_i, Menu_status_*,
+  Menu_equipment_*, menu_option_i, ItemPickingDeclaration, ItemStockRequest,
+  lb_item_stock_mv, map_move, MapSignRequest, Menu_chatcnfg_i, boss_icon_color,
+  wyvern_area, DispWholeMap, WyvernAreaMove, Pit_disp_menu_status, disp_retire,
+  trans_pit_0/1/2/1_lb/2_lb, Item_box_get_efct/_item.
+- Near-match in menu_nm.c (written, not linked): Pit_init, Pit_reset (andi of zero
+  reg not reproduced), pit_key_repeat (26 off), menu_retire_mv (4), Menu_item_mv (2,
+  probably only relocs), Menu_data_mv (12), menu_data_mix_sub (4), menu_data_monster_sub,
+  menu_equip_get_equip (7), menu_option_mv (37), item_stock_mv (204, register
+  allocation), map_sign_move (4), Menu_chatcnfg_mv, menu_chcnfg_sendpl/reibun,
+  maru_disp_sub, camp_disp_sub, Pit_mv_lb (14), Pit_mv (31), Menu_mix_mv (479, saved
+  register order only).
+- Not written yet (all display code): Pit_disp_*, disp_* (map, item, vital, gauges,
+  chat), font_print_quest_*, quest_condition_print, efct_circle, enemy_on_map,
+  player_on_map, disp_map_sign, disp_whole_map/partial_map/map, put_mix_material,
+  trans_box, Pit_effect_move, mix_effect_set, pef_get_*. They use string literals and
+  float tables, so linking them also needs main:rodata ranges.
+- Linking pitfalls found: a function with a `switch` jump table needs its
+  `main:rodata` range in c_files.txt (menu03); an `if/else if/else` chain that
+  `return`s in each branch vs one `r = ...; return r;` changes where the epilogue
+  label sits (boss_icon_color: use a result variable); a struct field of the wrong
+  signedness only shows as a one-instruction diff (PitMenu.x10 lb vs lbu in
+  trans_pit_1) that check.py hides because it ignores relocations - always
+  rebuild after adding a run. Fields accessed twice through FLD8(game_w, off)
+  get CSE'd into one pointer; give the field a real name (game.h x1E7) instead.
+- check.py shows `--` for calls to functions whose symbol it cannot resolve
+  (func_5BD520 etc.); those are not real differences.
 - Lessons (function that shows it):
   * `return x ? 1 : 0;` after an early `return 0;` gives the extra nop/branch
     shape of a bool return (Cockpit_menu_chk, mix_item_chk).
