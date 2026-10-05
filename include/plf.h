@@ -196,4 +196,9 @@ void Item_regained(PLW *, int);
 void egg_set(PLW *);
 void BBQcamera_set(PLW *);
 void func_555A90(PLW *, int);
+void adx_se_stop(PLW *);
+void Pile_on(PLW *);
+void Basic_item_set(PLW *);
+void Fue_item_set(PLW *);
+void Pl_slash_calc(PLW *, int);
 #endif

@@ -304,13 +304,13 @@ typedef struct PLW {
     u8    work8C4;           /* 0x8C4 */
     s8    work8C5;           /* 0x8C5 */
     u8 x8C6;                 /* 0x8C6 non-zero: ignore pad for camera (cam_sw_set_sub) */
-    s8    work8C7;           /* 0x8C7 */
+    u8    work8C7;           /* 0x8C7 */
     u8 x8C8;                 /* 0x8C8 non-zero: camera resets behind player (cam_sub_std) */
     s8    work8C9;           /* 0x8C9 */
     s16   work8CA;           /* 0x8CA */
     s16   work8CC;           /* 0x8CC */
     s16   work8CE;           /* 0x8CE */
-    s8    work8D0;           /* 0x8D0 */
+    u8    work8D0;           /* 0x8D0 */
     u8    work8D1;           /* 0x8D1 */
     u8    work8D2;           /* 0x8D2 */
     u8 _pad8D3[0x8D4 - 0x8D3];

@@ -20,7 +20,8 @@ def get(n):
 start = tab[funcs[0]][0]
 end = tab[funcs[-1]][0] + tab[funcs[-1]][1]
 body = "\n".join(get(f) for f in funcs)
-hdr = "/* Player code (SLPM_654.95 0x%08X-0x%08X): %s */\n#include \"pl.h\"\n#include \"game.h\"\n#include \"plf.h\"\n\n" % (start, end, descr)
+incs = "".join(l + "\n" for l in s.split("\n") if l.startswith("#include"))
+hdr = "/* Player code (SLPM_654.95 0x%08X-0x%08X): %s */\n%s\n" % (start, end, descr, incs)
 open("src/main/pl/%s.c" % name, "w").write(hdr + body)
 for f in funcs:
     s = s.replace(get(f), "")
