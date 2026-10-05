@@ -1058,3 +1058,277 @@ EMW *em;
         break;
     }
 }
+
+void lb_npc_old_material(em)
+EMW *em;
+{
+    LB_NPCMV *mv = (LB_NPCMV *)em->ex;
+
+    switch (em->x15) {
+    case 0:
+        if (em->x05 == 0) {
+            em->x05++;
+            Lb_pl_chr_set0(em, 0x3F7, 2, 0, 0);
+            return;
+        }
+        break;
+    case 0x64:
+        mv->x2D = 1;
+        switch (em->x05) {
+        case 0:
+            em->x05++;
+            if (em->char0 != 1) {
+                Lb_pl_chr_set0(em, 0x3F8, 4, 0, 0);
+                return;
+            }
+            break;
+        case 1:
+            if (em->x194 <= 0) {
+                Lb_act_set(em, 0, 0x65);
+                return;
+            }
+            break;
+        }
+        break;
+    case 0x65:
+        switch (em->x05) {
+        case 0:
+            mv->x2D = 1;
+            em->x05++;
+            Lb_pl_chr_set0(em, 0x3F9, 2, 0, 0);
+            return;
+        case 1:
+            mv->x2D = 1;
+            if (em->x194 < 2 && em->char0 != 0x3FA) {
+                Lb_pl_chr_set0(em, 0x3FA, 2, 0, 0);
+            }
+            if (lb_sys.x68 == 0) {
+                em->work08 = (ran_suu(1) & 0xFF) + 0x258;
+                em->x05++;
+                Lb_pl_chr_set0(em, 0x3F9, 0x1A, 0, 0);
+                return;
+            }
+            break;
+        case 2:
+            if (--em->work08 == 0) {
+                em->x05++;
+                Lb_pl_chr_set0(em, 0x3F7, 0x1E, 0, 0);
+                return;
+            }
+            if (em->x194 == 0) {
+                Lb_pl_chr_set0(em, 0x3F9, 2, 0, 0);
+                return;
+            }
+            break;
+        case 3:
+            if (em->x194 <= 0) {
+                Lb_act_set(em, 0, 0);
+            }
+            break;
+        }
+        break;
+    }
+}
+
+void lb_npc_old_mix(em)
+EMW *em;
+{
+    LB_NPCMV *mv = (LB_NPCMV *)em->ex;
+    int idx = game_w.stage != 0x4E;
+    VEC3 *tbl;
+    VEC3 v;
+
+    switch (em->x15) {
+    case 0:
+        mv->f0F = 1;
+        if (em->x05 == 0) {
+            em->x05++;
+            Lb_pl_chr_set0(em, 0x3FB, 2, 0, 0);
+            return;
+        }
+        if (em->x194 == 0) {
+            Lb_pl_chr_set0(em, 0x3FB, 2, 0x58, 0);
+            return;
+        }
+        break;
+    case 0x64:
+        mv->x2D = 1;
+        switch (em->x05) {
+        case 0:
+            if (em->char0 == 0x3FB) {
+                if (frame_check2(em, 89.0f, 0) != 0) {
+                    em->x05++;
+                    return;
+                }
+            } else if (em->char0 == 0x3FC || em->char0 == 0x3F0) {
+                em->x05 = 2;
+                return;
+            } else {
+                em->x05++;
+                return;
+            }
+            break;
+        case 1:
+            em->x05++;
+            Lb_pl_chr_set0(em, 0x3FC, 4, 0, 0);
+            return;
+        case 2:
+            if (em->x194 <= 0) {
+                em->x05++;
+                Lb_pl_chr_set0(em, 0x3F0, 4, 0, 0);
+                return;
+            }
+            break;
+        case 3:
+            if (lb_sys.x68 == 0) {
+                Lb_pl_chr_set0(em, 0x3FB, 0xA, 0, 0);
+                em->x05++;
+                return;
+            }
+            break;
+        case 4:
+            Lb_act_set(em, 0, 0);
+            return;
+        }
+        break;
+    case 0x68:
+        switch (em->x05) {
+        case 0:
+            Lb_pl_chr_set0(em, 0x3FD, 0, 0, 0);
+            em->x05++;
+            return;
+        case 1:
+            tbl = &old_dir_tbl[(u16)idx];
+            em->ang[1] += (u16)((s16)(u16)Lb_get_angle(em, tbl) / 2);
+            if (flvecCalcDistance(em->pos, tbl) <= 40.0f) {
+                Lb_pl_chr_set0(em, 0x3E9, 0, 0, 0);
+                em->work08 = 0x3C;
+                em->x05++;
+                cnWrap_SoundRequest(0xD);
+                return;
+            }
+            break;
+        case 2:
+            if (em->work08 % 5 == 0) {
+                v.x = 2100.0f;
+                v.z = 1800.0f;
+                v.y = 0.0f;
+                Eft02_set_pos(&v, 7, 0);
+            }
+            if (--em->work08 <= 0) {
+                u8 s = em->x05;
+                tbl = &old_pos_tbl[(u16)idx];
+                em->x05 = s + 1;
+                em->ang[1] += (u16)(s16)(u16)Lb_get_angle(em, tbl, s);
+                *(VEC3 *)em->pos = *tbl;
+                Lb_pl_chr_set0(em, 0x3FE, 2, 0, 0);
+                return;
+            }
+            break;
+        case 3:
+            if (em->x194 == 0) {
+                Lb_pl_chr_set0(em, 0x3E9, 4, 0, 0);
+                Lb_act_set(em, 0, 0x64);
+                em->x05 = 2;
+            }
+            break;
+        }
+        break;
+    }
+}
+
+void lb_npc_old_guild(em)
+EMW *em;
+{
+    LB_NPCMV *mv = (LB_NPCMV *)em->ex;
+
+    switch (em->x15) {
+    case 0:
+        if (em->x05 == 0) {
+            em->x05++;
+            em->work08 = ((ran_suu(1) & 0xFFFF) + 0x12C) & 0xFF;
+            if (em->char0 != 0x3FF) {
+                Lb_pl_chr_set0(em, 0x3FF, 2, 0, 0);
+                return;
+            }
+        } else {
+            if (--em->work08 <= 0) {
+                Lb_act_set(em, 0);
+                return;
+            }
+        }
+        break;
+    case 0x69:
+        switch (em->x05) {
+        case 0:
+            em->x05++;
+            Lb_pl_chr_set0(em, 0x400, 2, 0, 0);
+            return;
+        case 1:
+            if (em->x194 <= 0) {
+                Lb_act_set(em, 0, 0);
+                return;
+            }
+            break;
+        }
+        break;
+    case 0x64:
+        switch (em->x05) {
+        case 0:
+            mv->x2D = 1;
+            em->x05++;
+            Lb_pl_chr_set0(em, 0x401, 8, 0, 0);
+            return;
+        case 1:
+            mv->x2D = 1;
+            if (em->x194 <= 0) {
+                em->x05++;
+                Lb_pl_chr_set0(em, 0x402, 2, 0, 0);
+                return;
+            }
+            if (lb_sys.x68 == 0) {
+                em->x05 += 3;
+                em->work08 = ((u16)ran_suu(1) & 0x1F) + 0x60;
+                return;
+            }
+            break;
+        case 2:
+            mv->x2D = 1;
+            if (em->x194 < 2) {
+                em->x05++;
+                Lb_pl_chr_set0(em, 0x403, 2, 0, 0);
+                return;
+            }
+            if (lb_sys.x68 == 0) {
+                em->x05 += 2;
+                em->work08 = ((u16)ran_suu(1) & 0x1F) + 0x60;
+                Lb_pl_chr_set0(em, 0x402, 0xA, 0, 0);
+                return;
+            }
+            break;
+        case 3:
+            mv->x2D = 1;
+            if (lb_sys.x68 == 0) {
+                em->x05++;
+                em->work08 = ((u16)ran_suu(1) & 0x1F) + 0x60;
+                Lb_pl_chr_set0(em, 0x402, 0xA, 0, 0);
+                return;
+            }
+            break;
+        case 4:
+            if (--em->work08 <= 0) {
+                em->x05++;
+                em->work08 = (ran_suu(1) & 0xFF) + 0x258;
+                Lb_pl_chr_set0(em, 0x3FF, 0x3C, 0, 0);
+                return;
+            }
+            break;
+        case 5:
+            if (--em->work08 <= 0) {
+                Lb_act_set(em, 0, 0);
+            }
+            break;
+        }
+        break;
+    }
+}

@@ -25,5 +25,8 @@ void npc_move_common();
 void lb_npc_bar_move();
 void lb_npc_mother_move();
 void lb_npc_father_move();
+void lb_npc_old_material();
+void lb_npc_old_mix();
+void lb_npc_old_guild();
 
 #endif

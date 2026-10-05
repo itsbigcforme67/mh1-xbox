@@ -34,6 +34,10 @@ s32 Lb_get_angle();
 f32 flvecCalcDistance();
 s32 ran_suu();
 s32 frame_check2(EMW *, f32, int);
+extern VEC3 old_pos_tbl[2];
+extern VEC3 old_dir_tbl[2];
+int Eft02_set_pos();
+int cnWrap_SoundRequest();
 extern void (*npc_move_func_190[])();
 extern void (*npc_move_func2_191[])();
 #endif
