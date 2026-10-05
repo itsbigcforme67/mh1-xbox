@@ -12,7 +12,6 @@ u16 Lb_stick_dir_set();
 void Lb_Pl_chat_act_set();
 int trade_get_ck_005D0750();
 void Lb_pl_status_i();
-void sound_call_005D3640();
 void NPCZoomInCameraRequest();
 void Lb_shop_init();
 int Event_flag_ck();
@@ -47,6 +46,11 @@ void Lb_shop_init();
 void Lb_pl_to_chair();
 void Lb_Pl_adj_calc();
 extern u8 *cw;
+static void sound_call_005D3640(u8 *a, int b) {
+    lb_sys.x80 = (s32)a;
+    lb_sys.x84 = b;
+    lb_sys.x7C = 20;
+}
 void lb_basic_master(PLW *pl) {
     f32 pos[3];
     f32 off[4];
