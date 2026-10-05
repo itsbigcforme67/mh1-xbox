@@ -12,6 +12,7 @@
  */
 #include "fl/fl.h"
 #include "rt/rt.h"
+#include "pad/pad.h"
 
 #include <SDL.h>
 #include <stdio.h>
@@ -203,6 +204,8 @@ typedef struct {
     fl_model model;
     fl_skel skel;            /* drives model (same AHI) */
     flmat world;
+    fmt_blob tbl;            /* *_tbl.bin */
+    int game;                /* 1: posed by the game's motion code (em_work[0]) */
     uint8_t *mem[3];
 } monster;
 
@@ -215,6 +218,8 @@ typedef struct {
     const uint8_t *ptmat[HUNTER_PARTS];  /* s16 tables from ptmat_tbl (0x3018F0) */
     flmat *pw[HUNTER_PARTS];         /* per part bone world matrices */
     flmat world;
+    fmt_blob tbl;                    /* plcom_tbl.bin */
+    int game;                        /* 1: posed by the game's motion code (player_work[0]) */
     uint8_t *mem[HUNTER_PARTS * 2 + 1];
 } hunter;
 
@@ -238,6 +243,8 @@ static int monster_load(monster *e, const char *amh, const char *tex, const char
     int g;
     if (!link.p)
         return -1;
+    e->tbl = tb;
+    e->game = 0;
     amo = fmt_link_entry(link, 0, FMT_LE);
     ahi = fmt_link_entry(link, 1, FMT_LE);
     if (fl_model_create(&e->model, amo, ahi, tx, 1, FMT_LE) != 0 || fl_skel_create(&e->skel, ahi, FMT_LE) != 0)
@@ -253,7 +260,10 @@ static int monster_load(monster *e, const char *amh, const char *tex, const char
 static void hunter_pose(hunter *h, float frame, const fl_light *L)
 {
     int s, i;
-    fl_skel_update(&h->master, frame);
+    if (h->game)
+        rt_player_pose(0, &h->master);   /* frame_move's motion player */
+    else
+        fl_skel_update(&h->master, frame);
     for (s = 0; s < HUNTER_PARTS; s++) {
         fl_model *m = &h->part[s];
         int nb = m->skel.nbone;
@@ -318,6 +328,8 @@ static int hunter_load(hunter *h, const int *num, int legs_id, int upper_id)
     if (!tbl)
         fprintf(stderr, "warning: no SLPM_654.95, armour parts will not follow the skeleton\n");
     tb = load("plcom_tbl.bin", &h->mem[k++]);
+    h->tbl = tb;
+    h->game = 0;
     if (tb.p) {
         fl_skel_set_motion(&h->master, 0, tb, legs_id, FMT_LE);   /* char0: legs */
         fl_skel_set_motion(&h->master, 1, tb, upper_id, FMT_LE);  /* char1: upper body */
@@ -353,6 +365,9 @@ int main(int argc, char **argv)
     float hx = 10900, hz = 7700, rx = 10000, rz = 6700, gy;
     Uint32 t0;
     int set_h0 = -1, ticks = 0, stage_no = 4, cam_given = 0;
+    int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter */
+    const char *script = NULL;
+    float hunter_yoff = 0;
 
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shot") && i + 1 < argc) shot = argv[++i];
@@ -362,11 +377,14 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--cam") && i + 1 < argc)
             cam_given = sscanf(argv[++i], "%f,%f,%f,%f,%f", &cam[0], &cam[1], &cam[2], &cam[3], &cam[4]) > 0;
         else if (!strcmp(argv[i], "--stage") && i + 1 < argc) stage_no = (int)strtol(argv[++i], NULL, 0);
+        else if (!strcmp(argv[i], "--play")) play = 1;
+        else if (!strcmp(argv[i], "--input") && i + 1 < argc) { script = argv[++i]; play = 1; }
+        else if (!strcmp(argv[i], "--sw-trace")) sw_trace = 1;
         else if (argv[i][0] != '-') disc = argv[i];
     }
     if (!disc) {
         fprintf(stderr, "usage: %s DISC_DIR [--shot out.png] [--frames N] [--time S] "
-                "[--size WxH] [--cam x,y,z,yaw,pitch] [--stage N]\n", argv[0]);
+                "[--size WxH] [--cam x,y,z,yaw,pitch] [--stage N] [--play] [--input SCRIPT]\n", argv[0]);
         return 1;
     }
     snprintf(path, sizeof path, "%s/AFS_DATA.AFS", disc);
@@ -385,6 +403,12 @@ int main(int argc, char **argv)
         fprintf(stderr, "some game data tables are missing\n");
     if (gfx_init(W, H, "MH1 PC viewer", shot != NULL) != 0)
         return 1;
+    if (script && !pad_script_set(script)) {
+        fprintf(stderr, "bad --input script\n");
+        return 1;
+    }
+    if (play)
+        pad_init();
 
     /* the stage's area model + set model (stage.md 1), ground collision,
      * found through main's per-stage tables (stage 4 = st04, st04_1, lg004) */
@@ -463,6 +487,11 @@ int main(int argc, char **argv)
 
     if (monster_load(&rathian, "em01_amh.bin", "em01_tex.bin", "em01_tbl.bin", 3) != 0)
         fprintf(stderr, "em01 load failed\n");
+    else if (rathian.tbl.p && !getenv("RT_HOST_MOTION")) {       /* animate with the game's create_em_motion/frame_move */
+        static const int ids[3] = { 1003, 1203, 1403 };   /* slot 3 of banks 0/2/4 */
+        rt_monster_motion_start(0, 0, rathian.tbl.p, 1, ids, 3);
+        rathian.game = 1;
+    }
     if (hunter_load(&pl, parts, 1, 101) != 0)
         fprintf(stderr, "hunter load failed\n");
 
@@ -506,6 +535,13 @@ int main(int argc, char **argv)
             float p[3] = { hx, gy, hz };
             rt_set_player(0, p);
             rt_debug_spawn(p);          /* RT_SPAWN test effects at the hunter */
+            if (pl.tbl.p && !getenv("RT_HOST_MOTION")) {   /* animate with the game's frame_init/frame_move */
+                rt_player_motion_start(0, pl.tbl.p, 1, 101);
+                pl.game = 1;
+                pl.master.root_lock = 1;    /* the game moves the actor by the root motion */
+                rt_player_set_ang(0, (int)(2.6f * 65536.0f / 6.2831853f));
+            }
+            hunter_yoff = -lo;
         }
     }
 
@@ -537,7 +573,7 @@ int main(int argc, char **argv)
             flmat_srt(camw, s, r, tr);
         }
         keys = SDL_GetKeyboardState(NULL);
-        if (!shot) {
+        if (!shot && !play) {
             if (keys[SDL_SCANCODE_LSHIFT]) spd *= 6;
             if (keys[SDL_SCANCODE_W]) { cam[0] -= camw[8] * spd; cam[1] -= camw[9] * spd; cam[2] -= camw[10] * spd; }
             if (keys[SDL_SCANCODE_S]) { cam[0] += camw[8] * spd; cam[1] += camw[9] * spd; cam[2] += camw[10] * spd; }
@@ -554,9 +590,46 @@ int main(int argc, char **argv)
          * have run their init and queued their prims) */
         while (ticks < 2 + (int)fr) {
             rt_game_move();
+            if (pl.game && play && ticks >= 2) {
+                pad_state ps;
+                if (script)
+                    pad_script_next(&ps);
+                else
+                    pad_read(&ps, 1);
+                rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
+                rt_player_tick(0);
+                /* right stick turns the follow camera */
+                cam[3] -= ps.rx * (0.04f / 127.0f);
+                if (sw_trace) {
+                    int now, ang, pw;
+                    float p[3];
+                    int a;
+                    rt_player_sw(0, &now, &ang, &pw);
+                    rt_player_get(0, p, &a);
+                    printf("tick %d: sw %04X stick ang %04X pow %d -> pos %.0f %.0f %.0f ang %04X\n",
+                           ticks, now, ang, pw, p[0], p[1], p[2], a & 0xFFFF);
+                }
+            } else if (pl.game) {
+                rt_player_motion_tick(0);
+            }
+            if (rathian.game && ticks >= 2)
+                rt_monster_motion_tick(0);
             ticks++;
         }
-        fl_skel_update(&rathian.skel, fr);
+        if (pl.game && play) {          /* hunter from player_work[0]; camera follows */
+            float p[3];
+            int a;
+            rt_player_get(0, p, &a);
+            place(pl.world, p[0], p[1] + hunter_yoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
+            cam[0] = p[0] + sinf(cam[3]) * 900.0f;
+            cam[1] = p[1] + 450.0f;
+            cam[2] = p[2] + cosf(cam[3]) * 900.0f;
+            cam[4] = -0.3f;
+        }
+        if (rathian.game)
+            rt_monster_pose(0, &rathian.skel);
+        else
+            fl_skel_update(&rathian.skel, fr);
         fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
         hunter_pose(&pl, fr, &light);
 

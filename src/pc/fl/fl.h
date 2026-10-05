@@ -64,6 +64,10 @@ typedef struct {
     int has_mot[FL_MAX_GROUPS];
     float frame;
     float end;                       /* longest motion end frame */
+    int root_lock;                   /* fl_skel_pose_groups: 1 = keep the X/Z
+                                        translation of the root motion bone
+                                        (AAN bone 1 of group 0) at its bind
+                                        value; the game moves the actor by it */
     float (*chan)[9];                /* per bone: current channels */
     flmat *world;                    /* per bone: world matrices */
 } fl_skel;
@@ -75,5 +79,17 @@ void fl_skel_release(fl_skel *s);
 int  fl_skel_set_motion(fl_skel *s, int group, fmt_blob tbl, int id, int be);
 /* Evaluate at frame t (loops on end) and compute world matrices. */
 void fl_skel_update(fl_skel *s, float t);
+
+/* One AHI group's pose: motion m at frame t (no looping: the caller keeps
+ * t in range, as frame_move does), optionally blended with m2 at t2:
+ * channels = wa * m + wb * m2 (flBlendMotionEx; rotations take the short
+ * way round). m NULL = bind pose. */
+typedef struct {
+    const aan_motion *m;
+    float t;
+    const aan_motion *m2;
+    float t2, wa, wb;
+} fl_group_pose;
+void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS]);
 
 #endif

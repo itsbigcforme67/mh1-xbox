@@ -184,3 +184,59 @@ Lessons:
   delay slot): check every flmat call's f12/f13/f14 in the asm.
 - m2c needs jump-table targets labelled (.L%08X:) and the table renamed
   jtbl_* in a .rodata section of the temporary .s that draft.py feeds it.
+
+## Assignment 9: motion system, pad, hunter on the runtime (5 Oct 2026)
+### main f_frame (0x125340-0x1267BC), 18 functions
+- 16 of 18 match: src/main/frame/f_frame.c 0x125340-0x125730
+  (create_plcom_motion, create_pl_motion, create_em_motion), f_frameb.c
+  0x1257D0-0x125F08 (aan_ctr_get, calc_ofs_velocity, calc_velocity,
+  pl_velocity_sub, frame_init, frame_init_b) and f_framec.c
+  0x1263F0-0x1267BC (frame_check, em_frame_check, frame_check2/3,
+  em_frame_check2/3, move). check.py OK; `tools/rebuild.sh` all OK.
+- Near-matches, whole file in f_frame_nm.c:
+  - frame_move 12/311 off: only `end` (fp vs s7) and the address of
+    sub_on[n] (s7 vs fp) swap registers, plus the f20/f21 restore order.
+    Declaration-order search and a 15-minute permuter run found nothing.
+  - aan_ofs_calc 35/40: the original keeps `aan` in v0 early (return value
+    set before the second test); permuter found nothing usable.
+- New header include/frame.h (FRW: the motion part of PLW/EMW, FRMT: one
+  0x50-byte layer at +0x194, model work FRMDL). No shared header edited.
+- Lessons:
+  - frame_init: two identical `han += no % 100` branches in the original
+    (the compiler kept both). Writing one as
+    `han = (u32 *)((u8 *)han + (no % 100) * 4)` stops MWCC from merging
+    them; that, `int` params (frame/blend/n: no masking in the callee) and
+    indexing `w->mt[n].x` directly (the compiler strength-reduces n * 0x50)
+    made it match.
+  - Argument order of float-taking callees shows in which load comes first:
+    flPlayMotionExSI is (f32 frame, node, u16 group): `lwc1 f12` before
+    `lw a0`.
+  - A u16 loop counter passed to a u16 parameter is passed unmasked; to
+    an int parameter it is masked (andi) - frame_move's calls show which
+    callees take u16.
+  - create_*_motion: found by a scripted search over declaration order
+    (random + local moves) and then the order of the init statements.
+    create_em_motion only matched once its per-bank pointer and bank*100
+    were written as `em_mot_han_ofs[no][bank]` / `bank * 100` (the
+    compiler makes the induction variables itself, inside the loop
+    guard) and `em` was an int passed to Em_max_parts_get(s16) (the
+    caller sign-extends).
+  - pl_velocity_sub: stack order of FLMAT/vec locals follows declaration
+    order (declare v[4] first to get it at the top).
+### PC runtime
+- rt_motion.c: fl motion layer (handles, motion players, blend, root
+  velocity, Hermite 0x192E40, cpApplyMatrix); hunter posed by the game's
+  frame_init/frame_move (build/show/A/motion_c*.png).
+- rt_pad.c + src/pc/pad/: Psw like ioRead_sub, then swset()/pl_sw_set as
+  game C (pad_get.c, pl_normal2.c built for the PC).
+- rt_player.c: host stand-in for pl_normal (turn/run/idle); viewer --play,
+  --input SCRIPT, --sw-trace (build/show/A/play_run.png).
+- Porting hazard to fix when em code is built for the PC: em04*/em19b/em18b
+  declare em_frame_check as (EMW *, f32, int); the definition is
+  (FRW *, int n, f32 frame). Fine on the PS2 (separate register files),
+  wrong on x86.
+- Rathian also animated by create_em_motion/frame_move (em_work[0]);
+  Em_max_parts_get ported natively (it takes an int and casts to s16
+  itself). Viewer fix: hunter.game was uninitialised.
+- trans_stage: not edited in this assignment (coordinator note: agent E
+  consolidates src/main/stage/trans_stage_nm.c and f_stage_nm.c).

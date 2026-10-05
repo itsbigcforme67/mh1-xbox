@@ -355,3 +355,57 @@ void fl_skel_update(fl_skel *s, float t)
     s->frame = t;
     bone_world(&s->skel, (const float (*)[9])s->chan, s->world);
 }
+
+static void eval_group(const ahi_skel *sk, int g, const aan_motion *m, float t, float (*chan)[9])
+{
+    int i, k = 0;
+    for (i = 0; i < sk->nbone && k < m->nbone; i++) {
+        if (sk->bone[i].group != g)
+            continue;
+        fmt_aan_eval(m, k++, t, chan[i]);
+    }
+}
+
+void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])
+{
+    int gi, i, c;
+    float (*tmp)[9] = NULL;
+    bind_channels(&s->skel, s->chan);
+    for (gi = 0; gi < FL_MAX_GROUPS; gi++) {
+        if (!g[gi].m)
+            continue;
+        eval_group(&s->skel, gi, g[gi].m, g[gi].t, s->chan);
+        if (!g[gi].m2)
+            continue;
+        if (!tmp)
+            tmp = malloc(s->skel.nbone * sizeof *tmp);
+        bind_channels(&s->skel, tmp);
+        eval_group(&s->skel, gi, g[gi].m2, g[gi].t2, tmp);
+        for (i = 0; i < s->skel.nbone; i++) {
+            if (s->skel.bone[i].group != gi)
+                continue;
+            for (c = 0; c < 9; c++) {
+                float a = s->chan[i][c], b = tmp[i][c];
+                if (c >= 3 && c < 6) {          /* angles: shortest way */
+                    while (b - a > 3.14159265f) b -= 6.2831853f;
+                    while (b - a < -3.14159265f) b += 6.2831853f;
+                }
+                s->chan[i][c] = g[gi].wa * a + g[gi].wb * b;
+            }
+        }
+    }
+    free(tmp);
+    if (s->root_lock) {
+        int k = 0;
+        for (i = 0; i < s->skel.nbone; i++) {
+            if (s->skel.bone[i].group != 0)
+                continue;
+            if (k++ == 1) {
+                s->chan[i][6] = s->skel.bone[i].t[0];
+                s->chan[i][8] = s->skel.bone[i].t[2];
+                break;
+            }
+        }
+    }
+    bone_world(&s->skel, (const float (*)[9])s->chan, s->world);
+}
