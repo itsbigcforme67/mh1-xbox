@@ -101,27 +101,39 @@ type 1  root (count = number of children)
                must be 0x0001xxxx)
       0x100000 matrix list: bone numbers used by the part
       0x110000 ? (stage models)
-  9        materials; children typed by index, 0x104-byte payload
+  9        materials; one child per material (0x104-byte payload; the
+           child's type word is 1 in em01, 0/2 in cube: meaning unknown)
            (plAMOSetMaterialData copies it into a 0x4C flMATERIAL):
            +0x00 colour A (4 floats) -> mat+0x24   (cube: 0.5 0.5 0.5 0)
            +0x10 colour B (4 floats) -> mat+0x04   (0.7 0.7 0.7 1)
            +0x20 colour C (4 floats) -> mat+0x14   (1 1 1 1)
            +0x30 float -> mat+0x48                 (50.0: specular power?)
-           +0x34 has-texture flag; +0x100 texture index -> mat+0x44
+           +0x34 has-texture flag; +0x100 texture slot -> mat+0x44
            (which of A/B/C is diffuse/ambient/specular: [guess] B diffuse)
-  0xA      textures; children typed by index, 0x100-byte payload; first word
-           = texture number used by the material (meaning of the rest: unknown)
+  0xA      texture slots; one child each, 0x100-byte payload:
+           +0 = APX index inside the model's *_tex.bin, +4 width, +8 height,
+           rest zero in em01 [verified: em01 renders correctly textured
+           with material +0x100 -> slot -> APX index]
 ```
 
 Primitives are **triangle strips** [verified: rendering em01 as strips gives
-a recognisable Rathalos; cube faces are 4-index strips]. The strip
+a recognisable Rathian (green; MH monster id 01); cube faces are 4-index strips]. The strip
 restarts are also visible in the converted data: flPS2ConvClayData sets the
 GS ADC bit (0x8000 in the vertex w) on the first two vertices of each strip
 [read].
 
 Vertex positions of skinned monsters are in model space, not bone space
-[verified: em01 parts line up in one pose without applying bones]. The AHI
-file (hierarchy) and motion data are not documented yet.
+[verified: em01 parts line up in one pose without applying bones]. Bones,
+weights and motions: see docs/formats/motion.md.
+
+Per-primitive materials [verified: em01 textured render]: 0x60000 has one
+u32 per primitive, counting the 0x30000 strips first and then the 0x40000
+strips (em01 part 0: 21 + 285 = 306 entries); each is an index into the
+part's 0x50000 list, which holds material numbers (children of chunk 9).
+
+The root chunk's size field can be short: in cube.amo it is 0x3C less than
+the end of its last child (the texture chunk). The game walks children by
+count, so tools should use the file size instead [verified: cube.amo].
 
 ### 2.4 MLCLAY: the CPU-side intermediate (input to flCreateClayHandle)
 
@@ -306,15 +318,88 @@ Exact GS field mapping inside flPS2SendRenderState_ALPHA/TEST/ZBUF/TEX1
 - rview_mat (game) is the camera matrix used for billboards (shell, set
   code multiplies by it).
 
-## 7. Textures [read, partial]
+## 7. Textures: APX [verified: tools/clay_dump.py renders em01 textured]
 
-- Formats on disc: `.apx` (Capcom) and one `.TM2` (TIM2). Loaders
-  flCreateTextureFromApx_mem / flCreateTextureFromTim2_mem
-  (g_flPS2DmaAddQueue.s). Texture/palette handles (flCreateTextureHandle,
-  flCreatePaletteHandle), a VRAM allocator (g_flPS2VramInit.s), and
-  4/8-bit swizzle helpers (Conv4to32, Conv8to32) → 4- and 8-bit paletted
-  (PSMT4/PSMT8 with CLUT) textures are in use [read: function names and
-  bodies]. The APX layout is not documented yet: next step.
+Formats on disc: `.apx` (584 loose files in AFS_DATA, all Meltw-compressed)
+and `*_tex.bin` link files (Meltw, then `u32 n; n x {offset, size}`), whose
+entries are APX images. One `.TM2` (TIM2) exists, loaded by
+flCreateTextureFromTim2_mem; not looked at.
+
+Loader chain [read]: mkTexture (0x11EBA0) = load_file_mdl (Meltw) then
+flCreateTextureFromApx_mem (0x16FA00), which reads the header through
+plAPXSetContextFromImage (0x217E90), copies each mip level with flMemcpy (or
+flPS2Conv4_8_32 when the texture record's +0x36 swizzle flag is set), and
+builds the palette with plAPXSetPaletteContextFromImage / GetAPXPaletteAdrs.
+
+APX header, 0x20 bytes, little-endian (GetAPXFileHeader returns the file
+start; field use from plAPXSetContextFromImage, GetAPXPixelMipmapAdrs,
+GetAPXPaletteAdrs):
+
+| off | type | meaning | em01_tex #0 |
+|----|----|----|----|
+| 0x00 | u32 | total size of this APX | 0x10420 |
+| 0x04 | u32 | pixel bytes (all mips); palette = pixels + this | 0x10000 |
+| 0x08 | u32 | palette bytes | 0x400 |
+| 0x0C | u16 | bits per pixel: 4, 8, 16, 24, 32 | 8 |
+| 0x0E | u16 | width | 256 |
+| 0x10 | u16 | height | 256 |
+| 0x12 | u16 | mip count (plAPXGetMipmapTextureNum) | 1 |
+| 0x14 | u16 | palette bits: 16, 24, 32 | 32 |
+| 0x16 | u16 | palette count (plAPXGetPaletteNum) | 1 |
+| 0x18 | 8 bytes | zero | |
+
+Then pixels at +0x20, mip 0 first, each level half the size of the last;
+then the palette(s).
+
+- Pixels are **linear**, not GS-swizzled [verified: decoding row by row
+  gives clean images for 8-bit (em01_tex) and 4-bit (st05_tex #10)].
+- 4-bit pixels: low nibble = left pixel [verified: st05 texture is clean].
+- Palettes are in **linear order**, not the PS2 CLUT CSM1 order [verified:
+  em01 palette is a smooth ramp across entries 7/8 and 15/16; using CSM1
+  order gives a broken image]. 32-bit entries are bytes R, G, B, A with
+  alpha 0-255. The PS2 code halves alpha for the GS (flPS2ConvertAlpha is
+  called for 32-bit data) [read]. 16-bit entries are RGBA5551, red in the
+  low bits [verified: st19_tex decodes cleanly].
+- Survey of every APX in AFS_DATA (loose and inside `_tex.bin`), as
+  (bpp, palette bits) [verified: script over all entries, header sizes all
+  consistent]: 8/32: 1702, 4/32: 326, 8/16: 95, 4/16: 15, one 32-bit
+  truecolour. No file has more than one mip level or one palette.
+- So in GS terms textures are PSMT8 / PSMT4 with a PSMCT32 or PSMCT16 CLUT
+  (flPS2GetTextureInfoFromContext sets the format codes 0x13 / 0x14, which
+  are the GS PSMT8 / PSMT4 values) [read].
+
+How a model finds its texture [verified: em01]: model `emNN_amh.bin` goes
+with `emNN_tex.bin`. Primitive -> 0x60000 slot -> 0x50000 material number ->
+material +0x100 texture slot -> chunk 0xA slot +0 -> APX index in
+`_tex.bin`. At run time the game creates one texture handle per APX and
+passes it with flSetRenderState(4, handle) [read: mkModel, state 4].
+
+tools/clay_dump.py writes each APX as a PNG (zlib only) plus an .mtl and
+UVs. UVs: OBJ v = 1 - t (PS2 t = 0 at the top of the image) [verified:
+textures land correctly].
+
+## 7b. Wii Monster Hunter G (2008) data [verified where marked]
+
+The owner's Wii MHG (disc/mhg_wii) packs all data in
+`files/fpack/0000.fpk`:
+- FPK header (big-endian): `u32 count (3476), u32 ?, u32 0x10 (header
+  size), u32 file size`, then count x 0x30-byte entries:
+  `char name[0x24]; u32 offset; u32 stored size; u32 unpacked size`
+  [verified: names and offsets parse, e.g. emmodel/em01/em01_amh.bin].
+- 3437 entries are compressed (stored < unpacked) with a byte-oriented LZ
+  that is **not** Meltw and not zlib; I did not crack it. Partial reading
+  against the known output: flag bytes plus 1-2 byte back-reference tokens,
+  e.g. 0xFC = "copy 3 bytes from 4 back" [guess].
+- The unpacked sizes of model files equal the PS2 Meltw output exactly
+  (em01_amh.bin 339172, em01_tex.bin 266404) [verified]. The 39 stored
+  (uncompressed) entries show the format is the **same, with every 32-bit
+  word byte-swapped** to big-endian: em08_tex.bin is byte-for-byte the PS2
+  file after swapping (link table, APX header, palette entries as u32;
+  8-bit pixel data identical) [verified: compared with the PS2 em08_tex].
+- main.dol still has the clay code ("CREATE CLAY FAIL !!") and file names
+  like cube.amo / cube.ahi. The cockpit list has paired `cpit1ps.apx` /
+  `cpit1xb.apx` textures ("ps" and "xb" variants) [verified: strings].
+- I did not look at the Wii renderer (GX) code; the DOL is stripped.
 
 ## 8. What a PC/Xbox renderer needs (first plan)
 
@@ -326,11 +411,13 @@ Exact GS field mapping inside flPS2SendRenderState_ALPHA/TEST/ZBUF/TEX1
 4. Skinning: bone matrices per part (0x100000 list) + per-vertex weights.
 5. Render state: map flSetRenderState's states to blend/alpha-test/z/fog;
    state 0x67 tint, 0x19 UV scroll.
-6. Textures: decode APX (4/8-bit + palette) to RGBA.
+6. Textures: decode APX (4/8-bit + palette) to RGBA (done in clay_dump).
+7. Animation: AHI bones + AAN curves (docs/formats/motion.md; posing done
+   in clay_dump --motion).
 
 ## 9. Next steps
 
-- Decode the APX texture format and add textures to clay_dump.
-- Read AHI (hierarchy) and the motion format to pose skinned models.
+- Crack the Wii FPK compression (would give a second, big-endian copy of
+  every file, and MHG's extra content).
 - Name every VU program family by skimming build/vu1/*.vsm.
 - Trace the GS register bits in flPS2SendRenderState_*.
