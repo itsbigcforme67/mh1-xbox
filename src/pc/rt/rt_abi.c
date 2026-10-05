@@ -66,3 +66,8 @@ void rtabi_Eft15_set3(void *em, int arg, f32 scale, int x07) { Eft15_set3(em, ar
  * definition (src/main/eft/eft02_nm.c) (em, ang, arg, joint, pos, scale) */
 void Eft02_set3(void *em, int ang, int arg, int joint, f32 *pos, f32 scale);
 void rtabi_Eft02_set3(f32 scale, void *em, int ang, int arg, int joint, f32 *pos) { Eft02_set3(em, ang, arg, joint, pos, scale); }
+
+/* NextStage_No_Set: em_core_nm.c calls it with no arguments (a0 = em left
+ * over in the asm); the definition (agent D's em_cmd_nm.c) takes em. */
+void NextStage_No_Set(void *em);
+void rtabi_NextStage_No_Set(void *em) { NextStage_No_Set(em); }

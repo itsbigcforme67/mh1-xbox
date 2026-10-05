@@ -153,6 +153,7 @@ for f in $GAME; do
              -DGetGroundHitStatusAreaPl=rtabi_GetGroundHitStatusAreaPl" ;;
     src/main/stage/f_stage.c) ABI="-Dhit_point_cbd=rtabi_hit_point_cbd" ;;
     */em_cmd_nm.c) ABI="-DGetWaterData()=GetWaterData(em)" ;;   # a0 = em left over
+    src/game/em/em_core_nm.c) ABI="-DNextStage_No_Set(...)=rtabi_NextStage_No_Set(em)" ;;   # a0 = em left over
     */em01_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
              -DEft15_set3=rtabi_Eft15_set3" ;;
     # em_sleep_eff_set: callers pass (em, joint, f32 *pos, f32 scale), the
