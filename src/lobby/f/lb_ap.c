@@ -69,17 +69,15 @@ char *bs_url_slash(char *p, char *end) {
     return 0;
 }
 int bs_url_cmp_list(char **list, char *s) {
-    char **p;
     int i;
     char *a;
-    p = list;
     a = *list;
     i = 0;
     if (a != 0) {
         for (;;) {
-            if (strncmp(s, *p, strlen(a)) != 0) {
-                p += 1;
-                a = *p;
+            if (strncmp(s, *list, strlen(a)) != 0) {
+                list += 1;
+                a = *list;
                 i += 1;
                 if (a != 0) {
                     continue;
@@ -88,10 +86,10 @@ int bs_url_cmp_list(char **list, char *s) {
             break;
         }
     }
-    if (*p != 0) {
-    } else {
-        i = -1;
+    if (*list != 0) {
+        return i;
     }
+    i = -1;
     return i;
 }
 void BsUrlEncode(s8 *dst, u8 *src) {

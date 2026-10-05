@@ -20,8 +20,7 @@ s8 Lb_get_quest_type(u16 *p) {
     return (s8)i;
 }
 u8 *Lb_room_member(int a, int b) {
-    int i = a & 0xFF;
-    u8 *m = (u8 *)(i * 0x2FC) + (int)cw;
+    u8 *m = (u8 *)(int)cw + (a & 0xFF) * 0x2FC;
     if (*(s8 *)(m + 0x73C) == 0) {
         return 0;
     }

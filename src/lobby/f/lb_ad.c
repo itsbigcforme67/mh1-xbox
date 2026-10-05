@@ -302,7 +302,7 @@ int Lb_check_hotel(int a) {
     int rank;
     int v;
     s0 = a - 0x51;
-    rank = (s8)Lb_get_lb_rank();
+    rank = (s8)Lb_get_lb_rank(*(u8 *)0x3C733B);
     if (Event_flag_ck(4) == 0) {
         return 0;
     }
@@ -312,10 +312,10 @@ int Lb_check_hotel(int a) {
     }
     if ((s8)rank >= s0) {
         if (*(s32 *)0x3C6FE0 >= ((s32 *)room_price)[s0]) {
+            return v;
         } else {
-            v = 3;
+            return 3;
         }
-        return v;
     }
     return 0;
 }

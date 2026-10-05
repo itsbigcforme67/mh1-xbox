@@ -78,21 +78,24 @@ int b;
         return 1;
     }
     s0 = (s8)a;
-    if (s1 >= s0) {
-        if ((sx1 = lb_get_quest_level(0)) >= s0) {
-            return 0;
-        }
-        return 1;
+    if (s0 > s1) {
+        goto rest;
     }
-    if (s0 == (sx2 = get_questLevelNum())) {
+    sx1 = lb_get_quest_level(0);
+    if (s0 > sx1) {
+        goto ret1;
+    }
+    return 0;
+rest:
+    sx2 = get_questLevelNum();
+    if (s0 == sx2) {
         if (key_quest_num != 0) {
             return 0;
         }
-        return 1;
-    }
-    if (Online_ck() == 1 && *(s8 *)(cw + 0x2C2F) != 0 && s0 == 7) {
+    } else if (Online_ck() == 1 && *(s8 *)(cw + 0x2C2F) != 0 && s0 == 7) {
         return 0;
     }
+ret1:
     return 1;
 }
 int lb_select_quest_level(void) {

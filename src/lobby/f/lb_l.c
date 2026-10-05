@@ -54,10 +54,11 @@ int trade_get_ck_005D0750(PLW *pl) {
 void pl_sleeping(PLW *pl) {
     s32 q[3];
     int t;
+    u16 r;
     u8 *src = lit_584_0064E1A8;
     *(long *)q = *(long *)src;
     q[2] = *(s32 *)(src + 8);
-    if (pl->char0 == 0x1AB && (ran_suu(1) & 0xFFFF & 0x3F) == 0) {
+    if (pl->char0 == 0x1AB && ((r = ran_suu(1)) & 0x3F) == 0) {
         Lb_pl_chr_set(pl, 0x1AC, 0, 0);
     } else if (pl->char0 == 0x1AC && F(s32, pl, 0x194) == 0) {
         Lb_pl_chr_set(pl, 0x1AB, 0, 0);
@@ -107,8 +108,7 @@ void lb_goto_guest_room(PLW *pl, int no) {
         lb_sys.x03 = 5;
         F(s16, pl, 0x73A) = no;
         c = cw;
-        m = (1 << (no - 0x51)) & 0xFF;
-        c[0x35D7] = c[0x35D7] | m;
+        c[0x35D7] |= (1 << (no - 0x51)) & 0xFF;
         lb_sys.x68 = 0x14;
         break;
     case 0:
