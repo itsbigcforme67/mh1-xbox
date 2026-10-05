@@ -52,10 +52,10 @@ typedef struct PLX {
     u8  _pad170[0x54];
     s32     x1C4;        /* 0x1C4  */
     u8  _pad1C8[0x114];
-    u16     char0;       /* 0x2DC  */
-    u8  _pad2DE[0x34F - 0x2DE];
-    u8      x34F;        /* 0x34F */
-    u8  _pad350[2];
+    u16     char0;       /* 0x2DC current action id */
+    u8  _pad2DE[0x71];
+    u8      x34F;        /* 0x34F  */
+    u8  _pad350[0x2];
     u8      armor[0x12]; /* 0x352 (+6+i: armor id of part i) */
     u16     sw_now;      /* 0x364  */
     u8  _pad366[0x22];
@@ -69,7 +69,11 @@ typedef struct PLX {
     PLMDL * wmdl;        /* 0x514 weapon model */
     u8  _pad518[0x1C];
     PLMDL * amdl[6];     /* 0x534 armor part models */
-    u8  _pad54C[0xB0];
+    u8  _pad54C[0x1F];
+    u8      x56B;        /* 0x56B low nibble: item in use, high nibble: which */
+    u8  _pad56C[0x40];
+    f32     gy;          /* 0x5AC ground height */
+    u8  _pad5B0[0x4C];
     u32     col5FC;      /* 0x5FC  */
     u8  _pad600[0x139];
     u8      x739;        /* 0x739  */

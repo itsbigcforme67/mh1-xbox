@@ -1127,3 +1127,326 @@ void enemy_trans(TRANSEM *tp) {
     light_change_normal(1);
     light_set(1);
 }
+
+/* ---- pl_item_trans (0x00165480): the item model (eft_mdlw: clay list at
+ * +0x30, materials at +0x10) held in the player's hand for the current
+ * action id (char0) or the item being used (x56B). Each branch picks a clay
+ * (offset into the model's clay list), a joint (0xE / 0x12 hand), an offset
+ * vector, rotation (rx, ry, rz) and scale; frame windows come from
+ * frame_check2. The common tail builds the matrix from the joint matrix and
+ * calls pl_item_trans_sub. The branch tables are data written as code; the
+ * float constants are exactly as in the asm. The meaning of each action id
+ * is a guess. ---- */
+extern struct { u8 flag; u8 _pad01[0x0F]; u8 *mat; u8 _pad14[0x1C]; CLAY *clay; } *eft_mdlw;
+s32 frame_check2(f32, PLW *, int);
+void flmatRotX33(FLMAT *, f32);
+void flmatRotY33(FLMAT *, f32);
+void flvecRotY(f32 *, f32);
+f32 flArcTan2(f32, f32);
+
+#define ANG2RAD(a) (2.0f * (3.1415927f * (360.0f * (f32)(a) / 65536.0f / 360.0f)))
+#define CLAYAT(off) ((CLAY *)((u8 *)mw->clay + (off)))
+
+void pl_item_trans(PLX *pl) {
+    FLMAT m;
+    FLMAT jm;
+    FLMAT m0;
+    f32 v[3];
+    f32 t[3];
+    f32 vv[3];
+    f32 sx = 1.0f;
+    f32 sy = sx;
+    f32 sz = sx;
+    f32 rx, ry, rz;
+    f32 tx, ty, tz;
+    CLAY *c = 0;
+    u8 *mat;
+    int jt = 0;
+    int ty8 = 0;
+    int skip = 0;
+    int flag = 0;
+    int a;
+    u16 ch;
+    typeof(eft_mdlw) mw = eft_mdlw;
+
+    if (mw == 0 || mw->flag == 0) return;
+    mat = mw->mat;
+    if ((pl->x56B & 0xF) != 0) {
+        if (act_ck((PLW *)pl, 5, 9) != 0 && pl->char0 == 0x33 && pl->x1C4 != 0) return;
+        switch ((pl->x56B & 0xF0) >> 4) {
+        case 0:
+        case 1:
+            ry = -3.28121901f;
+            rx = -0.942477882f;
+            sy = sy * 1.3f;
+            rz = 2.05948853f;
+            jt = 0xE;
+            c = CLAYAT(0x48BC);
+            v[0] = 5.5f;
+            v[1] = -28.0f;
+            v[2] = 12.0f;
+            flmatMakeTrans(&m0, 0.0f, 0.0625f, 0.0f);
+            flSetRenderState(0x19, (u32)m0);
+            break;
+        case 2:
+            rx = -0.942477882f;
+            ry = -3.28121901f;
+            jt = 0xE;
+            rz = 2.05948853f;
+            c = CLAYAT(0x48BC);
+            v[0] = 8.9f;
+            v[1] = -25.0f;
+            v[2] = 4.6f;
+            flmatMakeTrans(&m0, 0.0f, 0.0f, 0.0f);
+            flSetRenderState(0x19, (u32)m0);
+            break;
+        case 3:
+        case 4:
+        case 5:
+            c = CLAYAT(0x166C);
+            sy = sy * 3.0f;
+            sx = sx * 2.5f;
+            sz = sz * 2.0f;
+            rx = -0.244346112f;
+            ry = 2.86233997f;
+            rz = 1.2566371f;
+            v[0] = 3.3f;
+            v[1] = -24.0f;
+            v[2] = 4.0f;
+            jt = 0xE;
+            a = (pl->x56B & 0xF0) >> 4;
+            if (a == 4) {
+                ty8 = 5;
+            } else if (a == 3) {
+                ty8 = 4;
+            } else if (a == 5) {
+                ty8 = 3;
+            }
+            break;
+        default:
+            break;
+        }
+    } else {
+        ch = pl->char0;
+        switch (ch) {
+        case 0x19F:
+            rx = 0.366519153f;
+            ry = 0.174532935f;
+            rz = 1.36135685f;
+            c = CLAYAT(0x2648);
+            jt = 0xE;
+            v[0] = 17.0f;
+            v[1] = 0.9f;
+            v[2] = 22.0f;
+            break;
+        case 0x1A0:
+            if (frame_check2(16.0f, (PLW *)pl, 0) == 0 || frame_check2(164.0f, (PLW *)pl, 0) != 0) return;
+            rx = -0.383972436f;
+            ry = 0.296705991f;
+            rz = -1.97222209f;
+            jt = 0x12;
+            ty8 = 2;
+            c = CLAYAT(0x1FB8);
+            v[0] = -17.0f;
+            v[1] = -30.0f;
+            v[2] = 1.0f;
+            break;
+        case 0x1A2:
+            if (frame_check2(118.0f, (PLW *)pl, 0) != 0) return;
+            ry = 3.1415927f;
+            rx = 0.0f;
+            jt = 0x12;
+            rz = ry;
+            v[0] = -9.0f;
+            v[1] = -1.0f;
+            v[2] = 65.0f;
+            c = CLAYAT(0x26D4);
+            break;
+        case 0x1A6:
+            if (frame_check2(20.0f, (PLW *)pl, 0) == 0) return;
+            goto a1a3;
+        case 0x1A3:
+            if (frame_check2(26.0f, (PLW *)pl, 0) == 0 || frame_check2(248.0f, (PLW *)pl, 0) != 0) return;
+        a1a3:
+            c = CLAYAT(0x41A0);
+            rx = 0.0f;
+            ry = rx;
+            rz = rx;
+            v[0] = 8.0f;
+            v[2] = -6.0f;
+            jt = 0xE;
+            v[1] = 0.0f;
+            break;
+        case 0x1A4:
+            if (frame_check2(6.0f, (PLW *)pl, 0) == 0) return;
+            goto a1a5;
+        case 0x1A5:
+            if (frame_check2(34.0f, (PLW *)pl, 0) != 0) return;
+        a1a5:
+            rx = -1.08210421f;
+            ry = -2.96705961f;
+            rz = 0.69813174f;
+            c = CLAYAT(0xA64);
+            jt = 0x12;
+            v[0] = -8.4f;
+            v[2] = -5.2f;
+            v[1] = -3.8f;
+            break;
+        case 0x1A8:
+            if (pl->x1C4 != 0) return;
+            goto a1a9;
+        case 0x1A9:
+            if (frame_check2(58.0f, (PLW *)pl, 0) != 0) return;
+        a1a9:
+            rx = 2.86233997f;
+            ry = -0.418879062f;
+            rz = -1.06465089f;
+            jt = 0x12;
+            c = CLAYAT(0x2D64);
+            v[0] = -12.0f;
+            v[1] = -7.0f;
+            v[2] = -3.0f;
+            break;
+        case 0x320:
+        case 0x321:
+        case 0x322:
+        case 0x323:
+            ty8 = 1;
+            if (ch == 0x322) {
+                if (frame_check2(100.0f, (PLW *)pl, 0) != 0) return;
+                if (frame_check2(70.0f, (PLW *)pl, 0) != 0) ty8 = 2;
+                flag = 1;
+            } else if (ch == 0x321) {
+                if (frame_check2(106.0f, (PLW *)pl, 0) != 0) return;
+                if (frame_check2(96.0f, (PLW *)pl, 0) != 0) ty8 = 0;
+                flag = 1;
+            } else if (ch == 0x320) {
+                flag = 0;
+                if (frame_check2(26.0f, (PLW *)pl, 0) == 0) return;
+            } else {
+                flag = 0;
+            }
+            if (ty8 != 0) {
+                c = CLAYAT(0x25BC);
+                flmatMakeTrans(&m, pl->pos[0], pl->gy, pl->pos[2]);
+                flmatRotY33(&m, ANG2RAD(pl->ang[1]));
+                flSetRenderState(0x1A, (u32)m);
+                flSetRenderState(0x67, -1);
+                pl_item_trans_sub(pl, c, &m, mat, 0);
+                if ((s16)ty8 == 2) return;
+            }
+            if (flag != 0) {
+                c = CLAYAT(0x1FB8);
+                jt = 0xE;
+                rz = 0.418879062f;
+                rx = 1.04719758f;
+                ry = -0.733038306f;
+                v[0] = 37.0f;
+                v[2] = 37.0f;
+                v[1] = 14.0f;
+                ty8 = 1;
+            } else {
+                v[0] = 0.0f;
+                v[1] = 0.0f;
+                v[2] = 128.0f;
+                flvecRotY(v, ANG2RAD(pl->ang[1]));
+                t[0] = pl->pos[0] + v[0];
+                t[1] = 80.0f + pl->gy;
+                t[2] = pl->pos[2] + v[2];
+                v[0] = -52.0f;
+                v[1] = 0.0f;
+                v[2] = 0.0f;
+                ry = ANG2RAD(pl->ang[1] + 0x7FFF + 0x4001);
+                flvecRotY(v, ry);
+                tx = t[0] + v[0];
+                ty = t[1] + v[1];
+                tz = t[2] + v[2];
+                if (pl->char0 == 0x323) {
+                    v[0] = 12.0f;
+                    v[1] = 0.0f;
+                    v[2] = 9.0f;
+                    flmatCopy(m, get_joint_wmat((PLW *)pl, 0xE));
+                    flvecApplyMat33_2(v, &m);
+                    v[0] += ((f32 *)m)[12];
+                    v[1] += ((f32 *)m)[13];
+                    v[2] += ((f32 *)m)[14];
+                    flvecRotY(v, -ry);
+                    v[0] -= tx;
+                    v[1] -= ty;
+                    v[2] -= tz;
+                    rx = flArcTan2(v[2], v[1]);
+                } else {
+                    rx = 0.0f;
+                }
+                flmatInit(&m);
+                flmatRotX33(&m, rx);
+                flmatRotY33(&m, ry);
+                c = CLAYAT(0x20D0);
+                flmatSetTrans(&m, tx, ty, tz);
+                flSetRenderState(0x67, 0xFF727162);
+                pl_item_trans_sub(pl, c, &m, mat, 0);
+                flmatSetTrans(&m, t[0], t[1], t[2]);
+                skip = 1;
+                rz = 0.0f;
+                c = CLAYAT(0x1FB8);
+                ty8 = 1;
+            }
+            break;
+        case 0x324:
+        case 0x325:
+        case 0x326:
+        case 0x327:
+        case 0x328:
+        case 0x329:
+        case 0x32A:
+            if (ch == 0x32A) {
+                if (frame_check2(22.0f, (PLW *)pl, 0) != 0) return;
+                if (frame_check2(20.0f, (PLW *)pl, 0) == 0) c = CLAYAT(0x47A4);
+                else if (frame_check2(22.0f, (PLW *)pl, 0) != 0) c = CLAYAT(0x4718);
+                else if (frame_check2(24.0f, (PLW *)pl, 0) != 0) c = CLAYAT(0x47A4);
+                else c = CLAYAT(0x2530);
+            } else if (ch == 0x329) {
+                if (frame_check2(36.0f, (PLW *)pl, 0) == 0) c = CLAYAT(0x47A4);
+                else if (frame_check2(40.0f, (PLW *)pl, 0) == 0) c = CLAYAT(0x4718);
+                else if (frame_check2(42.0f, (PLW *)pl, 0) == 0) c = CLAYAT(0x47A4);
+                else c = CLAYAT(0x2530);
+            } else if (ch == 0x328) {
+                if (frame_check2(20.0f, (PLW *)pl, 0) == 0) c = CLAYAT(0x47A4);
+                else if (frame_check2(26.0f, (PLW *)pl, 0) == 0) c = CLAYAT(0x4718);
+                else if (frame_check2(28.0f, (PLW *)pl, 0) == 0) c = CLAYAT(0x47A4);
+                else c = CLAYAT(0x2530);
+            } else if (ch == 0x327) {
+                if (frame_check2(20.0f, (PLW *)pl, 0) == 0) c = CLAYAT(0x2530);
+                else if (frame_check2(30.0f, (PLW *)pl, 0) == 0) c = CLAYAT(0x47A4);
+                else c = CLAYAT(0x4718);
+            } else {
+                c = CLAYAT(0x2530);
+            }
+            rz = -1.5707964f;
+            jt = 0x12;
+            v[0] = -9.2f;
+            rx = 0.0f;
+            v[2] = 12.0f;
+            ry = rx;
+            v[1] = -1.7f;
+            break;
+        default:
+            return;
+        }
+    }
+    if (skip == 0) {
+        flmatCopy(jm, get_joint_wmat((PLW *)pl, jt));
+        flmatGetTrans(t, &jm);
+        flvecApplyMat33_2(v, &jm);
+        t[0] += v[0];
+        t[1] += v[1];
+        t[2] += v[2];
+        flmatMakeScale(&m, sx, sy, sz);
+        flmatRotXYZ33(&m, rx, ry, rz);
+        flmatMul33_2(&m, &jm);
+    }
+    flmatSetTrans(&m, t[0], t[1], t[2]);
+    flSetRenderState(0x67, -1);
+    pl_item_trans_sub(pl, c, &m, mat, ty8 & 0xFF);
+    clay_attr_reset();
+}
