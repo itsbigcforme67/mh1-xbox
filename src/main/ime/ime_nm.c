@@ -160,7 +160,6 @@ void change_kind();
 int current_makedisp();
 int first_makedisp();
 int kouho_makedisp();
-KH *take_kouho();
 void free_khmemlist();
 void free_mem();
 KH *kh_followed();
@@ -322,11 +321,42 @@ int kstrncpy();
 void kh_mergesort();
 int kwin_length();
 extern int kwin_len, gun_num;
+extern u8 *e_khstr;
+extern u8 kouho_head[5];
+extern u8 kouho_rest[11];
+extern u8 lit_485_0036E088[];
+extern u8 mem[72000];
+extern void *free_univ;
+extern int first_init_5;
+KH *raw_kouho();
+KH *kh_endof();
+void khmem_raw();
+void kh_append_init();
+void kh_append();
+int kh_merge_getone();
+int exist_kouho();
+int kh_length();
+int kh_count();
+KH *take_kouho();
+void kouho_set_num();
+int jiritu_makedisp();
+int next_gun();
+int back_gun();
+int is_jis();
+int shiftlen();
+int sstrtom();
+void *alloc_mem();
+void free_mem();
+int bs_point();
+void bs_ctd();
+int calc_point();
+int ignore_syn();
+int setu_point();
 extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-int bs_prefer();
+s16 bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -4264,4 +4294,887 @@ int kstrncpy(u8 *dst, u8 *src, int n)
     }
     *dst = 0;
     return total - n;
+}
+
+KH *raw_kouho(int pos, int len, int mode)
+{
+    KH *out;
+
+    ((u16 *)wdsbuf)[0] = 0xFFFF;
+    ((u16 *)wdsbuf)[1] = 0;
+    ((u8 *)wdsbuf)[4] = 0;
+    trans_roman((u8 *)wdsbuf + 5, pos, len, mode);
+    return create_kouho((u8 *)wdsbuf, 0, len, &out);
+}
+
+void khmem_raw(int mode)
+{
+    HCHAR *h;
+
+    h = &hchar[cur_pos];
+    free_khmemlist(h->kh);
+    h->kh = raw_kouho(cur_pos, cur_len, mode);
+}
+
+void kh_mergesort(int pos, KL *list)
+{
+    KH *head;
+    KH *tail;
+    KH *k;
+    HCHAR *h;
+
+    h = &hchar[pos];
+    head = h->kh;
+    tail = kh_endof(head);
+    kh_append_init(pos, head);
+    while ((k = (KH *)kh_merge_getone(list)) != 0) {
+        kh_append(pos, &head, &tail, k);
+    }
+    k = null_kouho(cur_len);
+    if (k != 0) {
+        kh_append(pos, &head, &tail, k);
+    }
+    h->kh = head;
+}
+
+int kh_merge_getone(KL *list)
+{
+    u16 best;
+    KL *sel;
+    KH *r;
+    KL *l;
+
+    best = 0;
+    sel = 0;
+    for (l = list; l != 0; l = l->next) {
+        if (l->kh != 0 && (sel == 0 || best < (u16)l->pri)) {
+            best = l->pri;
+            sel = l;
+        }
+    }
+    if (sel == 0) {
+        return 0;
+    }
+    r = sel->kh;
+    sel->kh = kh_skip(r, best);
+    if (sel->kh == 0) {
+        sel->pri = 0;
+    } else {
+        sel->pri = kh_priority(sel->bs, sel->kh->x0E) & 0xFFFF;
+    }
+    return (int)r;
+}
+
+void kh_append_init(int pos, KH *k)
+{
+    s8 n;
+
+    e_khstr = (u8 *)wdsbuf;
+    while (k != 0) {
+        n = meantosjis(meanbuf, e_khstr + 1, kouho_makedisp(pos, cur_len, k, meanbuf));
+        *e_khstr = n;
+        e_khstr++;
+        e_khstr += n;
+        k = kh_followed(k);
+    }
+}
+
+void kh_append(pos, head, tail, k)
+int pos;
+KH **head;
+KH **tail;
+KH *k;
+{
+    s8 n;
+
+    n = meantosjis(meanbuf, outbuf, kouho_makedisp(pos, cur_len, k, meanbuf));
+    if (exist_kouho(outbuf, n) != 0) {
+        free_khmemlist(k);
+        return;
+    }
+    if ((u32)mem >= (u32)(e_khstr + n + 1)) {
+        *e_khstr = n;
+        e_khstr++;
+        strncpy(e_khstr, outbuf, n);
+        e_khstr += n;
+    }
+    if (*head == 0) {
+        *tail = k;
+        *head = k;
+    } else {
+        (*tail)->next = k;
+    }
+    *tail = kh_endof(k);
+}
+
+int exist_kouho(u8 *s, int n)
+{
+    u8 *p;
+    u8 len;
+
+    for (p = (u8 *)wdsbuf; p < e_khstr; p += len) {
+        len = *p++;
+        if (len == n && ask_strncmp(p, s, len) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+KH *kh_skip(KH *k)
+{
+    KH *r;
+
+    while (k->flag & 1) {
+        k = k->next;
+    }
+    r = k->next;
+    k->next = 0;
+    return r;
+}
+
+KH *kh_followed(KH *k)
+{
+    while (k->flag & 1) {
+        k = k->next;
+    }
+    return k->next;
+}
+
+KH *kh_endof(KH *k)
+{
+    KH *n;
+
+    if (k == 0) {
+        return 0;
+    }
+    while ((n = k->next) != 0) {
+        k = n;
+    }
+    return k;
+}
+
+int kh_count(KH *k)
+{
+    int n;
+
+    n = 0;
+    while (k != 0) {
+        k = kh_followed(k);
+        n++;
+    }
+    return n;
+}
+
+int kh_length(KH *k)
+{
+    int n;
+    int len;
+
+    if (k->flag == 0x80) {
+        return cur_len * 2;
+    }
+    n = (cur_len - k->x06) * 2;
+    while (k->flag & 1) {
+        len = strlen(k->str);
+        k = k->next;
+        n += len;
+    }
+    return n + strlen(k->str);
+}
+
+KH *take_kouho(KH *k, int n)
+{
+    n--;
+    while (n != -1 && n + 1 != 0) {
+        k = kh_followed(k);
+        n--;
+    }
+    return k;
+}
+
+void disp_kouho()
+{
+    u16 *p;
+    KH *k;
+    int pos;
+    int n;
+    int i;
+    int len;
+    u16 *q;
+
+    kouho_set_num(kh_count(top_kh) - gun_nkh - 1, kouho_rest + 5);
+    sstrtom(meanbuf, kouho_rest, 0);
+    pos = 0xA;
+    k = top_kh;
+    i = 0;
+    while (i < gun_num) {
+        kouho_head[2] = i + 0x31;
+        pos += sstrtom(meanbuf + pos, kouho_head, 0);
+        q = meanbuf + pos;
+        len = kouho_makedisp(cur_pos, cur_len, k, q);
+        if (i == gun_nkh) {
+            change_kind(q, len, 7);
+        } else {
+            change_kind(q, len, 0);
+        }
+        pos += len;
+        k = kh_followed(k);
+        if (k == 0) {
+            break;
+        }
+        i++;
+    }
+    p = meanbuf + pos;
+    while (pos < kwin_len) {
+        sstrtom(p, lit_485_0036E088, 0);
+        p++;
+        pos++;
+    }
+}
+
+void kouho_set_num(int n, u8 *out)
+{
+    int h;
+    int t;
+    int r;
+
+    if (n < 0) {
+        n = 0;
+    }
+    h = n / 100;
+    if (h != 0) {
+        *out = h + 0x30;
+    } else {
+        *out = 0x20;
+    }
+    out++;
+    r = n % 100;
+    t = r / 10;
+    if (t == 0 && out[-1] == 0x20) {
+        *out = 0x20;
+    } else {
+        *out = t + 0x30;
+    }
+    out[1] = r % 10 + 0x30;
+}
+
+int kouho_makedisp(int pos, int len, KH *k, u16 *buf)
+{
+    int n;
+
+    if (k != 0 && !(k->flag & 0x80)) {
+        n = jiritu_makedisp(k, buf);
+        return n + roman_makedisp(pos + k->x06, len - k->x06, buf + n, 0);
+    }
+    return roman_makedisp(pos, len, buf, 0);
+}
+
+int jiritu_makedisp(KH *k, u16 *buf)
+{
+    int n;
+
+    n = 0;
+    for (;;) {
+        n += sstrtom(buf + n, k->str, 6);
+        if (!(k->flag & 1)) {
+            break;
+        }
+        k = k->next;
+    }
+    return n;
+}
+
+int inc_gun(KH *k)
+{
+    int n;
+    int w;
+    int room;
+    KH *p;
+
+    if (k == 0) {
+        return 0;
+    }
+    p = k;
+    w = 0;
+    n = 0;
+    room = kwin_len - 0xA;
+    while (n < 9) {
+        if (p == 0) {
+            break;
+        }
+        w += kh_length(p) + 4;
+        if (room < w) {
+            break;
+        }
+        n++;
+        p = kh_followed(p);
+    }
+    if (n == 0) {
+        n = 1;
+    }
+    return n;
+}
+
+int next_gun(int disp, int wrap)
+{
+    KH *old;
+    int n;
+
+    old = top_kh;
+    top_kh = take_kouho(old, gun_num);
+    n = inc_gun(top_kh);
+    if (n == 0) {
+        if (wrap == 0) {
+            top_kh = old;
+            return 0;
+        }
+        init_kouho(0, 0);
+    } else {
+        gun_num = n;
+    }
+    gun_nkh = 0;
+    if (disp == 1) {
+        disp_kouho();
+    }
+    return 1;
+}
+
+int back_gun(int disp, int wrap)
+{
+    KH *old;
+    int num;
+
+    old = top_kh;
+    num = gun_num;
+    init_kouho(0, 0);
+    if (old == top_kh) {
+        if (wrap == 0) {
+            top_kh = old;
+            gun_num = num;
+            gun_nkh = 0;
+            return 0;
+        }
+        old = 0;
+    }
+    while (take_kouho(top_kh, gun_num) != old) {
+        next_gun(0, 1);
+    }
+    if (disp == 1) {
+        disp_kouho(0);
+    }
+    return 1;
+}
+
+int is_jis(c)
+int c;
+{
+    int a;
+    int b;
+    int r;
+
+    a = 0;
+    r = 0;
+    if (((c & 0xFFFF) >> 8 & 0xFF) >= 0x21 && ((c & 0xFFFF) >> 8 & 0xFF) < 0x7F) {
+        a = 1;
+    }
+    if (a != 0) {
+        b = 0;
+        if ((c & 0xFF) >= 0x21 && (c & 0xFF) < 0x7F) {
+            b = 1;
+        }
+        if (b != 0) {
+            r = 1;
+        }
+    }
+    return r;
+}
+
+int is_kanji(int c)
+{
+    c = c & 0xFF;
+    if (c < 0x81 || c >= 0xFD || (c >= 0xA0 && c < 0xE0)) {
+        return 0;
+    }
+    return 1;
+}
+
+int is_shift(int c)
+{
+    int lo;
+
+    if (is_kanji((c & 0xFFFF) >> 8 & 0xFF) == 0) {
+        return 0;
+    }
+    lo = c & 0xFF;
+    if (lo < 0x40 || lo >= 0xFD || lo == 0x7F) {
+        return 0;
+    }
+    return 1;
+}
+
+int setmean(u16 *out, int c, int kind)
+{
+    int k;
+    int f;
+
+    k = ((kind & 0xFFFF) << 12) & 0xFFFF;
+    if (is_shift(c) != 0) {
+        if (shiftlen(c) == 1) {
+            f = (k | 0x300) & 0xFFFF;
+        } else {
+            f = (k | 0x700) & 0xFFFF;
+        }
+        goto two;
+    }
+    if (is_jis(c) != 0) {
+        f = (k | 0x500) & 0xFFFF;
+        if ((c & 0xFFFF) == 0x2474) {
+            c = 0x2574;
+        }
+        if ((c & 0xFFFF) == 0x2475) {
+            c = 0x2575;
+        }
+        if ((c & 0xFFFF) == 0x2476) {
+            c = 0x2576;
+        }
+two:
+        out[0] = (f & 0xFFFF) | ((c & 0xFFFF) >> 8);
+        out[1] = ((f & 0xFFFF) + 0x100) | (c & 0xFF);
+        return 2;
+    }
+    out[0] = (k & 0xFFFF) | (c & 0xFF);
+    return 1;
+}
+
+void change_kind(u16 *p, int n, int kind)
+{
+    n--;
+    while (n != -1 && n + 1 != 0) {
+        *p = (*p & 0xFFF) | (((kind & 0xFFFF) << 12) & 0xFFFF);
+        p++;
+        n--;
+    }
+}
+
+int shiftlen(int c)
+{
+    c = c & 0xFFFF;
+    switch (c & 0xFF00) {
+    case 0x8500:
+    case 0x8000:
+        return 1;
+    case 0x8600:
+        if ((c & 0xFF) < 0x9E) {
+            return 1;
+        }
+    default:
+        return 2;
+    }
+}
+
+int sstrtom(u16 *out, u8 *s, int kind)
+{
+    u16 *start;
+    int c;
+    int n;
+
+    start = out;
+    while (*s != 0) {
+        c = *s;
+        if (c >= 0x80 && !(c >= 0xA0 && c < 0xE0)) {
+            n = setmean(out, ((c << 8) | s[1]) & 0xFFFF, kind);
+            s += 2;
+        } else {
+            c = *s;
+            s++;
+            n = setmean(out, c, kind);
+        }
+        out += n;
+    }
+    return out - start;
+}
+
+int to_ucode(int c)
+{
+    c = c & 0xFFFF;
+    if (c >= 0x21 && c < 0x7F) {
+        return 0;
+    }
+    switch (c & 0xFF00) {
+    case 0x2300:
+        return c & 0x7F;
+    case 0x2400:
+        return ((c & 0x7F) | 0x80) & 0xFF;
+    case 0x2500:
+        return 0;
+    default:
+        return srch_ucode(c);
+    }
+}
+
+int is_kata(c, flag)
+int c;
+int flag;
+{
+    if (flag != 0 && (c & 0xFFFF) == 0x213C) {
+        return 1;
+    }
+    if ((c & 0xFFFF & 0xFF00) == 0x2500) {
+        return 1;
+    }
+    return 0;
+}
+
+int is_jisknj(int c)
+{
+    return (c & 0xFFFF) >= 0x3020;
+}
+
+int is_jiskig(int c)
+{
+    c = c & 0xFFFF;
+    if (c >= 0x2120 && c < 0x3020) {
+        return is_kata(0) == 0;
+    }
+    return 0;
+}
+
+int meantosjis(u16 *src, u8 *dst, int n)
+{
+    int cnt;
+    u8 *d;
+    u16 c;
+    u16 c2;
+    int hi;
+    int v;
+
+    cnt = 0;
+    d = dst;
+    while (cnt < n) {
+        c = *src;
+        hi = (c >> 8) & 0xF;
+        if (hi == 0) {
+            d[0] = c;
+            src++;
+            d++;
+            cnt++;
+        } else if (hi & 1) {
+            src++;
+            c2 = *src;
+            v = (c << 8) & 0xFFFF;
+            cnt++;
+            if (((c2 >> 8) & 0xF) == hi + 1) {
+                src++;
+                cnt++;
+                v = (v | (c2 & 0xFF)) & 0xFFFF;
+                if (is_jis(v, v) != 0) {
+                    v = ask_jis2sjis(v) & 0xFFFF;
+                }
+                d[0] = v >> 8;
+                d[1] = v;
+                d += 2;
+            }
+        }
+    }
+    *d = 0;
+    return d - dst;
+}
+
+int ask_sjis2jis(int c)
+{
+    int lo;
+    int hi;
+    int r;
+    int s;
+
+    lo = c & 0xFF;
+    hi = ((c & 0xFFFF) >> 8) & 0xFF;
+    if (lo >= 0x40 && lo < 0xFD) {
+        if (lo == 0x7F) {
+            return 0;
+        }
+        if (hi >= 0xE0) {
+            hi = (hi - 0x40) & 0xFF;
+        }
+        s = (((hi - 0x81) * 2) + 0x21) & 0xFF;
+        if (lo >= 0x9F) {
+            r = lo - 0x7E;
+            s = (s + 1) & 0xFF;
+        } else {
+            r = lo - 0x20;
+            if (lo < 0x80) {
+                r = lo - 0x1F;
+            }
+        }
+        return ((s << 8) | (r & 0xFF)) & 0xFFFF;
+    }
+    return 0;
+}
+
+int ask_jis2sjis(int c)
+{
+    int lo;
+    unsigned int hi;
+    int a;
+    unsigned int b;
+    int t;
+    int r;
+
+    c = c & 0xFFFF;
+    lo = c & 0xFF;
+    hi = (c >> 8) & 0xFF;
+    if (c >= 0x2121 && c < 0x7E7F) {
+        if (lo < 0x21 || lo >= 0x7F) {
+            return 0;
+        }
+        a = (lo + 0x1F) & 0xFF;
+        b = hi >> 1;
+        if (!(hi & 1)) {
+            a = (a + 0x5E) & 0xFF;
+            b = ((hi >> 1) & 0xFF) - 1;
+        }
+        t = b & 0xFF;
+        if ((a & 0xFF) >= 0x7F) {
+            a = (a + 1) & 0xFF;
+        }
+        r = t + 0x71;
+        if (t >= 0x2F) {
+            r = t + 0xB1;
+        }
+        return (((r & 0xFF) << 8) | (a & 0xFF)) & 0xFFFF;
+    }
+    return 0;
+}
+
+void init_univmem(void)
+{
+    u8 *p;
+
+    free_univ = mem;
+    for (p = mem; p < mem + 0x11928; p += 0x18) {
+        *(u8 **)p = p + 0x18;
+    }
+    *(u8 **)p = 0;
+    first_init_5 = 0;
+}
+
+void *alloc_mem(void)
+{
+    void *r;
+
+    r = free_univ;
+    if (r == 0) {
+        return 0;
+    }
+    free_univ = *(void **)r;
+    return r;
+}
+
+void free_mem(void *p)
+{
+    if (p != 0) {
+        *(void **)p = free_univ;
+        free_univ = p;
+    }
+}
+
+CH *alloc_chmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+BS *alloc_bsmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+PWM *alloc_pwmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+KH *alloc_khmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+KL *alloc_klmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+void free_pwmemlist(PWM *p)
+{
+    PWM *n;
+
+    while (p != 0) {
+        n = p->next;
+        free_mem(p);
+        p = n;
+    }
+}
+
+void free_chmemlist(CH *c)
+{
+    CH *n;
+    s64 prev;
+
+    prev = 0;
+    while (c != 0) {
+        n = c->next;
+        if (prev == 0 || c->id != prev) {
+            if (c->id != 0) {
+                dic_freeentid(c->id);
+            }
+        }
+        prev = c->id;
+        free_mem(c);
+        c = n;
+    }
+}
+
+void free_bsmemlist(BS *b)
+{
+    BS *n;
+
+    while (b != 0) {
+        n = b->next;
+        free_mem(b);
+        b = n;
+    }
+}
+
+void free_khmemlist(KH *k)
+{
+    KH *n;
+
+    while (k != 0) {
+        n = k->next;
+        free_mem(k);
+        k = n;
+    }
+}
+
+void free_klmemlist(KL *l)
+{
+    KL *n;
+
+    while (l != 0) {
+        n = l->next;
+        free_mem(l);
+        l = n;
+    }
+}
+
+s16 bs_prefer(int pos, int end, int len)
+{
+    BS *b;
+    BS *best;
+    BS *p;
+    HCHAR *h;
+
+    h = &hchar[pos];
+    for (b = h->bs; b != 0; b = b->next) {
+        if (len < 0 || b->len == len) {
+            if (bs_point(b, pos, end) == -1) {
+                return -1;
+            }
+        }
+    }
+    if (h != 0) {
+        best = h->bs;
+        if (best == 0) {
+            return -1;
+        }
+        for (p = best->next; p != 0; p = p->next) {
+            if (best->x08 < p->x08) {
+                best = p;
+            }
+        }
+        bs_ctd(best, pos, end);
+        return best->len;
+    }
+    return -1;
+}
+
+int calc_point(int pos, BS *b, BS *next)
+{
+    s16 a;
+    s16 c;
+    int f;
+    u16 pri;
+
+    if (next == 0) {
+        a = b->len;
+        c = 0;
+        f = 1;
+    } else {
+        c = b->len;
+        a = next->len;
+        f = 0;
+    }
+    pri = b->x0A;
+    return f * 0x32 + (pri + (c * 0x10 + a * 0x11) + setu_point(b, next, pri));
+}
+
+int bs_point(BS *b, int pos, int end)
+{
+    BS *n;
+    s16 best;
+    s16 v;
+    int p;
+
+    if (ignore_syn() != 0) {
+        b->x08 = 0;
+        return 0;
+    }
+    if (b->x02 == 0xFF || (p = pos + b->len) >= end) {
+        best = calc_point(pos, b, 0) & 0xFFFF;
+    } else {
+        n = hchar[p].bs;
+        if (n == 0 && henkan_mode >= 3) {
+            return -1;
+        }
+        best = 0;
+        while (n != 0) {
+            v = calc_point(pos, b, n) & 0xFFFF;
+            if ((best & 0xFFFF) < v) {
+                best = v;
+            }
+            n = n->next;
+        }
+    }
+    b->x08 = best;
+    return 0;
 }
