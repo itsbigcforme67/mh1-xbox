@@ -82,35 +82,18 @@ done
 # when this checkout has the branch and main does not have the file yet, the
 # file and that branch's include/ are exported to build/pc/ext/<branch>/
 # (gitignored) and compiled against those headers (same struct layouts, more
-# fields named). A file listed here that main also builds (em_taisei_nm.c)
-# is replaced by the branch's newer copy. Remove entries once merged.
-#   agent-B: em01_ai_nm.c (the whole Rathian AI), em_taisei_nm.c (Em_Dmg_Sys)
+# fields named). Remove entries once merged (agent B's em01_ai_nm.c and
+# em_taisei_nm.c were, 6 Oct 2026).
 #   agent-D: em_cmd_nm.c (the monster command interpreter)
-EXT="agent-B:src/game/em/em01_ai_nm.c agent-B:src/game/em/em_taisei_nm.c agent-D:src/game/em/em_cmd_nm.c"
+EXT="agent-D:src/game/em/em_cmd_nm.c"
 for e in $EXT; do
     br=${e%%:*}; f=${e#*:}
+    [ -f "$f" ] && continue                       # main has it
     git rev-parse -q --verify "$br" >/dev/null 2>&1 || continue
-    if [ -f "$f" ] && [ "$(git hash-object "$f")" = "$(git rev-parse "$br:$f" 2>/dev/null)" ]; then
-        continue                                  # main has the same file
-    fi
-    case " $EM " in *" $f "*) ;; *) [ -f "$f" ] && continue ;; esac   # main has its own (other) copy and does not build it
     d="build/pc/ext/$br"
     rm -rf "$d/include"; mkdir -p "$d/include" "$(dirname "$d/$f")"
     git archive "$br" include | tar -x -C "$d"
-    # absolute PS2 addresses some m2c-based files still use (game_w
-    # 0x3F33F0, quest_w 0x3C7440) -> the host symbols (src/pc/rt/rt_ps2abs.h)
-    git show "$br:$f" | python3 -c '
-import re, sys
-B = {"game_w": (0x3F33F0, 0x224), "quest_w": (0x3C7440, 0x188)}
-def fix(m):
-    a = int(m.group(2), 16)
-    for n, (b, z) in B.items():
-        if b <= a < b + z:
-            return "(%s *)(rt_ps2_%s + 0x%X)" % (m.group(1), n, a - b)
-    return m.group(0)
-sys.stdout.write(re.sub(r"\(\s*(\w+)\s*\*\s*\)\s*0x([0-9A-Fa-f]{6,8})\b", fix, sys.stdin.read()))
-' > "$d/$f"
-    EM=$(echo " $EM " | sed "s# $f # #")
+    git show "$br:$f" > "$d/$f"
     EM="$EM $d/$f"
 done
 WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm"
@@ -163,8 +146,28 @@ for f in $GAME; do
              -Dem_sleep_eff_set=rtabi_em_sleep_eff_set_ps2" ;;
     esac
     INC=""
-    case "$f" in build/pc/ext/*) INC="-I$(echo "$f" | cut -d/ -f1-4)/include -include src/pc/rt/rt_ps2abs.h" ;; esac
-    gcc $INC $GAMEFLAGS $ABI $SYS -c "$f" -o "$o"
+    src="$f"
+    case "$f" in build/pc/ext/*) INC="-I$(echo "$f" | cut -d/ -f1-4)/include" ;; esac
+    # absolute PS2 addresses some m2c-based files still use (game_w
+    # 0x3F33F0, quest_w 0x3C7440): compile a copy that reads the host's
+    # game_w / quest_w instead (src/pc/rt/rt_ps2abs.h)
+    if grep -qE '\(\s*\w+\s*\*\s*\)\s*0x(3F3|3C74)[0-9A-Fa-f]{3}' "$f"; then
+        src="build/pc/abs/$b.c"
+        mkdir -p build/pc/abs
+        python3 -c '
+import re, sys
+B = {"game_w": (0x3F33F0, 0x224), "quest_w": (0x3C7440, 0x188)}
+def fix(m):
+    a = int(m.group(2), 16)
+    for n, (b, z) in B.items():
+        if b <= a < b + z:
+            return "(%s *)(rt_ps2_%s + 0x%X)" % (m.group(1), n, a - b)
+    return m.group(0)
+sys.stdout.write(re.sub(r"\(\s*(\w+)\s*\*\s*\)\s*0x([0-9A-Fa-f]{6,8})\b", fix, open(sys.argv[1]).read()))
+' "$f" > "$src"
+        INC="$INC -I$(dirname "$f") -include src/pc/rt/rt_ps2abs.h"
+    fi
+    gcc $INC $GAMEFLAGS $ABI $SYS -c "$src" -o "$o"
     case " $WEAK " in *" $b "*) objcopy --weaken "$o" ;; esac
     OBJS="$OBJS $o"
 done
