@@ -38,6 +38,9 @@ f32 set09_st08_beetle_tbl[4][3], set09_st05_type09_pos[16], set09_st33_bird_tbl[
 u16 set09_st05_type09_ang[16];
 f32 stage_start_pos[88][3];
 
+/* set17 (src/game/set/set17.c) */
+u8 st01_parts_id_tbl[4], st02_parts_id_tbl[20], st03_parts_id_tbl[12], st46_parts_id_tbl[30];
+
 static const struct {
     const char *name;
     uint32_t va;
@@ -73,6 +76,10 @@ static const struct {
     T(set09_st05_type09_ang, 0x677A80, 0x20),
     T(set09_st33_bird_tbl, 0x677AA0, 0x18),
     T(stage_start_pos, 0x2F2620, 0x420),
+    T(st01_parts_id_tbl, 0x389B20, 4),
+    T(st02_parts_id_tbl, 0x6784F0, 0x14),
+    T(st03_parts_id_tbl, 0x678508, 0xC),
+    T(st46_parts_id_tbl, 0x678520, 0x1E),
     T(st00_mdl_tbl, 0x389AC8, 8),
     T(st01_mdl_tbl, 0x389AD0, 8),
     T(st04_mdl_tbl, 0x389AD8, 8),

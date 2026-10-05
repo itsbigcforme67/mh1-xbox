@@ -45,3 +45,20 @@ int hit_point_cyl(f32 *p, f32 *c, f32 r, f32 y0, f32 y1)
         fprintf(stderr, "rt: hit_point_cyl not ported yet (returns 0)\n");
     return 0;
 }
+
+/* View-frustum culling (Create_FOV builds the clip planes in fov from the
+ * camera; flCheckMeshFOV tests a sphere). Not ported: everything counts as
+ * visible and the GPU clips, which only costs draw calls. out[2] gets the
+ * view-space depth like the original's first step. */
+u8 fov[0x48];
+void Create_FOV(f32 dist, int a) { (void)dist; (void)a; }
+int flCheckMeshFOV(f32 r, f32 *c, f32 *out, f32 (*view)[4], void *planes)
+{
+    (void)r; (void)planes;
+    out[2] = c[0] * view[0][2] + c[1] * view[1][2] + c[2] * view[2][2] + view[3][2];
+    return 1;
+}
+
+/* reload_tex (0x11F160): re-sends a texture list to VRAM on the PS2; the
+ * host keeps every texture resident, so nothing to do. */
+void reload_tex(int num, int id) { (void)num; (void)id; }

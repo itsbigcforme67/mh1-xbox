@@ -22,6 +22,7 @@
 
 FLMAT rview_mat;     /* 0x3F2060: inverse of the view matrix (camera world) */
 FLMAT rview_matY;    /* 0x3F2020: rotation about Y that turns a billboard to the camera */
+FLMAT view_mat;      /* 0x3F20A0: the view matrix (world -> camera) */
 
 void flmatInit(FLMAT *m)
 {
@@ -118,6 +119,19 @@ void rt_set_camera(const float cam_world[16])
 {
     u16 ang;
     memcpy(rview_mat, cam_world, sizeof rview_mat);
+    /* view_mat = inverse of the camera's rigid world matrix */
+    {
+        int i, k;
+        for (i = 0; i < 3; i++)
+            for (k = 0; k < 3; k++)
+                view_mat[i][k] = rview_mat[k][i];
+        for (k = 0; k < 3; k++) {
+            view_mat[3][k] = -(rview_mat[3][0] * view_mat[0][k] + rview_mat[3][1] * view_mat[1][k]
+                              + rview_mat[3][2] * view_mat[2][k]);
+            view_mat[k][3] = 0.0f;
+        }
+        view_mat[3][3] = 1.0f;
+    }
     ang = (u16)(calc_mat_angY(&rview_mat) + 0x4000);
     flmatInit(&rview_matY);
     flmatSetXYZ33(&rview_matY, 0.0f, 2.0f * (3.1415927f * (360.0f * (f32)ang / 65536.0f / 360.0f)), 0.0f);
