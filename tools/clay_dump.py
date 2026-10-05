@@ -19,6 +19,11 @@ Usage:
     python3 tools/clay_dump.py disc/mh1/AFS_DATA.AFS cube.amo -o build/cube.obj
     python3 tools/clay_dump.py disc/mh1/AFS_DATA.AFS em01_amh.bin -o build/em01.obj
     python3 tools/clay_dump.py disc/mh1/AFS_DATA.AFS em01_amh.bin --tree
+    python3 tools/clay_dump.py disc/mh1/AFS_DATA.AFS em01_amh.bin -o build/pose/em01.obj --motion 1 --frame 30
+
+With a *_tex.bin next to the model (or --tex) the .obj gets UVs, a .mtl and
+one PNG per APX texture. --motion poses the mesh with AHI bones + an AAN
+motion from the *_tbl.bin.
 """
 import argparse
 import os
@@ -222,7 +227,7 @@ def material_textures(d):
     return res
 
 
-def dump_obj(d, out, texdata=None):
+def dump_obj(d, out, texdata=None, skin=None):
     root = root_chunk(d)
     models = child(d, root[0], root[3], T_MODELS)
     if not models:
@@ -253,8 +258,10 @@ def dump_obj(d, out, texdata=None):
             continue
         nv = v[1]
         lines.append("o part%02d" % k)
-        for j in range(nv):
-            x, y, z = struct.unpack_from("<3f", d, v[0] + 12 + 12 * j)
+        verts = [struct.unpack_from("<3f", d, v[0] + 12 + 12 * j) for j in range(nv)]
+        if skin is not None:
+            verts = skin_vertices(d, o, s, verts, skin)
+        for x, y, z in verts:
             lines.append("v %f %f %f" % (x, y, z))
         st = child(d, o, s, T_ST)
         if texdata is not None and st:
@@ -293,6 +300,178 @@ def dump_obj(d, out, texdata=None):
     print("%s: %d parts, %d vertices, %d triangles" % (out, nparts, base - 1, ntris))
 
 
+# ---------------------------------------------------------------- skeleton
+# AHI hierarchy (entry 1 of *_amh.bin; plAHI* / GetModelDataAHI, main
+# 0x1900A0-0x190340) and AAN motions (*_tbl.bin; plCreateMotionSetFromAAN
+# 0x18F370, flGetMotionMatrix 0x174300). See docs/formats/graphics.md.
+
+def read_ahi(a):
+    """Return [(parent, group, S[3], R[3], T[3])] indexed by bone number."""
+    flags, n, size = struct.unpack_from("<III", a, 0)
+    bones = {}
+    o = 12
+    for _ in range(n):
+        t, c, sz = struct.unpack_from("<III", a, o)
+        if t != 0:
+            v = struct.unpack_from("<4i12f2i", a, o + 12)
+            bones[v[0]] = (v[1], v[17], v[4:7], v[8:11], v[12:15])
+        o += sz
+    return [bones[k] for k in range(len(bones))]
+
+
+AAN_KEYSIZE = {0x21: 8, 0x22: 16, 0x23: 20, 0x11: 4, 0x12: 8, 0x13: 12}
+
+
+def read_aan(d, o):
+    """Return (kind, [bone -> {channel: (fmt, keys)}]). Channels 0-8 =
+    Sx Sy Sz Rx Ry Rz Tx Ty Tz."""
+    hdr, n, size = struct.unpack_from("<III", d, o)
+    p = o + 0x14
+    bones = []
+    for _ in range(n):
+        bt, bc, bs = struct.unpack_from("<III", d, p)
+        q = p + 12
+        curves = {}
+        for _ in range(bc):
+            ct, cn, cs = struct.unpack_from("<III", d, q)
+            fmt = (ct >> 16) & 0xFF
+            ch = (ct & 0x1FF).bit_length() - 1
+            ks = AAN_KEYSIZE[fmt]
+            curves[ch] = (fmt, [d[q + 12 + ks * k:q + 12 + ks * (k + 1)] for k in range(cn)])
+            q += cs
+        bones.append(curves)
+        p += bs
+    return hdr & 0xFF, bones
+
+
+def fcurve(fmt, keys, t):
+    """Evaluate one curve (flFCVGetValue2 0x170240): keys are (value, time,
+    in-slope, out-slope); Hermite uses k0.out and k1.in in value per frame."""
+    if fmt in (0x21, 0x22):
+        ks = [struct.unpack("<ff" if fmt == 0x21 else "<4f", k) for k in keys]
+    elif fmt in (0x11, 0x12):
+        ks = [struct.unpack("<hh" if fmt == 0x11 else "<4h", k) for k in keys]
+    else:   # complex: s32 interpolation (0x10000 linear, 0x20000 hermite) + 4 values
+        ks = [struct.unpack("<i4f" if fmt == 0x23 else "<i4h", k)[1:] for k in keys]
+    if t <= ks[0][1] or len(ks) == 1:
+        return float(ks[0][0])
+    if t >= ks[-1][1]:
+        return float(ks[-1][0])
+    for a, b in zip(ks, ks[1:]):
+        if a[1] <= t <= b[1]:
+            break
+    dt = float(b[1] - a[1])
+    s = t - a[1]
+    if fmt in (0x21, 0x11) or len(a) < 4:
+        return a[0] + (b[0] - a[0]) * s / dt
+    u = s / dt
+    h00 = 2 * u ** 3 - 3 * u ** 2 + 1
+    h01 = 3 * u ** 2 - 2 * u ** 3
+    return h00 * a[0] + h01 * b[0] + (u ** 3 - 2 * u ** 2 + u) * dt * a[3] + (u ** 3 - u ** 2) * dt * b[2]
+
+
+def matmul(a, b):
+    return [[sum(a[i][k] * b[k][j] for k in range(4)) for j in range(4)] for i in range(4)]
+
+
+def local_matrix(S, R, T):
+    """flGetMotionMatrix: Scale, then flmatRotXYZ33 (M = M*Rx*Ry*Rz, row
+    vectors), translation in row 3."""
+    import math
+    m = [[S[0], 0, 0, 0], [0, S[1], 0, 0], [0, 0, S[2], 0], [0, 0, 0, 1]]
+    sx, cx = math.sin(R[0]), math.cos(R[0])
+    sy, cy = math.sin(R[1]), math.cos(R[1])
+    sz, cz = math.sin(R[2]), math.cos(R[2])
+    rx = [[1, 0, 0, 0], [0, cx, sx, 0], [0, -sx, cx, 0], [0, 0, 0, 1]]
+    ry = [[cy, 0, -sy, 0], [0, 1, 0, 0], [sy, 0, cy, 0], [0, 0, 0, 1]]
+    rz = [[cz, sz, 0, 0], [-sz, cz, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+    m = matmul(matmul(matmul(m, rx), ry), rz)
+    m[3] = [T[0], T[1], T[2], 1]
+    return m
+
+
+def invert_rigid(m):
+    """Inverse of a rotation+translation (+uniform scale 1) matrix."""
+    r = [[m[j][i] for j in range(3)] for i in range(3)]
+    t = [-sum(m[3][k] * r[k][j] for k in range(3)) for j in range(3)]
+    return [r[0] + [0], r[1] + [0], r[2] + [0], t + [1]]
+
+
+def world_matrices(bones, chans):
+    out = [None] * len(bones)
+
+    def get(i):
+        if out[i] is None:
+            c = chans[i]
+            m = local_matrix(c[0:3], c[3:6], c[6:9])
+            par = bones[i][0]
+            out[i] = matmul(m, get(par)) if par >= 0 else m
+        return out[i]
+    for i in range(len(bones)):
+        get(i)
+    return out
+
+
+def skin_matrices(ahi, tbl, slot, frame):
+    """Per AHI bone: inverse(bind world) * posed world. Motions are stored per
+    bone group (AHI +0x44): bank 2*g of the *_tbl.bin holds group g, and AAN
+    bone i drives the group's i-th bone."""
+    bones = read_ahi(ahi)
+    bind = [list(b[2]) + list(b[3]) + list(b[4]) for b in bones]
+    pose = [list(c) for c in bind]
+    nbanks = 0
+    while struct.unpack_from("<I", tbl, 8 * nbanks)[0]:
+        nbanks += 1
+    groups = sorted(set(b[1] for b in bones))
+    for g in groups:
+        members = [i for i, b in enumerate(bones) if b[1] == g]
+        bank = 2 * g
+        if bank >= nbanks:
+            continue
+        cnt, off = struct.unpack_from("<II", tbl, 8 * bank)
+        if slot >= cnt:
+            continue
+        mo, = struct.unpack_from("<i", tbl, off + 4 * slot)
+        if mo < 0:
+            continue
+        kind, curves = read_aan(tbl, mo)
+        for i, cv in enumerate(curves):
+            if i >= len(members):
+                break
+            for ch, (fmt, keys) in cv.items():
+                v = fcurve(fmt, keys, frame)
+                if kind == 2:   # short motions: rotation in 1/16384 turn, rest x16
+                    v = v * 0.0003834952 if ch in (3, 4, 5) else v / 16.0
+                pose[members[i]][ch] = v
+    wb = world_matrices(bones, bind)
+    wp = world_matrices(bones, pose)
+    return [matmul(invert_rigid(b), p) for b, p in zip(wb, wp)]
+
+
+def skin_vertices(d, o, s, verts, skin):
+    """Apply 0xC0000 weights: each {bone, weight} names an index into the
+    part's 0x100000 list (which holds AHI bone numbers); weights are percent."""
+    w = child(d, o, s, T_WEIGHT)
+    mx = child(d, o, s, T_MATRIX)
+    if not w or not mx:
+        return verts
+    pal = struct.unpack_from("<%dI" % mx[1], d, mx[0] + 12)
+    p = w[0] + 12
+    out = []
+    for x, y, z in verts:
+        n, = struct.unpack_from("<I", d, p)
+        p += 4
+        acc = [0.0, 0.0, 0.0]
+        for _ in range(n):
+            b, f = struct.unpack_from("<If", d, p)
+            p += 8
+            m = skin[pal[b]]
+            for j in range(3):
+                acc[j] += (x * m[0][j] + y * m[1][j] + z * m[2][j] + m[3][j]) * f / 100.0
+        out.append(tuple(acc))
+    return out
+
+
 def read_entry(afs, name):
     """Return (name, raw bytes) of one AFS entry, by name or index."""
     with open(afs, "rb") as f:
@@ -314,11 +493,21 @@ def main():
     ap.add_argument("--tree", action="store_true", help="print the chunk tree")
     ap.add_argument("--tex", help="texture entry (default: NAME with _amh.bin -> _tex.bin); "
                     "writes .mtl, UVs and one PNG per APX next to the .obj; 'none' to skip")
+    ap.add_argument("--motion", type=int, help="pose with this motion slot of NAME_tbl.bin "
+                    "(em models: em01_amh.bin -> em01_tbl.bin)")
+    ap.add_argument("--frame", type=float, default=0.0, help="motion frame (default 0)")
+    ap.add_argument("--tbl", help="motion table entry (default derived from NAME)")
     args = ap.parse_args()
     name, raw = read_entry(args.afs, args.name)
     d = melt(raw)
+    skin = None
     if name and name.endswith("_amh.bin"):
-        lo, ls = link_entries(d)[0]
+        link = link_entries(d)
+        if args.motion is not None:
+            ho, hs = link[1]
+            tbl = melt(read_entry(args.afs, args.tbl or name[:-len("_amh.bin")] + "_tbl.bin")[1])
+            skin = skin_matrices(d[ho:ho + hs], tbl, args.motion, args.frame)
+        lo, ls = link[0]
         d = d[lo:lo + ls]
     if args.tree:
         o, t, c, sz = root_chunk(d)
@@ -334,7 +523,7 @@ def main():
                 texdata = melt(read_entry(args.afs, texname)[1])
             except ValueError:
                 print("no texture entry %s" % texname)
-        dump_obj(d, args.out, texdata)
+        dump_obj(d, args.out, texdata, skin)
 
 
 if __name__ == "__main__":
