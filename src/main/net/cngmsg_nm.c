@@ -128,7 +128,8 @@ u16 CngNet_MSG_ReadU16(CNGMSG *m) {
 }
 
 void CngNet_MSG_WriteFloat32(CNGMSG *m, f32 v) {
-    CngNet_MSG_Write(m, (u8 *)&v, 4);
+    f32 t = v;
+    CngNet_MSG_Write(m, (u8 *)&t, 4);
 }
 
 f32 CngNet_MSG_ReadFloat32(CNGMSG *m) {

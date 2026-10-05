@@ -220,8 +220,8 @@ int ms_network_bb_last_time_save(void) {
         break;
     case 2:
         if (Ncm_mmbb_spr_create() != 0) {
+            net_common_w.step = net_common_w.step + 1;
             net_common_w.timer = 0xA;
-            net_common_w.step++;
             Ncm_spr_BG_set();
             Ncm_spr_set_diarog_b();
             Net_fade_execute(0, 0x14, 0);

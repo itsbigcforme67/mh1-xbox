@@ -180,33 +180,51 @@ s16 Ud_item_num_ck(u16 id) {
     return 0;
 }
 
-s16 Ud_item_num_ck2(u16 id) {
-    s16 i;
-    UDW *u = User_data;
-    for (i = 0; i < 20; i++) {
-        if (u->item[i].id == id) {
-            u8 m = Item_data[id][3];
-            if (m == 0xFF) {
-                return 0xFF;
-            }
-            return m - u->item[i].num;
+int Ud_item_num_ck2(u16 id)
+{
+  s16 i;
+  int r;
+  UDW *u = User_data;
+  for (i = 0; i < 20; i++)
+  {
+    if (u->item[i].id == id)
+    {
+      u8 m = Item_data[id][3];
+      if (m == 0xFF)
+      {
+        if ((m && m) && m)
+        {
         }
+        return 0xFF;
+      }
+      else
+      {
+        return (s16) (m - u->item[i].num);
+      }
     }
-    return Item_data[id][3];
+  }
+
+  return Item_data[id][3];
 }
 
-s16 Ud_item_num_ck3(u16 id) {
+int Ud_item_num_ck3(u16 id) {
     s16 i;
+    int new_var;
     s16 n = 0;
     UDW *u = User_data;
     for (i = 0; i < 20; i++) {
         u16 v = u->item[i].id;
-        if (v == id) {
+        new_var = v == id;
+        if (new_var) {
             u8 m = Item_data[id][3];
             if (m == 0xFF) {
+                /* permuter-found filler: changes only the branch/delay-slot layout */
+                if (((!v) && (!v)) && (!v)) {
+                }
                 return 0xFF;
+            } else {
+                return (s16)(m - u->item[i].num);
             }
-            return m - u->item[i].num;
         }
         if (v == 0) {
             n++;
@@ -615,13 +633,36 @@ void Set_equip_idx(UDW *u) {
     }
 }
 
-int Now_equip_ck(UDW *u, int idx) {
-    if (u->widx[0] == idx) { return 1; }
-    if (u->widx[1] == idx) { return 1; }
-    if (u->widx[2] == idx) { return 1; }
-    if (u->widx[3] == idx) { return 1; }
-    if (u->widx[4] == idx) { return 1; }
-    return u->widx[5] == idx;
+int Now_equip_ck(UDW *u, int idx)
+{
+  if (u->widx[0] == idx)
+  {
+    return 1;
+  }
+  if (u->widx[1] == idx)
+  {
+    return 1;
+  }
+  if (u->widx[2] == idx)
+  {
+    return 1;
+  }
+  if (u->widx[3] == idx)
+  {
+    return 1;
+  }
+  if (u->widx[4] == idx)
+  {
+    if (idx)
+    {
+      return 1;
+    }
+    else
+    {
+      return 1;
+    }
+  }
+  return u->widx[5] == idx;
 }
 
 int Warehouse_space_ck(UDW *u, int idx) {
@@ -768,11 +809,11 @@ int Equip_ok_ck(UDW *u, UD_WARE *w) {
     if (u->x01 == 0) { m |= 1; } else { m |= 2; }
     if (u->wkind == 7) { m |= 8; } else { m |= 4; }
     switch (w->kind) {
-    case 0: if (m == (m & Armor_Leg_Data[w->id][2])) { break; } return 0;
     case 2: if (m == (m & Armor_Head_Data[w->id][2])) { break; } return 0;
     case 3: if (m == (m & Armor_Body_Data[w->id][2])) { break; } return 0;
-    case 4: if (m == (m & Armor_Arm_Data[w->id][2])) { break; } return 0;
     case 5: if (m == (m & Armor_Waist_Data[w->id][2])) { break; } return 0;
+    case 4: if (m == (m & Armor_Arm_Data[w->id][2])) { break; } return 0;
+    case 0: if (m == (m & Armor_Leg_Data[w->id][2])) { break; } return 0;
     case 6:
     case 7:
     default: break;
@@ -782,11 +823,11 @@ int Equip_ok_ck(UDW *u, UD_WARE *w) {
 
 int Get_equip_bit(UDW *u, UD_WARE *w) {
     switch (w->kind) {
-    case 0: return Armor_Leg_Data[w->id][2];
     case 2: return Armor_Head_Data[w->id][2];
     case 3: return Armor_Body_Data[w->id][2];
-    case 4: return Armor_Arm_Data[w->id][2];
     case 5: return Armor_Waist_Data[w->id][2];
+    case 4: return Armor_Arm_Data[w->id][2];
+    case 0: return Armor_Leg_Data[w->id][2];
     case 6:
     case 7: return 0xF;
     default: return 0;

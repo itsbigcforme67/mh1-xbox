@@ -545,9 +545,10 @@ done:
 }
 
 void sk_reibun_input(void) {
-    char buf[0x20];
+    char buf[0x100];
     u8 *r = SKP(0xC);
     int s;
+    int n;
 
     if (r != 0) {
         cmd_kakutei_all();
@@ -557,7 +558,8 @@ void sk_reibun_input(void) {
             return;
         }
         strcpy(buf, (char *)s);
-        SKU16(0x2A) += kbd_insert(lpSKey + 0x44, buf, SKU16(0x2A), SKU16(0x3A));
+        n = kbd_insert(lpSKey + 0x44, buf, SKU16(0x2A), SKU16(0x3A));
+        SKU16(0x2A) = SKU16(0x2A) + n;
         SKS8(0x29) = *(SKP(0) + 0x10) & 0x7F;
         se_req(7, 0x16, 0);
     }
@@ -580,7 +582,7 @@ extern s8 han_zen_tbl_671[];
 s8 sk_zen_han_check(u8 a) {
     s8 t = han_zen_tbl_671[a];
 
-    if (t >= 0 && !(SKS32(0x20) & (1 << han_zen_tbl_671[a]))) {
+    if (t >= 0 && !(SKS32(0x20) & (1 << t))) {
         return t;
     }
     return -1;
@@ -783,20 +785,20 @@ void setup_rw_moji(void) {
 
 int dakuten_ck(char *tbl) {
     u16 n = SKU16(0x2C);
-    u8 *p;
+    char *p;
     u16 key;
     int cnt;
     int i;
     char *t = tbl;
 
-    if ((s16)n < 2) {
+    if (n < 2) {
         return 0;
     }
-    p = lpSKey + (n - 2) + 0x158;
-    key = (p[0] << 8) | p[1];
-    cnt = strlen(tbl) >> 2;
+    p = (char *)lpSKey + (n - 2) + 0x158;
+    key = (p[0] << 8) | (u8)p[1];
+    cnt = (u32)strlen(tbl) >> 2;
     for (i = 0; i < cnt; i++, t += 2) {
-        if ((((t[0] << 8) & 0xFFFF) | (u8)t[1]) == key) {
+        if ((u16)((t[0] << 8) | (u8)t[1]) == key) {
             p[0] = t[2];
             p[1] = t[3];
             SKS8(0x28) = 0;
@@ -1013,8 +1015,8 @@ void sk_set_etc_data() {
     sk_get_key_code();
 }
 
-extern u8 dakuten_1257[];
-extern u8 handakuten_1258[];
+extern u8 dakuten_1257[2];
+extern u8 handakuten_1258[2];
 
 int dakuten_ck_sub(u8 *p) {
     u8 c = p[3];

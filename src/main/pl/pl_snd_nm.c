@@ -11,6 +11,9 @@
 #define STALE (-1)
 
 int frame_check(f32, PLW *, int);
+/* the real frame_check is (work, n, f32): float last. Only a float variable argument shows the difference (the
+ * move of the float into f12 is scheduled last), so ef_move_sub's loops call it by this alias (config/main_aliases.txt) */
+int frame_check_001263F0(PLW *, int, f32);
 void Pl_se_req2_com(PLW *, int, int, f32 *, int, int);
 void Pl_se_req2(PLW *, int, int, f32 *, int, int);
 void se_req2(int, int, int, f32 *, int, int);
@@ -21,7 +24,7 @@ struct PL01EX;
 void ef_move_sub_0024A790(PLW *, struct PL01EX *);
 int Code_Make(int, int, int, int);
 void Eft13_set_scl(PLW *, int, int, f32);
-void Eft20_set_pl(PLW *, int, int, int);
+void Eft20_set_pl(f32, PLW *, s16, s16);
 void func_54BA40(PLW *, int);
 void func_555020(PLW *, int);
 void func_60E2B0(PLW *, int);
@@ -137,7 +140,7 @@ void yoroi_sd_req(f32 frame, PLW *pl, int idx) {
     }
 }
 
-static void move_default_0024A750(PLW *pl) {
+static void move_default_0024A750(PLW *pl, struct PL01EX *w) {
     parts_chg(pl, 0x12, 0);
     parts_chg(pl, 0xE, 0);
 }
@@ -161,9 +164,10 @@ typedef struct PL01EX {
 
 void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
 {
-    int i;
-    int j;
+    s16 i;
+    s16 j;
     PLW *p;
+    f32 f;
     f32 v[3];
     f32 v2[3];
 
@@ -174,32 +178,13 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
     if (w->tmr != 0) {
         w->tmr--;
     }
-    if (Pl_master_ck(pl) != 1 && PU8(pl, 0x14) != 3 && GW8(0xD3) > 0) {
-        p = player_work;
-        for (i = 0; i < GW8(0xD3); i++, p++) {
-            if ((s16)i == pl->id || PU8(p, 0x917) == 0 || PU8(p, 0x14) != 0) {
+    if (Pl_master_ck(pl) != 1 && PU8(pl, 0x14) != 3) {
+        for (i = 0; i < game_w.pl_num; i++) {
+            p = &player_work[i];
+            if (i == pl->id || PU8(p, 0x917) == 0 || PU8(p, 0x14) != 0) {
                 continue;
             }
             switch (PU8(p, 0x15)) {
-            case 99:
-                if (w->tmr == 0) {
-                    w->tmr = 60;
-                    switch (PU16(p, 0x88A)) {
-                    case 138:
-                        Eft06_set(4.0f, pl, 0, 0, 10);
-                        break;
-                    case 139:
-                        Eft06_set(4.0f, pl, 0, 1, 10);
-                        break;
-                    case 140:
-                        Eft06_set(4.0f, pl, 0, 2, 10);
-                        break;
-                    case 141:
-                        Eft06_set(4.0f, pl, 0, 3, 10);
-                        break;
-                    }
-                }
-                break;
             case 113:
                 switch (PU16(p, 0x88A)) {
                 case 154:
@@ -232,6 +217,25 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
                         Eft06_set(4.0f, pl, 0, 3, 10);
                     }
                     break;
+                }
+                break;
+            case 99:
+                if (w->tmr == 0) {
+                    w->tmr = 60;
+                    switch (PU16(p, 0x88A)) {
+                    case 138:
+                        Eft06_set(4.0f, pl, 0, 0, 10);
+                        break;
+                    case 139:
+                        Eft06_set(4.0f, pl, 0, 1, 10);
+                        break;
+                    case 140:
+                        Eft06_set(4.0f, pl, 0, 2, 10);
+                        break;
+                    case 141:
+                        Eft06_set(4.0f, pl, 0, 3, 10);
+                        break;
+                    }
                 }
                 break;
             }
@@ -307,7 +311,7 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
         sound_call_0024A2A0(pl, 108, 68);
         break;
     case 12:
-        sound_call2(pl, 2, Code_Make(STALE, 2, STALE, 2));
+        sound_call2(pl, 2, Code_Make(35, 2, 36, 2));
         ashi_sd_req_0024A510(2.0f, pl, 3);
         yoroi_sd_req(4.0f, pl, 0);
         break;
@@ -337,7 +341,7 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
         sound_call_0024A2A0(pl, 2, 75);
         break;
     case 18:
-        sound_call2(pl, 2, Code_Make(STALE, 3, STALE, 3));
+        sound_call2(pl, 2, Code_Make(38, 3, 38, 3));
         yoroi_sd_req(12.0f, pl, 4);
         yoroi_sd_req(56.0f, pl, 4);
         ashi_sd_req_0024A510(88.0f, pl, 3);
@@ -374,7 +378,7 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
         yoroi_sd_req(14.0f, pl, 4);
         break;
     case 28:
-        sound_call2(pl, 2, Code_Make(STALE, 4, STALE, 4));
+        sound_call2(pl, 2, Code_Make(35, 4, 36, 4));
         ashi_sd_req_0024A510(2.0f, pl, 3);
         sound_call_0024A2A0(pl, 2, 63);
         yoroi_sd_req(20.0f, pl, 3);
@@ -452,7 +456,7 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
         }
         break;
     case 39:
-        sound_call2(pl, STALE, STALE);
+        sound_call2(pl, 42, 41);
         ashi_sd_req_0024A510(18.0f, pl, 2);
         ashi_sd_req_0024A510(48.0f, pl, 2);
         ashi_sd_req_0024A510(72.0f, pl, 2);
@@ -560,7 +564,7 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
         ashi_sd_req_0024A510(32.0f, pl, 1);
         break;
     case 57:
-        sound_call_0024A2A0(pl, 4, STALE);
+        sound_call_0024A2A0(pl, 4, 64);
         ashi_sd_req_0024A510(88.0f, pl, 0);
         yoroi_sd_req(88.0f, pl, 0);
         ashi_eft_req(4.0f, pl, 2, 6);
@@ -1540,7 +1544,7 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
             sound_call_0024A2A0(pl, 8, 61);
             break;
         default:
-            move_default_0024A750(pl);
+            move_default_0024A750(pl, w);
             break;
         }
         break;
@@ -1759,7 +1763,7 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
             sound_call2(pl, 56, 7);
             break;
         default:
-            move_default_0024A750(pl);
+            move_default_0024A750(pl, w);
             break;
         }
         break;
@@ -1870,7 +1874,7 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
             sound_call2(pl, 12, 8);
             break;
         default:
-            move_default_0024A750(pl);
+            move_default_0024A750(pl, w);
             break;
         }
         break;
@@ -1985,10 +1989,10 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
                 eft13_set(pl, 10, 16);
             }
             if (frame_check(48.0f, pl, 0)) {
-                Eft20_set_pl(pl, 2, 3, 0.6000000238418579f);
+                Eft20_set_pl(0.6000000238418579f, pl, 2, 3);
             }
             if (frame_check(52.0f, pl, 0)) {
-                Eft20_set_pl(pl, 3, 3, 0.6000000238418579f);
+                Eft20_set_pl(0.6000000238418579f, pl, 3, 3);
             }
             sound_call2(pl, 4, Code_Make(35, 2, 36, 2));
             sound_call2(pl, 12, 5);
@@ -1997,10 +2001,10 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
             break;
         case 1402:
             if (frame_check(4.0f, pl, 0)) {
-                Eft20_set_pl(pl, 2, 2, 0.4000000059604645f);
+                Eft20_set_pl(0.4000000059604645f, pl, 2, 2);
             }
             if (frame_check(22.0f, pl, 0)) {
-                Eft20_set_pl(pl, 3, 2, 0.4000000059604645f);
+                Eft20_set_pl(0.4000000059604645f, pl, 3, 2);
             }
             sound_call2(pl, 4, 7);
             sound_call2(pl, 22, 7);
@@ -2109,11 +2113,13 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
             ashi_sd_req_0024A510(8.0f, pl, 3);
             yoroi_sd_req(10.0f, pl, 0);
             sound_call_0024A2A0(pl, 26, 68);
+            f = 26.0f;
             for (j = 0; j < 9; j++) {
-                if (frame_check(26.0f, pl, 0)) {
+                if (frame_check_001263F0(pl, 0, f)) {
                     Eft13_set_scl(pl, 5, 3, 1.2999999523162842f);
                     Eft13_set_scl(pl, 8, 3, 1.2999999523162842f);
                 }
+                f += 4.0f;
             }
             break;
         case 1416:
@@ -2129,7 +2135,7 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
             ashi_sd_req_0024A510(92.0f, pl, 1);
             break;
         default:
-            move_default_0024A750(pl);
+            move_default_0024A750(pl, w);
             break;
         }
         break;
@@ -2288,9 +2294,11 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
             ashi_sd_req_0024A510(124.0f, pl, 0);
             yoroi_sd_req(40.0f, pl, 0);
             sound_call_0024A2A0(pl, 46, 64);
+            f = 46.0f;
             for (j = 0; j < 7; j++) {
-                ashi_eft_req(46.0f, pl, 5, 1);
-                ashi_eft_req(46.0f, pl, 8, 1);
+                ashi_eft_req(f, pl, 5, 1);
+                ashi_eft_req(f, pl, 8, 1);
+                f += 4.0f;
             }
             break;
         case 1416:
@@ -2303,7 +2311,7 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
             }
             break;
         default:
-            move_default_0024A750(pl);
+            move_default_0024A750(pl, w);
             break;
         }
         break;
@@ -2458,11 +2466,13 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
             yoroi_sd_req(40.0f, pl, 0);
             yoroi_sd_req(72.0f, pl, 0);
             yoroi_sd_req(84.0f, pl, 4);
+            f = 64.0f;
             for (j = 0; j < 6; j++) {
-                if (frame_check(64.0f, pl, 0)) {
+                if (frame_check_001263F0(pl, 0, f)) {
                     Eft13_set_scl(pl, 5, 3, 1.2999999523162842f);
                     Eft13_set_scl(pl, 8, 3, 1.2999999523162842f);
                 }
+                f += 4.0f;
             }
             break;
         case 1416:
@@ -2522,7 +2532,7 @@ void ef_move_sub_0024A790(PLW *pl, PL01EX *w)
             ashi_sd_req_0024A510(26.0f, pl, 0);
             break;
         default:
-            move_default_0024A750(pl);
+            move_default_0024A750(pl, w);
             break;
         }
         break;
