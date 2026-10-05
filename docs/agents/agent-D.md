@@ -341,10 +341,11 @@ PLMDL (clay list +0x30, skin +0x24, materials +0x10), WNODE (skeleton node,
   (257/260), enemy_trans (165/228), pl_item_trans_sub (300/322), weapon_trans
   (1287/1360; the 0x10-0x13 byte constants of the weapon placement tables
   are real, the decompiler dropped middle float arguments, read from the asm).
-- NOT written: pl_item_trans (0x165480, 3.8 KB): a per-item hand placement
-  table written out as code (joint index, offset, rotation, scale for about
-  20 character/item ids with frame_check2 windows). Data heavy, low value for
-  the Xbox port; asm/main/text/pl_item_trans_sub.s has it.
+- pl_item_trans (0x165480, 3.8 KB, 887/960): written too, in weapon3_nm.c: a
+  hand-placement table written out as code (clay offset, joint 0xE/0x12,
+  offset vector, rotation, scale for ~20 action ids with frame_check2
+  windows, plus the item-in-use cases of x56B). Float constants are the exact
+  values from the asm; the meaning of each action id is a guess.
 - Lesson: a small helper that returns a float and is defined earlier in the
   same file (vInnerProduct) keeps float temporaries in caller-saved registers
   only if it is `static` (GetOrthogonalPoint, camr6_nm.c).
@@ -372,8 +373,12 @@ area), HPOLY (56-byte polygon: kind, flags, 3 vertices, normal, plane d),
 HKIND (per-kind flags: lava +0xB, water +0xC, +0xE special), HSWEEP (swept
 sphere), and the result arrays hit_decision/hit_near_point/hit_hosei_base/
 hit_kouten/hit_side/hit_area_out/hit_poly_num.
-Built (main OK): shit1.c load_stage_hit, shit5.c NormalClipFace, shit6.c
-add_vec_sub2, shit7.c check_angle.
+Built (main OK): shit1.c load_stage_hit, shit15.c GetWallTblAdrs, shit5.c
+NormalClipFace, shit6.c add_vec_sub2, shit16.c GetGroundTblAdrs, shit7.c
+check_angle; hit3.c hit_point_cyl (0x290560).
+Also in hit/: hit3_nm.c hit_point_cbd (5/113), tri_nm.c tri_in_check (1/143),
+VectorHitCheck (54/182), old_pos_save (41/52), hitw_nm.c HitWallPlayer
+(104/217).
 Not built (all compile at the original instruction counts):
 - shit1_nm.c WallHitInit / GroundHitInit (6/70 each; a register swap of the
   -1 constant and the cell pointer, 400 s permuter found nothing).
@@ -381,7 +386,7 @@ Not built (all compile at the original instruction counts):
   FieldInCheck (51/72), AreaFieldInCheck (13/40), GetWallTblAdrs (1/46, mult
   operand order).
 - shit3_nm.c ground heights: GetGroundHit (186/204), GetGroundShellHit
-  (200/218), GetWaterHit, GetTenjoHit, GetYouganHit, GetGroundTblAdrs (1/46).
+  (200/218), GetWaterHit, GetTenjoHit, GetYouganHit (GetGroundTblAdrs matches, shit16.c).
 - shit4_nm.c FaceLinePos (25/140), check_slide (6/52) + the three matching
   helpers; shit8_nm.c GetGroundHitArea/Upper/StatusAreaPl/Em; shit9_nm.c
   GetFloorSlide; shit10_nm.c sphr_face_o3/o4 + GetWallHitBit2; shit11_nm.c
