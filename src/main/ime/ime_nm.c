@@ -649,10 +649,15 @@ void prev_learn(KH *kh)
         wd.yomi = prev_yomi;
         wd.len = strlen(prev_yomi);
         wd.x06 = 0;
-        if (kh != 0 && (pw = kh->pw) != 0) {
+        if (kh != 0) {
+            pw = kh->pw;
+            if (pw == 0) {
+                goto none;
+            }
             wd.x07 = pw->x02;
             wd.x08 = pw->x03;
         } else {
+none:
             wd.x08 = 0;
             wd.x07 = 0x28;
         }
@@ -2552,8 +2557,8 @@ void set_entry2(u8 *key, int len)
 
 int srch_page(u8 *key)
 {
-    int lo;
     int hi;
+    int lo;
     int mid;
     int c;
 
@@ -2806,7 +2811,7 @@ void clear_entid_tmpall(int pg)
     int i;
 
     for (i = 0; i < 128; i++) {
-        if (pg == (entid_tab[i].c >> 12)) {
+        if (pg == (s16)(entid_tab[i].c >> 12)) {
             entid_tab[i].c = -1;
         }
     }
@@ -4220,13 +4225,13 @@ int is_kuten(int c)
 
 void first_kouho(int pos, int len)
 {
-    KH *kh;
+    HCHAR *h;
     BS *b;
     BS *best;
     PW *pw;
     int pri;
     int p;
-    HCHAR *h;
+    KH *kh;
     KH *out;
 
     best = 0;
@@ -4650,7 +4655,11 @@ KH *kh_endof(KH *k)
     if (k == 0) {
         return 0;
     }
-    while ((n = k->next) != 0) {
+    for (;;) {
+        n = k->next;
+        if (n == 0) {
+            break;
+        }
         k = n;
     }
     return k;
@@ -4687,10 +4696,8 @@ int kh_length(KH *k)
 
 KH *take_kouho(KH *k, int n)
 {
-    n--;
-    while (n != -1 && n + 1 != 0) {
+    while (n-- != 0) {
         k = kh_followed(k);
-        n--;
     }
     return k;
 }
@@ -4951,20 +4958,22 @@ two:
 
 void change_kind(u16 *p, int n, int kind)
 {
-    n--;
-    while (n != -1 && n + 1 != 0) {
+    while (n-- != 0) {
         *p = (*p & 0xFFF) | (((kind & 0xFFFF) << 12) & 0xFFFF);
         p++;
-        n--;
     }
 }
 
-int shiftlen(int c)
+int shiftlen(int x)
 {
-    c = c & 0xFFFF;
-    switch (c & 0xFF00) {
-    case 0x8500:
+    int c;
+    int h;
+
+    c = x & 0xFFFF;
+    h = c & 0xFF00;
+    switch (h) {
     case 0x8000:
+    case 0x8500:
         return 1;
     case 0x8600:
         if ((c & 0xFF) < 0x9E) {
@@ -5024,7 +5033,7 @@ int flag;
     if (flag != 0 && (c & 0xFFFF) == 0x213C) {
         return 1;
     }
-    if ((c & 0xFFFF & 0xFF00) == 0x2500) {
+    if ((c & 0xFF00) == 0x2500) {
         return 1;
     }
     return 0;
@@ -6389,10 +6398,14 @@ int api_touroku(int *a)
 
 int syn_2to3(int n)
 {
-    n--;
-    if (n >= 0 && n < 0x1E) {
+    n = n - 1;
+    if (n >= 0) {
+        if (n >= 0x1E) {
+            goto bad;
+        }
         return tab_2to3[n];
     }
+bad:
     return -1;
 }
 
