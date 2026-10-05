@@ -68,23 +68,8 @@ s16 AarcTan2(f32 y, f32 x)
 f32 flPow(f32 a, f32 b) { return powf(a, b); }
 void flMemset(void *p, s32 v, s32 n) { memset(p, v, (size_t)n); }
 
-/* Pl_scope_ck: holding a scope (item kind 7 with flag 0x40) */
-s32 Pl_scope_ck(PLW *pl)
-{
-    u8 *p = (u8 *)pl;
-    if (p[0x35F] != 7)
-        return 0;
-    return (*(u16 *)(p + 0x362) & 0x40) != 0;
-}
 
 int act_ck(void *chr, int a, int b);
-/* Pl_bari_ck: in action 0/0x36 or 0/0x48 */
-s32 Pl_bari_ck(PLW *pl)
-{
-    if ((s16)act_ck(pl, 0, 0x36) != 0)
-        return 1;
-    return (s16)act_ck(pl, 0, 0x48) != 0;
-}
 
 /* Game_clear_ck (0x162DB0): only states 3-8 of game_w+0xD5 (quest end)
  * can give 1; quests do not run on the PC yet, so it is 0 there. */

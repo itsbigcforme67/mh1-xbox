@@ -28,6 +28,62 @@ int mc_copy_patch();
 int user_data_copy2();
 int user_data_clr();
 
+void encode_data_002814E0(buf)
+u16 *buf;
+{
+    int r;
+    int i;
+    u16 key;
+    u16 *sum;
+
+    r = ran_suu(0);
+    key = r & 0xFFFF;
+    i = 0;
+    *buf++ = 0x100;
+    *buf++ = r;
+    *buf = 0;
+    sum = buf++;
+    *buf++ = 0x5963;
+    for (i = 0; i < 0x8A20; i++) {
+        *sum = *sum + *buf;
+        *buf ^= key;
+        buf++;
+        if ((key & 0xFFFF) == 0) {
+            key = 1;
+        }
+        key = ((key & 0xFFFF) * 0xB0) % 65363 & 0xFFFF;
+    }
+}
+
+static void decode_data(out, buf)
+u16 *out;
+u16 *buf;
+{
+    int i;
+    u16 key;
+    u16 stored;
+    int sum;
+
+    sum = 0;
+    i = 0;
+    out[8] = *buf != 0x100;
+    buf++;
+    key = *buf++;
+    stored = *buf++;
+    buf++;
+    do {
+        *buf ^= key;
+        sum = (sum + *buf) & 0xFFFF;
+        buf++;
+        if ((key & 0xFFFF) == 0) {
+            key = 1;
+        }
+        key = ((key & 0xFFFF) * 0xB0) % 65363 & 0xFFFF;
+        i++;
+    } while (i < 0x8A20);
+    out[9] = (stored & 0xFFFF) != (sum & 0xFFFF);
+}
+
 void check_sum_set(s)
 u8 *s;
 {
@@ -52,4 +108,14 @@ u8 *s;
         return 0;
     }
     return *(s32 *)(s + 0x64) == t[1];
+}
+
+int decode_to_ck(out)
+u16 *out;
+{
+    decode_data(out, data_load_ptr);
+    if (out[8] != 0 || out[9] != 0) {
+        return 1;
+    }
+    return 0;
 }

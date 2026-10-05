@@ -31,24 +31,23 @@ int user_data_clr();
 void encode_data_002814E0(buf)
 u16 *buf;
 {
-    int r = ran_suu(0);
-    int key = r & 0xFFFF;
+    int r;
     int i;
-    u16 *p;
+    u16 key;
     u16 *sum;
 
-    buf[0] = 0x100;
-    buf[1] = r;
-    buf += 2;
+    r = ran_suu(0);
+    key = r & 0xFFFF;
+    i = 0;
+    *buf++ = 0x100;
+    *buf++ = r;
     *buf = 0;
-    sum = buf;
-    buf[1] = 0x5963;
-    buf += 2;
-    p = buf;
+    sum = buf++;
+    *buf++ = 0x5963;
     for (i = 0; i < 0x8A20; i++) {
-        *sum = *sum + *p;
-        *p ^= key;
-        p++;
+        *sum = *sum + *buf;
+        *buf ^= key;
+        buf++;
         if ((key & 0xFFFF) == 0) {
             key = 1;
         }
@@ -60,16 +59,18 @@ static void decode_data(out, buf)
 u16 *out;
 u16 *buf;
 {
-    int i = 0;
+    int i;
     u16 key;
     u16 stored;
-    int sum = 0;
+    int sum;
 
-    out[8] = buf[0] != 0x100;
-    key = buf[1];
-    buf += 2;
-    stored = buf[0];
-    buf += 2;
+    sum = 0;
+    i = 0;
+    out[8] = *buf != 0x100;
+    buf++;
+    key = *buf++;
+    stored = *buf++;
+    buf++;
     do {
         *buf ^= key;
         sum = (sum + *buf) & 0xFFFF;
@@ -77,8 +78,8 @@ u16 *buf;
         if ((key & 0xFFFF) == 0) {
             key = 1;
         }
-        i++;
         key = ((key & 0xFFFF) * 0xB0) % 65363 & 0xFFFF;
+        i++;
     } while (i < 0x8A20);
     out[9] = (stored & 0xFFFF) != (sum & 0xFFFF);
 }
@@ -165,11 +166,11 @@ int save;
     u8 *b;
 
     if (save == 0) {
-        off = (slot & 0xFF) * 0x480;
+        off = (u8)slot * 0x480;
         a = option_w + off + 0x10;
         b = d + off + 0x10260;
     } else {
-        off = (slot & 0xFF) * 0x480;
+        off = (u8)slot * 0x480;
         b = option_w + off + 0x10;
         a = d + off + 0x10260;
     }

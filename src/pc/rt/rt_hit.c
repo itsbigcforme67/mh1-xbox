@@ -33,6 +33,12 @@ void rt_set_file_loader(uint8_t *(*fn)(int idx, size_t *n))
     file_loader = fn;
 }
 
+/* AFS_DATA entry idx, Meltw-decompressed, in a new host buffer (free it) */
+uint8_t *rt_file_load(int idx, size_t *n)
+{
+    return file_loader && idx >= 0 ? file_loader(idx, n) : NULL;
+}
+
 /* The PS2 loads the wall / ground HITS files into fixed RAM areas
  * (stage_hit_area_w / _f hold their addresses). Here: two host buffers. */
 #define HIT_AREA_SIZE (4u << 20)
