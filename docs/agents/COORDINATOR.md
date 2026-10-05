@@ -61,14 +61,15 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
-- A (Opus): PC renderer prototype, src/pc/ (docs/pc.md when done).
-- B (Opus, next on Sonnet): per-monster AI files f_em_*.s.
-- C (Sonnet): em_core near-match leftovers, then f_menu in main (f_em core linked as em_core*.c).
-- D (Opus, next on Sonnet): hit/cam/weapon in main.
-- E (Sonnet): game flow in main (f_game, f_stage, f_reward, f_quest).
-- F (Sonnet): player code f_pl.s in main.
-- Remaining big areas after these: f_menu, f_chat, f_sk/f_hk/f_ud, the large f_em_* files,
-  set14_trans/shell08_m and other parked near-matches, lobby (online, later).
+- A (Opus): PC runtime (src/pc). Done: stages, effects, motion, pad, collision, camera, audio.
+  Next (after F's player code lands in main): player actions/weapons on the runtime.
+- B (Sonnet): monster AI f_em_*/em*, em01 (Rathian) first.
+- C (Sonnet): unowned main files below 0x1A0000.
+- D (Sonnet): unmatched non-monster game files (eft*, shell*, set*).
+- E (Sonnet): unowned main files from 0x1A0000 up.
+- F (Sonnet): merge main into agent-F and fix the plf.h/pl.h clashes (its merge broke
+  main once: prototypes changed matched em/quest code), then player code.
+- Later: lobby (online), parked near-matches.
 
 ## Other running threads
 
