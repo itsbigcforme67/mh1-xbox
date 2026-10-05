@@ -48,6 +48,12 @@ void enemy_insurance_sub();
 #define PL8(p, o) (*(u8 *)((u8 *)(p) + (o)))
 #define PL32(p, o) (*(s32 *)((u8 *)(p) + (o)))
 
+void em_next_tbl_ck();
+void func_5589F0();
+void em_create_model();
+void em_herb_set();
+EMW *Em_direct_set();
+
 void Quest_next_em_clr(arg0, arg1)
 int arg0;
 int arg1;

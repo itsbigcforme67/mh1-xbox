@@ -683,3 +683,74 @@ int arg1;
         }
     }
 }
+
+void em_next_tbl_ck();
+void func_5589F0();
+void em_create_model();
+void em_herb_set();
+EMW *Em_direct_set();
+
+void Quest_next_em_set(n)
+int n;
+{
+    s32 *l0;
+    QEM *l1;
+    int i;
+    int v;
+    u8 *g;
+
+    em_next_tbl_ck();
+    func_5589F0(n);
+    if (n == game_w.x2F) {
+        for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
+            if (g[0x28] <= 0) {
+                game_w.x28[i] = 0x12;
+                em_create_model(i);
+                break;
+            }
+        }
+    }
+    if (n == 5 || n == 0x10 || n == 0x29) {
+        for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
+            if (g[0x28] <= 0) {
+                game_w.x28[i] = 0xA;
+                em_create_model(i);
+                break;
+            }
+        }
+    }
+    l0 = Em_data_st_adrs_get(quest_w.x74, n, 0, quest_w.x3A);
+    l1 = (QEM *)Em_data_st_adrs_get(quest_w.x74, n, 1, quest_w.x3A);
+    if (l0 != 0) {
+        while (*l0 != -1) {
+            v = *l0;
+            for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
+                if (g[0x28] == v) {
+                    break;
+                }
+            }
+            if (i < 4) {
+                l0++;
+                continue;
+            }
+            for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
+                if (g[0x28] <= 0) {
+                    ((u8 *)&game_w)[0x28 + i] = v;
+                    em_create_model(i);
+                    break;
+                }
+            }
+            l0++;
+        }
+        while (l1->id >= 0) {
+            if (!(l1->x2E & 1)) {
+                Em_direct_set(l1);
+                l1->x07 = game_w.stage;
+            }
+            l1 = (QEM *)((u8 *)l1 + 0x3C);
+        }
+    }
+    if (n == 5 || n == 0x10 || n == 0x29) {
+        em_herb_set();
+    }
+}
