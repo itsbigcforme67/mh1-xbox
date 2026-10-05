@@ -1,5 +1,4 @@
-/* eft24 - game.bin 0x00558A80-0x0055925C, split in two around eft24_m
- * (see eft24_nm.c). In the original all eft24_* functions are static. Stars circling a stunned head:
+/* eft24 - game.bin 0x00558A80-0x0055925C. Stars circling a stunned head:
  * up to five billboards spin around a joint of a player (Eft24_set) or a
  * monster (Eft24_set_em) while it stays in the stunned animation, or for a
  * set time. */
@@ -50,12 +49,12 @@ void flvecApplyMat33_2(f32 *, FLMAT *);
 void eft_trans_sub_opa(CLAY *, FLMAT *, void *);
 void se_req2(int, int, int, f32 *, int, int);
 
-void eft24_move(EFTW *ew);
+static void eft24_move(EFTW *ew);
 static void eft24_i(EFTW *ew);
-void eft24_m(EFTW *ew);
-void eft24_d(EFTW *ew);
-void eft24_e(EFTW *ew);
-void eft24_t(PRIM *pr);
+static void eft24_m(EFTW *ew);
+static void eft24_d(EFTW *ew);
+static void eft24_e(EFTW *ew);
+static void eft24_t(PRIM *pr);
 
 void Eft24_set(PLW *pl, int arg) {
     EFTW *ew;
@@ -100,7 +99,7 @@ void Eft24_set_em(EMW *em, int arg, int joint, int time, f32 y, f32 scale) {
     }
 }
 
-void eft24_move(EFTW *ew) {
+static void eft24_move(EFTW *ew) {
     switch (ew->mode) {
     case 0:
         eft24_i(ew);
@@ -158,4 +157,101 @@ static void eft24_i(EFTW *ew) {
             w->prim[i] = 0;
         }
     }
+}
+
+static void eft24_m(EFTW *ew) {
+    FLMAT m;
+    EFT24_WORK *w = ew->work;
+    EMW *em = ew->owner;
+    s16 i;
+    s16 n;
+
+    if (ew->arg == 2) {
+        if (em->be_flag == 0) {
+            ew->mode++;
+            ew->be_flag = 0;
+            return;
+        }
+        if (em->mode == 5) {
+            ew->mode++;
+            ew->be_flag = 0;
+            return;
+        }
+    } else if (em->be_flag == 0 || act_ck(em, w->act0, w->act1) == 0) {
+        ew->mode++;
+        ew->be_flag = 0;
+        return;
+    }
+    ew->timer++;
+    switch (ew->arg) {
+    case 0:
+        n = em->x07;
+        if (ew->timer % 23 == 1) {
+            se_req2(1, 0x38, 0, em->pos, 1, 0);
+        }
+        break;
+    case 1:
+    case 2:
+        if (ew->timer > w->time) {
+            ew->mode++;
+            ew->be_flag = 0;
+            return;
+        }
+        n = 5;
+        break;
+    }
+    if (n == 0) {
+        ew->mode++;
+        ew->be_flag = 0;
+        return;
+    }
+    if (n > 5) {
+        n = 5;
+    }
+    flmatCopy(&m, get_joint_wmat(em, w->joint));
+    flmatGetTrans(ew->pos, &m);
+    ew->u0A.joint += 0x800;
+    for (i = 0; i < n; i++) {
+        if (w->prim[i] != 0) {
+            flvecCopy(w->prim[i]->pos, w->pos);
+            flvecRotY(w->prim[i]->pos, DEG2RAD(ANG2DEG(ew->u0A.joint + i * (0x10000 / n))));
+            flvecApplyMat33_2(w->prim[i]->pos, &m);
+            w->prim[i]->pos[0] += ew->pos[0];
+            w->prim[i]->pos[1] += ew->pos[1];
+            w->prim[i]->pos[2] += ew->pos[2];
+            add_prim(ot1, w->prim[i], 0x20, 0);
+        }
+    }
+}
+
+static void eft24_d(EFTW *ew) {
+    EFT24_WORK *w = ew->work;
+    s16 i;
+
+    ew->mode++;
+    for (i = 0; i < 5; i++) {
+        if (w->prim[i] != 0) {
+            release_prim(w->prim_no[i]);
+        }
+    }
+}
+
+static void eft24_e(EFTW *ew) {
+    push_eft_work(ew);
+}
+
+static void eft24_t(PRIM *pr) {
+    FLMAT m;
+    EFT_MDLW *mw = eft_mdlw[0];
+    EFTW *ew = pr->owner;
+    void *mats;
+    CLAY *cl;
+
+    cl = &mw->clay[118];
+    mats = mw->mat;
+    flmatMakeScale(&m, ew->scale, ew->scale, ew->scale);
+    flmatSetTrans(&m, pr->pos[0], pr->pos[1], pr->pos[2]);
+    flmatMul33_2(&m, &rview_mat);
+    flSetRenderState(0x67, -1);
+    eft_trans_sub_opa(cl, &m, mats);
 }
