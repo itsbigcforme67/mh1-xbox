@@ -7,18 +7,23 @@ standing in it. Both play their motions in real time. Camera is free-fly.
 
 ## Build
 
-Needs gcc, the SDL2 development files (`pkg-config sdl2`) and OpenGL
-(libGL). No other libraries.
+The build is 32-bit (`gcc -m32`, see "Port runtime" below and
+docs/DECISIONS.md). Needs gcc, the 32-bit runtime libraries (libc6:i386,
+libsdl2-2.0-0:i386, libgl1:i386) and either gcc-multilib or the no-root
+sysroot made by tools/setup_pc32.sh (downloads libc6-dev-i386 and
+lib32gcc-13-dev into build/sysroot32). No other libraries.
 
+    tools/setup_pc32.sh          # once, only without gcc-multilib
     tools/build_pc.sh            # -> build/pc/mhview
 
 ## Run
 
     build/pc/mhview disc/mh1
 
-`disc/mh1` must contain `AFS_DATA.AFS` and `SLPM_654.95`. The ELF is only
-read for the hunter's part-to-bone table, ptmat_tbl at 0x3018F0; without
-it the armour pieces stay in their bind pose.
+`disc/mh1` must contain `AFS_DATA.AFS` and `SLPM_654.95`. The ELF and the
+game.bin overlay (an AFS_DATA entry, stored uncompressed) are read for the
+hunter's part-to-bone table (ptmat_tbl, 0x3018F0) and the game data tables
+the decompiled C uses (src/pc/rt/rt_data.c).
 
 Controls:
 - WASD move, mouse look.
@@ -53,10 +58,50 @@ pc_viewer_close_0.5.png / _2.0.png:
 | `src/pc/gfx/gfx.h` | the graphics interface: textures, render states, clays |
 | `src/pc/gfx/gfx_gl.c` | its OpenGL 1.x fixed-function implementation (SDL2 window) |
 | `src/pc/fl/` | the port's "fl" layer: `fl_model` (AMO → clays, CPU skinning, VU1-style lighting), `fl_skel` (AHI + AAN motions → bone matrices), `flmat.h` (fl row-vector matrices) |
+| `src/pc/rt/` | the port runtime: what decompiled game C expects from the PS2 side (see below) |
 | `src/pc/viewer.c` | the app: scene setup, hunter assembly (SetPartsTrans), camera, screenshot PNG writer |
 | `tools/build_pc.sh` | build script; output in build/pc/ (gitignored) |
 
 `src/pc/` is not part of the matching build and is not in c_files.txt.
+
+## Port runtime (game C running natively)
+
+The decompiled game C is compiled unchanged with the game's own include/
+headers and linked into the viewer. First file: set14 (stage UV-scroll
+overlay), from src/game/set/set14_nm.c (whole file; set14_trans is a
+near-match on the PS2 side, believed equivalent). On stage 4 it scrolls the
+two waterfall layers of the st04_1 set model (clays 2 and 3, placed at
+11060,0,1566).
+
+src/pc/rt/:
+- `rt_game.c`: game_w, player_work, stage_work (timer counts up each tick),
+  set_mdlw; the set object pool (pull/push_set_work, 64 entries of 0x80: a
+  guess); prims and ordering tables ot0..ot3 (get_prim, add_prim; prims are
+  drawn in table order, low priority first: a guess); ran_suu (same
+  generator as 0x161230); rt_game_init/move/draw. Static asserts check the
+  struct layouts.
+- `rt_fl.c`: flSetRenderState (0x19 texture matrix, 0x1A world, 0x60 alpha
+  ref, 0x67 fade, 0x6C z-write; others print a one-time warning),
+  flmatMakeTrans, flFloor, flExecuteClay (handle -> gfx clay). Stubs:
+  clay_attr_set/reset, SetFilterMode, se_req2.
+- `rt_data.c`: Capcom data tables are declared empty and filled at start-up
+  from the user's SLPM_654.95 / game.bin by address (nothing copied into
+  the repo).
+- `rt_mem.c`: PS2 address lookup in the ELF and the overlay.
+
+Game logic ticks at 30 per second; the host draws its own models, then
+`rt_game_draw()` walks the ordering tables. Set-model parts the game C has
+drawn are skipped by the host's generic draw so they are not drawn twice.
+The stage's set spawn list is not decompiled yet, so rt_game_init calls
+set14_set() by hand.
+
+Verified 5 Oct 2026: `build/pc/mhview disc/mh1 --shot X.png --size 640x480
+--frames 3 --time T --cam 11060,700,5000,0,-0.1` at T = 1.0 and 1.5: the
+waterfalls are drawn, and between the two shots only the waterfall and
+mist pixels change (the textures scroll).
+
+Adding more game C: put the file in GAME in tools/build_pc.sh, its data
+tables in rt_data.c, and whatever it calls into rt_*.c.
 
 ## Design notes, for the port
 
@@ -103,5 +148,8 @@ pc_viewer_close_0.5.png / _2.0.png:
   ground. No blending between motions.
 - **Hunter:** no weapon. Hair and cloth bones (ptmat ≥ 64) keep their bind
   offset.
+- **Runtime:** clay attributes (0xF0000 chunk) are not applied for game
+  draws either; fl fade alpha is passed as-is (PS2 0x80 = 1.0 is not
+  handled).
 - **Hard-coded scene:** only stage 4, em01 and one armour set, chosen in
   viewer.c.
