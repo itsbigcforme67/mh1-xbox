@@ -91,9 +91,10 @@ extern u8 Select_task[];
 typedef struct EDIT_W {
     s8 x0[8];           /* 0x00 cleared by char_make_init */
     s32 col;            /* 0x08 current colour (from sample_col) */
-    u8 _pad0C[0x24 - 0xC];
+    f32 eye[3];         /* 0x0C camera position for the preview (ed_view_set) */
+    f32 at[3];          /* 0x18 camera target */
     s8 name[0x12];      /* 0x24 character name (SJIS bytes, 0 = end) */
-    u8 _pad36[2];
+    u16 x36;            /* 0x36 */
     s16 x38;            /* 0x38 */
     u8 x3A;             /* 0x3A colour index */
     u8 x3B;             /* 0x3B */
@@ -112,7 +113,7 @@ void pl_chr_set2();
 void flSetRenderState();
 void Sel_back_disp();
 void Sel_menu_disp();
-void cmn_mongon_check_sub();
+int cmn_mongon_check_sub();
 void Set_equip_data();
 void DispFrameMessageA();
 int strlen();
@@ -154,4 +155,18 @@ extern s8 check_mongon[];
 int cmn_mongon_set();
 void font_print_ex();
 extern char lit_501_0053B820[], lit_502_0053B840[], lit_503_0053B870[], lit_504_0053B8A0[];
+void flps0004();
+void flps0005();
+void Disp_button(f32, int, int, int, int);
+extern u16 System_timer;
+extern char *edit_menu_msg[];
+extern char *sex_char_tbl[];
+extern char lit_319_0053B628[], lit_320_0053B630[], lit_321_0053B640[], lit_322_0053B658[];
+void Sel_csr_disp();
+extern char lit_463_0053B6A0[], lit_464_0053B6C0[], lit_465_0053B6D8[], lit_466_0053B6F0[], lit_467_0053B720[], lit_468_0053B740[], lit_469_0053B770[], lit_470_0053B7A0[], lit_471_0053B7A8[];
+typedef struct LPVIEW { f32 at[3]; f32 eye[3]; } LPVIEW;
+extern LPVIEW *lpView;
+void flvecCopy(f32 *, f32 *);
+void get_joint_pos();
+extern char lit_485_0053B7B0[], lit_486_0053B7D0[], lit_487_0053B7E0[], lit_488_0053B800[];
 #endif
