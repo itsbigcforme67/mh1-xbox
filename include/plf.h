@@ -177,4 +177,5 @@ void Pl_set_quake_sub(PLW *, int);
 void vib_set_pl(PLW *, int);
 int ex_kabe_ck(PLW *);
 void kabe_hosei(PLW *, int);
+void Ana_item_set(PLW *);
 #endif
