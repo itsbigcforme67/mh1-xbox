@@ -4289,17 +4289,12 @@ static void sound_call_sub_005E1F80(EMW *em, int se, int joint) {
 }
 
 static void sound_call_005E1FF0(EMW *em, int frame, int se, int joint) {
-    EM17W *w = (EM17W *)em->ex;
     int add;
 
     add = 0;
     if (em_frame_check(em, 0, (f32)frame) != 0) {
-        if (w->x1B == 1) {
-            if (joint != 0x14) {
-                if (joint == 0x1A) {
-                    add = 0x35;
-                }
-            } else {
+        if (em->ex[0x1B] == 1) {
+            if (joint == 0x14 || joint == 0x1A) {
                 add = 0x35;
             }
         }
@@ -4356,6 +4351,7 @@ static void ef_move_sub_005E21D0(EMW *em, EM17W *w) {
     temp_v1_2 = w->anim;
     switch (temp_v1_2) {                            /* irregular */
     case 0x3E9:
+        break;
     case 0x3EA:
         sound_call_005E1FF0(em, 0x2C, 1, 0x14);
         sound_call_005E1FF0(em, 0x74, 1, 0x1A);
@@ -4446,7 +4442,6 @@ block_115:
         }
         break;
     case 0x3F7:
-    case 0x3F8:
         sound_call_005E1FF0(em, 4, 0xC, 6);
         sound_call_005E1FF0(em, 8, 0xC, 0xC);
         sound_call_005E1FF0(em, 0x3A, 0xB, 6);
@@ -4478,6 +4473,8 @@ block_130:
                 }
             }
         }
+        break;
+    case 0x3F8:
         break;
     case 0x3F9:
         sound_call_005E1FF0(em, 6, 0x27, 0x23);
@@ -4547,11 +4544,12 @@ block_130:
         }
         break;
     case 0x405:
-    case 0x406:
         sound_call_005E1FF0(em, 0x1E, 0x13, 0);
         sound_call_005E1FF0(em, 2, 0x20, 0x23);
         sound_call_005E1FF0(em, 4, 0xE, 0xC);
         sound_call_005E1FF0(em, 8, 0xE, 6);
+        break;
+    case 0x406:
         break;
     case 0x407:
         sound_call_005E1FF0(em, 2, 0x55, 0x23);
