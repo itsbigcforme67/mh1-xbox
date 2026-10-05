@@ -1,6 +1,13 @@
-/* eft04 - game.bin 0x0053FFD0-0x005412A8: eft04_move to eft04_e. eft04_t is
- * still assembly (near-match in eft04_nm.c); the rest is in eft04b.c. See
- * eft04_nm.c for what the effect does. */
+/* eft04 - game.bin 0x0053FFD0-0x00542D34. Near-match for the whole file (not
+ * built): everything matches except eft04_t, 6 instructions off (the
+ * scheduling of one colour recombine in type 3). Monster
+ * attack effects with nine types (arg): each spawns up to eft04_num pieces
+ * that grow and fade along keyframe tables (eft04_data, through
+ * eft04_index/param) and are drawn with the monster area's model set
+ * (game_w.area_mdlw). Types 0, 3 and 8 follow a monster joint while the
+ * monster plays one animation (0x45A, 0x417, 0x40F); type 0 scatters four
+ * pieces over the joints in eft04_em15_pos. Placed at a monster
+ * (Eft04_set, Eft04_set_time) or at a point (Eft04_set_pos). */
 #include "eft.h"
 #include "em.h"
 #include "game.h"
@@ -83,19 +90,19 @@ void eft_trans_sub_col(CLAY *, FLMAT *, u32, u16, void *);
 void eft_trans_sub_opa(CLAY *, FLMAT *, void *);
 void Eft13_set_pos(f32 *, int, f32);
 
-void eft04_move(EFTW *ew);
-void eft04_i(EFTW *ew);
-void eft04_m(EFTW *ew);
-void eft04_d(EFTW *ew);
-void eft04_e(EFTW *ew);
-void eft04_t(PRIM *pr);
-void eft04_pos_calc(f32 *pos, EMW *em, f32 *ofs, int joint);
-void eft04_type0_0_init(EFTW *ew, EFT04_PIECE *p);
-void eft04_type3_init(EFTW *ew, EFT04_PIECE *p);
-void eft04_type8_init(EFTW *ew, EFT04_PIECE *p);
-void eft04_z_adj(FLMAT *m, f32 *pos);
+static void eft04_move(EFTW *ew);
+static void eft04_i(EFTW *ew);
+static void eft04_m(EFTW *ew);
+static void eft04_d(EFTW *ew);
+static void eft04_e(EFTW *ew);
+static void eft04_t(PRIM *pr);
+static void eft04_pos_calc(f32 *pos, EMW *em, f32 *ofs, int joint);
+static void eft04_type0_0_init(EFTW *ew, EFT04_PIECE *p);
+static void eft04_type3_init(EFTW *ew, EFT04_PIECE *p);
+static void eft04_type8_init(EFTW *ew, EFT04_PIECE *p);
+static void eft04_z_adj(FLMAT *m, f32 *pos);
 
-void eft04_move(EFTW *ew) {
+static void eft04_move(EFTW *ew) {
     switch (ew->mode) {
     case 0:
         eft04_i(ew);
@@ -112,7 +119,7 @@ void eft04_move(EFTW *ew) {
     }
 }
 
-void eft04_i(EFTW *ew) {
+static void eft04_i(EFTW *ew) {
     f32 v[3];
     s16 n;
     EFT04_PIECE *p = ew->work;
@@ -273,7 +280,7 @@ void eft04_i(EFTW *ew) {
     eft04_m(ew);
 }
 
-void eft04_m(EFTW *ew) {
+static void eft04_m(EFTW *ew) {
     f32 a;
     f32 v[3];
     s16 *tt;
@@ -532,7 +539,7 @@ void eft04_m(EFTW *ew) {
     }
 }
 
-void eft04_d(EFTW *ew) {
+static void eft04_d(EFTW *ew) {
     s16 n;
     s16 i;
     EFT04_PIECE *p = ew->work;
@@ -549,6 +556,418 @@ void eft04_d(EFTW *ew) {
     }
 }
 
-void eft04_e(EFTW *ew) {
+static void eft04_e(EFTW *ew) {
     push_eft_work(ew);
+}
+
+static void eft04_t(PRIM *pr) {
+    f32 sc[3];
+    f32 rot[3];
+    FLMAT m;
+    FLMAT uv;
+    u32 col;
+    void *mats;
+    EFTW *ew = pr->owner;
+    u16 mul;
+    u8 *fade;
+    int order;
+    s16 area;
+    u8 alpha;
+    EFT04_PIECE *p = &((EFT04_PIECE *)ew->work)[pr->no];
+    EFT_MDLW *mw;
+    CLAY *cl;
+    u16 flag = 0;
+
+    if (eft_mdlw[0] != 0 && eft_mdlw[0]->flag != 0) {
+        sc[0] = p->size * p->scale[0];
+        sc[1] = p->size * p->scale[1];
+        sc[2] = p->size * p->scale[2];
+        mul = 1;
+        area = Em_area_ck(ew->x07);
+        if (area != -1) {
+        mw = game_w.area_mdlw[area];
+        if (mw != 0 && mw->flag != 0) {
+        mats = mw->mat;
+        switch (ew->arg) {
+        case 0:
+            if (p->no == 0) {
+                cl = &mw->clay[7];
+                rot[0] = DEG2RAD(ANG2DEG(p->rot[0]));
+                rot[1] = DEG2RAD(ANG2DEG(p->rot[1]));
+                rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+                order = 0xE;
+                flmatMakeTrans(&uv, 0.0f, 0.046875f * (f32)p->lag, 0.0f);
+                flSetRenderState(0x19, (u32)&uv);
+                alpha = 0xFF;
+                mul = 0;
+            } else {
+                cl = mw->clay;
+                flag |= 2;
+                rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+                order = 2;
+                if (p->col == 1) {
+                    alpha = 0xFF;
+                } else {
+                    alpha = 0x80;
+                    sc[0] *= 0.8f;
+                    sc[1] *= 0.8f;
+                    sc[2] *= 0.8f;
+                }
+            }
+            make_mat_srt(sc, rot, pr->pos, order, &m);
+            col = (alpha << 24) | 0xFFFFFF;
+            break;
+        case 1:
+            if (p->no == 0) {
+                cl = &mw->clay[3];
+                flag |= 2;
+            } else {
+                cl = &mw->clay[11];
+            }
+            rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            col = (p->alpha << 24) | 0xFFFFFF;
+            break;
+        case 2:
+            cl = &mw->clay[10];
+            rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            col = (p->alpha << 24) | 0xFFFFFF;
+            break;
+        case 3:
+            switch (p->no) {
+            case 0:
+                fade = fade_type3_em02_00644B70;
+                cl = &mw->clay[2];
+                rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+                order = 2;
+                flag |= 2;
+                break;
+            case 1:
+                fade = fade_type3_em03;
+                order = 0;
+                cl = &mw->clay[3];
+                flag |= 2;
+                break;
+            case 2:
+                fade = fade_type3_em07;
+                cl = &mw->clay[7];
+                rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+                order = 2;
+                flmatMakeTrans(&uv, 0.0f, 0.0234375f * (f32)p->lag, 0.0f);
+                flSetRenderState(0x19, (u32)&uv);
+                mul = 0;
+                break;
+            case 3:
+                fade = fade_type3_em05;
+                cl = &mw->clay[5];
+                rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+                order = 2;
+                flag |= 2;
+                break;
+            }
+            make_mat_srt(sc, rot, pr->pos, order, &m);
+            eft_rgba_linear(fade, p->lag, &col);
+            if (ew->timer < 20) {
+                col = (((u32)((f32)((col >> 24) & 0xFF) * ((f32)ew->timer / 20.0f)) & 0xFF) << 24) |
+                      (((col >> 16) & 0xFF) << 16) | (((col >> 8) & 0xFF) << 8) | (col & 0xFF);
+            }
+            break;
+        case 4:
+            switch (p->no) {
+            case 0:
+            case 1:
+                cl = &mw->clay[1];
+                flmatInit(&m);
+                flmatRotXYZ33(&m, DEG2RAD(ANG2DEG(p->rot[0])), DEG2RAD(ANG2DEG(p->rot[1])), 0.0f);
+                eft04_z_adj(&m, pr->pos);
+                m[0][0] *= p->scale[0];
+                m[0][1] *= p->scale[0];
+                m[0][2] *= p->scale[0];
+                m[1][0] *= p->scale[1];
+                m[1][1] *= p->scale[1];
+                m[1][2] *= p->scale[1];
+                m[2][0] *= p->scale[2];
+                m[2][1] *= p->scale[2];
+                m[2][2] *= p->scale[2];
+                flmatSetTrans(&m, pr->pos[0], pr->pos[1], pr->pos[2]);
+                mul = 0;
+                flag |= 2;
+                break;
+            case 2:
+                cl = &mw->clay[2];
+                rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+                flag |= 2;
+                make_mat_srt(sc, rot, pr->pos, 2, &m);
+                break;
+            case 3:
+                cl = &mw->clay[3];
+                flag |= 2;
+                make_mat_srt(sc, rot, pr->pos, 0, &m);
+                break;
+            case 4:
+                cl = &mw->clay[4];
+                rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+                flag |= 2;
+                make_mat_srt(sc, rot, pr->pos, 2, &m);
+                break;
+            case 5:
+                cl = &mw->clay[8];
+                rot[1] = DEG2RAD(ANG2DEG(p->rot[1]));
+                make_mat_srt(sc, rot, pr->pos, 4, &m);
+                flmatMakeTrans(&uv, 0.0f, 0.0234375f * (f32)p->lag, 0.0f);
+                flSetRenderState(0x19, (u32)&uv);
+                mul = 0;
+                break;
+            }
+            fade = eft04_type4_fade_data[p->no];
+            if (fade == 0) {
+                col = -1;
+            } else {
+                eft_rgba_linear(fade, p->lag, &col);
+            }
+            break;
+        case 5:
+            switch (p->no) {
+            case 0:
+                cl = &mw->clay[5];
+                rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+                order = 2;
+                flag |= 2;
+                break;
+            case 1:
+                cl = &mw->clay[3];
+                flag |= 2;
+                order = 0;
+                make_mat_srt(sc, rot, pr->pos, 0, &m);
+                break;
+            }
+            fade = eft04_type5_fade_data[p->no];
+            if (fade == 0) {
+                col = -1;
+            } else {
+                eft_rgba_linear(fade, p->lag, &col);
+            }
+            make_mat_srt(sc, rot, pr->pos, order, &m);
+            break;
+        case 6:
+            cl = &mw->clay[6];
+            rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+            flag |= 2;
+            col = -1;
+            make_mat_srt(sc, rot, pr->pos, 2, &m);
+            flmatMakeTrans(&uv, 0.0f, 0.0f, 0.0f);
+            flSetRenderState(0x19, (u32)&uv);
+            break;
+        case 7:
+            flSetRenderState(0x6C, 0);
+            switch (p->no) {
+            case 0:
+                cl = &mw->clay[6];
+                rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+                order = 2;
+                flmatMakeTrans(&uv, 0.0f, 0.0f, 0.0f);
+                flSetRenderState(0x19, (u32)&uv);
+                break;
+            case 1:
+                order = 0;
+                cl = &mw->clay[4];
+                break;
+            case 2:
+                cl = &mw->clay[7];
+                rot[1] = DEG2RAD(ANG2DEG(p->rot[1]));
+                order = 4;
+                mul = 0;
+                break;
+            }
+            flag |= 2;
+            col = (p->alpha << 24) | 0xFFFFFF;
+            make_mat_srt(sc, rot, pr->pos, order, &m);
+            break;
+        case 8:
+            flSetRenderState(0x6C, 0);
+            switch (p->no) {
+            case 0:
+                cl = mw->clay;
+                rot[0] = DEG2RAD(ANG2DEG(p->rot[0]));
+                rot[1] = DEG2RAD(ANG2DEG(p->rot[1]));
+                rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+                order = 0xE;
+                mul = 0;
+                break;
+            default:
+                flag |= 2;
+                cl = &mw->clay[6];
+                rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
+                order = 2;
+                flmatMakeTrans(&uv, 0.0f, 0.25f, 0.0f);
+                flSetRenderState(0x19, (u32)&uv);
+                break;
+            }
+            col = -1;
+            make_mat_srt(sc, rot, pr->pos, order, &m);
+            break;
+        }
+        if (mul) {
+            flmatMul33_2(&m, &rview_mat);
+        }
+        if (p->col != 0) {
+            eft_trans_sub_col(cl, &m, col, flag, mats);
+        } else {
+            flSetRenderState(0x67, col);
+            eft_trans_sub_opa(cl, &m, mats);
+        }
+        flSetRenderState(0x6C, 1);
+        }
+        }
+    }
+}
+
+static void eft04_pos_calc(f32 *pos, EMW *em, f32 *ofs, int joint) {
+    FLMAT m;
+    f32 v[3];
+
+    flmatCopy(&m, get_joint_wmat_em(em, joint));
+    flvecApplyMat33(v, ofs, &m);
+    pos[0] = m[3][0] + v[0];
+    pos[1] = m[3][1] + v[1];
+    pos[2] = m[3][2] + v[2];
+}
+
+static void eft04_type0_0_init(EFTW *ew, EFT04_PIECE *p) {
+    s16 sel[4];
+    s16 used[4];
+    s16 i;
+    s16 j;
+    s16 n;
+    EFT04_JPOS *jp;
+
+    p++;
+    for (i = 0; i < 4; i++, p++) {
+        sel[i] = (u16)ran_suu(1) % (10 - i);
+        for (j = 0; j < i; j++) {
+            used[j] = 0;
+        }
+        while (1) {
+            n = 0;
+            for (j = 0; j < i; j++) {
+                if (used[j] == 0 && sel[j] <= sel[i]) {
+                    used[j] = 1;
+                    n++;
+                }
+            }
+            if (n <= 0) {
+                break;
+            }
+            sel[i] += n;
+        }
+        p->joint = sel[i];
+        p->rot[2] = ran_suu(1);
+        p->size = eft04_em15_pos[p->joint].size * (0.9f + 0.00020000001f * (f32)((u16)ran_suu(1) & 0x3FF));
+        jp = &eft04_em15_pos[p->joint];
+        eft04_pos_calc(p->pos, ew->owner, jp->ofs, jp->joint);
+    }
+}
+
+static void eft04_type3_init(EFTW *ew, EFT04_PIECE *p) {
+    switch (p->no) {
+    case 0:
+        p->lag = 1;
+        p->rot[2] = ran_suu(1);
+        break;
+    case 1:
+        p->lag = 1;
+        break;
+    case 2:
+        p->lag = 1;
+        p->rot[2] = ran_suu(1);
+        break;
+    case 3:
+        p->lag = -1;
+        p->rot[2] = ran_suu(1);
+        break;
+    }
+}
+
+static void eft04_type8_init(EFTW *ew, EFT04_PIECE *p) {
+    p->lag = 1;
+    switch (p->no) {
+    case 0:
+        p->rot[0] = ran_suu(1);
+        p->rot[1] = ran_suu(1);
+        p->rot[2] = ran_suu(1);
+        break;
+    default:
+        p->rot[2] = ran_suu(1);
+        p->size = 1.2f + 0.0006f * (f32)((u16)ran_suu(1) & 0x3FF);
+        break;
+    }
+}
+
+static void eft04_z_adj(FLMAT *m, f32 *pos) {
+    f32 a[3];
+    f32 b[3];
+    f32 c[3];
+    f32 d[3];
+
+    PointToPoint(a, D_3F2090, pos);
+    flvecCopy(b, (*m)[2]);
+    flvecOuterProduct(c, a, b);
+    flvecNormalize(c);
+    flvecOuterProduct(d, b, c);
+    if (flvecInnerProduct(d, d) > 0.0001f) {
+        flvecOuterProduct(c, d, b);
+        flvecCopy((*m)[0], c);
+        flvecCopy((*m)[1], d);
+    }
+}
+
+void Eft04_set(EMW *em, int arg) {
+    EFTW *ew;
+
+    if (Em_stg_ck(em) != 0) {
+        ew = pull_eft_work(1);
+        if (ew != 0) {
+            ew->type = 4;
+            ew->move = eft04_move;
+            ew->arg = arg;
+            ew->owner = em;
+            ew->x07 = em->kind;
+            ew->prim = 0;
+            ew->scale = 1.0f;
+        }
+    }
+}
+
+void Eft04_set_pos(f32 *pos, int arg, int kind, f32 scale) {
+    EFTW *ew;
+
+    if ((ew = pull_eft_work(1)) != 0) {
+        ew->type = 4;
+        ew->move = eft04_move;
+        ew->arg = arg;
+        ew->owner = 0;
+        ew->x07 = kind;
+        ew->prim = 0;
+        ew->scale = scale;
+        flvecCopy(ew->pos, pos);
+    }
+}
+
+void Eft04_set_time(EMW *em, int arg, int time, f32 scale) {
+    EFTW *ew;
+
+    if (Em_stg_ck(em) != 0) {
+        ew = pull_eft_work(1);
+        if (ew != 0) {
+            ew->type = 4;
+            ew->move = eft04_move;
+            ew->arg = arg;
+            ew->owner = em;
+            ew->x07 = em->kind;
+            ew->prim = 0;
+            ew->scale = scale;
+            ew->u0A.joint = time;
+        }
+    }
 }
