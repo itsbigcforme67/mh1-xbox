@@ -634,6 +634,8 @@ segments:
       - [0x11E268, asm, text/g_Init_rev_set]
       - [0x11F3D0, c, cam/cam]
       - [0x11F464, asm, text/SetCameraData]
+      - [0x11F590, c, cam/camm]
+      - [0x11F9A8, asm, text/cam_sub_std]
       - [0x120420, c, cam/camb]
       - [0x1206A4, asm, text/cam_sub_stg]
       - [0x121460, c, cam/camc]
