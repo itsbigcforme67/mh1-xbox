@@ -46,6 +46,9 @@ int rt_register_clay(gfx_clay *c);
  * clays[0]; the others follow in order. attr: CLAY+0x88 word per clay
  * (rt_clay_attr_word) or NULL. */
 int rt_bind_set_model(gfx_clay *const *clays, const uint32_t *attr, int n);
+/* The stage's area model (stage_work.mdl, one clay per AMO part), drawn
+ * by the game's trans_stage (rt_stage_draw). Returns the first handle. */
+int rt_bind_stage_model(gfx_clay *const *clays, const uint32_t *attr, int n);
 /* 1 if game code drew this handle at least once (the host's generic model
  * draw skips such parts so they are not drawn twice). */
 int rt_clay_claimed(int handle);
@@ -79,6 +82,9 @@ void rt_set_player(int no, const float pos[3]);
 void rt_game_init(int stage);
 /* One game tick (the PS2 game logic runs at 30 per second). */
 void rt_game_move(void);
+/* Draw the stage like the game's trans_stage: area model parts (sky,
+ * per-stage placed/spun/scrolled parts) and the set-model parts it places. */
+void rt_stage_draw(void);
 /* Walk the ordering tables queued by the last tick and call each prim's
  * trans(). VIEW/PROJECTION must already be set; render states touched by
  * game code are restored afterwards. */

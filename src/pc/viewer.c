@@ -394,20 +394,24 @@ int main(int argc, char **argv)
     set_tex = load_stage_file(0x2EF130, stage_no, &keep[3]);      /* SET_TEX */
     hit = load_stage_file(0x2ECAB0, stage_no, &keep[4]);          /* stage_hit_data_f */
     if (stage_no != 4) {
-        /* no hand-picked spots: stand the actors and the camera at the
-         * middle of the walkable ground */
-        float sx = 0, sz = 0, x, z, y;
+        /* no hand-picked spots: the hunter at the stage's start position
+         * (stage_start_pos, main 0x2F2620, also used by set09/em19), else
+         * at the middle of the walkable ground */
+        extern float stage_start_pos[88][3];
+        float sx = stage_start_pos[stage_no][0], sz = stage_start_pos[stage_no][2], x, z, y;
         int cnt = 0;
-        for (x = -30000; x <= 30000; x += 500)
-            for (z = -30000; z <= 30000; z += 500)
-                if (fmt_hits_ground_y(hit, x, z, 1e6f, &y, FMT_LE)) {
-                    sx += x;
-                    sz += z;
-                    cnt++;
-                }
-        if (cnt) {
-            sx /= cnt;
-            sz /= cnt;
+        if (sx == 0.0f && sz == 0.0f) {
+            for (x = -30000; x <= 30000; x += 500)
+                for (z = -30000; z <= 30000; z += 500)
+                    if (fmt_hits_ground_y(hit, x, z, 1e6f, &y, FMT_LE)) {
+                        sx += x;
+                        sz += z;
+                        cnt++;
+                    }
+            if (cnt) {
+                sx /= cnt;
+                sz /= cnt;
+            }
         }
         hx = sx;
         hz = sz;
@@ -432,6 +436,16 @@ int main(int argc, char **argv)
     if (set_link.p)
         fl_model_create(&set, fmt_link_entry(set_link, 0, FMT_LE), fmt_link_entry(set_link, 1, FMT_LE),
                         set_tex, 0, FMT_LE);
+    {                           /* the area model to the game C (stage_work.mdl) */
+        gfx_clay *c[64];
+        uint32_t at[64];
+        int k, nc = stage.npart < 64 ? stage.npart : 64;
+        for (k = 0; k < nc; k++) {
+            c[k] = stage.part[k].clay;
+            at[k] = part_attr(&stage, k);
+        }
+        rt_bind_stage_model(c, at, nc);
+    }
     if (set.npart) {            /* hand the set model to the game C (set_mdlw) */
         gfx_clay *c[64];
         uint32_t at[64];
@@ -554,19 +568,8 @@ int main(int argc, char **argv)
             flmat id;
             flmat_identity(id);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
-            gfx_set_render_state(GFX_RS_ZWRITE, 0);       /* sky first, behind everything */
-            draw_model_attr(&stage, 1);
             gfx_set_render_state(GFX_RS_ZWRITE, 1);
-            draw_model_attr(&stage, 0);
-            {   /* set-model parts the game C draws itself are skipped here */
-                int k;
-                for (k = 0; k < set.npart; k++)
-                    if (set_h0 < 0 || k >= 64 || !rt_clay_claimed(set_h0 + k)) {
-                        rt_clay_attr_set(part_attr(&set, k));
-                        gfx_execute_clay(set.part[k].clay);
-                        rt_clay_attr_reset();
-                    }
-            }
+            rt_stage_draw();            /* trans_stage: area model + placed set parts */
         }
         rt_game_draw();                 /* game C prims (set14 waterfalls) */
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)rathian.world);
