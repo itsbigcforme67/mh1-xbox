@@ -31,3 +31,131 @@ A model held between a monster's joints 6 and 9; thrown when animation 0x432
 hits frame 48, flies 10 frames to a per-stage spot (stages 0x51-0x55), Eft13
 puff, stays 300 frames. Small per-stage tables declared with their real
 sizes so the s16 angle tables are gp-relative.
+
+## eft02 (0x27D6E0-0x27EF58) - 13/14 match
+Hit sparks and blood. eft02.c (move/i/m/d/e, 0x27D6E0-0x27DDB8, jump tables
+0x384170-0x3841F0 incl. alignment pad) and eft02b.c (8 spawners,
+0x27E940-0x27EF58, table 0x384220-0x384240) are built. eft02_t stays asm:
+src/main/eft/eft02_nm.c (whole file) is 12 instructions off, all in case
+9-11 (a1/a2 swap for the clay index temp and where `col = -1` is
+scheduled); 20 minutes of permuter found nothing better.
+- Float constants that are one ulp above the obvious literal come from
+  folded expressions: 0x39D1B718 = `0.4f / 1000.0f` (0.0004f gives ...717),
+  0x3C23D70B = `0.1f * 0.1f` (0.01f gives ...70A). Found by compiling the
+  candidates with MWCC.
+- `mw->clay + ew->timer / 2 + 97` (pointer + index, then constant), not
+  `&mw->clay[97 + t/2]`, matches the add order.
+- A u8 field read into a u32 local (`k = ew->arg` before a call) explains a
+  value kept in a saved register and converted with the unsigned sequence.
+- Eft_rendope_set takes a u16 (callers pass the u16 flags without andi).
+Shared header: pl.h carves PLW+0x3EC (u16 x3EC) from _pad3D2.
+
+## set13 (0x1569E0-0x158F18) - 6/10 match so far
+Sun glare / lens flare (guess from sun_pos_tbl and camera maths).
+set13.c (Set13_set/set2/move/i, 0x1569E0-0x157080) and set13b.c (d/e,
+0x158130-0x158188) are built. set13_m (4.3 KB) and set13_trans (3.1 KB) not
+attempted yet (fused mula.s/madd.s maths, an inlined angle helper).
+src/main/set/set13c.c (not registered): set13_hit_calc matches,
+set13_disp_pos_calc is 13 off (the original loads dir[1], dir[2] before the
+first store; no natural source found yet).
+- `PLW *pl = &player_work[game_w.master];` as an initialiser (not a later
+  statement) gives the original's early address computation (set13_i).
+- `if ((sw = pull_set_work(0)) != 0)` tests v0 before the copy to s0
+  (Set13_set2, Eft02_set2), where `sw = ...; if (sw != 0)` tests s0.
+- set13_hit_calc: `p = (f32 *)((u8 *)p + 8)` keeps two separate +8 steps
+  that `p += 2` lets the compiler merge (found from a permuter hint).
+
+## eft06 (0x102BD0-0x105B10) - 17/19 match
+Hit sparks with ten types; pieces are 0x38 bytes (EFT06_PIECE).
+eft06.c (move, i, init_subs, pw_die_ck, continue, type_ck; 0x102BD0-
+0x103A38, tables 0x3579C0-0x357A08), eft06b.c (d/e) and eft06c.c (se_req,
+set_com, Eft06_set/set2/set_hit) built. eft06_m (4.8 KB) and eft06_t
+(2.2 KB) still asm, not attempted.
+- eft06_i: the main loop must index `w[i]` (the compiler's own pointer
+  induction then increments first); `p++` in the for header put the
+  pointer increment last.
+- Eft06_set takes the float scale as its LAST parameter: argument set-up
+  order of the recursive call follows parameter order.
+- eft06_continue's count parameter is s16 (int gave an extra sign-extend).
+
+set13c.c (set13_hit_calc, 0x158E00-0x158F18) is now built too; the
+near-match set13_disp_pos_calc moved to src/main/set/set13_nm.c.
+
+## eft13 (0x105B10-0x109E28) - 13/19 match
+Dust, splashes and debris (35 types). Built: eft13.c (move), eft13b.c
+(d/e), eft13c.c (se_req, water_ck, set_sub), eft13d.c (eft13_set,
+Eft13_set_scl), eft13e.c (Eft13_set_em/_em_scl/_pos/_pos2, water_set; jump
+table 0x357D70-0x357D98). Not attempted (big): eft13_i, _m, _t, _set_pos,
+_set_sub_em, _set_pos_em.
+- Main calls game.bin's Eft08_set/Eft08_set2 by address with no symbol:
+  call them as func_544C90 / func_544D20 (config/main_undefined_funcs_auto.txt).
+  check.py shows these calls as differing ("original calls ?"); the build
+  links them correctly.
+- eft13_water_set: `sc = 2.7f * scale` into a new local gives the
+  original's const*reg multiply order; reusing the parameter swaps it.
+  Statement order inside cases matters (case 2 has `pos[1] += 5` before
+  the scale, case 8 after).
+- A parameter only passed on to other functions: declaring it s16 makes
+  MWCC re-extend it at each call to a function defined in ANOTHER file,
+  while a callee defined earlier in the same file is trusted. After the
+  split, eft13_set/Eft13_set_scl need `int j` to keep the raw pass-through.
+- game_w+0x1E is read as a u16 here (`*(u16 *)&game_w.x1E`); game.h names
+  it as a u8 (eft12), left unchanged.
+
+## eft20 (0x218590-0x21D464) - 9/13 match
+Monster dust/debris, sibling of eft13. Built: eft20.c (move, se_req),
+eft20b.c (d/e), eft20c.c (water_ck), eft20d.c (Eft20_set/_set2/_set_pl,
+water_set). Not attempted (big): eft20_i (4.3 KB), _m (4.6 KB), _t (5.1 KB),
+_pos_set (3.5 KB). Same lessons as eft13 (func_544C90 calls, `sc` local).
+
+eft06 update: eft06_t matches too (18/19); it is merged with d/e and the
+spawners into eft06b.c (0x104D30-0x105B10, table 0x357A70-0x357A98),
+eft06c.c is gone. Lessons from eft06_t:
+- A switch whose default only returns, with the original branching to the
+  epilogue right after the compares: write `default: return;` FIRST.
+- An address the original loads into a saved register before an unrelated
+  call is a local pointer assigned there (`fa = fade_type7_61_4;`).
+- `col &= 0xFFFFFF` compiles to dsll32/dsrl32 by 8 (u32 local in memory).
+- eft_rgba_linear's time argument is an int here (callers pass lhu/lh as
+  loaded); an s16 prototype turned the u16 load into lh.
+
+eft13 update: eft13_t matches (14/19); merged with d/e/se_req/water_ck/
+set_sub into eft13b.c (0x106DB0-0x107C50, table 0x357C50-0x357CDC);
+eft13c.c is gone. eft13_t repeats one identical case body for several case
+groups (0, the big group, 5/10): MWCC does not merge identical blocks, so
+they are written out separately. Declaration order found with a greedy
+move search (/tmp/claude-1000/agentD/permsub.py).
+
+## Policy change (coordinator): cover whole files, park near-matches
+eft20_nm.c (not built) now holds C for every eft20 function still in asm:
+eft20_i (1032/1080 instructions differ), eft20_m (885/1150), eft20_t
+(1209/1287), eft20_pos_set (842/891). These counts are mostly register
+allocation and block order; the logic was written from m2c drafts (with
+jump tables, /tmp/claude-1000/agentD/jdraft_main.py) checked against the
+asm by hand, and compiles. Not verified at runtime. Calls into game.bin
+by address: func_628690 (shell01_set2), func_628750 (shell01_set3),
+func_629C20 (shell04_set2).
+eft13_nm.c (not built) holds C for the five eft13 functions still in asm:
+eft13_i (468/483 differ), eft13_m (608/672), eft13_set_pos (598/648),
+eft13_set_sub_em (269/349), eft13_set_pos_em (628/695). Notable: in
+eft13_m a piece marked 0xFF ends the whole update (`return`, not
+`continue`), and in set_sub_em / set_pos_em case 19 falls through into
+case 20 (both checked in the asm). game.bin calls by address:
+func_53FDF0 (Eft17_set_ex), func_628690, func_62A2C0 (shell05_set3).
+eft06_nm.c (not built) holds C for eft06_m (1097/1212 differ); with it
+every eft06 function now has C.
+set13_nm.c (not built) now also holds set13_m (853/1074 differ) and
+set13_trans (761/775). set13_trans uses a helper set13_roll() that the
+original inlines twice (flare roll from sun/camera on XZ, fused
+mula/madd maths). Several values are left uninitialised exactly as in
+the original (set13_m case 1 on stages other than 0x18/0x22, case 7 box
+limits on stages other than 0x2D/0x38). The uv offsets in set13_trans
+cases 3 and 7 go to x (checked: f13 = 0).
+
+## Coverage summary (agent D)
+Every function of the eight assigned files now has C. Built and
+byte-matching: eft26 7/7, eft01 9/9, set21 12/12, eft02 13/14, eft06 18/19,
+eft13 14/19, eft20 9/13, set13 7/10 (89 of 103). The other 14 are in
+*_nm.c files (not built): eft02_t (12 off), eft06_m, eft13_i/_m/_set_pos/
+_set_sub_em/_set_pos_em, eft20_i/_m/_t/_pos_set, set13_m/_trans/
+_disp_pos_calc (13 off).
