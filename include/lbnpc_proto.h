@@ -15,11 +15,15 @@ void npcMvDOWN();
 void npcMvTOPL();
 void npcMvBOARD();
 void npcMvSHOP();
+void npcMvBEER();
 void npcMvDRUNKDOWN();
 void npcMvTOPL2();
 void npcMvRANDWAIT();
 void npcMvWALL();
 void npcMvKEGA();
 void npc_move_common();
+void lb_npc_bar_move();
+void lb_npc_mother_move();
+void lb_npc_father_move();
 
 #endif

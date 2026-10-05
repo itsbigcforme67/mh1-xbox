@@ -25,6 +25,7 @@ typedef struct LB_NPCMV {
     s8 x2D;             /* 0x2D */
 } LB_NPCMV;
 
+#define EM_S32(em, o) (*(s32 *)((u8 *)(em) + (o)))
 int Lb_act_set();
 int Lb_Pl_basic_flagset();
 int Lb_pl_chr_set();
