@@ -43,7 +43,7 @@ void em_rate_clear_g(EMW *);
 int rate_add_g2(EMW *);
 void Em_Mahi_Start(EMW *);
 void Em_Mahi_End(EMW *);
-void em_mahi_eff_set(EMW *);
+void em_mahi_eff_set(EMW *, int);
 void Em_Mode_Chg(EMW *, int, int);
 void Quest_enemy_die(EMW *);
 void em_rate_clear(EMW *);
@@ -776,7 +776,7 @@ static void em_dm03_0058D4E0(EMW *em) {
         em_cmd_reset(em);
         break;
     case 1:
-        em_mahi_eff_set(em);
+        em_mahi_eff_set(em, 2);
         if (em->work08 <= 0) {
             em->x05++;
             em_char_set(em, 72, 0, 0);
