@@ -164,4 +164,7 @@ void lb_action_timer_calc();
 int ck_pl_send();
 void Lb_pl_to_normal();
 void Lb_send_pl_status();
+void lb_pl_flag_clr();
+void Lb_pl_flag_set();
+int Lb_ck_target();
 #endif

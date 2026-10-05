@@ -4,8 +4,6 @@ import sys, os, re, glob, subprocess
 D = os.environ.get('LBDRAFTS', '/tmp/claude-1000/-home-james-claude-projects/6db1702a-235b-4025-a34e-ca6b5540767b/scratchpad/drafts')
 txt = ''.join(open(f).read() for f in sorted(glob.glob(D + '/d*.c')))
 for fn in sys.argv[1:]:
-    m = re.search(r'((?:^[^\n]*\n)*?)^[\w\*\s]+\b%s\([^;{]*\) \{\n.*?\n\}\n' % re.escape(fn), txt, re.M | re.S)
-    # find the function definition and trailing extern block just before it
     i = None
     for mm in re.finditer(r'^[\w\*\s]+\b%s\([^;{]*\) \{\n' % re.escape(fn), txt, re.M):
         i = mm.start(); break
