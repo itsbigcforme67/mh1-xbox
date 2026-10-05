@@ -377,3 +377,172 @@ WARNING: align.py hides differences in lui constants (a float constant 110.0f vs
 - All unregistered em text left in game.yaml (f_em_55B060, 5B5290, 5C2A80, 5D9EE0, 5EBA10, 5FFFD0) is agent D's (em14/15/17/20/21).
   Agent B's remaining em work is only the parked near-matches (em10_turn_sub, em04 act_set/ef_move_sub, em03 mv, em09, em12).
 - em10_turn_sub: four more declaration/type forms retried (u32/s32/u16 d, tgt as u32, no tgt local): still 10 instrs off (a1/a2/a3 colouring), parked.
+
+# Lobby overlay (lobby.bin, links at 0x533980 like game) - agent B, 0x533980-0x5C4E60
+
+Findings from the first pass (5 Oct 2026). Byte/structural comparison of every
+lobby function against matched game/main code (opcode+register shape, immediates
+ignored) found essentially nothing shared: only ~60 tiny coincidences (accessors,
+5-instruction wrappers). The lobby is its own code base, so nothing is reused
+from game.bin. What does repeat is *inside* the lobby network layer: 335 of the
+935 cnlbs functions fall into 82 identical-shape families (see below).
+
+## Area map (vram, size)
+- 0x533980-0x53E848 (43 KB) lobby town game logic (Capcom):
+  - 0x533A00-0x535238 lb_talk: NPC talk start/choosers, Lb_event_* (reward talks),
+    lb_talk_init, Lb_put_npc_default. MATCHED (src/lobby/lb/lb_talk.c, rodata 0x654AD0).
+  - 0x535240-0x536708 lb_mix: forge/item shop (Lb_mix, list build, select, buy/sell).
+  - 0x536708-0x53856C shop engine (Lb_shop_move step machine, list/help/tag drawing).
+  - 0x53856C-0x53C21C lb_process (weapon/armor forge menu), 0x53C21C-0x53D7D0 lb_armor
+    (armor shop), then f_sound/f_em10/f_em09/f_move (0x53D7D0-0x53E848, small).
+- 0x53E848-0x590D40 (330 KB) NOT Capcom code: Sony/third-party libraries compiled with
+  GCC: sceHTTP client (0x53E848-0x549A30), MD5/digest, then an SSL/crypto stack
+  (ASN1, BER, BIO, BN, X509, EVP, RSA/DSA/DH, SSL2/3/TLS1, OP_, R_ eitems, sk_, ...).
+  Skip (the brief says skip GCC library code).
+- 0x590D40-0x5C4E60 (207 KB, 935 functions) "cnlbs" - the lobby client:
+  - 0x590D40-0x5A2A20 (73 KB) lobby/plaza UI: Lb_eat (eat scene), dialog/window/button
+    drawing (SetDialogData, Draw_menu_square, DispButtonHelp ...), Lbs_plaza menus
+    (plaza_*: friends, mail, chat log, search), npc movement scripts (npcMv*, npcCat*,
+    npcPig*, lb_npc_*_move).
+  - 0x5A2A20-0x5AE320 (45 KB, ~370 funcs) cnLBS network protocol: cnLBS_* (start a
+    request in a CnetSys_w.bg slot), __cnet_SendReq_* (build packet in send_work),
+    _cnet_RecvFromLbs_* (reply handlers), __cnet_bgProg_* (multi-step jobs),
+    SetSendData*/GetRecvData*, lbs_encode_ex.
+  - 0x5AE320-0x5B1E74 lbs_encode_ex and friends, 0x5B1E74-0x5C4E60 lobby client state
+    machine: lm_* menus, lbc_* (login/browser/top menu/in plaza/in lobby), CallBack_Result_*,
+    Split_TagCode, server_select_*. Agent F takes 0x5C4E60 to the end.
+
+## Lobby status and lessons (agent B)
+Source layout: `src/lobby/lb/` (town game logic) and `src/lobby/cnet/` (network layer).
+Shared lobby headers: `include/lobby.h` (lb_pit/lb_sys/lbShop/LB_NPCW...), `include/lbnet.h`
+(CnetSys_w, send_work, burst/bg slots), `include/lbnet_proto.h` (generated K&R declarations).
+- lb_talk.c (0x533A00-0x535238): whole file matches, rodata jump table 0x654AD0.
+- cnlbs (0x5A2A20-0x5AE320 network protocol): `src/lobby/cnet/cnlbs_nm.c` holds all ~300 functions
+  written so far in address order; `tools/lbregister.sh` (uses tools/lbruns.py) cuts it into runs
+  of contiguous matching functions (cnlbs.c, cnlbsb.c, ...) and registers them in c_files.txt.
+  Add new functions with `tools/lbmerge.py src/lobby/cnet/cnlbs_nm.c NEW.c` (sorts by address,
+  refreshes lbnet_proto.h). CnetSys_w fields live in `config/lbnet_fields.txt`
+  (`tools/lbfields.py` regenerates the struct in lbnet.h).
+- Near-match files (not built): src/lobby/lb/lb_mix_nm.c (forge shop, 0x535240-0x536708),
+  lb_shop_nm.c (shop engine, Lb_shop_move is 4 instructions off), lb_em10_nm.c / lb_em09_nm.c /
+  lb_em04_nm.c (NPC sound scripts, only the effect_move wrappers are 6 instructions off).
+- tools: lbconv.py (m2c -> closer-to-C draft with lobby struct names), check.py now infers the
+  module from the path (src/lobby/..) and has `--at NAME=ADDR` for functions whose name exists
+  several times (static `sound_call` etc.).
+
+Lessons that were each confirmed by a match:
+- The lobby code uses K&R function definitions (`int f(idx, d) int idx; char *d; {`). With an ANSI
+  prototype definition `(int idx)` the same body compiles differently (e.g. cnLBS_Get_PlazaName:
+  `base + (u16)(idx-1)*0x164` is only produced by the K&R form). Params narrower than int
+  (`s8 val`) must also be K&R-declared, and calls through unprototyped declarations pass
+  nothing for forgotten arguments (stale registers in the original: m2c shows them as junk).
+- `(u8 *)&CnetSys_w + 0x1234` arithmetic is common-subexpression-eliminated by MWCC (one address
+  register kept across calls); the original did not, because it used struct members. Name the
+  field in CNET_SYS instead (`&CnetSys_w.field`).
+- A struct copy `*dst = CnetSys_w.field;` generates the original's copy loops; the element type
+  decides the loop (u8 blob = byte pairs, s16 blob = halfword pairs, s32 blob = words).
+- `switch (x) { case 0: case 3: ... }` (labels ascending) gives the compare order 3 then 0 that the
+  original has (Lb_event_market); a trailing `return;`/`break;` in the last case adds a jump the
+  original lacks (drop it).
+- A by-value struct param (`CNET_RES res`, 8 bytes in a0) is spilled and read in place; do not
+  copy it to a local first.
+- Compare chains of a switch are in REVERSE source order of the case labels (lb_em* ef_move_sub).
+- Statics with the same name in several files (sound_call): check with `--at`.
+
+## Lobby: where I stopped and what is next (agent B)
+Done and byte-matching (registered, lobby rebuild OK): lb_talk.c (0x533A00-0x535238) and 42 runs of
+`src/lobby/cnet/cnlbs*.c` cut from cnlbs_nm.c (about 290 network-layer functions: the cnLBS_* request
+starters, __cnet_SendReq_*, _cnet_RecvFromLbs_* handlers, the table getters, GetRecvData*/SetSendData*).
+Near-matches kept in cnlbs_nm.c (a handful of instructions off, mostly register allocation or stack
+layout): __cnetSub_Return_BgProcess (the done callback gets the slot pointer in a2 in a way I could
+not reproduce), cnLBS_RecvData / __cnetSub_RecvThreeData / __cnet_RecvFromLbs helpers, the four
+GetRecvData{String,Option,Option3} and SetSend{StringData,StringData2,EncodeStringData} (the
+original recomputes `len & 0xFFFF` instead of CSE-ing it), the Match* handlers (2 nops of
+alignment), cnLBS_Get_CurrentPlace, cnLBS_Get_GameServerAddress.
+Not written yet in 0x590D40-0x5AE320: ~55 net functions (condition search, personal data
+registration, the bgProg_* multi-step jobs, personal record tables, TopInformation/WarningMessage,
+RuleControl, MemberSub/InOut/ReceiveJoinUser), and everything below:
+- 0x590D40-0x5A2A20 (73 KB): UI/town code (Lb_eat, dialog drawing, Lbs_plaza menus, npc move
+  scripts). Many reference string literals; MWCC puts <= 8 byte literals into .sdata (gp-relative)
+  whereas the original keeps them in .rodata, so functions with short string literals do not match
+  (cnLBS_Send_LoginUserAccount, __cnet_SendReq_EchoPacket are the two cases in the net layer);
+  needs a compiler flag/pragma that is not known yet.
+- 0x5AE320-0x5B1E74: lbs_encode_ex/write_col_numeric/read_col_numeric/mmbbc_encode (bit encoders),
+  the item shop copy of the forge code (Lb_shop, lb_shop_select, ... 0x5AE8D0-0x5AFFA0, structurally
+  the same as src/lobby/lb/lb_mix_nm.c), Lb_join / lb_select_* (room join menus).
+- 0x5B1E74-0x5C4E60: login/browser/plaza/lobby state machines (lbc_*, lm_*, CallBack_*).
+- The lb_* near-match files (lb_mix_nm.c, lb_shop_nm.c, lb_em*_nm.c) still need one more tuning
+  round; K&R definitions (see lessons) were not yet tried on all of them.
+- Static helpers (LOCAL symbols in docs/survey/mh1_symbols.csv, e.g. write_col_numeric/read_col_numeric)
+  must be `static` in the near-match file: MWCC then does inter-procedural register allocation for
+  their callers (mmbbc_encode keeps values in t0/t1 across the calls). tools/lbruns.py strips `static` in
+  the run files (asm callers need the symbol); modifying the parameter itself (`buf += n - 1;`)
+  instead of a new pointer variable fixed write_col_numeric's register allocation.
+- `tools/lbfieldcheck.py`: tools/check.py ignores relocation addends, so a mistyped field in
+  config/lbnet_fields.txt (e.g. `u8 *name` parsed as 1 byte) only shows in the rebuild; the checker
+  compiles the header and verifies every CnetSys_w field offset (lbregister.sh runs it).
+
+# Lobby round 2 (agent B, 5 Oct 2026): net layer finished, town NPC scripts, tools
+New/changed tools: `tools/lbregister.sh` now handles two families (cnet/cnlbs_nm.c -> cnlbs*.c runs, lb/lbnpc_nm.c -> lbnpc*.c runs).
+`tools/lbruns.py` verifies every generated run file with check.py (a function that stops matching inside its run, e.g. because a
+`static` helper is not in the same run, is demoted and left in asm) and keeps `static` helpers static when all callers are in the run.
+`tools/lbmerge.py NM.c NEW.c include/lbnpc_proto.h lbnpc.h` merges functions into any near-match file (proto header + base include).
+`config/lbnet_rodata.txt` (START END FUNCTION) gives string literals / jump tables a rodata slot in the run file that holds FUNCTION.
+`tools/lbconv.py` now names gp-relative globals of main.bin from config/symbols/main.txt (lobby gp = 0x38EB70).
+Net layer (0x5A2A20-0x5AE320) status: all functions written except __cnet_bgProg_ReadRoomRule (2 KB, 19-state job with 8x-unrolled
+table clears; asm read, not written). Matching and linked: condition search, personal data (bgProg_RegistPersonalData), room rule
+set job (bgProg_RoomSetRule), InOutRoomMember, RuleControl, CheckCheckSum, personal record, patch, top information BattleResult etc.
+Near-match (cnlbs_nm.c, not linked): bgProg_Read{Plaza,Lobby,Room}Allocation (19-23 instrs: register colouring in the check loop),
+MatchOpponentInfo/Status (3), Warning/TopInformation recv (stack/regs), SendReq_ConditionSearchUser (3: loop init order).
+Town NPC scripts (0x59DB40-0x5A2A20, src/lobby/lb/lbnpc_nm.c, headers include/lbnpc.h): all npcMv*, npc_move_common, lb_npc_*_move,
+npcCat*, npcPig* written; linked in lbnpc*.c runs: all except npcPigSLEEP/TOPL/EXIT/WALK2 and lb_npc_old_guild (2 instrs, register
+of a constant), npcCatWAITER (2.4 KB, jump table, not written). Pig/cat helpers use em.h names (x05 step, x15 action, work08 timer,
+x194 anim wait) and LB_NPCMV (ex area: route list, idx, f0F, kind 0x0E, x26/x28, x2D).
+Lessons (each confirmed by a match):
+- SHORT STRING LITERALS (see BRIEF.md): `#pragma readonly_strings on` fixes the .sdata/.rodata mismatch.
+- MWCC unrolls a plain counted loop 8x: do not write the unrolled body by hand (CheckCheckSum `for (i = 0; i < size; i++) acc += *p++;`,
+  RuleControl 3-byte element copy, table clears). The preheader test `slt at,zero,n` is the loop's own, so write no outer `if (n > 0)`.
+- `x >= C` vs `x > C-1`: the compare result goes to `at` (original) or into the value register; `if (n > 2)` instead of `n >= 3` fixed
+  PersonalRecordHeader/Data and MemberSub (and `i = k + 1; if (count < i || i > 10)` style tests).
+- m2c lists the labels of a ladder switch sorted by value; the asm compare ladder (beq chain) runs in REVERSE source order, so read the
+  `addiu t,0,imm; beq x,t,L` sequence (script: /tmp ladder.py idea) and write the labels reversed. A group of case labels whose block
+  is shared must be written in that reversed order too (npcMvTOPL: 14 empty cases that `break` come first).
+- A `return;` that m2c shows after the last statement of a case is usually not in the source: the original branches threaded straight
+  to the epilogue (bgtz -> end). If the compare ladder / bgtz goes to the epilogue use `break` / nothing; an extra `b end; nop` in
+  your output means one `return;` too many.
+- `if (a == 2 || a == 0)` gives `beq a,2,L; bnez a,else` (father_move); a `switch` with the same labels gives `beq zero..; b default`.
+- One-case switches again (`switch (em->x05) { case 0: ... }`) give the `beqz / b end` shape; `case 1: break;` after case 0 when the
+  original ladder tests 1 first.
+- A local `LB_NPCMV *mv = (LB_NPCMV *)em->ex;` at the top makes the original's early `addiu a2,s0,0x444`.
+- Functions called with an extra constant argument (Lb_pl_chr_set0 has 5 args, Lb_Pl_basic_flagset(em, 1, 0, 0), Lb_act_set(em, 0, act,
+  idx)) show the extra zero registers; m2c drops a0 (em) and shifts the others.
+- A float argument needs a prototype (frame_check2(EMW *, f32, int)); the f32 goes in $f12 regardless of position.
+- Struct member arrays keep the `symbol+const` base (lb_sys.x88[idx] = 1 gives lui/addiu of lb_sys+0x88 plus idx); a separate extern
+  symbol (D_3E4C05, in config/lobby_undefined_syms_auto.txt) is needed where the original loads `0(reg)` from symbol+0x15 plus offset.
+- `u16 t = x - 1; x = t; if ((s16)t <= 0)` gives andi + dsll32/dsra32 (pig ATACK).
+- check.py ignores relocation addends: burst[7] vs burst[9] (0xF34 vs 0xF7C) and rseq vs rseq2 only showed in the rebuild.
+- Register colouring at the start of a function (em saved in s1 before the loads of player_work/x05, vs after in the original):
+  npcPigSLEEP/TOPL/WALK2 and ReadXAllocation are still open; declaration order, scoped locals and extra K&R params did not help.
+
+# Lobby UI (agent B): src/lobby/lb/lbui_nm.c, include/lbui.h (0x590D40-0x59DB40, plaza/dialog UI)
+Started the UI region: ~55 functions written and linked (lbui*.c runs): dialog data/titles/help line setters, tl_menu cursors,
+plaza_backToServer/checkChatLog/logOut/ReibunEdit/checkMyStatus, chat id lists, mail/comment/request input, page numbers,
+scene titles, SetDialogData, plaza_selectMenu (5 instrs off, parked) ... Not started: Lb_eat/event_eat_* (0x590D40-0x591600), Draw_menu_square,
+draw_dialog_square, DispDialogData, DispButtonHelp/put_button_help, plaza_enterLobby/movePlaza (+Trans), plaza_searchAll/Member,
+plaza_mailBox(+Trans), plaza_setChatMode(+Trans), Plaza_add_friend, plaza_checkFriend (3.7 KB), disp_status, put_member_info, Lb_put_new_mail.
+Parked near-matches: set_dialog_square (36, op order), plaza_selectMenu (5, `addu` operand order), plaza_chatMain (1), plaza_setMyComment (14),
+Lb_addChatMember (56), Lb_clearChatMember (20).
+Data structs (guesses): LB_NETW (pNet window state: idx/depth 2/step 3/x04/x05/x06/sel 7/menu 8/cur 9/x0C/x10/x24/x26/x28), LB_CW (cw chat work, accessed
+through the CW macro because lobby.h declares cw as u8 *), LB_DIALOG, LB_TXT (x,y,string entries of text_lobby_msg), LB_SCOND, LB_PINFO.
+More lessons (each confirmed by a match):
+- A string literal shared by many functions of the original (lit_193_0065DBE8 "%s%s") must NOT be compiled into the run objects (each object
+  would get its own copy and everything after shifts): declare `extern char lit_...[]` and keep the string in the asm data.
+- Repeated `return 0;` in a switch is not in the source when the original has ONE `daddu v0,zero,zero` at the end: use `break` and a single
+  final `return 0;`, with only the special cases (`return 1;`) inside (mail_input, my_comment_input, getHandleFromID `return 2` after the switch).
+- A pointer loaded in each branch (`n = pNet;` repeated in the if and the else) is CSE'd at the merge point in the original; a single hoisted
+  `n = pNet` is scheduled too early (lb_chatMemberCheck).
+- `x >= 2` on a u8 global: write `x > 1`; `if ((u16)sw & 0x20)` gives andi 0xFFFF + andi; `s16 v = x24 + 1; x24 = v; if (v > 2)`.
+- Unprototyped callees take stale extra arguments (disp_status has 8 args: a4..a7 are my_user_mini_data, pNet->x24, 3, D_3C73B4); Draw_menu_square(x,y,w,h,flag,color)
+  ends with 1, 0xFF2A0000 (window) or 0, 0 (Tex variant).
+- Static (LOCAL in docs/survey/mh1_symbols.csv) helpers: tl_menu_cursor_up/down are static so plaza_selectMenu reads a stale t1 after calling them.
+- Integer arithmetic `master + (int)cw + 0x2BFE` fixes the operand order of the addu that `cw[...]` produces the other way round.

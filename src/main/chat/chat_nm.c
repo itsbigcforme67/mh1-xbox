@@ -2181,7 +2181,7 @@ void chcnfg_reibun_set(s8 *src, int no) {
         s += 2;
         t += 2;
         if (m == 0) {
-            ((s8 *)r)[8] = 0x81;
+            ((u8 *)r)[8] = 0x81;
             ((s8 *)r)[9] = 0x64;
             ((s8 *)r)[10] = 0;
             break;
@@ -2204,6 +2204,7 @@ int Reibun_Edit_Start(int no) {
 int Reibun_Edit_Core(int no) {
     s8 buf[0x30];
     s8 r;
+    s8 SoftKeyboard_move();
 
     buf[0] = 0;
     r = SoftKeyboard_move(buf, *(s16 *)((u8 *)&Psw + 0), *(s16 *)((u8 *)&Psw + 4));

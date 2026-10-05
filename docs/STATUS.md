@@ -704,3 +704,28 @@ row plus silencer/long-barrel rows. Matching notes:
   ../mh1-wt/A/build/show/A/stages/). Plan for player+monster with input: docs/pc.md "Plan".
 - Running: A motion system + pad backend; B f_em_*; C f_menu display code; D weapon/rail cam/hit;
   E f_quest/f_stage; F f_pl.
+
+## 2026-10-05 (afternoon): 35% matched, PC hunt works
+
+```
+main           6525    1516544   304460 20.076%
+select           44      19404     9736 50.175%
+game           2640    1065496   877480 82.354%
+yn              104      30372     3492 11.497%
+lobby          3272     849880    23524  2.768%
+total         12585    3481696  1218692 35.003%
+4318 of 12585 functions decompiled
+```
+All five modules byte-identical after every merge; main pushed.
+- PC runtime (agent A): hunter runs the game's player code (move, roll, draw, attack combos,
+  guard; sword-and-shield and great sword) with sounds; collision, camera, audio (ADX music,
+  ambience, SEs). Rathian runs her own AI (em01 + em_core + em_cmd): notices, roars, charges,
+  bites (hunter 100 -> 51 HP), takes hits (2500 HP from em01_init). `mhview --quest 10`.
+  Not yet: carving, quest clear, death/restart, HUD (agent A working on it).
+- Network outage ~09:50-10:30 killed all agents; restarted, nothing lost.
+- Merge rule now: agents merge main before reporting; a conflicting merge on main is
+  aborted and handed back to the agent (docs/agents/COORDINATOR.md).
+- Running: A full quest loop on PC; B lobby 0x533980-0x5C4E60; C main leftovers + menu03/04
+  range overlap; D push game overlay to 100%; E (background permuter on mc_sel_ck; restart
+  E when it finishes: memory-card run, IME near-matches); F lobby 0x5C4E60-end.
+- Owner said (5 Oct): keep going until told to stop; no scheduled usage checks.

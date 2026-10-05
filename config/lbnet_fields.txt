@@ -1,0 +1,68 @@
+# CnetSys_w (0x00676380, size 0x3BA6C) fields: OFFSET TYPE NAME [COMMENT]; arrays as name[N]; struct arrays carry size=0x..
+0x000 s32 active
+0x018 CNET_BG bg[0x80] size=0xE00 background request slots
+0xE18 CNET_BURST burst[12] size=0x1B0 burst slots
+0xFDC s32 sock socket handle
+0xFE0 s32 rlen bytes read by the last select
+0xFE4 s16 rcmd command of the last packet
+0xFE6 u16 rcat category of the last packet
+0xFE8 u16 rseq sequence of the last packet
+0xFEA u16 rseq2
+0xFEC s8 rres result byte
+0x102C u16 rcnt receive counter
+0x4064 CNET_PIECE plaza[10] size=0xDE8 plaza table (counts of plaza/lobby/room at 0x404E/0x4050/0x4052 just before)
+0x4E4C CNET_PIECE lobby[14] size=0x1378 lobby table
+0x61C4 CNET_PIECE room[8] size=0xB20 room table
+0x162E CNET_B5C minidata size=0x5C mini data of a lobby member
+0x302EC u8 n_lobby_member
+0x302ED u8 n_room_member
+0x302EE u8 n_annex_member
+0x30310 CNET_W5D4 matchinfo size=0x5D4 match information
+0x36EE u8 lobby_member[0x300]
+0x39EE u8 room_member[0x300]
+0x3CEE u8 annex_member[0x300]
+0x30B8A CNET_CHAT chat size=0x120 chat message being received
+0x1008 s32 patch_ver patch information version
+0x1014 char patch_a[0x10] patch information string
+0x1024 char patch_b[8] patch information string 2
+0x10FA CNET_PDATA pdata size=0x1D0 personal data being registered
+0x12CA CNET_RULE rule size=0x16B room rule being set
+0x168A CNET_B1004 topinfo size=0x1004 top information
+0x268E CNET_H1004 warnmsg size=0x1004 login warning message
+0x3692 CNET_B5C leave_user size=0x5C user who left the room
+0x375B8 CNET_B308 chatbin size=0x308 chat binary
+0x6E48 CNET_RULETBL ruletbl size=0x294A4 room rule allocation table
+0x3BA58 s16 curplace[3] current place (3 values)
+0x30300 u8 gsaddr[4] game server address bytes
+0x30308 u8 gsport[2] game server port bytes
+0x6CEC u16 last_id id of the last received plaza/lobby/room item
+0x6D00 u8 last_status status of the last item
+0x6D01 u8 last_pwinfo
+0x6D02 char last_name[0x42] name of the last item
+0x302FE u16 resttime room rest time
+0x014 s8 x14
+0xFF0 s32 xff0
+0xFF4 s32 xff4
+0xFF8 u8* xff8
+0xFFC s32 patch_ptr
+0x1000 s32 patch_cnt
+0x1004 s16 x1004
+0x1006 u16 patch_x
+0x100C s32 patch_size
+0x102E u16 echo_sum
+0x1030 u8 echo_n
+0x1034 CNET_LOGIN login size=0x40 login configuration (copied by value)
+0x1074 CNET_B5C acct size=0x5C account being logged in
+0x10D0 CNET_FIRSTDATA firstdata size=0x24 first data sent after login
+0x145E u8 n_login_user
+0x1462 CNET_LUSER login_users[4] size=0x170 users returned by the login server (entry 3 is the account being logged in)
+0x37BC0 CNET_BUF2000 loginbuf size=0x2000
+0x15D2 char decide_id[8] decided user id
+0x15DA char decide_handle[0x10] decided user handle
+0x3FEE u8 extra_member[0x60] extra member entry
+0x378C0 char srvmsg[0x300] server message
+0xFEE u16 xfee
+0x39D8C CNET_CSEARCH csearch size=0x1CC4 condition search result
+0x3BA50 u16 cs_slot bg slot of the condition search in progress
+0x6CEE u16 last_ja joined users of the last item
+0x1436 CNET_BATRES batres size=0x28 battle result being reported

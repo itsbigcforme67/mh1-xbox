@@ -100,7 +100,7 @@ void han2zen(u8 *src, u8 *dst) {
 
     c = *src;
     while (c != 0) {
-        if ((c >= 0x80 && c < 0xA0) || (c >= 0xE0 && c < 0x100)) {
+        if ((c >= 0x80 && c <= 0x9F) || (c >= 0xE0 && c < 0x100)) {
             dst[0] = c;
             dst[1] = src[1];
             src += 2;

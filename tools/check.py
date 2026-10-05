@@ -156,10 +156,16 @@ def main():
     ap.add_argument("--add", nargs=2, metavar=("MODULE", "NAME"),
                     help="if all functions match and are contiguous, add to c_files.txt")
     ap.add_argument("--module", help="prefer this module when a name is ambiguous")
+    ap.add_argument("--at", action="append", default=[], metavar="NAME=ADDR",
+                    help="pick this original address for a function whose name exists several times (hex)")
     ap.add_argument("--cc", help="another compiler dir under tools/compilers "
                     "(e.g. bundle/mwcps2-3.0b22-020926)")
     ap.add_argument("--flags", help="replace -O4,p (e.g. '-O3')")
     args = ap.parse_args()
+    if not args.module:
+        mm = re.match(r"(?:.*/)?src/(main|select|game|yn|lobby)/", os.path.abspath(args.cfile).replace(ROOT + "/", ""))
+        if mm:
+            args.module = mm.group(1)
 
     with tempfile.TemporaryDirectory(dir=os.path.join(ROOT, "build") if
                                      os.path.isdir(os.path.join(ROOT, "build")) else None) as tmp:
@@ -183,13 +189,17 @@ def main():
         if not cands and m:
             # functions with no symbol in the original are named by address
             a = int(m.group(1), 16)
-            for mod in SECTIONS:
+            for mod in ([args.module] if args.module else []) + list(SECTIONS):
                 base, img = module_image(mod)
                 if base <= a < base + len(img):
                     cands = [(mod, a, len(code))]
                     break
         if args.module:
             cands = [c for c in cands if c[0] == args.module] or cands
+        for a_ in args.at:
+            n_, v_ = a_.split("=")
+            if n_ == name:
+                cands = [c for c in cands if c[1] == int(v_, 16)] or cands
         if not cands:
             print("??  %-32s not in the symbol table" % name)
             all_ok = False

@@ -521,3 +521,82 @@ Tried and left: eft22_end_init (4 off, constant 35/27 goes to v1 not v0),
 fish_type_set (6 off, sum/r swap a1/a2 whatever the declaration order),
 eft11_i (the original loads the address of eft11_t0 just before the copy
 loop; we load it first), Set20_set (only branch delay slots), print_tuto_message.
+
+# Sixth assignment: monster AI files em14, em15, em17, em20, em21 and f_em_55B060
+
+## f_em_55B060 (0x55B060-0x56653C): the monster command interpreter, 137 functions
+All 137 functions have C in src/game/em/em_cmd_nm.c (include/em_cmd.h holds the shared
+declarations). 99 match and are linked as em_cmd_r01..r26 (config/c_files.txt; jump tables
+0x685A40-60, 0x685AE0-0C, 0x685B10-30). The 38 near-matches stay asm: flag_set/flag_clear/flag_ck,
+the *_sel family (24/117 off: one shared shape, CMD_SEL_FUNC macro), end_command (514/571), the
+pl_target_sel functions, angle_ck/range_ck/rnd32 and others (see em_cmd_nm.c, check.py).
+Lesson: top-level macro invocations (CMD_SEL_FUNC) are copied into every run file by mkrun2.py:
+delete them from runs that do not contain the function.
+
+## Pipeline used for the big monster files (em21 first; same for 14/15/17/20)
+Each file is ~110-150 functions of the same family (act/mv/fly/atk/dmg/die/demo/move dispatchers,
+main, uvmove, effect_move, ef_move_sub = a per-animation sound/effect script of 3-11 KB).
+1. m2c draft with a context file (all EMW/PLW/GAME_W structs and the prototypes of the other em files
+   merged into one header, unparsable lines dropped): `DRAFT_CTX=ctx.c python3 tools/draft.py game --file F`.
+   m2c knows the float arguments in $f12 only for the first parameter, so floats and ints after a float
+   are wrong in its output; a small resolver rewrote those calls from the asm (lui+mtc1 constants).
+   Functions with jump tables need the asm of their lit_NNN tables (tools/draft.py now accepts plain
+   `lit_NNN` names, not only lit_NNN_ADDR).
+2. clean-ups that were the same in every function (each confirmed by matches): m2c `return;` at the
+   end of a case -> `break;` (the original has no extra `b`); `var = 4; if (c) {} else var = 6;` ->
+   `if (c) x = 4; else x = 6;` with the store in both branches; three stores to consecutive stack
+   words + `&sp` -> `f32 v[3]`; named EMW fields instead of M2C_FIELD(em, T, off); `EM_LYR(em, i)`
+   = ((EML *)&em->x194)[i].v (stride 0x50) gives `sll,addu` in the original order; a leftover `0x41200000`
+   literal stored in a float field must be written as a float (670.0f).
+3. every function whose name carries an address suffix is `static` in the original and the
+   statics matter for codegen: a caller keeps temporaries in caller-saved registers only when the static
+   callee is defined EARLIER in the same file (hire_move needs static hire_move_sub1/2 in its file).
+   So runs must contain a function together with its earlier static callees.
+4. tools: `tools/alignall.py FILE [-v]` = align.py for every function with one check run (real
+   differences only); `tools/mkruns3.py` splits the matching address-contiguous functions into runs
+   (verifies each run on its own, finds jump-table ranges from the original binary, one merged rodata
+   range per run including the padding between tables, drops `static` where the symbol is used by
+   asm or another run). check.py shows "calls X, original calls Y" for address-suffixed names: ignore it,
+   rebuild.sh is the judge.
+5. NM files must compile (the build compiles every src/**/*.c); WIP files live in wip/ until they do.
+
+## Status at the end of this assignment (all in src/game/em/, game OK, rebuild.sh byte-identical)
+| file | functions | match (alignall = 0 diff) | linked runs |
+|---|---|---|---|
+| em_cmd_nm.c (f_em_55B060) | 137 | 99 | em_cmd_r01-r26 |
+| em21_nm.c (f_em_5FFFD0) | 114 | 94 | em21_r01-r14 |
+| em15_nm.c (f_em_5C2A80) | 120 | 100 | em15_r01-r14 |
+| em14_nm.c (f_em_5B5290) | 115 | ~92 | em14_r01-r14 |
+| em17_nm.c (f_em_5D9EE0) | 118 | ~93 | em17_r01-r19 |
+| em20_ai_nm.c (f_em_5EBA10; em20_nm.c is the older setter file) | 148 | ~113 | em20_r01-r25 |
+Every function of the five monster files and of the command interpreter has C; the near-matches stay asm.
+New headers: include/em14.h em15.h em17.h em20.h em21.h (work areas, EMW+0x444), include/em_cmd.h.
+Shared header edits: none beyond new files (em_cmd.h macro CMD_SEL_FUNC uses q instead of r in the
+else loop, equivalent).
+
+## Matching lessons from these files (each confirmed by a match)
+- A function that passes its second parameter through unchanged (`em14_atk_end_sel(em, w)`) keeps a1 live:
+  the compiler then puts the temporaries in a2/a3. Define the callee with the second parameter too.
+  A callee that reads a1 without being given it (em14_to_fly(em, flag), flag = stale a1 of the caller)
+  is declared with its parameter and called with `(em, 0)` here; the original passes nothing.
+- `if (x != 0) return; call();` at the end of a move dispatcher is a single-case `switch (x) { case 0: ... }`
+  (em_move06, act_dist_select, em14_to_fly: beq/b layout).
+- Ladders of `||` compares over the same variable keep `sltiu at`; when the original shows `at` for the first
+  compare and the && / || form does not reproduce it (em_mv03/05, em21 mv02/fly03/fly09) leave it.
+- A float local assigned first (`f32 k = 0.4f;` then `x * k`) loads the constant before the cvt (em20_to_normal).
+- `case 0x3E9: break;` as the FIRST case of a big switch is real when the original's range check starts at
+  0x3E9 (em20/em14 ef_move_sub); and two neighbouring case labels in the opposite source order change the
+  compare ladder (em15 ef_move_sub: 0x42E before 0x433).
+- Local vector arrays: the order of the declarations decides the stack slots (later declarations lower);
+  reading the sp offsets of the original and sorting the arrays by them fixed em14 ef_move_sub.
+- m2c drops the store in the delay slot of a tail call (`j f; sb ...`): em14_to_swim, em15_to_tenjo/fly,
+  em21_to_swim. tools/alignall.py shows it as 2-4 differing instructions at the end.
+- Tables of 2 u16 per entry indexed `p = tbl + i * 2` (em_act_search2): the stride is bytes/2.
+- `(f32)(u32)u8` gives the bltz fix-up of the original for `1500.0f * x13` in every init.
+
+## Not done / next
+- hire_move_sub1/sub2 (em21; my C is not the original's), em14_main (112 off), em17_main (21), em20_main (61),
+  em21_main (27), em15_main (23): written as C, logic believed right (the conditions of the damage switch were
+  rebuilt from the compare ladders), but the exact branch layout is not matched.
+- em_cmd: *_sel family (7 functions, 18/117 off each, one shared macro), end_command, the pl_target_sel group.
+- The m2c-based pipeline scripts lived in /tmp and are not committed; the steps are listed above.

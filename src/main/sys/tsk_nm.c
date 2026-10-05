@@ -44,7 +44,7 @@ void Scheduler(void) {
         spr_list_no = 0;
     }
     for (i = 0, t = tcb_w; i < 16; i++, t++) {
-        if (paused != 0 && i < 12) {
+        if (paused != 0 && i <= 11) {
         } else {
             switch (t->state) {
             case 0:
