@@ -455,3 +455,226 @@ int Menu_mix_i(void) {
     PitMenu.x12 = 0;
     return 0;
 }
+
+/* Item list in the pit menu: step x48 0 pick slot, 1 pick action, 2 details. */
+int Menu_item_mv(int sw) {
+    PLW *pl = lpPit->pl;
+    int ok;
+    int add;
+    int n;
+    int max;
+    u8 step = lpPit->x48;
+
+    switch (step) {
+    case 0:
+        if (!((u16)sw & 0x40)) {
+            Menu_select_mv(&lpPit->x49, sw, 0x14);
+            PitMenu.x12 = get_pl_item_type(lpPit->x49) + 0x18;
+            if ((u16)sw & 0x20) {
+                if (pl->item[lpPit->x49].id != 0) {
+                    lpPit->x48++;
+                    se_req(7, 0x13, 0);
+                } else {
+                    se_req(7, 0x15, 0);
+                }
+            }
+        }
+        break;
+    case 1:
+        if (pl->item[lpPit->x49].id == 0) {
+            lpPit->x48 = 0;
+            sw = (u16)(sw & 0xFFBF);
+        } else {
+            ListSelect(&lpPit->x4A, sw, 2);
+            if ((u16)sw & 0x40) {
+                sw = (u16)(sw & 0xFFBF);
+                lpPit->x48--;
+                se_req(7, 0x14, 0);
+            } else if ((u16)sw & 0x20) {
+                if (Item_ok_chk(pl) == 0) {
+                    se_req(7, 0x15, 0);
+                } else {
+                    switch (lpPit->x4A) {
+                    case 0:
+                        lpPit->yn = 1;
+                        lpPit->x48++;
+                        lpPit->x4B = 0;
+                        se_req(7, 0x13, 0);
+                        break;
+                    case 1:
+                        if (item_present_chk() == 1) {
+                            lpPit->x4D = 1;
+                            lpPit->x48++;
+                            if (pl->item[lpPit->x49].num != 1) {
+                                lpPit->x4E = 0;
+                                lpPit->x4B = 0;
+                            } else {
+                                lpPit->x4B = 1;
+                            }
+                            se_req(7, 0x13, 0);
+                        } else {
+                            se_req(7, 0x15, 0);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        break;
+    case 2:
+        if (pl->item[lpPit->x49].id == 0) {
+            lpPit->x48 = 0;
+            sw = (u16)(sw & 0xFFBF);
+            PitMenu.x12 = get_pl_item_type(lpPit->x49) + 0x18;
+        } else {
+            switch (lpPit->x4A) {
+            case 0:
+                if ((u16)sw & 0x40) {
+                    sw = (u16)(sw & 0xFFBF);
+                    menu_item_back_sub();
+                } else {
+                    PitMenu.x12 = 0;
+                    select_yes_no(sw, 0x3000);
+                    if ((u16)sw & 0x20) {
+                        if (lpPit->yn == 0) {
+                            Pl_item_erase(pl, lpPit->x49);
+                            lpPit->x48 = 0;
+                            lpPit->x4A = 0;
+                            se_req(7, 0x13, 0);
+                        } else {
+                            menu_item_back_sub();
+                        }
+                    }
+                }
+                break;
+            case 1:
+                switch (lpPit->x4B) {
+                case 0:
+                    if ((u16)sw & 0x40) {
+                        sw = (u16)(sw & 0xFFBF);
+                        menu_item_back_sub();
+                    } else {
+                        PitMenu.x12 = 3;
+                        add = 0;
+                        if ((u16)sw & 0x800) {
+                            add--;
+                        }
+                        if ((u16)sw & 0x400) {
+                            add += 1;
+                        }
+                        if ((u16)sw & 0x2000) {
+                            add += 10;
+                        }
+                        if ((u16)sw & 0x1000) {
+                            add -= 10;
+                        }
+                        if (add != 0) {
+                            lpPit->x4E = 0;
+                            n = add + lpPit->x4D;
+                            if (n <= 0) {
+                                n = 1;
+                            }
+                            if (n >= pl->item[lpPit->x49].num) {
+                                n = pl->item[lpPit->x49].num;
+                                lpPit->x4E = 1;
+                            }
+                            if (lpPit->x4D != n) {
+                                lpPit->x4D = n;
+                                se_req(7, 0x16, 0);
+                            }
+                        }
+                        if ((u16)sw & 0x20) {
+                            PitMenu.x12 = 1;
+                            lpPit->x4B++;
+                            se_req(7, 0x13, 0);
+                        }
+                    }
+                    break;
+                case 1:
+                    if ((u16)sw & 0x40) {
+                        sw = (u16)(sw & 0xFFBF);
+                        if (pl->item[lpPit->x49].num != 1 && Item_data[pl->item[lpPit->x49].id][3] != 0xFF) {
+                            lpPit->x4B = 0;
+                        } else {
+                            menu_item_back_sub();
+                        }
+                    } else {
+                        PitMenu.x12 = 1;
+                        max = game_w.x1DC == 0 ? 3 : 7;
+                        if ((u16)sw & 0x2000) {
+                            FLDS8(*lpPit, 0x4C)--;
+                            if (FLDS8(*lpPit, 0x4C) < 0) {
+                                FLDS8(*lpPit, 0x4C) = max;
+                            }
+                            if (FLDS8(*lpPit, 0x4C) == game_w.master) {
+                                FLDS8(*lpPit, 0x4C)--;
+                            }
+                            if (FLDS8(*lpPit, 0x4C) < 0) {
+                                FLDS8(*lpPit, 0x4C) = max;
+                            }
+                            se_req(7, 0x16, 0);
+                        } else if ((u16)sw & 0x1000) {
+                            FLDS8(*lpPit, 0x4C)++;
+                            if (max < FLDS8(*lpPit, 0x4C)) {
+                                FLDS8(*lpPit, 0x4C) = 0;
+                            }
+                            if (FLDS8(*lpPit, 0x4C) == game_w.master) {
+                                FLDS8(*lpPit, 0x4C)++;
+                            }
+                            if (max < FLDS8(*lpPit, 0x4C)) {
+                                FLDS8(*lpPit, 0x4C) = 0;
+                            }
+                            se_req(7, 0x16, 0);
+                        }
+                        if ((u16)sw & 0x20) {
+                            if (game_w.x1DC == 0) {
+                                ok = game_w.pl_state[FLDS8(*lpPit, 0x4C)] == 1;
+                            } else {
+                                switch (func_5D8370(FLDS8(*lpPit, 0x4C))) {
+                                case 0:
+                                    ok = 1;
+                                    break;
+                                case 1:
+                                case 2:
+                                    ok = 0;
+                                    break;
+                                }
+                            }
+                            if (ok == 1) {
+                                sw = 0;
+                                FLDS8(*pl, 0x909) = FLDS8(*lpPit, 0x4C);
+                                FLD16(*pl, 0x904) = pl->item[lpPit->x49].id;
+                                FLDS16(*pl, 0x906) = lpPit->x4D;
+                                FLDS8(*pl, 0x908) = 1;
+                                lpPit->x4B++;
+                            } else {
+                                se_req(7, 0x15, 0);
+                            }
+                        }
+                    }
+                    break;
+                case 2:
+                    if (FLD8(*pl, 0x90B) != 0) {
+                        if (game_w.x1DC == 0) {
+                            menu_exit();
+                        } else {
+                            func_5B3E60();
+                        }
+                        se_req(7, 0x13, 0);
+                    } else {
+                        lpPit->x4B = 1;
+                        se_req(7, 0x15, 0);
+                    }
+                    sw = 0;
+                    break;
+                }
+                break;
+            default:
+                lpPit->x48 = 0;
+                break;
+            }
+        }
+        break;
+    }
+    return sw;
+}
