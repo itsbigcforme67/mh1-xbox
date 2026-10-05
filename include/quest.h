@@ -29,6 +29,14 @@ typedef struct MISSION2 {
     s32 x18;            /* 0x18 */
 } MISSION2;
 
+/* One command of the quest condition program (quest_w.x6C): 8 bytes. */
+typedef struct QCMD {
+    s16 cmd;            /* 0x00 */
+    s16 a;              /* 0x02 */
+    s16 b;              /* 0x04 */
+    s16 c;              /* 0x06 */
+} QCMD;
+
 typedef struct QUEST_W {
     s8 x00;             /* 0x00 condition type */
     s8 x01;             /* 0x01 step */
@@ -39,9 +47,9 @@ typedef struct QUEST_W {
     s8 x06;             /* 0x06 state: 4 clear, 6, 7 retire, 8 error */
     u8 _pad07;
     s16 no;             /* 0x08 quest number (0: free hunt) */
-    u8 _pad0A;
+    s8 x0A;             /* 0x0A section number (quest_condition_prog case 0x1B) */
     s8 x0B;             /* 0x0B */
-    u8 _pad0C[4];
+    s32 x0C;            /* 0x0C wait counter (condition program cmd 5/6) */
     s32 x10;            /* 0x10 time left */
     s32 x14;            /* 0x14 reward money */
     s32 x18;            /* 0x18 fee (subtracted from the reward) */
@@ -53,7 +61,7 @@ typedef struct QUEST_W {
     s16 x36;            /* 0x36 condition program counter, -1 done */
     s16 x38;            /* 0x38 */
     s8 x3A;             /* 0x3A */
-    u8 _pad3B;
+    s8 x3B;             /* 0x3B number of pick points in stiem_stack_tbl */
     void *x3C;          /* 0x3C last monster (EMW) that counted */
     s32 x40;            /* 0x40 flags from the mission info (bit 1: ...) */
     u8 _pad44[0x64 - 0x44];
@@ -80,8 +88,8 @@ typedef struct QUEST_W {
     QPAIR xBC[32];      /* 0xBC */
     s32 x13C;           /* 0x13C */
     s32 x140;           /* 0x140 */
-    s32 x144;           /* 0x144 */
-    s32 x148;           /* 0x148 */
+    s16 x144[2];        /* 0x144 copy of x2C (quest_enemy_set) */
+    s16 x148[2];        /* 0x148 copy of x30 */
     s16 x14C;           /* 0x14C */
     s8 x14E;            /* 0x14E */
     s8 x14F;            /* 0x14F */
@@ -113,7 +121,24 @@ typedef struct QEM {
     f32 pos[3];         /* 0x20 */
     s16 x2C;            /* 0x2C */
     s16 x2E;            /* 0x2E flags: 1 gone, 2, 4 dead, 8 captured */
+    u8 _pad30[0xC];     /* 0x30 (entry size is 0x3C) */
 } QEM;
+
+/* One extra pick-up point (StiEM_data[20], 0x1C bytes): treasure/hagi spot
+ * with a radius, an item id (bit 15: ...) and a remaining count. Guesses. */
+typedef struct STIEM {
+    f32 pos[3];         /* 0x00 */
+    f32 rad;            /* 0x0C pick radius */
+    u16 id;             /* 0x10 item id, 0xFFFF = free */
+    u16 cnt;            /* 0x12 remaining picks (0xFF: endless) */
+    s16 x14;            /* 0x14 */
+    u8 _pad16[2];
+    u8 stg;             /* 0x18 stage */
+    u8 x19;             /* 0x19 flags */
+    s16 x1A;            /* 0x1A */
+} STIEM;
+extern STIEM StiEM_data[20];
+extern s8 stiem_stack_tbl[20];
 
 extern u8 *mission_area;
 #endif

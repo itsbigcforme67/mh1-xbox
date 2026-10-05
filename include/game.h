@@ -55,7 +55,9 @@ typedef struct GAME_W {
     u8 _pad07C[0x80 - 0x7C];
     u8 x80[4];          /* 0x080 per player, copied into the cooking smell (Eft12_set4) */
     u8 _pad084[0xA8 - 0x84];
-    struct EFT_MDLW *area_mdlw[10]; /* 0x0A8 model sets by area (eft07_t, Em_area_ck) */
+    struct EFT_MDLW *area_mdlw[9]; /* 0x0A8 model sets by area (eft07_t, Em_area_ck) */
+    s16 xCC;            /* 0x0CC stolen item id (Item_stolen) */
+    s16 xCE;            /* 0x0CE stolen item count */
     u8 x0D0;            /* 0x0D0 cleared by Quest_start */
     u8 master;          /* 0x0D1 player number of the session master */
     u8 x0D2;            /* 0x0D2 set to 1 by Game_task, passed to AQ_init */
@@ -63,8 +65,10 @@ typedef struct GAME_W {
     u8 _pad0D4;
     u8 x0D5;            /* 0x0D5 result screen: 7/8 = special end (result_prog) */
     u8 _pad0D6[0x128 - 0xD6];
-    PL_ITEM reward_item[16]; /* 0x128 reward screen item list (reward_mv) */
-    u8 _pad168[0x1B2 - 0x168];
+    PL_ITEM reward_item[32]; /* 0x128 reward item list: 32 entries (remuneration_item_set), the screen pages through 16 (reward_mv) */
+    s32 x1A8;           /* 0x1A8 cleared by remuneration_item_set */
+    s32 x1AC;           /* 0x1AC */
+    u8 _pad1B0[0x1B2 - 0x1B0];
     u8 x1B2;            /* 0x1B2 set05: kind-2 fixtures fire once set */
     u8 flag1B3;         /* 0x1B3 bit 0 hides set04 on stage 28 */
     u8 _pad1B4[0x1DC - 0x1B4];

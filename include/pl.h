@@ -311,7 +311,8 @@ typedef struct PLW {
     u8 _pad8F1[0x8F2 - 0x8F1];
     u8    work8F2;           /* 0x8F2 */
     s8    work8F3;           /* 0x8F3 */
-    u8 _pad8F4[0x908 - 0x8F4];
+    PL_ITEM share[4];        /* 0x8F4 shared items carried (Share_item_stack, quest.c) */
+    u8 _pad904[0x908 - 0x904];
     s8    work908;           /* 0x908 */
     u8 _pad909[0x90C - 0x909];
     s16   work90C;           /* 0x90C */

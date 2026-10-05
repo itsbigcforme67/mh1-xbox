@@ -34,21 +34,32 @@ Lessons:
 - `if (x > 0x22550FF)` instead of `>= 0x2255100` stops the compiler sharing
   the lui of two constants (Game_task).
 
-## f_stage (0x15C210-0x15F...): partly done; PAUSED here
-Built (f_stage.c, 0x15C210-0x15C6A4, main OK): stage_mv_ck, clr_stg_work, clr_flash,
-Stage_env_ck, Pile_on, stage_i. Functions in a file must be in address order
-(stage_mv_ck first) or the build mismatches.
-f_stage_nm.c (not built): stage_se_move (~100 instr off, register allocation: original
-has p=s0.., cnt=s2, n=s1, pl=s3; declbf takes >15 min, run in background), plus
-stage_m and move_stage written from the asm but NEVER compiled against the original.
-Not started: trans_stage_sub, trans_stage (0x3B30 bytes, huge), spr_disp_sub,
-stage_spr_disp (m2c draft via `python3 tools/draft.py main --file f_stage`).
-Also not started: f_reward.s (24 fns), f_quest.s (83 fns).
-Lessons: prototype float-argument callees (`f32 flSqrt(f32);`) or the arg goes to a0;
-`dx=..; dz=..; flSqrt(dx*dx+dz*dz)` gives mula.s/madd.s; stage_mv_ck: use named PLW
-fields (macros cast pointers and the compiler hoists addresses). After merging, GAME_W
-x208 is pl_state, PLW 0x570 is work570 (s16, cast (u16) for lhu).
-
+## f_stage (0x15C210-0x160E??): every function written, 5 of 11 built
+Built (main OK): f_stage.c (stage_mv_ck .. stage_i), f_stageb.c (stage_se_move), f_stagec.c (move_stage, trans_stage_sub).
+stage_set_set is in src/main/stage/stage_set.c (agent A). Source of truth for the rest: src/main/stage/f_stage_nm.c (functions in
+address order, brace on its own line so tools/split_runs.py can parse them; the file is compiled but not linked).
+Near-matches:
+- stage_m (0x15C940): 5 of 231 instructions off. The sum `65.0f + it->pos[1] + (f32)((r & 0x3F) - 0x20)` needs the cast
+  evaluated first but added second (`add.s f0,f0,f2`); I could only get `add.s f0,f2,f0`.
+- spr_disp_sub (colour lerp, 0x1608C0): 67/123. static (see lesson) helps stage_spr_disp, the byte shuffling schedule differs.
+- stage_spr_disp (sky gradient from the sun angle + flash overlay, 0x160AB0, 1844 bytes = same size): ~132/461, the colour table loads
+  (8 packed colours built from bytes) use different temp registers.
+- trans_stage (0x15CD90, 15152 bytes = EXACTLY the original size): written as two passes (stage clays with per-stage UV scroll
+  / rotation, then the set objects from the setNN_pos_tbl tables). The first pass (0x15CE90-0x15F700) is instruction-identical except
+  registers of the prologue; the second pass differs only in which s-register each per-case local lives in (the original has
+  block-local variables per case; mine are function-level). The two jump tables lit_1784_0035B9D0 / lit_1785_0035B9A0
+  (main:rodata 0x35B9A0-0x35B9F4) will have to be registered together with the file that holds trans_stage once it matches.
+Lessons:
+- `static` on a leaf helper defined earlier in the same file makes MWCC keep values in caller-saved registers across the call
+  (stage_spr_disp keeps 8 colours in t1..t8 across spr_disp_sub calls); a non-static helper does not.
+- A single-case `switch (stage) { case 0x4F: ... }` gives `beq; b end`; two separate `&&` conditions do not (stage_m).
+- Variables declared last get the lowest saved register (s0), declared first the highest: declaring `best,px,pz,i,pl,cnt,n,p`
+  produced the original allocation of stage_se_move.
+- `cnt = 3` that is never set before a `switch (...) {case 3: ...}` test is shared with the compare constant `addiu s2,zero,3`:
+  write the assignment only in the cases that have it (stage_se_move case 1).
+- Generating the symbolic listing of a giant function: the small script used for trans_stage tracks lui/ori/mtc1 constants and prints
+  every call with its argument registers, which is far easier to read than m2c output when floats are passed in f12-f14 (m2c's
+  context mode puts them in a1-a3).
 ## f_reward (0x290E80-0x293B68): 19 of 24 functions built, 2 near-matches
 Built (main OK): f_reward.c (key_quest_ck .. gold_main, tables 0x3865A0/0x3865D0), f_reward2.c
 (gold_disp, result_init, result_main, tables 0x3866F0/0x386710), f_reward3.c (result_disp, error_disp,
@@ -78,19 +89,55 @@ Lessons:
   the store BEFORE the call (reward_mv).
 - An empty `case 2: break;` forces the extra compare in a switch whose original has it (disp_reward).
 
-## f_quest (0x226C30-...): started, 14 of 83 built
-Source of truth is src/main/quest/f_quest_nm.c (all functions written so far, in address order);
-matching runs are extracted into f_quest.c, f_questb.c .. f_queste.c with `python3 tools/split_runs.py
-f_quest_nm.c src/main/quest/f_quest ':A-B' 'b:C-D' ...` and registered in config/c_files.txt (END = next
-function's start). Types in include/quest.h (QUEST_W, QEM mission enemy entry (0x3C bytes), MISSION).
-Built: Quest_error_set2/error_set, Quest_restart .. Quest_remuneration_calc, Quest_condition_judging,
-Quest_next_em_clr. Near-matches (nm only): Quest_start (16 off, schedule/reg), Quest_retire_set (15),
-Quest_pl_stage_init (11), Em_direct_set (53, register numbering), Quest_next_em_set (written, never
-matched: first diff is loop pointer/register shape; not registered). Next: Quest_str_get onward
-(asm is in asm/main/text/Quest_next_em_set.s after the rebuild).
-Lessons: `if ((q = f()) != 0 && ...)` tests v0 directly (plain `q = f(); if (q ...)` copies first);
-a prototype with an s8 last parameter changes argument evaluation order to left-to-right
-(Em_data_st_adrs_get); `x > 2` gives slti $at where `x >= 3` does not; `(u8 *)arr + i*2` folds the
-array offset into the symbol, `&arr[i].f` does not; `v == 5 || v == 6 || v == 7` reproduces the
-original sltiu range test; check.py shows "1/N differ" for functions whose only difference is a
-relocation: trust `tools/rebuild.sh main` OK.
+## f_quest (0x226C30-0x22C66C): all 83 functions written, 52 built
+Source of truth is src/main/quest/f_quest_nm.c (every function, in ADDRESS order: split_runs needs that; all
+non-function lines, typedefs and prototypes, are at the top). The matching runs are extracted into
+f_quest.c, f_questb.c ... f_questq.c and registered in config/c_files.txt. Re-extract after any change with the
+new helper tools/genruns.py (see its header: reorders the nm file into address order, writes every run of
+consecutive OK functions with split_runs and prints the config lines; the quest config lines are f_quest[f-r]). It strips `static`
+from the generated files because the nm file needs `static` on leaf helpers (see lessons) but the linked files must export them.
+`tools/rebuild.sh` printed OK for all five modules after the last change. Other helpers added: tools/permdecl.py (brute-force /
+hill-climb the order of a function's local declarations, with a mini file that also contains static helpers), tools/symdump.py.
+Types in include/quest.h: QUEST_W, QEM (mission enemy entry, 0x3C bytes), QCMD (condition-program command, 8 bytes),
+STIEM (pick-up point, 0x1C bytes, StiEM_data[20]), MISSION.
+Near-matches (nm only), distance in instructions of the whole function:
+- quest_condition_prog (0x22A410, 3420 bytes): whole interpreter written, size equals the original; 532/855 differ,
+  mostly shifted register names and the 4-byte `p += 4` vs `p++` choice in case 0xA. A switch on cmd+2 (jump table lit_2397).
+- Quest_net_sub (switch on quest_w.x181, table lit_3028): 179/205 (a nop in a branch delay slot differs).
+- remuneration_item_set: 51/460, only temp register numbers differ (the pick loop uses a1/a2/a3 in another order).
+- quest_item_ck2 109/114 (original uses 5 s-registers, mine 6), Item_regained 158/189, stolen_item_stack 145/145
+  (original keeps its args in a3/t0 across the call, i.e. it uses an IPA-like "callee clobbers only a few regs"
+  schedule that I could not trigger), Share_item_stack 86/127, Net_Share_item_stack 71/117, Share_item_num_ck 61/86,
+  em_work_serch 75/86 and em_work_serch2 43/93 (only `slt/bne` vs `bltz` for `x3A >= 0`), Quest_str_get 15/21,
+  str_gattai (varargs: the compiler knows `va_start` but I could not get the original's "(8-n)*8" prologue),
+  Em_hagi_point_cnt_ck 20/50, station_em_set 12/85, quest_enemy_ck_sub/_sub2 (the original keeps a `beq 0x63; b` pair).
+New lessons (function that shows it):
+- Loops that scan the same table twice use two separate pairs of locals in the original (station_em_set: i,g for the first loop and
+  j,h for the second); declare them all at function level and let tools/permdecl.py find the order (it matched station_em_set and
+  Ext_pick_point_set, whose only difference was the order of `i` and `s = StiEM_data`).
+- `static` on a leaf callee defined earlier in the same file makes MWCC keep the caller's values in t-registers across the call
+  (stolen_item_stack: 145/145 -> 7/138 diffs; stage_spr_disp). A K&R `static s16 f(item) u16 item;` was needed there, a prototype-style
+  definition masked the argument at the call site.
+- check.py "1/N differ" is NOT always a relocation: quest_failed_ptr_set was a real `addiu a3,8` vs 16 (s16* stride) and
+  quest_item_ck a real lhu/lh. Look at `-v` before registering; the rebuild is the final judge.
+- A function that is K&R-defined stays unprototyped in the split files, but one with a prototype-style definition
+  (stolen_item_stack(int,s16), em_work_serch2(s16,s16)) needs the same prototype at the top of every split file, or
+  its callers (Item_stolen) get different argument conversions and the rebuild fails.
+- Loops: write `for (;;) { if (e->id < 0) break; ... e++; }` to get the original's test-at-top loop with a back jump
+  (Em_direct_set neighbours: enemy_insurance_sub, em_next_tbl_ck, quest_em_init_sub, quest_enemy_ck_sub).
+- `while ((v = *p) != 0)` plus `tbl += k; base = *tbl;` (reuse the parameter register): em_data_st_adrs_set.
+- Local declaration order decides callee-saved register numbering: the LAST declared local gets s0, the first the highest
+  (quest_em_die: e, em, hp -> s2, s1, s0). Block-scoped temporaries keep short-lived values out of s-registers
+  (quest_condition_prog frame size).
+- `if (x == 0) continue; break;` vs `if (x) break; continue;` emits different branch polarity; the original's
+  `bnez give; nop; b next` needs the first form (remuneration_item_set).
+- `r = 0xFFFE; r = r & 0xFFFF;` reproduces `ori; andi` for a constant that is later masked (Ext_pick_point_ck2).
+- A sparse `switch` with ~25 cases is a compare chain in REVERSE source order, bodies in source order
+  (remuneration_item_set); a `switch (x) { case 0: case 1: case 2: ...}` gives `beq 2; beq 1; beqz` where `||` would give
+  a sltiu range test (Quest_net_sub).
+- struct field used with `lhu` in the asm needs an unsigned type (STIEM.cnt u16), `lh` a signed one.
+- unused-argument trick: Item_stolen(pl, item, num) has a first argument that is never read; q_net_send_em_capture calls
+  net_send_sys(6, master) although m2c shows one argument.
+Shared header edits: include/pl.h (PL_ITEM share[4] at 0x8F4), include/game.h (area_mdlw[10] -> [9] because Item_stolen
+stores at game_w+0xCC/0xCE: new fields xCC, xCE; reward_item[16] -> [32] and x1A8/x1AC), include/em.h (x876 u8 at 0x876,
+x88D now s8 as proved by lb in Em_hagi_point_cnt_ck).

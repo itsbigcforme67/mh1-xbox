@@ -251,7 +251,9 @@ typedef struct EMW {
     u8 x86D;            /* 0x86D */
     u8 x86E;            /* 0x86E */
     u8 x86F;            /* 0x86F */
-    u8 _pad870[0x878 - 0x870];
+    u8 _pad870[0x876 - 0x870];
+    u8 x876;            /* 0x876 joint of the hagi pick point (Em_hagi_point_set), 0 = none */
+    u8 _pad877;
     struct EFTW *tail;  /* 0x878 cut-tail effect (eft09_set) */
     u8 _pad87C[0x881 - 0x87C];
     u8 x881;            /* 0x881 target kind, 0 none (1 and 7 seen; 0x934 = its position) */
@@ -265,7 +267,7 @@ typedef struct EMW {
     u8 x88A;            /* 0x88A */
     u8 x88B;            /* 0x88B */
     u8 x88C;            /* 0x88C */
-    u8 x88D;            /* 0x88D */
+    s8 x88D;            /* 0x88D (s8: lb in Em_hagi_point_cnt_ck) hagi pick point index, -1 none */
     u8 x88E;            /* 0x88E */
     u8 x88F;            /* 0x88F */
     s16 x890[4];        /* 0x890 */
