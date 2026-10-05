@@ -80,3 +80,69 @@ s32 Lb_ItemBox_mv(int arg0) {
     F(s8, ib, 0) = 1;
     return 1;
 }
+
+extern char frame_itembox_cmd[];
+extern u32 D_3C733C[];
+extern char *yes_or_no[2];
+int DispFrameList();
+int Disp_help_mess();
+int Put_shousai();
+int font_print_sp();
+void flfntSetSize();
+void flfntLocate();
+void font_set_palette();
+void font_print_uf();
+void SetFilterMode();
+void reload_tex();
+void SetTextureStage();
+void PutArrow();
+
+int disp_itembox_cmd(int a) {
+    if (!(a & 0xFF)) {
+        *(s32 *)(frame_itembox_cmd + 0x10) = 0xA9182;
+    } else {
+        *(s32 *)(frame_itembox_cmd + 0x10) = 0x808080;
+    }
+    return DispFrameList(frame_itembox_cmd, 0, F(u8, ib, 2));
+}
+
+void item_explanation(int a, int b, int c) {
+    if ((a & 0xFF) == 1) {
+        Disp_help_mess(1, (u16)(*(u16 *)&D_3C733C[b & 0xFF] + 0x18));
+    } else {
+        Put_shousai();
+    }
+}
+
+int yes_no_disp_sub(void) {
+    flfntSetSize(0x12, 0x12);
+    flfntLocate(0x1B0, 0x18E);
+    return font_print_sp(yes_or_no[F(u8, ib, 0x21)]);
+}
+
+/* amount selector: two-digit number with up/down arrows */
+void kosuu_disp_sub(void) {
+    s8 buf[8];
+    u8 *w;
+    if (F(s16, ib, 0x1A) != 0x270F) {
+        flfntSetSize(0x12, 0x12);
+        font_set_palette(0);
+        flfntLocate(0x22E, 0x17A);
+        w = ib;
+        buf[0] = 0x82;
+        buf[1] = F(s16, w, 0x1A) / 10 + 0x4F;
+        buf[2] = 0x82;
+        buf[3] = F(s16, w, 0x1A) % 10 + 0x4F;
+        buf[4] = 0;
+        font_print_uf(buf, 0xA, w, -0x7E);
+        SetFilterMode(1);
+        reload_tex(1, 0x11A);
+        SetTextureStage(0x11A);
+        if (F(u8, ib, 0x1C) == 0) {
+            PutArrow(0x234, 0x168, 0x18, 0x12, 0xFF20FF28, 2);
+        }
+        if (F(s16, ib, 0x1A) != 1) {
+            PutArrow(0x234, 0x18E, 0x18, 0x12, 0xFF20FF28, 3);
+        }
+    }
+}
