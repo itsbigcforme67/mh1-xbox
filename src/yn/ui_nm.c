@@ -177,7 +177,7 @@ void yn_set_size();
 void yn_set_z(f32 z);
 void yn_set_halftype();
 s32 yn_get_halftype();
-s16 yn_center_x();
+int yn_center_x();
 int yn_strlen();
 void yn_strconv();
 void yn_strconv2();
@@ -2431,7 +2431,7 @@ s32 yn_get_halftype(void) {
     return 1;
 }
 
-s16 yn_center_x(u8 *str, int w) {
+int yn_center_x(u8 *str, int w) {
     int half = 0;
     int full = 0;
     int i = 0;
@@ -2584,6 +2584,7 @@ void yn_port_init(u16 *arg0) {
 }
 
 typedef struct { s32 a; s32 b; } PR8;
+typedef struct { s32 w[130]; } PR520;
 
 /* Copy the 0x41 pairs of proxy settings (0x208 bytes) in the work area. */
 #define PROXY_COPY(dst, src) \
@@ -2870,20 +2871,20 @@ block_22:
 }
 
 void yn_backup_allwork(u8 *ifc) {
-    s8 name;
+    u8 name[4];
 
-    name = 0;
-    yn_netcnf_ifc_to_work(D_5306B0, ifc, &name);
+    name[0] = 0;
+    yn_netcnf_ifc_to_work(D_5306B0, ifc, name);
     yn_netcnf_dev_to_work(D_5306B0, ifc);
-    PROXY_COPY(D_5310D0, ynw + 0xEC8);
+    *(PR520 *)D_5310D0 = *(PR520 *)(ynw + 0xEC8);
 }
 
 void yn_proxy_wk_load(void) {
-    PROXY_COPY(ynw + 0xEC8, D_530394);
+    *(PR520 *)(ynw + 0xEC8) = *(PR520 *)D_530394;
 }
 
 void yn_proxy_wk_save(void) {
-    PROXY_COPY(D_530394, ynw + 0xEC8);
+    *(PR520 *)D_530394 = *(PR520 *)(ynw + 0xEC8);
 }
 
 int yn_load_texfile(int file, int size) {

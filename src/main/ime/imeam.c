@@ -469,35 +469,51 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void free_bsmemlist(BS *b)
+int to_ucode(int x)
 {
-    BS *n;
+    int c;
 
-    while (b != 0) {
-        n = b->next;
-        free_mem(b);
-        b = n;
+    c = x & 0xFFFF;
+    if (c > 0x20 && c < 0x7F) {
+        return 0;
+    }
+    switch (c & 0xFF00) {
+    case 0x2300:
+        return c & 0x7F;
+    case 0x2400:
+        return ((c & 0x7F) | 0x80) & 0xFF;
+    case 0x2500:
+        return 0;
+    default:
+        return srch_ucode(x);
     }
 }
 
-void free_khmemlist(KH *k)
+int is_kata(c, flag)
+u16 c;
+int flag;
 {
-    KH *n;
-
-    while (k != 0) {
-        n = k->next;
-        free_mem(k);
-        k = n;
+    if (flag != 0 && c == 0x213C) {
+        return 1;
     }
+    if ((c & 0xFF00) == 0x2500) {
+        return 1;
+    }
+    return 0;
 }
 
-void free_klmemlist(KL *l)
+int is_jisknj(int c)
 {
-    KL *n;
+    return (c & 0xFFFF) >= 0x3020;
+}
 
-    while (l != 0) {
-        n = l->next;
-        free_mem(l);
-        l = n;
+int is_jiskig(int x)
+{
+    int c;
+
+    c = x & 0xFFFF;
+    if (c >= 0x2120 && c < 0x3020) {
+        return is_kata(x, 0) ? 0 : 1;
     }
+    return 0;
 }

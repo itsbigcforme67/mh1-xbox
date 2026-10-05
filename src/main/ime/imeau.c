@@ -469,33 +469,26 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void change_kind(u16 *p, int n, int kind)
+int api_dicopen(void)
 {
-    u16 k;
-
-    k = (kind & 0xFFFF) << 12;
-    while (n-- != 0) {
-        *p = (*p & 0xFFF) | k;
-        p++;
+    if (lock_mode == 0) {
+        return -1;
     }
+    if (dic_open(dic_name) == -7) {
+        return 1;
+    }
+    into_editing(0);
+    func_mode = 1;
+    return 0;
 }
 
-int shiftlen(int x)
+int api_dicclose(void)
 {
-    int c;
-    int h;
-
-    c = x & 0xFFFF;
-    h = c & 0xFF00;
-    switch (h) {
-    case 0x8000:
-    case 0x8500:
-        return 1;
-    case 0x8600:
-        if ((c & 0xFF) < 0x9E) {
-            return 1;
-        }
-    default:
-        return 2;
+    if (lock_mode == 0) {
+        return -1;
     }
+    init_edit0();
+    dic_close();
+    func_mode = 0;
+    return 0;
 }
