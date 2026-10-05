@@ -9,7 +9,7 @@ for l in open('config/c_files.txt'):
     p = l.split()
     if len(p) >= 4 and p[0] == 'lobby':
         reg.append((int(p[1], 16), int(p[2], 16)))
-out = subprocess.run(['python3', 'tools/check.py', nm], capture_output=True, text=True).stdout
+out = subprocess.run(['python3', 'tools/check.py', nm, '--module', 'lobby'], capture_output=True, text=True).stdout
 force = set(filter(None, os.environ.get('FORCE_OK', '').split(',')))
 rows = []
 for l in out.split('\n'):

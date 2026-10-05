@@ -4,7 +4,8 @@ relocation targets and branch-address shifts, so only real differences show.
 Runs tools/check.py -v. Standard library only."""
 import sys,subprocess,re,difflib
 f,func=sys.argv[1],sys.argv[2]
-out=subprocess.run(['python3','tools/check.py',f,'-v'],capture_output=True,text=True).stdout
+import os
+out=subprocess.run(['python3','tools/check.py',f,'-v']+os.environ.get('CHK_ARGS','').split(),capture_output=True,text=True).stdout
 lines=out.split('\n'); i=[k for k,l in enumerate(lines) if (' %s '%func) in l and l[:2] in('--','OK')][0]
 L=[];R=[]
 for l in lines[i+1:]:
