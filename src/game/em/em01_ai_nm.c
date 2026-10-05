@@ -45,6 +45,7 @@ typedef struct EM01W {
     u8 adj_z;           /* 0x4E */
     u8 adj_type;        /* 0x4F table row */
     s16 adj_tm;         /* 0x50 time into the table */
+    s16 x52;            /* 0x52 cooldown frames (atk 8) */
 } EM01W;
 
 typedef struct QUEST_W {
@@ -144,7 +145,7 @@ static void takeon_eff_set_0057A900(EMW *em);
 static void hover_eff_set2_0057A9A0(EMW *em);
 static int kyusyu_char_set_0057A9F0(EMW *em);
 static int kyusyu_char_set2_0057AAA0(EMW *em);
-static void kyusyu_senkai_ret_0057AB40(EMW *em);
+static void kyusyu_senkai_ret_0057AB40(EMW *em, EM01W *w);
 static void ef_move_sub_00574EE0(EMW *em);
 static void em01_uvmove(EMW *em);
 void em01_senkai_sub2(EMW *, int, int);
@@ -159,6 +160,11 @@ f32 flSqrt(f32);
 void SetVector(f32 *, f32, f32, f32);
 void senkai_player(EMW *);
 s8 smell_search(EMW *, int, f32 *);
+void ground_point_search(EMW *);
+void xang_set_pl(EMW *, int, f32);
+int Pl_stg_ck_tw(EMW *, PLW *);
+int em_target_pl_samestage_ck(EMW *);
+void World_calc2(u8, f32 *, f32 *);
 void em01_to_normal();
 void em01_to_fly();
 void em01_frame_reset();
@@ -2449,8 +2455,8 @@ static int kyusyu_char_set2_0057AAA0(EMW *em) {
     return 0;
 }
 
-static void kyusyu_senkai_ret_0057AB40(EMW *em) {
-    ((EM01W *)em->ex)->x05 = 0x63;
+static void kyusyu_senkai_ret_0057AB40(EMW *em, EM01W *w) {
+    em->x05 = 0x63;
     em01_to_fly(em, 1);
 }
 
@@ -3586,4 +3592,299 @@ void em_atk25(EMW *em, EM01W *w) {
         }
         break;
     }
+}
+
+static void em_atk17_0056EC80(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x31, 0, 0);
+        em01_fly_adjy2_init(em, 0xD);
+        break;
+    case 1:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (EMF(em, s32, 0x1E4) == 0) {
+            if (--w->x1A <= 0) {
+                em->x05++;
+            }
+        }
+        break;
+    case 2:
+        em01_fly_adjy2(em);
+        sound_call_00574D40(em, 0x78, 0x20, 0x23);
+        senkai_player(em);
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x2E, 0, 0);
+        }
+        break;
+    case 3:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 6.0f, 0)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x1E94, 0);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x2E, 4, 0);
+        }
+        break;
+    case 4:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 6.0f, 1)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x1E94, 0);
+        }
+        if (em_frame_check(em, 40.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0xF, 2, 0x22);
+        }
+        break;
+    case 5:
+        em01_fly_adjy2(em);
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em->x05++;
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+/* kyusyu attack: the monster follows a player in the air (guess: "kyusyu" = suck/drain). */
+static void em_atk08_0056D300(EMW *em, EM01W *w) {
+    STAGE_DATA *sd;
+    PLW *pl;
+    f32 p2[4];
+    f32 p1[4];
+    f32 p3[4];
+    f32 adj;
+    s16 t;
+
+    sd = Stage_data_get(em->stg);
+    t = w->x52;
+    if (t != 0) {
+        t = t - 1;
+        w->x52 = t;
+        if (t <= 0) {
+            w->x52 = 0;
+        }
+    }
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        w->x52 = 0;
+        break;
+    case 1:
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        em01_senkai_sub(em, 3, 1);
+        if (100.0f < em->adj_z) {
+            em->adj_z -= 2.0f;
+        } else if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 3000.0f) {
+            em->x05++;
+            em->work08 = 0x258;
+        }
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (--em->work08 <= 0) {
+            kyusyu_senkai_ret_0057AB40(em, w);
+        }
+        break;
+    case 2:
+        if (em->x617 == -1) {
+            kyusyu_senkai_ret_0057AB40(em, w);
+        } else {
+            if (80.0f < em->adj_z) {
+                em->adj_z -= 1.0f;
+            }
+            pl = &player_work[em->x617];
+            if (!(Pl_stg_ck_tw(em, pl) & 0xFF) && pl->be_flag != 0) {
+                kyusyu_senkai_ret_0057AB40(em, w);
+            } else {
+                em_pl_pos_set(em, em->x617, p1);
+                World_calc2(pl->stg, p1, p2);
+                w->dang = Em_Calc_angY(em->x754, p2);
+                w->dang = w->dang - em->ang[1];
+                em01_senkai_sub(em, 3, 1);
+                if (w->dang <= 0x800 || w->dang >= 0xF800) {
+                    if (4000.0f >= CalcDistanceXZ(em->pos, p1)) {
+                        kyusyu_senkai_ret_0057AB40(em, w);
+                    } else {
+                        em->x05++;
+                        w->turn = 0x100;
+                        em_char_set(em, 0x2C, 0, 0);
+                        em->work08 = 0x258;
+                    }
+                }
+                w->spd[0] = em->ang[0];
+                w->spd[1] = em->ang[1];
+                w->spd[2] = 0;
+                speed_add(em, w->spd);
+                if (--em->work08 <= 0 || !(em_target_pl_samestage_ck(em) & 0xFF)) {
+                    kyusyu_senkai_ret_0057AB40(em, w);
+                }
+            }
+        }
+        break;
+    case 3:
+        if (em->ang[2] != 0) {
+            if (em->ang[2] <= 0x8000) {
+                em->ang[2] = em->ang[2] - w->bank_spd;
+            } else {
+                em->ang[2] = em->ang[2] + w->bank_spd;
+            }
+        }
+        if (em_frame_check2(em, 0, 46.0f)) {
+            if (50.0f < em->adj_z) {
+                em->adj_z -= 0.1f;
+            }
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x57, 0, 0);
+            em->adj_z = 100.0f;
+            em->work08 = 0x258;
+        }
+        pl = &player_work[em->x617];
+        if (!(Pl_stg_ck_tw(em, pl) & 0xFF) && pl->be_flag != 0) {
+            kyusyu_senkai_ret_0057AB40(em, w);
+        } else {
+            senkai_player(em);
+            w->spd[0] = em->ang[0];
+            w->spd[1] = em->ang[1];
+            w->spd[2] = 0xF;
+            speed_add(em, w->spd);
+            em->pos[1] -= 0.1f;
+            if (--em->work08 <= 0 || !(em_target_pl_samestage_ck(em) & 0xFF)) {
+                kyusyu_senkai_ret_0057AB40(em, w);
+            }
+        }
+        break;
+    case 4:
+        if (em->pos[1] <= 1000.0f + sd->floor_y) {
+            em->x05++;
+            em->work08 = 0x258;
+        }
+        if (kyusyu_char_set_0057A9F0(em)) {
+            if (em->x05 == 4) {
+                em->x05++;
+                em->work08 = 0x258;
+            }
+        }
+        if (em->char0 == 0x415) {
+            xang_set_pl(em, 2, 0.0f);
+        } else {
+            xang_set_pl(em, 0, -200.0f);
+        }
+        senkai_player(em);
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        if (w->x52 == 0) {
+            xang_calc_pl(em, w->spd, -3000.0f, 0.0f);
+        }
+        if (em->x74C != 0) {
+            w->spd[0] = 0;
+            w->x52 = 0x1E;
+        }
+        speed_add(em, w->spd);
+        if (em->x74C != 0) {
+            w->spd[0] = 0;
+            adj = em->adj_y;
+            if (adj < 0.0f) {
+                em->pos[1] -= adj;
+            }
+            em->pos[1] += 30.0f;
+        }
+        if (--em->work08 <= 0 || !(em_target_pl_samestage_ck(em) & 0xFF)) {
+            kyusyu_senkai_ret_0057AB40(em, w);
+        }
+        break;
+    case 5:
+        kyusyu_char_set_0057A9F0(em);
+        if (em->char0 == 0x415 && em->x194 == 0) {
+            em->x05 = 6;
+            em_char_set(em, 0xE, 0, 0);
+            ground_point_search(em);
+        }
+        senkai_player(em);
+        if (w->x52 == 0) {
+            xang_set_pl(em, 2, 100.0f);
+            if (em->char0 == 0x415 && em_frame_check2(em, 0, 76.0f)) {
+                xang_calc_pl(em, w->spd, 300.0f, 0.0f);
+            } else if (em->x617 != -1) {
+                em_pl_pos_set(em, em->x617, p3);
+                if (!(200.0f + p3[1] < em->pos[1])) {
+                    xang_calc_pl(em, w->spd, 50.0f, 0.0f);
+                } else {
+                    xang_calc_pl(em, w->spd, -2000.0f, 0.0f);
+                }
+            } else {
+                xang_calc_pl(em, w->spd, -2000.0f, 0.0f);
+            }
+        }
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        if (em->x74C != 0) {
+            w->spd[0] = 0;
+            w->x52 = 0x1E;
+        }
+        speed_add(em, w->spd);
+        if (em->x74C != 0) {
+            w->spd[0] = 0;
+            adj = em->adj_y;
+            if (adj < 0.0f) {
+                em->pos[1] -= adj;
+            }
+            em->pos[1] += 30.0f;
+        }
+        if (--em->work08 <= 0 || !(em_target_pl_samestage_ck(em) & 0xFF)) {
+            kyusyu_senkai_ret_0057AB40(em, w);
+        }
+        break;
+    case 6:
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        xang_set_pl(em, 1, 0.0f);
+        em01_senkai_sub(em, 3, 1);
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (1300.0f + sd->floor_y <= em->pos[1]) {
+            em->x05++;
+            em->work08 = 0x12C;
+        }
+        break;
+    case 7:
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        xang_set_pl(em, 2, 0.0f);
+        em01_senkai_sub(em, 3, 1);
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 3000.0f) {
+            ground_point_search(em);
+        }
+        if ((em->ang[0] == 0 && em->ang[2] == 0) || --em->work08 <= 0) {
+            em->ang[0] = 0;
+            em->ang[2] = 0;
+            kyusyu_senkai_ret_0057AB40(em, w);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
 }
