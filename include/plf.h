@@ -240,4 +240,9 @@ void pl_egg(PLW *);
 void pl_chat(PLW *);
 void pl_turn_sub(PLW *);
 void pl_horm_sub(PLW *);
+void frame_move(PLW *);
+void Pl_item_cnt_up(PLW *);
+void func_5496E0(PLW *, int, int);   /* Eft12_set4 (game overlay) */
+void func_633B50(f32 *, int, int, PLW *);   /* Shell10_set (game overlay) */
+void func_634460(PLW *, int);   /* Shell12_set (game overlay) */
 #endif

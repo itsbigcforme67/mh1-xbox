@@ -1805,3 +1805,57 @@ void pl_move_sub(PLW *pl) {
     }
     }
 }
+
+#include "flow.h"
+
+
+
+
+
+s32 pl_flag_ck(PLW *pl, int f) {
+    if (!(f & 0x80000000)) {
+        return pl->act_flag & f;
+    }
+    return pl->work394 & (f & 0x7FFFFFFF);
+}
+
+
+
+void to_normal(PLW *pl, s32 blend, s16 tm) {
+    int e;
+    if (pl->flag604 != 0) {
+        pl->char0 = 0x18;
+        pl->char1 = 0x7C;
+    } else if (pl->flag12 != 0) {
+        pl->char0 = 0x3E9;
+        pl->char1 = 0x44D;
+    } else if (pl->work882 < 0x4C) {
+        pl->char0 = 0x193;
+        pl->char1 = 0x1F7;
+    } else {
+        e = Stage_env_ck(pl->stg);
+        switch (e) {
+        default:
+            pl->char0 = 1;
+            pl->char1 = 0x65;
+            break;
+        case 1:
+            pl->char0 = 0x15;
+            pl->char1 = 0x79;
+            break;
+        case 2:
+            pl->char0 = 0x1AF;
+            pl->char1 = 0x213;
+            break;
+        }
+    }
+    pl->blend0 = blend / 2;
+    pl->blend1 = blend / 2;
+    pl->act_tm0 = tm;
+    pl->act_tm1 = tm;
+    pl->flag14 = 0;
+    pl->flag15 = 0;
+    if (Pl_master_ck(pl) == 1) {
+        net_send_pl(pl, 1, 0);
+    }
+}
