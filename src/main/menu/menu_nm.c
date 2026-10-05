@@ -930,10 +930,10 @@ u8 *menu_equip_get_equip(u8 no) {
     default:
         return 0;
     }
-    if (idx == 0xFF) {
-        return 0;
+    if (idx != 0xFF) {
+        return u + idx * 6 + 0x44;
     }
-    return &u[0x44 + idx * 6];
+    return 0;
 }
 
 void Menu_equipment_i(void) {
