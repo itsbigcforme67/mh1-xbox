@@ -316,6 +316,14 @@ int rt_quest_load(int no)
     return quest_w.no == no && quest_w.x94 ? 0 : -1;
 }
 
+/* no quest (free play in the viewer): Quest_init's free-hunt tables, so
+ * the HUD and quest helpers have their data */
+void rt_quest_free_hunt(void)
+{
+    rt_quest_mem_init();
+    Quest_init();
+}
+
 /* the quest's own monsters (QEM list 1 of quest_w.x78), NULL for none */
 static void *quest_com_list(int which)
 {

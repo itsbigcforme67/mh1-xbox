@@ -184,6 +184,7 @@ int rt_flow_mode(void);         /* game_w.mode */
 /* mode 6 (after the result screen): the host's "back" (village not ported) */
 void rt_flow_set_back(void (*fn)(void));
 void rt_monster_clear_all(void);
+void rt_quest_free_hunt(void);  /* no --quest: Quest_init only */
 /* the host's stage (re)load, called by st_model_load in a stage change */
 void rt_set_stage_loader(int (*fn)(int));
 int rt_monster_shown(int no);   /* em_work[no] in use and on the current stage */

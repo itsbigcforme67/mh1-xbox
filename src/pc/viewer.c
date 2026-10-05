@@ -614,7 +614,7 @@ static void sim_tick(void)
             printf("tick %d: em0 pos %.0f %.0f %.0f ang %04X\n", ticks, p[0], p[1], p[2], a & 0xFFFF);
         }
     }
-    if (quest_no)
+    if (quest_no || play)
         rt_hud_tick();                  /* Pit_mv: HUD layers (last step of move()) */
     if (snd == 0) {
         rt_snd_tick();
@@ -709,7 +709,8 @@ int main(int argc, char **argv)
             if (!stage_given)
                 stage_no = st;
         }
-    }
+    } else if (play)
+        rt_quest_free_hunt();           /* Quest_init: the free-hunt tables (HUD clock etc.) */
     /* the stage's area model + set model (stage.md 1), ground collision,
      * found through main's per-stage tables (stage 4 = st04, st04_1, lg004) */
     if (load_stage_models(stage_no) != 0)
@@ -750,7 +751,7 @@ int main(int argc, char **argv)
     }
     load_eft_models();
     rt_game_init(stage_no);
-    if (quest_no)
+    if (quest_no || play)
         rt_hud_init();                  /* load_pit, Pit_init, info banner */
     if (!mute)
         snd = rt_snd_init(disc, audio_dump == NULL && shot == NULL);
