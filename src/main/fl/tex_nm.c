@@ -193,7 +193,7 @@ int flPS2GetTextureBuffWidth(s16 w) {
     int r = 1;
     int i;
 
-    for (i = 1; i < 11; i++) {
+    for (i = 1; i <= 10; i++) {
         if (!((r << i) < w)) {
             return (s16)i;
         }

@@ -744,3 +744,7 @@ main 0x0028A110 0x0028A168 mc/netfile2_01
 main 0x0028A3B0 0x0028A3C4 mc/netfile2_02
 main 0x0028B330 0x0028B3A8 mc/netfile2_03
 main 0x0028B470 0x0028B4A8 mc/netfile2_04
+main 0x00189EE0 0x00189F28 fl/tex_01
+main 0x00163670 0x001637A4 font/disp2_01
+main 0x00161CA0 0x00161D38 font/fontst2_01
+main 0x00125080 0x001251F8 sys/tsk_01

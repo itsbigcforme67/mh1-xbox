@@ -34,11 +34,22 @@ for l in out.split("\n"):
         continue
     if cur and ">>" in l and "(calls " not in l:
         res[cur]["real"] += 1
-good = {n: v for n, v in res.items() if v["ok"] or v["real"] == 0}
+registered = []
+for l_ in open("config/c_files.txt"):
+    m_ = re.match(r"main (0x[0-9A-F]+) (0x[0-9A-F]+) ", l_)
+    if m_:
+        registered.append((int(m_.group(1), 16), int(m_.group(2), 16)))
+def is_reg(v):
+    return any(a0 <= v["addr"] < a1 for a0, a1 in registered)
+good = {n: v for n, v in res.items() if (v["ok"] or v["real"] == 0) and not is_reg(v)}
 fn = sorted(good.items(), key=lambda x: x[1]["addr"])
 allfn = sorted(res.items(), key=lambda x: x[1]["addr"])
 runs, run = [], []
 for n, v in allfn:
+    if is_reg(v):
+        if run:
+            runs.append(run); run = []
+        continue
     if n in good:
         if run:
             pe = res[run[-1]]["addr"] + res[run[-1]]["size"]

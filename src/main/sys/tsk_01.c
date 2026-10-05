@@ -1,7 +1,4 @@
-/* Task scheduler. SLPM_654.95 0x00124D00-0x00125340 region of g_armor_model_free (the
- * scheduler half): 16 task control blocks of 0x20 bytes in tcb_w (slots 12..15 are system
- * tasks that also run while the game is paused). State: 0 free, 1 sleeping, 2 signalled,
- * 4 ready, 8 running (calls fn every frame), 0xC start, 0x10 timed wait. */
+/* SLPM_654.95 0x00125080-0x001251F8: Scheduler .. Scheduler. See tsk_nm.c. */
 #include "types.h"
 #include "sysw.h"
 
@@ -23,9 +20,13 @@ void *memset(void *, int, unsigned);
 int ran_suu(int);
 void TransReset(void);
 
-void SchedulerInit(void) {
-    memset(tcb_w, 0, 0x200);
-}
+
+
+
+
+
+
+
 
 void Scheduler(void) {
     TCB *t;
@@ -75,37 +76,4 @@ void Scheduler(void) {
             }
         }
     }
-}
-
-void Tsk_Execute(void (*fn)(TCB *), s16 n) {
-    TCB *t = &tcb_w[n];
-
-    memset(t, 0, 0x20);
-    t->state = 0xC;
-    t->fn = fn;
-}
-
-void Select_Tsk_Execute(void) {
-    TCB *t = &tcb_w[1];
-
-    memset(t, 0, 0x20);
-    t->state = 0xC;
-    t->fn = (void (*)(TCB *))Select_task;
-    t->step = 1;
-}
-
-void Tsk_Exit(TCB *t) {
-    t->state = 0;
-}
-
-void Tsk_Sleep(s16 n) {
-    tcb_w[n].state = 1;
-}
-
-void Tsk_Signal(s16 n) {
-    tcb_w[n].state = 2;
-}
-
-void Tsk_Kill(s16 n) {
-    tcb_w[n].state = 0;
 }
