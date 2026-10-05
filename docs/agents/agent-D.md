@@ -118,3 +118,10 @@ eft06c.c is gone. Lessons from eft06_t:
 - `col &= 0xFFFFFF` compiles to dsll32/dsrl32 by 8 (u32 local in memory).
 - eft_rgba_linear's time argument is an int here (callers pass lhu/lh as
   loaded); an s16 prototype turned the u16 load into lh.
+
+eft13 update: eft13_t matches (14/19); merged with d/e/se_req/water_ck/
+set_sub into eft13b.c (0x106DB0-0x107C50, table 0x357C50-0x357CDC);
+eft13c.c is gone. eft13_t repeats one identical case body for several case
+groups (0, the big group, 5/10): MWCC does not merge identical blocks, so
+they are written out separately. Declaration order found with a greedy
+move search (/tmp/claude-1000/agentD/permsub.py).
