@@ -359,6 +359,8 @@ segments:
       - [0x091AE4, asm, text/em_fly00_005C5470]
       - [0x091AF0, c, em/em15_r04]
       - [0x09267C, asm, text/em_fly08_005C6000]
+      - [0x092680, c, em/em15_r20]
+      - [0x092904, asm, text/em_fly09_005C6290]
       - [0x092910, c, em/em15_r17]
       - [0x092AAC, asm, text/em_fly10_005C6430]
       - [0x092CB0, c, em/em15_r05]
