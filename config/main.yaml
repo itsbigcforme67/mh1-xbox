@@ -695,7 +695,7 @@ segments:
       - [0x17BF80, asm, text/g_Reibun_print]
       - [0x17C0B0, asm, text/sceBASE64Encoder]
       - [0x17C360, asm, text/GetRomName]
-      - [0x17CA50, asm, text/f_eft26]
+      - [0x17CA50, c, eft/eft26]
       - [0x17CF10, asm, text/g_cnLBS_Read_FileDownload]
       - [0x17CFC0, asm, text/f_cnlbs]
       - [0x17D210, asm, text/f_cnlbs_27D210]
