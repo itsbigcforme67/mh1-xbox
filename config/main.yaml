@@ -107,6 +107,8 @@ segments:
       - [0x02B054, asm, text/Menu_chatcnfg_mv]
       - [0x02CAF0, c, menu/menu14]
       - [0x02CCCC, asm, text/maru_disp_sub]
+      - [0x02D5E0, c, menu/menu19]
+      - [0x02D6F4, asm, text/disp_whole_map]
       - [0x02DD20, c, menu/menu15]
       - [0x02DDF4, asm, text/disp_partial_map]
       - [0x0324B0, c, menu/menu16]

@@ -286,3 +286,4 @@ main 0x00163E40 0x0016440C weapon/weapon
 main 0x00164D60 0x00164F68 weapon/weapon2
 main 0x00223F90 0x00223FDC cam/camr1
 main 0x00224CB0 0x00224D38 cam/camr3
+main 0x0012D5E0 0x0012D6F4 menu/menu19
