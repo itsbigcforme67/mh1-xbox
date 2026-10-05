@@ -111,3 +111,34 @@ Still assembly:
   chunk -> render states, HITS collision. st04 = base camp (render).
 - graphics.md 7a: cpit1xb/cpit2xb decoded (cpit2xb = real Xbox buttons).
 - Wii FPK LZ: still not cracked (two short attempts).
+
+## Assignment 6: native host for game C (5 Oct 2026) - PAUSED by owner
+Where I stopped:
+- Build approach chosen: 32-bit native build (`gcc -m32`), same pointer
+  size as the PS2 game C and the original Xbox. No root needed:
+  tools/setup_pc32.sh `apt-get download`s libc6-dev-i386 + lib32gcc-13-dev
+  into build/sysroot32 (gitignored); the i386 runtime libs (libc6, SDL2,
+  libGL) are already installed here. With root this equals
+  `sudo apt install gcc-multilib`. Verified: the current viewer builds
+  32-bit with
+  `gcc -m32 -idirafter /usr/include/x86_64-linux-gnu -idirafter $SR/usr/include/x86_64-linux-gnu -B$SR/usr/lib32 -B$G -L$SR/usr/lib32 -L$G -L$SR/lib ... -lSDL2 -lGL -lm`
+  (SR=build/sysroot32, G=$SR/usr/lib/gcc/x86_64-linux-gnu/13/32) and
+  `--shot` renders the same stage-4 picture (build/show/pc32_test.png).
+  tools/build_pc.sh is not changed yet.
+- First game-logic slice picked: set14 (src/game/set/set14.c + set14_trans
+  from set14_nm.c). On stage 4 it scrolls the UVs of the st04_1 set-model
+  waterfall cards (layers 1 and 3 per set14_st04_mask_tbl, clays from
+  st04_mdl_tbl, placed at 11060,0,1566). Its data tables are main sdata
+  (0x389AD8.., config/symbols/main.txt) and game.bin data (overlay vram
+  0x533980, file disc/mh1/overlays/game.bin): plan is a host "data import"
+  table that fills host arrays from the ELF/overlay at start-up.
+  set09 spawns nothing on stage 4 (controller), so it is a second choice.
+Next:
+1. tools/build_pc.sh: add a 32-bit mode using the flags above.
+2. src/pc/rt/: flSetRenderState -> gfx states (0x19 texture matrix,
+   0x1A world, 0x60, 0x67, 0x6C), flExecuteClay over fl_model parts,
+   flmat*, prim pool + ordering tables (ot0..ot3) walking trans(),
+   pull/push_set_work, ran_suu, se_req* stubs, game_w/stage_work/set_mdlw.
+3. Compile set14 with the game's include/ and run it in the viewer;
+   two --shot frames should show the waterfalls scrolling.
+4. docs/pc.md + DECISIONS "Open" entry for the 32-bit choice.
