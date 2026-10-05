@@ -469,31 +469,7 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int FAskRom_Open(void)
+int ext_jis(int c, u16 hi)
 {
-    gAskRom.rest = 0x97C00;
-    gAskRom.cur = ask_load_adrs;
-    return 1;
-}
-
-int FAskRom_Close(void)
-{
-    return 0;
-}
-
-int FAskRom_Read(fd, buf, n)
-int fd;
-void *buf;
-int n;
-{
-    int len;
-
-    len = gAskRom.rest;
-    if (len >= n) {
-        len = n;
-    }
-    memcpy(buf, gAskRom.cur, len);
-    gAskRom.rest = gAskRom.rest - len;
-    gAskRom.cur = gAskRom.cur + len;
-    return len;
+    return ((c & 0xFF) | ((hi & 0x100) + 0x2400)) & 0xFFFF;
 }

@@ -469,28 +469,24 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int dic_getallnum(u8 *s, int len, u8 *out, int *cnt)
+int dic_freeentid()
 {
-    int k;
-    u8 *r;
+    free_entid_tab();
+    return 3;
+}
 
+int dic_getgaku(void)
+{
+    return gaku_mode;
+}
+
+int dic_get1num(u8 *s, int len, u8 *out)
+{
     if (dic_fd == -1) {
         return -3;
     }
-    *cnt = 0;
-    r = set_num(s, len, out, suji_mode);
-    if (r != 0) {
-        out = r;
-        (*cnt)++;
-    }
-    for (k = 0; k < 4; k++) {
-        if (k != suji_mode) {
-            r = set_num(s, len, out, k);
-            if (r != 0) {
-                out = r;
-                (*cnt)++;
-            }
-        }
+    if (set_num(s, len, out, suji_mode) == 0) {
+        set_num(s, len, out, 0);
     }
     return 1;
 }

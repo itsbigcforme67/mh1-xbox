@@ -469,7 +469,28 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-u8 *load_temp(int off)
+int hashfunc(u8 *key)
 {
-    return temp_pages[(s16)(off >> 12)] + (s16)(off & 0xFFF);
+    if (key[0] >= 0xA0 && key[0] < 0xF0) {
+        return key[0] - 0xA0;
+    }
+    return 0;
+}
+
+NODE *alloc_node(void)
+{
+    NODE *n;
+
+    if (freelist == 0) {
+        page_gc();
+    }
+    n = freelist;
+    freelist = n->next;
+    return n;
+}
+
+void free_node(NODE *n)
+{
+    n->next = freelist;
+    freelist = n;
 }

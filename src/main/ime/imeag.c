@@ -469,22 +469,12 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-KH *kh_skip(KH *k)
+void khmem_raw(mode)
+int mode;
 {
-    KH *r;
+    HCHAR *h;
 
-    while (k->flag & 1) {
-        k = k->next;
-    }
-    r = k->next;
-    k->next = 0;
-    return r;
-}
-
-KH *kh_followed(KH *k)
-{
-    while (k->flag & 1) {
-        k = k->next;
-    }
-    return k->next;
+    h = &hchar[cur_pos];
+    free_khmemlist(h->kh);
+    h->kh = raw_kouho(cur_pos, cur_len, mode);
 }

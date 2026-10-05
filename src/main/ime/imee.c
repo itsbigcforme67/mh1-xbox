@@ -522,3 +522,114 @@ void apiask_24_AllKakutei(int a)
     req[0] = 0x18;
     api_funcent(req);
 }
+
+void apiask_25_FirstKakutei(int a, int b, int c, int d, int e)
+{
+    int req[6];
+
+    req[1] = a;
+    req[2] = b;
+    req[3] = c;
+    req[0] = 0x19;
+    req[4] = d;
+    req[5] = e;
+    api_funcent(req);
+}
+
+void apiask_28_OpenDic(void)
+{
+    int req[1];
+
+    req[0] = 0x1C;
+    api_funcent(req);
+}
+
+void apiask_33_LongerKouho(int a, int b)
+{
+    int req[3];
+
+    req[1] = a;
+    req[2] = b;
+    req[0] = 0x21;
+    api_funcent(req);
+}
+
+void apiask_34_ShorterKouho(int a, int b)
+{
+    int req[3];
+
+    req[1] = a;
+    req[2] = b;
+    req[0] = 0x22;
+    api_funcent(req);
+}
+
+void apiask_35_PrevBunsetu(int a, int b)
+{
+    int req[3];
+
+    req[1] = a;
+    req[2] = b;
+    req[0] = 0x23;
+    api_funcent(req);
+}
+
+void apiask_36_NextBunsetu(int a, int b)
+{
+    int req[3];
+
+    req[1] = a;
+    req[2] = b;
+    req[0] = 0x24;
+    api_funcent(req);
+}
+
+void apiask_37_FirstHenkanToKata(int a, int b)
+{
+    int req[3];
+
+    req[1] = a;
+    req[2] = b;
+    req[0] = 0x25;
+    api_funcent(req);
+}
+
+void apiask_38_FirstHenkanToHira(int a, int b)
+{
+    int req[3];
+
+    req[1] = a;
+    req[2] = b;
+    req[0] = 0x26;
+    api_funcent(req);
+}
+
+int kwin_length()
+{
+    return 0x48;
+}
+
+int nwin_length()
+{
+    return 0x48;
+}
+
+void init_roman(void)
+{
+    kana_len = 0;
+    einpc_buf = inpc_buf;
+    cinpc_buf = inpc_buf;
+    qinpc_buf = inpc_buf;
+    pinpc_buf = inpc_buf;
+    ekana_buf = kana_buf;
+    pkana_buf = kana_buf;
+    e_ustr = kana_ustr;
+    p_ustr = kana_ustr;
+}
+
+void init_edit0(void)
+{
+    init_roman();
+    free_hchar(0, 0x50, 0);
+    clear_prevwd();
+}

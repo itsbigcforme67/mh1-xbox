@@ -469,73 +469,14 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void update_nowtmp(void)
+int updwdlen(WD *w)
 {
-    temp_updated = 1;
-}
+    int extra;
 
-int setkbuflen(u8 *p)
-{
-    int n;
-
-    n = 0;
-    while (*p != 0) {
-        if (iskanji(*p) != 0) {
-            p += 2;
-        } else {
-            p += 1;
-        }
-        n += 2;
+    if (w->x08 != 0 || w->x07 >= 0x2D) {
+        extra = 3;
+    } else {
+        extra = 2;
     }
-    return n;
-}
-
-void setkbuf(u8 *src, u8 *dst)
-{
-    while (*src != 0) {
-        if (iskanji(*src) != 0) {
-            *dst = *src;
-            src++;
-            dst++;
-        } else {
-            *dst = 0xFF;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
-    }
-}
-
-int getkbuflen(u8 *p, u8 *end)
-{
-    int n;
-
-    n = 0;
-    while (p < end && *p >= 0x39) {
-        if (*p == 0xFF) {
-            n++;
-        } else {
-            n += 2;
-        }
-        p += 2;
-    }
-    return n;
-}
-
-void getkbuf(u8 *dst, u8 *src, u8 *end)
-{
-    while (src < end && *src >= 0x39) {
-        if (*src == 0xFF) {
-            src++;
-        } else {
-            *dst = *src;
-            src++;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
-    }
-    *dst = 0;
+    return extra + setkbuflen(w->tango);
 }

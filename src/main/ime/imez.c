@@ -469,14 +469,13 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int updwdlen(WD *w)
+int write_temp(void)
 {
-    int extra;
-
-    if (w->x08 != 0 || w->x07 >= 0x2D) {
-        extra = 3;
-    } else {
-        extra = 2;
+    if (seek_dic(0x1400) == -1) {
+        return -1;
     }
-    return extra + setkbuflen(w->tango);
+    if (d_write(dic_fd, temp_pages, 0x2000) != 0x2000) {
+        return -1;
+    }
+    return 0;
 }

@@ -469,35 +469,100 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void free_bsmemlist(BS *b)
+void init_univmem(void)
 {
-    BS *n;
+    u8 *p;
 
-    while (b != 0) {
-        n = b->next;
-        free_mem(b);
-        b = n;
+    free_univ = mem;
+    for (p = mem; p < mem + 0x11928; p += 0x18) {
+        *(u8 **)p = p + 0x18;
+    }
+    *(u8 **)p = 0;
+    first_init_5 = 0;
+}
+
+void *alloc_mem(void)
+{
+    void *r;
+
+    r = free_univ;
+    if (r == 0) {
+        return 0;
+    }
+    free_univ = *(void **)r;
+    return r;
+}
+
+void free_mem(void *p)
+{
+    if (p != 0) {
+        *(void **)p = free_univ;
+        free_univ = p;
     }
 }
 
-void free_khmemlist(KH *k)
+CH *alloc_chmem(void)
 {
-    KH *n;
+    void *r;
 
-    while (k != 0) {
-        n = k->next;
-        free_mem(k);
-        k = n;
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
+    return 0;
 }
 
-void free_klmemlist(KL *l)
+BS *alloc_bsmem(void)
 {
-    KL *n;
+    void *r;
 
-    while (l != 0) {
-        n = l->next;
-        free_mem(l);
-        l = n;
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+PWM *alloc_pwmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+KH *alloc_khmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+KL *alloc_klmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+void free_pwmemlist(PWM *p)
+{
+    PWM *n;
+
+    while (p != 0) {
+        n = p->next;
+        free_mem(p);
+        p = n;
     }
 }

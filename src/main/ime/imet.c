@@ -469,112 +469,34 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int prefix(u8 *a, u8 *b, int n)
+int srch_page(u8 *key)
 {
-    int i;
+    int hi;
+    int lo;
+    int mid;
+    int c;
 
-    i = 0;
-    while (i < n) {
-        if (*a != *b || *a == 0) {
-            break;
+    lo = mainlower;
+    hi = mainupper;
+    while (lo + 1 < hi) {
+        mid = (hi + lo) / 2;
+        c = ask_strncmp(key, mainindex + mid * 4, 4);
+        if (c == 0) {
+            return mid;
         }
-        i++;
-        a++;
-        b++;
-    }
-    return i;
-}
-
-void init_page_tab(void)
-{
-    PAGE *p;
-
-    page_top = page_tab;
-    for (p = page_tab; p < page_tab + 9; p++) {
-        p->id = -1;
-        p->dirty = 0;
-        p->next = p + 1;
-    }
-    p->id = -1;
-    p->dirty = 0;
-    p->next = 0;
-}
-
-int write_page(PAGE *p)
-{
-    if (seek_dic(((s64)p->id << 10) + 0x3400) == -1) {
-        return -1;
-    }
-    if (d_write(dic_fd, p->data, 0x400) != 0x400) {
-        return -1;
-    }
-    return 0;
-}
-
-int read_page(PAGE *p)
-{
-    if (seek_dic(((s64)p->id << 10) + 0x3400) == -1) {
-        return -1;
-    }
-    d_read(dic_fd, p->data, 0x400);
-    return 0;
-}
-
-u8 *load_page(int id)
-{
-    PAGE *p;
-    PAGE *prev;
-
-    prev = 0;
-    p = page_top;
-    for (;;) {
-        if (p->id == id) {
-            if (prev != 0) {
-                prev->next = p->next;
-                p->next = page_top;
-                page_top = p;
-            }
-            return p->data;
-        }
-        if (p->next == 0) {
-            break;
-        }
-        prev = p;
-        p = p->next;
-    }
-    prev->next = 0;
-    p->next = page_top;
-    page_top = p;
-    if (p->dirty == 1) {
-        write_page(p);
-    }
-    p->id = id;
-    p->dirty = 0;
-    read_page(p);
-    return p->data;
-}
-
-void update_nowpage(void)
-{
-    page_top->dirty = 1;
-}
-
-void flush_pages(void)
-{
-    PAGE *p;
-
-    for (p = page_top; p != 0; p = p->next) {
-        if (p->dirty == 1) {
-            write_page(p);
+        if (c > 0) {
+            lo = mid;
+        } else {
+            hi = mid;
         }
     }
+    if (ask_strncmp(key, mainindex + lo * 4, 4) < 0) {
+        lo--;
+    }
+    return lo;
 }
 
-void init_entid_tab(void)
+int page_fix(int page, u8 *key)
 {
-    int i;
-
-    for (i = 0; i < 128; i++) {
-        entid_tab[i].cnt = 0;
-    }
+    return key[prefix(mainindex + (page + 1) * 4, key, 4)] != 0;
 }

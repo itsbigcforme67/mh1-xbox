@@ -469,7 +469,22 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int is_jisknj(int c)
+int shiftlen(int x)
 {
-    return (c & 0xFFFF) >= 0x3020;
+    int c;
+    int h;
+
+    c = x & 0xFFFF;
+    h = c & 0xFF00;
+    switch (h) {
+    case 0x8000:
+    case 0x8500:
+        return 1;
+    case 0x8600:
+        if ((c & 0xFF) < 0x9E) {
+            return 1;
+        }
+    default:
+        return 2;
+    }
 }

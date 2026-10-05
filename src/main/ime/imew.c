@@ -469,28 +469,61 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int hashfunc(u8 *key)
+void clear_entid_tmpall(int pg)
 {
-    if (key[0] >= 0xA0 && key[0] < 0xF0) {
-        return key[0] - 0xA0;
+    int i;
+
+    for (i = 0; i < 128; i++) {
+        if (pg == (s16)(entid_tab[i].c >> 12)) {
+            entid_tab[i].c = -1;
+        }
     }
-    return 0;
 }
 
-NODE *alloc_node(void)
+void clear_entid_tmp(int v)
+{
+    int i;
+
+    for (i = 0; i < 128; i++) {
+        if (v == entid_tab[i].c) {
+            entid_tab[i].c = -1;
+        }
+    }
+}
+
+void init_temp(void)
+{
+    init_node_tab();
+    init_hash_tab();
+    if (read_temp() == -1) {
+        reset_temp();
+    }
+    temp_updated = 0;
+}
+
+void flush_temp(void)
+{
+    if (temp_updated != 0) {
+        write_temp();
+    }
+}
+
+void init_node_tab(void)
 {
     NODE *n;
 
-    if (freelist == 0) {
-        page_gc();
+    for (n = node_tab; n < node_tab + 511; n++) {
+        n->next = n + 1;
     }
-    n = freelist;
-    freelist = n->next;
-    return n;
+    n->next = 0;
+    freelist = node_tab;
 }
 
-void free_node(NODE *n)
+void init_hash_tab(void)
 {
-    n->next = freelist;
-    freelist = n;
+    int i;
+
+    for (i = 0; i < 80; i++) {
+        hash_tab[i] = 0;
+    }
 }

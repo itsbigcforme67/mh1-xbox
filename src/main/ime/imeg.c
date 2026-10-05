@@ -469,17 +469,31 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void into_editing(int mode)
+int FAskRom_Open(void)
 {
-    int n;
+    gAskRom.rest = 0x97C00;
+    gAskRom.cur = ask_load_adrs;
+    return 1;
+}
 
-    learn_on = dic_getgaku();
-    init_univmem();
-    init_hchar();
-    init_edit0();
-    if (mode == 1) {
-        n = nwin_length() - 1;
-        kana_buf_size = n / 2;
-        im_state = 1;
+int FAskRom_Close(void)
+{
+    return 0;
+}
+
+int FAskRom_Read(fd, buf, n)
+int fd;
+void *buf;
+int n;
+{
+    int len;
+
+    len = gAskRom.rest;
+    if (len >= n) {
+        len = n;
     }
+    memcpy(buf, gAskRom.cur, len);
+    gAskRom.rest = gAskRom.rest - len;
+    gAskRom.cur = gAskRom.cur + len;
+    return len;
 }

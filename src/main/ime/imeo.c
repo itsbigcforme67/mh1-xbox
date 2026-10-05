@@ -469,24 +469,14 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int dic_freeentid()
+u8 *end_page(u8 *p)
 {
-    free_entid_tab();
-    return 3;
-}
+    int n;
 
-int dic_getgaku(void)
-{
-    return gaku_mode;
-}
-
-int dic_get1num(u8 *s, int len, u8 *out)
-{
-    if (dic_fd == -1) {
-        return -3;
+    n = ELEN(p);
+    while (n != 0) {
+        p += n;
+        n = ELEN(p);
     }
-    if (set_num(s, len, out, suji_mode) == 0) {
-        set_num(s, len, out, 0);
-    }
-    return 1;
+    return p;
 }

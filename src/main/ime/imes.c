@@ -469,7 +469,13 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int page_fix(int page, u8 *key)
+int read_index(void)
 {
-    return key[prefix(mainindex + (page + 1) * 4, key, 4)] != 0;
+    if (seek_dic(0x400) == -1) {
+        return -1;
+    }
+    if (d_read(dic_fd, mainindex, 0x1000) != 0x1000) {
+        return -1;
+    }
+    return 0;
 }

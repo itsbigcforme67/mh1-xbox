@@ -469,6 +469,59 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
+int exist_kouho(u8 *s, int n)
+{
+    u8 *p;
+    int len;
+
+    for (p = (u8 *)wdsbuf; p < e_khstr;) {
+        len = *p;
+        p++;
+        if (len == n && ask_strncmp(p, s, len) == 0) {
+            return 1;
+        }
+        p += len;
+    }
+    return 0;
+}
+
+KH *kh_skip(KH *k)
+{
+    KH *r;
+
+    while (k->flag & 1) {
+        k = k->next;
+    }
+    r = k->next;
+    k->next = 0;
+    return r;
+}
+
+KH *kh_followed(KH *k)
+{
+    while (k->flag & 1) {
+        k = k->next;
+    }
+    return k->next;
+}
+
+KH *kh_endof(KH *k)
+{
+    KH *n;
+
+    if (k == 0) {
+        return 0;
+    }
+    for (;;) {
+        n = k->next;
+        if (n == 0) {
+            break;
+        }
+        k = n;
+    }
+    return k;
+}
+
 int kh_count(KH *k)
 {
     int n;
@@ -496,4 +549,12 @@ int kh_length(KH *k)
         n += len;
     }
     return n + strlen(k->str);
+}
+
+KH *take_kouho(KH *k, int n)
+{
+    while (n-- != 0) {
+        k = kh_followed(k);
+    }
+    return k;
 }

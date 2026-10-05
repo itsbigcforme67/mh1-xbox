@@ -469,13 +469,7 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int write_temp(void)
+u8 *load_temp(int off)
 {
-    if (seek_dic(0x1400) == -1) {
-        return -1;
-    }
-    if (d_write(dic_fd, temp_pages, 0x2000) != 0x2000) {
-        return -1;
-    }
-    return 0;
+    return temp_pages[(s16)(off >> 12)] + (s16)(off & 0xFFF);
 }

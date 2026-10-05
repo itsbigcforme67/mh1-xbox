@@ -469,16 +469,147 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int getbit(s16 n)
+int apis_dicname(int *a)
 {
-    return bitpool[n >> 3] & power[n & 7];
+    strcpy(dic_name, a[0]);
+    return 0;
 }
 
-int g2jodo(int c)
+int api_khlong(int *a)
 {
-    c = c & 0xFF;
-    if (c > 0 && c < 0xE) {
-        return (c + 0x7F) & 0xFF;
+    u8 *p;
+    u8 *q;
+
+    if (func_mode != 3) {
+        return -1;
     }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    if (cur_pos + cur_len >= kana_len) {
+        return 0;
+    }
+    save_fst_bslen(cur_pos);
+    free_hchar(cur_pos, kana_len, 1);
+    cur_len++;
+    henkan(cur_pos, kana_len, 1, cur_len);
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
+    return kh_count(hchar[cur_pos].kh);
+}
+
+int api_khshort(int *a)
+{
+    u8 *p;
+    u8 *q;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    if (cur_len < 2) {
+        return 0;
+    }
+    save_fst_bslen(cur_pos);
+    free_hchar(cur_pos, kana_len, 1);
+    cur_len--;
+    henkan(cur_pos, kana_len, 1, cur_len);
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
+    return kh_count(hchar[cur_pos].kh);
+}
+
+int api_backbunsetu(int *a)
+{
+    u8 *p;
+    u8 *q;
+    int pos;
+    int len;
+
+    len = 0;
+    if (func_mode != 3) {
+        return -1;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    if (cur_pos == 0) {
+        return 0;
+    }
+    unify_khmem(cur_pos, 0);
+    pos = 0;
+    while (pos < cur_pos) {
+        len = bunsetu_len(pos);
+        if (pos + len >= cur_pos) {
+            break;
+        }
+        pos += len;
+    }
+    cur_pos = pos;
+    cur_len = len;
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
+    return kh_count(hchar[cur_pos].kh);
+}
+
+int api_nextbunsetu(int *a)
+{
+    u8 *p;
+    u8 *q;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    if (cur_pos + cur_len >= kana_len) {
+        return 0;
+    }
+    unify_khmem(cur_pos, 0);
+    cur_pos += cur_len;
+    cur_len = bunsetu_len(cur_pos);
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
+    return kh_count(hchar[cur_pos].kh);
+}
+
+int api_khhenkan(int *a)
+{
+    int mode;
+    u8 *p;
+    u8 *q;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    switch (a[-1]) {
+    case 37:
+        mode = 2;
+        break;
+    case 38:
+        mode = 1;
+        break;
+    case 39:
+        mode = 3;
+        break;
+    case 40:
+        mode = 4;
+        break;
+    default:
+        mode = 4;
+        break;
+    }
+    khmem_raw(mode);
+    if (hchar[cur_pos].kh == 0) {
+        return -1;
+    }
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
     return 0;
+}
+
+int api_none(void)
+{
+    return -1;
 }

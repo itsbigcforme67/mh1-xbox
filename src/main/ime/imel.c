@@ -469,16 +469,30 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int dic_close(void)
+int exist_synref(SYN *p, SYN *e)
 {
-    if (dic_fd == -1) {
-        return -3;
+    for (; p < e; p++) {
+        if (p->x00 == e->x00 && p->x01 == e->x01) {
+            if (p->x04 < e->x04) {
+                p->x04 = e->x04;
+            }
+            return 1;
+        }
     }
-    flush_head();
-    flush_temp();
-    flush_pages();
-    if (close_dic() == -1) {
-        return -2;
+    return 0;
+}
+
+u8 *next_wd(p, end)
+u8 *p;
+u8 *end;
+{
+    if (p < end) {
+        do {
+            if ((int)(*p) <= 0x38) {
+                break;
+            }
+            p += 2;
+        } while (p < end);
     }
-    return 3;
+    return p;
 }

@@ -469,27 +469,45 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void free_kouholists(KL *l)
+void unify_bsmem(int pos, int len)
 {
-    while (l != 0) {
-        free_mem(l->kh);
-        l = l->next;
+    BS **pp;
+    BS *b;
+
+    pp = &hchar[pos].bs;
+    b = *pp;
+    while (b != 0) {
+        if (b->len == len) {
+            pp = &b->next;
+        } else {
+            *pp = b->next;
+            free_mem(b);
+        }
+        b = *pp;
     }
 }
 
-KH *null_kouho(int len)
+int bunsetu_len(pos)
+int pos;
 {
-    KH *k;
+    HCHAR *h;
 
-    k = alloc_khmem();
-    if (k != 0) {
-        k->flag = 0x80;
-        k->str[0] = 0;
-        k->x06 = len;
-        k->x07 = 0;
-        k->pw = 0;
-        k->x0C = 0xFFFF;
-        k->next = 0;
+    if (pos >= kana_len) {
+        return 0;
     }
-    return k;
+    h = &hchar[pos];
+    if (im_state == 2 && h->x14 == 0) {
+        return 0;
+    }
+    return h->x15;
+}
+
+void save_fst_bslen(int pos)
+{
+    HCHAR *h;
+
+    h = &hchar[pos];
+    if (h->x16 == 0 && h->x14 != 0) {
+        h->x16 = h->x15;
+    }
 }

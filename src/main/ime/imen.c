@@ -469,14 +469,26 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-u8 *end_page(u8 *p)
+int max_rtime(u8 *ent)
 {
-    int n;
+    int m;
+    u8 *end;
+    u8 *p;
 
-    n = ELEN(p);
-    while (n != 0) {
-        p += n;
-        n = ELEN(p);
+    end = ent + ELEN(ent);
+    p = ent + ent[2] + 3;
+    m = 0;
+    if (p < end) {
+        do {
+            if (m < p[1]) {
+                m = p[1];
+            }
+            p += 2;
+            if (*p < 0xC) {
+                p++;
+            }
+            p = next_wd(p, end);
+        } while (p < end);
     }
-    return p;
+    return m;
 }

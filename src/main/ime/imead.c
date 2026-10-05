@@ -469,45 +469,56 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void unify_bsmem(int pos, int len)
+int bs_check(int pos, int end)
 {
-    BS **pp;
+    HCHAR *h;
+    CH *c;
+    BS *r;
+    BS *r2;
     BS *b;
 
-    pp = &hchar[pos].bs;
-    b = *pp;
-    while (b != 0) {
-        if (b->len == len) {
-            pp = &b->next;
-        } else {
-            *pp = b->next;
-            free_mem(b);
+    h = &hchar[pos];
+    c = h->ch;
+    if (c != (CH *)-1 && c != 0) {
+        do {
+            r = make_bsmem(pos, end, c);
+            if (r == (BS *)-1) {
+                if (h->bs != 0) {
+                    free_bsmemlist(h->bs);
+                    h->bs = 0;
+                }
+                return 0;
+            }
+            if (r != 0) {
+                hchar_addbsmem(pos, r);
+            }
+            c = c->next;
+        } while (c != 0);
+    }
+    r2 = make_bsmem(pos, end, &null_chmem);
+    if (r2 == (BS *)-1) {
+        if (h->bs != 0) {
+            free_bsmemlist(h->bs);
+            h->bs = 0;
         }
-        b = *pp;
-    }
-}
-
-int bunsetu_len(pos)
-int pos;
-{
-    HCHAR *h;
-
-    if (pos >= kana_len) {
         return 0;
     }
-    h = &hchar[pos];
-    if (im_state == 2 && h->x14 == 0) {
-        return 0;
+    if (r2 != 0) {
+        hchar_addbsmem(pos, r2);
     }
-    return h->x15;
-}
-
-void save_fst_bslen(int pos)
-{
-    HCHAR *h;
-
-    h = &hchar[pos];
-    if (h->x16 == 0 && h->x14 != 0) {
-        h->x16 = h->x15;
+    if (h->bs == 0) {
+        if ((b = alloc_bsmem()) == 0) {
+            return -1;
+        }
+        b->len = muhenkan(pos, end);
+        b->x02 = 0x28;
+        b->x03 = 0;
+        b->pw = 0;
+        b->x08 = 0;
+        b->x0A = 0;
+        b->next = 0;
+        h->bs = b;
+        return 1;
     }
+    return 1;
 }

@@ -469,7 +469,28 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int ext_jis(int c, u16 hi)
+int can_daku(int c)
 {
-    return ((c & 0xFF) | ((hi & 0x100) + 0x2400)) & 0xFFFF;
+    u8 buf[4];
+
+    if (is_shift() != 0) {
+        c = ask_sjis2jis(c) & 0xFFFF;
+    }
+    if (to_hankaku(buf, c) != 1) {
+        return 0;
+    }
+    return (rmtype[buf[0]] & 0xF) == 0xA;
+}
+
+int can_handaku(int c)
+{
+    u8 buf[4];
+
+    if (is_shift() != 0) {
+        c = ask_sjis2jis(c) & 0xFFFF;
+    }
+    if (to_hankaku(buf, c) != 1) {
+        return 0;
+    }
+    return (rmtype[buf[0]] & 0xF) == 0xB;
 }

@@ -469,100 +469,17 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void apiask_28_OpenDic(void)
+void into_editing(int mode)
 {
-    int req[1];
+    int n;
 
-    req[0] = 0x1C;
-    api_funcent(req);
-}
-
-void apiask_33_LongerKouho(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x21;
-    api_funcent(req);
-}
-
-void apiask_34_ShorterKouho(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x22;
-    api_funcent(req);
-}
-
-void apiask_35_PrevBunsetu(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x23;
-    api_funcent(req);
-}
-
-void apiask_36_NextBunsetu(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x24;
-    api_funcent(req);
-}
-
-void apiask_37_FirstHenkanToKata(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x25;
-    api_funcent(req);
-}
-
-void apiask_38_FirstHenkanToHira(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x26;
-    api_funcent(req);
-}
-
-int kwin_length()
-{
-    return 0x48;
-}
-
-int nwin_length()
-{
-    return 0x48;
-}
-
-void init_roman(void)
-{
-    kana_len = 0;
-    einpc_buf = inpc_buf;
-    cinpc_buf = inpc_buf;
-    qinpc_buf = inpc_buf;
-    pinpc_buf = inpc_buf;
-    ekana_buf = kana_buf;
-    pkana_buf = kana_buf;
-    e_ustr = kana_ustr;
-    p_ustr = kana_ustr;
-}
-
-void init_edit0(void)
-{
-    init_roman();
-    free_hchar(0, 0x50, 0);
-    clear_prevwd();
+    learn_on = dic_getgaku();
+    init_univmem();
+    init_hchar();
+    init_edit0();
+    if (mode == 1) {
+        n = nwin_length() - 1;
+        kana_buf_size = n / 2;
+        im_state = 1;
+    }
 }

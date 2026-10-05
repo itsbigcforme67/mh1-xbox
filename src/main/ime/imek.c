@@ -469,16 +469,16 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int getbit(s16 n)
+int dic_close(void)
 {
-    return bitpool[n >> 3] & power[n & 7];
-}
-
-int g2jodo(int c)
-{
-    c = c & 0xFF;
-    if (c > 0 && c < 0xE) {
-        return (c + 0x7F) & 0xFF;
+    if (dic_fd == -1) {
+        return -3;
     }
-    return 0;
+    flush_head();
+    flush_temp();
+    flush_pages();
+    if (close_dic() == -1) {
+        return -2;
+    }
+    return 3;
 }

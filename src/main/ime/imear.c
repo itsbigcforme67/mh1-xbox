@@ -469,13 +469,31 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int ToUpper(int c)
+u16 kh_priority(BS *b, int v)
 {
-    int u;
-
-    u = c & 0xFF;
-    if (u >= 0x61 && u < 0x7B) {
-        return (u - 0x20) & 0xFF;
+    v = v & 0xFFFF;
+    if (v != 0) {
+        return (v + 0x3E8) & 0xFFFF;
     }
-    return c;
+    return b->x08;
+}
+
+int is_alphanum(int c)
+{
+    return rmtype[c & 0xFF] & 0xC0;
+}
+
+int is_num(int c)
+{
+    return rmtype[c & 0xFF] & 0x80;
+}
+
+int is_alpha(int c)
+{
+    return rmtype[c & 0xFF] & 0x40;
+}
+
+int is_paren(int c)
+{
+    return rmtype[c & 0xFF] & 0x20;
 }

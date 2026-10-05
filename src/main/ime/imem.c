@@ -469,30 +469,21 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int exist_synref(SYN *p, SYN *e)
+void clear_rtime(u8 *ent)
 {
-    for (; p < e; p++) {
-        if (p->x00 == e->x00 && p->x01 == e->x01) {
-            if (p->x04 < e->x04) {
-                p->x04 = e->x04;
-            }
-            return 1;
-        }
-    }
-    return 0;
-}
+    u8 *end;
+    u8 *p;
 
-u8 *next_wd(p, end)
-u8 *p;
-u8 *end;
-{
+    end = ent + ELEN(ent);
+    p = ent + ent[2] + 3;
     if (p < end) {
         do {
-            if ((int)(*p) <= 0x38) {
-                break;
-            }
+            p[1] = 0;
             p += 2;
+            if (*p < 0xC) {
+                p++;
+            }
+            p = next_wd(p, end);
         } while (p < end);
     }
-    return p;
 }

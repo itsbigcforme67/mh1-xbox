@@ -469,75 +469,28 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int d_open()
+int dic_getallnum(u8 *s, int len, u8 *out, int *cnt)
 {
-    return FAskRom_Open();
-}
+    int k;
+    u8 *r;
 
-int d_read()
-{
-    return FAskRom_Read();
-}
-
-int d_write()
-{
-    return FAskRom_Write();
-}
-
-int d_close()
-{
-    return FAskRom_Close();
-}
-
-int d_seek()
-{
-    return FAskRom_Seek();
-}
-
-void set_dicname(u8 *name)
-{
-    strcpy(mydicname, name);
-}
-
-int open_dic(void)
-{
-    int fd;
-
-    fd = d_open(mydicname, dic_rw);
-    if (fd == -1) {
-        dic_fd = -1;
-        return -1;
+    if (dic_fd == -1) {
+        return -3;
     }
-    dic_fd = fd;
-    return 0;
-}
-
-int close_dic(void)
-{
-    if (d_close(dic_fd) == -1) {
-        dic_fd = -1;
-        return -1;
+    *cnt = 0;
+    r = set_num(s, len, out, suji_mode);
+    if (r != 0) {
+        out = r;
+        (*cnt)++;
     }
-    dic_fd = -1;
-    return 0;
-}
-
-int seek_dic(pos)
-int pos;
-{
-    if (d_seek(dic_fd, pos, 0) == -1) {
-        if (open_dic() != 0) {
-            return -1;
-        }
-        if (d_seek(dic_fd, pos, 0) == -1) {
-            return -1;
+    for (k = 0; k < 4; k++) {
+        if (k != suji_mode) {
+            r = set_num(s, len, out, k);
+            if (r != 0) {
+                out = r;
+                (*cnt)++;
+            }
         }
     }
-    return 0;
-}
-
-void init_page(void)
-{
-    init_page_tab();
-    init_entid_tab();
+    return 1;
 }

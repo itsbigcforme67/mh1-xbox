@@ -469,100 +469,18 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void init_univmem(void)
+int is_jisknj(int c)
 {
-    u8 *p;
-
-    free_univ = mem;
-    for (p = mem; p < mem + 0x11928; p += 0x18) {
-        *(u8 **)p = p + 0x18;
-    }
-    *(u8 **)p = 0;
-    first_init_5 = 0;
+    return (c & 0xFFFF) >= 0x3020;
 }
 
-void *alloc_mem(void)
+int is_jiskig(int x)
 {
-    void *r;
+    int c;
 
-    r = free_univ;
-    if (r == 0) {
-        return 0;
-    }
-    free_univ = *(void **)r;
-    return r;
-}
-
-void free_mem(void *p)
-{
-    if (p != 0) {
-        *(void **)p = free_univ;
-        free_univ = p;
-    }
-}
-
-CH *alloc_chmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
+    c = x & 0xFFFF;
+    if (c >= 0x2120 && c < 0x3020) {
+        return is_kata(x, 0) ? 0 : 1;
     }
     return 0;
-}
-
-BS *alloc_bsmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
-    }
-    return 0;
-}
-
-PWM *alloc_pwmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
-    }
-    return 0;
-}
-
-KH *alloc_khmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
-    }
-    return 0;
-}
-
-KL *alloc_klmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
-    }
-    return 0;
-}
-
-void free_pwmemlist(PWM *p)
-{
-    PWM *n;
-
-    while (p != 0) {
-        n = p->next;
-        free_mem(p);
-        p = n;
-    }
 }

@@ -786,7 +786,7 @@ void apiask_24_AllKakutei(int a)
     api_funcent(req);
 }
 
-void apiask_25_FirstKakutei(int a, int b, int c, int d)
+void apiask_25_FirstKakutei(int a, int b, int c, int d, int e)
 {
     int req[6];
 
@@ -795,7 +795,7 @@ void apiask_25_FirstKakutei(int a, int b, int c, int d)
     req[3] = c;
     req[0] = 0x19;
     req[4] = d;
-    req[5] = 0;
+    req[5] = e;
     api_funcent(req);
 }
 
@@ -1933,17 +1933,18 @@ void clear_rtime(u8 *ent)
 {
     u8 *end;
     u8 *p;
-    u8 *q;
 
     end = ent + ELEN(ent);
     p = ent + ent[2] + 3;
-    while (p < end) {
-        p[1] = 0;
-        q = p + 2;
-        if (p[2] < 0xC) {
-            q++;
-        }
-        p = next_wd(q, end);
+    if (p < end) {
+        do {
+            p[1] = 0;
+            p += 2;
+            if (*p < 0xC) {
+                p++;
+            }
+            p = next_wd(p, end);
+        } while (p < end);
     }
 }
 
@@ -1975,22 +1976,23 @@ int max_rtime(u8 *ent)
     int m;
     u8 *end;
     u8 *p;
-    u8 *q;
 
     end = ent + ELEN(ent);
     p = ent + ent[2] + 3;
     m = 0;
-    while (p < end) {
-        if (m < p[1]) {
-            m = p[1];
-        }
-        q = p + 2;
-        if (p[2] < 0xC) {
-            q++;
-        }
-        p = next_wd(q, end);
+    if (p < end) {
+        do {
+            if (m < p[1]) {
+                m = p[1];
+            }
+            p += 2;
+            if (*p < 0xC) {
+                p++;
+            }
+            p = next_wd(p, end);
+        } while (p < end);
     }
-    return (u8)m;
+    return m;
 }
 
 int dic_touroku(WD *w)
@@ -2595,7 +2597,8 @@ int calc_pulen(int page, u8 *key)
     if (n >= 4) {
         return n;
     }
-    if (key[n] != 0) {
+    if (key[n] == 0) {
+    } else {
         n++;
     }
     return n;
@@ -4617,13 +4620,15 @@ KH *k;
 int exist_kouho(u8 *s, int n)
 {
     u8 *p;
-    u8 len;
+    int len;
 
-    for (p = (u8 *)wdsbuf; p < e_khstr; p += len) {
-        len = *p++;
+    for (p = (u8 *)wdsbuf; p < e_khstr;) {
+        len = *p;
+        p++;
         if (len == n && ask_strncmp(p, s, len) == 0) {
             return 1;
         }
+        p += len;
     }
     return 0;
 }
@@ -5044,11 +5049,13 @@ int is_jisknj(int c)
     return (c & 0xFFFF) >= 0x3020;
 }
 
-int is_jiskig(int c)
+int is_jiskig(int x)
 {
-    c = c & 0xFFFF;
+    int c;
+
+    c = x & 0xFFFF;
     if (c >= 0x2120 && c < 0x3020) {
-        return is_kata(0) == 0;
+        return is_kata(x, 0) ? 0 : 1;
     }
     return 0;
 }

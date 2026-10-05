@@ -469,31 +469,13 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-u16 kh_priority(BS *b, int v)
+int ignore_syn(BS *b)
 {
-    v = v & 0xFFFF;
-    if (v != 0) {
-        return (v + 0x3E8) & 0xFFFF;
+    PW *pw;
+
+    pw = b->pw;
+    if (pw != 0 && (pw->x02 == 0x28 || pw->x02 == 0x29)) {
+        return 1;
     }
-    return b->x08;
-}
-
-int is_alphanum(int c)
-{
-    return rmtype[c & 0xFF] & 0xC0;
-}
-
-int is_num(int c)
-{
-    return rmtype[c & 0xFF] & 0x80;
-}
-
-int is_alpha(int c)
-{
-    return rmtype[c & 0xFF] & 0x40;
-}
-
-int is_paren(int c)
-{
-    return rmtype[c & 0xFF] & 0x20;
+    return 0;
 }
