@@ -61,7 +61,7 @@ void plaza_enterLobbyTrans(int arg0, int arg1) {
                     var_s2_2 = 0;
                 }
                 sprintf(&spC0, &lit_193_0065DBE8, Get_ServerName(), var_s1 + 0x14);
-                sprintf(&sp100, &lit_2315, ((int *)&lb_num_str)[ (var_s2_2 << 0x30) >> 0x30], ((int *)&lb_num_str)[(s16)temp_s5]);
+                sprintf(&sp100, &lit_2315, ((int *)&lb_num_str)[( (var_s2_2 << 0x30) >> 0x30)], ((int *)&lb_num_str)[((s16)temp_s5)]);
                 Lb_put_icon( ((temp_v1_2 + 0xCA) << 0x30) >> 0x30, var_s4, 7, -1);
                 Lb_put_icon( (s16) spB0, var_s4, 8, -1);
                 if (var_s3 == (F(u8, pNet, 0xA) % 7)) {

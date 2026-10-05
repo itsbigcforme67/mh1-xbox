@@ -1,5 +1,4 @@
 #include "lobby_a.h"
-extern char s64[];
 extern char sp38[];
 extern char sp38[];
 extern char ClassInfo[];

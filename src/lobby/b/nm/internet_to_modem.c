@@ -16,6 +16,6 @@ s32 internet_to_modem(void) {
             var_s0 = 0;
         }
     }
-    ((int (**)())&conn_mcs_jmp_tbl_871)[temp_v1 & 0xFF]();
+    ((int (**)())&conn_mcs_jmp_tbl_871)[(temp_v1 & 0xFF)]();
     return var_s0;
 }

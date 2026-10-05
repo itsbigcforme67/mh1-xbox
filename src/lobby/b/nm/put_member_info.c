@@ -12,7 +12,7 @@ void put_member_info(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5)
     if ((*(s8 *)arg2) != 0) {
         han2zen(arg2, &spC0);
         if (temp_s1 != 0) {
-            sprintf(&sp60, &lit_2632, &spC0, ((int *)&lb_num_str)[(F(u8, temp_s1, 1) / 10) + ((u8) F(u8, temp_s1, 1) >> 0x1F)]);
+            sprintf(&sp60, &lit_2632, &spC0, ((int *)&lb_num_str)[((F(u8, temp_s1, 1) / 10) + ((u8) F(u8, temp_s1, 1) >> 0x1F))]);
         } else {
             sprintf(&sp60, &lit_2633, &spC0);
         }
