@@ -164,3 +164,13 @@ staff 0x2907C0 (1.6K), movie_* 0x22F7B0 (1.5K), evdemo 0x2862F0 (1.7K), npc 0x23
 mc* memory card 0x27EF60-0x2862F0 (28K, ~135 functions), IME dictionary 0x23E500-0x24A240 (47K, Japanese input, low priority),
 f_sound 0x24A250 (41K, sound requests), net file load/save 0x2869A0-0x28BEC0 (21K, online-ish).
 Order: staff, movie, evdemo, npc, select/omake, mc.
+
+### staff (0x2907C0-0x290AE0, credits) and movie (0x22F7B0-0x22FDD0, Sofdec wrapper)
+- staff: Staff_init + logo_disp built (src/main/staff/staff.c, staffb.c; main OK). Staff_main 2/110 off (original passes `1` in a0 reused from the
+  switch compare, mine reloads it in the call delay slot), staff_disp ~75/95 off (register choice; the loop test reloads `e->x`): both in staff_nm.c.
+- movie: everything except movie_draw built (src/main/movie/movie.c; movie_nm.c has all). movie_draw 13/96 off: store order of the sprite fields.
+- Lessons: (1) a global struct accessed many times in one function wants `SFD_W *w = &sfd_work;` as local to get the original `lui s0` base register
+  (movie_server/stop/exit); declare it late (assign after the first calls) if the original materializes it late (movie_start).
+  (2) `memset(p, 0, (u32)n)`: the cast changes arg load order (movie_start). (3) a K&R `s8 no` param gives dsll32/dsra32 but the original used the raw
+  register: use `int no`. (4) struct-copy loop of 19 words = assignment of a 19-word local struct (movie_server, local frame 0x50).
+  (5) END of a `main` range in c_files.txt: use the exact end of the last function (size from symbols), 0x290AE0 vs 0x290AD8 gave MISMATCH.

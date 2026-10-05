@@ -289,6 +289,9 @@ game:rodata 0x00689CE0 0x00689E00 em/em33
 
 game 0x005873D0 0x0058B84C em/em03
 game:rodata 0x00686490 0x00686590 em/em03
+main 0x002907C0 0x002907FC staff/staff
+main 0x002909C0 0x00290AD8 staff/staffb
+main 0x0022F7B0 0x0022FC50 movie/movie
 main 0x00290E80 0x00291D30 reward/f_reward
 main:rodata 0x003865A0 0x003865EC reward/f_reward
 main 0x00291D30 0x0029250C reward/f_reward2
