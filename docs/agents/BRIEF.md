@@ -35,6 +35,9 @@ equivalent), note how far off it is, and move on. Cover whole files before perfe
 single functions.
 
 ## Lessons from earlier agents (read before starting)
+- A function whose switch compiles to a jump table also needs its `MODULE:rodata START END`
+  line in config/c_files.txt; check.py cannot see this (the link fails with an undefined
+  .Lxxxx). tools/lbf_jt.py finds the range. (agent F)
 - tools/check.py ignores relocation addends: a wrong array index into a global, a wrong
   table symbol or a gp-relative global still shows OK. Only `tools/rebuild.sh` (byte compare
   of the linked module) proves a match; run it before registering a file. (agent E)
