@@ -641,8 +641,7 @@ int Quest_condition_judging(void)
     return 0;
 }
 
-EMW *Em_direct_set(q)
-QEM *q;
+EMW *Em_direct_set(QEM *q)
 {
     EMW *em;
     int i;

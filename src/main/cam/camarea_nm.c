@@ -35,17 +35,17 @@ void CamRailPoint(f32 *out, f32 *c, f32 t);
 
 /* f32 -> u32 as the PS2 code does it (values >= 2^31 through the sign bit;
  * negative values wrap) */
-static u32 f2u(f32 f) {
-    if (f >= 2147483648.0f) {
-        return (u32)(s32)(f - 2147483648.0f) | 0x80000000u;
+static inline u32 f2u(f32 f) {
+    if (f < 2147483648.0f) {
+        return (u32)(s32)f;
     }
-    return (u32)(s32)f;
+    return (u32)(s32)(f - 2147483648.0f) | 0x80000000u;
 }
 
 /* 0x00222E20: one follow-the-player area covering everything, built in
  * cam_data_area; zoom entries 1-4 from the stage's rows of
  * stage_camera_data_tbl[0..3] (y, z, tar_y, gnd), entry 0 fixed. */
-void default_area_data(CAMW *cw) {
+static void default_area_data(CAMW *cw) {
     u8 *d = cam_data_area;
     int k;
 
@@ -156,13 +156,17 @@ s8 Get_cam_grid_XZ(s16 *gx, s16 *gz, f32 *pos, u8 *hdr) {
     s8 r = 0;
     u32 i;
 
-    i = (f2u(pos[0]) - EW(hdr, 0x8)) / EH(hdr, 0x4);
+    u32 a = pos[0];
+    u32 w = EW(hdr, 0x8);
+    i = (a - w) / EH(hdr, 0x4);
     if (!(i < EH(hdr, 0x0))) {
         r |= 1;
         i = EH(hdr, 0x0) - 1;
     }
     *gx = i;
-    i = (f2u(pos[2]) - EW(hdr, 0xC)) / EH(hdr, 0x6);
+    a = pos[2];
+    w = EW(hdr, 0xC);
+    i = (a - w) / EH(hdr, 0x6);
     if (!(i < EH(hdr, 0x2))) {
         i = EH(hdr, 0x2) - 1;
         r = 0x10;
@@ -175,9 +179,9 @@ s8 Get_cam_grid_XZ(s16 *gx, s16 *gz, f32 *pos, u8 *hdr) {
  * 0x27-0x2B of state 0 (cannon? guess) */
 s32 CamAreaAttribChk(CAMAREA *a, PLW *pl) {
     if (EB(a, 6) & 0x80) {
-        if (EB(pl, 0x14) != 0) return 0;
-        if (EB(pl, 0x15) < 0x27) return 0;
-        if (!(EB(pl, 0x15) < 0x2C)) return 0;
+        if (EB(pl, 0x14) != 0 || EB(pl, 0x15) < 0x27 || EB(pl, 0x15) > 0x2B) {
+            return 0;
+        }
     }
     return 1;
 }

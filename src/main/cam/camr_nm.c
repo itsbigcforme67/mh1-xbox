@@ -40,8 +40,16 @@ f32 ZoomRateCalc(f32 x, f32 *z) {
     return (z[5] - z[4]) / (z[3] - z[2]) * (x - z[2]) + z[4];
 }
 
-f32 ZoomBaseAngleRail(f32 t, f32 *rail, int i) {
-    return rail[i + 0x80] * (1.0f - t) + rail[i + 0x81] * t;
+f32 ZoomBaseAngleRail(f32 t, f32 *rail, int i)
+{
+  f32 new_var;
+  f32 new_var2;
+  new_var2 = rail[i + 0x81];
+  if (1)
+  {
+    new_var = rail[i - -0x80];
+    return (new_var * (1.0f - t)) + (new_var2 * t);
+  }
 }
 
 f32 RollAngleRail(f32 t, s16 *rail, int i) {
