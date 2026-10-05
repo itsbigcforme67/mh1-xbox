@@ -16,7 +16,8 @@ def flush():
     if top:
         chunks.append(('top', None, '\n'.join(top))); top = []
 hdr = re.compile(r'^(?:static )?[A-Za-z_][\w \*]*?\b(\w+)\(.*\)\s*(?:[A-Za-z_][^{;]*;\s*)*\{\s*$')
-macro = re.compile(r'^(DMG_SIMPLE)\((\w+),')
+_mac = set(re.findall(r'^#define (\w+)\(NAME\b', open(nm).read(), re.M))   # macros that define a function
+macro = re.compile(r'^(%s)\((\w+),' % '|'.join(sorted(_mac) or ['NOMACRO']))
 while i < len(lines):
     l = lines[i]
     m = macro.match(l)
@@ -65,7 +66,8 @@ for k, run in enumerate(runs):
         return m.group(0) if m.group(2) in D else m.group(1) + m.group(3)
     t_ = re.sub(r'^(static )((?:[A-Za-z_][\w \*]*?\b)?(\w+))\(', lambda m: m.group(0) if m.group(3) in D else m.group(2) + '(', tops, flags=re.M)
     first, last = run[0], run[-1]
-    head = '/* em01 AI, run %d: %s .. %s (game.bin 0x%08X-0x%08X). Matching functions of em01_ai_nm.c (that file holds the\n * whole AI including the near-matches). See em01_ai_nm.c for the description. */\n' % (k + 1, first, last, res[first]['addr'], res[last]['addr'] + res[last]['size'])
+    nmb = os.path.basename(nm)
+    head = '/* %s, run %d: %s .. %s (game.bin 0x%08X-0x%08X). Matching functions of %s (that file holds the\n * whole code including the near-matches); see it for the description. */\n' % (os.path.basename(prefix), k + 1, first, last, res[first]['addr'], res[last]['addr'] + res[last]['size'], nmb)
     # strip leading top comment of the nm file
     t = re.sub(r'\A/\*.*?\*/\n', '', t_, count=1, flags=re.S)
     open(path, 'w').write(head + t.rstrip('\n') + '\n\n' + body + '\n')

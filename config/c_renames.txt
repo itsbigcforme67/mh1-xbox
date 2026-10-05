@@ -29,6 +29,9 @@ build/src/game/em/em01_aif.c.o .rodata .data
 build/src/game/em/em01_aig.c.o .rodata .data
 build/src/game/em/em01.c.o .rodata .data
 build/src/game/em/em02.c.o .rodata .data
+build/src/game/em/em02_ai.c.o .rodata .data
+build/src/game/em/em02_aib.c.o .rodata .data
+build/src/game/em/em02_aic.c.o .rodata .data
 build/src/game/em/em03.c.o .rodata .data
 build/src/game/em/em04.c.o .rodata .data
 build/src/game/em/em04b.c.o .rodata .data

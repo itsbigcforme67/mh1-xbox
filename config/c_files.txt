@@ -374,3 +374,10 @@ game 0x0057A900 0x0057AB58 em/em01_aih
 game:rodata 0x00685B30 0x00685B50 em/em01_aie
 game:rodata 0x00685B50 0x00685EF0 em/em01_aif
 game:rodata 0x00685EF0 0x00686078 em/em01_aig
+game 0x0057F1E0 0x005800B4 em/em02_ai
+game 0x005803B0 0x00583928 em/em02_aib
+game 0x00583B30 0x00587350 em/em02_aic
+game 0x005873B0 0x005873C8 em/em02_aid
+game:rodata 0x00686270 0x006862CC em/em02_ai
+game:rodata 0x006862D0 0x00686400 em/em02_aib
+game:rodata 0x00686400 0x00686488 em/em02_aic

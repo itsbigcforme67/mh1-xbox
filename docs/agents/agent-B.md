@@ -278,3 +278,20 @@ Capcom bug kept: em_fly24 passes an uninitialized local to Em_Calc_angY.
 - A callee in the same file that is `static` keeps its callers' register use; if it must be global (called from asm or
   another run) check the run file again with tools/status.py (em_act_search2 had to stay static, KEEP in mkruns.py).
 - Shell08_set_ang takes 6 arguments (em, joint, a, b, ang1, ang2); the last two sit in $t0/$t1 and the delay slot.
+
+# em02 AI (f_em_57F1E0, 0x57F1E0-0x587390, 66 functions): 63 linked
+src/game/em/em02_ai.c .. em02_aid.c (4 runs, rodata 0x686270-0x686488), em02_ai_nm.c = whole file. Rebuild OK (all five modules).
+Near-matches (stay asm): em_mv01_005800C0 (7: same turn test as em01 mv03), em02_uvmove (61, same as em01; note em02's timer
+advances by 2), em02_effect_move (6, same a2/v1 register difference as em01_effect_move).
+Notes:
+- em_atk05 is shared by actions 5, 10, 11 and takes a third argument (0/1/2) that picks the shell angle; the dispatcher
+  em_move03 passes it. A switch whose compare ladder reads 0,1,2 means the source order is 2,1,0 (atk09), and 2,1,0 means 0,1,2.
+- em_uvset (static leaf called many times from ef_move_sub): the caller does NOT reload a2/a3 between calls, so the callee
+  must not modify them (write the index as `*(u8 *)((u16)idx + (u32)em + 0x5F8)` to keep a2 intact). tools/genef.py keeps
+  a2/a3 across em_uvset calls so the generated constants are right.
+- ef_move_sub_00583BF0 only matches as a file-static function but is called by asm (em02_effect_move): it is defined static
+  and config/game_aliases.txt (new, added to the link by tools/build.py when it exists) gives the asm its address.
+  Callees of ef_move_sub that precede or follow it in the file (move_default, quake_call, sound_call*, em_uvset) must also
+  stay static (MKRUNS_KEEP in tools/mkruns.py).
+- tools/mkruns.py recognises function-defining macros (#define NAME(NAME, ...)) automatically now.
+- `em->mode != 6 || em->x15 != 0` guards two cases of the em02 effect script (genef flags unknown branches with #error).
