@@ -405,7 +405,7 @@ void Eft16_set(PLW *pl, int arg, s16 hit, f32 *pos, f32 scale) {
             ew->u0A.ang = CHR_ANG3EC(pl) + 0x8000;
             ew->mode2 &= 0x30;
             if (pl->x10 != 0) {
-                switch (pl->_pad002[0]) {
+                switch (pl->kind) {
                 case 9:
                 case 0x17:
                     ew->mode2 |= 2;
@@ -533,7 +533,7 @@ void Eft16_set_impact(PLW *pl, f32 *pos, int arg, s16 hit, s16 wpn, f32 scale) {
                 ew->stg = 1;
                 break;
             default:
-                if (pl->x10 != 0 && (pl->_pad002[0] == 0x13 || pl->_pad002[0] == 0x18)) {
+                if (pl->x10 != 0 && (pl->kind == 0x13 || pl->kind == 0x18)) {
                     ew->mode2 |= 0x80;
                 }
                 break;
