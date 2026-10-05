@@ -1265,10 +1265,6 @@ main 0x00249D60 0x0024A238 ime/imeaw
 main 0x00274660 0x00274688 ud/udb01
 main 0x00274960 0x00274E10 ud/udb02
 main:rodata 0x00373590 0x003735D0 ud/udb02
-main 0x00226830 0x00226840 quest/qstb01
-main 0x00226900 0x00226914 quest/qstb02
-main 0x002269E0 0x002269F8 quest/qstb03
-main 0x00226B40 0x00226C24 quest/qstb04
 main 0x0024A240 0x0024A3DC sound/sndb01
 main 0x0024A5A0 0x0024A78C sound/sndb02
 main:rodata 0x0036E0C0 0x0036E0E4 sound/sndb02
@@ -1279,3 +1275,6 @@ main 0x00159410 0x00159524 sound/sndc01
 main 0x001598A0 0x00159A48 sound/sndc02
 main 0x00159D30 0x00159FE4 sound/sndc03
 main 0x0015A230 0x0015A51C sound/sndc04
+main 0x00226830 0x002268A0 quest/qstb01
+main 0x00226900 0x00226914 quest/qstb02
+main 0x002269E0 0x00226C24 quest/qstb03

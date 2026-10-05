@@ -9,6 +9,7 @@ void *memset(void *, int, unsigned int);
 
 
 
+#define QOFS(off) ((off) != 0 ? (void *)((off) + (int)mission_area) : 0)
 
 
 
