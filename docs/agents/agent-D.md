@@ -242,21 +242,42 @@ fish_cam_sub. Still no C for: CameraMove, cam_init_sub_std, cam_sub_std,
 cam_sub_stg, cam_sub_pchngr, cmd_set_pos, cmd_set_tar, cmd_cam_move,
 point_cam_sub (jump tables 0x36B0D0-0x36B178 still need main:rodata lines).
 
-f_cam update 2: camd.c now spans 0x221820-0x222408 (NPC zoom, demo camera,
-get_em_local, cmd_set_pos/tar, cmd_copy, get_angle, cmd_cam_move,
-point_cam_hit; jump tables 0x36B0D0-0x36B108). came.c/camf.c merged into it.
-point_cam_sub is written (cam_nm.c) but 28 instructions off, only a2 vs a3
-for the command pointer; one permuter run found nothing. Not built.
+f_cam update 2 (final state of this pass): built and byte-matching (main OK):
+cam.c, camm.c (CameraMove, cam_init_sub_std 0x21F590-0x21F9A8), camb.c,
+camp.c (cam_init_sub_pchngr, cam_sub_pchngr, pch_lock_chk 0x220EE0-0x221460),
+camc.c (PachiTypeCheck .. fish_cam_sub 0x221460-0x221814), camd.c
+(0x221820-0x222408: NPC zoom, demo camera, static get_em_local, cmd_set_pos,
+cmd_set_tar, cmd_copy, get_angle, cmd_cam_move, point_cam_hit; jump tables
+0x36B0D0-0x36B108), camg.c (cam2view .. cam_sw_set_sub). 46 of 51 functions.
+Still asm: SetCameraData (66/72; C in cam_nm.c, 65 diffs whatever the
+declaration order: the original loop shape differs), cam_sub_std (65/668:
+angle smoothing registers ca/da, two stray nops after the k switch and the
+blend-rate if), cam_sub_stg (written, 409/524: register assignment of
+cw/cs/area/d/spl and the smoothing blocks, not worked through), point_cam_sub
+(28/225: command pointer a2 vs a3). All in src/main/cam/cam_nm.c.
+Lessons:
 - get_em_local must be `static` and defined BEFORE its callers in the same
   file: MWCC then knows its clobber set and keeps `out` in a temp register
-  across the call (cmd_set_pos/tar). Non-static or another file: a saved reg.
-- cpInterVector takes the float LAST: (f32 *out, f32 *a, f32 *b, f32 t)
-  (the float-first guess scheduled `mov.s $f12` too early).
+  across the call (cmd_set_pos/tar). Otherwise a saved register is used.
+- Float-last prototypes: cpInterVector(f32 *out, f32 *a, f32 *b, f32 t) and
+  flvecRotY(f32 *v, f32 a) (flvecRotX likewise); with the float first the
+  `mov.s $f12` is scheduled too early. act_ck returns int here (an s16
+  prototype adds a sign-extend; PachiTypeCheck casts, cam_sub_std does not).
 - A 6-entry switch with an empty `case 5:` gets a jump table (sltiu 6);
   without it, an if-chain. Source case order = body order; the compare chain
-  of small switches comes out reversed from the source order.
+  of a small switch comes out reversed from the source order (pch_lock_chk:
+  write the cases in reverse of the original's compare order).
 - `if (a <= 0 || b >= 0) {loop} else {finish}` gave the original layout where
   `if (a > 0 && b < 0) {finish} else {loop}` did not (point_cam_sub case 21).
+- `if (f != 1) { if (f != 0) {A} else {B} } else {B}` (B duplicated) gives
+  the original's code for `f != 1 && f != 0`; `&&` gave a different layout.
+- `switch (x) { default: k = 950; break; case 2: k = -950; break; }` gave the
+  original's unfilled-delay-slot layout for a two-way constant choice.
+- `a > 0x60` (u16 field) compiled with `slti at`; `a >= 0x61` did not.
+- A global pointer hoisted into a local (`spl = SplineRvalue`) is how the
+  original gets a saved register for it (cam_sub_stg).
 - cmd_cam_move constant 0x38C90FDB = 0.000095873799f (2*pi/65536).
-Still no C: CameraMove, cam_init_sub_std, cam_sub_std, cam_sub_stg,
-cam_sub_pchngr, point_cam_sub (near-match only).
+- Frame/ordering tool: /tmp/claude-1000/.../scratchpad/dperm2.py permutes the
+  first N declaration lines and keeps the best (same idea as tools/declbf.py
+  but with a count limit; declbf over 7 lines is too slow).
+Shared header: include/cam.h area_chg is u8 (lbu in cam_sub_std).

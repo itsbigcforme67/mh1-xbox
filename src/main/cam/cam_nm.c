@@ -103,13 +103,13 @@ void CameraInit(void) {
 }
 
 void SetCameraData(CAMDATA *d) {
+    s32 i;
+    CAMBLK *b;
+    s32 n;
+    s32 j;
     u8 *p;
     CAMGRID *g;
     u8 **l;
-    s32 n;
-    s32 j;
-    CAMBLK *b;
-    s32 i;
 
     CameraWork.data = d;
     if (d != NULL) {
