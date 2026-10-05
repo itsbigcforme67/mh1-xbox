@@ -144,3 +144,18 @@ case 20 (both checked in the asm). game.bin calls by address:
 func_53FDF0 (Eft17_set_ex), func_628690, func_62A2C0 (shell05_set3).
 eft06_nm.c (not built) holds C for eft06_m (1097/1212 differ); with it
 every eft06 function now has C.
+set13_nm.c (not built) now also holds set13_m (853/1074 differ) and
+set13_trans (761/775). set13_trans uses a helper set13_roll() that the
+original inlines twice (flare roll from sun/camera on XZ, fused
+mula/madd maths). Several values are left uninitialised exactly as in
+the original (set13_m case 1 on stages other than 0x18/0x22, case 7 box
+limits on stages other than 0x2D/0x38). The uv offsets in set13_trans
+cases 3 and 7 go to x (checked: f13 = 0).
+
+## Coverage summary (agent D)
+Every function of the eight assigned files now has C. Built and
+byte-matching: eft26 7/7, eft01 9/9, set21 12/12, eft02 13/14, eft06 18/19,
+eft13 14/19, eft20 9/13, set13 7/10 (89 of 103). The other 14 are in
+*_nm.c files (not built): eft02_t (12 off), eft06_m, eft13_i/_m/_set_pos/
+_set_sub_em/_set_pos_em, eft20_i/_m/_t/_pos_set, set13_m/_trans/
+_disp_pos_calc (13 off).
