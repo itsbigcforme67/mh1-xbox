@@ -36,9 +36,14 @@ typedef struct CNET_BURST {
 } CNET_BURST;
 
 /* plaza / lobby / room table entries (0x164 bytes each), indexed from 0 as (id - 1) */
-typedef struct CNET_PIECE {     /* plaza and room */
+typedef struct CNET_PIECE {     /* plaza, lobby and room */
     s32 prop;           /* 0x00 room property */
-    u8 _pad04[0x14];
+    u16 _pad04;
+    u16 ja;             /* 0x06 joined users (mh) */
+    u16 jb;             /* 0x08 */
+    u16 ri[5];          /* 0x0A room join info */
+    u16 ma;             /* 0x14 match entry users */
+    u16 mb;             /* 0x16 */
     u8 status;          /* 0x18 */
     u8 pwinfo;          /* 0x19 password info */
     char name[0x42];    /* 0x1A */
@@ -59,6 +64,25 @@ typedef struct CNET_PDATA {
 typedef struct CNET_COND {
     u8 b[0x224];
 } CNET_COND;
+
+/* blobs copied by value out of CnetSys_w (struct assignment; the element type fixes the copy loop) */
+typedef struct CNET_B5C { u8 b[0x5C]; } CNET_B5C;
+typedef struct CNET_B308 { u8 b[0x308]; } CNET_B308;
+typedef struct CNET_B1004 { u8 b[0x1004]; } CNET_B1004;
+typedef struct CNET_H1004 { s16 h[0x802]; } CNET_H1004;
+typedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;
+typedef struct CNET_RULETBL { u8 b[0x294A4]; } CNET_RULETBL;
+typedef struct CNET_CHAT {
+    char from[8];       /* 0x00 sender */
+    char x[0x14];       /* 0x08 */
+    char msg[0x100];    /* 0x1C text */
+    u8 a, b, c, d;      /* 0x11C */
+} CNET_CHAT;
+
+/* room rule block (0x16B bytes) */
+typedef struct CNET_RULE {
+    u8 b[0x16B];
+} CNET_RULE;
 
 typedef struct CNET_SYS {
     s32 active;  /* 0x000  */
@@ -83,12 +107,15 @@ typedef struct CNET_SYS {
     char tel[0x14];  /* 0x1060 telephone number (personal data) */
     u8 _pad1074[0x86];
     CNET_PDATA pdata;  /* 0x10FA personal data being registered */
-    u8 _pad12CA[0x2AC];
+    CNET_RULE rule;  /* 0x12CA room rule being set */
+    u8 _pad1435[0x141];
     char uid[8];  /* 0x1576 user id string */
     char uhandle[0x40];  /* 0x157E user handle string */
     u8 _pad15BE[0x70];
-    u8 minidata[0x5C];  /* 0x162E mini data of a lobby member */
-    u8 _pad168A[0x2064];
+    CNET_B5C minidata;  /* 0x162E mini data of a lobby member */
+    CNET_B1004 topinfo;  /* 0x168A top information */
+    CNET_H1004 warnmsg;  /* 0x268E login warning message */
+    CNET_B5C leave_user;  /* 0x3692 user who left the room */
     u8 lobby_member[0x300];  /* 0x36EE  */
     u8 room_member[0x300];  /* 0x39EE  */
     u8 annex_member[0x300];  /* 0x3CEE  */
@@ -96,20 +123,23 @@ typedef struct CNET_SYS {
     CNET_PIECE plaza[10];  /* 0x4068 plaza table, entry for id n is plaza[n - 1] (counts of plaza/lobby/room at 0x404E/0x4050/0x4052 just before it) */
     CNET_PIECE lobby[14];  /* 0x4E50 lobby table */
     CNET_PIECE room[8];  /* 0x61C8 room table */
-    u8 _pad6CE8[0x29604];
+    u8 _pad6CE8[0x160];
+    CNET_RULETBL ruletbl;  /* 0x6E48 room rule allocation table */
     u8 n_lobby_member;  /* 0x302EC  */
     u8 n_room_member;  /* 0x302ED  */
     u8 n_annex_member;  /* 0x302EE  */
-    u8 _pad302EF[0x21];
-    u8 matchinfo[0x5D4];  /* 0x30310 match information */
+    u8 _pad302EF[0x11];
+    u8 gsaddr[4];  /* 0x30300 game server address bytes */
+    u8 _pad30304[0x4];
+    u8 gsport[2];  /* 0x30308 game server port bytes */
+    u8 _pad3030A[0x6];
+    CNET_W5D4 matchinfo;  /* 0x30310 match information */
     u8 _pad308E4[0x2A6];
-    char chat_from[8];  /* 0x30B8A chat message sender */
-    char chat_x[0x14];  /* 0x30B92  */
-    char chat_msg[0x100];  /* 0x30BA6 chat message text */
-    u8 chat_a;  /* 0x30CA6  */
-    u8 chat_b;  /* 0x30CA7  */
-    u8 chat_c;  /* 0x30CA8  */
-    u8 chat_d;  /* 0x30CA9  */
+    CNET_CHAT chat;  /* 0x30B8A chat message being received */
+    u8 _pad30CAA[0x690E];
+    CNET_B308 chatbin;  /* 0x375B8 chat binary */
+    u8 _pad378C0[0x4198];
+    s16 curplace[3];  /* 0x3BA58 current place (3 values) */
 } CNET_SYS;
 extern CNET_SYS CnetSys_w;
 

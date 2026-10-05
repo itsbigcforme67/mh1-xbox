@@ -16,22 +16,25 @@
 0x1060 char tel[0x14] telephone number (personal data)
 0x1576 char uid[8] user id string
 0x157E char uhandle[0x40] user handle string
-0x162E u8 minidata[0x5C] mini data of a lobby member
+0x162E CNET_B5C minidata size=0x5C mini data of a lobby member
 0x302EC u8 n_lobby_member
 0x302ED u8 n_room_member
 0x302EE u8 n_annex_member
-0x30310 u8 matchinfo[0x5D4] match information
+0x30310 CNET_W5D4 matchinfo size=0x5D4 match information
 0x36EE u8 lobby_member[0x300]
 0x39EE u8 room_member[0x300]
 0x3CEE u8 annex_member[0x300]
-0x30B8A char chat_from[8] chat message sender
-0x30B92 char chat_x[0x14]
-0x30BA6 char chat_msg[0x100] chat message text
-0x30CA6 u8 chat_a
-0x30CA7 u8 chat_b
-0x30CA8 u8 chat_c
-0x30CA9 u8 chat_d
+0x30B8A CNET_CHAT chat size=0x120 chat message being received
 0x1008 s32 patch_ver patch information version
 0x1014 char patch_a[0x10] patch information string
 0x1024 char patch_b[8] patch information string 2
 0x10FA CNET_PDATA pdata size=0x1D0 personal data being registered
+0x12CA CNET_RULE rule size=0x16B room rule being set
+0x168A CNET_B1004 topinfo size=0x1004 top information
+0x268E CNET_H1004 warnmsg size=0x1004 login warning message
+0x3692 CNET_B5C leave_user size=0x5C user who left the room
+0x375B8 CNET_B308 chatbin size=0x308 chat binary
+0x6E48 CNET_RULETBL ruletbl size=0x294A4 room rule allocation table
+0x3BA58 s16 curplace[3] current place (3 values)
+0x30300 u8 gsaddr[4] game server address bytes
+0x30308 u8 gsport[2] game server port bytes
