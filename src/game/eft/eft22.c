@@ -55,7 +55,7 @@ f32 flvecCalcDistance(f32 *, f32 *);
 int pl_flag_ck(PLW *, int);
 int frame_check(PLW *, int, f32);
 u8 Pl_stg_ck(PLW *);
-void Eft20_set2(f32 *, int, int, f32);
+void Eft20_set2(f32, f32 *, int, int);
 void Eft08_set(f32 *, int, int, f32);
 void eft22_end_init(EFTW *ew, UKI *w);
 void eft22_line_sub(EFTW *ew, UKI *w);
@@ -191,7 +191,7 @@ void eft22_m(EFTW *ew) {
             v[0] = w->pos[0];
             v[1] = 15.0f + w->suimen;
             v[2] = w->pos[2];
-            Eft20_set2(v, 0x11, ran_suu(1), 1.0f);
+            Eft20_set2(1.0f, v, 0x11, ran_suu(1));
             w->vel[0] = 0.0f;
             w->vel[1] = 0.0f;
             w->vel[2] = 0.0f;
@@ -230,7 +230,7 @@ void eft22_m(EFTW *ew) {
         }
         if (w->timer < (s8)pl->x881) {
             w->vel[1] -= 10.0f + (s8)pl->x881;
-            Eft20_set2(v, 0x11, ran_suu(1), 1.0f);
+            Eft20_set2(1.0f, v, 0x11, ran_suu(1));
             eft22_se_req(ew, ew->pos, 0);
         }
         if (ew->pos[1] < w->pos[1]) {

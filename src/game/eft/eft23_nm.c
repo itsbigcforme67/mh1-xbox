@@ -93,7 +93,7 @@ void flvecApplyMat33(f32 *, f32 *, FLMAT *);
 void flmatRotZXY33(FLMAT *, f32, f32, f32);
 void vib_set_pl(void *, int);
 f32 Eft22_suimen_ck(EFTW *);
-void Eft20_set2(f32 *, int, int, f32);
+void Eft20_set2(f32, f32 *, int, int);
 
 static void eft23_move(EFTW *ew);
 static void eft23_i(EFTW *ew);
@@ -302,7 +302,7 @@ static void eft23_atari_mv(EFTW *ew, FISH *w) {
                 v[0] = u->pos[0];
                 v[1] = 10.0f + Eft22_suimen_ck(u);
                 v[2] = u->pos[2];
-                Eft20_set2(v, 0x11, ran_suu(1), 0.5f);
+                Eft20_set2(0.5f, v, 0x11, ran_suu(1));
                 vib_set_pl(u->owner, 4);
             }
             ew->stg++;

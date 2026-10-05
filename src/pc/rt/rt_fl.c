@@ -50,13 +50,11 @@ void flSetRenderState(int state, u32 value)
     case 0x60:   /* alpha reference */
         gfx_set_render_state(GFX_RS_ALPHA_REF, value & 0xFF);
         break;
-    case 0x67: { /* fade colour: 0xAABBGGRR on the GS? the game builds (a << 24) | 0xFFFFFF */
-        u32 a = value >> 24, b = (value >> 16) & 0xFF, g = (value >> 8) & 0xFF, r = value & 0xFF;
-        /* GS colours are R in the low byte; gfx wants 0xAARRGGBB. PS2 alpha
-         * 0x80 means 1.0, but set14 passes up to 0xFF, so it is taken as-is. */
-        gfx_set_render_state(GFX_RS_FADE_COLOR, a << 24 | r << 16 | g << 8 | b);
+    case 0x67:   /* fade colour 0xAARRGGBB: eft05 builds (r << 16) | (g << 8) | b
+                  * from its RGB bytes and eft14 passes 0xFF5F00 for fire orange.
+                  * Alpha 0xFF = 1.0 (eft_trans_sub sends 255 * a). */
+        gfx_set_render_state(GFX_RS_FADE_COLOR, value);
         break;
-    }
     case 0x6D:   /* alpha test method (GS TEST 0x7000 bits): 3 normal, 7 set13 glare [not traced] */
         break;
     default:

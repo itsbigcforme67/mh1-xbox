@@ -228,6 +228,10 @@ void rt_set_player(int no, const float pos[3])
 /* ------------------------------------------------------------ game loop */
 void stage_set_set(int stage);
 void rt_fl_reset_states(void);
+void rt_eft_init(void);
+void rt_eft_move(void);
+void rt_eft_draw(void);
+void rt_eft_trace(void);
 
 void rt_game_init(int stage)
 {
@@ -235,6 +239,7 @@ void rt_game_init(int stage)
     game_w.stage = (u8)stage;
     game_w.master = 0;
     stage_work.timer = 0;
+    rt_eft_init();          /* init_eft_work / init_shell_work */
     stage_set_set(stage);   /* the game's own spawn list (src/main/stage/stage_set.c) */
 }
 
@@ -252,6 +257,7 @@ void rt_game_move(void)
             }
             set_pool[i].w.move(&set_pool[i].w);
         }
+    rt_eft_move();          /* move_shell, move_eft (order after sets: a guess) */
 }
 
 void rt_game_draw(void)
@@ -260,6 +266,7 @@ void rt_game_draw(void)
     static int traced;
     if (!traced && getenv("RT_TRACE")) {
         traced = 1;
+        rt_eft_trace();
         for (t = 0; t < OT_N; t++)
             for (k = 0; k < nqueue[t]; k++) {
                 SETW *o = (SETW *)queue[t][k].p->owner;
@@ -267,6 +274,8 @@ void rt_game_draw(void)
                         o ? o->type : -1, o ? o->arg : -1, queue[t][k].p->pos[0], queue[t][k].p->pos[1], queue[t][k].p->pos[2]);
             }
     }
+    rt_eft_draw();          /* trans_shell, trans_eft, trans_eft_up (before the prims: a guess) */
+    rt_fl_reset_states();
     for (t = 0; t < OT_N; t++)
         for (k = 0; k < nqueue[t]; k++) {
             PRIM *p = queue[t][k].p;

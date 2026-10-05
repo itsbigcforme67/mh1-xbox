@@ -106,7 +106,7 @@ void flmatSetXYZ33(FLMAT *m, f32 x, f32 y, f32 z)
 
 /* calc_mat_angY (0x120520): yaw of the matrix's local +z axis, 0x10000 per
  * turn: atan2(-dz, dx) of (0,0,1) * m - m's translation. */
-static u16 calc_mat_angY(FLMAT *m)
+u16 calc_mat_angY(FLMAT *m)
 {
     f32 dx = (*m)[2][0], dz = (*m)[2][2];
     return (u16)(int)(65536.0f * atan2f(-dz, dx) / 6.2831855f + 0.5f);
@@ -266,4 +266,124 @@ u16 calc_vec_ang(f32 x0, f32 z0, f32 x1, f32 z1)
     f32 v[3] = { x0 - x1, 0.0f, z0 - z1 };
     flvecNormalize(v);
     return (u16)(int)(65536.0f * atan2f(-v[2], v[0]) / 6.2831855f + 0.5f);
+}
+
+/* ------------------------------------------------------------ more fl
+ * (for the eft and shell game C; from the VU0 asm in flmatAddTrans2.s) */
+
+/* flmatCopy33: the 3x3 part only */
+void flmatCopy33(FLMAT *d, FLMAT *s)
+{
+    int i, k;
+    for (i = 0; i < 3; i++)
+        for (k = 0; k < 3; k++)
+            (*d)[i][k] = (*s)[i][k];
+}
+
+/* flmatMul(d, a, b): d = a * b, all four rows and columns */
+void flmatMul(FLMAT *d, FLMAT *a, FLMAT *b)
+{
+    FLMAT t;
+    int i, k;
+    for (i = 0; i < 4; i++)
+        for (k = 0; k < 4; k++)
+            t[i][k] = (*a)[i][0] * (*b)[0][k] + (*a)[i][1] * (*b)[1][k] + (*a)[i][2] * (*b)[2][k]
+                    + (*a)[i][3] * (*b)[3][k];
+    memcpy(d, t, sizeof t);
+}
+
+/* flmatInvert(d, s): inverse of a rotation-and-scale + translation matrix:
+ * d[i][j] = s[j][i] / |row j|^2, translation -t * that. */
+void flmatInvert(FLMAT *d, FLMAT *s)
+{
+    FLMAT t;
+    f32 q[3];
+    int i, j;
+    for (j = 0; j < 3; j++)
+        q[j] = 1.0f / ((*s)[j][0] * (*s)[j][0] + (*s)[j][1] * (*s)[j][1] + (*s)[j][2] * (*s)[j][2]);
+    memset(t, 0, sizeof t);
+    for (i = 0; i < 3; i++)
+        for (j = 0; j < 3; j++)
+            t[i][j] = (*s)[j][i] * q[j];
+    for (j = 0; j < 3; j++)
+        t[3][j] = -((*s)[3][0] * (*s)[j][0] + (*s)[3][1] * (*s)[j][1] + (*s)[3][2] * (*s)[j][2]) * q[j];
+    t[3][3] = 1.0f;
+    memcpy(d, t, sizeof t);
+}
+
+static void v3norm(f32 *v)
+{
+    f32 l = sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+    if (l > 0.0f) {
+        v[0] /= l;
+        v[1] /= l;
+        v[2] /= l;
+    }
+}
+
+static void v3cross(f32 *d, const f32 *a, const f32 *b)
+{
+    f32 x = a[1] * b[2] - a[2] * b[1], y = a[2] * b[0] - a[0] * b[2], z = a[0] * b[1] - a[1] * b[0];
+    d[0] = x;
+    d[1] = y;
+    d[2] = z;
+}
+
+/* flmatBlend(d, a, b, ta, tb): rows x, y and translation mixed as
+ * a * ta + b * tb, then re-orthonormalised (z = x cross y, y = z cross x). */
+void flmatBlend(FLMAT *d, FLMAT *a, FLMAT *b, f32 ta, f32 tb)
+{
+    f32 x[3], y[3], z[3], t[3];
+    int k;
+    for (k = 0; k < 3; k++) {
+        x[k] = (*a)[0][k] * ta + (*b)[0][k] * tb;
+        y[k] = (*a)[1][k] * ta + (*b)[1][k] * tb;
+        t[k] = (*a)[3][k] * ta + (*b)[3][k] * tb;
+    }
+    v3norm(x);
+    v3norm(y);
+    v3cross(z, x, y);
+    v3norm(z);
+    v3cross(y, z, x);
+    memset(d, 0, sizeof *d);
+    for (k = 0; k < 3; k++) {
+        (*d)[0][k] = x[k];
+        (*d)[1][k] = y[k];
+        (*d)[2][k] = z[k];
+        (*d)[3][k] = t[k];
+    }
+    (*d)[3][3] = 1.0f;
+}
+
+/* flmatRotZXY33(m, x, y, z): m = m * Rz(z) * Rx(x) * Ry(y) */
+void flmatRotZXY33(FLMAT *m, f32 x, f32 y, f32 z)
+{
+    flmatRotZ33(m, z);
+    flmatRotX33(m, x);
+    flmatRotY33(m, y);
+}
+
+/* flConvertStoR (0x1733C0) / cpAng2Rad: 0x10000-per-turn angle to radians
+ * in (-pi, pi]. */
+f32 flConvertStoR(u32 a)
+{
+    f32 r = 3.1415927f * ((f32)a * 0.0054931640625f) / 180.0f;
+    if (!(r <= 3.1415927f))
+        r += -6.2831855f;
+    return r;
+}
+
+/* cpRotMatrix (0x1202C0): m = Rx Ry Rz of three 0x10000-per-turn angles */
+FLMAT *cpRotMatrix(s32 *ang, FLMAT *m)
+{
+    flmatInit(m);
+    flmatSetXYZ33(m, flConvertStoR((u32)ang[0]), flConvertStoR((u32)ang[1]), flConvertStoR((u32)ang[2]));
+    return m;
+}
+
+/* CalcDistanceXZ (0x120F20): distance in the XZ plane */
+f32 CalcDistanceXZ(f32 *a, f32 *b)
+{
+    f32 dx = a[0] - b[0], dz = a[2] - b[2];
+    return sqrtf(dx * dx + dz * dz);
 }

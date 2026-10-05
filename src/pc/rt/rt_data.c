@@ -45,6 +45,10 @@ f32 set09_st08_beetle_tbl[4][3], set09_st05_type09_pos[16], set09_st33_bird_tbl[
 u16 set09_st05_type09_ang[16];
 f32 stage_start_pos[88][3];
 
+/* eft01 (lobby.bin enemy_shadow_size_lb, D_610300): the lobby overlay is
+ * not loaded; zeros */
+f32 D_610300[0x46][2];
+
 /* set17 (src/game/set/set17.c) */
 u8 st01_parts_id_tbl[4], st02_parts_id_tbl[20], st03_parts_id_tbl[12], st46_parts_id_tbl[30];
 
@@ -131,6 +135,7 @@ struct rt_table { const char *name; uint32_t va; void *dst; size_t size; };
 extern const struct rt_table rt_auto_tables[];
 
 /* PS2 address -> host pointer (see the header comment) */
+static int map_tables;     /* 1 while relocating the host tables (for RT_TRACE) */
 static void *map_ptr(uint32_t v)
 {
     const struct rt_table *t;
@@ -149,7 +154,7 @@ static void *map_ptr(uint32_t v)
     if (name && (h = dlsym(RTLD_DEFAULT, name)) != NULL)
         return (uint8_t *)h + off;
     if (func) {         /* code that is not ported: leave no MIPS address behind */
-        if (getenv("RT_TRACE"))
+        if (map_tables && getenv("RT_TRACE"))
             fprintf(stderr, "rt: pointer to unported function %s+0x%X\n", name, (unsigned)off);
         return NULL;
     }
@@ -206,10 +211,12 @@ int rt_import_data(void)
     }
     /* pointers: host copies first, then the images themselves */
     if (rt_load_relocs() == 0) {
+        map_tables = 1;
         for (t = rt_auto_tables; t->name; t++)
             rt_relocate_range(t->va, t->dst, t->size, map_ptr);
         for (i = 0; i < sizeof tables / sizeof tables[0]; i++)
             rt_relocate_range(tables[i].va, tables[i].dst, tables[i].size, map_ptr);
+        map_tables = 0;
         rt_relocate_images(map_ptr);
     } else {
         fprintf(stderr, "rt: no relocations in the ELF: pointers in data tables stay PS2 addresses\n");

@@ -50,6 +50,13 @@ int rt_bind_set_model(gfx_clay *const *clays, const uint32_t *attr, int n);
  * draw skips such parts so they are not drawn twice). */
 int rt_clay_claimed(int handle);
 
+/* Hand effect model k (eft_mdlw[k]: 0 ef_00, 1-3 kage04-06, 4 ef_01) to
+ * the game C; attr as for rt_bind_set_model. */
+void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n);
+/* Ground height for GetGroundHit: fn returns 1 and the highest ground y at
+ * (x, z) not above ymax, or 0. */
+void rt_set_ground(int (*fn)(float x, float z, float ymax, float *y));
+
 /* CLAY+0x88 attribute word from an AMO part's 0xF0000 chunk (18 words, as
  * amo_part.attr; NULL = no chunk -> 0), like Attribute_from_amo. */
 uint32_t rt_clay_attr_word(const int32_t *attr);

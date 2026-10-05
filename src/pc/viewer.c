@@ -76,6 +76,43 @@ static void draw_model_attr(fl_model *m, int sky)
         }
 }
 
+/* The effect models (eft_mdlw, load_eft / load_shadow at 0x111110): AFS
+ * entries from main's effect_model_data / EFT_TEX tables (5 x s32 each:
+ * ef_00, kage04-06, ef_01), handed to the game C. */
+static fl_model eft_models[5];
+static uint8_t *eft_keep[10];
+static void load_eft_models(void)
+{
+    int k;
+    for (k = 0; k < 5; k++) {
+        fmt_blob link = load_stage_file(0x2ECEE0, k, &eft_keep[2 * k]);    /* effect_model_data */
+        fmt_blob tex = load_stage_file(0x2EF2A0, k, &eft_keep[2 * k + 1]); /* EFT_TEX */
+        gfx_clay **c;
+        uint32_t *at;
+        int i;
+        if (!link.p || fl_model_create(&eft_models[k], fmt_link_entry(link, 0, FMT_LE),
+                                       fmt_link_entry(link, 1, FMT_LE), tex, 0, FMT_LE) != 0) {
+            fprintf(stderr, "effect model %d: load failed\n", k);
+            continue;
+        }
+        c = calloc((size_t)eft_models[k].npart + 1, sizeof *c);
+        at = calloc((size_t)eft_models[k].npart + 1, sizeof *at);
+        for (i = 0; i < eft_models[k].npart; i++) {
+            c[i] = eft_models[k].part[i].clay;
+            at[i] = part_attr(&eft_models[k], i);
+        }
+        rt_bind_eft_model(k, c, at, eft_models[k].npart);
+        free(c);
+        free(at);
+    }
+}
+
+static fmt_blob ground_hit;
+static int ground_y(float x, float z, float ymax, float *y)
+{
+    return fmt_hits_ground_y(ground_hit, x, z, ymax, y, FMT_LE);
+}
+
 static uint32_t crc_table[256];
 
 static uint32_t crc32_update(uint32_t c, const uint8_t *p, size_t n)
@@ -405,6 +442,9 @@ int main(int argc, char **argv)
         }
         set_h0 = rt_bind_set_model(c, at, nc);
     }
+    load_eft_models();
+    ground_hit = hit;
+    rt_set_ground(ground_y);
     rt_game_init(stage_no);
 
     if (monster_load(&rathian, "em01_amh.bin", "em01_tex.bin", "em01_tbl.bin", 3) != 0)
