@@ -1,4 +1,4 @@
-/* chat11 - f_chat 0x002799B0-0x002799EC: PrintPlayerJob. Whole file in chat_nm.c. */
+/* chat11 - f_chat 0x00278C20-0x00278C4C: SetMessageHaltFlag, ClearMessageHaltFlag. Whole file in chat_nm.c. */
 #include "types.h"
 #include "menu.h"
 #include "ud.h"
@@ -218,14 +218,61 @@ u8 Get_equip_rare(u8, u16);
 extern char *menu_stat_job_str[];
 
 
-int EquipmentDescriptionWindowA(u8 *, s16, s16, int);
+int EquipmentDescriptionWindowA(u8 *, s16, s16, int, u8 *, int);
 
 
 extern char lit_3701[];
 extern char lit_3702[];
 void Put_PageArrow(s16, s16, int, int);
-void equip_exp_core(void *, s16, s16, int);
+void equip_exp_core(u8 *, s16, s16, int, u8 *);
 void Get_equip_icon_uv(u8 *, s16 *, s16 *);
+
+
+
+extern char *equip_exp_str_sword[];
+extern char *equip_exp_str_gun[];
+extern char *equip_exp_str_armor[];
+extern char *weapon_exp_str_common[];
+extern char *armor_exp_str_common[];
+extern char *reload_level_str[];
+extern char *wearable_tbl[];
+extern char *lv123str[];
+extern char *lv12str[];
+extern u8 weapon_exp[][16];
+extern u8 armor_exp[][16];
+extern char lit_4150[];
+extern char lit_4151[];
+extern char lit_4152[];
+extern char lit_4153[];
+extern char lit_4154[];
+extern char lit_4155[];
+extern char lit_4156[];
+extern char lit_4157[];
+extern char lit_4158[];
+extern char lit_4159[];
+extern char lit_4160[];
+extern char lit_4161[];
+extern char lit_4162[];
+extern char lit_4163[];
+extern char lit_4164[];
+extern char lit_4165[];
+extern char lit_4166[];
+extern char lit_4167[];
+extern char lit_4168[];
+extern char lit_4169[];
+extern char lit_4170[];
+extern char lit_4171[];
+extern char lit_4172[];
+extern char lit_4173[];
+void *Get_equip_data_ptr(void *);
+void font_print_strings(int, int, void *, int);
+int Get_bowgun_atk(void *);
+int Get_weapon_job(void *);
+u8 Get_equip_rare(u8, u16);
+void sword_zokusei(u8 *, int, s16);
+void slash_level_bar(u8 *, s16);
+
+#define ATKCONV(v, job) ((u16)((f32)(v) * job_atk_adj_tbl[job]))
 
 
 extern char *equip_exp_str_sw_attr[];
@@ -233,7 +280,7 @@ extern char lit_4221[];
 extern char lit_4222[];
 
 
-void EquipmentCompareWindowA(int a, s16 b, s16 c, s16 d, int e);
+void EquipmentCompareWindowA(u8 *cur, u8 *other, s16 x, s16 y, int page, int alpha);
 
 
 
@@ -247,17 +294,16 @@ extern char lit_4368[];
 
 
 extern u8 lit_4374[];
-extern u8 setumei_shousai_4372[];
+extern u8 setumei_shousai_4372[8];
 void font_print_ex(int, int, int, void *);
 
 
 extern s16 equip_icon_u_tbl[];
 extern s16 weapon_icon_u_tbl[];
-int Get_weapon_job(u8);
 
 
-extern s32 ng_word_tbl_0[][2];
-extern s32 ng_word_tbl_2[][2];
+extern char *ng_word_tbl_0[];
+extern char *ng_word_tbl_2[];
 int ng_word_sub(char *, char *, s8);
 
 
@@ -283,6 +329,11 @@ int softkey_ck();
 
 
 
-void PrintPlayerJob(void *pl) {
-    font_print_uf(menu_stat_job_str[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF]);
+void SetMessageHaltFlag(void) {
+    PitMenu.x0C = 0;
+    FS8(&PitMenu, 0x1C) = 1;
+}
+
+void ClearMessageHaltFlag(void) {
+    FS8(&PitMenu, 0x1C) = 0;
 }

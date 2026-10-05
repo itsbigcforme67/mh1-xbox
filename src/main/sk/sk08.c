@@ -1,4 +1,4 @@
-/* sk08 - f_sk 0x002627B0-0x0026280C: kbd_free_set, kbdExecServer_flag_clear. Whole file in sk_nm.c. */
+/* sk08 - f_sk 0x002624F0-0x002625A8: sk_daisyo_chg. Whole file in sk_nm.c. */
 #include "types.h"
 
 extern u8 *lpSKey;
@@ -33,7 +33,7 @@ void sk_board_ptr_replace(void);
 void sk_conv_init(char *);
 void sk_get_key_code();
 void sk_kbd_act_exec(void);
-void sk_kbd_act_kill(int);
+void sk_kbd_act_kill();
 void sk_skb_exec();
 void sk_skb_kill(void);
 void sk_disp_palette_set(void);
@@ -57,11 +57,11 @@ void kbd_reibun_input_sub(int, int, void *);
 void sk_backspace(int, int, void *);
 void sk_cmd_input(u8 *);
 void sk_cursor_mv(s16, s16);
-void sk_daisyo_chg(void *);
+void sk_daisyo_chg(void);
 void sk_henkan_sub(void *, int, void *);
 void sk_pltchange(int);
 void sk_speaking(int, int, void *);
-void sk_zen_han_chg(void *);
+void sk_zen_han_chg(void);
 
 
 void cmd_next_bun(s16, s8, void *);
@@ -74,7 +74,7 @@ void hk_key_r_cursor(s16, s8, void *);
 
 void hk_kbd_input_sub(u8 *);
 void sk_moji_input(u8 *);
-void sk_yn_kigou_func(u8 *);
+void sk_yn_kigou_func();
 
 
 void cmd_kakutei_all(void);
@@ -86,12 +86,12 @@ int sk_yn_check(void);
 int sk_zenkaku_ck(u8 *);
 int yn_mask_char_check(u8 *);
 extern char lit_628_0036E5C0[];
-extern char maru_moji[];
-extern char ten_moji[];
+extern char *maru_moji;
+extern char *ten_moji;
 
 
 
-void sk_set_etc_data(u8);
+void sk_set_etc_data();
 extern u8 palette_set_tbl[];
 
 
@@ -162,7 +162,7 @@ extern u8 handakuten_1258[];
 
 
 s8 sk_daisyo_check(u8);
-extern s8 disp_plt_tbl_1413[];
+extern u8 disp_plt_tbl_1413[];
 extern s8 daisyo_tbl_1423[];
 
 
@@ -180,19 +180,31 @@ int palette_ng_sub(int, u8 *, u8 *);
 
 
 
-s8 sk_zen_han_check(u8, int);
-void sk_yn_kigou_func(u8 *);
+s8 sk_zen_han_check(u8);
+void sk_yn_kigou_func();
 
 
 
 
-void kbd_free_set(void) {
-    cmd_kakutei_all();
-    if (Softkey_free_0(lpSKey + 0x44, lpSKey + 0x2A) < 0) {
-        SKB(0x35) |= 0xF;
+void sk_daisyo_chg(void) {
+    int snd = 0x15;
+    s8 t = sk_daisyo_check(SKB(0x1E));
+    u8 x;
+    u8 y;
+
+    if (t >= 0) {
+        x = SKB(0x24);
+        y = SKB(0x25);
+        SKB(0x1E) = t;
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        sk_set_etc_data();
+        sk_set_yn_kigou_f();
+        snd = 0x16;
+        SKS8(0x29) = *(SKP(0) + 0x10) & 0x7F;
+        SKB(0x24) = x;
+        SKB(0x25) = y;
+        sk_get_key_code();
     }
-}
-
-void kbdExecServer_flag_clear(void) {
-    softkeyboard[0x37] = 0;
+    se_req(7, snd, 0);
 }

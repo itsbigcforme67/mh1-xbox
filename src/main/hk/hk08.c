@@ -1,4 +1,4 @@
-/* hk08 - f_hk 0x00266A70-0x00266AA8: sk_yn_check. Whole file in hk_nm.c. */
+/* hk08 - f_hk 0x002667E0-0x002668A8: hk_yn_hardkeyboard_check. Whole file in hk_nm.c. */
 #include "types.h"
 
 extern u8 *lpSKey;
@@ -72,7 +72,7 @@ void sk_henkan_sub(void *);
 void sk_zen_han_chg(void);
 void sk_disp_palette_set(void);
 void sk_palette_cursor_set(void);
-void sk_set_etc_data(void);
+void sk_set_etc_data();
 void sk_set_yn_kigou_f(void);
 void kbd_free_set(void);
 int palette_ng_sub(int, u8 *, u8 *);
@@ -80,8 +80,8 @@ void cmd_henkan(void *);
 void cmd_dakuten(void);
 void cmd_handakuten(void);
 void cmd_muhenkan(void);
-void cmd_next_kouho(int);
-void cmd_prev_kouho(int);
+void cmd_next_kouho();
+void cmd_prev_kouho();
 void cmd_next_bun(void);
 void cmd_prev_bun(void);
 void Set_KouhoTable(void);
@@ -167,11 +167,23 @@ extern char lit_2586[];
 extern char lit_2587[];
 
 
-int sk_yn_check(void) {
-    u8 m = SKB(0x1D);
+int hk_yn_hardkeyboard_check(void *p) {
+    u8 *k = p;
+    u32 i;
 
-    if (m >= 8 && m < 0xB) {
-        return 1;
+    if (k[1] == 0x20) {
+        if (k[0] == 0x2C) {
+            return 0;
+        }
+        if (k[0] >= 0x20 && k[0] < 0x7F) {
+            return 1;
+        }
+        return 0;
+    }
+    for (i = 0; i < 0x108; i++) {
+        if (strncmp(yn_spell_tbl_2236[i], (char *)p, 2) == 0) {
+            return 1;
+        }
     }
     return 0;
 }

@@ -308,11 +308,11 @@ void PutArrow(s16 x0, s16 y, s16 x1, s16 h, int col, int flag) {
     q.p[3] = h;
     q.col = col;
     if (f & 1) {
-        q.uv[0] = 0x94;
-        q.uv[2] = 0xA6;
-    } else {
         q.uv[0] = 0xA6;
         q.uv[2] = 0x94;
+    } else {
+        q.uv[0] = 0x94;
+        q.uv[2] = 0xA6;
     }
     if (f & 2) {
         q.p[0] = x0;
@@ -907,10 +907,10 @@ extern char lit_3181_00383570[];
 
 void chat_log_name(char *buf, PIT_CHAT *l) {
     if (PitMenu.x14 == 0) {
-        sprintf(lit_3181_00383570, l->name);
+        sprintf(buf, lit_3181_00383570, l->name);
         return;
     }
-    sprintf(lit_3181_00383570, l->uid);
+    sprintf(buf, lit_3181_00383570, l->uid);
 }
 
 void disp_chat_log_sub(int top, s16 yofs, int a) {
@@ -1008,7 +1008,7 @@ void Pit_disp_chat_log(void) {
 }
 
 void Receive_mess_move(void) {
-    if (PitMenu.x06 != 0) {
+    if (F8(&PitMenu, 6) != 0) {
         if (PitMenu.x0F == 0) {
             PitMenu.x0C = 0;
         }
@@ -1016,7 +1016,7 @@ void Receive_mess_move(void) {
     }
     if (!(PitMenu.x22 & 0x80) && F8(&PitMenu, 0x1C) == 0) {
         PitMenu.x0F = 0;
-        if (PitMenu.x0C > 0) {
+        if (F16(&PitMenu, 0xC) > 0) {
             PitMenu.x0C--;
         }
     }
@@ -1961,7 +1961,7 @@ void Put_PageArrow(s16 x, s16 y, int a, int b) {
 }
 
 extern u8 lit_4374[];
-extern u8 setumei_shousai_4372[];
+extern u8 setumei_shousai_4372[8];
 void font_print_ex(int, int, int, void *);
 
 void Put_shousai(void) {
@@ -1991,23 +1991,23 @@ void Get_equip_icon_uv(u8 *eq, s16 *a, s16 *b) {
     b[1] = v;
 }
 
-extern s32 ng_word_tbl_0[][2];
-extern s32 ng_word_tbl_2[][2];
+extern char *ng_word_tbl_0[];
+extern char *ng_word_tbl_2[];
 int ng_word_sub(char *, char *, s8);
 
 void KinshiYogo_chk(char *s) {
-    s32 (*p)[2];
+    char **p;
 
     p = ng_word_tbl_0;
     do {
-        ng_word_sub(s, (char *)p[0][0], 0);
-        p += 2;
-    } while (p[0][0] != 0);
+        ng_word_sub(s, *p, 0);
+        p++;
+    } while (*p != 0);
     p = ng_word_tbl_2;
     do {
-        ng_word_sub(s, (char *)p[0][0], 2);
-        p += 2;
-    } while (p[0][0] != 0);
+        ng_word_sub(s, *p, 2);
+        p++;
+    } while (*p != 0);
 }
 
 u32 strlen(const char *);
@@ -2202,7 +2202,7 @@ int Reibun_Edit_Core(int no) {
     s8 r;
 
     buf[0] = 0;
-    r = SoftKeyboard_move(buf, (s16)Psw.x0, (s16)Psw.x4);
+    r = SoftKeyboard_move(buf, *(s16 *)((u8 *)&Psw + 0), *(s16 *)((u8 *)&Psw + 4));
     if (r != 0) {
         if (buf[0] != 0 && r > 0) {
             chcnfg_reibun_set(buf, no);

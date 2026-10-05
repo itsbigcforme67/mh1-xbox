@@ -1,4 +1,4 @@
-/* hk06 - f_hk 0x002662F0-0x00266348: hk_key_han_zen, backspace_all. Whole file in hk_nm.c. */
+/* hk06 - f_hk 0x002660E0-0x0026624C: hk_key_henkan, hk_key_muhenkan. Whole file in hk_nm.c. */
 #include "types.h"
 
 extern u8 *lpSKey;
@@ -72,7 +72,7 @@ void sk_henkan_sub(void *);
 void sk_zen_han_chg(void);
 void sk_disp_palette_set(void);
 void sk_palette_cursor_set(void);
-void sk_set_etc_data(void);
+void sk_set_etc_data();
 void sk_set_yn_kigou_f(void);
 void kbd_free_set(void);
 int palette_ng_sub(int, u8 *, u8 *);
@@ -80,8 +80,8 @@ void cmd_henkan(void *);
 void cmd_dakuten(void);
 void cmd_handakuten(void);
 void cmd_muhenkan(void);
-void cmd_next_kouho(int);
-void cmd_prev_kouho(int);
+void cmd_next_kouho();
+void cmd_prev_kouho();
 void cmd_next_bun(void);
 void cmd_prev_bun(void);
 void Set_KouhoTable(void);
@@ -167,16 +167,39 @@ extern char lit_2586[];
 extern char lit_2587[];
 
 
-void hk_key_han_zen(void) {
-    sk_zen_han_chg();
+void hk_key_henkan(void) {
+    if (sk_yn_check() == 1 && SKS8(0x36) == 0) {
+        hk_key_muhenkan();
+        return;
+    }
+    if (SKB(0x2F) == 0) {
+        if (SKS8(0x36) != 0) {
+            sk_henkan_sub(lpSKey);
+            return;
+        }
+        if (SKB(0x158) != 0) {
+            cmd_henkan(lpSKey);
+            SKS32(0x150) = get_kouho_suu();
+            Set_KouhoTable();
+            se_req(7, 0x16, 0);
+        }
+    } else {
+        se_req(7, 0x16, 0);
+        if (hk_shift_key_ck() != 0) {
+            cmd_prev_kouho();
+            return;
+        }
+        cmd_next_kouho();
+    }
 }
 
-int backspace_all(char *s, int n) {
-    if (n == 0) {
-        return 0;
+void hk_key_muhenkan(void) {
+    if (sk_zenkaku_ck() != 0 && SKB(0x158) != 0) {
+        se_req(7, 0x16, 0);
+        if (SKB(0x2F) == 0) {
+            cmd_kakutei_all();
+            return;
+        }
+        cmd_muhenkan();
     }
-    *s = 0;
-    strcat(s, s + n);
-    SKS8(0x28) = 0;
-    return n;
 }

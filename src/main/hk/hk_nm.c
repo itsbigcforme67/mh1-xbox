@@ -74,7 +74,7 @@ void sk_henkan_sub(void *);
 void sk_zen_han_chg(void);
 void sk_disp_palette_set(void);
 void sk_palette_cursor_set(void);
-void sk_set_etc_data(void);
+void sk_set_etc_data();
 void sk_set_yn_kigou_f(void);
 void kbd_free_set(void);
 int palette_ng_sub(int, u8 *, u8 *);
@@ -82,8 +82,8 @@ void cmd_henkan(void *);
 void cmd_dakuten(void);
 void cmd_handakuten(void);
 void cmd_muhenkan(void);
-void cmd_next_kouho(int);
-void cmd_prev_kouho(int);
+void cmd_next_kouho();
+void cmd_prev_kouho();
 void cmd_next_bun(void);
 void cmd_prev_bun(void);
 void Set_KouhoTable(void);
@@ -407,10 +407,10 @@ void hk_key_space(int a) {
     } else {
         se_req(7, 0x16, 0);
         if (hk_shift_key_ck() != 0) {
-            cmd_prev_kouho(0);
+            cmd_prev_kouho();
             return;
         }
-        cmd_next_kouho(0);
+        cmd_next_kouho();
     }
 }
 
@@ -874,7 +874,7 @@ void hk_key_u_cursor(void) {
         return;
     }
     if (SKB(0x2F) != 0) {
-        cmd_prev_kouho(2);
+        cmd_prev_kouho();
         se_req(7, 0x16, 0);
     }
 }
@@ -885,7 +885,7 @@ void hk_key_d_cursor(void) {
         return;
     }
     if (SKB(0x2F) != 0) {
-        cmd_next_kouho(3);
+        cmd_next_kouho();
         se_req(7, 0x16, 0);
     }
 }
@@ -941,10 +941,10 @@ void hk_key_henkan(void) {
     } else {
         se_req(7, 0x16, 0);
         if (hk_shift_key_ck() != 0) {
-            cmd_prev_kouho(0);
+            cmd_prev_kouho();
             return;
         }
-        cmd_next_kouho(0);
+        cmd_next_kouho();
     }
 }
 

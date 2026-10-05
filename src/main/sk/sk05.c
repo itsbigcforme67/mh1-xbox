@@ -1,4 +1,4 @@
-/* sk05 - f_sk 0x00261FE0-0x00262004: sk_set_etc_data. Whole file in sk_nm.c. */
+/* sk05 - f_sk 0x00261E70-0x00262004: kbd_plt1_move, sk_set_etc_data. Whole file in sk_nm.c. */
 #include "types.h"
 
 extern u8 *lpSKey;
@@ -33,7 +33,7 @@ void sk_board_ptr_replace(void);
 void sk_conv_init(char *);
 void sk_get_key_code();
 void sk_kbd_act_exec(void);
-void sk_kbd_act_kill(int);
+void sk_kbd_act_kill();
 void sk_skb_exec();
 void sk_skb_kill(void);
 void sk_disp_palette_set(void);
@@ -57,11 +57,11 @@ void kbd_reibun_input_sub(int, int, void *);
 void sk_backspace(int, int, void *);
 void sk_cmd_input(u8 *);
 void sk_cursor_mv(s16, s16);
-void sk_daisyo_chg(void *);
+void sk_daisyo_chg(void);
 void sk_henkan_sub(void *, int, void *);
 void sk_pltchange(int);
 void sk_speaking(int, int, void *);
-void sk_zen_han_chg(void *);
+void sk_zen_han_chg(void);
 
 
 void cmd_next_bun(s16, s8, void *);
@@ -74,7 +74,7 @@ void hk_key_r_cursor(s16, s8, void *);
 
 void hk_kbd_input_sub(u8 *);
 void sk_moji_input(u8 *);
-void sk_yn_kigou_func(u8 *);
+void sk_yn_kigou_func();
 
 
 void cmd_kakutei_all(void);
@@ -86,12 +86,12 @@ int sk_yn_check(void);
 int sk_zenkaku_ck(u8 *);
 int yn_mask_char_check(u8 *);
 extern char lit_628_0036E5C0[];
-extern char maru_moji[];
-extern char ten_moji[];
+extern char *maru_moji;
+extern char *ten_moji;
 
 
 
-void sk_set_etc_data(u8);
+void sk_set_etc_data();
 extern u8 palette_set_tbl[];
 
 
@@ -162,7 +162,7 @@ extern u8 handakuten_1258[];
 
 
 s8 sk_daisyo_check(u8);
-extern s8 disp_plt_tbl_1413[];
+extern u8 disp_plt_tbl_1413[];
 extern s8 daisyo_tbl_1423[];
 
 
@@ -180,13 +180,61 @@ int palette_ng_sub(int, u8 *, u8 *);
 
 
 
-s8 sk_zen_han_check(u8, int);
-void sk_yn_kigou_func(u8 *);
+s8 sk_zen_han_check(u8);
+void sk_yn_kigou_func();
 
 
 
 
-void sk_set_etc_data(u8 a) {
+void kbd_plt1_move(u8 *c, int a, void *b) {
+    if (palette_ng_sub2(c[3], lpSKey + 0x1F, lpSKey + 0x1E) != 0) {
+        se_req(7, 0x15, 0);
+        return;
+    }
+    SKS8(0x35) = 0;
+    sk_set_yn_kigou_f();
+    switch (c[3]) {
+    case 4:
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        kbd_free_set();
+        sk_set_etc_data();
+        break;
+    case 3:
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        if (SKS8(0x36) != 0) {
+            sk_yn_kigou_func();
+            sk_key_repeat(0, 0);
+        }
+        sk_set_etc_data();
+        break;
+    case 5:
+        cmd_kakutei_all();
+    case 0:
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        sk_set_etc_data();
+        break;
+    case 1:
+    case 2:
+        sk_disp_palette_set();
+        sk_palette_cursor_set();
+        sk_set_etc_data();
+        break;
+    case 6:
+    case 7:
+        sk_zen_han_chg();
+        break;
+    case 8:
+    case 9:
+        sk_daisyo_chg();
+        break;
+    }
+    se_req(7, 0x16, 0);
+}
+
+void sk_set_etc_data() {
     sk_board_ptr_replace();
     sk_get_key_code();
 }

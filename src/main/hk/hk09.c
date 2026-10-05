@@ -1,4 +1,4 @@
-/* hk07 - f_hk 0x002662F0-0x00266348: hk_key_han_zen, backspace_all. Whole file in hk_nm.c. */
+/* hk09 - f_hk 0x00266A70-0x00266AA8: sk_yn_check. Whole file in hk_nm.c. */
 #include "types.h"
 
 extern u8 *lpSKey;
@@ -167,16 +167,11 @@ extern char lit_2586[];
 extern char lit_2587[];
 
 
-void hk_key_han_zen(void) {
-    sk_zen_han_chg();
-}
+int sk_yn_check(void) {
+    u8 m = SKB(0x1D);
 
-int backspace_all(char *s, int n) {
-    if (n == 0) {
-        return 0;
+    if (m >= 8 && m < 0xB) {
+        return 1;
     }
-    *s = 0;
-    strcat(s, s + n);
-    SKS8(0x28) = 0;
-    return n;
+    return 0;
 }

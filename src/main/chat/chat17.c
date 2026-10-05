@@ -1,4 +1,4 @@
-/* chat04 - f_chat 0x00276F60-0x00277034: PutArrow. Whole file in chat_nm.c. */
+/* chat17 - f_chat 0x0027BE70-0x0027BEF8: Reibun_Edit_Start. Whole file in chat_nm.c. */
 #include "types.h"
 #include "menu.h"
 #include "ud.h"
@@ -329,29 +329,12 @@ int softkey_ck();
 
 
 
-void PutArrow(s16 x0, s16 y, s16 x1, s16 h, int col, int flag) {
-    PFLP8 q;
-    int f = flag & 0xFF;
-
-    q.uv[1] = 0x1A;
-    q.p[1] = y;
-    q.uv[3] = 0x2E;
-    q.p[3] = h;
-    q.col = col;
-    if (f & 1) {
-        q.uv[0] = 0xA6;
-        q.uv[2] = 0x94;
-    } else {
-        q.uv[0] = 0x94;
-        q.uv[2] = 0xA6;
+int Reibun_Edit_Start(int no) {
+    if (softkey_ck() == 0) {
+        return 0;
     }
-    if (f & 2) {
-        q.p[0] = x0;
-        q.p[2] = x1;
-        Put_sprite_rotate(&q, 2);
-        return;
-    }
-    q.p[0] = 0.8f * (f32)x0;
-    q.p[2] = 0.8f * (f32)x1;
-    flps0008(&q);
+    SoftKeyboard_pos_set(80.0f, 0x50);
+    SoftKeyboard_set(2, 0, 0x2C, (int)str_tbl_reibun0[no & 0xFF].edit);
+    se_req(7, 0x11, 0);
+    return 1;
 }

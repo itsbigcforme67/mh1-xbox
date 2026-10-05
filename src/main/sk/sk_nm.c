@@ -35,7 +35,7 @@ void sk_board_ptr_replace(void);
 void sk_conv_init(char *);
 void sk_get_key_code();
 void sk_kbd_act_exec(void);
-void sk_kbd_act_kill(int);
+void sk_kbd_act_kill();
 void sk_skb_exec();
 void sk_skb_kill(void);
 void sk_disp_palette_set(void);
@@ -47,6 +47,7 @@ void sk_init_mode(u8);
 
 void SoftKeyboard_init(void) {
     lpSKey = softkeyboard;
+    SKB(0x37) = 0;
     SoftkeyAppInit();
 }
 
@@ -188,11 +189,11 @@ void kbd_reibun_input_sub(int, int, void *);
 void sk_backspace(int, int, void *);
 void sk_cmd_input(u8 *);
 void sk_cursor_mv(s16, s16);
-void sk_daisyo_chg(void *);
+void sk_daisyo_chg(void);
 void sk_henkan_sub(void *, int, void *);
 void sk_pltchange(int);
 void sk_speaking(int, int, void *);
-void sk_zen_han_chg(void *);
+void sk_zen_han_chg(void);
 
 s8 SoftKeyboard_move(char *out, s16 sw, s16 hold) {
     s16 k;
@@ -274,9 +275,9 @@ s8 SoftKeyboard_move(char *out, s16 sw, s16 hold) {
                 if (k & 8) {
                     sk_pltchange(0);
                 } else if (k & 0x10) {
-                    sk_daisyo_chg(lpSKey);
+                    sk_daisyo_chg();
                 } else if (k & 4) {
-                    sk_zen_han_chg(lpSKey);
+                    sk_zen_han_chg();
                 } else if (k & 0x80) {
                     u8 m = SKB(0x1F);
                     if (m == 4) {
@@ -408,7 +409,7 @@ cmd:
 
 void hk_kbd_input_sub(u8 *);
 void sk_moji_input(u8 *);
-void sk_yn_kigou_func(u8 *);
+void sk_yn_kigou_func();
 
 void sk_cmd_input(u8 *key) {
     s8 m = SKS8(0x30);
@@ -440,8 +441,8 @@ int sk_yn_check(void);
 int sk_zenkaku_ck(u8 *);
 int yn_mask_char_check(u8 *);
 extern char lit_628_0036E5C0[];
-extern char maru_moji[];
-extern char ten_moji[];
+extern char *maru_moji;
+extern char *ten_moji;
 
 void sk_moji_input(u8 *key) {
     char buf[4];
@@ -562,7 +563,7 @@ void sk_reibun_input(void) {
     }
 }
 
-void sk_set_etc_data(u8);
+void sk_set_etc_data();
 extern u8 palette_set_tbl[];
 
 void kbd_reibun_input_sub(int a, int b, void *c) {
@@ -576,17 +577,17 @@ void kbd_reibun_input_sub(int a, int b, void *c) {
 
 extern s8 han_zen_tbl_671[];
 
-s8 sk_zen_han_check(u8 a, int b) {
+s8 sk_zen_han_check(u8 a) {
     s8 t = han_zen_tbl_671[a];
 
-    if (t >= 0 && !(SKS32(0x20) & (1 << t))) {
+    if (t >= 0 && !(SKS32(0x20) & (1 << han_zen_tbl_671[a]))) {
         return t;
     }
     return -1;
 }
 
-void sk_zen_han_chg(void *a) {
-    s8 t = sk_zen_han_check(SKB(0x1E), 0x15);
+void sk_zen_han_chg(void) {
+    s8 t = sk_zen_han_check(SKB(0x1E));
     u8 x;
     u8 y;
 
@@ -597,7 +598,7 @@ void sk_zen_han_chg(void *a) {
         sk_disp_palette_set();
         sk_palette_cursor_set();
         cmd_kakutei_all();
-        sk_set_etc_data(0);
+        sk_set_etc_data();
         sk_set_yn_kigou_f();
         SKB(0x24) = x;
         SKB(0x25) = y;
@@ -718,7 +719,7 @@ void sk_pltchange(int back) {
     }
     sk_disp_palette_set();
     sk_palette_cursor_set();
-    sk_set_etc_data(0);
+    sk_set_etc_data();
     sk_set_yn_kigou_f();
     if (SKS8(0x36) != 0) {
         sk_henkan_sub();
@@ -1007,7 +1008,7 @@ cur:
     kbd_Disp_KouhoGun(2.0f + (14.0f + ox) / *(f32 *)(lpSKey + 0x14));
 }
 
-void sk_set_etc_data(u8 a) {
+void sk_set_etc_data() {
     sk_board_ptr_replace();
     sk_get_key_code();
 }
@@ -1027,12 +1028,12 @@ int dakuten_ck_sub(u8 *p) {
     return 0;
 }
 
-void dakuten_ck_ten(char *t) {
-    dakuten_ck(t);
+void dakuten_ck_ten(void) {
+    dakuten_ck(ten_moji);
 }
 
-void dakuten_ck_han(char *t) {
-    dakuten_ck(t);
+void dakuten_ck_han(void) {
+    dakuten_ck(maru_moji);
 }
 
 s8 SoftKeyboard_alive_check(void) {
@@ -1041,15 +1042,15 @@ s8 SoftKeyboard_alive_check(void) {
 
 void SoftKeyboard_exit(void) {
     if (SoftKeyboard_alive_check() != 0) {
-        sk_kbd_act_kill(0);
+        sk_kbd_act_kill();
         sk_skb_kill();
         SKS8(0x32) = -1;
     }
 }
 
-void SoftKeyboard_pos_set(f32 x, int y) {
+void SoftKeyboard_pos_set(f32 x, s16 y) {
     *(f32 *)(lpSKey + 0x40) = x;
-    SKS16(0x38) = x;
+    SKS16(0x38) = y;
 }
 
 void sk_skb_exec(void) {
@@ -1066,12 +1067,12 @@ void sk_kbd_act_exec(void) {
     SKS8(0x31) = 1;
 }
 
-void sk_kbd_act_kill(int a) {
+void sk_kbd_act_kill() {
     SKS8(0x31) = 0;
 }
 
 s8 sk_daisyo_check(u8);
-extern s8 disp_plt_tbl_1413[];
+extern u8 disp_plt_tbl_1413[];
 extern s8 daisyo_tbl_1423[];
 
 void sk_disp_palette_set(void) {
@@ -1081,13 +1082,13 @@ void sk_disp_palette_set(void) {
 s8 sk_daisyo_check(u8 a) {
     s8 t = daisyo_tbl_1423[a];
 
-    if (t >= 0 && !(SKS32(0x20) & (1 << t))) {
+    if (t >= 0 && !(SKS32(0x20) & (1 << daisyo_tbl_1423[a]))) {
         return t;
     }
     return -1;
 }
 
-void sk_daisyo_chg(void *a) {
+void sk_daisyo_chg(void) {
     int snd = 0x15;
     s8 t = sk_daisyo_check(SKB(0x1E));
     u8 x;
@@ -1099,7 +1100,7 @@ void sk_daisyo_chg(void *a) {
         SKB(0x1E) = t;
         sk_disp_palette_set();
         sk_palette_cursor_set();
-        sk_set_etc_data(0);
+        sk_set_etc_data();
         sk_set_yn_kigou_f();
         snd = 0x16;
         SKS8(0x29) = *(SKP(0) + 0x10) & 0x7F;
@@ -1255,8 +1256,8 @@ int mh_char_make_check(u8 *p) {
     return 1;
 }
 
-s8 sk_zen_han_check(u8, int);
-void sk_yn_kigou_func(u8 *);
+s8 sk_zen_han_check(u8);
+void sk_yn_kigou_func();
 
 int palette_ng_sub(int pal, u8 *f, u8 *e) {
     u8 tmp;
@@ -1362,7 +1363,7 @@ int palette_ng_sub2(u8 p, u8 *f, u8 *e) {
     switch (p) {
     case 7:
     case 6:
-        if (sk_zen_han_check(cur, 0) >= 0) {
+        if (sk_zen_han_check(cur) >= 0) {
             return 0;
         }
         break;
@@ -1392,37 +1393,37 @@ void kbd_plt1_move(u8 *c, int a, void *b) {
         sk_disp_palette_set();
         sk_palette_cursor_set();
         kbd_free_set();
-        sk_set_etc_data(0);
+        sk_set_etc_data();
         break;
     case 3:
         sk_disp_palette_set();
         sk_palette_cursor_set();
         if (SKS8(0x36) != 0) {
-            sk_yn_kigou_func(0);
+            sk_yn_kigou_func();
             sk_key_repeat(0, 0);
         }
-        sk_set_etc_data(0);
+        sk_set_etc_data();
         break;
     case 5:
         cmd_kakutei_all();
     case 0:
         sk_disp_palette_set();
         sk_palette_cursor_set();
-        sk_set_etc_data(0);
+        sk_set_etc_data();
         break;
     case 1:
     case 2:
         sk_disp_palette_set();
         sk_palette_cursor_set();
-        sk_set_etc_data(0);
+        sk_set_etc_data();
         break;
     case 6:
     case 7:
-        sk_zen_han_chg(lpSKey);
+        sk_zen_han_chg();
         break;
     case 8:
     case 9:
-        sk_daisyo_chg(lpSKey);
+        sk_daisyo_chg();
         break;
     }
     se_req(7, 0x16, 0);

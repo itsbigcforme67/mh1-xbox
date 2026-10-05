@@ -1,4 +1,4 @@
-/* sk06 - f_sk 0x00262070-0x0026216C: dakuten_ck_ten, dakuten_ck_han, SoftKeyboard_alive_check, SoftKeyboard_exit, SoftKeyboard_pos_set, sk_skb_exec, sk_skb_kill, sk_kbd_act_exec, sk_kbd_act_kill. Whole file in sk_nm.c. */
+/* sk09 - f_sk 0x002627B0-0x0026280C: kbd_free_set, kbdExecServer_flag_clear. Whole file in sk_nm.c. */
 #include "types.h"
 
 extern u8 *lpSKey;
@@ -186,45 +186,13 @@ void sk_yn_kigou_func();
 
 
 
-void dakuten_ck_ten(void) {
-    dakuten_ck(ten_moji);
-}
-
-void dakuten_ck_han(void) {
-    dakuten_ck(maru_moji);
-}
-
-s8 SoftKeyboard_alive_check(void) {
-    return SKS8(0x31);
-}
-
-void SoftKeyboard_exit(void) {
-    if (SoftKeyboard_alive_check() != 0) {
-        sk_kbd_act_kill();
-        sk_skb_kill();
-        SKS8(0x32) = -1;
+void kbd_free_set(void) {
+    cmd_kakutei_all();
+    if (Softkey_free_0(lpSKey + 0x44, lpSKey + 0x2A) < 0) {
+        SKB(0x35) |= 0xF;
     }
 }
 
-void SoftKeyboard_pos_set(f32 x, s16 y) {
-    *(f32 *)(lpSKey + 0x40) = x;
-    SKS16(0x38) = y;
-}
-
-void sk_skb_exec(void) {
-    SKS8(0x30) = 1;
-    SKS8(0x26) = 0;
-}
-
-void sk_skb_kill(void) {
-    SKS8(0x30) = 0;
-    SKS8(0x26) = 1;
-}
-
-void sk_kbd_act_exec(void) {
-    SKS8(0x31) = 1;
-}
-
-void sk_kbd_act_kill() {
-    SKS8(0x31) = 0;
+void kbdExecServer_flag_clear(void) {
+    softkeyboard[0x37] = 0;
 }

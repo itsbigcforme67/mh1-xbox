@@ -1,4 +1,4 @@
-/* chat04 - f_chat 0x00276F60-0x00277034: PutArrow. Whole file in chat_nm.c. */
+/* chat14 - f_chat 0x0027B8F0-0x0027B934: Put_shousai. Whole file in chat_nm.c. */
 #include "types.h"
 #include "menu.h"
 #include "ud.h"
@@ -329,29 +329,8 @@ int softkey_ck();
 
 
 
-void PutArrow(s16 x0, s16 y, s16 x1, s16 h, int col, int flag) {
-    PFLP8 q;
-    int f = flag & 0xFF;
-
-    q.uv[1] = 0x1A;
-    q.p[1] = y;
-    q.uv[3] = 0x2E;
-    q.p[3] = h;
-    q.col = col;
-    if (f & 1) {
-        q.uv[0] = 0xA6;
-        q.uv[2] = 0x94;
-    } else {
-        q.uv[0] = 0x94;
-        q.uv[2] = 0xA6;
-    }
-    if (f & 2) {
-        q.p[0] = x0;
-        q.p[2] = x1;
-        Put_sprite_rotate(&q, 2);
-        return;
-    }
-    q.p[0] = 0.8f * (f32)x0;
-    q.p[2] = 0.8f * (f32)x1;
-    flps0008(&q);
+void Put_shousai(void) {
+    flfntSetSize(0x12, 0x12);
+    font_print_ex(0x22E, 0x18A, 0, lit_4374);
+    PutButtonICON(setumei_shousai_4372, 1);
 }
