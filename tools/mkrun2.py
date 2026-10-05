@@ -5,7 +5,7 @@ functions) and only the named function bodies."""
 import re,sys
 nm,out,hdr=sys.argv[1:4]; funcs=sys.argv[4:]
 s=open(nm).read()
-pat=re.compile(r'^(?:[A-Za-z_][\w \*]*?\b)(\w+)\([^;{]*\)\s*\{\n',re.M)
+pat=re.compile(r'^(?:[A-Za-z_][\w \*]*?\b)(\w+)\([^;{]*\)(?:\n(?:[\w \*]+;\n)+)?\s*\{\n',re.M)
 chunks=[]  # (name or None, text)
 pos=0
 for m in pat.finditer(s):

@@ -1,76 +1,32 @@
 #!/usr/bin/env python3
-"""mkruns.py NM.c PREFIX [env MKRUNS_KEEP=name1,name2 MKRUNS_EXCLUDE=name1,...]: split the near-match file into matching runs (files PREFIX, PREFIXb, ...) and
-print c_files.txt lines (text only; rodata lines separately)."""
-import re, sys, os, subprocess
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-os.chdir(ROOT)
-nm, prefix = sys.argv[1:3]
-exec(open(os.path.join(ROOT, 'tools/status.py')).read().split("if __name__")[0].replace('f=sys.argv[1] if len(sys.argv) > 1 else "x"', 'f=nm'))
-# parse chunks
-lines = open(nm).read().split('\n')
-chunks = []   # (kind, name, text) kind: 'top' or 'fn'
-i = 0
-top = []
-def flush():
-    global top
-    if top:
-        chunks.append(('top', None, '\n'.join(top))); top = []
-hdr = re.compile(r'^(?:static )?[A-Za-z_][\w \*]*?\b(\w+)\(.*\)\s*(?:[A-Za-z_][^{;]*;\s*)*\{\s*$')
-_mac = set(re.findall(r'^#define (\w+)\(NAME\b', open(nm).read(), re.M))   # macros that define a function
-macro = re.compile(r'^(%s)\((\w+),' % '|'.join(sorted(_mac) or ['NOMACRO']))
-while i < len(lines):
-    l = lines[i]
-    m = macro.match(l)
-    if m:
-        flush(); chunks.append(('fn', m.group(2), l)); i += 1; continue
-    m = hdr.match(l)
-    if m and not l.startswith(('extern', 'typedef', '#', ' ')) and '=' not in l.split('(')[0] and not l.rstrip().endswith(';'):
-        # find closing brace line
-        j = i
-        while lines[j] != '}':
-            j += 1
-        # attach preceding comment lines that directly precede (no blank)
-        k = len(top)
-        cm = []
-        while top and top[-1].strip() and (top[-1].lstrip().startswith(('/*', '*', '*/')) or top[-1].rstrip().endswith('*/')):
-            cm.insert(0, top.pop())
-        flush()
-        chunks.append(('fn', m.group(1), '\n'.join(cm + lines[i:j + 1])))
-        i = j + 1
-        continue
-    top.append(l); i += 1
-flush()
-fn = {n: t for k, n, t in chunks if k == 'fn'}
-print('functions:', len(fn), file=sys.stderr)
-missing = [n for n in fn if n not in res]
-print('no status for', missing, file=sys.stderr)
-def statusof(n): return st.get(n, '?')
-tops = '\n'.join(t for k, n, t in chunks if k == 'top')
-tops = re.sub(r'\n{3,}', '\n\n', tops)
-order = sorted([n for n in fn if n in res], key=lambda n: res[n]['addr'])
-runs = []; cur = []
-for n in order:
-    if statusof(n) in ('OK', 'NOISE') and n not in set(os.environ.get('MKRUNS_EXCLUDE', '').split(',')): cur.append(n)
+"""mkruns.py NM.c OUTDIR PREFIX FIRSTNUM "range comment": split the fully matching, address-contiguous
+runs of NM.c out into OUTDIR/PREFIXNN.c (via mkrun2.py) and print the c_files.txt lines for them.
+Only prints/writes; edit config/c_files.txt yourself (jump tables need main:rodata lines)."""
+import re,subprocess,sys
+nm,outdir,prefix,first,cmt=sys.argv[1:6]
+first=int(first)
+out=subprocess.run(['python3','tools/check.py',nm],capture_output=True,text=True).stdout
+rows=[]
+for l in out.split('\n'):
+    m=re.match(r'^(OK|--)\s+(\S+)\s+main\s+0x([0-9A-F]+)\s+(\d+) bytes',l)
+    if m: rows.append((m.group(2),int(m.group(3),16),int(m.group(4)),m.group(1)=='OK'))
+rows.sort(key=lambda r:r[1])
+runs=[];cur=[]
+for r in rows:
+    if r[3] and cur and 0<=r[1]-(cur[-1][1]+cur[-1][2])<16: cur.append(r)
+    elif r[3]: 
+        if cur: runs.append(cur)
+        cur=[r]
     else:
         if cur: runs.append(cur)
-        cur = []
+        cur=[]
 if cur: runs.append(cur)
-letters = ['', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n']
-outl = []
-for k, run in enumerate(runs):
-    path = prefix + letters[k] + '.c'
-    KEEP = set(os.environ.get('MKRUNS_KEEP', '').split(','))  # statics that must stay static (callees only used in their own run)
-    body = '\n\n'.join(re.sub(r'^static ', '', fn[n], flags=re.M) if n not in KEEP else fn[n] for n in run)
-    D = set(n for n in run if n in KEEP)
-    def fixproto(m):
-        return m.group(0) if m.group(2) in D else m.group(1) + m.group(3)
-    t_ = re.sub(r'^(static )((?:[A-Za-z_][\w \*]*?\b)?(\w+))\(', lambda m: m.group(0) if m.group(3) in D else m.group(2) + '(', tops, flags=re.M)
-    first, last = run[0], run[-1]
-    nmb = os.path.basename(nm)
-    head = '/* %s, run %d: %s .. %s (game.bin 0x%08X-0x%08X). Matching functions of %s (that file holds the\n * whole code including the near-matches); see it for the description. */\n' % (os.path.basename(prefix), k + 1, first, last, res[first]['addr'], res[last]['addr'] + res[last]['size'], nmb)
-    # strip leading top comment of the nm file
-    t = re.sub(r'\A/\*.*?\*/\n', '', t_, count=1, flags=re.S)
-    open(path, 'w').write(head + t.rstrip('\n') + '\n\n' + body + '\n')
-    outl.append('game 0x%08X 0x%08X %s' % (res[first]['addr'], res[last]['addr'] + res[last]['size'], os.path.relpath(path[:-2], 'src/game')))
-    print('%s: %d functions %s..%s' % (path, len(run), first, last), file=sys.stderr)
-print('\n'.join(outl))
+n=first
+for run in runs:
+    name=f'{prefix}{n:02d}'
+    path=f'{outdir}/{name}.c'
+    s,e=run[0][1],run[-1][1]+run[-1][2]
+    hdr=f'{name} - {cmt} 0x{s:08X}-0x{e:08X}: '+', '.join(r[0] for r in run)+'. Whole file in '+nm.split('/')[-1]+'.'
+    subprocess.run(['python3','tools/mkrun2.py',nm,path,hdr]+[r[0] for r in run],check=True)
+    print(f'main 0x{s:08X} 0x{e:08X} {outdir.replace("src/main/","")}/{name}   # {len(run)} funcs: {run[0][0]}..{run[-1][0]}')
+    n+=1

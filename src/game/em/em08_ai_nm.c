@@ -3122,7 +3122,7 @@ static void em_dmg15_005A08C0(EMW *em, EM08W *w) {
         em_rate_clear(em);
         em_char_set(em, 0x7E, 0, 0);
         em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
-        em->_pad8B9[0] = 0;
+        em->x8B9 = 0;
         em->work08 = 0x1E;
         em->x3C0[1] = -10.0f;
         em->adj_y = ((em->tgt_pos[1] - em->pos[1]) / (f32)em->work08) - ((em->x3C0[1] * (f32)em->work08) / 2.0f);

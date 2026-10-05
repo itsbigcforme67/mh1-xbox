@@ -415,3 +415,136 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
     args (Reibun_select_mv(sw, idx)); check prototype arity from the asm.
   * MWCC emits `madd.s/msub.s/adda.s/mula.s` for `a*b + c*d`; flSinCos(ang, &sin, &cos) with
     sin at the higher stack address (declare `f32 s, c;` in that order).
+
+
+## Sixth session (worker C on Sonnet): f_ud, f_chat, f_sk, f_hk (main.bin) written in C
+- Every function of the four files has C now (breadth first, per the 5 Oct policy):
+  src/main/ud/ud_nm.c (f_ud 0x1723F0-0x174E10, 48 funcs), src/main/chat/chat_nm.c (f_chat 0x1755D0-0x17BF80,
+  70 funcs), src/main/sk/sk_nm.c (f_sk 0x15FA90-0x162A90, 46), src/main/hk/hk_nm.c (f_hk 0x164180-0x167198, 46).
+  None of this C is Capcom bytes. Matching runs are split out with `tools/mkruns.py NM.c OUTDIR PREFIX FIRST "comment"`
+  (new: groups address-contiguous fully matching functions, one file per run via mkrun2.py, prints the
+  c_files.txt lines; check each run file with check.py on its own before registering).
+  Linked, all five modules OK: ud01-ud08, chat*, sk*, hk* (config/c_files.txt; the run numbers shift whenever more
+  functions match: regenerate with mkruns.py and verify each run file with check.py before registering; a run whose
+  static helper is not part of it fails, e.g. Init_reibun alone).
+- Status (check.py, fully matching / near-match): ud 37/11, chat 31/38, sk 20/26, hk 21/25 (functions linked are the
+  address-contiguous matching runs: 47 c_files.txt lines for ud/chat/sk/hk; the ud Gun_* group, 9 matching functions, is
+  parked behind gun_check, see below). Many of the "near" ones
+  are only a register swap or a delay slot; most of the rest are float-heavy UI code (see below).
+- New shared header include/ud.h (UDW: User_data layout: point 0x1C, evflag 0x24, ware[64] 0x44, stock[100] 0x1C4,
+  qclear[8] 0x354, rank 0x37B, item[20] 0x37C, wkind 0x3CD, wid 0x3CE, wopt 0x3D0, armor[5] 0x3D2, widx[6] 0x456,
+  wyv_kill 0x45C). include/menu.h edited (pad carve only): PIT_CHAT (chat log entry, 0x5D bytes) and PitMenu fields
+  x04, x06/x07, x0E, x19, logtop 0x1E, lognum 0x1F, logscr 0x20, x21, x22, log[64] at 0x23.
+- tools/symsz.sh NAME: prints a symbol's address and size from config/symbols (sdata items <= 8 bytes are gp-relative:
+  declare them with their size, e.g. `extern u8 btn_menu_sub[8];`, or the compiler uses lui/addiu).
+- Lessons (function that shows it):
+  * A static function defined EARLIER in the same file keeps its caller's argument registers alive (the callee's clobber
+    set is known): Set_equip_idx/Gun_* use a0/a1 after calling gun_check/equip_idx_ck/Equip_idx_renew. They must be
+    `static` and in the same run as their callers, or the call costs the saved registers. Consequence: a run with such
+    a static helper cannot be linked unless EVERY function between the helper and its callers matches (gun_check
+    group is parked because Gun_level_up and Gun_option_ck are 9 and 15 instructions off).
+  * An unused static is dropped by the compiler: a run holding only the static helper fails the link.
+  * `UDW *u = User_data;` as a local (global declared `extern UDW User_data[];`) gives the original's single `lui/addiu`
+    base register across loops (Ud_item_num_ck); declaration order of `u` and the index decides which of a1/a2 is which
+    (tools/declbf.py found them in seconds).
+  * `u16 ret = 0; ... ret = 5;` makes constants load with `daddiu` instead of `addiu` (Hunter_point_add_sub); a long long
+    local does too but adds more. Return `(u8)ret`.
+  * `if (x) { ...; break; } return 0;` inside a switch case, with ONE shared `return 1` after the switch, matched
+    Equip_ok_ck where `if (m == x) return 1; return 0;` per case became xor/sltiu. A `goto` to a shared `return 1`
+    fixed equip_idx_ck the same way.
+  * `1LL << (n % 32)` on a u32 array gives the original's lwu/dsllv (Quest_clear_bit_ck/set).
+  * Struct-offset array tables: `((GE *)&Gun_data[0][8])[id].v` (a typedef'd view starting at the field) folds +8 into the
+    symbol like the original; `Gun_data[id][8]` keeps the displacement (Get_equip_value).
+  * Registers named with a `.sdata` extern of size > 8 are not gp-relative; Psw/PitMenu need a typed global (struct with
+    the real fields) for the original's per-field `lui at; lhu lo(at)` (chat_sw_set matched only that way).
+  * m2c output of small functions can be wrong about argument passing (it reads `$a0..` that were never set as
+    arguments): check the asm prologue before trusting a prototype. For jump-table functions m2c can be fed a temp asm
+    with the table renamed `jtbl_...` and appended as `.rodata` (see how equip_exp_core was drafted; recipe in
+    /tmp notes: rename the lit_NNN symbol used by the `lui/addiu/jr` sequence, append `glabel jtbl_lit_NNN` with its
+    `.word .L...` entries).
+  * After a run is linked the remaining asm of that file is re-split into new files (e.g. asm/main/text/
+    EquipmentDescriptionWindow.s holds the rest of f_chat): use `grep -rn "glabel NAME" asm/main/text`.
+- Near-match list with how far off (see per-function check.py output; counts are instructions that differ):
+  ud: Ud_item_stack 150, Ud_u_item_stack 75, Ud_item_num_ck2 19 / ck3 15 (u16 id param, decl order),
+  Get_bowgun_atk 25 (id*0x14 scheduled earlier), Now_equip_ck (two extra nops in the original), Seisan_ok_ck 50,
+  Set_mini_data_to_pl 17 (s1/s0 swap), Copy_user_id 8 (sym+0x1E8 folding), Gun_level_up 9, Gun_option_ck 15.
+  chat/sk/hk: not worked through per function; most diffs are float constants (the C uses literals, the original reads
+  its own literal pool: linking such a function needs `extern f32 lit_NNNN[]` pool reads, not done), prim struct
+  layouts of the local PFLP4/PFLP8 stack structs (original keeps several separate stack variables), and loops.
+- f_menu quick pass (retry of the 2-5 instruction near-matches): nothing new matched in the time box
+  (menu_data_mix_sub/monster_sub/chcnfg_reibun: declbf finds no better order; Pit_mv, disp_needle etc. untouched).
+- tools/perm.py on a function inside a whole-file nm.c gave scores around 1300 for a 15-instruction diff (the context
+  is the whole file): not useful here; use try.py-style variant lists (small script comparing check.py output) or
+  declbf.py instead.
+- Not done: f_menu quick pass beyond pef_get_alpha (2, float temp reg), Pit_disp_chat_cnfg (2, lui/ori register of the /3
+  magic number after PitMenu.x1B became s8), disp_needle (4), Pit_mv/Pit_mv_lb. Float-literal functions (most of the f_chat
+  UI) cannot be linked until the literals are read from the original pool (`extern f32 lit_NNNN[]` with the right NNNN).
+
+# select.bin and yn.bin overlays (agent C, 5 Oct 2026, second assignment)
+
+Both overlays are built through config/c_files.txt like game: `select START END NAME` is
+src/select/NAME.c, `yn START END NAME` is src/yn/NAME.c; jump tables need a
+`select:rodata START END NAME` line (exact table end, no padding). Strings and other data stay as
+asm (declared `extern char lit_NNN_ADDR[]`). Shared declarations: include/select.h (select only;
+it carries its own partial SYS_W / SEL_W / EDIT_W / DEMO_W layouts, so do not include flow.h or
+f_game.h in the same file).
+
+## select.bin (0x533A00-0x538580): 44 functions
+- select00.c Init_task, demo.c (title/logo/opening movie: Demo_task, demo_task_sub, violence_logo,
+  capcom_logo, middle_logo, c_disp, title_disp, opening_demo) all match.
+- edit_nm.c holds the whole f_disp.s file (character edit + continue screens); matching runs are
+  split out as edit00..edit08.c (tools/mkruns_mod.py does the split) and linked. What stays asm
+  is listed in the status table at the end of this section.
+- Lessons (function that shows it):
+  - Unused leading arguments: callers pass leftover registers. `McCardOperation()` and
+    `system_w_set()` with no arguments matched (Init_task); `param_change_sub(w, btn, p, max, se)`
+    is called with w as an unused first argument (param_change_00536280).
+  - Float parameter order: `SoftKeyboard_pos_set(int, f32)` needs a real prototype, otherwise a
+    float passed to an unprototyped call is promoted to double (edit_trans).
+  - A global that the original reloads after a store through a pointer: `*(volatile u16 *)&Psw[4]`
+    gave the two loads (roll_move).
+  - `u32` in the cast `(f32)(u32)x` produces the bltz/srl unsigned-to-float sequence (arrow_disp).
+  - `if (0 <= n)` gives slt+bne instead of bltz (cmn_mongon_check_filter); switch with cases
+    written in ascending order is tested in descending order (demo_task_sub, disp_check).
+  - Statement order of struct stores can be brute forced: permute lines with itertools and
+    keep the one that compares OK (title_disp, ~40k compiles at 0.05 s each, found in seconds).
+  - tools/draft.py now resolves switch tables (lit_NNN_ADDR in the same overlay) so m2c
+    drafts functions with jump tables (Edit_task, Cont_task).
+- disp_edinfo matched with `(0x280u - len * 10) >> 1` (unsigned constant, not a (u32) cast of the
+  whole difference); status: select 38 of 44 functions linked (tools/progress.py: 50% by bytes; the 44th is a nop).
+- Not linked (near-match, logic complete, in edit_nm.c): edit_pl_init_new / edit_pl_init (original
+  reads stage_start_pos x/y/z through three separate symbols D_2F2620/24/28 that only exist as
+  auto-generated undefined symbols; our C uses stage_start_pos[n][i] = one base register),
+  disp_edit_spr (register allocation, 4 saved regs vs 6), disp_color, Edit_task, Cont_task (big state machines, only drafted from
+  m2c and cleaned, not tuned), cmn_mongon_check_sub, cmn_mongon_set (hand unrolled copy loops).
+
+## yn.bin (0x533A00-0x53C800): 104 functions
+Linked and checked (yn OK): yn_sd, yn_mc, nc00-nc04 (network config helpers incl. yn_hard_*),
+ui00-ui06 (string/draw helpers, key repeat, scecom reboot), misc00/01. Counts (progress.py): 11.5%.
+- The Sony library part (sce_callback.s, sce_cbfunc.s, sceNetcnfif*, about 45 functions from
+  libnetcnfif) is compiled with GCC, not MWCC: an m2c draft compiled with MWCC differs in every
+  instruction (checked with sce_callback, sce_call_rpc). No C is provided for it; keep as asm or
+  replace with the SDK source/own implementation in the port (the PS2 network adapter code is not
+  needed on Xbox anyway).
+- src/yn/netcnf_nm.c: all 28 Capcom network config functions (yn_netcnf_*, yn_hard_*, yn_utf8_to_sjis,
+  yn_sjis_to_utf8, module_load/unload). They compile; the ones that match are linked as nc00-04.
+  Near-matches (not linked): work_to_ifc/dev, dev_to_work, setup_devwork, set_current, get_num/list,
+  net_allload, magicno_check_sub, pastdata/pastproxy_check, utf8/sjis converters (m2c-derived,
+  structure guessed: the ifc struct is 0x1330 bytes, dev 0x1320; module_load is 0x1CC in the
+  original and 0x13C here, so its real structure is different).
+- src/yn/ui_nm.c: the 57 UI functions of f_yn_535340.s from tools/draft2c.py. 34 compile; 19 are
+  wrapped in `#if 0 /* name: m2c draft ... */` (yn_set_main compiles but is far off; big
+  switch-heavy ones like yn_select_provider, the yn_*_font_sub family, yn_dialog_*, yn_keyboard_init,
+  yn_sprite_draw_each are still raw m2c). tools/ifdef0.py disables failing functions,
+  tools/ifdef1.py re-enables one after you fix it.
+- Tools added: tools/draft2c.py (m2c drafts of a whole asm file as compilable K&R-style C, gp
+  globals named, M2C_FIELD macro from include/yn.h), tools/mkruns_mod.py (split matching runs of a
+  *_nm.c for any module), tools/mkrun2.py now also parses K&R definitions.
+- Lessons: old-style (K&R) definitions `void f(a, b)\nint a;\n{` make small passthrough wrappers
+  match (yn_printf, yn_set_pal: callers pass wider/other types, and the sign-extension of an s8
+  parameter happens inside the callee); a float-taking tail call needs `void flfntSetZ(f32)` so
+  `yn_set_z(f32 z) { flfntSetZ(z); }` becomes a plain `j` (yn_set_z); m2c loses trailing arguments
+  of calls (module_load takes 5, yn_netcnf_num_to_ip 6 values): compare the asm when a call has
+  fewer arguments than expected; a gp global holding a work pointer (`ynw`) is accessed as
+  `((STRUCT *)ynw)->field` with the cast repeated at each use to get the original reloads
+  (yn_key_repeat).

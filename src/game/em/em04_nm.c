@@ -38,7 +38,7 @@ void pl_flag_clr(EMW *, u32);
 void em_cmd_reset(EMW *);
 void shell02_set(EMW *, int);
 void flvecApplyMat33(f32 *, f32 *, FLMAT *);
-int em_frame_check(EMW *, f32, int);
+int em_frame_check(EMW *, int, f32);
 void em_rate_clear_g(EMW *);
 int rate_add_g2(EMW *);
 void Em_Mahi_Start(EMW *);
@@ -660,7 +660,7 @@ static void em_dm01_0058D0A0(EMW *em) {
         em_cmd_reset(em);
         break;
     case 1:
-        if (em_frame_check(em, 10.0f, 0)) {
+        if (em_frame_check(em, 0, 10.0f)) {
             em->x05++;
             ang[0] = 0;
             ang[1] = em->dm_ang + 0x8000;
@@ -848,7 +848,7 @@ static void em_die00_0058D770(EMW *em) {
         Quest_enemy_die(em);
         break;
     case 1:
-        if (em_frame_check(em, 10.0f, 0)) {
+        if (em_frame_check(em, 0, 10.0f)) {
             em->x05++;
             ang[0] = 0;
             ang[1] = em->dm_ang + 0x8000;
@@ -1310,7 +1310,7 @@ static void ef_move_sub_0058E500(EMW *em, EM04W *w) {
         sound_call_0058F430(em, 68, 13);
         sound_call_0058F430(em, 36, 20);
         sound_call_0058F430(em, 74, 16);
-        if (em_frame_check(em, 66.0f, 0)) {
+        if (em_frame_check(em, 0, 66.0f)) {
             Eft13_set_em_scl(em, 6, 0.7f, 3);
         }
         break;
@@ -1318,10 +1318,10 @@ static void ef_move_sub_0058E500(EMW *em, EM04W *w) {
         sound_call_0058F430(em, 10, 14);
         sound_call_0058F430(em, 24, 19);
         sound_call_0058F430(em, 36, 19);
-        if (em_frame_check(em, 16.0f, 0)) {
+        if (em_frame_check(em, 0, 16.0f)) {
             Eft13_set_em_scl(em, 4, 2.0f, 3);
         }
-        if (em_frame_check(em, 30.0f, 0)) {
+        if (em_frame_check(em, 0, 30.0f)) {
             Eft13_set_em_scl(em, 17, 3.5f, 3);
         }
         break;
@@ -1331,7 +1331,7 @@ static void ef_move_sub_0058E500(EMW *em, EM04W *w) {
         sound_call_0058F430(em, 14, 19);
         sound_call_0058F430(em, 12, 13);
         sound_call_0058F430(em, 98, 18);
-        if (em_frame_check(em, 10.0f, 0) || em_frame_check(em, 14.0f, 0)) {
+        if (em_frame_check(em, 0, 10.0f) || em_frame_check(em, 0, 14.0f)) {
             Eft13_set_em_scl(em, 6, 1.2f, 3);
             Eft13_set_em_scl(em, 9, 1.2f, 3);
         }
@@ -1369,7 +1369,7 @@ static void ef_move_sub_0058E500(EMW *em, EM04W *w) {
     case 0x427:
         sound_call_0058F430(em, 16, Code_Make(5, 4, 6, 4));
         sound_call_0058F430(em, 14, 17);
-        if (em_frame_check(em, 2.0f, 0)) {
+        if (em_frame_check(em, 0, 2.0f)) {
             Eft13_set_em_scl(em, 2, 0.8f, 7);
         }
         break;
@@ -1395,7 +1395,7 @@ static void ef_move_sub_0058E500(EMW *em, EM04W *w) {
         sound_call_0058F430(em, 96, Code_Make(3, 4, 6, 4));
         sound_call_0058F430(em, 124, Code_Make(5, 4, 6, 4));
         sound_call_0058F430(em, 180, Code_Make(0, 4, 1, 4));
-        if (em_frame_check(em, 34.0f, 0)) {
+        if (em_frame_check(em, 0, 34.0f)) {
             Eft13_set_em_scl(em, 2, 1.0f, 6);
         }
         break;
@@ -1427,7 +1427,7 @@ void em04_effect_move_0058F3E0(EMW *em) {
 }
 
 static void sound_call_0058F430(EMW *em, int frame, int se) {
-    if (em_frame_check(em, (f32)frame, 0)) {
+    if (em_frame_check(em, 0, (f32)frame)) {
         Em_se_req2(em, se, 0, em->pos, 6, 0);
     }
 }

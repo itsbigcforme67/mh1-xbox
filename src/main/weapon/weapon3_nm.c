@@ -31,21 +31,6 @@ void Material_set_sub(u8 *base, MATSET *m) {
     }
 }
 
-void plplAdd2(u32 *n, u32 *p) {
-    u32 v, w;
-top:
-    v = *p;
-    if (v != 0 && (v & 1)) {
-        w = v & ~1;
-        if (!(((f32 *)w)[1] <= ((f32 *)n)[1])) {
-            p = (u32 *)w;
-            goto top;
-        }
-    }
-    *p = (u32)n | 1;
-    *n = v;
-}
-
 void flmatMul(FLMAT *, f32 *, FLMAT *);
 void flmatCopy(void *, void *);
 void flCalcTrans(void *, FLMAT *);
@@ -1035,18 +1020,18 @@ void flSetSkinTransMatrixList(void *, void *);
 void enemy_trans(TRANSEM *tp) {
     PLX *em = tp->em;
     PLMDL *mdl = em->mdl;
-    FLMAT ma;
     FLMAT mb;
     FLMAT mc;
+    FLMAT ma;
     f32 ang[3];
-    s16 *lp;
-    s16 v;
-    s16 n;
-    CLAY *cb;
-    CLAY *c;
+    int n;
     int fgo;
     int i;
+    CLAY *cb;
+    s16 *lp;
     int k;
+    s16 v;
+    CLAY *c;
     u8 *mat;
     u8 *mm;
 

@@ -504,7 +504,7 @@ void em_dm01_0058D0A0(EMW *em) {
         em_cmd_reset(em);
         break;
     case 1:
-        if (em_frame_check(em, 10.0f, 0)) {
+        if (em_frame_check(em, 0, 10.0f)) {
             em->x05++;
             ang[0] = 0;
             ang[1] = em->dm_ang + 0x8000;

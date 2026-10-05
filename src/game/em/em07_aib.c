@@ -273,10 +273,10 @@ void em_act02_0058FD50(EMW *em) {
         }
         break;
     case 2:
-        em->_pad87C[3] = 5;
+        em->x87F = 5;
         if (em->x194 == 0) {
             em->x05++;
-            em->_pad87C[3] = 0;
+            em->x87F = 0;
             em07_to_normal(em);
         }
         break;

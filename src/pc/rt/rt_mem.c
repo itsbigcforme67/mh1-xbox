@@ -75,6 +75,39 @@ int rt_in_bss(uint32_t va, size_t n)
     return ovl && va >= OVL_GAME_VRAM + ovl_n && va + n <= OVL_GAME_VRAM + ovl_n + OVL_GAME_BSS;
 }
 
+/* Host memory standing in for the .bss of the ELF / overlay, for pointers
+ * in data tables that point at zero-initialised PS2 memory that has no host
+ * table of its own (e.g. wall_tbl_add -> st04_wall_tbl): zeros, like the
+ * PS2 at boot. Allocated on first use, one block per image. */
+void *rt_bss_shadow(uint32_t va)
+{
+    static uint8_t *shadow[2];
+    static uint32_t base[2], size[2];
+    int k;
+    if (!rt_in_bss(va, 1))
+        return NULL;
+    if (ovl && va >= OVL_GAME_VRAM + ovl_n) {
+        k = 1;
+        base[1] = OVL_GAME_VRAM + (uint32_t)ovl_n;
+        size[1] = OVL_GAME_BSS;
+    } else {
+        uint32_t phoff = rd32(elf + 28);
+        unsigned i, ph_n = elf[44] | elf[45] << 8;
+        k = 0;
+        for (i = 0; i < ph_n; i++) {
+            const uint8_t *ph = elf + phoff + 32 * i;
+            uint32_t vaddr = rd32(ph + 8), filesz = rd32(ph + 16), memsz = rd32(ph + 20);
+            if (rd32(ph) == 1 && va >= vaddr + filesz && va < vaddr + memsz) {
+                base[0] = vaddr + filesz;
+                size[0] = memsz - filesz;
+            }
+        }
+    }
+    if (!shadow[k] && !(shadow[k] = calloc(1, size[k])))
+        return NULL;
+    return shadow[k] + (va - base[k]);
+}
+
 /* ------------------------------------------------------------ relocations
  * The ELF keeps its link relocations (.relmain, .relgame.bin). Every
  * R_MIPS_32 entry marks a word of data that holds an absolute PS2 address:

@@ -251,8 +251,8 @@ Capcom bug kept: em_fly24 passes an uninitialized local to Em_Calc_angY.
 - `tools/draft.py` now resolves jump tables (jt_patch): m2c decompiles functions with switch tables.
 - `tools/status.py FILE` (noise-aware check): prints per function OK / NOISE (only "calls X, original calls Y" static-name
   differences) / DIFF n; "true OK" = OK or NOISE. check.py itself reports NOISE functions as `--`, so genruns.py does not
-  see them as matching; use tools/mkruns.py instead.
-- `tools/mkruns.py NM.c PREFIX`: writes the matching runs (PREFIX.c, PREFIXb.c ...) of a near-match file (all true-OK
+  see them as matching; use tools/mkruns_nm.py instead.
+- `tools/mkruns_nm.py NM.c PREFIX`: writes the matching runs (PREFIX.c, PREFIXb.c ...) of a near-match file (all true-OK
   functions that are consecutive by address; every function becomes global except those in KEEP) and prints the
   c_files.txt text lines. Rodata lines (jump tables) are still computed by hand: each run's tables are contiguous from the
   first to the end of the last table (16-byte aligned in between), see tools/rodata.py.
@@ -276,7 +276,7 @@ Capcom bug kept: em_fly24 passes an uninitialized local to Em_Calc_angY.
 - Float local arrays for `em_sleep_eff_set(em, n, v, 1.6f)`: `v[1] = 10.0f; v[2] = 140.0f; v[0] = 0.0f;` in this order
   (the last store lands in the jal delay slot); two such calls need two arrays (declaration order = address order).
 - A callee in the same file that is `static` keeps its callers' register use; if it must be global (called from asm or
-  another run) check the run file again with tools/status.py (em_act_search2 had to stay static, KEEP in mkruns.py).
+  another run) check the run file again with tools/status.py (em_act_search2 had to stay static, KEEP in mkruns_nm.py).
 - Shell08_set_ang takes 6 arguments (em, joint, a, b, ang1, ang2); the last two sit in $t0/$t1 and the delay slot.
 
 # em02 AI (f_em_57F1E0, 0x57F1E0-0x587390, 66 functions): 63 linked
@@ -292,8 +292,8 @@ Notes:
 - ef_move_sub_00583BF0 only matches as a file-static function but is called by asm (em02_effect_move): it is defined static
   and config/game_aliases.txt (new, added to the link by tools/build.py when it exists) gives the asm its address.
   Callees of ef_move_sub that precede or follow it in the file (move_default, quake_call, sound_call*, em_uvset) must also
-  stay static (MKRUNS_KEEP in tools/mkruns.py).
-- tools/mkruns.py recognises function-defining macros (#define NAME(NAME, ...)) automatically now.
+  stay static (MKRUNS_KEEP in tools/mkruns_nm.py).
+- tools/mkruns_nm.py recognises function-defining macros (#define NAME(NAME, ...)) automatically now.
 - `em->mode != 6 || em->x15 != 0` guards two cases of the em02 effect script (genef flags unknown branches with #error).
 
 # em07 AI (f_em_58F4A0, 0x58F4A0-0x599EC8, 75 functions): 70 linked
@@ -337,8 +337,9 @@ Notes:
 # Porting tools for sibling AI files (handed over; agent D now owns em14/15/17/20/21)
 tools/port_em.py ASMNAME PFX OUT.c turns the m2c draft of one AI file into a first-pass C file (about 2 minutes; f12.py runs per
 function), tools/protos.py regenerates its forward prototypes, tools/fixlib.py has rep()/sub1()/ensure_spd() for hand-fix scripts
-that survive a re-run (never use s.index('name(') on a file that has prototypes: it hits the prototype), tools/mkruns.py takes
+that survive a re-run (never use s.index('name(') on a file that has prototypes: it hits the prototype), tools/mkruns_nm.py takes
 MKRUNS_EXCLUDE for functions that must stay asm (callers of static callees with custom register args). tools/sibcmp.py shows
 opcode-identical sibling functions (em20/em01 66, em17/em20 55, em21/em08 49, em14/em20 48). em14 was started and dropped.
 Hand fixes that were always needed: to_normal-like functions with extra args, the uvmove/sound_call helper block copied from
 em01/em08, ef_move_sub via genef.py, EMxxW field names (dang/has_tgt/dist) for the TURN macros.
+- Note: tools/mkruns.py is main's tool (fully matching runs by check.py); mkruns_nm.py is agent B's (split an NM file by status.py).

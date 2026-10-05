@@ -38,7 +38,7 @@ void pl_flag_clr(EMW *, u32);
 void em_cmd_reset(EMW *);
 void shell02_set(EMW *, int);
 void flvecApplyMat33(f32 *, f32 *, FLMAT *);
-int em_frame_check(EMW *, f32, int);
+int em_frame_check(EMW *, int, f32);
 void em_rate_clear_g(EMW *);
 int rate_add_g2(EMW *);
 void Em_Mahi_Start(EMW *);

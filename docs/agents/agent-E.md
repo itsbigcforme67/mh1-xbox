@@ -5,14 +5,14 @@ printing "main OK". Shared headers I touch: include/game.h (fields carved out of
 padding, see commit messages), include/pl.h (x73A), new include/flow.h and
 include/f_game.h.
 
-## f_game (0x10F050-0x110F08, Game_task + game0..game13, game_core) - 10/12 built
+## f_game (0x10F050-0x110F08, Game_task + game0..game13, game_core) - 11/12 built
 Game mode machine. `Game_task(tsk)` runs setup steps (tsk+8), then calls
 game0..game5 by `game_w.mode`; game_w.step (+1) and game_w.sub (+2) are the
 step inside a mode. game12 is the sound/model loading sequence.
-Built: f_game.c (game0, game10, game11, game12, game13, game1, game2, table
+Built: f_game.c (game0, game10..13, game1, game2, game3, table
 0x3580E0-0x35815C), f_gameb.c (game4, game5, game_core).
-Near-match (f_game_nm.c, not built): game3 (10/150 instructions off, order of
-the sprite-struct stores) and Game_task (the C is complete; ~90 of 788
+game3 MATCHES now: the sprite-struct stores must be in this order: w,h,x0,y0,z0,w0,one0,one1,alpha,kind,col,z (found by brute-forcing the permutations of the last six statements, ~1 s each with tools/align.py).
+Near-match (f_game_nm.c, not built): Game_task (the C is complete; ~90 of 788
 instructions differ in real terms: the original keeps tsk->step in a1 and has
 different delay-slot filling for the first switch).
 Strings (SJIS UI text) are left in the original rodata and referenced as
@@ -34,17 +34,16 @@ Lessons:
 - `if (x > 0x22550FF)` instead of `>= 0x2255100` stops the compiler sharing
   the lui of two constants (Game_task).
 
-## f_stage (0x15C210-0x160E??): every function written, 5 of 11 built
-Built (main OK): f_stage.c (stage_mv_ck .. stage_i), f_stageb.c (stage_se_move), f_stagec.c (move_stage, trans_stage_sub).
+## f_stage (0x15C210-0x160E??): every function written, 6 of 11 built
+Built (main OK): f_stage.c (stage_mv_ck .. stage_i), f_stageb.c (stage_se_move, stage_m, move_stage, trans_stage_sub; f_stagec.c was merged into it).
 stage_set_set is in src/main/stage/stage_set.c (agent A). Source of truth for the rest: src/main/stage/f_stage_nm.c (functions in
 address order, brace on its own line so tools/split_runs.py can parse them; the file is compiled but not linked).
 Near-matches:
-- stage_m (0x15C940): 5 of 231 instructions off. The sum `65.0f + it->pos[1] + (f32)((r & 0x3F) - 0x20)` needs the cast
-  evaluated first but added second (`add.s f0,f0,f2`); I could only get `add.s f0,f2,f0`.
+- stage_m MATCHES now (main OK): `pos[1] = (65.0f + it->pos[1]) + (f32)(int)((r & 0x3F) - 0x20);` -- the extra `(int)` cast (a no-op) is what puts the cvt before the add and gives `add.s f0,f0,f2`. Lesson: a redundant `(f32)(int)` cast changes MWCC's float expression scheduling.
 - spr_disp_sub (colour lerp, 0x1608C0): 67/123. static (see lesson) helps stage_spr_disp, the byte shuffling schedule differs.
 - stage_spr_disp (sky gradient from the sun angle + flash overlay, 0x160AB0, 1844 bytes = same size): ~132/461, the colour table loads
   (8 packed colours built from bytes) use different temp registers.
-- trans_stage (0x15CD90, 15152 bytes = EXACTLY the original size): written as two passes (stage clays with per-stage UV scroll
+- trans_stage now lives in src/main/stage/trans_stage.c (the ONE definition; it replaced agent A's trans_stage_nm.c, and the PC runtime links it via tools/build_pc.sh; the helpers light_set/get_tex_num/trans_stage_sub are stubs/copies in src/pc/rt/rt_main.c). A call-trace comparison of both versions (32-bit freestanding harness, mocked fl*/flmat* that hash every matrix op, all 88 stages x 5 timer values) was identical except stage 0x28, where the asm falls through from the case-0x28 body into the 0x3B code (layer drawn twice), so mine is kept. The 32-bit sysroot (build/sysroot32) does not exist in this worktree, so tools/build_pc.sh was NOT run; only syntax/-m32 -c checks of the changed files. trans_stage (0x15CD90, 15152 bytes = EXACTLY the original size): written as two passes (stage clays with per-stage UV scroll
   / rotation, then the set objects from the setNN_pos_tbl tables). The first pass (0x15CE90-0x15F700) is instruction-identical except
   registers of the prologue; the second pass differs only in which s-register each per-case local lives in (the original has
   block-local variables per case; mine are function-level). The two jump tables lit_1784_0035B9D0 / lit_1785_0035B9A0
@@ -141,3 +140,19 @@ New lessons (function that shows it):
 Shared header edits: include/pl.h (PL_ITEM share[4] at 0x8F4), include/game.h (area_mdlw[10] -> [9] because Item_stolen
 stores at game_w+0xCC/0xCE: new fields xCC, xCE; reward_item[16] -> [32] and x1A8/x1AC), include/em.h (x876 u8 at 0x876,
 x88D now s8 as proved by lb in Em_hagi_point_cnt_ck).
+
+## Update 5 Oct 2026 (second pass): newly matched, main OK
+- stage_m, game3 (see above); f_quest: em_work_serch, ext_pick_point_tbl_clr_ex, quest_enemy_ck_sub, quest_enemy_ck_sub2
+  (now in f_questj/m/p, config ranges widened). Game_task: still 690 diffs (a local copy of tsk->step does not change the a1/a0 choice).
+- Lesson (slt vs bltz): `if (0 > x)` gives the original `slt at,x,zero; bne`, while `x < 0` gives `bltz`; likewise `if (0 < n)` gives
+  `slt at,zero,n; beq`, `n >= 1` gives `blez` (em_work_serch, ext_pick_point_tbl_clr_ex). Write the constant on the left.
+- Lesson (`beq X; nop; b Y` pairs): an `if (v == K) {A} else {if (v == k2) {B}}` whose original has the two bodies out of line is a
+  one-case switch: `switch (v) { case K: A; break; default: B; }` (quest_enemy_ck_sub/_sub2). Not yet working for quest_em_init_sub2
+  (`bne v0,zero; nop; b` for `if (quest_w.no == 0) {} else {...}`; tried switch forms, `;` in the then part).
+- Lesson (float add order): a redundant `(f32)(int)(...)` cast changed MWCC's evaluation order (stage_m).
+- Lesson: tools/align.py output lines are indented ("   - "); count real diffs with `grep -c '^   [-+]'`. For small files the
+  permutation of N independent statements can be brute-forced with align.py (~1 s per try; game3).
+- quest_item_ck3, quest_supplies_get now match: reading consecutive u16/s16 fields of a pointer must be written `p++; id = *p; p++; num = *p;`
+  (or `*p++`), not `p[1]` / `p += 2` (the compiler then loads both before bumping p; the original bumps in between).
+- Still parked: Quest_retire_set (6 instr: `bne; nop` empty delay slot and -1/7 register order; switch form gets the -1 register right but wrong branch),
+  Quest_str_get, Em_hagi_point_cnt_ck, quest_em_init_sub2 (see above).

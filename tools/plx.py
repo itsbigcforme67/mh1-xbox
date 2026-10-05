@@ -16,6 +16,15 @@ SIZES = {"u8": 1, "s8": 1, "char": 1, "u16": 2, "s16": 2, "u32": 4, "s32": 4, "f
 FIELD = re.compile(r'\s*(u8|s8|u16|s16|u32|s32|f32|char|PLSW|PL_ITEM|struct \w+ \*|void \*)\s*(\w+)(\[[^\]]*\])?;\s*(?:/\*\s*(0x[0-9A-Fa-f]+)\s*(.*?)\s*(\*/)?)?\s*$')
 
 PADS = {}
+UNION04 = '''    union {
+        s32   work04;    /* 0x004 */
+        struct {
+            u8 x04;      /* 0x004 */
+            u8 x05;      /* 0x005 step within the current action (pl_mv*, as EMW) */
+            u8 x06;      /* 0x006 timer/counter of the current action */
+            u8 x07;      /* 0x007 */
+        };
+    };'''
 
 def tsize(t):
     if t.endswith("*"):
@@ -39,6 +48,12 @@ def load():
         if off is None:
             raise SystemExit("field without offset comment: " + l)
         ents.append([int(off, 16), t.strip(), n, arr or "", cm or "", l])
+    # the union at 0x004 (work04 / x04..x07): keep it as one raw block
+    if any(e[2] == "work04" for e in ents):
+        ents[:] = [e for e in ents if not (e[2] in ("x04", "x05", "x06", "x07") and 4 <= e[0] <= 7)]
+        for e in ents:
+            if e[2] == "work04":
+                e[5] = UNION04
     # multi-line comment continuation lines are dropped on purpose
     # (raw lines are kept for fields, so a rewrite only touches pad lines)
     pads = {}

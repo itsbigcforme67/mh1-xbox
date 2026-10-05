@@ -45,14 +45,17 @@ typedef struct {                     /* model work (MDLW, get_mdlw_ptr; SET_MDLW
 _Static_assert(offsetof(RT_SET_MDLW, clay) == 0x30, "SET_MDLW layout");
 
 typedef struct {                     /* stage_work, 0x64 bytes (set14_nm.c STAGE_WORK,
-                                      * trans_stage_nm.c STAGE_W) */
+                                      * trans_stage.c STAGE_W) */
     u8 flag;                         /* 0x00 trans_stage draws while flag and x01 are set */
     u8 x01;                          /* 0x01 */
-    u8 _pad02[6];
+    u8 stage;                        /* 0x02 stage_w_init: game_w.stage */
+    u8 _pad03[5];
     s16 timer;                       /* 0x08 counts up every tick (UV scrolling) */
     u8 _pad0A[0x3C - 0x0A];
     RT_SET_MDLW *mdl;                /* 0x3C stage model set */
-    u8 _pad40[0x64 - 0x40];
+    u8 _pad40[8];
+    void *data;                      /* 0x48 stage_w_init: Stage_data_get(stage) (floor heights) */
+    u8 _pad4C[0x64 - 0x4C];
 } RT_STAGE_WORK;
 _Static_assert(sizeof(RT_STAGE_WORK) == 0x64 && offsetof(RT_STAGE_WORK, mdl) == 0x3C, "STAGE_WORK layout");
 
@@ -176,10 +179,7 @@ void push_set_work(SETW *sw)
     }
 }
 
-void se_req2(int a, int b, int c, f32 *pos, int d, int e)
-{
-    (void)a; (void)b; (void)c; (void)pos; (void)d; (void)e;   /* no sound yet */
-}
+/* se_req2 and the other sound calls: rt_snd.c */
 
 /* ------------------------------------------------------------ prims */
 /* get_prim hands out slots, add_prim queues one on an ordering table for
@@ -246,6 +246,9 @@ void rt_set_player(int no, const float pos[3])
     pl->pos[0] = pos[0];
     pl->pos[1] = pos[1];
     pl->pos[2] = pos[2];
+    pl->scl[0] = pl->scl[1] = pl->scl[2] = 1.0f;   /* pl_init_sub */
+    pl->work4D4 = 1;                                /* pl05.c: wall tests on */
+    pl->x5AC = pos[1];
 }
 
 /* ------------------------------------------------------------ game loop */
@@ -256,6 +259,8 @@ void rt_eft_move(void);
 void rt_eft_draw(void);
 void rt_eft_trace(void);
 
+void *Stage_data_get(int stg);
+
 void rt_game_init(int stage)
 {
     memset(&game_w, 0, sizeof game_w);
@@ -264,6 +269,8 @@ void rt_game_init(int stage)
     stage_work.timer = 0;
     stage_work.flag = 1;
     stage_work.x01 = 1;
+    stage_work.stage = (u8)stage;
+    stage_work.data = Stage_data_get(stage);
     rt_eft_init();          /* init_eft_work / init_shell_work */
     stage_set_set(stage);   /* the game's own spawn list (src/main/stage/stage_set.c) */
 }
