@@ -186,3 +186,69 @@ void selling_price_disp_sub(void) {
     flfntLocate(0x1B0, 0x18E);
     font_print_sp(yes_or_no[F(u8, ib, 0x21)]);
 }
+
+/* edit a quantity byte with the d-pad: mode 0 = two decimal digits, otherwise two octal digits (hi << 3 | lo) */
+void itembox_cursor_mv(u8 *val, int pad, int mode) {
+    u8 v;
+    u8 hi;
+    int p;
+    u8 lo;
+    u8 nv;
+    v = *val;
+    if (!(mode & 0xFF)) {
+        v = v & 0xFF;
+        p = pad & 0xFFFF;
+        lo = v % 10;
+        hi = v / 10;
+        if (p & 0x800) {
+            if (!(lo & 0xFF)) {
+                lo = 9;
+            } else {
+                lo = lo - 1;
+            }
+        }
+        if (p & 0x400) {
+            if ((lo & 0xFF) >= 9) {
+                lo = 0;
+            } else {
+                lo = lo + 1;
+            }
+        }
+        if (p & 0x2000) {
+            if (!(hi & 0xFF)) {
+                hi = 9;
+            } else {
+                hi = hi - 1;
+            }
+        }
+        if (p & 0x1000) {
+            if ((hi & 0xFF) >= 9) {
+                hi = 0;
+            } else {
+                hi = hi + 1;
+            }
+        }
+        nv = (lo & 0xFF) % 10 + (hi & 0xFF) % 10 * 10;
+    } else {
+        lo = v;
+        p = pad & 0xFFFF;
+        hi = lo >> 3;
+        if (p & 0x800) {
+            lo = lo - 1;
+        }
+        if (p & 0x400) {
+            lo = lo + 1;
+        }
+        if (p & 0x2000) {
+            hi = hi - 1;
+        }
+        if (p & 0x1000) {
+            hi = hi + 1;
+        }
+        nv = (lo & 7) | ((hi & 7) << 3);
+    }
+    if (v != nv) {
+        *val = nv;
+        se_req(7, 0x16, 0);
+    }
+}
