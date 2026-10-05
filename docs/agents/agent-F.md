@@ -109,3 +109,10 @@ differ once split (implicit prototypes of callees that used to be defined in the
 (3) A callee defined earlier in the same file as `static` (pl_chr_set_com) gives the IPA register behaviour; params passed as `int`
 and masked at the use site (`(u16)slot`, `(s16)num`) reproduce the raw-register + repeated dsll32/dsra32 pattern.
 (4) switch case order: when the chain compares 3,2,1,0 the source usually lists cases in ascending order (Get_weapon_job2 used if/else).
+
+Addendum (same day): pl79/80 Basic_item_set + Fue_item_set (matched), pl81 pl_voice_req, pl82 pl_body_make, pl83 body_hit_sub_pl.
+Near-match only (in pl_nm.c, logic from asm): body_hit, body_hit_sub_new, body_hit_sub_em, box_get, Pl_box_select, pl_light_ck.
+body_hit_sub_em keeps a quirk of the original: the target sphere-list pointer is not rewound for later spheres of the first
+monster. Fue_item_set calls Pl_master_ck(pl) (not the master slot). Still asm: Plsel_task..sel_default_set (online select screens),
+Pit_disp_pit_effect, pef_get_alpha. NOTE: tools/build.py compiles every src/**/*.c including pl_wip.c/pl_nm.c, so pl_wip.c must
+always compile (git checkout of an old wip with junk drafts broke a rebuild once).

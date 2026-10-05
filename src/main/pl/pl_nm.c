@@ -2749,3 +2749,102 @@ void body_hit(void) {
     }
 }
 
+
+#include "flow.h"
+extern u16 Psw[];
+void Item_box_get_efct();
+void Item_box_get_item(u16, u8);
+void net_send_host(int, u8);
+s16 Pl_item_num_ck(PLW *, int);
+
+/* Item box (village storage): game_w+0x128 holds {u16 item, s16 count} per slot (32 slots), game_w+0x1A8 a taken-bitmask. */
+void box_get(PLW *pl) {
+    pl->work8F3 = 0x1E;
+    Item_box_get_efct();
+    if (Online_ck() == 1) {
+        pl->work932 = 0x384;
+        pl->work91F = 1;
+        net_send_host(1, game_w.master);
+        return;
+    }
+    pl->work932 = 0;
+    pl->work91F = 0;
+    Pl_item_stack(pl, PU16(&game_w, 0x128 + pl->work8C3 * 4), PS16(&game_w, 0x12A + pl->work8C3 * 4));
+    PU32(&game_w, 0x1A8 + (pl->work8C3 >> 5) * 4) |= 1 << (pl->work8C3 % 32);
+    Item_box_get_item(PU16(&game_w, 0x128 + pl->work8C3 * 4), pl->work8C3);
+}
+
+void Pl_box_select(PLW *pl) {
+    s16 trg;
+    s16 pad;
+    int a;
+    u8 idx;
+    int bit;
+    if (Pl_master_ck(pl) != 0) {
+        trg = Psw[2];
+        pad = Psw[2] | Psw[12];
+        if (pl->work8F3 != 0) {
+            pl->work8F3--;
+        }
+        if (pl->work932 != 0) {
+            pl->work932--;
+            if (pl->work932 == 0) {
+                pl->work91F = 0;
+            }
+        }
+        if (pl->work91F != 0 || pl->work8F3 != 0) {
+            return;
+        }
+        a = pad;
+        if (a & 0x40) {
+            se_req(7, 0x14, 0);
+            pl->work8C2 = 0;
+            return;
+        }
+        if (a & 0x800) {
+            se_req(7, 0x16, 0);
+            if (pl->work8C3 & 7) {
+                pl->work8C3 = pl->work8C3 - 1;
+            } else {
+                pl->work8C3 = pl->work8C3 + 7;
+            }
+        }
+        if (a & 0x400) {
+            se_req(7, 0x16, 0);
+            if ((pl->work8C3 & 7) != 7) {
+                pl->work8C3 = pl->work8C3 + 1;
+            } else {
+                pl->work8C3 = pl->work8C3 - 7;
+            }
+        }
+        if (a & 0x2000) {
+            se_req(7, 0x16, 0);
+            if (pl->work8C3 < 8) {
+                pl->work8C3 = pl->work8C3 + 0x18;
+            } else {
+                pl->work8C3 = pl->work8C3 - 8;
+            }
+        }
+        if (a & 0x1000) {
+            se_req(7, 0x16, 0);
+            if (pl->work8C3 >= 0x18) {
+                pl->work8C3 = pl->work8C3 - 0x18;
+            } else {
+                pl->work8C3 = pl->work8C3 + 8;
+            }
+        }
+        idx = pl->work8C3;
+        bit = 1 << (idx % 32);
+        if (!(PU32(&game_w, 0x1A8 + (idx >> 5) * 4) & bit) && (trg & 0x20) && PU16(&game_w, 0x128 + idx * 4) != 0 && pl->work8F3 == 0) {
+            if (Pl_item_num_ck(pl, PU16(&game_w, 0x128 + idx * 4)) == 0) {
+                if (Pl_item_search_space(pl) != 0) {
+                    se_req(7, 0x19, 0);
+                    box_get(pl);
+                }
+            } else if (Pl_item_num_ck2(pl, PU16(&game_w, 0x128 + pl->work8C3 * 4)) >= PS16(&game_w, 0x12A + pl->work8C3 * 4)) {
+                se_req(7, 0x19, 0);
+                box_get(pl);
+            }
+        }
+    }
+}
