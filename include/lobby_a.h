@@ -19,7 +19,8 @@ extern LBPLAYER lb_player[8];
 typedef struct LBSYS {         /* lb_sys 0x90 bytes */
     u8 _pad00[3];
     s8 x03;                    /* 0x03 mode (4 = send positions) */
-    u8 _pad04[2];
+    s8 x04;                    /* 0x04 phase counter of vs_square_* */
+    s8 x05;                    /* 0x05 */
     s8 x06;                    /* 0x06 guild screen state */
     s8 x07;                    /* 0x07 guild/quest sub state */
     s8 x08;                    /* 0x08 rule sheet/quest sub state */
@@ -292,6 +293,8 @@ void Lb_cockpit_move();
 int Lb_check_pl_load();
 int add_prim();
 typedef struct BSCELL { u8 p[0x5C]; } BSCELL;   /* browser table-cell record (0x5C bytes): indexing an ARRAY of structs gives idx*size + base (addu order) */
+typedef struct BSCELL1 { u8 p[1]; } BSCELL1;
+#define BSC1(T, b, i, d) (*(T *)(((BSCELL1 *)((u8 *)(b) + (d)))[i].p))
 typedef struct BSCELL2 { u8 p[2]; } BSCELL2;
 typedef struct BSCELL4 { u8 p[4]; } BSCELL4;
 typedef struct BSCELL8 { u8 p[8]; } BSCELL8;
@@ -299,4 +302,68 @@ typedef struct BSCELL8 { u8 p[8]; } BSCELL8;
 #define BSC4(T, b, i, d) (*(T *)(((BSCELL4 *)((u8 *)(b) + (d) / 4 * 4))[i].p + (d) % 4))
 #define BSC8(T, b, i, d) (*(T *)(((BSCELL8 *)((u8 *)(b) + (d) / 8 * 8))[i].p + (d) % 8))
 #define BSC(T, b, i, d) (*(T *)(((BSCELL *)((u8 *)(b) + (d) / 0x5C * 0x5C))[i].p + (d) % 0x5C))
+/* Browser system work (bsSysWork, 0x5C4 bytes; pointer bsSys). Fields named from the stock functions, finalAccount and UpdateEndpoint. */
+typedef struct BSSYS {
+    u8 _pad00[0xC];
+    s32 x0C;               /* right edge reached by the page so far */
+    s32 x10;               /* bottom edge */
+    s32 x14;
+    u16 x18;               /* page style flags */
+    s16 x1A, x1C, x1E, x20;/* blank margins (setUpDnLtRtBlank) */
+    s16 x22;               /* 0x20490 / x10 */
+    s16 x24;
+    s16 x26;               /* 0x4EB40 / x0C */
+    s16 x28;
+    u8 x2A, x2B, x2C, x2D, x2E, x2F, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39, x3A;
+    char meta[0x100];      /* 0x3B meta refresh url */
+    u8 _pad13B[0x33B - 0x13B];
+    char style[0x222];     /* 0x33B */
+    char id1[0x22];        /* 0x55D */
+    char id2[0x22];        /* 0x57F */
+    char id3[0x22];        /* 0x5A1 */
+    u8 x5C3;
+} BSSYS;
+/* Browser work object (BsWorkPull): one per on-screen element (background, scroll bars, title bar, cursor ...). */
+typedef struct BSWK {
+    s8 x00;                /* active */
+    s8 x01;
+    u8 x02;                /* kind of the stocked page object */
+    u8 _pad03[2];
+    u8 x05;
+    s8 x06;                /* sprite state requested by the task */
+    s8 x07;
+    u8 _pad08[2];
+    s16 x0A, x0C, x0E, x10;
+    u8 _pad12[2];
+    void *task;            /* 0x14 */
+    void *trans;           /* 0x18 */
+    u8 _pad1C[0x30 - 0x1C];
+    u8 x30;
+    u8 _pad31[3];
+    f32 x34, x38;          /* position */
+    u8 _pad3C[4];
+    f32 x40, x44;          /* size */
+    u8 _pad48[4];
+    s32 x4C, x50;
+    u8 _pad54[0x5D - 0x54];
+    s8 x5D;
+    u8 _pad5E;
+    u8 x5F;
+} BSWK;
+/* Browser queue node (request / route / cache / source / image queues): singly linked, url at +4 */
+typedef struct BSNODE {
+    struct BSNODE *next;      /* 0x000 */
+    char url[0x100];          /* 0x004 */
+    s32 used;                 /* 0x104 state / in-use flag */
+    u8 x108, x109;            /* 0x108 page counter, status flags */
+    u8 _pad10A[2];
+    s8 x10C;                  /* 0x10C request kind */
+    s8 x10D;                  /* 0x10D 1 = html, 2 = image */
+    u8 _pad10E[2];
+    char *x110;               /* 0x110 */
+    u32 tex;                  /* 0x114 texture | palette handle << 16 */
+    s16 x118, x11A;
+    u8 _pad11C[8];
+    s8 x124, x125;
+} BSNODE;
 #endif

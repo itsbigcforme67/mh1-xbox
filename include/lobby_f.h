@@ -292,6 +292,8 @@ void Lb_cockpit_move();
 int Lb_check_pl_load();
 int add_prim();
 typedef struct BSCELL { u8 p[0x5C]; } BSCELL;   /* browser table-cell record (0x5C bytes): indexing an ARRAY of structs gives idx*size + base (addu order) */
+typedef struct BSCELL1 { u8 p[1]; } BSCELL1;
+#define BSC1(T, b, i, d) (*(T *)(((BSCELL1 *)((u8 *)(b) + (d)))[i].p))
 typedef struct BSCELL2 { u8 p[2]; } BSCELL2;
 typedef struct BSCELL4 { u8 p[4]; } BSCELL4;
 typedef struct BSCELL8 { u8 p[8]; } BSCELL8;
@@ -301,7 +303,8 @@ typedef struct BSCELL8 { u8 p[8]; } BSCELL8;
 #define BSC(T, b, i, d) (*(T *)(((BSCELL *)((u8 *)(b) + (d) / 0x5C * 0x5C))[i].p + (d) % 0x5C))
 /* Browser system work (bsSysWork, 0x5C4 bytes; pointer bsSys). Fields named from the stock functions, finalAccount and UpdateEndpoint. */
 typedef struct BSSYS {
-    u8 _pad00[0xC];
+    u8 x00, x01, x02, x03;   /* x01 = browser mode, x02 = sub state */
+    u8 _pad04[0xC - 4];
     s32 x0C;               /* right edge reached by the page so far */
     s32 x10;               /* bottom edge */
     s32 x14;
