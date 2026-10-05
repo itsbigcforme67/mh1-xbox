@@ -103,6 +103,78 @@ MCW *w;
     return -(sceMcSync(1, &w->cmd, &w->res) == 0);
 }
 
+int mc_check_card(w)
+MCW *w;
+{
+    int a1;
+
+    switch (w->step) {
+    case 0:
+        if (mc_sync(w) >= 0) {
+            w->step++;
+            w->retry = 3;
+    case 1:
+            if (sceMcGetInfo(w->port, 0, &w->type, &w->free, &w->fmt) < 0) {
+                if (--w->retry <= 0) {
+                fail:
+                    w->step = 0;
+                    w->state[w->port] = 0;
+                    w->info[w->port] = 0;
+                    return 0;
+                }
+            } else {
+                w->step++;
+            }
+        }
+        break;
+    case 2:
+        if (mc_sync(w) >= 0) {
+            switch (w->res) {
+            case 0:
+                a1 = 1;
+            common:
+                if (w->type == 2) {
+                    if (w->fmt != 0) {
+                        w->state[w->port] = a1;
+                        w->info[w->port] = w->free;
+                        goto done;
+                    }
+                    goto again;
+                }
+                goto fail;
+            case -1:
+                a1 = 2;
+                w->changed |= 1 << w->port;
+                goto common;
+            case -2:
+                if (w->type == 2) {
+                    w->changed |= 1 << w->port;
+                    goto again;
+                }
+                goto fail;
+            default:
+                if (--w->retry > 0) {
+                    goto retry;
+                }
+                goto fail;
+            }
+        again:
+            if (--w->retry > 0) {
+            retry:
+                w->step = 1;
+                return -1;
+            }
+            w->state[w->port] = 3;
+            w->info[w->port] = 8000;
+        done:
+            w->step = 0;
+            return w->state[w->port];
+        }
+        break;
+    }
+    return -1;
+}
+
 int mc_check_file(w)
 MCW *w;
 {
