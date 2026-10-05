@@ -32,6 +32,160 @@ void frame_init(EMW *, u16, s16, int);
 int em_pl_pos_set(EMW *, u8, f32 *);
 void em_neck_move_sub(EMW *em, f32 *tgt, int on);
 
+FLMAT *get_joint_wmat_em(EMW *, int);
+u16 calc_mat_angY(FLMAT *);
+void get_joint_pos_em(EMW *, int, f32 *);
+int GetEyeHitLine(EMW *, f32 *, f32 *, f32 *, int);
+void SetVector(f32 *, f32, f32, f32);
+void senko_ck(EMW *em, int pl, EM_EYE *e);
+int smoke_ck(EMW *em, EM_EYE *e);
+void Em_Hate_Add(EMW *em, s32 add, s32 max, u8 pl);
+s32 *em_hate_suu_set(EMW *em, u8 type, u8 pl);
+int Pl_stg_ck_tw(EMW *, PLW *);
+
+/* Sight check: sets EMW.x88C bit i for every player i the monster sees and
+ * returns the nearest one seen (-1: none). */
+s8 em_eye_search_set(EMW *em) {
+    int near = -1;
+    int i;
+    PLW *pl;
+    EM_SEARCH *s;
+    u16 fov;
+    s32 ang;
+    f32 best;
+    f32 dist;
+    f32 up;
+    f32 down;
+    f32 xC;
+    f32 y;
+    f32 d;
+    f32 dy;
+    f32 xz;
+    f32 eye[3];
+    f32 hit[3];
+    f32 tgt[3];
+    f32 ppos[3];
+    EM_EYE e;
+
+    if (em->x88B == 0) {
+        em->x88C = 0;
+        return (u8)near;
+    }
+    em->x3AC = 0;
+    best = 0.0f;
+    pl = player_work;
+    switch (em->kind) {
+    case 1:
+    case 11:
+    case 6:
+    case 8:
+    case 14:
+    case 15:
+    case 17:
+    case 20:
+    case 21:
+    case 22:
+    case 26:
+    case 34:
+        get_joint_pos_em(em, 0x22, eye);
+        y = em->pos[1];
+        ang = (u16)(calc_mat_angY(get_joint_wmat_em(em, 0x22)) + 0x4000);
+        break;
+    case 2:
+        get_joint_pos_em(em, 0x33, eye);
+        y = em->pos[1];
+        ang = (u16)(calc_mat_angY(get_joint_wmat_em(em, 0x33)) + 0x4000);
+        break;
+    case 7:
+        get_joint_pos_em(em, 0x23, eye);
+        y = em->pos[1];
+        ang = (u16)(calc_mat_angY(get_joint_wmat_em(em, 0x23)) + 0x4000);
+        break;
+    case 9:
+    case 23:
+        eye[0] = em->pos[0];
+        eye[1] = 100.0f + em->pos[1];
+        eye[2] = em->pos[2];
+        ang = em->ang[1];
+        y = em->pos[1];
+        break;
+    default:
+        eye[0] = em->pos[0];
+        eye[1] = 100.0f + em->pos[1];
+        eye[2] = em->pos[2];
+        y = em->pos[1];
+        ang = em->ang[1];
+        break;
+    }
+    s = em->search;
+    e.pos = eye;
+    dist = s->dist;
+    fov = s->fov;
+    up = s->up;
+    down = s->down;
+    xC = s->xC;
+    e.ang = ang;
+    e.fov = fov;
+    for (i = 0; i < 4; i++, pl++) {
+        if (*(u8 *)&pl->flag14 == 3 || !Pl_stg_ck_tw(em, pl) || pl->be_flag == 0) {
+            goto fail;
+        }
+        em_pl_pos_set(em, i, ppos);
+        senko_ck(em, (u8)i, &e);
+        dy = ppos[1] - y;
+        if (down != 0.0f && !(dy <= 0.0f) && !(dy <= down)) {
+            goto fail;
+        }
+        if (xC != 0.0f && dy < 0.0f && !(-dy <= xC)) {
+            goto fail;
+        }
+        xz = em->x8D4[i];
+        if (dist != 0.0f && !(xz <= dist)) {
+            goto fail;
+        }
+        if (up != 0.0f && xz < up) {
+            goto fail;
+        }
+        d = em->x8C4[i];
+        if ((u16)(em->x904[i] + fov - ang) > fov * 2) {
+            goto fail;
+        }
+        if (pl->st == 1) {
+            SetVector(tgt, ppos[0], 50.0f + ppos[1], ppos[2]);
+        } else {
+            SetVector(tgt, ppos[0], 170.0f + ppos[1], ppos[2]);
+        }
+        e.tgt = tgt;
+        if (game_w.gate_open != 0) {
+            if (GetEyeHitLine(em, eye, tgt, hit, 0x4100) == 1) {
+                goto fail;
+            }
+            if (GetEyeHitLine(em, eye, tgt, hit, 0x100) == 1) {
+                goto fail;
+            }
+        }
+        if ((u8)smoke_ck(em, &e) == 1) {
+            goto fail;
+        }
+        if (!(em->x88C & (1 << i)) && em->x888 == 0) {
+            s32 *h = em_hate_suu_set(em, 0, i);
+            Em_Hate_Add(em, h[0], h[1], i);
+        }
+        em->x88C |= 1 << i;
+        if (best == 0.0f) {
+            best = d;
+            near = i;
+        } else if (!(d <= best)) {
+            best = d;
+            near = i;
+        }
+        continue;
+    fail:
+        em->x88C &= ~(1 << i);
+    }
+    return (u8)near;
+}
+
 void senko_ck(EMW *em, int pl, EM_EYE *e) {
     int i;
 
@@ -80,6 +234,116 @@ void em_search_data_set(EMW *em, u8 no) {
     em->search = &em_search_tbl[em->kind][no];
 }
 
+/* mot_data_tbl[kind][no] (12 bytes): one animation request. */
+typedef struct EM_MOT {
+    u8 no;              /* 0x0 animation number (+1000 + layer * 200) */
+    s8 layer;           /* 0x1 0-2: that layer only, 16-18: all but one, else all */
+    u8 _pad2;
+    u8 ex;              /* 0x3 exmot_data_tbl entry used when already playing */
+    s16 tm;             /* 0x4 */
+    s8 blend;           /* 0x6 */
+    s8 next_blend;      /* 0x7 stored to EMW.x416 */
+    u8 can;             /* 0x8 canmot_data_tbl entry when EMW.x6FE is set */
+    u8 _pad9[3];
+} EM_MOT;
+
+extern EM_MOT *mot_data_tbl[];
+extern EM_MOT *canmot_data_tbl[];
+extern EM_MOT *exmot_data_tbl[];
+void cpRotMatrixYXZ2(s32 *, FLMAT *);
+
+void em_char_set(EMW *em, int no, int blend, s16 tm) {
+    EM_MOT *tbl = mot_data_tbl[em->kind];
+    int n;
+    u16 ch;
+    u16 cur;
+    int k;
+    EM_MOT *e;
+
+    cpRotMatrixYXZ2(em->ang, (FLMAT *)((u8 *)em + 0x20));
+    if (em->x6FE != 0) {
+        em->x6FE = 0;
+        if (tbl[no].can != 0) {
+            no = tbl[no].can;
+            tbl = canmot_data_tbl[em->kind];
+        }
+    }
+    for (n = 0; n < em->x300; n++) {
+        switch (tbl[no].layer) {
+        case 0:
+        case 1:
+        case 2:
+            if (n != tbl[no].layer) {
+                continue;
+            }
+            break;
+        case 16:
+            if (n == 2) {
+                continue;
+            }
+            break;
+        case 17:
+            if (n == 1) {
+                continue;
+            }
+            break;
+        case 18:
+            if (n == 0) {
+                continue;
+            }
+            break;
+        }
+        if (tm == 0) {
+            tm = tbl[no].tm;
+        }
+        ch = tbl[no].no + 1000 + n * 200;
+        if (blend == 0) {
+            if (em->x416 != 0) {
+                if (tbl[no].blend != 0) {
+                    blend = tbl[no].blend;
+                } else {
+                    blend = em->x416;
+                }
+            } else {
+                blend = tbl[no].blend;
+            }
+        }
+        cur = (&em->char0)[n];
+        if (cur == ch && *(s32 *)((u8 *)&em->x1AC + n * 0x50) != 0 &&
+            *(s32 *)((u8 *)&em->x194 + n * 0x50) == 0) {
+            blend = 0;
+        }
+        k = cur - 1000 - n * 200;
+        if (tbl[k].ex != 0 && k > 0) {
+            e = &exmot_data_tbl[em->kind][tbl[k].ex];
+            if ((u16)(e->no + 1000 + n * 200) == cur) {
+                tm = e->tm;
+                ch = e->no + 1000 + n * 200;
+                if (em->x416 != 0) {
+                    if (e->blend != 0) {
+                        blend = e->blend;
+                    } else {
+                        blend = em->x416;
+                    }
+                } else {
+                    blend = e->blend;
+                }
+                if (cur == ch && *(s32 *)((u8 *)&em->x1AC + n * 0x50) != 0) {
+                    blend = 0;
+                }
+            }
+        }
+        if (cur == 0) {
+            blend = 0;
+        }
+        (&em->char0)[n] = ch;
+        (&em->blend0)[n] = blend / 2;
+        (&em->act_tm0)[n] = tm;
+        frame_init(em, (&em->act_tm0)[n], (&em->blend0)[n], n);
+    }
+    em->x416 = tbl[no].next_blend;
+}
+
 void em_char_set2(EMW *em, int ch, int blend, u16 tm, int n) {
     if (n < em->x300) {
         cpRotMatrix(em->ang, (u8 *)em + 0x20);
@@ -92,6 +356,19 @@ void em_char_set2(EMW *em, int ch, int blend, u16 tm, int n) {
         frame_init(em, (&em->act_tm0)[n], (&em->blend0)[n], n);
     }
 }
+
+/* em_neck_tbl[kind]: neck turning data. */
+typedef struct EM_NECK {
+    f32 fwd;            /* 0x00 head offset ahead of the body (em_neck_move_sub) */
+    u8 _pad04[6];
+    u16 spd;            /* 0x0A base turn speed */
+    u16 spd_max;        /* 0x0C */
+    u16 spd_add;        /* 0x0E */
+    u16 lim[4];         /* 0x10 per-joint limits */
+    u16 range;          /* 0x18 */
+} EM_NECK;
+
+extern EM_NECK *em_neck_tbl[];
 
 void em_neck_move(EMW *em) {
     f32 p[3];
@@ -107,6 +384,167 @@ void em_neck_move(EMW *em) {
         em_neck_move_sub(em, p, 1);
     }
 }
+
+/* Spreads the neck turn ang over the four neck joints (EMW.neck[]), moving
+ * each toward its share by at most its part of spd. */
+void neck_ang_set(EMW *em, u16 spd, u16 ang) {
+    u16 r0 = (spd >> 1) + (spd >> 6);
+    u16 r1 = (spd >> 2) + (spd >> 6);
+    EM_NECK *t = em_neck_tbl[em->kind];
+    u32 d = ang;
+    u16 r2 = (spd >> 3) + (spd >> 6);
+    u16 r3 = (spd >> 4) + (spd >> 6);
+    u16 t0;
+    u16 t1;
+    u16 t2;
+    u16 t3;
+    u32 cur;
+    u32 diff;
+    u32 tt;
+
+    if (d > 0x8000) {
+        d = 0x10000 - d;
+    }
+    t0 = (d >> 1) + (d >> 6);
+    t1 = (d >> 2) + (d >> 6);
+    t2 = (d >> 3) + (d >> 6);
+    t3 = (d >> 4) + (d >> 6);
+    if (t0 > t->lim[0]) {
+        t1 += t0 - t->lim[0];
+        t0 = t->lim[0];
+    }
+    if (t1 > t->lim[1]) {
+        t2 += t1 - t->lim[1];
+        t1 = t->lim[1];
+    }
+    if (t2 > t->lim[2]) {
+        t3 += t2 - t->lim[2];
+        t2 = t->lim[2];
+    }
+    if (t3 > t->lim[3]) {
+        t3 = t->lim[3];
+    }
+    if (ang < 0x8000) {
+        cur = em->neck[0];
+        if (cur > 0x8000) {
+            diff = t0 + (0x10000 - cur);
+        } else {
+            diff = t0 - cur;
+        }
+        if (diff >= 0x10000) {
+            diff = (u16)(0x10000 - diff);
+        }
+        if (r0 >= diff) {
+            em->neck[0] = t0;
+        } else if (t0 < cur && cur < 0x8000) {
+            em->neck[0] -= r0;
+        } else {
+            em->neck[0] += r0;
+        }
+        cur = em->neck[1];
+        if (cur > 0x8000) {
+            diff = t1 + (0x10000 - cur);
+        } else {
+            diff = t1 - cur;
+        }
+        if (diff >= 0x10000) {
+            diff = (u16)(0x10000 - diff);
+        }
+        if (r1 >= diff) {
+            em->neck[1] = t1;
+        } else if (t1 < cur && cur < 0x8000) {
+            em->neck[1] -= r1;
+        } else {
+            em->neck[1] += r1;
+        }
+        cur = em->neck[2];
+        if (cur > 0x8000) {
+            diff = t2 + (0x10000 - cur);
+        } else {
+            diff = t2 - cur;
+        }
+        if (diff >= 0x10000) {
+            diff = (u16)(0x10000 - diff);
+        }
+        if (r2 >= diff) {
+            em->neck[2] = t2;
+        } else if (t2 < cur && cur < 0x8000) {
+            em->neck[2] -= r2;
+        } else {
+            em->neck[2] += r2;
+        }
+        cur = em->neck[3];
+        if (cur > 0x8000) {
+            diff = t3 + (0x10000 - cur);
+        } else {
+            diff = t3 - cur;
+        }
+        if (diff >= 0x10000) {
+            diff = (u16)(0x10000 - diff);
+        }
+        if (r3 >= diff) {
+            em->neck[3] = t3;
+        } else if (t3 < cur && cur < 0x8000) {
+            em->neck[3] -= r3;
+        } else {
+            em->neck[3] += r3;
+        }
+    } else {
+        cur = em->neck[0];
+        tt = 0x10000 - t0;
+        diff = tt - cur;
+        if (diff >= 0x8000) {
+            diff = (u16)(0x10000 - diff);
+        }
+        if (r0 >= diff) {
+            em->neck[0] = (u16)tt;
+        } else if (cur < tt && cur > 0x8000) {
+            em->neck[0] += r0;
+        } else {
+            em->neck[0] -= r0;
+        }
+        cur = em->neck[1];
+        tt = 0x10000 - t1;
+        diff = tt - cur;
+        if (diff >= 0x8000) {
+            diff = (u16)(0x10000 - diff);
+        }
+        if (r1 >= diff) {
+            em->neck[1] = (u16)tt;
+        } else if (cur < tt && cur > 0x8000) {
+            em->neck[1] += r1;
+        } else {
+            em->neck[1] -= r1;
+        }
+        cur = em->neck[2];
+        tt = 0x10000 - t2;
+        diff = tt - cur;
+        if (diff >= 0x8000) {
+            diff = (u16)(0x10000 - diff);
+        }
+        if (r2 >= diff) {
+            em->neck[2] = (u16)tt;
+        } else if (cur < tt && cur > 0x8000) {
+            em->neck[2] += r2;
+        } else {
+            em->neck[2] -= r2;
+        }
+        cur = em->neck[3];
+        tt = 0x10000 - t3;
+        diff = tt - cur;
+        if (diff >= 0x8000) {
+            diff = (u16)(0x10000 - diff);
+        }
+        if (r3 >= diff) {
+            em->neck[3] = (u16)tt;
+        } else if (cur < tt && cur > 0x8000) {
+            em->neck[3] += r3;
+        } else {
+            em->neck[3] -= r3;
+        }
+    }
+}
+
 
 typedef struct EM_MOTW {
     u8 _pad00[0xD0];
@@ -752,6 +1190,620 @@ void em_range_set(EMW *em, s8 no) {
     em->x90C[2] = (*a)[0];
     em->x8E4[3] = (*r)[1];
     em->x90C[3] = (*a)[1];
+}
+
+typedef struct STAGE_DATA {
+    u8 _pad00[0x10];
+    f32 w;              /* 0x10 stage size x */
+    f32 d;              /* 0x14 stage size z */
+    f32 floor_y;        /* 0x18 */
+} STAGE_DATA;
+
+/* em->area->x18 lists, by stage: routes of points. */
+typedef struct EM_ROUTE_PT {
+    f32 pos[3];         /* 0x00 */
+    u8 _pad0C[8];
+} EM_ROUTE_PT;
+
+typedef struct EM_ROUTE {
+    u8 _pad00[2];
+    s16 n;              /* 0x02 point count (read from the first route only) */
+    EM_ROUTE_PT *pt;    /* 0x04 */
+    u8 _pad08[0x10];
+} EM_ROUTE;
+
+extern f32 (*em_cmd_pos_tbl[])[3];
+STAGE_DATA *Stage_data_get(u8);
+void NextStage_No_Set(void);
+EM_STG_POS *gp_ck(EMW *em, EM_STG_POS *p, s16 stg);
+typedef f32 (*EM_POSP)[3];
+EM_POSP gp_ptr_ck(EMW *em, EM_STG_POS *p);
+
+/* Target position for a commanded monster (x827 = target kind, x828/x829
+ * its arguments). */
+void cmd_target_kind_set(EMW *em, f32 *pos) {
+    EM_POSP p;
+    STAGE_DATA *sd;
+    EM_STG_POS *g;
+    EM_ROUTE *r;
+    EM_ROUTE_PT *pt;
+    f32 *q;
+    s8 i;
+    EM_SMELL *sm;
+    u8 found;
+
+    em->x881 = em->x827;
+    em->x882 = em->x828;
+    em->x883 = em->x829;
+    switch (em->x827) {
+    case 1:
+        switch (em->x882) {
+        case 0:
+        if (em->x883 == -1) {
+            em->x617 = -1;
+            em->x3B0 = 0;
+        } else {
+        if (em->x888 == 1 && em->x844 != -1) {
+            em->x829 = em->x844 & 0xF;
+            em->x883 = em->x829;
+        }
+        em->x617 = em->x829;
+        em->x3B0 = &player_work[em->x617];
+        em_pl_pos_set(em, em->x617, pos);
+        }
+        }
+        break;
+    case 2:
+        p = gp_ptr_ck(em, (&em->area->x0)[em->x828]);
+        switch (em->x828) {
+        case 0:
+        def0:
+            if (p == 0) {
+                pos[0] = 5000.0f;
+                pos[1] = em->pos[1];
+                pos[2] = 5000.0f;
+            } else {
+                pos[0] = p[0][0];
+                pos[1] = p[0][1];
+                pos[2] = p[0][2];
+            }
+            break;
+        case 1:
+            if (p == 0) {
+                pos[0] = 5000.0f;
+                pos[1] = 0.0f;
+                pos[2] = 5000.0f;
+            } else {
+                q = p[em->x829];
+                pos[0] = q[0];
+                pos[1] = q[1];
+                pos[2] = q[2];
+            }
+            break;
+        case 2:
+            em->x883 = em->x829;
+            if (p == 0) {
+            sd = Stage_data_get(em->stg);
+            switch (em->x829) {
+            case 0:
+                pos[0] = 0.2f * sd->w;
+                pos[1] = 1000.0f + sd->floor_y;
+                pos[2] = 0.2f * sd->d;
+                break;
+            case 1:
+                pos[0] = 0.2f * sd->w;
+                pos[1] = 1000.0f + sd->floor_y;
+                pos[2] = 0.8f * sd->d;
+                break;
+            case 2:
+                pos[0] = 0.8f * sd->w;
+                pos[1] = 1000.0f + sd->floor_y;
+                pos[2] = 0.8f * sd->d;
+                break;
+            case 3:
+            default:
+                pos[0] = 0.8f * sd->w;
+                pos[1] = 1000.0f + sd->floor_y;
+                pos[2] = 0.2f * sd->d;
+                break;
+            }
+            } else {
+                q = p[em->x829];
+                pos[0] = q[0];
+                pos[1] = q[1];
+                pos[2] = q[2];
+            }
+            break;
+        case 3:
+            if (p == 0) {
+                em->x828 = 0;
+                em->x882 = em->x828;
+                p = gp_ptr_ck(em, em->area->x0);
+                goto def0;
+            }
+            q = p[em->x883 = em->x829];
+            pos[0] = q[0];
+            pos[1] = q[1];
+            pos[2] = q[2];
+            break;
+        case 4:
+            if (p == 0) {
+                em->x828 = 0;
+                em->x882 = em->x828;
+                p = gp_ptr_ck(em, em->area->x0);
+                goto def0;
+            }
+            q = p[em->x829];
+            pos[0] = q[0];
+            pos[1] = q[1];
+            pos[2] = q[2];
+            break;
+        case 5:
+            if (p == 0) {
+                em->x828 = 0;
+                em->x882 = em->x828;
+                p = gp_ptr_ck(em, em->area->x0);
+                goto def0;
+            }
+            q = p[em->x829];
+            pos[0] = q[0];
+            pos[1] = q[1];
+            pos[2] = q[2];
+            break;
+        }
+        break;
+    case 3:
+        em->x73A = em->x829;
+        NextStage_No_Set();
+        em->x828 = em->x92F;
+        break;
+    case 5:
+        p = em_cmd_pos_tbl[em->kind];
+        pos[0] = p[em->x883][0];
+        pos[1] = p[em->x883][1];
+        pos[2] = p[em->x883][2];
+        break;
+    case 6: {
+        u16 ang;
+        f32 sc;
+        f32 out[3];
+        f32 v[3];
+        s32 rot[3];
+        FLMAT mat;
+
+        switch (em->x882) {
+        case 0:
+            sc = 1.0f;
+            ang = 0;
+            break;
+        case 1:
+            sc = 1.0f;
+            ang = 0xC000;
+            break;
+        case 2:
+            sc = 1.0f;
+            ang = 0x4000;
+            break;
+        case 3:
+            sc = 1.0f;
+            ang = 0x8000;
+            break;
+        case 8:
+            sc = 2.0f;
+            ang = 0;
+            break;
+        case 9:
+            sc = 2.0f;
+            ang = 0xC000;
+            break;
+        case 10:
+            sc = 2.0f;
+            ang = 0x4000;
+            break;
+        case 11:
+            sc = 2.0f;
+            ang = 0x8000;
+            break;
+        }
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = 500.0f * sc;
+        rot[0] = 0;
+        rot[1] = (u16)(em->ang[1] + ang);
+        rot[2] = 0;
+        cpRotMatrix(rot, &mat);
+        flvecApplyMat33(out, v, &mat);
+        pos[0] = em->pos[0] + out[0];
+        pos[1] = em->pos[1] + out[1];
+        pos[2] = em->pos[2] + out[2];
+        break;
+    }
+    case 7:
+        found = 0;
+        if (smell_cnt != 0) {
+            for (i = 0; i < 32; i++) {
+                sm = smell_stack[i];
+                if (sm != 0 && sm->x10 == em->x882 && sm->x11 == em->x883) {
+                    found = 1;
+                    pos[0] = sm->pos[0];
+                    pos[1] = sm->pos[1];
+                    pos[2] = sm->pos[2];
+                    break;
+                }
+            }
+            if (found) {
+                break;
+            }
+        }
+        p = gp_ptr_ck(em, em->area->x0);
+        goto def0;
+    case 8:
+        pos[0] = em->x9C8[0];
+        pos[1] = em->x9C8[1];
+        pos[2] = em->x9C8[2];
+        break;
+    case 9:
+        g = gp_ck(em, em->area->x18, em->stg);
+        if (g == 0) {
+            p = gp_ptr_ck(em, em->area->x0);
+            goto def0;
+        }
+        r = (EM_ROUTE *)g->pos;
+        if (r == 0) {
+            p = gp_ptr_ck(em, em->area->x0);
+            goto def0;
+        }
+        pt = r[em->x882].pt;
+        if (pt == 0) {
+            p = gp_ptr_ck(em, em->area->x0);
+            goto def0;
+        }
+        pos[0] = pt[em->x883].pos[0];
+        pos[1] = pt[em->x883].pos[1];
+        pos[2] = pt[em->x883].pos[2];
+        em->x86D = em->x882;
+        em->x86E = em->x883;
+        break;
+    case 11: {
+        f32 *base;
+        s32 rot[3];
+        f32 v[3];
+        f32 out[3];
+        FLMAT mat;
+
+        em->x617 = em->x882;
+        em->x3B0 = &player_work[em->x617];
+        {
+            u16 n = em->x3B0->x70E;
+
+            base = gp_ptr_ck(em, em->area->x0)[n];
+        }
+        {
+            u16 a = Em_Calc_angY(base, em->pos);
+
+            rot[0] = 0;
+            rot[1] = a;
+            rot[2] = 0;
+        }
+        switch (em->x883) {
+        case 0:
+            v[0] = 0.0f;
+            v[1] = 500.0f;
+            v[2] = 1000.0f;
+            break;
+        case 1:
+            v[0] = 0.0f;
+            v[1] = 400.0f;
+            v[2] = 800.0f;
+            break;
+        case 2:
+            v[0] = 0.0f;
+            v[1] = 400.0f;
+            v[2] = 1500.0f;
+            break;
+        case 3:
+            v[0] = 0.0f;
+            v[1] = 600.0f;
+            v[2] = 600.0f;
+            break;
+        }
+        cpRotMatrixYXZ2(rot, &mat);
+        flvecApplyMat33(out, v, &mat);
+        pos[0] = base[0] + out[0];
+        pos[1] = base[1] + out[1];
+        pos[2] = base[2] + out[2];
+        break;
+    }
+    case 12:
+        break;
+    }
+    em->x881 = em->x827;
+    em->x882 = em->x828;
+    em->x883 = em->x829;
+}
+
+void target_kind_set(EMW *em, f32 *pos) {
+    EM_POSP p;
+    STAGE_DATA *sd;
+    EM_STG_POS *g;
+    EM_ROUTE *r;
+    EM_ROUTE_PT *pt;
+    f32 *q;
+    s8 i;
+    EM_SMELL *sm;
+    u8 found;
+
+    em->x827 = em->x881;
+    em->x828 = em->x882;
+    em->x829 = em->x883;
+    switch (em->x881) {
+    case 1:
+        switch (em->x882) {
+        case 0:
+            if (em->x883 == -1) {
+                em->x617 = -1;
+                em->x3B0 = 0;
+            } else {
+                em->x617 = em->x883;
+                em->x3B0 = &player_work[em->x883];
+                em_pl_pos_set(em, em->x617, pos);
+                em->x844 = em->x883;
+            }
+        }
+        break;
+    case 2:
+        p = gp_ptr_ck(em, (&em->area->x0)[em->x882]);
+        switch (em->x882) {
+        case 0:
+        def0:
+            if (p == 0) {
+                pos[0] = 5000.0f;
+                pos[1] = em->pos[1];
+                pos[2] = 5000.0f;
+            } else {
+                pos[0] = p[0][0];
+                pos[1] = p[0][1];
+                pos[2] = p[0][2];
+            }
+            break;
+        case 1:
+            if (p == 0) {
+                pos[0] = 5000.0f;
+                pos[1] = 0.0f;
+                pos[2] = 5000.0f;
+            } else {
+                q = p[em->x883];
+                pos[0] = q[0];
+                pos[1] = q[1];
+                pos[2] = q[2];
+            }
+            break;
+        case 2:
+            if (p == 0) {
+            sd = Stage_data_get(em->stg);
+            switch (em->x883) {
+            case 0:
+                pos[0] = 0.2f * sd->w;
+                pos[1] = 1000.0f + sd->floor_y;
+                pos[2] = 0.2f * sd->d;
+                break;
+            case 1:
+                pos[0] = 0.2f * sd->w;
+                pos[1] = 1000.0f + sd->floor_y;
+                pos[2] = 0.8f * sd->d;
+                break;
+            case 2:
+                pos[0] = 0.8f * sd->w;
+                pos[1] = 1000.0f + sd->floor_y;
+                pos[2] = 0.8f * sd->d;
+                break;
+            case 3:
+            default:
+                pos[0] = 0.8f * sd->w;
+                pos[1] = 1000.0f + sd->floor_y;
+                pos[2] = 0.2f * sd->d;
+                break;
+            }
+            } else {
+                q = p[em->x883];
+                pos[0] = q[0];
+                pos[1] = q[1];
+                pos[2] = q[2];
+            }
+            break;
+        case 3:
+        case 4:
+        case 5:
+            if (p == 0) {
+                goto fb;
+            }
+            q = p[em->x883];
+            pos[0] = q[0];
+            pos[1] = q[1];
+            pos[2] = q[2];
+            break;
+        }
+        break;
+    case 3:
+        em->x92F = em->x882;
+        em->x73A = em->x883;
+        break;
+    case 5:
+        p = em_cmd_pos_tbl[em->kind];
+        pos[0] = p[em->x883][0];
+        pos[1] = p[em->x883][1];
+        pos[2] = p[em->x883][2];
+        break;
+    case 6: {
+        u16 ang;
+        f32 sc;
+        f32 out[3];
+        f32 v[3];
+        s32 rot[3];
+        FLMAT mat;
+
+        switch (em->x882) {
+        case 0:
+            sc = 1.0f;
+            ang = 0;
+            break;
+        case 1:
+            sc = 1.0f;
+            ang = 0xC000;
+            break;
+        case 2:
+            sc = 1.0f;
+            ang = 0x4000;
+            break;
+        case 3:
+            sc = 1.0f;
+            ang = 0x8000;
+            break;
+        case 8:
+            sc = 2.0f;
+            ang = 0;
+            break;
+        case 9:
+            sc = 2.0f;
+            ang = 0xC000;
+            break;
+        case 10:
+            sc = 2.0f;
+            ang = 0x4000;
+            break;
+        case 11:
+            sc = 2.0f;
+            ang = 0x8000;
+            break;
+        }
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = 500.0f * sc;
+        rot[0] = 0;
+        rot[1] = (u16)(em->ang[1] + ang);
+        rot[2] = 0;
+        cpRotMatrix(rot, &mat);
+        flvecApplyMat33(out, v, &mat);
+        pos[0] = em->pos[0] + out[0];
+        pos[1] = em->pos[1] + out[1];
+        pos[2] = em->pos[2] + out[2];
+        break;
+    }
+    case 7:
+        found = 0;
+        if (smell_cnt != 0) {
+            em->x951 = em->x882;
+            em->x952 = em->x883;
+            for (i = 0; i < 32; i++) {
+                sm = smell_stack[i];
+                if (sm != 0 && sm->x10 == em->x882 && sm->x11 == em->x883) {
+                    found = 1;
+                    pos[0] = sm->pos[0];
+                    pos[1] = sm->pos[1];
+                    pos[2] = sm->pos[2];
+                    break;
+                }
+            }
+            if (found) {
+                break;
+            }
+        }
+    fb:
+        p = gp_ptr_ck(em, em->area->x0);
+        goto def0;
+    case 8:
+        pos[0] = em->x9C8[0];
+        pos[1] = em->x9C8[1];
+        pos[2] = em->x9C8[2];
+        break;
+    case 9:
+        g = gp_ck(em, em->area->x18, em->stg);
+        if (g == 0) {
+            p = gp_ptr_ck(em, em->area->x0);
+            goto def0;
+        }
+        r = (EM_ROUTE *)g->pos;
+        if (r == 0) {
+            p = gp_ptr_ck(em, em->area->x0);
+            goto def0;
+        }
+        if (em->x882 >= g->num) {
+            p = gp_ptr_ck(em, em->area->x0);
+            goto def0;
+        }
+        pt = r[em->x882].pt;
+        if (pt == 0) {
+            p = gp_ptr_ck(em, em->area->x0);
+            goto def0;
+        }
+        if (em->x883 >= r->n) {
+            em->x883 = r->n - 1;
+        }
+        pos[0] = pt[em->x883].pos[0];
+        pos[1] = pt[em->x883].pos[1];
+        pos[2] = pt[em->x883].pos[2];
+        em->x86D = em->x882;
+        em->x86E = em->x883;
+        break;
+    case 11: {
+        f32 *base;
+        s32 rot[3];
+        f32 v[3];
+        f32 out[3];
+        FLMAT mat;
+
+        em->x617 = em->x882;
+        em->x3B0 = &player_work[em->x617];
+        {
+            u16 n = em->x3B0->x70E;
+
+            base = gp_ptr_ck(em, em->area->x0)[n];
+        }
+        {
+            u16 a = Em_Calc_angY(base, em->pos);
+
+            rot[0] = 0;
+            rot[1] = a;
+            rot[2] = 0;
+        }
+        switch (em->x883) {
+        case 0:
+            v[0] = 0.0f;
+            v[1] = 500.0f;
+            v[2] = 1000.0f;
+            break;
+        case 1:
+            v[0] = 0.0f;
+            v[1] = 400.0f;
+            v[2] = 800.0f;
+            break;
+        case 2:
+            v[0] = 0.0f;
+            v[1] = 400.0f;
+            v[2] = 1500.0f;
+            break;
+        case 3:
+            v[0] = 0.0f;
+            v[1] = 600.0f;
+            v[2] = 600.0f;
+            break;
+        }
+        cpRotMatrixYXZ2(rot, &mat);
+        flvecApplyMat33(out, v, &mat);
+        pos[0] = base[0] + out[0];
+        pos[1] = base[1] + out[1];
+        pos[2] = base[2] + out[2];
+        break;
+    }
+    case 12:
+        if (em->x882 == 0) {
+            em->x95A = em->x883;
+        }
+        break;
+    }
+    em->x827 = em->x881;
+    em->x828 = em->x882;
+    em->x829 = em->x883;
 }
 
 u8 pl_ninshiki_ck(EMW *em) {

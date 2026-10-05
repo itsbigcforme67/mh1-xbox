@@ -28,7 +28,7 @@ typedef struct EM_MDL {
  * stg == -1; pos points to 4 positions. */
 typedef struct EM_STG_POS {
     s16 stg;            /* 0x0 stage number, -1 ends the list (also used as default) */
-    u8 _pad2[2];
+    s16 num;            /* 0x2 entry count (EMW.area->x18 lists, target_kind_set) */
     f32 (*pos)[3];      /* 0x4 */
 } EM_STG_POS;
 
@@ -113,7 +113,8 @@ typedef struct EMW {
     u16 x39A;           /* 0x39A em16 acts only when it is even */
     u8 _pad39C[0x3A4 - 0x39C];
     s32 horm_ang;       /* 0x3A4 angle to turn toward (emNN_horm_init, em10 act 10) */
-    u8 _pad3A8[0x3B0 - 0x3A8];
+    u8 _pad3A8[0x3AC - 0x3A8];
+    s32 x3AC;           /* 0x3AC cleared by em_eye_search_set */
     struct PLW *x3B0;   /* 0x3B0 target player (em15 fly 33 / atk 2) */
     f32 rate_x;         /* 0x3B4 rate/jump vector x (em10 act 2); with adj_y, adj_z it is a
                          * f32[3] (em19_rate_add_calc copies all three) */
@@ -127,7 +128,9 @@ typedef struct EMW {
     u8 _pad3F5[0x40C - 0x3F5];
     s16 x40C;           /* 0x40C set to 10 while dying (em29 move 5) */
     s16 x40E;           /* 0x40E */
-    u8 _pad410[0x444 - 0x410];
+    u8 _pad410[0x416 - 0x410];
+    s16 x416;           /* 0x416 default blend (em_char_set) */
+    u8 _pad418[0x444 - 0x418];
     u8 ex[0x50C - 0x444]; /* 0x444 per-monster work: each emNN.c lays out its own
                          * struct here (EM07W...). The end is a guess. */
     struct EM_MDL *mdl; /* 0x50C model work */
@@ -136,16 +139,22 @@ typedef struct EMW {
     u8 _pad56B[0x5A0 - 0x56B];
     f32 x5A0[3];        /* 0x5A0 */
     f32 x5AC;           /* 0x5AC height used for set20's shell */
-    u8 _pad5B0[0x616 - 0x5B0];
+    u8 _pad5B0[0x60C - 0x5B0];
+    u16 neck_tgt;       /* 0x60C neck target angle, relative (em_neck_move_sub) */
+    u16 neck_ang;       /* 0x60E current neck angle */
+    u8 _pad610[0x616 - 0x610];
     u8 x616;            /* 0x616 player number (em18 mov01 follows player_work[x616]) */
     s8 x617;            /* 0x617 -1: no ... (em08_fly_act_set) */
     u8 _pad618[0x6E0 - 0x618];
     u16 x6E0;           /* 0x6E0 em10: item given in a trade */
     u16 x6E2;           /* 0x6E2 em10: item taken in a trade */
     struct EM_SEARCH * search;/* 0x6E4 */
-    u8 _pad6E8[0x6FD - 0x6E8];
+    u32 neck[4];        /* 0x6E8 per-joint neck angles (neck_ang_set) */
+    u16 neck_spd;       /* 0x6F8 */
+    u16 neck_lock;      /* 0x6FA target latched while turning */
+    u8 neck_st;         /* 0x6FC 0 off 1 start 2 turning 3 settled */
     s8 x6FD;            /* 0x6FD */
-    u8 _pad6FE[0x6FF - 0x6FE];
+    u8 x6FE;            /* 0x6FE 1 = next em_char_set uses canmot_data_tbl */
     u8 x6FF;            /* 0x6FF non-zero: main_sub runs twice this frame (em29_main) */
     f32 x700[3];        /* 0x700 */
     u8 _pad70C[0x70E - 0x70C];
@@ -281,7 +290,7 @@ typedef struct EMW {
     f32 x8D4[4];        /* 0x8D4 per player (indexed by x617; em01 atk 4), size a guess */
     f32 x8E4[4];        /* 0x8E4 */
     s32 x8F4[4];        /* 0x8F4 */
-    s16 x904[4];        /* 0x904 */
+    u16 x904[4];        /* 0x904 (u16: em_eye_search_set) angle to each player */
     u16 x90C[4];        /* 0x90C */
     u8 x914;            /* 0x914 */
     u8 x915;            /* 0x915 */
