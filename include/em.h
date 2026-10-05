@@ -41,7 +41,7 @@ typedef struct EMW {
     u8 _pad003[0x4 - 0x3];
     u8 x04;             /* 0x004 shells end when >= 2 (shell02_m) */
     u8 x05;             /* 0x005 step within the current action (em29 dm00/move05) */
-    u8 _pad006[0x7 - 0x6];
+    u8 x06;             /* 0x006 cleared when em10 starts talking (act 4) */
     u8 x07;             /* 0x007 3 ends attached effects (eft07_m) */
     s32 work08;         /* 0x008 (as PLW; em08 stores a turn time here) */
     u16 id;             /* 0x00C */
