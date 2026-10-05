@@ -20,7 +20,7 @@ import re
 import sys
 
 LINE = re.compile(r"^(\w+) = 0x([0-9A-Fa-f]+);(?:\s*//\s*(?:type:(\w+))?\s*(?:size:0x([0-9A-Fa-f]+))?)?")
-CAST = re.compile(r"\(\s*(\w+)\s*\*\s*\)\s*0x([0-9A-Fa-f]{6,8})\b")
+CAST = re.compile(r"\(\s*(\w+(?:\s*\*)+)\s*\)\s*0x([0-9A-Fa-f]{6,8})\b")
 
 
 def main():
@@ -43,7 +43,7 @@ def main():
             va, size, name = syms[i]
             if va <= a < va + size:
                 used[name] = 1
-                return "(%s *)(rt_abs_%s + 0x%X)" % (m.group(1), name, a - va)
+                return "(%s)(rt_abs_%s + 0x%X)" % (m.group(1), name, a - va)
             if a - va > 0x10000:
                 break
             i -= 1

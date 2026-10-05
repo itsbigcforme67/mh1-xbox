@@ -168,6 +168,11 @@ for f in $GAME; do
              -DEft06_set=rtabi_Eft06_set -DEft02_set6=rtabi_Eft02_set6 \
              -DGetGroundHitStatusAreaPl=rtabi_GetGroundHitStatusAreaPl" ;;
     src/main/stage/f_stage.c) ABI="-Dhit_point_cbd=rtabi_hit_point_cbd" ;;
+    # lobby C: frame_check2 / em_frame_check declared with the float first
+    # (include/lobby_f.h, the lobby NPC files) or second (include/lbnpc.h)
+    src/lobby/lb/lb_em*_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
+    src/lobby/lb/lbnpc_nm.c) ABI="-Dframe_check2=rtabi_frame_check2_em" ;;
+    src/lobby/f/*) ABI="-Dframe_check2=rtabi_frame_check2" ;;
     # game_core (swset, move, trans, hit_check) is the host tick (rt_quest.c)
     src/main/game/f_gameb.c) ABI="-Dgame_core=ps2_game_core" ;;
     */em_cmd_nm.c) ABI="-DGetWaterData()=GetWaterData(em)" ;;   # a0 = em left over
@@ -220,7 +225,7 @@ for f in $GAME; do
     # absolute PS2 addresses some m2c-based files still use (game_w
     # 0x3F33F0, User_data ...): compile a copy that reads the host's symbol
     # instead (tools/pc_abs.py)
-    if grep -qE '\(\s*\w+\s*\*\s*\)\s*0x[0-9A-Fa-f]{6}' "$src"; then
+    if grep -qE '\(\s*\w+(\s*\*)+\s*\)\s*0x[0-9A-Fa-f]{6}' "$src"; then
         mkdir -p build/pc/abs
         if python3 tools/pc_abs.py "$src" "build/pc/abs/$b.abs.c"; then
             src="build/pc/abs/$b.abs.c"

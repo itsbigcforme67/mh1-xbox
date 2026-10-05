@@ -649,6 +649,33 @@ static void quest_back(void)
         rt_cam_init(stage_no);
 }
 
+/* The quest accepted in the village (game mode 0 -> game1/10/11/12/13 on
+ * the PS2): Quest_init + Quest_start (rt_quest_load), the hunt starts on
+ * the quest's own start stage (the base camp, game_w.stage), the hunter at
+ * its start position (pl_init), the stage's monsters (Quest_em_init_set). */
+static void quest_from_village(void)
+{
+    int st;
+    float p[3] = { rx, 0, rz };
+    rt_monster_clear_all();
+    if (rt_quest_load(quest_no) != 0) {
+        fprintf(stderr, "quest %d: no mission file\n", quest_no);
+        return;
+    }
+    st = rt_game_stage();
+    if (st != stage_no)
+        load_stage_models(st);
+    stage_no = st;
+    rt_game_init(stage_no);
+    rt_hud_init();
+    rt_player_game_init(0);
+    rt_monster_spawn(1, p, 0);
+    if (game_cam)
+        rt_cam_init(stage_no);
+    if (getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "village: quest %d starts on stage %d\n", quest_no, stage_no);
+}
+
 /* After the reward screen (game mode 6): the village, as on the PS2
  * (rt_village.c runs lobby.bin's Local_main); a quest accepted at the
  * counter starts when the hunter leaves through the gate. RT_NO_VILLAGE=1
@@ -667,7 +694,7 @@ static void village_step(void)
         if (getenv("RT_QUEST_TRACE"))
             fprintf(stderr, "village: quest %d accepted, leaving the village\n", q);
         quest_no = q;
-        quest_back();
+        quest_from_village();
     } else if (q < 0) {
         quest_back();
     }

@@ -34,7 +34,7 @@ void rt_game_move(void);
 void rt_font_tick_begin(void);
 void rt_prims_reset(void);
 
-static int active, tick, last_step = -1, last_x68 = -1;
+static int active, tick, last_step = -1, last_x68 = -1, last_6 = -1;
 
 int rt_village_active(void) { return active; }
 
@@ -66,6 +66,22 @@ int rt_village_tick(void)
     rt_prims_reset();
     rt_game_move();                     /* set objects and effects (move_set / move_eft) */
     r = Local_main();
+    if (getenv("RT_VILLAGE_TRACE") && tick == 20) {     /* the stage's unique spots (exits, chairs ...) */
+        void *Stage_unique_data_get(int st);
+        u8 *r = Stage_unique_data_get(game_w[0x14]);
+        for (; r && *(float *)(r + 4) != -1.0f; r += 0x18)
+            fprintf(stderr, "rt_village:   spot kind %d at %.0f %.0f %.0f r %.0f ang %04X\n", *(u16 *)(r + 2),
+                    *(float *)(r + 4), *(float *)(r + 8), *(float *)(r + 0xC), *(float *)(r + 0x10), *(u16 *)(r + 0x14));
+    }
+    if (getenv("RT_VILLAGE_TRACE") && tick % 90 == 60) {   /* the stage's NPCs: slot, model kind, type, talk kind, position */
+        int i;
+        for (i = 0; i < 20; i++) {
+            u8 *e = em_work + 0xA10 * i;
+            if (e[0] && e[0x1E])
+                fprintf(stderr, "rt_village:   npc slot %d kind %d type %d talk %d act %d/%d pos %.0f %.0f %.0f\n", i, e[2], e[0x1B],
+                        e[0x452], e[0x14], e[0x15], *(float *)(e + 0xAC), *(float *)(e + 0xB0), *(float *)(e + 0xB4));
+        }
+    }
     if (getenv("RT_VILLAGE_TRACE") && tick % 30 == 0) {
         float *p = (float *)(player_work + 0xAC), e[3], t[3], roll, fov;
         rt_cam_view(e, t, &roll, &fov);
@@ -74,11 +90,32 @@ int rt_village_tick(void)
                 tick, p[0], p[1], p[2], *(u16 *)(player_work + 0xE), player_work[0x14], player_work[0x15],
                 *(u16 *)(player_work + 0x2DC), e[0], e[1], e[2], t[0], t[1], t[2], fov, roll);
     }
+    if (getenv("RT_VILLAGE_TRACE") && *(s32 *)(lb_sys + 0x68) != 0 && tick % 10 == 0) {
+        extern u8 lb_pit[];
+        fprintf(stderr, "rt_village: tick %d talk %d/%d pit x0 %d pos %p page %d sel %d done %d\n", tick, (s8)lb_sys[6], (s8)lb_sys[7],
+                *(s32 *)lb_pit, *(void **)(lb_pit + 4), (s8)lb_pit[8], (s8)lb_pit[9], (s8)lb_pit[0xB]);
+    }
+    if (getenv("RT_QUEST_TRACE") && *(s32 *)(lb_sys + 0x68) != 0 && lb_sys[6] != last_6) {
+        extern u8 lb_pit[];
+        fprintf(stderr, "rt_village: tick %d talk state %d (x68 %d) page %d sel %d\n", tick, (s8)lb_sys[6],
+                *(s32 *)(lb_sys + 0x68), (s8)lb_pit[8], (s8)lb_pit[9]);
+        last_6 = lb_sys[6];
+    }
     if (getenv("RT_QUEST_TRACE") && (lb_sys[3] != last_step || *(s32 *)(lb_sys + 0x68) != last_x68)) {
         float *p = (float *)(player_work + 0xAC);
-        fprintf(stderr, "rt_village: tick %d step %d sub %d x68 %d stage %d pl %.0f %.0f %.0f act %d/%d\n",
+        extern u8 *cw;
+        fprintf(stderr, "rt_village: tick %d step %d sub %d x68 %d stage %d pl %.0f %.0f %.0f act %d/%d quest %d (accepted %d)\n",
                 tick, (s8)lb_sys[3], (s8)lb_sys[4], *(s32 *)(lb_sys + 0x68), game_w[0x14],
-                p[0], p[1], p[2], player_work[0x14], player_work[0x15]);
+                p[0], p[1], p[2], player_work[0x14], player_work[0x15], *(s16 *)(select_w + 0xAC), cw ? cw[0x35D3] : -1);
+        if (0) {
+            int i;
+            for (i = 0; i < 20; i++) {
+                u8 *e = em_work + 0xA10 * i;
+                if (e[0] && e[0x1E])
+                    fprintf(stderr, "rt_village:   npc slot %d kind %d type %d talk %d pos %.0f %.0f %.0f\n", i, e[2], e[0x1B],
+                            e[0x452], *(float *)(e + 0xAC), *(float *)(e + 0xB0), *(float *)(e + 0xB4));
+            }
+        }
         last_step = lb_sys[3];
         last_x68 = *(s32 *)(lb_sys + 0x68);
     }

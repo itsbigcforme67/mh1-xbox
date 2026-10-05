@@ -137,6 +137,7 @@ int rt_village_tick(void);
 int rt_village_active(void);
 void rt_flow_set_village(void (*fn)(void));
 void rt_flow_set_mode(int mode);   /* test aid: jump to a game mode */
+int rt_game_stage(void);           /* game_w.stage */
 /* One tick of player no with the pad: pl_sw_set (game C), then the host
  * stand-in for the normal state (rt_player.c: turn/run/idle with the
  * game's frame_init/frame_move) and ground following. */

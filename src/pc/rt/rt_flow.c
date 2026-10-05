@@ -47,6 +47,7 @@ void game2(void); void game3(void); void game4(void); void game5(void);
 extern u8 quest_w[];
 int rt_flow_mode(void) { return game_w[0]; }
 void rt_flow_set_mode(int m) { game_w[0] = (u8)m; game_w[1] = 0; }
+int rt_game_stage(void) { return game_w[0x14]; }
 int rt_flow_tick(void)
 {
     static u32 last = 0xFFFFFFFF;
