@@ -430,7 +430,7 @@ def world_matrices(bones, chans):
 def motion_channels(bones, tbl, ids, frame):
     """Per bone [Sx Sy Sz Rx Ry Rz Tx Ty Tz]: the AHI bind values, overwritten
     by the motions in ids = {group: motion id}. A motion id is decoded like
-    frame_init (0x10F2xx): bank = (id % 1000) // 100, slot = id % 100; ids
+    frame_init (0x125920): bank = (id % 1000) // 100, slot = id % 100; ids
     >= 1000 select the character's own table instead of the common one,
     which for a single *_tbl.bin makes no difference here."""
     pose = [list(b[2]) + list(b[3]) + list(b[4]) for b in bones]

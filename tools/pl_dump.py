@@ -11,7 +11,7 @@ How the game does it (addresses in docs/formats/player.md):
   0 reg (legs), 1 face, 2 hair, 3 body, 4 arm, 5 wst (waist), file names
   {m,f}_{reg,face,hair,body,arm,wst}NNN_amh.bin (tables armor_model_m/f).
   Each part has its own small AHI skeleton. Only slot 0 (legs) is animated:
-  its 21-bone AHI is the master skeleton. SetPartsTrans (0x10xxxx, f_trans)
+  its 21-bone AHI is the master skeleton. SetPartsTrans (0x163E40)
   gives every bone of the other parts the world matrix of a master bone,
   looked up in ptmat_tbl[slot][bone] (read here from main.bin).
 
