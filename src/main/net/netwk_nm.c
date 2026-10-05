@@ -57,6 +57,21 @@ extern PSW Psw[];
 extern u8 SoftKeyWork[];
 extern u8 CNFile[];
 extern s8 MMBB_LOGIN;
+extern s32 net_sel_drive;
+extern s32 Last_sel_drive;
+extern u8 *data_load_ptr;
+int McActSave0Set();
+int McActMain();
+int McActResult();
+int NetFileLoad();
+int NetFileCreate();
+int net_yesno_operation_move(void);
+int net_shot_ok_ck(int);
+int net_shot_ng_ck(void);
+int net_swdata(void);
+int Net_fade_execute();
+int func_535310();
+int func_535340();
 extern int (*ms_network_jp_142[])();
 void cnnect_err_set();
 void Net_work_move();
@@ -92,6 +107,9 @@ void Ncm_spr_TITLE_set(void);
 void Ncm_spr_set_diarog_m(void);
 void Ncm_spr_SVAE_GAME_set(void);
 void Ncm_spr_kill_all(void);
+void Net_fade_kill(void);
+void Ncm_spr_D_MENU_set(s8 a, s8 b);
+void Ncm_spr_kill2(int m);
 int Net_fade_check(void);
 
 void *memset(void *, int, int);
@@ -113,6 +131,9 @@ int load_file_mdl();
 
 void SoftKey_onoff(int on);
 void Ncm_spr_kill_all(void);
+void Net_fade_kill(void);
+void Ncm_spr_D_MENU_set(s8 a, s8 b);
+void Ncm_spr_kill2(int m);
 
 int ms_network_sub(void) {
     int ret = 0;
@@ -420,6 +441,416 @@ int ms_network_bb_connect_driver(void) {
         COM_R_No_3 = 0;
         COM_R_No_0 = 1;
         COM_R_No_4 = 0;
+        break;
+    }
+    return ret;
+}
+
+int ms_network_net_file(void) {
+    int ret = 0;
+    int r;
+    s16 t;
+
+    {
+        switch (net_common_w.step) {
+        case 0:
+            Ncm_mssage_disp_req(0x1F);
+            if (net_common_w.timer == 0) {
+                system_w[0x3C] = 1;
+                net_common_w.step++;
+                Net_McWorkInit(2);
+                net_sel_drive = 0;
+                net_common_w.x06 = 5;
+            } else {
+                net_common_w.timer = net_common_w.timer - 1;
+            }
+            break;
+        case 2:
+            Ncm_mssage_disp_req(0x1F);
+            Ncm_mssage_disp_req(2);
+        case 5:
+            if (net_common_w.timer == 0) {
+                net_common_w.step++;
+            } else {
+                net_common_w.timer = net_common_w.timer - 1;
+            }
+            break;
+        case 1:
+            Ncm_mssage_disp_req(0x1F);
+            Ncm_mssage_disp_req(2);
+            t = net_common_w.x06 - 1;
+            net_common_w.x06 = t;
+            if (t <= 0) {
+                switch (net_common_w.sub) {
+                case 0:
+                    net_common_w.sub++;
+                    net_common_w.x08 = 0;
+                    net_common_w.x0A = 0;
+                    net_common_w.x0D = 0;
+                    net_common_w.x79 = 0;
+                    Net_McWorkInit(2);
+                    net_sel_drive = 0;
+                    McActSave0Set(0, data_load_ptr, 0);
+                    break;
+                case 1:
+                    McActMain(2);
+                    r = McActResult();
+                    if (r != -1) {
+                        if (r == 0) {
+                            net_common_w.sub = 0;
+                            net_common_w.step = 3;
+                            net_common_w.x06 = 0xA;
+                            net_common_w.x0D = 0;
+                            net_common_w.x79 = 0;
+                            Last_sel_drive = net_common_w.x0D;
+                        } else {
+                            net_common_w.x08 = r;
+                            net_common_w.sub++;
+                            McActSave0Set(1, data_load_ptr, 0);
+                        }
+                    }
+                    break;
+                case 2:
+                    McActMain(2);
+                    r = McActResult();
+                    if (r != -1) {
+                        if (r == 0) {
+                            net_common_w.sub = 0;
+                            net_common_w.step = 3;
+                            net_common_w.x0D = 1;
+                            net_common_w.x79 = 1;
+                            net_common_w.x06 = 0xA;
+                            system_w[0x3C] = 0;
+                            Last_sel_drive = net_common_w.x0D;
+                        } else {
+                            net_common_w.x0A = r;
+                            net_common_w.sub++;
+                        }
+                    }
+                    break;
+                case 3:
+                    if (net_common_w.x08 == -0xFF && net_common_w.x0A == -0xFF) {
+                        net_common_w.sub = 0;
+                        net_common_w.step = 0xA;
+                        net_common_w.x06 = 0xA;
+                        system_w[0x3C] = 0;
+                        break;
+                    }
+                    net_common_w.sub = 0;
+                    system_w[0x3C] = 0;
+                    net_common_w.step = 0x14;
+                    net_common_w.x06 = 0xA;
+                    break;
+                }
+            }
+            break;
+        case 3:
+            Ncm_mssage_disp_req(0x1F);
+            t = net_common_w.x06 - 1;
+            net_common_w.x06 = t;
+            if (t == 0) {
+                net_common_w.x29 = 0;
+                net_common_w.step = 4;
+                net_common_w.x06 = 0x14;
+                Ncm_spr_D_MENU_set(0, 2);
+            }
+            break;
+        case 4:
+            Ncm_mssage_disp_req(0x1F);
+            Ncm_mssage_disp_req(3);
+            Ncm_menu_disp_req(4);
+            if (net_common_w.x06 > 0) {
+                net_common_w.x06 = net_common_w.x06 - 1;
+            } else {
+                r = net_yesno_operation_move();
+                switch (r) {
+                case 0:
+                    break;
+                case 1:
+                    net_common_w.step = 6;
+                    net_common_w.timer = 0x14;
+                    Ncm_spr_kill(0x100000);
+                    Ncm_spr_kill(0x40000);
+                    Ncm_spr_kill(0x80000);
+                    Net_McWorkInit(2);
+                    system_w[0x3C] = 1;
+                    break;
+                case -1:
+                    net_common_w.step = 0xD;
+                    net_common_w.x06 = 0x14;
+                    Ncm_spr_kill(0x40000);
+                    Ncm_spr_kill(0x80000);
+                    if (net_shot_ok_ck(0) != 0) {
+                        Ncm_spr_kill(0x100000);
+                    } else {
+                        Ncm_spr_kill2(0x100000);
+                    }
+                    Net_fade_execute(0, 0x14, 1);
+                    break;
+                }
+            }
+            break;
+        case 6:
+            if (net_common_w.timer == 0) {
+                net_common_w.step++;
+            } else {
+                net_common_w.timer = net_common_w.timer - 1;
+            }
+            break;
+        case 7:
+            Ncm_mssage_disp_req(0x1F);
+            r = NetFileLoad();
+            switch (r) {
+            case 0:
+                break;
+            case 1:
+                system_w[0x3C] = 0;
+                net_sel_drive = net_common_w.x0D;
+                net_common_w.step++;
+                break;
+            case -1:
+                net_common_w.x03 = 0;
+                net_common_w.step = 0xD;
+                Net_fade_execute(0, 0x14, 1);
+                system_w[0x3C] = 0;
+                break;
+            }
+            break;
+        case 8:
+            net_common_w.step = 0x64;
+            net_common_w.timer = 0xA;
+            Net_fade_execute(0, 0x14, 1);
+            break;
+        case 0xA:
+            Ncm_mssage_disp_req(0x1F);
+            t = net_common_w.x06 - 1;
+            net_common_w.x06 = t;
+            if (t == 0) {
+                net_common_w.x29 = 1;
+                net_common_w.x06 = 0xA;
+                net_common_w.step++;
+                Ncm_spr_D_MENU_set(0, 2);
+            }
+            break;
+        case 0xB:
+            Ncm_mssage_disp_req(0x1F);
+            Ncm_mssage_disp_req(4);
+            Ncm_menu_disp_req(4);
+            if (net_common_w.x06 > 0) {
+                net_common_w.x06 = net_common_w.x06 - 1;
+            } else {
+                r = net_yesno_operation_move();
+                switch (r) {
+                case 0:
+                    break;
+                case 1:
+                    net_common_w.x06 = 0xA;
+                    net_common_w.step += 2;
+                    Ncm_spr_kill(0x100000);
+                    Ncm_spr_kill(0x40000);
+                    Ncm_spr_kill(0x80000);
+                    Net_fade_execute(0, 0x1E, 1);
+                    break;
+                case -1:
+                    net_common_w.x06 = 0xA;
+                    net_common_w.step++;
+                    if (net_shot_ok_ck(0) != 0) {
+                        Ncm_spr_kill(0x100000);
+                    } else {
+                        Ncm_spr_kill2(0x100000);
+                    }
+                    Ncm_spr_kill(0x40000);
+                    Ncm_spr_kill(0x80000);
+                    break;
+                }
+            }
+            break;
+        case 0xC:
+            t = net_common_w.x06 - 1;
+            net_common_w.x06 = t;
+            if (t == 0) {
+                net_common_w.step = 0;
+            }
+            break;
+        case 0xD:
+            if (Net_fade_check() == 0) {
+                net_common_w.step++;
+                Ncm_spr_kill_all();
+        case 0xE:
+                net_common_w.step = 0;
+                ret = -1;
+            }
+            break;
+        case 0x14:
+            Ncm_mssage_disp_req(0x1F);
+            t = net_common_w.x06 - 1;
+            net_common_w.x06 = t;
+            if (t == 0) {
+                net_common_w.x29 = 0;
+                net_common_w.x06 = 0xA;
+                net_common_w.step++;
+                Ncm_spr_D_MENU_set(0, 2);
+            }
+            break;
+        case 0x15:
+            Ncm_mssage_disp_req(5);
+            Ncm_menu_disp_req(4);
+            Ncm_mssage_disp_req(0x1F);
+            if (net_common_w.x06 > 0) {
+                net_common_w.x06 = net_common_w.x06 - 1;
+            } else {
+                r = net_yesno_operation_move();
+                switch (r) {
+                case 0:
+                    break;
+                case 1:
+                    net_common_w.step++;
+                    Ncm_spr_kill(0x100000);
+                    Ncm_spr_kill(0x40000);
+                    Ncm_spr_kill(0x80000);
+                    Net_fade_execute(0, 0x1E, 1);
+                    break;
+                case -1:
+                    net_common_w.x06 = 0x14;
+                    net_common_w.step = 0xD;
+                    if (net_shot_ok_ck(0) != 0) {
+                        Ncm_spr_kill(0x100000);
+                    } else {
+                        Ncm_spr_kill2(0x100000);
+                    }
+                    Ncm_spr_kill(0x40000);
+                    Ncm_spr_kill(0x80000);
+                    Net_fade_execute(0, 0x14, 1);
+                    break;
+                }
+            }
+            break;
+        case 0x16:
+            Ncm_mssage_disp_req(0x1F);
+            if (Net_fade_check() == 0) {
+                net_common_w.step++;
+                Net_McWorkInit(2);
+                system_w[0x3C] = 1;
+                Net_fade_kill();
+            }
+            break;
+        case 0x17:
+            Ncm_mssage_disp_req(0x1F);
+            r = NetFileCreate();
+            switch (r) {
+            case 0:
+                break;
+            case 1:
+                system_w[0x3C] = 0;
+                net_sel_drive = net_common_w.x0D;
+                net_common_w.step++;
+                break;
+            case -1:
+                net_common_w.step = 0xD;
+                net_common_w.x06 = 0xA;
+                Net_fade_execute(0, 0x14, 1);
+                system_w[0x3C] = 0;
+                break;
+            }
+            break;
+        case 0x18:
+            net_common_w.step++;
+            break;
+        case 0x19:
+            if (Net_fade_check() == 0) {
+                net_common_w.step = 8;
+            }
+            break;
+        case 0x5A:
+            Ncm_mssage_disp_req(0x1F);
+            net_common_w.x06 = 5;
+            net_common_w.step++;
+            break;
+        case 0x5B:
+            Ncm_mssage_disp_req(0x1F);
+            if (net_common_w.x06 > 0) {
+                net_common_w.x06 = net_common_w.x06 - 1;
+            } else {
+                Ncm_mssage_disp_req(6);
+                if (net_shot_ok_ck(2) != 0) {
+                    net_common_w.x06 = 0xA;
+                    net_common_w.step++;
+                }
+            }
+            break;
+        case 0x5C:
+            Ncm_mssage_disp_req(0x1F);
+            t = net_common_w.x06 - 1;
+            net_common_w.x06 = t;
+            if (t == 0) {
+                net_common_w.step = 0;
+            }
+            break;
+        case 0x64:
+        case 0x65:
+        case 0x66:
+            Ncm_mssage_disp_req(0x1F);
+            if (Net_fade_check() == 0) {
+                net_common_w.step = 0;
+                ret = 1;
+                net_common_w.timer = 0xA;
+                Net_work_init_all();
+                Ncm_spr_kill_all();
+                system_w[0x3C] = 0;
+            }
+            break;
+        }
+    }
+    return ret;
+}
+
+int ms_network_yn_file(void) {
+    int ret = 0;
+
+    switch (net_common_w.step) {
+    case 0:
+        net_common_w.step++;
+        Net_all_reset(0);
+        Net_work_init_all();
+        Net_fade_kill();
+        game_w[0x1DC] = 0;
+        Load_overlay(4, 1);
+        break;
+    case 1:
+        net_common_w.step++;
+        func_535310(net_common_w.x10);
+        break;
+    case 2:
+        switch (func_535340()) {
+        case 0:
+            break;
+        case 2:
+            net_common_w.x28 = 1;
+        case 1:
+            net_common_w.step = 3;
+            fade_set(0xA);
+            break;
+        case -1:
+            net_common_w.step = 5;
+            fade_set(0xA);
+            break;
+        }
+        break;
+    case 3:
+    case 5:
+        if ((Fade_busy_ck() & 0xFF) == 2) {
+            net_common_w.step++;
+            Load_overlay(3, 1);
+            game_w[0x1DC] = 1;
+        }
+        break;
+    case 4:
+        Net_fade_kill();
+        ret = 1;
+        break;
+    case 6:
+        Net_fade_kill();
+        ret = -1;
         break;
     }
     return ret;

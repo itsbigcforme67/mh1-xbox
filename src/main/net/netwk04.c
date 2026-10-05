@@ -53,6 +53,21 @@ extern PSW Psw[];
 extern u8 SoftKeyWork[];
 extern u8 CNFile[];
 extern s8 MMBB_LOGIN;
+extern s32 net_sel_drive;
+extern s32 Last_sel_drive;
+extern u8 *data_load_ptr;
+int McActSave0Set();
+int McActMain();
+int McActResult();
+int NetFileLoad();
+int NetFileCreate();
+int net_yesno_operation_move(void);
+int net_shot_ok_ck(int);
+int net_shot_ng_ck(void);
+int net_swdata(void);
+int Net_fade_execute();
+int func_535310();
+int func_535340();
 extern int (*ms_network_jp_142[])();
 void cnnect_err_set();
 void Net_work_move();
@@ -88,6 +103,9 @@ void Ncm_spr_TITLE_set(void);
 void Ncm_spr_set_diarog_m(void);
 void Ncm_spr_SVAE_GAME_set(void);
 void Ncm_spr_kill_all(void);
+void Net_fade_kill(void);
+void Ncm_spr_D_MENU_set(s8 a, s8 b);
+void Ncm_spr_kill2(int m);
 int Net_fade_check(void);
 
 void *memset(void *, int, int);
@@ -109,6 +127,11 @@ int load_file_mdl();
 
 void SoftKey_onoff(int on);
 void Ncm_spr_kill_all(void);
+void Net_fade_kill(void);
+void Ncm_spr_D_MENU_set(s8 a, s8 b);
+void Ncm_spr_kill2(int m);
+
+
 
 
 
