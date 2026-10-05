@@ -536,3 +536,8 @@ shell08_type6_mdl_no
 shell08_type9_fade
 stage_hate_add_tbl
 em_dur_tbl
+chat_act_tbl_002F1860
+lit_1805_0035B1B0
+lit_1806_0035B1D0
+lit_1807_0035B1F0
+Equip_Bonus

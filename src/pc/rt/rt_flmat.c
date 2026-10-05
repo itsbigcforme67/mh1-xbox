@@ -387,3 +387,55 @@ f32 CalcDistanceXZ(f32 *a, f32 *b)
     f32 dx = a[0] - b[0], dz = a[2] - b[2];
     return sqrtf(dx * dx + dz * dz);
 }
+
+/* RotMatVec (main 0x120570): rotation matrix m whose row `axis` (0 X,
+ * 1 Y, 2 Z) is the normalised v; another row comes from a cross product
+ * with a fixed axis (a second one when v is parallel to the first,
+ * |cross|^2 < 0.001), the third completes the frame. */
+void RotMatVec(f32 *v, FLMAT *m, int axis)
+{
+    f32 u[3], x[3], y[3], z[3];
+    flvecNormalize(v);
+    switch (axis & 0xFF) {
+    case 0:
+        u[0] = 0; u[1] = 0; u[2] = 1.0f;
+        flvecOuterProduct(y, u, v);
+        if (flvecInnerProduct(y, y) < 0.001f) {
+            u[2] = 0; u[0] = 1.0f;
+            flvecOuterProduct(y, u, v);
+        }
+        flvecNormalize(y);
+        flvecCopy(x, v);
+        flvecOuterProduct(z, x, y);
+        break;
+    case 1:
+        u[0] = 0; u[1] = 0; u[2] = 1.0f;
+        flvecOuterProduct(x, v, u);
+        if (flvecInnerProduct(x, x) < 0.001f) {
+            u[2] = 0; u[1] = 1.0f;
+            flvecOuterProduct(x, u, v);
+        }
+        flvecNormalize(x);
+        flvecCopy(y, v);
+        flvecOuterProduct(z, x, y);
+        break;
+    case 2:
+        u[0] = 0; u[1] = 1.0f; u[2] = 0;
+        flvecOuterProduct(x, u, v);
+        if (flvecInnerProduct(x, x) < 0.001f) {
+            u[2] = 1.0f; u[1] = 0;
+            flvecOuterProduct(x, v, u);
+        }
+        flvecNormalize(x);
+        flvecCopy(z, v);
+        flvecOuterProduct(y, z, x);
+        break;
+    default:   /* the original leaves the rows uninitialised */
+        x[0] = 1; x[1] = x[2] = 0; y[1] = 1; y[0] = y[2] = 0; z[2] = 1; z[0] = z[1] = 0;
+        break;
+    }
+    flmatInit(m);
+    flvecCopy((*m)[0], x);
+    flvecCopy((*m)[1], y);
+    flvecCopy((*m)[2], z);
+}

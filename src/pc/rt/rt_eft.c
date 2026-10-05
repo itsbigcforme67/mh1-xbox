@@ -537,6 +537,7 @@ void flvecRotX(f32 *v, f32 a)
 static FLMAT joint_m;
 static struct { const void *chr; const f32 *m; int n; } joints[8];
 
+u8 *rt_actor_nodes(const void *work, int *max);
 void rt_actor_joints(const void *chr, const float *mats, int n)
 {
     int i, f = -1;
@@ -548,6 +549,13 @@ void rt_actor_joints(const void *chr, const float *mats, int n)
     joints[f].chr = chr;
     joints[f].m = mats;
     joints[f].n = n;
+    {   /* also where the game reads them: node j of mdl+0x24, +0 */
+        int max, j;
+        u8 *nodes = rt_actor_nodes(chr, &max);
+        if (nodes)
+            for (j = 0; j < n && j < max; j++)
+                memcpy(nodes + j * 0x190, mats + 16 * j, 64);
+    }
 }
 
 static const f32 *joint_mat(const void *chr, int j)
@@ -570,6 +578,21 @@ void get_joint_pos(void *chr, int joint, f32 *out)
 
 void get_joint_pos_em(void *chr, int joint, f32 *out) { get_joint_pos(chr, joint, out); }
 
+/* get_joint_mat (0x10A1D0): node joint's local matrix (mdl+0x24 nodes,
+ * 0x190 bytes each, +0x40), which callers turn in place (the player's
+ * waist/neck twist). The host poses its skeleton from the motion alone, so
+ * those edits are not shown yet [gap]. */
+FLMAT *get_joint_mat(void *chr, int joint, int arg)
+{
+    static FLMAT scratch;
+    int max;
+    u8 *nodes = rt_actor_nodes(chr, &max);
+    (void)arg;
+    if (!nodes || (s16)joint < 0 || (s16)joint >= max)
+        return &scratch;
+    return (FLMAT *)(nodes + (s16)joint * 0x190 + 0x40);
+}
+
 FLMAT *get_joint_wmat(void *chr, int joint)
 {
     const f32 *m = joint_mat(chr, (s16)joint);
@@ -587,41 +610,6 @@ FLMAT *get_joint_wmat(void *chr, int joint)
 }
 
 void flvecApplyMat33(f32 *out, f32 *v, FLMAT *m);
-/* hit_data_expand (0x151A60): one body entry {s16 joint, s16 type, ..,
- * f32 r at +0xC, offsets at +0x10 / +0x1C} around the joint's world
- * matrix (on the PS2 node j of chr+0x50C -> +0x24, 0x190 bytes a node):
- * type 0 sphere, type 1 capsule; radius times the actor scale (+0xB8).
- * Joint 0x7F (and actors without host joints) give -1, no part. */
-int hit_data_expand(void *chr, void *body, f32 *cap, f32 *sph)
-{
-    const u8 *e = body;
-    s16 j = *(const s16 *)e;
-    const f32 *m;
-    f32 o[3];
-    if (j == 0x7F || !(m = joint_mat(chr, j)))
-        return -1;
-    switch (*(const s16 *)(e + 2)) {
-    case 0:
-        sph[3] = *(const f32 *)(e + 0xC) * *(const f32 *)((u8 *)chr + 0xB8);
-        flvecApplyMat33(o, (f32 *)(e + 0x10), (FLMAT *)m);
-        sph[0] = m[12] + o[0];
-        sph[1] = m[13] + o[1];
-        sph[2] = m[14] + o[2];
-        return 0;
-    case 1:
-        cap[6] = *(const f32 *)(e + 0xC) * *(const f32 *)((u8 *)chr + 0xB8);
-        flvecApplyMat33(o, (f32 *)(e + 0x10), (FLMAT *)m);
-        cap[0] = m[12] + o[0];
-        cap[1] = m[13] + o[1];
-        cap[2] = m[14] + o[2];
-        flvecApplyMat33(o, (f32 *)(e + 0x1C), (FLMAT *)m);
-        cap[3] = m[12] + o[0];
-        cap[4] = m[13] + o[1];
-        cap[5] = m[14] + o[2];
-        return 1;
-    }
-    return -1;
-}
 
 FLMAT *get_joint_wmat_em(void *chr, int joint) { return get_joint_wmat(chr, joint); }
 
@@ -744,37 +732,8 @@ static void once(const char *name)
 #define STUB_V(name, args) void name args { static int o; if (!o++) once(#name); }
 #define STUB_I(name, args) int name args { static int o; if (!o++) once(#name); return 0; }
 
-/* act_ck (0x14EF20): the object's action pair (+0x14, +0x15) is (a, b) */
-int act_ck(void *chr, int a, int b)
-{
-    const u8 *p = chr;
-    return p[0x14] == (u8)a && p[0x15] == (u8)b;
-}
 
-/* pl_flag_ck (0x14EF60): bit test in the flag words +0x390 / +0x394 (bit
- * 31 of the argument picks the second) */
-int pl_flag_ck(void *pl, u32 flag)
-{
-    const u8 *p = pl;
-    u32 w;
-    if (flag & 0x80000000u) {
-        memcpy(&w, p + 0x394, 4);
-        return (int)(w & (flag & 0x7FFFFFFFu));
-    }
-    memcpy(&w, p + 0x390, 4);
-    return (int)(w & flag);
-}
 
-/* Pl_silencer_ck (0x154D30): gun type 7 with option bit 0x10 */
-int Pl_silencer_ck(void *pl)
-{
-    const u8 *p = pl;
-    u16 o;
-    if (p[0x35F] != 7)
-        return 0;
-    memcpy(&o, p + 0x362, 2);
-    return (o & 0x10) != 0;
-}
 
 /* Em_area_ck (0x10B790): index (0-3) of area a in game_w+0x28, else -1 */
 int Em_area_ck(int a)
@@ -796,20 +755,7 @@ int Em_area_ck(int a)
 /* shell_flag_set: src/main/pl/pl_normal.c (built). shell_rate_add/_g
  * (0x151660, 0x1516A0): velocity integration */
 
-void shell_rate_add(SHLW *sh)
-{
-    sh->pos2.x += sh->rate[0];
-    sh->pos2.y += sh->rate[1];
-    sh->pos2.z += sh->rate[2];
-}
 
-void shell_rate_add_g(SHLW *sh)
-{
-    sh->rate[0] += sh->rate_g[0];
-    sh->rate[1] += sh->rate_g[1];
-    sh->rate[2] += sh->rate_g[2];
-    shell_rate_add(sh);
-}
 
 int softdip_ck(void) { return 0; }   /* 0x1593D0: returns 0 */
 

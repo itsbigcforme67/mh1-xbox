@@ -10,6 +10,7 @@
 #include "game.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define WEAK __attribute__((weak))
@@ -64,21 +65,7 @@ void em_dur_init(EMW *em)
     PU8(em, 0x953) = (u8)*t;
 }
 
-/* em_rate_clear (0x151620): the rate vector +0x3B4..+0x3C8 */
-void em_rate_clear(void *w)
-{
-    memset((u8 *)w + 0x3B4, 0, 0x18);
-}
 
-/* World_calc2 (0x1520C0): stage-local position -> world for stage st:
- * x + area x, y + (area y0 + y1) / 2, z + area z (Stage_data_get rows). */
-void World_calc2(int st, f32 *in, f32 *out)
-{
-    f32 *d = Stage_data_get(st & 0xFFFF);
-    out[0] = in[0] + d[0];
-    out[1] = in[1] + (d[6] + d[7]) / 2.0f;
-    out[2] = in[2] + d[1];
-}
 
 /* hit_line2_pk (0x28CC40): packs a line p0..p1: +0 p0, +0xC p1, +0x18
  * p1 - p0, +0x24 centre, +0x30 half length. */
