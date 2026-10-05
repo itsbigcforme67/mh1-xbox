@@ -49,3 +49,31 @@ scheduled); 20 minutes of permuter found nothing better.
   value kept in a saved register and converted with the unsigned sequence.
 - Eft_rendope_set takes a u16 (callers pass the u16 flags without andi).
 Shared header: pl.h carves PLW+0x3EC (u16 x3EC) from _pad3D2.
+
+## set13 (0x1569E0-0x158F18) - 6/10 match so far
+Sun glare / lens flare (guess from sun_pos_tbl and camera maths).
+set13.c (Set13_set/set2/move/i, 0x1569E0-0x157080) and set13b.c (d/e,
+0x158130-0x158188) are built. set13_m (4.3 KB) and set13_trans (3.1 KB) not
+attempted yet (fused mula.s/madd.s maths, an inlined angle helper).
+src/main/set/set13c.c (not registered): set13_hit_calc matches,
+set13_disp_pos_calc is 13 off (the original loads dir[1], dir[2] before the
+first store; no natural source found yet).
+- `PLW *pl = &player_work[game_w.master];` as an initialiser (not a later
+  statement) gives the original's early address computation (set13_i).
+- `if ((sw = pull_set_work(0)) != 0)` tests v0 before the copy to s0
+  (Set13_set2, Eft02_set2), where `sw = ...; if (sw != 0)` tests s0.
+- set13_hit_calc: `p = (f32 *)((u8 *)p + 8)` keeps two separate +8 steps
+  that `p += 2` lets the compiler merge (found from a permuter hint).
+
+## eft06 (0x102BD0-0x105B10) - 17/19 match
+Hit sparks with ten types; pieces are 0x38 bytes (EFT06_PIECE).
+eft06.c (move, i, init_subs, pw_die_ck, continue, type_ck; 0x102BD0-
+0x103A38, tables 0x3579C0-0x357A08), eft06b.c (d/e) and eft06c.c (se_req,
+set_com, Eft06_set/set2/set_hit) built. eft06_m (4.8 KB) and eft06_t
+(2.2 KB) still asm, not attempted.
+- eft06_i: the main loop must index `w[i]` (the compiler's own pointer
+  induction then increments first); `p++` in the for header put the
+  pointer increment last.
+- Eft06_set takes the float scale as its LAST parameter: argument set-up
+  order of the recursive call follows parameter order.
+- eft06_continue's count parameter is s16 (int gave an extra sign-extend).
