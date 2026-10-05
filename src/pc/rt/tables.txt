@@ -602,3 +602,29 @@ shell06_body_tbl
 shell06_flag_tbl
 shell06_tbl
 sleeve_param_tbl0
+# quest flow (f_quest0_nm.c, f_quest_nm.c)
+quest_data_tbl
+Item_get_tbl
+select_w work
+StiEM_data work
+stiem_stack_tbl work
+em_hagi_type_tbl
+capture_type_tbl
+quest_timer_disp_tbl
+rem_item_calc_tbl
+rem_item_exit_sel_tbl
+item_regained_tbl
+lit_656_0036B1F0
+lit_657_0036B210
+lit_658_0036B230
+lit_659_0036B250
+lit_660_0036B270
+lit_1730_0036B290
+lit_2393
+lit_2394
+lit_2395
+lit_2396
+h_rank_tbl
+lit_173_0068A530
+quest_t001_tbl
+quest_t_stin_tbl

@@ -210,6 +210,7 @@ void GetPlayerMaterialData(void *pl) { (void)pl; }
 /* messages, sounds not ported */
 void set01_set(int a, int b, int c) { (void)a; (void)b; (void)c; }
 void set01_set2(void *msg) { (void)msg; }
+void set01_set2_use_mem(void *msg) { (void)msg; }
 void unmei_se(void *pl) { (void)pl; STUB("unmei_se") }
 void adx_se_set(void *pl, int a) { (void)pl; (void)a; STUB("adx_se_set") }
 void adx_se_stop(void *pl) { (void)pl; }
@@ -221,15 +222,9 @@ void PlComebackCameraRequest(void) {}
 void PilebunkerCameraRequest(void) {}
 void ItemPickingDeclaration(void *pl, void *p) { (void)pl; (void)p; }
 long ItemStockRequest(void *pl, int a, int b, int c) { (void)pl; (void)a; (void)b; (void)c; return 0; }
-int Ext_pick_point_ck(void *pl) { (void)pl; return 0; }
-int Ext_pick_point_ck2(void *pl) { (void)pl; return 0; }
-void Item_regained(void *pl, int a) { (void)pl; (void)a; }
-void Share_item_conv(void *pl) { (void)pl; }
-int Modori_dama_ck(void) { return 0; }
-void Quest_restart(void) { STUB("Quest_restart") }
-int Quest_remuneration_calc(void) { return 0; }
-void Quest_forfeit_message(void) {}
-void *pull_enemy_work(void) { STUB("pull_enemy_work") return NULL; }
+/* Item_regained: f_quest_nm.c */
+void *rt_pull_enemy_work(void);
+void *pull_enemy_work(void) { return rt_pull_enemy_work(); }   /* rt_em.c */
 
 /* ------------------------------------------------ attack data / hit ids (f_pl 0x151800..) */
 /* Get_hit_id / Hit_id_init: a counter in game_w+0xD4 that skips 0 */
@@ -280,7 +275,6 @@ void Pl_poison_add(void *pl, int v)
 
 /* Stage_mv_data_get (f_quest): the stage's exits list; none on the PC
  * (stage changes are not ported) */
-void *Stage_mv_data_get(int stg, int master) { (void)stg; (void)master; return NULL; }
 
 /* fptodp: the PS2 libc float->double helper (debug printf in hit_nm.c) */
 int fptodp(float f) { (void)f; return 0; }   /* hit_nm.c declares it int; debug output only */
@@ -339,13 +333,9 @@ void init_eft_work(void) { STUB("init_eft_work") }
 void init_item_work(void) { STUB("init_item_work") }
 void init_set_work(void) { STUB("init_set_work") }
 void init_shell_work(void) { STUB("init_shell_work") }
-int Stage_item_data_get(void) { STUB("Stage_item_data_get") return 0; }
-int Stage_item_probability_get(void) { STUB("Stage_item_probability_get") return 0; }
-int Stage_unique_data_get(void) { STUB("Stage_unique_data_get") return 0; }
 int Item_box_get_efct(void) { STUB("Item_box_get_efct") return 0; }
 int Item_box_get_item(void) { STUB("Item_box_get_item") return 0; }
 void net_send_host(void) { STUB("net_send_host") }
-int Share_item_stack(void) { STUB("Share_item_stack") return 0; }
 /* overlay calls by address (as rt_overlay.c): Eft12_set4, Shell12_set, Pl_poison_add */
 void Eft12_set4(void *, int, int);
 void Shell12_set(void *, int);

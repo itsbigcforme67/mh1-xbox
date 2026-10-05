@@ -75,6 +75,10 @@ PL="$(ls src/main/pl/pl[0-9][0-9].c | tr '\n' ' ') src/main/pl/pl_nm.c src/main/
 # stand-ins for what is missing.
 EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c src/game/em/em_taisei_nm.c \
     src/game/em/em01.c src/game/em/em01_horm.c"
+# Quest flow (agent C/E): f_quest (whole file near-match) and its first
+# part f_quest0_nm.c (accessors, Quest_init; written from the asm), the
+# tutorial checks it calls (game.bin tutorial.c)
+QUEST="src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c"
 for f in src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c; do
     [ -f "$f" ] && EM="$EM $f"
 done
@@ -97,7 +101,7 @@ for e in $EXT; do
     EM="$EM $d/$f"
 done
 WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm"
-GAME="$GAME $HIT $CAM $EFT $PL $EM"
+GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST"
 
 SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
 CFLAGS="-m32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
@@ -148,6 +152,13 @@ for f in $GAME; do
     INC=""
     src="$f"
     case "$f" in build/pc/ext/*) INC="-I$(echo "$f" | cut -d/ -f1-4)/include" ;; esac
+    # f_quest_nm.c declares va_list as char * (the PS2 ABI): use the host's
+    case "$f" in
+    src/main/quest/f_quest_nm.c)
+        src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
+        sed 's/^typedef char \*va_list;/#include <stdarg.h>/' "$f" > "$src"
+        INC="$INC -I$(dirname "$f")" ;;
+    esac
     # absolute PS2 addresses some m2c-based files still use (game_w
     # 0x3F33F0, quest_w 0x3C7440): compile a copy that reads the host's
     # game_w / quest_w instead (src/pc/rt/rt_ps2abs.h)
@@ -177,7 +188,7 @@ python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 gcc $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest; do
     # shellcheck disable=SC2086
     gcc $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"

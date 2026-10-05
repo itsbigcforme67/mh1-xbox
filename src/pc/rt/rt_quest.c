@@ -1,0 +1,98 @@
+/*
+ * rt_quest.c - the quest flow on the port runtime: what f_quest
+ * (src/main/quest/f_quest0_nm.c, f_quest_nm.c), the game modes
+ * (src/main/game/f_game.c) and the result / reward screens call that is
+ * not decompiled yet. Written from the asm where noted; offline only (the
+ * network calls do nothing).
+ */
+#include "rt.h"
+#include "types.h"
+#include "em.h"
+#include "game.h"
+#include "quest.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define WEAK __attribute__((weak))
+#define PU8(p, o) (*(u8 *)((u8 *)(p) + (o)))
+#define PS16(p, o) (*(s16 *)((u8 *)(p) + (o)))
+#define PU16(p, o) (*(u16 *)((u8 *)(p) + (o)))
+#define PU32(p, o) (*(u32 *)((u8 *)(p) + (o)))
+
+static int qtrace(void) { static int t = -1; if (t < 0) t = getenv("RT_QUEST_TRACE") != NULL; return t; }
+
+/* mission_area (0x38A208): where Quest_start loads the mission file
+ * (questName[no], Meltw). 256 KB host buffer. */
+u8 *mission_area;
+static u8 mission_buf[0x40000] __attribute__((aligned(16)));
+void rt_quest_mem_init(void) { mission_area = mission_buf; }
+
+/* ------------------------------------------------ user data (main ud, 0x272xxx) */
+
+extern u32 h_rank_tbl[];
+/* Event_flag_set / _clear / _ck (0x272EC0..): u16 flags at User_data+0x24 */
+void Event_flag_set(int n) { PU16(&User_data, 0x24 + 2 * (n / 16)) |= (u16)(1 << (n & 0xF)); }
+void Event_flag_clear(int n) { PU16(&User_data, 0x24 + 2 * (n / 16)) &= (u16)~(1 << (n & 0xF)); }
+int Event_flag_ck(int n) { return (PU16(&User_data, 0x24 + 2 * (n / 16)) & (1 << (n & 0xF))) != 0; }
+/* Get_hunter_rank (0x272320): number of h_rank_tbl entries (ended by
+ * 9999999) that the hunter points (u+0x1C) reach */
+u8 Get_hunter_rank(u8 *u)
+{
+    u32 pts = PU32(u, 0x1C), *t = h_rank_tbl;
+    u8 n = 0;
+    if (*t == 0x98967F)
+        return 0;
+    for (; pts >= *t; ) {
+        t++;
+        n++;
+        if (*t == 0x98967F)
+            break;
+    }
+    return n;
+}
+
+/* ------------------------------------------------ network (offline) */
+void net_send_sys(int kind, int pl) { (void)kind; (void)pl; }
+
+/* ------------------------------------------------ monster models (main 0x124820)
+ * em_create_model(slot) loads the model of kind game_w+0x28[slot] into
+ * model slot `slot`; release_enemy_model frees it. The host loads its
+ * models itself (viewer.c), so these only log. A kind whose monster
+ * program (em_prog_tbl, game.bin) is not ported yet gets no model slot
+ * (game_w+0x28[slot] back to 0), so Em_direct_set does not spawn it. */
+extern void *em_prog_tbl[];
+void em_create_model(int slot)
+{
+    int kind = PU8(&game_w, 0x28 + slot);
+    if (!em_prog_tbl[kind] || !*(void **)em_prog_tbl[kind]) {
+        if (qtrace())
+            fprintf(stderr, "rt_quest: monster kind %d not ported, not spawned\n", kind);
+        PU8(&game_w, 0x28 + slot) = 0;
+        return;
+    }
+    if (qtrace())
+        fprintf(stderr, "rt_quest: em_create_model slot %d kind %d\n", slot, kind);
+}
+void release_enemy_model(int slot)
+{
+    if (qtrace())
+        fprintf(stderr, "rt_quest: release_enemy_model slot %d\n", slot);
+}
+
+/* ------------------------------------------------ game.bin calls by address */
+int Tutorial_quest_ck(void);
+void Tutorial_prog(void);
+void em_act_set(EMW *em, int kind, u16 no);
+int func_63AF40(void) { return Tutorial_quest_ck(); }
+void func_63ACA0(void) { Tutorial_prog(); }
+void func_535D20(EMW *em, int kind, int no) { em_act_set(em, kind, (u16)no); }
+/* Bdora_hp_ck (0x53B5C0), Fish_set (0x5589F0), Em09_item_sub (0x5A8170):
+ * other monsters / the fishing spot; not on the PC yet */
+int func_53B5C0(void) { return 0; }
+void func_5589F0(int n) { (void)n; }
+void func_5A8170(void *e) { (void)e; }
+/* Lb_get_quest_str2 (lobby 0x5C5E20): online quest names */
+static char empty_str[1];
+char *func_5C5E20(void) { return empty_str; }
