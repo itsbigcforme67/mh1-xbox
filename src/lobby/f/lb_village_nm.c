@@ -117,7 +117,7 @@ int Lbc_SendMiniData();
 int Lbc_connect();
 int Lbc_getDate();
 int Lbc_init_network_work();
-int Lbc_set_prim();
+void Lbc_set_prim(void *, void *, void *);
 int Lbs_GetRoomInfo();
 int Lbs_InRoomCheck();
 int Lbs_LobbyExit();
@@ -221,7 +221,7 @@ int lb_normal_material();
 int lb_npc_item_trans();
 int lb_put_sprite();
 int lb_rule_seet_set();
-int lbc_text_lobby_trans();
+void lbc_text_lobby_trans(u8 *);
 int light_init();
 int load_bin_req();
 int load_busy_ck();
@@ -5162,5 +5162,51 @@ void lb_npc_ef_move(u8 *em) {
         ef_move_sub_005C49F0(em, em + 0x444);
     } else if (k == 0) {
         M2C_FIELD(em, s8 *, 0x46E) = 1;
+    }
+}
+
+/* Lbc_set_prim (0x5B7460): the lobby's three screen prims (lb_prim, main
+ * 0x3EBC70, 0x20 bytes each) get draw functions a, b, c; pNet+0x14..0x1C
+ * point at them */
+extern u8 lb_prim[];
+void Lbc_set_prim(void *a, void *b, void *c) {
+    M2C_FIELD(pNet, u8 **, 0x14) = lb_prim;
+    M2C_FIELD(M2C_FIELD(pNet, u8 **, 0x14), void **, 0x14) = a;
+    M2C_FIELD(pNet, u8 **, 0x18) = lb_prim + 0x20;
+    M2C_FIELD(M2C_FIELD(pNet, u8 **, 0x18), void **, 0x14) = b;
+    M2C_FIELD(pNet, u8 **, 0x1C) = lb_prim + 0x40;
+    M2C_FIELD(M2C_FIELD(pNet, u8 **, 0x1C), void **, 0x14) = c;
+    /* +0x18: the font stack the draw function prints to (Lb_guild_trans:
+     * font_set_stack_no(prim+0x18)); ot5/ot6/ot7 are drawn before stacks
+     * 0/1/2 (trans()), so prim i -> stack i [guess: no store to these words
+     * was found in the code; on the PS2 they are set elsewhere] */
+    M2C_FIELD(lb_prim, s32 *, 0x18) = 0;
+    M2C_FIELD(lb_prim, s32 *, 0x38) = 1;
+    M2C_FIELD(lb_prim, s32 *, 0x58) = 2;
+}
+
+/* lbc_text_lobby_trans (0x5B78F0): queue the lobby screen prims that have
+ * a draw function: +0x14 on ot5, +0x18 on ot6, +0x1C on ot7, +0x20 on ot2
+ * (entry 0 of 16) */
+extern u8 ot2[], ot5[], ot6[], ot7[];
+int add_prim2();
+void lbc_text_lobby_trans(u8 *net) {
+    u8 *p;
+
+    p = M2C_FIELD(net, u8 **, 0x14);
+    if (p != NULL && M2C_FIELD(p, void **, 0x14) != NULL) {
+        add_prim2(ot5, p, 0, 1);
+    }
+    p = M2C_FIELD(net, u8 **, 0x18);
+    if (p != NULL && M2C_FIELD(p, void **, 0x14) != NULL) {
+        add_prim2(ot6, p, 0, 1);
+    }
+    p = M2C_FIELD(net, u8 **, 0x1C);
+    if (p != NULL && M2C_FIELD(p, void **, 0x14) != NULL) {
+        add_prim2(ot7, p, 0, 1);
+    }
+    p = M2C_FIELD(net, u8 **, 0x20);
+    if (p != NULL && M2C_FIELD(p, void **, 0x14) != NULL) {
+        add_prim2(ot2, p, 0, 0x10);
     }
 }
