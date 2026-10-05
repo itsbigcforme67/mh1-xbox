@@ -325,10 +325,11 @@ typedef struct BSSYS {
 } BSSYS;
 /* Browser work object (BsWorkPull): one per on-screen element (background, scroll bars, title bar, cursor ...). */
 typedef struct BSWK {
-    s8 x00;                /* active */
-    s8 x01;
+    u8 x00;                /* active */
+    u8 x01;
     u8 x02;                /* kind of the stocked page object */
-    u8 _pad03[2];
+    u8 x03;                /* work line */
+    u8 _pad04;
     u8 x05;
     s8 x06;                /* sprite state requested by the task */
     s8 x07;
@@ -337,7 +338,9 @@ typedef struct BSWK {
     u8 _pad12[2];
     void *task;            /* 0x14 */
     void *trans;           /* 0x18 */
-    u8 _pad1C[0x30 - 0x1C];
+    struct BSWK *prev;     /* 0x1C */
+    struct BSWK *next;     /* 0x20 */
+    u8 _pad24[0x30 - 0x24];
     u8 x30;
     u8 _pad31[3];
     f32 x34, x38;          /* position */
@@ -349,6 +352,7 @@ typedef struct BSWK {
     s8 x5D;
     u8 _pad5E;
     u8 x5F;
+    u8 _pad60[0x70 - 0x60];
 } BSWK;
 /* Browser queue node (request / route / cache / source / image queues): singly linked, url at +4 */
 typedef struct BSNODE {
