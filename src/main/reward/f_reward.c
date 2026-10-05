@@ -3,10 +3,19 @@
  * tables, the result screen's backdrop/frame drawing, and the check that
  * unlocks a bonus movie after a quest. Meanings are guesses. */
 #include "f_game.h"
+#include "plf.h"
 
 typedef struct QUEST_WR {
     u8 _pad00[8];
     s16 no;             /* 0x08 current quest number */
+    u8 _pad0A[0x14 - 0xA];
+    s32 x14;            /* 0x14 reward money (gold_init) */
+    u8 _pad18[0x34 - 0x18];
+    s16 x34;            /* 0x34 */
+    u8 _pad36[0x94 - 0x36];
+    s32 *x94;           /* 0x94 */
+    u8 _pad98[0x14C - 0x98];
+    s16 x14C;           /* 0x14C */
 } QUEST_WR;
 extern QUEST_WR quest_w;
 
@@ -20,16 +29,7 @@ extern MOVIE_ADD movie_add_tbl[];
 extern s32 card_list_frame_tbl_00357850[];
 extern u8 card_prim[];
 
-/* result screen task (guess): small state block, fields by offset */
-typedef struct RES_TSK {
-    s8 mode;            /* 0x00 */
-    s8 step;            /* 0x01 */
-    s8 sub;             /* 0x02 */
-    s8 x3;              /* 0x03 */
-    s16 x4;             /* 0x04 */
-    s16 x6;             /* 0x06 */
-    s16 x8;             /* 0x08 */
-} RES_TSK;
+
 
 int Quest_clear_bit_ck(s16);
 int movie_add_ck();
@@ -159,7 +159,7 @@ void end_fade_set(void)
     str_fadein_vol(0, 0x1E, 0);
 }
 
-int movie_add_check(RES_TSK *t, int go)
+int movie_add_check(GAME_W *t, int go)
 {
     int r = movie_add_ck(quest_w.no);
     u8 *p;
@@ -169,7 +169,7 @@ int movie_add_check(RES_TSK *t, int go)
         if (go) {
             t->mode = 6;
             t->step = 0;
-            t->x3 = 0;
+            t->x03 = 0;
             all_reset();
         }
         return 1;
@@ -177,9 +177,9 @@ int movie_add_check(RES_TSK *t, int go)
     if (go) {
         t->step = 6;
         t->sub = 0;
-        t->x3 = r;
-        t->x4 = 0x5A;
-        t->x6 = 1;
+        t->x03 = r;
+        t->x04 = 0x5A;
+        t->x06 = 1;
         str_play(1, 0xF);
         fade_set(2);
         p = card_prim;
@@ -189,4 +189,213 @@ int movie_add_check(RES_TSK *t, int go)
         *(void **)(card_prim + 0x14) = trans_result_3;
     }
     return 0;
+}
+
+extern s32 quest_price;
+extern u16 Psw[];
+extern u8 ot8[4];
+int Quest_f_dra_ck();
+void Quest_clear_bit_set();
+void Quest_price_return();
+int Quest_clear_ck();
+int Online_ck();
+void se_stop_all();
+void se_req();
+void remuneration_item_set();
+void reward_init();
+int reward_mv();
+void ItemCopy_Pl2Ud();
+void fade_set();
+int gold_init();
+int gold_main();
+void gold_disp();
+int result_init();
+int result_main();
+void result_disp();
+void add_disp();
+void error_disp();
+void add_prim2();
+#define USER_x1A (*(s16 *)((u8 *)&User_data + 0x1A))
+
+void result_prog(void)
+{
+    GAME_W *t = &game_w;
+    int i;
+    int j;
+    PLW *pl;
+
+    switch (t->step) {
+    case 0:
+        se_stop_all();
+        t->x0A = 0;
+        for (i = 0; i < 2; i++) {
+            memset(card_prim + i * 0x20, 0, 0x20);
+        }
+        if (game_w.x0D5 == 8) {
+            t->step = 8;
+            t->sub = 0;
+            t->x04 = 0x96;
+            t->x06 = 1;
+            Quest_price_return();
+            fade_set(2);
+            *(void **)(card_prim + 0x14) = trans_result_2;
+            break;
+        }
+        if (game_w.x0D5 == 7) {
+            Quest_price_return();
+            t->step = 10;
+            fade_set(10);
+            t->x04 = 0x1E;
+            end_fade_set();
+            return;
+        }
+        *(void **)(card_prim + 0x14) = trans_result_0;
+        quest_price = 0;
+        for (i = 0, j = 0; i < 20; i++, j += 4) {
+            pl = &player_work[t->master];
+            if (Item_data[pl->item[i].id][4] & 0x10) {
+                Pl_item_stack(pl, pl->item[i].id, (s16)-pl->item[i].num);
+            }
+        }
+        if (Quest_clear_ck(1) == 1) {
+            if (Online_ck() == 1) {
+                if (Quest_f_dra_ck((u8)quest_w.no) == 0) {
+                    if (key_quest_ck(quest_w.no) != 1 || game_w.x21A != 0) {
+                        Quest_clear_bit_set(quest_w.no);
+                    }
+                }
+            } else {
+                Quest_clear_bit_set(quest_w.no);
+            }
+            if (Quest_f_dra_ck((u8)quest_w.no) != 0) {
+                if (quest_w.x34 == 0) {
+                    quest_w.x14C = 0;
+                    if (game_w.x21A != 0) {
+                        Quest_clear_bit_set(0x67);
+                        Quest_clear_bit_set(0x68);
+                        Quest_clear_bit_set(0x69);
+                        Quest_clear_bit_set(0x6A);
+                    }
+                }
+                if (game_w.x21A != 0) {
+                    USER_x1A = quest_w.x14C;
+                }
+            }
+            remuneration_item_set();
+            t->step++;
+            t->sub = 0;
+            t->x04 = 0x5A;
+            reward_init();
+            fade_set(2);
+        } else {
+            t->step = 2;
+            ItemCopy_Pl2Ud(&player_work[t->master]);
+            gold_init(t);
+        }
+        break;
+    case 1:
+        if ((s16)reward_mv() <= 0) {
+            t->step++;
+            ItemCopy_Pl2Ud(&player_work[t->master]);
+            gold_init(t);
+        }
+        break;
+    case 2:
+        if (gold_main(t)) {
+            t->step++;
+            fade_set(1);
+            t->x04 = 0x1E;
+            if (Online_ck() != 1) {
+                if (movie_add_check(t, 0)) {
+                    end_fade_set();
+                }
+            }
+        }
+        gold_disp(t);
+        break;
+    case 3:
+        if (--t->x04 <= 0) {
+            t->step++;
+            if (result_init(t)) {
+                return;
+            }
+            break;
+        }
+        gold_disp(t);
+        break;
+    case 4:
+        if (result_main(t)) {
+            t->step++;
+            fade_set(1);
+            t->x04 = 0x1E;
+            if (movie_add_check(t, 0)) {
+                end_fade_set();
+            }
+        }
+        result_disp(t);
+        break;
+    case 5:
+        if (--t->x04 <= 0) {
+            if (movie_add_check(t, 1)) {
+                return;
+            }
+            break;
+        }
+        result_disp(t);
+        break;
+    case 6:
+        if (t->x04 > 0) {
+            t->x04--;
+        } else {
+            if (--t->x06 <= 0) {
+                t->x06 = 0xF;
+                t->sub ^= 1;
+            }
+        }
+        if (t->x04 <= 0 && (Psw[2] & 0x20)) {
+            t->step++;
+            se_req(7, 0x13, 0);
+            fade_set(1);
+            t->x04 = 0x1E;
+            end_fade_set();
+        }
+        add_disp(t);
+        break;
+    case 7:
+        if (--t->x04 <= 0) {
+            t->mode = 6;
+            t->step = 0;
+            all_reset();
+            return;
+        }
+        add_disp(t);
+        break;
+    case 8:
+        if (--t->x04 <= 0) {
+            t->step++;
+            fade_set(1);
+        }
+        error_disp();
+        break;
+    case 9:
+        if (--t->x04 <= 0) {
+            t->mode = 6;
+            t->step = 0;
+            all_reset();
+            return;
+        }
+        error_disp();
+        break;
+    case 10:
+        if (--t->x04 <= 0) {
+            t->mode = 6;
+            t->step = 0;
+            all_reset();
+            return;
+        }
+        break;
+    }
+    if (*(void **)(card_prim + 0x14) != 0) {
+        add_prim2(ot8, card_prim, 0, 1);
+    }
 }
