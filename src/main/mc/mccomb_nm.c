@@ -437,6 +437,7 @@ int mc_yn_ck(CARDW *w, int x, s16 y, u8 *sel)
     return -1;
 }
 
+/* near-match, 31/116 differ (only s0-s4 allocation: original shares y's register with i) */
 int mc_sel_ck(CARDW *w, s16 x, s16 y, u8 *sel, int hide)
 {
     int py;
@@ -450,11 +451,10 @@ int mc_sel_ck(CARDW *w, s16 x, s16 y, u8 *sel, int hide)
         se_req(7, 0x16, 0);
     }
     flfntSetSize(0x12, 0x12);
-    t = mc_sel_tbl;
+    y1 = y0 = y + 0x12;
     i = 0;
-    y0 = y + 0x12;
-    y1 = y0;
     py = y1;
+    t = mc_sel_tbl;
     do {
         if (*sel == i) {
             font_set_palette(5);
@@ -473,7 +473,7 @@ int mc_sel_ck(CARDW *w, s16 x, s16 y, u8 *sel, int hide)
         if (*sel == 0) {
             w->csr[1] = y0;
         } else {
-            w->csr[1] = y1 + 0x24;
+            w->csr[1] = (y0 = y1) + 0x24;
         }
         w->csr[1] -= 2;
         w->csr[2] = 306;
