@@ -115,3 +115,5 @@ main 0x0027D6E0 0x0027DDB8 eft/eft02
 main:rodata 0x00384170 0x003841F0 eft/eft02
 main 0x0027E940 0x0027EF58 eft/eft02b
 main:rodata 0x00384220 0x00384240 eft/eft02b
+main 0x001569E0 0x00157080 set/set13
+main 0x00158130 0x00158188 set/set13b
