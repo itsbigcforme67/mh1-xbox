@@ -29,7 +29,7 @@ void player_init0(PLW *pl) {
     u32 i;
     s8 *eq;
     u8 *mx;
-    if (game_w.pl_ent[pl->id] == 0xFF && Pl_master_ck(pl) == 0) {
+    if (game_w.pl_state[pl->id] == 0xFF && Pl_master_ck(pl) == 0) {
         pl->be_flag = 0;
         pl->x01 = 0;
         return;
@@ -62,7 +62,7 @@ void player_init0(PLW *pl) {
 
 void pl_work_clr(PLW *pl, u8 no, PLPROG *prog) {
     pl->id = (u8)no;
-    if (game_w.pl_ent[pl->id] == 1 || Pl_master_ck(pl) == 1) {
+    if (game_w.pl_state[pl->id] == 1 || Pl_master_ck(pl) == 1) {
         pl->x01 = 1;
     } else {
         pl->x01 = 0;

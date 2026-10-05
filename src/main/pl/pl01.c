@@ -48,7 +48,7 @@ clr:
             }
             if (m == 0) {
                 if (Pl_master_ck(pl) == 1) {
-                    pl->work73A = pl->stg;
+                    pl->x73A = pl->stg;
                     pl->work73C = pl->pos[0];
                     pl->work740 = pl->pos[1];
                     pl->work744 = pl->pos[2];
