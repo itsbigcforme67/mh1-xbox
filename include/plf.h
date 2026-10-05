@@ -162,6 +162,7 @@ typedef struct { s16 chr; s16 mot; s16 flag12; s16 next; } PL_MV_ENT;
 extern PL_MV_ENT mv004_chr_tbl0[7], mv004_chr_tbl1[7], mv004_chr_tbl2[7], mv004_chr_tbl3[7];
 void pl_mv004(PLW *, u32);
 void pl_mv021(PLW *, s32);
+void pl_mv060(PLW *);
 extern s16 mv001_tbl[];
 int frame_check(f32, PLW *, int);
 void pl_mv001(PLW *, u32);
@@ -178,4 +179,5 @@ void vib_set_pl(PLW *, int);
 int ex_kabe_ck(PLW *);
 void kabe_hosei(PLW *, int);
 void Ana_item_set(PLW *);
+void func_637F60(PLW *, int);
 #endif

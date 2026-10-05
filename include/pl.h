@@ -87,7 +87,9 @@ typedef struct PLW {
     s32   chr_no0;       /* 0x198 */
     f32   work19C;           /* 0x19C */
     f32   chr_spd0;      /* 0x1A0 */
-    u8 _pad1A4[0x1E8 - 0x1A4];
+    u8 _pad1A4[0x4];
+    f32   work1A8;           /* 0x1A8 */
+    u8 _pad1AC[0x3C];
     s32   chr_no1;       /* 0x1E8 */
     u8 _pad1EC[0x1F0 - 0x1EC];
     f32   chr_spd1;      /* 0x1F0 */
