@@ -218,3 +218,6 @@ main 0x0028CFB0 0x0028D098 hit/hit2b
 main 0x0028E440 0x0028EE3C hit/hit2c
 main 0x00290140 0x00290274 hit/hit2d
 main 0x00290420 0x00290560 hit/hit2e
+main 0x0010FC70 0x001109D0 game/f_game
+main:rodata 0x003580E0 0x0035815C game/f_game
+main 0x00110C30 0x00110F08 game/f_gameb

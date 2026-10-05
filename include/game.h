@@ -5,42 +5,68 @@
 #include "types.h"
 
 typedef struct GAME_W {
-    u8 _pad000[0x0D];
+    u8 mode;            /* 0x000 game mode (Game_task jumps on it) */
+    u8 step;            /* 0x001 step inside the mode */
+    u8 sub;             /* 0x002 sub-step (game12 loading sequence) */
+    u8 x03;             /* 0x003 */
+    s16 x04;            /* 0x004 counter (game3/game4) */
+    s16 x06;            /* 0x006 counter (game3) */
+    u8 _pad008[0xA - 0x8];
+    s16 x0A;            /* 0x00A counter (game5) */
+    u8 _pad00C[0xD - 0xC];
     u8 pad_on;          /* 0x00D read controllers this frame (swset) */
-    u8 _pad00E[0x14 - 0x0E];
+    u8 _pad00E[0xF - 0xE];
+    u8 x0F;             /* 0x00F copied from option_w+7 (game11) */
+    u8 x10;             /* 0x010 */
+    u8 x11;             /* 0x011 */
+    u8 x12;             /* 0x012 */
+    u8 _pad013[0x14 - 0x13];
     u8 stage;           /* 0x014 stage number (0x4E, 0x57 in set06) */
     u8 _pad015[0x1E - 0x15];
     u8 x1E;             /* 0x01E counter scrolling the smoke screen UVs (eft12_t01) */
-    u8 _pad01F;
+    u8 _pad01F[0x20 - 0x1F];
     u8 port[2];         /* 0x020 controller port per player (get_sw) */
-    u8 _pad022[2];
+    u8 _pad022[0x24 - 0x22];
     u8 sw_mask;         /* 0x024 buttons ignored until released (get_sw) */
     u8 _pad025[0x2C - 0x25];
     u16 quest;          /* 0x02C quest number (SonchoInit: 0x83.. tutorials) */
     u8 x2E;             /* 0x02E 6: em20 fly 9 picks point 1 for monster kind 6 */
-    u8 _pad02F[0x80 - 0x2F];
+    u8 _pad02F[0x30 - 0x2F];
+    u8 x30[4];          /* 0x030 per player, copied from select_w+0x0C (game11) */
+    u8 _pad034[0x40 - 0x34];
+    V3S x40[4]; /* 0x040 per player 3 shorts, from select_w+0x5C (game11) */
+    u8 _pad058[0x70 - 0x58];
+    u8 x70[4];          /* 0x070 from select_w+0x54 */
+    u8 _pad074[0x78 - 0x74];
+    s8 x78[4];          /* 0x078 from select_w+0x94 */
+    u8 _pad07C[0x80 - 0x7C];
     u8 x80[4];          /* 0x080 per player, copied into the cooking smell (Eft12_set4) */
     u8 _pad084[0xA8 - 0x84];
     struct EFT_MDLW *area_mdlw[10]; /* 0x0A8 model sets by area (eft07_t, Em_area_ck) */
-    u8 _pad0D0;
+    u8 _pad0D0[0xD1 - 0xD0];
     u8 master;          /* 0x0D1 player number of the session master */
-    u8 _pad0D2;
+    u8 x0D2;            /* 0x0D2 set to 1 by Game_task, passed to AQ_init */
     u8 pl_num;          /* 0x0D3 players in the session (shell_hit_ck loops over them) */
     u8 _pad0D4[0x1B2 - 0xD4];
     u8 x1B2;            /* 0x1B2 set05: kind-2 fixtures fire once set */
     u8 flag1B3;         /* 0x1B3 bit 0 hides set04 on stage 28 */
     u8 _pad1B4[0x1DC - 0x1B4];
     u8 x1DC;            /* 0x1DC non-zero in the lobby? eft01_t then reads lobby.bin tables */
-    u8 _pad1DD;
+    u8 _pad1DD[0x1DE - 0x1DD];
     u8 info_seq;        /* 0x1DE set01 message sequence number (7 bits) */
     u8 info_now;        /* 0x1DF set01 message being shown, 0xFF = none */
     u8 _pad1E0[0x1E6 - 0x1E0];
     u8 gate_open;       /* 0x1E6 set20 gate state, set from the quest */
-    u8 _pad1E7[0x210 - 0x1E7];
+    u8 _pad1E7[0x1E8 - 0x1E7];
+    u8 x1E8[4][8];      /* 0x1E8 per player flags, cleared by game0 */
+    u8 x208[4];         /* 0x208 per player: 1 while the player slot is in use (Game_task) */
+    u8 _pad20C[0x210 - 0x20C];
     u8 shl10_num;       /* 0x210 live shell10s owned by the master player */
     u8 meat_num;        /* 0x211 meat on the spit owned by the master player (eft12) */
     u8 trap_num;        /* 0x212 traps set by the master player (shell12) */
-    u8 _pad213[0x21F - 0x213];
+    u8 _pad213[0x21B - 0x213];
+    u8 x21B;            /* 0x21B cleared by Game_task */
+    u8 _pad21C[0x21F - 0x21C];
     u8 info_stop;       /* 0x21F set01 queue paused while set */
     u8 _pad220[0x224 - 0x220];
 } GAME_W;
