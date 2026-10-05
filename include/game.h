@@ -41,10 +41,10 @@ typedef struct GAME_W {
     u8 _pad022[0x24 - 0x22];
     u8 sw_mask;         /* 0x024 buttons ignored until released (get_sw) */
     u8 _pad025[0x28 - 0x25];
-    u8 x28[4];          /* 0x028 per player quest entry id, cleared by Quest_start (Em_direct_set) */
+    u8 x28[4];          /* 0x028 per player quest entry id, cleared by Quest_start (Em_direct_set); pl_demo000 compares with 0x12 (monster-grab demo) */
     u16 quest;          /* 0x02C quest number (SonchoInit: 0x83.. tutorials) */
     u8 x2E;             /* 0x02E 6: em20 fly 9 picks point 1 for monster kind 6 */
-    u8 x2F;             /* 0x02F from the mission data (Quest_start) */
+    u8 x2F;             /* 0x02F from the mission data (Quest_start); stage start slot index (pl_mv014: stage_start_pos/ang) */
     u8 x30[4];          /* 0x030 per player, copied from select_w+0x0C (game11) */
     u8 _pad034[0x40 - 0x34];
     V3S x40[4]; /* 0x040 per player 3 shorts, from select_w+0x5C (game11) */
@@ -63,7 +63,7 @@ typedef struct GAME_W {
     u8 x0D2;            /* 0x0D2 set to 1 by Game_task, passed to AQ_init */
     u8 pl_num;          /* 0x0D3 players in the session (shell_hit_ck loops over them) */
     u8 _pad0D4;
-    u8 x0D5;            /* 0x0D5 result screen: 7/8 = special end (result_prog) */
+    u8 x0D5;            /* 0x0D5 result screen: 7/8 = special end (result_prog); stage/session state switch in sit_com_ck (4..8) */
     u8 _pad0D6[0x128 - 0xD6];
     PL_ITEM reward_item[32]; /* 0x128 reward item list: 32 entries (remuneration_item_set), the screen pages through 16 (reward_mv) */
     s32 x1A8;           /* 0x1A8 cleared by remuneration_item_set */
@@ -73,7 +73,7 @@ typedef struct GAME_W {
     u8 flag1B3;         /* 0x1B3 bit 0 hides set04 on stage 28 */
     u8 _pad1B4[0x1DC - 0x1B4];
     u8 x1DC;            /* 0x1DC non-zero in the lobby? eft01_t then reads lobby.bin tables */
-    u8 _pad1DD[0x1DE - 0x1DD];
+    u8 x1DD;            /* 0x1DD aim control mode (gun_adj_sub: non-zero inverts the pad, 2 swaps the turn) */
     u8 info_seq;        /* 0x1DE set01 message sequence number (7 bits) */
     u8 info_now;        /* 0x1DF set01 message being shown, 0xFF = none */
     u8 _pad1E0[0x1E6 - 0x1E0];

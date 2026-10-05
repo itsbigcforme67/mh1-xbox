@@ -110,3 +110,34 @@ void Eft23_set(int arg, f32 *pos) {
         w->range = *pos;
     }
 }
+
+/* Fish spot: centre, range, fish type (negative ends the list) and how
+ * many fish of that type to spawn. */
+typedef struct FISH_SPOT {
+    f32 pos[3];         /* 0x00 */
+    f32 range;          /* 0x0C */
+    s32 kind;           /* 0x10 */
+    s32 num;            /* 0x14 */
+} FISH_SPOT;
+
+extern FISH_SPOT *Fish_hani_tbl[];
+
+/* Spawns every fish of a stage's spot table (stage argument). */
+void Fish_set(int stage) {
+    FISH_SPOT *sp = Fish_hani_tbl[stage];
+    int n;
+
+    if (sp != 0) {
+        for (;;) {
+            if (sp->kind < 0) {
+                break;
+            }
+            n = sp->num;
+            while (n > 0) {
+                Eft23_set(sp->kind, (f32 *)sp);
+                n--;
+            }
+            sp++;
+        }
+    }
+}

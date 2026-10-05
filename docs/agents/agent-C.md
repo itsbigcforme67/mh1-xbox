@@ -618,3 +618,6 @@ Lessons (function that shows it):
 - mkruns_mod.py: FORCE_OK=name,name env marks functions whose only diffs are jal targets in another module (overlay calls such as func_53A190);
   mkrun2.py cannot split empty function bodies (put a comment inside) nor macro-generated functions.
 - After splitting a *_nm.c into runs, run check.py on every run file: sibling functions need prototypes (cp02 SetVector lost its float prototype).
+
+- fl/pv01-03 (0x192E30 plFCVSetBaseAddress, 0x192FA0 plGetFcurveTime, 0x193150-0x193344 plvec length/normalize/inner/outer/plane): match.
+  plmatCopy33 (in plvec_nm.c) sits inside another asm file's range and is not linked.

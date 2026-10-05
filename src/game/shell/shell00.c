@@ -74,7 +74,7 @@ static void shell00_move(SHLW *sh) {
 
 static void shell00_i(SHLW *sh) {
     PLW *pl = &player_work[sh->em_no];
-    int atk = 0;
+    u8 atk = 0;
     VEC3 d, v;
     s16 val;
     s32 a;
@@ -109,7 +109,7 @@ static void shell00_i(SHLW *sh) {
         atk = 1;
         break;
     }
-    if (atk != 0) {
+    if (atk) {
         if ((val = Get_atk_value(pl, 0)) > 0) {
             sh->ailment |= 0x10;
             sh->ailment_val = val;

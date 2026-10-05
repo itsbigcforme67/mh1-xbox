@@ -54,12 +54,12 @@ void pl_to_normal_clr(PLW *pl) {
 }
 
 void pl_to_normal_clr2(PLW *pl) {
-    pl->work3B4[0] = 0;
-    pl->work3B4[1] = 0;
-    pl->work3B4[2] = 0;
-    pl->work3B4[3] = 0;
-    pl->work3B4[4] = 0;
-    pl->work3B4[5] = 0;
+    pl->vel[0] = 0.0f;
+    pl->vel[1] = 0.0f;
+    pl->vel[2] = 0.0f;
+    pl->acc[0] = 0.0f;
+    pl->acc[1] = 0.0f;
+    pl->acc[2] = 0.0f;
     pl->act_flag &= 0x104;
 }
 

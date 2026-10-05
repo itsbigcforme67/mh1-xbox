@@ -1,8 +1,8 @@
-/* weapon3 - SLPM_654.95 0x00168EA0-0x1691B4 (f_weapon, part 4): skeleton
+/* weapon3 - SLPM_654.95 0x00168EA0-0x169228 (f_weapon, part 4): skeleton
  * matrices of the player model (player_mat_calc: per-joint scale, then the
  * skin transform; player_modify: world matrix from position/angle/scale),
  * player_mk (all players), get_tex_num (count of used texture slots) and
- * Material_set_sub (hand a model's materials to the renderer). The larger
+ * Material_set_sub (hand a model's materials to the renderer) and plplAdd2. The larger
  * display functions of this part are in weapon3_nm.c (near-matches).
  * Names guessed from the code. */
 #include "types.h"
@@ -96,5 +96,30 @@ void Material_set_sub(u8 *base, MATSET *m) {
     int i;
     for (i = 0; i < m->num; i++) {
         flSetRenderState((i + 0x3A) & 0xFF, (int)(base + m->idx[i] * 0x4C));
+    }
+}
+
+/* sorted insertion into a singly linked list: next pointers carry a tag in
+ * bit 0, the list is ordered by key (+4), n is inserted before the first
+ * entry whose key is <= n's (guess: draw ordering list) */
+typedef struct PLN { u32 next; f32 key; } PLN;
+
+void plplAdd2(PLN *n, PLN *p) {
+    u32 v;
+    PLN *w;
+    while (1) {
+        v = p->next;
+        if (v == 0 || !(v & 1)) {
+            p->next = (u32)n | 1;
+            n->next = v;
+            return;
+        }
+        w = (PLN *)(v & ~1);
+        if (w->key <= n->key) {
+            p->next = (u32)n | 1;
+            n->next = v;
+            return;
+        }
+        p = w;
     }
 }

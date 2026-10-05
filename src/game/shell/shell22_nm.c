@@ -6,9 +6,9 @@
  * (shell22_rock_sel). Landing rocks shake the camera by distance
  * (shell22_rock_quake).
  * Near-match for the whole file: shell22_i is 67 instructions off (one
- * delay slot left unfilled shifts the rest) and shell22_h 52 (the
- * original tests case 1 explicitly yet falls into its body from the
- * default). */
+ * delay slot left unfilled shifts the rest) and shell22_h 3 (the
+ * original tests case 1 explicitly; `case 0:` added here gives the same
+ * layout but compares 0). */
 #include "shell.h"
 #include "game.h"
 #include "pl.h"
@@ -426,6 +426,7 @@ static void shell22_m(SHLW *sh) {
 static void shell22_h(SHLW *sh) {
     switch (sh->arg) {
     case 1:
+    case 0:
     default:
         shell22_d(sh);
         break;
