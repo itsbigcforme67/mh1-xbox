@@ -216,4 +216,8 @@ s32 Get_string_pow(PLW *, u8);
 typedef struct { s16 chr; u16 a; u16 b; } PL_AT008_ENT;
 extern PL_AT008_ENT at008_tbl[3];
 s32 we02_hit_sub(PLW *);
+s32 tame_pow_ck(PLW *);
+void tame_release(PLW *);
+void tame_cnt_up(PLW *);
+void tame_com_ck(PLW *);
 #endif

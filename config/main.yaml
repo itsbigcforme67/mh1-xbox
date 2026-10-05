@@ -131,6 +131,8 @@ segments:
       - [0x0422FC, asm, text/pl_at000]
       - [0x042300, c, pl/pl27]
       - [0x043420, asm, text/pl_at008]
+      - [0x043790, c, pl/pl28]
+      - [0x044538, asm, text/pl_at028]
       - [0x04D1C8, asm, text/g_pl_chr_sub]
       - [0x04E0C0, asm, text/f_disp]
       - [0x04EAFC, asm, text/g_act_set]

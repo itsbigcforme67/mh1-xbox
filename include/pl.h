@@ -284,7 +284,7 @@ typedef struct PLW {
     void *fish878;           /* 0x878 hooked fish? +0x14 u16 angle (cam_plEX_fishing) */
     s16   work87C;       /* 0x87C */
     s16   work87E;           /* 0x87E */
-    u8 _pad880[0x881 - 0x880];
+    s8    work880;           /* 0x880 */
     s8    x881;              /* 0x881 bite timer (eft23 fishing); s8: signed loads in fish_com_ck */
     s16   work882;       /* 0x882 */
     s16   work884;           /* 0x884 */
