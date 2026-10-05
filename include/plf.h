@@ -157,4 +157,11 @@ void pl_chr_set2(PLW *, int, int, int);
 void Pl_basic_flagset(PLW *, int, int, int);
 int frame_check2(f32, PLW *, int);
 void action_timer_calc(PLW *, int);
+void guard_atk_ck(PLW *);
+typedef struct { s16 chr; s16 mot; s16 flag12; s16 next; } PL_MV_ENT;
+extern PL_MV_ENT mv004_chr_tbl0[7], mv004_chr_tbl1[7], mv004_chr_tbl2[7], mv004_chr_tbl3[7];
+void pl_mv004(PLW *, u32);
+extern s16 mv001_tbl[];
+int frame_check(f32, PLW *, int);
+void pl_mv001(PLW *, u32);
 #endif
