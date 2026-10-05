@@ -1681,8 +1681,8 @@ void Pit_mv_lb(void) {
 /* Per-frame pit menu: HP/stamina bars, item stock window, chat, main menu. */
 void Pit_mv(void) {
     PLW *pl;
-    u16 now;
-    u16 hold;
+    int now;
+    int hold;
     int sw;
     u32 i;
     int r;
