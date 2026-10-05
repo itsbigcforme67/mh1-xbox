@@ -73,10 +73,14 @@ def jtbls(asmtext, start, end):
     out = ""
     for n in sorted(names):
         m = re.search(r"_([0-9A-F]{8})$", n)
-        if not m:
-            print("jump table without address in name:", n, file=sys.stderr)
-            continue
-        a = int(m.group(1), 16)
+        if m:
+            a = int(m.group(1), 16)
+        else:
+            ms = re.search(r"^%s = 0x([0-9A-Fa-f]+);" % re.escape(n), open(os.path.join(ROOT, "config/symbols/main.txt")).read(), re.M)
+            if not ms:
+                print("jump table without address in name:", n, file=sys.stderr)
+                continue
+            a = int(ms.group(1), 16)
         words = []
         while True:
             w = struct.unpack_from("<I", IMG, a - 0x100000 + 4 * len(words))[0]
