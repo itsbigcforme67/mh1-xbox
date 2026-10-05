@@ -36,6 +36,37 @@ def named_regs(text):
     return re.sub(r"\$(\d+)\b", lambda m: "$" + (GPR[int(m.group(1))] if int(m.group(1)) < 32 else m.group(1)), text)
 
 
+def jt_patch(text, module):
+    """Make switch jump tables visible to m2c: for each lit_* table referenced via %hi(), put a label on every
+    case target inside the function, rename the table jtbl_* and append it in .rodata."""
+    names = sorted(set(re.findall(r"%hi\((lit_\w+)\)", text)))
+    tail = ""
+    for n in names:
+        tab = None
+        for path in glob.glob(os.path.join(ROOT, "asm", module, "data", "data", "*.s")):
+            m = re.search(r"^dlabel %s\n(.*?)^enddlabel %s\n" % (n, n), open(path).read(), re.M | re.S)
+            if m:
+                tab = re.findall(r"\.word (0x[0-9A-Fa-f]+)", m.group(1))
+                break
+        if not tab:
+            continue
+        addrs = [int(a, 16) for a in tab]
+        lines = text.split("\n")
+        hit = 0
+        for a in sorted(set(addrs)):
+            key = "%08X" % a
+            for i, l in enumerate(lines):
+                if re.search(r"/\* [0-9A-F]+ " + key + r" ", l):
+                    lines[i] = ".Ljt_%s:\n%s" % (key, l)
+                    hit += 1
+                    break
+        if not hit:
+            continue
+        text = "\n".join(lines).replace(n, "jtbl_" + n)
+        tail += ".section .rodata\nglabel jtbl_%s\n" % n + "".join(".word .Ljt_%08X\n" % a for a in addrs) + "\n"
+    return text + "\n" + tail if tail else text
+
+
 def blocks(module):
     """function name -> asm text (glabel..endlabel), across a module."""
     out = {}

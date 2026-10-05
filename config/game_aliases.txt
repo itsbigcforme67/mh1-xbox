@@ -1,0 +1,5 @@
+/* Linker symbols for C functions that must stay file-static (their codegen depends on it) but are still called by
+ * functions that are asm. Each line: name = address; (the build adds this file when it exists). */
+ef_move_sub_00583BF0 = 0x00583BF0;
+ef_move_sub_00593B30 = 0x00593B30;
+ef_move_sub_005A3E50 = 0x005A3E50;

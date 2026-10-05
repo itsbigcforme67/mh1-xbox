@@ -170,7 +170,7 @@ void em09_next_act_set(EMW *em) {
 int em09_status_ck(EMW *em) {
     EM09W *w = (EM09W *)em->ex;
 
-    if (em->x388 != 0 || (u8)(em->mode - 4) < 3 || em->be_flag == 0) {
+    if (em->x388 != 0 || (u32)(em->mode - 4) <= 2U || em->be_flag == 0) {
         return -1;
     }
     if (em->x19 != 0 && em->x7A4->kind == 2) {
@@ -188,10 +188,7 @@ int em09_dir_calc(s32 *ang, s32 *tgt, int spd) {
 
     *tgt = (u16)*tgt;
     d = (u16)(*tgt - *ang);
-    a = d;
-    if (d >= 0x8000) {
-        a = (u16)-d;
-    }
+    a = d >= 0x8000 ? (u16)-d : d;
     if (a < spd) {
         spd = a;
     }

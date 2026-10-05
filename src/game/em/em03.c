@@ -137,7 +137,7 @@ void em03_init(EMW *em) {
     em_act_set(em, 0, 1);
 }
 
-#define EM03_HAGI0(em) (*(s16 *)&(em)->hagi[0][0])
+#define EM03_HAGI0(em) ((em)->hagi[0].hp)
 
 void em03_main(EMW *em) {
     u8 dmg[4];

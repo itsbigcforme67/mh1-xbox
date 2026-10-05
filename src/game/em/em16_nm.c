@@ -2669,53 +2669,50 @@ void em16_main_sub(EMW *em, EM16W *w) {
 
 #define UV_RESET(i) \
     do { \
-        uv[i][0] = 0.0f; \
-        uv[i][1] = 0.0f; \
-        tm[i] = 0xFFFF; \
-        ty[i] = 0xFF; \
+        em->uv[i][0] = 0.0f; \
+        em->uv[i][1] = 0.0f; \
+        em->uvtm[i] = 0xFFFF; \
+        em->uvty[i] = 0xFF; \
     } while (0)
 
 void em16_uvmove(EMW *em) {
-    f32 (*uv)[3] = (f32 (*)[3])((u8 *)em + 0x5C0);
-    u16 *tm = (u16 *)((u8 *)em + 0x5F0);
-    u8 *ty = (u8 *)em + 0x5F8;
     int i;
 
     for (i = 0; i < 4; i++) {
-        if (tm[i] != 0xFFFF) {
-            tm[i]++;
+        if (em->uvtm[i] != 0xFFFF) {
+            em->uvtm[i]++;
         }
-        switch (ty[i]) {
-        case 0xFF:
-            break;
+        switch (em->uvty[i]) {
         case 0:
             UV_RESET(i);
             break;
         case 1:
-            if (tm[i] >= 0x3E) {
+            if (em->uvtm[i] >= 0x3E) {
                 UV_RESET(i);
             } else {
-                int k = (tm[i] >> 1) + 1;
+                int k = ((u32)em->uvtm[i] >> 1) + 1;
 
-                uv[i][0] = 0.125f * (f32)(k % 8);
-                uv[i][1] = 0.25f * (f32)(k / 8 % 4);
+                em->uv[i][0] = 0.125f * (f32)(k % 8);
+                em->uv[i][1] = 0.25f * (f32)(k / 8 % 4);
             }
             break;
         case 2:
-            uv[i][0] = 0.125f;
-            uv[i][1] = 0.0f;
-            tm[i] = 0xFFFF;
-            ty[i] = 0xFF;
+            em->uv[i][0] = 0.125f;
+            em->uv[i][1] = 0.0f;
+            em->uvtm[i] = 0xFFFF;
+            em->uvty[i] = 0xFF;
             break;
         case 3:
-            if (tm[i] >= 0xC) {
+            if (em->uvtm[i] >= 0xC) {
                 UV_RESET(i);
             } else {
-                int k = (tm[i] >> 1) + 2;
+                int k = ((u32)em->uvtm[i] >> 1) + 2;
 
-                uv[i][0] = 0.125f * (f32)(k % 4);
-                uv[i][1] = 0.25f * (f32)(k / 4 % 4);
+                em->uv[i][0] = 0.125f * (f32)(k % 4);
+                em->uv[i][1] = 0.25f * (f32)(k / 4 % 4);
             }
+            break;
+        case 0xFF:
             break;
         }
     }
