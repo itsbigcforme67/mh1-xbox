@@ -378,6 +378,36 @@ tools/clay_dump.py writes each APX as a PNG (zlib only) plus an .mtl and
 UVs. UVs: OBJ v = 1 - t (PS2 t = 0 at the top of the image) [verified:
 textures land correctly].
 
+## 7a. Leftover Xbox HUD textures (`cpit*xb.apx`) [verified: decoded]
+
+AFS_DATA has two "xb" textures; there are none in AFS00/AFS01 [verified:
+listing]:
+
+| AFS # | name | pairs with |
+|----|----|----|
+| 8 / 9 | cpit1ps.apx / **cpit1xb.apx** | HUD atlas 1 |
+| 24 / 25 | cpit2ps.apx / **cpit2xb.apx** | HUD atlas 2 |
+
+- **Format:** like every loose `.apx`, they are Meltw-compressed. The odd
+  header values (0x0420001B, ...) were the compressed stream. After Meltw
+  all four are ordinary APX files: 256x256 8-bit with a 32-bit palette
+  [verified: tools/clay_dump.apx_decode]. PNGs are in build/show/
+  (cpit1ps.png, cpit1xb.png, cpit2ps.png, cpit2xb.png and cpit_compare.png).
+- **cpit2xb:** clearly Xbox. Its top rows replace the PlayStation symbols
+  and L1/L2/R1/R2 with coloured **B A Y X** buttons, the white and black
+  buttons, L and R triggers, and START / BACK. The rest of the atlas
+  (arrows, R3/L3, map parchment, item icons) is at the same places as in
+  cpit2ps, so it is a drop-in replacement [verified: side-by-side render].
+- **cpit1xb:** a different, partly reorganised atlas. It has rounded
+  PlayStation-style buttons plus START / SELECT, a dial, emoticon faces and
+  a "RELOAD" label. Many cpit1ps icons are missing or moved. It is not a
+  straight Xbox swap; maybe an earlier or alternative layout [guess].
+- **Not used by the game:** filedef_sys (0x2EF2D0) lists 8 (cpit1ps) and
+  24 (cpit2ps) but not 9 or 25 [verified: table values], so the xb files
+  are never loaded. Pointing filedef_sys at 9 and 25 should show the Xbox
+  art in game, at least for cpit2 [guess, untested].
+- The Wii MHG main.dol still names both pairs (section 7b).
+
 ## 7b. Wii Monster Hunter G (2008) data [verified where marked]
 
 The owner's Wii MHG (disc/mhg_wii) packs all data in
