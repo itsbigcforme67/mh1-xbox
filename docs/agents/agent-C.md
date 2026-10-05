@@ -548,3 +548,31 @@ ui00-ui06 (string/draw helpers, key repeat, scecom reboot), misc00/01. Counts (p
   fewer arguments than expected; a gp global holding a work pointer (`ynw`) is accessed as
   `((STRUCT *)ynw)->field` with the cast repeated at each use to get the original reloads
   (yn_key_repeat).
+
+# Third assignment: unowned main code 0x100000-0x1A0000
+
+Candidates (asm files still without C; sizes are the whole asm file; owned elsewhere are skipped:
+player f_pl 0x134000-0x15B000 (F), hit 0x111000-0x125000 and camera/weapon (D), f_game/f_stage/f_quest (E)):
+- 0x15AED0 f_trans (sprite list, 0x430), 0x1611F0 g_system_w_init (0x290), g_Put_sprite_rotate (0x8E0), f_calcpoint (0x9B0),
+  g_get_prim_ptr (0x5B0), g_RollView (0xEF8: view, em_work, smell/smoke/senko stacks, ground data, fms), f_set (0x318)
+- f_font (0x11B4), g_font_set_stack_no (0x77C, softreset/Get_sw...), f_disp_162DB0 (0xA60 loading screens)
+- 0x11E910 f_release (0xC8), g_load_texlist (0x348), f_load (0x6D0), f_ioread (0xE44), g_cpAng2Rad (0x114C vector math),
+  f_yure (0x7F0), f_get (0x1ED0 model work), set_used_clay (0xC74), g_armor_model_free (0xC6C incl. Scheduler/Tsk_*)
+- f_option (0xC40), Pit_* leftovers of the menu pass (menu_* near-matches), g_Fade_task (0x438), f_em (0x3428), f_tri (0x14B0)
+- 0x16B060.. f_flps2 / flib graphics library (0x2890+, ~0x28000 total, probably Capcom/Sony mix: left for last),
+  0x18D9D0.. pl* AHI/AMO model loader library, 0x196390.. sceCd*/libc (GCC or Sony libs, not Capcom: skip).
+Status per file below as it is done.
+
+## Sprite/system/prim files (src/main/sprite, src/main/prim)
+- sprite/trans2.c (f_trans 0x15AED0, 4/4 match): sort_sub must be `static` and defined before its caller:
+  MWCC then keeps the caller's loop variable in a0/t3 across the call (it knows the leaf callee's register use).
+  `(*s & 8) / 8` (signed divide) gives the bgez/addiu 7/sra sequence; flSetRenderState(int, int) with `(int)m` fixed an a0/a1 order diff.
+  Statement-level locals: `u8 *p = s + sort_no[i]*0x50;` before the flag test fixed the delay-slot placement.
+- sprite/sysw.c (0x1611F0, 11/11): ran_suu needs `u32 v` locals declared r, v, p order; init_std_rate wants the constant in a local `g`.
+- sprite/putspr.c, putspr2.c (Put_2TF, Put_F, Paint_square, Put_megaphone, stage_w_init, stage_fog_set match):
+  struct copy of 12/20 bytes compiles to lwc1/swc1 pairs; Paint_square statement order found with tools/stperm.py
+  (new tool: brute-forces the order of N single-line statements); stage_w_init needs its own struct with real fields
+  (a FLD macro with a base pointer makes the compiler CSE `&stage_work` and emit different code).
+  Not matched: Put_sprite_rotate (0x15B300, big, 4 temp pointers), Draw_square (src/main/sprite/putspr_nm.c, 76/78 differ).
+- prim/prim2.c (0x169300, 10/10): get_prim_ptr takes int here (header says s16; callers extend). add_prim returns the slot
+  (header says void; not changed, prim2.c has its own PRIM typedef).
