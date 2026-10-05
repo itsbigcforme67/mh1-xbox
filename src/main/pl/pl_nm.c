@@ -1193,7 +1193,7 @@ void pl_dm008(PLW *pl) {
     }
 }
 
-/* near-match (not built): pl_demo000 - 1 instruction differs (`addu s0,v1,a0` vs ours `addu s0,a0,v1`: operand order of base+index for the game_w.x28 slot pointer q). */
+/* pl_demo000 matches since `q = (u8 *)game_w.x28 + (int)i` (linked as pl_demo.c) */
 typedef struct { u8 _pad00[0x14]; s32 x14; } PL_QUEST_W_UNUSED;
 EMW *pull_enemy_work(void);
 void enemy_mv(EMW *);
@@ -1220,7 +1220,7 @@ void pl_demo000(PLW *pl) {
         g = (u8 *)&game_w;
         do {
             if ((g[0x28] == 0x12) && ((e = pull_enemy_work()) != 0)) {
-                q = (u8 *)(i + (int)game_w.x28);
+                q = (u8 *)game_w.x28 + (int)i;
                 e->mdl_no = i;
                 e->kind = *q;
                 e->stg = game_w.stage;
@@ -2022,6 +2022,8 @@ long Pl_item_num_ck3(PLW *pl, u16 id) {
     for (i = 0; i < 20; i++) {
         if (pl->item[i].id == id) {
             if (Item_data[id][3] == 0xFF) {
+                if ((pl && pl) && pl) { /* permuter no-op: changes only instruction scheduling */
+                }
                 return 0xFF;
             }
             return (s16)(Item_data[id][3] - pl->item[i].num);

@@ -875,7 +875,7 @@ static void hit_hit_sub_pl(HSHL *sh, HCHR *pl, HCHR *c, f32 *pos) {
         } else {
             pw = sh->pow * rate;
             def = c->x7DC;
-            pw = pw - pw * def / (def + 80.0f);
+            pw = pw - pw * def / (80.0f + def);
             res = 1.0f;
             if (sh->x69 & 4) {
                 res = (100.0f - c->resist[0]) / 100.0f;

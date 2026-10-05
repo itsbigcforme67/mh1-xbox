@@ -1,9 +1,11 @@
-/* menu36 - f_menu 0x00134710-0x00134950: pef_get_scale, pef_get_alpha */
+/* menu37 - f_menu 0x00131FB0-0x00132160: Pit_disp_chat_cnfg (chat-preset screen: page of 6 preset lines, cursor list). Whole file in menu_disp_nm.c. */
+/* menu_disp_nm - f_menu display half (0x0012B690-0x00134950, main.bin): written
+ * from the asm, near-match C not built; matching runs are built as menuNN.c.
+ * Field meanings and struct names are guesses. */
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
 #include "fl.h"
-
 #define FX(p, o) (*(f32 *)((u8 *)(p) + (o)))
 extern u8 quest_w[];
 extern u8 room_member_id[];
@@ -13,7 +15,6 @@ extern char *map_name[];
 extern char *quest_condition_str[];
 extern u8 lb_no_player[];
 extern u8 PitMenuB[];
-
 void flfntSetSize(int, int);
 void flfntLocate(int, int);
 void font_set_palette(int);
@@ -62,20 +63,6 @@ extern u8 quest_str[][0x34];
 extern u8 item_cmd_frame[], item_cmd_str[], item_yn_frame[], item_cmd_present[];
 extern u8 item_cmd_item_num[], D_6EAC80[];
 extern u8 frame_matA[], frame_matB[], frame_mix_cmd[], frame_mixed_item[];
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ===== map display (0x12CCD0-0x12E3E0) ===== */
 extern u8 enemy_icon_tbl[];
 extern u8 camp_pos[][8];
@@ -108,11 +95,6 @@ typedef struct PFLP12 {
     u32 col;
     s16 uv[6];
 } PFLP12;
-
-
-
-
-
 /* ===== item window and gauges (0x12E3E0-0x1306A0) ===== */
 extern u8 Item_data[][16];
 extern u32 item_col_tbl[];
@@ -140,14 +122,6 @@ typedef struct PFLPS3 {
     u32 uv0;
     u32 uv1;
 } PFLPS3;
-
-
-
-
-
-
-
-
 extern u8 pl_type_uv[];
 extern u16 uv_tbl_3869[][4];
 void flps0002(void *);
@@ -155,15 +129,14 @@ typedef struct PFLPS1 {
     s16 s[4];
     u32 col;
 } PFLPS1;
-
-
 /* ===== timer, gauges (0x1306A0-0x131580) ===== */
 extern u16 System_timer;
 extern u8 needle_data[][0x24];
 void flSinCos(f32, f32 *, f32 *);
 f32 flSin(f32);
-void gage_disp(void *, int);
-void bar_disp(void *, int);
+struct GAGE;
+void gage_disp(struct GAGE *, int);
+void bar_disp(struct GAGE *, int);
 void disp_needle(int, int);
 typedef struct GAGE {
     f32 x;      /* 0x00 */
@@ -174,12 +147,6 @@ typedef struct GAGE {
     u8 _pad0E[2];
     u32 col;    /* 0x10 */
 } GAGE;
-
-
-
-
-
-
 /* ===== slash level, pachinger, cannon, menu list (0x1313A0-0x1324B0) ===== */
 extern u8 slash_lev_tbl[];
 typedef struct PACHISIGHT {
@@ -212,14 +179,46 @@ void Reibun_print(int, int);
 void lb_disp_chat_cnfg_sendpl(int, PIT_W *);
 void font_print_strings(s16, s16, void *, int);
 void disp_menu(int, PIT_W *);
+/* 0x131FB0 */
+void Pit_disp_chat_cnfg(void) {
+    char buf[32];
+    u32 i;
+    int y;
+    u8 *e;
+    s8 k;
 
-
-
-
-
-
-
-
+    switch (lpPit->x7E) {
+    case 0:
+        disp_menu(1, lpPit);
+        DispFrameList(pf_chat_cnfg + game_w.x1DC * 0x18, 0, lpPit->x7D);
+        break;
+    case 1:
+        switch (lpPit->x7D) {
+        case 0:
+            lb_disp_chat_cnfg_sendpl(1, lpPit);
+            break;
+        case 1:
+            k = PitMenu.x1B;
+            sprintf(buf, (char *)lit_4493_0035A620, k / 6 + 1);
+            DispFrameList(pf_chcnfg_reibun, buf, k % 6);
+            DispFrameListOptionArrow(pf_chcnfg_reibun);
+            flfntSetSize(0x12, 0x12);
+            font_set_palette(0);
+            i = 6;
+            e = str_tbl_reibun0 + (PitMenu.x1B / 6) * 0x60;
+            y = 0x54;
+            do {
+                flfntLocate(0x1AF, y);
+                Reibun_print(10, *(s32 *)(e + 0xC));
+                i--;
+                e += 0x10;
+                y = (s16)(y + 0x16);
+            } while (i != 0);
+            break;
+        }
+        break;
+    }
+}
 /* ===== wyvern ripple, data/option windows (0x132510-0x133A00) ===== */
 extern u8 pfl_menu_data[];
 extern u8 pf_mix_list_base[], pf_monster_list_base[];
@@ -241,13 +240,6 @@ void PlayerEquipmentWindow(PLW *);
 void flps0004(void *);
 int menu_equip_get_equip(u8);
 void efct_circle(int, int, int, f32, f32);
-
-
-
-
-
-
-
 /* ===== mix / pit effects (0x133FB0-0x134950) ===== */
 typedef struct PEF_DATA {
     s16 ang;        /* 0x00 */
@@ -278,12 +270,6 @@ extern s16 ofs_5159[][3][2];
 void SetBlendingMode(u16);
 int pef_get_scale(PEF *, int *, s16);
 int pef_get_alpha(PEF *, int *, s16);
-
-
-
-
-
-
 /* ===== item box (0x1327D0-0x1332E4) ===== */
 extern u8 lit_4892[], lit_4893[], lit_4894[], lit_4895[];
 extern u8 pf_item_box_base[];
@@ -294,8 +280,6 @@ f32 flSqrt(f32);
 #define BOX_ID(i)   (*(u16 *)((u8 *)&game_w + 0x128 + (i) * 4))
 #define BOX_NUM(i)  (*(s16 *)((u8 *)&game_w + 0x12A + (i) * 4))
 #define BOX_FLAG(i) ((*(s32 *)((u8 *)&game_w + 0x1A8 + ((i) >> 5) * 4)) & (1 << ((i) & 0x1F)))
-
-
 /* ===== item window, select mode (0x12E910-0x12F830) ===== */
 extern u8 item_select_base[];
 extern u8 btn_item_sel_3360[];
@@ -303,74 +287,3 @@ extern s16 sy_tbl_3417[];
 int Get_Use_itemnum(PLW *);
 u16 item_sel_sub(PLW *, u16, int);
 int Pl_shell_set(PLW *, u16, int);
-
-
-/* 0x134710 */
-int pef_get_scale(PEF *e, int *tbl, s16 t) {
-    int *cur;
-    int *nx;
-    int t1;
-    int ta;
-    f32 a, b, f, g, dt, dd;
-
-    cur = tbl;
-    if (t < tbl[0]) {
-        return 1;
-    }
-    t1 = cur[3];
-    nx = cur + 3;
-    if (t1 > 0) {
-        for (;;) {
-            if (!(t > t1)) {
-                ta = cur[0];
-                a = *(f32 *)&cur[1];
-                b = *(f32 *)&cur[2];
-                f = a + ((*(f32 *)&nx[1] - a) * (f32)(t - ta)) / (f32)(t1 - ta);
-                g = b + ((*(f32 *)&nx[2] - b) * (f32)(t - ta)) / (f32)(t1 - ta);
-                e->l = (f32)(-e->d->ox) * f;
-                e->r = f * (f32)(e->d->w - e->d->ox);
-                e->t = (f32)(-e->d->oy) * g;
-                e->b = g * (f32)(e->d->h - e->d->oy);
-                return 0;
-            }
-            cur = nx;
-            nx += 3;
-            t1 = *nx;
-            if (t1 <= 0) break;
-        }
-    }
-    e->on = 0;
-    return -1;
-}
-
-/* 0x134860 */
-int pef_get_alpha(PEF *e, int *tbl, s16 t) {
-    int *cur;
-    int *nx;
-    int t1;
-    f32 a, f;
-
-    cur = tbl;
-    if (t < tbl[0]) {
-        return 1;
-    }
-    t1 = cur[2];
-    nx = cur + 2;
-    if (t1 > 0) {
-        for (;;) {
-            if (!(t > t1)) {
-                a = *(f32 *)&cur[1];
-                a = a + ((*(f32 *)&nx[1] - a) * (f32)(t - cur[0])) / (f32)(t1 - cur[0]);
-                f = 255.0f * a;
-                e->alpha = (u8)f;
-                return 0;
-            }
-            cur = nx;
-            nx += 2;
-            t1 = *nx;
-            if (t1 <= 0) break;
-        }
-    }
-    e->on = 0;
-    return -1;
-}

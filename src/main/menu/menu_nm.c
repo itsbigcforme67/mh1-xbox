@@ -101,7 +101,7 @@ int Menu_chatlog_i(void);
 extern int (*menu_mv_jmp[])(int);
 void Chat_log_clear(void);
 void pit_prim_init(void);
-u16 pit_key_repeat(u16, u16);
+int pit_key_repeat(u16, u16);
 void SoftKeyboard_exit(void);
 int Quest_time_get(int);
 int Online_ck();
@@ -376,7 +376,7 @@ void player_name_id_print(PLW *pl) {
     player_name_print(name);
 }
 
-u16 pit_key_repeat(u16 now, u16 hold) {
+int pit_key_repeat(u16 now, u16 hold) {
     u16 k = now & 0x3C00;
     u16 h;
     u16 r;
@@ -1228,7 +1228,7 @@ int lb_item_stock_mv(int sw) {
     return r;
 }
 
-void map_move(int sw, u16 hold) {
+void map_move(int sw, int hold) {
     if (lpPit->lb == 0 && lpPit->x83 == 0 && ((u16)sw & 0x4000)) {
         lpPit->x3E ^= 1;
     }
@@ -1437,10 +1437,12 @@ int menu_chcnfg_sendpl(int sw) {
 
 int menu_chcnfg_reibun(int sw) {
     int a;
-    int r = sw;
+    unsigned int r = sw;
 
     switch (lpPit->x7F) {
     case 0:
+        if (!r) { /* permuter no-op: changes only instruction scheduling */
+        }
         a = r & 0xFFFF;
         if (!(a & 0x40)) {
             PitMenu.x12 = 3;
