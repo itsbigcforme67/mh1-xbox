@@ -142,6 +142,8 @@ segments:
       - [0x02B794, asm, text/em_cmd_smell_set]
       - [0x02B7A0, c, em/em_cmd_r10]
       - [0x02BADC, asm, text/em_cmd_body_status_sel]
+      - [0x02BAE0, c, em/em_cmd_r35]
+      - [0x02BC1C, asm, text/em_cmd_act_st_ck]
       - [0x02BC20, c, em/em_cmd_r11]
       - [0x02C2AC, asm, text/em_cmd_boss_atk_ck]
       - [0x02C540, c, em/em_cmd_r32]
