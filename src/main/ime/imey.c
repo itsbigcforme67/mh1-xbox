@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,7 +469,31 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-u8 *load_temp(int off)
+int tmp_touroku(u8 *key, WD *w, int rt)
 {
-    return temp_pages[(s16)(off >> 12)] + (s16)(off & 0xFFF);
+    NODE *nd;
+    NODE **link;
+    NODE *n;
+    u8 *rec;
+    int need;
+    int len;
+
+    temp_updated = 1;
+    link = srch_node(key, w->len, &nd);
+    len = w->len;
+    rec = nd->rec;
+    if (rec[2] == len && ask_strncmp(key, rec + 3, len) == 0) {
+        rec[2] = 0;
+        *link = nd->next;
+        clear_entid_tmp(tmpoffset(nd->rec));
+        free_node(nd);
+    }
+    n = alloc_node();
+    rec = alloc_record(need = newwdlen(w));
+    set_record(rec, need, w, rt);
+    link = srch_node(key, w->len, &nd);
+    n->rec = rec;
+    n->next = nd;
+    *link = n;
+    return 0;
 }

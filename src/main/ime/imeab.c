@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,73 +469,56 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void update_nowtmp(void)
+int bs_check(int pos, int end)
 {
-    temp_updated = 1;
-}
+    HCHAR *h;
+    CH *c;
+    BS *r;
+    BS *r2;
+    BS *b;
 
-int setkbuflen(u8 *p)
-{
-    int n;
-
-    n = 0;
-    while (*p != 0) {
-        if (iskanji(*p) != 0) {
-            p += 2;
-        } else {
-            p += 1;
-        }
-        n += 2;
+    h = &hchar[pos];
+    c = h->ch;
+    if (c != (CH *)-1 && c != 0) {
+        do {
+            r = make_bsmem(pos, end, c);
+            if (r == (BS *)-1) {
+                if (h->bs != 0) {
+                    free_bsmemlist(h->bs);
+                    h->bs = 0;
+                }
+                return 0;
+            }
+            if (r != 0) {
+                hchar_addbsmem(pos, r);
+            }
+            c = c->next;
+        } while (c != 0);
     }
-    return n;
-}
-
-void setkbuf(u8 *src, u8 *dst)
-{
-    while (*src != 0) {
-        if (iskanji(*src) != 0) {
-            *dst = *src;
-            src++;
-            dst++;
-        } else {
-            *dst = 0xFF;
-            dst++;
+    r2 = make_bsmem(pos, end, &null_chmem);
+    if (r2 == (BS *)-1) {
+        if (h->bs != 0) {
+            free_bsmemlist(h->bs);
+            h->bs = 0;
         }
-        *dst = *src;
-        src++;
-        dst++;
+        return 0;
     }
-}
-
-int getkbuflen(u8 *p, u8 *end)
-{
-    int n;
-
-    n = 0;
-    while (p < end && *p >= 0x39) {
-        if (*p == 0xFF) {
-            n++;
-        } else {
-            n += 2;
+    if (r2 != 0) {
+        hchar_addbsmem(pos, r2);
+    }
+    if (h->bs == 0) {
+        if ((b = alloc_bsmem()) == 0) {
+            return -1;
         }
-        p += 2;
+        b->len = muhenkan(pos, end);
+        b->x02 = 0x28;
+        b->x03 = 0;
+        b->pw = 0;
+        b->x08 = 0;
+        b->x0A = 0;
+        b->next = 0;
+        h->bs = b;
+        return 1;
     }
-    return n;
-}
-
-void getkbuf(u8 *dst, u8 *src, u8 *end)
-{
-    while (src < end && *src >= 0x39) {
-        if (*src == 0xFF) {
-            src++;
-        } else {
-            *dst = *src;
-            src++;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
-    }
-    *dst = 0;
+    return 1;
 }

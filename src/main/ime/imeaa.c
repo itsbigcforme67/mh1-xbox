@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,14 +469,63 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int updwdlen(WD *w)
+void init_hchar(void)
 {
-    int extra;
+    HCHAR *h;
 
-    if (w->x08 != 0 || w->x07 >= 0x2D) {
-        extra = 3;
-    } else {
-        extra = 2;
+    for (h = hchar; (u8 *)h < (u8 *)wdsbuf; h++) {
+        clear_hchar(h);
     }
-    return extra + setkbuflen(w->tango);
+}
+
+void clear_hchar(HCHAR *h)
+{
+    h->x00 = -1;
+    h->ch = 0;
+    h->bs = 0;
+    h->kh = 0;
+    h->x10 = 0;
+    h->x14 = 0;
+    h->x15 = 0;
+    h->x16 = 0;
+    h->x17 = -1;
+    h->x18 = -1;
+    h->x19 = -1;
+}
+
+void free_hchar(int from, int to, int keep)
+{
+    HCHAR *h;
+    HCHAR *end;
+
+    end = hchar + to;
+    for (h = hchar + from; h < end; h++) {
+        free_hchar_one(h, keep);
+    }
+}
+
+void free_hchar_one(HCHAR *h, int keep)
+{
+    if (keep == 0) {
+        h->x00 = -1;
+        h->x18 = -1;
+        if (h->ch != (void *)-1) {
+            free_chmemlist(h->ch);
+        }
+        h->ch = 0;
+        h->x17 = -1;
+        h->x19 = -1;
+        h->x16 = 0;
+    }
+    if (h->bs != 0 && h->bs != (BS *)-1) {
+        free_bsmemlist(h->bs);
+    }
+    h->bs = 0;
+    if (h->kh != 0) {
+        free_khmemlist(h->kh);
+    }
+    h->kh = 0;
+    h->x10 = 0;
+    h->x14 = 0;
+    h->x15 = 0;
 }

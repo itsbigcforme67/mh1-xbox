@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,28 +469,14 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int hashfunc(u8 *key)
+int updwdlen(WD *w)
 {
-    if (key[0] >= 0xA0 && key[0] < 0xF0) {
-        return key[0] - 0xA0;
+    int extra;
+
+    if (w->x08 != 0 || w->x07 >= 0x2D) {
+        extra = 3;
+    } else {
+        extra = 2;
     }
-    return 0;
-}
-
-NODE *alloc_node(void)
-{
-    NODE *n;
-
-    if (freelist == 0) {
-        page_gc();
-    }
-    n = freelist;
-    freelist = n->next;
-    return n;
-}
-
-void free_node(NODE *n)
-{
-    n->next = freelist;
-    freelist = n;
+    return extra + setkbuflen(w->tango);
 }

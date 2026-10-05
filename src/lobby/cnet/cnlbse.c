@@ -1,23 +1,24 @@
-/* cnlbs, run 5: cnLBS_RequestPersonalDataChange .. _cnet_RecvFromLbs_AnswerPersonalDataChange (lobby.bin 0x005A3400-0x005A34C8): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 5: _cnet_CallBack_Result_Room_NumOfRoom .. _cnet_CallBack_Result_RoomJoinJoinUser (lobby.bin 0x005A7660-0x005A7704): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#pragma readonly_strings on
 
-int cnLBS_RequestPersonalDataChange(int arg0) {
-    int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
-
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PersonalDataChange();
-        return slot;
+void _cnet_CallBack_Result_Room_NumOfRoom(CNET_RES res) {
+    if (res.val == 0) {
+        CnetSys_w.burst[4].res = 1;
+        return;
     }
-    return -1;
+    CnetSys_w.burst[4].res = 2;
 }
 
-int __cnet_SendReq_PersonalDataChange(void) {
-    int cmd = SetSendCommand(&send_work, 0xB2) & 0xFFFF;
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-    return cmd;
-}
+void _cnet_CallBack_Result_RoomJoinJoinUser(CNET_RES res) {
+    CNET_RES r;
 
-void _cnet_RecvFromLbs_AnswerPersonalDataChange(void) {
-    _cnet_Return_CallBack(0);
+    if (res.val == 0) {
+        r.val = 2;
+        r.id = 0xB;
+        CnetSys_w.burst[4].cb(r, &r);
+        CnetSys_w.burst[4].res = 1;
+        return;
+    }
+    CnetSys_w.burst[4].res = 2;
 }

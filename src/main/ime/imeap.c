@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,35 +469,31 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void free_bsmemlist(BS *b)
+u16 kh_priority(BS *b, int v)
 {
-    BS *n;
-
-    while (b != 0) {
-        n = b->next;
-        free_mem(b);
-        b = n;
+    v = v & 0xFFFF;
+    if (v != 0) {
+        return (v + 0x3E8) & 0xFFFF;
     }
+    return b->x08;
 }
 
-void free_khmemlist(KH *k)
+int is_alphanum(int c)
 {
-    KH *n;
-
-    while (k != 0) {
-        n = k->next;
-        free_mem(k);
-        k = n;
-    }
+    return rmtype[c & 0xFF] & 0xC0;
 }
 
-void free_klmemlist(KL *l)
+int is_num(int c)
 {
-    KL *n;
+    return rmtype[c & 0xFF] & 0x80;
+}
 
-    while (l != 0) {
-        n = l->next;
-        free_mem(l);
-        l = n;
-    }
+int is_alpha(int c)
+{
+    return rmtype[c & 0xFF] & 0x40;
+}
+
+int is_paren(int c)
+{
+    return rmtype[c & 0xFF] & 0x20;
 }

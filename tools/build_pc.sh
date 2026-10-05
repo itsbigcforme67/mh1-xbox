@@ -74,7 +74,20 @@ PL="$(ls src/main/pl/pl[0-9][0-9].c | tr '\n' ' ') src/main/pl/pl_nm.c src/main/
 # em_cmd_nm.c, the command interpreter); src/pc/rt/rt_em.c has weak
 # stand-ins for what is missing.
 EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c src/game/em/em_taisei_nm.c \
-    src/game/em/em01.c src/game/em/em01_horm.c"
+    src/game/em/em01.c src/game/em/em01_horm.c src/game/em/em18_init.c src/game/em/em18b.c"
+# Quest flow (agent C/E): f_quest (whole file near-match) and its first
+# part f_quest0_nm.c (accessors, Quest_init; written from the asm), the
+# tutorial checks it calls (game.bin tutorial.c)
+QUEST="src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c \
+       src/main/game/f_game.c src/main/game/f_gameb.c src/main/font/dsp01.c \
+       src/main/menu/menu_nm.c src/main/menu/menu_disp_nm.c \
+       src/main/chat/chat_nm.c src/main/font/fontst_nm.c \
+       src/main/font/fontst2_nm.c src/main/font/gfs_nm.c src/main/set/set01.c src/main/sys/vib.c \
+       src/main/sprite/putspr.c src/main/sprite/putspr2.c src/main/sprite/calcpoint.c src/main/sprite/trans2.c src/main/sprite/sysw.c \
+       src/main/load/mkmap.c \
+       src/main/reward/f_reward.c src/main/reward/f_reward2.c src/main/reward/f_reward3.c src/main/reward/f_rewardb.c \
+       src/main/reward/f_rewardc.c src/main/reward/f_reward_nm.c src/main/reward/f_rewardb_nm.c src/main/reward/f_rewardd_nm.c \
+       src/main/ud/ud_nm.c src/main/font/disp2_nm.c src/main/font/disp1_nm.c"
 for f in src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c; do
     [ -f "$f" ] && EM="$EM $f"
 done
@@ -84,8 +97,8 @@ done
 # (gitignored) and compiled against those headers (same struct layouts, more
 # fields named). Remove entries once merged (agent B's em01_ai_nm.c and
 # em_taisei_nm.c were, 6 Oct 2026).
-#   agent-D: em_cmd_nm.c (the monster command interpreter)
-EXT="agent-D:src/game/em/em_cmd_nm.c"
+# (agent D's em_cmd_nm.c was merged into main on 6 Oct 2026; none left)
+EXT=""
 for e in $EXT; do
     br=${e%%:*}; f=${e#*:}
     [ -f "$f" ] && continue                       # main has it
@@ -96,8 +109,8 @@ for e in $EXT; do
     git show "$br:$f" > "$d/$f"
     EM="$EM $d/$f"
 done
-WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm"
-GAME="$GAME $HIT $CAM $EFT $PL $EM"
+WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
+GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST"
 
 SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
 CFLAGS="-m32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
@@ -135,6 +148,8 @@ for f in $GAME; do
              -DEft06_set=rtabi_Eft06_set -DEft02_set6=rtabi_Eft02_set6 \
              -DGetGroundHitStatusAreaPl=rtabi_GetGroundHitStatusAreaPl" ;;
     src/main/stage/f_stage.c) ABI="-Dhit_point_cbd=rtabi_hit_point_cbd" ;;
+    # game_core (swset, move, trans, hit_check) is the host tick (rt_quest.c)
+    src/main/game/f_gameb.c) ABI="-Dgame_core=ps2_game_core" ;;
     */em_cmd_nm.c) ABI="-DGetWaterData()=GetWaterData(em)" ;;   # a0 = em left over
     src/game/em/em_core_nm.c) ABI="-DNextStage_No_Set(...)=rtabi_NextStage_No_Set(em)" ;;   # a0 = em left over
     */em01_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
@@ -148,6 +163,23 @@ for f in $GAME; do
     INC=""
     src="$f"
     case "$f" in build/pc/ext/*) INC="-I$(echo "$f" | cut -d/ -f1-4)/include" ;; esac
+    # f_quest_nm.c declares va_list as char * (the PS2 ABI): use the host's
+    case "$f" in
+    src/main/quest/f_quest_nm.c)
+        src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
+        sed 's/^typedef char \*va_list;/#include <stdarg.h>/' "$f" > "$src"
+        INC="$INC -I$(dirname "$f")" ;;
+    # item_action_set calls Get_Active_itemnum() with a0 = pl left over
+    src/main/pl/pl10.c)
+        src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
+        sed 's/(s16)Get_Active_itemnum()/(s16)Get_Active_itemnum(pl)/' "$f" > "$src"
+        INC="$INC -I$(dirname "$f")" ;;
+    # ItemPickingDeclaration calls Pl_master_ck() with its own a0 (arg) left over
+    src/main/menu/menu_nm.c)
+        src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
+        sed 's/^int Pl_master_ck(void);/int Pl_master_ck();/; s/Pl_master_ck() == 0/Pl_master_ck((void *)arg) == 0/' "$f" > "$src"
+        INC="$INC -I$(dirname "$f")" ;;
+    esac
     # absolute PS2 addresses some m2c-based files still use (game_w
     # 0x3F33F0, quest_w 0x3C7440): compile a copy that reads the host's
     # game_w / quest_w instead (src/pc/rt/rt_ps2abs.h)
@@ -177,7 +209,7 @@ python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 gcc $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font; do
     # shellcheck disable=SC2086
     gcc $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"
