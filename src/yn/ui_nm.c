@@ -91,7 +91,6 @@ extern u8 MyUserName[];
 extern u8 Psw[];
 extern u8 SrvDomain[];
 extern u8 Yn_temp[];
-extern u8 args[];
 extern u8 lit_160_0053EA40[];
 extern u8 lit_4084[];
 extern u8 lit_4085[];
@@ -178,7 +177,7 @@ void yn_set_size();
 void yn_set_z(f32 z);
 void yn_set_halftype();
 s32 yn_get_halftype();
-s64 yn_center_x();
+s16 yn_center_x();
 int yn_strlen();
 void yn_strconv();
 void yn_strconv2();
@@ -1525,9 +1524,10 @@ s32 yn_common_memcard_out(void) {
     s32 temp_s0;
     u8 *temp_v0;
 
+    temp_s0 = 0;
     if (yn_mc_device_check_all(ynw + 0x10D0) >= 0) {
         temp_v0 = ynw;
-        temp_s0 = 0 | (((s32) (M2C_FIELD(temp_v0, u8 *, 0x10D2) | M2C_FIELD(temp_v0, u8 *, 0x10D3)) >> 1) & 3);
+        temp_s0 |= ((M2C_FIELD(temp_v0, u8 *, 0x10D2) | M2C_FIELD(temp_v0, u8 *, 0x10D3)) >> 1) & 3;
         if (!(temp_s0 & (1 << yn_mc_get_current(temp_v0 + 0x10D0)))) {
             return 1;
         }
@@ -2431,47 +2431,26 @@ s32 yn_get_halftype(void) {
     return 1;
 }
 
-s64 yn_center_x(u8 *arg0, s32 arg1) {
-    s32 temp_v1;
-    s32 temp_v1_2;
-    s32 var_a2;
-    s32 var_a3;
-    s32 var_v0;
-    s32 var_v0_2;
-    s32 var_v1;
-    u8 *var_a0;
-    u8 temp_v0;
-
-    var_a0 = arg0;
-    var_v1 = 0;
-    var_a2 = 0;
-    var_a3 = 0;
-loop_1:
-    temp_v0 = *var_a0;
-    if (temp_v0 != 0) {
-        if ((s32) temp_v0 >= 0x80) {
-            var_a0 += 1;
-            var_a2 += 1;
+s16 yn_center_x(u8 *str, int w) {
+    int half = 0;
+    int full = 0;
+    int i = 0;
+    int total;
+    while (*str != 0) {
+        if (*str >= 0x80) {
+            str++;
+            full++;
         } else {
-            var_v1 += 1;
+            half++;
         }
-        var_a3 += 1;
-        var_a0 += 1;
-        if (var_a3 < 0x100) {
-            goto loop_1;
+        i++;
+        str++;
+        if (i >= 0x100) {
+            break;
         }
     }
-    temp_v1 = arg1 * var_v1;
-    var_v0_2 = temp_v1 >> 1;
-    if (temp_v1 < 0) {
-        var_v0_2 = (s32) (temp_v1 + 1) >> 1;
-    }
-    temp_v1_2 = (0x280 - (arg1 * var_a2)) - var_v0_2;
-    var_v0 = temp_v1_2 >> 1;
-    if (temp_v1_2 < 0) {
-        var_v0 = (s32) (temp_v1_2 + 1) >> 1;
-    }
-    return (s64) ((s64) var_v0 << 0x30) >> 0x30;
+    total = 0x280 - w * full - w * half / 2;
+    return total / 2;
 }
 
 int yn_strlen(char *s) {
@@ -2604,23 +2583,19 @@ void yn_port_init(u16 *arg0) {
     M2C_FIELD(ynw, s8 *, 0x38) = 0;
 }
 
-void yn_key_repeat(u8 *arg0) {
-    u32 temp_v1_2;
-    u8 *temp_a1;
-    u8 *temp_v1;
+typedef struct YNW_K { u8 _p[0x28]; s32 x28; u32 rep; } YNW_K;
 
-    M2C_FIELD(ynw, s32 *, 0x28) = 0;
-    if (M2C_FIELD(arg0, u16 *, 2) == M2C_FIELD(arg0, u16 *, 0)) {
-        temp_a1 = ynw;
-        M2C_FIELD(temp_a1, u32 *, 0x2C) = (u32) (M2C_FIELD(temp_a1, u32 *, 0x2C) + 1);
-        temp_v1 = ynw;
-        temp_v1_2 = M2C_FIELD(temp_v1, u32 *, 0x2C);
-        if ((temp_v1_2 >= 0x15U) && (temp_v1_2 >= 0x17U)) {
-            M2C_FIELD(temp_v1, u32 *, 0x2C) = 0x14U;
-            M2C_FIELD(ynw, s32 *, 0x28) = (s32) M2C_FIELD(arg0, u16 *, 0);
+/* Key repeat: x28 = pad bits to act on this frame, rep = frames held. */
+void yn_key_repeat(u8 *pad) {
+    ((YNW_K *)ynw)->x28 = 0;
+    if (M2C_FIELD(pad, u16 *, 2) == M2C_FIELD(pad, u16 *, 0)) {
+        ((YNW_K *)ynw)->rep++;
+        if (((YNW_K *)ynw)->rep > 20 && ((YNW_K *)ynw)->rep > 22) {
+            ((YNW_K *)ynw)->rep = 0x14;
+            ((YNW_K *)ynw)->x28 = M2C_FIELD(pad, u16 *, 0);
         }
     } else {
-        M2C_FIELD(ynw, u32 *, 0x2C) = 0U;
+        ((YNW_K *)ynw)->rep = 0;
     }
 }
 
@@ -2947,6 +2922,9 @@ int yn_load_texfile(int file, int size) {
     return flCreateTextureFromTim2_mem(Yn_temp, 3);
 }
 
+extern s32 flPs2VIF1Control[];
+extern char *args[2];
+
 void yn_scecom_reboot(void) {
     str_stop_all();
     ADXPS2_LoadFcacheDvd(0);
@@ -2954,8 +2932,8 @@ void yn_scecom_reboot(void) {
     sceGsSyncPath(0, 0);
     flPADDestroy();
     DIntr();
-    DisableDmac(*(s32 *)0x423F00);
-    RemoveDmacHandler(*(u8 *)0x423F00, *(s32 *)0x423F08);
+    DisableDmac(flPs2VIF1Control[0]);
+    RemoveDmacHandler(flPs2VIF1Control[0], flPs2VIF1Control[2]);
     DisableIntc(0);
     RemoveIntcHandler(0, flPs2GsHandler);
     EIntr();
