@@ -33,6 +33,16 @@ typedef struct QUEST_W {
 extern QUEST_W quest_w;
 extern GAME_W game_w;
 extern f32 em12_scale_tbl[];
+extern f32 st45_pos_tbl[][6];
+extern f32 st49_pos_tbl_0065BBC0[][6];
+extern f32 st51_pos_tbl_0065BC20[][6];
+extern f32 st53_pos_tbl_0065BC80[][6];
+extern f32 st56_pos_tbl[][6];
+void Em_Mode_Chg(EMW *, int, int);
+void Tuto_flag_set(int);
+void Em_hagi_point_set(EMW *, int);
+int Em_hagi_point_cnt_ck(EMW *);
+void Em_hagi_point_clr(EMW *);
 
 #define ANG2DEG(a) (360.0f * (f32)(a) / 65536.0f)
 #define DEG2RAD(d) (2.0f * (3.1415927f * ((d) / 360.0f)))
@@ -1136,9 +1146,7 @@ static void em_dm05_005B2180(EMW *em) {
 }
 
 static void em_move04_005B2440(EMW *em) {
-    EM12W *w = (EM12W *)em->ex;
-
-    w->x90 = 1;
+    em->ex[0x90] = 1;
     switch (em->x15) {
     case 0: em_dm00_005B1880(em); break;
     case 1: em_dm01_005B1950(em); break;
@@ -1147,5 +1155,207 @@ static void em_move04_005B2440(EMW *em) {
     case 4: em_dm03_005B1BE0(em, 1); break;
     case 5: em_dm04_005B1FA0(em); break;
     case 6: em_dm05_005B2180(em); break;
+    }
+}
+
+#define EM12_WALK(em, v, k) \
+    do { \
+        v[0] = (k) * em->scale[0]; \
+        v[1] = 0.0f; \
+        v[2] = 0.0f; \
+        flvecRotY(v, DEG2RAD(ANG2DEG(em->ang[1]))); \
+        em->pos[0] += v[0]; \
+        em->pos[2] += v[2]; \
+    } while (0)
+
+static void em_die00_005B24F0(EMW *em, int arg) {
+    EM12W *w = (EM12W *)em->ex;
+    f32 v[3];
+
+    Em_Mode_Chg(em, 0, 0);
+    switch (em->x05) {
+    case 0:
+        Quest_enemy_die(em);
+        switch (em->char0) {
+        case 0x427:
+        case 0x42B:
+            em->x05 = 2;
+            break;
+        case 0x428:
+            em->work08 = 0x28;
+            em->x05 = 3;
+            break;
+        case 0x429:
+            em->work08 = 0x1E;
+            em->x05 = 4;
+            break;
+        default:
+            if (arg == 0) {
+                em->x05++;
+                em_char_set(em, 0x3E, 0, 0);
+            } else {
+                em->x05 = 2;
+                em_char_set(em, 0x3F, 0, 0);
+            }
+            break;
+        }
+        break;
+    case 1:
+        EM12_WALK(em, v, -10.909091f);
+        if (em_frame_check(em, 12.0f, 0) == 0) {
+            em->x05 = 2;
+            em_char_set(em, 0x43, 0, 0);
+        }
+        break;
+    case 2:
+        if (arg == 0) {
+            if (em_frame_check2(em, 0, 8.0f) == 0 && em->x1C4 == 0) {
+                EM12_WALK(em, v, -10.909091f);
+            }
+        } else if (em_frame_check2(em, 0, 30.0f) == 0 && em->x1C4 == 0) {
+            EM12_WALK(em, v, 21.428572f);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em->work08 = 0x28;
+            em_char_set(em, 0x40, 0, 0);
+        }
+        break;
+    case 3:
+        if (--em->work08 <= 0 && em_frame_check(em, 98.0f, 0) != 0) {
+            em->x05++;
+            em_char_set(em, 0x41, 0, 0);
+        }
+        break;
+    case 4:
+        if (em_frame_check2(em, 0, 50.0f) != 0) {
+            em->x05++;
+            em->act_spd = 0.0f;
+            Tuto_flag_set(0);
+            if (em->kind == 12) {
+                em->work08 = 0x960;
+            } else {
+                em->work08 = 0x708;
+            }
+            Em_hagi_point_set(em, 0);
+            em->ex[0x90] = 0;
+        }
+        break;
+    case 5:
+        em->act_spd = 0.0f;
+        if (Em_hagi_point_cnt_ck(em) <= 0 || --em->work08 <= 0) {
+            Em_hagi_point_clr(em);
+            em->x05++;
+            em->work08 = 0x6E;
+        }
+        break;
+    case 6:
+        em->act_spd = 0.0f;
+        em->work08--;
+        if (em->work08 < 100) {
+            em->x798 = (f32)em->work08 / 100.0f;
+        }
+        if (em->work08 <= 0) {
+            if (w->x3C == 1) {
+                pull_em_yobi((f32 *)((u8 *)w + 0x24));
+                w->x3C = 0;
+            }
+            em->x01 = 0;
+            em_act_set(em, 5, 3);
+        }
+        break;
+    }
+}
+
+static void em_die01_005B2A60(EMW *em) {
+    EM12W *w = (EM12W *)em->ex;
+
+    em->x40C = 10;
+    em->x40E = 10;
+    switch (em->x05) {
+    case 0:
+        Quest_enemy_die(em);
+        em->x05++;
+        em->work08 = 0x64;
+        if (em->char0 != 0x3F3) {
+            em_char_set(em, 0xB, 0, 0);
+        }
+        break;
+    case 1:
+        em->work08--;
+        em->x798 = (f32)em->work08 / 100.0f;
+        if (em->work08 <= 0) {
+            if (w->x3C == 1) {
+                pull_em_yobi((f32 *)((u8 *)w + 0x24));
+                w->x3C = 0;
+            }
+            em->x01 = 0;
+            em_act_set(em, 5, 3);
+        }
+        break;
+    }
+}
+
+#define EM12_REV_POS(em, tbl, v, act) \
+    do { \
+        flvecCopy(em->pos, tbl[em->type]); \
+        flvecCopy(em->x5A0, em->pos); \
+        flvecCopy(v, &tbl[em->type][3]); \
+        em->ang[1] = Em_Calc_angY(em->pos, v) & 0xFFFF; \
+        em_act_set(em, 7, act); \
+        em->x798 = 0.0f; \
+    } while (0)
+
+static void em_die_rev_005B2B70(EMW *em) {
+    f32 v[3];
+
+    switch (em->x05) {
+    case 0:
+        if (Quest_enemy_revival_ck(em) == 1) {
+            em->x05++;
+        } else {
+            em->x04++;
+        }
+        break;
+    case 1:
+        em_status_init(em);
+        em12_init(em);
+        Quest_enemy_revival_set(em);
+        em_cmd_reset(em);
+        em->x839 = 0;
+        switch (em->stg) {
+        default:
+            Quest_enemy_escape(em);
+            em->x04++;
+            em->x01 = 0;
+            break;
+        case 0x2D:
+            EM12_REV_POS(em, st45_pos_tbl, v, 1);
+            break;
+        case 0x31:
+            EM12_REV_POS(em, st49_pos_tbl_0065BBC0, v, 0);
+            break;
+        case 0x33:
+            EM12_REV_POS(em, st51_pos_tbl_0065BC20, v, 0);
+            break;
+        case 0x35:
+            EM12_REV_POS(em, st53_pos_tbl_0065BC80, v, 0);
+            break;
+        case 0x38:
+            EM12_REV_POS(em, st56_pos_tbl, v, 1);
+            break;
+        }
+        break;
+    }
+}
+
+static void em_move05_005B2F10(EMW *em) {
+    em->x40C = 10;
+    em->x40E = 10;
+    switch (em->x15) {
+    case 0: em_die00_005B24F0(em, 0); break;
+    case 1: em_die00_005B24F0(em, 1); break;
+    case 2: em_die01_005B2A60(em); break;
+    case 3: em_die_rev_005B2B70(em); break;
     }
 }
