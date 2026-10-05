@@ -121,9 +121,9 @@ s8 em_eye_search_set(EMW *em) {
         break;
     }
     s = em->search;
-    e.pos = eye;
     dist = s->dist;
     fov = s->fov;
+    e.pos = eye;
     up = s->up;
     down = s->down;
     xC = s->xC;
@@ -1094,15 +1094,16 @@ u16 em_act_search(EM_ACTRATE *tbl) {
     u16 sum = 0;
     u16 r;
     u16 n;
+    u16 x;
 
-    while (p->rate != 0xFFFF) {
-        sum += p->rate;
+    while ((x = p->rate) != 0xFFFF) {
+        sum += x;
         p++;
     }
     r = ran_suu(0) % sum;
     n = 0;
-    while (tbl->rate != 0xFFFF) {
-        n += tbl->rate;
+    while ((x = tbl->rate) != 0xFFFF) {
+        n += x;
         if (r < n) {
             return tbl->act;
         }
@@ -1210,7 +1211,7 @@ void Em_Hate_Add(EMW *em, s32 add, s32 max, u8 pl) {
     s32 *h;
 
     if (p->be_flag != 0 && *(u8 *)&p->flag14 != 3) {
-        h = &em->x918[n];
+        h = (s32 *)em->x918 + pl;
         if (*h + add < max) {
             *h += add;
         }
