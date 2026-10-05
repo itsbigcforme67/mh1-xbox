@@ -98,3 +98,39 @@ Lessons from this round (each confirmed by a match):
   indexed separately, not through a pointer (em10_init); em10_init reads angle/act/pose
   from em10_start_pos41 for every stage (a Capcom bug kept as is).
 - `(s32)((u32)u8 >> 3)` gives srl + plain cvt (em29_init).
+
+# Third round: em04 (f_em_58BA40, 0x58BA40-0x58F4A0, monster kind 4, 42 functions)
+39 of 42 functions match and are built (rebuild all OK): src/game/em/em04.c
+(0x58BCC0-0x58D4D8, rodata 0x6865B0-0x686648), em04b.c (0x58D600-0x58E4F8, rodata
+0x686650-0x6866F0), em04c.c (0x58F3E0-0x58F498). Shared declarations and EM04W in
+include/em04.h. em04_nm.c holds the whole file including the three near-matches
+(not built, stay asm):
+- em04_act_set (0x58BA40): logic complete; only the copy of six floats from
+  em05_rev_set_tbl_stNN rows differs: the original keeps `p += 2` as a real addiu
+  between the three pairs, MWCC folds it into the load offsets for every source
+  form tried (f32*, f32(*)[2], V2 struct copy).
+- em_dm03 (0x58D4E0): 2 instructions: the constant 2 of the switch ladder sits in a1
+  instead of v1.
+- ef_move_sub (0x58E500, per-animation sound/effect script, 3.7 KB, generated from the asm
+  with a script): the whole compare ladder uses a0 for constants and v1 for the value
+  where mine uses v1/v0; same kind of difference as em_dm03 (an extra live value
+  somewhere in the original?). Everything else in the 936 instructions is identical.
+Shared header edits: em.h x39C, x1A8, dm_ang (0x3EC, same offset as PLW.dm_ang).
+Lessons (each confirmed by a match):
+- Switch compare ladders come out in REVERSE source order of the case labels; code
+  blocks follow source order. Jump table entries then tell the source order: em_move00's
+  table showed cases 9, 12, 10, 11 (check.py does not see this, only rebuild does).
+- A callee called with a varying number of arguments (em04_act_set: 3 params, callers pass
+  3 or 4) needs an unprototyped declaration `void f();` before a K&R definition
+  (`void f(em, kind, no) EMW *em; int kind; u16 no; { ... }`); u16 `no` then keeps
+  daddiu for constant assignments. A call (em, 6, 0, 1) loads the constant 1 in a3 and
+  shares it with a compare constant.
+- `if (a * b >= 0.0f) x = 0.0f;` compiles to bc1t + the store in the delay slot (the
+  original's odd "bc1t to the next instruction" in em_dm01/02/die00). `< 0.0f` gives bc1f.
+- Locals declared `FLMAT mat; f32 in[3]; f32 out[3]; s32 ang[3];` land at sp+0x20/0x60/0x70/0x80
+  (later declarations get lower addresses; ang[0] doubles as temp in dm01).
+- `(u16)ran_suu(1) & 0x7F`, `x = (u16)f(); y = x;` (local) avoids a reload of the first store.
+- A u16-returning declaration for em_act_search plus u16 parameter in em_act_set stops MWCC
+  from adding andi at the call.
+- Statics called across a split need the suffixed global name (em_move00_0058C350 ...), and
+  the jump-table order check is only done by rebuild.sh.
