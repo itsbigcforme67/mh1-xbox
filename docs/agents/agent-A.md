@@ -367,29 +367,51 @@ Next ideas: carving and quest clear (f_quest_nm.c on the PC), the other
 monsters of a quest (per-stage QEM lists), stage changes (area exits),
 Quest_restart, a scripted "bot" for longer fight tests.
 
-## Assignment 14: a complete quest loop on the PC (6 Oct 2026, in progress)
-Done so far (each step committed; details will go to docs/pc.md "Quest"):
+## Assignment 14: a complete quest loop on the PC (6 Oct 2026)
+Done (each step committed; details and verification in docs/pc.md "Quest
+loop"; shots in build/show/A/quest/):
 - `--quest N` runs the game's own quest start (Quest_init, Quest_start,
-  station_em_set/Quest_next_em_set -> Em_direct_set) and game modes:
-  rt_flow.c calls game2/game3/game5 (f_game.c, matched) each tick with
+  station_em_set / Quest_next_em_set -> Em_direct_set) and game modes:
+  rt_flow.c runs game2/game3/game5 (f_game.c, matched) each tick with
   game_core = the viewer's host tick. Quest 10: kill -> Quest_enemy_die ->
   Quest_condition_judging (clear, 60 s carve time) -> game3 -> game5
-  result_prog -> reward screen (f_reward*) -> items into the pouch.
-- Carving: the player's own carve action (0/0x4A) with Em_hagi_point_set /
-  Ext_pick_point_ck2 / ItemStockRequest gives Rathian Scale, Spike, Flame
-  Sac (pouch trace RT_QUEST_TRACE=1).
-- HUD: menu_nm.c / menu_disp_nm.c / chat_nm.c / set01.c run on the PC;
-  rt_2d.c = fl screen prims (flps0002/4/5/8/9/C) + APX textures (load_pit),
-  rt_font.c = fl font system + f_font prints (font file AFS 0x6D2).
-  Shots: build/show/A/quest/hud_items.png, clear_banner.png,
-  reward_menu.png, reward_items.png.
-- New: src/main/quest/f_quest0_nm.c (main 0x2267F0-0x226C24 from the asm,
-  not built for the PS2, not checked). Fixes in not-built files:
-  f_quest_nm.c Item_regained takes the unused 2nd argument; chat_nm.c
-  DispFrameListA steps its string list by one pointer (was 4).
-- Requests (not decompiled, written natively for the PC from the asm):
-  main 0x274E10-0x2755C0 (load_pit, UseItemChk, Item_valid_chk,
-  Item_ok_chk, Pit_shot_ok_chk: rt_menu.c / rt_2d.c), font system
-  0x216490-0x217760 and f_font 0x161970-0x162640 (rt_font.c), flps prims
-  0x175290-0x176470 (rt_2d.c), Get_hunter_rank / Event_flag_* / Gold_add
-  (rt_quest.c), Quest_price_return 0x290E50.
+  result_prog -> reward screen -> money screen -> mode 6 (host restarts
+  the quest: the village is not ported).
+- Carving: the hunter's own carve action (0/0x4A) -> Ext_pick_point_ck2 ->
+  ItemStockRequest gives Rathian Scale, Spike, Flame Sac; reward items are
+  taken into the pouch with the pad; potion use works (10 -> 9).
+- Hunter faints: death 3/0 -> game2 steps 2-6 -> st_model_load = the
+  viewer's load_stage_models (stage, set, collision, camera, sound) ->
+  pl_init(1): carted back to base camp (stage 21). The cart is em18
+  (em18_init.c / em18b.c built); its model is not drawn.
+- HUD: menu_nm.c / menu_disp_nm.c / chat_nm.c / set01.c (+ f_reward*,
+  ud_nm, disp1/2_nm) run on the PC; rt_2d.c = fl screen prims + APX
+  textures (load_pit), rt_font.c = fl font system + f_font prints.
+- New C written from the asm (not built for the PS2, not checked):
+  src/main/quest/f_quest0_nm.c (main 0x2267F0-0x226C24).
+- Fixes in not-built files: f_quest_nm.c Item_regained takes the unused
+  2nd argument; chat_nm.c DispFrameListA steps its string list by one
+  pointer (was 4: asm addiu 4) and a block-scope redeclaration gcc
+  rejects was dropped. No include/ headers edited. tools/rebuild.sh all OK.
+- x86 "a0 left over" calls fixed at build time (sed copies in
+  build_pc.sh): menu_nm.c ItemPickingDeclaration -> Pl_master_ck(arg),
+  pl10.c item_action_set -> Get_Active_itemnum(pl).
+- Lesson: objcopy --weaken also weakens a file's undefined references:
+  a weakened whole-file _nm.c that calls a missing function links and
+  jumps to 0 (gfs_nm's stage_free). Host replacements of functions such a
+  file also defines must be strong. Check with `nm mhview | grep " w "`.
+- Lesson: the game caches the texture stage (SetTextureStage); host draws
+  that bind other textures must be followed by InitRenderState(1) (trans()
+  ends with it) or the cache goes stale.
+Requests (not decompiled; written natively for the PC from the asm, can
+be the starting point): main 0x274E10-0x2755C0 (load_pit, UseItemChk,
+Item_valid_chk, Item_ok_chk, Pit_shot_ok_chk), the fl font system
+0x216490-0x217760 and f_font 0x161970-0x162640 (rt_font.c), flps prims
+0x175290-0x176470 (rt_2d.c), Get_hunter_rank 0x272320, Gold_add 0x2722C0,
+Quest_price_return 0x290E50 (rt_quest.c).
+Not done / next: SpritePut (0x15A6D0) + sprite prims flps0D00/0F00/1300/
+1400/1600 (game3's darkening quad, Put_sprite_rotate effects), models for
+em18 (cart) and other small monsters, pause-menu list selection
+(ListSelect/PageSelect/Menu_select_mv), item combining
+(Item_preparation*), map markers (flvecrRotTransPers), quest failure after
+three faints (untested), the village.
