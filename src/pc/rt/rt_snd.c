@@ -142,6 +142,7 @@ static const int16_t *vag_pcm(pack *p, int vag, int *len, int *loop, int *rate)
 typedef struct {
     int voice, port, code, slot, refresh;
     float base_vol, base_pan, ratio;
+    snd_note nt;
 } rt_voice;
 
 static rt_voice rv[AUDIO_VOICES];
@@ -173,8 +174,13 @@ static rt_voice *rv_new(void)
 }
 
 static float pan_f(int pan) { return (pan - 64) / 64.0f; }
-/* pitch word: 0x2000 = as recorded; taken as a +-2 semitone bend [guess] */
-static float pitch_f(int pitch) { return powf(2.0f, (pitch - 0x2000) / 8192.0f * 2.0f / 12.0f); }
+/* pitch word: 0x2000 = as recorded, 0 / 0x3FFF = full bend down / up by
+ * the split's bend range [guess: TSNDDRV not read; MIDI-like] */
+static float pitch_f(int pitch, const snd_note *nt)
+{
+    float b = (pitch - 0x2000) / 8192.0f;
+    return powf(2.0f, b * (b < 0 ? nt->bend_lo : nt->bend_hi) / 12.0f);
+}
 
 /* SdrSeReq / SdrSeChg. key = port << 16 | code << 8 | flag << 7 | slot
  * (flSndRequest packs it like that); vol 0..127, pan 0..127. */
@@ -195,7 +201,7 @@ static void sdr_se(int chg, int key, int vol, int pan, int pitch, int id)
     if (chg && (r = rv_find(pn, code)) != NULL) {
         r->refresh = tick_no;
         audio_voice_set(r->voice, r->base_vol * vol / 127.0f, fminf(1, fmaxf(-1, r->base_pan + pan_f(pan))),
-                        r->ratio * pitch_f(pitch));
+                        r->ratio * pitch_f(pitch, &r->nt));
         return;
     }
     /* the TSBD program plus the caller's id: monster packs (snd_emNN)
@@ -226,7 +232,7 @@ static void sdr_se(int chg, int key, int vol, int pan, int pitch, int id)
     pa = nt.pan;
     r = rv_new();
     r->voice = audio_voice_play(pcm, len, loop, rate, v * vol / 127.0f,
-                                fminf(1, fmaxf(-1, pa + pan_f(pan))), nt.ratio * pitch_f(pitch));
+                                fminf(1, fmaxf(-1, pa + pan_f(pan))), nt.ratio * pitch_f(pitch, &nt));
     r->port = pn;
     r->code = code;
     r->slot = slot;
@@ -234,6 +240,7 @@ static void sdr_se(int chg, int key, int vol, int pan, int pitch, int id)
     r->base_vol = v;
     r->base_pan = pa;
     r->ratio = nt.ratio;
+    r->nt = nt;
     if (trace)
         printf("snd: tick %d port %d code 0x%02X prog %d note 0x%02X -> %s vag %d (%.2fs%s) vol %d pan %d\n",
                tick_no, pn, code, prog, e[3], afs01.name[pk->afs_idx], nt.vag, (double)len / rate,

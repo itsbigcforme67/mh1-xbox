@@ -184,6 +184,7 @@ typedef struct {
     float ratio;            /* playback rate multiplier (note vs base note) */
     float vol;              /* program/split/sample volume product, 0..1 */
     float pan;              /* -1 left .. 1 right (split + sample pan) */
+    float bend_lo, bend_hi; /* pitch-bend range in semitones (split +6 / +8, high byte) */
 } snd_note;
 
 int fmt_snd_open(snd_pack *p, const uint8_t *d, size_t n);

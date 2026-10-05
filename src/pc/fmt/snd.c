@@ -90,8 +90,10 @@ int fmt_snd_has_prog(const snd_pack *p, int prog)
 
 /* Program param (0x24 bytes): u32 split block offset, u8 nsplit, u8 split
  * size, u8 volume, u8 pan, ... Split block (0x14): u16 sample set,
- * u8 low note, u8 crossfade, u8 high note, ..., +0x10 volume, +0x11 pan,
- * +0x12 transpose, +0x13 detune. Sample set: u8 vel curve, vel low, vel high,
+ * u8 low note, u8 crossfade, u8 high note, u8 number, u16 bend range low,
+ * u16 bend range high (0x0200 = 2 semitones [inferred]), ..., +0x10
+ * volume, +0x11 pan, +0x12 transpose, +0x13 detune (the SDK's
+ * SceHdSplitBlock order). Sample set: u8 vel curve, vel low, vel high,
  * u8 count, u16 samples[]. Sample (0x2A): u16 VAG index, ..., +0x0B base
  * note, +0x0C detune, +0x0D pan, +0x10 volume. */
 int fmt_snd_resolve(const snd_pack *p, int prog, int note, snd_note *out)
@@ -119,6 +121,8 @@ int fmt_snd_resolve(const snd_pack *p, int prog, int note, snd_note *out)
         out->vag = U16(smp);
         out->ratio = powf(2.0f, semis / 12.0f);
         out->vol = (pg[6] / 127.0f) * (sp[16] / 127.0f) * (smp[16] / 127.0f);
+        out->bend_lo = sp[7];
+        out->bend_hi = sp[9];
         out->pan = ((int)pg[7] + sp[17] + smp[13] - 3 * 64) / 64.0f;
         if (out->pan < -1.0f) out->pan = -1.0f;
         if (out->pan > 1.0f) out->pan = 1.0f;

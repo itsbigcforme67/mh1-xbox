@@ -127,7 +127,7 @@ class Pack:
         for sp in self.splits(prog):
             if sp["lo"] <= note <= sp["hi"]:
                 smp = self.sample(self.sset_samples(sp["sset"])[0])
-                semis = note - smp["base"] + smp["detune"] / 128.0
+                semis = note + sp["transpose"] - smp["base"] + smp["detune"] / 128.0
                 vol = (sp["vol"] / 127.0) * (smp["vol"] / 127.0)
                 return smp["vag"], 2 ** (semis / 12.0), vol
         return None
