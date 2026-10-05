@@ -209,3 +209,25 @@ hit_point_sphr then costs the full clobber set.
   computing all of px/py/pz before the v[] subtraction fixed the
   cap/sphere functions; the result pass `len = rr - d; out = len * m`.
 - permsub (greedy declaration moves) halved hit_cap_cap2_m: t first.
+
+## f_cam (0x21F3D0-0x222E20) - IN PROGRESS, paused by the owner
+Where I stopped: src/main/cam/cam_t.c (not registered, not built) holds 42
+of the 51 functions; 38 of them match per check.py, near: SetCameraData
+(66/72, register numbering in the block loop), cam_init_sub_pchngr (3,
+range reloads max), pch_lock_chk (6, tail branch layout), fish_cam_sub (2,
+mov.s in delay slot). New header include/cam.h: CAMW (CameraWork, 0x5F8),
+CAMS (5 slots of 0x100 at 0x80: std, stage, pachinger, player EX, demo),
+per-mode work unions at slot+0x90, CAMQUAKE, CAMAREA, CAMCNF.
+Shared header: include/pl.h PLW carved part[2] 0x110, mdl148, x3A8, x56E,
+x714, x763, pch_on 0x764, fish878, x8C6, x8C8, x8EE (camera users).
+Next: write CameraMove, cam_init_sub_std, cam_sub_std, cam_sub_stg,
+cam_sub_pchngr, cmd_set_pos, cmd_set_tar, cmd_cam_move, point_cam_sub (the
+last three use jump tables lit_1012/1110/1179 at 0x36B0D0-0x36B178, need
+main:rodata lines), then split cam_t.c into matching runs, register, park
+the rest in cam_nm.c. Then f_cam_223B50 (22) and f_weapon (29).
+Lessons so far: the original takes `CAMW *cw = &CameraWork` into a local
+(WyvernFindPlayer, BBQcamera_set, PachingerCamChk); manual_cam_chk and
+GetPachingerInfo take an unused first argument; 0x3F75BE0B is 55 degrees
+in radians (0.9599311f); `if (a == 1 || b) {zero} else {copy}` order
+(cam_sw_set_sub); statement order pl/npc/src in cam_plEX_zoom was found by
+permuting (scratch tools: /tmp/claude-1000/agentD/tryv.py, rep.py, carve.py).

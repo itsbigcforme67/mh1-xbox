@@ -60,7 +60,11 @@ typedef struct PLW {
     u8 _pad078[0xA0 - 0x78];
     s32   ang[3];        /* 0x0A0 rotation, 0x10000 = 360 degrees (set05_m, as EMW) */
     f32   pos[3];        /* 0x0AC world position (set16_m, shell00_set) */
-    u8 _pad0B8[0x158 - 0xB8];
+    u8 _pad0B8[0x110 - 0x0B8];
+    void *part[2];           /* 0x110 matrix blocks, part[i]+0x40 is a world matrix (cmd_set_pos) */
+    u8 _pad118[0x148 - 0x118];
+    u8 *mdl148;              /* 0x148 +0x40 is a matrix (cam_sub_pchngr) */
+    u8 _pad14C[0x158 - 0x14C];
     struct PL_HAND *hand;  /* 0x158 thrown items start from hand->pos (shell03_set) */
     u8 _pad15C[0x198 - 0x15C];
     s32   chr_no0;       /* 0x198 */
@@ -110,7 +114,9 @@ typedef struct PLW {
     s16   work398;       /* 0x398 */
     u16   cnt39A;        /* 0x39A every 3rd hit applies ailments (shell00_i) */
     s32   work39C;       /* 0x39C */
-    u8 _pad3A0[0x3B0 - 0x3A0];
+    u8 _pad3A0[0x3A8 - 0x3A0];
+    s32 x3A8;                /* 0x3A8 angle the camera turns to on reset (cam_sub_std) */
+    u8 _pad3AC[0x3B0 - 0x3AC];
     void *x3B0;          /* 0x3B0 player marked by eft26 (eft26_m); type unknown */
     s32   work3B4[6];    /* 0x3B4 */
     struct PLPROG *prog; /* 0x3CC table of state handlers (pl_work_clr); see PLPROG */
@@ -144,7 +150,9 @@ typedef struct PLW {
     u8 _pad56A[0x56B - 0x56A];
     s8    work56B;       /* 0x56B */
     u8    ammo_type;     /* 0x56C shot type fired (shell06_set) */
-    u8 _pad56D[0x570 - 0x56D];
+    u8 _pad56D[0x56E - 0x56D];
+    u8 x56E;                 /* 0x56E non-zero: no manual camera (manual_cam_chk) */
+    u8 _pad56F[0x570 - 0x56F];
     s16   work570;           /* 0x570 */
     u8 _pad572[0x5AC - 0x572];
     f32   x5AC;          /* 0x5AC ground height (eft21_i, as EMW) */
@@ -159,7 +167,9 @@ typedef struct PLW {
     u8    work616;           /* 0x616 */
     u8 _pad617[0x70E - 0x617];
     u16   x70E;          /* 0x70E point number in the stage list (cmd_target_kind_set) */
-    u8 _pad710[0x720 - 0x710];
+    u8 _pad710[0x714 - 0x710];
+    u8 x714;                 /* 0x714 non-zero: stage_camera_data_ex (cam_sub_std) */
+    u8 _pad715[0x720 - 0x715];
     s8    work720[4];    /* 0x720 */
     s16   work724[4];    /* 0x724 */
     u16   work72C[4];    /* 0x72C (u16: blend_set) */
@@ -173,7 +183,10 @@ typedef struct PLW {
     f32   work740;           /* 0x740 */
     f32   work744;           /* 0x744 */
     s16   stamina;       /* 0x748 guarding needs 75 or more (pl_guard_ck); a guess */
-    u8 _pad74A[0x766 - 0x74A];
+    u8 _pad74A[0x763 - 0x74A];
+    u8 x763;                 /* 0x763 non-zero: no manual camera (manual_cam_chk) */
+    u8 pch_on;               /* 0x764 riding the pachinger cannon? (cam_sub_pchngr) */
+    u8 _pad765[0x766 - 0x765];
     s16   dm_vital;      /* 0x766 damage to take (Pl_damage_sub) */
     u8 _pad768[0x790 - 0x768];
     s16   vital_red;     /* 0x790 red part of the life bar (Pl_damage_sub) */
@@ -192,7 +205,8 @@ typedef struct PLW {
     s16   x7C6;          /* 0x7C6 */
     u8 _pad7C8[0x7D8 - 0x7C8];
     f32   atk_rate;      /* 0x7D8 shot power (shell06_get_weaopn_data) */
-    u8 _pad7DC[0x87C - 0x7DC];
+    u8 _pad7DC[0x878 - 0x7DC];
+    void *fish878;           /* 0x878 hooked fish? +0x14 u16 angle (cam_plEX_fishing) */
     s16   work87C;       /* 0x87C */
     u8 _pad87E[0x881 - 0x87E];
     u8    x881;          /* 0x881 bite timer (eft23 fishing) */
@@ -205,13 +219,17 @@ typedef struct PLW {
     u8    work8BF;           /* 0x8BF */
     u8 _pad8C0[0x8C2 - 0x8C0];
     u8    work8C2;       /* 0x8C2 */
-    u8 _pad8C3[0x8C9 - 0x8C3];
+    u8 _pad8C3[0x8C6 - 0x8C3];
+    u8 x8C6;                 /* 0x8C6 non-zero: ignore pad for camera (cam_sw_set_sub) */
+    u8 _pad8C7[0x8C8 - 0x8C7];
+    u8 x8C8;                 /* 0x8C8 non-zero: camera resets behind player (cam_sub_std) */
     s8    work8C9;           /* 0x8C9 */
     u8 _pad8CA[0x8D4 - 0x8CA];
     char  name[0x14];    /* 0x8D4 player name (set01_i) */
     u16   fish_time;     /* 0x8E8 time to land the hooked fish (eft23) */
     u16   x8EA;          /* 0x8EA non-zero: bait still on (eft23) */
-    u8 _pad8EC[0x8F0 - 0x8EC];
+    u8 _pad8EC[0x8EE - 0x8EC];
+    s16 x8EE;                /* 0x8EE pachinger yaw (cam_sub_pchngr) */
     s8    work8F0;       /* 0x8F0 */
     u8 _pad8F1[0xA00 - 0x8F1];
 } PLW;
