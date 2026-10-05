@@ -2437,3 +2437,160 @@ int pef_get_alpha(PEF *e, int *tbl, s16 t) {
     e->on = 0;
     return -1;
 }
+
+/* ===== item box (0x1327D0-0x1332E4) ===== */
+extern u8 lit_4892[], lit_4893[], lit_4894[], lit_4895[];
+extern u8 pf_item_box_base[];
+void DispFrameMessageA(void *, int, int);
+void flps0004(void *);
+int Pl_item_num_ck3(PLW *, u16);
+f32 flSqrt(f32);
+#define BOX_ID(i)   (*(u16 *)((u8 *)&game_w + 0x128 + (i) * 4))
+#define BOX_NUM(i)  (*(s16 *)((u8 *)&game_w + 0x12A + (i) * 4))
+#define BOX_FLAG(i) ((*(s32 *)((u8 *)&game_w + 0x1A8 + ((i) >> 5) * 4)) & (1 << ((i) & 0x1F)))
+
+/* 0x1327D0 */
+void trans_box(void) {
+    PFLPS2 q;
+    PFLPS3 r;
+    char buf[0x28];
+    PLW *pl = lpPit->pl;
+    s16 i;
+    long long k;
+    int px;
+    u16 id;
+    s16 num;
+    s16 sx;
+    f32 t;
+    u32 a;
+
+    if (*((u8 *)pl + 0x8C2) != 0) {
+        flSetRenderState(0x60, 0);
+        DispFrameMessageA(pf_item_box_base, 0, 0xFF);
+        r.col = 0xFF200000;
+        for (k = 0; k < 0x20; k = (s16)(k + 1)) {
+            s16 kk = k;
+            sx = (s16)(0.8f * (313.0f + 36.0f * (f32)(kk & 7))) + 4;
+            r.s[0] = sx;
+            r.s[2] = 25.6f + (f32)sx;
+            r.s[1] = ((kk >> 3) << 5) + 0x60;
+            r.s[3] = r.s[1] + 0x1C;
+            flps0004(&r);
+        }
+        SetFilterMode(0);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
+        q.s[2] = 0x20;
+        q.s[3] = 0x20;
+        for (i = 0; i < 0x20; i++) {
+            id = BOX_ID(i);
+            if (id != 0 && !BOX_FLAG(i)) {
+                u8 *d = Item_data[id];
+                if (d[5] != 0xFF) {
+                    int n = d[5] + 1;
+                    int uu = (n & 7) << 5;
+                    int vv = (n >> 3) << 5;
+                    q.s[0] = 0.8f * (313.0f + 36.0f * (f32)(i & 7));
+                    q.s[1] = ((i >> 3) << 5) + 0x5E;
+                    q.uv[0] = uu + 1;
+                    q.uv[1] = vv + 1;
+                    q.uv[2] = uu + 0x1F;
+                    q.uv[3] = vv + 0x1F;
+                    q.col = item_col_tbl[d[6]];
+                    flps0008(&q);
+                }
+            }
+        }
+        if (lpPit->x64 > 0) {
+            f32 p = (f32)lpPit->x64 / (f32)lpPit->x63;
+            int n = Item_data[lpPit->x66][5] + 1;
+            int uu = (n & 7) << 5;
+            int vv = (n >> 3) << 5;
+            q.s[0] = (0.8f * (313.0f + 36.0f * (f32)(lpPit->x65 & 7))) * p + 252.0f * (1.0f - p);
+            q.s[1] = (((lpPit->x65 >> 3) << 5) + 0x5E) * p + 256.0f * (1.0f - p);
+            q.uv[0] = uu + 1;
+            q.uv[1] = vv + 1;
+            q.uv[2] = uu + 0x1F;
+            q.uv[3] = vv + 0x1F;
+            q.col = item_col_tbl[Item_data[lpPit->x66][6]];
+            t = 57.0f * flSqrt((f32)lpPit->x64);
+            q.col |= ((u32)t & 0xFF) << 24;
+            flps0008(&q);
+        }
+        q.s[0] = 0.8f * (313.0f + 36.0f * (f32)(*((u8 *)pl + 0x8C3) & 7));
+        q.s[1] = ((*((u8 *)pl + 0x8C3) >> 3) << 5) + 0x5E;
+        q.uv[0] = 0;
+        *(u32 *)&q.uv[2] = 0x200020;
+        q.col = -1;
+        flps0008(&q);
+        if (lpPit->x60 > 0) {
+            f32 f = (f32)(lpPit->x60 & 0x1F);
+            a = (u32)(45.0f * flSqrt(f));
+            t = 32.0f * (1.0f + 0.17960416f * flSqrt(31.0f - f));
+            q.s[2] = t;
+            q.s[3] = t;
+            q.s[0] = (s16)(0.8f * (313.0f + 36.0f * (f32)(lpPit->x62 & 7))) - ((q.s[2] - 0x20) >> 1);
+            q.s[1] = (((lpPit->x62 >> 3) << 5) + 0x5E) - ((q.s[3] - 0x20) >> 1);
+            q.col = ((a & 0xFF) << 24) + 0xFFFFFF;
+            flps0008(&q);
+        }
+        reload_tex(1, 0x157);
+        SetTextureStage(0x157);
+        q.s[0] = 0xFC;
+        q.s[1] = 0x100;
+        q.s[2] = 0x28;
+        q.s[3] = 0x32;
+        *(u32 *)&q.uv[0] = 0xEC0078;
+        *(u32 *)&q.uv[2] = 0x0100008C;
+        q.col = -1;
+        flps0008(&q);
+        flfntSetSize(0x12, 0x12);
+        font_set_palette(0);
+        flfntLocate(0x144, 0x46);
+        font_print_uf(lit_4892);
+        {
+            u8 cur = *((u8 *)pl + 0x8C3);
+            id = BOX_ID(cur);
+            if (id != 0) {
+                if (BOX_FLAG(cur)) goto none;
+                num = BOX_NUM(cur);
+                switch (Item_data[id][3]) {
+                case 1:
+                    sprintf(buf, (char *)item_str[id], BOX_NUM(cur));
+                    break;
+                case 0xFF:
+                    sprintf(buf, (char *)lit_3659, item_str[id]);
+                    break;
+                default:
+                    sprintf(buf, (char *)lit_4893, item_str[id], (s16)num);
+                    break;
+                }
+                flfntLocate((s16)(0x1CB - (strlen(buf) * 9 >> 1)), 0xEE);
+                font_print_uf(buf);
+                {
+                    long long px2 = -1;
+                    s16 have = Pl_item_num_ck3(pl, id);
+                    if (have < 0) {
+                        px2 = 0x18C;
+                        sprintf(buf, (char *)lit_4894);
+                    } else if (have < (s16)num) {
+                        px2 = 0x17A;
+                        sprintf(buf, (char *)lit_4895);
+                    }
+                    if ((s16)px2 > 0) {
+                        flfntLocate((int)px2, 0x10C);
+                        font_set_palette(2);
+                        font_print_uf(buf);
+                    }
+                }
+            } else {
+none:
+                sprintf(buf, (char *)lit_3253, item_str);
+                flfntLocate((s16)(0x1CB - (strlen(buf) * 9 >> 1)), 0xEE);
+                font_print_uf(buf);
+                id = 0;
+            }
+            Disp_help_mess(1, (u16)(id + 0x18));
+        }
+    }
+}
