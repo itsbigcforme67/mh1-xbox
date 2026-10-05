@@ -490,3 +490,4 @@ main:rodata 0x003582E0 0x00358300 load/mkmap
 main 0x0010CD30 0x0010CE94 emw/emt01
 main:rodata 0x00357EC0 0x00357F4C emw/emt01
 main 0x0010EBF0 0x0010EC00 emw/emt02
+main 0x0010BAD0 0x0010BE28 emw/ems01
