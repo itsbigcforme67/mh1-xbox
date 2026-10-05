@@ -545,7 +545,7 @@ void get_angle(s16 *a, CAMS *cs) {
     }
 }
 
-s32 point_cam_hit(void) {
+s32 point_cam_hit(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
     return 0;
 }
 
@@ -716,4 +716,125 @@ void cam_sw_set_sub(CAMW *cw) {
         cw->an_ang = Psw[9];
         cw->an_pow = Psw[11];
     }
+}
+
+/* point_cam_sub is 28 instructions off (only a2/a3 for the command pointer
+ * `w`); cmd_set_pos, cmd_set_tar, cmd_cam_move match in camd.c. */
+s32 point_cam_sub(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
+    s8 *cmd;
+    s32 *w;
+    s8 *c;
+    s32 go;
+    s32 r;
+
+    go = 1;
+    d->stop = 0;
+    cmd = d->cmd;
+    do {
+        c = cmd;
+        w = (s32 *)cmd;
+        cmd += cmd[1] * 4;
+        switch (c[0]) {
+        case 0:
+            d->move = c[2];
+            break;
+        case 1:
+            d->pos_mode = c[2];
+            d->pos_part = c[3];
+            break;
+        case 2:
+            cmd_set_pos(d->eye, d, w);
+            break;
+        case 3:
+            cmd_set_pos(d->eye_o, d, w);
+            break;
+        case 4:
+            d->tar_mode = c[2];
+            d->tar_part = c[3];
+            break;
+        case 5:
+            cmd_set_tar(d->tar, d, w);
+            break;
+        case 6:
+            cmd_set_tar(d->tar_o, d, w);
+            break;
+        case 7:
+            d->x4D = c[2];
+            break;
+        case 8:
+            cs->ax = *(s16 *)(c + 2);
+            break;
+        case 9:
+            cs->ax0 = *(s16 *)(c + 2);
+            break;
+        case 10:
+            cs->ay = *(s16 *)(c + 2);
+            break;
+        case 11:
+            cs->ay0 = *(s16 *)(c + 2);
+            break;
+        case 12:
+            d->x54 = 0.0625f * w[1];
+            break;
+        case 13:
+            d->x58 = 0.0625f * w[1];
+            break;
+        case 14:
+            d->roll = 0.000095873799f * w[1];
+            break;
+        case 15:
+            d->roll_o = 0.000095873799f * w[1];
+            break;
+        case 16:
+            d->fov = 0.000095873799f * w[1];
+            break;
+        case 17:
+            d->fov_o = 0.000095873799f * w[1];
+            break;
+        case 18:
+            cs->cnt = cs->cnt_max = w[1];
+            break;
+        case 19:
+            cmd_copy(d, c[2]);
+            break;
+        case 20:
+            d->loop = cmd;
+            break;
+        case 21:
+            cs->cnt--;
+            if (cs->cnt_max <= 0 || cs->cnt >= 0) {
+                cmd = d->loop;
+                go = 0;
+                r = 0;
+            } else {
+                flvecCopy(d->eye, cs->eye);
+                flvecCopy(d->tar, cs->tar);
+                cs->ax = cs->ax0;
+                cs->ay = cs->ay0;
+                d->roll = cs->roll;
+                d->fov = cs->fov;
+                cs->cnt_max = cs->cnt = -1;
+            }
+            break;
+        case 22:
+            cmd_cam_move(cw, cs, d);
+            break;
+        case 25:
+            if (point_cam_hit(cw, cs, d) == 0) {
+                break;
+            }
+        default:
+        case 23:
+            return 1;
+        case 24:
+            go = 0;
+            r = -1;
+            break;
+        }
+        if (d->stop != 0) {
+            return 1;
+        }
+        d->cmd = cmd;
+    } while (go != 0);
+    return r;
 }

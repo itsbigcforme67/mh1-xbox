@@ -6,6 +6,7 @@
  * copies the winning slot into lpView with the screen quake. */
 #include "cam.h"
 #include "game.h"
+#include "fl.h"
 
 #ifndef NULL
 #define NULL 0
@@ -66,7 +67,10 @@ s32 Pl_bari_ck(PLW *);
 s32 pl_flag_ck(PLW *, s32);
 void flvecRotY(f32, f32 *);
 void AddVector(f32 *, f32 *, f32 *);
-void cpInterVector(f32, f32 *, f32 *, f32 *);
+void cpInterVector(f32 *, f32 *, f32 *, f32);
+void flvecApplyMat33_2(f32 *, f32 *);
+void flmatInit(FLMAT *);
+void flmatRotXYZ33(FLMAT *, f32, f32, f32);
 s32 fish_cam_sub(CAMW *, CAMS *, CAMFISH *);
 s32 point_cam_sub(CAMW *, CAMS *, CAMD_DEMO *);
 s32 point_camera(CAMW *, CAMS *);
@@ -136,14 +140,14 @@ void cam_plEX_zoom(CAMW *cw, CAMS *cs, CAMZOOM *z) {
     npc = z->npc;
     pl = cw->pl;
     if (npc->kind == 3) {
-        cpInterVector(0.5f, z->tar, pl->pos, npc->pos);
+        cpInterVector(z->tar, pl->pos, npc->pos, 0.5f);
         z->tar[1] += 64.0f;
     } else {
-        cpInterVector(0.2f, z->tar, pl->pos, z->pos);
+        cpInterVector(z->tar, pl->pos, z->pos, 0.2f);
         z->tar[1] += 150.0f;
     }
     t = z->cnt * (1.0f / 15.0f);
-    cpInterVector(t, cs->tar, z->tar, src->tar);
+    cpInterVector(cs->tar, z->tar, src->tar, t);
     cs->fov = src->fov * (1.0f - t) + 0.5235988f * t;
     flvecCopy(cs->eye, src->eye);
     cs->roll = src->roll;
@@ -240,7 +244,7 @@ s32 point_camera(CAMW *cw, CAMS *cs) {
     return r;
 }
 
-f32 *get_em_local(CAMD_DEMO *d) {
+static f32 *get_em_local(CAMD_DEMO *d) {
     u8 *em = *(u8 **)((u8 *)d + 0x50);
 
     if (em != NULL && *em != 0) {
@@ -248,4 +252,179 @@ f32 *get_em_local(CAMD_DEMO *d) {
     }
     d->stop = 1;
     return NULL;
+}
+
+void cmd_set_pos(f32 *out, CAMD_DEMO *d, s32 *cmd) {
+    PLW *pl;
+    f32 *r;
+
+    pl = &player_work[game_w.master];
+    out[0] = 0.000244140625f * cmd[1];
+    out[1] = 0.000244140625f * cmd[2];
+    out[2] = 0.000244140625f * cmd[3];
+    switch (d->pos_mode) {
+    case 2:
+        nlCalcPoint(out, out, (f32 *)((u8 *)pl->part[d->pos_part] + 0x40));
+        break;
+    case 0:
+        nlCalcPoint(out, out, (f32 *)((u8 *)pl + 0x60));
+        break;
+    case 1:
+        AddVector(out, out, (f32 *)((u8 *)pl + 0xAC));
+        break;
+    case 3:
+        r = get_em_local(d);
+        if (r != NULL) {
+            nlCalcPoint(out, out, r);
+        }
+        break;
+    case 4:
+        AddVector(out, out, d->tar);
+        break;
+    case 5:
+        break;
+    }
+}
+
+void cmd_set_tar(f32 *out, CAMD_DEMO *d, s32 *cmd) {
+    PLW *pl;
+    f32 *r;
+
+    pl = &player_work[game_w.master];
+    out[0] = 0.000244140625f * cmd[1];
+    out[1] = 0.000244140625f * cmd[2];
+    out[2] = 0.000244140625f * cmd[3];
+    switch (d->tar_mode) {
+    case 2:
+        nlCalcPoint(out, out, (f32 *)((u8 *)pl->part[d->tar_part] + 0x40));
+        break;
+    case 0:
+        nlCalcPoint(out, out, (f32 *)((u8 *)pl + 0x60));
+        break;
+    case 1:
+        AddVector(out, out, (f32 *)((u8 *)pl + 0xAC));
+        break;
+    case 3:
+        r = get_em_local(d);
+        if (r != NULL) {
+            nlCalcPoint(out, out, r);
+        }
+        break;
+    case 4:
+        break;
+    }
+}
+
+void cmd_copy(CAMD_DEMO *d, s32 n) {
+    switch (n) {
+    case 0:
+        flvecCopy(d->eye_o, d->eye);
+        break;
+    case 1:
+        flvecCopy(d->tar_o, d->tar);
+        break;
+    case 2:
+        d->roll_o = d->roll;
+        break;
+    case 3:
+        d->fov_o = d->fov;
+        break;
+    }
+}
+
+void get_angle(s16 *a, CAMS *cs) {
+    if (cs->cnt_max > 0) {
+        a[0] = cs->ax - cs->ax0;
+        a[0] = cs->ax0 + a[0] * cs->cnt / cs->cnt_max;
+        a[1] = cs->ay - cs->ay0;
+        a[1] = cs->ay0 + a[1] * cs->cnt / cs->cnt_max;
+    } else {
+        a[0] = cs->ax;
+        a[1] = cs->ay;
+    }
+}
+
+void cmd_cam_move(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
+    s16 ang[2];
+    FLMAT m;
+    f32 v[3];
+    f32 t, u;
+    PLW *pl;
+    f32 *r;
+    f32 *vz;
+
+    if (cs->cnt_max > 0) {
+        t = (f32)cs->cnt / (f32)cs->cnt_max;
+    } else {
+        t = 1.0f;
+    }
+    u = 1.0f - t;
+    switch (d->move) {
+    case 0:
+        get_angle(ang, cs);
+        flmatInit(&m);
+        flmatRotXYZ33(&m, 0.000095873799f * ang[0], 0.000095873799f * ang[1], 0.0f);
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        vz = &v[2];
+        *vz = 500.0f;
+        if (d->x4D == 1) {
+            cpInterVector(cs->eye, d->eye, d->eye_o, t);
+            flvecApplyMat33_2(v, (f32 *)&m);
+            pl = &player_work[game_w.master];
+            switch (d->pos_mode) {
+            case 2:
+                flvecApplyMat33_2(v, (f32 *)((u8 *)pl->part[d->tar_part] + 0x40));
+                break;
+            case 0:
+                flvecApplyMat33_2(v, (f32 *)((u8 *)pl + 0x60));
+                break;
+            case 1:
+            case 4:
+            case 5:
+                break;
+            case 3:
+                r = get_em_local(d);
+                if (r != NULL) {
+                    flvecApplyMat33_2(v, r);
+                }
+                break;
+            }
+            AddVector(cs->tar, cs->eye, v);
+        } else {
+            cpInterVector(cs->tar, d->tar, d->tar_o, t);
+            *vz = d->x54 * t + d->x58 * u;
+            flvecApplyMat33_2(v, (f32 *)&m);
+            pl = &player_work[game_w.master];
+            switch (d->tar_mode) {
+            case 2:
+                flvecApplyMat33_2(v, (f32 *)((u8 *)pl->part[d->pos_part] + 0x40));
+                break;
+            case 0:
+                flvecApplyMat33_2(v, (f32 *)((u8 *)pl + 0x60));
+                break;
+            case 3:
+                r = get_em_local(d);
+                if (r != NULL) {
+                    flvecApplyMat33_2(v, r);
+                }
+                break;
+            case 1:
+            case 4:
+                break;
+            }
+            AddVector(cs->eye, cs->tar, v);
+        }
+        break;
+    case 1:
+        cpInterVector(cs->tar, d->tar, d->tar_o, t);
+        cpInterVector(cs->eye, d->eye, d->eye_o, t);
+        break;
+    }
+    cs->roll = d->roll * t + d->roll_o * u;
+    cs->fov = d->fov * t + d->fov_o * u;
+}
+
+s32 point_cam_hit(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
+    return 0;
 }

@@ -241,3 +241,22 @@ file incl. near-matches SetCameraData, cam_init_sub_pchngr, pch_lock_chk,
 fish_cam_sub. Still no C for: CameraMove, cam_init_sub_std, cam_sub_std,
 cam_sub_stg, cam_sub_pchngr, cmd_set_pos, cmd_set_tar, cmd_cam_move,
 point_cam_sub (jump tables 0x36B0D0-0x36B178 still need main:rodata lines).
+
+f_cam update 2: camd.c now spans 0x221820-0x222408 (NPC zoom, demo camera,
+get_em_local, cmd_set_pos/tar, cmd_copy, get_angle, cmd_cam_move,
+point_cam_hit; jump tables 0x36B0D0-0x36B108). came.c/camf.c merged into it.
+point_cam_sub is written (cam_nm.c) but 28 instructions off, only a2 vs a3
+for the command pointer; one permuter run found nothing. Not built.
+- get_em_local must be `static` and defined BEFORE its callers in the same
+  file: MWCC then knows its clobber set and keeps `out` in a temp register
+  across the call (cmd_set_pos/tar). Non-static or another file: a saved reg.
+- cpInterVector takes the float LAST: (f32 *out, f32 *a, f32 *b, f32 t)
+  (the float-first guess scheduled `mov.s $f12` too early).
+- A 6-entry switch with an empty `case 5:` gets a jump table (sltiu 6);
+  without it, an if-chain. Source case order = body order; the compare chain
+  of small switches comes out reversed from the source order.
+- `if (a <= 0 || b >= 0) {loop} else {finish}` gave the original layout where
+  `if (a > 0 && b < 0) {finish} else {loop}` did not (point_cam_sub case 21).
+- cmd_cam_move constant 0x38C90FDB = 0.000095873799f (2*pi/65536).
+Still no C: CameraMove, cam_init_sub_std, cam_sub_std, cam_sub_stg,
+cam_sub_pchngr, point_cam_sub (near-match only).
