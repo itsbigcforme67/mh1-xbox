@@ -191,9 +191,14 @@ extern LBCOMMER lbCommer[8];
 void action_timer_calc();
 extern s16 chat09_chr_tbl_0064E1C0[];
 void Lb_eat_to_bell();
+void flvecApplyMat33();
 void Lb_put_hint();
 void adx_se_set();
 void Lb_put_set01();
 int Lb_check_hotel();
 void NPCZoomInCameraCancel();
+void Eft06_set(f32, PLW *, int, int, int);
+void Lb_eat_to_end();
+extern s8 eatResult;
+int frame_check2(f32, PLW *, int);
 #endif
