@@ -31,6 +31,12 @@ typedef struct PFLPS {
     u32 c;
 } PFLPS;
 void flps0008(void *);
+typedef struct PFLPS2 {
+    s16 s[4];
+    u32 col;
+    s16 uv[4];
+} PFLPS2;
+void efct_circle(int, int, int, f32, f32);
 void SetTrnslMode(int, int);
 void flSetRenderState(int, int);
 void font_set_stack_no(int);
@@ -2121,5 +2127,53 @@ void menu_move(int sw) {
             se_req(7, 0x14, 0);
         }
         break;
+    }
+}
+
+/* Ripple ring of a map sign: circle at (x, y) fading with t. */
+void efct_circle(int x, int y, int color, f32 scale, f32 t) {
+    PFLPS q;
+    u8 alpha;
+    f32 r;
+    f32 w;
+
+    alpha = (u32)(51.0f * flSqrt(t));
+    r = flSqrt(25.0f - t);
+    q.a = (color & 0xFFFFFF) | (alpha << 24);
+    w = scale * (0.291667f + 0.1180555f * r);
+    q.s[2] = 0.8f * w;
+    q.s[3] = w;
+    q.s[0] = x;
+    q.s[1] = y;
+    q.b = 0xE100E1;
+    q.c = 0x1000100;
+    flps0008(&q);
+    q.s[1] = (s16)y - q.s[3];
+    ((s16 *)&q.b)[1] = 0x100;
+    ((s16 *)&q.c)[1] = 0xE1;
+    flps0008(&q);
+    q.s[0] = (s16)x - q.s[2];
+    ((s16 *)&q.b)[0] = 0x100;
+    ((s16 *)&q.c)[0] = 0xE1;
+    flps0008(&q);
+    q.s[1] = y;
+    ((s16 *)&q.b)[1] = 0xE1;
+    ((s16 *)&q.c)[1] = 0x100;
+    flps0008(&q);
+}
+
+void disp_map_sign(int x, int y, s16 timer, int color) {
+    int m;
+
+    if (timer < 20) {
+        efct_circle(x, y, color, 40.0f, 25 - timer);
+    } else if (timer < 85) {
+        m = (s16)(timer % 20);
+        efct_circle(x, y, color, 40.0f, 25 - m);
+        if (5 - m >= 0) {
+            efct_circle(x, y, color, 40.0f, 5 - m);
+        }
+    } else {
+        efct_circle(x, y, color, 40.0f, 105 - timer);
     }
 }
