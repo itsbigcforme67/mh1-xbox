@@ -25,7 +25,9 @@ typedef struct GAME_W {
     u8 gate_open;       /* 0x1E6 set20 gate state, set from the quest */
     u8 _pad1E7[0x210 - 0x1E7];
     u8 shl10_num;       /* 0x210 live shell10s owned by the master player */
-    u8 _pad211[0x21F - 0x211];
+    u8 _pad211;
+    u8 trap_num;        /* 0x212 traps set by the master player (shell12) */
+    u8 _pad213[0x21F - 0x213];
     u8 info_stop;       /* 0x21F set01 queue paused while set */
     u8 _pad220[0x224 - 0x220];
 } GAME_W;

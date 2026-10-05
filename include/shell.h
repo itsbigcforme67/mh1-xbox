@@ -52,7 +52,7 @@ typedef struct SHLW {
     u8 _pad90[0x94 - 0x90];
     void *owner;        /* 0x94 */
     u8 _pad98[4];
-    s32 x9C;            /* 0x9C */
+    EMW *x9C;           /* 0x9C monster caught (shell12) */
     s32 xA0;            /* 0xA0 */
     u8 _padA4[0xB4 - 0xA4];
     u8 xB4;             /* 0xB4 */

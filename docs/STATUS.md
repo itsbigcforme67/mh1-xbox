@@ -417,6 +417,12 @@ How it works (each step was checked, not assumed):
   - set05_m: u16 kind + u8 n moves every temporary; u8 kind + int n is
     2 off. Type changes to small locals reshuffle temporaries, not just
     saved registers.
+  - shell12 (player traps) matches. `x >= N` versus `x > N-1` keeps
+    mattering: the original's comparisons that use the `at` register are
+    the `> N-1` form (5 cases in shell12_m alone).
+  - A C file with several jump tables needs ONE rodata slot in
+    config/c_files.txt covering all of them (MWCC emits a data section per
+    function and each slot line pulls in the whole object's data).
   - CLAY: material count at +4 and 32 material indices at +8 (shell03_trans
     sets each material's colour to white before drawing).
 - set20 (stage 25 gate) matches apart from Set20_set. `++t > 180` and

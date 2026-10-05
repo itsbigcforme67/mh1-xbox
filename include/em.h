@@ -41,7 +41,11 @@ typedef struct EMW {
     f32 x5AC;           /* 0x5AC height used for set20's shell */
     u8 _pad5B0[0x736 - 0x5B0];
     u8 stg;             /* 0x736 */
-    u8 _pad737[0xA10 - 0x737];
+    u8 _pad737[0x959 - 0x737];
+    u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
+    u8 _pad95A[0x9EA - 0x95A];
+    s8 x9EA;            /* 0x9EA trap state (shell12_m) */
+    u8 _pad9EB[0xA10 - 0x9EB];
 } EMW;
 
 extern EMW em_work[];
