@@ -334,6 +334,22 @@ void rt_monster_motion_start(int no, int mdl_no, const uint8_t *tbl, int kind, c
     w->mdl_no = (u8)mdl_no;
     w->scl[0] = w->scl[1] = w->scl[2] = 1.0f;
     w->layers = (u16)layers;
+    if (getenv("RT_MOTION_SCAN")) {     /* bank 0 (body) motions of this model */
+        int first = em_mot_han_ofs[mdl_no][0], last = em_mot_han_ofs[mdl_no][1], slot;
+        for (slot = 0; slot < last - first && slot < 100; slot++) {
+            const aan_motion *m = mset_get(motion_set_handle_tbl[mdl_no * 600 + 1700 + first + slot]);
+            float c0[9] = { 0 }, c1[9] = { 0 };
+            if (!m)
+                continue;
+            if (m->nbone > 1) {
+                fmt_aan_eval(m, 1, 0, c0);
+                fmt_aan_eval(m, 1, m->end, c1);
+            }
+            printf("em mdl %d id %d: end %.0f loop %d(%.0f) bones %d d=(%.1f %.1f %.1f)\n",
+                   mdl_no, 1000 + slot, m->end, m->loop, m->loop_start, m->nbone,
+                   c1[6] - c0[6], c1[7] - c0[7], c1[8] - c0[8]);
+        }
+    }
     for (g = 0; g < layers && g < 4; g++) {
         w->chr[g] = (u16)ids[g];
         w->mt[g].spd = 1.0f;
@@ -341,9 +357,55 @@ void rt_monster_motion_start(int no, int mdl_no, const uint8_t *tbl, int kind, c
     }
 }
 
+void rt_monster_save_old(void *em);
+void rt_monster_collide(void *em);
+u8 Em_stg_ck(void *);
+
+/* One tick of em_work[no]: em_move's order (old position, frame_move with
+ * root motion, walls and ground: rt_hit.c) once it is placed on the stage
+ * (rt_monster_place), else only the motion. */
 int rt_monster_motion_tick(int no)
 {
-    return frame_move((FRW *)&em_work[no]);
+    EMW *em = &em_work[no];
+    int r;
+    if (!((FRW *)em)->be_flag)
+        return frame_move((FRW *)em);
+    rt_monster_save_old(em);
+    rt_snd_monster_motion(no);      /* walk sounds (em01 ef_move_sub's list), before the frame steps */
+    r = frame_move((FRW *)em);
+    if (Em_stg_ck(em) & 0xFF)
+        rt_monster_collide(em);
+    return r;
+}
+
+/* Put em_work[no] on the current stage at pos facing ang_y (0x10000 per
+ * turn): in use, monster kind `kind` (em+2, selects its wall spheres
+ * em_hit_push_tbl[kind]), wall tests on (+0x4D4, as the em init code at
+ * 0x10BE08 sets it). */
+void rt_monster_place(int no, int kind, const float pos[3], int ang_y)
+{
+    EMW *em = &em_work[no];
+    FRW *w = (FRW *)em;
+    u8 *b = (u8 *)em;
+    w->be_flag = 1;
+    b[0x2] = (u8)kind;
+    b[0x4D4] = 1;
+    b[0x736] = game_w.stage;
+    w->pos[0] = pos[0];
+    w->pos[1] = pos[1];
+    w->pos[2] = pos[2];
+    w->ang[1] = ang_y & 0xFFFF;
+    w->scl[0] = w->scl[1] = w->scl[2] = 1.0f;
+    *(f32 *)(b + 0x5AC) = pos[1];
+}
+
+void rt_monster_get(int no, float pos[3], int *ang_y)
+{
+    FRW *w = (FRW *)&em_work[no];
+    pos[0] = w->pos[0];
+    pos[1] = w->pos[1];
+    pos[2] = w->pos[2];
+    *ang_y = w->ang[1];
 }
 
 void rt_monster_pose(int no, void *skel)

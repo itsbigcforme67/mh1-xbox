@@ -18,7 +18,7 @@ void em04_effect_move_0058F3E0(EMW *em) {
 }
 
 void sound_call_0058F430(EMW *em, int frame, int se) {
-    if (em_frame_check(em, (f32)frame, 0)) {
+    if (em_frame_check(em, 0, (f32)frame)) {
         Em_se_req2(em, se, 0, em->pos, 6, 0);
     }
 }

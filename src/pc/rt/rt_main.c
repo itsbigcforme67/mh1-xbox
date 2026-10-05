@@ -92,19 +92,15 @@ u8 Em_stg_ck(void *p) { return ((u8 *)p)[0x736] == game_w.stage; }
 void flvecApplyMat33(f32 *out, f32 *v, f32 (*m)[4]);
 void flvecApplyMat33_2(f32 *v, f32 (*m)[4]) { flvecApplyMat33(v, v, m); }
 
-/* Not ported yet: camera quake (CameraWork; the viewer has its own camera),
- * monster sound. (The effects/shells set objects spawn now run as game C.) */
+/* (Sound: rt_snd.c. Camera quake: set_quake_sub /
+ * set_quake_sub2 are the game's own now, src/main/cam.) (The effects/shells set objects spawn now run as game C.) */
 #define STUB_ONCE(name) { static int once; if (!once++) fprintf(stderr, "rt: %s not ported yet (skipped)\n", name); }
-void set_quake_sub(int kind, f32 *pos) { (void)kind; (void)pos; }
-void set_quake_sub2(int kind) { (void)kind; }
-void Em_se_req2(void *em, int a, int b, f32 *pos, int c, int d) { (void)em; (void)a; (void)b; (void)pos; (void)c; (void)d; }
 
 /* Callees of the game tick move() (src/main/frame/f_frame_nm.c, 0x1265E0)
  * that are not ported yet. Weak, so a ported version wins when it is
  * linked in. move() itself is not called by the host loop yet. */
 #define WEAK __attribute__((weak))
 WEAK void player_mv(void) {}
-WEAK void old_pos_save(void *w) { (void)w; }
 WEAK int enemy_mv(void *w) { (void)w; return 1; }
 WEAK void enemy_mk(void *w) { (void)w; }
 WEAK void em_ride_sub(void *w) { (void)w; }
@@ -113,7 +109,6 @@ WEAK void npc_mk(void *w) { (void)w; }
 WEAK void item_check(void) {}
 WEAK void body_hit(void) {}
 WEAK void bgm_server(void) {}
-WEAK void HitWallPlayer(void *w, int a) { (void)w; (void)a; }
 WEAK void player_mk(void) {}
 WEAK void yure_move(void) {}
 WEAK void CameraMove(void) {}

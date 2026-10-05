@@ -510,7 +510,8 @@ int eft_trans_sub_opa(CLAY *clay, FLMAT *m, void *mat)
 void SetVector(f32 *v, f32 x, f32 y, f32 z) { v[0] = x; v[1] = y; v[2] = z; }
 void AddVector(f32 *d, f32 *a, f32 *b) { d[0] = a[0] + b[0]; d[1] = a[1] + b[1]; d[2] = a[2] + b[2]; }
 void ScaleVector(f32 *d, f32 *a, f32 s) { d[0] = a[0] * s; d[1] = a[1] * s; d[2] = a[2] * s; }
-void PointToPoint(f32 *d, f32 *a, f32 *b) { d[0] = b[0] - a[0]; d[1] = b[1] - a[1]; d[2] = b[2] - a[2]; }
+/* PointToPoint (g_cpAng2Rad): d = a - b (checked against the asm; was b - a) */
+void PointToPoint(f32 *d, f32 *a, f32 *b) { d[0] = a[0] - b[0]; d[1] = a[1] - b[1]; d[2] = a[2] - b[2]; }
 
 /* flvecRotX (0x172FF0): rotate v about X by a radians */
 void flvecRotX(f32 *v, f32 a)
@@ -551,34 +552,8 @@ FLMAT *get_joint_wmat(void *chr, int joint)
 FLMAT *get_joint_wmat_em(void *chr, int joint) { return get_joint_wmat(chr, joint); }
 
 /* ------------------------------------------------------------ ground */
-static int (*ground_fn)(float x, float z, float ymax, float *y);
-
-void rt_set_ground(int (*fn)(float x, float z, float ymax, float *y))
-{
-    ground_fn = fn;
-}
-
-/* GetGroundHit (0x119210): height of the ground polygon under pos, the
- * highest one at most 50 above pos.y [approximation of the PS2 search];
- * pos.y if there is none. */
-f32 GetGroundHit(f32 *pos)
-{
-    float y;
-    if (ground_fn && ground_fn(pos[0], pos[2], pos[1] + 50.0f, &y))
-        return y;
-    return pos[1];
-}
-
-f32 GetGroundShellHit(f32 *pos) { return GetGroundHit(pos); }
-
-/* GetWaterHit (0x11ACF0): water surface test. No water planes in the
- * port yet: never in water. */
-int GetWaterHit(f32 *pos, f32 *out)
-{
-    (void)pos;
-    (void)out;
-    return 0;
-}
+/* GetGroundHit, GetGroundShellHit, GetWaterHit: the game's own C now
+ * (src/main/hit/shit3_nm.c on the stage's HITS files, rt_hit.c). */
 
 /* ------------------------------------------------------------ models */
 typedef struct {                     /* MDLW (get_mdlw_ptr) as the eft code sees it */
@@ -748,7 +723,6 @@ int softdip_ck(void) { return 0; }   /* 0x1593D0: returns 0 */
 
 STUB_V(pl_atck_data_set_shl, (SHLW *sh, void *em, int a, u8 *d))
 STUB_V(vib_set_pl, (void *pl, int a))
-STUB_V(Pl_se_req2, (void *pl, int a, int b, f32 *pos, int c, int d))
 STUB_V(pl_light_change, (void *em, int a))
 STUB_V(Pl_light_set, (void *em))
 STUB_I(Get_atk_value, (void *pl, int a))

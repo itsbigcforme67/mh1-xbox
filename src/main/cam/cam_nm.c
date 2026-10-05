@@ -67,7 +67,7 @@ s32 Pl_bari_ck(PLW *);
 s32 pl_flag_ck(PLW *, s32);
 void flvecRotY(f32 *, f32);
 void AddVector(f32 *, f32 *, f32 *);
-void cpInterVector(f32, f32 *, f32 *, f32 *);
+void cpInterVector(f32 *, f32 *, f32 *, f32);   /* out = a * t + b * (1 - t) (0x120E30) */
 s32 fish_cam_sub(CAMW *, CAMS *, CAMFISH *);
 s32 point_cam_sub(CAMW *, CAMS *, CAMD_DEMO *);
 s32 point_camera(CAMW *, CAMS *);
@@ -405,14 +405,14 @@ void cam_plEX_zoom(CAMW *cw, CAMS *cs, CAMZOOM *z) {
     npc = z->npc;
     pl = cw->pl;
     if (npc->kind == 3) {
-        cpInterVector(0.5f, z->tar, pl->pos, npc->pos);
+        cpInterVector(z->tar, pl->pos, npc->pos, 0.5f);
         z->tar[1] += 64.0f;
     } else {
-        cpInterVector(0.2f, z->tar, pl->pos, z->pos);
+        cpInterVector(z->tar, pl->pos, z->pos, 0.2f);
         z->tar[1] += 150.0f;
     }
     t = z->cnt * (1.0f / 15.0f);
-    cpInterVector(t, cs->tar, z->tar, src->tar);
+    cpInterVector(cs->tar, z->tar, src->tar, t);
     cs->fov = src->fov * (1.0f - t) + 0.5235988f * t;
     flvecCopy(cs->eye, src->eye);
     cs->roll = src->roll;
@@ -854,7 +854,7 @@ f32 flSqrt(f32);
 extern CAMCNFE stage_camera_data_ex;
 void std_cam_sw_set_sub(CAMW *, CAMD_STD *);
 void k_HitEmCamera(f32 *, f32 *, s32);
-void k_HitWallCamera(f32 *, f32 *, f32 *);
+f32 k_HitWallCamera(f32 *, f32 *, f32 *);
 u8 GetWallHitLine(f32 *, f32 *, f32 *, s32);
 void PointToPoint(f32 *, f32 *, f32 *);
 f32 flvecCalcLength(f32 *);
@@ -1118,8 +1118,8 @@ void cam_sub_std(CAMW *cw, CAMS *cs) {
         cs->step.b++;
     case 2:
         t = (f32)cs->cnt * d->rate;
-        cpInterVector(t, cs->eye, cs->eye_f, cs->eye);
-        cpInterVector(t, cs->tar, cs->tar_f, cs->tar);
+        cpInterVector(cs->eye, cs->eye_f, cs->eye, t);
+        cpInterVector(cs->tar, cs->tar_f, cs->tar, t);
         cs->roll = cs->roll_f * t + d->roll * (1.0f - t);
         cs->fov = cs->fov_f * t + d->fov * (1.0f - t);
         cs->cnt--;
@@ -1135,7 +1135,7 @@ void cam_sub_std(CAMW *cw, CAMS *cs) {
 typedef struct CAMSPL { u8 b[0x30]; } CAMSPL;
 extern CAMSPL SplineRvalue[];
 void CamRailMove(CAMW *, CAMSPL *, f32 *, s32);
-void CamRailPoint(f32, f32 *, CAMSPL *);
+void CamRailPoint(f32 *, f32 *, f32);           /* (out, spline section, t): camr2.c */
 void GetPanTarget(CAMW *, f32 *, CAMAREA *);
 void GetRailTarget(CAMW *, f32 *, CAMAREA *, f32 *);
 void GetRailCamPos(f32 *, CAMW *, CAMAREA *, CAMSPL *);
@@ -1188,7 +1188,7 @@ void cam_sub_stg(CAMW *cw, CAMS *cs) {
             break;
         case 2:
             CamRailMove(cw, spl, pl->pos, 0);
-            CamRailPoint(cw->rail_t, v, &spl[cw->rail_no]);
+            CamRailPoint(v, (f32 *)&spl[cw->rail_no], cw->rail_t);
             GetRailTarget(cw, d->tar, area, v);
             GetRailCamPos(d->eye, cw, area, spl);
             break;
@@ -1220,7 +1220,7 @@ void cam_sub_stg(CAMW *cw, CAMS *cs) {
             } else {
                 CamRailMove(cw, spl, pl->pos, 0);
             }
-            CamRailPoint(cw->rail_t, v, &spl[cw->rail_no]);
+            CamRailPoint(v, (f32 *)&spl[cw->rail_no], cw->rail_t);
             base = ZoomBaseAngleRail(cw->rail_u, &area->u, cw->rail_no);
             d->roll = RollAngleRail(cw->rail_u, &area->u, cw->rail_no);
             GetRailTarget(cw, d->tar, area, v);
@@ -1330,8 +1330,8 @@ void cam_sub_stg(CAMW *cw, CAMS *cs) {
         cs->step.b++;
     case 2:
         t = (f32)d->cnt * d->rate;
-        cpInterVector(t, cs->eye, d->eye_f, d->eye);
-        cpInterVector(t, cs->tar, d->tar_f, d->tar);
+        cpInterVector(cs->eye, d->eye_f, d->eye, t);
+        cpInterVector(cs->tar, d->tar_f, d->tar, t);
         cs->roll = d->roll_f * t + d->roll * (1.0f - t);
         cs->fov = d->fov_f * t + d->fov * (1.0f - t);
         d->cnt--;

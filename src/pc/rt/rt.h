@@ -24,6 +24,9 @@ void rt_set_overlay(uint8_t *bin, size_t n);   /* takes ownership */
 const uint8_t *rt_addr(uint32_t va, size_t n);
 /* 1 if the range is .bss (zero at start) of the ELF or the overlay. */
 int rt_in_bss(uint32_t va, size_t n);
+/* Zeroed host memory standing in for PS2 .bss at va (pointers in data
+ * tables that point there), or NULL if va is not .bss. */
+void *rt_bss_shadow(uint32_t va);
 /* Fill the game's data tables (rt_data.c) from the loaded images.
  * Returns the number of tables that could not be found. */
 int rt_import_data(void);
@@ -56,9 +59,15 @@ int rt_clay_claimed(int handle);
 /* Hand effect model k (eft_mdlw[k]: 0 ef_00, 1-3 kage04-06, 4 ef_01) to
  * the game C; attr as for rt_bind_set_model. */
 void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n);
-/* Ground height for GetGroundHit: fn returns 1 and the highest ground y at
- * (x, z) not above ymax, or 0. */
-void rt_set_ground(int (*fn)(float x, float z, float ymax, float *y));
+/* Files the game C loads by AFS index (load_file_mdl): fn returns the
+ * Meltw-decompressed entry (malloc'd, the caller frees) and its size. */
+void rt_set_file_loader(uint8_t *(*fn)(int idx, size_t *n));
+/* Load a stage's wall and ground collision (the game's load_stage_hit:
+ * stage_hit_data_w/_f files, WallHitInit/GroundHitInit). 0 on success. */
+int rt_load_stage_hit(int stage);
+/* The game's GetGroundHit at (x, z) from above ymax: 1 and the highest
+ * ground y not above ymax, or 0 if there is no ground polygon there. */
+int rt_ground_y(float x, float z, float ymax, float *y);
 
 /* CLAY+0x88 attribute word from an AMO part's 0xF0000 chunk (18 words, as
  * amo_part.attr; NULL = no chunk -> 0), like Attribute_from_amo. */
@@ -92,6 +101,10 @@ void rt_player_get(int no, float pos[3], int *ang_y);
  * layer g (ids >= 1000). */
 void rt_monster_motion_start(int no, int mdl_no, const uint8_t *tbl, int kind, const int *ids, int layers);
 int rt_monster_motion_tick(int no);
+/* Place em_work[no] on the stage (then each tick also runs em_move's wall
+ * and ground collision) and read back where it is. */
+void rt_monster_place(int no, int kind, const float pos[3], int ang_y);
+void rt_monster_get(int no, float pos[3], int *ang_y);
 void rt_monster_pose(int no, void *fl_skel_ptr);
 
 /* Host pad state for the next ticks (fl pad bits + sticks, see
@@ -105,6 +118,24 @@ void rt_player_tick(int no);
 void rt_player_set_ang(int no, int ang_y);
 /* What the game's sw_set_sub gave player no: buttons, left stick. */
 void rt_player_sw(int no, int *now, int *ang, int *pow);
+
+/* Sound (rt_snd.c, docs/pc.md "Sound"): open AFS00/AFS01 in disc and the
+ * output device (device = 0: mixer only, for --audio-dump); load a stage's
+ * packs and start its stream; one tick per game tick; footsteps of the
+ * host player stand-in (call before frame_move). */
+int  rt_snd_init(const char *disc, int device);
+void rt_snd_stage(int stage, const int *em_kinds, int nem);
+void rt_snd_tick(void);
+void rt_snd_player_motion(int no);
+void rt_snd_monster_motion(int no);
+void rt_snd_shutdown(void);
+
+/* The game camera (src/main/cam CameraMove, rt_cam.c): init for a stage
+ * once the master player is set, one tick per game tick after the player,
+ * and the resulting view (eye, target, roll, fov in radians). */
+void rt_cam_init(int stage);
+void rt_cam_tick(void);
+void rt_cam_view(float eye[3], float tar[3], float *roll, float *fov);
 
 /* RT_SPAWN="eft13:N,eft17:N,shell22:N,eft14:N,eft08:N": spawn test effects at pos. */
 void rt_debug_spawn(const float pos[3]);
