@@ -251,7 +251,7 @@ void user_load(void *unused, PLW *pl, s16 n) {
     }
 }
 
-void disp_mc(EDIT_W *w, s16 flag) {
+void disp_mc(u8 *w, s16 flag) {
     DispFrameMessageA(help_mess_005387B0, 0, 0x80);
     flfntSetSize(0x14, 0x14);
     if (flag == 0) {
@@ -259,7 +259,7 @@ void disp_mc(EDIT_W *w, s16 flag) {
         font_print_ex(0x8C, 0x180, 2, lit_502_0053B840);
         return;
     }
-    if (w->x3B != 0) {
+    if (w[0x3B] != 0) {
         font_print_ex(0x8C, 0x168, 0, lit_503_0053B870);
         return;
     }
@@ -569,4 +569,84 @@ void param_change_00536280(u8 *w) {
         param_change_sub(w, btn, &w[6], 0xA, 0x12);
         break;
     }
+}
+
+typedef struct { u8 _p[0x18]; STASK *work; } TSKH;
+void disp_color(void *e);
+
+void edit_trans(TSKH *t) {
+    STASK *s = t->work;
+    u8 *e = (u8 *)&edit_w;
+    flSetRenderState(0x60, 0);
+    if (s->step < 5) {
+        disp_edit_spr(s, e);
+    } else if (s->step > 5 && s->step < 9) {
+    } else {
+        Disp_button(1.0f, 0x12, 0x206, 0x60, 8);
+        flfntSetSize(0x14, 0x14);
+        font_print_ex(0x220, 0x60, 0, lit_322_0053B658);
+    }
+    switch (s->step) {
+    case 0:
+    case 1:
+    case 2:
+        disp_edinfo(e);
+        break;
+    case 3:
+        if (e[2] == 4) {
+            disp_color(e);
+        }
+        if (e[2] == 0) {
+            SoftKeyboard_pos_set(0x150, 22.0f);
+            DispSoftkeyboard(system_w.x31);
+        }
+        break;
+    case 4:
+        disp_check(e, 0);
+        break;
+    case 6:
+    case 7:
+    case 8:
+        disp_mc(e, 1);
+        break;
+    case 9:
+    case 10:
+        Sel_menu_disp(4);
+        disp_check(e, 3);
+        break;
+    }
+}
+
+void ed_color_sel(EDIT_W *w, PLW *pl, u16 btn) {
+    u8 c[3];
+    c[0] = w->col >> 16;
+    c[1] = w->col >> 8;
+    c[2] = w->col;
+    if (btn & 0x2000) {
+        if (w->x0[3] == 0) {
+            w->x0[3] = 3;
+        } else {
+            w->x0[3]--;
+        }
+        se_req(7, 0x16, 0);
+    }
+    if (btn & 0x1000) {
+        if (w->x0[3] >= 3) {
+            w->x0[3] = 0;
+        } else {
+            w->x0[3]++;
+        }
+        se_req(7, 0x16, 0);
+    }
+    if (w->x0[3] < 3) {
+        param_change_sub2(w, w->x3E, c + w->x0[3], 0x100, 0x17);
+        w->col = 0xFF000000 | (c[0] << 16) | (c[1] << 8) | c[2];
+    } else {
+        param_change_sub(w, btn, &w->x3A, 0x10, 0x16);
+        if (Psw[2] & 0x20) {
+            w->col = sample_col[w->x3A];
+            ed_decide_se();
+        }
+    }
+    pl->work5FC = w->col;
 }

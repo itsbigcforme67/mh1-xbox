@@ -89,8 +89,8 @@ extern DEMO_W demo_w;
 extern u8 Select_task[];
 /* edit_w (main 0x3F32E0, 0x4C bytes): character edit work (layout partly guessed) */
 typedef struct EDIT_W {
-    s8 x0[8];           /* 0x00 cleared by char_make_init */
-    s32 col;            /* 0x08 current colour (from sample_col) */
+    u8 x0[8];           /* 0x00 cleared by char_make_init */
+    u32 col;            /* 0x08 current colour (from sample_col) */
     f32 eye[3];         /* 0x0C camera position for the preview (ed_view_set) */
     f32 at[3];          /* 0x18 camera target */
     s8 name[0x12];      /* 0x24 character name (SJIS bytes, 0 = end) */
@@ -100,7 +100,8 @@ typedef struct EDIT_W {
     u8 x3B;             /* 0x3B */
     s8 x3C;             /* 0x3C */
     s8 x3D;             /* 0x3D */
-    u8 _pad3E[0x4C - 0x3E];
+    u16 x3E;            /* 0x3E button state used by ed_color_sel (guess) */
+    u8 _pad40[0x4C - 0x40];
 } EDIT_W;
 extern EDIT_W edit_w;
 extern s32 sample_col[];
@@ -169,4 +170,6 @@ extern LPVIEW *lpView;
 void flvecCopy(f32 *, f32 *);
 void get_joint_pos();
 extern char lit_485_0053B7B0[], lit_486_0053B7D0[], lit_487_0053B7E0[], lit_488_0053B800[];
+void SoftKeyboard_pos_set(int, f32);
+void DispSoftkeyboard();
 #endif
