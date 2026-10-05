@@ -76,7 +76,8 @@ typedef struct EMW {
     u8 _pad198[0x19C - 0x198];
     f32 x19C;           /* 0x19C time used by em02_fly_adjy (0 or 1: start value) */
     f32 chr_spd0;       /* 0x1A0 frame step (as PLW); divides the fly_adjy2 tables */
-    u8 _pad1A4[0x1AC - 0x1A4];
+    u8 _pad1A4[0x1A8 - 0x1A4];
+    f32 x1A8;           /* 0x1A8 (em04 turn: frame count of the current motion?) */
     s32 x1AC;           /* 0x1AC */
     f32 x1B0;           /* 0x1B0 */
     u8 _pad1B4[0x1C4 - 0x1B4];

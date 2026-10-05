@@ -5,6 +5,14 @@
 #include "em.h"
 #include "game.h"
 
+/* Per-monster work at EMW+0x444. */
+typedef struct EM04W {
+    u8 _pad00[0x14];
+    f32 home[3];        /* 0x14 position it returns to (mov05) */
+    u8 _pad20[4];
+    u16 tgt_ang;        /* 0x24 facing to turn to (mov00) */
+} EM04W;
+
 void em_char_set(EMW *, int, int, int);
 void em_act_set(EMW *, int, u16);
 u16 em_act_search(void *);
@@ -17,6 +25,10 @@ u16 Em_Calc_angY(f32 *, f32 *);
 void em09_dir_calc(s32 *, s32 *, int);
 void cpRotMatrix(s32 *, f32 (*)[4]);
 u32 ran_suu(int);
+f32 flvecCalcDistance(f32 *, f32 *);
+void pl_flag_set(EMW *, u32);
+void pl_flag_clr(EMW *, u32);
+void em_cmd_reset(EMW *);
 
 extern u8 em04_act_tbl[];
 extern f32 em05_rev_set_tbl_st69[][6];
@@ -313,5 +325,180 @@ static void em_move00(EMW *em) {
     case 10: em_act10(em); break;
     case 11: em_act07(em); break;
     case 12: em_act08(em); break;
+    }
+}
+
+static void em_mov00(EMW *em, int flag) {
+    EM04W *w = (EM04W *)em->ex;
+    u32 d;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        if (flag == 0) {
+            w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
+        } else {
+            w->tgt_ang = em->ang[1] + 0x4000;
+        }
+        d = (u16)(w->tgt_ang - em->ang[1]);
+        if (d <= 0x1000 || d >= 0xF000) {
+            pl_flag_set(em, 0x20000);
+            em_char_set(em, 2, 0, 0);
+        } else if (d >= 0x8000) {
+            em_char_set(em, 5, 0, 0);
+        } else {
+            em_char_set(em, 4, 0, 0);
+        }
+        break;
+    case 1:
+        if (em->x1C4 == 0) {
+            u32 spd = (u32)(16384.0f / (em->x1A8 / 2.0f) * em->act_spd);
+            u32 ang = em->ang[1];
+
+            d = (u16)(w->tgt_ang - (u16)ang);
+            if (em->x194 == 0) {
+                if ((u16)(d + spd) < spd * 2) {
+                    em->x05++;
+                    pl_flag_clr(em, 0x20000);
+                    em04_next_act_set(em);
+                } else if (d <= 0x1000 || d >= 0xF000) {
+                    pl_flag_set(em, 0x20000);
+                    em_char_set(em, 2, 0, 0);
+                } else {
+                    pl_flag_clr(em, 0x20000);
+                    if (d >= 0x8000) {
+                        em_char_set(em, 5, 0, 0);
+                    } else {
+                        em_char_set(em, 4, 0, 0);
+                    }
+                }
+            } else if ((u16)(d + spd) < spd * 2) {
+                em->ang[1] = w->tgt_ang;
+            } else if (d < 0x8000) {
+                em->ang[1] = (u16)(ang + spd);
+            } else {
+                em->ang[1] = (u16)(ang - spd);
+            }
+        }
+        break;
+    }
+}
+
+
+static void em_mov01(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 2, 6, 0);
+        break;
+    case 1:
+        if (flvecCalcDistance(em->pos, em->tgt_pos) < 200.0f || --em->work08 <= 0) {
+            em04_next_act_set(em);
+        } else {
+            em->horm_ang = Em_Calc_angY(em->pos, em->tgt_pos);
+            em09_dir_calc(&em->ang[1], &em->horm_ang, 0x200);
+            cpRotMatrix(em->ang, em->mat);
+        }
+        break;
+    }
+}
+
+static void em_mov02(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 3, 6, 0);
+        break;
+    case 1:
+        if (flvecCalcDistance(em->pos, em->tgt_pos) < 100.0f || --em->work08 <= 0) {
+            em04_next_act_set(em);
+        } else {
+            em->horm_ang = Em_Calc_angY(em->pos, em->tgt_pos);
+            em09_dir_calc(&em->ang[1], &em->horm_ang, 0x200);
+            cpRotMatrix(em->ang, em->mat);
+        }
+        break;
+    }
+}
+
+static void em_mov03(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 8, 6, 0);
+        break;
+    case 1:
+        if (flvecCalcDistance(em->pos, em->tgt_pos) < 200.0f || --em->work08 <= 0) {
+            em04_next_act_set(em);
+        } else {
+            em->horm_ang = Em_Calc_angY(em->pos, em->tgt_pos);
+            em09_dir_calc(&em->ang[1], &em->horm_ang, 0x200);
+            cpRotMatrix(em->ang, em->mat);
+        }
+        break;
+    }
+}
+
+static void em_mov04(EMW *em) {
+    u32 a;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 2, 0, 0);
+        a = (u16)Em_Calc_angY(em->pos, em->tgt_pos);
+        em->horm_ang = a;
+        em->ang[1] = a;
+        break;
+    case 1:
+        if (flvecCalcDistance(em->pos, em->tgt_pos) < 200.0f || --em->work08 <= 0) {
+            em_cmd_reset(em);
+            em04_next_act_set(em);
+        } else {
+            em09_dir_calc(&em->ang[1], &em->horm_ang, 0x200);
+            cpRotMatrix(em->ang, em->mat);
+        }
+        break;
+    }
+}
+
+static void em_mov05(EMW *em) {
+    EM04W *w = (EM04W *)em->ex;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->work08 = ((u16)ran_suu(1) & 0x7F) + 120;
+        em_char_set(em, 2, 6, 0);
+        break;
+    case 1:
+        if (em->work08 > 0) {
+            em->work08--;
+        }
+        if (em->x8C3 == 0 && em->work08 <= 0) {
+            em04_next_act_set(em);
+        } else {
+            em->horm_ang = (u16)Em_Calc_angY(em->pos, w->home);
+            em09_dir_calc(&em->ang[1], &em->horm_ang, 0x80);
+            cpRotMatrix(em->ang, em->mat);
+        }
+        break;
+    }
+}
+
+static void em_move01(EMW *em) {
+    switch (em->x15) {
+    case 0: em_mov00(em, 0); break;
+    case 1: em_mov01(em); break;
+    case 2: em_mov02(em); break;
+    case 3: em_mov03(em); break;
+    case 4: em_mov04(em); break;
+    case 5: em_mov05(em); break;
+    case 6: em_mov00(em, 1); break;
     }
 }
