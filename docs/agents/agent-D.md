@@ -186,3 +186,26 @@ Shared header: game.h carves game_w+0xD3 (pl_num) from _pad0D2.
   then the four ailment values).
 - 2-D tables indexed `tbl[k * 4 + v]` as flat arrays match where `[k][v]`
   computes the address differently (s_gauge_tbl, hit_se_tbl).
+
+## f_hit_28CE00 (0x28CE00-0x290560) - 11/14 match, 9 built
+Geometry tests: point/sphere, sphere/sphere (bool, contact point, push
+vector), capsule/capsule and capsule/sphere (contact point or push-out),
+sphere/plane, line/sphere. HPK (include/hit.h) is the capsule packed by
+hit_cap_pk: p0, p1, r, dir = p1 - p0, centre, bounding radius. HLINE is
+the line form used by hit_line_sphr2. Shared prototypes: include/hit2.h.
+Built: hit2.c, hit2b.c, hit2c.c, hit2d.c, hit2e.c. hit2_nm.c holds the
+whole file with the four helpers static as in the original.
+Not matching: hit_sphr_sphr2 (18/64, scheduling), hit_cap_cap2_m (41/1253)
+and hit_cap_cap3_m (90/945): only t2/h float registers and the i/j int
+registers swap; the logic is complete. hit_cap_sphr2_m and hit_line_sphr2
+match in hit2_nm.c but not when split off, because the call to the static
+hit_point_sphr then costs the full clobber set.
+- A C range that ends at a function followed by alignment zeros must end
+  at the function's last byte, not at the next function: the object has
+  no trailing padding and SUBALIGN is off, so everything after shifts.
+- hit_sphr_cap_m keeps an original bug: on the second try for a
+  perpendicular it bumps p[1], not the copy it then uses.
+- `rr = r + k->r` into a new local (not reusing the parameter) and
+  computing all of px/py/pz before the v[] subtraction fixed the
+  cap/sphere functions; the result pass `len = rr - d; out = len * m`.
+- permsub (greedy declaration moves) halved hit_cap_cap2_m: t first.

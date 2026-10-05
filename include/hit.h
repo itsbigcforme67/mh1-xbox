@@ -182,11 +182,24 @@ typedef struct HSHL {
 } HSHL;
 
 /* A packed capsule (hit_cap_pk); +0x28 is the point dm_vec_calc uses. */
+/* A packed capsule (hit_cap_pk). */
 typedef struct HPK {
-    u8 _pad00[0x28];
-    f32 c[3];           /* 0x28 */
-    u8 _pad34[0x40 - 0x34];
+    f32 p0[3];          /* 0x00 */
+    f32 p1[3];          /* 0x0C */
+    f32 r;              /* 0x18 */
+    f32 dir[3];         /* 0x1C p1 - p0 */
+    f32 c[3];           /* 0x28 middle */
+    f32 cr;             /* 0x34 bounding radius */
+    u8 _pad38[0x40 - 0x38];
 } HPK;
+
+typedef struct HLINE {
+    f32 p0[3];          /* 0x00 */
+    f32 p1[3];          /* 0x0C */
+    f32 dir[3];         /* 0x18 */
+    f32 mid[3];         /* 0x24 */
+    f32 half;           /* 0x30 */
+} HLINE;
 
 typedef struct HCAP {
     f32 p[2][3];
