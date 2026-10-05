@@ -1179,9 +1179,9 @@ u16 to_zenkaku_spec(int c)
     k = spec_key_19;
     t = spec_tran_20;
     while (*k != 0) {
-        if (*k == (c & 0xFF)) {
+        if ((*k & 0xFF) == (c & 0xFF)) {
             r = *t;
-            if ((r & 0xFF00) == 0x2500 && !(c & 0x100)) {
+            if ((r & 0xFF00) == 0x2500 && !((u16)c & 0x100)) {
                 return (r & 0xFF) | 0x2400;
             }
             return r;
@@ -5030,10 +5030,10 @@ int to_ucode(int x)
 }
 
 int is_kata(c, flag)
-int c;
+u16 c;
 int flag;
 {
-    if (flag != 0 && (c & 0xFFFF) == 0x213C) {
+    if (flag != 0 && c == 0x213C) {
         return 1;
     }
     if ((c & 0xFF00) == 0x2500) {
