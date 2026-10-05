@@ -585,6 +585,8 @@ int main(int argc, char **argv)
                 pl.game = 1;
                 pl.master.root_lock = 1;    /* the game moves the actor by the root motion */
                 rt_player_set_ang(0, (int)(2.6f * 65536.0f / 6.2831853f));
+                if (play && rt_player_uses_game())
+                    rt_player_game_init(0);     /* the game's pl_init: start position, idle */
             }
             hunter_yoff = -lo;
             if (play && pl.game && !follow_given && !getenv("RT_HOST_CAM")) {
@@ -742,6 +744,13 @@ int main(int argc, char **argv)
             fl_skel_update(&rathian.skel, fr);
         fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
         hunter_pose(&pl, fr, &light);
+        if (pl.game && play) {          /* joint world matrices for the game C (parts, get_joint_pos) */
+            static flmat jw[128];
+            int nb = pl.master.skel.nbone < 128 ? pl.master.skel.nbone : 128, j;
+            for (j = 0; j < nb; j++)
+                flmat_mul(jw[j], pl.master.world[j], pl.world);
+            rt_player_parts(0, &jw[0][0], nb);
+        }
 
         gfx_begin_frame(0x8098B8);
         gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);

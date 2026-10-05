@@ -60,8 +60,14 @@ EFT="src/game/eft/eft00.c src/main/eft/eft01.c src/main/eft/eft02_nm.c src/game/
      src/game/shell/shell12.c src/game/shell/shell13.c src/game/shell/shell14.c src/game/shell/shell15.c \
      src/game/shell/shell16.c src/game/shell/shell17.c src/game/shell/shell18.c src/game/shell/shell19.c \
      src/game/shell/shell20.c src/game/shell/shell21.c src/game/shell/shell22_nm.c src/game/shell/shell23.c"
-WEAK="shell06_nm eft20_nm cam_nm"
-GAME="$GAME $HIT $CAM $EFT"
+# Player code (f_pl, agent F): every matched plNN.c plus pl_nm.c (the
+# near-matches: pl_move_sub, pl_turn_sub, basic_com_ck, ...).
+PL="$(ls src/main/pl/pl[0-9][0-9].c | tr '\n' ' ') src/main/pl/pl_nm.c src/main/pl/pl_normal.c \
+    src/main/pl/normal_char_set.c src/main/pl/pl_stg_ck_tw.c \
+    src/game/pl/pl_damage.c src/game/pl/pl_damageb.c src/game/pl/pl_damage_nm.c \
+    src/main/hit/hit_nm.c src/main/hit/hit2_nm.c src/main/hit/hit3_nm.c src/main/stage/f_stage.c"
+WEAK="shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm"
+GAME="$GAME $HIT $CAM $EFT $PL"
 
 SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
 CFLAGS="-m32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
@@ -87,7 +93,17 @@ rm -f build/pc/.m32test
 for f in $GAME; do
     b=$(basename "$f" .c)
     o="build/pc/$b.o"
-    gcc $GAMEFLAGS $SYS -c "$f" -o "$o"
+    # float-argument order adaptors (src/pc/rt/rt_abi.c) for callers whose
+    # declaration orders float and int arguments unlike the definition
+    ABI=""
+    case "$f" in
+    src/main/pl/*|src/game/pl/*|src/main/hit/hit_nm.c)
+        ABI="-Dframe_check=rtabi_frame_check -Dframe_check2=rtabi_frame_check2 -Dframe_check3=rtabi_frame_check3 \
+             -DEft06_set=rtabi_Eft06_set -DEft02_set6=rtabi_Eft02_set6 \
+             -DGetGroundHitStatusAreaPl=rtabi_GetGroundHitStatusAreaPl" ;;
+    src/main/stage/f_stage.c) ABI="-Dhit_point_cbd=rtabi_hit_point_cbd" ;;
+    esac
+    gcc $GAMEFLAGS $ABI $SYS -c "$f" -o "$o"
     case " $WEAK " in *" $b "*) objcopy --weaken "$o" ;; esac
     OBJS="$OBJS $o"
 done
@@ -97,7 +113,7 @@ python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 gcc $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi; do
     # shellcheck disable=SC2086
     gcc $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"

@@ -429,3 +429,49 @@ st48_se_pos
 st52_se_pos
 st54_se_pos
 st62_se_pos
+# player code (src/main/pl, src/pc/rt/rt_pl.c, src/main/hit/hit_nm.c)
+Item_data
+Ken_data
+Battle_type
+stage_start_ang
+pl_cnt_w work
+User_data work
+system_w work
+System_timer work
+pl_prog_tbl
+pl01_adr_tbl
+parts_max_tbl
+mv001_tbl
+mv004_chr_tbl0
+mv004_chr_tbl1
+mv004_chr_tbl2
+mv004_chr_tbl3
+at008_tbl
+chat09_chr_tbl_002F17C0
+test_hair_col
+equip_set
+bed_ofs
+start_ofs
+pl_supp_tbl
+piyo_ret_tbl
+Pl_slash_tbl
+Armor_Head_Data
+Armor_Body_Data
+Armor_Arm_Data
+Armor_Waist_Data
+Armor_Leg_Data
+Stg_env_type
+slash_minus_tbl
+slash_adj_tbl
+s_gauge_tbl
+hit_se_tbl
+em_meat_tbl
+lit_1830
+lit_3557
+lit_6243
+lit_6244
+lit_6245
+lit_951_00358250
+lit_952_00358270
+lit_953_00358290
+lit_954_003582B0

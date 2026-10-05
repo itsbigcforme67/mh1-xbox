@@ -1,31 +1,24 @@
 /*
- * rt_player.c - a stand-in for the player's "normal" state (pl_normal,
- * main 0x141BA0, and its pl_mv### actions: not decompiled yet, agent F's
- * area) so the hunter can stand, turn and run with the pad.
+ * rt_player.c - the hunter driven by the game's own player code.
  *
- * What runs as game C each tick:
- *   rt_pad_tick -> swset (pad_get.c) -> pl_sw_set / sw_set_sub
- *   (pl_normal2.c) fill player_work[0].sw from the host pad;
- *   frame_init / frame_move (f_frame_nm.c) play the motions and move the
- *   player by the motion's root translation (pl_velocity_sub).
- * What is host code here (a guess at the game's behaviour, to be replaced
- * by the decompiled pl_normal):
- *   - the left stick turns the hunter towards the stick direction relative
- *     to the camera, at most 0x800 (11 degrees) per tick;
- *   - stick pushed: legs/upper motions 3/103 (the run loop: plcom 3 moves
- *     bone 1 537 units forward over 78 frames, and pl_mv001, which uses it,
- *     is the first action pl_normal calls), else idle 1/101 (as
- *     normal_char_set picks on a plain stage); 4-tick cross-fade;
- * Collision is the game's own C (src/main/hit/, rt_hit.c), called in
- * pl_move_sub's order (main 0x14C500, read from the asm): the old position
- * is saved to +0x5A0 first; after the move HitWallPlayer(pl, 0) pushes the
- * hunter out of the walls (spheres push00 swept from the old position),
- * GetFloorSlide(pl, v, 1) slides it down steep slopes (pl_move_sub does
- * this in the normal state, flag14 == 0), GetGroundHitStatusAreaPl gives
- * the ground height (+0x5AC), and y snaps to it when the hunter is below it
- * or less than 30 above it. Higher up the PS2 starts the fall action
- * (Pl_act_set(pl, 0, 9)); the stand-in just drops with a constant gravity
- * [guess] until it lands.
+ * Each tick (rt_player_tick): rt_pad_tick turns the host pad into Psw
+ * (ioRead_sub), then pl_move (src/main/pl/pl48.c, matched) runs exactly
+ * as on the PS2: pl_sw_set fills PLW.sw, pl_move_sub (pl_nm.c) runs the
+ * timers, damage, the state machine (pl_move_sub_sub -> pl_normal /
+ * pl_attack / pl_damage ... -> pl_mvNNN / pl_atNNN through their jump
+ * tables), turning, the motion step (pl_chr_sub -> frame_init /
+ * frame_move), the per-motion sound/effect hook (pl01_effect_move) and
+ * the stage collision; hit_timer_calc_shl ages the attack shells.
+ * The helpers that are not decompiled yet are in rt_pl.c (from the asm).
+ *
+ * Set-up (rt_player_game_init) does what init_pl_work (main 0x1116E0,
+ * g_game_init) does for the master player in an offline quest: equipment
+ * (+0x35E type/+0x360 weapon id, +0x34C = Ken_data[id][0], kind =
+ * Battle_type[+0x34C]) and User_data for Get_equip_value; then the game's
+ * pl_init(0) (pl01.c) places the hunter at stage_start_pos and starts the
+ * idle motion (pl_init_sub -> normal_char_set).
+ *
+ * RT_PL_STANDIN=1 keeps the old host stand-in (turn/run/idle only).
  */
 #include "rt.h"
 #include "types.h"
@@ -37,16 +30,56 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 extern FLMAT rview_mat;
 void pl_sw_set(void);
+void pl_move(void);
+void pl_init(int mode);
 void rt_pad_tick(void);
+void hit_chk_init(void);
+extern u8 Ken_data[][0x18];
+extern u8 Gun_data[][0x14];
+extern u8 Battle_type[];
+extern u8 User_data[];
+
+#define PF(pl, T, o) (*(T *)((u8 *)(pl) + (o)))
+
+static int use_game = -1;
+
+/* Weapon: Ken_data id (sword type 6) or Gun_data id (type 7). Default:
+ * Ken 156, the first sword-and-shield (job 4) in the table. RT_WEAPON=id
+ * picks another sword (e.g. 1 = the first great sword, job 0). */
+void rt_player_game_init(int no)
+{
+    PLW *pl = &player_work[no];
+    int wid = getenv("RT_WEAPON") ? atoi(getenv("RT_WEAPON")) : 156;
+    int type = 6;
+    if (wid < 0 || wid >= 234) wid = 156;
+    /* init_pl_work's offline master path (Set_userdata) [read from the asm] */
+    pl->be_flag = 1;
+    pl->id = (u16)no;
+    pl->stg = game_w.stage;
+    PF(pl, u8, 0x35E) = 0;
+    PF(pl, u8, 0x35F) = (u8)type;
+    pl->wpn_kind = (u16)wid;
+    pl->work34C = Ken_data[wid][0];
+    pl->kind = Battle_type[pl->work34C];
+    PF(User_data, u8, 0x3CD) = (u8)type;
+    PF(User_data, u16, 0x3CE) = (u16)wid;
+    game_w.pl_state[no] = 1;
+    pl_init(0);
+    if (getenv("RT_PL_TRACE"))
+        fprintf(stderr, "rt_player: weapon %d model %d job %d at %.0f %.0f %.0f act %d/%d chr %d/%d\n",
+                wid, pl->work34C, pl->kind, pl->pos[0], pl->pos[1], pl->pos[2], pl->flag14, pl->flag15,
+                PF(pl, u16, 0x2DC), PF(pl, u16, 0x2DE));
+}
+
+/* ---------------------------------------------- old host stand-in */
 void HitWallPlayer(void *ent, int keep);
 int GetFloorSlide(void *ent, f32 *out, int flag);
 int GetGroundHitStatusAreaPl(void *ent, f32 *pos, void *attr, f32 *out, f32 *flag);
 u8 Pl_stg_ck(void *);
-
-#define PF(pl, T, o) (*(T *)((u8 *)(pl) + (o)))
 
 static int moving[8];
 static float fall_v[8];
@@ -62,33 +95,17 @@ static void set_motion(PLW *pl, int legs, int upper, int blend)
     frame_init(w, 0, blend, 1);
 }
 
-/* Shortest signed difference b - a of two 0x10000-per-turn angles. */
 static int ang_diff(int a, int b)
 {
     return (s16)(u16)(b - a);
 }
 
-/* The collision part of pl_move_sub (see the header). */
-static void rt_player_collide(PLW *pl)
+static void standin_collide(PLW *pl)
 {
     f32 v[4], gy;
     int no = pl->id & 7;
-    if (Pl_stg_ck(pl) & 0xFF) {
-        static int tr = -1;
-        float b[3] = { pl->pos[0], pl->pos[1], pl->pos[2] };
+    if (Pl_stg_ck(pl) & 0xFF)
         HitWallPlayer(pl, 0);
-        if (tr < 0) tr = getenv("RT_HIT_TRACE") != NULL;
-        if (tr) {
-            extern s8 hit_poly_num;
-            void rt_hit_dump(f32 *);
-            static int dumped;
-            if (!dumped++) rt_hit_dump(pl->pos);      /* wall polygons of the start cell */
-            extern f32 push00[][4];
-            fprintf(stderr, "wall: old %.0f %.0f %.0f new %.0f %.0f %.0f -> %.1f %.1f %.1f contacts %d push00 %.0f %.0f %.0f %.0f 4d4 %d\n",
-                    PF(pl, f32, 0x5A0), PF(pl, f32, 0x5A4), PF(pl, f32, 0x5A8), b[0], b[1], b[2],
-                    pl->pos[0], pl->pos[1], pl->pos[2], hit_poly_num, push00[0][0], push00[0][1], push00[0][2], push00[0][3], pl->work4D4);
-        }
-    }
     if (pl->flag14 == 0 && (Pl_stg_ck(pl) & 0xFF))
         GetFloorSlide(pl, v, 1);
     if (GetGroundHitStatusAreaPl(pl, pl->pos, (u8 *)pl + 0x70C, &gy, (f32 *)((u8 *)pl + 0x7E4)) == 1)
@@ -98,9 +115,8 @@ static void rt_player_collide(PLW *pl)
     gy = pl->x5AC;
     if (pl->pos[1] < gy || pl->pos[1] - gy < 30.0f) {
         pl->pos[1] = gy;
-        pl->flag604 = 0;
         fall_v[no] = 0;
-    } else {                        /* host stand-in for the fall action */
+    } else {
         fall_v[no] -= 3.0f;
         pl->pos[1] += fall_v[no];
         if (pl->pos[1] < gy) {
@@ -110,25 +126,21 @@ static void rt_player_collide(PLW *pl)
     }
 }
 
-void rt_player_tick(int no)
+static void standin_tick(int no)
 {
     PLW *pl = &player_work[no];
-    int pow, want;
-
-    /* pl_move_sub: remember where the move starts (wall sweeps) */
+    int want;
     PF(pl, f32, 0x5A0) = pl->pos[0];
     PF(pl, f32, 0x5A4) = pl->pos[1];
     PF(pl, f32, 0x5A8) = pl->pos[2];
     rt_pad_tick();
     pl_sw_set();
-    pow = pl->sw.pow[0];
-    want = pow > 0;
+    want = pl->sw.pow[0] > 0;
     if (want) {
-        /* stick angle: 0 = right, 0x4000 = up; up = away from the camera */
         float a = (float)pl->sw.ang[0] * (6.2831853f / 65536.0f);
         float sx = cosf(a), sy = sinf(a);
-        float rx = rview_mat[0][0], rz = rview_mat[0][2];      /* camera right */
-        float fx = -rview_mat[2][0], fz = -rview_mat[2][2];    /* camera forward */
+        float rx = rview_mat[0][0], rz = rview_mat[0][2];
+        float fx = -rview_mat[2][0], fz = -rview_mat[2][2];
         float dx = rx * sx + fx * sy, dz = rz * sx + fz * sy;
         int target = (int)(atan2f(dx, dz) * (65536.0f / 6.2831853f)) & 0xFFFF;
         int d = ang_diff(pl->ang[1], target);
@@ -139,14 +151,36 @@ void rt_player_tick(int no)
     }
     if (want != moving[no]) {
         moving[no] = want;
-        if (want)
-            set_motion(pl, 3, 103, 4);
-        else
-            set_motion(pl, 1, 101, 4);
+        set_motion(pl, want ? 3 : 1, want ? 103 : 101, 4);
     }
-    rt_snd_player_motion(no);       /* footsteps (ef_move_sub's list), before the frame steps */
+    rt_snd_player_motion(no);
     frame_move((FRW *)pl);
-    rt_player_collide(pl);
+    standin_collide(pl);
+}
+
+/* ---------------------------------------------- tick */
+int rt_player_uses_game(void)
+{
+    if (use_game < 0)
+        use_game = getenv("RT_PL_STANDIN") == NULL;
+    return use_game;
+}
+
+void rt_player_tick(int no)
+{
+    if (!rt_player_uses_game()) {
+        standin_tick(no);
+        return;
+    }
+    rt_pad_tick();
+    pl_move();
+    if (getenv("RT_PL_TRACE")) {
+        PLW *pl = &player_work[no];
+        printf("pl: act %d/%d step %d chr %d/%d fr %.1f spd %.1f pos %.0f %.0f %.0f ang %04X st %d sw %04X/%04X\n",
+               pl->flag14, pl->flag15, PF(pl, u8, 5), PF(pl, u16, 0x2DC), PF(pl, u16, 0x2DE),
+               PF(pl, f32, 0x19C), PF(pl, f32, 0x1A0), pl->pos[0], pl->pos[1], pl->pos[2],
+               pl->ang[1] & 0xFFFF, pl->st, pl->sw.now, pl->sw.trg);
+    }
 }
 
 /* Read back what the game code saw (for tests): buttons, stick. */

@@ -110,7 +110,7 @@ int hit_data_expand(void *em, void *body, void *cap, void *sph)
     (void)em; (void)body; (void)cap; (void)sph;
     return 0;
 }
-void body_ptr_ck2(void *em, void *body) { (void)em; (void)body; }
+/* body_ptr_ck2: src/main/hit/hit_nm.c (built) */
 
 /* View_move: the host builds its camera from lpView (rt_cam_view). */
 void View_move(void) {}

@@ -185,7 +185,7 @@ static void trans_eft(int up)
 static union { SHLW w; u8 raw[SHL_SIZE]; } shl_pool[SHL_N];
 static u8 *shl_free[SHL_N];
 static int shl_ctr;
-static u8 *shell_w_top;
+u8 *shell_w_top;          /* also read by hit_nm.c (shell hit checks) */
 static void *shl_heap[SHL_N];
 
 static void shl_init(void)
@@ -522,14 +522,40 @@ void flvecRotX(f32 *v, f32 a)
 }
 
 /* ------------------------------------------------------------ actors */
-/* No player or monster skeletons run as game C yet: joints are the
- * actor's position, joint matrices a translation to it (stand-ins). */
+/* Joints: on the PS2 get_joint_pos(chr, j) reads the world matrix of node
+ * j of the actor's skeleton (chr+0x50C -> model -> +0x24, 0x190 bytes a
+ * node). The host skeletons live in the viewer, which hands their world
+ * matrices over each frame (rt_actor_joints); actors without them use
+ * their position (stand-in). */
 static FLMAT joint_m;
+static struct { const void *chr; const f32 *m; int n; } joints[8];
+
+void rt_actor_joints(const void *chr, const float *mats, int n)
+{
+    int i, f = -1;
+    for (i = 0; i < 8; i++) {
+        if (joints[i].chr == chr) { f = i; break; }
+        if (f < 0 && !joints[i].chr) f = i;
+    }
+    if (f < 0) return;
+    joints[f].chr = chr;
+    joints[f].m = mats;
+    joints[f].n = n;
+}
+
+static const f32 *joint_mat(const void *chr, int j)
+{
+    int i;
+    for (i = 0; i < 8; i++)
+        if (joints[i].chr == chr && joints[i].m && j >= 0 && j < joints[i].n)
+            return joints[i].m + 16 * j;
+    return NULL;
+}
 
 void get_joint_pos(void *chr, int joint, f32 *out)
 {
-    const f32 *p = (const f32 *)((u8 *)chr + 0xAC);
-    (void)joint;
+    const f32 *m = joint_mat(chr, (s16)joint);
+    const f32 *p = m ? m + 12 : (const f32 *)((u8 *)chr + 0xAC);
     out[0] = p[0];
     out[1] = p[1];
     out[2] = p[2];
@@ -539,8 +565,12 @@ void get_joint_pos_em(void *chr, int joint, f32 *out) { get_joint_pos(chr, joint
 
 FLMAT *get_joint_wmat(void *chr, int joint)
 {
+    const f32 *m = joint_mat(chr, (s16)joint);
     const f32 *p = (const f32 *)((u8 *)chr + 0xAC);
-    (void)joint;
+    if (m) {
+        memcpy(joint_m, m, sizeof joint_m);
+        return &joint_m;
+    }
     memset(joint_m, 0, sizeof joint_m);
     joint_m[0][0] = joint_m[1][1] = joint_m[2][2] = joint_m[3][3] = 1.0f;
     joint_m[3][0] = p[0];
@@ -695,14 +725,8 @@ void atck_data_set_shl(SHLW *sh, int a, u8 *data)
     *(u8 **)((u8 *)sh + 0x90) = data;
 }
 
-/* shell_flag_set (src/main/pl/pl_normal.c) and shell_rate_add/_g
+/* shell_flag_set: src/main/pl/pl_normal.c (built). shell_rate_add/_g
  * (0x151660, 0x1516A0): velocity integration */
-int shell_flag_set(SHLW *sh, int flag)
-{
-    int ret = sh->flag & flag;
-    sh->flag |= flag;
-    return ret;
-}
 
 void shell_rate_add(SHLW *sh)
 {

@@ -115,6 +115,9 @@ void rt_pad_set(uint16_t fl_bits, int lx, int ly, int rx, int ry);
  * stand-in for the normal state (rt_player.c: turn/run/idle with the
  * game's frame_init/frame_move) and ground following. */
 void rt_player_tick(int no);
+void rt_player_game_init(int no);
+void rt_player_parts(int no, const float *world, int n);   /* joint world matrices from the host skeleton */   /* equipment + the game's pl_init (rt_player.c) */
+int rt_player_uses_game(void);       /* 0 with RT_PL_STANDIN=1 */
 void rt_player_set_ang(int no, int ang_y);
 /* What the game's sw_set_sub gave player no: buttons, left stick. */
 void rt_player_sw(int no, int *now, int *ang, int *pow);
