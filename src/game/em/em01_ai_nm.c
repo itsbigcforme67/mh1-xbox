@@ -145,6 +145,8 @@ static int kyusyu_char_set2_0057AAA0(EMW *em);
 static void kyusyu_senkai_ret_0057AB40(EMW *em);
 static void ef_move_sub_00574EE0(EMW *em);
 static void em01_uvmove(EMW *em);
+void em01_senkai_sub2(EMW *, int, int);
+void em01_senkai_sub3(EMW *, int, int);
 void em01_to_normal();
 void em01_to_fly();
 void em01_frame_reset();
@@ -2443,4 +2445,325 @@ static void kyusyu_senkai_ret_0057AB40(EMW *em) {
 
 /* A file static in the original; data tables point at it. */
 void dummy_em_prog_0057AB50(void) {
+}
+
+static void em_fly17_0056BD50(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 2;
+        em->rate_x = 0.0f;
+        em->adj_y = 0.0f;
+        em_rate_clear_g(em);
+        if (em->adj_z < 50.0f) {
+            em->x07 = 0;
+            em->adj_z = 50.0f;
+            em_char_set(em, 0xC, 0, 0);
+        } else {
+            em->x07 = 1;
+            if (em->char0 != 0x3F4 && em->char0 != 0x3F6) {
+                em_char_set(em, 0xC, 0, 0);
+            }
+        }
+        w->x18 = 1;
+        break;
+    case 1:
+        if (em->x07 == 0 && em->x194 == 0) {
+            em->x07++;
+            em_char_set(em, 0xE, 0, 0);
+        }
+        if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 1000.0f || --em->work08 <= 0) {
+            em->x883++;
+            em->x883 &= 3;
+            target_kind_set(em, em->tgt_pos);
+            em->work08 = (int)(1.5f * CalcDistanceXZ(em->pos, em->tgt_pos) / 50.0f) + 0x96;
+            em->x05++;
+            em_act_set(em, 2, 0x11);
+        }
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        em01_senkai_sub2(em, 1, 0);
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly18_0056BF90(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x5A, 0, 0);
+        em01_fly_adjy2_init(em, 9);
+        w->x18 = 0;
+        break;
+    case 1:
+        if (em->ang[0] != 0) {
+            if (em->ang[0] < 0x8000) {
+                em->ang[0] = em->ang[0] - w->pitch_spd;
+            } else {
+                em->ang[0] = em->ang[0] + w->pitch_spd;
+            }
+            em->ang[0] = (u16)em->ang[0];
+        }
+        if (em->ang[2] != 0) {
+            if (em->ang[2] < 0x8000) {
+                em->ang[2] = em->ang[2] - w->bank_spd;
+            } else {
+                em->ang[2] = em->ang[2] + w->bank_spd;
+            }
+            em->ang[2] = (u16)em->ang[2];
+        }
+        if (em01_fly_adjy2(em) & 0xFF) {
+            em->x05++;
+            em_rate_clear(em);
+            em_char_set(em, 0xF, 0, 0);
+            em->work08 = 0x12C;
+            em01_act_set(em, 2, 1, 1);
+        }
+        break;
+    case 2:
+        if (--em->work08 <= 0) {
+            em->work08 = 0x12C;
+            em_char_set(em, 0xF, 0, 0);
+            if (em->x8C3 == 0) {
+                em01_act_set(em, 2, 1, 1);
+            }
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly19_0056C160(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 2;
+        em->rate_x = 0.0f;
+        em->adj_y = 0.0f;
+        em_rate_clear_g(em);
+        if (em->adj_z < 50.0f) {
+            em->x07 = 0;
+            em->adj_z = 50.0f;
+            em_char_set(em, 0xC, 0, 0);
+        } else {
+            em->x07 = 1;
+            if (em->char0 != 0x3F4 && em->char0 != 0x3F6) {
+                em_char_set(em, 0xC, 0, 0);
+            }
+        }
+        w->x18 = 1;
+        break;
+    case 1:
+        if (em->x07 == 0 && em->x194 == 0) {
+            em->x07++;
+            em_char_set(em, 0xE, 0, 0);
+        }
+        if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 1000.0f || --em->work08 <= 0) {
+            em->x05++;
+            em01_to_fly(em, 1);
+        }
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = w->dang - em->ang[1];
+        em01_senkai_sub3(em, 1, 0);
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly20_0056C340(EMW *em, EM01W *w) {
+    int done = 0;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x54, 0, 0);
+        em01_fly_adjy2_init(em, 0xC);
+        w->x18 = 0;
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 44.0f)) {
+            em->x388 = 2;
+            done = em01_fly_adjy2(em);
+        }
+        if (done != 0 && em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em->x388 = 0;
+            em->pos[1] = em->x5AC;
+            ground_land_eff_set_0057A7E0(em);
+            Em_set_quake_sub(em, 2);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly21_0056C490(EMW *em, EM01W *w) {
+    f32 d;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        w->turn = 0x100;
+        em_char_set(em, 0xF, 0, 0);
+        w->x18 = 0;
+        break;
+    case 1:
+        w->spd[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+        w->spd[2] = 0;
+        xang_calc_target(em, w->spd, 0.0f, 0.0f);
+        speed_add(em, w->spd);
+        d = flvecCalcDistance(em->pos, em->tgt_pos);
+        if (--em->work08 <= 0 || d <= 10.0f * em->adj_z) {
+            em->x05++;
+            em_rate_clear(em);
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly22_0056C5D0(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x5A, 0, 0);
+        em01_fly_adjy2_init(em, 9);
+        w->x18 = 0;
+        break;
+    case 1:
+        if (em->ang[0] != 0) {
+            if (em->ang[0] < 0x8000) {
+                em->ang[0] = em->ang[0] - w->pitch_spd;
+            } else {
+                em->ang[0] = em->ang[0] + w->pitch_spd;
+            }
+            em->ang[0] = (u16)em->ang[0];
+        }
+        if (em->ang[2] != 0) {
+            if (em->ang[2] < 0x8000) {
+                em->ang[2] = em->ang[2] - w->bank_spd;
+            } else {
+                em->ang[2] = em->ang[2] + w->bank_spd;
+            }
+            em->ang[2] = (u16)em->ang[2];
+        }
+        if (em01_fly_adjy2(em) & 0xFF) {
+            em->x05++;
+            em_rate_clear(em);
+            em01_to_fly(em, 0);
+        }
+        break;
+    case 2:
+        em01_fly_adjy2(em);
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly23_0056C740(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x762 = 0;
+        em_char_set(em, 0x12, 0xA, 0x1E);
+        em01_fly_adjy2_init(em, 2);
+        em->x388 = 2;
+        em->x9EA = 0;
+        em->x959 = 0;
+        em->x8BD = 1;
+        break;
+    case 1:
+        em01_fly_adjy2(em);
+        if (em->x194 == 0) {
+            em->x05++;
+        }
+        break;
+    case 2:
+        if ((em01_fly_adjy2(em) & 0xFF) && em->pos[1] <= 800.0f + em->x5AC) {
+            em->x05++;
+            em_char_set(em, 0xB, 0, 0);
+            em_rate_clear(em);
+            FLY_FLOOR(em);
+            em->adj_y = (em->x5AC - em->pos[1]) / 30.0f;
+            if (!(em->adj_y < 0.0f)) {
+                em->adj_y = -10.0f;
+            }
+        }
+        break;
+    case 3:
+        w->spd[0] = 0;
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em_char_set(em, 0x13, 0, 0);
+            em->x388 = 0;
+            em->pos[1] = em->x5AC;
+            Em_set_quake_sub(em, 2);
+        }
+        break;
+    case 4:
+        if (em->x194 == 0) {
+            w->x06 = 0x96;
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+static void em_fly24_0056C980(EMW *em, EM01W *w) {
+    f32 v[4]; /* never filled: the original passes this uninitialized local (Capcom bug) */
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 2;
+        em_char_set(em, 0xF, 0, 0);
+        w->x18 = 0;
+        w->spd[0] = 0;
+        w->spd[2] = 0;
+        em_rate_clear(em);
+        em->adj_y = 20.0f;
+        break;
+    case 1:
+        w->spd[1] = Em_Calc_angY(em->pos, v) & 0xFFFF;
+        speed_add(em, w->spd);
+        if (--em->work08 <= 0 || !(em->pos[1] <= 1000.0f + em->tgt_pos[1])) {
+            em->x05++;
+            em_rate_clear(em);
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
 }
