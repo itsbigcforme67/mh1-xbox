@@ -238,3 +238,4 @@ main:rodata 0x003866F0 0x0038670C reward/f_reward
 main:rodata 0x00386710 0x0038672C reward/f_reward
 main:rodata 0x003868F0 0x0038690C reward/f_reward
 main 0x002932C0 0x00293364 reward/f_rewardb
+main 0x00293420 0x00293684 reward/f_rewardc
