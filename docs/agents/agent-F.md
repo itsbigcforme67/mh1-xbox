@@ -226,3 +226,19 @@ of the auto drafts), lbfix2.py (second repair pass for .err.c), lbsweep.py (chec
 lbshow.sh / lbsrc.sh (auto source + align diff), align.py with RN=1 (register-renaming insensitive diff).
 Left: see `python3 tools/lbleft.py` (about 400 functions, mostly browser: Bs* request/cache/memory/URL/work, zlib/png glue, parsetag, layout/table,
 tagAct_*, DispFontSize, item box 0x609770-0x60E330, plaza chat, eft25, http_test_*). The m2c drafts for all of them are in the scratch drafts dir (LBDRAFTS).
+
+Addendum (same session, later): more idioms verified by matching.
+- Compound assignment matters: `bsw[0xE96C]++` / `x += 1` compiled with `lui at; addu at,base,at; lbu/sb disp(at)` per access like the original, while
+  `x = x + 1` made MWCC CSE the address (`ori at; addu v1`); tagAct_604 matched only with `++`.
+- Pass-through arguments: a call whose first arg register was never reloaded passes the caller's own argument (`tagprintf(a, &sp2C)`, `BsCloseCapDlg(1)` with
+  the constant kept in a register, `To_BodyMain_RcvSrc()` takes none). When an instruction like `addiu a1,sp,0x2C` appears where ours has a0, a leading argument is missing.
+- STATIC callees in the same TU: `bs_pul_wk`/`bs_psh_wk` (work pool) and `_inet_mem_get_free_cell_005E83C0` (cell allocator) are `static` in the original, which is
+  why the callers keep temporaries in a0/a1/t0 across the call. They only match when the static helper and its callers are one contiguous registered run
+  (lb_av01 0x5E9A20-0x5E9D44, lb_ao01 0x5E8330-0x5E8590); check.py then reports 1 insn off for the jal (static symbol) although the link is fine (FORCE_OK=name).
+- Chains of equality tests on u8 fields that MWCC would merge into a range (case 0xB..0xF) are written as `switch` with explicit labels (To_ReqCancelWait).
+- Loops with the test at the bottom after an entry jump (`b test`) come from `while (cond)`; `for(;;)` with break gives a top-tested loop (bs_url_end, not matched).
+- Struct typedefs added to lobby_f.h for the browser: BSSYS (bsSys), BSWK (work object, 0x70 bytes), BSNODE (queue nodes), BSCELL1/2/4/8 index macros BSC1..BSC8.
+Registered since the first note: lb_ao (cell allocator), lb_ap (BsUrlBaseClear, sjis2euc_sub), lb_aq (tagAct_604/145), lb_ar (tiny wrappers: BsParseInitialize,
+inflateInit_, _png_malloc, font_data_clear, ItemboxWindow/Cursor, http_test_12), lb_as (mode dispatchers: BsPosterMode ... BsQuitMain), lb_at (BsBody07-15 wait-cancel
+states), lb_au (BsQuit02_Push2, BsPoster00/06, BsPullPageWork/BsPushPageWork, BsCsMove06_CapWarn, To_ReqCancelWait, SetNextURL), lb_av (work pool, BsTextureFreeAll/Load),
+lb_aw (tagoutprintf*, pos_cr), lb_ax (line buffers, tagprintf_cr), lb_ay (yes_no_select), lb_s15-26 (more tag handlers, parsetag_init, http_test_10 ...).
