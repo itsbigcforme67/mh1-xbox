@@ -19,6 +19,15 @@ extern REIBUN reibun_edit;
 u8 Reibun_select_mv();
 int Reibun_Edit_Start();
 int Reibun_Edit_Core();
+extern char str_tbl_reibun0[];
+void Put_page_num();
+void flfntSetSize();
+void font_set_palette();
+void flfntLocate();
+void Reibun_print();
+int put_main_cursor();
+void font_print_uf();
+void font_print_double2();
 void Name_ID_change();
 int plaza_log_id_chk_sub();
 extern char D_39DAE3[];
@@ -214,4 +223,115 @@ int Plaza_ReibunEdit_mv(int arg) {
         break;
     }
     return pad;
+}
+
+int Plaza_disp_ReibunEdit(int arg) {
+    char *p;
+    REIBUN *e;
+    u32 n;
+    int y;
+    e = &reibun_edit;
+    Put_page_num(0x20E, 0x78, (s16)(reibun_edit.sel / 6), 2, 0);
+    flfntSetSize(0x12, 0x12);
+    font_set_palette(0);
+    n = 6;
+    y = 0xA4;
+    p = str_tbl_reibun0 + reibun_edit.sel / 6 * 0x60;
+    do {
+        flfntLocate(0xDA, y);
+        Reibun_print(0x16, *(int *)(p + 0xC));
+        n -= 1;
+        p += 0x10;
+        y = (s16)(y + 0x16);
+    } while (n != 0);
+    return put_main_cursor(e->sel % 6 + 1);
+}
+
+/* draw the visible lines of the plaza chat log; first = first visible entry, sel = 0: name field 2 else field 1 */
+void plaza_disp_chat_log_sub(int first, int sel, int kind) {
+    s8 name[0x10];
+    int y;
+    int cnt;
+    int idx;
+    int line;
+    u8 *e;
+    u8 *p;
+    int k;
+    if (PZ_COUNT != 0) {
+        flfntSetSize(0x12, 0x12);
+        if ((u32)Plaza_get_chat_line_num() > 9 && !(sel & 0xFF)) {
+            u8 kd;
+            int n = first & 0xFF;
+            y = 0x124;
+            cnt = PZ_COUNT - n;
+            idx = PZ_HEAD - 1 - n;
+            if (cnt != 0) {
+                kd = kind;
+                do {
+                    idx &= 0x3F;
+                    e = (u8 *)PitMenu + idx * 0x5D + 0x23;
+                    line = e[0x3E] - 1;
+                    if (line >= 0) {
+                        p = e + line * 0x1F;
+                        do {
+                            font_set_palette(e[0x43]);
+                            flfntLocate(0x14B, y);
+                            font_print_uf(p);
+                            if (line == 0) {
+                                if (!kd) {
+                                    plaza_name_sprint(name, (s8 *)(e + 0x4C));
+                                } else {
+                                    plaza_name_sprint(name, (s8 *)(e + 0x44));
+                                }
+                                font_print_double2(0xD8, y, 1, e[0x42], name);
+                            }
+                            y = (s16)(y - 0x15);
+                            if (y < 0x7C) {
+                                return;
+                            }
+                            line -= 1;
+                            p -= 0x1F;
+                        } while (line >= 0);
+                    }
+                    cnt -= 1;
+                    idx -= 1;
+                } while (cnt != 0);
+            }
+        } else {
+            u8 kd;
+            u8 left = PZ_COUNT;
+            y = 0x7C;
+            idx = PZ_HEAD - left;
+            if (left != 0) {
+                kd = kind;
+                do {
+                    idx &= 0x3F;
+                    e = (u8 *)PitMenu + idx * 0x5D + 0x23;
+                    if (!kd) {
+                        plaza_name_sprint(name, (s8 *)(e + 0x4C));
+                    } else {
+                        plaza_name_sprint(name, (s8 *)(e + 0x44));
+                    }
+                    font_print_double2(0xD8, y, 1, e[0x42], name);
+                    font_set_palette(e[0x43]);
+                    k = 0;
+                    if (e[0x3E] > 0) {
+                        p = e;
+                        do {
+                            flfntLocate(0x14B, y);
+                            font_print_uf(p);
+                            y = (s16)(y + 0x15);
+                            if (y >= 0x125) {
+                                return;
+                            }
+                            k += 1;
+                            p += 0x1F;
+                        } while (k < e[0x3E]);
+                    }
+                    left -= 1;
+                    idx += 1;
+                } while (left != 0);
+            }
+        }
+    }
 }
