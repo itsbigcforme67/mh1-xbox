@@ -336,3 +336,19 @@ with K&R definitions (it turns them into declarations), so run it on a small sta
 - Tools added: tools/relink_runs.py (verify runs per file + rewrite config), GENRUNS_SKIP / GENRUNS_KEEP_STATIC in genruns.py. Comparison form
   brute force (`<`/`<=`, `>=`/`>` with K+-1) found to_ucode; a LOCAL helper may only stay `static` in a run file when ALL its callers are C in the
   same run (ins_bsmem, exist_kouho); the others (getbit, kh_append...) are called from asm and give undefined references.
+
+### Session notes (mc chain linked, IME small near-matches)
+- Memory card chain: mc_sel_ck still 35/116 (the old permuter run in /tmp/perm_sel.log never beat base score 255; no permuter is running).
+  Extra tries (no y0 variable, loop counter = y) were worse. The rest of 0x2814E0-0x2862F0 IS linked now: 21 run files src/main/mc/mccombb..v
+  (from mccomb_nm.c via `RELINK_KEEP=decode_data python3 tools/relink_runs.py src/main/mc/mccomb_nm.c src/main/mc/mccomb 2814E0 b`),
+  plus the jump tables of trans_card_0, CardAtld, CardOptsv, CardCmsv, CardConld, CardOnsv1, CardOfsv, CardOfsv (main:rodata lines found with
+  a small script scanning lui/addiu pairs; relink_runs/genruns do NOT write main:rodata lines, add them by hand). 20 Card* steps that need
+  `static mc_r_no_set`/`decode_to_ck` in the same file as the callers stay asm (Atld01/11, Cmsv00/02/03/05/09, Conld00/03, Ofsv000/002/003/005/009,
+  Onsv102/104/106, Optsv00/03/06). They link only once mc_sel_ck matches (one big file).
+- IME matches this pass (now linked): is_shift (`u8 lo = c` BEFORE the call), tmp_touroku (`alloc_record(need = newwdlen(w))`), FAskRom_Write (the
+  original memcpy's `n`, not `len`: an original bug), kh_mergesort (`if ((k = null_kouho(..)) != 0)`), is_kata (K&R `u16 c`),
+  to_zenkaku_spec (`(*k & 0xFF) == (c & 0xFF)`, `(u16)c & 0x100`), isnum (`for (v = *p; v != 0; v = *++p) if ((v & 0xFF) < 0x30 || (v & 0xFF) > 0x39)`).
+- Tried without success (parked): calc_pulen (empty-if layout), kstrncpy (sltu/xori on *src), not_bhead (return layout), srch_ucode, change_kind
+  (original hoists the shifted kind out of the loop), free_entid_tab (sign-extended index), clear_allrtime. The bigger ones (henkan 74 real diffs,
+  ch_check 219, setu_point 74, josi_match 67, to_roman 99, set_num 61) were not attempted.
+- Tool pitfall: a variant-testing script that rewrites the source file must compute the new text BEFORE opening the file for writing.

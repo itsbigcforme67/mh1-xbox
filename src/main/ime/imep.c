@@ -469,6 +469,18 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
+int isnum(u8 *p)
+{
+    u8 v;
+
+    for (v = *p; v != 0; v = *++p) {
+        if ((v & 0xFF) < 0x30 || (v & 0xFF) > 0x39) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 int dic_freeentid()
 {
     free_entid_tab();

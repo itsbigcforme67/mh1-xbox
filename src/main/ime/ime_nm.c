@@ -1119,7 +1119,7 @@ int n;
     if (n < len) {
         len = n;
     }
-    memcpy(gAskRom.cur, buf, len);
+    memcpy(gAskRom.cur, buf, n);
     gAskRom.rest = gAskRom.rest - len;
     gAskRom.cur = gAskRom.cur + len;
     return len;
@@ -1179,9 +1179,9 @@ u16 to_zenkaku_spec(int c)
     k = spec_key_19;
     t = spec_tran_20;
     while (*k != 0) {
-        if (*k == (c & 0xFF)) {
+        if ((*k & 0xFF) == (c & 0xFF)) {
             r = *t;
-            if ((r & 0xFF00) == 0x2500 && !(c & 0x100)) {
+            if ((r & 0xFF00) == 0x2500 && !((u16)c & 0x100)) {
                 return (r & 0xFF) | 0x2400;
             }
             return r;
@@ -2229,15 +2229,10 @@ int isnum(u8 *p)
 {
     u8 v;
 
-    v = *p;
-    if (v != 0) {
-        do {
-            if (v <= 0x2F || v >= 0x3A) {
-                return 0;
-            }
-            p++;
-            v = *p;
-        } while (v != 0);
+    for (v = *p; v != 0; v = *++p) {
+        if ((v & 0xFF) < 0x30 || (v & 0xFF) > 0x39) {
+            return 0;
+        }
     }
     return 1;
 }
@@ -3139,8 +3134,7 @@ int tmp_touroku(u8 *key, WD *w, int rt)
         free_node(nd);
     }
     n = alloc_node();
-    need = newwdlen(w);
-    rec = alloc_record(need);
+    rec = alloc_record(need = newwdlen(w));
     set_record(rec, need, w, rt);
     link = srch_node(key, w->len, &nd);
     n->rec = rec;
@@ -4540,8 +4534,7 @@ void kh_mergesort(int pos, KL *list)
     while ((k = (KH *)kh_merge_getone(list)) != 0) {
         kh_append(pos, &head, &tail, k);
     }
-    k = null_kouho(cur_len);
-    if (k != 0) {
+    if ((k = null_kouho(cur_len)) != 0) {
         kh_append(pos, &head, &tail, k);
     }
     h->kh = head;
@@ -4915,12 +4908,12 @@ int is_kanji(int c)
 
 int is_shift(int c)
 {
-    int lo;
+    u8 lo;
 
+    lo = c;
     if (is_kanji((c & 0xFFFF) >> 8 & 0xFF) == 0) {
         return 0;
     }
-    lo = c & 0xFF & 0xFF;
     if (lo < 0x40 || lo >= 0xFD || lo == 0x7F) {
         return 0;
     }
@@ -5032,10 +5025,10 @@ int to_ucode(int x)
 }
 
 int is_kata(c, flag)
-int c;
+u16 c;
 int flag;
 {
-    if (flag != 0 && (c & 0xFFFF) == 0x213C) {
+    if (flag != 0 && c == 0x213C) {
         return 1;
     }
     if ((c & 0xFF00) == 0x2500) {

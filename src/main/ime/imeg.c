@@ -497,3 +497,20 @@ int n;
     gAskRom.cur = gAskRom.cur + len;
     return len;
 }
+
+int FAskRom_Write(fd, buf, n)
+int fd;
+void *buf;
+int n;
+{
+    int len;
+
+    len = gAskRom.rest;
+    if (n < len) {
+        len = n;
+    }
+    memcpy(gAskRom.cur, buf, n);
+    gAskRom.rest = gAskRom.rest - len;
+    gAskRom.cur = gAskRom.cur + len;
+    return len;
+}

@@ -469,22 +469,25 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int shiftlen(int x)
+int is_kanji(int c)
 {
-    int c;
-    int h;
-
-    c = x & 0xFFFF;
-    h = c & 0xFF00;
-    switch (h) {
-    case 0x8000:
-    case 0x8500:
-        return 1;
-    case 0x8600:
-        if ((c & 0xFF) < 0x9E) {
-            return 1;
-        }
-    default:
-        return 2;
+    c = c & 0xFF;
+    if (c < 0x81 || c >= 0xFD || (c >= 0xA0 && c < 0xE0)) {
+        return 0;
     }
+    return 1;
+}
+
+int is_shift(int c)
+{
+    u8 lo;
+
+    lo = c;
+    if (is_kanji((c & 0xFFFF) >> 8 & 0xFF) == 0) {
+        return 0;
+    }
+    if (lo < 0x40 || lo >= 0xFD || lo == 0x7F) {
+        return 0;
+    }
+    return 1;
 }

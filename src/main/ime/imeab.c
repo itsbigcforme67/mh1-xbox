@@ -469,73 +469,31 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void update_nowtmp(void)
+int tmp_touroku(u8 *key, WD *w, int rt)
 {
+    NODE *nd;
+    NODE **link;
+    NODE *n;
+    u8 *rec;
+    int need;
+    int len;
+
     temp_updated = 1;
-}
-
-int setkbuflen(u8 *p)
-{
-    int n;
-
-    n = 0;
-    while (*p != 0) {
-        if (iskanji(*p) != 0) {
-            p += 2;
-        } else {
-            p += 1;
-        }
-        n += 2;
+    link = srch_node(key, w->len, &nd);
+    len = w->len;
+    rec = nd->rec;
+    if (rec[2] == len && ask_strncmp(key, rec + 3, len) == 0) {
+        rec[2] = 0;
+        *link = nd->next;
+        clear_entid_tmp(tmpoffset(nd->rec));
+        free_node(nd);
     }
-    return n;
-}
-
-void setkbuf(u8 *src, u8 *dst)
-{
-    while (*src != 0) {
-        if (iskanji(*src) != 0) {
-            *dst = *src;
-            src++;
-            dst++;
-        } else {
-            *dst = 0xFF;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
-    }
-}
-
-int getkbuflen(u8 *p, u8 *end)
-{
-    int n;
-
-    n = 0;
-    while (p < end && *p >= 0x39) {
-        if (*p == 0xFF) {
-            n++;
-        } else {
-            n += 2;
-        }
-        p += 2;
-    }
-    return n;
-}
-
-void getkbuf(u8 *dst, u8 *src, u8 *end)
-{
-    while (src < end && *src >= 0x39) {
-        if (*src == 0xFF) {
-            src++;
-        } else {
-            *dst = *src;
-            src++;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
-    }
-    *dst = 0;
+    n = alloc_node();
+    rec = alloc_record(need = newwdlen(w));
+    set_record(rec, need, w, rt);
+    link = srch_node(key, w->len, &nd);
+    n->rec = rec;
+    n->next = nd;
+    *link = n;
+    return 0;
 }

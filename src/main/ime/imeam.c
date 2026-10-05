@@ -469,22 +469,22 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int to_ucode(int x)
+int shiftlen(int x)
 {
     int c;
+    int h;
 
     c = x & 0xFFFF;
-    if (c > 0x20 && c < 0x7F) {
-        return 0;
-    }
-    switch (c & 0xFF00) {
-    case 0x2300:
-        return c & 0x7F;
-    case 0x2400:
-        return ((c & 0x7F) | 0x80) & 0xFF;
-    case 0x2500:
-        return 0;
+    h = c & 0xFF00;
+    switch (h) {
+    case 0x8000:
+    case 0x8500:
+        return 1;
+    case 0x8600:
+        if ((c & 0xFF) < 0x9E) {
+            return 1;
+        }
     default:
-        return srch_ucode(x);
+        return 2;
     }
 }
