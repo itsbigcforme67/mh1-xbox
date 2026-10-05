@@ -40,7 +40,7 @@ static void set17_i(SETW *sw);
 static void set17_m(SETW *sw);
 static void set17_d(SETW *sw);
 static void set17_e(SETW *sw);
-static void set17_trans(PRIM *pr);
+void set17_trans(PRIM *pr);
 
 void set17_set(void) {
     SETW *sw = pull_set_work(0);
@@ -107,87 +107,4 @@ static void set17_d(SETW *sw) {
 
 static void set17_e(SETW *sw) {
     push_set_work(sw);
-}
-
-static void set17_trans(PRIM *pr) {
-    FLMAT mat;
-    f32 out[4];
-    SPHERE sp;
-    u8 *tbl;
-    int base;
-    u8 id;
-    SET_MDLW *mw = set_mdlw;
-    CLAY *cl;
-    s16 rows, cols, i, j, n;
-    f32 x0, z, step, x;
-
-    if (mw != 0 && mw->flag != 0) {
-        flSetRenderState(0x60, 0x80);
-        switch (game_w.stage) {
-        case 1:
-            x0 = 8000.0f;
-            rows = 1;
-            cols = 4;
-            tbl = st01_parts_id_tbl;
-            sp.r = 2828.0f;
-            z = 10000.0f;
-            step = 2000.0f;
-            Create_FOV(1500.0f, 0);
-            break;
-        case 2:
-            rows = 5;
-            x0 = 7000.0f;
-            cols = 4;
-            z = 6000.0f;
-            step = 2000.0f;
-            sp.r = 2828.0f;
-            tbl = st02_parts_id_tbl;
-            Create_FOV(1100.0f, 0);
-            break;
-        case 3:
-            x0 = 8000.0f;
-            cols = 3;
-            rows = 4;
-            sp.r = 2828.0f;
-            z = 6000.0f;
-            tbl = st03_parts_id_tbl;
-            step = 2000.0f;
-            Create_FOV(1500.0f, 0);
-            break;
-        case 0x2E:
-            z = 6000.0f;
-            x0 = 4000.0f;
-            rows = 6;
-            step = 2000.0f;
-            cols = 5;
-            tbl = st46_parts_id_tbl;
-            sp.r = 2828.0f;
-            Create_FOV(1100.0f, 0);
-            break;
-        }
-        sp.y = 0.0f;
-        reload_tex(0x10, 0x12D);
-        base = 0;
-        for (i = 0; i < rows; i++) {
-            x = x0;
-            for (j = 0; j < cols; j++) {
-                sp.x = x;
-                sp.z = z;
-                n = j + base;
-                if (flCheckMeshFOV(sp.r, &sp.x, out, &view_mat, fov) != 0) {
-                    id = tbl[n];
-                    if (id != 0xFF) {
-                        cl = &mw->clay[id & 0xF];
-                        flmatMakeTrans(&mat, x, 0.0f, z);
-                        flSetRenderState(0x1A, (u32)&mat);
-                        clay_attr_set(cl->attr);
-                        flExecuteClay(cl->handle, 0);
-                    }
-                }
-                x += step;
-            }
-            base += cols;
-            z += step;
-        }
-    }
 }

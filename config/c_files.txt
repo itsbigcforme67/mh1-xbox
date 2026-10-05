@@ -441,3 +441,4 @@ select 0x005382B0 0x00538538 edit07
 game 0x006362B0 0x00636918 shell/shell00
 game:rodata 0x0068A3B0 0x0068A3D0 shell/shell00
 game 0x0063A010 0x0063A0E4 pl/pl_guard
+game 0x00625630 0x00625838 set/set17
