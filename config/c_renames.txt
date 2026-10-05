@@ -5,6 +5,7 @@ build/src/main/eft/eft06b.c.o .rodata .data
 build/src/main/eft/eft13b.c.o .rodata .data
 build/src/main/eft/eft13e.c.o .rodata .data
 build/src/main/emw/emu01.c.o .rodata .data
+build/src/main/emw/emt01.c.o .rodata .data
 build/src/main/game/f_game.c.o .rodata .data
 build/src/main/hit/hit.c.o .rodata .data
 build/src/main/load/mkmap.c.o .rodata .data

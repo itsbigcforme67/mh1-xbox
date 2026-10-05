@@ -487,3 +487,6 @@ main 0x001631A0 0x0016341C font/dsp02
 main:rodata 0x0035BBC0 0x0035BBD8 font/dsp02
 main 0x0011EC20 0x0011ED1C load/mkmap
 main:rodata 0x003582E0 0x00358300 load/mkmap
+main 0x0010CD30 0x0010CE94 emw/emt01
+main:rodata 0x00357EC0 0x00357F4C emw/emt01
+main 0x0010EBF0 0x0010EC00 emw/emt02
