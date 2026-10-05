@@ -77,6 +77,9 @@ void rt_set_camera(const float cam_world[16]);
  * Call after rt_game_init. */
 void rt_set_player(int no, const float pos[3]);
 
+/* RT_SPAWN="eft13:N,eft17:N,shell22:N,eft14:N,eft08:N": spawn test effects at pos. */
+void rt_debug_spawn(const float pos[3]);
+
 /* ------------------------------------------------------------ game loop */
 /* Set up the game globals for a stage and spawn its set objects. */
 void rt_game_init(int stage);

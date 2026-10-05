@@ -505,6 +505,7 @@ int main(int argc, char **argv)
         {   /* the hunter is the master player (player_work[0]) for the game C */
             float p[3] = { hx, gy, hz };
             rt_set_player(0, p);
+            rt_debug_spawn(p);          /* RT_SPAWN test effects at the hunter */
         }
     }
 

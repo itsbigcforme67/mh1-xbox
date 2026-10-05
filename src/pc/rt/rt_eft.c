@@ -769,3 +769,40 @@ STUB_V(flSetSkinTransMatrixList, (void *a, void *b))
 STUB_V(flSetSkinTrans, (void *a))
 /* shell08_trans (game 0x6309A0) is not decompiled yet: the shell is not drawn */
 STUB_V(shell08_trans, (void *pr))
+
+/* ------------------------------------------------------------ test spawns
+ * RT_SPAWN="eft13:N,eft17:N,shell22:N,eft14:N,eft08:N" spawns those effects
+ * (N = arg) at pos, for checking the eft/shell C with screenshots. */
+void Eft13_set_pos(f32 scale, f32 *pos, int arg);
+void Eft17_set_ex(f32 *pos, int ang, int arg, f32 scale);
+void Shell22_set2(f32 *pos, u8 arg, int stg, u16 ang);
+void Eft14_set2(f32 *pos, s16 arg);
+void Eft08_set(f32 *pos, int arg, int x07, f32 scale);
+
+void rt_debug_spawn(const float pos[3])
+{
+    const char *s = getenv("RT_SPAWN");
+    char name[16];
+    int arg, n;
+    f32 p[3];
+    while (s && sscanf(s, "%15[a-z0-9]:%d%n", name, &arg, &n) == 2) {
+        p[0] = pos[0];
+        p[1] = pos[1];
+        p[2] = pos[2];
+        if (!strcmp(name, "eft13"))
+            Eft13_set_pos(1.0f, p, arg);
+        else if (!strcmp(name, "eft17"))
+            Eft17_set_ex(p, 0, arg, 1.0f);
+        else if (!strcmp(name, "shell22"))
+            Shell22_set2(p, (u8)arg, game_w.stage, 0);
+        else if (!strcmp(name, "eft14"))
+            Eft14_set2(p, (s16)arg);
+        else if (!strcmp(name, "eft08"))
+            Eft08_set(p, arg, 0, 1.0f);
+        else
+            fprintf(stderr, "rt: RT_SPAWN: unknown %s\n", name);
+        s += n;
+        if (*s == ',')
+            s++;
+    }
+}
