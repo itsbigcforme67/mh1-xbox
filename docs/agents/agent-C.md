@@ -92,3 +92,13 @@ Fields used straight from EMW in the em files (so common to all monsters):
   `beq ==1 -> body; b end` is a one-case `switch (no) { case 1: ... }`.
 - Lesson: `em->x883 != -1` on a u8 field keeps the -1 compare (lbu then
   li -1), as in the original; no cast needed.
+- em21 (0x60C3A0-0x60D3FC, 11 functions): 10 match, built as em21.c
+  (0x60C3A0-0x60D26C), rodata 0x6898D0-0x68997C. em21_senkai_pos_no is the
+  same code as em08's and the same 2 instructions off (em21_nm.c).
+  Tail functions (fly_adjy2_init .. senkai_pos_no) are byte-identical to
+  em08's apart from relocations, so they were copied.
+- Lessons (em21): `game_w.stage == em->stg` (global first) gives the
+  original's load order; the "on my own stage" fallback check used by most
+  fly/attack cases is a macro in em21.c (EM21_STAGE_CK). A `goto` from
+  move case 0 into case 3 (laid out after case 1) matched. `x / 7` on an
+  int from a float shows up as the 0x92492493 multiply.

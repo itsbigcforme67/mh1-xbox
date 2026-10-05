@@ -92,7 +92,9 @@ typedef struct EMW {
     u32 x74C;           /* 0x74C flags; 0xF000000F stops fly_adjz2 (em16) */
     u8 _pad750[0x792 - 0x750];
     s16 x792;           /* 0x792 maximum of x302? (guess) */
-    u8 _pad794[0x818 - 0x794];
+    u8 _pad794[0x7E8 - 0x794];
+    u8 x7E8;            /* 0x7E8 0: em21 falls back to act 0/1 on its own stage */
+    u8 _pad7E9[0x818 - 0x7E9];
     f32 x818;           /* 0x818 compared with x8C4[x883] (em16_act_act_set) */
     u8 _pad81C[0x827 - 0x81C];
     u8 x827;            /* 0x827 */
