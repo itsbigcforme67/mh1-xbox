@@ -2,6 +2,9 @@
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
+
+typedef struct { s16 a, b, c; } CPLACE3;
+
 int __cnet_Send_ConditionSearchUserCertify(int arg0) {
     int cmd = SetSendCommand(&send_work, 0xEE) & 0xFFFF;
     SetSendData8(&send_work, arg0);

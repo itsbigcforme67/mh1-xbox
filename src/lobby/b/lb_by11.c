@@ -1,3 +1,4 @@
+/* lb_by11 - agent B promoted near-match 0x005BF370-0x005BF4DC: Check_InterruptFlag (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 
 s32 Check_InterruptFlag(void) {

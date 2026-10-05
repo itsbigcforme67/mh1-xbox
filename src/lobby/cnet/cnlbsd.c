@@ -2,6 +2,9 @@
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
+
+typedef struct { s16 a, b, c; } CPLACE3;
+
 void _cnet_CallBack_Result_Room_NumOfRoom(CNET_RES res) {
     if (res.val == 0) {
         CnetSys_w.burst[4].res = 1;

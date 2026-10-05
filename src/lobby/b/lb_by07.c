@@ -1,5 +1,7 @@
+/* lb_by07 - agent B promoted near-match 0x005B3C70-0x005B3D14: Lb_pl_status_m (first drafted by tools/lbauto.py). */
 #include "lobby_f.h"
 extern u8 * pNet;
+
 s32 Lb_pl_status_m(s32 arg0) {
     s32 temp_v1;
     void *temp_v1_2;

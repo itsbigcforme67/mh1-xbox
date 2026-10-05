@@ -1,13 +1,11 @@
+/* lb_by13 - agent B promoted near-match 0x005C2990-0x005C2B08: server_select_sub_03 (first drafted by tools/lbauto.py). */
 #include "lobby_f.h"
 extern char test_server_sel_disp[];
 extern char netr_sub01_tbl[];
-extern char test_server_sel_disp[];
-extern char netr_sub01_tbl[];
-extern char ss_text_lobby_trans_ot[];
-extern char netr_sub01_col[];
 extern char ss_text_lobby_trans_ot[];
 extern char netr_sub01_col[];
 typedef struct { s16 x0000; s8 x0002; u8 x0003; u8 pad0004[0x4]; u8 x0008; u8 pad0009[0x3]; s8 x000C; } ARG_server_select_sub_03_arg0;
+
 void server_select_sub_03(ARG_server_select_sub_03_arg0 *arg0) {
     u8 temp_v1;
 

@@ -1,20 +1,33 @@
-/* cnlbs, run 13: __cnet_Recv_PatchStart .. _cnet_RecvFromLbs_NoticePatchData (lobby.bin 0x005ACCA0-0x005ACD8C): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 13: cnLBS_Init_LobbyBgProcess .. __cnetSub_Set_BgProcess (lobby.bin 0x005AD240-0x005AD308): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-void __cnet_Recv_PatchStart(void) {
-    char b[0x18];
 
-    memset(b, 0, 0x18);
-    GetRecvData32(&CnetSys_w.patch_size, GetRecvData32(&CnetSys_w.patch_ver, GetRecvData16(&CnetSys_w.patch_x, GetRecvDataString(b, recv_work))));
-    memset(&CnetSys_w.patch_b, 0, 8);
-    memcpy(&CnetSys_w.patch_b, b, 4);
-    memset(&CnetSys_w.patch_a, 0, 0x10);
-    memcpy(&CnetSys_w.patch_a, b + 4, 0xA);
+typedef struct { s16 a, b, c; } CPLACE3;
+
+void cnLBS_Init_LobbyBgProcess(void) {
+    memset((u8 *)&CnetSys_w + 0x18, 0, 0xE00);
 }
 
-void _cnet_RecvFromLbs_NoticePatchData(void) {
-    if (CNW(u8, 0xE38) != 0) {
-        __cnet_Recv_PatchData();
+void cnLBS_Init_LobbyBgBurstProcess(void) {
+    memset((u8 *)&CnetSys_w + 0xE18, 0, 0x1B0);
+}
+
+int __cnetSub_Set_BgProcess(kind, arg1, arg2)
+s8 kind;
+int arg1;
+int arg2;
+{
+    int i;
+
+    for (i = 0; i < 0x80; i++) {
+        if (CnetSys_w.bg[i].state == 0) {
+            CnetSys_w.bg[i].state = kind;
+            CnetSys_w.bg[i].x19 = 0;
+            CnetSys_w.bg[i].done = (void (*)())arg2;
+            CnetSys_w.bg[i].cb = (void (*)())arg1;
+            return i;
+        }
     }
+    return -1;
 }

@@ -1,3 +1,4 @@
+/* lb_by10 - agent B promoted near-match 0x005B6600-0x005B6710: server_select_03 (first drafted by tools/lbauto.py). */
 #include "lobby_f.h"
 extern s32 lbs_select_timer;
 extern s8 COM_R_No_2;
@@ -6,6 +7,7 @@ extern u8 * pNet;
 extern u8 COM_R_No_1;
 extern char ConnectLbsId[];
 extern char BsLbsInfo[];
+
 s32 server_select_03(void) {
     s32 temp_v0;
     s32 temp_v0_2;

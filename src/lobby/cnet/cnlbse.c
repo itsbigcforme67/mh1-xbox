@@ -2,6 +2,9 @@
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
+
+typedef struct { s16 a, b, c; } CPLACE3;
+
 int cnLBS_Get_AllocationProgressCount(u16 *arg0) {
     *arg0 = CNW(u16, 0x1032);
     return 0;

@@ -2788,6 +2788,7 @@ u8 *arg1;
     u8 sp4F;
     u8 sp4E;
     u16 sp4C;
+    int x;
     int r;
     int i;
     int j;
@@ -2802,7 +2803,7 @@ u8 *arg1;
         arg1 += 0x60;
         if (sp4F > 3) {
             for (j = 0; j < sp4F - 3; j++) {
-                r = sp4C + GetRecvData16(&sp4C, r);
+                x = GetRecvData16(&sp4C, r); r = x + sp4C;
             }
         }
     }
@@ -3007,12 +3008,9 @@ int cnLBS_Read_CurrentPlace(int arg0) {
     return -1;
 }
 
+typedef struct { s16 a, b, c; } CPLACE3;
 int cnLBS_Get_CurrentPlace(s16 *d) {
-    s16 *t = CnetSys_w.curplace;
-
-    d[0] = t[0];
-    d[1] = t[1];
-    d[2] = t[2];
+    *(CPLACE3 *)d = *(CPLACE3 *)CnetSys_w.curplace;
     return 0;
 }
 
@@ -3782,9 +3780,9 @@ void _cnet_RecvFromLbs_MatchOpponentInfo(void) {
 }
 
 void _cnet_RecvFromLbs_MatchOpponentStatus(void) {
-    u8 idx;
-    s8 r;
     u8 *p;
+    CNET_RES res;
+    u8 idx;
 
     if (CNW(u8, 0xF34) != 0 && CnetSys_w.rcat != 0x10) {
         if (CnetSys_w.rcat == 2) {
@@ -3793,9 +3791,9 @@ void _cnet_RecvFromLbs_MatchOpponentStatus(void) {
                 GetRecvData32(p + (idx - 1) * 0x98 + 0x1A4, GetRecvData32(p + (idx - 1) * 0x98 + 0x1A0, GetRecvData32(p + (idx - 1) * 0x98 + 0x19C, GetRecvData32(p + (idx - 1) * 0x98 + 0x198, GetRecvData32(p + (idx - 1) * 0x98 + 0x194, GetRecvData16(p + (idx - 1) * 0x98 + 0x190, GetRecvData8(&idx, recv_work)))))));
                 (p + idx * 0x98)[0x110] = idx;
             } else {
-                r = -1;
+                res.val = -1;
                 __cnet_Recv_ServerMessage(CnetSys_w.rcat, recv_work);
-                __cnet_Return_MatchInformation((long long)r);
+                __cnet_Return_MatchInformation(res);
                 return;
             }
         }
@@ -3941,8 +3939,9 @@ int cnLBS_Get_MatchInfomation(CNET_W5D4 *d) {
 
 void cnLBS_Get_GameServerAddress(u32 *addr, u16 *port) {
     int p;
+    u32 a0 = CnetSys_w.gsaddr[0];
 
-    *addr = (CnetSys_w.gsaddr[3] << 24 & 0xFF000000) | ((CnetSys_w.gsaddr[2] << 16 & 0xFF0000) | (CnetSys_w.gsaddr[0] | (CnetSys_w.gsaddr[1] << 8 & 0xFF00)));
+    *addr = (CnetSys_w.gsaddr[3] << 24 & 0xFF000000) | ((CnetSys_w.gsaddr[2] << 16 & 0xFF0000) | (a0 | (CnetSys_w.gsaddr[1] << 8 & 0xFF00)));
     p = (CnetSys_w.gsport[1] + (CnetSys_w.gsport[0] << 8)) & 0xFFFF;
     *port = (p << 8 & 0xFF00) | (p >> 8 & 0xFF);
 }
@@ -4398,25 +4397,25 @@ u8 *src;
 int GetRecvDataOption(dst, src, len)
 void *dst;
 u8 *src;
-int len;
+u16 len;
 {
-    memcpy(dst, src, len & 0xFFFF);
-    return (int)src + (len & 0xFFFF);
+    memcpy(dst, src, len);
+    return (int)(src + len);
 }
 
 int GetRecvDataOption3(dst, maxlen, src)
 void *dst;
-int maxlen;
+u16 maxlen;
 u8 *src;
 {
     int t;
-    int m;
     int v;
+    u16 hi;
 
-    m = maxlen & 0xFFFF;
-    v = (((src[0] << 8) & 0xFFFF) | src[1]) & 0xFFFF;
+    hi = src[0] << 8;
+    v = (hi | src[1]) & 0xFFFF;
     t = v;
-    if (m < v) v = m;
+    if (maxlen < v) v = maxlen;
     if (v != 0) {
         memcpy(dst, src + 2, v & 0xFFFF);
     }

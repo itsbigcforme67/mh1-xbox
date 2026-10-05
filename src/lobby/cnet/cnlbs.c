@@ -2,6 +2,9 @@
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
+
+typedef struct { s16 a, b, c; } CPLACE3;
+
 void _cnet_RecvFromLbs_NoticeMailMessage(void) {
     __cnet_Recv_MailMessage();
     _cnetEvent_JumpCallBack(3, 0);
