@@ -1,4 +1,4 @@
-/* SLPM_654.95 0x0022F010-0x0022F050: CngNetAQDataSearch .. CngNetAQDataTrans2Work. See cng_nm.c. */
+/* SLPM_654.95 0x0022EE40-0x0022F1F8: CngNetAQPacketSend .. CngNetAQDisconnectUserIDGet. See cng_nm.c. */
 #include "types.h"
 
 /* message ring (CngNet_MSG_*, 0x14 bytes) */
@@ -48,7 +48,7 @@ typedef struct CNGAQ {
     s16 x1CC;           /* 0x1CC */
     u8 x1CE;            /* 0x1CE disconnect user id */
     u8 pad1CF[0x1E0 - 0x1CF];
-    s16 x1E0;           /* 0x1E0 */
+    u16 x1E0;           /* 0x1E0 */
     u8 pad1E2[6];
     u16 drop;           /* 0x1E8 drop-out count */
     u8 pad1EA[6];
@@ -132,6 +132,19 @@ void CngHostIPSet(CNGP2P *s, char *ip);
 f32 CngSessionTimeGet(CNGP2P *s);
 int CngNetAQSessionWait();
 int CngNetAQdataToObj();
+int CngNetAQPacketMake();
+void CngNetAQImageTrans(CNGAQ *q);
+int CngRecvMsg();
+int CngNet_MSG_GetReadSize();
+int CngNet_MSG_ReadTop();
+void *memmove(void *, const void *, int);
+void *memcpy(void *, const void *, int);
+int CngNetAQConnectIdGet();
+int CngSessionStatGet(CNGP2P *s);
+int CngSendMsg(CNGP2P *s, int a1, CNGMSG *msg);
+int CngGetTrafficLevel(CNGP2P *s);
+void CngNetMcsP2PPoll(CNGP2P *p);
+void CngNetAQSendBuffReset(CNGAQ *q);
 
 
 
@@ -161,6 +174,16 @@ int CngNetAQdataToObj();
 
 
 
+typedef struct CNGPKT {
+    u16 pl;             /* 0x00 */
+    u8 kind;            /* 0x02 low nibble: priority */
+    u8 len;             /* 0x03 */
+    s32 time;           /* 0x04 */
+    u16 id;             /* 0x08 */
+    u8 x0A;
+    u8 x0B;             /* 0x0B bits 5-7 flags, bits 0-4 connect id */
+    u8 data[1];         /* 0x0C */
+} CNGPKT;
 
 
 
@@ -170,6 +193,70 @@ int CngNetAQdataToObj();
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+int CngNetAQPacketSend(CNGAQ *q, u8 mode) {
+    int ret = 0;
+
+    if ((mode & 0xFF) == 0) {
+        if (CngNetAQPacketMake(q) != 0) {
+            CngNetAQImageTrans(q);
+            CngNetAQSendBuffReset(q);
+            ret = 1;
+        }
+    } else if ((CngGetTrafficLevel(&q->p2p) & 0xFF) < 2) {
+        q->x1E0 = 0;
+        if (CngNetAQPacketMake(q) != 0) {
+            CngNetAQImageTrans(q);
+            CngSendMsg(&q->p2p, 0, &q->txm);
+            CngNetAQSendBuffReset(q);
+            ret = 1;
+        }
+    }
+    return ret;
+}
+
+void CngNetAQImageTrans(CNGAQ *q) {
+    u8 *img = q->sbuf;
+
+    CngNet_MSG_Clear(&q->txm);
+    CngNet_MSG_Write(&q->txm, img, (int)q->scur - (int)q->sbuf);
+}
+
+int CngNetAQPacketReceive(CNGAQ *q) {
+    u8 id;
+    int ret = 0;
+
+    switch (CngRecvMsg(&q->p2p, &id, &q->rxm)) {
+    case 0x20:
+        ret = 0x40;
+        break;
+    case 1:
+        ret = 1;
+        break;
+    case 4:
+        ret = 4;
+        q->x1CE = id;
+        break;
+    }
+    if (ret == 0 && CngNet_MSG_GetReadSize(q) != 0) {
+        ret = 0x80;
+    }
+    if (q->x1E0 > q->drop) {
+        q->x1E0 = 0;
+        ret = 0x40;
+    }
+    return ret;
+}
 
 u8 *CngNetAQDataSearch(CNGAQ *q) {
     if (q->rxm.rd < q->rxm.wr) {
@@ -180,4 +267,65 @@ u8 *CngNetAQDataSearch(CNGAQ *q) {
 
 int CngNetAQDataTrans2Work(CNGAQ *q, u8 *w) {
     return CngNetAQdataToObj(w, q);
+}
+
+void CngReceiveBuffAdjust(CNGMSG *m) {
+    int n = CngNet_MSG_GetReadSize(m);
+    u8 *b = m->base;
+
+    memmove(b, b + m->rd, n);
+    CngNet_MSG_ReadTop(m);
+    m->wr = n;
+}
+
+s8 CngNetAQIsHost(CNGAQ *q) {
+    return CngIsHost(&q->p2p);
+}
+
+int CngNetAQConnectIdGet(CNGAQ *q) {
+    return CngGetConnectID(&q->p2p) & 0xFF;
+}
+
+u8 CngNetAQJoinNumGet(CNGAQ *q) {
+    return *CngGetSessionInfo(&q->p2p);
+}
+
+u8 CngNetAQBuffCheck(CNGAQ *q) {
+    int v = (q->rbuf + q->rsize - q->rcur) * 5;
+
+    return v / q->rsize;
+}
+
+void CngNetAQBuffInit(CNGAQ *q, u8 *buf, int size, u8 esize) {
+    q->rbuf = buf;
+    q->rcur = buf;
+    q->rsize = size;
+    q->esize = esize;
+    memset(q->rbuf, 0, q->rsize);
+}
+
+void CngNetAQSendBuffInit(CNGAQ *q, u8 *buf, int size) {
+    q->sbuf = buf;
+    q->scur = buf;
+    q->ssize = size;
+    memset(q->sbuf, 0, q->ssize);
+}
+
+void CngNetAQHostIPSet(CNGAQ *q, char *ip) {
+    if (ip != 0) {
+        CngHostIPSet(&q->p2p, ip);
+    }
+}
+
+void CngNetAQDropOutSet(CNGAQ *q, int n) {
+    q->drop = n;
+    q->x1E0 = 0;
+}
+
+f32 CngNetAQNetTimeGet(CNGAQ *q) {
+    return 1000.0f * CngSessionTimeGet(&q->p2p);
+}
+
+u8 CngNetAQDisconnectUserIDGet(CNGAQ *q) {
+    return q->x1CE;
 }

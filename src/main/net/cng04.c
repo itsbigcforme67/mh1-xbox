@@ -48,7 +48,7 @@ typedef struct CNGAQ {
     s16 x1CC;           /* 0x1CC */
     u8 x1CE;            /* 0x1CE disconnect user id */
     u8 pad1CF[0x1E0 - 0x1CF];
-    s16 x1E0;           /* 0x1E0 */
+    u16 x1E0;           /* 0x1E0 */
     u8 pad1E2[6];
     u16 drop;           /* 0x1E8 drop-out count */
     u8 pad1EA[6];
@@ -132,6 +132,19 @@ void CngHostIPSet(CNGP2P *s, char *ip);
 f32 CngSessionTimeGet(CNGP2P *s);
 int CngNetAQSessionWait();
 int CngNetAQdataToObj();
+int CngNetAQPacketMake();
+void CngNetAQImageTrans(CNGAQ *q);
+int CngRecvMsg();
+int CngNet_MSG_GetReadSize();
+int CngNet_MSG_ReadTop();
+void *memmove(void *, const void *, int);
+void *memcpy(void *, const void *, int);
+int CngNetAQConnectIdGet();
+int CngSessionStatGet(CNGP2P *s);
+int CngSendMsg(CNGP2P *s, int a1, CNGMSG *msg);
+int CngGetTrafficLevel(CNGP2P *s);
+void CngNetMcsP2PPoll(CNGP2P *p);
+void CngNetAQSendBuffReset(CNGAQ *q);
 
 
 
@@ -161,6 +174,16 @@ int CngNetAQdataToObj();
 
 
 
+typedef struct CNGPKT {
+    u16 pl;             /* 0x00 */
+    u8 kind;            /* 0x02 low nibble: priority */
+    u8 len;             /* 0x03 */
+    s32 time;           /* 0x04 */
+    u16 id;             /* 0x08 */
+    u8 x0A;
+    u8 x0B;             /* 0x0B bits 5-7 flags, bits 0-4 connect id */
+    u8 data[1];         /* 0x0C */
+} CNGPKT;
 
 
 
@@ -171,17 +194,27 @@ int CngNetAQdataToObj();
 
 
 
-int CngGetTrafficLevel(s32 *s) {
-    if (*s == 3 && mcsls_get_execute_state() != 1 && mcsls_app_push_is_ready(0x2BC) != 0) {
+
+
+
+
+
+
+
+
+
+
+int CngGetTrafficLevel(CNGP2P *s) {
+    if (s->state == 3 && mcsls_get_execute_state() != 1 && mcsls_app_push_is_ready(0x2BC) != 0) {
         return 1;
     }
     return 3;
 }
 
-int CngSendMsg(s32 *s, int a1, u8 *msg) {
-    if (*s != 3) {
+int CngSendMsg(CNGP2P *s, int a1, CNGMSG *msg) {
+    if (s->state != 3) {
         return 0;
     }
-    mcsls_app_push(*(s32 *)(msg + 8), *(s32 *)(msg + 0xC));
+    mcsls_app_push(msg->base, msg->wr);
     return 1;
 }

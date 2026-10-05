@@ -49,7 +49,7 @@ typedef struct CNGAQ {
     s16 x1CC;           /* 0x1CC */
     u8 x1CE;            /* 0x1CE disconnect user id */
     u8 pad1CF[0x1E0 - 0x1CF];
-    s16 x1E0;           /* 0x1E0 */
+    u16 x1E0;           /* 0x1E0 */
     u8 pad1E2[6];
     u16 drop;           /* 0x1E8 drop-out count */
     u8 pad1EA[6];
@@ -133,6 +133,19 @@ void CngHostIPSet(CNGP2P *s, char *ip);
 f32 CngSessionTimeGet(CNGP2P *s);
 int CngNetAQSessionWait();
 int CngNetAQdataToObj();
+int CngNetAQPacketMake();
+void CngNetAQImageTrans(CNGAQ *q);
+int CngRecvMsg();
+int CngNet_MSG_GetReadSize();
+int CngNet_MSG_ReadTop();
+void *memmove(void *, const void *, int);
+void *memcpy(void *, const void *, int);
+int CngNetAQConnectIdGet();
+int CngSessionStatGet(CNGP2P *s);
+int CngSendMsg(CNGP2P *s, int a1, CNGMSG *msg);
+int CngGetTrafficLevel(CNGP2P *s);
+void CngNetMcsP2PPoll(CNGP2P *p);
+void CngNetAQSendBuffReset(CNGAQ *q);
 
 void CpInetSetLocalIpAddr(int a) {
     _local_ip_address = a;
@@ -308,18 +321,71 @@ void CngNetMcsP2PPoll(CNGP2P *p) {
     }
 }
 
-int CngGetTrafficLevel(s32 *s) {
-    if (*s == 3 && mcsls_get_execute_state() != 1 && mcsls_app_push_is_ready(0x2BC) != 0) {
+int CngGetTrafficLevel(CNGP2P *s) {
+    if (s->state == 3 && mcsls_get_execute_state() != 1 && mcsls_app_push_is_ready(0x2BC) != 0) {
         return 1;
     }
     return 3;
 }
 
-int CngSendMsg(s32 *s, int a1, u8 *msg) {
-    if (*s != 3) {
+int CngRecvMsg(CNGP2P *s, u8 *id, CNGMSG *out) {
+    u8 *buf;
+    int kind;
+    int n;
+    int ret = 0;
+    int i;
+    int j;
+
+    if (s->state != 3) {
+        if (s->state == 5) {
+            return 0x20;
+        }
         return 0;
     }
-    mcsls_app_push(*(s32 *)(msg + 8), *(s32 *)(msg + 0xC));
+    n = mcsls_app_pull(&buf, &kind);
+    if (n != 0) {
+        if (kind == 0xF) {
+            if (buf[0] == 1) {
+                *id = buf[1];
+                i = 0;
+                if (s->count > 0) {
+                    s32 *q = s->ids;
+                    for (; q[0] != *id; q++) {
+                        i++;
+                        if (i >= s->count) {
+                            break;
+                        }
+                    }
+                }
+                j = i + 1;
+                if (j < s->count) {
+                    do {
+                        s->ids[j - 1] = s->ids[j];
+                        j++;
+                    } while (j < s->count);
+                }
+                s->count = s->count - 1;
+                s->host = (s->ids[0] == s->id) ? 1 : 0;
+                ret = 4;
+            }
+        } else {
+            if (out->wr - out->rd == 0) {
+                CngNet_MSG_Clear(out);
+            }
+            *id = kind;
+            CngNet_MSG_Write(out, buf, n);
+            ret = 1;
+        }
+        mcsls_app_purge();
+    }
+    return ret;
+}
+
+int CngSendMsg(CNGP2P *s, int a1, CNGMSG *msg) {
+    if (s->state != 3) {
+        return 0;
+    }
+    mcsls_app_push(msg->base, msg->wr);
     return 1;
 }
 
@@ -331,8 +397,8 @@ void CngExitSession_online() {
     CnInetNetworkCleanup_online();
 }
 
-int CngSessionStatGet(s32 *s) {
-    return *s;
+int CngSessionStatGet(CNGP2P *s) {
+    return s->state;
 }
 
 s8 CngIsHost(CNGP2P *s) {
@@ -381,8 +447,240 @@ void CngNetAQSessionExit_online(CNGAQ *q) {
     CngExitSession_online(&q->p2p);
 }
 
-int CngNetAQSessionCheck() {
-    return CngNetAQSessionWait();
+int CngNetAQSessionWait(CNGAQ *q) {
+    int r;
+
+    if (CngSessionStatGet(&q->p2p) == 3) {
+        r = 1;
+    } else {
+        r = 0;
+    }
+    return r;
+}
+
+int CngNetAQPoll(CNGAQ *q) {
+    int r;
+
+    CngNetMcsP2PPoll(&q->p2p);
+    q->x1E0 = q->x1E0 + 1;
+    if (CngSessionStatGet(&q->p2p) == 3) {
+        r = 1;
+    } else {
+        r = 0;
+    }
+    return r;
+}
+
+int CngNetAQPacketSend(CNGAQ *q, u8 mode) {
+    int ret = 0;
+
+    if ((mode & 0xFF) == 0) {
+        if (CngNetAQPacketMake(q) != 0) {
+            CngNetAQImageTrans(q);
+            CngNetAQSendBuffReset(q);
+            ret = 1;
+        }
+    } else if ((CngGetTrafficLevel(&q->p2p) & 0xFF) < 2) {
+        q->x1E0 = 0;
+        if (CngNetAQPacketMake(q) != 0) {
+            CngNetAQImageTrans(q);
+            CngSendMsg(&q->p2p, 0, &q->txm);
+            CngNetAQSendBuffReset(q);
+            ret = 1;
+        }
+    }
+    return ret;
+}
+
+typedef struct CNGPKT {
+    u16 pl;             /* 0x00 */
+    u8 kind;            /* 0x02 low nibble: priority */
+    u8 len;             /* 0x03 */
+    s32 time;           /* 0x04 */
+    u16 id;             /* 0x08 */
+    u8 x0A;
+    u8 x0B;             /* 0x0B bits 5-7 flags, bits 0-4 connect id */
+    u8 data[1];         /* 0x0C */
+} CNGPKT;
+
+int CngNetAQDataPut(CNGAQ *q, CNGPKT *pkt) {
+    CNGPKT *slot = (CNGPKT *)q->rcur;
+    int cid;
+    int idv;
+    int len;
+    int flags;
+    u16 esz;
+
+    if (pkt == 0) {
+        return 0;
+    }
+    if (pkt->pl != 0) {
+        len = pkt->len;
+        if (len != 0) {
+            if (pkt->id == 0) {
+                return 0;
+            }
+            esz = q->esize;
+            if ((u32)(q->rbuf + q->rsize) < (u32)((u8 *)slot + esz)) {
+                return 0;
+            }
+            len = len & 0xFF;
+            if (esz - 0xC >= len) {
+                memcpy((u8 *)slot + 0xC, (u8 *)pkt + 0xC, len);
+                slot->pl = pkt->pl;
+                slot->kind = pkt->kind;
+                slot->len = pkt->len + 0xC;
+                slot->time = pkt->time;
+                slot->id = pkt->id;
+                slot->x0A = pkt->x0A;
+                flags = pkt->x0B & 0xE0 & 0xFF;
+                cid = CngNetAQConnectIdGet(q) & 0xFF;
+                if (cid != 0xFF) {
+                    idv = cid & 0x1F;
+                } else {
+                    idv = 0;
+                }
+                slot->x0B = (flags & 0xFF) | (idv & 0xFF);
+                q->rcur = q->rcur + q->esize;
+                len = slot->len;
+                if (len % 4 != 0) {
+                    len += 4 - len % 4;
+                }
+                q->bytes = q->bytes + len;
+                q->cnt = q->cnt + 1;
+                return 1;
+            }
+            return 0;
+        }
+    }
+    return 0;
+}
+
+int CngNetAQPacketMake(CNGAQ *q) {
+    u8 *p;
+    u8 *first = 0;
+    int moved = 0;
+    int used = 0;
+    int pri;
+    u32 len;
+    int n;
+    u8 *dst;
+
+    memset(q->sbuf, 0, q->ssize);
+    if (q->cnt == 0) {
+        return 0;
+    }
+    p = q->rbuf;
+    if (q->ssize >= (u32)q->bytes) {
+        if (p < q->rcur) {
+            do {
+                len = p[3];
+                if (len % 4 != 0) {
+                    len += 4 - len % 4;
+                }
+                memcpy(q->scur, p, len & 0xFFFF);
+                q->scur = q->scur + len;
+                p += q->esize;
+            } while (p < q->rcur);
+        }
+        q->bytes = 0;
+        q->cnt = 0;
+    } else {
+        pri = 4;
+        do {
+            p = q->rbuf;
+            if (q->rcur >= p) {
+                do {
+                    if ((p[2] & 0xF) == pri) {
+                        len = p[3];
+                        if (len % 4 != 0) {
+                            len += 4 - len % 4;
+                        }
+                        if (q->ssize >= used + len) {
+                            memcpy(q->scur, p, len & 0xFFFF);
+                            p[2] = 0;
+                            used += len;
+                            q->scur = q->scur + len;
+                            q->bytes = q->bytes - len;
+                            q->cnt = q->cnt - 1;
+                        } else if (pri >= 4) {
+                            if (moved == 0) {
+                                first = p;
+                                moved = 1;
+                            }
+                        } else {
+                            p[2] = 0;
+                        }
+                    }
+                    p += q->esize;
+                } while (q->rcur >= p);
+            }
+            pri--;
+        } while (pri > 0);
+    }
+    if (first != 0) {
+        dst = q->rbuf;
+        if (first < q->rcur) {
+            do {
+                if ((first[2] & 0xF) >= 4) {
+                    memcpy(dst, first, q->esize);
+                    first[2] = 0;
+                    dst += q->esize;
+                }
+                first += q->esize;
+            } while (first < q->rcur);
+        }
+        q->rcur = dst;
+    } else {
+        q->rcur = 0;
+    }
+    return 1;
+}
+
+void CngNetAQImageTrans(CNGAQ *q) {
+    u8 *img = q->sbuf;
+
+    CngNet_MSG_Clear(&q->txm);
+    CngNet_MSG_Write(&q->txm, img, (int)q->scur - (int)q->sbuf);
+}
+
+int CngNetAQPacketReceive(CNGAQ *q) {
+    u8 id;
+    int ret = 0;
+
+    switch (CngRecvMsg(&q->p2p, &id, &q->rxm)) {
+    case 0x20:
+        ret = 0x40;
+        break;
+    case 1:
+        ret = 1;
+        break;
+    case 4:
+        ret = 4;
+        q->x1CE = id;
+        break;
+    }
+    if (ret == 0 && CngNet_MSG_GetReadSize(q) != 0) {
+        ret = 0x80;
+    }
+    if (q->x1E0 > q->drop) {
+        q->x1E0 = 0;
+        ret = 0x40;
+    }
+    return ret;
+}
+
+void CngReceiveBuffAdjust(CNGMSG *m) {
+    int n = CngNet_MSG_GetReadSize(m);
+    u8 *b = m->base;
+
+    memmove(b, b + m->rd, n);
+    CngNet_MSG_ReadTop(m);
+    m->wr = n;
+}
+
+int CngNetAQSessionCheck(CNGAQ *q) {
+    return CngNetAQSessionWait(q);
 }
 
 u8 *CngNetAQDataSearch(CNGAQ *q) {
