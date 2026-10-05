@@ -144,6 +144,8 @@ segments:
       - [0x033FA4, asm, text/mix_effect_set]
       - [0x034280, c, menu/menu34]
       - [0x03435C, asm, text/Pit_disp_pit_effect]
+      - [0x034710, c, menu/menu36]
+      - [0x034858, asm, text/pef_get_alpha]
       - [0x034950, c, pl/pl04]
       - [0x034A34, asm, text/player_init0]
       - [0x034C20, c, pl/pl01]

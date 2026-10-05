@@ -2383,29 +2383,29 @@ void Pit_disp_pit_effect(void) {
 
 /* 0x134710 */
 int pef_get_scale(PEF *e, int *tbl, s16 t) {
-    int *cur = tbl;
-    int *nx = tbl + 3;
+    int *cur;
+    int *nx;
     int t1;
     int ta;
     f32 a, b, f, g, dt, dd;
 
+    cur = tbl;
     if (t < tbl[0]) {
         return 1;
     }
-    t1 = tbl[3];
+    t1 = cur[3];
+    nx = cur + 3;
     if (t1 > 0) {
         for (;;) {
-            if (t1 >= t) {
+            if (!(t > t1)) {
                 ta = cur[0];
                 a = *(f32 *)&cur[1];
                 b = *(f32 *)&cur[2];
-                dt = (f32)(t - ta);
-                dd = (f32)(t1 - ta);
-                f = a + ((*(f32 *)&nx[1] - a) * dt) / dd;
-                g = b + ((*(f32 *)&nx[2] - b) * dt) / dd;
-                e->l = -(f32)e->d->ox * f;
+                f = a + ((*(f32 *)&nx[1] - a) * (f32)(t - ta)) / (f32)(t1 - ta);
+                g = b + ((*(f32 *)&nx[2] - b) * (f32)(t - ta)) / (f32)(t1 - ta);
+                e->l = (f32)(-e->d->ox) * f;
                 e->r = f * (f32)(e->d->w - e->d->ox);
-                e->t = -(f32)e->d->oy * g;
+                e->t = (f32)(-e->d->oy) * g;
                 e->b = g * (f32)(e->d->h - e->d->oy);
                 return 0;
             }
@@ -2421,18 +2421,20 @@ int pef_get_scale(PEF *e, int *tbl, s16 t) {
 
 /* 0x134860 */
 int pef_get_alpha(PEF *e, int *tbl, s16 t) {
-    int *cur = tbl;
-    int *nx = tbl + 2;
+    int *cur;
+    int *nx;
     int t1;
     f32 a, f;
 
+    cur = tbl;
     if (t < tbl[0]) {
         return 1;
     }
-    t1 = tbl[2];
+    t1 = cur[2];
+    nx = cur + 2;
     if (t1 > 0) {
         for (;;) {
-            if (t1 >= t) {
+            if (!(t > t1)) {
                 a = *(f32 *)&cur[1];
                 f = 255.0f * (a + ((*(f32 *)&nx[1] - a) * (f32)(t - cur[0])) / (f32)(t1 - cur[0]));
                 e->alpha = (u8)f;
