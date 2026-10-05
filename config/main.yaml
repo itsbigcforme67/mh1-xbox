@@ -339,6 +339,8 @@ segments:
       - [0x090080, c, fl/rs02]
       - [0x090370, asm, text/g_plGetInitMotionSetSizeFromAHI]
       - [0x090600, asm, text/f_convertmodelmeshamo]
+      - [0x090720, c, fl/amo01]
+      - [0x090FB8, asm, text/GetIndexListNumAMOModelMesh]
       - [0x092DC8, asm, text/g_plBMPGetPixelAddressFromImage]
       - [0x0935C0, asm, text/f_pltim2]
       - [0x093EEC, asm, text/g_plReport]
