@@ -1210,7 +1210,7 @@ int yn_mask_char_check(u8 *p) {
     return r;
 }
 
-int palette_ng_sub2(u8 a, u8 *b, u8 *c);
+int palette_ng_sub2();
 int palette_ng_sub(int, u8 *, u8 *);
 
 int key_mask_check(void *k) {
@@ -1351,10 +1351,15 @@ def:
     return 1;
 }
 
-int palette_ng_sub2(u8 p, u8 *f, u8 *e) {
+int palette_ng_sub2(p, f, e)
+int p;
+u8 *f;
+u8 *e;
+{
     u8 cur;
+    u8 q = p;
 
-    if (p < 6) {
+    if (q < 6) {
         return palette_ng_sub(p, f, e);
     }
     if (e == 0) {
@@ -1362,9 +1367,9 @@ int palette_ng_sub2(u8 p, u8 *f, u8 *e) {
     } else {
         cur = *e;
     }
-    switch (p) {
-    case 7:
+    switch (q) {
     case 6:
+    case 7:
         if (sk_zen_han_check(cur) >= 0) {
             return 0;
         }

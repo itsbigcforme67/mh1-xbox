@@ -4199,11 +4199,23 @@ int not_bhead(int c)
     if (henkan_mode == 1 || henkan_mode == 2) {
         return 0;
     }
-    c = c & 0xFF;
-    if (c != 0xF3 && c != 0xF2 && c != 0xEE && c != 0xE7 && c != 0xE5 && c != 0xE3 && c != 0xC3 && c != 0xA9 && c != 0xA7 && c != 0xA5 && c != 0xA3 && c != 0xA1 && c != 0x9D) {
-        return 0;
+    switch (c & 0xFF) {
+    case 0x9D:
+    case 0xA1:
+    case 0xA3:
+    case 0xA5:
+    case 0xA7:
+    case 0xA9:
+    case 0xC3:
+    case 0xE3:
+    case 0xE5:
+    case 0xE7:
+    case 0xEE:
+    case 0xF2:
+    case 0xF3:
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 int is_kuten(int c)
@@ -4480,10 +4492,11 @@ KH *create_kouho(u8 *buf, PW *pw, int len, KH **out)
 int kstrncpy(u8 *dst, u8 *src, int n)
 {
     int total;
+    int c;
 
     total = n;
-    while (*src && n > 0) {
-            if (is_kanji(*src) != 0) {
+    while ((c = *src) && n > 0) {
+        if (is_kanji(c) != 0) {
             if (n <= 1) {
                 break;
             }

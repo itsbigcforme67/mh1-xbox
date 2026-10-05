@@ -3,12 +3,35 @@
 #define LBUI_PROTO_H
 #include "lbui.h"
 
+extern s16 pfl_menu_449[];
+extern s16 frame_matA_450[];
+extern s16 frame_matB_451[];
+extern u8 eat_command_452[];
+extern char eat_data_name[][0x11];
+extern char lit_473_0065B948[];
+extern char lit_474_0065B950[];
+extern char lit_475_0065B960[];
+extern char lit_476_0065B970[];
+extern char lit_477_0065B980[];
+extern char lit_520_0065B990[], lit_521_0065B9B0[], lit_522_0065B9D0[], lit_523_0065B9F0[], lit_524_0065BA10[], lit_525_0065BA30[], lit_526_0065BA50[], lit_527_0065BA70[];
+extern EATSTAT Status_add_tbl[];
+extern EATRES *eat_result[];
+extern s8 eat_data_type[];
+extern s8 eatResult;
+extern EATRES *pRes;
+extern char lit_216_0065B900[];
+extern EATENT *eat_data[];
+extern char RoomRule[];
 
-
+void Lb_eat();
+void lb_eat_set();
 void Lb_eat_to_bell();
 void Lb_eat_to_rcpt();
 void Lb_eat_to_eat();
 void Lb_eat_to_end();
+int event_eat_rcpt();
+void event_eat_trans_ot0();
+void event_eat_set_msg();
 void event_eat_trans_ot1();
 void SetDialogData_HTML();
 void SetDialogYesNo();
@@ -58,5 +81,8 @@ void Get_PlazaName();
 void Get_LobbyName();
 void Lbs_load();
 void Lbc_release();
+char *GetRoomRule();
+int Lbs_MatchStart();
+void lb_npc_effect_move();
 
 #endif

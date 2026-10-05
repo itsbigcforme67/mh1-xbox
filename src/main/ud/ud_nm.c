@@ -737,7 +737,7 @@ int Seisan_ok_ck(u16 kind, s16 idx, int mode) {
     return 0;
 }
 
-static int gun_check(UDW *u, s16 i) {
+int gun_check(UDW *u, s16 i) {
     return u->ware[i].kind == 7;
 }
 

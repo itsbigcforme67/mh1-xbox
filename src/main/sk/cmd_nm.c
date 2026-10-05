@@ -428,7 +428,7 @@ void cmd_next_kouho(void) {
             Set_KouhoTableSub(0, 0);
         } else {
             n = SKS32(0x148);
-            if (a > n * 3 + 2) {
+            if (n * 3 + 3 <= a) {
                 SKS32(0x148) = n + 1;
                 Set_KouhoTableSub(SKS32(0x144), 0);
             } else {
@@ -441,26 +441,24 @@ void cmd_next_kouho(void) {
     }
 }
 
-void cmd_prev_bun(void)
-{
-  int r;
-  int n;
-  s16 x;
-  if ((((*((u8 *) (lpSKey + 0x2F))) != 0) && ((*((s8 *) (lpSKey + 0x358))) != 0)) && ((*((s8 *) (lpSKey + 0x36))) == 0))
-  {
-    apiask_25_FirstKakutei(*((s32 *) (lpSKey + 0x14C)), line, lpSKey + 0x458, lpSKey + 0x558, &x);
-    apiask_35_PrevBunsetu(lpSKey + 0x458, lpSKey + 0x558);
-    r = apiask_35_PrevBunsetu(lpSKey + 0x458, lpSKey + 0x558);
-    *((s32 *) (lpSKey + 0x150)) = r;
-    kata_kouho_set();
-    if (r != 0)
-    {
-      n = strlen(((char *) lpSKey) + 0x358);
-      *((lpSKey + (n - strlen(((char *) lpSKey) + 0x458))) + 0x358) = 0;
-      *((s32 *) (lpSKey + 0x150)) = get_kouho_suu();
-      Set_KouhoTable();
+void cmd_prev_bun(void) {
+    int r;
+    int n;
+    s16 x;
+
+    if (SKB(0x2F) != 0 && SKS8(0x358) != 0 && SKS8(0x36) == 0) {
+        apiask_25_FirstKakutei(SKS32(0x14C), line, lpSKey + 0x458, lpSKey + 0x558, &x);
+        apiask_35_PrevBunsetu(lpSKey + 0x458, lpSKey + 0x558);
+        r = apiask_35_PrevBunsetu(lpSKey + 0x458, lpSKey + 0x558);
+        SKS32(0x150) = r;
+        kata_kouho_set();
+        if (r != 0) {
+            n = strlen((char *)lpSKey + 0x358);
+            lpSKey[(n - strlen((char *)lpSKey + 0x458)) + 0x358] = 0;
+            SKS32(0x150) = get_kouho_suu();
+            Set_KouhoTable();
+        }
     }
-  }
 }
 
 void cmd_next_bun(void) {

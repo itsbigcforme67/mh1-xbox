@@ -71,18 +71,15 @@ int CngNet_MSG_GetReadSize(CNGMSG *m) {
     return m->wr - m->rd;
 }
 
-void CngNet_MSG_Write(CNGMSG *m, u8 *src, int n)
-{
-  int wr = m->wr;
-  if ((wr + n) > m->cap)
-  {
-    mcsls_critical_error(4);
-  }
-  else
-  {
-    memcpy(m->base + wr, src, n);
-    m->wr = m->wr + n;
-  }
+void CngNet_MSG_Write(CNGMSG *m, u8 *src, int n) {
+    int wr = m->wr;
+
+    if (wr + n > m->cap) {
+        mcsls_critical_error(4);
+    } else {
+        memcpy(m->base + wr, src, n);
+        m->wr = m->wr + n;
+    }
 }
 
 void CngNet_MSG_Read(CNGMSG *m, u8 *dst, int n) {
