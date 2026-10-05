@@ -189,3 +189,100 @@ go:
         break;
     }
 }
+
+void pl_at030(PLW *pl) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl_chr_set2(pl, 0x57E, 2, 0);
+        Pl_basic_flagset(pl, 0, 1, 0);
+        func_6362B0(pl, 0xA);
+        pl->x43E = 0x3C;
+        break;
+    case 1:
+        if (frame_check(74.0f, pl, 0) != 0) {
+            func_6362B0(pl, 0xB);
+        }
+        if (frame_check(80.0f, pl, 0) != 0) {
+            vib_set_pl(pl, 2);
+            Pl_set_quake_sub(pl, 2);
+        }
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 6, 0);
+            break;
+        }
+        if (frame_check3(84.0f, 170.0f, pl, 0) != 0) {
+            ex_atk_ck(pl, 0);
+        }
+        break;
+    }
+}
+
+void pl_at031(PLW *pl) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl->x06 = 0;
+        Pl_basic_flagset(pl, 0, 0, 0);
+        pl_chr_set2(pl, 0x580, 0, 0);
+        break;
+    case 1:
+        if (pl->x06 != 0) {
+            if (frame_check2(32.0f, pl, 0) != 0) {
+                Pl_act_set(pl, 1, 0x51, 0xC);
+            }
+        } else if ((frame_check3(2.0f, 30.0f, pl, 0) != 0) && (pl->x06 == 0) && (pl->work88C == 0) && (pl->sw.an_trg & 0x3C)) {
+            pl->x06 = 1;
+        }
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 0xA, 0);
+        }
+        break;
+    }
+}
+
+void pl_at032(PLW *pl) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Pl_basic_flagset(pl, 0, 1, 0);
+        action_timer_calc(pl, 0);
+        pl_chr_set2(pl, 0x3F2, 2, 0);
+        Pl_basic_flagset(pl, 0, 1, 0);
+        pl->flag12 = 1;
+        pl->work615 = 1;
+        pl->x43E = 0x3C;
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            pl->x05 = s + 1;
+            pl_chr_set2(pl, 0x57D, 2, 0x2E);
+            action_timer_calc(pl, 0);
+            pl->work615 = 1;
+        }
+        break;
+    case 2:
+        if (frame_check(56.0f, pl, 0) != 0) {
+            func_6362B0(pl, 0x22);
+            pl->x05++;
+        }
+    case 3:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 6, 0);
+            break;
+        }
+        if (frame_check2(88.0f, pl, 0) != 0) {
+            ex_atk_ck(pl, 0);
+        }
+        break;
+    }
+}
