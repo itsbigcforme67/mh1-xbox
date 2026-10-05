@@ -1994,24 +1994,18 @@ loop_1:
 }
 
 void check_sum_set_cn_file(u8 *arg0) {
-    s32 var_a2;
-    s8 temp_v1_2;
-    u8 *temp_v1;
+    s32 i = 0;
+    s8 v;
+    u8 *p;
 
-    var_a2 = 0;
     do {
-        temp_v1 = arg0 + var_a2;
-        temp_v1_2 = M2C_FIELD(temp_v1, s8 *, 0xC7D);
-        if (temp_v1_2 >= 0) {
-            if (temp_v1_2 >= 3) {
-                goto block_4;
-            }
-        } else {
-block_4:
-            M2C_FIELD(temp_v1, s8 *, 0xC7D) = 0;
+        p = arg0 + i;
+        v = M2C_FIELD(p, s8 *, 0xC7D);
+        if (v < 0 || v > 2) {
+            M2C_FIELD(p, s8 *, 0xC7D) = 0;
         }
-        var_a2 += 1;
-    } while (var_a2 < 0x10);
+        i += 1;
+    } while (i < 0x10);
 }
 
 

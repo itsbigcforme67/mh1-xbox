@@ -76,7 +76,7 @@ int Staff_main(void)
         }
         break;
     case 2:
-        if (Fade_busy_ck(1) != 1) {
+        if (Fade_busy_ck() != 1) {
             w->page++;
             if (w->page >= 0x22) {
                 w->step++;
@@ -92,7 +92,7 @@ int Staff_main(void)
     case 3:
         return 0;
     case 4:
-        if (Fade_busy_ck(1) != 1) {
+        if (Fade_busy_ck() != 1) {
             str_stop(0);
             return 0;
         }

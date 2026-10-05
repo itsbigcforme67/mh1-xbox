@@ -50,8 +50,11 @@ int plmemRegisterAlign(PLMEM *m, u32 size, int align) {
     m->blocks[h].size = size;
     m->blocks[h].align = m->align;
     if (m->dir != 0) {
+        int a;
+
         m->blocks[h].addr = m->cur;
-        m->cur = ~(align - 1) & (m->blocks[h].addr + size + align - 1);
+        a = m->blocks[h].addr;
+        m->cur = ~(align - 1) & (a + size + align - 1);
     } else {
         m->blocks[h].addr = ~(align - 1) & (m->cur - size);
         m->cur = m->blocks[h].addr;
@@ -72,7 +75,11 @@ u32 plmemTemporaryUse(PLMEM *m, int size) {
         }
     }
     if (m->dir != 0) {
-        return m->base + m->size - need;
+        {
+            int b = m->base;
+
+            return b + m->size - need;
+        }
     }
     return m->base - m->size;
 }
@@ -107,16 +114,20 @@ int plmemRelease(PLMEM *m, int h) {
 
 int plmemGetFreeSpace(PLMEM *m) {
     if (m->dir != 0) {
-        return m->size + m->base - m->cur - m->x20;
+        {
+            int b = m->base;
+
+            return b + m->size - m->cur - m->x20;
+        }
     }
     return m->cur - (m->base - m->size) - m->x20;
 }
 
 int plmemPullHandle(PLMEM *m) {
     int i;
-    PLBLK *b = m->blocks;
+    PLBLK *b;
 
-    for (i = 0; i < m->count; i++) {
+    for (i = 0, b = m->blocks; i < m->count; i++) {
         if (b->size == 0) {
             plMemset(&m->blocks[i], 0, 0x10);
             return i;

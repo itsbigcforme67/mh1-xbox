@@ -748,3 +748,10 @@ main 0x00189EE0 0x00189F28 fl/tex_01
 main 0x00163670 0x001637A4 font/disp2_01
 main 0x00161CA0 0x00161D38 font/fontst2_01
 main 0x00125080 0x001251F8 sys/tsk_01
+main 0x00290800 0x002909B8 staff/staff_01
+main 0x0018D9D0 0x0018DB24 fl/plmem_01
+main 0x0018DE50 0x0018DF0C fl/plmem_02
+main 0x0018E1B0 0x0018E200 fl/plmem_03
+main 0x00190FC0 0x00190FF4 fl/amo2_01
+main 0x00191270 0x001912A4 fl/amo2_02
+main 0x0028B2E0 0x0028B328 mc/netfile2b_01
