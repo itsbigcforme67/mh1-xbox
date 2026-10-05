@@ -31,6 +31,7 @@ int my_comment_input();
 void plaza_checkMyStatus();
 int plaza_req_input();
 int getHandleFromID();
+int lb_chatMemberCheck();
 int Lb_checkChatID();
 void Lb_clearChatID();
 void Lb_clearChatList();

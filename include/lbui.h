@@ -13,7 +13,7 @@ typedef struct LB_DIALOG {
 
 /* net window state pointed to by pNet (main .sbss); also the argument of tl_menu_cursor_up/down */
 typedef struct LB_NETW {
-    u8 _pad00[2];
+    s16 idx;            /* 0x00 loop index (chat members) */
     u8 depth;           /* 0x02 menu depth */
     u8 step;            /* 0x03 step of the current sub menu */
     u8 x04;             /* 0x04 */
@@ -92,6 +92,7 @@ typedef struct LB_CW {
 #define CW ((LB_CW *)cw)
 extern u16 System_timer;
 extern u8 chatIDList[7][8];
+extern u8 chatListFlag;
 extern u8 chatHandleList[7][0x10];
 extern u8 *plazaMenuTbl[];
 extern int htmlStr;
