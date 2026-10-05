@@ -329,6 +329,7 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
   allocation), map_sign_move (4), Menu_chatcnfg_mv, menu_chcnfg_sendpl/reibun,
   maru_disp_sub, camp_disp_sub, Pit_mv_lb (14), Pit_mv (31), Menu_mix_mv (479, saved
   register order only).
+- Also written as near-match: efct_circle (48 off), disp_map_sign (OK, not linked yet), enemy_on_map (119/229, stack/register order).
 - Not written yet (all display code): Pit_disp_*, disp_* (map, item, vital, gauges,
   chat), font_print_quest_*, quest_condition_print, efct_circle, enemy_on_map,
   player_on_map, disp_map_sign, disp_whole_map/partial_map/map, put_mix_material,
