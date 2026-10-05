@@ -228,14 +228,12 @@ static void eft16_i(EFTW *ew) {
 
 static void eft16_m(EFTW *ew) {
     FLMAT m;
-    f32 o[3];
     f32 v[3];
+    f32 o[3];
     f32 a;
     f32 f;
     s32 n;
     s32 k;
-    s32 zz;
-    s32 z;
     s16 num;
     s16 all;
     s16 idx;
@@ -244,12 +242,14 @@ static void eft16_m(EFTW *ew) {
     s16 i;
     s16 j;
     s16 hit;
+    s16 tm;
+    s16 found;
     s16 cnt;
     s16 lim;
     u16 rx;
     u16 ry;
     s16 *tbl;
-    s16 *uv;
+    s32 u;
     f32 *dir;
     EFT16_NECK *nk;
     void *d;
@@ -269,8 +269,10 @@ static void eft16_m(EFTW *ew) {
         if (all < 0) {
             all = 1000;
             ew->timer = 0;
+            time = all;
+        } else {
+            time = all;
         }
-        time = all;
         break;
     }
     if (++ew->timer > all) {
@@ -312,7 +314,8 @@ static void eft16_m(EFTW *ew) {
             lim = 0x32;
             break;
         }
-        if (ew->timer % (cnt + 1) == 1) {
+        tm = ew->timer;
+        if (tm % (cnt + 1) == 1) {
             if (ew->x07 != 0xFF) {
                 flmatCopy(&m, get_joint_wmat(ew->owner, ew->x07));
                 flvecApplyMat33(v, ew->pos, &m);
@@ -340,17 +343,17 @@ static void eft16_m(EFTW *ew) {
             }
             if (ew->arg == 4) {
                 f = 0.4f;
-            } else if (lim < ew->timer) {
-                f = 1.0f - 0.06666667f * (f32)(ew->timer - lim);
-            } else {
+            } else if (tm <= lim) {
                 f = 1.0f;
+            } else {
+                f = 1.0f - 0.06666667f * (f32)(tm - lim);
             }
             Eft02_set4(rx, ry, 3, o, ew->scale * f);
         }
         return;
     }
     if (ew->arg == 0 && p->no != 0xFF) {
-        if (!(ew->mode2 & 0x20)) {
+        if ((ew->mode2 & 0x20) == 0) {
             hit = ew->timer - 10;
         } else {
             hit = ew->timer;
@@ -367,15 +370,15 @@ static void eft16_m(EFTW *ew) {
             break;
         }
         j = 0;
-        k = 0;
+        found = 0;
         while (tbl[j * 2] != -1) {
             if (hit == tbl[j * 2]) {
-                k = 1;
+                found = 1;
                 break;
             }
             j++;
         }
-        if (k == 1) {
+        if (found == 1) {
             if (ew->x07 != 0xFF) {
                 flmatCopy(&m, get_joint_wmat(ew->owner, ew->x07));
                 flvecApplyMat33(v, ew->pos, &m);
@@ -386,16 +389,17 @@ static void eft16_m(EFTW *ew) {
                 if (j == 0 && ew->owner->x10 == 1 && (ew->mode2 & 0x30) != 0x20) {
                     eft16_se_req(ew, o);
                 }
-                f = 0.1f * (f32)tbl[j * 2 + 1] * (ew->scale * eft16_scale_tbl[ew->mode2 & 0xF]);
+                f = 0.1f * (f32)tbl[j * 2 + 1];
+                f *= ew->scale * eft16_scale_tbl[ew->mode2 & 0xF];
                 switch (ew->mode2 & 0x30) {
                 case 0:
-                    Eft02_set3(ew->owner, ew->u0A.ang, 3, 2, o, f);
+                    Eft02_set3(ew->owner, (u16)ew->u0A.joint, 3, 2, o, f);
                     break;
                 case 0x20:
-                    Eft02_set3(ew->owner, ew->u0A.ang, 3, 0, o, f);
+                    Eft02_set3(ew->owner, (u16)ew->u0A.joint, 3, 0, o, f);
                     break;
                 case 0x10:
-                    Eft02_set3(ew->owner, ew->u0A.ang, 3, 3, o, f);
+                    Eft02_set3(ew->owner, (u16)ew->u0A.joint, 3, 3, o, f);
                     break;
                 }
             } else {
@@ -404,7 +408,7 @@ static void eft16_m(EFTW *ew) {
         }
     }
     n = num;
-    for (i = 0, z = 15, zz = 0; i < n; i++, z += 5, zz += 5) {
+    for (i = 0; i < n; i++) {
         switch (ew->arg) {
         case 0:
         case 8:
@@ -488,7 +492,7 @@ static void eft16_m(EFTW *ew) {
             }
         } else if (p->lag > time) {
             if (ew->arg == 0xD) {
-                p->lag = ew->stg * -9 + 0x3C;
+                p->lag = -ew->stg * 9 + 0x3C;
                 flvecCopy(p->pos, ew->pos);
             }
             idx += step;
@@ -540,12 +544,16 @@ static void eft16_m(EFTW *ew) {
             idx += 2;
             eft_alpha_linear(p->lag, eft16_data[(s16)(k + 1)], &a);
             p->alpha = 255.0f * a;
-            for (uv = uv78_00647180; *uv != -1; uv++) {
-                if (p->lag == *uv) {
+            u = 0;
+            while (uv78_00647180[u] != -1) {
+                if (p->lag == uv78_00647180[u]) {
                     p->uv++;
                     break;
                 }
+                u++;
             }
+            break;
+        case 14:
             break;
         }
         if (p->prim != 0) {
@@ -560,7 +568,7 @@ static void eft16_m(EFTW *ew) {
             case 5:
                 v[0] = 0.0f;
                 v[1] = 0.0f;
-                v[2] = z;
+                v[2] = i * 5 + 15;
                 flvecApplyMat33_2(v, &rview_mat);
                 p->prim->pos[0] = p->pos[0] + v[0];
                 p->prim->pos[1] = p->pos[1] + v[1];
@@ -569,7 +577,7 @@ static void eft16_m(EFTW *ew) {
             case 6:
                 v[0] = 0.0f;
                 v[1] = 0.0f;
-                v[2] = z;
+                v[2] = i * 5 + 15;
                 flvecApplyMat33_2(v, &rview_mat);
                 p->prim->pos[0] = p->pos[0] + v[0];
                 p->prim->pos[1] = p->pos[1] + v[1];
@@ -627,7 +635,7 @@ static void eft16_m(EFTW *ew) {
                 }
                 v[0] = 0.0f;
                 v[1] = 0.0f;
-                v[2] = -zz;
+                v[2] = -(i * 5);
                 flvecApplyMat33_2(v, &rview_mat);
                 p->pos[1] += 3.0f + 0.001f * (f32)((u16)ran_suu(1) & 0x3FF);
                 p->prim->pos[0] = p->pos[0] + v[0];
