@@ -58,6 +58,7 @@ offscreen in a hidden window, reads the back buffer and writes a PNG.
 | `--cam x,y,z,yaw,pitch` | camera position and angles (radians) |
 | `--size WxH` | window size |
 | `--stage N` | stage number (game_w.stage, 0-87, hex with 0x), default 4 |
+| `--quest N` | load quest N's mission file (questName[N], 1-0xB1); the stage becomes the one where the quest's own monster starts (unless `--stage`) and that monster is set up from the mission data (quest 10: the Rathian in her nest, stage 40) |
 | `--play` | the pad (controller + keyboard) drives the hunter; follow camera |
 | `--input SCRIPT` | scripted pad for tests, implies --play: `idle*10,up*50,left+cross*15` = ticks per step; names in src/pc/pad/pad.h |
 | `--follow D,H,P` | `--play` camera: distance D behind, H above the hunter, pitch P (default 900,450,-0.3); the yaw is `--cam`'s |
@@ -72,6 +73,13 @@ old host stand-in), `RT_EM_POS=x,z` (put the Rathian there, for hit tests),
 `RT_HIT_DM=1` (print damage the Rathian takes; `2` also lists live attack
 shells and their hit volumes), `RT_SKIP_TYPE=n` (do not draw prims of
 effects/sets of type n).
+Monster: `RT_EM_TRACE=1` (per tick: enemy_mv step, action, motion, frame,
+position, angle, hit points, mode 0 calm / 1 attack; at spawn the part
+durabilities), `RT_EM_STANDIN=1` (the old host stand-in: root motion and
+collision only, no AI). Test aids that change the game (scripted fights
+only): `RT_PL_GOD=1` (hunter vital back to 100 each tick), `RT_PL_AIM=1`
+(hunter faces monster 0 while standing), `RT_DMG_MUL=n` (damage to
+monster 0 times n). `RT_EM_POS` also moves a `--quest` monster.
 
 Verified 5 Oct 2026 with build/show/pc_viewer.png and
 pc_viewer_close_0.5.png / _2.0.png:
@@ -284,8 +292,7 @@ up and calls it:
   hers. A hit fills the monster's damage fields, plays the hit sounds,
   starts the 2-tick hit stop (PLW+0x610: motion speed 0.2) and the hit
   marks (eft16, eft05 slash trail via the skinned ef_01 model). The
-  Rathian's HP (+0x302) is a stand-in 2000 [guess]; she does not react:
-  her AI (enemy_mv, em_move, em01) is not on the PC yet.
+  Rathian's HP comes from em01_init and she reacts (see "Monster").
 - x86 hazards: several matched files declare a callee with the float
   argument in another position than the definition (fine on the PS2,
   where floats use their own registers). build_pc.sh compiles those files
@@ -305,6 +312,60 @@ up and calls it:
   (code 4) with voice (snd_vo_m00 0x24), footsteps on the ground
   material; hit on the Rathian (hit_sheet2.png, RT_HIT_DM output).
   Nobody has compared any of it with the PS2 side by side.
+
+### Monster (game C, enemy_mv)
+
+The Rathian runs the game's own monster code since 6 Oct 2026: each tick
+rt_monster_tick calls enemy_mv (src/main/em/f_em_nm.c, written from the
+asm) -> em_move (sight, smell, hate, anger, status upkeep from em_core /
+em_master / em_taisei) -> em01_main (agent B's em01_ai_nm.c) and the
+command interpreter (agent D's em_cmd_nm.c, still on branch agent-D:
+build_pc.sh exports it with that branch's headers to build/pc/ext) ->
+frame_move -> HitWallPlayer / GetGroundHitStatusAreaEm. Her per-animation
+sound/effect script is the game's (em_prog_tbl[1][3] = em01_effect_move).
+- Set-up (rt_em.c): `--quest N` reads the mission file into a host
+  mission_area and points quest_w.x64/x74/x78/x80/x94/x14E at its tables
+  as Quest_init does; the quest's own monsters are the QEM list at
+  Em_data_com_adrs_get(x78, 1) (0x3C bytes each: kind, variant, stage,
+  hunger/thirst/sleep, angle, position). rt_monster_spawn does what
+  Em_direct_set does (free em_work, fields from the QEM, enemy_mv step 0 =
+  em_init; em01_init sets the hit points: 2500 for quest 10). Without
+  `--quest` (free hunt, quest_w.no 0) a stand-in QEM at the viewer's spot is
+  used; em01 then starts with a fly-in.
+- Quests with the Rathian (kind 1) as their own monster: 10 (stage 40),
+  12 (52), 21/24/27 (9), 44/45 (19), 60 (40); kind 11 (em01 code too) in
+  6-9 and 46. Read from the mission files with a throw-away script; stage
+  numbers are QEM+7.
+- x86 fixes needed on the way (none touch PS2-built code): game_w.pl_num
+  = 1 (sight/hate loop over it); Em_Master_Change and NextStage_No_Set get
+  em (a0 left over in the asm); GetGroundHitStatusAreaEm's fifth argument
+  em+0x7E4 (t0, set in the delay slot); argument-order adaptors in
+  rt_abi.c (em_frame_check, Eft13_set_em_scl, Eft15_set3, Eft02_set3);
+  em_sleep_eff_set on the PC (rt_em.c, the PS2 one leaves the scale in
+  f12); `-fno-aggressive-loop-optimizations` (Em_Dmg_Sys reads
+  EMW.hagi[8] with i == 8 and gcc dropped the loop exit); absolute
+  game_w/quest_w addresses in m2c-based files rewritten at build time
+  (rt_ps2abs.h); weak-NULL data tables (eft20, fade_type25/26, shell06)
+  added to tables.txt.
+- make_mat_srt (host, rt_eft.c) had the rotation flags swapped (asm: 2 = Z,
+  8 = X): eft16's blood streak (flag 2, only rot[2] set) was turned by an
+  uninitialised X angle into the screen-wide red smear of the earlier hit
+  shots. 71 effect call sites use flag 2. eft16_nm.c itself checks OK
+  against the asm except eft16_m's spill order (its float immediates match).
+- Verified 6 Oct 2026 (scripted --input, RT_EM_TRACE / RT_PL_TRACE /
+  RT_HIT_DM, shots in build/show/A/em/): quest 10, stage 40: she turns
+  and walks (1/3, 1/0) while calm; when the hunter comes close she roars
+  (1/7; the hunter covers his ears, 2/25), mode 1, then charges and bites
+  (3/4, 3/18, 3/6); a hit takes 49 of the hunter's 100 (knock-down 2/2);
+  his sword hits take 3 per slash off her 2500; with RT_DMG_MUL=40 a 120
+  hit on part 6 (durability 100) makes her flinch (4/2, motion 1063).
+  2100-tick runs on stage 40 and stage 4 without crashes. Nobody has
+  compared any of it with the PS2 side by side.
+- Not done: carving points (Em_hagi_point_set returns -1), quest clear /
+  monster death handling (Quest_enemy_die prints), map marker
+  (WyvernAreaMove), event flags (no save data), Quest_restart after the
+  hunter dies (stub), other quests' small monsters (QEM lists per stage at
+  x74) and stage changes.
 
 ### Collision (stage HITS, game C)
 

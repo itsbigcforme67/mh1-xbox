@@ -336,3 +336,33 @@ Shared header edit: include/plf.h pl_mv060/pl_at009/pl_at012 now K&R.
   set-up (Rathian HP is a stand-in), pad vibration, parts_chg (hand model
   swaps), weapon_dat_make node scaling (great sword / lance / hammer /
   bowgun blade extension during some motions).
+
+## Assignment 13: the Rathian as a real opponent on the PC (6 Oct 2026)
+Done (each step committed; details in docs/pc.md "Monster"):
+- The PC runs enemy_mv -> em_move -> em01_main / em_cmd (agent B's
+  em01_ai_nm.c from main, agent D's em_cmd_nm.c exported from branch
+  agent-D at build time) -> frame_move -> collision, every tick.
+- `--quest N`: mission file -> quest_w tables -> the quest's own monster
+  spawned like Em_direct_set (quest 10 = Rathian nest, stage 40; HP 2500
+  from em01_init).
+- Verified with scripted runs: she notices the hunter (roar, mode 1),
+  walks/turns, charges and bites, hits him (100 -> 51, knock-down), takes
+  his sword damage (3 a slash) and flinches (4/2) when a part's durability
+  runs out (tested with RT_DMG_MUL=40).
+- eft16: the C matches the asm (check.py OK but eft16_m's spill order); the
+  screen-wide streak was the host make_mat_srt with X/Z flags swapped.
+- x86 hazards found and fixed (list in docs/pc.md "Monster"); LTO script
+  for arg-count and float-order mismatches in docs/pc.md "Player".
+- Also: Get_atk_value ported (element/ailment); the leftover rt_pl.c
+  stand-ins replaced by agent F's pl49..pl83 (pre-outage work committed).
+- No shared include/ headers edited. f_em_nm.c (not in c_files) got the
+  GetGroundHitStatusAreaEm 5th argument and Em_Master_Change(em).
+Lessons:
+- On x86, "a0 left over" calls (callee declared without the argument the
+  asm passes in a0) read garbage: Em_Master_Change, NextStage_No_Set,
+  GetWaterData. Fixed with per-file -D macros in build_pc.sh.
+- gcc's loop optimiser trusts array bounds: decompiled loops that index
+  one past a struct array need -fno-aggressive-loop-optimizations.
+Next ideas: carving and quest clear (f_quest_nm.c on the PC), the other
+monsters of a quest (per-stage QEM lists), stage changes (area exits),
+Quest_restart, a scripted "bot" for longer fight tests.
