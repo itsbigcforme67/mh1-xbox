@@ -2490,6 +2490,7 @@ block_19:
 }
 
 static void em_fly09_005F0580(EMW *em, EM20W *w) {
+    f32 dd;
     s32 temp_v1;
     u8 temp_a2;
 
@@ -2517,8 +2518,9 @@ static void em_fly09_005F0580(EMW *em, EM20W *w) {
         w->spd[1] = (s32) em->ang[1];
         w->spd[2] = 0;
         speed_add(em, w->spd);
+        dd = CalcDistanceXZ(em->pos, em->tgt_pos);
         em->work08 -= 1;
-        if ((CalcDistanceXZ(em->pos, em->tgt_pos) <= 1000.0f) || (em->work08 < 0)) {
+        if ((dd <= 1000.0f) || (em->work08 < 0)) {
             em->x05 += 1;
             em->work08 = 0x258;
             em20_act_set(em, 2, 1, 1);
