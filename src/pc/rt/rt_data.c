@@ -4,13 +4,20 @@
  * Capcom's tables are not copied into the repo: each one is declared here
  * empty and filled at start-up from the user's own SLPM_654.95 / game.bin
  * (rt_import_data). Addresses are from config/symbols/main.txt and
- * game.txt. PS2 and x86 are both little-endian and these tables hold only
- * numbers (no pointers), so they are copied byte for byte.
+ * game.txt. PS2 and x86 are both little-endian, so tables are copied byte
+ * for byte; then every pointer word in them (the ELF's R_MIPS_32
+ * relocations) is turned into a host pointer: to the host copy of a table
+ * if it points into one, else to the host symbol of that name (functions,
+ * work areas; found with dlsym, the binary is linked -rdynamic), else to
+ * the same bytes in the loaded image (which is relocated the same way).
  */
+#define _GNU_SOURCE 1   /* dlsym RTLD_DEFAULT */
 #include "rt.h"
 #include "types.h"
 
+#include <dlfcn.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* set14 (src/game/set/set14_nm.c) */
@@ -37,6 +44,10 @@ f32 set00_st26_scale_tbl[2], set00_st41_scale_tbl[1][3], set00_st42_scale_tbl[2]
 f32 set09_st08_beetle_tbl[4][3], set09_st05_type09_pos[16], set09_st33_bird_tbl[2][3];
 u16 set09_st05_type09_ang[16];
 f32 stage_start_pos[88][3];
+
+/* eft01 (lobby.bin enemy_shadow_size_lb, D_610300): the lobby overlay is
+ * not loaded; zeros */
+f32 D_610300[0x46][2];
 
 /* set17 (src/game/set/set17.c) */
 u8 st01_parts_id_tbl[4], st02_parts_id_tbl[20], st03_parts_id_tbl[12], st46_parts_id_tbl[30];
@@ -123,6 +134,43 @@ static const struct {
 struct rt_table { const char *name; uint32_t va; void *dst; size_t size; };
 extern const struct rt_table rt_auto_tables[];
 
+/* PS2 address -> host pointer (see the header comment) */
+static int map_tables;     /* 1 while relocating the host tables (for RT_TRACE) */
+static void *map_ptr(uint32_t v)
+{
+    const struct rt_table *t;
+    size_t i;
+    uint32_t off;
+    int func = 0;
+    const char *name;
+    void *h;
+    for (t = rt_auto_tables; t->name; t++)
+        if (v >= t->va && v < t->va + t->size)
+            return (uint8_t *)t->dst + (v - t->va);
+    for (i = 0; i < sizeof tables / sizeof tables[0]; i++)
+        if (v >= tables[i].va && v < tables[i].va + tables[i].size)
+            return (uint8_t *)tables[i].dst + (v - tables[i].va);
+    name = rt_sym_at(v, &off, &func);
+    if (name && (h = dlsym(RTLD_DEFAULT, name)) != NULL)
+        return (uint8_t *)h + off;
+    if (func) {         /* code that is not ported: leave no MIPS address behind */
+        if (map_tables && getenv("RT_TRACE"))
+            fprintf(stderr, "rt: pointer to unported function %s+0x%X\n", name, (unsigned)off);
+        return NULL;
+    }
+    return (void *)rt_addr(v, 1);
+}
+
+const void *rt_ptr_at(uint32_t va)
+{
+    const uint8_t *p = rt_addr(va, 4);
+    uint32_t h;
+    if (!p || !rt_is_pointer(va))
+        return NULL;
+    memcpy(&h, p, 4);
+    return (const void *)(uintptr_t)h;
+}
+
 int rt_import_data(void)
 {
     size_t i;
@@ -160,6 +208,18 @@ int rt_import_data(void)
             fprintf(stderr, "rt: data table %s (0x%X) not found\n", tables[i].name, (unsigned)tables[i].va);
             missing++;
         }
+    }
+    /* pointers: host copies first, then the images themselves */
+    if (rt_load_relocs() == 0) {
+        map_tables = 1;
+        for (t = rt_auto_tables; t->name; t++)
+            rt_relocate_range(t->va, t->dst, t->size, map_ptr);
+        for (i = 0; i < sizeof tables / sizeof tables[0]; i++)
+            rt_relocate_range(tables[i].va, tables[i].dst, tables[i].size, map_ptr);
+        map_tables = 0;
+        rt_relocate_images(map_ptr);
+    } else {
+        fprintf(stderr, "rt: no relocations in the ELF: pointers in data tables stay PS2 addresses\n");
     }
     return missing;
 }

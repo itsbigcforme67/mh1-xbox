@@ -3,20 +3,12 @@
  *
  * Main-program C calls overlay functions by address (func_XXXXXX, see
  * src/main/stage/stage_set.c). Natively there is no overlay, so each such
- * name is routed here to the decompiled function, or to a stub that says
- * once that the code is not ported yet.
+ * name is routed here to the decompiled function.
  */
 #include "rt.h"
 #include "types.h"
 
 #include <stdio.h>
-
-static void not_ported(const char *name)
-{
-    fprintf(stderr, "rt: %s not ported yet (skipped)\n", name);
-}
-
-#define STUB(fn, name, args) void fn args { static int once; if (!once++) not_ported(name); }
 
 /* ported (decompiled C in src/game/set) */
 void Set03_set(void); void Set04_set(void); void Set05_set(u8 arg); void set07_set(void);
@@ -43,6 +35,20 @@ void func_626E70(int kind) { Set20_set(kind); }
 void func_627840(void) { Set22_set(); }
 /* Set13_set (main, set13.c: sun glare) is linked directly. */
 
-/* not ported yet */
-STUB(func_633B50, "Shell10_set", (f32 *pos, int a, int stage, int b))
-STUB(func_54B8C0, "Eft14_set2", (f32 *pos, int kind))
+/* effects and shells (src/game/eft, src/game/shell) called from main C by
+ * address; each forwards to the definition's own argument order. */
+struct PLW;
+void Shell10_set(f32 *pos, int arg, int stg, struct PLW *pl);
+void Eft14_set2(f32 *pos, s16 arg);
+void Eft17_set_ex(f32 *pos, int ang, int arg, f32 scale);
+void Eft08_set(f32 *pos, int arg, int x07, f32 scale);
+void Eft08_set2(struct PLW *pl, int arg, int x07, f32 scale, f32 y);
+void shell01_set2(void *src, int arg);
+void shell05_set3(void *src, int arg);
+void func_633B50(f32 *pos, int a, int stage, int b) { Shell10_set(pos, a, stage, (struct PLW *)(uintptr_t)b); }
+void func_54B8C0(f32 *pos, int kind) { Eft14_set2(pos, (s16)kind); }
+void func_53FDF0(f32 *pos, u16 ang, int arg, f32 scale) { Eft17_set_ex(pos, ang, arg, scale); }
+void func_544C90(f32 *pos, int arg, int x07, f32 scale) { Eft08_set(pos, arg, x07, scale); }
+void func_544D20(void *pl, int arg, int x07, f32 scale, f32 y) { Eft08_set2(pl, arg, x07, scale, y); }
+void func_628690(void *src, int arg) { shell01_set2(src, arg); }
+void func_62A2C0(void *src, int arg) { shell05_set3(src, arg); }

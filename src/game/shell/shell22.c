@@ -59,7 +59,7 @@ void shell_rate_add_g(SHLW *);
 f32 GetGroundShellHit(VEC3 *);
 void Eft18_set5(f32 *, int, u16, u16);
 void Eft02_set_pos2(int, int, int, VEC3 *, f32);
-void Eft13_set_pos2(void *, VEC3 *, int, f32);
+void Eft13_set_pos2(f32, void *, VEC3 *, int);
 void set_quake_sub2(int);
 void se_req2(int, int, int, f32 *, int, int);
 void Em_se_req2(EMW *, int, int, f32 *, int, int);

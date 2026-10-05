@@ -27,7 +27,7 @@ s16 get_prim2(void);
 PRIM *get_prim_ptr2(s16);
 void release_prim2(s16);
 void flvecCopy(void *, void *);
-void eft14_set(f32, VEC3 *, int);
+void eft14_set(VEC3 *, int, f32);
 void Shell09_set(VEC3 *, int, int);
 void flmatMakeScale(FLMAT *, f32, f32, f32);
 void Material_set_sub(s32, CLAY *);
@@ -124,7 +124,7 @@ static void shell10_m(SHLW *sh) {
     if (sh->xB4 != 0) {
         sh->mode++;
         if (game_w.stage == sh->stg) {
-            eft14_set(2.0f, &sh->pos2, 0);
+            eft14_set(&sh->pos2, 0, 2.0f);
         }
         Shell09_set(&sh->pos2, 2, sh->stg);
     }

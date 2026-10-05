@@ -27,6 +27,15 @@ int rt_in_bss(uint32_t va, size_t n);
 /* Fill the game's data tables (rt_data.c) from the loaded images.
  * Returns the number of tables that could not be found. */
 int rt_import_data(void);
+/* Pointer words (R_MIPS_32 relocations of the ELF) and symbols. */
+int rt_load_relocs(void);
+int rt_is_pointer(uint32_t va);
+void rt_relocate_range(uint32_t va, uint8_t *dst, size_t size, void *(*map)(uint32_t));
+void rt_relocate_images(void *(*map)(uint32_t));
+const char *rt_sym_at(uint32_t va, uint32_t *off, int *func);
+/* After rt_import_data: the host pointer stored at PS2 address va (a
+ * pointer word of the images, already translated), or NULL. */
+const void *rt_ptr_at(uint32_t va);
 
 /* ------------------------------------------------------------ clays */
 /* Register a host clay; the result is the handle the game passes to
@@ -37,9 +46,19 @@ int rt_register_clay(gfx_clay *c);
  * clays[0]; the others follow in order. attr: CLAY+0x88 word per clay
  * (rt_clay_attr_word) or NULL. */
 int rt_bind_set_model(gfx_clay *const *clays, const uint32_t *attr, int n);
+/* The stage's area model (stage_work.mdl, one clay per AMO part), drawn
+ * by the game's trans_stage (rt_stage_draw). Returns the first handle. */
+int rt_bind_stage_model(gfx_clay *const *clays, const uint32_t *attr, int n);
 /* 1 if game code drew this handle at least once (the host's generic model
  * draw skips such parts so they are not drawn twice). */
 int rt_clay_claimed(int handle);
+
+/* Hand effect model k (eft_mdlw[k]: 0 ef_00, 1-3 kage04-06, 4 ef_01) to
+ * the game C; attr as for rt_bind_set_model. */
+void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n);
+/* Ground height for GetGroundHit: fn returns 1 and the highest ground y at
+ * (x, z) not above ymax, or 0. */
+void rt_set_ground(int (*fn)(float x, float z, float ymax, float *y));
 
 /* CLAY+0x88 attribute word from an AMO part's 0xF0000 chunk (18 words, as
  * amo_part.attr; NULL = no chunk -> 0), like Attribute_from_amo. */
@@ -58,11 +77,17 @@ void rt_set_camera(const float cam_world[16]);
  * Call after rt_game_init. */
 void rt_set_player(int no, const float pos[3]);
 
+/* RT_SPAWN="eft13:N,eft17:N,shell22:N,eft14:N,eft08:N": spawn test effects at pos. */
+void rt_debug_spawn(const float pos[3]);
+
 /* ------------------------------------------------------------ game loop */
 /* Set up the game globals for a stage and spawn its set objects. */
 void rt_game_init(int stage);
 /* One game tick (the PS2 game logic runs at 30 per second). */
 void rt_game_move(void);
+/* Draw the stage like the game's trans_stage: area model parts (sky,
+ * per-stage placed/spun/scrolled parts) and the set-model parts it places. */
+void rt_stage_draw(void);
 /* Walk the ordering tables queued by the last tick and call each prim's
  * trans(). VIEW/PROJECTION must already be set; render states touched by
  * game code are restored afterwards. */

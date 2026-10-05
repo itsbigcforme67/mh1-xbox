@@ -35,15 +35,20 @@ _Static_assert(sizeof(CLAY) == 0x8C, "CLAY size");
 GAME_W game_w;                       /* 0x3F33F0 */
 PLW player_work[8];                  /* 0x3E4BF0, 0x5000 bytes */
 
-typedef struct {                     /* set model work (file-local SET_MDLW in set*.c) */
+typedef struct {                     /* model work (MDLW, get_mdlw_ptr; SET_MDLW in set*.c) */
     u8 flag;                         /* 0x00 loaded */
-    u8 _pad01[0x2F];
+    u8 _pad01[0x2B];
+    s16 nclay;                       /* 0x2C clay count (trans_stage) */
+    u8 _pad2E[2];
     CLAY *clay;                      /* 0x30 */
 } RT_SET_MDLW;
 _Static_assert(offsetof(RT_SET_MDLW, clay) == 0x30, "SET_MDLW layout");
 
-typedef struct {                     /* stage_work, 0x64 bytes (set14_nm.c STAGE_WORK) */
-    u8 _pad00[8];
+typedef struct {                     /* stage_work, 0x64 bytes (set14_nm.c STAGE_WORK,
+                                      * trans_stage_nm.c STAGE_W) */
+    u8 flag;                         /* 0x00 trans_stage draws while flag and x01 are set */
+    u8 x01;                          /* 0x01 */
+    u8 _pad02[6];
     s16 timer;                       /* 0x08 counts up every tick (UV scrolling) */
     u8 _pad0A[0x3C - 0x0A];
     RT_SET_MDLW *mdl;                /* 0x3C stage model set */
@@ -53,7 +58,8 @@ _Static_assert(sizeof(RT_STAGE_WORK) == 0x64 && offsetof(RT_STAGE_WORK, mdl) == 
 
 RT_STAGE_WORK stage_work;            /* 0x3D8230 */
 RT_SET_MDLW *set_mdlw;               /* 0x38A184 */
-static RT_SET_MDLW set_mdl;
+static RT_SET_MDLW set_mdl, stage_mdl;
+static CLAY stage_clay[64];
 static CLAY set_clay[64];
 
 /* ------------------------------------------------------------ clays */
@@ -92,10 +98,27 @@ int rt_bind_set_model(gfx_clay *const *c, const uint32_t *attr, int n)
         set_clay[i].attr = i < n && attr ? (s32)attr[i] : 0;
     }
     set_mdl.flag = 1;
+    set_mdl.nclay = (s16)(n < 64 ? n : 64);
     set_mdl.clay = set_clay;
     set_mdlw = &set_mdl;
-    stage_work.mdl = &set_mdl;
     return set_clay[0].handle;
+}
+
+int rt_bind_stage_model(gfx_clay *const *c, const uint32_t *attr, int n)
+{
+    int i;
+    memset(stage_clay, 0, sizeof stage_clay);
+    if (n > 64)
+        n = 64;
+    for (i = 0; i < 64; i++) {
+        stage_clay[i].handle = i < n ? rt_register_clay(c[i]) : -1;
+        stage_clay[i].attr = i < n && attr ? (s32)attr[i] : 0;
+    }
+    stage_mdl.flag = 1;
+    stage_mdl.nclay = (s16)n;
+    stage_mdl.clay = stage_clay;
+    stage_work.mdl = &stage_mdl;     /* trans_stage draws it; set14 uses it on stages 0/0x1A */
+    return stage_clay[0].handle;
 }
 
 /* ------------------------------------------------------------ random */
@@ -228,6 +251,10 @@ void rt_set_player(int no, const float pos[3])
 /* ------------------------------------------------------------ game loop */
 void stage_set_set(int stage);
 void rt_fl_reset_states(void);
+void rt_eft_init(void);
+void rt_eft_move(void);
+void rt_eft_draw(void);
+void rt_eft_trace(void);
 
 void rt_game_init(int stage)
 {
@@ -235,6 +262,9 @@ void rt_game_init(int stage)
     game_w.stage = (u8)stage;
     game_w.master = 0;
     stage_work.timer = 0;
+    stage_work.flag = 1;
+    stage_work.x01 = 1;
+    rt_eft_init();          /* init_eft_work / init_shell_work */
     stage_set_set(stage);   /* the game's own spawn list (src/main/stage/stage_set.c) */
 }
 
@@ -244,6 +274,7 @@ void rt_game_move(void)
     for (i = 0; i < OT_N; i++)
         nqueue[i] = 0;
     stage_work.timer++;
+    (*(u16 *)((u8 *)&game_w + 0x1E))++;     /* per-tick counter (0x10F060) */
     for (i = 0; i < SET_MAX; i++)
         if (set_used[i] && set_pool[i].w.move) {
             if (!set_seen[i] && getenv("RT_TRACE")) {
@@ -252,6 +283,15 @@ void rt_game_move(void)
             }
             set_pool[i].w.move(&set_pool[i].w);
         }
+    rt_eft_move();          /* move_shell, move_eft (order after sets: a guess) */
+}
+
+void trans_stage(void);
+
+void rt_stage_draw(void)
+{
+    trans_stage();
+    rt_fl_reset_states();
 }
 
 void rt_game_draw(void)
@@ -260,6 +300,7 @@ void rt_game_draw(void)
     static int traced;
     if (!traced && getenv("RT_TRACE")) {
         traced = 1;
+        rt_eft_trace();
         for (t = 0; t < OT_N; t++)
             for (k = 0; k < nqueue[t]; k++) {
                 SETW *o = (SETW *)queue[t][k].p->owner;
@@ -267,6 +308,8 @@ void rt_game_draw(void)
                         o ? o->type : -1, o ? o->arg : -1, queue[t][k].p->pos[0], queue[t][k].p->pos[1], queue[t][k].p->pos[2]);
             }
     }
+    rt_eft_draw();          /* trans_shell, trans_eft, trans_eft_up (before the prims: a guess) */
+    rt_fl_reset_states();
     for (t = 0; t < OT_N; t++)
         for (k = 0; k < nqueue[t]; k++) {
             PRIM *p = queue[t][k].p;

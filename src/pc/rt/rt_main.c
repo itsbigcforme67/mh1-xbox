@@ -85,11 +85,8 @@ void flvecApplyMat33(f32 *out, f32 *v, f32 (*m)[4]);
 void flvecApplyMat33_2(f32 *v, f32 (*m)[4]) { flvecApplyMat33(v, v, m); }
 
 /* Not ported yet: camera quake (CameraWork; the viewer has its own camera),
- * monster sound, and the effects/shells some set objects spawn. */
+ * monster sound. (The effects/shells set objects spawn now run as game C.) */
 #define STUB_ONCE(name) { static int once; if (!once++) fprintf(stderr, "rt: %s not ported yet (skipped)\n", name); }
 void set_quake_sub(int kind, f32 *pos) { (void)kind; (void)pos; }
 void set_quake_sub2(int kind) { (void)kind; }
 void Em_se_req2(void *em, int a, int b, f32 *pos, int c, int d) { (void)em; (void)a; (void)b; (void)pos; (void)c; (void)d; }
-void Shell22_set2(f32 *pos, int a, int b, int c) STUB_ONCE("Shell22_set2")
-void Eft17_set_ex(f32 *pos, int a, int b, f32 s) STUB_ONCE("Eft17_set_ex")
-void Eft13_set_pos(f32 s, f32 *pos, int a) STUB_ONCE("Eft13_set_pos")
