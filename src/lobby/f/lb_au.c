@@ -181,18 +181,14 @@ BSWK *BsPullPageWork(void) {
     }
     return w;
 }
-void BsInit00_BootInit(int a) {
+void BsInit00_BootInit(void) {
     bsMainRetVal = 0;
-    if (strcmp(FirstURL, bsCsv + 0x1C) != 0) {
-        if (strcmp(FirstURL, bsCsv + 0x11D) == 0) {
-            goto b3;
-        }
-        bsGoHidePage = 0;
-    } else {
-b3:
+    if (strcmp(FirstURL, bsCsv + 0x1C) == 0 || strcmp(FirstURL, bsCsv + 0x11D) == 0) {
         bsGoHidePage = 1;
+    } else {
+        bsGoHidePage = 0;
     }
-    flfntInit(a);
+    flfntInit();
     sbfptr = bssbuf;
     bsSys->x02 = bsSys->x02 + 1;
     bsSys->x03 = 0;

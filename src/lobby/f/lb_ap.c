@@ -1,7 +1,7 @@
 /* Lobby browser: URL scanning helpers and SJIS/EUC conversion, hand-written from m2c drafts. */
 #include "lobby_f.h"
 extern u8 BsCacheCurrentBaseUrlstr[];
-extern u8 lit_928_00666260[];
+extern s8 lit_928_00666260[];
 u32 strlen();
 int strncmp();
 int BsUrlSchemeGet();
@@ -92,19 +92,20 @@ int bs_url_cmp_list(char **list, char *s) {
     i = -1;
     return i;
 }
-void BsUrlEncode(s8 *dst, u8 *src) {
-    int v;
+int BsUrlEncode(s8 *dst, u8 *src) {
+    int i;
+    i = 0;
     if (*src != 0) {
         do {
             dst[0] = 0x25;
+            i += 3;
             dst[1] = lit_928_00666260[(*src & 0xF0) >> 4];
-            v = *src & 0xF;
-            src += 1;
-            dst[2] = lit_928_00666260[v];
-            dst = dst + 2 + 1;
+            dst += 2;
+            *dst++ = lit_928_00666260[*src++ & 0xF];
         } while (*src != 0);
     }
     *dst = 0;
+    return i;
 }
 int sjis2euc_sub(u32 v) {
     u32 hi;
