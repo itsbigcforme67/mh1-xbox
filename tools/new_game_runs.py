@@ -30,6 +30,13 @@ for l in out.split("\n"):
     if l.startswith("# verify:"):
         bad = set(x.strip() for x in l.rsplit(":", 1)[1].split(",")) - {"none", ""}
 lines = [re.sub(r"\s+#.*", "", l).replace(" src/game/", " ") for l in out.split("\n") if l.startswith("game")]
+for rf in glob.glob("%s/%s[0-9][0-9].c" % (d, stem)):          # top-level macro invocations (CMD_SEL_FUNC) are copied into every run: keep only this run's
+    t = open(rf).read()
+    mh = re.match(r"/\*[^:]*: ([^*]*)\. Whole file", t)
+    if mh and "CMD_SEL_FUNC" in t:
+        mine = set(x.strip() for x in mh.group(1).split(","))
+        t = "\n".join(l for l in t.split("\n") if not (l.startswith("CMD_SEL_FUNC") and l.split("(")[1].split(",")[0].strip() not in mine))
+        open(rf, "w").write(t)
 if bad:
     print("FAILED inside run, remove and retry with those excluded:", sorted(bad))
     sys.exit(1)

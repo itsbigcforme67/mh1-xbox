@@ -704,6 +704,13 @@ game 0x005655D0 0x00565840 em/em_cmd_r24
 game 0x00565F20 0x00566224 em/em_cmd_r25
 game 0x00566490 0x005664F8 em/em_cmd_r26
 game 0x00566230 0x0056648C em/em_cmd_r27
+game 0x0055D400 0x0055D5D4 em/em_cmd_r28
+game 0x0055DD40 0x0055DF14 em/em_cmd_r29
+game 0x0055E740 0x0055E914 em/em_cmd_r30
+game 0x0055EF40 0x0055F114 em/em_cmd_r31
+game 0x0055FEC0 0x005600B4 em/em_cmd_r32
+game 0x00561D90 0x00561F74 em/em_cmd_r33
+game 0x005642A0 0x00564474 em/em_cmd_r34
 game:rodata 0x00685A40 0x00685A60 em/em_cmd_r01
 game:rodata 0x00685AE0 0x00685B0C em/em_cmd_r21
 game:rodata 0x00685B10 0x00685B30 em/em_cmd_r24
