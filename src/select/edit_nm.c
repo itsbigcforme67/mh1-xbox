@@ -572,7 +572,7 @@ void param_change_00536280(u8 *w) {
 }
 
 typedef struct { u8 _p[0x18]; STASK *work; } TSKH;
-void disp_color(void *e);
+void disp_color(u8 *w);
 
 void edit_trans(TSKH *t) {
     STASK *s = t->work;
@@ -649,4 +649,68 @@ void ed_color_sel(EDIT_W *w, PLW *pl, u16 btn) {
         }
     }
     pl->work5FC = w->col;
+}
+
+/* Near-match (logic complete, not compared further): colour picker screen. */
+void disp_color(u8 *w) {
+    SPR5 s;
+    SPR4 q;
+    s16 y = 0x141;
+    s16 i;
+    f32 fx;
+    u32 c;
+    DispFrameMessageA(color_mess, 0, 0x80);
+    flfntSetSize(0x14, 0x14);
+    for (i = 0; i < 3; i++) {
+        if (w[3] == i) {
+            font_set_palette(5);
+        } else {
+            font_set_palette(0);
+        }
+        s.x = 96;
+        s.y = y + 2;
+        s.h = s.y + 0x12;
+        flfntLocate(0x64, y);
+        switch (i) {
+        case 0:
+            font_print(lit_656_0053B8C8);
+            c = (B32(w, 8) >> 16) & 0xFF;
+            s.col[0] = 0xFF400101;
+            s.col[1] = 0xFFFF0101;
+            break;
+        case 1:
+            font_print(lit_657_0053B8D0);
+            c = (B32(w, 8) >> 8) & 0xFF;
+            s.col[0] = 0xFF014001;
+            s.col[1] = 0xFF01FF01;
+            break;
+        case 2:
+            font_print(lit_658_0053B8D8);
+            c = w[8];
+            s.col[0] = 0xFF010140;
+            s.col[1] = 0xFF0101FF;
+            break;
+        }
+        s.w = 0.8f * (120.0f + (f32)c);
+        s.col[2] = s.col[0];
+        s.col[3] = s.col[1];
+        if (w[3] == i) {
+            waku_disp(118.0f, (f32)y, 259.0f, 22.0f, 2.0f);
+        }
+        flps0005(&s);
+        y += 0x1E;
+    }
+    fx = 67.0f;
+    for (i = 0; i < 16; i++) {
+        if (w[3] == 3 && w[0x3A] == i) {
+            waku_disp(fx - 2.0f, (f32)y - 2.0f, 20.0f, 20.0f, 2.0f);
+        }
+        q.x = 0.8f * fx;
+        q.y = y;
+        q.w = 0.8f * (16.0f + fx);
+        q.h = (f32)y + 16.0f;
+        q.col = sample_col[i];
+        flps0004(&q);
+        fx += 22.0f;
+    }
 }

@@ -172,4 +172,10 @@ void get_joint_pos();
 extern char lit_485_0053B7B0[], lit_486_0053B7D0[], lit_487_0053B7E0[], lit_488_0053B800[];
 void SoftKeyboard_pos_set(int, f32);
 void DispSoftkeyboard();
+void font_set_palette();
+void font_print();
+void flfntLocate();
+void waku_disp(f32, f32, f32, f32, f32);
+extern u8 color_mess[];
+extern char lit_656_0053B8C8[], lit_657_0053B8D0[], lit_658_0053B8D8[];
 #endif
