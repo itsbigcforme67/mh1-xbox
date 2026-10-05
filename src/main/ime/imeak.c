@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,26 +469,51 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int next_gun(int disp, int wrap)
+int to_ucode(int x)
 {
-    KH *old;
-    int n;
+    int c;
 
-    old = top_kh;
-    top_kh = take_kouho(old, gun_num);
-    n = inc_gun(top_kh);
-    if (n == 0) {
-        if (wrap == 0) {
-            top_kh = old;
-            return 0;
-        }
-        init_kouho(0, 0);
-    } else {
-        gun_num = n;
+    c = x & 0xFFFF;
+    if (c > 0x20 && c < 0x7F) {
+        return 0;
     }
-    gun_nkh = 0;
-    if (disp == 1) {
-        disp_kouho();
+    switch (c & 0xFF00) {
+    case 0x2300:
+        return c & 0x7F;
+    case 0x2400:
+        return ((c & 0x7F) | 0x80) & 0xFF;
+    case 0x2500:
+        return 0;
+    default:
+        return srch_ucode(x);
     }
-    return 1;
+}
+
+int is_kata(c, flag)
+u16 c;
+int flag;
+{
+    if (flag != 0 && c == 0x213C) {
+        return 1;
+    }
+    if ((c & 0xFF00) == 0x2500) {
+        return 1;
+    }
+    return 0;
+}
+
+int is_jisknj(int c)
+{
+    return (c & 0xFFFF) >= 0x3020;
+}
+
+int is_jiskig(int x)
+{
+    int c;
+
+    c = x & 0xFFFF;
+    if (c >= 0x2120 && c < 0x3020) {
+        return is_kata(x, 0) ? 0 : 1;
+    }
+    return 0;
 }

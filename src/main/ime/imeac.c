@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,73 +469,45 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void update_nowtmp(void)
+void unify_bsmem(int pos, int len)
 {
-    temp_updated = 1;
-}
+    BS **pp;
+    BS *b;
 
-int setkbuflen(u8 *p)
-{
-    int n;
-
-    n = 0;
-    while (*p != 0) {
-        if (iskanji(*p) != 0) {
-            p += 2;
+    pp = &hchar[pos].bs;
+    b = *pp;
+    while (b != 0) {
+        if (b->len == len) {
+            pp = &b->next;
         } else {
-            p += 1;
+            *pp = b->next;
+            free_mem(b);
         }
-        n += 2;
-    }
-    return n;
-}
-
-void setkbuf(u8 *src, u8 *dst)
-{
-    while (*src != 0) {
-        if (iskanji(*src) != 0) {
-            *dst = *src;
-            src++;
-            dst++;
-        } else {
-            *dst = 0xFF;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
+        b = *pp;
     }
 }
 
-int getkbuflen(u8 *p, u8 *end)
+int bunsetu_len(pos)
+int pos;
 {
-    int n;
+    HCHAR *h;
 
-    n = 0;
-    while (p < end && *p >= 0x39) {
-        if (*p == 0xFF) {
-            n++;
-        } else {
-            n += 2;
-        }
-        p += 2;
+    if (pos >= kana_len) {
+        return 0;
     }
-    return n;
+    h = &hchar[pos];
+    if (im_state == 2 && h->x14 == 0) {
+        return 0;
+    }
+    return h->x15;
 }
 
-void getkbuf(u8 *dst, u8 *src, u8 *end)
+void save_fst_bslen(int pos)
 {
-    while (src < end && *src >= 0x39) {
-        if (*src == 0xFF) {
-            src++;
-        } else {
-            *dst = *src;
-            src++;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
+    HCHAR *h;
+
+    h = &hchar[pos];
+    if (h->x16 == 0 && h->x14 != 0) {
+        h->x16 = h->x15;
     }
-    *dst = 0;
 }

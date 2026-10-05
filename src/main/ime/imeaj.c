@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,17 +469,33 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int jiritu_makedisp(KH *k, u16 *buf)
+void change_kind(u16 *p, int n, int kind)
 {
-    int n;
+    u16 k;
 
-    n = 0;
-    for (;;) {
-        n += sstrtom(buf + n, k->str, 6);
-        if (!(k->flag & 1)) {
-            break;
-        }
-        k = k->next;
+    k = (kind & 0xFFFF) << 12;
+    while (n-- != 0) {
+        *p = (*p & 0xFFF) | k;
+        p++;
     }
-    return n;
+}
+
+int shiftlen(int x)
+{
+    int c;
+    int h;
+
+    c = x & 0xFFFF;
+    h = c & 0xFF00;
+    switch (h) {
+    case 0x8000:
+    case 0x8500:
+        return 1;
+    case 0x8600:
+        if ((c & 0xFF) < 0x9E) {
+            return 1;
+        }
+    default:
+        return 2;
+    }
 }

@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,134 +469,25 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void kh_append_init(int pos, KH *k)
+int is_kanji(int c)
 {
-    int n;
-
-    e_khstr = (u8 *)wdsbuf;
-    while (k != 0) {
-        n = meantosjis(meanbuf, e_khstr + 1, kouho_makedisp(pos, cur_len, k, meanbuf));
-        *e_khstr = n;
-        e_khstr++;
-        e_khstr += n;
-        k = kh_followed(k);
-    }
-}
-
-void kh_append(pos, head, tail, k)
-int pos;
-KH **head;
-KH **tail;
-KH *k;
-{
-    int n;
-
-    n = meantosjis(meanbuf, outbuf, kouho_makedisp(pos, cur_len, k, meanbuf));
-    if (exist_kouho(outbuf, n) != 0) {
-        free_khmemlist(k);
-        return;
-    }
-    if ((u32)(e_khstr + n + 1) <= (u32)mem) {
-        *e_khstr = n;
-        e_khstr++;
-        strncpy(e_khstr, outbuf, n);
-        e_khstr += n;
-    }
-    if (*head == 0) {
-        *tail = k;
-        *head = k;
-    } else {
-        (*tail)->next = k;
-    }
-    *tail = kh_endof(k);
-}
-
-static int exist_kouho(u8 *s, int n)
-{
-    u8 *p;
-    int len;
-
-    for (p = (u8 *)wdsbuf; p < e_khstr;) {
-        len = *p;
-        p++;
-        if (len == n && ask_strncmp(p, s, len) == 0) {
-            return 1;
-        }
-        p += len;
-    }
-    return 0;
-}
-
-KH *kh_skip(KH *k)
-{
-    KH *r;
-
-    while (k->flag & 1) {
-        k = k->next;
-    }
-    r = k->next;
-    k->next = 0;
-    return r;
-}
-
-KH *kh_followed(KH *k)
-{
-    while (k->flag & 1) {
-        k = k->next;
-    }
-    return k->next;
-}
-
-KH *kh_endof(KH *k)
-{
-    KH *n;
-
-    if (k == 0) {
+    c = c & 0xFF;
+    if (c < 0x81 || c >= 0xFD || (c >= 0xA0 && c < 0xE0)) {
         return 0;
     }
-    for (;;) {
-        n = k->next;
-        if (n == 0) {
-            break;
-        }
-        k = n;
-    }
-    return k;
+    return 1;
 }
 
-int kh_count(KH *k)
+int is_shift(int c)
 {
-    int n;
+    u8 lo;
 
-    n = 0;
-    while (k != 0) {
-        k = kh_followed(k);
-        n++;
+    lo = c;
+    if (is_kanji((c & 0xFFFF) >> 8 & 0xFF) == 0) {
+        return 0;
     }
-    return n;
-}
-
-int kh_length(KH *k)
-{
-    int n;
-    int len;
-
-    if (k->flag == 0x80) {
-        return cur_len * 2;
+    if (lo < 0x40 || lo >= 0xFD || lo == 0x7F) {
+        return 0;
     }
-    n = (cur_len - k->x06) * 2;
-    while (k->flag & 1) {
-        len = strlen(k->str);
-        k = k->next;
-        n += len;
-    }
-    return n + strlen(k->str);
-}
-
-KH *take_kouho(KH *k, int n)
-{
-    while (n-- != 0) {
-        k = kh_followed(k);
-    }
-    return k;
+    return 1;
 }

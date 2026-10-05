@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,112 +469,28 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int prefix(u8 *a, u8 *b, int n)
+int hashfunc(u8 *key)
 {
-    int i;
-
-    i = 0;
-    while (i < n) {
-        if (*a != *b || *a == 0) {
-            break;
-        }
-        i++;
-        a++;
-        b++;
-    }
-    return i;
-}
-
-void init_page_tab(void)
-{
-    PAGE *p;
-
-    page_top = page_tab;
-    for (p = page_tab; p < page_tab + 9; p++) {
-        p->id = -1;
-        p->dirty = 0;
-        p->next = p + 1;
-    }
-    p->id = -1;
-    p->dirty = 0;
-    p->next = 0;
-}
-
-int write_page(PAGE *p)
-{
-    if (seek_dic(((s64)p->id << 10) + 0x3400) == -1) {
-        return -1;
-    }
-    if (d_write(dic_fd, p->data, 0x400) != 0x400) {
-        return -1;
+    if (key[0] >= 0xA0 && key[0] < 0xF0) {
+        return key[0] - 0xA0;
     }
     return 0;
 }
 
-int read_page(PAGE *p)
+NODE *alloc_node(void)
 {
-    if (seek_dic(((s64)p->id << 10) + 0x3400) == -1) {
-        return -1;
+    NODE *n;
+
+    if (freelist == 0) {
+        page_gc();
     }
-    d_read(dic_fd, p->data, 0x400);
-    return 0;
+    n = freelist;
+    freelist = n->next;
+    return n;
 }
 
-u8 *load_page(int id)
+void free_node(NODE *n)
 {
-    PAGE *p;
-    PAGE *prev;
-
-    prev = 0;
-    p = page_top;
-    for (;;) {
-        if (p->id == id) {
-            if (prev != 0) {
-                prev->next = p->next;
-                p->next = page_top;
-                page_top = p;
-            }
-            return p->data;
-        }
-        if (p->next == 0) {
-            break;
-        }
-        prev = p;
-        p = p->next;
-    }
-    prev->next = 0;
-    p->next = page_top;
-    page_top = p;
-    if (p->dirty == 1) {
-        write_page(p);
-    }
-    p->id = id;
-    p->dirty = 0;
-    read_page(p);
-    return p->data;
-}
-
-void update_nowpage(void)
-{
-    page_top->dirty = 1;
-}
-
-void flush_pages(void)
-{
-    PAGE *p;
-
-    for (p = page_top; p != 0; p = p->next) {
-        if (p->dirty == 1) {
-            write_page(p);
-        }
-    }
-}
-
-void init_entid_tab(void)
-{
-    int i;
-
-    for (i = 0; i < 128; i++) {
-        entid_tab[i].cnt = 0;
-    }
+    n->next = freelist;
+    freelist = n;
 }

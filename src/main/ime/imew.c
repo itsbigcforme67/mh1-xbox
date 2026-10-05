@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,61 +469,13 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void clear_entid_tmpall(int pg)
+int write_temp(void)
 {
-    int i;
-
-    for (i = 0; i < 128; i++) {
-        if (pg == (s16)(entid_tab[i].c >> 12)) {
-            entid_tab[i].c = -1;
-        }
+    if (seek_dic(0x1400) == -1) {
+        return -1;
     }
-}
-
-void clear_entid_tmp(int v)
-{
-    int i;
-
-    for (i = 0; i < 128; i++) {
-        if (v == entid_tab[i].c) {
-            entid_tab[i].c = -1;
-        }
+    if (d_write(dic_fd, temp_pages, 0x2000) != 0x2000) {
+        return -1;
     }
-}
-
-void init_temp(void)
-{
-    init_node_tab();
-    init_hash_tab();
-    if (read_temp() == -1) {
-        reset_temp();
-    }
-    temp_updated = 0;
-}
-
-void flush_temp(void)
-{
-    if (temp_updated != 0) {
-        write_temp();
-    }
-}
-
-void init_node_tab(void)
-{
-    NODE *n;
-
-    for (n = node_tab; n < node_tab + 511; n++) {
-        n->next = n + 1;
-    }
-    n->next = 0;
-    freelist = node_tab;
-}
-
-void init_hash_tab(void)
-{
-    int i;
-
-    for (i = 0; i < 80; i++) {
-        hash_tab[i] = 0;
-    }
+    return 0;
 }
