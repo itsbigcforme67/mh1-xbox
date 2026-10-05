@@ -230,4 +230,5 @@ void get_joint_pos(PLW *, int, f32 *);
 void pl_dm003(PLW *, s32);
 void rate_add(PLW *);
 void pl_dm008(PLW *);
+void eft13_set(PLW *, int, int);
 #endif
