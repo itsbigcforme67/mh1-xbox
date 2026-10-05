@@ -646,3 +646,33 @@ row plus silencer/long-barrel rows. Matching notes:
   owner/joint load order comes out right. This fixed eft18_m00 (was 2 off),
   which is now in eft18.c (0x551830-0x552CF8, rodata to 0x6857EC).
   Verified: check.py OK and `tools/rebuild.sh game` = game OK.
+
+## 2026-10-05: PS2Recomp feasibility test, Wii MH G, first model off the disc
+
+### Verified
+- Agent A's tools/clay_dump.py exports em01_amh.bin (Rathalos) from
+  disc/mh1/AFS_DATA.AFS to .obj: 5 parts, 4184 vertices, 4583 triangles; a
+  flat-shaded render is clearly Rathalos in bind pose (no textures yet). Format
+  write-up: docs/formats/graphics.md.
+- PS2Recomp (ran-j/PS2Recomp, commit c5a9d02, cloned to tools/ps2recomp,
+  gitignored; built recompiler + analyzer only with g++ 13 and pip cmake/ninja,
+  runtime skipped because it needs FFmpeg dev libraries):
+  - main (SLPM_654.95, has symbols): analyzer 8 s, recompiler 7 s,
+    7223 C++ files. 26800 "unhandled instruction" errors, all at addresses past
+    the last main function (0x293B68), i.e. data taken for code. Zero errors in
+    real code.
+  - game overlay (our build/game.elf, linked with the full symbol list):
+    2766 files, 16779 errors, all past the last game function (0x63BB50).
+  - A sample output file (shell06_d) compiles with g++ -std=c++20 against the
+    runtime headers. Output is literal: one C++ statement per instruction.
+  - All four overlays (game, lobby, select, yn) link at 0x533980, so a hybrid
+    build needs per-overlay function tables switched when the game loads one.
+- The owner's Wii "Monster Hunter G" (Japan, RVL SDK GX build of Sep 2008) is
+  in disc/mhg_wii (extracted with the Dolphin flatpak's dolphin-tool).
+  sys/main.dol (7.2 MB) is stripped (only source file names like
+  slib_ftask.c), but keeps the same asset paths as the PS2 game
+  (emmodel/em01/em01_amh.bin, motion/em01_tbl.bin) and the clay system
+  ("CREATE CLAY FAIL !!"). Not yet checked whether the data format is the same.
+
+### Not verified
+- That recompiled code runs: the runtime was not built or linked yet.

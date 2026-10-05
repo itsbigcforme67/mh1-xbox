@@ -18,27 +18,30 @@ otherwise.
 
 ## Where things stand
 
-Phase 0 (survey). Nothing has been decompiled. No game files are in the repo.
-PS2 Monster Hunter G has been surveyed (docs/STATUS.md): stripped, built
-with Metrowerks CodeWarrior, code mostly in compressed MWo3 overlays that
-tools/mwo_unpack.py unpacks. Japanese MH1 (SLPM_654.95) surveyed: 50k symbols, same compiler, chosen
-as the base. Roughly 3.2 MB of game code. Compiler found: Metrowerks mwcps2
-3.0 family (working default 3.0b52-030722 -O4,p); 5 test functions
-byte-match (tools/matchtest/). Phase 1 done: main and the game
-overlays (select, game, yn, lobby) all rebuild byte-identical; one C
-function is linked in. Run tools/progress.py for numbers.
+Phase 1 done (main and the game overlays select, game, yn, lobby rebuild
+byte-identical); Phase 2 (decompilation) under way: about 8% of all code
+matches as of 5 Oct 2026 (run tools/progress.py). The owner's priority since
+5 Oct 2026 is "playable and recognizable first, polished afterwards" (see
+docs/DECISIONS.md): matching stays the correctness check, but stubborn
+functions are parked as near-matches (*_nm.c) and platform work runs in
+parallel. Model, texture and motion formats are understood well enough to
+render posed, textured monsters (docs/formats/, tools/clay_dump.py).
+PS2Recomp (static recompiler) is being tested as a stop-gap for code not yet
+decompiled (docs/STATUS.md).
 
-- All three tools have now run on the real MH1 and G discs (fixes logged
-  in docs/STATUS.md).
-- The owner's images live in disc/mh1/ and disc/mhg/ (gitignored).
+- Work is split between worker agents in git worktrees (../mh1-wt/A..D,
+  branches agent-A..D) and a coordinating session that merges into main.
+  Agents follow docs/agents/BRIEF.md and keep notes in docs/agents/.
+- The owner's discs live in disc/ (gitignored): mh1 (base), mhg (PS2 G),
+  mhg_wii (Wii MH G), mhp (PSP Portable), mhf (Frontier 1.0 installer).
 - The owner describes their reverse-engineering experience as "so-so" and
   will rely on Claude for most of the technical work. Keep them in the loop:
   explain findings in plain language and check in before big decisions.
 
 ## What to do first
 
-Steps 1-4 were done on 4 Oct 2026 (see docs/STATUS.md). The compiler
-question is settled and step 5 is under way.
+Read docs/STATUS.md (latest entries at the end) and docs/DECISIONS.md. The
+original setup steps below were all done on 4 Oct 2026; kept for reference.
 
 
 1. Ask the owner where their disc files are (Japanese MH1, and PS2 Monster
@@ -107,7 +110,9 @@ the network wire protocol identical to the PS2 client with DNAS removed.
     docs/STATUS.md       session log (create on first session)
     docs/survey/         survey outputs (create on first run)
     config/              splat config, symbol list, c_files.txt
-    src/                 decompiled C (byte-matching only)
+    src/                 decompiled C (byte-matching; *_nm.c = near-matches, not built)
+    docs/formats/        file formats (graphics, motion, ...)
+    docs/agents/         worker-agent brief and notes
     tools/               elf_survey.py, afs_extract.py, mwo_unpack.py,
                          mips_dis.py, matchtest/, compilers/ (gitignored)
     disc/                user's own game files, gitignored
