@@ -1275,3 +1275,7 @@ main:rodata 0x0036E0C0 0x0036E0E4 sound/sndb02
 main 0x0027BDD0 0x0027BE70 chat/chatb01
 main 0x00193100 0x0019314C fl/plvecb01
 main 0x0010EC00 0x0010EC18 em/femb01
+main 0x00159410 0x00159524 sound/sndc01
+main 0x001598A0 0x00159A48 sound/sndc02
+main 0x00159D30 0x00159FE4 sound/sndc03
+main 0x0015A230 0x0015A51C sound/sndc04
