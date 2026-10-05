@@ -25,7 +25,7 @@ typedef struct CARDW {
     s32 op;         /* 0x34 operation (McOperationSet) */
     s32 done;       /* 0x38 finished flag */
     u16 pad;        /* 0x3C pressed buttons */
-    u8 _pad3E[2];
+    u16 held;       /* 0x3E held buttons */
     s32 res[2];     /* 0x40 result per port */
     u8 _pad48[4];
     s16 csr[4];     /* 0x4C cursor rect x,y,w,h */
@@ -42,6 +42,8 @@ typedef struct CARDW {
 extern CARDW card_w;
 extern u8 card_prim[];
 extern u8 system_w[];
+extern u16 Psw[];
+extern u8 ot8[4];
 extern u8 edit_w[];
 extern u8 option_w[];
 extern u8 *data_load_ptr;
@@ -51,6 +53,9 @@ extern int mc_sel_tbl[2];
 extern int card_list_frame_tbl_00355430[];
 extern char lit_496_00384EE8[];
 
+void add_prim2();
+void McActMain();
+void CardAtld(), CardOptsv(), CardEasysv(), CardCmsv(), CardConld(), CardOfsv0(), CardOnsv1();
 void flfntSetSize();
 void flfntLocate(s16, s16);
 void font_set_palette();
@@ -2198,4 +2203,67 @@ CARDW *w;
         w->done = 1;
         break;
     }
+}
+
+u8 McCardOperation(void)
+{
+    CARDW *w = &card_w;
+
+    font_set_stack_no(4);
+    *(s32 *)w->frame = 0;
+    w->csr_on = 0;
+    w->btn_on = 0;
+    w->pad = Psw[2];
+    w->held = Psw[0];
+    if (w->timer > 0) {
+        w->timer--;
+    }
+    switch (w->op) {
+    case 3:
+        CardCmsv(w);
+        w->frame[0] = 1;
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    case 0:
+        CardAtld(w);
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    case 1:
+        CardOptsv(w);
+        if (!(w->rno < 2) && w->rno != 12) {
+            w->frame[0] = 1;
+        }
+        w->frame[1] = 2;
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    case 6:
+    case 7:
+    case 8:
+    case 10:
+        CardOnsv1(w);
+        w->frame[0] = 3;
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    case 2:
+        CardEasysv(w);
+        break;
+    case 5:
+    case 9:
+        CardOfsv0(w);
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    case 4:
+        CardConld(w);
+        add_prim2(ot8, card_prim, 0, 1);
+        break;
+    default:
+        w->done = 1;
+        break;
+    }
+    font_set_stack_no(0);
+    McActMain();
+    if (w->done != 0) {
+        system_w[0x12] = 1;
+    }
+    return w->done;
 }
