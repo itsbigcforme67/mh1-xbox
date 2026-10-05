@@ -9,7 +9,9 @@
 
 /* Per-monster work at EMW+0x444. */
 typedef struct EM04W {
-    u8 _pad00[0x14];
+    u8 _pad00[0xC];
+    u16 x0C;            /* 0x0C counted down each frame */
+    u8 _pad0E[6];
     f32 home[3];        /* 0x14 position it returns to (mov05) */
     u8 _pad20[4];
     u16 tgt_ang;        /* 0x24 facing to turn to (mov00) */
@@ -45,6 +47,21 @@ void em_rate_clear(EMW *);
 void Em_hagi_point_set(EMW *, int);
 int Em_hagi_point_cnt_ck(EMW *);
 void Em_hagi_point_clr(EMW *);
+int Quest_enemy_revival_ck(EMW *);
+int Event_flag_ck();
+void em_dur_set(EMW *, int);
+void em_cmd_ck(EMW *);
+u8 Em_Dmg_Sys(EMW *, u8 *);
+void em_mahi_dmg_timer_set(EMW *);
+void em_sleep_dmg_timer_set(EMW *);
+int act_ck(EMW *, int, int);
+void Quest_enemy_revival_set(EMW *);
+void em_status_init(EMW *);
+void Quest_enemy_escape(EMW *);
+void em04_init(EMW *);
+void em04_act_set();
+#define em04_act_set_k em04_act_set
+void em04_main_sub(EMW *em);
 
 extern u8 em04_act_tbl[];
 extern f32 em05_rev_set_tbl_st69[][6];
@@ -52,7 +69,11 @@ extern f32 em05_rev_set_tbl_st18[][6];
 
 void em04_next_act_set(EMW *em);
 
-void em04_act_set(EMW *em, int kind, u16 no) {
+void em04_act_set(em, kind, no)
+EMW *em;
+int kind;
+u16 no;
+{
     em->act_spd = 1.0f;
     switch ((u16)kind) {
     case 0:
@@ -884,4 +905,298 @@ static void em_die00_0058D770(EMW *em) {
         }
         break;
     }
+}
+
+static void em_die01_0058DA90(EMW *em) {
+    FLMAT mat;
+    f32 in[3];
+    f32 out[3];
+    s32 ang[3];
+
+    em->x40C = 10;
+    em->x40E = 10;
+    Em_Mode_Chg(em, 0, 0);
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        ang[0] = (u16)(em->dm_ang - em->ang[1]);
+        if (ang[0] < 0x8000) {
+            em_char_set(em, 62, 0, 10);
+        } else {
+            em_char_set(em, 67, 0, 10);
+        }
+        Quest_enemy_die(em);
+        ang[0] = 0;
+        ang[1] = em->dm_ang + 0x8000;
+        ang[2] = 0;
+        cpRotMatrix(ang, mat);
+        in[0] = 0.0f;
+        in[1] = 8.0f;
+        in[2] = -21.0f;
+        flvecApplyMat33(out, in, &mat);
+        em_rate_clear_g(em);
+        em->rate_x = out[0];
+        em->adj_y = out[1];
+        em->adj_z = out[2];
+        em->x3C0[1] = -1.09f;
+        em->x3C0[2] = 0.28f;
+        break;
+    case 1:
+        if (em->adj_z * em->x3C0[2] >= 0.0f) {
+            em->x3C0[2] = 0.0f;
+        }
+        if (rate_add_g2(em)) {
+            em->x05++;
+            em->x388 = 0;
+            em_char_set(em, 63, 6, 0);
+            em->work08 = 150;
+            em_rate_clear(em);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 64, 0, 0);
+            em->work08 = 60;
+            Em_hagi_point_set(em, 0);
+            em->ex[0x90] = 0;
+        }
+        break;
+    case 3:
+        Em_hagi_point_cnt_ck(em);
+        if (em->x194 == 0) {
+            em->x05++;
+            if (em->kind == 4) {
+                em->work08 = 2400;
+            } else {
+                em->work08 = 900;
+            }
+        }
+        break;
+    case 4:
+        if (--em->work08 <= 0 || Em_hagi_point_cnt_ck(em) <= 0) {
+            em->x05++;
+            Em_hagi_point_clr(em);
+        }
+        break;
+    case 5:
+        em->x798 -= 0.016666668f;
+        if (em->x798 <= 0.0f) {
+            em->x01 = 0;
+            em_act_set(em, 5, 2);
+        }
+        break;
+    }
+}
+
+static void em_die_rev_0058DD70(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        if (Quest_enemy_revival_ck(em) == 1) {
+            em->x05++;
+        } else {
+            em->x04++;
+        }
+        break;
+    case 1:
+        em_status_init(em);
+        em04_init(em);
+        Quest_enemy_revival_set(em);
+        if (em->kind == 5) {
+            switch (em->stg) {
+            case 0x16:
+            case 0x2A:
+            case 0x2C:
+            case 0x2E:
+            case 0x45:
+                Quest_enemy_escape(em);
+                em->x04++;
+                em->x01 = 0;
+                break;
+            default:
+                em04_act_set_k(em, 1, 4, 0);
+                break;
+            }
+        } else {
+            switch (em->stg) {
+            case 1:
+            case 0x16:
+            case 0x17:
+            case 0x20:
+            case 0x21:
+            case 0x23:
+            case 0x2A:
+            case 0x2C:
+            case 0x2E:
+            case 0x45:
+                Quest_enemy_escape(em);
+                em->x04++;
+                em->x01 = 0;
+                break;
+            }
+        }
+        break;
+    }
+}
+
+static void em_move05_0058DF20(EMW *em) {
+    switch (em->x15) {
+    case 0:
+        em_die00_0058D770(em);
+        break;
+    case 1:
+        em_die01_0058DA90(em);
+        break;
+    case 2:
+        em_die_rev_0058DD70(em);
+        break;
+    }
+}
+
+static void em_demo00_0058DF90(EMW *em) {
+    em->x9E1 = 5;
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 1, 0, 0);
+        em->x01 = 0;
+        em->x839 = 0;
+        break;
+    case 1:
+        if (Event_flag_ck(0xF) == 1) {
+            em->x05++;
+            em->x01 = 1;
+            em04_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_move06_0058E030(EMW *em) {
+    switch (em->x15) {
+    case 0:
+        em_demo00_0058DF90(em);
+        break;
+    }
+}
+
+typedef struct QUEST_W {
+    u8 _pad00[8];
+    s16 x08;            /* 0x08 quest number */
+} QUEST_W;
+extern QUEST_W quest_w;
+extern GAME_W game_w;
+
+void em04_main(EMW *em) {
+    u8 dmg[4];
+    EM04W *w = (EM04W *)em->ex;
+
+    if (w->x0C != 0) {
+        w->x0C--;
+    }
+    switch (Em_Dmg_Sys(em, dmg)) {
+    case 0:
+    case 3:
+    case 4:
+    case 9:
+    case 11:
+    case 14:
+        break;
+    case 1:
+    case 2:
+        if (em->x388 == 2) {
+            em_act_set(em, 5, 0);
+        } else {
+            em_act_set(em, 5, 1);
+        }
+        break;
+    case 5:
+        if ((em->mode == 4 && em->x15 == 1) || (em->mode == 4 && em->x15 == 2)) {
+            break;
+        }
+        em_act_set(em, 4, 2);
+        break;
+    case 6:
+        if ((em->mode == 4 && em->x15 == 1) || (em->mode == 4 && em->x15 == 2)) {
+            break;
+        }
+        em_mahi_dmg_timer_set(em);
+        em04_act_set_k(em, 4, 3, 0);
+        break;
+    case 7:
+        em_act_set(em, 4, 2);
+        break;
+    case 8:
+        if ((em->mode == 4 && em->x15 == 1) || (em->mode == 4 && em->x15 == 2)) {
+            break;
+        }
+        em_sleep_dmg_timer_set(em);
+        em04_act_set_k(em, 0, 10, 0);
+        break;
+    case 10:
+        em->x88B = 1;
+        Em_Sleep_End(em);
+        if (em->x388 == 2) {
+            em_act_set(em, 4, 2);
+        } else {
+            em04_act_set_k(em, 4, 1, 0);
+        }
+        break;
+    case 12:
+        if (em->x388 == 2) {
+            em_act_set(em, 4, 2);
+        } else if ((s16)act_ck(em, 4, 0)) {
+            em_act_set(em, 4, 1);
+        } else {
+            em_act_set(em, 4, 0);
+        }
+        break;
+    case 13:
+        if (em->x388 == 2) {
+            em_act_set(em, 4, 2);
+        } else {
+            em_act_set(em, 4, 1);
+        }
+        em_dur_set(em, 0);
+        break;
+    }
+    if (quest_w.x08 == 0x87 && em->kind == 5 && em->stg == 0x2A && Event_flag_ck(0xF) == 0) {
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            em04_act_set_k(em, 6, 0, 1);
+        }
+    } else {
+        switch (em->x734) {
+        case 3:
+            if (em->x839 != 0) {
+                em_cmd_ck(em);
+                em->x839 = 0;
+            }
+            break;
+        }
+    }
+    em04_main_sub(em);
+    if (em->x6FF != 0) {
+        em04_main_sub(em);
+        em->x6FF = 0;
+    }
+}
+
+void em04_main_sub(EMW *em) {
+    switch (em->mode) {
+    case 0: em_move00(em); break;
+    case 1: em_move01(em); break;
+    case 2: em_move00(em); break;
+    case 3: em_move03_0058CF10(em); break;
+    case 4: em_move04_0058D6D0(em); break;
+    case 5: em_move05_0058DF20(em); break;
+    case 6: em_move06_0058E030(em); break;
+    case 7: em_move04_0058D6D0(em); break;
+    }
+}
+
+void move_default_0058E4F0(void) {
 }
