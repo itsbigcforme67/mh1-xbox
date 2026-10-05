@@ -320,3 +320,11 @@ int GetYouganHit(f32 *pos) {
     }
     return r;
 }
+
+/* 0x0011B1E0: ground cell list for a position. */
+s32 *GetGroundTblAdrs(f32 *p) {
+    f32 csz = (u32)diorama_w.gcsz;
+    f32 csx = (u32)diorama_w.gcsx;
+
+    return (s32 *)diorama_w.gtbl[(int)(p[2] / csz) + diorama_w.gnz * (int)(p[0] / csx)];
+}

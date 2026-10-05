@@ -85,5 +85,5 @@ s32 GetWallTblAdrs(f32 *p) {
     f32 csz = (u32)diorama_w.wcsz;
     f32 csx = (u32)diorama_w.wcsx;
 
-    return (s32)diorama_w.wtbl[(int)(p[2] / csz) + (int)(p[0] / csx) * diorama_w.wnz];
+    return (s32)diorama_w.wtbl[(int)(p[2] / csz) + diorama_w.wnz * (int)(p[0] / csx)];
 }
