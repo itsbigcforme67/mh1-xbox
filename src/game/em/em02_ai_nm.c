@@ -1300,3 +1300,379 @@ static void em_atk09_00581B50(EMW *em, EM02W *w) {
     }
     FLY_FLOOR(em);
 }
+
+#define DMG_SIMPLE(NAME, CH)                     \
+    static void NAME(EMW *em, EM02W *w) {        \
+        switch (em->x05) {                       \
+        case 0:                                  \
+            em->x05++;                           \
+            em->x388 = 0;                        \
+            em->x3F4 = 0;                        \
+            em_cmd_reset(em);                    \
+            em_char_set(em, CH, 0, 0);           \
+            break;                               \
+        case 1:                                  \
+            if (em->x194 == 0) {                 \
+                em->x05++;                       \
+                em02_to_normal(em);              \
+            }                                    \
+            break;                               \
+        }                                        \
+    }
+
+DMG_SIMPLE(em_dmg00_00581DC0, 0x14)
+DMG_SIMPLE(em_dmg01_00581E50, 0x15)
+
+static void em_dmg02_00581EE0(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_cmd_reset(em);
+        em_char_set(em, 0x16, 0, 0);
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 50.0f) == 0) {
+            em->ang[1] += 0x28E;
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_dmg03_00581FA0(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x19, 0, 0);
+        em_cmd_reset(em);
+        if (!(em->adj_y <= -50.0f)) {
+            em->adj_y = -50.0f;
+        }
+        em->x3C0[1] = -10.0f;
+        break;
+    case 1:
+        speed_add_g(em, w->spd);
+        if (180.0f + em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            em_char_set(em, 0x1A, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 8, 0, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_dmg04_00582100(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x1B, 0, 0);
+        em->work08 = 0x78;
+        em_cmd_reset(em);
+        game_w.flag1B3 |= 2;
+        em->x762 = 3;
+        break;
+    case 1:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 0x1C, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em->x762 = 0;
+            em_char_set(em, 8, 0, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_dmg05_00582220(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x22, 0, 0);
+        Em_Mahi_Start(em);
+        em->x8BD = 1;
+        em_cmd_reset(em);
+        break;
+    case 1:
+        if (em_frame_check(em, 296.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0x1B, 0xC, 0x124);
+        }
+        break;
+    case 2:
+        em_mahi_eff_set(em, 2);
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em02_act_set(em, 0, 6, 4);
+        }
+        break;
+    case 3:
+        if (em->x8C3 == 0) {
+            em02_act_set(em, 0, 6, 4);
+        }
+        break;
+    }
+}
+
+static void em_dmg06_00582350(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x17, 0, 0);
+        em_cmd_reset(em);
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 50.0f) == 0) {
+            em->ang[1] -= 0x28E;
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_dmg07_00582410(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x14, 0, 0);
+        em_cmd_reset(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_dmg08_005824A0(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x19, 0, 0);
+        if (!(em->adj_y <= -50.0f)) {
+            em->adj_y = -50.0f;
+        }
+        em->x3C0[1] = -10.0f;
+        em_cmd_reset(em);
+        break;
+    case 1:
+        speed_add_g(em, w->spd);
+        if (180.0f + em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            em_char_set(em, 0x1A, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 8, 0, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_rate_clear(em);
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_die00_00582600(EMW *em, EM02W *w) {
+    em->x40E = 5;
+    em->x888 = 0;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x18, 0, 0);
+        em->x3F4 = 0;
+        em->x388 = 3;
+        Quest_enemy_die(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->work08 = 0x1C2;
+            em->x05++;
+            em02_hagi_set(em);
+            em->ex[0x90] = 0;
+        }
+        break;
+    case 2:
+        em02_hagi_move(em);
+        break;
+    case 3:
+        if (--em->work08 <= 0) {
+            em->x04++;
+            em->x01 = 0;
+            em02_hagi_clr(em);
+        } else {
+            em->x798 = (f32)em->work08 / 150.0f;
+        }
+        break;
+    case 0x63:
+        if (em->x194 == 0) {
+            em->x388 = 0;
+            em02_to_normal(em);
+            em->mode_old = em->mode;
+            em->x15_old = em->x15;
+        }
+        break;
+    }
+}
+
+static void em_die01_00582760(EMW *em, EM02W *w) {
+    em->x40E = 5;
+    Em_Mode_Chg(em, 0, 0);
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x1D, 0, 0);
+        em->x3F4 = 0;
+        em->x388 = 3;
+        game_w.flag1B3 |= 2;
+        Quest_enemy_die(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->work08 = 0x1C2;
+            em->x05++;
+            em02_hagi_set(em);
+            em->ex[0x90] = 0;
+        }
+        break;
+    case 2:
+        em02_hagi_move(em);
+        break;
+    case 3:
+        if (--em->work08 <= 0) {
+            em->x04++;
+            em->x01 = 0;
+            em02_hagi_clr(em);
+        } else {
+            em->x798 = (f32)em->work08 / 150.0f;
+        }
+        break;
+    case 0x63:
+        if (em->x194 == 0) {
+            em->x388 = 0;
+            em02_to_normal(em);
+            em->mode_old = em->mode;
+            em->x15_old = em->x15;
+        }
+        break;
+    }
+}
+
+static void em_die02_005828E0(EMW *em, EM02W *w) {
+    em->x40E = 5;
+    Em_Mode_Chg(em, 0, 0);
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x19, 0, 0);
+        if (!(em->adj_y <= -50.0f)) {
+            em->adj_y = -50.0f;
+        }
+        em->x3C0[1] = -10.0f;
+        break;
+    case 1:
+        speed_add_g(em, w->spd);
+        if (em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            em_char_set(em, 0x1A, 0, 0);
+            em_rate_clear(em);
+        }
+        break;
+    case 2:
+        if (em_frame_check(em, 134.0f, 0)) {
+            em->x05++;
+            em->act_spd = 0.0f;
+            em->work08 = 0;
+            em->x388 = 3;
+            Quest_enemy_die(em);
+            em02_hagi_set(em);
+            em->ex[0x90] = 0;
+        }
+        break;
+    case 3:
+        em->act_spd = 0.0f;
+        em02_hagi_move(em);
+        if (em->x194 == 0) {
+            em->work08 = 0x1C2;
+            em->x05++;
+        }
+        break;
+    case 4:
+        em02_hagi_move(em);
+        break;
+    case 5:
+        if (--em->work08 <= 0) {
+            em->x04++;
+            em->x01 = 0;
+            em02_hagi_clr(em);
+        } else {
+            em->x798 = (f32)em->work08 / 150.0f;
+        }
+        break;
+    case 0x63:
+        if (em->x194 == 0) {
+            em->x388 = 0;
+            em02_to_normal(em);
+            em->mode_old = em->mode;
+            em->x15_old = em->x15;
+        }
+        break;
+    }
+}
