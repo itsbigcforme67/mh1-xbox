@@ -128,3 +128,48 @@ s16 no;
     pk.f = t[1];
     flps0008(&pk, &pk.f, &pk.e);
 }
+
+void Lb_put_icon_free2(a0, a1, a2, a3, no)
+int a0;
+s16 a1;
+s16 a2;
+int a3;
+s16 no;
+{
+    struct { s16 w, x, y, z; s32 u; LBS16x2 e; LBS16x2 f; } pk;
+    LBS16x2 *t;
+    pk.x = a1;
+    pk.u = a3;
+    t = (LBS16x2 *)&lb_icon_tbl[no * 4];
+    pk.y = a2;
+    pk.z = a2;
+    pk.w = 0.8f * a0;
+    pk.e = t[0];
+    pk.f = t[1];
+    flps0008(&pk, &pk.f, &pk.e, t);
+}
+
+void Lb_num_to_str(int n, char *out) {
+    char buf[0x20];
+    char *p;
+    char c;
+    sprintf(buf, lit_688_00664CB0, n);
+    *out = 0;
+    c = buf[0];
+    p = buf;
+    if (c != 0) {
+        do {
+            strcat(out, *(char **)((u8 *)lb_num_str + (c - 0x30) * 4));
+            p++;
+            c = *p;
+        } while (c != 0);
+    }
+}
+
+int Lb_check_pl_load(int id) {
+    s8 i = id;
+    if (player_work[i].be_flag != 0 && ((s8 *)(i + (int)cw))[0x2BFE] == 0) {
+        return 0;
+    }
+    return 1;
+}
