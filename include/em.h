@@ -127,7 +127,8 @@ typedef struct EMW {
     u8 _pad8B7[0x8C3 - 0x8B7];
     u8 x8C3;            /* 0x8C3 0: em_cdm_act_flag_ck runs before an action is set */
     f32 x8C4[4];        /* 0x8C4 indexed by x883 (size a guess) */
-    u8 _pad8D4[0x930 - 0x8D4];
+    f32 x8D4[4];        /* 0x8D4 per player (indexed by x617; em01 atk 4), size a guess */
+    u8 _pad8E4[0x930 - 0x8E4];
     f32 act_spd;        /* 0x930 animation speed, 1.0 set by every em*_act_set (guess) */
     f32 tgt_pos[3];     /* 0x934 target position (CalcDistanceXZ/Em_Calc_angY from pos) */
     struct EM_AREA *area; /* 0x940 per-stage data (em08_senkai_pos_no) */

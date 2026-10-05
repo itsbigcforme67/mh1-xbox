@@ -130,3 +130,5 @@ game 0x005FCDC0 0x005FD898 em/em20
 game:rodata 0x006894E0 0x00689600 em/em20
 game 0x005FDA10 0x005FFCB4 em/em20b
 game:rodata 0x00689620 0x0068965C em/em20b
+game 0x0057AB60 0x0057DE24 em/em01
+game:rodata 0x00686080 0x006861EC em/em01

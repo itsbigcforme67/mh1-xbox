@@ -183,3 +183,12 @@ also assigned before the em_pl_pos_set call).
     instead of keeping it in a local fixed the register choice; `q = pos[n]`
     taken before the stores.
   - xang_set_pl: `a = 0x10000 - calc_vec_ang(...); a = (u16)(a - ang[0]);`
+- em01 (0x57AB60-0x57DE24, 19 functions): all match, rodata
+  0x686080-0x6861EC. Generated from em20's code: senkai_sub* add
+  `if (!(flags & 8))` around the turn-rate update (and sub1
+  `!(flags & 0x10)` before the animation change), em01_demo_senkai_target
+  is senkai_target without the "no target" exit. New EMW field x8D4[4]
+  (per-player value, em01 atk 4). Lesson (atk 4): a plain
+  `if (A) no = 0x18; else if (B) no = 4; else no = 0x19;` chain puts each
+  `no = ...` in the branch delay slot (overwritten anyway on the other
+  path), so it looks like "statement before the if" but is not.
