@@ -39,6 +39,15 @@ typedef struct SELECT_W {
     s8 x94[4];
 } SELECT_W;
 extern SELECT_W select_w;
-extern u8 stage_work[];  /* +1 set by game13 */
+typedef struct STGW {
+    u8 _pad00;
+    u8 x01;             /* 0x01 set to 1 by game13/game2 */
+    u8 _pad02[2];
+    u8 step;            /* 0x04 0 = init (stage_i), 1 = run (stage_m) */
+    u8 _pad05[3];
+    s16 x08;            /* 0x08 frame counter */
+    u8 _pad0A[0x64 - 0x0A];
+} STGW;
+extern STGW stage_work;
 extern u8 Plsel_task[];
 #endif

@@ -17,21 +17,29 @@ typedef struct EM_MDL {
     u8 *bone;           /* 0x24 bone matrices (byte offsets: 0x4330 tail root) */
     u8 _pad28[8];
     struct CLAY *clay;  /* 0x30 */
-    u8 _pad34[0x14];
+    u8 _pad34[0x10];
+    struct EM_MOTW *mot0; /* 0x44 motion of layer 0 (mot_miration_ret) */
     u8 *mtx;            /* 0x48 skin matrix list */
+    u8 _pad4C[8];
+    struct EM_MOTW *mot1; /* 0x54 blended motion (mot_miration_ret) */
 } EM_MDL;
 
 /* Per-stage point list (EM_AREA+8, em08_senkai_pos_no): entries until
  * stg == -1; pos points to 4 positions. */
 typedef struct EM_STG_POS {
     s16 stg;            /* 0x0 stage number, -1 ends the list (also used as default) */
-    u8 _pad2[2];
+    s16 num;            /* 0x2 entry count (EMW.area->x18 lists, target_kind_set) */
     f32 (*pos)[3];      /* 0x4 */
 } EM_STG_POS;
 
 typedef struct EM_AREA {
-    u8 _pad00[8];
+    EM_STG_POS *x0;     /* 0x0 lists picked by EMW.x828 (cmd_target_kind_set) */
+    EM_STG_POS *x4;     /* 0x4 */
     EM_STG_POS *stg_pos; /* 0x8 */
+    EM_STG_POS *xC;     /* 0xC */
+    EM_STG_POS *x10;    /* 0x10 */
+    EM_STG_POS *x14;    /* 0x14 */
+    EM_STG_POS *x18;    /* 0x18 routes: pos is really an EM_ROUTE list */
 } EM_AREA;
 
 typedef struct EMW {
@@ -68,9 +76,14 @@ typedef struct EMW {
     u8 _pad198[0x19C - 0x198];
     f32 x19C;           /* 0x19C time used by em02_fly_adjy (0 or 1: start value) */
     f32 chr_spd0;       /* 0x1A0 frame step (as PLW); divides the fly_adjy2 tables */
-    u8 _pad1A4[0x1C4 - 0x1A4];
+    u8 _pad1A4[0x1AC - 0x1A4];
+    s32 x1AC;           /* 0x1AC */
+    f32 x1B0;           /* 0x1B0 */
+    u8 _pad1B4[0x1C4 - 0x1B4];
     s32 x1C4;           /* 0x1C4 non-zero: fly_adjy2 uses time 0 */
-    u8 _pad1C8[0x2D4 - 0x1C8];
+    u8 _pad1C8[0x1CC - 0x1C8];
+    f32 x1CC;           /* 0x1CC */
+    u8 _pad1D0[0x2D4 - 0x1D0];
     u16 x2D4;           /* 0x2D4 em10: idle pose (0 stand, 1/2 others) */
     u16 x2D6;           /* 0x2D6 em10: message page */
     u16 x2D8;           /* 0x2D8 em10: message number (row of talk_tbl) */
@@ -82,7 +95,8 @@ typedef struct EMW {
     u8 _pad2E8[0x2EC - 0x2E8];
     s16 blend0;         /* 0x2EC */
     s16 blend1;         /* 0x2EE */
-    u8 _pad2F0[0x302 - 0x2F0];
+    u8 _pad2F0[0x300 - 0x2F0];
+    u16 x300;           /* 0x300 number of animation layers (char0/act_tm0/blend0 are [0] of arrays) */
     s16 x302;           /* 0x302 compared with 10% of x792 (hit points? guess) */
     u8 _pad304[0x308 - 0x304];
     u8 hagi[8][8];      /* 0x308 */
@@ -92,11 +106,15 @@ typedef struct EMW {
     u8 x388;            /* 0x388 non-zero keeps set20's gate shut */
     u8 _pad389[0x38E - 0x389];
     s8 x38E;            /* 0x38E */
-    u8 _pad38F[0x39A - 0x38F];
+    u8 _pad38F[0x390 - 0x38F];
+    s32 x390;           /* 0x390 */
+    s32 x394;           /* 0x394 */
+    u8 _pad398[0x39A - 0x398];
     u16 x39A;           /* 0x39A em16 acts only when it is even */
     u8 _pad39C[0x3A4 - 0x39C];
     s32 horm_ang;       /* 0x3A4 angle to turn toward (emNN_horm_init, em10 act 10) */
-    u8 _pad3A8[0x3B0 - 0x3A8];
+    u8 _pad3A8[0x3AC - 0x3A8];
+    s32 x3AC;           /* 0x3AC cleared by em_eye_search_set */
     struct PLW *x3B0;   /* 0x3B0 target player (em15 fly 33 / atk 2) */
     f32 rate_x;         /* 0x3B4 rate/jump vector x (em10 act 2); with adj_y, adj_z it is a
                          * f32[3] (em19_rate_add_calc copies all three) */
@@ -110,7 +128,9 @@ typedef struct EMW {
     u8 _pad3F5[0x40C - 0x3F5];
     s16 x40C;           /* 0x40C set to 10 while dying (em29 move 5) */
     s16 x40E;           /* 0x40E */
-    u8 _pad410[0x444 - 0x410];
+    u8 _pad410[0x416 - 0x410];
+    s16 x416;           /* 0x416 default blend (em_char_set) */
+    u8 _pad418[0x444 - 0x418];
     u8 ex[0x50C - 0x444]; /* 0x444 per-monster work: each emNN.c lays out its own
                          * struct here (EM07W...). The end is a guess. */
     struct EM_MDL *mdl; /* 0x50C model work */
@@ -119,21 +139,32 @@ typedef struct EMW {
     u8 _pad56B[0x5A0 - 0x56B];
     f32 x5A0[3];        /* 0x5A0 */
     f32 x5AC;           /* 0x5AC height used for set20's shell */
-    u8 _pad5B0[0x616 - 0x5B0];
+    u8 _pad5B0[0x60C - 0x5B0];
+    u16 neck_tgt;       /* 0x60C neck target angle, relative (em_neck_move_sub) */
+    u16 neck_ang;       /* 0x60E current neck angle */
+    u8 _pad610[0x616 - 0x610];
     u8 x616;            /* 0x616 player number (em18 mov01 follows player_work[x616]) */
     s8 x617;            /* 0x617 -1: no ... (em08_fly_act_set) */
     u8 _pad618[0x6E0 - 0x618];
     u16 x6E0;           /* 0x6E0 em10: item given in a trade */
     u16 x6E2;           /* 0x6E2 em10: item taken in a trade */
-    u8 _pad6E4[0x6FF - 0x6E4];
+    struct EM_SEARCH * search;/* 0x6E4 */
+    u32 neck[4];        /* 0x6E8 per-joint neck angles (neck_ang_set) */
+    u16 neck_spd;       /* 0x6F8 */
+    u16 neck_lock;      /* 0x6FA target latched while turning */
+    u8 neck_st;         /* 0x6FC 0 off 1 start 2 turning 3 settled */
+    s8 x6FD;            /* 0x6FD */
+    u8 x6FE;            /* 0x6FE 1 = next em_char_set uses canmot_data_tbl */
     u8 x6FF;            /* 0x6FF non-zero: main_sub runs twice this frame (em29_main) */
-    u8 _pad700[0x70E - 0x700];
+    f32 x700[3];        /* 0x700 */
+    u8 _pad70C[0x70E - 0x70C];
     u16 x70E;           /* 0x70E */
     u8 _pad710[0x734 - 0x710];
     u8 x734;            /* 0x734 3: monster takes commands (em29_main) */
     u8 _pad735[0x736 - 0x735];
     u8 stg;             /* 0x736 */
-    u8 _pad737[0x73C - 0x737];
+    u8 _pad737[0x73A - 0x737];
+    s16 x73A;           /* 0x73A */
     f32 home[3];        /* 0x73C start position (em10_init) */
     u8 _pad748[0x74C - 0x748];
     u32 x74C;           /* 0x74C flags; 0xF000000F stops fly_adjz2 (em16) */
@@ -145,13 +176,20 @@ typedef struct EMW {
     u8 x765;            /* 0x765 (em02_init) */
     s16 dmg[8];         /* 0x766 */
     s16 x776;           /* 0x776 */
-    u8 _pad778[0x788 - 0x778];
+    s16 x778[4];        /* 0x778 */
+    s16 x780[4];        /* 0x780 */
     u8 x788[8];         /* 0x788 */
     u8 _pad790[0x792 - 0x790];
     s16 x792;           /* 0x792 maximum of x302? (guess) */
-    u8 _pad794[0x798 - 0x794];
+    s8 x794;            /* 0x794 */
+    s8 x795;            /* 0x795 */
+    u8 _pad796[0x797 - 0x796];
+    u8 x797;            /* 0x797 */
     f32 x798;           /* 0x798 fade 0..1 at the end of em18 mov03 (alpha?) */
-    u8 _pad79C[0x7B0 - 0x79C];
+    u8 _pad79C[0x7A8 - 0x79C];
+    u8 x7A8;            /* 0x7A8 */
+    u8 x7A9;            /* 0x7A9 */
+    u8 _pad7AA[0x7B0 - 0x7AA];
     s16 sleep_tol;      /* 0x7B0 */
     s16 x7B2;           /* 0x7B2 */
     s16 x7B4;           /* 0x7B4 */
@@ -173,7 +211,8 @@ typedef struct EMW {
     u8 taisei;          /* 0x7D3 */
     u8 _pad7D4[0x7D6 - 0x7D4];
     u8 x7D6;            /* 0x7D6 2 while dying (em19) */
-    u8 _pad7D7[0x7DC - 0x7D7];
+    u8 _pad7D7[0x7D8 - 0x7D7];
+    f32 x7D8;           /* 0x7D8 */
     f32 x7DC;           /* 0x7DC */
     u8 _pad7E0[0x7E8 - 0x7E0];
     u8 x7E8;            /* 0x7E8 0: em21 falls back to act 0/1 on its own stage */
@@ -184,18 +223,27 @@ typedef struct EMW {
     u8 x7F0;            /* 0x7F0 */
     u8 x7F1;            /* 0x7F1 */
     u8 x7F2;            /* 0x7F2 */
-    u8 _pad7F3[0x818 - 0x7F3];
+    u8 _pad7F3[0x810 - 0x7F3];
+    f32 x810;           /* 0x810 */
+    f32 x814;           /* 0x814 */
     f32 x818;           /* 0x818 compared with x8C4[x883] (em16_act_act_set) */
-    u8 _pad81C[0x827 - 0x81C];
+    f32 x81C;           /* 0x81C */
+    u8 _pad820[0x827 - 0x820];
     u8 x827;            /* 0x827 */
     u8 x828;            /* 0x828 */
     u8 x829;            /* 0x829 em08_senkai_pos_no result */
     u8 _pad82A[0x839 - 0x82A];
     u8 x839;            /* 0x839 set by em14 move action 1 */
-    u8 _pad83A[0x84D - 0x83A];
+    u8 _pad83A[0x83B - 0x83A];
+    u8 x83B;            /* 0x83B */
+    u8 _pad83C[0x844 - 0x83C];
+    s8 x844;            /* 0x844 */
+    u8 _pad845[0x84D - 0x845];
     u8 x84D;            /* 0x84D (em15 fly 11) */
     s8 x84E;            /* 0x84E */
-    u8 _pad84F[0x86F - 0x84F];
+    u8 _pad84F[0x86D - 0x84F];
+    u8 x86D;            /* 0x86D */
+    u8 x86E;            /* 0x86E */
     u8 x86F;            /* 0x86F */
     u8 _pad870[0x878 - 0x870];
     struct EFTW *tail;  /* 0x878 cut-tail effect (eft09_set) */
@@ -210,10 +258,11 @@ typedef struct EMW {
     u8 x889;            /* 0x889 */
     u8 x88A;            /* 0x88A */
     u8 x88B;            /* 0x88B */
-    u8 _pad88C[0x88E - 0x88C];
+    u8 x88C;            /* 0x88C */
+    u8 x88D;            /* 0x88D */
     u8 x88E;            /* 0x88E */
     u8 x88F;            /* 0x88F */
-    u8 _pad890[0x898 - 0x890];
+    s16 x890[4];        /* 0x890 */
     s32 thirst;         /* 0x898 */
     s32 hungry;         /* 0x89C */
     s32 x8A0;           /* 0x8A0 */
@@ -229,21 +278,29 @@ typedef struct EMW {
     u8 _pad8B9[0x8BA - 0x8B9];
     s8 x8BA;            /* 0x8BA */
     s8 x8BB;            /* 0x8BB (s8: Em_Damage_Stock) set to 10 while ex+4 is non-zero (em29_main) */
-    u8 _pad8BC[0x8BD - 0x8BC];
+    u8 x8BC;            /* 0x8BC */
     u8 x8BD;            /* 0x8BD 1 while paralysed (em19 dm02) */
-    u8 _pad8BE[0x8C0 - 0x8BE];
+    u8 _pad8BE[0x8BF - 0x8BE];
+    u8 x8BF;            /* 0x8BF */
     s8 x8C0;            /* 0x8C0 */
     s8 x8C1;            /* 0x8C1 */
     u8 x8C2;            /* 0x8C2 */
     u8 x8C3;            /* 0x8C3 0: em_cdm_act_flag_ck runs before an action is set */
     f32 x8C4[4];        /* 0x8C4 indexed by x883 (size a guess) */
     f32 x8D4[4];        /* 0x8D4 per player (indexed by x617; em01 atk 4), size a guess */
-    u8 _pad8E4[0x8F4 - 0x8E4];
+    f32 x8E4[4];        /* 0x8E4 */
     s32 x8F4[4];        /* 0x8F4 */
-    u8 _pad904[0x917 - 0x904];
+    u16 x904[4];        /* 0x904 (u16: em_eye_search_set) angle to each player */
+    u16 x90C[4];        /* 0x90C */
+    u8 x914;            /* 0x914 */
+    u8 x915;            /* 0x915 */
+    u8 x916;            /* 0x916 */
     u8 x917;            /* 0x917 */
     s32 x918[4];        /* 0x918 */
-    u8 _pad928[0x930 - 0x928];
+    s8 x928;            /* 0x928 */
+    s8 x929;            /* 0x929 */
+    u8 _pad92A[0x92F - 0x92A];
+    u8 x92F;            /* 0x92F */
     f32 act_spd;        /* 0x930 animation speed, 1.0 set by every em*_act_set (guess) */
     f32 tgt_pos[3];     /* 0x934 target position (CalcDistanceXZ/Em_Calc_angY from pos) */
     struct EM_AREA *area; /* 0x940 per-stage data (em08_senkai_pos_no) */
@@ -252,7 +309,13 @@ typedef struct EMW {
     u8 x949;            /* 0x949 */
     s16 stay_tm;        /* 0x94A from emNN_stay_timer_tbl[stg] (local_area_move_init) */
     s16 runaway_tm;     /* 0x94C from emNN_runaway_timer_tbl[stg] */
-    u8 _pad94E[0x958 - 0x94E];
+    u8 _pad94E[0x950 - 0x94E];
+    u8 x950;            /* 0x950 */
+    u8 x951;            /* 0x951 */
+    u8 x952;            /* 0x952 */
+    u8 _pad953[0x954 - 0x953];
+    u16 x954;           /* 0x954 */
+    u8 _pad956[0x958 - 0x956];
     s8 x958;            /* 0x958 */
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
     s8 x95A;            /* 0x95A */
@@ -268,18 +331,19 @@ typedef struct EMW {
     u8 _pad9DA[0x9E1 - 0x9DA];
     s8 x9E1;            /* 0x9E1 (em18/em29_init: 5; Em_Yobi_Ck: non-zero = no call for help) */
     u8 x9E2;            /* 0x9E2 */
-    s8 x9E3;            /* 0x9E3 */
-    s8 x9E4;            /* 0x9E4 */
-    u8 _pad9E5[0x9E6 - 0x9E5];
-    s8 x9E6;            /* 0x9E6 */
-    s8 x9E7;            /* 0x9E7 */
-    s8 x9E8;            /* 0x9E8 */
+    u8 x9E3;            /* 0x9E3 (u8: em_escape_action_ck) */
+    u8 x9E4;            /* 0x9E4 (u8: em_escape_action_ck) */
+    u8 x9E5;            /* 0x9E5 */
+    u8 x9E6;            /* 0x9E6 (u8: em_escape_action_ck) */
+    u8 x9E7;            /* 0x9E7 (u8: em_escape_action_ck) */
+    u8 x9E8;            /* 0x9E8 (u8: em_escape_action_ck) */
     u8 x9E9;            /* 0x9E9 */
     s8 x9EA;            /* 0x9EA trap state (shell12_m) */
     u8 _pad9EB[0x9EC - 0x9EB];
     u8 x9EC;            /* 0x9EC */
     s8 x9ED;            /* 0x9ED */
-    u8 _pad9EE[0x9F1 - 0x9EE];
+    s8 range_no;        /* 0x9EE */
+    u8 _pad9EF[0x9F1 - 0x9EF];
     s8 x9F1;            /* 0x9F1 */
     u8 _pad9F2[0x9F3 - 0x9F2];
     u8 x9F3;            /* 0x9F3 0: em15 fly 24 falls back to act 0/7 */

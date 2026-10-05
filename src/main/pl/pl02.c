@@ -20,7 +20,7 @@ void Pl_ofs_set(PLW *pl, f32 *pos, int ang) {
     pos[2] += out[2];
 }
 
-int skill_hp_calc_00134FF0(int pl) {
+int skill_hp_calc_00134FF0(PLW *pl) {
     if (Pl_Skill_ck(pl, 0x22) == 1) return 10;
     if (Pl_Skill_ck(pl, 0x23) == 1) return 20;
     if (Pl_Skill_ck(pl, 0x24) == 1) return 30;

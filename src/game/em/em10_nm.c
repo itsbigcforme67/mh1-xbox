@@ -119,7 +119,7 @@ int em10_search_set(EMW *em) {
 }
 
 static void em10_msg_set(EMW *em, u16 no) {
-    ((PLW *)player_work)[game_w.master].talk = 10;
+    ((PLW *)player_work)[game_w.master].x8C6 = 10;
     em->x2D6 = 0;
     em->x2D8 = no;
     em->x2DA = 0;
@@ -161,7 +161,7 @@ void em10_msg_set2(EMW *em) {
             em->x2D8 = 0xC;
         }
     }
-    pl->talk = 10;
+    pl->x8C6 = 10;
     em->x2D6 = 0;
     em->x2DA = 0;
     w->sel = 1;
@@ -177,7 +177,7 @@ int talk_move(EMW *em) {
 
     pl = &player_work[game_w.master];
     t = &talk_tbl[em->x2D8];
-    pl->talk = 5;
+    pl->x8C6 = 5;
     w = (EM10W *)em->ex;
     if (em->x2DA < 300) {
         em->x2DA++;
@@ -190,7 +190,7 @@ int talk_move(EMW *em) {
             if ((pl->sw.trg & 0x20) && w->x1A == 0) {
                 switch (t->kind) {
                 case 0:
-                    pl->talk = 0;
+                    pl->x8C6 = 0;
                     break;
                 case 3:
                     switch (game_w.x2E) {
@@ -244,14 +244,14 @@ int talk_move(EMW *em) {
                     }
                     break;
                 case 6:
-                    if (pl->x8C7 >= 7) {
-                        pl->talk = 0;
+                    if (pl->work8C7 >= 7) {
+                        pl->x8C6 = 0;
                     } else {
                         em10_msg_set2(em);
                     }
                     break;
                 case 7:
-                    pl->talk = 0;
+                    pl->x8C6 = 0;
                     Pl_item_stack(pl, em->x6E0, 1);
                     set01_set(1, 0xD, em->x6E0);
                     break;
@@ -279,7 +279,7 @@ int talk_move(EMW *em) {
                         em10_msg_set2(em);
                     } else {
                         se_req(6, 0x20, Snd_em_id_conv_tbl[10]);
-                        pl->talk = 0;
+                        pl->x8C6 = 0;
                     }
                     break;
                 case 1:
@@ -289,14 +289,14 @@ int talk_move(EMW *em) {
                             em_act_set(em, 0, 9);
                             em10_msg_set(em, t->yes);
                         } else {
-                            pl->talk = 0;
+                            pl->x8C6 = 0;
                         }
                     } else {
                         se_req(6, 0x20, Snd_em_id_conv_tbl[10]);
                         if (t->no != 0xFF) {
                             em10_msg_set(em, t->no);
                         } else {
-                            pl->talk = 0;
+                            pl->x8C6 = 0;
                         }
                     }
                     break;
@@ -304,7 +304,7 @@ int talk_move(EMW *em) {
                     if (t->yes != 0xFF) {
                         em10_msg_set(em, t->yes);
                     } else {
-                        pl->talk = 0;
+                        pl->x8C6 = 0;
                     }
                     break;
                 case 8:
@@ -487,7 +487,7 @@ static void em_act00(EMW *em) {
         break;
     case 1:
         if (em10_search_set(em) == 1) {
-            if (pl->talk != 0) {
+            if (pl->x8C6 != 0) {
                 em_act_set(em, 0, 3);
             }
         } else {
@@ -594,7 +594,7 @@ static void em_act03(EMW *em) {
         w->x1A = 0;
         em->x0E = calc_vec_ang2(em->pos, pl->pos) - 0x4000;
         se_req(6, 0x1E, Snd_em_id_conv_tbl[10]);
-        if (pl->x8C7 >= 7) {
+        if (pl->work8C7 >= 7) {
             switch (em->x39A % 3) {
             case 0:
                 em10_msg_set(em, 3);
@@ -626,7 +626,7 @@ static void em_act03(EMW *em) {
     case 1:
         w->x1A = 0;
         talk_move(em);
-        if (pl->talk == 0) {
+        if (pl->x8C6 == 0) {
             em10_to_normal(em, 0, 4, 0);
         } else if (em->x194 == 0) {
             em_act_set(em, 0, 4);
@@ -648,7 +648,7 @@ static void em_act04(EMW *em) {
         talk_move(em);
     case 1:
         talk_move(em);
-        if (pl->talk == 0) {
+        if (pl->x8C6 == 0) {
             em10_to_normal(em, 0, 4, 0);
         }
         break;
@@ -687,7 +687,7 @@ static void em_act05(EMW *em, int type) {
     case 2:
         w->x1A = 0;
         talk_move(em);
-        if (pl->talk == 0) {
+        if (pl->x8C6 == 0) {
             em10_to_normal(em, 0, 2, 0);
         }
         break;
@@ -726,7 +726,7 @@ static void em_act06(EMW *em) {
         }
         break;
     }
-    if (em10_search_set(em) == 1 && pl->talk != 0) {
+    if (em10_search_set(em) == 1 && pl->x8C6 != 0) {
         em_act_set(em, 0, 3);
     }
 }
@@ -753,7 +753,7 @@ static void em_act09(EMW *em) {
     case 2:
         w->x1A = 0;
         talk_move(em);
-        if (pl->talk == 0) {
+        if (pl->x8C6 == 0) {
             em10_to_normal(em, 0, 2, 0);
         }
         break;
@@ -784,7 +784,7 @@ static void em_act10(EMW *em) {
             em->x0E = em->ang[1];
             cpRotMatrix(em->ang, em->mat);
         }
-        if (em10_search_set(em) == 1 && pl->talk != 0) {
+        if (em10_search_set(em) == 1 && pl->x8C6 != 0) {
             em_act_set(em, 0, 3);
         }
         break;
@@ -804,7 +804,7 @@ static void em_act11(EMW *em) {
         if (em->x194 == 0) {
             em10_to_normal(em, 0, 4, 0);
         }
-        if (em10_search_set(em) == 1 && pl->talk != 0) {
+        if (em10_search_set(em) == 1 && pl->x8C6 != 0) {
             em_act_set(em, 0, 3);
         }
         break;
