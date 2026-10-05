@@ -203,8 +203,7 @@ void add_prim(void *ot, PRIM *p, int pri, int kind)
 }
 
 /* ------------------------------------------------------------ game loop */
-void set14_set(void);
-void set00_set(void);
+void stage_set_set(int stage);
 void rt_fl_reset_states(void);
 
 void rt_game_init(int stage)
@@ -213,18 +212,7 @@ void rt_game_init(int stage)
     game_w.stage = (u8)stage;
     game_w.master = 0;
     stage_work.timer = 0;
-    /* The stage's own set spawn list is not decompiled yet: spawn set14
-     * (UV-scrolled waterfalls/water) by hand on the stages it handles. */
-    switch (stage) {
-    case 0: case 1: case 3: case 4: case 0x1A: case 0x2A: case 0x33: case 0x34: case 0x35:
-        set14_set();
-        break;
-    }
-    switch (stage) {   /* set00: translucent scrolling billboards */
-    case 4: case 8: case 0x1A: case 0x29: case 0x2A: case 0x2B:
-        set00_set();
-        break;
-    }
+    stage_set_set(stage);   /* the game's own spawn list (src/main/stage/stage_set.c) */
 }
 
 void rt_game_move(void)
