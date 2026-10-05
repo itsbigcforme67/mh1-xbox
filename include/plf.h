@@ -57,7 +57,7 @@ void Pl_ofs_set(PLW *, f32 *, int);
 void Pl_reg_calc(PLW *);
 u16 Pl_shell_set(PLW *, int, int);
 s8 Pl_slash_lv_ck(PLW *, u16);
-void Pl_view_reset(PLW *, int, int, int);
+void Pl_view_reset(PLW *);
 void Shell_type_set(PLW *, int);
 void World_calc(PLW *);
 void flvecCopy(f32 *, f32 *);
@@ -164,4 +164,7 @@ void pl_mv004(PLW *, u32);
 extern s16 mv001_tbl[];
 int frame_check(f32, PLW *, int);
 void pl_mv001(PLW *, u32);
+void rate_g_calc(PLW *, int);
+void rate_add_g(int, int, u8);
+void rate_clear(PLW *, int, int, u8);
 #endif

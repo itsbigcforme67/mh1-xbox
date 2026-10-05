@@ -326,3 +326,117 @@ go:
         }
     }
 }
+
+void pl_mv006(PLW *pl, s32 arg1) {
+    int sp4C;
+    f32 sp40[3];
+    f32 sp30[3];
+    f32 f;
+    u8 s;
+
+    pl->work08++;
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl->st = 2;
+        pl->x763 = 0;
+        Pl_view_reset(pl);
+        switch (arg1) {
+        default:
+            pl_chr_set2(pl, 0xF, 0, 0);
+            pl->vel[0] = 0.0f;
+            pl->vel[2] = 20.0f;
+            pl->vel[1] = 18.0f;
+            pl->acc[0] = 0.0f;
+            pl->acc[2] = -(pl->vel[2] / 80.0f);
+            rate_g_calc(pl, 0x13);
+            if (pl->flag604 != 0) {
+                pl->flag604 = 2;
+            }
+            break;
+        case 1:
+            pl_chr_set2(pl, 0xF, 8, 0x20);
+            pl->flag604 = 0;
+            pl->vel[0] = 0.0f;
+            pl->vel[2] = 8.0f;
+            pl->vel[1] = -10.0f;
+            pl->acc[2] = 0.0f;
+            pl->acc[0] = 0.0f;
+            pl->acc[1] = -0.72727275f;
+            break;
+        }
+        action_timer_calc(pl, 0);
+        Pl_basic_flagset(pl, 2, 0, 0);
+        pl->work08 = 0;
+        pl->x07 = 0;
+        break;
+    case 1:
+        pl->vel[0] = pl->vel[0] + pl->acc[0];
+        pl->vel[1] = pl->vel[1] + pl->acc[1];
+        pl->vel[2] = pl->vel[2] + pl->acc[2];
+        if (pl->vel[0] < 0.0f) {
+            pl->vel[0] = 0.0f;
+        }
+        if (pl->vel[2] < 0.0f) {
+            pl->vel[2] = 0.0f;
+        }
+        sp40[0] = pl->vel[0];
+        sp40[1] = pl->vel[1];
+        sp40[2] = pl->vel[2];
+        flvecApplyMat33(sp30, sp40, (f32 *)((u8 *)pl + 0x20));
+        pl->pos[0] = pl->pos[0] + sp30[0];
+        pl->pos[1] = pl->pos[1] + sp30[1];
+        pl->pos[2] = pl->pos[2] + sp30[2];
+        if (pl->x06 < 5) {
+            f = pl->work19C;
+            if (!(f < 10.0f) && (f <= 40.0f) && (pl->sw.trg & 0x4000)) {
+                pl->x05 = 1;
+                pl->x06++;
+            }
+        }
+        if (pl->vel[1] < 0.0f) {
+            if ((front_land_ck(55.0f, 180.0f, 30.0f, pl, &sp4C) != 0) && (pl->vital > 0) && (pl->work937 < 0x15)) {
+                pl->ang_y = pl->ang[1];
+                Pl_act_set2(pl, 0, 0x1B, 4);
+                break;
+            }
+            f = pl->x5AC;
+            if (!(f < pl->pos[1])) {
+                pl->pos[1] = f;
+                pl->st = 0;
+                pl->flag604 = 0;
+                if ((pl->vital <= 0) && (Pl_master_ck(pl) == 1)) {
+                    func_639F20(pl);
+                    break;
+                }
+                if (pl->work08 >= 0x1E) {
+                    Pl_act_set2(pl, 0, 0x26, 0);
+                    break;
+                }
+                pl->x05++;
+                if ((pl->flag12 == 0) && (pl->sw.now & 0x10) && (stick_pow_get(pl, 0) & 0xFF)) {
+                    pl->x07 = 1;
+                    pl_chr_set2(pl, 0x10, 0, 0);
+                    break;
+                }
+                pl->x07 = 0;
+                pl_chr_set2(pl, 0x3E, 0, 0);
+            }
+        }
+        break;
+    case 2:
+        if (pl->work194 == 0) {
+            if (pl->x07 == 0) {
+                pl_to_normal(pl, 0, 8, 0);
+                break;
+            }
+            if (pl->work81E == 0) {
+                Pl_act_set2(pl, 0, 0x46, 0);
+                break;
+            }
+            Pl_act_set2(pl, 0, 0x20, 0);
+        }
+        break;
+    }
+}

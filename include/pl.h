@@ -83,7 +83,7 @@ typedef struct PLW {
     u8 _pad15C[0x38];
     s32   work194;           /* 0x194 */
     s32   chr_no0;       /* 0x198 */
-    u8 _pad19C[0x1A0 - 0x19C];
+    f32   work19C;           /* 0x19C */
     f32   chr_spd0;      /* 0x1A0 */
     u8 _pad1A4[0x1E8 - 0x1A4];
     s32   chr_no1;       /* 0x1E8 */
@@ -136,7 +136,8 @@ typedef struct PLW {
     s32 x3A8;                /* 0x3A8 angle the camera turns to on reset (cam_sub_std) */
     u8 _pad3AC[0x3B0 - 0x3AC];
     void *x3B0;          /* 0x3B0 player marked by eft26 (eft26_m); type unknown */
-    s32   work3B4[6];    /* 0x3B4 */
+    f32   vel[3];            /* 0x3B4 velocity applied in the air/jump actions (pl_mv006/021) */
+    f32   acc[3];            /* 0x3C0 per-frame change of vel (rate_g_calc) */
     struct PLPROG *prog; /* 0x3CC table of state handlers (pl_work_clr); see PLPROG */
     s8    work3D0;       /* 0x3D0 */
     s8    work3D1;       /* 0x3D1 */
@@ -339,7 +340,8 @@ typedef struct PLW {
     u8 _pad932[0x934 - 0x932];
     s16   work934;           /* 0x934 */
     u8    work936;           /* 0x936 */
-    u8 _pad937[0xA00 - 0x937];
+    s8    work937;           /* 0x937 */
+    u8 _pad938[0xC8];
 } PLW;
 
 extern PLW player_work[];
