@@ -57,6 +57,7 @@ s16 em_hp_vital_set2(EMW *, s16, s16);
 int em_act_search(void *);
 void em_char_set(EMW *, int, int, int);
 void em_char_set2();
+void em_char_set2();
 void em_act_set(EMW *, int, u16);
 int em_frame_check(EMW *, f32, int);
 int em_frame_check2(EMW *, int, f32);
@@ -174,6 +175,17 @@ void em02_fly_adjy2_init(EMW *, u8);
 u16 em02_senkai_target(EMW *);
 void em02_main_sub(EMW *em, EM02W *w);
 void em02_to_normal(EMW *em);
+void em02_senkai_player(EMW *);
+void shell04_set(EMW *, int);
+void Eft17_set(EMW *, int, int, int);
+void Shell08_set_ang(EMW *, s16, u8, u8, u16, u16);
+void em_sleep_eff_set(EMW *, int, f32 *, f32);
+void mot_miration_ret(EMW *, f32 *);
+void xang_calc_target(EMW *, int *, f32, f32);
+void speed_add(EMW *, s32 *);
+void speed_add_g(EMW *, s32 *);
+int em_frame_check2(EMW *, int, f32);
+int em_frame_check(EMW *, f32, int);
 void em02_to_fly(EMW *em, int mode);
 void em_no_battle_area_ck(EMW *, int, int);
 void F_DragonEscapeCamera(EMW *);
@@ -399,5 +411,265 @@ void em02_main(EMW *em) {
     if (em->x6FF != 0) {
         em02_main_sub(em, w);
         em->x6FF = 0;
+    }
+}
+
+#define FLY_FLOOR(em)                    \
+    if ((em)->pos[1] < (em)->x5AC) {     \
+        (em)->pos[1] = (em)->x5AC;       \
+    }
+
+/* Turn toward the target by at most 0x40 per frame (same as em01/em03). */
+#define EM02_TURN(em)                                                     \
+    do {                                                                  \
+        int d;                                                            \
+        d = (u16)((u16)Em_Calc_angY((em)->pos, (em)->tgt_pos) - (em)->ang[1]); \
+        if (d <= 0x8000) {                                                \
+            if (d <= 0x3F) {                                              \
+                (em)->ang[1] += d;                                        \
+            } else {                                                      \
+                (em)->ang[1] += 0x40;                                     \
+            }                                                             \
+        } else if (d > 0xFFC0) {                                          \
+            (em)->ang[1] += d;                                            \
+        } else {                                                          \
+            (em)->ang[1] -= 0x40;                                         \
+        }                                                                 \
+    } while (0)
+
+static void em_act00_0057FA50(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        if (em->char0 != 0x3E9) {
+            em_char_set2(em, 0x3E9, 0xA, 0, 0);
+        }
+        if (em->x2DE != 0x44D) {
+            em_char_set2(em, 0x4B1, 0xA, 0, 1);
+        }
+        if (em->x2E0 != 0x4B1) {
+            em_char_set2(em, 0x579, 0xA, 0, 2);
+        }
+        break;
+    case 1:
+        if (--em->work08 <= 0) {
+            em->x839 = 1;
+        }
+        break;
+    }
+}
+
+static void em_act01_0057FB30(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 1, 0, 0);
+        break;
+    case 1:
+        if (em->x8C3 == 0 && em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_act02_0057FBC0(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x1E, 0, 0);
+        break;
+    case 1:
+        if (em->x8C3 == 0 && em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_act03_0057FC50(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x20, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_act04_0057FCD0(EMW *em, EM02W *w) {
+    f32 v[3];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x22, 0, 0);
+        em->x88B = 0;
+        Em_Sleep_Start(em);
+        break;
+    case 1:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em02_act_set(em, 0, 5, 3);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            em02_act_set(em, 0, 5, 3);
+        }
+        break;
+    }
+    if (em_frame_check2(em, 0, 296.0f)) {
+        v[1] = 100.0f;
+        v[2] = 200.0f;
+        v[0] = 0.0f;
+        em_sleep_eff_set(em, 0x33, v, 1.6f);
+    }
+}
+
+static void em_act05_0057FDF0(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x1C, 0, 0);
+        em->x88B = 1;
+        Em_Sleep_End(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 8, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_act06_0057FEC0(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x1C, 0, 0);
+        Em_Mahi_End(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 8, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_mv00_0057FF80(EMW *em, EM02W *w) {
+    f32 v[4];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 2, 0, 0);
+        break;
+    case 1:
+        if (w->has_tgt != 0) {
+            EM02_TURN(em);
+        }
+        mot_miration_ret(em, v);
+        w->dist = w->dist - v[2];
+        if (w->dist <= 0.0f) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+static void em_mv01_005800C0(EMW *em, EM02W *w) {
+    u32 spd;
+    u32 d;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        d = (w->dang - em->ang[1]) & 0xFFFF;
+        if (d < 0xE39U || d >= 0xF1C8U) {
+            pl_flag_set((PLW *)em, 0x20000);
+            em_char_set(em, 2, 0, 0);
+        } else if (d >= 0x8000U) {
+            em_char_set(em, 3, 0, 0);
+        } else {
+            em_char_set(em, 4, 0, 0);
+        }
+        break;
+    case 1:
+        if (em->x1C4 == 0) {
+            spd = (u32)(372.0f * em->act_spd);
+            d = (w->dang - (u16)em->ang[1]) & 0xFFFF;
+            if (em->x194 == 0) {
+                if ((u32)((d + spd) & 0xFFFF) < spd * 2) {
+                    em->x05++;
+                    pl_flag_clr((PLW *)em, 0x20000);
+                    em02_to_normal(em);
+                    return;
+                }
+                if (d < 0xE39U || d >= 0xF1C8U) {
+                    pl_flag_set((PLW *)em, 0x20000);
+                    em_char_set(em, 2, 0, 0);
+                    return;
+                }
+                pl_flag_clr((PLW *)em, 0x20000);
+                if (d >= 0x8000U) {
+                    em_char_set(em, 3, 0, 0);
+                } else {
+                    em_char_set(em, 4, 0, 0);
+                }
+                return;
+            }
+            if (em_frame_check2(em, 0, 89.0f) == 0) {
+                if ((u32)((d + spd) & 0xFFFF) < spd * 2) {
+                    em->ang[1] = (u16)w->dang;
+                } else if (d < 0x8000U) {
+                    em->ang[1] = (em->ang[1] + spd) & 0xFFFF;
+                } else {
+                    em->ang[1] = (em->ang[1] - spd) & 0xFFFF;
+                }
+            }
+        }
+        break;
     }
 }
