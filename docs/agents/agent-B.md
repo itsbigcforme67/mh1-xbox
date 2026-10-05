@@ -546,3 +546,50 @@ More lessons (each confirmed by a match):
   ends with 1, 0xFF2A0000 (window) or 0, 0 (Tex variant).
 - Static (LOCAL in docs/survey/mh1_symbols.csv) helpers: tl_menu_cursor_up/down are static so plaza_selectMenu reads a stale t1 after calling them.
 - Integer arithmetic `master + (int)cw + 0x2BFE` fixes the operand order of the addu that `cw[...]` produces the other way round.
+
+# Lobby round 3 (agent B, 5 Oct 2026): client/UI region 0x590D40-0x5C4E60, automation
+Status of 0x590D40-0x5C4E60 (207 KB): ~75 KB matched and linked (lobby rebuild OK), ~98 KB compilable near-match C, ~34 KB with no C yet
+(mostly big UI drawing / plaza functions and the login/logout state machines). All five modules OK.
+Where the C lives:
+- `src/lobby/b/lb_bzNN.c` (registered as `b/lb_bzNN`): ~140 runs of functions that came out byte-identical from the auto pipeline
+  (`tools/lbauto.py` drafts, see agent-F.md) plus hand fixes. New tools for that pipeline:
+  `tools/lbe2.py` (second chance for drafts that did not compile: void * -> u8 *, jump-table reads `*((int)&TBL + i*4)` ->
+  `((int *)&TBL)[i]`, call tables -> `((int (**)())&TBL)[i]()`, s64 -> long long, redeclared externs dropped), `tools/lbcb.py`
+  (CallBack_Result_*: by-value `CNET_RES res` parameter spilled to the stack, stale temp args dropped), `tools/lbcws.py` (cw accessed through a
+  per-function struct), `tools/lbfld.py/lbfld2.py` (F(T,&lb_sys,off) -> typed members of include/lobby_b.h), `tools/lbvar.py` (`>= C` -> `> C-1`),
+  `tools/lbtail.py` (drop the `return;` m2c puts at the end of the last case), `tools/lbfix2.py` (`block_N: default: return X;` -> break + return).
+  `tools/lbf_merge.py` now takes LBFL (function list file), LBDIR (output dir under src/lobby), FORCE_OK (names check.py cannot verify).
+- `src/lobby/b/nm/NAME.c`: one near-match draft per function (compiles, not linked). Many are still m2c "int mode" code (pointers as int);
+  measure closeness with `python3 tools/align.py FILE FUNC | grep -c '^replace\|^insert\|^delete'` (hunks), the instruction count
+  from check.py is misleading when one missing/extra instruction shifts everything.
+- UI region: `src/lobby/lb/lbui_nm.c` + `include/lbui.h` (eat scene: Lb_eat 17 instrs off (a final `b end; nop` after case 7 not reproduced),
+  event_eat_rcpt/set_msg match, event_eat_trans_ot0 9 off (evaluation order of the two flfntLocate arguments), lb_eat_set 61 off);
+  item shop `src/lobby/lb/lbshop2_nm.c` + `include/lbshop2*.h` (new family in tools/lbregister.sh): Lb_shop_init_member, Lb_shop, lb_shop_select,
+  lb_shop_decide, lb_shop_listIcon match; lb_shop_put_itemDetail 6 off, CheckItemPrice_005AFEE0 24 off, tag_decide/item_select/checkMax parked.
+- npcCatWAITER written (lbnpc_nm.c, 379 instrs off: register allocation of the four callee-saved pointers, the logic is complete),
+  __cnet_bgProg_ReadRoomRule written (cnlbs_nm.c, 80 hunks, state machine complete), plaza_chatMain still 1 off (`addu` operand order),
+  lb_npc_old_guild 2 off (register of the constant 0x69).
+Lessons (each confirmed by a match):
+- Typed globals matter: `lb_sys`/`pNet`/`lb_pit` as struct members (`lb_sys.x06`) give the original `lui %hi(lb_sys+6)` per access;
+  `*((s8 *)&lb_sys + 6)` and F() macros make MWCC hoist the address into a saved register. include/lobby.h LB_SYS and include/lobby_b.h
+  LBSYS_B carry all offsets seen in the asm. A 1-byte symbol+offset access can also be done with a local overlay struct
+  (`((LBS1 *)&lb_sys)->x01++`).
+- The client work `cw` is a struct pointer in the original: three separate `cw->x2C31 / cw->x2C45` reads in one function (no temp variable) give the
+  original register allocation and the `addiu a2,a1,0x2C45` pointer; a temp `u8 *p = cw` does not (tools/lbcws.py).
+- Callbacks `CallBack_Result_*(CNET_RES res)`: 8-byte struct by value, spilled with sd, read with lb 0x18(sp).
+- `if (!(c)) return a; return K;` / `return c ? K : a;` removes a stray nop that `if (c) a = K; return a;` produces (lm_place_mv).
+- `if (x == 3) {..; return 0x40;} return 0;` compiles with `bne/b` only as a single-case `switch (x) { case 3: ...; default: return 0; }` (lm_*_mv).
+- A tail call with a constant argument (`str_stop(0)`, `fade_set(1)`, `To_LogOut(1)`): m2c drops the delay-slot `addiu a0`; also the delay-slot store before
+  `Init_InterruptFlag` is dropped (add `cw->x2C3F = 0` before the call).
+- A dead counter (`k++` never read) is removed by MWCC; the original keeps an index only when it is used (`eat_data_name[k]`/`eat_data_type[k]`).
+- K&R params keep the callee-side narrowing: `connect_ps2(a, b, c) int a; s16 b; s16 c; { struct {int a; s16 b; s16 c;} t; ... CpInetTcpOpen(&t); }`
+  spills the three arguments as one struct (4/4/2 bytes); a local array bigger than the passed size is real (Lbc_SendMiniData: `char sp10[0x20]`
+  passed to memcmp/memcpy with 0x40).
+- Constant-folded counts: `pages = cnt / 7; if (cnt % 7) pages++` with cnt = 20 is `3`.
+- Calls with stale argument registers: Lb_draw_square has six args (x, y, w, h, 0xFF602020, 1), Lb_put_itemIcon four; cnLBS_Read_RoomRule* take a third
+  (callback) argument that the matched 2-argument definitions pass through to __cnetSub_Set_BgProcess unchanged.
+- `u16` K&R params (`CheckItemPrice_005AFEE0(id, qty) u16 id; s16 qty;`) avoid the `andi` that a prototype adds at the call sites.
+- `Lb_eat`-style switch with an empty middle case: the jump table has 9 entries when cases 2 and 8 are absent but the highest label is 7 + `case 8: break;`.
+Not started / still asm in this region: draw_dialog_square, Draw_menu_square, DispButtonHelp, plaza_checkFriend (3.7 KB), plaza_searchMember,
+plaza_mailBox, the plaza *Trans functions (most have int-mode drafts in b/nm), Lb_put_new_mail, disp_status, lbc_login_*, lbc_logout_*, tk_logout,
+Lb_menu_move_Core/DispLobbyMenu, test_server_sel_disp, Display_StringData/Analysis_TagCode, lb_npc_init/lb_npc_trans/lb_npc_item_trans.
