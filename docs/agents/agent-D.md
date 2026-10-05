@@ -231,3 +231,93 @@ GetPachingerInfo take an unused first argument; 0x3F75BE0B is 55 degrees
 in radians (0.9599311f); `if (a == 1 || b) {zero} else {copy}` order
 (cam_sw_set_sub); statement order pl/npc/src in cam_plEX_zoom was found by
 permuting (scratch tools: /tmp/claude-1000/agentD/tryv.py, rep.py, carve.py).
+
+### f_cam update
+cam_t.c is split and linked (main OK): cam.c (0x21F3D0-0x21F464), camb.c
+(0x220420-0x2206A4), camc.c (0x221460-0x221700), camd.c (0x221820-
+0x221D28), came.c (0x221F90-0x2220C0), camf.c (point_cam_hit), camg.c
+(0x2227A0-0x222E20): 38 functions. cam_nm.c (not built) holds the whole
+file incl. near-matches SetCameraData, cam_init_sub_pchngr, pch_lock_chk,
+fish_cam_sub. Still no C for: CameraMove, cam_init_sub_std, cam_sub_std,
+cam_sub_stg, cam_sub_pchngr, cmd_set_pos, cmd_set_tar, cmd_cam_move,
+point_cam_sub (jump tables 0x36B0D0-0x36B178 still need main:rodata lines).
+
+f_cam update 2 (final state of this pass): built and byte-matching (main OK):
+cam.c, camm.c (CameraMove, cam_init_sub_std 0x21F590-0x21F9A8), camb.c,
+camp.c (cam_init_sub_pchngr, cam_sub_pchngr, pch_lock_chk 0x220EE0-0x221460),
+camc.c (PachiTypeCheck .. fish_cam_sub 0x221460-0x221814), camd.c
+(0x221820-0x222408: NPC zoom, demo camera, static get_em_local, cmd_set_pos,
+cmd_set_tar, cmd_copy, get_angle, cmd_cam_move, point_cam_hit; jump tables
+0x36B0D0-0x36B108), camg.c (cam2view .. cam_sw_set_sub). 46 of 51 functions.
+Still asm: SetCameraData (66/72; C in cam_nm.c, 65 diffs whatever the
+declaration order: the original loop shape differs), cam_sub_std (65/668:
+angle smoothing registers ca/da, two stray nops after the k switch and the
+blend-rate if), cam_sub_stg (written, 409/524: register assignment of
+cw/cs/area/d/spl and the smoothing blocks, not worked through), point_cam_sub
+(28/225: command pointer a2 vs a3). All in src/main/cam/cam_nm.c.
+Lessons:
+- get_em_local must be `static` and defined BEFORE its callers in the same
+  file: MWCC then knows its clobber set and keeps `out` in a temp register
+  across the call (cmd_set_pos/tar). Otherwise a saved register is used.
+- Float-last prototypes: cpInterVector(f32 *out, f32 *a, f32 *b, f32 t) and
+  flvecRotY(f32 *v, f32 a) (flvecRotX likewise); with the float first the
+  `mov.s $f12` is scheduled too early. act_ck returns int here (an s16
+  prototype adds a sign-extend; PachiTypeCheck casts, cam_sub_std does not).
+- A 6-entry switch with an empty `case 5:` gets a jump table (sltiu 6);
+  without it, an if-chain. Source case order = body order; the compare chain
+  of a small switch comes out reversed from the source order (pch_lock_chk:
+  write the cases in reverse of the original's compare order).
+- `if (a <= 0 || b >= 0) {loop} else {finish}` gave the original layout where
+  `if (a > 0 && b < 0) {finish} else {loop}` did not (point_cam_sub case 21).
+- `if (f != 1) { if (f != 0) {A} else {B} } else {B}` (B duplicated) gives
+  the original's code for `f != 1 && f != 0`; `&&` gave a different layout.
+- `switch (x) { default: k = 950; break; case 2: k = -950; break; }` gave the
+  original's unfilled-delay-slot layout for a two-way constant choice.
+- `a > 0x60` (u16 field) compiled with `slti at`; `a >= 0x61` did not.
+- A global pointer hoisted into a local (`spl = SplineRvalue`) is how the
+  original gets a saved register for it (cam_sub_stg).
+- cmd_cam_move constant 0x38C90FDB = 0.000095873799f (2*pi/65536).
+- Frame/ordering tool: /tmp/claude-1000/.../scratchpad/dperm2.py permutes the
+  first N declaration lines and keeps the best (same idea as tools/declbf.py
+  but with a count limit; declbf over 7 lines is too slow).
+Shared header: include/cam.h area_chg is u8 (lbu in cam_sub_std).
+
+## f_weapon (0x163AB0-0x1678xx, display "trans" code) - started
+Built and byte-matching (main OK): src/main/weapon/trans.c (TransReset,
+TransSet, GameTrans, trans; 0x163AB0-0x163D20), weapon.c (SetPartsTrans,
+SetPartsTrans2, weapon_dat_make/2/3; 0x163E40-0x16440C), weapon2.c
+(sight_disp2, sight_disp_ballista; 0x164D60-0x164F68). Parked as near-match
+in src/main/weapon/weapon_nm.c: trans_pl_sub/Lb_trans_pl/Ed_trans_pl (10/23:
+the original keeps an empty then-block, call placed after `b end`),
+weapon_joint_calc (jump table ok, ~440/600 differ in layout; written as C).
+Not started: pl_item_trans_sub, pl_item_trans (3.8 KB), weapon_trans (5.4 KB),
+player_trans, lb_pl_item_trans, Lb_player_trans, Ed_player_trans,
+enemy_trans, player_mat_calc, player_modify, player_mk, get_tex_num,
+Material_set_sub, plplAdd2. These are display transforms (skeleton/weapon
+model draw for the PS2 renderer): low value for the Xbox port, which will
+redraw them on its own renderer.
+- `for (i = 0; i < 0x40; i++) trans_func[i] = 0;` compiles to the original's
+  8x unrolled loop (TransReset); do not hand-unroll.
+- ot4..ot8 are 4-byte objects in .sdata (declare `extern u8 ot4[4]`).
+- `if (a == 0) {} else {r = v}` kept as an empty then-block by the original
+  is reproduced by `switch (a) { case 0: r = v; break; default: break; }`
+  (weapon_joint_calc) but not for trans_pl_sub.
+- The jump table for a switch on a 0..5 value needs an explicit `case 0:`
+  before `default:` when the original table sends 0 to default.
+- Locals `f32 *vy = &v[1], *vz = &v[2];` reproduce the original's hoisted
+  element pointers (sight_disp2/ballista).
+
+## f_cam_223B50 (rail camera, spline, wall hit camera) - started
+Linked: camr1.c (vInnerProductXZ, vInnerProduct), camr3.c (dCnvComplex,
+dSubComplex, dMulComplex). Near-match in camr_nm.c: ZoomRateCalc (8/34),
+ZoomBaseAngleRail (1/10), RollAngleRail (11/28), dDivComplex (13/34),
+QuestClearCameraRequest (33/65; C complete). Not started: cam_rail_move_sub,
+cam_rail_move, cam_rail_move_0, CamRailMove, CamRailPoint, GetOrthogonalPoint
+(finds the t where the camera rail cubic is nearest to a point: builds the
+degree-5 polynomial of (P(t)-Q).P'(t), solves it with DKA5 (Durand-Kerner,
+complex roots, uses the d*Complex helpers) or Cardano/linear when the
+leading terms are below 1e-10; keeps roots with |im| < 0.001), tri_diag and
+Spline (natural cubic spline via tridiagonal solves, 0x30 bytes of
+coefficients per segment), DKA5, Cardano, k_HitWallCamera, k_HitEmCamera.
+m2c cannot read mula.s/madd.s: read the asm.
+- Float-last prototypes again: ScaleVector(f32 *out, f32 *in, f32 t).

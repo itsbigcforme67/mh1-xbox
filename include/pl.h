@@ -38,10 +38,13 @@ typedef struct PLPROG {
 } PLPROG;
 
 /* One slot of the item pouch (PLW.item[20]): item id (index into Item_data) and count. */
+#ifndef PL_ITEM_DEFINED
+#define PL_ITEM_DEFINED
 typedef struct PL_ITEM {
     u16 id;
     s16 num;
 } PL_ITEM;
+#endif
 
 typedef struct PLW {
     u8    be_flag;       /* 0x000 in use (set05_m) */
@@ -259,7 +262,9 @@ typedef struct PLW {
     u8 _pad81D[0x81E - 0x81D];
     u8    work81E;           /* 0x81E */
     u8    work81F;           /* 0x81F */
-    u8 _pad820[0x828 - 0x820];
+    u8 _pad820[0x824 - 0x820];
+    void *x824;              /* 0x824 monster that holds/targets this player? cleared by Quest_next_em_clr */
+
     PL_ITEM item[20];        /* 0x828 item pouch, 20 slots (Pl_item_charge, item_sel_sub); the ammo slot is picked by Pl_shell_set */
     void *fish878;           /* 0x878 hooked fish? +0x14 u16 angle (cam_plEX_fishing) */
     s16   work87C;       /* 0x87C */
@@ -316,7 +321,7 @@ typedef struct PLW {
     u16   work918;           /* 0x918 */
     u16   work91A;           /* 0x91A */
     u16   work91C;           /* 0x91C */
-    s8    work91E;           /* 0x91E */
+    u8    work91E;           /* 0x91E (u8: lbu in result_init) */
     s8    work91F;           /* 0x91F */
     u8 _pad920[0x930 - 0x920];
     u16   work930;           /* 0x930 */

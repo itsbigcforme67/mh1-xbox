@@ -51,7 +51,7 @@ void flmatCopy(FLMAT *, FLMAT *);
 void flmatRotZ33(FLMAT *, f32);
 void SetFilterMode(int);
 void hit_cap_pk(SET13_CAP *, void *);
-int hit_cap_sphr_m(f32, void *, f32 *, void *);
+u8 hit_cap_sphr_m(void *k, f32 *c, void *out, f32 r);   /* hit2c.c */
 
 void set13_disp_pos_calc(f32 *out, f32 *dir, f32 d) {
     f32 y = dir[1];

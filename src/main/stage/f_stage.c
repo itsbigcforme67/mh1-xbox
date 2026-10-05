@@ -47,26 +47,6 @@ void flSetRenderState();
 void clay_attr_set();
 void flExecuteClay();
 
-void clr_stg_work(void) {
-    memset(&stage_work, 0, 0x64);
-}
-
-void clr_flash(void) {
-    flash_flag = 0;
-    flash_timer = 0;
-}
-
-s16 Stage_env_ck(u8 stg) {
-    return Stg_env_type[stg];
-}
-
-void Pile_on(void) {
-    game_w.x1B2 = 1;
-    if (Pl_master_ck() != 0) {
-        PilebunkerCameraRequest();
-    }
-}
-
 void stage_mv_ck(void) {
     STG_MV *p;
     PLW *pl = &player_work[game_w.master];
@@ -128,9 +108,30 @@ void stage_mv_ck(void) {
             pl->work740 = p->dest[1];
             pl->work744 = p->dest[2];
             pl->work570 = p->ang + 0x4000;
-            Pl_ofs_set(pl, &pl->work73C, pl->work570);
+            Pl_ofs_set(pl, &pl->work73C, (u16)pl->work570);
             net_send_pl(pl, 5, 0);
         }
+    }
+}
+
+
+void clr_stg_work(void) {
+    memset(&stage_work, 0, 0x64);
+}
+
+void clr_flash(void) {
+    flash_flag = 0;
+    flash_timer = 0;
+}
+
+s16 Stage_env_ck(u8 stg) {
+    return Stg_env_type[stg];
+}
+
+void Pile_on(void) {
+    game_w.x1B2 = 1;
+    if (Pl_master_ck() != 0) {
+        PilebunkerCameraRequest();
     }
 }
 
@@ -184,79 +185,4 @@ void stage_i(STGW *w) {
     pos[0] = p[0];
     pos[2] = p[1];
     se_req2(7, 0x21, 0, pos, n, 0);
-}
-
-void stage_se_move(void) {
-    PLW *pl = &player_work[game_w.master];
-    f32 *p;
-    f32 px, pz, best, d;
-    int cnt;
-    f32 pos[3];
-    s16 n;
-    int i;
-
-    if (((*(u16 *)&game_w.x1E) & 3) != 0) {
-        return;
-    }
-    pos[1] = 0;
-    cnt = 3;
-    switch (game_w.stage) {
-    case 0x1A:
-        p = st26_se_pos[0];
-        cnt = 6;
-        n = 9;
-        break;
-    case 1:
-        p = st01_se_pos[0];
-        n = 9;
-        break;
-    case 3:
-        pos[0] = st03_se_pos2[0];
-        pos[2] = st03_se_pos2[1];
-        se_req2(7, 0x22, 0, pos, 0xB, 1);
-        p = st03_se_pos[0];
-        cnt = 2;
-        n = 9;
-        break;
-    case 0x30:
-        p = st48_se_pos[0];
-        cnt = 2;
-        n = 9;
-        break;
-    case 0x34:
-        p = st52_se_pos[0];
-        cnt = 3;
-        n = 9;
-        break;
-    case 0x36:
-        p = st54_se_pos[0];
-        cnt = 6;
-        n = 9;
-        break;
-    case 0x3E:
-        p = st62_se_pos[0];
-        cnt = 4;
-        n = 0xB;
-        break;
-    default:
-        return;
-    }
-    px = pl->pos[0];
-    pz = pl->pos[2];
-    best = -1.0f;
-    for (i = 0; i < cnt; i++, p += 2) {
-        f32 dx = px - p[0];
-        f32 dz = pz - p[1];
-        d = flSqrt(dx * dx + dz * dz);
-        if (best < 0.0f || best > d) {
-            best = d;
-            pos[0] = p[0];
-            pos[2] = p[1];
-        }
-    }
-    if (game_w.stage == 0x1A) {
-        se_req2(7, 0x22, 0, pos, n, 1);
-    } else {
-        se_req2(7, 0x21, 0, pos, n, 1);
-    }
 }
