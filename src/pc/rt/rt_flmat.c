@@ -172,3 +172,84 @@ f32 flSqrt(f32 x) { return sqrtf(x); }
 f32 flAbs(f32 x) { return fabsf(x); }
 f32 flArcSin(f32 x) { return asinf(x < -1.0f ? -1.0f : x > 1.0f ? 1.0f : x); }
 f32 flArcCos(f32 x) { return acosf(x < -1.0f ? -1.0f : x > 1.0f ? 1.0f : x); }
+
+/* ------------------------------------------------------------ more helpers (set09) */
+f32 flSin(f32 a) { return sinf(a); }     /* flPS2SinFast: an approximation on the PS2 */
+f32 flCos(f32 a) { return cosf(a); }
+f32 flArcTan2(f32 y, f32 x) { return atan2f(y, x); }   /* j atan2f */
+
+void flmatGetTrans(f32 *v, FLMAT *m)
+{
+    v[0] = (*m)[3][0];
+    v[1] = (*m)[3][1];
+    v[2] = (*m)[3][2];
+}
+
+/* flmatMakeScale: identity with the scale on the diagonal (row 3 = 0,0,0,1). */
+void flmatMakeScale(FLMAT *m, f32 x, f32 y, f32 z)
+{
+    flmatInit(m);
+    (*m)[0][0] = x;
+    (*m)[1][1] = y;
+    (*m)[2][2] = z;
+}
+
+/* flmatMul33(dst, a, b): dst 3x3 = a * b; dst's w column and row 3 are kept. */
+void flmatMul33(FLMAT *dst, FLMAT *a, FLMAT *b)
+{
+    FLMAT t;
+    int i, k;
+    for (i = 0; i < 3; i++)
+        for (k = 0; k < 3; k++)
+            t[i][k] = (*a)[i][0] * (*b)[0][k] + (*a)[i][1] * (*b)[1][k] + (*a)[i][2] * (*b)[2][k];
+    for (i = 0; i < 3; i++)
+        for (k = 0; k < 3; k++)
+            (*dst)[i][k] = t[i][k];
+}
+
+/* flmatRotXYZ33(m, x, y, z): m = m * Rx(x) * Ry(y) * Rz(z) (same VU0 blocks
+ * as flmatSetXYZ33, without the reset). */
+void flmatRotXYZ33(FLMAT *m, f32 x, f32 y, f32 z)
+{
+    flmatRotX33(m, x);
+    flmatRotY33(m, y);
+    flmatRotZ33(m, z);
+}
+
+/* RotateX/Y/Z (g_cpAng2Rad): m = R(a) * m on the 3x3 part. */
+static void rotate_pre(FLMAT *m, void (*rot)(FLMAT *, f32), f32 a)
+{
+    FLMAT r;
+    flmatInit(&r);
+    rot(&r, a);
+    flmatMul33(m, &r, m);
+}
+void RotateX(FLMAT *m, f32 a) { rotate_pre(m, flmatRotX33, a); }
+void RotateY(FLMAT *m, f32 a) { rotate_pre(m, flmatRotY33, a); }
+void RotateZ(FLMAT *m, f32 a) { rotate_pre(m, flmatRotZ33, a); }
+
+/* flvecApplyMat33(out, v, m): out = v * m (3x3). */
+void flvecApplyMat33(f32 *out, f32 *v, FLMAT *m)
+{
+    f32 x = v[0], y = v[1], z = v[2];
+    out[0] = x * (*m)[0][0] + y * (*m)[1][0] + z * (*m)[2][0];
+    out[1] = x * (*m)[0][1] + y * (*m)[1][1] + z * (*m)[2][1];
+    out[2] = x * (*m)[0][2] + y * (*m)[1][2] + z * (*m)[2][2];
+}
+
+/* flvecRotY(v, a): v = v * Ry(a) (x' = c x + s z, z' = -s x + c z). */
+void flvecRotY(f32 *v, f32 a)
+{
+    f32 s = sinf(a), c = cosf(a), x = v[0], z = v[2];
+    v[0] = c * x + s * z;
+    v[2] = -s * x + c * z;
+}
+
+/* calc_vec_ang (g_cpAng2Rad): angle of (x0 - x1, z0 - z1), 0x10000 per
+ * turn: atan2(-dz, dx) of the normalised vector. */
+u16 calc_vec_ang(f32 x0, f32 z0, f32 x1, f32 z1)
+{
+    f32 v[3] = { x0 - x1, 0.0f, z0 - z1 };
+    flvecNormalize(v);
+    return (u16)(int)(65536.0f * atan2f(-v[2], v[0]) / 6.2831855f + 0.5f);
+}

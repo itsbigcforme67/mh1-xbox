@@ -33,6 +33,11 @@ s16 set00_st04_dir_tbl[2], set00_st08_dir_tbl[6], set00_st26_dir_tbl[2];
 s16 set00_st41_dir_tbl[1][2], set00_st42_dir_tbl[2], set00_st43_dir_tbl[2];
 f32 set00_st26_scale_tbl[2], set00_st41_scale_tbl[1][3], set00_st42_scale_tbl[2];
 
+/* set09 (src/game/set/set09.c) and the stage start positions (main) */
+f32 set09_st08_beetle_tbl[4][3], set09_st05_type09_pos[16], set09_st33_bird_tbl[2][3];
+u16 set09_st05_type09_ang[16];
+f32 stage_start_pos[88][3];
+
 static const struct {
     const char *name;
     uint32_t va;
@@ -63,6 +68,11 @@ static const struct {
     T(set00_st42_dir_tbl, 0x389AB4, 4),
     T(set00_st42_scale_tbl, 0x389AB8, 8),
     T(set00_st43_dir_tbl, 0x389AC0, 4),
+    T(set09_st08_beetle_tbl, 0x677A10, 0x30),
+    T(set09_st05_type09_pos, 0x677A40, 0x40),
+    T(set09_st05_type09_ang, 0x677A80, 0x20),
+    T(set09_st33_bird_tbl, 0x677AA0, 0x18),
+    T(stage_start_pos, 0x2F2620, 0x420),
     T(st00_mdl_tbl, 0x389AC8, 8),
     T(st01_mdl_tbl, 0x389AD0, 8),
     T(st04_mdl_tbl, 0x389AD8, 8),

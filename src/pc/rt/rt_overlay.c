@@ -31,11 +31,13 @@ STUB(func_61F2C0, "Set04_set", (void))
 STUB(func_61F7E0, "Set05_set", (int stage))
 STUB(func_6206D0, "set07_set", (void))
 STUB(func_620B70, "set08_set", (void))
-STUB(func_618CA0, "set09_set", (void))
+void set09_set(void);
+void func_618CA0(void) { set09_set(); }
 STUB(func_621C70, "Set10_set", (void))
 STUB(func_622180, "set11_set", (void))
 STUB(func_624050, "set15_set", (void))
 STUB(func_625120, "set16_set", (void))
+
 STUB(func_625630, "set17_set", (void))
 STUB(func_625BB0, "Set18_set", (void))
 STUB(func_6263B0, "Set19_set", (void))

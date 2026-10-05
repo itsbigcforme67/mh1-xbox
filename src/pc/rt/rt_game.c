@@ -120,6 +120,7 @@ u32 ran_suu(int ch)
 static union { SETW w; u8 raw[0x80]; } set_pool[SET_MAX];
 static unsigned char set_used[SET_MAX];
 static void *set_heap[SET_MAX];
+static unsigned char set_seen[SET_MAX];     /* RT_TRACE: reported once */
 
 SETW *pull_set_work(int n)
 {
@@ -128,6 +129,7 @@ SETW *pull_set_work(int n)
         if (!set_used[i]) {
             memset(&set_pool[i], 0, sizeof set_pool[i]);
             set_used[i] = 1;
+            set_seen[i] = 0;
             set_pool[i].raw[0] = 1;
             if (n > 0) {
                 set_heap[i] = calloc((size_t)n, SET_HEAP_BLOCK);
@@ -228,13 +230,28 @@ void rt_game_move(void)
         nqueue[i] = 0;
     stage_work.timer++;
     for (i = 0; i < SET_MAX; i++)
-        if (set_used[i] && set_pool[i].w.move)
+        if (set_used[i] && set_pool[i].w.move) {
+            if (!set_seen[i] && getenv("RT_TRACE")) {
+                set_seen[i] = 1;
+                fprintf(stderr, "rt: set object %d: type %d arg %d\n", i, set_pool[i].w.type, set_pool[i].w.arg);
+            }
             set_pool[i].w.move(&set_pool[i].w);
+        }
 }
 
 void rt_game_draw(void)
 {
     int t, k;
+    static int traced;
+    if (!traced && getenv("RT_TRACE")) {
+        traced = 1;
+        for (t = 0; t < OT_N; t++)
+            for (k = 0; k < nqueue[t]; k++) {
+                SETW *o = (SETW *)queue[t][k].p->owner;
+                fprintf(stderr, "rt: ot%d prim pri %d owner type %d arg %d pos %.0f,%.0f,%.0f\n", t, queue[t][k].pri,
+                        o ? o->type : -1, o ? o->arg : -1, queue[t][k].p->pos[0], queue[t][k].p->pos[1], queue[t][k].p->pos[2]);
+            }
+    }
     for (t = 0; t < OT_N; t++)
         for (k = 0; k < nqueue[t]; k++) {
             PRIM *p = queue[t][k].p;

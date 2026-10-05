@@ -18,7 +18,8 @@ RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_gam
 # set13_trans (near-matches on the PS2 side, believed equivalent).
 GAME="src/game/set/set14_nm.c src/game/set/set00.c src/main/stage/stage_set.c \
       src/main/set/set13.c src/main/set/set13b.c src/main/set/set13c.c src/main/set/set13_nm.c \
-      src/main/hit/hit2.c src/main/hit/hit2c.c"
+      src/main/hit/hit2.c src/main/hit/hit2c.c \
+      src/game/set/set09.c"
 
 SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
 CFLAGS="-m32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
