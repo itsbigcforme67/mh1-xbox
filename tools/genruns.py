@@ -43,4 +43,8 @@ for k,run in enumerate(runs):
     args.append('%s:%s-%s'%(letters[k],f[2],l[2]))
     cfg.append('main 0x%08X 0x%08X %s%s'%(f[0],l[0]+l[1],os.path.relpath(prefix+letters[k],'src/main'),''))
 subprocess.run(['python3','tools/split_runs.py',nm,prefix]+args,check=True,capture_output=True)
+# strip static: the near-match file needs `static` helpers (callers keep values in temp registers), the linked run files must export them
+for a_ in args:
+    fn_=prefix+a_.split(':')[0]+'.c'
+    t_=open(fn_).read(); open(fn_,'w').write(re.sub(r'^static ','',t_,flags=re.M))  # strip static
 print('\n'.join(args)); print('\n'.join(cfg))

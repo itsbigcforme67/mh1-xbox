@@ -7,7 +7,7 @@
 typedef char *va_list;
 void str_gattai(char *dst, char *fmt, ...);
 QEM *em_work_serch2(s16, s16);
-int stolen_item_stack(int, s16);
+u16 stolen_item_stack(int, s16);
 void Quest_start();
 void Quest_retire_set();
 void Quest_error_set2();
@@ -21,7 +21,6 @@ void Quest_enemy_hagi_set();
 EMW * Em_direct_set();
 void Quest_next_em_clr();
 char * Quest_str_get();
-s16 stolen_item_num_ck();
 void Item_stolen();
 void Item_regained();
 void Share_item_conv();
@@ -166,6 +165,39 @@ typedef struct REMI {
     u16 id;             /* 0x02 item */
     u16 num;            /* 0x04 count */
 } REMI;
+
+int Ext_pick_point_set(a, pos)
+STIEM *a;
+f32 *pos;
+{
+    STIEM *s = StiEM_data;
+    int i;
+
+    ext_pick_point_fifo_ck();
+    for (i = 0; i < 20; i++, s++) {
+        if (s->id == 0xFFFF) {
+            if (pos == 0) {
+                s->pos[0] = a->pos[0];
+                s->pos[1] = a->pos[1];
+                s->pos[2] = a->pos[2];
+            } else {
+                s->pos[0] = pos[0];
+                s->pos[1] = pos[1];
+                s->pos[2] = pos[2];
+            }
+            s->rad = a->rad;
+            s->id = a->id;
+            s->cnt = a->cnt;
+            s->x14 = 2;
+            s->stg = a->stg;
+            s->x19 = a->x19;
+            s->x1A = a->x1A;
+            ext_pick_point_tbl_set((s8)i);
+            return i;
+        }
+    }
+    return -1;
+}
 
 u16 Ext_pick_point_cnt_ck(n)
 int n;

@@ -7,7 +7,7 @@
 typedef char *va_list;
 void str_gattai(char *dst, char *fmt, ...);
 QEM *em_work_serch2(s16, s16);
-int stolen_item_stack(int, s16);
+u16 stolen_item_stack(int, s16);
 void Quest_start();
 void Quest_retire_set();
 void Quest_error_set2();
@@ -21,7 +21,6 @@ void Quest_enemy_hagi_set();
 EMW * Em_direct_set();
 void Quest_next_em_clr();
 char * Quest_str_get();
-s16 stolen_item_num_ck();
 void Item_stolen();
 void Item_regained();
 void Share_item_conv();
