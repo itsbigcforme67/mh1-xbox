@@ -343,6 +343,8 @@ segments:
       - [0x08D880, c, fl/fm02]
       - [0x08D9C8, asm, text/plmemRegisterAlign]
       - [0x08D9D0, asm, text/f_plmemregisteralign]
+      - [0x08DF10, c, fl/pm01]
+      - [0x08DF50, asm, text/plmemRelease]
       - [0x08E430, asm, text/g_flpad_ram_clear]
       - [0x08F0B0, c, fl/rs01]
       - [0x08F0B8, asm, text/GetModelHeadAAN]
