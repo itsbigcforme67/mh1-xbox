@@ -3375,3 +3375,215 @@ static void em_atk16_0056EAD0(EMW *em, EM01W *w) {
     }
     FLY_FLOOR(em);
 }
+
+static void em_atk18_0056EF60(EMW *em, EM01W *w) {
+    f32 v[4];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x11, 0, 0);
+        break;
+    case 1:
+        if (w->has_tgt != 0) {
+            EM01_TURN(em);
+            mot_miration_ret(em, v);
+            w->dist = w->dist - v[2];
+            if (w->dist <= 500.0f) {
+                em->work08 = 1;
+            }
+        }
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 0x5B, 0, 0);
+            shell01_set(em, 0x24);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+/* A file static in the original. */
+void em_atk19(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x23, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+/* A file static in the original. */
+void em_atk20(EMW *em, EM01W *w) {
+    int done = 0;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x5C, 0, 0);
+        em01_fly_adjy2_init(em, 0xA);
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 94.0f)) {
+            em->x388 = 2;
+            done = em01_fly_adjy2(em);
+        }
+        if (done != 0 && em->pos[1] <= 372.0f + em->x5AC) {
+            em->x05++;
+            em_char_set(em, 0x5D, 0, 0);
+            em01_fly_adjy2_init(em, 0xB);
+        }
+        break;
+    case 2:
+        if ((em01_fly_adjy2(em) & 0xFF) && em->pos[1] <= em->x5AC) {
+            em->x05++;
+            em_char_set(em, 0x5E, 0, 0);
+            em->x388 = 0;
+            em->pos[1] = em->x5AC;
+            ground_land_eff_set_0057A7E0(em);
+            Em_set_quake_sub(em, 2);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+/* A file static in the original. */
+void em_atk23(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        break;
+    case 1:
+        if (em01_horm_main(em)) {
+            em->x05++;
+            em->x3F4 = 0;
+            em_char_set(em, 0x32, 0, 0);
+        }
+        break;
+    case 2:
+        if (em_frame_check2(em, 0, 256.0f) && em_frame_check2(em, 0, 316.0f) == 0 && !(*(u16 *)&game_w.x1E & 3)) {
+            Eft20_set(1.0f, em, 0x1A, 1);
+        }
+        if (em_frame_check(em, 78.0f, 0)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 0, 0x5B0, 0);
+        }
+        if (em_frame_check(em, 120.0f, 0)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 0, 0x4FA, 0);
+        }
+        if (em_frame_check(em, 164.0f, 0)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 0, 0x444, 0);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em->x3F4 = 0;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+/* A file static in the original. */
+void em_atk24(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        break;
+    case 1:
+        if (em01_horm_main(em)) {
+            em->x05++;
+            em->x3F4 = 0;
+            em_char_set(em, 0x2F, 0, 0);
+        }
+        break;
+    case 2:
+        if (em_frame_check2(em, 0, 154.0f) && em_frame_check2(em, 0, 276.0f) == 0) {
+            if (!(*(u16 *)&game_w.x1E & 3)) {
+                Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
+            }
+        } else if (em_frame_check(em, 78.0f, 0)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 0, 0xE39, 0);
+        }
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
+            em->x05++;
+            if (--w->x1A <= 0) {
+                em01_to_normal(em, 0, 0);
+            } else {
+                em01_horm_init(em);
+                em_act_set(em, 3, 0x18);
+            }
+        }
+        break;
+    }
+}
+
+/* A file static in the original. */
+void em_atk25(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        break;
+    case 1:
+        if (em01_horm_main(em)) {
+            em->x05++;
+            em->x3F4 = 0;
+            em_char_set(em, 0x2F, 0, 0);
+        }
+        break;
+    case 2:
+        if (em_frame_check2(em, 0, 154.0f) && em_frame_check2(em, 0, 276.0f) == 0) {
+            if (!(*(u16 *)&game_w.x1E & 3)) {
+                Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));
+            }
+        } else if (em_frame_check(em, 78.0f, 0)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 0, 0xF1C8, 0);
+        }
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
+            em->x05++;
+            if (--w->x1A <= 0) {
+                em01_to_normal(em, 0, 0);
+            } else {
+                em01_horm_init(em);
+                em_act_set(em, 3, 0x19);
+            }
+        }
+        break;
+    }
+}
