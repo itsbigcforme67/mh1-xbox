@@ -58,8 +58,11 @@ void user_data_copy(UDC_SRC *src, u8 slot) {
     BS8(dst, 0x37B) = Get_hunter_rank(dst);
 }
 
+extern f32 D_2F2624[];
+extern f32 D_2F2628[];
+
 void edit_pl_init_new(PLW *pl, s16 mode, u16 no) {
-    f32 *pos;
+    EDIT_W *e = &edit_w;
     pl->be_flag = 1;
     pl->x01 = 1;
     pl->id = no;
@@ -73,17 +76,16 @@ void edit_pl_init_new(PLW *pl, s16 mode, u16 no) {
     pl->chr_spd0 = 1.0f;
     pl->chr_spd1 = 1.0f;
     pl->flag12 = 0;
-    pl->pos[0] = stage_start_pos[game_w.stage][0];
-    pl->pos[1] = stage_start_pos[game_w.stage][1];
-    pos = stage_start_pos[game_w.stage];
-    pl->pos[2] = pos[2];
+    pl->pos[0] = ((f32 *)stage_start_pos)[game_w.stage * 3];
+    pl->pos[1] = D_2F2624[game_w.stage * 3];
+    pl->pos[2] = D_2F2628[game_w.stage * 3];
     pl->ang[1] = 0;
     pl->ang[0] = 0;
     pl->ang[2] = 0;
     pl->kind = 0;
     if (mode == 0) {
-        pl->work011 = *(u8 *)((u8 *)&edit_w + 4);
-        pl->work5FC = *(s32 *)((u8 *)&edit_w + 8);
+        pl->work011 = *(u8 *)((u8 *)e + 4);
+        pl->work5FC = e->col;
         pl->work352[0] = 1;
         pl->work352[1] = 1;
         pl->work352[2] = 1;
@@ -92,7 +94,7 @@ void edit_pl_init_new(PLW *pl, s16 mode, u16 no) {
         pl->work352[5] = 1;
         B8(pl, 0x607) = 0;
     }
-    pl_create_model(pl->id, mode, pos, game_w.stage * 12);
+    pl_create_model(pl->id);
     B32(pl, 0x50C) = get_mdlw_ptr(edit_top[(s16)no]);
     parts_init(pl);
     pl->work568 = get_prim();
@@ -109,7 +111,7 @@ void decide_chr_set(PLW *pl, u8 a, u8 b) {
 }
 
 void edit_pl_init(PLW *pl, s16 mode, u16 no) {
-    f32 *pos;
+    EDIT_W *e = &edit_w;
     pl->be_flag = 1;
     pl->x01 = 1;
     pl->id = no;
@@ -123,16 +125,15 @@ void edit_pl_init(PLW *pl, s16 mode, u16 no) {
     pl->chr_spd0 = 1.0f;
     pl->chr_spd1 = 1.0f;
     pl->flag12 = 0;
-    pl->pos[0] = stage_start_pos[game_w.stage][0];
-    pl->pos[1] = stage_start_pos[game_w.stage][1];
-    pos = stage_start_pos[game_w.stage];
-    pl->pos[2] = pos[2];
+    pl->pos[0] = ((f32 *)stage_start_pos)[game_w.stage * 3];
+    pl->pos[1] = D_2F2624[game_w.stage * 3];
+    pl->pos[2] = D_2F2628[game_w.stage * 3];
     pl->ang[1] = 0;
     pl->ang[0] = 0;
     pl->ang[2] = 0;
     if (mode == 0) {
-        pl->work011 = *(u8 *)((u8 *)&edit_w + 4);
-        pl->work5FC = *(s32 *)((u8 *)&edit_w + 8);
+        pl->work011 = *(u8 *)((u8 *)e + 4);
+        pl->work5FC = e->col;
         pl->work352[0] = 1;
         pl->work352[1] = 1;
         pl->work352[2] = 1;
@@ -141,7 +142,7 @@ void edit_pl_init(PLW *pl, s16 mode, u16 no) {
         pl->work352[5] = 1;
         B8(pl, 0x607) = 0;
     }
-    weapon_create_model(pl->work34C, pl->id, 0, game_w.stage * 12);
+    weapon_create_model(pl->work34C, pl->id, 0);
     pl_create_model(pl->id);
     armor_create_model(pl);
     yure_init(pl);

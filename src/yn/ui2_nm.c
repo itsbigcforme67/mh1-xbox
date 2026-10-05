@@ -378,7 +378,7 @@ void yn_dialog_font_once(s32 arg0) {
     YMSG *m;
     int x;
 
-    m = (YMSG *)((u8 *)yn_dialog_mes_tbl[M2C_FIELD(ynw, u8 *, 0x46)] + arg0 * 8);
+    m = &((YMSG *)yn_dialog_mes_tbl[M2C_FIELD(ynw, u8 *, 0x46)])[arg0];
     x = m->x;
     if (x == -1) {
         x = (s16)yn_center_x(m->str, 0x16);
@@ -1024,5 +1024,221 @@ void yn_sprite_draw_sub(int arg0, int arg1, int arg2) {
         a = 128.0f + 127.0f * flSin(3.1415927f * (f32)t / 2.0f / 16.0f);
         yn_sprite_draw_each(yn_spr_data + part[2] * 12, sel, arg1, arg2, ((u8)(int)a << 24) | 0xFFFFFF);
         flSetRenderState(0x5E, 0x32);
+    }
+}
+
+#define YS8(o) M2C_FIELD(ynw, s8 *, o)
+#define YU8(o) M2C_FIELD(ynw, u8 *, o)
+
+/* Draw the dialog parts for the current screen (ynw+0x42). */
+void yn_sprite_draw(void) {
+    int v;
+
+    switch (YS8(0x42)) {
+    case 1:
+        yn_sprite_draw_sub(5, 0, 0);
+        if (YS8(0x1C) > 2) {
+            yn_sprite_draw_sub(0x1F, 0, 0);
+        }
+        v = YS8(8);
+        if (v < 2) {
+            yn_sprite_draw_sub(7, 0, (s16)(v * 0x1A));
+        } else {
+            yn_sprite_draw_sub(7, 0, (s16)((YS8(0xB) - YS8(0xC)) * 0x1C + 0x3F));
+        }
+        break;
+    case 2:
+        yn_sprite_draw_sub(0x21, 0, 0);
+        yn_sprite_draw_sub(8, 0, (s16)(YS8(8) * 0x28));
+        break;
+    case 3:
+        yn_sprite_draw_sub(0xA, 0, 0);
+        yn_sprite_draw_sub(0xB, 0, 0);
+        yn_sprite_draw_sub(9, 0, (s16)(YS8(9) * 0x38));
+        break;
+    case 4:
+        yn_sprite_draw_sub(0xB, 0, 0);
+        if (YU8(0x1F) >= 4) {
+            yn_sprite_draw_sub(0xE, 0, 0);
+            yn_sprite_draw_sub(0xF, 0, 0);
+        }
+        yn_sprite_draw_sub(0x12, 0, (s16)((YS8(0xA) - YS8(0x15)) * 0x1C));
+        break;
+    case 17:
+        yn_sprite_draw_sub(0xB, 0, 0);
+        yn_sprite_draw_sub(0xD, 0, 0);
+        yn_sprite_draw_sub(0xE, 0, 0);
+        yn_sprite_draw_sub(0xF, 0, 0);
+        v = YU8(0x4B0) - YS8(0x14);
+        if (v >= 0 && v < 3) {
+            yn_sprite_draw_sub(0x10, 0, (s16)(v * 0x1C));
+        }
+        yn_sprite_draw_sub(0x11, 0, (s16)((YS8(0x12) - YS8(0x14)) * 0x1C));
+        break;
+    case 5:
+        yn_sprite_draw_sub(0xB, 0, 0);
+        yn_sprite_draw_sub(0xD, 0, 0);
+        yn_sprite_draw_sub(0x13, 0, (s16)(YU8(0x4AD) * 0x38));
+        yn_sprite_draw_sub(0x14, 0, (s16)(YS8(0xB) * 0x38));
+        break;
+    case 6:
+        yn_sprite_draw_sub(0xB, 0, 0);
+        yn_sprite_draw_sub(0xC, 0, 0);
+        if (YU8(0x4B4) != 0 && YU8(0x6B4) != 0) {
+            yn_sprite_draw_sub(0xD, 0, 0);
+        }
+        yn_sprite_draw_sub(0x12, 0, (s16)(YS8(0xC) * 0x38));
+        break;
+    case 7:
+        yn_sprite_draw_sub(0xB, 0, 0);
+        yn_sprite_draw_sub(0xC, 0, 0);
+        yn_sprite_draw_sub(0xD, 0, 0);
+        yn_sprite_draw_sub(0x15, 0, (s16)(YU8(0x4AE) * 0x38));
+        yn_sprite_draw_sub(0x16, 0, (s16)(YS8(0xD) * 0x38));
+        break;
+    case 8:
+        yn_sprite_draw_sub(0xB, 0, 0);
+        yn_sprite_draw_sub(0xC, 0, 0);
+        if (yn_netcnf_ip_check(ynw + 0xAB4) != 0 && yn_netcnf_ip_check(ynw + 0xAB8) != 0 &&
+            yn_netcnf_ip_check(ynw + 0xABC) != 0) {
+            yn_sprite_draw_sub(0xD, 0, 0);
+        }
+        if (YS8(0x39) == 0) {
+            yn_sprite_draw_sub(0x12, 0, (s16)(YS8(0xE) * 0x1C));
+        } else {
+            yn_sprite_draw_sub(0x17, (s16)(YS8(0x38) * 0x37), (s16)(YS8(0xE) * 0x1C));
+        }
+        break;
+    case 9:
+        yn_sprite_draw_sub(0xB, 0, 0);
+        yn_sprite_draw_sub(0xC, 0, 0);
+        yn_sprite_draw_sub(0xD, 0, 0);
+        yn_sprite_draw_sub(0x18, 0, (s16)(YU8(0x4AF) * 0x38));
+        yn_sprite_draw_sub(0x19, 0, (s16)(YS8(0xF) * 0x38));
+        break;
+    case 10:
+        yn_sprite_draw_sub(0xB, 0, 0);
+        yn_sprite_draw_sub(0xC, 0, 0);
+        if (yn_netcnf_ip_check(ynw + 0xAC0) != 0) {
+            yn_sprite_draw_sub(0xD, 0, 0);
+        }
+        if (YS8(0x39) == 0) {
+            yn_sprite_draw_sub(0x12, 0, (s16)(YS8(0x10) * 0x38));
+        } else {
+            yn_sprite_draw_sub(0x17, (s16)(YS8(0x38) * 0x37), (s16)(YS8(0x10) * 0x38));
+        }
+        break;
+    case 11:
+        yn_sprite_draw_sub(0xB, 0, 0);
+        yn_sprite_draw_sub(0xC, 0, 0);
+        if (YU8(0xAC8) != 0) {
+            yn_sprite_draw_sub(0xD, 0, 0);
+        }
+        yn_sprite_draw_sub(0x12, 0, 0x1C);
+        break;
+    case 14:
+        yn_sprite_draw_sub(0xB, 0, 0);
+        yn_sprite_draw_sub(0xC, 0, 0);
+        yn_sprite_draw_sub(0xD, 0, 0);
+        yn_sprite_draw_sub(0x12, 0, 0x1C);
+        break;
+    case 12:
+        yn_sprite_draw_sub(0xA, 0, 0);
+        break;
+    case 13:
+        yn_sprite_draw_sub(0xB, 0, 0);
+        if (YS8(0x1C) > 3) {
+            yn_sprite_draw_sub(0xE, 0, 0);
+            yn_sprite_draw_sub(0xF, 0, 0);
+        }
+        v = YS8(0x11) - YS8(0x16);
+        if (v < 2) {
+            yn_sprite_draw_sub(0x12, 0, (s16)(v * 0x1C));
+        } else {
+            yn_sprite_draw_sub(0x12, 0, (s16)(v * 0x1C + 2));
+        }
+        break;
+    case 15:
+        yn_sprite_draw_sub(0xB, 0, 0);
+        yn_sprite_draw_sub(0xD, 0, 0);
+        yn_sprite_draw_sub(0x13, 0, (s16)((1 - M2C_FIELD(ynw, s32 *, 0xEC8)) * 0x38));
+        yn_sprite_draw_sub(0x14, 0, (s16)(YS8(0xD) * 0x38));
+        break;
+    case 16:
+        yn_sprite_draw_sub(0xB, 0, 0);
+        yn_sprite_draw_sub(0xC, 0, 0);
+        if (YU8(0xED0) != 0 && M2C_FIELD(ynw, u16 *, 0xECC) != 0) {
+            yn_sprite_draw_sub(0xD, 0, 0);
+        }
+        switch (YS8(0x39)) {
+        case 0:
+        case 1:
+            yn_sprite_draw_sub(0x12, 0, (s16)(YS8(0xE) * 0x18 - 0xA));
+            break;
+        case 2:
+            yn_sprite_draw_sub(0x1C, 0x60, (s16)(YS8(0xE) * 0x18 - 0x18));
+            v = YS8(0x38);
+            yn_sprite_draw_sub(0x1D, (s16)(0x76 - v * 0xB), (s16)(YS8(0xE) * 0x18 - 0x18));
+            break;
+        }
+        break;
+    default:
+        return;
+    }
+    yn_sprite_draw_sub(4, 0, 0);
+    yn_sprite_draw_sub(6, 0, 0);
+}
+
+/* Draw count sprite cells (12 bytes each: x, y, w, h, uv index, rotation) at an offset with a color. */
+void yn_sprite_draw_each(u8 *spr, int count, int ox, int oy, int col) {
+    struct { s16 x, y, w, h; s32 col; s16 u0, v0, u1, v1; } rect;
+    int i;
+    u8 *t;
+    s16 a;
+    s16 b;
+    s16 c;
+    s16 d;
+    s16 p;
+    s16 q;
+
+    for (i = 0; i < count; i++) {
+        t = yn_uv_data + (s16)(M2C_FIELD(spr, s16 *, 8) * 4) * 2;
+        a = M2C_FIELD(t, s16 *, 0);
+        b = M2C_FIELD(t, s16 *, 2);
+        c = M2C_FIELD(t, s16 *, 4);
+        d = M2C_FIELD(t, s16 *, 6);
+        switch (M2C_FIELD(spr, s16 *, 0xA)) {
+        case 0:
+            p = (s16)(a + c);
+            q = (s16)(b + d);
+            break;
+        case 1:
+            p = a;
+            a = p + c;
+            q = (s16)(b + d);
+            break;
+        case 2:
+            q = b;
+            b = q + d;
+            p = (s16)(a + c);
+            break;
+        case 3:
+            p = a;
+            q = b;
+            b = q + d;
+            a = p + c;
+            break;
+        }
+        rect.x = M2C_FIELD(spr, s16 *, 0) + (s16)ox;
+        rect.y = M2C_FIELD(spr, s16 *, 2) + (s16)oy;
+        rect.w = M2C_FIELD(spr, s16 *, 4);
+        rect.h = M2C_FIELD(spr, s16 *, 6);
+        rect.col = col;
+        rect.u0 = a;
+        rect.v0 = b;
+        rect.u1 = p;
+        rect.v1 = q;
+        net_flps0008(&rect, &rect.u0, rect.h, c);
+        spr += 12;
     }
 }
