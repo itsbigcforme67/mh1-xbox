@@ -71,6 +71,14 @@ int kb_chat_in_chk(void);
 int softkey_ck(void);
 extern int ot6;
 extern int ot7;
+int Game_clear_ck(int);
+int Pit_shot_ok_chk(PLW *);
+void Pl_box_select(PLW *);
+int UseItemChk(PLW *, u16);
+int func_63B0C0(int);
+void menu_init(void);
+void menu_move(int);
+extern int ot5;
 void Chat_log_clear(void);
 void pit_prim_init(void);
 u16 pit_key_repeat(u16, u16);
@@ -1195,7 +1203,7 @@ int lb_item_stock_mv(int sw) {
     return r;
 }
 
-void map_move(int sw) {
+void map_move(int sw, u16 hold) {
     if (lpPit->lb == 0 && lpPit->x83 == 0 && ((u16)sw & 0x4000)) {
         lpPit->x3E ^= 1;
     }
@@ -1649,7 +1657,7 @@ void Pit_mv_lb(void) {
         switch (PitMenu.open) {
         case 0:
             if (PitMenu.x06 == 0) {
-                if (Online_ck() == 1 && softkey_ck() == 1 && ((r = kb_chat_in_chk(), ((sw & 0xFFFF) & 0x100) != 0) || r == 1)) {
+                if (Online_ck() == 1 && softkey_ck() == 1 && ((r = kb_chat_in_chk(), ((u16)sw & 0x100) != 0) || r == 1)) {
                     Chat_init();
                 } else {
                     if (lb_item_stock_mv(sw) == 0) {
@@ -1666,6 +1674,164 @@ void Pit_mv_lb(void) {
         break;
     }
     Receive_mess_move();
+    add_prim2(&ot6, &pit_prim[1], 0, 1);
+    add_prim2(&ot7, &pit_prim[2], 0, 1);
+}
+
+/* Per-frame pit menu: HP/stamina bars, item stock window, chat, main menu. */
+void Pit_mv(void) {
+    PLW *pl;
+    u16 now;
+    u16 hold;
+    int sw;
+    u32 i;
+    int r;
+
+    if (GW8(0x21F) != 0) {
+        return;
+    }
+    pl = lpPit->pl;
+    if (Game_clear_ck(1) == 1) {
+        if (lpPit->x8D != 0) {
+            for (i = 0; i < 2; i++) {
+                u16 id = (&lpPit->x6C)[i];
+
+                if (id != 0xFFFF) {
+                    Pl_item_stack(pl, id, 1);
+                }
+            }
+            lpPit->x8D = 0;
+        }
+        lpPit->x05 = 0;
+        lpPit->x06 = 0;
+        lpPit->x07 = 0;
+        lpPit->x40 = 0;
+        GWS8(0xE) = 0;
+        PitMenu.open = 0;
+        PitMenu.x18 = 0;
+        return;
+    }
+    now = FLD16(Psw, 4);
+    hold = FLD16(Psw, 0);
+    sw = (now | pit_key_repeat(now, hold)) & 0xFFFF;
+    switch (lpPit->x04) {
+    case 0:
+        lpPit->x04++;
+        FLDS8(*lpPit, 0) = 1;
+        GWS8(0xE) = 0;
+        lpPit->x24 = pl->vital;
+        lpPit->x26 = pl->vital_red;
+    case 1:
+        if (lpPit->x24 != pl->vital) {
+            if (lpPit->x24 < pl->vital) {
+                lpPit->x24 = lpPit->x24 + 1;
+            } else {
+                lpPit->x24 = lpPit->x24 - 1;
+            }
+        }
+        lpPit->x26 = pl->vital_red;
+        lpPit->x57 = 0;
+        if (lpPit->x5A != pl->work888) {
+            lpPit->x5A = pl->work888;
+            if (UseItemChk(pl, pl->work888) == 1) {
+                lpPit->x58 = 2;
+                if (pl->work8F2 & 4) {
+                    lpPit->x59 = -1;
+                } else {
+                    lpPit->x59 = 1;
+                }
+            }
+        }
+        if (pl->kind == 1 || pl->kind == 5) {
+            if (lpPit->x5E != pl->work88E) {
+                lpPit->x5E = pl->work88E;
+                if (pl->work88E != 0xFF) {
+                    lpPit->x5C = 2;
+                    if (pl->work8F2 & 0x10) {
+                        lpPit->x5D = -1;
+                    } else {
+                        lpPit->x5D = 1;
+                    }
+                }
+            }
+        }
+        lpPit->x2B = 0;
+        if (Pit_shot_ok_chk(pl) == 1) {
+            if (lpPit->x28 >= 4) {
+                lpPit->x2B = 1;
+            }
+            if (lpPit->x28 != 0) {
+                lpPit->x28--;
+            }
+        } else {
+            lpPit->x28 = 4;
+        }
+        lpPit->x83 = 0;
+        if (pl->work88C == 0) {
+            lpPit->x83 = lpPit->x88;
+        }
+        if (lpPit->x3F != 0) {
+            lpPit->x3F--;
+        }
+        map_sign_move(hold);
+        if (lpPit->x60 > 0) {
+            lpPit->x60--;
+        }
+        if (lpPit->x64 > 0) {
+            lpPit->x64--;
+        }
+        if (Online_ck() == 1) {
+            Join_pl_chk();
+            FLDS8(PitMenu, 0x22) = 0;
+        }
+        switch (PitMenu.open) {
+        case 0:
+            if (game_w.x1E7 == 0) {
+                if (pl->work88C == 0 && pl->x8C6 == 0 && Online_ck() == 1 && softkey_ck() == 1 &&
+                    ((r = kb_chat_in_chk(), ((u16)sw & 0x100) != 0) || r == 1)) {
+                    Chat_init();
+                    map_move(sw, hold);
+                    break;
+                }
+            } else if (func_63B0C0(sw) & 0xFF) {
+                PitMenu.open++;
+                break;
+            }
+            if (item_stock_mv(sw) == 0) {
+                switch (lpPit->x05) {
+                case 0:
+                    if (pl->x8C6 == 0 && ((u16)sw & 0x8000)) {
+                        menu_init();
+                        se_req(7, 0x11, 0);
+                    } else {
+                        if (lpPit->x06 != 0) {
+                            Pl_box_select(pl);
+                        } else {
+                            map_move(sw, hold);
+                        }
+                        lpPit->x06 = pl->work8C2;
+                    }
+                    break;
+                case 1:
+                    menu_move(sw);
+                    break;
+                }
+            }
+            Pit_effect_move();
+            break;
+        case 1:
+            if (game_w.x1E7 == 0) {
+                Chat_move(sw);
+                map_move(sw, hold);
+            } else if (!(func_63B0C0(sw) & 0xFF)) {
+                PitMenu.open = 0;
+            }
+            break;
+        }
+        break;
+    }
+    Receive_mess_move();
+    add_prim2(&ot5, &pit_prim[0], 0, 1);
     add_prim2(&ot6, &pit_prim[1], 0, 1);
     add_prim2(&ot7, &pit_prim[2], 0, 1);
 }
