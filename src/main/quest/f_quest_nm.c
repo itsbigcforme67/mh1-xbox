@@ -7,7 +7,7 @@
 typedef char *va_list;
 void str_gattai(char *dst, char *fmt, ...);
 QEM *em_work_serch2(s16, s16);
-int stolen_item_stack(int, s16);
+u16 stolen_item_stack(int, s16);
 void Quest_start();
 void Quest_retire_set();
 void Quest_error_set2();
@@ -21,7 +21,6 @@ void Quest_enemy_hagi_set();
 EMW * Em_direct_set();
 void Quest_next_em_clr();
 char * Quest_str_get();
-s16 stolen_item_num_ck();
 void Item_stolen();
 void Item_regained();
 void Share_item_conv();
@@ -876,7 +875,7 @@ char *Quest_str_get(int n)
     return (char *)(mission_area + quest_w.x84[n]);
 }
 
-s16 stolen_item_num_ck(item)
+static s16 stolen_item_num_ck(item)
 u16 item;
 {
     s16 i;
@@ -890,7 +889,7 @@ u16 item;
     return 0;
 }
 
-int stolen_item_stack(int item, s16 num)
+u16 stolen_item_stack(int item, s16 num)
 {
     s16 i;
     u16 r;
@@ -918,7 +917,7 @@ int stolen_item_stack(int item, s16 num)
     } else {
         for (i = 0, q = (u8 *)&quest_w; i < 5; i++, q += 4) {
             if (*(u16 *)(q + 0x98) == (u16)item) {
-                mx = ((s8 *)Item_data)[((u16)item << 4) + 3];
+                mx = *((s8 *)Item_data + 3 + (item & 0xFFFF) * 16);
                 if (num > 0 && quest_w.x98[i].f >= mx) {
                     quest_w.x98[i].f = mx;
                     r = 3;
