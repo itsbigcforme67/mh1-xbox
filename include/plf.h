@@ -172,4 +172,5 @@ void func_628FB0(PLW *, int, int);
 s32 GetGroundHitAreaUpper(PLW *, f32 *, f32 *);
 void Oki_item_set(PLW *);
 s32 frame_check3(f32, f32, PLW *, int);
+s32 front_land_ck2(f32, f32, PLW *, int);
 #endif
