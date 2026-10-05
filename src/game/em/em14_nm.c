@@ -402,7 +402,7 @@ static void em_act01_005B59C0(EMW *em, EM14W *w) {
     case 1:
         if (em->x8C3 == 0) {
             temp_a0 = em->x734;
-            if (((u32) (temp_a0 - 1) < 2) || (temp_a0 == 3)) {
+            if (temp_a0 == 1 || temp_a0 == 2 || temp_a0 == 3) {
                 if (em->x194 == 0) {
                     em->x05 += 1;
                     act_dist_select_005B5650(em);
@@ -414,8 +414,6 @@ static void em_act01_005B59C0(EMW *em, EM14W *w) {
                     em14_act_set(em, 0, temp_a2, 0);
                 }
             }
-        } else {
-            return;
         }
         break;
     }

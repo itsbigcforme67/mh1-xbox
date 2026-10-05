@@ -617,14 +617,14 @@ static void em_act01_005EC820(EMW *em, EM20W *w) {
     case 1:
         if (em->x8C3 == 0) {
             temp_a0 = em->x734;
-            if (((u32) (temp_a0 - 1) < 2) || (temp_a0 == 3)) {
+            if (temp_a0 == 1 || temp_a0 == 2 || temp_a0 == 3) {
                 if (em->x194 == 0) {
                     em->x05 += 1;
                     act_dist_select_005EC0E0(em);
                     return;
                 }
             } else {
-                temp_a2 = em_act_search(*(&em20_act_add + (em->_pad735[0] * 4))) & 0xFFFF;
+                temp_a2 = em_act_search(em20_act_add[M2C_FIELD(em, u8 *, 0x735)]) & 0xFFFF;
                 if (temp_a2 != 1) {
                     em20_act_set(em, 0, temp_a2, 0);
                 }
