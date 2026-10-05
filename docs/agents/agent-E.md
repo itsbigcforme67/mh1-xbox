@@ -34,21 +34,32 @@ Lessons:
 - `if (x > 0x22550FF)` instead of `>= 0x2255100` stops the compiler sharing
   the lui of two constants (Game_task).
 
-## f_stage (0x15C210-0x15F...): partly done; PAUSED here
-Built (f_stage.c, 0x15C210-0x15C6A4, main OK): stage_mv_ck, clr_stg_work, clr_flash,
-Stage_env_ck, Pile_on, stage_i. Functions in a file must be in address order
-(stage_mv_ck first) or the build mismatches.
-f_stage_nm.c (not built): stage_se_move (~100 instr off, register allocation: original
-has p=s0.., cnt=s2, n=s1, pl=s3; declbf takes >15 min, run in background), plus
-stage_m and move_stage written from the asm but NEVER compiled against the original.
-Not started: trans_stage_sub, trans_stage (0x3B30 bytes, huge), spr_disp_sub,
-stage_spr_disp (m2c draft via `python3 tools/draft.py main --file f_stage`).
-Also not started: f_reward.s (24 fns), f_quest.s (83 fns).
-Lessons: prototype float-argument callees (`f32 flSqrt(f32);`) or the arg goes to a0;
-`dx=..; dz=..; flSqrt(dx*dx+dz*dz)` gives mula.s/madd.s; stage_mv_ck: use named PLW
-fields (macros cast pointers and the compiler hoists addresses). After merging, GAME_W
-x208 is pl_state, PLW 0x570 is work570 (s16, cast (u16) for lhu).
-
+## f_stage (0x15C210-0x160E??): every function written, 5 of 11 built
+Built (main OK): f_stage.c (stage_mv_ck .. stage_i), f_stageb.c (stage_se_move), f_stagec.c (move_stage, trans_stage_sub).
+stage_set_set is in src/main/stage/stage_set.c (agent A). Source of truth for the rest: src/main/stage/f_stage_nm.c (functions in
+address order, brace on its own line so tools/split_runs.py can parse them; the file is compiled but not linked).
+Near-matches:
+- stage_m (0x15C940): 5 of 231 instructions off. The sum `65.0f + it->pos[1] + (f32)((r & 0x3F) - 0x20)` needs the cast
+  evaluated first but added second (`add.s f0,f0,f2`); I could only get `add.s f0,f2,f0`.
+- spr_disp_sub (colour lerp, 0x1608C0): 67/123. static (see lesson) helps stage_spr_disp, the byte shuffling schedule differs.
+- stage_spr_disp (sky gradient from the sun angle + flash overlay, 0x160AB0, 1844 bytes = same size): ~132/461, the colour table loads
+  (8 packed colours built from bytes) use different temp registers.
+- trans_stage (0x15CD90, 15152 bytes = EXACTLY the original size): written as two passes (stage clays with per-stage UV scroll
+  / rotation, then the set objects from the setNN_pos_tbl tables). The first pass (0x15CE90-0x15F700) is instruction-identical except
+  registers of the prologue; the second pass differs only in which s-register each per-case local lives in (the original has
+  block-local variables per case; mine are function-level). The two jump tables lit_1784_0035B9D0 / lit_1785_0035B9A0
+  (main:rodata 0x35B9A0-0x35B9F4) will have to be registered together with the file that holds trans_stage once it matches.
+Lessons:
+- `static` on a leaf helper defined earlier in the same file makes MWCC keep values in caller-saved registers across the call
+  (stage_spr_disp keeps 8 colours in t1..t8 across spr_disp_sub calls); a non-static helper does not.
+- A single-case `switch (stage) { case 0x4F: ... }` gives `beq; b end`; two separate `&&` conditions do not (stage_m).
+- Variables declared last get the lowest saved register (s0), declared first the highest: declaring `best,px,pz,i,pl,cnt,n,p`
+  produced the original allocation of stage_se_move.
+- `cnt = 3` that is never set before a `switch (...) {case 3: ...}` test is shared with the compare constant `addiu s2,zero,3`:
+  write the assignment only in the cases that have it (stage_se_move case 1).
+- Generating the symbolic listing of a giant function: the small script used for trans_stage tracks lui/ori/mtc1 constants and prints
+  every call with its argument registers, which is far easier to read than m2c output when floats are passed in f12-f14 (m2c's
+  context mode puts them in a1-a3).
 ## f_reward (0x290E80-0x293B68): 19 of 24 functions built, 2 near-matches
 Built (main OK): f_reward.c (key_quest_ck .. gold_main, tables 0x3865A0/0x3865D0), f_reward2.c
 (gold_disp, result_init, result_main, tables 0x3866F0/0x386710), f_reward3.c (result_disp, error_disp,

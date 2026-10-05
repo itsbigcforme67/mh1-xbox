@@ -69,6 +69,99 @@ int ran_suu();
 
 /* ---- */
 
+extern f32 *sun_pos_tbl[];
+extern u8 *st_sun_rgba_tbl[];
+extern s16 *st_sun_tb_tbl[];
+extern f32 rview_mat[];
+f32 flArcTan2(f32, f32);
+f32 flSin(f32);
+void SetOpeMode();
+void SetTrnslMode();
+void flps0004();
+void flps0005();
+
+#define SUN_COL(c, o) ((c)[(o) + 2] | (((c)[(o) + 1] << 8) | (((c)[(o) + 3] << 24) | ((c)[(o)] << 16))))
+
+typedef struct SKYR {
+    s16 r[4];           /* x0, y0, x1, y1 */
+    u32 c[4];           /* corner colours */
+} SKYR;
+
+typedef struct FLR {
+    s16 r[4];
+    u32 c;
+} FLR;
+
+/* ---- trans_stage (0x15CD90-0x160890): translucent/animated stage layers ----
+ * Pass 1 draws the stage model's clay layers (layer 0 with state 0x6D = 7, the rest
+ * with per-stage UV scrolling / rotation), pass 2 draws the set objects of the stage
+ * (set_mdlw clays at fixed positions from the setNN_pos_tbl tables). */
+typedef f32 SFLMAT[4][4];
+
+typedef struct SCLAY {
+    s32 handle;         /* 0x00 */
+    u8 _pad04[0x84];
+    s32 attr;           /* 0x88 */
+} SCLAY;                /* 0x8C */
+
+typedef struct STG_MDLS {
+    u8 flag;            /* 0x00 */
+    u8 _pad01[0x2B];
+    s16 num;            /* 0x2C layers */
+    u8 _pad2E[2];
+    SCLAY *clay;        /* 0x30 */
+} STG_MDLS;
+
+extern STG_MDLS *set_mdlw;
+extern f32 st00_pos_tbl[4][3];
+extern f32 set04_pos_tbl[3];
+extern f32 set05_pos_tbl1[2][3];
+extern f32 set09_pos_tbl[14][4];
+extern f32 set20_pos_tbl[2][3];
+extern f32 set28_pos_tbl[4];
+extern f32 set33_pos_tbl[9][4];
+extern f32 set34_pos_tbl[9][4];
+extern f32 set36_pos_tbl[2][4];
+extern f32 set38_pos_tbl[11][4];
+extern f32 set39_pos_tbl[2][3];
+extern f32 set43_pos_tbl[2][4];
+extern f32 set45_pos_tbl[4][4];
+extern f32 set50_pos_tbl[3];
+extern f32 set54_pos_tbl[3];
+extern f32 set58_pos_tbl[6][4];
+extern f32 set62_pos_tbl[3][4];
+extern f32 set63_pos_tbl[5][4];
+extern f32 set64_pos_tbl[3][4];
+extern f32 set71_pos_tbl[11][4];
+extern f32 set72_pos_tbl[6][4];
+extern f32 set73_pos_tbl[2][4];
+extern f32 set75_pos_tbl[2][4];
+void light_set();
+void get_tex_num();
+void reload_tex();
+void clay_attr_reset(void);
+void flmatInit(SFLMAT *);
+void flmatMakeTrans(SFLMAT *, f32, f32, f32);
+void flmatMakeScale(SFLMAT *, f32, f32, f32);
+void flmatSetTrans(SFLMAT *, f32, f32, f32);
+void flmatSetXYZ33(SFLMAT *, f32, f32, f32);
+void flmatRotX33(SFLMAT *, f32);
+void flmatRotY33(SFLMAT *, f32);
+f32 flSin(f32);
+
+#define ANG(x) (2.0f * (3.1415927f * (360.0f * (f32)(x) / 65536.0f / 360.0f)))
+#define RS flSetRenderState
+#define MT(x, y, z) flmatMakeTrans(&mat, x, y, z)
+#define MTW() flmatMakeTrans(&mat, w->pos[0], w->pos[1], w->pos[2])
+#define MTP(p) flmatMakeTrans(&mat, (p)[0], (p)[1], (p)[2])
+#define SXA(a) flmatSetXYZ33(&mat, 0.0f, ANG(a), 0.0f)
+#define SXW() flmatSetXYZ33(&mat, w->rot[0], w->rot[1], w->rot[2])
+#define UVT(u, v) flmatMakeTrans(&mat2, u, v, 0.0f)
+#define EXC() flExecuteClay(mdl->handle, 0)
+#define FRM ((u16)w->x08)
+#define SFRM ((s16)w->x08)
+#define X1E (*(u16 *)&game_w.x1E)
+
 void move_stage(void)
 {
     STGW *w = &stage_work;
