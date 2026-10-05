@@ -379,22 +379,26 @@ void player_name_id_print(PLW *pl) {
 u16 pit_key_repeat(u16 now, u16 hold) {
     u16 k = now & 0x3C00;
     u16 h;
+    u16 r;
 
     if (k != 0) {
         lpPit->key = k;
         lpPit->rep = 8;
-        return (s16)k;
+        r = (s16)k;
+    } else {
+        h = hold & 0x3C00;
+        if (h == 0) {
+            r = lpPit->key = 0;
+        } else {
+            lpPit->rep--;
+            r = 0;
+            if (lpPit->rep <= 0) {
+                lpPit->rep = 3;
+                r = lpPit->key &= h;
+            }
+        }
     }
-    h = hold & 0x3C00;
-    if (h == 0) {
-        return lpPit->key = 0;
-    }
-    lpPit->rep--;
-    if (lpPit->rep <= 0) {
-        lpPit->rep = 3;
-        return lpPit->key &= h;
-    }
-    return 0;
+    return r;
 }
 
 void menu_init(void) {
@@ -1632,20 +1636,23 @@ u32 boss_icon_color(EMW *em) {
 
 void maru_disp_sub(int col, f32 x, f32 y, f32 r) {
     PFLPS q;
+    f32 w;
 
     SetFilterMode(1);
+    q.b = 0xF00010;
     q.a = col;
     q.c = 0x1000020;
-    q.b = 0xF00010;
     q.s[0] = 0.8f * (x - r);
     q.s[1] = y - r;
-    q.s[2] = 0.8f * (2.0f * r);
-    q.s[3] = 2.0f * r;
+    w = r + r;
+    q.s[2] = 0.8f * w;
+    q.s[3] = w;
     flps0008(&q);
 }
 
 void camp_disp_sub(f32 x, f32 y) {
     PFLPS q;
+    f32 w, h;
 
     reload_tex(1, 0x119);
     SetTextureStage(0x119);
@@ -1655,8 +1662,10 @@ void camp_disp_sub(f32 x, f32 y) {
     q.c = 0xFF002F;
     q.s[0] = 0.8f * (x - 8.0f);
     q.s[1] = y - 8.0f;
-    q.s[2] = 12.8f;
-    q.s[3] = 16.0f;
+    w = 12.8f;
+    h = 16.0f;
+    q.s[2] = w;
+    q.s[3] = h;
     flps0008(&q);
 }
 
