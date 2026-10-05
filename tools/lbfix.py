@@ -29,6 +29,18 @@ def fix(fn):
     if best is None: return fn, 'err'
     if best == 0: return fn, 'OK'
     bestsrc = src
+    # phase 0: enlarge a local char buffer (original frames often keep a bigger array than the size passed to the callee)
+    for mm in list(re.finditer(r'char (sp\w+)\[(0x[0-9A-Fa-f]+)\]', src)):
+        base_sz = int(mm.group(2), 16)
+        for add in (8, 0x10, 1, 0x18):
+            s2 = src[:mm.start(2)] + hex(base_sz + add) + src[mm.end(2):]
+            r = run(fn, s2, 'f%d' % add)
+            if r is not None and r < best:
+                best = r; bestsrc = s2; src2 = s2
+                if r == 0: break
+        if best == 0: break
+    if best == 0:
+        open(p, 'w').write(bestsrc); return fn, 'OK'
     params = [x.strip() for x in m.group(2).split(',') if x.strip() and x.strip() != 'void']
     have = {int(re.search(r'arg(\d)$', x).group(1)) for x in params if re.search(r'arg(\d)$', x)}
     opts = [None] + ['arg0', 'arg1', 'arg2', 'arg3']
@@ -66,6 +78,18 @@ def fix(fn):
                 if T == mm.group(1): continue
                 s2 = cur[:mm.start(1)] + T + cur[mm.end(1):]
                 r = run(fn, s2, 'w%d' % k)
+                if r is not None and r < best:
+                    best = r; cur = s2
+                    if r == 0: break
+            if best == 0: break
+        # derefs of plain integer variables: (*(T *)name)
+        for k in range(len(list(re.finditer(r'\(\*\((?:int|s8|u8|s16|u16|s32|u32) \*\)(\w+)\)', cur)))):
+            ms = list(re.finditer(r'\(\*\((?:int|s8|u8|s16|u16|s32|u32) \*\)(\w+)\)', cur))
+            if k >= len(ms): break
+            mm = ms[k]
+            for T in ['int', 'u8', 's8', 'u16', 's16']:
+                s2 = cur[:mm.start()] + '(*(%s *)%s)' % (T, mm.group(1)) + cur[mm.end():]
+                r = run(fn, s2, 'p%d' % k)
                 if r is not None and r < best:
                     best = r; cur = s2
                     if r == 0: break

@@ -218,3 +218,31 @@ void Lb_put_hint(int a, int n) {
     }
     sprintf((char *)&lb_sys + a * 0x1E + 0xA, lit_743_00665D60, *(int *)((u8 *)hint_tbl[a] + t));
 }
+
+int lb_key_quest_ck(int n) {
+    switch (n & 0xFF) {
+    case 0x27:
+    case 9:
+    case 0x65:
+    case 0x4F:
+    case 0x61:
+    case 0x6B:
+    case 0x83:
+    case 0x88:
+    case 0x89:
+    case 0x9A:
+    case 0x8B:
+    case 0xAB:
+    case 0xAA:
+    case 0xAF:
+    case 0xAE:
+    case 0xAD:
+    case 0xAC:
+    case 0x67:
+    case 0x68:
+    case 0x69:
+    case 0x6A:
+        return 1;
+    }
+    return 0;
+}

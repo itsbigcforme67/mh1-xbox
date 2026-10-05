@@ -37,8 +37,11 @@ typedef struct LBSYS {         /* lb_sys 0x90 bytes */
     s8 x84;                    /* 0x84 */
     s8 x85;                    /* 0x85 send interval counter */
     u8 _pad86;
-    s8 x87;                    /* 0x87 */
-    u8 _pad88[8];
+    u8 x87;                    /* 0x87 */
+    u8 _pad88[5];
+    u8 x8D;                    /* 0x8D */
+    u8 x8E;                    /* 0x8E frame counter */
+    u8 _pad8F;
 } LBSYS;
 extern u8 lbSendInterval;
 extern LBSYS lb_sys;
@@ -256,4 +259,32 @@ void Lbc_init_network_work();
 extern char lit_275_00665668[];
 extern char lit_743_00665D60[];
 extern int *hint_tbl[2];
+extern u8 em_work[];
+extern u8 ot1[];
+extern u8 lbShop[0x90];
+int Lb_shop_sw();
+void Lb_check_newCommer();
+void Npc_se_req();
+void ItemCopy_Ud2Pl();
+void Info_control();
+void Lb_pl_move();
+void old_pos_save();
+int enemy_mv();
+void enemy_mk();
+void em_ride_sub();
+int Lb_npc_mv();
+void Lb_npc_mk();
+void player_mk();
+void yure_move();
+void Lb_check_target();
+void lb_check_status();
+void CameraMove();
+void light_move();
+void move_eft();
+void move_set();
+void move_stage();
+void Pit_mv_lb();
+void Lb_cockpit_move();
+int Lb_check_pl_load();
+int add_prim();
 #endif

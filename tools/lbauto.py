@@ -102,6 +102,10 @@ def to_int_mode(body):
     for name, T in ptrs.items():
         body = re.sub(r'(?<![\w\)\]])\*%s\b' % name, '(*(%s *)%s)' % (T, name), body)
         body = re.sub(r'\b%s\[' % name, '((%s *)%s)[' % (T, name), body)
+    names = set(re.findall(r'\b(?:int|s32|u32|s16|u16|s8|u8|s64|u64)\s+((?:arg\d|var_\w+|temp_\w+))\b', body))
+    for nm in names:
+        if nm in ptrs: continue
+        body = re.sub(r'(?<![\w\)\]])\*%s\b' % nm, '(*(int *)%s)' % nm, body)
     body = re.sub(r'\bF\(\s*(?:\w+\s+)*\*+\s*,', 'F(int,', body)
     body = re.sub(r'^(?:s32|void|u8|s8|u16|s16|u32)\s*\*+\s*(\w+\()', r'int \1', body, flags=re.M)
     body = re.sub(r'\(int \*\)(\d+)', r'\1', body)
@@ -109,6 +113,35 @@ def to_int_mode(body):
     body = re.sub(r'= &(\w+);', r'= (int)&\1;', body)
     body = re.sub(r'\(u8 \*\)&(\w+) \+ ', r'(int)&\1 + ', body)
     return body
+
+def conv_sext_calls(s):
+    # m2c: ((call(...) << 0x38) >> 0x38)  ->  (tmp = call(...)) with `s8 tmp;` declared at the top of the function
+    n = [0]; decl = []
+    def rep(m):
+        n[0] += 1; t = 'sx%d' % n[0]
+        decl.append('    %s %s;' % ('s8' if m.group(3) == '38' else 's16', t))
+        return '(%s = %s)' % (t, m.group(2))
+    pat = re.compile(r'\(\s*\(\(?(\s*)(\w+\((?:[^()]|\([^()]*\))*\))\s*<< 0x(38|30)\)\s*>> 0x(?:38|30)\)')
+    pat2 = re.compile(r'\(\s*\((\w+\((?:[^()]|\([^()]*\))*\)) << 0x(38|30)\) >> 0x(?:38|30)\)')
+    def rep2(m):
+        n[0] += 1; t = 'sx%d' % n[0]
+        decl.append('    %s %s;' % ('s8' if m.group(2) == '38' else 's16', t))
+        return '(%s = %s)' % (t, m.group(1))
+    s = pat2.sub(rep2, s)
+    if decl:
+        i = s.index('{\n') + 2
+        s = s[:i] + '\n'.join(decl) + '\n' + s[i:]
+    return s
+
+def conv_chain_switch(s):
+    # if ((v != A) && (v != B) && ...) { return X; } return Y;   ->   switch (v) { case <reverse>: return Y; } return X;
+    m = re.search(r'    if \(((?:\(\w+ != (?:0x[0-9A-Fa-f]+|\d+)\)(?: && )?){4,})\) \{\n\s*return (\w+);\n\s*\}\n\s*return (\w+);\n\}', s)
+    if not m: return s
+    items = re.findall(r'\((\w+) != (0x[0-9A-Fa-f]+|\d+)\)', m.group(1))
+    v = items[0][0]
+    if any(x[0] != v for x in items): return s
+    cases = ''.join('    case %s:\n' % x[1] for x in reversed(items))
+    return s[:m.start()] + '    switch (%s) {\n%s        return %s;\n    }\n    return %s;\n}' % (v, cases, m.group(3), m.group(2)) + s[m.end():]
 
 def conv(s, decls):
     s = conv_fields(s, decls)
@@ -145,6 +178,8 @@ def conv(s, decls):
     s = re.sub(r'\(s64\) \(\(s64\) (\w+) << 0x38\) >> 0x38', r'(s8)\1', s)
     s = re.sub(r'\(s64\) \((\w+\([^()]*\)) << 0x30\) >> 0x30', r'(s16)\1', s)
     s = s.replace('(s64)', '').replace('(s32) ', '')
+    s = conv_sext_calls(s)
+    s = conv_chain_switch(s)
     s = s.replace('*(u8 *)0x3F34C1', 'game_w.master').replace('*(u8 *)0x3F3404', 'game_w.stage')
     s = s.replace('*(void *)0x3F34C1', 'game_w.master').replace('*(void *)0x3F3404', 'game_w.stage')
     s = s.replace('NULL', '0').replace('void *arg', 'u8 *arg').replace('(void *)', '(u8 *)')
