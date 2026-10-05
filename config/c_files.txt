@@ -238,3 +238,5 @@ main 0x00221460 0x00221814 cam/camc
 main 0x00221820 0x00222408 cam/camd
 main:rodata 0x0036B0D0 0x0036B108 cam/camd
 main 0x002227A0 0x00222E20 cam/camg
+main 0x00163AB0 0x00163D20 weapon/trans
+main 0x00163E40 0x0016440C weapon/weapon
