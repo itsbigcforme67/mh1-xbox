@@ -90,7 +90,6 @@ segments:
       - [0x0284D0, c, menu/menu03]
       - [0x028844, asm, text/menu_retire_mv]
       - [0x028900, c, menu/menu05]
-      - [0x028CA0, asm, text/Menu_item_mv]
       - [0x029470, c, menu/menu06]
       - [0x0296A4, asm, text/Menu_mix_mv]
       - [0x029F00, c, menu/menu07]
