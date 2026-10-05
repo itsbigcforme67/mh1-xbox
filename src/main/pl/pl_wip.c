@@ -290,3 +290,138 @@ block_31:
         return 0;
     }
 }
+
+void ex_atk_ck(PLW *pl, s32 arg1) {
+    s32 temp_a0;
+    s32 temp_v0;
+    s32 temp_v0_2;
+    s32 temp_v0_3;
+    s32 temp_v1_2;
+    u8 temp_v1;
+
+    if (((Pl_master_ck(pl) != 0) || (Online_ck() != 1)) && (Game_clear_ck(1) != 1) && (pl->work88C == 0)) {
+        temp_v1 = pl->kind;
+        switch (temp_v1) {
+        case 0:
+            if (pl->sw.an_trg & 0x3C) {
+                temp_a0 = (pl->sw.ang[1] + 0x4000) & 0xFFFF;
+                if ((temp_a0 >= 0) && (temp_a0 < 0x5555) && (arg1 != 1)) {
+                    if (arg1 == 0) {
+                        if (pl->sw.an_now & 0x400) {
+                            Pl_act_set(pl, 1, 0x3F, 4);
+                        } else {
+                            Pl_act_set(pl, 1, 0xD, 4);
+                        }
+                    } else if (pl->sw.an_now & 0x400) {
+                        Pl_act_set(pl, 1, 0x43, 4);
+                    } else {
+                        Pl_act_set(pl, 1, 0xF, 4);
+                    }
+                } else if ((temp_a0 >= 0x5555) && (temp_a0 < 0xAAAB) && (arg1 != 0)) {
+                    if (arg1 == 1) {
+                        if (pl->sw.an_now & 0x400) {
+                            Pl_act_set(pl, 1, 0x44, 4);
+                        } else {
+                            Pl_act_set(pl, 1, 0x10, 4);
+                        }
+                    } else if (pl->sw.an_now & 0x800) {
+                        Pl_act_set(pl, 1, 0x42, 4);
+                    } else {
+                        Pl_act_set(pl, 1, 0x11, 4);
+                    }
+                } else if ((temp_a0 >= 0xAAAB) && (arg1 != 2)) {
+                    if (arg1 == 0) {
+                        if (pl->sw.an_now & 0x800) {
+                            Pl_act_set(pl, 1, 0x40, 4);
+                        } else {
+                            Pl_act_set(pl, 1, 0x12, 4);
+                        }
+                    } else if (pl->sw.an_now & 0x800) {
+                        Pl_act_set(pl, 1, 0x45, 4);
+                    } else {
+                        Pl_act_set(pl, 1, 0x13, 4);
+                    }
+                }
+            }
+            if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
+                if (pl->sw.an_now & 0x3C00) {
+                    temp_v0 = (pl->sw.ang[0] + 0x4000) & 0xFFFF;
+                    if (temp_v0 < 0x5C72) {
+                        Pl_act_set(pl, 0, 0x31, 4);
+                        return;
+                    }
+                    if (temp_v0 < 0xA38E) {
+                        Pl_act_set(pl, 0, 0x1C, 4);
+                        return;
+                    }
+                    Pl_act_set(pl, 0, 0x32, 4);
+                    return;
+                }
+                Pl_act_set(pl, 0, 0x1C, 4);
+                return;
+            }
+            break;
+        case 4:
+            if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
+                if (pl->sw.an_now & 0x3C00) {
+                    temp_v0_2 = (pl->sw.ang[0] + 0x4000) & 0xFFFF;
+                    if (temp_v0_2 < 0x5C72) {
+                        Pl_act_set(pl, 0, 0x31, 4);
+                        return;
+                    }
+                    if (temp_v0_2 < 0xA38E) {
+                        Pl_act_set(pl, 0, 0x1C, 4);
+                        return;
+                    }
+                    Pl_act_set(pl, 0, 0x32, 4);
+                    return;
+                }
+                Pl_act_set(pl, 0, 0x1C, 4);
+                return;
+            }
+            break;
+        case 2:
+            if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
+                if (pl->sw.an_now & 0x3C00) {
+                    temp_v0_3 = (pl->sw.ang[0] + 0x4000) & 0xFFFF;
+                    if (temp_v0_3 < 0x5C72) {
+                        Pl_act_set(pl, 0, 0x31, 4);
+                    } else if (temp_v0_3 < 0xA38E) {
+                        Pl_act_set(pl, 0, 0x1C, 4);
+                    } else {
+                        Pl_act_set(pl, 0, 0x32, 4);
+                    }
+                } else {
+                    Pl_act_set(pl, 0, 0x1C, 4);
+                }
+            }
+            if ((pl->sw.an_trg & 0x3C) && (((pl->sw.ang[1] + 0x1555) & 0xFFFF) < 0xAAAC) && (arg1 == 1)) {
+                Pl_act_set(pl, 1, 0x4B, 4);
+                return;
+            }
+            break;
+        case 3:
+            if ((pl->sw.trg & 0x40) && (pl->stamina >= 0x4B)) {
+                if (pl->sw.an_now & 0x3C00) {
+                    temp_v1_2 = (pl->sw.ang[0] + 0x2000) & 0xFFFF;
+                    if (temp_v1_2 < 0x6000) {
+                        Pl_act_set(pl, 0, 0x6C, 4);
+                    } else if ((temp_v1_2 >= 0x6000) && (temp_v1_2 < 0xC001)) {
+                        Pl_act_set(pl, 0, 0x6B, 4);
+                    } else {
+                        Pl_act_set(pl, 0, 0x6E, 4);
+                    }
+                } else {
+                    Pl_act_set(pl, 0, 0x6D, 4);
+                }
+            }
+            if (pl->sw.trg & 1) {
+                Pl_act_set(pl, 1, 0x22, 0xC);
+            }
+            break;
+        case 1:
+        case 5:
+            break;
+        }
+    }
+}
