@@ -364,3 +364,10 @@ Written: em_eye_dmg_act_set (matches; no `default:` label: a jump-table switch w
 Em_Dmg_Sys (10 instrs off), Em_Taisei_Damage_Check now matches (`u8 t = x & ~4; u8 u; u = t & 0xFF;` gives the extra andi).
 EMW.hagi is now EM_HAGI hagi[8] (hp s16, cnt u8): real struct member arrays keep the em+const offsets unfolded (same lesson as uvmove).
 Not linked yet because the file still has two near-matches inside (Em_Taisei_Ck, Em_Dmg_Sys); the matching ones could be split out with mkruns_nm.py.
+
+# sltiu at/v0 near-matches solved (em01 mv03/mv05, em02 mv01, em07/em08 mv02) + tools/appendfn.py
+`d < 0x11C8U || d >= 0xEE39U` gives `sltiu v0`; the original `sltiu at` comes from writing the first test as `d <= 0x11C7U` (second stays `>=`).
+The three `return;` in the turn function must be an if / else if / else chain ending in `break;` (a shared `return` stub adds a nop before the b).
+tools/appendfn.py RUN.c NM.c fname appends a function that now matches to its neighbouring run file; then extend that run's end in config/c_files.txt
+(end = function start + size). A function that is static in the nm file must become global (address-suffixed name) when asm callers remain.
+WARNING: align.py hides differences in lui constants (a float constant 110.0f vs 48.0f looked like a match); check.py or a rebuild is the arbiter.

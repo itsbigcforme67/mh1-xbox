@@ -416,8 +416,8 @@ main 0x00125340 0x00125730 frame/f_frame
 main 0x001257D0 0x00125F08 frame/f_frameb
 main 0x001263F0 0x001267BC frame/f_framec
 game 0x00566630 0x005670A4 em/em01_ai
-game 0x00567280 0x005695DC em/em01_aib
-game 0x005698F0 0x00569A4C em/em01_aic
+game 0x00567280 0x005698E4 em/em01_aib
+game 0x005698F0 0x00569D54 em/em01_aic
 game 0x00569D60 0x0056AFB4 em/em01_aid
 game 0x0056B190 0x0056E15C em/em01_aie
 game 0x0056E6F0 0x00574AC8 em/em01_aif
@@ -426,7 +426,7 @@ game 0x0057A900 0x0057AB58 em/em01_aih
 game:rodata 0x00685B30 0x00685B50 em/em01_aie
 game:rodata 0x00685B50 0x00685EF0 em/em01_aif
 game:rodata 0x00685EF0 0x00686078 em/em01_aig
-game 0x0057F1E0 0x005800B4 em/em02_ai
+game 0x0057F1E0 0x005803A4 em/em02_ai
 game 0x005803B0 0x00583928 em/em02_aib
 game 0x00583B30 0x00587350 em/em02_aic
 game 0x005873B0 0x005873C8 em/em02_aid
@@ -434,7 +434,7 @@ game:rodata 0x00686270 0x006862CC em/em02_ai
 game:rodata 0x006862D0 0x00686400 em/em02_aib
 game:rodata 0x00686400 0x00686488 em/em02_aic
 game 0x0058F4A0 0x0058FB64 em/em07_ai
-game 0x0058FBF0 0x00590504 em/em07_aib
+game 0x0058FBF0 0x00590790 em/em07_aib
 game 0x00590790 0x00592FDC em/em07_aic
 game 0x005934E0 0x005935D8 em/em07_aid
 game 0x005937E0 0x00599C04 em/em07_aie
@@ -444,7 +444,7 @@ game:rodata 0x00686710 0x006867D8 em/em07_aic
 game:rodata 0x00686840 0x00686860 em/em07_aid
 game 0x0059A280 0x0059A2B8 em/em08_ai
 game 0x0059A680 0x0059A74C em/em08_aib
-game 0x0059A7B0 0x0059C47C em/em08_aic
+game 0x0059A7B0 0x0059C6C4 em/em08_aic
 game 0x0059C6D0 0x0059CA24 em/em08_aid
 game 0x0059CCE0 0x0059D414 em/em08_aie
 game 0x0059D720 0x0059FAA4 em/em08_aif

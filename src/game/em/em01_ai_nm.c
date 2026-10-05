@@ -1459,7 +1459,7 @@ static void em_mv03_005695E0(EMW *em, EM01W *w) {
         em->x3F4 = 0;
         w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
         d = (w->dang - em->ang[1]) & 0xFFFF;
-        if (d < 0xE39U || d >= 0xF1C8U) {
+        if (d <= 0xE38U || d >= 0xF1C8U) {
             pl_flag_set((PLW *)em, 0x20000);
             em_char_set(em, 3, 0, 0);
         } else if (d >= 0x8000U) {
@@ -1477,20 +1477,18 @@ static void em_mv03_005695E0(EMW *em, EM01W *w) {
                     em->x05++;
                     pl_flag_clr((PLW *)em, 0x20000);
                     em01_to_normal(em, 0, 0);
-                    return;
-                }
-                if (d < 0xE39U || d >= 0xF1C8U) {
+                } else if (d <= 0xE38U || d >= 0xF1C8U) {
                     pl_flag_set((PLW *)em, 0x20000);
                     em_char_set(em, 3, 0, 0);
-                    return;
-                }
-                pl_flag_clr((PLW *)em, 0x20000);
-                if (d >= 0x8000U) {
-                    em_char_set(em, 6, 0, 0);
                 } else {
-                    em_char_set(em, 5, 0, 0);
+                    pl_flag_clr((PLW *)em, 0x20000);
+                    if (d >= 0x8000U) {
+                        em_char_set(em, 6, 0, 0);
+                    } else {
+                        em_char_set(em, 5, 0, 0);
+                    }
                 }
-                return;
+                break;
             }
             if ((u32)((d + spd) & 0xFFFF) < spd * 2) {
                 em->ang[1] = (u16)w->dang;
@@ -1542,7 +1540,7 @@ static void em_mv05_00569A50(EMW *em, EM01W *w) {
         em->x3F4 = 0;
         w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
         d = (w->dang - em->ang[1]) & 0xFFFF;
-        if (d < 0xE39U || d >= 0xF1C8U) {
+        if (d <= 0xE38U || d >= 0xF1C8U) {
             pl_flag_set((PLW *)em, 0x20000);
             em_char_set(em, 3, 0, 0);
         } else if (d >= 0x8000U) {
@@ -1555,25 +1553,23 @@ static void em_mv05_00569A50(EMW *em, EM01W *w) {
         if (em->x1C4 == 0) {
             spd = (u32)((16384.0f / (em->x1A8 / 2.0f)) * em->act_spd);
             d = (w->dang - (u16)em->ang[1]) & 0xFFFF;
-            if (em->x194 == 0 || em_frame_check2(em, 0, 110.0f)) {
+            if (em->x194 == 0 || em_frame_check2(em, 0, 48.0f)) {
                 if ((u32)((d + spd) & 0xFFFF) < spd * 2) {
                     em->x05++;
                     pl_flag_clr((PLW *)em, 0x20000);
                     em01_to_normal(em, 0, 0);
-                    return;
-                }
-                if (d < 0xE39U || d >= 0xF1C8U) {
+                } else if (d <= 0xE38U || d >= 0xF1C8U) {
                     pl_flag_set((PLW *)em, 0x20000);
                     em_char_set(em, 3, 0, 0);
-                    return;
-                }
-                pl_flag_clr((PLW *)em, 0x20000);
-                if (d >= 0x8000U) {
-                    em_char_set(em, 7, 0, 0);
                 } else {
-                    em_char_set(em, 8, 0, 0);
+                    pl_flag_clr((PLW *)em, 0x20000);
+                    if (d >= 0x8000U) {
+                        em_char_set(em, 7, 0, 0);
+                    } else {
+                        em_char_set(em, 8, 0, 0);
+                    }
                 }
-                return;
+                break;
             }
             if ((u32)((d + spd) & 0xFFFF) < spd * 2) {
                 em->ang[1] = (u16)w->dang;
