@@ -44,8 +44,8 @@ void SetSceneTitle(a, b)
 int a;
 int b;
 {
-    pSceneTitle = (int)text_lobby_msg[a];
-    pSceneTitle = pSceneTitle + b * 8;
+    pSceneTitle = text_lobby_msg[a];
+    pSceneTitle = pSceneTitle + b;
 }
 
 void SetSceneSubTitle(a, b, c)
@@ -55,8 +55,8 @@ char *c;
 {
     subTitleCol = 0xFF2A0000;
     pSceneSubTitle = text_lobby_msg[a];
-    pSceneSubTitle = pSceneSubTitle + b * 8;
-    strcpy(*(char **)(pSceneSubTitle + 4), c);
+    pSceneSubTitle = pSceneSubTitle + b;
+    strcpy(pSceneSubTitle->s, c);
 }
 
 void SetSceneSubTitleColor(c)
@@ -69,10 +69,77 @@ void SetHelpLineMsg(a, b)
 int a;
 int b;
 {
-    *(u8 **)helpLineStr = text_lobby_msg[a];
+    *(u8 **)helpLineStr = (u8 *)text_lobby_msg[a];
     *(int *)(helpLineStr + 4) = 0;
     *(int *)(helpLineStr + 8) = 0;
     *(u8 **)helpLineStr = *(u8 **)helpLineStr + b * 8;
+}
+
+void DispSceneTitle(void) {
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
+    SetFilterMode(1);
+    flSetRenderState(0x60, 0);
+    Put_2TF(helpLineTbl);
+    if (pSceneTitle != 0) {
+        flfntSetSize(0x1E, 0x1E);
+        font_print_double(pSceneTitle->x, pSceneTitle->y, 1, 0, pSceneTitle->s);
+    }
+}
+
+void DispSceneSubTitle(void) {
+    flfntSetSize(0x12, 0x12);
+    if (CW->x35D5 != 0 && *(s8 *)(game_w.master + (int)cw + 0x2BFE) != 0) {
+        Draw_menu_square(0xD4, 0x30, 0xC0, 0x20, 0, 0);
+        font_print_double(pSceneSubTitle->x, 0x38, 1, 0, pSceneSubTitle->s);
+        return;
+    }
+    Draw_menu_square(0xD4, 0x44, 0xC0, 0x20, 1, subTitleCol);
+    font_print_double(pSceneSubTitle->x, pSceneSubTitle->y, 1, 0, pSceneSubTitle->s);
+}
+
+void LBDisp_NowLoading2(a)
+int a;
+{
+    switch (a) {
+    case 0:
+        break;
+    case 1:
+        SetDialogData(2, 5);
+        break;
+    case 2:
+        SetDialogData(0, 5);
+        break;
+    case 3:
+        SetDialogData(1, 5);
+        break;
+    }
+    DispDialogData();
+}
+
+int Lbs_plaza(a)
+LB_NETW *a;
+{
+    LB_TXT *t = text_lobby_msg[2];
+
+    a->x28 = Get_sw2(0);
+    switch (a->depth) {
+    case 0:
+        sprintf(t->s, "%s%s", Get_ServerName(), PlazaInfo[ClassInfo.plaza - 1].name);
+        SetSceneTitle(2, 0);
+        SetHelpLineMsg(2, 2);
+        Lbc_set_prim(Lbs_plaza_trans, plaza_trans_ot0, plaza_trans_ot1);
+        lobby_bgm_set2(0x48);
+        a->cur = 2;
+        a->depth++;
+    case 1:
+        plaza_selectMenu(a);
+        break;
+    case 2:
+        plaza_moveMain();
+        break;
+    }
+    return a->x10;
 }
 
 void tl_menu_cursor_up(m)
@@ -126,7 +193,7 @@ LB_TLMENU *m;
 int getUserInfo(void) {
     switch (Lbs_SeekId()) {
     case 0:
-        Lbc_RequestNetComment(cw + 0x2F80);
+        Lbc_RequestNetComment(CW->x2F80);
         return 0;
     case 1:
         return 1;
@@ -141,7 +208,7 @@ int a;
     int id = Lb_get_plID() & 0xFF;
 
     if (id != 0xFF) {
-        memset(cw + id * 0x62 + 0x288C, 0, 0x62);
+        memset(CW->comment[id], 0, 0x62);
         Lbc_RequestNetComment(a);
         return 1;
     }
@@ -190,7 +257,7 @@ void Lb_clearChatList(void) {
     u8 *a = (u8 *)chatIDList;
     u8 *b = (u8 *)chatHandleList;
 
-    cw[0x32BE] = 0;
+    CW->chatmode = 0;
     do {
         memset(a, 0, 8);
         memset(b, 0, 0x10);
@@ -233,6 +300,33 @@ void plaza_checkChatLog(void) {
             break;
         }
         Plaza_chatlog_mv(sw);
+        break;
+    }
+}
+
+void plaza_chatMain(a)
+LB_NETW *a;
+{
+    u8 *tbl = plazaMenuTbl[a->menu];
+
+    a->x28 = Get_sw(0);
+    switch (a->step) {
+    case 0:
+        a->step++;
+        Plaza_chat_init();
+        break;
+    case 1:
+        a->x28 = Get_sw_on2(0);
+        if (Plaza_chat_move(*(u16 *)0x3F3714) == -1) {
+            a->step++;
+        }
+        break;
+    case 2:
+        a->step++;
+        break;
+    case 3:
+        tl_exit_sub_menu(1);
+        SetHelpLineMsg(2, *(u16 *)(a->cur * 0x24 + (int)tbl + 2) + 2);
         break;
     }
 }
@@ -325,6 +419,31 @@ int Lb_get_cursor_col(void) {
     f32 a = 0.0000958738f * (f32)(u32)(u16)((System_timer & 0x3F) << 10);
 
     return (((s8)(int)(80.0f * flSin(a)) + 0x9F) << 24) | 0xFF00;
+}
+
+void plaza_checkMyStatusTrans(void) {
+    disp_status(0xD8, 0x50, CW->x440, CW->x448, my_user_mini_data, *(s8 *)((u8 *)pNet + 0x24), 3, D_3C73B4);
+}
+
+void plaza_chatTrans(void) {
+    s16 idx;
+
+    switch (CW->chatmode) {
+    case 0:
+        Put_megaphone(0x1F6, 0x32, 3);
+        idx = 0;
+        break;
+    case 1:
+        Put_megaphone(0x1F6, 0x32, 1);
+        idx = 1;
+        break;
+    default:
+        Put_megaphone(0x1F6, 0x32, 2);
+        idx = 2;
+        break;
+    }
+    flfntSetSize(0x16, 0x16);
+    font_print_double(0x22E, 0x33, 1, 0, tl_etc[3 + idx]);
 }
 
 void plaza_trans_ot1(a)
