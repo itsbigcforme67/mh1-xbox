@@ -683,3 +683,5 @@ main 0x001593C0 0x00159408 pl/shell_work2
 main 0x00192E30 0x00192E38 fl/pv01
 main 0x00192FA0 0x00192FA8 fl/pv02
 main 0x00193150 0x00193344 fl/pv03
+lobby 0x00533A00 0x00535238 lb/lb_talk
+lobby:rodata 0x00654AD0 0x00654B1C lb/lb_talk
