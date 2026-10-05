@@ -2632,3 +2632,91 @@ again:
         return i;
     }
 }
+
+int Net_Share_item_stack();
+
+void Quest_net_sub(void)
+{
+    int i;
+    s16 id;
+    s32 t;
+
+    switch ((u8)quest_w.x181) {
+    case 1:
+        id = quest_w.x184;
+        for (i = 0; i < 4; i++) {
+            if (quest_w.x1C[i] == id) {
+                quest_w.x24[i] = quest_w.x24[i] - quest_w.x186;
+                break;
+            }
+        }
+        break;
+    case 2:
+        quest_w.x140 |= 1 << ((u8)quest_w.x180 + 8);
+        switch (game_w.x0D5) {
+        case 0:
+        case 1:
+        case 2:
+            quest_presuccess_ptr_set(0);
+            break;
+        }
+        break;
+    case 4:
+        switch (game_w.x0D5) {
+        case 5:
+        case 6:
+            break;
+        default:
+            quest_failed_ptr_set(0);
+            break;
+        }
+        break;
+    case 5:
+        t = ((s32)quest_w.x184 << 16 & 0xFFFF0000) | (u16)quest_w.x186;
+        if (t < quest_w.x10) {
+            quest_w.x10 = t;
+        }
+        break;
+    case 6:
+        id = quest_w.x184;
+        if (quest_w.x3A < id) {
+            quest_w.x3A = id;
+        }
+        break;
+    case 7:
+        quest_em_die();
+        break;
+    case 9:
+        Net_Share_item_stack(&player_work[(u8)quest_w.x180], (u16)quest_w.x184, quest_w.x186);
+        break;
+    case 10:
+        switch (game_w.x0D5) {
+        case 5:
+        case 6:
+            break;
+        default:
+            quest_failed_ptr_set(1);
+            break;
+        }
+        break;
+    case 11:
+        quest_w.x140 |= 1 << ((u8)quest_w.x180 + 8);
+        switch (game_w.x0D5) {
+        case 0:
+        case 1:
+        case 2:
+            quest_presuccess_ptr_set(1);
+            break;
+        }
+        break;
+    case 12:
+        quest_w.x140 |= 1 << (u8)quest_w.x180;
+        quest_w.xB4[(u8)quest_w.x180].a = quest_w.x184;
+        break;
+    case 13:
+        quest_w.x140 |= 1 << ((u8)quest_w.x180 + 4);
+        quest_w.x13C |= quest_w.x184 << 16;
+        quest_w.x13C |= quest_w.x186;
+        break;
+    }
+}
