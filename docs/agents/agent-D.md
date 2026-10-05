@@ -321,3 +321,85 @@ Spline (natural cubic spline via tridiagonal solves, 0x30 bytes of
 coefficients per segment), DKA5, Cardano, k_HitWallCamera, k_HitEmCamera.
 m2c cannot read mula.s/madd.s: read the asm.
 - Float-last prototypes again: ScaleVector(f32 *out, f32 *in, f32 t).
+
+# Third assignment: rest of f_weapon, f_cam_223B50, stage hit (f_sphr)
+
+Policy: breadth first; every function has C now except pl_item_trans (below).
+"Not built" = lives in an `X_nm.c` file (compiles, logic believed equivalent,
+byte-different). Counts are "instructions differing / total" from check.py.
+
+## f_weapon part 4 (0x164F70-0x1692C0), include/trans_pl.h
+New header trans_pl.h: PLX is an overlay of PLW with the display fields
+(armor model pointers at +0x534, model at +0x50C, weapon model +0x514, ...),
+PLMDL (clay list +0x30, skin +0x24, materials +0x10), WNODE (skeleton node,
+0x190 bytes, matrix at +0x40). It does not touch pl.h.
+- Built (main OK): weapon3.c: player_mat_calc, player_modify, player_mk,
+  get_tex_num, Material_set_sub (0x168EA0-0x1691B4).
+- weapon3_nm.c (not built, all compile at the original size): plplAdd2 (22/26:
+  the original does not hoist the load of the key's +4), player_trans (272/391),
+  Lb_player_trans (275/387), lb_pl_item_trans (129/137), Ed_player_trans
+  (257/260), enemy_trans (165/228), pl_item_trans_sub (300/322), weapon_trans
+  (1287/1360; the 0x10-0x13 byte constants of the weapon placement tables
+  are real, the decompiler dropped middle float arguments, read from the asm).
+- pl_item_trans (0x165480, 3.8 KB, 887/960): written too, in weapon3_nm.c: a
+  hand-placement table written out as code (clay offset, joint 0xE/0x12,
+  offset vector, rotation, scale for ~20 action ids with frame_check2
+  windows, plus the item-in-use cases of x56B). Float constants are the exact
+  values from the asm; the meaning of each action id is a guess.
+- Lesson: a small helper that returns a float and is defined earlier in the
+  same file (vInnerProduct) keeps float temporaries in caller-saved registers
+  only if it is `static` (GetOrthogonalPoint, camr6_nm.c).
+
+## f_cam_223B50 (rail camera), 0x223B50-0x225200
+Built: camr1.c, camr2.c (CamRailMove, CamRailPoint 0x223E90-0x223F8C), camr3.c,
+camr4.c (tri_diag). camr2_nm.c: cam_rail_move_sub (2/80), cam_rail_move (83/84:
+the original keeps the section byte in a stack slot), cam_rail_move_0 (1/43).
+camr4_nm.c: Spline (259/262). camr5_nm.c: DKA5 (153/158), Cardano (99/203),
+k_HitWallCamera (46/104), k_HitEmCamera (446/538). camr6_nm.c:
+GetOrthogonalPoint (234/413, saved register choice). camr_nm.c (older):
+ZoomRateCalc, ZoomBaseAngleRail, RollAngleRail, dDivComplex,
+QuestClearCameraRequest. Every function of the file now has C.
+Notes: the double constant 1e-10 / 1e-6 compares are `(double)x < 1.0e-6`
+(soft-float _dpflt/_dpfgt); tri_diag(x, a, b, c, d, n) (Thomas algorithm, 64
+unknowns, scratch g[] on the stack) matched first try; DKA5 relies on the
+d*Complex helpers being defined before it in the same file (a2 survives).
+A scratch tool that expands the PS2 FPU mula/madd/msub/adda ops for m2c:
+/tmp/claude-1000/agentD/draft2.py (copy it into tools/ if wanted).
+
+## Stage hit (f_sphr, 0x114AE0-0x11CA74, 33 functions; hit/shit*.c)
+Previously no C. include/hit3.h: DIORAMA (diorama_w: wall grid at +8..+0x1C,
+ground grid at +0x20..+0x34: cell size x/z, cell counts, cell table, polygon
+area), HPOLY (56-byte polygon: kind, flags, 3 vertices, normal, plane d),
+HKIND (per-kind flags: lava +0xB, water +0xC, +0xE special), HSWEEP (swept
+sphere), and the result arrays hit_decision/hit_near_point/hit_hosei_base/
+hit_kouten/hit_side/hit_area_out/hit_poly_num.
+Built (main OK): shit1.c load_stage_hit, shit15.c GetWallTblAdrs, shit5.c
+NormalClipFace, shit6.c add_vec_sub2, shit16.c GetGroundTblAdrs, shit7.c
+check_angle; hit3.c hit_point_cyl (0x290560).
+Also in hit/: hit3_nm.c hit_point_cbd (5/113), tri_nm.c tri_in_check (1/143),
+VectorHitCheck (54/182), old_pos_save (41/52), hitw_nm.c HitWallPlayer
+(104/217).
+Not built (all compile at the original instruction counts):
+- shit1_nm.c WallHitInit / GroundHitInit (6/70 each; a register swap of the
+  -1 constant and the cell pointer, 400 s permuter found nothing).
+- shit2.c (registered nowhere, near): BlockPlaceCgeck (74/80), Ground/Wall
+  FieldInCheck (51/72), AreaFieldInCheck (13/40), GetWallTblAdrs (1/46, mult
+  operand order).
+- shit3_nm.c ground heights: GetGroundHit (186/204), GetGroundShellHit
+  (200/218), GetWaterHit, GetTenjoHit, GetYouganHit (GetGroundTblAdrs matches, shit16.c).
+- shit4_nm.c FaceLinePos (25/140), check_slide (6/52) + the three matching
+  helpers; shit8_nm.c GetGroundHitArea/Upper/StatusAreaPl/Em; shit9_nm.c
+  GetFloorSlide; shit10_nm.c sphr_face_o3/o4 + GetWallHitBit2; shit11_nm.c
+  GetWallHitBitPl/Em; shit12_nm.c GetWallHitLine/GetEyeHitLine; shit13_nm.c
+  hosei_sub; shit14_nm.c PushAdjust3.
+Semantics worth knowing: ground queries collect up to 5 polygon heights under
+the point and take the highest not above y+50 (the lowest if none); the wall
+tests sweep a sphere (HSWEEP) over a 2x2 or n x n block of cells, test every
+polygon with a face test, then edge/corner tests, and PushAdjust3 combines the
+pushes. A few places where the decompiler lost data are commented in the C
+(the "seen" loops of GetWallHitLine/GetEyeHitLine, the A[k]/cov[k] pairing in
+PushAdjust3, the y override of face contacts in sphr_face_o4).
+Lessons: struct/array offsets from the asm are exact but m2c drops the middle
+float argument of calls (flmatMakeScale, SetVector, flmatSetTrans: read the
+asm); `if (0 < n) for (i = 0; ...)` becomes `for (i = 0; i < n; i++)` with
+the original's sltu form (WallHitInit).
