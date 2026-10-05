@@ -157,3 +157,30 @@ Ideas next: the eft/shell spawns set code asks for (Eft14_set2,
 Shell10_set, Shell22_set2, Eft17_set_ex, Eft13_set_pos); area-model
 placement offset for stages like st05; hit_point_cyl; fade alpha scale
 (PS2 0x80 = 1.0?).
+
+## Assignment 8: effects/shells, stage drawing, player plan (5 Oct 2026)
+Done (each step committed; details in docs/pc.md "Port runtime"):
+- All decompiled eft*/shell* C builds into the PC port (list EFT= in
+  tools/build_pc.sh) on a native effect/shell runtime (src/pc/rt/rt_eft.c).
+  The spawn stubs are gone; Eft14_set2 camp fire on stage 0x15
+  (build/show/A/st21_eft14_close_1.3.png), Shell10 barrels on 0x11,
+  Eft17 dust via RT_SPAWN (spawn_sheet.png).
+- Pointers inside imported tables are translated through the ELF's own
+  R_MIPS_32 relocations (+ dlsym of host symbols): rt_data.c / rt_mem.c.
+- Porting hazard fixed in game C: callers declaring Eft13_set_pos,
+  Eft20_set2, Eft14_set3, eft14_set, Eft13_set_pos2 with a different
+  argument order than the definition (eft04*, eft22*, eft23*, shell03,
+  shell10, shell12, shell14, shell22*, em29). check.py unchanged
+  (shell22c shell22_trans was already 1 off before), rebuild all OK.
+- Fade colour (fl state 0x67) is 0xAARRGGBB: fire was blue before.
+- Floor holes: the area model is drawn by trans_stage (main 0x15CD90),
+  which places/spins/scrolls per-stage parts (st05 parts 2/3 are modelled
+  at the origin). C written from an m2c draft + asm in
+  src/main/stage/trans_stage_nm.c (not matched, not in c_files). All 88
+  stages shot: build/show/A/stages/sheet0/1.png.
+- Plan for player + monster with input: docs/pc.md "Plan".
+Lessons:
+- m2c drops a float argument it thinks unused (f13 when 0 or computed in a
+  delay slot): check every flmat call's f12/f13/f14 in the asm.
+- m2c needs jump-table targets labelled (.L%08X:) and the table renamed
+  jtbl_* in a .rodata section (build/pc/try/m2c_ts.py pattern).
