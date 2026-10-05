@@ -113,7 +113,7 @@ void free_mem();
 KH *kh_followed();
 KH *kh_skip();
 int meantosjis();
-void dic_learn();
+int dic_learn();
 void dic_newlearn();
 struct WD *raw_newwd();
 void dic_tmptouroku();
@@ -141,7 +141,7 @@ int g2jodo();
 int getbit(s16);
 int is_shift();
 void *memcpy();
-void close_dic();
+int close_dic();
 void init_page();
 void init_temp();
 int open_dic();
@@ -151,6 +151,80 @@ void set_dicname();
 void flush_head();
 void flush_temp();
 void flush_pages();
+int main_snssyn();
+int tmp_snssyn();
+int main_getsyn();
+int tmp_getsyn();
+s64 set_entid_tab();
+int set_synref();
+int exist_synref();
+u8 *next_wd();
+int get_entid_tab();
+u8 *load_page();
+u8 *load_temp();
+void get1wd();
+void getallwd();
+void set_wds();
+u8 *ins_wds();
+int getkbuflen();
+void getkbuf();
+void clear_allrtime();
+void clear_rtime();
+int get_maxtime();
+void shift_temp();
+void update_nowtmp();
+void update_nowpage();
+void update_entid_rtime();
+int max_rtime();
+u8 *end_page();
+void shiftpage();
+int newwdlen();
+int updwdlen();
+void set_record();
+void upd_record();
+void set_entry2();
+void init_entid_tab();
+int srch_page();
+int ask_strncmp();
+int calc_pulen();
+int page_fix();
+int prefix();
+int chk_entry2();
+int delwd();
+extern int gaku_mode, suji_mode;
+
+#define ELEN(p) (((p)[0] + ((p)[1] << 8)) & 0xFFFF)
+
+typedef struct SYN {
+    u8 x00;
+    u8 x01;
+    u8 x02;
+    u8 x03;
+    u16 x04;
+} SYN;
+
+/* result of a synonym search (dic_snssyn / dic_getsyn) */
+typedef struct SYNR {
+    s16 x00;
+    s16 x02;
+    s16 x04;
+    s16 x06;
+    s64 id;         /* 0x08 */
+    s16 x10;
+    s16 x12;
+    s16 x14;
+    SYN syn[32];    /* 0x16 */
+} SYNR;
+
+/* result of one page search (main_snssyn / main_getsyn) */
+typedef struct SRCH {
+    s16 page;       /* 0x00 */
+    s16 off;        /* 0x02 */
+    s16 x04;
+    s16 x06;
+    s32 x08;
+    u8 *ent;        /* 0x0C */
+} SRCH;
 
 void Overlay_reset(void)
 {
@@ -1090,4 +1164,662 @@ int dic_open(u8 *name)
         r = -6;
     }
     return r;
+}
+
+int dic_close(void)
+{
+    if (dic_fd == -1) {
+        return -3;
+    }
+    flush_head();
+    flush_temp();
+    flush_pages();
+    if (close_dic() == -1) {
+        return -2;
+    }
+    return 3;
+}
+
+int dic_snssyn(u8 *key, int len, SYNR *r)
+{
+    int n;
+    int m;
+    int cnt;
+    u8 buf[0x20];
+    SRCH a;
+    SRCH b;
+
+    if (dic_fd == -1) {
+        return -3;
+    }
+    strncpy(buf, key, (s16)len);
+    buf[(s16)len] = 0;
+    n = main_snssyn(buf, len, &a);
+    if (n == 2) {
+        return 2;
+    }
+    strncpy(buf, key, (s16)len);
+    buf[(s16)len] = 0;
+    m = tmp_snssyn(buf, len, &b);
+    if (m == 2) {
+        return 2;
+    }
+    if (n == 0 && m == 0) {
+        return 0;
+    }
+    r->x12 = 1;
+    cnt = 0;
+    r->x10 = (a.x06 >= b.x06) ? a.x06 : b.x06;
+    if (a.x04 < b.x04) {
+        r->x00 = b.x04;
+        r->x14 = set_synref(b.ent, r->syn, 0, &cnt);
+        a.off = -1;
+    } else if (b.x04 < a.x04) {
+        r->x00 = a.x04;
+        r->x14 = set_synref(a.ent, r->syn, 0, &cnt);
+        b.off = -1;
+    } else {
+        r->x00 = b.x04;
+        r->x14 = set_synref(a.ent, r->syn, set_synref(b.ent, r->syn, 0, &cnt), &cnt);
+    }
+    r->id = (int)set_entid_tab(a.page, b.page, b.off, cnt);
+    return r->id != 0;
+}
+
+int main_snssyn(u8 *key, int len0, SRCH *r)
+{
+    s16 len;
+    s16 page;
+    s16 plen;
+    s16 best;
+    s16 maxp;
+    int more;
+    int c;
+    u8 *e;
+    u8 *hit;
+    u8 *base;
+    s16 klen;
+    s16 pre;
+
+    more = 1;
+    len = len0;
+    r->x06 = 0;
+    r->x04 = 0;
+    hit = 0;
+    page = srch_page(key);
+    if (page_fix(page, key) == 0) {
+        return 2;
+    }
+    maxp = 0;
+    for (;;) {
+        base = load_page(page);
+        e = base;
+        plen = calc_pulen(page, key);
+        best = 0;
+        while (ELEN(e) != 0) {
+            klen = e[2];
+            pre = prefix(e + 3, key, klen);
+            if (pre >= maxp) {
+                maxp = pre + 1;
+            }
+            c = ask_strncmp(e + 3, key, klen);
+            if (c == 0) {
+                if (klen == len && more != 0) {
+                    return 2;
+                }
+                best = klen;
+                hit = e;
+            } else if (c > 0) {
+                if (ask_strncmp(e + 3, key, len) == 0 && more != 0) {
+                    return 2;
+                }
+                break;
+            }
+            e += ELEN(e);
+        }
+        if (best > 0) {
+            r->page = page;
+            r->off = hit - base;
+            r->x04 = best;
+            r->x06 = maxp;
+            r->ent = hit;
+            return 1;
+        }
+        if (plen < 2) {
+            r->off = -1;
+            return 0;
+        }
+        len = plen - 1;
+        key[len] = 0;
+        page = srch_page(key);
+        more = 0;
+    }
+}
+
+int set_synref(u8 *ent, SYN *out, int n, int *maxv)
+{
+    u8 *p;
+    u8 *end;
+    u8 *q;
+    SYN *o;
+
+    o = out + n;
+    end = ent + ELEN(ent);
+    p = ent + ent[2] + 3;
+    while (p < end) {
+        o->x00 = p[0];
+        o->x04 = p[1];
+        q = p + 2;
+        if (*maxv < p[1]) {
+            *maxv = o->x04;
+        }
+        if (p[2] < 0xC) {
+            o->x01 = p[2];
+            q++;
+        } else {
+            o->x01 = 0;
+        }
+        o->x02 = 0;
+        if (exist_synref(out, o) == 0) {
+            n++;
+            o++;
+            if (n >= 0x20) {
+                break;
+            }
+        }
+        p = next_wd(q, end);
+    }
+    return n;
+}
+
+int exist_synref(SYN *p, SYN *e)
+{
+    for (; p < e; p++) {
+        if (p->x00 == e->x00 && p->x01 == e->x01) {
+            if (p->x04 < e->x04) {
+                p->x04 = e->x04;
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
+
+u8 *next_wd(p, end)
+u8 *p;
+u8 *end;
+{
+    while (p < end && *p >= 0x39) {
+        p += 2;
+    }
+    return p;
+}
+
+int dic_getsyn(u8 *key, int len, SYNR *r)
+{
+    int n;
+    int m;
+    int cnt;
+    u8 buf[0x20];
+    SRCH a;
+    SRCH b;
+
+    if (dic_fd == -1) {
+        return -3;
+    }
+    strncpy(buf, key, (s16)len);
+    buf[(s16)len] = 0;
+    n = main_getsyn(buf, len, &a);
+    m = tmp_getsyn(buf, len, &b);
+    if (n == 0 && m == 0) {
+        return 0;
+    }
+    r->x00 = len;
+    r->x10 = len;
+    r->x12 = 1;
+    r->x14 = 0;
+    cnt = 0;
+    if (n == 1) {
+        r->x14 = set_synref(a.ent, r->syn, 0, &cnt);
+    }
+    if (m == 1) {
+        r->x14 = set_synref(b.ent, r->syn, r->x14, &cnt);
+    }
+    r->id = (int)set_entid_tab(a.page, a.off, b.off, cnt);
+    if (r->id == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+int main_getsyn(u8 *key, int len0, SRCH *r)
+{
+    s16 len;
+    s16 page;
+    s16 klen;
+    u8 *base;
+    u8 *e;
+    int c;
+
+    len = len0;
+    if (len < 3 && chk_entry2() != 0) {
+        r->off = -1;
+        return 0;
+    }
+    page = srch_page(key);
+    base = load_page(page);
+    e = base;
+    while (ELEN(e) != 0) {
+        klen = e[2];
+        c = ask_strncmp(e + 3, key, klen);
+        if (c == 0) {
+            if (klen == len) {
+                break;
+            }
+        } else if (c > 0) {
+            r->off = -1;
+            return 0;
+        }
+        e += ELEN(e);
+    }
+    if (ELEN(e) == 0) {
+        r->off = -1;
+        return 0;
+    }
+    r->page = page;
+    r->off = e - base;
+    r->ent = e;
+    return 1;
+}
+
+int dic_get1wd(int a, int b, int out)
+{
+    int off;
+    int tmp;
+    int unused;
+    int best;
+    int page;
+
+    if (dic_fd == -1) {
+        return -3;
+    }
+    page = get_entid_tab(&off, &tmp, &unused);
+    if (page == -1) {
+        return 0;
+    }
+    best = -1;
+    if (off != -1) {
+        get1wd(load_page(page) + off, a & 0xFF, b & 0xFF, &best);
+    }
+    if (tmp != -1) {
+        get1wd(load_temp(tmp), a & 0xFF, b & 0xFF, &best);
+    }
+    if (best == -1) {
+        return 0;
+    }
+    return 1;
+}
+
+void get1wd(u8 *ent, int a, int b, int *best, int out, int tag)
+{
+    int old;
+    u8 *end;
+    u8 *p;
+    u8 *q;
+    u8 *hit;
+    int rt;
+    int k;
+
+    old = *best;
+    end = ent + ELEN(ent);
+    p = ent + ent[2] + 3;
+    hit = 0;
+    while (p < end) {
+        rt = p[1];
+        q = p + 2;
+        k = p[2];
+        if (k < 0xC) {
+            q++;
+        } else {
+            k = 0;
+        }
+        if (a == p[0] && b == k && *best < rt) {
+            *best = rt;
+            hit = p;
+        }
+        p = next_wd(q, end, p);
+    }
+    if (old < *best) {
+        set_wds(out, hit, end, tag | (hit - ent));
+    }
+}
+
+void set_wds(w0, rec, end, tag)
+void *w0;
+u8 *rec;
+u8 *end;
+int tag;
+{
+    s16 *w = w0;
+    u8 *p;
+
+    w[0] = tag;
+    w[1] = rec[1];
+    p = rec + 2;
+    ((u8 *)w)[4] = 0;
+    if (rec[2] < 0xC) {
+        p++;
+    }
+    getkbuf(p);
+}
+
+int dic_getallwd(int a, int b, int out)
+{
+    int off;
+    int tmp;
+    int cnt;
+    int page;
+    int n;
+
+    if (dic_fd == -1) {
+        return -3;
+    }
+    page = get_entid_tab(&off, &tmp, &cnt);
+    if (page == -1) {
+        return 0;
+    }
+    cnt = 0;
+    n = 0;
+    if (off != -1) {
+        getallwd(load_page(page) + off, a & 0xFF, b & 0xFF, &cnt);
+    }
+    if (tmp != -1) {
+        getallwd(load_temp(tmp), a & 0xFF, b & 0xFF, &cnt);
+    }
+    *(int *)out = cnt;
+    if (cnt == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+void getallwd(u8 *ent, int a, int b, int *cnt, int *pos, int buf, int tag)
+{
+    u8 *end;
+    u8 *p;
+    u8 *q;
+    int rt;
+    int k;
+    int len;
+
+    end = ent + ELEN(ent);
+    p = ent + ent[2] + 3;
+    while (p < end) {
+        rt = p[1];
+        q = p + 2;
+        k = p[2];
+        if (k < 0xC) {
+            q++;
+        } else {
+            k = 0;
+        }
+        if (a == p[0] && b == k) {
+            len = getkbuflen(q, end) + 6;
+            if (len & 1) {
+                len++;
+            }
+            set_wds(ins_wds(buf, rt, len, *pos), p, end, tag | (p - ent));
+            *pos += len;
+            (*cnt)++;
+        }
+        p = next_wd(q, end);
+    }
+}
+
+u8 *ins_wds(u8 *p, int rt, int len, int total)
+{
+    u8 *end;
+    u8 *s;
+
+    end = p + total;
+    while (p < end) {
+        if (*(s16 *)(p + 2) >= rt) {
+            break;
+        }
+        p += 5;
+        while (*p++ != 0) {
+        }
+        if ((u32)p & 1) {
+            p++;
+        }
+    }
+    s = end - 1;
+    if (p < end) {
+        while (s >= p) {
+            s[len] = *s;
+            s--;
+        }
+    }
+    return p;
+}
+
+int dic_learn(s64 id, int code, s64 *list, int n)
+{
+    int off;
+    int tmp;
+    int rt;
+    int page;
+    int c;
+    int istmp;
+    u8 *base;
+    u8 *e;
+
+    if (gaku_mode == 0) {
+        return 3;
+    }
+    if (dic_fd == -1) {
+        return -3;
+    }
+    if (id == 0) {
+        c = code & 0xFFFF;
+        if (c >= 0 && c < 4) {
+            suji_mode = c;
+            clear_allrtime(list, n);
+            update_entid_rtime(list, n, 0);
+            return 3;
+        }
+    }
+    page = get_entid_tab(&off, &tmp, &rt);
+    if (page == -1) {
+        return 0;
+    }
+    c = code & 0xFFFF;
+    istmp = c & 0x8000;
+    if (istmp != 0) {
+        if (tmp == -1) {
+            return 0;
+        }
+        base = load_temp(tmp, -1);
+    } else {
+        if (off == -1) {
+            return 0;
+        }
+        base = load_page(page, -1) + off;
+    }
+    rt = get_maxtime(list, n);
+    e = base + (c & 0xFFFF7FFF);
+    if (e[1] != 0 && e[1] == rt) {
+        if (istmp != 0) {
+            shift_temp(tmp);
+            update_nowtmp();
+        }
+        return 3;
+    }
+    rt = rt + 1;
+    if (rt == 0xFF) {
+        clear_allrtime(list, n);
+        rt = 1;
+    }
+    e[1] = rt;
+    if (istmp != 0) {
+        shift_temp(tmp);
+        update_nowtmp();
+    } else {
+        update_nowpage();
+    }
+    update_entid_rtime(list, n, rt);
+    return 3;
+}
+
+void clear_rtime(u8 *ent)
+{
+    u8 *end;
+    u8 *p;
+    u8 *q;
+
+    end = ent + ELEN(ent);
+    p = ent + ent[2] + 3;
+    while (p < end) {
+        p[1] = 0;
+        q = p + 2;
+        if (p[2] < 0xC) {
+            q++;
+        }
+        p = next_wd(q, end);
+    }
+}
+
+void clear_allrtime(s64 *list, int n)
+{
+    int off;
+    int tmp;
+    int unused;
+    int page;
+    int i;
+
+    for (i = 0; i < n; i++) {
+        page = get_entid_tab(list[i], &off, &tmp, &unused);
+        if (page != -1) {
+            if (off != -1) {
+                clear_rtime(load_page(page, -1) + off);
+                update_nowpage();
+            }
+            if (tmp != -1) {
+                clear_rtime(load_temp(tmp));
+                update_nowtmp();
+            }
+        }
+    }
+}
+
+int max_rtime(u8 *ent)
+{
+    int m;
+    u8 *end;
+    u8 *p;
+    u8 *q;
+
+    end = ent + ELEN(ent);
+    p = ent + ent[2] + 3;
+    m = 0;
+    while (p < end) {
+        if (m < p[1]) {
+            m = p[1];
+        }
+        q = p + 2;
+        if (p[2] < 0xC) {
+            q++;
+        }
+        p = next_wd(q, end);
+    }
+    return (u8)m;
+}
+
+int dic_touroku(SYNR *w)
+{
+    int isnew;
+    int need;
+    int c;
+    s16 klen;
+    u8 buf[0x30];
+    u8 *base;
+    u8 *end;
+    u8 *e;
+
+    isnew = 1;
+    if (dic_fd == -1) {
+        return -3;
+    }
+    if (dic_rw == 0x8000) {
+        return -6;
+    }
+    strncpy(buf, *(u8 **)w, ((s16 *)w)[2]);
+    buf[((s16 *)w)[2]] = 0;
+    base = load_page(srch_page(buf));
+    end = end_page(base);
+    e = base;
+    while (e < end) {
+        klen = e[2];
+        c = ask_strncmp(e + 3, buf, klen);
+        if (c == 0) {
+            if (klen == ((s16 *)w)[2]) {
+                isnew = 0;
+                break;
+            }
+        } else if (c > 0) {
+            break;
+        }
+        e += ELEN(e);
+    }
+    if (isnew != 0) {
+        need = newwdlen(w);
+    } else {
+        need = updwdlen(w);
+    }
+    if ((u32)(base + 0x3FE - need) < (u32)end) {
+        return -5;
+    }
+    if (isnew != 0) {
+        shiftpage(e, end + 2, need);
+        set_record(e, need, w, 0);
+        if (((s16 *)w)[2] < 3) {
+            set_entry2(buf, ((s16 *)w)[2]);
+        }
+    } else {
+        shiftpage(e + ELEN(e), end + 2, need);
+        upd_record(e, need, w, max_rtime(e) + 1);
+    }
+    init_entid_tab();
+    update_nowpage();
+    return 3;
+}
+
+u8 *end_page(u8 *p)
+{
+    int n;
+
+    n = ELEN(p);
+    while (n != 0) {
+        p += n;
+        n = ELEN(p);
+    }
+    return p;
+}
+
+void shiftpage(u8 *from, u8 *end, int d)
+{
+    u8 *s;
+
+    if (d > 0) {
+        s = end - 1;
+        while (s >= from) {
+            s[d] = *s;
+            s--;
+        }
+    } else if (d < 0) {
+        while (from < end) {
+            from[d] = *from;
+            from++;
+        }
+    }
 }
