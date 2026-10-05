@@ -53,7 +53,6 @@ void flmatSetXYZ33(FLMAT *, f32, f32, f32);
 void flvecApplyMat33_2(f32 *, FLMAT *);
 void AddVector(f32 *, f32 *, f32 *);
 void RotateY(FLMAT *, f32);
-void ef21_rate_add(EFTW *, EFT21_BIT *);
 
 static void eft21_move(EFTW *ew);
 static void eft21_i(EFTW *ew);
@@ -170,6 +169,13 @@ static void eft21_i(EFTW *ew) {
     if (found != 0) {
         push_eft_work(ew);
     }
+}
+
+void ef21_rate_add(EFTW *ew, EFT21_BIT *p) {
+    p->pos[0] += p->vel[0];
+    p->pos[1] += p->vel[1];
+    p->pos[2] += p->vel[2];
+    p->vel[1] += -0.72727275f;
 }
 
 static void eft21_m(EFTW *ew) {
