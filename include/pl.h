@@ -111,7 +111,9 @@ typedef struct PLW {
     s8    work4E3;       /* 0x4E3 */
     u8 _pad4E4[0x87];
     s8    work56B;       /* 0x56B */
-    u8 _pad56C[0x98];
+    u8 _pad56C[0x5AC - 0x56C];
+    f32   x5AC;          /* 0x5AC ground height (eft21_i, as EMW) */
+    u8 _pad5B0[0x604 - 0x5B0];
     u8    flag604;       /* 0x604 */
     u8 _pad605[0x0B];
     s16   x610;          /* 0x610 shell00 hits count while set (cont_add) */
