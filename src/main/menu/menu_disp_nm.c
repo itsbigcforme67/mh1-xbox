@@ -1336,3 +1336,244 @@ void player_info_sub(f32 x, PLW *pl, s16 y) {
                       *(s16 *)((u8 *)lpPit + id * 2 + 0x34), disp_pl_rgb[id & 3]);
     }
 }
+
+/* ===== timer, gauges (0x1306A0-0x131580) ===== */
+extern u16 System_timer;
+extern u8 needle_data[][0x24];
+void flSinCos(f32, f32 *, f32 *);
+f32 flSin(f32);
+void gage_disp(void *, int);
+void bar_disp(void *, int);
+void disp_needle(int, int);
+typedef struct GAGE {
+    f32 x;      /* 0x00 */
+    f32 len;    /* 0x04 */
+    s16 y;      /* 0x08 */
+    s16 cur;    /* 0x0A */
+    s16 max;    /* 0x0C */
+    u8 _pad0E[2];
+    u32 col;    /* 0x10 */
+} GAGE;
+
+/* 0x1306A0 */
+void disp_timer(void) {
+    PFLPS3 q;
+    int t0, t1;
+    int v;
+    int a;
+
+    SetFilterMode(1);
+    reload_tex(1, 0x11A);
+    SetTextureStage(0x11A);
+    switch (game_w.x0D5) {
+    case 2:
+        lpPit->time0 = Quest_time_get(0);
+        lpPit->time1 = Quest_time_get(1);
+        break;
+    case 4:
+    case 3:
+        switch (game_w.quest) {
+        case 0xCF:
+        case 0x6A:
+        case 0x69:
+        case 0x68:
+        case 0x67:
+        case 0xCE:
+        case 0x6B:
+        case 0x65:
+            if (*(s16 *)(quest_w + 0x34) != 0) {
+                lpPit->time0 = 0;
+            }
+            break;
+        case 0xD0:
+        case 0xCD:
+            lpPit->time0 = 0;
+            break;
+        }
+        break;
+    }
+    t0 = lpPit->time0;
+    t1 = lpPit->time1;
+    q.s[2] = 0x47;
+    q.s[3] = 0x40;
+    q.uv0 = 0x310000;
+    q.uv1 = 0x710047;
+    q.s[0] = 0x10;
+    q.s[1] = 0x10;
+    if (t0 >= 0x2329) {
+        q.col = -1;
+    } else if (t0 >= 0x709) {
+        v = ((System_timer & 0x1F) << 11) & 0xFFFF;
+        a = (s8)(60.0f * flSin(0.0000958738f * (f32)v)) + 0xC0;
+        q.col = (a << 8) | 0xFFFF0000 | a;
+    } else {
+        v = ((System_timer & 0xF) << 12) & 0xFFFF;
+        a = (s8)(120.0f * flSin(0.0000958738f * (f32)v)) + 0x80;
+        q.col = (a << 8) | 0xFFFF0000 | a;
+    }
+    flps0008(&q);
+    SetFilterMode(0);
+    disp_needle(t1, 1);
+    v = t1 - t0;
+    if (v < 0) {
+        v = 0;
+    }
+    disp_needle(v, 0);
+}
+
+/* 0x1309A0 */
+void disp_needle(int n, int sel) {
+    PFLP12 q;
+    f32 s, c;
+    f32 *d = (f32 *)needle_data[sel];
+    u8 *b = needle_data[sel];
+    int k;
+
+    q.col = -1;
+    q.uv[0] = b[0x20];
+    q.uv[1] = b[0x21];
+    q.uv[2] = b[0x22];
+    q.uv[3] = b[0x21];
+    q.uv[4] = b[0x20];
+    q.uv[5] = b[0x23];
+    k = n / 1800;
+    flSinCos(0.10471976f * (f32)(k / 5 * 5) - 3.1415927f, &s, &c);
+    q.p[0] = 0.5f + 0.8f * (64.5f + d[0] * c - d[1] * s);
+    q.p[1] = 0.5f + (48.0f + d[0] * s + d[1] * c);
+    q.p[2] = 0.5f + 0.8f * (64.5f + d[2] * c - d[3] * s);
+    q.p[3] = 0.5f + (48.0f + d[2] * s + d[3] * c);
+    q.p[4] = 0.5f + 0.8f * (64.5f + d[4] * c - d[5] * s);
+    q.p[5] = 0.5f + (48.0f + d[4] * s + d[5] * c);
+    flps000C(&q);
+    q.uv[0] = b[0x22];
+    q.uv[1] = b[0x23];
+    q.p[0] = 0.5f + 0.8f * (64.5f + d[6] * c - d[7] * s);
+    q.p[1] = 0.5f + (48.0f + d[6] * s + d[7] * c);
+    flps000C(&q);
+}
+
+/* 0x130C70 */
+void disp_pl_vital(void) {
+    GAGE g;
+    PLW *pl = lpPit->pl;
+    int a;
+    u32 col;
+    int v;
+
+    SetFilterMode(0);
+    reload_tex(1, 0x11A);
+    SetTextureStage(0x11A);
+    g.x = 101.0f;
+    g.y = 0x19;
+    g.len = 288.0f;
+    g.max = 0x64;
+    g.cur = *(s16 *)((u8 *)pl + 0x792);
+    g.col = -1;
+    gage_disp(&g, 0);
+    if (*(s16 *)((u8 *)pl + 0x302) > 0) {
+        s16 mx = *(s16 *)((u8 *)pl + 0x790);
+        if (lpPit->x24 < mx) {
+            g.cur = mx;
+            g.col = 0xFFC01010;
+            bar_disp(&g, 0);
+        }
+        g.cur = lpPit->x24;
+        g.col = 0xFF10C010;
+        bar_disp(&g, 0);
+    }
+    g.y = 0x26;
+    g.max = 0x12C;
+    g.cur = *(s16 *)((u8 *)pl + 0x882);
+    g.col = -1;
+    gage_disp(&g, 1);
+    if (*(s16 *)((u8 *)pl + 0x748) < 0x4C) {
+        a = ((s16)(64.0f * flSin(2.0f * (3.1415927f * ((f32)((System_timer % 45) * 8) / 360.0f)))) + 0x40) & 0xFF;
+        col = (a << 8) | 0xFFFF0000 | a;
+    } else if (*(s16 *)((u8 *)pl + 0x8CC) == 0) {
+        col = 0xFFF0F000;
+    } else {
+        v = ((System_timer & 0x3F) << 10) & 0xFFFF;
+        a = ((s8)40.0f + 0xE7) & 0xFF;
+        col = (((s8)(40.0f * flSin(0.0000958738f * (f32)v)) + 0x9F) & 0xFF) | ((a << 16) | 0xFF000000 | (a << 8));
+    }
+    g.col = col;
+    g.cur = *(s16 *)((u8 *)pl + 0x748);
+    bar_disp(&g, 1);
+}
+
+/* 0x130F50 */
+void gage_disp(void *gp, int sel) {
+    GAGE *g = gp;
+    PFLPS2 q;
+    f32 x, l, t;
+    u32 w, n, r;
+
+    reload_tex(1, 0x11A);
+    SetTextureStage(0x11A);
+    q.s[1] = g->y;
+    q.s[3] = 0xD;
+    q.col = g->col;
+    if (sel == 0) {
+        q.uv[1] = 0x55;
+        q.uv[3] = 0x62;
+    } else {
+        q.uv[1] = 0x61;
+        q.uv[3] = 0x54;
+    }
+    t = g->len * ((f32)g->cur / (f32)g->max);
+    w = (u32)t;
+    x = g->x;
+    r = w % 48;
+    q.uv[0] = 0x48;
+    n = w / 48;
+    q.uv[2] = 0x78;
+    while (n != 0) {
+        t = 0.8f * x;
+        x += 54.216003f;
+        q.s[0] = t;
+        q.s[2] = (s16)(0.8f * x) - (s16)t;
+        flps0008(&q);
+        n--;
+    }
+    q.s[0] = 0.8f * x;
+    q.s[2] = 0.8f * (1.1295f * (f32)r);
+    q.uv[2] = r + 0x48;
+    flps0008(&q);
+    q.s[0] = (f32)q.s[0] + (-3.2f + (f32)q.s[2]);
+    q.s[2] = 0x19;
+    q.s[3] = 0x12;
+    q.uv[0] = 0x47;
+    q.uv[2] = 0x67;
+    if (sel == 0) {
+        q.s[1] = g->y - 5;
+        q.uv[1] = 0x31;
+        q.uv[3] = 0x43;
+    } else {
+        q.s[1] = g->y - 2;
+        q.uv[1] = 0x42;
+        q.uv[3] = 0x54;
+    }
+    flps0008(&q);
+}
+
+/* 0x131280 */
+void bar_disp(void *gp, int sel) {
+    GAGE *g = gp;
+    PFLPS3 q;
+
+    if (g->cur > 0) {
+        if (g->max <= 0) {
+        } else {
+        reload_tex(1, 0x11A);
+        SetTextureStage(0x11A);
+        q.s[0] = 0.8f * g->x;
+        q.s[2] = 0.90360004f * (g->len * ((f32)g->cur / (f32)g->max));
+        q.s[3] = 4;
+        q.s[1] = g->y + (s16)((sel != 0) ? 2 : 6);
+        q.col = g->col;
+        q.uv0 = 0x56007A;
+        q.uv1 = 0x5A007C;
+        flps0008(&q);
+        }
+    }
+}
