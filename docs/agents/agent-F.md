@@ -13,6 +13,13 @@ shows the asm without the noise, write the C by hand (the m2c output is only a g
 `python3 tools/check.py src/main/pl/pl_wip.c -v | grep '>>'`, then `python3 tools/plreg.py plNN "descr" F1 F2 ... [RODATA=a-b]`
 moves them into src/main/pl/plNN.c and registers the range; `tools/rebuild.sh main` must print OK.
 
+## Shell work pool (7 Oct 2026)
+src/main/pl/shell_work.c (0x158F20-0x159378: init/clr/pull/push/move/trans_shell) and shell_work2.c (Ana_ok_ck, softdip stubs) match;
+Taru_ok_ck is a near-match in shell_work_nm.c (8/14 insns, original lays the `return 0` arm inline before the else load).
+SHLW is 0xD4 bytes (shell_work = 64 entries x 0xD4): include/shell.h was padded to that size and got xC4, prev/next/heap_pos/heap_n/x7B.
+Not done: sound glue 0x159410-0x15A520 (Snd_init, se_req*, Pl/Em/Npc_se_req*, snd_joint_load*; PC port replaces sound), online select
+screens 0x14E0C0-0x14E8E0, set13_m/set13_trans (see set13_nm.c), SpritePut/CalcPoint/trans_sprite.
+
 ## Near-matches in pl_nm.c
 - pl_move_sub 469/536 insns differ, only delay-slot hoisting of `move a0,s0` (see pl_nm.c); all else matches.
 - Pl_item_charge OK in nm too (registered pl04). player_init0 8 off (register choice for work616 load), pl_work_clr 15 off
