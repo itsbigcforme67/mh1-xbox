@@ -227,27 +227,31 @@ def material_textures(d):
     return res
 
 
-def dump_obj(d, out, texdata=None, skin=None):
+def mesh_obj(d, texdata=None, skin=None, stem="out", tag="", base=1, vtbase=1):
+    """OBJ lines for one AMO. texdata: a *_tex.bin link file, or a single
+    APX (bytes starting with an APX header) for player parts. Returns
+    (obj lines, mtl lines, vertices written, uvs written, parts, triangles).
+    PNGs are written as STEM_TAGtexN.png."""
     root = root_chunk(d)
     models = child(d, root[0], root[3], T_MODELS)
     if not models:
         sys.exit("no model list in this AMO")
-    base = 1
-    lines = ["# MH1 AMO dump by tools/clay_dump.py (triangle strips -> triangles)"]
-    stem = os.path.splitext(out)[0]
+    lines, mtl = [], []
     mat2apx = material_textures(d)
     if texdata is not None:
-        lines.append("mtllib %s.mtl" % os.path.basename(stem))
-        mtl = []
-        apxs = link_entries(texdata)
+        n0 = struct.unpack_from("<I", texdata, 0)[0]
+        if n0 == len(texdata) or n0 > 0x1000:      # a bare APX (+0 = its size)
+            apxs = [(0, len(texdata))]
+            mat2apx = {m: 0 for m in mat2apx} or {}
+        else:
+            apxs = link_entries(texdata)
         for k, (ao, asz) in enumerate(apxs):
             w, h, rgba = apx_decode(texdata, ao)
-            write_png("%s_tex%d.png" % (stem, k), w, h, rgba)
+            write_png("%s_%stex%d.png" % (stem, tag, k), w, h, rgba)
         for m, a in sorted(mat2apx.items()):
-            mtl += ["newmtl mat%d" % m, "Kd 1 1 1", "map_Kd %s_tex%d.png" % (os.path.basename(stem), a), ""]
-        with open(stem + ".mtl", "w") as f:
-            f.write("\n".join(mtl))
-    vtbase = 1
+            mtl += ["newmtl %smat%d" % (tag, m), "Kd 1 1 1",
+                    "map_Kd %s_%stex%d.png" % (os.path.basename(stem), tag, a), ""]
+    v0, vt0 = base, vtbase
     nparts = ntris = 0
     for k, (o, t, c, s) in enumerate(chunks(d, models[0] + 12, models[0] + models[2])):
         if t != T_MODEL:
@@ -257,7 +261,7 @@ def dump_obj(d, out, texdata=None, skin=None):
         if not v or not il:
             continue
         nv = v[1]
-        lines.append("o part%02d" % k)
+        lines.append("o %spart%02d" % (tag, k))
         verts = [struct.unpack_from("<3f", d, v[0] + 12 + 12 * j) for j in range(nv)]
         if skin is not None:
             verts = skin_vertices(d, o, s, verts, skin)
@@ -277,7 +281,7 @@ def dump_obj(d, out, texdata=None, skin=None):
             if texdata is not None and pn < len(primmat) and primmat[pn] < len(matnums):
                 m = matnums[primmat[pn]]
                 if m != cur:
-                    lines.append("usemtl mat%d" % m)
+                    lines.append("usemtl %smat%d" % (tag, m))
                     cur = m
             for j in range(len(idx) - 2):
                 a, b, cc = idx[j], idx[j + 1], idx[j + 2]
@@ -295,9 +299,20 @@ def dump_obj(d, out, texdata=None, skin=None):
         if texdata is not None and st:
             vtbase += nv
         nparts += 1
+    return lines, mtl, base - v0, vtbase - vt0, nparts, ntris
+
+
+def dump_obj(d, out, texdata=None, skin=None):
+    stem = os.path.splitext(out)[0]
+    lines, mtl, nv, nvt, nparts, ntris = mesh_obj(d, texdata, skin, stem)
+    head = ["# MH1 AMO dump by tools/clay_dump.py (triangle strips -> triangles)"]
+    if texdata is not None:
+        head.append("mtllib %s.mtl" % os.path.basename(stem))
+        with open(stem + ".mtl", "w") as f:
+            f.write("\n".join(mtl))
     with open(out, "w") as f:
-        f.write("\n".join(lines) + "\n")
-    print("%s: %d parts, %d vertices, %d triangles" % (out, nparts, base - 1, ntris))
+        f.write("\n".join(head + lines) + "\n")
+    print("%s: %d parts, %d vertices, %d triangles" % (out, nparts, nv, ntris))
 
 
 # ---------------------------------------------------------------- skeleton
@@ -412,20 +427,19 @@ def world_matrices(bones, chans):
     return out
 
 
-def skin_matrices(ahi, tbl, slot, frame):
-    """Per AHI bone: inverse(bind world) * posed world. Motions are stored per
-    bone group (AHI +0x44): bank 2*g of the *_tbl.bin holds group g, and AAN
-    bone i drives the group's i-th bone."""
-    bones = read_ahi(ahi)
-    bind = [list(b[2]) + list(b[3]) + list(b[4]) for b in bones]
-    pose = [list(c) for c in bind]
+def motion_channels(bones, tbl, ids, frame):
+    """Per bone [Sx Sy Sz Rx Ry Rz Tx Ty Tz]: the AHI bind values, overwritten
+    by the motions in ids = {group: motion id}. A motion id is decoded like
+    frame_init (0x10F2xx): bank = (id % 1000) // 100, slot = id % 100; ids
+    >= 1000 select the character's own table instead of the common one,
+    which for a single *_tbl.bin makes no difference here."""
+    pose = [list(b[2]) + list(b[3]) + list(b[4]) for b in bones]
     nbanks = 0
     while struct.unpack_from("<I", tbl, 8 * nbanks)[0]:
         nbanks += 1
-    groups = sorted(set(b[1] for b in bones))
-    for g in groups:
+    for g, mid in ids.items():
         members = [i for i, b in enumerate(bones) if b[1] == g]
-        bank = 2 * g
+        bank, slot = (mid % 1000) // 100, mid % 100
         if bank >= nbanks:
             continue
         cnt, off = struct.unpack_from("<II", tbl, 8 * bank)
@@ -443,6 +457,18 @@ def skin_matrices(ahi, tbl, slot, frame):
                 if kind == 2:   # short motions: rotation in 1/16384 turn, rest x16
                     v = v * 0.0003834952 if ch in (3, 4, 5) else v / 16.0
                 pose[members[i]][ch] = v
+    return pose
+
+
+def skin_matrices(ahi, tbl, slot, frame, ids=None):
+    """Per AHI bone: inverse(bind world) * posed world. Without explicit ids,
+    group g plays motion id 200*g + slot (bank 2g, as the em*_tbl.bin files
+    are laid out: one bank per group, odd banks empty)."""
+    bones = read_ahi(ahi)
+    if ids is None:
+        ids = {g: 200 * g + slot for g in set(b[1] for b in bones)}
+    bind = [list(b[2]) + list(b[3]) + list(b[4]) for b in bones]
+    pose = motion_channels(bones, tbl, ids, frame)
     wb = world_matrices(bones, bind)
     wp = world_matrices(bones, pose)
     return [matmul(invert_rigid(b), p) for b, p in zip(wb, wp)]
@@ -453,9 +479,10 @@ def skin_vertices(d, o, s, verts, skin):
     part's 0x100000 list (which holds AHI bone numbers); weights are percent."""
     w = child(d, o, s, T_WEIGHT)
     mx = child(d, o, s, T_MATRIX)
-    if not w or not mx:
+    if not w:
         return verts
-    pal = struct.unpack_from("<%dI" % mx[1], d, mx[0] + 12)
+    # without a 0x100000 list (player parts) indices are the part's own bones
+    pal = struct.unpack_from("<%dI" % mx[1], d, mx[0] + 12) if mx else range(len(skin))
     p = w[0] + 12
     out = []
     for x, y, z in verts:
