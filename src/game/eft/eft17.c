@@ -50,8 +50,8 @@ extern u16 eft17_all_time[];
 extern s16 eft17_param[];
 extern s16 eft17_index[];
 extern u16 *eft17_time[];
-extern s16 eft17_type11_lag_tbl[];
-extern s16 eft17_type15_lag_tbl[];
+extern s16 eft17_type11_lag_tbl[4];
+extern s16 eft17_type15_lag_tbl[4];
 extern u8 fade_type15_em03[];
 extern u8 fade_type15_em04_em06[];
 extern u8 fade_type15_em04_em06_2[];
@@ -75,7 +75,7 @@ void flvecApplyMat33_2(f32 *, FLMAT *);
 void flmatCopy(FLMAT *, FLMAT *);
 void RotateX(FLMAT *, f32);
 void RotateY(FLMAT *, f32);
-FLMAT *get_joint_wmat(void *, int);
+FLMAT *get_joint_wmat(void *, s16);
 void get_joint_pos_em(EMW *, s16, f32 *);
 f32 GetGroundHit(f32 *);
 void eft_vec_linear(f32, void *, f32 *);
@@ -179,9 +179,9 @@ static void eft17_i00(EFTW *ew) {
     FLMAT m;
     f32 v[3];
     s16 n;
-    s16 i;
     u16 ang;
     EFT17_PIECE *p = ew->work;
+    s16 i;
 
     n = eft17_num[ew->arg];
     switch (ew->arg) {
@@ -273,12 +273,16 @@ static void eft17_i00(EFTW *ew) {
         ew->x07 = ew->owner->kind;
         ew->scale *= 2.0f;
         break;
+    case 5:
+    case 16:
+    case 17:
+        break;
     case 18:
         ew->stg = (u16)ran_suu(1) & 0x1FF;
         break;
     }
     ew->timer = 0;
-    for (i = 0; i < n; i++, p++) {
+    for (i = 0; i < n; p++, i++) {
         p->prim_no = get_prim();
         if (p->prim_no != -1) {
             p->no = i;
@@ -754,11 +758,13 @@ static void eft17_m00(EFTW *ew) {
 
 static void eft17_i08(EFTW *ew) {
     f32 h;
-    s16 i;
     EFT17_PIECE *p = ew->work;
+    s16 i;
 
-    if (ew->arg == 8) {
+    switch (ew->arg) {
+    case 8:
         h = 70.0f;
+        break;
     }
     ew->timer = 0;
     for (i = 0; i < 10; i++, p++) {
@@ -793,11 +799,11 @@ static void eft17_i08(EFTW *ew) {
 
 static void eft17_m08(EFTW *ew) {
     f32 y;
+    EFT17_PIECE *p = ew->work;
     s16 i;
     s16 cnt;
-    EFT17_PIECE *p = ew->work;
 
-    if (++ew->timer >= 0x97) {
+    if (++ew->timer > 0x96) {
         ew->mode++;
         ew->be_flag = 0;
         return;
