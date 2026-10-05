@@ -264,6 +264,7 @@ def attempt(fn, mode=''):
             for mm in re.finditer(r"'?(\w+)\(\.\.\.\)'? redeclared|identifier '(\w+)\(\.\.\.\)' redeclared", out):
                 pass
             if not added:
+                open(os.path.join(OUT, fn + '.err.c'), 'w').write(src)
                 res = {'status': 'error', 'msg': out.strip().split('\n')[3:6]}
                 break
     finally:
