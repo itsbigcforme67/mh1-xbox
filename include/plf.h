@@ -186,7 +186,11 @@ u8 Check_hold_item(s32);
 long ItemStockRequest(PLW *, int, s16, int);
 extern u8 lit_3557[];
 void pick_set_sub(PLW *, u16);
+void ItemPickingDeclaration(PLW *, void *);
+void pl_mv071(PLW *, u32);
 s32 Ext_pick_point_ck2(PLW *);
 s32 St_pick_ck2(PLW *);
 void adx_se_set(PLW *, int);
+void Item_regained(PLW *, int);
+void egg_set(PLW *);
 #endif
