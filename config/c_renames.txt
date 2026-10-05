@@ -21,6 +21,8 @@ build/src/game/eft/eft23.c.o .rodata .data
 build/src/game/em/em_taisei.c.o .rodata .data
 build/src/game/em/em01.c.o .rodata .data
 build/src/game/em/em02.c.o .rodata .data
+build/src/game/em/em03.c.o .rodata .data
+build/src/game/em/em03c.c.o .rodata .data
 build/src/game/em/em04.c.o .rodata .data
 build/src/game/em/em04b.c.o .rodata .data
 build/src/game/em/em07.c.o .rodata .data
