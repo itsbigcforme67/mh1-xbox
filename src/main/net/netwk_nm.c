@@ -124,7 +124,7 @@ int McActInit();
 int Load_overlay();
 int kbdExecServer();
 int SoftKeyboard_move();
-int SoftKeyboard_pos_set();
+int SoftKeyboard_pos_set(f32, s16);
 int SoftKeyboard_set();
 int DispSoftkeyboard();
 int load_file_mdl();
@@ -1196,6 +1196,20 @@ int Net_kb_input_sub(void) {
         r = (s8)SoftKeyboard_move(SoftKeyWork + 4, (s16)Psw[0].x00, (s16)Psw[0].x04);
     }
     return r;
+}
+
+typedef struct SKMODE {
+    s32 a;
+    s32 b;
+} SKMODE;
+extern SKMODE skey_mode_tbl_910[];
+
+void Net_kb_input_init2(int x, int y, char *str, int w, int mode) {
+    SoftKeyboard_pos_set((f32)x, (s16)y);
+    SoftKeyboard_set(skey_mode_tbl_910[mode].a, (u8)skey_mode_tbl_910[mode].b, w & 0xFFFF, str);
+    memset(SoftKeyWork + 4, 0, 0x100);
+    strcpy((char *)SoftKeyWork + 4, str);
+    SoftKey_onoff(1);
 }
 
 u8 *SoftKey_Getstr(void) {
