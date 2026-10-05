@@ -2355,3 +2355,27 @@ void Shell_type_set(PLW *pl, int flag) {
 
 extern u8 chat_act_tbl_002F1860[0xD];
 void Pl_se_req2(PLW *, int, int, f32 *, int, int);
+
+#include "flow.h"
+
+s32 Pl_hold_item_ck(PLW *pl) {
+    s16 i;
+    u16 r = 0xFFFF;
+    for (i = 0; i < 20; i++) {
+        if (pl->item[i].num != 0) {
+            switch (pl->item[i].id) {
+            case 0x91:
+            case 0x92:
+            case 0xA3:
+            case 0x94:
+            case 0x93:
+            case 0x95:
+                r = pl->item[i].id;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+    return r;
+}
