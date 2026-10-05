@@ -424,8 +424,12 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
   None of this C is Capcom bytes. Matching runs are split out with `tools/mkruns.py NM.c OUTDIR PREFIX FIRST "comment"`
   (new: groups address-contiguous fully matching functions, one file per run via mkrun2.py, prints the
   c_files.txt lines; check each run file with check.py on its own before registering).
-  Linked, all five modules OK: ud01-ud08, chat01-chat13, sk01-sk08, hk01-hk08 (config/c_files.txt).
-- Status (check.py, fully matching / near-match): ud 37/11, chat 21/48, sk 12/34, hk 18/28. Many of the "near" ones
+  Linked, all five modules OK: ud01-ud08, chat*, sk*, hk* (config/c_files.txt; the run numbers shift whenever more
+  functions match: regenerate with mkruns.py and verify each run file with check.py before registering; a run whose
+  static helper is not part of it fails, e.g. Init_reibun alone).
+- Status (check.py, fully matching / near-match): ud 37/11, chat 31/38, sk 20/26, hk 21/25 (functions linked are the
+  address-contiguous matching runs: 47 c_files.txt lines for ud/chat/sk/hk; the ud Gun_* group, 9 matching functions, is
+  parked behind gun_check, see below). Many of the "near" ones
   are only a register swap or a delay slot; most of the rest are float-heavy UI code (see below).
 - New shared header include/ud.h (UDW: User_data layout: point 0x1C, evflag 0x24, ware[64] 0x44, stock[100] 0x1C4,
   qclear[8] 0x354, rank 0x37B, item[20] 0x37C, wkind 0x3CD, wid 0x3CE, wopt 0x3D0, armor[5] 0x3D2, widx[6] 0x456,
@@ -469,3 +473,9 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
   layouts of the local PFLP4/PFLP8 stack structs (original keeps several separate stack variables), and loops.
 - f_menu quick pass (retry of the 2-5 instruction near-matches): nothing new matched in the time box
   (menu_data_mix_sub/monster_sub/chcnfg_reibun: declbf finds no better order; Pit_mv, disp_needle etc. untouched).
+- tools/perm.py on a function inside a whole-file nm.c gave scores around 1300 for a 15-instruction diff (the context
+  is the whole file): not useful here; use try.py-style variant lists (small script comparing check.py output) or
+  declbf.py instead.
+- Not done: f_menu quick pass beyond pef_get_alpha (2, float temp reg), Pit_disp_chat_cnfg (2, lui/ori register of the /3
+  magic number after PitMenu.x1B became s8), disp_needle (4), Pit_mv/Pit_mv_lb. Float-literal functions (most of the f_chat
+  UI) cannot be linked until the literals are read from the original pool (`extern f32 lit_NNNN[]` with the right NNNN).
