@@ -301,6 +301,8 @@ main:rodata 0x0036D1E0 0x0036D1F8 omake/omakee
 main 0x00281660 0x002816E8 mc/mcsaveb
 main 0x00281740 0x002818E4 mc/mcsaved
 main 0x002819C0 0x00281BC0 mc/mcsavec
+main 0x0023DAB0 0x0023DEA8 npc/npcb
+main 0x0023E260 0x0023E4E0 npc/npcc
 main 0x00290E80 0x00291D30 reward/f_reward
 main:rodata 0x003865A0 0x003865EC reward/f_reward
 main 0x00291D30 0x0029250C reward/f_reward2

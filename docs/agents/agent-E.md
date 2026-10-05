@@ -203,3 +203,14 @@ Near-match: encode_data_002814E0 (38/48; original keeps buf in s0, advances it i
 local declaration order found by permuting: sum? see the file), user_data_copy2 (35/51; original reads data_load_ptr before the `if` and
 keeps the raw slot in s1), decode_to_ck matches ONLY with `static decode_data` earlier in the file (the compiler then knows a0 survives the call), so
 it is not linked. Save image layout is described at the top of mcsave_nm.c (scrambled u16 stream, key = key*0xB0 % 65363).
+
+### npc (0x23D870-0x23E500): 8 of 10 built (npcb.c, npcc.c), main OK
+NPC = a player-like work block (struct NPCW in npc_nm.c; fields named only as far as used). Built: npc_init_sub, npc_init, npc_die, npc_erase, npc_mv, npc_chr_sub,
+npc_mk, npc_effect_move (npc_effect_move = prog->init2-style call through the table at +0x3CC; the init writes game overlay function func_53A190, which check.py
+cannot verify: the rebuild did). Near-match: npc_trans 149/152 (too many live values: the original uses 7 s-registers, mine 9; locals order rad,m3,m4,m2 gave
+the right stack offsets), npc_move 193/234 (original hoists `lbu kind` into the delay slot of the first branch).
+Lessons: (1) raw `*(u8*)((u8*)p+off)` accessors on a parameter pointer change the codegen too (address CSE: `addiu v1,s0,764; sb v0,0(v1)`): a local view struct
+with named fields at the right offsets fixes it (npc_chr_sub 6/44 -> OK). Generate the struct from an offset table with padding. (2) assigning an integer
+bit pattern to an f32 field converts it: write 2.0f/1.0f (npc_init). (3) pointer tables of u16 are walked with `q++` (2 bytes), a `[][2]` s16 table gives
+`sll 2; lh` (npc_init). (4) a struct field 0x18 that is a pointer covers 0x18-0x1B: check overlapping field offsets before building a view struct.
+(5) the first call arg of K&R-declared callees may carry stale registers in m2c output (npc_init_sub(p, 1) was really npc_init_sub(p)); a 5th pl_chr_set arg (t0) is real.
