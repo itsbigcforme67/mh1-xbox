@@ -178,13 +178,22 @@ void rt_player_tick(int no)
         return;
     }
     rt_pad_tick();
+    if (getenv("RT_PL_AIM")) {      /* test aid: face monster 0 while standing (scripted fights) */
+        extern u8 em_work[];
+        u16 Em_Calc_angY(f32 *a, f32 *b);
+        PLW *p = &player_work[no];
+        if (em_work[0] && (p->flag14 == 0 || p->flag14 == 1) && (p->flag15 == 0 || p->flag15 == 2 || p->flag15 == 3 || p->flag15 == 4))
+            p->ang[1] = Em_Calc_angY(p->pos, (f32 *)(em_work + 0xAC));
+    }
     pl_move();
+    if (getenv("RT_PL_GOD"))        /* test aid: the hunter's vital (+0x302) back to 100 each tick */
+        PF(&player_work[no], s16, 0x302) = 100;
     if (getenv("RT_PL_TRACE")) {
         PLW *pl = &player_work[no];
-        printf("pl: act %d/%d step %d chr %d/%d fr %.1f spd %.1f pos %.0f %.0f %.0f ang %04X st %d sw %04X/%04X\n",
+        printf("pl: act %d/%d step %d chr %d/%d fr %.1f spd %.1f pos %.0f %.0f %.0f ang %04X st %d sw %04X/%04X hp %d\n",
                pl->flag14, pl->flag15, PF(pl, u8, 5), PF(pl, u16, 0x2DC), PF(pl, u16, 0x2DE),
                PF(pl, f32, 0x19C), PF(pl, f32, 0x1A0), pl->pos[0], pl->pos[1], pl->pos[2],
-               pl->ang[1] & 0xFFFF, pl->st, pl->sw.now, pl->sw.trg);
+               pl->ang[1] & 0xFFFF, pl->st, pl->sw.now, pl->sw.trg, PF(pl, s16, 0x302));
     }
 }
 
@@ -317,6 +326,11 @@ void rt_hit_check(void)
     static int tr = -1;
     u8 *e = em_work;
     hit_check();
+    if (e[0x38D] && getenv("RT_DMG_MUL")) {     /* test aid: scale this tick's damage to monster 0 */
+        int k, m = atoi(getenv("RT_DMG_MUL"));
+        for (k = 0; k < 8; k++)
+            PF(e, s16, 0x766 + 2 * k) = (s16)(PF(e, s16, 0x766 + 2 * k) * m);
+    }
     if (tr < 0) tr = getenv("RT_HIT_DM") != NULL;
     if (tr > 1 || (tr && getenv("RT_HIT_DM")[0] == '2')) {   /* RT_HIT_DM=2: live shells each tick */
         extern u8 *shell_w_top;

@@ -191,11 +191,17 @@ u8 *pl_area_top;
 u8 *data_load_ptr;
 void create_plcom_motion(void);
 
+#define RT_NODE_SIZE 0x190
+#define RT_NODE_MAX 128
 typedef struct {
     FRMDL mdl;
     u8 _pad[0x60 - sizeof(FRMDL)];
-    u8 skl[0x210];
     RT_MPLAY mot0, mot1;
+    /* mdl+0x24: the skeleton's nodes, RT_NODE_SIZE bytes each as on the PS2:
+     * +0x00 world matrix (filled from the host skeleton each tick by
+     * rt_actor_joints: hit_data_expand reads it), +0x40 local matrix (rows
+     * turned by get_joint_mat callers; row 3 of node 1 is FRSKL.vel) */
+    u8 skl[RT_NODE_MAX * RT_NODE_SIZE];
 } rt_actor_motion;
 
 void rt_motion_load_plcom(const uint8_t *tbl)
@@ -423,4 +429,13 @@ void rt_monster_get(int no, float pos[3], int *ang_y)
 void rt_monster_pose(int no, void *skel)
 {
     rt_motion_pose(skel, &em_work[no]);
+}
+
+/* the node array at mdl+0x24 of a player/monster work (NULL without one) */
+u8 *rt_actor_nodes(const void *work, int *max)
+{
+    const FRW *w = work;
+    if (max)
+        *max = RT_NODE_MAX;
+    return w->mdl ? (u8 *)w->mdl->skl : NULL;
 }

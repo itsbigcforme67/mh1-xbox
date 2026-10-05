@@ -266,6 +266,7 @@ void rt_game_init(int stage)
     memset(&game_w, 0, sizeof game_w);
     game_w.stage = (u8)stage;
     game_w.master = 0;
+    game_w.pl_num = 1;      /* one player, offline (monster sight/hate loops over pl_num) */
     stage_work.timer = 0;
     stage_work.flag = 1;
     stage_work.x01 = 1;

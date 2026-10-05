@@ -105,6 +105,11 @@ int rt_monster_motion_tick(int no);
 /* Place em_work[no] on the stage (then each tick also runs em_move's wall
  * and ground collision) and read back where it is. */
 void rt_monster_place(int no, int kind, const float pos[3], int ang_y);
+/* rt_em.c: quest mission data and the game's monster loop (enemy_mv) */
+int rt_quest_load(int no);
+int rt_quest_monster_stage(int *kind);
+int rt_monster_spawn(int kind, const float pos[3], int ang_y);
+int rt_monster_tick(int no);
 void rt_monster_get(int no, float pos[3], int *ang_y);
 void rt_monster_pose(int no, void *fl_skel_ptr);
 
