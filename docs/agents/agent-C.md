@@ -170,3 +170,16 @@ also assigned before the em_pl_pos_set call).
   MWCC's register colouring (found by the permuter as an inline accessor,
   then rewritten as block-scoped locals). em17 is one whole file again
   (0x5D81A0-0x5D9BC4); em17b.c and em17_nm.c are gone.
+- em20 (0x5FCDC0-0x5FFCB4, 18 functions): 17 match, built as em20.c
+  (0x5FCDC0-0x5FD898, rodata 0x6894E0-0x689600) and em20b.c
+  (0x5FDA10-0x5FFCB4, rodata 0x689620-0x68965C). em20_act_set is 1
+  instruction off (`kind = 3` loads with daddiu in the original, i.e. a
+  16-bit type, but a u16 `kind` makes MWCC reuse the masked switch value
+  for the em_act_set2 call); whole file in em20_nm.c. senkai_sub2/sub3 are
+  senkai_sub with parts removed (turn base 0x100, no sinking, climb toward
+  tgt_pos[1]). New: GAME_W x2E (include/game.h). Lessons:
+  - ground_point_search: same pointer-walk loop as senkai_pos_no, with the
+    pointer assigned before the em_pl_pos_set call; reading em->x617 twice
+    instead of keeping it in a local fixed the register choice; `q = pos[n]`
+    taken before the stores.
+  - xang_set_pl: `a = 0x10000 - calc_vec_ang(...); a = (u16)(a - ang[0]);`
