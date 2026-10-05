@@ -124,11 +124,11 @@ void stage_mv_ck(void) {
         if (hit != 0) {
             pl->x738 = 1;
             pl->x73A = p->id;
-            pl->x73C[0] = p->dest[0];
-            pl->x73C[1] = p->dest[1];
-            pl->x73C[2] = p->dest[2];
-            pl->x570 = p->ang + 0x4000;
-            Pl_ofs_set(pl, pl->x73C, pl->x570);
+            pl->work73C = p->dest[0];
+            pl->work740 = p->dest[1];
+            pl->work744 = p->dest[2];
+            pl->work570 = p->ang + 0x4000;
+            Pl_ofs_set(pl, &pl->work73C, pl->work570);
             net_send_pl(pl, 5, 0);
         }
     }

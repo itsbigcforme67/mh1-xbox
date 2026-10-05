@@ -159,3 +159,53 @@ eft13 14/19, eft20 9/13, set13 7/10 (89 of 103). The other 14 are in
 *_nm.c files (not built): eft02_t (12 off), eft06_m, eft13_i/_m/_set_pos/
 _set_sub_em/_set_pos_em, eft20_i/_m/_t/_pos_set, set13_m/_trans/
 _disp_pos_calc (13 off).
+
+# Second assignment: hit, cam, weapon (main)
+
+## hit (0x111B20-0x114A88) - 17/20 match
+Shell hit detection: every live shell against monsters, players and other
+shells; damage per body part, sharpness (s_gauge_tbl) and meat values
+(em_meat_tbl), ailment build-up, hit sounds and hit-mark effects. New
+header include/hit.h (HCHR = header shared by PLW/EMW, HSHL = hit side of
+SHLW, HBODY = 0x28-byte hit volume), fields mostly named by offset.
+Built: hit.c (0x111B20-0x1131C0, jump table 0x358230-0x358250), hitb.c
+(dm_vec_calc), hitc.c (0x114880-0x114A88). hit_nm.c holds the whole file;
+not matching: hit_hit_sub_em (112 off), hit_hit_sub_pl (2: add.s operand
+order of `def + 80.0f`), hit_calc_shl (2: one nop placed differently).
+Shared header: game.h carves game_w+0xD3 (pl_num) from _pad0D2.
+- `if (x == 0xFF) own = 0; else if (...) own = A; else own = B;` gives the
+  original's "bne to compute; delay own=0; b end" (shell_hit_ck); the
+  pre-initialised `own = 0; if (x != 0xFF) ...` does not.
+- An early "return if any of these values" test was a switch with the
+  cases then `return;` (hit_shl_shl_ck); an if-chain gets range-merged.
+- Stack aggregates: declared first = highest address; matching the
+  original's slots fixed whole functions (hit_shl_shl_ck, hit_calc_shl).
+- `if (a && (b = p->x) != 0)` puts the store in the delay slot; the
+  original tested `p->x != 0` and assigned in the body.
+- Float registers: declaration order again (hit_hit_sub_em: sharp, rate,
+  then the four ailment values).
+- 2-D tables indexed `tbl[k * 4 + v]` as flat arrays match where `[k][v]`
+  computes the address differently (s_gauge_tbl, hit_se_tbl).
+
+## f_hit_28CE00 (0x28CE00-0x290560) - 11/14 match, 9 built
+Geometry tests: point/sphere, sphere/sphere (bool, contact point, push
+vector), capsule/capsule and capsule/sphere (contact point or push-out),
+sphere/plane, line/sphere. HPK (include/hit.h) is the capsule packed by
+hit_cap_pk: p0, p1, r, dir = p1 - p0, centre, bounding radius. HLINE is
+the line form used by hit_line_sphr2. Shared prototypes: include/hit2.h.
+Built: hit2.c, hit2b.c, hit2c.c, hit2d.c, hit2e.c. hit2_nm.c holds the
+whole file with the four helpers static as in the original.
+Not matching: hit_sphr_sphr2 (18/64, scheduling), hit_cap_cap2_m (41/1253)
+and hit_cap_cap3_m (90/945): only t2/h float registers and the i/j int
+registers swap; the logic is complete. hit_cap_sphr2_m and hit_line_sphr2
+match in hit2_nm.c but not when split off, because the call to the static
+hit_point_sphr then costs the full clobber set.
+- A C range that ends at a function followed by alignment zeros must end
+  at the function's last byte, not at the next function: the object has
+  no trailing padding and SUBALIGN is off, so everything after shifts.
+- hit_sphr_cap_m keeps an original bug: on the second try for a
+  perpendicular it bumps p[1], not the copy it then uses.
+- `rr = r + k->r` into a new local (not reusing the parameter) and
+  computing all of px/py/pz before the v[] subtraction fixed the
+  cap/sphere functions; the result pass `len = rr - d; out = len * m`.
+- permsub (greedy declaration moves) halved hit_cap_cap2_m: t first.

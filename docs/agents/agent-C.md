@@ -200,3 +200,68 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
 1 instruction off, em20_nm.c, a 15-minute permuter run found nothing).
 153 of 154 functions byte-match; every registered file passes
 `tools/rebuild.sh game` (game OK).
+
+## Second assignment: g_em* gap files, f_em.s, Em_Master_Change, Em_Taisei_Damage_Check
+
+- horm (turn-to-face-player) code: em01_horm.c, em14_horm.c, em17_horm.c,
+  em20_horm.c, all match. em01 checks em_frame_check2 before re-picking the
+  turn animation; the others only test x194. em17 uses animation 2 instead
+  of 3. em14_horm.c also has em14_suna_ck / em14_sasari_ck. The stretch
+  after each horm file holds the next monster's local_area_move_init
+  (em15/em17/em21), kept in the same C file because the real boundaries
+  are unknown.
+- local_area_move_init (em08/em14/em27 standalone, em15/em17/em21 in the
+  horm files): `em->stay_tm = emNN_stay_timer_tbl[stg]; em->runaway_tm =
+  emNN_runaway_timer_tbl[stg];` (EMW 0x94A/0x94C, new).
+- New EMW fields: horm_ang (0x3A4), x3F4, stay_tm, runaway_tm, x95D.
+- Lesson (horm_main): `((a + 0x200) & 0xFFFF) < 0x400` on a u32 gives the
+  unsigned sltiu; `(u16)(a + 0x200) < 0x400` promotes to int (slti).
+- em19_flyinit.c (em19_fly_adjy2_init, right before fly.c), em19_move.c
+  (em19_move_sub, em19_dir_adj, em19_rate_add_calc,
+  em20_local_area_move_init) and em15_senkai.c (em15_senkai_target = em02's
+  code) all match. EMW 0x3B4 rate_x: rate vector x; with adj_y (0x3B8) and
+  adj_z (0x3BC) it forms a f32[3] that em19_rate_add_calc copies and
+  rotates by ang[1] before adding to pos.
+- Monster init files em02_init.c, em04_init.c, em09_init.c (+ Em09_item_sub),
+  em18_init.c, em19_init.c (+ em19_act_set): all match. Common pattern:
+  quest 0 places the monster by spawn slot em->x13 (stage 15: 3-bit grid
+  around (9500, 9200); otherwise a fixed spot or stage_start_pos[stage]),
+  then em_char_set(em, 1), x388 = 0, em_act_set(em, 0, 1), hit points via
+  em_hp_vital_set, and the work block's home position. New fields: EMW
+  x13, x1B, x40C/x40E, x56A, x734, x765, x7EE, x88B, x9E1; GAME_W x218
+  (carried-over hit points, em02). quest_w is declared file-locally
+  (QUEST_W {s16 no at +8}), as in tutorial.c.
+- Lessons: `(int)((u32)em->x13 >> 3)` for the original's srl (a u8 >> 3
+  is an int shift, sra); `((f32 *)stage_start_pos)[stage * 3]` for the
+  x term matched where `stage_start_pos[stage][0]` added an andi.
+- g_Em_Master_Change (0x5395F0-0x53BA4C, 48 functions): 45 match, built as
+  em_master.c (0x539AC0-0x539C90), em_master_b.c (0x539D00-0x53B6D0),
+  em_master_c.c (0x53B8A0-0x53BA4C); whole file in em_master_nm.c.
+  Near-matches: Em_Master_Change (network master hand-over; logic written,
+  register allocation far off, a permuter run did not help), Em_Taisei_Set
+  (23 off: the original loads all four table pointers before storing),
+  em_hagitori_lv_up (19 off, register choice).
+- g_Em_Taisei_Damage_Check (0x559260-0x55B054, 14 functions): 10 written,
+  9 built as em_taisei.c (em_eye_dmg_reset_act_set) and em_taisei_b.c
+  (stock/timer functions, Em_Damage_Stock); em_taisei_nm.c holds the file.
+  Em_Taisei_Ck is 2 off (two saved registers swapped), Em_Taisei_Damage_Check
+  10 off; em_eye_dmg_act_set (per-monster reaction to eye damage, 0xA10)
+  and Em_Dmg_Sys (0x7A4) are not written yet.
+- New shared header include/em_sys.h (EM_TAISEI_DATA, EM_SMELL, status
+  tables). Many EMW fields added through a carve script (gen/carve.py in my
+  scratchpad, not committed): mostly xNNN names for flags and counters used
+  by this code; named ones: boss (0x9D4), taisei (0x7D3 status bits),
+  *_tol tolerances, hungry/thirst (+max), dmg[8] (0x766), hagi[8][8]
+  (0x308). GAME_W: pl_num (0xD3), pl_state[4] (0x208).
+- Lessons:
+  - `x = x + n` with an int n leaves n alone; `x += n` on an s16 field
+    sign-extends n first (*_stock_set).
+  - Early `return` inside an if-body gives a `b epilogue` stub; the outer
+    test written as a nested if branches straight to the end
+    (em_no_floor_ck).
+  - `pl = &player_work[i];` inside the loop body (not a walking pointer in
+    the for header) for player loops (em_no_battle_area_ck).
+  - A struct table pointer used once at the end is still loaded at the top:
+    declare it as an initialised local (`EM_TAISEI_DATA *d = tbl[kind];`).
+  - game_w+0x1E is read as a u16 frame counter here; the existing u8 x1E
+    field (eft12) was left alone and read through `*(u16 *)&game_w.x1E`.

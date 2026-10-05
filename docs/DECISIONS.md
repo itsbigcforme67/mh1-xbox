@@ -54,6 +54,19 @@ Kept as a fallback for any file that resists matching.
   decomp. Whether to use static recompilation for not-yet-decompiled code to
   reach "playable on PC" sooner is still open (see Open).
 
+- 2026-10-05, owner: the ultimate goal is player experience. Platform layers
+  (rendering, audio, input, files, saves, movies, windowing, widescreen) are
+  written from scratch for PC and Xbox; nothing PS2-specific (IOP, VU, DMA,
+  GS, disc drive, memory card) is emulated. What players feel is kept faithful
+  from the original code: game logic (monster AI, hunter movement, weapons,
+  hit detection, damage, camera, quests, items, menus) and what defines the
+  look (models, textures, animation timing, lighting rules, effects).
+  Byte-matching is a verification tool for that game-logic C, not a goal; it
+  never blocks progress, and exact equivalence is polish for later. Same
+  approach as the owner's Tonic Trouble project (new native engine on the
+  original data, gameplay-accurate). PS2Recomp, if used, is scaffolding to run
+  not-yet-decompiled logic, never the shipped product.
+
 ## Rejected
 
 **Porting the Wii version of Monster Hunter G instead.** (4 Oct 2026)

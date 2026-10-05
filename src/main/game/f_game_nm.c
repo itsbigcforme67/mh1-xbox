@@ -848,18 +848,18 @@ void Game_task(TSK *tsk) {
             game_w.x21B = 0;
             for (i = 0; i < 4; i++) {
                 if (i < game_w.pl_num) {
-                    game_w.x208[i] = 1;
+                    game_w.pl_state[i] = 1;
                 } else {
-                    game_w.x208[i] = 0;
+                    game_w.pl_state[i] = 0;
                 }
             }
         } else {
             game_w.pl_num = 1;
             for (i = 0; i < 4; i++) {
                 if (i < game_w.pl_num) {
-                    game_w.x208[i] = 1;
+                    game_w.pl_state[i] = 1;
                 } else {
-                    game_w.x208[i] = 0;
+                    game_w.pl_state[i] = 0;
                 }
             }
         }

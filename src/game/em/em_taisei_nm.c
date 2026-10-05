@@ -1,0 +1,410 @@
+/* em_taisei_nm - game.bin 0x00559260-0x0055B054 (whole file, not built;
+ * Em_Taisei_Damage_Check and Em_Taisei_Ck are near-matches, em_eye_dmg_act_set
+ * and Em_Dmg_Sys are not written yet): status effects on monsters
+ * (poison, sleep, sleep2, paralysis "mahi"): stocking up damage until the
+ * tolerance in em->*_tol is reached, then flagging the state in em->taisei
+ * (bits 1 sleep2, 2 sleep, 4 poison, 8 paralysis). Meanings are guesses. */
+#include "em_sys.h"
+#include "game.h"
+
+void Em_Sleep_Flag_Ck2(EMW *em);
+
+u8 Em_Taisei_Damage_Check(EMW *em) {
+    u8 ret = 0;
+    u8 t;
+
+    if (em->x7D2 == 0 && em->x3F0 != 6 && em->x3F0 != 9) {
+        t = em->taisei & ~4;
+        if (t != 0) {
+            if (em->x388 == 2) {
+                Em_Sleep_Flag_Ck2(em);
+                return 1;
+            }
+            if (t & 8) {
+                return 4;
+            }
+            if (t & 1) {
+                return 2;
+            }
+            if (t & 2) {
+                ret = 3;
+            }
+        }
+    }
+    return ret;
+}
+
+void em01_act_set(EMW *, int, u16, u16);
+void em08_act_set(EMW *, int, u16, u16);
+void em21_act_set(EMW *, int, u16, u16);
+
+void em_eye_dmg_reset_act_set(EMW *em) {
+    switch (em->kind) {
+    case 1:
+    case 11:
+        em01_act_set(em, 0, 25, 4);
+        break;
+    case 8:
+    case 34:
+        em08_act_set(em, 0, 7, 4);
+        break;
+    case 21:
+        if (em->x388 == 0) {
+            em21_act_set(em, 0, 7, 4);
+        }
+        break;
+    case 0:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 9:
+    case 10:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+    case 17:
+    case 18:
+    case 19:
+    case 20:
+    case 22:
+    case 23:
+    case 24:
+    case 25:
+    case 26:
+    case 27:
+    case 28:
+    case 29:
+    case 30:
+    case 31:
+    case 32:
+    case 33:
+        break;
+    }
+}
+
+void Eft06_set2(f32, EMW *, int, int, f32 *);
+void Em_Taisei_Ck(EMW *em) {
+    EM_TAISEI_DATA *po = em_poison_data_tbl[em->kind];
+    EM_TAISEI_DATA *ma = em_mahi_data_tbl[em->kind];
+    EM_TAISEI_DATA *sl = em_sleep_data_tbl[em->kind];
+    EM_TAISEI_DATA *s2 = em_sleep2_data_tbl[em->kind];
+
+    if (em->taisei & 4) {
+        if (--em->x7C0 > 0) {
+            switch (em->kind) {
+            case 1:
+            case 6:
+            case 8:
+            case 11:
+            case 14:
+            case 15:
+            case 17:
+            case 20:
+            case 21:
+            case 22:
+            case 26:
+            case 34:
+                if (*(u16 *)&game_w.x1E % 60 == 0) {
+                    f32 o[3];
+
+                    o[0] = 0.0f;
+                    o[1] = 100.0f;
+                    o[2] = 0.0f;
+                    Eft06_set2(2.0f, em, 3, 34, o);
+                }
+                break;
+            case 2:
+                if (*(u16 *)&game_w.x1E % 60 == 0) {
+                    f32 o[3];
+
+                    o[0] = 0.0f;
+                    o[1] = 200.0f;
+                    o[2] = 0.0f;
+                    Eft06_set2(2.0f, em, 3, 51, o);
+                }
+                break;
+            case 3:
+                if (*(u16 *)&game_w.x1E % 60 == 0) {
+                    f32 o[3];
+
+                    o[0] = 0.0f;
+                    o[1] = 50.0f;
+                    o[2] = 0.0f;
+                    Eft06_set2(1.0f, em, 3, 23, o);
+                }
+                break;
+            case 12:
+            case 25:
+                if (*(u16 *)&game_w.x1E % 60 == 0) {
+                    f32 o[3];
+
+                    o[0] = 0.0f;
+                    o[1] = 50.0f;
+                    o[2] = 0.0f;
+                    Eft06_set2(1.2f, em, 3, 15, o);
+                }
+                break;
+            case 9:
+            case 23:
+                if (*(u16 *)&game_w.x1E % 60 == 0) {
+                    f32 o[3];
+
+                    o[0] = 0.0f;
+                    o[1] = 20.0f;
+                    o[2] = 0.0f;
+                    Eft06_set2(1.2f, em, 3, 10, o);
+                }
+                break;
+            case 13:
+            case 16:
+            case 27:
+            case 28:
+            case 30:
+            case 31:
+                if (*(u16 *)&game_w.x1E % 60 == 0) {
+                    f32 o[3];
+
+                    o[0] = 0.0f;
+                    o[1] = 20.0f;
+                    o[2] = 0.0f;
+                    Eft06_set2(1.2f, em, 3, 14, o);
+                }
+                break;
+            case 4:
+            case 5:
+            case 32:
+                if (*(u16 *)&game_w.x1E % 60 == 0) {
+                    f32 o[3];
+
+                    o[0] = 0.0f;
+                    o[1] = 10.0f;
+                    o[2] = 0.0f;
+                    Eft06_set2(1.0f, em, 3, 11, o);
+                }
+                break;
+            case 19:
+            case 24:
+                if (*(u16 *)&game_w.x1E % 60 == 0) {
+                    f32 o[3];
+
+                    o[0] = 0.0f;
+                    o[1] = 0.0f;
+                    o[2] = 0.0f;
+                    Eft06_set2(0.5f, em, 3, 8, o);
+                }
+                break;
+            case 33:
+                if (*(u16 *)&game_w.x1E % 60 == 0) {
+                    f32 o[3];
+
+                    o[0] = 0.0f;
+                    o[1] = 50.0f;
+                    o[2] = 0.0f;
+                    Eft06_set2(1.0f, em, 3, 23, o);
+                }
+                break;
+            default:
+                if (*(u16 *)&game_w.x1E % 60 == 0) {
+                    f32 o[3];
+
+                    o[0] = 0.0f;
+                    o[1] = 50.0f;
+                    o[2] = 0.0f;
+                    Eft06_set2(1.0f, em, 3, 0, o);
+                }
+                break;
+            }
+            if (--em->x7BE <= 0) {
+                em->x7BE = po->tick;
+                em->x302 -= po->time;
+                if (em->x302 <= 0) {
+                    if (em->x8BB > 0 || em->x9E2 != 0) {
+                        em->x302 = 1;
+                    }
+                }
+            }
+        } else {
+            em->x7C0 = 0;
+            em->x7BA = 0;
+            em->x7BE = 0;
+            em->taisei &= 0xFB;
+            if (em->x7F0 < 3) {
+                em->x7F0++;
+                em->poison_tol += po->add2;
+            }
+        }
+    } else if (em->x7BA != 0) {
+        if (--em->x7BE <= 0) {
+            em->x7BE = po->decay;
+            em->x7BA -= po->dec;
+            if (em->x7BA <= 0) {
+                em->x7BA = 0;
+                em->x7BE = 0;
+            }
+        }
+    }
+    if (!(em->taisei & 8) && em->x7C4 != 0) {
+        if (--em->x7C8 <= 0) {
+            em->x7C8 = ma->decay;
+            em->x7C4 -= ma->dec;
+            if (em->x7C4 <= 0) {
+                em->x7C4 = 0;
+                em->x7C8 = 0;
+            }
+        }
+    }
+    if (!(em->taisei & 1) && em->x7CC != 0) {
+        if (--em->x7D0 <= 0) {
+            em->x7D0 = s2->decay;
+            em->x7CC -= s2->dec;
+            if (em->x7CC <= 0) {
+                em->x7CC = 0;
+                em->x7D0 = 0;
+            }
+        }
+    }
+    if (!(em->taisei & 2) && em->x7B2 != 0) {
+        if (--em->x7B6 <= 0) {
+            em->x7B6 = sl->decay;
+            em->x7B2 -= sl->dec;
+            if (em->x7B2 <= 0) {
+                em->x7B2 = 0;
+                em->x7B6 = 0;
+            }
+        }
+    }
+}
+
+/* em_special_dmg_tbl[kind]: a weak spot that, hit in a given state, keeps
+ * its damage in em->x776. */
+typedef struct EM_SPDMG {
+    u8 idx;             /* 0x0 damage slot */
+    u8 mask;            /* 0x1 */
+    u8 lv;              /* 0x2 0: always */
+    u8 state;           /* 0x3 em->x388 */
+} EM_SPDMG;
+
+extern EM_SPDMG *em_special_dmg_tbl[];
+
+void em_ikari_add(EMW *, s16);
+
+void poison_stock_set(EMW *em, int n) {
+    EM_TAISEI_DATA *d = em_poison_data_tbl[em->kind];
+
+    if (n != 0 && em->poison_tol > 0) {
+        em->x7BA = em->x7BA + n;
+        em->x7BE = d->decay;
+        if (em->x7BA >= em->poison_tol) {
+            em->taisei |= 4;
+            em->x7C0 = d->add;
+            em->x7BE = 0;
+        }
+    }
+}
+
+void mahi_stock_set(EMW *em, int n) {
+    EM_TAISEI_DATA *d = em_mahi_data_tbl[em->kind];
+
+    if (n != 0 && em->mahi_tol > 0) {
+        if (!(em->taisei & 8)) {
+            em->x7C4 = em->x7C4 + n;
+            em->x7C8 = d->decay;
+        }
+        if (em->x7C4 >= em->mahi_tol) {
+            em->taisei |= 8;
+        }
+    }
+}
+
+void sleep_stock_set(EMW *em, int n) {
+    EM_TAISEI_DATA *d = em_sleep_data_tbl[em->kind];
+
+    if (n != 0 && em->sleep_tol > 0) {
+        if (!(em->taisei & 2)) {
+            em->x7B2 = em->x7B2 + n;
+            em->x7B6 = d->decay;
+        }
+        if (em->x7B2 >= em->sleep_tol) {
+            em->taisei |= 2;
+        }
+    }
+}
+
+void sleep2_stock_set(EMW *em, int n) {
+    EM_TAISEI_DATA *d = em_sleep2_data_tbl[em->kind];
+
+    if (n != 0 && em->sleep2_tol > 0) {
+        if (!(em->taisei & 1)) {
+            em->x7CC = em->x7CC + n;
+            em->x7D0 = d->decay;
+        }
+        if (em->x7CC >= em->sleep2_tol) {
+            em->taisei |= 1;
+        }
+    }
+}
+
+void em_mahi_dmg_timer_set(EMW *em) {
+    em->work08 = em_mahi_data_tbl[em->kind]->time;
+    em->x839 = 0;
+}
+
+void em_sleep_dmg_timer_set(EMW *em) {
+    em->work08 = em_sleep_data_tbl[em->kind]->time;
+    em->x839 = 0;
+}
+
+void em_sleep2_dmg_timer_set(EMW *em) {
+    em->work08 = em_sleep2_data_tbl[em->kind]->time;
+    em->x839 = 0;
+}
+
+void Em_Damage_Stock(EMW *em, s16 *dmg, s16 *heal) {
+    u32 i;
+    s16 max = 0;
+    u8 best = 0;
+    EM_SPDMG *sp = em_special_dmg_tbl[em->kind];
+    s16 d;
+
+    for (i = 0; i < 8; i++) {
+        d = em->dmg[i] * em->x7DC;
+        if (em->dmg[i] > 0 && d == 0) {
+            d = 1;
+        }
+        if (d < 0) {
+            *heal -= d;
+        } else {
+            *dmg += d;
+            if (em->dmg[i] > max) {
+                max = em->dmg[i];
+                best = i;
+            }
+        }
+    }
+    if (sp != 0) {
+        if ((em->x788[sp->idx] & sp->mask) && em->x388 == sp->state &&
+            (sp->lv == 0 || em->x958 < (s8)sp->lv)) {
+            em->x776 = em->dmg[sp->idx];
+            if (em->x776 < 0) {
+                em->x776 = 0;
+            }
+        } else {
+            em->x776 = 0;
+        }
+    }
+    if (em->x8B6 == 0 && *dmg > 0) {
+        em_ikari_add(em, *dmg);
+    }
+    em->x38E = best;
+    if (em->x8BB <= 0) {
+        sleep2_stock_set(em, em->x7CE);
+        sleep_stock_set(em, em->x7B4);
+        poison_stock_set(em, em->x7BC);
+        mahi_stock_set(em, em->x7C6);
+    }
+}
