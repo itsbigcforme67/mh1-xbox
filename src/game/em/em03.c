@@ -48,7 +48,7 @@ void em03_act_set(EMW *em, int kind, u16 no, u16 arg);
 void em03_to_normal(EMW *em);
 void em03_char_set(EMW *em, int no, int a, int b);
 void Em_Sleep_Start(EMW *);
-int em_frame_check(EMW *, f32, int);
+int em_frame_check(EMW *, int, f32);
 void Em_Mahi_End(EMW *);
 u16 Em_Calc_angY(f32 *, f32 *);
 int em09_dir_calc(s32 *, s32 *, int);
@@ -903,7 +903,7 @@ static void em_atk03(EMW *em, EM03W *w) {
         Eft04_set_time(em, 8, (int)(90.0f / (2.0f * em->act_spd)), 1.0f);
         break;
     case 1:
-        if (em_frame_check(em, 22.0f, 0)) {
+        if (em_frame_check(em, 0, 22.0f)) {
             Shell08_set_ang(em, 23, 8, 0, 0, 0);
         }
         if (em->x194 == 0) {
@@ -922,7 +922,7 @@ static void em_atk04(EMW *em, EM03W *w) {
         Eft04_set_time(em, 8, (int)(90.0f / (2.0f * em->act_spd)), 1.0f);
         break;
     case 1:
-        if (em_frame_check(em, 90.0f, 0)) {
+        if (em_frame_check(em, 0, 90.0f)) {
             Shell08_set_ang(em, 23, 8, 1, 0, 0);
         }
         if (em->x194 == 0) {
@@ -941,7 +941,7 @@ static void em_atk05(EMW *em, EM03W *w) {
         Eft04_set_time(em, 8, (int)(90.0f / (2.0f * em->act_spd)), 1.0f);
         break;
     case 1:
-        if (em_frame_check(em, 90.0f, 0)) {
+        if (em_frame_check(em, 0, 90.0f)) {
             Shell08_set_ang(em, 23, 8, 2, 0, 0);
         }
         if (em->x194 == 0) {
@@ -960,7 +960,7 @@ static void em_atk06(EMW *em, EM03W *w) {
         Eft04_set_time(em, 8, (int)(90.0f / (2.0f * em->act_spd)), 1.0f);
         break;
     case 1:
-        if (em_frame_check(em, 90.0f, 0)) {
+        if (em_frame_check(em, 0, 90.0f)) {
             Shell08_set_ang(em, 23, 8, 3, 0, 0);
         }
         if (em->x194 == 0) {
@@ -979,7 +979,7 @@ static void em_atk07(EMW *em, EM03W *w) {
         Eft04_set_time(em, 8, (int)(90.0f / (2.0f * em->act_spd)), 1.0f);
         break;
     case 1:
-        if (em_frame_check(em, 90.0f, 0)) {
+        if (em_frame_check(em, 0, 90.0f)) {
             Shell08_set_ang(em, 23, 8, 4, 0, 0);
         }
         if (em->x194 == 0) {
@@ -998,7 +998,7 @@ static void em_atk08(EMW *em, EM03W *w) {
         Eft04_set_time(em, 8, (int)(90.0f / (2.0f * em->act_spd)), 1.0f);
         break;
     case 1:
-        if (em_frame_check(em, 90.0f, 0)) {
+        if (em_frame_check(em, 0, 90.0f)) {
             Shell08_set_ang(em, 23, 8, 5, 0, 0);
         }
         if (em->x194 == 0) {
@@ -1423,7 +1423,7 @@ static void sound_call_sub_0058A8E0(EMW *em, int se, int idx) {
 }
 
 static void sound_call_0058A950(EMW *em, int frame, int se, int idx) {
-    if (em_frame_check(em, (f32)frame, 0)) {
+    if (em_frame_check(em, 0, (f32)frame)) {
         sound_call_sub_0058A8E0(em, se, idx);
     }
 }
@@ -1481,10 +1481,10 @@ static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
         sound_call_0058A950(em, 14, 19, 0);
         sound_call_0058A950(em, 18, 19, 0);
         sound_call_0058A950(em, 26, 19, 0);
-        if (em_frame_check(em, 4.0f, 0)) {
+        if (em_frame_check(em, 0, 4.0f)) {
             Eft13_set_em_scl(em, 21, 0.6f, 3);
         }
-        if (em_frame_check(em, 28.0f, 0)) {
+        if (em_frame_check(em, 0, 28.0f)) {
             Eft13_set_em_scl(em, 17, 0.6f, 3);
         }
         break;
@@ -1493,10 +1493,10 @@ static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
         sound_call_0058A950(em, 26, 19, 0);
         sound_call_0058A950(em, 12, 19, 0);
         sound_call_0058A950(em, 20, 19, 0);
-        if (em_frame_check(em, 12.0f, 0)) {
+        if (em_frame_check(em, 0, 12.0f)) {
             Eft13_set_em_scl(em, 21, 0.7f, 3);
         }
-        if (em_frame_check(em, 18.0f, 0)) {
+        if (em_frame_check(em, 0, 18.0f)) {
             Eft13_set_em_scl(em, 17, 0.7f, 3);
         }
         break;
@@ -1506,11 +1506,11 @@ static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
         sound_call_0058A950(em, 10, 19, 0);
         sound_call_0058A950(em, 14, 19, 0);
         if (w->anim == 0x3F7) {
-            if (em_frame_check(em, 12.0f, 0)) {
+            if (em_frame_check(em, 0, 12.0f)) {
                 Eft13_set_em_scl(em, 21, 0.9f, 3);
             }
         } else {
-            if (em_frame_check(em, 12.0f, 0)) {
+            if (em_frame_check(em, 0, 12.0f)) {
                 Eft13_set_em_scl(em, 17, 0.9f, 3);
             }
         }
@@ -1519,16 +1519,16 @@ static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
         sound_call_0058A950(em, 12, 19, 0);
         sound_call_0058A950(em, 16, 19, 0);
         sound_call_0058A950(em, 46, 0, 0);
-        if (em_frame_check(em, 12.0f, 0)) {
+        if (em_frame_check(em, 0, 12.0f)) {
             Eft13_set_em_scl(em, 11, 0.6f, 3);
         }
-        if (em_frame_check(em, 16.0f, 0)) {
+        if (em_frame_check(em, 0, 16.0f)) {
             Eft13_set_em_scl(em, 11, 0.6f, 3);
         }
-        if (em_frame_check(em, 12.0f, 0)) {
+        if (em_frame_check(em, 0, 12.0f)) {
             Eft13_set_em_scl(em, 7, 0.6f, 3);
         }
-        if (em_frame_check(em, 16.0f, 0)) {
+        if (em_frame_check(em, 0, 16.0f)) {
             Eft13_set_em_scl(em, 7, 0.6f, 3);
         }
         break;
@@ -1541,11 +1541,11 @@ static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
         sound_call_0058A950(em, 56, 19, 0);
         sound_call_0058A950(em, 58, 19, 0);
         if (w->anim == 0x3F7) {
-            if (em_frame_check(em, 34.0f, 0)) {
+            if (em_frame_check(em, 0, 34.0f)) {
                 Eft13_set_em_scl(em, 21, 0.6f, 3);
             }
         } else {
-            if (em_frame_check(em, 34.0f, 0)) {
+            if (em_frame_check(em, 0, 34.0f)) {
                 Eft13_set_em_scl(em, 17, 0.6f, 3);
             }
         }
@@ -1563,14 +1563,14 @@ static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
         sound_call_0058A950(em, 24, 1, 0);
         sound_call_0058A950(em, 46, 0, 0);
         sound_call_0058A950(em, 48, 0, 0);
-        if (em_frame_check(em, 20.0f, 0)) {
+        if (em_frame_check(em, 0, 20.0f)) {
             if (em->kind == 3) {
                 shell02_set(em, 5);
             } else {
                 shell02_set(em, 11);
             }
         }
-        if (em_frame_check(em, 24.0f, 0)) {
+        if (em_frame_check(em, 0, 24.0f)) {
             Eft13_set_em_scl(em, 22, 0.9f, 3);
         }
         break;
@@ -1579,7 +1579,7 @@ static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
         sound_call_0058A950(em, 26, 19, 0);
         sound_call_0058A950(em, 44, 19, 0);
         sound_call_0058A950(em, 46, 19, 0);
-        if (em_frame_check(em, 26.0f, 0)) {
+        if (em_frame_check(em, 0, 26.0f)) {
             Eft13_set_em_scl(em, 22, 0.9f, 3);
         }
         break;
@@ -1592,7 +1592,7 @@ static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
         sound_call_0058A950(em, 12, 3, 23);
         sound_call_0058A950(em, 54, 0, 0);
         sound_call_0058A950(em, 58, 0, 0);
-        if (em_frame_check(em, 14.0f, 0)) {
+        if (em_frame_check(em, 0, 14.0f)) {
             if (em->kind == 3) {
                 shell02_set(em, 6);
             } else {
@@ -1624,7 +1624,7 @@ static void ef_move_sub_0058A9C0(EMW *em, EM03W *w) {
     case 0x427:
         sound_call_0058A950(em, 4, 6, 0);
         sound_call_0058A950(em, 44, 20, 0);
-        if (em_frame_check(em, 44.0f, 0)) {
+        if (em_frame_check(em, 0, 44.0f)) {
             Eft13_set_em_scl(em, 2, 0.5f, 6);
         }
         break;
