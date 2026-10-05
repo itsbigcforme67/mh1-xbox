@@ -43,6 +43,30 @@ void PageSelect(u8 *, int, int);
 extern u8 quest_w[];
 void font_print_uf(char *, int);
 u8 *func_5B4D30(u8);
+extern u8 User_data[];
+int Item_preparation_list_search(s8 *, s8, u16 *, u16 *);
+int Monster_list_search(s8, int);
+int Get_weapon_job2(u8, u16);
+void vib_set(int, int);
+int Reibun_Edit_Core(u8);
+int Reibun_Edit_Start(u8);
+u8 Reibun_select_mv(u8);
+extern u16 item_pick_declaration_code;
+extern s16 item_pick_declaration_timer;
+int Pl_master_ck(void);
+int Check_hold_item(int);
+void Pl_item_get_se(PLW *, int);
+int Pl_item_stack(PLW *, int, int);
+u8 set01_set(int, int, s16);
+int item_stock_mv();
+int Info_stack_ck(void);
+void ItemCopy_Pl2Ud(PLW *);
+void net_send_sys(int, u8);
+f32 flSqrt(f32);
+void menu_data_mix_sub(int);
+void menu_data_monster_sub(int);
+int menu_chcnfg_sendpl(int sw);
+int menu_chcnfg_reibun(int sw);
 
 void PitWork_init(void) {
     lpPit = &pit_work;
@@ -681,30 +705,6 @@ int Menu_item_mv(int sw) {
     return sw;
 }
 
-extern u8 User_data[];
-int Item_preparation_list_search(s8 *, s8, u16 *, u16 *);
-int Monster_list_search(s8, int);
-int Get_weapon_job2(u8, u16);
-void vib_set(int, int);
-int Reibun_Edit_Core(u8);
-int Reibun_Edit_Start(u8);
-u8 Reibun_select_mv(u8);
-extern u16 item_pick_declaration_code;
-extern s16 item_pick_declaration_timer;
-int Pl_master_ck(void);
-int Check_hold_item(int);
-void Pl_item_get_se(PLW *, int);
-int Pl_item_stack(PLW *, int, int);
-u8 set01_set(int, int, s16);
-int item_stock_mv(u16);
-int Info_stack_ck(void);
-
-void ItemCopy_Pl2Ud(PLW *);
-void net_send_sys(int, u8);
-f32 flSqrt(f32);
-void menu_data_mix_sub(int);
-void menu_data_monster_sub(int);
-
 void Menu_data_i(void) {
     lpPit->x42 = 0;
     lpPit->x43 = 0;
@@ -1012,7 +1012,7 @@ int ItemStockRequest(PLW *pl, int id, int code, int flags) {
 
 /* Item box / stock request window: state x07 (0 idle, 1 wait for the info
  * message, 2-3 open, 4 pick, 5 erase confirm, 6 close). */
-int item_stock_mv(u16 sw) {
+int item_stock_mv(int sw) {
     PLW *pl;
     PIT_W *p = lpPit;
     u8 *st = &lpPit->x07;
@@ -1127,7 +1127,7 @@ int item_stock_mv(u16 sw) {
     return 1;
 }
 
-int lb_item_stock_mv(u16 sw) {
+int lb_item_stock_mv(int sw) {
     int r = item_stock_mv(sw);
 
     if (r != 0) {
@@ -1206,9 +1206,6 @@ int Menu_chatcnfg_i(void) {
     PitMenu.x1B = 0;
     return 0;
 }
-
-int menu_chcnfg_sendpl(int sw);
-int menu_chcnfg_reibun(int sw);
 
 int Menu_chatcnfg_mv(int sw) {
     int r;
