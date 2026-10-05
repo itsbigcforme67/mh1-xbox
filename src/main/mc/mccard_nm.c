@@ -322,16 +322,22 @@ void trans_card_0(void)
     i = 0;
     p = (u8 *)w;
     do {
-        if (p[0x2C] != 0) {
-            if (p[0x2C] == 6) {
-                disp_savesel_waku(edit_w, 2, 0);
-            } else if (p[0x2C] == 5) {
-                disp_savesel_waku(edit_w, 0, 0);
-            } else if (card_w.op == 1) {
+        switch (p[0x2C]) {
+        case 5:
+            disp_savesel_waku(edit_w, 0, 0);
+            break;
+        case 6:
+            disp_savesel_waku(edit_w, 2, 0);
+            break;
+        case 0:
+            break;
+        default:
+            if (card_w.op == 1) {
                 DispFrameListA(card_list_frame_tbl_00355430[p[0x2C]], 0, -1, 255);
             } else {
                 DispFrameListA(card_list_frame_tbl_00355430[p[0x2C]], 0, -1, 128);
             }
+            break;
         }
         i++;
         p++;
@@ -1191,10 +1197,10 @@ CARDW *w;
     case 0:
         CardCmsv00(w);
         break;
-    case 1:
+    case 2:
         CardCmsv12(w);
         break;
-    case 2:
+    case 1:
         CardCmsv01(w);
         w->frame[1] = 2;
         break;
@@ -1241,6 +1247,7 @@ CARDW *w;
         w->done = 1;
         break;
     case 14:
+    default:
         w->done = 2;
         break;
     }
@@ -1422,9 +1429,11 @@ CARDW *w;
         w->frame[1] = 2;
         break;
     case 6:
+    default:
         w->done = 1;
         break;
     case 7:
+    default:
         w->done = 2;
         break;
     }
@@ -1647,10 +1656,12 @@ CARDW *w;
         system_w[0x3C] = 0;
         break;
     case 8:
+    default:
         system_w[0x3C] = 0;
         w->done = 1;
         break;
     case 9:
+    default:
         system_w[0x3C] = 0;
         w->done = 2;
         break;
@@ -2020,11 +2031,11 @@ CARDW *w;
     case 0:
         CardOfsv000(w);
         break;
-    case 1:
+    case 2:
         CardOfsv012(w);
         w->frame[1] = 3;
         break;
-    case 2:
+    case 1:
         CardOfsv001(w);
         w->frame[0] = 4;
         w->frame[1] = 3;
@@ -2082,6 +2093,7 @@ CARDW *w;
         w->done = 1;
         break;
     case 14:
+    default:
         w->done = 2;
         break;
     }
