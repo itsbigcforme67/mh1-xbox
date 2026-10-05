@@ -209,3 +209,12 @@ game 0x0053B8A0 0x0053BA4C em/em_master_c
 game 0x00559D30 0x00559DB4 em/em_taisei
 game:rodata 0x00685920 0x006859AC em/em_taisei
 game 0x0055A440 0x0055A8A4 em/em_taisei_b
+main 0x00111B20 0x001131C0 hit/hit
+main:rodata 0x00358230 0x00358250 hit/hit
+main 0x00114280 0x00114318 hit/hitb
+main 0x00114880 0x00114A88 hit/hitc
+main 0x0028CE00 0x0028CEA4 hit/hit2
+main 0x0028CFB0 0x0028D098 hit/hit2b
+main 0x0028E440 0x0028EE3C hit/hit2c
+main 0x00290140 0x00290274 hit/hit2d
+main 0x00290420 0x00290560 hit/hit2e
