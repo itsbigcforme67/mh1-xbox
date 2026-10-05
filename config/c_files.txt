@@ -438,3 +438,7 @@ select:rodata 0x0053B8E0 0x0053B90C edit04
 select 0x00537460 0x005375EC edit05
 select 0x00538030 0x00538038 edit06
 select 0x005382B0 0x00538538 edit07
+main 0x0015AED0 0x0015B300 sprite/trans2
+main 0x001611F0 0x00161478 sprite/sysw
+main 0x0015B930 0x0015BBDC sprite/putspr2
+main 0x0015B650 0x0015B810 sprite/putspr
