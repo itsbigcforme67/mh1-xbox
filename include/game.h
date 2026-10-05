@@ -9,11 +9,15 @@ typedef struct GAME_W {
     u8 pad_on;          /* 0x00D read controllers this frame (swset) */
     u8 _pad00E[0x14 - 0x0E];
     u8 stage;           /* 0x014 stage number (0x4E, 0x57 in set06) */
-    u8 _pad015[0x20 - 0x15];
+    u8 _pad015[0x1E - 0x15];
+    u8 x1E;             /* 0x01E counter scrolling the smoke screen UVs (eft12_t01) */
+    u8 _pad01F;
     u8 port[2];         /* 0x020 controller port per player (get_sw) */
     u8 _pad022[2];
     u8 sw_mask;         /* 0x024 buttons ignored until released (get_sw) */
-    u8 _pad025[0xA8 - 0x25];
+    u8 _pad025[0x80 - 0x25];
+    u8 x80[4];          /* 0x080 per player, copied into the cooking smell (Eft12_set4) */
+    u8 _pad084[0xA8 - 0x84];
     struct EFT_MDLW *area_mdlw[10]; /* 0x0A8 model sets by area (eft07_t, Em_area_ck) */
     u8 _pad0D0;
     u8 master;          /* 0x0D1 player number of the session master */
@@ -27,7 +31,7 @@ typedef struct GAME_W {
     u8 gate_open;       /* 0x1E6 set20 gate state, set from the quest */
     u8 _pad1E7[0x210 - 0x1E7];
     u8 shl10_num;       /* 0x210 live shell10s owned by the master player */
-    u8 _pad211;
+    u8 meat_num;        /* 0x211 meat on the spit owned by the master player (eft12) */
     u8 trap_num;        /* 0x212 traps set by the master player (shell12) */
     u8 _pad213[0x21F - 0x213];
     u8 info_stop;       /* 0x21F set01 queue paused while set */

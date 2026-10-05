@@ -98,6 +98,25 @@ extracted to disc/mhg/ (gitignored). MH1 not yet supplied.
     num, all, idx, step, time, tt. In eft10 `drot` is u16 (the original
     loads rot first there).
 
+- eft12 (cooking: the barbecue spit, smoke cloud, meat on the spit with
+  its smell, the thrown egg and steam) matches in full, 28 functions. New
+  GAME_W fields: x1E (smoke UV scroll), x80[4] (per player, copied into the
+  smell) and meat_num (0x211). Findings, each checked with tools/check.py:
+  - Loop increments are emitted in the order of the for-expression.
+    eft12_m01 matched only as `for (i = 0, r = rotz77; i < 4; i++, p++,
+    r++)` with `p->rot += *r`; indexing `rotz77[i]` let the compiler add
+    its own pointer after `p`.
+  - Argument types show in the caller: a parameter declared s16 is passed
+    on unextended (Eft12_set3, eft12_set_sh), an int is sign-extended
+    before the call.
+  - Colour words are built `((g << 8) | ((a << 24) | (r << 16))) | b`;
+    the plain left-to-right OR chain swaps one operand pair.
+  - A store placed before a call lands in its delay slot: eft12_t01 clears
+    enmaku_flag before clay_attr_reset(), not after.
+  - `game_w.x1E` (u8) converted with a signed cvt needed `(f32)(int)`.
+  - Six u8 colour locals had to be declared bone r,g,b then meat r,g,b to
+    get the saved-register order.
+
 ### Next
 
 1. Owner supplies Japanese MH1. Survey it the same way. The plan's base
