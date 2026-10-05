@@ -186,9 +186,43 @@ lb_zNNN (auto-drafted: m2c + tools/lbauto.py, see the pipeline section). The wor
 Jump tables: a function whose switch compiled to a jump table in the original needs its table data registered as
 `lobby:rodata START END f/NAME` (tools/lbf_jt.py prints the range from the asm BEFORE the function is registered; lbf_runs/lbf_merge do it
 automatically). tools/check.py cannot see this; the failure shows up only as `undefined reference to .Lxxxxxxxx` at the lobby link.
-Left (about 590 functions): browser (Bs*/draw*/stock*/tagAct_NNN and layout), guild UI (Lb_guild 4100, lb_rule_seet_set, lb_select_quest_level_trans,
+(Superseded by 'Lobby session 3' below.) Left (about 590 functions): browser (Bs*/draw*/stock*/tagAct_NNN and layout), guild UI (Lb_guild 4100, lb_rule_seet_set, lb_select_quest_level_trans,
 lb_questpage_trans), lb_basic_master (4840), lb_check_status (2316), Lb_stage_load (1852), Lb_put_help, lb_disp_name, vs_square*, http_test_*.
 Known stubborn classes: (1) `addu rd, idx*N, base` vs `addu rd, base, idx*N` (operand order of an indexed address: ~12 tagAct_/stock functions
 are exactly 1 instruction off for this reason; no source form found that flips it); (2) s0/s1 register order of two long-lived locals
 (lb_commer_message, lb_set_pl_status/pos/stage, Lb_move_common); (3) rodata struct copies (Lb_put_gold, pl_sleeping); (4) functions whose
 m2c draft needs hand work for stack arguments beyond 8 (AppendWork stock* wrappers, 13 args: reg args a0-a3,t0-t3 then 5 stack dwords).
+
+
+## Lobby session 3 (8 Oct 2026): town logic, guild UI, first browser objects
+Registered (exact): lb_check_status (lb_q01 + jump table), Lb_guild helpers (lb_v01-03: lb_get_quest_level, lb_rule_seet_trans, lb_guild_talk),
+lb_guild_check_keyQuest-style small ones (lb_t01-05), the browser tag handlers tagAct_* (lb_s01-14), stock* recorders + UpdateEndpoint (lb_ak01-09),
+browser screen objects (CharSet/Task of BgImg, PageObj, H/V scroll bar, title bar, tool menu, soft keyboard, cursor, dialog: lb_al01-09),
+queue helpers (lb_am01-05, lb_an01). Hand-written near-matches (compile, believed equivalent, NOT registered; the working files keep them):
+lb_q.c Lb_stage_load (46 of 463 insns off: two `andi v0,zero,0xFFFF` constants and the St_unique_tbl index scheduling), lb_r.c lb_basic_master (structure
+equal; only s0/s1 register naming and a few delay slots differ), lb_u.c Lb_guild, lb_v.c quest-level/startMsg/make_room/input/rule sheet,
+lb_w.c lb_rule_seet_set, lb_x.c quest board draw + select_quest, lb_y.c quest table generation, lb_aa..lb_ai (player status window, member checks,
+target selection, chat, chair, plaza phases vs_square_*, name tags, help bar, mv052/076/088, Lb_check_receipt), lb_am/lb_an (route/request queues).
+Idioms learned (all verified by matching):
+- `addu idx*N, base` order (the old "stubborn class 1"): index an ARRAY of structs of size N: `((CELL *)base)[idx].p[off]` (macros BSC/BSC2/BSC4/BSC8 in
+  lobby_f.h for sizes 0x5C/2/4/8). Taking the address (`&arr[i]`) or `(int)base + i*N` gives base-first. A global pointer needs a separate `(i*N)+(int)p`.
+- A base declared `int` makes MWCC split a large constant offset (addiu 32767 + addiu x); declare the base `u8 *`/pointer to get `ori at,zero,K; addu`.
+- `x > N-1` gives `slti at`, `x >= N` gives `slti v1` (also for unsigned `sltiu at`); try the other form when only the register of a compare differs.
+- `if (a == 1) {...}` for a single value compiled as `beq; b end` is a one-case `switch (a) { case 1: ... }` (all the Bs*CharSet functions).
+- Switch compare chain = reverse of source order, and labels that jump to the end (`case 8: case 32: break;`) or to default must be listed
+  explicitly; they change the jump table (check_status: table entries 8 and 32 pointed at the end). A dense table is only emitted when the
+  explicit labels fill the range (basic_master fish switch: add `case 0: case 2: ... default: return;`). The table needs its own `lobby:rodata`.
+- `default:` placed FIRST in a switch means the default body is the first code (lb_check_status). Cases that ended in `goto block` in m2c are often
+  plain `break`/`return` plus code after the switch (Lb_guild: `lb_guild_talk()` after the switch; lb_basic_master: block_233 after the switch).
+- Functions with more than 8 args: declare the callee with int params (AppendWork has 13); the 5th..8th go in t0-t3 and the rest as `sd` dwords.
+  The stock* wrappers then match directly. Leftover argument registers are not arguments: `Lb_pl_to_chair();`, `Online_ck();` take none.
+- A function returning float args needs an ANSI prototype (`int f(f32 r, PLW *pl, ...)`); K&R promotes float to double and shifts a0..
+- Stage/state globals as struct fields (lb_sys.x04/x07/x08, MHRULE x00/x4F/x58, BSSYS, BSWK, BSNODE in lobby_f.h) avoid the CSE of `&field` addresses
+  that raw `*(s8 *)((u8 *)&sym + off)` accessors cause (lb_rule_seet_set saved a register that way).
+- IPA again: BsRouteForwardCheck/BackCheck use a1 across the call to bs_route_queue_forward, so they only match in one TU with the callee defined
+  before them (needs the whole range bs_route_queue_forward..BsRouteBackCheck in one file; not done).
+New tools: tools/lbexp.py FILE (compile + disassemble a scratch file), lbdecl.py (permute local declarations), lbbsc.py / lbptr.py / lbv.py (mechanical rewrites
+of the auto drafts), lbfix2.py (second repair pass for .err.c), lbsweep.py (check all auto sources), lbleft.py [MIN [MAX]] (functions not yet written),
+lbshow.sh / lbsrc.sh (auto source + align diff), align.py with RN=1 (register-renaming insensitive diff).
+Left: see `python3 tools/lbleft.py` (about 400 functions, mostly browser: Bs* request/cache/memory/URL/work, zlib/png glue, parsetag, layout/table,
+tagAct_*, DispFontSize, item box 0x609770-0x60E330, plaza chat, eft25, http_test_*). The m2c drafts for all of them are in the scratch drafts dir (LBDRAFTS).
