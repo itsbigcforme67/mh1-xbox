@@ -204,6 +204,8 @@ typedef struct {
     fl_model model;
     fl_skel skel;            /* drives model (same AHI) */
     flmat world;
+    fmt_blob tbl;            /* *_tbl.bin */
+    int game;                /* 1: posed by the game's motion code (em_work[0]) */
     uint8_t *mem[3];
 } monster;
 
@@ -241,6 +243,8 @@ static int monster_load(monster *e, const char *amh, const char *tex, const char
     int g;
     if (!link.p)
         return -1;
+    e->tbl = tb;
+    e->game = 0;
     amo = fmt_link_entry(link, 0, FMT_LE);
     ahi = fmt_link_entry(link, 1, FMT_LE);
     if (fl_model_create(&e->model, amo, ahi, tx, 1, FMT_LE) != 0 || fl_skel_create(&e->skel, ahi, FMT_LE) != 0)
@@ -325,6 +329,7 @@ static int hunter_load(hunter *h, const int *num, int legs_id, int upper_id)
         fprintf(stderr, "warning: no SLPM_654.95, armour parts will not follow the skeleton\n");
     tb = load("plcom_tbl.bin", &h->mem[k++]);
     h->tbl = tb;
+    h->game = 0;
     if (tb.p) {
         fl_skel_set_motion(&h->master, 0, tb, legs_id, FMT_LE);   /* char0: legs */
         fl_skel_set_motion(&h->master, 1, tb, upper_id, FMT_LE);  /* char1: upper body */
@@ -482,6 +487,11 @@ int main(int argc, char **argv)
 
     if (monster_load(&rathian, "em01_amh.bin", "em01_tex.bin", "em01_tbl.bin", 3) != 0)
         fprintf(stderr, "em01 load failed\n");
+    else if (rathian.tbl.p && !getenv("RT_HOST_MOTION")) {       /* animate with the game's create_em_motion/frame_move */
+        static const int ids[3] = { 1003, 1203, 1403 };   /* slot 3 of banks 0/2/4 */
+        rt_monster_motion_start(0, 0, rathian.tbl.p, 1, ids, 3);
+        rathian.game = 1;
+    }
     if (hunter_load(&pl, parts, 1, 101) != 0)
         fprintf(stderr, "hunter load failed\n");
 
@@ -525,7 +535,7 @@ int main(int argc, char **argv)
             float p[3] = { hx, gy, hz };
             rt_set_player(0, p);
             rt_debug_spawn(p);          /* RT_SPAWN test effects at the hunter */
-            if (pl.tbl.p) {             /* animate with the game's frame_init/frame_move */
+            if (pl.tbl.p && !getenv("RT_HOST_MOTION")) {   /* animate with the game's frame_init/frame_move */
                 rt_player_motion_start(0, pl.tbl.p, 1, 101);
                 pl.game = 1;
                 pl.master.root_lock = 1;    /* the game moves the actor by the root motion */
@@ -602,6 +612,8 @@ int main(int argc, char **argv)
             } else if (pl.game) {
                 rt_player_motion_tick(0);
             }
+            if (rathian.game && ticks >= 2)
+                rt_monster_motion_tick(0);
             ticks++;
         }
         if (pl.game && play) {          /* hunter from player_work[0]; camera follows */
@@ -614,7 +626,10 @@ int main(int argc, char **argv)
             cam[2] = p[2] + cosf(cam[3]) * 900.0f;
             cam[4] = -0.3f;
         }
-        fl_skel_update(&rathian.skel, fr);
+        if (rathian.game)
+            rt_monster_pose(0, &rathian.skel);
+        else
+            fl_skel_update(&rathian.skel, fr);
         fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
         hunter_pose(&pl, fr, &light);
 

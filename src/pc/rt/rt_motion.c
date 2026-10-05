@@ -312,3 +312,41 @@ void rt_motion_scan(void)
         }
     }
 }
+
+/* ------------------------------------------------------------ monsters */
+#include "em.h"
+void create_em_motion(int no, int em);
+
+/* em_work[no] played by the game's motion code: builds monster model
+ * mdl_no's handles from its *_tbl.bin (create_em_motion, kind em: number
+ * of part groups from em_parts_num) and starts ids[g] on layer g. */
+void rt_monster_motion_start(int no, int mdl_no, const uint8_t *tbl, int kind, const int *ids, int layers)
+{
+    EMW *em = &em_work[no];
+    FRW *w = (FRW *)em;
+    int g;
+    pl_area_top = (u8 *)tbl;
+    create_em_motion(mdl_no, kind);
+    if (!w->mdl)
+        rt_motion_attach(em);
+    w->x10 = 1;                 /* not a player: em_mot_han_ofs path */
+    w->x1E = 0;
+    w->mdl_no = (u8)mdl_no;
+    w->scl[0] = w->scl[1] = w->scl[2] = 1.0f;
+    w->layers = (u16)layers;
+    for (g = 0; g < layers && g < 4; g++) {
+        w->chr[g] = (u16)ids[g];
+        w->mt[g].spd = 1.0f;
+        frame_init(w, 0, 0, g);
+    }
+}
+
+int rt_monster_motion_tick(int no)
+{
+    return frame_move((FRW *)&em_work[no]);
+}
+
+void rt_monster_pose(int no, void *skel)
+{
+    rt_motion_pose(skel, &em_work[no]);
+}

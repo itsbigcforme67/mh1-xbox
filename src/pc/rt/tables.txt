@@ -365,3 +365,4 @@ Plan_ang work
 Plan_pow work
 swset_w work
 for_pad_timer_tbl
+em_parts_num

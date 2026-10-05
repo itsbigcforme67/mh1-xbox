@@ -110,9 +110,11 @@ WEAK void move_shell(void) {}
 WEAK void move_set(void) {}
 WEAK void move_senko(void) {}
 WEAK void move_smoke(void) {}
-/* Em_max_parts_get (game): number of motion part groups of a monster
- * kind; create_em_motion builds 2 banks per group. Not ported. */
-WEAK u8 Em_max_parts_get(s16 em) { (void)em; return 3; }
+/* Em_max_parts_get (main 0x10B770): number of motion part groups of
+ * monster kind em (em_parts_num[(s16)em]); create_em_motion builds 2 banks
+ * per group. */
+extern u8 em_parts_num[];
+u8 Em_max_parts_get(int em) { return em_parts_num[(s16)em]; }
 
 /* pad_timer_calc (0x1513A0) / pad_timer_calc_sub (0x151350): ticks counter
  * at PLW+0x5B8, cleared while ~sw.now & for_pad_timer_tbl[0] is non-zero,

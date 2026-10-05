@@ -87,6 +87,13 @@ int rt_player_motion_tick(int no);
 void rt_player_pose(int no, void *fl_skel_ptr);
 void rt_player_get(int no, float pos[3], int *ang_y);
 
+/* The same for monster em_work[no] (model number mdl_no, monster kind
+ * kind for em_parts_num): create_em_motion from its *_tbl.bin, ids[g] on
+ * layer g (ids >= 1000). */
+void rt_monster_motion_start(int no, int mdl_no, const uint8_t *tbl, int kind, const int *ids, int layers);
+int rt_monster_motion_tick(int no);
+void rt_monster_pose(int no, void *fl_skel_ptr);
+
 /* Host pad state for the next ticks (fl pad bits + sticks, see
  * src/pc/pad/pad.h); rt_pad_tick (called by rt_player_tick) runs the PS2
  * pad driver step and the game's swset(). */

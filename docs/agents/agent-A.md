@@ -235,3 +235,8 @@ Lessons:
   declare em_frame_check as (EMW *, f32, int); the definition is
   (FRW *, int n, f32 frame). Fine on the PS2 (separate register files),
   wrong on x86.
+- Rathian also animated by create_em_motion/frame_move (em_work[0]);
+  Em_max_parts_get ported natively (it takes an int and casts to s16
+  itself). Viewer fix: hunter.game was uninitialised.
+- trans_stage: not edited in this assignment (coordinator note: agent E
+  consolidates src/main/stage/trans_stage_nm.c and f_stage_nm.c).

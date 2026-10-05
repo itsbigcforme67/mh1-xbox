@@ -191,6 +191,14 @@ channel blend), keeping that bone's X/Z translation at its bind value
 because the game moves the actor instead (`root_lock`; how the PS2 cancels
 it at draw time is not traced yet [guess]).
 
+The Rathian runs the same way: create_em_motion builds em01_tbl.bin's
+handles (Em_max_parts_get, ported in rt_main.c from main 0x10B770: 3 part
+groups for kind 1), em_work[0] (not in use, be_flag 0) holds its motion
+layers, ids 1003/1203/1403 (slot 3 of banks 0/2/4). Verified: with
+`RT_HOST_MOTION=1` (the viewer's old AAN player for both actors) the shot
+build/show/A/em_host_view.png matches em_game_view.png except for a
+one-frame phase difference.
+
 `RT_MOTION_SCAN=1` lists every common motion with its length, loop and root
 travel (how plcom 3 was found).
 
