@@ -498,3 +498,26 @@ see above). This round:
   original are byte offsets, here clay indices (offset / 0x8C).
   Uninitialised-register reads in the original (clay index of kinds 6/7/8 in
   rare modes) are given defaults (5, 1).
+
+# Fifth assignment: non-monster game.bin overlay leftovers
+
+Remaining unmatched (non-em) functions of game.bin, with sizes, at the start of
+this pass: set17_trans 872 B, shell00_i 912, shell22_i 1188, shell22_h 256,
+shell08_rgba 944, eft05_t 1160, eft11_i 672, eft22_end_init 564, fish_type_set
+340, Set20_set 232, print_tuto_message 160, pl_guard_ck 212, Fish_set 132,
+set05_m 1800, shell06_move_sub 3132, set14_trans 3148, eft04_t 5064, eft16_m
+7032, shell08_m 7584, shell08_trans 6320. All have C except Fish_set (new).
+Now linked (game OK): shell00 (7/7; shell00_i needed `u8 atk` and `if (atk)`:
+the original's constant 1 loads with daddiu; jump table 0x68A3B0-0x68A3D0),
+Fish_set (eft23b.c, 0x5589F0; the stage's fish spawn list, entries of 0x18
+bytes: x,y,z, range, kind (<0 ends), count; `for(;;){if(kind<0)break;...}`
+gives the original's loop layout), pl_guard_ck (pl_guard.c; return type u8
+and `u8 ret` fixed the last instruction), set17 without set17_trans.
+Near-matches improved: shell22_h 52 -> 3 off (switch with `case 1: case 0:
+default:`; original compares 1 where we compare 0), shell08_rgba 48 -> 43,
+set17_trans 88 -> 67 (declaration hill-climb; tool /tmp/dperm4.py moves one
+declaration at a time and keeps improvements).
+Tried and left: eft22_end_init (4 off, constant 35/27 goes to v1 not v0),
+fish_type_set (6 off, sum/r swap a1/a2 whatever the declaration order),
+eft11_i (the original loads the address of eft11_t0 just before the copy
+loop; we load it first), Set20_set (only branch delay slots), print_tuto_message.
