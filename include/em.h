@@ -326,7 +326,7 @@ typedef struct EMW {
     s8 x958;            /* 0x958 */
     u8 x959;            /* 0x959 trapped: 6 pitfall, 9 shock (shell12_m) */
     s8 x95A;            /* 0x95A */
-    u8 _pad95B[0x95C - 0x95B];
+    u8 x95B;            /* 0x95B 1: boss (em16 init sets x9E1 and the boss work) */
     u8 x95C;            /* 0x95C 2 while dying (em19) */
     s8 x95D;            /* 0x95D (em14_sasari_ck) */
     u16 x95E;           /* 0x95E */
