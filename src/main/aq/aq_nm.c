@@ -67,6 +67,7 @@ int mcsls_get_error_code();
 int set01_set2();
 int Quest_error_set();
 void get_AQdata(void);
+u8 *ck_exec_aq();
 void host_change(void);
 void AQ_session_exit_online(void);
 void AQ_recv(int);
@@ -672,13 +673,13 @@ void pl_data_put(int pl, u8 *d) {
 }
 
 void pl_AQ_put(void) {
-    u8 buf[0x100];
+    u8 buf[0xF0];
     u8 *q;
     PLPUT *pb = &pl_put_buf;
 
     if (pl_put_buf.pl != -1 && pb->len != 0 && aq_work.buff >= 2) {
         buf[0] = *pb->top;
-        buf[1] = pb->len + 4;
+        buf[1] = (u8)pb->len + 4;
         q = buf + 2;
         q[0] = game_w[0xD1];
         q[1] = 0;
@@ -730,19 +731,26 @@ void other_item_sub(u8 *d, int idx, int x) {
 }
 
 void host_change(void) {
-    u8 *p = game_w;
     s16 i;
+    u8 *p;
     u8 *pl;
+    u8 *base;
 
-    for (i = 0; i < game_w[0xD3]; i++) {
-        if (p[0x208] == 1) {
-            game_w[0x21B] = i;
-            pl = player_work + 0x91F + game_w[0xD1] * 0xA00;
-            if (*pl != 0) {
-                *pl = 0;
+    i = 0;
+    if (game_w[0xD3] > 0) {
+        p = game_w;
+        do {
+            if (p[0x208] == 1) {
+                game_w[0x21B] = i;
+                base = player_work + 0x91F;
+                pl = base + game_w[0xD1] * 0xA00;
+                if (*pl != 0) {
+                    *pl = 0;
+                }
+                break;
             }
-            break;
-        }
-        p++;
+            i++;
+            p++;
+        } while (i < game_w[0xD3]);
     }
 }
