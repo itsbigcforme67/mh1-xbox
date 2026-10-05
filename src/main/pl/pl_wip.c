@@ -276,3 +276,99 @@ void pl_at052(PLW *pl) {
         break;
     }
 }
+
+void pl_at061(PLW *pl) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl_chr_set2(pl, 0x585, 4, 0);
+        Pl_basic_flagset(pl, 0, 1, 0);
+        func_6362B0(pl, 0x1D);
+        break;
+    case 1:
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 4, 0);
+        }
+        break;
+    }
+}
+
+void pl_at065(PLW *pl) {
+    u8 s;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        pl_chr_set2(pl, 0x589, 0, 0);
+        Pl_set_quake_sub(pl, 0);
+        Pl_basic_flagset(pl, 0, 1, 0);
+        break;
+    case 1:
+        if (pl->x06 != 0) {
+            if (frame_check2(42.0f, pl, 0) != 0) {
+                Pl_act_set(pl, 1, 0x52, 0xC);
+            }
+        } else if ((frame_check3(10.0f, 40.0f, pl, 0) != 0) && (pl->x06 == 0) && (pl->work88C == 0) && (pl->sw.an_trg & 0x3C)) {
+            pl->x06 = 1;
+        }
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 4, 0);
+        }
+        break;
+    }
+}
+
+void pl_at070(PLW *pl, s32 arg1) {
+    s32 t;
+    u8 s;
+    u8 u;
+
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Pl_basic_flagset(pl, 0, 1, 0);
+        pl->x06 = 0;
+        if (arg1 == 0) {
+            pl_chr_set2(pl, 0x57E, 2, 0);
+        } else {
+            pl_chr_set2(pl, 0x57E, 2, 8);
+        }
+        func_6362B0(pl, 0x1E);
+        break;
+    case 1:
+        if ((pl->x06 == 0) && (frame_check2(26.0f, pl, 0) != 0) && (frame_check2(38.0f, pl, 0) == 0) && (pl->sw.an_trg & 0x3C)) {
+            t = (pl->sw.ang[1] + 0x2AAB) & 0xFFFF;
+            if (t < 0x4001) {
+                pl->x06 = 2;
+            } else if (t < 0x9556) {
+                pl->x06 = 1;
+            } else if (t < 0xD556) {
+                pl->x06 = 2;
+            }
+        }
+        if (pl->work194 == 0) {
+            pl_to_normal(pl, 0, 6, 0);
+            break;
+        }
+        if ((we04_hit_sub(pl) != 1) && (frame_check2(26.0f, pl, 0) != 0)) {
+            u = pl->x06;
+            if (u == 1) {
+                Pl_act_set(pl, 1, 0x48, 4);
+                break;
+            }
+            if (u == 2) {
+                Pl_act_set(pl, 1, 0x33, 4);
+                break;
+            }
+            if (frame_check2(38.0f, pl, 0) == 0) {
+                ex_atk_ck(pl, 0);
+            }
+        }
+        break;
+    }
+}
