@@ -100,3 +100,4 @@ game:rodata 0x00685760 0x00685790 eft/eft18
 game 0x00552D00 0x005546DC eft/eft18b
 game:rodata 0x006857F0 0x00685838 eft/eft18b
 game 0x00554750 0x0055497C eft/eft18c
+game 0x006229B0 0x006233F8 set/set14

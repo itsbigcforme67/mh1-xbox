@@ -138,6 +138,12 @@ extracted to disc/mhg/ (gitignored). MH1 not yet supplied.
   - New SHLW field pos0 (0x3C), used by Eft18_set3 to size the effect by
     the distance from pos2.
 
+- set14 (a stage overlay with scrolling masked textures; on stages 51-53
+  two of five layers fade at random intervals) matches except set14_trans,
+  its draw function (still assembly, last in the file so no split).
+  set14_m repeats the same mask-timer code for stages 51, 52 and 53; it
+  matched written out three times.
+
 ### Next
 
 1. Owner supplies Japanese MH1. Survey it the same way. The plan's base
