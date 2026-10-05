@@ -33,16 +33,18 @@ typedef struct GAME_W {
     u8 x12;             /* 0x012 */
     u8 _pad013[0x14 - 0x13];
     u8 stage;           /* 0x014 stage number (0x4E, 0x57 in set06) */
-    u8 _pad015[0x1E - 0x15];
+    u8 x15;             /* 0x015 copied with stage (Quest_pl_stage_init) */
+    u8 _pad016[0x1E - 0x16];
     u8 x1E;             /* 0x01E counter scrolling the smoke screen UVs (eft12_t01) */
     u8 _pad01F[0x20 - 0x1F];
     u8 port[2];         /* 0x020 controller port per player (get_sw) */
     u8 _pad022[0x24 - 0x22];
     u8 sw_mask;         /* 0x024 buttons ignored until released (get_sw) */
-    u8 _pad025[0x2C - 0x25];
+    u8 _pad025[0x28 - 0x25];
+    u8 x28[4];          /* 0x028 per player quest entry id, cleared by Quest_start (Em_direct_set) */
     u16 quest;          /* 0x02C quest number (SonchoInit: 0x83.. tutorials) */
     u8 x2E;             /* 0x02E 6: em20 fly 9 picks point 1 for monster kind 6 */
-    u8 _pad02F[0x30 - 0x2F];
+    u8 x2F;             /* 0x02F from the mission data (Quest_start) */
     u8 x30[4];          /* 0x030 per player, copied from select_w+0x0C (game11) */
     u8 _pad034[0x40 - 0x34];
     V3S x40[4]; /* 0x040 per player 3 shorts, from select_w+0x5C (game11) */
@@ -54,7 +56,7 @@ typedef struct GAME_W {
     u8 x80[4];          /* 0x080 per player, copied into the cooking smell (Eft12_set4) */
     u8 _pad084[0xA8 - 0x84];
     struct EFT_MDLW *area_mdlw[10]; /* 0x0A8 model sets by area (eft07_t, Em_area_ck) */
-    u8 _pad0D0[0xD1 - 0xD0];
+    u8 x0D0;            /* 0x0D0 cleared by Quest_start */
     u8 master;          /* 0x0D1 player number of the session master */
     u8 x0D2;            /* 0x0D2 set to 1 by Game_task, passed to AQ_init */
     u8 pl_num;          /* 0x0D3 players in the session (shell_hit_ck loops over them) */
@@ -72,7 +74,7 @@ typedef struct GAME_W {
     u8 info_now;        /* 0x1DF set01 message being shown, 0xFF = none */
     u8 _pad1E0[0x1E6 - 0x1E0];
     u8 gate_open;       /* 0x1E6 set20 gate state, set from the quest */
-    u8 _pad1E7[0x1E8 - 0x1E7];
+    u8 x1E7;            /* 0x1E7 from func_63AF40(quest) (Quest_start) */
     u8 x1E8[4][8];      /* 0x1E8 per player flags, cleared by game0 */
     u8 pl_state[8];       /* 0x208 per player: 0xFF = not joined? (player_init0, pl_work_clr); guess */
     u8 shl10_num;       /* 0x210 live shell10s owned by the master player */

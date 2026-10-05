@@ -239,3 +239,5 @@ main 0x00292510 0x00292D34 reward/f_reward3
 main:rodata 0x003868F0 0x0038690C reward/f_reward3
 main 0x002932C0 0x00293364 reward/f_rewardb
 main 0x00293420 0x00293684 reward/f_rewardc
+main 0x00227100 0x0022715C quest/f_quest
+main 0x00227240 0x00227764 quest/f_questb

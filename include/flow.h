@@ -27,7 +27,8 @@ extern SYSTEM_W system_w;
 extern OPTION_W option_w;
 /* select_w: character select results (only what game11 and game3/4 read) */
 typedef struct SELECT_W {
-    u8 _pad00[0x0C];
+    u8 _pad00[0x0A];
+    s16 x0A;            /* 0x0A stage number (Quest_start) */
     u8 x0C[4];
     u8 _pad10[0x54 - 0x10];
     u8 x54[4];
@@ -37,6 +38,8 @@ typedef struct SELECT_W {
     s8 ready[4];        /* 0x8C per player ready flag (game3/game4) */
     u8 _pad90[0x94 - 0x90];
     s8 x94[4];
+    u8 _pad98[0xAC - 0x98];
+    u16 xAC;            /* 0xAC selected quest number (Quest_start) */
 } SELECT_W;
 extern SELECT_W select_w;
 typedef struct STGW {
