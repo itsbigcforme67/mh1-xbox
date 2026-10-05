@@ -68,9 +68,16 @@ def main():
     om, tm = body(ot, a.struct), body(tt, a.struct)
     ofs, tfs = parse(om.group(1).split("\n")), parse(tm.group(1).split("\n"))
     end = max(f["off"] + f["size"] for f in ofs + tfs)
-    endm = re.search(r"_pad(\w+)\[0x([0-9A-Fa-f]+) - 0x\w+\];\s*\n\} %s;" % a.struct, ot)
-    if endm:
-        end = max(end, int(endm.group(2), 16))
+    lastpad = re.search(r"u8 _pad\w*\[([^\]]+)\];\s*\n\} %s;" % a.struct, ot)
+    if lastpad:
+        before = ot[:lastpad.start()]
+        offs = [int(x, 16) for x in re.findall(r"/\*\s*(0x[0-9A-Fa-f]+)", before[om.start(1):])]
+        expr = lastpad.group(1)
+        if " - " in expr:
+            end = max(end, eval(expr.split(" - ")[0], {}))
+        else:
+            last = max(f["off"] + f["size"] for f in ofs)
+            end = max(end, last + eval(expr, {}))
     byoff = {f["off"]: f for f in ofs}
     renames = []
     for f in tfs:
@@ -80,6 +87,9 @@ def main():
                 sys.exit("size clash at 0x%X: %s (%d) vs %s (%d)" % (f["off"], g["name"], g["size"], f["name"], f["size"]))
             if g["name"] != f["name"]:
                 renames.append((f["name"], g["name"]))
+            gt = FIELD.match(g["line"]).group(2); ft = FIELD.match(f["line"]).group(2)
+            if gt != ft:
+                print("TYPE DIFFERS at 0x%X: ours %s %s, theirs %s %s -- check which the code needs" % (f["off"], gt, g["name"], ft, f["name"]))
             continue
         byoff[f["off"]] = f
     out, pos = [], 0

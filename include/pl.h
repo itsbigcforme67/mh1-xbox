@@ -160,7 +160,7 @@ typedef struct PLW {
     u8 _pad617[0x720 - 0x617];
     s8    work720[4];    /* 0x720 */
     s16   work724[4];    /* 0x724 */
-    s16   work72C[4];    /* 0x72C */
+    u16   work72C[4];    /* 0x72C (u16: blend_set) */
     u8 _pad734[0x736 - 0x734];
     u8    stg;           /* 0x736 */
     u8 _pad737[0x738 - 0x737];
@@ -209,6 +209,7 @@ typedef struct PLW {
     u16   x8EA;          /* 0x8EA non-zero: bait still on (eft23) */
     u8 _pad8EC[0x8F0 - 0x8EC];
     s8    work8F0;       /* 0x8F0 */
+    u8 _pad8F1[0xA00 - 0x8F1];
 } PLW;
 
 extern PLW player_work[];

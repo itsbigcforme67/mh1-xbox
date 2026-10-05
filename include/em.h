@@ -228,7 +228,7 @@ typedef struct EMW {
     u8 x8B8;            /* 0x8B8 */
     u8 _pad8B9[0x8BA - 0x8B9];
     s8 x8BA;            /* 0x8BA */
-    u8 x8BB;            /* 0x8BB set to 10 while ex+4 is non-zero (em29_main) */
+    s8 x8BB;            /* 0x8BB (s8: Em_Damage_Stock) set to 10 while ex+4 is non-zero (em29_main) */
     u8 _pad8BC[0x8BD - 0x8BC];
     u8 x8BD;            /* 0x8BD 1 while paralysed (em19 dm02) */
     u8 _pad8BE[0x8C0 - 0x8BE];
@@ -266,7 +266,7 @@ typedef struct EMW {
     u8 _pad9D8[0x9D9 - 0x9D8];
     u8 x9D9;            /* 0x9D9 */
     u8 _pad9DA[0x9E1 - 0x9DA];
-    u8 x9E1;            /* 0x9E1 (em29_init sets 5) */
+    s8 x9E1;            /* 0x9E1 (em18/em29_init: 5; Em_Yobi_Ck: non-zero = no call for help) */
     u8 x9E2;            /* 0x9E2 */
     s8 x9E3;            /* 0x9E3 */
     s8 x9E4;            /* 0x9E4 */

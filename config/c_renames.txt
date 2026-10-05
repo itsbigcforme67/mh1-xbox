@@ -4,6 +4,7 @@ build/src/main/eft/eft06.c.o .rodata .data
 build/src/main/eft/eft06b.c.o .rodata .data
 build/src/main/eft/eft13b.c.o .rodata .data
 build/src/main/eft/eft13e.c.o .rodata .data
+build/src/main/game/f_game.c.o .rodata .data
 build/src/main/hit/hit.c.o .rodata .data
 build/src/game/eft/eft17.c.o .rodata .data
 build/src/game/eft/eft04.c.o .rodata .data
@@ -16,6 +17,7 @@ build/src/game/eft/eft18.c.o .rodata .data
 build/src/game/eft/eft18b.c.o .rodata .data
 build/src/game/eft/eft22.c.o .rodata .data
 build/src/game/eft/eft23.c.o .rodata .data
+build/src/game/em/em_taisei.c.o .rodata .data
 build/src/game/em/em01.c.o .rodata .data
 build/src/game/em/em02.c.o .rodata .data
 build/src/game/em/em07.c.o .rodata .data
@@ -26,6 +28,7 @@ build/src/game/em/em17.c.o .rodata .data
 build/src/game/em/em16.c.o .rodata .data
 build/src/game/em/em18b.c.o .rodata .data
 build/src/game/em/em19b.c.o .rodata .data
+build/src/game/em/em19_flyinit.c.o .rodata .data
 build/src/game/em/em20.c.o .rodata .data
 build/src/game/em/em20b.c.o .rodata .data
 build/src/game/em/em21.c.o .rodata .data
