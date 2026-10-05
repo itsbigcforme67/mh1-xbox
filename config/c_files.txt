@@ -1281,3 +1281,6 @@ main 0x00248E90 0x00248EC0 ime/imeaq
 main 0x00249540 0x00249940 ime/imear
 main 0x00249A90 0x00249B44 ime/imeas
 main 0x00249D60 0x0024A238 ime/imeat
+lobby 0x005E8330 0x005E8590 f/lb_ao01
+lobby 0x005E8920 0x005E8934 f/lb_ap01
+lobby 0x005E96D0 0x005E9754 f/lb_ap02
