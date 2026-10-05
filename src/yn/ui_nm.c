@@ -199,94 +199,67 @@ int yn_load_texfile();
 void yn_scecom_reboot();
 
 s32 yn_set_main(void) {
-    u8 *temp_v0_5;
-    u8 *temp_v1;
-    u8 *temp_v1_2;
-    u8 *temp_v1_3;
-    u8 *temp_v1_4;
-    u8 *temp_v1_6;
-    u8 *temp_v1_7;
-    u8 *temp_v1_8;
-    u8 *temp_v1_9;
-    s32 temp_s0;
-    s32 temp_s1;
-    s32 temp_v0_2;
-    s32 temp_v0_3;
-    s32 temp_v0_4;
-    u16 temp_v1_10;
-    u16 temp_v1_11;
-    u16 temp_v1_5;
-    u32 temp_v0;
+    u8 *w;
+    s8 *q;
+    s32 r;
+    s32 t1;
+    s32 t2;
+    u16 pad;
+    u32 rno;
 
     yn_keyboard_server();
-    temp_v0 = yn_r_no;
-    switch (temp_v0) {                              /* switch 1 */
-    case 0:                                         /* switch 1 */
+    rno = yn_r_no;
+    switch (rno) {
+    case 0:
         yn_stop_bgm();
-        temp_s1 = yn_load_texfile(0, 0x10500);
-        temp_s0 = yn_load_texfile(1, 0x40500);
+        t1 = yn_load_texfile(0, 0x10500);
+        t2 = yn_load_texfile(1, 0x40500);
         ynw = Yn_temp;
         memset(ynw, 0, 0x1AEC0);
-        M2C_FIELD(ynw, s32 *, 0) = temp_s1;
-        M2C_FIELD(ynw, s32 *, 4) = temp_s0;
+        M2C_FIELD(ynw, s32 *, 0) = t1;
+        M2C_FIELD(ynw, s32 *, 4) = t2;
         yn_netcnf_init1(ynw + 0x1180);
-        yn_r_no = 1U;
+        yn_r_no = 1;
         return 0;
-    case 1:                                         /* switch 1 */
+    case 1:
         yn_netcnf_init2(ynw + 0x1180);
         yn_hard_init();
         yn_proxy_wk_load();
         if (yn_type == 0) {
             flSetRenderState(0x14, 0xFF000000);
-            yn_r_no = 2U;
+            yn_r_no = 2;
         } else {
-            yn_r_no = 3U;
+            yn_r_no = 3;
         }
-    default:                                        /* switch 1 */
-block_74:
-        if (yn_r_no == 4) {
-            return 0;
-        }
-        M2C_FIELD(ynw, s8 *, 0x1A) = yn_get_halftype();
-        yn_set_halftype(1);
-        yn_set_pal(0);
-        yn_set_size(0x16, 0x16);
-        yn_set_z(850.0f);
-        yn_title_font();
-        yn_message_font();
-        yn_button_font();
-        yn_dialog_font();
-        yn_help_font();
-        yn_draw();
-        yn_set_halftype(M2C_FIELD(ynw, s8 *, 0x1A));
-        return 0;
-    case 2:                                         /* switch 1 */
-        temp_v1 = ynw;
-        M2C_FIELD(temp_v1, u8 *, 0x21) = (u8) (M2C_FIELD(temp_v1, u8 *, 0x21) + 1);
-        temp_v0_2 = yn_file_search();
-        switch (temp_v0_2) {                        /* switch 2; irregular */
-        case 0:                                     /* switch 2 */
+    default:
+        break;
+    case 2:
+        w = ynw;
+        M2C_FIELD(w, u8 *, 0x21) = M2C_FIELD(w, u8 *, 0x21) + 1;
+        r = yn_file_search();
+        switch (r) {
+        case 0:
             break;
-        case 1:                                     /* switch 2 */
-            yn_r_no = 6U;
+        case 1:
+            yn_r_no = 6;
             M2C_FIELD(ynw, s8 *, 0x24) = 0;
             M2C_FIELD(ynw, s8 *, 8) = 0;
             M2C_FIELD(ynw, s8 *, 0x46) = 0;
             break;
-        case -1:                                    /* switch 2 */
-            yn_r_no = 6U;
+        case -1:
+            yn_r_no = 6;
             M2C_FIELD(ynw, s8 *, 0x24) = 0;
             M2C_FIELD(ynw, s8 *, 8) = 0;
             M2C_FIELD(ynw, s8 *, 0x46) = 0;
             break;
-        case -2:                                    /* switch 2 */
-            yn_r_no = 9U;
+        case -2:
+            yn_r_no = 9;
             M2C_FIELD(ynw, s8 *, 0x46) = 6;
             M2C_FIELD(ynw, s8 *, 0x17) = 0;
             yn_log_sd();
             break;
-        case -3:                                    /* switch 2 */
-            yn_r_no = 0xAU;
+        case -3:
+            yn_r_no = 0xA;
             M2C_FIELD(ynw, s8 *, 0x24) = 0;
             M2C_FIELD(ynw, s8 *, 8) = 0;
             M2C_FIELD(ynw, s8 *, 0x17) = 0;
@@ -300,145 +273,153 @@ block_74:
             M2C_FIELD(ynw, s8 *, 0x48) = 0;
             break;
         }
-        goto block_74;
-    case 3:                                         /* switch 1 */
-        temp_v1_2 = ynw;
-        M2C_FIELD(temp_v1_2, u8 *, 0x21) = (u8) (M2C_FIELD(temp_v1_2, u8 *, 0x21) + 1);
-        temp_v0_3 = yn_auto_connect();
-        switch (temp_v0_3) {                        /* switch 3 */
-        case 1:                                     /* switch 3 */
-            yn_r_no = 7U;
+        break;
+    case 3:
+        w = ynw;
+        M2C_FIELD(w, u8 *, 0x21) = M2C_FIELD(w, u8 *, 0x21) + 1;
+        r = yn_auto_connect();
+        switch (r) {
+        case 1:
+            yn_r_no = 7;
             M2C_FIELD(ynw, s8 *, 0x18) = 0;
             break;
-        case -1:                                    /* switch 3 */
-            yn_r_no = 9U;
+        case -1:
+            yn_r_no = 9;
             M2C_FIELD(ynw, s8 *, 0x46) = 0x2B;
             yn_log_sd();
             break;
-        case -2:                                    /* switch 3 */
-            yn_r_no = 9U;
+        case -2:
+            yn_r_no = 9;
             M2C_FIELD(ynw, s8 *, 0x46) = 6;
             yn_log_sd();
             break;
-        case -3:                                    /* switch 3 */
-            yn_r_no = 9U;
+        case -3:
+            yn_r_no = 9;
             M2C_FIELD(ynw, s8 *, 0x46) = 5;
             yn_log_sd();
             break;
-        case -4:                                    /* switch 3 */
-            yn_r_no = 9U;
+        case -4:
+            yn_r_no = 9;
             M2C_FIELD(ynw, s8 *, 0x46) = 0x2B;
             yn_log_sd();
             break;
-        case -6:                                    /* switch 3 */
-            yn_r_no = 9U;
+        case -6:
+            yn_r_no = 9;
             M2C_FIELD(ynw, s8 *, 0x46) = 0x39;
             yn_log_sd();
             break;
         }
-        goto block_74;
-    case 4:                                         /* switch 1 */
+        break;
+    case 4:
         yn_scecom_reboot();
-        goto block_74;
-    case 6:                                         /* switch 1 */
-        temp_v1_3 = ynw;
-        M2C_FIELD(temp_v1_3, u8 *, 0x21) = (u8) (M2C_FIELD(temp_v1_3, u8 *, 0x21) + 1);
+        break;
+    case 6:
+        w = ynw;
+        M2C_FIELD(w, u8 *, 0x21) = M2C_FIELD(w, u8 *, 0x21) + 1;
         M2C_FIELD(ynw, s8 *, 0x39) = 0;
         yn_key_repeat(Psw);
-        temp_v0_4 = yn_select_provider();
-        switch (temp_v0_4) {                        /* switch 4; irregular */
-        case 0:                                     /* switch 4 */
+        r = yn_select_provider();
+        switch (r) {
+        case 0:
             break;
-        case 1:                                     /* switch 4 */
-            yn_r_no = 7U;
+        case 1:
+            yn_r_no = 7;
             M2C_FIELD(ynw, s8 *, 0x18) = 0;
             break;
-        case 2:                                     /* switch 4 */
-            yn_r_no = 4U;
+        case 2:
+            yn_r_no = 4;
             M2C_FIELD(ynw, s8 *, 0x18) = 0;
             M2C_FIELD(ynw, s8 *, 8) = 0;
             break;
-        case -1:                                    /* switch 4 */
-            yn_r_no = 8U;
+        case -1:
+            yn_r_no = 8;
             M2C_FIELD(ynw, s8 *, 0x18) = 0;
             M2C_FIELD(ynw, s8 *, 0x46) = 0x1A;
             M2C_FIELD(ynw, s8 *, 8) = 0;
             M2C_FIELD(ynw, s8 *, 0x17) = 0;
             yn_log_sd();
             break;
-        case -2:                                    /* switch 4 */
-            yn_r_no = 2U;
+        case -2:
+            yn_r_no = 2;
             M2C_FIELD(ynw, s8 *, 0x18) = 0;
             break;
         }
-        goto block_74;
-    case 7:                                         /* switch 1 */
+        break;
+    case 7:
         yn_set_exit_sub();
         return M2C_FIELD(ynw, u8 *, 0x26) + 1;
-    case 8:                                         /* switch 1 */
-        temp_v1_4 = ynw;
-        M2C_FIELD(temp_v1_4, u8 *, 0x21) = (u8) (M2C_FIELD(temp_v1_4, u8 *, 0x21) + 1);
-        temp_v1_5 = *(u16 *)0x3F3714;
-        if (temp_v1_5 & 0x40) {
+    case 8:
+        w = ynw;
+        M2C_FIELD(w, u8 *, 0x21) = M2C_FIELD(w, u8 *, 0x21) + 1;
+        pad = *(u16 *)0x3F3714;
+        if (pad & 0x40) {
             M2C_FIELD(ynw, s8 *, 0x46) = 0;
             yn_can_sd();
-            yn_r_no = 6U;
-            goto block_74;
+            yn_r_no = 6;
+            break;
         }
-        if (temp_v1_5 & 0x20) {
-            temp_v1_6 = ynw;
-            if (M2C_FIELD(temp_v1_6, s8 *, 0x17) != 0) {
+        if (pad & 0x20) {
+            w = ynw;
+            if (M2C_FIELD(w, s8 *, 0x17) != 0) {
                 yn_dec_sd();
                 yn_set_exit_sub();
                 return -1;
             }
-            M2C_FIELD(temp_v1_6, s8 *, 0x46) = 0;
+            M2C_FIELD(w, s8 *, 0x46) = 0;
             yn_can_sd();
-            yn_r_no = 6U;
-            goto block_74;
+            yn_r_no = 6;
+            break;
         }
-        if (temp_v1_5 & 0x3000) {
-            if (temp_v1_5 & 0x2000) {
-                temp_v1_7 = ynw;
-                M2C_FIELD(temp_v1_7, s8 *, 0x17) = (s8) (M2C_FIELD(temp_v1_7, s8 *, 0x17) - 1);
+        if (pad & 0x3000) {
+            if (pad & 0x2000) {
+                w = ynw;
+                M2C_FIELD(w, s8 *, 0x17) = M2C_FIELD(w, s8 *, 0x17) - 1;
             }
-            if (*(u8 *)0x3F3714 & 0x1000) {
-                temp_v1_8 = ynw;
-                M2C_FIELD(temp_v1_8, s8 *, 0x17) = (s8) (M2C_FIELD(temp_v1_8, s8 *, 0x17) + 1);
+            if (*(u16 *)0x3F3714 & 0x1000) {
+                w = ynw;
+                M2C_FIELD(w, s8 *, 0x17) = M2C_FIELD(w, s8 *, 0x17) + 1;
             }
-            temp_v0_5 = ynw;
-            M2C_FIELD(temp_v0_5, s8 *, 0x17) = (s8) ((s32) (M2C_FIELD(temp_v0_5, s8 *, 0x17) + 2) % 2);
-            yn_cur2_sd(temp_v0_5 + 0x17);
+            w = ynw;
+            q = (s8 *)(w + 0x17);
+            *q = (*q + 2) % 2;
+            yn_cur2_sd(q);
         }
-        goto block_74;
-    case 9:                                         /* switch 1 */
-        temp_v1_9 = ynw;
-        M2C_FIELD(temp_v1_9, u8 *, 0x21) = (u8) (M2C_FIELD(temp_v1_9, u8 *, 0x21) + 1);
-        temp_v1_10 = *(u8 *)0x3F3714;
-        if (!(temp_v1_10 & 0x20)) {
-            if (temp_v1_10 & 0x40) {
-                goto block_69;
-            }
-            goto block_74;
+        break;
+    case 9:
+        w = ynw;
+        M2C_FIELD(w, u8 *, 0x21) = M2C_FIELD(w, u8 *, 0x21) + 1;
+        pad = *(u16 *)0x3F3714;
+        if ((pad & 0x20) || (pad & 0x40)) {
+            yn_dec_sd();
+            yn_set_exit_sub();
+            return -1;
         }
-block_69:
-        yn_dec_sd();
-        yn_set_exit_sub();
-        return -1;
-    case 10:                                        /* switch 1 */
-        temp_v1_11 = *(u8 *)0x3F3714;
-        if (!(temp_v1_11 & 0x20)) {
-            if (temp_v1_11 & 0x40) {
-                goto block_73;
-            }
-        } else {
-block_73:
-            yn_r_no = 6U;
+        break;
+    case 10:
+        pad = *(u16 *)0x3F3714;
+        if ((pad & 0x20) || (pad & 0x40)) {
+            yn_r_no = 6;
             M2C_FIELD(ynw, s8 *, 0x46) = 0;
             yn_dec_sd();
         }
-        goto block_74;
+        break;
     }
+    if (yn_r_no == 4) {
+        return 0;
+    }
+    M2C_FIELD(ynw, s8 *, 0x1A) = yn_get_halftype();
+    yn_set_halftype(1);
+    yn_set_pal(0);
+    yn_set_size(0x16, 0x16);
+    yn_set_z(850.0f);
+    yn_title_font();
+    yn_message_font();
+    yn_button_font();
+    yn_dialog_font();
+    yn_help_font();
+    yn_draw();
+    yn_set_halftype(M2C_FIELD(ynw, s8 *, 0x1A));
+    return 0;
 }
 
 void yn_set_exit_sub(void) {
