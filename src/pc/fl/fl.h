@@ -64,6 +64,10 @@ typedef struct {
     int has_mot[FL_MAX_GROUPS];
     float frame;
     float end;                       /* longest motion end frame */
+    int root_lock;                   /* fl_skel_pose_groups: 1 = keep the X/Z
+                                        translation of the root motion bone
+                                        (AAN bone 1 of group 0) at its bind
+                                        value; the game moves the actor by it */
     float (*chan)[9];                /* per bone: current channels */
     flmat *world;                    /* per bone: world matrices */
 } fl_skel;

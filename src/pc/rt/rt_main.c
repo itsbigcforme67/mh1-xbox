@@ -113,3 +113,27 @@ WEAK void move_smoke(void) {}
 /* Em_max_parts_get (game): number of motion part groups of a monster
  * kind; create_em_motion builds 2 banks per group. Not ported. */
 WEAK u8 Em_max_parts_get(s16 em) { (void)em; return 3; }
+
+/* pad_timer_calc (0x1513A0) / pad_timer_calc_sub (0x151350): ticks counter
+ * at PLW+0x5B8, cleared while ~sw.now & for_pad_timer_tbl[0] is non-zero,
+ * else counted up to 0xFFFF. */
+extern u16 for_pad_timer_tbl[];
+void pad_timer_calc(void *pl)
+{
+    u16 *t = (u16 *)((u8 *)pl + 0x5B8);
+    u16 now = *(u16 *)((u8 *)pl + 0x364);
+    if ((u16)~now & for_pad_timer_tbl[0])
+        *t = 0;
+    else if (*t < 0xFFFF)
+        (*t)++;
+}
+
+/* Online_ck (0x162D60): system_w+0x10 != 0. The port runs offline. */
+int Online_ck(void) { return 0; }
+/* Cockpit_menu_chk (0x1279F0): 1 while a cockpit menu has the pad. No menus yet. */
+WEAK int Cockpit_menu_chk(void) { return 0; }
+/* player state changes called from pl_normal2.c (agent F's area, not ported) */
+WEAK void pl_st_set(void *pl, int st) { (void)pl; (void)st; STUB_ONCE("pl_st_set") }
+WEAK void to_normal(void *pl, int a, int b) { (void)pl; (void)a; (void)b; STUB_ONCE("to_normal") }
+WEAK void to_normal_fly(void *pl, int a, int b) { (void)pl; (void)a; (void)b; STUB_ONCE("to_normal_fly") }
+WEAK void action_timer_calc(void *pl, int a) { (void)pl; (void)a; }

@@ -9,7 +9,7 @@ cd "$(dirname "$0")/.."
 mkdir -p build/pc
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
-    src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c"
+    src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c"
 RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_game.c src/pc/rt/rt_fl.c src/pc/rt/rt_overlay.c src/pc/rt/rt_main.c src/pc/rt/rt_eft.c"   # (listing only)
 # Decompiled game C run natively. set14_nm.c is the whole set14 file
 # (set14_trans is a near-match on the PS2 side, believed equivalent).
@@ -22,7 +22,7 @@ GAME="src/game/set/set14_nm.c src/game/set/set00.c src/main/stage/stage_set.c \
       src/game/set/set09.c src/game/set/set17.c \
       src/game/set/set03.c src/game/set/set04.c src/game/set/set05_nm.c src/game/set/set07.c src/game/set/set08.c src/game/set/set10.c src/game/set/set11.c src/game/set/set15.c src/game/set/set16.c src/game/set/set18.c src/game/set/set19.c src/game/set/set20_nm.c src/game/set/set22.c \
       src/main/set/set12.c src/main/pl/pl_master_ck.c src/main/stage/trans_stage_nm.c \
-      src/main/frame/f_frame_nm.c"
+      src/main/frame/f_frame_nm.c src/main/pad/pad_get.c src/main/pl/pl_normal2.c"
 # Effects and shells (game.bin eft*/shell*, main eft*). Split files: the
 # whole-file _nm.c where it holds every function, else the matching pieces
 # plus the _nm.c near-matches. Files in WEAK are near-match copies that
@@ -81,7 +81,7 @@ python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 gcc $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player; do
     # shellcheck disable=SC2086
     gcc $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"

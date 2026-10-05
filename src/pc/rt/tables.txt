@@ -359,3 +359,9 @@ em_mot_han_ofs work
 pl_mot_han_ofs work
 com_mot_han_ofs work
 lit_277_003584C0
+Plsw_buff work
+Plan_buff work
+Plan_ang work
+Plan_pow work
+swset_w work
+for_pad_timer_tbl

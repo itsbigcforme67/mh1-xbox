@@ -395,5 +395,17 @@ void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])
         }
     }
     free(tmp);
+    if (s->root_lock) {
+        int k = 0;
+        for (i = 0; i < s->skel.nbone; i++) {
+            if (s->skel.bone[i].group != 0)
+                continue;
+            if (k++ == 1) {
+                s->chan[i][6] = s->skel.bone[i].t[0];
+                s->chan[i][8] = s->skel.bone[i].t[2];
+                break;
+            }
+        }
+    }
     bone_world(&s->skel, (const float (*)[9])s->chan, s->world);
 }

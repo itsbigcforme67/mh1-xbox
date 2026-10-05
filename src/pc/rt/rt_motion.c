@@ -242,6 +242,7 @@ void rt_motion_pose(fl_skel *s, const void *work)
 
 /* ------------------------------------------------------------ players */
 extern PLW player_work[];
+void rt_motion_scan(void);
 static int plcom_loaded;
 
 void rt_player_motion_start(int no, const uint8_t *plcom_tbl, int legs_id, int upper_id)
@@ -251,6 +252,8 @@ void rt_player_motion_start(int no, const uint8_t *plcom_tbl, int legs_id, int u
     if (!plcom_loaded) {
         rt_motion_load_plcom(plcom_tbl);
         plcom_loaded = 1;
+        if (getenv("RT_MOTION_SCAN"))
+            rt_motion_scan();
     }
     if (!w->mdl)
         rt_motion_attach(pl);
@@ -283,4 +286,29 @@ void rt_player_get(int no, float pos[3], int *ang_y)
     pos[1] = pl->pos[1];
     pos[2] = pl->pos[2];
     *ang_y = pl->ang[1];
+}
+
+/* RT_MOTION_SCAN=1: list the common motions (bank, slot, frames, loop and
+ * how far bone 1 moves over the motion: root motion) to find walk/run. */
+void rt_motion_scan(void)
+{
+    extern s32 com_mot_han_ofs[];
+    int bank, slot;
+    for (bank = 0; bank < 10; bank += 2) {
+        int first = com_mot_han_ofs[bank], last = bank < 9 ? com_mot_han_ofs[bank + 1] : first;
+        for (slot = 0; slot < last - first && slot < 100; slot++) {
+            u32 h = motion_set_handle_tbl[first + slot];
+            const aan_motion *m = mset_get(h);
+            float c0[9] = { 0 }, c1[9] = { 0 };
+            if (!m)
+                continue;
+            if (m->nbone > 1) {
+                fmt_aan_eval(m, 1, 0, c0);
+                fmt_aan_eval(m, 1, m->end, c1);
+            }
+            printf("plcom id %d: end %.0f loop %d(%.0f) bones %d d=(%.1f %.1f %.1f)\n",
+                   bank * 100 + slot, m->end, m->loop, m->loop_start, m->nbone,
+                   c1[6] - c0[6], c1[7] - c0[7], c1[8] - c0[8]);
+        }
+    }
 }

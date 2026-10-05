@@ -87,6 +87,18 @@ int rt_player_motion_tick(int no);
 void rt_player_pose(int no, void *fl_skel_ptr);
 void rt_player_get(int no, float pos[3], int *ang_y);
 
+/* Host pad state for the next ticks (fl pad bits + sticks, see
+ * src/pc/pad/pad.h); rt_pad_tick (called by rt_player_tick) runs the PS2
+ * pad driver step and the game's swset(). */
+void rt_pad_set(uint16_t fl_bits, int lx, int ly, int rx, int ry);
+/* One tick of player no with the pad: pl_sw_set (game C), then the host
+ * stand-in for the normal state (rt_player.c: turn/run/idle with the
+ * game's frame_init/frame_move) and ground following. */
+void rt_player_tick(int no);
+void rt_player_set_ang(int no, int ang_y);
+/* What the game's sw_set_sub gave player no: buttons, left stick. */
+void rt_player_sw(int no, int *now, int *ang, int *pow);
+
 /* RT_SPAWN="eft13:N,eft17:N,shell22:N,eft14:N,eft08:N": spawn test effects at pos. */
 void rt_debug_spawn(const float pos[3]);
 
