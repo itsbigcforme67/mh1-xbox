@@ -23,6 +23,7 @@ void set00_set(void);
 void set14_set(void);
 void func_6213F0(void) { set00_set(); }
 void func_6229B0(void) { set14_set(); }
+/* Set13_set (main, set13.c: sun glare) is linked directly. */
 
 /* not ported yet */
 STUB(func_61ED10, "Set03_set", (void))
@@ -42,13 +43,3 @@ STUB(func_626E70, "Set20_set", (int kind))
 STUB(func_627840, "Set22_set", (void))
 STUB(func_633B50, "Shell10_set", (f32 *pos, int a, int stage, int b))
 STUB(func_54B8C0, "Eft14_set2", (f32 *pos, int kind))
-/* main-program code not ported yet */
-STUB(Set13_set, "Set13_set (sun glare)", (int arg))
-
-/* clr_flash (0x15C4B0, f_stage): clears the screen-flash state. */
-s16 flash_flag, flash_timer;
-void clr_flash(void)
-{
-    flash_flag = 0;
-    flash_timer = 0;
-}

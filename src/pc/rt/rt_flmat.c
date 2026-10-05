@@ -122,3 +122,53 @@ void rt_set_camera(const float cam_world[16])
     flmatInit(&rview_matY);
     flmatSetXYZ33(&rview_matY, 0.0f, 2.0f * (3.1415927f * (360.0f * (f32)ang / 65536.0f / 360.0f)), 0.0f);
 }
+
+/* ------------------------------------------------------------ vectors, maths */
+/* fl vector helpers (flvec*, VU0 on the PS2) and the fl maths wrappers. */
+void flvecCopy(f32 *dst, f32 *src)
+{
+    dst[0] = src[0];
+    dst[1] = src[1];
+    dst[2] = src[2];
+}
+
+f32 flvecInnerProduct(f32 *a, f32 *b)
+{
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+void flvecOuterProduct(f32 *out, f32 *a, f32 *b)
+{
+    f32 x = a[1] * b[2] - a[2] * b[1];
+    f32 y = a[2] * b[0] - a[0] * b[2];
+    f32 z = a[0] * b[1] - a[1] * b[0];
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+}
+
+f32 flvecCalcLength(f32 *v)
+{
+    return sqrtf(flvecInnerProduct(v, v));
+}
+
+f32 flvecCalcDistance(f32 *a, f32 *b)
+{
+    f32 d[3] = { a[0] - b[0], a[1] - b[1], a[2] - b[2] };
+    return flvecCalcLength(d);
+}
+
+void flvecNormalize(f32 *v)
+{
+    f32 l = flvecCalcLength(v);
+    if (l > 0.0f) {
+        v[0] /= l;
+        v[1] /= l;
+        v[2] /= l;
+    }
+}
+
+f32 flSqrt(f32 x) { return sqrtf(x); }
+f32 flAbs(f32 x) { return fabsf(x); }
+f32 flArcSin(f32 x) { return asinf(x < -1.0f ? -1.0f : x > 1.0f ? 1.0f : x); }
+f32 flArcCos(f32 x) { return acosf(x < -1.0f ? -1.0f : x > 1.0f ? 1.0f : x); }

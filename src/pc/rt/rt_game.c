@@ -158,13 +158,13 @@ void se_req2(int a, int b, int c, f32 *pos, int d, int e)
 
 /* ------------------------------------------------------------ prims */
 /* get_prim hands out slots, add_prim queues one on an ordering table for
- * this tick; rt_game_draw walks ot0..ot3 in order. Priority order inside a
+ * this tick; rt_game_draw walks ot0..ot4 in order. Priority order inside a
  * table (low first) is a guess. */
 #define PRIM_MAX 256
-#define OT_N 4
+#define OT_N 5
 #define QUEUE_MAX 512
-u8 ot0[0x20], ot1[0x20], ot2[0x20], ot3[0x20];
-static u8 *const ots[OT_N] = { ot0, ot1, ot2, ot3 };
+u8 ot0[0x20], ot1[0x20], ot2[0x20], ot3[0x20], ot4[0x20];
+static u8 *const ots[OT_N] = { ot0, ot1, ot2, ot3, ot4 };   /* ot4: set13 glare, drawn last (guess) */
 static union { PRIM p; u8 raw[0x40]; } prim_pool[PRIM_MAX];
 static unsigned char prim_used[PRIM_MAX];
 static struct { PRIM *p; int pri; } queue[OT_N][QUEUE_MAX];
@@ -180,6 +180,12 @@ int get_prim(void)
             return i;
         }
     return -1;
+}
+
+void release_prim(s16 no)
+{
+    if (no >= 0 && no < PRIM_MAX)
+        prim_used[no] = 0;
 }
 
 PRIM *get_prim_ptr(s16 no)

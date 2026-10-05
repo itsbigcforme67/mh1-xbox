@@ -57,6 +57,8 @@ void flSetRenderState(int state, u32 value)
         gfx_set_render_state(GFX_RS_FADE_COLOR, a << 24 | r << 16 | g << 8 | b);
         break;
     }
+    case 0x6D:   /* alpha test method (GS TEST 0x7000 bits): 3 normal, 7 set13 glare [not traced] */
+        break;
     default:
         if (state >= 0 && state < 0x100 && !warned[state]) {
             warned[state] = 1;

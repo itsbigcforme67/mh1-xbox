@@ -10,12 +10,15 @@ mkdir -p build/pc
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
     src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c"
-RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_game.c src/pc/rt/rt_fl.c src/pc/rt/rt_overlay.c"   # (listing only)
+RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_game.c src/pc/rt/rt_fl.c src/pc/rt/rt_overlay.c src/pc/rt/rt_main.c"   # (listing only)
 # Decompiled game C run natively. set14_nm.c is the whole set14 file
 # (set14_trans is a near-match on the PS2 side, believed equivalent).
 # stage_set.c (main) spawns each stage's set objects; its calls into the
-# overlay go through src/pc/rt/rt_overlay.c.
-GAME="src/game/set/set14_nm.c src/game/set/set00.c src/main/stage/stage_set.c"
+# overlay go through src/pc/rt/rt_overlay.c. set13_nm.c holds set13_m /
+# set13_trans (near-matches on the PS2 side, believed equivalent).
+GAME="src/game/set/set14_nm.c src/game/set/set00.c src/main/stage/stage_set.c \
+      src/main/set/set13.c src/main/set/set13b.c src/main/set/set13c.c src/main/set/set13_nm.c \
+      src/main/hit/hit2.c src/main/hit/hit2c.c"
 
 SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
 CFLAGS="-m32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
@@ -40,7 +43,7 @@ for f in $GAME; do
     OBJS="$OBJS $o"
 done
 # runtime files that include the game headers
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main; do
     # shellcheck disable=SC2086
     gcc $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"

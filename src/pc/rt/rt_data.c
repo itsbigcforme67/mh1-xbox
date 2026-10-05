@@ -82,10 +82,43 @@ static const struct {
 #undef T
 };
 
+/* Tables of pointers (one per stage) into the game's data. Each PS2 pointer
+ * is translated to the same bytes in the loaded ELF/overlay image; the
+ * game C only reads through them. */
+f32 *sun_pos_tbl[88];          /* set13: sun position per stage */
+s16 *stg_eft_mdl_no[88];       /* set13: set-model clay numbers per stage */
+f32 *stage_sphr_tbl[88];       /* set13: occluding spheres r,x,y,z ... r = -1 */
+
+static const struct {
+    const char *name;
+    uint32_t va;
+    void **dst;
+    int n;
+} ptables[] = {
+#define P(sym, va) { #sym, va, (void **)sym, (int)(sizeof sym / sizeof sym[0]) }
+    P(sun_pos_tbl, 0x2F7160),
+    P(stg_eft_mdl_no, 0x2F6C00),
+    P(stage_sphr_tbl, 0x2F1CF0),
+#undef P
+};
+
 int rt_import_data(void)
 {
     size_t i;
-    int missing = 0;
+    int k, missing = 0;
+    for (i = 0; i < sizeof ptables / sizeof ptables[0]; i++) {
+        const uint8_t *p = rt_addr(ptables[i].va, 4 * (size_t)ptables[i].n);
+        if (!p) {
+            fprintf(stderr, "rt: pointer table %s (0x%X) not found\n", ptables[i].name, (unsigned)ptables[i].va);
+            missing++;
+            continue;
+        }
+        for (k = 0; k < ptables[i].n; k++) {
+            uint32_t va;
+            memcpy(&va, p + 4 * k, 4);
+            ptables[i].dst[k] = va ? (void *)rt_addr(va, 4) : NULL;
+        }
+    }
     for (i = 0; i < sizeof tables / sizeof tables[0]; i++) {
         const uint8_t *p = rt_addr(tables[i].va, tables[i].size);
         if (p) {
