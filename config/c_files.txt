@@ -90,3 +90,7 @@ game:rodata 0x00685840 0x00685858 eft/eft22
 game 0x00557480 0x005587F8 eft/eft23
 game 0x00558960 0x005589EC eft/eft23b
 game:rodata 0x00685860 0x00685884 eft/eft23
+game 0x0054BB60 0x0054BBE4 eft/eft15
+game 0x0054CAC0 0x0054CB58 eft/eft15b
+game 0x0054D320 0x0054D654 eft/eft15c
+game:rodata 0x00685700 0x00685724 eft/eft15c

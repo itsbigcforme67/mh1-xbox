@@ -60,6 +60,23 @@ extracted to disc/mhg/ (gitignored). MH1 not yet supplied.
   - PLW +0x8E8 holds the bait kind here (0x60/0x62/0x63 make the float drift
     gently), so the "fish_time" name from eft23 is unverified.
 
+- eft15 (sprite bursts, nine types) matches except eft15_i (5 instructions,
+  loop increment order), eft15_m (~270, keyframe-read scheduling) and
+  eft15_t (6, two saved registers swapped). Split into eft15.c / eft15b.c /
+  eft15c.c; the whole file is in eft15_nm.c. Findings, each checked with
+  tools/check.py:
+  - eft15_m's joint switch has no default: the original leaves `joint`
+    unset there and the register still holds the 4 from an earlier
+    compare. Writing `default: joint = 4;` adds code.
+  - `if ((ew = pull_eft_work(1)) != 0)` tests v0 directly and matched
+    Eft15_set/Eft15_set2; a separate assignment tests the saved copy.
+  - `&mw->clay[p->lag] + 27` (add, then add 27*0x8C) and
+    `&mw->clay[p->lag + 27]` compile differently.
+  - A plain int passed to make_mat_srt's u16 argument gives the original's
+    `andi 0xFFFF` at the call; a u16 local does not.
+  - Moving one declaration (the loop counter) fixed the s0/s1/s2 order in
+    eft15_m (found by the permuter).
+
 ### Next
 
 1. Owner supplies Japanese MH1. Survey it the same way. The plan's base
