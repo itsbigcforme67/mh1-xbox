@@ -190,4 +190,10 @@ void Lbc_set_prim();
 extern LBCOMMER lbCommer[8];
 void action_timer_calc();
 extern s16 chat09_chr_tbl_0064E1C0[];
+void Lb_eat_to_bell();
+void Lb_put_hint();
+void adx_se_set();
+void Lb_put_set01();
+int Lb_check_hotel();
+void NPCZoomInCameraCancel();
 #endif
