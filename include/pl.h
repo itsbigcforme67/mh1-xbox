@@ -29,6 +29,14 @@ typedef struct PL_HAND {
     f32 pos[3];         /* 0x70 */
 } PL_HAND;
 
+/* pl_prog_tbl entry: handlers called through PLW.prog (offsets 0 and 0xC seen
+ * in pl_work_clr; the rest is not decoded yet). */
+typedef struct PLPROG {
+    void (*init)(struct PLW *);   /* 0x00 */
+    u8 _pad04[0x8];
+    void (*init2)(struct PLW *);  /* 0x0C */
+} PLPROG;
+
 typedef struct PLW {
     u8    be_flag;       /* 0x000 in use (set05_m) */
     u8    x01;           /* 0x001 (set05_m) */
@@ -39,14 +47,15 @@ typedef struct PLW {
     u16   id;            /* 0x00C */
     s16   ang_y;         /* 0x00E copy of ang[1] (Pl_damage_sub) */
     u8    x10;           /* 0x010 copied to shells (shell03_set) */
-    u8 _pad011;
+    u8    work011;           /* 0x011 */
     u8    flag12;        /* 0x012 */
     u8 _pad013[0x1];
     s8    flag14;        /* 0x014 */
     s8    flag15;        /* 0x015 */
-    u8 _pad016[0x4A];
-    u8    rot[0x18];     /* 0x060 rotation matrix (start; extent unknown), used
-                            with flvecApplyMat33 (shell00_i) */
+    u8 _pad016[0x8];
+    s8    work01E;           /* 0x01E */
+    u8 _pad01F[0x41];
+    u8    rot[0x18];     /* 0x060 rotation matrix (start; extent unknown); flvecApplyMat33 (shell00_i) */
     u8 _pad078[0xA0 - 0x78];
     s32   ang[3];        /* 0x0A0 rotation, 0x10000 = 360 degrees (set05_m, as EMW) */
     f32   pos[3];        /* 0x0AC world position (set16_m, shell00_set) */
@@ -75,9 +84,16 @@ typedef struct PLW {
     s8    work2F8;       /* 0x2F8 */
     u8 _pad2F9[0x3];
     s16   work2FC;       /* 0x2FC */
-    u8 _pad2FE[0x302 - 0x2FE];
+    u8 _pad2FE[0x2];
+    s16   work300;           /* 0x300 */
     s16   vital;         /* 0x302 hit points (Pl_damage_sub) */
-    u8 _pad304[0x360 - 0x304];
+    u8 _pad304[0x48];
+    u8    work34C;           /* 0x34C */
+    u8 _pad34D[0x3];
+    s8    work350;           /* 0x350 */
+    s8    work351;           /* 0x351 */
+    s8    work352[6];        /* 0x352 parts/armor ids? */
+    u8 _pad358[0x8];
     u16   wpn_kind;      /* 0x360 gun type, row of D_3367B2 (shell06) */
     u16   wpn_ammo;      /* 0x362 loaded ammo; low nibble = Gun_Grow_Up_DATA row (shell06) */
     PLSW  sw;            /* 0x364 */
@@ -96,7 +112,7 @@ typedef struct PLW {
     u8 _pad3A0[0x10];
     void *x3B0;          /* 0x3B0 player marked by eft26 (eft26_m); type unknown */
     s32   work3B4[6];    /* 0x3B4 */
-    u8 _pad3CC[0x4];
+    struct PLPROG *prog; /* 0x3CC table of state handlers (pl_work_clr); see PLPROG */
     s8    work3D0;       /* 0x3D0 */
     s8    work3D1;       /* 0x3D1 */
     u8 _pad3D2[0x3EC - 0x3D2];
@@ -121,26 +137,38 @@ typedef struct PLW {
     s16   work4E0;       /* 0x4E0 */
     u8 _pad4E2[0x1];
     s8    work4E3;       /* 0x4E3 */
-    u8 _pad4E4[0x87];
+    u8 _pad4E4[0x80];
+    void *work564;           /* 0x564 */
+    s16   work568;           /* 0x568 */
+    u8 _pad56A;
     s8    work56B;       /* 0x56B */
     u8    ammo_type;     /* 0x56C shot type fired (shell06_set) */
-    u8 _pad56D[0x5AC - 0x56D];
+    u8 _pad56D[0x3];
+    s16   work570;           /* 0x570 */
+    u8 _pad572[0x3A];
     f32   x5AC;          /* 0x5AC ground height (eft21_i, as EMW) */
-    u8 _pad5B0[0x604 - 0x5B0];
+    u8 _pad5B0[0x4C];
+    u32   work5FC;           /* 0x5FC */
+    u8 _pad600[0x4];
     u8    flag604;       /* 0x604 */
     u8 _pad605[0x0B];
     s16   x610;          /* 0x610 shell00 hits count while set (cont_add) */
     u8 _pad612[0x3];
     u8    work615;       /* 0x615 non-zero: weapon in the other hand (eft05) */
-    u8 _pad616[0x10A];
+    u8    work616;           /* 0x616 */
+    u8 _pad617[0x109];
     s8    work720[4];    /* 0x720 */
     s16   work724[4];    /* 0x724 */
-    s16   work72C[4];    /* 0x72C */
+    u16   work72C[4];    /* 0x72C (retyped from s16: blend_set) */
     u8 _pad734[0x2];
     u8    stg;           /* 0x736 */
     u8 _pad737[0x1];
     u8    x738;          /* 0x738 cleared on death (Pl_die_set) */
-    u8 _pad739[0x748 - 0x739];
+    u8 _pad739;
+    s16   work73A;           /* 0x73A */
+    f32   work73C;           /* 0x73C */
+    f32   work740;           /* 0x740 */
+    f32   work744;           /* 0x744 */
     s16   stamina;       /* 0x748 guarding needs 75 or more (pl_guard_ck); a guess */
     u8 _pad74A[0x766 - 0x74A];
     s16   dm_vital;      /* 0x766 damage to take (Pl_damage_sub) */
@@ -168,9 +196,13 @@ typedef struct PLW {
     s16   work882;       /* 0x882 */
     u8 _pad884[0x8];
     u8    work88C;       /* 0x88C */
-    u8 _pad88D[0x35];
+    u8 _pad88D[0x32];
+    u8    work8BF;           /* 0x8BF */
+    u8 _pad8C0[0x2];
     u8    work8C2;       /* 0x8C2 */
-    u8 _pad8C3[0x11];
+    u8 _pad8C3[0x6];
+    s8    work8C9;           /* 0x8C9 */
+    u8 _pad8CA[0xA];
     char  name[0x14];    /* 0x8D4 player name (set01_i) */
     u16   fish_time;     /* 0x8E8 time to land the hooked fish (eft23) */
     u16   x8EA;          /* 0x8EA non-zero: bait still on (eft23) */

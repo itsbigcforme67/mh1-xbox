@@ -34,7 +34,8 @@ typedef struct GAME_W {
     u8 info_now;        /* 0x1DF set01 message being shown, 0xFF = none */
     u8 _pad1E0[0x1E6 - 0x1E0];
     u8 gate_open;       /* 0x1E6 set20 gate state, set from the quest */
-    u8 _pad1E7[0x210 - 0x1E7];
+    u8 _pad1E7[0x208 - 0x1E7];
+    u8 pl_ent[8];       /* 0x208 per player: 0xFF = not joined? (player_init0, pl_work_clr); guess */
     u8 shl10_num;       /* 0x210 live shell10s owned by the master player */
     u8 meat_num;        /* 0x211 meat on the spit owned by the master player (eft12) */
     u8 trap_num;        /* 0x212 traps set by the master player (shell12) */
