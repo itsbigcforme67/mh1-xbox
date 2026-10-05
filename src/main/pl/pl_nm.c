@@ -1475,3 +1475,86 @@ void pl_egg05(PLW *pl, s32 arg1) {
         break;
     }
 }
+
+/* near-match (not built): pl_turn_sub - structure and instructions match, 44 lines differ by register naming (a/b/t/d/v locals land in
+   a2/t0/v1/a0 differently); declaration-order search (40 random permutations) did not fix it. */
+void pl_turn_sub(PLW *pl) {
+    u8 k;
+    s32 t;
+    u16 v;
+    u16 c;
+    u32 d;
+    s32 b;
+    u16 a1;
+    s32 a;
+
+    if (pl->x738 == 0) {
+        if ((pl->flag12 != 0) && (pl->flag14 == 0)) {
+            k = pl->flag15;
+            if ((u32)(k - 1) > 1) {
+                if (k == 0xC) {
+                    goto b71;
+                }
+                goto other;
+            }
+b71:
+            t = 0x71C;
+        } else {
+other:
+            if ((act_ck(pl, 0, 1) != 0) || (act_ck(pl, 0, 0x24) != 0)) {
+                t = 0x71C;
+            } else if (act_ck(pl, 0, 0x1F) != 0) {
+                t = 0x5B0;
+            } else if (act_ck(pl, 0, 0x3F) != 0) {
+                t = 0;
+            } else {
+                t = 0xFA4;
+            }
+        }
+        a = pl->ang[1];
+        b = *(u16 *)&pl->ang_y;
+        c = pl->char0;
+        d = (b - (a & 0xFFFF)) & 0xFFFF;
+        switch (c) {
+        case 3:
+            a1 = 0x80;
+            break;
+        case 4:
+            a1 = 0xA0;
+            break;
+        default:
+            a1 = 0;
+            break;
+        }
+        if ((u32)((d + t) & 0xFFFF) < (u32)(t * 2)) {
+            pl->ang[1] = b;
+            pl->work2F8 = 0;
+            v = pl->work750;
+            if (v + 0x300 < 0x601) {
+                pl->work750 = 0;
+            } else {
+                if (v < 0x8000) {
+                    pl->work750 = v - 0x300;
+                } else {
+                    pl->work750 = v + 0x300;
+                }
+            }
+        } else {
+            if (d < 0x8000) {
+                pl->ang[1] = (a + t) & 0xFFFF;
+                pl->work750 = pl->work750 - a1;
+            } else {
+                pl->ang[1] = (a - t) & 0xFFFF;
+                pl->work750 = pl->work750 + a1;
+            }
+        }
+        v = pl->work750;
+        if ((v < 0xF601) && (v >= 0xA00)) {
+            if (v < 0x8000) {
+                pl->work750 = 0xA00;
+            } else {
+                pl->work750 = 0xF600;
+            }
+        }
+    }
+}

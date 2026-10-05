@@ -281,3 +281,5 @@ main:rodata 0x0035AE70 0x0035AE9C pl/pl45
 main 0x0014B3F0 0x0014C1E0 pl/pl46
 main 0x0014C1E0 0x0014C3E0 pl/pl47
 main:rodata 0x0035AEA0 0x0035AEE4 pl/pl47
+main 0x0014C3E0 0x0014C4F4 pl/pl48
+main:rodata 0x0035AEF0 0x0035AF0C pl/pl48

@@ -22,3 +22,10 @@ void PlComebackCameraRequest(void);
 
 
 
+
+void pl_sw_set(void);
+void hit_timer_calc_shl(void);
+void pl_move_sub(PLW *);
+
+
+

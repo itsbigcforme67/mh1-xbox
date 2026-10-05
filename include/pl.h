@@ -231,7 +231,7 @@ typedef struct PLW {
     s16   stamina;       /* 0x748 guarding needs 75 or more (pl_guard_ck); a guess */
     s16   work74A;           /* 0x74A */
     s32   work74C;           /* 0x74C */
-    s16   work750;           /* 0x750 */
+    u16   work750;           /* 0x750 */
     u8 _pad752[0x760 - 0x752];
     s16   work760;           /* 0x760 */
     u8 _pad762[0x763 - 0x762];
@@ -274,8 +274,8 @@ typedef struct PLW {
     f32   work808;           /* 0x808 */
     u8 _pad80C[0x818 - 0x80C];
     s16   work818;           /* 0x818 */
-    s16   work81A;           /* 0x81A */
-    s8    work81C;           /* 0x81C */
+    u16   work81A;           /* 0x81A */
+    u8    work81C;           /* 0x81C */
     u8 _pad81D[0x81E - 0x81D];
     u8    work81E;           /* 0x81E */
     u8    work81F;           /* 0x81F */

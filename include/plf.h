@@ -238,4 +238,12 @@ void pl_egg03(PLW *, s32);
 void pl_egg05(PLW *, s32);
 typedef struct { s16 a; s16 b; } PL_CHAT09_ENT;
 extern PL_CHAT09_ENT chat09_chr_tbl_002F17C0[4];
+void pl_normal(PLW *);
+void pl_attack(PLW *);
+void pl_damage(PLW *);
+void pl_die(PLW *);
+void pl_demo(PLW *);
+void pl_egg(PLW *);
+void pl_chat(PLW *);
+void pl_turn_sub(PLW *);
 #endif
