@@ -550,3 +550,5 @@ main 0x0014F9B0 0x0014FB34 pl/pl82
 main 0x00150D30 0x00150EB4 pl/pl83
 main 0x00155000 0x00155138 set/setwork
 main 0x00155240 0x001554D8 set/setwork2
+main 0x00158F20 0x00159378 pl/shell_work
+main 0x001593C0 0x00159408 pl/shell_work2

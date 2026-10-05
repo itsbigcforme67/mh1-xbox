@@ -67,11 +67,13 @@ typedef struct SHLW {
     u8 _padBA[2];
     struct PRIM *prim;  /* 0xBC */
     s16 prim_no;        /* 0xC0 */
-    u8 _padC2[0xC8 - 0xC2];
+    u8 _padC2[0xC4 - 0xC2];
+    s32 xC4;            /* 0xC4 cleared by pull_shell_work */
     u16 xC8;            /* 0xC8 */
     u8 stg;             /* 0xCA */
     u8 _padCB;
     u8 xCC;             /* 0xCC shell05: passed to set4 */
+    u8 _padCD[0xD4 - 0xCD];
 } SHLW;
 
 SHLW *pull_shell_work(int);
