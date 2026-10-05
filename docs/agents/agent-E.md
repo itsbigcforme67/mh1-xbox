@@ -89,14 +89,15 @@ Lessons:
   the store BEFORE the call (reward_mv).
 - An empty `case 2: break;` forces the extra compare in a switch whose original has it (disp_reward).
 
-## f_quest (0x226C30-0x22C66C): all 83 functions written, ~50 built
+## f_quest (0x226C30-0x22C66C): all 83 functions written, 52 built
 Source of truth is src/main/quest/f_quest_nm.c (every function, in ADDRESS order: split_runs needs that; all
 non-function lines, typedefs and prototypes, are at the top). The matching runs are extracted into
 f_quest.c, f_questb.c ... f_questq.c and registered in config/c_files.txt. Re-extract after any change with the
-helper that lists the OK functions of the nm file and rewrites those files + config lines (it lives in the
-session scratchpad; the recipe is: tools/check.py src/main/quest/f_quest_nm.c, take every function marked OK as
-a run of consecutive addresses, `python3 tools/split_runs.py f_quest_nm.c src/main/quest/f_quest 'f:A-B' ...`,
-END of each run = last function start + size from check.py). `tools/rebuild.sh` printed OK for all five modules.
+new helper tools/genruns.py (see its header: reorders the nm file into address order, writes every run of
+consecutive OK functions with split_runs and prints the config lines; the quest config lines are f_quest[f-r]). It strips `static`
+from the generated files because the nm file needs `static` on leaf helpers (see lessons) but the linked files must export them.
+`tools/rebuild.sh` printed OK for all five modules after the last change. Other helpers added: tools/permdecl.py (brute-force /
+hill-climb the order of a function's local declarations, with a mini file that also contains static helpers), tools/symdump.py.
 Types in include/quest.h: QUEST_W, QEM (mission enemy entry, 0x3C bytes), QCMD (condition-program command, 8 bytes),
 STIEM (pick-up point, 0x1C bytes, StiEM_data[20]), MISSION.
 Near-matches (nm only), distance in instructions of the whole function:
@@ -111,6 +112,12 @@ Near-matches (nm only), distance in instructions of the whole function:
   str_gattai (varargs: the compiler knows `va_start` but I could not get the original's "(8-n)*8" prologue),
   Em_hagi_point_cnt_ck 20/50, station_em_set 12/85, quest_enemy_ck_sub/_sub2 (the original keeps a `beq 0x63; b` pair).
 New lessons (function that shows it):
+- Loops that scan the same table twice use two separate pairs of locals in the original (station_em_set: i,g for the first loop and
+  j,h for the second); declare them all at function level and let tools/permdecl.py find the order (it matched station_em_set and
+  Ext_pick_point_set, whose only difference was the order of `i` and `s = StiEM_data`).
+- `static` on a leaf callee defined earlier in the same file makes MWCC keep the caller's values in t-registers across the call
+  (stolen_item_stack: 145/145 -> 7/138 diffs; stage_spr_disp). A K&R `static s16 f(item) u16 item;` was needed there, a prototype-style
+  definition masked the argument at the call site.
 - check.py "1/N differ" is NOT always a relocation: quest_failed_ptr_set was a real `addiu a3,8` vs 16 (s16* stride) and
   quest_item_ck a real lhu/lh. Look at `-v` before registering; the rebuild is the final judge.
 - A function that is K&R-defined stays unprototyped in the split files, but one with a prototype-style definition
