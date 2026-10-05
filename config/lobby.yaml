@@ -1007,8 +1007,6 @@ segments:
       - [0x1279D8, rodata, data/rodata_65B358]
       - [0x127A00, rodata, data/rodata_65B380]
       - [0x127A30, rodata, data/rodata_65B3B0]
-      - [0x12A268, .rodata, lb/lbuio]
-      - [0x12A270, rodata, data/rodata_65DBF0]
       - [0x12A570, .rodata, cnet/cnlbsc]
       - [0x12A590, .rodata, cnet/cnlbsc]
       - [0x12A5B0, rodata, data/rodata_65DF30]

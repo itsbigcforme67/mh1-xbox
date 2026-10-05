@@ -125,7 +125,7 @@ LB_NETW *a;
     a->x28 = Get_sw2(0);
     switch (a->depth) {
     case 0:
-        sprintf(t->s, "%s%s", Get_ServerName(), PlazaInfo[ClassInfo.plaza - 1].name);
+        sprintf(t->s, lit_193_0065DBE8, Get_ServerName(), PlazaInfo[ClassInfo.plaza - 1].name);
         SetSceneTitle(2, 0);
         SetHelpLineMsg(2, 2);
         Lbc_set_prim(Lbs_plaza_trans, plaza_trans_ot0, plaza_trans_ot1);
@@ -463,13 +463,13 @@ u8 *a;
 void Get_PlazaName(dst)
 char *dst;
 {
-    sprintf(dst, "%s%s", Get_ServerName(), PlazaInfo[ClassInfo.plaza - 1].name);
+    sprintf(dst, lit_193_0065DBE8, Get_ServerName(), PlazaInfo[ClassInfo.plaza - 1].name);
 }
 
 void Get_LobbyName(dst)
 char *dst;
 {
-    sprintf(dst, "%s%s", Get_ServerName(), LobbyInfo[ClassInfo.lobby - 1].name);
+    sprintf(dst, lit_193_0065DBE8, Get_ServerName(), LobbyInfo[ClassInfo.lobby - 1].name);
 }
 
 void Lbs_load(void) {

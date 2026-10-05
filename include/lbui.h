@@ -113,6 +113,7 @@ int disp_status();
 extern char *tl_etc[];
 extern u8 my_user_mini_data[];
 extern u8 D_3C73B4[];
+extern char lit_193_0065DBE8[];
 int set_dialog_square();
 int load_pit();
 int load_texlist();

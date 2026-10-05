@@ -5,13 +5,13 @@
 void Get_PlazaName(dst)
 char *dst;
 {
-    sprintf(dst, "%s%s", Get_ServerName(), PlazaInfo[ClassInfo.plaza - 1].name);
+    sprintf(dst, lit_193_0065DBE8, Get_ServerName(), PlazaInfo[ClassInfo.plaza - 1].name);
 }
 
 void Get_LobbyName(dst)
 char *dst;
 {
-    sprintf(dst, "%s%s", Get_ServerName(), LobbyInfo[ClassInfo.lobby - 1].name);
+    sprintf(dst, lit_193_0065DBE8, Get_ServerName(), LobbyInfo[ClassInfo.lobby - 1].name);
 }
 
 void Lbs_load(void) {

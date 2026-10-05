@@ -733,4 +733,3 @@ lobby:rodata 0x0065E008 0x0065E010 cnet/cnlbsm
 lobby:rodata 0x0065DEF0 0x0065DF10 cnet/cnlbsc
 lobby:rodata 0x0065DFE0 0x0065E000 cnet/cnlbsg
 lobby:rodata 0x0065DF10 0x0065DF30 cnet/cnlbsc
-lobby:rodata 0x0065DBE8 0x0065DBF0 lb/lbuio
