@@ -227,8 +227,8 @@ game 0x005E7920 0x005E805C em/em19_init
 game 0x00539AC0 0x00539C90 em/em_master
 game 0x00539D00 0x0053B6D0 em/em_master_b
 game 0x0053B8A0 0x0053BA4C em/em_master_c
-game 0x00559D30 0x00559DB4 em/em_taisei
-game:rodata 0x00685920 0x006859AC em/em_taisei
+game 0x00559260 0x00559DB4 em/em_taisei
+game:rodata 0x00685890 0x006859AC em/em_taisei
 game 0x0055A440 0x0055A8A4 em/em_taisei_b
 main 0x00111B20 0x001131C0 hit/hit
 main:rodata 0x00358230 0x00358250 hit/hit
