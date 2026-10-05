@@ -1243,8 +1243,8 @@ int Ext_pick_point_set(a, pos)
 STIEM *a;
 f32 *pos;
 {
-    int i;
     STIEM *s = StiEM_data;
+    int i;
 
     ext_pick_point_fifo_ck();
     for (i = 0; i < 20; i++, s++) {
