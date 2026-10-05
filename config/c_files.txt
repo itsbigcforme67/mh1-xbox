@@ -737,3 +737,10 @@ main 0x0022EE40 0x0022F1F8 net/cng08
 main 0x0022F240 0x0022F298 net/aqcmd01
 main 0x0022F430 0x0022F64C net/aqcmd02
 main 0x0022F790 0x0022F7A4 net/aqcmd03
+main 0x00162F10 0x00162F7C font/disp101
+main 0x00163050 0x001631A0 font/disp102
+main 0x001637B0 0x00163810 font/disp201
+main 0x0028A110 0x0028A168 mc/netfile2_01
+main 0x0028A3B0 0x0028A3C4 mc/netfile2_02
+main 0x0028B330 0x0028B3A8 mc/netfile2_03
+main 0x0028B470 0x0028B4A8 mc/netfile2_04
