@@ -386,19 +386,15 @@ void em07_to_normal(EMW *em) {
 }
 
 int em07_act_sub(EMW *em, int idx) {
-    if (*(s32 *)(idx * 0x50 + (char *)em + 0x194) == 0) {
-        goto ok;
-    }
-    if (idx != 0xFF) {
-        return 0;
-    }
-ok:
-    if (em->x734 == 3) {
-        em->x839 = 1;
+    if (((s32 (*)[20])&em->x194)[idx][0] == 0 || idx == 0xFF) {
+        if (em->x734 == 3) {
+            em->x839 = 1;
+            return 1;
+        }
+        em_act_set(em, 0, 1);
         return 1;
     }
-    em_act_set(em, 0, 1);
-    return 1;
+    return 0;
 }
 
 static void em_act00_0058FBF0(EMW *em) {

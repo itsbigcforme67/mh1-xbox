@@ -293,3 +293,11 @@ void em08_to_swim(EMW *em) {
     em->x839 = 1;
     em08_act_set(em, 2, 0, 0);
 }
+
+int em08_act_sub(EMW *em, int arg1) {
+    if (((s32 (*)[20])&em->x194)[arg1][0] == 0 || arg1 == 0xFF) {
+        em08_to_normal(em);
+        return 1;
+    }
+    return 0;
+}

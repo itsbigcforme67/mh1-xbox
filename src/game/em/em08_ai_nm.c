@@ -353,15 +353,11 @@ void em08_to_swim(EMW *em) {
 }
 
 int em08_act_sub(EMW *em, int arg1) {
-    if (*(s32 *)(arg1 * 0x50 + (char *)em + 0x194) != 0) {
-        if (arg1 == 0xFF) {
-            goto block_3;
-        }
-        return 0;
+    if (((s32 (*)[20])&em->x194)[arg1][0] == 0 || arg1 == 0xFF) {
+        em08_to_normal(em);
+        return 1;
     }
-block_3:
-    em08_to_normal(em);
-    return 1;
+    return 0;
 }
 
 #define EM08_TURN(em, tgt)                                                \

@@ -433,7 +433,7 @@ game 0x005873B0 0x005873C8 em/em02_aid
 game:rodata 0x00686270 0x006862CC em/em02_ai
 game:rodata 0x006862D0 0x00686400 em/em02_aib
 game:rodata 0x00686400 0x00686488 em/em02_aic
-game 0x0058F4A0 0x0058FB64 em/em07_ai
+game 0x0058F4A0 0x0058FBE4 em/em07_ai
 game 0x0058FBF0 0x00590790 em/em07_aib
 game 0x00590790 0x00592FDC em/em07_aic
 game 0x005934E0 0x005935D8 em/em07_aid
@@ -443,7 +443,7 @@ game:rodata 0x006866F0 0x00686710 em/em07_aib
 game:rodata 0x00686710 0x006867D8 em/em07_aic
 game:rodata 0x00686840 0x00686860 em/em07_aid
 game 0x0059A280 0x0059A2B8 em/em08_ai
-game 0x0059A680 0x0059A74C em/em08_aib
+game 0x0059A680 0x0059A7A4 em/em08_aib
 game 0x0059A7B0 0x0059C6C4 em/em08_aic
 game 0x0059C6D0 0x0059CCDC em/em08_aid
 game 0x0059CCE0 0x0059D714 em/em08_aie

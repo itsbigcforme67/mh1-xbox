@@ -412,3 +412,15 @@ void em07_to_normal(EMW *em) {
         em07_act_set(em, 0, 1, 0);
     }
 }
+
+int em07_act_sub(EMW *em, int idx) {
+    if (((s32 (*)[20])&em->x194)[idx][0] == 0 || idx == 0xFF) {
+        if (em->x734 == 3) {
+            em->x839 = 1;
+            return 1;
+        }
+        em_act_set(em, 0, 1);
+        return 1;
+    }
+    return 0;
+}
