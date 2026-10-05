@@ -1,4 +1,4 @@
-/* em_core_f - game.bin 0x00536530-0x00536BB4: Em_Hate_Ck, pl_status_ret, Em_Kehai_Hate_Add. Matching run of the f_em file
+/* em_core_f - game.bin 0x00536440-0x00536BB4: Em_Hate_Add, Em_Hate_Ck, pl_status_ret, Em_Kehai_Hate_Add. Matching run of the f_em file
  * (whole file in em_core_nm.c). Meanings of fields are guesses. */
 #include "em_sys.h"
 #include "game.h"
@@ -199,6 +199,23 @@ void ikari_flag_set(EMW *em);
 void Em_Damage_Hate_Set(EMW *em);
 
 void Em_Hate_Add(EMW *em, s32 add, s32 max, u8 pl);
+
+void Em_Hate_Add(EMW *em, s32 add, s32 max, u8 pl) {
+    u8 n = pl;
+    PLW *p = &player_work[n];
+    s32 *h;
+
+    if (p->be_flag != 0 && *(u8 *)&p->flag14 != 3) {
+        h = (s32 *)em->x918 + pl;
+        if (*h + add < max) {
+            *h += add;
+        }
+        if (*h >= 9000 && Pl_stg_ck_tw(em, p)) {
+            em->x88F |= 1 << pl;
+            em->x890[n] = em_ninshiki_timer_tbl[em->kind];
+        }
+    }
+}
 
 void Em_Hate_Ck(EMW *em) {
     int i;
