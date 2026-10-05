@@ -1,35 +1,22 @@
-#include "lobby_a.h"
+#include "lobby_b.h"
 extern char s64[];
-extern char sp18[];
-extern char sp18[];
-extern char temp_v1[];
-extern char temp_v1[];
 extern char unksp19[];
 extern char CnetWork[];
 extern char CnetWork[];
 extern char CnetWork[];
-extern char temp_v0[];
-extern char temp_v0[];
 extern char CnetWork[];
 extern char my_user_id[];
 extern char unksp19[];
 extern char my_user_id[];
-extern char temp_a0[];
-extern char temp_a0[];
-extern char temp_a0_2[];
-extern char temp_a0_2[];
 extern char unksp19[];
 extern char unksp19[];
 extern char unksp19[];
-void CallBack_Result_LoginLobbyServer(int arg0) {
-    long long sp18;
+void CallBack_Result_LoginLobbyServer(CNET_RES res) {
     int temp_a0_2;
     int temp_v1;
     int temp_a0;
     int temp_v0;
-
-    sp18 = arg0;
-    if ((s8) sp18 != -1) {
+    if (res.val != -1) {
         temp_v1 = (s8)unksp19;
         switch (temp_v1) {                          /* switch 1 */
         case 4:                                     /* switch 1 */

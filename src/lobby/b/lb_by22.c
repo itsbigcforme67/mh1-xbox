@@ -1,10 +1,12 @@
+/* lb_by22 - agent B promoted near-match 0x005C30C0-0x005C314C: Get_ServerColor (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern char BsLbsInfo[];
 extern char ConnectLbsId[];
 extern char netr_sub01_col[];
+
 s32 Get_ServerColor(void) {
-    int var_s0;
     s32 var_s1;
+    int var_s0;
 
     var_s1 = 0;
     var_s0 = (int)&BsLbsInfo;

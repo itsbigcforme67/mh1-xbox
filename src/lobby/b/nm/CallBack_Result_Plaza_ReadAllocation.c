@@ -1,31 +1,23 @@
-#include "lobby_a.h"
-extern char temp_a1[];
-extern char sp38[];
-extern char temp_a1[];
-extern char temp_a1[];
+#include "lobby_b.h"
 extern char ClassInfo[];
 extern char var_s0[];
 extern char ClassInfo[];
 extern char var_s1[];
-extern char temp_v0[];
 extern char var_s1[];
-extern char temp_v0[];
 extern char var_s0[];
 extern char var_s0[];
 extern char var_s0[];
 extern char var_s1[];
 extern char var_s0[];
 extern char PlazaInfo[];
-void CallBack_Result_Plaza_ReadAllocation(int arg0) {
-    long long sp38;
+void CallBack_Result_Plaza_ReadAllocation(CNET_RES res) {
     int var_s1;
     s16 temp_v0;
     s32 var_s0;
     int temp_a1;
 
     temp_a1 = (int)cw;
-    sp38 = arg0;
-    if ((F(u8, temp_a1, 0x2C31) != 5) && (F(u8, temp_a1, 0x2C45) == 6) && ((s8) sp38 != 2) && ((s8) sp38 == 0)) {
+    if ((F(u8, temp_a1, 0x2C31) != 5) && (F(u8, temp_a1, 0x2C45) == 6) && (res.val != 2) && (res.val == 0)) {
         F(u8, temp_a1, 0x2C45) = 0U;
         F(s8, (u8 *)cw, 0x2C33) = 1;
         F(s8, (u8 *)cw, 0x2C34) = 0;

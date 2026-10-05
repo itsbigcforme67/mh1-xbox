@@ -43,14 +43,16 @@ for l in open('config/lbnet_rodata.txt'):
 import sys
 sys.path.insert(0, 'tools')
 import lbf_jt
-have = set(l.strip() for l in open('config/c_files.txt'))
+have = set(l.strip() for l in open('config/c_files.txt')) | set(out)
+rng = [(int(q[1], 16), int(q[2], 16)) for q in (l.split() for l in list(open('config/c_files.txt')) + out) if len(q) == 4 and q[0] == 'lobby:rodata']
 for l in open('config/c_files.txt'):
     p = l.split()
     if len(p) == 4 and p[0] == 'lobby' and re.match(r'lb/lb(npc|ui|mix|shp|shop2|em)|cnet/cnlbs', p[3]):
         for fn in re.findall(r'^[A-Za-z_][\w \*]*?\b(\w+)\([^;{]*\)(?:\n[^;{\n]*;)*\s*\{', open('src/lobby/' + p[3] + '.c').read(), re.M):
             for a, e in lbf_jt.ranges(fn):
                 ln = 'lobby:rodata 0x%08X 0x%08X %s' % (a, e, p[3])
-                if ln not in have: out.append(ln); have.add(ln); print('jump table', fn, ln)
+                if ln not in have and not any(x < e and a < y for x, y in rng):
+                    out.append(ln); have.add(ln); rng.append((a, e)); print('jump table', fn, ln)
 open('config/c_files.txt', 'a').write('\n'.join(out) + '\n')
 PY
 echo "registered $(grep -c '^lobby 0x.* \(cnet/cnlbs\|lb/lbnpc\|lb/lbui\|lb/lbshop2\|lb/lbmix\|lb/lbshp\|lb/lbem\)' config/c_files.txt) runs"

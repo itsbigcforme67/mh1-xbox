@@ -1,34 +1,20 @@
-#include "lobby_a.h"
-extern char temp_a2[];
-extern char sp30[];
-extern char temp_a2[];
-extern char sp30[];
+#include "lobby_b.h"
 extern char unksp31[];
 extern char unksp31[];
-extern char sp30[];
-extern char temp_a2[];
-extern char temp_v1[];
-extern char temp_v1[];
 extern char unksp31[];
 extern char ClassInfo[];
 extern char var_s0[];
 extern char ClassInfo[];
 extern char var_s1[];
-extern char temp_v0[];
 extern char var_s1[];
-extern char temp_v0[];
 extern char var_s0[];
 extern char var_s0[];
 extern char var_s0[];
 extern char var_s1[];
 extern char var_s0[];
-extern char temp_a3[];
-extern char temp_a3[];
-extern char temp_a3[];
 extern char LobbyInfo[];
-void CallBack_Result_Plaza_ReadLobbyAllocation(int arg0) {
+void CallBack_Result_Plaza_ReadLobbyAllocation(CNET_RES res) {
     int sp3C;
-    long long sp30;
     int var_s1;
     s16 temp_v0;
     s32 var_s0;
@@ -37,19 +23,18 @@ void CallBack_Result_Plaza_ReadLobbyAllocation(int arg0) {
     int temp_v1;
 
     temp_a2 = (int)cw;
-    sp30 = arg0;
     if ((F(u8, temp_a2, 0x2C31) != 5) && (temp_a3 = temp_a2 + 0x2C45, (F(u8, temp_a2, 0x2C45) == 0xB))) {
-        switch ((s8) sp30) {                        /* irregular */
+        switch (res.val) {                        /* irregular */
         case 2:
             if (((s8)unksp31) == 0xB) {
-                cnLBS_Get_AllocationProgressCount(&sp3C, unksp31, (s8) sp30, temp_a3);
+                cnLBS_Get_AllocationProgressCount(&sp3C, unksp31, res.val, temp_a3);
                 return;
             }
-            if ((s8) sp30 == 0) {
+            if (res.val == 0) {
                 F(u8, temp_a2, 0x2C45) = 0U;
                 temp_v1 = (int)cw;
                 F(u8, temp_v1, 0x2C34) = (u8) (F(u8, temp_v1, 0x2C34) + 1);
-                fade_set(1, unksp31, (s8) sp30, temp_a3);
+                fade_set(1, unksp31, res.val, temp_a3);
                 cnLBS_Get_LobbyCount((int)&ClassInfo + 6);
                 var_s0 = 0;
                 if (F(u16, &ClassInfo, 6) > 0) {

@@ -1,21 +1,14 @@
-#include "lobby_a.h"
-extern char temp_a2[];
-extern char sp10[];
-extern char temp_a2[];
-extern char sp10[];
-extern char temp_a2[];
-extern char temp_a2[];
-extern char temp_a2[];
-void CallBack_Result_ReadFileDownload(int arg0) {
+/* lb_by19 - agent B promoted near-match 0x005BB9A0-0x005BBA24: CallBack_Result_ReadFileDownload (first drafted by tools/lbauto.py). */
+#include "lobby_b.h"
+
+void CallBack_Result_ReadFileDownload(CNET_RES res) {
     int sp1C;
     s32 sp18;
-    long long sp10;
     int temp_a2;
 
     temp_a2 = (int)cw;
-    sp10 = arg0;
     if ((F(u8, temp_a2, 0x2C31) != 5) && (F(u8, temp_a2, 0x2C45) == 0xC)) {
-        if ((s8) sp10 == 0) {
+        if (res.val == 0) {
             F(u8, temp_a2, 0x2C35) = (u8) (F(u8, temp_a2, 0x2C35) + 1);
             cnLBS_Get_FileDownloadInfo(&sp18, &sp1C, temp_a2);
             if (sp18 != 0) {

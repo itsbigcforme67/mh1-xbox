@@ -4681,11 +4681,14 @@ int n;
 {
     int v = 0;
     int i;
+    int d;
 
     for (i = 0; i < n; i++) {
         char c = *str;
         if (c >= 0x30 && c < 0x3A) {
-            v = (c - 0x30) + v * 10;
+            d = c - 0x30;
+            v = v * 10;
+            v += d;
         }
         str++;
     }

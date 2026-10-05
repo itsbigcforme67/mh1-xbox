@@ -1,4 +1,4 @@
-/* cnlbs, run 18: write_col_numeric .. write_col_numeric (lobby.bin 0x005AE5C0-0x005AE7E8): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 18: write_col_numeric .. read_col_numeric (lobby.bin 0x005AE5C0-0x005AE840): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
@@ -19,4 +19,24 @@ int n;
         val /= 10;
     }
     return 0;
+}
+
+int read_col_numeric(str, n)
+char *str;
+int n;
+{
+    int v = 0;
+    int i;
+    int d;
+
+    for (i = 0; i < n; i++) {
+        char c = *str;
+        if (c >= 0x30 && c < 0x3A) {
+            d = c - 0x30;
+            v = v * 10;
+            v += d;
+        }
+        str++;
+    }
+    return v;
 }
