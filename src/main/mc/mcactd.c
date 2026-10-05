@@ -1,7 +1,7 @@
 /* Memory card action layer, SLPM_654.95 main 0x27FDF0-0x280EF0.
  * McActXxxSet() arms one of the mc_act_* machines (index stored in MemcardWork.act, run
  * from McActMain every frame through the table mc_act_jmp); the machine advances
- * MemcardWork.step through the low level mc_* calls and finally writes MemcardWork.ret:
+ * MemcardWork.astep through the low level mc_* calls and finally writes MemcardWork.ret:
  * 0 = done, -1 = still busy, -0xFF no card, -0xFE unformatted, -0xFD no file,
  * -0xFC not enough free blocks, -0xFB card full/other, -0x100 I/O error.
  * Field names are guesses (see include/mcw.h). */
@@ -37,7 +37,7 @@ extern void (*mc_act_jmp[])();
 void mc_act_delete(w)
 MCW *w;
 {
-    switch (w->step) {
+    switch (w->astep) {
     case 0:
         switch (mc_check_card(w)) {
         case 0:
@@ -48,17 +48,17 @@ MCW *w;
             break;
         case 1:
         case 2:
-            w->step++;
+            w->astep++;
             break;
         }
         break;
     case 1:
         switch (mc_check_file(w)) {
         case 0:
-            w->step++;
+            w->astep++;
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0xFD;
             break;
         }
@@ -66,11 +66,11 @@ MCW *w;
     case 2:
         switch (mc_delete_dir(w)) {
         case 0:
-            w->step = 0;
+            w->astep = 0;
             w->ret = 0;
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0x100;
             break;
         }
@@ -82,7 +82,7 @@ MCW *w;
 void mc_act_remove(w)
 MCW *w;
 {
-    switch (w->step) {
+    switch (w->astep) {
     case 0:
         switch (mc_delete_dir(w)) {
         case 0:
@@ -102,8 +102,8 @@ int port;
 char *pattern;
 u8 *buf;
 {
+    MemcardWork.astep = 0;
     MemcardWork.step = 0;
-    MemcardWork.x04 = 0;
     MemcardWork.port = port;
     MemcardWork.act = 9;
     MemcardWork.ret = -1;
@@ -114,7 +114,7 @@ u8 *buf;
 void mc_act_list(w)
 MCW *w;
 {
-    switch (w->step) {
+    switch (w->astep) {
     case 0:
         switch (mc_check_card(w)) {
         case 0:
@@ -125,22 +125,22 @@ MCW *w;
             break;
         case 1:
         case 2:
-            w->step++;
+            w->astep++;
             break;
         }
         break;
     case 1:
         switch (mc_get_dir(w)) {
         case 0:
-            w->step = 0;
+            w->astep = 0;
             w->ret = w->cnt;
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0x100;
             break;
         case 2:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0xFD;
             break;
         }

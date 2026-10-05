@@ -1,7 +1,7 @@
 /* Memory card action layer, SLPM_654.95 main 0x27FDF0-0x280EF0.
  * McActXxxSet() arms one of the mc_act_* machines (index stored in MemcardWork.act, run
  * from McActMain every frame through the table mc_act_jmp); the machine advances
- * MemcardWork.step through the low level mc_* calls and finally writes MemcardWork.ret:
+ * MemcardWork.astep through the low level mc_* calls and finally writes MemcardWork.ret:
  * 0 = done, -1 = still busy, -0xFF no card, -0xFE unformatted, -0xFD no file,
  * -0xFC not enough free blocks, -0xFB card full/other, -0x100 I/O error.
  * Field names are guesses (see include/mcw.h). */
@@ -38,8 +38,8 @@ void McActInit(file)
 int file;
 {
     MemcardWork.file = file;
+    MemcardWork.astep = 0;
     MemcardWork.step = 0;
-    MemcardWork.x04 = 0;
     MemcardWork.act = 0;
 }
 
@@ -76,8 +76,8 @@ MCW *w;
 
 void McActCheckSet(void)
 {
+    MemcardWork.astep = 0;
     MemcardWork.step = 0;
-    MemcardWork.x04 = 0;
     MemcardWork.act = 1;
     MemcardWork.ret = -1;
     MemcardWork.port = 0;
@@ -101,8 +101,8 @@ u8 *buf;
 
     MemcardWork.act = 2;
     MemcardWork.ret = -1;
+    MemcardWork.astep = 0;
     MemcardWork.step = 0;
-    MemcardWork.x04 = 0;
     MemcardWork.port = port;
     MemcardWork.buf = buf;
     sprintf(MemcardWork.name, lit_422_00384308, f->dir, f->dir);
@@ -112,7 +112,7 @@ u8 *buf;
 void mc_act_load(w)
 MCW *w;
 {
-    switch (w->step) {
+    switch (w->astep) {
     case 0:
         switch (mc_check_card(w)) {
         case 0:
@@ -123,17 +123,17 @@ MCW *w;
             break;
         case 1:
         case 2:
-            w->step++;
+            w->astep++;
             break;
         }
         break;
     case 1:
         switch (mc_check_file(w)) {
         case 0:
-            w->step++;
+            w->astep++;
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0xFD;
             break;
         }
@@ -141,11 +141,11 @@ MCW *w;
     case 2:
         switch (mc_read_file(w)) {
         case 0:
-            w->step = 0;
+            w->astep = 0;
             w->ret = 0;
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0x100;
             break;
         }
@@ -163,8 +163,8 @@ int flag;
 
     MemcardWork.act = 3;
     MemcardWork.ret = -1;
+    MemcardWork.astep = 0;
     MemcardWork.step = 0;
-    MemcardWork.x04 = 0;
     MemcardWork.port = port;
     MemcardWork.buf = buf;
     MemcardWork.xA0 = flag;
@@ -177,7 +177,7 @@ MCW *w;
 {
     MCFILE *f = mc_file_tbl[w->file];
 
-    switch (w->step) {
+    switch (w->astep) {
     case 0:
         switch (mc_check_card(w)) {
         case 0:
@@ -188,7 +188,7 @@ MCW *w;
             break;
         case 1:
         case 2:
-            w->step++;
+            w->astep++;
             break;
         }
         break;
@@ -196,14 +196,14 @@ MCW *w;
         switch (mc_check_file(w)) {
         case 0:
             if (w->xA0 == 0) {
-                w->step = 0;
+                w->astep = 0;
                 w->ret = 0;
             } else {
-                w->step++;
+                w->astep++;
             }
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             if (w->info[w->port] >= f->blocks) {
                 w->ret = -0xFD;
             } else {
@@ -215,11 +215,11 @@ MCW *w;
     case 2:
         switch (mc_read_file(w)) {
         case 0:
-            w->step = 0;
+            w->astep = 0;
             w->ret = 0;
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             if (w->res == -2) {
                 w->ret = -0xFE;
             } else if (w->res == -3) {
@@ -244,8 +244,8 @@ u8 *buf;
 
     MemcardWork.act = 4;
     MemcardWork.ret = -1;
+    MemcardWork.astep = 0;
     MemcardWork.step = 0;
-    MemcardWork.x04 = 0;
     MemcardWork.slot = 0;
     MemcardWork.port = port;
     MemcardWork.buf = buf;
@@ -260,7 +260,7 @@ MCW *w;
     MCFILE *f = mc_file_tbl[w->file];
     MCF *e;
 
-    switch (w->step) {
+    switch (w->astep) {
     case 0:
         switch (mc_check_card(w)) {
         case 0:
@@ -271,7 +271,7 @@ MCW *w;
             break;
         case 1:
         case 2:
-            w->step++;
+            w->astep++;
             mc_icon_sys_set(w);
             break;
         }
@@ -279,11 +279,11 @@ MCW *w;
     case 1:
         switch (mc_check_file(w)) {
         case 0:
-            w->step = 0xD;
+            w->astep = 0xD;
             w->xA0 = 0;
             break;
         case 1:
-            w->step++;
+            w->astep++;
             w->xA0 = 1;
             sprintf(w->name, lit_423_00384310, f->dir);
             break;
@@ -292,10 +292,10 @@ MCW *w;
     case 2:
         switch (mc_mkdir(w)) {
         case 0:
-            w->step++;
+            w->astep++;
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0x100;
             break;
         }
@@ -303,10 +303,10 @@ MCW *w;
     case 3:
         switch (mc_attr_file(w)) {
         case 0:
-            w->step = 0xA;
+            w->astep = 0xA;
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0x100;
             break;
         }
@@ -323,9 +323,9 @@ MCW *w;
         }
         w->len = MCFI(f, w->slot)->size;
         if (w->xA0 == 0) {
-            w->step++;
+            w->astep++;
         } else {
-            w->step += 2;
+            w->astep += 2;
             break;
         }
     case 0xB:
@@ -334,20 +334,20 @@ MCW *w;
             if (MCFI(f, w->slot)->on == 1) {
                 goto next;
             }
-            w->step += 2;
+            w->astep += 2;
             break;
         case 1:
-            w->step++;
+            w->astep++;
             break;
         }
         break;
     case 0xC:
         switch (mc_create_file(w)) {
         case 0:
-            w->step++;
+            w->astep++;
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0x100;
             break;
         }
@@ -357,14 +357,14 @@ MCW *w;
         case 0:
         next:
             if (++w->slot < 5) {
-                w->step = 0xA;
+                w->astep = 0xA;
                 goto again;
             }
-            w->step = 0;
+            w->astep = 0;
             w->ret = 0;
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0x100;
             break;
         }
@@ -377,17 +377,17 @@ void McActFormatSet(port)
 int port;
 {
     MemcardWork.port = port;
-    MemcardWork.step = 0;
+    MemcardWork.astep = 0;
     MemcardWork.act = 5;
     MemcardWork.ret = -1;
     MemcardWork.xB0 = 1;
-    MemcardWork.x04 = 0;
+    MemcardWork.step = 0;
 }
 
 void mc_act_format(w)
 MCW *w;
 {
-    switch (w->step) {
+    switch (w->astep) {
     case 0:
         switch (mc_format(w)) {
         case 0:
@@ -405,7 +405,7 @@ MCW *w;
 void mc_act_unformat(w)
 MCW *w;
 {
-    switch (w->step) {
+    switch (w->astep) {
     case 0:
         switch (mc_unformat(w)) {
         case 0:
@@ -423,7 +423,7 @@ MCW *w;
 void mc_act_delete(w)
 MCW *w;
 {
-    switch (w->step) {
+    switch (w->astep) {
     case 0:
         switch (mc_check_card(w)) {
         case 0:
@@ -434,17 +434,17 @@ MCW *w;
             break;
         case 1:
         case 2:
-            w->step++;
+            w->astep++;
             break;
         }
         break;
     case 1:
         switch (mc_check_file(w)) {
         case 0:
-            w->step++;
+            w->astep++;
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0xFD;
             break;
         }
@@ -452,11 +452,11 @@ MCW *w;
     case 2:
         switch (mc_delete_dir(w)) {
         case 0:
-            w->step = 0;
+            w->astep = 0;
             w->ret = 0;
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0x100;
             break;
         }
@@ -468,7 +468,7 @@ MCW *w;
 void mc_act_remove(w)
 MCW *w;
 {
-    switch (w->step) {
+    switch (w->astep) {
     case 0:
         switch (mc_delete_dir(w)) {
         case 0:
@@ -488,8 +488,8 @@ int port;
 char *pattern;
 u8 *buf;
 {
+    MemcardWork.astep = 0;
     MemcardWork.step = 0;
-    MemcardWork.x04 = 0;
     MemcardWork.port = port;
     MemcardWork.act = 9;
     MemcardWork.ret = -1;
@@ -500,7 +500,7 @@ u8 *buf;
 void mc_act_list(w)
 MCW *w;
 {
-    switch (w->step) {
+    switch (w->astep) {
     case 0:
         switch (mc_check_card(w)) {
         case 0:
@@ -511,22 +511,22 @@ MCW *w;
             break;
         case 1:
         case 2:
-            w->step++;
+            w->astep++;
             break;
         }
         break;
     case 1:
         switch (mc_get_dir(w)) {
         case 0:
-            w->step = 0;
+            w->astep = 0;
             w->ret = w->cnt;
             break;
         case 1:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0x100;
             break;
         case 2:
-            w->step = 0;
+            w->astep = 0;
             w->ret = -0xFD;
             break;
         }

@@ -1,7 +1,7 @@
 /* Memory card action layer, SLPM_654.95 main 0x27FDF0-0x280EF0.
  * McActXxxSet() arms one of the mc_act_* machines (index stored in MemcardWork.act, run
  * from McActMain every frame through the table mc_act_jmp); the machine advances
- * MemcardWork.step through the low level mc_* calls and finally writes MemcardWork.ret:
+ * MemcardWork.astep through the low level mc_* calls and finally writes MemcardWork.ret:
  * 0 = done, -1 = still busy, -0xFF no card, -0xFE unformatted, -0xFD no file,
  * -0xFC not enough free blocks, -0xFB card full/other, -0x100 I/O error.
  * Field names are guesses (see include/mcw.h). */

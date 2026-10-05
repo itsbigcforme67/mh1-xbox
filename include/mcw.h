@@ -5,8 +5,8 @@
 #include "types.h"
 
 typedef struct MCW {
-    s32 step;       /* 0x00 step inside the current mc_act_* machine */
-    s32 x04;        /* 0x04 step inside the low level mc_* function */
+    s32 astep;      /* 0x00 step inside the current mc_act_* machine */
+    s32 step;       /* 0x04 step inside the low level mc_* function */
     s32 slot;       /* 0x08 file index being saved (mc_act_save) */
     s32 cnt;        /* 0x0C result count of mc_get_dir */
     s32 nports;     /* 0x10 number of ports (2) */
