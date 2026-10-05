@@ -1,4 +1,4 @@
-/* SLPM_654.95 0x00263830-0x00263908: cmd_prev_bun .. cmd_prev_bun. See cmd_nm.c. */
+/* SLPM_654.95 0x002636E0-0x00263908: cmd_next_kouho .. cmd_prev_bun. See cmd_nm.c. */
 #include "types.h"
 
 extern u8 *lpSKey;
@@ -85,6 +85,34 @@ typedef struct KGRECT {
 typedef struct { s8 b[0x11]; } ZK;
 extern ZK lit_913_0034E410;
 
+
+void cmd_next_kouho(void) {
+    char w1[0x100];
+    char w2[0x100];
+    int a;
+    int n;
+
+    if (SKB(0x2F) != 0) {
+        SKS32(0x144) = SKS32(0x144) + 1;
+        a = SKS32(0x144);
+        if (a > SKS32(0x150) - 1) {
+            SKS32(0x144) = 0;
+            SKS32(0x148) = 0;
+            Set_KouhoTableSub(0, 0);
+        } else {
+            n = SKS32(0x148);
+            if (n * 3 + 3 <= a) {
+                SKS32(0x148) = n + 1;
+                Set_KouhoTableSub(SKS32(0x144), 0);
+            } else {
+                apiask_21_NextKouho(w1, w2);
+            }
+        }
+        memset(lpSKey + 0x458, 0, 0x100);
+        strcpy((char *)lpSKey + 0x458, (char *)kouho_work + (SKS32(0x144) % 3) * 0x101 + 1);
+        SKS32(0x14C) = (u8)kouho_work[(SKS32(0x144) % 3) * 0x101];
+    }
+}
 
 void cmd_prev_bun(void) {
     int r;

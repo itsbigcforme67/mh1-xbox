@@ -428,7 +428,7 @@ void cmd_next_kouho(void) {
             Set_KouhoTableSub(0, 0);
         } else {
             n = SKS32(0x148);
-            if (a > n * 3 + 2) {
+            if (n * 3 + 3 <= a) {
                 SKS32(0x148) = n + 1;
                 Set_KouhoTableSub(SKS32(0x144), 0);
             } else {
