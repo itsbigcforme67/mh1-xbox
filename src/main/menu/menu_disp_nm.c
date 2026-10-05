@@ -991,7 +991,7 @@ void disp_item_sub_normal(void) {
         if (pl->work8BC != 0) {
             flfntSetSize(0x14, 0x14);
             if (disp_shell_name(pl->work88E, 0x132) == 1) {
-                q.col = item_col_tbl[Item_data[pl->item[(u8)pl->work88E].id][6]];
+                q.col = item_col_tbl[Item_data[pl->item[pl->work88E].id][6]];
             }
         }
         reload_tex(1, 0x11A);
@@ -1136,7 +1136,7 @@ void disp_item_icon(u8 slot, s16 x, int big, s8 side) {
 void disp_item_stock(void) {
     u8 m = lpPit->x07;
 
-    if (m >= 2) {
+    if (m > 1) {
         if (m == 2) {
             if (lpPit->x55 == 0) {
                 DispFrameMessage(pf_item_stock_full, lit_3772);
@@ -1437,7 +1437,7 @@ void disp_needle(int n, int sel) {
     q.uv[4] = b[0x20];
     q.uv[5] = b[0x23];
     k = n / 1800;
-    flSinCos(0.10471976f * (f32)(k / 5 * 5) - 3.1415927f, &s, &c);
+    flSinCos((f32)(k / 5 * 5) * 0.10471976f - 3.1415927f, &s, &c);
     q.p[0] = 0.5f + 0.8f * (64.5f + d[0] * c - d[1] * s);
     q.p[1] = 0.5f + (48.0f + d[0] * s + d[1] * c);
     q.p[2] = 0.5f + 0.8f * (64.5f + d[2] * c - d[3] * s);
@@ -2089,12 +2089,12 @@ void disp_mix_list(int sw, PIT_W *p) {
 
 /* 0x133550 */
 void disp_monster_list(int sw, PIT_W *p) {
-    PFLPS3 q;
+    PFLPS2 q;
     u8 *m;
     s8 sel;
 
     DispFrameList(pf_monster_list_base, lit_4985, -1);
-    if (Monster_list_num() >= 2U) {
+    if (Monster_list_num() > 1U) {
         DispFrameListOptionArrow(pf_monster_list_base);
     }
     flfntSetSize(0x12, 0x12);
@@ -2116,8 +2116,8 @@ void disp_monster_list(int sw, PIT_W *p) {
         q.s[2] = 0x50;
         q.s[1] = 0x80;
         q.s[3] = 0x48;
-        q.uv0 = 0x380008;
-        q.uv1 = 0xB80088;
+        *(u32 *)&q.uv[0] = 0x380008;
+        *(u32 *)&q.uv[2] = 0xB80088;
         q.col = -1;
         flps0008(&q);
         SetFilterMode(0);
@@ -2127,10 +2127,10 @@ void disp_monster_list(int sw, PIT_W *p) {
         q.s[2] = 0x33;
         q.s[1] = 0x84;
         q.s[3] = 0x40;
-        ((s16 *)&q.uv0)[0] = m[1];
-        ((s16 *)&q.uv0)[1] = m[2];
-        ((s16 *)&q.uv1)[0] = m[1] + 0x33;
-        ((s16 *)&q.uv1)[1] = m[2] + 0x33;
+        q.uv[0] = m[1];
+        q.uv[1] = m[2];
+        q.uv[2] = m[1] + 0x33;
+        q.uv[3] = m[2] + 0x33;
         q.col = -1;
         flps0008(&q);
         return;

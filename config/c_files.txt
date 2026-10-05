@@ -296,3 +296,7 @@ main 0x0012A2F0 0x0012A390 menu/menu26
 main:rodata 0x0035A3A0 0x0035A3B8 menu/menu26
 main 0x00129F50 0x0012A104 menu/menu27
 main 0x00127C70 0x00127D30 menu/menu28
+main 0x0012E640 0x0012E908 menu/menu29
+main 0x0012F830 0x0012F924 menu/menu30
+main 0x0012FD50 0x0012FEA4 menu/menu31
+main 0x00133550 0x00133788 menu/menu32
