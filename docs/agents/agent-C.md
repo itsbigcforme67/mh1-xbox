@@ -374,7 +374,7 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
   map_sign_move; menu26 menu_equip_get_equip (+ jump table 0x35A3A0); menu27 Menu_data_mv;
   menu28 pit_key_repeat; menu29 disp_item_sub_normal; menu30 disp_item_sub_select_ex; menu31
   disp_item_stock; menu32 disp_monster_list; menu33 Pit_disp_data; menu34 Pit_effect_move;
-  menu35 disp_mix_list.
+  menu35 disp_mix_list; menu36 pef_get_scale.
 - Near-match, how far off (check.py counts; many "reloc" lines are not real):
   disp_needle 4 (float reg order of one constant), Pit_disp_chat_cnfg 3, Pit_mv 4 / Pit_mv_lb 3
   (needs `int pit_key_repeat(u16,u16)` prototype and decl order sw,hold,now; remaining diff is
@@ -396,6 +396,8 @@ em15, em17, em01 fully match (whole files); em20 matches 17/18 (em20_act_set
 - Lessons (function that shows it):
   * `x >= N` compiles `slti v1,...`; `x > N-1` compiles `slti at,...` (map_sign_move,
     disp_item_stock, disp_monster_list, disp_mix_list): use the form the original has.
+  * Repeated float subexpressions: write them inline, not via temporaries (pef_get_scale matched
+    only with `(f32)(t - ta)` spelled out twice; `-(f32)x` vs `(f32)(-x)` also matters).
   * A `return` in each switch case vs `break` changes code layout (Pit_disp_data: breaks).
   * `if (a != X) { return value; } return 0;` order vs `if (a == X) return 0; return value;`
     changes where the delay-slot addiu lands; `u + idx*6 + 0x44` vs `&u[0x44 + idx*6]`

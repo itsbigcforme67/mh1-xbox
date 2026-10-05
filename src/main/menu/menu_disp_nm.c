@@ -1348,8 +1348,9 @@ extern u16 System_timer;
 extern u8 needle_data[][0x24];
 void flSinCos(f32, f32 *, f32 *);
 f32 flSin(f32);
-void gage_disp(void *, int);
-void bar_disp(void *, int);
+struct GAGE;
+void gage_disp(struct GAGE *, int);
+void bar_disp(struct GAGE *, int);
 void disp_needle(int, int);
 typedef struct GAGE {
     f32 x;      /* 0x00 */
@@ -1508,8 +1509,7 @@ void disp_pl_vital(void) {
 }
 
 /* 0x130F50 */
-void gage_disp(void *gp, int sel) {
-    GAGE *g = gp;
+void gage_disp(GAGE *g, int sel) {
     PFLPS2 q;
     f32 x, l, t;
     u32 w, n, r;
@@ -1563,8 +1563,7 @@ void gage_disp(void *gp, int sel) {
 }
 
 /* 0x131280 */
-void bar_disp(void *gp, int sel) {
-    GAGE *g = gp;
+void bar_disp(GAGE *g, int sel) {
     PFLPS3 q;
 
     if (g->cur > 0) {
