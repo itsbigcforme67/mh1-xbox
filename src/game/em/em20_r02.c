@@ -1,4 +1,4 @@
-/* em20_r02 - monster 20 AI 0x005EC400-0x005EC4C8: em20_dmg_to_normal. Whole file in em20_ai_nm.c. */
+/* em20_r02 - monster 20 AI 0x005EC0A0-0x005EC554: em_act_search2_005EC0A0, act_dist_select_005EC0E0, em20_to_normal, em20_dmg_to_normal, em20_to_fly. Whole file in em20_ai_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -120,7 +120,7 @@ extern s16 em20_runaway_timer_tbl[];
 
 void em20_local_init(EMW *em);
 void em20_init(EMW *em);
-u16 *em_act_search2_005EC0A0(EMW *em, u16 *tbl);
+static u16 *em_act_search2_005EC0A0(EMW *em, u16 *tbl);
 void act_dist_select_005EC0E0(EMW *em);
 void em20_to_normal(EMW *em, s16 a, s16 b);
 void em20_dmg_to_normal(EMW *em, s16 a, s16 b);
@@ -251,11 +251,11 @@ void em20_main(EMW *em);
 void em20_main_sub(EMW *em, EM20W *w);
 void em20_uvmove(EMW *em);
 void sound_call_sub_005F75F0(EMW *em, int se, int joint);
-void sound_call_005F7660(EMW *em, int frame, int se, int joint);
+static void sound_call_005F7660(EMW *em, int frame, int se, int joint);
 void sound_call_parts_005F76C0(EMW *em, int frame, int se, int joint, u8 layer);
 void Em_set_quake_sub(EMW *, int);
-void quake_call_005F7760(EMW *em, int frame, int arg);
-void move_default_005F77B0(EMW *em);
+static void quake_call_005F7760(EMW *em, int frame, int arg);
+static void move_default_005F77B0(EMW *em);
 void ef_move_sub_005F7800(EMW *em, EM20W *w);
 void em20_effect_move(EMW *em);
 void ground_land_eff_set_005FC860(EMW *em);
@@ -263,7 +263,7 @@ void takeoff_eff_set_005FC910(EMW *em);
 void takeon_eff_set_005FC980(EMW *em);
 void hover_eff_set2_005FCA20(EMW *em);
 s32 kyusyu_char_set_005FCA70(EMW *em);
-void em20_atk_end_sel(EMW *em);
+void em20_atk_end_sel(EMW *em, EM20W *w);
 void kyusyu_senkai_ret_005FCBA0(EMW *em);
 void em20_material_sub(EMW *em, int type, u8 *tbl);
 void dummy_em_prog_005FCDB0(void);
@@ -430,6 +430,102 @@ extern FLYNEED *em_hungry_tbl[];
 
 
 
+static u16 *em_act_search2_005EC0A0(EMW *em, u16 *tbl) {
+    EM20W *w = (EM20W *)em->ex;
+    u16 *p;
+    u8 i;
+
+    i = w->x19;
+    w->x19 = i + 1;
+    p = tbl + i * 2;
+    if (*p == 0xFFFF) {
+        p = tbl;
+        w->x19 = 1;
+    }
+    return p;
+}
+
+void act_dist_select_005EC0E0(EMW *em) {
+    EM20W *w = (EM20W *)em->ex;
+    u16 *p;
+    int k;
+    u8 temp_a1;
+    u8 temp_a2;
+
+    temp_a1 = em->x734;
+    temp_a2 = M2C_FIELD(em, u8 *, 0x735);
+    switch (temp_a1) {
+    case 0:
+        if (em->x8C3 == 0) {
+            em20_act_set(em, 0, em_act_search(em20_act_add[temp_a2]) & 0xFFFF, 1);
+        }
+        break;
+    case 1:
+        if (em->x8C3 == 0) {
+            p = em_act_search2_005EC0A0(em, em20_rail_add[temp_a2]);
+            k = p[0];
+            if (k == 1 && p[1] == 0) {
+                w->has_tgt = 1;
+            }
+            em20_act_set(em, k, p[1], 1);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            p = em_act_search2_005EC0A0(em, em20_rail_half_add[temp_a2]);
+            k = p[0];
+            if (k == 1 && p[1] == 0) {
+                w->has_tgt = 1;
+            }
+            em20_act_set(em, k, p[1], 1);
+        }
+        break;
+    case 3:
+        em->x839 = 1;
+        if (em->x388 == 0) {
+            em20_act_set(em, 0, 1, 0);
+        } else {
+            em20_act_set(em, 2, 2, 0);
+        }
+        break;
+    }
+}
+
+void em20_to_normal(EMW *em, s16 a, s16 b) {
+    f32 k = 0.2f;
+
+    if (em->x734 != 0) {
+        act_dist_select_005EC0E0(em);
+        return;
+    }
+    if (em->x734 == 3) {
+        em->act_spd = 1.0f;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em->x839 = 1;
+        if (em->x302 < (s16)((f32)em->x792 * k)) {
+            em20_act_set(em, 0, 1, 0);
+        } else if (em->x888 == 0) {
+            em20_act_set(em, 0, 1, 0);
+        } else {
+            em20_act_set(em, 0, 0x11, 0);
+        }
+        return;
+    }
+    if (em->char0 != 0x3E9) {
+        em_char_set(em, 1, a, b);
+    }
+    if (em->x2DE != 0x44D) {
+        em_char_set(em, 1, a, b);
+    }
+    if (em->x2E0 != 0x4B1) {
+        em_char_set(em, 1, a, b);
+    }
+    em->x388 = 0;
+    em->x3F4 = 0;
+    em20_act_set(em, 0, 1, 0);
+}
+
 void em20_dmg_to_normal(EMW *em, s16 a, s16 b) {
     if (em->x39A % 100 < 0xA) {
         em20_to_normal(em, 0, 0);
@@ -446,4 +542,21 @@ void em20_dmg_to_normal(EMW *em, s16 a, s16 b) {
         return;
     }
     em20_to_normal(em, a, b);
+}
+
+void em20_to_fly(EMW *em, int flag) {
+    if (em->x734 != 3) {
+        act_dist_select_005EC0E0(em);
+        return;
+    }
+    em->x839 = 1;
+    em->act_spd = 1.0f;
+    switch (flag & 0xFF) {
+    case 0:
+        em_act_set(em, 2, 0xE);
+        break;
+    case 1:
+        em_act_set(em, 2, 0xF);
+        break;
+    }
 }

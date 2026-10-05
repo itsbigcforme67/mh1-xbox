@@ -263,7 +263,7 @@ static void takeoff_eff_set_005FC910(EMW *em);
 static void takeon_eff_set_005FC980(EMW *em);
 static void hover_eff_set2_005FCA20(EMW *em);
 static s32 kyusyu_char_set_005FCA70(EMW *em);
-void em20_atk_end_sel(EMW *em);
+void em20_atk_end_sel(EMW *em, EM20W *w);
 static void kyusyu_senkai_ret_005FCBA0(EMW *em);
 void em20_material_sub(EMW *em, int type, u8 *tbl);
 void dummy_em_prog_005FCDB0(void);
@@ -399,7 +399,7 @@ static u16 *em_act_search2_005EC0A0(EMW *em, u16 *tbl) {
 
     i = w->x19;
     w->x19 = i + 1;
-    p = tbl + i * 4;
+    p = tbl + i * 2;
     if (*p == 0xFFFF) {
         p = tbl;
         w->x19 = 1;
@@ -414,6 +414,7 @@ extern u16 *em20_rail_half_add[1];
 static void act_dist_select_005EC0E0(EMW *em) {
     EM20W *w = (EM20W *)em->ex;
     u16 *p;
+    int k;
     u8 temp_a1;
     u8 temp_a2;
 
@@ -428,19 +429,21 @@ static void act_dist_select_005EC0E0(EMW *em) {
     case 1:
         if (em->x8C3 == 0) {
             p = em_act_search2_005EC0A0(em, em20_rail_add[temp_a2]);
-            if (p[0] == 1 && p[1] == 0) {
+            k = p[0];
+            if (k == 1 && p[1] == 0) {
                 w->has_tgt = 1;
             }
-            em20_act_set(em, p[0], p[1], 1);
+            em20_act_set(em, k, p[1], 1);
         }
         break;
     case 2:
         if (em->x8C3 == 0) {
             p = em_act_search2_005EC0A0(em, em20_rail_half_add[temp_a2]);
-            if (p[0] == 1 && p[1] == 0) {
+            k = p[0];
+            if (k == 1 && p[1] == 0) {
                 w->has_tgt = 1;
             }
-            em20_act_set(em, p[0], p[1], 1);
+            em20_act_set(em, k, p[1], 1);
         }
         break;
     case 3:
@@ -455,6 +458,8 @@ static void act_dist_select_005EC0E0(EMW *em) {
 }
 
 void em20_to_normal(EMW *em, s16 a, s16 b) {
+    f32 k = 0.2f;
+
     if (em->x734 != 0) {
         act_dist_select_005EC0E0(em);
         return;
@@ -464,7 +469,7 @@ void em20_to_normal(EMW *em, s16 a, s16 b) {
         em->x388 = 0;
         em->x3F4 = 0;
         em->x839 = 1;
-        if (em->x302 < (s16)(0.3f * (f32)em->x792)) {
+        if (em->x302 < (s16)((f32)em->x792 * k)) {
             em20_act_set(em, 0, 1, 0);
         } else if (em->x888 == 0) {
             em20_act_set(em, 0, 1, 0);
@@ -512,10 +517,14 @@ void em20_to_fly(EMW *em, int flag) {
     }
     em->x839 = 1;
     em->act_spd = 1.0f;
-    if (flag & 0xFF) {
-        return;
+    switch (flag & 0xFF) {
+    case 0:
+        em_act_set(em, 2, 0xE);
+        break;
+    case 1:
+        em_act_set(em, 2, 0xF);
+        break;
     }
-    em_act_set(em, 2, 0xE);
 }
 
 static void item_theft_005EC560(PLW *pl) {
@@ -1615,6 +1624,7 @@ static void em_mv00_005EE7A0(EMW *em, EM20W *w) {
 }
 
 static void em_mv01_005EE900(EMW *em, EM20W *w) {
+    em->x05 += 1;
     em20_to_normal(em, 0, 0);
 }
 
@@ -3409,7 +3419,7 @@ static void em_atk02_005F20E0(EMW *em, EM20W *w) {
     case 4:                                         /* switch 1 */
         if (em->x194 == 0) {
             em->x05 = temp_a2 + 1;
-            em20_atk_end_sel(em);
+            em20_atk_end_sel(em, w);
         }
         break;
     }
@@ -3434,7 +3444,7 @@ static void em_atk03_005F2350(EMW *em, EM20W *w) {
         if (em->x194 == 0) {
             em->x3F4 = 0;
             em->x05 += 1;
-            em20_atk_end_sel(em);
+            em20_atk_end_sel(em, w);
         }
         break;
     }
@@ -3506,7 +3516,7 @@ static void em_atk06_005F24F0(EMW *em, EM20W *w) {
         em->ang[1] -= 0x200;
         if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
             em->x05 += 1;
-            em20_atk_end_sel(em);
+            em20_atk_end_sel(em, w);
         }
         break;
     }
@@ -4199,7 +4209,7 @@ block_80:
     case 7:
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
-            em20_atk_end_sel(em);
+            em20_atk_end_sel(em, w);
         }
         break;
     }
@@ -7471,7 +7481,7 @@ static s32 kyusyu_char_set_005FCA70(EMW *em) {
     return 0;
 }
 
-void em20_atk_end_sel(EMW *em) {
+void em20_atk_end_sel(EMW *em, EM20W *w) {
     if (em->x734 == 3) {
         em20_to_normal(em, 0, 0);
         return;

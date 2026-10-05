@@ -1,4 +1,4 @@
-/* em14_r05 - monster 14 AI 0x005B79C0-0x005B7B1C: em_mv06_005B79C0. Whole file in em14_nm.c. */
+/* em14_r05 - monster 14 AI 0x005B7C60-0x005B7EE0: em_fly00_005B7C60, em_fly01_005B7D30, em_fly02_005B7DC0. Whole file in em14_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -53,12 +53,13 @@ void em_action_timer_calc(EMW *, int);
 int Event_flag_ck();
 void em_dur_set(EMW *, int);
 void Eft20_set(f32, EMW *, int, int);
+void Eft15_set3(EMW *, int, f32, int);
 FLMAT *get_joint_wmat_em(EMW *, int);
 void flmatCopy(FLMAT *, FLMAT *);
 void flvecApplyMat33_2(f32 *, FLMAT *);
 int em_frame_check3(EMW *, int, f32, f32);
 void em14_act_set(EMW *em, int kind, u16 no, u16 arg);
-u8 Em_stg_ck(EMW *);
+int Em_stg_ck(EMW *);
 s16 em_hp_vital_set2(EMW *, s16, s16);
 void em_no_battle_area_ck(EMW *, int, int);
 void Eft02_set3(EMW *, u16, int, int, f32 *, f32);
@@ -200,7 +201,7 @@ void move_default_005BCCF0(EMW *em);
 void ef_move_sub_005BCD40(EMW *em, EM14W *w);
 void em14_effect_move(EMW *em);
 void ground_land_eff_set_005C1120(EMW *em);
-void em14_atk_end_sel(EMW *em);
+void em14_atk_end_sel(EMW *em, EM14W *w);
 void dummy_em_prog_005C1250(void);
 
 
@@ -323,51 +324,89 @@ extern u8 *em14_act_add[3];
 
 
 
-void em_mv06_005B79C0(EMW *em, EM14W *w) {
-    int d;
-    f32 sp30[3];
-    f32 temp_f1;
-    s32 temp_v0;
-    s32 temp_v1;
-    s32 temp_v1_2;
-    s32 var_v0;
+void em_fly00_005B7C60(EMW *em, EM14W *w) {
     u8 temp_a1;
 
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
         em->x05 = temp_a1 + 1;
-        em->x388 = 0;
         em->x3F4 = 0;
-        em_char_set(em, 0xA, 0, 0);
+        if (em->char0 != 0x44F) {
+            em_char_set(em, 0x67, 0, 0);
+        }
+        em->x8BD = 1;
+        em->x388 = 0;
         break;
     case 1:
-        if (w->has_tgt != 0) {
-            d = (u16)((u16)Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
-            if (d <= 0x8000) {
-                if (d <= 0x3F) {
-                    em->ang[1] += d;
-                } else {
-                    em->ang[1] += 0x40;
-                }
-            } else if (d > 0xFFC0) {
-                em->ang[1] += d;
-            } else {
-                em->ang[1] -= 0x40;
-            }
-            mot_miration_ret(em, sp30);
-            temp_f1 = w->dist - sp30[2];
-            w->dist = temp_f1;
-            if (temp_f1 <= 0.0f) {
-                em->work08 = 1;
+        if (em_frame_check2(em, 0, 100.0f) != 0) {
+            em->x95C = 2;
+            em->x7D6 = 2;
+        }
+        if (em->x194 == 0) {
+            em->x05 += 1;
+            em->x8BD = 0;
+            em14_to_swim(em);
+        }
+        break;
+    }
+    em->x8BB = 2;
+}
+
+void em_fly01_005B7D30(EMW *em, EM14W *w) {
+    u8 temp_a2;
+
+    temp_a2 = em->x05;
+    switch (temp_a2) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a2 + 1;
+        em->x388 = 4;
+        em->x3F4 = 0;
+        em_char_set(em, 1, 0, 0);
+        break;
+    case 1:
+        if ((em->x8C3 == 0) && (em->x194 == 0)) {
+            em->x05 = temp_a2 + 1;
+            em14_to_swim(em);
+        }
+        break;
+    }
+}
+
+void em_fly02_005B7DC0(EMW *em, EM14W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x3F4 = 0;
+        if (em->char0 != 0x450) {
+            em_char_set(em, 0x68, 0, 0);
+            em->x388 = 4;
+        } else if (em->x1C4 != 0) {
+            em->x388 = 4;
+        } else {
+            em->x388 = 0;
+        }
+        em->x8BD = 1;
+        break;
+    case 1:
+        if (em->x1C4 != 0) {
+            em->x388 = 4;
+        } else {
+            em->x388 = 0;
+            if (em_frame_check2(em, 0, 100.0f) == 0) {
+                em->x95C = 2;
+                em->x7D6 = 2;
             }
         }
-        temp_v1_2 = em->work08 - 1;
-        em->work08 = temp_v1_2;
-        if (temp_v1_2 <= 0) {
+        if (em->x194 == 0) {
             em->x05 += 1;
+            em->x8BD = 0;
             em14_to_normal(em, 0, 0);
         }
         break;
     }
+    em->x8BB = 2;
 }

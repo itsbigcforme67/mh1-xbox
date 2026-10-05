@@ -31,7 +31,13 @@ for n,i in enumerate(heads):
     sm=difflib.SequenceMatcher(None,a,b,autojunk=False)
     cnt=0; hunks=[]
     for op,i1,i2,j1,j2 in sm.get_opcodes():
-        if op=='equal': continue
+        if op=='equal':
+            # lui immediates are masked by key() (they may be relocations); compare them exactly when mine has no reloc
+            for k in range(i2-i1):
+                lt=L[i1+k][1]; rt=R[j1+k]
+                if lt.startswith('lui ') and '(reloc)' not in rt and re.sub(r'\s+',' ',lt)!=re.sub(r'\s+',' ',rt):
+                    cnt+=1; hunks.append(('replace',L[i1+k][0],[lt],[rt]))
+            continue
         if op=='replace' and i2-i1==j2-j1 and all('(reloc)' in R[j1+k] and L[i1+k][1].split()[:1]==R[j1+k].split()[:1] and re.sub(r',[^,]*$','',L[i1+k][1])==re.sub(r',[^,]*$','',R[j1+k].replace('(reloc)','').rstrip()) for k in range(i2-i1)):
             continue
         cnt+=max(i2-i1,j2-j1)

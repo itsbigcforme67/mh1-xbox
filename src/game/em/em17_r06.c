@@ -1,4 +1,4 @@
-/* em17_r06 - monster 17 AI 0x005DC6B0-0x005DC73C: em_mv01_005DC6B0, em_mv02_005DC6C0. Whole file in em17_nm.c. */
+/* em17_r06 - monster 17 AI 0x005DCA10-0x005DCE8C: em_mv04_005DCA10, em_mv05_005DCBD0, em_mv06_005DCD30. Whole file in em17_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -93,7 +93,7 @@ extern s16 em17_runaway_timer_tbl[];
 
 void em17_local_init(EMW *em);
 void em17_init(EMW *em);
-u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
+static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
 void act_dist_select_005DA5C0(EMW *em);
 void em17_to_normal(EMW *em, s16 a, s16 b);
 void em17_to_fly(EMW *em, int flag);
@@ -208,7 +208,7 @@ void ef_move_sub_005E21D0(EMW *em, EM17W *w);
 void em17_effect_move(EMW *em);
 void ground_land_eff_set_005E63F0(EMW *em);
 s32 kyusyu_char_set2_005E64A0(EMW *em);
-void em17_atk_end_sel(EMW *em);
+void em17_atk_end_sel(EMW *em, EM17W *w);
 void dummy_em_prog_005E65C0(void);
 
 
@@ -338,11 +338,14 @@ extern u8 *em17_act_add[3];
 
 
 
-void em_mv01_005DC6B0(EMW *em, EM17W *w) {
-    em17_to_normal(em, 0, 0);
-}
-
-void em_mv02_005DC6C0(EMW *em, EM17W *w) {
+void em_mv04_005DCA10(EMW *em, EM17W *w) {
+    int d;
+    f32 sp30[3];
+    f32 temp_f1;
+    s32 temp_v0;
+    s32 temp_v1;
+    s32 temp_v1_2;
+    s32 var_v0;
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -351,11 +354,143 @@ void em_mv02_005DC6C0(EMW *em, EM17W *w) {
         em->x05 = temp_a1 + 1;
         em->x388 = 0;
         em->x3F4 = 0;
-        em_char_set(em, 0x64, 0, 0);
+        em_char_set(em, 0x11, 0, 0);
         break;
     case 1:
+        if (em_frame_check(em, 0, 150.0f) != 0) {
+            em->x05 += 1;
+        }
+        break;
+    case 2:
+        if (w->has_tgt != 0) {
+            d = (u16)((u16)Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
+            if (d <= 0x8000) {
+                if (d <= 0x3F) {
+                    em->ang[1] += d;
+                } else {
+                    em->ang[1] += 0x40;
+                }
+            } else if (d > 0xFFC0) {
+                em->ang[1] += d;
+            } else {
+                em->ang[1] -= 0x40;
+            }
+            mot_miration_ret(em, sp30);
+            temp_f1 = w->dist - sp30[2];
+            w->dist = temp_f1;
+            if (temp_f1 <= 0.0f) {
+                em->work08 = 1;
+            }
+        }
+        temp_v1_2 = em->work08 - 1;
+        em->work08 = temp_v1_2;
+        if (temp_v1_2 <= 0) {
+            em->x05 += 1;
+            em_char_set(em, 0x64, 0, 0);
+            return;
+        }
+        break;
+    case 3:
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void em_mv05_005DCBD0(EMW *em, EM17W *w) {
+    int d;
+    f32 sp30[3];
+    f32 temp_f1;
+    s32 temp_v0;
+    s32 temp_v1;
+    s32 temp_v1_2;
+    s32 var_v0;
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 2, 0, 0);
+        break;
+    case 1:
+        if (w->has_tgt != 0) {
+            d = (u16)((u16)Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
+            if (d <= 0x8000) {
+                if (d <= 0x3F) {
+                    em->ang[1] += d;
+                } else {
+                    em->ang[1] += 0x40;
+                }
+            } else if (d > 0xFFC0) {
+                em->ang[1] += d;
+            } else {
+                em->ang[1] -= 0x40;
+            }
+            mot_miration_ret(em, sp30);
+            temp_f1 = w->dist - sp30[2];
+            w->dist = temp_f1;
+            if (temp_f1 <= 0.0f) {
+                em->work08 = 1;
+            }
+        }
+        temp_v1_2 = em->work08 - 1;
+        em->work08 = temp_v1_2;
+        if (temp_v1_2 <= 0) {
+            em->x05 += 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void em_mv06_005DCD30(EMW *em, EM17W *w) {
+    int d;
+    f32 sp30[3];
+    f32 temp_f1;
+    s32 temp_v0;
+    s32 temp_v1;
+    s32 temp_v1_2;
+    s32 var_v0;
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0xA, 0, 0);
+        break;
+    case 1:
+        if (w->has_tgt != 0) {
+            d = (u16)((u16)Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
+            if (d <= 0x8000) {
+                if (d <= 0x3F) {
+                    em->ang[1] += d;
+                } else {
+                    em->ang[1] += 0x40;
+                }
+            } else if (d > 0xFFC0) {
+                em->ang[1] += d;
+            } else {
+                em->ang[1] -= 0x40;
+            }
+            mot_miration_ret(em, sp30);
+            temp_f1 = w->dist - sp30[2];
+            w->dist = temp_f1;
+            if (temp_f1 <= 0.0f) {
+                em->work08 = 1;
+            }
+        }
+        temp_v1_2 = em->work08 - 1;
+        em->work08 = temp_v1_2;
+        if (temp_v1_2 <= 0) {
+            em->x05 += 1;
             em17_to_normal(em, 0, 0);
         }
         break;

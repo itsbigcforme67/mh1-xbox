@@ -208,7 +208,7 @@ static void ef_move_sub_005E21D0(EMW *em, EM17W *w);
 void em17_effect_move(EMW *em);
 static void ground_land_eff_set_005E63F0(EMW *em);
 static s32 kyusyu_char_set2_005E64A0(EMW *em);
-void em17_atk_end_sel(EMW *em);
+void em17_atk_end_sel(EMW *em, EM17W *w);
 void dummy_em_prog_005E65C0(void);
 
 
@@ -342,7 +342,7 @@ static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl) {
 
     i = w->x19;
     w->x19 = i + 1;
-    p = tbl + i * 4;
+    p = tbl + i * 2;
     if (*p == 0xFFFF) {
         p = tbl;
         w->x19 = 1;
@@ -357,6 +357,7 @@ extern u16 *em17_rail_half_add[1];
 static void act_dist_select_005DA5C0(EMW *em) {
     EM17W *w = (EM17W *)em->ex;
     u16 *p;
+    int k;
     u8 temp_a1;
     u8 temp_a2;
 
@@ -371,19 +372,21 @@ static void act_dist_select_005DA5C0(EMW *em) {
     case 1:
         if (em->x8C3 == 0) {
             p = em_act_search2_005DA580(em, em17_rail_add[temp_a2]);
-            if (p[0] == 1 && p[1] == 0) {
+            k = p[0];
+            if (k == 1 && p[1] == 0) {
                 w->has_tgt = 1;
             }
-            em17_act_set(em, p[0], p[1], 1);
+            em17_act_set(em, k, p[1], 1);
         }
         break;
     case 2:
         if (em->x8C3 == 0) {
             p = em_act_search2_005DA580(em, em17_rail_half_add[temp_a2]);
-            if (p[0] == 1 && p[1] == 0) {
+            k = p[0];
+            if (k == 1 && p[1] == 0) {
                 w->has_tgt = 1;
             }
-            em17_act_set(em, p[0], p[1], 1);
+            em17_act_set(em, k, p[1], 1);
         }
         break;
     case 3:
@@ -437,10 +440,11 @@ void em17_to_fly(EMW *em, int flag) {
     }
     em->x839 = 1;
     em->act_spd = 1.0f;
-    if (flag & 0xFF) {
-        return;
+    switch (flag & 0xFF) {
+    case 0:
+        em_act_set(em, 2, 0xE);
+        break;
     }
-    em_act_set(em, 2, 0xE);
 }
 
 void em17_frame_reset(EMW *em, int i) {
@@ -2343,7 +2347,7 @@ static void em_atk03_005DE370(EMW *em, EM17W *w) {
         if (em->x194 == 0) {
             em->x3F4 = 0;
             em->x05 += 1;
-            em17_atk_end_sel(em);
+            em17_atk_end_sel(em, w);
         }
         break;
     }
@@ -2455,7 +2459,7 @@ static void em_atk06_005DE710(EMW *em, EM17W *w) {
         em->ang[1] -= 0x200;
         if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
             em->x05 += 1;
-            em17_atk_end_sel(em);
+            em17_atk_end_sel(em, w);
         }
         break;
     }
@@ -5369,7 +5373,7 @@ static s32 kyusyu_char_set2_005E64A0(EMW *em) {
     return 0;
 }
 
-void em17_atk_end_sel(EMW *em) {
+void em17_atk_end_sel(EMW *em, EM17W *w) {
     if (em->x734 == 3) {
         em17_to_normal(em, 0, 0);
         return;

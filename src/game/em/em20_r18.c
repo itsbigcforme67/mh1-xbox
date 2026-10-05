@@ -1,4 +1,4 @@
-/* em20_r18 - monster 20 AI 0x005F3E70-0x005F4090: em_atk27_005F3E70, em_atk28_005F3F30, em_atk29_005F3FF0. Whole file in em20_ai_nm.c. */
+/* em20_r18 - monster 20 AI 0x005F72E0-0x005F73E8: em20_main_sub. Whole file in em20_ai_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -120,7 +120,7 @@ extern s16 em20_runaway_timer_tbl[];
 
 void em20_local_init(EMW *em);
 void em20_init(EMW *em);
-u16 *em_act_search2_005EC0A0(EMW *em, u16 *tbl);
+static u16 *em_act_search2_005EC0A0(EMW *em, u16 *tbl);
 void act_dist_select_005EC0E0(EMW *em);
 void em20_to_normal(EMW *em, s16 a, s16 b);
 void em20_dmg_to_normal(EMW *em, s16 a, s16 b);
@@ -251,11 +251,11 @@ void em20_main(EMW *em);
 void em20_main_sub(EMW *em, EM20W *w);
 void em20_uvmove(EMW *em);
 void sound_call_sub_005F75F0(EMW *em, int se, int joint);
-void sound_call_005F7660(EMW *em, int frame, int se, int joint);
+static void sound_call_005F7660(EMW *em, int frame, int se, int joint);
 void sound_call_parts_005F76C0(EMW *em, int frame, int se, int joint, u8 layer);
 void Em_set_quake_sub(EMW *, int);
-void quake_call_005F7760(EMW *em, int frame, int arg);
-void move_default_005F77B0(EMW *em);
+static void quake_call_005F7760(EMW *em, int frame, int arg);
+static void move_default_005F77B0(EMW *em);
 void ef_move_sub_005F7800(EMW *em, EM20W *w);
 void em20_effect_move(EMW *em);
 void ground_land_eff_set_005FC860(EMW *em);
@@ -263,7 +263,7 @@ void takeoff_eff_set_005FC910(EMW *em);
 void takeon_eff_set_005FC980(EMW *em);
 void hover_eff_set2_005FCA20(EMW *em);
 s32 kyusyu_char_set_005FCA70(EMW *em);
-void em20_atk_end_sel(EMW *em);
+void em20_atk_end_sel(EMW *em, EM20W *w);
 void kyusyu_senkai_ret_005FCBA0(EMW *em);
 void em20_material_sub(EMW *em, int type, u8 *tbl);
 void dummy_em_prog_005FCDB0(void);
@@ -430,77 +430,39 @@ extern FLYNEED *em_hungry_tbl[];
 
 
 
-void em_atk27_005F3E70(EMW *em, EM20W *w) {
-    u8 temp_a1;
+void em20_main_sub(EMW *em, EM20W *w) {
+    u8 temp_v1;
 
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
+    em->mode_old = em->mode;
+    em->x15_old = em->x15;
+    temp_v1 = em->mode;
+    switch (temp_v1) {
     case 0:
-        em->x05 = temp_a1 + 1;
-        em->x388 = 0;
-        /* fallthrough */
+        em_move00_005F5F20(em, w);
+        break;
     case 1:
-        if (em20_horm_main(em, temp_a1) != 0) {
-            em->x05 += 1;
-            em->x3F4 = 0;
-            em_char_set(em, 0x69, 0, 0);
-        }
+        em_move01_005F6180(em, w);
         break;
     case 2:
-        if (em->x194 == 0) {
-            em->x3F4 = 0;
-            em->x05 += 1;
-            em20_to_normal(em, 0, 0);
-        }
+        em_move02_005F6270(em, w);
+        break;
+    case 3:
+        em_move03_005F6440(em, w);
+        break;
+    case 4:
+        em_move04_005F6680(em, w);
+        break;
+    case 5:
+        em_move05_005F6810(em, w);
+        break;
+    case 6:
+        em_move06_005F6880(em, w);
+        break;
+    case 7:
+        em_move06_005F6880(em, w);
         break;
     }
-}
-
-void em_atk28_005F3F30(EMW *em, EM20W *w) {
-    u8 temp_a1;
-
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
-    case 0:
-        em->x05 = temp_a1 + 1;
-        em->x388 = 0;
-        /* fallthrough */
-    case 1:
-        if (em20_horm_main(em, temp_a1) != 0) {
-            em->x05 += 1;
-            em->x3F4 = 0;
-            em_char_set(em, 0x6A, 0, 0);
-        }
-        break;
-    case 2:
-        if (em->x194 == 0) {
-            em->x3F4 = 0;
-            em->x05 += 1;
-            em20_to_normal(em, 0, 0);
-        }
-        break;
-    }
-}
-
-void em_atk29_005F3FF0(EMW *em, EM20W *w) {
-    u8 temp_a1;
-
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
-    case 0:
-        em->x05 = temp_a1 + 1;
-        em->x388 = 0;
-        em->x3F4 = 0;
-        em_char_set(em, 0x6B, 0, 0);
-        w->x08 = 1;
-        break;
-    case 1:
-        if (em->x194 == 0) {
-            em->x3F4 = 0;
-            em->x05 += 1;
-            w->x08 = 0;
-            em20_to_normal(em, 0, 0);
-        }
-        break;
+    if ((em->pos[0] <= 0.0f) || (em->pos[2] <= 0.0f)) {
+        em_dur_set(em, 0);
     }
 }

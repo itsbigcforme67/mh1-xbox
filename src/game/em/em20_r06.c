@@ -1,4 +1,4 @@
-/* em20_r06 - monster 20 AI 0x005EED50-0x005EEEAC: em_mv04_005EED50. Whole file in em20_ai_nm.c. */
+/* em20_r06 - monster 20 AI 0x005EF180-0x005EF2DC: em_mv06_005EF180. Whole file in em20_ai_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -120,7 +120,7 @@ extern s16 em20_runaway_timer_tbl[];
 
 void em20_local_init(EMW *em);
 void em20_init(EMW *em);
-u16 *em_act_search2_005EC0A0(EMW *em, u16 *tbl);
+static u16 *em_act_search2_005EC0A0(EMW *em, u16 *tbl);
 void act_dist_select_005EC0E0(EMW *em);
 void em20_to_normal(EMW *em, s16 a, s16 b);
 void em20_dmg_to_normal(EMW *em, s16 a, s16 b);
@@ -251,11 +251,11 @@ void em20_main(EMW *em);
 void em20_main_sub(EMW *em, EM20W *w);
 void em20_uvmove(EMW *em);
 void sound_call_sub_005F75F0(EMW *em, int se, int joint);
-void sound_call_005F7660(EMW *em, int frame, int se, int joint);
+static void sound_call_005F7660(EMW *em, int frame, int se, int joint);
 void sound_call_parts_005F76C0(EMW *em, int frame, int se, int joint, u8 layer);
 void Em_set_quake_sub(EMW *, int);
-void quake_call_005F7760(EMW *em, int frame, int arg);
-void move_default_005F77B0(EMW *em);
+static void quake_call_005F7760(EMW *em, int frame, int arg);
+static void move_default_005F77B0(EMW *em);
 void ef_move_sub_005F7800(EMW *em, EM20W *w);
 void em20_effect_move(EMW *em);
 void ground_land_eff_set_005FC860(EMW *em);
@@ -263,7 +263,7 @@ void takeoff_eff_set_005FC910(EMW *em);
 void takeon_eff_set_005FC980(EMW *em);
 void hover_eff_set2_005FCA20(EMW *em);
 s32 kyusyu_char_set_005FCA70(EMW *em);
-void em20_atk_end_sel(EMW *em);
+void em20_atk_end_sel(EMW *em, EM20W *w);
 void kyusyu_senkai_ret_005FCBA0(EMW *em);
 void em20_material_sub(EMW *em, int type, u8 *tbl);
 void dummy_em_prog_005FCDB0(void);
@@ -430,7 +430,7 @@ extern FLYNEED *em_hungry_tbl[];
 
 
 
-void em_mv04_005EED50(EMW *em, EM20W *w) {
+void em_mv06_005EF180(EMW *em, EM20W *w) {
     int d;
     f32 sp30[3];
     f32 temp_f1;
@@ -446,7 +446,7 @@ void em_mv04_005EED50(EMW *em, EM20W *w) {
         em->x05 = temp_a1 + 1;
         em->x388 = 0;
         em->x3F4 = 0;
-        em_char_set(em, 0x11, 0, 0);
+        em_char_set(em, 0xA, 0, 0);
         break;
     case 1:
         if (w->has_tgt != 0) {

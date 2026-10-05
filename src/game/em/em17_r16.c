@@ -93,7 +93,7 @@ extern s16 em17_runaway_timer_tbl[];
 
 void em17_local_init(EMW *em);
 void em17_init(EMW *em);
-u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
+static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
 void act_dist_select_005DA5C0(EMW *em);
 void em17_to_normal(EMW *em, s16 a, s16 b);
 void em17_to_fly(EMW *em, int flag);
@@ -208,7 +208,7 @@ void ef_move_sub_005E21D0(EMW *em, EM17W *w);
 void em17_effect_move(EMW *em);
 void ground_land_eff_set_005E63F0(EMW *em);
 s32 kyusyu_char_set2_005E64A0(EMW *em);
-void em17_atk_end_sel(EMW *em);
+void em17_atk_end_sel(EMW *em, EM17W *w);
 void dummy_em_prog_005E65C0(void);
 
 

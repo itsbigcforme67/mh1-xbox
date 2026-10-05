@@ -53,12 +53,13 @@ void em_action_timer_calc(EMW *, int);
 int Event_flag_ck();
 void em_dur_set(EMW *, int);
 void Eft20_set(f32, EMW *, int, int);
+void Eft15_set3(EMW *, int, f32, int);
 FLMAT *get_joint_wmat_em(EMW *, int);
 void flmatCopy(FLMAT *, FLMAT *);
 void flvecApplyMat33_2(f32 *, FLMAT *);
 int em_frame_check3(EMW *, int, f32, f32);
 void em14_act_set(EMW *em, int kind, u16 no, u16 arg);
-u8 Em_stg_ck(EMW *);
+int Em_stg_ck(EMW *);
 s16 em_hp_vital_set2(EMW *, s16, s16);
 void em_no_battle_area_ck(EMW *, int, int);
 void Eft02_set3(EMW *, u16, int, int, f32 *, f32);
@@ -200,7 +201,7 @@ static void move_default_005BCCF0(EMW *em);
 static void ef_move_sub_005BCD40(EMW *em, EM14W *w);
 void em14_effect_move(EMW *em);
 static void ground_land_eff_set_005C1120(EMW *em);
-void em14_atk_end_sel(EMW *em);
+void em14_atk_end_sel(EMW *em, EM14W *w);
 void dummy_em_prog_005C1250(void);
 
 
@@ -285,9 +286,11 @@ void em14_init(EMW *em) {
 }
 
 static void act_dist_select_005B5650(EMW *em) {
-    if (em->x734 == 3) {
+    switch (em->x734) {
+    case 3:
         em->x839 = 1;
         em14_act_set(em, 0, 1, 0);
+        break;
     }
 }
 
@@ -329,10 +332,11 @@ void em14_to_swim(EMW *em) {
 void em14_to_fly(EMW *em, int flag) {
     em->x839 = 1;
     em->act_spd = 1.0f;
-    if (flag & 0xFF) {
-        return;
+    switch (flag & 0xFF) {
+    case 0:
+        em_act_set(em, 2, 0xE);
+        break;
     }
-    em_act_set(em, 2, 0xE);
 }
 
 void em14_frame_reset(EMW *em, int i) {
@@ -2151,7 +2155,7 @@ static void em_atk03_005B8FA0(EMW *em, EM14W *w) {
         if (em->x194 == 0) {
             em->x3F4 = 0;
             em->x05 += 1;
-            em14_atk_end_sel(em);
+            em14_atk_end_sel(em, w);
         }
         break;
     }
@@ -2180,7 +2184,7 @@ static void em_atk06_005B9020(EMW *em, EM14W *w) {
         em->ang[1] -= 0x200;
         if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
             em->x05 += 1;
-            em14_atk_end_sel(em);
+            em14_atk_end_sel(em, w);
         }
         break;
     }
@@ -3685,10 +3689,11 @@ static void em_move05_005BBBC0(EMW *em, EM14W *w) {
 }
 
 static void em_move06_005BBC30(EMW *em, EM14W *w) {
-    if (em->x15 != 0) {
-        return;
+    switch (em->x15) {
+    case 0:
+        em_demo00_005BAB80(em, w);
+        break;
     }
-    em_demo00_005BAB80(em, w);
 }
 
 void em14_main(EMW *em) {
@@ -4253,9 +4258,9 @@ static void move_default_005BCCF0(EMW *em) {
 static void ef_move_sub_005BCD40(EMW *em, EM14W *w) {
     f32 sp50[3];
     FLMAT m50;
+    f32 v3[3];
     f32 v[3];
     f32 v2[3];
-    f32 v3[3];
     s16 temp_v1;
     u16 temp_a0;
 
@@ -4265,6 +4270,8 @@ static void ef_move_sub_005BCD40(EMW *em, EM14W *w) {
     }
     temp_v1 = w->anim;
     switch (temp_v1) {                              /* irregular */
+    case 0x3E9:
+        break;
     case 0x3EB:
         if (em->x388 != 4) {
             sound_call_005BCBA0(em, 0x34, 1, 0x14);
@@ -4863,8 +4870,8 @@ block_246:
             return;
         }
         break;
-    case 0x433:
     case 0x42E:
+    case 0x433:
         sound_call_005BCBA0(em, 8, 0x16, 0);
         sound_call_005BCBA0(em, 0x32, 0x1F, 0x23);
         break;
@@ -5245,7 +5252,7 @@ block_432:
         sound_call_005BCBA0(em, 0x130, 0x16, 0);
         if (em_frame_check(em, 0, 112.0f) != 0) {
             shell18_set(em, 0x13);
-            Eft15_set3(0x3F800000, em, 5, 6);
+            Eft15_set3(em, 5, 1.0f, 6);
             return;
         }
         break;
@@ -5356,7 +5363,7 @@ static void ground_land_eff_set_005C1120(EMW *em) {
     }
 }
 
-void em14_atk_end_sel(EMW *em) {
+void em14_atk_end_sel(EMW *em, EM14W *w) {
     if (em->x734 == 3) {
         em14_to_normal(em, 0, 0);
         return;

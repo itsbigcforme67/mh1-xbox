@@ -560,8 +560,43 @@ main, uvmove, effect_move, ef_move_sub = a per-animation sound/effect script of 
    rebuild.sh is the judge.
 5. NM files must compile (the build compiles every src/**/*.c); WIP files live in wip/ until they do.
 
-## em21 (f_em_5FFFD0, 0x5FFFD0-0x60C398, 114 functions): 87 match, 14 runs linked (em21_r01-r14)
-src/game/em/em21_nm.c has every function; include/em21.h has the work struct (EM21W). Near-matches:
-em21_main (27 off, ladder order of the damage switch), em_mv00-03 (turn code), em_fly04/05/10/11/14/16,
-em21_uvmove, hire_move_sub1/sub2 (my C is wrong in places: both are 100+ off), em_atk01/03-06
-(Shell08_set_ang_time has 7 arguments, see shell08.c), em_dmg15, hire_req_set, em21_effect_move.
+## Status at the end of this assignment (all in src/game/em/, game OK, rebuild.sh byte-identical)
+| file | functions | match (alignall = 0 diff) | linked runs |
+|---|---|---|---|
+| em_cmd_nm.c (f_em_55B060) | 137 | 99 | em_cmd_r01-r26 |
+| em21_nm.c (f_em_5FFFD0) | 114 | 94 | em21_r01-r14 |
+| em15_nm.c (f_em_5C2A80) | 120 | 100 | em15_r01-r14 |
+| em14_nm.c (f_em_5B5290) | 115 | ~92 | em14_r01-r14 |
+| em17_nm.c (f_em_5D9EE0) | 118 | ~93 | em17_r01-r19 |
+| em20_ai_nm.c (f_em_5EBA10; em20_nm.c is the older setter file) | 148 | ~113 | em20_r01-r25 |
+Every function of the five monster files and of the command interpreter has C; the near-matches stay asm.
+New headers: include/em14.h em15.h em17.h em20.h em21.h (work areas, EMW+0x444), include/em_cmd.h.
+Shared header edits: none beyond new files (em_cmd.h macro CMD_SEL_FUNC uses q instead of r in the
+else loop, equivalent).
+
+## Matching lessons from these files (each confirmed by a match)
+- A function that passes its second parameter through unchanged (`em14_atk_end_sel(em, w)`) keeps a1 live:
+  the compiler then puts the temporaries in a2/a3. Define the callee with the second parameter too.
+  A callee that reads a1 without being given it (em14_to_fly(em, flag), flag = stale a1 of the caller)
+  is declared with its parameter and called with `(em, 0)` here; the original passes nothing.
+- `if (x != 0) return; call();` at the end of a move dispatcher is a single-case `switch (x) { case 0: ... }`
+  (em_move06, act_dist_select, em14_to_fly: beq/b layout).
+- Ladders of `||` compares over the same variable keep `sltiu at`; when the original shows `at` for the first
+  compare and the && / || form does not reproduce it (em_mv03/05, em21 mv02/fly03/fly09) leave it.
+- A float local assigned first (`f32 k = 0.4f;` then `x * k`) loads the constant before the cvt (em20_to_normal).
+- `case 0x3E9: break;` as the FIRST case of a big switch is real when the original's range check starts at
+  0x3E9 (em20/em14 ef_move_sub); and two neighbouring case labels in the opposite source order change the
+  compare ladder (em15 ef_move_sub: 0x42E before 0x433).
+- Local vector arrays: the order of the declarations decides the stack slots (later declarations lower);
+  reading the sp offsets of the original and sorting the arrays by them fixed em14 ef_move_sub.
+- m2c drops the store in the delay slot of a tail call (`j f; sb ...`): em14_to_swim, em15_to_tenjo/fly,
+  em21_to_swim. tools/alignall.py shows it as 2-4 differing instructions at the end.
+- Tables of 2 u16 per entry indexed `p = tbl + i * 2` (em_act_search2): the stride is bytes/2.
+- `(f32)(u32)u8` gives the bltz fix-up of the original for `1500.0f * x13` in every init.
+
+## Not done / next
+- hire_move_sub1/sub2 (em21; my C is not the original's), em14_main (112 off), em17_main (21), em20_main (61),
+  em21_main (27), em15_main (23): written as C, logic believed right (the conditions of the damage switch were
+  rebuilt from the compare ladders), but the exact branch layout is not matched.
+- em_cmd: *_sel family (7 functions, 18/117 off each, one shared macro), end_command, the pl_target_sel group.
+- The m2c-based pipeline scripts lived in /tmp and are not committed; the steps are listed above.

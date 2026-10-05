@@ -1,4 +1,4 @@
-/* em17_r12 - monster 17 AI 0x005DE360-0x005DE368: em_atk02_005DE360. Whole file in em17_nm.c. */
+/* em17_r12 - monster 17 AI 0x005DE710-0x005DE7F8: em_atk06_005DE710. Whole file in em17_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -93,7 +93,7 @@ extern s16 em17_runaway_timer_tbl[];
 
 void em17_local_init(EMW *em);
 void em17_init(EMW *em);
-u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
+static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
 void act_dist_select_005DA5C0(EMW *em);
 void em17_to_normal(EMW *em, s16 a, s16 b);
 void em17_to_fly(EMW *em, int flag);
@@ -208,7 +208,7 @@ void ef_move_sub_005E21D0(EMW *em, EM17W *w);
 void em17_effect_move(EMW *em);
 void ground_land_eff_set_005E63F0(EMW *em);
 s32 kyusyu_char_set2_005E64A0(EMW *em);
-void em17_atk_end_sel(EMW *em);
+void em17_atk_end_sel(EMW *em, EM17W *w);
 void dummy_em_prog_005E65C0(void);
 
 
@@ -338,6 +338,31 @@ extern u8 *em17_act_add[3];
 
 
 
-void em_atk02_005DE360(EMW *em, EM17W *w) {
+void em_atk06_005DE710(EMW *em, EM17W *w) {
+    u8 temp_a2;
 
+    temp_a2 = em->x05;
+    switch (temp_a2) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a2 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x2B, 0, 0);
+        em_action_timer_calc(em, 0);
+        break;
+    case 1:
+        em->ang[1] -= 0x200;
+        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
+            em->x05 += 1;
+            em_char_set(em, 0x2B, 0, 0);
+        }
+        break;
+    case 2:
+        em->ang[1] -= 0x200;
+        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
+            em->x05 += 1;
+            em17_atk_end_sel(em, w);
+        }
+        break;
+    }
 }

@@ -1,4 +1,4 @@
-/* em20_r22 - monster 20 AI 0x005FC860-0x005FC908: ground_land_eff_set_005FC860. Whole file in em20_ai_nm.c. */
+/* em20_r22 - monster 20 AI 0x005FCB20-0x005FCBA8: em20_atk_end_sel, kyusyu_senkai_ret_005FCBA0. Whole file in em20_ai_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -120,7 +120,7 @@ extern s16 em20_runaway_timer_tbl[];
 
 void em20_local_init(EMW *em);
 void em20_init(EMW *em);
-u16 *em_act_search2_005EC0A0(EMW *em, u16 *tbl);
+static u16 *em_act_search2_005EC0A0(EMW *em, u16 *tbl);
 void act_dist_select_005EC0E0(EMW *em);
 void em20_to_normal(EMW *em, s16 a, s16 b);
 void em20_dmg_to_normal(EMW *em, s16 a, s16 b);
@@ -251,11 +251,11 @@ void em20_main(EMW *em);
 void em20_main_sub(EMW *em, EM20W *w);
 void em20_uvmove(EMW *em);
 void sound_call_sub_005F75F0(EMW *em, int se, int joint);
-void sound_call_005F7660(EMW *em, int frame, int se, int joint);
+static void sound_call_005F7660(EMW *em, int frame, int se, int joint);
 void sound_call_parts_005F76C0(EMW *em, int frame, int se, int joint, u8 layer);
 void Em_set_quake_sub(EMW *, int);
-void quake_call_005F7760(EMW *em, int frame, int arg);
-void move_default_005F77B0(EMW *em);
+static void quake_call_005F7760(EMW *em, int frame, int arg);
+static void move_default_005F77B0(EMW *em);
 void ef_move_sub_005F7800(EMW *em, EM20W *w);
 void em20_effect_move(EMW *em);
 void ground_land_eff_set_005FC860(EMW *em);
@@ -263,7 +263,7 @@ void takeoff_eff_set_005FC910(EMW *em);
 void takeon_eff_set_005FC980(EMW *em);
 void hover_eff_set2_005FCA20(EMW *em);
 s32 kyusyu_char_set_005FCA70(EMW *em);
-void em20_atk_end_sel(EMW *em);
+void em20_atk_end_sel(EMW *em, EM20W *w);
 void kyusyu_senkai_ret_005FCBA0(EMW *em);
 void em20_material_sub(EMW *em, int type, u8 *tbl);
 void dummy_em_prog_005FCDB0(void);
@@ -430,18 +430,18 @@ extern FLYNEED *em_hungry_tbl[];
 
 
 
-void ground_land_eff_set_005FC860(EMW *em) {
-    f32 pos[3];
-
-    if (game_w.stage == 0) {
-        get_joint_pos_em(em, 0x14, pos);
-        pos[1] = em->x5AC;
-        if (pos[1] <= 46.0f) {
-            eft11_set(em, pos, 1);
-            get_joint_pos_em(em, 0x1A, pos);
-            eft11_set(em, pos, 1);
-        }
-    } else {
-        Eft20_set(1.0f, em, 0xB, 0);
+void em20_atk_end_sel(EMW *em, EM20W *w) {
+    if (em->x734 == 3) {
+        em20_to_normal(em, 0, 0);
+        return;
     }
+    if (((s32) em->x39A % 10) == 0) {
+        em20_act_set(em, 0, 1, 1);
+        return;
+    }
+    em20_to_normal(em, 0, 0);
+}
+
+void kyusyu_senkai_ret_005FCBA0(EMW *em) {
+    em20_to_fly(em, 1);
 }

@@ -1,4 +1,4 @@
-/* em14_r11 - monster 14 AI 0x005BA140-0x005BBC2C: em_dmg08_005BA140, em_dmg09_005BA2A0, em_dmg10_005BA400, em_dmg11_005BA490, em_dmg13_005BA560, em_dmg14_005BA660, em_dmg15_005BA800, em_dmg16_005BA880, em_dmg17_005BA9A0, em_dmg18_005BAA90, em_demo00_005BAB80, em_die00_005BAEF0, em_die01_005BB090, em_die02_005BB290, em_move00_005BB460, em_move01_005BB690, em_move02_005BB760, em_move03_005BB900, em_move04_005BBA60, em_move05_005BBBC0. Whole file in em14_nm.c. */
+/* em14_r11 - monster 14 AI 0x005BA140-0x005BBC64: em_dmg08_005BA140, em_dmg09_005BA2A0, em_dmg10_005BA400, em_dmg11_005BA490, em_dmg13_005BA560, em_dmg14_005BA660, em_dmg15_005BA800, em_dmg16_005BA880, em_dmg17_005BA9A0, em_dmg18_005BAA90, em_demo00_005BAB80, em_die00_005BAEF0, em_die01_005BB090, em_die02_005BB290, em_move00_005BB460, em_move01_005BB690, em_move02_005BB760, em_move03_005BB900, em_move04_005BBA60, em_move05_005BBBC0, em_move06_005BBC30. Whole file in em14_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -53,12 +53,13 @@ void em_action_timer_calc(EMW *, int);
 int Event_flag_ck();
 void em_dur_set(EMW *, int);
 void Eft20_set(f32, EMW *, int, int);
+void Eft15_set3(EMW *, int, f32, int);
 FLMAT *get_joint_wmat_em(EMW *, int);
 void flmatCopy(FLMAT *, FLMAT *);
 void flvecApplyMat33_2(f32 *, FLMAT *);
 int em_frame_check3(EMW *, int, f32, f32);
 void em14_act_set(EMW *em, int kind, u16 no, u16 arg);
-u8 Em_stg_ck(EMW *);
+int Em_stg_ck(EMW *);
 s16 em_hp_vital_set2(EMW *, s16, s16);
 void em_no_battle_area_ck(EMW *, int, int);
 void Eft02_set3(EMW *, u16, int, int, f32 *, f32);
@@ -200,7 +201,7 @@ void move_default_005BCCF0(EMW *em);
 void ef_move_sub_005BCD40(EMW *em, EM14W *w);
 void em14_effect_move(EMW *em);
 void ground_land_eff_set_005C1120(EMW *em);
-void em14_atk_end_sel(EMW *em);
+void em14_atk_end_sel(EMW *em, EM14W *w);
 void dummy_em_prog_005C1250(void);
 
 
@@ -1281,6 +1282,14 @@ void em_move05_005BBBC0(EMW *em, EM14W *w) {
         break;
     case 2:
         em_die02_005BB290(em, w);
+        break;
+    }
+}
+
+void em_move06_005BBC30(EMW *em, EM14W *w) {
+    switch (em->x15) {
+    case 0:
+        em_demo00_005BAB80(em, w);
         break;
     }
 }

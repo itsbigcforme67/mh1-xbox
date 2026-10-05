@@ -1,4 +1,4 @@
-/* em17_r08 - monster 17 AI 0x005DCFD0-0x005DD30C: em_fly00_005DCFD0, em_fly01_005DD0D0. Whole file in em17_nm.c. */
+/* em17_r08 - monster 17 AI 0x005DD420-0x005DDAEC: em_fly03_005DD420, em_fly04_005DD6D0, em_fly05_005DD840, em_fly07_005DD9B0. Whole file in em17_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -93,7 +93,7 @@ extern s16 em17_runaway_timer_tbl[];
 
 void em17_local_init(EMW *em);
 void em17_init(EMW *em);
-u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
+static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
 void act_dist_select_005DA5C0(EMW *em);
 void em17_to_normal(EMW *em, s16 a, s16 b);
 void em17_to_fly(EMW *em, int flag);
@@ -208,7 +208,7 @@ void ef_move_sub_005E21D0(EMW *em, EM17W *w);
 void em17_effect_move(EMW *em);
 void ground_land_eff_set_005E63F0(EMW *em);
 s32 kyusyu_char_set2_005E64A0(EMW *em);
-void em17_atk_end_sel(EMW *em);
+void em17_atk_end_sel(EMW *em, EM17W *w);
 void dummy_em_prog_005E65C0(void);
 
 
@@ -338,9 +338,85 @@ extern u8 *em17_act_add[3];
 
 
 
-void em_fly00_005DCFD0(EMW *em, EM17W *w) {
+void em_fly03_005DD420(EMW *em, EM17W *w) {
+    f32 temp_f1;
+    f32 temp_f1_2;
+    u8 temp_a2;
+
+    temp_a2 = em->x05;
+    switch (temp_a2) {
+    case 0:
+        em->x05 = temp_a2 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x12, 0, 0);
+        em_rate_clear(em);
+        /* fallthrough */
+    case 1:
+        if (em_frame_check(em, 0, 96.0f) != 0) {
+            em->x05 += 1;
+            em_rate_clear(em);
+            em17_fly_adjy2_init(em, 2);
+            w->x18 = 0;
+        }
+        break;
+    case 2:
+        if ((em_frame_check2(em, 0, 50.0f) != 0) && (em_frame_check2(em, 0, 114.0f) == 0)) {
+            em17_senkai_target(em);
+        }
+        if (em_frame_check2(em, 0, 30.0f) != 0) {
+            em->x388 = 2;
+            em17_fly_adjy2(em);
+        }
+        if (em->x194 == 0) {
+            em->x05 += 1;
+        }
+        break;
+    case 3:
+        if ((em17_fly_adjy2(em) & 0xFF) && (em->pos[1] <= (800.0f + em->x5AC))) {
+            em->x05 += 1;
+            em_char_set(em, 0xB, 0, 0);
+            em_rate_clear(em);
+            temp_f1 = (em->x5AC - em->pos[1]) / 30.0f;
+            em->adj_y = temp_f1;
+            if (!(temp_f1 < 0.0f)) {
+                em->adj_y = -10.0f;
+            }
+        }
+        break;
+    case 4:
+        w->spd[0] = 0;
+        w->spd[1] = (s32) em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (em->pos[1] <= em->x5AC) {
+            em->x05 += 1;
+            em_char_set(em, 0x13, 0, 0);
+            em->x388 = 0;
+            em->pos[1] = em->x5AC;
+            Em_set_quake_sub(em, 2);
+        }
+        break;
+    case 5:
+        if (em->x194 == 0) {
+            w->x06 = 0x96;
+            em->x05 += 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+    temp_f1_2 = em->x5AC;
+    if (em->pos[1] < temp_f1_2) {
+        em->pos[1] = temp_f1_2;
+    }
+}
+
+void em_fly04_005DD6D0(EMW *em, EM17W *w) {
+    f32 temp_f1;
+    s32 var_s2;
     u8 temp_a1;
 
+    var_s2 = 0;
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
@@ -348,28 +424,84 @@ void em_fly00_005DCFD0(EMW *em, EM17W *w) {
         em->x388 = 0;
         em->x3F4 = 0;
         em_char_set(em, 0x12, 0, 0);
-        em17_fly_adjy2_init(em, 2);
+        em17_fly_adjy2_init(em, 3);
+        em->adj_z = 20.0f;
         w->x18 = 0;
         break;
     case 1:
-        if (em_frame_check(em, 0, 96.0f) != 0) {
-            em->x05 += 1;
+        if (em_frame_check2(em, 0, 30.0f) != 0) {
             em->x388 = 2;
-            em17_fly_adjy2(em);
+            var_s2 = em17_fly_adjy2(em) & 0xFF;
+        }
+        if ((var_s2 != 0) && (em->pos[1] <= em->x5AC)) {
+            em_char_set(em, 0x13, 0, 0);
+            em->x05 += 1;
+            em->x388 = 0;
+            em->pos[1] = em->x5AC;
+            Em_set_quake_sub(em, 2);
         }
         break;
     case 2:
-        if (em17_fly_adjy2(em) != 0) {
+        if (em->x194 == 0) {
+            w->x06 = 0x96;
             em->x05 += 1;
-            em17_to_fly(em, 0);
+            em17_to_normal(em, 0, 0);
         }
         break;
     }
+    temp_f1 = em->x5AC;
+    if (em->pos[1] < temp_f1) {
+        em->pos[1] = temp_f1;
+    }
 }
 
-void em_fly01_005DD0D0(EMW *em, EM17W *w) {
+void em_fly05_005DD840(EMW *em, EM17W *w) {
     f32 temp_f1;
-    f32 temp_f1_2;
+    s32 var_s2;
+    u8 temp_a1;
+
+    var_s2 = 0;
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x12, 0, 0);
+        em17_fly_adjy2_init(em, 3);
+        em->adj_z = -20.0f;
+        w->x18 = 0;
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 30.0f) != 0) {
+            em->x388 = 2;
+            var_s2 = em17_fly_adjy2(em) & 0xFF;
+        }
+        if ((var_s2 != 0) && (em->pos[1] <= em->x5AC)) {
+            em_char_set(em, 0x13, 0, 0);
+            em->x05 += 1;
+            em->x388 = 0;
+            em->pos[1] = em->x5AC;
+            Em_set_quake_sub(em, 2);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            w->x06 = 0x96;
+            em->x05 += 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+    temp_f1 = em->x5AC;
+    if (em->pos[1] < temp_f1) {
+        em->pos[1] = temp_f1;
+    }
+}
+
+void em_fly07_005DD9B0(EMW *em, EM17W *w) {
+    f32 temp_f0;
+    f32 temp_f1;
     s32 temp_v1;
     u8 temp_a1;
 
@@ -379,55 +511,34 @@ void em_fly01_005DD0D0(EMW *em, EM17W *w) {
         em->x05 = temp_a1 + 1;
         em->x388 = 2;
         em->x3F4 = 0;
-        em->ang[0] = 0;
-        em->ang[2] = 0;
+        w->turn = 0x100;
         em_char_set(em, 0xF, 0, 0);
-        em_rate_clear(em);
-        em->adj_y = -10.0f;
         w->x18 = 0;
         break;
     case 1:
-        w->spd[0] = 0;
+        em17_senkai_target(em);
         w->spd[1] = (s32) em->ang[1];
         w->spd[2] = 0;
+        xang_calc_target(em, w->spd, 0.0f, 0.0f);
         speed_add(em, w->spd);
-        if (!((630.0f + em->x5AC) <= em->pos[1]) && ((em_frame_check(em, 0, 10.0f) != 0) || (em_frame_check(em, 0, 86.0f) != 0) || (em_frame_check(em, 0, 160.0f) != 0))) {
-            em->x05 += 1;
-            em_char_set(em, 0xB, 0, 0);
-            temp_f1 = (em->x5AC - em->pos[1]) / 30.0f;
-            em->adj_y = temp_f1;
-            if (!(temp_f1 < 0.0f)) {
-                em->adj_y = -10.0f;
-            }
-            em->work08 = 0x1E;
-        }
-        break;
-    case 2:
-        w->spd[0] = 0;
-        w->spd[1] = (s32) em->ang[1];
-        w->spd[2] = 0;
-        speed_add(em, w->spd);
+        em17_fly_adjy(em, 1);
+        temp_f0 = CalcDistanceXZ(em->pos, em->tgt_pos);
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
-        if (temp_v1 < 0) {
+        if (temp_v1 > 0) {
+            if (temp_f0 <= (10.0f * em->adj_z)) {
+                goto block_9;
+            }
+        } else {
+block_9:
             em->x05 += 1;
-            em_char_set(em, 0x13, 0, 0);
-            em->pos[1] = em->x5AC;
-            em->ang[0] = 0;
-            em->ang[2] = 0;
-            em->x388 = 0;
-            Em_set_quake_sub(em, 1);
-        }
-        break;
-    case 3:
-        if (em->x194 == 0) {
-            em->x05 = temp_a1 + 1;
-            em17_to_normal(em, 0, 0);
+            em_rate_clear(em);
+            em17_to_fly(em, 0);
         }
         break;
     }
-    temp_f1_2 = em->x5AC;
-    if (em->pos[1] < temp_f1_2) {
-        em->pos[1] = temp_f1_2;
+    temp_f1 = em->x5AC;
+    if (em->pos[1] < temp_f1) {
+        em->pos[1] = temp_f1;
     }
 }

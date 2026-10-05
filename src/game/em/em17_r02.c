@@ -1,4 +1,4 @@
-/* em17_r02 - monster 17 AI 0x005DA740-0x005DA8D8: em17_to_normal. Whole file in em17_nm.c. */
+/* em17_r02 - monster 17 AI 0x005DA580-0x005DAAC8: em_act_search2_005DA580, act_dist_select_005DA5C0, em17_to_normal, em17_to_fly, em17_frame_reset, em_act00_005DA9F0. Whole file in em17_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -93,7 +93,7 @@ extern s16 em17_runaway_timer_tbl[];
 
 void em17_local_init(EMW *em);
 void em17_init(EMW *em);
-u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
+static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
 void act_dist_select_005DA5C0(EMW *em);
 void em17_to_normal(EMW *em, s16 a, s16 b);
 void em17_to_fly(EMW *em, int flag);
@@ -208,7 +208,7 @@ void ef_move_sub_005E21D0(EMW *em, EM17W *w);
 void em17_effect_move(EMW *em);
 void ground_land_eff_set_005E63F0(EMW *em);
 s32 kyusyu_char_set2_005E64A0(EMW *em);
-void em17_atk_end_sel(EMW *em);
+void em17_atk_end_sel(EMW *em, EM17W *w);
 void dummy_em_prog_005E65C0(void);
 
 
@@ -338,6 +338,67 @@ extern u8 *em17_act_add[3];
 
 
 
+static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl) {
+    EM17W *w = (EM17W *)em->ex;
+    u16 *p;
+    u8 i;
+
+    i = w->x19;
+    w->x19 = i + 1;
+    p = tbl + i * 2;
+    if (*p == 0xFFFF) {
+        p = tbl;
+        w->x19 = 1;
+    }
+    return p;
+}
+
+void act_dist_select_005DA5C0(EMW *em) {
+    EM17W *w = (EM17W *)em->ex;
+    u16 *p;
+    int k;
+    u8 temp_a1;
+    u8 temp_a2;
+
+    temp_a1 = em->x734;
+    temp_a2 = M2C_FIELD(em, u8 *, 0x735);
+    switch (temp_a1) {
+    case 0:
+        if (em->x8C3 == 0) {
+            em17_act_set(em, 0, em_act_search(em17_act_add[temp_a2]) & 0xFFFF, 1);
+        }
+        break;
+    case 1:
+        if (em->x8C3 == 0) {
+            p = em_act_search2_005DA580(em, em17_rail_add[temp_a2]);
+            k = p[0];
+            if (k == 1 && p[1] == 0) {
+                w->has_tgt = 1;
+            }
+            em17_act_set(em, k, p[1], 1);
+        }
+        break;
+    case 2:
+        if (em->x8C3 == 0) {
+            p = em_act_search2_005DA580(em, em17_rail_half_add[temp_a2]);
+            k = p[0];
+            if (k == 1 && p[1] == 0) {
+                w->has_tgt = 1;
+            }
+            em17_act_set(em, k, p[1], 1);
+        }
+        break;
+    case 3:
+        em->x839 = 1;
+        if (em->x388 == 0) {
+            em17_act_set(em, 0, 1, 0);
+        } else {
+            em17_act_set(em, 2, 2, 0);
+        }
+        break;
+    }
+}
+
 void em17_to_normal(EMW *em, s16 a, s16 b) {
     if (em->x734 != 0) {
         act_dist_select_005DA5C0(em);
@@ -369,4 +430,63 @@ void em17_to_normal(EMW *em, s16 a, s16 b) {
     em->x388 = 0;
     em->x3F4 = 0;
     em17_act_set(em, 0, 1, 0);
+}
+
+void em17_to_fly(EMW *em, int flag) {
+    if (em->x734 != 3) {
+        act_dist_select_005DA5C0(em);
+        return;
+    }
+    em->x839 = 1;
+    em->act_spd = 1.0f;
+    switch (flag & 0xFF) {
+    case 0:
+        em_act_set(em, 2, 0xE);
+        break;
+    }
+}
+
+void em17_frame_reset(EMW *em, int i) {
+    if (EM_LYR(em, i) == 0) {
+        switch (i) {
+        case 0:
+            em_char_set2(em, 0x3E9, 0xA, 0, 0);
+            break;
+        case 1:
+            em_char_set2(em, 0x4B1, 0xA, 0, 1);
+            break;
+        case 2:
+            em_char_set2(em, 0x579, 0xA, 0, 2);
+            break;
+        }
+    }
+}
+
+void em_act00_005DA9F0(EMW *em, EM17W *w) {
+    s32 temp_v1_2;
+    u8 temp_v1;
+
+    temp_v1 = em->x05;
+    switch (temp_v1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_v1 + 1;
+        em->x3F4 = 0;
+        if (em->char0 != 0x3E9) {
+            em_char_set2(em, 0x3E9, 0xA, 0, 0);
+        }
+        if (em->x2DE != 0x44D) {
+            em_char_set2(em, 0x4B1, 0xA, 0, 1);
+        }
+        if (em->x2E0 != 0x4B1) {
+            em_char_set2(em, 0x579, 0xA, 0, 2);
+        }
+        break;
+    case 1:
+        temp_v1_2 = em->work08 - 1;
+        em->work08 = temp_v1_2;
+        if (temp_v1_2 <= 0) {
+            em->x839 = 1;
+        }
+        break;
+    }
 }

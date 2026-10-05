@@ -115,12 +115,12 @@ u8 *name(EMW *em, u8 *p) {                                                     \
             } else {                                                           \
                 more = 1;                                                      \
                 do {                                                           \
-                    r = cmd_end_search(em, q, code, 3);                        \
-                    if ((r[0] == (code) && r[1] == 2) ||                       \
-                        (r[0] == (code) && r[1] == 3)) {                       \
+                    q = cmd_end_search(em, q, code, 3);                        \
+                    if ((q[0] == (code) && q[1] == 2) ||                       \
+                        (q[0] == (code) && q[1] == 3)) {                       \
                         more = 0;                                              \
                     }                                                          \
-                    q = next_cmd_search(em, r);                                \
+                    q = next_cmd_search(em, q);                                \
                 } while (more);                                                \
                 break;                                                         \
             }                                                                  \
@@ -178,12 +178,12 @@ u8 *name(EMW *em, u8 *p) {                                                     \
             } else {                                                           \
                 more = 1;                                                      \
                 do {                                                           \
-                    r = cmd_end_search(em, q, code, 3);                        \
-                    if ((r[0] == (code) && r[1] == 2) ||                       \
-                        (r[0] == (code) && r[1] == 3)) {                       \
+                    q = cmd_end_search(em, q, code, 3);                        \
+                    if ((q[0] == (code) && q[1] == 2) ||                       \
+                        (q[0] == (code) && q[1] == 3)) {                       \
                         more = 0;                                              \
                     }                                                          \
-                    q = next_cmd_search(em, r);                                \
+                    q = next_cmd_search(em, q);                                \
                 } while (more);                                                \
                 break;                                                         \
             }                                                                  \

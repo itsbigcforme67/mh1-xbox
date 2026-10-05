@@ -1,4 +1,4 @@
-/* em20_r04 - monster 20 AI 0x005EC910-0x005EE8FC: em_act02_005EC910, em_act03_005EC9A0, em_act04_005ECA20, em_act05_005ECAC0, em_act06_005ECBB0, em_act07_005ECC80, em_act08_005ECD20, em_act09_005ECD30, em_act10_005ECDE0, em_act11_005ECEF0, em_act12_005ECFC0, em_act13_005ED040, em_act14_005ED110, em_act15_005ED4A0, em_act16_005ED5D0, em_act17_005ED700, em_act18_005ED780, em_act19_005ED940, em_act40_005EDAC0, em_act20_005EDB80, em_act21_005EDC90, em_act22_005EDE50, em_act23_005EDED0, em_act24_005EDFA0, em_act25_005EE070, em_act26_005EE0F0, em_act27_005EE230, em_act28_005EE340, em_act29_005EE410, em_act31_005EE550, em_act33_005EE690, em_act34, em_mv00_005EE7A0. Whole file in em20_ai_nm.c. */
+/* em20_r04 - monster 20 AI 0x005EC910-0x005EEA7C: em_act02_005EC910, em_act03_005EC9A0, em_act04_005ECA20, em_act05_005ECAC0, em_act06_005ECBB0, em_act07_005ECC80, em_act08_005ECD20, em_act09_005ECD30, em_act10_005ECDE0, em_act11_005ECEF0, em_act12_005ECFC0, em_act13_005ED040, em_act14_005ED110, em_act15_005ED4A0, em_act16_005ED5D0, em_act17_005ED700, em_act18_005ED780, em_act19_005ED940, em_act40_005EDAC0, em_act20_005EDB80, em_act21_005EDC90, em_act22_005EDE50, em_act23_005EDED0, em_act24_005EDFA0, em_act25_005EE070, em_act26_005EE0F0, em_act27_005EE230, em_act28_005EE340, em_act29_005EE410, em_act31_005EE550, em_act33_005EE690, em_act34, em_mv00_005EE7A0, em_mv01_005EE900, em_mv02_005EE920. Whole file in em20_ai_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -120,7 +120,7 @@ extern s16 em20_runaway_timer_tbl[];
 
 void em20_local_init(EMW *em);
 void em20_init(EMW *em);
-u16 *em_act_search2_005EC0A0(EMW *em, u16 *tbl);
+static u16 *em_act_search2_005EC0A0(EMW *em, u16 *tbl);
 void act_dist_select_005EC0E0(EMW *em);
 void em20_to_normal(EMW *em, s16 a, s16 b);
 void em20_dmg_to_normal(EMW *em, s16 a, s16 b);
@@ -251,11 +251,11 @@ void em20_main(EMW *em);
 void em20_main_sub(EMW *em, EM20W *w);
 void em20_uvmove(EMW *em);
 void sound_call_sub_005F75F0(EMW *em, int se, int joint);
-void sound_call_005F7660(EMW *em, int frame, int se, int joint);
+static void sound_call_005F7660(EMW *em, int frame, int se, int joint);
 void sound_call_parts_005F76C0(EMW *em, int frame, int se, int joint, u8 layer);
 void Em_set_quake_sub(EMW *, int);
-void quake_call_005F7760(EMW *em, int frame, int arg);
-void move_default_005F77B0(EMW *em);
+static void quake_call_005F7760(EMW *em, int frame, int arg);
+static void move_default_005F77B0(EMW *em);
 void ef_move_sub_005F7800(EMW *em, EM20W *w);
 void em20_effect_move(EMW *em);
 void ground_land_eff_set_005FC860(EMW *em);
@@ -263,7 +263,7 @@ void takeoff_eff_set_005FC910(EMW *em);
 void takeon_eff_set_005FC980(EMW *em);
 void hover_eff_set2_005FCA20(EMW *em);
 s32 kyusyu_char_set_005FCA70(EMW *em);
-void em20_atk_end_sel(EMW *em);
+void em20_atk_end_sel(EMW *em, EM20W *w);
 void kyusyu_senkai_ret_005FCBA0(EMW *em);
 void em20_material_sub(EMW *em, int type, u8 *tbl);
 void dummy_em_prog_005FCDB0(void);
@@ -1385,6 +1385,60 @@ void em_mv00_005EE7A0(EMW *em, EM20W *w) {
         em->x388 = 0;
         em->x3F4 = 0;
         em_char_set(em, 3, 0, 0);
+        break;
+    case 1:
+        if (w->has_tgt != 0) {
+            d = (u16)((u16)Em_Calc_angY(em->pos, em->tgt_pos) - em->ang[1]);
+            if (d <= 0x8000) {
+                if (d <= 0x3F) {
+                    em->ang[1] += d;
+                } else {
+                    em->ang[1] += 0x40;
+                }
+            } else if (d > 0xFFC0) {
+                em->ang[1] += d;
+            } else {
+                em->ang[1] -= 0x40;
+            }
+            mot_miration_ret(em, sp30);
+            temp_f1 = w->dist - sp30[2];
+            w->dist = temp_f1;
+            if (temp_f1 <= 0.0f) {
+                em->work08 = 1;
+            }
+        }
+        temp_v1_2 = em->work08 - 1;
+        em->work08 = temp_v1_2;
+        if (temp_v1_2 <= 0) {
+            em->x05 += 1;
+            em20_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void em_mv01_005EE900(EMW *em, EM20W *w) {
+    em->x05 += 1;
+    em20_to_normal(em, 0, 0);
+}
+
+void em_mv02_005EE920(EMW *em, EM20W *w) {
+    int d;
+    f32 sp30[3];
+    f32 temp_f1;
+    s32 temp_v0;
+    s32 temp_v1;
+    s32 temp_v1_2;
+    s32 var_v0;
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {                              /* irregular */
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x68, 0, 0);
         break;
     case 1:
         if (w->has_tgt != 0) {

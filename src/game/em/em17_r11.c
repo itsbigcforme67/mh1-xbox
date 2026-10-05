@@ -1,4 +1,4 @@
-/* em17_r11 - monster 17 AI 0x005DDF40-0x005DE074: em_fly21_005DDF40. Whole file in em17_nm.c. */
+/* em17_r11 - monster 17 AI 0x005DE360-0x005DE3EC: em_atk02_005DE360, em_atk03_005DE370. Whole file in em17_nm.c. */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -93,7 +93,7 @@ extern s16 em17_runaway_timer_tbl[];
 
 void em17_local_init(EMW *em);
 void em17_init(EMW *em);
-u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
+static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
 void act_dist_select_005DA5C0(EMW *em);
 void em17_to_normal(EMW *em, s16 a, s16 b);
 void em17_to_fly(EMW *em, int flag);
@@ -208,7 +208,7 @@ void ef_move_sub_005E21D0(EMW *em, EM17W *w);
 void em17_effect_move(EMW *em);
 void ground_land_eff_set_005E63F0(EMW *em);
 s32 kyusyu_char_set2_005E64A0(EMW *em);
-void em17_atk_end_sel(EMW *em);
+void em17_atk_end_sel(EMW *em, EM17W *w);
 void dummy_em_prog_005E65C0(void);
 
 
@@ -338,44 +338,27 @@ extern u8 *em17_act_add[3];
 
 
 
-void em_fly21_005DDF40(EMW *em, EM17W *w) {
-    f32 temp_f0;
-    f32 temp_f1;
-    s32 temp_v1;
-    u8 temp_a1;
+void em_atk02_005DE360(EMW *em, EM17W *w) {
 
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
+}
+
+void em_atk03_005DE370(EMW *em, EM17W *w) {
+    u8 temp_a2;
+
+    temp_a2 = em->x05;
+    switch (temp_a2) {                              /* irregular */
     case 0:
-        em->x05 = temp_a1 + 1;
-        em->x388 = 2;
-        em->x3F4 = 0;
-        w->turn = 0x100;
-        em_char_set(em, 0xF, 0, 0);
-        w->x18 = 0;
+        em->x05 = temp_a2 + 1;
+        em->x388 = 0;
+        em->x3F4 = 1;
+        em_char_set(em, 0x24, 0, 0);
         break;
     case 1:
-        w->spd[1] = (s32) (Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF);
-        w->spd[2] = 0;
-        xang_calc_target(em, w->spd, 0.0f, 0.0f);
-        speed_add(em, w->spd);
-        temp_f0 = flvecCalcDistance(em->pos, em->tgt_pos);
-        temp_v1 = em->work08 - 1;
-        em->work08 = temp_v1;
-        if (temp_v1 > 0) {
-            if (temp_f0 <= (10.0f * em->adj_z)) {
-                goto block_9;
-            }
-        } else {
-block_9:
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
             em->x05 += 1;
-            em_rate_clear(em);
-            em17_to_fly(em, 0);
+            em17_atk_end_sel(em, w);
         }
         break;
-    }
-    temp_f1 = em->x5AC;
-    if (em->pos[1] < temp_f1) {
-        em->pos[1] = temp_f1;
     }
 }
