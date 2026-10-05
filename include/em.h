@@ -316,7 +316,7 @@ typedef struct EMW {
     u8 x949;            /* 0x949 */
     s16 stay_tm;        /* 0x94A from emNN_stay_timer_tbl[stg] (local_area_move_init) */
     s16 runaway_tm;     /* 0x94C from emNN_runaway_timer_tbl[stg] */
-    u8 _pad94E[0x950 - 0x94E];
+    s16 x94E;           /* 0x94E (em12 dm04 copies it to work08) */
     u8 x950;            /* 0x950 */
     u8 x951;            /* 0x951 */
     u8 x952;            /* 0x952 */

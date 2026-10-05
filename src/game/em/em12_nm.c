@@ -21,6 +21,8 @@ typedef struct EM12W {
     u8 x3C;             /* 0x3C */
     u8 x3D;             /* 0x3D */
     u16 x3E;            /* 0x3E */
+    u8 _pad40[0x90 - 0x40];
+    s8 x90;             /* 0x90 */
 } EM12W;
 
 typedef struct QUEST_W {
@@ -42,6 +44,17 @@ void flvecCopy(f32 *, f32 *);
 f32 CalcDistanceXZ(f32 *, f32 *);
 int calc_vec_ang(f32, f32, f32, f32);
 void flvecRotY(f32 *, f32);
+void em_cmd_reset(EMW *);
+void Eft16_set_ex(EMW *, int, int);
+void em_escape_mind_set(EMW *, u8, u8);
+void Em_Mahi_Start(EMW *);
+void Em_Mahi_End(EMW *);
+void em_mahi_eff_set(EMW *, int);
+void Quest_enemy_die(EMW *);
+int Quest_enemy_revival_ck(EMW *);
+void Quest_enemy_revival_set(EMW *);
+void em_status_init(EMW *);
+void em12_init(EMW *);
 int em_frame_check2(EMW *, int, f32);
 int em_frame_check(EMW *, f32, int);
 void Em_Sleep_Start(EMW *);
@@ -52,6 +65,7 @@ void em12_next_act_set(EMW *em);
 int em_frame_check3(EMW *, int, f32, f32);
 void mot_miration_ret(EMW *, f32 *);
 u16 Em_Calc_angY(f32 *, f32 *);
+s8 em_search_set(EMW *, int, f32, f32);
 
 void em12_init(EMW *em) {
     EM12W *w = (EM12W *)em->ex;
@@ -484,6 +498,107 @@ static void em_mov00_005B0590(EMW *em) {
     }
 }
 
+static void em_mov01_005B06E0(EMW *em) {
+    EM12W *w = (EM12W *)em->ex;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        if (em->char0 != 0x406) {
+            *(f32 *)&em->x3AC = 400.0f;
+        }
+        em_char_set(em, 0x1E, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            if (em_search_set(em, 0x78E4, 700.0f, 300.0f) != -1) {
+                if ((u16)(em->horm_ang - em->ang[1]) < 0x3000) {
+                    em->x05 = 4;
+                    em_char_set(em, 0x22, 0, 0);
+                    em->x07 = 0;
+                    w->x0A = 0;
+                } else if ((u16)(em->horm_ang - em->ang[1]) >= 0xD001) {
+                    em->x05 = 4;
+                    em_char_set(em, 0x21, 0, 0);
+                    em->x07 = 1;
+                    w->x0A = 0;
+                } else if ((u16)(em->horm_ang - em->ang[1]) > 0x5400 && (u16)(em->horm_ang - em->ang[1]) < 0xA600) {
+                    em_act_set(em, 3, 0);
+                } else {
+                    em->x05++;
+                    em_char_set(em, 0x20, 0, 0);
+                }
+            } else {
+                em12_next_act_set(em);
+            }
+        }
+        break;
+    case 2:
+        if (em->x1C4 == 0) {
+            em->x05++;
+            em->work08 = (em->x39A & 3) * 30 + 0xD2;
+        }
+        break;
+    case 3:
+        if (em_search_set(em, 0x8000, 500.0f, 200.0f) != -1) {
+            int d = (u16)(em->horm_ang - em->ang[1]);
+
+            if (d > 0x5400 && d < 0xA600) {
+                em_act_set(em, 3, 0);
+            } else {
+                em->work08--;
+                if (em_frame_check2(em, 0, 14.0f) != 0) {
+                    if (d < 0x8000) {
+                        if (em->work08 <= 0) {
+                            em->x05++;
+                            em_char_set(em, 0x22, 0, 0);
+                            em->x07 = 0;
+                            w->x0A = 0;
+                        }
+                        em->ang[1] -= 0x42;
+                    } else {
+                        if (em->work08 <= 0) {
+                            em->x05++;
+                            em_char_set(em, 0x21, 0, 0);
+                            em->x07 = 1;
+                            w->x0A = 0;
+                        }
+                        em->ang[1] += 0x42;
+                    }
+                }
+            }
+        } else {
+            em->x05 = 5;
+            em_char_set(em, 0x23, 0, 0);
+        }
+        break;
+    case 4:
+        if (em->x194 == 0) {
+            em->x05 = 2;
+            em_char_set(em, 0x20, 0, 0);
+        } else {
+            if (em_frame_check(em, 6.0f, 0) != 0) {
+                w->x0A++;
+            } else if (em_frame_check(em, 122.0f, 0) != 0) {
+                w->x0A = 0;
+            }
+            if (w->x0A != 0) {
+                if (em->x07 == 0) {
+                    em->ang[1] -= 0x1D7;
+                } else {
+                    em->ang[1] += 0x1D7;
+                }
+            }
+        }
+        break;
+    case 5:
+        if (em->x194 == 0) {
+            em12_next_act_set(em);
+        }
+        break;
+    }
+}
+
 static void em_mov02_005B0AE0(EMW *em) {
     EM12W *w = (EM12W *)em->ex;
 
@@ -674,5 +789,363 @@ static void em_mov09_005B13C0(EMW *em) {
         em->x05++;
         em12_next_act_set(em);
         break;
+    }
+}
+
+static void em_move01_005B1400(EMW *em) {
+    switch (em->x15) {
+    case 0: em_mov00_005B0590(em); break;
+    case 1: em_mov01_005B06E0(em); break;
+    case 2: em_mov02_005B0AE0(em); break;
+    case 3: em_mov03_005B0BD0(em); break;
+    case 4: em_mov04_005B0CC0(em); break;
+    case 5: em_mov05_005B0E40(em); break;
+    case 6: em_mov06_005B0FB0(em); break;
+    case 7: em_mov07_005B1100(em); break;
+    case 8: em_mov08_005B1280(em); break;
+    case 9: em_mov09_005B13C0(em); break;
+    }
+}
+
+static void em_atk00_005B14E0(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x1F, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em12_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_atk01_005B1550(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 6, 0, 0);
+        break;
+    case 1:
+        if (em_frame_check(em, 102.0f, 0) != 0) {
+            em->x05++;
+            em_char_set(em, 0x24, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em12_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_atk02_005B1610(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x25, 0, 0);
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 128.0f) == 0 && em->x1C4 == 0) {
+            em->ang[1] += 0x1C7;
+        }
+        if (em->x194 == 0) {
+            em12_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_atk03_005B16C0(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x24, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em12_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_atk04_005B1730(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 2, 0, 0);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 7, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em12_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_move03_005B17E0(EMW *em) {
+    switch (em->x15) {
+    case 0: em_atk00_005B14E0(em); break;
+    case 1: em_atk01_005B1550(em); break;
+    case 2: em_atk02_005B1610(em); break;
+    case 3: em_atk03_005B16C0(em); break;
+    case 4: em_atk04_005B1730(em); break;
+    }
+}
+
+static void em_dm00_005B1880(EMW *em) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        if (em->char0 != 0x424) {
+            em_char_set(em, 0x3C, 0, 0);
+        }
+        em_cmd_reset(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em_act_set(em, 0, 1);
+            em->x302 = 0x40;
+        } else if (em_frame_check(em, 2.0f, 0) != 0) {
+            Eft16_set_ex(em, 3, 0xD);
+            Eft16_set_ex(em, 4, 0xE);
+        }
+        break;
+    }
+}
+
+static void em_dm01_005B1950(EMW *em) {
+    f32 v[3];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x3E, 0, 0);
+        em_cmd_reset(em);
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 22.0f) == 0 && em->x1C4 == 0) {
+            v[0] = -10.909091f * em->scale[0];
+            v[1] = 0.0f;
+            v[2] = 0.0f;
+            flvecRotY(v, DEG2RAD(ANG2DEG(em->ang[1])));
+            em->pos[0] += v[0];
+            em->pos[2] += v[2];
+        }
+        if (em->x194 == 0) {
+            em12_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_dm02_005B1A90(EMW *em) {
+    EM12W *w = (EM12W *)em->ex;
+    f32 v[3];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x3D, 0, 0);
+        w->x0A = 0;
+        em_cmd_reset(em);
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 22.0f) == 0 && em->x1C4 == 0) {
+            v[0] = 10.909091f * em->scale[0];
+            v[1] = 0.0f;
+            v[2] = 0.0f;
+            flvecRotY(v, DEG2RAD(ANG2DEG(em->ang[1])));
+            em->pos[0] += v[0];
+            em->pos[2] += v[2];
+        }
+        if (em->x194 == 0) {
+            em12_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_dm03_005B1BE0(EMW *em, int arg) {
+    f32 v[3];
+
+    switch (em->x05) {
+    case 0:
+        if (arg == 0) {
+            em->x05++;
+            em_char_set(em, 0x3E, 0, 0);
+        } else {
+            em->x05 = 2;
+            if (em->char0 != 0x427) {
+                em_char_set(em, 0x3F, 0, 0);
+            }
+        }
+        em_cmd_reset(em);
+        break;
+    case 1:
+        v[0] = -10.909091f * em->scale[0];
+        v[1] = 0.0f;
+        v[2] = 0.0f;
+        flvecRotY(v, DEG2RAD(ANG2DEG(em->ang[1])));
+        em->pos[0] += v[0];
+        em->pos[2] += v[2];
+        if (em_frame_check(em, 12.0f, 0) == 0) {
+            em->x05 = 2;
+            em_char_set(em, 0x43, 0, 0);
+        }
+        break;
+    case 2:
+        if (arg == 0) {
+            if (em_frame_check2(em, 0, 8.0f) == 0 && em->x1C4 == 0) {
+                v[0] = -10.909091f * em->scale[0];
+                v[1] = 0.0f;
+                v[2] = 0.0f;
+                flvecRotY(v, DEG2RAD(ANG2DEG(em->ang[1])));
+                em->pos[0] += v[0];
+                em->pos[2] += v[2];
+            }
+        } else if (em_frame_check2(em, 0, 30.0f) == 0 && em->x1C4 == 0) {
+            v[0] = 21.428572f * em->scale[0];
+            v[1] = 0.0f;
+            v[2] = 0.0f;
+            flvecRotY(v, DEG2RAD(ANG2DEG(em->ang[1])));
+            em->pos[0] += v[0] * em->scale[0];
+            em->pos[2] += v[2];
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em->work08 = 0xC8;
+            em_char_set(em, 0x40, 0, 0);
+        }
+        break;
+    case 3:
+        if (--em->work08 <= 0 && em_frame_check(em, 98.0f, 0) != 0) {
+            em->x05++;
+            em_char_set(em, 0x42, 0, 0);
+        }
+        break;
+    case 4:
+        if (em->x194 == 0) {
+            em12_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_dm04_005B1FA0(EMW *em) {
+    EM12W *w = (EM12W *)em->ex;
+    f32 v[3];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        if (em->x39A & 1) {
+            em_char_set(em, 0x3D, 0, 0);
+            w->x0A = 0;
+        } else {
+            em_char_set(em, 0x3E, 0, 0);
+            w->x0A = 1;
+        }
+        if (em->x889 != 1) {
+            em_escape_mind_set(em, 4, 0x90);
+        }
+        em_cmd_reset(em);
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 22.0f) == 0 && em->x1C4 == 0) {
+            if (w->x0A == 0) {
+                v[0] = 10.909091f * em->scale[0];
+            } else {
+                v[0] = -10.909091f * em->scale[0];
+            }
+            v[1] = 0.0f;
+            v[2] = 0.0f;
+            flvecRotY(v, DEG2RAD(ANG2DEG(em->ang[1])));
+            em->pos[0] += v[0];
+            em->pos[2] += v[2];
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em->work08 = em->x94E;
+            em12_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_dm05_005B2180(EMW *em) {
+    f32 v[3];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_cmd_reset(em);
+        em_char_set(em, 0x3D, 0, 0);
+        Em_Mahi_Start(em);
+        em->x8BD = 1;
+        break;
+    case 1:
+        if (em_frame_check2(em, 0, 22.0f) == 0 && em->x1C4 == 0) {
+            v[0] = 10.909091f * em->scale[0];
+            v[1] = 0.0f;
+            v[2] = 0.0f;
+            flvecRotY(v, DEG2RAD(ANG2DEG(em->ang[1])));
+            em->pos[0] += v[0];
+            em->pos[2] += v[2];
+        }
+        if (em_frame_check(em, 30.0f, 0) != 0) {
+            em->x05++;
+            em_char_set(em, 0x45, 0, 0);
+        }
+        break;
+    case 2:
+        em_mahi_eff_set(em, 2);
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 0x3D, 6, 0x1E);
+            Em_Mahi_End(em);
+        }
+        break;
+    case 3:
+        if (em_frame_check2(em, 0, 22.0f) == 0 && em->x1C4 == 0) {
+            v[0] = 10.909091f * em->scale[0];
+            v[1] = 0.0f;
+            v[2] = 0.0f;
+            flvecRotY(v, DEG2RAD(ANG2DEG(em->ang[1])));
+            em->pos[0] += v[0] * em->scale[0];
+            em->pos[2] += v[2];
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em12_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_move04_005B2440(EMW *em) {
+    EM12W *w = (EM12W *)em->ex;
+
+    w->x90 = 1;
+    switch (em->x15) {
+    case 0: em_dm00_005B1880(em); break;
+    case 1: em_dm01_005B1950(em); break;
+    case 2: em_dm02_005B1A90(em); break;
+    case 3: em_dm03_005B1BE0(em, 0); break;
+    case 4: em_dm03_005B1BE0(em, 1); break;
+    case 5: em_dm04_005B1FA0(em); break;
+    case 6: em_dm05_005B2180(em); break;
     }
 }
