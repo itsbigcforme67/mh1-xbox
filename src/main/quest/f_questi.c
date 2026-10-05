@@ -224,3 +224,36 @@ PLW *pl;
     }
     return 0xFFFF;
 }
+
+int Ext_pick_point_ck2(pl)
+PLW *pl;
+{
+    STIEM *s;
+    int i;
+    f32 dx, dz;
+    int r;
+    u16 c;
+
+    s = StiEM_data;
+    for (i = 0; i < 20; i++, s++) {
+        if (s->id != 0xFFFF && s->stg == pl->stg) {
+            if (!(pl->pos[1] < s->pos[1] - 200.0f) && pl->pos[1] < s->pos[1] + 100.0f) {
+                dx = pl->pos[0] - s->pos[0];
+                dz = pl->pos[2] - s->pos[2];
+                if (flSqrt(dx * dx + dz * dz) <= s->rad) {
+                    if ((s32)s->cnt > 0) {
+                        r = Item_get_ck(s->id & 0x7FFF) & 0xFFFF;
+                        if (s->cnt != 0xFF) {
+                            s->cnt = s->cnt - 1;
+                        }
+                    } else {
+                        r = 0xFFFE;
+                        r = r & 0xFFFF;
+                    }
+                    return r;
+                }
+            }
+        }
+    }
+    return 0;
+}

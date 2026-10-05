@@ -658,7 +658,7 @@ segments:
       - [0x128F10, c, quest/f_questh]
       - [0x1290A4, asm, text/Ext_pick_point_init]
       - [0x129240, c, quest/f_questi]
-      - [0x129438, asm, text/Ext_pick_point_ck2]
+      - [0x129568, asm, text/ext_pick_point_fifo_ck]
       - [0x129700, c, quest/f_questj]
       - [0x12997C, asm, text/Em_hagi_point_cnt_ck]
       - [0x129A50, c, quest/f_questk]

@@ -78,19 +78,48 @@ Lessons:
   the store BEFORE the call (reward_mv).
 - An empty `case 2: break;` forces the extra compare in a switch whose original has it (disp_reward).
 
-## f_quest (0x226C30-...): started, 14 of 83 built
-Source of truth is src/main/quest/f_quest_nm.c (all functions written so far, in address order);
-matching runs are extracted into f_quest.c, f_questb.c .. f_queste.c with `python3 tools/split_runs.py
-f_quest_nm.c src/main/quest/f_quest ':A-B' 'b:C-D' ...` and registered in config/c_files.txt (END = next
-function's start). Types in include/quest.h (QUEST_W, QEM mission enemy entry (0x3C bytes), MISSION).
-Built: Quest_error_set2/error_set, Quest_restart .. Quest_remuneration_calc, Quest_condition_judging,
-Quest_next_em_clr. Near-matches (nm only): Quest_start (16 off, schedule/reg), Quest_retire_set (15),
-Quest_pl_stage_init (11), Em_direct_set (53, register numbering), Quest_next_em_set (written, never
-matched: first diff is loop pointer/register shape; not registered). Next: Quest_str_get onward
-(asm is in asm/main/text/Quest_next_em_set.s after the rebuild).
-Lessons: `if ((q = f()) != 0 && ...)` tests v0 directly (plain `q = f(); if (q ...)` copies first);
-a prototype with an s8 last parameter changes argument evaluation order to left-to-right
-(Em_data_st_adrs_get); `x > 2` gives slti $at where `x >= 3` does not; `(u8 *)arr + i*2` folds the
-array offset into the symbol, `&arr[i].f` does not; `v == 5 || v == 6 || v == 7` reproduces the
-original sltiu range test; check.py shows "1/N differ" for functions whose only difference is a
-relocation: trust `tools/rebuild.sh main` OK.
+## f_quest (0x226C30-0x22C66C): all 83 functions written, ~50 built
+Source of truth is src/main/quest/f_quest_nm.c (every function, in ADDRESS order: split_runs needs that; all
+non-function lines, typedefs and prototypes, are at the top). The matching runs are extracted into
+f_quest.c, f_questb.c ... f_questq.c and registered in config/c_files.txt. Re-extract after any change with the
+helper that lists the OK functions of the nm file and rewrites those files + config lines (it lives in the
+session scratchpad; the recipe is: tools/check.py src/main/quest/f_quest_nm.c, take every function marked OK as
+a run of consecutive addresses, `python3 tools/split_runs.py f_quest_nm.c src/main/quest/f_quest 'f:A-B' ...`,
+END of each run = last function start + size from check.py). `tools/rebuild.sh` printed OK for all five modules.
+Types in include/quest.h: QUEST_W, QEM (mission enemy entry, 0x3C bytes), QCMD (condition-program command, 8 bytes),
+STIEM (pick-up point, 0x1C bytes, StiEM_data[20]), MISSION.
+Near-matches (nm only), distance in instructions of the whole function:
+- quest_condition_prog (0x22A410, 3420 bytes): whole interpreter written, size equals the original; 532/855 differ,
+  mostly shifted register names and the 4-byte `p += 4` vs `p++` choice in case 0xA. A switch on cmd+2 (jump table lit_2397).
+- Quest_net_sub (switch on quest_w.x181, table lit_3028): 179/205 (a nop in a branch delay slot differs).
+- remuneration_item_set: 51/460, only temp register numbers differ (the pick loop uses a1/a2/a3 in another order).
+- quest_item_ck2 109/114 (original uses 5 s-registers, mine 6), Item_regained 158/189, stolen_item_stack 145/145
+  (original keeps its args in a3/t0 across the call, i.e. it uses an IPA-like "callee clobbers only a few regs"
+  schedule that I could not trigger), Share_item_stack 86/127, Net_Share_item_stack 71/117, Share_item_num_ck 61/86,
+  em_work_serch 75/86 and em_work_serch2 43/93 (only `slt/bne` vs `bltz` for `x3A >= 0`), Quest_str_get 15/21,
+  str_gattai (varargs: the compiler knows `va_start` but I could not get the original's "(8-n)*8" prologue),
+  Em_hagi_point_cnt_ck 20/50, station_em_set 12/85, quest_enemy_ck_sub/_sub2 (the original keeps a `beq 0x63; b` pair).
+New lessons (function that shows it):
+- check.py "1/N differ" is NOT always a relocation: quest_failed_ptr_set was a real `addiu a3,8` vs 16 (s16* stride) and
+  quest_item_ck a real lhu/lh. Look at `-v` before registering; the rebuild is the final judge.
+- A function that is K&R-defined stays unprototyped in the split files, but one with a prototype-style definition
+  (stolen_item_stack(int,s16), em_work_serch2(s16,s16)) needs the same prototype at the top of every split file, or
+  its callers (Item_stolen) get different argument conversions and the rebuild fails.
+- Loops: write `for (;;) { if (e->id < 0) break; ... e++; }` to get the original's test-at-top loop with a back jump
+  (Em_direct_set neighbours: enemy_insurance_sub, em_next_tbl_ck, quest_em_init_sub, quest_enemy_ck_sub).
+- `while ((v = *p) != 0)` plus `tbl += k; base = *tbl;` (reuse the parameter register): em_data_st_adrs_set.
+- Local declaration order decides callee-saved register numbering: the LAST declared local gets s0, the first the highest
+  (quest_em_die: e, em, hp -> s2, s1, s0). Block-scoped temporaries keep short-lived values out of s-registers
+  (quest_condition_prog frame size).
+- `if (x == 0) continue; break;` vs `if (x) break; continue;` emits different branch polarity; the original's
+  `bnez give; nop; b next` needs the first form (remuneration_item_set).
+- `r = 0xFFFE; r = r & 0xFFFF;` reproduces `ori; andi` for a constant that is later masked (Ext_pick_point_ck2).
+- A sparse `switch` with ~25 cases is a compare chain in REVERSE source order, bodies in source order
+  (remuneration_item_set); a `switch (x) { case 0: case 1: case 2: ...}` gives `beq 2; beq 1; beqz` where `||` would give
+  a sltiu range test (Quest_net_sub).
+- struct field used with `lhu` in the asm needs an unsigned type (STIEM.cnt u16), `lh` a signed one.
+- unused-argument trick: Item_stolen(pl, item, num) has a first argument that is never read; q_net_send_em_capture calls
+  net_send_sys(6, master) although m2c shows one argument.
+Shared header edits: include/pl.h (PL_ITEM share[4] at 0x8F4), include/game.h (area_mdlw[10] -> [9] because Item_stolen
+stores at game_w+0xCC/0xCE: new fields xCC, xCE; reward_item[16] -> [32] and x1A8/x1AC), include/em.h (x876 u8 at 0x876,
+x88D now s8 as proved by lb in Em_hagi_point_cnt_ck).

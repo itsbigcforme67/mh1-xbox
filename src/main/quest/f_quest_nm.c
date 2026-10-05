@@ -1348,13 +1348,13 @@ PLW *pl;
                 dz = pl->pos[2] - s->pos[2];
                 if (flSqrt(dx * dx + dz * dz) <= s->rad) {
                     if ((s32)s->cnt > 0) {
-                        c = s->cnt;
                         r = Item_get_ck(s->id & 0x7FFF) & 0xFFFF;
-                        if (c != 0xFF) {
-                            s->cnt = c - 1;
+                        if (s->cnt != 0xFF) {
+                            s->cnt = s->cnt - 1;
                         }
                     } else {
-                        r = 0xFFFE & 0xFFFF;
+                        r = 0xFFFE;
+                        r = r & 0xFFFF;
                     }
                     return r;
                 }
@@ -1526,7 +1526,7 @@ EMW *em;
             return -1;
         }
         if (em->x876 != 0) {
-            get_joint_pos_em(em->x876, jp);
+            get_joint_pos_em(em, em->x876, jp);
             jp[1] = em->x5AC;
             Ext_pick_point_pos(em->x88D, jp);
         } else {
@@ -2562,11 +2562,9 @@ u16 *quest_supplies_get(pl, p)
 PLW *pl;
 u16 *p;
 {
-    u16 a;
-    s16 b;
+    u16 a = p[0];
+    s16 b = p[1];
 
-    a = p[0];
-    b = p[1];
     p += 2;
     Pl_item_stack(pl, a, b);
     return p;
