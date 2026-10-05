@@ -234,7 +234,7 @@ int mc_sel_ck(CARDW *w, s16 x, s16 y, u8 *sel, int hide)
         if (*sel == 0) {
             w->csr[1] = y0;
         } else {
-            w->csr[1] = y1 + 0x24;
+            w->csr[1] = (y0 = y1) + 0x24;
         }
         w->csr[1] -= 2;
         w->csr[2] = 306;

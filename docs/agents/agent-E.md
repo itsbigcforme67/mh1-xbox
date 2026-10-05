@@ -329,3 +329,10 @@ Conld01, Ofsv001); `t = w->timer - 1; w->timer = t; if ((s16)t <= 0)` (Optsv02);
 mc_sel_ck: tried declaration order, K&R/ANSI, int vs s16 params, an explicit/implicit y0, for/do loops. The original keeps hide in s7, the
 y+18 value in fp and w,x,sel,y in s3..s0 (y shares s0 with the loop counter); mine puts y first. Permuter: tools/perm.py cannot read files
 with K&R definitions (it turns them into declarations), so run it on a small standalone file (header + the one ANSI function).
+- mc_sel_ck update: the permuter found `w->csr[1] = (y0 = y1) + 0x24;` (68 -> 35 of 116 differing); now only the callee-saved register
+  assignment differs (original: y0 in fp, hide in s7, w/x/sel/y in s3..s0). A 25 minute permuter run on top of that found nothing better.
+  Once mc_sel_ck matches, build ONE run file from src/main/mc/mccomb_nm.c (regenerate: mcsave_nm.c + mccard_nm.c, static decode_to_ck)
+  for 0x2814E0-0x2862F0 and drop the mcsaveb/c/d lines from config/c_files.txt.
+- Tools added: tools/relink_runs.py (verify runs per file + rewrite config), GENRUNS_SKIP / GENRUNS_KEEP_STATIC in genruns.py. Comparison form
+  brute force (`<`/`<=`, `>=`/`>` with K+-1) found to_ucode; a LOCAL helper may only stay `static` in a run file when ALL its callers are C in the
+  same run (ins_bsmem, exist_kouho); the others (getbit, kh_append...) are called from asm and give undefined references.
