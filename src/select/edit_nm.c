@@ -387,9 +387,9 @@ void disp_edinfo(u8 *w) {
     DispFrameMessageA(help_mess_005387B0, 0, 0x80);
     flfntSetSize(0x14, 0x14);
     len = strlen(edit_msg[w[2]].a);
-    font_print_ex((s16)((u32)(0x280 - len * 10) >> 1), 0x168, 0, lit_319_0053B628, edit_msg[w[2]].a);
+    font_print_ex((s16)((0x280u - len * 10) >> 1), 0x168, 0, lit_319_0053B628, edit_msg[w[2]].a);
     len = strlen(edit_msg[w[2]].b);
-    font_print_ex((s16)((u32)(0x280 - len * 10) >> 1), 0x180, 0, lit_319_0053B628, edit_msg[w[2]].b);
+    font_print_ex((s16)((0x280u - len * 10) >> 1), 0x180, 0, lit_319_0053B628, edit_msg[w[2]].b);
     switch (w[2]) {
     case 0:
         Disp_button(1.0f, 0, 0xC4, 0x17E, 8);

@@ -1,4 +1,4 @@
-/* edit06 - select.bin character edit screen 0x00537460-0x005375EC: disp_cont_spr, cont_trans. Whole file in edit_nm.c. */
+/* edit06 - select.bin character edit screen 0x00538030-0x00538038: NG_name_chk. Whole file in edit_nm.c. */
 #include "select.h"
 
 
@@ -55,35 +55,6 @@ void cont_trans(TSKH *tk);
 
 
 
-void disp_cont_spr(void *unused) {
-    flSetRenderState(0x6C, 0);
-    Sel_back_disp(0xFF);
-    flSetRenderState(0x6C, 1);
-    Sel_menu_disp(5);
-}
-
-void cont_trans(TSKH *tk) {
-    STASK *s = tk->work;
-    u8 *e = (u8 *)&edit_w;
-    flSetRenderState(0x60, 0);
-    if (s->step < 5) {
-        if (s->step == 4) {
-            disp_check(e, 2);
-        }
-        if (s->step == 3) {
-            disp_save_info(e, 1);
-        }
-        if (s->step >= 2) {
-            disp_savesel(e, 1, s->step);
-            Disp_button(1.0f, 0x12, 0x206, 0x60, 8);
-            font_print_ex(0x220, 0x60, 0, lit_322_0053B658);
-        }
-    }
-    if (s->step == 5) {
-        Mem_mes_disp(0x160, 0x28);
-        DispFrameMessageA(help_mess_005387B0, 0, 0x80);
-        if (!((edit_w.x38 / 15) & 1)) {
-            Disp_button(1.0f, 0, 0x232, 0x184, 8);
-        }
-    }
+int NG_name_chk(u8 *s) {
+    return cmn_mongon_check_sub(s);
 }

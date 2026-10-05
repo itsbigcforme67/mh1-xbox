@@ -1,4 +1,4 @@
-/* edit04 - select.bin character edit screen 0x005355A0-0x00535A84: name_str_check, disp_check, disp_save_info, disp_mc. Whole file in edit_nm.c. */
+/* edit04 - select.bin character edit screen 0x00535F30-0x005367EC: ed_view_set, param_change_sub, param_change_sub2, param_change_00536280, user_load, roll_move, ed_color_sel, edit_trans. Whole file in edit_nm.c. */
 #include "select.h"
 
 
@@ -55,99 +55,202 @@ void cont_trans(TSKH *tk);
 
 
 
-int name_str_check(u8 *w0) {
-    EDIT_W *w = (EDIT_W *)w0;
-    s16 i;
-    u8 f;
-    f = 0;
-    i = 0;
-loop:
-    if (w->name[i] != 0) {
-        if (w->name[i] != 0 && w->name[i] != 0x20) {
-            f = 1;
-        }
-        i++;
-        if (i < 0x10) {
-            goto loop;
-        }
+void ed_view_set(PLW *pl, s16 mode, s16 flag) {
+    EDIT_W *e = &edit_w;
+    switch (mode) {
+    case 0:
+        flvecCopy(e->eye, pl->pos);
+        e->eye[0] -= 100.0f;
+        e->eye[1] += 90.0f;
+        flvecCopy(e->at, e->eye);
+        e->at[2] += 300.0f;
+        break;
+    case 1:
+        get_joint_pos(pl, 0x14, e->eye);
+        e->eye[0] -= 20.0f;
+        flvecCopy(e->at, e->eye);
+        e->at[1] += 15.0f;
+        e->at[2] += 80.0f;
+        break;
+    case 2:
+        flvecCopy(e->eye, pl->pos);
+        e->eye[1] += 100.0f;
+        flvecCopy(e->at, e->eye);
+        e->at[2] += 260.0f;
+        break;
     }
-    if (f == 1) {
-        return 1;
-    }
-    return 0;
-}
-
-void disp_check(u8 *w, s16 mode) {
-    u8 f;
-    flfntSetSize(0x14, 0x14);
-    DispFrameMessageA(help_mess_005387B0, 0, 0x80);
-    f = 0;
-    if (name_str_check(w) == 0) {
-        f = 1;
-    } else if (NG_name_chk(w + 0x24) == 0) {
-        f = 2;
-    }
-    if (f != 0 && mode == 0) {
-        if (f == 1) {
-            font_print_ex(0xC8, 0x168, 0, lit_463_0053B6A0);
-        } else {
-            font_print_ex(0xD2, 0x168, 0, lit_464_0053B6C0);
-        }
-        font_print_ex(0x104, 0x180, 0, lit_465_0053B6D8);
-        Disp_button(1.0f, 0, 0x104, 0x17E, 8);
-        Disp_button(1.0f, 1, 0x122, 0x17E, 8);
-    } else {
-        switch (mode) {
-        case 0:
-            font_print_ex(0xA0, 0x168, 0, lit_466_0053B6F0);
-            break;
-        case 1:
-            font_print_ex(0xAA, 0x168, 0, lit_467_0053B720);
-            break;
-        case 2:
-            font_print_ex(0x96, 0x168, 0, lit_468_0053B740);
-            break;
-        case 3:
-            font_print_ex(0x64, 0x168, 0, lit_469_0053B770);
-            break;
-        }
-        if (w[3] == 0) {
-            Sel_csr_disp(0x10E, 0x17E, 0x64, 0x18, 0xFF20C0C0);
-            font_print_ex(0xFA, 0x180, 5, lit_470_0053B7A0);
-            font_print_ex(0x15E, 0x180, 0, lit_471_0053B7A8);
-        } else {
-            Sel_csr_disp(0x17C, 0x17E, 0x64, 0x18, 0xFF20C0C0);
-            font_print_ex(0xFA, 0x180, 0, lit_470_0053B7A0);
-            font_print_ex(0x15E, 0x180, 5, lit_471_0053B7A8);
-        }
-    }
-}
-
-void disp_save_info(void *unused, u16 mode) {
-    DispFrameMessageA(help_mess_005387B0, 0, 0x80);
-    flfntSetSize(0x14, 0x14);
-    if (mode == 0) {
-        font_print_ex(0xA0, 0x168, 0, lit_485_0053B7B0);
-        font_print_ex(0xA0, 0x180, 0, lit_486_0053B7D0);
-    } else {
-        font_print_ex(0xAA, 0x168, 0, lit_487_0053B7E0);
-        font_print_ex(0xE6, 0x180, 0, lit_488_0053B800);
-        Disp_button(1.0f, 0, 0xCE, 0x17E, 8);
-        Disp_button(1.0f, 1, 0x132, 0x17E, 8);
-    }
-}
-
-void disp_mc(u8 *w, s16 flag) {
-    DispFrameMessageA(help_mess_005387B0, 0, 0x80);
-    flfntSetSize(0x14, 0x14);
     if (flag == 0) {
-        font_print_ex(0x8C, 0x168, 0, lit_501_0053B820);
-        font_print_ex(0x8C, 0x180, 2, lit_502_0053B840);
-        return;
+        flvecCopy(lpView->eye, e->eye);
+        flvecCopy(lpView->at, e->at);
     }
-    if (w[0x3B] != 0) {
-        font_print_ex(0x8C, 0x168, 0, lit_503_0053B870);
-        return;
+}
+
+void param_change_sub(void *unused, u16 btn, u8 *p, u16 max, u16 se) {
+    if (btn & 0x800) {
+        if (*p == 0) {
+            *p = max - 1;
+        } else {
+            *p = *p - 1;
+        }
+        se_req(7, se, 0);
     }
-    font_print_ex(0x96, 0x168, 0, lit_504_0053B8A0);
+    if (btn & 0x400) {
+        if (*p >= max - 1) {
+            *p = 0;
+        } else {
+            *p = *p + 1;
+        }
+        se_req(7, se, 0);
+    }
+}
+
+void param_change_sub2(void *unused, u16 btn, u8 *p, u16 max, u16 se) {
+    if (btn & 0x800) {
+        if (*p > 0) {
+            *p = *p - 1;
+            se_req(7, se, 0);
+        } else {
+            *p = 0;
+        }
+    }
+    if (btn & 0x400) {
+        if (*p < max - 1) {
+            *p = *p + 1;
+            se_req(7, se, 0);
+        } else {
+            *p = max - 1;
+        }
+    }
+}
+
+void param_change_00536280(u8 *w) {
+    u8 *pa = (u8 *)&player_work[0];
+    u8 *pb = (u8 *)&player_work[1];
+    u16 btn = Psw[2] | Psw[12];
+    u8 old;
+    switch (w[2]) {
+    case 1:
+        if (btn & 0xC00) {
+            w[4] ^= 1;
+            se_req(7, 0x12, 0);
+        }
+        break;
+    case 2:
+        old = w[5];
+        param_change_sub(w, btn, &w[5], 0x18, 0x12);
+        if (old != w[5]) {
+            B8(pa, 0x353) = w[5] + 1;
+            B8(pb, 0x353) = w[5] + 1;
+        }
+        break;
+    case 3:
+        old = w[7];
+        param_change_sub(w, btn, &w[7], 0xA, 0x12);
+        if (old != w[7]) {
+            B8(pa, 0x354) = w[7] + 1;
+            B8(pb, 0x354) = w[7] + 1;
+        }
+        break;
+    case 5:
+        param_change_sub(w, btn, &w[6], 0xA, 0x12);
+        break;
+    }
+}
+
+void user_load(void *unused, PLW *pl, s16 n) {
+    u8 *u = option_w + n * 0x480 + 0x10;
+    if (*u != 0) {
+        Set_equip_data(pl, u);
+        if (pl->work011 == 0) {
+            pl_chr_set2(pl, 1, 0, 0);
+            return;
+        }
+        pl_chr_set2(pl, 0x32B, 0, 0);
+    }
+}
+
+void roll_move(PLW *w, s16 unused) {
+    if (*(volatile u16 *)&Psw[4] & 8) {
+        w->ang[1] -= 0x400;
+    }
+    if (*(volatile u16 *)&Psw[4] & 4) {
+        w->ang[1] += 0x400;
+    }
+}
+
+void ed_color_sel(EDIT_W *w, PLW *pl, u16 btn) {
+    u8 c[3];
+    c[0] = w->col >> 16;
+    c[1] = w->col >> 8;
+    c[2] = w->col;
+    if (btn & 0x2000) {
+        if (w->x0[3] == 0) {
+            w->x0[3] = 3;
+        } else {
+            w->x0[3]--;
+        }
+        se_req(7, 0x16, 0);
+    }
+    if (btn & 0x1000) {
+        if (w->x0[3] >= 3) {
+            w->x0[3] = 0;
+        } else {
+            w->x0[3]++;
+        }
+        se_req(7, 0x16, 0);
+    }
+    if (w->x0[3] < 3) {
+        param_change_sub2(w, w->x3E, c + w->x0[3], 0x100, 0x17);
+        w->col = 0xFF000000 | (c[0] << 16) | (c[1] << 8) | c[2];
+    } else {
+        param_change_sub(w, btn, &w->x3A, 0x10, 0x16);
+        if (Psw[2] & 0x20) {
+            w->col = sample_col[w->x3A];
+            ed_decide_se();
+        }
+    }
+    pl->work5FC = w->col;
+}
+
+void edit_trans(TSKH *t) {
+    STASK *s = t->work;
+    u8 *e = (u8 *)&edit_w;
+    flSetRenderState(0x60, 0);
+    if (s->step < 5) {
+        disp_edit_spr(s, e);
+    } else if (s->step > 5 && s->step < 9) {
+    } else {
+        Disp_button(1.0f, 0x12, 0x206, 0x60, 8);
+        flfntSetSize(0x14, 0x14);
+        font_print_ex(0x220, 0x60, 0, lit_322_0053B658);
+    }
+    switch (s->step) {
+    case 0:
+    case 1:
+    case 2:
+        disp_edinfo(e);
+        break;
+    case 3:
+        if (e[2] == 4) {
+            disp_color(e);
+        }
+        if (e[2] == 0) {
+            SoftKeyboard_pos_set(0x150, 22.0f);
+            DispSoftkeyboard(system_w.x31);
+        }
+        break;
+    case 4:
+        disp_check(e, 0);
+        break;
+    case 6:
+    case 7:
+    case 8:
+        disp_mc(e, 1);
+        break;
+    case 9:
+    case 10:
+        Sel_menu_disp(4);
+        disp_check(e, 3);
+        break;
+    }
 }

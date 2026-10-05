@@ -510,9 +510,41 @@ f_game.h in the same file).
     keep the one that compares OK (title_disp, ~40k compiles at 0.05 s each, found in seconds).
   - tools/draft.py now resolves switch tables (lit_NNN_ADDR in the same overlay) so m2c
     drafts functions with jump tables (Edit_task, Cont_task).
+- disp_edinfo matched with `(0x280u - len * 10) >> 1` (unsigned constant, not a (u32) cast of the
+  whole difference); status: select 36 of 44 functions linked (tools/progress.py: 47% by bytes).
 - Not linked (near-match, logic complete, in edit_nm.c): edit_pl_init_new / edit_pl_init (original
   reads stage_start_pos x/y/z through three separate symbols D_2F2620/24/28 that only exist as
   auto-generated undefined symbols; our C uses stage_start_pos[n][i] = one base register),
-  disp_edit_spr (register allocation, 4 saved regs vs 6), disp_edinfo (6 instructions: register
-  choice for 640-len*10), disp_color, Edit_task, Cont_task (big state machines, only drafted from
+  disp_edit_spr (register allocation, 4 saved regs vs 6), disp_color, Edit_task, Cont_task (big state machines, only drafted from
   m2c and cleaned, not tuned), cmn_mongon_check_sub, cmn_mongon_set (hand unrolled copy loops).
+
+## yn.bin (0x533A00-0x53C800): 104 functions
+Linked and checked (yn OK): yn_sd, yn_mc, nc00-nc04 (network config helpers incl. yn_hard_*),
+ui00-ui06 (string/draw helpers, key repeat, scecom reboot), misc00/01. Counts (progress.py): 11.5%.
+- The Sony library part (sce_callback.s, sce_cbfunc.s, sceNetcnfif*, about 45 functions from
+  libnetcnfif) is compiled with GCC, not MWCC: an m2c draft compiled with MWCC differs in every
+  instruction (checked with sce_callback, sce_call_rpc). No C is provided for it; keep as asm or
+  replace with the SDK source/own implementation in the port (the PS2 network adapter code is not
+  needed on Xbox anyway).
+- src/yn/netcnf_nm.c: all 28 Capcom network config functions (yn_netcnf_*, yn_hard_*, yn_utf8_to_sjis,
+  yn_sjis_to_utf8, module_load/unload). They compile; the ones that match are linked as nc00-04.
+  Near-matches (not linked): work_to_ifc/dev, dev_to_work, setup_devwork, set_current, get_num/list,
+  net_allload, magicno_check_sub, pastdata/pastproxy_check, utf8/sjis converters (m2c-derived,
+  structure guessed: the ifc struct is 0x1330 bytes, dev 0x1320; module_load is 0x1CC in the
+  original and 0x13C here, so its real structure is different).
+- src/yn/ui_nm.c: the 57 UI functions of f_yn_535340.s from tools/draft2c.py. 34 compile; 19 are
+  wrapped in `#if 0 /* name: m2c draft ... */` (yn_set_main compiles but is far off; big
+  switch-heavy ones like yn_select_provider, the yn_*_font_sub family, yn_dialog_*, yn_keyboard_init,
+  yn_sprite_draw_each are still raw m2c). tools/ifdef0.py disables failing functions,
+  tools/ifdef1.py re-enables one after you fix it.
+- Tools added: tools/draft2c.py (m2c drafts of a whole asm file as compilable K&R-style C, gp
+  globals named, M2C_FIELD macro from include/yn.h), tools/mkruns_mod.py (split matching runs of a
+  *_nm.c for any module), tools/mkrun2.py now also parses K&R definitions.
+- Lessons: old-style (K&R) definitions `void f(a, b)\nint a;\n{` make small passthrough wrappers
+  match (yn_printf, yn_set_pal: callers pass wider/other types, and the sign-extension of an s8
+  parameter happens inside the callee); a float-taking tail call needs `void flfntSetZ(f32)` so
+  `yn_set_z(f32 z) { flfntSetZ(z); }` becomes a plain `j` (yn_set_z); m2c loses trailing arguments
+  of calls (module_load takes 5, yn_netcnf_num_to_ip 6 values): compare the asm when a call has
+  fewer arguments than expected; a gp global holding a work pointer (`ynw`) is accessed as
+  `((STRUCT *)ynw)->field` with the cast repeated at each use to get the original reloads
+  (yn_key_repeat).

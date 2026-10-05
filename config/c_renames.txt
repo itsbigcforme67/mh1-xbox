@@ -11,7 +11,8 @@ build/src/main/menu/menu26.c.o .rodata .data
 build/src/main/pl/pl05.c.o .rodata .data
 build/src/main/stage/stage_set.c.o .rodata .data
 build/src/select/demo.c.o .rodata .data
-build/src/select/edit05.c.o .rodata .data
+build/src/select/edit03.c.o .rodata .data
+build/src/select/edit04.c.o .rodata .data
 build/src/game/em/em_core_d.c.o .rodata .data
 build/src/game/em/em_core_g.c.o .rodata .data
 build/src/game/eft/eft17.c.o .rodata .data
