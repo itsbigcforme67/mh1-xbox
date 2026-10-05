@@ -210,7 +210,7 @@ segments:
       - [0x074830, c, em/em09]
       - [0x074890, asm, text/em09_act_set]
       - [0x074A30, c, em/em09b]
-      - [0x074AB0, asm, text/em09_status_ck]
+      - [0x074BB8, asm, text/item_theft_005A8540]
       - [0x074BC0, c, em/em09c]
       - [0x078FB8, asm, text/em09_effect_move_005AC940]
       - [0x0792C0, c, em/em09d]
