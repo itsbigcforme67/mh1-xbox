@@ -57,7 +57,9 @@ typedef struct EMW {
     u8 x19;             /* 0x019 cleared when a shell is spawned */
     u8 _pad01A;
     u8 type;            /* 0x01B variant, row of the monster's type table (em29) */
-    u8 _pad01C[0xA0 - 0x1C];
+    u8 _pad01C[0x20 - 0x1C];
+    f32 mat[4][4];      /* 0x020 rotation matrix, rebuilt from ang by cpRotMatrix (em18) */
+    u8 _pad060[0xA0 - 0x60];
     s32 ang[3];         /* 0x0A0 rotation, 0x10000 = 360 degrees (shell14_trans) */
     f32 pos[3];         /* 0x0AC world position (set20_m, as PLW) */
     f32 scale[3];       /* 0x0B8 model scale (eft09_t) */
@@ -98,7 +100,8 @@ typedef struct EMW {
     struct EM_MDL *mdl; /* 0x50C model work */
     u8 _pad510[0x5AC - 0x510];
     f32 x5AC;           /* 0x5AC height used for set20's shell */
-    u8 _pad5B0[0x617 - 0x5B0];
+    u8 _pad5B0[0x616 - 0x5B0];
+    u8 x616;            /* 0x616 player number (em18 mov01 follows player_work[x616]) */
     s8 x617;            /* 0x617 -1: no ... (em08_fly_act_set) */
     u8 _pad618[0x6FF - 0x618];
     u8 x6FF;            /* 0x6FF non-zero: main_sub runs twice this frame (em29_main) */
@@ -112,7 +115,9 @@ typedef struct EMW {
     f32 x754[3];        /* 0x754 position the turn toward a player starts from (em02_senkai_player) */
     u8 _pad760[0x792 - 0x760];
     s16 x792;           /* 0x792 maximum of x302? (guess) */
-    u8 _pad794[0x7E8 - 0x794];
+    u8 _pad794[0x798 - 0x794];
+    f32 x798;           /* 0x798 fade 0..1 at the end of em18 mov03 (alpha?) */
+    u8 _pad79C[0x7E8 - 0x79C];
     u8 x7E8;            /* 0x7E8 0: em21 falls back to act 0/1 on its own stage */
     u8 x7E9;            /* 0x7E9 0: em14 fly action 0 becomes act 0/3 */
     u8 _pad7EA[0x818 - 0x7EA];

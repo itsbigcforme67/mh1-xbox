@@ -19,6 +19,7 @@ build/src/game/em/em14.c.o .rodata .data
 build/src/game/em/em15.c.o .rodata .data
 build/src/game/em/em17.c.o .rodata .data
 build/src/game/em/em16.c.o .rodata .data
+build/src/game/em/em18.c.o .rodata .data
 build/src/game/em/em20.c.o .rodata .data
 build/src/game/em/em20b.c.o .rodata .data
 build/src/game/em/em21.c.o .rodata .data
