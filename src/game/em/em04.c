@@ -4,6 +4,8 @@
  * Meanings of most fields are guesses. */
 #include "em.h"
 #include "game.h"
+#include "fl.h"
+#include "pl.h"
 
 /* Per-monster work at EMW+0x444. */
 typedef struct EM04W {
@@ -29,6 +31,11 @@ f32 flvecCalcDistance(f32 *, f32 *);
 void pl_flag_set(EMW *, u32);
 void pl_flag_clr(EMW *, u32);
 void em_cmd_reset(EMW *);
+void shell02_set(EMW *, int);
+void flvecApplyMat33(f32 *, f32 *, FLMAT *);
+int em_frame_check(EMW *, f32, int);
+void em_rate_clear_g(EMW *);
+int rate_add_g2(EMW *);
 
 extern u8 em04_act_tbl[];
 extern f32 em05_rev_set_tbl_st69[][6];
@@ -500,5 +507,218 @@ static void em_move01(EMW *em) {
     case 4: em_mov04(em); break;
     case 5: em_mov05(em); break;
     case 6: em_mov00(em, 1); break;
+    }
+}
+
+static void em_atk00_0058CC80(EMW *em, int kind) {
+    FLMAT mat;
+    f32 in[3];
+    f32 out[3];
+    s32 ang[3];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em_char_set(em, 15, 10, 0);
+        switch (kind) {
+        case 0: shell02_set(em, 3); break;
+        case 1: shell02_set(em, 8); break;
+        case 2: shell02_set(em, 9); break;
+        case 3: shell02_set(em, 10); break;
+        case 4: shell02_set(em, 14); break;
+        case 5: shell02_set(em, 15); break;
+        }
+        ang[0] = 0;
+        ang[1] = (u16)Em_Calc_angY(em->pos, em->tgt_pos);
+        ang[2] = 0;
+        cpRotMatrix(ang, mat);
+        in[0] = 0.0f;
+        in[1] = 0.0f;
+        in[2] = 100.0f;
+        flvecApplyMat33(out, in, &mat);
+        em->tgt_pos[0] += out[0];
+        em->tgt_pos[2] += out[2];
+        em->horm_ang = (u16)Em_Calc_angY(em->pos, em->tgt_pos);
+        break;
+    case 1:
+        if (flvecCalcDistance(em->pos, em->tgt_pos) < 100.0f || --em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 16, 10, 0);
+        } else {
+            em09_dir_calc(&em->ang[1], &em->horm_ang, 0x200);
+            cpRotMatrix(em->ang, em->mat);
+            if (em->work08 > 15) {
+                s8 n = em->x617;
+
+                if (n == -1) {
+                    em->work08 = 15;
+                } else if (em->stg != ((PLW *)player_work)[n].stg) {
+                    em->work08 = 15;
+                }
+            }
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em04_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_move03_0058CF10(EMW *em) {
+    switch (em->x15) {
+    case 0: em_atk00_0058CC80(em, 0); break;
+    case 1: em_atk00_0058CC80(em, 1); break;
+    case 2: em_atk00_0058CC80(em, 2); break;
+    case 3: em_atk00_0058CC80(em, 3); break;
+    case 4: em_atk00_0058CC80(em, 4); break;
+    case 5: em_atk00_0058CC80(em, 5); break;
+    }
+}
+
+static void em_dm00(EMW *em) {
+    s32 a;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        a = (u16)(em->dm_ang - em->ang[1]);
+        if (a > 0x6000 && a < 0xA000) {
+            em_char_set(em, 20, 0, 0);
+        } else if (a < 0x8000) {
+            em_char_set(em, 60, 0, 0);
+        } else {
+            em_char_set(em, 61, 0, 0);
+        }
+        em_cmd_reset(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em04_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_dm01(EMW *em) {
+    FLMAT mat;
+    f32 in[3];
+    f32 out[3];
+    s32 ang[3];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        ang[0] = (u16)(em->dm_ang - em->ang[1]);
+        if (ang[0] < 0x8000) {
+            em_char_set(em, 62, 0, 0);
+        } else {
+            em_char_set(em, 67, 0, 0);
+        }
+        em_cmd_reset(em);
+        break;
+    case 1:
+        if (em_frame_check(em, 10.0f, 0)) {
+            em->x05++;
+            ang[0] = 0;
+            ang[1] = em->dm_ang + 0x8000;
+            ang[2] = 0;
+            cpRotMatrix(ang, mat);
+            in[0] = 0.0f;
+            in[1] = 8.0f;
+            in[2] = -21.0f;
+            flvecApplyMat33(out, in, &mat);
+            em_rate_clear_g(em);
+            em->rate_x = out[0];
+            em->adj_y = out[1];
+            em->adj_z = out[2];
+            em->x3C0[1] = -1.09f;
+            em->x3C0[2] = 0.28f;
+            em->x388 = 2;
+        }
+        break;
+    case 2:
+        if (em->adj_z * em->x3C0[2] >= 0.0f) {
+            em->x3C0[2] = 0.0f;
+        }
+        if (rate_add_g2(em)) {
+            em->x05++;
+            em->x388 = 0;
+            em_char_set(em, 63, 6, 0);
+            em->work08 = 150;
+        }
+        break;
+    case 3:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 66, 6, 0);
+        }
+        break;
+    case 4:
+        if (em->x194 == 0) {
+            em04_next_act_set(em);
+        }
+        break;
+    }
+}
+
+static void em_dm02(EMW *em) {
+    FLMAT mat;
+    f32 in[3];
+    f32 out[3];
+    s32 ang[3];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        ang[0] = (u16)(em->dm_ang - em->ang[1]);
+        if (ang[0] < 0x8000) {
+            em_char_set(em, 62, 0, 10);
+        } else {
+            em_char_set(em, 67, 0, 10);
+        }
+        ang[0] = 0;
+        ang[1] = em->dm_ang + 0x8000;
+        ang[2] = 0;
+        cpRotMatrix(ang, mat);
+        in[0] = 0.0f;
+        in[1] = 8.0f;
+        in[2] = -21.0f;
+        flvecApplyMat33(out, in, &mat);
+        em_rate_clear_g(em);
+        em->rate_x = out[0];
+        em->adj_y = out[1];
+        em->adj_z = out[2];
+        em->x3C0[1] = -1.09f;
+        em->x3C0[2] = 0.28f;
+        em_cmd_reset(em);
+        break;
+    case 1:
+        if (em->adj_z * em->x3C0[2] >= 0.0f) {
+            em->x3C0[2] = 0.0f;
+        }
+        if (rate_add_g2(em)) {
+            em->x05++;
+            em->x388 = 0;
+            em_char_set(em, 63, 6, 0);
+            em->work08 = 150;
+        }
+        break;
+    case 2:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 66, 6, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em04_next_act_set(em);
+        }
+        break;
     }
 }

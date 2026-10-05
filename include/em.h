@@ -123,7 +123,9 @@ typedef struct EMW {
     f32 adj_y;          /* 0x3B8 fly height correction per frame (fly_adjy2_suby) */
     f32 adj_z;          /* 0x3BC (fly_adjy2_subz) */
     f32 x3C0[3];        /* 0x3C0 em19: copy of the 0x3B4 vector, flipped to wobble */
-    u8 _pad3CC[0x3F0 - 0x3CC];
+    u8 _pad3CC[0x3EC - 0x3CC];
+    u16 dm_ang;         /* 0x3EC direction the hit came from (as PLW, em04 dm00) */
+    u8 _pad3EE[0x3F0 - 0x3EE];
     u16 x3F0;           /* 0x3F0 */
     u8 _pad3F2[0x3F4 - 0x3F2];
     u8 x3F4;            /* 0x3F4 cleared by em19 demo/revival */
