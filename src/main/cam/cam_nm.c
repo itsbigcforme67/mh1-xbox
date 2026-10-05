@@ -230,22 +230,24 @@ void cam_init_sub_stg(CAMW *cw, CAMS *cs) {
 }
 
 void cam_init_sub_pchngr(CAMW *cw, CAMS *cs) {
+    CAMD_PCH *d = &cs->d.pch;
+
     cs->fov = 0.7853982f;
     cs->roll = 0.0f;
-    cs->d.pch.min = 0.17453294f;
-    cs->d.pch.max = 1.0471976f;
-    cs->d.pch.range = cs->d.pch.max - cs->d.pch.min;
-    cs->d.pch.fov1 = cs->d.pch.fov0 = cs->fov;
+    d->min = 0.17453294f;
+    d->max = 1.0471976f;
+    d->range = d->max - d->min;
+    d->fov0 = d->fov1 = cs->fov;
 }
 
 s32 pch_lock_chk(PLW *pl) {
     switch (pl->char0) {
-    case 0x580:
-    case 0x57D:
-    case 0x583:
-    case 0x57C:
-    case 0x579:
     case 0x3EA:
+    case 0x579:
+    case 0x57C:
+    case 0x583:
+    case 0x57D:
+    case 0x580:
         return 1;
     }
     return 0;

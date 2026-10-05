@@ -1,4 +1,5 @@
-/* camp - SLPM_654.95 0x00220F30-0x002213F4 (f_cam): pachinger cannon camera:
+/* camp - SLPM_654.95 0x00220EE0-0x00221460 (f_cam): pachinger cannon camera init, update
+ * and the "cannon is locked" check:
  * the camera sits on the cannon matrix and the stick zooms the angle of view
  * (guess from the code). */
 #include "cam.h"
@@ -52,6 +53,17 @@ void flmatGetTrans(f32 *, f32 *);
 void flmatInit(FLMAT *);
 void flmatRotXYZ33(FLMAT *, f32, f32, f32);
 void flvecApplyMat33(f32 *, f32 *, f32 *);
+
+void cam_init_sub_pchngr(CAMW *cw, CAMS *cs) {
+    CAMD_PCH *d = &cs->d.pch;
+
+    cs->fov = 0.7853982f;
+    cs->roll = 0.0f;
+    d->min = 0.17453294f;
+    d->max = 1.0471976f;
+    d->range = d->max - d->min;
+    d->fov0 = d->fov1 = cs->fov;
+}
 
 void cam_sub_pchngr(CAMW *cw, CAMS *cs) {
     CAMD_PCH *d;
@@ -169,4 +181,17 @@ void cam_sub_pchngr(CAMW *cw, CAMS *cs) {
         cs->act = 1;
         return;
     }
+}
+
+s32 pch_lock_chk(PLW *pl) {
+    switch (pl->char0) {
+    case 0x3EA:
+    case 0x579:
+    case 0x57C:
+    case 0x583:
+    case 0x57D:
+    case 0x580:
+        return 1;
+    }
+    return 0;
 }
