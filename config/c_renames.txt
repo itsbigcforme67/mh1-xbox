@@ -3,7 +3,6 @@
 build/src/game/eft/eft08.c.o .rodata .data
 build/src/game/eft/eft12.c.o .rodata .data
 build/src/game/eft/eft14.c.o .rodata .data
-build/src/game/eft/eft14b.c.o .rodata .data
 build/src/game/eft/eft15.c.o .rodata .data
 build/src/game/eft/eft22.c.o .rodata .data
 build/src/game/eft/eft23.c.o .rodata .data

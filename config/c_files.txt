@@ -91,9 +91,7 @@ game 0x00558960 0x005589EC eft/eft23b
 game:rodata 0x00685860 0x00685884 eft/eft23
 game 0x0054BB60 0x0054D654 eft/eft15
 game:rodata 0x00685650 0x00685724 eft/eft15
-game 0x005498E0 0x0054A40C eft/eft14
-game:rodata 0x00685560 0x0068558C eft/eft14
-game 0x0054AE50 0x0054BB54 eft/eft14b
-game:rodata 0x00685620 0x00685648 eft/eft14b
+game 0x005498E0 0x0054BB54 eft/eft14
+game:rodata 0x00685560 0x00685648 eft/eft14
 game 0x005468F0 0x005498E0 eft/eft12
 game:rodata 0x006854A0 0x00685558 eft/eft12

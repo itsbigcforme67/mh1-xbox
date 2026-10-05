@@ -60,11 +60,13 @@ extracted to disc/mhg/ (gitignored). MH1 not yet supplied.
   - PLW +0x8E8 holds the bait kind here (0x60/0x62/0x63 make the float drift
     gently), so the "fish_time" name from eft23 is unverified.
 
-- eft15 (sprite bursts, nine types) matches as one file; eft14 (sparks
-  and flashes, eleven types) matches except eft14_m00 (split into
-  eft14.c / eft14b.c, near-match in eft14_nm.c: its two UV-frame searches
-  keep a dead loop counter that our build drops). Findings, each checked
-  with tools/check.py:
+- eft15 (sprite bursts, nine types) and eft14 (sparks and flashes, eleven
+  types) both match as single files. Findings, each checked with
+  tools/check.py:
+  - eft14_m00's two UV-frame searches keep a loop counter `j` that is
+    never read. Our build dropped it until the same variable was also used
+    for the UV nibble in the type 3/6 branch (`j = p->uv & 0xF; ...`): a
+    variable with other uses keeps its increments.
   - Keyframe reads: `d = eft15_data[idx++]; eft_vec_linear(p->lag, d, ...)`
     matches; passing `eft15_data[idx++]` straight in loads lag first and
     shifts registers (eft08 already used the local; the permuter found it
