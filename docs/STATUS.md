@@ -60,22 +60,38 @@ extracted to disc/mhg/ (gitignored). MH1 not yet supplied.
   - PLW +0x8E8 holds the bait kind here (0x60/0x62/0x63 make the float drift
     gently), so the "fish_time" name from eft23 is unverified.
 
-- eft15 (sprite bursts, nine types) matches except eft15_i (5 instructions,
-  loop increment order), eft15_m (~270, keyframe-read scheduling) and
-  eft15_t (6, two saved registers swapped). Split into eft15.c / eft15b.c /
-  eft15c.c; the whole file is in eft15_nm.c. Findings, each checked with
-  tools/check.py:
+- eft15 (sprite bursts, nine types) matches as one file; eft14 (sparks
+  and flashes, eleven types) matches except eft14_m00 (split into
+  eft14.c / eft14b.c, near-match in eft14_nm.c: its two UV-frame searches
+  keep a dead loop counter that our build drops). Findings, each checked
+  with tools/check.py:
+  - Keyframe reads: `d = eft15_data[idx++]; eft_vec_linear(p->lag, d, ...)`
+    matches; passing `eft15_data[idx++]` straight in loads lag first and
+    shifts registers (eft08 already used the local; the permuter found it
+    again).
+  - Loops that spawn sprites index the work directly (`w[i].lag = ...`).
+    Stepping a pointer (`p++`) emits its increment after the other
+    induction variables instead of first (eft14_i00, eft15_i).
   - eft15_m's joint switch has no default: the original leaves `joint`
     unset there and the register still holds the 4 from an earlier
     compare. Writing `default: joint = 4;` adds code.
-  - `if ((ew = pull_eft_work(1)) != 0)` tests v0 directly and matched
-    Eft15_set/Eft15_set2; a separate assignment tests the saved copy.
-  - `&mw->clay[p->lag] + 27` (add, then add 27*0x8C) and
-    `&mw->clay[p->lag + 27]` compile differently.
-  - A plain int passed to make_mat_srt's u16 argument gives the original's
-    `andi 0xFFFF` at the call; a u16 local does not.
-  - Moving one declaration (the loop counter) fixed the s0/s1/s2 order in
-    eft15_m (found by the permuter).
+  - `if ((ew = pull_eft_work(1)) != 0)` tests v0 directly; a separate
+    assignment tests the saved copy (Eft15_set, eft14_set, Eft14_set3/4).
+  - `&mw->clay[p->lag] + 27` and `&mw->clay[p->lag + 27]` differ.
+  - A plain int passed to make_mat_srt's u16 argument gives the `andi
+    0xFFFF` at the call; a u16 local does not.
+  - `ew->arg <= 1U` gives the original's `sltiu at`; `< 2` and `<= 1` give
+    slti.
+  - Argument evaluation order shows parameter order: Eft14_set3 is
+    (pos, arg, scale, pl) and eft_trans_sub is (clay, mat, flag, alpha,
+    mats), since the float is set up before the pointer after it.
+  - Some float constants are one ulp off the obvious decimal (0x3C75C290 =
+    0.015000001f, 0x3C23D70B = 0.010000001f); write them that way.
+  - Local declaration order sets saved-register order. For eft15_t a
+    brute-force over the 120 orders of five declaration groups found the
+    matching one (`ew, p, mw` first, then `mats, cl, flag, order`).
+  - A drot field read with `lhu` in `rot += drot` is still s16 (eft14 and
+    eft15 both match only with s16).
 
 ### Next
 
