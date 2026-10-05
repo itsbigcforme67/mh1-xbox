@@ -228,7 +228,7 @@ void roll_move(PLW *w, s16 unused) {
     }
 }
 
-void disp_cont_spr(void) {
+void disp_cont_spr(void *unused) {
     flSetRenderState(0x6C, 0);
     Sel_back_disp(0xFF);
     flSetRenderState(0x6C, 1);
@@ -573,6 +573,8 @@ void param_change_00536280(u8 *w) {
 
 typedef struct { u8 _p[0x18]; STASK *work; } TSKH;
 void disp_color(u8 *w);
+void cont_trans(TSKH *tk);
+
 
 void edit_trans(TSKH *t) {
     STASK *s = t->work;
@@ -1187,5 +1189,279 @@ void Edit_task(STASK *t) {
             trans();
         }
         return;
+    }
+}
+
+/* Near-match: controller/continue screen task (steps: 0 init, 1 load, 2 se load, 3 choose
+   hunter, 4 confirm, 5-8 fade out). */
+void Cont_task(STASK *t) {
+    EDIT_W *e = &edit_w;
+    u32 btn;
+    s16 i;
+    u8 j;
+    PLW *pl;
+    f32 *v;
+    f32 *ev;
+    u8 r;
+
+    btn = (Psw[2] | Psw[12]) & 0xFFFF;
+    SetTrnslMode(4, 5);
+    switch (t->step) {
+    case 0:
+        t->step++;
+        all_model_free(t->step - 1);
+        all_motion_free();
+        model_work_init();
+        init_move_work();
+        init_view_work();
+        init_light_work();
+        clr_pl_work();
+        flFlip(0);
+        flCompact();
+        fade_set(2);
+        char_make_init();
+        *(void **)(demo_prim + 0x18) = t;
+        *(void **)(demo_prim + 0x14) = (void *)cont_trans;
+        View_init();
+        CameraWorkInit();
+        game_w.stage = 0x11;
+        light_init(game_w.stage);
+        system_w.x35 = 1;
+        stage_w_init();
+        system_w.x35 = 0;
+        B32(lpView, 0x2C) = 0x3F5F66F4;
+        B32(lpView, 0x34) = 0;
+        McOperationSet(4);
+        goto common;
+    case 1:
+        r = McCardOperation() & 0xFF;
+        if (r != 0) {
+            if (r == 2) {
+                se_req_bgm_vol(1, 2, 0);
+                se_req_bgm_vol(1, 3, 0);
+                Tsk_Exit(t);
+                Select_Tsk_Execute();
+                return;
+            }
+            e->x0[1] = 0xFF;
+            for (j = 0, pl = player_work; j < 3; j++, pl++) {
+                if (option_w[j * 0x480 + 0x10] == 0) {
+                    pl->be_flag = 0;
+                } else {
+                    if (e->x0[1] == 0xFF) {
+                        e->x0[1] = j;
+                    }
+                    user_load(e, pl, j);
+                    edit_pl_init(pl, 1, j);
+                    pl->x01 = 0;
+                }
+            }
+            if (option_w[option_w[0xFCE] * 0x480 + 0x10] != 0) {
+                e->x0[1] = option_w[0xFCE];
+            }
+            ed_view_set(&player_work[e->x0[1]], 0, 0);
+            com_motion_load(2);
+            t->step++;
+        }
+        /* fall through */
+    case 2:
+        if (edit_se_load(t) != 0) {
+            t->step++;
+            B8(t, 9) = 0;
+            e->x0[2] = e->x0[1];
+            player_work[0].x01 = 1;
+            se_req_bgm_vol(1, 0, 0);
+            se_req_bgm_vol(1, 1, 0);
+            se_req(7, 0x19, 0);
+        }
+        goto common;
+    case 3:
+        for (i = 0, pl = player_work; i < 3; i++, pl++) {
+            roll_move(pl, i);
+        }
+        if (Psw[2] & 0x20) {
+            t->step++;
+            e->x0[3] = 0;
+            ed_decide_se();
+        } else if (Psw[2] & 0x40) {
+            ed_cancel_se();
+            se_req_bgm_vol(1, 2, 0);
+            se_req_bgm_vol(1, 3, 0);
+            Tsk_Exit(t);
+            Select_Tsk_Execute();
+        } else {
+            if (Psw[2] & 0x2000) {
+                do {
+                    if (e->x0[1] == 0) {
+                        e->x0[1] = 2;
+                    } else {
+                        e->x0[1]--;
+                    }
+                } while (option_w[e->x0[1] * 0x480 + 0x10] == 0);
+                if (e->x0[2] != e->x0[1]) {
+                    cursor_se(2, e->x0[1], e->x0[2]);
+                    B32(&player_work[e->x0[1]], 0x578) = 0x01000000;
+                    B32(&player_work[e->x0[1]], 0x57C) = 0x01000000;
+                    B32(&player_work[e->x0[1]], 0x580) = 0x01000000;
+                }
+            }
+            if (Psw[2] & 0x1000) {
+                do {
+                    if (e->x0[1] >= 2) {
+                        e->x0[1] = 0;
+                    } else {
+                        e->x0[1]++;
+                    }
+                } while (option_w[e->x0[1] * 0x480 + 0x10] == 0);
+                if (e->x0[2] != e->x0[1]) {
+                    cursor_se(e->x0[1], e->x0[2]);
+                    B32(&player_work[e->x0[1]], 0x578) = 0x01000000;
+                    B32(&player_work[e->x0[1]], 0x57C) = 0x01000000;
+                    B32(&player_work[e->x0[1]], 0x580) = 0x01000000;
+                }
+            }
+            if (e->x0[2] != e->x0[1]) {
+                e->x0[2] = e->x0[1];
+            }
+        }
+        goto common;
+    case 4:
+        for (i = 0, pl = player_work; i < 3; i++, pl++) {
+            roll_move(pl, i);
+        }
+        if ((Psw[2] & 0x20) && e->x0[3] == 0) {
+            t->step++;
+            ed_decide_se();
+            option_w[0xFCE] = e->x0[1];
+            pl = &player_work[e->x0[1]];
+            ed_view_set(pl, 2, 1);
+            pl->ang[1] = 0;
+            e->x38 = 0;
+            ((SEL_GW *)&select_w)->xF6 = e->x0[1];
+            Load_userdata(e->x0[1]);
+        } else if (!(Psw[2] & 0x20) || e->x0[3] != 1) {
+            if (Psw[2] & 0x40) {
+                ed_cancel_se();
+                t->step = 3;
+            } else {
+                if ((btn & 0x800) && e->x0[3] != 0) {
+                    se_req(7, 0x12, 0);
+                    e->x0[3] = 0;
+                }
+                if ((btn & 0x400) && e->x0[3] == 0) {
+                    se_req(7, 0x12, 0);
+                    e->x0[3] = 1;
+                }
+            }
+        } else {
+            ed_cancel_se();
+            t->step = 3;
+        }
+        goto common;
+    case 5:
+        e->x38++;
+        if (Psw[2] & 0x20) {
+            t->step++;
+            se_req(7, 0x2E, 0);
+            se_req_bgm_vol(1, 2, 0);
+            se_req_bgm_vol(1, 3, 0);
+            pl = &player_work[e->x0[1]];
+            decide_chr_set(pl, pl->work011, B8(pl, 0x8D3));
+            e->x38 = 0;
+        }
+        goto common;
+    case 6:
+        e->x38++;
+        if (e->x38 >= 0x41) {
+            t->step++;
+            fade_set(5);
+        }
+        goto common;
+    case 7:
+        if (Fade_busy_ck() != 1) {
+            t->step++;
+            e->x38 = 4;
+        }
+        goto common;
+    case 8:
+        e->x38--;
+        if (e->x38 <= 0) {
+            Tsk_Exit(t);
+            Tsk_Signal(1);
+            fade_set(2);
+            return;
+        }
+        goto common;
+    default:
+    common:
+        pl = player_work;
+        if (t->step >= 2) {
+            for (i = 0; i < 3; i++, pl++) {
+                if (pl->be_flag != 0) {
+                    if (i == e->x0[1]) {
+                        pl->x01 = 1;
+                    } else {
+                        pl->x01 = 0;
+                    }
+                    pl_timer_calc(pl);
+                    hit_stop_calc(pl);
+                    pl_chr_sub(pl);
+                }
+            }
+            yure_move();
+            player_mk();
+            light_move();
+        }
+        e->x36++;
+        ev = e->eye;
+        v = (f32 *)((u8 *)lpView + 0xC);
+        v[0] = v[0] + (ev[0] - v[0]) / 10.0f;
+        v[1] = v[1] + (ev[1] - v[1]) / 10.0f;
+        v[2] = v[2] + (ev[2] - v[2]) / 10.0f;
+        v = (f32 *)lpView;
+        ev = e->at;
+        v[0] = v[0] + (ev[0] - v[0]) / 10.0f;
+        v[1] = v[1] + (ev[1] - v[1]) / 10.0f;
+        v[2] = v[2] + (ev[2] - v[2]) / 10.0f;
+        View_move();
+        if (t->step < 8) {
+            if (t->step >= 2) {
+                pl = &player_work[e->x0[1]];
+                BF(BP(pl, 0x564), 8) = pl->pos[0];
+                BF(BP(pl, 0x564), 0xC) = pl->pos[1];
+                BF(BP(pl, 0x564), 0x10) = pl->pos[2];
+                add_prim(ot1, BP(pl, 0x564), 0x20, 0);
+            }
+            add_prim2(ot0, demo_prim, 0, 0x40);
+            disp_cont_spr(e);
+            trans();
+        }
+        return;
+    }
+}
+
+void cont_trans(TSKH *tk) {
+    STASK *s = tk->work;
+    u8 *e = (u8 *)&edit_w;
+    flSetRenderState(0x60, 0);
+    switch (s->step) {
+    case 3:
+        disp_save_info(e, 1);
+        break;
+    case 4:
+        disp_check(e, 2);
+        break;
+    }
+    if (s->step >= 2) {
+        disp_savesel(e, 1, s->step);
+        Disp_button(1.0f, 0x12, 0x206, 0x60, 8);
+        font_print_ex(0x220, 0x60, 0, lit_322_0053B658);
+    }
+    if (s->step == 5) {
+        Mem_mes_disp(0x160, 0x28);
+        DispFrameMessageA(help_mess_005387B0, 0, 0x80);
+        if (!((edit_w.x38 / 15) & 1)) {
+            Disp_button(1.0f, 0, 0x232, 0x184, 8);
+        }
     }
 }

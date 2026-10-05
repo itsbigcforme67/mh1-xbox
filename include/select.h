@@ -235,4 +235,9 @@ void Tsk_Exit();
 void Select_Tsk_Execute();
 extern u8 Game_task[];
 extern s16 view_type[];
+void Load_userdata();
+void Tsk_Signal();
+void yure_move();
+void Mem_mes_disp();
+void disp_savesel();
 #endif
