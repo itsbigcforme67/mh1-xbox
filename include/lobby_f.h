@@ -347,4 +347,20 @@ typedef struct BSWK {
     u8 _pad5E;
     u8 x5F;
 } BSWK;
+/* Browser queue node (request / route / cache / source / image queues): singly linked, url at +4 */
+typedef struct BSNODE {
+    struct BSNODE *next;      /* 0x000 */
+    char url[0x100];          /* 0x004 */
+    s32 used;                 /* 0x104 state / in-use flag */
+    u8 x108, x109;            /* 0x108 page counter, status flags */
+    u8 _pad10A[2];
+    s8 x10C;                  /* 0x10C request kind */
+    s8 x10D;                  /* 0x10D 1 = html, 2 = image */
+    u8 _pad10E[2];
+    char *x110;               /* 0x110 */
+    u32 tex;                  /* 0x114 texture | palette handle << 16 */
+    s16 x118, x11A;
+    u8 _pad11C[8];
+    s8 x124, x125;
+} BSNODE;
 #endif
