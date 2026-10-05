@@ -16,12 +16,37 @@ typedef struct LB_PIT {
 
 /* lb_sys (0x006EAE50, size 0x90): lobby town system state */
 typedef struct LB_SYS {
-    u8 _pad00[7];
+    u8 _pad00;
+    s8 x01;             /* 0x01 (client state counters) */
+    s8 x02;
+    s8 x03;
+    s8 x04;
+    s8 x05;
+    s8 x06;             /* 0x06 eat scene / guild screen state */
     s8 step;            /* 0x07 event step */
-    u8 _pad08[0x68 - 0x08];
+    s8 x08;
+    u8 _pad09;
+    s8 x0A;
+    u8 _pad0B[0x28 - 0x0B];
+    s8 x28;
+    u8 _pad29[0x64 - 0x29];
+    u16 x64;            /* 0x64 chair bit mask */
+    u16 x66;            /* 0x66 chair number */
     s32 x68;            /* 0x68 talk/event mode (0 = none) */
     s32 x6C;            /* 0x6C */
-    u8 _pad70[0x87 - 0x70];
+    u8 x70;
+    s8 x71;
+    s8 x72;
+    u8 x73;
+    s16 x74;
+    u16 x76;            /* 0x76 wait timer */
+    u8 x78;
+    u8 _pad79[3];
+    s32 x7C;
+    s32 x80;
+    s8 x84;
+    u8 _pad85;
+    s8 x86;
     s8 x87;             /* 0x87 */
     u8 x88[8];          /* 0x88 per-stage flags, indexed by stage - 0x51 (up to 0x55: the object is larger than its declared size) */
 } LB_SYS;

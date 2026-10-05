@@ -221,7 +221,7 @@ void em15_init(EMW *em) {
     s16 temp_a3;
     s16 temp_v0;
     u8 temp_a0;
-    u8 temp_a1;
+    u32 temp_a1;
     u8 temp_v1;
 
     em_char_set(em, 1, 0, 0);
@@ -1227,7 +1227,7 @@ static void em_mv03_005C4BD0(EMW *em, EM15W *w) {
         em->x3F4 = 0;
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 < 0xE39 || temp_v1 >= 0xF1C8) {
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
             pl_flag_set((PLW *)em, 0x20000);
             em_char_set(em, 3, 0, 0);
         } else if (temp_v1 >= 0x8000) {
@@ -1248,7 +1248,7 @@ static void em_mv03_005C4BD0(EMW *em, EM15W *w) {
                     em15_to_normal(em);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 3, 0, 0);
                     return;
@@ -1268,8 +1268,6 @@ static void em_mv03_005C4BD0(EMW *em, EM15W *w) {
             } else {
                 em->ang[1] = (em->ang[1] - var_s1) & 0xFFFF;
             }
-        } else {
-            return;
         }
         break;
     }
@@ -1290,7 +1288,7 @@ static void em_mv05_005C4ED0(EMW *em, EM15W *w) {
         em->x3F4 = 0;
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 < 0xE39 || temp_v1 >= 0xF1C8) {
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
             pl_flag_set((PLW *)em, 0x20000);
             em_char_set(em, 3, 0, 0);
         } else if (temp_v1 >= 0x8000) {
@@ -1311,7 +1309,7 @@ static void em_mv05_005C4ED0(EMW *em, EM15W *w) {
                     em15_to_normal(em);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 3, 0, 0);
                     return;
@@ -1331,8 +1329,6 @@ static void em_mv05_005C4ED0(EMW *em, EM15W *w) {
             } else {
                 em->ang[1] = (em->ang[1] - var_s1) & 0xFFFF;
             }
-        } else {
-            return;
         }
         break;
     }
@@ -1388,9 +1384,9 @@ static void em_mv06_005C51D0(EMW *em, EM15W *w) {
 }
 
 static void em_mv07_005C5330(EMW *em, EM15W *w) {
-    s32 temp_a0;
     u16 temp_v1;
     u32 temp_a1_2;
+    s32 temp_a0;
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -1824,7 +1820,7 @@ static void em_fly08_005C6000(EMW *em, EM15W *w) {
     case 2:
         em->x05 = temp_a2 + 1;
         temp_v1 = em->thirst;
-        if (temp_v1 >= 0xBB9) {
+        if (temp_v1 > 0xBB8) {
             em->thirst = temp_v1 - 0xBB8;
         } else {
             em->thirst = 0;
@@ -1842,10 +1838,10 @@ static void em_fly08_005C6000(EMW *em, EM15W *w) {
         em->work08 = 0x258;
         Em_Next_Stage_Pos(em);
         temp_v1_3 = em->x92F;
-        if ((u16) em->x73A != temp_v1_3) {
-            if (temp_v1_3 == 0xFF) {
-                goto block_21;
-            }
+        if ((u16) em->x73A == temp_v1_3 || temp_v1_3 == 0xFF) {
+            WyvernAreaMove(em);
+            em15_act_set(em, 2, 9, 1);
+        } else {
             if (em->x8C3 == 0) {
                 em->x73A = (s16) temp_v1_3;
                 em->x829 = temp_v1_3 & 0xFFFF;
@@ -1854,10 +1850,6 @@ static void em_fly08_005C6000(EMW *em, EM15W *w) {
             }
             em15_act_set(em, 2, 0xD, 1);
             WyvernAreaMove(em);
-        } else {
-block_21:
-            WyvernAreaMove(em);
-            em15_act_set(em, 2, 9, 1);
         }
         break;
     case 4:
@@ -1878,6 +1870,7 @@ block_21:
 
 static void em_fly09_005C6290(EMW *em, EM15W *w) {
     s32 temp_v1;
+    f32 dd;
     u8 temp_a2;
 
     temp_a2 = em->x05;
@@ -1903,8 +1896,9 @@ static void em_fly09_005C6290(EMW *em, EM15W *w) {
         w->spd[1] = (s32) em->ang[1];
         w->spd[2] = 0;
         speed_add(em, w->spd);
+        dd = CalcDistanceXZ(em->pos, em->tgt_pos);
         em->work08 -= 1;
-        if ((CalcDistanceXZ(em->pos, em->tgt_pos) <= 500.0f) || (em->work08 < 0)) {
+        if ((dd <= 500.0f) || (em->work08 < 0)) {
             em->x05 += 1;
             em->work08 = 0x258;
             em15_act_set(em, 2, 1, 1);
@@ -1942,10 +1936,10 @@ static void em_fly10_005C6430(EMW *em, EM15W *w) {
         NextStage_Dir_Set(em, em->tgt_pos);
         break;
     case 1:
-        em15_senkai_target(temp_a1, 2);
+        em15_senkai_target(em, 2);
         em15_fly_adjy(em, 1);
-        temp_f1 = em->pos[1] + 100.0f;
-        em->pos[1] = temp_f1;
+        em->pos[1] += 100.0f;
+        temp_f1 = em->pos[1];
         if (!(temp_f1 < em->tgt_pos[1])) {
             em->x05 += 1;
         }
@@ -2071,8 +2065,8 @@ static void em_fly12_005C6860(EMW *em, EM15W *w) {
         w->spd[1] = (s32) em->ang[1];
         speed_add(em, w->spd);
         em15_fly_adjy(em, 1);
-        temp_f1 = 20.0f + em->pos[1];
-        em->pos[1] = temp_f1;
+        em->pos[1] += 20.0f;
+        temp_f1 = em->pos[1];
         if (!(temp_f1 < 10000.0f)) {
             em->x05 += 1;
             em_rate_clear(em);
@@ -2400,13 +2394,13 @@ static void em_fly23_005C7220(EMW *em, EM15W *w) {
         em->x8BD = 1;
         break;
     case 1:
-        em15_fly_adjy2(temp_a2);
+        em15_fly_adjy2(em);
         if (em->x194 == 0) {
             em->x05 += 1;
         }
         break;
     case 2:
-        if ((em15_fly_adjy2(temp_a2) & 0xFF) && (em->pos[1] <= (800.0f + em->x5AC))) {
+        if ((em15_fly_adjy2(em) & 0xFF) && (em->pos[1] <= (800.0f + em->x5AC))) {
             em->x05 += 1;
             em_char_set(em, 0xB, 0, 0);
             em_rate_clear(em);
@@ -2607,7 +2601,7 @@ block_7:
                     em15_to_tenjo(em);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 0x77, 0, 0);
                     return;
@@ -2629,8 +2623,6 @@ block_7:
                 return;
             }
             em->ang[1] = (temp_a2_2 - 0x2C8) & 0xFFFF;
-        } else {
-            return;
         }
         break;
     }
@@ -2847,7 +2839,7 @@ block_8:
                     em15_act_set(em, 2, 0x1D, 1);
                     return;
                 }
-                if ((temp_a0 < 0xE39) || (temp_a0 >= 0xF1C8)) {
+                if ((temp_a0 <= 0xE38) || (temp_a0 >= 0xF1C8)) {
                     em_char_set(em, 0x77, 0, 0);
                     return;
                 }
@@ -2994,7 +2986,7 @@ block_8:
                     em15_act_set(em, 2, 0x20, 1);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 0x77, 0, 0);
                     return;
@@ -3079,7 +3071,7 @@ block_8:
                     em15_act_set(em, 2, 0x1C, 1);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 0x77, 0, 0);
                     return;

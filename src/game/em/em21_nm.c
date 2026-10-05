@@ -270,7 +270,7 @@ void em21_init(EMW *em) {
         case 0x15:
         case 0x16:
             em->ex[0xA3] = 0;
-            eft09_set(em, temp_a1, 0x100, 0x4000);
+            eft09_set(em, temp_a1);
             break;
         case 0x14:
             break;
@@ -1001,7 +1001,7 @@ static void em_mv02_00601870(EMW *em, EM21W *w) {
         em->x388 = 0;
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 < 0xE39 || temp_v1 >= 0xF1C8) {
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
             pl_flag_set((PLW *)em, 0x20000);
             em_char_set(em, 3, 0, 0);
         } else if (temp_v1 >= 0x8000) {
@@ -1022,7 +1022,7 @@ static void em_mv02_00601870(EMW *em, EM21W *w) {
                     em21_to_normal(em);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 3, 0, 0);
                     return;
@@ -1041,11 +1041,9 @@ static void em_mv02_00601870(EMW *em, EM21W *w) {
             }
             if (temp_s0 < 0x8000) {
                 em->ang[1] = (temp_t0 + 0x1D4) & 0xFFFF;
-                return;
+            } else {
+                em->ang[1] = (temp_t0 - 0x1D4) & 0xFFFF;
             }
-            em->ang[1] = (temp_t0 - 0x1D4) & 0xFFFF;
-        } else {
-            return;
         }
         break;
     }
@@ -1160,7 +1158,7 @@ static void em_fly03_00601D90(EMW *em, EM21W *w) {
         em->x388 = 4;
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if ((temp_v1 < 0x2AA9) || (temp_v1 >= 0xD558)) {
+        if ((temp_v1 <= 0x2AA8) || (temp_v1 >= 0xD558)) {
             em_char_set(em, 0x65, 0, 0);
             return;
         }
@@ -1183,7 +1181,7 @@ static void em_fly03_00601D90(EMW *em, EM21W *w) {
                     em21_to_swim(em);
                     return;
                 }
-                if ((temp_a2 < 0x2AA9) || (temp_a2 >= 0xD558)) {
+                if ((temp_a2 <= 0x2AA8) || (temp_a2 >= 0xD558)) {
                     em_char_set(em, 0x65, 0, 0);
                     return;
                 }
@@ -1203,8 +1201,6 @@ static void em_fly03_00601D90(EMW *em, EM21W *w) {
                 return;
             }
             em->ang[1] = (temp_a3 - var_t0) & 0xFFFF;
-        } else {
-            return;
         }
         break;
     }
@@ -1324,7 +1320,8 @@ static void em_fly05_00602280(EMW *em, EM21W *w) {
                     em->ang[1] -= 0x40;
                 }
             }
-            temp_f1 = w->dist - em->adj_z;
+            temp_f1 = em->adj_z;
+            temp_f1 = w->dist - temp_f1;
             w->dist = temp_f1;
             if (temp_f1 <= 0.0f) {
                 em->x05 += 1;
@@ -1350,7 +1347,7 @@ static void em_fly06_00602450(EMW *em, EM21W *w) {
         em21_fly_adjy2_init(em, 0);
         break;
     case 1:
-        if (em21_fly_adjy2(em) != 0) {
+        if (em21_fly_adjy2(em)) {
             em->x05 += 1;
             em21_to_swim(em);
         }
@@ -1459,7 +1456,7 @@ static void em_fly09_00602780(EMW *em, EM21W *w) {
         em->x388 = 4;
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if ((temp_v1 < 0x2AA9) || (temp_v1 >= 0xD558)) {
+        if ((temp_v1 <= 0x2AA8) || (temp_v1 >= 0xD558)) {
             em_char_set(em, 0x65, 0, 0);
             return;
         }
@@ -1483,7 +1480,7 @@ static void em_fly09_00602780(EMW *em, EM21W *w) {
                     em21_act_set(em, 2, 0xA, 1);
                     return;
                 }
-                if ((temp_a2_2 < 0x2AA9) || (temp_a2_2 >= 0xD558)) {
+                if ((temp_a2_2 <= 0x2AA8) || (temp_a2_2 >= 0xD558)) {
                     em_char_set(em, 0x65, 0, 0);
                     return;
                 }
@@ -1777,8 +1774,6 @@ static void em_fly14_006030F0(EMW *em, EM21W *w) {
                 em21_act_set(em, 0, 4, 4);
                 return;
             }
-        } else {
-            return;
         }
         break;
     case 0x2:

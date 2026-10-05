@@ -34,20 +34,17 @@ void Quest_failed_set(void)
 int Quest_f_dra_ck(int unused)
 {
     switch (quest_w.no) {
-    case 0x6A:
-    case 0x69:
-    case 0x68:
-    case 0x67:
     case 0x66:
+    case 0x67:
+    case 0x68:
+    case 0x69:
+    case 0x6A:
         return 1;
     }
     return 0;
 }
 
-static void *qofs(s32 off)
-{
-    return off != 0 ? mission_area + off : 0;
-}
+#define QOFS(off) ((off) != 0 ? (void *)((off) + (int)mission_area) : 0)
 
 /* 0x2268A0: the exits list of stage n */
 void *Stage_mv_data_get(int n)
@@ -55,7 +52,13 @@ void *Stage_mv_data_get(int n)
     if (quest_w.no == 0) {
         return (void *)quest_w.x7C[n];
     }
-    return qofs(quest_w.x7C[n]);
+    {
+        s32 v = quest_w.x7C[n];
+        if (v == 0) {
+            return 0;
+        }
+        return (void *)(v + (int)mission_area);
+    }
 }
 
 /* 0x226900: stage n's 32-byte entry */
@@ -70,7 +73,13 @@ void *Stage_item_data_get(int n)
     if (quest_w.no == 0) {
         return (void *)quest_w.x8C[n + 1];
     }
-    return qofs(quest_w.x8C[n + 1]);
+    {
+        s32 v = quest_w.x8C[n + 1];
+        if (v == 0) {
+            return 0;
+        }
+        return (void *)(v + (int)mission_area);
+    }
 }
 
 /* 0x226980 */
@@ -79,7 +88,13 @@ void *Stage_unique_data_get(int n)
     if (quest_w.no == 0) {
         return (void *)quest_w.x90[n];
     }
-    return qofs(quest_w.x90[n]);
+    {
+        s32 v = quest_w.x90[n];
+        if (v == 0) {
+            return 0;
+        }
+        return (void *)(v + (int)mission_area);
+    }
 }
 
 /* 0x2269E0 */
@@ -92,7 +107,7 @@ s32 Stage_item_probability_get(int n)
  * list header; 0 or -1 is returned as is */
 s32 *Em_data_com_adrs_get(s32 *p, int which)
 {
-    s32 v = which != 0 ? p[3] : p[2];
+    s32 v = which == 0 ? p[2] : p[3];
 
     if (quest_w.no == 0) {
         return (s32 *)v;
@@ -100,7 +115,7 @@ s32 *Em_data_com_adrs_get(s32 *p, int which)
     if (v == 0 || v == -1) {
         return (s32 *)v;
     }
-    return (s32 *)(v + mission_area);
+    return (s32 *)(v + (int)mission_area);
 }
 
 /* 0x226A60: the per-stage monster list of stage `id` in table p[idx]
@@ -113,10 +128,11 @@ s32 *Em_data_st_adrs_get(s32 *p, int id, int which, s8 idx)
     if (quest_w.no == 0) {
         return 0;
     }
-    if (p[idx] == 0) {
+    p += idx;
+    if (*p == 0) {
         return 0;
     }
-    q = (s32 *)(mission_area + p[idx]);
+    q = (s32 *)(*p + (int)mission_area);
     for (;;) {
         if (q[0] == 0) {
             return 0;
@@ -126,20 +142,21 @@ s32 *Em_data_st_adrs_get(s32 *p, int id, int which, s8 idx)
         }
         q += 4;
     }
-    v = which != 0 ? q[3] : q[2];
+    v = which == 0 ? q[2] : q[3];
     if (v == 0 || v == -1) {
         return (s32 *)v;
     }
-    return (s32 *)(v + mission_area);
+    return (s32 *)(v + (int)mission_area);
 }
 
 /* 0x226B10 */
 void *Start_item_data_adrs_get(void)
 {
+    u8 *m = mission_area;
     if (quest_w.no == 0) {
         return quest_data_tbl[2];
     }
-    return mission_area + ((s32 *)mission_area)[2];
+    return (void *)(((s32 *)m)[2] + (int)m);
 }
 
 /* 0x226B40: clear quest_w and point it at the free-hunt tables */

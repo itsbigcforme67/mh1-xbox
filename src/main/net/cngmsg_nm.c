@@ -74,7 +74,7 @@ int CngNet_MSG_GetReadSize(CNGMSG *m) {
 void CngNet_MSG_Write(CNGMSG *m, u8 *src, int n) {
     int wr = m->wr;
 
-    if (m->cap < wr + n) {
+    if (wr + n > m->cap) {
         mcsls_critical_error(4);
     } else {
         memcpy(m->base + wr, src, n);

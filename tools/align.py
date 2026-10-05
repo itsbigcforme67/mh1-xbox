@@ -26,6 +26,15 @@ def key(s):
 a=[key(x[1]) for x in L]; b=[key(x) for x in R]
 # right side reloc addiu with 0
 b=[re.sub(r'(addiu \w+, \w+), 0$',r'\1, N',x) for x in b]
+if os.environ.get('RN'):
+    def canon(seq):
+        m={}
+        def rep(mm):
+            r=mm.group(0)
+            if r not in m: m[r]='S%d'%len(m)
+            return m[r]
+        return [re.sub(r'\bs[0-7]\b',rep,x) for x in seq]
+    a=canon(a); b=canon(b)
 sm=difflib.SequenceMatcher(None,a,b,autojunk=False)
 for op,i1,i2,j1,j2 in sm.get_opcodes():
     if op=='equal': continue

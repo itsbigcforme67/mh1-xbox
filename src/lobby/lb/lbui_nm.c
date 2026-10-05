@@ -3,6 +3,117 @@
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
+void Lb_eat()
+{
+    u8 *pl;
+
+    pl = (u8 *)player_work + game_w.master * 0xA00;
+    switch (lb_sys.x06) {
+    case 0:
+        lb_sys.x06 = 8;
+        Lbc_init_network_work(pl);
+        Lbc_set_prim(event_eat_trans_ot0, event_eat_trans_ot1, 0);
+        lb_eat_set();
+        break;
+    case 1:
+        lb_sys.x06 = lb_sys.x06 + 1;
+        Lb_act_set(pl, 0, 0x56);
+        break;
+    case 3:
+        switch ((s8)event_eat_rcpt(network_work)) {
+        case 0:
+            lb_sys.x06 = 8;
+            ((LB_CW *)cw)->x35D6 = 1;
+            break;
+        case 1:
+            lb_sys.x06 = 7;
+            break;
+        case 2:
+            break;
+        }
+        break;
+    case 4:
+        lb_sys.x06 = 8;
+        Lb_act_set(pl, 0, 0x61);
+        break;
+    case 5:
+        if ((u8)pNet->x06 == 0) {
+            set01_set2(lit_216_0065B900);
+            cnWrap_SoundRequest(2);
+            lb_sys.x06 = lb_sys.x06 + 1;
+        } else {
+            event_eat_set_msg();
+            lb_sys.x06 = lb_sys.x06 + 1;
+        }
+        break;
+    case 6:
+        if (lb_sys.x76 == 0) {
+            lb_sys.x06 = 0;
+            lb_sys.x68 = 0;
+            Lbc_init_network_work(pl);
+        }
+        break;
+    case 7:
+        if (lb_sys.x76 == 0) {
+            lb_sys.x06 = 0;
+            lb_sys.x68 = 0;
+            Lb_Pl_act_set(pl, 0, 0x4D, 0);
+            Lbc_init_network_work();
+        }
+        break;
+    case 8:
+        break;
+    }
+}
+
+void lb_eat_set(void) {
+    s8 flag[15];
+    s8 stage;
+    int i, tries, n, k;
+    s8 *f;
+    EATENT *e;
+    EATENT *e2;
+
+    stage = game_w.stage - 0x51;
+    flMemset(flag, 0, 15);
+    n = 0;
+    tries = 0;
+    do {
+        f = &flag[(u16)ran_suu(1) % 15];
+        if (*f == 0) {
+            n++;
+            *f = 1;
+            if (n >= 10) {
+                break;
+            }
+        }
+        tries++;
+    } while (tries < 100);
+    if (n < 10) {
+        for (i = 0; i < 10; i++) {
+            if (flag[i] == 0) {
+                n++;
+                flag[i] = 1;
+                if (n >= 10) {
+                    break;
+                }
+            }
+        }
+    }
+    e = eat_data[stage];
+    e2 = e;
+    k = 0;
+    for (i = 0; i < 15; i++) {
+        if (flag[i] != 0) {
+            strcpy(eat_data_name[k], e->name);
+            eat_data_type[k] = e2->type;
+            k++;
+        }
+        e++;
+        e2++;
+    }
+}
+
 void Lb_eat_to_bell(void) {
     LBS8(6) = 1;
 }
@@ -17,6 +128,260 @@ void Lb_eat_to_eat(void) {
 
 void Lb_eat_to_end(void) {
     LBS8(6) = 5;
+}
+
+int event_eat_rcpt(w)
+LB_NETW *w;
+{
+    s8 stage;
+    int sw;
+    s8 a;
+    s8 b;
+    u16 key;
+    int i;
+    int t;
+    EATRES *p2;
+
+    stage = game_w.stage - 0x51;
+    sw = (u16)Get_sw2(0);
+    switch (w->depth) {
+    case 0:
+        sw = (u16)sw & 0xFFFF;
+        if (sw & 0x20) {
+            w->depth = w->depth + 1;
+            w->cur = w->menu;
+            cnWrap_SoundRequest(0);
+        } else if (sw & 0x40) {
+            cnWrap_SoundRequest(3);
+            return 1;
+        } else if (sw & 0x2000) {
+            if (w->menu == 0) {
+                w->menu = 9;
+            } else {
+                w->menu = w->menu - 1;
+            }
+            cnWrap_SoundRequest(1);
+        } else if (sw & 0x1000) {
+            t = w->menu + 1;
+            w->menu = t;
+            if ((t & 0xFF) >= 10) {
+                w->menu = 0;
+            }
+            cnWrap_SoundRequest(1);
+        }
+        break;
+    case 1:
+        sw = (u16)sw & 0xFFFF;
+        if (sw & 0x20) {
+            if (w->cur == w->menu) {
+                cnWrap_SoundRequest(7);
+            } else {
+                w->depth = w->depth + 1;
+                cnWrap_SoundRequest(0);
+            }
+        } else if (sw & 0x40) {
+            w->depth = w->depth - 1;
+            cnWrap_SoundRequest(3);
+        } else if (sw & 0x2000) {
+            if (w->cur == 0) {
+                w->cur = 9;
+            } else {
+                w->cur = w->cur - 1;
+            }
+            cnWrap_SoundRequest(1);
+        } else if (sw & 0x1000) {
+            t = w->cur + 1;
+            w->cur = t;
+            if ((t & 0xFF) >= 10) {
+                w->cur = 0;
+            }
+            cnWrap_SoundRequest(1);
+        }
+        break;
+    case 2:
+        sw = (u16)sw & 0xFFFF;
+        if (sw & 0x20) {
+            if ((u8)w->x0A == 1) {
+                cnWrap_SoundRequest(3);
+                return 1;
+            }
+            cnWrap_SoundRequest(8);
+            a = eat_data_type[w->cur];
+            b = eat_data_type[w->menu];
+            if (b < a) {
+                key = (b << 8) | a;
+            } else {
+                key = (a << 8) | b;
+            }
+            pRes = eat_result[stage];
+            i = 0;
+            if (pRes->key != 0xFF) {
+                while (1) {
+                    if (pRes->key == (key & 0xFFFF)) {
+                        w->x06 = pRes->idx;
+                        break;
+                    }
+                    i = (i + 1) & 0xFFFF;
+                    if (i > 0x32) {
+                        w->x06 = 0;
+                        break;
+                    }
+                    pRes = pRes + 1;
+                    if (pRes->key == 0xFF) {
+                        break;
+                    }
+                }
+            }
+            t = (u8)w->x06;
+            if (t == 0 || t == 0xFF) {
+                eatResult = 1;
+            } else {
+                if ((f32)Status_add_tbl[pRes->idx].s3 + ((f32)Status_add_tbl[pRes->idx].s2 + (f32)(Status_add_tbl[pRes->idx].s0 + Status_add_tbl[pRes->idx].s1)) > 0.0f) {
+                    eatResult = 2;
+                } else {
+                    eatResult = 0;
+                }
+            }
+            p2 = pRes;
+            *(s8 *)0x3F3603 = Status_add_tbl[p2->idx].s2;
+            *(s8 *)0x3F3604 = Status_add_tbl[p2->idx].s3;
+            *(s8 *)0x3F3605 = Status_add_tbl[p2->idx].s0;
+            *(s16 *)0x3F3606 = Status_add_tbl[p2->idx].s1;
+            return 0;
+        }
+        if (sw & 0x40) {
+            w->depth = w->depth - 1;
+            cnWrap_SoundRequest(3);
+        } else if (sw & 0x3000) {
+            w->x0A = (u8)w->x0A ^ 1;
+            cnWrap_SoundRequest(1);
+        }
+        break;
+    }
+    return 2;
+}
+
+void event_eat_trans_ot0(a)
+u8 *a;
+{
+    int x;
+    s16 y;
+    s16 i;
+
+    font_set_stack_no(*(int *)(a + 0x18));
+    if (LBS8(6) == 3) {
+        x = pfl_menu_449[0];
+        y = pfl_menu_449[1];
+        flfntSetSize(0x12, 0x12);
+        font_set_palette(0);
+        i = 0;
+        do {
+            y += 0x16;
+            flfntLocate(x, y);
+            font_print(lit_473_0065B948, eat_data_name[i]);
+            i++;
+        } while (i < 10);
+        switch (pNet->depth) {
+        case 0:
+            DispFrameList(pfl_menu_449, lit_474_0065B950, pNet->menu);
+            DispFrameMessage(frame_matA_450, 0);
+            font_set_palette(5);
+            flfntLocate(frame_matA_450[0], frame_matA_450[1]);
+            font_print(lit_475_0065B960);
+            font_set_palette(3);
+            y = frame_matA_450[1] + 0x16;
+            x = frame_matA_450[0];
+            flfntLocate(x, y);
+            font_print(lit_476_0065B970);
+            break;
+        case 1:
+            DispFrameList(pfl_menu_449, lit_474_0065B950, pNet->cur);
+            DispFrameMessage(frame_matA_450, 0);
+            font_set_palette(5);
+            flfntLocate(frame_matA_450[0], frame_matA_450[1]);
+            font_print(lit_475_0065B960);
+            font_set_palette(0);
+            y = frame_matA_450[1] + 0x16;
+            x = frame_matA_450[0];
+            flfntLocate(x, y);
+            font_print(lit_473_0065B948, eat_data_name[pNet->menu]);
+            DispFrameMessage(frame_matB_451, 0);
+            font_set_palette(5);
+            flfntLocate(frame_matB_451[0], frame_matB_451[1]);
+            font_print(lit_477_0065B980);
+            font_set_palette(3);
+            y = frame_matB_451[1] + 0x16;
+            x = frame_matB_451[0];
+            flfntLocate(x, y);
+            font_print(lit_476_0065B970);
+            break;
+        case 2:
+            DispFrameList(pfl_menu_449, lit_474_0065B950, -1);
+            DispFrameMessage(frame_matA_450, 0);
+            font_set_palette(5);
+            flfntLocate(frame_matA_450[0], frame_matA_450[1]);
+            font_print(lit_475_0065B960);
+            font_set_palette(0);
+            y = frame_matA_450[1] + 0x16;
+            x = frame_matA_450[0];
+            flfntLocate(x, y);
+            font_print(lit_473_0065B948, eat_data_name[pNet->menu]);
+            DispFrameMessage(frame_matB_451, 0);
+            font_set_palette(5);
+            flfntLocate(frame_matB_451[0], frame_matB_451[1]);
+            font_print(lit_477_0065B980);
+            font_set_palette(0);
+            y = frame_matB_451[1] + 0x16;
+            x = frame_matB_451[0];
+            flfntLocate(x, y);
+            font_print(lit_473_0065B948, eat_data_name[pNet->cur]);
+            DispFrameList(eat_command_452, 0, (u8)pNet->x0A);
+            break;
+        }
+    }
+}
+
+void event_eat_set_msg(void) {
+    char sp10[0x100];
+    s16 v;
+
+    set01_set2(pRes->msg);
+    v = Status_add_tbl[pRes->idx].s0;
+    if (v != 0) {
+        if (v > 0) {
+            sprintf(sp10, lit_520_0065B990);
+        } else if (v < 0) {
+            sprintf(sp10, lit_521_0065B9B0);
+        }
+        set01_set2_use_mem(sp10);
+    }
+    v = Status_add_tbl[pRes->idx].s1;
+    if (v != 0) {
+        if (v > 0) {
+            sprintf(sp10, lit_522_0065B9D0);
+        } else if (v < 0) {
+            sprintf(sp10, lit_523_0065B9F0);
+        }
+        set01_set2_use_mem(sp10);
+    }
+    v = Status_add_tbl[pRes->idx].s2;
+    if (v != 0) {
+        if (v > 0) {
+            sprintf(sp10, lit_524_0065BA10);
+        } else if (v < 0) {
+            sprintf(sp10, lit_525_0065BA30);
+        }
+        set01_set2_use_mem(sp10);
+    }
+    v = Status_add_tbl[pRes->idx].s3;
+    if (v != 0) {
+        if (v > 0) {
+            sprintf(sp10, lit_526_0065BA50);
+        } else if (v < 0) {
+            sprintf(sp10, lit_527_0065BA70);
+        }
+        set01_set2_use_mem(sp10);
+    }
 }
 
 void event_eat_trans_ot1(a)
@@ -1111,4 +1476,19 @@ void Lbs_load(void) {
 
 void Lbc_release(void) {
     release_texture(0x118, 0x15);
+}
+
+char *GetRoomRule(void) {
+    return RoomRule;
+}
+
+int Lbs_MatchStart(void) {
+    cnLBS_MatchStart();
+    return 1;
+}
+
+void lb_npc_effect_move(em)
+void *em;
+{
+    (*(void (**)())(*(int *)((u8 *)em + 0x3CC) + 0xC))(em);
 }

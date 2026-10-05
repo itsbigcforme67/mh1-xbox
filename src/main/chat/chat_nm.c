@@ -613,7 +613,7 @@ void Chat_init(void) {
 int ChatKinsoku_chk(u8 *);
 int Menu_chatlog_i(void);
 void SoftKeyboard_exit(void);
-s8 SoftKeyboard_move(s8 *, u16, u16);
+s8 SoftKeyboard_move(s8 *, s16, s16);
 void chat_log_add(int, s8 *, PIT_CHAT *);
 void func_5CB100(u8, s8 *, u8);
 void net_send_chat(u8, int, s8 *, int);

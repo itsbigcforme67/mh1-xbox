@@ -95,8 +95,15 @@ typedef struct LB_CW {
     u8 chatmode;        /* 0x32BE */
     u8 _pad32BF[0x35D5 - 0x32BF];
     u8 x35D5;           /* 0x35D5 */
+    s8 x35D6;           /* 0x35D6 eat scene result */
 } LB_CW;
 #define CW ((LB_CW *)cw)
+/* eat scene tables */
+typedef struct { u16 key; u16 idx; char *msg; } EATRES;
+typedef struct { s16 s0; s16 s1; s16 s2; s16 s3; } EATSTAT;
+typedef struct { char name[0x11]; s8 type; } EATENT;
+extern u8 player_work[];
+extern u8 network_work[0x2C];
 extern u16 System_timer;
 extern u8 chatIDList[7][8];
 extern u8 chatListFlag;

@@ -402,7 +402,7 @@ static void em_act01_005B59C0(EMW *em, EM14W *w) {
     case 1:
         if (em->x8C3 == 0) {
             temp_a0 = em->x734;
-            if (((u32) (temp_a0 - 1) < 2) || (temp_a0 == 3)) {
+            if (temp_a0 == 1 || temp_a0 == 2 || temp_a0 == 3) {
                 if (em->x194 == 0) {
                     em->x05 += 1;
                     act_dist_select_005B5650(em);
@@ -414,8 +414,6 @@ static void em_act01_005B59C0(EMW *em, EM14W *w) {
                     em14_act_set(em, 0, temp_a2, 0);
                 }
             }
-        } else {
-            return;
         }
         break;
     }
@@ -1229,7 +1227,7 @@ static void em_mv02_005B71D0(EMW *em, EM14W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            em14_tossin_move(temp_a1);
+            em14_tossin_move(em);
             if (w->dist <= 0.0f) {
                 em->work08 = 1;
                 goto block_11;
@@ -1268,7 +1266,7 @@ static void em_mv03_005B72E0(EMW *em, EM14W *w) {
         em->x3F4 = 0;
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 < 0xE39 || temp_v1 >= 0xF1C8) {
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
             pl_flag_set((PLW *)em, 0x20000);
             em_char_set(em, 3, 0, 0);
         } else if (temp_v1 >= 0x8000) {
@@ -1291,7 +1289,7 @@ static void em_mv03_005B72E0(EMW *em, EM14W *w) {
                     em14_to_normal(em, 0, 0);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 3, 0, 0);
                     return;
@@ -1313,8 +1311,6 @@ static void em_mv03_005B72E0(EMW *em, EM14W *w) {
                 return;
             }
             em->ang[1] = (temp_a2 - var_a3) & 0xFFFF;
-        } else {
-            return;
         }
         break;
     }
@@ -1334,7 +1330,7 @@ static void em_mv04_005B75B0(EMW *em, EM14W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            em14_tossin_move(temp_a1);
+            em14_tossin_move(em);
             if (w->dist <= 0.0f) {
                 em->work08 = 1;
                 goto block_11;
@@ -1379,7 +1375,7 @@ static void em_mv05_005B76F0(EMW *em, EM14W *w) {
         em->x3F4 = 0;
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 < 0xE39 || temp_v1 >= 0xF1C8) {
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
             pl_flag_set((PLW *)em, 0x20000);
             em_char_set(em, 3, 0, 0);
         } else if (temp_v1 >= 0x8000) {
@@ -1402,7 +1398,7 @@ static void em_mv05_005B76F0(EMW *em, EM14W *w) {
                     em14_to_normal(em, 0, 0);
                     return;
                 }
-                if ((temp_s0 < 0xE39) || (temp_s0 >= 0xF1C8)) {
+                if ((temp_s0 <= 0xE38) || (temp_s0 >= 0xF1C8)) {
                     pl_flag_set((PLW *) em, 0x20000);
                     em_char_set(em, 3, 0, 0);
                     return;
@@ -1424,8 +1420,6 @@ static void em_mv05_005B76F0(EMW *em, EM14W *w) {
                 return;
             }
             em->ang[1] = (temp_a2 - var_a3) & 0xFFFF;
-        } else {
-            return;
         }
         break;
     }
@@ -1481,9 +1475,9 @@ static void em_mv06_005B79C0(EMW *em, EM14W *w) {
 }
 
 static void em_mv07_005B7B20(EMW *em, EM14W *w) {
-    s32 temp_a0;
     u16 temp_v1;
     u32 temp_a1_2;
+    s32 temp_a0;
     u8 temp_a1;
 
     temp_a1 = em->x05;
@@ -2070,13 +2064,13 @@ static void em_fly23_005B8CD0(EMW *em, EM14W *w) {
         em->x8BD = 1;
         break;
     case 1:
-        em14_fly_adjy2(temp_a2);
+        em14_fly_adjy2(em);
         if (em->x194 == 0) {
             em->x05 += 1;
         }
         break;
     case 2:
-        if ((em14_fly_adjy2(temp_a2) & 0xFF) && (em->pos[1] <= (800.0f + em->x5AC))) {
+        if ((em14_fly_adjy2(em) & 0xFF) && (em->pos[1] <= (800.0f + em->x5AC))) {
             em->x05 += 1;
             em_char_set(em, 0xB, 0, 0);
             em_rate_clear(em);
@@ -2124,7 +2118,7 @@ static void em_atk00_005B8F00(EMW *em, EM14W *w) {
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        if (em14_horm_main(temp_a1) != 0) {
+        if (em14_horm_main(em) != 0) {
             em->x05 += 1;
             em->x388 = 0;
             em->x3F4 = 0;
@@ -2204,7 +2198,7 @@ static void em_atk15_005B9110(EMW *em, EM14W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            em14_tossin_move(temp_a1);
+            em14_tossin_move(em);
             if (w->dist <= 0.0f) {
                 em->work08 = 1;
                 goto block_11;
@@ -2246,7 +2240,7 @@ static void em_atk16_005B9250(EMW *em, EM14W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            em14_tossin_move(temp_a1);
+            em14_tossin_move(em);
             if (w->dist <= 0.0f) {
                 em->work08 = 1;
                 goto block_11;
@@ -2288,7 +2282,7 @@ static void em_atk17_005B9390(EMW *em, EM14W *w) {
         break;
     case 1:
         if (w->has_tgt != 0) {
-            em14_tossin_move(temp_a1);
+            em14_tossin_move(em);
             if (w->dist <= 0.0f) {
                 em->work08 = 1;
                 goto block_11;
@@ -2322,7 +2316,7 @@ static void em_atk26_005B94D0(EMW *em, EM14W *w) {
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        if (em14_horm_main(temp_a1) != 0) {
+        if (em14_horm_main(em) != 0) {
             em->x05 += 1;
             em->x388 = 0;
             em->x3F4 = 0;
@@ -2344,7 +2338,7 @@ static void em_atk27_005B9570(EMW *em, EM14W *w) {
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        if (em14_horm_main(temp_a1) != 0) {
+        if (em14_horm_main(em) != 0) {
             em->x05 += 1;
             em->x388 = 0;
             em->x3F4 = 0;
@@ -2386,7 +2380,7 @@ static void em_atk29_005B9690(EMW *em, EM14W *w) {
     temp_a1 = em->x05;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        if (em14_horm_main(temp_a1) != 0) {
+        if (em14_horm_main(em) != 0) {
             em->x05 += 1;
             em->x388 = 0;
             em->x3F4 = 0;
