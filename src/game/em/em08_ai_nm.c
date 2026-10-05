@@ -242,49 +242,30 @@ void em08_local_init(EMW *em) {
 
 void em08_init(EMW *em) {
     EM08W *w = (EM08W *)em->ex;
-    f32 var_f2;
-    f32 var_f2_2;
-    s16 var_v0;
-    s32 var_v1;
-    u8 temp_a0;
-    u8 temp_v0;
-    u8 temp_v0_2;
-    u8 temp_v1;
-    u8 temp_v1_2;
-
+    u8 t;
 
     em_char_set(em, 1, 0, 0);
-    if (*(s16 *)0x3C7448 == 0) {
+    if (quest_w.no == 0) {
         em->ang[1] = 0x8000;
-        if (*(u8 *)0x3F3404 != 0x36) {
-            temp_v0 = em->x13;
-            if ((s32) temp_v0 >= 0) {
-                var_f2 = (f32) temp_v0;
-            } else {
-                var_f2 = 2.0f * (f32) ((temp_v0 >> 1) | (temp_v0 & 1));
-            }
-            em->pos[0] = 5000.0f + (1500.0f * var_f2);
-            em->pos[1] = 0.0f;
-            em->pos[2] = 9000.0f;
-            em->x388 = 0;
-            em08_act_set(em, 2, 0, 0);
-        } else {
-            temp_v0_2 = em->x13;
-            if ((s32) temp_v0_2 >= 0) {
-                var_f2_2 = (f32) temp_v0_2;
-            } else {
-                var_f2_2 = 2.0f * (f32) ((temp_v0_2 >> 1) | (temp_v0_2 & 1));
-            }
-            em->pos[0] = 6000.0f + (1500.0f * var_f2_2);
+        switch (game_w.stage) {
+        case 0x36:
+            em->pos[0] = 6000.0f + (1500.0f * (f32)(u32)em->x13);
             em->pos[1] = 0.0f;
             em->pos[2] = 10000.0f;
             em->ang[1] = 0x4000;
             em->x388 = 4;
             em08_act_set(em, 2, 0, 0);
+            break;
+        default:
+            em->pos[0] = 5000.0f + (1500.0f * (f32)(u32)em->x13);
+            em->pos[1] = 0.0f;
+            em->pos[2] = 9000.0f;
+            em->x388 = 0;
+            em08_act_set(em, 2, 0, 0);
+            break;
         }
     } else {
-        temp_v1 = *(u8 *)0x3F3404;
-        switch (temp_v1) {
+        switch (game_w.stage) {
         case 0x36:
             em->x388 = 4;
             em08_act_set(em, 2, 0, 0);
@@ -304,20 +285,17 @@ void em08_init(EMW *em) {
     em->x88B = 1;
     if (em->kind == 8) {
         em->x765 = 1;
-        var_v0 = em_hp_vital_set2(em, 0x578, 0x258);
-        em->x302 = var_v0;
+        em->x792 = em->x302 = em_hp_vital_set2(em, 0x578, 0x258);
     } else {
         em->x8C3 = 0;
         em->x765 = 0;
-        var_v0 = em_hp_vital_set2(em, 0x8C, 0x64);
-        em->x302 = var_v0;
+        em->x792 = em->x302 = em_hp_vital_set2(em, 0x8C, 0x64);
     }
-    em->x792 = var_v0;
     em->x8C2 = 0;
     em->x56A = 0;
     em->stay_tm = em08_stay_timer_tbl[em->stg];
     em->runaway_tm = em08_runaway_timer_tbl[em->stg];
-    EMF(w, s16, 0xA) = 0x4000;
+    w->dang = 0x4000;
     w->x28 = 0x100;
     w->x2C = 0x200;
     w->x30 = 0x100;
@@ -326,21 +304,29 @@ void em08_init(EMW *em) {
     w->x38 = 0;
     w->x39 = 0;
     w->x3A = 0;
-    var_v1 = 0x43E10000;
     if (em->kind == 8) {
-
+        em->x7E0 = 450.0f;
     } else {
-        var_v1 = 0x437A0000;
+        em->x7E0 = 250.0f;
     }
-    EMF(em, s32, 0x7E0) = var_v1;
-    temp_v1_2 = em->x948 & 1;
-    em->x948 = temp_v1_2;
-    if ((temp_v1_2 == 0) && (temp_a0 = em->kind, (temp_a0 != 0x14))) {
-        if ((temp_a0 != 0x22) && (temp_a0 != 0x16) && (temp_a0 != 0x15) && (temp_a0 != 0x11) && (temp_a0 != 0xE) && (temp_a0 != 0xF) && (temp_a0 != 0xB) && (temp_a0 != 8) && (temp_a0 != 6) && (temp_a0 != 1)) {
-            return;
+    t = em->x948 & 1;
+    em->x948 = t;
+    if (t == 0 && em->kind != 0x14) {
+        switch (em->kind) {
+        case 1:
+        case 6:
+        case 8:
+        case 0xB:
+        case 0xF:
+        case 0xE:
+        case 0x11:
+        case 0x15:
+        case 0x16:
+        case 0x22:
+            em->ex[0xA3] = 0;
+            eft09_set(em, 0x200);
+            break;
         }
-        em->ex[0xA3] = 0;
-        eft09_set(em, 0x200);
     }
 }
 
@@ -1657,7 +1643,7 @@ static void em_fly07_0059D190(EMW *em, EM08W *w) {
             em->adj_y = 50.0f;
             em->x3C0[1] = 0.0f;
         }
-        temp_f1 = EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0);
+        temp_f1 = em->x7E4 - em->x7E0;
         if (!(em->pos[1] <= temp_f1)) {
             em->pos[1] = temp_f1;
             em->x05++;
@@ -2003,7 +1989,7 @@ static void em_fly14_0059DDA0(EMW *em, EM08W *w) {
     case 1:
         w->vel[1] = (s32) em->ang[1];
         speed_add(em, w->vel);
-        if (!(em->pos[1] < (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0)))) {
+        if (!(em->pos[1] < (em->x7E4 - em->x7E0))) {
             temp_a3 = em->x05;
             em->x05 = temp_a3 + 1;
             em->x388 = 2;
@@ -2044,7 +2030,7 @@ static void em_fly15_0059DF70(EMW *em, EM08W *w) {
         em->x388 = 4;
         em_char_set(em, 0x79, 0, 0);
         em_rate_clear(em);
-        em->pos[1] = EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0);
+        em->pos[1] = em->x7E4 - em->x7E0;
         break;
     case 1:
         if (em_frame_check(em, 10.0f, 0) != 0) {
@@ -2089,16 +2075,16 @@ static void em_fly16_0059E020(EMW *em, EM08W *w) {
         w->vel[1] = (s32) em->ang[1];
         w->vel[2] = 0;
         speed_add_g(em, w->vel);
-        if (em->pos[1] <= (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0))) {
+        if (em->pos[1] <= (em->x7E4 - em->x7E0)) {
             em->x388 = 4;
         }
         if (em->adj_y < 0.0f) {
             if (*(u8 *)0x3F3404 == em->stg) {
                 if (em->x7E9 != 0) {
-                    if (em->pos[1] < (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0))) {
+                    if (em->pos[1] < (em->x7E4 - em->x7E0)) {
                         em->x05++;
                         em->x388 = 4;
-                        em->pos[1] = EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0);
+                        em->pos[1] = em->x7E4 - em->x7E0;
                         em->adj_y = 0.0f;
                         em->x3C0[1] = 0.0f;
                         em_char_set(em, 0x67, 0xA, 0);
@@ -2121,10 +2107,10 @@ static void em_fly16_0059E020(EMW *em, EM08W *w) {
                     swim_eff_set2_005A7120(8.0f, em);
                     return;
                 }
-            } else if (em->pos[1] < (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0))) {
+            } else if (em->pos[1] < (em->x7E4 - em->x7E0)) {
                 em->x05++;
                 em->x388 = 4;
-                em->pos[1] = EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0);
+                em->pos[1] = em->x7E4 - em->x7E0;
                 em->adj_y = 0.0f;
                 em->x3C0[1] = 0.0f;
                 em_char_set(em, 0x67, 0xA, 0);
@@ -2188,7 +2174,7 @@ static void em_fly17_0059E400(EMW *em, EM08W *w) {
     case 0x1:
         w->vel[1] = (s32) em->ang[1];
         speed_add(em, w->vel);
-        if (!(em->pos[1] <= (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0)))) {
+        if (!(em->pos[1] <= (em->x7E4 - em->x7E0))) {
             em->x388 = 2;
             swim_eff_set2_005A7120(8.0f, em);
             em->x05++;
@@ -2200,16 +2186,16 @@ static void em_fly17_0059E400(EMW *em, EM08W *w) {
     case 0x2:
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
-        if (em->pos[1] < (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0))) {
+        if (em->pos[1] < (em->x7E4 - em->x7E0)) {
             em->x388 = 4;
         }
         if (em->adj_y < 0.0f) {
             if (*(u8 *)0x3F3404 == em->stg) {
                 if (em->x7E9 != 0) {
-                    if (em->pos[1] < (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0))) {
+                    if (em->pos[1] < (em->x7E4 - em->x7E0)) {
                         em->x05++;
                         em->x388 = 4;
-                        em->pos[1] = EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0);
+                        em->pos[1] = em->x7E4 - em->x7E0;
                         em->adj_y = 0.0f;
                         em->x3C0[1] = 0.0f;
                         em_char_set(em, 0x67, 0xA, 0);
@@ -2232,9 +2218,9 @@ static void em_fly17_0059E400(EMW *em, EM08W *w) {
                     swim_eff_set2_005A7120(8.0f, em);
                     return;
                 }
-            } else if (em->pos[1] < (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0))) {
+            } else if (em->pos[1] < (em->x7E4 - em->x7E0)) {
                 em->x05++;
-                em->pos[1] = EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0);
+                em->pos[1] = em->x7E4 - em->x7E0;
                 em->x388 = 4;
                 em->adj_y = 0.0f;
                 em->x3C0[1] = 0.0f;
@@ -2695,7 +2681,7 @@ static void em_atk06_0059F5C0(EMW *em, EM08W *w) {
     case 1:
         w->vel[1] = (s32) em->ang[1];
         speed_add(em, w->vel);
-        if (!(em->pos[1] <= (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0)))) {
+        if (!(em->pos[1] <= (em->x7E4 - em->x7E0))) {
             temp_a1 = em->x05;
             em->x05 = temp_a1 + 1;
             em->x388 = 2;
@@ -2709,7 +2695,7 @@ static void em_atk06_0059F5C0(EMW *em, EM08W *w) {
     case 2:
         w->vel[1] = (s32) em->ang[1];
         speed_add(em, w->vel);
-        if (!(em->pos[1] <= EMF(em, f32, 0x7E4))) {
+        if (!(em->pos[1] <= em->x7E4)) {
             em->x05++;
             em->adj_y = 0.0f;
             em->work08 = 0x1E;
@@ -2729,7 +2715,7 @@ static void em_atk06_0059F5C0(EMW *em, EM08W *w) {
     case 4:
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
-        if ((em->pos[1] <= (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0))) && (em->adj_y < 0.0f)) {
+        if ((em->pos[1] <= (em->x7E4 - em->x7E0)) && (em->adj_y < 0.0f)) {
             em->x05++;
             em->x388 = 4;
             em->adj_y = 0.0f;
@@ -2801,7 +2787,7 @@ static void em_atk08_0059F910(EMW *em, EM08W *w) {
             em->work08 = 0x12;
             em->x3C0[2] = -em->adj_z / (f32) em->work08;
         }
-        if ((em_frame_check2(em, 0, 84.0f) != 0) && (em->pos[1] <= (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0)))) {
+        if ((em_frame_check2(em, 0, 84.0f) != 0) && (em->pos[1] <= (em->x7E4 - em->x7E0))) {
             em->adj_y = 0.0f;
             em->x3C0[1] = 0.0f;
         }
@@ -2997,7 +2983,7 @@ static void em_dmg06_0059FFE0(EMW *em, EM08W *w) {
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
         var_v1 = 2;
-        if (!(em->pos[1] < EMF(em, f32, 0x7E4))) {
+        if (!(em->pos[1] < em->x7E4)) {
 
         } else {
             var_v1 = 4;
@@ -3111,7 +3097,7 @@ static void em_dmg09_005A0350(EMW *em, EM08W *w) {
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
         var_v1 = 2;
-        if (!(em->pos[1] < EMF(em, f32, 0x7E4))) {
+        if (!(em->pos[1] < em->x7E4)) {
 
         } else {
             var_v1 = 4;
@@ -3298,7 +3284,7 @@ static void em_dmg15_005A08C0(EMW *em, EM08W *w) {
     case 1:
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
-        if (!(em->pos[1] < EMF(em, f32, 0x7E4))) {
+        if (!(em->pos[1] < em->x7E4)) {
             em->x388 = 2;
         }
         if ((em->adj_y < 0.0f) && (em->pos[1] < em->x5AC)) {
@@ -3393,7 +3379,7 @@ static void em_dmg17_005A0C40(EMW *em, EM08W *w) {
         break;
     case 1:
         w->vel[1] = (s32) em->ang[1];
-        if (!(em->pos[1] < (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0)))) {
+        if (!(em->pos[1] < (em->x7E4 - em->x7E0))) {
             em->x388 = 2;
             em->adj_y = 80.0f;
             speed_add_g(em, w->vel);
@@ -3407,7 +3393,7 @@ static void em_dmg17_005A0C40(EMW *em, EM08W *w) {
     case 2:
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
-        if ((em->pos[1] < EMF(em, f32, 0x7E4)) && (em->adj_y < 0.0f)) {
+        if ((em->pos[1] < em->x7E4) && (em->adj_y < 0.0f)) {
             em->x05++;
             em->x388 = 0;
             em->pos[1] = em->x5AC;
@@ -3519,10 +3505,10 @@ static void em_demo00_005A0FF0(EMW *em, EM08W *w) {
         em->x05 = 3;
         em->x388 = 4;
         em->pos[0] = 11900.0f;
-        em->pos[1] = -EMF(em, f32, 0x7E0);
+        em->pos[1] = -em->x7E0;
         em->pos[2] = 5220.0f;
         em->tgt_pos[0] = 16700.0f;
-        em->tgt_pos[1] = -EMF(em, f32, 0x7E0);
+        em->tgt_pos[1] = -em->x7E0;
         em->tgt_pos[2] = 8450.0f;
         em->ang[0] = 0;
         em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
@@ -3543,7 +3529,7 @@ static void em_demo00_005A0FF0(EMW *em, EM08W *w) {
         if (temp_f1 <= 0.0f) {
             em->x05++;
             em->tgt_pos[0] = 16700.0f;
-            em->tgt_pos[1] = -EMF(em, f32, 0x7E0);
+            em->tgt_pos[1] = -em->x7E0;
             em->tgt_pos[2] = 8450.0f;
             w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
             w->dist = CalcDistanceXZ(em->pos, em->tgt_pos);
@@ -3581,7 +3567,7 @@ static void em_demo00_005A0FF0(EMW *em, EM08W *w) {
         if (temp_f1_3 <= 0.0f) {
             em->x05++;
             em->tgt_pos[0] = 12728.0f;
-            em->tgt_pos[1] = -EMF(em, f32, 0x7E0);
+            em->tgt_pos[1] = -em->x7E0;
             em->tgt_pos[2] = 13160.0f;
             w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
             w->dist = CalcDistanceXZ(em->pos, em->tgt_pos);
@@ -3630,7 +3616,7 @@ static void em_demo00_005A0FF0(EMW *em, EM08W *w) {
     case 6:
         w->vel[1] = (s32) em->ang[1];
         speed_add(em, w->vel);
-        if (!(em->pos[1] < (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0)))) {
+        if (!(em->pos[1] < (em->x7E4 - em->x7E0))) {
             temp_a3_2 = em->x05;
             em->x05 = temp_a3_2 + 1;
             em->x388 = 2;
@@ -3879,7 +3865,7 @@ static void em_die02_005A1BD0(EMW *em, EM08W *w) {
         break;
     case 0x1:
         w->vel[1] = (s32) em->ang[1];
-        if (!(em->pos[1] < (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0)))) {
+        if (!(em->pos[1] < (em->x7E4 - em->x7E0))) {
             em->x388 = 2;
             em->adj_y = 80.0f;
             speed_add_g(em, w->vel);
@@ -3892,7 +3878,7 @@ static void em_die02_005A1BD0(EMW *em, EM08W *w) {
     case 0x2:
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
-        if ((em->pos[1] < EMF(em, f32, 0x7E4)) && (em->adj_y < 0.0f)) {
+        if ((em->pos[1] < em->x7E4) && (em->adj_y < 0.0f)) {
             em->x05++;
             em->x388 = 0;
             em->pos[1] = em->x5AC;
@@ -4089,7 +4075,7 @@ static void em_die05_005A22A0(EMW *em, EM08W *w) {
         w->vel[1] = (s32) em->ang[1];
         speed_add_g(em, w->vel);
         var_v1 = 2;
-        if (!(em->pos[1] < EMF(em, f32, 0x7E4))) {
+        if (!(em->pos[1] < em->x7E4)) {
 
         } else {
             var_v1 = 4;
@@ -4500,8 +4486,8 @@ static void em_move06_005A2D90(EMW *em, EM08W *w) {
 void em08_main(EMW *em) {
     EM08W *w = (EM08W *)em->ex;
     u8 dmg[4];
-    int flag;
-    s8 t;
+    u8 flag;
+    u8 k;
     f32 temp_f1;
     f32 temp_f1_2;
     f32 temp_f1_3;
@@ -4522,8 +4508,8 @@ void em08_main(EMW *em) {
             em08_act_set(em, 5, 1, 2);
         } else {
             switch (em->x388) {
-            case 1:
             case 4:
+            case 1:
                 em08_act_set(em, 5, 2, 2);
                 break;
             case 2:
@@ -4539,14 +4525,13 @@ void em08_main(EMW *em) {
     case 3:
     case 4:
         Em_Sleep_Flag_Ck(em);
-        t = 0x10;
-        if (dmg[0] != 0) {
-            t = 0xA;
-            if (em->x8B6 != 0) {
-                t = 6;
-            }
+        if (dmg[0] == 0) {
+            em->x95A = 0x10;
+        } else if (em->x8B6 == 0) {
+            em->x95A = 0xA;
+        } else {
+            em->x95A = 6;
         }
-        em->x95A = t;
         em_ana_loop_cnt_set(em);
         em08_act_set(em, 4, 0xC, 2);
         break;
@@ -4637,9 +4622,10 @@ void em08_main(EMW *em) {
     case 12:
         flag = 1;
         switch (em->x388) {
-        case 3:
         case 0:
-            switch (em->x38E) {
+        case 3:
+            k = em->x38E;
+            switch (k) {
             case 0:
             case 7:
                 em08_act_set(em, 4, 0, 2);
@@ -4653,7 +4639,7 @@ void em08_main(EMW *em) {
                 em08_act_set(em, 4, 3, 2);
                 break;
             default:
-                if (*(u8 *)(em->x38E * 8 + (u8 *)em + 0x30A) >= 2) {
+                if (*(u8 *)((k & 0xFF) * 8 + (u8 *)em + 0x30A) >= 2) {
                     em08_act_set(em, 4, 5, 2);
                     if (em->x38E != 3) {
                         em->x07 = 0;
@@ -4710,11 +4696,11 @@ void em08_main(EMW *em) {
     }
     if ((em->x7E9 != 0) && (*(u8 *)0x3F3404 == em->stg)) {
         if (em->x388 == 4) {
-            temp_f1 = EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0);
+            temp_f1 = em->x7E4 - em->x7E0;
             if (!(em->pos[1] <= temp_f1)) {
                 em->pos[1] = temp_f1;
             }
-            temp_f1_2 = EMF(em, f32, 0x7E4) - 1000.0f;
+            temp_f1_2 = em->x7E4 - 1000.0f;
             if (!(em->x5AC < temp_f1_2)) {
                 em->x5AC = temp_f1_2;
             }
@@ -4724,7 +4710,7 @@ void em08_main(EMW *em) {
             }
         }
         if (em->x388 == 0) {
-            temp_f1_4 = EMF(em, f32, 0x7E4);
+            temp_f1_4 = em->x7E4;
             em->x5AC = temp_f1_4;
             if (em->pos[1] < temp_f1_4) {
                 em->pos[1] = temp_f1_4;
@@ -5664,8 +5650,8 @@ void swim_eff_set_005A7070(f32 scale, EMW *em) {
     f32 v[3];
 
     if (*(u8 *)0x3F3404 == em->stg && !(*(u16 *)0x3F340E & 3) &&
-        !(em->pos[1] < (EMF(em, f32, 0x7E4) - EMF(em, f32, 0x7E0)) - 100.0f)) {
-        SetVector(v, em->pos[0], EMF(em, f32, 0x7E4), em->pos[2]);
+        !(em->pos[1] < (em->x7E4 - em->x7E0) - 100.0f)) {
+        SetVector(v, em->pos[0], em->x7E4, em->pos[2]);
         Eft08_set(v, 2, 2, scale * EMF(em, f32, 0xB8));
     }
 }
@@ -5674,7 +5660,7 @@ void swim_eff_set2_005A7120(f32 scale, EMW *em) {
     f32 v[3];
 
     if (*(u8 *)0x3F3404 == em->stg) {
-        SetVector(v, em->pos[0], EMF(em, f32, 0x7E4), em->pos[2]);
+        SetVector(v, em->pos[0], em->x7E4, em->pos[2]);
         Eft08_set(v, 5, 2, scale * EMF(em, f32, 0xB8));
         sound_call_sub_005A3CA0(em, 0x1A, 6);
     }

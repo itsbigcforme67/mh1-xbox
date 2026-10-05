@@ -223,7 +223,8 @@ typedef struct EMW {
     u8 _pad7D7[0x7D8 - 0x7D7];
     f32 x7D8;           /* 0x7D8 */
     f32 x7DC;           /* 0x7DC */
-    u8 _pad7E0[0x7E8 - 0x7E0];
+    f32 x7E0;           /* 0x7E0 em08: depth below the water surface (450 big / 250 small) */
+    f32 x7E4;           /* 0x7E4 em08: water surface height */
     u8 x7E8;            /* 0x7E8 0: em21 falls back to act 0/1 on its own stage */
     u8 x7E9;            /* 0x7E9 0: em14 fly action 0 becomes act 0/3 */
     u8 _pad7EA[0x7EE - 0x7EA];
