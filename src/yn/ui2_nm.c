@@ -100,6 +100,11 @@ extern u8 lit_4118[];
 extern u8 lit_4217[];
 extern u8 lit_4218[];
 extern u8 lit_4358[];
+extern u8 lit_4994[];
+extern u8 lit_3947[];
+extern u8 lit_3948[];
+extern u8 lit_3949[];
+extern u8 lit_3950[];
 extern u8 lit_4372[];
 extern u8 lit_4679[];
 extern u8 lit_4680[];
@@ -803,4 +808,202 @@ void yn_dialog_font(void) {
         break;
     }
     yn_set_z(850.0f);
+}
+
+void yn_message_font(void) {
+    s8 id;
+    int i;
+    int y;
+    int idx;
+
+    id = M2C_FIELD(ynw, s8 *, 0x45);
+    switch (id) {
+    case 1:
+        yn_connect_font_sub();
+        yn_message_font_sub();
+        return;
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 21:
+        yn_memcard_font_sub();
+        yn_message_font_sub();
+        return;
+    case 7:
+        yn_message_font_sub();
+        yn_hard_font_sub();
+        return;
+    case 9:
+        yn_message_font_sub();
+        yn_id_pw_font_sub();
+        return;
+    case 11:
+        yn_ipadrs_font_sub(ynw + 0xAB4, 0x157, 0xC4);
+        yn_ipadrs_font_sub(ynw + 0xAB8, 0x157, 0xE0);
+        yn_ipadrs_font_sub(ynw + 0xABC, 0x157, 0xFC);
+        yn_message_font_sub();
+        return;
+    case 13:
+        yn_ipadrs_font_sub(ynw + 0xAC0, 0x157, 0xC4);
+        yn_ipadrs_font_sub(ynw + 0xAC4, 0x157, 0xFC);
+        yn_message_font_sub();
+        return;
+    case 14:
+        yn_adname_font_sub(ynw + 0x8B4, lit_3947, 0x115, 0xE0);
+        yn_message_font_sub();
+        return;
+    case 15:
+        yn_adname_font_sub(ynw + 0xAC8, lit_3948, 0x115, 0xE0);
+        yn_message_font_sub();
+        return;
+    case 16:
+    case 17:
+    case 18:
+        i = 0;
+        y = 0xC4;
+        do {
+            idx = M2C_FIELD(ynw, s8 *, 0x16) + i;
+            if (idx < M2C_FIELD(ynw, s8 *, 0x1C)) {
+                yn_prname_font_sub(yn_netcnf_search_usr_name(ynw + 0x1180, ynw + idx * 0x1340 + 0xAF00), idx, 0x65, (s16)y);
+            }
+            i++;
+            y += 0x1C;
+        } while (i < 3);
+        yn_message_font_sub();
+        return;
+    case 23:
+        yn_adname_font_sub(ynw + 0xED0, lit_3949, 0x157, 0xBA);
+        yn_adname_font_sub(ynw + 0xFD0, lit_3950, 0x157, 0xEA);
+        yn_port_font_sub((u16 *)(ynw + 0xECC), 0x157, 0xD2);
+        yn_port_font_sub((u16 *)(ynw + 0xECE), 0x157, 0x102);
+        yn_message_font_sub();
+        return;
+    case 24:
+        yn_hard_more_font_sub();
+        yn_message_font_sub();
+        return;
+    default:
+        yn_message_font_sub();
+        return;
+    }
+}
+
+void yn_keyboard_init(int arg0, u8 *arg1) {
+    u8 *buf;
+
+    flfntInit();
+    buf = ynw + 0x50;
+    memset(buf, 0, 0x200);
+    M2C_FIELD(ynw, u8 **, 0x4C) = arg1;
+    strcpy(buf, arg1);
+    printf(lit_4994, strlen(arg1), arg1);
+    printf(lit_4994, strlen(buf), buf);
+    SoftKey_onoff(1);
+    switch (arg0) {
+    case 0:
+        Net_kb_input_init2(0x60, 0x12A, buf, 0xFF, 3);
+        break;
+    case 1:
+        Net_kb_input_init2(0x60, 0x12A, buf, 0xFF, 4);
+        break;
+    case 2:
+        Net_kb_input_init2(0x60, 0x12A, buf, 0xFF, 5);
+        break;
+    }
+}
+
+void yn_dialog_font_setting(void) {
+    u8 sp250[0x200];
+    u8 sp50[0x200];
+    u8 *e;
+    u8 *d;
+    int sel;
+    int y;
+    u8 *p;
+
+    y = 0x82;
+    e = ynw + M2C_FIELD(ynw, s8 *, 0xB) * 0x14;
+    d = M2C_FIELD(e, u8 **, 0x260);
+    p = e + 0x250;
+    if (M2C_FIELD(e, s32 *, 0x250) == 1) {
+        sprintf(sp250, lit_4679, M2C_FIELD(p, u8 **, 8), M2C_FIELD(p, s32 *, 0xC));
+        yn_strconv(sp50, sp250, 0x2E);
+    } else {
+        yn_set_pal(2);
+        strcpy(sp50, lit_4680);
+    }
+    yn_set_pal(0);
+    yn_printf(0x44, y, sp50);
+    y += 0x19;
+    if (d != NULL && M2C_FIELD(e, s32 *, 0x250) == 1) {
+        switch (M2C_FIELD(d, s32 *, 0x1310)) {
+        case 1:
+            sel = 0;
+            break;
+        case 2:
+            sel = 1;
+            break;
+        case 3:
+            sel = 2;
+            break;
+        case 5:
+            sel = 3;
+            break;
+        case 6:
+            sel = 4;
+            break;
+        }
+        sprintf(sp250, lit_4681, yn_hard_more_mes_tbl[sel]);
+        yn_strconv(sp50, sp250, 0x2C);
+        yn_printf(0x44, (s16)y, sp50);
+        y += 0x19;
+        if (M2C_FIELD(d, u8 *, 0x1325) == 1) {
+            yn_strconv(sp250, d + 0xB00, 0x1C);
+            sceNetcnfifConvAuthname(sp250, sp50, 0x100);
+            sprintf(sp250, lit_4682, sp50);
+            yn_printf(0x44, (s16)y, sp250);
+            y += 0x19;
+        } else if (M2C_FIELD(d, u8 *, 0x1320) == 1) {
+            if (M2C_FIELD(d, s8 *, 0x200) == 0) {
+                strcpy(sp250, lit_160_0053EA40);
+            } else {
+                yn_strconv(sp250, d + 0x200, 0x1C);
+            }
+            sprintf(sp50, lit_4683, sp250);
+            yn_printf(0x44, (s16)y, sp50);
+            y += 0x19;
+        } else if (M2C_FIELD(d, s8 *, 0x300) != 0) {
+            yn_dialog_font_ip_sub(sp50, d + 0x300);
+            sprintf(sp250, lit_4684, sp50);
+            yn_printf(0x44, (s16)y, sp250);
+            y += 0x19;
+            yn_dialog_font_ip_sub(sp50, d + 0x400);
+            sprintf(sp250, lit_4685, sp50);
+            yn_printf(0x44, (s16)y, sp250);
+            y += 0x19;
+            yn_dialog_font_ip_sub(sp50, d + 0x500);
+            sprintf(sp250, lit_4686, sp50);
+            yn_printf(0x44, (s16)y, sp250);
+            y += 0x19;
+        }
+        if (M2C_FIELD(d, s8 *, 0x600) == 0) {
+            strcpy(sp250, lit_160_0053EA40);
+        } else {
+            yn_dialog_font_ip_sub(sp250, d + 0x600);
+        }
+        sprintf(sp50, lit_4687, sp250);
+        yn_printf(0x44, (s16)y, sp50);
+        if (M2C_FIELD(d, s8 *, 0x700) == 0) {
+            if (*(s8 *)(d + 0x600) == 0) {
+                strcpy(sp250, lit_160_0053EA40);
+            } else {
+                strcpy(sp250, lit_4372);
+            }
+        } else {
+            yn_dialog_font_ip_sub(sp250, d + 0x700);
+        }
+        sprintf(sp50, lit_4688, sp250);
+        yn_printf(0x44, (s16)(y + 0x19), sp50);
+    }
 }
