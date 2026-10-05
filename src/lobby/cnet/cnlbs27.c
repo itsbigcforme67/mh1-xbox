@@ -1,15 +1,29 @@
-/* cnlbs, run 28: cnLBS_Get_TopInformation .. __cnet_SendReq_TopInformation (lobby.bin 0x005AAC40-0x005AACCC): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 28: __cnet_Login_Return .. _cnet_RecvFromLbs_RequestBattleResult (lobby.bin 0x005AADE0-0x005AAE7C): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-int cnLBS_Get_TopInformation(CNET_B1004 *d) {
-    *d = CnetSys_w.topinfo;
-    return 0;
+void __cnet_Login_Return(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.burst[0].state != 0) {
+        res.val = 0;
+        CnetSys_w.burst[0].state = 0;
+        res.id = 0;
+        CnetSys_w.burst[0].x21 = 0;
+        CnetSys_w.burst[0].cb(res, &res);
+    }
 }
 
-int __cnet_SendReq_TopInformation(void) {
-    int cmd = SetSendCommand(&send_work, 0x1F) & 0xFFFF;
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-    return cmd;
+void _cnet_RecvFromLbs_RequestTelephoneNumber(void) {
+    __cnet_SendSet_TelephoneNumber();
+}
+
+void _cnet_RecvFromLbs_RequestPersonalDataRegist(void) {
+
+}
+
+void _cnet_RecvFromLbs_RequestBattleResult(void) {
+    if (CNW(u8, 0xE38) != 0) {
+        __cnet_SendAns_BattleResult();
+    }
 }

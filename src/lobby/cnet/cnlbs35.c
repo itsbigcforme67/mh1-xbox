@@ -1,39 +1,30 @@
-/* cnlbs, run 36: _cnet_RecvFromLbs_RequestRegurationVersion .. _cnetEvent_JumpCallBack (lobby.bin 0x005AD0F0-0x005AD1AC): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 36: cnLBS_Init_LobbyBgProcess .. __cnetSub_Set_BgProcess (lobby.bin 0x005AD240-0x005AD308): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-void _cnet_RecvFromLbs_RequestRegurationVersion(void) {
-
+void cnLBS_Init_LobbyBgProcess(void) {
+    memset((u8 *)&CnetSys_w + 0x18, 0, 0xE00);
 }
 
-void _cnet_RecvFromLbs_NoticeRegurationAddress(void) {
-
+void cnLBS_Init_LobbyBgBurstProcess(void) {
+    memset((u8 *)&CnetSys_w + 0xE18, 0, 0x1B0);
 }
 
-void _cnet_RecvFromLbs_AnswerRegurationData(void) {
-    _cnet_RecvFromLbs_AnswerBrowserMethodGet();
-}
-
-void cnLBS_Send_RegurationAgree(void) {
-
-}
-
-void _cnet_RecvFromLbs_AnswerRegurationAgree(void) {
-
-}
-
-void cnLBS_Set_CallBackNoticeEvent(int idx, void (*fn)()) {
-    pFunc[idx] = fn;
-}
-
-void _cnetEvent_JumpCallBack(idx)
-int idx;
+int __cnetSub_Set_BgProcess(kind, arg1, arg2)
+s8 kind;
+int arg1;
+int arg2;
 {
-    CNET_RES r;
-    void (*fn)();
+    int i;
 
-    r.id = idx;
-    r.val = 1;
-    fn = pFunc[(u16)idx];
-    if (fn != 0) fn(r, 0);
+    for (i = 0; i < 0x80; i++) {
+        if (CnetSys_w.bg[i].state == 0) {
+            CnetSys_w.bg[i].state = kind;
+            CnetSys_w.bg[i].x19 = 0;
+            CnetSys_w.bg[i].done = (void (*)())arg2;
+            CnetSys_w.bg[i].cb = (void (*)())arg1;
+            return i;
+        }
+    }
+    return -1;
 }

@@ -205,7 +205,7 @@ void _cnet_CallBack_Result_PersonalDataChange(CNET_RES res) {
     CNW(s8, 0xF7E) = 2;
 }
 
-void __cnet_KeepEntryFloorInfo(kind, val)
+static void __cnet_KeepEntryFloorInfo(kind, val)
 int kind;
 s8 val;
 {
@@ -397,6 +397,22 @@ void _cnet_RecvFromLbs_BothPlazaExplain(void) {
     _cnet_Return_CallBack(0x11);
 }
 
+int cnLBS_PlazaEntry(arg0, arg1)
+int arg0;
+int arg1;
+{
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
+    u16 cmd;
+
+    if (slot != -1) {
+        cmd = __cnet_SendReq_PieceEntry(0, arg0);
+        __cnet_KeepEntryFloorInfo(0, arg0);
+        CnetSys_w.bg[slot].cmd = cmd;
+        return slot;
+    }
+    return -1;
+}
+
 void _cnet_RecvFromLbs_AnswerPlazaEntry(void) {
     if (CNW(s8, 0xFEC) == 0) {
         __cnet_SetEntryFloorInfo(0);
@@ -566,6 +582,22 @@ void _cnet_RecvFromLbs_AnswerLobbyExplain(void) {
         CnetSys_w.lobby[id - 1].flags |= 8;
     }
     _cnet_Return_CallBack(0x16);
+}
+
+int cnLBS_LobbyEntry(arg0, arg1)
+int arg0;
+int arg1;
+{
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
+    u16 cmd;
+
+    if (slot != -1) {
+        cmd = __cnet_SendReq_PieceEntry(1, arg0);
+        __cnet_KeepEntryFloorInfo(1, arg0);
+        CnetSys_w.bg[slot].cmd = cmd;
+        return slot;
+    }
+    return -1;
 }
 
 void _cnet_RecvFromLbs_AnswerLobbyEntry(void) {
@@ -781,6 +813,22 @@ int __cnet_SendReq_RoomJoinInfo(int arg0) {
     return cmd;
 }
 
+int cnLBS_RoomCreate(arg0, arg1)
+int arg0;
+int arg1;
+{
+    int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
+    u16 cmd;
+
+    if (slot != -1) {
+        cmd = __cnet_SendReq_RoomCreate(arg0);
+        __cnet_KeepEntryFloorInfo(2, arg0);
+        CnetSys_w.bg[slot].cmd = cmd;
+        return slot;
+    }
+    return -1;
+}
+
 void _cnet_RecvFromLbs_AnswerRoomCreate(void) {
     if (CNW(s8, 0xFEC) == 0) {
         __cnet_SetEntryFloorInfo(2);
@@ -788,11 +836,42 @@ void _cnet_RecvFromLbs_AnswerRoomCreate(void) {
     _cnet_Return_CallBack(0);
 }
 
+int cnLBS_Set_RoomRule(rule, cb)
+CNET_RULE *rule;
+int cb;
+{
+    CnetSys_w.rule = *rule;
+    if (CnetSys_w.burst[6].state == 0) {
+        CnetSys_w.burst[6].cb = (void *)cb;
+        CnetSys_w.burst[6].state = 1;
+        CnetSys_w.burst[6].run = __cnet_bgProg_RoomSetRule;
+        CnetSys_w.burst[6].x21 = 0;
+        return 0;
+    }
+    return -1;
+}
+
 int cnLBS_Set_RoomRuleFinish(int arg0) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
     if (slot != -1) {
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomSetFinish();
+        return slot;
+    }
+    return -1;
+}
+
+int cnLBS_RoomEntry(arg0, arg1)
+int arg0;
+int arg1;
+{
+    int slot = __cnetSub_Set_BgProcess(1, 0);
+    u16 cmd;
+
+    if (slot != -1) {
+        cmd = __cnet_SendReq_RoomEntry(arg0, arg1);
+        __cnet_KeepEntryFloorInfo(2, arg0);
+        CnetSys_w.bg[slot].cmd = cmd;
         return slot;
     }
     return -1;
@@ -1384,6 +1463,52 @@ int arg1;
         break;
     case 2:
         cmd = SetSendCommand(&send_work, 0x7D) & 0xFFFF;
+        break;
+    }
+    SetSendData16(&send_work, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_PieceJoinUser(kind, arg1)
+int kind;
+int arg1;
+{
+    int cmd;
+
+    switch (kind & 0xFFFF) {
+    case 0:
+        cmd = SetSendCommand(&send_work, 0x36) & 0xFFFF;
+        break;
+    case 1:
+        cmd = SetSendCommand(&send_work, 0x4A) & 0xFFFF;
+        break;
+    case 2:
+        cmd = SetSendCommand(&send_work, 0x80) & 0xFFFF;
+        break;
+    }
+    SetSendData16(&send_work, arg1);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int __cnet_SendReq_PieceStatus(kind, arg1)
+int kind;
+int arg1;
+{
+    int cmd;
+
+    switch (kind & 0xFFFF) {
+    case 0:
+        cmd = SetSendCommand(&send_work, 0x39) & 0xFFFF;
+        break;
+    case 1:
+        cmd = SetSendCommand(&send_work, 0x4D) & 0xFFFF;
+        break;
+    case 2:
+        cmd = SetSendCommand(&send_work, 0x83) & 0xFFFF;
         break;
     }
     SetSendData16(&send_work, arg1);
