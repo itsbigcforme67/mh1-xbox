@@ -119,10 +119,26 @@ static const struct {
 #undef P
 };
 
+/* the generated list (build/pc/rt_tables.c from tables.txt) */
+struct rt_table { const char *name; uint32_t va; void *dst; size_t size; };
+extern const struct rt_table rt_auto_tables[];
+
 int rt_import_data(void)
 {
     size_t i;
     int k, missing = 0;
+    const struct rt_table *t;
+    for (t = rt_auto_tables; t->name; t++) {
+        const uint8_t *p = rt_addr(t->va, t->size);
+        if (p) {
+            memcpy(t->dst, p, t->size);
+        } else if (rt_in_bss(t->va, t->size)) {
+            memset(t->dst, 0, t->size);
+        } else {
+            fprintf(stderr, "rt: data table %s (0x%X) not found\n", t->name, (unsigned)t->va);
+            missing++;
+        }
+    }
     for (i = 0; i < sizeof ptables / sizeof ptables[0]; i++) {
         const uint8_t *p = rt_addr(ptables[i].va, 4 * (size_t)ptables[i].n);
         if (!p) {

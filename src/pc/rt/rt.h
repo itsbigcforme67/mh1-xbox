@@ -22,6 +22,8 @@ int rt_load_elf(const char *path);
 void rt_set_overlay(uint8_t *bin, size_t n);   /* takes ownership */
 /* Pointer to `n` bytes at PS2 address `va`, or NULL if not in a loaded image. */
 const uint8_t *rt_addr(uint32_t va, size_t n);
+/* 1 if the range is .bss (zero at start) of the ELF or the overlay. */
+int rt_in_bss(uint32_t va, size_t n);
 /* Fill the game's data tables (rt_data.c) from the loaded images.
  * Returns the number of tables that could not be found. */
 int rt_import_data(void);

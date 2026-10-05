@@ -11,6 +11,7 @@
 #include <string.h>
 
 #define OVL_GAME_VRAM 0x533980u
+#define OVL_GAME_BSS 0x200u        /* config/game.yaml bss_size */
 
 static uint8_t *elf, *ovl;
 static size_t elf_n, ovl_n;
@@ -55,4 +56,21 @@ const uint8_t *rt_addr(uint32_t va, size_t n)
     if (ovl && va >= OVL_GAME_VRAM && va - OVL_GAME_VRAM + n <= ovl_n)
         return ovl + (va - OVL_GAME_VRAM);
     return NULL;
+}
+
+/* 1 if [va, va + n) is zero-initialised memory (.bss) of the ELF or the
+ * overlay: tables there start as zeros. */
+int rt_in_bss(uint32_t va, size_t n)
+{
+    if (elf_n >= 52) {
+        uint32_t phoff = rd32(elf + 28);
+        unsigned i, ph_n = elf[44] | elf[45] << 8;
+        for (i = 0; i < ph_n && phoff + 32 * (i + 1) <= elf_n; i++) {
+            const uint8_t *ph = elf + phoff + 32 * i;
+            uint32_t vaddr = rd32(ph + 8), filesz = rd32(ph + 16), memsz = rd32(ph + 20);
+            if (rd32(ph) == 1 && filesz && va >= vaddr + filesz && va + n <= vaddr + memsz)
+                return 1;
+        }
+    }
+    return ovl && va >= OVL_GAME_VRAM + ovl_n && va + n <= OVL_GAME_VRAM + ovl_n + OVL_GAME_BSS;
 }

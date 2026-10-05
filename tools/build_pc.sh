@@ -19,7 +19,9 @@ RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_gam
 GAME="src/game/set/set14_nm.c src/game/set/set00.c src/main/stage/stage_set.c \
       src/main/set/set13.c src/main/set/set13b.c src/main/set/set13c.c src/main/set/set13_nm.c \
       src/main/hit/hit2.c src/main/hit/hit2c.c \
-      src/game/set/set09.c src/game/set/set17.c"
+      src/game/set/set09.c src/game/set/set17.c \
+      src/game/set/set03.c src/game/set/set04.c src/game/set/set05_nm.c src/game/set/set07.c src/game/set/set08.c src/game/set/set10.c src/game/set/set11.c src/game/set/set15.c src/game/set/set16.c src/game/set/set18.c src/game/set/set19.c src/game/set/set20_nm.c src/game/set/set22.c \
+      src/main/set/set12.c src/main/pl/pl_master_ck.c"
 
 SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
 CFLAGS="-m32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
@@ -43,6 +45,11 @@ for f in $GAME; do
     gcc $GAMEFLAGS $SYS -c "$f" -o "$o"
     OBJS="$OBJS $o"
 done
+# data tables (names in src/pc/rt/tables.txt; bytes come from the disc at run time)
+python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
+# shellcheck disable=SC2086
+gcc $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
+OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
 for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main; do
     # shellcheck disable=SC2086

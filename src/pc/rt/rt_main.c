@@ -62,3 +62,34 @@ int flCheckMeshFOV(f32 r, f32 *c, f32 *out, f32 (*view)[4], void *planes)
 /* reload_tex (0x11F160): re-sends a texture list to VRAM on the PS2; the
  * host keeps every texture resident, so nothing to do. */
 void reload_tex(int num, int id) { (void)num; (void)id; }
+
+/* Pl_stg_ck / Em_stg_ck (0x151FF0 / 0x152010): is this player / monster
+ * (byte +0x736) on the current stage (game_w+0x14)? */
+#include "game.h"
+u8 Pl_stg_ck(void *p) { return ((u8 *)p)[0x736] == game_w.stage; }
+u8 Em_stg_ck(void *p) { return ((u8 *)p)[0x736] == game_w.stage; }
+
+/* frame_check2 (0x126500): 0 while motion slot n of the object is not
+ * running (+0x1C4 set), else whether frame f <= the slot's frame
+ * (+0x19C + n * 0x50). */
+int frame_check2(void *p, int n, f32 f)
+{
+    u8 *b = p;
+    if (*(s32 *)(b + 0x1C4) != 0)
+        return 0;
+    return f <= *(f32 *)(b + 0x19C + n * 0x50);
+}
+
+/* flvecApplyMat33_2(v, m): v = v * m (3x3), in place. */
+void flvecApplyMat33(f32 *out, f32 *v, f32 (*m)[4]);
+void flvecApplyMat33_2(f32 *v, f32 (*m)[4]) { flvecApplyMat33(v, v, m); }
+
+/* Not ported yet: camera quake (CameraWork; the viewer has its own camera),
+ * monster sound, and the effects/shells some set objects spawn. */
+#define STUB_ONCE(name) { static int once; if (!once++) fprintf(stderr, "rt: %s not ported yet (skipped)\n", name); }
+void set_quake_sub(int kind, f32 *pos) { (void)kind; (void)pos; }
+void set_quake_sub2(int kind) { (void)kind; }
+void Em_se_req2(void *em, int a, int b, f32 *pos, int c, int d) { (void)em; (void)a; (void)b; (void)pos; (void)c; (void)d; }
+void Shell22_set2(f32 *pos, int a, int b, int c) STUB_ONCE("Shell22_set2")
+void Eft17_set_ex(f32 *pos, int a, int b, f32 s) STUB_ONCE("Eft17_set_ex")
+void Eft13_set_pos(f32 s, f32 *pos, int a) STUB_ONCE("Eft13_set_pos")
