@@ -116,7 +116,7 @@ typedef struct PLW {
     u8 _pad605[0x0B];
     s16   x610;          /* 0x610 shell00 hits count while set (cont_add) */
     u8 _pad612[0x3];
-    s8    work615;       /* 0x615 */
+    u8    work615;       /* 0x615 non-zero: weapon in the other hand (eft05) */
     u8 _pad616[0x10A];
     s8    work720[4];    /* 0x720 */
     s16   work724[4];    /* 0x724 */
