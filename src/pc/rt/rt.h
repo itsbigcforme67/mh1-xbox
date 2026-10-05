@@ -135,6 +135,8 @@ void rt_pad_read(void);
 void rt_village_enter(void);
 int rt_village_tick(void);
 int rt_village_active(void);
+void rt_set_npc_model_loader(void (*fn)(int slot, int amh, int tex));
+void rt_monster_pose(int no, void *fl_skel_ptr);
 void rt_flow_set_village(void (*fn)(void));
 void rt_flow_set_mode(int mode);   /* test aid: jump to a game mode */
 int rt_game_stage(void);           /* game_w.stage */

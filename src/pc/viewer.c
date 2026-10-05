@@ -649,6 +649,65 @@ static void quest_back(void)
         rt_cam_init(stage_no);
 }
 
+/* Village NPC models (npc_create_model -> here): slot = NPC kind. */
+static monster npc_mdl[4];
+static int npc_have[4];
+static void npc_model_load(int slot, int amh, int tex)
+{
+    monster *e = &npc_mdl[slot];
+    fmt_blob link, tx, amo, ahi;
+    if (npc_have[slot] || amh < 0 || (uint32_t)amh >= afs.count || tex < 0 || (uint32_t)tex >= afs.count)
+        return;
+    link = load(afs.name[amh], &e->mem[0]);
+    tx = load(afs.name[tex], &e->mem[1]);
+    if (!link.p)
+        return;
+    amo = fmt_link_entry(link, 0, FMT_LE);
+    ahi = fmt_link_entry(link, 1, FMT_LE);
+    if (fl_model_create(&e->model, amo, ahi, tx, 1, FMT_LE) != 0 || fl_skel_create(&e->skel, ahi, FMT_LE) != 0) {
+        fprintf(stderr, "npc model %d (%s): load failed\n", slot, afs.name[amh]);
+        return;
+    }
+    npc_have[slot] = 1;
+    if (getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "village: npc model %d = %s, %d parts, %d bones\n", slot, afs.name[amh], e->model.npart, e->skel.skel.nbone);
+}
+
+/* The NPCs on this stage (em_work slots with +0x1E): their model, posed by
+ * the game's motion player, placed and scaled like Lb_npc_mk; villagers
+ * (kind 0) show only their own parts (+0x4E6 per part, lb_npc_trans). */
+static void npc_draw(const fl_light *L)
+{
+    extern uint8_t em_work[];
+    int i, k;
+    for (i = 0; i < 20; i++) {
+        uint8_t *em = em_work + 0xA10 * i;
+        monster *m;
+        flmat w;
+        float s[3], r[3], t[3];
+        int kind = em[0x34F];
+        if (!em[0] || !em[0x1E] || !em[1] || em[0x736] != (uint8_t)rt_game_stage() || kind > 3 || !npc_have[kind])
+            continue;
+        m = &npc_mdl[kind];
+        rt_monster_pose(i, &m->skel);
+        fl_model_pose(&m->model, (const flmat *)m->skel.world, L);
+        memcpy(s, em + 0xB8, sizeof s);
+        r[0] = 0;
+        r[1] = (float)(*(int32_t *)(em + 0xA4) & 0xFFFF) * (6.2831853f / 65536.0f);
+        r[2] = 0;
+        memcpy(t, em + 0xAC, sizeof t);
+        flmat_srt(w, s, r, t);
+        gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
+        for (k = 0; k < m->model.npart; k++) {
+            if (kind == 0 && (k >= 0x20 || !em[0x4E6 + k]))
+                continue;
+            rt_clay_attr_set(part_attr(&m->model, k));
+            gfx_execute_clay(m->model.part[k].clay);
+            rt_clay_attr_reset();
+        }
+    }
+}
+
 /* The quest accepted in the village (game mode 0 -> game1/10/11/12/13 on
  * the PS2): Quest_init + Quest_start (rt_quest_load), the hunt starts on
  * the quest's own start stage (the base camp, game_w.stage), the hunter at
@@ -923,6 +982,7 @@ int main(int argc, char **argv)
     rt_set_stage_loader(load_stage_models);
     rt_flow_set_back(quest_back);
     rt_flow_set_village(village_step);
+    rt_set_npc_model_loader(npc_model_load);
     if (quest_no && getenv("RT_VILLAGE_START"))   /* test aid: straight to the village (game mode 6) */
         rt_flow_set_mode(6);
     t0 = SDL_GetTicks();
@@ -1064,6 +1124,8 @@ int main(int argc, char **argv)
             for (s = 0; s < HUNTER_PARTS; s++)
                 draw_model_attr(&pl.part[s], -1);
         }
+        if (rt_village_active())
+            npc_draw(&light);
         if (weapon.game && pl.game && play) {
             static flmat wid;
             flmat_identity(wid);

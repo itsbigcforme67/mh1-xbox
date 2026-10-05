@@ -155,3 +155,46 @@ void com_motion_load(int n)
     }
     rt_motion_load_plcom(keep[n]);
 }
+
+/* ------------------------------------------------------------ village NPCs
+ * npc_create_model (main 0x124A30): model slot n (= NPC kind, EMW+0x34F):
+ * npc_model_data[n] / its texture (0x2EF2C0[n]): 0 npc00 villagers (one
+ * model, parts shown per NPC by +0x4E6), 1 npc01 the elder, 2 em09, 3
+ * em32; slots 1-3 also load their motions (em_motion_load(n, 10 / 9 /
+ * 32)); the villagers use the common (lbcom) motions. The host draws the
+ * models (viewer.c), so the model files go to the host's loader. */
+static void (*npc_model_fn)(int slot, int amh, int tex);
+void rt_set_npc_model_loader(void (*fn)(int slot, int amh, int tex)) { npc_model_fn = fn; }
+
+extern u8 *pl_area_top;
+void create_em_motion(int no, int em);
+/* em_motion_load (main 0x111AE0): em_motion_data[n] -> create_em_motion */
+void em_motion_load(int slot, int n)
+{
+    static uint8_t *keep[64];
+    const uint8_t *p = rt_addr(0x2EC830 + 4 * (uint32_t)n, 4);
+    int32_t idx;
+    size_t sz;
+    if (n < 0 || n >= 64 || !p)
+        return;
+    memcpy(&idx, p, 4);
+    if (!keep[n] && !(keep[n] = rt_file_load(idx, &sz)))
+        return;
+    pl_area_top = keep[n];
+    create_em_motion(slot, n);
+}
+
+void npc_create_model(int slot)
+{
+    static const int motions[4] = { -1, 10, 9, 32 };
+    const uint8_t *a = rt_addr(0x2ECED0 + 4 * (uint32_t)slot, 4), *t = rt_addr(0x2EF2C0 + 4 * (uint32_t)slot, 4);
+    int32_t amh, tex;
+    if (slot < 0 || slot > 3 || !a || !t)
+        return;
+    memcpy(&amh, a, 4);
+    memcpy(&tex, t, 4);
+    if (npc_model_fn)
+        npc_model_fn(slot, amh, tex);
+    if (motions[slot] >= 0)
+        em_motion_load(slot, motions[slot]);
+}
