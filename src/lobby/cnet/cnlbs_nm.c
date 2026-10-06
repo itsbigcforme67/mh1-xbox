@@ -134,7 +134,10 @@ int __cnet_SendReq_ConditionSearchUser(CNET_COND c) {
     n = c.b[1];
     SetSendData8(&send_work, n);
     n &= 0xFF;
-    for (i = 0, e = c.b; i < n; i++, e += 0x44) {
+    if (0 < n) {
+        i = 0;
+        e = c.b;
+        do {
         int t = e[4];
         SetSendData8(&send_work, t);
         switch (t & 0xFF) {
@@ -158,7 +161,9 @@ int __cnet_SendReq_ConditionSearchUser(CNET_COND c) {
             SetSendData8(&send_work, e[9]);
             break;
         }
-        
+            i++;
+            e += 0x44;
+        } while (i < n);
     }
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
