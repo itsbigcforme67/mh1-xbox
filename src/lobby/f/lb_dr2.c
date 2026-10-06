@@ -761,3 +761,153 @@ u8 *cut_spacer_string(u8 *s) {
     }
     return s;
 }
+
+void *sceHTTPGetResponse();
+void KanjiEuc2SjisEx();
+void *memcpy(void *, const void *, unsigned int);
+
+/* http state 6: pick up the response body into the task buffer (converted to Shift-JIS when the page is EUC) */
+void http_test_06(u8 *arg0) {
+    s32 temp_a1;
+    s32 temp_v0_2;
+    s32 var_s1;
+    u8 *temp_v0;
+    u8 *temp_v1;
+
+    if (*(s8 *)(arg0 + 0x35) != 0) {
+        *(s8 *)(arg0 + 0x3D) = 0x11;
+        *(s8 *)(arg0 + 0x3C) = 3;
+        *(u8 *)(arg0 + 0x40) = 0xB;
+        return;
+    }
+    temp_v0 = sceHTTPGetResponse(*(s32 *)(arg0 + 0x6C));
+    *(u8 **)(arg0 + 0x7C) = temp_v0;
+    if (temp_v0 == 0) {
+        *(s8 *)(arg0 + 0x3D) = 7;
+        *(s8 *)(arg0 + 0x3C) = 3;
+        *(u8 *)(arg0 + 0x40) = 0xB;
+        return;
+    }
+    temp_v1 = *(u8 **)(arg0 + 0x7C);
+    temp_a1 = *(s32 *)(temp_v1 + 0x18);
+    if (temp_a1 != 0) {
+        var_s1 = *(s32 *)(temp_v1 + 0x20);
+        temp_v0_2 = *(s32 *)(arg0 + 0x14);
+        if (temp_v0_2 <= var_s1) {
+            var_s1 = temp_v0_2 - 1;
+        }
+        memcpy(*(char **)(arg0 + 0x10), (void *)temp_a1, var_s1);
+        (*(char **)(arg0 + 0x10))[var_s1] = 0;
+        *(s32 *)(arg0 + 0x38) = var_s1;
+        if (*(s8 *)(arg0 + 0x34) != 0) {
+            if (is_sjis(arg0, *(u8 **)(arg0 + 0x10), var_s1) == 0) {
+                KanjiEuc2SjisEx(*(char **)(arg0 + 0x10));
+            }
+            *(s32 *)(arg0 + 0x38) = strlen(*(char **)(arg0 + 0x10));
+        }
+    } else {
+        **(char **)(arg0 + 0x10) = 0;
+        *(s32 *)(arg0 + 0x38) = 0;
+    }
+    *(u8 *)(arg0 + 0x40) = *(u8 *)(arg0 + 0x40) + 1;
+}
+
+void CpInetInterfaceProblemEnable();
+int sceHTTPParseURI();
+
+/* http state 1: parse the request url (and the optional proxy / referer urls) */
+void http_test_01(u8 *arg0) {
+    s32 temp_v1;
+    u8 temp_a0;
+
+    temp_a0 = arg0[0x41];
+    switch (temp_a0) {
+    case 0:
+        arg0[0x41] = 5;
+        CpInetInterfaceProblemEnable(0);
+        return;
+    case 5:
+        if (*(s8 *)(arg0 + 0x35) != 0) {
+            *(s8 *)(arg0 + 0x3D) = 0x11;
+            *(s8 *)(arg0 + 0x3C) = 0;
+            arg0[0x40] = 0xB;
+            return;
+        }
+        *(s32 *)(arg0 + 0x70) = sceHTTPParseURI(*(s32 *)(arg0 + 4), 0x60);
+        if (*(s32 *)(arg0 + 0x70) == 0) {
+            *(s8 *)(arg0 + 0x3D) = 1;
+            *(s8 *)(arg0 + 0x3C) = 0;
+            arg0[0x40] = 0xB;
+            return;
+        }
+        temp_v1 = *(s8 *)(arg0 + 1);
+        if (temp_v1 != 0) {
+            if (((s8)temp_v1) & 1) {
+                *(s32 *)(arg0 + 0x74) = sceHTTPParseURI(*(s32 *)(arg0 + 8), 0);
+                if (*(s32 *)(arg0 + 0x74) == 0) {
+                    *(s8 *)(arg0 + 0x3D) = 1;
+                    *(s8 *)(arg0 + 0x3C) = 1;
+                    arg0[0x40] = 0xB;
+                    return;
+                }
+            }
+            if (*(s8 *)(arg0 + 1) & 2) {
+                *(s32 *)(arg0 + 0x78) = sceHTTPParseURI(*(s32 *)(arg0 + 0xC), 0);
+                if (*(s32 *)(arg0 + 0x78) == 0) {
+                    *(s8 *)(arg0 + 0x3D) = 1;
+                    *(s8 *)(arg0 + 0x3C) = 1;
+                    arg0[0x40] = 0xB;
+                    return;
+                }
+            }
+        }
+block_16:
+        arg0[0x40] = arg0[0x40] + 1;
+        arg0[0x41] = 0;
+    }
+}
+
+extern s16 ParseCk_ret;
+extern s32 ParseArg;
+extern u8 ParseReq;
+int parsetag();
+
+/* run the html tag parser for a while (until the timer says stop) and report its state */
+s16 *BsParseCheck(int arg0) {
+    s32 temp_v1_2;
+    u32 temp_s0;
+    u8 temp_v1;
+
+    temp_v1 = ParseReq;
+    switch (temp_v1) {
+    case 1:
+        temp_s0 = *(u32 *)0x10000000;
+loop_4:
+        temp_v1_2 = parsetag(ParseArg, 1, arg0) & 0xFFFF;
+        if (((temp_v1_2 == 0) || (temp_v1_2 == 1)) && (*(volatile u32 *)0x10000000 >= temp_s0)) {
+            if ((*(volatile u32 *)0x10000000 - temp_s0) < 0x41U) {
+                goto loop_4;
+            }
+        }
+        switch (temp_v1_2) {
+        case 0:
+            ParseCk_ret = 0;
+            return &ParseCk_ret;
+        case 1:
+            ParseCk_ret = 1;
+            return &ParseCk_ret;
+        case 2:
+            ParseCk_ret = 2;
+            ParseReq = 0;
+            return &ParseCk_ret;
+        case 3:
+            ParseCk_ret = 3;
+            ParseReq = 0;
+            return &ParseCk_ret;
+        }
+        break;
+    case 0:
+    default:
+        return 0;
+    }
+}

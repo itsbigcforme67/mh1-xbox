@@ -358,8 +358,7 @@ void eft25_m(E25 *e) {
         e->on = 0;
         return;
     }
-    switch (e->type) {
-    case 6:
+    if (e->type == 6) {
         if (*e->joint == 0) {
             e->state += 1;
             e->on = 0;
@@ -373,15 +372,13 @@ void eft25_m(E25 *e) {
         e->pos[0] = m[12] + v[0];
         e->pos[1] = m[13] + v[1];
         e->pos[2] = m[14] + v[2];
-        break;
-    case 7:
+    } else if (e->type == 7) {
         if (*e->joint == 0) {
             e->state += 1;
             e->on = 0;
             return;
         }
-        break;
-    case 8:
+    } else if (e->type == 8) {
         if (*e->joint == 0) {
             e->state += 1;
             e->on = 0;
@@ -395,7 +392,6 @@ void eft25_m(E25 *e) {
         e->pos[0] = m[12] + v[0];
         e->pos[1] = m[13] + v[1];
         e->pos[2] = m[14] + v[2];
-        break;
     }
     nn = n;
     k = 0;

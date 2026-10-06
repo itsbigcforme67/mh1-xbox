@@ -330,3 +330,28 @@ Source-form findings (verified by matching):
 - `a ? x : 0` with a compare of an unsigned byte against a constant: write `v[0x48] > 1 ? v : 0` (not `>= 2` / `< 2 ? 0 : v`) to get `slti at; movn` with the compare in `at` (check_upTD_rowspan2). A shared `return 0;` that the original reaches by jumping from several places is a `goto ret0;` (check_upTD_rowspan).
 - Prototype args: floats in the PS2 ABI do not use up integer argument registers in MWCC: `drawString(int pal, int a1, int a2, f32 x, f32 y, int size, u8 *s)` needs two dummy ints so that size lands in a3 and the string in t0.
 - Struct locals built for GS packets (BSQUAD/BSSPR/BSTRI): fill the fields in the order of the original stores (BsDrawSprite stores the colour first).
+
+### Lobby session 5: what is linked and what is left
+Linked this session (all `tools/rebuild.sh` OK): lobby 144.7 KB -> about 156 KB of matching C.
+- Translation units with static helpers: src/lobby/f/lb_tu_browser.c (0x5E5F90-0x5E8330: queue/route/cache/request code, statics
+  bs_route_queue_forward/back, bs_route_current_page_status, bs_page_status_flag_set; aliases for still-asm callers in config/lobby_aliases.txt; unwritten
+  functions are `asm` stubs, e.g. BsCacheInitialize, BsRequestCheck), lb_tu_act.c (0x5CDF70-0x5CF100: static lb_action_timer_calc, Lb_act_set now matches),
+  lb_tu_ib.c (item box 0x609750-0x60D6D8: u_item_chk, u_equip_chk, item_kosuu_sel_chk, pick_kosuu_sel_chk, equip_ok_chk matched; the other 15 functions of the
+  screen are still `asm` stubs in config/c_rawfuncs.txt, their C is in lb_ib.c / lb_ay.c).
+- lb_e25.c: eft25_i, eft25_d now match (with Eft25_set_pos, eft25_move, eft25_e only eft25_m and eft25_t are left: eft25_m is a 3.2 KB function whose
+  prologue shows five table base registers and two spilled locals; eft25_t 2.5 KB).
+- lb_pc.c: Plaza_chat_move, Plaza_disp_ReibunEdit match; left: Plaza_chatlog_mv (7 insns), Plaza_disp_chatlog (38), plaza_disp_chat_log_sub (64).
+- Other source-form fixes: lb_commer_message, lb_check_chair, Lb_put_2TF, tagAct_050/052/053/310/318/320/339/341/342/349, BsBody05_ActDsp, BsTextureGet,
+  RequestAllImages, get_numeric_parameter2 (permuter) ...
+- New hand-written (unwritten before): src/lobby/f/lb_dr.c, lb_dr2.c, lb_dr3.c: fillRect, fillTrgl, drawHLine/VLine, drawOuterImage, drawString, BsDrawRectangle/
+  Triangle/Sprite, http_test_proc/_01/_06/_18, HttpTaskInitialize/Pull, is_sjis, BtnScrollXY, DispFontSize, BsFixPalInit, BsUrlBadHeaderGet, BsCheckLbsError,
+  PostLbsInfoGetOrGameEnd, BsRequestCancelAll/Html, BsStrtblGet, tagAct_035/042, tagoutprintf2, pull/pushTableImage, set_TH_TD_data_1st, check_upTD_rowspan(2) ...
+Still near-matches (source in the working files / build/lbauto, not linked): drawRect (20 insns), Disp_TABLE_Line (2), tagAct_602 (7), font_data_off, set_align_data (15),
+check_rowspan (41), check_rowspan2 (7), ResetFormParam (35), check_special_character (register order of 8 locals), BsParseCheck (register order),
+cut_spacer_string(_t) (loop layout), BsTextureAdd (1), get_input_tag_sp_type (8: `daddiu` li in delay slots), setUpDnLtRtBlank (7: decl order), lb_insert_target_list,
+BsCsMove07_NetError, Disp_Text, the ItemboxWindowX family and the itembox_* screen functions (structurally far: User_data base kept in a register).
+The permuter (one function at a time, -j1, 5 minutes each) found get_numeric_parameter2 and equip_ok_chk; it is cheap to try on any function that is
+under ~10 instructions off: `python3 tools/perm.py lobby FUNC file.c -j1 --stop-on-zero` (build/asmkeep keeps a copy of asm/lobby/text for functions that are
+already registered).
+Ideas not done: write http_test_00/04/05 (m2c switch output needs hand cleanup), table/layout code 0x5FD000-0x608D00 (about 60 functions), the drawing
+functions 0x5DBA80-0x5E0F00 (drawInnerImg5/6, DrawPageObj, DrawPulldown, ...).
