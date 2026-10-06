@@ -986,3 +986,14 @@ friends 7 off (j and the pointer IV swap a2/a3), key_rept_du 5 (idx4 and the `on
 address in the original), weapon_create_model/edit_create_model 10, Sel_back_disp (the OR order of the colour; best expression shape gets 2 lines off),
 pl_egg05 32 (the original does not fill two branch delay slots and has a `nop` before an aligned block), parts_init (original unrolls the 21-iteration
 loop 7x and keeps nine stores per iteration, ours is not unrolled: the unroll limit), mode_sel (the original has `nop nop` padding in front of case 0).
+Also linked later in the pass: pl_mv060 (pl/plx12, 0x13EA40), edit_create_model (model/crmdl04, 0x124F80), load_texlist (load/lf04, 0x11E9E0). More lessons:
+- `if (c) v = 12; else v = 8;` (not `v = c ? 12 : 8;`) when the original does the int-to-s16 extension of v after the branch (pl_mv060); the opposite
+  holds where the ternary moved the `mtc1` to the join (pl_egg03): try both.
+- When the saved-register numbering of two pointer/index variables is swapped, drop the explicit induction variable and write the expression in terms
+  of the loop counter: `model_work_set(.., (s16)(10 + i * 0x32), ..)` instead of `y += 0x32` (edit_create_model); `mem_tex[base++] = ..` instead of a
+  `dst = &mem_tex[base]` pointer (load_texlist, which also moves the pointer set-up behind the `0 < n` guard as in the original).
+- Do not use an automatic statement swapper on code with side effects: a trial swap of two Pl_item_stack calls and of a load call and a field read
+  "improved" the diff count while changing the behaviour (both reverted).
+Still near-match, tried this pass without success: Pit_mv 4 / Pit_mv_lb 3 (the original loads `now` into a0 and copies it to the saved register; assignment
+inside the argument, int/u16/u32 types, a hold variable and statement orders all give the same 3), load_shadow 2, menu_data_monster_sub 5, pl_dm008/pl_at012
+(the original re-copies a0 from s0 in the first call block), Pl_slash_lv_ck, se_req2 7 (permuter ran 15 minutes), em_dur_set 8, release_model 7.
