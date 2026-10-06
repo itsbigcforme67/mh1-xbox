@@ -17,18 +17,20 @@ typedef struct { u32 w[16]; } M64;
 extern M64 flPS2VIEWPORT;
 
 typedef struct AMBSRC { u8 _pad[0x24]; f32 a; } AMBSRC;
-typedef struct AMDL { u8 _pad[0x4C]; AMBSRC *mat; } AMDL;
+typedef struct AMDL { u8 _pad[0x4C]; AMBSRC *mat; u8 _pad2[4]; u32 flags; } AMDL;
 
 extern f32 flFogEnd;
 extern f32 flFogStart;
 extern f32 flPS2FadeColor[4];
 
 u32 *flPS2GetSystemTmpBuff(int size, int align);
+void flmatInvert();
 
 /* packet field accessors (byte offsets from the packet base p) and the recurring packet pieces */
 #define W(o) (*(u32 *)((u8 *)p + (o)))
 #define F(o) (*(f32 *)((u8 *)p + (o)))
 #define LF(o) (*(f32 *)(flLIGHT + (o)))
+#define PB(o) ((u8 *)p + (o))
 #define AMB (m->mat->a)
 #define HEAD(sz, cnt, w7) \
     p = flPS2GetSystemTmpBuff(sz, 0x10); \
@@ -58,6 +60,8 @@ u32 *flPS2GetSystemTmpBuff(int size, int align);
     W((o) + 4) = 0; \
     W((o) + 8) = 0; \
     W((o) + 12) = 0;
+#define VN(i, l) v[i] = -LF(l); v[(i) + 1] = -LF((l) + 4); v[(i) + 2] = -LF((l) + 8);
+#define VP3(i, l) v[i] = LF(l); v[(i) + 1] = LF((l) + 4); v[(i) + 2] = LF((l) + 8);
 #define LIGHTV \
     v[0] = -LF(0x34); \
     v[1] = -LF(0x38); \
@@ -69,97 +73,97 @@ u32 *flPS2GetSystemTmpBuff(int size, int align);
     v[9] = -LF(0x108); \
     v[10] = -LF(0x10C);
 
-static asm u32 *flPS2matMul(u32 *dst, void *a, void *b)
+static asm u32 *flPS2matMul(void *dst, void *a, void *b)
 {
 #include "flPS2matMul.inc"
 }
 
-static asm u32 *flPS2matMul2(u32 *dst, void *tmp, void *a, void *b, void *c)
+static asm u32 *flPS2matMul2(void *dst, void *tmp, void *a, void *b, void *c)
 {
 #include "flPS2matMul2.inc"
 }
 
-static asm u32 *flPS2matNormalize33(u32 *dst, void *a)
+static asm u32 *flPS2matNormalize33(void *dst, void *a)
 {
 #include "flPS2matNormalize33.inc"
 }
 
-static asm u32 *flPS2matMulNormalize33(u32 *dst, void *a, void *b)
+static asm u32 *flPS2matMulNormalize33(void *dst, void *a, void *b, void *c)
 {
 #include "flPS2matMulNormalize33.inc"
 }
 
-static asm u32 *PS2SHADER_ADD_LIGHTVECD3(u32 *dst, void *m, void *v)
+static asm u32 *PS2SHADER_ADD_LIGHTVECD3(void *dst, void *m, void *v)
 {
 #include "PS2SHADER_ADD_LIGHTVECD3.inc"
 }
 
-static asm u32 *PS2SHADER_ADD_LIGHTVECP1(u32 *dst, void *a, void *b, void *c)
+static asm u32 *PS2SHADER_ADD_LIGHTVECP1(void *dst, void *a, void *b, void *c)
 {
 #include "PS2SHADER_ADD_LIGHTVECP1.inc"
 }
 
-static asm u32 *PS2SHADER_ADD_LIGHTVECP3(u32 *dst, void *a, void *b, void *c)
+static asm u32 *PS2SHADER_ADD_LIGHTVECP3(void *dst, void *a, void *b, void *c)
 {
 #include "PS2SHADER_ADD_LIGHTVECP3.inc"
 }
 
-static asm u32 *PS2SHADER_ADD_LIGHTVECD1P2(u32 *dst, void *a, void *b, void *c)
+static asm u32 *PS2SHADER_ADD_LIGHTVECD1P2(void *dst, void *a, void *b, void *c)
 {
 #include "PS2SHADER_ADD_LIGHTVECD1P2.inc"
 }
 
-static asm u32 *PS2SHADER_ADD_LIGHTVECD2P1(u32 *dst, void *a, void *b, void *c)
+static asm u32 *PS2SHADER_ADD_LIGHTVECD2P1(void *dst, void *a, void *b, void *c)
 {
 #include "PS2SHADER_ADD_LIGHTVECD2P1.inc"
 }
 
-static asm u32 *PS2SHADER_ADD_LIGHTVECD1P2_2(u32 *dst, void *a)
+static asm u32 *PS2SHADER_ADD_LIGHTVECD1P2_2(void *dst, void *a, void *b, void *c)
 {
 #include "PS2SHADER_ADD_LIGHTVECD1P2_2.inc"
 }
 
-static asm u32 *PS2SHADER_ADD_LIGHTVECD2P1_2(u32 *dst, void *a)
+static asm u32 *PS2SHADER_ADD_LIGHTVECD2P1_2(void *dst, void *a, void *b, void *c)
 {
 #include "PS2SHADER_ADD_LIGHTVECD2P1_2.inc"
 }
 
-static asm u32 *flPS2SHADER_ADD_SVEC1(u32 *dst, void *a, void *b)
+static asm u32 *flPS2SHADER_ADD_SVEC1(void *dst, void *a, void *b)
 {
 #include "flPS2SHADER_ADD_SVEC1.inc"
 }
 
-static asm u32 *flPS2SHADER_ADD_SVEC2(u32 *dst, void *a, void *b)
+static asm u32 *flPS2SHADER_ADD_SVEC2(void *dst, void *a, void *b)
 {
 #include "flPS2SHADER_ADD_SVEC2.inc"
 }
 
-static asm u32 *PS2SHADER_ADD_LIGHTCOL3(f32 s, u32 *dst)
+static asm u32 *PS2SHADER_ADD_LIGHTCOL3(f32 s, void *dst)
 {
 #include "PS2SHADER_ADD_LIGHTCOL3.inc"
 }
 
-static asm u32 *PS2SHADER_ADD_LIGHTCOL3_2(f32 s, u32 *dst)
+static asm u32 *PS2SHADER_ADD_LIGHTCOL3_2(f32 s, void *dst)
 {
 #include "PS2SHADER_ADD_LIGHTCOL3_2.inc"
 }
 
-static asm u32 *PS2SHADER_ADD_LIGHTCOL3_3(f32 s, u32 *dst)
+static asm u32 *PS2SHADER_ADD_LIGHTCOL3_3(f32 s, void *dst)
 {
 #include "PS2SHADER_ADD_LIGHTCOL3_3.inc"
 }
 
-static asm u32 *PS2SHADER_ADD_LIGHTCOL1(f32 s, u32 *dst, u32 *a)
+static asm u32 *PS2SHADER_ADD_LIGHTCOL1(f32 s, void *dst, void *a)
 {
 #include "PS2SHADER_ADD_LIGHTCOL1.inc"
 }
 
-static asm u32 *PS2SHADER_ADD_UVSCROLL(u32 *dst)
+static asm u32 *PS2SHADER_ADD_UVSCROLL(void *dst)
 {
 #include "PS2SHADER_ADD_UVSCROLL.inc"
 }
 
-static asm u32 *PS2SHADER_FLMATRIX_COPY(u32 *dst, u32 mask)
+static asm u32 *PS2SHADER_FLMATRIX_COPY(void *dst, u32 mask)
 {
 #include "PS2SHADER_FLMATRIX_COPY.inc"
 }
@@ -656,5 +660,89 @@ void flPS2AddMatrix_0051(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_UVSCROLL(p + 48);
     *(M64 *)((u8 *)p + 0xf0) = flPS2VIEWPORT;
     TAIL(0x130)
+}
+
+void flPS2AddMatrix_0001(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    HEAD(0xf30, 0x200000f2, 0x6cf00000)
+    p = flPS2matMul(p + 12, flMATRIX + 0x840, flPS2VIEWPROJ);
+    p = flPS2matMul(p + 28, flMATRIX + 0x840, flPS2CLIPPROJ);
+    F(0xb0) = -LF(0x34);
+    F(0xb4) = -LF(0x38);
+    F(0xb8) = -LF(0x3c);
+    F(0xc0) = -LF(0x9c);
+    F(0xc4) = -LF(0xa0);
+    F(0xc8) = -LF(0xa4);
+    F(0xd0) = -LF(0x104);
+    F(0xd4) = -LF(0x108);
+    F(0xd8) = -LF(0x10c);
+    p = PS2SHADER_FLMATRIX_COPY(p + 72, *(u32 *)((u8 *)m + 0x54));
+    p = PS2SHADER_ADD_LIGHTCOL3(AMB, p + 56);
+    TAIL(0xf20)
+}
+
+void flPS2AddMatrix_000C(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    f32 tmp[16];
+    HEAD(0x120, 0x20000011, 0x6C0F0000)
+    FADE
+    p = flPS2matMul2(PB(0x80), tmp, flMATRIX, flMATRIX + 0x840, flPS2VIEWPROJ);
+    p = flPS2matNormalize33(tmp, tmp);
+    *(M64 *)PB(0x40) = *(M64 *)tmp;
+    p = flPS2matMul(PB(0xC0), tmp, flPS2CLIPPROJ);
+    FOG(0x100)
+    TAIL(0x110)
+}
+
+void flPS2AddMatrix_002C(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    f32 v[12];
+    int i;
+    u8 *mp, *sp2, *dp;
+    HEAD(0xF70, 0x200000F6, 0x6CF40000)
+    FOG(0x30)
+    *(M64 *)PB(0x40) = *(M64 *)flPS2VIEWPROJ;
+    *(M64 *)PB(0x80) = *(M64 *)flPS2CLIPPROJ;
+    i = 0;
+    mp = flMATRIX;
+    sp2 = (u8 *)p;
+    dp = (u8 *)p;
+    for (; i < 32; i++) {
+        if (m->flags & (1 << i))
+            p = flPS2matMulNormalize33(dp + 0x960, sp2 + 0x160, mp, flMATRIX + 0x840);
+        mp += 0x40;
+        sp2 += 0x40;
+        dp += 0x30;
+    }
+    v[3] = 1.0f;
+    v[7] = 1.0f;
+    v[11] = 1.0f;
+    v[0] = -LF(0x34);
+    v[1] = -LF(0x38);
+    v[2] = -LF(0x3C);
+    v[4] = LF(0xA8);
+    v[5] = LF(0xAC);
+    v[6] = LF(0xB0);
+    v[8] = LF(0x110);
+    v[9] = LF(0x114);
+    v[10] = LF(0x118);
+    p = PS2SHADER_ADD_LIGHTVECD1P2_2(PB(0xC0), PB(0xF0), flMATRIX + 0x840, v);
+    p = PS2SHADER_ADD_LIGHTCOL3_2(AMB, PB(0x100));
+    TAIL(0xF60)
+}
+
+void *flPS2AddMatrix_0028(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    f32 tmp[16];
+    f32 v[4];
+    HEAD(0x120, 0x20000011, 0x6C0F0000)
+    flPS2matMul2(PB(0x30), tmp, flMATRIX, flMATRIX + 0x840, flPS2VIEWPROJ);
+    flPS2matMul(PB(0x70), tmp, flPS2CLIPPROJ);
+    v[3] = 1.0f;
+    VP3(0, 0x40)
+    PS2SHADER_ADD_LIGHTVECP1(PB(0xB0), PB(0xE0), flMATRIX, v);
+    PS2SHADER_ADD_LIGHTCOL1(AMB, PB(0xF0), PB(0x100));
+    TAIL(0x110)
+    return p;
 }
 
