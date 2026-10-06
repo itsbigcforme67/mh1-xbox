@@ -1,40 +1,36 @@
 #include "lobby_a.h"
 extern char CallBack_Result_Plaza_PlazaExit2[];
 extern char CallBack_Result_Plaza_PlazaEntry2[];
-s32 Lbs_ExitAndEnterPlaza(s32 arg0, int arg1, int arg2) {
-    u8 temp_a0;
-    int temp_a1;
-    int temp_v0;
-
-    temp_v0 = (int)cw;
-    temp_a0 = F(u8, temp_v0, 0x2C35);
-    temp_a1 = temp_v0 + 0x2C35;
-    switch (temp_a0) {
+typedef struct { u8 pad0[0x2C35]; u8 x2C35; u8 pad2C36[0xF]; s8 x2C45; } CWS_ee;
+#define CWX ((CWS_ee *)cw)
+s32 Lbs_ExitAndEnterPlaza(arg0)
+int arg0;
+{
+    switch (CWX->x2C35) {
     case 0:
-        F(u8, temp_v0, 0x2C35) = (u8) (temp_a0 + 1);
+        CWX->x2C35++;
         CallBackWaitInit();
-        F(s8, (u8 *)cw, 0x2C45) = 9;
+        CWX->x2C45 = 9;
         cnLBS_PlazaExit(&CallBack_Result_Plaza_PlazaExit2);
-    default:
-block_12:
-        return 2;
+        break;
     case 1:
         Check_CallBackWait();
-        goto block_12;
+        break;
     case 2:
-        F(u8, temp_v0, 0x2C35) = (u8) (temp_a0 + 1);
+        CWX->x2C35++;
         CallBackWaitInit();
-        F(s8, (u8 *)cw, 0x2C45) = 4;
-        cnLBS_PlazaEntry(arg2 & 0xFFFF, &CallBack_Result_Plaza_PlazaEntry2);
-        goto block_12;
+        CWX->x2C45 = 4;
+        cnLBS_PlazaEntry(arg0 & 0xFFFF, &CallBack_Result_Plaza_PlazaEntry2);
+        break;
     case 3:
         Check_CallBackWait();
-        goto block_12;
+        break;
     case 4:
-        F(u8, temp_v0, 0x2C35) = 0U;
+        CWX->x2C35 = 0;
         return 0;
     case 5:
-        F(u8, temp_v0, 0x2C35) = 0U;
+        CWX->x2C35 = 0;
         return 1;
     }
+    return 2;
 }
