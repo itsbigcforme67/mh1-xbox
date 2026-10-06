@@ -1,5 +1,4 @@
 # Decompiled code that replaces disassembly. One line per C file:
-game 0x005A69A0 0x005A6F04 em/em08_r01
 game 0x005A71A0 0x005A724C em/em08_r02
 game 0x00592FE0 0x005934D4 em/em07_ai_r01
 game:rodata 0x006867E0 0x00686840 em/em07_ai_r01
@@ -227,12 +226,12 @@ game 0x005B40D0 0x005B5248 em/em12c
 game:rodata 0x00688410 0x00688430 em/em12c
 game 0x0060D440 0x00612B94 em/em27a
 game:rodata 0x00689980 0x00689B40 em/em27a
-game 0x00612DA0 0x00613958 em/em27b
+game 0x00612BA0 0x006139C0 em/em27b
 game:rodata 0x00689B40 0x00689C14 em/em27b
 game 0x006139C0 0x006139C8 em/em27c
 game 0x005D0600 0x005D7404 em/em16a
 game:rodata 0x00688940 0x00688B50 em/em16a
-game 0x005D7610 0x005D8130 em/em16b
+game 0x005D7410 0x005D8190 em/em16b
 game:rodata 0x00688B50 0x00688C24 em/em16b
 game 0x005D8190 0x005D8198 em/em16c
 game 0x005E6C80 0x005E6E00 em/em18_init
@@ -463,7 +462,7 @@ game:rodata 0x00685B50 0x00685EF0 em/em01_aif
 game:rodata 0x00685EF0 0x00686078 em/em01_aig
 game 0x0057F1E0 0x005803A4 em/em02_ai
 game 0x005803B0 0x00583928 em/em02_aib
-game 0x00583B30 0x00587350 em/em02_aic
+game 0x00583930 0x005873B0 em/em02_aic
 game 0x005873B0 0x005873C8 em/em02_aid
 game:rodata 0x00686270 0x006862CC em/em02_ai
 game:rodata 0x006862D0 0x00686400 em/em02_aib
@@ -472,7 +471,7 @@ game 0x0058F4A0 0x0058FBE4 em/em07_ai
 game 0x0058FBF0 0x00590790 em/em07_aib
 game 0x00590790 0x00592FDC em/em07_aic
 game 0x005934E0 0x005935D8 em/em07_aid
-game 0x005937E0 0x00599C04 em/em07_aie
+game 0x005935E0 0x00599C70 em/em07_aie
 game 0x00599C70 0x00599EC8 em/em07_aif
 game:rodata 0x006866F0 0x00686710 em/em07_aib
 game:rodata 0x00686710 0x006867D8 em/em07_aic
@@ -486,7 +485,7 @@ game 0x0059D720 0x0059FB90 em/em08_aif
 game 0x0059FB90 0x005A0FE8 em/em08_aig
 game 0x005A1700 0x005A3990 em/em08_aih
 game 0x005A3990 0x005A3A98 em/em08_aii
-game 0x005A3CA0 0x005A699C em/em08_aij
+game 0x005A3AA0 0x005A6F8C em/em08_aij
 game 0x005A6F90 0x005A719C em/em08_aik
 game 0x005A7250 0x005A7378 em/em08_ail
 game:rodata 0x00686880 0x00686898 em/em08_aif
@@ -733,11 +732,6 @@ game 0x005ADC50 0x005AE05C em/em10b
 game 0x005AE280 0x005AF528 em/em10c
 game:rodata 0x00688220 0x00688248 em/em10
 game:rodata 0x00688250 0x006882D4 em/em10c
-game 0x00583930 0x00583B24 em/em02_uv
-game 0x005935E0 0x005937D4 em/em07_uv
-game 0x005A3AA0 0x005A3C94 em/em08_uv
-game 0x005D7410 0x005D7604 em/em16_uv
-game 0x00612BA0 0x00612D94 em/em27_uv
 main 0x0014D320 0x0014DC8C pl/pl79
 main 0x0014DEA0 0x0014E0B4 pl/pl80
 main 0x0014F850 0x0014F864 pl/pl81
