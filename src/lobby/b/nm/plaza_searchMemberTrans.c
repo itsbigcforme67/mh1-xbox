@@ -94,7 +94,7 @@ block_49:
                 break;
             case 1:                                 /* switch 2 */
                 if (F(u8, arg0, 3) == 3) {
-                    flfntLocate(0x17B, var_s1_2);
+                    flfntLocate(0x17B);
                     han2zen(&seekStr, &sp60);
                     font_print(&lit_2316, &sp60);
                 }

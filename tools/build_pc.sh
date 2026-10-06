@@ -126,7 +126,7 @@ LOBBY="$(ls src/lobby/f/lb_[a-p].c src/lobby/f/lb_z*.c | tr '\n' ' ') src/lobby/
 # the village start menu (Lb_ck_menu -> lbmw = lb_menu_w): Lb_Menu_Init,
 # the menu's move and draw (b/nm near-matches, b/lb_menu_nm.c from the asm)
 LOBBY="$LOBBY src/lobby/b/lb_bz15.c src/lobby/b/lb_bz17.c src/lobby/b/lb_bz19.c src/lobby/b/lb_bz135.c \
-       src/lobby/b/nm/Lb_menu_move_Core.c src/lobby/b/nm/DispLobbyMenu.c src/lobby/b/lb_menu_nm.c"
+       src/lobby/b/nm/Lb_menu_move_Core.c src/lobby/b/lb_by86.c src/lobby/b/lb_menu_nm.c"
 WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY"
 
@@ -135,7 +135,13 @@ CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOUR
 # -fno-aggressive-loop-optimizations: decompiled loops index past declared
 # array ends (EMW.hagi[8] read with i == 8 in Em_Dmg_Sys): without it gcc
 # drops the loop exit
-GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -Iinclude -w"
+# -ftrivial-auto-var-init=zero: matching C sometimes reads a local the
+# original never wrote on that path (the PS2 reads a stale stack slot,
+# usually a small leftover); on the PC it was garbage. pl_dm001 (pl33.c,
+# the guard knock-back) adds sp30[2] to the hunter's position after frame
+# 94 without setting it: the hunter flew off to z = 1e21 and the screen
+# went blank. Zero is what such a slot ends near in every case seen.
+GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -ftrivial-auto-var-init=zero -Iinclude -w"
 LIBS="-lSDL2 -lGL -lm -ldl -rdynamic"   # -rdynamic: rt_data.c finds host symbols with dlsym
 # unnamed PS2 data the game C refers to as D_<addr>: rows of rview_mat
 # (0x3F2060) and two game.bin tables

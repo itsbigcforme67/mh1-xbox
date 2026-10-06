@@ -168,6 +168,7 @@ void rt_player_sw(int no, int *now, int *ang, int *pow);
  * host player stand-in (call before frame_move). */
 int  rt_snd_init(const char *disc, int device);
 void rt_snd_stage(int stage, const int *em_kinds, int nem);
+void rt_snd_em_add(int kind);        /* a monster kind's sound pack on port 6 */
 void rt_snd_tick(void);
 void rt_snd_player_motion(int no);
 void rt_snd_monster_motion(int no);

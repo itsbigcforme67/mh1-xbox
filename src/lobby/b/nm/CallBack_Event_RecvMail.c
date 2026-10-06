@@ -67,7 +67,7 @@ void CallBack_Event_RecvMail(CNET_RES res) {
         var_v1 += 0x9A;
     } while (var_a1 < 8);
     if (var_a0 == 0) {
-        cnWrap_SoundRequest(5, var_a1);
+        cnWrap_SoundRequest(5);
     }
     memset(sp20, 0, 0x9C);
     cnLBS_Get_RecvMessage(sp20, sp28, sp3C);

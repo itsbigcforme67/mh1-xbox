@@ -1,5 +1,5 @@
 #include "lobby_a.h"
-extern char wait_157[];
+extern char wait_157[4];
 extern char D_38A82E[];
 s32 tk_lever_ck(int arg0, u8 arg1, s32 arg2) {
     int var_s1;

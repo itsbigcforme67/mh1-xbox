@@ -353,10 +353,12 @@ int lb_ck_unique_act(int a0, u8 *p) {
 }
 
 /* original bytes: build/raw/Lb_put_unique_act_hint.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm void Lb_put_unique_act_hint()
 {
 #include "Lb_put_unique_act_hint.inc"
 }
+#endif
 
 int Lb_Pl_stg_ck(PLW *pl) {
     u8 s = pl->stg;

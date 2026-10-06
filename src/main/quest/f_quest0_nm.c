@@ -56,16 +56,20 @@ int Quest_f_dra_ck(int unused)
 /* 0x2268A0: the exits list of stage n */
 void *Stage_mv_data_get(int n)
 {
+    s32 v;
+    s32 *p;
     if (quest_w.no == 0) {
-        return (void *)quest_w.x7C[n];
+        p = quest_w.x7C;
+        p += n;
+        return (void *)*p;
     }
-    {
-        s32 v = quest_w.x7C[n];
-        if (v == 0) {
-            return 0;
-        }
-        return (void *)(v + (int)mission_area);
+    p = quest_w.x7C;
+    p += n;
+    v = *p;
+    if (v == 0) {
+        return 0;
     }
+    return (void *)(v + (int)mission_area);
 }
 
 /* 0x226900: stage n's 32-byte entry */
@@ -77,31 +81,39 @@ void *Stage_data_get(int n)
 /* 0x226920 */
 void *Stage_item_data_get(int n)
 {
+    s32 v;
+    s32 *p;
     if (quest_w.no == 0) {
-        return (void *)quest_w.x8C[n + 1];
+        p = quest_w.x8C;
+        p += n + 1;
+        return (void *)*p;
     }
-    {
-        s32 v = quest_w.x8C[n + 1];
-        if (v == 0) {
-            return 0;
-        }
-        return (void *)(v + (int)mission_area);
+    p = quest_w.x8C;
+    p += n + 1;
+    v = *p;
+    if (v == 0) {
+        return 0;
     }
+    return (void *)(v + (int)mission_area);
 }
 
 /* 0x226980 */
 void *Stage_unique_data_get(int n)
 {
+    s32 v;
+    s32 *p;
     if (quest_w.no == 0) {
-        return (void *)quest_w.x90[n];
+        p = quest_w.x90;
+        p += n;
+        return (void *)*p;
     }
-    {
-        s32 v = quest_w.x90[n];
-        if (v == 0) {
-            return 0;
-        }
-        return (void *)(v + (int)mission_area);
+    p = quest_w.x90;
+    p += n;
+    v = *p;
+    if (v == 0) {
+        return 0;
     }
+    return (void *)(v + (int)mission_area);
 }
 
 /* 0x2269E0 */

@@ -11,7 +11,7 @@ s32 join_input_password(s32 arg0) {
     case 0:                                         /* switch 1 */
         F(s8, &lb_sys, 7) = (s8) (F(s8, &lb_sys, 7) + 1);
         SoftKeyboard_pos_set(0x42A00000, 0x3A);
-        SoftKeyboard_set(0, 6, 8, arg0);
+        SoftKeyboard_set(0, 6, 8);
         *(s8 *)0x3F36AB = 0;
     case 3:                                         /* switch 2 */
     case 1:                                         /* switch 1 */

@@ -6,23 +6,18 @@ extern u8 * pNet;
 extern u8 BsLbsCount;
 extern u8 COM_R_No_1;
 extern u8 mcs_connect_flag;
-extern char CnetWork[];
-extern char CnetWork[];
-extern char CnetWork[];
-extern char CnetWork[];
-extern char CnetWork[];
-extern char CnetWork[];
-extern char CnetWork[];
+typedef struct { u8 pad00[0x4]; u8 x04; u8 x05; u8 padEND[0x2A]; } CNW;
+extern CNW CnetWork;
 s32 server_select_01(void) {
     s32 var_s0;
     u8 temp_v0;
 
     var_s0 = 0;
-    switch (F(u8, &CnetWork, 5)) {        /* irregular */
+    switch (CnetWork.x05) {        /* irregular */
     case 0:
-        F(u8, &CnetWork, 4) = (u8) (F(u8, &CnetWork, 4) + 1);
-        if (F(u8, &CnetWork, 4) < BsLbsCount) {
-            if (get_next_server(F(u8, &CnetWork, 5)) == 0) {
+        CnetWork.x04 = (u8) (CnetWork.x04 + 1);
+        if (CnetWork.x04 < BsLbsCount) {
+            if (get_next_server(CnetWork.x05) == 0) {
                 return -1;
             }
             var_s0 = 1;
@@ -53,10 +48,10 @@ block_23:
         if ((temp_v0 == 1) || (temp_v0 == 2)) {
             mcs_connect_flag = 0U;
         } else {
-            F(u8, &CnetWork, 4) = (u8) (F(u8, &CnetWork, 4) + 1);
+            CnetWork.x04 = (u8) (CnetWork.x04 + 1);
         }
-        if (F(u8, &CnetWork, 4) < BsLbsCount) {
-            if (get_next_server(1U, F(u8, &CnetWork, 5)) == 0) {
+        if (CnetWork.x04 < BsLbsCount) {
+            if (get_next_server(1U, CnetWork.x05) == 0) {
                 return -1;
             }
             var_s0 = 1;

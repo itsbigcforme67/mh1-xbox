@@ -42,7 +42,7 @@ s32 tcp_init(void) {
         var_s0 = (int)&bsCsvWork;
 loop_6:
         if (strncmp(&ConnectLbsId, var_s0 + 0x603, 0xC) == 0) {
-            strncpy(&_fqdn_tmp_440, (int)&bsCsvWork + (var_s1 * 0x62) + 0x22F, 0x40);
+            strncpy(&_fqdn_tmp_440, &bsCsvWork[var_s1 * 0x62] + 0x22F, 0x40);
         } else {
             var_s1 += 1;
             var_s0 += 0x101;
@@ -101,7 +101,7 @@ loop_19:
         break;
     case 2:                                         /* switch 1 */
         SecCunt = (s8) (SecCunt - 1);
-        if (SecCunt <= 0) {
+        if (0 >= SecCunt) {
             TryCunt = (s8) (TryCunt + 1);
             SecCunt = 0x3C;
             if (TryCunt >= 0x15) {

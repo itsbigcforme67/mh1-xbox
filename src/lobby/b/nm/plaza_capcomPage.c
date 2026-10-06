@@ -33,7 +33,7 @@ void plaza_capcomPage(void) {
             return;
         }
     default:                                        /* switch 1 */
-        return;
+        break;
     case 2:                                         /* switch 1 */
         if (F(u8, (u8 *)cw, 0x2C44) == 2) {
             F(u8, temp_a2, 3) = (u8) (temp_a1 + 1);
@@ -53,7 +53,7 @@ void plaza_capcomPage(void) {
         tl_exit_sub_menu(1);
         return;
     case 4:                                         /* switch 1 */
-        temp_v0 = Lbc_SendBrowserResult(&jtbl_2033);
+        temp_v0 = Lbc_SendBrowserResult();
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             F(s8, (u8 *)cw, 0x2C08) = 1;

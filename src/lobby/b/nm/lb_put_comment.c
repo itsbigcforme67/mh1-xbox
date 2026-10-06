@@ -10,6 +10,6 @@ void lb_put_comment(int arg0, int arg1, int arg2, int arg3) {
         Draw_square( ((temp_s0 - 6) << 0x30) >> 0x30,  ((temp_s1 - 2) << 0x30) >> 0x30, 0x12C, 0x42);
         Draw_square( ((temp_s0 - 7) << 0x30) >> 0x30,  ((temp_s1 - 3) << 0x30) >> 0x30, 0x12E, 0x44);
     }
-    KinshiYogo_chk(arg2);
+    KinshiYogo_chk();
     Put_comment(arg0,  ((( (arg1 << 0x30) >> 0x30) - 0x16) << 0x30) >> 0x30, 0x16, arg2);
 }

@@ -301,7 +301,7 @@ void plaza_searchMember(int arg0) {
         F(u8, arg0, 3) = 6U;
         return;
     case 9:                                         /* switch 1 */
-        temp_v0_8 = getUserInfo(arg0);
+        temp_v0_8 = getUserInfo();
         switch (temp_v0_8) {                        /* switch 4; irregular */
         case 0:                                     /* switch 4 */
             F(u8, arg0, 3) = (u8) (F(u8, arg0, 3) + 1);

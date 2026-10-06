@@ -347,8 +347,9 @@ void plaza_disp_chat_log_sub(int first, int sel, int kind) {
 void Plaza_disp_chatlog(void) {
     u32 ang;
     u32 col;
-    int y;
+    s16 y;
     u8 fl;
+    u32 c2;
     SetFilterMode(0);
     plaza_disp_chat_log_sub(PZ_TOP, PZ_ATEND, *(u8 *)0x39DAD4);
     ang = ((System_timer & 0x1F) << 11) & 0xFFFF;
@@ -356,18 +357,19 @@ void Plaza_disp_chatlog(void) {
     y = 0x6F;
     fl = PZ_ARROWS;
     if (fl & 1) {
+        c2 = col;
         if (fl & 4) {
-            y = (s16)(y - 2);
+            y = y - 2;
         }
     } else {
-        col = 0xC0606060;
+        c2 = 0xC0606060;
     }
-    PutArrow(0xFC, y, 0x16, 0xC, col, 2);
+    PutArrow(0xFC, y, 0x16, 0xC, c2, 2);
     y = 0x138;
     fl = PZ_ARROWS;
     if (fl & 2) {
         if (fl & 8) {
-            y = (s16)(y + 2);
+            y = y + 2;
         }
     } else {
         col = 0xC0606060;

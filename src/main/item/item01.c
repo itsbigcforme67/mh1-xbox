@@ -1,4 +1,4 @@
-/* SLPM_654.95 0x0011CDF0-0x0011D270: init_item_work .. Item_preparation_one_ck. See item_nm.c. */
+/* SLPM_654.95 0x0011CDF0-0x0011D328: init_item_work .. Item_preparation_adrs. See item_nm.c. */
 #include "types.h"
 #include "pl.h"
 
@@ -205,6 +205,35 @@ int Item_preparation_one_ck(s16 a) {
                 } while (n > 0);
             }
         }
+    }
+    return 0;
+}
+IPREP *Item_preparation_adrs(a, b)
+s16 a;
+s16 b;
+{
+    IPREP *p;
+    int n;
+
+    if (a > b) {
+        s16 t = b;
+
+        b = a;
+        a = t;
+    }
+    n = *(u8 *)((u8 *)Item_preparation_tbl + (a + a));
+    if (n == 0) {
+        return 0;
+    }
+    p = &Item_preparation_tbl_00[*(u8 *)((u8 *)Item_preparation_tbl + (a + a) + 1)];
+    if (n != 0) {
+        do {
+            if (p->a == b) {
+                return p;
+            }
+            n--;
+            p++;
+        } while (n != 0);
     }
     return 0;
 }

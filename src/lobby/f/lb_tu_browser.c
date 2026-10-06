@@ -134,10 +134,12 @@ static BSNODE *bs_route_queue_back(BSNODE *head, BSNODE *p) {
 }
 
 /* original bytes: build/raw/bs_route_queue_free_reverse.inc (config/c_rawfuncs.txt); near-match C is in lb_am.c */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm BSNODE *bs_route_queue_free_reverse()
 {
 #include "bs_route_queue_free_reverse.inc"
 }
+#endif
 
 BSNODE *bs_route_queue_free_after(BSNODE *arg0, BSNODE *arg1) {
     BSNODE *var_a1;
@@ -272,10 +274,12 @@ void bs_cache_queue_free_node(BSNODE *head, BSNODE *node) {
 }
 
 /* original bytes: build/raw/bs_cache_queue_get.inc (config/c_rawfuncs.txt); near-match C is in lb_am.c */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int bs_cache_queue_get()
 {
 #include "bs_cache_queue_get.inc"
 }
+#endif
 
 void bs_source_cache_clear(BSNODE *arg0) {
     bs_cache_queue_free_node(&BcSource_head, arg0);
@@ -301,10 +305,12 @@ void bs_image_cache_clear(BSNODE *n) {
 }
 
 /* original bytes: build/raw/BsCacheInitialize.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int BsCacheInitialize()
 {
 #include "BsCacheInitialize.inc"
 }
+#endif
 
 void BsCacheCleanup(void) {
     bs_cache_queue_image_free_all(&BcImage_head);
@@ -430,10 +436,12 @@ void BsRequestHtmlPost(char **a) {
 }
 
 /* original bytes: build/raw/BsRequestPostAdd.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int BsRequestPostAdd()
 {
 #include "BsRequestPostAdd.inc"
 }
+#endif
 
 void BsRequestPostClear(void) {
     memset(BsCachePost, 0, 0x1000);
@@ -460,16 +468,20 @@ int BsRequestImage(char **a) {
 }
 
 /* original bytes: build/raw/bs_cache_request_html_core.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int bs_cache_request_html_core()
 {
 #include "bs_cache_request_html_core.inc"
 }
+#endif
 
 /* original bytes: build/raw/bs_cache_request_image_core.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int bs_cache_request_image_core()
 {
 #include "bs_cache_request_image_core.inc"
 }
+#endif
 
 void bs_cache_queue_image_free_all(BSNODE *arg0) {
     BSNODE *var_a0;
@@ -484,46 +496,60 @@ void bs_cache_queue_image_free_all(BSNODE *arg0) {
 }
 
 /* original bytes: build/raw/bs_cache_request_create_texture.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int bs_cache_request_create_texture()
 {
 #include "bs_cache_request_create_texture.inc"
 }
+#endif
 
 /* original bytes: build/raw/bs_request_check_task_http.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int bs_request_check_task_http()
 {
 #include "bs_request_check_task_http.inc"
 }
+#endif
 
 /* original bytes: build/raw/bs_request_set_task_core.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int bs_request_set_task_core()
 {
 #include "bs_request_set_task_core.inc"
 }
+#endif
 
 /* original bytes: build/raw/bs_request_set_task_html.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int bs_request_set_task_html()
 {
 #include "bs_request_set_task_html.inc"
 }
+#endif
 
 /* original bytes: build/raw/bs_request_set_task_image.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int bs_request_set_task_image()
 {
 #include "bs_request_set_task_image.inc"
 }
+#endif
 
 /* original bytes: build/raw/BsRequestTask.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int BsRequestTask()
 {
 #include "BsRequestTask.inc"
 }
+#endif
 
 /* original bytes: build/raw/BsRequestCheck.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int BsRequestCheck()
 {
 #include "BsRequestCheck.inc"
 }
+#endif
 
 void BsRequestCancelHtml(void) {
     switch (BcCurrentPage[0]) {

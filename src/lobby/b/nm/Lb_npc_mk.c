@@ -47,7 +47,7 @@ block_12:
             }
             temp_f4 = F(f32, temp_s0, 4);
             temp_f20 = temp_f4 + (0.2f * (var_f3 - temp_f4));
-            flmatRotY33((3.1415927f * temp_f20) / 180.0f, var_s1);
+            flmatRotY33((3.1415927f * temp_f20) / 180.0f);
             F(f32, temp_s0, 4) = temp_f20;
         }
     }

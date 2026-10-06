@@ -1,7 +1,7 @@
 #include "lobby_a.h"
 extern char SearchCondition[];
 extern char SearchCondition[];
-extern char my_user_id[];
+extern char my_user_id[8];
 void plaza_searchAll(void) {
     s16 temp_v0_2;
     s16 temp_v0_3;
@@ -66,7 +66,7 @@ void plaza_searchAll(void) {
                 F(s16, temp_a0_2, 0x26) = (s16) (F(s16, temp_a0_2, 0x26) + 1);
                 return;
             }
-            return;
+            break;
         case 1:                                     /* switch 2 */
             SetDialogData(0x2B, 0);
             F(u8, pNet, 3) = 7U;
@@ -162,7 +162,7 @@ void plaza_searchAll(void) {
                         F(u8, temp_a0_7, 0xA) = 0U;
                     }
                 }
-                cnWrap_SoundRequest(1, var_a1);
+                cnWrap_SoundRequest(1);
                 return;
             }
         }
@@ -184,7 +184,7 @@ void plaza_searchAll(void) {
         F(u8, pNet, 3) = 6U;
         return;
     case 9:                                         /* switch 1 */
-        temp_v0_7 = getUserInfo(temp_a0);
+        temp_v0_7 = getUserInfo();
         switch (temp_v0_7) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
             temp_a0_8 = (int)pNet;
