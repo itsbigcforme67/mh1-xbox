@@ -813,3 +813,21 @@ would be the shortcut if steps 3 and 5 turn out too slow.
   wall: use --cam). Stage 0x11 (st11 files) has barrels (Shell10) at
   1400..4100 where the area model has no geometry: probably an unused
   stage [guess].
+
+### ARM (Armbian RK3518 box, 6 Oct 2026)
+
+The same port runs as a 32-bit ARM (armhf) program on a 64-bit ARM Linux box, without
+root: `tools/build_arm.sh` cross-builds with Debian's gcc-14-arm-linux-gnueabihf and an armhf
+sysroot unpacked in ~/mh1arm, and `tools/run_arm.sh` starts it through the sysroot's
+loader (Mesa's lima driver from the sysroot). Setup of ~/mh1arm: a user-level apt config
+with `APT::Architectures { arm64; armhf; }` and its own lists/status dirs, `apt-get update`,
+`apt-get download` of the armhf closure of libsdl2-2.0-0, libsdl2-dev, libgl1, libglx-mesa0,
+libgl1-mesa-dri, libc6-dev (apt-cache depends --recurse) into sysroot/, and of
+gcc-14-arm-linux-gnueabihf, cpp-14-..., binutils-arm-linux-gnueabihf, libc6(-dev)-armhf-cross,
+libgcc-14-dev-armhf-cross, linux-libc-dev-armhf-cross (+ bases) into cross/, all unpacked
+with dpkg-deb -x; the cross libc.so linker script is edited to point at cross/. ARM-specific
+flags: -fsigned-char (PS2 char is signed), -fpermissive (gcc 14). `RT_FPS=1` prints drawn
+frames per second.
+- Measured 6 Oct 2026 (H96 Max, RK3518, Mali-450 GL 2.1, quest 10 at the cave, no fight):
+  game logic at full speed (30 ticks/s), about 27 fps drawn at 960x720 and 48 fps at 640x480;
+  a --shot screenshot looks the same as on x86. Not tested: long play, fights, the village.

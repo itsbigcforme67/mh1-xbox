@@ -6,6 +6,10 @@
 # or the no-root sysroot from tools/setup_pc32.sh.
 set -e
 cd "$(dirname "$0")/.."
+# Cross builds (e.g. 32-bit ARM on the Armbian box, tools/build_arm.sh) set
+# CC (compiler + sysroot flags), M32 (empty), OBJCOPY, NM, SDL_CFLAGS and
+# PC_SYS (skips the multilib check).
+CC=${CC:-gcc}; OBJCOPY=${OBJCOPY:-objcopy}; NM=${NM:-nm}; M32=${M32--m32}
 mkdir -p build/pc
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
@@ -126,19 +130,21 @@ LOBBY="$LOBBY src/lobby/b/lb_bz15.c src/lobby/b/lb_bz17.c src/lobby/b/lb_bz19.c 
 WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY"
 
-SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
-CFLAGS="-m32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
+SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}
+CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
 # -fno-aggressive-loop-optimizations: decompiled loops index past declared
 # array ends (EMW.hagi[8] read with i == 8 in Em_Dmg_Sys): without it gcc
 # drops the loop exit
-GAMEFLAGS="-m32 -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -Iinclude -w"
+GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -Iinclude -w"
 LIBS="-lSDL2 -lGL -lm -ldl -rdynamic"   # -rdynamic: rt_data.c finds host symbols with dlsym
 # unnamed PS2 data the game C refers to as D_<addr>: rows of rview_mat
 # (0x3F2060) and two game.bin tables
 LIBS="$LIBS -Wl,--defsym,D_3F2080=rview_mat+0x20 -Wl,--defsym,D_3F2090=rview_mat+0x30 \
       -Wl,--defsym,D_63BC40=enemy_shadow_size -Wl,--defsym,D_63BD60=enemy_mahi_size -Wl,--defsym,D_63FC50=em_hit_push_tbl -Wl,--defsym,D_63FA10=em_body_tbl -Wl,--defsym,D_3E4C9C=player_work+0xAC"
 
-if echo 'int main(void){return 0;}' | gcc -m32 -x c - -o build/pc/.m32test $LIBS 2>/dev/null; then
+if [ -n "$PC_SYS" ]; then
+    SYS="$PC_SYS"
+elif echo 'int main(void){return 0;}' | gcc -m32 -x c - -o build/pc/.m32test $LIBS 2>/dev/null; then
     SYS=""                                   # gcc-multilib installed
 else
     SR=build/sysroot32      # relative: the checkout path may contain spaces
@@ -238,22 +244,22 @@ for f in $GAME; do
             INC="$INC -I$(dirname "$f")"
         fi
     fi
-    gcc $INC $GAMEFLAGS $ABI $SYS -c "$src" -o "$o"
-    case " $WEAK " in *" $b "*) objcopy --weaken "$o" ;; esac
+    $CC $INC $GAMEFLAGS $ABI $SYS -c "$src" -o "$o"
+    case " $WEAK " in *" $b "*) $OBJCOPY --weaken "$o" ;; esac
     # single symbols that another file also defines (the lobby NPC files'
     # empty dummy_em_prog: main's f_em one wins)
-    case "$b" in lb__lb_em*_nm) objcopy --weaken-symbol=dummy_em_prog "$o" ;; esac
+    case "$b" in lb__lb_em*_nm) $OBJCOPY --weaken-symbol=dummy_em_prog "$o" ;; esac
     OBJS="$OBJS $o"
 done
 # data tables (names in src/pc/rt/tables.txt; bytes come from the disc at run time)
 python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 # shellcheck disable=SC2086
-gcc $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
+$CC $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
 for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village; do
     # shellcheck disable=SC2086
-    gcc $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
+    $CC $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"
 done
 # Symbols nothing defines yet (callees and data of the linked overlay C):
@@ -263,17 +269,17 @@ done
 echo '#include <stddef.h>
 struct rt_table { const char *name; unsigned va; void *dst; size_t size; };
 const struct rt_table rt_gen_main_tables[1];' > build/pc/rt_gen.c
-gcc $CFLAGS $SYS -c build/pc/rt_gen.c -o build/pc/rt_gen.o
+$CC $CFLAGS $SYS -c build/pc/rt_gen.c -o build/pc/rt_gen.o
 # shellcheck disable=SC2086
-gcc $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview.tmp $LIBS \
+$CC $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview.tmp $LIBS \
     -Wl,--warn-unresolved-symbols 2> build/pc/link1.log || { cat build/pc/link1.log; exit 1; }
 sed -n "s/.*undefined reference to \`\([^']*\)'.*/\1/p" build/pc/link1.log | sort -u > build/pc/undefined.txt
 rm -f build/pc/mhview.tmp
 # shellcheck disable=SC2086
-nm --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined.txt
+$NM --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined.txt
 python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
-gcc $CFLAGS $SYS -w -c build/pc/rt_gen.c -o build/pc/rt_gen.o
+$CC $CFLAGS $SYS -w -c build/pc/rt_gen.c -o build/pc/rt_gen.o
 # shellcheck disable=SC2086
-gcc $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview $LIBS \
+$CC $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview $LIBS \
     $(cat build/pc/rt_gen.defsym)
 echo "built build/pc/mhview (32-bit)"

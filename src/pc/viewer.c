@@ -1236,6 +1236,15 @@ int main(int argc, char **argv)
         rt_game_draw_2d();              /* screen layers: HUD, info banner, text (after the 3D scene) */
 
         frame_no++;
+        if (getenv("RT_FPS")) {         /* drawn frames per second (the game ticks at 30 regardless) */
+            static Uint32 fps_t0; static int fps_n;
+            Uint32 now = SDL_GetTicks();
+            if (!fps_t0) fps_t0 = now;
+            if (++fps_n, now - fps_t0 >= 1000) {
+                fprintf(stderr, "fps %.1f\n", fps_n * 1000.0 / (now - fps_t0));
+                fps_t0 = now; fps_n = 0;
+            }
+        }
         if (shot && frame_no >= frames) {
             uint8_t *rgb = malloc((size_t)W * H * 3);
             gfx_read_pixels(rgb);
