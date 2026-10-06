@@ -463,3 +463,26 @@ Lessons: m2c-style drafts hide the real structure; re-derive from the asm. `int 
 u32 args converted with `(f32)` give the bltz/srl unsigned convert, int locals for `0xFFFF - d` (lb_target_angle); `e += n;` before the `if (i >= max || e == 0 ...) return;` puts it in the delay slot (Lb_pl_to_chair);
 loop-carried counters kept in a u16 var that is summed but never used survive (cnt in Lb_check_target); u16 local used in `pad & 0x20` gives the double andi.
 Near-matches: lb_guild_make_room 15 (x5C update order), Lb_put_room_message 2 (delay slot of beq on x load), Lb_room_member 1 (addu order), lb_send_data 3 (if-false branch lands on a `b end` block), lb_insert_target_list 8, lb_pl_turn_sub ~43, get_flag_quest 28, lb_set_pl_stage 47. Item box / eft25 / browser moved to agent B.
+
+## Lobby session 11 (range 0x5C4E60-0x5EE618, village first)
+Linked (rebuild OK x5, all village): Lb_put_room_message (lb_v05.c), lb_put_room_member_005CB220 (lb_e10.c), lb_select_quest (lb_x02.c), lb_set_questpage_info (lb_v06.c),
+lb_select_quest_level_trans (lb_v07.c), lb_put_sprite (lb_ag03.c). Lobby 30.20% -> 30.80%. Nothing online-only linked.
+Method that worked: read the ORIGINAL asm (asm/lobby/text/NAME.s, it has symbol names and %hi/%lo), write the C from it, and judge with `tools/align.py FILE FUNC`
+(real differences only); check.py counts are inflated by shifted branch targets. m2c drafts were far off only in a few systematic ways:
+- Lobby data the original reaches with `lui at; lb -N(at)` (lb_sys fields, mhRule) is fine as a cast absolute address (`*(s8 *)0x6EAE78`); but an address the original forms with
+  `lui; addiu` as an argument needs its own alias object (`extern char D_6EAE5A[]` + config/lobby_aliases.txt `D_6EAE5A = 0x006EAE5A;`, same trick as D_6EABD9).
+- Two copies of a 4-byte struct (UV) whose source is `tbl + off` and `tbl + 4 + off`: the second source is written `(u8 *)(tbl + 4) + off` (offset kept on the symbol), the
+  destinations are two separate pointer locals; one pointer with +0/+4 merges them. Same for `(char **)(lb_quest_all + 199)[k]` instead of `(u8 *)lb_quest_all + 0x31C + k * 4`.
+- A loop-invariant address (`(char *)exp + 0x3EC` inside a strcat loop) is hoisted into an s-register unless written `(char *)(exp + 0x3EC)`.
+- `s0 += 2; ... s0[0]` folds the add into offsets; two statements `s0++; s0++;` keep the real `addiu s0,s0,8`.
+- 16-bit offsets: an s16 local gives plain `addu` in `sp.x += xo` and the if/else with the then-constant in the branch delay slot; an int local gives movz or extra dsll32/dsra32.
+  `sext = (s16)xo` into an int local gives the extension that is then reused (lb_select_quest_level_trans). Passing an s16 variable to a K&R function re-extends it: give the
+  callee an s16 prototype (Sel_csr_disp, font_print_double, Lb_put_icon in the files that use them) and the extra dsll32/dsra32 disappear (also removes the explicit (s16) casts).
+- `s16 a3 = 30; if (c) a3 += 30;` is NOT constant-folded (an `int` with `a3 = (s16)(a3 + 30)` is); with the s16 prototype the call needs no extra extension (lb_put_sprite).
+- Remaining part-2 locals of a long function: random permutation of declaration order (script of 30 lines, scored by check.py) found the register map in a minute (lb_select_quest_level_trans).
+- A `switch (x) { case 0: case 0xF: case 8: break; default: return; }` is how the original gets three `beq` + `b end` for an early exit (lb_disp_name top).
+Near-matches left: Lb_room_member 1 (the cast form `(u8 *)(int)cw + idx*0x2FC` gives addu operand order wrong, `idx * 0x2FC + cw` is 8 off), lb_send_data 3 (the second-switch
+default block must be reached from the flag test, goto/label variants get threaded away), lb_insert_target_list 8 (head must be in a2, K&R decl blocks declperm), lb_guild_make_room 15
+(x5C update: bit-field and temp variants all worse), get_flag_quest 25 (tbl gets the param register instead of its own s4), Lb_send_chat_plus 23 (params must take s0-s2), lb_disp_name
+(draft has a wrong 1.25f*w locate argument: original uses (f32)(int)scr[0]; half = len / 2; rewrite from the asm, scr[1]/scr[2] must NOT be hoisted), Lb_put_help (not started).
+Never touched: lb_rule_seet_set, Lb_make_quest_tbl(_local), lb_set_pl_stage, lb_pl_turn_sub, Lb_draw_square, get_new_quest and everything from BsParseCheck/http_test on (browser).
