@@ -1,5 +1,5 @@
 /* hit_nm - NOT BUILT. The whole hit file as C. Not yet matching:
- * hit_hit_sub_em (112 instructions off), hit_hit_sub_pl (2: one add.s
+ * hit_hit_sub_em (112 instructions off), hit_hit_sub_pl (now linked from hite.c; was 2: one add.s
  * operand order), hit_calc_shl (now linked from hitd.c). The rest matches and is
  * built from hit.c / hitb.c / hitc.c.
  * hit - SLPM_654.95 0x00111B20-0x00114A88. Shell (attack) hit checks: every

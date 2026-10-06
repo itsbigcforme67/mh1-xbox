@@ -140,9 +140,7 @@ void edit_create_model(void) {
     int a;
     int h;
     int i;
-    int y;
 
-    y = 10;
     for (i = 0; i < 2; i++) {
         load_edit_model(i);
         a = pl_area_top;
@@ -153,8 +151,7 @@ void edit_create_model(void) {
         edit_top[i] = h;
         edit_mdlw[i] = (s32)get_mdlw_ptr(h);
         set_used_mdlw(h, 1);
-        model_work_set((s16)h, a, (s16)y, EDIT_TEX[i], 0x900, 2);
-        y += 0x32;
+        model_work_set((s16)h, a, (s16)(10 + i * 0x32), EDIT_TEX[i], 0x900, 2);
     }
 }
 

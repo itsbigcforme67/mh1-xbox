@@ -579,6 +579,7 @@ select 0x005382B0 0x00538538 edit07
 main 0x0015AED0 0x0015B300 sprite/trans2
 main 0x001611F0 0x00161478 sprite/sysw
 main 0x0015B930 0x0015BBDC sprite/putspr2
+main 0x0015B300 0x0015B648 sprite/putspr3
 main 0x0015B650 0x0015B810 sprite/putspr
 main 0x00169300 0x001698A4 prim/prim2
 main 0x00169DA0 0x0016A004 emw/emw01
@@ -2166,3 +2167,15 @@ lobby 0x005B4B20 0x005B4D2C b/lb_by152
 lobby 0x0053AB50 0x0053AFC8 b/lb_by153
 lobby 0x00538A70 0x00539220 b/lb_by154
 lobby 0x00539510 0x00539A84 b/lb_by155
+main 0x0011DE60 0x0011E278 model/light05
+main 0x00123F60 0x00124310 model/crmdl03
+main:rodata 0x00358480 0x00358498 model/crmdl03
+main 0x00121280 0x00121380 cp/cp03
+main 0x00134A40 0x00134C1C pl/plx09
+main 0x00113E50 0x00114280 hit/hite
+main 0x00152260 0x001523D8 pl/plx10
+main 0x0014F870 0x0014F9A8 pl/plx11
+main 0x0014AD80 0x0014AF14 pl/plegg2
+main 0x0013EA40 0x0013EB0C pl/plx12
+main 0x00124F80 0x00125060 model/crmdl04
+main 0x0011E9E0 0x0011EAAC load/lf04
