@@ -1684,7 +1684,7 @@ lobby:rodata 0x0065DA50 0x0065DAFC lb/lbuie
 lobby:rodata 0x00654D80 0x00654DA4 lb/lbshp
 main 0x00131FB0 0x00132160 menu/menu37
 main 0x0012B5A0 0x0012B688 menu/menu38
-main 0x00152C70 0x00152D48 pl/pl_itemck
+main 0x00152BC0 0x00152D48 pl/pl_itemck
 main 0x00100230 0x00100238 sys/adx_err
 main 0x0011E9D0 0x0011E9D8 tex/reltex
 main 0x00162E20 0x00162F08 font/dsp03

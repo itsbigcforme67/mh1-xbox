@@ -421,7 +421,7 @@ segments:
       - [0x052760, asm, text/Pl_item_stack]
       - [0x052B60, c, pl/pl64]
       - [0x052BB8, asm, text/Pl_item_num_ck2]
-      - [0x052C70, c, pl/pl_itemck]
+      - [0x052BC0, c, pl/pl_itemck]
       - [0x052D48, asm, text/Get_Active_itemnum]
       - [0x052D50, c, pl/pl65]
       - [0x052D64, asm, text/Get_Use_itemnum]

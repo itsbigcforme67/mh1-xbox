@@ -2012,6 +2012,8 @@ long Pl_item_num_ck2(PLW *pl, u16 id) {
     for (i = 0; i < 20; i++) {
         if (pl->item[i].id == id) {
             if (Item_data[id][3] == 0xFF) {
+                if ((pl && pl) && pl) {
+                }
                 return 0xFF;
             }
             return (s16)(Item_data[id][3] - pl->item[i].num);
