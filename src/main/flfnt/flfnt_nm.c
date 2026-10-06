@@ -153,8 +153,8 @@ void flfntSetPalData(int idx, u32 c0, u32 c1, u32 c2, u32 c3) {
 
     idx = idx % 32;
     off = idx << 6;
-    a = (c0 & 0xFF000000) ? 0x80 : 0;
     d = np->palbuf + off;
+    a = (c0 & 0xFF000000) ? 0x80 : 0;
     col[0] = c0;
     col[1] = c0 >> 8;
     col[2] = c0 >> 16;
@@ -186,16 +186,16 @@ void flfntSetPalData(int idx, u32 c0, u32 c1, u32 c2, u32 c3) {
     }
     i = np->palh[idx];
     if (i != 0) {
-        P8 *d2;
         P8 *s2;
+        P8 *d2;
         flLockPalette(0, i, lock, 2);
         s2 = (P8 *)(np->palbuf + off);
         d2 = *(P8 **)(lock + 0x10);
         d2->a = s2->a;
         d2->b = s2->b;
         s2++;
-        d2++;
         d2->a = s2->a;
+        d2++;
         d2->b = s2->b;
         flUnlockPalette(i, s2);
     }
@@ -517,12 +517,12 @@ int flnecAscii2Sjis(int c) {
 
 void flnecCheckFont(int idx) {
     FNP *p = np;
-    u16 *slot = &p->cache[(u16)idx];
+    u16 *slot = (u16 *)((int)((u16)idx << 1) + (int)p) + 413;
 
     if (*slot == 0xFF) {
         *slot = p->next;
         np->next++;
-        np->load[np->x60] = idx;
+        np->load[np->x60] = (s16)idx;
         np->x60++;
     }
 }

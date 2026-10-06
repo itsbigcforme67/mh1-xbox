@@ -1,8 +1,4 @@
-/* Near-match, not built: reward_mv (0x292D40-0x2932B8), the reward screen's
- * input handling (item list, pick, swap with the pouch). 9 of 351 instructions
- * differ: the original keeps the constant 2 in a2 and the masked key-repeat
- * result in a0 (this build uses a0 and a1). Everything else, including the
- * order of stores around the se_req calls, matches. */
+/* SLPM_654.95 0x292D40-0x2932BC: reward_mv, the reward screen input handling (item list, pick, swap with the pouch). */
 #include "reward.h"
 
 int Pl_item_num_ck3();

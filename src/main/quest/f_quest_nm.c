@@ -276,8 +276,9 @@ void Quest_start(void)
 void Quest_retire_set(void)
 {
     if (Quest_clear_ck(1) == 0) {
+        game_w.x0D5 = 7;
+        quest_w.x06 = 7;
         quest_w.x36 = -1;
-        quest_w.x06 = game_w.x0D5 = 7;
         if (Online_ck() != 0) {
             net_send_sys(0xC, game_w.master);
         }
@@ -312,11 +313,13 @@ int arg;
         }
         return;
     }
-    tbl = mission_area + *(s32 *)(mission_area + 4);
-    if ((u16)arg == 0xFF) {
-        game_w.x15 = game_w.stage = *(s32 *)(tbl + game_w.master * 0x10);
+    tbl = (u8 *)(*(s32 *)(mission_area + 4) + (int)mission_area);
+    arg = (u16)arg;
+    if (arg == 0xFF) {
+        tbl += game_w.master * 0x10;
+        game_w.x15 = game_w.stage = *(s32 *)tbl;
     } else {
-        player_work[(u16)arg].stg = *(s32 *)(tbl + (u16)arg * 0x10);
+        player_work[arg].stg = *(s32 *)(tbl + arg * 0x10);
     }
 }
 
@@ -927,7 +930,7 @@ u16 stolen_item_stack(int item, s16 num)
     } else {
         for (i = 0, q = (u8 *)&quest_w; i < 5; i++, q += 4) {
             if (*(u16 *)(q + 0x98) == (u16)item) {
-                mx = *((s8 *)Item_data + 3 + (item & 0xFFFF) * 16);
+                mx = *((s8 *)((s8 *)Item_data + 3) + (item & 0xFFFF) * 16);
                 if (num > 0 && quest_w.x98[i].f >= mx) {
                     quest_w.x98[i].f = mx;
                     r = 3;
