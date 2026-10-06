@@ -1236,6 +1236,9 @@ game 0x0055FC30 0x0055FD80 em/em_cmd_r92
 game 0x0055FD80 0x0055FEC0 em/em_cmd_r93
 game 0x00560820 0x00560960 em/em_cmd_r94
 game 0x00563330 0x005634C4 em/em_cmd_r95
+game 0x0055C440 0x0055C5B4 em/em_cmd_r96
+game 0x0062B160 0x0062BD9C shell/shell06_r01
+game:rodata 0x0068A030 0x0068A054 shell/shell06_r01
 lobby 0x00533A00 0x00535238 lb/lb_talk
 lobby:rodata 0x00654AD0 0x00654B1C lb/lb_talk
 lobby 0x00604520 0x006045AC f/lb_z131

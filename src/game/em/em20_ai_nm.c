@@ -7469,16 +7469,17 @@ static void kyusyu_senkai_ret_005FCBA0(EMW *em) {
 }
 
 void em20_material_sub(EMW *em, int type, u8 *tbl) {
-    int i = 0;
     u8 *base = *(u8 **)((u8 *)em->mdl + 0x10);
+    int i = 0;
     EM20W *w = (EM20W *)em->ex;
     s32 *p = (s32 *)(tbl + type * 0x8C);
+    u8 *m;
 
     if (0 < p[1]) {
         s32 *num = &p[1];
 
         do {
-            u8 *m = base + p[2] * 0x4C;
+            m = base + p[2] * 0x4C;
 
             *(f32 *)(m + 0x10) = em->x798;
             switch (type) {

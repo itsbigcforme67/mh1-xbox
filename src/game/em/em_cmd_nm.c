@@ -502,12 +502,17 @@ u8 *em_cmd_area_move_ck(EMW *em, u8 *p) {
         tbl = em_area_mv_tbl[em->kind];
         stg = em->x73A;
         q += 1;
-        if (em->stg != stg && stg != 0xFF && (v = tbl[stg]) != 0) {
-            if (v == 2) {
-            } else if (v == 1) {
-            } else {
-            }
-        } else {
+        if (em->stg == stg || stg == 0xFF) {
+            goto clr;
+        }
+        v = tbl[stg];
+        switch (v) {
+        case 1:
+            break;
+        case 2:
+            break;
+        case 0:
+        clr:
             em->x827 = 0;
             em->x828 = 0;
             em->x829 = 0;
@@ -515,6 +520,7 @@ u8 *em_cmd_area_move_ck(EMW *em, u8 *p) {
             em->x882 = 0;
             em->x883 = 0;
             CMD_SKIP(em, q, 3);
+            break;
         }
         break;
     case 1:
@@ -1174,12 +1180,12 @@ u8 *em_cmd_pl_ang_sel(EMW *em, u8 *p) {
     case 0:
         n = *p;
         p += 3;
-        if (!(0 < n)) {
+        if (!(n > 0)) {
         } else {
             v = *p;
             t = em->x844;
             p += 1;
-            if (((s32)(0.5f + ((65536.0f * v) / 360.0f)) & 0xFFFF) >= em->x904[t] && t != -1) {
+            if (em->x904[t] <= ((s32)(0.5f + ((65536.0f * v) / 360.0f)) & 0xFFFF)&& t != -1) {
             } else {
                 more = 1;
                 do {
