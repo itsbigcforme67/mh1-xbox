@@ -1154,13 +1154,15 @@ int whence;
     return gAskRom.cur - ask_load_adrs;
 }
 
-u16 to_zenkaku(int c)
+u16 to_zenkaku(c)
+u16 c;
 {
     u16 r;
 
     r = asc2jis[c & 0xFF];
     if ((r & 0xFF00) == 0x2500 && !(c & 0x100)) {
         r = (r & 0xFF) | 0x2400;
+        return r;
     }
     return r;
 }

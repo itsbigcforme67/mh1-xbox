@@ -49,7 +49,7 @@ typedef struct PFLP8 { s16 p[4]; u32 col; s16 uv[4]; } PFLP8;
  * x1 (rect {x0, y0, x1, y1}; asm 0x2755D0) */
 void disp_cursorC(s16 x, s16 x1, s16 y, s16 h, s16 n, int col) {
     PFLP4 q;
-    s16 t;
+    u16 t;
 
     q.p[0] = x;
     q.p[2] = x1;
@@ -253,7 +253,7 @@ void DispFrameListA(void *fr, char *title, int cur, int alpha) {
 }
 
 void DispFrameListOptionArrow(void *fr) {
-    s16 t = (System_timer & 0x3F) << 10;
+    u16 t = (System_timer & 0x3F) << 10;
     DispFrameListOptionArrowC(fr, (((s8)(48.0f * flSin(0.0000958738f * (f32)t)) + 0xAF) << 8) | 0xF0200020);
 }
 
