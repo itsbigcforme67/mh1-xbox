@@ -1902,3 +1902,4 @@ main 0x00194A00 0x00194A48 fl/pl_ps2io01
 main 0x00194AE0 0x00194B5C fl/pl_ps2io02
 main 0x00194DF0 0x00194FF4 fl/tarpad01
 main 0x00173E60 0x00174058 fl/flnode01
+main 0x00174170 0x00174290 fl/flnode02
