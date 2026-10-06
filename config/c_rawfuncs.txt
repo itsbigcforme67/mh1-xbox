@@ -46,3 +46,6 @@ main 0x17CD60 0x58 PS2SHADER_FLMATRIX_COPY mn
 main 0x17D150 0x2F0 flPS2AddMatrix_0002
 main 0x17D440 0x25C flPS2AddMatrix_0003
 main 0x17E310 0x3B0 flPS2AddMatrix_000D
+lobby 0x00536F20 0x794 shop_select_items
+lobby 0x00539F80 0x5E0 lb_process_kyoukaListProg
+lobby 0x0053A560 0x1AC lb_process_use_item
