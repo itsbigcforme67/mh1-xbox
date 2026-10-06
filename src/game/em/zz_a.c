@@ -1,4 +1,4 @@
-/* em01 AI, run 7 (with em01_uvmove 0x00574AD0 as a static before its callers, and em01_effect_move after ef_move_sub: one translation unit, as in the original): sound_call_sub_00574CD0 .. ef_move_sub_00574EE0 (game.bin 0x00574AD0-0x0057A7E0). Matching functions of em01_ai_nm.c (that file holds the
+/* em01 AI, run 7: sound_call_sub_00574CD0 .. ef_move_sub_00574EE0 (game.bin 0x00574CD0-0x0057A778). Matching functions of em01_ai_nm.c (that file holds the
  * whole AI including the near-matches). See em01_ai_nm.c for the description. */
 #include "em.h"
 #include "game.h"

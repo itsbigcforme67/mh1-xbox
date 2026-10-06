@@ -244,6 +244,7 @@ int Ncm_spr_kill_all_ex_BG();
 int ms_network_bb_regulation(void) {
     int ret = 0;
     int sw;
+    s16 t;
 
     switch (net_common_w.step) {
     case 0:
@@ -258,8 +259,8 @@ int ms_network_bb_regulation(void) {
         Ncm_mssage_disp_req(0x1F);
         if (Ncm_mmbb_spr_create() != 0) {
             net_common_w.timer = 0xA;
-            net_common_w.x08 = 1;
             net_common_w.step++;
+            net_common_w.x08 = 1;
             Ncm_spr_set_diarog_b();
             Ncm_spr_D_MENU_set(3, 2);
             net_bgm_set();
@@ -284,8 +285,8 @@ int ms_network_bb_regulation(void) {
                 }
             }
             if (net_shot_ok_ck(1) != 0) {
-                net_common_w.x06 = 0xA;
                 net_common_w.step++;
+                net_common_w.x06 = 0xA;
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 Ncm_spr_kill(0x100000);
@@ -304,8 +305,9 @@ int ms_network_bb_regulation(void) {
         Ncm_mssage_disp_req(0x13);
         Ncm_mssage_disp_req(0x14);
         Ncm_mssage_disp_req(0x16);
-        net_common_w.x06 = net_common_w.x06 - 1;
-        if (net_common_w.x06 <= 0) {
+        t = net_common_w.x06 - 1;
+        net_common_w.x06 = t;
+        if (t <= 0) {
             if (net_common_w.x08 == 0) {
                 Ncm_spr_kill_all_ex_BG();
                 net_common_w.step++;
@@ -353,8 +355,8 @@ int ms_network_bb_edit_mmbbid(void) {
         if (Ncm_mmbb_spr_create() != 0) {
             Ncm_mssage_disp_req(0x1F);
             net_common_w.timer = 0xA;
-            net_common_w.sel = 1;
             net_common_w.step++;
+            net_common_w.sel = 1;
             Ncm_spr_set_diarog_m();
             Ncm_spr_D_MENU_set(4, 2);
             net_bgm_set();
@@ -390,7 +392,7 @@ int ms_network_bb_edit_mmbbid(void) {
                 } else {
                     net_common_w.step = 0x64;
                 }
-            } else if (net_shot_ng_ck(0x200) != 0) {
+            } else if (net_shot_ng_ck() != 0) {
                 Ncm_spr_kill(0x200);
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);

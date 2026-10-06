@@ -121,6 +121,10 @@ EM="$EM src/game/em/em14_nm.c src/game/em/em14.c src/game/em/em14_horm.c src/gam
 EM="$EM src/game/em/em15_nm.c src/game/em/em15.c src/game/em/em15_senkai.c"
 # kind 3 Kelbi: em03
 EM="$EM src/game/em/em03.c"
+# kind 2 Fatalis: em02; kind 7 Lao-Shan Lung: em07; kind 10 (village NPC): em10; kind 33: em33 (round 21)
+EM="$EM src/game/em/em02_ai_nm.c src/game/em/em02.c src/game/em/em02_init.c"
+EM="$EM src/game/em/em07_ai_nm.c src/game/em/em07.c"
+EM="$EM src/game/em/em10_nm.c src/game/em/em33.c"
 WEAK_EM="em20_nm em17_nm em27_nm em04_nm em09_nm em08_ai_nm em21_nm em14_nm em15_nm"
 # Monster C that is still on other agents' branches (not merged into main):
 # when this checkout has the branch and main does not have the file yet, the
@@ -297,6 +301,12 @@ for f in $GAME; do
     src/game/em/em03.c) ABI="-Dem_frame_check2=rtabi_em_frame_check2 -DEft13_set_em_scl=rtabi_Eft13_set_em_scl" ;;
     src/game/em/em04_act.c|src/game/em/em04_nm.c|src/game/em/em20_ai_nm.c|src/game/em/em21_nm.c)
         ABI="-DEft13_set_em_scl=rtabi_Eft13_set_em_scl" ;;
+    # round 21: Fatalis (em02), Lao-Shan Lung (em07), em33
+    src/game/em/em02_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
+             -DEft15_set3=rtabi_Eft15_set3" ;;
+    src/game/em/em07_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
+             -DEft15_set3=rtabi_Eft15_set3 -DEft02_set3=rtabi_Eft02_set3" ;;
+    src/game/em/em33.c) ABI="-Dem_frame_check2=rtabi_em_frame_check2 -DEft13_set_em_scl=rtabi_Eft13_set_em_scl" ;;
     src/game/em/em14_nm.c|src/game/em/em15_nm.c|src/game/em/em17_nm.c)
         ABI="-DEft13_set_em_scl=rtabi_Eft13_set_em_scl -DEft15_set3=rtabi_Eft15_set3" ;;
     esac

@@ -735,8 +735,9 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
         room = 0x1E;
     }
     l->nline = 0;
+    i = 0;
     o = (s8 *)l->text[0];
-    for (i = 0; i < 2; i++, o += 0x1F) {
+    for (; i < 2; i++, o += 0x1F) {
         int left;
         s8 *d = o;
         if (*s == 0) {
@@ -754,7 +755,7 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
             uc = c & 0xFF;
             if ((uc >= 0x80 && uc < 0xA0) || (uc >= 0xE0 && uc < 0x100)) {
                 if (left >= 2) {
-                    *d = c;
+                    *d = uc;
                     left -= 2;
                     d[1] = s[1];
                     s += 2;
@@ -763,7 +764,7 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
                     break;
                 }
             } else {
-                *d = c;
+                *d = uc;
                 s++;
                 d++;
                 left--;
