@@ -630,7 +630,7 @@ static void hit_hit_sub_em(HSHL *sh, HCHR *pl, HCHR *c, HBODY *sb, HBODY *eb, f3
     f32 a;
     f32 b;
     f32 pw;
-    s16 dmg;
+    int dmg;
 
     sh->xCB = 0;
     meat = &em_meat_tbl[c->kind][eb->num];

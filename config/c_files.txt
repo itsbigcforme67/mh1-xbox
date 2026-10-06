@@ -1347,3 +1347,11 @@ main 0x00159380 0x001593B8 pl/taru01
 main 0x0011E4C0 0x0011E540 model/light01
 main 0x0011E860 0x0011E904 model/light02
 main 0x00123C70 0x00123C80 model/light03
+main 0x00230060 0x002306BC net/cnmsg01
+main 0x00230710 0x00230758 net/cnmsg03
+main 0x00235260 0x002352DC net/cpinet01
+main 0x002359D0 0x00235B6C net/cpinet02
+main 0x00235BF0 0x00235C4C net/cpinet03
+main 0x00235E00 0x00235E3C net/cpinet04
+main 0x00236110 0x0023615C net/cpinet05
+main 0x00236370 0x002368BC net/cpinet06
