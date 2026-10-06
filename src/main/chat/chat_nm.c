@@ -26,7 +26,7 @@ void SetTextureStage(int);
 void SetFilterMode(int);
 void SetTrnslMode(int, int);
 void reload_tex(int, int);
-void flfntLocate(int, int);
+void flfntLocate(int, s16);
 void flfntSetSize(int, int);
 void font_set_palette(int);
 void font_print(void *, ...);

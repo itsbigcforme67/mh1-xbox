@@ -1,4 +1,4 @@
-/* chat19: DispFrameListOptionArrowC. Run built from the whole-file C in chat_nm.c (declarations copied from there). */
+/* chat20: sword_zokusei. Run built from the whole-file C in chat_nm.c (declarations copied from there). */
 /* chat_nm - f_chat (SLPM_654.95 0x001755D0-0x0017BF80, main.bin): sprite/frame helpers, chat log, pit-menu
  * windows (status, equipment), reibun (preset phrases). Near-match C, not built; matching runs are
  * built from it as chatNN.c. Field meanings are guesses. */
@@ -263,19 +263,34 @@ extern REIBUN str_tbl_reibun0[];
 
 int softkey_ck();
 
-void DispFrameListOptionArrowC(void *fr, int col) {
-    PFLP8 q;
+void sword_zokusei(u8 *w, int x, s16 y) {
+    int k;
 
-    q.p[2] = 0xE;
-    q.p[1] = FS16(fr, 2);
-    q.p[3] = F8(fr, 5);
-    q.col = col;
-    q.p[0] = 0.8f * ((f32)FS16(fr, 0) - 8.0f);
-    *(u32 *)&q.uv[0] = 0x1A00A6;
-    *(u32 *)&q.uv[2] = 0x2E0094;
-    flps0008(&q);
-    q.p[0] = 0.8f * ((8.0f + (f32)(FS16(fr, 0) + (F8(fr, 4) * F8(fr, 6)))) - 18.0f);
-    q.uv[0] = 0x94;
-    q.uv[2] = 0xA6;
-    flps0008(&q);
+    flfntSetSize(0x12, 0x12);
+    font_set_palette(0);
+    k = -1;
+    if (w[0xB] != 0) {
+        k = 0;
+    } else if (w[0xC] != 0) {
+        k = 1;
+    } else if (w[0xD] != 0) {
+        k = 2;
+    } else if (w[0xE] != 0) {
+        k = 3;
+    } else if (w[0xF] != 0) {
+        k = 4;
+    } else if (w[0x10] != 0) {
+        k = 5;
+    } else if (w[0x11] != 0) {
+        k = 6;
+    }
+    if (k >= 0) {
+        flfntLocate(x, y);
+        font_print(lit_4221, equip_exp_str_sw_attr[k]);
+        y += 0x14;
+    }
+    if (w[0xA] != 0) {
+        flfntLocate(x, y);
+        font_print(lit_4222, (int)w[0xA]);
+    }
 }
