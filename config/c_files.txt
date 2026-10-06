@@ -1426,7 +1426,7 @@ main 0x00223070 0x0022318C cam/camarea05
 main 0x00223DE0 0x00223E8C cam/camr2n01
 main 0x0010A210 0x0010A44C hit/tri01
 main 0x001267C0 0x00127440 option/option01
-main 0x0011CDF0 0x0011D270 item/item01
+main 0x0011CDF0 0x0011D328 item/item01
 main 0x0011D560 0x0011D59C item/item02
 main 0x0011D840 0x0011DB04 item/item03
 main 0x00271FB0 0x00272010 ud/udmisc01
@@ -1766,6 +1766,7 @@ main 0x00235E00 0x00235E3C net/cpinet04
 main 0x00236110 0x0023615C net/cpinet05
 main 0x00236370 0x002368BC net/cpinet06
 main 0x002352E0 0x00235344 net/cpinet07
+main 0x00235350 0x00235364 net/cpinet13
 main 0x00235370 0x002355B4 net/cpinet08
 main 0x00235600 0x0023571C net/cpinet09
 main 0x00235850 0x002358D8 net/cpinet10
@@ -1884,3 +1885,4 @@ main 0x00216890 0x0021691C flfnt/flfnt02
 main 0x00216AC0 0x00216DD4 flfnt/flfnt03
 main 0x00217480 0x00217544 flfnt/flfnt04
 main 0x00217DE0 0x00217E48 flfnt/flfnt05
+main 0x001309A0 0x00130C70 menu/menu40

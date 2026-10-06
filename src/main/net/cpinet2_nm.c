@@ -40,8 +40,8 @@ int CpInetTcpConnected(void) {
     return Inet_interface_status[0] == 3;
 }
 
-void CpInetInterfaceProblemEnable(int on) {
-    Inet_interface_problem_disable[0] = !on;
+int CpInetInterfaceProblemEnable(int on) {
+    return Inet_interface_problem_disable[0] = !on;
 }
 
 /* Polls for network trouble (device change, DHCP lease lost, PPP drop) and latches it in Inet_interface_problem_status

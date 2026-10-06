@@ -199,10 +199,10 @@ s16 b;
     int n;
 
     if (a > b) {
-        s16 t = a;
+        s16 t = b;
 
-        a = b;
-        b = t;
+        b = a;
+        a = t;
     }
     n = *(u8 *)((u8 *)Item_preparation_tbl + (a + a));
     if (n == 0) {
