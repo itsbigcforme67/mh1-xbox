@@ -491,13 +491,89 @@ set4:
 }
 
 
-/* original bytes: build/raw/itembox_sortup.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int itembox_sortup()
-{
-#include "itembox_sortup.inc"
+s32 itembox_sortup(s32 pad) {
+    SW4 tmp4;
+    SW6 tmp6;
+    u8 *w;
+    u8 *i2;
+    u8 *u;
+    u8 *i1;
+    u8 *p3;
+    u8 *p10;
+    u8 first;
+    u8 second;
+    u8 col;
+    w = ib;
+    *(s16 *)D_39DAD2 = F(u8, w, 3) + 0x14;
+    p3 = w + 3;
+    switch (F(u8, w, 5)) {
+    case 0:
+        ListSelect(p3, pad, 2);
+        if ((u16)pad & 0x20) {
+            F(s8, ib, 0x1F) = 0;
+            F(u8, ib, 5) = F(u8, ib, 5) + 1;
+            F(u8, ib, 6) = 0;
+            se_req(7, 0x13, 0);
+        } else {
+            *(s8 *)D_39DAD0 = 0;
+        }
+        break;
+    case 1:
+        switch (F(u8, w, 6)) {
+        case 0:
+            pad = ib_select_sub(pad) & 0xFFFF;
+            if (pad & 0x40) {
+                pad = (u16)(pad & 0xFFBF);
+                *(u8 *)D_39DAD0 = 0;
+                F(u8, ib, 5) = 0;
+            } else if (pad & 0x20) {
+                F(u8, ib, 0xA) = F(u8, F(u8, ib, 3) + (int)ib, 8);
+                F(u8, ib, 6) = F(u8, ib, 6) + 1;
+                se_req(7, 0x25, 0);
+            }
+            break;
+        case 1:
+            pad = ib_select_sub(pad) & 0xFFFF;
+            if (pad & 0x40) {
+                pad = (u16)(pad & 0xFFBF);
+                F(u8, ib, 6) = 0;
+            } else if (pad & 0x20) {
+                second = F(u8, ib, 0xA);
+                first = *(u8 *)((int)(ib + 8) + F(u8, ib, 3));
+                col = F(u8, ib, 3);
+                if (first != F(u8, ib, 0xA)) {
+                    u = User_data;
+                    if (col == 0) {
+                        tmp4 = *(SW4 *)((first << 2) + (int)u + 0x1C4);
+                        *(SW4 *)((first << 2) + (int)u + 0x1C4) = *(SW4 *)((second << 2) + (int)u + 0x1C4);
+                        *(SW4 *)((F(u8, ib, 0xA) << 2) + (int)u + 0x1C4) = tmp4;
+                    } else {
+                        i1 = sortup_idx_chk(first, second);
+                        i2 = sortup_idx_chk(F(u8, ib, 0xA));
+                        w = ib;
+                        p10 = w + 0xA;
+                        tmp6 = ((SW6 *)(u + 0x44))[F(u8, F(u8, w, 3) + (int)w, 8)];
+                        ((SW6 *)(u + 0x44))[F(u8, F(u8, w, 3) + (int)w, 8)] = ((SW6 *)(u + 0x44))[F(u8, w, 0xA)];
+                        ((SW6 *)(u + 0x44))[F(u8, w, 0xA)] = tmp6;
+                        if (i1 != 0) {
+                            *i1 = *p10;
+                        }
+                        if (i2 != 0) {
+                            *i2 = F(u8, F(u8, ib, 3) + (int)ib, 8);
+                        }
+                    }
+                    F(u8, ib, 6) = 0;
+                    se_req(7, 0x26, 0);
+                } else {
+                    se_req(7, 0x15, 0);
+                }
+            }
+            break;
+        }
+        break;
+    }
+    return pad;
 }
-#endif
 
 void yes_no_select(u16 pad) {
     u8 *t;
