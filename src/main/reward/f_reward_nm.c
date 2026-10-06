@@ -25,7 +25,7 @@ s16 reward_mv(void)
     keys = (Psw[2] | (u16)reward_key_repeat(Psw[2], Psw[0])) & 0xFFFF;
     switch (reward_w.x0) {
     case 0:
-        ListSelect(&w->x1, keys);
+        ListSelect(&w->x1, keys, 2);   /* a2 = 2 left over from the switch compare (asm 0x292DB8) */
         if ((u16)keys & 0x20) {
             if (w->x1 == 0) {
                 PitMenu.x12 = 0;
