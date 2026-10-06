@@ -52,7 +52,7 @@ void Lb_eat()
             lb_sys.x68 = 0;
             Lbc_init_network_work(pl);
         }
-        break;
+        return;
     case 7:
         if (lb_sys.x76 == 0) {
             lb_sys.x06 = 0;
@@ -60,7 +60,7 @@ void Lb_eat()
             Lb_Pl_act_set(pl, 0, 0x4D, 0);
             Lbc_init_network_work();
         }
-        break;
+        return;
     case 8:
         break;
     }

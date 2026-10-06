@@ -1,4 +1,4 @@
-/* lbui, run 18: plaza_chatTrans .. plaza_chatTrans (lobby.bin 0x0059D250-0x0059D314): the matching functions of lbui_nm.c. */
+/* lbui, run 18: plaza_checkMyStatusTrans .. plaza_checkMyStatusTrans (lobby.bin 0x0059C2F0-0x0059C324): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
@@ -18,23 +18,6 @@ void put_button_help(int a, int b, int c, u16 d);
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
-void plaza_chatTrans(void) {
-    s16 idx;
-
-    switch (CW->chatmode) {
-    case 0:
-        Put_megaphone(0x1F6, 0x32, 3);
-        idx = 0;
-        break;
-    case 1:
-        Put_megaphone(0x1F6, 0x32, 1);
-        idx = 1;
-        break;
-    default:
-        Put_megaphone(0x1F6, 0x32, 2);
-        idx = 2;
-        break;
-    }
-    flfntSetSize(0x16, 0x16);
-    font_print_double(0x22E, 0x33, 1, 0, tl_etc[3 + idx]);
+void plaza_checkMyStatusTrans(void) {
+    disp_status(0xD8, 0x50, CW->x440, CW->x448, my_user_mini_data, *(s8 *)((u8 *)pNet + 0x24), 3, D_3C73B4);
 }

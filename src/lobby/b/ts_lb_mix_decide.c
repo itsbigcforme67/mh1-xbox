@@ -1,4 +1,6 @@
-/* lbmix, run 3: lb_mix_tag_decide .. lb_mix_tag_decide (lobby.bin 0x00535E80-0x00536140): the matching functions of lb_mix_nm.c. */
+/* lb_mix - lobby.bin 0x00535240-0x00536708. Lobby forge/item-trade shop
+ * (Lb_mix): list building, item select, buy/sell/make. lbShop.mode 0 = make
+ * (mix recipes), 1 = buy, 2 = sell. */
 #include "lobby.h"
 #include "pl.h"
 #include "em.h"
@@ -78,61 +80,30 @@ int Item_preparation();
 
 /* can `qty` of item `id` be bought / is it held (mode 2) */
 
-void lb_mix_tag_decide(void) {
-    UD_ITEM *it = User_data[0].item;
-    int i;
-    int cnt;
-    LB_SHOPITEM *sl = shopList;
-    int v;
-    int pages;
+void lb_mix_decide(void) {
+    int id;
+    LB_MIXDATA *m;
 
-    memset(shopList, 0, 0x5000);
+    if (lbShop.mode != 2) id = lbShop.tbl[lbShop.cur];
+    else id = User_data[0].item[lbShop.cur].id;
     switch (lbShop.mode) {
-    case 0:
-        cnt = lb_mix_makeMixList(lbShop.mode);
-        lbShop.x18 = 0;
-        lbShop.x8E = 3;
-        if (Ud_item_search_space() != 0) lbShop.help = shop_mix_help[6];
-        else lbShop.help = shop_mix_help[7];
-        break;
     case 1:
-        lbShop.tbl = mix_shop_tbl;
-        if (Ud_item_search_space(lbShop.mode) != 0) lbShop.help = shop_mix_help[8];
-        else lbShop.help = shop_mix_help[9];
-        cnt = 0;
-        Ud_item_search_space();
-        for (i = 0; i < 100; i++) {
-            v = lbShop.tbl[i];
-            if (v == 0xFFFF) break;
-            strcpy(sl->name, item_str[v]);
-            sl->price = Item_data[v].buy;
-            if (Lb_mix_item_checkMax(v & 0xFFFF, 1) == 0) sl->state = 1;
-            else sl->state = 0;
-            cnt++;
-            sl++;
-        }
-        lbShop.x8E = 0;
-        lbShop.x18 = 1;
+        Gold_add(-(lbShop.qty * shopList[lbShop.cur].price), lbShop.cur, lbShop.mode);
+        Ud_item_stack(id & 0xFFFF, (s16)lbShop.qty);
+        cnWrap_SoundRequest(8);
         break;
     case 2:
-        lbShop.help = shop_mix_help[10];
-        for (i = 0; i < 20; i++, sl++, it++) {
-            if (it->num <= 0) {
-                sl->state = 2;
-            } else {
-                u16 id = it->id;
-                strcpy(sl->name, item_str[id]);
-                sl->price = Item_data[id].sell;
-                sl->state = 0;
-            }
-        }
-        lbShop.x8E = 0;
-        cnt = 0x14;
-        lbShop.x18 = 1;
+        Gold_add(lbShop.qty * shopList[lbShop.cur].price, lbShop.cur, lbShop.mode);
+        cnWrap_SoundRequest(8);
+        Ud_item_stack(id & 0xFFFF, (s16)-lbShop.qty);
+        break;
+    case 0:
+        m = mixData;
+        m += lbShop.cur;
+        Gold_add(-m->price, lbShop.cur, lbShop.mode);
+        cnWrap_SoundRequest(8);
+        Ud_item_stack((s16)Item_preparation(&player_work[*(u8 *)0x3F34C1], m->no, *(s16 *)m->rec, 1) & 0xFFFF, 1);
         break;
     }
-    pages = cnt / 7;
-    lbShop.count = cnt;
-    if (cnt % 7 != 0) pages++;
-    lbShop.x6D = pages;
+    lbShop.help = 0;
 }

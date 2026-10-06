@@ -1,4 +1,4 @@
-/* lbui, run 22: Lbs_MatchStart .. Lbs_MatchStart (lobby.bin 0x005BDC70-0x005BDC90): the matching functions of lbui_nm.c. */
+/* lbui, run 22: GetRoomRule .. GetRoomRule (lobby.bin 0x005BC6B0-0x005BC6BC): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
@@ -18,7 +18,6 @@ void put_button_help(int a, int b, int c, u16 d);
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
-int Lbs_MatchStart(void) {
-    cnLBS_MatchStart();
-    return 1;
+char *GetRoomRule(void) {
+    return RoomRule;
 }
