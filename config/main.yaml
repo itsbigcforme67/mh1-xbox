@@ -565,6 +565,8 @@ segments:
       - [0x06AC90, c, fl/fmsGetFrame]
       - [0x06ACAC, asm, text/fmsReleaseFrame]
       - [0x06ACC8, asm, text/flCreateClayHandle]
+      - [0x06AEC0, c, fl/clay01]
+      - [0x06B054, asm, text/flPS2CreateClay]
       - [0x06B060, c, fl/clay02]
       - [0x06B10C, asm, text/flPS2GetMLCLAY]
       - [0x06D8F0, c, fl/clay03]

@@ -17,12 +17,12 @@ typedef struct MLCLAY {
 } MLCLAY;
 
 void flPS2GetMLCLAY(CLAYS *c, MLCLAY *out) {
-    s32 d;
     u8 *h;
+    u8 *q;
 
-    h = flPS2GetSystemBuffAdrs(c->x14);
-    d = (s32)h + 0x30;
+    q = h = flPS2GetSystemBuffAdrs(c->x14);
     flMemcpy(out, h, 0x24);
-    out->x08 = d;
-    out->x10 = d + ((*(s32 *)(h + 0x1C) + 0xF) & ~0xF);
+    h += 0x30;
+    out->x08 = (s32)h;
+    out->x10 = (s32)h + ((*(s32 *)(q + 0x1C) + 0xF) & ~0xF);
 }
