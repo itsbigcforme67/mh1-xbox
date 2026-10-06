@@ -2113,8 +2113,9 @@ static void em_fly13_005C6970(EMW *em, EM15W *w) {
         w->spd[1] = (s32) em->ang[1];
         w->spd[2] = 0;
         speed_add(em, w->spd);
+        temp_f1 = CalcDistanceXZ(em->pos, em->tgt_pos);
         em->work08 -= 1;
-        if ((CalcDistanceXZ(em->pos, em->tgt_pos) <= 500.0f) || (em->work08 < 0)) {
+        if (temp_f1 <= 500.0f || em->work08 < 0) {
             em->x05 += 1;
             NextStage_No_Set(em);
             NextStage_Dir_Set(em, em->tgt_pos);
@@ -2137,10 +2138,10 @@ static void em_fly13_005C6970(EMW *em, EM15W *w) {
         em->work08 = 0x258;
         Em_Next_Stage_Pos(em);
         temp_v1 = em->x92F;
-        if ((u16) em->x73A != temp_v1) {
-            if (temp_v1 == 0xFF) {
-                goto block_16;
-            }
+        if ((u16) em->x73A == temp_v1 || temp_v1 == 0xFF) {
+            WyvernAreaMove(em);
+            em15_act_set(em, 2, 9, 1);
+        } else {
             if (em->x8C3 == 0) {
                 em->x73A = (s16) temp_v1;
                 em->x829 = temp_v1 & 0xFFFF;
@@ -2149,10 +2150,6 @@ static void em_fly13_005C6970(EMW *em, EM15W *w) {
             }
             em15_act_set(em, 2, 0xD, 1);
             WyvernAreaMove(em);
-        } else {
-block_16:
-            WyvernAreaMove(em);
-            em15_act_set(em, 2, 9, 1);
         }
         break;
     case 4:
@@ -2572,20 +2569,14 @@ void em_fly27(EMW *em, EM15W *w) {
         em->x3F4 = 0;
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 >= 0xE39) {
-            if (temp_v1 >= 0xF1C8) {
-                goto block_7;
-            }
-            if (temp_v1 >= 0x8000) {
-                em_char_set(em, 0x79, 0, 0);
-                return;
-            }
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
+            pl_flag_set((PLW *) em, 0x20000);
+            em_char_set(em, 0x77, 0, 0);
+        } else if (temp_v1 >= 0x8000) {
+            em_char_set(em, 0x79, 0, 0);
+        } else {
             em_char_set(em, 0x78, 0, 0);
-            return;
         }
-block_7:
-        pl_flag_set((PLW *) em, 0x20000);
-        em_char_set(em, 0x77, 0, 0);
         break;
     case 1:
         if (em_frame_check2(em, 0, 8.0f) != 0) {
@@ -2714,20 +2705,18 @@ block_8:
                 em_act_set(em, 2, 0x1D);
             }
         }
-        temp_a0 = em->ang[1];
-        temp_v1 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - temp_a0) & 0xFFFF;
+        temp_v1 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - em->ang[1]) & 0xFFFF;
         if (temp_v1 < 0x8001) {
             if (temp_v1 < 0x200) {
-                var_v1 = temp_a0 + temp_v1;
+                em->ang[1] += temp_v1;
             } else {
-                var_v1 = temp_a0 + 0x200;
+                em->ang[1] += 0x200;
             }
-        } else if (temp_v1 >= 0xFE01) {
-            var_v1 = temp_a0 + temp_v1;
+        } else if (temp_v1 > 0xFE00) {
+            em->ang[1] += temp_v1;
         } else {
-            var_v1 = temp_a0 - 0x200;
+            em->ang[1] -= 0x200;
         }
-        em->ang[1] = var_v1;
         break;
     }
 }
@@ -2773,20 +2762,18 @@ block_8:
                 em_act_set(em, 2, 0x1E);
             }
         }
-        temp_a0 = em->ang[1];
-        temp_v1 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - temp_a0) & 0xFFFF;
+        temp_v1 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - em->ang[1]) & 0xFFFF;
         if (temp_v1 < 0x8001) {
             if (temp_v1 < 0x200) {
-                var_v1 = temp_a0 + temp_v1;
+                em->ang[1] += temp_v1;
             } else {
-                var_v1 = temp_a0 + 0x200;
+                em->ang[1] += 0x200;
             }
-        } else if (temp_v1 >= 0xFE01) {
-            var_v1 = temp_a0 + temp_v1;
+        } else if (temp_v1 > 0xFE00) {
+            em->ang[1] += temp_v1;
         } else {
-            var_v1 = temp_a0 - 0x200;
+            em->ang[1] -= 0x200;
         }
-        em->ang[1] = var_v1;
         break;
     }
 }
@@ -2810,22 +2797,16 @@ void em_fly31(EMW *em, EM15W *w) {
         pl_flag_set((PLW *) em, 0x20000);
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 >= 0xE39) {
-            if (temp_v1 >= 0xF1C8) {
-                goto block_8;
-            }
-            if (temp_v1 >= 0x8000) {
-                em_char_set(em, 0x79, 0, 0);
-                return;
-            }
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
+            em_char_set(em, 0x77, 0, 0);
+        } else if (temp_v1 >= 0x8000) {
+            em_char_set(em, 0x79, 0, 0);
+        } else {
             em_char_set(em, 0x78, 0, 0);
-            return;
         }
-block_8:
-        em_char_set(em, 0x77, 0, 0);
         break;
     case 1:
-        if (em_frame_check2(em, 0, 3e-45f) != 0) {
+        if (em_frame_check2(em, 0, 8.0f) != 0) {
             em->x05 += 1;
         case 2:
             temp_a2 = em->ang[1];
@@ -2956,20 +2937,14 @@ void em_fly33(EMW *em, EM15W *w) {
         em->x3F4 = 0;
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 >= 0xE39) {
-            if (temp_v1 >= 0xF1C8) {
-                goto block_8;
-            }
-            if (temp_v1 >= 0x8000) {
-                em_char_set(em, 0x79, 0, 0);
-                return;
-            }
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
+            pl_flag_set((PLW *) em, 0x20000);
+            em_char_set(em, 0x77, 0, 0);
+        } else if (temp_v1 >= 0x8000) {
+            em_char_set(em, 0x79, 0, 0);
+        } else {
             em_char_set(em, 0x78, 0, 0);
-            return;
         }
-block_8:
-        pl_flag_set((PLW *) em, 0x20000);
-        em_char_set(em, 0x77, 0, 0);
         break;
     case 1:
         if (em_frame_check2(em, 0, 8.0f) != 0) {
@@ -3041,20 +3016,14 @@ void em_fly34(EMW *em, EM15W *w) {
         em->x3F4 = 0;
         w->tgt_ang = Em_Calc_angY(em->pos, em->tgt_pos);
         temp_v1 = (w->tgt_ang - em->ang[1]) & 0xFFFF;
-        if (temp_v1 >= 0xE39) {
-            if (temp_v1 >= 0xF1C8) {
-                goto block_8;
-            }
-            if (temp_v1 >= 0x8000) {
-                em_char_set(em, 0x79, 0, 0);
-                return;
-            }
+        if (temp_v1 <= 0xE38 || temp_v1 >= 0xF1C8) {
+            pl_flag_set((PLW *) em, 0x20000);
+            em_char_set(em, 0x77, 0, 0);
+        } else if (temp_v1 >= 0x8000) {
+            em_char_set(em, 0x79, 0, 0);
+        } else {
             em_char_set(em, 0x78, 0, 0);
-            return;
         }
-block_8:
-        pl_flag_set((PLW *) em, 0x20000);
-        em_char_set(em, 0x77, 0, 0);
         break;
     case 1:
         if (em_frame_check2(em, 0, 8.0f) != 0) {

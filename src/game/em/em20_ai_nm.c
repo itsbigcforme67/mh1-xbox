@@ -2561,8 +2561,8 @@ static void em_fly10_005F0730(EMW *em, EM20W *w) {
     case 1:
         em20_senkai_target(em, 2);
         em20_fly_adjy(em, 1);
-        temp_f1 = em->pos[1] + 100.0f;
-        em->pos[1] = temp_f1;
+        em->pos[1] += 100.0f;
+        temp_f1 = em->pos[1];
         if (!(temp_f1 < em->tgt_pos[1])) {
             em->x05 += 1;
         }
@@ -2734,12 +2734,11 @@ static void em_fly13_005F0CF0(EMW *em, EM20W *w) {
         temp_v0_2 = gp_ptr_ck(em, em->area->x0);
         if (temp_v0_2 == 0) {
             em->tgt_pos[0] = temp_v0->width / 2.0f;
-            var_f0 = temp_v0->depth / 2.0f;
+            em->tgt_pos[2] = temp_v0->depth / 2.0f;
         } else {
             em->tgt_pos[0] = (*temp_v0_2)[0];
-            var_f0 = (*temp_v0_2)[2];
+            em->tgt_pos[2] = (*temp_v0_2)[2];
         }
-        em->tgt_pos[2] = var_f0;
         w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
         em->ang[1] = (s32) w->dang;
         w->x18 = 1;
@@ -2753,8 +2752,9 @@ static void em_fly13_005F0CF0(EMW *em, EM20W *w) {
         w->spd[1] = (s32) em->ang[1];
         w->spd[2] = 0;
         speed_add(em, w->spd);
+        temp_f1 = CalcDistanceXZ(em->pos, em->tgt_pos);
         em->work08 -= 1;
-        if ((CalcDistanceXZ(em->pos, em->tgt_pos) <= 1000.0f) || (em->work08 < 0)) {
+        if (temp_f1 <= 1000.0f || em->work08 < 0) {
             em->x05 += 1;
             NextStage_Dir_Set(em, em->tgt_pos);
         }
@@ -2776,10 +2776,10 @@ static void em_fly13_005F0CF0(EMW *em, EM20W *w) {
         em->work08 = 0x258;
         Em_Next_Stage_Pos(em);
         temp_v1 = em->x92F;
-        if ((u16) em->x73A != temp_v1) {
-            if (temp_v1 == 0xFF) {
-                goto block_21;
-            }
+        if ((u16) em->x73A == temp_v1 || temp_v1 == 0xFF) {
+            WyvernAreaMove(em);
+            em20_act_set(em, 2, 9, 1);
+        } else {
             if (em->x8C3 == 0) {
                 em->x73A = (s16) temp_v1;
                 em->x829 = temp_v1 & 0xFFFF;
@@ -2788,10 +2788,6 @@ static void em_fly13_005F0CF0(EMW *em, EM20W *w) {
             }
             em20_act_set(em, 2, 0xD, 1);
             WyvernAreaMove(em);
-        } else {
-block_21:
-            WyvernAreaMove(em);
-            em20_act_set(em, 2, 9, 1);
         }
         break;
     case 4:
@@ -2856,7 +2852,7 @@ static void em_fly15_005F1120(EMW *em, EM20W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05 = temp_a2 + 1;
-            em20_to_fly(em, 0);
+            em20_to_fly(em, 1);
         }
         break;
     }
