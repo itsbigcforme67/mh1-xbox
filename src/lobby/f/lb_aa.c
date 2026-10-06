@@ -64,7 +64,7 @@ int c;
             bit *= 2;
         } while (i < 8);
     }
-    Lb_send_chat(a, b);
+    Lb_send_chat(a, b, c);
 }
 int Lb_PlayerStatus(u8 *pl, int idx) {
     char sp50[0x40];
