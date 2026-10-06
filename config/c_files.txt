@@ -1892,3 +1892,4 @@ main 0x001BBE60 0x001BC1FC net/netsyn08
 main:rodata 0x0035EC70 0x0035ECA4 net/netsyn08
 lobby 0x005D9B20 0x005D9C68 f/lb_gdr24
 lobby 0x005DA880 0x005DA99C f/lb_gdr25
+main 0x001BA8E0 0x001BB000 net/netsyn10
