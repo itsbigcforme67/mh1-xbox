@@ -1833,7 +1833,7 @@ u8 *ins_wds(u8 *p, int rt, int len, int total)
 
     end = p + total;
     while (p < end) {
-        if (*(s16 *)(p + 2) >= rt) {
+        if (*(u16 *)(p + 2) < rt) {
             break;
         }
         p += 5;
@@ -3530,12 +3530,12 @@ prefer:
 int concat_bslen(int pos, int end)
 {
     int n;
-    s8 c;
     HCHAR *h;
+    int c;
 
     c = 0;
-    n = 0;
     h = &hchar[pos];
+    n = 0;
     while (pos < end) {
         c = h->x15;
         if (c == 0) {
@@ -4796,11 +4796,12 @@ int kouho_makedisp(int pos, int len, KH *k, u16 *buf)
 {
     int n;
 
-    if (k != 0 && !(k->flag & 0x80)) {
+    if (k == 0 || (k->flag & 0x80)) {
+        return roman_makedisp(pos, len, buf, 0);
+    } else {
         n = jiritu_makedisp(k, buf);
         return n + roman_makedisp(pos + k->x06, len - k->x06, buf + n, 0);
     }
-    return roman_makedisp(pos, len, buf, 0);
 }
 
 int jiritu_makedisp(KH *k, u16 *buf)
