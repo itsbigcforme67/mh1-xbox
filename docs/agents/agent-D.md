@@ -944,3 +944,18 @@ differ from the original in the near-match C (file in parentheses; *_nm.c is not
 - 22F200    64 CngNetAQBuffEmptyCheck: 14 off of 16 (net/cng_nm.c)
 - 22ED90    52 CngNetAQSessionWait: 9 off of 13 (net/cng_nm.c)
 - 216050    48 flSndOutputMode: 8 off of 13 (sound/flsnd00_nm.c)
+
+## Lobby overlay tail, 0x5EE618 - 0x610288 (agent D, 10 Oct 2026)
+Map (what is where; V = village/offline path, O = online-only; checked by names and callers, not traced at runtime):
+- 5EE618-5EFFE0 PNG/BMP texture glue (plPNGSetContextFromImage, BsCreateTexturePixelFromPNG/BMP, flCreate*From*_mem_err): O (browser images).
+- 5EFFE0-5F1DB0 lobby info CSV, game style, HTML tag type parsing (parsetag, special_tag_check): O.
+- 5F21D8-5F6F50 browser state bodies (MainBsInitialize, BsBody01-06, AppendWork 9.8 KB, CheckHTMLSource): O.
+- 5F7430-5FD6xx browser cursor, scrolling, form handling (moveCursor, dragScroll, eachObjAction, FormHandler, linkPage): O.
+- 5FE800-602430 tagAct_NNN handlers and tag parameter parsers (get_numeric_parameter3-5, get_tag_in_parameter*): O.
+- 602430-609400 table / text layout (Disp_Text, tagprintf, set_TABLE_*, check_rowspan/colspan, chack_TableTagClose*, the *_t twins): O.
+- 609700-60D6E0 ITEM BOX (Lb_ItemBox_*, itembox_*, kosuu_select, ItemboxWindow*, Disp_lb_item_box): V (also used online).
+- 60D710-60E330 plaza chat log: O.
+- 60E330-610288 eft25 (NPC effect spawned from the town NPC scripts lbnpc/lbem04/09/10): V (guess from callers, the PC runtime stubs func_60E2B0 = Eft25_set).
+Unwritten-in-C functions after the previous owners: 102 functions, about 80 KB, ALL browser (O): the m2c + lbauto pipeline (tools/lbauto.py with the
+existing drafts in the scratchpad `drafts/`) compiled none of them byte-identical (0 of 102 OK; 40 within 10-30 percent, mostly register order).
+Because of the village priority I worked the item box (V) instead; the browser tail is untouched.
