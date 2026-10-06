@@ -1895,3 +1895,7 @@ main 0x002358E0 0x00235940 net/cpinet14
 main 0x00235970 0x002359D0 net/cpinet15
 main 0x00151350 0x001513A0 pl/plx05
 main 0x0011D450 0x0011D554 item/item04
+main 0x00235720 0x00235850 net/cpinet16
+main:rodata 0x0036CE20 0x0036CE50 net/cpinet16
+main 0x00235C50 0x00235CC8 net/cpinet17
+main 0x00235CD0 0x00235DF4 net/cpinet18
