@@ -40,14 +40,14 @@ void plaza_movePlazaTrans(ARG_plaza_movePlazaTrans_arg0 *arg0) {
                 font_print_double((s16) ( (temp_s0_2 << 0x30) >> 0x30), var_s4, 1, 4);
             } else {
                 font_set_palette(0);
-                flfntLocate(temp_s5, var_s4);
+                flfntLocate();
                 font_print(&lit_2316, &sp80);
                 flfntLocate((s16) ( (temp_s0_2 << 0x30) >> 0x30), var_s4);
                 font_print(&lit_2316, &spD0);
             }
         } else if (var_s2 < 0xA) {
             font_set_palette(0);
-            flfntLocate(temp_s5, var_s4);
+            flfntLocate();
             font_print(&lit_2317);
         }
         var_s3 += 1;

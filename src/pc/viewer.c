@@ -652,8 +652,11 @@ static void quest_back(void)
     if (rt_quest_load(quest_no) != 0)
         return;
     st = rt_quest_monster_stage(&k);
-    if (st >= 0 && st != stage_no)
+    if (!getenv("RT_QUEST_STAGE") || st < 0)
+        st = rt_game_stage();           /* the quest's start stage (base camp) */
+    if (st != stage_no)
         load_stage_models(st);
+    stage_no = st;
     rt_game_init(stage_no);
     rt_hud_init();
     rt_monster_spawn(1, p, (int)(0.6f * 65536.0f / 6.2831853f));
@@ -893,15 +896,25 @@ int main(int argc, char **argv)
     rt_set_file_loader(afs_entry);
     rt_set_em_model_loader(em_model_load);  /* before the quest's em_create_model calls */
     if (quest_no) {
-        /* --quest N: the mission file's monsters (rt_em.c); the hunt's
-         * stage is where the quest's own monster starts */
+        /* --quest N: Quest_init + Quest_start as game11 does. The hunt
+         * starts where the game starts it: the quest's start stage
+         * (game_w.stage, the base camp), as a quest accepted in the
+         * village does. Test aid RT_QUEST_STAGE=1: start on the stage of
+         * the quest's own monster instead (the old scripted-test set-up);
+         * --stage N overrides both. */
         int k, st;
         if (rt_quest_load(quest_no) != 0)
             fprintf(stderr, "quest %d: no mission file\n", quest_no);
-        else if ((st = rt_quest_monster_stage(&k)) >= 0) {
-            fprintf(stderr, "quest %d: monster kind %d on stage %d\n", quest_no, k, st);
-            if (!stage_given)
-                stage_no = st;
+        else {
+            st = rt_quest_monster_stage(&k);
+            fprintf(stderr, "quest %d: monster kind %d on stage %d, start stage %d\n",
+                    quest_no, k, st, rt_game_stage());
+            if (!stage_given) {
+                if (getenv("RT_QUEST_STAGE") && st >= 0)
+                    stage_no = st;
+                else
+                    stage_no = rt_game_stage();
+            }
         }
     } else if (play)
         rt_quest_free_hunt();           /* Quest_init: the free-hunt tables (HUD clock etc.) */

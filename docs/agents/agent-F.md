@@ -355,3 +355,11 @@ under ~10 instructions off: `python3 tools/perm.py lobby FUNC file.c -j1 --stop-
 already registered).
 Ideas not done: write http_test_00/04/05 (m2c switch output needs hand cleanup), table/layout code 0x5FD000-0x608D00 (about 60 functions), the drawing
 functions 0x5DBA80-0x5E0F00 (drawInnerImg5/6, DrawPageObj, DrawPulldown, ...).
+
+## Lobby session 6: chain assignment, mutation tools, near-matches
+- `andi rX,zero,0xFFFF/0xFF` in the original is a CHAIN ASSIGNMENT through a narrower member: `F(s8, ib, 0xB) = F(u16, ib, 8) = 0;` (inner store sh/sb zero, outer store gets the unfolded masked
+  zero). Fixed Lb_ItemBox_open (linked), Lb_stage_load (lb_pl_place inline: `pl->ang[1] = *(u16 *)&pl->ang_y = ang;`, linked; ang_y is s16 in PLW so cast), Lb_ItemBox_mv (chain u8->s16).
+- Linked: sortup_idx_chk, kosuu_select, ItemboxWindowCursorX (statement order x,y,w,h found with a permutation script), Lb_ItemBox_open, Lb_stage_load, Lb_npc_mv, guild_trans_ot0, BsQuit00_Init, tagAct_602 (`v > 1` not `v >= 2`).
+- `(int)row + idx * 24` (not idx first) fixed the St_unique_tbl row address order. A static inline helper is not copied into lbf_runs run files: add it by hand.
+- Tools used (scratch, build/scr, not committed): hill-climb on safe source edits (>= / > swaps, ++ forms, adjacent assignment swaps) scored by the align metric took Lb_guild 39->10, lb_basic_master 21->12 differing insns.
+- Still near-match: item box itembox_stock (4), cursor_mv, sortup, pickup, equipchange, sellout, ItemboxWindowX, Disp_lb_item_box, Lb_ItemBox_mv (6, scheduling only); eft25_m/t (frame differs); Plaza_chatlog_mv (7), Plaza_disp_chatlog, plaza_disp_chat_log_sub; Lb_guild (~10), lb_basic_master (~12), lb_rule_seet_set (large).

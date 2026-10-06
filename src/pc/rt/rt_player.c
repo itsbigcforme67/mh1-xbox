@@ -229,6 +229,16 @@ void rt_player_tick(int no)
                     p->pos[0], p->pos[2], hp, t[0], t[1], t[2]);
         }
     }
+    if (getenv("RT_PL_WARP")) {     /* test aid: "tick,x,z": put the hunter at x,z (same height) at that tick */
+        static int tk;
+        int t = 0;
+        float x, z;
+        if (sscanf(getenv("RT_PL_WARP"), "%d,%f,%f", &t, &x, &z) == 3 && ++tk == t) {
+            player_work[no].pos[0] = x;
+            player_work[no].pos[2] = z;
+            fprintf(stderr, "rt_player: warped to %.0f %.0f\n", x, z);
+        }
+    }
     if (getenv("RT_PL_DIE")) {      /* test aid: "t1,t2,..": the hunter faints (the game's Pl_die_set) at those ticks */
         static int tk;
         void Pl_die_set(PLW *pl);

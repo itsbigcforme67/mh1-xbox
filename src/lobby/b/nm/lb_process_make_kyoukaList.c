@@ -125,7 +125,7 @@ void lb_process_make_kyoukaList(void) {
         lbShop.count = 3;
     } else {
         lbShop.count = 4;
-        F(u32, &shopList2, 0) = (u32) ((temp_s1 / 10) * *(s32 *)((int)&lvup_price + (temp_v0 * 4)));
+        F(u32, &shopList2, 0) = (u32) ((temp_s1 / 10) * *(s32 *)(&lvup_price[temp_v0 * 4]));
         if ((u32) *(u8 *)0x3C6FE0 < (u32) F(u32, &shopList2, 0)) {
             F(s16, &shopList2, 0x24) = 1;
         } else {

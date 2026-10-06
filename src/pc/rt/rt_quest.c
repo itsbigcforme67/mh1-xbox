@@ -80,6 +80,7 @@ void em_create_model(int slot)
         fprintf(stderr, "rt_quest: em_create_model slot %d kind %d\n", slot, kind);
     if (em_model_fn)
         em_model_fn(slot, kind);      /* the host's model and the motions of the slot */
+    rt_snd_em_add(kind);              /* its sounds (port 6) */
 }
 void release_enemy_model(int slot)
 {

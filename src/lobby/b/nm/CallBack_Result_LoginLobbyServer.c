@@ -90,7 +90,7 @@ void CallBack_Result_LoginLobbyServer(CNET_RES res) {
         case 9:                                     /* switch 3 */
             To_LogOut(4, unksp19);
         default:                                    /* switch 1 */
-            return;
+            break;
         }
     }
 }
