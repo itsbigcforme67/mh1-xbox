@@ -3257,12 +3257,12 @@ u8 *em_cmd_range_ck(EMW *em, u8 *p) {
             i = n;
         } else {
             i = 0;
-            EM_FIELD(em, f32 *, 0x3AC) = f;
-            if (n > 0) {
+            *(f32 *)&em->x3AC = f;
+            if (0 < n) {
                 w = (f32 *)em;
                 for (;;) {
                     v = EM_FIELD(w, f32 *, 0x810);
-                    if (EM_FIELD(em, f32 *, 0x3AC) <= v) {
+                    if (*(f32 *)&em->x3AC <= v) {
                         if (!(v < 0.0f)) {
                             break;
                         }
@@ -3277,7 +3277,7 @@ u8 *em_cmd_range_ck(EMW *em, u8 *p) {
         }
         em->x82A = i;
         j = 0;
-        if ((u8)em->x82A > 0) {
+        if (0 < (u8)em->x82A) {
             do {
                 q = cmd_end_search(em, next_cmd_search(em, q), 0x83, 0xFF);
                 j += 1;
@@ -3291,14 +3291,13 @@ u8 *em_cmd_range_ck(EMW *em, u8 *p) {
     case 4:
     case 5:
         for (;;) {
-            r = cmd_end_search(em, q, 0x83, 0xFF);
-            if (r[1] != 0xFF) {
-                q = r + 2;
-                continue;
+            q = cmd_end_search(em, q, 0x83, 0xFF);
+            if (q[1] == 0xFF) {
+                q += 2;
+                break;
             }
-            break;
+            q += 2;
         }
-        q = r + 2;
         break;
     case 0xFF:
         break;
@@ -4554,10 +4553,11 @@ void NextStage_Dir_Set(EMW *em, f32 *out) {
 }
 
 void em_cdm_act_flag_ck(EMW *em) {
-    s32 cnt;
     s32 i;
-    s8 j;
+    s32 cnt;
+    s32 j;
     u8 n;
+    u8 m;
 
     switch (em->x82B) {
     case 0:
@@ -4579,17 +4579,10 @@ void em_cdm_act_flag_ck(EMW *em) {
         EM_FIELD(em, s8 *, 0x880) = 1;
         em->x881 = 1;
         em->x882 = 0;
-        n = *(u8 *)0x3F34C3;
+        m = *(u8 *)0x3F34C3;
         j = 0;
-        if (n > 0) {
-            for (;;) {
-                if (em->x914 & (1 << j)) {
-                    break;
-                }
-                j += 1;
-                if (!(j < n)) {
-                    break;
-                }
+        if (0 < m) {
+            while (!(em->x914 & (1 << j)) && ++j < m) {
             }
         }
         em->x883 = j;

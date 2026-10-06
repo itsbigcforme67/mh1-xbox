@@ -5405,10 +5405,10 @@ void em21_effect_move(EMW *em) {
 
 static void hire_req_set_0060C0C0(EMW *em, EM21W *w, u8 mode) {
     w->hire_mode = mode;
-    if (w->hire_mode == 1 && (s16)(0.2f * (f32)em->x792) >= em->x302) {
+    if (w->hire_mode == 1 && em->x302 <= (s16)(0.2f * (f32)em->x792)) {
         w->hire_mode = 2;
     }
-    if (w->hire_mode == 3 && (s16)(0.2f * (f32)em->x792) < em->x302) {
+    if (w->hire_mode == 3 && em->x302 > (s16)(0.2f * (f32)em->x792)) {
         w->hire_mode = 0;
     }
 }

@@ -1206,6 +1206,7 @@ game 0x00604AE0 0x00604DBC em/em21_r24
 game 0x00605DC0 0x006060E4 em/em21_r25
 game:rodata 0x006896A0 0x006896C0 em/em21_r25
 game 0x00608B00 0x00608CF4 em/em21_r26
+game 0x0060C0C0 0x0060C180 em/em21_r27
 lobby 0x00533A00 0x00535238 lb/lb_talk
 lobby:rodata 0x00654AD0 0x00654B1C lb/lb_talk
 lobby 0x00604520 0x006045AC f/lb_z131

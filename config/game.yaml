@@ -639,6 +639,7 @@ segments:
       - [0x0D5374, asm, text/sound_call_sub_00608D00]
       - [0x0D5380, c, em/em21_r12]
       - [0x0D8144, asm, text/hire_move_sub2_0060BAD0]
+      - [0x0D8740, c, em/em21_r27]
       - [0x0D8800, c, em/em21_r13]
       - [0x0D8A18, asm, text/em21_act_act_set]
       - [0x0D8A20, c, em/em21]
