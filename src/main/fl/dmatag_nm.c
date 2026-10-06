@@ -16,13 +16,14 @@ u32 *flPS2DmaAddCntTag(u32 *p, int qwc, int irq) {
 
 u32 *flPS2DmaAddNextTag(u32 *p, int qwc, unsigned long addr, int irq) {
     unsigned long a = addr & 0x0FFFFFFF;
-    unsigned long spr = 0;
-
+    long spr = 0;
+    u32 w;
     if ((addr & 0x70000000) == 0x70000000) {
         spr = (int)0x80000000;
     }
+    w = qwc + 0x20000000;
     *(u128 *)p = 0;
-    p[0] = qwc + 0x20000000;
+    p[0] = w;
     p[1] = a | spr;
     if (irq == 1) {
         p[0] |= 0x80000000;
