@@ -1757,16 +1757,15 @@ u8 *end;
 int tag;
 {
     s16 *w = w0;
-    u8 *p;
 
     w[0] = tag;
     w[1] = rec[1];
-    p = rec + 2;
+    rec += 2;
     ((u8 *)w)[4] = 0;
-    if (p[0] < 0xC) {
-        p++;
+    if (rec[0] < 0xC) {
+        rec++;
     }
-    getkbuf(p);
+    getkbuf((u8 *)w + 5, rec);
 }
 
 int dic_getallwd(int id, int a, int b, u8 *out)
@@ -2479,14 +2478,12 @@ int flush_head(void)
     if (temp_page == old_temp && suji_mode == old_suji && entry2upd == 0) {
         return 0;
     }
-    p[0] = temp_page % 256;
-    p[1] = temp_page / 256;
-    p += 2;
-    p[0] = gaku_mode % 256;
-    p[1] = gaku_mode / 256;
-    p += 2;
-    p[0] = suji_mode % 256;
-    p[1] = suji_mode / 256;
+    *p++ = temp_page % 256;
+    *p++ = temp_page / 256;
+    *p++ = gaku_mode % 256;
+    *p++ = gaku_mode / 256;
+    *p++ = suji_mode % 256;
+    *p = suji_mode / 256;
     if (seek_dic(0) == -1) {
         return -1;
     }
@@ -3047,14 +3044,10 @@ int newwdlen(WD *w)
 {
     int extra;
 
-    if (w->x08 == 0) {
-        if (w->x07 >= 0x2D) {
-            goto three;
-        }
-        extra = 2;
-    } else {
-three:
+    if (w->x08 != 0 || w->x07 >= 0x2D) {
         extra = 3;
+    } else {
+        extra = 2;
     }
     return w->len + 3 + extra + setkbuflen(w->tango);
 }

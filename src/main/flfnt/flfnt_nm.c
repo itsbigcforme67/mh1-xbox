@@ -397,8 +397,8 @@ int flfntSjis2Jis(u32 c) {
 
 int flfntSjis2Index(u32 c) {
     int j = flfntSjis2Jis(c);
-    int hi = (j >> 8) - 0x21;
-    int idx = (hi * 0x5E) + (j & 0xFF) - 0x21;
+    int hi = ((j >> 8) - 0x21) * 0x5E;
+    int idx = hi + ((j & 0xFF) - 0x21);
     if (idx >= 0x1E80) {
         idx = -1;
     }
