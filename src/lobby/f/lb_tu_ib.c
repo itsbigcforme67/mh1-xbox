@@ -24,6 +24,10 @@ typedef struct IBS4 { u16 w[2]; } IBS4;
 #define IBNUM2(i) F(s16, User_data + (i) * 4, 0x37E)
 #define IBID(u, i) (((IBS4 *)(u))[i].w[0x37C / 2])
 #define IBNUM(u, i) (((IBS4 *)(u))[i].w[0x37E / 2])
+#define UPIDU(i) F(u16, (((int)(i) << 2) + (int)u), 0x1C4)
+#define UPNUMU(i) F(s16, (((int)(i) << 2) + (int)u), 0x1C6)
+#define IBID2U(i) F(u16, (((int)(i) << 2) + (int)u), 0x37C)
+#define IBNUM2U(i) F(s16, (((int)(i) << 2) + (int)u), 0x37E)
 int Ud_u_item_stack(u16, u16);
 void Menu_select_mv();
 void itembox_cursor_mv();
@@ -268,13 +272,224 @@ asm int itembox_pickup()
 }
 #endif
 
-/* original bytes: build/raw/itembox_equipchange.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int itembox_equipchange()
-{
-#include "itembox_equipchange.inc"
+s32 itembox_equipchange(s32 pad) {
+    u8 *e2;
+    int r;
+    u8 *w;
+    u8 *sp5;
+    u8 kind;
+    int st;
+    u8 *u;
+    int ok;
+    u8 eq;
+    u8 *e1;
+    u8 *p;
+    u = User_data;
+    w = ib;
+    sp5 = w + 5;
+    switch (*sp5) {
+    case 0:
+        if (F(s8, w, 0x1D) >= 0) {
+            if ((u16)pad & 0x20) {
+                F(s8, w, 0x1D) = -1;
+                F(u8, ib, 0x20) = 0xFF;
+                pad = 0;
+                se_req(7, 9, 0);
+                goto select;
+            }
+            F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
+            D_39DAD2[0] = F(s8, ib, 0x1D);
+            return 0;
+        }
+select:
+        w = ib;
+        D_39DAD2[0] = 0xA;
+        p = w + 0x1F;
+        if (F(u8, w, 0x1F) != 0) {
+            if ((u16)pad & 0x240) {
+                *p = 0;
+                se_req(7, 0x14, 0);
+            } else {
+                PageSelect(w + 0x18, pad, F(u8, w, 0x19));
+            }
+            pad = 0;
+        }
+        itembox_cursor_mv(ib + 9, pad, 1);
+        r = (u16)pad;
+        if (r & 0x20) {
+            w = ib;
+            F(u8 *, w, 0x14) = u + F(u8, w, 9) * 6 + 0x44;
+            w = ib;
+            ok = 0;
+            if (*F(u8 *, w, 0x14) != 0) {
+                F(s8, w, 0x18) = 0;
+                F(u8, ib, 0x19) = 2;
+                F(u8, ib, 1) = 0;
+                w = ib;
+                kind = F(u8 *, w, 0x14)[1];
+                ok = 1;
+                switch (kind) {
+                case 0:
+                    eq = u[0x457];
+                    break;
+                case 2:
+                    eq = u[0x458];
+                    break;
+                case 3:
+                    eq = u[0x459];
+                    break;
+                case 4:
+                    eq = u[0x45A];
+                    break;
+                case 5:
+                    eq = u[0x45B];
+                    break;
+                case 6:
+                case 7:
+                    eq = u[0x456];
+                    F(u8, w, 1) = 1;
+                    break;
+                }
+                if ((eq & 0xFF) != 0xFF) {
+                    F(u8 *, ib, 0x10) = u + (eq & 0xFF) * 6 + 0x44;
+                } else {
+                    F(u8 *, ib, 0x10) = 0;
+                }
+                w = ib;
+                e2 = F(u8 *, w, 0x14);
+                e1 = F(u8 *, w, 0x10);
+                if (e1 == e2) {
+                    if (F(u8, w, 1) != 0) {
+                        ok = 0;
+                        F(s8, w, 0x1D) = 0xC;
+                        F(u8, ib, 0x1E) = F(u8, ib, 9);
+                    }
+                    F(u8 *, ib, 0x14) = 0;
+                } else if (F(u8, w, 1) == 0) {
+                    st = Get_equip_data_ptr(e2, w)[2];
+                    if (!(st & ((u[1] == 0 ? 1 : 2) & 0xFF))) {
+                        ok = 0;
+                        F(s8, ib, 0x1D) = 0xE;
+                        F(u8, ib, 0x1E) = F(u8, ib, 9);
+                    } else {
+                        if (!(st & ((u[u[0x456] * 6 + 0x45] == 6 ? 4 : 8) & 0xFF))) {
+                            ok = 0;
+                            F(s8, ib, 0x1D) = 0xD;
+                            F(u8, ib, 0x1E) = F(u8, ib, 9);
+                        }
+                    }
+                } else {
+                    if (e1[1] != 7) {
+                        if (e2[1] == 7) {
+                            goto set4;
+                        }
+                    } else {
+set4:
+                        F(u8, w, 0x19) = 4;
+                    }
+                    w = ib;
+                    if (F(u8 *, w, 0x10)[1] != F(u8 *, w, 0x14)[1]) {
+                        F(u8, w, 1) = 2;
+                    }
+                }
+            }
+            if (ok == 1) {
+                F(u8, ib, 5) = F(u8, ib, 5) + 1;
+                se_req(7, 0x13, 0);
+            } else {
+                se_req(7, 0x15, 0);
+            }
+        } else if (r & 0x200) {
+            w = ib;
+            F(u8 *, w, 0x14) = u + F(u8, w, 9) * 6 + 0x44;
+            w = ib;
+            if (*F(u8 *, w, 0x14) != 0) {
+                D_39DAD2[0] = 0xA;
+                F(u8, w, 0x1F) = 2;
+                F(s8, ib, 0x18) = 0;
+                F(u8, ib, 0x19) = 4;
+                se_req(7, 0x11, 0);
+            } else {
+                se_req(7, 0x15, 0);
+            }
+        }
+    default:
+        break;
+    case 1:
+        r = (u16)pad;
+        if (r & 0x40) {
+            D_39DAD2[0] = 0xA;
+            *sp5 = 0;
+            pad = (u16)(pad & 0xFFBF);
+            se_req(7, 0x14, 0);
+        } else {
+            if (F(u8 *, w, 0x14) == 0) {
+                D_39DAD2[0] = 0x10;
+            } else if (F(u8 *, w, 0x10) == 0) {
+                D_39DAD2[0] = 0x11;
+            } else if (F(u8, w, 1) != 2) {
+                D_39DAD2[0] = 0xF;
+            } else {
+                D_39DAD2[0] = 0xB;
+            }
+            w = ib;
+            PageSelect(w + 0x18, pad, F(u8, w, 0x19));
+            if (r & 0x20) {
+                w = ib;
+                if (F(u8 *, w, 0x14) == 0) {
+                    r = Warehouse_equip_out(u, F(u8 *, w, 0x10)[1]);
+                } else {
+                    r = Warehouse_equip(u, F(u8, w, 9));
+                }
+                if (r == 1) {
+                    D_39DAD2[0] = 0x12;
+                    F(s8, ib, 0x18) = 0;
+                    F(u8, ib, 5) = F(u8, ib, 5) + 1;
+                    F(u8, ib, 6) = 0;
+                    se_req(7, 0x2D, 0);
+                    se_req(7, 0x13, 0);
+                } else {
+                    se_req(7, 0x15, 0);
+                }
+            }
+        }
+        break;
+    case 2:
+        D_39DAD2[0] = 0x12;
+        switch (F(u8, w, 6)) {
+        case 0:
+            if (!(F(u8, w, 1) & 1)) {
+                F(u8, w, 6) = F(u8, w, 6) + 1;
+            } else {
+                Lb_equip_set((u8 *)player_work + game_w.master * 0xA00, u, w + 6);
+                F(u8, ib, 6) = 2;
+            }
+            break;
+        case 1:
+            armor_set_myArmor(2, w, w + 6);
+            F(u8, ib, 6) = F(u8, ib, 6) + 1;
+            break;
+        case 2:
+            D_39DAD2[0] = 0x13;
+            F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
+            w = ib;
+            if (F(u8 *, w, 0x14) != 0) {
+                PageSelect(w + 0x18, pad, F(u8, w, 0x19));
+            }
+            if ((u16)pad & 0x20) {
+                F(u8, ib, 0x20) = 0xFF;
+                D_39DAD2[0] = 0xA;
+                F(u8, ib, 5) = 0;
+                se_req(7, 9, 0, 0xFF);
+            }
+            break;
+        }
+        pad = (u16)(pad & 0xFFBF);
+        break;
+    }
+    return pad;
 }
-#endif
+
 
 /* original bytes: build/raw/itembox_sortup.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */

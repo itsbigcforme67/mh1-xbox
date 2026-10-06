@@ -2320,6 +2320,8 @@ segments:
       - [0x132874, rodata, data/rodata_6661F4]
       - [0x133C50, .rodata, f/lb_gdr16]
       - [0x133C6C, rodata, data/rodata_6675EC]
+      - [0x134AC0, .rodata, f/lb_tu_ib]
+      - [0x134AE0, rodata, data/rodata_668460]
       - [0x134C70, .rodata, f/lb_ge2503]
       - [0x134CE4, rodata, data/rodata_668664]
   - [0x134E00]
