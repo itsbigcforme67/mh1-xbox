@@ -762,8 +762,6 @@ main 0x00155000 0x00155138 set/setwork
 main 0x00155140 0x001554D8 set/setwork2
 main 0x00158F20 0x00159378 pl/shell_work
 main 0x001593C0 0x00159408 pl/shell_work2
-main 0x00192E30 0x00192E38 fl/pv01
-main 0x00192FA0 0x00192FA8 fl/pv02
 main 0x00193150 0x00193344 fl/pv03
 lobby 0x005C5200 0x005C5378 f/lb_a01
 lobby 0x005C55D0 0x005C5678 f/lb_a02
@@ -2341,3 +2339,4 @@ main 0x0016E6E0 0x0016F284 fl/fldma01
 main 0x0016E6E0 0x0016F284 fl/fldma01
 main 0x00187D10 0x001887F8 fl/fltex01
 main 0x0022DEA0 0x0022DF28 aq/aqrun01
+main 0x00192E30 0x001930F8 fl/plfcv01
