@@ -3811,9 +3811,8 @@ void _cnet_RecvFromLbs_MatchBattleCode(void) {
 
     if (CnetSys_w.burst[7].state != 0 && CnetSys_w.rcat != 0x10) {
         if (CnetSys_w.rcat == 2) {
-            p = CNWP(0x30312);
             if (CnetSys_w.rres == 0) {
-                GetRecvDataString(p, recv_work);
+                GetRecvDataString(CNWP(0x30312), recv_work);
             } else {
                 res.val = -1;
                 __cnet_Recv_ServerMessage();
@@ -3831,9 +3830,8 @@ void _cnet_RecvFromLbs_MatchGameRule(void) {
 
     if (CnetSys_w.burst[7].state != 0 && CnetSys_w.rcat != 0x10) {
         if (CnetSys_w.rcat == 2) {
-            p = CNWP(0x30323);
             if (CnetSys_w.rres == 0) {
-                GetRecvDataString(p, recv_work);
+                GetRecvDataString(CNWP(0x30323), recv_work);
             } else {
                 res.val = -1;
                 __cnet_Recv_ServerMessage();
@@ -3847,17 +3845,15 @@ void _cnet_RecvFromLbs_MatchGameRule(void) {
 
 void _cnet_RecvFromLbs_MatchGameServerAddr(void) {
     CNET_RES res;
-    u8 *a;
 
     if (CNW(u8, 0xF34) != 0) {
         if (CnetSys_w.rcat == 2) {
-            a = CNWP(0x30300);
             if (CnetSys_w.rres == 0) {
                 res.val = 0;
-                GetRecvDataString(CNWP(0x30308), GetRecvDataString(a, recv_work));
+                GetRecvDataString(CNWP(0x30308), GetRecvDataString(CNWP(0x30300), recv_work));
             } else {
                 res.val = -1;
-                __cnet_Recv_ServerMessage(a);
+                __cnet_Recv_ServerMessage();
                 __cnet_Return_MatchInformation(res);
                 return;
             }
@@ -3938,9 +3934,12 @@ int cnLBS_Get_MatchInfomation(CNET_W5D4 *d) {
 
 void cnLBS_Get_GameServerAddress(u32 *addr, u16 *port) {
     int p;
-    u32 a0 = CnetSys_w.gsaddr[0];
-
-    *addr = (CnetSys_w.gsaddr[3] << 24 & 0xFF000000) | ((CnetSys_w.gsaddr[2] << 16 & 0xFF0000) | (a0 | (CnetSys_w.gsaddr[1] << 8 & 0xFF00)));
+    u32 v;
+    v = CnetSys_w.gsaddr[0];
+    v |= CnetSys_w.gsaddr[1] << 8 & 0xFF00;
+    v = (CnetSys_w.gsaddr[2] << 16 & 0xFF0000) | v;
+    v = (CnetSys_w.gsaddr[3] << 24 & 0xFF000000) | v;
+    *addr = v;
     p = (CnetSys_w.gsport[1] + (CnetSys_w.gsport[0] << 8)) & 0xFFFF;
     *port = (p << 8 & 0xFF00) | (p >> 8 & 0xFF);
 }

@@ -1,9 +1,67 @@
-/* cnlbs, run 10: __cnet_Return_MatchInformation .. cnLBS_Get_MatchInfomation (lobby.bin 0x005AC860-0x005ACB84): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 10: _cnet_RecvFromLbs_MatchBattleCode .. cnLBS_Get_MatchInfomation (lobby.bin 0x005AC690-0x005ACB84): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
 
 typedef struct { s16 a, b, c; } CPLACE3;
+
+void _cnet_RecvFromLbs_MatchBattleCode(void) {
+    CNET_RES res;
+    u8 *p;
+
+    if (CnetSys_w.burst[7].state != 0 && CnetSys_w.rcat != 0x10) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                GetRecvDataString(CNWP(0x30312), recv_work);
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        __cnet_SendReq_MatchGameRule();
+    }
+}
+
+void _cnet_RecvFromLbs_MatchGameRule(void) {
+    CNET_RES res;
+    u8 *p;
+
+    if (CnetSys_w.burst[7].state != 0 && CnetSys_w.rcat != 0x10) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                GetRecvDataString(CNWP(0x30323), recv_work);
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        __cnet_SendReq_MatchMcsIpAddr();
+    }
+}
+
+void _cnet_RecvFromLbs_MatchGameServerAddr(void) {
+    CNET_RES res;
+
+    if (CNW(u8, 0xF34) != 0) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                res.val = 0;
+                GetRecvDataString(CNWP(0x30308), GetRecvDataString(CNWP(0x30300), recv_work));
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        res.val = 0;
+        __cnet_Return_MatchInformation(res);
+    }
+}
 
 void __cnet_Return_MatchInformation(CNET_RES res) {
     if (res.val == -1) {

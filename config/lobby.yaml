@@ -940,7 +940,7 @@ segments:
       - [0x077E7C, asm, text/__cnet_Recv_UserIDandHandle]
       - [0x077F50, c, cnet/cnlbsi]
       - [0x0787D0, asm, text/_cnet_RecvFromLbs_MatchJoin]
-      - [0x078EE0, c, cnet/cnlbsj]
+      - [0x078D10, c, cnet/cnlbsj]
       - [0x079204, asm, text/cnLBS_Get_GameServerAddress]
       - [0x079320, c, cnet/cnlbsk]
       - [0x07940C, asm, text/__cnet_Recv_PatchData]
