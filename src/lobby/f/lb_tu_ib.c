@@ -3,6 +3,9 @@
 #include "lobby_f.h"
 extern u8 * ib;
 extern char item_box[];
+extern s16 D_39DAD2[16];   /* item box cursor/status bytes: separate objects so that the stores do not alias ib */
+extern s8 D_39DAD0[16];
+extern s8 D_39DAD1[16];
 typedef struct ITEMSLOT { u16 id; s16 num; } ITEMSLOT;
 extern u8 *ib;
 extern u8 User_data[];
@@ -132,13 +135,64 @@ s32 Lb_ItemBox_open(void) {
 }
 
 
-/* original bytes: build/raw/Lb_ItemBox_mv.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int Lb_ItemBox_mv()
-{
-#include "Lb_ItemBox_mv.inc"
+s32 Lb_ItemBox_mv(int arg0) {
+    s32 s0;
+    u8 *a;
+    s0 = arg0 & 0xFFFF;
+    F(s8, ib, 0) = 0;
+    a = ib;
+    switch (a[4]) {
+    case 0:
+        D_39DAD0[0] = 0;
+        if (!(s0 & 0x40)) {
+            ListSelect(a + 2, arg0, 5);
+            if (s0 & 0x20) {
+                arg0 = 0;
+                F(s8, ib, 3) = 0;
+                F(s16, ib, 8) = F(u8, ib, 0xB) = 0;
+                F(s8, ib, 0x1F) = 0;
+                F(s8, ib, 0x1D) = -1;
+                F(u8, ib, 0x1E) = 0xFF;
+                F(u8, ib, 4) = F(u8, ib, 4) + 1;
+                F(s8, ib, 5) = 0;
+                se_req(7, 0x13, 0, -1);
+    case 1:
+                *(u8 *)D_39DAD0 = 1;
+                switch (F(u8, ib, 2)) {
+                case 0:
+                    s0 = itembox_stock(arg0) & 0xFFFF;
+                    break;
+                case 1:
+                    s0 = itembox_pickup(arg0) & 0xFFFF;
+                    break;
+                case 2:
+                    s0 = itembox_equipchange(arg0) & 0xFFFF;
+                    break;
+                case 3:
+                    s0 = itembox_sortup(arg0) & 0xFFFF;
+                    break;
+                case 4:
+                    s0 = itembox_sellout(arg0) & 0xFFFF;
+                    break;
+                }
+                if ((u16)s0 & 0x40) {
+                    s0 = (u16)(s0 & 0xFFBF);
+                    *(u8 *)D_39DAD0 = 0;
+                    F(u8, ib, 4) = 0;
+                    se_req(7, 0x14, 0);
+                }
+            }
+        }
+        break;
+    }
+    if ((u16)s0 & 0x40) {
+        se_req(7, 0x14, 0);
+        return 0;
+    }
+    F(s8, ib, 0) = 1;
+    return 1;
 }
-#endif
+
 
 /* original bytes: build/raw/itembox_cursor_mv.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
@@ -148,13 +202,63 @@ asm void itembox_cursor_mv()
 }
 #endif
 
-/* original bytes: build/raw/itembox_stock.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm int itembox_stock()
-{
-#include "itembox_stock.inc"
+s32 itembox_stock(s32 pad) {
+    u16 left;
+    u8 *w;
+    u8 *u;
+    u = User_data;
+    w = ib;
+    switch (F(u8, w, 5)) {
+    case 0:
+        D_39DAD2[0] = 0;
+        if (F(u8, w, 0x1F) != 0) {
+            if ((u16)pad & 0x240) {
+                F(u8, w, 0x1F) = 0;
+                se_req(7, 0x14, 0);
+            }
+            pad = (u16)(pad & 0xFFBF);
+        } else if ((u16)pad & 0x200) {
+            F(u8, w, 0x1F) = 1;
+            se_req(7, 9, 0);
+        }
+        Menu_select_mv(ib + 0xB, pad, 0x14);
+        if ((u16)pad & 0x20) {
+            if (F(u16, (F(u8, ib, 0xB)<<2) + (int)u, 0x37C) != 0) {
+                left = Ud_u_item_stack(F(u16, (F(u8, ib, 0xB)<<2) + (int)u, 0x37C), F(s16, (F(u8, ib, 0xB)<<2) + (int)u, 0x37E)) & 0xFFFF;
+                if (left == 0) {
+                    F(s16, (F(u8, ib, 0xB)<<2) + (int)u, 0x37E) = 0;
+                    F(u16, (F(u8, ib, 0xB)<<2) + (int)u, 0x37C) = 0;
+                    F(s8, ib, 0x1D) = 1;
+                    se_req(7, 0x2C, 0, left);
+                } else {
+                    F(s16, (F(u8, ib, 0xB)<<2) + (int)u, 0x37E) = left;
+                    F(s8, ib, 0x1D) = 2;
+                    se_req(7, 0x15, 0, left);
+                }
+                D_39DAD2[0] = F(s8, ib, 0x1D);
+                F(u8, ib, 0x1F) = 0;
+                F(u8, ib, 5) = F(u8, ib, 5) + 1;
+            } else {
+                se_req(7, 0x15, 0);
+            }
+        }
+        break;
+    case 1:
+        D_39DAD2[0] = F(s8, ib, 0x1D);
+        F(u8, ib, 0x20) = F(u8, ib, 0x20) + 1;
+        if ((u16)pad & 0x20) {
+            D_39DAD2[0] = 0;
+            F(u8, ib, 5) = 0;
+            F(u8, ib, 0x1F) = 0;
+            F(u8, ib, 0x20) = 0xFF;
+            se_req(7, 9, 0);
+        }
+        pad = 0;
+        break;
+    }
+    return pad;
 }
-#endif
+
 
 /* original bytes: build/raw/itembox_pickup.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
