@@ -322,66 +322,83 @@ void Set_KouhoTableSub(int a, int b) {
     } while (i >= 0);
 }
 
-void Set_KouhoTable(void) {
-    char w1[0x100];
-    char w2[0x100];
-    int n;
-    int cnt;
-    int i;
-    s8 *q;
-    s8 *t;
-    int j;
-
-    SKS32(0x144) = 0;
-    SKS32(0x148) = 0;
-    if (SKS32(0x150) != 0) {
-        memset(kouho_work, 0, 0x10100);
-        memset(kouhogun, 0, 0x300);
-        n = SKS32(0x150);
-        cnt = n - 1;
-        if (n > 3) {
-            cnt = 2;
-        }
-        if (SKS8(0x36) != 0) {
-            i = 0;
-            if (0 < cnt + 1) {
-                do {
-                    yn_kouho_work_set(i, 0);
-                    i++;
-                } while (i < cnt + 1);
-            }
-            yn_kigou_inbuf_set();
-        } else {
-            strcpy((char *)kouho_work + 1, (char *)lpSKey + 0x458);
-            if (SKS32(0x150) > 1) {
-                kouho_work[0] = SKS32(0x14C);
-            }
-            i = 0;
-            if (0 < cnt) {
-                q = kouho_work;
-                j = 0;
-                do {
-                    t = kouho_work + (j + 0x101);
-                    q[0x101] = apiask_21_NextKouho(t + 1, lpSKey + 0x558);
-                    i++;
-                    j += 0x101;
-                    q += 0x101;
-                } while (i < cnt);
-            }
-            i = 0;
-            if (0 < cnt) {
-                do {
-                    apiask_20_PrevKouho(w1, w2);
-                    i++;
-                } while (i < cnt);
-            }
-        }
-        i = 0;
-        do {
-            kouhogun_table_set(i);
-            i++;
-        } while (i < 3);
+void Set_KouhoTable(void)
+{
+  char w1[0x100];
+  char w2[0x100];
+  int n;
+  int cnt;
+  int i;
+  s8 *t;
+  int j;
+  s8 *q;
+  *((s32 *) (lpSKey + 0x144)) = 0;
+  *((s32 *) (lpSKey + 0x148)) = 0;
+  if ((*((s32 *) (lpSKey + 0x150))) != 0)
+  {
+    memset(kouho_work, 0, 0x10100);
+    memset(kouhogun, 0, 0x300);
+    n = *((s32 *) (lpSKey + 0x150));
+    cnt = n - 1;
+    if (n > 3)
+    {
+      cnt = 2;
     }
+    if ((*((s8 *) (lpSKey + 0x36))) != 0)
+    {
+      i = 0;
+      if (0 < (cnt + 1))
+      {
+        do
+        {
+          yn_kouho_work_set(i, 0);
+          i++;
+        }
+        while (i < (cnt + 1));
+      }
+      yn_kigou_inbuf_set();
+    }
+    else
+    {
+      strcpy(((char *) kouho_work) + 1, ((char *) lpSKey) + 0x458);
+      if ((*((s32 *) (lpSKey + 0x150))) > 1)
+      {
+        kouho_work[0] = *((s32 *) (lpSKey + 0x14C));
+      }
+      i = 0;
+      if (0 < cnt)
+      {
+        q = kouho_work;
+        j = 0;
+        do
+        {
+          t = kouho_work + (j + 0x101);
+          q[0x101] = apiask_21_NextKouho(t + 1, lpSKey + 0x558);
+          i++;
+          j += 0x101;
+          q += 0x101;
+        }
+        while (i < cnt);
+      }
+      i = 0;
+      if (0 < cnt)
+      {
+        do
+        {
+          apiask_20_PrevKouho(w1, w2);
+          i++;
+        }
+        while (i < cnt);
+      }
+    }
+    i = 0;
+    do
+    {
+      kouhogun_table_set(i);
+      i++;
+    }
+    while (i < 3);
+  }
 }
 
 void cmd_prev_kouho(void)

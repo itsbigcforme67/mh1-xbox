@@ -835,48 +835,65 @@ void hk_key_r_cursor(void) {
     }
 }
 
-void hk_key_l_cursor(void) {
-    int v;
-
-    if (hk_cursor_check() == 1) {
-        hk_cursor_mv(0);
-        return;
+void hk_key_l_cursor(void)
+{
+  int v;
+  if (hk_cursor_check() == 1)
+  {
+    hk_cursor_mv(0);
+    return;
+  }
+  if ((*((u8 *) (lpSKey + 0x2F))) == 0)
+  {
+    if ((*((u8 *) (lpSKey + 0x158))) != 0)
+    {
+      if ((*((u16 *) (lpSKey + 0x2C))) != 0)
+      {
+        if (hk_ctrl_key_ck() == 0)
+        {
+          *((u16 *) (lpSKey + 0x2C)) -= 2;
+        }
+        else
+        {
+          *((u16 *) (lpSKey + 0x2C)) = 0;
+        }
+        *((s8 *) (lpSKey + 0x28)) = 0;
+        se_req(7, 0x17, 0);
+      }
     }
-    if (SKB(0x2F) == 0) {
-        if (SKB(0x158) != 0) {
-            if (SKU16(0x2C) != 0) {
-                if (hk_ctrl_key_ck() == 0) {
-                    SKU16(0x2C) -= 2;
-                } else {
-                    SKU16(0x2C) = 0;
-                }
-                SKS8(0x28) = 0;
-                se_req(7, 0x17, 0);
-            }
-        } else if (SKU16(0x2A) != 0) {
-            if (hk_ctrl_key_ck() == 0) {
-                SKU16(0x2A) -= sk_letlenB(lpSKey + 0x44, SKU16(0x2A));
-            } else {
-                SKU16(0x2A) = 0;
-            }
-            SKS8(0x28) = 0;
-            se_req(7, 0x17, 0);
-        }
-    } else {
-        if (SKS8(0x30) == 0 && hk_shift_key_ck() == 0) {
-            cmd_prev_bun();
-            se_req(7, 0x17, 0);
-            return;
-        }
-        v = apiask_34_ShorterKouho(lpSKey + 0x458, lpSKey + 0x558);
-        if (v > 0) {
-            SKS32(0x150) = v;
-            kata_kouho_set();
-            SKS32(0x150) = get_kouho_suu();
-            Set_KouhoTable();
-            se_req(7, 0x17, 0);
-        }
+    else
+      if ((*((u16 *) (lpSKey + 0x2A))) != 0)
+    {
+      if (hk_ctrl_key_ck() == 0)
+      {
+        *((u16 *) (lpSKey + 0x2A)) = (*((u16 *) (lpSKey + 0x2A))) - sk_letlenB(lpSKey + 0x44, *((u16 *) (lpSKey + 0x2A)));
+      }
+      else
+      {
+        *((u16 *) (lpSKey + 0x2A)) = 0;
+      }
+      *((s8 *) (lpSKey + 0x28)) = 0;
+      se_req(7, 0x17, 0);
     }
+  }
+  else
+  {
+    if (((*((s8 *) (lpSKey + 0x30))) == 0) && (hk_shift_key_ck() == 0))
+    {
+      cmd_prev_bun();
+      se_req(7, 0x17, 0);
+      return;
+    }
+    v = apiask_34_ShorterKouho(lpSKey + 0x458, lpSKey + 0x558);
+    if (v > 0)
+    {
+      *((s32 *) (lpSKey + 0x150)) = v;
+      kata_kouho_set();
+      *((s32 *) (lpSKey + 0x150)) = get_kouho_suu();
+      Set_KouhoTable();
+      se_req(7, 0x17, 0);
+    }
+  }
 }
 
 void hk_key_u_cursor(void) {

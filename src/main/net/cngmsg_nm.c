@@ -156,16 +156,18 @@ u16 CngNet_MSGBOB_ReadU16(CNGMSG *m) {
     return v;
 }
 
-void swapb(u8 *buf, int n) {
-    int i = 0;
-    int h = n / 2;
-    u8 t;
+void swapb(u8 *buf, int n)
+{
+  int i = 0;
+  int h;
+  u8 t;
+  for (; i < (n / 2); i++)
+  {
+    t = buf[i];
+    buf[i] = buf[(n - 1) - i];
+    buf[(n - 1) - i] = t;
+  }
 
-    for (; i < h; i++) {
-        t = buf[i];
-        buf[i] = buf[n - 1 - i];
-        buf[n - 1 - i] = t;
-    }
 }
 
 u16 CngNetSwapByteU16(u16 v) {

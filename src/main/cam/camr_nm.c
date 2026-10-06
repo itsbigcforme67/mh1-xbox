@@ -9,20 +9,22 @@ typedef struct DCMPLX {
     f32 im;
 } DCMPLX;
 
-void dDivComplex(DCMPLX *r, DCMPLX *a, DCMPLX *b) {
-    DCMPLX t;
-    f32 d;
-    f32 inv;
-
-    d = b->re * b->re + b->im * b->im;
-    if (d != 0.0f) {
-        inv = 1.0f / d;
-        t.re = inv * (a->re * b->re + a->im * b->im);
-        t.im = inv * (a->im * b->re - a->re * b->im);
-        *r = t;
-    } else {
-        *r = *a;
-    }
+void dDivComplex(DCMPLX *r, DCMPLX *a, DCMPLX *b)
+{
+  DCMPLX t;
+  f32 d;
+  d = (b->re * b->re) + (b->im * b->im);
+  if (d != 0.0f)
+  {
+    d = 1.0f / d;
+    t.re = d * ((a->re * b->re) + (a->im * b->im));
+    t.im = d * ((a->im * b->re) - (a->re * b->im));
+    *r = t;
+  }
+  else
+  {
+    *r = *a;
+  }
 }
 
 /* ZoomRateCalc 8/34, ZoomBaseAngleRail 1/10 (addu operand order), RollAngleRail

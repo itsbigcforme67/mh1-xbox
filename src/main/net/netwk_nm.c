@@ -941,15 +941,17 @@ int net_swdata(void) {
     return sw;
 }
 
-int net_swdata3(s8 p) {
-    int sw = 0;
-    int idx;
-
-    if (system_w[0] & (1 << p)) {
-        idx = game_w[0x20 + p];
-        sw = 0 | Psw[idx].x00;
-    }
-    return sw;
+int net_swdata3(s8 p)
+{
+  int sw = 0;
+  int idx;
+  if (system_w[0] & (1 << p))
+  {
+    idx = game_w[0x20 + p];
+    sw = 0;
+    sw = sw | Psw[idx].x00;
+  }
+  return sw;
 }
 
 int net_joy_ok_ck_each(s8 p) {
