@@ -1,4 +1,4 @@
-/* lb_d04 - browser: BsBody06_WaitCancel1 0x005F3920-0x005F3A14 (waits for the cancelled request / image loads). Hand-written from the asm. */
+/* lb_dd04 - browser: BsBody06_WaitCancel1 0x005F3920-0x005F3A14 (waits for the cancelled request / image loads). Hand-written from the asm. */
 #include "lobby_f.h"
 extern BSSYS *bsSys;
 void MoveAndTransSet();

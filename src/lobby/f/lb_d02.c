@@ -1,42 +1,46 @@
-/* lb_d02 - browser: BsCountdownTimer 0x005F6F50-0x005F705C (page meta-refresh / cursor timers). Hand-written from the asm. */
+/* lb_d02 - lobby send functions 0x005D5F90-0x005D6140: Lb_send_myChair, Lb_send_trade_start, Lb_send_trade_startTU, Lb_send_item_request. Whole file in lb_d.c. */
 #include "lobby_f.h"
-extern BSSYS *bsSys;
-extern u8 *bsCur;
-extern s16 BsTimer0;
-extern s16 BsTimer1;
-extern u8 BsToolMenuReq;
-extern u8 BsSoftKbdReq;
-extern u8 BsDialogReq;
-extern char bsUrl[4];
-void BsUrlSet();
-void To_ReqCancelWait();
-void To_BodyMain_ReqSrc();
-int BsCountdownTimer() {
-    s16 t;
-    if (bsSys->x38 != 0) {
-        bsSys->x38--;
-    }
-    if (BsTimer0 > 0) {
-        if (BsToolMenuReq != 0) return 0;
-        if (BsSoftKbdReq != 2) return 0;
-        if (BsDialogReq != 1) return 0;
-        t = BsTimer0 - 1;
-        BsTimer0 = t;
-        if (t == 0) {
-            BsUrlSet(bsUrl, bsSys->meta);
-            if (bsSys->x2E == 8) {
-                To_ReqCancelWait(8);
-                return 1;
-            } else {
-                To_BodyMain_ReqSrc(8);
-            return 1;
-            }
-        }
-    }
-    if (BsTimer1 > 0) {
-        BsTimer1--;
-    } else {
-        bsCur[3] = 0;
-    }
-    return 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void Lb_send_myChair(void) {
+    lb_send_data(1, 0x11, &lb_sys.x66);
+    Lb_send_data_to_myself(1, 0x11, &lb_sys.x66);
+}
+
+void Lb_send_trade_start(PLW *pl) {
+    LBPKTRD t;
+    memcpy(t.id, CWPLAYER(pl->work909) + 0x132C, 8);
+    t.item = pl->work904;
+    t.num = pl->work906;
+    lb_send_data(0xE, 0xC, &t);
+}
+
+void Lb_send_trade_startTU(PLW *pl, int a1) {
+    LBPKTRD t;
+    memcpy(t.id, CWPLAYER(pl->work909) + 0x132C, 8);
+    t.item = pl->work904;
+    t.num = pl->work906;
+    lb_send_dataTU(0xE, 0xC, &t, a1);
+}
+
+void Lb_send_item_request(int a0, PLW *pl) {
+    LBPKTRD t;
+    memcpy(t.id, CWPLAYER(pl->work909) + 0x132C, 8);
+    t.item = pl->work904;
+    t.num = pl->work906;
+    lb_send_dataTU(0xE, 0xD, &t, a0);
 }
