@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -473,6 +473,20 @@ int is_kanji(int c)
 {
     c = c & 0xFF;
     if (c < 0x81 || c >= 0xFD || (c >= 0xA0 && c < 0xE0)) {
+        return 0;
+    }
+    return 1;
+}
+
+int is_shift(int c)
+{
+    u8 lo;
+
+    lo = c;
+    if (is_kanji((c & 0xFFFF) >> 8 & 0xFF) == 0) {
+        return 0;
+    }
+    if (lo < 0x40 || lo >= 0xFD || lo == 0x7F) {
         return 0;
     }
     return 1;

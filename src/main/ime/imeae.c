@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,45 +469,27 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void unify_bsmem(int pos, int len)
+void free_kouholists(KL *l)
 {
-    BS **pp;
-    BS *b;
-
-    pp = &hchar[pos].bs;
-    b = *pp;
-    while (b != 0) {
-        if (b->len == len) {
-            pp = &b->next;
-        } else {
-            *pp = b->next;
-            free_mem(b);
-        }
-        b = *pp;
+    while (l != 0) {
+        free_mem(l->kh);
+        l = l->next;
     }
 }
 
-int bunsetu_len(pos)
-int pos;
+KH *null_kouho(int len)
 {
-    HCHAR *h;
+    KH *k;
 
-    if (pos >= kana_len) {
-        return 0;
+    k = alloc_khmem();
+    if (k != 0) {
+        k->flag = 0x80;
+        k->str[0] = 0;
+        k->x06 = len;
+        k->x07 = 0;
+        k->pw = 0;
+        k->x0C = 0xFFFF;
+        k->next = 0;
     }
-    h = &hchar[pos];
-    if (im_state == 2 && h->x14 == 0) {
-        return 0;
-    }
-    return h->x15;
-}
-
-void save_fst_bslen(int pos)
-{
-    HCHAR *h;
-
-    h = &hchar[pos];
-    if (h->x16 == 0 && h->x14 != 0) {
-        h->x16 = h->x15;
-    }
+    return k;
 }

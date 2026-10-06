@@ -147,7 +147,7 @@ void flMemset();
 extern u8 User_data[];
 extern u8 option_w[];
 extern f32 stage_start_pos[][3];
-extern s32 edit_top[];
+extern s32 edit_top[2];
 void Ed_trans_pl();
 int get_mdlw_ptr();
 s16 get_prim();

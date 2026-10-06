@@ -13,6 +13,7 @@ nm, prefix, minaddr = sys.argv[1:4]
 first = sys.argv[4] if len(sys.argv) > 4 else 'b'
 skip = set()
 keep = sorted(set(re.findall(r'^static [^\n;]*?\b(\w+)\(', open(nm).read(), re.M)))   # LOCAL functions stay static in the run files (callers in the same run)
+if os.environ.get('RELINK_KEEP') is not None: keep = [x for x in os.environ['RELINK_KEEP'].split(',') if x]
 rel = os.path.relpath(prefix, 'src/main')            # e.g. ime/ime
 pat = re.compile(r'^main 0x[0-9A-Fa-f]+ 0x[0-9A-Fa-f]+ %s[a-z]+$' % re.escape(rel))
 for it in range(8):

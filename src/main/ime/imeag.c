@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -477,4 +477,24 @@ int mode;
     h = &hchar[cur_pos];
     free_khmemlist(h->kh);
     h->kh = raw_kouho(cur_pos, cur_len, mode);
+}
+
+void kh_mergesort(int pos, KL *list)
+{
+    KH *head;
+    KH *tail;
+    KH *k;
+    HCHAR *h;
+
+    h = &hchar[pos];
+    head = h->kh;
+    tail = kh_endof(head);
+    kh_append_init(pos, head);
+    while ((k = (KH *)kh_merge_getone(list)) != 0) {
+        kh_append(pos, &head, &tail, k);
+    }
+    if ((k = null_kouho(cur_len)) != 0) {
+        kh_append(pos, &head, &tail, k);
+    }
+    h->kh = head;
 }

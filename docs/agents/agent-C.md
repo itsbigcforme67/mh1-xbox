@@ -667,3 +667,86 @@ f_ncm text drawing, f_ms patch download (ms_net_patch_set 6.9 KB), f_mcsls/f_ave
 - Also linked: net/aqcmd01-03 (AQ command lists), plus fixed-and-linked nm files for plmem, amo2, netfile2, tex, staff and Scheduler.
 - mcsls_nm.c stays near-match only (not linked). The r0 state handlers and app queues (vram 0x230CD0-0x232494) are NOT done; the MCSLS player array sits at +0x4C with a 0x3C stride. m2c output needs hand typing with that struct.
 - tools/linkruns.py: always run tools/rebuild.sh first, otherwise carved jump tables vanish from asm and the link fails.
+
+## Fifth assignment: main, both halves (Sonnet worker C, 5 Oct 2026)
+Fixed the menu03/menu04 range overlap (menu_retire_i belongs to menu04; menu03 now ends at 0x1287F0). Rebuild all five OK after every step.
+
+Done (all rebuilt byte-identical; `_nm.c` keeps the functions that still differ):
+- net/mcsls_r0_nm.c + mcsls_r01/r02: the r0 state handlers and application queues (0x230C10-0x231D40): 17 of 19 functions linked
+  (mcsls_r0_pingpong 83 diffs and mcsls_recv 450 diffs stay nm: pingpong min/max registers, recv has a different loop
+  nesting at the start and 2 more saved registers). New include/mcsls.h with the session layout (CNMSG queue, MCSPL 0x3C bytes per
+  player at +0x4C, MCSLS). net/mcsls_nm.c (0x232494-0x232C50) rewritten on it: 9 of 12 linked (mcsls_t01-03); send_size_get (13 diffs,
+  saved-register order) and send_command_app_data (73, the tag byte is masked earlier) stay nm.
+- option/option_nm.c: the whole OPTION screen (0x1267C0-0x127440), 11 functions, linked as option/option01.c.
+- item/item_nm.c: the 64-slot field item pool and the item-preparation (mix recipe) tables (0x11CDF0-0x11DB00): 13 of 17 linked.
+  Item_preparation (29 diffs, saved register order), Item_preparation_rate_0 (14), Item_preparation_adrs (3), list_num (popcount macro,
+  the original hoists &User_data) stay nm.
+- ud/udmisc_nm.c (0x271FB0-0x272400): Load/Save_userdata, ItemCopy_*, Gold_add, Get_hunter_rank/status linked (udmisc01/02);
+  Set_equip_data (5 diffs) and Set_userdata (100 diffs, the original keeps &User_data and the player work in s0/s1) stay nm.
+  include/ud.h: carved UDW.gold (0x20) out of the padding.
+- game/flow_nm.c (0x110F10-0x111B1C): game_init, stage_load, player_all_load, load_eft, st_model_load, swset_w_init, init_light_work,
+  the motion loaders linked (flow01/02). load_shadow (2 diffs, instruction order of a dsra32), init_pl_work (77: block layout of the
+  `be_flag = 1 / else be_flag = 0` test) and round_init (260: the original uses 6 saved registers, mine 9; the monster placement loops need
+  strength-reduced induction pointers) stay nm. include/flow.h: carved STGW.stage (0x02), x34, x38 out of the padding.
+  `STGW *sw = &stage_work;` as a local (declared after the int it is used with) is what makes MWCC keep the base in a saved register (st_model_load).
+- Near-match fixes linked: GetRailCamPos, cam_rail_move_0 (camarea02, camr2n01), tri_in_check (tri01).
+Unmatched but understood: wall_act_ck/wall_vec_set (pl_nm.c, 1 diff each: `addu v0,v0,s1` operand order of an index add), disp_needle
+(menu_disp_nm.c, 4 diffs: which float register holds the constant), pef_get_alpha (2), menu_data_mix_sub (4), menu_data_monster_sub (5).
+
+Lessons (function that showed it):
+- check.py compares only the original size, so a run file can pass check.py and still be longer: always run check.py on the generated run file
+  (linkruns copies declarations but a callee defined earlier in the nm file is not visible: Item_preparation_rate returned
+  an s8 call result and got an extra dsll32/dsra32 until `s8 Item_preparation_rate_0();` was declared in the run file). A rebuild MISMATCH with
+  "built N bytes, want M" and a shift of the next asm function means an object is longer than its range.
+- Compare chains: a `switch` gives `beq x,k; nop` chains; `if (a != 7 && a != 6 && a != 5)` gives packed beq with a delay-slot instruction.
+  param_change_00126B30: `switch (row) { case 5: case 6: case 7: break; default: ... }`. A one-case `switch` gives `beq v1,v0,L; b end` (disp_option_sub_menu).
+  Chain tests run in reverse source order, so the source cases are ascending when the chain tests descending (Option_task).
+- K&R definitions keep a u16/s8 parameter unnarrowed: `void option_main_menu(t, pad) OPTTSK *t; u16 pad; {` with a `()` forward declaration
+  matches the original's `daddu s0,a1` where a prototype with u16 gives andi at every call. Same for a callee called with fewer or more
+  arguments than it takes (Item_preparation_rate calls `Item_preparation_adrs()` without arguments: the registers pass through).
+- An s16 variable in a register is normalized (dsll32/dsra32) at each use, an int variable only where it is cast: disp_option_menu uses `int y`
+  with prototype `flfntLocate(s16, s16)` and gets the original per-call conversion with a plain `addiu` for `y += 12`.
+- `if (x > 0xC8)` gives `slti at,x,201; bne at` where `x >= 0xC9` gives `slti v0` (mcsls_app_que_send, app_push_is_ready); `i > 0x41` gives `slti at`.
+- `if (!x) continue; return i;` gives sltu/xori/bnez, `if (x == 0) {} else return` does not (mcsls_calc_master_id).
+- `if (a || b) { ...returns... } return 0;` puts `return 0` last (mcsls_get_error_code).
+- `a + b` operand order: `(u8 *)(i * 16) + (int)ptr` swaps the add (GetRailCamPos); `int t = f() & 0xFFFF; if (t + s >= N)` (tri_in_check); `*(u8 *)((u8 *)tbl + (a + a))`
+  gives `addu v0,a,a` for a 2-byte element index (Item_preparation_one_ck).
+- `option_w[6]`-style repeated accesses are hoisted into one register only when a local `s8 *w = option_w;` exists (option_sub_menu).
+- Declaration order decides saved registers; tools/declbf.py handles plain declarations, a hand-made permutation loop (scratch script, 4-5 names, 120 tries) the rest.
+  The register of a stack temp follows the LAST declared stack object (mcsls_recv: `u8 pad[12]` declared before the u16 temp and the queue struct, CNMSGB = queue + 10 bytes).
+- Bit counting written as nested `((u8)((x & 0x55) + ((x & 0xAA) >> 1)))` macros matches in shape (Item_preparation_list_num) but the original loads all the bytes through one hoisted base.
+- Item pool free-list push `*--item_sp = p--` in a `for (i < 0x40)` loop reproduces the 8x unrolled original (init_item_work); declare `int i; ITEMW *p;` in that order.
+
+### Unwritten Capcom functions in main (no C anywhere), by area, largest first (sizes in bytes; after this pass)
+- game flow, stage load (0x110000): round_init 1036, init_pl_work 520, stage_load 224, st_model_load 220, load_eft 216, load_shadow 196, game_init 140, swset_w_init 104, player_all_load 88, em_motion_load 60 (17 functions, 3 KB)
+- lights, model loading, ioRead (0x11DB10-0x125000): yure_move_hair 1864, mkModel4 1184, ioRead_sub 1140, flash_move 1048, mkModel 1040, armor_create_model 964, Pl_model_id_set 944, mkModel3 896, Pl_light_set 792, parts_init 748 (36 functions, 17 KB)
+- player select / debug enemy select (0x14E0C0): em_select 600, sel_default_set 540, disp_em_select 392, player_sel 344, Plsel_task 248 (8 functions, 2.5 KB)
+- sound requests (0x159500): se_req2 872, armor_sd_req 736, snd_joint_load 568, snd_joint_load_pl 396 (18 functions, 4 KB)
+- sprites and fonts: SpritePut 2048, Put_sprite_rotate 840, font_print_sp 972, font_sp_ck 564, font_print2 372 (8 functions, 5 KB)
+- enemy model/ride (0x109E30): mlCalcTransEM 1712, em_ride_sub 1632, em_search_set 564 (16 functions, 5 KB)
+- quest and shared items (0x226A00): quest_condition_prog 3420, Item_regained 756, Quest_next_em_set 576, Share_item_stack 508, Net_Share_item_stack 468 (16 functions, 8 KB)
+- network core (0x22E000-0x233000): mcsls_move 632, mcsls_init 556, CnInetMcsReceive 484, module_load 460, module_loadhigh 424 (46 functions, 5 KB); prot_00/prot_01 (0x2381F0) 2796 and 3260, InetDisconnectAll 1588
+- Ncm text (0x26CD60-0x271000): disp_spr_sub 11912, net_connect_draw 1420, Ncm_br_mc_mssage_disp 784, ncm_str_disp_sub 624, Ncm_menu_disp 624 (13 functions, 17 KB); DispFrameMessageA 3316 (0x276170)
+- net patch/DNAS (0x28A170-0x28D000): nb_flps0009 788, PatchExecCS 740, net_flps0008 724 (11 functions, 4.6 KB); reward_itembox 1240, staff_disp 372 (0x290AE0)
+- flPS2 clay/dma/file (0x16AEC0-0x170000): flPS2ConvClayData 4536, flPS2SetMaterialData 1580, flPS2StoreImageB 1312, flPS2VIF1MakeLoadImage 1196 (35 functions, 19 KB, Capcom's own flPS2 layer)
+- not listed: ADX/CRI/sce/SJ/newlib/mpv (0x100008-0x117E50 front, 0x170000-0x21F000 vendor), IME (0x23E500-0x24A240, agent E), memory card (0x2814E0-0x2862F0, agent E).
+Written but not matching (`_nm.c`): see tools/ scan idea: `for f in src/main/*/*_nm.c; check.py -v` and sort by differing instructions; 95 functions are within 8 diffs.
+
+## Sixth assignment: main leftovers and small near-match sweep (Sonnet worker C)
+Linked (all rebuild OK): ud/udb01-02 (gun_check, Equip_ok_ck, Get_equip_bit, wyvern_kill_cnt_up, Gunner_wasure_ck, Ex_quest_ck),
+quest/qstb01-03, sound/sndb01-02 + sndc01-04 (Snd_init, se_req, Code_Make, Pl/Em/Npc_se_req2, snd_joint_load_pl, pack loaders),
+chat/chatb01 + chatc01, fl/plvecb01, em/femb01, menu/pitx01, sk/cmdy01 + skx01, net/aqcmdx01 + cngmsgx01, cam/camr2x01,
+plsel/plsel01-02 (player_sel, player_wait, em_select; debug player/monster select, plsel_nm.c).
+Near-match still: se_req2 (7: `vol` in v1 not a3), armor_sd_req (original 5 saved regs), snd_joint_load (15), disp_em_select (68, regs),
+sel_default_set (129, regs), wall_act_ck/wall_vec_set (1: index add operand order, not fixed by 15 variants), load_shadow (2).
+Lessons:
+- check.py cannot see switch case ORDER or the data a case uses: Equip_ok_ck/Get_equip_bit matched under check.py but the jump table
+  differed (case blocks in source order 2,3,5,4,0). Always rebuild before trusting a run.
+- Compare operand order picks the slt destination: `v[j]->time > pivot` gives `slt at` where `pivot < v[j]->time` gives v1 (AQQuickSortSub);
+  `rp->sec > target` (cam_rail_move_sub); `wr + n > m->cap` (CngNet_MSG_Write); `n*3+3 <= a` (cmd_next_kouho).
+- `(u8 *)(i * 4) + (int)ptr` swaps the addu operands (UseItemChk); `lpSKey[(n - x) + 0x358]` (cmd_prev_bun); `(v + (int)base)` (Em_data_com_adrs_get).
+- K&R definition `int f(p, f, e) int p;` + local `u8 q = p;` stops the re-mask of a u8 param passed on (palette_ng_sub2).
+- `u8 *m = mission_area;` declared first hoists the gp load into the branch delay slot (Start_item_data_adrs_get).
+- Calls whose callee takes s16 args load with lh: prototype SoftKeyboard_move(s8 *, s16, s16) (Reibun_Edit_Core).
+- Local `u8 *sw = select_w;` keeps the base in a saved register (player_sel/player_wait). tools/flipcmp.py tries operand flips per function.
+- The unnamed 0x24A240+ and 0x1C0000-0x230000 runs linked here are now agent D's range; all were committed before the hand-over.

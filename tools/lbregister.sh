@@ -5,7 +5,8 @@ cd "$(dirname "$0")/.." || exit 1
 python3 tools/lbfieldcheck.py || exit 1
 FAMILIES="cnet/cnlbs_nm.c cnet/cnlbs cnet/cnlbs
 lb/lbnpc_nm.c lb/lbnpc lb/lbnpc
-lb/lbui_nm.c lb/lbui lb/lbui"
+lb/lbui_nm.c lb/lbui lb/lbui
+lb/lbshop2_nm.c lb/lbshop2 lb/lbshop2"
 : > /tmp/c_files.add
 grep -v '^$' config/c_files.txt > /tmp/c_files.new
 echo "$FAMILIES" | while read nm prefix regdir; do
@@ -35,4 +36,4 @@ for l in open('config/lbnet_rodata.txt'):
         out.append('lobby:rodata %s %s %s' % (l[0], l[1], runs[l[2]]))
 open('config/c_files.txt', 'a').write('\n'.join(out) + '\n')
 PY
-echo "registered $(grep -c '^lobby 0x.* \(cnet/cnlbs\|lb/lbnpc\|lb/lbui\)' config/c_files.txt) runs"
+echo "registered $(grep -c '^lobby 0x.* \(cnet/cnlbs\|lb/lbnpc\|lb/lbui\|lb/lbshop2\)' config/c_files.txt) runs"

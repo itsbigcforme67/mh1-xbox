@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,56 +469,26 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int bs_check(int pos, int end)
+int not_bhead(int c)
 {
-    HCHAR *h;
-    CH *c;
-    BS *r;
-    BS *r2;
-    BS *b;
-
-    h = &hchar[pos];
-    c = h->ch;
-    if (c != (CH *)-1 && c != 0) {
-        do {
-            r = make_bsmem(pos, end, c);
-            if (r == (BS *)-1) {
-                if (h->bs != 0) {
-                    free_bsmemlist(h->bs);
-                    h->bs = 0;
-                }
-                return 0;
-            }
-            if (r != 0) {
-                hchar_addbsmem(pos, r);
-            }
-            c = c->next;
-        } while (c != 0);
-    }
-    r2 = make_bsmem(pos, end, &null_chmem);
-    if (r2 == (BS *)-1) {
-        if (h->bs != 0) {
-            free_bsmemlist(h->bs);
-            h->bs = 0;
-        }
+    if (henkan_mode == 1 || henkan_mode == 2) {
         return 0;
     }
-    if (r2 != 0) {
-        hchar_addbsmem(pos, r2);
-    }
-    if (h->bs == 0) {
-        if ((b = alloc_bsmem()) == 0) {
-            return -1;
-        }
-        b->len = muhenkan(pos, end);
-        b->x02 = 0x28;
-        b->x03 = 0;
-        b->pw = 0;
-        b->x08 = 0;
-        b->x0A = 0;
-        b->next = 0;
-        h->bs = b;
+    switch (c & 0xFF) {
+    case 0x9D:
+    case 0xA1:
+    case 0xA3:
+    case 0xA5:
+    case 0xA7:
+    case 0xA9:
+    case 0xC3:
+    case 0xE3:
+    case 0xE5:
+    case 0xE7:
+    case 0xEE:
+    case 0xF2:
+    case 0xF3:
         return 1;
     }
-    return 1;
+    return 0;
 }

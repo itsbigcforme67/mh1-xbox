@@ -28,7 +28,8 @@ typedef struct CNET_BURST {
     void (*cb)();       /* 0x04 completion callback of the request */
     s32 a08;            /* 0x08 */
     s32 a0C;            /* 0x0C next index */
-    u8 _pad10[8];
+    u8 _pad10[4];
+    s32 x14;            /* 0x14 request id (room rule allocation: room id) */
     s32 val;            /* 0x18 request argument (start index / count) */
     u8 _pad1C[4];
     u8 state;           /* 0x20 (CnetSys_w+0xE38) 1 = run */

@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -468,6 +468,17 @@ typedef struct SRCH {
 extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
+
+void change_kind(u16 *p, int n, int kind)
+{
+    u16 k;
+
+    k = (kind & 0xFFFF) << 12;
+    while (n-- != 0) {
+        *p = (*p & 0xFFF) | k;
+        p++;
+    }
+}
 
 int shiftlen(int x)
 {

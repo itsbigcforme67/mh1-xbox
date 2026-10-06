@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,13 +469,31 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int ignore_syn(BS *b)
+u16 kh_priority(BS *b, int v)
 {
-    PW *pw;
-
-    pw = b->pw;
-    if (pw != 0 && (pw->x02 == 0x28 || pw->x02 == 0x29)) {
-        return 1;
+    v = v & 0xFFFF;
+    if (v != 0) {
+        return (v + 0x3E8) & 0xFFFF;
     }
-    return 0;
+    return b->x08;
+}
+
+int is_alphanum(int c)
+{
+    return rmtype[c & 0xFF] & 0xC0;
+}
+
+int is_num(int c)
+{
+    return rmtype[c & 0xFF] & 0x80;
+}
+
+int is_alpha(int c)
+{
+    return rmtype[c & 0xFF] & 0x40;
+}
+
+int is_paren(int c)
+{
+    return rmtype[c & 0xFF] & 0x20;
 }

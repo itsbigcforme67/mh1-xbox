@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -468,6 +468,28 @@ typedef struct SRCH {
 extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
+
+u16 to_zenkaku_spec(int c)
+{
+    u8 *k;
+    u16 *t;
+    u16 r;
+
+    k = spec_key_19;
+    t = spec_tran_20;
+    while (*k != 0) {
+        if ((*k & 0xFF) == (c & 0xFF)) {
+            r = *t;
+            if ((r & 0xFF00) == 0x2500 && !((u16)c & 0x100)) {
+                return (r & 0xFF) | 0x2400;
+            }
+            return r;
+        }
+        k++;
+        t++;
+    }
+    return 0;
+}
 
 int ext_jis(int c, u16 hi)
 {

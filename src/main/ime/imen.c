@@ -381,7 +381,7 @@ extern CH null_chmem;
 extern u16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
-s16 bs_prefer();
+int bs_prefer();
 void bs_prefix();
 void unify_bsmem();
 void first_kouho();
@@ -469,26 +469,14 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int max_rtime(u8 *ent)
+u8 *end_page(u8 *p)
 {
-    int m;
-    u8 *end;
-    u8 *p;
+    int n;
 
-    end = ent + ELEN(ent);
-    p = ent + ent[2] + 3;
-    m = 0;
-    if (p < end) {
-        do {
-            if (m < p[1]) {
-                m = p[1];
-            }
-            p += 2;
-            if (*p < 0xC) {
-                p++;
-            }
-            p = next_wd(p, end);
-        } while (p < end);
+    n = ELEN(p);
+    while (n != 0) {
+        p += n;
+        n = ELEN(p);
     }
-    return m;
+    return p;
 }

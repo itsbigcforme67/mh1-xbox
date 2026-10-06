@@ -35,6 +35,33 @@ CFLAGS = ["-c", "-O4,p", "-nostdinc", "-stderr", "-pragma", "divbyzerocheck on"]
 MODULES = ["main", "select", "game", "yn", "lobby"]
 
 
+def gen_raw():
+    """config/c_rawfuncs.txt: 'MODULE VRAM SIZE NAME'. Writes build/raw/NAME.inc
+    (.word lines of the ORIGINAL bytes, taken from disc/) for use as the body of an
+    `asm` function inside a C file. This is the INCLUDE_ASM equivalent: it lets a
+    function that does not match yet stay original inside a single-translation-unit
+    C file. The bytes are never committed (build/ is ignored)."""
+    path = os.path.join(ROOT, "config/c_rawfuncs.txt")
+    if not os.path.exists(path):
+        return
+    os.makedirs(os.path.join(ROOT, "build/raw"), exist_ok=True)
+    for line in open(path):
+        f = line.split("#", 1)[0].split()
+        if not f:
+            continue
+        mod, vram, size, name = f[0], int(f[1], 16), int(f[2], 16), f[3]
+        data = open(os.path.join(ROOT, "disc/mh1/split/%s.bin" % mod), "rb").read()
+        base = 0x100000 if mod == "main" else None
+        if base is None:
+            sys.exit("c_rawfuncs: only main supported")
+        words = [int.from_bytes(data[vram - base + i:vram - base + i + 4], "little")
+                 for i in range(0, size, 4)]
+        out = os.path.join(ROOT, "build/raw", name + ".inc")
+        text = "".join("    .word 0x%08X;\n" % w for w in words)
+        if not os.path.exists(out) or open(out).read() != text:
+            open(out, "w").write(text)
+
+
 def run(cmd):
     p = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
     if p.returncode:
@@ -77,7 +104,7 @@ def compile_c(src):
         return None
     os.makedirs(os.path.join(ROOT, os.path.dirname(obj)), exist_ok=True)
     # Relative paths: wibo hands them to a Windows program.
-    err = run([WIBO, MWCC] + CFLAGS + ["-Iinclude", rel, "-o", obj])
+    err = run([WIBO, MWCC] + CFLAGS + ["-Iinclude", "-Ibuild/raw", rel, "-o", obj])
     if err:
         return err
     for old, new in RENAMES.get(obj, []):
@@ -119,6 +146,7 @@ def main():
         for d in ("build/asm", "build/assets"):
             shutil.rmtree(os.path.join(ROOT, d), ignore_errors=True)
 
+    gen_raw()
     sources = glob.glob(os.path.join(ROOT, "asm/**/*.s"), recursive=True)
     sources += glob.glob(os.path.join(ROOT, "src/**/*.s"), recursive=True)
     bins = glob.glob(os.path.join(ROOT, "assets/**/*.bin"), recursive=True)

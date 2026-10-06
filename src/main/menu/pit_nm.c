@@ -153,7 +153,7 @@ int Cockpit_chat_chk(void) {
 }
 
 int UseItemChk(u8 *pl, int slot) {
-    u8 *q = pl + (slot & 0xFFFF) * 4;
+    u8 *q = (u8 *)((slot & 0xFFFF) * 4) + (int)pl;
     s16 id;
 
     if (*(s16 *)(q + 0x82A) > 0) {

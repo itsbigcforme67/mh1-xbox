@@ -52,7 +52,10 @@ int tri_in_check(f32 *tri, f32 *p) {
     ca = flArcCos(ca);
     s = flConvertRtoS(ab) & 0xFFFF;
     s = (flConvertRtoS(bc) & 0xFFFF) + s;
-    if (s + (flConvertRtoS(ca) & 0xFFFF) >= 0xF000) return 1;
+    {
+        int t = flConvertRtoS(ca) & 0xFFFF;
+        if (t + s >= 0xF000) return 1;
+    }
     return 0;
 }
 
