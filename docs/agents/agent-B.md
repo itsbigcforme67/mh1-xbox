@@ -638,3 +638,55 @@ Lessons (each confirmed by a match):
 Header edits (all proven by a match): include/lobby_a.h and include/lobby_f.h: LBPLAYER.x24 (s8) carved out of _pad14 (Lb_pl_status_m); include/lobby_a.h
 was regenerated from lobby_f.h by tools/lbauto.py (it only picked up fields already merged into lobby_f.h); new include/lobby_s.h (lobby_a.h plus typed
 lbShop, shopList, lb_pit).
+
+# Lobby round 5 (agent B, 6 Oct 2026): 0x533980-0x5C4E60, about 17 KB / 95 more functions linked
+Result: lobby (and all five modules) rebuild OK. New linked runs: `b/lb_by61..by118+` (b/lb_by*.c), `b/lbarm01` (Lb_armor_shop), `b/lbsnd01-03`
+(npc sound helpers). Newly linked: shop/armor/process family (Lb_make_mySrcEquip, lb_put_shopHelp, lb_put_mk_tags, Lb_shop_sw, Lb_shop_item_checkMax,
+Lb_armor_shop, lb_process_decide, lb_process_tag_decide01, random_stack, lb_armor_decide/itemBuy, armor_set_myArmor, armor_shop(2)_trans, Lb_shop_move_x/xR,
+Lb_shop_init/talk, lb_shop_put_shopHelp), login/logout machines (lbc_login_patch/error/reguration/finish_after, lbc_logout_01, lbc_top_menu_01,
+lbc_in_plaza_03/04, lbc_in_lobby_00_05/03_01/03_02, lbc_game_ready_02/04, lbc_browser_04, check_warning_level, check_top_information_level,
+lbc_text_lobby_trans, To_LogOut, To_EnterRoom, Lbc_ReserveRoom, Lbs_GuestEnterRoom, get_next_server, set_event_npc, server_select_sub_02/04, disconnect,
+lobby_return_to_lobby), callbacks (Plaza/Lobby/Room ReadAllocation, ReadCurrentPlace, Lobby/InRoom JoinUser, GuestRuleAllocation), net_ToNetworkLobby,
+Lbs_GetLobbyMemberList, DispLobbyMenu, cnWrap_SetFontSize, internet_to_modem, Lb_npc_mv.
+Still near-match (b/nm or lb/*_nm.c): draw_dialog_square (8 off: the last two Put_sprite_rotate float operand registers), Draw_menu_square (not
+retried), tk_logout (case-local re-reads of COM_R_No_Logout, 8 hunks), plaza_mailBox and the plaza_*/disp_status family (still int-mode drafts),
+lbc_logout_00 (7 off, store scheduling of the COM_R_No_x block), lb_select_room_list (1 off, delay slot), lbc_in_lobby_03_00 (7), lbc_admin_message_00/01,
+item_to_stack (1: addu operand order), check_erase_dialog, lb_armor_itemBuy/lb_put_shopList (cast CSE, see below).
+Matching lessons (each confirmed by a match):
+- `return;` vs `break;` at the end of a switch case that ends in an if-block decides whether the false branch jumps straight to the function end
+  (lbc_in_plaza_03, server_select_sub_02/04, lobby_return_to_lobby). m2c writes `return;` everywhere; try `break;` first. Brute force 2^n over the tail
+  statements found lobby_return_to_lobby (tools below). A mid-switch `if (x != 2 && x != 0)` is `switch (x) { case 0: case 2: break; default: ... }`
+  (armor_shop_trans, Lb_shop_talk: write the labels in the reverse of the ladder order).
+- State machines on the client work: `typedef struct { u8 pad0[0x2C34]; u8 x2C34; ...} CWS_x; #define CWX ((CWS_x *)cw)` and `switch (CWX->x2C34) {...
+  CWX->x2C34++; ...}`, NO local copy of cw: gives the original `lw cw` per access (lbc_login_reguration, lbc_in_lobby_03_02, lbc_logout_01...).
+  `u16 sw = Get_sw2(0); ... (sw & 0x60)` reproduces the original double mask; `s32 sw = Get_sw2(0) & 0xFFFF; ... sw & 0xFFFF & 0x20` also; try both.
+- Stale arguments: the m2c drafts pass register leftovers (`Check_CallBackWait(&jtbl_xxx, temp_a1)`); drop them (CallBackWaitInit(), Check_CallBackWait(),
+  fade_set(1), Fade_busy_ck(), Lbc_init_network_work(), To_TopMenu()). One pass of tools below did this automatically (lbc_login_patch matched with just that).
+- gp-relative vs lui/addiu access of the same symbol: a data symbol of 8 bytes or less is gp-relative; declare it with its real size (`extern s16 Vs_Cnt_0;`,
+  `extern char ot5[4]`, `extern CNW CnetWork` with a struct bigger than 8 bytes for the lui form). `extern char X[]` (unsized) always gives lui/addiu.
+- Typed globals beat F(T, &sym, off): a struct typedef for CnetWork (`CnetWork.x05`), ClassInfo (`.x2`, `.x6`, `.xA`), RoomInfo/PlazaInfo/LobbyInfo arrays of
+  0x15C-byte records, ... removes the hoisted `addiu s0, sym` register (lbc_login_finish_after, check_warning_level, lbc_top_menu_01, Plaza ReadAllocation).
+  A repeated reload like `i == ClassInfo.x2` / `i < ClassInfo.x2` must stay two separate reads.
+- Callee prototypes with narrow parameters change the call site: `int cnLBS_Get_PlazaStatus(u16 id, void *p);` declared in the file (not in the header) makes MWCC
+  convert `i + 1` at every call (`addiu v0,s0,1; andi a0,v0,0xFFFF` each time); with a K&R declaration the converted value is shared in a saved register.
+  Also fixes To_EnterRoom (`int n` + u16 prototypes). Where lobby_a.h declares the function K&R (flfntLocate) rename it around the include:
+  `#define flfntLocate flfntLocate_hdr / #include "lobby_a.h" / #undef flfntLocate / void flfntLocate(int, s16);` (disp_string_handle: not yet a match).
+- A temp pointer `u8 *st = (u8 *)cw + 0x2C35; switch (*st) { ... (*st)++ ...}` is real in some functions (Lbc_ReserveRoom) where the m2c draft names
+  `temp_a1 = cw + 0x2C35`; use it when the original keeps `addiu a1,cw,0x2C35` and `sb v0,0(a1)`.
+- `(int)&SYM + K` as a call argument must be `&SYM[K]` (Lbs_GuestEnterRoom: one `lui/addiu` pair against SYM+K, not SYM then +K).
+- `x > 0` vs `0 < x` selects `slt at,zero,x; beq` instead of `blez` (lbc_game_ready_02, get_next_server); `n >= m` vs `m <= n` swaps `slt v0`/`slt at`.
+- Struct copy of three s16: `typedef struct { s16 a, b, c; } S3; *(S3 *)(pl + 0x35E) = *(S3 *)m.wp;` (Lb_set_mini_data_to_pl, Lb_make_mySrcEquip).
+  A store of constant 1 into a 3-s16 block via sb is `lbShop.x5A[0] = 1`, not sh (Lb_make_mySrcEquip: final `x54 = 1` is a byte store).
+- Several `lbShop.tbl + cur*8` loads: `e = (s32 *)(lbShop.cur * 8 + (int)lbShop.tbl)`, or `lbShop.tbl[lbShop.cur * 2]` / `[... + 1]` (random_stack, lb_armor_decide).
+  Permuter hint accepted (lb_armor_decide): `new_var2 = lbShop.cur;` before an unrelated store changes the load order.
+- Unmatchable without the callee in the same translation unit: functions that hold a value in a1..a3 across a call (Lbs_ExitAndEnterPlaza,
+  Lbc_SetPropaty, CallBack_Event_ChatMessage/TU keep `&msg[0x11D]` in a1 across get_font_col): MWCC knew the callee clobbers fewer registers, so the original
+  source file contained the callee. These stay near-match (not a missing trick).
+- Permuter: works from a symlinked path without spaces (`ln -s <worktree> /tmp/x; cd /tmp/x; PERM_ASM_DIR=<snapshot of asm/> python3 tools/perm.py lobby FUNC FILE -j1`),
+  redirect output to a file (it prints one line per iteration). A near-match file that contains K&R forward declarations of the form `void f(em);`
+  makes the permuter's base compile fail (pycparser): cut the function into a small file first. Found cnWrap_SetFontSize (`s = size; w = (u32)s;`) and
+  the `ClassInfo[8]` re-read in CallBack_Result_InRoom00_JoinUser.
+New helper scripts (kept in the scratchpad, not committed; the ideas are enough to redo them): stale-argument dropper, `(int)&SYM + K` -> `&SYM[K]`,
+comparison mirroring (WARNING: its operand regex mis-parses `a + b * 7 >= c`; I reverted three bad rewrites, check semantics), CnetWork struct typing,
+return/break toggler (single and pair), gp-size fixer. They only keep a rewrite when check.py's diff count falls.
+No shared header was changed this round (lobby_p.h was tried and removed). New C files are all under src/lobby/b/ and registered in config/c_files.txt.
