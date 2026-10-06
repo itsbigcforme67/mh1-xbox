@@ -987,14 +987,13 @@ s32 itembox_equipchange(s32 pad) {
             return 0;
         }
 select:
-        w = ib;
         *(s16 *)0x39DAD2 = 0xA;
-        if (F(u8, w, 0x1F) != 0) {
+        if (F(u8, ib, 0x1F) != 0) {
             if ((u16)pad & 0x240) {
-                F(u8, w, 0x1F) = 0;
+                F(u8, ib, 0x1F) = 0;
                 se_req(7, 0x14, 0);
             } else {
-                PageSelect(w + 0x18, pad, F(u8, w, 0x19));
+                PageSelect(ib + 0x18, pad, F(u8, ib, 0x19));
             }
             pad = 0;
         }
