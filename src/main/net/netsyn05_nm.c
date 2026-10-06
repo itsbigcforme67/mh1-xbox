@@ -46,7 +46,7 @@ void net_receive_host(int slot, u8 *buf) {
                         game_w.x1E4 = 0xFF;
                     } else {
                         game_w.x1A8[t >> 5] |= bit;
-                        game_w.x1E4 = t;
+                        game_w.x1E4 = s;
                     }
                     net_send_host(2, game_w.x21B);
                     return;
