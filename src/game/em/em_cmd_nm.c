@@ -3128,10 +3128,9 @@ u8 *em_cmd_contents(EMW *em, u8 *p) {
 u8 *em_cmd_sub_contents(EMW *em, u8 *p) {
     u8 v;
 
-    v = p[0];
-    em->x824 = p[1];
+    v = *p++;
+    em->x824 = *p++;
     if (em->x826 == 1) {
-        p += 2;
         em->cmd_p80C = p;
     }
     em->x826 = 2;

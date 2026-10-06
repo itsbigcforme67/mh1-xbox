@@ -7427,13 +7427,11 @@ static void ground_land_eff_set_005FC860(EMW *em) {
 
 static void takeoff_eff_set_005FC910(EMW *em) {
     f32 sp20[3];
-    f32 temp_f1;
 
     if (game_w.stage == 0) {
         get_joint_pos_em(em, 0, sp20);
-        temp_f1 = em->x5AC;
-        sp20[1] = temp_f1;
-        if (temp_f1 <= 46.0f) {
+        sp20[1] = em->x5AC;
+        if (sp20[1] <= 46.0f) {
             eft11_set(em, sp20, 1);
         }
     }
