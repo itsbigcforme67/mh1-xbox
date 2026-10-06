@@ -272,8 +272,6 @@ void pl_dm_value_sub(PLW *pl) {
     if (Pl_master_ck(pl) == 1) {
         e = Stage_env_ck(pl->stg);
         switch (e) {
-        case 2:
-            break;
         case 1:
             if (Pl_Skill_ck(pl, 0x2D) != 1 && pl->work918 == 0) {
                 t = pl->work90C - 1;
@@ -292,8 +290,8 @@ void pl_dm_value_sub(PLW *pl) {
                 }
             }
             break;
-        default:
-            return;
+        case 2:
+            break;
         }
     }
 }
@@ -1318,7 +1316,7 @@ go:
                     } else {
                         Pl_act_set2(pl, 0, 8, 0);
                     }
-                    break;
+                    return;
                 }
                 if (pl->sw.an_trg & 0x3C) {
                     Pl_act_set2(pl, 0, 4, 0);
