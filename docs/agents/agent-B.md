@@ -690,3 +690,120 @@ New helper scripts (kept in the scratchpad, not committed; the ideas are enough 
 comparison mirroring (WARNING: its operand regex mis-parses `a + b * 7 >= c`; I reverted three bad rewrites, check semantics), CnetWork struct typing,
 return/break toggler (single and pair), gp-size fixer. They only keep a rewrite when check.py's diff count falls.
 No shared header was changed this round (lobby_p.h was tried and removed). New C files are all under src/lobby/b/ and registered in config/c_files.txt.
+
+# Lobby round 6 (agent B, 6 Oct 2026): village vs online classification of the unlinked functions in 0x533980-0x5C4E60
+How: a call graph of lobby.bin (jal/j targets, lui+addiu/ori function addresses in code, and function-pointer tables in data: a table counts as
+reached when a reached function loads an address inside it), rooted at Local_main (0x5D8680, F's range; its step table runs init_pre, init_init, init,
+Lb_move_common, exit, event), plus the offline menu entries Lb_Menu_Init, Lb_menu_move_Core, DispLobbyMenu, Disp_lb_menu. Third-party HTTP/SSL/crypto
+(0x53E848-0x590D40) skipped. Caveat: the village and the online lobby share one code path switched by Online_ck(), so "reached" does not prove an
+offline run executes it. Names with a plaza/cnet/Lbc/lbc/lm_/lb_select/join/mail/server flavour that the graph reaches only through the shared
+walking loop are listed as online. Size in bytes after the name.
+VILLAGE (offline reaches it; the first group is the shop / item process / armor / mix / eat / NPC / dialog / menu family):
+npcCatWAITER 2448, disp_status 2008, shop_select_items 1940, Draw_menu_square 1896, lb_process_drawHelp 1692, lb_process_kyoukaListProg 1504, lb_process_make_kyoukaList 1396, Display_StringData 1380, DispDialogData 1312, draw_dialog_square 1248, lb_npc_init 1228, shop_process_after 1144, lb_process_set_weaponList 1120, Lb_menu_move_Core 1120, event_eat_trans_ot0 980, lb_npc_trans 968, Lb_process_shop 960, lb_mix_put_itemDetail 948, lb_process_select 932, lb_npc_old_guild 864, Analysis_TagCode 856, lb_npc_item_trans 856, lb_process_set_armorList 848, shop_armor2_question 848, lb_shop_item_select 848, lb_mix_item_select 800, lb_shop_put_itemDetail 752, Put_page_num 748, lb_shop_tag_decide 720, lb_armor_put_itemDetail 712, lb_mix_tag_decide 704, shop_armor_question 704, Analysis_StringData 672, npcPigTOPL 628, Lb_shop_trans2 620, lb_put_shopList 612, shop_armor2_stack 596, npcPigWALK2 556, Lb_npc_mk 556, lb_armor_tag_decide01 548, Disp_lb_menu 524, Lb_eat 508, lb_mix_makeMixList 500, lb_armor_tag_decide00 476, Lb_put_armorIcon 472, lb_mix_decide 440, lb_process_use_item 428, item_to_stack 412, lb_eat_set 408, npcPigSLEEP 364, Lb_put_itemIcon 364, lb_npc_move 336, Lb_put_job_limit 328, Lb_put_materialItem 304, npcPigEXIT 304, Lb_gh_board_trans 300, set_se_type 296, Split_TagCode 272, lb_set_npc 260, lb_armor2_listItem 252, put_main_cursor2 228, lb_cat_material 224, value_result 216, Lb_pl_status_i 208, CheckItemPrice_005AFEE0 192, Lb_gh_board 192, put_main_cursor 180, set_dialog_square 172, lb_normal_material 140, Lb_ck_menu 124, Lb_set_mini_data 244
+ONLINE (reached via shared code but only meaningful with a network, or not reached at all):
+plaza_checkFriend 3748, plaza_searchMember 2524, Lb_join 2372, plaza_mailBox 2200, __cnet_bgProg_ReadRoomRule 2040, plaza_searchAll 1664, lb_select_tag 1504, plaza_mailBoxTrans 1432, plaza_setChatModeTrans 1352, plaza_setChatMode 1332, plaza_searchMemberTrans 1320, plaza_enterLobbyTrans 1272, Plaza_add_friend 1220, lb_select_set_data 1144, plaza_enterLobby 1072, lbc_login_init 1068, plaza_checkFriendTrans 1028, __cnet_bgProg_ReadRoomAllocation 1004, lm_room_member_mv 996, plaza_movePlaza 988, lm_member_list_mv 912, __cnet_bgProg_ReadPlazaAllocation 876, __cnet_bgProg_ReadLobbyAllocation 876, lbc_logout_00 868, lbc_login_id_select 860, plaza_trans_ot0 856, Lb_put_new_mail 840, put_mail_input_square 836, tcp_init 820, plaza_setMyCommentTrans 808, test_server_sel_disp 808, Lbc_ConditionSearch 764, internet_lobby_act 756, Lbc_GuestReadRoom 744, internet_browser 720, CallBack_Result_LoginLobbyServer 700, CallBack_Result_Plaza_LobbyMember 692, server_select_05 680, lbs_encode_ex 668, lb_select_trans 648, Lbc_GetRoomRule 644, CallBack_Event_RecvMail 636, tk_logout 616, getFriendNow 608, CallBack_Event_RoomLeaver 608, plaza_disp_mail 604, plaza_movePlazaTrans 600, lm_member_trans 584, lbc_login_users_personal_data 548, select_ps2 540, lbc_game_ready_00 540, lbc_login_warning_message 532, lbc_login_finish 520, lbc_login_top_information 520, _cnet_RecvFromLbs_MatchOpponentInfo 512, _cnet_RecvFromLbs_MatchOpponentStatus 504, cmcs_04 504, lb_select_room 492, put_member_info 472, plaza_capcomPage 468, __cnet_SendReq_ConditionSearchUser 460, net_time_move 456, plaza_setMyComment 444, Lbc_SetRoomRule 436, plaza_moveMain 428, server_select_00 424, Lbs_plaza_trans 416, server_select_01 408, Lb_on_dialog 404, join_input_password 396, lbc_in_lobby_03_00 396, transSelectHandleName 396, net_time_str 392, lbc_admin_message_00 380, lm_place_trans 364, disp_lm_room_member 356, CallBack_Event_LobbyCommer 348, lobby_client_admin_message 340, Lb_clearChatMember 336, id_select_01 328, _cnet_RecvFromLbs_RequestWarningMessage 320, lb_select_room_list 316, DispNameAndIDonDialog 296, __cnetSub_Return_BgProcess 296, CallBack_Event_LobbyLeaver 292, Lb_addChatMember 284, disp_string_handle 284, check_room_require 280, lb_put_room_member_005B1930 276, _cnet_RecvFromLbs_AnswerTopInformation 272, nwDispStr_Html 264, CallBack_Event_MatchEntryUser 264, CallBack_Event_RoomCommer 256, CallBack_Event_MatchStart 252, Lbs_ExitAndEnterPlaza 244, disp_string_id 240, lb_put_comment 236, cmcs_02 228, CallBack_NoticeUserMiniData 228, cnLBS_RecvData 212, __cnetSub_RecvThreeData 212, check_halfcode 212, __cnet_Recv_UserIDandHandle 200, connecting_10 196, lbc_admin_message_01 196, cmcs_01 188, Lbc_SetPropaty 188, CallBack_Event_ChatMessageTU 172, _cnet_RecvFromLbs_MatchPlSide 164, _cnet_RecvFromLbs_MatchGameServerAddr 164, SetSendStringData2 148, SetSendEncodeStringData 148, Get_ServerName 148, _cnet_RecvFromLbs_MatchBattleCode 140, _cnet_RecvFromLbs_MatchGameRule 140, mmbbc_encode 140, net_Check_FriendData 140, connecting_00 140, cnLBS_Get_GameServerAddress 136, _cnet_RecvFromLbs_MatchJoin 132, _cnet_Return_CallBack 132, _cnet_RecvFromLbs_NoticePatchStart 116, CallBack_Event_ChatMessage 116, tk_logout_message_sub 112, GetRecvDataString 108, transOtSelectHandleName 108, __cnet_Recv_PatchData 92, SetSendStringData 88, cmcs_00 88
+(The list is as of the start of round 6; round 6 linked many of the VILLAGE entries, see "Lobby round 6: results" below.)
+UNDECIDED (not reached by the graph, probably called from tables built at run time): ef_move_sub_0053E360 1064, create_server_table 900, ef_move_sub_005C49F0 760, tk_dialog_mv02 680, tk_lever_ck 508, check_erase_dialog 48
+ (ef_move_sub_* are effect movers: village-likely; tk_dialog_mv02/tk_lever_ck/check_erase_dialog are talk-window helpers; create_server_table is online.)
+
+## Lobby round 6: results (agent B, 6 Oct 2026)
+Linked this round (all rebuild OK): village side: Lb_eat, lb_mix_tag_decide (lbui/lb_mix family runs), Lb_ck_menu (by119), lb_normal_material (by120),
+lb_cat_material (by121), set_se_type (by122), Lb_gh_board_trans / Lb_gh_board / Lb_pl_status_i (by123), put_main_cursor / put_main_cursor2 (by124),
+Lb_put_armorIcon (by125), Lb_put_job_limit (by126), Lb_npc_mk (by127), lb_armor_tag_decide01 (by128), lb_armor_tag_decide00 (by129), item_to_stack (by130),
+shop_armor2_stack (by131), lb_armor2_listItem (by134). Online side: lb_select_room_list (by132), check_erase_dialog (by133).
+Near-matches left (village): draw_dialog_square (8, float operand regs of `20.0f * h`), Draw_menu_square,
+lb_process_use_item (14, base of shopList+0x26), shop_armor_question (55), lb_process_select, lb_armor_put_itemDetail (kind/id registers), value_result,
+Lb_put_materialItem (17, id/need saved registers), event_eat_trans_ot0 (9), lb_mix_decide (4), lb_mix_put_itemDetail (6), lb_shop_put_itemDetail (6),
+lb_npc_old_guild (2), lb_npc_move (21: tail layout), npcPigTOPL (14). Their best C is in lb/*_nm.c or b/nm/*.c.
+New matching lessons (each confirmed by a match):
+- Declaration order picks saved registers: the FIRST declared local gets the HIGHEST s-register (lb_armor_tag_decide00: `int i; EQREC *r; LB_SHOPITEM *sl;
+  SHTBL *t;` gives i=s3, r=s2, sl=s1, t=s0). tools/declbf.py only handles ANSI one-line signatures (K&R drafts: convert first).
+- Loop strength reduction: write `shopList[i].x`, `D[i].y`-style pointer variables initialised at the top (`sl = shopList; r = D;`, `i++, r++, sl++`) and let a
+  table that the original loads late (after a call) be a pointer assigned just before the loop (lb_armor_tag_decide00).
+- Entry address operand order (`addu v0,v0,a0` vs `addu v0,a0,v0`): `u16 *lp = (u16 *)lbShop.list; int c = lbShop.cur; lp[c * 20 + 0x13]` gives the original
+  order and load order (item_to_stack, shop_armor2_stack); the one-expression forms do not.
+- A switch whose ladder is plain compares (no range trick) with several labels per target is a `switch` in the source, not `||` (that gives sltiu range
+  tests): lb_cat_material (`case 2: case 3: case 4:`, ladder = reverse label order). A trailing `return;` in the last case (not `break`) fixes the
+  extra `b end` (Lb_eat case 6/7).
+- Params: `int kind` (not `s16 kind`) when the original keeps the raw a-register and converts at each use (`(s16)kind`, `(u8)kind`); declare the callee's
+  narrow parameters locally so the caller sign-extends (Lb_put_armorIcon(int,int,int,s16,s16)). `(u8)kind` in one use and `kind & 0xFF` in the other stops MWCC
+  from CSE-ing the mask into a saved register (Lb_put_armorIcon).
+- 12-byte rectangle records on the stack: `typedef struct { s16 v[6]; } R12; R12 a = lit_3380;` copies with ld + lwc1 like the original (put_main_cursor).
+  An 8-byte local struct for Get_equip_bit's out parameter (`{u8 x0; s8 kind; s16 id; u8 x4[4];}`) reproduces the frame (Lb_put_job_limit, lb_armor_tag_decide01).
+  Small globals (shop_armor01_tag, 8 bytes) must be declared with their size to get the gp form.
+- `i = (s16)n + lbShop.x6C * 7;` (explicit cast, plain `int` sum) matched lb_armor2_listItem where `i = lbShop.x6C*7; i += n` did not.
+- `get_quest_info()` is called with no argument in lb_select_room_list (the m2c draft passed a stale 7).
+- Permuter on these tiny near-matches (connecting_00, cmcs_00...) found nothing below the base score in 5-10 minutes each (base scores include relocation noise); not worth the CPU.
+
+# Lobby round 7 (agent B, 6-7 Oct 2026): village first
+Linked (all in src/lobby/b/lb_by135-152.c, registered in config/c_files.txt as `lobby ... b/lb_byNNN`; rebuild OK for all five modules):
+- by135 lb_set_npc, by136 lb_npc_move, by137 lb_put_shopList, by138 shop_armor2_question, by139 Lb_shop_trans2, by140 tk_lever_ck,
+  by141 Put_page_num, by142 lb_mix_item_select, by143 lb_shop_item_select, by144 Lb_process_shop, by145 npcPigEXIT, by146 lb_mix_makeMixList,
+  by147 npcCatWAITER (2448 bytes, jump table rodata 0x65DEA0-0x65DEC8), by148 npcPigWALK2, by149 npcPigTOPL, by150 npcPigSLEEP,
+  by151 Lb_menu_move_Core (village / lobby start menu, two jump tables 0x65E6A0-0x65E720), by152 Disp_lb_menu.
+  All village (NPC placement/walk/serve, shop list/detail/select, forge, armor shop, talk lever, pig NPCs, start menu). None is online-only,
+  though Lb_menu_move_Core's pages 8-15 are the online menu entries.
+Biggest lesson of the round: the m2c-style drafts were far closer than their check.py counts said. Run `python3 tools/align.py FILE FUNC --module lobby`
+(not the "N/M differ" figure, which counts every shifted instruction) and fix what the asm really does: m2c drafts passed junk arguments
+(`Lb_get_angle(pl->pos, player_work, off)` is really `Lb_get_angle(em, pl->pos)`; `pl_flag_set(pl, ..)` is really `(em, ..)`; `Menu_x_i(lbmw)` is
+`Menu_x_i()` with a0 left over; a "stage4" second argument was a stale register) and a stray `int off` variable. Removing those, plus `break` for a
+trailing `return;`, turned 28-379 differing lines into 0 for npcPig*/npcCatWAITER/Lb_menu_move_Core.
+New matching lessons (each confirmed by a match):
+- A callee with narrow parameters (`flfntLocate(int x, s16 y)`, `Lb_put_icon_free(s16, s16, int, int, int)`, `Lb_mix_item_checkMax(u16 id, s8 qty)`)
+  declared in the file makes the CALLER narrow each argument at the call and stops MWCC from CSE-ing the mask / sign extension into a
+  saved register (lb_put_shopList y, Put_page_num x/y, lb_mix_item_select / lb_shop_item_select id). The headers declare these K&R, so
+  rename the header declaration first: `#define flfntLocate flfntLocate_hdr` before the include, `#undef` after, then declare yours.
+  Writing `(s16)x - 0x18` inline in each argument (no x/y temporaries) matched Put_page_num; a temporary made the allocator swap s0/s2.
+- `u16 key = lbShop.key` loaded first and a separate `int k = key & 0xFFFF;` (not `key = key & 0xFFFF`, which the compiler folds away) gives
+  the original `lhu` ... `andi` pair; put the mask inside the `if (armor_shop_r == 0)` block when the original does (shop_armor2_question).
+  Same for lb_mix_item_select (`keys = lbShop.key;` first, `k = keys & 0xFFFF;` after the id load).
+- A shared `return 2;` after an if/else block: when the original's `addiu v0,zero,2` sits at the very end after the `return 0` path, the
+  source is `if (a == 0) { ... (no return) } else { ... return 0; } return 2;` (shop_armor_question / shop_armor2_question).
+- Last case of a switch ending in `return;` adds a stray `b`: use `break` (npcPigEXIT). A switch whose "matched" cases all go straight to
+  `return;` with the real work AFTER the switch gives `beq ...; b skip; L: b end` (lb_npc_move: the 9 slot kinds that skip ground snap).
+- `if (cond1 == 0 || cond2) { state = 1; } else { state = 0; }` lays out the else (state = 0) after the then, the original order, where
+  `if (A && B) state = 0 else state = 1` does not (lb_mix_makeMixList). `md->price > funds` gives `slt at` where `funds < md->price` gave `slt v0`.
+- Declaration order picks saved registers in reverse of first use: lb_mix_makeMixList wanted `num, rt, idx, sl, rec, md, j, no, tb` (the old
+  nm file had them in the opposite order and every s register was permuted). A 10th local that does not fit (8 s regs + fp) is spilled to the
+  stack (the 8-bit `cnt` read: `sw v0,0xA0(sp); lw v0,0xA0(sp)`).
+- Loop counters: `i = 0` moved INTO the `if` that guards the loop changes which s register `i` gets (lb_mix_item_select).
+- `(u8)kind` in all four uses (not `kind & 0xFF`, not mixed) was needed in lb_armor_put_itemDetail to keep the mask un-CSE'd.
+- gp-relative globals must be declared with a size <= 8 (wait_157[4], D_38A82E[2], r_no_process, armor_shop_tmp is not gp).
+- ANSI vs K&R: `s32 f()` vs `s32 f(void)` made no difference to codegen here.
+Near-matches (village) after this round, with the real remaining difference (counts exclude relocation noise):
+- lb_mix_decide (4): `lui s0; sll; addiu` order of `mixData + cur` and the `sll v0,a0,9` register for `&player_work[idx]`.
+- lb_mix_put_itemDetail / lb_shop_put_itemDetail (6): `(s16)have` sign-extension goes to t0 in the original, v1 here, plus lw/sll order in case 1.
+  Permuter (-j1, 15 min on a standalone copy) found nothing.
+- lb_npc_old_guild (2): the constant 105 uses a2 (the register holding `mv`) in the original, v1 here.
+- draw_dialog_square (8), event_eat_trans_ot0 (9): see round 6; event_eat: the x load after the y load only fails for the three
+  `y = M[1] + 0x16; flfntLocate(M[0], y)` sites that are followed by a one-argument font_print.
+- lb_process_use_item (14): base `shopList + 0x26` indexing is right, but n*40 uses a0 as the destination in mine, v1/a1 in the original.
+- Lb_put_materialItem (17): saved-register order of id/need (s3/s1); compare forms tried.
+- shop_armor_question (3): cur/tbl load order and register of the entry address; everything after matches.
+- lb_armor_put_itemDetail (about 10, prologue only): body matches.
+- lb_shop_tag_decide: the original shares `cnt` between the two branches (`pages = cnt/7` after the if/else) and its loop in mode 0 uses 5 s regs
+  (the Item array pointer `it` is not live there); not reproduced.
+- lb_process_select: the original keeps the mode in v1 and constant 1 in v0; mine swaps them; not reproduced.
+Online-flavoured functions that the round-6 graph listed as village but are really the in-game web browser: Analysis_TagCode,
+Analysis_StringData, Split_TagCode, tk_dialog_mv02 (nwDispStr_Html). Not attempted.
+
+More lessons from the second half of round 7:
+- A function whose conditions are `x68 != 0x11 || s6 == 6 || s6 == 7` first and the real work after: write the leave-branch as the then-part
+  (`if (cond) { leave; return; } work`), not `if (!cond-ish) { work } else { leave }`; the original lays the leave block out first
+  (npcCatWAITER cases 5, 6, 7).
+- `((s32 **)&((u8 *)tbl)[0x3C])[stage]` keeps `tbl+0x3C` as one address constant (`addiu v1,v1,sym+0x3C`) instead of folding 0x3C into the lw offset.
+- Declaring `PLW *pl` before a K&R-style `int off` or using `pl = &player_work[game_w.master]` matters: m2c's `(u8 *)player_work + off` form gives a0/a1 swaps.
+- `int n; page = (u32)n >> 3; sel = n % 8;` reproduces `srl` + the signed-mod fix-up of Disp_lb_menu (the nm had `u8 n` and `& 7`).
+- `u16 r = Menu_xxx_mv(keys)` for int-returning callees gives the `andi v0,v0,0xFFFF` after each call and `daddiu` for a u16 default constant;
+  keep the *_i handlers `int` (their result is copied with `daddu s0,v0,zero`, no mask).
+- Tried and not solved (register/ordering only): lb_npc_init (typed near-match now in b/nm/lb_npc_init.c; the original clears the 32 flag bytes
+  at em+0x4E6 with a counter in a0 and `em+a0` recomputed per iteration, my loops always strength-reduce it), lb_eat_set (the original keeps a dead
+  `k++` counter in s18: 7 saved registers), lb_process_select, lb_shop_tag_decide (shared `cnt` after the if/else), draw_dialog_square
+  (float registers f1/f2 swapped on the `0.025f * (20.0f * tw)` expression, expression order did not help), ef_move_sub_0053E360 (compare ladder uses
+  a1/v1 where mine uses v1/v0, 17 instructions of register names only), set_dialog_square (the original keeps `addiu $11,$11,0x28` between the three
+  table rows, MWCC folds pointer steps into offsets in every form I tried).
+PC build (tools/build_pc.sh, docs/pc.md "Village"): functions I matched whose PC version is a near-match or stand-in: lb_set_npc and lb_npc_move (stand-ins in
+lb_village_nm.c), Lb_menu_move_Core (src/lobby/b/nm/Lb_menu_move_Core.c, m2c draft that passes lbmw to the *_i handlers; lb_by151.c calls them without
+arguments as the asm does), Disp_lb_menu (lb_menu_nm.c, matched form differs only by `int n` / `n % 8`), npcPigEXIT/WALK2/TOPL/SLEEP and npcCatWAITER
+(lbnpc_nm.c: corrected in place, see above; PC behaviour changes where the drafts passed wrong arguments), lb_mix_item_select / lb_mix_makeMixList
+(lb_mix_nm.c) and lb_shop_item_select (lbshop2_nm.c) unchanged. The by files themselves are not compiled by build_pc.sh.

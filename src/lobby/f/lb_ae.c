@@ -329,8 +329,8 @@ u8 *a;
 u8 *p;
 {
     int id;
-    u8 t;
     u8 *q;
+    u8 t;
     t = p[0];
     q = p + 1;
     if (cw[0x35D5] != 0) {
@@ -363,7 +363,7 @@ u8 *p;
         lb_check_chair(a, q);
         return;
     case 9:
-        lb_sys.chair_mask = lb_sys.chair_mask & ~(1 << *(s8 *)(p + 1));
+        lb_sys.chair_mask = lb_sys.chair_mask & ~(1 << *(s8 *)q);
         return;
     case 5:
         lb_set_chair((s8)id, q);

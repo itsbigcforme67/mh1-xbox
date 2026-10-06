@@ -873,3 +873,56 @@ frames per second.
 - Measured 6 Oct 2026 (H96 Max, RK3518, Mali-450 GL 2.1, quest 10 at the cave, no fight):
   game logic at full speed (30 ticks/s), about 27 fps drawn at 960x720 and 48 fps at 640x480;
   a --shot screenshot looks the same as on x86. Not tested: long play, fights, the village.
+
+### Power-on, new game / continue, memory card, village features (agent A, 8 Oct 2026)
+`tools/play.sh` (no argument) now starts from power-on: `mhview --boot`.
+- Boot (src/pc/rt/rt_boot.c): the game's own task scheduler (tsk_nm.c) runs
+  select.bin's Init_task (card check, options auto-load CardAtld), Demo_task
+  (rating screen, middleware and Capcom logos, title), main's Select_task
+  (omake_nm.c: NEW GAME / CONTINUE / GALLERY / OPTIONS, then the village /
+  town choice), Edit_task (character creation) or Cont_task (load a hunter),
+  plus Fade_task / Card_task. When a task starts Game_task the host takes
+  over: game mode 6 = the village (Game_task's offline path). "Go to town"
+  (network) falls back to the village.
+- select.bin data: rt_sel_mem (like rt_lb_mem), symbols from
+  config/symbols/select.txt aliased by tools/gen_rt_auto.py, pointers from
+  .relselect.bin. main calls select functions by address: D_533BE0 /
+  D_5367F0 / D_5375F0 (defsyms), func_534650 (user_data_copy) and
+  func_533A00 (Init_task) in rt_overlay.c.
+- The tasks draw while they run (flps0008, font_draw, trans()); one tick's
+  gfx calls are recorded (src/pc/gfx/gfx_rec.c, hooks in the backend) and
+  every frame replays the last tick, so frames and 30 Hz ticks stay
+  independent. trans() (rt_boot.c) only draws during the boot.
+- Fades are real now (fade_nm.c + Fade_task, also outside the boot via
+  rt_sys_tick; host quest starts call fade_set(2) as game13 does).
+  `RT_NO_FADE=1` hides them. all_reset is a host version (trans list, fade,
+  sounds, fonts). The opening movie (Sofdec) is not played: its wait ends
+  at once. The online patch check after a load (PatchLoadinDNAS) is done
+  at once.
+- Name entry: the soft keyboard (sk_nm.c, kana/kanji) is not ported; the
+  stand-in in rt_menu.c takes typed ASCII (stored full width via han2zen),
+  Enter or the pad's start finishes, empty = "HUNTER". `RT_NAME=x` for
+  scripted runs.
+- Memory card (src/pc/rt/rt_mc.c): libmc (sceMc*) on a host directory,
+  `$MH1_SAVE_DIR` or `~/.local/share/mh1pc/memcard0`; port 1 has no card.
+  The game's mclow/mcact/mccomb C runs unchanged on it, so the save is the
+  PS2's own BISLPM-65495MH directory (data file 0x11450 bytes, icon.sys,
+  icon00.ico). `RT_MC_TRACE=1` prints the commands.
+- The hunter's look: armor_create_model runs Pl_model_id_set (written from
+  the asm, main 0x123F60) and the bare-part rule of 0x124310; the viewer
+  reloads m_/f_<part><n> models when the look changes (sex, face, hair,
+  skin colour from the face, armour). Hair colour (PLW+0x5FC) is not applied.
+- Village: item box (lobby f/lb_ib.c whole file; main's draw call 0x60CE50
+  routed), shops/forge/armour pieces from agent B's b/ and b/nm files
+  (LOBBY2 in build_pc.sh, linked weak). D_610370 (NPC body volumes for the
+  camera) is lobby.bin's table (the zeroed placeholder crashed the camera).
+- Test aids: `RT_BOOT_TRACE=1` (task slots), `RT_LB_WARP="tick,x,z[,ang];..."`
+  (village warp), `RT_SHOP_TRACE=1`, `RT_VILLAGE_TRACE` lists each stage's
+  spots (house door kind 12 at 11225,14350; in the house bed kind 14 at
+  2230,745, item box kind 15 at 1950,1160; spots need square).
+- Checked (scripted --input, shots in build/show/A/boot/): power-on ->
+  logos -> title -> NEW GAME -> name/sex/face/hair -> save (file written) ->
+  village with the first-visit event; restart -> auto-load message ->
+  CONTINUE -> character select shows the saved hunter -> village; female
+  hunter with face 4 in the village; bed save in the house writes the card
+  file; item box store works. Not compared with the PS2.

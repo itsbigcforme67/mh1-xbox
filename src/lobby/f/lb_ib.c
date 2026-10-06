@@ -1,5 +1,8 @@
 /* Lobby item box UI and plaza chat log (SLPM_654.95 lobby overlay 0x609770-0x60E330). Whole file; runs split into lb_ibNN.c */
 #include "lobby_f.h"
+extern s8 D_39DAD1[16];
+extern s8 D_39DAD0[16];
+extern s16 D_39DAD2[16];
 extern u8 *ib;
 /* item box slots: 4 bytes per slot at User_data + 0x37C (u16 item id, s16 amount) */
 typedef struct IBS4 { u16 w[2]; } IBS4;
@@ -67,12 +70,10 @@ extern u16 System_timer;
 f32 flSin(f32);
 u8 *sortup_idx_chk();
 void se_req();
-s32 Lb_ItemBox_open(u16 arg0, s32 arg1) {
-    arg0 = 0;
+s32 Lb_ItemBox_open() {
     F(s32, ib, 4) = 0;
     F(s16, ib, 2) = 0;
-    F(s16, ib, 8) = 0;
-    F(s8, ib, 0xB) = arg0;
+    F(s8, ib, 0xB) = F(u16, ib, 8) = 0;
     F(s8, ib, 0x1F) = 0;
     F(u8, ib, 0x20) = 0xFF;
     *(s8 *)0x39DAD1 = 5;
@@ -101,8 +102,7 @@ s32 Lb_ItemBox_mv(int arg0) {
             if (s0 & 0x20) {
                 arg0 = 0;
                 F(s8, ib, 3) = 0;
-                F(s8, ib, 0xB) = 0;
-                F(s16, ib, 8) = (u8)arg0;
+                F(s16, ib, 8) = F(u8, ib, 0xB) = 0;
                 F(s8, ib, 0x1F) = 0;
                 F(s8, ib, 0x1D) = -1;
                 F(u8, ib, 0x1E) = 0xFF;
@@ -110,8 +110,9 @@ s32 Lb_ItemBox_mv(int arg0) {
                 F(s8, ib, 5) = 0;
                 se_req(7, 0x13, 0, -1);
     case 1:
+                a = ib;
                 *(u8 *)0x39DAD0 = 1;
-                switch (F(u8, ib, 2)) {
+                switch (a[2]) {
                 case 0:
                     s0 = itembox_stock(arg0) & 0xFFFF;
                     break;
@@ -258,63 +259,63 @@ void selling_price_disp_sub(void) {
 
 /* edit a quantity byte with the d-pad: mode 0 = two decimal digits, otherwise two octal digits (hi << 3 | lo) */
 void itembox_cursor_mv(u8 *val, int pad, int mode) {
-    u8 v;
-    u8 hi;
+    int v;
+    int hi;
     int p;
-    u8 lo;
+    int lo;
     u8 nv;
     v = *val;
     if (!(mode & 0xFF)) {
         v = v & 0xFF;
         p = pad & 0xFFFF;
-        lo = v % 10;
-        hi = v / 10;
+        lo = v % 10 & 0xFF;
+        hi = v / 10 & 0xFF;
         if (p & 0x800) {
             if (!(lo & 0xFF)) {
-                lo = 9;
+                lo = (u8)9;
             } else {
-                lo = lo - 1;
+                lo = (lo - 1) & 0xFF;
             }
         }
         if (p & 0x400) {
             if ((lo & 0xFF) >= 9) {
                 lo = 0;
             } else {
-                lo = lo + 1;
+                lo = (lo + 1) & 0xFF;
             }
         }
         if (p & 0x2000) {
             if (!(hi & 0xFF)) {
-                hi = 9;
+                hi = (u8)9;
             } else {
-                hi = hi - 1;
+                hi = (hi - 1) & 0xFF;
             }
         }
         if (p & 0x1000) {
             if ((hi & 0xFF) >= 9) {
                 hi = 0;
             } else {
-                hi = hi + 1;
+                hi = (hi + 1) & 0xFF;
             }
         }
         nv = (lo & 0xFF) % 10 + (hi & 0xFF) % 10 * 10;
     } else {
-        lo = v;
+        v = lo = v & 0xFF;
         p = pad & 0xFFFF;
-        hi = lo >> 3;
+        hi = (lo >> 3) & 0xFF;
         if (p & 0x800) {
-            lo = lo - 1;
+            lo = (lo - 1) & 0xFF;
         }
         if (p & 0x400) {
-            lo = lo + 1;
+            lo = (lo + 1) & 0xFF;
         }
         if (p & 0x2000) {
-            hi = hi - 1;
+            hi = (hi - 1) & 0xFF;
         }
         if (p & 0x1000) {
-            hi = hi + 1;
+            hi = (hi + 1) & 0xFF;
         }
-        nv = (lo & 7) | ((hi & 7) << 3);
+        nv = ((u8)lo & 7) | (((u8)hi & 7) << 3);
     }
     if (v != nv) {
         *val = nv;
@@ -327,6 +328,8 @@ s32 itembox_stock(s32 pad) {
     u16 left;
     u8 *w;
     u8 *u;
+    u8 *v;
+    int k;
     u = User_data;
     w = ib;
     switch (F(u8, w, 5)) {
@@ -344,20 +347,25 @@ s32 itembox_stock(s32 pad) {
         }
         Menu_select_mv(ib + 0xB, pad, 0x14);
         if ((u16)pad & 0x20) {
-            if (IBID(u, F(u8, ib, 0xB)) != 0) {
-                left = Ud_u_item_stack(IBID(u, F(u8, ib, 0xB)), IBNUM(u, F(u8, ib, 0xB))) & 0xFFFF;
+            k = F(u8, ib, 0xB) * 4;
+            if (*(u16 *)(k + (int)u + 0x37C) != 0) {
+                left = Ud_u_item_stack(*(u16 *)(k + (int)u + 0x37C), *(u16 *)(k + (int)u + 0x37E)) & 0xFFFF;
                 if (left == 0) {
-                    IBNUM(u, F(u8, ib, 0xB)) = 0;
-                    IBID(u, F(u8, ib, 0xB)) = 0;
+                    k = F(u8, ib, 0xB) * 4;
+                    *(s16 *)(k + (int)u + 0x37E) = 0;
+                    k = F(u8, ib, 0xB) * 4;
+                    *(u16 *)(k + (int)u + 0x37C) = 0;
                     F(s8, ib, 0x1D) = 1;
                     se_req(7, 0x2C, 0, left);
                 } else {
-                    IBNUM(u, F(u8, ib, 0xB)) = left;
+                    k = F(u8, ib, 0xB) * 4;
+                    *(s16 *)(k + (int)u + 0x37E) = left;
                     F(s8, ib, 0x1D) = 2;
                     se_req(7, 0x15, 0, left);
                 }
-                *(s16 *)0x39DAD2 = F(s8, ib, 0x1D);
-                F(u8, ib, 0x1F) = 0;
+                v = ib;
+                *(s16 *)0x39DAD2 = F(s8, v, 0x1D);
+                F(u8, v, 0x1F) = 0;
                 F(u8, ib, 5) = F(u8, ib, 5) + 1;
             } else {
                 se_req(7, 0x15, 0);
@@ -365,11 +373,12 @@ s32 itembox_stock(s32 pad) {
         }
         break;
     case 1:
-        *(s16 *)0x39DAD2 = F(s8, ib, 0x1D);
-        F(u8, ib, 0x20) = F(u8, ib, 0x20) + 1;
+        *(s16 *)0x39DAD2 = F(s8, w, 0x1D);
+        F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
         if ((u16)pad & 0x20) {
+            v = ib;
             *(s16 *)0x39DAD2 = 0;
-            F(u8, ib, 5) = 0;
+            F(u8, v, 5) = 0;
             F(u8, ib, 0x1F) = 0;
             F(u8, ib, 0x20) = 0xFF;
             se_req(7, 9, 0);
@@ -448,16 +457,16 @@ void ItemboxWindowCursorX(f32 base, int idx, int color, int mode) {
     SetTextureStage(0x118);
     if (!(mode & 0xFF)) {
         i = (s16)idx;
+        r.x = 0.8f * (153.0f + base - 146.0f + 28.8f * (f32)(i % 10));
+        r.y = i / 10 * 0x19 + 0x3B;
         r.w = 0x19;
         r.h = 0x19;
-        r.y = i / 10 * 0x19 + 0x3B;
-        r.x = 0.8f * (153.0f + base - 146.0f + 28.8f * (f32)(i % 10));
     } else {
         i = (s16)idx;
+        r.x = 0.8f * (153.0f + base - 146.0f + 36.0f * (f32)(i & 7));
         r.y = (i >> 3 << 5) + 0x3B;
         r.w = 0x20;
         r.h = 0x20;
-        r.x = 0.8f * (153.0f + base - 146.0f + 36.0f * (f32)(i & 7));
     }
     r.size = 0x200020;
     r.color = color;
@@ -473,24 +482,27 @@ s32 itembox_sortup(s32 pad) {
     SW4 tmp4;
     SW6 tmp6;
     u8 *w;
-    u8 *i1;
     u8 *i2;
     u8 *u;
+    u8 *i1;
+    u8 *p3;
+    u8 *p10;
     u8 first;
     u8 second;
     u8 col;
     w = ib;
-    *(s16 *)0x39DAD2 = F(u8, w, 3) + 0x14;
+    *(s16 *)D_39DAD2 = F(u8, w, 3) + 0x14;
+    p3 = w + 3;
     switch (F(u8, w, 5)) {
     case 0:
-        ListSelect(w + 3, pad, 2);
+        ListSelect(p3, pad, 2);
         if ((u16)pad & 0x20) {
             F(s8, ib, 0x1F) = 0;
             F(u8, ib, 5) = F(u8, ib, 5) + 1;
             F(u8, ib, 6) = 0;
             se_req(7, 0x13, 0);
         } else {
-            *(s8 *)0x39DAD0 = 0;
+            *(s8 *)D_39DAD0 = 0;
         }
         break;
     case 1:
@@ -499,10 +511,10 @@ s32 itembox_sortup(s32 pad) {
             pad = ib_select_sub(pad) & 0xFFFF;
             if (pad & 0x40) {
                 pad = (u16)(pad & 0xFFBF);
-                *(u8 *)0x39DAD0 = 0;
+                *(u8 *)D_39DAD0 = 0;
                 F(u8, ib, 5) = 0;
             } else if (pad & 0x20) {
-                F(u8, ib, 0xA) = F(u8, ib + F(u8, ib, 3), 8);
+                F(u8, ib, 0xA) = F(u8, F(u8, ib, 3) + (int)ib, 8);
                 F(u8, ib, 6) = F(u8, ib, 6) + 1;
                 se_req(7, 0x25, 0);
             }
@@ -513,28 +525,28 @@ s32 itembox_sortup(s32 pad) {
                 pad = (u16)(pad & 0xFFBF);
                 F(u8, ib, 6) = 0;
             } else if (pad & 0x20) {
-                w = ib;
-                second = F(u8, w, 0xA);
-                col = F(u8, w, 3);
-                first = *(w + 8 + col);
-                if (first != second) {
+                second = F(u8, ib, 0xA);
+                first = *(u8 *)((int)(ib + 8) + F(u8, ib, 3));
+                col = F(u8, ib, 3);
+                if (first != F(u8, ib, 0xA)) {
+                    u = User_data;
                     if (col == 0) {
-                        u = User_data;
-                        tmp4 = *(SW4 *)(u + 0x1C4 + first * 4);
-                        *(SW4 *)(u + 0x1C4 + first * 4) = *(SW4 *)(u + 0x1C4 + second * 4);
-                        *(SW4 *)(u + 0x1C4 + F(u8, ib, 0xA) * 4) = tmp4;
+                        tmp4 = *(SW4 *)((first << 2) + (int)u + 0x1C4);
+                        *(SW4 *)((first << 2) + (int)u + 0x1C4) = *(SW4 *)((second << 2) + (int)u + 0x1C4);
+                        *(SW4 *)((F(u8, ib, 0xA) << 2) + (int)u + 0x1C4) = tmp4;
                     } else {
                         i1 = sortup_idx_chk(first, second);
                         i2 = sortup_idx_chk(F(u8, ib, 0xA));
                         w = ib;
-                        tmp6 = *(SW6 *)(User_data + 0x44 + F(u8, w + F(u8, w, 3), 8) * 6);
-                        *(SW6 *)(User_data + 0x44 + F(u8, w + F(u8, w, 3), 8) * 6) = *(SW6 *)(User_data + 0x44 + F(u8, w, 0xA) * 6);
-                        *(SW6 *)(User_data + 0x44 + F(u8, w, 0xA) * 6) = tmp6;
+                        p10 = w + 0xA;
+                        tmp6 = ((SW6 *)(u + 0x44))[F(u8, F(u8, w, 3) + (int)w, 8)];
+                        ((SW6 *)(u + 0x44))[F(u8, F(u8, w, 3) + (int)w, 8)] = ((SW6 *)(u + 0x44))[F(u8, w, 0xA)];
+                        ((SW6 *)(u + 0x44))[F(u8, w, 0xA)] = tmp6;
                         if (i1 != 0) {
-                            *i1 = F(u8, w, 0xA);
+                            *i1 = *p10;
                         }
                         if (i2 != 0) {
-                            *i2 = F(u8, ib + F(u8, ib, 3), 8);
+                            *i2 = F(u8, F(u8, ib, 3) + (int)ib, 8);
                         }
                     }
                     F(u8, ib, 6) = 0;
@@ -554,6 +566,7 @@ s32 itembox_sortup(s32 pad) {
 void Disp_lb_item_box(void) {
     f32 fa;
     u32 ang;
+    f32 new_var;
     int pos;
     u8 *w;
     u8 a;
@@ -667,8 +680,9 @@ cursor:
                         if (a == 1) {
                             ang = ((System_timer & 0x1F) << 11) & 0xFFFF;
                             fa = (f32)ang;
+                            new_var = flSin(0.0000958738f * fa);
                             w = ib;
-                            ItemboxWindowCursor(F(u8, w, 0xA), (((((s8)(int)(96.0f * flSin(0.0000958738f * fa))) + 0x9F) & 0xFF) << 24) | 0xFF0000, F(u8, w, 3));
+                            ItemboxWindowCursor(F(u8, w, 0xA), (((((s8)(int)(96.0f * new_var)) + 0x9F) & 0xFF) << 24) | 0xFF0000, F(u8, w, 3));
                             return;
                         }
                     }
@@ -719,18 +733,24 @@ cursor:
 
 /* item box "pickup" tab: move an item from the pouch into the item box (stacking onto an existing slot when possible) */
 s32 itembox_pickup(s32 pad) {
-    u16 hold[2];
+    SW4 tmp4;
+    u8 *u;
     u8 *w;
+    u8 *p5;
+    int sel;
     int cur;
     int id16;
     int mx;
     int e;
     int tmp;
-    int sel;
+    int k;
+    int j;
+    u = User_data;
     w = ib;
-    switch (F(u8, w, 5)) {
+    p5 = w + 5;
+    switch (*p5) {
     case 0:
-        *(s16 *)0x39DAD2 = 3;
+        *(s16 *)D_39DAD2 = 3;
         if (F(u8, w, 0x1F) != 0) {
             if ((u16)pad & 0x240) {
                 F(u8, w, 0x1F) = 0;
@@ -748,53 +768,57 @@ s32 itembox_pickup(s32 pad) {
             } else {
                 F(u8, ib, 0x1F) = 0;
                 F(u8, ib, 0xB) = 0;
-                /* look for an item box slot that already holds this item */
-                while (F(u8, ib, 0xB) < 0x14 && IBID2(F(u8, ib, 0xB)) != UPID(F(u8, ib, 8))) {
+                while (F(u8, ib, 0xB) < 0x14) {
+                    if (*(u16 *)(u + (F(u8, ib, 0xB) & 0xFF) * 4 + 0x37C) == *(u16 *)(u + F(u8, ib, 8) * 4 + 0x1C4)) {
+                        break;
+                    }
                     F(u8, ib, 0xB) += 1;
                 }
                 if (F(u8, ib, 0xB) < 0x14) {
                     cur = F(u8, ib, 0xB);
-                    id16 = IBID2(cur) * 0x10;
+                    id16 = *(u16 *)(cur * 4 + (int)u + 0x37C) * 0x10;
                     mx = D_3396D3[id16];
-                    if (mx != 0xFF && IBNUM2(F(u8, ib, 0xB)) < mx) {
-                        if (pick_kosuu_sel_chk(0xFF, mx, id16) == 0) {
-                            IBNUM2(F(u8, ib, 0xB)) = IBNUM2(F(u8, ib, 0xB)) + 1;
-                            UPNUM(F(u8, ib, 8)) = UPNUM(F(u8, ib, 8)) - 1;
-                            if (UPNUM(F(u8, ib, 8)) == 0) {
-                                UPID(F(u8, ib, 8)) = 0;
+                    if (mx != 0xFF && *(s16 *)(F(u8, ib, 0xB) * 4 + (int)u + 0x37E) < mx) {
+                        if (pick_kosuu_sel_chk() == 0) {
+                            k = F(u8, ib, 0xB) * 4;
+                            *(s16 *)(k + (int)u + 0x37E) += 1;
+                            k = F(u8, ib, 8) * 4;
+                            *(s16 *)(k + (int)u + 0x1C6) -= 1;
+                            k = F(u8, ib, 8) * 4;
+                            if (*(s16 *)(k + (int)u + 0x1C6) == 0) {
+                                k = F(u8, ib, 8) * 4;
+                                *(u16 *)(k + (int)u + 0x1C4) = 0;
                             }
                             F(s8, ib, 0x1D) = 7;
-                            *(u8 *)0x39DAD2 = 7;
+                            *(s16 *)D_39DAD2 = 7;
                             F(u8, ib, 5) = 4;
                             se_req(7, 0x2C, 0);
                         } else {
-                            *(u8 *)0x39DAD2 = 5;
+                            *(s16 *)D_39DAD2 = 5;
                             F(s16, ib, 0x1A) = 1;
                             F(s8, ib, 0x1C) = 0;
                             F(u8, ib, 5) = 2;
                             F(u8, ib, 6) = 0;
                             F(s8, ib, 0x1D) = 3;
-                            se_req(7, 0x13, 0, 2);
+                            se_req(7, 0x13, 0);
                         }
                     } else {
                         F(s8, ib, 0x1D) = 6;
-                        *(u8 *)0x39DAD2 = 6;
+                        *(s16 *)D_39DAD2 = 6;
                         F(u8, ib, 5) = 4;
                         se_req(7, 0x15, 0);
                     }
                 } else {
-                    /* no stack to add to: choose the first free slot */
                     F(u8, ib, 0xB) = 0;
                     pad = 0;
                     for (e = 0; e < 0x14; e++) {
-                        if (IBID2(e) == 0) {
+                        if (*(u16 *)(u + e * 4 + 0x37C) == 0) {
                             F(u8, ib, 0xB) = e;
                             break;
                         }
                     }
                     F(u8, ib, 5) = 1;
                     se_req(7, 0x13, 0);
-                    goto case1;
                 }
             }
         }
@@ -810,46 +834,50 @@ case1:
             pad = (u16)(pad & 0xFFBF);
             goto menu;
         }
-        sel = (u16)pad;
-        if (sel & 0x40) {
-            *(u8 *)0x39DAD2 = 3;
+        tmp = (u16)pad;
+        if (tmp & 0x40) {
+            *(s16 *)D_39DAD2 = 3;
             F(u8, w, 5) = 0;
             pad = 0;
             se_req(7, 0x14, 0);
         } else {
-            if (sel & 0x200) {
+            if (tmp & 0x200) {
                 F(u8, w, 0x1F) = 1;
                 se_req(7, 9, 0);
             }
 menu:
-            *(u8 *)0x39DAD2 = 4;
+            *(s16 *)D_39DAD2 = 4;
             Menu_select_mv(ib + 0xB, pad, 0x14);
             if ((u16)pad & 0x20) {
                 F(u8, ib, 0x1F) = 0;
                 w = ib;
-                if (IBID2(F(u8, w, 0xB)) != 0) {
-                    *(u8 *)0x39DAD2 = 8;
+                k = F(u8, w, 0xB) * 4;
+                if (*(u16 *)(k + (int)u + 0x37C) != 0) {
+                    *(s16 *)D_39DAD2 = 8;
                     F(u8, w, 5) = 3;
                     F(u8, ib, 0x21) = 0;
                     se_req(7, 0x13, 0);
                 } else if (item_kosuu_sel_chk() == 0) {
-                    w = ib;
-                    IBID2(F(u8, w, 0xB)) = UPID(F(u8, w, 8));
-                    w = ib;
-                    tmp = UPNUM(F(u8, w, 8));
-                    IBNUM2(F(u8, w, 0xB)) = tmp;
-                    UPNUM(F(u8, ib, 8)) = 0;
-                    UPID(F(u8, ib, 8)) = 0;
+                    j = F(u8, ib, 8);
+                    k = F(u8, ib, 0xB);
+                    *(u16 *)((k * 4) + (int)u + 0x37C) = *(u16 *)((j * 4) + (int)u + 0x1C4);
+                    j = F(u8, ib, 8);
+                    k = F(u8, ib, 0xB);
+                    *(s16 *)((k * 4) + (int)u + 0x37E) = *(s16 *)((j * 4) + (int)u + 0x1C6);
+                    k = F(u8, ib, 8) * 4;
+                    *(s16 *)(k + (int)u + 0x1C6) = 0;
+                    k = F(u8, ib, 8) * 4;
+                    *(u16 *)(k + (int)u + 0x1C4) = 0;
                     F(s8, ib, 0x1D) = 7;
-                    *(u8 *)0x39DAD2 = 7;
+                    *(s16 *)D_39DAD2 = 7;
                     F(u8, ib, 5) = 4;
-                    se_req(7, 0x2C, 0, tmp);
+                    se_req(7, 0x2C, 0);
                 } else {
                     pad = 0;
                     F(s16, ib, 0x1A) = 1;
                     F(s8, ib, 0x1C) = 0;
                     F(u8, ib, 5) = 2;
-                    se_req(7, 0x13, 0, 1);
+                    se_req(7, 0x13, 0);
                     F(u8, ib, 6) = 1;
                     F(s8, ib, 0x1D) = 4;
     case 2:
@@ -857,24 +885,27 @@ menu:
                     if (sel & 0x40) {
                         w = ib;
                         pad = (u16)(pad & 0xFFBF);
-                        *(u8 *)0x39DAD2 = F(s8, w, 0x1D);
+                        *(s16 *)D_39DAD2 = F(s8, w, 0x1D);
                         F(u8, w, 5) = F(u8, w, 6);
                         se_req(7, 0x14, 0);
                     } else {
-                        *(u8 *)0x39DAD2 = 5;
+                        *(s16 *)D_39DAD2 = 5;
                         kosuu_select(pad, F(u8, ib, 6));
                         if (sel & 0x20) {
-                            w = ib;
-                            IBID2(F(u8, w, 0xB)) = UPID(F(u8, w, 8));
-                            w = ib;
-                            IBNUM2(F(u8, w, 0xB)) = IBNUM2(F(u8, w, 0xB)) + F(s16, w, 0x1A);
-                            w = ib;
-                            UPNUM(F(u8, w, 8)) = UPNUM(F(u8, w, 8)) - F(s16, w, 0x1A);
-                            if (UPNUM(F(u8, ib, 8)) == 0) {
-                                UPID(F(u8, ib, 8)) = 0;
+                            j = F(u8, ib, 8);
+                            k = F(u8, ib, 0xB);
+                            *(u16 *)((k * 4) + (int)u + 0x37C) = *(u16 *)((j * 4) + (int)u + 0x1C4);
+                            k = F(u8, ib, 0xB) * 4;
+                            *(s16 *)(k + (int)u + 0x37E) = *(s16 *)(k + (int)u + 0x37E) + F(s16, ib, 0x1A);
+                            k = F(u8, ib, 8) * 4;
+                            *(s16 *)(k + (int)u + 0x1C6) = *(s16 *)(k + (int)u + 0x1C6) - F(s16, ib, 0x1A);
+                            k = F(u8, ib, 8) * 4;
+                            if (*(s16 *)(k + (int)u + 0x1C6) == 0) {
+                                k = F(u8, ib, 8) * 4;
+                                *(u16 *)(k + (int)u + 0x1C4) = 0;
                             }
                             F(s8, ib, 0x1D) = 7;
-                            *(u8 *)0x39DAD2 = 7;
+                            *(s16 *)D_39DAD2 = 7;
                             F(u8, ib, 5) = 4;
                             se_req(7, 0x2C, 0);
                         }
@@ -886,34 +917,38 @@ menu:
     case 3:
         sel = (u16)pad;
         if (sel & 0x40) {
-            *(u8 *)0x39DAD2 = 4;
-            F(u8, w, 5) = 1;
+            *(s16 *)D_39DAD2 = 4;
+            *p5 = 1;
             pad = (u16)(pad & 0xFFBF);
             se_req(7, 0x14, 0);
         } else {
-            *(u8 *)0x39DAD2 = 8;
+            *(s16 *)D_39DAD2 = 8;
             yes_no_select(3);
             if (sel & 0x20) {
                 w = ib;
                 pad = 0;
                 if (F(u8, w, 0x21) != 0) {
-                    *(u8 *)0x39DAD2 = 4;
+                    *(s16 *)D_39DAD2 = 4;
                     F(u8, w, 5) = 1;
                     se_req(7, 0x14, 0);
                 } else {
-                    hold[0] = IBID2(F(u8, w, 0xB));
-                    hold[1] = IBNUM2(F(u8, w, 0xB));
-                    IBID2(F(u8, w, 0xB)) = UPID(F(u8, w, 8));
-                    IBNUM2(F(u8, w, 0xB)) = UPNUM(F(u8, w, 8));
-                    UPID(F(u8, ib, 8)) = 0;
-                    UPNUM(F(u8, ib, 8)) = 0;
-                    Ud_u_item_stack(hold[0], hold[1]);
+                    k = F(u8, w, 0xB) * 4;
+                    tmp4 = *(SW4 *)(k + (int)u + 0x37C);
+                    j = F(u8, w, 8);
+                    k = F(u8, w, 0xB);
+                    *(u16 *)((k * 4) + (int)u + 0x37C) = *(u16 *)((j * 4) + (int)u + 0x1C4);
+                    *(s16 *)((k * 4) + (int)u + 0x37E) = *(s16 *)((j * 4) + (int)u + 0x1C6);
+                    k = F(u8, ib, 8) * 4;
+                    *(u16 *)(k + (int)u + 0x1C4) = 0;
+                    k = F(u8, ib, 8) * 4;
+                    *(s16 *)(k + (int)u + 0x1C6) = 0;
+                    Ud_u_item_stack(tmp4.a, tmp4.b);
                     F(s8, ib, 0x1D) = 7;
                     F(u8, ib, 5) = 4;
                     se_req(7, 0x2C, 0);
     case 4:
                     w = ib;
-                    *(u8 *)0x39DAD2 = F(s8, w, 0x1D);
+                    *(s16 *)D_39DAD2 = F(s8, w, 0x1D);
                     F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
                     if ((u16)pad & 0x20) {
                         F(u8, ib, 5) = 0;
@@ -931,17 +966,21 @@ menu:
 
 /* item box "equipment change" tab: move equipment between the equipment box (User_data + 0x44, 6 byte slots) and the character */
 s32 itembox_equipchange(s32 pad) {
-    u8 eq;
+    u8 *u;
+    int ok;
     u8 *w;
     u8 *e1;
     u8 *e2;
     u8 st;
     u8 kind;
-    int ok;
+    u8 eq;
     int r;
     int mask;
+    u8 *p5;
+    u = User_data;
     w = ib;
-    switch (F(u8, w, 5)) {
+    p5 = w + 5;
+    switch (*p5) {
     case 0:
         if (F(s8, w, 0x1D) >= 0) {
             if ((u16)pad & 0x20) {
@@ -956,14 +995,13 @@ s32 itembox_equipchange(s32 pad) {
             return 0;
         }
 select:
-        w = ib;
-        *(u8 *)0x39DAD2 = 0xA;
-        if (F(u8, w, 0x1F) != 0) {
+        *(s16 *)0x39DAD2 = 0xA;
+        if (F(u8, ib, 0x1F) != 0) {
             if ((u16)pad & 0x240) {
-                F(u8, w, 0x1F) = 0;
+                F(u8, ib, 0x1F) = 0;
                 se_req(7, 0x14, 0);
             } else {
-                PageSelect(w + 0x18, pad, F(u8, w, 0x19));
+                PageSelect(ib + 0x18, pad, F(u8, ib, 0x19));
             }
             pad = 0;
         }
@@ -971,7 +1009,7 @@ select:
         r = (u16)pad;
         if (r & 0x20) {
             w = ib;
-            F(u8 *, w, 0x14) = User_data + F(u8, w, 9) * 6 + 0x44;
+            F(u8 *, w, 0x14) = u + F(u8, w, 9) * 6 + 0x44;
             w = ib;
             ok = 0;
             if (*F(u8 *, w, 0x14) != 0) {
@@ -983,28 +1021,28 @@ select:
                 ok = 1;
                 switch (kind) {
                 case 0:
-                    eq = User_data[0x457];
+                    eq = u[0x457];
                     break;
                 case 2:
-                    eq = User_data[0x458];
+                    eq = u[0x458];
                     break;
                 case 3:
-                    eq = User_data[0x459];
+                    eq = u[0x459];
                     break;
                 case 4:
-                    eq = User_data[0x45A];
+                    eq = u[0x45A];
                     break;
                 case 5:
-                    eq = User_data[0x45B];
+                    eq = u[0x45B];
                     break;
                 case 6:
                 case 7:
-                    eq = User_data[0x456];
+                    eq = u[0x456];
                     F(u8, w, 1) = 1;
                     break;
                 }
                 if ((eq & 0xFF) != 0xFF) {
-                    F(u8 *, ib, 0x10) = User_data + (eq & 0xFF) * 6 + 0x44;
+                    F(u8 *, ib, 0x10) = u + (eq & 0xFF) * 6 + 0x44;
                 } else {
                     F(u8 *, ib, 0x10) = 0;
                 }
@@ -1020,14 +1058,15 @@ select:
                     F(u8 *, ib, 0x14) = 0;
                 } else if (F(u8, w, 1) == 0) {
                     st = Get_equip_data_ptr(e2, w)[2];
-                    if (!(st & ((User_data[1] != 0 ? 2 : 1) & 0xFF))) {
+                    if (!(st & ((u[1] == 0 ? 1 : 2) & 0xFF))) {
                         ok = 0;
                         F(s8, ib, 0x1D) = 0xE;
                         F(u8, ib, 0x1E) = F(u8, ib, 9);
                     } else {
-                        mask = 8;
-                        if (User_data[User_data[0x456] * 6 + 0x45] == 6) {
+                        if (u[u[0x456] * 6 + 0x45] == 6) {
                             mask = 4;
+                        } else {
+                            mask = 8;
                         }
                         if (!(st & (mask & 0xFF))) {
                             ok = 0;
@@ -1058,10 +1097,10 @@ set4:
             }
         } else if (r & 0x200) {
             w = ib;
-            F(u8 *, w, 0x14) = User_data + F(u8, w, 9) * 6 + 0x44;
+            F(u8 *, w, 0x14) = u + F(u8, w, 9) * 6 + 0x44;
             w = ib;
             if (*F(u8 *, w, 0x14) != 0) {
-                *(u8 *)0x39DAD2 = 0xA;
+                *(s16 *)0x39DAD2 = 0xA;
                 F(u8, w, 0x1F) = 2;
                 F(s8, ib, 0x18) = 0;
                 F(u8, ib, 0x19) = 4;
@@ -1071,35 +1110,35 @@ set4:
             }
         }
     default:
-        return pad;
+        break;
     case 1:
         r = (u16)pad;
         if (r & 0x40) {
-            *(u8 *)0x39DAD2 = 0xA;
-            F(u8, w, 5) = 0;
+            *(s16 *)0x39DAD2 = 0xA;
+            *p5 = 0;
             pad = (u16)(pad & 0xFFBF);
             se_req(7, 0x14, 0);
         } else {
             if (F(u8 *, w, 0x14) == 0) {
-                *(u8 *)0x39DAD2 = 0x10;
+                *(s16 *)0x39DAD2 = 0x10;
             } else if (F(u8 *, w, 0x10) == 0) {
-                *(u8 *)0x39DAD2 = 0x11;
+                *(s16 *)0x39DAD2 = 0x11;
             } else if (F(u8, w, 1) != 2) {
-                *(u8 *)0x39DAD2 = 0xF;
+                *(s16 *)0x39DAD2 = 0xF;
             } else {
-                *(u8 *)0x39DAD2 = 0xB;
+                *(s16 *)0x39DAD2 = 0xB;
             }
             w = ib;
             PageSelect(w + 0x18, pad, F(u8, w, 0x19));
             if (r & 0x20) {
                 w = ib;
                 if (F(u8 *, w, 0x14) == 0) {
-                    r = Warehouse_equip_out(User_data, F(u8 *, w, 0x10)[1]);
+                    r = Warehouse_equip_out(u, F(u8 *, w, 0x10)[1]);
                 } else {
-                    r = Warehouse_equip(User_data, F(u8, w, 9));
+                    r = Warehouse_equip(u, F(u8, w, 9));
                 }
                 if (r == 1) {
-                    *(u8 *)0x39DAD2 = 0x12;
+                    *(s16 *)0x39DAD2 = 0x12;
                     F(s8, ib, 0x18) = 0;
                     F(u8, ib, 5) = F(u8, ib, 5) + 1;
                     F(u8, ib, 6) = 0;
@@ -1110,15 +1149,15 @@ set4:
                 }
             }
         }
-        return pad;
+        break;
     case 2:
-        *(u8 *)0x39DAD2 = 0x12;
+        *(s16 *)0x39DAD2 = 0x12;
         switch (F(u8, w, 6)) {
         case 0:
             if (!(F(u8, w, 1) & 1)) {
                 F(u8, w, 6) = F(u8, w, 6) + 1;
             } else {
-                Lb_equip_set((u8 *)player_work + game_w.master * 0xA00, User_data, w + 6);
+                Lb_equip_set((u8 *)player_work + game_w.master * 0xA00, u, w + 6);
                 F(u8, ib, 6) = 2;
             }
             break;
@@ -1127,7 +1166,7 @@ set4:
             F(u8, ib, 6) = F(u8, ib, 6) + 1;
             break;
         case 2:
-            *(u8 *)0x39DAD2 = 0x13;
+            *(s16 *)0x39DAD2 = 0x13;
             F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
             w = ib;
             if (F(u8 *, w, 0x14) != 0) {
@@ -1135,41 +1174,46 @@ set4:
             }
             if ((u16)pad & 0x20) {
                 F(u8, ib, 0x20) = 0xFF;
-                *(u8 *)0x39DAD2 = 0xA;
+                *(s16 *)0x39DAD2 = 0xA;
                 F(u8, ib, 5) = 0;
                 se_req(7, 9, 0, 0xFF);
             }
             break;
         }
         pad = (u16)(pad & 0xFFBF);
-        return pad;
+        break;
     }
+    return pad;
 }
 
 /* item box "sell" tab: pick an item or equipment, choose the amount, confirm and add the gold */
 s32 itembox_sellout(s32 pad) {
     u8 *w;
+    u8 *u;
+    u8 *p3;
+    int k;
     u8 *s;
     int ok;
     int r;
     int sel;
     int mx;
+    u = User_data;
     w = ib;
     switch (F(u8, w, 5)) {
     case 0:
         ListSelect(w + 3, pad, 2);
         if ((u16)pad & 0x20) {
             w = ib;
-            *(s16 *)0x39DAD2 = F(u8, w, 3) + 0x16;
+            *(s16 *)D_39DAD2 = F(u8, w, 3) + 0x16;
             F(s8, w, 0x1D) = -1;
             F(u8, ib, 5) = F(u8, ib, 5) + 1;
             F(u8, ib, 6) = 0;
             se_req(7, 0x13, 0);
         } else {
-            *(s8 *)0x39DAD0 = 0;
+            *(s8 *)D_39DAD0 = 0;
         }
     default:
-        return pad;
+        break;
     case 1:
         switch (F(u8, w, 6)) {
         case 0:
@@ -1182,44 +1226,47 @@ s32 itembox_sellout(s32 pad) {
                     goto sel;
                 }
                 F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
-                *(u8 *)0x39DAD2 = F(s8, ib, 0x1D);
+                *(s16 *)D_39DAD2 = F(s8, ib, 0x1D);
                 return 0;
             }
 sel:
             pad = ib_select_sub(pad) & 0xFFFF;
             if (pad & 0x40) {
-                *(u8 *)0x39DAD0 = 0;
+                *(u8 *)D_39DAD0 = 0;
                 pad = 0;
                 F(u8, ib, 5) = 0;
             } else {
                 w = ib;
-                *(u8 *)0x39DAD2 = F(u8, w, 3) + 0x16;
+                p3 = w + 3;
+                *(s16 *)D_39DAD2 = *p3 + 0x16;
                 if (pad & 0x20) {
-                    if (F(u8, w, 3) == 0) {
+                    if (*p3 == 0) {
                         ok = u_item_chk(F(u8, w, 8));
                         if (ok == 1) {
                             if (item_kosuu_sel_chk() == 0) {
-                                *(u8 *)0x39DAD2 = 0x19;
+                                *(s16 *)D_39DAD2 = 0x19;
                                 F(u8, ib, 6) = 2;
                                 F(u8, ib, 0x21) = 0;
                                 w = ib;
-                                F(s32, w, 0xC) = *(s32 *)(D_3396DE + UPID(F(u8, w + F(u8, w, 3), 8)) * 0x10);
+                                k = F(u8, F(u8, w, 3) + (int)w, 8) * 4;
+                                F(s32, w, 0xC) = *(u16 *)(D_3396DE + F(u16, k + (int)u, 0x1C4) * 0x10);
                             } else {
                                 F(s16, ib, 0x1A) = 1;
-                                *(u8 *)0x39DAD2 = 0x18;
+                                *(s16 *)D_39DAD2 = 0x18;
                                 F(u8, ib, 6) = 1;
                             }
                         }
                     } else {
                         r = (s8)u_equip_chk(F(u8, w, 9));
                         if (r > 0) {
-                            *(u8 *)0x39DAD2 = 0x19;
+                            *(s16 *)D_39DAD2 = 0x19;
                             F(u8, ib, 6) = 2;
                             F(u8, ib, 0x21) = 0;
                             w = ib;
-                            s = User_data + F(u8, w + F(u8, w, 3), 8) * 6;
-                            ok = 1;
+                            k = F(u8, F(u8, w, 3) + (int)w, 8) * 6;
+                            s = (u8 *)(k + (int)u);
                             F(s32, ib, 0xC) = Get_equip_kaitori(F(u8, s, 0x45), F(u16, s, 0x46));
+                            ok = 1;
                         } else {
                             ok = 0;
                             if (r == 0) {
@@ -1237,22 +1284,23 @@ sel:
                     }
                 }
             }
-            return pad;
+            break;
         case 1:
             sel = (u16)pad;
             if (sel & 0x40) {
-                *(u8 *)0x39DAD2 = 0x16;
+                *(s16 *)D_39DAD2 = 0x16;
                 pad = (u16)(pad & 0xFFBF);
                 F(u8, w, 6) = 0;
                 se_req(7, 0x14, 0);
             } else {
-                *(u8 *)0x39DAD2 = 0x18;
+                *(s16 *)D_39DAD2 = 0x18;
                 kosuu_select(1);
                 if (sel & 0x20) {
                     w = ib;
                     pad = 0;
-                    mx = UPID(F(u8, w + F(u8, w, 3), 8)) * 0x10;
-                    F(s32, w, 0xC) = F(s16, w, 0x1A) * *(s32 *)(D_3396DE + mx);
+                    k = F(u8, F(u8, w, 3) + (int)w, 8) * 4;
+                    mx = F(u16, k + (int)u, 0x1C4) * 0x10;
+                    F(s32, w, 0xC) = F(s16, w, 0x1A) * *(u16 *)(D_3396DE + mx);
                     F(u8, ib, 6) = F(u8, ib, 6) + 1;
                     F(u8, ib, 0x21) = 0;
                     se_req(7, 0x13, 0);
@@ -1260,52 +1308,58 @@ sel:
                     sel = (u16)pad;
                     if (sel & 0x40) {
                         if (F(u8, ib, 3) == 0 && item_kosuu_sel_chk() == 1) {
-                            *(u8 *)0x39DAD2 = 0x18;
+                            *(s16 *)D_39DAD2 = 0x18;
                             F(u8, ib, 6) = 1;
                         } else {
                             w = ib;
-                            *(u8 *)0x39DAD2 = F(u8, w, 3) + 0x16;
+                            *(s16 *)D_39DAD2 = F(u8, w, 3) + 0x16;
                             F(u8, w, 6) = 0;
                         }
                         pad = (u16)(pad & 0xFFBF);
                         se_req(7, 0x14, 0);
                     } else {
-                        *(u8 *)0x39DAD2 = 0x19;
+                        *(s16 *)D_39DAD2 = 0x19;
                         yes_no_select(pad);
                         if (sel & 0x20) {
                             w = ib;
                             if (F(u8, w, 0x21) != 0) {
                                 if (F(u8, w, 3) == 0 && item_kosuu_sel_chk() == 1) {
-                                    *(u8 *)0x39DAD2 = 0x18;
+                                    *(s16 *)D_39DAD2 = 0x18;
                                     F(u8, ib, 6) = 1;
                                 } else {
                                     w = ib;
-                                    *(u8 *)0x39DAD2 = F(u8, w, 3) + 0x16;
+                                    *(s16 *)D_39DAD2 = F(u8, w, 3) + 0x16;
                                     F(u8, w, 6) = 0;
                                 }
                                 se_req(7, 0x14, 0);
                             } else {
                                 if (F(u8, w, 3) == 0) {
-                                    s = User_data + F(u8, w + F(u8, w, 3), 8) * 4;
+                                    k = F(u8, F(u8, w, 3) + (int)w, 8) * 4;
+                                    s = (u8 *)(k + (int)u);
                                     if (*(D_3396D3 + F(u16, s, 0x1C4) * 0x10) == 0xFF) {
                                         F(u16, s, 0x1C4) = 0;
                                         w = ib;
-                                        UPNUM(F(u8, w + F(u8, w, 3), 8)) = 0;
+                                        k = F(u8, F(u8, w, 3) + (int)w, 8) * 4;
+                                        F(s16, k + (int)u, 0x1C6) = 0;
                                     } else {
                                         F(s16, s, 0x1C6) = F(s16, s, 0x1C6) - F(s16, w, 0x1A);
                                         w = ib;
-                                        if (UPNUM(F(u8, w + F(u8, w, 3), 8)) == 0) {
-                                            UPID(F(u8, w + F(u8, w, 3), 8)) = 0;
+                                        k = F(u8, F(u8, w, 3) + (int)w, 8) * 4;
+                                        if (F(s16, k + (int)u, 0x1C6) == 0) {
+                                            k = F(u8, F(u8, w, 3) + (int)w, 8) * 4;
+                                            F(u16, k + (int)u, 0x1C4) = 0;
                                         }
                                     }
                                 } else {
-                                    F(s16, User_data + F(u8, w + F(u8, w, 3), 8) * 6, 0x46) = 0;
+                                    k = F(u8, F(u8, w, 3) + (int)w, 8) * 6;
+                                    F(s16, k + (int)u, 0x46) = 0;
                                     w = ib;
-                                    F(s8, User_data + F(u8, w + F(u8, w, 3), 8) * 6, 0x44) = 0;
+                                    k = F(u8, F(u8, w, 3) + (int)w, 8) * 6;
+                                    F(s8, k + (int)u, 0x44) = 0;
                                 }
                                 Gold_add(F(s32, ib, 0xC));
                                 w = ib;
-                                *(u8 *)0x39DAD2 = F(u8, w, 3) + 0x16;
+                                *(s16 *)D_39DAD2 = F(u8, w, 3) + 0x16;
                                 F(u8, w, 6) = 0;
                                 se_req(7, 0x1A, 0);
                             }
@@ -1313,7 +1367,7 @@ sel:
                     }
                 }
             }
-            return pad;
+            break;
         }
         break;
     }

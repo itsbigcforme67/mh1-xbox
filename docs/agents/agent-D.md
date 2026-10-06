@@ -944,3 +944,44 @@ differ from the original in the near-match C (file in parentheses; *_nm.c is not
 - 22F200    64 CngNetAQBuffEmptyCheck: 14 off of 16 (net/cng_nm.c)
 - 22ED90    52 CngNetAQSessionWait: 9 off of 13 (net/cng_nm.c)
 - 216050    48 flSndOutputMode: 8 off of 13 (sound/flsnd00_nm.c)
+
+## Lobby overlay tail, 0x5EE618 - 0x610288 (agent D, 10 Oct 2026)
+Map (V = village/offline path, O = online-only; from names and callers, not traced at runtime):
+- 5EE618-5EFFE0 PNG/BMP texture glue (plPNGSetContextFromImage, BsCreateTexturePixelFromPNG/BMP, flCreate*From*_mem_err): O (browser images).
+- 5EFFE0-5F1DB0 lobby info CSV, game style, HTML tag type parsing (parsetag, special_tag_check): O.
+- 5F21D8-5F6F50 browser state bodies (MainBsInitialize, BsBody01-06, AppendWork 9.8 KB, CheckHTMLSource): O.
+- 5F7430-5FD6xx browser cursor, scrolling, forms (moveCursor, dragScroll, eachObjAction, FormHandler, linkPage): O.
+- 5FE800-602430 tagAct_NNN handlers and tag parameter parsers: O.
+- 602430-609400 table / text layout (Disp_Text, tagprintf, set_TABLE_*, chack_TableTagClose*, the *_t twins): O.
+- 609700-60D6E0 ITEM BOX (Lb_ItemBox_*, itembox_*, kosuu_select, ItemboxWindow*, Disp_lb_item_box): V (also used online).
+- 60D710-60E330 plaza chat log: O.
+- 60E330-610288 eft25 (effect spawned by the town NPC scripts lbnpc/lbem04/09/10, PC runtime stubs func_60E2B0 = Eft25_set): V (guess from callers).
+Start state: 102 functions (80 KB) had no C at all, all browser; m2c + tools/lbauto.py matched none byte-identical.
+Linked this session (rebuild OK, all five modules):
+- V: item box Lb_ItemBox_open, kosuu_select, sortup_idx_chk, ItemboxWindowCursorX (matched here, but main got the same four from another agent at the same time:
+  the merge took main's lb_tu_ib.c; tagAct_602 is lb_gdr2x01 on main, my lb_dd14 was dropped).
+- O: BsInit01_LoadWait, BsCountdownTimer, BsBody01_RcvSrc, BsBody03_PrsSrc, BsBody06_WaitCancel1, BsCheckInetProblem, BsInitAllObj, BsCsMove05_CapRegist,
+  BsCsMove07_NetError, get_input_tag_sp_type, Disp_TABLE_Line, check_rowspan, check_rowspan2, set_align_data, (src/lobby/f/lb_dd01-13,15.c,
+  one registered range each; lb_d01-03 are agent F's files, do not reuse those names).
+Near-matches left, V (item box, working copies in src/lobby/f/lb_ib.c / lb_ay.c, not linked; counts are differing lines of tools/align.py):
+- Lb_ItemBox_mv 6 (the `lw v1,ib` before the 0x39DAD0 store at the case-1 label, and the lui/sb order in the cancel tail),
+  itembox_stock 2 (sh store scheduled after the constant loads in case 1), itembox_equipchange about 26 (only a0/v1 temp names, mask var in v0, store order at +0xABF8),
+  itembox_pickup 262, itembox_sortup about 110, itembox_sellout 255, itembox_cursor_mv 40, Disp_lb_item_box 124 (ib pointer in t0 instead of v1), ItemboxWindowX 840.
+Near-matches left, O: font_data_off 2 (nop placement), tagAct_600 (the second `bsw[bsw[0xE96C]+0xE96C]` read gets CSE'd into an ori/addu), BsPalCheck, BsDlgMvCsr, CheckAllImages (about 95).
+Lessons (each confirmed by a match):
+- Chained assignment: `a = b = 0` with b a different width makes the compiler keep the converted zero in a temp (`andi t0,zero,0xFFFF` + `sb t0`):
+  `F(s8, ib, 0xB) = F(u16, ib, 8) = 0;` (Lb_ItemBox_open); `F(s16, ib, 8) = F(u8, ib, 0xB) = 0;` (Lb_ItemBox_mv).
+- A K&R call `f();` leaves a0.. as they were: m2c's extra arguments (`LoadInnerImage(4, ..)`, `BsSetRenderState(.., bsSys)`, `RetryShadowPost(a, b, c)`) are stale
+  registers, drop them (BsInit01_LoadWait, BsBody01_RcvSrc). Same for `se_req(7, 0x2C, 0, tmp)` in the item box.
+- `u = User_data` kept in a saved register while the slot index is `lbu; sll 2; addu v0,v0,s0` (index first): write `k = F(u8, ib, 0xB) * 4;` as its OWN statement and
+  `*(u16 *)(k + (int)u + 0x37C)`; any single-expression form (`ib[11] * 4 + (int)u`, struct array, comma operator) gives `addu v0,s0,v0` (itembox_stock, kosuu_select).
+- `while (a < N) { if (match) break; a += 1; }` gives the rotated loop with the first test duplicated at the bottom; `while (a < N && !match)` does not (itembox_pickup shape).
+- Orig lays an inline `return 0` at two places: write both (`if (v == 0) return 0; do {..} while (v != 0); return 0;`), not a shared label (check_rowspan).
+- `switch (x) { case 6: case 7: break; case 1: f(); return; }` followed by common code after the switch gives ladder (1,7,6) with body of 1 first (BsBody01_RcvSrc).
+  An empty last case that the original ends with `b end` needs `case 2: return;` (not break).
+- `daddiu` constant loads: u8 return type and u8 locals (get_input_tag_sp_type); `s1++` on a u16 loop counter avoids the pre-mask that `s1 = s1 + 1` adds (BsInitAllObj).
+- `x > 1` instead of `x >= 2` moves the slti result to `at` (tagAct_602); `& 0xFFFFFFFF` on one call argument changed the load order (Disp_TABLE_Line, found by the permuter).
+- Declaration order: the cell pointer declared before the s32 it is read from and assigned first (check_rowspan2).
+- A static-sized local that the original allocates but the compiler would drop: `SW4 tmp4` / `SW6 tmp6` in the item box keep the 80-byte frame.
+- Permuter on raw/registered functions: the asm is not in asm/lobby/text; make a copy with `config/lobby.yaml` where the registered range is turned into an `asm` subsegment
+  (see build/lobby_ib.yaml idea: replace `[0x0D5DD0, c, f/lb_tu_ib]` by `[0x0D5DD0, asm, text/ibtu]`, `asm_path: build/asmib/lobby`, run splat) and use PERM_ASM_DIR=build/asmib.

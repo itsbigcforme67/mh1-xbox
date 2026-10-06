@@ -51,6 +51,27 @@ const char *rt_lb_sym_at(uint32_t va, uint32_t *off, int *func);
 int rt_lb_is_pointer(uint32_t va);
 void rt_lb_relocate_range(uint32_t va, uint8_t *dst, size_t size, void *(*map)(uint32_t));
 void rt_lb_relocate_image(void *(*map)(uint32_t));
+/* select.bin (boot overlay: title, character creation, continue) */
+void rt_set_select(uint8_t *bin, size_t n);   /* takes ownership */
+const uint8_t *rt_sel_addr(uint32_t va, size_t n);
+int rt_sel_in_range(uint32_t va);
+const char *rt_sel_sym_at(uint32_t va, uint32_t *off, int *func);
+void rt_sel_relocate_range(uint32_t va, uint8_t *dst, size_t size, void *(*map)(uint32_t));
+/* After rt_import_data and rt_set_select: select.bin's data (rt_data.c) */
+int rt_import_select(void);
+/* Power-on (rt_boot.c): the game's boot tasks (title, new hunter, load)
+ * until Game_task starts; then the host flow runs the village. */
+void rt_boot_init(void);
+int  rt_boot_tick(void);        /* 1: boot over */
+void rt_boot_draw(void);
+int  rt_boot_active(void);
+void rt_sys_init(void);         /* system tasks without a boot (Fade_task) */
+void rt_sys_tick(void);
+void rt_fade_draw(void);
+/* The hunter's parts as the game chose them (armor_create_model): sex
+ * (0 male) and model numbers of reg, face, hair, body, arm, wst. Returns
+ * a counter that changes on every new choice, 0 = none yet. */
+int  rt_player_look(int no, int *sex, int id[6]);
 
 /* ------------------------------------------------------------ clays */
 /* Register a host clay; the result is the handle the game passes to

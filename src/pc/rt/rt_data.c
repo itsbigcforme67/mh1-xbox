@@ -322,5 +322,52 @@ int rt_import_lobby(void)
         pit_help_str_tbl[4] = map_lb(0x64E2C0);
         pit_help_str_tbl[5] = map_lb(0x6539E0);
     }
+    {   /* main's shop_default_tag_00389E90 (the item shop's "buy" / "sell"
+         * tags, lb_shop_init) points at lobby.bin strings 0x65E020/28 */
+        extern void *shop_default_tag_00389E90[];
+        shop_default_tag_00389E90[0] = map_lb(0x65E020);
+        shop_default_tag_00389E90[1] = map_lb(0x65E028);
+    }
+    return 0;
+}
+
+/* ------------------------------------------------------------ select.bin
+ * The boot overlay's data (tables and strings; it has no .bss): one host
+ * block, rt_sel_mem, at its PS2 layout; its data symbols are linker
+ * aliases into it (tools/gen_rt_auto.py, config/symbols/select.txt).
+ * Pointer words (.relselect.bin): select functions to the host function
+ * of that name, select data into rt_sel_mem, main as for the ELF. */
+#define SEL_SPAN 0x8000u        /* select.bin is 0x8000 bytes */
+uint8_t rt_sel_mem[SEL_SPAN] __attribute__((aligned(16)));
+
+static void *map_sel(uint32_t v)
+{
+    uint32_t off;
+    int func = 0;
+    const char *name;
+    void *h;
+    if (!rt_sel_in_range(v))
+        return map_ptr(v);
+    name = rt_sel_sym_at(v, &off, &func);
+    if (func && name) {
+        if ((h = dlsym(RTLD_DEFAULT, name)) != NULL)
+            return (uint8_t *)h + off;
+        if (getenv("RT_TRACE"))
+            fprintf(stderr, "rt: select pointer to unported function %s+0x%X\n", name, (unsigned)off);
+        return NULL;
+    }
+    return v - LB_VRAM < SEL_SPAN ? rt_sel_mem + (v - LB_VRAM) : NULL;
+}
+
+int rt_import_select(void)
+{
+    uint32_t n = 0;
+    if (!rt_sel_addr(LB_VRAM, 4))
+        return 1;
+    while (n < SEL_SPAN && rt_sel_addr(LB_VRAM + n, 1))
+        n++;
+    memcpy(rt_sel_mem, rt_sel_addr(LB_VRAM, n), n);
+    memset(rt_sel_mem + n, 0, SEL_SPAN - n);
+    rt_sel_relocate_range(LB_VRAM, rt_sel_mem, n, map_sel);
     return 0;
 }

@@ -25,7 +25,7 @@ extern s32 flSystemRenderState;
 extern s32 flClayNum;
 
 void flMemset(void *, int, int);
-void flMemcpy(void *, void *, int);
+void flMemcpy(void *, void *, u32);
 int flPS2CreateClay(void *, void *);
 int flPS2GetSystemMemoryHandle(int, int);
 void *flPS2GetSystemBuffAdrs(int);

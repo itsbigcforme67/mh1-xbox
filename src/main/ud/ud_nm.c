@@ -746,7 +746,7 @@ void Gun_level_up(UDW *u, s16 i) {
         u16 o = u->ware[i].opt;
         int l = o & 0xF;
         u16 v;
-        if (l >= 4) {
+        if (l > 3) {
             v = 4;
         } else {
             v = (l + 1) & 0xFFFF;

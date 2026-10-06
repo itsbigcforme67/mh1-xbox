@@ -14,7 +14,7 @@ mkdir -p build/pc
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
     src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c \
-    src/pc/fmt/snd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c"
+    src/pc/fmt/snd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c"
 RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_game.c src/pc/rt/rt_fl.c src/pc/rt/rt_overlay.c src/pc/rt/rt_main.c src/pc/rt/rt_eft.c src/pc/rt/rt_hit.c src/pc/rt/rt_cam.c"   # (listing only)
 # Decompiled game C run natively. set14_nm.c is the whole set14 file
 # (set14_trans is a near-match on the PS2 side, believed equivalent).
@@ -127,8 +127,53 @@ LOBBY="$(ls src/lobby/f/lb_[a-p].c src/lobby/f/lb_z*.c | tr '\n' ' ') src/lobby/
 # the menu's move and draw (b/nm near-matches, b/lb_menu_nm.c from the asm)
 LOBBY="$LOBBY src/lobby/b/lb_bz15.c src/lobby/b/lb_bz17.c src/lobby/b/lb_bz19.c src/lobby/b/lb_bz135.c \
        src/lobby/b/nm/Lb_menu_move_Core.c src/lobby/b/lb_by86.c src/lobby/b/lb_menu_nm.c"
-WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
-GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY"
+# Memory card (main f_mc): the save screens (mccomb.c, matched; its
+# mc_sel_ck is original bytes on the PS2, so the near-match copy in
+# mccomb_nm.c, weak, gives it here), the McAct layer and the low-level
+# step machines (whole-file near-matches); libmc under them is host code
+# on save files (src/pc/rt/rt_mc.c)
+MC="src/main/mc/mclow_nm.c src/main/mc/mcact_nm.c src/main/mc/mcdisp_nm.c src/main/mc/mccomb.c src/main/mc/mccomb_nm.c"
+# the hunter's save data into a player work (Set_userdata, Set_equip_data,
+# Load_userdata: udmisc_nm, weak beside the copies rt_menu/rt_quest have)
+MC="$MC src/main/ud/udmisc_nm.c"
+# Power-on (rt_boot.c): select.bin's boot tasks (Init_task, the logos and
+# title, character creation and the continue screen: select00/demo
+# matched, edit_nm the whole edit file), main's mode menu (omake_nm),
+# options (option_nm), screen fade (fade_nm), the task scheduler (tsk_nm)
+# and TransSet/GameTrans (weapon/trans.c; its trans() is the host's,
+# rt_boot.c)
+BOOT="src/select/select00.c src/select/demo.c src/select/edit_nm.c src/main/omake/omake_nm.c \
+      src/main/option/option_nm.c src/main/fade/fade_nm.c src/main/sys/tsk_nm.c src/main/weapon/trans.c"
+# Village features beyond the walk-and-talk loop (agent F's lobby f/ files,
+# agent B's b/ runs and b/nm near-matches): the item box (lb_ib.c whole
+# file; Lb_ItemBox_init from lb_tu_ib.c), the shops (item shop, forge
+# Lb_process_shop, armour shop, materials), chairs, the player status
+# screens. Linked weak (only their defined symbols): a copy already linked
+# elsewhere wins.
+LOBBY2="src/lobby/f/lb_ib.c src/lobby/f/lb_tu_ib.c src/lobby/f/lb_ad.c src/lobby/f/lb_aa.c src/lobby/f/lb_s08.c \
+        src/lobby/f/lb_ag.c \
+        src/lobby/b/lb_by89.c src/lobby/b/lb_by90.c src/lobby/b/lb_by91.c src/lobby/b/lb_by43.c src/lobby/b/lb_by92.c \
+        src/lobby/b/lb_by51.c src/lobby/b/lb_bz70.c src/lobby/b/lbarm01.c src/lobby/b/lb_by56.c src/lobby/b/lb_bz01.c \
+        src/lobby/b/lb_by07.c src/lobby/b/lb_by20.c \
+        src/lobby/b/nm/Lb_shop_trans2.c src/lobby/b/nm/Lb_process_shop.c src/lobby/b/nm/lb_cat_material.c \
+        src/lobby/b/nm/lb_normal_material.c src/lobby/f/lb_ay.c src/lobby/f/lb_aw.c src/lobby/f/lb_dr2.c \
+        src/lobby/b/lb_by82.c src/lobby/b/lb_by61.c src/lobby/b/lb_by62.c src/lobby/b/lb_by84.c src/lobby/b/lb_by49.c \
+        src/lobby/b/lb_by60.c src/lobby/b/lb_by50.c src/lobby/b/lb_by45.c src/lobby/b/lb_bz02.c src/lobby/b/lb_by54.c \
+        src/lobby/b/lb_by80.c src/lobby/b/lb_by77.c src/lobby/b/lb_by76.c \
+        src/lobby/b/nm/lb_armor2_listItem.c src/lobby/b/nm/lb_armor_put_itemDetail.c src/lobby/b/nm/lb_armor_tag_decide00.c \
+        src/lobby/b/nm/lb_process_drawHelp.c src/lobby/b/nm/lb_process_select.c src/lobby/b/nm/lb_put_shopList.c \
+        src/lobby/b/nm/Put_page_num.c src/lobby/b/nm/shop_process_after.c \
+        src/lobby/b/lb_by44.c src/lobby/b/lb_by46.c src/lobby/b/lb_by47.c src/lobby/b/lb_by48.c src/lobby/b/lb_by52.c src/lobby/b/lb_by53.c src/lobby/b/lb_by57.c src/lobby/b/lb_by58.c src/lobby/b/lb_by59.c src/lobby/b/lb_by78.c src/lobby/b/lb_by81.c src/lobby/b/lb_by83.c src/lobby/b/nm/lb_armor_tag_decide01.c src/lobby/b/nm/lb_process_make_kyoukaList.c src/lobby/b/nm/lb_process_set_armorList.c src/lobby/b/nm/lb_process_set_weaponList.c src/lobby/b/nm/Lb_put_armorIcon.c src/lobby/b/nm/Lb_put_job_limit.c src/lobby/b/nm/shop_armor2_question.c src/lobby/b/nm/shop_armor2_stack.c src/lobby/b/nm/shop_armor_question.c src/lobby/f/lb_ax.c src/lobby/f/lb_s14.c \
+        src/lobby/b/lb_by55.c src/lobby/b/nm/item_to_stack.c src/lobby/b/nm/lb_process_kyoukaListProg.c src/lobby/b/nm/lb_process_use_item.c"
+# agent B's matched village functions (lobby round 7: NPC placement and
+# walk, pig/cat NPCs, shop list/select, forge, armour shop, start menu):
+# linked as they are; the near-match / stand-in copies of the same
+# functions in other lobby objects are weakened after compiling (BMATCH)
+BMATCH="$(ls src/lobby/b/lb_by13[5-9].c src/lobby/b/lb_by14[0-9].c src/lobby/b/lb_by15[0-2].c 2>/dev/null | tr '\n' ' ')"
+LOBBY="$LOBBY $LOBBY2 $BMATCH"
+WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
+WEAK="mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
+GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT"
 
 SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}
 CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
@@ -144,9 +189,11 @@ CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOUR
 GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -ftrivial-auto-var-init=zero -Iinclude -w"
 LIBS="-lSDL2 -lGL -lm -ldl -rdynamic"   # -rdynamic: rt_data.c finds host symbols with dlsym
 # unnamed PS2 data the game C refers to as D_<addr>: rows of rview_mat
-# (0x3F2060) and two game.bin tables
+# (0x3F2060) and two game.bin tables; main's mode menu starts select.bin
+# tasks by address (Demo_task, Edit_task, Cont_task)
 LIBS="$LIBS -Wl,--defsym,D_3F2080=rview_mat+0x20 -Wl,--defsym,D_3F2090=rview_mat+0x30 \
-      -Wl,--defsym,D_63BC40=enemy_shadow_size -Wl,--defsym,D_63BD60=enemy_mahi_size -Wl,--defsym,D_63FC50=em_hit_push_tbl -Wl,--defsym,D_63FA10=em_body_tbl -Wl,--defsym,D_3E4C9C=player_work+0xAC"
+      -Wl,--defsym,D_63BC40=enemy_shadow_size -Wl,--defsym,D_63BD60=enemy_mahi_size -Wl,--defsym,D_63FC50=em_hit_push_tbl -Wl,--defsym,D_63FA10=em_body_tbl -Wl,--defsym,D_3E4C9C=player_work+0xAC \
+      -Wl,--defsym,D_533BE0=Demo_task -Wl,--defsym,D_5367F0=Edit_task -Wl,--defsym,D_5375F0=Cont_task"
 
 if [ -n "$PC_SYS" ]; then
     SYS="$PC_SYS"
@@ -170,7 +217,7 @@ NEWEST=$(ls -t include/*.h src/pc/rt/rt_ps2abs.h tools/build_pc.sh tools/pc_abs.
 # shellcheck disable=SC2086
 for f in $GAME; do
     b=$(basename "$f" .c)
-    case "$f" in src/lobby/*) b="lb__$b" ;; esac
+    case "$f" in src/lobby/*) b="lb__$b" ;; src/select/*) b="sel__$b" ;; esac
     o="build/pc/$b.o"
     if [ -f "$o" ] && [ "$o" -nt "$f" ] && [ "$o" -nt "$STAMP" ]; then
         OBJS="$OBJS $o"
@@ -192,6 +239,8 @@ for f in $GAME; do
     src/lobby/f/*) ABI="-Dframe_check2=rtabi_frame_check2" ;;
     # game_core (swset, move, trans, hit_check) is the host tick (rt_quest.c)
     src/main/game/f_gameb.c) ABI="-Dgame_core=ps2_game_core" ;;
+    # trans() is the host's (rt_boot.c); TransSet/GameTrans are the game's
+    src/main/weapon/trans.c) ABI="-Dtrans=ps2_trans" ;;
     */em_cmd_nm.c) ABI="-DGetWaterData()=GetWaterData(em)" ;;   # a0 = em left over
     src/game/em/em_core_nm.c) ABI="-DNextStage_No_Set(...)=rtabi_NextStage_No_Set(em)" ;;   # a0 = em left over
     src/game/em/em16_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
@@ -251,11 +300,22 @@ for f in $GAME; do
         fi
     fi
     $CC $INC $GAMEFLAGS $ABI $SYS -c "$src" -o "$o"
-    case " $WEAK " in *" $b "*) $OBJCOPY --weaken "$o" ;; esac
+    # only the symbols the file defines: "objcopy --weaken" would also make
+    # its undefined references weak, and a weak reference nothing defines
+    # is NULL (gen_rt_auto.py never sees it: mccomb_nm's mc_sel_tbl)
+    case " $WEAK $WEAK_LB2 " in *" $b "*)
+        $OBJCOPY $($NM --defined-only -g "$o" | awk 'NF == 3 {printf "--weaken-symbol=%s ", $3}') "$o" ;; esac
     # single symbols that another file also defines (the lobby NPC files'
     # empty dummy_em_prog: main's f_em one wins)
     case "$b" in lb__lb_em*_nm) $OBJCOPY --weaken-symbol=dummy_em_prog "$o" ;; esac
     OBJS="$OBJS $o"
+done
+# the matched lobby functions win over other lobby objects' copies
+BSYMS=$(for f in $BMATCH; do $NM --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && $2 == "T" {print $3}'; done | sort -u)
+for o in $OBJS; do
+    case "$o" in build/pc/lb__lb_by13[5-9].o|build/pc/lb__lb_by14[0-9].o|build/pc/lb__lb_by15[0-2].o) continue ;; build/pc/lb__*) ;; *) continue ;; esac
+    W=$($NM --defined-only -g "$o" | awk 'NF == 3 {print $3}' | sort -u | comm -12 - "$(printf '%s\n' $BSYMS | sort -u > build/pc/.bsyms; echo build/pc/.bsyms)")
+    [ -n "$W" ] && $OBJCOPY $(for w in $W; do printf -- '--weaken-symbol=%s ' "$w"; done) "$o"
 done
 # data tables (names in src/pc/rt/tables.txt; bytes come from the disc at run time)
 python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
@@ -263,7 +323,7 @@ python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 $CC $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot; do
     # shellcheck disable=SC2086
     $CC $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"

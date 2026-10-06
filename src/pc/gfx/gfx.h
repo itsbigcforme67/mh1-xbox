@@ -95,6 +95,21 @@ typedef struct {
  * states apply. Matrices are left as they were. */
 void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, const uint8_t *col);
 
+/* Recording (gfx_rec.c): between gfx_rec_begin and gfx_rec_end the draw
+ * calls below are recorded instead of drawn; gfx_rec_replay draws the last
+ * finished recording (game code that draws while its tick runs, e.g. the
+ * title screen). gfx_rec_call records a host draw callback in order. */
+void gfx_rec_begin(void);
+void gfx_rec_end(void);
+void gfx_rec_clear(void);
+int  gfx_rec_have(void);
+void gfx_rec_replay(void);
+void gfx_rec_call(void (*fn)(void *), void *arg);
+/* backend hooks: 1 = recorded, the backend returns at once */
+int  gfx_rec_state(int state, uintptr_t v);
+int  gfx_rec_2d(int w, int h, int n, const float *pos, const float *st, const uint8_t *col);
+int  gfx_rec_clay(gfx_clay *c);
+
 gfx_clay *gfx_create_clay(const gfx_clay_desc *d);
 /* Replace positions and/or colours (either may be NULL). */
 void gfx_update_clay(gfx_clay *c, const float *pos, const uint8_t *col);

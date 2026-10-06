@@ -1026,7 +1026,7 @@ void cam_sub_std(CAMW *cw, CAMS *cs) {
     ca = cs->ang;
     da = d->ang;
     diff = (u16)(da - ca);
-    if (diff >= 0x8001) {
+    if (diff > 0x8000) {
         cs->ang = ca - (s16)((u16)(ca + 0x10000 - da) / 6);
     } else {
         cs->ang = ca + (s16)(diff / 6);
