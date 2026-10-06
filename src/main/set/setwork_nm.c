@@ -51,7 +51,7 @@ int get_start_heap(int n) {
 }
 
 u8 *get_heap_ptr(int n) {
-    return (u8 *)((n << 9) + (int)work_heap_area);
+    return (u8 *)((int)work_heap_area + (n << 9));
 }
 
 void set_used_heap(int pos, int n) {

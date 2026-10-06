@@ -1848,6 +1848,15 @@ lobby 0x005E9660 0x005E96C8 f/lb_gap02
 lobby 0x005FDFE0 0x005FE140 f/lb_gaq01
 lobby 0x005CA8C0 0x005CA9C0 f/lb_gy01
 lobby:rodata 0x00664AA0 0x00664AB8 f/lb_gy01
+main 0x00235B70 0x00235BE4 net/cpinet12
+main 0x0018A490 0x0018A4E8 fl/tx07
+main 0x00154FF0 0x00155000 set/setwork3
+main 0x001635E0 0x00163668 font/disp103
+main 0x001541A0 0x00154238 pl/plx01
+main 0x00233B10 0x00234260 net/ave01
+main 0x002344F0 0x0023525C net/ave02
+main 0x00152D70 0x00152DE0 pl/plx02
+main 0x00173300 0x0017331C fl/flm03
 main 0x0028B3B0 0x0028B468 mc/netfile2c
 main 0x0028B4B0 0x0028B578 mc/netfile2d
 main 0x0028B210 0x0028B2E0 mc/netfile2e
