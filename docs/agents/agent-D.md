@@ -747,3 +747,45 @@ More lessons (each confirmed by a match):
 - Not solved (left near-match): hk_key_eisuu (2 off: one `b`+nop pair), Seisan_ok_ck (register naming of locals, 8 locals),
   Get_cam_grid_XZ (10), Em_direct_set (register naming, K&R parameter), str_gattai (needs MWCC's own va_start; the nm
   file's `va_start` is an implicit call), quest_condition_prog (124 off), the *_effect_move family.
+
+# Fourth assignment (main module 0x1C0000-0x230000, 0x24A240-0x2814E0)
+
+Linked, all five modules OK (rebuild.sh):
+- ud12.c Seisan_ok_ck (0x2743E0-0x274654). Fix: the final test is `cnt == 0 || any != 0`
+  (the older C had it inverted), and `for (j = 0, e = ent; ...)` puts j=0 first.
+- boot01.c/boot02.c: main (0x22FDD0), SlashToBackslash, InetDbgPrint (varargs stub with four
+  named params), InetConnectInitialize, LobbyToMcsInitSocket, LobbyToMcsInit. cnNet_ModuleLoad
+  (0x22FE00, 12 bytes) sits between main and SlashToBackslash and stays asm: always check
+  tools symbol list for hidden functions between two linked ones.
+  `switch (*CurDevice) { case 2: case 3: ...; break; default: break; }` gives the original
+  "beq, beq, b" with the empty fall-through (the if/else forms do not).
+- camq1.c Fish Wyvern / Legend Sword camera requests (0x225F50).
+- ncm01-03.c network connection message drawing (ncm_char_length, ncm_get_char_size_num,
+  ncm_center_x, Ncm_mssage_disp, Ncm_err_mssage_disp). ncm_char_length must return u8 with a
+  u8 result variable (daddiu constants). Spilled s16 parameters of the callee are `int` params.
+  A `do {} while` guarded by `if (*lines != 0)` and a copy `x0 = x` inside the guard
+  matches the original compare of the first x only.
+- flfnt01-05.c: the Capcom "fl" bitmap font library (0x216490-0x217E48, 27 functions, no C
+  before). Linked: Create, GetSystemMemorySize, StackReset, Init, CacheFlush, SetSize, Locate,
+  SetZ, SetPalette (`(s16)pal % 32`), SetHalftype, Draw, DrawAll, MakeHandle, PaletteTrans,
+  DrawStart, flnecAscii2Sjis. np (gp pointer) is the font work FNP (struct in flfnt_nm.c):
+  five request lists of 0x80 FREQ (0x10 bytes), string buffer, glyph cache, texture and
+  palette handles, DMA packet cursor. Whole library with near-matches in flfnt_nm.c.
+  Near-matches (compile, logic believed right): flfntSetPalData (99/108, the original steps
+  the destination by 2 twice, no way found to stop MWCC folding it), flfntPrintf (73/103,
+  hand-made va_list: &fmt + 0x48 - 56; original re-reads np for every field), flfntFontPuts
+  (18/108, char register a0 instead of a1), flfntDrawTerm (18/54, the 36-bit mask is
+  dsll32/dsrl32 in the original, MWCC folds it to and), flfntSjis2Index (6/21),
+  flfntSjis2Jis (51), flnecCheckFont (12), flnecCheckString (32), flnecExpandFont (88; the
+  original steps the output pointer after every pixel pair), flnecReloadTexture (7/189).
+  Not written: flfntFontPutc (GS packet builder, 1260 bytes).
+- ncm_nm.c also holds Ncm_mssage_disp_option (37/86), Ncm_br_mc_mssage_disp (95/200),
+  Ncm_menu_disp (139/162; the switch needs explicit case 0, 2..11 for the jump table at
+  0x373460, not yet registered) and ncm_str_disp_sub (34/156, saved-register order of s/x/size;
+  declbf over six locals found nothing better).
+Near-matches left: Quest_start (10 off: `mission_area` loaded before `m->o[0]`, the original
+loads o[0] first; tried operand order, temp variable), Get_cam_grid_XZ (the original loads the
+cell origin after the float conversion, u8 result), hk_key_eisuu (original returns straight to
+the epilogue from the failed tests; every if/else, break and return form compiled to a stub).
+Not Capcom, skipped: Sofdec/ADX/CRI middleware (0x1C4000-0x216000), PS2 kernel stubs (0x254300+),
+libcdvd-style RTC helpers (0x27C698).

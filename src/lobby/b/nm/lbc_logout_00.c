@@ -32,7 +32,7 @@ void lbc_logout_00(void) {
     temp_a2 = temp_v1 + 0x2C34;
     switch (temp_a1) {                              /* switch 1 */
     case 0:                                         /* switch 1 */
-        Lbc_init_network_work(&jtbl_3160, temp_a1, temp_a2);
+        Lbc_init_network_work(&jtbl_3160);
         temp_a0 = (int)cw;
         if (F(u8, temp_a0, 0x2C46) != 0) {
             F(u8, temp_a0, 0x2C34) = (u8) (F(u8, temp_a0, 0x2C34) + 1);
@@ -45,14 +45,14 @@ void lbc_logout_00(void) {
         F(u8, temp_a0, 0x2C34) = 3U;
         return;
     case 1:                                         /* switch 1 */
-        if ((Fade_busy_ck(&jtbl_3160, temp_a1, temp_a2) & 0xFF) != 1) {
+        if ((Fade_busy_ck(&jtbl_3160) & 0xFF) != 1) {
             temp_v1_2 = (int)cw;
             if (F(u8, temp_v1_2, 0x2C46) != 0) {
                 str_stop(0);
                 str_stop(1);
                 temp_a1_2 = game_w.master;
                 if ((*(s8 *)((u8 *)&D_3E4C05 + (temp_a1_2 * 0xA00))) != 0x34) {
-                    fade_set(2, temp_a1_2);
+                    fade_set(2);
                     cnWrap_BgmStop();
                     Pit_reset();
                     temp_v1_3 = (int)cw;
@@ -74,7 +74,7 @@ void lbc_logout_00(void) {
         return;
     case 3:                                         /* switch 1 */
         F(u8, temp_v1, 0x2C34) = (u8) (temp_a1 + 1);
-        tk_logout_init(&jtbl_3160, temp_a1, temp_a2);
+        tk_logout_init(&jtbl_3160);
         SoftKeyboard_exit();
         temp_a0_2 = F(u8, (int)cw, 0x2C46);
         if (temp_a0_2 == 3) {
@@ -102,7 +102,7 @@ void lbc_logout_00(void) {
         }
         break;
     case 6:                                         /* switch 1 */
-        if ((Fade_busy_ck(&jtbl_3160, temp_a1, temp_a2) & 0xFF) != 1) {
+        if ((Fade_busy_ck(&jtbl_3160) & 0xFF) != 1) {
             temp_a1_3 = (int)cw;
             F(u8, temp_a1_3, 0x2C34) = (u8) (F(u8, temp_a1_3, 0x2C34) + 1);
             if (F(u8, (int)cw, 0x2C46) != 0) {
@@ -113,7 +113,7 @@ void lbc_logout_00(void) {
         }
         break;
     case 7:                                         /* switch 1 */
-        if ((Fade_busy_ck(&jtbl_3160, temp_a1, temp_a2) & 0xFF) == 1) {
+        if ((Fade_busy_ck(&jtbl_3160) & 0xFF) == 1) {
             if (F(u8, (int)cw, 0x2C46) != 0) {
                 F(s8, pNet, 0xC) = 1;
             }

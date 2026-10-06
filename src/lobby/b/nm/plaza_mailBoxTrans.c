@@ -144,7 +144,7 @@ loop_15:
             put_titles( (temp_s1_4 << 0x30) >> 0x30,  (temp_s2_2 << 0x30) >> 0x30, F(s32, &tl_mail_tbl, 0x14));
             temp_s0_3 =  (temp_s2_2 << 0x30) >> 0x30;
             plaza_disp_mail(pNet,  (temp_s1_4 << 0x30) >> 0x30,  ((temp_s0_3 + 0x16) << 0x30) >> 0x30);
-            put_mail_input_square(pNet,  (temp_s1_4 << 0x30) >> 0x30, temp_s0_3);
+            put_mail_input_square(pNet,  (temp_s1_4 << 0x30) >> 0x30);
             if (F(s8, (u8 *)cw, 0x2F99) != 0) {
                 font_set_palette(0);
             } else {

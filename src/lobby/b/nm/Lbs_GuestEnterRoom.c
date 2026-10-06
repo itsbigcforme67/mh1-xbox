@@ -17,12 +17,10 @@ s32 Lbs_GuestEnterRoom(void) {
         F(s8, (u8 *)cw, 0x2C45) = 0x15;
         F(s8, &ClassInfo, 8) = (s8) (F(u8, &lb_sys, 0x73) + 1);
         cnLBS_RoomEntry(cnLbc_CheckInFloorOrder(2) & 0xFFFF, (int)&RoomRule + 2, &CallBack_Result_Lobby_RoomEntry);
-block_12:
-    default:
-        return 2;
+        break;
     case 1:
         Check_CallBackWait(temp_a0);
-        goto block_12;
+        break;
     case 2:
         F(u8, temp_v1, 0x2C35) = 0U;
         To_EnterRoom(temp_a0);
@@ -31,4 +29,5 @@ block_12:
         F(u8, temp_v1, 0x2C35) = 0U;
         return 1;
     }
+    return 2;
 }

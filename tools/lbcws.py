@@ -20,7 +20,7 @@ def convert(src, fn):
     m = re.search(r'^[\w\*\s]+\b%s\([^;{]*\)(?:\n(?:[\w \*]+;\n)+)?\s*\{\n' % re.escape(fn), src, re.M)
     if not m: return None
     head, body = src[:m.start()], src[m.start():]
-    cwv = set(re.findall(r'\b(\w+) = \(u8 \*\)cw;', body))
+    cwv = set(re.findall(r'\b(\w+) = \(u8 \*\)cw;', body)) | set(re.findall(r'\b(\w+) = \(int\)cw;', body))
     cwv |= set(re.findall(r'\b(\w+) = cw;', body))
     used = {}
     def rep(mm):
@@ -33,9 +33,11 @@ def convert(src, fn):
     body2 = re.sub(r'F\((\w+), ([^,()]+(?: \*\))?[^,()]*), (0x[0-9A-Fa-f]+|\d+)\)', rep, body)
     if not used: return None
     for v in cwv:
-        body2 = re.sub(r'^\s*%s = (?:\(u8 \*\))?cw;\n' % v, '', body2, flags=re.M)
+        body2 = re.sub(r'^\s*%s = (?:\(u8 \*\)|\(int\))?cw;\n' % v, '', body2, flags=re.M)
         body2 = re.sub(r'^\s*(?:void|u8) \*%s;\n' % v, '', body2, flags=re.M)
+        body2 = re.sub(r'^\s*(?:int|s32) %s;\n' % v, '', body2, flags=re.M)
         body2 = re.sub(r'^\s*(?:void|u8) \*%s = (?:\(u8 \*\))?cw;\n' % v, '', body2, flags=re.M)
+        body2 = re.sub(r'\b%s\b(?= [+-] )' % v, '(u8 *)cw', body2)
         body2 = re.sub(r'\b%s\b' % v, '((CWS_%s *)cw)' % fn, body2)
     body2 = body2.replace('CWX->', '((CWS_%s *)cw)->' % fn)
     offs = sorted(used)
@@ -81,13 +83,14 @@ def convert_args(src, fn):
     if out_params == params: return None
     return head + m.group(1) + out_params + m.group(3) + body
 for fn in sys.argv[1:]:
-    p = 'build/lbauto/%s.c' % fn
+    p = os.environ.get('NMFILE') or 'build/lbauto/%s.c' % fn
     src = open(p).read()
     base = run(fn, src)
     new = convert(src, fn)
     if new is None or os.environ.get('ARGS'): new = convert_args(new or src, fn)
     if new is None or base is None: print(fn, 'skip'); continue
     r = run(fn, new)
+    if r is None and os.environ.get('DBG'): open('/tmp/x_cws.c','w').write(new)
     if r is not None and r <= base and new != src:
         open(p, 'w').write(new)
         print(fn, 'OK' if r == 0 else 'd%d (was %d)' % (r, base), flush=True)

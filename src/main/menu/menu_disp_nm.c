@@ -1909,8 +1909,8 @@ void Pit_disp_chat_cnfg(void) {
             flfntSetSize(0x12, 0x12);
             font_set_palette(0);
             i = 6;
-            y = 0x54;
             e = str_tbl_reibun0 + (PitMenu.x1B / 6) * 0x60;
+            y = 0x54;
             do {
                 flfntLocate(0x1AF, y);
                 Reibun_print(10, *(s32 *)(e + 0xC));
@@ -2436,7 +2436,8 @@ int pef_get_alpha(PEF *e, int *tbl, s16 t) {
         for (;;) {
             if (!(t > t1)) {
                 a = *(f32 *)&cur[1];
-                f = 255.0f * (a + ((*(f32 *)&nx[1] - a) * (f32)(t - cur[0])) / (f32)(t1 - cur[0]));
+                a = a + ((*(f32 *)&nx[1] - a) * (f32)(t - cur[0])) / (f32)(t1 - cur[0]);
+                f = 255.0f * a;
                 e->alpha = (u8)f;
                 return 0;
             }

@@ -1,6 +1,5 @@
-/* power01 - SLPM_654.95 0x00290C60-0x00290E7C: PS2 HDD/console power-off handling (ps2HddPowerOffSet starts a thread
- * that waits for the power-off interrupt, then shuts the HDD down and powers the console off) and Quest_price_return
- * (give back the quest fee that was held). Names of the sce* calls are from the symbol table; the semaphore/thread
+/* power01 - SLPM_654.95 0x00290C60-0x00290E48: PS2 HDD/console power-off handling (ps2HddPowerOffSet starts a thread
+ * that waits for the power-off interrupt, then shuts the HDD down and powers the console off). Names of the sce* calls are from the symbol table; the semaphore/thread
  * parameter blocks are guesses from the stores. */
 #include "types.h"
 
@@ -9,7 +8,6 @@ extern char lit_233_00386418[];
 extern char lit_234_00386420[];
 extern char lit_235_00386428[];
 extern u8 stack[];
-extern s32 quest_price;
 extern char _gp;
 
 int WaitSema();
@@ -23,7 +21,6 @@ int GetThreadId();
 int StartThread();
 int sceCdPOffCallback();
 int iSignalSema();
-void Gold_add();
 void PowerOffHandler();
 void PowerOffThread();
 
@@ -97,12 +94,4 @@ void PowerOffThread()
 void PowerOffHandler()
 {
     iSignalSema();
-}
-
-void Quest_price_return()
-{
-    if (quest_price != 0) {
-        Gold_add(quest_price);
-        quest_price = 0;
-    }
 }

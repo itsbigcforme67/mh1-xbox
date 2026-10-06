@@ -38,6 +38,11 @@ def ranges(fn):
     for n in sorted(set(re.findall(r'%hi\((lit_\w+)\)', body(fn)))):
         if n in tables() and n in syms():
             a, sz = syms()[n]; out.append((a, a + sz))
+    try:
+        import lbjt2
+        out = sorted(set(out) | set(lbjt2.ranges(fn)))
+    except KeyError:
+        pass
     return out
 if __name__ == '__main__':
     for fn in sys.argv[1:]:

@@ -187,8 +187,11 @@ void InitSystemData(void) {
 
 void setBGcolor(int n) {
     u8 *t = bg_col_tbl[n];
+    u32 r = *t++;
+    u32 g = *t++;
+    u32 b = *t;
 
-    flSetRenderState(0x14, (t[0] << 16) | 0xFF000000 | (t[1] << 8) | t[2]);
+    flSetRenderState(0x14, (r << 16) | 0xFF000000 | (g << 8) | b);
 }
 
 static void ioread_sub(int n) {

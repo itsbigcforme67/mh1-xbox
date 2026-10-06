@@ -23,14 +23,14 @@ s32 server_select_05(void) {
     switch (temp_a0) {
     case 0:
         COM_R_No_3 = (u8) (temp_a0 + 1);
-        cnWrap_BgmStop(temp_a0, temp_a1);
+        cnWrap_BgmStop(temp_a0);
         cnWrap_ScreenFadeOut(0, 0x14);
     default:
 block_30:
         lbc_text_lobby_trans(&network_work);
         return var_s0;
     case 1:
-        if (cnWrap_ScreenFadeCheck(temp_a0, temp_a1) == 0) {
+        if (cnWrap_ScreenFadeCheck(temp_a0) == 0) {
             if (COM_R_No_2 != 0) {
                 var_v0 = COM_R_No_3 + 1;
             } else {
@@ -47,7 +47,7 @@ block_30:
         goto block_30;
     case 3:
         COM_R_No_3 = (u8) (temp_a0 + 1);
-        FlushCache(0, temp_a1);
+        FlushCache(0);
         memset(&FirstURL, 0, 0x100);
         MMBB_LOGIN = 2;
         BS_MODE_R_NO = 1;
@@ -55,23 +55,23 @@ block_30:
         MainBsInitialize(0);
         goto block_30;
     case 4:
-        if (MainBrowser(temp_a0, temp_a1) != 0) {
+        if (MainBrowser(temp_a0) != 0) {
             MainBsDispose();
             COM_R_No_3 = (u8) (COM_R_No_3 + 1);
         }
         goto block_30;
     case 5:
-        cnLbc_LoadNetModel(1, temp_a1);
+        cnLbc_LoadNetModel(1);
         COM_R_No_3 = (u8) (COM_R_No_3 + 1);
         goto block_30;
     case 6:
-        if (cnLbc_LoadModelWait(1, temp_a1) == 0) {
+        if (cnLbc_LoadModelWait(1) == 0) {
             return 0;
         }
         COM_R_No_3 = (u8) (COM_R_No_3 + 1);
         goto block_30;
     case 7:
-        if (disconnect(temp_a0, temp_a1) != 0) {
+        if (disconnect(temp_a0) != 0) {
             COM_R_No_3 = (u8) (COM_R_No_3 + 1);
         }
         goto block_30;

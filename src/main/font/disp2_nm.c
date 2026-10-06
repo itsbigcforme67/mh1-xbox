@@ -29,9 +29,9 @@ s16 *Start_item_data_adrs_get(void);
 void Start_item_init(void) {
     GAME_W *g = &game_w;
     s16 i;
-    s16 j;
     s16 *d;
     u16 id;
+    s16 j;
 
     for (i = 0; i < 0x20; i += 8) {
         g->reward_item[i + 0].id = 0;

@@ -593,3 +593,48 @@ Lessons (each confirmed by a match):
 Not started / still asm in this region: draw_dialog_square, Draw_menu_square, DispButtonHelp, plaza_checkFriend (3.7 KB), plaza_searchMember,
 plaza_mailBox, the plaza *Trans functions (most have int-mode drafts in b/nm), Lb_put_new_mail, disp_status, lbc_login_*, lbc_logout_*, tk_logout,
 Lb_menu_move_Core/DispLobbyMenu, test_server_sel_disp, Display_StringData/Analysis_TagCode, lb_npc_init/lb_npc_trans/lb_npc_item_trans.
+
+# Lobby round 4 (agent B, 5 Oct 2026): 0x533980-0x5C4E60, near-match files turned into linked runs
+
+Result: lobby (and all five modules) rebuild OK. About 60 new small linked runs plus the existing families grew; see `config/c_files.txt`
+(`b/lb_by01..60`, `lb/lbmix*`, `lb/lbshp*`, `lb/lbem04/09/10*`, `lb/lbui*` incl. DispButtonHelp 1796 bytes, `cnet/cnlbs*`).
+Not linked, near-match C that compiles (`src/lobby/b/nm/NAME.c`, `lb/*_nm.c`, `cnet/cnlbs_nm.c`, run `python3 tools/check.py FILE`):
+the rest of the 0x537860-0x53D800 shop / armor / process family (lb_process_*, shop_armor*, lb_armor*, Lb_put_*; typed with include/lobby_s.h),
+draw_dialog_square (8 off), Draw_menu_square, tk_logout (44 off), plaza_mailBox, plaza_checkFriend/searchMember/searchAll (int-mode drafts),
+lbc_login_*/lbc_logout_*, Display_StringData, Analysis_TagCode, lb_npc_trans/init, Lb_menu_move_Core, DispLobbyMenu, disp_status.
+Holdouts after a real attempt: npcCatWAITER, __cnet_bgProg_ReadRoomRule (no c_rawfuncs fallback needed: the family runs already link around an
+unmatched function, which stays asm), plaza_chat* done; lb_npc_old_guild (the constant register of 0x69, 2 off), lb_mix_decide, Draw_menu_square
+(x and y live on the stack in the original), connecting_00, cmcs_00, check_erase_dialog, event_eat_trans_ot0 (flfntLocate argument order),
+_cnet_RecvFromLbs_MatchJoin/PlSide/Opponent* (res and the byte variable share one stack slot), value_result (64-bit locals).
+Third-party code, not decompiled: 0x53E848-0x590D40 = Sony HTTP client (sceHTTP*, 0x53E848-0x54A000), HTTPS/SSL glue and the SSLeay-style crypto
+library (ASN1, BER, BN, BIO, X509, EVP, DES, RC2/RC4, MD2/MD5/SHA1, DH/RSA/PK, SSLv2/v3/TLS1, PEM) up to 0x590D40.
+
+New tools (all in tools/, see the docstrings): lbpromote.sh NAME... (matching b/nm/NAME.c -> linked run lb_byNN.c), lbregister.sh (now also lb_mix,
+lb_shop, lb_em04/09/10 families and the jump-table slots; one slot per object, tables only separated by alignment are merged), lbjt2.py (jump tables of
+functions that are already C), lbblk2.py, lbstale.py, lbderef.py, lbundef.py, lbshopfld.py, lbglob.py, lbcbnm.py, autodecl.py / permdecl.py /
+permlines.py / permcases.py (brute force declaration order, statement order, case order; permuter.py does not work for lobby: the repo path has a
+space), al3.py-style filtering of align.py output is in the scratchpad only. check.py now ignores a `_XXXXXXXX` address suffix on callee names (check.py
+compares callee names with docs/survey/mh1_symbols.csv, so address-suffixed statics showed as differences); rebuild.sh is the proof. Tools that read
+check.py output must read stderr too (compile errors go there).
+
+Lessons (each confirmed by a match):
+- CallBack_Event_* take `CNET_RES res` by value as well (frame 32 instead of 16 even if res is unused).
+- `ok = f(x) > 0; if (!ok) ...` gives `slt v0` + bne (lb_mix_checkItemMake); `qty <= cnt` instead of `cnt >= qty` gives `slt at` (Lb_mix_item_checkMax).
+- Prototype `int CheckItemPrice(int id, int qty)` at the call site while the definition is K&R u16/s16 (no andi at the call).
+- `for (i = 0, p = x; ...)` instead of `p = x; for (i = 0; ...)` moves an addiu (Lb_mix_item_checkMax).
+- A struct copy of three s16 (`*(S3 *)d = *(S3 *)t`) compiles to lh/lh/lh then sh/sh/sh (cnLBS_Get_CurrentPlace); a 20-byte struct of five f32 copies as
+  lwc1/swc1 (draw_dialog_square: `*(F5 *)&sp = *(F5 *)t`).
+- m2c `return;` in the middle of a switch whose cases return values = `r = ..; break;` and `return r;` after the switch (cnLbc_CheckInFloorOrder).
+- `block_N: default: return X;` in m2c output = `break` + `return X;` after the switch (lbblk2.py fixed ten functions at once).
+- Switch with the ladder in reverse source order: write the cases ascending when the compare ladder is descending (connect_10, DispButtonHelp inner switches).
+- Stack slot sharing: `char buf[9]` instead of 8 moves a stack local (cnet __cnet_Recv_SearchUser); declaration order of scalars (autodecl.py) fixes saved-register
+  numbering (id_select_00, Get_ServerColor).
+- `v = (u16)Get_sw2(0)` keeps both masks of `v & 0xFFFF & 0x100`; `u16 pad = Get_sw2(0)` too (DispHelpLine, plaza_selectMenu); a u16 member loaded with lhu keeps
+  `& 0xFFFF` as well (DispButtonHelp), a masked call result does not.
+- `off = a->cur * 0x24; ... (off + tbl + 2)` fixes addu operand order (plaza_chatMain, plaza_selectMenu).
+- Typed `lbShop` (include/lobby_s.h, struct LB_SHOP from include/lobby.h) was worth more than anything else for the shop family: one tools/lbshopfld.py pass.
+  A table symbol that the original reaches gp-relative must be declared with a small size (`extern s32 shop_process00_tag[1]`).
+- Struct arguments `put_button_help(int, int, int, u16)`: the u16 prototype adds the `andi 0xFFFF` at the call sites.
+Header edits (all proven by a match): include/lobby_a.h and include/lobby_f.h: LBPLAYER.x24 (s8) carved out of _pad14 (Lb_pl_status_m); include/lobby_a.h
+was regenerated from lobby_f.h by tools/lbauto.py (it only picked up fields already merged into lobby_f.h); new include/lobby_s.h (lobby_a.h plus typed
+lbShop, shopList, lb_pit).

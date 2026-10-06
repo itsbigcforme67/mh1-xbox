@@ -1,5 +1,5 @@
-/* hit3 - SLPM_654.95 0x00290560-0x002907B4 (g_hit_point_cyl, hit_point_cbd): point tests
- * against solids. hit_point_cyl: is point p inside the vertical
+/* hit3 - SLPM_654.95 0x00290560-0x002905E8 (g_hit_point_cyl): point test
+ * against a solid. hit_point_cyl: is point p inside the vertical
  * cylinder of radius r at c (top / bottom are offsets from c.y, tested only
  * when top > 0)? Guess from the code. */
 #include "types.h"
@@ -20,7 +20,6 @@ int hit_point_cyl(f32 *p, f32 *c, f32 r, f32 top, f32 bot) {
     return 0;
 }
 
-/* hit_point_cbd 0x002905F0-0x002907B4: is p inside the slab above the segment a -> b (height h, half width w)? */
 u8 hit_point_cbd(f32 *p, f32 *a, f32 *b, f32 h, f32 w) {
     f32 n[3];
     f32 d[3];

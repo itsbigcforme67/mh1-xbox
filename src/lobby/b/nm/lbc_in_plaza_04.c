@@ -2,8 +2,8 @@
 typedef struct { u8 pad0000[0x2C4C]; s32 x2C4C; } CWS_lbc_in_plaza_04;
 
 void lbc_in_plaza_04(void) {
-    s32 temp_a0;
     s32 temp_a2;
+    s32 temp_a0;
     temp_a2 = Get_sw2(0) & 0xFFFF;
     temp_a0 = ((CWS_lbc_in_plaza_04 *)cw)->x2C4C;
     ((CWS_lbc_in_plaza_04 *)cw)->x2C4C = (temp_a0 + 1);
