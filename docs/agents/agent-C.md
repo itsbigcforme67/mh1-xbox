@@ -794,3 +794,24 @@ Lessons (function that shows it):
 - `r = *t++; g = *t++; b = *t;` (not t[0..2]) gives the original's advanced pointer (setBGcolor).
 - Several statements `a = x; b = y` at the top of a function change which saved register a variable gets; a stray initialisation
   `s16 cur = 0` at the declaration hoists the `li` into the prologue (font_print_sp, not fixed).
+
+## Eighth assignment: near-match sweep, ranges 0x100000-0x160000 and 0x230000-0x23E500 (Sonnet worker C, 5 Oct 2026)
+Linked (main rebuild OK): net/ave01 + ave02 (the 48 "Ave_" IOP network RPC wrappers, 0x233B10-0x23525C; Ave_TcpSend 360 bytes and
+Ave_TcpRecv 288 stay near-matches in ave_nm.c: loop shape / double s16 normalisation), net/cpinet12 (CpInetDnsLookUp), set/setwork3
+(get_heap_ptr), pl/plx01 (Sansai_talk_ck), pl/plx02 (Get_Use_itemnum). Outside my new range (0x160000-0x1C0000, now agent E, all committed):
+font/disp103 (Ck_hankaku), fl/tx07 (flPS2GetPaletteVramBlock), fl/flm03 (flvecCopy).
+Still near-match: load_bin 5 (saved register order of part/file), em_search_set 57, stick_pow_get 1 (r tested masked, returned unmasked),
+flPS2SearchVramSpace 3 (extra nop), CpInetDnsLookUp done, CpInetTcpOpen/Close/Delete, flPS2DmaAdd*Tag 16-18 (schedule), CCnNetMsg_CnReadSeek 5
+(rd/size register swap), getsh_nm.c (get_start_material/hierarchy/clay/mdlw: MWCC unrolls the byte-sum loop 8x, the original does not).
+Library, not worth matching: sceNetGlue* + ipaddr_from_string (0x236B70-0x237800, Sony netglue), sceUsbKb* (0x23BE10-0x23D870), flPS2Dma* (hardware
+DMA with pcpyld / inline asm, 0x16E790-0x16F0F0).
+Lessons:
+- A switch whose LAST case falls out (`case -2: r = -3;` with no break, then `return r;`) gives the original's "last block has no `b end`" layout
+  (CpInetDnsLookUp, flPS2GetPaletteVramBlock with `int r;` declared first).
+- Result of an s16-returning callee kept in `int r` and function returning `int` avoids the second dsll32/dsra32 at the return (Ave_GetOpt);
+  `if (r > len) {} else memcpy(...)` gives `slt at`; `if (0 <= r) {...}` gives `slt at,r,zero; bne` instead of bltz (Ave_DnsLookUp).
+- Struct assignment of a 3-float struct gives lwc1 x3/swc1 x3 in the original order (flvecCopy); 11-float struct likewise (Ave_PppStatus).
+- Rounding `(16 - n % 16) + n` (operand order) for RPC sizes (Ave_SifCallRpc). `(s16)!f()` in an int function = sltu/xori/dsll32/dsra32.
+- `for (i = 0; i < n + 1 ...)` with `i = 0` first, and `c <= 0x9F` instead of `c < 0xA0` (Ck_hankaku); `(int)base + (n << 9)` order (get_heap_ptr).
+- declbf killed by a timeout leaves the file in a worse permutation: always `git diff` the nm file after a killed run.
+- mk1.py silently overwrites an existing run file: check `ls` for the name first.

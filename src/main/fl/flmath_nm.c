@@ -14,14 +14,10 @@ f32 flPS2SinFast(f32);
 f32 flPS2CosFast(f32);
 void flPS2SinCosFast(f32 *, f32);
 
-void flvecCopy(f32 *d, f32 *s) {
-    f32 x = s[0];
-    f32 y = s[1];
-    f32 z = s[2];
+typedef struct FV3 { f32 x, y, z; } FV3;
 
-    d[0] = x;
-    d[1] = y;
-    d[2] = z;
+void flvecCopy(f32 *d, f32 *s) {
+    *(FV3 *)d = *(FV3 *)s;
 }
 
 f32 flConvertRtoS_f(f32 r);
