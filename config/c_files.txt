@@ -2392,3 +2392,5 @@ lobby 0x005B6CC0 0x005B6EB8 b/lb_cmcs04
 lobby 0x005B6A60 0x005B6AB8 b/lb_cmcs00
 lobby 0x005B4F80 0x005B5044 b/lb_cn10
 lobby 0x005B6AC0 0x005B6B7C b/lb_cmcs01
+lobby 0x005B5640 0x005B5974 b/lb_tcp01
+lobby 0x005BA940 0x005BABF4 b/lb_cbpl01
