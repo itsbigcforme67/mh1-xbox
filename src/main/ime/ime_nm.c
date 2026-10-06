@@ -649,17 +649,12 @@ void prev_learn(KH *kh)
         wd.yomi = prev_yomi;
         wd.len = strlen(prev_yomi);
         wd.x06 = 0;
-        if (kh != 0) {
-            pw = kh->pw;
-            if (pw == 0) {
-                goto none;
-            }
-            wd.x07 = pw->x02;
-            wd.x08 = pw->x03;
-        } else {
-none:
+        if (kh == 0 || (pw = kh->pw) == 0) {
             wd.x08 = 0;
             wd.x07 = 0x28;
+        } else {
+            wd.x07 = pw->x02;
+            wd.x08 = pw->x03;
         }
         wd.tango = prev_tango;
         dic_tmptouroku(&wd);
