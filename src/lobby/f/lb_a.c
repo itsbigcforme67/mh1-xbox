@@ -16,8 +16,8 @@ void lb_commer_message(s8 id, u8 *src) {
         buf[0x11F] = 6;
         buf[0x11E] = 6;
         buf[0x11D] = 6;
-        if (name != 0) {
-            sprintf((char *)buf + 0x1C, lit_238_0065ECF0, name);
+        if (lbCommer[id].name != 0) {
+            sprintf((char *)buf + 0x1C, lit_238_0065ECF0, lbCommer[id].name);
             Chat_log_add(0, buf);
         }
     }
