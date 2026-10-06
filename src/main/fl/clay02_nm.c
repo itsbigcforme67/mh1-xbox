@@ -6,7 +6,7 @@ typedef struct CLAYS {
     s32 x14;
 } CLAYS;
 
-void flMemcpy(void *, void *, int);
+void flMemcpy(void *, void *, u32);
 u8 *flPS2GetSystemBuffAdrs(int);
 
 typedef struct MLCLAY {
@@ -17,12 +17,14 @@ typedef struct MLCLAY {
 } MLCLAY;
 
 void flPS2GetMLCLAY(CLAYS *c, MLCLAY *out) {
-    u8 *h;
     u8 *q;
+    u8 *h;
 
-    q = h = flPS2GetSystemBuffAdrs(c->x14);
-    flMemcpy(out, h, 0x24);
+    q = flPS2GetSystemBuffAdrs(c->x14);
+    h = q;
+    flMemcpy(out, q, 0x24);
     h += 0x30;
     out->x08 = (s32)h;
-    out->x10 = (s32)h + ((*(s32 *)(q + 0x1C) + 0xF) & ~0xF);
+    h += (*(s32 *)(q + 0x1C) + 0xF) & ~0xF;
+    out->x10 = (s32)h;
 }

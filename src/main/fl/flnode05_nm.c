@@ -75,25 +75,31 @@ int flGetHierarchy3(FLNODE *nodes, int h, int unused, int mode) {
     d = flPS2GetSystemBuffAdrs(h);
     cnt = *(s16 *)(d + 2);
     i = 0;
-    n = nodes;
-    for (; i < cnt; i++) {
-        n->cnt = cnt;
-        n->sibIdx = -1;
-        n->childIdx = -1;
-        n->sib = 0;
-        n->child = 0;
-        n->handle = 0;
-        n->data = 0;
-        n->x178 = 0;
-        n->x17C = 0;
-        flmatInit(n->mat);
-        n++;
+    if (0 < cnt) {
+        n = nodes;
+        do {
+            n->cnt = cnt;
+            n->sibIdx = -1;
+            n->childIdx = -1;
+            n->sib = 0;
+            n->child = 0;
+            n->handle = 0;
+            n->data = 0;
+            n->x178 = 0;
+            n->x17C = 0;
+            flmatInit(n->mat);
+            n++;
+            i++;
+        } while (i < cnt);
     }
-    j = 0;
-    m = nodes;
-    for (; j < cnt; j++) {
-        flGetHierarchyData2(m, d, j);
-        m++;
+    if (0 < cnt) {
+        j = 0;
+        m = nodes;
+        do {
+            flGetHierarchyData2(m, d, j);
+            j++;
+            m++;
+        } while (j < cnt);
     }
     flGetHierarchy3_sub(nodes, nodes, 0);
     switch (mode) {

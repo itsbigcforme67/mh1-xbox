@@ -31,6 +31,8 @@ void Save_userdata(int slot) {
 }
 
 /* the fields Set_equip_data touches, as overlays on the player work and the saved data */
+typedef struct { s16 a, b, c; } EQS3;
+
 typedef struct EQPL {
     u8 pad00[2];
     u8 kind;            /* 0x002 */
@@ -83,9 +85,7 @@ void Set_equip_data(EQPL *pl, EQUD *u) {
     pl->x5FC = u->x04;
     pl->x8D3 = u->a3D7;
     pl->wkind = Get_weapon_id(&u->wx3CC);
-    pl->wid = u->wx3CC;
-    pl->wopt = u->wx3CE;
-    pl->wx362 = u->wx3D0;
+    *(EQS3 *)&pl->wid = *(EQS3 *)&u->wx3CC;
     pl->kind = Battle_type[pl->wkind];
     pl->x352 = u->a3D2;
     pl->x354 = u->a3D3;

@@ -248,13 +248,13 @@ void movie_draw(void)
             spr.v2 = w->h - 2;
         } else {
             spr.x = -1;
+            spr.y = 0;
             spr.w = w->w * 2;
             spr.h = 0x1C0;
-            spr.u = 0;
-            spr.v2 = 0x1DF;
-            spr.y = 0;
-            spr.u2 = w->w - 1;
             spr.v = 0x20;
+            spr.u = 0;
+            spr.u2 = w->w - 1;
+            spr.v2 = 0x1DF;
         }
         spr.col = -1;
         flps0008(&spr);

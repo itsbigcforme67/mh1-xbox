@@ -154,9 +154,10 @@ u8 page;
                 } else {
                     size = e->size;
                 }
-                x = e->x;
                 if (e->kind == 1) {
                     x = e->x - (size / 2 * strlen(e->str) >> 1);
+                } else {
+                    x = e->x;
                 }
                 flfntSetSize(size, size);
                 font_print_ex(x, y, e->col, lit_403_00386408, e->str);
@@ -166,7 +167,7 @@ u8 page;
                 break;
             }
             e++;
-            y = y + (s16)(size + 4);
+            y += (s16)(size + 4);
         } while (e->x != 0x3E7);
     }
 }

@@ -143,8 +143,6 @@ void sk_init_mode(u8 mode) {
         break;
     case 8:
         SKB(0x1E) = 0;
-        SKB(0x33) = 0;
-        break;
     default:
         SKB(0x33) = 0;
         break;
@@ -582,7 +580,7 @@ extern s8 han_zen_tbl_671[];
 s8 sk_zen_han_check(u8 a) {
     s8 t = han_zen_tbl_671[a];
 
-    if (t >= 0 && !(SKS32(0x20) & (1 << t))) {
+    if (t >= 0 && !(SKS32(0x20) & (1 << (s8)t))) {
         return t;
     }
     return -1;
@@ -1198,6 +1196,7 @@ int yn_mask_char_check(u8 *p) {
     if (m == 0 || m == 1) {
         c = *p;
         if (c != 0xF3 && c != 0xE1 && c != 0xE0 && c != 0xB9 && c != 0xB8 && c != 0xB7 && c != 0xB6 && c != 0xB5 && c != 0xA8 && c != 0x99 && c != 0x98) {
+            r = 0;
         } else {
             r = 1;
         }

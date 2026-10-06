@@ -57,8 +57,7 @@ void disp_load_msg(void) {
     q.x1 = 0x20;
     q.uv1.b = 0xFF;
     q.y1 = 0x20;
-    t = load_char_tbl;
-    for (i = 0; i < 10; i++) {
+    for (i = 0, t = load_char_tbl; i < 10; i++) {
         q.x0 = (*t)[0];
         q.uv0.a = (*t)[1];
         q.uv1.a = q.uv0.a + 0x1F;
