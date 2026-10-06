@@ -18,6 +18,8 @@ extern u8 ClassInfo[];
 int Get_sw2();
 void Lbc_init_network_work();
 void Lbc_set_prim();
+extern u8 D_3F360A[16];
+extern s16 D_3F33DC[8];
 void Lb_guild_trans();
 int Lbs_InRoomCheck();
 void lb_set_questpage_info();
@@ -198,12 +200,12 @@ void Lb_guild(void) {
                     if (Online_ck() == 0) {
                         cw[0x35D3] = 1;
                         cw[0x32C5] = 1;
-                        *(u8 *)0x3F360A = cw[0x32C5];
+                        D_3F360A[0] = cw[0x32C5];
                         Lb_menu_quest_info(lb_quest_all[mhRule.quest]);
                         *(s32 *)lb_pit = 0;
                         lb_pit[8] = 4;
                         lb_sys.x06 = 0xA;
-                        *(s16 *)0x3F33DC = mhRule.quest;
+                        D_3F33DC[0] = mhRule.quest;
                         qq = lb_quest_all[mhRule.quest];
                         quest_price = qq->fee;
                         Lb_menu_quest_info(qq);

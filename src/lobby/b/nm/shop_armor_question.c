@@ -1,72 +1,77 @@
-#include "lobby_a.h"
+#include "lobby_s.h"
 extern s8 armor_shop_r;
 extern char User_data[];
-extern char User_data[];
-extern char User_data[];
-extern char User_data[];
+void armor_set_myArmor();
+void Lb_put_set01();
+void lb_armor_tag_decide01();
 s32 shop_armor_question(void) {
-    s32 temp_a1;
-    s32 temp_a2;
-    s32 temp_s0;
-    s32 temp_v1_2;
-    u8 temp_a3;
-    int temp_v1;
+    s32 id;
+    s32 kind;
+    int key;
+    s32 k;
+    s32 c;
+    u8 *e;
+    u8 m;
+    s32 r;
 
-    temp_v1 = F(s32, &lbShop, 0x64) + (F(s32, &lbShop, 0x74) * 8);
-    temp_a2 = F(s32, temp_v1, 4);
-    temp_a1 = F(s32, temp_v1, 0);
+    key = lbShop.key;
+    e = (u8 *)lbShop.tbl;
+    c = lbShop.cur;
+    e = e + c * 8;
+    id = *(s32 *)(e + 4);
+    kind = *(s32 *)e;
     if (armor_shop_r == 0) {
-        temp_v1_2 = F(u16, &lbShop, 0x8C) & 0xFFFF;
-        if (temp_v1_2 & 0x20) {
-            temp_s0 = Warehouse_equip_stack(&User_data, temp_a1 & 0xFF, temp_a2 & 0xFFFF, 0) & 0xFF;
-            if (F(s8, &lbShop, 0x78) == 0) {
+        k = key & 0xFFFF;
+        if (k & 0x20) {
+            r = Warehouse_equip_stack(User_data, kind & 0xFF, id & 0xFFFF, 0) & 0xFF;
+            if (lbShop.x78 == 0) {
                 cnWrap_SoundRequest(0x10);
                 cnWrap_SoundRequest(0);
-                Warehouse_equip(&User_data);
-                armor_shop_r = (s8) (armor_shop_r + 1);
-                goto block_24;
-            }
-            cnWrap_SoundRequest(3);
-            lb_armor_tag_decide01();
-            Lb_put_set01(0xC);
-            return 3;
-        }
-        if (temp_v1_2 & 0x40) {
-            if (F(s8, &lbShop, 0x78) != 1) {
+                Warehouse_equip(User_data, r);
+                armor_shop_r++;
+            } else {
                 cnWrap_SoundRequest(3);
-                F(s8, &lbShop, 0x78) = 1;
-                goto block_24;
+                lb_armor_tag_decide01();
+                Lb_put_set01(0xC);
+                return 3;
             }
-            Warehouse_equip_stack(&User_data, temp_a1 & 0xFF, temp_a2 & 0xFFFF, 0);
-            cnWrap_SoundRequest(3);
-            lb_armor_tag_decide01();
-            Lb_put_set01(0xC);
-            return 3;
-        }
-        if (temp_v1_2 & 0x800) {
-            if (F(s8, &lbShop, 0x78) != 0) {
-                F(s8, &lbShop, 0x78) = 0;
+        } else if (k & 0x40) {
+            if (lbShop.x78 != 1) {
+                cnWrap_SoundRequest(3);
+                lbShop.x78 = 1;
+            } else {
+                Warehouse_equip_stack(User_data, kind & 0xFF, id & 0xFFFF, 0);
+                cnWrap_SoundRequest(3);
+                lb_armor_tag_decide01();
+                Lb_put_set01(0xC);
+                return 3;
+            }
+        } else if (k & 0x800) {
+            if (lbShop.x78 != 0) {
+                lbShop.x78 = 0;
                 cnWrap_SoundRequest(1);
             }
-        } else if ((temp_v1_2 & 0x400) && (F(s8, &lbShop, 0x78) != 1)) {
-            F(s8, &lbShop, 0x78) = 1;
-            cnWrap_SoundRequest(1);
+        } else if (k & 0x400) {
+            if (lbShop.x78 != 1) {
+                lbShop.x78 = 1;
+                cnWrap_SoundRequest(1);
+            }
         }
-block_24:
-        return 2;
-    }
-    if ((temp_a1 != 7) && (temp_a1 != 6)) {
-        armor_set_myArmor(F(u16, &lbShop, 0x8C));
-    } else if (*(u8 *)0x3C738D != temp_a1) {
-        armor_set_myArmor(F(u16, &lbShop, 0x8C));
     } else {
-        Set_equip_idx(&User_data);
+    if (kind != 7 && kind != 6) {
+        armor_set_myArmor(key);
+    } else if (*(u8 *)0x3C738D != kind) {
+        armor_set_myArmor(key);
+    } else {
+        Set_equip_idx(User_data);
     }
-    F(s8, &lb_sys, 0x78) = 1;
-    Set_userdata((int)&player_work + (game_w.master * 0xA00));
-    Lb_set_mini_data((s32)cw + (game_w.master * 0x2FC) + 0x1346);
-    temp_a3 = game_w.master;
-    memcpy((int)&lbCommer + (temp_a3 * 0x5C) + 0x1C, (s32)cw + (temp_a3 * 0x2FC) + 0x1346, 0x40);
+    lb_sys.x78 = 1;
+    Set_userdata((u8 *)player_work + game_w.master * 0xA00);
+    Lb_set_mini_data(cw + game_w.master * 0x2FC + 0x1346);
+    m = game_w.master;
+    memcpy((u8 *)lbCommer + m * 0x5C + 0x1C, cw + m * 0x2FC + 0x1346, 0x40);
     lb_armor_tag_decide01();
     return 0;
+    }
+    return 2;
 }

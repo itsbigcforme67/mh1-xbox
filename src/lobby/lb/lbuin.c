@@ -1,4 +1,4 @@
-/* lbui, run 14: plaza_logOut .. tl_exit_sub_menu (lobby.bin 0x00599460-0x005997C0): the matching functions of lbui_nm.c. */
+/* lbui, run 14: Lb_clearChatID .. plaza_checkChatLog (lobby.bin 0x00599020-0x00599278): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
@@ -18,111 +18,73 @@ void put_button_help(int a, int b, int c, u16 d);
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
-void plaza_logOut(a)
-LB_NETW *a;
+void Lb_clearChatID(id)
+u8 *id;
 {
+    int i;
+    u8 *p = (u8 *)chatIDList;
+
+    for (i = 0; ; ) {
+        if (memcmp(p, id, 8) == 0) {
+            Lb_clearChatMember(i);
+            return;
+        }
+        i = (s8)(i + 1);
+        p += 8;
+        if (i >= 7) {
+            return;
+        }
+    }
+}
+
+void Lb_clearChatList(void) {
+    s8 i = 0;
+    u8 *a = (u8 *)chatIDList;
+    u8 *b = (u8 *)chatHandleList;
+
+    CW->chatmode = 0;
+    do {
+        memset(a, 0, 8);
+        memset(b, 0, 0x10);
+        i++;
+        a += 8;
+        b += 0x10;
+    } while (i < 7);
+}
+
+void plaza_ReibunEdit(void) {
     int sw = Get_sw2(0) & 0xFFFF;
-    int t;
 
-    switch (a->step) {
+    switch (pNet->step) {
     case 0:
-        a->step++;
-        SetDialogData(0x27, 2);
-        SetDialogYesNo(1);
-        return;
-    case 1:
-        t = sw & 0xFFFF;
-        a->x0C = 1;
-        if (t & 0x20) {
-            a->step++;
-            return;
-        }
-        if (t & 0x800) {
-            if (a->yesno != 0) {
-                SetDialogYesNo(0);
-                cnWrap_SoundRequest(1);
-                return;
-            }
-        } else if (t & 0x400) {
-            if (a->yesno != 1) {
-                SetDialogYesNo(1);
-                cnWrap_SoundRequest(1);
-                return;
-            }
-        } else {
-            if (t & 0x40) {
-                if (a->yesno != 1) {
-                    SetDialogYesNo(1);
-                    cnWrap_SoundRequest(1);
-                    return;
-                }
-                a->step++;
-                return;
-            }
-        }
+        Plaza_ReibunEdit_i();
+        pNet->step++;
         break;
-    case 2:
-        if (a->yesno == 0) {
-            a->step++;
-            cnWrap_SoundRequest(0);
-            fade_set(1);
-            return;
-        }
-        tl_exit_sub_menu(0);
-        return;
-    case 3:
-        if ((Fade_busy_ck() & 0xFF) != 1) {
-            To_LogOut(1);
+    case 1:
+        pNet->x28 = Get_sw_on2(0);
+        if ((u16)Plaza_ReibunEdit_mv(sw) & 0x40) {
+            tl_exit_sub_menu(0);
         }
         break;
     }
 }
 
-void plaza_chatMain(a)
-LB_NETW *a;
-{
-    int tbl = (int)plazaMenuTbl[a->menu];
-    int off;
+void plaza_checkChatLog(void) {
+    int sw = Get_sw2(0) & 0xFFFF;
 
-    a->x28 = Get_sw(0);
-    switch (a->step) {
+    switch (pNet->step) {
     case 0:
-        a->step++;
-        Plaza_chat_init();
+        Plaza_chatlog_i();
+        pNet->step++;
         break;
     case 1:
-        a->x28 = Get_sw_on2(0);
-        if (Plaza_chat_move(*(u16 *)0x3F3714) == -1) {
-            a->step++;
+        pNet->x28 = Get_sw_on2(0);
+        if ((u16)sw & 0x40) {
+            Plaza_chatlog_i();
+            tl_exit_sub_menu(0);
+            break;
         }
-        break;
-    case 2:
-        a->step++;
-        break;
-    case 3:
-        tl_exit_sub_menu(1);
-        off = a->cur * 0x24;
-        SetHelpLineMsg(2, *(u16 *)(off + tbl + 2) + 2);
+        Plaza_chatlog_mv(sw);
         break;
     }
-}
-
-void tl_exit_sub_menu(silent)
-int silent;
-{
-    if (!(silent & 0xFF)) {
-        cnWrap_SoundRequest(3);
-    }
-    SetHelpLineMsg(2, pNet->sel + 2);
-    pNet->depth--;
-    pNet->step = 0;
-    pNet->x04 = 0;
-    pNet->x05 = 0;
-    pNet->x0A = 0;
-    pNet->x24 = 0;
-    pNet->x12 = 0;
-    pNet->x28 = 0;
-    pNet->x26 = 0;
-    pNet->sel = 0xE;
-    pNet->x0D = 1;
 }

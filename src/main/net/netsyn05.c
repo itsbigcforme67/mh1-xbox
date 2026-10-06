@@ -47,3 +47,60 @@ void net_send_host(u8 cmd, u8 slot) {
         }
     }
 }
+
+void net_receive_host(int slot, u8 *buf) {
+    u8 s;
+    int v;
+    int bit;
+    u8 who;
+    u16 a;
+    NPLV *pl;
+    unsigned int t;
+    int idx;
+    NITEM *it;
+    u8 *p;
+
+    if (Online_ck() != 0) {
+        u8 kind = buf[0];
+        p = buf + 4;
+        switch (kind) {
+        case 0:
+            break;
+        case 1:
+        case 2:
+            a = p[0];
+            s = p[3];
+            if (kind == 1) {
+                if (game_w.master == game_w.x21B) {
+                    v = s & 0xFF;
+                    game_w.x1E2 = a;
+                    bit = 1 << (v % 32);
+                    t = s;
+                    if (game_w.x1A8[t >> 5] & bit) {
+                        game_w.x1E4 = 0xFF;
+                    } else {
+                        game_w.x1A8[t >> 5] |= bit;
+                        game_w.x1E4 = s;
+                    }
+                    net_send_host(2, game_w.x21B);
+                    return;
+                }
+            } else {
+                who = p[2];
+                if (who == game_w.master) {
+                    pl = (NPLV *)(player_work + who * 0xA00);
+                    pl->x91F = 0;
+                    idx = s & 0xFF;
+                    if (idx != 0xFF) {
+                        it = &game_w.item[idx];
+                        Pl_item_stack(pl, (&game_w.item[idx])->id, game_w.item[s & 0xFF].num);
+                        Item_box_get_item((&game_w.item[idx])->id, s);
+                    }
+                }
+                game_w.x1A8[0] |= (unsigned long)(*(s32 *)(p + 4));
+                game_w.x1A8[1] |= (unsigned long)(*(s32 *)(p + 8));
+            }
+            break;
+        }
+    }
+}

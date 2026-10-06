@@ -363,3 +363,23 @@ functions 0x5DBA80-0x5E0F00 (drawInnerImg5/6, DrawPageObj, DrawPulldown, ...).
 - `(int)row + idx * 24` (not idx first) fixed the St_unique_tbl row address order. A static inline helper is not copied into lbf_runs run files: add it by hand.
 - Tools used (scratch, build/scr, not committed): hill-climb on safe source edits (>= / > swaps, ++ forms, adjacent assignment swaps) scored by the align metric took Lb_guild 39->10, lb_basic_master 21->12 differing insns.
 - Still near-match: item box itembox_stock (4), cursor_mv, sortup, pickup, equipchange, sellout, ItemboxWindowX, Disp_lb_item_box, Lb_ItemBox_mv (6, scheduling only); eft25_m/t (frame differs); Plaza_chatlog_mv (7), Plaza_disp_chatlog, plaza_disp_chat_log_sub; Lb_guild (~10), lb_basic_master (~12), lb_rule_seet_set (large).
+
+## Lobby session 7 (village first): item box, Lb_guild, Clear_lobby_ram
+Linked (tools/rebuild.sh all five OK): Lb_ItemBox_mv, itembox_stock, itembox_equipchange (in src/lobby/f/lb_tu_ib.c, removed from c_rawfuncs; jump table
+rodata 0x668440-0x668460 registered), Lb_guild (src/lobby/f/lb_u.c, run 0x5C5F30-0x5C6F34 + rodata), Clear_lobby_ram (new src/lobby/f/lb_n09.c).
+Findings (verified by matching):
+- A store through an absolute-address cast (`*(s16 *)0x39DAD2 = x`) makes MWCC assume it may alias any pointer, so it re-reads globals (ib, cw, mhRule index)
+  after the store. Declaring the address as its own extern object (`extern s16 D_39DAD2[16];` plus `D_39DAD2 = 0x39DAD2;` in config/lobby_aliases.txt) removes the
+  reload and matches the original (itembox_stock, Lb_ItemBox_mv, Lb_guild: D_3F360A/D_3F33DC, Clear_lobby_ram: D_3F3415). Objects larger than 8 bytes avoid gp addressing.
+  Use the s16 form where the original stores with sh; casting to u8 gives sb.
+- `F(s16, ib, 8) = F(u8, ib, 0xB) = 0;` chain assignment explains `andi t0,zero,0xFF` (Lb_ItemBox_mv).
+- Address of `base + idx*4` in the original is `addu idx,base`: write `(F(u8, ib, 0xB) << 2) + (int)u` (itembox_stock); the `u = User_data` local at function
+  top makes the original's s-register (pickup/sellout/equipchange keep it in s1/s2).
+- `u8 *sp5 = w + 5; switch (*sp5)` and one later `*sp5 = x` gives the original's hoisted `addiu a2,a1,5`; `u8 *p = w + 0x1F;` assigned before the `if` gives the hoisted
+  `addiu a0,v1,31` in the branch delay slot (equipchange). One shared `return pad;` after the switch (cases `break`) removes duplicated delay-slot moves.
+- A byte compared in `st & (cond ? 1 : 2)` allocates differently when `st` is int instead of u8 (equipchange); inlining a temp mask removes an extra register.
+- Statement order of three independent stores before a call matters (permute them), see itembox_equipchange `-1; 0xFF store; pad = 0`.
+- Permuter on a raw-asm function: write the .inc words into a snapshot `.s` (glabel/endlabel) and use PERM_ASM_DIR (relocation penalties are constant).
+Still near-match: itembox_cursor_mv (decimal part matches with int temporaries, `daddiu` slot fill and hex-part registers differ), itembox_sortup/pickup/sellout
+(original keeps pad, User_data and a third value in s0-s2, frame 80; mine allocates two), ItemboxWindowX, Disp_lb_item_box, lb_rule_seet_set, lb_basic_master (delay-slot
+fills), Lb_room_member (`addu` operand order, 1 insn), lb_trade_result (arg load order in the call delay slot).

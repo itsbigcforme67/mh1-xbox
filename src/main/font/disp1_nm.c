@@ -47,7 +47,7 @@ void disp_load_spr(void) {
 void disp_load_msg(void) {
     PUT_2TF q;
     s16 i;
-    s16 (*t)[2] = load_char_tbl;
+    s16 (*t)[2];
 
     reload_tex(1, 0x156);
     SetTextureStage(0x156);
@@ -57,6 +57,7 @@ void disp_load_msg(void) {
     q.x1 = 0x20;
     q.uv1.b = 0xFF;
     q.y1 = 0x20;
+    t = load_char_tbl;
     for (i = 0; i < 10; i++) {
         q.x0 = (*t)[0];
         q.uv0.a = (*t)[1];

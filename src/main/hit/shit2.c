@@ -15,18 +15,25 @@ typedef struct STAGE_SZ {
 STAGE_SZ *Stage_data_get(int);
 
 int BlockPlaceCgeck(f32 *p) {
-    f32 z = p[2];
-    int r = 0;
-    u32 cz = diorama_w.wcsz;
     f32 x;
-    u32 cx;
+    int iz;
+    int r;
     u32 t;
+    int ix;
+    f32 z;
+    u32 cx;
+    u32 cz;
 
+    z = p[2];
+    r = 0;
+    cz = diorama_w.wcsz;
+    iz = (int)(z / cz);
     x = p[0];
     cx = diorama_w.wcsx;
-    t = (cx >> 1) + (int)(x / cx) * cx;
+    ix = (int)(x / cx);
+    t = (cx >> 1) + ix * cx;
     if (!(x < t)) r = 1;
-    t = (cz >> 1) + (int)(z / cz) * cz;
+    t = (cz >> 1) + iz * cz;
     if (!(z < t)) r += 2;
     return r;
 }
@@ -35,15 +42,8 @@ int GroundFieldInCheck(f32 *p) {
     f32 x = p[0];
     f32 z;
 
-    if (!(x < 8.0f)) {
-        z = p[2];
-        if (z < 8.0f) return 0;
-        if (x < (f32)((u32)diorama_w.gcsx * (u32)diorama_w.gnx) - 8.0f) {
-            if (z < (f32)((u32)diorama_w.gcsz * (u32)diorama_w.gnz) - 8.0f) return 1;
-            return 0;
-        }
-        return 0;
-    }
+    if (x < 8.0f || (z = p[2]) < 8.0f) return 0;
+    if (x < (f32)((u32)diorama_w.gcsx * (u32)diorama_w.gnx) - 8.0f && z < (f32)((u32)diorama_w.gcsz * (u32)diorama_w.gnz) - 8.0f) return 1;
     return 0;
 }
 
@@ -51,15 +51,8 @@ int WallFieldInCheck(f32 *p) {
     f32 x = p[0];
     f32 z;
 
-    if (!(x < 8.0f)) {
-        z = p[2];
-        if (z < 8.0f) return 0;
-        if (x < (f32)((u32)diorama_w.wcsx * (u32)diorama_w.wnx) - 8.0f) {
-            if (z < (f32)((u32)diorama_w.wcsz * (u32)diorama_w.wnz) - 8.0f) return 1;
-            return 0;
-        }
-        return 0;
-    }
+    if (x < 8.0f || (z = p[2]) < 8.0f) return 0;
+    if (x < (f32)((u32)diorama_w.wcsx * (u32)diorama_w.wnx) - 8.0f && z < (f32)((u32)diorama_w.wcsz * (u32)diorama_w.wnz) - 8.0f) return 1;
     return 0;
 }
 
@@ -68,12 +61,8 @@ int AreaFieldInCheck(int stg, f32 *p) {
     f32 x = p[0];
     f32 z;
 
-    if (!(x < 8.0f)) {
-        z = p[2];
-        if (z < 8.0f) return 0;
-        if (x < sd->sx - 8.0f && z < sd->sz - 8.0f) return 1;
-        return 0;
-    }
+    if (x < 8.0f || (z = p[2]) < 8.0f) return 0;
+    if (x < sd->sx - 8.0f && z < sd->sz - 8.0f) return 1;
     return 0;
 }
 
