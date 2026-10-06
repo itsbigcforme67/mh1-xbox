@@ -1881,5 +1881,17 @@ main 0x00216890 0x0021691C flfnt/flfnt02
 main 0x00216AC0 0x00216DD4 flfnt/flfnt03
 main 0x00217480 0x00217544 flfnt/flfnt04
 main 0x00217DE0 0x00217E48 flfnt/flfnt05
+main 0x0017BE20 0x00187C50 flps/fladdm
+main 0x001B9F70 0x001BA2B8 net/netsyn01
+main:rodata 0x0035EC10 0x0035EC34 net/netsyn01
+main 0x001BCCF0 0x001BCD7C net/netsyn04
+main 0x001BD260 0x001BD660 net/netsyn03
+main 0x001BCA20 0x001BCB38 net/netsyn05
+main 0x001BC690 0x001BC844 net/netsyn06
+main 0x001BBE60 0x001BC1FC net/netsyn08
+main:rodata 0x0035EC70 0x0035ECA4 net/netsyn08
 lobby 0x005D9B20 0x005D9C68 f/lb_gdr24
 lobby 0x005DA880 0x005DA99C f/lb_gdr25
+main 0x001BA8E0 0x001BB000 net/netsyn10
+main 0x0016B060 0x0016B10C fl/clay02
+main 0x0016D8F0 0x0016D9C0 fl/clay03
