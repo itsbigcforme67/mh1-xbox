@@ -452,3 +452,45 @@ Not linked (near-match, own notes):
   the original keeps only s0-s3 (task in s0 shared with the menu pointer), mine allocates six. cmn_mongon_set 94/96 (hand-unrolled
   copy loops with separate out/in cursors), disp_color needs `s.x = 96.0f` style float stores (the original converts floats to s16 with
   cvt.w.s for every field) and was not rewritten; Edit_task/Cont_task untouched.
+
+### Session notes (select overlay + yn leftovers, 5 Oct 2026, third pass)
+Linked this pass (rebuild.sh OK for all five modules): select cmn_mongon_set (edit10), Edit_task + Cont_task (edit04, now
+0x535F30-0x538028 with rodata 0x53B8E0-0x53B964; edit05 was merged into it), disp_edit_spr (edit11, jump table 0x53B660-0x53B678);
+yn yn_sprite_draw_each (ui32), yn_dialog_font_once (ui33). select is at about 87%.
+Shared-header edits (all proven by matched loads/stores): select.h EDIT_W x3C/x3D are u8 (lbu in Edit_task); SoftKeyboard_move is
+`s8 (s8 *, s16, s16)` (lh loads of Psw, s8 return); SEL_W got `xB6` carved out of padding (Edit_task/Cont_task store the slot at
+select_w+0xB6); font_print_ex is now `void (s16, s16, int, char *, ...)` (see lessons).
+New config file: config/select_aliases.txt (`roll_move = 0x00536470;`) because roll_move is file-static in edit04.c.
+Lessons (each shown by the named function):
+- A file-static (or just earlier-defined, leaf) callee tells MWCC which registers it clobbers, so the caller keeps loop variables in
+  a0/a1 across `roll_move(pl, i)` calls. Edit_task/Cont_task only matched after `static void roll_move` in the same file; asm callers
+  then need a `name = addr;` alias in config/<module>_aliases.txt.
+- An unprototyped call passes an s16 local after a lazy sign extension and CSEs that extension across calls (extra callee-saved
+  register). With a prototype whose parameter is s16 the compiler converts per call and keeps no copy: disp_edit_spr only matched after
+  font_print_ex got `s16 x, s16 y`; Edit_task needed `edit_pl_init_new(PLW *, s16, s16)` to pass i raw.
+- Repeated reads of a global u16 array (Psw) are re-read, not CSE'd, when stores through u16 fields sit between them: reading through
+  `*(volatile u16 *)&Psw[i]` at the top of Edit_task reproduces that (only there; later in the function the original does CSE).
+  Operand order of `a == b` follows the load order in the original: `PSWV(1) == PSWV(0)` loaded Psw[1] first.
+- check.py ignores both relocation addends and jump-table contents; Edit_task passed check.py with the wrong Psw index and
+  disp_edit_spr with its switch cases in the wrong order (cases 5, 3, 4 sit in the order 2, 5, 3, 4 in memory). Always run rebuild.sh.
+- `all_model_free(t->step++)` gives the original delay-slot store; `if (++e->x38 >= 0x3C)` gives `andi 0xFFFF; slti` without `at`;
+  `A || B` conditions that share one body (cancel) must be written once: `else if (((p & 0x20) && x == 1) || (p & 0x40))`.
+- `for (i = 0; i < 2; i++) f(&player_work[i])` instead of a `pl++` pointer swaps which of i/pl gets the lower saved register.
+- Declaration order mattered a lot in Cont_task: tools/declhill.py (hill-climb over the declaration order, ~5 min) found the order
+  that tools/declbf.py cannot reach with 8 variables. tools/vt.py + tools/mkscratch.py test source variants on one function with the
+  other functions as K&R declarations (`DECLS="void f(int, s16)" python3 tools/mkscratch.py nm.c scratch.c FUNC ...`).
+  tools/cc.sh compiles and disassembles a file (micro experiments), tools/vtry.py tries whole-function variants.
+Near-match left (not linked):
+- cmn_mongon_check_sub 136/155: callee-saved allocation differs (mine strength-reduces `flt + pos` into a pointer and needs s7; the
+  original recomputes it from sp each outer iteration and uses s0-s6). The rest of the structure (do/while nest, `idx = pos` copy,
+  `look(&flt[idx])`, found/c handling) is right.
+- disp_color 269/293: contents match the original instruction by instruction in both loops (per-case `s.w`, u32 colour bytes,
+  `s.x = 0.8f * fx0` with a float local so the cvt stays; a `flfntLocate(int, s16)` prototype was tried and left out), but the original keeps the first loop's test at the
+  bottom with the s16 copy of i computed there and the pointer hoists in an out-of-line preheader after the second loop; mine rotates
+  the loop. Not found how to provoke that (while/do forms, int/s16 variants, goto-free).
+- yn_utf8_to_sjis and yn_sjis_to_utf8 stay 2 instructions off each (`andi t4, t4, 0xFFFF` is done in place before `sra` in the original,
+  in a fresh register in mine; u16/int/u32 code, (u16) casts, `&= 0xFFFF`, separate out variable all tried). The matching shapes are
+  `code = (src[1] << 8) + *(src += 2); src += 1;` and three `*dst++` stores.
+- yn_sprite_draw_sub 15/119 (scheduling of the first call's two byte loads), yn_connect_font_sub 3/141 (ynw/(i+1) register pair),
+  yn_select_provider still 216/1384: the permuter at -j1 managed only 51 iterations in 25 minutes (about 30 s per candidate on the
+  5.5 KB function) and found nothing better than the base.

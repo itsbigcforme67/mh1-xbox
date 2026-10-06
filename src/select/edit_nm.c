@@ -329,8 +329,8 @@ typedef struct { s16 x, y, w, h; u32 col[4]; } SPR5;
 void disp_edit_spr(STASK *t, u8 *w) {
     SPR5 s;
     f32 sn;
-    int i;
     int y;
+    int i;
     flSetRenderState(0x6C, 0);
     Sel_menu_disp(4);
     y = 0x60;
@@ -350,7 +350,7 @@ void disp_edit_spr(STASK *t, u8 *w) {
         arrow_disp(w);
     }
     flfntSetSize(0x14, 0x14);
-    for (i = 0; i < 7; i++, y += 0x20) {
+    for (i = 0; i < 7; y += 0x20, i++) {
         font_print_ex(0x30, (s16)y, 0, lit_319_0053B628, edit_menu_msg[i]);
         switch (i) {
         case 0:
@@ -362,13 +362,13 @@ void disp_edit_spr(STASK *t, u8 *w) {
         case 2:
             font_print_ex(0xE4, (s16)y, 5, lit_320_0053B630, w[5] + 1);
             break;
-        case 3:
+        case 5:
             font_print_ex(0xE4, (s16)y, 5, lit_320_0053B630, w[6] + 1);
             break;
-        case 4:
+        case 3:
             font_print_ex(0xE4, (s16)y, 5, lit_320_0053B630, w[7] + 1);
             break;
-        case 5: {
+        case 4: {
             u32 c = *(u32 *)(w + 8);
             font_print_ex(0xBC, (s16)y, 5, lit_321_0053B640, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF);
             break;
@@ -666,43 +666,44 @@ void ed_color_sel(EDIT_W *w, PLW *pl, u16 btn) {
 void disp_color(u8 *w) {
     SPR5 s;
     SPR4 q;
-    s16 y = 0x141;
+    s16 y;
     s16 i;
     f32 fx;
-    u32 c;
+    f32 fx0;
     DispFrameMessageA(color_mess, 0, 0x80);
     flfntSetSize(0x14, 0x14);
+    y = 0x141;
     for (i = 0; i < 3; i++) {
         if (w[3] == i) {
             font_set_palette(5);
         } else {
             font_set_palette(0);
         }
-        s.x = 96;
+        fx0 = 120.0f;
+        s.x = 0.8f * fx0;
         s.y = y + 2;
         s.h = s.y + 0x12;
         flfntLocate(0x64, y);
         switch (i) {
         case 0:
             font_print(lit_656_0053B8C8);
-            c = (B32(w, 8) >> 16) & 0xFF;
+            s.w = 0.8f * (120.0f + (f32)((*(u32 *)(w + 8) >> 16) & 0xFF));
             s.col[0] = 0xFF400101;
             s.col[1] = 0xFFFF0101;
             break;
         case 1:
             font_print(lit_657_0053B8D0);
-            c = (B32(w, 8) >> 8) & 0xFF;
+            s.w = 0.8f * (120.0f + (f32)((*(u32 *)(w + 8) >> 8) & 0xFF));
             s.col[0] = 0xFF014001;
             s.col[1] = 0xFF01FF01;
             break;
         case 2:
             font_print(lit_658_0053B8D8);
-            c = w[8];
+            s.w = 0.8f * (120.0f + (f32)w[8]);
             s.col[0] = 0xFF010140;
             s.col[1] = 0xFF0101FF;
             break;
         }
-        s.w = 0.8f * (120.0f + (f32)c);
         s.col[2] = s.col[0];
         s.col[3] = s.col[1];
         if (w[3] == i) {
