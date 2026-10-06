@@ -148,3 +148,5 @@ build/src/yn/ui24.c.o .rodata .data
 build/src/lobby/lb/lb_talk.c.o .rodata .data
 build/src/lobby/lb/lbshp.c.o .rodata .data
 build/src/lobby/b/lb_by78.c.o .rodata .data
+build/src/lobby/b/lb_by130.c.o .rodata .data
+build/src/lobby/b/lb_by131.c.o .rodata .data

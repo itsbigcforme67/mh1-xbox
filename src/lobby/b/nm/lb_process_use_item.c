@@ -1,58 +1,54 @@
 #include "lobby_s.h"
-extern char buki_sei_tbl[];
-extern char kakou_tbl[];
-extern char bou_sei_tbl[];
-void lb_process_use_item(s32 arg0) {
-    s32 var_s0;
-    s32 var_s0_2;
-    s32 var_s0_3;
-    u16 temp_a0;
-    u16 temp_a0_2;
-    u16 temp_a0_3;
-    int var_s1;
-    int var_s1_2;
-    int var_s1_3;
+extern u8 buki_sei_tbl[];
+extern u8 kakou_tbl[];
+extern u8 bou_sei_tbl[];
+void lb_process_use_item(int n) {
+    int i;
+    u8 *p;
+    u16 id;
+    u8 *e;
 
-    switch (lbShop.mode) {       /* switch 1; irregular */
-    case 0:                                         /* switch 1 */
-        switch (lbShop.x1A) {   /* switch 2; irregular */
-        case 0:                                     /* switch 2 */
-            var_s0 = 0;
-            var_s1 = (int)&buki_sei_tbl + (*(s32 *)((int)&shopList + 0x26 + (arg0 * 0x28)) * 0x18);
+    e = (u8 *)lbShop.tbl + lbShop.cur * 8;
+    switch (lbShop.mode) {
+    case 0:
+        switch (lbShop.x1A) {
+        case 0:
+            i = 0;
+            p = buki_sei_tbl + *(u16 *)(&((u8 *)shopList)[0x26] + n * 0x28) * 0x18;
             do {
-                temp_a0 = F(u16, var_s1, 4);
-                if (temp_a0 != 0) {
-                    Ud_item_stack(temp_a0,  ( -F(s16, var_s1, 6) << 0x30) >> 0x30);
+                id = *(u16 *)(p + 4);
+                if (id != 0) {
+                    Ud_item_stack(id, (s16)-*(s16 *)(p + 6));
                 }
-                var_s0 += 1;
-                var_s1 += 4;
-            } while (var_s0 < 4);
+                i++;
+                p += 4;
+            } while (i < 4);
             return;
-        case 1:                                     /* switch 2 */
-            var_s0_2 = 0;
-            var_s1_2 = (int)&kakou_tbl + (F(s32, ((int)lbShop.tbl + (lbShop.cur * 8)), 4) * 0x18);
+        case 1:
+            i = 0;
+            p = kakou_tbl + *(s32 *)(e + 4) * 0x18;
             do {
-                temp_a0_2 = F(u16, var_s1_2, 0);
-                if (temp_a0_2 != 0) {
-                    Ud_item_stack(temp_a0_2,  ( -F(s16, var_s1_2, 2) << 0x30) >> 0x30);
+                id = *(u16 *)p;
+                if (id != 0) {
+                    Ud_item_stack(id, (s16)-*(s16 *)(p + 2));
                 }
-                var_s0_2 += 1;
-                var_s1_2 += 4;
-            } while (var_s0_2 < 3);
+                i++;
+                p += 4;
+            } while (i < 3);
             return;
         }
         break;
-    case 1:                                         /* switch 1 */
-        var_s0_3 = 0;
-        var_s1_3 = (int)&bou_sei_tbl + (*(s32 *)((int)&shopList + 0x26 + (arg0 * 0x28)) * 0x18);
+    case 1:
+        i = 0;
+        p = bou_sei_tbl + *(u16 *)(&((u8 *)shopList)[0x26] + n * 0x28) * 0x18;
         do {
-            temp_a0_3 = F(u16, var_s1_3, 4);
-            if (temp_a0_3 != 0) {
-                Ud_item_stack(temp_a0_3,  ( -F(s16, var_s1_3, 6) << 0x30) >> 0x30);
+            id = *(u16 *)(p + 4);
+            if (id != 0) {
+                Ud_item_stack(id, (s16)-*(s16 *)(p + 6));
             }
-            var_s0_3 += 1;
-            var_s1_3 += 4;
-        } while (var_s0_3 < 4);
+            i++;
+            p += 4;
+        } while (i < 4);
         break;
     }
 }

@@ -1,3 +1,4 @@
+/* lb_by134 - agent B 0x0053BD00-0x0053BDFC: lb_armor2_listItem (armor shop list: icon of entry n on the page). */
 #include "lobby_s.h"
 extern u8 buki_sei_tbl[];
 extern u8 bou_sei_tbl[];
@@ -9,8 +10,7 @@ void lb_armor2_listItem(int x, int y, int z, s16 n) {
     int i;
     u8 *f;
 
-    i = lbShop.x6C * 7;
-    i += n;
+    i = (s16)n + lbShop.x6C * 7;
     e = (u8 *)lbShop.tbl + i * 8;
     if (lbShop.mode == 0) {
         if (lbShop.x1A == 1) {
