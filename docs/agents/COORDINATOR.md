@@ -67,9 +67,9 @@ always been a struct field type or a lost field.
 
 - A (Opus): PC runtime: windowed crash + windowed/headless divergence in the village run, cart model, SpritePut, free-play crash hunt.
 - B (Sonnet): lobby overlay 0x533980-0x5C4E60 (round 4: link its ~98 KB of near-match C, then login/logout, dialogs, plaza; skip libs).
-- C (Sonnet): Capcom code in main 0x100000-0x1C0000 and 0x230000-0x23E500 (outside D and E).
+- C (Sonnet): main 0x100000-0x160000 and 0x230000-0x23E500.
 - D (Sonnet): main 0x1C0000-0x230000 and 0x24A240-0x2814E0 (game overlay parked at 82%, 139 hard functions listed in agent-D.md).
-- E (Sonnet): main 0x2862F0-end of Capcom code (select at 90.8% and yn at 66.5% parked; leftovers in agent-E.md).
+- E (Sonnet): main 0x160000-0x1C0000 (from C), plus IME, memory card and 0x2862F0-0x293B68 (end of .text; select 90.8% and yn 68.9% parked).
 - F (Sonnet): lobby overlay 0x5C4E60-end (round 5: link lb_ib.c, lb_pc.c, lb_e25.c and the ~95 near-matches; skip zlib/png 0x5E9ED0-0x5EE618).
 - Parked: near-matches everywhere (register allocation); online code in main.
 

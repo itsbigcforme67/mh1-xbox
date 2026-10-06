@@ -49,8 +49,10 @@ int Plaza_chat_init(void) {
 int Plaza_chat_move(int a) {
     char buf[0x40];
     int r;
+    int x = *(s16 *)0x3F3710;
+    int y = *(s16 *)0x3F3714;
     buf[0] = 0;
-    r = (s8)SoftKeyboard_move(buf, *(s16 *)0x3F3710, *(s16 *)0x3F3714);
+    r = (s8)SoftKeyboard_move(buf, x, y);
     if (r == -1) {
         SoftKeyboard_exit();
         Plaza_chatlog_i();
@@ -153,8 +155,9 @@ int Plaza_chatlog_mv(int arg) {
         if (pad & 0x1000) {
             a = PZ_TOP;
             if (a > 0) {
-                PZ_TOP = a - 1;
+                a--;
                 PZ_ARROWS = PZ_ARROWS | 8;
+                PZ_TOP = a;
                 r = se_req(7, 0x16, 0);
                 PZ_ATEND = 0;
             }
@@ -238,9 +241,9 @@ int Plaza_disp_ReibunEdit(int arg) {
     Put_page_num(0x20E, 0x78, (s16)(reibun_edit.sel / 6), 2, 0);
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
+    p = str_tbl_reibun0 + reibun_edit.sel / 6 * 0x60;
     n = 6;
     y = 0xA4;
-    p = str_tbl_reibun0 + reibun_edit.sel / 6 * 0x60;
     do {
         flfntLocate(0xDA, y);
         Reibun_print(0x16, *(int *)(p + 0xC));

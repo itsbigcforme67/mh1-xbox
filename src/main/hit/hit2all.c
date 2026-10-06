@@ -51,10 +51,12 @@ u8 hit_sphr_sphr(f32 *a, f32 *b, f32 ra, f32 rb) {
 }
 
 /* original bytes kept (does not match as C yet): build/raw/hit_sphr_sphr2.inc, see config/c_rawfuncs.txt */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C (weak) */
 asm u8 hit_sphr_sphr2(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb)
 {
 #include "hit_sphr_sphr2.inc"
 }
+#endif
 
 u8 hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb) {
     f32 d = flvecCalcDistance(a, b);
@@ -84,10 +86,12 @@ u8 hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb) {
 }
 
 /* original bytes kept (does not match as C yet): build/raw/hit_cap_cap2_m.inc, see config/c_rawfuncs.txt */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C (weak) */
 asm u8 hit_cap_cap2_m(HPK *k1, HPK *k2, f32 *out)
 {
 #include "hit_cap_cap2_m.inc"
 }
+#endif
 
 void hit_cap_cap2_sub(f32 *a, f32 *v, f32 *out, f32 len, f32 r) {
     if (len < 0.001f) {
@@ -373,10 +377,12 @@ u8 hit_cap_sphr2_m(HPK *k, f32 *c, f32 *out, f32 r) {
 }
 
 /* original bytes kept (does not match as C yet): build/raw/hit_cap_cap3_m.inc, see config/c_rawfuncs.txt */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C (weak) */
 asm u8 hit_cap_cap3_m(HPK *k1, HPK *k2, f32 *out)
 {
 #include "hit_cap_cap3_m.inc"
 }
+#endif
 
 void hit_cap_cap3_sub(f32 *v, f32 *out, f32 r, f32 d) {
     f32 t;

@@ -82,6 +82,19 @@ void rt_player_game_init(int no)
             q++;
         }
     }
+    {   /* Set_userdata copies the user's pouch (User_data+0x37C) to the
+         * hunter; without save data the user's pouch starts as the one
+         * pl_init / RT_PL_ITEMS gave him */
+        void ItemCopy_Pl2Ud(PLW *), ItemCopy_Ud2Pl(PLW *);
+        extern u8 User_data[];
+        int k, any = 0;
+        for (k = 0; k < 0x50; k++)
+            any |= User_data[0x37C + k];
+        if (any && !getenv("RT_PL_ITEMS"))
+            ItemCopy_Ud2Pl(pl);
+        else
+            ItemCopy_Pl2Ud(pl);
+    }
     if (getenv("RT_PL_TRACE"))
         fprintf(stderr, "rt_player: weapon %d model %d job %d at %.0f %.0f %.0f act %d/%d chr %d/%d\n",
                 wid, pl->work34C, pl->kind, pl->pos[0], pl->pos[1], pl->pos[2], pl->flag14, pl->flag15,

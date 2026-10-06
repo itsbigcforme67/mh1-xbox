@@ -494,3 +494,22 @@ Near-match left (not linked):
 - yn_sprite_draw_sub 15/119 (scheduling of the first call's two byte loads), yn_connect_font_sub 3/141 (ynw/(i+1) register pair),
   yn_select_provider still 216/1384: the permuter at -j1 managed only 51 iterations in 25 minutes (about 30 s per candidate on the
   5.5 KB function) and found nothing better than the base.
+
+## Assignment 4 (main 0x2862F0 to end of Capcom code)
+Code/library map: 0x2862F0-0x293B68 is ALL Capcom code (82 functions, last is reward_itembox); .text ends there. No sce*/adx/sfd/libc
+code in this range (that sits below 0x28xxxx in the 0x200000s and in the 0x1A0000-0x1C0000 libc block). After it comes data (0x2E5F00 on).
+Layout: evdemo 2862F0 | net file code 2869A0-28BEC0 | net_flps/nb_flps 28BEC0-28C750 | Patch* 28C750-28CC40 | hit 28CC40-2907B4 |
+staff 2907C0 | power off 290C60 | reward/result 290E50-293B68.
+Linked this pass (rebuild OK x5): hit2.c (whole hit file as one unit, 3 raw holdouts hit_sphr_sphr2 18/64, hit_cap_cap2_m 41/1253, hit_cap_cap3_m 90/945
+via config/c_rawfuncs.txt; the split files lost the "static callee" scheduling so hit_cap_sphr2_m and hit_line_sphr2 only match inside one file),
+hit_point_cbd (hit3.c), net save code (netfile2c-l: decode/encode_data, mc_bs_chg, check_data_cn_file, Net_Icon_Data_Load, dialog_limit_disp,
+SaveGameFileNet2, SaveNetFile, SaveNetFile_ForLobby, SaveNetFileBr, NetAutoLoad), power01 (ps2HddPowerOffSet, PowerOffThread, PowerOffHandler,
+Quest_price_return), patch01/02 (PatchInitCS, PatchLoadinDNAS_Init/Main).
+Header edits (proven by matched loads): netcw.h gained x7A (s16), x7C (s8, lb), x7D, x8C, x8D[5]; new include/netfile2.h; config/main_aliases.txt `_gp`.
+Lessons: (1) a single `case 0:` plus `default:` switch produces the `beq/nop/b` double jump of the original (SaveNetFile_ForLobby case 5, PowerOffThread);
+`return` vs `break`, and case order = reverse of the compare ladder, decide everything else. (2) `(int)ptr + 0x12000` loads ptr before the constant (Net_Icon_Data_Load).
+(3) `sub++; timer = N;` vs `timer = N; sub++` change which is loaded first; try both (NetAutoLoad, SaveNetFile). (4) `x ^ 1` form `((a & 1) != 0) ^ 1` gives sltu+xori.
+(5) hit_point_cbd: store order n[0], n[1], n[2] lets d[2] stay in a register. (6) sceDevctl takes 6 args; `&_gp` gives `addiu v1, gp, 0`.
+Near-matches left (not linked): NetFileLoad (netfile2m_nm.c, step in a2 vs a1 cascades), NetFileCreate (m2c only, 6780 B), PatchExecCS (patch03_nm.c),
+net_flps0008/0004, nb_flps0009 (not started), staff_disp (75/93, original has a case-0 stub + default path I could not reproduce),
+reward_mv 9/351 and reward_key_repeat 29/42 (pointer in a2 vs a0), reward_itembox 115/312, hit_cap_cap2_m/cap3_m, hit_sphr_sphr2.

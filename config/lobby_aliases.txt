@@ -1,0 +1,7 @@
+/* Linker symbols for C functions that must stay file-static (their codegen depends on it: callee register use is only
+ * known inside the translation unit, tools/lbtu.py) but are still called by functions that are still asm.
+ * Each line: name = address; (the build adds this file when it exists). */
+bs_route_queue_forward = 0x005E6140;
+bs_route_queue_back = 0x005E6180;
+bs_page_status_flag_set = 0x005E6380;
+bs_route_current_page_status = 0x005E6C60;

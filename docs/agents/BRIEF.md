@@ -122,3 +122,5 @@ anything the coordinator must know to merge. Then stop.
   `asm` + the generated build/raw/NAME.inc in its place (see mc_sel_ck in src/main/mc/mccomb.c;
   the .inc comes from the disc at build time and is never committed). It still counts as
   unmatched; use it only after a real attempt, so the rest of the file can link.
+- Wrap every c_rawfuncs `asm` block in `#ifdef __MWERKS__ ... #endif`: gcc (the PC build) can't
+  compile it and takes the near-match C instead (keep that in a *_nm.c the PC build links weak).

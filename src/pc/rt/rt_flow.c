@@ -57,15 +57,15 @@ int rt_flow_tick(void)
     tick++;
     rt_font_tick_begin();       /* the text of the previous tick is replaced */
     rt_prims_reset();           /* ot_init */
-    if (getenv("RT_QUEST_TRACE")) {     /* the master player's pouch (PLW+0x828, 24 x {id, n}) when it changes */
+    if (getenv("RT_QUEST_TRACE")) {     /* the master player's pouch (PLW+0x828, 20 x {id, n}: ItemCopy copies 0x50 bytes) when it changes */
         extern u8 player_work[];
-        static s16 old[48];
+        static s16 old[40];
         s16 *it = (s16 *)(player_work + 0x828);
         int i;
         if (memcmp(old, it, sizeof old)) {
             memcpy(old, it, sizeof old);
             fprintf(stderr, "rt_flow: tick %d pouch:", tick);
-            for (i = 0; i < 24; i++)
+            for (i = 0; i < 20; i++)
                 if (it[2 * i])
                     fprintf(stderr, " %d:%d", it[2 * i], it[2 * i + 1]);
             fprintf(stderr, "\n");
@@ -137,4 +137,4 @@ NOP(EvDemoInitialize) NOP(em_yobi_init) NOP(em_effect_pull) NOP(ear_init) NOP(Di
 NOP(Copy_user_id) NOP(Disp_NowLoading2)
 
 /* ------------------------------------------------ 2D (replaced as it is ported) */
-NOP(SpritePut) NOP(trans)
+NOP(trans)

@@ -85,7 +85,8 @@ void eft06_m(EFTW *ew) {
     f32 jp[3];
     EFT06_PIECE *p = ew->work;
     EFT06_PIECE *w = p;
-    s16 *tt = eft06_time[ew->arg];
+    s16 *tt0 = eft06_time[ew->arg];     /* the asm tests the table (s8), reads through the stepped copy (s6) */
+    s16 *tt = tt0;
     s16 n = eft06_num[ew->arg];
     u16 all = eft06_all_time[ew->arg];
     s16 idx = eft06_index[ew->arg];
@@ -299,7 +300,7 @@ void eft06_m(EFTW *ew) {
         } else if (ew->arg == 1) {
             idx = eft06_index[ew->arg];
             fidx = ew->mode2 + eft06_fade_index[ew->arg];
-        } else if (tt != 0) {
+        } else if (tt0 != 0) {
             time = *tt;
         } else {
             idx = eft06_index[ew->arg];

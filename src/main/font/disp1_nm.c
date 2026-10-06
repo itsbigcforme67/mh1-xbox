@@ -102,10 +102,10 @@ int Ck_hankaku(u8 *s, u32 n) {
     int c;
 
     i = 0;
-    if (0u < n + 1) {
+    if (i < n + 1) {
         do {
             c = *s;
-            if ((c >= 0x80 && c < 0xA0) || (c >= 0xE0 && c < 0x100)) {
+            if ((c >= 0x80 && c <= 0x9F) || (c >= 0xE0 && c <= 0xFF)) {
                 if (i == n) {
                     return 1;
                 }

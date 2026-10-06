@@ -7,6 +7,7 @@
 #include "pad.h"
 
 #include <SDL.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -18,8 +19,8 @@ void pad_init(void)
     if (!SDL_WasInit(SDL_INIT_GAMECONTROLLER))
         SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);
     for (i = 0; i < SDL_NumJoysticks() && !ctl; i++)
-        if (SDL_IsGameController(i))
-            ctl = SDL_GameControllerOpen(i);
+        if (SDL_IsGameController(i) && (ctl = SDL_GameControllerOpen(i)) != NULL)
+            fprintf(stderr, "pad: controller \"%s\"\n", SDL_GameControllerName(ctl));
 }
 
 static int axis(SDL_GameControllerAxis a)

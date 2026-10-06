@@ -39,9 +39,12 @@ for run in runs:
     hdr = '%s - %s 0x%08X-0x%08X: %s. Whole file in %s.' % (name, cmt, s, e, ', '.join(r[0] for r in run), os.path.basename(nm))
     subprocess.run(['python3', 'tools/mkrun2.py', nm, 'src/lobby/f/%s.c' % name, hdr] + [r[0] for r in run], check=True)
     lines.append('lobby 0x%08X 0x%08X f/%s' % (s, e, name))
+    jt = []
     for r in run:
         for a, e2 in lbf_jt.ranges(r[0]):
-            lines.append('lobby:rodata 0x%08X 0x%08X f/%s' % (a, e2, name)); print('  jump table', r[0], lines[-1])
+            jt.append((a, e2)); print('  jump table', r[0], hex(a), hex(e2))
+    if jt:   # one object has ONE rodata slot: several tables become one range (alignment padding included)
+        lines.append('lobby:rodata 0x%08X 0x%08X f/%s' % (min(a for a, b in jt), max(b for a, b in jt), name))
     print(lines[-1], '#', ', '.join(r[0] for r in run))
 with open('config/c_files.txt', 'a') as f:
     f.write('\n'.join(lines) + ('\n' if lines else ''))
