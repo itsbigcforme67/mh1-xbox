@@ -5,5 +5,4 @@ frame_check_001263F0 = 0x001263F0;
 D_6E9700 = 0x006E9700;   /* lobby/overlay word read by ms_net_patch_set (patch size); the auto list only holds +4 and +0x14 */
 _gp = 0x0038EB70;   /* gp_value of the main module: power01.c takes &_gp (addiu v1, gp, 0) */
 flPS2matMulNormalize33 = 0x0017C000;   /* static asm helper in flps/fladdm.c, still referenced by a data table (0x32D210 area) */
-GetFileHeadAAN = 0x0018F0B0;   /* file-static in fl/rs03.c, called from fl/rs02.c */
 flPS2_Mem_move16_16A = 0x0016AD48;   /* hand-written asm entry called from fl/flpsm01.c */
