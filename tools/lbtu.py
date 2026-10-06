@@ -127,7 +127,7 @@ for ad, n, t in items:
             sig = '%s %s(%s)' % (mt.group(1).strip(), n, mt.group(2))
         else:
             sig = 'int %s()' % n
-        out.append('/* original bytes: build/raw/%s.inc (config/c_rawfuncs.txt) */\nasm %s\n{\n#include "%s.inc"\n}\n' % (n, sig, n))
+        out.append("/* original bytes: build/raw/%s.inc (config/c_rawfuncs.txt) */\n#ifdef __MWERKS__\nasm %s\n{\n#include \"%s.inc\"\n}\n#endif\n" % (n, sig, n))
         rawlines.append('lobby 0x%08X 0x%X %s' % (ad, sz, n))
     else:
         out.append(t)

@@ -2015,6 +2015,10 @@ main 0x001BCA20 0x001BCB38 net/netsyn05
 main 0x001BC690 0x001BC844 net/netsyn06
 main 0x001BBE60 0x001BC1FC net/netsyn08
 main:rodata 0x0035EC70 0x0035ECA4 net/netsyn08
+lobby 0x005D7050 0x005D778C f/lb_gq01
+lobby 0x005C9910 0x005C9A50 f/lb_gv05
+lobby 0x005F7110 0x005F7188 f/lb_gau03
+lobby 0x005FFCB0 0x005FFD1C f/lb_gdr2x01
 main 0x001BA8E0 0x001BB000 net/netsyn10
 main 0x0016B060 0x0016B10C fl/clay02
 main 0x0016D8F0 0x0016D9C0 fl/clay03

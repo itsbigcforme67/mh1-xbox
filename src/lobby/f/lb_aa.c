@@ -142,12 +142,12 @@ void Lb_PlStatusSet(int a) {
     int a3;
     mini = GetAdrsMiniData();
     s0 = a & 0xFF;
-    a2 = *(s16 *)(mini + 8);
     a1 = *(s16 *)(mini + 0xA);
+    a2 = *(s16 *)(mini + 8);
     a3 = s0 * 0xA00;
     pl = (PLW *)((u8 *)player_work + a3);
-    *(s16 *)((u8 *)pl + 0x35E) = a2;
     *(s16 *)((u8 *)pl + 0x360) = a1;
+    *(s16 *)((u8 *)pl + 0x35E) = a2;
     *(s16 *)((u8 *)pl + 0x362) = *(s16 *)(mini + 0xC);
     *((u8 *)pl + 0x352) = mini[0xE];
     *((u8 *)pl + 0x353) = mini[0xF];

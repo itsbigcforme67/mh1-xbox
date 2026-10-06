@@ -103,7 +103,7 @@ s8 Lb_get_quest_type(u16 *p) {
     if (!((t >> 3) & 1)) {
         for (;;) {
             v = v - 1;
-            if (v < 0) {
+            if (v <= -1) {
                 v = 0;
                 break;
             }

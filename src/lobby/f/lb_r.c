@@ -261,8 +261,8 @@ block_119:
         if ((a != 0 || *(u16 *)(fh + 2) == 0x13 || *(u16 *)(fh + 2) == 0x14) && lb_sys.x87 == 0 && (lb_sys.x68 != 8 || *(u16 *)(fh + 2) == 6)) {
             pos[0] = *(f32 *)(fh + 4);
             pos[1] = *(f32 *)((u8 *)pl->fish878 + 8);
-            pos[2] = *(f32 *)((u8 *)pl->fish878 + 0xC);
             fh = (u8 *)pl->fish878;
+            pos[2] = *(f32 *)((u8 *)pl->fish878 + 0xC);
             ang = *(u16 *)(fh + 0x14);
             switch ((u32) * (u16 *)(fh + 2)) {
             case 0:
