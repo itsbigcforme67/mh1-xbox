@@ -25,6 +25,10 @@ PATCHES = {
         ("void Lb_Pl_act_set2(PLW *pl) {\n    Lb_Pl_act_set();",
          "void Lb_Pl_act_set2(PLW *pl, int a, int b, int f) {\n    Lb_Pl_act_set(pl, a, b, f);"),
     ],
+    # a K&R block-scope redeclaration gcc rejects (lobby_f.h has the prototype)
+    "src/lobby/f/lb_a.c": [
+        ("    LBTRADE2 t;\n    void Ud_item_stack();\n", "    LBTRADE2 t;\n"),
+    ],
     # lb_pl_to_normal_clr(pl) (a0 = pl)
     "src/lobby/f/lb_g.c": [
         ("    lb_pl_to_normal_clr();\n    pl->work4E0 = 0;",

@@ -29,7 +29,7 @@ extern u8 lit_2244[];
 #define FS16(p, o) (*(s16 *)((u8 *)(p) + (o)))
 #define FU16(p, o) (*(u16 *)((u8 *)(p) + (o)))
 #define FU32(p, o) (*(u32 *)((u8 *)(p) + (o)))
-#define SX(f) ((s16)(s32)(0.8f * (f)))
+#define SX(v) ((s16)(s32)(0.8f * (v)))
 
 void DispFrameMessageA(u8 *fr, char *text, int alpha) {
     s16 q[10];          /* sprite: x y w h col(2) u0 v0 u1 v1 */

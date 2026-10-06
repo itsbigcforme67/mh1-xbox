@@ -1012,7 +1012,7 @@ void Lb_npc_set(s32 st) {
         break;
     }
     for (i = 0; i < n; i++) {
-        em = pull_enemy_work();
+        em = (u8 *)pull_enemy_work();
         if (em != NULL) {
             M2C_FIELD(em, s8 *, 0x1E) = 1;
             M2C_FIELD(em, s8 *, 0x34F) = 0;
@@ -1176,7 +1176,7 @@ void Lb_make_quest_tbl_local(void) {
     sp100 = (s32) (((s8)(lb_get_quest_level(1))));
     var_t1 = 0;
     var_a3 = quest_local_tbl;
-    var_a2 = lb_quest_clear;
+    var_a2 = (s8 *)lb_quest_clear;
     var_a1 = lb_quest_info;
     do {
         temp_t0 = (*(u8 **)var_a3);
@@ -1202,7 +1202,7 @@ void Lb_make_quest_tbl_local(void) {
         spB0 = quest_local_tbl;
         var_s1 = 0;
         var_s3 = lb_quest_info;
-        spA0 = lb_quest_clear;
+        spA0 = (s8 *)lb_quest_clear;
         do {
             temp_s6 = (*(u8 **)spB0);
             temp_s4 = get_new_quest(var_s1) & 0xFF;
@@ -1342,22 +1342,22 @@ s32 lb_set_key_quest_local(void) {
         M2C_FIELD(lb_quest_info, s8 *, 0x19) = 0xAA;
     }
     if (Ex_quest_ck(User_data, 2) == 1) {
-        temp_v1 = lb_quest_info + 0x19 + (((s8)(var_s0)));
+        temp_v1 = (s8 *)lb_quest_info + 0x19 + (((s8)(var_s0)));
         var_s0 = ((s8)((var_s0 + 1)));
         *temp_v1 = 0xAF;
     }
     if (Ex_quest_ck(User_data, 1) == 1) {
-        temp_v1_2 = lb_quest_info + 0x19 + (((s8)(var_s0)));
+        temp_v1_2 = (s8 *)lb_quest_info + 0x19 + (((s8)(var_s0)));
         var_s0 = ((s8)((var_s0 + 1)));
         *temp_v1_2 = 0xAE;
     }
     if (Ex_quest_ck(User_data, 0) == 1) {
-        temp_v1_3 = lb_quest_info + 0x19 + (((s8)(var_s0)));
+        temp_v1_3 = (s8 *)lb_quest_info + 0x19 + (((s8)(var_s0)));
         var_s0 = ((s8)((var_s0 + 1)));
         *temp_v1_3 = 0xAD;
     }
     if (Quest_clear_bit_ck(0xAD) == 1) {
-        temp_v1_4 = lb_quest_info + 0x19 + (((s8)(var_s0)));
+        temp_v1_4 = (s8 *)lb_quest_info + 0x19 + (((s8)(var_s0)));
         var_s0 = ((s8)((var_s0 + 1)));
         *temp_v1_4 = 0xAC;
     }
@@ -2512,10 +2512,10 @@ void Lb_npc_mk(u8 *em) {
     c = M2C_FIELD(em, u16 *, 0x2DC);
     if (c != 0x284 && c != 0x286 && M2C_FIELD(w, u8 *, 0xE) != 5) {
         if (M2C_FIELD(em, u8 *, 2) != 0) {
-            jm = get_joint_mat_em(em, 0xC);
+            jm = (void *)get_joint_mat_em(em, 0xC);
             lim = 10.0f;
         } else {
-            jm = get_joint_mat_em(em, 0x13);
+            jm = (void *)get_joint_mat_em(em, 0x13);
             lim = 20.0f;
         }
         a = (180.0f * flConvertStoR(Lb_get_angle(em, player_work + (*(u8 *)0x3F34C1 * 0xA00) + 0xAC) & 0xFFFF)) / 3.1415927f;
@@ -2832,11 +2832,7 @@ void lb_npc_erase(u8 *em) {
     push_em_work(em);
 }
 
-/* lb_npc_effect_move (0x5C4890): the NPC program's effect hook
- * (+0x3CC table, entry 3) */
-void lb_npc_effect_move(u8 *em) {
-    (*(void (**)(u8 *))(M2C_FIELD(em, u8 **, 0x3CC) + 0xC))(em);
-}
+/* lb_npc_effect_move (0x5C4890) is in src/lobby/lb/lbui_nm.c */
 
 /* lb_set_npc (0x5C4220): the NPC's record (0x44 bytes) from
  * npc_dialog_table+0x60[stage] by its number +0x1B: angle, position,
@@ -2885,21 +2881,21 @@ void set_event_npc(u8 *arg0) {
     switch (temp_a0) {                              /* irregular */
     case 26:
         if ((Quest_clear_bit_ck(0x6B) == 1) && (Lb_guild_check_requireF() == 1) && (Lb_check_existF() == 1)) {
-            M2C_FIELD(temp_s0, int **, 8) = npcMv26_EVENT;
+            M2C_FIELD(temp_s0, int **, 8) = (int *)npcMv26_EVENT;
 block_17:
             M2C_FIELD(arg0, s32 *, 0xA4) = 0;
         }
         return;
     case 33:
         if ((Quest_clear_bit_ck(0x6B) == 1) && (Lb_guild_check_requireF() == 1) && (Lb_check_existF() == 1)) {
-            M2C_FIELD(temp_s0, int **, 8) = npcMv33_EVENT;
+            M2C_FIELD(temp_s0, int **, 8) = (int *)npcMv33_EVENT;
             M2C_FIELD(arg0, s32 *, 0xA4) = 0xE001;
             return;
         }
         break;
     case 34:
         if ((Quest_clear_bit_ck(0x6B) == 1) && (Lb_guild_check_requireF() == 1) && (Lb_check_existF() == 1)) {
-            M2C_FIELD(temp_s0, int **, 8) = npcMv34_EVENT;
+            M2C_FIELD(temp_s0, int **, 8) = (int *)npcMv34_EVENT;
             goto block_17;
         }
         break;
@@ -2957,7 +2953,7 @@ void lb_npc_trans(u8 *arg0) {
                                 var_s1 = var_s4;
                                 do {
                                     temp_v1 = M2C_FIELD(temp_s0, u8 *, 2);
-                                    temp_s3 = temp_fp + (M2C_FIELD(var_s1, s32 *, 8) * 0x4C);
+                                    temp_s3 = (u8 *)(temp_fp + (M2C_FIELD(var_s1, s32 *, 8) * 0x4C));
                                     switch (temp_v1) { /* switch 1; irregular */
                                     case 1:         /* switch 1 */
                                         lb_normal_material(temp_s0, temp_s3, var_s5, ((s16)(var_s6)));
@@ -3391,7 +3387,7 @@ void lb_check_status(void) {
             }
             break;
         case 48:                                    /* switch 1 */
-            temp_v0_2 = Lbs_GetRoomInfo(((s16)((M2C_FIELD(ClassInfo, u8 *, 8) - 1))), temp_a1, temp_a2);
+            temp_v0_2 = (u8 *)Lbs_GetRoomInfo(((s16)((M2C_FIELD(ClassInfo, u8 *, 8) - 1))), (u8 *)temp_a1, temp_a2);
             if (((M2C_FIELD(mhRule, s8 *, 0) + 1) >= 2) && ((M2C_FIELD(cw, u16 *, 0x32C6) + 1) < (s32) M2C_FIELD(temp_v0_2, u16 *, 2))) {
                 M2C_FIELD(pNet, u8 *, 0xC) = 0U;
                 *(u8 *)0x3F36AB = 1;
@@ -3699,7 +3695,7 @@ void Lb_guild(void) {
 
     temp_a0 = *(u8 *)0x3F34C1;
     temp_s1 = *(u8 * *)(D_3E4FA0 + (temp_a0 * 0xA00)) + 0x444;
-    temp_s0 = get_quest_info(temp_a0);
+    temp_s0 = (u8 *)get_quest_info(temp_a0);
     Get_sw2(0);
     switch (M2C_FIELD(lb_sys, s8 *, 6)) {          /* switch 1 */
     case 0:                                         /* switch 1 */
@@ -3912,7 +3908,7 @@ block_36:
         case 0:                                     /* switch 4 */
             temp_s0_3 = M2C_FIELD(mhRule, u8 *, 0x58);
             if (temp_s0_3 == ((((s8)(get_questLevelNum()))) + 1)) {
-                var_v0 = get_quest_info();
+                var_v0 = (u8 *)get_quest_info();
             } else {
                 var_v0 = *(u8 * *)(lb_quest_all + (M2C_FIELD(mhRule, s32 *, 0x54) * 4));
             }
@@ -4098,7 +4094,7 @@ void lb_guild_talk(void) {
         switch (M2C_FIELD(lb_sys, s8 *, 6)) {      /* irregular */
         case 6:
             strcpy(guildStr, M2C_FIELD(temp_s0, int **, 4));
-            temp_v0 = strrchr(guildStr, 0x24);
+            temp_v0 = (u8 *)strrchr(guildStr, 0x24);
             if (temp_v0 != NULL) {
                 Lb_num_to_str(guildPrice, temp_v0);
                 strcat(guildStr, strrchr(M2C_FIELD(temp_s0, int **, 4), 0x24) + 1);
@@ -4219,7 +4215,7 @@ s32 lb_select_quest(void) {
     temp_s1 = M2C_FIELD(mhRule, u8 *, 0x58);
     temp_s0 = Get_sw2(0) & 0xFFFF;
     if (temp_s1 == ((((s8)(get_questLevelNum()))) + 1)) {
-        var_v0 = get_quest_info();
+        var_v0 = (u8 *)get_quest_info();
     } else {
         var_v0 = *(u8 * *)(lb_quest_all + (*(M2C_FIELD(pNet, u8 *, 7) + (lb_quest_info + ((temp_s1 & 0xFF) * 5))) * 4));
     }
@@ -4457,14 +4453,14 @@ void lb_set_questpage_info(void) {
 
     if (M2C_FIELD(cw, u8 *, 0x35D3) != 0) {
         if ((s32) M2C_FIELD(mhRule, u8 *, 0x54) >= 0xC8) {
-            var_s1 = get_quest_info();
+            var_s1 = (u8 *)get_quest_info();
         } else {
             var_s1 = *(u8 * *)(lb_quest_all + (M2C_FIELD(mhRule, u8 *, 0x54) * 4));
         }
     } else {
         temp_s0 = M2C_FIELD(mhRule, u8 *, 0x58);
         if (temp_s0 == ((((s8)(get_questLevelNum()))) + 1)) {
-            var_s1 = get_quest_info();
+            var_s1 = (u8 *)get_quest_info();
         } else {
             var_s1 = *(u8 * *)(lb_quest_all + (*(M2C_FIELD(pNet, u8 *, 7) + (lb_quest_info + ((temp_s0 & 0xFF) * 5))) * 4));
         }
@@ -4569,12 +4565,12 @@ void lb_questpage_trans(u8 *arg0) {
     if (Lbs_InRoomCheck() == 0) {
         temp_s4 = M2C_FIELD(mhRule, u8 *, 0x58);
         if (temp_s4 == ((((s8)(get_questLevelNum()))) + 1)) {
-            var_s4 = get_quest_info();
+            var_s4 = (u8 *)get_quest_info();
         } else {
             var_s4 = *(u8 * *)(lb_quest_all + (*(M2C_FIELD(pNet, u8 *, 7) + (lb_quest_info + ((temp_s4 & 0xFF) * 5))) * 4));
         }
     } else if ((u32) M2C_FIELD(mhRule, u32 *, 0x54) >= 0xC8U) {
-        var_s4 = get_quest_info();
+        var_s4 = (u8 *)get_quest_info();
     } else {
         var_s4 = *(u8 * *)(lb_quest_all + (M2C_FIELD(mhRule, u32 *, 0x54) * 4));
     }
