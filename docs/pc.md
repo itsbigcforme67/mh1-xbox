@@ -934,8 +934,8 @@ frames per second.
   address (`NAME 0xADDR 0xSIZE` lines in src/pc/rt/tables.txt). Carving
   (pl_mv071 arg 3) gives raw meat; the camp's delivery box is unique spot
   kind 21 (10350,40,10640, circle -> Share_item_conv): "all items delivered",
-  quest clear, 20 s, reward screen, money (+50z: reward 50 - fee 0 shown at
-  the Elder... the trace shows Gold_add(32) after 18 single steps), village.
+  quest clear, 20 s, reward screen, money screen (+50z, counted up 1z at a
+  time then the rest), village.
 - Reward screen: ListSelect(&cur, keys, 2) (the count 2 is a2 left over in
   the asm, 0x292DB8); "end receiving" works.
 - Village re-entry reloads lobby.bin's data and zeroes its .bss
