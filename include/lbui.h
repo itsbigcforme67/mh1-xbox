@@ -130,7 +130,7 @@ int flSetRenderState();
 int Put_2TF();
 int Lbc_set_prim();
 int lobby_bgm_set2();
-int plaza_moveMain();
+void plaza_moveMain();
 int Plaza_chat_init();
 int Plaza_chat_move();
 int Put_megaphone();

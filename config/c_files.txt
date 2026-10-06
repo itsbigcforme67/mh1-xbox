@@ -2439,3 +2439,9 @@ lobby 0x005B4F80 0x005B5044 b/lb_cn10
 lobby 0x005B6AC0 0x005B6B7C b/lb_cmcs01
 lobby 0x005B5640 0x005B5974 b/lb_tcp01
 lobby 0x005BA940 0x005BABF4 b/lb_cbpl01
+lobby 0x00594260 0x0059440C f/lb_pz01
+lobby:rodata 0x0065DBF0 0x0065DC2C f/lb_pz01
+lobby 0x0059C660 0x0059C74C f/lb_pz02
+lobby 0x00599B10 0x00599CB0 f/lb_pz03
+lobby 0x0059B640 0x0059B818 f/lb_pz04
+lobby 0x005997C0 0x00599B08 f/lb_pz05
