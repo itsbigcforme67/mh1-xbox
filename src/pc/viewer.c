@@ -622,6 +622,11 @@ static void sim_tick(void)
             printf("tick %d: em0 pos %.0f %.0f %.0f ang %04X\n", ticks, p[0], p[1], p[2], a & 0xFFFF);
         }
     }
+    if (quest_no && pl.game && play && ticks >= 2 && rt_player_uses_game()) {
+        void stage_mv_ck(void);
+        stage_mv_ck();                  /* move_stage -> stage_m's area-exit check (f_stage.c):
+                                         * pl+0x738 = 1 -> game2 steps 2-6 load the next area */
+    }
     if (quest_no || play)
         rt_hud_tick();                  /* Pit_mv: HUD layers (last step of move()) */
     if (snd == 0) {
