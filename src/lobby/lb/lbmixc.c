@@ -1,4 +1,4 @@
-/* lbmix, run 3: lb_mix_listIcon .. CheckItemPrice (lobby.bin 0x00536620-0x00536708): the matching functions of lb_mix_nm.c. */
+/* lbmix, run 3: lb_mix_tag_decide .. lb_mix_tag_decide (lobby.bin 0x00535E80-0x00536140): the matching functions of lb_mix_nm.c. */
 #include "lobby.h"
 #include "pl.h"
 #include "em.h"
@@ -78,22 +78,61 @@ int Item_preparation();
 
 /* can `qty` of item `id` be bought / is it held (mode 2) */
 
-void lb_mix_listIcon(int x, int y, int z, s16 n) {
+void lb_mix_tag_decide(void) {
+    UD_ITEM *it = User_data[0].item;
+    int i;
+    int cnt;
+    LB_SHOPITEM *sl = shopList;
     int v;
+    int pages;
 
-    if (lbShop.mode != 2) {
-        v = lbShop.tbl[n + lbShop.x6C * 7];
-    } else {
-        int k = n + lbShop.x6C * 7;
-        if (User_data[0].item[k].num <= 0) return;
-        v = User_data[0].item[k].id;
+    memset(shopList, 0, 0x5000);
+    switch (lbShop.mode) {
+    case 0:
+        cnt = lb_mix_makeMixList(lbShop.mode);
+        lbShop.x18 = 0;
+        lbShop.x8E = 3;
+        if (Ud_item_search_space() != 0) lbShop.help = shop_mix_help[6];
+        else lbShop.help = shop_mix_help[7];
+        break;
+    case 1:
+        lbShop.tbl = mix_shop_tbl;
+        if (Ud_item_search_space(lbShop.mode) != 0) lbShop.help = shop_mix_help[8];
+        else lbShop.help = shop_mix_help[9];
+        cnt = 0;
+        Ud_item_search_space();
+        for (i = 0; i < 100; i++) {
+            v = lbShop.tbl[i];
+            if (v == 0xFFFF) break;
+            strcpy(sl->name, item_str[v]);
+            sl->price = Item_data[v].buy;
+            if (Lb_mix_item_checkMax(v & 0xFFFF, 1) == 0) sl->state = 1;
+            else sl->state = 0;
+            cnt++;
+            sl++;
+        }
+        lbShop.x8E = 0;
+        lbShop.x18 = 1;
+        break;
+    case 2:
+        lbShop.help = shop_mix_help[10];
+        for (i = 0; i < 20; i++, sl++, it++) {
+            if (it->num <= 0) {
+                sl->state = 2;
+            } else {
+                u16 id = it->id;
+                strcpy(sl->name, item_str[id]);
+                sl->price = Item_data[id].sell;
+                sl->state = 0;
+            }
+        }
+        lbShop.x8E = 0;
+        cnt = 0x14;
+        lbShop.x18 = 1;
+        break;
     }
-    Lb_put_itemIcon(x, y, z, v);
-}
-
-int CheckItemPrice(id, qty)
-u16 id;
-s16 qty;
-{
-    return *(s32 *)0x3C6FE0 >= qty * Item_data[id].buy;
+    pages = cnt / 7;
+    lbShop.count = cnt;
+    if (cnt % 7 != 0) pages++;
+    lbShop.x6D = pages;
 }

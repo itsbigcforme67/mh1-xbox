@@ -1,4 +1,4 @@
-/* pl_itemck - player 0x00152C70-0x00152D48: Pl_item_num_ck3 (free count of an item in the pouch, -1 if the pouch is full). Whole file in pl_nm.c. */
+/* pl_itemck - player 0x00152BC0-0x00152D48: Pl_item_num_ck2 (count left to carry), Pl_item_num_ck3 (free count of an item in the pouch, -1 if the pouch is full). Whole file in pl_nm.c. */
 /* Player code (f_pl.s, 0x134950..): working file; matched functions are moved
  * to plX.c, what is left here is near-match (not built). */
 #include "pl.h"
@@ -61,6 +61,20 @@ typedef struct W24 { s32 a, b, c, d, e, f; } W24;
 ST_ITEM *Stage_item_data_get(u8);
 ST_UNIQ *Stage_unique_data_get(u8);
 u16 *Stage_item_probability_get(int);
+long Pl_item_num_ck2(PLW *pl, u16 id) {
+    s16 i;
+    for (i = 0; i < 20; i++) {
+        if (pl->item[i].id == id) {
+            if (Item_data[id][3] == 0xFF) {
+                if ((pl && pl) && pl) { /* permuter no-op: changes only instruction scheduling */
+                }
+                return 0xFF;
+            }
+            return (s16)(Item_data[id][3] - pl->item[i].num);
+        }
+    }
+    return Item_data[id][3];
+}
 long Pl_item_num_ck3(PLW *pl, u16 id) {
     s16 i;
     s16 free = 0;

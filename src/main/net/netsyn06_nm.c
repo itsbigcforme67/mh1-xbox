@@ -15,11 +15,11 @@ typedef struct NPKC {
 void ChatLogAdd_Q(u8, u8, u8 *);
 
 void net_receive_chat(int slot, u8 *buf) {
-    u8 *p;
-    u8 text[0x40];
-    u8 *d;
-    s8 i;
     u8 len;
+    u8 text[0x40];
+    u8 *p;
+    s8 i;
+    u8 *d;
     u8 who;
     u8 kind;
 
