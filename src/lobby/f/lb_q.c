@@ -28,8 +28,7 @@ void Lb_player_load();
 
 static inline void lb_pl_place(PLW *pl, LBV3 *v, u16 ang) {
     *(LBV3 *)pl->pos = *v;
-    pl->ang_y = ang;
-    pl->ang[1] = ang;
+    pl->ang[1] = *(u16 *)&pl->ang_y = ang;
 }
 #define LBPLACE(pl, p) \
     *(LBV3 *)(pl)->pos = *(LBV3 *)(p); \
@@ -146,13 +145,17 @@ void Lb_stage_load(int stage) {
             LBPLACE(pl, p);
             break;
         default:
-            *(LBV3 *)pl->pos = *(LBV3 *)stage_start_pos[stage];
-            pl->ang[1] = pl->ang_y = 0;
+            u = (LBUNI *)((int)St_unique_tbl[stage] + lb_sys.x71 * 24);
+            *(LBV3 *)pl->pos = u->pos;
+            pl->ang[1] = u->ang;
+            pl->ang_y = u->ang;
             break;
         }
     } else {
-        *(LBV3 *)pl->pos = *(LBV3 *)stage_start_pos[stage];
-        pl->ang[1] = pl->ang_y = 0;
+        u = (LBUNI *)((int)St_unique_tbl[stage] + lb_sys.x71 * 24);
+        *(LBV3 *)pl->pos = u->pos;
+        pl->ang[1] = u->ang;
+        pl->ang_y = u->ang;
     }
     pl->x3B0 = 0;
     if (lb_sys.x68 != 0x21) {

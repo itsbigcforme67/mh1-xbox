@@ -4,7 +4,6 @@ lobby 0x005E6580 0x80 bs_cache_queue_get
 lobby 0x005E66D0 0x374 BsCacheInitialize
 lobby 0x005E6E80 0x1DC BsRequestPostAdd
 lobby 0x005CEA40 0x47C Lb_put_unique_act_hint
-lobby 0x00609770 0x7C Lb_ItemBox_open
 lobby 0x006097F0 0x204 Lb_ItemBox_mv
 lobby 0x00609A00 0x1DC itembox_cursor_mv
 lobby 0x00609BE0 0x238 itembox_stock
