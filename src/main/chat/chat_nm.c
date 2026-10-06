@@ -4,6 +4,7 @@
 #include "types.h"
 #include "menu.h"
 #include "ud.h"
+#include "pl.h"
 
 #define F8(p, o) (*(u8 *)((u8 *)(p) + (o)))
 #define FS8(p, o) (*(s8 *)((u8 *)(p) + (o)))
@@ -661,8 +662,8 @@ void Chat_move(int a) {
 }
 
 char *strcpy(char *, const char *);
-extern u8 chat_font_color[];
-extern u8 chat_cnfg_font_color[];
+extern u8 chat_font_color[8];
+extern u8 chat_cnfg_font_color[8];
 extern u8 my_user_id[];
 
 void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
@@ -671,6 +672,7 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
     int i;
     int room;
     s8 c;
+    int uc;
 
     if (*s == 0) {
         return;
@@ -686,8 +688,8 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
         strcpy(l->name, (char *)src + 8);
     } else {
         l->col[0] = 0;
-        l->col[2] = l->col[1] = chat_font_color[l->who];
-        l->col[3] = chat_cnfg_font_color[PitMenu.x17];
+        l->col[1] = l->col[2] = chat_font_color[l->who];
+        l->col[3] = chat_cnfg_font_color[(u8)PitMenu.x17];
         strcpy(l->uid, (char *)my_user_id);
         strcpy(l->name, (char *)player_work + l->who * 0xA00 + 0x8D4);
     }
@@ -698,7 +700,7 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
         PitMenu.lognum = 0x40;
     }
     room = 0x16;
-    if (who == 0xFF) {
+    if ((who & 0xFF) == 0xFF) {
         room = 0x1E;
     }
     l->nline = 0;
@@ -718,16 +720,8 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
                 l->nline++;
                 return;
             }
-            if ((u8)c < 0x80 || (u8)c > 0x9F) {
-                if ((u8)c >= 0xE0) {
-                    goto dbl;
-                }
-                *d = c;
-                s++;
-                d++;
-                left--;
-            } else {
-dbl:
+            uc = c & 0xFF;
+            if ((uc >= 0x80 && uc < 0xA0) || (uc >= 0xE0 && uc < 0x100)) {
                 if (left >= 2) {
                     *d = c;
                     left -= 2;
@@ -737,6 +731,11 @@ dbl:
                 } else {
                     break;
                 }
+            } else {
+                *d = c;
+                s++;
+                d++;
+                left--;
             }
             if (left <= 0) {
                 break;
@@ -790,9 +789,9 @@ int Online_ck();
 extern char room_member_id[][8];
 
 void ChatLogAdd_Q(int who, int mask, s8 *msg) {
-    struct { char uid[8]; char name[8]; u8 col[4]; } e;
-    int k;
-    int p = who & 0xFF;
+    struct { char name[8]; char uid[0x114]; u8 col[4]; } e;
+    u8 k;
+    int p;
     u8 c;
 
     KinshiYogo_chk((char *)msg);
@@ -803,11 +802,12 @@ void ChatLogAdd_Q(int who, int mask, s8 *msg) {
     } else {
         k = 2;
     }
-    e.col[3] = 0;
+    p = who & 0xFF;
+    e.col[0] = 0;
     c = chat_font_color[p];
     e.col[2] = c;
     e.col[1] = c;
-    e.col[0] = chat_cnfg_font_color[k & 0xFF];
+    e.col[3] = chat_cnfg_font_color[k & 0xFF];
     strcpy(e.uid, (char *)player_work + p * 0xA00 + 0x8D4);
     strcpy(e.name, room_member_id[p]);
     chat_log_add(who, msg, (PIT_CHAT *)&e);
@@ -978,29 +978,35 @@ next:
 }
 
 void Pit_disp_chat_log(void) {
-    s16 t;
+    u32 t;
     int col;
-    s16 a1;
-    s16 a2;
+    int c;
+    s16 y;
+    s16 y2;
 
     SetFilterMode(0);
     DispFrameMessage(pf_chat_log_base, 0);
-    t = (System_timer & 0x1F) << 11;
-    a1 = 0xB6;
+    t = (u16)((System_timer & 0x1F) << 11);
     col = (((s8)(48.0f * flSin(0.0000958738f * (f32)t)) + 0xCF) << 24) | 0x1ACC8E;
+    y = 0xB6;
     if (PitMenu.x22 & 1) {
+        c = col;
         if (PitMenu.x22 & 4) {
-            a1 = 0xB4;
+            y -= 2;
         }
+    } else {
+        c = 0xA0606060;
     }
-    PutArrow(0x80, a1, 0x1B, 0xF, col, 0);
-    a2 = 0x198;
+    PutArrow(0x80, y, 0x1B, 0xF, c, 2);
+    y2 = 0x198;
     if (PitMenu.x22 & 2) {
         if (PitMenu.x22 & 8) {
-            a2 = 0x19A;
+            y2 += 2;
         }
+    } else {
+        col = 0xA0606060;
     }
-    PutArrow(0x80, a2, 0x1B, 0xF, col, 2);
+    PutArrow(0x80, y2, 0x1B, 0xF, col, 3);
     disp_chat_log_sub(PitMenu.logscr, -0xA, PitMenu.x21);
     Put_receive_mark(0);
 }
@@ -1161,17 +1167,17 @@ extern u8 Item_data[][16];
 int Item_preparation_one_ck(s16);
 
 void ItemListWindow(int page, int cursel, int mode) {
-    char buf[0x40];
+    char buf[0x20];
     s16 base;
-    s16 i;
     s16 sel;
     s16 y;
     s16 cnt;
     s16 pal;
     UD_ITEM *it;
+    u8 *w;
 
     base = (s16)(page / 10) * 10;
-    it = (UD_ITEM *)((u8 *)&player_work[GW(0xD1)] + 0x828) + base;
+    w = (u8 *)&player_work[GW(0xD1)] + 0x828;
     SetTrnslMode(4, 5);
     if (cursel != 0) {
         FS32(item_list_frame, 0x10) = cursel;
@@ -1186,6 +1192,7 @@ void ItemListWindow(int page, int cursel, int mode) {
     }
     SetFilterMode(0);
     flfntSetSize(0x12, 0x12);
+    it = (UD_ITEM *)w + base;
     y = 0x3E;
     for (cnt = 10; cnt > 0; cnt--, it++) {
         y += 0x16;
@@ -1235,7 +1242,7 @@ int Event_flag_ck(int);
 void Get_hunter_status(void *, u8 *, int *, int *);
 int Get_weapon_job2(u8, u16);
 void PrintPlayerJob(void *);
-void PlayerEquipmentWindow(void *);
+void PlayerEquipmentWindow(PLW *);
 void Put_comment(int, int, int, void *);
 
 void PlayerStatusWindow(u8 *pl, int tab) {
@@ -1302,7 +1309,7 @@ void PlayerStatusWindow(u8 *pl, int tab) {
         Put_comment(0x132, 0x126, 0x14, (u8 *)&User_data + 0x3F4);
         return;
     case 1:
-        PlayerEquipmentWindow(pl);
+        PlayerEquipmentWindow((PLW *)pl);
         if (F8(pl, 0x910) == 0) {
             flfntLocate(0x132, 0x13A);
             font_print_uf(Skill_name[0]);
@@ -1324,37 +1331,36 @@ extern u8 Armor_Arm_Data[][0x14];
 extern u8 Armor_Waist_Data[][0x14];
 extern u8 Armor_Leg_Data[][0x14];
 extern u8 menu_stat_icon_tbl1[5];
-extern u8 menu_stat_icon_tbl2[];
+extern u8 menu_stat_icon_tbl2[8];
 extern char lit_3652[];
 int Get_equip_name(u8, u16);
-u8 Get_equip_rare(u8, u16);
+int Get_equip_rare(u8, u16);
 
-void PlayerEquipmentWindow(void *plv) {
-    u8 *pl = plv;
+void PlayerEquipmentWindow(PLW *pl) {
     PFLP8 q;
     u8 *eq[5];
     s16 y;
-    s16 i;
-    s16 ty;
+    u32 i;
+    int ty;
 
-    eq[0] = Armor_Head_Data[F8(pl, 0x354)];
-    eq[1] = Armor_Body_Data[F8(pl, 0x355)];
-    eq[2] = Armor_Arm_Data[F8(pl, 0x356)];
-    eq[3] = Armor_Waist_Data[F8(pl, 0x357)];
-    eq[4] = Armor_Leg_Data[F8(pl, 0x352)];
+    eq[0] = Armor_Head_Data[pl->work352[2]];
+    eq[1] = Armor_Body_Data[pl->work352[3]];
+    eq[2] = Armor_Arm_Data[pl->work352[4]];
+    eq[3] = Armor_Waist_Data[pl->work352[5]];
+    eq[4] = Armor_Leg_Data[pl->work352[0]];
     SetFilterMode(1);
     reload_tex(1, 0x118);
     SetTextureStage(0x118);
     q.p[0] = 0xF8;
-    y = 0x55;
     q.p[2] = 0x20;
+    y = 0x55;
     q.p[3] = 0x20;
     q.p[1] = 0x55;
-    q.uv[0] = menu_stat_icon_tbl2[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF];
+    q.uv[0] = menu_stat_icon_tbl2[Get_weapon_job2(pl->work35F, pl->wpn_kind) & 0xFF];
     q.uv[2] = q.uv[0] + 0x20;
     q.uv[1] = 0xA0;
     q.uv[3] = 0xC0;
-    q.col = Equip_icon_color_rare(Get_equip_rare(F8(pl, 0x35F), F16(pl, 0x360)), 0xFF, 0);
+    q.col = Equip_icon_color_rare(Get_equip_rare(pl->work35F, pl->wpn_kind), 0xFF, 0);
     flps0008(&q);
     q.uv[1] = 0xC0;
     q.uv[3] = 0xE0;
@@ -1368,7 +1374,7 @@ void PlayerEquipmentWindow(void *plv) {
     }
     flfntSetSize(0x12, 0x12);
     flfntLocate(0x168, 0x5C);
-    font_print_sp(lit_3652, Get_equip_name(F8(pl, 0x35F), F16(pl, 0x360)));
+    font_print_sp(lit_3652, Get_equip_name(pl->work35F, pl->wpn_kind));
     ty = 0x7C;
     for (i = 0; i < 5; i++) {
         flfntLocate(0x168, ty);
@@ -1495,7 +1501,7 @@ void *Get_equip_data_ptr(void *);
 void font_print_strings(int, int, void *, int);
 int Get_bowgun_atk(void *);
 int Get_weapon_job(void *);
-u8 Get_equip_rare(u8, u16);
+int Get_equip_rare(u8, u16);
 void sword_zokusei(u8 *, int, s16);
 void slash_level_bar(u8 *, s16);
 

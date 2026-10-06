@@ -20,7 +20,7 @@ int strncmp(const char *, const char *, int);
 char *strncpy(char *, const char *, int);
 char *strchr(const char *, int);
 
-void hk_kbd_input(void);
+void hk_kbd_input();
 void hk_kbd_input_sub(u8 *);
 void hk_key_esc(void);
 void hk_key_space(int);
@@ -101,15 +101,20 @@ void Han2zen(char *, char *);
 int backspace_all(char *, int);
 void delete_all(char *, int);
 
-void HardKeyboard_move(void) {
+void HardKeyboard_move(a)
+int a;
+{
+    u8 *q;
+
     SKB(0x661) = SKB(0x660);
     SKB(0x660) = SKB(0x658);
-    if (SKB(0x65F) & 0x80) {
-        SKB(0x65F) = 0;
+    q = &SKB(0x65F);
+    if (*q & 0x80) {
+        *q = 0;
     }
     if (SKB(0x660) != 0 && SKB(0x660) != SKB(0x661)) {
         SKB(0x65F) = 0x9E;
-        hk_kbd_input();
+        hk_kbd_input(a);
     }
 }
 
