@@ -240,17 +240,88 @@ static int pick_kosuu_sel_chk() {
 }
 
 
-/* original bytes: build/raw/kosuu_select.inc (config/c_rawfuncs.txt) */
-asm void kosuu_select(int pad, int c)
-{
-#include "kosuu_select.inc"
+void kosuu_select(int pad, int c) {
+    int a3;
+    int a0;
+    int a1;
+    s16 *q;
+    int k;
+    u8 *t0;
+    int t;
+    u8 *u;
+    u8 mx;
+    t0 = ib;
+    u = User_data;
+    mx = D_3C7186[t0[8] * 4];
+    if (!(c & 0xFF)) {
+        k = t0[0xB] * 4;
+        a1 = D_3396D3[*(u16 *)(k + (int)u + 0x37C) * 0x10] - *(s16 *)(k + (int)u + 0x37E);
+        if (a1 < (mx & 0xFF)) {
+            mx = a1;
+        }
+    }
+    t = pad & 0xFFFF;
+    t0[0x1C] = 0;
+    q = (s16 *)(ib + 0x1A);
+    a3 = *q;
+    if (t & 0x800) {
+        *q = 1;
+    } else if (t & 0x400) {
+        *q = mx & 0xFF;
+    } else {
+        a0 = mx & 0xFF;
+        if (t & 0x2000) {
+            if (a3 >= a0) {
+                *q = a0;
+                a3 = -1;
+            } else {
+                *q = a3 + 1;
+            }
+        } else if (t & 0x1000) {
+            if (a3 > 1) {
+                *q = a3 - 1;
+            } else {
+                a3 = -1;
+            }
+        }
+    }
+    a1 = (s16)a3;
+    if (a1 < 0) {
+        se_req(7, 0x15, 0);
+    } else if (a1 != *(s16 *)(ib + 0x1A)) {
+        se_req(7, 0x16, 0);
+    }
+    t0 = ib;
+    if (*(s16 *)(t0 + 0x1A) >= (mx & 0xFF)) {
+        t0[0x1C] = 1;
+    }
 }
 
 
-/* original bytes: build/raw/sortup_idx_chk.inc (config/c_rawfuncs.txt) */
-asm u8 * sortup_idx_chk(int a)
-{
-#include "sortup_idx_chk.inc"
+u8 *sortup_idx_chk(int a) {
+    u8 *u;
+    int v;
+    v = a & 0xFF;
+    u = User_data;
+    if (v == User_data[0x457]) {
+        return u + 0x457;
+    }
+    if (v == u[0x458]) {
+        return u + 0x458;
+    }
+    if (v == u[0x459]) {
+        return u + 0x459;
+    }
+    if (v == u[0x45A]) {
+        return u + 0x45A;
+    }
+    if (v == u[0x45B]) {
+        return u + 0x45B;
+    }
+    if (v == u[0x456]) {
+        return u + 0x456;
+    }
+    return 0;
 }
 
 
