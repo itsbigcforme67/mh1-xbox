@@ -1498,8 +1498,8 @@ EMW *em;
     f32 *r;
 
     m = game_w.master;
-    flags = *(s32 **)((u8 *)waiter_tbl_03 + 0x3C + game_w.stage * 4);
     pl = &player_work[m];
+    flags = ((s32 **)&((u8 *)waiter_tbl_03)[0x3C])[game_w.stage];
     ex = (LB_WAITEX *)em->ex;
     if (pl->fish878 == 0) {
         Lb_act_set(em, 0, 0);
@@ -1544,7 +1544,7 @@ EMW *em;
                 return;
             }
         }
-        return;
+        break;
     case 2:
         t = em->work08 - 1;
         em->work08 = t;
@@ -1601,69 +1601,67 @@ EMW *em;
                 em->work08 = 3;
                 return;
             }
-            if (*(s32 *)((u8 *)&lb_sys + 0x68) == 0x11 && LBS8(6) != 6 && LBS8(6) != 7) {
-                em->x05++;
-                ex->idx = 3;
-                em->x0E = Lb_get_angle(em, route + (ex->idx + 1) * 3);
-                em->work08 = 3;
-                Set21_set(em, (s16)(*(u16 *)pl->fish878 - 0xE));
-                Lb_pl_chr_set0(em, 0x3F8, 4, 0, 0);
+            if (*(s32 *)((u8 *)&lb_sys + 0x68) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
+                ex->x26 = 0;
+                *(s16 *)((u8 *)&lb_sys + 0x76) = 0;
+                Lb_act_set(em, 0, 0);
                 return;
             }
-            ex->x26 = 0;
-            *(s16 *)((u8 *)&lb_sys + 0x76) = 0;
-            Lb_act_set(em, 0, 0);
+            em->x05++;
+            ex->idx = 3;
+            em->x0E = Lb_get_angle(em, route + (ex->idx + 1) * 3);
+            em->work08 = 3;
+            Set21_set(em, (s16)(*(u16 *)pl->fish878 - 0xE));
+            Lb_pl_chr_set0(em, 0x3F8, 4, 0, 0);
             return;
         }
         break;
     case 6:
-        if (*(s32 *)((u8 *)&lb_sys + 0x68) == 0x11 && LBS8(6) != 6 && LBS8(6) != 7) {
-            t = em->work08 - 1;
-            em->work08 = t;
-            if (t >= 0) {
-                em->ang[1] += em->x0E / 3;
-            }
-            if (flvecCalcDistance(em->pos, route + (ex->idx + 1) * 3) < 70.0f) {
-                ex->idx++;
-                if (flags[ex->idx] == 1) {
-                    em->x0E = Lb_get_angle(em, route + (ex->idx + 1) * 3);
-                    em->work08 = 3;
-                    return;
-                }
-                em->x05++;
-                em->work08 = 100;
-                em->x0E = Lb_get_angle(em, (u8 *)&player_work[game_w.master] + 0xAC);
-                Lb_pl_chr_set0(em, 0x432, 8, 0, 0);
-                return;
-            }
-        } else {
+        if (*(s32 *)((u8 *)&lb_sys + 0x68) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
             ex->x26 = 0;
             *(s16 *)((u8 *)&lb_sys + 0x76) = 0;
             ex->idx = 0;
             em->x05 += 2;
             return;
         }
-        break;
-    case 7:
-        if (*(s32 *)((u8 *)&lb_sys + 0x68) == 0x11 && LBS8(6) != 6 && LBS8(6) != 7) {
-            t = em->work08 - 1;
-            em->work08 = t;
-            if (t >= 0x5A) {
-                em->ang[1] += em->x0E / 10;
-            } else if (em->work08 == 0x42) {
-                Lb_eat_to_eat();
-            }
-            if (em->x194 <= 0) {
-                em->x05++;
-                em->work08 = 100;
-                Lb_pl_chr_set0(em, 0x430, 6, 12, 0);
+        t = em->work08 - 1;
+        em->work08 = t;
+        if (t >= 0) {
+            em->ang[1] += em->x0E / 3;
+        }
+        if (flvecCalcDistance(em->pos, route + (ex->idx + 1) * 3) < 70.0f) {
+            ex->idx++;
+            if (flags[ex->idx] == 1) {
+                em->x0E = Lb_get_angle(em, route + (ex->idx + 1) * 3);
+                em->work08 = 3;
                 return;
             }
-        } else {
+            em->x05++;
+            em->work08 = 100;
+            em->x0E = Lb_get_angle(em, (u8 *)&player_work[game_w.master] + 0xAC);
+            Lb_pl_chr_set0(em, 0x432, 8, 0, 0);
+            return;
+        }
+        break;
+    case 7:
+        if (*(s32 *)((u8 *)&lb_sys + 0x68) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
             ex->x26 = 0;
             *(s16 *)((u8 *)&lb_sys + 0x76) = 0;
             ex->idx = 0;
             em->x05++;
+            return;
+        }
+        t = em->work08 - 1;
+        em->work08 = t;
+        if (t >= 0x5A) {
+            em->ang[1] += em->x0E / 10;
+        } else if (em->work08 == 0x42) {
+            Lb_eat_to_eat();
+        }
+        if (em->x194 <= 0) {
+            em->x05++;
+            em->work08 = 100;
+            Lb_pl_chr_set0(em, 0x430, 6, 12, 0);
             return;
         }
         break;
