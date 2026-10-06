@@ -1,3 +1,4 @@
+/* lb_by155 - agent B 0x00539510-0x00539A84: lb_process_make_kyoukaList (weapon/armor upgrade shop: builds the list of upgrade options and their prices/states). */
 #include "lobby_s.h"
 typedef struct { s32 kind; s32 id; } SHTBL;
 typedef struct { u8 x0; u8 kind; u16 id; u16 x4; } EQREC;

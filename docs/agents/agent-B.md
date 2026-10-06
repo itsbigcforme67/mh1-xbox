@@ -807,3 +807,12 @@ lb_village_nm.c), Lb_menu_move_Core (src/lobby/b/nm/Lb_menu_move_Core.c, m2c dra
 arguments as the asm does), Disp_lb_menu (lb_menu_nm.c, matched form differs only by `int n` / `n % 8`), npcPigEXIT/WALK2/TOPL/SLEEP and npcCatWAITER
 (lbnpc_nm.c: corrected in place, see above; PC behaviour changes where the drafts passed wrong arguments), lb_mix_item_select / lb_mix_makeMixList
 (lb_mix_nm.c) and lb_shop_item_select (lbshop2_nm.c) unchanged. The by files themselves are not compiled by build_pc.sh.
+
+# Lobby round 8 (agent B, 7 Oct 2026): village
+Linked: lb_process_make_kyoukaList (lb_by155, village forge/upgrade list; all five modules OK). Its nm copy stays in src/lobby/b/nm/ because build_pc.sh compiles it.
+Near-matches (best C in src/lobby/b/nm/ unless noted):
+- lb_process_kyoukaListProg: 3 hunks (about 12 instructions); only the 0x400 branch (lim s8 conversion registers) differs.
+- shop_select_items: 1 hunk; same s8 `lim`/`x6E + 1` compare as above. Best form is not in the repo (lb_shop_nm.c holds the older m2c draft): `lim = x6E-table == 7 ? 4 : 2` ternary, `lbShop.x6E++; n = lbShop.x6E; if (lim <= n)`, other branches use `x1C == 0 || x8E == 0 || (x8E == 3 && x1C != 2)` as the if condition, `x > 1` instead of `>= 2`, s8 local for x6C.
+- lb_npc_item_trans: first version written (arrays of rotation/offset floats, em_frame_check2 case 0x2AD returns early); constant stores scheduled differently (about 20 hunks).
+- lb_npc_trans, disp_status, lb_process_drawHelp: first hand-written C, register allocation far off (30-85 hunks); lb_process_select, lb_eat_set, event_eat_trans_ot0, lb_process_use_item unchanged.
+Lessons: a `switch (x) { case 0: ... }` single-case form reproduces `beqz; b` layouts (lb_npc_item_trans); `if (a == 0 || b != 7)` first gives "then" block before the switch (kyoukaListProg tail); `price > money` (not `money < price`) fixes the load order of the `sltu` compare; `sl++; sl++;` keeps real pointer increments where `sl += 2` folds into offsets (make_kyoukaList); hill-climbing over statement order (random move/swap, score = align hunks) found make_kyoukaList's store order after hand tries failed.
