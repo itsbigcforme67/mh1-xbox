@@ -62,8 +62,8 @@ void net_receive_host(int slot, u8 *buf) {
                         Item_box_get_item((&game_w.item[s & 0xFF])->id, s);
                     }
                 }
-                game_w.x1A8[0] |= *(s32 *)(p + 4);
-                game_w.x1A8[1] |= *(s32 *)(p + 8);
+                game_w.x1A8[0] |= (unsigned long)(*(s32 *)(p + 4));
+                game_w.x1A8[1] |= (unsigned long)(*(s32 *)(p + 8));
             }
             break;
         }
