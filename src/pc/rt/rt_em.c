@@ -499,3 +499,17 @@ void rt_monster_clear_all(void)
     for (i = 0; i < 20; i++)
         em_work[i].be_flag = 0;
 }
+
+/* main 0x225E90 / 0x225EA0 (not decompiled yet; written from the asm):
+ * the escape camera demos of Lao-Shan Lung (em07) and Fatalis (em02).
+ * F_DragonEscapeCamera picks demo 10 when EMW+0x388 is 2, else 31. */
+void DemoCameraRequest(s8 no, s32 arg);
+void RedDragonEscapeCamera(EMW *em)
+{
+    DemoCameraRequest(28, (s32)em);
+}
+
+void F_DragonEscapeCamera(EMW *em)
+{
+    DemoCameraRequest(((u8 *)em)[0x388] == 2 ? 10 : 31, (s32)em);
+}

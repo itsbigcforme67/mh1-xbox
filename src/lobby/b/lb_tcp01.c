@@ -1,3 +1,4 @@
+/* lb_tcp01 - agent C 0x005B5640-0x005B5974: tcp_init (ConnWork struct, swapped SecCunt store, > 0x14). */
 #include "lobby_a.h"
 extern s16 cnt_441;
 extern s8 COM_R_No_4;
@@ -8,8 +9,8 @@ extern u8 COM_R_No_2;
 extern char _fqdn_tmp_440[];
 extern char bsCsvWork[];
 extern char ConnectLbsId[];
-extern char D_4E36F4[];
-extern char D_4E3714[];
+typedef struct { s32 x00; s32 sock; u8 pad08[0x1C]; s16 st; u8 pad26[6]; } CONNW;
+extern CONNW ConnWork;
 s32 tcp_init(void) {
     s32 sp3C;
     int i;
@@ -67,7 +68,7 @@ s32 tcp_init(void) {
         }
         port = PORT_NUMBER_439;
         h = connect_ps2(sp3C, (((port << 8) & 0xFF00) | ((port >> 8) & 0xFF)) & 0xFFFF, 0);
-        *(s32 *)0x4E36F4 = h;
+        ConnWork.sock = h;
         if (h < 0) {
             return -1;
         }
@@ -78,22 +79,22 @@ s32 tcp_init(void) {
     case 2:
         SecCunt = (s8) (SecCunt - 1);
         if (SecCunt <= 0) {
-            TryCunt = (s8) (TryCunt + 1);
             SecCunt = 0x3C;
-            if (TryCunt >= 0x15) {
-                CpInetTcpAbort(*(s32 *)0x4E36F4);
-                CpInetTcpDelete(&D_4E36F4);
+            TryCunt = (s8) (TryCunt + 1);
+            if (TryCunt > 0x14) {
+                CpInetTcpAbort(ConnWork.sock);
+                CpInetTcpDelete(&ConnWork.sock);
                 SecCunt = 0;
                 TryCunt = 0;
                 return -1;
             }
         }
-        if (CpInetTcpGetStatus(*(s32 *)0x4E36F4, &D_4E3714) < 0) {
-            CpInetTcpAbort(*(s32 *)0x4E36F4);
-            CpInetTcpDelete(&D_4E36F4);
+        if (CpInetTcpGetStatus(ConnWork.sock, &ConnWork.st) < 0) {
+            CpInetTcpAbort(ConnWork.sock);
+            CpInetTcpDelete(&ConnWork.sock);
             return -1;
         }
-        if (*(s16 *)0x4E3714 != 4) {
+        if (ConnWork.st != 4) {
             return -2;
         }
         SecCunt = 0;

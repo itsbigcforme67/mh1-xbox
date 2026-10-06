@@ -22,10 +22,12 @@ void Lb_put_status();
 int strlen();
 int Online_ck();
 void lb_disp_name(u8 *arg0) {
+    f32 sp100[3];
+    f32 spF0[4];
+    f32 spB0[16];
     s32 var_v0;
     u8 *var_s0;
     s32 var_s4;
-    f32 spB0[16];
     int var_s3;
     s32 var_fp;
     u8 *temp_v1;
@@ -34,12 +36,10 @@ void lb_disp_name(u8 *arg0) {
     s32 temp_s2_2;
     s32 var_s1;
     s32 var_s0_2;
-    f32 sp100[3];
     u8 temp_v1_3;
     s32 var_s3_2;
     u8 temp_v1_2;
     u8 *spA0;
-    f32 spF0[4];
     u8 *var_s6;
     u8 *temp_s1;
     s32 temp_s5;

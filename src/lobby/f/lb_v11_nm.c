@@ -7,7 +7,7 @@ void lb_pl_turn_sub(PLW *pl) {
     int a3;
     int a2;
     int v1;
-    int a1;
+    u16 a1;
     u16 a0;
     if ((s16)Lb_act_ck(pl, 0, 1) != 0 || (s16)Lb_act_ck(pl, 0, 0x24) != 0) {
         t1 = 0x71C;
@@ -48,9 +48,10 @@ void lb_pl_turn_sub(PLW *pl) {
             pl->work750 = 0;
         } else {
             if (a0 < 0x8000) {
-                v1 = a0 - 0x300;
+                pl->work750 = a0 - 0x300;
+            } else {
+                pl->work750 = v1;
             }
-            pl->work750 = v1;
         }
     } else {
         if (t0 < 0x8000U) {
@@ -64,10 +65,10 @@ void lb_pl_turn_sub(PLW *pl) {
     }
     a0 = pl->work750;
     if (a0 < 0xF601 && a0 >= 0xA00) {
-        if (a0 < 0x8000) {
-            pl->work750 = 0xA00;
-        } else {
+        if (a0 > 0x7FFF) {
             pl->work750 = 0xF600;
+        } else {
+            pl->work750 = 0xA00;
         }
     }
 }

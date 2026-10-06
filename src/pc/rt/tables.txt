@@ -1031,3 +1031,22 @@ st34_pos_tbl
 st38_pos_tbl_00671470
 st39_pos_tbl_006714A0
 st53_pos_tbl_00671500
+# em02 (Fatalis), em10 (village NPC), em33 (round 21)
+em02_stay_timer_tbl
+em10_start_pos05
+em10_start_pos16
+em10_start_pos41
+em33_runaway_timer_tbl
+em33_stay_timer_tbl
+map2_trade_nm
+map2_trade_sp
+map4_trade_nm
+map4_trade_sp
+map6_trade_nm
+map6_trade_sp
+send_tbl
+talk_tbl
+fly_adjy2_hosei_tbl_00654420
+fly_adjz2_hosei_tbl_006544A0
+hagi_r_tbl_006544B0
+hagi_r_tbl_00657788

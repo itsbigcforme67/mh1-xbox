@@ -94,42 +94,28 @@ void Set_equip_data(EQPL *pl, EQUD *u) {
     pl->x357 = u->a3D6;
 }
 
+typedef struct UDN { u8 pad[8]; s8 name[0x12]; } UDN;
+
 void Set_userdata(PLW *pl) {
     s16 i;
     s16 j;
-    PL_ITEM *dst;
-    UD_ITEM *src;
+    UDW *u = User_data;
 
-    for (i = 0; i < 0x12; i += 6) {
-        pl->name[i] = ((s8 *)User_data)[i + 8];
-        pl->name[i + 1] = ((s8 *)User_data)[i + 1 + 8];
-        pl->name[i + 2] = ((s8 *)User_data)[i + 2 + 8];
-        pl->name[i + 3] = ((s8 *)User_data)[i + 3 + 8];
-        pl->name[i + 4] = ((s8 *)User_data)[i + 4 + 8];
-        pl->name[i + 5] = ((s8 *)User_data)[i + 5 + 8];
+    i = 0;
+    do {
+        pl->name[i] = ((UDN *)u)->name[i];
+        i++;
+    } while (i < 0x12);
+    for (j = 0; j < 20; j++) {
+        pl->item[j].id = u[0].item[j].id;
+        pl->item[j].num = u[0].item[j].num;
     }
-    dst = pl->item;
-    src = User_data[0].item;
-    for (j = 0; j < 0x14; j += 5) {
-        dst[0].id = src[0].id;
-        dst[0].num = src[0].num;
-        dst[1].id = src[1].id;
-        dst[1].num = src[1].num;
-        dst[2].id = src[2].id;
-        dst[2].num = src[2].num;
-        dst[3].id = src[3].id;
-        dst[3].num = src[3].num;
-        dst[4].id = src[4].id;
-        dst[4].num = src[4].num;
-        dst += 5;
-        src += 5;
-    }
-    PLB(pl, 0x8D3) = UDB(User_data, 0x3D7);
-    PLB(pl, 0x34C) = Get_weapon_id((u8 *)User_data + 0x3CC);
-    PLH(pl, 0x35E) = UDH(User_data, 0x3CC);
-    PLH(pl, 0x360) = UDH(User_data, 0x3CE);
-    PLH(pl, 0x362) = UDH(User_data, 0x3D0);
-    Set_equip_data((void *)pl, (void *)User_data);
+    PLB(pl, 0x8D3) = UDB(u, 0x3D7);
+    PLB(pl, 0x34C) = Get_weapon_id(u->item + 20);
+    PLH(pl, 0x35E) = UDH(u, 0x3CC);
+    PLH(pl, 0x360) = UDH(u, 0x3CE);
+    PLH(pl, 0x362) = UDH(u, 0x3D0);
+    Set_equip_data((void *)pl, (void *)u);
 }
 
 void ItemCopy_Pl2Ud(PLW *pl) {

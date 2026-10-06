@@ -1,4 +1,7 @@
+/* lb_cn10 - agent C 0x005B4F80-0x005B5044: connecting_10. */
 #include "lobby_a.h"
+extern u8 InetSys[];
+#include "netcw.h"
 extern s16 Vs_Cnt_0;
 extern s16 Vs_Cnt_1;
 extern s8 COM_R_No_3;
@@ -23,10 +26,10 @@ s32 connecting_10(void) {
     }
     reset_NG_flag = 1;
     COMconnect = 1;
-    *(s16 *)0x4E4746 = 0;
+    *(s16 *)((u8 *)InetSys + 6) = 0;
     COM_R_No_4 = 0;
     COM_R_No_3 = 0;
-    *(s16 *)0x3A6E94 = 0;
+    net_common_w.timer = 0;
     COM_R_No_2 = (u8) (COM_R_No_2 + 1);
     if (COM_R_No_5 == 0) {
         Ncm_spr_PRG_BAR_set();

@@ -1,4 +1,4 @@
-/* Near-match (not linked): sk_get_key_code (0x0025F9C0-0x0025FA84), 3 of 49 instructions differ: the two lbu loads of the cursor row/column use v1/a0 where the original uses a0/v1. */
+/* sk19 - f_sk (0x0025F9C0-0x0025FA84): sk_get_key_code, soft keyboard cursor cell to key code and the row/column pointers. */
 #include "types.h"
 
 extern u8 *lpSKey;
@@ -9,7 +9,7 @@ extern u8 *lpSKey;
 s8 sk_get_key_code(void) {
     u8 *l;
 
-    SKS8(0x2E) = *(s8 *)(*(u8 **)(SKP(0) + 8) + (SKB(0x24) * 4 + SKB(0x25)));
+    SKS8(0x2E) = *(s8 *)(*(u8 **)(SKP(0) + 8) + ((SKB(0x24) << 2) + SKB(0x25)));
     SKP(4) = *(u8 **)(SKP(0) + 4) + SKS8(0x2E) * 8;
     SKP(8) = *(u8 **)(SKP(0) + 0) + SKS8(0x2E) * 4;
     if (*(u8 **)(SKP(0) + 0xC) != 0) {
