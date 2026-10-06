@@ -27,7 +27,7 @@ void SetTextureStage(int);
 void SetFilterMode(int);
 void SetTrnslMode(int, int);
 void reload_tex(int, int);
-void flfntLocate(int, s16);
+void flfntLocate(s16, s16);
 void flfntSetSize(int, int);
 void font_set_palette(int);
 void font_print(void *, ...);
@@ -1389,29 +1389,31 @@ void PrintPlayerJob(void *pl) {
     font_print_uf(menu_stat_job_str[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF]);
 }
 
-int EquipmentDescriptionWindowA(u8 *, s16, s16, int, u8 *, int);
+typedef struct EQD { u8 be; u8 kind; u16 id; } EQD;
+u8 EquipmentDescriptionWindowA_s(EQD *, s16, s16, int, u8 *, int);
+u8 EquipmentDescriptionWindowA(EQD *, int, int, int, u8 *, int);
 
 void EquipmentDescriptionWindow(u8 *a, s16 b, s16 c, int d, u8 *e) {
-    EquipmentDescriptionWindowA(a, b, c, d, e, 0xB2);
+    EquipmentDescriptionWindowA((EQD *)a, b, c, d, e, 0xB2);
 }
 
 extern char lit_3701[];
 extern char lit_3702[];
-void Put_PageArrow(int, int, int, int);
+void Put_PageArrow(int, int, int, u8);
+void Put_PageArrow_s(s16, s16, int, u8);
 void flfntLocate_i(int, int);
-void equip_exp_core(u8 *, s16, s16, int, u8 *);
+void equip_exp_core(u8 *, int, int, int, u8 *);
 void Get_equip_icon_uv(u8 *, s16 *, s16 *);
 
-int EquipmentDescriptionWindowA(u8 *eq, s16 x, s16 y, int page, u8 *cmp, int alpha) {
-    struct { s16 x; s16 y; s16 sp0; s16 sp1; u8 w; u8 h; u8 a; u8 b; } fr;
+u8 EquipmentDescriptionWindowA(EQD *eq, int x, int y, int page, u8 *cmp, int alpha) {
+    struct { s16 x; s16 y; u8 w; u8 h; u8 a; u8 b; s16 sp0; s16 sp1; } fr;
     PFLP8 q;
-    s16 uv[2];
-    s16 uv2[2];
-    int pages;
-    int pg;
+    u8 pages;
+    u8 pg;
+    u8 pb;
 
-    fr.w = 0x12;
     fr.h = 0x12;
+    fr.w = 0x12;
     fr.x = x;
     fr.y = y;
     fr.a = 0x11;
@@ -1419,44 +1421,45 @@ int EquipmentDescriptionWindowA(u8 *eq, s16 x, s16 y, int page, u8 *cmp, int alp
     fr.sp0 = 0;
     fr.sp1 = 0;
     DispFrameMessageA(&fr, 0, alpha);
-    if (eq != 0 && eq[0] != 0) {
-        if (F16(eq, 2) != 0x3E7) {
-            if (eq[1] != 7) {
+    if (eq != 0 && eq->be != 0) {
+        if (eq->id != 0x3E7) {
+            pb = page;
+            if (eq->kind != 7) {
                 pages = 2;
-                pg = page & 1;
+                page = page & 1;
             } else {
                 pages = 4;
-                pg = page & 3;
+                page = page & 3;
             }
-            if (!(page & 0xFF & 0x80)) {
-                Put_PageArrow(x + 0xE1, y + 0x64, ((pg & 0xFF) + 1) & 0xFF, pages);
+            if (!(pb & 0x80)) {
+                Put_PageArrow_s((s16)x + 0xE1, (s16)y + 0x64, ((page & 0xFF) + 1) & 0xFF, pages);
             }
-            if ((pg & 0xFF) < 2) {
+            pg = page;
+            if (pg < 2) {
                 SetFilterMode(1);
                 reload_tex(1, 0x118);
                 SetTextureStage(0x118);
+                q.p[0] = 0.8f * (5.0f + (f32)x);
                 q.p[2] = 0x20;
                 q.p[3] = 0x20;
-                q.p[0] = 0.8f * (5.0f + (f32)x);
-                q.col = Equip_icon_color_rare(Get_equip_rare(eq[1], F16(eq, 2)), 0xFF, 0);
-                Get_equip_icon_uv(eq, uv, uv2);
+                q.col = Equip_icon_color_rare(Get_equip_rare(eq->kind, eq->id), 0xFF, 0);
+                Get_equip_icon_uv((u8 *)eq, &q.uv[0], &q.uv[2]);
                 q.p[1] = y;
-                if ((pg & 0xFF) == 1) {
+                if (pg == 1) {
                     q.p[1] += 0xE;
                 }
-                *(s16 *)&q.uv[0] = uv[0];
                 flps0008(&q);
             }
-            equip_exp_core(eq, x, y, pg, cmp);
+            equip_exp_core((u8 *)eq, x, y, page, cmp);
             return pages;
         }
         font_set_palette(0);
-        flfntLocate(x + 0x36, y + 0xA);
+        flfntLocate((s16)x + 0x36, (s16)y + 0xA);
         font_print_uf(lit_3701);
         return 0;
     }
     font_set_palette(0);
-    flfntLocate(x + 0x36, y + 0xA);
+    flfntLocate((s16)x + 0x36, (s16)y + 0xA);
     font_print_uf(lit_3702);
     return 0;
 }
@@ -1507,7 +1510,7 @@ void slash_level_bar(u8 *, s16);
 
 #define ATKCONV(v, job) ((u16)((f32)(v) * job_atk_adj_tbl[job]))
 
-void equip_exp_core(u8 *eq, s16 x, s16 y, int page, u8 *cmp) {
+void equip_exp_core(u8 *eq, int x, int y, int page, u8 *cmp) {
     u8 rare = Get_equip_rare(eq[1], F16(eq, 2));
     int job = Get_weapon_job(eq) & 0xFF;
     int pg = page & 0xFF;
@@ -1871,16 +1874,18 @@ void EquipmentCompareWindow(u8 *cur, u8 *other, s16 x, s16 y, int page) {
 }
 
 void EquipmentCompareWindowA(u8 *cur, u8 *other, s16 x, s16 y, int page, int alpha) {
-    s16 t;
+    u32 t;
+    f32 s;
 
-    EquipmentDescriptionWindowA(cur, x, y, page, 0, alpha);
-    EquipmentDescriptionWindowA(other, x, y + 0x90, page, cur, alpha);
+    EquipmentDescriptionWindowA_s((EQD *)cur, x, y, page, 0, alpha);
+    EquipmentDescriptionWindowA_s((EQD *)other, x, y + 0x90, page, cur, alpha);
     SetFilterMode(1);
     reload_tex(1, 0x11A);
     SetTextureStage(0x11A);
-    t = (System_timer & 0x1F) << 11;
-    flSin(0.0000958738f * (f32)t);
-    PutArrow(x + 0x89, y + 0x7A, 0x20, 0x10, 0, 0);
+    t = (u16)((System_timer & 0x1F) << 11);
+    s = flSin(0.0000958738f * (f32)t);
+    PutArrow(x + 0x89, y + 0x7A, 0x20, 0x10,
+             (((((s8)(96.0f * s) + 0x90) & 0xFF) << 16) | 0xFF000000 | ((((s8)(20.0f * s) + 0xE4) & 0xFF) << 8)) | (((s8)(7.0f * s) + 0xF7) & 0xFF), 3);
 }
 
 extern u8 Battle_type[];
@@ -1943,7 +1948,7 @@ void slash_level_bar(u8 *pl, s16 y) {
 
 extern char lit_4368[];
 
-void Put_PageArrow(int x, int y, int a, int b) {
+void Put_PageArrow(int x, int y, int a, u8 b) {
     PFLP8 q;
 
     q.p[2] = 0xE;

@@ -9,3 +9,5 @@ GetFileHeadAAN = 0x0018F0B0;   /* file-static in fl/rs03.c, called from fl/rs02.
 flPS2_Mem_move16_16A = 0x0016AD48;   /* hand-written asm entry called from fl/flpsm01.c */
 flfntLocate_i = 0x002168B0;   /* flfntLocate called with a raw int y (no s16 narrowing): chat/Put_PageArrow */
 Equip_moji_color_rare_i = 0x00275900;   /* same function, int result (no u8 mask on the caller side) */
+Put_PageArrow_s = 0x0027B790;   /* Put_PageArrow called with narrowing s16 x/y (caller side) */
+EquipmentDescriptionWindowA_s = 0x00279A00;   /* EquipmentDescriptionWindowA called with narrowing s16 x/y (EquipmentCompareWindowA) */
