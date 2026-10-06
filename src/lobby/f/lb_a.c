@@ -202,7 +202,7 @@ void lb_set_pl_stage(s8 id, u8 *stg) {
 
 void lb_check_chair(int a0, u8 *p) {
     if (memcmp(cw + 0x440, cw + 3, 8) == 0) {
-        if ((1 << *p) & lb_sys.chair_mask) {
+        if (lb_sys.chair_mask & (1 << (*p & 0xFF))) {
             Lb_send_chair_status(a0, 0, *p);
             return;
         }
