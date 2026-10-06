@@ -83,7 +83,7 @@ void flfntPaletteTrans();
 void flnecCheckFont(int idx);
 void flLockTexture(int, int, void *, int);
 void flUnlockTexture(int);
-void flReloadTexture(void *);
+void flReloadTexture(int, void *);
 void flnecExpandFont(u8 *src, u8 *dst);
 
 void flfntCreate(u8 *mem) {
@@ -375,12 +375,107 @@ void flfntDrawTerm(void) {
 int flfntSjis2Index(u32 c) {
     int j = flfntSjis2Jis(c);
     int hi = (j >> 8) - 0x21;
-    int idx = (j & 0xFF) - 0x21;
-    idx += hi * 0x5E;
+    int idx = (hi * 0x5E) + (j & 0xFF) - 0x21;
     if (idx >= 0x1E80) {
         idx = -1;
     }
     return idx;
+}
+
+/* Texture/palette records of the fl layer (0x38 bytes each; only the GS fields used here). */
+typedef struct FLTEX {
+    u8 _pad00[0x14];
+    s16 x14;            /* 0x14 TBP0 (texture) / CBP (palette) */
+    s16 x16;            /* 0x16 TW (log2 width) */
+    s16 x18;            /* 0x18 TH (log2 height) */
+    u8 _pad1A[6];
+    u32 x20;            /* 0x20 PSM (texture) / CPSM (palette) */
+} FLTEX;
+extern FLTEX flTexture[];
+extern FLTEX flPalette[];
+
+/* Queue one glyph (cache slot of JIS index idx) as a GS sprite. First, when the texture page or palette or
+ * the "not 22x22" flag differs from the last glyph, a 0x40-byte packet sets TEX0_1/TEX1_1 (flag selects linear
+ * filtering); then a 0x50-byte packet (GIF tag, PRIM sprite+TME+FST, RGBAQ 0x80808080, UV, XYZ2 twice with
+ * Z = 0xFFFFFFFF) draws the glyph. The screen position is scaled from 640 to flPs2State+0xC and centred in
+ * the 4096x4096 GS primitive space. Near-match (compile differs from the original). */
+void flfntFontPutc(int idx, FREQ *r) {
+    u16 slot = np->cache[idx];
+    int key;
+    int flag;
+    u64 *q;
+    u64 z;
+    int col;
+    int row;
+    u32 u;
+    u32 v;
+    int cx;
+    int cy;
+    f32 sc;
+    u32 x0;
+    u32 x1;
+    u32 y0;
+    u32 y1;
+    FLTEX *tex;
+    FLTEX *pal;
+
+    key = np->texh[slot / 121] | (np->palh[r->pal] << 16);
+    flag = !(r->sw == 0x16 && r->sh == 0x16);
+    if (key != np->dnum || flag != np->dx) {
+        np->dnum = key;
+        np->dx = flag;
+        tex = &flTexture[(key & 0xFFFF) - 1];
+        pal = &flPalette[((u32)(key & 0xFFFF0000) >> 16) - 1];
+        if (*(u32 *)(flPs2State + 0x40C) - np->dcur >= 0x40) {
+            q = (u64 *)np->dcur;
+            ((u32 *)q)[0] = 0;
+            ((u32 *)q)[1] = 0;
+            ((u32 *)q)[2] = 0;
+            ((u32 *)q)[3] = 0x50000003;
+            q[2] = 0x8002 | ((u64)0x10000000 << 32);
+            q[3] = 0xE;
+            q[4] = ((u64)pal->x20 << 51) | ((u64)(long)pal->x14 << 37) | ((u64)(long)tex->x18 << 30)
+                 | ((u64)(long)tex->x16 << 26) | ((u64)(long)tex->x14 | 0x10000 | ((u64)tex->x20 << 20))
+                 | ((u64)4 << 32) | ((u64)0x40000000 << 32);
+            q[5] = 6;
+            q[6] = ((u64)(u32)flag << 5) | ((u64)(u32)flag << 6);
+            q[7] = 0x14;
+            np->dcur += 0x40;
+        }
+    }
+    np->dflag++;
+    if (*(u32 *)(flPs2State + 0x40C) - np->dcur >= 0x50) {
+        q = (u64 *)np->dcur;
+        ((u32 *)q)[0] = 0;
+        ((u32 *)q)[1] = 0;
+        ((u32 *)q)[2] = 0;
+        ((u32 *)q)[3] = 0x50000004;
+        q[2] = 0x8001 | ((u64)0x64000000 << 32);
+        q[3] = 0x535310;
+        q[4] = 0x156;
+        q[5] = (0x8080 << 16) | 0x8080 | ((u64)1 << 32);
+        col = (slot % 121) % 11;
+        row = (slot % 121) / 11;
+        u = col * 0x16 + 1;
+        v = row * 0x16 + 1;
+        q[6] = (u64)(u32)(u * 0x10) | ((u64)(u32)(v * 0x10) << 16);
+        cx = (0x1000 - *(int *)(flPs2State + 0xC)) / 2 * 0x10;
+        cy = (0x1000 - *(int *)(flPs2State + 0x10)) / 2 * 0x10;
+        sc = (f32) * (int *)(flPs2State + 0xC) / 640.0f;
+        x0 = (u32)(16.0f * ((f32)np->px * sc));
+        x1 = (u32)(16.0f * (sc * (f32)(np->px + r->sw)));
+        y0 = np->py * 0x10;
+        y1 = (np->py + r->sh) * 0x10;
+        if (*(int *)(flPs2State + 4) == 0) {
+            y0 >>= 1;
+            y1 >>= 1;
+        }
+        z = (u64)0xFFFFFFFF << 32;
+        q[7] = ((u64)(u32)(x0 + cx) | ((u64)(u32)(y0 + cy) << 16)) | z;
+        q[8] = (u64)(u32)((u + 0x16) * 0x10) | ((u64)(u32)((v + 0x16) * 0x10) << 16);
+        q[9] = ((u64)(u32)(x1 + cx) | ((u64)(u32)(y1 + cy) << 16)) | z;
+        np->dcur += 0x50;
+    }
 }
 
 /* Half-width character to its Shift-JIS full-width form. */
@@ -510,43 +605,58 @@ void flfntFontPuts(char *str, FREQ *r) {
 /* Uploads the glyphs queued in load[] (x5C .. x60) into the glyph textures
  * (11 x 11 glyphs of 22 x 22 pixels per texture, 121 per page), then reloads
  * all textures and palettes. */
-void flnecReloadTexture(void) {
-    int h;
-    int page;
-    int g;
-    int j;
-    int i;
-    u8 lock[0x50];
-    int arr[0x23];
-    int m;
-    int q;
-    int off;
-
-    if (np->x5C != np->x60) {
-        for (page = np->x5C / 121; page <= np->x60 / 121; page++) {
-            h = np->texh[page];
-            flLockTexture(0, h, lock, 2);
-            for (;;) {
-                if (np->x5C / 121 != page || np->x5C >= 0x16B || np->x5C == np->x60) {
-                    break;
-                }
-                g = np->x5C;
-                m = g % 11;
-                q = g % 121 / 11;
-                off = 514 + m * 22 + q * 5632;
-                flnecExpandFont(np->glyph + np->load[g] * 100, *(u8 **)(lock + 0x10) + off / 2);
-                np->x5C++;
-            }
-            flUnlockTexture(h);
+void flnecReloadTexture(void)
+{
+  int h;
+  int page;
+  int g;
+  int j;
+  int i;
+  u8 lock[0x50];
+  u8 *new_var;
+  int arr[0x23];
+  s32 *new_var2;
+  int m;
+  int q;
+  int off;
+  s32 *new_var3;
+  if (np->x5C != np->x60)
+  {
+    for (page = np->x5C / 121; page <= (np->x60 / 121); page++)
+    {
+      h = np->texh[page];
+      flLockTexture(0, h, lock, 2);
+      for (;;)
+      {
+        if ((((np->x5C / 121) != page) || (np->x5C >= 0x16B)) || (np->x5C == np->x60))
+        {
+          break;
         }
+        g = np->x5C;
+        m = g % 11;
+        q = (g % 121) / 11;
+        new_var = np->glyph + (np->load[g] * 100);
+        off = (514 + (m * 22)) + (q * 5632);
+        flnecExpandFont(new_var, (*((u8 **) (lock + 0x10))) + (off / 2));
+        np->x5C++;
+      }
+
+      flUnlockTexture(h);
     }
-    arr[0] = np->texh[0];
-    arr[1] = np->texh[1];
-    arr[2] = np->texh[2];
-    for (i = 0, j = 3; i < 0x20; i++, j++) {
-        arr[j] = np->palh[i] << 16;
-    }
-    flReloadTexture(arr);
+
+  }
+  j = 0;
+  new_var2 = np->texh;
+  arr[j++] = new_var2[0];
+  new_var3 = np->texh;
+  arr[j++] = new_var3[1];
+  arr[j++] = new_var2[2];
+  for (i = 0; i < 0x20; i++, j++)
+  {
+    arr[j] = np->palh[i] << 16;
+  }
+
+  flReloadTexture(j, arr);
 }
 
 #define EXP1(o, i) \

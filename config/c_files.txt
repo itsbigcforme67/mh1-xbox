@@ -1793,3 +1793,7 @@ main 0x00216890 0x0021691C flfnt/flfnt02
 main 0x00216AC0 0x00216DD4 flfnt/flfnt03
 main 0x00217480 0x00217544 flfnt/flfnt04
 main 0x00217DE0 0x00217E48 flfnt/flfnt05
+main 0x00225D80 0x00225F4C cam/camq0
+main 0x002163D0 0x00216484 sound/flmw01
+main 0x00223760 0x0022386C cam/camr2s01
+main 0x00217E50 0x00218588 tex/apx01
