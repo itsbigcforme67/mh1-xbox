@@ -3004,31 +3004,69 @@ u8 *em_cmd_all_pl_hate_clear(EMW *em, u8 *p) {
     return p;
 }
 
-u8 *em_cmd_pl_ride_ck(EMW *em, u8 *p) {
-    u8 *q;
-    u16 ok;
-    s8 i;
-    u8 n;
-
-    q = p;
-    ok = 1;
-    switch (*q++) {
+u8 *em_cmd_pl_ride_ck(EMW *em, u8 *p)
+{
+  u8 *q;
+  PLW *new_var;
+  u16 ok;
+  s8 i;
+  u8 n;
+  q = p;
+  ok = 1;
+  switch (*(q++))
+  {
     case 0:
-        n = *(u8 *)0x3F34C3;
-        for (i = 0; i < n; i++) {
-            if (player_work[i].flag604 != 0) {
-                ok = 0;
-            }
-        }
-        CMD_SKIPF(em, q, 0x66, ok);
-        break;
-    case 1:
-        q = else_ck(em, q, 0x66);
-        break;
-    case 2:
-        break;
+      n = *((u8 *) 0x3F34C3);
+      new_var = player_work;
+      for (i = 0; i < n; i++)
+    {
+      if (new_var[i].flag604 != 0)
+      {
+        ok = 0;
+      }
     }
-    return q;
+
+      if (ok)
+    {
+      if (ok)
+      {
+        for (;;)
+        {
+          if ((q[0] == 0x66) && (q[1] == 1))
+          {
+            break;
+          }
+          if ((q[0] == 0x66) && (q[1] == 2))
+          {
+            break;
+          }
+          q = cmd_end_search(em, q, 0x66, 2);
+          if (!ok)
+          {
+            break;
+          }
+        }
+
+      }
+      q = next_cmd_search(em, q);
+      if ((q[0] == 0x66) && (q[1] == 2))
+      {
+        q = next_cmd_search(em, q);
+      }
+    }
+      ;
+      break;
+
+    case 1:
+      q = else_ck(em, q, 0x66);
+      break;
+
+    case 2:
+      break;
+
+  }
+
+  return q;
 }
 
 u8 *em_cmd_em_master_ck(EMW *em, u8 *p) {

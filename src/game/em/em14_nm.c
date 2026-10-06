@@ -1607,7 +1607,6 @@ static void em_fly03_005B7EE0(EMW *em, EM14W *w) {
     f32 temp_f1;
     u32 var_a2;
     s32 temp_v1;
-    u16 var_v1;
     u32 temp_a1;
     u8 temp_a0;
 
@@ -1624,9 +1623,9 @@ static void em_fly03_005B7EE0(EMW *em, EM14W *w) {
     case 1:
         temp_f1 = 409.6f * em->act_spd;
         var_a2 = (u32)temp_f1;
+        temp_a1 = (w->tgt_ang - (u16)em->ang[1]) & 0xFFFF;
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
-        temp_a1 = (w->tgt_ang - M2C_FIELD(em, u16 *, 0xA4)) & 0xFFFF;
         if (temp_v1 <= 0) {
             if ((u32) ((temp_a1 + var_a2) & 0xFFFF) < (u32) (var_a2 * 2)) {
                 em->x05 += 1;
@@ -1637,13 +1636,12 @@ static void em_fly03_005B7EE0(EMW *em, EM14W *w) {
             return;
         }
         if ((u32) ((temp_a1 + var_a2) & 0xFFFF) < (u32) (var_a2 * 2)) {
-            var_v1 = w->tgt_ang;
+            em->ang[1] = w->tgt_ang;
         } else if (temp_a1 < 0x8000) {
-            var_v1 = (em->ang[1] + var_a2) & 0xFFFF;
+            em->ang[1] = (em->ang[1] + var_a2) & 0xFFFF;
         } else {
-            var_v1 = (em->ang[1] - var_a2) & 0xFFFF;
+            em->ang[1] = (em->ang[1] - var_a2) & 0xFFFF;
         }
-        em->ang[1] = (s32) var_v1;
         break;
     }
 }
@@ -2654,8 +2652,8 @@ static void em_dmg06_005B9D60(EMW *em, EM14W *w) {
 
 static void em_dmg07_005B9ED0(EMW *em, EM14W *w) {
     FLMAT m50;
-    f32 v[3];
     f32 v2[3];
+    f32 v[3];
     f32 var_f0;
     u8 temp_a0;
     u8 temp_a1;
