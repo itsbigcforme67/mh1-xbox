@@ -22,27 +22,29 @@ void Lb_put_status();
 int strlen();
 int Online_ck();
 void lb_disp_name(u8 *arg0) {
-    f32 v[3];
-    f32 scr[4];
-    f32 mat[16];
-    u8 *pe;
-    u8 *p;
-    u8 *pl;
-    u8 *c;
-    char *name;
-    u8 *c2;
-    s16 len;
-    int half;
-    int off;
-    s16 i;
-    int px;
-    int y2;
-    int x2;
-    int py;
-    int y4;
-    int pal;
-    u8 f;
-    pe = (u8 *)lb_player;
+    s32 var_v0;
+    u8 *var_s0;
+    s32 var_s4;
+    f32 spB0[16];
+    int var_s3;
+    s32 var_fp;
+    u8 *temp_v1;
+    s32 temp_s1_2;
+    s32 temp_s2;
+    s32 temp_s2_2;
+    s32 var_s1;
+    s32 var_s0_2;
+    f32 sp100[3];
+    u8 temp_v1_3;
+    s32 var_s3_2;
+    u8 temp_v1_2;
+    u8 *spA0;
+    f32 spF0[4];
+    u8 *var_s6;
+    u8 *temp_s1;
+    s32 temp_s5;
+
+    spA0 = (u8 *)lb_player;
     switch (lb_sys.x68) {
     case 0:
     case 0xF:
@@ -56,80 +58,80 @@ void lb_disp_name(u8 *arg0) {
     SetTextureStage(0x157);
     SetFilterMode(1);
     flSetRenderState(0x60, 0);
-    p = (u8 *)lb_player;
-    i = 0;
-    off = 0;
+    var_s4 = 0;
+    var_s6 = (u8 *)lb_player;
+    var_fp = 0;
     do {
-        pl = *(u8 **)pe;
-        if (*pl != 0 && pl[1] != 0 && (Lb_Pl_stg_ck(pl) & 0xFF) && Lb_get_pl_stat2((s8)i) == 0 && (*(f32 *)(pl + 0xAC) != 0.0f || *(f32 *)(pl + 0xB4) != 0.0f)) {
-            name = (char *)p + 4;
+        temp_s1 = *(u8 **)spA0;
+        if (temp_s1[0] != 0 && temp_s1[1] != 0 && (Lb_Pl_stg_ck(temp_s1) & 0xFF) && Lb_get_pl_stat2((s8)var_s4) == 0 && (*(f32 *)(temp_s1 + 0xAC) != 0.0f || *(f32 *)(temp_s1 + 0xB4) != 0.0f)) {
+            var_s0 = var_s6 + 4;
             if (Online_ck() == 1 && *(u8 *)0x39DAD4 != 0) {
-                name = (char *)p + 0x24;
+                var_s0 = var_s6 + 0x24;
             }
-            len = strlen(name);
-            flmatInit(mat);
-            flSetRenderState(0x1A, mat);
-            v[0] = *(f32 *)(pl + 0xAC);
-            v[1] = 190.0f + *(f32 *)(pl + 0xB0);
-            v[2] = *(f32 *)(pl + 0xB4);
-            flvecrRotTransPers(scr, v);
-            if (scr[0] < 700.0f && !(scr[0] <= -60.0f)) {
-                if (scr[1] < 500.0f && !(scr[1] <= -20.0f) && !(scr[3] <= 0.0f)) {
-                    half = len / 2;
-                    scr[0] -= (f32)(half * 8);
-                    flfntLocate((int)(1.25f * (f32)(int)scr[0]), (int)scr[1]);
-                    px = (s16)(int)(1.25f * (f32)(int)scr[0]);
-                    py = (s16)(int)scr[1];
+            temp_s2 = (s16)strlen(var_s0);
+            flmatInit(spB0);
+            flSetRenderState(0x1A, spB0);
+            sp100[0] = *(f32 *)(temp_s1 + 0xAC);
+            sp100[1] = 190.0f + *(f32 *)(temp_s1 + 0xB0);
+            sp100[2] = *(f32 *)(temp_s1 + 0xB4);
+            flvecrRotTransPers(spF0, sp100);
+            if (spF0[0] < 700.0f && !(spF0[0] <= -60.0f)) {
+                if (spF0[1] < 500.0f && !(spF0[1] <= -20.0f) && !(spF0[3] <= 0.0f)) {
+                    temp_s2_2 = (s16)temp_s2;
+                    var_v0 = temp_s2_2 / 2;
+                    spF0[0] -= (f32)(var_v0 * 8);
+                    flfntLocate((s32)(1.25f * (f32)(s32)spF0[0]), (s32)spF0[1]);
+                    temp_s5 = (s16)(s32)(1.25f * (f32)(s32)spF0[0]);
+                    temp_s1_2 = (s16)(s32)spF0[1];
                     flfntSetSize(0x10, 0x10);
-                    c = cw + off;
-                    c2 = c + 0x1346;
-                    f = c[0x1347];
-                    if (f == 0x14) {
-                        pal = 2;
-                    } else if (f >= 0xD) {
-                        pal = 6;
+                    temp_v1 = cw + var_fp;
+                    temp_v1_2 = temp_v1[0x1347];
+                    if (temp_v1_2 == 0x14) {
+                        var_s3 = 2;
+                    } else if ((s32)temp_v1_2 >= 0xD) {
+                        var_s3 = 6;
                     } else {
-                        pal = 5;
+                        var_s3 = 5;
                     }
                     font_set_stack_no(0);
-                    font_print_double((int)(1.25f * (f32)(int)scr[0]), (int)scr[1], 1, pal, name);
-                    if (i == *(u8 *)0x3F34C1) {
-                        s8 job = Get_weapon_job(D_3C738C);
+                    font_print_double((s32)(1.25f * (f32)(s32)spF0[0]), (s32)spF0[1], 1, var_s3, var_s0);
+                    if ((s16)var_s4 == *(u8 *)0x3F34C1) {
+                        s32 job = (s8)Get_weapon_job(D_3C738C);
                         if (job == 5) {
                             job = 1;
                         }
-                        y2 = (s16)py;
-                        x2 = (s16)px;
-                        y4 = y2 - 4;
-                        Lb_put_job((s16)(x2 - 0x16), (s16)y4, 0x16, -1, job, 0);
+                        var_s3_2 = (s16)temp_s1_2;
+                        var_s1 = (s16)temp_s5;
+                        var_s0_2 = var_s3_2 - 4;
+                        Lb_put_job((s16)(var_s1 - 0x16), (s16)var_s0_2, 0x16, -1, job, 0);
                     } else {
-                        y2 = (s16)py;
-                        x2 = (s16)px;
-                        y4 = y2 - 4;
-                        Lb_put_job((s16)(x2 - 0x16), (s16)y4, 0x16, -1, *c2, 0);
+                        var_s3_2 = (s16)temp_s1_2;
+                        var_s1 = (s16)temp_s5;
+                        var_s0_2 = var_s3_2 - 4;
+                        Lb_put_job((s16)(var_s1 - 0x16), (s16)var_s0_2, 0x16, -1, temp_v1[0x1346], 0);
                     }
-                    f = c2[0x15];
-                    if (f & 0xC0) {
-                        if (!(f & 0x40)) {
+                    temp_v1_3 = temp_v1[0x1346 + 0x15];
+                    if (temp_v1_3 & 0xC0) {
+                        if (!(temp_v1_3 & 0x40)) {
                             if (!(System_timer & 0x10)) {
                                 goto next;
                             }
                         }
-                        Lb_put_icon_free((s16)(x2 + len * 4 - 0xC), (s16)(y2 - 0x1A), 0x16, *(s32 *)(lb_quest_color_tbl + (f & 0xF) * 4), 0xF);
-                    } else if (f & 0x30) {
-                        if ((f & 0x10) || (System_timer & 0x10)) {
-                            Lb_put_icon_free((s16)(x2 + len * 4 - 0xC), (s16)(y2 - 0x1A), 0x16, *(s32 *)(lb_quest_color_tbl + (f & 0xF) * 4), 0xE);
+                        Lb_put_icon_free((s16)(var_s1 + temp_s2_2 * 4 - 0xC), (s16)(var_s3_2 - 0x1A), 0x16, *(s32 *)(lb_quest_color_tbl + (temp_v1_3 & 0xF) * 4), 0xF);
+                    } else if (temp_v1_3 & 0x30) {
+                        if ((temp_v1_3 & 0x10) || (System_timer & 0x10)) {
+                            Lb_put_icon_free((s16)(var_s1 + temp_s2_2 * 4 - 0xC), (s16)(var_s3_2 - 0x1A), 0x16, *(s32 *)(lb_quest_color_tbl + (temp_v1_3 & 0xF) * 4), 0xE);
                         }
                     } else {
-                        Lb_put_status((s16)(x2 + len * 8 + 6), (s16)y4, 0x14, -1, c2[2]);
+                        Lb_put_status((s16)(var_s1 + temp_s2_2 * 8 + 6), (s16)var_s0_2, 0x14, -1, temp_v1[0x1346 + 2]);
                     }
                 }
             }
         }
 next:
-        p += 0x38;
-        i = (s16)(i + 1);
-        pe += 0x38;
-        off += 0x2FC;
-    } while (i < 8);
+        var_s6 += 0x38;
+        var_s4 = (s16)(var_s4 + 1);
+        spA0 += 0x38;
+        var_fp += 0x2FC;
+    } while (var_s4 < 8);
 }

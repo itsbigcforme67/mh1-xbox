@@ -486,3 +486,18 @@ default block must be reached from the flag test, goto/label variants get thread
 (x5C update: bit-field and temp variants all worse), get_flag_quest 25 (tbl gets the param register instead of its own s4), Lb_send_chat_plus 23 (params must take s0-s2), lb_disp_name
 (draft has a wrong 1.25f*w locate argument: original uses (f32)(int)scr[0]; half = len / 2; rewrite from the asm, scr[1]/scr[2] must NOT be hoisted), Lb_put_help (not started).
 Never touched: lb_rule_seet_set, Lb_make_quest_tbl(_local), lb_set_pl_stage, lb_pl_turn_sub, Lb_draw_square, get_new_quest and everything from BsParseCheck/http_test on (browser).
+
+## Lobby session 12 (range 0x5C4E60-0x5EE618, village first, then room/member code)
+Linked (rebuild OK x5): Lb_draw_square (lb_v09.c), lb_set_pl_stage (lb_v10.c), get_new_quest (lb_v12.c), get_flag_quest (lb_v13.c). The last two use `#include "types.h"` plus a local
+`int ran_suu();` because lobby_f.h declares ran_suu as s16, which adds a dsll32/dsra32 pair that the original does not have.
+Lessons:
+- Lb_draw_square: the original keeps &q[1], &q[2], &q[3] in registers; writing `s16 *p1 = &q[1]` etc. (p3 assigned just before its first use) reproduces it; y1 is an `int`, the
+  third line group must be `*p1 = *p3 = y; q[0] = sx;` (the q[0] store ends in the jal delay slot).
+- lb_set_pl_stage: `me = &player_work[game_w.master]` must come BEFORE `pl->stg = *stg` (it fixes the load order); K&R `int id` and `Lb_clearChatMember((s8)id)`.
+- get_new_quest / get_flag_quest: declarations in the order k, i, n (the compiler assigns s-registers in reverse), `v = (ran_suu(1) & 0xFFFF) % n; i = v & 0xFF;` (a temp, then the mask),
+  `if (0 < n)` gives `slt at` + beqz (n > 0 gives blez), `if (*e != 0x90 || Quest_clear_bit_ck(0x94) == 1) return *e;` shares one return. In get_flag_quest the 0x67..0x6A test needs a `u8 w = i;`
+  temp (`if (w < 0x67 || w > 0x6A)`) to get `andi` + `slti at`.
+Near-matches left (not built): lb_disp_name (lb_v08_nm.c, ~140 of 364 words differ: register map is off - s-register for lb_player pointer/len/px/py, the original keeps spA0 on the stack),
+lb_pl_turn_sub (lb_v11_nm.c, 45: the original keeps a1 as a u16 local with daddiu constants and no mask on use; mine masks), lb_insert_target_list (lb_v14_nm.c, 8: head must be a2, compare in `at`),
+Lb_room_member 1 (addu operand order; tried 14 spellings), lb_send_data 3 (Lbs flag branch must jump to the default block, not past it), Clear_lobby_ram is already linked (lb_n09).
+Not started: Lb_put_help (m2c goto draft), lb_rule_seet_set, Lb_make_quest_tbl(_local), lb_guild_make_room.
