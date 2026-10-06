@@ -19,7 +19,7 @@ RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_gam
 # set13_trans (near-matches on the PS2 side, believed equivalent).
 GAME="src/game/set/set14_nm.c src/game/set/set00.c src/main/stage/stage_set.c \
       src/main/set/set13.c src/main/set/set13b.c src/main/set/set13c.c src/main/set/set13_nm.c \
-      src/main/hit/hit2.c src/main/hit/hit2c.c \
+      src/main/hit/hit2all.c \
       src/game/set/set09.c src/game/set/set17.c src/game/set/set17_nm.c \
       src/game/set/set03.c src/game/set/set04.c src/game/set/set05_nm.c src/game/set/set07.c src/game/set/set08.c src/game/set/set10.c src/game/set/set11.c src/game/set/set15.c src/game/set/set16.c src/game/set/set18.c src/game/set/set19.c src/game/set/set20_nm.c src/game/set/set22.c \
       src/main/set/set12.c src/main/pl/pl_master_ck.c src/main/stage/trans_stage.c \
@@ -38,7 +38,7 @@ HIT="src/main/hit/shit1_nm.c src/main/hit/shit2.c src/main/hit/shit3_nm.c src/ma
 # monster).
 CAM="src/main/cam/cam_nm.c src/main/cam/camm.c src/main/cam/camd.c src/main/cam/camarea_nm.c \
      src/main/cam/camr_nm.c src/main/cam/camr2_nm.c src/main/cam/camr3.c src/main/cam/camr4_nm.c \
-     src/main/cam/camr5_nm.c src/main/cam/camr6_nm.c src/main/hit/hit2b.c"
+     src/main/cam/camr5_nm.c src/main/cam/camr6_nm.c"
 # Effects and shells (game.bin eft*/shell*, main eft*). Split files: the
 # whole-file _nm.c where it holds every function, else the matching pieces
 # plus the _nm.c near-matches. Files in WEAK are near-match copies that
