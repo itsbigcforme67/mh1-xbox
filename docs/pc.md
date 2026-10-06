@@ -474,6 +474,42 @@ With `--quest N` the PC runs the game's own quest flow (6 Oct 2026, agent A):
   (mode 6 restarts the quest as before), `RT_CAM_DEBUG=1`,
   `RT_PL_DIE="t1,t2,..."` (the hunter faints at those player ticks).
 
+### Windowed = headless, village menu, sprites, area exits (agent A, 7 Oct 2026)
+- Scripted runs are tick-for-tick the same windowed and with `--shot`:
+  the host syncs joint matrices after every tick (not only per drawn
+  frame). Check with `RT_TICK_TRACE=1` (per tick: flow mode, stage,
+  hunter position/angle, a sum of monster positions) and diff the two
+  runs' "T" lines. Checked on: the village accept script, village/quest
+  random roams (5 seeds, 2-4 minutes each), village -> quest 131 -> camp
+  -> area 1.
+- Fixed crashes: windowed segfault at the village -> quest switch
+  (rt_game_init now empties the prim queues: a frame drew eft13 prims of
+  cleared effects); start in the village (lbmw NULL); eft06_m (the _nm C
+  tested the stepped pointer instead of the table, asm s8 vs s6);
+  monsters whose program entry [3] is not ported (kind 29 in area 1)
+  are no longer spawned.
+- Village start menu: Pit_init's lobby branch -> Lb_Menu_Init; Pit_mv_lb
+  -> Lb_menu_move_Core, trans_pit_1_lb -> DispLobbyMenu / Disp_lb_menu
+  (src/lobby/b/lb_menu_nm.c, from the asm). main's func_5B3D70.. forward
+  to the lobby C (rt_menu.c). Quest status, items (discard), combine
+  list, data, status and equipment screens checked on screenshots.
+  pit_help_str_tbl[4]/[5] point into lobby.bin (mapped in rt_data.c).
+  ItemCopy_Pl2Ud / Ud2Pl as udmisc02.c; without save data the user's
+  pouch starts as the hunter's (rt_player_game_init).
+- Sprites: SpritePut (src/main/sprite/spriteput_nm.c, from the asm) +
+  trans_sprite before ot5 + flps0D00: game3's darkening quad fades the
+  screen (brightness 46 -> 31 -> 20 over the fade). flps0F00/1300/1400/
+  1600 (textured / 3D sprites) are still stubs.
+- Area exits: the host calls stage_mv_ck every tick (move_stage's exit
+  check; the rest of stage_m, stage sounds and item sparkles, is not run)
+  -> pl+0x738 -> game2 loads the next area (camp 21 -> area 1 = 39).
+- flSetRenderState 0x0F-0x11 fog values (inert: nothing sets 0x12),
+  0x5F Z test (7 = off [guess]); 0x01/0x0E/0x15 known no-ops.
+- The cart (em18) is drawn with its Felynes when the hunter is carted
+  (cart13.png); nothing more was needed.
+- Not checked: comparison with the PS2; textured sprite kinds; other
+  areas' exits beyond camp -> area 1; save data.
+
 ### Collision (stage HITS, game C)
 
 The game's own collision C (agent D's f_sphr near-matches, list HIT= in
