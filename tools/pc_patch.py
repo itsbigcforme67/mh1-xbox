@@ -40,6 +40,15 @@ PATCHES = {
         ("    PLU8(pl, 0) = 0;\n    armor_model_free();",
          "    PLU8(pl, 0) = 0;\n    armor_model_free(pl);"),
     ],
+    # Eft20_set(f32 scale, em, kind, n): MIPS passes the float in f12
+    # whatever its place, so the matching em18b.c lists it last
+    "src/game/em/em18b.c": [
+        ("void Eft20_set(EMW *, int, int, f32);", "void Eft20_set(f32, EMW *, int, int);"),
+        ("Eft20_set(em, 2, 5, 0.2f);", "Eft20_set(0.2f, em, 2, 5);"),
+        ("Eft20_set(em, 3, 5, 0.2f);", "Eft20_set(0.2f, em, 3, 5);"),
+        ("Eft20_set(em, 0x1C, 0, 1.0f);", "Eft20_set(1.0f, em, 0x1C, 0);"),
+        ("Eft20_set(em, 0x1C, 1, 1.0f);", "Eft20_set(1.0f, em, 0x1C, 1);"),
+    ],
     # lb_npc_old_guild: a2 is whatever the caller left [guess: 0, the
     # normal action]
     "src/lobby/lb/lbnpc_nm.c": [

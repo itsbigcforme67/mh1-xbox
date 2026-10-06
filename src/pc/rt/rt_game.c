@@ -195,6 +195,16 @@ void push_set_work(SETW *sw)
     }
 }
 
+/* clr_set_work (main, via all_reset -> clr_stg_work): every set object
+ * gone (the PS2 zeroes set_work); the host frees its pool entries */
+void clr_set_work(void)
+{
+    int i;
+    for (i = 0; i < SET_MAX; i++)
+        if (set_used[i])
+            push_set_work(&set_pool[i].w);
+}
+
 /* se_req2 and the other sound calls: rt_snd.c */
 
 /* ------------------------------------------------------------ prims */

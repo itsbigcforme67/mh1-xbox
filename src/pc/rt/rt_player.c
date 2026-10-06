@@ -216,6 +216,23 @@ void rt_player_tick(int no)
                     p->pos[0], p->pos[2], hp, t[0], t[1], t[2]);
         }
     }
+    if (getenv("RT_PL_DIE")) {      /* test aid: "t1,t2,..": the hunter faints (the game's Pl_die_set) at those ticks */
+        static int tk;
+        void Pl_die_set(PLW *pl);
+        const char *s = getenv("RT_PL_DIE");
+        tk++;
+        while (*s) {
+            if (atoi(s) == tk) {
+                fprintf(stderr, "rt_player: tick %d faint (Pl_die_set)\n", tk);
+                PF(&player_work[no], s16, 0x302) = 0;
+                Pl_die_set(&player_work[no]);
+            }
+            while (*s && *s != ',')
+                s++;
+            if (*s)
+                s++;
+        }
+    }
     pl_move();
     if (getenv("RT_PL_GOD")) {      /* test aid: the hunter's vital (+0x302) back to 100 each tick, no stun gauge (+0x7AA) */
         PF(&player_work[no], s16, 0x302) = 100;

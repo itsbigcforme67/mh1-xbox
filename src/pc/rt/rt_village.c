@@ -29,6 +29,7 @@ extern u8 select_w[];
 extern u8 game_w[];
 extern u8 stage_work[];
 void Clear_lobby_ram(void);
+void clr_set_work(void);
 s32 Local_main(void);
 void rt_game_move(void);
 void rt_font_tick_begin(void);
@@ -42,6 +43,7 @@ int rt_village_active(void) { return active; }
 void rt_village_enter(void)
 {
     memset(em_work, 0, 0xA10 * 20);     /* the quest's monsters are gone (all_reset) */
+    clr_set_work();                     /* and the quest stage's set objects (all_reset -> clr_stg_work) */
     rt_cam_init(game_w[0x14]);          /* camera work (also with the host's own camera) */
     Clear_lobby_ram();
     game_w[0x1DC] = 1;                  /* in the lobby overlay (Game_task step 1): lobby HUD prims, NPC talk sounds */
