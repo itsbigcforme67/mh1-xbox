@@ -66,3 +66,10 @@ lobby 0x00535840 0x3B4 lb_mix_put_itemDetail
 lobby 0x00536460 0x1B8 lb_mix_decide
 main 0x274690 0x74 Gun_level_up
 main 0x274760 0x54 Gun_option_ck
+main 0x190600 0x120 plAMOGetModelMatrixlist
+main 0x191420 0x22c GetPrimVertexNumAMOModelMesh
+main 0x191650 0x234 GetPrimCullTypeAMOModelMesh
+main 0x191890 0x24c GetPrimVertexIndexAMOModelMesh
+main 0x191D20 0x144 GetWeightAMOModelMesh
+main 0x192090 0x618 ConvertModelMeshAMO_NormalModel
+main 0x1926B0 0x718 ConvertModelMeshAMO_WeightModel
