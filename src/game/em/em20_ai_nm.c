@@ -2408,9 +2408,11 @@ static void em_fly08_005F02E0(EMW *em, EM20W *w) {
     s32 temp_v1_4;
     u8 temp_a2;
     u8 temp_v1_3;
+    FLYNEED *hu;
     FLYNEED *temp_a3;
 
     temp_a2 = em->x05;
+    hu = em_hungry_tbl[em->kind];
     temp_a3 = em_thirst_tbl[em->kind];
     switch (temp_a2) {                              /* irregular */
     case 0:
@@ -2444,7 +2446,7 @@ static void em_fly08_005F02E0(EMW *em, EM20W *w) {
         } else {
             em->thirst = 0;
         }
-        temp_a0_2 = em_hungry_tbl[em->kind]->x14;
+        temp_a0_2 = hu->x14;
         temp_v1_2 = em->hungry;
         if (temp_a0_2 < temp_v1_2) {
             em->hungry = temp_v1_2 - temp_a0_2;
@@ -2457,22 +2459,18 @@ static void em_fly08_005F02E0(EMW *em, EM20W *w) {
         em->work08 = 0x258;
         Em_Next_Stage_Pos(em);
         temp_v1_3 = em->x92F;
-        if ((u16) em->x73A != temp_v1_3) {
-            if (temp_v1_3 == 0xFF) {
-                goto block_19;
-            }
+        if ((u16)em->x73A == temp_v1_3 || temp_v1_3 == 0xFF) {
+            WyvernAreaMove(em);
+            em20_act_set(em, 2, 9, 1);
+        } else {
             if (em->x8C3 == 0) {
-                em->x73A = (s16) temp_v1_3;
+                em->x73A = (s16)temp_v1_3;
                 em->x829 = temp_v1_3 & 0xFFFF;
                 em->x827 = 3;
                 cmd_target_kind_set(em, em->tgt_pos);
             }
             em20_act_set(em, 2, 0xD, 1);
             WyvernAreaMove(em);
-        } else {
-block_19:
-            WyvernAreaMove(em);
-            em20_act_set(em, 2, 9, 1);
         }
         break;
     case 4:
