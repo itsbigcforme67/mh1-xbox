@@ -969,6 +969,8 @@ segments:
       - [0x07C4D8, asm, text/Lb_shop_talk]
       - [0x07C4E0, c, b/lb_by92]
       - [0x07C55C, asm, text/CheckItemPrice_005AFEE0]
+      - [0x07C560, c, b/lb_cip01]
+      - [0x07C620, asm, text/Lb_join]
       - [0x07CF70, c, b/lb_jip01]
       - [0x07D0FC, asm, text/check_room_require]
       - [0x07D100, c, b/lb_crr01]

@@ -2440,3 +2440,4 @@ lobby:rodata 0x0065DEF0 0x0065DF10 cnet/cnlbs
 lobby:rodata 0x0065DFE0 0x0065E000 cnet/cnlbse
 lobby:rodata 0x0065DF10 0x0065DF30 cnet/cnlbs
 lobby:rodata 0x0065DED0 0x0065DEEC cnet/cnlbs
+lobby 0x005AFEE0 0x005AFFA0 b/lb_cip01
