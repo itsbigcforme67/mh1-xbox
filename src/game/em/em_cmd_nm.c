@@ -1734,33 +1734,33 @@ u8 *em_cmd_boss_work_ck(EMW *em, u8 *p) {
 u8 *em_cmd_boss_atk_ck(EMW *em, u8 *p) {
     u8 *q;
     EMW *b;
-    u8 ok;
+    u8 flag;
 
     q = p;
     switch (*q++) {
     case 0:
         b = em->boss;
-        ok = 1;
-        if (b == NULL || b->x888 != 1 || b->stg != em->stg) {
-            ok = 1;
-            if (ok) {
-                for (;;) {
-                    if (q[0] == 0x3C && q[1] == 1) {
-                        break;
-                    }
-                    if (q[0] == 0x3C && q[1] == 2) {
-                        break;
-                    }
-                    q = cmd_end_search(em, q, 0x3C, 2);
-                    if (!ok) {
-                        break;
-                    }
-                }
+        flag = 1;
+        if (b == NULL) {
+            flag = 1;
+        } else {
+            if (b->x888 == 1 && b->stg == em->stg) {
+                break;
             }
-            q = next_cmd_search(em, q);
+            flag = 1;
+        }
+        while (flag) {
+            if (q[0] == 0x3C && q[1] == 1) {
+                break;
+            }
             if (q[0] == 0x3C && q[1] == 2) {
-                q = next_cmd_search(em, q);
+                break;
             }
+            q = cmd_end_search(em, q, 0x3C, 2);
+        }
+        q = next_cmd_search(em, q);
+        if (q[0] == 0x3C && q[1] == 2) {
+            q = next_cmd_search(em, q);
         }
         break;
     case 1:
@@ -1773,55 +1773,44 @@ u8 *em_cmd_boss_atk_ck(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_before_stage_ck(EMW *em, u8 *p) {
-    u8 temp_a0;
-    s32 var_s0;
-    u8 *temp_v0;
-    u8 *var_a1;
-    u8 temp_v1;
-    u8 temp_v1_2;
-    u8 temp_v1_3;
+    u8 *q;
+    u8 v;
+    u8 flag;
 
-    var_a1 = p;
-    switch (*var_a1++) {
+    q = p;
+    switch (*q++) {
     case 0:
-        temp_v1_2 = *var_a1;
-        var_a1 += 1;
-        if (temp_v1_2 == 0xFF) {
-            var_s0 = 1 & 0xFF;
-            goto loop_16;
+        v = *q++;
+        if (v == 0xFF) {
+            flag = 1;
+        } else {
+            flag = 1;
+            if (em->x92E == v) {
+                break;
+            }
+            flag = 1;
         }
-        var_s0 = 1 & 0xFF;
-        if (em->x92E != temp_v1_2) {
-loop_16:
-            if (var_s0 != 0) {
-                temp_a0 = EM_FIELD(var_a1, u8 *, 0);
-                if ((temp_a0 != 0x3D) || (EM_FIELD(var_a1, u8 *, 1) != 1)) {
-                    if (temp_a0 == 0x3D) {
-                        if (EM_FIELD(var_a1, u8 *, 1) != 2) {
-                            goto block_15;
-                        }
-                    } else {
-block_15:
-                        var_a1 = cmd_end_search(em, var_a1, 0x3D, 2);
-                        goto loop_16;
-                    }
-                }
+        while (flag) {
+            if (q[0] == 0x3D && q[1] == 1) {
+                break;
             }
-            temp_v0 = next_cmd_search(em, var_a1);
-            temp_v1_3 = EM_FIELD(temp_v0, u8 *, 0);
-            var_a1 = temp_v0;
-            if ((temp_v1_3 == 0x3D) && (EM_FIELD(var_a1, u8 *, 1) == 2)) {
-                var_a1 = next_cmd_search(em, var_a1);
+            if (q[0] == 0x3D && q[1] == 2) {
+                break;
             }
+            q = cmd_end_search(em, q, 0x3D, 2);
+        }
+        q = next_cmd_search(em, q);
+        if (q[0] == 0x3D && q[1] == 2) {
+            q = next_cmd_search(em, q);
         }
         break;
     case 1:
-        var_a1 = else_ck(em, var_a1, 0x3D);
+        q = else_ck(em, q, 0x3D);
         break;
     case 2:
         break;
     }
-    return var_a1;
+    return q;
 }
 
 CMD_SEL_FUNC_W(em_cmd_before_stage_sel, 0x3E, u8, u8, em->x92E)
@@ -2072,13 +2061,32 @@ block_27:
 u8 *em_cmd_boss_same_stage_ck(EMW *em, u8 *p) {
     u8 *q;
     EMW *b;
+    u8 flag;
 
     q = p;
     switch (*q++) {
     case 0:
         b = em->boss;
-        if (b == NULL || em->stg != b->stg) {
-            CMD_SKIP(em, q, 0x44);
+        if (b == NULL) {
+            flag = 1;
+        } else {
+            if (em->stg == b->stg) {
+                break;
+            }
+            flag = 1;
+        }
+        while (flag) {
+            if (q[0] == 0x44 && q[1] == 1) {
+                break;
+            }
+            if (q[0] == 0x44 && q[1] == 2) {
+                break;
+            }
+            q = cmd_end_search(em, q, 0x44, 2);
+        }
+        q = next_cmd_search(em, q);
+        if (q[0] == 0x44 && q[1] == 2) {
+            q = next_cmd_search(em, q);
         }
         break;
     case 1:
@@ -3098,15 +3106,15 @@ u8 *em_cmd_em_cmd_reset(EMW *em, u8 *p) {
 u8 *em_cmd_rnd32(EMW *em, u8 *p) {
     u8 n;
     int w;
-    int cum;
     u16 i;
+    int cum;
     u16 rnd;
 
     switch (*p) {
     case 0:
         n = p[1];
-        i = 0;
         cum = 0;
+        i = 0;
         rnd = em->x39A & 0x1F;
         p += 2;
         if (0 < n) {
