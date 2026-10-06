@@ -17,6 +17,8 @@ typedef struct NEMACT {                                               /* 0x34: p
     u8 x82[0x34 - 0x22];
 } NEMACT;
 
+typedef struct NITEM { u16 id; s16 num; } NITEM;
+
 typedef struct NPLV {
     u8     x00;               /* 0x000 */
     u8     x01;               /* 0x001 */
@@ -79,7 +81,9 @@ typedef struct NPLV {
     f32    x894;              /* 0x894 */
     f32    x898;              /* 0x898 */
     NPSLOT slot[2];           /* 0x89C */
-    u8  x8BC_[0x8C9 - 0x8BC];
+    u8  x8BC_[0x8C3 - 0x8BC];
+    u8     x8C3;              /* 0x8C3 */
+    u8  x8C4_[0x8C9 - 0x8C4];
     s8     x8C9;              /* 0x8C9 */
     u8  x8CA_[0x904 - 0x8CA];
     u16    x904;              /* 0x904 */
@@ -89,6 +93,8 @@ typedef struct NPLV {
     u8     x90A;              /* 0x90A */
     u8  x90B_[0x90E - 0x90B];
     s8     x90E;              /* 0x90E */
+    u8  x90F_[0x91F - 0x90F];
+    s8     x91F;              /* 0x91F */
 } NPLV;
 
 typedef struct NEMV {
@@ -168,21 +174,37 @@ typedef struct NEMV {
 } NEMV;
 
 typedef struct NGW {
-    u8  x000_[0xD1 - 0x0];
+    u8     mode;              /* 0x000 */
+    u8     step;              /* 0x001 */
+    u8  x002_[0xD1 - 0x2];
     u8     master;            /* 0x0D1 */
-    u8  x0D2_[0xD6 - 0xD2];
+    u8  x0D2_[0xD3 - 0xD2];
+    u8     pl_num;            /* 0x0D3 */
+    u8  x0D4_[0xD6 - 0xD4];
     s8     xD6;               /* 0x0D6 */
-    u8  x0D7_[0xD8 - 0xD7];
+    u8     xD7;               /* 0x0D7 */
     s8     xD8[4];            /* 0x0D8 */
-    u8  x0DC_[0xE8 - 0xDC];
+    u8  x0DC_[0xE0 - 0xDC];
+    u8     xE0[4];            /* 0x0E0 */
+    u8  x0E4_[0xE8 - 0xE4];
     s8     xE8[8];            /* 0x0E8 */
     u8  x0F0_[0xF8 - 0xF0];
     s8     xF8[8];            /* 0x0F8 */
     u8  x100_[0x108 - 0x100];
     s8     x108[8];           /* 0x108 */
     s8     x110[4];           /* 0x110 */
-    u8  x114_[0x1B0 - 0x114];
+    u8  x114_[0x124 - 0x114];
+    s32    x124;              /* 0x124 */
+    NITEM  item[32];          /* 0x128 */
+    s32    x1A8[2];           /* 0x1A8 */
     s16    x1B0;              /* 0x1B0 */
+    u8  x1B2_[0x1E2 - 0x1B2];
+    u16    x1E2;              /* 0x1E2 */
+    u16    x1E4;              /* 0x1E4 */
+    u8  x1E6_[0x208 - 0x1E6];
+    u8     pl_state[8];       /* 0x208 */
+    u8  x210_[0x21B - 0x210];
+    u8     x21B;              /* 0x21B */
 } NGW;
 
 int Online_ck();
