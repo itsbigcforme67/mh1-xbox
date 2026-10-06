@@ -955,3 +955,7 @@ Online (last): prot_01 3260, prot_00 2796, mcsls_recv 1876, mcsls_r0_pingpong 88
 CpInetPppStart 720, CpInetTcpOpen, Ave_TcpSend, DeviceUpdateStatus, InetDnsSetAll, InetIPAddrFromString, ipaddr_from_string, module_load/loadhigh/unload,
 SetResult*/rpccall_end/USB keyboard (cnv_keycode, vblank_e_handler, push/pop/clear_repbuf, usbkbdm_*, getPS2KbData, usbKbConnectChk), Menu_chatcnfg_mv,
 menu_chcnfg_sendpl, lb_disp_chat_cnfg_sendpl (chat config UI).
+
+## Twelfth pass (Sonnet worker C, after the network cut-off)
+Linked: egg_com_ck (pl/plegg.c, 0x14A6B0-0x14AA44): `return;` instead of `break;` after the dash branch (early-return form). The single-player / online split of the
+remaining list is the "Eleventh assignment" section above. load_shadow: `(s16)(i + 0x127)` is far worse (23 off); stays at 2 off. Remaining near-matches unchanged.
