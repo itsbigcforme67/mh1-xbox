@@ -485,3 +485,70 @@ void em20_atk_end_sel(EMW *em, EM20W *w) {
 void kyusyu_senkai_ret_005FCBA0(EMW *em) {
     em20_to_fly(em, 1);
 }
+
+void em20_material_sub(EMW *em, int type, u8 *tbl) {
+    u8 *base = *(u8 **)((u8 *)em->mdl + 0x10);
+    int i = 0;
+    EM20W *w = (EM20W *)em->ex;
+    s32 *p = (s32 *)((u8 *)(type * 0x8C) + (int)tbl);
+    u8 *m;
+
+    if (0 < p[1]) {
+        s32 *num = &p[1];
+
+        do {
+            m = base + p[2] * 0x4C;
+
+            *(f32 *)(m + 0x10) = em->x798;
+            switch (type) {
+            case 0:
+                switch (i) {
+                case 1:
+                    *(s32 *)(m + 0x10) = 0;
+                    break;
+                case 3:
+                    if (w->x1B == 0) {
+                        *(s32 *)(m + 0x10) = 0;
+                    } else {
+                        *(f32 *)(m + 0x10) = 1.0f;
+                    }
+                    break;
+                }
+                break;
+            case 2:
+                switch (i) {
+                case 5:
+                    if (w->x1B != 0) {
+                        *(s32 *)(m + 0x10) = 0;
+                    }
+                    break;
+                case 6:
+                    *(s32 *)(m + 0x10) = 0;
+                    break;
+                }
+                break;
+            case 3:
+                switch (i) {
+                case 0:
+                    if (w->x1B == 0 || w->x08 == 0) {
+                        *(s32 *)(m + 0x10) = 0;
+                    } else {
+                        *(f32 *)(m + 0x10) = 1.0f;
+                    }
+                    break;
+                case 5:
+                    if (em->x8B6 != 0 && em->mode != 5) {
+                        *(f32 *)(m + 0x10) = 1.0f;
+                    } else {
+                        *(s32 *)(m + 0x10) = 0;
+                    }
+                    break;
+                }
+                break;
+            }
+            flSetRenderState((i + 0x3A) & 0xFF, (u32)m);
+            i++;
+            p++;
+        } while (i < *num);
+    }
+}
