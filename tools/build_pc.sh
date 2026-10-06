@@ -135,7 +135,13 @@ CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOUR
 # -fno-aggressive-loop-optimizations: decompiled loops index past declared
 # array ends (EMW.hagi[8] read with i == 8 in Em_Dmg_Sys): without it gcc
 # drops the loop exit
-GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -Iinclude -w"
+# -ftrivial-auto-var-init=zero: matching C sometimes reads a local the
+# original never wrote on that path (the PS2 reads a stale stack slot,
+# usually a small leftover); on the PC it was garbage. pl_dm001 (pl33.c,
+# the guard knock-back) adds sp30[2] to the hunter's position after frame
+# 94 without setting it: the hunter flew off to z = 1e21 and the screen
+# went blank. Zero is what such a slot ends near in every case seen.
+GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -ftrivial-auto-var-init=zero -Iinclude -w"
 LIBS="-lSDL2 -lGL -lm -ldl -rdynamic"   # -rdynamic: rt_data.c finds host symbols with dlsym
 # unnamed PS2 data the game C refers to as D_<addr>: rows of rview_mat
 # (0x3F2060) and two game.bin tables
