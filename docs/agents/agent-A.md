@@ -494,3 +494,37 @@ Done (each step committed; details in docs/pc.md "Windowed = headless"):
 - Lesson: headless --time runs do every tick before the first frame, so
   host work done per drawn frame (joint sync) made windowed runs
   diverge; anything that writes game state must run per tick.
+
+## Assignment 17: quest start at camp, supply box, playability pass (7 Oct 2026)
+Done (each step committed; details in docs/pc.md "Quest start, supply box,
+playability pass"; shots in build/show/A/r17/):
+- `--quest N` starts at the quest's start stage (base camp) as on the PS2;
+  `RT_QUEST_STAGE=1` keeps the old monster-stage start for scripted tests.
+- Supply box filled (Start_item_init after Quest_start) and usable: box
+  screen, items into the pouch, item bar. A new character's pouch is empty
+  in the game too (select.bin user_data_copy), so nothing was invented.
+- Monster sound packs follow the model slots (Velociprey sounds).
+- Guard knock-back crash/blank screen: pl_dm001 reads an unset local;
+  game C now built with -ftrivial-auto-var-init=zero.
+- Test aids RT_SPOT_TRACE, RT_PL_WARP; em trace shows motion state.
+No include/ headers edited; no PS2-built files edited.
+Lesson: matching C that reads a never-written local is fine on the PS2
+(stale stack slot, usually small) and garbage on x86; gcc's
+maybe-uninitialized warning misses arrays passed by pointer. Zero-init
+for all game C was the cheap global fix (run time unchanged on x86).
+Not checked / for the owner to judge on the real thing:
+- ARM speed with the zero-init flag (expected small; not measured).
+- Roar: in scripted fights the Rathian charged (atk 18) and shot fireballs
+  (atk 4, 23) but no roar / ear-cover reaction was seen; whether her
+  command program should roar on first sight was not compared with the PS2.
+- Damage numbers (a charge took a fresh hunter from 88 to 25; guarded
+  hits chip ~7) look plausible for no armour but were not compared.
+- Supply box reach: the spot (r 200) is only reachable from one corner of
+  the crates; if the PS2 lets you open it from the front, the wall data or
+  the hunter's push radius (push00: 48) differ.
+- The camera can sit inside camp bushes (no collision with plants; the PS2
+  likely does the same).
+- Hunter armour: the host always draws armour set 1 with head part 0
+  (viewer.c parts[]), whatever the game's equipment says; a new character
+  in the game wears no armour. Not changed (how the PS2 draws "no armour"
+  was not checked).

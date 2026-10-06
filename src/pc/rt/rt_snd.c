@@ -594,6 +594,25 @@ static int stage_map(int stage)
     return 2;                               /* select overlay's free-mode default */
 }
 
+/* A monster kind's sound pack (snd_emNN, Snd_em_id_file_conv_tbl) on
+ * port 6, once. The PS2 loads the packs of the quest's model slots at the
+ * start (game12 snd_joint_load); the host also adds them when a model slot
+ * gets a new kind (em_create_model: a stage's small monsters), so
+ * Velocipreys etc. are not silent. */
+void rt_snd_em_add(int kind)
+{
+    int f, i;
+    if (!snd_on || kind <= 0 || kind >= 50)       /* Snd_em_id_file_conv_tbl: 50 bytes */
+        return;
+    f = Snd_em_id_file_conv_tbl[kind];
+    if (!f || ports[6].n == 0)
+        return;
+    for (i = 0; i < ports[6].n; i++)
+        if (ports[6].p[i].afs_idx == 0x88 + f)
+            return;
+    port_add(6, 0x88 + f);
+}
+
 /* Ports as game12 (f_game, main) fills them: 1 common01, 7 the map's
  * pack, 2.. player weapon + voice, 6 the monsters on top of em_blank.
  * Port 0 (common00) is loaded at boot [guess: Menu_snd_load path]. */
@@ -618,13 +637,14 @@ void rt_snd_stage(int stage, const int *em_kinds, int nem)
     v = (((u8 *)pl)[0x11] == 0 ? 0x73 : 0x7D) + ((u8 *)pl)[0x8D3];
     port_add(2, w);
     port_add(2, v);
-    /* snd_joint_load: em_blank (TSBD only), then each kind's snd_emNN */
+    /* snd_joint_load: em_blank (TSBD only), then each kind's snd_emNN:
+     * the kinds of the model slots (game_w+0x28, the list game12 passes)
+     * and the caller's */
     port_add(6, 0x88);
-    for (i = 0; i < nem; i++) {
-        int f = Snd_em_id_file_conv_tbl[em_kinds[i]];
-        if (f)
-            port_add(6, 0x88 + f);
-    }
+    for (i = 0; i < 4; i++)
+        rt_snd_em_add(game_w.x28[i]);
+    for (i = 0; i < nem; i++)
+        rt_snd_em_add(em_kinds[i]);
     /* stage_bgm_set (0x21DF80), no-quest path: the stage_bgm_etc_tbl
      * stream on the first entry (game_w+0x10 == 0; st04 = S_M6CAMP, the
      * base-camp music), else Snd_bgm_tbl[stage] = (AFS00 entry, volume) */

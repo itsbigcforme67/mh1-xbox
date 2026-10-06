@@ -309,6 +309,13 @@ void rt_game_init(int stage)
                              * draw them: eft13_t on a freed effect, village -> quest) */
     rt_eft_init();          /* init_eft_work / init_shell_work */
     stage_set_set(stage);   /* the game's own spawn list (src/main/stage/stage_set.c) */
+    if (getenv("RT_SPOT_TRACE")) {  /* test aid: the stage's unique spots (3 = supply box, 6 = exit ...) */
+        void *Stage_unique_data_get(int st);
+        u8 *r = Stage_unique_data_get(stage);
+        for (; r && *(float *)(r + 4) != -1.0f; r += 0x18)
+            fprintf(stderr, "rt_game: stage %d spot kind %d at %.0f %.0f %.0f r %.0f ang %04X\n", stage, *(u16 *)(r + 2),
+                    *(float *)(r + 4), *(float *)(r + 8), *(float *)(r + 0xC), *(float *)(r + 0x10), *(u16 *)(r + 0x14));
+    }
 }
 
 void rt_font_tick_begin(void);
