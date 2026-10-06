@@ -728,6 +728,16 @@ static void sim_tick(void)
     } else if (pl.game) {
         rt_player_motion_tick(0);
     }
+    if (pl.game && play && ticks < 2 && game_cam) {
+        /* the camera also runs on the first ticks: a quest's event demo
+         * (game2 -> EvDemoMove) can request its demo camera on tick 0 and
+         * ends at once when CameraMove has not taken the request */
+        flmat cw;
+        rt_cam_tick();
+        rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
+        lookat_world(cw, gc_eye, gc_tar);
+        rt_set_camera(cw);
+    }
     if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
         sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
         monsters_sync(0, &light);
