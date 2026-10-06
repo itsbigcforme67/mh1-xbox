@@ -2903,7 +2903,7 @@ u8 *alloc_record(int len)
 {
     u8 *r;
 
-    if ((u32)(temp_end - len - 2) < (u32)temp_top) {
+    if ((u32)temp_top > (u32)(temp_end - len - 2)) {
         page_gc();
     }
     r = temp_top;
@@ -4224,10 +4224,21 @@ int is_kuten(int c)
     if (c >= 0xA0) {
         return 0;
     }
-    if (c != 0x9C && c != 0x9B && c != 0x98 && c != 0x3F && c != 0x3B && c != 0x3A && c != 0x2E && c != 0x2C && c != 0x21 && c != 0x20) {
+    switch (c) {
+    case 0x20:
+    case 0x21:
+    case 0x2C:
+    case 0x2E:
+    case 0x3A:
+    case 0x3B:
+    case 0x3F:
+    case 0x98:
+    case 0x9B:
+    case 0x9C:
+        return 1;
+    default:
         return 0;
     }
-    return 1;
 }
 
 void first_kouho(int pos, int len)
