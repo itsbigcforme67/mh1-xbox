@@ -1316,7 +1316,7 @@ go:
                     } else {
                         Pl_act_set2(pl, 0, 8, 0);
                     }
-                    break;
+                    return;
                 }
                 if (pl->sw.an_trg & 0x3C) {
                     Pl_act_set2(pl, 0, 4, 0);

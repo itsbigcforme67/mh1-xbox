@@ -355,6 +355,8 @@ segments:
       - [0x04A604, asm, text/egg_set]
       - [0x04A610, c, pl/pl42]
       - [0x04A6A8, asm, text/egg_com_ck]
+      - [0x04A6B0, c, pl/plegg]
+      - [0x04AA44, asm, text/pl_egg00]
       - [0x04AA50, c, pl/pl43]
       - [0x04AD78, asm, text/pl_egg03]
       - [0x04B200, c, pl/pl44]
