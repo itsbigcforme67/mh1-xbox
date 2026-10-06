@@ -3875,7 +3875,7 @@ static void em_die03_005A1F70(EMW *em, EM08W *w) {
 static void em_die04_005A21F0(EMW *em, EM08W *w) {
     switch (em->x05) {
     case 0:
-        if (Quest_enemy_revival_ck() == 1) {
+        if (Quest_enemy_revival_ck(em) == 1   /* PC: a0 = em left over */) {
             Quest_enemy_revival_set(em);
             em_status_init(em);
             em08_init(em);
@@ -5572,7 +5572,7 @@ void em21_target_ang_calc(EMW *em, int arg1)
   t = t & 0xFFFF;
   if (((d - a) & 0xFFFF) < 0x8001)
   {
-    em->pos = em->pos;
+    /* (a permuter no-op "em->pos = em->pos;" removed: not C for gcc) */
     if (0, ((d - a) & 0xFFFF) < t)
     {
       em->ang[1] = a + ((d - a) & 0xFFFF);

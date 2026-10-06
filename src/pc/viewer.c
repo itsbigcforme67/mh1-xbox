@@ -235,7 +235,9 @@ typedef struct {
     flmat *pw[HUNTER_PARTS];         /* per part bone world matrices */
     flmat world;
     fmt_blob tbl;                    /* plcom_tbl.bin */
-    int game;                        /* 1: posed by the game's motion code (player_work[0]) */
+    int game;                        /* 1: posed by the game's motion code (player_work[no]) */
+    int no;                          /* player_work index */
+    int look[HUNTER_PARTS], sex, look_gen;  /* the parts loaded (hunter_relook) */
     uint8_t *mem[HUNTER_PARTS * 2 + 1];
 } hunter;
 
@@ -329,7 +331,7 @@ static void hunter_pose(hunter *h, float frame, const fl_light *L)
 {
     int s, i;
     if (h->game)
-        rt_player_pose(0, &h->master);   /* frame_move's motion player */
+        rt_player_pose(h->no, &h->master);   /* frame_move's motion player */
     else
         fl_skel_update(&h->master, frame);
     for (s = 0; s < HUNTER_PARTS; s++) {
@@ -368,7 +370,7 @@ static void hunter_pose(hunter *h, float frame, const fl_light *L)
         }
         free(ok);
         if (s == 2 && h->game) {        /* player_trans: hair colour (PLW+0x5FC) on the head part's first material */
-            unsigned c = rt_player_hair_col(0);
+            unsigned c = rt_player_hair_col(h->no);
             m->has_tint = c != 0;
             m->tint[0] = ((c >> 16) & 0xFF) / 255.0f;
             m->tint[1] = ((c >> 8) & 0xFF) / 255.0f;
@@ -416,7 +418,6 @@ static int hunter_load(hunter *h, const int *num, int legs_id, int upper_id)
 /* The hunter the game asked for (armor_create_model, rt_pl.c: sex and the
  * six part numbers from the save's character and armour): reload the
  * parts that differ. A part file that cannot be loaded keeps the old one. */
-static int hunter_look[HUNTER_PARTS], hunter_sex, hunter_look_gen;
 static void hunter_relook(hunter *h, int sex, const int *num)
 {
     int s;
@@ -425,7 +426,7 @@ static void hunter_relook(hunter *h, int sex, const int *num)
         uint8_t *m0, *m1;
         fmt_blob link, tex, ahi;
         fl_model nm;
-        if (num[s] == hunter_look[s] && sex == hunter_sex)
+        if (num[s] == h->look[s] && sex == h->sex)
             continue;
         snprintf(name, sizeof name, "%c_%s%03d_amh.bin", sex ? 'f' : 'm', pl_slot[s], num[s]);
         snprintf(tname, sizeof tname, "%c_%s%03d.apx", sex ? 'f' : 'm', pl_slot[s], num[s]);
@@ -463,8 +464,8 @@ static void hunter_relook(hunter *h, int sex, const int *num)
         h->pw[s] = calloc(h->part[s].skel.nbone + 1, sizeof(flmat));
     }
     for (s = 0; s < HUNTER_PARTS; s++)
-        hunter_look[s] = num[s];
-    hunter_sex = sex;
+        h->look[s] = num[s];
+    h->sex = sex;
 }
 
 static void place(flmat w, float x, float y, float z, float yaw)
@@ -479,6 +480,14 @@ static void place(flmat w, float x, float y, float z, float yaw)
  * (em_work[0]) for the game C: parts, get_joint_pos, hit_data_expand.
  * On the PS2 they come from the draw (trans) that runs between move()
  * and hit_check(), so this runs once per game tick, before hit_check. */
+/* em_work[0] is the host's Rathian object (em01 model) only while it is a
+ * Rathian (kind 1; 0 in free hunts); any other kind in slot 0 (Kut-Ku,
+ * Rathalos, ...) is posed, drawn and given joints by monsters_sync */
+static int slot0_rathian(void)
+{
+    extern uint8_t em_work[];
+    return em_work[2] <= 1;
+}
 static void sync_joints(hunter *h, float hyoff, monster *e, float eyoff)
 {
     static flmat jw[128], ew[128];
@@ -493,7 +502,7 @@ static void sync_joints(hunter *h, float hyoff, monster *e, float eyoff)
             flmat_mul(jw[j], h->master.world[j], h->world);
         rt_player_parts(0, &jw[0][0], nb);
     }
-    if (e->game && e->skel.root_lock) {
+    if (e->game && e->skel.root_lock && slot0_rathian()) {
         rt_monster_get(0, p, &a);
         place(e->world, p[0], p[1] + eyoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
         rt_monster_pose(0, &e->skel);
@@ -556,6 +565,61 @@ static int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter
 static int boot = 0, booting = 0;           /* --boot: from power-on (rt_boot.c) */
 static const char *script = NULL;
 static float hunter_yoff = 0;
+
+/* ------------------------------------------------------------ boot hunters
+ * The character creation and continue screens draw their hunter from a
+ * prim (trans_pl_sub -> player_trans) inside the task's trans(): rt_pl.c
+ * calls rt_hunter_draw_hook(no) there, which records a host draw at that
+ * point of the tick's gfx list (gfx_rec_call); each replay poses
+ * player_work[no] with the game's motion and draws it with the game's view
+ * (lpView, as in the village). One host hunter per player_work slot. */
+static hunter ed_h[3];
+static int ed_loaded[3];
+static void ed_hunter_draw(void *arg)
+{
+    int no = (int)(intptr_t)arg, sx, ids[HUNTER_PARTS], g, s, a;
+    hunter *h;
+    float eye[3], tar[3], roll, fov, p[3];
+    flmat camw, view, proj;
+    if (no < 0 || no >= 3)
+        return;
+    h = &ed_h[no];
+    if (!ed_loaded[no]) {
+        static const int dflt[HUNTER_PARTS] = { 1, 0, 1, 1, 1, 1 };
+        ed_loaded[no] = hunter_load(h, dflt, 1, 101) == 0 ? 1 : -1;
+        memcpy(h->look, dflt, sizeof h->look);
+        h->no = no;
+        h->game = 1;
+    }
+    if (ed_loaded[no] < 0)
+        return;
+    g = rt_player_look(no, &sx, ids);      /* continue screen: armor_create_model */
+    if (!g)
+        g = rt_player_edit_look(no, &sx, ids);     /* character creation */
+    if (g && g != h->look_gen) {
+        h->look_gen = g;
+        hunter_relook(h, sx, ids);
+    }
+    rt_player_get(no, p, &a);
+    place(h->world, p[0], p[1], p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
+    hunter_pose(h, 0, &light);
+    rt_cam_view(eye, tar, &roll, &fov);
+    lookat_world(camw, eye, tar);
+    flmat_invert_affine(view, camw);
+    flmat_perspective(proj, fov > 0.01f ? fov : 1.0f, (float)W / H, 10.0f, 80000.0f);
+    gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);
+    gfx_set_render_state(GFX_RS_VIEW, (uintptr_t)view);
+    gfx_set_render_state(GFX_RS_ALPHA_REF, 0x40);
+    gfx_set_render_state(GFX_RS_BLEND, 1);
+    gfx_set_render_state(GFX_RS_ZWRITE, 1);
+    gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)h->world);
+    for (s = 0; s < HUNTER_PARTS; s++)
+        draw_model_attr(&h->part[s], -1);
+}
+static void ed_hunter_hook(int no)
+{
+    gfx_rec_call(ed_hunter_draw, (void *)(intptr_t)no);
+}
 
 
 /* ------------------------------------------------------------ stage files
@@ -747,9 +811,22 @@ static void em_model_load(int slot, int kind)
         return;
     e = &em_mdl[kind];
     if (!em_have[kind]) {
+        /* the game's per-kind AFS entries: model (load_enemy_model,
+         * main 0x2EC7A0), textures (0x2EEE20) and motions (load_em_motion,
+         * 0x2EC830); several kinds share files (the dromes use the
+         * Velociprey / Genprey / Ioprey models and the em16 motions) */
+        static const uint32_t tbl_va[3] = { 0x2EC7A0, 0x2EEE20, 0x2EC830 };
+        char *nm[3] = { a, t, b };
+        int k;
         snprintf(a, sizeof a, "em%02d_amh.bin", kind);
         snprintf(t, sizeof t, "em%02d_tex.bin", kind);
         snprintf(b, sizeof b, "em%02d_tbl.bin", kind);
+        for (k = 0; k < 3; k++) {
+            const uint8_t *q = elf_addr(tbl_va[k] + 4 * (uint32_t)kind);
+            uint32_t idx = q ? fmt_u32(q, FMT_LE) : 0;
+            if (idx > 0 && idx < afs.count)
+                snprintf(nm[k], 32, "%s", afs.name[idx]);
+        }
         if (monster_load(e, a, t, b, 0) != 0) {
             fprintf(stderr, "monster kind %d: model %s not loaded\n", kind, a);
             return;
@@ -766,7 +843,7 @@ static void em_model_load(int slot, int kind)
 static void monsters_sync(int draw, const fl_light *L)
 {
     extern uint8_t em_work[];
-    static flmat jw[128];
+    static flmat jw[20][128];       /* per slot: rt_monster_joints keeps the pointer */
     int i, j, nb;
     for (i = 0; i < 20; i++) {
         uint8_t *em = em_work + 0xA10 * i;
@@ -774,7 +851,7 @@ static void monsters_sync(int draw, const fl_light *L)
         flmat w;
         float s[3], r[3], t[3];
         int kind = em[2];
-        if (!em[0] || em[0x1E] || (i == 0 && rathian.game && kind == 1) || kind <= 0 || kind >= 40 || !em_have[kind])
+        if (!em[0] || em[0x1E] || (i == 0 && rathian.game && kind <= 1) || kind <= 0 || kind >= 40 || !em_have[kind])
             continue;
         if (em[0x736] != (uint8_t)rt_game_stage())
             continue;
@@ -789,8 +866,8 @@ static void monsters_sync(int draw, const fl_light *L)
         flmat_srt(w, s, r, t);
         nb = m->skel.skel.nbone < 128 ? m->skel.skel.nbone : 128;
         for (j = 0; j < nb; j++)
-            flmat_mul(jw[j], m->skel.world[j], w);
-        rt_monster_joints(i, &jw[0][0], nb);
+            flmat_mul(jw[i][j], m->skel.world[j], w);
+        rt_monster_joints(i, &jw[i][0][0], nb);
         if (draw) {
             fl_model_pose(&m->model, (const flmat *)m->skel.world, L);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
@@ -1051,7 +1128,7 @@ int main(int argc, char **argv)
     }
     if (hunter_load(&pl, parts, 1, 101) != 0)
         fprintf(stderr, "hunter load failed\n");
-    memcpy(hunter_look, parts, sizeof hunter_look);
+    memcpy(pl.look, parts, sizeof pl.look);
 
     /* lighting: the VU1 model, 3 directional + ambient */
     memset(&light, 0, sizeof light);
@@ -1138,9 +1215,9 @@ int main(int argc, char **argv)
                 }
             }
             hunter_yoff = -lo;
-            if (play && pl.game && !follow_given && !getenv("RT_HOST_CAM")) {
-                rt_cam_init(stage_no);  /* the game camera follows player_work[0] */
-                game_cam = 1;
+            if (play && pl.game) {
+                rt_cam_init(stage_no);  /* the game camera follows player_work[0] (game2 moves it on stage changes) */
+                game_cam = !follow_given && !getenv("RT_HOST_CAM");
             }
         }
     }
@@ -1165,6 +1242,7 @@ int main(int argc, char **argv)
     if (boot) {         /* power-on: the game's boot tasks until Game_task (rt_boot.c) */
         rt_boot_init();
         booting = 1;
+        rt_hunter_draw_hook = ed_hunter_hook;
     } else
         rt_sys_init();  /* the system tasks the boot would have started (Fade_task) */
     tick_trace = getenv("RT_TICK_TRACE") != NULL;
@@ -1224,6 +1302,17 @@ int main(int argc, char **argv)
          * have run their init and queued their prims) */
         if (shot && shot_next > 2 + (int)fr)
             shot_next = 0;              /* RT_SHOTS past --time: dropped */
+        /* RT_PROF=1: host time per game tick (logic) and per drawn frame
+         * (CPU side of the draw: posing, skinning, GL calls), every 300 ticks */
+        static int prof = -1, prof_ticks0, prof_n, prof_fr;
+        static double prof_logic, prof_draw;
+        static Uint64 prof_t;
+        if (prof < 0)
+            prof = getenv("RT_PROF") != NULL;
+        if (prof) {
+            prof_t = SDL_GetPerformanceCounter();
+            prof_ticks0 = ticks;
+        }
         while (ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
             if (booting) {      /* ACRMain: pad, then the task scheduler */
                 pad_state ps;
@@ -1282,6 +1371,12 @@ int main(int argc, char **argv)
                         rt_game_stage(), p[0], p[1], p[2], a & 0xFFFF, es);
             }
         }
+        if (prof) {
+            Uint64 t1 = SDL_GetPerformanceCounter();
+            prof_logic += (double)(t1 - prof_t) * 1000.0 / (double)SDL_GetPerformanceFrequency();
+            prof_n += ticks - prof_ticks0;
+            prof_t = t1;
+        }
         if (booting) {          /* the boot screens: the last tick's picture */
             gfx_begin_frame(0);
             rt_boot_draw();
@@ -1311,8 +1406,8 @@ int main(int argc, char **argv)
         }
         {   /* the hunter the game built last (character, armour) */
             int sx, ids[HUNTER_PARTS], g = rt_player_look(0, &sx, ids);
-            if (g && g != hunter_look_gen) {
-                hunter_look_gen = g;
+            if (g && g != pl.look_gen) {
+                pl.look_gen = g;
                 hunter_relook(&pl, sx, ids);
             }
         }
@@ -1327,6 +1422,18 @@ int main(int argc, char **argv)
         if (weapon.game && pl.game && play)
             weapon_pose(&light);
 
+        if (getenv("RT_CAM_EM")) {      /* test aid "slot,dist,height,yaw": free camera on monster slot */
+            float p[3], d = 1500, hh = 600, yw = 0;
+            int a, sl = 0;
+            sscanf(getenv("RT_CAM_EM"), "%d,%f,%f,%f", &sl, &d, &hh, &yw);
+            rt_monster_get(sl, p, &a);
+            cam[0] = p[0] + sinf(yw) * d;
+            cam[1] = p[1] + hh;
+            cam[2] = p[2] + cosf(yw) * d;
+            cam[3] = yw;
+            cam[4] = -atan2f(hh - 250.0f, d);
+            game_cam = 0;
+        }
         /* the view of this frame, from the camera the ticks above left
          * (the game camera or the follow camera moved with the hunter) */
         if (game_cam && have_view) {
@@ -1354,7 +1461,7 @@ int main(int argc, char **argv)
             rt_stage_draw();            /* trans_stage: area model + placed set parts */
         }
         rt_game_draw();                 /* game C prims (set14 waterfalls) */
-        if (rt_monster_shown(0)) {     /* in use and on this stage */
+        if (rt_monster_shown(0) && slot0_rathian()) {     /* in use and on this stage */
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)rathian.world);
             draw_model_attr(&rathian.model, -1);
         }
@@ -1407,6 +1514,16 @@ int main(int argc, char **argv)
             printf("wrote %s (%dx%d, motion frame %.1f)\n", shot, W, H, fr);
             free(rgb);
             running = 0;
+        }
+        if (prof) {
+            prof_draw += (double)(SDL_GetPerformanceCounter() - prof_t) * 1000.0 / (double)SDL_GetPerformanceFrequency();
+            prof_fr++;
+            if (prof_n >= 300 || prof_fr >= 300) {
+                fprintf(stderr, "prof: logic %.2f ms/tick (%d ticks), draw %.2f ms/frame CPU (%d frames)\n",
+                        prof_n ? prof_logic / prof_n : 0.0, prof_n, prof_draw / prof_fr, prof_fr);
+                prof_logic = prof_draw = 0;
+                prof_n = prof_fr = 0;
+            }
         }
         gfx_end_frame();
     }

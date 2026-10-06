@@ -3821,7 +3821,7 @@ static void em_demo04_005C9F20(EMW *em, EM15W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05 = temp_v1 + 1;
-            Quest_enemy_capture();
+            Quest_enemy_capture(em);   /* PC: a0 = em left over in the asm */
         }
         break;
     case 2:

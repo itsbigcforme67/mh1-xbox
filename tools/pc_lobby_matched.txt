@@ -56,3 +56,35 @@ src/lobby/lb/lbuiv.c
 src/lobby/lb/lbuiw.c
 src/lobby/f/lb_gac01.c
 src/lobby/f/lb_gac03.c
+# round 20: shop / forge / armour shop / NPC / dialog functions the PC took from *_nm copies or
+# gen_rt_auto stand-ins (Lb_put_itemIcon, Lb_put_materialItem were stand-ins: no icons)
+src/lobby/b/lb_by103.c
+src/lobby/b/lb_by116.c
+src/lobby/b/lb_by119.c
+src/lobby/b/lb_by120.c
+src/lobby/b/lb_by121.c
+src/lobby/b/lb_by125.c
+src/lobby/b/lb_by126.c
+src/lobby/b/lb_by128.c
+src/lobby/b/lb_by129.c
+src/lobby/b/lb_by130.c
+src/lobby/b/lb_by131.c
+src/lobby/b/lb_by134.c
+src/lobby/b/lb_by153.c
+src/lobby/b/lb_by154.c
+src/lobby/b/lb_by155.c
+src/lobby/b/lb_by162.c
+src/lobby/b/lb_by163.c
+src/lobby/b/lb_by180.c
+src/lobby/b/lb_by182.c
+src/lobby/b/lb_by23.c
+src/lobby/b/lb_bz05.c
+src/lobby/b/lb_bz29.c
+src/lobby/b/lb_vs01.c
+src/lobby/b/lb_vs02.c
+src/lobby/b/lb_by159.c
+src/lobby/b/lb_by177.c
+src/lobby/f/lb_gaf01.c
+src/lobby/f/lb_ge2501.c
+src/lobby/f/lb_ag01.c
+src/lobby/f/lb_ag02.c
