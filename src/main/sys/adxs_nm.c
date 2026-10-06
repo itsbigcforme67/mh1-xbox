@@ -54,7 +54,8 @@ int load_bin(u32 id, void *buf) {
 
     do {
         do {
-            h = ADXF_OpenAfs(part, file);
+            st = part; /* dead store kept: gives the original's register use */
+            h = ADXF_OpenAfs(st, file);
         } while (h == 0);
         st = ADXF_GetFsizeSct(h);
         ADXF_ReadNw(h, st, buf);

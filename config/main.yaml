@@ -43,6 +43,7 @@ segments:
       - [0x00037C, asm, text/g_Adx_server]
       - [0x000380, c, sys/adxs01]
       - [0x0003A4, asm, text/load_bin]
+      - [0x0003B0, c, sys/adxs06]
       - [0x0004D0, c, sys/adxs02]
       - [0x00090C, asm, text/str_init]
       - [0x000910, c, sys/adxs03]
