@@ -22,7 +22,7 @@ int need;
         }
         num = (new_var = (s16)num);
         need = (s16)need;
-        if (num >= need) {
+        if (need <= num) {
             font_set_palette(0);
         } else if (num + (s16)stock >= need) {
             font_set_palette(6);

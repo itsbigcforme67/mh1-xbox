@@ -51,7 +51,7 @@ void server_select_sub_04(ARG_server_select_sub_04_arg0 *arg0) {
         break;
     case 4:
         arg0->x0000 = (s16) (arg0->x0000 - 1);
-        if (arg0->x0000 < 0) {
+        if (0 > arg0->x0000) {
             if (arg0->x000B == 0) {
                 arg0->x0002 = 2;
                 arg0->x0003 = 2U;

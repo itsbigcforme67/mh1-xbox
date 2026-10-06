@@ -65,7 +65,7 @@ s32 Lbc_GetRoomRule(u8 arg28) {
                 F(u8, var_s3, 0x9A) = temp_v0_2;
                 F(u8, var_s3, 0x99) = temp_v0_2;
                 var_s5 = 0;
-                if (F(u8, var_s3, 0x97) > 0) {
+                if (0 < F(u8, var_s3, 0x97)) {
                     var_s2 = var_s4;
                     var_s1 = var_s3;
                     do {

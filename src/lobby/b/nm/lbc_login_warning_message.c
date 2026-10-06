@@ -54,12 +54,12 @@ void lbc_login_warning_message(void) {
         if (F(u16, temp_a1_3, 0x3600) != 0) {
             F(s32, temp_a1_3, 0x2C4C) = (F(s32, temp_a1_3, 0x2C4C) - 1);
             temp_v1_2 = (int)cw;
-            if ((s8) F(s32, temp_v1_2, 0x2C4C) <= 0) {
+            if (0 >= (s8) F(s32, temp_v1_2, 0x2C4C)) {
                 F(s32, temp_v1_2, 0x2C4C) = 0x3C;
                 temp_a0_2 = (int)cw;
                 F(u16, temp_a0_2, 0x3600) = (u16) (F(u16, temp_a0_2, 0x3600) - 1);
                 temp_v1_3 = (int)cw;
-                if ((s16) F(u16, temp_v1_3, 0x3600) < 0) {
+                if (0 > (s16) F(u16, temp_v1_3, 0x3600)) {
                     F(u16, temp_v1_3, 0x3600) = 0U;
                     return;
                 }

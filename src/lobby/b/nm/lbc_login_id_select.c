@@ -1,10 +1,11 @@
 #include "lobby_a.h"
 extern char jtbl_650_0065E8B0[];
 extern char jtbl_650_0065E8B0[];
-extern char CnetWork[];
 extern char jtbl_650_0065E8B0[];
 extern char D_3C6FC8[];
 extern char jtbl_650_0065E8B0[];
+typedef struct { u8 pad00[0x5]; u8 x05; u8 padEND[0x2A]; } CNW;
+extern CNW CnetWork;
 void lbc_login_id_select(void) {
     s32 temp_s0;
     s32 temp_v0;
@@ -73,7 +74,7 @@ void lbc_login_id_select(void) {
         if ((Fade_busy_ck(&jtbl_650_0065E8B0) & 0xFF) != 1) {
             temp_a0_2 = (int)cw;
             F(u8, temp_a0_2, 0x2C34) = (u8) (F(u8, temp_a0_2, 0x2C34) + 1);
-            if (F(u8, &CnetWork, 5) == 0) {
+            if (CnetWork.x05 == 0) {
                 fade_set(2);
                 return;
             }

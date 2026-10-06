@@ -171,7 +171,7 @@ block_46:
                 lb_pit.x0 = 0;
                 lb_pit.x08 = 2;
                 lb_sys.x07 = 0;
-                memset((int)&RoomRule + 2, 0, 0x10);
+                memset(&RoomRule[2], 0, 0x10);
                 *(u8 *)0x3F36AB = 0;
                 lb_sys.x06 = (s8) (lb_sys.x06 + 1);
             } else {
@@ -190,7 +190,7 @@ block_46:
         goto block_88;
     case 9:                                         /* switch 1 */
         Lb_talk_check_default(1);
-        temp_v0_5 = join_input_password((int)&RoomRule + 2);
+        temp_v0_5 = join_input_password(&RoomRule[2]);
         switch (temp_v0_5) {                        /* switch 7; irregular */
         case 0:                                     /* switch 7 */
             lb_pit.x08 = 3;
