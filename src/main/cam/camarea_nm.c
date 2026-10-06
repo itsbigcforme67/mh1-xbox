@@ -127,21 +127,21 @@ s32 SetAreaData(CAMW *cw) {
     PLW *pl = &player_work[EB(&game_w, 0xD1)];
     u8 *d = cw->data;
     u8 *cell;
-    u32 n;
     CAMAREA **l;
+    u32 n;
 
     if (d == 0) {
         cw->area = 0;
         return -1;
     }
     cw->area = (CAMAREA *)EP(d, 0x28);
-    if (cw->grid != 0) {
+    if ((u8)cw->grid != 0) {
         return 0;
     }
     if (EP(d, 0x1C) == 0) {
         return 0;
     }
-    cell = EP(d, 0x1C) + ((u16)cw->gx + (u16)cw->gz * EH(cw, 0x590)) * 8;
+    cell = EP(d, 0x1C) + ((u16)cw->gx + EH(cw, 0x590) * (u16)cw->gz) * 8;
     n = EW(cell, 0);
     if (n == 0) {
         return 0;

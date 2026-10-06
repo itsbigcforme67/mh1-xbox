@@ -31,12 +31,13 @@ void CngNet_MSG_Read(CNGMSG *m, u8 *dst, int n);
 u16 CngNetSwapByteU16(u16 v);
 void swapb(u8 *buf, int n);
 
-void CnInetNetworkInitialize_online(void) {
-    cng_net_lib_w.x02 = 1;
-    cng_net_lib_w.on = 1;
-    cng_net_lib_w.x08 = -1;
-    cng_net_lib_w.state = 2;
-    CnInetNetworkAveTcpEnvSet(2);
+void CnInetNetworkInitialize_online(void)
+{
+  cng_net_lib_w.x02 = 1;
+  cng_net_lib_w.on = 1;
+  cng_net_lib_w.state = 2;
+  cng_net_lib_w.x08 = -1;
+  CnInetNetworkAveTcpEnvSet(2);
 }
 
 void CnInetNetworkCleanup_online(void) {

@@ -378,16 +378,17 @@ s8 Get_pl_id(s8 *key) {
     return 0;
 }
 
-void Copy_user_id(u8 no) {
-    u8 *d = ((u8 *)&game_w + 0x1E8) + no * 8;
-    d[0] = my_user_id[0];
-    d[1] = my_user_id[1];
-    d[2] = my_user_id[2];
-    d[3] = my_user_id[3];
-    d[4] = my_user_id[4];
-    d[5] = my_user_id[5];
-    d[6] = my_user_id[6];
-    d[7] = my_user_id[7];
+void Copy_user_id(u8 no)
+{
+  u8 *d = (((u8 *) (&game_w)) + 0x1E8) - (-(no * 8));
+  d[0] = my_user_id[0];
+  d[1] = my_user_id[1];
+  d[2] = my_user_id[2];
+  d[3] = my_user_id[3];
+  d[4] = my_user_id[4];
+  d[5] = my_user_id[5];
+  d[6] = my_user_id[6];
+  d[7] = my_user_id[7];
 }
 
 s16 Get_atk_value(u8 *p, u8 kind) {

@@ -52,15 +52,17 @@ f32 ZoomBaseAngleRail(f32 t, f32 *rail, int i)
   }
 }
 
-f32 RollAngleRail(f32 t, s16 *rail, int i) {
-    union {
-        s32 w;
-        s16 h[2];
-    } u;
-
-    u.w = (s32)(65536.0f * t) * (rail[i + 0x121] - rail[i + 0x120]);
-    u.h[1] += rail[i + 0x120];
-    return 0.000095873799f * u.h[1];
+f32 RollAngleRail(f32 t, s16 *rail, int i)
+{
+  s16 (*new_var)[2];
+  union 
+  {
+    s32 w;
+    s16 h[2];
+  } u;
+  u.w = ((s32) (65536.0f * t)) * (rail[i + 0x121] - rail[i + 0x120]);
+  u.h[1] += rail[i + 0x120];
+  return 0.000095873799f * (*(new_var = &u.h))[1];
 }
 
 #include "pl.h"

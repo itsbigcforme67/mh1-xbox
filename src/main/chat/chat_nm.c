@@ -1033,12 +1033,12 @@ void Pit_disp_receive_mes(void) {
     }
 }
 
-extern s16 receive_mark_pos[][2];
+extern s16 receive_mark_pos[2][2];
 extern u8 pf_receive_mark[];
 extern char lit_3351[];
 
 void Put_receive_mark(int n) {
-    if (PitMenu.x0F != 0) {
+    if ((u8)PitMenu.x0F != 0) {
         if ((n & 0xFF) == 1) {
             DispFrameMessage(pf_receive_mark, 0);
         }

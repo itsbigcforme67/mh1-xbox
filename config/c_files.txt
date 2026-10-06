@@ -1,5 +1,6 @@
 # Decompiled code that replaces disassembly. One line per C file:
 main 0x002246F0 0x00224718 cam/camr01
+main 0x00224720 0x00224790 cam/camr02
 main 0x0024A240 0x002542E0 pl/pl_snd01
 main:rodata 0x0036E0C0 0x0036E108 pl/pl_snd01
 game 0x0059A2C0 0x0059A674 em/em08_ai_r01
@@ -486,6 +487,7 @@ main:rodata 0x00373550 0x00373590 ud/ud07
 main 0x002743C0 0x002743E0 ud/ud08
 main 0x00272A60 0x00272BF0 ud/ud09
 main 0x00274330 0x002743C0 ud/ud10
+main 0x00273130 0x002731A8 ud/ud11
 main 0x00264D70 0x00264E8C hk/hk01
 main 0x002652B0 0x00265490 hk/hk02
 main 0x00265880 0x002658CC hk/hk03
@@ -953,6 +955,8 @@ lobby 0x00604200 0x0060423C f/lb_z130
 main 0x0021D5E0 0x0021DBE0 sound/bgm01
 main 0x0021DDC0 0x0021DF74 sound/bgm02
 main:rodata 0x003674B0 0x003674E0 sound/bgm01
+main 0x0021DBE0 0x0021DDC0 sound/bgm03
+main 0x0021DF80 0x0021E268 sound/bgm04
 main 0x0021E270 0x0021E304 sound/rev01
 main 0x0022CB80 0x0022CBE4 aq/aq01
 main 0x0022CD60 0x0022D2E8 aq/aq02
@@ -965,6 +969,7 @@ main 0x00262A90 0x00262D10 sk/cmd01
 main 0x00262E50 0x00263140 sk/cmd02
 main 0x00263910 0x002639BC sk/cmd03
 main 0x00263D20 0x002640B8 sk/cmd04
+main 0x00263560 0x002636DC sk/cmd05
 main 0x002710A0 0x002712BC net/connect01
 main 0x00271880 0x00271E94 net/connect02
 main:rodata 0x003734B0 0x003734E8 net/connect02
@@ -1001,6 +1006,7 @@ main 0x0022C7D0 0x0022C944 net/cngmsg02
 main 0x0022C9B0 0x0022C9E0 net/cngmsg03
 main 0x0022CB50 0x0022CB78 net/cngmsg04
 main 0x0022C950 0x0022C9A8 net/cngmsg05
+main 0x0022C670 0x0022C6A0 net/cngmsg06
 main 0x0022DF30 0x0022E084 net/cng01
 main 0x0022E1B0 0x0022E344 net/cng02
 main 0x0022E430 0x0022E448 net/cng03
@@ -1469,6 +1475,7 @@ main 0x002232A0 0x002233BC cam/camarea01
 main 0x00223500 0x00223754 cam/camarea02
 main 0x00222E20 0x00223070 cam/camarea03
 main 0x002233C0 0x00223410 cam/camarea04
+main 0x00223070 0x0022318C cam/camarea05
 main 0x00223DE0 0x00223E8C cam/camr2n01
 main 0x0010A210 0x0010A44C hit/tri01
 main 0x001267C0 0x00127440 option/option01
