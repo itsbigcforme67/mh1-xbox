@@ -37,12 +37,13 @@ void DispFrameList(void *, char *, int);
 void DispFrameListOptionArrowC(void *, int);
 void DispFrameMessageA(void *, void *, int);
 void DispFrameMessage(void *, void *);
-void PutButtonICON(void *, int);
+void PutButtonICON(u8 *, u8);
 void disp_cursorC(s16, s16, s16, s16, int, int);
 void Disp_help_mess(int, int);
 u8 Equip_moji_color_rare(u8);
 int Equip_moji_color_rare_i(u8);
 
+typedef struct S2 { s16 a, b; } S2;
 typedef struct PFLP4 { s16 p[4]; u32 col; } PFLP4;
 typedef struct PFLP8 { s16 p[4]; u32 col; s16 uv[4]; } PFLP8;
 
@@ -79,25 +80,21 @@ void Disp_name_or_id(s16 v) {
 
 extern u8 button_icon_uv[][8];
 
-void PutButtonICON(void *b, int n) {
+void PutButtonICON(u8 *p, u8 n) {
     PFLP8 q;
-    u8 *p = b;
-    u8 cnt = n;
 
     reload_tex(1, 0x157);
     SetTextureStage(0x157);
-    while (cnt > 0) {
+    while (n > 0) {
         q.p[0] = 0.8f * (f32)FS16(p, 0);
         q.p[1] = FS16(p, 2);
         q.p[2] = 0.8f * (f32)FS16(p, 4);
         q.p[3] = FS16(p, 4);
-        q.uv[0] = FS16(button_icon_uv[F8(p, 6)], 0);
-        q.uv[1] = FS16(button_icon_uv[F8(p, 6)], 2);
-        q.uv[2] = FS16(button_icon_uv[F8(p, 6)], 4);
-        q.uv[3] = FS16(button_icon_uv[F8(p, 6)], 6);
+        *(S2 *)&q.uv[0] = *(S2 *)(button_icon_uv[F8(p, 6)] + 0);
+        *(S2 *)&q.uv[2] = *(S2 *)(button_icon_uv[F8(p, 6)] + 4);
         q.col = (F8(p, 7) << 24) | 0xFFFFFF;
         flps0008(&q);
-        cnt--;
+        n--;
         p += 8;
     }
 }
@@ -283,15 +280,15 @@ void PutSpriteDiv3(PFLP8 *q, s16 w, s16 d) {
     s16 ow = q->p[2];
     s16 u0 = q->uv[0];
     s16 u1 = q->uv[2];
-    s16 t;
+    int t;
 
     q->p[2] = w;
     q->uv[2] = q->uv[0] + d;
     flps0008(q);
-    t = u1 - d;
     q->p[0] = q->p[0] + q->p[2];
-    q->p[2] = ow - w * 2;
+    q->p[2] = ow - (w + w);
     q->uv[0] = u0 + d;
+    t = u1 - d;
     q->uv[2] = t;
     flps0008(q);
     q->p[0] = q->p[0] + q->p[2];
@@ -330,25 +327,27 @@ void PutArrow(s16 x0, s16 y, s16 x1, s16 h, int col, int flag) {
 
 extern u8 minisight_tbl[4][10];
 
-void Put_mini_sight(s16 ofs, int col) {
+void Put_mini_sight(f32 scale, s16 ofs, int col) {
     PFLP8 q;
     u8 (*e)[10];
-    int i;
+    u32 i;
+    s16 x0;
 
     SetFilterMode(1);
     reload_tex(1, 0x11A);
     SetTextureStage(0x11A);
+    x0 = 1.25f * scale;
     q.uv[1] = 0xD8;
     q.col = col;
-    q.uv[0] = 0x100;
+    q.uv[2] = 0x100;
     e = minisight_tbl;
-    q.uv[2] = 0xEC;
+    q.uv[3] = 0xEC;
     for (i = 4; i != 0; i--, e++) {
-        q.p[0] = (s16)(1.25f * (f32)ofs) + FS16(e, 0);
+        q.p[0] = x0 + FS16(e, 0);
         q.p[1] = ofs + FS16(e, 2);
         q.p[2] = FS16(e, 4);
         q.p[3] = FS16(e, 6);
-        q.uv[3] = q.uv[0] - q.p[2];
+        q.uv[0] = q.uv[2] - q.p[2];
         Put_sprite_rotate(&q, FS8(e, 8));
     }
 }
@@ -370,35 +369,36 @@ int Monster_list_num(void) {
     return (v & 0xFFFF) + ((v & 0xFFFF0000) >> 16);
 }
 
-s8 Monster_list_search(s8 cur, s8 dir) {
+s8 Monster_list_search(s8 cur, int dir) {
     int n;
-    s8 i;
+    u32 f;
 
-    if (F32(&User_data, 0x3F0) != 0) {
+    f = F32(&User_data, 0x3F0);
+    if (f != 0) {
         if (cur < 0) {
-            i = 0;
+            cur = 0;
         } else {
-            i = cur + dir;
-            if (i > 29) {
-                i = 0;
+            cur += dir;
+            if (cur > 29) {
+                cur = 0;
             }
-            if (i < 0) {
-                i = 29;
+            if (cur < 0) {
+                cur = 29;
             }
         }
         for (n = 30; n != 0; n--) {
-            if (F32(&User_data, 0x3F0) & (1 << i)) {
-                return i;
+            if (f & (1 << cur)) {
+                return cur;
             }
-            if (dir >= 0) {
-                i++;
-                if (i > 29) {
-                    i = 0;
+            if ((s8)dir >= 0) {
+                cur++;
+                if (cur > 29) {
+                    cur = 0;
                 }
-            } else if (i <= 0) {
-                i = 29;
+            } else if (cur <= 0) {
+                cur = 29;
             } else {
-                i--;
+                cur--;
             }
         }
     }
@@ -1098,12 +1098,12 @@ extern char lit_3441[];
 extern char lit_3442[];
 
 void Disp_NPC_message(void) {
-    char buf[0x20];
-    char *d;
-    s8 *s;
-    s16 left;
+    char buf[0x40];
+    int left;
     s16 y;
+    s8 *s;
     int room;
+    char *d;
 
     if (!(PitMenu.x06 & 0x10)) {
         DispFrameMessage(pf_chat_log_base, lit_3439);
@@ -1968,25 +1968,23 @@ void Put_shousai(void) {
     PutButtonICON(setumei_shousai_4372, 1);
 }
 
-extern s16 equip_icon_u_tbl[];
-extern s16 weapon_icon_u_tbl[];
+extern u8 equip_icon_u_tbl[8];
+extern u8 weapon_icon_u_tbl[8];
 
 void Get_equip_icon_uv(u8 *eq, s16 *a, s16 *b) {
-    s16 v;
     u8 k = eq[1];
 
     if (k == 6 || k == 7) {
-        v = 0xBF;
         a[0] = weapon_icon_u_tbl[Get_weapon_job(eq) & 0xFF] + 1;
         b[0] = a[0] + 0x1E;
         a[1] = 0xA1;
+        b[1] = 0xBF;
     } else {
-        v = 0xDF;
         a[0] = equip_icon_u_tbl[k] + 1;
         b[0] = a[0] + 0x1E;
         a[1] = 0xC1;
+        b[1] = 0xDF;
     }
-    b[1] = v;
 }
 
 extern char *ng_word_tbl_0[];

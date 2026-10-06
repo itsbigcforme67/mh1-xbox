@@ -931,7 +931,8 @@ void hk_key_kata_hira(void) {
     }
     if (SKB(0x1E) != 6) {
         m = SKS32(0x20);
-        if (!(m & 2)) {
+        if (m & 2) {
+        } else {
             if (m & 1) {
             } else {
                 if (hk_shift_key_ck() != 0 && SKB(0x1E) != 1) {
