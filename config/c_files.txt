@@ -1913,3 +1913,5 @@ main 0x00174B40 0x00174B5C fl/flnode05c
 main 0x00174C90 0x00174EB8 fl/flnode05d
 main 0x001751D0 0x00175288 fl/flps_misc01
 main 0x00163420 0x001635D8 font/disp2_02
+main 0x001BC200 0x001BC688 net/netsyn09
+main:rodata 0x0035ECB0 0x0035ECE4 net/netsyn09
