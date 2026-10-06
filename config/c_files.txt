@@ -1912,3 +1912,4 @@ main 0x00174940 0x00174A1C fl/flnode05b
 main 0x00174B40 0x00174B5C fl/flnode05c
 main 0x00174C90 0x00174EB8 fl/flnode05d
 main 0x001751D0 0x00175288 fl/flps_misc01
+main 0x00163420 0x001635D8 font/disp2_02
