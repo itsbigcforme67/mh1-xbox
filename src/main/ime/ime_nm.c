@@ -2179,25 +2179,26 @@ int delwd(u8 *ent, WD *w)
 
 int dic_tmptouroku(WD *w)
 {
-    u8 buf[0x30];
+    u8 buf[0x50];
 
-    if (gaku_mode != 0) {
-        if (dic_fd == -1) {
-            return -3;
-        }
-        strncpy(buf, w->yomi, w->len);
-        if (w->x07 == 0x28 || w->x07 == 0x29) {
-            w->x07 = 0x27;
-        }
-        buf[w->len] = 0;
-        tmp_touroku(buf, w, 1);
+    if (gaku_mode == 0) {
+        return 3;
     }
+    if (dic_fd == -1) {
+        return -3;
+    }
+    strncpy(buf, w->yomi, w->len);
+    if (w->x07 == 0x28 || w->x07 == 0x29) {
+        w->x07 = 0x27;
+    }
+    buf[w->len] = 0;
+    tmp_touroku(buf, w, 1);
     return 3;
 }
 
 int dic_newlearn(WD *w, s64 *list, int n)
 {
-    u8 buf[0x30];
+    u8 buf[0x50];
     int rt;
 
     if (gaku_mode == 0) {
@@ -2211,7 +2212,8 @@ int dic_newlearn(WD *w, s64 *list, int n)
     if (isnum(buf) != 0) {
         w->x07 = 0x1F;
     }
-    rt = get_maxtime(list, n) + 1;
+    rt = get_maxtime(list, n);
+    rt++;
     if (rt == 0xFF) {
         clear_allrtime(list, n);
         rt = 1;
