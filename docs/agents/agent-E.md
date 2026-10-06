@@ -602,3 +602,56 @@ Lessons:
   store block (flps/disp: Disp_button matched when `q.col = -1` moved after the last field store). check.py's count for calls to functions in other modules always shows one
   diff per unresolved call (func_NNNNNN names): that is not a real difference.
 - `if (...) return 0; return 1;` is not the same as `return !(...)` for float compares (flPS2CheckGSClip).
+
+## Assignment 7 (6 Oct): single-player first, own ranges plus agent D's parked main ranges
+Linked this pass (rebuild OK x5): sound driver host side src/main/sound/sdr02-sdr07, sdr09 (Sdr* queue writers, SIF RPC status calls, makebuff*,
+SdrSendReq, sending_req 1036 B), flsnd04 (flSndRequest, flSndChange, flSndStatGet), flsnd05 (flSndModuleInit .. flSndPackLoadStatus), flsnd02 (flSndJointSet),
+flsnd06; fl clay01 (flCreateClayHandle), flnode05e (flGetFcurveValue); flfnt07 (flfntSjis2Index); hk18 (hk_key_eisuu); ime runs imeaw..imebd (is_kuten,
+alloc_record, set_wds, flush_head, newwdlen, get_entid_tab). Near-matches left: SdrSeReq/SdrSeChg (sdr01_nm.c), sdr_dmaadr_set/SdrDmaLoadReq (sdr08_nm.c),
+staff_disp 21 off (down from 75), flGetHierarchy3 5 off, flPS2GetMLCLAY 12 off, reward_mv 9 off, reward_itembox, flGetHierarchyData2 2 off.
+Not done: Sofdec/ADX/CRI (skipped as told), wait_alarm (asm, uses ei), net_receive_* (online, last).
+Lessons (each shown by the named function):
+- memcpy/flMemcpy size parameter must be unsigned: `void flMemcpy(void *, void *, u32)` changes the order in which the two argument loads of consecutive
+  calls are scheduled (flCreateClayHandle, flSndJointSet).
+- A function whose callee's result is returned in v0 must return it: `int f() { int r = g(); if (r > 0) return r; return h(); }` (flSndPackLoadStatus,
+  SdrGetState, flSndOutputMode, flSndPackLoadBG2: a void version gives different branch layout).
+- `int & 0xFFFFFF` compiles to dsll32 8 / dsrl32 8; the final command word `(x & 0xFFFFFF) | 0x4A000000` is plain int code (SdrPortStop). An unsigned long
+  mask or shifts through `long` do not (they fold or add a sign extension before the sw).
+- Globals of 8 bytes or less are gp-relative only when their size is known: `extern int sque_w_idx[];` (unknown size) gives lui/addiu; `volatile` there made
+  the compiler re-read it after the byte stores like the original (SdrAllStop, SdrSeReq).
+- Separate lui/addiu for every field of a queue entry (`sndque_tbl+4+off`) is `sndque_tbl[idx].field` through a global array of structs, not a pointer; a
+  local pointer q gives `4(q)` offsets and is used where the original does (SdrSetRev, sdr_dmaadr_set).
+- `*p++ = a; *p++ = b;` (pointer bumped by 2 after pairs of byte stores) vs `p[0]/p[1]` offsets (makebuff_tq, flush_head). Declaration order of 7 locals found with
+  tools/declhill.py (makebuff_tq).
+- A long nested if ladder with no jump table that tests `x & 0xF0` groups is ONE switch with the cases in reverse ladder order, `case 0x60: case 0x50:` for a
+  ladder 0x50, 0x60 (sending_req); a `switch` whose failure paths jump straight to the function end has the shared tail code as a label INSIDE the switch,
+  after `default: return;` (hk_key_eisuu).
+- A switch with sparse cases compiled as compare ladder where `||` chains of != failed: write the switch (is_kuten).
+- `x < K` of an unsigned subtraction: `(u32)(op - 0x39) <= 2` gives the `at` form. `n >= 5` vs `n > 4` the same (makebuff).
+- A 64-bit parameter matters: `get_entid_tab(unsigned long id, ...)` (the callers pass s64 list entries) removed a sign extension and also improved dic_learn,
+  dic_get1wd and dic_getallwd by 10 each. Return type int, not u16.
+- A dead statement can fix register allocation: `if (c) {}` inside the switch of flGetFcurveValue (found by the permuter; output-0 had `if ((c && c) && c) {}`).
+- In-place parameter updates (`depth |= (mode + 1) << 6;`, `size0 = (size0 + 15) & ~15;`) keep the original register (SdrSetRev).
+- tools/rebuild.sh takes about 4-8 minutes now; run the permuter with PERM_ASM_DIR pointing at a snapshot of asm/ because the rebuild wipes it.
+- The scratchpad directory is shared between agents: keep your own files in a subdirectory (mine: .../scratchpad/E).
+
+### Assignment 7, second half (IME, chat UI, more lessons)
+Linked in the ime runs (imeaw .. imebu): is_kuten, alloc_record, set_wds, flush_head, newwdlen, get_entid_tab, dic_open, iskanji, tmpoffset, api_funcent,
+dic_tmptouroku, dic_newlearn, bs_ctd, main_getsyn, setu_match (jump table 0x36E090-0x36E0B4 is registered with it), syn_2to3, hchar_addchmem, prev_learn,
+to_zenkaku, bytesin_kana_buf, count_byte_kana_buf (both were empty stubs), back_gun, muhenkan, set_record. Chat UI runs chat19-chat23: DispFrameListOptionArrowC,
+sword_zokusei, Receive_mess_move, zen_kigou_suuji_chk, DispFrameListOptionArrow. New helper scripts are NOT in the repo (they lived in my scratch directory): a
+function-local variant tester (replace text inside one function, run alignall, print the count), a "make a run file from an nm file" script (all declarations of
+the nm file plus the chosen functions) and a greedy comparison flipper (tools/greedy_sub.py with `>= K` -> `> K-1` and `< K` -> `<= K-1`).
+More lessons (each shown by the named function):
+- K&R definition `u16 to_zenkaku(c) u16 c;` keeps the call sites with two arguments legal and gives the original's single widening at entry.
+- `u16 t` instead of `s16 t` for a timer phase makes `(f32)t` the unsigned conversion with the bltz fix-up (DispFrameListOptionArrow, disp_cursorC 48 -> 4 off).
+- A 64-bit parameter: `get_entid_tab(unsigned long id, ...)`; `char *name` plus `*name == 0` gives `lb`; `int page` instead of `s16 page` removes a sign extension when the
+  callee already returns the value in a sign-extended register (main_getsyn); `(s16)klen == len` re-extends klen at the compare.
+- `if (k < end) { p = ...; do { if (!test(*p)) break; k++; p++; } while (k < end); }` is the shape of `while (k < end && test(*p))` here (muhenkan).
+- `if (cond1) { if (cond2) return 1; } if (cond3) {...}` is not a switch: the failed first test falls into the second test (zen_kigou_suuji_chk, ladder with
+  fall-through into the next compare); a stack buffer can be bigger than the used length (`u8 buf[0x50]` in dic_tmptouroku / dic_newlearn: the frame size shows it).
+- `if (kh == 0 || (pw = kh->pw) == 0) { else-branch values } else { ... }` puts the else-branch code first, as the original does (prev_learn).
+- `disp_kouho()` with no argument where the original passes a stale a0 (back_gun); `rt = f(); rt++;` instead of `rt = f() + 1;` (dic_newlearn).
+- Unprototyped callers that pass a second argument (`to_zenkaku(c | 0x100, c)`) force the callee to stay K&R in the whole-file C.
+- flfntLocate(int, s16) is the prototype that makes an s16 argument pass without a re-extension.
+- A greedy pass over `>=`/`<` rewrites on a 6000-line near-match file (ime_nm.c, 25 minutes) found improvements in josi_match (67 -> 30), setu_match, FAskRom_Seek and others.
