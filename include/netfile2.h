@@ -52,4 +52,10 @@ void save_data_store_sys_foe_net();
 int decode_data_for_net();
 int mc_bs_chg();
 int check_data_cn_file();
+extern s32 Last_sel_drive;
+extern s32 net_sel_drive;
+int func_591BE0();
+int func_5E5D20();
+int func_5E5D30();
+void check_sum_set_cn_file();
 #endif

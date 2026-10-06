@@ -1724,3 +1724,6 @@ main 0x00289060 0x0028911C mc/netfile2f
 main 0x0028A170 0x0028A3B0 mc/netfile2g
 main 0x00289AB0 0x0028A104 mc/netfile2h
 main 0x00289120 0x00289AA4 mc/netfile2i
+main 0x0028A3D0 0x0028AB2C mc/netfile2j
+main 0x0028AB30 0x0028B204 mc/netfile2k
+main 0x0028B580 0x0028BEC0 mc/netfile2l
