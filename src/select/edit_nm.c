@@ -156,7 +156,7 @@ void edit_pl_init(PLW *pl, s16 mode, u16 no) {
     }
 }
 
-void arrow_disp(u8 *w) {
+static void arrow_disp(u8 *w) {
     SPR s;
     f32 sn;
     s16 sel;
@@ -1185,21 +1185,21 @@ void Edit_task(STASK *t) {
 /* Near-match: controller/continue screen task (steps: 0 init, 1 load, 2 se load, 3 choose
    hunter, 4 confirm, 5-8 fade out). */
 void Cont_task(STASK *t) {
+    u8 *op;
+    u8 old;
+    s16 r;
     EDIT_W *e = &edit_w;
-    u32 btn;
     s16 i;
-    u8 j;
-    PLW *pl;
-    f32 *v;
-    f32 *ev;
-    u8 r;
+    PLW *q;
+    PLW *pl = player_work;
+    u8 cur;
+    u16 btn;
 
-    btn = (Psw[2] | Psw[12]) & 0xFFFF;
+    btn = PSWV(2) | PSWV(12);
     SetTrnslMode(4, 5);
     switch (t->step) {
     case 0:
-        t->step++;
-        all_model_free(t->step - 1);
+        all_model_free(t->step++);
         all_motion_free();
         model_work_init();
         init_move_work();
@@ -1224,8 +1224,11 @@ void Cont_task(STASK *t) {
         McOperationSet(4);
         goto common;
     case 1:
-        r = McCardOperation() & 0xFF;
-        if (r != 0) {
+        r = (u8)McCardOperation();
+        if (r == 0) {
+            goto common;
+        }
+        {
             if (r == 2) {
                 se_req_bgm_vol(1, 2, 0);
                 se_req_bgm_vol(1, 3, 0);
@@ -1234,15 +1237,15 @@ void Cont_task(STASK *t) {
                 return;
             }
             e->x0[1] = 0xFF;
-            for (j = 0, pl = player_work; j < 3; j++, pl++) {
-                if (option_w[j * 0x480 + 0x10] == 0) {
+            for (i = 0, op = option_w; i < 3; i++, op += 0x480, pl++) {
+                if (op[0x10] == 0) {
                     pl->be_flag = 0;
                 } else {
                     if (e->x0[1] == 0xFF) {
-                        e->x0[1] = j;
+                        e->x0[1] = i;
                     }
-                    user_load(e, pl, j);
-                    edit_pl_init(pl, 1, j);
+                    user_load(e, pl, i);
+                    edit_pl_init(pl, 1, i);
                     pl->x01 = 0;
                 }
             }
@@ -1259,15 +1262,15 @@ void Cont_task(STASK *t) {
             t->step++;
             B8(t, 9) = 0;
             e->x0[2] = e->x0[1];
-            player_work[0].x01 = 1;
+            pl->x01 = 1;
             se_req_bgm_vol(1, 0, 0);
             se_req_bgm_vol(1, 1, 0);
             se_req(7, 0x19, 0);
         }
         goto common;
     case 3:
-        for (i = 0, pl = player_work; i < 3; i++, pl++) {
-            roll_move(pl, i);
+        for (q = player_work, i = 0; i < 3; i++, q++) {
+            roll_move(q, i);
         }
         if (Psw[2] & 0x20) {
             t->step++;
@@ -1281,33 +1284,39 @@ void Cont_task(STASK *t) {
             Select_Tsk_Execute();
         } else {
             if (Psw[2] & 0x2000) {
+                cur = e->x0[1];
+                old = cur;
                 do {
-                    if (e->x0[1] == 0) {
+                    if (cur == 0) {
                         e->x0[1] = 2;
                     } else {
                         e->x0[1]--;
                     }
-                } while (option_w[e->x0[1] * 0x480 + 0x10] == 0);
-                if (e->x0[2] != e->x0[1]) {
-                    cursor_se(2, e->x0[1], e->x0[2]);
-                    B32(&player_work[e->x0[1]], 0x578) = 0x01000000;
-                    B32(&player_work[e->x0[1]], 0x57C) = 0x01000000;
-                    B32(&player_work[e->x0[1]], 0x580) = 0x01000000;
+                    cur = e->x0[1];
+                } while (option_w[cur * 0x480 + 0x10] == 0);
+                if (old != cur) {
+                    cursor_se();
+                    *(u32 *)&((PLW *)((u8 *)player_work + 0x578))[e->x0[1]] = 0x01000000;
+                    *(u32 *)&((PLW *)((u8 *)player_work + 0x57C))[e->x0[1]] = 0x01000000;
+                    *(u32 *)&((PLW *)((u8 *)player_work + 0x580))[e->x0[1]] = 0x01000000;
                 }
             }
             if (Psw[2] & 0x1000) {
+                cur = e->x0[1];
+                old = cur;
                 do {
-                    if (e->x0[1] >= 2) {
+                    if (cur >= 2) {
                         e->x0[1] = 0;
                     } else {
                         e->x0[1]++;
                     }
-                } while (option_w[e->x0[1] * 0x480 + 0x10] == 0);
-                if (e->x0[2] != e->x0[1]) {
-                    cursor_se(e->x0[1], e->x0[2]);
-                    B32(&player_work[e->x0[1]], 0x578) = 0x01000000;
-                    B32(&player_work[e->x0[1]], 0x57C) = 0x01000000;
-                    B32(&player_work[e->x0[1]], 0x580) = 0x01000000;
+                    cur = e->x0[1];
+                } while (option_w[cur * 0x480 + 0x10] == 0);
+                if (old != cur) {
+                    cursor_se();
+                    *(u32 *)&((PLW *)((u8 *)player_work + 0x578))[e->x0[1]] = 0x01000000;
+                    *(u32 *)&((PLW *)((u8 *)player_work + 0x57C))[e->x0[1]] = 0x01000000;
+                    *(u32 *)&((PLW *)((u8 *)player_work + 0x580))[e->x0[1]] = 0x01000000;
                 }
             }
             if (e->x0[2] != e->x0[1]) {
@@ -1316,36 +1325,31 @@ void Cont_task(STASK *t) {
         }
         goto common;
     case 4:
-        for (i = 0, pl = player_work; i < 3; i++, pl++) {
+        for (i = 0; i < 3; i++, pl++) {
             roll_move(pl, i);
         }
         if ((Psw[2] & 0x20) && e->x0[3] == 0) {
             t->step++;
             ed_decide_se();
-            option_w[0xFCE] = e->x0[1];
+            B8(option_w, 0xFCE) = e->x0[1];
             pl = &player_work[e->x0[1]];
             ed_view_set(pl, 2, 1);
             pl->ang[1] = 0;
             e->x38 = 0;
             select_w.xB6 = e->x0[1];
             Load_userdata(e->x0[1]);
-        } else if (!(Psw[2] & 0x20) || e->x0[3] != 1) {
-            if (Psw[2] & 0x40) {
-                ed_cancel_se();
-                t->step = 3;
-            } else {
-                if ((btn & 0x800) && e->x0[3] != 0) {
-                    se_req(7, 0x12, 0);
-                    e->x0[3] = 0;
-                }
-                if ((btn & 0x400) && e->x0[3] == 0) {
-                    se_req(7, 0x12, 0);
-                    e->x0[3] = 1;
-                }
-            }
-        } else {
+        } else if (((Psw[2] & 0x20) && e->x0[3] == 1) || (Psw[2] & 0x40)) {
             ed_cancel_se();
             t->step = 3;
+        } else {
+            if ((btn & 0x800) && e->x0[3] != 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 0;
+            }
+            if ((btn & 0x400) && e->x0[3] == 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 1;
+            }
         }
         goto common;
     case 5:
@@ -1361,8 +1365,7 @@ void Cont_task(STASK *t) {
         }
         goto common;
     case 6:
-        e->x38++;
-        if (e->x38 >= 0x41) {
+        if (++e->x38 >= 0x41) {
             t->step++;
             fade_set(5);
         }
@@ -1374,8 +1377,7 @@ void Cont_task(STASK *t) {
         }
         goto common;
     case 8:
-        e->x38--;
-        if (e->x38 <= 0) {
+        if (--e->x38 <= 0) {
             Tsk_Exit(t);
             Tsk_Signal(1);
             fade_set(2);
@@ -1403,24 +1405,22 @@ void Cont_task(STASK *t) {
             light_move();
         }
         e->x36++;
-        ev = e->eye;
-        v = (f32 *)((u8 *)lpView + 0xC);
-        v[0] = v[0] + (ev[0] - v[0]) / 10.0f;
-        v[1] = v[1] + (ev[1] - v[1]) / 10.0f;
-        v[2] = v[2] + (ev[2] - v[2]) / 10.0f;
-        v = (f32 *)lpView;
-        ev = e->at;
-        v[0] = v[0] + (ev[0] - v[0]) / 10.0f;
-        v[1] = v[1] + (ev[1] - v[1]) / 10.0f;
-        v[2] = v[2] + (ev[2] - v[2]) / 10.0f;
+        BF(lpView, 0xC) = BF(lpView, 0xC) + (e->eye[0] - BF(lpView, 0xC)) / 10.0f;
+        BF(lpView, 0x10) = BF(lpView, 0x10) + (e->eye[1] - BF(lpView, 0x10)) / 10.0f;
+        BF(lpView, 0x14) = BF(lpView, 0x14) + (e->eye[2] - BF(lpView, 0x14)) / 10.0f;
+        BF(lpView, 0) = BF(lpView, 0) + (e->at[0] - BF(lpView, 0)) / 10.0f;
+        BF(lpView, 4) = BF(lpView, 4) + (e->at[1] - BF(lpView, 4)) / 10.0f;
+        BF(lpView, 8) = BF(lpView, 8) + (e->at[2] - BF(lpView, 8)) / 10.0f;
         View_move();
         if (t->step < 8) {
             if (t->step >= 2) {
                 pl = &player_work[e->x0[1]];
-                BF(BP(pl, 0x564), 8) = pl->pos[0];
-                BF(BP(pl, 0x564), 0xC) = pl->pos[1];
-                BF(BP(pl, 0x564), 0x10) = pl->pos[2];
-                add_prim(ot1, BP(pl, 0x564), 0x20, 0);
+                if (t->step >= 2) {
+                    BF(BP(pl, 0x564), 8) = pl->pos[0];
+                    BF(BP(pl, 0x564), 0xC) = pl->pos[1];
+                    BF(BP(pl, 0x564), 0x10) = pl->pos[2];
+                    add_prim(ot1, BP(pl, 0x564), 0x20, 0);
+                }
             }
             add_prim2(ot0, demo_prim, 0, 0x40);
             disp_cont_spr(e);
