@@ -4875,11 +4875,14 @@ int back_gun(int disp, int wrap)
         }
         old = 0;
     }
-    while (take_kouho(top_kh, gun_num) != old) {
+    for (;;) {
+        if (take_kouho(top_kh, gun_num) == old) {
+            break;
+        }
         next_gun(0, 1);
     }
     if (disp == 1) {
-        disp_kouho(0);
+        disp_kouho();
     }
     return 1;
 }
