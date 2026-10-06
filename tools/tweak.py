@@ -110,7 +110,8 @@ def main():
     if "--rounds" in sys.argv:
         rounds = int(sys.argv[sys.argv.index("--rounds") + 1])
     apply_ = "--apply" in sys.argv
-    mini = os.path.join(os.path.dirname(nm), "zztw_%s.c" % name)
+    os.makedirs("build/tweak", exist_ok=True)
+    mini = os.path.join("build/tweak", "zztw_%s.c" % name)
     subprocess.run(["python3", "tools/mkrun2.py", nm, mini, "tweak", name], check=True)
     try:
         src = open(mini).read()
