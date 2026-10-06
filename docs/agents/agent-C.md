@@ -1101,3 +1101,31 @@ Lessons (each from a function that matched):
   cnLBS_Get_GameServerAddress 3, cnLBS_RecvData 4, MatchJoin/PlSide/OpponentInfo (record hole).
 - Browser/HTML functions (internet_browser, Analysis_TagCode, nwDispStr_Html, Display_StringData, lbc_admin_message_*, check_halfcode) were skipped on
   the coordinator's instruction (browser work paused).
+
+## Lobby online round 3 (agent C, 7 Oct 2026): literal addresses were the culprit
+Matched (rebuild OK): lbc_login_id_select (lb_lid01), lbc_logout_00 (lb_lo01), connecting_00/10, cmcs_00/01/04, tcp_init, CallBack_Result_Plaza_LobbyMember,
+net_Check_FriendData, __cnet_SendReq_ConditionSearchUser: 11 functions. No shared-header edits.
+- Hypothesis "one TU from 0x5B7020 with static helpers" tested (scratch TU with internet_connect_minimum_cleanup/CallBackWaitInit/Check_CallBackWait/
+  check_warning_level static, then lbc_login_init/warning_message/id_select/logout_00): NO change in any diff count. So static helpers do not explain
+  those near-misses (they still help Lbs_ExitAndEnterPlaza). Do not spend more time on that TU idea.
+- THE finding: `*(u8 *)0x3F33F1 = x` (a literal address) schedules differently from the same store through the symbol the address belongs to.
+  Most "store order / lui at placement" near-misses (logout_00 7, connecting_00 3, cmcs_00 4, cmcs_04 4, tcp_init 8, LobbyMember 7) were this.
+  Look the address up in config/symbols/main.txt (script: size covers the address) and use the symbol with its field: 0x3F33F1 = game_w.step,
+  0x3F34C3 = game_w.pl_num, 0x3F34C1 = game_w.master, 0x3A6E94 = net_common_w.timer (include/netcw.h), 0x4E36F4 = ConnWork.sock (word at +4 of
+  ConnWork, a 0x2C-byte object; +0x24 is a s16 status), 0x4E4723 = InetGame+3 (extern u8 InetGame[0x14]), 0x39DAD0/2/4 = PitMenu x10/x12/x14.
+  `*(u8 *)((u8 *)SYM + off)` is NOT enough in every case; a struct field or SYM[index] form worked (tcp_init needed a small struct for ConnWork so the
+  address of the status field is not CSE'd into a saved register).
+- id_select_01: two index variables that share a name in different blocks get registers by use count; declaring SEPARATE locals (ix, of) for the second
+  block fixed the s0/s1 swap (lbc_login_id_select).
+- tcp_init: `SecCunt = 0x3C` placed BEFORE `TryCunt = TryCunt + 1` gives the original's delay-slot store; `x >= 0x15` must be `x > 0x14` (slti into at).
+- cmcs_00: stores in source order Vs_Cnt_0, Vs_Cnt_1, flag. cmcs_01: ANSI prototype `s32 connect_ps2(s32, u16, s32)` changes the argument load order.
+- net_Check_FriendData / ConditionSearchUser: the loop `i = 0` init lands in the beq delay slot when written as `n = x & 0xFF; i = 0; if (0 < n) { p = ..; do {..} while (i < n); }`
+  (FriendData) and `if (0 < n) { i = 0; e = ..; do {..} while (i < n); }` (ConditionSearchUser). Try both placements of the init.
+- MatchJoin/PlSide/OpponentInfo (record hole): one more attempt. In the original the 8-byte result record sits at sp+24 and the received byte at sp+31
+  (overlapping it); frame is 32. Any form that makes the byte part of the record (union, cast of &res+7) makes MWCC allocate a quad-aligned 48-byte frame
+  with a saved s0, so that is not it. Unused extra locals are dropped. Still 2 instructions off (stack slot 16 vs 24).
+- Still near-matches in the range: lbc_login_warning_message 6 (sw lands in a2 and cw in t0, original has them the other way; declaration order, separate locals,
+  masks, case-4 reuse all tried), lm_*_mv (register allocation), disp_string_handle 7 (sel ternary layout), disp_lm_room_member 10, create_server_table 45 (was 51
+  after LbsInfoWork fields), RoomLeaver 22 (all 120 declaration orders tried), cnLBS_Get_GameServerAddress 3 (OR-chain temps), cnLBS_RecvData 4 (an extra nop
+  from branch-target alignment), CheckItemPrice_005AFEE0 24 (original keeps both price compares as explicit slt/beq blocks, ours folds to xori; if/else, early
+  return, flag variable, cost variable all tried; User_gold in place of the literal made it worse).
