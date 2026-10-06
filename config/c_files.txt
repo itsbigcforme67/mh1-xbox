@@ -1798,3 +1798,8 @@ main 0x002163D0 0x00216484 sound/flmw01
 main 0x00223760 0x0022386C cam/camr2s01
 main 0x00217E50 0x00218588 tex/apx01
 main 0x00217760 0x00217A54 flfnt/flfnt06
+main 0x0022E090 0x0022E1AC net/cng00
+main:rodata 0x0036CCB0 0x0036CCC8 net/cng00
+main 0x00216010 0x00216044 sound/flsnd00
+main 0x002162C0 0x002162EC sound/flsnd02
+main 0x0022FE00 0x0022FE0C boot/boot03

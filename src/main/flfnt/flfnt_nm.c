@@ -372,6 +372,29 @@ void flfntDrawTerm(void) {
     }
 }
 
+/* Shift-JIS code to JIS X 0208 (0x2121 = first cell). Near-match (the original compares with slti on
+ * 64-bit zero-extended copies of the bytes, 45-49 instructions off with every int/u32/long mix tried). */
+int flfntSjis2Jis(u32 c) {
+    int hi = (c >> 8) & 0xFF;
+    int lo = c & 0xFF;
+
+    if (hi >= 0x81 && hi < 0xA0) {
+        hi -= 0x81;
+    } else if (hi >= 0xE0 && hi < 0xF0) {
+        hi -= 0xC1;
+    }
+    hi *= 2;
+    if (lo >= 0x40 && lo < 0x7F) {
+        lo -= 0x40;
+    } else if (lo >= 0x80 && lo < 0x9F) {
+        lo -= 0x41;
+    } else if (lo >= 0x9F && lo < 0xFD) {
+        lo -= 0x9F;
+        hi++;
+    }
+    return ((hi + 1) << 8) + lo + 0x2021;
+}
+
 int flfntSjis2Index(u32 c) {
     int j = flfntSjis2Jis(c);
     int hi = (j >> 8) - 0x21;

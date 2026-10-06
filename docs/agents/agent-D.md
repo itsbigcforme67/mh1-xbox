@@ -789,3 +789,143 @@ cell origin after the float conversion, u8 result), hk_key_eisuu (original retur
 the epilogue from the failed tests; every if/else, break and return form compiled to a stub).
 Not Capcom, skipped: Sofdec/ADX/CRI middleware (0x1C4000-0x216000), PS2 kernel stubs (0x254300+),
 libcdvd-style RTC helpers (0x27C698).
+
+# Fifth assignment (main module 0x1C0000-0x230000, 0x24A240-0x2814E0)
+
+Linked, all five modules OK (tools/rebuild.sh, 5 Oct 2026):
+- cam/camq0.c (0x225D80-0x225F4C): QuestClearCameraRequest, RedDragonEscapeCamera, F_DragonEscapeCamera,
+  PlayerDieCameraRequest, PlComebackCameraRequest, PilebunkerCameraRequest. All matched first or second try.
+  QuestClearCameraRequest = one `switch (e[2])` with cases 7, 2, default that only *prepare* the camera number
+  (`if (x34 == 0) cam = N; else return;`, not `goto`), then ONE DemoCameraRequest call after the switch.
+  A tail call with fewer arguments than the callee has (RedDragon: `a1 = a0; a0 = 0x1C; j`) needs the
+  unprototyped declaration `void DemoCameraRequest();` (the 3-argument prototype adds `a2 = 0`).
+- cam/camr2s01.c GetNearSection (0x223760): declbf found the declaration order.
+  `f32 dist[16]` is the stack array (frame 0xC0).
+- sound/flmw01.c flmwVSyncCallback (`flAdxControll(0)`, the 0 is in the tail-call delay slot) and flmwFlip: the
+  hardware read `*(u64 *)0x12001000` (GS CSR, bit 13 = field) must come first into a local, then the two stores.
+  `a >= b` was written `b <= a` (loads in the original order).
+- tex/apx01.c (0x217E50-0x218588, new include/apx.h): the Capcom APX texture helpers plAPXGetMipmapTextureNum,
+  plAPXGetPaletteNum, plAPXSetContextFromImage, plAPXSetPaletteContextFromImage, plAPXGet*AddressFromImage,
+  GetAPXFileHeader. The callees return `int` (a `u16` return type adds an andi). The colour-channel fields
+  are written in the original's store order (c1: shift before bits for the "all zero" cases; the 0x1C/0x34 pair is
+  written twice on purpose). Two holdouts stay original bytes in the file via config/c_rawfuncs.txt:
+  GetAPXPixelMipmapAdrs (12 off) and GetAPXPaletteAdrs (50 off); the C is in apx_nm.c. GetAPXPaletteAdrs calls
+  GetAPXFileHeader(img) and GetAPXPixelMipmapAdrs(img, 0) without saving `img` across the first call (a0 is never
+  copied to a saved register); no C form that does this was found.
+- flfnt/flfnt06.c flnecReloadTexture (permuter output; `j = 0; arr[j++] = ...` for the first three texture
+  handles, `flReloadTexture(j, arr)` passes the count 0x23 as first argument). Clean source is in flfnt_nm.c.
+- net/cng00.c CnInetNetworkAveTcpPoll (0x22E090, jump table 0x36CCB0-0x36CCC8): explicit `case 4: case 5:`
+  makes the 6-entry table.
+Written but not matching (nm files): flfntFontPutc (flfnt_nm.c, 1260 B: GS TEX0/TEX1 packet when the texture page,
+palette or the "size != 22x22" flag changes, then a 0x50-byte sprite packet; logic follows the asm, compile is
+completely different: 315/315), flSndPackLoadSub2 (sound/flsnd_nm.c, 118/122: the original keeps two copies of
+`pack` in saved registers), flSndPackLoadBG2/flSndOutputMode (sound/flsnd00.c, not built: the original has
+the "else" part first, 7 and 8 instructions off), flSndJointSet (sound/flsnd02.c, 1 off: the first memcpy length
+is loaded through a0 in the original, s0 in mine).
+Near-matches left in the font library (flfnt_nm.c): SetPalData 99/108, Printf 73/103, FontPuts 18/108,
+DrawTerm 18/54, Sjis2Index 6/21 (original order: `sra v1,v0,8; addiu a0,v1,-33; andi v0,v0,0xFF`, the
+compiler always starts with the andi), CheckFont 12/26 (original stores the unmasked idx, MWCC reuses the masked
+register), CheckString 32/86, ExpandFont 88/106. ncm_nm.c: ncm_str_disp_sub 34/156, Ncm_mssage_disp_option
+37/86 (register numbering of y/step/lines), Ncm_br_mc_mssage_disp 95/200, Ncm_menu_disp 138/162 (the original
+walks one induction variable `s1 = i*4` for both the string table and `s1<<1` for the s16 position table; the
+C compiler makes two). Quest_start stays 10 off: the original keeps `m = mission_area` in s0 and
+reads `m->o[0]` BEFORE reloading the global for `quest_w.x94 = mission_area + m->o[0]`, and it stores x38/x36 after
+the loads of o[4]/x94; every operand order / pointer cast tried (u8 *, int, s32, either side) compiles identically.
+Permuter (-j1, 200-420 s each) was run on 38 functions of this assignment; only flnecReloadTexture reached
+a real match (and linked). flSndJointSet "reached score 0" but the applied source still showed the one diff in
+check.py: always re-run check.py after tools/permapply.py. Hit rate for 1-15 instruction diffs: about 1 in 20.
+Also linked: boot/boot03.c cnNet_ModuleLoad (`CngNetPS2ModuleBootInitialize(1, 1)` as a tail call), sound/flsnd00.c
+(flSndAllStop, flSndPortStop(int), flSndSetRev(int, int, int, int, int): a wrapper whose callee prototype has
+s16/u8 parameters gets the dsll32/andi conversions in the tail-call delay slots) and sound/flsnd02.c
+(flSndJointInit).
+Lessons: `0x1C0000..` ranges: a function that "matches in check.py" inside an nm file is NOT linked until its
+own run is registered (all five such cases here were already handled). Shell: `pkill -f NAME` kills the shell
+that runs it when NAME appears in the command line; use PIDs.
+
+## Unmatched Capcom functions left in my ranges (5 Oct 2026, after the fifth assignment)
+83 70192 (functions, bytes), sorted by size. `off` = instructions that differ from the original in the near-match C
+(file in parentheses; nm = not built). Sofdec/ADX/CRI (0x1C4000-0x216000) and PS2 kernel stubs (0x254300+) skipped.
+
+- 1C1958  9976 cftraw_CnvMbRAW8toPlaneARGB: hand-written MMI asm (CRI middleware): no C possible
+- 21A9F0  5148 eft20_t: 1209 off of 1287 (eft/eft20_nm.c)
+- 219750  4600 eft20_m: 885 off of 1150 (eft/eft20_nm.c)
+- 218670  4316 eft20_i: 1032 off of 1080 (eft/eft20_nm.c)
+- 21E310  4280 HdMerge: no C yet; Sony .HD bank merger (4 chunk types, padding loops), next candidate for a long session
+- 21BF50  3564 eft20_pos_set: 842 off of 891 (eft/eft20_nm.c)
+- 22A410  3420 quest_condition_prog: 532 off of 855 (quest/f_quest_nm.c)
+- 21F9B0  2664 cam_sub_std: 63 off of 668 (cam/cam_nm.c)
+- 225510  2152 k_HitEmCamera: 446 off of 538 (cam/camr5_nm.c)
+- 2206B0  2096 cam_sub_stg: 410 off of 524 (cam/cam_nm.c)
+- 22B170  1840 remuneration_item_set: 51 off of 460 (quest/f_quest_nm.c)
+- 223FE0  1652 GetOrthogonalPoint: 234 off of 413 (cam/camr6_nm.c)
+- 216F90  1260 flfntFontPutc: 315 off of 315 (flfnt/flfnt_nm.c)
+- 226C30  1136 Quest_start: 10 off of 284 (quest/f_quest_nm.c)
+- 2248C0  1000 Spline: 259 off of 262 (cam/camr4_nm.c)
+- 222410   900 point_cam_sub: 28 off of 225 (cam/cam_nm.c)
+- 22C050   812 Quest_net_sub: 179 off of 205 (quest/f_quest_nm.c)
+- 225050   796 Cardano: 99 off of 203 (cam/camr5_nm.c)
+- 2286D0   756 Item_regained: 158 off of 189 (quest/f_quest_nm.c)
+- 22EAA0   656 CngNetAQPacketMake: 147 off of 164 (net/cng_nm.c)
+- 224DD0   632 DKA5: 153 off of 158 (cam/camr5_nm.c)
+- 228130   576 Quest_next_em_set: 17 off of 144 (quest/f_quest_nm.c)
+- 228440   552 stolen_item_stack: 7 off of 138 (quest/f_quest_nm.c)
+- 2289D0   508 Share_item_stack: 86 off of 127 (quest/f_quest_nm.c)
+- 22D2F0   504 get_AQdata: 16 off of 126 (aq/aq_nm.c)
+- 2160D0   488 flSndPackLoadSub2: 118 off of 122 (sound/flsnd_nm.c)
+- 228BD0   468 Net_Share_item_stack: 71 off of 117 (quest/f_quest_nm.c)
+- 223980   460 GetNearPoint: 122 off of 124 (cam/camarea_nm.c)
+- 22BA40   456 quest_item_ck2: 109 off of 114 (quest/f_quest_nm.c)
+- 22E690   440 CngRecvMsg: 87 off of 110 (net/cng_nm.c)
+- 216DE0   432 flfntFontPuts: 18 off of 108 (flfnt/flfnt_nm.c)
+- 2166E0   432 flfntSetPalData: 99 off of 108 (flfnt/flfnt_nm.c)
+- 217A60   424 flnecExpandFont: 88 off of 106 (flfnt/flfnt_nm.c)
+- 22E900   416 CngNetAQDataPut: 98 off of 104 (net/cng_nm.c)
+- 225370   416 k_HitWallCamera: 46 off of 104 (cam/camr5_nm.c)
+- 216920   412 flfntPrintf: 73 off of 103 (flfnt/flfnt_nm.c)
+- 22E450   408 CngNetMcsP2PPoll: 3 off of 102 (net/cng_nm.c)
+- 22F2A0   396 CngNetAQdataToObj: 90 off of 99 (net/aqcmd_nm.c)
+- 22FC50   384 movie_draw: 10 off of 96 (movie/movie_nm.c)
+- 22A220   368 em_work_serch2: 43 off of 93 (quest/f_quest_nm.c)
+- 21D470   368 em_status_ck: 15 off of 92 (sound/bgm_nm.c)
+- 22CBF0   356 AQ_init: 45 off of 89 (aq/aq_nm.c)
+- 228DB0   344 Share_item_num_ck: 61 off of 86 (quest/f_quest_nm.c)
+- 217C10   344 flnecCheckString: 32 off of 86 (flfnt/flfnt_nm.c)
+- 223C90   336 cam_rail_move: 83 off of 84 (cam/camr2_nm.c)
+- 227CF0   320 Em_direct_set: 53 off of 80 (quest/f_quest_nm.c)
+- 218360   308 GetAPXPixelMipmapAdrs: original bytes linked via c_rawfuncs; C in tex/apx_nm.c (12 off)
+- 22D9C0   300 AQ_data_put: 31 off of 75 (aq/aq_nm.c)
+- 21F470   288 SetCameraData: 65 off of 72 (cam/cam_nm.c)
+- 223870   264 get_near_point_sub: 18 off of 66 (cam/camarea_nm.c)
+- 223190   264 Get_cam_grid_XZ: 20 off of 66 (cam/camarea_nm.c)
+- 22DAF0   248 pl_data_put: 38 off of 62 (aq/aq_nm.c)
+- 229E60   244 quest_em_init_sub2: 49 off of 61 (quest/f_quest_nm.c)
+- 223410   232 Area_XZ_Check: 57 off of 58 (cam/camarea_nm.c)
+- 2184A0   232 GetAPXPaletteAdrs: original bytes linked via c_rawfuncs; C in tex/apx_nm.c (50 off)
+- 22E350   220 CngSessionStart_online: 3 off of 55 (net/cng_nm.c)
+- 217680   220 flfntSjis2Jis: C in flfnt_nm.c (45/55 off: the original compares 64-bit zero-extended byte copies with slti)
+- 227160   216 Quest_pl_stage_init: 11 off of 54 (quest/f_quest_nm.c)
+- 2162F0   212 flSndJointSet: 1 off of 53 (sound/flsnd02.c)
+- 229980   200 Em_hagi_point_cnt_ck: 20 off of 50 (quest/f_quest_nm.c)
+- 217550   200 flfntDrawTerm: 18 off of 54 (flfnt/flfnt_nm.c)
+- 22DBF0   196 pl_AQ_put: 14 off of 49 (aq/aq_nm.c)
+- 22D690   164 self_data_ctrl: 2 off of 41 (aq/aq_nm.c)
+- 229570   148 ext_pick_point_fifo_ck: 36 off of 39 (quest/f_quest_nm.c)
+- 22DEA0   136 host_change: 9 off of 34 (aq/aq_nm.c)
+- 224660   136 ZoomRateCalc: 8 off of 34 (cam/camrz01.c)
+- 22D740   120 set_other_data: 18 off of 32 (aq/aq_nm.c)
+- 229610   116 ext_pick_point_tbl_clr: 27 off of 31 (quest/f_quest_nm.c)
+- 2290B0   116 Ext_pick_point_init: 45 off of 49 (quest/f_quest_nm.c)
+- 217D70   104 flnecCheckFont: 12 off of 26 (flfnt/flfnt_nm.c)
+- 229AE0    96 str_gattai: 25 off of 25 (quest/f_quest_nm.c)
+- 226980    96 Stage_unique_data_get: 8 off of 24 (quest/f_quest0_nm.c)
+- 226920    96 Stage_item_data_get: 15 off of 24 (quest/f_quest0_nm.c)
+- 2268A0    96 Stage_mv_data_get: 8 off of 24 (quest/f_quest0_nm.c)
+- 2270A0    92 Quest_retire_set: 15 off of 23 (quest/f_quest_nm.c)
+- 22EDE0    84 CngNetAQPoll: 10 off of 21 (net/cng_nm.c)
+- 228370    84 Quest_str_get: 15 off of 21 (quest/f_quest_nm.c)
+- 217620    84 flfntSjis2Index: 6 off of 21 (flfnt/flfnt_nm.c)
+- 22DE00    76 item_ans_send: 7 off of 19 (aq/aq_nm.c)
+- 216080    76 flSndPackLoadBG2: 7 off of 19 (sound/flsnd00.c)
+- 22F200    64 CngNetAQBuffEmptyCheck: 14 off of 16 (net/cng_nm.c)
+- 22ED90    52 CngNetAQSessionWait: 9 off of 13 (net/cng_nm.c)
+- 216050    48 flSndOutputMode: 8 off of 13 (sound/flsnd00.c)
