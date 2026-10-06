@@ -87,66 +87,46 @@ s32 tagAct_145(s32 arg0) {
 void tagoutprintf2();
 s32 tagAct_500(int arg0, char *buf) {
     int c;
-    u8 *t;
     if (*(s32 *)(bsw + 4) > 0x7D) {
         tagoutprintf2(bsw + 0xD8E4);
     }
-    t = bsw;
-    c = *(s32 *)(t + 4);
-    *(s32 *)(t + 4) = c + 1;
-    buf[c] = 60;
+    buf[(*(s32 *)(bsw + 4))++] = 60;
     buf[*(s32 *)(bsw + 4)] = 0;
     return 0;
 }
 s32 tagAct_501(int arg0, char *buf) {
     int c;
-    u8 *t;
     if (*(s32 *)(bsw + 4) > 0x7D) {
         tagoutprintf2(bsw + 0xD8E4);
     }
-    t = bsw;
-    c = *(s32 *)(t + 4);
-    *(s32 *)(t + 4) = c + 1;
-    buf[c] = 62;
+    buf[(*(s32 *)(bsw + 4))++] = 62;
     buf[*(s32 *)(bsw + 4)] = 0;
     return 0;
 }
 s32 tagAct_502(int arg0, char *buf) {
     int c;
-    u8 *t;
     if (*(s32 *)(bsw + 4) > 0x7D) {
         tagoutprintf2(bsw + 0xD8E4);
     }
-    t = bsw;
-    c = *(s32 *)(t + 4);
-    *(s32 *)(t + 4) = c + 1;
-    buf[c] = 34;
+    buf[(*(s32 *)(bsw + 4))++] = 34;
     buf[*(s32 *)(bsw + 4)] = 0;
     return 0;
 }
 s32 tagAct_503(int arg0, char *buf) {
     int c;
-    u8 *t;
     if (*(s32 *)(bsw + 4) > 0x7D) {
         tagoutprintf2(bsw + 0xD8E4);
     }
-    t = bsw;
-    c = *(s32 *)(t + 4);
-    *(s32 *)(t + 4) = c + 1;
-    buf[c] = 38;
+    buf[(*(s32 *)(bsw + 4))++] = 38;
     buf[*(s32 *)(bsw + 4)] = 0;
     return 0;
 }
 s32 tagAct_504(int arg0, char *buf) {
     int c;
-    u8 *t;
     if (*(s32 *)(bsw + 4) > 0x7D) {
         tagoutprintf2(bsw + 0xD8E4);
     }
-    t = bsw;
-    c = *(s32 *)(t + 4);
-    *(s32 *)(t + 4) = c + 1;
-    buf[c] = 7;
+    buf[(*(s32 *)(bsw + 4))++] = 7;
     buf[*(s32 *)(bsw + 4)] = 0;
     return 0;
 }
