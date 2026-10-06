@@ -1,4 +1,4 @@
-/* lb_pz10 - lobby.bin 0x00596850-0x00597224: plaza_searchMember(a), member search by name / handle / class / level range (x04 = search kind, X06 = saved cursor), then the same result paging and add-friend steps as plaza_searchAll. Header edit: LB_NETW.x0E carved from _pad0E. SearchCondition case 3: the four stores are written as u8 array stores in the order [4],[5],[1],[0] (found by permutation). */
+/* lb_pz10 - lobby.bin 0x00596850-0x0059722C: plaza_searchMember(a), member search by name / handle / class / level range (x04 = search kind, X06 = saved cursor), then the same result paging and add-friend steps as plaza_searchAll. Header edit: LB_NETW.x0E carved from _pad0E. SearchCondition case 3: the four stores are written as u8 array stores in the order [4],[5],[1],[0] (found by permutation). */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 #define XA (*(u8 *)&a->x0A)
