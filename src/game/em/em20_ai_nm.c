@@ -7471,7 +7471,7 @@ void em20_material_sub(EMW *em, int type, u8 *tbl) {
     u8 *base = *(u8 **)((u8 *)em->mdl + 0x10);
     int i = 0;
     EM20W *w = (EM20W *)em->ex;
-    s32 *p = (s32 *)(tbl + type * 0x8C);
+    s32 *p = (s32 *)((u8 *)(type * 0x8C) + (int)tbl);
     u8 *m;
 
     if (0 < p[1]) {
