@@ -201,10 +201,13 @@ typedef struct NGW {
     u8  x1B2_[0x1E2 - 0x1B2];
     u16    x1E2;              /* 0x1E2 */
     u16    x1E4;              /* 0x1E4 */
-    u8  x1E6_[0x208 - 0x1E6];
+    u8  x1E6_[0x1E8 - 0x1E6];
+    s8     x1E8[4][8];        /* 0x1E8 */
     u8     pl_state[8];       /* 0x208 */
     u8  x210_[0x21B - 0x210];
     u8     x21B;              /* 0x21B */
+    u8  x21C_[0x21E - 0x21C];
+    u8     x21E;              /* 0x21E */
 } NGW;
 
 int Online_ck();
