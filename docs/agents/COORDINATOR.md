@@ -68,11 +68,11 @@ always been a struct field type or a lost field.
 Priority (owner, 6 Oct 2026): offline village and single player before online-only code (docs/DECISIONS.md).
 
 - A (Opus): PC: quest -> reward -> village -> save -> continue loop, shops with money, forge, char screen polish, swap in matched village C.
-- B (Sonnet): lobby 0x533980-0x5C4E60, village/offline first (traced from Local_main), online last.
-- C (Sonnet): main 0x100000-0x160000 and 0x230000-0x23E500.
+- B (Sonnet): lobby 0x5EE618-end (from F): item box and eft25 first, plaza chat log and browser last.
+- C (Sonnet): lobby 0x5AB000-0x5C4E60, village first (main ranges done apart from near-matches listed in agent-C.md).
 - D (Sonnet): game overlay leftovers (87.8%, 139 hard functions) with the newer tricks; select leftovers.
 - E (Sonnet): main: own ranges + D's parked 0x1C0000-0x230000 and 0x24A240-0x2814E0, single player first (fonts, Quest_start, reward, staff), net last.
-- F (Sonnet): lobby 0x5C4E60-end (took D's tail): item box, guild, eft25 first; browser and plaza chat (online) last.
+- F (Sonnet): lobby 0x5C4E60-0x5EE618, village first.
 - Parked: near-matches everywhere (register allocation); online code in main.
 
 ## Other running threads
