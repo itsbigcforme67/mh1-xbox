@@ -247,7 +247,7 @@ main 0x00119010 0x00119210 hit/shit6
 main 0x0011B1E0 0x0011B298 hit/shit16
 main 0x0011C9F0 0x0011CA74 hit/shit7
 main 0x0028CE00 0x00290560 hit/hit2
-main 0x00290560 0x002905E8 hit/hit3
+main 0x00290560 0x002907B4 hit/hit3
 main 0x0010FC70 0x00110C30 game/f_game
 main:rodata 0x003580E0 0x0035815C game/f_game
 main 0x00110C30 0x00110F08 game/f_gameb
@@ -1727,3 +1727,6 @@ main 0x00289120 0x00289AA4 mc/netfile2i
 main 0x0028A3D0 0x0028AB2C mc/netfile2j
 main 0x0028AB30 0x0028B204 mc/netfile2k
 main 0x0028B580 0x0028BEC0 mc/netfile2l
+main 0x00290C60 0x00290E7C net/power01
+main 0x0028C750 0x0028C7C8 net/patch01
+main 0x0028CAC0 0x0028CC40 net/patch02
