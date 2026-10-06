@@ -671,105 +671,83 @@ s32 yn_hard_select_set(s32 n) {
     return 1;
 }
 
-void yn_utf8_to_sjis(s8 *arg0, u8 *arg1) {
-    s32 temp_t4;
-    s32 var_t4_2;
-    s8 *var_a0;
-    s8 temp_t4_2;
-    u8 *var_a1;
-    u8 var_t4;
+void yn_utf8_to_sjis(s8 *dst, u8 *src) {
+    int c;
+    u16 code;
 
-    var_a0 = arg0;
-    var_a1 = arg1;
-    var_t4 = *var_a1;
-    if (var_t4 != 0) {
-        do {
-            if ((s32) var_t4 >= 0x80) {
-                temp_t4 = ((M2C_FIELD(var_a1, u8 *, 1) << 8) + M2C_FIELD(var_a1, u8 *, 2)) & 0xFFFF;
-                var_a1 = var_a1 + 2 + 1;
-                if ((temp_t4 >= 0x8181) && (temp_t4 < 0x81C0)) {
-                    var_t4_2 = (temp_t4 + 0x11E) & 0xFFFF;
-                } else if ((temp_t4 >= 0x8280) && (temp_t4 < 0x8294)) {
-                    var_t4_2 = (temp_t4 + 0x5E) & 0xFFFF;
-                } else if ((temp_t4 >= 0x82A1) && (temp_t4 < 0x82C0)) {
-                    var_t4_2 = (temp_t4 + 0x9F) & 0xFFFF;
-                } else if ((temp_t4 >= 0x8380) && (temp_t4 < 0x83A0)) {
-                    var_t4_2 = (temp_t4 - 0x21) & 0xFFFF;
-                } else if ((temp_t4 >= 0x83A0) && (temp_t4 < 0x83B7)) {
-                    var_t4_2 = (temp_t4 - 0x20) & 0xFFFF;
-                } else {
-                    var_t4_2 = 0x815B & 0xFFFF;
-                }
-                temp_t4_2 = var_t4_2 & 0xFFFF;
-                M2C_FIELD(var_a0, u8 *, 0) = (u8) (temp_t4_2 >> 8);
-                M2C_FIELD(var_a0, s8 *, 1) = temp_t4_2;
-                var_a0 += 2;
+    while ((c = *src) != 0) {
+        if (c >= 0x80) {
+            code = (src[1] << 8) + *(src += 2);
+            src += 1;
+            if (code >= 0x8181 && code < 0x81C0) {
+                code = code + 0x11E;
+            } else if (code >= 0x8280 && code < 0x8294) {
+                code = code + 0x5E;
+            } else if (code >= 0x82A1 && code < 0x82C0) {
+                code = code + 0x9F;
+            } else if (code >= 0x8380 && code < 0x83A0) {
+                code = code - 0x21;
+            } else if (code >= 0x83A0 && code < 0x83B7) {
+                code = code - 0x20;
             } else {
-                M2C_FIELD(var_a0, u8 *, 0) = var_t4;
-                var_a1 += 1;
-                var_a0 += 1;
+                code = 0x815B;
             }
-            var_t4 = *var_a1;
-        } while (var_t4 != 0);
-    }
-    *var_a0 = 0;
-}
-
-void yn_sjis_to_utf8(s8 *arg0, u8 *arg1) {
-    s32 temp_t6;
-    s32 var_t6_2;
-    s32 var_v1;
-    s8 *var_a0;
-    s8 temp_t6_2;
-    u8 *var_a1;
-    u8 var_t6;
-
-    var_a0 = arg0;
-    var_a1 = arg1;
-    var_t6 = *var_a1;
-    var_v1 = 0;
-    if (var_t6 != 0) {
-loop_2:
-        if ((s32) var_t6 >= 0x80) {
-            if (var_v1 < 0xFD) {
-                temp_t6 = (((var_t6 & 0xFF) << 8) + M2C_FIELD(var_a1, u8 *, 1)) & 0xFFFF;
-                var_a1 += 2;
-                if ((temp_t6 >= 0x829F) && (temp_t6 < 0x82DE)) {
-                    var_t6_2 = (temp_t6 - 0x11E) & 0xFFFF;
-                } else if ((temp_t6 >= 0x82DE) && (temp_t6 < 0x82F2)) {
-                    var_t6_2 = (temp_t6 - 0x5E) & 0xFFFF;
-                } else if ((temp_t6 >= 0x8340) && (temp_t6 < 0x835F)) {
-                    var_t6_2 = (temp_t6 - 0x9F) & 0xFFFF;
-                } else if ((temp_t6 >= 0x835F) && (temp_t6 < 0x837F)) {
-                    var_t6_2 = (temp_t6 + 0x21) & 0xFFFF;
-                } else if ((temp_t6 >= 0x8380) && (temp_t6 < 0x8397)) {
-                    var_t6_2 = (temp_t6 + 0x20) & 0xFFFF;
-                } else {
-                    var_t6_2 = 0x83BC & 0xFFFF;
-                }
-                temp_t6_2 = var_t6_2 & 0xFFFF;
-                M2C_FIELD(var_a0, u8 *, 0) = 0xE3;
-                M2C_FIELD(var_a0, s8 *, 1) = (s8) (temp_t6_2 >> 8);
-                var_v1 += 3;
-                M2C_FIELD(var_a0, s8 *, 2) = temp_t6_2;
-                var_a0 = var_a0 + 2 + 1;
-                goto block_25;
-            }
-        } else if (var_v1 < 0xFF) {
-            M2C_FIELD(var_a0, u8 *, 0) = var_t6;
-            var_a1 += 1;
-            var_a0 += 1;
-            var_v1 += 1;
-block_25:
-            var_t6 = *var_a1;
-            if (var_t6 == 0) {
-
-            } else {
-                goto loop_2;
-            }
+            dst[0] = code >> 8;
+            dst[1] = code;
+            dst += 2;
+        } else {
+            *dst = c;
+            src++;
+            dst++;
         }
     }
-    *var_a0 = 0;
+    *dst = 0;
+}
+
+void yn_sjis_to_utf8(u8 *dst, u8 *src) {
+    int n = 0;
+    u8 c;
+    u16 code;
+
+    c = *src;
+    if (c != 0) {
+        do {
+            if (c >= 0x80) {
+                if (n >= 0xFD) {
+                    break;
+                }
+                code = ((c & 0xFF) << 8) + src[1];
+                src += 2;
+                if (code >= 0x829F && code < 0x82DE) {
+                    code = code - 0x11E;
+                } else if (code >= 0x82DE && code < 0x82F2) {
+                    code = code - 0x5E;
+                } else if (code >= 0x8340 && code < 0x835F) {
+                    code = code - 0x9F;
+                } else if (code >= 0x835F && code < 0x837F) {
+                    code = code + 0x21;
+                } else if (code >= 0x8380 && code < 0x8397) {
+                    code = code + 0x20;
+                } else {
+                    code = 0x83BC;
+                }
+                *dst++ = 0xE3;
+                *dst++ = code >> 8;
+                *dst++ = code;
+                n += 3;
+            } else {
+                if (n >= 0xFF) {
+                    break;
+                }
+                *dst = c;
+                src++;
+                dst++;
+                n++;
+            }
+            c = *src;
+        } while (c != 0);
+    }
+    *dst = 0;
 }
 
 /* Stop and unload an IOP module (retries until the IOP accepts the request). */

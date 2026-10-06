@@ -502,7 +502,7 @@ int SoftKeyboardInitialize(char *s, int n) {
 char *SoftKeyboard(void) {
     s8 sx;
     flfntSetSize(0x16, 0x16);
-    if ((sx = SoftKeyboard_move(inputStrBuf, BsPsw, *(s16 *)0x3F3714)) != 0) {
+    if ((sx = SoftKeyboard_move(inputStrBuf, *(s16 *)BsPsw, *(s16 *)0x3F3714)) != 0) {
         return inputStrBuf;
     }
     return 0;

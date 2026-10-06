@@ -45,16 +45,11 @@ int stockTitle(char *s, int b, int c) {
 }
 int stockPlainText(int x, int y, int a2, int a3, int x2, int y2, char *text, int t3) {
     int v;
-    v = strcmp(text, lit_288_00665FB8);
-    if (v != 0) {
-        v = strcmp(text, lit_289_00665FC0);
-        if (v == 0) {
-            return v;
-        }
-        UpdateEndpoint(x2 & 0xFFFF, y2 & 0xFFFF);
-        return AppendWork(1, 1, x, y, x2, y2, a2, a3, t3, 0, text, lit_270_00665FB0, lit_270_00665FB0);
+    if ((v = strcmp(text, lit_288_00665FB8)) == 0 || (v = strcmp(text, lit_289_00665FC0)) == 0) {
+        return v;
     }
-    return v;
+    UpdateEndpoint(x2 & 0xFFFF, y2 & 0xFFFF);
+    return AppendWork(1, 1, x, y, x2, y2, a2, a3, t3, 0, text, lit_270_00665FB0, lit_270_00665FB0);
 }
 int stockLinkText(int x, int y, int c1, int c2, int x2, int y2, char *s6, char *s7, u8 a8) {
     UpdateEndpoint(x2 & 0xFFFF, y2 & 0xFFFF);
@@ -85,40 +80,34 @@ int stockSpButton(int x, int y, int x2, int y2, char *s) {
     UpdateEndpoint(x2 & 0xFFFF, y2 & 0xFFFF);
     return AppendWork(5, 1, x, y, x2, y2, 0xFF000001, 0x10, 0, 0, s, lit_270_00665FB0, lit_270_00665FB0);
 }
-int stockTextField(int x, int y, int x2, int y2, void *t0, char *str, int len, int kind) {
+int stockTextField(int x, int y, int x2, int y2, void *t0, char *str, u16 len, int kind) {
     u16 n;
-    u16 ln;
-    ln = len;
     UpdateEndpoint(x2 & 0xFFFF, y2 & 0xFFFF);
-    if ((kind & 0xFF) > 0 && (kind & 0xFF) < 4 && ln > 0x10) {
-        ln = 0x10;
+    if ((kind & 0xFF) > 0 && (kind & 0xFF) < 4 && len > 0x10) {
+        len = 0x10;
     }
-    n = ln;
+    n = len;
     if (n < strlen(str)) {
         str = lit_270_00665FB0;
     }
     if (n > 0xFF) {
-        ln = 0xFF;
+        len = 0xFF;
     }
-    len = ln;
     return AppendWork(6, 1, x, y, x2, y2, 0xFF000001, 0x10, kind, len & 0xFF, t0, str, lit_270_00665FB0);
 }
-int stockPassField(int x, int y, int x2, int y2, void *t0, char *str, int len, int kind) {
+int stockPassField(int x, int y, int x2, int y2, void *t0, char *str, u16 len, int kind) {
     u16 n;
-    u16 ln;
-    ln = len;
     UpdateEndpoint(x2 & 0xFFFF, y2 & 0xFFFF);
-    if ((kind & 0xFF) > 0 && (kind & 0xFF) < 4 && ln > 0x10) {
-        ln = 0x10;
+    if ((kind & 0xFF) > 0 && (kind & 0xFF) < 4 && len > 0x10) {
+        len = 0x10;
     }
-    n = ln;
+    n = len;
     if (n < strlen(str)) {
         str = lit_270_00665FB0;
     }
     if (n > 0xFF) {
-        ln = 0xFF;
+        len = 0xFF;
     }
-    len = ln;
     return AppendWork(7, 1, x, y, x2, y2, 0xFF000001, 0x10, kind, len & 0xFF, t0, str, lit_270_00665FB0);
 }
 int stockStartPulldown(void *a) {
@@ -135,16 +124,16 @@ int stockHorizon(int x, int y, int x2, int y2) {
     return AppendWork(0xA, 1, x, y, x2, y2, 0xFF000001, 0, 0, 0, lit_270_00665FB0, lit_270_00665FB0, lit_270_00665FB0);
 }
 int stockRadioButton(int x, int y, int a2, int a3, void *t0, int t1) {
-    int x2;
     int y2;
+    int x2;
     y2 = (y & 0xFFFF) + 0x14;
     x2 = (x & 0xFFFF) + 0x14;
     UpdateEndpoint(x2, y2);
     return AppendWork(0xB, 1, x, y, x2 & 0xFFFF, y2 & 0xFFFF, 0xFF000001, 0, t1, a2, (void *)a3, t0, lit_270_00665FB0);
 }
 int stockCheckBox(int x, int y, int a2, int a3, void *t0, int t1) {
-    int x2;
     int y2;
+    int x2;
     y2 = (y & 0xFFFF) + 0x14;
     x2 = (x & 0xFFFF) + 0x14;
     UpdateEndpoint(x2, y2);

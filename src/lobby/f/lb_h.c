@@ -35,14 +35,15 @@ u8 Lb_stick_pow_get(PLW *pl) {
 
 void Lb_Pl_basic_flagset(PLW *pl, int a) {
     int t = a & 0xFF;
-    u16 f = a;
-    if (t != 2) {
-        if (t != 1) {
-            PLU8(pl, 0x388) = 0;
-        } else {
-            PLU8(pl, 0x388) = 1;
-        }
-    } else {
+    int f = a & 0xFFFF;
+    switch (t) {
+    default:
+        PLU8(pl, 0x388) = 0;
+        break;
+    case 1:
+        PLU8(pl, 0x388) = 1;
+        break;
+    case 2:
         PLU8(pl, 0x388) = 2;
     }
     if (f & 0x8000) {

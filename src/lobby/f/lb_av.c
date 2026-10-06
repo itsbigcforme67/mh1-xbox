@@ -16,9 +16,9 @@ void load_file_mdl();
 int flCreateTextureFromTim2_mem();
 int BsTextureAdd();
 void BsWorkInitAll(void) {
+    int i;
     BSWK **h;
     BSWK **l;
-    int i;
     BSWK *w;
     int n;
     i = 0;
@@ -37,18 +37,17 @@ void BsWorkInitAll(void) {
     } while (i < 9);
     w = Bs_work;
     Bs_work_hit_head = 0;
-    n = 0x1FF;
+    n = 0x200;
     Bs_work_hit_last = 0;
     Bs_work_free_head = Bs_work;
-    if (0x200 != 0) {
+    if (n-- != 0) {
         do {
             memset(w, 0, 0x70);
             if (n != 0) {
                 w->next = w + 1;
             }
             w += 1;
-            n -= 1;
-        } while (n != 0);
+        } while (n-- != 0);
     }
 }
 static BSWK *bs_pul_wk(void) {

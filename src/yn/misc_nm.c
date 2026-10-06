@@ -30,51 +30,63 @@ void yn_mc_init(u8 *work) {
     McActInit(2);
 }
 
-s32 yn_mc_device_check_all(u8 *work) {
+typedef struct MCD {
+    s8 st;          /* 0 state */
+    s8 x1;          /* 1 */
+    u8 inserted;    /* 2 bit n+1 = card n present */
+    u8 formatted;   /* 3 bit n+1 = card n formatted */
+    s8 started;     /* 4 */
+} MCD;
+
+s32 yn_mc_device_check_all(MCD *w) {
     s8 st;
     s32 i;
-    s32 v;
 
-    st = M2C_FIELD(work, s8 *, 0);
+    st = w->st;
     switch (st) {
     case 0:
-        if (MemcardWork.busy == 0) {
-            M2C_FIELD(work, s8 *, 0) = st + 1;
-            M2C_FIELD(work, s8 *, 4) = 0;
-            M2C_FIELD(work, u8 *, 2) = 0;
-            M2C_FIELD(work, u8 *, 3) = 0;
-            McActInit(2);
-            MemcardWork.x14 = 0;
-            MemcardWork.state[0] = -1;
-            MemcardWork.state[1] = -1;
-            McActCheckSet();
+        if (MemcardWork.busy != 0) {
+            break;
+        }
+        w->st = st + 1;
+        w->started = 0;
+        w->inserted = 0;
+        w->formatted = 0;
+        McActInit(2);
+        MemcardWork.x14 = 0;
+        MemcardWork.state[0] = -1;
+        MemcardWork.state[1] = -1;
+        McActCheckSet();
     case 1:
-            McActMain();
-            if ((u8)MemcardWork.state[0] != 0xFF) {
-                st = M2C_FIELD(work, s8 *, 4);
-                if (st == 0) {
-                    M2C_FIELD(work, s8 *, 4) = st + 1;
-                    MemcardWork.x14 = 1;
-                }
-            }
-            if ((u8)MemcardWork.state[0] != 0xFF && (u8)MemcardWork.state[1] != 0xFF) {
-                for (i = 0; i < 2; i++) {
-                    v = MemcardWork.state[i];
-                    if (v == 1 || v == 2) {
-                        M2C_FIELD(work, u8 *, 2) |= (1 << (i + 1)) & 0xFF;
-                    }
-                    if (MemcardWork.state[i] == 3) {
-                        M2C_FIELD(work, u8 *, 3) |= (1 << (i + 1)) & 0xFF;
-                    }
-                }
-                M2C_FIELD(work, s8 *, 0) = 0;
-                McActInit(2);
-                return M2C_FIELD(work, u8 *, 3) | M2C_FIELD(work, u8 *, 2);
+        McActMain();
+        if (MemcardWork.state[0] != -1) {
+            st = w->started;
+            if (st == 0) {
+                w->started = st + 1;
+                MemcardWork.x14 = 1;
             }
         }
+        if (MemcardWork.state[0] == -1) {
+            break;
+        }
+        if (MemcardWork.state[1] == -1) {
+            break;
+        }
+        for (i = 0; i < 2; i++) {
+            if (MemcardWork.state[i] == 1 || MemcardWork.state[i] == 2) {
+                w->inserted |= (1 << (i + 1)) & 0xFF;
+            }
+            if (MemcardWork.state[i] == 3) {
+                w->formatted |= (1 << (i + 1)) & 0xFF;
+            }
+        }
+        w->st = 0;
+        McActInit(2);
+        return w->formatted | w->inserted;
     default:
-        return -1;
+        break;
     }
+    return -1;
 }
 
 s32 yn_set_init(s32 type) {

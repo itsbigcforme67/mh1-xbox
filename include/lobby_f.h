@@ -34,7 +34,7 @@ typedef struct LBSYS {         /* lb_sys 0x90 bytes */
     u8 _pad73;
     s16 x74;                   /* 0x74 */
     u8 _pad76[2];
-    s8 x78;                    /* 0x78 */
+    u8 x78;                    /* 0x78 (u8: lbu in vs_square_exit) */
     u8 _pad79[3];
     s32 x7C;                   /* 0x7C */
     s32 x80;                   /* 0x80 */

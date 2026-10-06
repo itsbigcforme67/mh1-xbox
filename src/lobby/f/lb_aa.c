@@ -12,7 +12,7 @@ extern char *hunter_appellation[];
 extern char *Skill_name[];
 extern u8 btn_friendentry[8];
 extern u8 pf_friendentry[];
-extern char *friend_entry_str[];
+extern char *friend_entry_str[2];
 extern PLW player_work[];
 char *strcpy();
 void Lb_send_chat();
@@ -127,7 +127,7 @@ int Lb_PlayerStatus(u8 *pl, int idx) {
 }
 void Disp_FriendListEntry(s16 x, int idx) {
     *(s16 *)(pf_friendentry + 2) = x;
-    DispFrameMessage(pf_friendentry, friend_entry_str[idx & 0xFF]);
+    DispFrameMessage(pf_friendentry, friend_entry_str[(u8)idx]);
     if (!(idx & 0xFF)) {
         *(s16 *)(btn_friendentry + 2) = x - 2;
         PutButtonICON(btn_friendentry, 1);

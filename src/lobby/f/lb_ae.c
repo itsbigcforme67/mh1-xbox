@@ -44,7 +44,14 @@ void lb_pl_mv052(PLW *pl, int a1, int a2) {
         Lb_act_set(pl, 0, 0);
         return;
     }
-    if (lb_sys.x68 != 0x25 && lb_sys.x68 != 0x24 && lb_sys.x68 != 0x23) {
+    switch (lb_sys.x68) {
+    case 0x23:
+    case 0x24:
+    case 0x25:
+        pl_sleeping(pl);
+        return;
+    }
+    {
         switch (pl->x05) {
         case 0:
             cw[0x2C08] = 0;
@@ -78,7 +85,7 @@ void lb_pl_mv052(PLW *pl, int a1, int a2) {
                 pl->x05 = 4;
                 break;
             }
-            pl_sleeping();
+            pl_sleeping(pl);
             return;
         case 2:
             v = pl->work08;
@@ -113,7 +120,7 @@ void lb_pl_mv052(PLW *pl, int a1, int a2) {
                     cnWrap_SoundRequest(0xB);
                 }
             }
-            pl_sleeping();
+            pl_sleeping(pl);
             return;
         case 3:
             pNet[0xC] = 1;
@@ -126,33 +133,31 @@ void lb_pl_mv052(PLW *pl, int a1, int a2) {
                     lb_sys.x68 = 0x23;
                     fade_set(1);
                 }
-            default:
-                pl_sleeping();
-                return;
+                break;
             case 3:
                 lb_exit_save(pl);
                 return;
             }
-            break;
+            pl_sleeping(pl);
+            return;
         case 4:
             pNet[0xC] = 1;
             v = Lb_select();
             switch (v) {
             case 0:
                 if (Online_ck() == 1) {
-                    Lbs_LogOutRequest(pl);
+                    Lbs_LogOutRequest();
                 } else {
                     pl->x05 = pl->x05 + 1;
                     SetDialogData(0x39, 4);
                 }
-            default:
-                pl_sleeping();
-                return;
+                break;
             case 3:
                 lb_exit_save(pl);
                 return;
             }
-            break;
+            pl_sleeping(pl);
+            return;
         case 5:
             pNet[0xC] = 1;
             v = Lb_select();
@@ -170,13 +175,9 @@ void lb_pl_mv052(PLW *pl, int a1, int a2) {
             case 3:
                 lb_sys.x68 = 0x23;
                 fade_set(1);
-            default:
                 return;
             }
-            break;
         }
-    } else {
-        pl_sleeping();
     }
 }
 void lb_pl_mv076(PLW *pl, int a1) {
@@ -195,9 +196,8 @@ void lb_pl_mv076(PLW *pl, int a1) {
             pl->work08 = 0x3C;
             if (*(u16 *)((u8 *)pl + 0x2DC) != 0x261) {
                 Lb_pl_chr_set(pl, 0x261, 6, 0);
-                return;
             }
-            return;
+            break;
         }
         Lb_pl_chr_set(pl, 0x260, -4, 0);
         return;
@@ -243,6 +243,7 @@ void lb_pl_mv076(PLW *pl, int a1) {
             }
             if (t & 0x400) {
                 Lb_act_set(pl, 0, 0x54);
+                return;
             }
         }
         break;

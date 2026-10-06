@@ -1,7 +1,7 @@
 /* Lobby browser: URL scanning helpers and SJIS/EUC conversion, hand-written from m2c drafts. */
 #include "lobby_f.h"
 extern u8 BsCacheCurrentBaseUrlstr[];
-extern u8 lit_928_00666260[];
+extern s8 lit_928_00666260[];
 u32 strlen();
 int strncmp();
 int BsUrlSchemeGet();
@@ -57,9 +57,10 @@ char *bs_url_extension(char *base, char *p) {
     return 0;
 }
 char *bs_url_slash(char *p, char *end) {
+    int c = 0x2F;
     if ((u32)p < (u32)end) {
         do {
-            if (*p == 0x2F) {
+            if (*p == c) {
                 return p;
             }
             p += 1;
@@ -68,17 +69,15 @@ char *bs_url_slash(char *p, char *end) {
     return 0;
 }
 int bs_url_cmp_list(char **list, char *s) {
-    char **p;
     int i;
     char *a;
-    p = list;
     a = *list;
     i = 0;
     if (a != 0) {
         for (;;) {
-            if (strncmp(s, *p, strlen(a)) != 0) {
-                p += 1;
-                a = *p;
+            if (strncmp(s, *list, strlen(a)) != 0) {
+                list += 1;
+                a = *list;
                 i += 1;
                 if (a != 0) {
                     continue;
@@ -87,25 +86,25 @@ int bs_url_cmp_list(char **list, char *s) {
             break;
         }
     }
-    if (*p != 0) {
-    } else {
-        i = -1;
+    if (*list != 0) {
+        return i;
     }
+    i = -1;
     return i;
 }
-void BsUrlEncode(s8 *dst, u8 *src) {
-    int v;
+int BsUrlEncode(s8 *dst, u8 *src) {
+    int i;
+    i = 0;
     if (*src != 0) {
         do {
-            dst[0] = 0x25;
-            dst[1] = lit_928_00666260[(*src & 0xF0) >> 4];
-            v = *src & 0xF;
-            src += 1;
-            dst[2] = lit_928_00666260[v];
-            dst = dst + 2 + 1;
+            *dst++ = 0x25;
+            i += 3;
+            *dst++ = lit_928_00666260[(*src & 0xF0) >> 4];
+            *dst++ = lit_928_00666260[*src++ & 0xF];
         } while (*src != 0);
     }
     *dst = 0;
+    return i;
 }
 int sjis2euc_sub(u32 v) {
     u32 hi;

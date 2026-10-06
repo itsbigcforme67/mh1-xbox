@@ -28,7 +28,7 @@ int trade_get_ck_005D0750(PLW *pl) {
                             Lb_Pl_act_set2(pl, 0, 0x2E, 0);
                         } else {
                             set01_set2(lit_516_00664D50);
-                            goto set936;
+                            pl->work936 = 0x5A;
                         }
                     } else if ((s16)Ud_item_num_ck2(o->work904) >= o->work906) {
                         pl->work904 = o->work904;
@@ -39,7 +39,6 @@ int trade_get_ck_005D0750(PLW *pl) {
                         Lb_Pl_act_set2(pl, 0, 0x2E, 0);
                     } else {
                         set01_set(1, 0xF, (s16)o->work904);
-set936:
                         pl->work936 = 0x5A;
                     }
                     return 1;
@@ -55,10 +54,11 @@ set936:
 void pl_sleeping(PLW *pl) {
     s32 q[3];
     int t;
+    u16 r;
     u8 *src = lit_584_0064E1A8;
     *(long *)q = *(long *)src;
     q[2] = *(s32 *)(src + 8);
-    if (pl->char0 == 0x1AB && (ran_suu(1) & 0xFFFF & 0x3F) == 0) {
+    if (pl->char0 == 0x1AB && ((r = ran_suu(1)) & 0x3F) == 0) {
         Lb_pl_chr_set(pl, 0x1AC, 0, 0);
     } else if (pl->char0 == 0x1AC && F(s32, pl, 0x194) == 0) {
         Lb_pl_chr_set(pl, 0x1AB, 0, 0);
@@ -108,8 +108,7 @@ void lb_goto_guest_room(PLW *pl, int no) {
         lb_sys.x03 = 5;
         F(s16, pl, 0x73A) = no;
         c = cw;
-        m = (1 << (no - 0x51)) & 0xFF;
-        c[0x35D7] = c[0x35D7] | m;
+        c[0x35D7] |= (1 << (no - 0x51)) & 0xFF;
         lb_sys.x68 = 0x14;
         break;
     case 0:
