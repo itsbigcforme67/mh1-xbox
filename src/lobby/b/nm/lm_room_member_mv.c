@@ -45,7 +45,7 @@ s32 lm_room_member_mv(s32 arg0) {
             }
             if (strcmp(temp_v0, &my_user_id) != 0) {
                 temp_v1 = lbmw;
-                if ((F(u8, temp_v1, 9) > 0) && (strcmp(temp_v0, temp_v1 + 0x11) == 0)) {
+                if ((0 < F(u8, temp_v1, 9)) && (strcmp(temp_v0, temp_v1 + 0x11) == 0)) {
                     F(u8, lbmw, 0xA) = var_s0;
                     F(u8, lbmw, 0xC) = var_s1;
                 }

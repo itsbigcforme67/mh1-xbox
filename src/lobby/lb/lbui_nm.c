@@ -562,7 +562,7 @@ void draw_dialog_square(void) {
         sp.y += (s16)(sp.h - 1);
     }
     sp.h = t->y + t->h - sp.y;
-    sp.v1 = sp.v0 + (s16)(0.025f * (20.0f * sp.h));
+    sp.v1 = sp.v0 + (s16)(0.025f * ((f32)sp.h * 20.0f));
     Put_2TF(&sp);
     t = (DLGSPR *)((u8 *)helpLineTbl + 0x78);
     *(DLGF5 *)&sp = *(DLGF5 *)t;
@@ -573,7 +573,7 @@ void draw_dialog_square(void) {
         sp.y += (s16)(sp.h - 1);
     }
     sp.h = t->y + t->h - sp.y;
-    sp.v1 = sp.v0 + (s16)(0.025f * (20.0f * sp.h));
+    sp.v1 = sp.v0 + (s16)(0.025f * ((f32)sp.h * 20.0f));
     Put_2TF(&sp);
     t = (DLGSPR *)((u8 *)helpLineTbl + 0x3C);
     *(DLGF5 *)&sp = *(DLGF5 *)t;
@@ -586,7 +586,7 @@ void draw_dialog_square(void) {
     }
     sp.w = (t->x + t->w) + 8 - sp.x;
     tw = sp.w;
-    sp.v1 = sp.v0 + (s16)(0.025f * ((f32)tw * 20.0f));
+    sp.v1 = sp.v0 + (s16)(0.025f * (20.0f * tw));
     Put_sprite_rotate(&sp, 2, tw);
     t = (DLGSPR *)((u8 *)helpLineTbl + 0x50);
     *(DLGF5 *)&sp = *(DLGF5 *)t;
@@ -599,7 +599,7 @@ void draw_dialog_square(void) {
     }
     sp.w = (t->x + t->w) + 8 - sp.x;
     tw = sp.w;
-    sp.v1 = sp.v0 + (s16)(0.025f * ((f32)tw * 20.0f));
+    sp.v1 = sp.v0 + (s16)(0.025f * (20.0f * tw));
     Put_sprite_rotate(&sp, 2, tw);
 }
 

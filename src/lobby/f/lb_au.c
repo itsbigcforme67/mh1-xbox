@@ -41,8 +41,8 @@ char *strcpy();
 void BsQuit00_Init(void) {
     BsBgImgReq = 4;
     wpushCtr = 0;
-    BsToolMenuReq = 2;
     BsPageObjReq = 5;
+    BsToolMenuReq = 2;
     BsDialogReq = 0xC;
     BsTtlBarReq = 5;
     BsVScrlBarReq = 5;

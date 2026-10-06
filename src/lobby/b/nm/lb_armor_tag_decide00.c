@@ -2,7 +2,7 @@
 extern char D_3C7004[];
 extern char shopList[];
 extern char shop_armor_question[];
-extern char shop_armor01_tag[];
+extern char shop_armor01_tag[8];
 extern char lb_armor_tag_decide01[];
 extern char shopTbl[];
 extern char shop_armor_help[];

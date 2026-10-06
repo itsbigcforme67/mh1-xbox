@@ -21,6 +21,7 @@ static void once(const char *n) { if (getenv("RT_TRACE")) fprintf(stderr, "rt_em
 #define PU8(p, o) (*(u8 *)((u8 *)(p) + (o)))
 #define PS8(p, o) (*(s8 *)((u8 *)(p) + (o)))
 #define PS16(p, o) (*(s16 *)((u8 *)(p) + (o)))
+#define PU16(p, o) (*(u16 *)((u8 *)(p) + (o)))
 #define PS32(p, o) (*(s32 *)((u8 *)(p) + (o)))
 #define PF(p, o) (*(f32 *)((u8 *)(p) + (o)))
 
@@ -288,6 +289,7 @@ WEAK void wyvern_kill_cnt_up(void *u, int n) { (void)u; (void)n; }
 void rt_quest_mem_init(void);
 void Quest_init(void);
 void Quest_start(void);
+void Start_item_init(void);
 void Quest_timer_reset(void);
 void Quest_em_init_set(int stage);
 s32 *Em_data_com_adrs_get(s32 *p, int which);
@@ -309,6 +311,14 @@ int rt_quest_load(int no)
     *((u8 *)&select_w + 0xAC) = (u8)no;
     *((u8 *)&select_w + 0xAD) = 0;
     Quest_start();
+    Start_item_init();      /* game11: the quest's supply box (game_w+0x128 list, dsp03) */
+    if (getenv("RT_QUEST_TRACE")) {
+        int i;
+        fprintf(stderr, "rt_quest: quest %d supply box:", no);
+        for (i = 0; i < 32 && PU16(&game_w, 0x128 + 4 * i); i++)
+            fprintf(stderr, " %d:%d", PU16(&game_w, 0x128 + 4 * i), PS16(&game_w, 0x12A + 4 * i));
+        fprintf(stderr, "\n");
+    }
     /* game13's start of the hunt: mode 2 (game2), timers */
     game_w.mode = 2;
     game_w.step = 0;
@@ -434,9 +444,10 @@ int rt_monster_tick(int no)
     if (!em->be_flag)
         return 0;
     if (getenv("RT_EM_TRACE"))
-        printf("em%d: step %d act %d/%d char %d frame %.1f pos %.0f %.0f %.0f ang %04X hp %d mode %d\n",
+        printf("em%d: step %d act %d/%d char %d frame %.1f pos %.0f %.0f %.0f ang %04X hp %d mode %d mt %d/%.0f/%d\n",
                 no, em->x04, PU8(em, 0x14), PU8(em, 0x15), PS16(em, 0x2DC), PF(em, 0x19C),
-                em->pos[0], em->pos[1], em->pos[2], em->ang[1] & 0xFFFF, PS16(em, 0x302), PU8(em, 0x888));
+                em->pos[0], em->pos[1], em->pos[2], em->ang[1] & 0xFFFF, PS16(em, 0x302), PU8(em, 0x888),
+                PS32(em, 0x194), PF(em, 0x1A8), PS32(em, 0x1C8));
     return enemy_mv(em);
 }
 

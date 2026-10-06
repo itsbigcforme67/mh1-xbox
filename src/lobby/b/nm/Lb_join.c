@@ -171,7 +171,7 @@ block_46:
                 lb_pit.x0 = 0;
                 lb_pit.x08 = 2;
                 lb_sys.x07 = 0;
-                memset((int)&RoomRule + 2, 0, 0x10);
+                memset(&RoomRule[2], 0, 0x10);
                 *(u8 *)0x3F36AB = 0;
                 lb_sys.x06 = (s8) (lb_sys.x06 + 1);
             } else {
@@ -190,7 +190,7 @@ block_46:
         goto block_88;
     case 9:                                         /* switch 1 */
         Lb_talk_check_default(1);
-        temp_v0_5 = join_input_password((int)&RoomRule + 2);
+        temp_v0_5 = join_input_password(&RoomRule[2]);
         switch (temp_v0_5) {                        /* switch 7; irregular */
         case 0:                                     /* switch 7 */
             lb_pit.x08 = 3;
@@ -220,7 +220,7 @@ block_46:
             } else {
                 var_v0 = lb_quest_all[temp_v1_2];
             }
-            Lb_menu_quest_info(var_v0);
+            Lb_menu_quest_info();
             temp_a1 = Lb_get_quest_type(var_v0) | 0x10;
             (*(int *)((u8 *)&D_3E5506 + (game_w.master * 0xA00))) = temp_a1;
             temp_v0_7 = (u8 *)Lbs_GetRoomInfo(lb_sys.x73);
@@ -229,7 +229,7 @@ block_46:
             *(s16 *)0x3F33DC = (s16) temp_a0;
             F(u32, &mhRule, 0x54) = temp_a0;
             *(s16 *)0x3F3608 = (s16) ((F(s32, temp_v0_7, 0x158) & 0x01FFFE00) >> 9);
-            Lbc_SendMiniData(temp_a0);
+            Lbc_SendMiniData();
             Lb_set_mini_data((u8 *)cw + (game_w.master * 0x2FC) + 0x1346);
             Lb_set_mini_data((int)&lbCommer + (game_w.master * 0x5C) + 0x1C);
             temp_s0_2 = F(int, var_v0, 0x18);

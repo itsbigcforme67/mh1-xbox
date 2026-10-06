@@ -193,7 +193,7 @@ int tagAct_602(int arg0, char *s) {
     tagoutprintf3(s);
     w = bsw;
     v = w[*(s16 *)(w + 0x124) + 0x168];
-    if (v >= 2) {
+    if (v > 1) {
         v = (v - 1) & 0xFF;
     }
     w[0x2D3] = (v & 0xFF) + 0x30;

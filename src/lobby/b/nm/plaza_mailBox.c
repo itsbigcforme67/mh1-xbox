@@ -93,7 +93,7 @@ loop_5:
             }
         }
         temp_a1_2 = temp_s0 & 0xFFFF;
-        F(s16, pNet, 0x28) = Get_sw_on2(0, (u8) var_a1, (u8 *) var_a2);
+        F(s16, pNet, 0x28) = Get_sw_on2(0, (u8) var_a1);
         if (temp_a1_2 & 0x20) {
             temp_a3 = (int)pNet;
             if (F(s16, temp_a3, 0x26) != 0) {
@@ -114,9 +114,9 @@ loop_5:
                 temp_a1_3 = F(u8, temp_a2_2, 0xE);
                 *((u8 *)&RecvMailInfo + (temp_a1_3 * 0x9A)) = 0;
                 F(u8, temp_a2_2, 3) = (u8) (F(u8, temp_a2_2, 3) + 1);
-                cnWrap_SoundRequest(0, temp_a1_3, temp_a2_2, temp_a3);
+                cnWrap_SoundRequest(0);
             } else {
-                cnWrap_SoundRequest(7, temp_a1_2);
+                cnWrap_SoundRequest(7);
             }
             goto block_102;
         }
@@ -129,39 +129,39 @@ loop_5:
             F(s8, (u8 *)cw, 0x2F80) = 0;
             F(s8, (u8 *)cw, 0x2F88) = 0;
             F(s8, (u8 *)cw, 0x2F99) = 0;
-            cnWrap_SoundRequest(6, temp_a1_2);
+            cnWrap_SoundRequest(6);
         } else {
             temp_v0_2 = (int)pNet;
             temp_a1_4 = F(s16, temp_v0_2, 0x26);
             if (temp_a1_4 >= 2) {
-                F(u8, pNet, 0xA) = Lb_cursorUD(F(u8, temp_v0_2, 0xA), temp_a1_4);
+                F(u8, pNet, 0xA) = Lb_cursorUD(F(u8, temp_v0_2, 0xA));
             }
         }
         goto block_102;
     case 2:                                         /* switch 1 */
         temp_a1_5 = temp_s0 & 0xFFFF;
-        F(s16, pNet, 0x28) = Get_sw_on2(0, temp_a1, temp_a2);
+        F(s16, pNet, 0x28) = Get_sw_on2(0);
         if (temp_a1_5 & 0x40) {
             temp_v1 = (int)pNet;
             F(u8, temp_v1, 0xA) = (u8) F(u8, temp_v1, 0xE);
             temp_v1_2 = (int)pNet;
             F(u8, temp_v1_2, 3) = (u8) (F(u8, temp_v1_2, 3) - 1);
-            cnWrap_SoundRequest(3, temp_a1_5);
+            cnWrap_SoundRequest(3);
         } else if (temp_a1_5 & 0x200) {
             temp_v1_3 = (int)pNet;
             F(u8, temp_v1_3, 3) = (u8) (F(u8, temp_v1_3, 3) + 1);
             F(s8, (u8 *)cw, 0x2F99) = 0;
-            cnWrap_SoundRequest(6, temp_a1_5);
+            cnWrap_SoundRequest(6);
         }
         goto block_102;
     case 3:                                         /* switch 1 */
         temp_a1_6 = temp_s0 & 0xFFFF;
-        F(s16, pNet, 0x28) = Get_sw_on2(0, temp_a1, temp_a2);
+        F(s16, pNet, 0x28) = Get_sw_on2(0);
         if (temp_a1_6 & 0x40) {
             F(u8, pNet, 3) = 1U;
             temp_v1_4 = (int)pNet;
             F(u8, temp_v1_4, 0xA) = (u8) F(u8, temp_v1_4, 0xE);
-            cnWrap_SoundRequest(3, temp_a1_6);
+            cnWrap_SoundRequest(3);
         } else if (temp_a1_6 & 0x20) {
             temp_v1_5 = (int)pNet;
             if (F(u8, temp_v1_5, 0xA) == 0) {
@@ -181,14 +181,14 @@ loop_5:
                     var_a1_3 += 2;
                 } while (var_a0_2 > 0);
                 F(u8, pNet, 3) = 5U;
-                SetDialogData(0x2A, 2, var_a2_3);
+                SetDialogData(0x2A, 2);
                 SetDialogYesNo(1);
             }
             cnWrap_SoundRequest(0);
         } else if ((temp_a1_6 & 0x3000) && (F(s8, (u8 *)cw, 0x2F99) != 0)) {
             temp_v1_6 = (int)pNet;
             F(u8, temp_v1_6, 0xA) = (u8) (F(u8, temp_v1_6, 0xA) ^ 1);
-            cnWrap_SoundRequest(1, temp_a1_6);
+            cnWrap_SoundRequest(1);
         }
         goto block_102;
     case 4:                                         /* switch 1 */
@@ -205,7 +205,7 @@ loop_5:
         goto block_102;
     case 5:                                         /* switch 1 */
         F(s8, temp_a0, 0xC) = 1;
-        temp_v0_5 = Lb_select(temp_a0, temp_a1, temp_a2);
+        temp_v0_5 = Lb_select();
         switch (temp_v0_5) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             SetDialogData(0x2D, 5);
@@ -225,7 +225,7 @@ loop_5:
         goto block_102;
     case 6:                                         /* switch 1 */
         F(s8, temp_a0, 0xC) = 1;
-        temp_v0_6 = Lbc_SendMail(temp_a0, temp_a1, temp_a2);
+        temp_v0_6 = Lbc_SendMail(temp_a0);
         switch (temp_v0_6) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
             SetDialogData(0x26, 3);
@@ -246,17 +246,17 @@ loop_5:
             temp_v1_12 = (int)pNet;
             F(u8, temp_v1_12, 0xA) = (u8) F(u8, temp_v1_12, 0xE);
             F(s8, (u8 *)cw, 0x2F99) = 0;
-            cnWrap_SoundRequest(0, temp_a1, temp_a2);
+            cnWrap_SoundRequest(0);
         }
         goto block_102;
     case 8:                                         /* switch 1 */
         temp_a1_7 = temp_s0 & 0xFFFF;
-        F(s16, pNet, 0x28) = Get_sw_on2(0, temp_a1, temp_a2);
+        F(s16, pNet, 0x28) = Get_sw_on2(0);
         if (temp_a1_7 & 0x40) {
             F(u8, pNet, 3) = 1U;
             temp_v1_13 = (int)pNet;
             F(u8, temp_v1_13, 0xA) = (u8) F(u8, temp_v1_13, 0xE);
-            cnWrap_SoundRequest(3, temp_a1_7);
+            cnWrap_SoundRequest(3);
         } else if (temp_a1_7 & 0x20) {
             temp_a0_5 = (int)pNet;
             F(u8, temp_a0_5, 6) = (u8) F(u8, temp_a0_5, 0xA);
@@ -320,7 +320,7 @@ loop_5:
         }
         goto block_102;
     case 10:                                        /* switch 1 */
-        temp_v0_9 = getHandleFromID(temp_a0, temp_a1, temp_a2);
+        temp_v0_9 = getHandleFromID();
         if ((temp_v0_9 != 1) && (temp_v0_9 != 0)) {
 
         } else {
@@ -347,7 +347,7 @@ loop_5:
         if (temp_s0 & 0xFFFF & 0x20) {
             F(u8, pNet, 3) = 8U;
             F(u8, pNet, 0xA) = 0U;
-            cnWrap_SoundRequest(0, temp_a1, temp_a2);
+            cnWrap_SoundRequest(0);
         }
         goto block_102;
     }

@@ -58,7 +58,7 @@ void armor_set_myArmor();
 static int u_item_chk();
 static int pick_kosuu_sel_chk();
 static int item_kosuu_sel_chk();
-void kosuu_select(int pad, int c);
+void kosuu_select();
 void yes_no_select(u16 pad);
 int Ud_u_item_stack2();
 int Chk_lb_status();
@@ -109,7 +109,7 @@ extern u8 *Bs_work_free_head;
 void CpInetInterfaceProblemEnable();
 void *_zlib_calloc();
 int inflateInit2_();
-int ItemboxWindowX(f32, int);
+int ItemboxWindowX(f32, int, int);
 int ItemboxWindowCursorX(f32, int, int, int);
 
 void Lb_ItemBox_init(void) {
@@ -118,7 +118,7 @@ void Lb_ItemBox_init(void) {
     F(s16, ib, 2) = 0;
 }
 
-s32 Lb_ItemBox_open() {
+s32 Lb_ItemBox_open(void) {
     F(s32, ib, 4) = 0;
     F(s16, ib, 2) = 0;
     F(s8, ib, 0xB) = F(u16, ib, 8) = 0;
@@ -131,41 +131,54 @@ s32 Lb_ItemBox_open() {
     return 1;
 }
 
+
 /* original bytes: build/raw/Lb_ItemBox_mv.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int Lb_ItemBox_mv()
 {
 #include "Lb_ItemBox_mv.inc"
 }
+#endif
 
 /* original bytes: build/raw/itembox_cursor_mv.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm void itembox_cursor_mv()
 {
 #include "itembox_cursor_mv.inc"
 }
+#endif
 
 /* original bytes: build/raw/itembox_stock.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int itembox_stock()
 {
 #include "itembox_stock.inc"
 }
+#endif
 
 /* original bytes: build/raw/itembox_pickup.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int itembox_pickup()
 {
 #include "itembox_pickup.inc"
 }
+#endif
 
 /* original bytes: build/raw/itembox_equipchange.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int itembox_equipchange()
 {
 #include "itembox_equipchange.inc"
 }
+#endif
 
 /* original bytes: build/raw/itembox_sortup.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int itembox_sortup()
 {
 #include "itembox_sortup.inc"
 }
+#endif
 
 void yes_no_select(u16 pad) {
     u8 *t;
@@ -184,10 +197,12 @@ void yes_no_select(u16 pad) {
 }
 
 /* original bytes: build/raw/itembox_sellout.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int itembox_sellout()
 {
 #include "itembox_sellout.inc"
 }
+#endif
 
 static int u_item_chk(int a) {
     u16 id;
@@ -250,26 +265,29 @@ static int pick_kosuu_sel_chk() {
 void kosuu_select(int pad, int c) {
     int a3;
     int a0;
-    int a1;
-    s16 *q;
-    int k;
+    s16 e;
     u8 *t0;
-    int t;
+    u8 *p;
+    int mx;
+    int a1;
     u8 *u;
-    u8 mx;
+    s16 *q;
+    int t;
     t0 = ib;
     u = User_data;
     mx = D_3C7186[t0[8] * 4];
     if (!(c & 0xFF)) {
-        k = t0[0xB] * 4;
-        a1 = D_3396D3[*(u16 *)(k + (int)u + 0x37C) * 0x10] - *(s16 *)(k + (int)u + 0x37E);
+        a1 = t0[0xB] * 4;
+        p = (u8 *)(a1 + (int)u);
+        a1 = D_3396D3[*(u16 *)(p + 0x37C) * 0x10] - *(s16 *)(p + 0x37E);
         if (a1 < (mx & 0xFF)) {
-            mx = a1;
+            mx = a1 & 0xFF;
         }
     }
     t = pad & 0xFFFF;
     t0[0x1C] = 0;
-    q = (s16 *)(ib + 0x1A);
+    p = ib;
+    q = (s16 *)(p + 0x1A);
     a3 = *q;
     if (t & 0x800) {
         *q = 1;
@@ -292,24 +310,25 @@ void kosuu_select(int pad, int c) {
             }
         }
     }
-    a1 = (s16)a3;
-    if (a1 < 0) {
+    e = a3;
+    if (e < 0) {
         se_req(7, 0x15, 0);
-    } else if (a1 != *(s16 *)(ib + 0x1A)) {
+    } else if (e != *(s16 *)(ib + 0x1A)) {
         se_req(7, 0x16, 0);
     }
-    t0 = ib;
-    if (*(s16 *)(t0 + 0x1A) >= (mx & 0xFF)) {
-        t0[0x1C] = 1;
+    p = ib;
+    if (*(s16 *)(p + 0x1A) >= (mx & 0xFF)) {
+        p[0x1C] = 1;
     }
 }
+
 
 
 u8 *sortup_idx_chk(int a) {
     u8 *u;
     int v;
-    v = a & 0xFF;
     u = User_data;
+    v = a & 0xFF;
     if (v == User_data[0x457]) {
         return u + 0x457;
     }
@@ -325,11 +344,9 @@ u8 *sortup_idx_chk(int a) {
     if (v == u[0x45B]) {
         return u + 0x45B;
     }
-    if (v == u[0x456]) {
-        return u + 0x456;
-    }
-    return 0;
+    return v == u[0x456] ? u + 0x456 : 0;
 }
+
 
 
 /* number / page selection sub-state shared by the item box tabs (returns the pad with consumed bits cleared, 0x40 = cancel) */
@@ -415,15 +432,20 @@ int equip_ok_chk(u8 *e) {
 }
 
 
-int ItemboxWindow(int a) {
-    return ItemboxWindowX(306.0f, a);
+int ItemboxWindow(a, b)
+int a;
+int b;
+{
+    return ItemboxWindowX(306.0f, a, b);
 }
 
 /* original bytes: build/raw/ItemboxWindowX.inc (config/c_rawfuncs.txt) */
-asm int ItemboxWindowX(f32, int)
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
+asm int ItemboxWindowX(f32 base, int cur, int flags)
 {
 #include "ItemboxWindowX.inc"
 }
+#endif
 
 int ItemboxWindowCursor(int a, int b, int c) {
     return ItemboxWindowCursorX(306.0f, a, b, c);
@@ -454,6 +476,7 @@ int ItemboxWindowCursorX(f32 base, int idx, int color, int mode) {
     flps0008(&r);
 }
 
+
 /* flps0008 textured icon */
 
 
@@ -467,15 +490,17 @@ int disp_itembox_cmd(int a) {
 }
 
 /* original bytes: build/raw/Disp_lb_item_box.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int Disp_lb_item_box()
 {
 #include "Disp_lb_item_box.inc"
 }
+#endif
 
 /* flps0008 textured icon */
 
 
-void item_explanation(a, b, c)
+int item_explanation(a, b, c)
 int a;
 int b;
 int c;
@@ -488,7 +513,7 @@ int c;
 }
 
 /* amount selector: two-digit number with up/down arrows */
-void kosuu_disp_sub(void) {
+int kosuu_disp_sub(void) {
     s8 buf[8];
     u8 *w;
     if (F(s16, ib, 0x1A) != 0x270F) {
@@ -515,7 +540,7 @@ void kosuu_disp_sub(void) {
 }
 
 /* selling price (value + two-byte full-width digits) and the yes/no label */
-void selling_price_disp_sub(void) {
+int selling_price_disp_sub(void) {
     u16 wide[16];
     s8 txt[16];
     u16 *d;

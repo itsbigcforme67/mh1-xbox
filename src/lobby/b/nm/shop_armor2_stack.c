@@ -37,7 +37,7 @@ s32 shop_armor2_stack(s8 arg0, s16 arg1, int arg2) {
             temp_v0 = F(u16, ((F(s32, &lbShop, 0x74) * 0x28) + F(s32, &lbShop, 0x50)), 0x26);
             switch (temp_v0) {
             case 0:
-                Gun_level_up(&User_data, (s16)temp_t0, 1, temp_a3);
+                Gun_level_up(&User_data, (s16)temp_t0, 1);
                 break;
             case 1:
                 Gun_Silencer_set(&User_data, (s16)temp_t0, 0);

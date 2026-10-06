@@ -23,7 +23,7 @@ void lb_npc_trans(int arg0) {
 
         } else {
             pl_light_change(temp_s0, 1);
-            Pl_light_set(temp_s0);
+            Pl_light_set();
             cpAng2Rad_all(temp_s0 + 0xA0, &sp160);
             flmatMakeScale(F(f32, temp_s0, 0xB8), F(f32, temp_s0, 0xC0), &spA0);
             cpRotMatrixYXZ2(temp_s0 + 0xA0, &sp120);
@@ -63,7 +63,7 @@ block_44:
                                         break;
                                     case 2:         /* switch 1 */
                                         F(int, temp_s3, 0x10) = (int) F(int, temp_s0, 0x798);
-                                        lb_cat_material(temp_s0, temp_s3, var_s5);
+                                        lb_cat_material(temp_s0, temp_s3);
                                         break;
                                     case 0:         /* switch 1 */
                                         F(int, temp_s3, 0x10) = (int) F(int, temp_s0, 0x798);
@@ -113,7 +113,7 @@ block_44:
                 } while (var_s6 < temp_s7);
             }
             clay_attr_reset();
-            lb_npc_item_trans(temp_s0);
+            lb_npc_item_trans();
             flSetRenderState(0x60, 0);
         }
     }

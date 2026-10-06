@@ -22,7 +22,7 @@ void lb_npc_init(int arg0) {
 
     temp_s0 = arg0 + 0x444;
     lb_set_npc();
-    em_work_set(arg0);
+    em_work_set();
     F(u8, arg0, 4) = (u8) (F(u8, arg0, 4) + 1);
     F(s8, arg0, 0x10) = 0;
     F(s8, arg0, 0x1E) = 1;
@@ -83,7 +83,7 @@ void lb_npc_init(int arg0) {
         }
         break;
     }
-    lb_npc_init_sub(arg0);
+    lb_npc_init_sub();
     if (F(u8, arg0, 2) == 0) {
         temp_v0_2 = F(int, temp_s0, 8);
         if (temp_v0_2 == 0) {
@@ -184,8 +184,8 @@ void lb_npc_init(int arg0) {
         Lb_pl_chr_set0(arg0, var_a1_3, 0, 0);
         frame_init(arg0, F(u16, arg0, 0x2E4), F(s16, arg0, 0x2EC), 0);
     }
-    frame_move(arg0);
-    lb_npc_chr_sub(arg0);
-    lb_npc_chr_sub(arg0);
-    Lb_World_calc(arg0);
+    frame_move();
+    lb_npc_chr_sub();
+    lb_npc_chr_sub();
+    Lb_World_calc();
 }

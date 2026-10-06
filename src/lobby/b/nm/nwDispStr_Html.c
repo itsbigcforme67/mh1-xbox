@@ -44,7 +44,7 @@ void nwDispStr_Html(f32 arg1, int arg0) {
         html_start_flag = 0;
         html_default_y = arg1;
         html_end_flag = 0U;
-        cnWrap_SetFontColor(0, temp_a1, var_a2, var_a3);
+        cnWrap_SetFontColor(0, temp_a1, var_a2);
         flfntSetSize(0x14, 0x14);
         var_s0 = 0;
 loop_10:

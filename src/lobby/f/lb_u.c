@@ -307,8 +307,8 @@ void Lb_guild(void) {
                     lb_pit[8] = 3;
                     cw[0x35D3] = 0;
                     lb_sys.x06 = 0xD;
-                    a = game_w.master;
                     qq = lb_quest_all[mhRule.quest];
+                    a = game_w.master;
                     D_3E5506[a * 0xA00] = 0;
                     Lb_set_mini_data(cw + a * 0x2FC + 0x1346, a);
                     a = game_w.master;
@@ -390,7 +390,7 @@ b111:
             lb_sys.x68 = 0;
             Lbc_init_network_work();
             NPCZoomInCameraCancel();
-            goto b136;
+            cw[0x2C08] = 1;
         }
         break;
     case 11:
@@ -424,12 +424,8 @@ b111:
             lb_sys.x68 = 0;
             Lbc_init_network_work();
             NPCZoomInCameraCancel();
-            goto b136;
+            cw[0x2C08] = 1;
         }
-        break;
-b136:
-        cw[0x2C08] = 1;
-        break;
     default:
         break;
     }

@@ -54,21 +54,22 @@ typedef struct MCSLS {
     u8 master;          /* 0x0E */
     u8 alive;           /* 0x0F players alive */
     f32 f10;            /* 0x10 */
-    u8 pad14[8];
+    f32 dt;             /* 0x14 seconds since the previous mcsls_move */
+    f32 t_prev;         /* 0x18 clock at the previous mcsls_move */
     f32 time;           /* 0x1C */
     f32 t_send;         /* 0x20 time of the last send */
     f32 t_que;          /* 0x24 time since the last app queue flush */
-    u8 pad28[4];
+    f32 t_sec;          /* 0x28 seconds since the byte counters were last aged */
     u8 sync_need;       /* 0x2C */
     u8 ping_cur;        /* 0x2D */
     u8 pad2E[2];
     s32 x30;            /* 0x30 */
     s32 napp;           /* 0x34 app messages pushed */
     s32 nsent;          /* 0x38 bytes sent */
-    u8 pad3C[2];
+    u16 nsent_prev;     /* 0x3C nsent16 of the previous second */
     u16 nsent16;        /* 0x3E */
     s32 nrecv;          /* 0x40 bytes received */
-    u8 pad44[2];
+    u16 nrecv_prev;     /* 0x44 nrecv16 of the previous second */
     u16 nrecv16;        /* 0x46 */
     u8 pad48[4];
     MCSPL pl[4];        /* 0x4C */
@@ -85,7 +86,7 @@ typedef struct MCSLS {
     s32 code;           /* 0x160 */
     s32 crit;           /* 0x164 critical error code */
     u16 x168;
-    u8 pad16A[2];
+    u16 x16A;           /* 0x16A last send window size reported by CpInetTcpGetStatus */
 } MCSLS;
 
 extern MCSLS mcsls_w;
