@@ -2042,15 +2042,16 @@ long Pl_item_num_ck3(PLW *pl, u16 id) {
 
 s16 Get_Use_itemnum(PLW *pl) {
     s16 i;
-    s16 n = 0;
-    for (i = 0; i < 20; i++) {
+    s16 n;
+    i = 0;
+    n = 0;
+    for (; i < 20; i++) {
         if (pl->item[i].num > 0 && (s16)pl->item[i].id != 0 && Item_data[(s16)pl->item[i].id][1] == 1) {
             n++;
         }
     }
     return n;
 }
-
 
 
 
