@@ -549,6 +549,8 @@ segments:
       - [0x06DC98, asm, text/flPS2VIF1MakeLoadImage]
       - [0x06E6E0, asm, text/f_intgsstoreimagehandler]
       - [0x06E84C, asm, text/g_flPS2DmaAddQueue]
+      - [0x06F290, c, fl/flio01]
+      - [0x06F5E4, asm, text/flMemset]
       - [0x06F5F0, c, fl/fs01]
       - [0x06F680, asm, text/flMemcpy]
       - [0x06F770, c, fl/fs02]
