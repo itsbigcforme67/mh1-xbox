@@ -1916,3 +1916,4 @@ main 0x00237900 0x0023794C net/cpinet22
 main 0x00237B70 0x00237BA0 net/cpinet23
 main 0x00237EF0 0x00237F34 net/cpinet24
 main 0x002368C0 0x002368DC net/cpinet25
+main 0x00154BD0 0x00154C68 pl/plx06
