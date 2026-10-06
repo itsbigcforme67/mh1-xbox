@@ -47,7 +47,61 @@ void init_select_work();
 s16 em_softdip_ck();
 u32 ran_suu();
 void sel_default_set(void);
-void init_plsel();
+void init_plsel(u8 *t);
+void player_sel(u8 *t);
+void player_wait(u8 *t);
+void em_select(u8 *t);
+
+/* Task entry of the select screen: reloads the select texture, runs the step (0 init, 1 player select, 2 wait, 3 monster
+   select), sends a keep-alive (net_send_sys 8) every 60 frames and draws. */
+void Plsel_task(u8 *t) {
+    s16 n;
+
+    if (mem_tex[1] != 0) {
+        flReloadTexture(1, &mem_tex[1]);
+    }
+    switch (t[8]) {
+    case 0:
+        init_plsel(t);
+        break;
+    case 1:
+        player_sel(t);
+        break;
+    case 2:
+        player_wait(t);
+        break;
+    case 3:
+        em_select(t);
+        break;
+    }
+    n = SELSH(4) + 1;
+    SELSH(4) = n;
+    if (n >= 0x3C) {
+        SELSH(4) = 0;
+        net_send_sys(8, GW8(0xD1));
+    }
+    trans();
+}
+
+void init_plsel(u8 *t) {
+    all_reset();
+    clr_pl_work();
+    clr_stg_work();
+    fade_reset();
+    mkTexture(0, 1, 0);
+    load_texlist(PIT_TEX[0], 2, 0);
+    load_texlist(SEL_TEX[0], 0x9A, 0);
+    t[0x14] = 0;
+    t[8]++;
+}
+
+void disp_str(int x, int y, int s, int pal) {
+    flfntSetSize(0x14, 0x14);
+    flfntLocate(x, y);
+    font_set_palette(pal & 0xFF);
+    font_print(lit_596_0035B158, s);
+}
+
 void player_sel(u8 *t) {
     s16 i;
     u8 *g;
