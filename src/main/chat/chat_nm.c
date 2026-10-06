@@ -1406,8 +1406,7 @@ void PlayerEquipmentWindow(PLW *pl) {
     flfntSetSize(0x12, 0x12);
     flfntLocate(0x168, 0x5C);
     font_print_sp(lit_3652, Get_equip_name(pl->work35F, pl->wpn_kind));
-    ty = 0x7C;
-    for (i = 0; i < 5; i++) {
+    for (i = 0, ty = 0x7C; i < 5; i++) {
         flfntLocate(0x168, ty);
         font_print_sp(lit_3652, FS32(eq[i], 0x10));
         ty += 0x20;

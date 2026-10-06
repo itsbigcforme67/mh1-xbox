@@ -588,6 +588,7 @@ s8 sk_zen_han_check(u8 a) {
 }
 
 void sk_zen_han_chg(void) {
+    int snd = 0x15;
     s8 t = sk_zen_han_check(SKB(0x1E));
     u8 x;
     u8 y;
@@ -601,10 +602,11 @@ void sk_zen_han_chg(void) {
         cmd_kakutei_all();
         sk_set_etc_data();
         sk_set_yn_kigou_f();
+        snd = 0x16;
         SKB(0x24) = x;
         SKB(0x25) = y;
     }
-    se_req(7, 0x16, 0);
+    se_req(7, snd, 0);
 }
 
 void sk_speaking(int, int, void *);
