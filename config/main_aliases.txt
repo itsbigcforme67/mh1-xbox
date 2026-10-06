@@ -11,3 +11,4 @@ flfntLocate_i = 0x002168B0;   /* flfntLocate called with a raw int y (no s16 nar
 Equip_moji_color_rare_i = 0x00275900;   /* same function, int result (no u8 mask on the caller side) */
 Put_PageArrow_s = 0x0027B790;   /* Put_PageArrow called with narrowing s16 x/y (caller side) */
 EquipmentDescriptionWindowA_s = 0x00279A00;   /* EquipmentDescriptionWindowA called with narrowing s16 x/y (EquipmentCompareWindowA) */
+flfntLocate_s = 0x002168B0;   /* flfntLocate with raw int x and s16 y (chat/sword_zokusei): same function, second prototype */
