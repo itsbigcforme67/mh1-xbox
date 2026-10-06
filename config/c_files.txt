@@ -1720,7 +1720,6 @@ lobby 0x005BB370 0x005BB3C8 b/lb_by17
 lobby 0x005BB4C0 0x005BB518 b/lb_by18
 lobby 0x005BB9A0 0x005BBA24 b/lb_by19
 lobby 0x005BBD10 0x005BBD30 b/lb_by20
-lobby 0x005C0B10 0x005C0B60 b/lb_by21
 lobby 0x005C30C0 0x005C314C b/lb_by22
 lobby 0x005C4CF0 0x005C4D3C b/lb_by23
 lobby 0x005C4DD0 0x005C4E14 b/lb_by24
@@ -2441,3 +2440,5 @@ lobby:rodata 0x0065DFE0 0x0065E000 cnet/cnlbse
 lobby:rodata 0x0065DF10 0x0065DF30 cnet/cnlbs
 lobby:rodata 0x0065DED0 0x0065DEEC cnet/cnlbs
 lobby 0x005AFEE0 0x005AFFA0 b/lb_cip01
+lobby 0x005B6B80 0x005B6C64 b/lb_cmcs02
+lobby 0x005C0B10 0x005C0C8C b/lb_cb05
