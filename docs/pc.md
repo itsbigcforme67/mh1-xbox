@@ -510,6 +510,48 @@ With `--quest N` the PC runs the game's own quest flow (6 Oct 2026, agent A):
 - Not checked: comparison with the PS2; textured sprite kinds; other
   areas' exits beyond camp -> area 1; save data.
 
+### Quest start, supply box, playability pass (agent A, 7 Oct 2026)
+- `--quest N` starts like the game: Quest_start leaves game_w.stage at the
+  quest's start stage (base camp, 21 for quest 10) and the hunter starts
+  there (pl_init's start position); the quest's monsters wait on their own
+  stages (the Rathian on 40). `RT_QUEST_STAGE=1` keeps the old start on the
+  monster's stage for scripted fights. A quest restarted after the reward
+  (RT_NO_VILLAGE) also starts at the camp.
+- Supply box: rt_quest_load runs Start_item_init after Quest_start (as
+  game11 does): the mission file's start items go into game_w+0x128 (32
+  slots of {item, count}). At the camp the box is unique spot kind 3
+  (stage 21: 9500,40,9500 r 200); circle there -> pl_mv087 ->
+  Pl_box_select (menu_nm.c) -> box_get -> Pl_item_stack. Checked with
+  RT_PL_WARP=20,9598,9639: box screen with the quest's 22 items, all taken
+  into the pouch (stack limits apply: 3 of 4 whetstone stacks fit), item
+  bar shows them. Walking there works too (closest reachable point ~170
+  from the spot centre, on its +x/+z corner: the crates in front of the box
+  keep the hunter ~250 away on the other sides; not compared with the PS2).
+- New character: the game's own defaults are select.bin's user_data_copy
+  (src/select/edit00.c): User_data cleared, sword and shield 0x9C, money 0,
+  pouch empty. So a fresh hunter's pouch is empty on the PS2 too; the items
+  come from the supply box. The PC does not run user_data_copy (only the
+  weapon matches it); `RT_PL_ITEMS` stays a test aid.
+- Monster sounds: rt_snd_stage loads the snd_emNN packs of game_w+0x28's
+  kinds (game12's snd_joint_load list) and em_create_model adds a new
+  kind's pack (rt_snd_em_add): Velocipreys were silent before.
+- Game C is compiled with `-ftrivial-auto-var-init=zero`: matching C can
+  read a local the original never wrote on that path (the PS2 then reads a
+  stale stack slot). pl_dm001 (guard knock-back, pl33.c) adds sp30[2] to the
+  hunter's position after frame 94 without setting it: on the PC the hunter
+  was thrown to z = 1e21 and the screen went blank seconds into a guarded
+  Rathian attack. gcc's -Wmaybe-uninitialized does not see this case (the
+  array goes to flvecApplyMat33 by pointer).
+- Test aids: `RT_SPOT_TRACE=1` (each stage's unique spots at stage set-up),
+  `RT_PL_WARP=tick,x,z` (move the hunter at that tick); RT_EM_TRACE also
+  prints layer 0's motion state (stat/end/blend ticks).
+- Checked (scripted, headless and windowed): five 200 s random-input fights
+  on stage 40 (no crash, positions sane), a 60 s windowed run at ~60 fps
+  (x86), guard blocks (2/3 -> 2/9 / 2/10 with chip damage), SnS chain
+  (draw 0/4 -> 1/48 -> 1/55 -> 1/56), Rathian charge (atk 18), single and
+  triple fireball (atk 4 / 23, explosions drawn), village -> quest 131
+  start with its supply box. Not compared with the PS2.
+
 ### Collision (stage HITS, game C)
 
 The game's own collision C (agent D's f_sphr near-matches, list HIT= in
