@@ -878,6 +878,13 @@ is the best of 120; the col expression is scheduled differently), Ave_TcpSend 76
 Permuter (-j1, 240 s each) found nothing better for: load_shadow, Item_preparation_adrs (solved by hand), hit_hit_sub_pl, stick_pow_get, egg_com_ck,
 menu_data_monster_sub, load_bin, hit_calc_shl.
 
+Update (later in the same pass): load_bin, stick_pow_get, pad_timer_calc_sub, CpInetTcpClose/Delete, Pl_hold_item_ck, Item_preparation_adrs, Item_preparation_rate_0,
+disp_needle, Fade_busy_ck, pl_work_clr and Ave_TcpRecv from the list above are now LINKED (see the file names in the first lines of this section); the near-match
+numbers quoted for them are the state before they were solved. Still near-match: Pit_mv 4 / Pit_mv_lb 3, hit_hit_sub_pl 2, hit_calc_shl 4, egg_com_ck 4, CpInetTcpOpen 3
+(`o++; o--` junk gets it to 3: the original copies the pointer with `daddu v0,a0`), em_dur_set 17, load_shadow 2, release_model 7, menu_data_monster_sub 5, Sel_back_disp 7,
+get_start_* 16 each (do-while form), light_init (written, 146/146: the original copies the three floats with `lwc1 0; lwc1 4; addiu a0,8; lwc1 0` and keeps `light_work`
+in s0), DeviceUpdateStatus (written, 12/83 with declbf; in build/scr only, not committed), rpccall_end 2 (`lui v0` instead of `lui at` for the semaphore id).
+
 ### Unmatched Capcom code left in my ranges (after this pass; the network device/IOP helpers and light_move/yure_move listed above are now done), largest first. Sizes in bytes; "C" = C exists in a *_nm.c (written, not matching),
 "-" = no C yet. Library (not worth matching) is noted separately.
 - 0x15C000 trans_stage 15152 (C, stage model transform), 0x10C000 em_material_sub 7500 (-, called from weapon3_nm.c only)
