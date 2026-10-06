@@ -34,18 +34,16 @@ s32 Lbc_GetRoomRule(u8 arg28) {
     switch (temp_a0_2) {                            /* irregular */
     case 0:
         F(u8, temp_a0, 0x2C35) = (u8) (temp_a0_2 + 1);
-block_24:
-    default:
-        return 0;
+        break;
     case 1:
         F(u8, temp_a0, 0x2C35) = (u8) (temp_a0_2 + 1);
         temp_a0_3 = CallBackWaitInit(temp_a0_2, temp_a1) & 0xFFFF;
         F(s8, (u8 *)cw, 0x2C45) = 0x10;
         cnLBS_Read_RoomRuleAllocation(temp_a0_3, &CallBack_Result_RuleAllocation);
-        goto block_24;
+        break;
     case 2:
         Check_CallBackWait(temp_a0_2, temp_a1);
-        goto block_24;
+        break;
     case 3:
         F(u8, temp_a0, 0x2C35) = 0U;
         F(s8, (u8 *)cw, 0x2C3A) = 0;
@@ -109,4 +107,5 @@ loop_18:
         F(s8, pNet, 6) = 3;
         return 1;
     }
+    return 0;
 }

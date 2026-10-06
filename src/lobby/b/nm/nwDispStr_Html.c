@@ -12,10 +12,10 @@ extern int html_string_ptr;
 extern u8 html_end_flag;
 void nwDispStr_Html(f32 arg1, int arg0) {
     s32 var_a2;
-    s32 var_a3;
-    s32 var_s0;
     s32 var_v1;
+    s32 var_a3;
     u8 temp_a1;
+    s32 var_s0;
 
     var_a3 = 1;
     temp_a1 = (*(u8 *)arg0);

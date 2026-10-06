@@ -1,6 +1,8 @@
+/* lb_by29 - agent B promoted near-match 0x005BBE70-0x005BBF0C: Lbc_getDate (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
-extern char CallBack_Result_Plaza_LobbyMember[];
-s32 Lbs_request_enter_lobby2(void) {
+extern char CallBack_GetDate[];
+
+s32 Lbc_getDate(void) {
     s32 temp_a0;
     u8 temp_v1_2;
     int temp_v1;
@@ -11,20 +13,16 @@ s32 Lbs_request_enter_lobby2(void) {
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
+        F(s8, (u8 *)cw, 0x2C45) = 0x17;
         CallBackWaitInit(temp_a0);
-        F(s8, (u8 *)cw, 0x2C45) = 0xA;
-        cnLBS_Read_LobbyMemberList(cnLbc_CheckInFloorOrder(1) & 0xFFFF, &CallBack_Result_Plaza_LobbyMember);
-block_12:
-    default:
-        return 2;
+        cnLBS_Read_TimingValue(&CallBack_GetDate);
+        break;
     case 1:
         Check_CallBackWait(temp_a0);
-        goto block_12;
+        break;
     case 2:
         F(u8, temp_v1, 0x2C35) = 0U;
         return 0;
-    case 3:
-        F(u8, temp_v1, 0x2C35) = 0U;
-        return 1;
     }
+    return 2;
 }

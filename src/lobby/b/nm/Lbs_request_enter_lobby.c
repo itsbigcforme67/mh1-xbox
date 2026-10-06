@@ -16,21 +16,19 @@ s32 Lbs_request_enter_lobby(void) {
         CallBackWaitInit();
         F(s8, (u8 *)cw, 0x2C45) = 8;
         cnLBS_LobbyEntry(cnLbc_CheckInFloorOrder(1) & 0xFFFF, &CallBack_Result_Plaza_LobbyEntry);
-    default:
-block_10:
-        return 2;
+        break;
     case 1:
         Check_CallBackWait(temp_a0, temp_a1);
-        goto block_10;
+        break;
     case 2:
         F(u8, temp_v0, 0x2C35) = (u8) (temp_a0 + 1);
         CallBackWaitInit(temp_a0, temp_a1);
         F(s8, (u8 *)cw, 0x2C45) = 0xA;
         cnLBS_Read_LobbyMemberList(cnLbc_CheckInFloorOrder(1) & 0xFFFF, &CallBack_Result_Plaza_LobbyMember);
-        goto block_10;
+        break;
     case 3:
         Check_CallBackWait(temp_a0, temp_a1);
-        goto block_10;
+        break;
     case 4:
         F(u8, temp_v0, 0x2C35) = 0U;
         return 0;
@@ -38,4 +36,5 @@ block_10:
         F(u8, temp_v0, 0x2C35) = 0U;
         return 1;
     }
+    return 2;
 }

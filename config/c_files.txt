@@ -1603,3 +1603,13 @@ lobby:rodata 0x0065DEF0 0x0065DF10 cnet/cnlbsb
 lobby:rodata 0x0065DFE0 0x0065E000 cnet/cnlbsf
 lobby:rodata 0x0065DF10 0x0065DF30 cnet/cnlbsb
 lobby:rodata 0x00654D80 0x00654DA4 lb/lbshp
+lobby 0x005B95A0 0x005B965C b/lb_by25
+lobby 0x005BA7E0 0x005BA8A4 b/lb_by26
+lobby 0x005BB3D0 0x005BB4BC b/lb_by27
+lobby 0x005BBA30 0x005BBB64 b/lb_by28
+lobby 0x005BBE70 0x005BBF0C b/lb_by29
+lobby 0x005BD2C0 0x005BD3A4 b/lb_by30
+lobby 0x005BD530 0x005BD5EC b/lb_by31
+lobby 0x005BD880 0x005BD93C b/lb_by32
+lobby 0x005BD9E0 0x005BDA94 b/lb_by33
+lobby 0x005C07A0 0x005C086C b/lb_by34

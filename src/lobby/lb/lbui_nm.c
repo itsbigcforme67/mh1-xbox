@@ -663,22 +663,24 @@ LB_NETW *a;
     int sw;
     u8 *t2;
     int v;
+    int off;
 
-    v = Get_sw2(0);
+    v = (u16)Get_sw2(0);
     a->x28 = v;
     SetSceneSubTitle(2, 1, tl_etc[0]);
     sw = v & 0xFFFF;
-    sw = sw & 0xFFFF;
     a->sel = 0xE;
     if (sw & 0x2000) {
         tl_menu_cursor_up(a);
-        SetHelpLineMsg(2, *(u16 *)((int)tbl + a->cur * 0x24 + 2) + 2);
+        off = a->cur * 0x24;
+        SetHelpLineMsg(2, *(u16 *)(off + (int)tbl + 2) + 2);
         cnWrap_SoundRequest(1);
         return;
     }
     if (sw & 0x1000) {
         tl_menu_cursor_down(a);
-        SetHelpLineMsg(2, *(u16 *)((int)tbl + a->cur * 0x24 + 2) + 2);
+        off = a->cur * 0x24;
+        SetHelpLineMsg(2, *(u16 *)(off + (int)tbl + 2) + 2);
         cnWrap_SoundRequest(1);
         return;
     }
@@ -688,12 +690,14 @@ LB_NETW *a;
         if (t2[a->cur * 0x24] != 1) {
             tl_menu_cursor_down(a);
         }
-        SetHelpLineMsg(2, *(u16 *)((int)t2 + a->cur * 0x24 + 2) + 2);
+        off = a->cur * 0x24;
+        SetHelpLineMsg(2, *(u16 *)(off + (int)t2 + 2) + 2);
         cnWrap_SoundRequest(1);
         return;
     }
     if (sw & 0x20) {
-        a->sel = *(u16 *)((int)tbl + a->cur * 0x24 + 2);
+        off = a->cur * 0x24;
+        a->sel = *(u16 *)(off + (int)tbl + 2);
         a->depth++;
         if (a->sel != 0xC) {
             SetSceneSubTitle(2, 1, tbl + a->cur * 0x24 + 4);
@@ -1305,6 +1309,7 @@ void plaza_chatMain(a)
 LB_NETW *a;
 {
     int tbl = (int)plazaMenuTbl[a->menu];
+    int off;
 
     a->x28 = Get_sw(0);
     switch (a->step) {
@@ -1323,7 +1328,8 @@ LB_NETW *a;
         break;
     case 3:
         tl_exit_sub_menu(1);
-        SetHelpLineMsg(2, *(u16 *)(tbl + a->cur * 0x24 + 2) + 2);
+        off = a->cur * 0x24;
+        SetHelpLineMsg(2, *(u16 *)(off + tbl + 2) + 2);
         break;
     }
 }

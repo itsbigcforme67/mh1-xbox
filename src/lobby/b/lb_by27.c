@@ -1,5 +1,7 @@
+/* lb_by27 - agent B promoted near-match 0x005BB3D0-0x005BB4BC: Lbs_SeekId (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern char CallBack_Result_SearchUserPlace[];
+
 s32 Lbs_SeekId(void) {
     s32 temp_a0;
     u8 temp_v1_2;
@@ -15,12 +17,10 @@ s32 Lbs_SeekId(void) {
         CallBackWaitInit(temp_a0);
         F(s8, (u8 *)cw, 0x2C45) = 0xA;
         cnLBS_SerchUserPlace((u8 *)cw + 0x2F80, &CallBack_Result_SearchUserPlace);
-block_11:
-    default:
-        return 2;
+        break;
     case 1:
         Check_CallBackWait(temp_a0);
-        goto block_11;
+        break;
     case 2:
         F(u8, temp_v1, 0x2C35) = 0U;
         temp_v0 = (int)cw;
@@ -32,4 +32,5 @@ block_11:
         cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1);
         return 1;
     }
+    return 2;
 }

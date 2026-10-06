@@ -1,5 +1,7 @@
+/* lb_by34 - agent B promoted near-match 0x005C07A0-0x005C086C: Lbc_SendMail (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern char CallBack_Result_Mail_SendMail[];
+
 s32 Lbc_SendMail(void) {
     s32 temp_a0;
     u8 temp_v1_2;
@@ -18,12 +20,10 @@ s32 Lbc_SendMail(void) {
         cnLBS_SendMessage(temp_v0 + 0x301A, temp_v0 + 0x3033, &CallBack_Result_Mail_SendMail);
         temp_v1_3 = (int)cw;
         F(u8, temp_v1_3, 0x2C35) = (u8) (F(u8, temp_v1_3, 0x2C35) + 1);
-block_12:
-    default:
-        return 2;
+        break;
     case 1:
         Check_CallBackWait(temp_a0);
-        goto block_12;
+        break;
     case 2:
         F(u8, temp_v1, 0x2C35) = 0U;
         return 0;
@@ -31,4 +31,5 @@ block_12:
         F(u8, temp_v1, 0x2C35) = 0U;
         return 1;
     }
+    return 2;
 }

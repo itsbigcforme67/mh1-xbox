@@ -1,14 +1,8 @@
+/* lb_by28 - agent B promoted near-match 0x005BBA30-0x005BBB64: Lbc_ReadRoomInfo (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern char RoomInfo[];
-extern char RoomInfo[];
-extern char RoomInfo[];
-extern char RoomInfo[];
-extern char RoomInfo[];
-extern char RoomInfo[];
-extern char RoomInfo[];
-extern char RoomInfo[];
-extern char RoomInfo[];
 extern char CallBack_Result_Lobby_ReadRoomAllocation[];
+
 s32 Lbc_ReadRoomInfo(void) {
     u8 temp_v1_2;
     int temp_v1;
@@ -30,12 +24,10 @@ s32 Lbc_ReadRoomInfo(void) {
         CallBackWaitInit();
         F(s8, (u8 *)cw, 0x2C45) = 0xE;
         cnLBS_Read_RoomAllocation(0, 0xBB, &CallBack_Result_Lobby_ReadRoomAllocation);
-block_12:
-    default:
-        return 2;
+        break;
     case 1:
         Check_CallBackWait(temp_v1 + 0x2C35);
-        goto block_12;
+        break;
     case 2:
         F(u8, temp_v1, 0x2C35) = 0U;
         return 0;
@@ -43,4 +35,5 @@ block_12:
         F(u8, temp_v1, 0x2C35) = 0U;
         return 1;
     }
+    return 2;
 }

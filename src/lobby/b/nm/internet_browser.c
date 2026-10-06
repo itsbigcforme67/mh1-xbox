@@ -15,11 +15,11 @@ extern char D_3A3C7D[];
 extern char lit_536_0065E7C0[];
 extern char lit_536_0065E7C0[];
 s32 internet_browser(void) {
-    s32 temp_v0;
-    s32 var_s0;
-    u8 temp_v0_2;
-    u8 temp_v1;
     u8 temp_v1_2;
+    s32 var_s0;
+    s32 temp_v0;
+    u8 temp_v1;
+    u8 temp_v0_2;
 
     temp_v1 = COM_R_No_2;
     var_s0 = 0;
