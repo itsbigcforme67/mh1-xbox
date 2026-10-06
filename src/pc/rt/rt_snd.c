@@ -434,6 +434,13 @@ void Pl_se_req2_com(void *w, int code, int id, f32 *pos, int type, int chg)
         se_req2(1, code, id, pos, type, chg);
 }
 
+/* Em_se_req2_com (0x1599D0): common pack (port 1) for a monster (em10) */
+void Em_se_req2_com(void *w, int code, int id, f32 *pos, int type, int chg)
+{
+    if (Em_stg_ck(w) & 0xFF)
+        se_req2(1, code, id, pos, type, chg);
+}
+
 void se_stop_all(void)
 {
     int i;
