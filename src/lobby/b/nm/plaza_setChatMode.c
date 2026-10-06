@@ -37,7 +37,7 @@ void plaza_setChatMode(ARG_plaza_setChatMode_arg0 *arg0, int arg1, int arg2) {
     case 1:
         temp_v0_2 = Plaza_log_id_chk(&chatLogBuff);
         arg0->x0012 = (u8) temp_v0_2;
-        arg0->x0026 = get_page_num( (temp_v0_2 << 0x30) >> 0x30, 7, temp_v0_2);
+        arg0->x0026 = get_page_num( (temp_v0_2 << 0x30) >> 0x30, 7);
         temp_v1 = arg0->x0026;
         if (arg0->x0024 >= temp_v1) {
             arg0->x0024 = (s16) (temp_v1 - 1);
@@ -68,7 +68,7 @@ void plaza_setChatMode(ARG_plaza_setChatMode_arg0 *arg0, int arg1, int arg2) {
             }
             temp_a1 = arg0->x0024;
             temp_s0_2 = *((u8 *)&chatLogBuff + ((temp_v0_3 - 1 + (temp_a1 * 7)) * 4));
-            if (Lb_checkChatID(temp_s0_2 + 0x44, temp_a1) == 1) {
+            if (Lb_checkChatID(temp_s0_2 + 0x44) == 1) {
                 Lb_clearChatID(temp_s0_2 + 0x44);
                 return;
             }

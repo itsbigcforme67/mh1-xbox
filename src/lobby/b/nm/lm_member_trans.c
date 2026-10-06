@@ -22,7 +22,7 @@ void lm_member_trans(void) {
     temp_a1 = F(u8, pNet, 2);
     switch (temp_a1) {                              /* irregular */
     case 0:
-        Disp_lb_menu(1, temp_a1);
+        Disp_lb_menu(1);
         var_s0 = 0;
         var_s4 = (int)&player_work;
         var_s3 = (int)&lb_player;

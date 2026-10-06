@@ -13,14 +13,13 @@ s32 Lbs_GetLobbyMemberList(int arg0) {
         temp_v1_3 = (int)pNet;
         F(u8, temp_v1_3, 0x12) = (u8) (F(u8, temp_v1_3, 0x12) + 1);
         cnLBS_Read_LobbyMemberList((( (arg0 << 0x30) >> 0x30) + 1) & 0xFFFF, &CallBack_Result_Plaza_LobbyMember2, 0xA);
-block_8:
-    default:
-        return 0;
+        break;
     case 1:
         Check_CallBackWait(temp_v1 + 0x12);
-        goto block_8;
+        break;
     case 2:
         F(u8, temp_v1, 0x12) = 0U;
         return 1;
     }
+    return 0;
 }

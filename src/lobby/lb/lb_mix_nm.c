@@ -98,8 +98,8 @@ void Lb_mix(void) {
 
 short Ud_item_num_ck3();
 short Ud_item_num_ck();
+int CheckItemPrice(int id, int qty);
 int Ud_item_search_space();
-int CheckItemPrice(u16 id, s16 qty);
 
 /* can `qty` of item `id` be bought / is it held (mode 2) */
 int Lb_mix_item_checkMax(s32 id, s8 qty) {
@@ -116,13 +116,12 @@ int Lb_mix_item_checkMax(s32 id, s8 qty) {
                 (short)Ud_item_search_space() == 1) {
                 return 1;
             }
-        } else if (cnt >= qty && CheckItemPrice(id, qty) == 1) {
+        } else if (qty <= cnt && CheckItemPrice(id, qty) == 1) {
             return 1;
         }
         break;
     default:
-        p = (u8 *)User_data;
-        for (i = 0; i < 20; i++, p += 4) {
+        for (i = 0, p = (u8 *)User_data; i < 20; i++, p += 4) {
             if (*(u16 *)(p + 0x37C) == (u16)id) {
                 if (*(s16 *)(p + 0x37E) == 0xFF) {
                     if (qty < 2) return 1;
@@ -160,7 +159,8 @@ int lb_mix_select(void) {
 }
 
 int lb_mix_checkItemMake(LB_MIXDATA *m, int result) {
-    if (!(Ud_item_num_ck3(*(u16 *)(m->rec + 2)) > 0)) return 0;
+    int ok = Ud_item_num_ck3(*(u16 *)(m->rec + 2)) > 0;
+    if (!ok) return 0;
     if (Ud_item_num_ck(*(u16 *)m) == 0) return 0;
     return Ud_item_num_ck(*(u16 *)m->rec) != 0;
 }
@@ -483,9 +483,11 @@ void lb_mix_listIcon(int x, int y, int z, s16 n) {
     Lb_put_itemIcon(x, y, z, v);
 }
 
-int CheckItemPrice(u16 id, s16 qty);
 
 /* can `qty` of item `id` be bought / is it held (mode 2) */
-int CheckItemPrice(u16 id, s16 qty) {
+int CheckItemPrice(id, qty)
+u16 id;
+s16 qty;
+{
     return *(s32 *)0x3C6FE0 >= qty * Item_data[id].buy;
 }

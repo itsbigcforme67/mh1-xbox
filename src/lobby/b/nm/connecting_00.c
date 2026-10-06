@@ -19,8 +19,8 @@ s32 connecting_00(void) {
         Ncm_spr_set_diarog_s();
         Vs_Cnt_1 = 0;
     }
-    *(s16 *)0x3A6E94 = 0;
     Vs_Cnt_0 = 8;
+    *(s16 *)0x3A6E94 = 0;
     cnWrap_ScreenFadeIn(0, 0x14);
     return 0;
 }

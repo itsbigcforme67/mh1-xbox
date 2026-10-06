@@ -223,7 +223,7 @@ block_46:
             Lb_menu_quest_info(var_v0);
             temp_a1 = Lb_get_quest_type(var_v0) | 0x10;
             (*(int *)((u8 *)&D_3E5506 + (game_w.master * 0xA00))) = temp_a1;
-            temp_v0_7 = (u8 *)Lbs_GetRoomInfo(lb_sys.x73, temp_a1);
+            temp_v0_7 = (u8 *)Lbs_GetRoomInfo(lb_sys.x73);
             temp_a0 = joinQuest;
             *(s16 *)0x3F341C = (s16) temp_a0;
             *(s16 *)0x3F33DC = (s16) temp_a0;

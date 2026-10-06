@@ -9,7 +9,7 @@ void server_select_sub_04(ARG_server_select_sub_04_arg0 *arg0) {
     case 0:
         arg0->x0003 = (u8) (temp_a2 + 1);
         arg0->x0000 = 8;
-        SetDialogData(0x27, 2, temp_a2);
+        SetDialogData(0x27, 2);
         arg0->x000B = 1U;
         SetDialogYesNo(arg0->x000B);
         return;
@@ -23,7 +23,7 @@ void server_select_sub_04(ARG_server_select_sub_04_arg0 *arg0) {
         return;
     case 2:
         arg0->x000C = 1;
-        if (tk_sw_on_ck(0x20, 2, temp_a2) != 0) {
+        if (tk_sw_on_ck(0x20, 2) != 0) {
             cnWrap_SoundRequest(0);
             arg0->x0003 = (u8) (arg0->x0003 + 1);
             arg0->x0000 = 8;
@@ -55,7 +55,7 @@ void server_select_sub_04(ARG_server_select_sub_04_arg0 *arg0) {
             if (arg0->x000B == 0) {
                 arg0->x0002 = 2;
                 arg0->x0003 = 2U;
-                cnWrap_SoundRequest(3, temp_a2);
+                cnWrap_SoundRequest(3);
                 arg0->x0000 = 0x28;
                 str_fadeout(0, 0xF);
                 return;
