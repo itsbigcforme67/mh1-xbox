@@ -1215,9 +1215,9 @@ int main(int argc, char **argv)
                 }
             }
             hunter_yoff = -lo;
-            if (play && pl.game && !follow_given && !getenv("RT_HOST_CAM")) {
-                rt_cam_init(stage_no);  /* the game camera follows player_work[0] */
-                game_cam = 1;
+            if (play && pl.game) {
+                rt_cam_init(stage_no);  /* the game camera follows player_work[0] (game2 moves it on stage changes) */
+                game_cam = !follow_given && !getenv("RT_HOST_CAM");
             }
         }
     }
