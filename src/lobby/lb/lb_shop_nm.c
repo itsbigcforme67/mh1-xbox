@@ -121,7 +121,7 @@ call24:
                 if (lbShop.f28 != 0) lbShop.f28();
                 lbShop.x15--;
                 if (lbShop.x8E != 2) lbShop.help = 0;
-                if ((lbShop.x8E == 0 || lbShop.x8E == 3) && lbShop.f24 != 0) lbShop.f24(lbShop.x15);
+                if ((lbShop.x8E == 0 || lbShop.x8E == 3) && lbShop.f24 != 0) lbShop.f24();
                 break;
             }
         }
@@ -149,7 +149,7 @@ call24:
                 if (lbShop.x8E == 0 && lbShop.f28 != 0) lbShop.f28();
             } else {
                 lbShop.x15 = 5;
-                if ((u32)lbShop.x8E < 2 || lbShop.x8E == 2) {
+                if (lbShop.x8E == 0 || lbShop.x8E == 1 || lbShop.x8E == 2) {
                     if (lbShop.f28 != 0) lbShop.f28();
                     else if (lbShop.f24 != 0) lbShop.f24();
                 }

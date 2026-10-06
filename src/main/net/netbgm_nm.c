@@ -22,7 +22,7 @@ typedef struct MEMTEX {
     s32 x470;
 } MEMTEX;
 extern MEMTEX mem_tex;
-extern void *NET_CON_TEX;
+extern void *NET_CON_TEX[];
 
 int se_stat();
 int se_req_bgm_vol();
@@ -229,7 +229,7 @@ int Ncm_mmbb_spr_create(void) {
         return 2;
     }
     if (NetLoadWait() == 0) {
-        load_texlist(NET_CON_TEX, 0x14D, 0);
+        load_texlist(NET_CON_TEX[0], 0x14D, 0);
         if (mem_tex.x470 == 0) {
             SoftkeyLoad();
         }

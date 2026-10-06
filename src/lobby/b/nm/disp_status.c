@@ -87,13 +87,13 @@ void disp_status(int arg0, s32 arg1, int arg2, int arg3, int arg4, int arg5, int
         temp_s4_2 =  ((temp_s4 + 0x16) << 0x30) >> 0x30;
         flfntLocate( ((temp_s0 + 0xA) << 0x30) >> 0x30, temp_s4_2);
         font_print(&lit_2316, F(int, &tl_mail_tbl, 0xC));
-        flfntLocate( (temp_s2 << 0x30) >> 0x30, temp_s4_2);
+        flfntLocate( (temp_s2 << 0x30) >> 0x30);
         han2zen(arg2, &sp100);
         font_print(&lit_2316, &sp100);
         temp_s4_3 =  ((temp_s4_2 + 0x16) << 0x30) >> 0x30;
         flfntLocate( ((temp_s0 + 0xA) << 0x30) >> 0x30, temp_s4_3);
         font_print(&lit_2316, F(int, &tl_mail_tbl, 0x1C));
-        flfntLocate( (temp_s2 << 0x30) >> 0x30, temp_s4_3);
+        flfntLocate( (temp_s2 << 0x30) >> 0x30);
         font_print(&lit_2316, ((int *)&tl_job_tbl)[F(u8, temp_s3, 0)]);
         var_s4 =  ((temp_s4_3 + 0x16) << 0x30) >> 0x30;
         flfntLocate( ((temp_s0 + 0xA) << 0x30) >> 0x30, var_s4);
@@ -111,7 +111,7 @@ void disp_status(int arg0, s32 arg1, int arg2, int arg3, int arg4, int arg5, int
         flfntLocate( ((temp_s0 + 0xA) << 0x30) >> 0x30, temp_s4_4);
         font_print(&lit_2316, F(int, &tl_mail_tbl, 0x24));
         temp_s0_2 = temp_s5 + 0x50;
-        flfntLocate( (temp_s0_2 << 0x30) >> 0x30, temp_s4_4);
+        flfntLocate( (temp_s0_2 << 0x30) >> 0x30);
         temp_s1_3 = F(u16, (u8 *)cw, 0x30B4);
         if (temp_s1_3 != 0) {
             font_print(&lit_193_0065DBE8, Get_ServerName(), (int)&PlazaInfo + ((temp_s1_3 - 1) * 0x15C) + 0x14);

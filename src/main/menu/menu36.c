@@ -1,4 +1,4 @@
-/* menu36 - f_menu 0x00134710-0x00134858: pef_get_scale */
+/* menu36 - f_menu 0x00134710-0x00134950: pef_get_scale, pef_get_alpha */
 #include "menu.h"
 #include "em.h"
 #include "pl.h"
@@ -335,6 +335,38 @@ int pef_get_scale(PEF *e, int *tbl, s16 t) {
             }
             cur = nx;
             nx += 3;
+            t1 = *nx;
+            if (t1 <= 0) break;
+        }
+    }
+    e->on = 0;
+    return -1;
+}
+
+/* 0x134860 */
+int pef_get_alpha(PEF *e, int *tbl, s16 t) {
+    int *cur;
+    int *nx;
+    int t1;
+    f32 a, f;
+
+    cur = tbl;
+    if (t < tbl[0]) {
+        return 1;
+    }
+    t1 = cur[2];
+    nx = cur + 2;
+    if (t1 > 0) {
+        for (;;) {
+            if (!(t > t1)) {
+                a = *(f32 *)&cur[1];
+                a = a + ((*(f32 *)&nx[1] - a) * (f32)(t - cur[0])) / (f32)(t1 - cur[0]);
+                f = 255.0f * a;
+                e->alpha = (u8)f;
+                return 0;
+            }
+            cur = nx;
+            nx += 2;
             t1 = *nx;
             if (t1 <= 0) break;
         }

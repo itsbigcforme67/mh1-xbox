@@ -425,10 +425,10 @@ void em01_frame_reset(em, i) EMW *em; int i; {
             em_char_set2(em, 0x3E9, 0xA, 0, 0);
             break;
         case 1:
-            em_char_set2(em, 0x4B1, 0xA, 0);
+            em_char_set2(em, 0x4B1, 0xA, 0, 1);
             break;
         case 2:
-            em_char_set2(em, 0x579, 0xA, 0);
+            em_char_set2(em, 0x579, 0xA, 0, 2);
             break;
         }
     }
@@ -446,7 +446,7 @@ void em01_reset_char_set(em, i) EMW *em; int i; {
         break;
     case 1:
         if (em->x2DE == 0x4CD) {
-            em_char_set2(em, 0x4B1, 0xA, 0);
+            em_char_set2(em, 0x4B1, 0xA, 0, 1);
         }
         if (em->x2DE == 0x4E3) {
             em_char_set2(em, 0x4B1, 0xA, 0, 1);
@@ -454,7 +454,7 @@ void em01_reset_char_set(em, i) EMW *em; int i; {
         break;
     case 2:
         if (em->x2E0 == 0x595) {
-            em_char_set2(em, 0x579, 0xA, 0);
+            em_char_set2(em, 0x579, 0xA, 0, 2);
         }
         if (em->x2E0 == 0x5AB) {
             em_char_set2(em, 0x579, 0xA, 0, 2);
@@ -2018,7 +2018,7 @@ static void em_fly08_0056AD20(EMW *em, EM01W *w) {
     case 3:
         em->x05++;
         em->work08 = 0x258;
-        Em_Next_Stage_Pos();
+        Em_Next_Stage_Pos(em);
         ar = em->x92F;
         if ((u16)em->x73A == ar || ar == 0xFF) {
             WyvernAreaMove((PLW *)em);
@@ -2137,7 +2137,7 @@ static void em_fly10_0056B190(EMW *em, EM01W *w) {
         break;
     case 4:
         em->x05++;
-        Em_Next_Stage_Pos();
+        Em_Next_Stage_Pos(em);
         WyvernAreaMove((PLW *)em);
         if (em->stg == 0xF) {
             em->stg = 0x13;
@@ -2299,7 +2299,7 @@ static void em_fly13_0056B740(EMW *em, EM01W *w) {
     case 3:
         em->x05++;
         em->work08 = 0x258;
-        Em_Next_Stage_Pos();
+        Em_Next_Stage_Pos(em);
         ar = em->x92F;
         if ((u16)em->x73A == ar || ar == 0xFF) {
             WyvernAreaMove((PLW *)em);
@@ -4702,7 +4702,7 @@ static void em_demo04_00572FA0(EMW *em, EM01W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05++;
-            Quest_enemy_capture();
+            Quest_enemy_capture(em);
         }
         break;
     case 2:

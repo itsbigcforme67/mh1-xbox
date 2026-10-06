@@ -320,7 +320,6 @@ void rt_player_parts(int no, const float *world, int n)
 /* ------------------------------------------------ callees of agent F's pl49..pl83 not ported */
 void clr_eft_work(void) { STUB("clr_eft_work") }
 void clr_item_work(void) { STUB("clr_item_work") }
-void clr_set_work(void) { STUB("clr_set_work") }
 void clr_shell_work(void) { STUB("clr_shell_work") }
 void clr_used_heap(void) { STUB("clr_used_heap") }
 void init_eft_work(void) { STUB("init_eft_work") }

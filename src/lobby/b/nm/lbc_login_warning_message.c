@@ -21,7 +21,7 @@ void lbc_login_warning_message(void) {
     temp_a3 = temp_a2 + 0x2C34;
     switch (temp_a1) {
     case 0:
-        if (check_warning_level(F(u8, temp_a2, 0x35FE), temp_a1, temp_a2, temp_a3) == 0) {
+        if (check_warning_level(F(u8, temp_a2, 0x35FE)) == 0) {
             F(u8, (u8 *)cw, 0x2C34) = 7U;
             CallBackWaitInit();
             cnLBS_Answer_LoginWarningMessage(0);
@@ -46,7 +46,7 @@ void lbc_login_warning_message(void) {
             SetDialogData_HTML((u8 *)cw + 0x3602, temp_a1, temp_a2, temp_a3);
             return;
         }
-        To_LogOut(1, temp_a1, temp_a2, temp_a3);
+        To_LogOut(1);
         return;
     case 4:
         F(s8, pNet, 0xC) = 1;
@@ -69,7 +69,7 @@ void lbc_login_warning_message(void) {
         }
         if (temp_t0 & 0xFFFF & 0x20) {
             F(u8, temp_a1_3, 0x2C34) = (u8) (F(u8, temp_a1_3, 0x2C34) + 1);
-            cnWrap_SoundRequest(0, temp_a1_3, temp_a2, temp_a3);
+            cnWrap_SoundRequest(0);
         }
         cnWrap_SetFontColor(5);
         flfntSetSize(0x14, 0x14);
@@ -80,11 +80,11 @@ void lbc_login_warning_message(void) {
         return;
     case 6:
         F(u8, temp_a2, 0x2C34) = (u8) (temp_a1 + 1);
-        CallBackWaitInit(&jtbl_548_0065E870, temp_a1, temp_a2, temp_a3);
+        CallBackWaitInit(&jtbl_548_0065E870);
         cnLBS_Answer_LoginWarningMessage(1);
         return;
     case 7:
-        Check_CallBackWait(&jtbl_548_0065E870, temp_a1, temp_a2, temp_a3);
+        Check_CallBackWait(&jtbl_548_0065E870);
         break;
     }
 }

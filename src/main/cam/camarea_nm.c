@@ -35,64 +35,70 @@ void CamRailPoint(f32 *out, f32 *c, f32 t);
 
 /* f32 -> u32 as the PS2 code does it (values >= 2^31 through the sign bit;
  * negative values wrap) */
-static u32 f2u(f32 f) {
-    if (f >= 2147483648.0f) {
-        return (u32)(s32)(f - 2147483648.0f) | 0x80000000u;
+static inline u32 f2u(f32 f) {
+    if (f < 2147483648.0f) {
+        return (u32)(s32)f;
     }
-    return (u32)(s32)f;
+    return (u32)(s32)(f - 2147483648.0f) | 0x80000000u;
 }
 
 /* 0x00222E20: one follow-the-player area covering everything, built in
  * cam_data_area; zoom entries 1-4 from the stage's rows of
  * stage_camera_data_tbl[0..3] (y, z, tar_y, gnd), entry 0 fixed. */
-void default_area_data(CAMW *cw) {
-    u8 *d = cam_data_area;
-    int k;
+static void default_area_data(CAMW *cw)
+{
+  u8 *d = cam_data_area;
+  u8 *new_var;
+  int k;
+  u8 *new_var2;
+  new_var2 = (u8 *) (((u8 *) d) + 0x30);
+  *((u16 *) (((u8 *) d) + 0x00)) = 0x102;
+  *((u16 *) (((u8 *) d) + 0x02)) = 0;
+  *((u16 *) (((u8 *) d) + 0x04)) = 1;
+  *((u16 *) (((u8 *) d) + 0x06)) = 1;
+  *((u16 *) (((u8 *) d) + 0x08)) = 20000;
+  *((u16 *) (((u8 *) d) + 0x0A)) = 20000;
+  *((u32 *) (((u8 *) d) + 0x0C)) = 0;
+  *((u32 *) (((u8 *) d) + 0x10)) = 0;
+  *((u32 *) (((u8 *) d) + 0x14)) = 20000;
+  *((u32 *) (((u8 *) d) + 0x18)) = 20000;
+  *((u32 *) (((u8 *) d) + 0x1C)) = 0;
+  *((u32 *) (((u8 *) d) + 0x20)) = 0;
+  *((u32 *) (((u8 *) d) + 0x24)) = 0;
+  *((u8 **) (((u8 *) d) + 0x28)) = d + 0x30;
+  *new_var2 = 0;
+  *((u8 *) (((u8 *) d) + 0x31)) = 0;
+  *((u8 *) (((u8 *) d) + 0x32)) = 0;
+  *((u8 *) (((u8 *) d) + 0x33)) = 2;
+  *((u8 *) (((u8 *) d) + 0x34)) = 0;
+  new_var = (u8 *) d;
+  *((u8 *) (new_var + 0x35)) = 0;
+  *((f32 *) (new_var + 0x38)) = 400.0f;
+  *((f32 *) (new_var + 0x3C)) = 2400.0f;
+  *((f32 *) (new_var + 0x40)) = 1.0f;
+  *((f32 *) (new_var + 0x44)) = 0.75f;
+  *((u32 *) (new_var + 0x48)) = 0;
+  *((u32 *) (new_var + 0x4C)) = 0;
+  for (k = 0; k < 4; k++)
+  {
+    f32 *row = (f32 *) (((u8 *) stage_camera_data_tbl[k]) + (game_w.stage * 28));
+    u8 *e = (d + 0x90) + (k * 0x20);
+    *((f32 *) (((u8 *) e) + 0x04)) = row[1];
+    *((f32 *) (((u8 *) e) + 0x08)) = row[2];
+    *((f32 *) (((u8 *) e) + 0x10)) = row[4];
+    *((f32 *) (((u8 *) e) + 0x18)) = row[6];
+  }
 
-    EH(d, 0x00) = 0x102;
-    EH(d, 0x02) = 0;
-    EH(d, 0x04) = 1;
-    EH(d, 0x06) = 1;
-    EH(d, 0x08) = 20000;
-    EH(d, 0x0A) = 20000;
-    EW(d, 0x0C) = 0;
-    EW(d, 0x10) = 0;
-    EW(d, 0x14) = 20000;
-    EW(d, 0x18) = 20000;
-    EW(d, 0x1C) = 0;
-    EW(d, 0x20) = 0;
-    EW(d, 0x24) = 0;
-    EP(d, 0x28) = d + 0x30;
-    EB(d, 0x30) = 0;
-    EB(d, 0x31) = 0;
-    EB(d, 0x32) = 0;            /* area type 0: follow the player */
-    EB(d, 0x33) = 2;
-    EB(d, 0x34) = 0;
-    EB(d, 0x35) = 0;            /* no boxes */
-    EF(d, 0x38) = 400.0f;
-    EF(d, 0x3C) = 2400.0f;
-    EF(d, 0x40) = 1.0f;
-    EF(d, 0x44) = 0.75f;
-    EW(d, 0x48) = 0;
-    EW(d, 0x4C) = 0;
-    for (k = 0; k < 4; k++) {
-        f32 *row = (f32 *)((u8 *)stage_camera_data_tbl[k] + game_w.stage * 28);
-        u8 *e = d + 0x90 + k * 0x20;
-        EF(e, 0x04) = row[1];
-        EF(e, 0x08) = row[2];
-        EF(e, 0x10) = row[4];
-        EF(e, 0x18) = row[6];
-    }
-    EF(d, 0x74) = 300.0f;       /* zoom entry 0 */
-    EF(d, 0x78) = 160.0f;
-    EF(d, 0x80) = 184.0f;
-    EF(d, 0x88) = 80.0f;
-    EF(d, 0x50) = 0.87266463f;  /* fov 50 degrees */
-    EF(d, 0x54) = 0.0f;
-    EF(d, 0x58) = 0.0f;
-    EH(d, 0x5E) = 0;
-    EH(d, 0x5C) = 0;
-    cw->data = d;
+  *((f32 *) (new_var + 0x74)) = 300.0f;
+  *((f32 *) (new_var + 0x78)) = 160.0f;
+  *((f32 *) (new_var + 0x80)) = 184.0f;
+  *((f32 *) (new_var + 0x88)) = 80.0f;
+  *((f32 *) (new_var + 0x50)) = 0.87266463f;
+  *((f32 *) (new_var + 0x54)) = 0.0f;
+  *((f32 *) (new_var + 0x58)) = 0.0f;
+  *((u16 *) (new_var + 0x5E)) = 0;
+  *((u16 *) (new_var + 0x5C)) = 0;
+  cw->data = d;
 }
 
 /* 0x00223000 */
@@ -121,21 +127,21 @@ s32 SetAreaData(CAMW *cw) {
     PLW *pl = &player_work[EB(&game_w, 0xD1)];
     u8 *d = cw->data;
     u8 *cell;
-    u32 n;
     CAMAREA **l;
+    u32 n;
 
     if (d == 0) {
         cw->area = 0;
         return -1;
     }
     cw->area = (CAMAREA *)EP(d, 0x28);
-    if (cw->grid != 0) {
+    if ((u8)cw->grid != 0) {
         return 0;
     }
     if (EP(d, 0x1C) == 0) {
         return 0;
     }
-    cell = EP(d, 0x1C) + ((u16)cw->gx + (u16)cw->gz * EH(cw, 0x590)) * 8;
+    cell = EP(d, 0x1C) + ((u16)cw->gx + EH(cw, 0x590) * (u16)cw->gz) * 8;
     n = EW(cell, 0);
     if (n == 0) {
         return 0;
@@ -156,13 +162,17 @@ s8 Get_cam_grid_XZ(s16 *gx, s16 *gz, f32 *pos, u8 *hdr) {
     s8 r = 0;
     u32 i;
 
-    i = (f2u(pos[0]) - EW(hdr, 0x8)) / EH(hdr, 0x4);
+    u32 a = pos[0];
+    u32 w = EW(hdr, 0x8);
+    i = (a - w) / EH(hdr, 0x4);
     if (!(i < EH(hdr, 0x0))) {
         r |= 1;
         i = EH(hdr, 0x0) - 1;
     }
     *gx = i;
-    i = (f2u(pos[2]) - EW(hdr, 0xC)) / EH(hdr, 0x6);
+    a = pos[2];
+    w = EW(hdr, 0xC);
+    i = (a - w) / EH(hdr, 0x6);
     if (!(i < EH(hdr, 0x2))) {
         i = EH(hdr, 0x2) - 1;
         r = 0x10;
@@ -175,9 +185,9 @@ s8 Get_cam_grid_XZ(s16 *gx, s16 *gz, f32 *pos, u8 *hdr) {
  * 0x27-0x2B of state 0 (cannon? guess) */
 s32 CamAreaAttribChk(CAMAREA *a, PLW *pl) {
     if (EB(a, 6) & 0x80) {
-        if (EB(pl, 0x14) != 0) return 0;
-        if (EB(pl, 0x15) < 0x27) return 0;
-        if (!(EB(pl, 0x15) < 0x2C)) return 0;
+        if (EB(pl, 0x14) != 0 || EB(pl, 0x15) < 0x27 || EB(pl, 0x15) > 0x2B) {
+            return 0;
+        }
     }
     return 1;
 }

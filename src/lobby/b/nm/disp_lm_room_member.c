@@ -19,7 +19,7 @@ void disp_lm_room_member(void) {
     temp_a1 = F(u8, lbmw, 9);
     switch (temp_a1) {                              /* irregular */
     case 0:
-        Disp_lb_menu(1, temp_a1);
+        Disp_lb_menu(1);
         var_s1 = 0;
         var_s0 = (int)&sp30;
         do {

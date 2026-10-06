@@ -34,10 +34,10 @@ void plaza_checkFriendTrans(int arg0, int arg1, int arg2) {
     var_s1 = (int)&Friend_data + temp_a3;
     switch (temp_v1) {                              /* irregular */
     case 0:
-        put_mainWindow(&Friend_data, temp_a3);
+        put_mainWindow(&Friend_data);
         break;
     case 1:
-        put_mainWindowTex(&Friend_data, temp_a3);
+        put_mainWindowTex(&Friend_data);
         break;
     }
     if (net_Check_FriendSuu(&Friend_data, 0x32) == 0) {
@@ -60,7 +60,7 @@ void plaza_checkFriendTrans(int arg0, int arg1, int arg2) {
         temp_s2 = ( (arg0 << 0x30) >> 0x30) + 0xA;
         temp_s0 = temp_s1 - 0x16;
         put_titles( (temp_s2 << 0x30) >> 0x30,  (temp_s0 << 0x30) >> 0x30, F(s32, &tl_mail_tbl, 0x14));
-        plaza_disp_mail(pNet,  (temp_s2 << 0x30) >> 0x30, temp_s1);
+        plaza_disp_mail(pNet,  (temp_s2 << 0x30) >> 0x30);
         put_mail_input_square(pNet,  (temp_s2 << 0x30) >> 0x30,  (temp_s0 << 0x30) >> 0x30);
         if (F(s8, (u8 *)cw, 0x2F99) != 0) {
             font_set_palette(0);

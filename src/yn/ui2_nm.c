@@ -377,8 +377,8 @@ s8 arg0;
 void yn_dialog_font_once(s32 arg0) {
     YMSG *m;
     int x;
-
-    m = &((YMSG *)yn_dialog_mes_tbl[M2C_FIELD(ynw, u8 *, 0x46)])[arg0];
+    m = (YMSG *)yn_dialog_mes_tbl[M2C_FIELD(ynw, u8 *, 0x46)];
+    m += arg0;
     x = m->x;
     if (x == -1) {
         x = (s16)yn_center_x(m->str, 0x16);
@@ -1010,19 +1010,23 @@ void yn_dialog_font_setting(void) {
 }
 
 void yn_sprite_draw_sub(int arg0, int arg1, int arg2) {
-    u8 *part;
+    int i;
     u8 sel;
     u32 t;
     f32 a;
-
-    part = yn_parts_data + arg0 * 4;
-    yn_sprite_draw_each(yn_spr_data + part[0] * 12, part[1], arg1, arg2, -1);
-    sel = part[3];
+    SPR *s;
+    u8 cnt;
+    i = arg0 * 4;
+    cnt = yn_parts_data[i + 1];
+    s = yn_spr_data + yn_parts_data[i];
+    yn_sprite_draw_each(s, cnt, arg1, arg2, -1);
+    sel = yn_parts_data[i + 3];
     if (sel != 0) {
         flSetRenderState(0x5E, 0x12);
+        s = yn_spr_data + yn_parts_data[i + 2];
         t = M2C_FIELD(ynw, u8 *, 0x21);
         a = 128.0f + 127.0f * flSin(3.1415927f * (f32)t / 2.0f / 16.0f);
-        yn_sprite_draw_each(yn_spr_data + part[2] * 12, sel, arg1, arg2, ((u8)(int)a << 24) | 0xFFFFFF);
+        yn_sprite_draw_each(s, sel, arg1, arg2, ((u8)(u32)a << 24) | 0xFFFFFF);
         flSetRenderState(0x5E, 0x32);
     }
 }
@@ -1218,27 +1222,27 @@ void yn_sprite_draw_each(u8 *spr, int count, int ox, int oy, int col) {
             q = (s16)(b + d);
             break;
         case 2:
+            p = (s16)(a + c);
             q = b;
             b = q + d;
-            p = (s16)(a + c);
             break;
         case 3:
             p = a;
             q = b;
-            b = q + d;
             a = p + c;
+            b = q + d;
             break;
         }
         rect.x = M2C_FIELD(spr, s16 *, 0) + (s16)ox;
         rect.y = M2C_FIELD(spr, s16 *, 2) + (s16)oy;
         rect.w = M2C_FIELD(spr, s16 *, 4);
         rect.h = M2C_FIELD(spr, s16 *, 6);
-        rect.col = col;
         rect.u0 = a;
         rect.v0 = b;
         rect.u1 = p;
         rect.v1 = q;
-        net_flps0008(&rect, &rect.u0, rect.h, c);
+        rect.col = col;
+        net_flps0008(&rect);
         spr += 12;
     }
 }

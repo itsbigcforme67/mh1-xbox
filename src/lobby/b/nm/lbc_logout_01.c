@@ -32,7 +32,7 @@ void lbc_logout_01(void) {
     temp_a1 = Get_sw2(0) & 0xFFFF;
     switch (temp_v1) {
     case 0:
-        Lbc_init_network_work(&jtbl_3219, temp_a1);
+        Lbc_init_network_work(&jtbl_3219);
         F(s8, pNet, 0x11) = 1;
         temp_v1_2 = (int)cw;
         F(u8, temp_v1_2, 0x2C34) = (u8) (F(u8, temp_v1_2, 0x2C34) + 1);
@@ -49,7 +49,7 @@ void lbc_logout_01(void) {
         return;
     case 1:
         F(s8, pNet, 0x11) = 1;
-        if ((Fade_busy_ck(&jtbl_3219, temp_a1) & 0xFF) != 1) {
+        if ((Fade_busy_ck(&jtbl_3219) & 0xFF) != 1) {
             temp_v1_3 = (int)cw;
             F(u8, temp_v1_3, 0x2C34) = (u8) (F(u8, temp_v1_3, 0x2C34) + 1);
             if (F(u8, (u8 *)cw, 0x2C46) != 0) {
@@ -75,7 +75,7 @@ void lbc_logout_01(void) {
         return;
     case 4:
         F(s8, pNet, 0x11) = 1;
-        temp_a0_3 = Fade_busy_ck(&jtbl_3219, temp_a1) & 0xFF;
+        temp_a0_3 = Fade_busy_ck(&jtbl_3219) & 0xFF;
         if (temp_a0_3 != 1) {
             temp_v1_4 = (int)cw;
             F(u8, temp_v1_4, 0x2C34) = (u8) (F(u8, temp_v1_4, 0x2C34) + 1);
@@ -128,12 +128,12 @@ void lbc_logout_01(void) {
         if (temp_v1_5 <= 0) {
             temp_v1_6 = (int)cw;
             F(u8, temp_v1_6, 0x2C34) = (u8) (F(u8, temp_v1_6, 0x2C34) + 1);
-            fade_set(1, temp_a1_2);
+            fade_set(1);
             return;
         }
         break;
     case 10:
-        temp_a0_6 = Fade_busy_ck(&jtbl_3219, temp_a1) & 0xFF;
+        temp_a0_6 = Fade_busy_ck(&jtbl_3219) & 0xFF;
         if (temp_a0_6 != 1) {
             all_reset(temp_a0_6);
             F(s8, pNet, 0x11) = 1;

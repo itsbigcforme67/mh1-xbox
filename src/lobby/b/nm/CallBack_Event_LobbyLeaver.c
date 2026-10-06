@@ -1,6 +1,6 @@
-#include "lobby_a.h"
+#include "lobby_b.h"
 
-void CallBack_Event_LobbyLeaver(void) {
+void CallBack_Event_LobbyLeaver(CNET_RES res) {
     int sp40;
     int var_s1;
     s32 var_s0;

@@ -14,6 +14,7 @@ Usage:
     python3 tools/perm.py main get_sw src/main/pad/pad_get_nm.c       # set up + run
     python3 tools/perm.py main get_sw src/main/pad/pad_get_nm.c -j8 --stop-on-zero
 Output goes to build/perm/<function>/ (output-*/ holds improved sources).
+PERM_ASM_DIR=/some/copy/of/asm makes it read the original asm from a snapshot (tools/rebuild.sh wipes asm/ while it runs).
 """
 import os
 import re
@@ -27,7 +28,7 @@ PY = os.path.join(ROOT, ".venv/bin/python")
 
 def asm_block(module, func):
     import glob
-    for path in glob.glob(os.path.join(ROOT, "asm", module, "text", "*.s")):
+    for path in glob.glob(os.path.join(os.environ.get("PERM_ASM_DIR") or os.path.join(ROOT, "asm"), module, "text", "*.s")):
         text = open(path).read()
         m = re.search(r"^glabel %s\n.*?^endlabel %s\n" % (re.escape(func), re.escape(func)),
                       text, re.M | re.S)

@@ -30,7 +30,9 @@ static void once(const char *n) { if (getenv("RT_TRACE")) fprintf(stderr, "rt_fl
 /* ------------------------------------------------ the host tick as game_core */
 static void (*core_fn)(void);
 static void (*back_fn)(void);
+static void (*village_fn)(void);
 void rt_flow_set_back(void (*fn)(void)) { back_fn = fn; }
+void rt_flow_set_village(void (*fn)(void)) { village_fn = fn; }
 void rt_flow_set_core(void (*fn)(void)) { core_fn = fn; }
 int game_core(void)
 {
@@ -44,6 +46,8 @@ void game2(void); void game3(void); void game4(void); void game5(void);
  * Game_task's step 4 dispatches them. Returns the mode it ran. */
 extern u8 quest_w[];
 int rt_flow_mode(void) { return game_w[0]; }
+void rt_flow_set_mode(int m) { game_w[0] = (u8)m; game_w[1] = 0; }
+int rt_game_stage(void) { return game_w[0x14]; }
 int rt_flow_tick(void)
 {
     static u32 last = 0xFFFFFFFF;
@@ -88,9 +92,11 @@ int rt_flow_tick(void)
     case 4: game4(); break;
     case 5: game5(); break;
     case 6:                     /* Game_task: offline, all_reset and back to the
-                                 * village (mode 0). The village is not ported:
-                                 * the host starts the quest again instead */
-        if (back_fn) {
+                                 * village (lobby.bin Local_main, rt_village.c);
+                                 * without it the host starts the quest again */
+        if (village_fn) {
+            village_fn();
+        } else if (back_fn) {
             if (getenv("RT_QUEST_TRACE"))
                 fprintf(stderr, "rt_flow: tick %d mode 6: back (quest restarted by the host)\n", tick);
             back_fn();

@@ -283,12 +283,14 @@ int frame_move(FRW *w) {
     f32 vb[4];
     f32 ra;
     f32 rb;
+    u16 new_var;
     f32 f;
 
     n = 0;
     mdl = w->mdl;
     skl = mdl->skl;
     for (; n < 4; n++) {
+        do { /* permuter: matching scheduling */
         if (n >= w->layers) {
             break;
         }
@@ -369,7 +371,8 @@ int frame_move(FRW *w) {
                     w->mt[n].stat = 0;
                 }
                 if (w->sub_on[n] != 0) {
-                    flPlayMotionExSI(w->mt[n].frame, mdl->mot0, n);
+                    new_var = n;
+                    flPlayMotionExSI(w->mt[new_var].frame, mdl->mot0, n);
                     frame_init_b(w, n);
                     flPlayMotionExSI(w->mt[n].frame, mdl->mot1, n);
                     flBlendMotionEx(mdl->mot0, mdl->mot1, n, 1.0f - w->sub_rate[n] / 100.0f, w->sub_rate[n] / 100.0f);
@@ -378,6 +381,7 @@ int frame_move(FRW *w) {
                 w->mt[n].stat = 1;
             }
         }
+        } while (0);
     }
     return end;
 }

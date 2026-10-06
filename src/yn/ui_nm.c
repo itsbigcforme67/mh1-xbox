@@ -1575,6 +1575,7 @@ void yn_connect_font_sub(void) {
     u8 *p;
     u8 *r;
     u8 *q;
+    int off;
 
     yn_set_pal(0);
     yn_printf(0x2C, 0x53, yn_memcard_mes_tbl[1 + yn_mc_get_current(ynw + 0x10D0)]);
@@ -1598,13 +1599,17 @@ void yn_connect_font_sub(void) {
             yn_strconv2(sp30, r, 0x2C);
             yn_utf8_to_sjis(sp130, sp30);
         }
-        sprintf(sp30, lit_4085, M2C_FIELD(ynw, s8 *, 0xC) + (i + 1), sp130);
+        {
+            int n = M2C_FIELD(ynw, s8 *, 0xC);
+            sprintf(sp30, lit_4085, n + (i + 1), sp130);
+        }
         yn_printf(0x2C, (s16)y, sp30);
         yn_set_pal(0);
     }
     q = ynw;
     if (M2C_FIELD(q, s8 *, 8) >= 2) {
-        p = M2C_FIELD(q, s8 *, 0xB) * 0x14 + q;
+        off = M2C_FIELD(q, s8 *, 0xB) * 0x14;
+        p = (u8 *)(off + (int)q);
         if (M2C_FIELD(p, s32 *, 0x250) == 0) {
             strcpy(sp130, lit_4086);
         } else {

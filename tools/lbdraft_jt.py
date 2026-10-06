@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""lbdraft_jt.py OUTFILE FUNC... : m2c drafts of lobby functions that use jump tables (draft.py cannot see the table data).
+"""lbdraft_jt.py OUTFILE FUNC... (MOD=main in the environment: same for main.bin) : m2c drafts of lobby functions that use jump tables (draft.py cannot see the table data).
 The table words are read from disc/mh1/split/lobby.bin. The output uses the same layout as draft.py output so that
 tools/lbd.py / lbconv.py / lbauto.py find it (name the file dj*.c in the drafts directory)."""
 import os, re, struct, subprocess, sys, tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 import draft as D
-IMG = open(os.path.join(ROOT, "disc/mh1/split/lobby.bin"), "rb").read()
-BASE = struct.unpack_from("<I", IMG, 8)[0]
-SYM = open(os.path.join(ROOT, "config/symbols/lobby.txt")).read()
+MOD = os.environ.get("MOD", "lobby")
+IMG = open(os.path.join(ROOT, "disc/mh1/split/%s.bin" % MOD), "rb").read()
+BASE = 0x100000 if MOD == "main" else struct.unpack_from("<I", IMG, 8)[0]
+SYM = open(os.path.join(ROOT, "config/symbols/%s.txt" % MOD)).read()
 def jtbls(asmtext, start, end):
     names = set(re.findall(r"%hi\((lit_\w+)\)", asmtext))
     out = ""
@@ -28,7 +29,7 @@ def jtbls(asmtext, start, end):
     return out
 def main():
     outf = sys.argv[1]
-    bl = D.blocks("lobby")
+    bl = D.blocks(MOD)
     res_all = []
     for name in sys.argv[2:]:
         if name not in bl:

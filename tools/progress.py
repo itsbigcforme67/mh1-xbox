@@ -29,6 +29,15 @@ def main():
         f = line.split("#", 1)[0].split()
         if f:
             ranges.append((f[0], int(f[1], 0), int(f[2], 0)))
+    # functions kept as original bytes inside a linked file (asm fallback)
+    # are not decompiled, so they don't count
+    raw = set()
+    rawpath = os.path.join(ROOT, "config/c_rawfuncs.txt")
+    if os.path.exists(rawpath):
+        for line in open(rawpath):
+            f = line.split("#", 1)[0].split()
+            if f:
+                raw.add((f[0], int(f[1], 0)))
 
     # functions kept as original bytes (asm stubs, config/c_rawfuncs.txt) sit inside registered ranges but are not decompiled
     raw = set()

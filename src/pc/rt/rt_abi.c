@@ -22,6 +22,8 @@ int frame_check2(void *w, int n, f32 f);
 int frame_check3(void *w, int n, f32 a, f32 b);
 int rtabi_frame_check(f32 f, PLW *pl, int n) { return frame_check(pl, n, f); }
 int rtabi_frame_check2(f32 f, PLW *pl, int n) { return frame_check2(pl, n, f); }
+/* include/lbnpc.h (EMW *, f32, int): the lobby NPC scripts */
+int rtabi_frame_check2_em(void *w, f32 f, int n) { return frame_check2(w, n, f); }
 int rtabi_frame_check3(f32 a, f32 b, PLW *pl, int n) { return frame_check3(pl, n, a, b); }
 
 /* Eft06_set: plf.h (f32 scale, PLW *, int arg, int x05, int joint);

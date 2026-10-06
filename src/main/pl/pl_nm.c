@@ -360,7 +360,8 @@ s32 wall_act_ck(PLW *pl, s16 mode) {
     }
     if (pl->work74C != 0) {
         for (i = 0, off = 0; i < 20; i++, off += 12) {
-            w = (PL_WALL *)((u8 *)pl_wall_mat[pl->id] + off);
+            w = pl_wall_mat[pl->id];
+            w = (PL_WALL *)((u8 *)w + off);
             flag = w->flag;
             if (flag == 0) {
                 break;
@@ -399,7 +400,8 @@ s32 wall_vec_set(PLW *pl, s16 mode) {
     }
     if (pl->work74C & (mode == 0 ? 0xE0000007 : 0x3E000)) {
         for (i = 0, off = 0; i < 20; i++, off += 12) {
-            w = (PL_WALL *)((u8 *)pl_wall_mat[pl->id] + off);
+            w = pl_wall_mat[pl->id];
+            w = (PL_WALL *)((u8 *)w + off);
             flag = w->flag;
             if (flag == 0) {
                 break;
@@ -1191,7 +1193,7 @@ void pl_dm008(PLW *pl) {
     }
 }
 
-/* near-match (not built): pl_demo000 - 1 instruction differs (`addu s0,v1,a0` vs ours `addu s0,a0,v1`: operand order of base+index for the game_w.x28 slot pointer q). */
+/* pl_demo000 matches since `q = (u8 *)game_w.x28 + (int)i` (linked as pl_demo.c) */
 typedef struct { u8 _pad00[0x14]; s32 x14; } PL_QUEST_W_UNUSED;
 EMW *pull_enemy_work(void);
 void enemy_mv(EMW *);
@@ -1218,7 +1220,7 @@ void pl_demo000(PLW *pl) {
         g = (u8 *)&game_w;
         do {
             if ((g[0x28] == 0x12) && ((e = pull_enemy_work()) != 0)) {
-                q = (u8 *)(i + (int)game_w.x28);
+                q = (u8 *)game_w.x28 + (int)i;
                 e->mdl_no = i;
                 e->kind = *q;
                 e->stg = game_w.stage;
@@ -1818,10 +1820,11 @@ void pl_move_sub(PLW *pl) {
 
 
 s32 pl_flag_ck(PLW *pl, int f) {
-    if (!(f & 0x80000000)) {
+    if ((f & 0x80000000) == 0) {
         return pl->act_flag & f;
+    } else {
+        return pl->work394 & (f & 0x7FFFFFFF);
     }
-    return pl->work394 & (f & 0x7FFFFFFF);
 }
 
 
@@ -2020,6 +2023,8 @@ long Pl_item_num_ck3(PLW *pl, u16 id) {
     for (i = 0; i < 20; i++) {
         if (pl->item[i].id == id) {
             if (Item_data[id][3] == 0xFF) {
+                if ((pl && pl) && pl) { /* permuter no-op: changes only instruction scheduling */
+                }
                 return 0xFF;
             }
             return (s16)(Item_data[id][3] - pl->item[i].num);
@@ -2392,21 +2397,33 @@ void clr_used_heap(int, int);
 
 s32 Pl_scope_ck(PLW *pl) {
     if (pl->work35F != 7) {
-        return 0;
+        if (pl) { /* permuter no-op: gives the original's extra branch stub */
+            return 0;
+        } else {
+            return 0;
+        }
     }
     return (pl->wpn_ammo & 0x40) != 0;
 }
 
 s32 Pl_silencer_ck(PLW *pl) {
     if (pl->work35F != 7) {
-        return 0;
+        if (pl) { /* permuter no-op: gives the original's extra branch stub */
+            return 0;
+        } else {
+            return 0;
+        }
     }
     return (pl->wpn_ammo & 0x10) != 0;
 }
 
 s32 Pl_barrel_ck(PLW *pl) {
     if (pl->work35F != 7) {
-        return 0;
+        if (pl) { /* permuter no-op: gives the original's extra branch stub */
+            return 0;
+        } else {
+            return 0;
+        }
     }
     return (pl->wpn_ammo & 0x20) != 0;
 }
