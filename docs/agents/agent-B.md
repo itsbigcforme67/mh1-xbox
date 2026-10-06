@@ -816,3 +816,52 @@ Near-matches (best C in src/lobby/b/nm/ unless noted):
 - lb_npc_item_trans: first version written (arrays of rotation/offset floats, em_frame_check2 case 0x2AD returns early); constant stores scheduled differently (about 20 hunks).
 - lb_npc_trans, disp_status, lb_process_drawHelp: first hand-written C, register allocation far off (30-85 hunks); lb_process_select, lb_eat_set, event_eat_trans_ot0, lb_process_use_item unchanged.
 Lessons: a `switch (x) { case 0: ... }` single-case form reproduces `beqz; b` layouts (lb_npc_item_trans); `if (a == 0 || b != 7)` first gives "then" block before the switch (kyoukaListProg tail); `price > money` (not `money < price`) fixes the load order of the `sltu` compare; `sl++; sl++;` keeps real pointer increments where `sl += 2` folds into offsets (make_kyoukaList); hill-climbing over statement order (random move/swap, score = align hunks) found make_kyoukaList's store order after hand tries failed.
+
+## Lobby round 8, part 2 (agent B, after the crash): raw-byte holdout files
+Linked (rebuild OK for all five modules) as files whose only PS2 content is an `asm` stub fed by the original bytes (config/c_rawfuncs.txt,
+tools/b_rawwrap.py wraps a C definition as `#ifdef __MWERKS__ asm ... #else C #endif`). These are NOT true matches; the near-match C stays beside them
+(in the by file under `#else`, or in the nm file named in the file's header comment) and is what build_pc.sh uses:
+by156 shop_select_items (1 hunk: `slt at` vs `slt v0` in the x6E+1 compare), by157 lb_process_kyoukaListProg (same 1 hunk), by158 lb_process_use_item
+(shopList+0x26 base ordering), by159 Lb_put_itemIcon (first real C: sprite struct as s16[10], Item_data rows through `(&Item_data[0][5])[id*16]`; schedule/reg diffs),
+by160 value_result, by162 lb_armor_put_itemDetail, by163 shop_armor_question, by164 lb_process_select, by165 lb_process_drawHelp, by166 disp_status,
+by167 lb_npc_trans, by168 lb_npc_init, by169 lb_eat_set, by170 event_eat_trans_ot0, by171 set_dialog_square, by172 draw_dialog_square, by173 Draw_menu_square,
+by174 lb_npc_old_guild, by175 lb_shop_put_itemDetail, by176 lb_shop_tag_decide, by177 Lb_put_materialItem, by178 lb_mix_put_itemDetail, by179 lb_mix_decide.
+All village. tools/b_covered.py lists the functions in my range with no linked run (mostly online, plus lb_npc_item_trans, ef_move_sub_*, DispDialogData,
+Display_StringData, tk_dialog_mv02, DispNameAndIDonDialog). Lesson: `if (lim <= ++lbShop.x6E)` with an s8 lim fixes the registers of the s8 `x6E++` compare
+but the compare result still goes to `at`; `if (--lbShop.x6E < 0)` (pre-decrement inside the condition) removes the reload after the store.
+
+# Lobby round 9 (agent B): real matches from the raw-linked village functions
+Range now 0x533980-0x5AB000 (agent C took 0x5AB000 up; by159/167/168/175/176 sit there and were left as they were). Lobby 29.202% -> 29.605% (progress.py).
+Real matches (C compiled to the original bytes, removed from c_rawfuncs.txt or new; all five modules OK):
+- shop_armor_question (lb_by163): load `kind = lbShop.tbl[c*2]` THEN `id = lbShop.tbl[c*2+1]` with `c = lbShop.cur` first (pointer `e` form never gave the load order).
+- lb_armor_put_itemDetail (lb_by162): declare/assign `e` (tbl entry) before `ud` (User_data row), and read `kind` before `id` in the mode 0 branch (the last load fills the branch delay slot).
+- DispDialogData (lb_by180, new, 1312 bytes): header edits LB_DIALOG x06 s16->u16 (lhu proven) and yesno u8->s8 (lb proven). `flfntLocate` redeclared with s16 params
+  (rename-the-header trick) so `y` is not re-extended; `Sel_csr_disp(x, (s16)(y-2), w, 0x18, 0xB0008000)` takes FIVE arguments; `nwDispStr_Html(100.0f, 60.0f, 1.0f, htmlStr)`
+  passes floats in f12-f14 (m2c showed them as integers); `if (html != 1) {lines; switch} else {html}` layout, `do {...} while (*p)` text loop.
+- DispNameAndIDonDialog (lb_by181, new): `s16 y` as ANSI parameter, callee `font_print_double(int, s16, int, int, char *)` / `Draw_square(int, s16, ...)` redeclared
+  narrow so each call narrows its own argument; strings are the extern literals lit_226/227.
+- Lb_on_dialog (lb_by182, new): a two-case `switch` on `step` gave the ladder in the wrong order; `if (step == 10) {...return;} if (step == 13) {...}` matched. x0A is read as u8 here (`(u8)n->x0A`).
+Still near-matches (best C in the by file under `#else` or the nm file):
+- shop_select_items (2 instructions) and lb_process_kyoukaListProg (2): `slt v0` vs `slt at` in the x6E+1 compare. `lim <= ++lbShop.x6E`, `lim > n` forms give `at` with the right registers; the `n < lim`
+  forms give `slt v0` but swap the lim/n registers (9 instructions). Tried about 40 spellings (temps, casts, ternary, `!`, `== 0`, int result) and a 1000-iteration permuter run.
+- lb_process_use_item (14): the original builds `shopList + 0x26` as an absolute constant (0x66DBC6) and adds `n*40`: `sll v1,a0,2; addu v1,v1,a0; ...; sll a1,v1,3; addu a0,a0,a1`; mine overwrites a0.
+  An alias `shopList_26 = 0x66DBC6` in config/lobby_aliases.txt gives the lui/addiu form but not the register choice (not committed).
+- lb_npc_old_guild (2): mv's live range has a hole in the original (a2 reused for the 105 compare constant); local init in case 0x64 only made it worse.
+- lb_mix_decide (4), lb_mix_put_itemDetail (6), Lb_put_materialItem (17), value_result (the original keeps `v` in a0 and re-masks u16 after each op), ef_move_sub_0053E360 (17, switch value in a1): no change.
+Remaining unwritten village functions in my range: plaza_* (online), ef_move_sub_0053E360 (has C), Lb_put_new_mail, plaza_capcomPage, put_member_info, Lbs_plaza_trans. Above 0x5AB000 (agent C now): lb_npc_item_trans, Display_StringData.
+
+# Lobby round 10 (agent B): lobby tail 0x5EE618-end
+Real matches: eft25_t (lb_ge2505.c, rodata 0x6686A0-0x668704) and tagAct_500-504 (lb_aq03.c). Lobby 29.605% -> see progress.py.
+eft25_t lessons: call prototypes with float args must be real (`flmatMakeTrans(u8 *, f32, f32, f32)`; K&R promotes floats to double); one `mat` buffer (not mat+mrv),
+`make_mat_srt(sc, rot, prim+8, mode & 0xFFFF, mat)` takes 5 args and rot is f32[3] with only rot[2] written; no `if (type < 9U)` wrapper (the switch range check is the only one);
+`flSetRenderState(0x19, (int)tr)` flips the delay-slot fill; prototype `eft_trans_sub_col(int, u8 *, int, u16, int)` avoids a re-extension of the u16 opt; colour `(g&0xFF) | ((r&0xFF)<<8 | (alpha<<24 | (b&0xFF)<<16))`
+(right-nested or); decl order x10, tex, opt, mode gave s6..s3; r,g,b declared b,r,g; eft_mdlw[0] (20-byte table) instead of a gp-addressed pointer; E25 f5/f6 are u8 (lbu) in lb_e25.c/lb_ge2505.c only.
+tagAct_500: `buf[(*(s32 *)(bsw + 4))++] = 60;` fixed the register order.
+eft25_m: `long k` made `(f32)k` call __floatdisf and a callee-saved f20; with `int k` and real prototypes (eft_vec_linear(f32, f32 *, f32 *) etc.) the frame matches (320) and about 316 align lines remain
+(the original spills par and tbl and keeps &v[1], &v[2] in s5/s6; mine keeps par in s5). Hill-climbs over declaration order and prologue statement order only got 332 -> 316.
+Still near: itembox_cursor_mv (2: daddiu for 9), sellout (34: w in a1 not a2; permuter 1 hour no gain), Disp_lb_item_box, pickup, Disp_TABLE_Line 2 (arg load order), BsBody00_ReqSrc (5, delay slot),
+Plaza_chatlog_mv 5, lb_process_kyoukaListProg (lim extension lands in v0 not v1; separate int temp did not help).
+
+## Lobby round 10b (agent B)
+BsBody00_ReqSrc matched (lb_au07.c): the original is `if (hide) { switch (MMBB_LOGIN) { case 2: case 1: ...; break; default: break; } } else {...}` (no early returns; the switch exit jumps straight to the epilogue).
+Owner paused browser work mid-round. Plaza_chatlog_mv still 5 (u8 PZ_TOP decrement lands in v0 not in place), itembox_cursor_mv still 2 (daddiu 9; tried int/u8/u16/long/ternary forms). tagAct_600/601 drafted in scratch only: bsw field reads must be `(bsw + bsw[0xE96C])[0xE96C]` with the first read not CSE'd; not finished.

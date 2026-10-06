@@ -42,6 +42,13 @@ typedef struct {
     int ntex;
     gfx_texture **tex;
     flmat *invbind;         /* per bone: inverse(bind world) */
+    /* material colour override (player_trans 0x167C38: the hair part's
+     * first clay's first material gets PLW+0x5FC): has_tint set by the
+     * caller; the vertices of part 0's first material are multiplied by
+     * tint (0..1) when posed */
+    int has_tint;
+    float tint[3];
+    uint8_t *tint_mask;     /* part 0: 1 = vertex used by its first material (built lazily) */
 } fl_model;
 
 /* amo: AMO bytes; ahi: AHI bytes or {NULL,0}; tex: *_tex.bin link file or

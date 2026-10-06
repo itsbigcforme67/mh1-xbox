@@ -926,3 +926,43 @@ frames per second.
   CONTINUE -> character select shows the saved hunter -> village; female
   hunter with face 4 in the village; bed save in the house writes the card
   file; item box store works. Not compared with the PS2.
+
+### First quest loop, shops, matched lobby code (agent A, 6 Oct 2026)
+- The Elder's first quest (131, "deliver 2 raw meat") from power-on to the
+  next CONTINUE: Aptonoth (em12_nm.c, kind 12) and em29 (a breakable target)
+  run on the PC; their tables that config/symbols lacks are imported by
+  address (`NAME 0xADDR 0xSIZE` lines in src/pc/rt/tables.txt). Carving
+  (pl_mv071 arg 3) gives raw meat; the camp's delivery box is unique spot
+  kind 21 (10350,40,10640, circle -> Share_item_conv): "all items delivered",
+  quest clear, 20 s, reward screen, money screen (+50z, counted up 1z at a
+  time then the rest), village.
+- Reward screen: ListSelect(&cur, keys, 2) (the count 2 is a2 left over in
+  the asm, 0x292DB8); "end receiving" works.
+- Village re-entry reloads lobby.bin's data and zeroes its .bss
+  (rt_lb_reload = Load_overlay(3)); before, client_work said "village motions
+  loaded" while the quest had replaced them and the hunter walked on the spot.
+- Shops: item shop buy (-20z, herb to the pouch) and sell (+1z) checked; owned
+  counts printed (font_print_ex count in t0); forge weapon list opens (crash
+  fixed: lb_process_drawHelp read 16-bit list fields as s32).
+- Spot hints ("square: enter house"): Lb_put_unique_act_hint (lb_ah.c, taken
+  with PICK) and main's hint_tbl[0] mapped to lobby 0x64F1F0.
+- Matched lobby code: tools/pc_lobby_matched.txt (56 files whose functions
+  the PC took from *_nm copies) and LOBBY3 (7 that were gen_rt_auto
+  stand-ins, e.g. cnWrap_SoundRequest: the village menu sounds) are linked;
+  BMATCH weakens the other copies. PICK="file:sym" links single functions of
+  a whole-file C.
+- Hair colour: player_trans (0x167C38) writes PLW+0x5FC into the head part's
+  first clay's first material; the PC multiplies that material's vertices
+  (fl_model tint). Not compared with the PS2.
+- Test aids: `RT_SHOTS=t1,t2,...` (with --shot X.png also X_<tick>.png),
+  `RT_PL_WARP="t,x,z;t,x,z"`, `RT_PL_WARP_EM="t1,t2-t3"` (next to the
+  target's carve point or body), `RT_PL_TARGET="tick:slot,..."` (which
+  monster AIM / WARP_EM / DMG_MUL use), RT_SPOT_TRACE lists exits too,
+  RT_LB_WARP counts village ticks over all visits; RT_QUEST_TRACE prints the
+  quest's condition program and every Gold_add. tools/mk_input.py builds
+  --input scripts from absolute ticks; tools/test_quest_loop.sh is the loop
+  check (tools/pc_scripts/).
+- Not done: opening movie (Sofdec decoding is not cheap: left skipped), the
+  character screen's 3D hunter, forge list icons / page title (garbage),
+  greeting window under the item shop's buy list, colour streaks over a
+  CLEAR!! quest card. Nothing here compared with the PS2.

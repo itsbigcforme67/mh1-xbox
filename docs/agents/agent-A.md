@@ -550,3 +550,34 @@ are not drawn), hair colour, the soft keyboard (typing stand-in), opening
 movie, options screen not tried, shop purchase with money, forge/armour
 screens not opened, the stale talk window stays under the shop list, save
 after a quest (op 9) not exercised, ARM speed of the boot not measured.
+
+## Assignment 19: the first quest loop, shops, hair colour, matched lobby code (6 Oct 2026)
+Details in docs/pc.md "First quest loop, shops, matched lobby code". PC-side
+files plus PC-only fixes in not-built near-match files (f_reward_nm.c,
+lbshop2_nm.c, lb_mix_nm.c, b/nm/lb_process_drawHelp.c, lb_village_nm.c);
+no include/ headers edited, no PS2-built file changed.
+- Quest 131 (the Elder's first quest, deliver 2 raw meat) playable end to end:
+  Aptonoth (em12_nm.c) and em29 run on the PC, carve, delivery box, reward
+  screen, money, back to the village, bed save, CONTINUE keeps money, pouch
+  and the quest's CLEAR!! mark. tools/test_quest_loop.sh checks it (~5 s).
+- Fixes: reward screen menu (ListSelect count in a2), lobby.bin reloaded per
+  village entry (hunter walked on the spot after a quest), shop owned counts,
+  forge crash (16-bit shop fields read as s32), hint_tbl mapped (spot hints).
+- 63 matched lobby files now linked instead of near-match copies / stand-ins
+  (tools/pc_lobby_matched.txt, LOBBY3, PICK in build_pc.sh).
+- Hair colour: PLW+0x5FC tints the head part's first material (player_trans
+  0x167C38), as the PS2 does; not compared with the PS2 picture.
+- Lessons: a matched C file can still carry an x86 trap that the near-match
+  copy did not (a0 left over: lb_by71 Lb_npc_mv; float argument order:
+  lb_check_target(f32, ...) vs the near-match's (..., f32)). Run
+  tools/argregs.py --check on every file newly linked for the PC, and check
+  that callers in other PC files declare float arguments in the same order.
+  Overlay data must be reloaded when the PS2 reloads the overlay
+  (Load_overlay = load_bin + mwOverlayInit). An m2c draft reading a 16-bit
+  field as s32 at an odd half-word offset reads its neighbour too
+  (lb_process_drawHelp +0x24/+0x26).
+Not done: opening movie (Sofdec MPEG: needs a video decoder, left skipped),
+character-screen 3D preview, forge list glitches (weapon-class icons and the
+yellow page title are garbage), the item shop's buy list still shows the
+greeting talk window on its left (sell list does not; whether the PS2 keeps
+it is unknown), colour streaks over a quest card marked CLEAR!!.

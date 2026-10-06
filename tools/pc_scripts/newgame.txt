@@ -1,0 +1,1 @@
+idle*600,start*2,idle*60,dup*2,idle*10,circle*2,idle*100,circle*2,idle*20,ddown*2,idle*6,ddown*2,idle*6,ddown*2,idle*6,ddown*2,idle*6,ddown*2,idle*6,ddown*2,idle*6,circle*2,idle*20,dleft*2,idle*6,circle*2,idle*90,circle*2,idle*60,circle*2,idle*120,circle*2,idle*120,dleft*2,idle*20,circle*2,idle*150,circle*2,idle*90

@@ -1,3 +1,4 @@
+/* PC note: the shop-list fields at +0x24 (lh) and +0x26 (lhu) are 16-bit in the asm (0x53B764, 0x53B7B4); reading them as s32 crashed the PC forge screen. */
 #include "lobby_s.h"
 extern char kakou_tbl[];
 extern char shopList2[];
@@ -47,27 +48,27 @@ void lb_process_drawHelp(void) {
                 var_a1 = value_result(F(u16, &lbShop, 0x58), F(u16, (temp_v1 + (int)lbShop.list), 0x26), 7, temp_a3) & 0xFFFF;
                 var_s0 = 1;
             }
-            if (*(s32 *)(&shopList2[0x24] + (lbShop.x70 * 0x28)) == 2) {
+            if (*(s16 *)(&shopList2[0x24] + (lbShop.x70 * 0x28)) == 2) {
                 Lb_draw_square(0x11F, 0xFC, 0x141, 2);
                 Lb_put_my_job();
                 return;
             }
             goto block_12;
         }
-        var_s4 = (int)&buki_sei_tbl + (*(s32 *)((int)&shopList + 0x26 + temp_v1) * 0x18);
+        var_s4 = (int)&buki_sei_tbl + (*(u16 *)((int)&shopList + 0x26 + temp_v1) * 0x18)   /* lhu (asm 0x53B7B4) */;
         var_s1 = F(u16, var_s4, 2);
         var_s2 = (u16) F(u8, var_s4, 0);
-        if (*(s32 *)((int)&shopList + 0x24 + (lbShop.x70 * 0x28)) == 2) {
+        if (*(s16 *)((int)&shopList + 0x24 + (lbShop.x70 * 0x28)) == 2) {
             Lb_draw_square(0x11F, 0xFC, 0x141, 2);
             Lb_put_my_job();
             return;
         }
         goto block_12;
     }
-    var_s4 = (int)&bou_sei_tbl + (*(s32 *)((int)&shopList + 0x26 + temp_v1) * 0x18);
+    var_s4 = (int)&bou_sei_tbl + (*(u16 *)((int)&shopList + 0x26 + temp_v1) * 0x18)   /* lhu (asm 0x53B7B4) */;
     var_s1 = F(u16, var_s4, 2);
     var_s2 = (u16) F(u8, var_s4, 0);
-    if (*(s32 *)((int)&shopList + 0x24 + (lbShop.x70 * 0x28)) == 2) {
+    if (*(s16 *)((int)&shopList + 0x24 + (lbShop.x70 * 0x28)) == 2) {
         Lb_draw_square(0x11F, 0xFC, 0x141, 2);
         Lb_put_my_job();
         return;
@@ -133,8 +134,7 @@ block_32:
         if (var_s4_2 == 0x3E7) {
             font_print_ex(0x1B0, 0x11A, 0, &lit_1226_006555D8);
         } else {
-            Lb_get_armor_num((u8) var_s2);
-            font_print_ex(0x1B0, 0x11A, 0, &lit_1227_006555E0);
+            font_print_ex(0x1B0, 0x11A, 0, &lit_1227_006555E0, Lb_get_armor_num((u8) var_s2, var_s1));  /* asm 0x53BB60: a0 s2, a1 s1, t0 = result */
         }
         flfntSetSize(0x12, 0x12);
         Lb_put_my_job();

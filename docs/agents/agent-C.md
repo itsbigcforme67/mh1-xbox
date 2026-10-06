@@ -997,3 +997,55 @@ Also linked later in the pass: pl_mv060 (pl/plx12, 0x13EA40), edit_create_model 
 Still near-match, tried this pass without success: Pit_mv 4 / Pit_mv_lb 3 (the original loads `now` into a0 and copies it to the saved register; assignment
 inside the argument, int/u16/u32 types, a hold variable and statement orders all give the same 3), load_shadow 2, menu_data_monster_sub 5, pl_dm008/pl_at012
 (the original re-copies a0 from s0 in the first call block), Pl_slash_lv_ck, se_req2 7 (permuter ran 15 minutes), em_dur_set 8, release_model 7.
+
+## Fourteenth pass (Sonnet worker C, after the crash restart)
+Remaining unmatched main-module functions in my ranges are all written in C now (nm files) except network/library code (prot_00, npc_trans is C but 30 off,
+sceUsbKb*, _start). Linked (all five `tools/rebuild.sh` OK): Pit_disp_menu_equipment (menu/menu41.c, 0x1337A0) and release_tex_sub (tex/reltex.c, now
+0x11E910-0x11E9D8 with release_texture). No header edits. Lessons:
+- Pit_disp_menu_equipment: `u32 v` (not int) for `(f32)v` gives the unsigned-convert branch; EquipmentDescriptionWindow takes a 5th int argument (original sets t0=0),
+  so the prototype in menu_disp_nm.c was widened (the menuNN.c files that call it with four args still match, the extra register is only set by this caller);
+  assigning `q.s[0]` before `q.s[2]` fixed the constant load order.
+- release_tex_sub: `for (i = 0; i < n; i++) { p = &mem_tex[start]; ...; start++; }` (pointer recomputed from a counter that is bumped at the end) puts the address
+  computation behind the guard and keeps the loop in registers; pointer-walk and pre-loop pointer forms hoist it. Same idea as load_texlist.
+- tools/mkone.py NM.c OUT.c FUNC HEADER builds a one-function file from an nm file in one step.
+Still near-match, tried again: Pl_light_set 5 (lp/pb swap s6/s7, all 24 orders of the four pointer locals tried), WallHitInit/GroundHitInit 6 (decl order, block scopes,
+`int e = -1`: no change; tweak.py and a 15 minute permuter run found nothing), key_rept_du 5, em_dur_set 4-17, pl_dm008 2 (if/else forms are worse: 6-11),
+atck_data_set_shl2 4 hunks (the original copies 24 bytes as three 8-byte lw/sw pairs; 8-byte s32 struct, u32 pair and loop forms all give lwc1/swc1 or a rolled loop),
+aan_ofs_calc ~31 (the original keeps `aan` copy in v0 and consumes a0).
+
+## Lobby overlay, 0x5AB000-0x5C4E60 (agent C, 6-7 Oct 2026)
+Map (checked with tools/lbleft.py-style counting + jal/data-reference scan of lobby.bin; 100 functions, 46 KB were still asm before this pass):
+- 0x5AB000-0x5AE320: cnLBS network protocol (Match*, Patch*, bg-process return, GetRecvData*, SetSend*): online only.
+- 0x5AE320-0x5AE8D0: lbs_encode_ex / write_col_numeric / mmbbc_encode (bit encoders for the network strings): online only.
+- 0x5AE8D0-0x5AFFA0: item shop (lbshop2). Village AND online: B's note says the town code switches on Online_ck();
+  CheckItemPrice_005AFEE0 (shop price check, village shop) is the only unlinked function here.
+- 0x5AFFA0-0x5B2E90: Lb_join (guild counter "join a room"), lb_select_*: room list/select dialogs, reached from lb_check_status
+  through Lbc_ReadRoomInfo (network): online.
+- 0x5B2E90-0x5B4F80: lm_* lobby menus (member list, room member): online.
+- 0x5B4F80-0x5B9030: connecting_NN, tcp_init, server_select_NN, cmcs_NN, internet_lobby_act, lbc_login_*: online login.
+- 0x5B9030-0x5C2000: CallBack_Result_* / CallBack_Event_* (login, plaza member, mail, room events), Lbc_* room rules,
+  lbc_logout/admin message, Analysis_TagCode/Display_StringData (HTML-ish tag text in the lobby browser): online.
+- 0x5C2000-0x5C31A0: id_select/handle name selection, test_server_sel_disp, Get_ServerName: online.
+- 0x5C31A0-0x5C4E60: village NPC code: lb_npc_item_trans (NPC carried item draw) and ef_move_sub_005C49F0 (NPC sound
+  script) are the village functions that were left; the rest of the range is already linked (B's lb_by*/lb_bz*).
+Local_main (0x5D8680, F's range) reaches almost everything through function-pointer tables, so a plain jal walk from it finds nothing;
+the village/online split above is by caller (jal and pointer-table scan) and name.
+
+Linked this pass (rebuild OK, all five modules):
+- lb_vs01 (b/lb_vs01.c, 0x5C49F0-0x5C4CE8) ef_move_sub_005C49F0: village NPC sound script. Compare chain 2B6..2,1 = labels written ascending
+  (case 1 is an explicit empty case); `ashi_sd_req_005C4980(em, f32)` needs an ANSI prototype (float in f12, em in a0, first call leaves a0).
+- lb_vs02 (b/lb_vs02.c, 0x5C31A0-0x5C34F8) lb_npc_item_trans: village NPC item draw. Lessons (each confirmed by the match):
+  * `kind == 0`, `ex[0xE] == 3` tests written as nested ONE-CASE switches (beq; b end), not &&.
+  * `em_frame_check2(em, 80.0f, 0)`: the callee takes (EMW *, f32, int); with a0 untouched the compiler keeps em in a0 and puts the
+    ex pointer in a1.
+  * `case 0x2AD: if (check != 0) return; case 0x2AB: case 0x2AC: ...` (fall into the body).
+  * Two FLMAT locals: declare `m` before `jm` (stack order); decl order of mw/c/mat/n/i found with tools/lbdbf.py.
+  * The order of the 14 constant stores + the clay pointer decides the constant-load scheduling. A hill-climb over single-statement
+    moves (one round, ~200 compiles) went 20 -> 0 after a group permutation (720 orders) got it to 20. Scripts were scratch (not committed):
+    permute groups, then try every "move one line to another position"; only use it for independent stores (not for calls).
+Near-matches left in the range, all online, mostly 100+ instructions off (b/nm/*.c, cnet/cnlbs_nm.c): Lb_join 306/593, lb_select_room,
+lm_member_trans, lm_room_member_mv, server_select_*, tcp_init, internet_lobby_act, lbc_login_*, CallBack_*; small ones that stay stuck on scheduling
+(statement-order hill-climb found nothing): cmcs_00 4, connecting_00 3, transOtSelectHandleName 4, net_Check_FriendData 5, _cnet_RecvFromLbs_MatchPlSide 2
+(original: the by-value result record is at sp+24 and the received byte at sp+31, which overlap; union/1-byte struct forms tried, no match),
+MatchOpponentInfo 3. CheckItemPrice_005AFEE0 (village shop): 24 off with `&&`, 32 off with a one-case switch (right size, wrong register use);
+the original has both price branches as explicit slt/beq/b blocks where ours folds the first one into xori.

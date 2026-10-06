@@ -167,11 +167,11 @@ void lb_shop_put_itemDetail(void) {
         }
         t = have;
         if (t == 0xFF) {
-            font_print_ex(0x1B0, 0x11A, 2, lit_324_0065E1D0);
+            font_print_ex(0x1B0, 0x11A, 2, lit_324_0065E1D0, t);   /* t0 = t (asm 0x5AF160) */
         } else if (t >= *((u8 *)&Item_data[0].max + off)) {
-            font_print_ex(0x1B0, 0x11A, 2, lit_325_0065E1D8);
+            font_print_ex(0x1B0, 0x11A, 2, lit_325_0065E1D8, t);
         } else {
-            font_print_ex(0x1B0, 0x11A, 0, lit_325_0065E1D8);
+            font_print_ex(0x1B0, 0x11A, 0, lit_325_0065E1D8, t);
         }
     } else {
         flfntLocate(0x168, 0x108);

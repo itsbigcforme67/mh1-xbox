@@ -170,7 +170,19 @@ LOBBY2="src/lobby/f/lb_ib.c src/lobby/f/lb_tu_ib.c src/lobby/f/lb_ad.c src/lobby
 # linked as they are; the near-match / stand-in copies of the same
 # functions in other lobby objects are weakened after compiling (BMATCH)
 BMATCH="$(ls src/lobby/b/lb_by13[5-9].c src/lobby/b/lb_by14[0-9].c src/lobby/b/lb_by15[0-2].c 2>/dev/null | tr '\n' ' ')"
-LOBBY="$LOBBY $LOBBY2 $BMATCH"
+# every other matched lobby file whose functions the PC took from a near-match
+# copy or a stand-in (list: tools/pc_lobby_matched.txt)
+BMATCH="$BMATCH $(grep -v '^#' tools/pc_lobby_matched.txt | tr '\n' ' ')"
+# matched lobby functions that were stand-ins (gen_rt_auto) until now:
+# NPC sound types, the guild-hall board / status init, the village menu
+# sounds (cnWrap_SoundRequest), the forge's value_result, lobby client
+# helpers (round 19)
+LOBBY3="src/lobby/b/lb_by122.c src/lobby/b/lb_by123.c src/lobby/b/lb_bz98.c src/lobby/b/lb_bz145.c \
+        src/lobby/b/lb_bz137.c src/lobby/b/lb_bz110.c src/lobby/b/nm/value_result.c"
+# PICK: whole-file C from which only the named functions are wanted (all its
+# other definitions are weakened: the copies already linked win)
+PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint"
+LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*}"; done)"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
 WEAK="mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT"
@@ -234,7 +246,7 @@ for f in $GAME; do
     src/main/stage/f_stage.c) ABI="-Dhit_point_cbd=rtabi_hit_point_cbd" ;;
     # lobby C: frame_check2 / em_frame_check declared with the float first
     # (include/lobby_f.h, the lobby NPC files) or second (include/lbnpc.h)
-    src/lobby/lb/lb_em*_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
+    src/lobby/lb/lb_em*_nm.c|src/lobby/lb/lbem*.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
     src/lobby/lb/lbnpc_nm.c) ABI="-Dframe_check2=rtabi_frame_check2_em" ;;
     src/lobby/f/*) ABI="-Dframe_check2=rtabi_frame_check2" ;;
     # game_core (swset, move, trans, hit_check) is the host tick (rt_quest.c)
@@ -269,11 +281,11 @@ for f in $GAME; do
     # lobby C that gcc rejects as is: a 128-bit quadword copy (lq/sq on the
     # PS2), a static that the header declares global, a call without the
     # argument the header gives
-    src/lobby/f/lb_f.c|src/lobby/f/lb_d.c|src/lobby/f/lb_n.c)
+    src/lobby/f/lb_f.c|src/lobby/f/lb_d.c|src/lobby/f/lb_n.c|src/lobby/f/lb_q01.c|src/lobby/f/lb_u.c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/^typedef unsigned __int128 u128;/typedef struct { unsigned int w[4]; } u128;/;
              s/^static s8 check_sender0()/s8 check_sender0()/;
-             s/^    Lbc_init_network_work();/    Lbc_init_network_work(0);/' "$f" > "$src"
+             s/^\( *\)Lbc_init_network_work();/\1Lbc_init_network_work(0);/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
     # ItemPickingDeclaration calls Pl_master_ck() with its own a0 (arg) left over
     src/main/menu/menu_nm.c)
@@ -308,12 +320,19 @@ for f in $GAME; do
     # single symbols that another file also defines (the lobby NPC files'
     # empty dummy_em_prog: main's f_em one wins)
     case "$b" in lb__lb_em*_nm) $OBJCOPY --weaken-symbol=dummy_em_prog "$o" ;; esac
+    for p in $PICK; do
+        [ "${p%%:*}" = "$f" ] || continue
+        KEEP=",${p#*:},"
+        $OBJCOPY $($NM --defined-only -g "$o" | awk -v k="$KEEP" 'NF == 3 && index(k, "," $3 ",") == 0 {printf "--weaken-symbol=%s ", $3}') "$o"
+    done
     OBJS="$OBJS $o"
 done
 # the matched lobby functions win over other lobby objects' copies
+BOBJS=$(for f in $BMATCH; do printf 'build/pc/lb__%s.o ' "$(basename "$f" .c)"; done)
 BSYMS=$(for f in $BMATCH; do $NM --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && $2 == "T" {print $3}'; done | sort -u)
 for o in $OBJS; do
-    case "$o" in build/pc/lb__lb_by13[5-9].o|build/pc/lb__lb_by14[0-9].o|build/pc/lb__lb_by15[0-2].o) continue ;; build/pc/lb__*) ;; *) continue ;; esac
+    case " $BOBJS " in *" $o "*) continue ;; esac
+    case "$o" in build/pc/lb__*) ;; *) continue ;; esac
     W=$($NM --defined-only -g "$o" | awk 'NF == 3 {print $3}' | sort -u | comm -12 - "$(printf '%s\n' $BSYMS | sort -u > build/pc/.bsyms; echo build/pc/.bsyms)")
     [ -n "$W" ] && $OBJCOPY $(for w in $W; do printf -- '--weaken-symbol=%s ' "$w"; done) "$o"
 done

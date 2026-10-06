@@ -201,6 +201,8 @@ void fl_model_release(fl_model *m)
     free(m->tex);
     free(m->part);
     free(m->invbind);
+    free(m->tint_mask);
+    m->tint_mask = NULL;
     fmt_ahi_free(&m->skel);
     fmt_amo_free(&m->amo);
     memset(m, 0, sizeof *m);
@@ -223,9 +225,18 @@ void fl_model_pose(fl_model *m, const flmat *bone_world_mats, const fl_light *L)
         int v;
         if (!fp->skinpos)
             continue;
+        if (m->has_tint && pi == 0 && !m->tint_mask && p->nstrip > 0) {   /* part 0's first material */
+            int s, k, mat0 = p->strip[0].material;
+            m->tint_mask = calloc((size_t)p->nvert + 1, 1);
+            for (s = 0; s < p->nstrip; s++)
+                if (p->strip[s].material == mat0)
+                    for (k = 0; k < p->strip[s].count; k++)
+                        if (p->index[p->strip[s].first + k] < p->nvert)
+                            m->tint_mask[p->index[p->strip[s].first + k]] = 1;
+        }
         for (v = 0; v < p->nvert; v++) {
             float pos[3], n[3] = { 0, 1, 0 }, lc[3], len;
-            int c;
+            int c, tint = m->has_tint && pi == 0 && m->tint_mask && m->tint_mask[v];
             if (skin && fp->skinned && p->infl_n[v]) {
                 int j;
                 pos[0] = pos[1] = pos[2] = 0;
@@ -267,6 +278,9 @@ void fl_model_pose(fl_model *m, const flmat *bone_world_mats, const fl_light *L)
                     }
                 }
             }
+            if (tint)
+                for (c = 0; c < 3; c++)
+                    lc[c] = (lc[c] > 1 ? 1 : lc[c]) * m->tint[c];
             for (c = 0; c < 3; c++) {
                 float vc = (p->col ? p->col[4 * v + c] : 255.0f) * (lc[c] > 1 ? 1 : lc[c]);
                 fp->skincol[4 * v + c] = (uint8_t)(vc > 255 ? 255 : vc < 0 ? 0 : vc);
