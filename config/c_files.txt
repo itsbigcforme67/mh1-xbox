@@ -1231,6 +1231,7 @@ game 0x005B7EE0 0x005B808C em/em14_r40
 game 0x005B9ED0 0x005BA13C em/em14_r41
 game 0x00563080 0x005631E0 em/em_cmd_r90
 game 0x00565EA0 0x00565F20 em/em_cmd_r91
+game 0x005355A0 0x00535824 em/em_core_r90
 lobby 0x00533A00 0x00535238 lb/lb_talk
 lobby:rodata 0x00654AD0 0x00654B1C lb/lb_talk
 lobby 0x00604520 0x006045AC f/lb_z131
