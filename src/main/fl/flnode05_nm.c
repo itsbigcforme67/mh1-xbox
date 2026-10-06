@@ -65,6 +65,8 @@ int flGetHierarchy3(FLNODE *, int, int, int);
 int flGetHierarchy3_sub(FLNODE *, FLNODE *, FLNODE *);
 
 int flGetHierarchy3(FLNODE *nodes, int h, int unused, int mode) {
+    FLNODE *m;
+    int j;
     int i;
     int cnt;
     u8 *d;
@@ -87,11 +89,11 @@ int flGetHierarchy3(FLNODE *nodes, int h, int unused, int mode) {
         flmatInit(n->mat);
         n++;
     }
-    i = 0;
-    n = nodes;
-    for (; i < cnt; i++) {
-        flGetHierarchyData2(n, d, i);
-        n++;
+    j = 0;
+    m = nodes;
+    for (; j < cnt; j++) {
+        flGetHierarchyData2(m, d, j);
+        m++;
     }
     flGetHierarchy3_sub(nodes, nodes, 0);
     switch (mode) {
