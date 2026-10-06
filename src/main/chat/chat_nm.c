@@ -38,16 +38,17 @@ void DispFrameListOptionArrowC(void *, int);
 void DispFrameMessageA(void *, void *, int);
 void DispFrameMessage(void *, void *);
 void PutButtonICON(void *, int);
-void disp_cursorC(s16, s16, s16, s16, s16, int);
+void disp_cursorC(s16, s16, s16, s16, int, int);
 void Disp_help_mess(int, int);
 u8 Equip_moji_color_rare(u8);
+int Equip_moji_color_rare_i(u8);
 
 typedef struct PFLP4 { s16 p[4]; u32 col; } PFLP4;
 typedef struct PFLP8 { s16 p[4]; u32 col; s16 uv[4]; } PFLP8;
 
 /* the highlight bar of row n of a list at y with rows h high, from x0 to
  * x1 (rect {x0, y0, x1, y1}; asm 0x2755D0) */
-void disp_cursorC(s16 x, s16 x1, s16 y, s16 h, s16 n, int col) {
+void disp_cursorC(s16 x, s16 x1, s16 y, s16 h, int n, int col) {
     PFLP4 q;
     u16 t;
 
@@ -411,23 +412,21 @@ void Disp_menu_help(void) {
 extern u8 Item_data[][16];
 extern u8 help_mess_00354680[];
 extern u32 item_col_tbl[];
-extern char lit_2796[8];
+extern char lit_2796[];
 extern s32 *pit_help_str_tbl[];
 
 void Disp_help_mess(int kind, int id) {
     PFLP8 q;
-    int k = kind & 0xFF;
-    int n = id & 0xFFFF;
     u8 *it;
 
-    if (k < 7 && n != 0xFFFF) {
-        if (k == 1 && n > 0x18) {
+    if ((u8)kind < 7 && (u16)id != 0xFFFF) {
+        if ((u8)kind == 1 && (u16)id > 0x18) {
             DispFrameMessage(help_mess_00354680, 0);
             flfntSetSize(0x12, 0x12);
             flfntLocate(0x168, 0x166);
             font_set_palette(FS16(help_mess_00354680, 8));
-            font_print_sp((void *)pit_help_str_tbl[1][n]);
-            it = Item_data[n - 0x18];
+            font_print_sp((void *)pit_help_str_tbl[1][(u16)id]);
+            it = Item_data[(u16)id - 0x18];
             reload_tex(1, 0x118);
             SetTextureStage(0x118);
             q.p[0] = 0xF4;
@@ -448,11 +447,11 @@ void Disp_help_mess(int kind, int id) {
             }
             flfntSetSize(0x10, 0x10);
             flfntLocate(0x132, 0x192);
-            font_set_palette(Equip_moji_color_rare(it[2]));
+            font_set_palette(Equip_moji_color_rare_i(it[2]));
             font_print(lit_2796, it[2] + 1);
             return;
         }
-        DispFrameMessage(help_mess_00354680, (void *)pit_help_str_tbl[k][n]);
+        DispFrameMessage(help_mess_00354680, (void *)pit_help_str_tbl[(u8)kind][(u16)id]);
     }
 }
 
@@ -497,8 +496,9 @@ extern PSWC Psw;
 int NPC_Message(s8 *s, u32 left, int mode, int flag) {
     s16 cnt;
     u32 w;
-    u32 pos = 0;
+    u32 pos;
     s8 c;
+    u16 v;
 
     if (PitMenu.open != 0) {
         return -1;
@@ -507,7 +507,7 @@ int NPC_Message(s8 *s, u32 left, int mode, int flag) {
         PitMenu.x06 = 0x10;
         return 0;
     }
-    if (left < PitMenu.x08 || *(s8 **)&PitMenu.x00 != s) {
+    if (PitMenu.x08 > left || *(s8 **)&PitMenu.x00 != s) {
         PitMenu.x04 = 0;
         PitMenu.x07 = 0;
     }
@@ -515,20 +515,19 @@ int NPC_Message(s8 *s, u32 left, int mode, int flag) {
     *(s8 **)&PitMenu.x00 = s;
     PitMenu.x06 = 1;
     c = *s;
+    pos = 0;
     while (c != 0) {
         pos++;
-        if (c != 0xA) {
-            switch (((c << 8) + s[1]) & 0xFFFF) {
-            case 0x8142:
-            case 0x8148:
+        if (c == 0xA) {
+            s += 1;
+        } else {
+            v = ((c << 8) + s[1]) & 0xFFFF;
+            if (v == 0x8142 || v == 0x8148) {
                 w = 0xF;
-                break;
-            case 0x8141:
+            } else if (v == 0x8141) {
                 w = 8;
-                break;
-            default:
+            } else {
                 w = 3;
-                break;
             }
             if (left < w) {
                 if (PitMenu.x04 < pos) {
@@ -543,8 +542,6 @@ int NPC_Message(s8 *s, u32 left, int mode, int flag) {
             }
             left -= w;
             s += 2;
-        } else {
-            s += 1;
         }
         c = *s;
     }
@@ -598,7 +595,6 @@ void Chat_move(int);
 
 void Chat_init(void) {
     int k = 0;
-    u16 z = 0;
 
     if (GW(0x1DC) != 0 && NPCZoomInCameraCheck() == 1) {
         k = 4;
@@ -606,8 +602,7 @@ void Chat_init(void) {
     PitMenu.open++;
     SoftKeyboard_pos_set(80.0f, 0x50);
     SoftKeyboard_set(k, 0xE, 0x2C, 0);
-    PitMenu.x0C = 0;
-    PitMenu.x0F = z;
+    PitMenu.x0F = PitMenu.x0C = 0;
     se_req(7, 0x11, 0);
     Chat_move(0);
 }
@@ -618,19 +613,20 @@ void SoftKeyboard_exit(void);
 s8 SoftKeyboard_move(s8 *, s16, s16);
 void chat_log_add(int, s8 *, PIT_CHAT *);
 void func_5CB100(u8, s8 *, u8);
-void net_send_chat(u8, int, s8 *, int);
+void net_send_chat(u8, int, s8 *, u8);
 void set01_set(int, int, int);
 
 
 void Chat_move(int a) {
     u16 sw0;
     u16 sw1;
-    s8 buf[0x30];
+    s8 buf[0x40];
     s8 r;
-    u8 *pl;
+    u8 w;
     int v;
+    struct { u8 _p[12]; u8 id; } *pl;
 
-    if (PitMenu.x18 != 0) {
+    if ((u8)PitMenu.x18 != 0) {
         set01_set(0, 0x14, 0);
         PitMenu.x18 = 0;
     }
@@ -639,17 +635,18 @@ void Chat_move(int a) {
     r = SoftKeyboard_move(buf, sw0, sw1);
     if (r != 0) {
         if (buf[0] != 0 && r > 0 && ChatKinsoku_chk((u8 *)buf) != 0) {
-            pl = (u8 *)&player_work[GW(0xD1)];
+            pl = (void *)&player_work[GW(0xD1)];
             if (GW(0x1DC) == 0) {
                 if (PitMenu.x15 != 0) {
                     v = 0xFF;
                 } else {
                     v = PitMenu.x16 & PitMenu.x19 & 0xFF;
                 }
-                chat_log_add(F8(pl, 0xC), buf, 0);
-                net_send_chat(F8(pl, 0xC), 1, buf, v & 0xFF);
+                w = v;
+                chat_log_add(pl->id, buf, 0);
+                net_send_chat(pl->id, 1, buf, w);
             } else {
-                func_5CB100(F8(pl, 0xC), buf, PitMenu.x17);
+                func_5CB100(pl->id, buf, PitMenu.x17);
             }
             PitMenu.x0F = 1;
             PitMenu.x0E = 1;
@@ -660,8 +657,7 @@ void Chat_move(int a) {
         Menu_chatlog_i();
         return;
     }
-    PitMenu.x0C = 0;
-    PitMenu.x0F = 0;
+    PitMenu.x0F = PitMenu.x0C = 0;
 }
 
 char *strcpy(char *, const char *);
@@ -871,8 +867,7 @@ int Menu_chatlog_mv(int sw) {
         }
     }
     if (PitMenu.logscr == 0) {
-        PitMenu.x0C = 0;
-        PitMenu.x0F = 0;
+        PitMenu.x0F = PitMenu.x0C = 0;
     }
     return sw;
 }
@@ -1041,7 +1036,7 @@ extern char lit_3351[];
 
 void Put_receive_mark(int n) {
     if ((u8)PitMenu.x0F != 0) {
-        if ((n & 0xFF) == 1) {
+        if ((u8)n == 1) {
             DispFrameMessage(pf_receive_mark, 0);
         }
         if ((System_timer & 0x1F) > 0xC) {
@@ -1072,16 +1067,15 @@ void Join_pl_chk(void) {
     PitMenu._pad1A = 0;
     PitMenu.x19 = 0;
     if (GW(0x1DC) == 0) {
-        g = (u8 *)&game_w;
-        for (i = 0; i < 4; i++, g++) {
-            if (GW(0xD1) != i && g[0x208] == 1) {
+        for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
+            if (game_w.master != i && g[0x208] == 1) {
                 PitMenu.x19 |= (1 << i) & 0xFF;
                 PitMenu._pad1A++;
             }
         }
     } else {
         for (i = 0; i < 8; i++) {
-            if (GW(0xD1) != i && func_5D8370(i) == 0) {
+            if (game_w.master != i && func_5D8370(i) == 0) {
                 PitMenu.x19 |= (1 << i) & 0xFF;
                 PitMenu._pad1A++;
             }
@@ -1397,7 +1391,8 @@ void EquipmentDescriptionWindow(u8 *a, s16 b, s16 c, int d, u8 *e) {
 
 extern char lit_3701[];
 extern char lit_3702[];
-void Put_PageArrow(s16, s16, int, int);
+void Put_PageArrow(int, int, int, int);
+void flfntLocate_i(int, int);
 void equip_exp_core(u8 *, s16, s16, int, u8 *);
 void Get_equip_icon_uv(u8 *, s16 *, s16 *);
 
@@ -1942,24 +1937,24 @@ void slash_level_bar(u8 *pl, s16 y) {
 
 extern char lit_4368[];
 
-void Put_PageArrow(s16 x, s16 y, int a, int b) {
+void Put_PageArrow(int x, int y, int a, int b) {
     PFLP8 q;
 
-    q.p[3] = 0x12;
     q.p[2] = 0xE;
+    q.p[3] = 0x12;
     q.p[1] = y;
     q.col = 0xFF20FF30;
-    q.p[0] = 0.8f * (f32)(x - 0x18);
+    q.p[0] = 0.8f * (f32)((s16)x - 0x18);
     *(u32 *)&q.uv[0] = 0x1A00A6;
     *(u32 *)&q.uv[2] = 0x2E0094;
     flps0008(&q);
-    q.p[0] = 0.8f * (f32)(x + 0x36);
-    *(u32 *)&q.uv[0] = 0x94;
-    *(u32 *)&q.uv[2] = 0xA6;
+    q.p[0] = 0.8f * (f32)((s16)x + 0x36);
+    q.uv[0] = 0x94;
+    q.uv[2] = 0xA6;
     flps0008(&q);
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
-    flfntLocate(x, y);
+    flfntLocate_i(x, y);
     font_print(lit_4368, a & 0xFF, b & 0xFF);
 }
 
@@ -2088,12 +2083,12 @@ int ChatKinsoku_chk(u8 *s) {
     u8 c = *p;
 
     while (c != 0) {
-        if (c == 0x81 && p[1] == 0x40) {
-            p += 2;
-            c = *p;
-        } else {
+        if (c != 0x81 || p[1] != 0x40) {
+            KinshiYogo_chk((char *)s);
             return 1;
         }
+        p += 2;
+        c = *p;
     }
     return 0;
 }
