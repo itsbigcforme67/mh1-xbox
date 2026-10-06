@@ -10,5 +10,7 @@ z=os.path.join(os.path.dirname(f),'zz.c')
 for i,v in enumerate(vs):
     open(z,'w').write(src[:a]+v.rstrip('\n')+'\n'+src[b:])
     out=subprocess.run(['./tools/cnt.sh',z,fn],capture_output=True,text=True).stdout.strip()
-    print(i,out or 'COMPILE ERROR/NONE')
+    al=subprocess.run(['python3','tools/align.py',z,fn],capture_output=True,text=True).stdout.split('\n')
+    n=sum(1 for l in al if l.startswith('   - ') or l.startswith('   + '))
+    print(i,out or 'COMPILE ERROR/NONE','align-lines',n)
 os.remove(z)

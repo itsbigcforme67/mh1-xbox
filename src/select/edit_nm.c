@@ -1,6 +1,7 @@
 /* select.bin 0x00534530-0x00538700: character make / edit screen and controller screen.
    (f_disp.s) Whole file; matching runs are split into edit00.c ... by tools/mkruns_mod.py. */
 #include "select.h"
+#define PSWV(i) (*(volatile u16 *)&Psw[i])
 
 void char_make_init(void) {
     EDIT_W *e = &edit_w;
@@ -228,7 +229,7 @@ loop:
     return 0;
 }
 
-void roll_move(PLW *w, s16 unused) {
+static void roll_move(PLW *w, s16 unused) {
     if (*(volatile u16 *)&Psw[4] & 8) {
         w->ang[1] -= 0x400;
     }
@@ -329,8 +330,7 @@ void disp_edit_spr(STASK *t, u8 *w) {
     SPR5 s;
     f32 sn;
     int i;
-    char **m;
-    s16 y;
+    int y;
     flSetRenderState(0x6C, 0);
     Sel_menu_disp(4);
     y = 0x60;
@@ -350,27 +350,27 @@ void disp_edit_spr(STASK *t, u8 *w) {
         arrow_disp(w);
     }
     flfntSetSize(0x14, 0x14);
-    for (i = 0, m = edit_menu_msg; i < 7; i++, m++, y += 0x20) {
-        font_print_ex(0x30, y, 0, lit_319_0053B628, *m);
+    for (i = 0; i < 7; i++, y += 0x20) {
+        font_print_ex(0x30, (s16)y, 0, lit_319_0053B628, edit_menu_msg[i]);
         switch (i) {
         case 0:
-            font_print_ex(0xB2, y, 5, lit_319_0053B628, w + 0x24);
+            font_print_ex(0xB2, (s16)y, 5, lit_319_0053B628, w + 0x24);
             break;
         case 1:
-            font_print_ex(0xE4, y, 5, lit_319_0053B628, sex_char_tbl[w[4]]);
+            font_print_ex(0xE4, (s16)y, 5, lit_319_0053B628, sex_char_tbl[w[4]]);
             break;
         case 2:
-            font_print_ex(0xE4, y, 5, lit_320_0053B630, w[5] + 1);
+            font_print_ex(0xE4, (s16)y, 5, lit_320_0053B630, w[5] + 1);
             break;
         case 3:
-            font_print_ex(0xE4, y, 5, lit_320_0053B630, w[6] + 1);
+            font_print_ex(0xE4, (s16)y, 5, lit_320_0053B630, w[6] + 1);
             break;
         case 4:
-            font_print_ex(0xE4, y, 5, lit_320_0053B630, w[7] + 1);
+            font_print_ex(0xE4, (s16)y, 5, lit_320_0053B630, w[7] + 1);
             break;
         case 5: {
             u32 c = *(u32 *)(w + 8);
-            font_print_ex(0xBC, y, 5, lit_321_0053B640, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF);
+            font_print_ex(0xBC, (s16)y, 5, lit_321_0053B640, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF);
             break;
         }
         }
@@ -876,37 +876,34 @@ int cmn_mongon_check_sub(s8 *str) {
 
 /* Near-match: edit screen task (steps: 0 init, 1 load, 2 menu, 3 name/colour edit, 4 confirm,
    5 save, 6-8 fade out and start the game, 9 cancel confirm, 10 back to the select task). */
+
 void Edit_task(STASK *t) {
     EDIT_W *e = &edit_w;
-    u32 btn;
-    u8 old;
+    u16 btn;
     s16 i;
     PLW *pl;
-    f32 *v;
-    f32 *ev;
-    u8 prev;
+    u32 prev;
     u8 r5;
 
     e->x3E = 0;
-    btn = (Psw[2] | Psw[12]) & 0xFFFF;
-    if (Psw[1] == Psw[0]) {
+    btn = PSWV(2) | PSWV(12);
+    if (PSWV(1) == PSWV(0)) {
         e->x40++;
-        if (e->x40 >= 0xB) {
+        if (e->x40 > 0xA) {
             e->x40 = 0xA;
-            e->x3E = Psw[0];
+            e->x3E = PSWV(0);
         }
     } else {
         e->x40 = 0;
     }
-    e->x3E |= Psw[2];
+    e->x3E = e->x3E | PSWV(2);
     if (e->x3D != 0) {
         e->x3D--;
     }
     SetTrnslMode(4, 5);
     switch (t->step) {
     case 0:
-        t->step++;
-        all_model_free(t->step - 1);
+        all_model_free(t->step++);
         all_motion_free();
         model_work_init();
         init_move_work();
@@ -965,7 +962,7 @@ void Edit_task(STASK *t) {
         }
         prev = e->x0[2];
         if (Psw[2] & 0x20) {
-            switch (prev) {
+            switch ((u8)prev) {
             case 0:
                 SoftKeyboard_set(3, 0xF, 8, e->name);
                 /* fall through */
@@ -989,21 +986,19 @@ void Edit_task(STASK *t) {
                 e->x0[3] = 1;
                 break;
             }
-            if (e->x0[2] != prev) {
-                ed_view_set(player_work, view_type[e->x0[2]], 1);
-            }
         } else if (Psw[2] & 0x40) {
-            ed_cancel_se();
+            cancel_se();
             t->step = 9;
             e->x0[3] = 1;
+            goto common;
         } else {
             if (Psw[2] & 0x2000) {
-                if (prev == 0) {
+                if ((u8)prev == 0) {
                     e->x0[2] = 6;
                 } else {
                     e->x0[2] = prev - 1;
                 }
-                se_req(7, 0x12, 0);
+                cursor_se();
             }
             if (Psw[2] & 0x1000) {
                 if (e->x0[2] >= 6) {
@@ -1011,12 +1006,12 @@ void Edit_task(STASK *t) {
                 } else {
                     e->x0[2]++;
                 }
-                se_req(7, 0x12, 0);
+                cursor_se();
             }
             param_change_00536280((u8 *)e);
-            if (e->x0[2] != prev) {
-                ed_view_set(player_work, view_type[e->x0[2]], 1);
-            }
+        }
+        if (e->x0[2] != (u8)prev) {
+            ed_view_set(player_work, view_type[e->x0[2]], 1);
         }
         goto common;
     case 3:
@@ -1055,30 +1050,25 @@ void Edit_task(STASK *t) {
             e->x0[1] = 0;
             t->step++;
             McOperationSet(3);
-        } else if (!(Psw[2] & 0x20) || e->x0[3] != 1) {
-            if (Psw[2] & 0x40) {
-                t->step = 2;
-                ed_cancel_se();
-            } else {
-                if ((btn & 0x800) && e->x0[3] != 0) {
-                    se_req(7, 0x12, 0);
-                    e->x0[3] = 0;
-                }
-                if ((btn & 0x400) && e->x0[3] == 0) {
-                    se_req(7, 0x12, 0);
-                    e->x0[3] = 1;
-                }
-            }
-        } else {
+        } else if (((Psw[2] & 0x20) && e->x0[3] == 1) || (Psw[2] & 0x40)) {
             t->step = 2;
             ed_cancel_se();
+        } else {
+            if ((btn & 0x800) && e->x0[3] != 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 0;
+            }
+            if ((btn & 0x400) && e->x0[3] == 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 1;
+            }
         }
         goto common;
     case 5:
         for (i = 0, pl = player_work; i < 2; i++, pl++) {
             roll_move(pl, i);
         }
-        r5 = McCardOperation(pl, i) & 0xFF;
+        r5 = McCardOperation();
         if (r5 != 0) {
             if (r5 == 2) {
                 e->x3B = 0;
@@ -1088,20 +1078,19 @@ void Edit_task(STASK *t) {
             }
             user_data_copy((void *)e, 0xFF);
             t->step++;
-            ((SEL_GW *)&select_w)->xF6 = e->x0[1];
+            select_w.xB6 = e->x0[1];
             e->x38 = 0;
             ed_view_set(player_work, 2, 1);
-            for (i = 0, pl = player_work; i < 2; i++, pl++) {
-                pl->ang[1] = 0;
-                decide_chr_set(pl, e->x0[4], e->x0[6]);
+            for (i = 0; i < 2; i++) {
+                player_work[i].ang[1] = 0;
+                decide_chr_set(&player_work[i], e->x0[4], e->x0[6]);
             }
             se_req_bgm_vol(1, 2, 0);
             se_req_bgm_vol(1, 3, 0);
         }
         goto common;
     case 6:
-        e->x38++;
-        if (e->x38 >= 0x3C) {
+        if (++e->x38 >= 0x3C) {
             t->step++;
             fade_set(5);
         }
@@ -1113,8 +1102,7 @@ void Edit_task(STASK *t) {
         }
         goto common;
     case 8:
-        e->x38--;
-        if (e->x38 <= 0) {
+        if (--e->x38 <= 0) {
             Tsk_Exit(t);
             system_w.x10 = 0;
             system_w.x03 = 1;
@@ -1135,23 +1123,18 @@ void Edit_task(STASK *t) {
             se_req_bgm_vol(1, 2, 0);
             se_req_bgm_vol(1, 3, 0);
             fade_set(1);
-        } else if (!(Psw[2] & 0x20) || e->x0[3] != 1) {
-            if (Psw[2] & 0x40) {
-                t->step = 2;
-                ed_cancel_se();
-            } else {
-                if ((btn & 0x800) && e->x0[3] != 0) {
-                    se_req(7, 0x12, 0);
-                    e->x0[3] = 0;
-                }
-                if ((btn & 0x400) && e->x0[3] == 0) {
-                    se_req(7, 0x12, 0);
-                    e->x0[3] = 1;
-                }
-            }
-        } else {
+        } else if (((Psw[2] & 0x20) && e->x0[3] == 1) || (Psw[2] & 0x40)) {
             t->step = 2;
             ed_cancel_se();
+        } else {
+            if ((btn & 0x800) && e->x0[3] != 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 0;
+            }
+            if ((btn & 0x400) && e->x0[3] == 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 1;
+            }
         }
         goto common;
     case 10:
@@ -1165,25 +1148,21 @@ void Edit_task(STASK *t) {
     default:
     common:
         if (t->step >= 2) {
-            for (i = 0, pl = player_work; i < 2; i++, pl++) {
-                pl_timer_calc(pl);
-                hit_stop_calc(pl);
-                pl_chr_sub(pl);
+            for (i = 0; i < 2; i++) {
+                pl_timer_calc(&player_work[i]);
+                hit_stop_calc(&player_work[i]);
+                pl_chr_sub(&player_work[i]);
             }
         }
         player_mk();
         light_move();
         e->x36++;
-        ev = e->eye;
-        v = (f32 *)((u8 *)lpView + 0xC);
-        v[0] = v[0] + (ev[0] - v[0]) / 10.0f;
-        v[1] = v[1] + (ev[1] - v[1]) / 10.0f;
-        v[2] = v[2] + (ev[2] - v[2]) / 10.0f;
-        v = (f32 *)lpView;
-        ev = e->at;
-        v[0] = v[0] + (ev[0] - v[0]) / 10.0f;
-        v[1] = v[1] + (ev[1] - v[1]) / 10.0f;
-        v[2] = v[2] + (ev[2] - v[2]) / 10.0f;
+        BF(lpView, 0xC) = BF(lpView, 0xC) + (e->eye[0] - BF(lpView, 0xC)) / 10.0f;
+        BF(lpView, 0x10) = BF(lpView, 0x10) + (e->eye[1] - BF(lpView, 0x10)) / 10.0f;
+        BF(lpView, 0x14) = BF(lpView, 0x14) + (e->eye[2] - BF(lpView, 0x14)) / 10.0f;
+        BF(lpView, 0) = BF(lpView, 0) + (e->at[0] - BF(lpView, 0)) / 10.0f;
+        BF(lpView, 4) = BF(lpView, 4) + (e->at[1] - BF(lpView, 4)) / 10.0f;
+        BF(lpView, 8) = BF(lpView, 8) + (e->at[2] - BF(lpView, 8)) / 10.0f;
         View_move();
         if (t->step != 8) {
             if (t->step >= 2) {
@@ -1348,7 +1327,7 @@ void Cont_task(STASK *t) {
             ed_view_set(pl, 2, 1);
             pl->ang[1] = 0;
             e->x38 = 0;
-            ((SEL_GW *)&select_w)->xF6 = e->x0[1];
+            select_w.xB6 = e->x0[1];
             Load_userdata(e->x0[1]);
         } else if (!(Psw[2] & 0x20) || e->x0[3] != 1) {
             if (Psw[2] & 0x40) {

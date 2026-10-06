@@ -27,7 +27,7 @@ typedef struct SYS_W {
     u8 _pad36[0x80 - 0x36];
 } SYS_W;
 extern SYS_W system_w;
-typedef struct SEL_W { u8 _pad00[0xAC]; u16 xAC; /* 0xAC selected quest number */ u8 _padAE[0xC0 - 0xAE]; } SEL_W;
+typedef struct SEL_W { u8 _pad00[0xAC]; u16 xAC; /* 0xAC selected quest number */ u8 _padAE[0xB6 - 0xAE]; u8 xB6; /* 0xB6 hunter slot written by Edit_task / Cont_task (from the matched stores) */ u8 _padB7[0xC0 - 0xB7]; } SEL_W;
 extern SEL_W select_w;
 void FlushCache();
 void Quest_init();
@@ -107,8 +107,8 @@ typedef struct EDIT_W {
     u16 x38;            /* 0x38 */
     u8 x3A;             /* 0x3A colour index */
     u8 x3B;             /* 0x3B */
-    s8 x3C;             /* 0x3C */
-    s8 x3D;             /* 0x3D */
+    u8 x3C;             /* 0x3C (u8: lbu in Edit_task) */
+    u8 x3D;             /* 0x3D (u8: lbu in Edit_task) */
     u16 x3E;            /* 0x3E button state used by ed_color_sel (guess) */
     u16 x40;            /* 0x40 button repeat counter */
     u8 _pad42[0x4C - 0x42];
@@ -226,7 +226,7 @@ void add_prim2();
 void cursor_se();
 void cancel_se();
 void SoftKeyboard_set();
-int SoftKeyboard_move();
+s8 SoftKeyboard_move(s8 *, s16, s16);
 void SoftKeyboard_exit();
 void McOperationSet();
 int McCardOperation();
