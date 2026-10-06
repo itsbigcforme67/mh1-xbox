@@ -27,7 +27,7 @@ print(len(blocks), 'blocks')
 if len(blocks) > 7 or len(blocks) < 2: sys.exit()
 def score(s):
     open(p, 'w').write(s)
-    out = subprocess.run(['python3', 'tools/check.py', p], capture_output=True, text=True).stdout
+    out = subprocess.run(['python3', 'tools/check.py', p], capture_output=True, text=True); out = out.stdout + out.stderr
     mm = re.search(r'^(--|OK)\s+%s\s.*$' % re.escape(func), out, re.M)
     if not mm: return 10**9
     if mm.group(1) == 'OK': return 0

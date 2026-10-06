@@ -4,7 +4,7 @@ near-match drafts. Per file: try removing them one call at a time (greedy), keep
 does not get worse and the file still compiles. Prints before/after."""
 import sys, re, subprocess
 def cnt(p):
-    out = subprocess.run(['python3', 'tools/check.py', p], capture_output=True, text=True).stdout
+    out = subprocess.run(['python3', 'tools/check.py', p], capture_output=True, text=True); out = out.stdout + out.stderr
     if 'Error' in out: return 10**9
     return sum(int(x) for x in re.findall(r'^--\s+\S+\s+lobby\s+0x\w+\s+\d+ bytes\s+\((\d+)/', out, re.M))
 pat = re.compile(r'\b([A-Za-z_]\w*)\(((?:[^()]|\([^()]*\))*?(?:,\s*temp_\w+)+)\)')

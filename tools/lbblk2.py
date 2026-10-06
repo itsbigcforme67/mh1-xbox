@@ -3,7 +3,7 @@
 -> `break;`, and a single `return X;` after the switch. Keeps the change only if check.py's diff count does not get worse."""
 import sys, re, subprocess
 def cnt(p):
-    out = subprocess.run(['python3', 'tools/check.py', p], capture_output=True, text=True).stdout
+    out = subprocess.run(['python3', 'tools/check.py', p], capture_output=True, text=True); out = out.stdout + out.stderr
     if 'Error' in out: return 10**9
     m = re.findall(r'^--\s+\S+\s+lobby\s+0x\w+\s+\d+ bytes\s+\((\d+)/', out, re.M)
     return sum(map(int, m))

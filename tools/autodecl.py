@@ -16,7 +16,7 @@ if len(lines) < 2 or math.factorial(len(lines)) > maxp: sys.exit('decls: %d' % l
 start = m.end()
 def score(s):
     open(p, 'w').write(s)
-    out = subprocess.run(['python3', 'tools/check.py', p], capture_output=True, text=True).stdout
+    out = subprocess.run(['python3', 'tools/check.py', p], capture_output=True, text=True); out = out.stdout + out.stderr
     mm = re.search(r'^(--|OK)\s+%s\s.*$' % re.escape(func), out, re.M)
     if not mm: return 10**9
     if mm.group(1) == 'OK': return 0
