@@ -67,12 +67,10 @@ extern u16 System_timer;
 f32 flSin(f32);
 u8 *sortup_idx_chk();
 void se_req();
-s32 Lb_ItemBox_open(u16 arg0, s32 arg1) {
-    arg0 = 0;
+s32 Lb_ItemBox_open() {
     F(s32, ib, 4) = 0;
     F(s16, ib, 2) = 0;
-    F(s16, ib, 8) = 0;
-    F(s8, ib, 0xB) = arg0;
+    F(s8, ib, 0xB) = F(u16, ib, 8) = 0;
     F(s8, ib, 0x1F) = 0;
     F(u8, ib, 0x20) = 0xFF;
     *(s8 *)0x39DAD1 = 5;
@@ -101,8 +99,7 @@ s32 Lb_ItemBox_mv(int arg0) {
             if (s0 & 0x20) {
                 arg0 = 0;
                 F(s8, ib, 3) = 0;
-                F(s8, ib, 0xB) = 0;
-                F(s16, ib, 8) = (u8)arg0;
+                F(s16, ib, 8) = F(u8, ib, 0xB) = 0;
                 F(s8, ib, 0x1F) = 0;
                 F(s8, ib, 0x1D) = -1;
                 F(u8, ib, 0x1E) = 0xFF;
@@ -110,8 +107,9 @@ s32 Lb_ItemBox_mv(int arg0) {
                 F(s8, ib, 5) = 0;
                 se_req(7, 0x13, 0, -1);
     case 1:
+                a = ib;
                 *(u8 *)0x39DAD0 = 1;
-                switch (F(u8, ib, 2)) {
+                switch (a[2]) {
                 case 0:
                     s0 = itembox_stock(arg0) & 0xFFFF;
                     break;
