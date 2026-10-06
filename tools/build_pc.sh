@@ -133,6 +133,9 @@ LOBBY="$LOBBY src/lobby/b/lb_bz15.c src/lobby/b/lb_bz17.c src/lobby/b/lb_bz19.c 
 # step machines (whole-file near-matches); libmc under them is host code
 # on save files (src/pc/rt/rt_mc.c)
 MC="src/main/mc/mclow_nm.c src/main/mc/mcact_nm.c src/main/mc/mcdisp_nm.c src/main/mc/mccomb.c src/main/mc/mccomb_nm.c"
+# the hunter's save data into a player work (Set_userdata, Set_equip_data,
+# Load_userdata: udmisc_nm, weak beside the copies rt_menu/rt_quest have)
+MC="$MC src/main/ud/udmisc_nm.c"
 # Power-on (rt_boot.c): select.bin's boot tasks (Init_task, the logos and
 # title, character creation and the continue screen: select00/demo
 # matched, edit_nm the whole edit file), main's mode menu (omake_nm),
@@ -141,7 +144,7 @@ MC="src/main/mc/mclow_nm.c src/main/mc/mcact_nm.c src/main/mc/mcdisp_nm.c src/ma
 # rt_boot.c)
 BOOT="src/select/select00.c src/select/demo.c src/select/edit_nm.c src/main/omake/omake_nm.c \
       src/main/option/option_nm.c src/main/fade/fade_nm.c src/main/sys/tsk_nm.c src/main/weapon/trans.c"
-WEAK="mccomb_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
+WEAK="mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT"
 
 SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}

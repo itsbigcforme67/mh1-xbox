@@ -259,6 +259,7 @@ extern PLW player_work[];
 void rt_motion_scan(void);
 static int plcom_loaded;
 
+void pl_create_model(int no);
 void rt_player_motion_start(int no, const uint8_t *plcom_tbl, int legs_id, int upper_id)
 {
     PLW *pl = &player_work[no];
@@ -270,7 +271,7 @@ void rt_player_motion_start(int no, const uint8_t *plcom_tbl, int legs_id, int u
             rt_motion_scan();
     }
     if (!w->mdl)
-        rt_motion_attach(pl);
+        pl_create_model(no);
     pl->scl[0] = pl->scl[1] = pl->scl[2] = 1.0f;
     w->layers = 2;
     w->chr[0] = (u16)legs_id;
@@ -279,6 +280,32 @@ void rt_player_motion_start(int no, const uint8_t *plcom_tbl, int legs_id, int u
     w->mt[1].spd = 1.0f;
     frame_init(w, 0, 0, 0);
     frame_init(w, 0, 0, 1);
+}
+
+/* pl_create_model (main f_model): on the PS2 it builds player no's model
+ * work (MDLW: skeleton nodes, the two motion players) and points PLW+0x50C
+ * at it; get_mdlw_ptr(index) gives a model work by its pool index (the
+ * character screen sets PLW+0x50C from it right after). The PC keeps one
+ * host model work per player (the hunter's parts are drawn by the host),
+ * so a cleared player work (clr_pl_work) gets the same one back. */
+static rt_actor_motion *pl_am[8];
+static int pl_am_last = -1;
+void pl_create_model(int no)
+{
+    FRW *w;
+    if (no < 0 || no >= 8)
+        return;
+    w = (FRW *)&player_work[no];
+    if (!pl_am[no])
+        pl_am[no] = rt_motion_attach(w);
+    else
+        w->mdl = &pl_am[no]->mdl;
+    pl_am_last = no;
+}
+void *get_mdlw_ptr(int idx)
+{
+    (void)idx;
+    return pl_am_last >= 0 && pl_am[pl_am_last] ? &pl_am[pl_am_last]->mdl : NULL;
 }
 
 /* One tick of the game's motion player (frame_move) for player no. */

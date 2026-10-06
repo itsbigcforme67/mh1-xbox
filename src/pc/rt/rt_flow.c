@@ -127,7 +127,7 @@ int snd_joint_load_pl() { return 1; }
 /* ------------------------------------------------ loading / system (no-ops) */
 NOP(flFlip) NOP(flSndPortStop) NOP0(flSndPackLoadStatus) NOP0(load_busy_ck) NOP(FlushCache)
 NOP(snd_joint_load_init) NOP(load_bin_req) NOP(flSndPackLoadBG2) NOP(flSndPackLoadBG)
-NOP(all_reset) NOP(view_reset) NOP(stage_bgm_set) 
+NOP(view_reset) NOP(stage_bgm_set) 
 NOP(round_init) NOP(flCompact) NOP(Zero_rev_set) NOP(vib_stop_all)
 NOP(stage_load) NOP(stage_init)
 NOP(stage_free)  NOP(smoke_init) NOP(smell_init) NOP(senko_init) NOP(prim_init)

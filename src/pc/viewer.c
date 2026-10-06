@@ -1092,6 +1092,10 @@ int main(int argc, char **argv)
     rt_flow_set_back(quest_back);
     rt_flow_set_village(village_step);
     rt_set_npc_model_loader(npc_model_load);
+    {
+        void rt_set_text_input(void (*begin)(int), int (*take)(char *, int));
+        rt_set_text_input(pad_text_mode, pad_text_take);
+    }
     if (quest_no && getenv("RT_VILLAGE_START"))   /* test aid: straight to the village (game mode 6) */
         rt_flow_set_mode(6);
     if (boot) {         /* power-on: the game's boot tasks until Game_task (rt_boot.c) */
@@ -1110,6 +1114,7 @@ int main(int argc, char **argv)
         float spd = 40;
 
         while (SDL_PollEvent(&ev)) {
+            pad_event(&ev);     /* typed text (the name entry) */
             if (ev.type == SDL_QUIT || (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE))
                 running = 0;
             else if (ev.type == SDL_MOUSEMOTION && !shot) {

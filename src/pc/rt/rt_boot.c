@@ -108,6 +108,27 @@ void Game_task(u8 *t)
     Tsk_Exit(t);
 }
 
+/* all_reset (main 0x160A30, src/main/font/gfs01.c): the parts that are
+ * game state on the PC: the TransSet list, the screen fade, sounds, the
+ * font stacks, the system flags. Model/texture/memory frees and the
+ * player/monster work clears stay with the host (it owns those). */
+void TransReset(void);
+void fade_reset(void);
+void se_stop_all(void);
+void font_stack_reset(void);
+void all_reset(void)
+{
+    TransReset();
+    fade_reset();
+    se_stop_all();
+    font_stack_reset();
+    system_w[0x32] = 0;
+    system_w[0x1B] = 1;
+    system_w[0x33] = 0;
+    system_w[0x3C] = 0;
+    system_w[0x12] = 1;
+}
+
 /* ------------------------------------------------------------ movies
  * The opening and the extras' movies are Sofdec streams (main f_movie);
  * the PC has no player for them yet. movie_server reports "not playing";
