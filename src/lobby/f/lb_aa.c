@@ -43,10 +43,11 @@ int c;
         cw[0x32BE] = 0;
     } else {
         bit = 1;
+        cw[0x32BE] = 1;
         i = 0;
         p = (u8 *)lb_player;
         id = chatIDList;
-        cw[0x32BE] = 1;
+        bit = 1;
         chatIDList[0] = 0;
         chatIDList[8] = 0;
         chatIDList[0x10] = 0;
@@ -61,7 +62,7 @@ int c;
             }
             i += 1;
             p += 0x38;
-            bit *= 2;
+            bit += bit;
         } while (i < 8);
     }
     Lb_send_chat(a, b, c);

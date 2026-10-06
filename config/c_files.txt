@@ -2341,3 +2341,4 @@ lobby:rodata 0x00664AC0 0x00664AD8 f/lb_v17
 lobby 0x005CA3D0 0x005CA8C0 f/lb_v16
 lobby 0x005C78F0 0x005C8224 f/lb_w
 lobby:rodata 0x00664A70 0x00664A90 f/lb_w
+lobby 0x005CB100 0x005CB220 f/lb_aa02
