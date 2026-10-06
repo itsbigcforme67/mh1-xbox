@@ -458,3 +458,144 @@ int BsRequestImage(char **a) {
     }
     return v;
 }
+
+/* original bytes: build/raw/bs_cache_request_html_core.inc (config/c_rawfuncs.txt) */
+asm int bs_cache_request_html_core()
+{
+#include "bs_cache_request_html_core.inc"
+}
+
+/* original bytes: build/raw/bs_cache_request_image_core.inc (config/c_rawfuncs.txt) */
+asm int bs_cache_request_image_core()
+{
+#include "bs_cache_request_image_core.inc"
+}
+
+void bs_cache_queue_image_free_all(BSNODE *arg0) {
+    BSNODE *var_a0;
+
+    var_a0 = bs_cache_queue_get_last();
+    if (var_a0 != 0) {
+        do {
+            bs_image_cache_clear(var_a0);
+            var_a0 = bs_cache_queue_get_last(arg0);
+        } while (var_a0 != 0);
+    }
+}
+
+/* original bytes: build/raw/bs_cache_request_create_texture.inc (config/c_rawfuncs.txt) */
+asm int bs_cache_request_create_texture()
+{
+#include "bs_cache_request_create_texture.inc"
+}
+
+/* original bytes: build/raw/bs_request_check_task_http.inc (config/c_rawfuncs.txt) */
+asm int bs_request_check_task_http()
+{
+#include "bs_request_check_task_http.inc"
+}
+
+/* original bytes: build/raw/bs_request_set_task_core.inc (config/c_rawfuncs.txt) */
+asm int bs_request_set_task_core()
+{
+#include "bs_request_set_task_core.inc"
+}
+
+/* original bytes: build/raw/bs_request_set_task_html.inc (config/c_rawfuncs.txt) */
+asm int bs_request_set_task_html()
+{
+#include "bs_request_set_task_html.inc"
+}
+
+/* original bytes: build/raw/bs_request_set_task_image.inc (config/c_rawfuncs.txt) */
+asm int bs_request_set_task_image()
+{
+#include "bs_request_set_task_image.inc"
+}
+
+/* original bytes: build/raw/BsRequestTask.inc (config/c_rawfuncs.txt) */
+asm int BsRequestTask()
+{
+#include "BsRequestTask.inc"
+}
+
+/* original bytes: build/raw/BsRequestCheck.inc (config/c_rawfuncs.txt) */
+asm int BsRequestCheck()
+{
+#include "BsRequestCheck.inc"
+}
+
+void BsRequestCancelHtml(void) {
+    switch (BcCurrentPage[0]) {
+    case 2:
+    case 1:
+        BcRoute_cur = bs_route_queue_back(&BcRoute_head, BcRoute_cur);
+        BcRoute_cur = bs_route_queue_free_after(&BcRoute_head, BcRoute_cur);
+        break;
+    case 3:
+        BcRoute_cur = bs_route_queue_back(&BcRoute_head, BcRoute_cur);
+        break;
+    case 4:
+        BcRoute_cur = bs_route_queue_forward(&BcRoute_head, BcRoute_cur);
+        break;
+    case 0:
+    case 5:
+        break;
+    }
+}
+
+void BsRequestCancelAll(void) {
+    BSNODE *n;
+    n = &BcRequest_head;
+    for (;;) {
+        n = n->next;
+        if (n == 0) {
+            return;
+        }
+        if (n->used == 0) {
+            return;
+        }
+        switch (n->used) {
+        case 6:
+            break;
+        case 5:
+        case 4:
+            n->used = 6;
+            n->x124 = 7;
+            n->x125 = 0;
+            break;
+        case 3:
+            *(u8 *)(*(int *)((u8 *)n + 0x118) + 0x35) = 1;
+            break;
+        }
+    }
+}
+
+
+extern char *bs_strtbl_html[];
+extern char *bs_strtbl_toolmenu[];
+extern char *bs_strtbl_titlebar[2];
+extern char *bs_strtbl_mmbb_dialog[];
+extern char *bs_strtbl_mmbb_ng_msg[];
+extern char *bs_strtbl_cap_dialog[];
+extern char *bs_strtbl_err_dialog[2];
+char *BsStrtblGet(int kind, int idx) {
+    switch (kind) {
+    case 2:
+        return bs_strtbl_html[idx];
+    case 3:
+        return bs_strtbl_toolmenu[idx];
+    case 4:
+        return bs_strtbl_titlebar[idx];
+    case 5:
+        return bs_strtbl_mmbb_dialog[idx];
+    case 6:
+        return bs_strtbl_mmbb_ng_msg[idx];
+    case 7:
+        return bs_strtbl_cap_dialog[idx];
+    case 8:
+        return bs_strtbl_err_dialog[idx];
+    }
+    return 0;
+}
+

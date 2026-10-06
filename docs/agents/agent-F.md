@@ -320,3 +320,13 @@ Source-form findings (verified by matching):
   is a static defined earlier in the same file AND itself matches (its a0-a2 usage is what makes a3 the first free register).
 - The permuter works on a translation-unit function: build a file with the declarations plus that single function (strip `static`, asm stubs) and run
   `tools/perm.py lobby FUNC file -j1`; it needs asm/lobby/text to still contain the function, so run it BEFORE the function's range is registered.
+- Large field offsets (> 0x7FFF, e.g. `bsw + 0xE96A`): the original forms the address in a register (`ori at,zero,0xE96A; addu v1,v0,at`) and uses it through a pointer variable:
+  `u8 *p = bsw + 0xE96A; if (*p != 0) *p = *p - 1;` (pullTableImage, pushTableImage). Written as `bsw[0xE96A]` the compiler folds `lui at,1; addu; lbu -0x1696(at)` instead.
+- `x = x * 10 + (c - 0x30)` as two statements (`x = x * 10; x = x + (c - 0x30);`) gives the original's early `addiu v1,a0,-48` (get_numeric_parameter2, found by the permuter).
+- An invariant load that the original re-reads every loop iteration (`while (i < *(s32 *)(w + 4) - 1)`) needs `*(volatile s32 *)p` in the loop (tagoutprintf2).
+- Gp-relative globals of 8 bytes or less must be declared with their real size (`extern char *BadHeaderList[2];`, `extern u8 Hn_Size[8];`), otherwise lui/addiu is emitted instead of gp addressing.
+- m2c `if (v != 0) {} else v = s[x];` followed by `d[y] = v;` is `if (v != 0) d[y] = v; else d[y] = s[x];` (set_TH_TD_data_1st).
+- Empty switch cases: the ladder in the asm is the reverse of the case labels; `case 0: break; case 1: {...} break; case 2: case 3: break;` gave the original (BsCheckLbsError).
+- `a ? x : 0` with a compare of an unsigned byte against a constant: write `v[0x48] > 1 ? v : 0` (not `>= 2` / `< 2 ? 0 : v`) to get `slti at; movn` with the compare in `at` (check_upTD_rowspan2). A shared `return 0;` that the original reaches by jumping from several places is a `goto ret0;` (check_upTD_rowspan).
+- Prototype args: floats in the PS2 ABI do not use up integer argument registers in MWCC: `drawString(int pal, int a1, int a2, f32 x, f32 y, int size, u8 *s)` needs two dummy ints so that size lands in a3 and the string in t0.
+- Struct locals built for GS packets (BSQUAD/BSSPR/BSTRI): fill the fields in the order of the original stores (BsDrawSprite stores the colour first).

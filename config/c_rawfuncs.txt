@@ -18,3 +18,12 @@ lobby 0x0060BE20 0xC8 equip_ok_chk
 lobby 0x0060BF10 0xD0C ItemboxWindowX
 lobby 0x0060CC40 0x1B8 ItemboxWindowCursorX
 lobby 0x0060CE50 0x5B8 Disp_lb_item_box
+lobby 0x005E7120 0x150 bs_cache_request_html_core
+lobby 0x005E7270 0xE4 bs_cache_request_image_core
+lobby 0x005E73B0 0x134 bs_cache_request_create_texture
+lobby 0x005E74F0 0x1A4 bs_request_check_task_http
+lobby 0x005E76A0 0x114 bs_request_set_task_core
+lobby 0x005E77C0 0x174 bs_request_set_task_html
+lobby 0x005E7940 0x144 bs_request_set_task_image
+lobby 0x005E7A90 0xE0 BsRequestTask
+lobby 0x005E7B70 0x5AC BsRequestCheck
