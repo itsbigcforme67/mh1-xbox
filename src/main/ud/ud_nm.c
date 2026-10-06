@@ -672,11 +672,11 @@ int Warehouse_space_ck(UDW *u, int idx) {
 
 int Seisan_ok_ck(u16 kind, s16 idx, int mode) {
     u8 *ent;
-    u8 ok;
+    s16 j;
     u8 any;
     s16 have;
     s16 t;
-    s16 j;
+    u8 ok;
     u8 cnt;
     u8 *e;
 
@@ -724,11 +724,11 @@ int Seisan_ok_ck(u16 kind, s16 idx, int mode) {
             ok |= 1 << j;
         }
     }
-    if (cnt || any) {
+    if ((u8)cnt != 0 || (u8)any != 0) {
         if (ok == 0xF) {
             return 2;
         }
-        if (any) {
+        if ((u8)any != 0) {
             return 1;
         }
     }
