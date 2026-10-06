@@ -20,6 +20,10 @@ for p in sys.argv[1:]:
     FT = {'f20': 'void (*)()', 'f24': 'void (*)()', 'f28': 'void (*)()', 'f34': 'void (*)()', 'f3C': 'void (*)()', 'f40': 'void (*)()',
           'f2C': 'int (*)()', 'f30': 'int (*)()', 'f38': 'int (*)()'}
     t = re.sub(r'lbShop\.(f[0-9A-F]{2}) = (?:\(int\)\s*)?&?(\w+);', lambda m: 'lbShop.%s = (%s)%s;' % (m.group(1), FT.get(m.group(1), 'void *'), m.group(2)) if m.group(1) in FT else m.group(0), t)
+    # dereferences of int-mode pointer arithmetic
+    t = re.sub(r'\*\(\(int\)&shopList \+ \(((?:[^()]|\([^()]*\))+?) \* 0x28\)\)', r'shopList[\1].price', t)
+    t = re.sub(r'\*\(\(int\)lbShop\.tbl \+ \(((?:[^()]|\([^()]*\))+?) \* 8\)\)', r'lbShop.tbl[(\1) * 2]', t)
+    t = re.sub(r'\*\(\(int\)lbShop\.tbl \+ \(((?:[^()]|\([^()]*\))+?) \* 8\) \+ 4\)', r'lbShop.tbl[(\1) * 2 + 1]', t)
     # pointer members used as integers (m2c int mode)
     t = re.sub(r'(?<![\w.&])lbShop\.(tbl|list|tag)\b(?!\s*=[^=])', r'(int)lbShop.\1', t)
     t = re.sub(r'(lbShop\.(?:tbl|list|tag)) = \(int\)&?(\w+);', lambda m: '%s = (void *)%s;' % (m.group(1), ('&' if False else '') + m.group(2)) , t)
