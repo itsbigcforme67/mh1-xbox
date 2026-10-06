@@ -1472,7 +1472,7 @@ main 0x001118E0 0x00111B1C game/flow02
 main 0x002814E0 0x002862E4 mc/mccomb
 main:rodata 0x00384EF0 0x0038506C mc/mccomb
 main 0x0023E500 0x0023E7F4 ime/imeb
-main 0x0023E8E0 0x0023E91C ime/imec
+main 0x0023E8E0 0x0023EA04 ime/imec
 main 0x0023ED70 0x0023ED7C ime/imed
 main 0x0023EE70 0x0023F234 ime/imee
 main 0x0023F6C0 0x0023F730 ime/imef
@@ -1520,7 +1520,7 @@ main 0x00247D70 0x00247F2C ime/imecb
 main 0x00248050 0x002480C0 ime/imeap
 main 0x00248180 0x002481C0 ime/imeaq
 main 0x00248A80 0x00248B2C ime/imear
-main 0x00248E90 0x00248EC0 ime/imeas
+main 0x00248E90 0x00248FC4 ime/imeas
 main 0x00249540 0x00249940 ime/imeat
 main 0x00249A90 0x00249B44 ime/imeau
 main 0x00249D60 0x0024A238 ime/imeav

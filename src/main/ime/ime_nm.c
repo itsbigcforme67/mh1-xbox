@@ -578,23 +578,23 @@ u8 *select_tostr(void)
 
 u8 *select_subtostr(int arg0, int n)
 {
-    u16 *p;
-    int len;
     int k;
     int pos;
+    u16 *p;
+    int len;
+    int end;
 
     p = meanbuf;
-    for (pos = arg0; pos < arg0 + n; pos += len) {
-        len = bunsetu_len(pos);
-        if (len == 0) {
-            break;
-        }
+    pos = arg0;
+    end = arg0 + n;
+    while (pos < end && (len = bunsetu_len(pos)) != 0) {
         if (pos == cur_pos) {
             k = current_makedisp(pos, len, p);
         } else {
             k = first_makedisp(pos, len, p);
         }
         p += k;
+        pos += len;
     }
     meantosjis(meanbuf, outbuf, p - meanbuf);
     return outbuf;
@@ -3754,13 +3754,13 @@ loop:
 
 CH *make_chmem(int pos, SYNR *r)
 {
-    SYN *s;
-    CH *first;
-    CH *prev;
     CH *c;
     s16 len;
     s64 id;
     int n;
+    SYN *s;
+    CH *first;
+    CH *prev;
 
     s = r->syn;
     first = 0;
@@ -5936,12 +5936,11 @@ int ToUpper(int c)
 
 u8 *getrda2(u16 *a, u16 *b)
 {
-    int n;
     u8 *p;
+    int n;
     u16 *q;
     int k;
     int len;
-    u8 key;
 
     n = b - a;
     p = rmspec;
@@ -5952,11 +5951,9 @@ u8 *getrda2(u16 *a, u16 *b)
             q = a;
             k = n;
             while (k > 0) {
-                key = *p;
-                if (key != (ToUpper(*q) & 0xFF)) {
+                if (*p != (ToUpper(*(u8 *)q++) & 0xFF)) {
                     break;
                 }
-                q++;
                 k--;
                 p++;
             }

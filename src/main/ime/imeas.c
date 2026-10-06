@@ -479,3 +479,39 @@ int ToUpper(int c)
     }
     return c;
 }
+
+u8 *getrda2(u16 *a, u16 *b)
+{
+    u8 *p;
+    int n;
+    u16 *q;
+    int k;
+    int len;
+
+    n = b - a;
+    p = rmspec;
+    while (*p != 0) {
+        len = *p;
+        p++;
+        if (n == len) {
+            q = a;
+            k = n;
+            while (k > 0) {
+                if (*p != (ToUpper(*(u8 *)q++) & 0xFF)) {
+                    break;
+                }
+                k--;
+                p++;
+            }
+            if (k == 0) {
+                return p;
+            }
+            p += k;
+        } else {
+            p += len;
+        }
+        while (*p++ != 0) {
+        }
+    }
+    return 0;
+}
