@@ -241,9 +241,9 @@ int Plaza_disp_ReibunEdit(int arg) {
     Put_page_num(0x20E, 0x78, (s16)(reibun_edit.sel / 6), 2, 0);
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
+    p = str_tbl_reibun0 + reibun_edit.sel / 6 * 0x60;
     n = 6;
     y = 0xA4;
-    p = str_tbl_reibun0 + reibun_edit.sel / 6 * 0x60;
     do {
         flfntLocate(0xDA, y);
         Reibun_print(0x16, *(int *)(p + 0xC));
