@@ -287,6 +287,13 @@ static void *map_lb(uint32_t v)
                     return (uint8_t *)h + off;
             }
         }
+        {   /* the other way round: the map has the plain name of a file
+             * static whose C carries the address suffix (em10_local_init) */
+            char sfx[160];
+            snprintf(sfx, sizeof sfx, "%s_%08X", name, (unsigned)(v - off));
+            if ((h = dlsym(RTLD_DEFAULT, sfx)) != NULL)
+                return (uint8_t *)h + off;
+        }
         if (getenv("RT_TRACE"))
             fprintf(stderr, "rt: lobby pointer to unported function %s+0x%X\n", name, (unsigned)off);
         return NULL;
@@ -307,5 +314,13 @@ int rt_import_lobby(void)
     memcpy(rt_lb_mem, img, n);
     memset(rt_lb_mem + n, 0, LB_SPAN - n);
     rt_lb_relocate_range(LB_VRAM, rt_lb_mem, n, map_lb);
+    {   /* main's pit_help_str_tbl[4] / [5] (0x351E90) point at lobby.bin data
+         * (lb_menu_help 0x64E2C0, pit_help_itembox_str 0x6539E0); game.bin
+         * shares that vram, so rt_import_data could not map them. Only the
+         * village/town menus use these two kinds (Disp_menu_help). */
+        extern void *pit_help_str_tbl[];
+        pit_help_str_tbl[4] = map_lb(0x64E2C0);
+        pit_help_str_tbl[5] = map_lb(0x6539E0);
+    }
     return 0;
 }

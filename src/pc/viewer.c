@@ -468,6 +468,7 @@ static const char *disc = NULL, *shot = NULL;
 static int frames = 1, W = 1280, H = 720, i, running = 1, frame_no = 0;
 static float cam[5] = { 11900, 700, 8900, 0.75f, -0.2f };   /* x y z yaw pitch */
 static float fixed_time = -1;
+static int tick_trace;
 static char path[1024];
 static size_t n;
 static fmt_blob stage_link, stage_tex, set_link, set_tex;
@@ -620,6 +621,11 @@ static void sim_tick(void)
             rt_monster_get(0, p, &a);
             printf("tick %d: em0 pos %.0f %.0f %.0f ang %04X\n", ticks, p[0], p[1], p[2], a & 0xFFFF);
         }
+    }
+    if (quest_no && pl.game && play && ticks >= 2 && rt_player_uses_game()) {
+        void stage_mv_ck(void);
+        stage_mv_ck();                  /* move_stage -> stage_m's area-exit check (f_stage.c):
+                                         * pl+0x738 = 1 -> game2 steps 2-6 load the next area */
     }
     if (quest_no || play)
         rt_hud_tick();                  /* Pit_mv: HUD layers (last step of move()) */
@@ -1059,6 +1065,7 @@ int main(int argc, char **argv)
     rt_set_npc_model_loader(npc_model_load);
     if (quest_no && getenv("RT_VILLAGE_START"))   /* test aid: straight to the village (game mode 6) */
         rt_flow_set_mode(6);
+    tick_trace = getenv("RT_TICK_TRACE") != NULL;
     t0 = SDL_GetTicks();
     while (running) {
         SDL_Event ev;
@@ -1127,6 +1134,24 @@ int main(int argc, char **argv)
             else
                 sim_tick();
             ticks++;
+            /* the joint matrices the next tick reads are those of the state
+             * this tick left, whether or not a frame is drawn in between
+             * (windowed and --shot runs stay tick-for-tick the same) */
+            if (pl.game && play && ticks >= 2) {
+                sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
+                if (!rt_village_active())
+                    monsters_sync(0, &light);
+            }
+            if (tick_trace) {           /* RT_TICK_TRACE=1: compare windowed and headless runs */
+                extern uint8_t em_work[];
+                float p[3], es = 0;
+                int a, k;
+                rt_player_get(0, p, &a);
+                for (k = 0; k < 20; k++)
+                    es += ((float *)(em_work + 0xA10 * k + 0xAC))[0] + ((float *)(em_work + 0xA10 * k + 0xAC))[2];
+                fprintf(stderr, "T %d m%d st%d pl %.2f %.2f %.2f %04X em %.2f\n", ticks, rt_flow_mode(),
+                        rt_game_stage(), p[0], p[1], p[2], a & 0xFFFF, es);
+            }
         }
         if (game_cam) {
             rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);

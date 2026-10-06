@@ -19,7 +19,6 @@ RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_gam
 # set13_trans (near-matches on the PS2 side, believed equivalent).
 GAME="src/game/set/set14_nm.c src/game/set/set00.c src/main/stage/stage_set.c \
       src/main/set/set13.c src/main/set/set13b.c src/main/set/set13c.c src/main/set/set13_nm.c \
-      src/main/hit/hit2all.c \
       src/game/set/set09.c src/game/set/set17.c src/game/set/set17_nm.c \
       src/game/set/set03.c src/game/set/set04.c src/game/set/set05_nm.c src/game/set/set07.c src/game/set/set08.c src/game/set/set10.c src/game/set/set11.c src/game/set/set15.c src/game/set/set16.c src/game/set/set18.c src/game/set/set19.c src/game/set/set20_nm.c src/game/set/set22.c \
       src/main/set/set12.c src/main/pl/pl_master_ck.c src/main/stage/trans_stage.c \
@@ -34,8 +33,9 @@ HIT="src/main/hit/shit1_nm.c src/main/hit/shit2.c src/main/hit/shit3_nm.c src/ma
      src/main/hit/tri_nm.c src/main/hit/hitw_nm.c"
 # Game camera (f_cam, f_cam_223B50: agent D; camarea_nm.c: camera areas).
 # cam_nm.c holds the whole f_cam file; the matching camd.c repeats some of
-# its functions, so cam_nm is in WEAK. hit2b.c: hit_sphr_sphr3 (camera vs
-# monster).
+# its functions, so cam_nm is in WEAK. The f_hit_28CE00 tests (hit_sphr_sphr3
+# etc.) come from hit2_nm.c (main's hit2all.c keeps three functions as
+# original bytes, which gcc cannot build).
 CAM="src/main/cam/cam_nm.c src/main/cam/camm.c src/main/cam/camd.c src/main/cam/camarea_nm.c \
      src/main/cam/camr_nm.c src/main/cam/camr2_nm.c src/main/cam/camr3.c src/main/cam/camr4_nm.c \
      src/main/cam/camr5_nm.c src/main/cam/camr6_nm.c"
@@ -84,7 +84,7 @@ QUEST="src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tu
        src/main/menu/menu_nm.c src/main/menu/menu_disp_nm.c \
        src/main/chat/chat_nm.c src/main/chat/dispframe_nm.c src/main/menu/listsel_nm.c src/main/font/fontst_nm.c \
        src/main/font/fontst2_nm.c src/main/font/gfs_nm.c src/main/set/set01.c src/main/sys/vib.c \
-       src/main/sprite/putspr.c src/main/sprite/putspr2.c src/main/sprite/calcpoint.c src/main/sprite/trans2.c src/main/sprite/sysw.c \
+       src/main/sprite/putspr.c src/main/sprite/putspr2.c src/main/sprite/calcpoint.c src/main/sprite/trans2.c src/main/sprite/sysw.c src/main/sprite/spriteput_nm.c \
        src/main/load/mkmap.c \
        src/main/reward/f_reward.c src/main/reward/f_reward2.c src/main/reward/f_reward3.c src/main/reward/f_rewardb.c \
        src/main/reward/f_rewardc.c src/main/reward/f_reward_nm.c src/main/reward/f_rewardb_nm.c src/main/reward/f_rewardd_nm.c \
@@ -119,7 +119,11 @@ done
 LOBBY="$(ls src/lobby/f/lb_[a-p].c src/lobby/f/lb_z*.c | tr '\n' ' ') src/lobby/f/lb_pl_nm.c \
        $(ls src/lobby/lb/*_nm.c | tr '\n' ' ') src/lobby/lb/lb_talk.c"
 [ -f src/lobby/f/lb_village_nm.c ] && LOBBY="$LOBBY src/lobby/f/lb_village_nm.c"
-WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
+# the village start menu (Lb_ck_menu -> lbmw = lb_menu_w): Lb_Menu_Init,
+# the menu's move and draw (b/nm near-matches, b/lb_menu_nm.c from the asm)
+LOBBY="$LOBBY src/lobby/b/lb_bz15.c src/lobby/b/lb_bz17.c src/lobby/b/lb_bz19.c src/lobby/b/lb_bz135.c \
+       src/lobby/b/nm/Lb_menu_move_Core.c src/lobby/b/nm/DispLobbyMenu.c src/lobby/b/lb_menu_nm.c"
+WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY"
 
 SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
