@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 #define PU8(p, o) (*(u8 *)((u8 *)(p) + (o)))
 #define PS16(p, o) (*(s16 *)((u8 *)(p) + (o)))
 
@@ -81,6 +82,27 @@ int Pit_shot_ok_chk(PLW *pl)
     return 0;
 }
 
+/* ------------------------------------------------ lobby.bin functions main calls by address
+ * (lobby C linked on the PC: the village start menu, Pit_init's lobby set-up) */
+void Lb_Menu_Init(void);
+void Lb_menu_exit(void);
+int Lb_menu_move_Core(void);
+void DispLobbyMenu(void);
+void Disp_lb_menu(s8);
+void *Lb_get_player_id(s32);
+void Lobby_quest_print(void);
+int Lb_get_pl_stat2(int);
+void Lb_ItemBox_init(void);
+void func_5B3D70(void) { Lb_Menu_Init(); }
+void func_5B3E60(void) { Lb_menu_exit(); }
+int func_5B3ED0(void) { return Lb_menu_move_Core(); }
+void func_5B4980(void) { DispLobbyMenu(); }
+void func_5B4B20(s8 a) { Disp_lb_menu(a); }
+void *func_5B4D30(s32 a) { return Lb_get_player_id(a); }
+int func_5CB310(void) { Lobby_quest_print(); return 0; }
+int func_5D8370(int a) { return Lb_get_pl_stat2(a); }
+void func_609750(void) { Lb_ItemBox_init(); }
+
 /* ------------------------------------------------ online / lobby only (no-ops) */
 u8 D_6EAC80[0x400];
 void SoftKeyboard_set() {}
@@ -92,27 +114,26 @@ void DispSoftkeyboard() {}
 void net_send_chat() {}
 void Reibun_print() {}
 int Reibun_select_mv() { return 0; }
-void func_5B3D70() {}
-void func_5B3E60() {}
-void func_5B3ED0() {}
-void func_5B4980() {}
-void func_5B4B20() {}
-void func_5B4D30() {}
 int func_5BD520() { return 0; }
 int func_5CB100() { return 0; }
-int func_5CB310() { return 0; }
-int func_5D8370() { return 0; }
-void func_609750() {}
 void func_60CE50() {}
 /* tutorial overlay pieces (game.bin 0x63B0C0 / 0x63B470): only in the
  * village tutorial */
 int func_63B0C0() { return 0; }
 void func_63B470() {}
 
+/* ItemCopy_Pl2Ud / ItemCopy_Ud2Pl (0x272280 / 0x2722A0, as udmisc02.c): the
+ * pouch (PLW+0x828, 0x50 bytes of {id, n}) <-> User_data+0x37C. The village copies
+ * the user's pouch to the hunter every tick (Lb_move_common) and back after
+ * its item menus (lb_menu_item_mv). */
+extern u8 User_data[];
+void ItemCopy_Pl2Ud(PLW *pl) { __builtin_memcpy((u8 *)User_data + 0x37C, (u8 *)pl + 0x828, 0x50); }
+void ItemCopy_Ud2Pl(PLW *pl) { __builtin_memcpy((u8 *)pl + 0x828, (u8 *)User_data + 0x37C, 0x50); }
+
 /* ------------------------------------------------ not ported yet (no-ops) */
 #define NOP(name) void name() { static int o; if (!o++ && getenv("RT_TRACE")) fprintf(stderr, "rt_menu: %s not ported\n", #name); }
 #define NOP0(name) int name() { static int o; if (!o++ && getenv("RT_TRACE")) fprintf(stderr, "rt_menu: %s not ported\n", #name); return 0; }
-NOP(Add_to_Item_preparation_list_0) NOP0(Get_hunter_status) NOP(ItemCopy_Pl2Ud)
+NOP(Add_to_Item_preparation_list_0) NOP0(Get_hunter_status)
 NOP0(Item_preparation) NOP0(Item_preparation_adrs) NOP0(Item_preparation_list_chk) NOP0(Item_preparation_list_chk_0)
 NOP0(Item_preparation_list_num) NOP0(Item_preparation_list_search) NOP0(Item_preparation_one_ck)
 NOP0(Item_preparation_rate_0) NOP(Put_sprite_rotate)

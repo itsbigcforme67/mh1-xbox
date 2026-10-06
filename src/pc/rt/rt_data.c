@@ -307,5 +307,13 @@ int rt_import_lobby(void)
     memcpy(rt_lb_mem, img, n);
     memset(rt_lb_mem + n, 0, LB_SPAN - n);
     rt_lb_relocate_range(LB_VRAM, rt_lb_mem, n, map_lb);
+    {   /* main's pit_help_str_tbl[4] / [5] (0x351E90) point at lobby.bin data
+         * (lb_menu_help 0x64E2C0, pit_help_itembox_str 0x6539E0); game.bin
+         * shares that vram, so rt_import_data could not map them. Only the
+         * village/town menus use these two kinds (Disp_menu_help). */
+        extern void *pit_help_str_tbl[];
+        pit_help_str_tbl[4] = map_lb(0x64E2C0);
+        pit_help_str_tbl[5] = map_lb(0x6539E0);
+    }
     return 0;
 }

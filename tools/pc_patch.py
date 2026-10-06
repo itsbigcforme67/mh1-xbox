@@ -29,6 +29,13 @@ PATCHES = {
     "src/lobby/f/lb_a.c": [
         ("    LBTRADE2 t;\n    void Ud_item_stack();\n", "    LBTRADE2 t;\n"),
     ],
+    # lb_menu_item_mv / lb_menu_mix_mv pass Lb_menu_move_Core's pad (a0) on
+    "src/lobby/b/lb_bz17.c": [
+        ("s32 lb_menu_item_mv(void) {\n    s32 temp_s0;\n\n    temp_s0 = Menu_item_mv() & 0xFFFF;",
+         "s32 lb_menu_item_mv(int sw) {\n    s32 temp_s0;\n\n    temp_s0 = Menu_item_mv(sw) & 0xFFFF;"),
+        ("s32 lb_menu_mix_mv(void) {\n    s32 temp_s0;\n\n    temp_s0 = Menu_mix_mv() & 0xFFFF;",
+         "s32 lb_menu_mix_mv(int sw) {\n    s32 temp_s0;\n\n    temp_s0 = Menu_mix_mv(sw) & 0xFFFF;"),
+    ],
     # lb_pl_to_normal_clr(pl) (a0 = pl)
     "src/lobby/f/lb_g.c": [
         ("    lb_pl_to_normal_clr();\n    pl->work4E0 = 0;",

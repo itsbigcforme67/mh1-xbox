@@ -119,6 +119,10 @@ done
 LOBBY="$(ls src/lobby/f/lb_[a-p].c src/lobby/f/lb_z*.c | tr '\n' ' ') src/lobby/f/lb_pl_nm.c \
        $(ls src/lobby/lb/*_nm.c | tr '\n' ' ') src/lobby/lb/lb_talk.c"
 [ -f src/lobby/f/lb_village_nm.c ] && LOBBY="$LOBBY src/lobby/f/lb_village_nm.c"
+# the village start menu (Lb_ck_menu -> lbmw = lb_menu_w): Lb_Menu_Init,
+# the menu's move and draw (b/nm near-matches, b/lb_menu_nm.c from the asm)
+LOBBY="$LOBBY src/lobby/b/lb_bz15.c src/lobby/b/lb_bz17.c src/lobby/b/lb_bz19.c src/lobby/b/lb_bz135.c \
+       src/lobby/b/nm/Lb_menu_move_Core.c src/lobby/b/nm/DispLobbyMenu.c src/lobby/b/lb_menu_nm.c"
 WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY"
 
