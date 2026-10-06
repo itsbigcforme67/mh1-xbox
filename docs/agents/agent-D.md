@@ -842,9 +842,29 @@ Lessons: `0x1C0000..` ranges: a function that "matches in check.py" inside an nm
 own run is registered (all five such cases here were already handled). Shell: `pkill -f NAME` kills the shell
 that runs it when NAME appears in the command line; use PIDs.
 
-## Unmatched Capcom functions left in my ranges (5 Oct 2026, after the fifth assignment)
-83 70192 (functions, bytes), sorted by size. `off` = instructions that differ from the original in the near-match C
-(file in parentheses; nm = not built). Sofdec/ADX/CRI (0x1C4000-0x216000) and PS2 kernel stubs (0x254300+) skipped.
+## Matching lessons from the second half of this pass (all confirmed by a match)
+- `p = table; p += n; return *p` (pointer advanced in its own register, then dereferenced) gave the original
+  `addu v1,v1,v0` with the base pointer as destination (Stage_mv/item/unique_data_get, qstb05/06). Plain `table[n]`
+  and `*(T *)((int)table + n * 4)` give the same instructions with the index register as destination.
+  Quest_str_get (5 off, only register numbers) uses the same idea.
+- A K&R/ANSI `s8` parameter that the loop then increments gets a sign extension per iteration; the original
+  widens once: `void f(int arg) { int n = (s8)arg; ... n++ ... }` (ext_pick_point_tbl_clr). The two pointers of a
+  `do { ... } while` loop took their registers from the declaration order (`s8 *t;` before `int last;`).
+- `if (0 < n) { do { ... i++; t++; } while (i < n); }` (ext_pick_point_fifo_ck): `0 < n` gives
+  `slt at,zero,n; beq at,zero` where `n > 0` gives `blez`; and `n = x3B; if (n >= 20) { n--; ...` loads the byte
+  once and compares before subtracting (the other order loads `quest_w.x3B` into a different register).
+- `x ? 0 : 1`, `!x`, `x == 0 ? 1 : 0` on an s8 all compile to xor/sltiu here, but the original of
+  CngSessionStart_online / CngNetMcsP2PPoll (p->host = ...) uses `addiu v0,zero,1; movn v0,zero,v1`; no source
+  form found (3 instructions off in each, nothing else).
+- check.py counts a call to an overlay address (jal into game/lobby code, e.g. func_5C5E20) as one differing
+  instruction ("original calls ?") although rebuild.sh links it fine: Quest_str_get's real diff is 4, not 5.
+- A tail call that passes fewer arguments than the callee's prototype wants needs an unprototyped
+  declaration (camq0.c, `void DemoCameraRequest();`).
+
+## Unmatched Capcom functions left in my ranges (5 Oct 2026, end of the fifth assignment)
+78 functions, 69 640 bytes (was 106 functions, 73 448 bytes at the start of this pass), sorted by size. `N off of M` = instructions that
+differ from the original in the near-match C (file in parentheses; *_nm.c is not built). Sofdec/ADX/CRI
+(0x1C4000-0x216000) and PS2 kernel stubs (0x254300+) are not counted.
 
 - 1C1958  9976 cftraw_CnvMbRAW8toPlaneARGB: hand-written MMI asm (CRI middleware): no C possible
 - 21A9F0  5148 eft20_t: 1209 off of 1287 (eft/eft20_nm.c)
@@ -909,20 +929,15 @@ that runs it when NAME appears in the command line; use PIDs.
 - 217550   200 flfntDrawTerm: 18 off of 54 (flfnt/flfnt_nm.c)
 - 22DBF0   196 pl_AQ_put: 14 off of 49 (aq/aq_nm.c)
 - 22D690   164 self_data_ctrl: 2 off of 41 (aq/aq_nm.c)
-- 229570   148 ext_pick_point_fifo_ck: 36 off of 39 (quest/f_quest_nm.c)
 - 22DEA0   136 host_change: 9 off of 34 (aq/aq_nm.c)
 - 224660   136 ZoomRateCalc: 8 off of 34 (cam/camrz01.c)
 - 22D740   120 set_other_data: 18 off of 32 (aq/aq_nm.c)
-- 229610   116 ext_pick_point_tbl_clr: 27 off of 31 (quest/f_quest_nm.c)
 - 2290B0   116 Ext_pick_point_init: 45 off of 49 (quest/f_quest_nm.c)
 - 217D70   104 flnecCheckFont: 12 off of 26 (flfnt/flfnt_nm.c)
 - 229AE0    96 str_gattai: 25 off of 25 (quest/f_quest_nm.c)
-- 226980    96 Stage_unique_data_get: 8 off of 24 (quest/f_quest0_nm.c)
-- 226920    96 Stage_item_data_get: 15 off of 24 (quest/f_quest0_nm.c)
-- 2268A0    96 Stage_mv_data_get: 8 off of 24 (quest/f_quest0_nm.c)
 - 2270A0    92 Quest_retire_set: 15 off of 23 (quest/f_quest_nm.c)
 - 22EDE0    84 CngNetAQPoll: 10 off of 21 (net/cng_nm.c)
-- 228370    84 Quest_str_get: 15 off of 21 (quest/f_quest_nm.c)
+- 228370    84 Quest_str_get: 5 off of 21 (quest/f_quest_nm.c)
 - 217620    84 flfntSjis2Index: 6 off of 21 (flfnt/flfnt_nm.c)
 - 22DE00    76 item_ans_send: 7 off of 19 (aq/aq_nm.c)
 - 216080    76 flSndPackLoadBG2: 7 off of 19 (sound/flsnd00_nm.c)
