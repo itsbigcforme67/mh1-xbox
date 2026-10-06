@@ -578,9 +578,10 @@ void kbd_reibun_input_sub(int a, int b, void *c) {
 extern s8 han_zen_tbl_671[];
 
 s8 sk_zen_han_check(u8 a) {
-    s8 t = han_zen_tbl_671[a];
+    int t = han_zen_tbl_671[a];
+    s8 u = t;
 
-    if (t >= 0 && !(SKS32(0x20) & (1 << (s8)t))) {
+    if (t >= 0 && !(SKS32(0x20) & (1 << u))) {
         return t;
     }
     return -1;
@@ -684,8 +685,8 @@ void sk_pltchange(int back) {
     int tries = 0;
     int ok = 0;
     u8 f = SKB(0x1F);
-    u8 e = SKB(0x1E);
     s8 p = f;
+    u8 e = SKB(0x1E);
     int v;
 
     while (1) {
@@ -1080,9 +1081,10 @@ void sk_disp_palette_set(void) {
 }
 
 s8 sk_daisyo_check(u8 a) {
-    s8 t = daisyo_tbl_1423[a];
+    int t = daisyo_tbl_1423[a];
+    s8 u = t;
 
-    if (t >= 0 && !(SKS32(0x20) & (1 << daisyo_tbl_1423[a]))) {
+    if (t >= 0 && !(SKS32(0x20) & (1 << u))) {
         return t;
     }
     return -1;
@@ -1195,9 +1197,8 @@ int yn_mask_char_check(u8 *p) {
 
     if (m == 0 || m == 1) {
         c = *p;
-        if (c != 0xF3 && c != 0xE1 && c != 0xE0 && c != 0xB9 && c != 0xB8 && c != 0xB7 && c != 0xB6 && c != 0xB5 && c != 0xA8 && c != 0x99 && c != 0x98) {
-            r = 0;
-        } else {
+        switch (c) {
+        case 0x98: case 0x99: case 0xA8: case 0xB5: case 0xB6: case 0xB7: case 0xB8: case 0xB9: case 0xE0: case 0xE1: case 0xF3:
             r = 1;
         }
     }
@@ -1249,12 +1250,13 @@ int key_mask_check(void *k) {
 }
 
 int mh_char_make_check(u8 *p) {
-    u8 c = *p;
+    int r = 0;
 
-    if (c != 0xF1 && c != 0xB9 && c != 0xB6 && c != 0xB5 && c != 0xE3) {
-        return 0;
+    switch (*p) {
+    case 0xE3: case 0xB5: case 0xB6: case 0xB9: case 0xF1:
+        r = 1;
     }
-    return 1;
+    return r;
 }
 
 s8 sk_zen_han_check(u8);
