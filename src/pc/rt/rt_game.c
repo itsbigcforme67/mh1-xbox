@@ -289,6 +289,7 @@ void rt_eft_trace(void);
 void *Stage_data_get(int stg);
 
 extern u8 quest_w[];
+void rt_prims_reset(void);
 void rt_game_init(int stage)
 {
     /* a quest (rt_quest_load: Quest_start) has already set game_w up, as
@@ -303,6 +304,9 @@ void rt_game_init(int stage)
     stage_work.x01 = 1;
     stage_work.stage = (u8)stage;
     stage_work.data = Stage_data_get(stage);
+    rt_prims_reset();       /* prims queued by the last tick belong to effects and
+                             * set objects that are gone now (a windowed frame would
+                             * draw them: eft13_t on a freed effect, village -> quest) */
     rt_eft_init();          /* init_eft_work / init_shell_work */
     stage_set_set(stage);   /* the game's own spawn list (src/main/stage/stage_set.c) */
 }
