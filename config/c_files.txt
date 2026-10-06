@@ -1717,3 +1717,10 @@ lobby 0x005E9660 0x005E96C8 f/lb_gap02
 lobby 0x005FDFE0 0x005FE140 f/lb_gaq01
 lobby 0x005CA8C0 0x005CA9C0 f/lb_gy01
 lobby:rodata 0x00664AA0 0x00664AB8 f/lb_gy01
+main 0x0028B3B0 0x0028B468 mc/netfile2c
+main 0x0028B4B0 0x0028B578 mc/netfile2d
+main 0x0028B210 0x0028B2E0 mc/netfile2e
+main 0x00289060 0x0028911C mc/netfile2f
+main 0x0028A170 0x0028A3B0 mc/netfile2g
+main 0x00289AB0 0x0028A104 mc/netfile2h
+main 0x00289120 0x00289AA4 mc/netfile2i
