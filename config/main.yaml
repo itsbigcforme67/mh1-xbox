@@ -190,7 +190,7 @@ segments:
       - [0x0246E0, c, model/crmdl01]
       - [0x024818, asm, text/em_create_model]
       - [0x024DC0, c, model/crmdl02]
-      - [0x024EBC, asm, text/set_create_model]
+      - [0x024F74, asm, text/edit_create_model]
       - [0x025060, c, sys/tsk01]
       - [0x025074, asm, text/Scheduler]
       - [0x025080, c, sys/tsk_01]

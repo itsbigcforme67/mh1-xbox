@@ -1704,7 +1704,7 @@ main 0x00169990 0x00169A7C sys/view201
 main 0x00114A90 0x00114AD8 hit/hitid01
 main 0x0012A110 0x0012A1CC menu/menu39
 main 0x001246E0 0x00124818 model/crmdl01
-main 0x00124DC0 0x00124EBC model/crmdl02
+main 0x00124DC0 0x00124F74 model/crmdl02
 main 0x0028CC40 0x0028CE00 hit/hitpk01
 main 0x00290E50 0x00290E7C reward/rwkey01
 main 0x00293370 0x00293418 reward/rwkey02

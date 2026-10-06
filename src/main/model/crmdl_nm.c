@@ -123,7 +123,7 @@ void set_create_model(int n) {
     int off = n * 4;
 
     if (*(s32 *)((u8 *)set_model_data + off) != -1) {
-        load_set_model(*(s32 *)((u8 *)set_model_data + off));
+        load_set_model(n);
         h = get_start_mdlw(1);
         if (h >= 0) {
             set_top = h;
@@ -136,7 +136,6 @@ void set_create_model(int n) {
         set_mdlw = 0;
     }
 }
-
 void edit_create_model(void) {
     int a;
     int h;
