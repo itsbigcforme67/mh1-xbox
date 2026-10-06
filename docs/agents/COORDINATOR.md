@@ -67,7 +67,7 @@ always been a struct field type or a lost field.
 
 Priority (owner, 6 Oct 2026): offline village and single player before online-only code (docs/DECISIONS.md).
 
-- A (Opus): PC runtime: boot flow (title -> char creation -> village), saving to a host file, village item box/shops/house.
+- A (Opus): PC: quest -> reward -> village -> save -> continue loop, shops with money, forge, char screen polish, swap in matched village C.
 - B (Sonnet): lobby 0x533980-0x5C4E60, village/offline first (traced from Local_main), online last.
 - C (Sonnet): main 0x100000-0x160000 and 0x230000-0x23E500.
 - D (Sonnet): game overlay leftovers (87.8%, 139 hard functions) with the newer tricks; select leftovers.

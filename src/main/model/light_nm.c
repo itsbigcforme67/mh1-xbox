@@ -75,3 +75,64 @@ void light_change_normal(int n) {
     s += 2;
     *(f32 *)(w + 0xF4) = s[0];
 }
+
+/* pl_light_change (0x0011E280, 340 bytes): logic complete, 49/85 off (the original keeps the stage 12/13/14/28/30 test as
+   five separate compares and three separate copy blocks; this form gets the layout but not the registers). Not linked. */
+typedef struct PLLC {
+    u8 _pad00[0x613];
+    u8 near_em;                 /* 0x613 near-monster light flag */
+    u8 _pad614[0x710 - 0x614];
+    f32 *tbl;                   /* 0x710 own light rows (0 = none) */
+} PLLC;
+
+extern f32 *pl_light_tbl2[];
+
+void pl_light_change(PLLC *pl, int n) {
+    u8 stg;
+    int off;
+    int i;
+    f32 *dst;
+    f32 *src;
+    u8 *w;
+
+    i = 0;
+    off = 0;
+    w = light_work + n * 0x140 + 0x10;
+    do {
+        dst = (f32 *)(w + 8);
+        if (pl->near_em != 0) {
+            stg = game_w.stage;
+            if (stg == 12) goto near;
+            if (stg == 13) goto near;
+            if (stg == 14) goto near;
+            if (stg == 28) goto near;
+            if (stg == 30) goto near;
+        }
+        if (pl->tbl != 0) {
+            if (i == 2) goto stage;
+            src = (f32 *)((u8 *)pl->tbl + off);
+            dst[1] = src[0];
+            dst[2] = src[1];
+            src += 2;
+            dst[3] = src[0];
+        } else {
+stage:
+            src = (f32 *)(*(u8 **)(pl_light_tbl + game_w.stage * 0x14 + 8) + off);
+            dst[1] = src[0];
+            dst[2] = src[1];
+            src += 2;
+            dst[3] = src[0];
+        }
+        goto tail;
+near:
+        src = pl_light_tbl2[game_w.stage];
+        dst[1] = src[0];
+        dst[2] = src[1];
+        src += 2;
+        dst[3] = src[0];
+tail:
+        i++;
+        w += 0x68;
+        off += 0x10;
+    } while (i < 3);
+}

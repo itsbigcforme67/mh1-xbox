@@ -1,4 +1,4 @@
-/* crmdl02 - stage model release (SLPM_654.95 0x00124DC0-0x00124EBC): release_stage_model. Whole file in crmdl_nm.c. */
+/* crmdl02 - stage model release (SLPM_654.95 0x00124DC0-0x00124EBC): release_stage_model, set_create_model (0x124EC0-0x124F73). Whole file in crmdl_nm.c. */
 /* crmdl_nm - SLPM_654.95 0x00123DC0-0x00125060: model creation per kind (player parts, weapon, armor, monster,
    npc, set, edit) and the matching releases. mdlw slots come from get_start_mdlw/set_used_mdlw. Working file. */
 #include "types.h"
@@ -79,6 +79,24 @@ void release_stage_model(void) {
         if (mdlw_heap[t] != 0) {
             clr_used_mdlw(t, 1);
         }
+    }
+}
+void set_create_model(int n) {
+    int h;
+    int off = n * 4;
+
+    if (*(s32 *)((u8 *)set_model_data + off) != -1) {
+        load_set_model(n);
+        h = get_start_mdlw(1);
+        if (h >= 0) {
+            set_top = h;
+            set_mdlw = (s32)get_mdlw_ptr(h);
+            set_used_mdlw(h, 1);
+            model_work_set((s16)h, stage_model, 0x12D, *(s32 *)((u8 *)SET_TEX + off), 0, 0);
+        }
+    } else {
+        set_top = -1;
+        set_mdlw = 0;
     }
 }
 typedef struct GWM {            /* game_w: monster model bookkeeping, 4 slots */

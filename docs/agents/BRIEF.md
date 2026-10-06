@@ -124,3 +124,5 @@ anything the coordinator must know to merge. Then stop.
   unmatched; use it only after a real attempt, so the rest of the file can link.
 - Wrap every c_rawfuncs `asm` block in `#ifdef __MWERKS__ ... #endif`: gcc (the PC build) can't
   compile it and takes the near-match C instead (keep that in a *_nm.c the PC build links weak).
+- Never `pkill -f` a broad pattern (permuter, python, mwcc): other agents' jobs match too, and the
+  pattern can match your own shell. Kill your own jobs by PID.
