@@ -1,4 +1,4 @@
-/* SLPM_654.95 0x0018E1B0-0x0018E200: plmemGetFreeSpace .. plmemGetFreeSpace. See plmem_nm.c. */
+/* SLPM_654.95 0x0018E1B0-0x0018E278: plmemGetFreeSpace, plmemPullHandle. See plmem_nm.c. */
 #include "types.h"
 
 typedef struct PLBLK {          /* 0x10 bytes */
@@ -47,4 +47,23 @@ int plmemGetFreeSpace(PLMEM *m) {
         }
     }
     return m->cur - (m->base - m->size) - m->x20;
+}
+
+int plmemPullHandle(PLMEM *m) {
+    int i;
+    PLBLK *b;
+
+    i = 0;
+    if (i < m->count) {
+        b = m->blocks;
+        do {
+            if (b->size == 0) {
+                plMemset(&m->blocks[i], 0, 0x10);
+                return i;
+            }
+            i++;
+            b++;
+        } while (i < m->count);
+    }
+    return 0xFFFF;
 }

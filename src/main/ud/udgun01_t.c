@@ -1,0 +1,164 @@
+/* SLPM_654.95 0x00274660-0x00274960: gun_check (file-static: the gun option helpers only match as statics of one file) with Get_Gun_level, Gun_barrel_set, Gun_Silencer_set, Gun_Scope_set. Gun_level_up and Gun_option_ck stay original bytes (build/raw, config/c_rawfuncs.txt); near-match C in ud_nm.c. */
+#include "types.h"
+#include "game.h"
+#include "pl.h"
+#include "ud.h"
+
+extern u8 Item_data[327][16];
+extern u8 h_rank_tbl[];
+typedef struct { s16 v; u8 _p[0x12]; } GE;
+typedef struct { s16 v; u8 _p[0x16]; } KE;
+extern u8 Ken_data[][0x18];
+extern u8 Gun_data[][0x14];
+extern u8 Armor_Head_Data[][0x14];
+extern u8 Armor_Body_Data[][0x14];
+extern u8 Armor_Waist_Data[][0x14];
+extern u8 Armor_Arm_Data[][0x14];
+extern u8 Armor_Leg_Data[][0x14];
+extern u8 *Gun_Grow_Up_DATA[];
+extern s16 Silencer_Grow_Up_Tbl[];
+extern s16 LBarrel_Grow_Up_Tbl[];
+extern u8 room_member_mini_data[][0x40];
+extern char room_member_handle[][0x11];
+extern s8 room_member_id[][8];
+extern s8 my_user_id[];
+extern u8 ex_equip_tbl[];
+extern u8 bou_sei_tbl[];
+extern u8 buki_sei_tbl[];
+extern char lit_1515_003735D0[];
+s8 Get_weapon_id();
+void *memcpy(void *, const void *, int);
+char *strcpy(char *, const char *);
+int Online_ck();
+s8 Get_pl_id(s8 *);
+u8 set01_set2(char *);
+
+u8 Get_hunter_rank();
+int Quest_clear_bit_ck();
+f32 flAbs(f32);
+void stop_level(void *, int);
+int Share_item_stack(void *, s16, s16);
+int Ud_item_erase(s16);
+s16 Ud_item_num_ck(u16);
+
+extern u32 D_0035178C[];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+extern u8 option_w[];
+
+
+
+
+
+
+
+
+
+
+
+
+int Now_equip_ck(UDW *u, int idx);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+static int gun_check(UDW *u, s16 i) {
+    return u->ware[i].kind == 7;
+}
+
+void Gun_level_up(UDW *u, s16 i) {
+    if (gun_check(u, i) != 0) {
+        u16 o = u->ware[i].opt;
+        int l = o & 0xF;
+        u16 v;
+        if (l > 3) {
+            v = 4;
+        } else {
+            v = (l + 1) & 0xFFFF;
+        }
+        u->ware[i].opt = (o & 0x70) | (v & 0xFFFF);
+    }
+}
+
+
+int Get_Gun_level(UDW *u, s16 i) {
+    if (gun_check(u, i) == 0) {
+        return 0;
+    }
+    return u->ware[i].opt & 0xF;
+}
+
+int Gun_option_ck(UDW *u, s16 i, int mask) {
+    int r;
+    if (gun_check(u, i) == 0) {
+        r = 0xFF;
+    } else {
+        r = (u->ware[i].opt & mask) != 0;
+    }
+    return r;
+}
+
+
+void Gun_barrel_set(UDW *u, s16 i, int off) {
+    if (gun_check(u, i) != 0) {
+        if (off == 0) {
+            u->ware[i].opt |= 0x20;
+            u->ware[i].opt &= 0xFFEF;
+            return;
+        }
+        u->ware[i].opt &= 0xFFDF;
+    }
+}
+
+void Gun_Silencer_set(UDW *u, s16 i, int off) {
+    if (gun_check(u, i) != 0) {
+        if (off == 0) {
+            u->ware[i].opt |= 0x10;
+            u->ware[i].opt &= 0xFFDF;
+            return;
+        }
+        u->ware[i].opt &= 0xFFEF;
+    }
+}
+
+void Gun_Scope_set(UDW *u, s16 i, int off) {
+    if (gun_check(u, i) != 0) {
+        if (off == 0) {
+            u->ware[i].opt |= 0x40;
+            return;
+        }
+        u->ware[i].opt &= 0xFFBF;
+    }
+}
