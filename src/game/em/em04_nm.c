@@ -759,7 +759,7 @@ static void em_dm02_0058D2E0(EMW *em) {
     }
 }
 
-static void em_dm03_0058D4E0(EMW *em) {
+void em_dm03_0058D4E0(EMW *em) {   /* not static: em04b.c (matched) calls it; the PC links this copy */
     if (em->work08 > 0) {
         em->work08--;
     }
@@ -1209,7 +1209,7 @@ void move_default_0058E4F0(EMW *em) {
 
 /* Sound and effect script per animation: sound_call(em, frame, se) plays
  * the sound code se once when the animation reaches frame. */
-static void ef_move_sub_0058E500(EMW *em, EM04W *w) {
+void ef_move_sub_0058E500(EMW *em, EM04W *w) {   /* not static: em04c.c calls it */
     if (w->anim != em->char0) {
         w->anim = em->char0;
     }

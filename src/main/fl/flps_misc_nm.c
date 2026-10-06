@@ -22,9 +22,7 @@ int flPS2psAddQueue(u32 *p) {
     p[2] = 0x13000000;
     p[3] = (n - 1) | 0x51000000;
     flPS2_Mem_move16_16A(p, buf, n);
-    t = buf << 36;
-    t >>= 36;
-    t |= 0x40000000;
+    t = (buf & 0xFFFFFFFULL) | 0x40000000;
     flPS2DmaAddQueue2(0, t, buf, flPs2VIF1Control);
     return 1;
 }

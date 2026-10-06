@@ -655,3 +655,55 @@ More lessons (each shown by the named function):
 - Unprototyped callers that pass a second argument (`to_zenkaku(c | 0x100, c)`) force the callee to stay K&R in the whole-file C.
 - flfntLocate(int, s16) is the prototype that makes an s16 argument pass without a re-extension.
 - A greedy pass over `>=`/`<` rewrites on a 6000-line near-match file (ime_nm.c, 25 minutes) found improvements in josi_match (67 -> 30), setu_match, FAskRom_Seek and others.
+
+## Assignment 8 (6 Oct, second round): near-matches first, then the biggest single-player areas
+Linked (main START END): eft02_t joins eft/eft02 (0x27D6E0-0x27E940, rodata 0x384170-0x384220); Quest_start (quest/f_quest01), Quest_str_get
+(f_quest02), mc_act_save (mc/mcact01), movie_draw (movie/movie01), cmd_henkan (sk/cmd07), sk_init_mode (sk/sk12 + jump table), disp_load_msg
+(font/disp1_01), flGetHierarchy3 (fl/flhier01), flPS2SystemTmpBuffFlush (fl/flsys01), ins_bsmem+hchar_addbsmem (ime/imebw), Set_equip_data
+(ud/udmisc03), flfntDrawTerm (flfnt/flfntx01), flfntFontPuts (flfnt/flfnty01), flPS2psAddQueue (fl/flpsm01, alias flPS2_Mem_move16_16A in
+config/main_aliases.txt), staff_disp (staff/staff01). File-statics (lesson 1): GetAPXPixelMipmapAdrs + GetAPXPaletteAdrs are now C in
+tex/apx01.c (two c_rawfuncs lines removed); ud/udgun01 (0x274660-0x274960, gun_check static; Gun_level_up 9 off and Gun_option_ck 3 off are
+the two c_rawfuncs holdouts); fl/rs03 (GetFileHeadAAN static + GetModelHeadAAN, alias in main_aliases.txt for fl/rs02.c).
+Near-matches left (off/instructions): flGetHierarchyData2 2/44, flInitPostureHierarchySISub 2/69, MAYASub 2/73, SdrSeReq 9/68, SdrSeChg 10/74,
+sdr_dmaadr_set 22/73, SdrDmaLoadReq 10/87, reward_mv 9/351, flPS2GetMLCLAY 4/28, flfntSetPalData 28/108, flfntPrintf 45/103, flfntFontPutc
+378/315, reward_itembox 35/310, enemy_trans 15/228, quest_em_init_sub2 3/61, stolen_item_stack 7/138, yn_mask_char_check 1/63,
+sk_zen_han_check/sk_daisyo_check 3/22, mc_act_unformat (needs mc_unformat static in the same file), tmp_getsyn (OK only with ins_bsmem AND
+exist_kouho static in one file). No include/ header edits.
+Lessons:
+1. FILE-STATICS: docs/survey/mh1_symbols.csv `bind` LOCAL = `static` originally. A static callee defined in the same file changes the caller's
+   register use (a0 not saved): GetAPXPaletteAdrs 50->0, Gun_* 25->0, GetModelHeadAAN 36->0, tmp_getsyn 44->0. Link such functions in ONE
+   file with their static callees; other files calling them need `name = addr;` in config/main_aliases.txt. tools/statictest.py FILE shows
+   what `static` changes. It did not help reward_mv or flInitPostureHierarchy*Sub.
+2. `x & 0xFFFFFFFULL` (u64) = dsll32 4 / dsrl32 4 (flfntDrawTerm, flPS2psAddQueue); `<<36>>36` folds to and.
+3. `(u32)m->o[0] + (int)mission_area` (Quest_start, Quest_str_get) fixes load order; `((i) << 4) + (int)f` fixes addu operand order (mc_act_save).
+4. Loop latch order: `y += ..; e++;` (staff_disp); `for (i = 0, t = tbl; ...)` (disp_load_msg); `i = 0; if (0 < cnt) {do{}while}` (flGetHierarchy3).
+5. `c <<= 8; c |= c2;` (flfntFontPuts); `c = p[2];` before the `||` test (cmd_henkan); `if (f(img) <= mip) return 0;` gives slt at (GetAPXPixelMipmapAdrs).
+6. 3-s16 struct copy loads all halves first (Set_equip_data); independent stores: brute-force the order (movie_draw).
+7. switch cases written 9,18,23 give the chain 23,18,9 (enemy_trans).
+8. decomp-permuter found nothing in 20 functions; tools/tweak.py (greedy rewrites on one function) and hand variants found the rest.
+Largest unmatched single-player Capcom areas in my ranges (bytes; state): weapon/player draw 0x164410-0x168F00 (weapon_trans 5440, pl_item_trans 3840,
+weapon_joint_calc 2376, player_trans 1548, Lb_player_trans 1524; near-match C 15-70% off); eft20 0x218670-0x21CC00 (eft20_t 5148, _m 4600, _i 4316,
+pos_set 3564; 15-40% off); chat UI equip_exp_core 5080, DispFrameMessageA 3316; quest_condition_prog 3420 (123/855), remuneration_item_set 1840;
+camera 0x21F470-0x225800 (cam_sub_std 2664 42/666, k_HitEmCamera 2152, cam_sub_stg 2096); hit_cap_cap2_m/cap3_m (raw in hit2all);
+stage_spr_disp 1844; DispSoftkeyboard/hk_kbd_input 1.4-1.7K; fl library without any source: flPS2SetShaderParam 8264, flPS2ConvClayData 4536,
+flSetRenderState 3572, flPS2InitRenderBuff 3056, flPS2LockTexture 2548; HdMerge 4280 (0x21E310). Network last: NetFileCreate 6780, disp_spr_sub 11912
+(0x26D310), net_receive_em/pl, ms_network_*.
+
+## Assignment 9 (6 Oct, long round): near-match sweep
+Linked (main OK x5, build_pc.sh builds): flPS2GetMLCLAY (fl/clay02b), reward_mv (reward/f_reward4, was f_reward_nm.c), plmemPullHandle (plmem_03), GetPlayerShagamiData
+(gmat02), Quest_retire_set (quest/f_quest03), Quest_pl_stage_init (f_quest04), flnecCheckFont (flfnt/flfntx02), soft keyboard helpers sk13-sk18, sk20 (yn_mask_char_check,
+sk_zen_han_check, sk_daisyo_check, mh_char_make_check, Softkey_free_0/1, kbdExecServer, Reibun_print, SoftkeyAppInit/Load/TextureSet, SetBlendingMode; these are in
+0x24A240-0x2814E0, now agent B's range, already committed), IME: is_jis (imebx), raw_kouho (imeby), chk_entry2+set_entry2 (imebz), bs_prefer+calc_point (imecb),
+kh_merge_getone (imecc), reset_temp (imece), concat_bslen (imecf), getrda2 (into imeas), select_subtostr (into imec).
+Left: flGetHierarchyData2/SISub/MAYASub (2 off each, scheduling), Gun_level_up 9 / Gun_option_ck 15 (raw holdouts, delay-slot fill differs), sk_get_key_code 3 off (sk19_nm.c),
+make_bsmem 4, fl_check 10, inc_gun 12, kouho_makedisp 13, make_chmem 18, add_dummy_chmem 20 (original loads -1 via pcpyld, not reproduced), cam_sub_std 41, free_chmemlist (pcpyld).
+Lessons (function that shows it):
+1. switch with ascending case labels and no default compiles the reverse-order beq ladder AND removes the else store (yn_mask_char_check, mh_char_make_check).
+2. `int t = tbl[a]; s8 u = t; ... (1 << u)` keeps t unclobbered (sk_daisyo_check).
+3. K&R `u16 c` parameter gives the entry `andi v0,a0,0xFFFF` and in-place use (is_jis); `int` locals instead of s16 remove dsll32/dsra32 pairs (concat_bslen, calc_point).
+4. A call with fewer/more args than the nm had: check the left-over a1/a3 registers (make_bsmem passes 4 args to pword_list, calc_point 2 to setu_point, raw_kouho a stale 5th to create_kouho: define the callee K&R).
+5. `row = key[0]-0xA1;` as a local and `u8 *q = &tbl[...]; *q |= v;` (set_entry2/chk_entry2); `q = &p->f; ` pointer per loop iteration `p = temp_pages[i]; p[1]=0; p[0]=0;` (reset_temp).
+6. `if (a == 0 || (x = a->f) == 0) {return -1;} else {...}` puts the else code first (bs_prefer); `p->x08 > best->x08` flips the load order (u16 field).
+7. Order of 3 independent init statements decides the prologue schedule: try all permutations (concat_bslen: c=0; h=&hchar[pos]; n=0). Declaration-order hill climb: tools/declhill.py only works for brace-on-same-line; my scratch variant handled both.
+8. `x >= 0x21` gives slti into v1, `x > 0x20` into at (is_jis). `loop: while (a && (len = f()) != 0)` (select_subtostr).
+9. decomp-permuter solved GetPlayerShagamiData in 20 s (unused local `GKIND *k;` and direct `u8 idx = (&tbl[..])->f;`); 8 other runs of 9 minutes found nothing. tools/tweak.py --apply can corrupt a file (it replaced the wrong span in sk_nm.c): never use it without git diff.

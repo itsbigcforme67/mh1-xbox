@@ -2028,7 +2028,7 @@ int Item_preparation_list_num();
 u32 Monster_list_num();
 void disp_mix_list(int, PIT_W *);
 void disp_monster_list(int, PIT_W *);
-void EquipmentDescriptionWindow(int, int, int, u8);
+void EquipmentDescriptionWindow(int, int, int, u8, int);
 void PlayerEquipmentWindow(PLW *);
 void flps0004(void *);
 int menu_equip_get_equip(u8);
@@ -2151,19 +2151,19 @@ void Pit_disp_menu_equipment(void) {
     PFLPS1 q;
     PLW *pl = lpPit->pl;
     int e;
-    int v;
+    u32 v;
 
     e = menu_equip_get_equip(lpPit->x43);
     DispFrameList(frame_status_main_002F0D70, lit_5012, -1);
     PlayerEquipmentWindow(pl);
-    q.s[2] = 0x1EB;
     q.s[0] = 0x12C;
+    q.s[2] = 0x1EB;
     q.s[1] = (lpPit->x43 << 5) + 0x55;
     v = ((System_timer & 0x3F) << 10) & 0xFFFF;
     q.s[3] = q.s[1] + 0x20;
     q.col = (((s8)(48.0f * flSin(0.0000958738f * (f32)v)) + 0xBF) << 24) | 0xA9182;
     flps0004(&q);
-    EquipmentDescriptionWindow(e, 0x132, 0x12A, lpPit->x44);
+    EquipmentDescriptionWindow(e, 0x132, 0x12A, lpPit->x44, 0);
 }
 
 /* 0x1338E0 */

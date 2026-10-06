@@ -474,3 +474,27 @@ u8 *select_tostr(void)
     meantosjis(meanbuf, outbuf, disp_select());
     return outbuf;
 }
+
+u8 *select_subtostr(int arg0, int n)
+{
+    int k;
+    int pos;
+    u16 *p;
+    int len;
+    int end;
+
+    p = meanbuf;
+    pos = arg0;
+    end = arg0 + n;
+    while (pos < end && (len = bunsetu_len(pos)) != 0) {
+        if (pos == cur_pos) {
+            k = current_makedisp(pos, len, p);
+        } else {
+            k = first_makedisp(pos, len, p);
+        }
+        p += k;
+        pos += len;
+    }
+    meantosjis(meanbuf, outbuf, p - meanbuf);
+    return outbuf;
+}

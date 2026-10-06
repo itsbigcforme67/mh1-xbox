@@ -1,4 +1,6 @@
-/* apx01 - Capcom APX texture file helpers 0x00217E50-0x002185xx (plAPX*, GetAPX*).
+/* apx01 - Capcom APX texture file helpers 0x00217E50-0x00218588 (plAPX*, GetAPX*). GetAPXFileHeader,
+ * GetAPXPixelMipmapAdrs and GetAPXPaletteAdrs are file-static in the original (LOCAL symbols); they only match
+ * as statics of this file (the compiler then knows GetAPXFileHeader leaves a0 alone).
  * An APX image starts with a 0x20-byte header (docs/formats/graphics.md section 7): +4 pixel bytes,
  * +0xC bits per pixel (4/8/16/24/32), +0xE width, +0x10 height, +0x12 mip count, +0x14 palette bits per
  * entry (16/24/32), +0x16 palette count. The pixel data follows at +0x20, mip 0 first, then the palettes.
@@ -7,6 +9,10 @@
 #include "types.h"
 
 #include "apx.h"
+
+static APXHDR *GetAPXFileHeader(void *img);
+static u8 *GetAPXPixelMipmapAdrs(void *img, int mip);
+static u8 *GetAPXPaletteAdrs(void *img, int idx);
 
 int plAPXGetMipmapTextureNum(void *img) {
     return GetAPXFileHeader(img)->mips;
@@ -212,17 +218,75 @@ u8 *plAPXGetPaletteAddressFromImage(void *img, int idx) {
     return GetAPXPaletteAdrs(img, idx);
 }
 
-APXHDR *GetAPXFileHeader(void *img) {
+static APXHDR *GetAPXFileHeader(void *img) {
     return (APXHDR *)img;
 }
 
-/* original bytes kept (does not match as C yet): build/raw/GetAPXPixelMipmapAdrs.inc, see config/c_rawfuncs.txt;
- * the C attempt is in apx_nm.c */
-asm u8 *GetAPXPixelMipmapAdrs(void *img, int mip) {
-#include "GetAPXPixelMipmapAdrs.inc"
+static u8 *GetAPXPixelMipmapAdrs(void *img, int mip) {
+    APXHDR *h;
+    int i;
+    int w;
+    int ht;
+    u8 *p;
+    int bpp;
+
+    if (plAPXGetMipmapTextureNum(img) <= mip) {
+        return 0;
+    }
+    h = GetAPXFileHeader(img);
+    w = h->w;
+    ht = h->h;
+    p = (u8 *)h + 0x20;
+    for (i = 0; i < mip; i++) {
+        switch (h->bpp) {
+        case 4:
+            p += (w * ht) / 2;
+            break;
+        case 8:
+            p += w * ht;
+            break;
+        case 16:
+            p += w * ht * 2;
+            break;
+        case 24:
+            p += w * ht * 3;
+            break;
+        case 32:
+            p += w * ht * 4;
+            break;
+        }
+        w >>= 1;
+        ht >>= 1;
+    }
+    return p;
 }
 
-/* original bytes kept (see above): build/raw/GetAPXPaletteAdrs.inc */
-asm u8 *GetAPXPaletteAdrs(void *img, int idx) {
-#include "GetAPXPaletteAdrs.inc"
+static u8 *GetAPXPaletteAdrs(void *img, int idx) {
+    APXHDR *h = GetAPXFileHeader(img);
+    u8 *p = GetAPXPixelMipmapAdrs(img, 0) + h->pixbytes;
+    int n;
+    int i;
+
+    switch (h->bpp) {
+    case 4:
+        n = 0x10;
+        break;
+    case 8:
+        n = 0x100;
+        break;
+    }
+    for (i = 0; i < idx; i++) {
+        switch (h->palbpp) {
+        case 16:
+            p += n * 2;
+            break;
+        case 24:
+            p += n * 3;
+            break;
+        case 32:
+            p += n * 4;
+            break;
+        }
+    }
+    return p;
 }

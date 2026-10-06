@@ -873,6 +873,9 @@ frames per second.
 - Measured 6 Oct 2026 (H96 Max, RK3518, Mali-450 GL 2.1, quest 10 at the cave, no fight):
   game logic at full speed (30 ticks/s), about 27 fps drawn at 960x720 and 48 fps at 640x480;
   a --shot screenshot looks the same as on x86. Not tested: long play, fights, the village.
+- Re-measured 6 Oct 2026 evening (box idle; current build with -ftrivial-auto-var-init=zero):
+  base camp 25-26 fps at 960x720 and 48 fps at 640x480, cave 27-28 fps at 960x720. No
+  regression; an earlier 18-19 fps reading was another copy of the game left running on the box.
 
 ### Power-on, new game / continue, memory card, village features (agent A, 8 Oct 2026)
 `tools/play.sh` (no argument) now starts from power-on: `mhview --boot`.
@@ -926,3 +929,122 @@ frames per second.
   CONTINUE -> character select shows the saved hunter -> village; female
   hunter with face 4 in the village; bed save in the house writes the card
   file; item box store works. Not compared with the PS2.
+
+### First quest loop, shops, matched lobby code (agent A, 6 Oct 2026)
+- The Elder's first quest (131, "deliver 2 raw meat") from power-on to the
+  next CONTINUE: Aptonoth (em12_nm.c, kind 12) and em29 (a breakable target)
+  run on the PC; their tables that config/symbols lacks are imported by
+  address (`NAME 0xADDR 0xSIZE` lines in src/pc/rt/tables.txt). Carving
+  (pl_mv071 arg 3) gives raw meat; the camp's delivery box is unique spot
+  kind 21 (10350,40,10640, circle -> Share_item_conv): "all items delivered",
+  quest clear, 20 s, reward screen, money screen (+50z, counted up 1z at a
+  time then the rest), village.
+- Reward screen: ListSelect(&cur, keys, 2) (the count 2 is a2 left over in
+  the asm, 0x292DB8); "end receiving" works.
+- Village re-entry reloads lobby.bin's data and zeroes its .bss
+  (rt_lb_reload = Load_overlay(3)); before, client_work said "village motions
+  loaded" while the quest had replaced them and the hunter walked on the spot.
+- Shops: item shop buy (-20z, herb to the pouch) and sell (+1z) checked; owned
+  counts printed (font_print_ex count in t0); forge weapon list opens (crash
+  fixed: lb_process_drawHelp read 16-bit list fields as s32).
+- Spot hints ("square: enter house"): Lb_put_unique_act_hint (lb_ah.c, taken
+  with PICK) and main's hint_tbl[0] mapped to lobby 0x64F1F0.
+- Matched lobby code: tools/pc_lobby_matched.txt (56 files whose functions
+  the PC took from *_nm copies) and LOBBY3 (7 that were gen_rt_auto
+  stand-ins, e.g. cnWrap_SoundRequest: the village menu sounds) are linked;
+  BMATCH weakens the other copies. PICK="file:sym" links single functions of
+  a whole-file C.
+- Hair colour: player_trans (0x167C38) writes PLW+0x5FC into the head part's
+  first clay's first material; the PC multiplies that material's vertices
+  (fl_model tint). Not compared with the PS2.
+- Test aids: `RT_SHOTS=t1,t2,...` (with --shot X.png also X_<tick>.png),
+  `RT_PL_WARP="t,x,z;t,x,z"`, `RT_PL_WARP_EM="t1,t2-t3"` (next to the
+  target's carve point or body), `RT_PL_TARGET="tick:slot,..."` (which
+  monster AIM / WARP_EM / DMG_MUL use), RT_SPOT_TRACE lists exits too,
+  RT_LB_WARP counts village ticks over all visits; RT_QUEST_TRACE prints the
+  quest's condition program and every Gold_add. tools/mk_input.py builds
+  --input scripts from absolute ticks; tools/test_quest_loop.sh is the loop
+  check (tools/pc_scripts/).
+- Not done: opening movie (Sofdec decoding is not cheap: left skipped), the
+  character screen's 3D hunter, forge list icons / page title (garbage),
+  greeting window under the item shop's buy list, colour streaks over a
+  CLEAR!! quest card. Nothing here compared with the PS2.
+
+### Village glitches, character screen hunter, monster breadth (agent A, round 20, 6 Oct 2026)
+Fixes (all PC side; PS2 rebuild all five OK):
+- Forge list: the yellow page title is main's my_job_str, whose pointers go
+  into lobby.bin. rt_import_lobby now finds every main data word whose
+  ELF relocation symbol lies in the lobby.bin section (72 words: my_job_str,
+  shop tags, menu help, armour shop tables, plaza menus ...) instead of
+  three hand-mapped tables. Icons: matched Lb_put_job / Lb_put_icon
+  (lb_ag01/02) and Lb_put_itemIcon / Lb_put_materialItem (were stand-ins)
+  linked; 30 more matched shop/forge/dialog files in
+  tools/pc_lobby_matched.txt (the forge list now has 2 pages of early
+  weapons instead of 13 pages of everything). lb_process_drawHelp near-
+  match: missing arguments added (argregs.py).
+- Item shop greeting window and CLEAR!! card streaks: not seen any more
+  after the above (shots of the buy list and the Elder's five ★1 cards, one
+  marked CLEAR!!). Each card has a green smudge top left; whether the PS2
+  card has it was not compared.
+- Character creation / continue screens: player_trans called from the
+  screens' prims now records a host draw (gfx_rec_call) of player_work[no]
+  with the game's view (lpView). Continue: the save's look; creation: bare
+  parts of the chosen sex/face/hair (the PS2 uses editpl_*_amh.bin, the
+  same parts in one file — the picture was not compared).
+- Monsters: em20 (Kut-Ku, Gypceros), em17 (Gravios, Basarios), em27
+  (Velocidrome, Gendrome, Iodrome), em19 (Vespoid, Hornetaur), em04
+  (Mosswine, Bullfango), em09 (Felyne, Melynx), em08 (Cephadrome,
+  Cephalos), em21 (Plesioth), em14 (Diablos, Monoblos), em15 (Khezu), em03
+  (Kelbi) linked (build_pc.sh EM, near-match copies weak via WEAK_EM), their
+  game.bin tables in tables.txt. Lessons:
+  - game.bin data an overlay C file names but tables.txt lacks becomes a
+    *function* stand-in in rt_gen.c, read as data (em20 crashed on its fly
+    height table). Check after adding files: weak `int NAME()` stand-ins
+    whose symbol has no type:func.
+  - em_prog_tbl entries point at file statics whose C carries the address
+    suffix; map_ptr now tries NAME_ADDR (Mosswine/Melynx were "not ported").
+  - Model / texture / motion files per kind come from main's tables
+    0x2EC7A0 / 0x2EEE20 / 0x2EC830 (dromes use em16/em13/em30 models and
+    em16 motions; Genprey had no motions before).
+  - Monster slot 0 was always drawn with the host's em01 object; all
+    monsters shared one joint-matrix buffer (rt_actor_joints keeps the
+    pointer), so hit checks used the last monster's skeleton.
+  - Per-file ABI adaptors (rt_abi.c) for em_frame_check(2), Eft13_set_em_scl,
+    Eft15_set3, Eft02_set3; a0-left-over calls fixed in the drafts.
+  - Quest event demos (evdemo.c) were NOPs: first-encounter monsters (Kut-Ku
+    148, Cephadrome 154, Monoblos 171) wait for game_w+0x21F and never woke.
+- Test aids: `RT_CAM_EM=slot,dist,height,yaw` (free camera on a monster),
+  `RT_PROF=1` (host ms per game tick and per drawn frame), the monster trace
+  shows act/sub/step.
+
+Monster state (scripted runs from `--quest N` with RT_QUEST_STAGE=1, the
+hunter warped next to the monster and slashing with RT_DMG_MUL, GOD mode;
+"clear" = monster killed with RT_EM_HP/RT_DMG_MUL test aids, quest clear
+(D5 3), carving checked through the pouch). Nothing compared with the PS2.
+
+| kind | monster | code | state |
+|---|---|---|---|
+| 1 | Rathian | em01 | as before (quest 10, 170) |
+| 11 | Rathalos | em01 | runs: sleeps in its nest (138), flies, attacks, flinches; kill not tested in a hunt quest |
+| 6 | Yian Kut-Ku | em20 | runs (144, 148, 150): attacks, flies, flinches, flees to another area when weak; killed -> quest clear, 3 carves |
+| 20 | Gypceros | em20 | runs (159): attacks, takes damage |
+| 22 | Basarios | em17 | runs (173): rock disguise, attacks; killed -> clear, carve |
+| 17 | Gravios | em17 | runs (172): attacks |
+| 27/28/31 | Velocidrome / Gendrome / Iodrome | em27 | run (137, 156, 160): attack, flinch, die; 137 killed -> clear; no carve seen |
+| 8/34 | Cephadrome / Cephalos | em08 | wake after the intro demo (154), swim in sand, attack; sword hits did not land while it swam (a sound bomb is the PS2 way; not tried) |
+| 14/26 | Diablos / Monoblos | em14 | run (174, 171): burrow, attack; little damage taken in the test |
+| 15 | Khezu | em15 | runs (175): attacks |
+| 21 | Plesioth | em21 | runs (165): swims; not hit in the test (stays in water) |
+| 19/24, 4/5/32, 9/23, 3, 13/16/30, 12, 29 | small monsters | em19/em04/em09/em03/em16/em12/em29 | spawn and run without crashes in all village quests |
+| 2, 7, 10, 33 | Fatalis, Lao-Shan Lung, ... | em02/em07/em10/em33 | not linked (town quests only); "not ported, not spawned" |
+
+All quests 1-177 start on their monster's stage and run 450 ticks
+(village 131-177: 1800-tick fights) without a crash.
+
+Frame rate (x86, this machine, RT_PROF=1): game logic 0.22-0.33 ms per tick
+in big-monster fights (Rathian quest 0.23, Kut-Ku 0.33, Basarios 0.32): cheap.
+The host's per-frame work is the CPU skinning of every visible model
+(fl_model_pose, per monster and per hunter part) plus the GL calls; the
+monster count on a stage is what grows it. The character screen poses and
+skins its hunter once per drawn frame (replay), not per tick. Not measured on
+the ARM box: run with `RT_PROF=1 RT_FPS=1`.

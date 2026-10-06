@@ -343,9 +343,9 @@ int Omake_flag_ck(int n) {
 }
 
 void Set_mini_data_to_pl(s8 *key, u8 *pl) {
-    s8 id;
     u8 *m;
-    s16 w;
+    s8 id;
+    s16 w, v, x;
 
     id = Get_pl_id(key);
     m = room_member_mini_data[id];
@@ -353,9 +353,11 @@ void Set_mini_data_to_pl(s8 *key, u8 *pl) {
     pl[0x11] = m[3];
     pl[0x34E] = m[0x14];
     w = *(s16 *)(m + 8);
+    v = *(s16 *)(m + 0xA);
+    x = *(s16 *)(m + 0xC);
     *(s16 *)(pl + 0x35E) = w;
-    *(s16 *)(pl + 0x360) = *(s16 *)(m + 0xA);
-    *(s16 *)(pl + 0x362) = *(s16 *)(m + 0xC);
+    *(s16 *)(pl + 0x360) = v;
+    *(s16 *)(pl + 0x362) = x;
     pl[0x8D3] = m[0x16];
     *(s8 *)(pl + 0x34C) = Get_weapon_id(m + 8, w);
     memcpy(pl + 0x352, m + 0xE, 6);
@@ -472,6 +474,7 @@ s16 Get_equip_value(u8 kind) {
 }
 
 s16 Get_bowgun_atk(u8 *w) {
+    u16 id;
     u16 o;
     int off;
     s16 r;
@@ -479,9 +482,10 @@ s16 Get_bowgun_atk(u8 *w) {
     if (w[1] != 7) {
         return -1;
     }
-    off = *(u16 *)(w + 2) * 0x14;
+    id = *(u16 *)(w + 2);
     o = *(u16 *)(w + 4);
-    r = ((GE *)(&Gun_data[0][8] + off))->v + *(s16 *)(Gun_Grow_Up_DATA[*(&Gun_data[0][2] + off)] + (o & 0xF) * 0x18);
+    off = id * 0x14;
+    r = *(s16 *)(&Gun_data[0][8] + off) + *(s16 *)(Gun_Grow_Up_DATA[*(&Gun_data[0][2] + off)] + (o & 0xF) * 0x18);
     if (o & 0x10) { r += Silencer_Grow_Up_Tbl[0]; }
     if (o & 0x20) { r += LBarrel_Grow_Up_Tbl[0]; }
     return r;
@@ -737,7 +741,7 @@ int Seisan_ok_ck(u16 kind, s16 idx, int mode) {
     return 0;
 }
 
-int gun_check(UDW *u, s16 i) {
+static int gun_check(UDW *u, s16 i) {
     return u->ware[i].kind == 7;
 }
 

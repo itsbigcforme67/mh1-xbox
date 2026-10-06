@@ -127,12 +127,17 @@ int plmemPullHandle(PLMEM *m) {
     int i;
     PLBLK *b;
 
-    for (i = 0, b = m->blocks; i < m->count; i++) {
-        if (b->size == 0) {
-            plMemset(&m->blocks[i], 0, 0x10);
-            return i;
-        }
-        b++;
+    i = 0;
+    if (i < m->count) {
+        b = m->blocks;
+        do {
+            if (b->size == 0) {
+                plMemset(&m->blocks[i], 0, 0x10);
+                return i;
+            }
+            i++;
+            b++;
+        } while (i < m->count);
     }
     return 0xFFFF;
 }

@@ -1,4 +1,4 @@
-/* lb_tu_act - one translation unit 0x005CDF70-0x005CF100: Lb_Pl_act_set, ck_pl_send, Lb_pl_to_normal, lb_pl_to_normal_clr, lb_pl_to_normal_clr2, lb_to_normal, lb_action_timer_calc, Lb_act_ck, Lb_stick_pow_get, Lb_stick_dir_set, Lb_Pl_basic_flagset, Lb_Pl_adj_calc, Lb_Em_adj_calc, Lb_Pl_pos_adj, Lb_Em_pos_adj, lb_pl_flag_clr, Lb_pl_flag_set, Lb_St_unique_adr_set, lb_ck_unique_act, Lb_put_unique_act_hint, Lb_Pl_stg_ck, Lb_hit_stop_calc, Lb_act_set. Built by tools/lbtu.py from the per-run files; functions that are
+/* lb_tu_act - one translation unit 0x005CDF70-0x005CF100 (all functions are C now): Lb_Pl_act_set, ck_pl_send, Lb_pl_to_normal, lb_pl_to_normal_clr, lb_pl_to_normal_clr2, lb_to_normal, lb_action_timer_calc, Lb_act_ck, Lb_stick_pow_get, Lb_stick_dir_set, Lb_Pl_basic_flagset, Lb_Pl_adj_calc, Lb_Em_adj_calc, Lb_Pl_pos_adj, Lb_Em_pos_adj, lb_pl_flag_clr, Lb_pl_flag_set, Lb_St_unique_adr_set, lb_ck_unique_act, Lb_put_unique_act_hint, Lb_Pl_stg_ck, Lb_hit_stop_calc, Lb_act_set. Built by tools/lbtu.py from the per-run files; functions that are
    not C yet stay original bytes (asm stubs, build/raw/*.inc). */
 #include "lobby_f.h"
 f32 *Stage_data_get(int stg);
@@ -13,6 +13,9 @@ void lb_target_angle();
 void lb_insert_target_list();
 u8 *Stage_unique_data_get();
 void Lb_put_unique_act_hint();
+void Lb_put_hint();
+int Event_flag_ck();
+int Online_ck();
 int lb_ck_unique_act();
 int Lb_Pl_stg_ck();
 int SoftKeyboard_alive_check();
@@ -352,13 +355,137 @@ int lb_ck_unique_act(int a0, u8 *p) {
     return 1;
 }
 
-/* original bytes: build/raw/Lb_put_unique_act_hint.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
-asm void Lb_put_unique_act_hint()
+void Lb_put_unique_act_hint(pl, a)
+PLW *pl;
+int a;
 {
-#include "Lb_put_unique_act_hint.inc"
+    u8 s;
+    u8 *c;
+    if (lb_sys.x68 != 0x21 && game_w.master == pl->id) {
+        switch (a) {
+        case 1:
+            switch (pl->flag15) {
+            case 76:
+            case 77:
+            case 84:
+            case 89:
+            case 90:
+            case 92:
+            case 93:
+            case 94:
+            case 96:
+            case 78:
+            case 42:
+            case 41:
+            case 43:
+                if (game_w.stage == 0x4D || lb_sys.x66 == 0x10) {
+                    Lb_put_hint(0, 1);
+                } else if (cw[0x35D6] != 0) {
+                    Lb_put_hint(0, 1);
+                }
+                break;
+            default:
+                Lb_put_hint(0, 0);
+                break;
+            }
+            break;
+        case 26:
+            if (lb_sys.x68 != 0x11) {
+                if (cw[0x35D6] == 0) {
+                    Lb_put_hint(0, 0x13);
+                } else {
+                    Lb_put_hint(0, 0x63);
+                }
+            }
+            break;
+        case 5:
+            if (Online_ck() == 0) {
+                Lb_put_hint(0, 0x15);
+            } else if (game_w.stage < 0x51) {
+                Lb_put_hint(0, 2);
+            } else {
+                Lb_put_hint(0, 0x11);
+            }
+            break;
+        case 6:
+            s = game_w.stage;
+            if (s == 0x4D || s == 0x57) {
+                c = cw;
+                if (c[0x35D3] != 0) {
+                    if (c[0x32C5] != 0) {
+                        Lb_put_hint(0, 3);
+                    } else {
+                        Lb_put_hint(0, 0x12);
+                    }
+                } else {
+                    Lb_put_hint(0, 0x63);
+                }
+            } else if (s < 0x51) {
+                Lb_put_hint(0, 2);
+            } else {
+                Lb_put_hint(0, 0x11);
+            }
+            break;
+        case 7:
+            if (lb_sys.x68 != 1) {
+                Lb_put_hint(0, 4);
+            }
+            break;
+        case 8:
+            Lb_put_hint(0, 5);
+            break;
+        case 11:
+            Lb_put_hint(0, 7);
+            break;
+        case 12:
+            if (Online_ck() == 1) {
+                Lb_put_hint(0, 8);
+            } else {
+                Lb_put_hint(0, 0x14);
+            }
+            break;
+        case 9:
+        case 10:
+            Lb_put_hint(0, 6);
+            break;
+        case 13:
+            Lb_put_hint(0, 9);
+            break;
+        case 14:
+            Lb_put_hint(0, 0xA);
+            break;
+        case 15:
+            Lb_put_hint(0, 0xB);
+            break;
+        case 18:
+            Lb_put_hint(0, 0xC);
+            Lb_put_hint(1, 0x63);
+            break;
+        case 19:
+            Lb_put_hint(0, 0xD);
+            Lb_put_hint(1, 0);
+            break;
+        case 20:
+            Lb_put_hint(0, 0xE);
+            Lb_put_hint(1, 1);
+            break;
+        case 22:
+            Lb_put_hint(0, 0xF);
+            break;
+        case 23:
+            if (Event_flag_ck(1) == 0) {
+                Lb_put_hint(0, 0x10);
+            } else {
+                Lb_put_hint(0, 0x63);
+            }
+            break;
+        case -1:
+            Lb_put_hint(0, 0x63);
+            Lb_put_hint(1, 0x63);
+            break;
+        }
+    }
 }
-#endif
 
 int Lb_Pl_stg_ck(PLW *pl) {
     u8 s = pl->stg;

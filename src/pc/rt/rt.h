@@ -34,6 +34,8 @@ int rt_import_data(void);
 int rt_import_lobby(void);
 /* Pointer words (R_MIPS_32 relocations of the ELF) and symbols. */
 int rt_load_relocs(void);
+/* main's pointer words into lobby.bin: n pairs (PS2 address, PS2 value) */
+size_t rt_main_lobby_ptrs(const uint32_t **pairs);
 int rt_is_pointer(uint32_t va);
 void rt_relocate_range(uint32_t va, uint8_t *dst, size_t size, void *(*map)(uint32_t));
 void rt_relocate_images(void *(*map)(uint32_t));
@@ -65,6 +67,9 @@ void rt_boot_init(void);
 int  rt_boot_tick(void);        /* 1: boot over */
 void rt_boot_draw(void);
 int  rt_boot_active(void);
+/* set by the app: draws player_work[no] from the boot screens' prims
+ * (player_trans during rt_boot_tick, inside the gfx recording) */
+extern void (*rt_hunter_draw_hook)(int no);
 void rt_sys_init(void);         /* system tasks without a boot (Fade_task) */
 void rt_sys_tick(void);
 void rt_fade_draw(void);
@@ -72,6 +77,7 @@ void rt_fade_draw(void);
  * (0 male) and model numbers of reg, face, hair, body, arm, wst. Returns
  * a counter that changes on every new choice, 0 = none yet. */
 int  rt_player_look(int no, int *sex, int id[6]);
+int  rt_player_edit_look(int no, int *sex, int id[6]);   /* character creation (no armour) */
 
 /* ------------------------------------------------------------ clays */
 /* Register a host clay; the result is the handle the game passes to
@@ -164,6 +170,7 @@ void rt_em_motion_create(int slot, int kind, const uint8_t *tbl);
 void rt_monster_pose(int no, void *fl_skel_ptr);
 void rt_flow_set_village(void (*fn)(void));
 void rt_flow_set_mode(int mode);   /* test aid: jump to a game mode */
+unsigned rt_player_hair_col(int no); /* PLW+0x5FC */
 int rt_game_stage(void);           /* game_w.stage */
 /* One tick of player no with the pad: pl_sw_set (game C), then the host
  * stand-in for the normal state (rt_player.c: turn/run/idle with the

@@ -19,15 +19,14 @@ u8 b;
     s8 sel;
 
     memset(buf, 0, 0x1E);
-    e = (u8 *)cw + b * 0x11;
-    if (*(s8 *)(e + 0x2B) == 0) {
+    if ((s8)cw[0x2B + b * 0x11] == 0) {
         strcpy(buf, *net_etc_mes_tbl[8]);
     } else {
-        strcpy(buf, e + 0x2B);
+        strcpy(buf, cw + 0x2B + b * 0x11);
     }
     cnWrap_SetFontSize(20.0f);
     idx = b;
-    sel = (a == idx) ? 4 : 0;
+    sel = (a != idx) ? 0 : 4;
     flfntSetSize(0x18, 0x14);
     y = idx * 0x58 + 0x62;
     font_print_double(0x1A4, y, 1, sel, buf);

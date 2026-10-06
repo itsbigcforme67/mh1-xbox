@@ -56,6 +56,9 @@ int rtabi_GetGroundHitStatusAreaPl(void *ent, f32 *pos, void *at, f32 *out)
 /* em_frame_check: em01_ai_nm.c (EMW *, f32 f, int n); definition (w, n, f) */
 int em_frame_check(void *w, int n, f32 f);
 int rtabi_em_frame_check(void *w, f32 f, int n) { return em_frame_check(w, n, f); }
+/* em_frame_check2: em03.c (EMW *, f32 f, int n); definition (w, n, f) */
+int em_frame_check2(void *w, int n, f32 f);
+int rtabi_em_frame_check2(void *w, f32 f, int n) { return em_frame_check2(w, n, f); }
 /* Eft13_set_em_scl: em01_ai_nm.c (EMW *, int j, f32 scale, int arg);
  * definition (src/main/eft/eft13e.c) (chr, s16 j, int arg, f32 scale) */
 void Eft13_set_em_scl(void *chr, s16 j, int arg, f32 scale);

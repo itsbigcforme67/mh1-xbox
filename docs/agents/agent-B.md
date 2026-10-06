@@ -816,3 +816,91 @@ Near-matches (best C in src/lobby/b/nm/ unless noted):
 - lb_npc_item_trans: first version written (arrays of rotation/offset floats, em_frame_check2 case 0x2AD returns early); constant stores scheduled differently (about 20 hunks).
 - lb_npc_trans, disp_status, lb_process_drawHelp: first hand-written C, register allocation far off (30-85 hunks); lb_process_select, lb_eat_set, event_eat_trans_ot0, lb_process_use_item unchanged.
 Lessons: a `switch (x) { case 0: ... }` single-case form reproduces `beqz; b` layouts (lb_npc_item_trans); `if (a == 0 || b != 7)` first gives "then" block before the switch (kyoukaListProg tail); `price > money` (not `money < price`) fixes the load order of the `sltu` compare; `sl++; sl++;` keeps real pointer increments where `sl += 2` folds into offsets (make_kyoukaList); hill-climbing over statement order (random move/swap, score = align hunks) found make_kyoukaList's store order after hand tries failed.
+
+## Lobby round 8, part 2 (agent B, after the crash): raw-byte holdout files
+Linked (rebuild OK for all five modules) as files whose only PS2 content is an `asm` stub fed by the original bytes (config/c_rawfuncs.txt,
+tools/b_rawwrap.py wraps a C definition as `#ifdef __MWERKS__ asm ... #else C #endif`). These are NOT true matches; the near-match C stays beside them
+(in the by file under `#else`, or in the nm file named in the file's header comment) and is what build_pc.sh uses:
+by156 shop_select_items (1 hunk: `slt at` vs `slt v0` in the x6E+1 compare), by157 lb_process_kyoukaListProg (same 1 hunk), by158 lb_process_use_item
+(shopList+0x26 base ordering), by159 Lb_put_itemIcon (first real C: sprite struct as s16[10], Item_data rows through `(&Item_data[0][5])[id*16]`; schedule/reg diffs),
+by160 value_result, by162 lb_armor_put_itemDetail, by163 shop_armor_question, by164 lb_process_select, by165 lb_process_drawHelp, by166 disp_status,
+by167 lb_npc_trans, by168 lb_npc_init, by169 lb_eat_set, by170 event_eat_trans_ot0, by171 set_dialog_square, by172 draw_dialog_square, by173 Draw_menu_square,
+by174 lb_npc_old_guild, by175 lb_shop_put_itemDetail, by176 lb_shop_tag_decide, by177 Lb_put_materialItem, by178 lb_mix_put_itemDetail, by179 lb_mix_decide.
+All village. tools/b_covered.py lists the functions in my range with no linked run (mostly online, plus lb_npc_item_trans, ef_move_sub_*, DispDialogData,
+Display_StringData, tk_dialog_mv02, DispNameAndIDonDialog). Lesson: `if (lim <= ++lbShop.x6E)` with an s8 lim fixes the registers of the s8 `x6E++` compare
+but the compare result still goes to `at`; `if (--lbShop.x6E < 0)` (pre-decrement inside the condition) removes the reload after the store.
+
+# Lobby round 9 (agent B): real matches from the raw-linked village functions
+Range now 0x533980-0x5AB000 (agent C took 0x5AB000 up; by159/167/168/175/176 sit there and were left as they were). Lobby 29.202% -> 29.605% (progress.py).
+Real matches (C compiled to the original bytes, removed from c_rawfuncs.txt or new; all five modules OK):
+- shop_armor_question (lb_by163): load `kind = lbShop.tbl[c*2]` THEN `id = lbShop.tbl[c*2+1]` with `c = lbShop.cur` first (pointer `e` form never gave the load order).
+- lb_armor_put_itemDetail (lb_by162): declare/assign `e` (tbl entry) before `ud` (User_data row), and read `kind` before `id` in the mode 0 branch (the last load fills the branch delay slot).
+- DispDialogData (lb_by180, new, 1312 bytes): header edits LB_DIALOG x06 s16->u16 (lhu proven) and yesno u8->s8 (lb proven). `flfntLocate` redeclared with s16 params
+  (rename-the-header trick) so `y` is not re-extended; `Sel_csr_disp(x, (s16)(y-2), w, 0x18, 0xB0008000)` takes FIVE arguments; `nwDispStr_Html(100.0f, 60.0f, 1.0f, htmlStr)`
+  passes floats in f12-f14 (m2c showed them as integers); `if (html != 1) {lines; switch} else {html}` layout, `do {...} while (*p)` text loop.
+- DispNameAndIDonDialog (lb_by181, new): `s16 y` as ANSI parameter, callee `font_print_double(int, s16, int, int, char *)` / `Draw_square(int, s16, ...)` redeclared
+  narrow so each call narrows its own argument; strings are the extern literals lit_226/227.
+- Lb_on_dialog (lb_by182, new): a two-case `switch` on `step` gave the ladder in the wrong order; `if (step == 10) {...return;} if (step == 13) {...}` matched. x0A is read as u8 here (`(u8)n->x0A`).
+Still near-matches (best C in the by file under `#else` or the nm file):
+- shop_select_items (2 instructions) and lb_process_kyoukaListProg (2): `slt v0` vs `slt at` in the x6E+1 compare. `lim <= ++lbShop.x6E`, `lim > n` forms give `at` with the right registers; the `n < lim`
+  forms give `slt v0` but swap the lim/n registers (9 instructions). Tried about 40 spellings (temps, casts, ternary, `!`, `== 0`, int result) and a 1000-iteration permuter run.
+- lb_process_use_item (14): the original builds `shopList + 0x26` as an absolute constant (0x66DBC6) and adds `n*40`: `sll v1,a0,2; addu v1,v1,a0; ...; sll a1,v1,3; addu a0,a0,a1`; mine overwrites a0.
+  An alias `shopList_26 = 0x66DBC6` in config/lobby_aliases.txt gives the lui/addiu form but not the register choice (not committed).
+- lb_npc_old_guild (2): mv's live range has a hole in the original (a2 reused for the 105 compare constant); local init in case 0x64 only made it worse.
+- lb_mix_decide (4), lb_mix_put_itemDetail (6), Lb_put_materialItem (17), value_result (the original keeps `v` in a0 and re-masks u16 after each op), ef_move_sub_0053E360 (17, switch value in a1): no change.
+Remaining unwritten village functions in my range: plaza_* (online), ef_move_sub_0053E360 (has C), Lb_put_new_mail, plaza_capcomPage, put_member_info, Lbs_plaza_trans. Above 0x5AB000 (agent C now): lb_npc_item_trans, Display_StringData.
+
+# Lobby round 10 (agent B): lobby tail 0x5EE618-end
+Real matches: eft25_t (lb_ge2505.c, rodata 0x6686A0-0x668704) and tagAct_500-504 (lb_aq03.c). Lobby 29.605% -> see progress.py.
+eft25_t lessons: call prototypes with float args must be real (`flmatMakeTrans(u8 *, f32, f32, f32)`; K&R promotes floats to double); one `mat` buffer (not mat+mrv),
+`make_mat_srt(sc, rot, prim+8, mode & 0xFFFF, mat)` takes 5 args and rot is f32[3] with only rot[2] written; no `if (type < 9U)` wrapper (the switch range check is the only one);
+`flSetRenderState(0x19, (int)tr)` flips the delay-slot fill; prototype `eft_trans_sub_col(int, u8 *, int, u16, int)` avoids a re-extension of the u16 opt; colour `(g&0xFF) | ((r&0xFF)<<8 | (alpha<<24 | (b&0xFF)<<16))`
+(right-nested or); decl order x10, tex, opt, mode gave s6..s3; r,g,b declared b,r,g; eft_mdlw[0] (20-byte table) instead of a gp-addressed pointer; E25 f5/f6 are u8 (lbu) in lb_e25.c/lb_ge2505.c only.
+tagAct_500: `buf[(*(s32 *)(bsw + 4))++] = 60;` fixed the register order.
+eft25_m: `long k` made `(f32)k` call __floatdisf and a callee-saved f20; with `int k` and real prototypes (eft_vec_linear(f32, f32 *, f32 *) etc.) the frame matches (320) and about 316 align lines remain
+(the original spills par and tbl and keeps &v[1], &v[2] in s5/s6; mine keeps par in s5). Hill-climbs over declaration order and prologue statement order only got 332 -> 316.
+Still near: itembox_cursor_mv (2: daddiu for 9), sellout (34: w in a1 not a2; permuter 1 hour no gain), Disp_lb_item_box, pickup, Disp_TABLE_Line 2 (arg load order), BsBody00_ReqSrc (5, delay slot),
+Plaza_chatlog_mv 5, lb_process_kyoukaListProg (lim extension lands in v0 not v1; separate int temp did not help).
+
+## Lobby round 10b (agent B)
+BsBody00_ReqSrc matched (lb_au07.c): the original is `if (hide) { switch (MMBB_LOGIN) { case 2: case 1: ...; break; default: break; } } else {...}` (no early returns; the switch exit jumps straight to the epilogue).
+Owner paused browser work mid-round. Plaza_chatlog_mv still 5 (u8 PZ_TOP decrement lands in v0 not in place), itembox_cursor_mv still 2 (daddiu 9; tried int/u8/u16/long/ternary forms). tagAct_600/601 drafted in scratch only: bsw field reads must be `(bsw + bsw[0xE96C])[0xE96C]` with the first read not CSE'd; not finished.
+
+# Main module 0x24A240-0x2814E0 (agent B, 7 Oct 2026)
+Map (all functions in this range that were not yet in a linked run; E's sk13-18/20 and D's pl_snd01 are merged first):
+- 0x24A240-0x2542E0 player sound script (pl_snd01, linked by D). 0x254300-0x25F980 PS2 kernel stubs, sceSif/Fs/Tty/Timer/Deci2 SDK: skipped (not Capcom).
+- 0x25F980-0x262A90 soft keyboard (sk_*, DispSoftkeyboard): chat/name text entry, offline and online. 0x263140-0x2671E0 candidate table, hard keyboard (hk_*), kbd_*, cmd_*.
+- 0x2671E0-0x26D2F0 online: ms_network_bb_*, net file, net_connect_draw. 0x26D310 disp_spr_sub (11.9 KB, network connection screen sprites), 0x2703F0-0x271050 ncm message drawing,
+  0x2712C0 server_connect / connect_error: online, last.
+- 0x271EA0-0x273B50 user data (Set_userdata, Ud_item_stack, Set_mini_data_to_pl, Get_bowgun_atk): single player. 0x274EC0-0x27BF80 pit menu: list/page select, item valid check,
+  frame/list/message drawing, chat log, NPC messages, player status / equipment windows (single player; chat log is shared with online).
+- 0x27C020-0x27CA10 Softkey app glue and Sony base64/scf/rtc library (skipped). 0x27CF10-0x27D4A0 cnLBS file download (online). 0x27F1C0-0x2814E0 memory card (mc*), save selection UI.
+Linked this round (all five modules OK): ListSelect, PageSelect, Item_valid_chk (pit04/05); chat24-43: Chat_init, ChatKinsoku_chk, Menu_chatlog_mv, Put_receive_mark, Join_pl_chk, Put_PageArrow,
+disp_cursorC, Disp_help_mess, NPC_Message, PutSpriteDiv3, Put_mini_sight, Disp_NPC_message, Get_equip_icon_uv, PutButtonICON, ChatLogAdd_Q, Pit_disp_chat_log, EquipmentDescriptionWindowA,
+EquipmentCompareWindowA, Monster_list_search, Chat_move; ud13 Set_mini_data_to_pl; hk19 cmd_delete; sk21/23/24 disp_keybase, sk_board_ptr_replace, key_mask_check.
+Header edit: include/menu.h PitMenu.x0C s16 -> u16 (Chat_init/Menu_chatlog_mv store the chained `x0F = x0C = 0` through andi 0xFFFF). Aliases added to config/main_aliases.txt:
+flfntLocate_i, Equip_moji_color_rare_i, Put_PageArrow_s, EquipmentDescriptionWindowA_s (same function, a second prototype so one TU can call it narrowed or raw; tools/mkruns3.py strips `_i`/`_s` when comparing call names).
+Matching lessons (each confirmed by a match):
+- Compare ladder of beq with a trailing `beq; nop; b` = a `switch` with `break` (yn_mask_char_check, mh_char_make_check); `r = 0` before the switch.
+- A shared `li v0,1` return label at the end of a function = `switch` whose cases `break` and a final `return 1` (Item_valid_chk); the early exits `return 0`.
+- Stray extra argument in a call (`se_req(7, 0x16, 0, v)`) put the variable in t0 instead of a3 (ListSelect/PageSelect). A call with FEWER args than the callee has: leave the arguments out
+  (sk_backspace(1) etc. in SoftKeyboard_move), declare the callee `void f();`.
+- `(u8)n` at every use (not `n & 0xFF`) keeps the mask un-CSE'd (Put_receive_mark, Disp_help_mess: `(u8)kind`, `(u16)id`).
+- Parameters of the callee decide narrowing at the call: Put_PageArrow / EquipmentDescriptionWindowA take raw ints in their own definition but their callers narrow (two prototypes via alias).
+  `u8` as last parameter of Put_PageArrow and return type u8 of EquipmentDescriptionWindowA removed the masks around `pages`.
+- A float parameter shows as `mov.s $f20,$f12` in the prologue: Put_mini_sight(f32 scale, s16 ofs, int col). Hoisted `x0 = 1.25f * scale` goes after the last call before the loop.
+- `int t = u1 - d` (int temp) instead of s16 saves the second sign extension (PutSpriteDiv3). Chained store `a = b = 0` stores the right-hand variable first.
+- Struct with u8/u16 views of the same bytes (`KM`: `k->v.w`, `k->v.s.lo`) stops MWCC from forming a `k+2` pointer register (key_mask_check, EQD in EquipmentDescriptionWindowA).
+- Per-branch stores `*(u8 **)lpSKey = X` in each case (not one temp `b` stored after the switch) (sk_board_ptr_replace). Reading `lpSKey->field` through a local pointer lets MWCC keep the pointer;
+  reading through the global every time reloads it like the original (setup_rw_sub, disp_keybase: no `sc` temp). int instead of u16 for a position variable kills `andi` copies (cmd_delete).
+  Declaration order is reverse of register order (cmd_delete: `p, s, n, pos` gave s0 = pos).
+- A compare `if (0 < x)` / `x > left` vs `left < x` flips the `slt` result register (NPC_Message `PitMenu.x08 > left`). Both-branch values assigned once: `if (c == 0xA) { s += 1; } else {...}` order.
+- Colour built from three sines: `(R | 0xFF000000 | G) | B` with each channel `(((s8)(K * s) + C) & 0xFF) << n` (EquipmentCompareWindowA); tried 7 orders with a script, four match.
+- Shift/sign helpers: `u8 pg = page` extra copy lets `page &= 3` stay in its register; locals of struct/array size decide the frame (buf[0x40] vs [0x20] in Chat_move/Disp_NPC_message/ItemListWindow).
+- Permuter (-j1, 7 min per function) found zero scores for Monster_list_search and Chat_move (applied with tools/permapply.py; formatting of those two functions is the permuter's).
+Near-matches left (real remaining difference in instructions, C in the *_nm.c files): PlayerEquipmentWindow 2 (init store order), server_connect 2, connect_error 4, net_overlay_request 4,
+hk_key_kata_hira 5 (empty then-block layout), sk_pltchange 5 (saved register order f/e), Chat_log_add / Plaza_chat_log_add 6 (a0 in the jal delay slot), HardKeyboard_move 7, hk_key_backspace 8,
+disp_keybase2 9, sk_key_repeat 11 (return type is s16), sk_palette_cursor_set 11, hk_key_end 13, hk_cursor_mv 15, setup_rw_sub 29, Get_bowgun_atk 27, ItemListWindow 62,
+ng_word_sub 67 (8 saved registers vs 7), PlayerStatusWindow 88 (pl/tab/t/noRank register order), SoftKeyboard_move 38 (callee prototypes now K&R; layout of the timer decrement block), equip_exp_core 965,
+DispFrameMessageA 606, DispFrameListA 348. mc_act_unformat (11) needs mc_unformat/mc_act_return in the SAME translation unit (the original keeps a0 across both calls: MWCC register info of an earlier callee).
+Not started: online code (disp_spr_sub, net_connect_draw, ms_network_*, ncm_*), mc disp/low, Ud_item_stack / Ud_u_item_stack.

@@ -997,3 +997,107 @@ Also linked later in the pass: pl_mv060 (pl/plx12, 0x13EA40), edit_create_model 
 Still near-match, tried this pass without success: Pit_mv 4 / Pit_mv_lb 3 (the original loads `now` into a0 and copies it to the saved register; assignment
 inside the argument, int/u16/u32 types, a hold variable and statement orders all give the same 3), load_shadow 2, menu_data_monster_sub 5, pl_dm008/pl_at012
 (the original re-copies a0 from s0 in the first call block), Pl_slash_lv_ck, se_req2 7 (permuter ran 15 minutes), em_dur_set 8, release_model 7.
+
+## Fourteenth pass (Sonnet worker C, after the crash restart)
+Remaining unmatched main-module functions in my ranges are all written in C now (nm files) except network/library code (prot_00, npc_trans is C but 30 off,
+sceUsbKb*, _start). Linked (all five `tools/rebuild.sh` OK): Pit_disp_menu_equipment (menu/menu41.c, 0x1337A0) and release_tex_sub (tex/reltex.c, now
+0x11E910-0x11E9D8 with release_texture). No header edits. Lessons:
+- Pit_disp_menu_equipment: `u32 v` (not int) for `(f32)v` gives the unsigned-convert branch; EquipmentDescriptionWindow takes a 5th int argument (original sets t0=0),
+  so the prototype in menu_disp_nm.c was widened (the menuNN.c files that call it with four args still match, the extra register is only set by this caller);
+  assigning `q.s[0]` before `q.s[2]` fixed the constant load order.
+- release_tex_sub: `for (i = 0; i < n; i++) { p = &mem_tex[start]; ...; start++; }` (pointer recomputed from a counter that is bumped at the end) puts the address
+  computation behind the guard and keeps the loop in registers; pointer-walk and pre-loop pointer forms hoist it. Same idea as load_texlist.
+- tools/mkone.py NM.c OUT.c FUNC HEADER builds a one-function file from an nm file in one step.
+Still near-match, tried again: Pl_light_set 5 (lp/pb swap s6/s7, all 24 orders of the four pointer locals tried), WallHitInit/GroundHitInit 6 (decl order, block scopes,
+`int e = -1`: no change; tweak.py and a 15 minute permuter run found nothing), key_rept_du 5, em_dur_set 4-17, pl_dm008 2 (if/else forms are worse: 6-11),
+atck_data_set_shl2 4 hunks (the original copies 24 bytes as three 8-byte lw/sw pairs; 8-byte s32 struct, u32 pair and loop forms all give lwc1/swc1 or a rolled loop),
+aan_ofs_calc ~31 (the original keeps `aan` copy in v0 and consumes a0).
+
+## Lobby overlay, 0x5AB000-0x5C4E60 (agent C, 6-7 Oct 2026)
+Map (checked with tools/lbleft.py-style counting + jal/data-reference scan of lobby.bin; 100 functions, 46 KB were still asm before this pass):
+- 0x5AB000-0x5AE320: cnLBS network protocol (Match*, Patch*, bg-process return, GetRecvData*, SetSend*): online only.
+- 0x5AE320-0x5AE8D0: lbs_encode_ex / write_col_numeric / mmbbc_encode (bit encoders for the network strings): online only.
+- 0x5AE8D0-0x5AFFA0: item shop (lbshop2). Village AND online: B's note says the town code switches on Online_ck();
+  CheckItemPrice_005AFEE0 (shop price check, village shop) is the only unlinked function here.
+- 0x5AFFA0-0x5B2E90: Lb_join (guild counter "join a room"), lb_select_*: room list/select dialogs, reached from lb_check_status
+  through Lbc_ReadRoomInfo (network): online.
+- 0x5B2E90-0x5B4F80: lm_* lobby menus (member list, room member): online.
+- 0x5B4F80-0x5B9030: connecting_NN, tcp_init, server_select_NN, cmcs_NN, internet_lobby_act, lbc_login_*: online login.
+- 0x5B9030-0x5C2000: CallBack_Result_* / CallBack_Event_* (login, plaza member, mail, room events), Lbc_* room rules,
+  lbc_logout/admin message, Analysis_TagCode/Display_StringData (HTML-ish tag text in the lobby browser): online.
+- 0x5C2000-0x5C31A0: id_select/handle name selection, test_server_sel_disp, Get_ServerName: online.
+- 0x5C31A0-0x5C4E60: village NPC code: lb_npc_item_trans (NPC carried item draw) and ef_move_sub_005C49F0 (NPC sound
+  script) are the village functions that were left; the rest of the range is already linked (B's lb_by*/lb_bz*).
+Local_main (0x5D8680, F's range) reaches almost everything through function-pointer tables, so a plain jal walk from it finds nothing;
+the village/online split above is by caller (jal and pointer-table scan) and name.
+
+Linked this pass (rebuild OK, all five modules):
+- lb_vs01 (b/lb_vs01.c, 0x5C49F0-0x5C4CE8) ef_move_sub_005C49F0: village NPC sound script. Compare chain 2B6..2,1 = labels written ascending
+  (case 1 is an explicit empty case); `ashi_sd_req_005C4980(em, f32)` needs an ANSI prototype (float in f12, em in a0, first call leaves a0).
+- lb_vs02 (b/lb_vs02.c, 0x5C31A0-0x5C34F8) lb_npc_item_trans: village NPC item draw. Lessons (each confirmed by the match):
+  * `kind == 0`, `ex[0xE] == 3` tests written as nested ONE-CASE switches (beq; b end), not &&.
+  * `em_frame_check2(em, 80.0f, 0)`: the callee takes (EMW *, f32, int); with a0 untouched the compiler keeps em in a0 and puts the
+    ex pointer in a1.
+  * `case 0x2AD: if (check != 0) return; case 0x2AB: case 0x2AC: ...` (fall into the body).
+  * Two FLMAT locals: declare `m` before `jm` (stack order); decl order of mw/c/mat/n/i found with tools/lbdbf.py.
+  * The order of the 14 constant stores + the clay pointer decides the constant-load scheduling. A hill-climb over single-statement
+    moves (one round, ~200 compiles) went 20 -> 0 after a group permutation (720 orders) got it to 20. Scripts were scratch (not committed):
+    permute groups, then try every "move one line to another position"; only use it for independent stores (not for calls).
+Near-matches left in the range, all online, mostly 100+ instructions off (b/nm/*.c, cnet/cnlbs_nm.c): Lb_join 306/593, lb_select_room,
+lm_member_trans, lm_room_member_mv, server_select_*, tcp_init, internet_lobby_act, lbc_login_*, CallBack_*; small ones that stay stuck on scheduling
+(statement-order hill-climb found nothing): cmcs_00 4, connecting_00 3, transOtSelectHandleName 4, net_Check_FriendData 5, _cnet_RecvFromLbs_MatchPlSide 2
+(original: the by-value result record is at sp+24 and the received byte at sp+31, which overlap; union/1-byte struct forms tried, no match),
+MatchOpponentInfo 3. CheckItemPrice_005AFEE0 (village shop): 24 off with `&&`, 32 off with a one-case switch (right size, wrong register use);
+the original has both price branches as explicit slt/beq/b blocks where ours folds the first one into xori.
+
+## Lobby online round (agent C, 6 Oct 2026, evening): cnet protocol, login, callbacks, menus
+Lobby 30.75% -> 31.64% (rebuild OK, all five modules). Matched this round (new files): lb_ss01/02 (server_select_00/01), lb_lg01
+(lbc_login_finish), lb_ila01 (internet_lobby_act, 756 B), lb_id01 (id_select_01), lb_cb01..04 (CallBack_Event_LobbyLeaver/LobbyCommer/
+RoomCommer/MatchStart), lb_nt01/02 (net_time_str/move), lb_gs01 (Get_ServerName), lb_dsi01 (disp_string_id), lb_crr01 (check_room_require,
++ rodata 0x65E240), lb_jip01 (join_input_password), lb_lmp01 (lm_place_trans), lb_tos01/lb_tsh01 (trans(Ot)SelectHandleName); and in
+cnet/cnlbs_nm.c (registered through tools/lbreg_cnet.sh = lbregister.sh restricted to the cnet family, which regenerates cnlbs*.c runs):
+_cnet_RecvFromLbs_MatchBattleCode/GameRule/GameServerAddr, _cnet_Return_CallBack, _cnet_RecvFromLbs_NoticePatchStart, SetSendStringData,
+SetSendStringData2, SetSendEncodeStringData, GetRecvDataString, __cnet_Recv_PatchData, __cnet_Recv_UserIDandHandle, cnLBS_RecvData stays 4 off.
+No shared-header edits. Run `tools/lbregister.sh` only after checking `git status`: it regenerates lb/lbnpc, lbui... runs too and broke the link
+once when main had promoted functions out of those nm files (use tools/lbreg_cnet.sh for cnet only).
+
+New scratch tools (tools/): lbvariants.py (try whole-function variants from stdin, `=====` separated), lbperm.py (all orders of a statement window),
+lbhill.py (move-one-line hill climb), lbdeclrand.py (random declaration orders), lbreg.py (check OK, write src/lobby/b/NAME.c, register, overlap
+check, delete the nm draft). Many nm drafts in b/nm are STALE (already matched by agent B in lb_by*; e.g. Lb_ck_menu, Lb_gh_board*, lb_select_room_list,
+lb_npc_*, set_se_type): lbreg.py refuses them with OVERLAP. check.py cannot see relocation addends: check_room_require compiled OK with
+`lb_pit.step` (offset 0xA) instead of `lb_pit.x08`; only tools/rebuild.sh caught it. Always rebuild before trusting a new match.
+
+Lessons (each from a function that matched):
+- m2c "switch ... irregular / goto block_NN" drafts are really if/else-if chains (server_select_00/01: `if (x == 0) {...} else if (x == 1 || x == 2) {...}`;
+  a callee called with no arguments in the original must be written with none (get_next_server()) or the compiler sets a0/a1).
+- Empty `if (x == 2) {}` is dropped by the compiler; the original keeps the compare: write `if (x == 2) { return; }` (NoticePatchStart).
+  Early-return form `if (a) { if (b) f(); return; } if (c) {...}` instead of else-if (_cnet_Return_CallBack: avoids the jump-threaded `b end`).
+- A switch whose last case just falls to common code AFTER the switch: `switch (r) { case 1: break; case 0: return; case -1: ...return; }`
+  puts the ladder in reverse label order (-1,0,1) and the body after the switch (cmcs_04, tcp_init case 1). A one-case `switch (x) { case 0x1031: ... }`
+  gives `beq; b end` (cmcs_04). A shared exit block inside a nested switch needs `goto` (join_input_password: case 4 -> `goto fin`, default falls into fin).
+- Struct-by-value result records: CNET_RES locals in sibling blocks end at sp+24 while a u8 sits at +31 (MatchJoin/MatchPlSide/MatchOpponentInfo): still
+  unsolved, see docs above (frame hole of 8/16 bytes below the record). Same hole for the 0x120 chat record in CallBack_Event_ChatMessage(TU).
+- `sprintf(buf, fmt, h, m, s)` with dead m, s: the original keeps them because they are call arguments (net_time_str); a dead local would be removed.
+- u16 params: `void f(w, src, len) u16 len;` K&R made `w->total += len` unmasked (SetSendStringData); with `int len` the compiler masks and CSEs.
+- `(u16)(src[0] << 8) | src[1]` keeps the inner andi (GetRecvDataString); `((x << 8) & 0xFFFF)` loses it.
+- CNW(T, off) pointer arithmetic on CnetSys_w makes the compiler cache the base in a saved register; use the named field (CnetSys_w.patch_ptr).
+- `x > C-1` and `0 < n` instead of `x >= C` / `n > 0` (UserIDandHandle: n > 3, 0 < n) to get slt+at.
+- Arguments of a call evaluated from a local temp (`p = CNWP(..); GetRecvDataString(p, ..)`) schedule differently from the inline expression (MatchBattleCode).
+- stack frames: a CNET_CHAT-like 0x120 struct plus sprintf needs the 16-byte outgoing area (variadic call): lm_place_trans needed the 5-float
+  record declared BEFORE the char buffer (later declaration = lower address).
+- Register naming: `s32 sw = Get_sw2(0) & 0xFFFF;` (id_select_01) vs `u16 sw = Get_sw2(0);` (Lb_gh_board): which one matches depends on whether the
+  original masks again at use; try both. `cw[0xB + n * 8]` single index expression (not `(n*8) + cw`) gives the original operand order for addu.
+- Static callee knowledge: when the original TU defines a small `static` helper above the caller, MWCC keeps caller values in a-registers across
+  the call (a2 survives CallBackWaitInit in Lbs_ExitAndEnterPlaza). A non-static helper in the same file does NOT do this. All the "stp"-style
+  register differences (lbc_login_warning_message, lbc_login_init, lbc_in_lobby_03_00, Lbc_SetPropaty, Lbs_ExitAndEnterPlaza) point at one original
+  translation unit that starts at 0x5B7020 (internet_connect_minimum_cleanup, CallBackWaitInit, Check_CallBackWait are its static helpers) and runs at least to
+  lbc_game_ready_00 (0x5BDD50). Lbs_ExitAndEnterPlaza matches (OK in check.py) when those three statics are in the same file in front of it,
+  but a file must be one contiguous run, so every function in 0x5B7020-0x5B9EE4 would have to match at once (still unmatched there: lbc_login_init,
+  lbc_login_users_personal_data, lbc_login_top_information, CallBack_Result_LoginLobbyServer, warning_message 6 off, id_select 10 off).
+  Everything else in that range is already matched in separate files.
+- Near-matches kept in b/nm (all logic complete): lbc_login_warning_message 6, lbc_login_id_select 10, lbc_logout_00 7 (store-order of three
+  3F33F1/COM_R_No_* blocks), lm_member_list_mv 191 (regs), lbc_login_init (regs, frame OK), create_server_table 51, CallBack_Event_RoomLeaver 22,
+  MatchEntryUser 39, disp_lm_room_member 10, tcp_init 8, cmcs_04 4, server_select_05 48, disp_string_handle 7, cmcs_00/01/02, connecting_00/10,
+  cnLBS_Get_GameServerAddress 3, cnLBS_RecvData 4, MatchJoin/PlSide/OpponentInfo (record hole).
+- Browser/HTML functions (internet_browser, Analysis_TagCode, nwDispStr_Html, Display_StringData, lbc_admin_message_*, check_halfcode) were skipped on
+  the coordinator's instruction (browser work paused).

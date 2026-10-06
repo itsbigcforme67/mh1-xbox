@@ -42,7 +42,7 @@ void sk_disp_palette_set(void);
 void sk_palette_cursor_set(void);
 void sk_set_yn_kigou_f(void);
 int sk_zenkaku_ck();
-s32 sk_key_repeat(s16, s16);
+s16 sk_key_repeat(s16, s16);
 void sk_init_mode(u8);
 
 void SoftKeyboard_init(void) {
@@ -152,7 +152,7 @@ void sk_init_mode(u8 mode) {
     sk_set_yn_kigou_f();
 }
 
-s32 sk_key_repeat(s16 now, s16 hold) {
+s16 sk_key_repeat(s16 now, s16 hold) {
     s16 h = hold & 0x3CFC;
     s16 n;
     s16 v;
@@ -578,15 +578,17 @@ void kbd_reibun_input_sub(int a, int b, void *c) {
 extern s8 han_zen_tbl_671[];
 
 s8 sk_zen_han_check(u8 a) {
-    s8 t = han_zen_tbl_671[a];
+    int t = han_zen_tbl_671[a];
+    s8 u = t;
 
-    if (t >= 0 && !(SKS32(0x20) & (1 << (s8)t))) {
+    if (t >= 0 && !(SKS32(0x20) & (1 << u))) {
         return t;
     }
     return -1;
 }
 
 void sk_zen_han_chg(void) {
+    int snd = 0x15;
     s8 t = sk_zen_han_check(SKB(0x1E));
     u8 x;
     u8 y;
@@ -600,10 +602,11 @@ void sk_zen_han_chg(void) {
         cmd_kakutei_all();
         sk_set_etc_data();
         sk_set_yn_kigou_f();
+        snd = 0x16;
         SKB(0x24) = x;
         SKB(0x25) = y;
     }
-    se_req(7, 0x16, 0);
+    se_req(7, snd, 0);
 }
 
 void sk_speaking(int, int, void *);
@@ -684,8 +687,8 @@ void sk_pltchange(int back) {
     int tries = 0;
     int ok = 0;
     u8 f = SKB(0x1F);
-    u8 e = SKB(0x1E);
     s8 p = f;
+    u8 e = SKB(0x1E);
     int v;
 
     while (1) {
@@ -734,14 +737,13 @@ extern s32 reibun_rw_tbl[][3];
 void setup_rw_sub(int n) {
     s32 *a = (s32 *)board_tbl[n + 4];
     s32 *b = (s32 *)board_tbl[n + 5];
-    u8 *e = SKP(0x10);
 
-    a[1] = free_rw_tbl[*(s32 *)(e + 0x20)][0];
-    a[2] = free_rw_tbl[*(s32 *)(e + 0x20)][1];
-    a[3] = *(s32 *)(e + 0x24);
-    b[1] = reibun_rw_tbl[*(s32 *)(e + 0x28)][0];
-    b[2] = reibun_rw_tbl[*(s32 *)(e + 0x28)][1];
-    b[3] = *(s32 *)(e + 0x2C);
+    a[1] = free_rw_tbl[*(s32 *)(SKP(0x10) + 0x20)][0];
+    a[2] = free_rw_tbl[*(s32 *)(SKP(0x10) + 0x20)][1];
+    a[3] = *(s32 *)(SKP(0x10) + 0x24);
+    b[1] = reibun_rw_tbl[*(s32 *)(SKP(0x10) + 0x28)][0];
+    b[2] = reibun_rw_tbl[*(s32 *)(SKP(0x10) + 0x28)][1];
+    b[3] = *(s32 *)(SKP(0x10) + 0x2C);
 }
 
 extern u8 moji_tbl_abn[], moji_tbl_abn_h[], moji_tbl_abn_s[], moji_tbl_abn_sh[], moji_tbl_free[];
@@ -834,30 +836,30 @@ void Han2zen(s8 *src, s8 *dst) {
 }
 
 void flps0004(void *);
-extern s32 key_size_tbl[][2];
+typedef struct KSZ { f32 w; s16 h; s16 pad; } KSZ;
+extern KSZ key_size_tbl[];
 
-void disp_keybase(s16 y, int col) {
+void disp_keybase(f32 x, s16 y, int col) {
     struct { s16 p[4]; int col; } q;
-    u8 *k = SKP(4);
-    f32 sc = *(f32 *)(lpSKey + 0x14);
+    u8 *k;
 
     q.col = col;
-    q.p[0] = (f32)y + *(f32 *)k * sc;
-    q.p[2] = (f32)y + sc * (*(f32 *)k + (f32)key_size_tbl[F16(k, 6)][0]);
+    k = SKP(4);
+    q.p[0] = x + *(f32 *)k * *(f32 *)(lpSKey + 0x14);
+    q.p[2] = x + *(f32 *)(lpSKey + 0x14) * (*(f32 *)k + key_size_tbl[F16(k, 6)].w);
     q.p[1] = y + FS16(k, 4);
-    q.p[3] = y + FS16(k, 4) + key_size_tbl[F16(k, 6)][1];
+    q.p[3] = y + FS16(k, 4) + key_size_tbl[F16(k, 6)].h;
     flps0004(&q);
 }
 
 extern u8 palette_set_tbl[];
 
-void disp_keybase2(s16 y, int col) {
+void disp_keybase2(f32 x, s16 y, int col) {
     struct { s16 p[4]; int col; } q;
     u8 a = palette_set_tbl[SKB(0x1F) * 2];
     u8 b = palette_set_tbl[SKB(0x1F) * 2 + 1];
     u8 *k;
     s8 idx;
-    f32 sc;
 
     if (SKS8(0x30) == 1 && SKB(0x26) == 0 && a == SKB(0x24)) {
         if (b != SKB(0x25)) {
@@ -865,14 +867,13 @@ void disp_keybase2(s16 y, int col) {
         }
     } else {
 draw:
-        idx = *(s8 *)(*(u8 **)(SKP(0) + 8) + a * 4 + b);
-        q.col = col;
+        idx = *(s8 *)(*(u8 **)(SKP(0) + 8) + (b + a * 4));
         k = *(u8 **)(SKP(0) + 4) + idx * 8;
-        sc = *(f32 *)(lpSKey + 0x14);
-        q.p[0] = (f32)y + *(f32 *)k * sc;
-        q.p[2] = (f32)y + sc * (*(f32 *)k + (f32)key_size_tbl[F16(k, 6)][0]);
+        q.col = col;
+        q.p[0] = x + *(f32 *)k * *(f32 *)(lpSKey + 0x14);
+        q.p[2] = x + *(f32 *)(lpSKey + 0x14) * (*(f32 *)k + key_size_tbl[F16(k, 6)].w);
         q.p[1] = y + FS16(k, 4);
-        q.p[3] = y + FS16(k, 4) + key_size_tbl[F16(k, 6)][1];
+        q.p[3] = y + FS16(k, 4) + key_size_tbl[F16(k, 6)].h;
         flps0004(&q);
     }
 }
@@ -882,7 +883,8 @@ void SoftkeyTextureSet(void);
 void kbd_Disp_KouhoGun(f32);
 void kbd_disp_input(f32, s16);
 int hk_cursor_check();
-int key_mask_check(void *);
+typedef struct KM { u8 b0; u8 b1; union { u16 w; struct { u8 lo; u8 hi; } s; } v; } KM;
+int key_mask_check(KM *);
 extern u8 moji_size[][4];
 extern char lit_1221_0036E5C8[];
 void flps0008(void *);
@@ -937,9 +939,9 @@ void DispSoftkeyboard(int scale) {
     kk = *(u8 **)(e + 4);
     for (; n != 0; n--, kk += 8) {
         q.p[0] = ox + *(f32 *)kk * *(f32 *)(lpSKey + 0x14);
-        q.p[2] = ox + *(f32 *)(lpSKey + 0x14) * (*(f32 *)kk + (f32)key_size_tbl[F16(kk, 6)][0]);
+        q.p[2] = ox + *(f32 *)(lpSKey + 0x14) * (*(f32 *)kk + key_size_tbl[F16(kk, 6)].w);
         q.p[1] = y + FS16(kk, 4);
-        q.p[3] = y + FS16(kk, 4) + key_size_tbl[F16(kk, 6)][1];
+        q.p[3] = y + FS16(kk, 4) + key_size_tbl[F16(kk, 6)].h;
         flps0004(&q);
     }
     SoftkeyTextureSet();
@@ -952,7 +954,7 @@ void DispSoftkeyboard(int scale) {
         int g;
         u8 *m;
 
-        if (key_mask_check(ent) == 1) {
+        if (key_mask_check((KM *)ent) == 1) {
             c = 0xC5;
             g = 0;
             k.col = *(s32 *)(SKP(0x10) + 0x10);
@@ -966,7 +968,7 @@ void DispSoftkeyboard(int scale) {
         k.uv[1] = (c & 0xF0) + 1;
         k.p[2] = ((s8)m[0] * (s8)m[1]) >> 4;
         k.p[3] = m[2];
-        k.p[0] = (((s16)((f32)*(f32 *)(lpSKey + 0x14) * (f32)key_size_tbl[F16(kk, 6)][0]) - k.p[2]) >> 1) + (s16)(ox + *(f32 *)kk * *(f32 *)(lpSKey + 0x14));
+        k.p[0] = (((s16)((f32)*(f32 *)(lpSKey + 0x14) * key_size_tbl[F16(kk, 6)].w) - k.p[2]) >> 1) + (s16)(ox + *(f32 *)kk * *(f32 *)(lpSKey + 0x14));
         k.p[1] = (y + FS16(kk, 4) + 0x10) - m[2];
         k.uv[2] = (k.uv[0] + (s8)m[0]) - 1;
         k.uv[3] = k.uv[1] + 0xF;
@@ -994,15 +996,15 @@ cur:
         SetBlendingMode(1);
         t = (SKU16(0x18) & 0x3F) << 10;
         sn = flSin(0.0000958738f * (f32)t);
-        if (key_mask_check(e) == 1) {
+        if (key_mask_check((KM *)e) == 1) {
             n = *(s32 *)(SKP(0x10) + 0x18);
         } else {
             n = *(s32 *)(SKP(0x10) + 0x14);
         }
-        disp_keybase(y, n | (((s8)(64.0f * sn) + 0xBF) << 24));
+        disp_keybase(ox, y, n | (((s8)(64.0f * sn) + 0xBF) << 24));
     }
     SetBlendingMode(1);
-    disp_keybase2(y, *(s32 *)(SKP(0x10) + 0x14) | 0xD0000000);
+    disp_keybase2(ox, y, *(s32 *)(SKP(0x10) + 0x14) | 0xD0000000);
     SetBlendingMode(0);
     kbd_disp_input(2.0f + (14.0f + ox) / *(f32 *)(lpSKey + 0x14), y);
     kbd_Disp_KouhoGun(2.0f + (14.0f + ox) / *(f32 *)(lpSKey + 0x14));
@@ -1080,9 +1082,10 @@ void sk_disp_palette_set(void) {
 }
 
 s8 sk_daisyo_check(u8 a) {
-    s8 t = daisyo_tbl_1423[a];
+    int t = daisyo_tbl_1423[a];
+    s8 u = t;
 
-    if (t >= 0 && !(SKS32(0x20) & (1 << daisyo_tbl_1423[a]))) {
+    if (t >= 0 && !(SKS32(0x20) & (1 << u))) {
         return t;
     }
     return -1;
@@ -1126,49 +1129,47 @@ set:
 }
 
 void sk_board_ptr_replace(void) {
-    u8 *b;
     u8 m = SKB(0x1D);
     u8 e;
 
     switch (m) {
     case 7:
-        b = board_tbl[0] + 0x154;
+        *(u8 **)lpSKey = board_tbl[0] + 0x154;
         break;
-    case 10:
-    case 9:
     case 8:
+    case 9:
+    case 10:
         e = SKB(0x1E);
         switch (e) {
         case 2:
-            b = board_tbl[0] + 0x168;
+            *(u8 **)lpSKey = board_tbl[0] + 0x168;
             break;
         case 10:
-            b = board_tbl[0] + 0x17C;
+            *(u8 **)lpSKey = board_tbl[0] + 0x17C;
             break;
         case 7:
-            b = board_tbl[0] + 0x190;
+            *(u8 **)lpSKey = board_tbl[0] + 0x190;
             break;
         case 15:
-            b = board_tbl[0] + 0x1A4;
+            *(u8 **)lpSKey = board_tbl[0] + 0x1A4;
             break;
         case 3:
             SKB(0x1E) = 0xB;
         case 11:
-            b = board_tbl[0] + 0x1B8;
+            *(u8 **)lpSKey = board_tbl[0] + 0x1B8;
             break;
         default:
-            b = board_tbl[e];
+            *(u8 **)lpSKey = board_tbl[e];
             break;
         }
         break;
     case 6:
-        b = board_tbl[0] + 0x1CC;
+        *(u8 **)lpSKey = board_tbl[0] + 0x1CC;
         break;
     default:
-        b = board_tbl[SKB(0x1E)];
+        *(u8 **)lpSKey = board_tbl[SKB(0x1E)];
         break;
     }
-    *(u8 **)lpSKey = b;
     if (SKB(0x1F) == 4 && (SKB(0x35) & 0xF)) {
         *(u8 **)lpSKey = board_tbl[0];
     }
@@ -1195,9 +1196,8 @@ int yn_mask_char_check(u8 *p) {
 
     if (m == 0 || m == 1) {
         c = *p;
-        if (c != 0xF3 && c != 0xE1 && c != 0xE0 && c != 0xB9 && c != 0xB8 && c != 0xB7 && c != 0xB6 && c != 0xB5 && c != 0xA8 && c != 0x99 && c != 0x98) {
-            r = 0;
-        } else {
+        switch (c) {
+        case 0x98: case 0x99: case 0xA8: case 0xB5: case 0xB6: case 0xB7: case 0xB8: case 0xB9: case 0xE0: case 0xE1: case 0xF3:
             r = 1;
         }
     }
@@ -1212,34 +1212,34 @@ int yn_mask_char_check(u8 *p) {
 int palette_ng_sub2();
 int palette_ng_sub(int, u8 *, u8 *);
 
-int key_mask_check(void *k) {
+int key_mask_check(KM *k) {
     int r = 0;
     u8 m;
 
-    if (F16(k, 2) == 0) {
+    if (k->v.w == 0) {
         r = 1;
-    } else if ((u8)F16(k, 2) == 1) {
-        if (palette_ng_sub2(F8(k, 3), 0, 0) != 0) {
+    } else if (k->v.s.lo == 1) {
+        if (palette_ng_sub2(k->v.s.hi, 0, 0) != 0) {
             r = 1;
         }
     } else if (sk_yn_check() == 1) {
-        if ((u8)F16(k, 2) == 2 && F8(k, 3) == 1) {
+        if (k->v.s.lo == 2 && k->v.s.hi == 1) {
             r = 1;
-        } else if (yn_mask_char_check(k) != 0) {
+        } else if (yn_mask_char_check((u8 *)k) != 0) {
             r = 1;
         }
     } else {
         m = SKB(0x1D);
         switch (m) {
         case 15:
-            if (mh_char_make_check(k) != 0) {
+            if (mh_char_make_check((u8 *)k) != 0) {
                 r = 1;
             }
             break;
-        case 2:
-        case 5:
         case 1:
-            if (F8(k, 0) == 0xE3) {
+        case 5:
+        case 2:
+            if (k->b0 == 0xE3) {
                 r = 1;
             }
             break;
@@ -1249,12 +1249,13 @@ int key_mask_check(void *k) {
 }
 
 int mh_char_make_check(u8 *p) {
-    u8 c = *p;
+    int r = 0;
 
-    if (c != 0xF1 && c != 0xB9 && c != 0xB6 && c != 0xB5 && c != 0xE3) {
-        return 0;
+    switch (*p) {
+    case 0xE3: case 0xB5: case 0xB6: case 0xB9: case 0xF1:
+        r = 1;
     }
-    return 1;
+    return r;
 }
 
 s8 sk_zen_han_check(u8);

@@ -283,11 +283,11 @@ void lb_mix_put_itemDetail(void) {
         }
         t = (s16)have;
         if (t == 0xFF) {
-            font_print_ex(0x1B0, 0x11A, 2, lit_359_00654D68);
+            font_print_ex(0x1B0, 0x11A, 2, lit_359_00654D68, t);   /* count in t0, as lb_shop_put_itemDetail [same layout, not checked in this asm] */
         } else if (t >= *((u8 *)&Item_data[0].max + off)) {
-            font_print_ex(0x1B0, 0x11A, 2, lit_360_00654D70);
+            font_print_ex(0x1B0, 0x11A, 2, lit_360_00654D70, t);
         } else {
-            font_print_ex(0x1B0, 0x11A, 0, lit_360_00654D70);
+            font_print_ex(0x1B0, 0x11A, 0, lit_360_00654D70, t);
         }
         Lb_put_itemIcon(0x122, 0x102, 0x36, id);
         Lb_put_itemRare(0x12A, 0x136, (s8)*rp);

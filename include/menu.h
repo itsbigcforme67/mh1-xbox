@@ -117,7 +117,7 @@ typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
     s8 x06;             /* 0x06 */
     s8 x07;             /* 0x07 (f_chat) */
     s32 x08;            /* 0x08 */
-    s16 x0C;            /* 0x0C */
+    u16 x0C;            /* 0x0C */
     s8 x0E;             /* 0x0E (f_chat) */
     s8 x0F;             /* 0x0F */
     u8 x10;             /* 0x10 */
