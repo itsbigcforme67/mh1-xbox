@@ -958,10 +958,10 @@ Map (V = village/offline path, O = online-only; from names and callers, not trac
 - 60E330-610288 eft25 (effect spawned by the town NPC scripts lbnpc/lbem04/09/10, PC runtime stubs func_60E2B0 = Eft25_set): V (guess from callers).
 Start state: 102 functions (80 KB) had no C at all, all browser; m2c + tools/lbauto.py matched none byte-identical.
 Linked this session (rebuild OK, all five modules):
-- V: item box Lb_ItemBox_open, kosuu_select, sortup_idx_chk, ItemboxWindowCursorX (in the translation unit src/lobby/f/lb_tu_ib.c, their asm stubs and
-  config/c_rawfuncs.txt lines are gone).
+- V: item box Lb_ItemBox_open, kosuu_select, sortup_idx_chk, ItemboxWindowCursorX (matched here, but main got the same four from another agent at the same time:
+  the merge took main's lb_tu_ib.c; tagAct_602 is lb_gdr2x01 on main, my lb_dd14 was dropped).
 - O: BsInit01_LoadWait, BsCountdownTimer, BsBody01_RcvSrc, BsBody03_PrsSrc, BsBody06_WaitCancel1, BsCheckInetProblem, BsInitAllObj, BsCsMove05_CapRegist,
-  BsCsMove07_NetError, get_input_tag_sp_type, Disp_TABLE_Line, check_rowspan, check_rowspan2, set_align_data, tagAct_602 (src/lobby/f/lb_dd01-15.c,
+  BsCsMove07_NetError, get_input_tag_sp_type, Disp_TABLE_Line, check_rowspan, check_rowspan2, set_align_data, (src/lobby/f/lb_dd01-13,15.c,
   one registered range each; lb_d01-03 are agent F's files, do not reuse those names).
 Near-matches left, V (item box, working copies in src/lobby/f/lb_ib.c / lb_ay.c, not linked; counts are differing lines of tools/align.py):
 - Lb_ItemBox_mv 6 (the `lw v1,ib` before the 0x39DAD0 store at the case-1 label, and the lui/sb order in the cancel tail),
