@@ -4178,10 +4178,10 @@ void em21_main(EMW *em) {
     EM21W *w = (EM21W *)em->ex;
     u8 dmg[4];
     u8 var_s0;
-    int i;
-    int n;
     u8 r;
     PLW *pl;
+    int i;
+    int n;
 
     var_s0 = 0;
     if (em->x8C3 == 0 && em->x04 == 1) {
@@ -4357,17 +4357,19 @@ void em21_main(EMW *em) {
                 break;
             }
         } else if (em->mode == 4) {
-            if (em->x15 == 0x16) {
+            switch (em->x15) {
+            case 0x16:
                 em21_act_set(em, 2, 0x19, 2);
                 em->x839 = 0;
+                break;
             }
         }
         break;
     case 12:
         var_s0 = 1;
         switch (em->x388) {
-        case 3:
         case 0:
+        case 3:
             switch ((u8)em->x38E) {
             case 0:
             case 7:
@@ -4420,7 +4422,7 @@ void em21_main(EMW *em) {
         }
         break;
     }
-    if (var_s0 != 0 && em->x94E == 0) {
+    if (var_s0 && em->x94E == 0) {
         em->x88B = 1;
     }
     if (em->x839 != 0) {

@@ -5735,7 +5735,7 @@ static void em_move06_005F6880(EMW *em, EM20W *w) {
 
 void em20_main(EMW *em) {
     EM20W *w = (EM20W *)em->ex;
-    u8 sp3C;
+    u8 dmg[4];
     s16 temp_a2;
     s16 temp_t0;
     s16 temp_v0;
@@ -5774,7 +5774,7 @@ void em20_main(EMW *em) {
     if (temp_v0 != 0) {
         w->x06 = (s16) (temp_v0 - 1);
     }
-    temp_v0_2 = Em_Dmg_Sys(em, &sp3C) & 0xFF;
+    temp_v0_2 = Em_Dmg_Sys(em, dmg) & 0xFF;
     switch (temp_v0_2) {                            /* switch 1 */
     case 1:                                         /* switch 1 */
     case 2:                                         /* switch 1 */
@@ -5789,7 +5789,7 @@ void em20_main(EMW *em) {
     case 3:                                         /* switch 1 */
     case 4:                                         /* switch 1 */
         if (em->x9EA == 0) {
-            if (sp3C == 0) {
+            if (dmg[0] == 0) {
                 em->x95A = 0x10;
             } else if (em->x8B6 == 0) {
                 em->x95A = 0xA;
@@ -5898,21 +5898,23 @@ block_79:
             em->x839 = 0;
             em_ikari_add(em, em->x8B0);
             break;
-        case 21:                                    /* switch 2 */
-        case 20:                                    /* switch 2 */
+        case 20:
+        case 21:
             em20_act_set(em, 0, 0x18, 2);
-block_132:
             em->x839 = 0;
             break;
-        case 27:                                    /* switch 2 */
+        case 27:
             em20_act_set(em, 0, 0x1C, 2);
-            goto block_132;
-        case 29:                                    /* switch 2 */
+            em->x839 = 0;
+            break;
+        case 29:
             em20_act_set(em, 4, 0x12, 2);
-            goto block_132;
-        case 31:                                    /* switch 2 */
+            em->x839 = 0;
+            break;
+        case 31:
             em20_act_set(em, 4, 0x13, 2);
-            goto block_132;
+            em->x839 = 0;
+            break;
         }
         break;
     case 11:                                        /* switch 1 */
@@ -5925,13 +5927,13 @@ block_132:
         } else if (em->kind == 0x14) {
             temp_t0 = em->x792;
             temp_a2 = em->x302;
-            if ((((temp_t0 * 0x1E) / 100) + ((u32) (temp_t0 * 0x1E) >> 0x1F)) >= temp_a2) {
-                if (((s32) em->x39A % 100) < 0x1E) {
+            if (temp_t0 * 0x1E / 100 >= temp_a2) {
+                if (em->x39A % 100 < 0x1E) {
                     em20_act_set(em, 4, 0x10, 2);
                 } else {
                     goto block_111;
                 }
-            } else if (((((temp_t0 * 0x32) / 100) + ((u32) (temp_t0 * 0x32) >> 0x1F)) >= temp_a2) && (((s32) em->x39A % 100) < 0x14)) {
+            } else if (temp_t0 * 0x32 / 100 >= temp_a2 && em->x39A % 100 < 0x14) {
                 em20_act_set(em, 4, 0x10, 2);
             } else {
                 goto block_111;
@@ -5957,7 +5959,7 @@ block_111:
                 em20_act_set(em, 4, 3, 2);
                 break;
             default:                                /* switch 3 */
-                if ((s32) M2C_FIELD((((temp_a0_4 & 0xFF) * 8) + em), u8 *, 0x30A) >= 2) {
+                if (em->hagi[temp_a0_4].cnt >= 2) {
                     if (temp_a0_4 != 3) {
                         em20_act_set(em, 4, 5, 2);
                     } else {
@@ -5973,7 +5975,7 @@ block_111:
     case 13:                                        /* switch 1 */
         if (em->x388 != 2) {
             em20_act_set(em, 4, 0, 2);
-            goto block_132;
+            em->x839 = 0;
         }
         break;
     }
@@ -5981,11 +5983,15 @@ block_111:
         if ((*(u8 *)0x3F360F == 1) && (em->mode != 6)) {
             em20_act_set(em, 6, 0, 1);
         }
-    } else if (em->x734 != 3) {
-
-    } else if (em->x839 != 0) {
-        em_cmd_ck(em);
-        em->x839 = 0;
+    } else {
+        switch (em->x734) {
+        case 3:
+            if (em->x839 != 0) {
+                em_cmd_ck(em);
+                em->x839 = 0;
+            }
+            break;
+        }
     }
     em20_main_sub(em, w);
     if (em->x6FF != 0) {

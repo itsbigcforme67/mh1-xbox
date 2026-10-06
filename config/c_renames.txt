@@ -64,6 +64,7 @@ build/src/game/em/em04.c.o .rodata .data
 build/src/game/em/em04b.c.o .rodata .data
 build/src/game/em/em07_aib.c.o .rodata .data
 build/src/game/em/em07_aic.c.o .rodata .data
+build/src/game/em/em07_ai_r01.c.o .rodata .data
 build/src/game/em/em07_aid.c.o .rodata .data
 build/src/game/em/em07.c.o .rodata .data
 build/src/game/em/em08_aif.c.o .rodata .data
@@ -78,9 +79,11 @@ build/src/game/em/em12.c.o .rodata .data
 build/src/game/em/em12b.c.o .rodata .data
 build/src/game/em/em12c.c.o .rodata .data
 build/src/game/em/em14_r10.c.o .rodata .data
+build/src/game/em/em14_r25.c.o .rodata .data
 build/src/game/em/em14_r11.c.o .rodata .data
 build/src/game/em/em14.c.o .rodata .data
 build/src/game/em/em15_r10.c.o .rodata .data
+build/src/game/em/em15_r21.c.o .rodata .data
 build/src/game/em/em15_r11.c.o .rodata .data
 build/src/game/em/em15.c.o .rodata .data
 build/src/game/em/em16a.c.o .rodata .data
@@ -88,6 +91,7 @@ build/src/game/em/em16b.c.o .rodata .data
 build/src/game/em/em17.c.o .rodata .data
 build/src/game/em/em17_r08.c.o .rodata .data
 build/src/game/em/em17_r14.c.o .rodata .data
+build/src/game/em/em17_r34.c.o .rodata .data
 build/src/game/em/em17_r15.c.o .rodata .data
 build/src/game/em/em16.c.o .rodata .data
 build/src/game/em/em18b.c.o .rodata .data

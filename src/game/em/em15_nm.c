@@ -4422,33 +4422,55 @@ void em15_main(EMW *em) {
     em->x9F1 = 0;
     if (game_w.stage == em->stg) {
         em->x9F3 = GetTenjoHit(em->pos, &em->x7E4, &w->x40);
-        if (em->stg != 0x4B && em->stg != 0x49 && em->stg != 0x46 && em->stg != 0x17 && em->stg != 0x16 && em->stg != 0x12) {
+        switch (em->stg) {
+        case 0x12:
+        case 0x16:
+        case 0x17:
+        case 0x46:
+        case 0x49:
+        case 0x4B:
             em_no_floor_ck(em);
-        } else {
+            break;
+        default:
             em_no_floor_ck(em);
+            break;
         }
-    } else if (em->stg != 0x4B && em->stg != 0x49 && em->stg != 0x46 && em->stg != 0x17 && em->stg != 0x16 && em->stg != 0x12) {
-        em->x9F3 = 0;
-        em_no_floor_ck(em);
     } else {
-        em->x9F3 = 1;
-        em->x7E4 = 1500.0f;
-        if (em->mode == 0 || em->mode == 3) {
-            em_no_battle_area_ck(em, 0, 1);
+        switch (em->stg) {
+        case 0x12:
+        case 0x16:
+        case 0x17:
+        case 0x46:
+        case 0x49:
+        case 0x4B:
+            em->x9F3 = 1;
+            em->x7E4 = 1500.0f;
+            if (em->mode == 0 || em->mode == 3) {
+                em_no_battle_area_ck(em, 0, 1);
+            }
+            break;
+        default:
+            em->x9F3 = 0;
+            em_no_floor_ck(em);
+            break;
         }
     }
     em_mode_timer_sub(em);
     if (em->x8C2 != 1) {
         q = quest_w.no;
-        if (q != 0x29 && q != 0x28) {
-            em_hinshi_ck(em, 0.2f);
-            em_hungry_ck(em);
-            em_sleep_ck(em);
-        } else {
+        switch (q) {
+        case 0x28:
+        case 0x29:
             em_hinshi_ck(em, 0.2f);
             em_thirst_ck(em);
             em_hungry_ck(em);
             em_sleep_ck(em);
+            break;
+        default:
+            em_hinshi_ck(em, 0.2f);
+            em_hungry_ck(em);
+            em_sleep_ck(em);
+            break;
         }
     }
     r = Em_Dmg_Sys(em, dmg);
@@ -4457,6 +4479,11 @@ void em15_main(EMW *em) {
         w->x45 = 0;
     }
     switch (r) {
+    case 0:
+    case 9:
+    case 11:
+    case 14:
+        break;
     case 1:
     case 2:
         if (em->x388 == 2) {

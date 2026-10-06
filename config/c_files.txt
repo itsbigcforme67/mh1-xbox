@@ -1,4 +1,6 @@
 # Decompiled code that replaces disassembly. One line per C file:
+game 0x00592FE0 0x005934D4 em/em07_ai_r01
+game:rodata 0x006867E0 0x00686840 em/em07_ai_r01
 main 0x002246F0 0x00224718 cam/camr01
 main 0x00224720 0x00224790 cam/camr02
 main 0x00224D40 0x00224DC8 cam/camr03
@@ -732,6 +734,7 @@ game:rodata 0x00685AE0 0x00685B0C em/em_cmd_r21
 game:rodata 0x00685B10 0x00685B30 em/em_cmd_r24
 game 0x0055F460 0x0055F59C em/em_cmd_r35
 game 0x00563520 0x00563578 em/em_cmd_r36
+game 0x005641A0 0x00564204 em/em_cmd_r37
 main 0x00155000 0x00155138 set/setwork
 main 0x00155140 0x001554D8 set/setwork2
 main 0x00158F20 0x00159378 pl/shell_work
@@ -1043,6 +1046,8 @@ game 0x005B71D0 0x005B72D4 em/em14_r21
 game 0x005B75B0 0x005B76E4 em/em14_r22
 game 0x005B9110 0x005B94C4 em/em14_r23
 game 0x005B8CD0 0x005B8F00 em/em14_r24
+game 0x005BBC70 0x005BC81C em/em14_r25
+game:rodata 0x00688580 0x006885E4 em/em14_r25
 game 0x005C2A80 0x005C2AB8 em/em15_r01
 game 0x005C2E90 0x005C4BC4 em/em15_r02
 game 0x005C51D0 0x005C5324 em/em15_r03
@@ -1065,6 +1070,8 @@ game 0x005C6290 0x005C642C em/em15_r17
 game 0x005C6860 0x005C696C em/em15_r18
 game 0x005C7220 0x005C7438 em/em15_r19
 game 0x005C6000 0x005C6284 em/em15_r20
+game 0x005CAEA0 0x005CB71C em/em15_r21
+game:rodata 0x006887B0 0x0068880C em/em15_r21
 game 0x005D9EE0 0x005D9F18 em/em17_r01
 game 0x005DA580 0x005DAAC8 em/em17_r02
 game 0x005DABF0 0x005DB510 em/em17_r03
@@ -1099,6 +1106,8 @@ game 0x005DE800 0x005DE9E0 em/em17_r30
 game 0x005DD310 0x005DD41C em/em17_r31
 game 0x005DE080 0x005DE2B8 em/em17_r32
 game 0x005DE3F0 0x005DE52C em/em17_r33
+game 0x005E1530 0x005E1C64 em/em17_r34
+game:rodata 0x00688E50 0x00688EAC em/em17_r34
 game 0x005EBA10 0x005EBA48 em/em20_r01
 game 0x005EC0A0 0x005EC554 em/em20_r02
 game 0x005EC6A0 0x005EC818 em/em20_r03

@@ -3944,7 +3944,7 @@ static void em_move06_005E1490(EMW *em, EM17W *w) {
 
 void em17_main(EMW *em) {
     EM17W *w = (EM17W *)em->ex;
-    u8 sp3C;
+    u8 dmg[4];
     s16 temp_v0;
     u32 temp_v0_2;
     u8 temp_a0;
@@ -3962,8 +3962,12 @@ void em17_main(EMW *em) {
     if (temp_v0 != 0) {
         w->x06 = (s16) (temp_v0 - 1);
     }
-    temp_v0_2 = Em_Dmg_Sys(em, &sp3C) & 0xFF;
-    switch (temp_v0_2) {                            /* switch 1 */
+    temp_v0_2 = Em_Dmg_Sys(em, dmg) & 0xFF;
+    switch (temp_v0_2) {
+    case 0:
+    case 9:
+    case 14:
+        break;
     case 1:                                         /* switch 1 */
     case 2:                                         /* switch 1 */
         if (em->x388 == 2) {
@@ -3990,7 +3994,7 @@ block_19:
     case 3:                                         /* switch 1 */
     case 4:                                         /* switch 1 */
         if (em->x9EA == 0) {
-            if (sp3C == 0) {
+            if (dmg[0] == 0) {
                 em->x95A = 0x10;
             } else if (em->x8B6 == 0) {
                 em->x95A = 0xA;
@@ -4081,20 +4085,22 @@ block_63:
             em->x839 = 0;
             em_ikari_add(em, em->x8B0);
             break;
-        case 20:                                    /* switch 2 */
+        case 20:
             em17_act_set(em, 0, 0x18, 2);
-block_107:
             em->x839 = 0;
             break;
-        case 27:                                    /* switch 2 */
+        case 27:
             em17_act_set(em, 0, 0x1C, 2);
-            goto block_107;
-        case 29:                                    /* switch 2 */
+            em->x839 = 0;
+            break;
+        case 29:
             em17_act_set(em, 4, 0x13, 2);
-            goto block_107;
-        case 31:                                    /* switch 2 */
+            em->x839 = 0;
+            break;
+        case 31:
             em17_act_set(em, 4, 0x14, 2);
-            goto block_107;
+            em->x839 = 0;
+            break;
         }
         break;
     case 11:                                        /* switch 1 */
@@ -4128,7 +4134,7 @@ block_107:
                 em17_act_set(em, 4, 3, 2);
                 break;
             default:                                /* switch 3 */
-                if ((s32) M2C_FIELD((((temp_a0_6 & 0xFF) * 8) + em), u8 *, 0x30A) >= 2) {
+                if (em->hagi[temp_a0_6].cnt >= 2) {
                     if (temp_a0_6 != 3) {
                         em17_act_set(em, 4, 5, 2);
                     } else {
@@ -4144,15 +4150,17 @@ block_107:
     case 13:                                        /* switch 1 */
         if (em->x388 != 2) {
             em17_act_set(em, 4, 0x10, 2);
-            goto block_107;
+            em->x839 = 0;
         }
         break;
     }
-    if (em->x734 != 3) {
-
-    } else if (em->x839 != 0) {
-        em_cmd_ck(em);
-        em->x839 = 0;
+    switch (em->x734) {
+    case 3:
+        if (em->x839 != 0) {
+            em_cmd_ck(em);
+            em->x839 = 0;
+        }
+        break;
     }
     em17_main_sub(em, w);
     if (em->x6FF != 0) {

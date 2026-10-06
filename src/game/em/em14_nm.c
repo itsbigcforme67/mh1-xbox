@@ -3690,9 +3690,11 @@ static void em_move06_005BBC30(EMW *em, EM14W *w) {
     }
 }
 
+#define M4(n) (em->mode == 4 && em->x15 == (n))
+#define M0(n) (em->mode == 0 && em->x15 == (n))
 void em14_main(EMW *em) {
     EM14W *w = (EM14W *)em->ex;
-    u8 sp3C;
+    u8 dmg[4];
     f32 temp_f1;
     f32 temp_f1_2;
     f32 temp_f1_3;
@@ -3704,8 +3706,8 @@ void em14_main(EMW *em) {
     u8 temp_a0_3;
     u8 temp_a0_4;
     u8 temp_a0_5;
-    u8 temp_v0;
-    u8 temp_v0_2;
+    s8 temp_v0;
+    s8 temp_v0_2;
     u8 temp_v0_5;
     u8 temp_v0_6;
     u8 temp_v0_7;
@@ -3720,7 +3722,7 @@ void em14_main(EMW *em) {
         case 0:                                     /* switch 1 */
             temp_v0 = (s8) w->x1B + 1;
             w->x1B = temp_v0;
-            if ((s8)temp_v0 >= 0x3D) {
+            if ((s8)temp_v0 > 0x3C) {
                 w->x1B = 0x3C;
                 em->x8B7 += 1;
             }
@@ -3751,206 +3753,59 @@ void em14_main(EMW *em) {
     if (temp_v0_3 != 0) {
         w->x06 = (s16) (temp_v0_3 - 1);
     }
-    temp_v0_4 = Em_Dmg_Sys(em, &sp3C) & 0xFF;
-    switch (temp_v0_4) {                            /* switch 2 */
-    case 1:                                         /* switch 2 */
-    case 2:                                         /* switch 2 */
-        temp_v1_2 = em->x388;
-        if (temp_v1_2 == 2) {
+    temp_v0_4 = Em_Dmg_Sys(em, dmg) & 0xFF;
+    switch (temp_v0_4) {
+    case 1:
+    case 2:
+        if (em->x388 == 2) {
             em14_act_set(em, 5, 2, 2);
-        } else if ((temp_v1_2 != 4) && ((temp_a0 = em->mode, (temp_a0 != 4)) || (em->x15 != 6))) {
-            if (temp_a0 == 4) {
-                if (em->x15 != 0xD) {
-                    goto block_31;
-                }
-                goto block_40;
-            }
-block_31:
-            if (temp_a0 == 4) {
-                if (em->x15 != 0xE) {
-                    goto block_34;
-                }
-                goto block_40;
-            }
-block_34:
-            if (temp_a0 == 4) {
-                if (em->x15 != 0x11) {
-                    goto block_37;
-                }
-                goto block_40;
-            }
-block_37:
-            if ((temp_a0 == 4) && (em->x15 == 0x12)) {
-                goto block_40;
-            }
-            em14_act_set(em, 5, 0, 2);
-        } else {
-block_40:
+        } else if (em->x388 == 4 || M4(6) || M4(0xD) || M4(0xE) || M4(0x11) || M4(0x12)) {
             em14_act_set(em, 5, 1, 2);
+        } else {
+            em14_act_set(em, 5, 0, 2);
         }
         break;
-    case 15:                                        /* switch 2 */
-    case 16:                                        /* switch 2 */
+    case 15:
+    case 16:
         if (em->x388 == 4) {
-            if (em->mode == 4) {
-                if (em->x15 != 6) {
-                    goto block_48;
-                }
-            } else {
-block_48:
+            if (!M4(6)) {
                 em14_act_set(em, 4, 6, 2);
             }
         }
         break;
-    case 5:                                         /* switch 2 */
-        if ((em->mode != 4) || (em->x15 != 8)) {
+    case 5:
+        if (!M4(8)) {
             em14_act_set(em, 4, 8, 2);
         }
         break;
-    case 6:                                         /* switch 2 */
-        temp_v0_5 = em->mode;
-        if ((temp_v0_5 != 4) || (em->x15 != 0xE)) {
-            if ((em->x388 != 4) && ((temp_v0_5 != 4) || (em->x15 != 6)) && ((temp_v0_5 != 0) || (em->x15 != 0x1D))) {
-                if (temp_v0_5 == 4) {
-                    if (em->x15 != 0xD) {
-                        goto block_64;
-                    }
-                    goto block_70;
-                }
-block_64:
-                if (temp_v0_5 == 4) {
-                    if (em->x15 != 0x11) {
-                        goto block_67;
-                    }
-                    goto block_70;
-                }
-block_67:
-                if ((temp_v0_5 == 4) && (em->x15 == 0x12)) {
-                    goto block_70;
-                }
-                if (temp_v0_5 == 4) {
-                    if (em->x15 != 0xB) {
-                        goto block_75;
-                    }
-                } else {
-block_75:
-                    if (temp_v0_5 == 4) {
-                        if (em->x15 != 8) {
-                            goto block_78;
-                        }
-                    } else {
-block_78:
-                        em_mahi_dmg_timer_set(em);
-                        em14_act_set(em, 4, 0xB, 2);
-                    }
-                }
-            } else {
-block_70:
-                em_mahi_dmg_timer_set(em);
-                em14_act_set(em, 4, 0xE, 2);
-            }
+    case 6:
+        if (M4(0xE)) {
+        } else if (em->x388 == 4 || M4(6) || M0(0x1D) || M4(0xD) || M4(0x11) || M4(0x12)) {
+            em_mahi_dmg_timer_set(em);
+            em14_act_set(em, 4, 0xE, 2);
+        } else if (!M4(0xB) && !M4(8)) {
+            em_mahi_dmg_timer_set(em);
+            em14_act_set(em, 4, 0xB, 2);
         }
         break;
-    case 7:                                         /* switch 2 */
-        temp_a0_2 = em->mode;
-        if (temp_a0_2 == 0) {
-            if (em->x15 != 0x1D) {
-                goto block_83;
-            }
-        } else {
-block_83:
-            if ((em->x388 != 4) && ((temp_a0_2 != 4) || (em->x15 != 6))) {
-                if (temp_a0_2 == 4) {
-                    if (em->x15 != 0xE) {
-                        goto block_89;
-                    }
-                    goto block_98;
-                }
-block_89:
-                if (temp_a0_2 == 4) {
-                    if (em->x15 != 0xD) {
-                        goto block_92;
-                    }
-                    goto block_98;
-                }
-block_92:
-                if (temp_a0_2 == 4) {
-                    if (em->x15 != 0x11) {
-                        goto block_95;
-                    }
-                    goto block_98;
-                }
-block_95:
-                if ((temp_a0_2 == 4) && (em->x15 == 0x12)) {
-                    goto block_98;
-                }
-                if ((temp_a0_2 != 0) || (em->x15 != 0x1B)) {
-                    if (temp_a0_2 == 4) {
-                        if (em->x15 != 8) {
-                            goto block_105;
-                        }
-                    } else {
-block_105:
-                        em_sleep2_dmg_timer_set(em);
-                        em14_act_set(em, 0, 0x1B, 2);
-                    }
-                }
-            } else {
-block_98:
-                em_sleep2_dmg_timer_set(em);
-                em14_act_set(em, 0, 0x1D, 2);
-            }
+    case 7:
+        if (M0(0x1D)) {
+        } else if (em->x388 == 4 || M4(6) || M4(0xE) || M4(0xD) || M4(0x11) || M4(0x12)) {
+            em_sleep2_dmg_timer_set(em);
+            em14_act_set(em, 0, 0x1D, 2);
+        } else if (!M0(0x1B) && !M4(8)) {
+            em_sleep2_dmg_timer_set(em);
+            em14_act_set(em, 0, 0x1B, 2);
         }
         break;
-    case 8:                                         /* switch 2 */
-        temp_a0_3 = em->mode;
-        if (temp_a0_3 == 0) {
-            if (em->x15 != 0x1D) {
-                goto block_110;
-            }
-        } else {
-block_110:
-            if ((em->x388 != 4) && ((temp_a0_3 != 4) || (em->x15 != 6))) {
-                if (temp_a0_3 == 4) {
-                    if (em->x15 != 0xE) {
-                        goto block_116;
-                    }
-                    goto block_125;
-                }
-block_116:
-                if (temp_a0_3 == 4) {
-                    if (em->x15 != 0xD) {
-                        goto block_119;
-                    }
-                    goto block_125;
-                }
-block_119:
-                if (temp_a0_3 == 4) {
-                    if (em->x15 != 0x11) {
-                        goto block_122;
-                    }
-                    goto block_125;
-                }
-block_122:
-                if ((temp_a0_3 == 4) && (em->x15 == 0x12)) {
-                    goto block_125;
-                }
-                if ((temp_a0_3 != 0) || (em->x15 != 0x14)) {
-                    if (temp_a0_3 == 4) {
-                        if (em->x15 != 8) {
-                            goto block_132;
-                        }
-                    } else {
-block_132:
-                        em_sleep_dmg_timer_set(em);
-                        em14_act_set(em, 0, 0x14, 2);
-                    }
-                }
-            } else {
-block_125:
-                em_sleep2_dmg_timer_set(em);
-                em14_act_set(em, 0, 0x1D, 2);
-            }
+    case 8:
+        if (M0(0x1D)) {
+        } else if (em->x388 == 4 || M4(6) || M4(0xE) || M4(0xD) || M4(0x11) || M4(0x12)) {
+            em_sleep2_dmg_timer_set(em);
+            em14_act_set(em, 0, 0x1D, 2);
+        } else if (!M0(0x14) && !M4(8)) {
+            em_sleep_dmg_timer_set(em);
+            em14_act_set(em, 0, 0x14, 2);
         }
         break;
     case 10:                                        /* switch 2 */
@@ -3990,20 +3845,12 @@ block_125:
             case 6:                                 /* switch 4 */
                 if (em->kind == 0xE) {
                     temp_v1_4 = w->x1A;
-                    if (temp_v1_4 == 0) {
-                        if ((s32) M2C_FIELD(((temp_a0_4 * 8) + em), u8 *, 0x30A) <= 0) {
-                            goto block_160;
-                        }
-                        goto block_163;
-                    }
-block_160:
-                    if ((temp_v1_4 == 1) && ((s32) M2C_FIELD((((temp_a0_4 & 0xFF) * 8) + em), u8 *, 0x30A) >= 2)) {
-block_163:
+                    if ((temp_v1_4 == 0 && em->hagi[temp_a0_4].cnt > 0) || (temp_v1_4 == 1 && em->hagi[temp_a0_4].cnt >= 2)) {
                         em14_act_set(em, 4, 7, 2);
                     } else {
                         em14_act_set(em, 4, 2, 2);
                     }
-                } else if ((w->x1A == 0) && ((s32) M2C_FIELD(((temp_a0_4 * 8) + em), u8 *, 0x30A) >= 2)) {
+                } else if ((w->x1A == 0) && em->hagi[temp_a0_4].cnt >= 2) {
                     em14_act_set(em, 4, 7, 2);
                 } else {
                     em14_act_set(em, 4, 2, 2);
@@ -4017,7 +3864,7 @@ block_163:
                 em14_act_set(em, 4, 3, 2);
                 break;
             default:                                /* switch 4 */
-                if ((s32) M2C_FIELD((((temp_a0_4 & 0xFF) * 8) + em), u8 *, 0x30A) >= 2) {
+                if (em->hagi[temp_a0_4].cnt >= 2) {
                     em14_act_set(em, 4, 5, 2);
                     if ((u8) em->x38E != 3) {
                         em14_act_set(em, 4, 5, 2);
@@ -4043,11 +3890,15 @@ block_163:
         if ((*(u8 *)0x3F360F == 1) && (em->mode != 6)) {
             em14_act_set(em, 6, 0, 1);
         }
-    } else if (em->x734 != 3) {
-
-    } else if (em->x839 != 0) {
-        em_cmd_ck(em);
-        em->x839 = 0;
+    } else {
+        switch (em->x734) {
+        case 3:
+            if (em->x839 != 0) {
+                em_cmd_ck(em);
+                em->x839 = 0;
+            }
+            break;
+        }
     }
     em14_main_sub(em, w);
     if (em->x6FF != 0) {
