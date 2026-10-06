@@ -513,3 +513,70 @@ Lessons: (1) a single `case 0:` plus `default:` switch produces the `beq/nop/b` 
 Near-matches left (not linked): NetFileLoad (netfile2m_nm.c, step in a2 vs a1 cascades), NetFileCreate (m2c only, 6780 B), PatchExecCS (patch03_nm.c),
 net_flps0008/0004, nb_flps0009 (not started), staff_disp (75/93, original has a case-0 stub + default path I could not reproduce),
 reward_mv 9/351 and reward_key_repeat 29/42 (pointer in a2 vs a0), reward_itembox 115/312, hit_cap_cap2_m/cap3_m, hit_sphr_sphr2.
+
+## Assignment 5: main 0x160000-0x1C0000 (Capcom vs library map, shader packet area linked)
+Map (function names from docs/survey/mh1_symbols.csv, MWCC = Capcom, GCC = Sony/newlib/CRI, not matchable):
+0x160000-0x16A000 sprite/font/weapon/player/enemy draw code (MWCC, mostly unmatched, see agent-D.md) | 0x16A860-0x16AEC0 fms/groundmat |
+0x16AEC0-0x170000 fl clay/DMA/file/texture-from-file (MWCC, 35 functions, 19 KB) | 0x170000-0x175000 fl math (fcv, flmat, flvec, quat, motion) |
+0x175000-0x177570 flps00xx sprite prims (GS 64-bit packets) | 0x177570-0x179DD0 render state + texture registers | 0x179DD0-0x17BE20 flPS2SetShaderParam (8 KB nested
+switch) | 0x17BE20-0x187C50 shader DMA packet builders flPS2AddMatrix_NNNN (LINKED, see below) | 0x187D10-0x18BD90 texture/palette/VRAM | 0x18BD90-0x18F0B0 flInitialize,
+draw buffers, plmem, pad | 0x18F0C0-0x193350 AAN/AMO model+motion conversion | 0x193350-0x195000 FOV clip, TIM2, plXXX | 0x195000-0x1B9E60 Sony libs, newlib, CRI
+(GCC, skipped) | 0x1B9EC0-0x1BD660 Capcom net sync (net_send/receive_pl/em/sys/chat/host, mwInit) | 0x1BD670-0x1BDB68 flSfd* | 0x1BDB68 on CRI CFT (GCC).
+
+### flps/fladdm.c (0x17BE20-0x187C50): 78 of 81 flPS2AddMatrix packet builders + 19 VU0 asm helpers, main OK x5
+Every flPS2AddMatrix_NNNN builds one DMA packet in the system temp buffer (flPS2GetSystemTmpBuff): header (cnt, n, 0x13000000, 0x01000404, w7), ambient*AMB, optional
+fade colour / fog (flFogEnd, 1/(end-start)), matrices (matMul2/matMul), light vectors, palette loops, closing tag `id | 0x15000000`. The packet pointer p is `u32 *`, packet
+offsets are written `p + (o >> 2)` (macro PB; byte-offset arithmetic `(u8 *)p + o` changes arg-register order in 002E/002F/0032 etc).
+The helpers (flPS2matMul .. PS2SHADER_FLMATRIX_COPY) are hand-written asm in the original, in the SAME file before their callers. Lessons:
+- MWCC reads the register writes of a `static asm` function: callers keep values in caller-saved registers across the call (p stays in v0, the previous a1 argument is not
+  reloaded: `matMul(PB(0x70), tmp, CLIPPROJ)` after `matMul2(..., tmp, ...)` emits no `addiu a1`) and, when the helper writes v0 or calls something (LIGHTVECP1 etc: jal flmatInvert),
+  p is moved to an s-register. `.word` bodies hide this, so the helpers must be real mnemonics. tools/build.py now makes build/raw/NAME.inc as mnemonics at build time from disc/
+  when a config/c_rawfuncs.txt line ends in `mn` (VU0 macro instructions stay `.word`, jal targets become symbol names). Never committed.
+- tools/check.py now passes -Ibuild/raw (raw functions can be checked).
+- A call result used as `p = helper(p + off, ...)` keeps p in v0; a call statement without assignment (return value unused) does not; functions that `return p` need p in s0.
+- Local arrays: first-declared is at the HIGHER address (`f32 tmp[16]; f32 v[12];` gives v at sp+0x40, tmp at sp+0x70).
+- 64-byte copies of flPS2VIEWPORT/flPS2VIEWPROJ/CLIPPROJ are struct assignments (`*(M64 *)PB(o) = flPS2VIEWPORT;`, M64 = struct of 16 words): MWCC emits the 8x lw/sw loop.
+- Two-packet header (AddMatrix_0045): second header at +0xA20 is written interleaved in the m2c order (0xA20 before 0x10, 0xA24 before 0x14, ...).
+- flmatMul (non-static, 0x172A30) is called by AddMatrix_0036 instead of the static asm matMul: then a1 IS reloaded for the 2nd call.
+- Palette loop: `i = 0; mp = flMATRIX; sp2 = p; dp = p; for (; i < 32; i++) { if (m->flags & (1 << i)) p = matMulNormalize33(dp + A, sp2 + B, mp, M840); mp += 0x40; sp2 += 0x40; dp += 0x30; }`;
+  the initialisation order of the induction pointers decides their registers.
+- Generated from tools/draft.py (m2c) output with a scratch transpiler (not committed): calls and stores in m2c order, call arguments read from the asm (stale registers = same expression).
+Held back as raw (config/c_rawfuncs.txt, not counted by progress.py): flPS2AddMatrix_0002 / _0003 (C in src/main/flps/fladdm_nm.c: 31 of ~190 instructions differ, only the
+register numbering of the lights loop: orig counter s0 and pointers s4/s3/s2, mine s4/s3/s2/s1; tried decl order, init order, for/do, scoping) and _000D (toon shader, not written).
+flPS2matMulNormalize33 is also referenced from a data table: config/main_aliases.txt keeps its symbol (the helper is static in C).
+Small find: flPS2GetPaletteVramBlock (tex_nm.c) matches as `int r; if (h == 1) r = 2; else switch (...) {case 0: case 1: r = 4; break; case 2: r = 4;} return r;` (last case falls out, no jump).
+
+### Network play sync (0x1B9F70-0x1BD660): src/main/net/netsyn01..09*.c, include/netsyn.h (new)
+Capcom's online session sync: packets built in a local union of per-kind layouts (`cmd, len, 0, 0, then fields`), queued with AQ_data_put, applied by net_receive_*.
+include/netsyn.h holds typed offset views (NPLV player work, NEMV enemy work, NGW game_w, NPSLOT/NEMACT pending slots) and the packet unions NPLPK / NPLRX; it is
+GENERATED from an offset table (each view is a struct with u8 padding between the fields) so the types stay exactly what the matched loads show. It does not touch
+pl.h/game.h/em.h (no shared header edits).
+Linked (rebuild OK): net_send_pl (netsyn01), net_game_w_clear (04), net_plpos_set, net_receive_pl_pos_set, net_emact_set, net_receive_em_act (03), net_send_host (05),
+net_send_chat (06), net_send_sys (08); jump tables 0x35EC10-0x35EC34 (send_pl) and 0x35EC70-0x35ECA4 (send_sys) registered.
+Near-match, all complete, only register numbering differs (netsyn02_nm.c net_receive_pl 296/390: orig payload pointer in s0 and player in s1, mine the other way; netsyn05_nm.c
+net_receive_host 76/108 same pattern; netsyn06_nm.c net_receive_chat 41/114: orig length a2 / text pointer a1 / counter a3; netsyn07_nm.c net_start_ck 244/309: the orig
+loop test `if (pl_state[i] != 0xFF) goto next` compiles to `beq body; b next`, not reproduced). Not written: net_send_em (1824), net_receive_em (3672).
+Lessons:
+- `u8 kind` as an ANSI parameter plus `k = kind;` inside the master check reproduces `andi a0, s1, 0xFF` placed after the Pl_master_ck call (net_send_pl); a local
+  `int k` hoisted before the call, or `(kind & 0xFF)`, moves it into an s-register or makes the `sb kind` reuse the masked copy.
+- `for (i = 0; i < 2; i++) { if (pl->slot[i].timer == 0) {...} }` with `s8 i` and slots as a struct array in the work block gives the original
+  pointer-for-the-test / index-for-the-store pair (net_plpos_set, net_emact_set, net_receive_em_act); do NOT write a separate pointer variable.
+- `if (x == a) {..} ` with the same value compared twice: the second compare uses the loaded value, not the constant (net_start_ck `old != pl_state[i]`).
+- A global struct read many times in one function is hoisted into an s-register only if you write `u8 *sw = (u8 *)&select_w;` and use `sw[off]` / `*(u16 *)(sw + off)`
+  (net_send_sys); `select_w.field` typed access did not hoist.
+- tools/declhill.py (declaration order hill-climb) found the register assignment of net_send_sys (pl/sw order); worth running on every near-match with many locals.
+- Calls with stale argument registers: `Quest_error_set2()` has no arguments here (m2c invented four), `net_send_sys` takes two.
+- Switch case order: ladder is the reverse of source order (`case 1: case 2:` for a ladder 2,1,0).
+
+### Later in assignment 5 (after the net sync pass)
+- net_send_em (netsyn10.c, 1824 B) matched on the first full attempt: m2c order + per-kind packet union (struct per kind, union padded to the frame size 0x40) + the flag byte as
+  `u8 f; if (x & 4) f |= 1; ...`. Linked 0x1BA8E0-0x1BB000. Unions must be padded up to the original frame (net_send_em/net_send_host/net_send_sys all needed a `pad[]`).
+- net_receive_em complete in netsyn11_nm.c (all four kinds; payload read through PU8/PS16/... byte-offset macros on a `u8 *p`): only the s0/s1 swap and load scheduling differ.
+  All five net_receive_* functions (pl, host, chat, sys, em) share one symptom: the original puts the payload pointer p = buf + 4 in the LOWER s-register and the incoming buf
+  in the higher one (net_receive_host: p=s0, buf=s1, then `s` reuses s1); this build gives buf the lower register. Declaring p last (net_receive_host 76 -> 71 diffs), p first,
+  extra/unused parameters, in-place `buf += 4`, 3-parameter prototypes and tools/declhill.py (net_receive_sys, 118 diffs, no change) did not fix it. A future agent could try
+  the permuter with a longer budget on net_receive_host (smallest, 432 B).
+- fl clay: flPS2CreateClay (`if (shader != -1) {calls} else { return 0; } flClayNum++; return 1;` is the layout) and flReleaseClayHandle (`flPS2DmaTerminate(h)` takes the 1-based handle,
+  not the index; `if (h > 0x180)` instead of `>= 0x181` keeps the compare in v0) linked: src/main/fl/clay02.c, clay03.c. Near-matches: flCreateClayHandle (clay01_nm.c, 4 instructions: the two
+  independent argument loads of the second flMemcpy come in the other order), flPS2GetMLCLAY (clay02_nm.c, 20/28: s0/s1 roles).
+- reward_mv (9 off): permuter 10 min, best score 195 -> 55, no zero; mutations tried by hand (`new_var = w->xB < 0` in the condition, dead `PitMenu.x12 = 0`) do not transfer.
