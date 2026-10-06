@@ -367,6 +367,13 @@ static void hunter_pose(hunter *h, float frame, const fl_light *L)
             }
         }
         free(ok);
+        if (s == 2 && h->game) {        /* player_trans: hair colour (PLW+0x5FC) on the head part's first material */
+            unsigned c = rt_player_hair_col(0);
+            m->has_tint = c != 0;
+            m->tint[0] = ((c >> 16) & 0xFF) / 255.0f;
+            m->tint[1] = ((c >> 8) & 0xFF) / 255.0f;
+            m->tint[2] = (c & 0xFF) / 255.0f;
+        }
         fl_model_pose(m, (const flmat *)h->pw[s], L);
     }
 }

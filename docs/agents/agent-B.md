@@ -849,3 +849,15 @@ Still near-matches (best C in the by file under `#else` or the nm file):
 - lb_npc_old_guild (2): mv's live range has a hole in the original (a2 reused for the 105 compare constant); local init in case 0x64 only made it worse.
 - lb_mix_decide (4), lb_mix_put_itemDetail (6), Lb_put_materialItem (17), value_result (the original keeps `v` in a0 and re-masks u16 after each op), ef_move_sub_0053E360 (17, switch value in a1): no change.
 Remaining unwritten village functions in my range: plaza_* (online), ef_move_sub_0053E360 (has C), Lb_put_new_mail, plaza_capcomPage, put_member_info, Lbs_plaza_trans. Above 0x5AB000 (agent C now): lb_npc_item_trans, Display_StringData.
+
+# Lobby round 10 (agent B): lobby tail 0x5EE618-end
+Real matches: eft25_t (lb_ge2505.c, rodata 0x6686A0-0x668704) and tagAct_500-504 (lb_aq03.c). Lobby 29.605% -> see progress.py.
+eft25_t lessons: call prototypes with float args must be real (`flmatMakeTrans(u8 *, f32, f32, f32)`; K&R promotes floats to double); one `mat` buffer (not mat+mrv),
+`make_mat_srt(sc, rot, prim+8, mode & 0xFFFF, mat)` takes 5 args and rot is f32[3] with only rot[2] written; no `if (type < 9U)` wrapper (the switch range check is the only one);
+`flSetRenderState(0x19, (int)tr)` flips the delay-slot fill; prototype `eft_trans_sub_col(int, u8 *, int, u16, int)` avoids a re-extension of the u16 opt; colour `(g&0xFF) | ((r&0xFF)<<8 | (alpha<<24 | (b&0xFF)<<16))`
+(right-nested or); decl order x10, tex, opt, mode gave s6..s3; r,g,b declared b,r,g; eft_mdlw[0] (20-byte table) instead of a gp-addressed pointer; E25 f5/f6 are u8 (lbu) in lb_e25.c/lb_ge2505.c only.
+tagAct_500: `buf[(*(s32 *)(bsw + 4))++] = 60;` fixed the register order.
+eft25_m: `long k` made `(f32)k` call __floatdisf and a callee-saved f20; with `int k` and real prototypes (eft_vec_linear(f32, f32 *, f32 *) etc.) the frame matches (320) and about 316 align lines remain
+(the original spills par and tbl and keeps &v[1], &v[2] in s5/s6; mine keeps par in s5). Hill-climbs over declaration order and prologue statement order only got 332 -> 316.
+Still near: itembox_cursor_mv (2: daddiu for 9), sellout (34: w in a1 not a2; permuter 1 hour no gain), Disp_lb_item_box, pickup, Disp_TABLE_Line 2 (arg load order), BsBody00_ReqSrc (5, delay slot),
+Plaza_chatlog_mv 5, lb_process_kyoukaListProg (lim extension lands in v0 not v1; separate int temp did not help).

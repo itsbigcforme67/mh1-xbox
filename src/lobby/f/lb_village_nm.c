@@ -394,7 +394,7 @@ void lb_set_npc();
 void set_event_npc();
 void lb_npc_trans();
 void Lb_check_target();
-s32 lb_check_target(u8 *pl, u8 *tgt, u8 **list, s32 lim, s32 mode, f32 range);
+s32 lb_check_target(f32 range, u8 *pl, u8 *tgt, u8 **list, s32 lim, s32 mode);  /* the order of the matched lb_gac03.c (f12 is separate on the PS2) */
 void lb_target_angle();
 void lb_insert_target_list();
 s32 Lb_ck_target();
@@ -3062,12 +3062,12 @@ void Lb_check_target(void) {
         if (st >= 0x51 && st < 0x56 && M2C_FIELD(em, u8 *, 2) == 3 && M2C_FIELD(lb_sys + st, u8 *, 0x37) != 0) {
             continue;
         }
-        lb_check_target(pl, em, &list, 0x2AAB, sw_flag_1260, range);
+        lb_check_target(range, pl, em, &list, 0x2AAB, sw_flag_1260);
     }
     pl = player_work + (*(u8 *)0x3F34C1 * 0xA00);
     for (i = 0, p = player_work; i < 8; i++, p += 0xA00) {
         if (M2C_FIELD(p, u8 *, 0) != 0 && M2C_FIELD(p, u16 *, 0xC) != *(u8 *)0x3F34C1 && (Lb_Pl_stg_ck(p) & 0xFF)) {
-            lb_check_target(pl, p, &list, 0x238E, sw_flag_1260, 300.0f);
+            lb_check_target(300.0f, pl, p, &list, 0x238E, sw_flag_1260);
         }
     }
     if (list == NULL) {
@@ -3099,7 +3099,7 @@ void Lb_check_target(void) {
  * of the player's facing (Lb_get_angle) and nearer than range: its
  * distance (+0x4C4) and priority (+0x302, lb_target_angle), into the list;
  * else +0x302 = -1 */
-s32 lb_check_target(u8 *pl, u8 *tgt, u8 **list, s32 lim, s32 mode, f32 range) {
+s32 lb_check_target(f32 range, u8 *pl, u8 *tgt, u8 **list, s32 lim, s32 mode) {
     f32 d;
     s32 a, l;
 
