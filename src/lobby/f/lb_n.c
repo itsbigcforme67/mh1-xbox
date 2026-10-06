@@ -38,45 +38,42 @@ s8 res;
 
 void lb_send_data(len, type, data)
 int len;
-s8 type;
+u8 type;
 u8 *data;
 {
     int t;
     u8 m;
     int l;
-    if (Online_ck() != 0 && (t = type & 0xFF, CW8(0x35D5) != 0)) {
+    if (Online_ck() != 0 && (t = type, CW8(0x35D5) != 0)) {
         if (t == 3 || Lbs_CheckMatchingFlag(t) != 1) {
             m = CW8(0x2C31);
-            if (m != 2 && m != 3) {
+            switch (m) {
+            default:
                 return;
+            case 3:
+            case 2:
+                sendDat[0] = type;
+                if (len & 0xFF) {
+                    flMemcpy(sendDat + 1, data, len & 0xFF);
+                }
+                cnLBS_Send_ChatBinary(sendDat, (u8)(((u8)len) + 1));
             }
-            l = len & 0xFF;
-            sendDat[0] = type;
-            if (l != 0) {
-                flMemcpy(sendDat + 1, data, l);
-            }
-            cnLBS_Send_ChatBinary(sendDat, ((len & 0xFF) + 1) & 0xFF);
         }
     }
 }
 
 void lb_send_dataTU(len, type, data, a3)
 int len;
-s8 type;
+u8 type;
 u8 *data;
 int a3;
 {
-    s8 t = type;
-    u8 *d = data;
-    int c = a3;
-    int l;
     if (Online_ck() != 0 && Lbs_CheckMatchingFlag() != 1) {
-        l = len & 0xFF;
-        sendDat[0] = t;
-        if (l != 0) {
-            flMemcpy(sendDat + 1, d, l);
+        sendDat[0] = type;
+        if (len & 0xFF) {
+            flMemcpy(sendDat + 1, data, len & 0xFF);
         }
-        cnLBS_Send_ChatBinaryTU(c, sendDat, ((len & 0xFF) + 1) & 0xFF, CallBack_Result_SendChatBinaryTU);
+        cnLBS_Send_ChatBinaryTU(a3, sendDat, (u8)(((u8)len) + 1), CallBack_Result_SendChatBinaryTU);
     }
 }
 
@@ -172,14 +169,17 @@ int Lb_guild_check_requireF(void) {
 
 int Lb_get_pl_stat2(int a0) {
     s8 i;
+    int r;
     if (Online_ck() == 0) {
         return 0;
     }
     i = a0;
     if (lbCommer[i].mac[0] != 0) {
-        return PLU8(&player_work[i], 0x736) == 0;
+        r = PLU8(&player_work[i], 0x736) == 0;
+    } else {
+        r = 2;
     }
-    return 2;
+    return r;
 }
 
 extern u8 D_3E55F0[], D_3E5FF0[], D_3E69F0[], D_3E73F0[], D_3E7DF0[], D_3E87F0[], D_3E91F0[];

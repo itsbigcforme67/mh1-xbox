@@ -12,11 +12,10 @@ void bs_page_status_flag_set();
 u8 *bs_route_current_page_status();
 char *BsRouteCurrent();
 int BsUrlFileExtensionGet();
+typedef struct PAIR2 { u8 a, b; } PAIR2;
 char *BsRouteForward(void) {
     BSNODE *n;
     BSNODE *r;
-    u8 a;
-    u8 b;
     n = bs_route_queue_forward(&BcRoute_head, BcRoute_cur);
     r = bs_request_queue_add(&BcRequest_head, n->url);
     r->used = 4;
@@ -24,19 +23,13 @@ char *BsRouteForward(void) {
         r->x10C = 6;
         r->x10D = 1;
         r->x110 = BcRoute_cur->url;
-        a = n->x108;
-        b = n->x109;
-        r->x108 = a;
-        r->x109 = b;
+        *(PAIR2 *)&r->x108 = *(PAIR2 *)&n->x108;
         BcCurrentPage[0] = 5;
     } else {
         r->x10C = 4;
         r->x10D = 1;
         r->x110 = BcRoute_cur->url;
-        a = n->x108;
-        b = n->x109;
-        r->x108 = a;
-        r->x109 = b;
+        *(PAIR2 *)&r->x108 = *(PAIR2 *)&n->x108;
         BcCurrentPage[0] = 3;
     }
     return n->url;
@@ -47,8 +40,6 @@ int BsRouteForwardCheck(int a, BSNODE *p) {
 char *BsRouteBack(void) {
     BSNODE *n;
     BSNODE *r;
-    u8 a;
-    u8 b;
     n = bs_route_queue_back(&BcRoute_head, BcRoute_cur);
     r = bs_request_queue_add(&BcRequest_head, n->url);
     r->used = 4;
@@ -56,19 +47,13 @@ char *BsRouteBack(void) {
         r->x10C = 6;
         r->x10D = 1;
         r->x110 = BcRoute_cur->url;
-        a = n->x108;
-        b = n->x109;
-        r->x108 = a;
-        r->x109 = b;
+        *(PAIR2 *)&r->x108 = *(PAIR2 *)&n->x108;
         BcCurrentPage[0] = 5;
     } else {
         r->x10C = 5;
         r->x10D = 1;
         r->x110 = n->url;
-        a = n->x108;
-        b = n->x109;
-        r->x108 = a;
-        r->x109 = b;
+        *(PAIR2 *)&r->x108 = *(PAIR2 *)&n->x108;
         BcCurrentPage[0] = 4;
     }
     return n->url;
@@ -91,31 +76,30 @@ char *BsRouteReload(void) {
     BcCurrentPage[0] = 5;
     return BcRoute_cur->url;
 }
-char *BsRequestHtmlGetCached(char *a) {
-    char *cur;
+void BsRequestHtmlGetCached(char **a) {
     u8 c;
     BSNODE *r;
-    r = ((BSNODE *(*)())bs_request_queue_add)(&BcRequest_head);
+    r = bs_request_queue_add(&BcRequest_head, *a);
     r->used = 4;
     r->x10C = 1;
     r->x10D = 1;
-    cur = BsRouteCurrent(a);
-    r->x110 = cur;
+    r->x110 = BsRouteCurrent();
     c = BcCurrentPage[0x10] + 1;
     BcCurrentPage[0x10] = c;
     r->x108 = c;
     r->x109 = 0;
     BcCurrentPage[0] = 1;
-    return cur;
 }
 void BsRequestHtmlPost(char **a) {
     u8 c;
     BSNODE *r;
+    char *cur;
     r = bs_request_queue_add(&BcRequest_head, *a);
     r->used = 4;
     r->x10C = 3;
     r->x10D = 1;
-    r->x110 = BsRouteCurrent(a);
+    cur = BsRouteCurrent();
+    r->x110 = cur;
     c = BcCurrentPage[0x10] + 1;
     BcCurrentPage[0x10] = c;
     r->x108 = c;
@@ -134,15 +118,15 @@ int BsRequestImage(char **a) {
     r->used = 4;
     r->x10C = 1;
     r->x10D = 2;
-    r->x110 = BsRouteCurrent(a);
-    st = bs_route_current_page_status(a);
-    r->x108 = st[0];
-    r->x109 = st[1];
+    r->x110 = BsRouteCurrent();
+    st = bs_route_current_page_status();
+    *(PAIR2 *)&r->x108 = *(PAIR2 *)st;
     v = BsUrlFileExtensionGet(*a);
     if (!(v & 0xFF)) {
         r->used = 6;
         r->x124 = 2;
         r->x125 = 0;
+        return v;
     }
     return v;
 }

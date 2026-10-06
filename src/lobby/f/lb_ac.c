@@ -18,9 +18,9 @@ u8 **list;
 u8 *tgt;
 {
     s16 ang;
+    u8 *c;
     u8 *cur;
     u8 *prev;
-    u8 *c;
     if (list == 0) {
         *(u8 **)list = tgt;
         return;
@@ -66,23 +66,24 @@ int lb_check_target(f32 range, PLW *pl, u8 *tgt, u8 **list, int ang, int x) {
     int a;
     *(s32 *)(tgt + 0x3B0) = 0;
     *(s8 *)(tgt + 0x3D0) = 0;
-    dir = Lb_get_angle(tgt + 0xAC) & 0xFFFF;
+    dir = Lb_get_angle(pl, tgt + 0xAC) & 0xFFFF;
     a = ang & 0xFFFF;
     if (dir >= a) {
-        if (0xFFFF - a < dir) {
-            goto inrange;
+        if (!(dir > 0xFFFF - a)) {
+            goto outside;
         }
-        *(s16 *)(tgt + 0x302) = -1;
-        return 0;
     }
-inrange:
-    d = flvecCalcDistance((f32 *)(pl + 0xAC), (f32 *)(tgt + 0xAC));
+    d = flvecCalcDistance((f32 *)((u8 *)pl + 0xAC), (f32 *)(tgt + 0xAC));
     if (d < range) {
         *(f32 *)(tgt + 0x4C4) = d;
         lb_target_angle(pl, tgt, dir, ang, x);
         lb_insert_target_list(list);
         return 1;
     }
+    goto done;
+outside:
+    *(s16 *)(tgt + 0x302) = -1;
+done:
     return 0;
 }
 int Lb_ck_target(u8 *p, int unused, int a) {
@@ -90,7 +91,7 @@ int Lb_ck_target(u8 *p, int unused, int a) {
     int v;
     d = (((*(s32 *)(p + 0xA4) - (((calc_vec_ang2(p + 0xAC) & 0xFFFF) + 0x4000) & 0xFFFF)) & 0xFFFF) - 0x8000) & 0xFFFF;
     v = (int)(0.5f + 65536.0f * (f32)a / 360.0f) & 0xFFFF;
-    if (0xFFFF - v < d || d < v) {
+    if (d > 0xFFFF - v || d < v) {
         return 1;
     }
     return 0;
@@ -204,12 +205,7 @@ void Lb_St_unique_adr_set(PLW *pl) {
         pl->fish878 = 0;
         return;
     }
-    for (;; p += 0x18) {
-        if (*(f32 *)(p + 4) == -1.0f) {
-            Lb_put_unique_act_hint(pl, -1);
-            pl->fish878 = 0;
-            return;
-        }
+    while (*(f32 *)(p + 4) != -1.0f) {
         z = *(f32 *)(p + 8);
         y = pl->pos[1];
         if (!(y < z - 50.0f) && y < 50.0f + z) {
@@ -227,5 +223,8 @@ void Lb_St_unique_adr_set(PLW *pl) {
                 return;
             }
         }
+        p += 0x18;
     }
+    Lb_put_unique_act_hint(pl, -1);
+    pl->fish878 = 0;
 }
