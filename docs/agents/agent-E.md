@@ -587,10 +587,10 @@ flupdate_pad_stick_dir/button_data/on_cnt, flPADFixedAnalogSelectSwitch), plpl01
 tarpad01 (tarPADDestroy, FixedAnalogSelectSwitch, flPADConfigSetACRtoXX, tarPADRead, ps2PADWorkClear), flnode01 (flCalcTrans, flSetSkinTrans,
 flSetSkinTransMatrixList), flnode02 (flSetMotionExSub, flFindGroupRoot), flmotion01/02 (flGetMotionSetTime/LoopInfo, flGetMotionMatrix), flnode03/04
 (flPlayMotionExSI, flCalcTransSI/Sub), flnode05a-d (hierarchy build: flGetHierarchySI, flGetHierarchy3_sub, flInitPostureHierarchySI/MAYA, flGetMatrixWithoutScale/SI/MAYA),
-flps_misc01 (flPS2CheckGSClip), disp2_02 (Disp_button), and net_receive_host (netsyn05.c now covers 0x1BCA20-0x1BCCF0).
+flps_misc01 (flPS2CheckGSClip), disp2_02 (Disp_button), net_receive_host (netsyn05.c now covers 0x1BCA20-0x1BCCF0) and net_receive_sys (netsyn09.c, 0x1BC200-0x1BC688 + jump table 0x35ECB0-0x35ECE4).
 Near-matches left in this pass (all in *_nm.c): flPADConfigSet (10/32), flPADGetALL (flpad03_nm.c, 4/86), ps2McInit (2/34), tarPADInit (tarpad02_nm.c, 68/163),
 flSetMatrixList (11/36), flPlayMotionExSISub (3/63), flnode05_nm.c: flGetHierarchy3 (11/74), flInitPostureHierarchySISub/MAYASub (2 each), flGetHierarchyData2 (2),
-flGetFcurveValue (7), flPS2psAddQueue (5/43), flCreateClayHandle (4/101), flPS2GetMLCLAY, net_receive_chat/pl/sys/em, net_start_ck.
+flGetFcurveValue (7), flPS2psAddQueue (5/43), flCreateClayHandle (4/101), flPS2GetMLCLAY, net_receive_chat (24/114: len/d/tmp registers), net_receive_pl, net_receive_em, net_start_ck, disp_load_msg (2/50), reward_mv (9/351).
 Lessons:
 - The node tree walk (child at +0xD0, sibling +0xCC, parent +0xC8) is `loop: work; if (n->child) {n = n->child; goto loop;} if (n->sib) {n = n->sib; goto loop;}
   while (n != top) { while (n->sib) {...} n = n->parent; }` written with goto; the walker's own params must be the loop variables (`void f(FLNODE *n, FLNODE *p) { FLNODE *top = n; ...`).
