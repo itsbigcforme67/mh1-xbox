@@ -143,6 +143,15 @@ int rt_village_tick(void)
         last_step = lb_sys[3];
         last_x68 = *(s32 *)(lb_sys + 0x68);
     }
+    if (getenv("RT_SHOP_TRACE")) {      /* the shop step machines (lbShop: step +0x14, sub +0x15, mode +0x19) */
+        extern u8 lbShop[];
+        static int last = -1;
+        int v = lbShop[0x14] | lbShop[0x15] << 8 | lbShop[0x19] << 16 | lbShop[0x1B] << 24;
+        if (v != last)
+            fprintf(stderr, "rt_village: tick %d shop step %d sub %d mode %d x1B %d x68 %d\n", tick, (s8)lbShop[0x14],
+                    (s8)lbShop[0x15], (s8)lbShop[0x19], lbShop[0x1B], *(s32 *)(lb_sys + 0x68));
+        last = v;
+    }
     if (r == 1 || r == -1) {
         void com_motion_load(int n);
         active = 0;

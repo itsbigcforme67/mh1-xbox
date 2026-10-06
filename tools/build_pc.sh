@@ -156,7 +156,15 @@ LOBBY2="src/lobby/f/lb_ib.c src/lobby/f/lb_tu_ib.c src/lobby/f/lb_ad.c src/lobby
         src/lobby/b/lb_by51.c src/lobby/b/lb_bz70.c src/lobby/b/lbarm01.c src/lobby/b/lb_by56.c src/lobby/b/lb_bz01.c \
         src/lobby/b/lb_by07.c src/lobby/b/lb_by20.c \
         src/lobby/b/nm/Lb_shop_trans2.c src/lobby/b/nm/Lb_process_shop.c src/lobby/b/nm/lb_cat_material.c \
-        src/lobby/b/nm/lb_normal_material.c"
+        src/lobby/b/nm/lb_normal_material.c src/lobby/f/lb_ay.c src/lobby/f/lb_aw.c src/lobby/f/lb_dr2.c \
+        src/lobby/b/lb_by82.c src/lobby/b/lb_by61.c src/lobby/b/lb_by62.c src/lobby/b/lb_by84.c src/lobby/b/lb_by49.c \
+        src/lobby/b/lb_by60.c src/lobby/b/lb_by50.c src/lobby/b/lb_by45.c src/lobby/b/lb_bz02.c src/lobby/b/lb_by54.c \
+        src/lobby/b/lb_by80.c src/lobby/b/lb_by77.c src/lobby/b/lb_by76.c \
+        src/lobby/b/nm/lb_armor2_listItem.c src/lobby/b/nm/lb_armor_put_itemDetail.c src/lobby/b/nm/lb_armor_tag_decide00.c \
+        src/lobby/b/nm/lb_process_drawHelp.c src/lobby/b/nm/lb_process_select.c src/lobby/b/nm/lb_put_shopList.c \
+        src/lobby/b/nm/Put_page_num.c src/lobby/b/nm/shop_process_after.c \
+        src/lobby/b/lb_by44.c src/lobby/b/lb_by46.c src/lobby/b/lb_by47.c src/lobby/b/lb_by48.c src/lobby/b/lb_by52.c src/lobby/b/lb_by53.c src/lobby/b/lb_by57.c src/lobby/b/lb_by58.c src/lobby/b/lb_by59.c src/lobby/b/lb_by78.c src/lobby/b/lb_by81.c src/lobby/b/lb_by83.c src/lobby/b/nm/lb_armor_tag_decide01.c src/lobby/b/nm/lb_process_make_kyoukaList.c src/lobby/b/nm/lb_process_set_armorList.c src/lobby/b/nm/lb_process_set_weaponList.c src/lobby/b/nm/Lb_put_armorIcon.c src/lobby/b/nm/Lb_put_job_limit.c src/lobby/b/nm/shop_armor2_question.c src/lobby/b/nm/shop_armor2_stack.c src/lobby/b/nm/shop_armor_question.c src/lobby/f/lb_ax.c src/lobby/f/lb_s14.c \
+        src/lobby/b/lb_by55.c src/lobby/b/nm/item_to_stack.c src/lobby/b/nm/lb_process_kyoukaListProg.c src/lobby/b/nm/lb_process_use_item.c"
 LOBBY="$LOBBY $LOBBY2"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
 WEAK="mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"

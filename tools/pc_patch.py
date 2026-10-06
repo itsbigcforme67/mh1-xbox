@@ -16,6 +16,11 @@ stops the build so a stale patch is noticed. Found with tools/argregs.py
 import sys
 
 PATCHES = {
+    # m2c dropped arguments (as the two other calls of this file have them)
+    "src/lobby/b/nm/lb_process_set_weaponList.c": [
+        ("var_s1_2 = Get_equip_name(F(u8, var_s0, 0));", "var_s1_2 = Get_equip_name(F(u8, var_s0, 0), F(u16, var_s0, 2));"),
+        ("strcpy(var_s5 + 4);", "strcpy(var_s5 + 4, (char *)var_s1_2);"),
+    ],
     # item box: the sell screen's quantity select gets (pad, 1) (a0/a1 at
     # the branch, 0x60B260); equip_ok_chk passes its e on
     "src/lobby/f/lb_ib.c": [

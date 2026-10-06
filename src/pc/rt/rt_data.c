@@ -322,6 +322,12 @@ int rt_import_lobby(void)
         pit_help_str_tbl[4] = map_lb(0x64E2C0);
         pit_help_str_tbl[5] = map_lb(0x6539E0);
     }
+    {   /* main's shop_default_tag_00389E90 (the item shop's "buy" / "sell"
+         * tags, lb_shop_init) points at lobby.bin strings 0x65E020/28 */
+        extern void *shop_default_tag_00389E90[];
+        shop_default_tag_00389E90[0] = map_lb(0x65E020);
+        shop_default_tag_00389E90[1] = map_lb(0x65E028);
+    }
     return 0;
 }
 
