@@ -42,7 +42,7 @@ s32 event_eat_rcpt(ARG_event_eat_rcpt_arg0 *arg0) {
             arg0->x0002 = (u8) (temp_a0 + 1);
             arg0->x0009 = (u8) arg0->x0008;
             cnWrap_SoundRequest(0);
-            goto block_67;
+            break;
         }
         if (temp_v1_2 & 0x40) {
             cnWrap_SoundRequest(3);
@@ -65,9 +65,7 @@ s32 event_eat_rcpt(ARG_event_eat_rcpt_arg0 *arg0) {
             }
             cnWrap_SoundRequest(1);
         }
-block_67:
-    default:
-        return 2;
+        break;
     case 1:
         temp_v1_3 = temp_v1 & 0xFFFF;
         if (temp_v1_3 & 0x20) {
@@ -97,7 +95,7 @@ block_67:
             }
             cnWrap_SoundRequest(1);
         }
-        goto block_67;
+        break;
     case 2:
         temp_v1_4 = temp_v1 & 0xFFFF;
         if (temp_v1_4 & 0x20) {
@@ -164,6 +162,7 @@ block_55:
             arg0->x000A = (u8) (arg0->x000A ^ 1);
             cnWrap_SoundRequest(1);
         }
-        goto block_67;
+        break;
     }
+    return 2;
 }

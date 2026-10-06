@@ -59,7 +59,7 @@ void plaza_searchMember(int arg0) {
         F(u8, arg0, 0xA) = 0U;
         return;
     case 1:                                         /* switch 1 */
-        F(s16, arg0, 0x28) = Get_sw_on2(0, temp_a1);
+        F(s16, arg0, 0x28) = Get_sw_on2(0);
         temp_s0_2 = temp_s0 & 0xFFFF;
         if ((temp_s0_2 & 0x20) || (kb_input_ck_enter() == 1)) {
             temp_v1 = F(u8, arg0, 4);
@@ -113,7 +113,7 @@ void plaza_searchMember(int arg0) {
         break;
     case 3:                                         /* switch 1 */
         temp_a0_2 = temp_s0 & 0xFFFF;
-        F(s16, arg0, 0x28) = Get_sw_on2(0, temp_a1);
+        F(s16, arg0, 0x28) = Get_sw_on2(0);
         if (temp_a0_2 & 0x20) {
             F(u8, arg0, 3) = 5U;
             SetDialogData(0x18, 5);
@@ -168,7 +168,7 @@ void plaza_searchMember(int arg0) {
         if (temp_s0 & 0xFFFF & 0x20) {
             F(u8, arg0, 3) = 0U;
             F(u8, arg0, 0xA) = (u8) F(u8, arg0, 6);
-            cnWrap_SoundRequest(0, temp_a1);
+            cnWrap_SoundRequest(0);
             return;
         }
         break;
@@ -200,7 +200,7 @@ void plaza_searchMember(int arg0) {
         break;
     case 6:                                         /* switch 1 */
         temp_a0_5 = temp_s0 & 0xFFFF;
-        F(s16, arg0, 0x28) = Get_sw_on2(0, temp_a1);
+        F(s16, arg0, 0x28) = Get_sw_on2(0);
         if (temp_a0_5 & 0x40) {
             tl_exit_sub_menu(0);
             return;
@@ -288,7 +288,7 @@ void plaza_searchMember(int arg0) {
         if (temp_s0 & 0xFFFF & 0x20) {
             F(u8, arg0, 3) = 1U;
             F(u8, arg0, 0xA) = 0U;
-            cnWrap_SoundRequest(0, temp_a1);
+            cnWrap_SoundRequest(0);
             return;
         }
         break;
@@ -301,7 +301,7 @@ void plaza_searchMember(int arg0) {
         F(u8, arg0, 3) = 6U;
         return;
     case 9:                                         /* switch 1 */
-        temp_v0_8 = getUserInfo(arg0, temp_a1);
+        temp_v0_8 = getUserInfo(arg0);
         switch (temp_v0_8) {                        /* switch 4; irregular */
         case 0:                                     /* switch 4 */
             F(u8, arg0, 3) = (u8) (F(u8, arg0, 3) + 1);
@@ -315,7 +315,7 @@ void plaza_searchMember(int arg0) {
         break;
     case 10:                                        /* switch 1 */
         temp_a0_6 = temp_s0 & 0xFFFF;
-        F(s16, arg0, 0x28) = Get_sw_on2(0, temp_a1);
+        F(s16, arg0, 0x28) = Get_sw_on2(0);
         if (temp_a0_6 & 0x800) {
             temp_v0_9 = F(u8, arg0, 0x12);
             if (temp_v0_9 == 0) {
@@ -346,7 +346,7 @@ void plaza_searchMember(int arg0) {
         F(s8, arg0, 0xC) = 1;
         if (temp_s0 & 0xFFFF & 0x20) {
             F(u8, arg0, 3) = 6U;
-            cnWrap_SoundRequest(0, temp_a1);
+            cnWrap_SoundRequest(0);
         }
         break;
     }

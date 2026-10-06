@@ -136,16 +136,13 @@ s8 f;
     Lb_put_icon_free(a, b, c, d);
 }
 void Lb_put_2TF(u8 *p, int a) {
-    struct { s16 x, y; u8 q[0x10]; } r;
-    *(f32 *)&r = *(f32 *)p;
-    *(double *)((u8 *)&r + 4) = *(double *)(p + 4);
-    *(f32 *)((u8 *)&r + 0xC) = *(f32 *)(p + 0xC);
-    *(f32 *)((u8 *)&r + 0x10) = *(f32 *)(p + 0x10);
-    r.x = 0.8f * (f32)r.x;
+    struct F5 { f32 a, b, c, d, e; } t;
+    t = *(struct F5 *)p;
+    *(s16 *)&t.a = 0.8f * (f32) * (s16 *)&t.a;
     if (a != 0) {
-        r.y = 0.8f * (f32)r.y;
+        *(s16 *)&t.b = 0.8f * (f32) * (s16 *)&t.b;
     }
-    flps0008(&r);
+    flps0008(&t);
 }
 void Lb_draw_square(a, x, y, w, color, scale)
 int a;

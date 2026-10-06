@@ -46,7 +46,7 @@ def jt_patch(text, module):
         for path in glob.glob(os.path.join(ROOT, "asm", module, "data", "data", "*.s")):
             m = re.search(r"^dlabel %s\n(.*?)^enddlabel %s\n" % (n, n), open(path).read(), re.M | re.S)
             if m:
-                tab = re.findall(r"\.word (0x[0-9A-Fa-f]+)", m.group(1))
+                tab = re.findall(r"\.word (?:0x|\.L)([0-9A-Fa-f]{8})", m.group(1))
                 break
         if not tab:
             continue
@@ -89,7 +89,7 @@ def jump_tables(module, fn_text):
             m = re.search(r"^dlabel %s\n(.*?)^enddlabel" % n, text, re.M | re.S)
             if not m:
                 continue
-            words = re.findall(r"\.word 0x([0-9A-Fa-f]{8})\s*$", m.group(1), re.M)
+            words = re.findall(r"\.word (?:0x|\.L)([0-9A-Fa-f]{8})\s*$", m.group(1), re.M)
             if words:
                 for w in set(x.upper() for x in words):
                     if w not in labels:   # case target without a label: add one before that instruction

@@ -34,6 +34,13 @@ def asm_block(module, func):
                       text, re.M | re.S)
         if m:
             return m.group(0)
+    # fallback: a snapshot of the split taken before the function was registered (build/asmkeep/<module>_text)
+    for path in glob.glob(os.path.join(ROOT, "build/asmkeep", module + "_text", "*.s")):
+        text = open(path).read()
+        m = re.search(r"^glabel %s\n.*?^endlabel %s\n" % (re.escape(func), re.escape(func)),
+                      text, re.M | re.S)
+        if m:
+            return m.group(0)
     sys.exit("%s not found in asm/%s (is it already C?)" % (func, module))
 
 

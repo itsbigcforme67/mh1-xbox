@@ -29,7 +29,7 @@ void lbc_login_patch(void) {
         return;
     case 2:
         F(s8, &network_work, 0x11) = 1;
-        temp_v0 = ms_net_patch_set(&jtbl_575_0065E890, temp_a1, temp_a2, temp_a3);
+        temp_v0 = ms_net_patch_set(&jtbl_575_0065E890);
         if (temp_v0 == 1) {
             temp_v1 = (int)cw;
             F(u8, temp_v1, 0x2C34) = (u8) (F(u8, temp_v1, 0x2C34) + 1);
@@ -42,26 +42,26 @@ void lbc_login_patch(void) {
         return;
     case 3:
         F(u8, temp_a2, 0x2C34) = (u8) (temp_a1 + 1);
-        Lbs_load(&jtbl_575_0065E890, temp_a1, temp_a2, temp_a3);
+        Lbs_load(&jtbl_575_0065E890);
         F(s8, &network_work, 0x11) = 0;
         return;
     case 4:
         F(u8, temp_a2, 0x2C34) = (u8) (temp_a1 + 1);
         F(s8, (u8 *)cw, 0x2C08) = 1;
-        CallBackWaitInit(&jtbl_575_0065E890, temp_a1, temp_a2, temp_a3);
+        CallBackWaitInit(&jtbl_575_0065E890);
         cnLBS_Answer_PatchFinish();
         return;
     case 5:
-        Check_CallBackWait(&jtbl_575_0065E890, temp_a1, temp_a2, temp_a3);
+        Check_CallBackWait(&jtbl_575_0065E890);
         return;
     case 6:
         F(u8, temp_a2, 0x2C34) = (u8) (temp_a1 + 1);
-        Lbs_load(&jtbl_575_0065E890, temp_a1, temp_a2, temp_a3);
+        Lbs_load(&jtbl_575_0065E890);
         F(s8, &network_work, 0x11) = 0;
         return;
     case 7:
         F(s8, temp_a2, 0x2C08) = 1;
-        To_LogOut(1, temp_a1, temp_a2, temp_a3);
+        To_LogOut(1);
         /* fallthrough */
     default:
         return;

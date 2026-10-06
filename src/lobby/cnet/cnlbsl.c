@@ -1,66 +1,113 @@
-/* cnlbs, run 12: cnLBS_Get_LoginWarningMessage .. __cnet_SendReq_TopInformation (lobby.bin 0x005AAA40-0x005AACCC): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 12: _cnet_RecvFromLbs_ReqestPatchLineCheck .. _cnetEvent_JumpCallBack (lobby.bin 0x005ACDF0-0x005AD1AC): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
-void cnLBS_Get_LoginWarningMessage(CNET_H1004 *d) {
-    *d = CnetSys_w.warnmsg;
-}
 
-int cnLBS_Answer_LoginWarningMessage(void) {
-    __cnet_SendAns_WarningMessage();
-    return 0;
-}
+typedef struct { s16 a, b, c; } CPLACE3;
 
-void __cnet_SendAns_WarningMessage(int arg0) {
-    SetSendCommand(&send_work, 0x14);
-    SetSendData8(&send_work, arg0);
-    SetSendCommandLen(&send_work);
-    Write_Socket(&send_work);
-}
+void _cnet_RecvFromLbs_ReqestPatchLineCheck(void) {
+    u16 v;
 
-int cnLBS_Send_LoginFinish(void) {
-    __cnet_SendSet_LoginFinish();
-    return 0;
-}
-
-void _cnet_RecvFromLbs_AnswerBillEstimate(void) {
-
-}
-
-void _cnet_RecvFromLbs_AnswerUserBinary(void) {
-    _cnet_Return_CallBack(0);
-}
-
-int cnLBS_Read_TopInformation(cb)
-int cb;
-{
-    int slot = __cnetSub_Set_BgProcess(1, 0, cb);
-
-    CnetSys_w.xff0 = 0;
-    CnetSys_w.xff4 = 0x1000;
-    CnetSys_w.xff8 = CnetSys_w.loginbuf.b;
-    memset(&CnetSys_w.topinfo, 0, 0x1004);
-    memset(&CnetSys_w.loginbuf, 0, 0x2000);
-    CnetSys_w.xff0 = 0;
-    CnetSys_w.xff4 = 0x1000;
-    CnetSys_w.xff8 = CnetSys_w.loginbuf.b;
-    memset(&CnetSys_w.topinfo, 0, 0x1004);
-    memset(&CnetSys_w.loginbuf, 0, 0x2000);
-    if (slot != -1) {
-        CnetSys_w.bg[slot].cmd = __cnet_SendReq_TopInformation();
-        return slot;
+    if (CnetSys_w.burst[0].state != 0) {
+        __cnet_Recv_Word(&v);
+        __cnet_Send_PatchLineCheck(v);
     }
-    return -1;
 }
 
-int cnLBS_Get_TopInformation(CNET_B1004 *d) {
-    *d = CnetSys_w.topinfo;
-    return 0;
-}
-
-int __cnet_SendReq_TopInformation(void) {
-    int cmd = SetSendCommand(&send_work, 0x1F) & 0xFFFF;
+int __cnet_Send_PatchLineCheck(int arg0) {
+    int cmd = SetSendCommand(&send_work, 0xC2) & 0xFFFF;
+    SetSendData16(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
+}
+
+void _cnet_RecvFromLbs_NoticePatchFooter(void) {
+
+}
+
+void _cnet_RecvFromLbs_RequestPatchFinish(void) {
+    CNET_RES res;
+
+    if (CnetSys_w.burst[0].state != 0) {
+        if (__cnet_CheckCheckSum(CNW(s32, 0x1054), CnetSys_w.patch_ver, CnetSys_w.patch_size) != 0) {
+            res.val = 0;
+            res.id = 3;
+            CnetSys_w.burst[0].cb(res, &res);
+            return;
+        }
+        res.val = -1;
+        res.id = 9;
+        CnetSys_w.burst[0].cb(res, &res);
+    }
+}
+
+int cnLBS_Answer_PatchFinish(void) {
+    __cnet_Send_PatchFinish();
+    return 0;
+}
+
+int __cnet_Send_PatchFinish(void) {
+    int cmd = SetSendCommand(&send_work, 0xC4) & 0xFFFF;
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int cnLBS_Get_PatchInformation(u8 *p) {
+    memset(p, 0, 0x1C);
+    strncpy(p + 4, CnetSys_w.patch_a, 0xA);
+    strncpy(p + 0x14, CnetSys_w.patch_b, 4);
+    *(int *)p = CnetSys_w.patch_ver;
+    return 0;
+}
+
+int __cnet_CheckCheckSum(p, size, sum)
+u8 *p;
+u32 size;
+int sum;
+{
+    u32 i;
+    int acc = 0;
+
+    for (i = 0; i < size; i++) {
+        acc += *p++;
+    }
+    return sum == acc;
+}
+
+void _cnet_RecvFromLbs_RequestRegurationVersion(void) {
+
+}
+
+void _cnet_RecvFromLbs_NoticeRegurationAddress(void) {
+
+}
+
+void _cnet_RecvFromLbs_AnswerRegurationData(void) {
+    _cnet_RecvFromLbs_AnswerBrowserMethodGet();
+}
+
+void cnLBS_Send_RegurationAgree(void) {
+
+}
+
+void _cnet_RecvFromLbs_AnswerRegurationAgree(void) {
+
+}
+
+void cnLBS_Set_CallBackNoticeEvent(int idx, void (*fn)()) {
+    pFunc[idx] = fn;
+}
+
+void _cnetEvent_JumpCallBack(idx)
+int idx;
+{
+    CNET_RES r;
+    void (*fn)();
+
+    r.id = idx;
+    r.val = 1;
+    fn = pFunc[(u16)idx];
+    if (fn != 0) fn(r, 0);
 }

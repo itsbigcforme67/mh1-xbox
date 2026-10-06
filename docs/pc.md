@@ -474,6 +474,42 @@ With `--quest N` the PC runs the game's own quest flow (6 Oct 2026, agent A):
   (mode 6 restarts the quest as before), `RT_CAM_DEBUG=1`,
   `RT_PL_DIE="t1,t2,..."` (the hunter faints at those player ticks).
 
+### Windowed = headless, village menu, sprites, area exits (agent A, 7 Oct 2026)
+- Scripted runs are tick-for-tick the same windowed and with `--shot`:
+  the host syncs joint matrices after every tick (not only per drawn
+  frame). Check with `RT_TICK_TRACE=1` (per tick: flow mode, stage,
+  hunter position/angle, a sum of monster positions) and diff the two
+  runs' "T" lines. Checked on: the village accept script, village/quest
+  random roams (5 seeds, 2-4 minutes each), village -> quest 131 -> camp
+  -> area 1.
+- Fixed crashes: windowed segfault at the village -> quest switch
+  (rt_game_init now empties the prim queues: a frame drew eft13 prims of
+  cleared effects); start in the village (lbmw NULL); eft06_m (the _nm C
+  tested the stepped pointer instead of the table, asm s8 vs s6);
+  monsters whose program entry [3] is not ported (kind 29 in area 1)
+  are no longer spawned.
+- Village start menu: Pit_init's lobby branch -> Lb_Menu_Init; Pit_mv_lb
+  -> Lb_menu_move_Core, trans_pit_1_lb -> DispLobbyMenu / Disp_lb_menu
+  (src/lobby/b/lb_menu_nm.c, from the asm). main's func_5B3D70.. forward
+  to the lobby C (rt_menu.c). Quest status, items (discard), combine
+  list, data, status and equipment screens checked on screenshots.
+  pit_help_str_tbl[4]/[5] point into lobby.bin (mapped in rt_data.c).
+  ItemCopy_Pl2Ud / Ud2Pl as udmisc02.c; without save data the user's
+  pouch starts as the hunter's (rt_player_game_init).
+- Sprites: SpritePut (src/main/sprite/spriteput_nm.c, from the asm) +
+  trans_sprite before ot5 + flps0D00: game3's darkening quad fades the
+  screen (brightness 46 -> 31 -> 20 over the fade). flps0F00/1300/1400/
+  1600 (textured / 3D sprites) are still stubs.
+- Area exits: the host calls stage_mv_ck every tick (move_stage's exit
+  check; the rest of stage_m, stage sounds and item sparkles, is not run)
+  -> pl+0x738 -> game2 loads the next area (camp 21 -> area 1 = 39).
+- flSetRenderState 0x0F-0x11 fog values (inert: nothing sets 0x12),
+  0x5F Z test (7 = off [guess]); 0x01/0x0E/0x15 known no-ops.
+- The cart (em18) is drawn with its Felynes when the hunter is carted
+  (cart13.png); nothing more was needed.
+- Not checked: comparison with the PS2; textured sprite kinds; other
+  areas' exits beyond camp -> area 1; save data.
+
 ### Collision (stage HITS, game C)
 
 The game's own collision C (agent D's f_sphr near-matches, list HIT= in
@@ -777,3 +813,21 @@ would be the shortcut if steps 3 and 5 turn out too slow.
   wall: use --cam). Stage 0x11 (st11 files) has barrels (Shell10) at
   1400..4100 where the area model has no geometry: probably an unused
   stage [guess].
+
+### ARM (Armbian RK3518 box, 6 Oct 2026)
+
+The same port runs as a 32-bit ARM (armhf) program on a 64-bit ARM Linux box, without
+root: `tools/build_arm.sh` cross-builds with Debian's gcc-14-arm-linux-gnueabihf and an armhf
+sysroot unpacked in ~/mh1arm, and `tools/run_arm.sh` starts it through the sysroot's
+loader (Mesa's lima driver from the sysroot). Setup of ~/mh1arm: a user-level apt config
+with `APT::Architectures { arm64; armhf; }` and its own lists/status dirs, `apt-get update`,
+`apt-get download` of the armhf closure of libsdl2-2.0-0, libsdl2-dev, libgl1, libglx-mesa0,
+libgl1-mesa-dri, libc6-dev (apt-cache depends --recurse) into sysroot/, and of
+gcc-14-arm-linux-gnueabihf, cpp-14-..., binutils-arm-linux-gnueabihf, libc6(-dev)-armhf-cross,
+libgcc-14-dev-armhf-cross, linux-libc-dev-armhf-cross (+ bases) into cross/, all unpacked
+with dpkg-deb -x; the cross libc.so linker script is edited to point at cross/. ARM-specific
+flags: -fsigned-char (PS2 char is signed), -fpermissive (gcc 14). `RT_FPS=1` prints drawn
+frames per second.
+- Measured 6 Oct 2026 (H96 Max, RK3518, Mali-450 GL 2.1, quest 10 at the cave, no fight):
+  game logic at full speed (30 ticks/s), about 27 fps drawn at 960x720 and 48 fps at 640x480;
+  a --shot screenshot looks the same as on x86. Not tested: long play, fights, the village.

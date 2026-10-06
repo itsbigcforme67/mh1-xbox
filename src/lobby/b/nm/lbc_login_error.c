@@ -14,7 +14,7 @@ void lbc_login_error(void) {
     temp_a2 = Get_sw2(0) & 0xFFFF;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        Lbc_init_network_work(1, temp_a1, temp_a2);
+        Lbc_init_network_work(1);
         Lbc_set_prim(&text_lobby_trans_ot0, 0, 0);
         temp_v1 = (int)cw;
         F(u8, temp_v1, 0x2C34) = (u8) (F(u8, temp_v1, 0x2C34) + 1);
@@ -31,17 +31,17 @@ void lbc_login_error(void) {
         if (temp_v1_2 > 0) {
             if ((temp_v1_2 < 0x1E0) && (temp_a2 & 0xFFFF & 0x20)) {
                 F(u8, temp_a1_3, 0x2C34) = (u8) (F(u8, temp_a1_3, 0x2C34) + 1);
-                cnWrap_SoundRequest(0, temp_a1_3, temp_a2);
+                cnWrap_SoundRequest(0);
                 fade_set(1);
                 return;
             }
             return;
         }
         F(u8, temp_a1_3, 0x2C34) = (u8) (F(u8, temp_a1_3, 0x2C34) + 1);
-        fade_set(1, temp_a1_3, temp_a2);
+        fade_set(1);
         return;
     case 2:
-        if ((Fade_busy_ck(temp_a0, temp_a1, temp_a2) & 0xFF) != 1) {
+        if ((Fade_busy_ck(temp_a0) & 0xFF) != 1) {
             F(s8, pNet, 0x11) = 1;
             F(s8, (u8 *)cw, 0x2C33) = 4;
             F(u8, (u8 *)cw, 0x2C34) = 1U;

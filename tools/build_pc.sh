@@ -6,6 +6,10 @@
 # or the no-root sysroot from tools/setup_pc32.sh.
 set -e
 cd "$(dirname "$0")/.."
+# Cross builds (e.g. 32-bit ARM on the Armbian box, tools/build_arm.sh) set
+# CC (compiler + sysroot flags), M32 (empty), OBJCOPY, NM, SDL_CFLAGS and
+# PC_SYS (skips the multilib check).
+CC=${CC:-gcc}; OBJCOPY=${OBJCOPY:-objcopy}; NM=${NM:-nm}; M32=${M32--m32}
 mkdir -p build/pc
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
@@ -19,7 +23,6 @@ RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_gam
 # set13_trans (near-matches on the PS2 side, believed equivalent).
 GAME="src/game/set/set14_nm.c src/game/set/set00.c src/main/stage/stage_set.c \
       src/main/set/set13.c src/main/set/set13b.c src/main/set/set13c.c src/main/set/set13_nm.c \
-      src/main/hit/hit2.c src/main/hit/hit2c.c \
       src/game/set/set09.c src/game/set/set17.c src/game/set/set17_nm.c \
       src/game/set/set03.c src/game/set/set04.c src/game/set/set05_nm.c src/game/set/set07.c src/game/set/set08.c src/game/set/set10.c src/game/set/set11.c src/game/set/set15.c src/game/set/set16.c src/game/set/set18.c src/game/set/set19.c src/game/set/set20_nm.c src/game/set/set22.c \
       src/main/set/set12.c src/main/pl/pl_master_ck.c src/main/stage/trans_stage.c \
@@ -34,11 +37,12 @@ HIT="src/main/hit/shit1_nm.c src/main/hit/shit2.c src/main/hit/shit3_nm.c src/ma
      src/main/hit/tri_nm.c src/main/hit/hitw_nm.c"
 # Game camera (f_cam, f_cam_223B50: agent D; camarea_nm.c: camera areas).
 # cam_nm.c holds the whole f_cam file; the matching camd.c repeats some of
-# its functions, so cam_nm is in WEAK. hit2b.c: hit_sphr_sphr3 (camera vs
-# monster).
+# its functions, so cam_nm is in WEAK. The f_hit_28CE00 tests (hit_sphr_sphr3
+# etc.) come from hit2_nm.c (main's hit2all.c keeps three functions as
+# original bytes, which gcc cannot build).
 CAM="src/main/cam/cam_nm.c src/main/cam/camm.c src/main/cam/camd.c src/main/cam/camarea_nm.c \
      src/main/cam/camr_nm.c src/main/cam/camr2_nm.c src/main/cam/camr3.c src/main/cam/camr4_nm.c \
-     src/main/cam/camr5_nm.c src/main/cam/camr6_nm.c src/main/hit/hit2b.c"
+     src/main/cam/camr5_nm.c src/main/cam/camr6_nm.c"
 # Effects and shells (game.bin eft*/shell*, main eft*). Split files: the
 # whole-file _nm.c where it holds every function, else the matching pieces
 # plus the _nm.c near-matches. Files in WEAK are near-match copies that
@@ -84,7 +88,7 @@ QUEST="src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tu
        src/main/menu/menu_nm.c src/main/menu/menu_disp_nm.c \
        src/main/chat/chat_nm.c src/main/chat/dispframe_nm.c src/main/menu/listsel_nm.c src/main/font/fontst_nm.c \
        src/main/font/fontst2_nm.c src/main/font/gfs_nm.c src/main/set/set01.c src/main/sys/vib.c \
-       src/main/sprite/putspr.c src/main/sprite/putspr2.c src/main/sprite/calcpoint.c src/main/sprite/trans2.c src/main/sprite/sysw.c \
+       src/main/sprite/putspr.c src/main/sprite/putspr2.c src/main/sprite/calcpoint.c src/main/sprite/trans2.c src/main/sprite/sysw.c src/main/sprite/spriteput_nm.c \
        src/main/load/mkmap.c \
        src/main/reward/f_reward.c src/main/reward/f_reward2.c src/main/reward/f_reward3.c src/main/reward/f_rewardb.c \
        src/main/reward/f_rewardc.c src/main/reward/f_reward_nm.c src/main/reward/f_rewardb_nm.c src/main/reward/f_rewardd_nm.c \
@@ -119,22 +123,28 @@ done
 LOBBY="$(ls src/lobby/f/lb_[a-p].c src/lobby/f/lb_z*.c | tr '\n' ' ') src/lobby/f/lb_pl_nm.c \
        $(ls src/lobby/lb/*_nm.c | tr '\n' ' ') src/lobby/lb/lb_talk.c"
 [ -f src/lobby/f/lb_village_nm.c ] && LOBBY="$LOBBY src/lobby/f/lb_village_nm.c"
-WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
+# the village start menu (Lb_ck_menu -> lbmw = lb_menu_w): Lb_Menu_Init,
+# the menu's move and draw (b/nm near-matches, b/lb_menu_nm.c from the asm)
+LOBBY="$LOBBY src/lobby/b/lb_bz15.c src/lobby/b/lb_bz17.c src/lobby/b/lb_bz19.c src/lobby/b/lb_bz135.c \
+       src/lobby/b/nm/Lb_menu_move_Core.c src/lobby/b/nm/DispLobbyMenu.c src/lobby/b/lb_menu_nm.c"
+WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY"
 
-SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
-CFLAGS="-m32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
+SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}
+CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
 # -fno-aggressive-loop-optimizations: decompiled loops index past declared
 # array ends (EMW.hagi[8] read with i == 8 in Em_Dmg_Sys): without it gcc
 # drops the loop exit
-GAMEFLAGS="-m32 -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -Iinclude -w"
+GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -Iinclude -w"
 LIBS="-lSDL2 -lGL -lm -ldl -rdynamic"   # -rdynamic: rt_data.c finds host symbols with dlsym
 # unnamed PS2 data the game C refers to as D_<addr>: rows of rview_mat
 # (0x3F2060) and two game.bin tables
 LIBS="$LIBS -Wl,--defsym,D_3F2080=rview_mat+0x20 -Wl,--defsym,D_3F2090=rview_mat+0x30 \
       -Wl,--defsym,D_63BC40=enemy_shadow_size -Wl,--defsym,D_63BD60=enemy_mahi_size -Wl,--defsym,D_63FC50=em_hit_push_tbl -Wl,--defsym,D_63FA10=em_body_tbl -Wl,--defsym,D_3E4C9C=player_work+0xAC"
 
-if echo 'int main(void){return 0;}' | gcc -m32 -x c - -o build/pc/.m32test $LIBS 2>/dev/null; then
+if [ -n "$PC_SYS" ]; then
+    SYS="$PC_SYS"
+elif echo 'int main(void){return 0;}' | gcc -m32 -x c - -o build/pc/.m32test $LIBS 2>/dev/null; then
     SYS=""                                   # gcc-multilib installed
 else
     SR=build/sysroot32      # relative: the checkout path may contain spaces
@@ -234,22 +244,22 @@ for f in $GAME; do
             INC="$INC -I$(dirname "$f")"
         fi
     fi
-    gcc $INC $GAMEFLAGS $ABI $SYS -c "$src" -o "$o"
-    case " $WEAK " in *" $b "*) objcopy --weaken "$o" ;; esac
+    $CC $INC $GAMEFLAGS $ABI $SYS -c "$src" -o "$o"
+    case " $WEAK " in *" $b "*) $OBJCOPY --weaken "$o" ;; esac
     # single symbols that another file also defines (the lobby NPC files'
     # empty dummy_em_prog: main's f_em one wins)
-    case "$b" in lb__lb_em*_nm) objcopy --weaken-symbol=dummy_em_prog "$o" ;; esac
+    case "$b" in lb__lb_em*_nm) $OBJCOPY --weaken-symbol=dummy_em_prog "$o" ;; esac
     OBJS="$OBJS $o"
 done
 # data tables (names in src/pc/rt/tables.txt; bytes come from the disc at run time)
 python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 # shellcheck disable=SC2086
-gcc $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
+$CC $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
 for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village; do
     # shellcheck disable=SC2086
-    gcc $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
+    $CC $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"
 done
 # Symbols nothing defines yet (callees and data of the linked overlay C):
@@ -259,17 +269,17 @@ done
 echo '#include <stddef.h>
 struct rt_table { const char *name; unsigned va; void *dst; size_t size; };
 const struct rt_table rt_gen_main_tables[1];' > build/pc/rt_gen.c
-gcc $CFLAGS $SYS -c build/pc/rt_gen.c -o build/pc/rt_gen.o
+$CC $CFLAGS $SYS -c build/pc/rt_gen.c -o build/pc/rt_gen.o
 # shellcheck disable=SC2086
-gcc $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview.tmp $LIBS \
+$CC $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview.tmp $LIBS \
     -Wl,--warn-unresolved-symbols 2> build/pc/link1.log || { cat build/pc/link1.log; exit 1; }
 sed -n "s/.*undefined reference to \`\([^']*\)'.*/\1/p" build/pc/link1.log | sort -u > build/pc/undefined.txt
 rm -f build/pc/mhview.tmp
 # shellcheck disable=SC2086
-nm --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined.txt
+$NM --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined.txt
 python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
-gcc $CFLAGS $SYS -w -c build/pc/rt_gen.c -o build/pc/rt_gen.o
+$CC $CFLAGS $SYS -w -c build/pc/rt_gen.c -o build/pc/rt_gen.o
 # shellcheck disable=SC2086
-gcc $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview $LIBS \
+$CC $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview $LIBS \
     $(cat build/pc/rt_gen.defsym)
 echo "built build/pc/mhview (32-bit)"

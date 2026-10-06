@@ -292,3 +292,66 @@ the next compare constant (bs_url_slash, BsBody00_ReqSrc, Lb_get_pl_stat2, u_ite
 target), vs_square_init (a0 reuse), stockButtonImage (`bgtz; nop; nop; b end` layout); BsQuit00_Init (store order); loops of the form
 `bne; nop; b exit; nop; nop; b top` (bs_route_queue_free_reverse, bs_url_end, bs_url_last_slash); rodata struct copy of 12 bytes (pl_sleeping, Lb_put_gold).
 The big ones (Lb_guild, lb_basic_master, Lb_stage_load, lb_rule_seet_set, quest table functions) were not touched this session.
+
+## Lobby session 5 (10 Oct 2026): translation-unit groups (static callees), raw functions, near-match fixes
+Overlay 0x5C4E60-end. New tools: tools/lbtu.py (merge the registered runs of an address range plus the not-yet-C functions into ONE C file,
+unmatched/unwritten functions become `asm` stubs fed by config/c_rawfuncs.txt; build.py gen_raw now supports lobby), tools/check.py has
+-Ibuild/raw, tools/progress.py no longer counts raw functions as decompiled.
+Why: MWCC only uses a callee's register usage ("IPA") when the callee is a `static` function defined EARLIER in the SAME file and every caller is
+in that file. The original has such statics: a global loaded into a1 and still in a1 after the call (BsRouteForwardCheck), `r` kept in a0 across
+`bs_route_current_page_status(r)` (BsRouteReload), a counter temp in v1 instead of v0 because `bs_page_status_flag_set` is static (BsRequestHtmlPost).
+A static whose callers are partly outside the group cannot link (callers in raw functions are fine: they hold absolute jal targets).
+Rules that held: scratch files must NOT live in src/ while tools/rebuild.sh runs (it compiles src/lobby/zz*.c); compile scratch copies in build/scr.
+Source-form findings (verified by matching):
+- `if (0 < n)` for a loop guard whose count is an s16 loaded value gives `slt at,zero,s0; beq` (original) where `n > 0` gives `blez` (eft25_i, eft25_d);
+  `i++` on an s16 loop counter avoids the extra sign extension before the add that `i = (s16)(i + 1)` produces.
+- switch label order: the compare ladder in the asm is the REVERSE of the order of the case labels in the source (eft25_i case 4: `case 0: case 1: ... default: case 2: case 3:`).
+- `p->time = -i * 5 - 10;` (not `i * -5 - 10`) for the s16 particle index.
+- A 20-byte float struct copy compiles to lwc1 x4 / swc1 x4 / lwc1 / swc1 only when the struct has f32 members: `struct F5 {f32 a,b,c,d,e;} t; t = *(struct F5 *)p;`
+  and then access the s16 halves with casts `*(s16 *)&t.a`, `*(s16 *)&t.b` (Lb_put_2TF). An s16/u8 struct gives ldr/ldl copies instead.
+- if/else-if chains (not switch) when the original compares the same u8 against 6, 7, 8 one after the other (eft25_m start).
+- `(1 << *p) & mask` vs `mask & (1 << (*p & 0xFF))`: the second gave the original operand order of `and` (lb_check_chair).
+- Local copies of the arguments (`int x = *(s16 *)A; int y = *(s16 *)B; buf[0] = 0; f(buf, x, y);`) move the store out of the delay slot (Plaza_chat_move).
+- Using `lbCommer[id].name` again instead of the cached `name` pointer changed the s0/s1 order (lb_commer_message).
+- `return x != 1 ? 1 : 0;` (not `return x != 1;`) gives the original branch-to-epilogue layout in small checkers (item_kosuu_sel_chk, u_item_chk); `if (id == 0) return 0; return X ? 1 : 0;`.
+- A local `u8 *u = User_data;` declared BEFORE the int copy of the parameter (`u8 *u; int v; v = a & 0xFF; u = User_data;`) puts `u` into the freed a0 and `v` into v1 (u_equip_chk);
+  `(u8 *)(i + (int)u)` / `(u8 *)(a0 + (int)u)` gives `addu idx,base` (the original operand order) where `u + i` gives `addu base,idx`.
+- Callee register use matters even for register-allocated locals of the CALLER: pick_kosuu_sel_chk keeps `User_data` in a3 across the call only if item_kosuu_sel_chk
+  is a static defined earlier in the same file AND itself matches (its a0-a2 usage is what makes a3 the first free register).
+- The permuter works on a translation-unit function: build a file with the declarations plus that single function (strip `static`, asm stubs) and run
+  `tools/perm.py lobby FUNC file -j1`; it needs asm/lobby/text to still contain the function, so run it BEFORE the function's range is registered.
+- Large field offsets (> 0x7FFF, e.g. `bsw + 0xE96A`): the original forms the address in a register (`ori at,zero,0xE96A; addu v1,v0,at`) and uses it through a pointer variable:
+  `u8 *p = bsw + 0xE96A; if (*p != 0) *p = *p - 1;` (pullTableImage, pushTableImage). Written as `bsw[0xE96A]` the compiler folds `lui at,1; addu; lbu -0x1696(at)` instead.
+- `x = x * 10 + (c - 0x30)` as two statements (`x = x * 10; x = x + (c - 0x30);`) gives the original's early `addiu v1,a0,-48` (get_numeric_parameter2, found by the permuter).
+- An invariant load that the original re-reads every loop iteration (`while (i < *(s32 *)(w + 4) - 1)`) needs `*(volatile s32 *)p` in the loop (tagoutprintf2).
+- Gp-relative globals of 8 bytes or less must be declared with their real size (`extern char *BadHeaderList[2];`, `extern u8 Hn_Size[8];`), otherwise lui/addiu is emitted instead of gp addressing.
+- m2c `if (v != 0) {} else v = s[x];` followed by `d[y] = v;` is `if (v != 0) d[y] = v; else d[y] = s[x];` (set_TH_TD_data_1st).
+- Empty switch cases: the ladder in the asm is the reverse of the case labels; `case 0: break; case 1: {...} break; case 2: case 3: break;` gave the original (BsCheckLbsError).
+- `a ? x : 0` with a compare of an unsigned byte against a constant: write `v[0x48] > 1 ? v : 0` (not `>= 2` / `< 2 ? 0 : v`) to get `slti at; movn` with the compare in `at` (check_upTD_rowspan2). A shared `return 0;` that the original reaches by jumping from several places is a `goto ret0;` (check_upTD_rowspan).
+- Prototype args: floats in the PS2 ABI do not use up integer argument registers in MWCC: `drawString(int pal, int a1, int a2, f32 x, f32 y, int size, u8 *s)` needs two dummy ints so that size lands in a3 and the string in t0.
+- Struct locals built for GS packets (BSQUAD/BSSPR/BSTRI): fill the fields in the order of the original stores (BsDrawSprite stores the colour first).
+
+### Lobby session 5: what is linked and what is left
+Linked this session (all `tools/rebuild.sh` OK): lobby 144.7 KB -> about 156 KB of matching C.
+- Translation units with static helpers: src/lobby/f/lb_tu_browser.c (0x5E5F90-0x5E8330: queue/route/cache/request code, statics
+  bs_route_queue_forward/back, bs_route_current_page_status, bs_page_status_flag_set; aliases for still-asm callers in config/lobby_aliases.txt; unwritten
+  functions are `asm` stubs, e.g. BsCacheInitialize, BsRequestCheck), lb_tu_act.c (0x5CDF70-0x5CF100: static lb_action_timer_calc, Lb_act_set now matches),
+  lb_tu_ib.c (item box 0x609750-0x60D6D8: u_item_chk, u_equip_chk, item_kosuu_sel_chk, pick_kosuu_sel_chk, equip_ok_chk matched; the other 15 functions of the
+  screen are still `asm` stubs in config/c_rawfuncs.txt, their C is in lb_ib.c / lb_ay.c).
+- lb_e25.c: eft25_i, eft25_d now match (with Eft25_set_pos, eft25_move, eft25_e only eft25_m and eft25_t are left: eft25_m is a 3.2 KB function whose
+  prologue shows five table base registers and two spilled locals; eft25_t 2.5 KB).
+- lb_pc.c: Plaza_chat_move, Plaza_disp_ReibunEdit match; left: Plaza_chatlog_mv (7 insns), Plaza_disp_chatlog (38), plaza_disp_chat_log_sub (64).
+- Other source-form fixes: lb_commer_message, lb_check_chair, Lb_put_2TF, tagAct_050/052/053/310/318/320/339/341/342/349, BsBody05_ActDsp, BsTextureGet,
+  RequestAllImages, get_numeric_parameter2 (permuter) ...
+- New hand-written (unwritten before): src/lobby/f/lb_dr.c, lb_dr2.c, lb_dr3.c: fillRect, fillTrgl, drawHLine/VLine, drawOuterImage, drawString, BsDrawRectangle/
+  Triangle/Sprite, http_test_proc/_01/_06/_18, HttpTaskInitialize/Pull, is_sjis, BtnScrollXY, DispFontSize, BsFixPalInit, BsUrlBadHeaderGet, BsCheckLbsError,
+  PostLbsInfoGetOrGameEnd, BsRequestCancelAll/Html, BsStrtblGet, tagAct_035/042, tagoutprintf2, pull/pushTableImage, set_TH_TD_data_1st, check_upTD_rowspan(2) ...
+Still near-matches (source in the working files / build/lbauto, not linked): drawRect (20 insns), Disp_TABLE_Line (2), tagAct_602 (7), font_data_off, set_align_data (15),
+check_rowspan (41), check_rowspan2 (7), ResetFormParam (35), check_special_character (register order of 8 locals), BsParseCheck (register order),
+cut_spacer_string(_t) (loop layout), BsTextureAdd (1), get_input_tag_sp_type (8: `daddiu` li in delay slots), setUpDnLtRtBlank (7: decl order), lb_insert_target_list,
+BsCsMove07_NetError, Disp_Text, the ItemboxWindowX family and the itembox_* screen functions (structurally far: User_data base kept in a register).
+The permuter (one function at a time, -j1, 5 minutes each) found get_numeric_parameter2 and equip_ok_chk; it is cheap to try on any function that is
+under ~10 instructions off: `python3 tools/perm.py lobby FUNC file.c -j1 --stop-on-zero` (build/asmkeep keeps a copy of asm/lobby/text for functions that are
+already registered).
+Ideas not done: write http_test_00/04/05 (m2c switch output needs hand cleanup), table/layout code 0x5FD000-0x608D00 (about 60 functions), the drawing
+functions 0x5DBA80-0x5E0F00 (drawInnerImg5/6, DrawPageObj, DrawPulldown, ...).

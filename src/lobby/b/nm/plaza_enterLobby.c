@@ -39,14 +39,14 @@ block_48:
         return 2;
     case 1:                                         /* switch 1 */
         temp_a1_2 = temp_s0 & 0xFFFF;
-        F(s16, pNet, 0x28) = Get_sw_on2(0, temp_a1, temp_a2);
+        F(s16, pNet, 0x28) = Get_sw_on2(0);
         if (temp_a1_2 & 0x20) {
             F(u8, pNet, 3) = 4U;
             temp_a2_2 = (int)pNet;
             F(s8, &ClassInfo, 4) = (s8) (F(u8, temp_a2_2, 0xA) + 1);
             F(u8, (u8 *)cw, 0x2C41) = (u8) F(u8, temp_a2_2, 0xA);
             F(s8, (u8 *)cw, 0x2C35) = 0;
-            SetDialogData(0x15, 5, temp_a2_2);
+            SetDialogData(0x15, 5);
             F(s8, pNet, 0xC) = 1;
             cnWrap_SoundRequest(0);
             goto block_48;
@@ -93,20 +93,20 @@ block_19:
             temp_a2_3 = (int)pNet;
             temp_a1_3 = F(u8, temp_a2_3, 0xA);
             F(s8, temp_a2_3, 6) = (s8) (*(int *)((u8 *)&D_3A1622 + (temp_a1_3 * 0x15C)));
-            cnWrap_SoundRequest(6, (u8 *) temp_a1_3, temp_a2_3);
+            cnWrap_SoundRequest(6, (u8 *) temp_a1_3);
             memset(&tl_member_buff, 0, 0x17E0);
             temp_v1_5 = (int)pNet;
             F(u8, temp_v1_5, 3) = (u8) (F(u8, temp_v1_5, 3) + 1);
         }
         goto block_48;
     case 2:                                         /* switch 1 */
-        if (Lbs_GetLobbyMemberList(F(u8, temp_a1, 0xA), temp_a1, temp_a2) == 1) {
+        if (Lbs_GetLobbyMemberList(F(u8, temp_a1, 0xA)) == 1) {
             temp_v1_6 = (int)pNet;
             F(u8, temp_v1_6, 3) = (u8) (F(u8, temp_v1_6, 3) + 1);
         }
         goto block_48;
     case 3:                                         /* switch 1 */
-        F(s16, pNet, 0x28) = Get_sw_on2(0, temp_a1, temp_a2);
+        F(s16, pNet, 0x28) = Get_sw_on2(0);
         if (temp_s0 & 0xFFFF & 0x40) {
             F(u8, pNet, 3) = 1U;
             cnWrap_SoundRequest(3);
@@ -114,7 +114,7 @@ block_19:
         goto block_48;
     case 4:                                         /* switch 1 */
         F(s8, temp_a1, 0xC) = 1;
-        temp_v0_3 = Lbs_request_enter_lobby(temp_a0, temp_a1, temp_a2);
+        temp_v0_3 = Lbs_request_enter_lobby(temp_a0);
         switch (temp_v0_3) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_v1_7 = (int)pNet;
@@ -130,7 +130,7 @@ block_19:
         goto block_48;
     case 5:                                         /* switch 1 */
         F(s8, temp_a1, 0xC) = 1;
-        temp_v0_4 = Lbc_DownloadQuest(temp_a0, temp_a1, temp_a2);
+        temp_v0_4 = Lbc_DownloadQuest(temp_a0);
         switch (temp_v0_4) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
             fade_set(0xA);

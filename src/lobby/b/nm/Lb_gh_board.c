@@ -8,9 +8,7 @@ s32 Lb_gh_board(void) {
     case 0:
         F(s8, &lb_sys, 6) = (s8) (F(s8, &lb_sys, 6) + 1);
         cnWrap_SoundRequest(6);
-block_9:
-    default:
-        return 0;
+        break;
     case 1:
         Lb_put_hint(0, 0x16);
         if (temp_s0 & 0xFFFF & 0x240) {
@@ -19,6 +17,7 @@ block_9:
             return 1;
         }
         Lbc_set_prim(&Lb_put_help, &Lb_gh_board_trans, 0);
-        goto block_9;
+        break;
     }
+    return 0;
 }

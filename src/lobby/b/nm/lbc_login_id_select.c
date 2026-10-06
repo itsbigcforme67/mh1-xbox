@@ -65,12 +65,12 @@ void lbc_login_id_select(void) {
         return;
     case 1:                                         /* switch 1 */
         F(u8, temp_v1, 0x2C34) = (u8) (temp_a1 + 1);
-        Lbc_init_network_work(&jtbl_650_0065E8B0, temp_a1, temp_a2);
+        Lbc_init_network_work(&jtbl_650_0065E8B0);
         F(u8, pNet, 6) = (u8) F(u8, (u8 *)cw, 2);
         F(u8, pNet, 8) = (u8) F(u8, (u8 *)cw, 1);
         return;
     case 2:                                         /* switch 1 */
-        if ((Fade_busy_ck(&jtbl_650_0065E8B0, temp_a1, temp_a2) & 0xFF) != 1) {
+        if ((Fade_busy_ck(&jtbl_650_0065E8B0) & 0xFF) != 1) {
             temp_a0_2 = (int)cw;
             F(u8, temp_a0_2, 0x2C34) = (u8) (F(u8, temp_a0_2, 0x2C34) + 1);
             if (F(u8, &CnetWork, 5) == 0) {
@@ -80,7 +80,7 @@ void lbc_login_id_select(void) {
         }
         break;
     case 3:                                         /* switch 1 */
-        temp_v0 = net_SetMenu_SelectHandleName(&network_work, temp_a1, temp_a2);
+        temp_v0 = net_SetMenu_SelectHandleName(&network_work);
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_a0_3 = (int)cw;
@@ -89,7 +89,7 @@ void lbc_login_id_select(void) {
         }
         break;
     case 4:                                         /* switch 1 */
-        if ((Fade_busy_ck(&jtbl_650_0065E8B0, temp_a1, temp_a2) & 0xFF) != 1) {
+        if ((Fade_busy_ck(&jtbl_650_0065E8B0) & 0xFF) != 1) {
             temp_v1_2 = (int)cw;
             F(u8, temp_v1_2, 0x2C34) = (u8) (F(u8, temp_v1_2, 0x2C34) + 1);
             Lbc_set_prim(0, 0, 0);
@@ -115,7 +115,7 @@ void lbc_login_id_select(void) {
         cnetGet_Login_DecideUserHandle((u8 *)cw + 0x448);
         return;
     case 6:                                         /* switch 1 */
-        Check_CallBackWait(&jtbl_650_0065E8B0, temp_a1, temp_a2);
+        Check_CallBackWait(&jtbl_650_0065E8B0);
         break;
     }
 }
