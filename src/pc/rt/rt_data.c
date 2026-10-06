@@ -330,6 +330,11 @@ int rt_import_lobby(void)
         shop_default_tag_00389E90[0] = map_lb(0x65E020);
         shop_default_tag_00389E90[1] = map_lb(0x65E028);
     }
+    {   /* main's hint_tbl[0] (0x389F80) points at lobby.bin's village hint
+         * strings 0x64F1F0 (Lb_put_hint); [1] is main's own */
+        extern void *hint_tbl[];
+        hint_tbl[0] = map_lb(0x64F1F0);
+    }
     lb_image_n = n;
     lb_image = malloc(n);       /* the freshly loaded overlay, for rt_lb_reload */
     if (lb_image)

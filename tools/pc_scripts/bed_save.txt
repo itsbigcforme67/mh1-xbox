@@ -1,0 +1,1 @@
+idle*60,square*2,idle*60,square*2,idle*60,circle*2,idle*60,circle*2,idle*60,circle*2,idle*100,circle*2,idle*40,dleft*2,idle*10,circle*2,idle*150,circle*2,idle*60,circle*2,idle*60,circle*2,idle*100

@@ -170,7 +170,16 @@ LOBBY2="src/lobby/f/lb_ib.c src/lobby/f/lb_tu_ib.c src/lobby/f/lb_ad.c src/lobby
 # linked as they are; the near-match / stand-in copies of the same
 # functions in other lobby objects are weakened after compiling (BMATCH)
 BMATCH="$(ls src/lobby/b/lb_by13[5-9].c src/lobby/b/lb_by14[0-9].c src/lobby/b/lb_by15[0-2].c 2>/dev/null | tr '\n' ' ')"
-LOBBY="$LOBBY $LOBBY2 $BMATCH"
+# matched lobby functions that were stand-ins (gen_rt_auto) until now:
+# NPC sound types, the guild-hall board / status init, the village menu
+# sounds (cnWrap_SoundRequest), the forge's value_result, lobby client
+# helpers (round 19)
+LOBBY3="src/lobby/b/lb_by122.c src/lobby/b/lb_by123.c src/lobby/b/lb_bz98.c src/lobby/b/lb_bz145.c \
+        src/lobby/b/lb_bz137.c src/lobby/b/lb_bz110.c src/lobby/b/nm/value_result.c"
+# PICK: whole-file C from which only the named functions are wanted (all its
+# other definitions are weakened: the copies already linked win)
+PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint"
+LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*}"; done)"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
 WEAK="mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT"
@@ -308,6 +317,11 @@ for f in $GAME; do
     # single symbols that another file also defines (the lobby NPC files'
     # empty dummy_em_prog: main's f_em one wins)
     case "$b" in lb__lb_em*_nm) $OBJCOPY --weaken-symbol=dummy_em_prog "$o" ;; esac
+    for p in $PICK; do
+        [ "${p%%:*}" = "$f" ] || continue
+        KEEP=",${p#*:},"
+        $OBJCOPY $($NM --defined-only -g "$o" | awk -v k="$KEEP" 'NF == 3 && index(k, "," $3 ",") == 0 {printf "--weaken-symbol=%s ", $3}') "$o"
+    done
     OBJS="$OBJS $o"
 done
 # the matched lobby functions win over other lobby objects' copies
