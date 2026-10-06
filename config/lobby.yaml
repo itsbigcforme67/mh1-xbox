@@ -1366,6 +1366,8 @@ segments:
       - [0x090288, asm, text/lb_npc_init]
       - [0x090760, c, b/lb_by116]
       - [0x09089C, asm, text/lb_set_npc]
+      - [0x0908A0, c, b/lb_by135]
+      - [0x0909A4, asm, text/lb_npc_move]
       - [0x090B00, c, b/lb_bz62]
       - [0x090B18, asm, text/Lb_npc_mv]
       - [0x090B20, c, b/lb_by71]
