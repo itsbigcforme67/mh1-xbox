@@ -775,8 +775,6 @@ s16 Get_atk_value(void *pl, int kind)
         return 0;
     return Ken_data[*(u16 *)(p + 0x360)][0xB + (kind & 0xFF)];
 }
-STUB_I(em09_status_ck, (void *em))
-STUB_V(em09_dir_calc, (s32 *a, s32 *b, s32 c))
 STUB_V(em_material_sub, (void *em, int a, CLAY *c))
 /* skinned-model drawing (fl hierarchy), used by eft01/eft05/eft09 */
 STUB_V(flCalcTrans, (void *h, FLMAT *m))

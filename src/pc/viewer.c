@@ -811,9 +811,22 @@ static void em_model_load(int slot, int kind)
         return;
     e = &em_mdl[kind];
     if (!em_have[kind]) {
+        /* the game's per-kind AFS entries: model (load_enemy_model,
+         * main 0x2EC7A0), textures (0x2EEE20) and motions (load_em_motion,
+         * 0x2EC830); several kinds share files (the dromes use the
+         * Velociprey / Genprey / Ioprey models and the em16 motions) */
+        static const uint32_t tbl_va[3] = { 0x2EC7A0, 0x2EEE20, 0x2EC830 };
+        char *nm[3] = { a, t, b };
+        int k;
         snprintf(a, sizeof a, "em%02d_amh.bin", kind);
         snprintf(t, sizeof t, "em%02d_tex.bin", kind);
         snprintf(b, sizeof b, "em%02d_tbl.bin", kind);
+        for (k = 0; k < 3; k++) {
+            const uint8_t *q = elf_addr(tbl_va[k] + 4 * (uint32_t)kind);
+            uint32_t idx = q ? fmt_u32(q, FMT_LE) : 0;
+            if (idx > 0 && idx < afs.count)
+                snprintf(nm[k], 32, "%s", afs.name[idx]);
+        }
         if (monster_load(e, a, t, b, 0) != 0) {
             fprintf(stderr, "monster kind %d: model %s not loaded\n", kind, a);
             return;

@@ -86,7 +86,7 @@ void em_hp_add(EMW *em, s16 n);
 void em_ana_loop_cnt_set(EMW *em);
 int em_sleep_hp_add(EMW *em, s16 n, s16 max, s16 step);
 void em_niku_eat_set(EMW *em);
-void Quest_enemy_capture();
+void Quest_enemy_capture(em);   /* PC: a0 = em left over in the asm */
 extern s16 em15_stay_timer_tbl[];
 extern s16 em15_runaway_timer_tbl[];
 
@@ -3821,7 +3821,7 @@ static void em_demo04_005C9F20(EMW *em, EM15W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05 = temp_v1 + 1;
-            Quest_enemy_capture();
+            Quest_enemy_capture(em);   /* PC: a0 = em left over in the asm */
         }
         break;
     case 2:

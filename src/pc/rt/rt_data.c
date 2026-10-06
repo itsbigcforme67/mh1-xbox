@@ -159,6 +159,13 @@ static void *map_ptr(uint32_t v)
     name = rt_sym_at(v, &off, &func);
     if (name && (h = dlsym(RTLD_DEFAULT, name)) != NULL)
         return (uint8_t *)h + off;
+    if (name) {         /* a file static whose C carries the address suffix
+                         * (em04_effect_move -> em04_effect_move_0058F3E0) */
+        char sfx[160];
+        snprintf(sfx, sizeof sfx, "%s_%08X", name, (unsigned)(v - off));
+        if ((h = dlsym(RTLD_DEFAULT, sfx)) != NULL)
+            return (uint8_t *)h + off;
+    }
     if (func) {         /* code that is not ported: leave no MIPS address behind */
         if (map_tables && getenv("RT_TRACE"))
             fprintf(stderr, "rt: pointer to unported function %s+0x%X\n", name, (unsigned)off);

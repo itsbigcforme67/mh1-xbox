@@ -68,7 +68,7 @@ void em_hinshi_end(EMW *em);
 void em_suimin_end(EMW *em);
 void em_ana_loop_cnt_set(EMW *em);
 void Eft08_set(f32 *, int, int, f32);
-void Quest_enemy_capture();
+void Quest_enemy_capture(em);   /* PC: a0 = em left over in the asm */
 extern s16 em_atk_mode_timer_tbl[35];
 extern s16 em21_stay_timer_tbl[];
 extern s16 em21_runaway_timer_tbl[];
@@ -3522,7 +3522,7 @@ static void em_demo00_00606B70(EMW *em, EM21W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05 = temp_v1 + 1;
-            Quest_enemy_capture();
+            Quest_enemy_capture(em);   /* PC: a0 = em left over in the asm */
         }
         break;
     case 2:

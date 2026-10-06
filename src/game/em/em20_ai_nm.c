@@ -6,6 +6,7 @@
 #include "plf.h"
 #include "quest.h"
 #include "em20.h"
+void em20_xang_set_pl(EMW *em, int mode, f32 h);   /* PC: prototype (the draft passed f12 first as an int) */
 
 typedef struct FLYNEED {
     u8 _pad00[0x14];
@@ -113,7 +114,7 @@ int em_sleep_hp_add(EMW *em, s16 n, s16 max, s16 step);
 void em_niku_eat_set(EMW *em);
 void em_sleep2_dmg_timer_set(EMW *em);
 void Eft14_set3(f32 *pos, s16 arg, f32 scale, PLW *pl);
-void Quest_enemy_capture();
+void Quest_enemy_capture(em);   /* PC: a0 = em left over in the asm */
 void Quest_enemy_hagi_set();
 extern s16 em20_stay_timer_tbl[];
 extern s16 em20_runaway_timer_tbl[];
@@ -3218,7 +3219,7 @@ static void em_fly22_005F1B80(EMW *em, EM20W *w) {
         }
         break;
     case 2:
-        em20_fly_adjy2(); /* original: no argument set up, a0 still holds em (K&R call for the byte match) */
+        em20_fly_adjy2(em); /* original: no argument set up, a0 still holds em (PC: passed) */
         break;
     }
 }
@@ -3687,9 +3688,9 @@ block_37:
             }
         }
         if (em->char0 == 0x415) {
-            em20_xang_set_pl(0, em, 2);
+            em20_xang_set_pl(em, 2, 0.0f);
         } else {
-            em20_xang_set_pl(0xC3480000, em, 0);
+            em20_xang_set_pl(em, 0, -200.0f);
         }
         em20_senkai_player(em);
         w->spd[1] = (s32) em->ang[1];
@@ -3726,7 +3727,7 @@ block_56:
             em20_ground_point_search(em);
         }
         em20_senkai_player(em);
-        em20_xang_set_pl(0x42C80000, em, 2);
+        em20_xang_set_pl(em, 2, 100.0f);
         if ((em->char0 == 0x415) && (em_frame_check2(em, 0, 76.0f) != 0)) {
             xang_calc_pl(em, w->spd, 300.0f, 0.0f);
         } else {
@@ -3770,7 +3771,7 @@ block_79:
     case 6:
         w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
         w->dang = (u16) (w->dang - em->ang[1]);
-        em20_xang_set_pl(0, em, 1);
+        em20_xang_set_pl(em, 1, 0.0f);
         em20_senkai_sub(em, 3, 1);
         w->spd[0] = (s32) em->ang[0];
         w->spd[1] = (s32) em->ang[1];
@@ -3784,7 +3785,7 @@ block_79:
     case 7:
         w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
         w->dang = (u16) (w->dang - em->ang[1]);
-        em20_xang_set_pl(0, em, 2);
+        em20_xang_set_pl(em, 2, 0.0f);
         em20_senkai_sub(em, 3, 1);
         w->spd[0] = (s32) em->ang[0];
         w->spd[1] = (s32) em->ang[1];
@@ -3873,7 +3874,7 @@ static void em_atk11_005F3170(EMW *em, EM20W *w) {
     temp_a3 = em->x05;
     switch (temp_a3) {                              /* irregular */
     case 0:
-        if (em20_horm_main() != 0) {
+        if (em20_horm_main(em) != 0) {   /* PC: a0 = em left over */
             em->x05 += 1;
             em->x388 = 0;
             em->x3F4 = 0;
@@ -4061,7 +4062,7 @@ block_24:
             }
         }
         if (em_frame_check2(em, 0, 46.0f) != 0) {
-            em20_xang_set_pl(0xC3480000, em, 0);
+            em20_xang_set_pl(em, 0, -200.0f);
             temp_f1_3 = em->adj_z;
             if (temp_f1_3 > 50.0f) {
                 em->adj_z = temp_f1_3 - 0.1f;
@@ -4103,9 +4104,9 @@ block_38:
             }
         }
         if (em->char0 == 0x415) {
-            em20_xang_set_pl(0, em, 2);
+            em20_xang_set_pl(em, 2, 0.0f);
         } else {
-            em20_xang_set_pl(0xC3480000, em, 0);
+            em20_xang_set_pl(em, 0, -200.0f);
         }
         em20_senkai_player(em);
         w->spd[1] = (s32) em->ang[1];
@@ -4143,7 +4144,7 @@ block_57:
             em->x3C0[1] = -10.0f;
         }
         em20_senkai_player(em);
-        em20_xang_set_pl(0x42C80000, em, 2);
+        em20_xang_set_pl(em, 2, 100.0f);
         if ((em->char0 == 0x415) && (em_frame_check2(em, 0, 76.0f) != 0)) {
             xang_calc_pl(em, w->spd, 50.0f, 0.0f);
         } else {
@@ -5120,7 +5121,7 @@ static void em_demo04_005F5870(EMW *em, EM20W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05 = temp_v1 + 1;
-            Quest_enemy_capture();
+            Quest_enemy_capture(em);   /* PC: a0 = em left over in the asm */
         }
         break;
     case 2:
