@@ -836,6 +836,18 @@ Lessons (function that shows it):
   form reproduced). The first search loop is `if (pos < N) { p = &heap[pos]; do { if (*p == 0) break; pos++; p++; } while (pos < N); }`.
 - `goto test;` / `top:` / `test: if (len > 0) goto top;` reproduces a loop whose test is at the bottom entered by `b test` (Ave_TcpSend, still 76/90 off:
   an extra callee-saved register for the normalised len).
+- Also linked later in this pass: pl/plx03 (pl_work_clr), pl/plx04 (stick_pow_get, rodata 0x35A7B0-0x35A7C8), sys/adxs06 (load_bin), net/cpinet14+15
+  (CpInetTcpClose/Delete), item/item04 (Item_preparation_rate_0), pl/plx05 (pad_timer_calc_sub).
+- A K&R definition `f(pl, no, prog) PLW *pl; int no; ...` keeps `no` raw in its saved register where the u8 prototype normalises it (pl_work_clr); when a
+  shared header declares the prototype, put the function in its own run file and rename the name around the include
+  (`#define pl_work_clr pl_work_clr_proto_unused` before the headers, `#undef` after, then `void pl_work_clr();`): no header edit (plx03/plx04).
+- A function whose result variable is u8 and whose original returns it unmasked but tests it masked: give the definition a `u8` return type and test
+  `(r & 0xFF)`; `int r` makes the constant loads addiu where the original has daddiu (stick_pow_get).
+- `0 <= t` (not `t >= 0`) gives `slt at,t,zero; bne` and `if (..) { r = f(); *p = -1; r = g(r); } else { *p = -1; } return r;` the original layout (CpInetTcpClose).
+- `if (mode == 0) { A } else { return 0x64; } if (rate > 0x64) rate = 0x64; return rate;` puts the else stub before the join (Item_preparation_rate_0);
+  `rate += tbl[i]` on a u8 keeps the value in its saved register.
+- The permuter's junk: `st = part;` (dead store before a call, load_bin) and `if (pl && pl && pl) {}` (pad_timer_calc_sub) are kept with comments. 330 s runs, one at a time,
+  solved both after 240 s runs had found nothing.
 Near-match status now: load_bin 5 (part/file saved registers swapped; declaration order irrelevant), stick_pow_get 3 (masks the test, ours masks
 the return instead; int r, (u8)r, copies did not help), Pit_mv 4 / Pit_mv_lb 3 (of which 2 and 1 are the real now/hold register copy, the rest are
 cosmetic func_NNNN names of other modules; the caller needs `int pit_key_repeat(u16,u16)` which both nm and a split file have), hit_hit_sub_pl 2 (one
