@@ -425,8 +425,8 @@ static void shell22_m(SHLW *sh) {
 
 static void shell22_h(SHLW *sh) {
     switch (sh->arg) {
-    case 1:
     case 0:
+    case 1:
     default:
         shell22_d(sh);
         break;

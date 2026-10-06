@@ -1797,14 +1797,16 @@ void em09_material_sub(EMW *em, int type, EM09_MATSEL *tbl) {
     EM09W *w = (EM09W *)em->ex;
     s32 *p = (s32 *)&tbl[type];
 
-    if (p[1] > 0) {
+    if (0 < p[1]) {
         s32 *num = &p[1];
 
         do {
-            u8 *m = base + p[2] * 0x4C;
+            u8 *m = p[2] * 0x4C + base;
 
             *(f32 *)(m + 0x10) = em->x798;
-            if (type == 1 || type == 0) {
+            switch (type) {
+            case 0:
+            case 1:
                 switch (w->x4A) {
                 default:
                     switch (i) {
@@ -1817,9 +1819,9 @@ void em09_material_sub(EMW *em, int type, EM09_MATSEL *tbl) {
                     break;
                 case 1:
                     switch (i) {
-                    case 1:
-                    case 3:
                     case 4:
+                    case 3:
+                    case 1:
                         *(s32 *)(m + 0x10) = 0;
                         break;
                     }
@@ -1843,6 +1845,7 @@ void em09_material_sub(EMW *em, int type, EM09_MATSEL *tbl) {
                     }
                     break;
                 }
+                break;
             }
             flSetRenderState((u8)(i + 0x3A), (u32)m);
             i++;

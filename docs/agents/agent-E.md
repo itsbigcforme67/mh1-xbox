@@ -707,3 +707,59 @@ Lessons (function that shows it):
 7. Order of 3 independent init statements decides the prologue schedule: try all permutations (concat_bslen: c=0; h=&hchar[pos]; n=0). Declaration-order hill climb: tools/declhill.py only works for brace-on-same-line; my scratch variant handled both.
 8. `x >= 0x21` gives slti into v1, `x > 0x20` into at (is_jis). `loop: while (a && (len = f()) != 0)` (select_subtostr).
 9. decomp-permuter solved GetPlayerShagamiData in 20 s (unused local `GKIND *k;` and direct `u8 idx = (&tbl[..])->f;`); 8 other runs of 9 minutes found nothing. tools/tweak.py --apply can corrupt a file (it replaced the wrong span in sk_nm.c): never use it without git diff.
+
+## Assignment 10 (6 Oct, long round): single-player breadth, whole-TU linking
+Ranges: main 0x160000-0x1C0000 (Capcom parts), 0x1C0000-0x24A240 (IME, skipping Sofdec/ADX 0x1C4000-0x216000) and 0x2814E0-0x293B68.
+Linked (main OK x5, see git log): fl/amo_all (0x190600-0x192DC8: the whole AMO model file: plAMO* readers, mesh getters, clay converters; 7 raw holdouts incl.
+ConvertModelMeshAMO_NormalModel/WeightModel), fl/res_all (0x18F0B0-0x1905F8: AAN/AHI readers and the whole motion-set creator: plCreateMotionSetFromAAN,
+plCreateMotionFromAAN, the 7 Fcurve creators, motion start/end time; 2 raw), fl/pltim_all (0x1935C0-0x194890: TIM2 reader, pixel contexts, plDrawPixel, plGetColor,
+plConvertContext, plReport, plMemset; 6 raw), fl/plbmp01, fl/flsys02 (flInitialize, system_work_init, flFlip, flPS2VramFullClear; system_hard_init and
+flPS2VSyncCallback raw), fl/fldma01 (VIF1 DMA queue: InitControl, AddQueue, Wait, Terminate, IopModuleLoad/Start; AddQueue2, Interrupt, Send, the store-image handler raw),
+fl/fltex01 (texture/palette handle creation: 0x187D10-0x1887F8; 3 raw), IME runs imerun01-07 (clear_allrtime, ask_strncmp, fl_check, make_chmem, make_bsmem,
+kouho_makedisp, inc_gun: the "close ones", fixed in ime_nm.c), aq/aqrun01 (host_change), fl/plfcv01 (pl fcurve start/end time helpers; the Hermite
+interpolation stays raw, 1 instruction off after a permuter run: `mul.s f4,f0,f5` operand order).
+Main line: 36.763% at the start of this round (after merging main), 37.72% with my links alone, 38.39% after merging main again (other agents' work included).
+Not mine: Gun_level_up / Gun_option_ck (0x274690/0x274760) sit in agent B's range now.
+Near-matches left (off/instructions): GetTim2PictureHead 22/30, GetTim2PictureData 49/100, CheckTIM2FileHeader 17/52 (it needs the dead `if (CLT)` test the compiler removes),
+GetTim2ClutData 2/35, plCalcAddress 2/46, plAMOGetModelMatrixlist 23/72, GetWeightAMOModelMesh 6/81, GetPrimVertexNum/CullType/VertexIndex 24-26/140, plGetInitMotionSetSizeFromAHI 3/23,
+plCreateInitMotionSetFromAHI 5/138, plMemmove 96/128 (original copies through temp pointers), system_hard_init 4/108 (arg load order of the last flPS2IopModuleLoad),
+flPS2DmaAddQueue2 19/112 (backward gotos become direct branches here, the original has `bnez; nop; b enq`), flPS2GetTextureInfoFromContext 2/135, flPS2GetVramTransAdrs 11/60,
+flPS2GetPaletteInfoFromContext 18/94, flfntSetPalData 18, flfntPrintf 45, SdrSeReq 9, SdrSeChg 10, enemy_trans 15, flGetHierarchyData2 / SISub / MAYASub 2 each, page_gc 16, add_dummy_chmem 18.
+Lessons (function that shows it):
+1. THE BIG ONE: a file-static callee changes the register use of every caller defined AFTER it in the same file. LOCAL symbols (docs/survey/mh1_symbols.csv bind) in a run of
+   functions mark one original source file: put the whole run in ONE translation unit in address order, statics defined before their users, and keep unfinished functions as
+   raw `static asm` holdouts (config/c_rawfuncs.txt, tools/b_rawwrap.py style; /tmp-style helper rawwrap: wrap the C in #ifdef __MWERKS__ asm ... #else C #endif). amo_all went from
+   many 40-70 off functions to 0 for 15 of them; res_all, pltim_all the same. The permuter (tools/perm.py) drops `static` from its copy, so it is useless for these.
+2. `x = r = call(); if (r == -1)` (copy into the variable in the branch delay slot, test on v0): clear_allrtime, make_chmem, GetAllPrimitiveNumAMOModelMesh, plAMOCreateClayFromImage.
+   `l = f(); if (l == -1) return; list = l;` (make_bsmem: the walker variable receives the call result).
+3. `return n ? n : 1;` for `bnez; nop; li; move v0` (inc_gun); `} while (n-- != 0)` (make_chmem); `buf += n; n += g(...)` in place (kouho_makedisp).
+4. `d += 0xC; return d + idx * 12;` gives addu v0,v1,v0 (GetVertexAMOModelMesh); `if (d == 0) return 0; ...` gives `bnez; nop; b END; daddu v0,0` (all AMO getters).
+5. switch: ladder tests the cases in REVERSE source order (write ascending to get a descending ladder), the delay slots stay nops (so a `n == 0x20 || ...` chain becomes
+   `switch (n) { case 0x400: ... case 0x20: break; default: log; return 0; }`: flPS2GetTextureInfoFromContext); a jump-table switch needs the dense case set (plAMO... AddQueue2).
+6. int fields beat pointers: `c->base + c->stride * y + x` with `int base` (plCalcAddress) removes the addu operand swap; `u32 tag` vs `unsigned long tag`: `(unsigned long)tag & 0xFFFFFFFUL`
+   is dsll32 4 / dsrl32 4 on the zero-extended register (flPS2DmaAddQueue2); `int v; (s16)v` instead of `long` kills dsll32 0/dsra32 0 (flPS2VramTrans).
+7. Calls with fewer arguments than the callee takes: declare the callee K&R (`int flPS2GetTextureBuffWidth();`) and pass two; the third register stays stale (fltex01).
+8. `0 < tries` vs `tries > 0` (slt at vs blez, flPS2IopModuleLoad); `!(a < b)` gives `sltu at` (flPS2DmaAddQueue); `(h & 0xFFFF0000) >> 16` explicit mask (flCreatePaletteHandle).
+9. varargs: `int plReport(char *fmt, ...) { va_list ap; va_start(ap, fmt); vsprintf(plReportMessage, fmt, ap); return 1; }` with include/va.h.
+10. A loop that polls a hardware word is `volatile int *p` (flPS2DmaWait); `for` loops over small constant counts are unrolled by the compiler itself when the body is simple
+    (plCreateInitMotionSetFromAHI: three rows by index inside `for j<4`).
+11. Statements that wrote 8 + stack args (flPS2VIF1MakeLoadImage has 11 arguments: 8 in registers, 3 `sd` on the stack, passed as `long`).
+12. Helper scripts (kept in the scratchpad, not the repo): tv.py (try source variants of one snippet and keep the best only if it beats the baseline), declperm (all declaration
+    orders of a function, found improvements in GetTim2PictureHead/PrimVertexNum/plGetColor 74 -> 0), dfn.py (one function's diff from tools/alignall.py -v), unm.py (unmatched list).
+
+Fresh list of the largest unmatched single-player Capcom code in my ranges (bytes, address), 6 Oct after this round.
+0x160000-0x195000 (116.9 KB unmatched): flPS2SetShaderParam 8264 0x179DD0 (GS/VU packets), weapon_trans 5440 0x166380 (nm 349 off), flPS2ConvClayData 4536 0x16B4D0, pl_item_trans 3840,
+flSetRenderState 3572 0x177720, flPS2InitRenderBuff 3056 0x18C310 (GS packet stores, draft in m2c is fine but hundreds of stores), flPS2LockTexture 2548, weapon_joint_calc 2376,
+flPS2SendRenderState_ALPHA 1872, stage_spr_disp 1844 (nm 132 off), flPS2SwapDBuff 1772, flPADACRConf 1716, flPS2SetMaterialData 1580 (statics flPS2RetouchMaterialTexData/_sub/_sub_mult follow it:
+one TU 0x16C690-0x16D5BC, drafts of the small ones are easy, they fill GS register pairs), player_trans 1548, Lb_player_trans 1524, flPS2SetTextureRegister 1440, flPS2UnlockTexture 1360,
+flPS2StoreImageB 1312, pl_item_trans_sub 1288, flps1600 1276, flPS2VIF1MakeLoadImage 1196, flPS2GetTextureVramBlock 1176 (division-by-zero checks everywhere), flPS2ConvertTextureFromContext 1060,
+Ed_player_trans 1040, flCreateTextureFromApx_mem 1024, font_print_sp 972, enemy_trans 912 (nm 15 off). Many fl functions are VU0 macro assembler (flmat*, flvec*, PS2SHADER_*): raw only.
+Working file src/main/fl/fltex02.c (not built): flPS2Conv4_8_32 and its statics Conv4to32/8to32 (0x18AC90-0x18B3A4); flPS2Conv4_8_32 matches, Conv4to32 is 19/84 (register names),
+BlockConv8to32 23/65 (the original does not merge the `e++` increments: hand-unrolling x4 gets 61 -> 23).
+0x216000-0x230000 (55.9 KB unmatched): eft20_t 5148, eft20_m 4600, eft20_i 4316, HdMerge 4280, eft20_pos_set 3564, quest_condition_prog 3420 (123 off), cam_sub_std 2664 (41 off), k_HitEmCamera 2152
+(329 off), cam_sub_stg 2096, remuneration_item_set 1840 (49 off), GetOrthogonalPoint 1652 (camr6_nm.c, only 34 of 413 instructions off: register naming of out/mode and a non-rotated
+`for (k < 5)` loop), flfntFontPutc 1260, Spline 1000 (147 off), Cardano 796 (72 off), DKA5 632, Item_regained 756 (54 off), Quest_next_em_set 576 (19 off).
+0x1C0000-0x24A240: 438.8 KB of it is Sofdec/ADX/CRI middleware (skipped); IME (0x23ED80-0x24A240): henkan 1032, ch_check 1352, trans_roman 1152, to_roman 864, pword_list 776 ... all with C in
+ime_nm.c (66-219 off), the near ones are page_gc 16, add_dummy_chmem 18, getallwd 19, unify_khmem 19.
+0x2814E0-0x293B68 (23.6 KB, network last): NetFileCreate 6780, hit_cap_cap2_m 5012, hit_cap_cap3_m 3780, NetFileLoad 3124, reward_itembox 1240 (35 off), nb_flps0009, PatchExecCS, net_flps0008, net_flps0004.
+Network functions with small gaps (nm files, off/instr): CpInetTcpOpen 3/13, CngSessionStart_online 3/55, CngNetMcsP2PPoll 3/102, InetIPAddrFromString 2/136, AQ_init 5/89, CngNetAQSessionWait 8/13.

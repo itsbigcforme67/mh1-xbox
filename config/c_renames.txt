@@ -102,6 +102,7 @@ build/src/game/em/em18b.c.o .rodata .data
 build/src/game/em/em19b.c.o .rodata .data
 build/src/game/em/em19_flyinit.c.o .rodata .data
 build/src/game/em/em20_r18.c.o .rodata .data
+build/src/game/em/em20_r45.c.o .rodata .data
 build/src/game/em/em20_r19.c.o .rodata .data
 build/src/game/em/em20_r20.c.o .rodata .data
 build/src/game/em/em20.c.o .rodata .data
@@ -109,6 +110,7 @@ build/src/game/em/em20b.c.o .rodata .data
 build/src/game/em/em21_r07.c.o .rodata .data
 build/src/game/em/em21_r25.c.o .rodata .data
 build/src/game/em/em21_r10.c.o .rodata .data
+build/src/game/em/em21_r28.c.o .rodata .data
 build/src/game/em/em21_r11.c.o .rodata .data
 build/src/game/em/em21.c.o .rodata .data
 build/src/game/em/em27a.c.o .rodata .data
@@ -126,6 +128,7 @@ build/src/game/shell/shell03.c.o .rodata .data
 build/src/game/shell/shell04.c.o .rodata .data
 build/src/game/shell/shell05.c.o .rodata .data
 build/src/game/shell/shell06.c.o .rodata .data
+build/src/game/shell/shell06_r01.c.o .rodata .data
 build/src/game/shell/shell06b.c.o .rodata .data
 build/src/game/shell/shell08.c.o .rodata .data
 build/src/game/shell/shell08c.c.o .rodata .data
