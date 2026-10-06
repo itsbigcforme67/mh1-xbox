@@ -318,6 +318,16 @@ int rt_quest_load(int no)
         for (i = 0; i < 32 && PU16(&game_w, 0x128 + 4 * i); i++)
             fprintf(stderr, " %d:%d", PU16(&game_w, 0x128 + 4 * i), PS16(&game_w, 0x12A + 4 * i));
         fprintf(stderr, "\n");
+        if (quest_w.x6C) {      /* the condition program (QCMD: cmd a b c), up to its end (-1 / -2) */
+            QCMD *q = (QCMD *)quest_w.x6C;
+            fprintf(stderr, "rt_quest: quest %d type %d reward %d fee %d program:", no, quest_w.x00, quest_w.x14, quest_w.x18);
+            for (i = 0; i < 48; i++, q++) {
+                fprintf(stderr, " %d/%d/%d/%d", q->cmd, q->a, q->b, q->c);
+                if (q->cmd == 0x1F)
+                    break;
+            }
+            fprintf(stderr, "\n");
+        }
     }
     /* game13's start of the hunt: mode 2 (game2), timers */
     game_w.mode = 2;

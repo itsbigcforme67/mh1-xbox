@@ -522,6 +522,8 @@ static const char *disc = NULL, *shot = NULL;
 static int frames = 1, W = 1280, H = 720, i, running = 1, frame_no = 0;
 static float cam[5] = { 11900, 700, 8900, 0.75f, -0.2f };   /* x y z yaw pitch */
 static float fixed_time = -1;
+static const char *shot_list;     /* RT_SHOTS */
+static int shot_next;
 static int tick_trace;
 static char path[1024];
 static size_t n;
@@ -1159,6 +1161,12 @@ int main(int argc, char **argv)
     } else
         rt_sys_init();  /* the system tasks the boot would have started (Fade_task) */
     tick_trace = getenv("RT_TICK_TRACE") != NULL;
+    if (shot && getenv("RT_SHOTS")) {   /* test aid: "t1,t2,...": with --shot X.png also X_<tick>.png at those game ticks (ascending) */
+        shot_list = getenv("RT_SHOTS");
+        shot_next = (int)strtol(shot_list, (char **)&shot_list, 10);
+        if (*shot_list == ',')
+            shot_list++;
+    }
     t0 = SDL_GetTicks();
     while (running) {
         SDL_Event ev;
@@ -1207,7 +1215,9 @@ int main(int argc, char **argv)
 
         /* game logic ticks at 30 per second (at least 2, so set objects
          * have run their init and queued their prims) */
-        while (ticks < 2 + (int)fr) {
+        if (shot && shot_next > 2 + (int)fr)
+            shot_next = 0;              /* RT_SHOTS past --time: dropped */
+        while (ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
             if (booting) {      /* ACRMain: pad, then the task scheduler */
                 pad_state ps;
                 if (script)
@@ -1371,7 +1381,19 @@ int main(int argc, char **argv)
                 fps_t0 = now; fps_n = 0;
             }
         }
-        if (shot && frame_no >= frames) {
+        if (shot && shot_next > 0 && ticks >= shot_next) {     /* RT_SHOTS: a picture at each listed tick */
+            char name[512];
+            uint8_t *rgb = malloc((size_t)W * H * 3);
+            gfx_read_pixels(rgb);
+            snprintf(name, sizeof name, "%.*s_%d.png", (int)(strlen(shot) > 4 ? strlen(shot) - 4 : strlen(shot)), shot, shot_next);
+            write_png(name, W, H, rgb);
+            printf("wrote %s\n", name);
+            free(rgb);
+            shot_next = shot_list && *shot_list ? (int)strtol(shot_list, (char **)&shot_list, 10) : 0;
+            if (shot_list && *shot_list == ',')
+                shot_list++;
+        }
+        if (shot && frame_no >= frames && shot_next <= 0) {
             uint8_t *rgb = malloc((size_t)W * H * 3);
             gfx_read_pixels(rgb);
             write_png(shot, W, H, rgb);

@@ -13,6 +13,8 @@ writes a C file defining them plus the import list:
     python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 
 tables.txt: one name per line; `#` starts a comment. A line
+`NAME 0xADDR 0xSIZE` gives a table the symbol files do not list (an
+address and size read off the split asm's data labels). A line
 `NAME work` defines a zeroed work area of the symbol's size that is not
 imported (RAM the game fills at run time, e.g. em_work).
 
@@ -47,6 +49,9 @@ def main():
         if not line:
             continue
         name, work = line[0], len(line) > 1 and line[1] == "work"
+        if len(line) == 3 and line[1].startswith("0x"):     # NAME 0xADDR 0xSIZE: not in the symbol files
+            entries.append((name, int(line[1], 16), int(line[2], 16), False))
+            continue
         if name not in syms:
             sys.exit("gen_rt_tables: %s not in %s" % (name, " / ".join(SYMFILES)))
         entries.append((name, syms[name][0], syms[name][1], work))
