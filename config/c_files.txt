@@ -2419,3 +2419,13 @@ lobby 0x005CA3D0 0x005CA8C0 f/lb_v16
 lobby 0x005C78F0 0x005C8224 f/lb_w
 lobby:rodata 0x00664A70 0x00664A90 f/lb_w
 lobby 0x005CB100 0x005CB220 f/lb_aa02
+main 0x0025F9C0 0x0025FA84 sk/sk19
+main 0x002677B0 0x00267FC4 net/netbgm04
+main:rodata 0x003706C0 0x003706E0 net/netbgm04
+main 0x0026BBC0 0x0026BC60 net/netwk12
+main 0x0026C400 0x0026C490 net/netwk13
+main 0x002714C0 0x0027187C net/connect03
+main 0x0027CF10 0x0027D028 net/cnlbs01
+main 0x0027D1C0 0x0027D2A4 net/cnlbs02
+main 0x0027D380 0x0027D4A0 net/cnlbs03
+main 0x00271050 0x00271094 net/dcon01
