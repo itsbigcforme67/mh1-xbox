@@ -1047,3 +1047,16 @@ in the original makes it behave as if there were none), em_cmd_range_ck 6, em10_
 em_cdm_act_flag_ck 10, em_eye_search_set 10, em_cmd_rnd32 6, em_cmd_flag_clear 19, cmn_mongon_check_sub (select) about
 120: structure now matches the original (index `flt[pos]`, `base = check_mongon` hoisted, pointer p/q loop), the rest
 is the inner-loop register choice; disp_color (select) not started (m2c draft, 231 of 293).
+
+## Game overlay leftovers round 2 (agent D, 12 Oct 2026)
+Linked (rebuild OK, all five modules): the 12 *_effect_move (em01, 02, 07, 08, 14, 15, 16, 17, 20, 21, 27; em04/09/10/12 were not touched), em20_material_sub.
+Cause of the "v1 vs v0" 4-6 off: effect_move was compiled in a file of its own. Compiled in ONE translation unit with the file that holds
+its neighbours (em_uvmove as `static` placed before it, the big ef_move_sub before it), the plain 2-arg form
+`switch (w->eff) { case 0: w->eff++; break; case 1: ef_move_sub(em, w); break; } emNN_uvmove(em);` matches at once.
+em08/em21: the hire_move group also joins the unit, and `*(u8 *)w = e + 1` (em08/21) instead of `w->eff++`/`em->ex[0]`.
+So the old em*_uv.c / em*_rNN.c files are gone; each monster's run now spans uvmove .. effect_move (c_files.txt ranges widened).
+- em20_material_sub: `p = (s32 *)((u8 *)(type * 0x8C) + (int)tbl)` (operand order of the final addu).
+Still near-matches: em20_act_set 1 (daddiu on `kind = 3`; u16 K&R param gives it but loses the register; permuter 7 min no gain),
+em_act_search 9 (n/x/r registers in the second loop; every local type and declaration order tried), em_eye_search_set 10, em_cdm_act_flag_ck 10,
+em10_turn_sub 10, em09_material_sub 13, em09_effect_move 4, em_cmd_flag_clear 19, em_fly10 (em15/em20) 18. Select overlay not attempted.
+The *_effect_move copies left in the *_nm.c files are stale (the linked versions are in the run files).
