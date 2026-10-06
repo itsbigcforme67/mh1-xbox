@@ -1947,10 +1947,11 @@ void clear_allrtime(s64 *list, int n)
     int unused;
     int page;
     int i;
+    int r;
 
     for (i = 0; i < n; i++) {
-        page = get_entid_tab(list[i], &off, &tmp, &unused);
-        if (page != -1) {
+        page = r = get_entid_tab(list[i], &off, &tmp, &unused);
+        if (r != -1) {
             if (off != -1) {
                 clear_rtime(load_page(page, -1) + off);
                 update_nowpage();
@@ -2359,12 +2360,11 @@ int ask_strncmp(u8 *a, u8 *b, int n)
     while (n-- != 0) {
         c = *(s8 *)a;
         d = (u8)c - *b;
-        if (d == 0) {
-            if (c == 0) {
-                return 0;
-            }
-        } else {
+        if (!!d) {
             return d;
+        }
+        if (c == 0) {
+            return 0;
         }
         a++;
         b++;
@@ -3133,14 +3133,14 @@ int tmp_touroku(u8 *key, WD *w, int rt)
 
 int tmp_snssyn(u8 *key, int len0, SRCH *r)
 {
-    s16 len;
-    NODE *n;
-    u8 *e;
-    u8 *hit;
     s16 best;
+    s16 len;
     s16 maxp;
+    NODE *n;
     s16 klen;
+    u8 *hit;
     s16 pre;
+    u8 *e;
     int c;
 
     hit = 0;
@@ -3577,9 +3577,9 @@ void fl_check(int pos, int end)
 {
     void *found;
     int hit;
-    u8 *p;
-    int n;
     HCHAR *h;
+    int n;
+    u8 *p;
 
     n = end - pos;
     h = &hchar[pos];
@@ -3788,8 +3788,7 @@ CH *make_chmem(int pos, SYNR *r)
             }
             prev = c;
             s++;
-            n--;
-        } while (n != 0);
+        } while (n-- != 0);
     }
     return first;
 }
@@ -3899,11 +3898,11 @@ BS *make_bsmem(int pos, int end, CH *ch)
     clen = ch->len;
     prev = 0;
     p = pos + clen;
-    list = pword_list(p, end, ch->x02, ch->x03);
-    if (list == (PWM *)-1) {
+    l = pword_list(p, end, ch->x02, ch->x03);
+    if (l == (PWM *)-1) {
         return (BS *)-1;
     }
-    l = list;
+    list = l;
     while (l != 0) {
         b = alloc_bsmem();
         if (b == 0) {
@@ -4800,7 +4799,9 @@ int kouho_makedisp(int pos, int len, KH *k, u16 *buf)
         return roman_makedisp(pos, len, buf, 0);
     } else {
         n = jiritu_makedisp(k, buf);
-        return n + roman_makedisp(pos + k->x06, len - k->x06, buf + n, 0);
+        buf += n;
+        n += roman_makedisp(pos + k->x06, len - k->x06, buf, 0);
+        return n;
     }
 }
 
@@ -4842,7 +4843,7 @@ int inc_gun(KH *k)
         p = kh_followed(p);
     }
     if (n == 0) {
-        n = 1;
+        return 1;
     }
     return n;
 }
