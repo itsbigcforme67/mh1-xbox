@@ -406,6 +406,60 @@ static int hunter_load(hunter *h, const int *num, int legs_id, int upper_id)
     return 0;
 }
 
+/* The hunter the game asked for (armor_create_model, rt_pl.c: sex and the
+ * six part numbers from the save's character and armour): reload the
+ * parts that differ. A part file that cannot be loaded keeps the old one. */
+static int hunter_look[HUNTER_PARTS], hunter_sex, hunter_look_gen;
+static void hunter_relook(hunter *h, int sex, const int *num)
+{
+    int s;
+    for (s = 0; s < HUNTER_PARTS; s++) {
+        char name[64], tname[64];
+        uint8_t *m0, *m1;
+        fmt_blob link, tex, ahi;
+        fl_model nm;
+        if (num[s] == hunter_look[s] && sex == hunter_sex)
+            continue;
+        snprintf(name, sizeof name, "%c_%s%03d_amh.bin", sex ? 'f' : 'm', pl_slot[s], num[s]);
+        snprintf(tname, sizeof tname, "%c_%s%03d.apx", sex ? 'f' : 'm', pl_slot[s], num[s]);
+        link = load(name, &m0);
+        tex = load(tname, &m1);
+        if (!link.p) {
+            free(m1);
+            continue;
+        }
+        ahi = fmt_link_entry(link, 1, FMT_LE);
+        if (fl_model_create(&nm, fmt_link_entry(link, 0, FMT_LE), ahi, tex, 1, FMT_LE) != 0) {
+            free(m0);
+            free(m1);
+            continue;
+        }
+        if (s == 0) {           /* the legs carry the master skeleton the motions pose */
+            fl_skel ns;
+            if (fl_skel_create(&ns, ahi, FMT_LE) != 0) {
+                fl_model_release(&nm);
+                free(m0);
+                free(m1);
+                continue;
+            }
+            ns.root_lock = h->master.root_lock;
+            fl_skel_release(&h->master);
+            h->master = ns;
+        }
+        fl_model_release(&h->part[s]);
+        free(h->mem[2 * s]);
+        free(h->mem[2 * s + 1]);
+        h->mem[2 * s] = m0;
+        h->mem[2 * s + 1] = m1;
+        h->part[s] = nm;
+        free(h->pw[s]);
+        h->pw[s] = calloc(h->part[s].skel.nbone + 1, sizeof(flmat));
+    }
+    for (s = 0; s < HUNTER_PARTS; s++)
+        hunter_look[s] = num[s];
+    hunter_sex = sex;
+}
+
 static void place(flmat w, float x, float y, float z, float yaw)
 {
     float s[3] = { 1, 1, 1 }, r[3] = { 0, 0, 0 }, t[3];
@@ -988,6 +1042,7 @@ int main(int argc, char **argv)
     }
     if (hunter_load(&pl, parts, 1, 101) != 0)
         fprintf(stderr, "hunter load failed\n");
+    memcpy(hunter_look, parts, sizeof hunter_look);
 
     /* lighting: the VU1 model, 3 directional + ambient */
     memset(&light, 0, sizeof light);
@@ -1236,6 +1291,13 @@ int main(int argc, char **argv)
             int a;
             rt_monster_get(0, p, &a);
             place(rathian.world, p[0], p[1] + rathian_yoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
+        }
+        {   /* the hunter the game built last (character, armour) */
+            int sx, ids[HUNTER_PARTS], g = rt_player_look(0, &sx, ids);
+            if (g && g != hunter_look_gen) {
+                hunter_look_gen = g;
+                hunter_relook(&pl, sx, ids);
+            }
         }
         if (rathian.game)
             rt_monster_pose(0, &rathian.skel);

@@ -68,6 +68,10 @@ int  rt_boot_active(void);
 void rt_sys_init(void);         /* system tasks without a boot (Fade_task) */
 void rt_sys_tick(void);
 void rt_fade_draw(void);
+/* The hunter's parts as the game chose them (armor_create_model): sex
+ * (0 male) and model numbers of reg, face, hair, body, arm, wst. Returns
+ * a counter that changes on every new choice, 0 = none yet. */
+int  rt_player_look(int no, int *sex, int id[6]);
 
 /* ------------------------------------------------------------ clays */
 /* Register a host clay; the result is the handle the game passes to
