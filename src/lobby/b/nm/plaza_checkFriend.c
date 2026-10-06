@@ -118,7 +118,7 @@ s32 plaza_checkFriend(void) {
 block_153:
         return 2;
     case 2:                                         /* switch 1 */
-        F(s16, pNet, 0x28) = Get_sw_on2(0, temp_a1, temp_a2);
+        F(s16, pNet, 0x28) = Get_sw_on2(0);
         temp_v1_2 = temp_s0 & 0xFFFF;
         if (net_Check_FriendSuu(&Friend_data, 0x32) == 0) {
             if (temp_v1_2 & 0x40) {
@@ -177,7 +177,7 @@ block_153:
                 F(s8, (u8 *)cw, 0x2F99) = 0;
                 cnWrap_SoundRequest(0);
             } else {
-                cnWrap_SoundRequest(7, temp_a1_2);
+                cnWrap_SoundRequest(7);
             }
         } else if (temp_v1_4 & 0x80) {
             F(u8, pNet, 3) = 5U;
@@ -187,7 +187,7 @@ block_153:
             temp_a0_5 = (int)pNet;
             temp_a2_3 = F(u8, temp_a0_5, 6);
             temp_s0_2 = (int)&Friend_data + ((temp_a2_3 + (F(s16, temp_a0_5, 0x24) * 7)) * 0x30);
-            strcpy((u8 *)cw + 0x2F80, temp_s0_2, temp_a2_3);
+            strcpy((u8 *)cw + 0x2F80);
             strcpy((u8 *)cw + 0x2F88, temp_s0_2 + 8);
             F(s8, (u8 *)cw, 0x2F99) = 0;
             cnWrap_SoundRequest(6);
@@ -270,7 +270,7 @@ block_153:
         }
         goto block_153;
     case 3:                                         /* switch 1 */
-        temp_v0_8 = getUserInfo(temp_a0, temp_a1, temp_a2);
+        temp_v0_8 = getUserInfo(temp_a0);
         switch (temp_v0_8) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_a0_8 = (int)pNet;
@@ -286,7 +286,7 @@ block_153:
         goto block_153;
     case 4:                                         /* switch 1 */
         temp_a1_3 = temp_s0 & 0xFFFF;
-        F(s16, pNet, 0x28) = Get_sw_on2(0, temp_a1, temp_a2);
+        F(s16, pNet, 0x28) = Get_sw_on2(0);
         if (temp_a1_3 & 0x40) {
             F(u8, pNet, 3) = 2U;
             temp_v1_10 = (int)pNet;
@@ -299,7 +299,7 @@ block_153:
             temp_a0_10 = (int)pNet;
             temp_a2_4 = F(u8, temp_a0_10, 6);
             temp_s0_3 = (int)&Friend_data + ((temp_a2_4 + (F(s16, temp_a0_10, 0x24) * 7)) * 0x30);
-            strcpy((u8 *)cw + 0x2F80, temp_s0_3, temp_a2_4);
+            strcpy((u8 *)cw + 0x2F80);
             strcpy((u8 *)cw + 0x2F88, temp_s0_3 + 8);
             F(s8, (u8 *)cw, 0x2F99) = 0;
             cnWrap_SoundRequest(6);
@@ -332,7 +332,7 @@ block_153:
         goto block_153;
     case 5:                                         /* switch 1 */
         var_a1 = temp_s0 & 0xFFFF;
-        F(s16, pNet, 0x28) = Get_sw_on2(0, temp_a1, temp_a2);
+        F(s16, pNet, 0x28) = Get_sw_on2(0);
         if (var_a1 & 0x40) {
             F(u8, pNet, 3) = 2U;
             temp_v1_13 = (int)pNet;
@@ -368,7 +368,7 @@ block_153:
         }
         goto block_153;
     case 6:                                         /* switch 1 */
-        if (mail_input(temp_a0, (u8 *)cw + 0x2F99, temp_a2) == 1) {
+        if (mail_input(temp_a0, (u8 *)cw + 0x2F99) == 1) {
             KinshiYogo_chk((u8 *)cw + 0x2F99);
             F(u8, pNet, 3) = 5U;
             if (F(s8, (u8 *)cw, 0x2F99) != 0) {
@@ -380,7 +380,7 @@ block_153:
         goto block_153;
     case 7:                                         /* switch 1 */
         F(s8, temp_a0, 0xC) = 1;
-        temp_v0_14 = Lb_select(temp_a0, temp_a1, temp_a2);
+        temp_v0_14 = Lb_select(temp_a0);
         switch (temp_v0_14) {                       /* switch 3; irregular */
         case 0:                                     /* switch 3 */
             F(u8, pNet, 3) = 8U;
@@ -393,7 +393,7 @@ block_153:
         goto block_153;
     case 8:                                         /* switch 1 */
         F(s8, temp_a0, 0xC) = 1;
-        temp_v0_15 = Lbc_SendMail(temp_a0, temp_a1, temp_a2);
+        temp_v0_15 = Lbc_SendMail(temp_a0);
         switch (temp_v0_15) {                       /* switch 4; irregular */
         case 0:                                     /* switch 4 */
             SetDialogData(0x26, 3);
@@ -413,12 +413,12 @@ block_153:
             temp_a1_4 = (int)pNet;
             F(u8, temp_a1_4, 0xA) = (u8) F(u8, temp_a1_4, 6);
             F(u8, pNet, 3) = 2U;
-            cnWrap_SoundRequest(0, temp_a1_4, temp_a2);
+            cnWrap_SoundRequest(0);
         }
         goto block_153;
     case 10:                                        /* switch 1 */
         F(s8, temp_a0, 0xC) = 1;
-        temp_v0_16 = Lb_select(temp_a0, temp_a1, temp_a2);
+        temp_v0_16 = Lb_select(temp_a0);
         switch (temp_v0_16) {                       /* switch 5; irregular */
         case 0:                                     /* switch 5 */
             F(u8, pNet, 0xD) = 0U;
@@ -464,7 +464,7 @@ block_153:
     case 11:                                        /* switch 1 */
         temp_v0_19 = F(u8, temp_a0, 0x12);
         if (temp_v0_19 == 0) {
-            temp_v0_20 = SaveNetFile_ForLobby(temp_a0, temp_a1, temp_a2);
+            temp_v0_20 = SaveNetFile_ForLobby(temp_a0);
             if ((temp_v0_20 != -1) && (temp_v0_20 != 1)) {
                 goto block_153;
             }
@@ -482,7 +482,7 @@ block_153:
     case 12:                                        /* switch 1 */
         F(s8, temp_a0, 0xC) = 1;
         if (temp_s0 & 0xFFFF & 0x20) {
-            cnWrap_SoundRequest(3, (u8 *) temp_a1, temp_a2);
+            cnWrap_SoundRequest(3, (u8 *) temp_a1);
             return 3;
         }
         goto block_153;
@@ -491,7 +491,7 @@ block_153:
         if (temp_s0 & 0xFFFF & 0x20) {
             temp_v1_19 = (int)pNet;
             F(u8, temp_v1_19, 3) = (u8) (F(u8, temp_v1_19, 3) + 1);
-            cnWrap_SoundRequest(0, (u8 *) temp_a1, temp_a2);
+            cnWrap_SoundRequest(0, (u8 *) temp_a1);
         }
         goto block_153;
     case 14:                                        /* switch 1 */

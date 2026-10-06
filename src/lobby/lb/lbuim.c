@@ -1,4 +1,4 @@
-/* lbui, run 13: plaza_logOut .. plaza_logOut (lobby.bin 0x00599460-0x005995F8): the matching functions of lbui_nm.c. */
+/* lbui, run 13: plaza_logOut .. tl_exit_sub_menu (lobby.bin 0x00599460-0x005997C0): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
@@ -60,4 +60,53 @@ LB_NETW *a;
         }
         break;
     }
+}
+
+void plaza_chatMain(a)
+LB_NETW *a;
+{
+    int tbl = (int)plazaMenuTbl[a->menu];
+    int off;
+
+    a->x28 = Get_sw(0);
+    switch (a->step) {
+    case 0:
+        a->step++;
+        Plaza_chat_init();
+        break;
+    case 1:
+        a->x28 = Get_sw_on2(0);
+        if (Plaza_chat_move(*(u16 *)0x3F3714) == -1) {
+            a->step++;
+        }
+        break;
+    case 2:
+        a->step++;
+        break;
+    case 3:
+        tl_exit_sub_menu(1);
+        off = a->cur * 0x24;
+        SetHelpLineMsg(2, *(u16 *)(off + tbl + 2) + 2);
+        break;
+    }
+}
+
+void tl_exit_sub_menu(silent)
+int silent;
+{
+    if (!(silent & 0xFF)) {
+        cnWrap_SoundRequest(3);
+    }
+    SetHelpLineMsg(2, pNet->sel + 2);
+    pNet->depth--;
+    pNet->step = 0;
+    pNet->x04 = 0;
+    pNet->x05 = 0;
+    pNet->x0A = 0;
+    pNet->x24 = 0;
+    pNet->x12 = 0;
+    pNet->x28 = 0;
+    pNet->x26 = 0;
+    pNet->sel = 0xE;
+    pNet->x0D = 1;
 }

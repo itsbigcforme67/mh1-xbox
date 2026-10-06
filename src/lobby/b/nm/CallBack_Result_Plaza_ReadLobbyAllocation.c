@@ -27,14 +27,14 @@ void CallBack_Result_Plaza_ReadLobbyAllocation(CNET_RES res) {
         switch (res.val) {                        /* irregular */
         case 2:
             if (((s8)unksp31) == 0xB) {
-                cnLBS_Get_AllocationProgressCount(&sp3C, unksp31, res.val, temp_a3);
+                cnLBS_Get_AllocationProgressCount(&sp3C, unksp31, res.val);
                 return;
             }
             if (res.val == 0) {
                 F(u8, temp_a2, 0x2C45) = 0U;
                 temp_v1 = (int)cw;
                 F(u8, temp_v1, 0x2C34) = (u8) (F(u8, temp_v1, 0x2C34) + 1);
-                fade_set(1, unksp31, res.val, temp_a3);
+                fade_set(1, unksp31, res.val);
                 cnLBS_Get_LobbyCount((int)&ClassInfo + 6);
                 var_s0 = 0;
                 if (F(u16, &ClassInfo, 6) > 0) {

@@ -1,7 +1,8 @@
-/* lbui, run 21: GetRoomRule .. GetRoomRule (lobby.bin 0x005BC6B0-0x005BC6BC): the matching functions of lbui_nm.c. */
+/* lbui, run 21: Lbs_MatchStart .. Lbs_MatchStart (lobby.bin 0x005BDC70-0x005BDC90): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
-char *GetRoomRule(void) {
-    return RoomRule;
+int Lbs_MatchStart(void) {
+    cnLBS_MatchStart();
+    return 1;
 }

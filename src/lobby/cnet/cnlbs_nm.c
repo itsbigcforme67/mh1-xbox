@@ -3710,18 +3710,17 @@ int cnLBS_Read_MatchInfomation(int cb) {
 }
 
 void _cnet_RecvFromLbs_MatchJoin(void) {
-    CNET_RES res;
-    u8 v;
+    union { CNET_RES r; u8 b[8]; } u;
 
     if (CnetSys_w.burst[7].state != 0) {
         if (CnetSys_w.rcat == 2) {
             if (CnetSys_w.rres == 0) {
-                __cnet_Recv_Byte(&v);
-                CNW(u8, 0x30310) = v;
+                __cnet_Recv_Byte(&u.b[7]);
+                CNW(u8, 0x30310) = u.b[7];
             } else {
-                res.val = -1;
+                u.r.val = -1;
                 __cnet_Recv_ServerMessage();
-                __cnet_Return_MatchInformation(res);
+                __cnet_Return_MatchInformation(u.r);
                 return;
             }
         }

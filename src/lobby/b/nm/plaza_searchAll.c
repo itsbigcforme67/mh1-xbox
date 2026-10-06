@@ -48,11 +48,11 @@ void plaza_searchAll(void) {
     case 0:                                         /* switch 1 */
         F(u8, temp_a0, 3) = 5U;
         SearchCondition[0] = 1;
-        SetDialogData(0x18, 5, temp_a2, temp_a3);
+        SetDialogData(0x18, 5);
         return;
     case 5:                                         /* switch 1 */
         F(s8, temp_a0, 0xC) = 1;
-        temp_v0 = Lbc_ConditionSearch(&SearchCondition, 0, temp_a2, temp_a3);
+        temp_v0 = Lbc_ConditionSearch(&SearchCondition, 0);
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_a1 = (int)pNet;
@@ -75,7 +75,7 @@ void plaza_searchAll(void) {
         break;
     case 6:                                         /* switch 1 */
         var_a1 = temp_s0 & 0xFFFF;
-        F(s16, pNet, 0x28) = Get_sw_on2(0, 5, temp_a2, temp_a3);
+        F(s16, pNet, 0x28) = Get_sw_on2(0, 5);
         if (var_a1 & 0x40) {
             tl_exit_sub_menu(0, var_a1);
             return;
@@ -171,7 +171,7 @@ void plaza_searchAll(void) {
         F(s8, temp_a0, 0xC) = 1;
         if (temp_s0 & 0xFFFF & 0x20) {
             F(u8, pNet, 3) = 6U;
-            cnWrap_SoundRequest(0, 1, temp_a2, temp_a3);
+            cnWrap_SoundRequest(0, 1);
             return;
         }
         break;
@@ -209,7 +209,7 @@ void plaza_searchAll(void) {
                 var_v0_2 = temp_v0_9 - 1;
             }
             F(u8, temp_v0_8, 0x12) = var_v0_2;
-            cnWrap_SoundRequest(1, temp_a1_4);
+            cnWrap_SoundRequest(1);
             return;
         }
         if (temp_a1_4 & 0x400) {
@@ -219,12 +219,12 @@ void plaza_searchAll(void) {
             if ((temp_v0_10 & 0xFF) >= 3) {
                 F(u8, pNet, 0x12) = 0U;
             }
-            cnWrap_SoundRequest(1, temp_a1_4);
+            cnWrap_SoundRequest(1);
             return;
         }
         if (temp_a1_4 & 0x40) {
             F(u8, pNet, 3) = 6U;
-            cnWrap_SoundRequest(3, temp_a1_4);
+            cnWrap_SoundRequest(3);
         }
         break;
     }

@@ -42,15 +42,15 @@ void lbc_in_lobby_03_01(void) {
             }
             break;
         case 3:
-            Check_CallBackWait(&jtbl_2502, temp_a1, temp_a2);
+            Check_CallBackWait(&jtbl_2502);
             return;
         case 4:
-            fade_set(1, temp_a1, temp_a2);
+            fade_set(1);
             temp_a0_2 = (int)cw;
             F(u8, temp_a0_2, 0x2C35) = (u8) (F(u8, temp_a0_2, 0x2C35) + 1);
             return;
         case 5:
-            if ((Fade_busy_ck(&jtbl_2502, temp_a1, temp_a2) & 0xFF) != 1) {
+            if ((Fade_busy_ck(&jtbl_2502) & 0xFF) != 1) {
                 F(s8, (int)cw, 0x35D5) = 0;
                 Lbc_set_prim(0, 0, 0);
                 To_EnterPlaza2Lobby();

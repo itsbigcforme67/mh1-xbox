@@ -1,6 +1,8 @@
+/* lb_by38 - agent B promoted near-match 0x005BA6D0-0x005BA7D4: Lbs_request_enter_lobby (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern char CallBack_Result_Plaza_LobbyEntry[];
 extern char CallBack_Result_Plaza_LobbyMember[];
+
 s32 Lbs_request_enter_lobby(void) {
     u8 temp_a0;
     int temp_a1;

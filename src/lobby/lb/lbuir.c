@@ -1,24 +1,17 @@
-/* lbui, run 18: plaza_chatTrans .. plaza_chatTrans (lobby.bin 0x0059D250-0x0059D314): the matching functions of lbui_nm.c. */
+/* lbui, run 18: plaza_trans_ot1 .. plaza_trans_ot1 (lobby.bin 0x0059D820-0x0059D884): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
-void plaza_chatTrans(void) {
-    s16 idx;
-
-    switch (CW->chatmode) {
-    case 0:
-        Put_megaphone(0x1F6, 0x32, 3);
-        idx = 0;
-        break;
-    case 1:
-        Put_megaphone(0x1F6, 0x32, 1);
-        idx = 1;
-        break;
-    default:
-        Put_megaphone(0x1F6, 0x32, 2);
-        idx = 2;
-        break;
+void plaza_trans_ot1(a)
+u8 *a;
+{
+    font_set_stack_no(*(int *)(a + 0x18));
+    if (SoftKeyboard_alive_check() != 0) {
+        DispSoftkeyboard(1);
     }
-    flfntSetSize(0x16, 0x16);
-    font_print_double(0x22E, 0x33, 1, 0, tl_etc[3 + idx]);
+    if (pNet->x0C == 1) {
+        DispDialogData(pNet->x0C);
+        Lb_on_dialog();
+        pNet->x0C = 0;
+    }
 }

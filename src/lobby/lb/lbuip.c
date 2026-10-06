@@ -1,9 +1,7 @@
-/* lbui, run 16: Lb_get_cursor_col .. Lb_get_cursor_col (lobby.bin 0x0059A6C0-0x0059A754): the matching functions of lbui_nm.c. */
+/* lbui, run 16: plaza_checkMyStatusTrans .. plaza_checkMyStatusTrans (lobby.bin 0x0059C2F0-0x0059C324): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
-int Lb_get_cursor_col(void) {
-    f32 a = 0.0000958738f * (f32)(u32)(u16)((System_timer & 0x3F) << 10);
-
-    return (((s8)(int)(80.0f * flSin(a)) + 0x9F) << 24) | 0xFF00;
+void plaza_checkMyStatusTrans(void) {
+    disp_status(0xD8, 0x50, CW->x440, CW->x448, my_user_mini_data, *(s8 *)((u8 *)pNet + 0x24), 3, D_3C73B4);
 }

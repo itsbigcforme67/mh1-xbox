@@ -51,7 +51,7 @@ void plaza_setMyCommentTrans(int arg0, s32 arg1, int arg2) {
     temp_s3_3 =  ((temp_s3_2 + 0x16) << 0x30) >> 0x30;
     flfntLocate( ((temp_s0 + 0xA) << 0x30) >> 0x30, temp_s3_3);
     font_print(&lit_2316, F(int, &tl_mail_tbl, 0xC));
-    flfntLocate( (temp_s1 << 0x30) >> 0x30, temp_s3_3);
+    flfntLocate( (temp_s1 << 0x30) >> 0x30);
     memcpy(&sp70, (s32)cw + 0x440, 8);
     han2zen(&sp70, &sp50);
     font_print(&lit_2316, &sp50);

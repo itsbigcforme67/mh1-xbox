@@ -35,7 +35,7 @@ void CallBack_Result_Lobby_ReadRoomAllocation(CNET_RES res) {
             F(u8, temp_a2, 0x2C45) = 0U;
             temp_v1 = (int)cw;
             F(u8, temp_v1, 0x2C35) = (u8) (F(u8, temp_v1, 0x2C35) + 1);
-            cnLBS_Get_RoomCount((int)&ClassInfo + 0xA, unksp31, temp_a2, temp_a3);
+            cnLBS_Get_RoomCount((int)&ClassInfo + 0xA, unksp31);
             var_s1 = 0;
             if (F(u16, &ClassInfo, 0xA) > 0) {
                 var_s0 = (int)&RoomInfo;
@@ -54,7 +54,7 @@ void CallBack_Result_Lobby_ReadRoomAllocation(CNET_RES res) {
             }
         } else {
             F(u8, temp_a2, 0x2C35) = 3U;
-            cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, unksp31, temp_a2, temp_a3);
+            cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, unksp31);
             SetDialogData_HTML((u8 *)cw + 0x32D1);
         }
     }

@@ -37,12 +37,12 @@ s32 Lbc_GetRoomRule(u8 arg28) {
         break;
     case 1:
         F(u8, temp_a0, 0x2C35) = (u8) (temp_a0_2 + 1);
-        temp_a0_3 = CallBackWaitInit(temp_a0_2, temp_a1) & 0xFFFF;
+        temp_a0_3 = CallBackWaitInit(temp_a0_2) & 0xFFFF;
         F(s8, (u8 *)cw, 0x2C45) = 0x10;
         cnLBS_Read_RoomRuleAllocation(temp_a0_3, &CallBack_Result_RuleAllocation);
         break;
     case 2:
-        Check_CallBackWait(temp_a0_2, temp_a1);
+        Check_CallBackWait(temp_a0_2);
         break;
     case 3:
         F(u8, temp_a0, 0x2C35) = 0U;

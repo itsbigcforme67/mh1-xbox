@@ -15,7 +15,7 @@ void lbc_in_lobby_03_00(void) {
     case 0:                                         /* switch 1 */
         F(u8, temp_a1, 0x2C35) = (u8) (temp_a0 + 1);
         F(s32, (u8 *)cw, 0x2C4C) = 0;
-        nwSetEff_FreeDialog(0x14, (u8 *)cw + 0x32D1, temp_a1 + 0x2C35, temp_a3);
+        nwSetEff_FreeDialog(0x14, (u8 *)cw + 0x32D1, temp_a1 + 0x2C35);
         return;
     case 1:                                         /* switch 1 */
         temp_a0_2 = F(s32, temp_a1, 0x2C4C);
@@ -56,7 +56,7 @@ block_19:
                 F(s8, (u8 *)cw, 0x2C34) = 1;
                 goto block_19;
             }
-            cnLbc_EraseDialog(0x4C, temp_a1_2, temp_a2, temp_a3);
+            cnLbc_EraseDialog(0x4C);
         }
     }
 }

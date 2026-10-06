@@ -1,5 +1,7 @@
+/* lb_by37 - agent B promoted near-match 0x005B9A70-0x005B9B1C: MH_lobbyClear (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern char CallBack_Result_SendUserMiniData[];
+
 void MH_lobbyClear(void) {
     u8 *m;
 

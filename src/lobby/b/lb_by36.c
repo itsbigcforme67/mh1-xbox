@@ -1,3 +1,4 @@
+/* lb_by36 - agent B promoted near-match 0x005B6F20-0x005B701C: internet_disconnect (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern s16 Vs_Cnt_0;
 extern s8 COM_RET;
@@ -7,6 +8,7 @@ extern s8 PPP_ErrorStatus;
 extern u8 COM_R_No_1;
 extern u8 MMBB_LOGIN;
 extern char D_4E36F4[];
+
 s32 internet_disconnect(void) {
     s16 temp_v0;
     s32 var_s0;
@@ -37,12 +39,10 @@ s32 internet_disconnect(void) {
             CpInetTcpDelete(&D_4E36F4);
             var_s0 = 1;
             COM_RET = (s8) PPP_ErrorStatus;
-            goto block_16;
-        }
-        if (disconnect() != 0) {
+            PPP_ErrorStatus = 0;
+        } else if (disconnect() != 0) {
             var_s0 = 1;
             COM_RET = (s8) PPP_ErrorStatus;
-block_16:
             PPP_ErrorStatus = 0;
         }
         break;

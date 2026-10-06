@@ -99,7 +99,7 @@ block_44:
                                         }
                                         break;
                                     }
-                                    flSetRenderState((var_s5 + 0x3A) & 0xFF, temp_s3);
+                                    flSetRenderState((var_s5 + 0x3A) & 0xFF);
                                     var_s5 += 1;
                                     var_s1 += 4;
                                 } while (var_s5 < F(s32, var_s4, 4));

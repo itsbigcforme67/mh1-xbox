@@ -1,8 +1,9 @@
-/* lbui, run 22: Lbs_MatchStart .. Lbs_MatchStart (lobby.bin 0x005BDC70-0x005BDC90): the matching functions of lbui_nm.c. */
+/* lbui, run 22: lb_npc_effect_move .. lb_npc_effect_move (lobby.bin 0x005C4890-0x005C48A0): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
-int Lbs_MatchStart(void) {
-    cnLBS_MatchStart();
-    return 1;
+void lb_npc_effect_move(em)
+void *em;
+{
+    (*(void (**)())(*(int *)((u8 *)em + 0x3CC) + 0xC))(em);
 }

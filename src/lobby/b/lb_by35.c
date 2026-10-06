@@ -1,3 +1,4 @@
+/* lb_by35 - agent B promoted near-match 0x005B2A10-0x005B2A50: net_Check_FriendSuu (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 
 s32 net_Check_FriendSuu(char *p, s32 n) {

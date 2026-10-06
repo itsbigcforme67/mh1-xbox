@@ -21,21 +21,21 @@ void lbc_login_reguration(void) {
         if (F(u8, temp_a2, 0x2C44) == 2) {
             F(u8, temp_a2, 0x2C34) = (u8) (temp_a1 + 1);
             F(u8, (u8 *)cw, 0x2C44) = 0U;
-            fade_set(1, temp_a1, temp_a2, temp_a3);
+            fade_set(1);
             return;
         }
-        lbc_browser(2, temp_a1, temp_a2, temp_a3);
+        lbc_browser(2);
         return;
     case 2:
         if (dod_new_reguration_agree_type == 0) {
-            To_LogOut(1, temp_a1, temp_a2, temp_a3);
+            To_LogOut(1);
             return;
         }
         F(u8, temp_a2, 0x2C34) = (u8) (temp_a1 + 1);
-        CallBackWaitInit(1, temp_a1, temp_a2, temp_a3);
+        CallBackWaitInit(1);
         cnLBS_Send_RegurationAgree(0);
         return;
     case 3:
-        Check_CallBackWait(temp_a1, temp_a2, temp_a3);
+        Check_CallBackWait(temp_a1);
     }
 }
