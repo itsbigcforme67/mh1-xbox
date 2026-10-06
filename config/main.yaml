@@ -286,6 +286,7 @@ segments:
       - [0x035B00, asm, text/timer_calc_sub_pl]
       - [0x0361B0, c, pl/pl06]
       - [0x036378, asm, text/pl_dm_value_sub]
+      - [0x036380, c, pl/pldmv]
       - [0x0365F0, c, pl/pl07]
       - [0x036D38, asm, text/stick_pow_get]
       - [0x036D40, c, pl/plx04]
