@@ -304,10 +304,15 @@ void em_eye_dmg_reset_act_set(EMW *em) {
 
 void Eft06_set2(f32, EMW *, int, int, f32 *);
 void Em_Taisei_Ck(EMW *em) {
-    EM_TAISEI_DATA *po = em_poison_data_tbl[em->kind];
-    EM_TAISEI_DATA *ma = em_mahi_data_tbl[em->kind];
-    EM_TAISEI_DATA *sl = em_sleep_data_tbl[em->kind];
-    EM_TAISEI_DATA *s2 = em_sleep2_data_tbl[em->kind];
+    EM_TAISEI_DATA *po;
+    EM_TAISEI_DATA *ma;
+    EM_TAISEI_DATA *sl;
+    EM_TAISEI_DATA *s2;
+
+    po = em_poison_data_tbl[em->kind];
+    ma = em_mahi_data_tbl[em->kind];
+    s2 = em_sleep2_data_tbl[em->kind];
+    sl = em_sleep_data_tbl[em->kind];
 
     if (em->taisei & 4) {
         if (--em->x7C0 > 0) {
