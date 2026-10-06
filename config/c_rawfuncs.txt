@@ -75,3 +75,11 @@ main 0x192090 0x618 ConvertModelMeshAMO_NormalModel
 main 0x1926B0 0x718 ConvertModelMeshAMO_WeightModel
 main 0x190370 0x5c plGetInitMotionSetSizeFromAHI
 main 0x1903D0 0x228 plCreateInitMotionSetFromAHI
+main 0x193B20 0xd0 CheckTIM2FileHeader
+main 0x193C50 0x78 GetTim2PictureHead
+main 0x193CD0 0x190 GetTim2PictureData
+main 0x193E60 0x8c GetTim2ClutData
+main 0x193FF0 0x200 plMemmove
+main 0x1941F0 0xb8 plCalcAddress
+main 0x18BF60 0x1b0 system_hard_init
+main 0x18C110 0xAC flPS2VSyncCallback

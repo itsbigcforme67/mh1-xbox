@@ -2327,5 +2327,7 @@ lobby 0x00593B80 0x00593CA8 b/lb_by181
 lobby 0x0059D680 0x0059D814 b/lb_by182
 lobby 0x005F3020 0x005F309C f/lb_au07
 main 0x00190600 0x00192DC8 fl/amo_all
-main 0x00193F60 0x00193FF0 fl/pl_misc01
 main 0x0018F0B0 0x001905F8 fl/res_all
+main 0x001935C0 0x00194890 fl/pltim_all
+main 0x00192DD0 0x00192E24 fl/plbmp01
+main 0x0018BD90 0x0018C304 fl/flsys02
