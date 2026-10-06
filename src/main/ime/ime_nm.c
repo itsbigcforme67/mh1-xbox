@@ -3559,10 +3559,15 @@ int muhenkan(int pos, int end)
     u8 *p;
 
     k = pos + 1;
-    p = kana_ustr + k;
-    while (k < end && not_bhead(*p) != 0) {
-        k++;
-        p++;
+    if (k < end) {
+        p = kana_ustr + k;
+        do {
+            if (not_bhead(*p) == 0) {
+                break;
+            }
+            k++;
+            p++;
+        } while (k < end);
     }
     return k - pos;
 }
