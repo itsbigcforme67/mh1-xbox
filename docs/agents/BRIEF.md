@@ -124,6 +124,8 @@ anything the coordinator must know to merge. Then stop.
   unmatched; use it only after a real attempt, so the rest of the file can link.
 - Wrap every c_rawfuncs `asm` block in `#ifdef __MWERKS__ ... #endif`: gcc (the PC build) can't
   compile it and takes the near-match C instead (keep that in a *_nm.c the PC build links weak).
+- HARD RULE: never `pkill -f`/`killall` a pattern (rebuild.sh, build.py, permuter, python, mwcc).
+  Note the PID when you start a job (`cmd & echo $!`) and kill only that PID.
 - Never `pkill -f` a broad pattern (permuter, python, mwcc): other agents' jobs match too, and the
   pattern can match your own shell. Kill your own jobs by PID.
 - The c_rawfuncs fallback is only for one or two holdouts in a file whose OTHER functions are real
