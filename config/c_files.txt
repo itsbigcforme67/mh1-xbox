@@ -1722,3 +1722,14 @@ lobby 0x005FDFE0 0x005FE140 f/lb_gaq01
 lobby 0x005CA8C0 0x005CA9C0 f/lb_gy01
 lobby:rodata 0x00664AA0 0x00664AB8 f/lb_gy01
 main 0x002743E0 0x00274654 ud/ud12
+main 0x0022FDD0 0x0022FE00 boot/boot01
+main 0x0022FE10 0x00230060 boot/boot02
+main 0x00225F50 0x00225FBC cam/camq1
+main 0x002702D0 0x002703E8 ncm/ncm01
+main 0x00270660 0x002707E4 ncm/ncm02
+main 0x00270940 0x00270AC4 ncm/ncm03
+main 0x00216490 0x002166DC flfnt/flfnt01
+main 0x00216890 0x0021691C flfnt/flfnt02
+main 0x00216AC0 0x00216DD4 flfnt/flfnt03
+main 0x00217480 0x00217544 flfnt/flfnt04
+main 0x00217DE0 0x00217E48 flfnt/flfnt05
