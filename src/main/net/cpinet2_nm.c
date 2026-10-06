@@ -182,12 +182,13 @@ int CpInetTcpClose(int *sock) {
     int t;
 
     t = *sock;
-    if (t >= 0) {
+    if (0 <= t) {
         r = (s16)Ave_TcpClose((s16)t);
         *sock = -1;
-        return common_error(r);
+        r = common_error(r);
+    } else {
+        *sock = -1;
     }
-    *sock = -1;
     return r;
 }
 
@@ -200,11 +201,12 @@ int CpInetTcpDelete(int *sock) {
     int t;
 
     t = *sock;
-    if (t >= 0) {
+    if (0 <= t) {
         r = (s16)Ave_TcpDelete((s16)t);
         *sock = -1;
-        return common_error(r);
+        r = common_error(r);
+    } else {
+        *sock = -1;
     }
-    *sock = -1;
     return r;
 }

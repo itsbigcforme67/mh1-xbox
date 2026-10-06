@@ -265,13 +265,14 @@ s8 Item_preparation_rate_0(IPREP *e, int mode) {
             i++;
             p++;
         } while (i < 5);
-        rate = rate + pre_manual_rate_tbl[i];
-        if (rate >= 0x65) {
-            rate = 0x64;
-        }
-        return rate;
+        rate += pre_manual_rate_tbl[i];
+    } else {
+        return 0x64;
     }
-    return 0x64;
+    if (rate > 0x64) {
+        rate = 0x64;
+    }
+    return rate;
 }
 
 s8 Item_preparation_rate(a, b, mode)
