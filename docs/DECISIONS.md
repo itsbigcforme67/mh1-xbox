@@ -123,4 +123,6 @@ order applies to main's network code versus its single-player code.
 
 The owner paused decompiling the lobby's in-game web browser (Bs*, tagAct_*, HTML tag/layout
 code, PNG/BMP glue; mostly 0x5EE618-0x609700): the port will probably use its own browser
-instead of the original. Already-matched browser functions stay; no new work there.
+instead of the original. The owner's understanding: it was only used for Capcom's website and buying
+the online subscription, not for any game function. Already-matched browser functions stay; no
+new work there. If a game function turns out to call into it, stub that call on the PC side.
