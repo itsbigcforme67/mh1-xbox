@@ -102,8 +102,8 @@ void GetPlayerDiffuseData(u8 kind, f32 *pos, PWK *w) {
 
 void GetPlayerShagamiData(u8 kind, f32 *pos, PWK *w) {
     u8 *out = &w->shagami;
-    GKIND *k = &ground_tbl_add[w->stg][kind];
-    u8 idx = k->shagami;
+    GKIND *k;
+    u8 idx = (&ground_tbl_add[w->stg][kind])->shagami;
     GAREA *a;
 
     if (!idx) {
@@ -142,7 +142,7 @@ int fmsInitialize(FMSTK *p, u32 base, u32 size, u32 align) {
 
     p->base = base;
     p->align = align;
-    p->lo = ~(p->align - 1) & (p->base + p->align - 1);
+    p->lo = ~(p->align - 1) & ((u32)p->base + p->align - 1);
     p->hi = ~(p->align - 1) & (p->align + (p->base + sz) - 1);
     p->cur = p->lo;
     p->top = p->hi;

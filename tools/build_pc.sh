@@ -91,7 +91,7 @@ QUEST="src/main/evdemo/evdemo.c src/main/quest/f_quest0_nm.c src/main/quest/f_qu
        src/main/sprite/putspr.c src/main/sprite/putspr2.c src/main/sprite/calcpoint.c src/main/sprite/trans2.c src/main/sprite/sysw.c src/main/sprite/spriteput_nm.c \
        src/main/load/mkmap.c \
        src/main/reward/f_reward.c src/main/reward/f_reward2.c src/main/reward/f_reward3.c src/main/reward/f_rewardb.c \
-       src/main/reward/f_rewardc.c src/main/reward/f_reward_nm.c src/main/reward/f_rewardb_nm.c src/main/reward/f_rewardd_nm.c \
+       src/main/reward/f_rewardc.c src/main/reward/f_reward4.c src/main/reward/f_rewardb_nm.c src/main/reward/f_rewardd_nm.c \
        src/main/ud/ud_nm.c src/main/font/disp2_nm.c src/main/font/disp1_nm.c"
 for f in src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c; do
     [ -f "$f" ] && EM="$EM $f"

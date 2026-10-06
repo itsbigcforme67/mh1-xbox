@@ -966,6 +966,9 @@ frames per second.
   character screen's 3D hunter, forge list icons / page title (garbage),
   greeting window under the item shop's buy list, colour streaks over a
   CLEAR!! quest card. Nothing here compared with the PS2.
+- Re-measured 6 Oct 2026 evening (box idle; current build with -ftrivial-auto-var-init=zero):
+  base camp 25-26 fps at 960x720 and 48 fps at 640x480, cave 27-28 fps at 960x720. No
+  regression; an earlier 18-19 fps reading was another copy of the game left running on the box.
 
 ### Village glitches, character screen hunter, monster breadth (agent A, round 20, 6 Oct 2026)
 Fixes (all PC side; PS2 rebuild all five OK):

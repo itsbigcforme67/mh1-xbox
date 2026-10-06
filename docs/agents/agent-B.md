@@ -861,3 +861,7 @@ eft25_m: `long k` made `(f32)k` call __floatdisf and a callee-saved f20; with `i
 (the original spills par and tbl and keeps &v[1], &v[2] in s5/s6; mine keeps par in s5). Hill-climbs over declaration order and prologue statement order only got 332 -> 316.
 Still near: itembox_cursor_mv (2: daddiu for 9), sellout (34: w in a1 not a2; permuter 1 hour no gain), Disp_lb_item_box, pickup, Disp_TABLE_Line 2 (arg load order), BsBody00_ReqSrc (5, delay slot),
 Plaza_chatlog_mv 5, lb_process_kyoukaListProg (lim extension lands in v0 not v1; separate int temp did not help).
+
+## Lobby round 10b (agent B)
+BsBody00_ReqSrc matched (lb_au07.c): the original is `if (hide) { switch (MMBB_LOGIN) { case 2: case 1: ...; break; default: break; } } else {...}` (no early returns; the switch exit jumps straight to the epilogue).
+Owner paused browser work mid-round. Plaza_chatlog_mv still 5 (u8 PZ_TOP decrement lands in v0 not in place), itembox_cursor_mv still 2 (daddiu 9; tried int/u8/u16/long/ternary forms). tagAct_600/601 drafted in scratch only: bsw field reads must be `(bsw + bsw[0xE96C])[0xE96C]` with the first read not CSE'd; not finished.

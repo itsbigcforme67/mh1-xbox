@@ -1,4 +1,5 @@
-/* fl clay near-match (not linked): flPS2GetMLCLAY (0x0016B110), 21/28 off (orig keeps the buffer pointer in s0 advanced by 0x30 and a copy in s1). */
+/* fl clay: flPS2GetMLCLAY (SLPM_654.95 0x0016B110-0x0016B180): copies the 0x24 byte header of a clay handle's system buffer into out and
+ * points out->x08 / out->x10 at the two data blocks that follow (each padded to 16 bytes). */
 #include "types.h"
 
 typedef struct CLAYS {
@@ -20,8 +21,8 @@ void flPS2GetMLCLAY(CLAYS *c, MLCLAY *out) {
     u8 *q;
     u8 *h;
 
-    q = flPS2GetSystemBuffAdrs(c->x14);
-    h = q;
+    h = flPS2GetSystemBuffAdrs(c->x14);
+    q = h;
     h += 0x30;
     flMemcpy(out, q, 0x24);
     out->x08 = (s32)h;
