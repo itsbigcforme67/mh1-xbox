@@ -1,181 +1,150 @@
 #include "lobby_s.h"
+typedef struct { s32 kind; s32 id; } SHTBL;
+typedef struct { u8 x0; u8 kind; u16 id; u16 x4; } EQREC;
 extern s32 armorIndex;
-extern char shopList2[];
-extern char D_3C7006[];
-extern char shopList2[];
-extern char shopTbl[];
-extern char shopList2[];
-extern char shopTbl[];
-extern char kakou_tbl[];
-extern char D_3C7005[];
-extern char kakou_tbl[];
-extern char shopTbl[];
-extern char shopTbl[];
-extern char shopTbl[];
-extern char shopTbl[];
-extern char shopTbl[];
-extern char shopTbl[];
-extern char shopTbl[];
-extern char shopTbl[];
-extern char D_3C7006[];
+extern EQREC D_3C7004[];
+extern SHTBL shopTbl[];
+extern u8 kakou_tbl[];
+extern char *gun_kyouka_tbl[];
+extern s32 lvup_price[];
 extern char User_data[];
-extern char shopList2[];
-extern char shopList2[];
-extern char shopList2[];
-extern char shopList2[];
-extern char shopList2[];
-extern char shopList2[];
-extern char shopList2[];
-extern char User_data[];
-extern char gun_kyouka_tbl[];
-extern char gun_kyouka_tbl[];
-extern char User_data[];
-extern char gun_kyouka_tbl[];
-extern char gun_kyouka_tbl[];
-extern char User_data[];
-extern char gun_kyouka_tbl[];
-extern char gun_kyouka_tbl[];
-extern char lvup_price[];
+extern LB_SHOPITEM shopList2[];
+char *Get_equip_name();
+u32 Get_equip_price();
+int check_items();
+int Get_Gun_level(char *, s16);
+int Gun_option_ck(char *, s16, int);
 void lb_process_make_kyoukaList(void) {
-    int var_s1;
-    int var_s2;
-    s16 var_v1;
-    s16 var_v1_2;
-    s32 temp_a1;
-    s32 temp_s0;
-    s32 temp_v0;
-    s32 var_s4;
-    s32 var_s5;
-    int var_s0;
-    u16 temp_a1_2;
-    u16 temp_s3;
-    u32 temp_s1;
-    int temp_s2;
-    int var_s3;
+    int i;
+    int j;
+    u16 *kk;
+    LB_SHOPITEM *sl;
+    SHTBL *t;
+    s32 *p;
+    u32 price;
+    int lvl;
+    int ai;
+    int id;
 
-    var_s2 = (int)&shopList2;
-    temp_s0 = armorIndex;
-    temp_s3 = *(s32 *)((int)&D_3C7006 + (temp_s0 * 6));
-    memset(&shopList2, 0, 0x5000);
+    sl = shopList2;
+    ai = armorIndex;
+    id = D_3C7004[ai].id;
+    memset(shopList2, 0, 0x5000);
     lbShop.count = 0;
-    var_s1 = (int)&shopTbl;
-    lbShop.list = (void *)shopList2;
+    lbShop.list = shopList2;
     lbShop.x6D = 1;
     lbShop.x6C = 0;
-    lbShop.tbl = (void *)shopTbl;
-    var_s3 = (int)&kakou_tbl + (temp_s3 * 0x18);
-    temp_a1 = temp_s0 * 6;
-    var_s5 = 0;
-    if (*(s32 *)((int)&D_3C7005 + temp_a1) == 6) {
+    t = shopTbl;
+    lbShop.tbl = (s32 *)shopTbl;
+    kk = (u16 *)(kakou_tbl + id * 0x18);
+    if (D_3C7004[ai].kind == 6) {
+        i = 0;
         do {
-            F(s16, var_s2, 0x24) = 0;
-            temp_a1_2 = F(u16, var_s3, 0xC);
-            if (temp_a1_2 != 0) {
-                strcpy(var_s2 + 4, Get_equip_name(6));
-                F(u32, var_s2, 0) = (u32) (Get_equip_price(6, F(u16, var_s3, 0xC)) >> 1);
-                F(s16, var_s2, 0x24) = 0;
-                var_s4 = 0;
-                F(u16, var_s2, 0x26) = (u16) F(u16, var_s3, 0xC);
-                var_s0 = (int)&kakou_tbl + (F(u16, var_s3, 0xC) * 0x18);
+            sl->state = 0;
+            if (kk[6] != 0) {
+                strcpy(sl->name, Get_equip_name(6, kk[6]));
+                sl->price = Get_equip_price(6, kk[6]) >> 1;
+                sl->state = 0;
+                *(u16 *)&sl->_pad26 = kk[6];
+                p = (s32 *)(kakou_tbl + kk[6] * 0x18);
+                j = 0;
                 do {
-                    if (((*(u16 *)var_s0) != 0) && (check_items(var_s0, 1) != 1)) {
-                        if ((check_items(var_s0, 0) == 1) && (var_v1 = 3, (F(s16, var_s2, 0x24) != 1))) {
-
+                    if (*(u16 *)p != 0 && check_items(p, 1) != 1) {
+                        if (check_items(p, 0) == 1 && sl->state != 1) {
+                            sl->state = 3;
                         } else {
-                            var_v1 = 1;
+                            sl->state = 1;
                         }
-                        F(s16, var_s2, 0x24) = var_v1;
                     }
-                    var_s4 += 1;
-                    var_s0 += 4;
-                } while (var_s4 < 3);
-                if ((u32) *(u32 *)0x3C6FE0 < (u32) F(u32, var_s2, 0)) {
-                    var_v1_2 = 4;
-                    if (F(s16, var_s2, 0x24) == 3) {
-
+                    j++;
+                    p++;
+                } while (j < 3);
+                if ((u32)sl->price > *(u32 *)0x3C6FE0) {
+                    if (sl->state == 3) {
+                        sl->state = 4;
                     } else {
-                        var_v1_2 = 1;
+                        sl->state = 1;
                     }
-                    F(s16, var_s2, 0x24) = var_v1_2;
                 }
-                F(s32, var_s1, 0) = 6;
-                F(s32, var_s1, 4) = F(u16, var_s3, 0xC);
+                t->kind = 6;
+                t->id = kk[6];
             } else {
-                F(s16, var_s2, 0x24) = 2;
+                sl->state = 2;
             }
-            var_s5 += 1;
-            var_s2 += 0x28;
-            var_s3 += 2;
-            var_s1 += 8;
-            lbShop.count = (lbShop.count + 1);
-        } while (var_s5 < 5);
+            i++;
+            sl++;
+            kk++;
+            t++;
+            lbShop.count = lbShop.count + 1;
+        } while (i < 5);
         return;
     }
-    F(s32, &shopTbl, 4) = 0;
-    F(s32, &shopTbl, 0xC) = 0;
-    F(s32, &shopTbl, 0) = 7;
-    F(s32, &shopTbl, 8) = 7;
-    F(s32, &shopTbl, 0x10) = 7;
-    F(s32, &shopTbl, 0x14) = 0;
-    F(s32, &shopTbl, 0x18) = 7;
-    F(s32, &shopTbl, 0x1C) = 0;
-    temp_s1 = Get_equip_price(7, *(s32 *)((int)&D_3C7006 + temp_a1));
-    temp_v0 = Get_Gun_level(&User_data, (s16)temp_s0);
-    if (temp_v0 >= 4) {
+    shopTbl[0].id = 0;
+    shopTbl[1].id = 0;
+    shopTbl[0].kind = 7;
+    shopTbl[1].kind = 7;
+    shopTbl[2].kind = 7;
+    shopTbl[2].id = 0;
+    shopTbl[3].kind = 7;
+    shopTbl[3].id = 0;
+    price = Get_equip_price(7, D_3C7004[ai].id);
+    lvl = Get_Gun_level(User_data, ai);
+    if (lvl >= 4) {
         lbShop.count = 3;
     } else {
         lbShop.count = 4;
-        F(u32, &shopList2, 0) = (u32) ((temp_s1 / 10) * *(s32 *)(&lvup_price[temp_v0 * 4]));
-        if ((u32) *(u8 *)0x3C6FE0 < (u32) F(u32, &shopList2, 0)) {
-            F(s16, &shopList2, 0x24) = 1;
+        sl->price = price / 10 * lvup_price[lvl];
+        if ((u32)sl->price > *(u32 *)0x3C6FE0) {
+            sl->state = 1;
         } else {
-            F(s16, &shopList2, 0x24) = 0;
+            sl->state = 0;
         }
-        F(s16, &shopList2, 0x26) = 0;
-        sprintf((int)&shopList2 + 4, F(s32, &gun_kyouka_tbl, 0));
-        var_s2 = (int)&shopList2 + 0x28;
+        *(u16 *)&sl->_pad26 = 0;
+        sprintf(sl->name, gun_kyouka_tbl[0]);
+        sl++;
     }
-    if (Gun_option_ck(&User_data, (s16)temp_s0, 0x10) == 1) {
-        F(u32, var_s2, 0) = 0xAU;
-        F(s16, var_s2, 0x26) = 2;
-        sprintf(var_s2 + 4, F(s32, &gun_kyouka_tbl, 8));
+    if (Gun_option_ck(User_data, ai, 0x10) == 1) {
+        sl->price = 10;
+        *(u16 *)&sl->_pad26 = 2;
+        sprintf(sl->name, gun_kyouka_tbl[2]);
     } else {
-        F(u32, var_s2, 0) = (u32) ((temp_s1 / 10) * 4);
-        F(s16, var_s2, 0x26) = 1;
-        sprintf(var_s2 + 4, F(s32, &gun_kyouka_tbl, 4));
+        sl->price = price / 10 * 4;
+        *(u16 *)&sl->_pad26 = 1;
+        sprintf(sl->name, gun_kyouka_tbl[1]);
     }
-    if ((u32) *(u8 *)0x3C6FE0 < (u32) F(u32, var_s2, 0)) {
-        F(s16, var_s2, 0x24) = 1;
+    if ((u32)sl->price > *(u32 *)0x3C6FE0) {
+        sl->state = 1;
     } else {
-        F(s16, var_s2, 0x24) = 0;
+        sl->state = 0;
     }
-    if (Gun_option_ck(&User_data, (s16)temp_s0, 0x20) == 1) {
-        F(u32, var_s2, 0x28) = 0xAU;
-        F(s16, var_s2, 0x4E) = 4;
-        sprintf(var_s2 + 0x2C, F(s32, &gun_kyouka_tbl, 0x10));
+    if (Gun_option_ck(User_data, ai, 0x20) == 1) {
+        sl[1].price = 10;
+        *(u16 *)&sl[1]._pad26 = 4;
+        sprintf(sl[1].name, gun_kyouka_tbl[4]);
     } else {
-        F(u32, var_s2, 0x28) = (u32) ((temp_s1 / 10) * 3);
-        F(s16, var_s2, 0x4E) = 3;
-        sprintf(var_s2 + 0x2C, F(s32, &gun_kyouka_tbl, 0xC));
+        sl[1].price = price / 10 * 3;
+        *(u16 *)&sl[1]._pad26 = 3;
+        sprintf(sl[1].name, gun_kyouka_tbl[3]);
     }
-    if ((u32) *(u8 *)0x3C6FE0 < (u32) F(u32, var_s2, 0x28)) {
-        F(s16, var_s2, 0x4C) = 1;
+    if ((u32)sl[1].price > *(u32 *)0x3C6FE0) {
+        sl[1].state = 1;
     } else {
-        F(s16, var_s2, 0x4C) = 0;
+        sl[1].state = 0;
     }
-    temp_s2 = var_s2 + 0x50;
-    if (Gun_option_ck(&User_data, (s16)temp_s0, 0x40) == 1) {
-        F(u32, var_s2, 0x50) = 0xAU;
-        F(s16, temp_s2, 0x26) = 6;
-        sprintf(temp_s2 + 4, F(s32, &gun_kyouka_tbl, 0x18));
+    sl++;
+    sl++;
+    if (Gun_option_ck(User_data, ai, 0x40) == 1) {
+        sl->price = 10;
+        *(u16 *)&sl->_pad26 = 6;
+        sprintf(sl->name, gun_kyouka_tbl[6]);
     } else {
-        F(u32, var_s2, 0x50) = (u32) ((temp_s1 / 10) * 3);
-        F(s16, temp_s2, 0x26) = 5;
-        sprintf(temp_s2 + 4, F(s32, &gun_kyouka_tbl, 0x14));
+        sl->price = price / 10 * 3;
+        *(u16 *)&sl->_pad26 = 5;
+        sprintf(sl->name, gun_kyouka_tbl[5]);
     }
-    if ((u32) *(u8 *)0x3C6FE0 < (u32) F(u32, var_s2, 0x50)) {
-        F(s16, temp_s2, 0x24) = 1;
-        return;
+    if ((u32)sl->price > *(u32 *)0x3C6FE0) {
+        sl->state = 1;
+    } else {
+        sl->state = 0;
     }
-    F(s16, temp_s2, 0x24) = 0;
 }

@@ -1,6 +1,5 @@
-/* eft02 - SLPM_654.95 0x0027D6E0-0x0027DDB8 (first matching run; eft02_t
- * is still asm, near-match in eft02_nm.c, setters in eft02b.c). Whole file
- * 0x0027D6E0-0x0027EF58. Hit sparks and blood: one
+/* eft02 - SLPM_654.95 0x0027D6E0-0x0027E940 (eft02_move .. eft02_t, setters in
+ * eft02b.c). Whole file 0x0027D6E0-0x0027EF58. Hit sparks and blood: one
  * model per effect, picked by arg (0-11), animated by stepping through
  * consecutive clay models every two frames (clay[timer / 2]), with its own
  * life time per arg (eft02_m). Blood colours come from Eft_blood_rgb (row 2
@@ -224,3 +223,201 @@ static void eft02_e(EFTW *ew) {
     push_eft_work(ew);
 }
 
+void eft02_t(PRIM *pr) {
+    EFTW *ew = pr->owner;
+    f32 v[3];
+    FLMAT m;
+    FLMAT uv;
+    u8 g;
+    u8 b;
+    CLAY *cl;
+    s16 col;
+    u16 ope = 0;
+    u8 r;
+    EFT_MDLW *mw = eft_mdlw[0];
+    void *mats;
+    u32 rgb;
+    f32 div;
+    u32 k;
+
+    if (mw != 0 && mw->flag != 0) {
+        mats = mw->mat;
+        flmatInit(&uv);
+        switch (ew->arg) {
+        case 0:
+        case 1:
+            SetFilterMode(0);
+            ope |= 0x10;
+            flSetRenderState(0x60, 0x80);
+            k = ew->arg;
+            flmatInit(&m);
+            flmatRotZ33(&m, DEG2RAD(ANG2DEG((u16)((ew->stg << 8) + ew->x07))));
+            flmatRotY33(&m, DEG2RAD(ANG2DEG(ew->u0A.ang)));
+            cl = &mw->clay[ew->timer / 2];
+            flmatSetTrans(&uv, 0.0f, 0.125f * k, 0.0f);
+            if (ew->arg == 0) {
+                r = 0xFF;
+                col = -1;
+                g = r;
+                b = r;
+            } else if (ew->x1E == 2) {
+                col = 2;
+            } else {
+                col = 0;
+            }
+            break;
+        case 2:
+            SetFilterMode(0);
+            ope |= 0x10;
+            flSetRenderState(0x60, 0x80);
+            flmatMakeScale(&m, 0.1f, 0.1f, 0.7f);
+            flmatRotZXY33(&m, DEG2RAD(ANG2DEG(ew->stg << 8)), DEG2RAD(ANG2DEG(ew->x07 << 8)),
+                          DEG2RAD(ANG2DEG(ew->u0A.joint)));
+            cl = &mw->clay[ew->timer / 2];
+            flmatSetTrans(&uv, 0.75f, 0.25f, 0.0f);
+            r = 0xFF;
+            col = -1;
+            g = r;
+            b = r;
+            break;
+        case 3:
+            flSetRenderState(0x60, 0xC0);
+            cl = mw->clay + ew->timer / 2 + 97;
+            flmatMakeScale(&m, ew->scale, ew->scale, ew->scale);
+            flmatRotZXY33(&m, DEG2RAD(ANG2DEG(ew->x07 << 8)), DEG2RAD(ANG2DEG(ew->u0A.joint)),
+                          DEG2RAD(ANG2DEG(ew->stg << 8)));
+            if (ew->mode2 == 0) {
+                flmatSetTrans(&uv, 0.75f, 0.25f, 0.0f);
+            } else {
+                flmatSetTrans(&uv, 0.0f, 0.0f, 0.0f);
+            }
+            if (ew->x1E == 2) {
+                col = 2;
+            } else {
+                col = 0;
+            }
+            break;
+        case 4:
+            flSetRenderState(0x60, 0);
+            cl = mw->clay + ew->timer / 2 + 27;
+            flmatMakeScale(&m, ew->scale, ew->scale, ew->scale);
+            flmatRotZ33(&m, DEG2RAD(ANG2DEG(ew->u0A.joint)));
+            flmatMul33_2(&m, &rview_mat);
+            if (ew->stg == 1) {
+                ope |= 2;
+                col = -1;
+                flmatSetTrans(&uv, 0.125f, 0.0f, 0.0f);
+            } else {
+                if (ew->x1E == 2) {
+                    col = 2;
+                } else {
+                    col = 0;
+                }
+                flmatSetTrans(&uv, 0.0f, 0.0f, 0.0f);
+            }
+            break;
+        case 5:
+        case 7:
+            flSetRenderState(0x60, 0x80);
+            if (ew->arg == 5) {
+                cl = &mw->clay[53];
+                div = 24.0f;
+            } else {
+                cl = &mw->clay[76];
+                div = 24.0f;
+            }
+            flmatMakeScale(&m, ew->scale, ew->scale, ew->scale);
+            flmatRotY33(&m, DEG2RAD(ANG2DEG(ew->u0A.joint)));
+            flmatSetTrans(&uv, 0.0f, ew->timer * (0.125f / div), 0.0f);
+            r = 0xFF;
+            col = -1;
+            g = r;
+            b = r;
+            break;
+        case 6:
+            ope |= 2;
+            eft_vec_linear(ew->timer / 2.0f, scale32_34_00354E00, v);
+            v[0] *= ew->scale;
+            v[1] *= ew->scale;
+            v[2] *= ew->scale;
+            flSetRenderState(0x60, 0);
+            cl = mw->clay + ew->stg + 32;
+            flmatMakeScale(&m, v[0], v[1], v[2]);
+            flmatSetTrans(&uv, 0.25f, 0.0f, 0.0f);
+            flmatMul33_2(&m, &rview_mat);
+            r = 0xFF;
+            col = -1;
+            g = r;
+            b = r;
+            break;
+        case 8:
+            flSetRenderState(0x60, 0);
+            cl = &mw->clay[39];
+            flmatMakeScale(&m, ew->scale, ew->scale, ew->scale);
+            flmatSetTrans(&uv, 0.0f, 0.0f, 0.0f);
+            flmatMul33_2(&m, &rview_mat);
+            r = 0xFF;
+            col = -1;
+            g = r;
+            b = r;
+            break;
+        case 9:
+        case 10:
+        case 11:
+            flSetRenderState(0x60, 0x80);
+            flmatMakeScale(&m, ew->scale, ew->scale, ew->scale);
+            flmatRotXYZ33(&m, DEG2RAD(ANG2DEG(ew->x07 << 8)), DEG2RAD(ANG2DEG(ew->u0A.joint)),
+                          DEG2RAD(ANG2DEG(ew->stg << 8)));
+            cl = mw->clay + ew->timer / 2 + 134;
+            col = -1;
+            if (ew->arg == 9) {
+                r = 0xFF;
+                g = r;
+                b = r;
+            } else if (ew->arg == 10) {
+                r = 0x5F;
+                g = r;
+                b = r;
+            } else {
+                r = 0xBF;
+                g = r;
+                b = r;
+            }
+            break;
+        }
+        flmatSetTrans(&m, pr->pos[0], pr->pos[1], pr->pos[2]);
+        flSetRenderState(0x19, (u32)&uv);
+        if (col >= 0) {
+            r = Eft_blood_rgb[col][0];
+            g = Eft_blood_rgb[col][1];
+            b = Eft_blood_rgb[col][2];
+        }
+        rgb = (r << 16 | 0xFF000000) | (g << 8) | b;
+        flSetRenderState(0x67, rgb);
+        flSetRenderState(0x1A, (u32)&m);
+        if (cl != 0 && cl->handle != -1) {
+            Material_set_sub(mats, cl);
+            clay_attr_set(cl->attr);
+            Eft_rendope_set(ope);
+            flExecuteClay(cl->handle, 0);
+        }
+        if (ew->arg == 0) {
+            flSetRenderState(0x67, rgb);
+            RotateZ(&m, 3.1415927f);
+            flSetRenderState(0x1A, (u32)&m);
+            if (cl != 0 && cl->handle != -1) {
+                Material_set_sub(mats, cl);
+                clay_attr_set(cl->attr);
+                Eft_rendope_set(ope);
+                flExecuteClay(cl->handle, 0);
+            }
+        }
+        SetFilterMode(1);
+        clay_attr_reset();
+        if (ew->arg == 6) {
+            flSetRenderState(0x60, 0);
+        } else {
+            flSetRenderState(0x60, 0x80);
+        }
+    }
+}

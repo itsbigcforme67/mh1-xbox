@@ -965,3 +965,12 @@ st63_pos_tbl
 st66_pos_tbl
 st69_pos_tbl
 st71_pos_tbl
+# em12 (Aptonoth, the herbivore) and em29 (a breakable target): tables not in
+# config/symbols (addresses and sizes from the split game.bin data labels)
+em12_scale_tbl 0x65BB10 0x2C
+st45_pos_tbl 0x65BB40 0x78
+st49_pos_tbl_0065BBC0 0x65BBC0 0x60
+st51_pos_tbl_0065BC20 0x65BC20 0x60
+st53_pos_tbl_0065BC80 0x65BC80 0x60
+st56_pos_tbl 0x65BCE0 0x78
+em29_type_tbl 0x675600 0x54

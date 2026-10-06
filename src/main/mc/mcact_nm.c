@@ -33,6 +33,7 @@ void mc_icon_sys_set();
 extern void (*mc_act_jmp[])();
 
 #define MCFI(f, i) ((MCF *)((i) * 16 + (u8 *)(f)))
+#define MCFJ(f, i) ((MCF *)(((i) << 4) + (int)(f)))
 
 void McActInit(file)
 int file;
@@ -313,15 +314,15 @@ MCW *w;
         break;
     case 0xA:
     again:
-        e = MCFI(f, w->slot);
+        e = MCFJ(f, w->slot);
         if (e->on == 0) {
             goto next;
         }
         sprintf(w->name, lit_422_00384308, f->dir, e->name);
         if (w->slot > 0) {
-            w->buf = MCFI(f, w->slot)->data;
+            w->buf = MCFJ(f, w->slot)->data;
         }
-        w->len = MCFI(f, w->slot)->size;
+        w->len = MCFJ(f, w->slot)->size;
         if (w->xA0 == 0) {
             w->astep++;
         } else {
@@ -331,7 +332,7 @@ MCW *w;
     case 0xB:
         switch (mc_check_file(w)) {
         case 0:
-            if (MCFI(f, w->slot)->on == 1) {
+            if (MCFJ(f, w->slot)->on == 1) {
                 goto next;
             }
             w->astep += 2;

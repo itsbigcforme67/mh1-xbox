@@ -851,7 +851,7 @@ int Menu_chatlog_mv(int sw) {
         }
         if (chat_log_disp_line(PitMenu.logscr) > 0xB) {
             PitMenu.x22 |= 1;
-            if (((sw & 0xFFFF) & 0x2000) && PitMenu.logscr < PitMenu.lognum - 1) {
+            if (((u16)sw & 0x2000) && PitMenu.logscr < PitMenu.lognum - 1) {
                 PitMenu.x21 = 0;
                 PitMenu.logscr++;
                 PitMenu.x22 |= 4;
@@ -863,7 +863,7 @@ int Menu_chatlog_mv(int sw) {
         } else {
             PitMenu.x21 = 1;
         }
-        if (((sw & 0xFFFF) & 0x1000) && PitMenu.logscr > 0) {
+        if (((u16)sw & 0x1000) && PitMenu.logscr > 0) {
             PitMenu.logscr--;
             PitMenu.x22 |= 8;
             se_req(7, 0x16, 0);

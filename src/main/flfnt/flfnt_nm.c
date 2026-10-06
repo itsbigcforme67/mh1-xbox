@@ -42,6 +42,7 @@ typedef struct FNP {
 } FNP;
 
 extern FNP *np;
+typedef struct { s32 a, b; } P8;
 
 void *memset(void *, int, int);
 s32 flfntMakeHandle(void);
@@ -144,17 +145,16 @@ void flfntCacheFlush(void) {
 void flfntSetPalData(int idx, u32 c0, u32 c1, u32 c2, u32 c3) {
     u8 col[12];
     u8 lock[0x50];
-    u8 *src;
-    u16 *dst;
-    int i;
     int off;
+    u8 *d;
     u8 a;
-    int slot;
+    int i;
+    u8 *src;
 
-    slot = idx % 32;
-    off = slot << 6;
+    idx = idx % 32;
+    off = idx << 6;
     a = (c0 & 0xFF000000) ? 0x80 : 0;
-    dst = (u16 *)(np->palbuf + off);
+    d = np->palbuf + off;
     col[0] = c0;
     col[1] = c0 >> 8;
     col[2] = c0 >> 16;
@@ -169,36 +169,35 @@ void flfntSetPalData(int idx, u32 c0, u32 c1, u32 c2, u32 c3) {
     col[11] = c3 >> 16;
     src = col;
     for (i = 0; i < 4; i++) {
-        u8 r = src[0];
-        u8 g = src[1];
-        u8 b = src[2];
-        ((u8 *)dst)[0] = b;
-        ((u8 *)dst)[1] = g;
-        dst++;
-        ((u8 *)dst)[0] = r;
-        if (a | (i == 0)) {
-            ((u8 *)dst)[1] = a;
+        int r = src[0];
+        int g = src[1];
+        int b = src[2];
+        *d++ = b;
+        *d++ = g;
+        *d++ = r;
+        if (a | !i) {
+            *d++ = a;
         } else if (b == 0 && g == 0 && r == 0) {
-            ((u8 *)dst)[1] = 0;
+            *d++ = 0;
         } else {
-            ((u8 *)dst)[1] = 0x80;
+            *d++ = 0x80;
         }
-        dst++;
         src += 3;
     }
-    i = np->palh[slot];
+    i = np->palh[idx];
     if (i != 0) {
-        u8 *d2;
+        P8 *d2;
+        P8 *s2;
         flLockPalette(0, i, lock, 2);
-        src = np->palbuf + off;
-        d2 = *(u8 **)(lock + 0x10);
-        ((s32 *)d2)[0] = ((s32 *)src)[0];
-        ((s32 *)d2)[1] = ((s32 *)src)[1];
-        src += 8;
-        d2 += 8;
-        ((s32 *)d2)[0] = ((s32 *)src)[0];
-        ((s32 *)d2)[1] = ((s32 *)src)[1];
-        flUnlockPalette(i, src);
+        s2 = (P8 *)(np->palbuf + off);
+        d2 = *(P8 **)(lock + 0x10);
+        d2->a = s2->a;
+        d2->b = s2->b;
+        s2++;
+        d2++;
+        d2->a = s2->a;
+        d2->b = s2->b;
+        flUnlockPalette(i, s2);
     }
 }
 
@@ -365,10 +364,7 @@ void flfntDrawTerm(void) {
         *(u128 *)(tail + 4) = 0;
         np->dcur += 0x20;
         flPS2GetSystemTmpBuff(np->dcur - np->dbuf, 0x10, head);
-        t = np->dbuf;
-        t <<= 36;
-        t >>= 36;
-        flPS2DmaAddQueue2(0, t, tail, flPs2VIF1Control);
+        flPS2DmaAddQueue2(0, (u64)(np->dbuf << 4) >> 4, tail, flPs2VIF1Control);
     }
 }
 
@@ -618,7 +614,7 @@ void flfntFontPuts(char *str, FREQ *r) {
         if (full == 0) {
             np->px += r->sw;
         } else if (np->halftype != 0) {
-            np->px += (s16)(r->sw >> 1);
+            np->px += (s16)(r->sw / 2);
         } else {
             np->px += (s16)(r->sw * 2 / 3);
         }

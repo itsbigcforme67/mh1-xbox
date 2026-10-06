@@ -264,6 +264,8 @@ int rt_import_data(void)
 #define LB_VRAM 0x533980u
 #define LB_SPAN 0x220000u       /* lobby.bin 0x134E00 + .bss 0xEA680, rounded up */
 uint8_t rt_lb_mem[LB_SPAN] __attribute__((aligned(16)));
+static uint8_t *lb_image;       /* rt_lb_mem as rt_import_lobby left it */
+static uint32_t lb_image_n;
 
 static void *map_lb(uint32_t v)
 {
@@ -328,7 +330,24 @@ int rt_import_lobby(void)
         shop_default_tag_00389E90[0] = map_lb(0x65E020);
         shop_default_tag_00389E90[1] = map_lb(0x65E028);
     }
+    lb_image_n = n;
+    lb_image = malloc(n);       /* the freshly loaded overlay, for rt_lb_reload */
+    if (lb_image)
+        memcpy(lb_image, rt_lb_mem, n);
     return 0;
+}
+
+/* Load_overlay(3) (main 0x23E510: load_bin + mwOverlayInit) on every entry
+ * to the village: lobby.bin's data comes back as on disc and its .bss is
+ * zeroed (game.bin used the same memory during the quest). Without it
+ * client_work kept "village motions loaded" (cw+0x2C06) from the last
+ * visit while the quest had replaced them: the hunter walked on the spot. */
+void rt_lb_reload(void)
+{
+    if (!lb_image)
+        return;
+    memcpy(rt_lb_mem, lb_image, lb_image_n);
+    memset(rt_lb_mem + lb_image_n, 0, LB_SPAN - lb_image_n);
 }
 
 /* ------------------------------------------------------------ select.bin

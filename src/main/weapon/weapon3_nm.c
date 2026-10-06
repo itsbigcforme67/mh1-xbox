@@ -1066,14 +1066,9 @@ void enemy_trans(TRANSEM *tp) {
     c = cb;
     for (i = 0; i < n; i++) {
         if (em->vis[i] != 0) {
-            for (;;) {
-                if (v == -1) break;
-                if (v < i) {
-                    lp++;
-                    v = *lp;
-                    continue;
-                }
-                break;
+            while (v != -1 && i > v) {
+                lp++;
+                v = *lp;
             }
             if (v == i || em->alpha != 1.0f) {
                 flSetRenderState(0x60, 0);
@@ -1086,9 +1081,9 @@ void enemy_trans(TRANSEM *tp) {
             em_trans_sub(em, i);
             if (c->handle != -1) {
                 switch (em->kind) {
-                case 23:
-                case 18:
                 case 9:
+                case 18:
+                case 23:
                     func_5ACA60(em, i, cb);
                     break;
                 case 20:

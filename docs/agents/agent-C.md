@@ -935,3 +935,65 @@ DeviceUpdateStatus 11 (netdev_nm.c), InetDnsSetAll 21 and CpInetPppStart ~18 (ne
 ipaddr_from_string 0x002368E0 is the same text), release_model 7, menu_data_monster_sub 5 (declbf/declhill/permuter found nothing for these), se_req2 7, pl_light_change
 (new C in no file yet: logic as in the m2c draft; the original keeps the stage 12/13/14/28/30 test as five separate compares), parts_init (m2c draft: three loops,
 the 21-iteration one is unrolled 7x by MWCC; our version differs in register allocation of w/q/i).
+
+## Eleventh assignment: single player first (Sonnet worker C, 6 Oct 2026)
+Remaining unmatched functions in my ranges: 236 functions, 208 KB (list from config/c_files.txt + c_rawfuncs; sizes in bytes).
+Split by caller: single player = reached from Game_task/round_init/em/pl/menu/village paths; online = cp/net/inet/mcsls/ppp/USB-keyboard-for-chat stack.
+
+Single player (work these first, largest first):
+- stage/models: trans_stage 15152, em_material_sub 7500, set13_m 4264, set13_trans 3100, mkModel4/mkModel/mkModel3, armor_create_model, Pl_model_id_set
+- effects: eft06_m 4848, eft13_m 2688, eft13_set_pos_em 2720, eft13_set_pos 2512, eft13_i 1924, eft13_set_sub_em 1388, eft_rgba_linear 944
+- collision: PushAdjust3 4024, hit_hit_sub_em 3208, GetEyeHitLine 2568, GetWallHitBitPl/Em 2196/2164, GetWallHitLine 2096, sphr_face_o3/o4, GetGroundHit* family, hit_calc_shl 1368, hit_hit_sub_pl 1072, GetFloorSlide, HitWallPlayer
+- game flow: Game_task 3096, em_move 2648, mlCalcTransEM 1712, em_ride_sub 1632, round_init 1036, init_pl_work 520, load_shadow 196
+- player: basic_com_ck 2368, pl_move_sub 2144, timer_calc_sub_pl 1700, body_hit_*, Pl_item_stack, pl_mv021, sougun/gun_adj_sub, egg_com_ck, pl_egg*, pl_at*
+- menus/HUD: disp_item_sub_select 3872, trans_box 2556, Menu_mix_mv 2120, player_info_sub 1836, disp_whole_map, Pit_mv 1528, Pit_mv_lb 416, disp_partial_map, item_stock_mv, disp_pachinger, gage_disp, disp_timer
+- sound/sprites: SpritePut 2048, se_req2 872, Put_sprite_rotate 840, armor_sd_req, snd_joint_load
+- omake/mode menus at 0x23A000-0x23E000 (called from the title/mode select, not the net): disp_mode_menu, mode_sel, Sel_menu_disp, disp_omake_menu, npc_move/npc_trans, Sel_back_disp, key_rept_du
+- library, skip: _start/_root/_exit, Adx_init (CRI), ioRead/ioread_sub/ioRead2 (known unmatched), MakeMediaVersion
+
+Online (last): prot_01 3260, prot_00 2796, mcsls_recv 1876, mcsls_r0_pingpong 884, mcsls_send_command_app_data, mcsls_send_size_get, InetDisconnectAll 1588,
+CpInetPppStart 720, CpInetTcpOpen, Ave_TcpSend, DeviceUpdateStatus, InetDnsSetAll, InetIPAddrFromString, ipaddr_from_string, module_load/loadhigh/unload,
+SetResult*/rpccall_end/USB keyboard (cnv_keycode, vblank_e_handler, push/pop/clear_repbuf, usbkbdm_*, getPS2KbData, usbKbConnectChk), Menu_chatcnfg_mv,
+menu_chcnfg_sendpl, lb_disp_chat_cnfg_sendpl (chat config UI).
+
+## Twelfth pass (Sonnet worker C, after the network cut-off)
+Linked: egg_com_ck (pl/plegg.c, 0x14A6B0-0x14AA44): `return;` instead of `break;` after the dash branch (early-return form). The single-player / online split of the
+remaining list is the "Eleventh assignment" section above. load_shadow: `(s16)(i + 0x127)` is far worse (23 off); stays at 2 off. Remaining near-matches unchanged.
+
+## Thirteenth pass (Sonnet worker C, single-player list, all `tools/rebuild.sh` OK)
+Linked (main module, single player): Put_sprite_rotate (sprite/putspr3, 0x15B300), flash_move (model/light05, 0x11DE60), Pl_model_id_set
+(model/crmdl03 + rodata 0x358480-0x358498), parts_chg + yure_init (cp/cp03, 0x121280-0x121380), player_init0 (pl/plx09), hit_hit_sub_pl
+(hit/hite, 0x113E50), St_pick_ck2 (pl/plx10), pl_light_ck (pl/plx11), pl_egg03 (pl/plegg2). No header edits. No online code touched.
+Lessons (function that shows it):
+- A struct/array local with `addiu v0,sp,off; sh r,0(v0)` stores is just `a = b = x` chained assignments (the inner one is stored first); declare the
+  bigger local FIRST to get the lower stack slot (Put_sprite_rotate: TRI before SPR).
+- A counted loop is NOT unrolled when written `i = 0; do { ... i++; } while (i < n);` (yure_init: orig is a single 10-store loop), but a `for` is
+  unrolled 4-8x; and a `for` whose body has 9 statements is not unrolled while one with 8 is (the unroller has a body-size limit, parts_init).
+- `j = sum = 0; for (; j < n; j++)` keeps `slt at,j,n` with j in a register (no folding of the first test), `for (j = 0; ...)` folds it (get_start_*, 7 off).
+- Switch whose compare ladder is 2,1,0 wants the cases written 0,1,2 (flash_move, parts_chg wants 0x12 before 0xE: the reverse of the ladder).
+- `(f32)p[2]` of a u8 gives the unsigned-convert branch only with `(u32)`: `1.0f / (u32)p[2]` (flash_move). Pointer walks that must not fold
+  (`d[1] = a[0]; d[2] = a[1]; a++; a++; d[3] = a[0];`) need `a++; a++;`, not `a += 2` (flash_move).
+- `f32 k = 80.0f; pw - pw * def / (def + k)` keeps the operand order of add.s that `80.0f + def` / `def + 80.0f` flip (hit_hit_sub_pl).
+- `for (i = 0, mx = tbl; i < 6; i++)` (init inside the for) and `eq = ..; ` before it fixes the order of `daddu s2,zero` vs `addiu s0` (player_init0).
+- The order of the `return` stubs at the end of a function is the textual order of the return statements: `if (n > 0) {..} else { return 0xFFFE; } return r;`
+  puts the 0xFFFE stub first (St_pick_ck2). An `int r` assigned `(u16)f()` gives `andi s0,v0,0xFFFF` once and a plain `daddu v0,s0` at the return.
+- `*(u8 *)((int)e + 0x612)` for the second use stops MWCC making a hoisted `addiu s3,s0,0x612` pointer that the original does not have (pl_light_ck).
+- `v = (arg1 == 1) ? 4 : 0x72;` instead of `v = 0x72; if (arg1 == 1) v = 4;` moves the int-to-float `mtc1` to the join point like the original (pl_egg03).
+Near-matches after this pass (all in the *_nm.c files): armor_create_model (written in the thirteenth pass, instructions identical, only the s-register
+numbering of i/p2/p4/off differs: orig i=s2 p2=s1 p4=s7 off=s6 id=s3 h=s4; declbf/declhill found nothing; the s16-id version needs `int id = (s16)mdl[i]`,
+`(u32)(id - 13) <= 1`, the model_work_set2 arg `(u16)(skin + sex * 4)` and explicit pointer counters `p2 += 2; p4 += 4; off += 2`), get_start_material and
+friends 7 off (j and the pointer IV swap a2/a3), key_rept_du 5 (idx4 and the `on` pointer swap t0/a3), em_dur_set 8 (the `n * 2` is computed before the table
+address in the original), weapon_create_model/edit_create_model 10, Sel_back_disp (the OR order of the colour; best expression shape gets 2 lines off),
+pl_egg05 32 (the original does not fill two branch delay slots and has a `nop` before an aligned block), parts_init (original unrolls the 21-iteration
+loop 7x and keeps nine stores per iteration, ours is not unrolled: the unroll limit), mode_sel (the original has `nop nop` padding in front of case 0).
+Also linked later in the pass: pl_mv060 (pl/plx12, 0x13EA40), edit_create_model (model/crmdl04, 0x124F80), load_texlist (load/lf04, 0x11E9E0). More lessons:
+- `if (c) v = 12; else v = 8;` (not `v = c ? 12 : 8;`) when the original does the int-to-s16 extension of v after the branch (pl_mv060); the opposite
+  holds where the ternary moved the `mtc1` to the join (pl_egg03): try both.
+- When the saved-register numbering of two pointer/index variables is swapped, drop the explicit induction variable and write the expression in terms
+  of the loop counter: `model_work_set(.., (s16)(10 + i * 0x32), ..)` instead of `y += 0x32` (edit_create_model); `mem_tex[base++] = ..` instead of a
+  `dst = &mem_tex[base]` pointer (load_texlist, which also moves the pointer set-up behind the `0 < n` guard as in the original).
+- Do not use an automatic statement swapper on code with side effects: a trial swap of two Pl_item_stack calls and of a load call and a field read
+  "improved" the diff count while changing the behaviour (both reverted).
+Still near-match, tried this pass without success: Pit_mv 4 / Pit_mv_lb 3 (the original loads `now` into a0 and copies it to the saved register; assignment
+inside the argument, int/u16/u32 types, a hold variable and statement orders all give the same 3), load_shadow 2, menu_data_monster_sub 5, pl_dm008/pl_at012
+(the original re-copies a0 from s0 in the first call block), Pl_slash_lv_ck, se_req2 7 (permuter ran 15 minutes), em_dur_set 8, release_model 7.

@@ -23,7 +23,10 @@ int SdrSeReq(int snd, s8 vol, s8 pan, s16 pitch, s8 x)
     if (sndque_tbl[idx].cmd >= 0) {
         return -1;
     }
-    sndque_tbl[idx].cmd = ((s8)(((vol >= 0) & 1) | (((pan >= 0) & 1) << 1) | ((pitch >= 0) << 2)) << 24) | (snd & 0xFFFFFF);
+    {
+    s8 f = ((vol >= 0) & 1) | (((pan >= 0) & 1) << 1) | ((pitch >= 0) << 2);
+    sndque_tbl[idx].cmd = (f << 24) | (snd & 0xFFFFFF);
+    }
     sndque_tbl[idx].vol = vol;
     sndque_tbl[idx].pan = pan;
     sndque_tbl[idx].pitch = pitch;

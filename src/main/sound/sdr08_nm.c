@@ -17,21 +17,24 @@ void sdr_dmaadr_set(int addr0, int size0, int addr1, int size1, int addr2, int s
 
 void sdr_dmaadr_set(int addr0, int size0, int addr1, int size1, int addr2, int size2)
 {
-    int idx = sque_w_idx[0];
+    int idx;
     SNDQUE *q;
+    SNDQUE *tbl;
 
+    tbl = (SNDQUE *)((int)sndque_tbl);
+    idx = sque_w_idx[0];
     size0 = (size0 + 0xF) & ~0xF;
-    q = &sndque_tbl[idx];
-    q->cmd = ((size0 >> 4) & 0xFFFFFF) | 0x4F000000;
+    q = &tbl[idx];
     q->w1 = addr0 | (size0 >> 20);
+    q->cmd = ((size0 >> 4) & 0xFFFFFF) | 0x4F000000;
     idx = (idx + 1) % 32;
     size1 = (size1 + 0xF) & ~0xF;
-    q = &sndque_tbl[idx];
+    q = &tbl[idx];
     q->cmd = ((size1 >> 4) & 0xFFFFFF) | 0x4F000000;
     q->w1 = addr1 | (size1 >> 20);
     idx = (idx + 1) % 32;
     size2 = (size2 + 0xF) & ~0xF;
-    q = &sndque_tbl[idx];
+    q = &tbl[idx];
     q->cmd = ((size2 >> 4) & 0xFFFFFF) | 0x4F000000;
     q->w1 = addr2 | (size2 >> 20);
     idx = (idx + 1) % 32;
@@ -40,16 +43,16 @@ void sdr_dmaadr_set(int addr0, int size0, int addr1, int size1, int addr2, int s
 
 int SdrDmaLoadReq(u32 id, int addr0, int size0, int addr1, int size1, int addr2, int size2)
 {
-    int idx;
     int n;
+    int idx;
 
-    if (id >= 0x1000) {
+    if (id > 0xFFF) {
         return -2;
     }
     if (((addr0 | addr1) | addr2) & 0xF) {
         return -3;
     }
-    if (size0 >= 0x1FFFF1 || size1 >= 0x1FFFF1 || size2 >= 0x1FFFF1) {
+    if (size0 > 0x1FFFF0 || size1 > 0x1FFFF0 || size2 > 0x1FFFF0) {
         return -4;
     }
     idx = sque_w_idx[0];
@@ -61,8 +64,10 @@ int SdrDmaLoadReq(u32 id, int addr0, int size0, int addr1, int size1, int addr2,
         idx = (idx + 1) % 32;
         n--;
     } while (n > 0);
-    sndque_tbl[sque_w_idx[0]].cmd = (((id << 8) & 0xFFFFFF)) | 0x4D000000;
-    sque_w_idx[0] = (sque_w_idx[0] + 1) % 32;
+    idx = sque_w_idx[0];
+    n = (((id << 8) & 0xFFFFFF)) | 0x4D000000;
+    ((SNDQUE *)((int)sndque_tbl))[idx].cmd = n;
+    sque_w_idx[0] = (idx + 1) % 32;
     sdr_dmaadr_set(addr0, size0, addr1, size1, addr2, size2);
     return 0;
 }
