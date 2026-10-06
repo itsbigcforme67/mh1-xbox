@@ -59,10 +59,10 @@ loop_1:
         temp_v1 = (s8)arg2;
         switch (temp_v1) {                          /* irregular */
         case 0:
-            put_mainWindow(arg0, arg1, var_a3);
+            put_mainWindow(arg0, arg1);
             break;
         case 1:
-            put_mainWindowTex(arg0, arg1, var_a3);
+            put_mainWindowTex(arg0, arg1);
             break;
         }
         font_set_palette(0);
@@ -95,7 +95,7 @@ loop_15:
                             font_print_double( (temp_s7 << 0x30) >> 0x30, var_s4, 1, 4);
                         } else {
                             font_set_palette(0);
-                            flfntLocate( (temp_s5 << 0x30) >> 0x30, var_s4);
+                            flfntLocate((temp_s5 << 0x30) >> 0x30);
                             font_print(&lit_2316, F(int, var_s2, 4));
                             flfntSetSize(0x16, 0x12);
                             flfntLocate( (temp_s6 << 0x30) >> 0x30, var_s4);

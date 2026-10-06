@@ -270,7 +270,7 @@ block_153:
         }
         goto block_153;
     case 3:                                         /* switch 1 */
-        temp_v0_8 = getUserInfo(temp_a0);
+        temp_v0_8 = getUserInfo();
         switch (temp_v0_8) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_a0_8 = (int)pNet;
@@ -291,7 +291,7 @@ block_153:
             F(u8, pNet, 3) = 2U;
             temp_v1_10 = (int)pNet;
             F(u8, temp_v1_10, 0xA) = (u8) F(u8, temp_v1_10, 6);
-            cnWrap_SoundRequest(3, (u8 *) temp_a1_3);
+            cnWrap_SoundRequest(3);
         } else if (temp_a1_3 & 0x80) {
             temp_a0_9 = (int)pNet;
             F(u8, temp_a0_9, 3) = (u8) (F(u8, temp_a0_9, 3) + 1);
@@ -319,7 +319,7 @@ block_153:
                 var_v0 = temp_v0_10 - 1;
             }
             F(u8, temp_v0_9, 0x12) = var_v0;
-            cnWrap_SoundRequest(1, (u8 *) temp_a1_3);
+            cnWrap_SoundRequest(1);
         } else if (temp_a1_3 & 0x400) {
             temp_v1_12 = (int)pNet;
             temp_v0_11 = F(u8, temp_v1_12, 0x12) + 1;
@@ -337,7 +337,7 @@ block_153:
             F(u8, pNet, 3) = 2U;
             temp_v1_13 = (int)pNet;
             F(u8, temp_v1_13, 0xA) = (u8) F(u8, temp_v1_13, 6);
-            cnWrap_SoundRequest(3, (u8 *) var_a1);
+            cnWrap_SoundRequest(3);
         } else if (var_a1 & 0x20) {
             temp_v1_14 = (int)pNet;
             if (F(u8, temp_v1_14, 0xA) == 0) {
@@ -364,7 +364,7 @@ block_153:
         } else if ((var_a1 & 0x3000) && (F(s8, (u8 *)cw, 0x2F99) != 0)) {
             temp_v1_15 = (int)pNet;
             F(u8, temp_v1_15, 0xA) = (u8) (F(u8, temp_v1_15, 0xA) ^ 1);
-            cnWrap_SoundRequest(1, (u8 *) var_a1);
+            cnWrap_SoundRequest(1);
         }
         goto block_153;
     case 6:                                         /* switch 1 */
@@ -464,7 +464,7 @@ block_153:
     case 11:                                        /* switch 1 */
         temp_v0_19 = F(u8, temp_a0, 0x12);
         if (temp_v0_19 == 0) {
-            temp_v0_20 = SaveNetFile_ForLobby(temp_a0);
+            temp_v0_20 = SaveNetFile_ForLobby();
             if ((temp_v0_20 != -1) && (temp_v0_20 != 1)) {
                 goto block_153;
             }
@@ -482,7 +482,7 @@ block_153:
     case 12:                                        /* switch 1 */
         F(s8, temp_a0, 0xC) = 1;
         if (temp_s0 & 0xFFFF & 0x20) {
-            cnWrap_SoundRequest(3, (u8 *) temp_a1);
+            cnWrap_SoundRequest(3);
             return 3;
         }
         goto block_153;
@@ -491,7 +491,7 @@ block_153:
         if (temp_s0 & 0xFFFF & 0x20) {
             temp_v1_19 = (int)pNet;
             F(u8, temp_v1_19, 3) = (u8) (F(u8, temp_v1_19, 3) + 1);
-            cnWrap_SoundRequest(0, (u8 *) temp_a1);
+            cnWrap_SoundRequest(0);
         }
         goto block_153;
     case 14:                                        /* switch 1 */

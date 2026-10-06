@@ -52,9 +52,9 @@ block_8:
         }
         temp_v1_2 = (int)SearchResult;
         if ((*(u8 *)temp_v1_2) != 0) {
-            memcpy((int)&tl_member_buff + (F(u8, arg0, 6) * 0x2FC) + 0x280, temp_v1_2 + 4, 8);
+            memcpy(&tl_member_buff[F(u8, arg0, 6) * 0x2FC] + 0x280, temp_v1_2 + 4, 8);
             temp_a3_3 = F(u8, arg0, 6);
-            memcpy((int)&tl_member_buff + (temp_a3_3 * 0x2FC) + 0x288, (int)SearchResult + 0xC, 0x11);
+            memcpy(&tl_member_buff[temp_a3_3 * 0x2FC] + 0x288, (int)SearchResult + 0xC, 0x11);
             temp_a3_4 = F(u8, arg0, 6);
             memcpy((int)&tl_member_buff + (temp_a3_4 * 0x2FC) + 0x29A, (int)SearchResult + 0x20, 0x40);
         }

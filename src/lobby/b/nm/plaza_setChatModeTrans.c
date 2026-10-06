@@ -53,7 +53,7 @@ void plaza_setChatModeTrans(void) {
         if (F(u8, pNet, 0xA) == 0) {
             font_print_double(F(s16, temp_s0, 0x158), F(s16, temp_s0_2, 2), 1, 4);
         } else {
-            Lb_put_msg_type2(temp_s0_2);
+            Lb_put_msg_type2();
         }
         if (F(u8, (u8 *)cw, 0x32BE) == 0) {
             Put_megaphone( ((F(s16, temp_s0, 0x158) - 0x1A) << 0x30) >> 0x30,  ((F(s16, temp_s0_2, 2) - 4) << 0x30) >> 0x30, 0);
@@ -142,8 +142,8 @@ loop_13:
                         font_set_palette(0xA);
                     }
                     flfntLocate( temp_s3, (s16) var_s2);
-                    font_print(&lit_2316, var_s7_2);
-                    strcpy(spD0, var_fp);
+                    font_print(&lit_2316);
+                    strcpy(spD0);
                     han2zen(spD0, &spA0);
                     flfntLocate( (temp_s4_2 << 0x30) >> 0x30, (s16) var_s2);
                     font_print(&lit_2316, &spA0);

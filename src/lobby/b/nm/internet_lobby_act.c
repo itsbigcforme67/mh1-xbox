@@ -81,12 +81,12 @@ block_18:
                 cnLbc_SetIspRestTime(temp_a0_2 + 0x35F8);
             }
             temp_v1_5 = (int)cw;
-            if (F(s32, temp_v1_5, 0x35F4) < 0) {
+            if (0 > F(s32, temp_v1_5, 0x35F4)) {
                 goto block_43;
             }
             temp_v0_2 = F(s32, temp_v1_5, 0x35F8) - 1;
             F(s32, temp_v1_5, 0x35F8) = temp_v0_2;
-            if (temp_v0_2 < 0) {
+            if (0 > temp_v0_2) {
                 goto block_43;
             }
             temp_v1_6 = F(s8, (u8 *)cw, 0x2C0E);

@@ -23,7 +23,7 @@ s32 server_select_05(void) {
     switch (temp_a0) {
     case 0:
         COM_R_No_3 = (u8) (temp_a0 + 1);
-        cnWrap_BgmStop(temp_a0);
+        cnWrap_BgmStop();
         cnWrap_ScreenFadeOut(0, 0x14);
     default:
 block_30:

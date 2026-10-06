@@ -28,7 +28,7 @@ void Lb_shop(void) {
     temp_a0 = (*(int *)((u8 *)&D_3E4FA0 + temp_a1));
     switch (F(s8, &lbShop, 0x14)) {       /* irregular */
     case 0:
-        Lb_shop_init_member(temp_a0);
+        Lb_shop_init_member();
         F(s8, &lbShop, 0x16) = 0;
         F(s8, &lbShop, 0x17) = 2;
         F(s8, &lbShop, 0x18) = 1;
@@ -55,7 +55,7 @@ void Lb_shop(void) {
         }
         break;
     case 2:
-        temp_v0 = Lb_shop_move(temp_a0);
+        temp_v0 = Lb_shop_move();
         if ((temp_v0 != 3) && (temp_v0 != 0)) {
 
         } else {

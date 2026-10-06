@@ -17,7 +17,7 @@ void lbc_admin_message_00(void) {
     switch (temp_a0_2) {                            /* irregular */
     case 0:
         F(u8, temp_a0, 0x2F6F) = (u8) (temp_a0_2 + 1);
-        Lbc_init_network_work(temp_a0_2, temp_a1);
+        Lbc_init_network_work();
         Info_Initialization();
         /* fallthrough */
     case 1:
@@ -41,7 +41,7 @@ void lbc_admin_message_00(void) {
             F(u8, (u8 *)cw, 0x2F6F) = 0U;
             F(s16, (u8 *)cw, 0x2F74) = 0;
         }
-        font_set_stack_no(3, temp_a1);
+        font_set_stack_no(3);
         cnWrap_SetFontColor(0);
         cnWrap_SetFontSize(0x41A00000);
         temp_v1_3 = (int)cw;

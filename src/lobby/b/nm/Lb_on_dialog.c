@@ -32,7 +32,7 @@ void Lb_on_dialog(void) {
             switch (temp_a0_2) {                    /* switch 2; irregular */
             case 10:                                /* switch 2 */
                 temp_a2 = (int)&Friend_data + ((F(u8, temp_a1, 0xA) + (F(s16, temp_a1, 0x24) * 7)) * 0x30);
-                DispNameAndIDonDialog(0x98, temp_a2 + 8, temp_a2);
+                DispNameAndIDonDialog(0x98, temp_a2 + 8);
                 return;
             case 13:                                /* switch 2 */
                 temp_v0_3 = (int)cw;

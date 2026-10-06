@@ -43,7 +43,7 @@ s32 lb_process_kyoukaListProg(void) {
     if (lbShop.key & 0x20) {
         if (F(s16, temp_s0, 0x24) == 0) {
             temp_a1_2 = armorIndex;
-            if (*(s32 *)((int)&D_3C7005 + (temp_a1_2 * 6)) != 7) {
+            if (*(s32 *)(&D_3C7005[temp_a1_2 * 6]) != 7) {
                 var_v0 = F(s32, &shop_process2_help, 0x14);
                 var_at = (int)&lbShop + 0x4C;
             } else {
@@ -123,7 +123,7 @@ s32 lb_process_kyoukaListProg(void) {
             cnWrap_SoundRequest(1);
             temp_v0 = lbShop.x70 - 1;
             lbShop.x70 = temp_v0;
-            if (temp_v0 < 0) {
+            if (0 > temp_v0) {
                 lbShop.x70 = (lbShop.count - 1);
             }
         }

@@ -29,7 +29,7 @@ void Put_page_num(int arg0, int arg1, int arg2, int arg3, int arg4) {
     }
     han2zen(sp90, &sp70);
     flfntSetSize(0x12, 0x12);
-    flfntLocate(arg0, arg1);
+    flfntLocate(arg0);
     font_set_palette(0);
     if (!(temp_s2 & 0xFF)) {
         font_print(&lit_2316, &sp70);

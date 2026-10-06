@@ -40,7 +40,7 @@ void id_select_01(ARG_id_select_01_arg0 *arg0) {
             cnWrap_SoundRequest(0);
             return;
         }
-        return;
+        break;
     case 1:
         if (F(s8, ((arg0->x0008 * 8) + (s32)cw), 0xB) == 0) {
             SetDialogData(6, 2);

@@ -21,14 +21,14 @@ void Lb_gh_board_trans(ARG_Lb_gh_board_trans_arg0 *arg0) {
     var_s0 = (int)&gh_boardStr2;
     do {
         flfntSetSize(0x12, 0x12);
-        flfntLocate(0x140, var_s3);
+        flfntLocate(0x140);
         font_print(&lit_519_0065E690, (*(s32 *)var_s1));
         if (( (var_s2 << 0x30) >> 0x30) != 0) {
             flfntSetSize(0x18, 0x12);
-            flfntLocate(0x1AC, var_s3);
+            flfntLocate(0x1AC);
             font_print(&lit_519_0065E690, (*(s32 *)var_s0));
             flfntSetSize(0x12, 0x12);
-            flfntLocate(0x228, var_s3);
+            flfntLocate(0x228);
             font_print(&lit_520_0065E698);
         }
         var_s1 += 4;

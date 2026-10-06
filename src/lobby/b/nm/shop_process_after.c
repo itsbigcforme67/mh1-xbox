@@ -57,7 +57,7 @@ s32 shop_process_after(void) {
             }
             if ((lbShop.mode == 0) && (lbShop.x1A == 1)) {
                 if (Now_equip_ck(&User_data, armorIndex) == 1) {
-                    shop_armor2_stack(var_s1);
+                    shop_armor2_stack();
                     lbShop.f38 = (int (*)())0;
                     lb_process_tag_decide01();
                     r_no_process = 0;
