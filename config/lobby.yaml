@@ -1506,6 +1506,8 @@ segments:
       - [0x0A1710, c, f/lb_k03]
       - [0x0A1DD0, c, f/lb_z134]
       - [0x0A1F34, asm, text/Clear_lobby_ram]
+      - [0x0A1F40, c, f/lb_n09]
+      - [0x0A2058, asm, text/Lb_send_chat]
       - [0x0A2060, c, f/lb_gad04]
       - [0x0A218C, asm, text/CallBack_Result_SendChatMessageTU]
       - [0x0A2190, c, f/lb_gad01]

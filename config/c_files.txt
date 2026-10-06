@@ -2025,3 +2025,4 @@ main 0x0016D8F0 0x0016D9C0 fl/clay03
 lobby 0x005C5F30 0x005C6F34 f/lb_u
 lobby:rodata 0x006649F0 0x00664A3C f/lb_u
 lobby:rodata 0x00668440 0x00668460 f/lb_tu_ib
+lobby 0x005D58C0 0x005D59D8 f/lb_n09
