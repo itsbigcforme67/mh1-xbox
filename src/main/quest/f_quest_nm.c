@@ -876,10 +876,13 @@ int n;
 
 char *Quest_str_get(int n)
 {
+    s32 *p;
     if (game_w.x1DC) {
         return func_5C5E20();
     }
-    return (char *)(mission_area + quest_w.x84[n]);
+    p = quest_w.x84;
+    p += n;
+    return (char *)(*p + mission_area);
 }
 
 static s16 stolen_item_num_ck(item)
