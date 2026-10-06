@@ -374,6 +374,7 @@ main:rodata 0x003865A0 0x003865EC reward/f_reward
 main 0x00291D30 0x0029250C reward/f_reward2
 main:rodata 0x003866F0 0x0038672C reward/f_reward2
 main 0x00292510 0x00292D34 reward/f_reward3
+main 0x00292D40 0x002932BC reward/f_reward4
 main:rodata 0x003868F0 0x0038690C reward/f_reward3
 main 0x002932C0 0x00293364 reward/f_rewardb
 main 0x00293420 0x00293684 reward/f_rewardc
@@ -2054,6 +2055,7 @@ lobby 0x005FFCB0 0x005FFD1C f/lb_gdr2x01
 main 0x001BA8E0 0x001BB000 net/netsyn10
 main 0x0016AEC0 0x0016B054 fl/clay01
 main 0x0016B060 0x0016B10C fl/clay02
+main 0x0016B110 0x0016B180 fl/clay02b
 main 0x0016D8F0 0x0016D9C0 fl/clay03
 lobby 0x005C5F30 0x005C6F34 f/lb_u
 lobby:rodata 0x006649F0 0x00664A3C f/lb_u
