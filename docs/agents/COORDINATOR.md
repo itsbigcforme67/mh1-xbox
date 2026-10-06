@@ -66,6 +66,7 @@ always been a struct field type or a lost field.
 ## Current assignments (update when they change)
 
 Priority (owner, 6 Oct 2026): offline village and single player before online-only code (docs/DECISIONS.md).
+In-game web browser: paused (owner, 6 Oct 2026) — no new work on Bs*/tagAct_*/HTML code.
 
 - A (Opus): PC: quest -> reward -> village -> save -> continue loop, shops with money, forge, char screen polish, swap in matched village C.
 - B (Sonnet): lobby 0x5EE618-end (from F): item box and eft25 first, plaza chat log and browser last.
