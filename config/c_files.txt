@@ -2387,3 +2387,8 @@ lobby 0x005B8170 0x005B84CC b/lb_lid01
 lobby 0x005BE6F0 0x005BEA54 b/lb_lo01
 lobby:rodata 0x0065E8B0 0x0065E8CC b/lb_lid01
 lobby:rodata 0x0065EA60 0x0065EA80 b/lb_lo01
+lobby 0x005B4EF0 0x005B4F7C b/lb_cn00
+lobby 0x005B6CC0 0x005B6EB8 b/lb_cmcs04
+lobby 0x005B6A60 0x005B6AB8 b/lb_cmcs00
+lobby 0x005B4F80 0x005B5044 b/lb_cn10
+lobby 0x005B6AC0 0x005B6B7C b/lb_cmcs01
