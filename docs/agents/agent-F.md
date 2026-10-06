@@ -486,3 +486,45 @@ default block must be reached from the flag test, goto/label variants get thread
 (x5C update: bit-field and temp variants all worse), get_flag_quest 25 (tbl gets the param register instead of its own s4), Lb_send_chat_plus 23 (params must take s0-s2), lb_disp_name
 (draft has a wrong 1.25f*w locate argument: original uses (f32)(int)scr[0]; half = len / 2; rewrite from the asm, scr[1]/scr[2] must NOT be hoisted), Lb_put_help (not started).
 Never touched: lb_rule_seet_set, Lb_make_quest_tbl(_local), lb_set_pl_stage, lb_pl_turn_sub, Lb_draw_square, get_new_quest and everything from BsParseCheck/http_test on (browser).
+
+## Lobby session 12 (range 0x5C4E60-0x5EE618, village first, then room/member code)
+Linked (rebuild OK x5): Lb_draw_square (lb_v09.c), lb_set_pl_stage (lb_v10.c), get_new_quest (lb_v12.c), get_flag_quest (lb_v13.c). The last two use `#include "types.h"` plus a local
+`int ran_suu();` because lobby_f.h declares ran_suu as s16, which adds a dsll32/dsra32 pair that the original does not have.
+Lessons:
+- Lb_draw_square: the original keeps &q[1], &q[2], &q[3] in registers; writing `s16 *p1 = &q[1]` etc. (p3 assigned just before its first use) reproduces it; y1 is an `int`, the
+  third line group must be `*p1 = *p3 = y; q[0] = sx;` (the q[0] store ends in the jal delay slot).
+- lb_set_pl_stage: `me = &player_work[game_w.master]` must come BEFORE `pl->stg = *stg` (it fixes the load order); K&R `int id` and `Lb_clearChatMember((s8)id)`.
+- get_new_quest / get_flag_quest: declarations in the order k, i, n (the compiler assigns s-registers in reverse), `v = (ran_suu(1) & 0xFFFF) % n; i = v & 0xFF;` (a temp, then the mask),
+  `if (0 < n)` gives `slt at` + beqz (n > 0 gives blez), `if (*e != 0x90 || Quest_clear_bit_ck(0x94) == 1) return *e;` shares one return. In get_flag_quest the 0x67..0x6A test needs a `u8 w = i;`
+  temp (`if (w < 0x67 || w > 0x6A)`) to get `andi` + `slti at`.
+Near-matches left (not built): lb_disp_name (lb_v08_nm.c, ~140 of 364 words differ: register map is off - s-register for lb_player pointer/len/px/py, the original keeps spA0 on the stack),
+lb_pl_turn_sub (lb_v11_nm.c, 45: the original keeps a1 as a u16 local with daddiu constants and no mask on use; mine masks), lb_insert_target_list (lb_v14_nm.c, 8: head must be a2, compare in `at`),
+Lb_room_member 1 (addu operand order; tried 14 spellings), lb_send_data 3 (Lbs flag branch must jump to the default block, not past it), Clear_lobby_ram is already linked (lb_n09).
+Not started: Lb_put_help (m2c goto draft), lb_rule_seet_set, Lb_make_quest_tbl(_local), lb_guild_make_room.
+
+## Lobby session 13 (range 0x5C4E60-0x5EE618, village first, then online)
+Linked (rebuild OK x5): Lb_put_help (lb_v15.c), Lb_make_quest_tbl_local (lb_v16.c), Lb_make_quest_tbl (lb_v17.c, jump table 0x664AC0-0x664AD8 as `lobby:rodata`). Lobby 31.54% -> 32.06%. All three are village code
+(guild quest table / hotel help line); no online-only function was linked.
+Lessons (each confirmed by a match):
+- `extern u8 lb_quest_clear[8];` (explicit size <= 8) is gp-addressed like the original (`addiu a1,gp,..`); `u8 x[]` is not. Same idea as the my_user_id 16-byte trick, the other way round.
+- A 5/6-round counted loop is only left un-unrolled when written as `do { ... } while (m < 6)` with explicit pointer locals (`tp += 4; cp++; p += 5`); a `for (i = 0; i < 5; i++)` gets unrolled.
+- Declaration order of those pointer locals decides the temp registers of the first loop (m, t, tp, cp, p = highest to lowest); the loop counter of a long second loop is a different variable (`i`).
+  Spilled locals (stack) get slot addresses in declaration order, later declared = lower address (lv, rnd, flag, sel, cnt ... = 0x100, 0xF0, 0xE0, 0xD0, 0xC0).
+- `k = 5; if (t[5] != 0) { do {...} while (t[k] != 0); }` puts `k = 5` in the delay slot of the test; `if (i != 0 && i != 1 && (k = 5, t[5] != 0))` does the same behind other tests.
+- `u32 r = ran_suu(1) & 0xFFFF; (r >> (k % 16)) & 1` gives srlv with the `bgez/andi/addiu` mod sequence; `(u16)ran_suu(1) % (u32)(5 - flag)` gives divu; `n = flag + (u16)ran_suu(1) % (u32)(...)` in one expression gives the original addu operand order.
+- A local u8 `sel`/`cnt` that the original keeps in a stack slot is just a normal local that ran out of registers; no volatile needed. Uninitialised `rnd` is read once before it is set (stack garbage in the original, kept).
+- `if (key_quest != 0x67) {else-part} else {0x67 part}` gives the original block order (beq to the 0x67 block).
+- Lb_put_help: `switch (lb_sys.x68) { case 0: case 0x27: case 7: case 8: break; default: return; }` for the early exit (labels in reverse ladder order); the nested hotel-price switches list 0, 1, 3, 2 with 1/3 falling through into 2 (the real order is the reverse of the compare ladder);
+  `*(u8 **)((int)pl + 0x878)` for the second read (a `F(u8 *, pl, 0x878)` twice gets the address CSE'd into a spare s-register); lb_sys+0xA / +0x28 as the alias objects D_6EAE5A / D_6EAE78 (config/lobby_aliases.txt) so every use is `lui; addiu` again; `PLW *pl = &player_work[*(u8 *)0x3F34C1]`.
+- lb_guild_make_room: all cases `break` to one `return 2` (explicit `return 0` / `return 1` only where the asm jumps to the epilogue); inner switch labels in the order 0, 1 (reverse of the compare ladder); `int s1` counter with `if (0 < RoomRule[0x97])`.
+  Down from 136 to 16 differing insns (src/lobby/f/lb_v.c). The rest is the order of the two mhRule.x5C updates.
+Online (non-browser) functions left in the range, largest first (all are near-matches, browser excluded):
+  1. lb_rule_seet_set 2356 bytes (lb_w.c, rule sheet editor; first block order and register use far off, not started in earnest)
+  2. lb_guild_make_room 772 bytes (16 insns, lb_v.c)
+  3. Lb_send_chat_plus 288 bytes (about 23: params must take the lowest s-registers)
+  4. lb_send_data 216 bytes (3 insns, lb_n.c: the Lbs flag test must branch to the `b end` block after the switch ladder; the original also has a nop before it)
+  5. lb_insert_target_list 192 bytes (8: head must be a2, the loaded half-word in v1; a `u16 w` temp, declaration orders tried)
+  6. Lb_room_member 88 bytes (1: addu operand order)
+Village near-matches: lb_disp_name 1456 bytes (lb_v08_nm.c, now 160 insns: stack layout fixed by declaring sp100, spF0, spB0 in that order; the (s16)(1.25f * spF0[0]) of the second locate has no (s32) cast; s-register map still off: original keeps
+(cw + off + 0x1346) in s23 via `c = cw + off; q = c + 0x1346; t = c[0x1347]`, x in s21, y in s17, i in s20, row in s22, off in s30), lb_pl_turn_sub 520 bytes (lb_v11_nm.c, 31: a1 is a u16 with daddiu constants, loaded half-word goes to a0 and the +0x300 sum to v1 in the original, swapped in mine;
+final clamp is `if (a0 >= 0x8000) 0xF600 else 0xA00`).
