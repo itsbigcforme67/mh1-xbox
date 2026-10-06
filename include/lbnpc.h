@@ -28,6 +28,16 @@ typedef struct LB_NPCMV {
     s8 x2D;             /* 0x2D */
 } LB_NPCMV;
 
+/* waiter cat: route/work at EMW+0x444 */
+typedef struct {
+    u8 _pad00[0x10];
+    s32 idx;            /* 0x10 current waypoint */
+    u8 _pad14[0x26 - 0x14];
+    s16 x26;            /* 0x26 */
+    u8 _pad28[0x30 - 0x28];
+    f32 *route;         /* 0x30 waypoint list (3 floats each) */
+} LB_WAITEX;
+
 #define LBS8(o) (*((s8 *)&lb_sys + (o)))
 #define EM_F32(em, o) (*(f32 *)((u8 *)(em) + (o)))
 #define EM_S32(em, o) (*(s32 *)((u8 *)(em) + (o)))

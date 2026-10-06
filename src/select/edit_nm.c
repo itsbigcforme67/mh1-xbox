@@ -1,6 +1,7 @@
 /* select.bin 0x00534530-0x00538700: character make / edit screen and controller screen.
    (f_disp.s) Whole file; matching runs are split into edit00.c ... by tools/mkruns_mod.py. */
 #include "select.h"
+#define PSWV(i) (*(volatile u16 *)&Psw[i])
 
 void char_make_init(void) {
     EDIT_W *e = &edit_w;
@@ -58,8 +59,11 @@ void user_data_copy(UDC_SRC *src, u8 slot) {
     BS8(dst, 0x37B) = Get_hunter_rank(dst);
 }
 
+extern f32 D_2F2624[];
+extern f32 D_2F2628[];
+
 void edit_pl_init_new(PLW *pl, s16 mode, u16 no) {
-    f32 *pos;
+    EDIT_W *e = &edit_w;
     pl->be_flag = 1;
     pl->x01 = 1;
     pl->id = no;
@@ -73,17 +77,16 @@ void edit_pl_init_new(PLW *pl, s16 mode, u16 no) {
     pl->chr_spd0 = 1.0f;
     pl->chr_spd1 = 1.0f;
     pl->flag12 = 0;
-    pl->pos[0] = stage_start_pos[game_w.stage][0];
-    pl->pos[1] = stage_start_pos[game_w.stage][1];
-    pos = stage_start_pos[game_w.stage];
-    pl->pos[2] = pos[2];
+    pl->pos[0] = ((f32 *)stage_start_pos)[game_w.stage * 3];
+    pl->pos[1] = D_2F2624[game_w.stage * 3];
+    pl->pos[2] = D_2F2628[game_w.stage * 3];
     pl->ang[1] = 0;
     pl->ang[0] = 0;
     pl->ang[2] = 0;
     pl->kind = 0;
     if (mode == 0) {
-        pl->work011 = *(u8 *)((u8 *)&edit_w + 4);
-        pl->work5FC = *(s32 *)((u8 *)&edit_w + 8);
+        pl->work011 = *(u8 *)((u8 *)e + 4);
+        pl->work5FC = e->col;
         pl->work352[0] = 1;
         pl->work352[1] = 1;
         pl->work352[2] = 1;
@@ -92,7 +95,7 @@ void edit_pl_init_new(PLW *pl, s16 mode, u16 no) {
         pl->work352[5] = 1;
         B8(pl, 0x607) = 0;
     }
-    pl_create_model(pl->id, mode, pos, game_w.stage * 12);
+    pl_create_model(pl->id);
     B32(pl, 0x50C) = get_mdlw_ptr(edit_top[(s16)no]);
     parts_init(pl);
     pl->work568 = get_prim();
@@ -109,7 +112,7 @@ void decide_chr_set(PLW *pl, u8 a, u8 b) {
 }
 
 void edit_pl_init(PLW *pl, s16 mode, u16 no) {
-    f32 *pos;
+    EDIT_W *e = &edit_w;
     pl->be_flag = 1;
     pl->x01 = 1;
     pl->id = no;
@@ -123,16 +126,15 @@ void edit_pl_init(PLW *pl, s16 mode, u16 no) {
     pl->chr_spd0 = 1.0f;
     pl->chr_spd1 = 1.0f;
     pl->flag12 = 0;
-    pl->pos[0] = stage_start_pos[game_w.stage][0];
-    pl->pos[1] = stage_start_pos[game_w.stage][1];
-    pos = stage_start_pos[game_w.stage];
-    pl->pos[2] = pos[2];
+    pl->pos[0] = ((f32 *)stage_start_pos)[game_w.stage * 3];
+    pl->pos[1] = D_2F2624[game_w.stage * 3];
+    pl->pos[2] = D_2F2628[game_w.stage * 3];
     pl->ang[1] = 0;
     pl->ang[0] = 0;
     pl->ang[2] = 0;
     if (mode == 0) {
-        pl->work011 = *(u8 *)((u8 *)&edit_w + 4);
-        pl->work5FC = *(s32 *)((u8 *)&edit_w + 8);
+        pl->work011 = *(u8 *)((u8 *)e + 4);
+        pl->work5FC = e->col;
         pl->work352[0] = 1;
         pl->work352[1] = 1;
         pl->work352[2] = 1;
@@ -141,7 +143,7 @@ void edit_pl_init(PLW *pl, s16 mode, u16 no) {
         pl->work352[5] = 1;
         B8(pl, 0x607) = 0;
     }
-    weapon_create_model(pl->work34C, pl->id, 0, game_w.stage * 12);
+    weapon_create_model(pl->work34C, pl->id, 0);
     pl_create_model(pl->id);
     armor_create_model(pl);
     yure_init(pl);
@@ -154,7 +156,7 @@ void edit_pl_init(PLW *pl, s16 mode, u16 no) {
     }
 }
 
-void arrow_disp(u8 *w) {
+static void arrow_disp(u8 *w) {
     SPR s;
     f32 sn;
     s16 sel;
@@ -227,7 +229,7 @@ loop:
     return 0;
 }
 
-void roll_move(PLW *w, s16 unused) {
+static void roll_move(PLW *w, s16 unused) {
     if (*(volatile u16 *)&Psw[4] & 8) {
         w->ang[1] -= 0x400;
     }
@@ -327,9 +329,8 @@ typedef struct { s16 x, y, w, h; u32 col[4]; } SPR5;
 void disp_edit_spr(STASK *t, u8 *w) {
     SPR5 s;
     f32 sn;
-    s16 i;
-    char **m;
-    s16 y;
+    int y;
+    int i;
     flSetRenderState(0x6C, 0);
     Sel_menu_disp(4);
     y = 0x60;
@@ -349,29 +350,29 @@ void disp_edit_spr(STASK *t, u8 *w) {
         arrow_disp(w);
     }
     flfntSetSize(0x14, 0x14);
-    for (i = 0, m = edit_menu_msg; i < 7; i++, m++, y += 0x20) {
-        font_print_ex(0x30, y, 0, lit_319_0053B628, *m);
+    for (i = 0; i < 7; y += 0x20, i++) {
+        font_print_ex(0x30, (s16)y, 0, lit_319_0053B628, edit_menu_msg[i]);
         switch (i) {
         case 0:
-            font_print_ex(0xB2, y, 5, lit_319_0053B628, w + 0x24);
+            font_print_ex(0xB2, (s16)y, 5, lit_319_0053B628, w + 0x24);
             break;
         case 1:
-            font_print_ex(0xE4, y, 5, lit_319_0053B628, sex_char_tbl[w[4]]);
+            font_print_ex(0xE4, (s16)y, 5, lit_319_0053B628, sex_char_tbl[w[4]]);
             break;
         case 2:
-            font_print_ex(0xE4, y, 5, lit_320_0053B630, w[5] + 1);
+            font_print_ex(0xE4, (s16)y, 5, lit_320_0053B630, w[5] + 1);
+            break;
+        case 5:
+            font_print_ex(0xE4, (s16)y, 5, lit_320_0053B630, w[6] + 1);
             break;
         case 3:
-            font_print_ex(0xE4, y, 5, lit_320_0053B630, w[7] + 1);
+            font_print_ex(0xE4, (s16)y, 5, lit_320_0053B630, w[7] + 1);
             break;
         case 4: {
-            u32 c = B32(w, 8);
-            font_print_ex(0xBC, y, 5, lit_321_0053B640, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF);
+            u32 c = *(u32 *)(w + 8);
+            font_print_ex(0xBC, (s16)y, 5, lit_321_0053B640, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF);
             break;
         }
-        case 5:
-            font_print_ex(0xE4, y, 5, lit_320_0053B630, w[6] + 1);
-            break;
         }
     }
     Disp_button(1.0f, 0x12, 0x206, 0x60, 8);
@@ -665,43 +666,44 @@ void ed_color_sel(EDIT_W *w, PLW *pl, u16 btn) {
 void disp_color(u8 *w) {
     SPR5 s;
     SPR4 q;
-    s16 y = 0x141;
+    s16 y;
     s16 i;
     f32 fx;
-    u32 c;
+    f32 fx0;
     DispFrameMessageA(color_mess, 0, 0x80);
     flfntSetSize(0x14, 0x14);
+    y = 0x141;
     for (i = 0; i < 3; i++) {
         if (w[3] == i) {
             font_set_palette(5);
         } else {
             font_set_palette(0);
         }
-        s.x = 96;
+        fx0 = 120.0f;
+        s.x = 0.8f * fx0;
         s.y = y + 2;
         s.h = s.y + 0x12;
         flfntLocate(0x64, y);
         switch (i) {
         case 0:
             font_print(lit_656_0053B8C8);
-            c = (B32(w, 8) >> 16) & 0xFF;
+            s.w = 0.8f * (120.0f + (f32)((*(u32 *)(w + 8) >> 16) & 0xFF));
             s.col[0] = 0xFF400101;
             s.col[1] = 0xFFFF0101;
             break;
         case 1:
             font_print(lit_657_0053B8D0);
-            c = (B32(w, 8) >> 8) & 0xFF;
+            s.w = 0.8f * (120.0f + (f32)((*(u32 *)(w + 8) >> 8) & 0xFF));
             s.col[0] = 0xFF014001;
             s.col[1] = 0xFF01FF01;
             break;
         case 2:
             font_print(lit_658_0053B8D8);
-            c = w[8];
+            s.w = 0.8f * (120.0f + (f32)w[8]);
             s.col[0] = 0xFF010140;
             s.col[1] = 0xFF0101FF;
             break;
         }
-        s.w = 0.8f * (120.0f + (f32)c);
         s.col[2] = s.col[0];
         s.col[3] = s.col[1];
         if (w[3] == i) {
@@ -756,29 +758,31 @@ void cmn_mongon_check_filter(s8 *out, s8 *str, int n) {
 /* Expand one entry of check_mongon (16-byte records, 14 chars + length at +0xF; a record whose
    next record has -1 at +0xF continues) into out. Returns the length, or -1 if it is longer than max. */
 int cmn_mongon_set(s8 *e, s8 *out, int max) {
-    s8 len = e[0xF];
-    s8 rem;
-    int k = 0;
-    int i = 0;
+    int k;
+    int rem;
+    int i;
     int j;
+    int off;
+    s8 len = e[0xF];
     if (max < len) {
         return -1;
     }
+    k = 0;
     rem = len;
     if (e[0x1F] == -1) {
+        off = 0;
         do {
             for (j = 0; j < 14; j++) {
-                out[k * 14 + j] = e[j];
+                out[off + j] = e[j];
             }
             e += 0x10;
+            off += 14;
             k++;
             rem -= 14;
         } while (e[0x1F] == -1);
     }
-    if (rem > 0) {
-        for (; i < rem; i++) {
-            out[k * 14 + i] = e[i];
-        }
+    for (i = 0; i < rem; i++) {
+        out[k * 14 + i] = e[i];
     }
     out[i + k * 14] = 0;
     return len;
@@ -873,37 +877,34 @@ int cmn_mongon_check_sub(s8 *str) {
 
 /* Near-match: edit screen task (steps: 0 init, 1 load, 2 menu, 3 name/colour edit, 4 confirm,
    5 save, 6-8 fade out and start the game, 9 cancel confirm, 10 back to the select task). */
+
 void Edit_task(STASK *t) {
     EDIT_W *e = &edit_w;
-    u32 btn;
-    u8 old;
+    u16 btn;
     s16 i;
     PLW *pl;
-    f32 *v;
-    f32 *ev;
-    u8 prev;
+    u32 prev;
     u8 r5;
 
     e->x3E = 0;
-    btn = (Psw[2] | Psw[12]) & 0xFFFF;
-    if (Psw[1] == Psw[0]) {
+    btn = PSWV(2) | PSWV(12);
+    if (PSWV(1) == PSWV(0)) {
         e->x40++;
-        if (e->x40 >= 0xB) {
+        if (e->x40 > 0xA) {
             e->x40 = 0xA;
-            e->x3E = Psw[0];
+            e->x3E = PSWV(0);
         }
     } else {
         e->x40 = 0;
     }
-    e->x3E |= Psw[2];
+    e->x3E = e->x3E | PSWV(2);
     if (e->x3D != 0) {
         e->x3D--;
     }
     SetTrnslMode(4, 5);
     switch (t->step) {
     case 0:
-        t->step++;
-        all_model_free(t->step - 1);
+        all_model_free(t->step++);
         all_motion_free();
         model_work_init();
         init_move_work();
@@ -962,7 +963,7 @@ void Edit_task(STASK *t) {
         }
         prev = e->x0[2];
         if (Psw[2] & 0x20) {
-            switch (prev) {
+            switch ((u8)prev) {
             case 0:
                 SoftKeyboard_set(3, 0xF, 8, e->name);
                 /* fall through */
@@ -986,21 +987,19 @@ void Edit_task(STASK *t) {
                 e->x0[3] = 1;
                 break;
             }
-            if (e->x0[2] != prev) {
-                ed_view_set(player_work, view_type[e->x0[2]], 1);
-            }
         } else if (Psw[2] & 0x40) {
-            ed_cancel_se();
+            cancel_se();
             t->step = 9;
             e->x0[3] = 1;
+            goto common;
         } else {
             if (Psw[2] & 0x2000) {
-                if (prev == 0) {
+                if ((u8)prev == 0) {
                     e->x0[2] = 6;
                 } else {
                     e->x0[2] = prev - 1;
                 }
-                se_req(7, 0x12, 0);
+                cursor_se();
             }
             if (Psw[2] & 0x1000) {
                 if (e->x0[2] >= 6) {
@@ -1008,12 +1007,12 @@ void Edit_task(STASK *t) {
                 } else {
                     e->x0[2]++;
                 }
-                se_req(7, 0x12, 0);
+                cursor_se();
             }
             param_change_00536280((u8 *)e);
-            if (e->x0[2] != prev) {
-                ed_view_set(player_work, view_type[e->x0[2]], 1);
-            }
+        }
+        if (e->x0[2] != (u8)prev) {
+            ed_view_set(player_work, view_type[e->x0[2]], 1);
         }
         goto common;
     case 3:
@@ -1052,30 +1051,25 @@ void Edit_task(STASK *t) {
             e->x0[1] = 0;
             t->step++;
             McOperationSet(3);
-        } else if (!(Psw[2] & 0x20) || e->x0[3] != 1) {
-            if (Psw[2] & 0x40) {
-                t->step = 2;
-                ed_cancel_se();
-            } else {
-                if ((btn & 0x800) && e->x0[3] != 0) {
-                    se_req(7, 0x12, 0);
-                    e->x0[3] = 0;
-                }
-                if ((btn & 0x400) && e->x0[3] == 0) {
-                    se_req(7, 0x12, 0);
-                    e->x0[3] = 1;
-                }
-            }
-        } else {
+        } else if (((Psw[2] & 0x20) && e->x0[3] == 1) || (Psw[2] & 0x40)) {
             t->step = 2;
             ed_cancel_se();
+        } else {
+            if ((btn & 0x800) && e->x0[3] != 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 0;
+            }
+            if ((btn & 0x400) && e->x0[3] == 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 1;
+            }
         }
         goto common;
     case 5:
         for (i = 0, pl = player_work; i < 2; i++, pl++) {
             roll_move(pl, i);
         }
-        r5 = McCardOperation(pl, i) & 0xFF;
+        r5 = McCardOperation();
         if (r5 != 0) {
             if (r5 == 2) {
                 e->x3B = 0;
@@ -1085,20 +1079,19 @@ void Edit_task(STASK *t) {
             }
             user_data_copy((void *)e, 0xFF);
             t->step++;
-            ((SEL_GW *)&select_w)->xF6 = e->x0[1];
+            select_w.xB6 = e->x0[1];
             e->x38 = 0;
             ed_view_set(player_work, 2, 1);
-            for (i = 0, pl = player_work; i < 2; i++, pl++) {
-                pl->ang[1] = 0;
-                decide_chr_set(pl, e->x0[4], e->x0[6]);
+            for (i = 0; i < 2; i++) {
+                player_work[i].ang[1] = 0;
+                decide_chr_set(&player_work[i], e->x0[4], e->x0[6]);
             }
             se_req_bgm_vol(1, 2, 0);
             se_req_bgm_vol(1, 3, 0);
         }
         goto common;
     case 6:
-        e->x38++;
-        if (e->x38 >= 0x3C) {
+        if (++e->x38 >= 0x3C) {
             t->step++;
             fade_set(5);
         }
@@ -1110,8 +1103,7 @@ void Edit_task(STASK *t) {
         }
         goto common;
     case 8:
-        e->x38--;
-        if (e->x38 <= 0) {
+        if (--e->x38 <= 0) {
             Tsk_Exit(t);
             system_w.x10 = 0;
             system_w.x03 = 1;
@@ -1132,23 +1124,18 @@ void Edit_task(STASK *t) {
             se_req_bgm_vol(1, 2, 0);
             se_req_bgm_vol(1, 3, 0);
             fade_set(1);
-        } else if (!(Psw[2] & 0x20) || e->x0[3] != 1) {
-            if (Psw[2] & 0x40) {
-                t->step = 2;
-                ed_cancel_se();
-            } else {
-                if ((btn & 0x800) && e->x0[3] != 0) {
-                    se_req(7, 0x12, 0);
-                    e->x0[3] = 0;
-                }
-                if ((btn & 0x400) && e->x0[3] == 0) {
-                    se_req(7, 0x12, 0);
-                    e->x0[3] = 1;
-                }
-            }
-        } else {
+        } else if (((Psw[2] & 0x20) && e->x0[3] == 1) || (Psw[2] & 0x40)) {
             t->step = 2;
             ed_cancel_se();
+        } else {
+            if ((btn & 0x800) && e->x0[3] != 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 0;
+            }
+            if ((btn & 0x400) && e->x0[3] == 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 1;
+            }
         }
         goto common;
     case 10:
@@ -1162,25 +1149,21 @@ void Edit_task(STASK *t) {
     default:
     common:
         if (t->step >= 2) {
-            for (i = 0, pl = player_work; i < 2; i++, pl++) {
-                pl_timer_calc(pl);
-                hit_stop_calc(pl);
-                pl_chr_sub(pl);
+            for (i = 0; i < 2; i++) {
+                pl_timer_calc(&player_work[i]);
+                hit_stop_calc(&player_work[i]);
+                pl_chr_sub(&player_work[i]);
             }
         }
         player_mk();
         light_move();
         e->x36++;
-        ev = e->eye;
-        v = (f32 *)((u8 *)lpView + 0xC);
-        v[0] = v[0] + (ev[0] - v[0]) / 10.0f;
-        v[1] = v[1] + (ev[1] - v[1]) / 10.0f;
-        v[2] = v[2] + (ev[2] - v[2]) / 10.0f;
-        v = (f32 *)lpView;
-        ev = e->at;
-        v[0] = v[0] + (ev[0] - v[0]) / 10.0f;
-        v[1] = v[1] + (ev[1] - v[1]) / 10.0f;
-        v[2] = v[2] + (ev[2] - v[2]) / 10.0f;
+        BF(lpView, 0xC) = BF(lpView, 0xC) + (e->eye[0] - BF(lpView, 0xC)) / 10.0f;
+        BF(lpView, 0x10) = BF(lpView, 0x10) + (e->eye[1] - BF(lpView, 0x10)) / 10.0f;
+        BF(lpView, 0x14) = BF(lpView, 0x14) + (e->eye[2] - BF(lpView, 0x14)) / 10.0f;
+        BF(lpView, 0) = BF(lpView, 0) + (e->at[0] - BF(lpView, 0)) / 10.0f;
+        BF(lpView, 4) = BF(lpView, 4) + (e->at[1] - BF(lpView, 4)) / 10.0f;
+        BF(lpView, 8) = BF(lpView, 8) + (e->at[2] - BF(lpView, 8)) / 10.0f;
         View_move();
         if (t->step != 8) {
             if (t->step >= 2) {
@@ -1203,21 +1186,21 @@ void Edit_task(STASK *t) {
 /* Near-match: controller/continue screen task (steps: 0 init, 1 load, 2 se load, 3 choose
    hunter, 4 confirm, 5-8 fade out). */
 void Cont_task(STASK *t) {
+    u8 *op;
+    u8 old;
+    s16 r;
     EDIT_W *e = &edit_w;
-    u32 btn;
     s16 i;
-    u8 j;
-    PLW *pl;
-    f32 *v;
-    f32 *ev;
-    u8 r;
+    PLW *q;
+    PLW *pl = player_work;
+    u8 cur;
+    u16 btn;
 
-    btn = (Psw[2] | Psw[12]) & 0xFFFF;
+    btn = PSWV(2) | PSWV(12);
     SetTrnslMode(4, 5);
     switch (t->step) {
     case 0:
-        t->step++;
-        all_model_free(t->step - 1);
+        all_model_free(t->step++);
         all_motion_free();
         model_work_init();
         init_move_work();
@@ -1242,8 +1225,11 @@ void Cont_task(STASK *t) {
         McOperationSet(4);
         goto common;
     case 1:
-        r = McCardOperation() & 0xFF;
-        if (r != 0) {
+        r = (u8)McCardOperation();
+        if (r == 0) {
+            goto common;
+        }
+        {
             if (r == 2) {
                 se_req_bgm_vol(1, 2, 0);
                 se_req_bgm_vol(1, 3, 0);
@@ -1252,15 +1238,15 @@ void Cont_task(STASK *t) {
                 return;
             }
             e->x0[1] = 0xFF;
-            for (j = 0, pl = player_work; j < 3; j++, pl++) {
-                if (option_w[j * 0x480 + 0x10] == 0) {
+            for (i = 0, op = option_w; i < 3; i++, op += 0x480, pl++) {
+                if (op[0x10] == 0) {
                     pl->be_flag = 0;
                 } else {
                     if (e->x0[1] == 0xFF) {
-                        e->x0[1] = j;
+                        e->x0[1] = i;
                     }
-                    user_load(e, pl, j);
-                    edit_pl_init(pl, 1, j);
+                    user_load(e, pl, i);
+                    edit_pl_init(pl, 1, i);
                     pl->x01 = 0;
                 }
             }
@@ -1277,15 +1263,15 @@ void Cont_task(STASK *t) {
             t->step++;
             B8(t, 9) = 0;
             e->x0[2] = e->x0[1];
-            player_work[0].x01 = 1;
+            pl->x01 = 1;
             se_req_bgm_vol(1, 0, 0);
             se_req_bgm_vol(1, 1, 0);
             se_req(7, 0x19, 0);
         }
         goto common;
     case 3:
-        for (i = 0, pl = player_work; i < 3; i++, pl++) {
-            roll_move(pl, i);
+        for (q = player_work, i = 0; i < 3; i++, q++) {
+            roll_move(q, i);
         }
         if (Psw[2] & 0x20) {
             t->step++;
@@ -1299,33 +1285,39 @@ void Cont_task(STASK *t) {
             Select_Tsk_Execute();
         } else {
             if (Psw[2] & 0x2000) {
+                cur = e->x0[1];
+                old = cur;
                 do {
-                    if (e->x0[1] == 0) {
+                    if (cur == 0) {
                         e->x0[1] = 2;
                     } else {
                         e->x0[1]--;
                     }
-                } while (option_w[e->x0[1] * 0x480 + 0x10] == 0);
-                if (e->x0[2] != e->x0[1]) {
-                    cursor_se(2, e->x0[1], e->x0[2]);
-                    B32(&player_work[e->x0[1]], 0x578) = 0x01000000;
-                    B32(&player_work[e->x0[1]], 0x57C) = 0x01000000;
-                    B32(&player_work[e->x0[1]], 0x580) = 0x01000000;
+                    cur = e->x0[1];
+                } while (option_w[cur * 0x480 + 0x10] == 0);
+                if (old != cur) {
+                    cursor_se();
+                    *(u32 *)&((PLW *)((u8 *)player_work + 0x578))[e->x0[1]] = 0x01000000;
+                    *(u32 *)&((PLW *)((u8 *)player_work + 0x57C))[e->x0[1]] = 0x01000000;
+                    *(u32 *)&((PLW *)((u8 *)player_work + 0x580))[e->x0[1]] = 0x01000000;
                 }
             }
             if (Psw[2] & 0x1000) {
+                cur = e->x0[1];
+                old = cur;
                 do {
-                    if (e->x0[1] >= 2) {
+                    if (cur >= 2) {
                         e->x0[1] = 0;
                     } else {
                         e->x0[1]++;
                     }
-                } while (option_w[e->x0[1] * 0x480 + 0x10] == 0);
-                if (e->x0[2] != e->x0[1]) {
-                    cursor_se(e->x0[1], e->x0[2]);
-                    B32(&player_work[e->x0[1]], 0x578) = 0x01000000;
-                    B32(&player_work[e->x0[1]], 0x57C) = 0x01000000;
-                    B32(&player_work[e->x0[1]], 0x580) = 0x01000000;
+                    cur = e->x0[1];
+                } while (option_w[cur * 0x480 + 0x10] == 0);
+                if (old != cur) {
+                    cursor_se();
+                    *(u32 *)&((PLW *)((u8 *)player_work + 0x578))[e->x0[1]] = 0x01000000;
+                    *(u32 *)&((PLW *)((u8 *)player_work + 0x57C))[e->x0[1]] = 0x01000000;
+                    *(u32 *)&((PLW *)((u8 *)player_work + 0x580))[e->x0[1]] = 0x01000000;
                 }
             }
             if (e->x0[2] != e->x0[1]) {
@@ -1334,36 +1326,31 @@ void Cont_task(STASK *t) {
         }
         goto common;
     case 4:
-        for (i = 0, pl = player_work; i < 3; i++, pl++) {
+        for (i = 0; i < 3; i++, pl++) {
             roll_move(pl, i);
         }
         if ((Psw[2] & 0x20) && e->x0[3] == 0) {
             t->step++;
             ed_decide_se();
-            option_w[0xFCE] = e->x0[1];
+            B8(option_w, 0xFCE) = e->x0[1];
             pl = &player_work[e->x0[1]];
             ed_view_set(pl, 2, 1);
             pl->ang[1] = 0;
             e->x38 = 0;
-            ((SEL_GW *)&select_w)->xF6 = e->x0[1];
+            select_w.xB6 = e->x0[1];
             Load_userdata(e->x0[1]);
-        } else if (!(Psw[2] & 0x20) || e->x0[3] != 1) {
-            if (Psw[2] & 0x40) {
-                ed_cancel_se();
-                t->step = 3;
-            } else {
-                if ((btn & 0x800) && e->x0[3] != 0) {
-                    se_req(7, 0x12, 0);
-                    e->x0[3] = 0;
-                }
-                if ((btn & 0x400) && e->x0[3] == 0) {
-                    se_req(7, 0x12, 0);
-                    e->x0[3] = 1;
-                }
-            }
-        } else {
+        } else if (((Psw[2] & 0x20) && e->x0[3] == 1) || (Psw[2] & 0x40)) {
             ed_cancel_se();
             t->step = 3;
+        } else {
+            if ((btn & 0x800) && e->x0[3] != 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 0;
+            }
+            if ((btn & 0x400) && e->x0[3] == 0) {
+                se_req(7, 0x12, 0);
+                e->x0[3] = 1;
+            }
         }
         goto common;
     case 5:
@@ -1379,8 +1366,7 @@ void Cont_task(STASK *t) {
         }
         goto common;
     case 6:
-        e->x38++;
-        if (e->x38 >= 0x41) {
+        if (++e->x38 >= 0x41) {
             t->step++;
             fade_set(5);
         }
@@ -1392,8 +1378,7 @@ void Cont_task(STASK *t) {
         }
         goto common;
     case 8:
-        e->x38--;
-        if (e->x38 <= 0) {
+        if (--e->x38 <= 0) {
             Tsk_Exit(t);
             Tsk_Signal(1);
             fade_set(2);
@@ -1421,24 +1406,22 @@ void Cont_task(STASK *t) {
             light_move();
         }
         e->x36++;
-        ev = e->eye;
-        v = (f32 *)((u8 *)lpView + 0xC);
-        v[0] = v[0] + (ev[0] - v[0]) / 10.0f;
-        v[1] = v[1] + (ev[1] - v[1]) / 10.0f;
-        v[2] = v[2] + (ev[2] - v[2]) / 10.0f;
-        v = (f32 *)lpView;
-        ev = e->at;
-        v[0] = v[0] + (ev[0] - v[0]) / 10.0f;
-        v[1] = v[1] + (ev[1] - v[1]) / 10.0f;
-        v[2] = v[2] + (ev[2] - v[2]) / 10.0f;
+        BF(lpView, 0xC) = BF(lpView, 0xC) + (e->eye[0] - BF(lpView, 0xC)) / 10.0f;
+        BF(lpView, 0x10) = BF(lpView, 0x10) + (e->eye[1] - BF(lpView, 0x10)) / 10.0f;
+        BF(lpView, 0x14) = BF(lpView, 0x14) + (e->eye[2] - BF(lpView, 0x14)) / 10.0f;
+        BF(lpView, 0) = BF(lpView, 0) + (e->at[0] - BF(lpView, 0)) / 10.0f;
+        BF(lpView, 4) = BF(lpView, 4) + (e->at[1] - BF(lpView, 4)) / 10.0f;
+        BF(lpView, 8) = BF(lpView, 8) + (e->at[2] - BF(lpView, 8)) / 10.0f;
         View_move();
         if (t->step < 8) {
             if (t->step >= 2) {
                 pl = &player_work[e->x0[1]];
-                BF(BP(pl, 0x564), 8) = pl->pos[0];
-                BF(BP(pl, 0x564), 0xC) = pl->pos[1];
-                BF(BP(pl, 0x564), 0x10) = pl->pos[2];
-                add_prim(ot1, BP(pl, 0x564), 0x20, 0);
+                if (t->step >= 2) {
+                    BF(BP(pl, 0x564), 8) = pl->pos[0];
+                    BF(BP(pl, 0x564), 0xC) = pl->pos[1];
+                    BF(BP(pl, 0x564), 0x10) = pl->pos[2];
+                    add_prim(ot1, BP(pl, 0x564), 0x20, 0);
+                }
             }
             add_prim2(ot0, demo_prim, 0, 0x40);
             disp_cont_spr(e);

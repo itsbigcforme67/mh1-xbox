@@ -180,33 +180,51 @@ s16 Ud_item_num_ck(u16 id) {
     return 0;
 }
 
-s16 Ud_item_num_ck2(u16 id) {
-    s16 i;
-    UDW *u = User_data;
-    for (i = 0; i < 20; i++) {
-        if (u->item[i].id == id) {
-            u8 m = Item_data[id][3];
-            if (m == 0xFF) {
-                return 0xFF;
-            }
-            return m - u->item[i].num;
+int Ud_item_num_ck2(u16 id)
+{
+  s16 i;
+  int r;
+  UDW *u = User_data;
+  for (i = 0; i < 20; i++)
+  {
+    if (u->item[i].id == id)
+    {
+      u8 m = Item_data[id][3];
+      if (m == 0xFF)
+      {
+        if ((m && m) && m)
+        {
         }
+        return 0xFF;
+      }
+      else
+      {
+        return (s16) (m - u->item[i].num);
+      }
     }
-    return Item_data[id][3];
+  }
+
+  return Item_data[id][3];
 }
 
-s16 Ud_item_num_ck3(u16 id) {
+int Ud_item_num_ck3(u16 id) {
     s16 i;
+    int new_var;
     s16 n = 0;
     UDW *u = User_data;
     for (i = 0; i < 20; i++) {
         u16 v = u->item[i].id;
-        if (v == id) {
+        new_var = v == id;
+        if (new_var) {
             u8 m = Item_data[id][3];
             if (m == 0xFF) {
+                /* permuter-found filler: changes only the branch/delay-slot layout */
+                if (((!v) && (!v)) && (!v)) {
+                }
                 return 0xFF;
+            } else {
+                return (s16)(m - u->item[i].num);
             }
-            return m - u->item[i].num;
         }
         if (v == 0) {
             n++;
@@ -360,16 +378,17 @@ s8 Get_pl_id(s8 *key) {
     return 0;
 }
 
-void Copy_user_id(u8 no) {
-    u8 *d = ((u8 *)&game_w + 0x1E8) + no * 8;
-    d[0] = my_user_id[0];
-    d[1] = my_user_id[1];
-    d[2] = my_user_id[2];
-    d[3] = my_user_id[3];
-    d[4] = my_user_id[4];
-    d[5] = my_user_id[5];
-    d[6] = my_user_id[6];
-    d[7] = my_user_id[7];
+void Copy_user_id(u8 no)
+{
+  u8 *d = (((u8 *) (&game_w)) + 0x1E8) - (-(no * 8));
+  d[0] = my_user_id[0];
+  d[1] = my_user_id[1];
+  d[2] = my_user_id[2];
+  d[3] = my_user_id[3];
+  d[4] = my_user_id[4];
+  d[5] = my_user_id[5];
+  d[6] = my_user_id[6];
+  d[7] = my_user_id[7];
 }
 
 s16 Get_atk_value(u8 *p, u8 kind) {
@@ -615,13 +634,36 @@ void Set_equip_idx(UDW *u) {
     }
 }
 
-int Now_equip_ck(UDW *u, int idx) {
-    if (u->widx[0] == idx) { return 1; }
-    if (u->widx[1] == idx) { return 1; }
-    if (u->widx[2] == idx) { return 1; }
-    if (u->widx[3] == idx) { return 1; }
-    if (u->widx[4] == idx) { return 1; }
-    return u->widx[5] == idx;
+int Now_equip_ck(UDW *u, int idx)
+{
+  if (u->widx[0] == idx)
+  {
+    return 1;
+  }
+  if (u->widx[1] == idx)
+  {
+    return 1;
+  }
+  if (u->widx[2] == idx)
+  {
+    return 1;
+  }
+  if (u->widx[3] == idx)
+  {
+    return 1;
+  }
+  if (u->widx[4] == idx)
+  {
+    if (idx)
+    {
+      return 1;
+    }
+    else
+    {
+      return 1;
+    }
+  }
+  return u->widx[5] == idx;
 }
 
 int Warehouse_space_ck(UDW *u, int idx) {
@@ -630,11 +672,11 @@ int Warehouse_space_ck(UDW *u, int idx) {
 
 int Seisan_ok_ck(u16 kind, s16 idx, int mode) {
     u8 *ent;
-    u8 ok;
+    s16 j;
     u8 any;
     s16 have;
     s16 t;
-    s16 j;
+    u8 ok;
     u8 cnt;
     u8 *e;
 
@@ -682,11 +724,11 @@ int Seisan_ok_ck(u16 kind, s16 idx, int mode) {
             ok |= 1 << j;
         }
     }
-    if (cnt || any) {
+    if ((u8)cnt != 0 || (u8)any != 0) {
         if (ok == 0xF) {
             return 2;
         }
-        if (any) {
+        if ((u8)any != 0) {
             return 1;
         }
     }

@@ -30,6 +30,7 @@ build/src/main/stage/stage_set.c.o .rodata .data
 build/src/main/font/dsp01.c.o .rodata .data
 build/src/main/font/dsp02.c.o .rodata .data
 build/src/select/demo.c.o .rodata .data
+build/src/select/edit11.c.o .rodata .data
 build/src/select/edit03.c.o .rodata .data
 build/src/select/edit04.c.o .rodata .data
 build/src/game/em/em_core_d.c.o .rodata .data
@@ -135,4 +136,12 @@ build/src/game/shell/shell22.c.o .rodata .data
 build/src/game/shell/shell22b.c.o .rodata .data
 build/src/game/shell/shell23.c.o .rodata .data
 build/src/game/pl/pl_damageb.c.o .rodata .data
+build/src/yn/ui29.c.o .rodata .data
+build/src/yn/ui28.c.o .rodata .data
+build/src/yn/ui31.c.o .rodata .data
+build/src/yn/ui30.c.o .rodata .data
+build/src/yn/ui14.c.o .rodata .data
+build/src/yn/ui15.c.o .rodata .data
+build/src/yn/ui12.c.o .rodata .data
+build/src/yn/ui24.c.o .rodata .data
 build/src/lobby/lb/lb_talk.c.o .rodata .data

@@ -469,26 +469,13 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int api_dicopen(void)
+int ToUpper(int c)
 {
-    if (lock_mode == 0) {
-        return -1;
-    }
-    if (dic_open(dic_name) == -7) {
-        return 1;
-    }
-    into_editing(0);
-    func_mode = 1;
-    return 0;
-}
+    int u;
 
-int api_dicclose(void)
-{
-    if (lock_mode == 0) {
-        return -1;
+    u = c & 0xFF;
+    if (u >= 0x61 && u < 0x7B) {
+        return (u - 0x20) & 0xFF;
     }
-    init_edit0();
-    dic_close();
-    func_mode = 0;
-    return 0;
+    return c;
 }

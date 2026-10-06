@@ -1,4 +1,4 @@
-/* shit401 - slide check on a steep floor and normal angle (SLPM_654.95 0x0011C920-0x0011CA74): check_slide, check_angle. Whole file in shit4_nm.c. */
+/* shit401 - slide check on a steep floor and normal angle (SLPM_654.95 0x0011C920-0x0011CA74): check_slide (check_angle is in shit7.c). Whole file in shit4_nm.c. */
 /* shit4_nm (not built): the rest of f_sphr (SLPM_654.95 0x00114D90-0x0011CA70,
  * stage hit queries) written as C but not matched yet; see shit1.c (loader),
  * shit2.c (grid helpers) and shit3_nm.c (ground height queries). Function
@@ -37,13 +37,4 @@ int check_slide(HPOLY *pl, u8 *e, s32 *ang, f32 *out, f32 scale) {
     out[new_var] = -(pl->n[new_var] * t / nn);
     out[2] = -(pl->n[2] * t / nn);
     return new_var;
-}
-/* 0x0011C9F0: angle (0x10000 = 360 degrees) between normal n and up. */
-void check_angle(f32 *n, s32 *out) {
-    f32 up[3];
-
-    up[0] = 0.0f;
-    up[1] = 1.0f;
-    up[2] = 0.0f;
-    *out = (s32)(0.5f + 65536.0f * flArcCos(flvecInnerProduct(n, up)) / 6.2831855f) & 0xFFFF;
 }

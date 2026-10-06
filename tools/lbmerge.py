@@ -36,14 +36,18 @@ order = sorted(cur, key=lambda k: sym.get(k, 1 << 40))
 open(nm, 'w').write(hdr + '\n'.join(cur[k] for k in order))
 # proto header
 p = open(proto).read()
-ext = [l for l in p.split('\n') if l.startswith('extern ')]
+ext = [l for l in p.split('\n') if l.startswith('extern ') and not any(re.search(r'\b%s\(' % re.escape(k), l) for k in cur)]
 for l in n.split('\n'):
-    if l.startswith('extern ') and l not in ext:
+    if l.startswith('extern ') and l not in ext and not any(re.search(r'\b%s\(' % re.escape(k), l) for k in cur):
         ext.append(l)
 def sig(k):
     h = cur[k].split('\n')[0]
-    m = re.match(r'^([\w \*]+?)\s*(\*?)\b%s\(' % re.escape(k), h)
+    m = re.match(r'^([\w \*]+?)\s*(\*?)\b%s\(([^)]*)\)' % re.escape(k), h)
     rt = m.group(1).strip()
+    params = m.group(3).strip()
+    bare = all(re.match(r'^\w+$', x.strip()) for x in params.split(',')) if params and params != 'void' else True
+    if params and not bare:
+        return '%s %s%s(%s);' % (rt, m.group(2), k, params)
     return '%s %s%s();' % (rt, m.group(2), k)
 fwd = [sig(k) for k in order if not cur[k].startswith('static ')]
 # keep forward declarations of functions defined elsewhere (other files / not yet written)

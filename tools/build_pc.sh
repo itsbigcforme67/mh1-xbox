@@ -74,14 +74,15 @@ PL="$(ls src/main/pl/pl[0-9][0-9].c | tr '\n' ' ') src/main/pl/pl_nm.c src/main/
 # em_cmd_nm.c, the command interpreter); src/pc/rt/rt_em.c has weak
 # stand-ins for what is missing.
 EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c src/game/em/em_taisei_nm.c \
-    src/game/em/em01.c src/game/em/em01_horm.c src/game/em/em18_init.c src/game/em/em18b.c"
+    src/game/em/em01.c src/game/em/em01_horm.c src/game/em/em18_init.c src/game/em/em18b.c \
+    src/game/em/em16_nm.c src/game/em/em16.c"
 # Quest flow (agent C/E): f_quest (whole file near-match) and its first
 # part f_quest0_nm.c (accessors, Quest_init; written from the asm), the
 # tutorial checks it calls (game.bin tutorial.c)
 QUEST="src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c \
        src/main/game/f_game.c src/main/game/f_gameb.c src/main/font/dsp01.c \
        src/main/menu/menu_nm.c src/main/menu/menu_disp_nm.c \
-       src/main/chat/chat_nm.c src/main/font/fontst_nm.c \
+       src/main/chat/chat_nm.c src/main/chat/dispframe_nm.c src/main/menu/listsel_nm.c src/main/font/fontst_nm.c \
        src/main/font/fontst2_nm.c src/main/font/gfs_nm.c src/main/set/set01.c src/main/sys/vib.c \
        src/main/sprite/putspr.c src/main/sprite/putspr2.c src/main/sprite/calcpoint.c src/main/sprite/trans2.c src/main/sprite/sysw.c \
        src/main/load/mkmap.c \
@@ -109,8 +110,17 @@ for e in $EXT; do
     git show "$br:$f" > "$d/$f"
     EM="$EM $d/$f"
 done
+# The village (lobby.bin: Kokoto village offline, the town online): agent
+# F's whole-file lobby C (src/lobby/f/lb_X.c, the lb_zNN singletons) and
+# agent B's whole-file near-matches (src/lobby/lb/*_nm.c, lb_talk.c), plus
+# src/lobby/f/lb_village_nm.c (written from the asm for the PC: the
+# village loop and what it calls that was not decompiled). Network code
+# (src/lobby/cnet) is left out: its callees become stand-ins.
+LOBBY="$(ls src/lobby/f/lb_[a-p].c src/lobby/f/lb_z*.c | tr '\n' ' ') src/lobby/f/lb_pl_nm.c \
+       $(ls src/lobby/lb/*_nm.c | tr '\n' ' ') src/lobby/lb/lb_talk.c"
+[ -f src/lobby/f/lb_village_nm.c ] && LOBBY="$LOBBY src/lobby/f/lb_village_nm.c"
 WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm hit2_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
-GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST"
+GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY"
 
 SDL_CFLAGS="-I/usr/include/SDL2 -D_REENTRANT"
 CFLAGS="-m32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
@@ -135,10 +145,21 @@ else
 fi
 rm -f build/pc/.m32test
 
+# Incremental: a game object is kept when it is newer than its source,
+# every include/ header and this script (FULL=1 rebuilds everything).
+STAMP=build/pc/.hdr_stamp
+NEWEST=$(ls -t include/*.h src/pc/rt/rt_ps2abs.h tools/build_pc.sh tools/pc_abs.py tools/pc_patch.py | head -1)
+[ -f "$STAMP" ] && [ "$STAMP" -nt "$NEWEST" ] || touch "$STAMP"
+[ -n "$FULL" ] && touch "$STAMP"
 # shellcheck disable=SC2086
 for f in $GAME; do
     b=$(basename "$f" .c)
+    case "$f" in src/lobby/*) b="lb__$b" ;; esac
     o="build/pc/$b.o"
+    if [ -f "$o" ] && [ "$o" -nt "$f" ] && [ "$o" -nt "$STAMP" ]; then
+        OBJS="$OBJS $o"
+        continue
+    fi
     # float-argument order adaptors (src/pc/rt/rt_abi.c) for callers whose
     # declaration orders float and int arguments unlike the definition
     ABI=""
@@ -148,10 +169,16 @@ for f in $GAME; do
              -DEft06_set=rtabi_Eft06_set -DEft02_set6=rtabi_Eft02_set6 \
              -DGetGroundHitStatusAreaPl=rtabi_GetGroundHitStatusAreaPl" ;;
     src/main/stage/f_stage.c) ABI="-Dhit_point_cbd=rtabi_hit_point_cbd" ;;
+    # lobby C: frame_check2 / em_frame_check declared with the float first
+    # (include/lobby_f.h, the lobby NPC files) or second (include/lbnpc.h)
+    src/lobby/lb/lb_em*_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
+    src/lobby/lb/lbnpc_nm.c) ABI="-Dframe_check2=rtabi_frame_check2_em" ;;
+    src/lobby/f/*) ABI="-Dframe_check2=rtabi_frame_check2" ;;
     # game_core (swset, move, trans, hit_check) is the host tick (rt_quest.c)
     src/main/game/f_gameb.c) ABI="-Dgame_core=ps2_game_core" ;;
     */em_cmd_nm.c) ABI="-DGetWaterData()=GetWaterData(em)" ;;   # a0 = em left over
     src/game/em/em_core_nm.c) ABI="-DNextStage_No_Set(...)=rtabi_NextStage_No_Set(em)" ;;   # a0 = em left over
+    src/game/em/em16_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
     */em01_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
              -DEft15_set3=rtabi_Eft15_set3" ;;
     # em_sleep_eff_set: callers pass (em, joint, f32 *pos, f32 scale), the
@@ -174,33 +201,44 @@ for f in $GAME; do
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/(s16)Get_Active_itemnum()/(s16)Get_Active_itemnum(pl)/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
+    # lobby C that gcc rejects as is: a 128-bit quadword copy (lq/sq on the
+    # PS2), a static that the header declares global, a call without the
+    # argument the header gives
+    src/lobby/f/lb_f.c|src/lobby/f/lb_d.c|src/lobby/f/lb_n.c)
+        src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
+        sed 's/^typedef unsigned __int128 u128;/typedef struct { unsigned int w[4]; } u128;/;
+             s/^static s8 check_sender0()/s8 check_sender0()/;
+             s/^    Lbc_init_network_work();/    Lbc_init_network_work(0);/' "$f" > "$src"
+        INC="$INC -I$(dirname "$f")" ;;
     # ItemPickingDeclaration calls Pl_master_ck() with its own a0 (arg) left over
     src/main/menu/menu_nm.c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/^int Pl_master_ck(void);/int Pl_master_ck();/; s/Pl_master_ck() == 0/Pl_master_ck((void *)arg) == 0/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
     esac
+    # PC-only source fixes (tools/pc_patch.py: register pass-through calls)
+    mkdir -p build/pc/abs
+    if python3 tools/pc_patch.py "$src" "build/pc/abs/$b.patch.c" "$f"; then
+        src="build/pc/abs/$b.patch.c"
+        INC="$INC -I$(dirname "$f")"
+    elif [ $? -eq 2 ]; then
+        exit 1
+    fi
     # absolute PS2 addresses some m2c-based files still use (game_w
-    # 0x3F33F0, quest_w 0x3C7440): compile a copy that reads the host's
-    # game_w / quest_w instead (src/pc/rt/rt_ps2abs.h)
-    if grep -qE '\(\s*\w+\s*\*\s*\)\s*0x(3F3|3C74)[0-9A-Fa-f]{3}' "$f"; then
-        src="build/pc/abs/$b.c"
+    # 0x3F33F0, User_data ...): compile a copy that reads the host's symbol
+    # instead (tools/pc_abs.py)
+    if grep -qE '\(\s*\w+(\s*\*)+\s*\)\s*0x[0-9A-Fa-f]{6}' "$src"; then
         mkdir -p build/pc/abs
-        python3 -c '
-import re, sys
-B = {"game_w": (0x3F33F0, 0x224), "quest_w": (0x3C7440, 0x188)}
-def fix(m):
-    a = int(m.group(2), 16)
-    for n, (b, z) in B.items():
-        if b <= a < b + z:
-            return "(%s *)(rt_ps2_%s + 0x%X)" % (m.group(1), n, a - b)
-    return m.group(0)
-sys.stdout.write(re.sub(r"\(\s*(\w+)\s*\*\s*\)\s*0x([0-9A-Fa-f]{6,8})\b", fix, open(sys.argv[1]).read()))
-' "$f" > "$src"
-        INC="$INC -I$(dirname "$f") -include src/pc/rt/rt_ps2abs.h"
+        if python3 tools/pc_abs.py "$src" "build/pc/abs/$b.abs.c"; then
+            src="build/pc/abs/$b.abs.c"
+            INC="$INC -I$(dirname "$f")"
+        fi
     fi
     gcc $INC $GAMEFLAGS $ABI $SYS -c "$src" -o "$o"
     case " $WEAK " in *" $b "*) objcopy --weaken "$o" ;; esac
+    # single symbols that another file also defines (the lobby NPC files'
+    # empty dummy_em_prog: main's f_em one wins)
+    case "$b" in lb__lb_em*_nm) objcopy --weaken-symbol=dummy_em_prog "$o" ;; esac
     OBJS="$OBJS $o"
 done
 # data tables (names in src/pc/rt/tables.txt; bytes come from the disc at run time)
@@ -209,11 +247,29 @@ python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 gcc $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village; do
     # shellcheck disable=SC2086
     gcc $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"
 done
+# Symbols nothing defines yet (callees and data of the linked overlay C):
+# link once allowing them, list them, and let tools/gen_rt_auto.py define
+# them (data filled from the disc, functions as stand-ins); then link.
+: > build/pc/rt_gen.c
+echo '#include <stddef.h>
+struct rt_table { const char *name; unsigned va; void *dst; size_t size; };
+const struct rt_table rt_gen_main_tables[1];' > build/pc/rt_gen.c
+gcc $CFLAGS $SYS -c build/pc/rt_gen.c -o build/pc/rt_gen.o
 # shellcheck disable=SC2086
-gcc $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS -o build/pc/mhview $LIBS
+gcc $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview.tmp $LIBS \
+    -Wl,--warn-unresolved-symbols 2> build/pc/link1.log || { cat build/pc/link1.log; exit 1; }
+sed -n "s/.*undefined reference to \`\([^']*\)'.*/\1/p" build/pc/link1.log | sort -u > build/pc/undefined.txt
+rm -f build/pc/mhview.tmp
+# shellcheck disable=SC2086
+nm --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined.txt
+python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
+gcc $CFLAGS $SYS -w -c build/pc/rt_gen.c -o build/pc/rt_gen.o
+# shellcheck disable=SC2086
+gcc $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview $LIBS \
+    $(cat build/pc/rt_gen.defsym)
 echo "built build/pc/mhview (32-bit)"

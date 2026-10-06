@@ -66,11 +66,11 @@ always been a struct field type or a lost field.
 ## Current assignments (update when they change)
 
 - A (Opus): PC runtime: village hub + quest counter, pause menu, small monsters, quest failure.
-- B (Sonnet): lobby overlay 0x533980-0x5C4E60 (no code shared with game; ~330 KB GCC libs skipped).
+- B (Sonnet): lobby overlay 0x533980-0x5C4E60 (round 4: link its ~98 KB of near-match C, then login/logout, dialogs, plaza; skip libs).
 - C (Sonnet): Capcom code in main outside D's and E's ranges (round 6: last round's unlinked list first).
 - D (Sonnet): main 0x1C0000-0x230000 and 0x24A240-0x2814E0 (game overlay parked at 82%, 139 hard functions listed in agent-D.md).
-- E (Sonnet): IME leftovers (bounded), then the yn overlay (11.5%, nobody else on it).
-- F (Sonnet): lobby overlay 0x5C4E60-end.
+- E (Sonnet): select overlay to 100% (54.5%), then yn leftovers (66.5%; select_provider last).
+- F (Sonnet): lobby overlay 0x5C4E60-end (round 5: link lb_ib.c, lb_pc.c, lb_e25.c and the ~95 near-matches; skip zlib/png 0x5E9ED0-0x5EE618).
 - Parked: near-matches everywhere (register allocation); online code in main.
 
 ## Other running threads

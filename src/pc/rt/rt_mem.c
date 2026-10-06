@@ -116,6 +116,8 @@ void *rt_bss_shadow(uint32_t va)
  * pointers, so the game C can follow pointers inside Capcom's tables. */
 static uint32_t *rel32;            /* sorted PS2 addresses of pointer words */
 static size_t nrel32;
+static uint32_t *rel32_lb;         /* the same for lobby.bin (.rellobby.bin) */
+static size_t nrel32_lb;
 
 static int cmp_u32(const void *a, const void *b)
 {
@@ -123,37 +125,48 @@ static int cmp_u32(const void *a, const void *b)
     return x < y ? -1 : x > y;
 }
 
+static void load_rel_sections(const char *a, const char *b, uint32_t **out, size_t *nout);
 int rt_load_relocs(void)
 {
+    load_rel_sections(".relmain", ".relgame.bin", &rel32, &nrel32);
+    load_rel_sections(".rellobby.bin", NULL, &rel32_lb, &nrel32_lb);
+    return nrel32 ? 0 : -1;
+}
+
+static void load_rel_sections(const char *a, const char *b, uint32_t **out, size_t *nout)
+{
     uint32_t shoff, i, n, shn, shstr, so;
+    uint32_t *rel32 = NULL;
+    size_t nrel32 = 0;
+    *out = NULL;
+    *nout = 0;
     if (elf_n < 52)
-        return -1;
+        return;
     shoff = rd32(elf + 32);
     shn = elf[48] | elf[49] << 8;
     shstr = elf[50] | elf[51] << 8;
     if (shoff + 40 * shn > elf_n || shstr >= shn)
-        return -1;
+        return;
     so = rd32(elf + shoff + 40 * shstr + 16);
-    free(rel32);
-    rel32 = NULL;
-    nrel32 = 0;
     for (i = 0; i < shn; i++) {
         const uint8_t *sh = elf + shoff + 40 * i;
         const char *name = (const char *)elf + so + rd32(sh);
         uint32_t off = rd32(sh + 16), size = rd32(sh + 20);
-        if (rd32(sh + 4) != 9 || (strcmp(name, ".relmain") && strcmp(name, ".relgame.bin")) || off + size > elf_n)
+        if (rd32(sh + 4) != 9 || (strcmp(name, a) && (!b || strcmp(name, b))) || off + size > elf_n)
             continue;
         rel32 = realloc(rel32, (nrel32 + size / 8) * sizeof *rel32);
         for (n = 0; n < size / 8; n++)
             if ((rd32(elf + off + 8 * n + 4) & 0xFF) == 2)      /* R_MIPS_32 */
                 rel32[nrel32++] = rd32(elf + off + 8 * n);
     }
-    qsort(rel32, nrel32, sizeof *rel32, cmp_u32);
-    return nrel32 ? 0 : -1;
+    if (rel32)
+        qsort(rel32, nrel32, sizeof *rel32, cmp_u32);
+    *out = rel32;
+    *nout = nrel32;
 }
 
 /* index of the first pointer word at or after va */
-static size_t rel_lower(uint32_t va)
+static size_t rel_lower_in(const uint32_t *rel32, size_t nrel32, uint32_t va)
 {
     size_t lo = 0, hi = nrel32;
     while (lo < hi) {
@@ -165,6 +178,8 @@ static size_t rel_lower(uint32_t va)
     }
     return lo;
 }
+
+static size_t rel_lower(uint32_t va) { return rel_lower_in(rel32, nrel32, va); }
 
 int rt_is_pointer(uint32_t va)
 {
@@ -200,8 +215,8 @@ void rt_relocate_images(void *(*map)(uint32_t))
  * target of a pointer: rt_sym_at(va, &off) gives the symbol that contains
  * va, the offset into it and whether it is a function, or NULL. */
 typedef struct { uint32_t va, size; const char *name; int func; } rt_sym;
-static rt_sym *syms;
-static size_t nsyms;
+static rt_sym *symset[2];          /* 0: main + game.bin, 1: main + lobby.bin */
+static size_t nsymset[2];
 
 static int cmp_sym(const void *a, const void *b)
 {
@@ -209,16 +224,19 @@ static int cmp_sym(const void *a, const void *b)
     return x->va < y->va ? -1 : x->va > y->va;
 }
 
-static void load_syms(void)
+static void load_syms(int set)
 {
     uint32_t shoff, shn, i, k;
-    if (syms || elf_n < 52)
+    unsigned ovl_sec = set ? 12 : 8;    /* section index of the overlay (readelf -S) */
+    if (symset[set] || elf_n < 52)
         return;
     shoff = rd32(elf + 32);
     shn = elf[48] | elf[49] << 8;
     for (i = 0; i < shn && shoff + 40 * (i + 1) <= elf_n; i++) {
         const uint8_t *sh = elf + shoff + 40 * i;
         uint32_t off = rd32(sh + 16), size = rd32(sh + 20), link = rd32(sh + 24), stro;
+        rt_sym *syms;
+        size_t nsyms = 0;
         if (rd32(sh + 4) != 2 || off + size > elf_n || link >= shn)
             continue;
         stro = rd32(elf + shoff + 40 * link + 16);
@@ -226,19 +244,23 @@ static void load_syms(void)
         for (k = 0; k < size / 16; k++) {
             const uint8_t *s = elf + off + 16 * k;
             unsigned shndx = s[14] | s[15] << 8;
-            if ((shndx == 4 || shndx == 8) && rd32(s) && (s[12] & 0xF) <= 2)   /* main, game.bin */
+            if ((shndx == 4 || shndx == ovl_sec) && rd32(s) && (s[12] & 0xF) <= 2)
                 syms[nsyms++] = (rt_sym){ rd32(s + 4), rd32(s + 8), (const char *)elf + stro + rd32(s), (s[12] & 0xF) == 2 };
         }
         qsort(syms, nsyms, sizeof *syms, cmp_sym);
+        symset[set] = syms;
+        nsymset[set] = nsyms;
         break;
     }
 }
 
-const char *rt_sym_at(uint32_t va, uint32_t *off, int *func)
+static const char *sym_at(int set, uint32_t va, uint32_t *off, int *func)
 {
     size_t lo = 0, hi;
-    load_syms();
-    hi = nsyms;
+    const rt_sym *syms;
+    load_syms(set);
+    syms = symset[set];
+    hi = nsymset[set];
     while (lo < hi) {                       /* last symbol with sym.va <= va */
         size_t mid = (lo + hi) / 2;
         if (syms[mid].va <= va)
@@ -266,4 +288,75 @@ const char *rt_sym_at(uint32_t va, uint32_t *off, int *func)
         }
     }
     return NULL;
+}
+
+const char *rt_sym_at(uint32_t va, uint32_t *off, int *func) { return sym_at(0, va, off, func); }
+
+/* ------------------------------------------------------------ lobby.bin
+ * The village/lobby overlay (lobby.bin, also at vram 0x533980, bss
+ * 0xEA680: config/lobby.yaml). It shares its addresses with game.bin, so
+ * it is kept apart: its own image, pointer words (.rellobby.bin) and
+ * symbols. Used to import the tables the lobby C reads (rt_data.c). */
+#define OVL_LOBBY_BSS 0xEA680u
+static uint8_t *lb_img;
+static size_t lb_n;
+
+void rt_set_lobby(uint8_t *bin, size_t n)
+{
+    free(lb_img);
+    lb_img = bin;
+    lb_n = bin ? n : 0;
+}
+
+/* lobby image bytes at va, or main ELF bytes for addresses below it */
+const uint8_t *rt_lb_addr(uint32_t va, size_t n)
+{
+    if (lb_img && va >= OVL_GAME_VRAM && va - OVL_GAME_VRAM + n <= lb_n)
+        return lb_img + (va - OVL_GAME_VRAM);
+    if (va < OVL_GAME_VRAM)
+        return rt_addr(va, n);
+    return NULL;
+}
+
+/* 1 if va is in the lobby range (image or its .bss) */
+int rt_lb_in_range(uint32_t va)
+{
+    return lb_img && va >= OVL_GAME_VRAM && va < OVL_GAME_VRAM + lb_n + OVL_LOBBY_BSS;
+}
+
+void *rt_lb_bss_shadow(uint32_t va)
+{
+    static uint8_t *shadow;
+    if (!lb_img || va < OVL_GAME_VRAM + lb_n || va >= OVL_GAME_VRAM + lb_n + OVL_LOBBY_BSS)
+        return NULL;
+    if (!shadow && !(shadow = calloc(1, OVL_LOBBY_BSS)))
+        return NULL;
+    return shadow + (va - OVL_GAME_VRAM - lb_n);
+}
+
+const char *rt_lb_sym_at(uint32_t va, uint32_t *off, int *func) { return sym_at(1, va, off, func); }
+
+int rt_lb_is_pointer(uint32_t va)
+{
+    size_t k = rel_lower_in(rel32_lb, nrel32_lb, va);
+    return k < nrel32_lb && rel32_lb[k] == va;
+}
+
+void rt_lb_relocate_range(uint32_t va, uint8_t *dst, size_t size, void *(*map)(uint32_t))
+{
+    size_t k;
+    for (k = rel_lower_in(rel32_lb, nrel32_lb, va); k < nrel32_lb && rel32_lb[k] + 4 <= va + size; k++) {
+        uint32_t v, h;
+        memcpy(&v, dst + (rel32_lb[k] - va), 4);
+        h = v ? (uint32_t)(uintptr_t)map(v) : 0;
+        memcpy(dst + (rel32_lb[k] - va), &h, 4);
+    }
+}
+
+void rt_lb_relocate_image(void *(*map)(uint32_t))
+{
+    size_t k;
+    for (k = 0; k < nrel32_lb; k++)
+        if (lb_img && rel32_lb[k] >= OVL_GAME_VRAM && rel32_lb[k] - OVL_GAME_VRAM + 4 <= lb_n)
+            rt_lb_relocate_range(rel32_lb[k], lb_img + (rel32_lb[k] - OVL_GAME_VRAM), 4, map);
 }

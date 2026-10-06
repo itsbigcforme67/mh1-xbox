@@ -31,12 +31,13 @@ void CngNet_MSG_Read(CNGMSG *m, u8 *dst, int n);
 u16 CngNetSwapByteU16(u16 v);
 void swapb(u8 *buf, int n);
 
-void CnInetNetworkInitialize_online(void) {
-    cng_net_lib_w.x02 = 1;
-    cng_net_lib_w.on = 1;
-    cng_net_lib_w.x08 = -1;
-    cng_net_lib_w.state = 2;
-    CnInetNetworkAveTcpEnvSet(2);
+void CnInetNetworkInitialize_online(void)
+{
+  cng_net_lib_w.x02 = 1;
+  cng_net_lib_w.on = 1;
+  cng_net_lib_w.state = 2;
+  cng_net_lib_w.x08 = -1;
+  CnInetNetworkAveTcpEnvSet(2);
 }
 
 void CnInetNetworkCleanup_online(void) {
@@ -127,17 +128,24 @@ u16 CngNet_MSG_ReadU16(CNGMSG *m) {
     return v;
 }
 
-void CngNet_MSG_WriteFloat32(CNGMSG *m, f32 v) {
-    CngNet_MSG_Write(m, (u8 *)&v, 4);
+void CngNet_MSG_WriteFloat32(CNGMSG *m, f32 v)
+{
+  u8 *new_var;
+  u8 *new_var2;
+  if ((v && v) && v)
+  {
+  }
+  v = v;
+  new_var2 = (u8 *) (&v);
+  CngNet_MSG_Write(m, new_var = new_var2, (unsigned long long) 4);
 }
 
-f32 CngNet_MSG_ReadFloat32(CNGMSG *m) {
-    f32 v;
-    f32 r;
-
-    CngNet_MSG_Read(m, (u8 *)&v, 4);
-    r = v;
-    return r;
+f32 CngNet_MSG_ReadFloat32(CNGMSG *m)
+{
+  f32 r;
+  CngNet_MSG_Read(m, (u8 *) (&r), 4);
+  r = r;
+  return r;
 }
 
 u16 CngNet_MSGBOB_ReadU16(CNGMSG *m) {
@@ -148,16 +156,18 @@ u16 CngNet_MSGBOB_ReadU16(CNGMSG *m) {
     return v;
 }
 
-void swapb(u8 *buf, int n) {
-    int i = 0;
-    int h = n / 2;
-    u8 t;
+void swapb(u8 *buf, int n)
+{
+  int i = 0;
+  int h;
+  u8 t;
+  for (; i < (n / 2); i++)
+  {
+    t = buf[i];
+    buf[i] = buf[(n - 1) - i];
+    buf[(n - 1) - i] = t;
+  }
 
-    for (; i < h; i++) {
-        t = buf[i];
-        buf[i] = buf[n - 1 - i];
-        buf[n - 1 - i] = t;
-    }
 }
 
 u16 CngNetSwapByteU16(u16 v) {

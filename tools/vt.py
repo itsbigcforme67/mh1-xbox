@@ -1,50 +1,33 @@
-#!/usr/bin/env python3
-"""vt.py FILE FUNC VARIANTS.py - try replacement texts for one function.
-VARIANTS.py defines V = [ "full function text", ... ]. Prints differing-instruction count per
-variant (and keeps the best in the file if --keep)."""
-import re, subprocess, sys, os
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-def split_func(src, name):
-    m = re.search(r'^[A-Za-z_][^\n;{]*\b%s\([^;{]*\)\s*\{' % re.escape(name), src, re.M)
-    if not m:
-        raise SystemExit("function not found: " + name)
-    i = m.start()
-    j = src.index("\n}\n", i) + 3
-    return i, j
-
-def score(path, name):
-    out = subprocess.run(["python3", os.path.join(ROOT, "tools/check.py"), path],
-                         capture_output=True, text=True, cwd=ROOT)
-    for l in (out.stdout + out.stderr).splitlines():
-        if re.match(r'(OK|--)\s+%s\s' % re.escape(name), l):
-            if l.startswith("OK"):
-                return 0
-            m = re.search(r'\((\d+)/', l)
-            return int(m.group(1))
-    return 9999
-
-def main():
-    path, name, vf = sys.argv[1:4]
-    keep = "--keep" in sys.argv
-    ns = {}
-    exec(open(vf).read(), ns)
-    src = open(path).read()
-    i, j = split_func(src, name)
-    best = (score(path, name), None)
-    print("current", best[0])
-    for k, v in enumerate(ns["V"]):
-        if not v.endswith("\n"):
-            v += "\n"
-        t = src[:i] + v + src[j:]
-        open(path, "w").write(t)
-        sc = score(path, name)
-        print(k, sc)
-        if sc < best[0]:
-            best = (sc, v)
-    if keep and best[1]:
-        open(path, "w").write(src[:i] + best[1] + src[j:])
-        print("kept best", best[0])
-    else:
-        open(path, "w").write(src)
-main()
+"""vt.py helper: from vt import try_variants
+try_variants(file, funcmark, funcname, [ [(old,new),...], ... ], apply_first=False)
+Each variant is a list of replacements applied to the function text. Prints the check.py diff
+count and the number of lines in align.py output. With apply=i, writes that variant into the file."""
+import subprocess,os,sys
+def fn_span(src,mark):
+    a=src.index(mark); b=src.index("\n}\n",a)+3
+    return a,b
+def score(path,fn):
+    out=subprocess.run(['./tools/cnt.sh',path,fn],capture_output=True,text=True).stdout.strip()
+    al=subprocess.run(['python3','tools/align.py',path,fn],capture_output=True,text=True).stdout.split('\n')
+    n=sum(1 for l in al if l.startswith('   - ') or l.startswith('   + '))
+    return out,n
+def try_variants(file,mark,fn,variants,apply=None):
+    src=open(file).read(); a,b=fn_span(src,mark); base=src[a:b]
+    z=os.path.join(os.path.dirname(file),'zzv.c')
+    res=[]
+    for i,v in enumerate(variants):
+        t=base
+        ok=True
+        for old,new in v:
+            if old not in t: print(i,'MISSING',repr(old[:40])); ok=False; break
+            t=t.replace(old,new,1)
+        if not ok: continue
+        open(z,'w').write(src[:a]+t+src[b:])
+        out,n=score(z,fn)
+        print(i,out[-40:] if out else 'COMPILE ERROR',n)
+        res.append((n,i,t))
+    if os.path.exists(z): os.remove(z)
+    if apply is not None:
+        t=[r for r in res if r[1]==apply][0][2]
+        open(file,'w').write(src[:a]+t+src[b:])
+    return res

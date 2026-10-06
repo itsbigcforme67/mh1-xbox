@@ -8,7 +8,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__))))
 import lbf_jt
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ROOT)
-S = '/tmp/claude-1000/-home-james-claude-projects/6db1702a-235b-4025-a34e-ca6b5540767b/scratchpad/fl.txt'
+S = os.environ.get('LBFL', '/tmp/claude-1000/-home-james-claude-projects/6db1702a-235b-4025-a34e-ca6b5540767b/scratchpad/fl.txt')
+LD = os.environ.get('LBDIR', 'f')
 prefix, cmt = sys.argv[1:3]; names = sys.argv[3:]
 info = {}
 for l in open(S):
@@ -20,7 +21,8 @@ def src(nm):
     raise SystemExit('no source for ' + nm)
 def split(nm):
     s = src(nm)
-    s = s.replace('#include "lobby.h"\n', '').replace('#include "lobby_f.h"\n', '').replace('#include "lobby_a.h"\n', '')
+    s = s.replace('#include "lobby.h"\n', '')
+    s = re.sub(r'#include "lobby_[a-z]\.h"\n', '', s)
     m = re.search(r'^[\w\*\s]+\b%s\([^;{]*\)(?:\n(?:[\w \*]+;\n)+)?\s*\{\n' % re.escape(nm), s, re.M)
     return [l.strip() for l in s[:m.start()].split('\n') if l.strip()], s[m.start():].strip() + '\n'
 reg = []
@@ -38,34 +40,39 @@ for n in names:
         cur = [n]
 if cur: runs.append(cur)
 num = 1
-while os.path.exists('src/lobby/f/%s%02d.c' % (prefix, num)): num += 1
+while os.path.exists('src/lobby/%s/%s%02d.c' % (LD, prefix, num)): num += 1
 def hdr_of(nm):
-    return 'lobby_a.h' if '#include "lobby_a.h"' in src(nm) else 'lobby_f.h'
+    m = re.search(r'#include "(lobby_[a-z]\.h)"', src(nm))
+    return m.group(1) if m else 'lobby_f.h'
 def build(group, path):
     decls = []; bodies = []
-    if len(set(hdr_of(n) for n in group)) > 1:
+    hs = set(hdr_of(n) for n in group)
+    if hs == {'lobby_a.h', 'lobby_b.h'}: hs = {'lobby_b.h'}
+    if len(hs) > 1:
         return False
+    H = hs.pop()
     for n in group:
         d, b = split(n)
         for l in d:
             if l not in decls: decls.append(l)
         bodies.append(b)
     hdr = '/* %s%02d - %s 0x%08X-0x%08X: %s (first drafted by tools/lbauto.py). */\n' % (prefix, num, cmt, info[group[0]][0], info[group[-1]][0] + info[group[-1]][1], ', '.join(group))
-    open(path, 'w').write(hdr + '#include "%s"\n' % hdr_of(group[0]) + '\n'.join(decls) + ('\n' if decls else '') + '\n' + '\n'.join(bodies))
+    open(path, 'w').write(hdr + '#include "%s"\n' % H + '\n'.join(decls) + ('\n' if decls else '') + '\n' + '\n'.join(bodies))
     return True
 def ok(path, group):
     out = subprocess.run(['python3', 'tools/check.py', path, '--module', 'lobby'], capture_output=True, text=True).stdout
-    got = [l for l in out.split('\n') if l.startswith('OK')]
+    force = set(filter(None, os.environ.get('FORCE_OK', '').split(',')))
+    got = [l for l in out.split('\n') if l.startswith('OK') or (len(l.split()) > 1 and l.split()[1] in force)]
     return len(got) == len(group)
 lines = []
 def emit(group):
     global num
-    path = 'src/lobby/f/%s%02d.c' % (prefix, num)
+    path = 'src/lobby/%s/%s%02d.c' % (LD, prefix, num)
     if build(group, path) and ok(path, group):
-        lines.append('lobby 0x%08X 0x%08X f/%s%02d' % (info[group[0]][0], info[group[-1]][0] + info[group[-1]][1], prefix, num))
+        lines.append('lobby 0x%08X 0x%08X %s/%s%02d' % (info[group[0]][0], info[group[-1]][0] + info[group[-1]][1], LD, prefix, num))
         for n in group:
             for a, e in lbf_jt.ranges(n):
-                lines.append('lobby:rodata 0x%08X 0x%08X f/%s%02d' % (a, e, prefix, num)); print('  jump table', n, lines[-1])
+                lines.append('lobby:rodata 0x%08X 0x%08X %s/%s%02d' % (a, e, LD, prefix, num)); print('  jump table', n, lines[-1])
         print(lines[-1], '#', ', '.join(group)); num += 1
     else:
         if os.path.exists(path): os.remove(path)

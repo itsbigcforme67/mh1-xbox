@@ -345,7 +345,7 @@ void menu_exit(void) {
 
 /* Prints a player name, at most 11 characters, ending with a cut mark. */
 void player_name_print(char *name) {
-    char buf[16];
+    char buf[64];   /* PC: room for the longest game format string (the PS2 frame is smaller) */
     int n = 11;
     char *d = buf;
 

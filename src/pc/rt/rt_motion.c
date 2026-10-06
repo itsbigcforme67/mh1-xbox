@@ -334,6 +334,12 @@ void create_em_motion(int no, int em);
 /* em_work[no] played by the game's motion code: builds monster model
  * mdl_no's handles from its *_tbl.bin (create_em_motion, kind em: number
  * of part groups from em_parts_num) and starts ids[g] on layer g. */
+void rt_em_motion_create(int slot, int kind, const uint8_t *tbl)
+{
+    pl_area_top = (u8 *)tbl;
+    create_em_motion(slot, kind);
+}
+
 void rt_monster_motion_start(int no, int mdl_no, const uint8_t *tbl, int kind, const int *ids, int layers)
 {
     EMW *em = &em_work[no];

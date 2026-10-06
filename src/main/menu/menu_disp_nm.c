@@ -105,7 +105,7 @@ void disp_name(void) {
 
 /* 0x12B900 */
 void Pit_disp_quest(void) {
-    char buf[32];
+    char buf[64];   /* PC: room for the longest game format string (the PS2 frame is smaller) */
 
     SetTrnslMode(4, 5);
     if (lpPit->x46 == 0) {
@@ -165,7 +165,7 @@ void Pit_disp_quest(void) {
 
 /* 0x12BBC0 */
 void font_print_quest_time(int n) {
-    char buf[8];
+    char buf[64];   /* PC: room for the longest game format string (the PS2 frame is smaller) */
     u16 out[12];
     u16 *o;
     char *p;
@@ -191,7 +191,7 @@ void font_print_quest_time(int n) {
 /* 0x12BCA0 */
 void font_print_quest_money(int n) {
     u16 out[32];
-    char buf[16];
+    char buf[64];   /* PC: room for the longest game format string (the PS2 frame is smaller) */
     u16 *o;
     char *p;
 
@@ -220,7 +220,7 @@ void font_print_quest_lv(int n) {
 
 /* 0x12BD60 */
 void font_print_quest_target(int a, int b) {
-    char buf[8];
+    char buf[64];   /* PC: room for the longest game format string (the PS2 frame is smaller) */
     u16 out[12];
     u16 *o;
     char *p;
@@ -242,7 +242,7 @@ void font_print_quest_target(int a, int b) {
 
 /* 0x12BE00 */
 void font_print_Bdragon(void) {
-    char buf[8];
+    char buf[64];   /* PC: room for the longest game format string (the PS2 frame is smaller) */
     u16 out[12];
     u16 *o;
     char *p;
@@ -258,7 +258,7 @@ void font_print_Bdragon(void) {
 
 /* 0x12BE90 */
 void font_print_BBQquest(void *pl, int y) {
-    char buf[8];
+    char buf[64];   /* PC: room for the longest game format string (the PS2 frame is smaller) */
     u16 out[12];
     u16 *o;
     char *p;
@@ -406,7 +406,7 @@ void Pit_disp_item_list(void) {
 /* 0x12C4A0 */
 void disp_item_list_present(int unused, void *unused2, void *unused3) {
     char *names[10];
-    char buf[32];
+    char buf[64];   /* PC: room for the longest game format string (the PS2 frame is smaller) */
     int i, n;
     int sel;
     u8 *rm;
@@ -1843,7 +1843,7 @@ void disp_gun_load_mess(int n) {
 
 /* 0x131D50 */
 void disp_menu(int sw, PIT_W *p) {
-    char buf[16];
+    char buf[48];   /* the title " ~C05menu  ~C00%01d/..." is longer than 16 bytes */
     int n, base, s3;
     u32 col;
     int v;
@@ -1885,7 +1885,7 @@ void disp_menu(int sw, PIT_W *p) {
 
 /* 0x131FB0 */
 void Pit_disp_chat_cnfg(void) {
-    char buf[32];
+    char buf[64];   /* PC: room for the longest game format string (the PS2 frame is smaller) */
     u32 i;
     int y;
     u8 *e;

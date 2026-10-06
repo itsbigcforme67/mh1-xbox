@@ -563,6 +563,7 @@ static int load_stage_models(int st)
  * What game_core does on the PS2 (swset, move, trans, hit_check), done by
  * the host pieces in the PS2 order. With --quest it runs inside the game's
  * own mode loop (game2 -> game_core, src/main/game/f_game.c; rt_flow.c). */
+static void monsters_sync(int draw, const fl_light *L);
 static void sim_tick(void)
 {
     rt_game_move();
@@ -600,7 +601,13 @@ static void sim_tick(void)
     }
     if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
         sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
+        monsters_sync(0, &light);
         rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
+    }
+    if (ticks >= 2 && !getenv("RT_EM_STANDIN")) {
+        int i;
+        for (i = 1; i < 20; i++)        /* move()'s monster loop: the others (em_work[0] below) */
+            rt_monster_tick(i);
     }
     if (rathian.game && ticks >= 2) {
         if (getenv("RT_EM_STANDIN"))
@@ -649,6 +656,182 @@ static void quest_back(void)
         rt_cam_init(stage_no);
 }
 
+/* Quest monsters other than the Rathian of the host's own set-up (the
+ * game's em_create_model -> here): the model of kind `kind` (cached by
+ * kind) and the motions of model slot `slot` (create_em_motion from
+ * em<kind>_tbl.bin, as the PS2 loads them with the model). */
+static monster em_mdl[40];
+static int em_have[40];
+static void em_model_load(int slot, int kind)
+{
+    char a[32], t[32], b[32];
+    monster *e;
+    if (kind <= 0 || kind >= 40)
+        return;
+    e = &em_mdl[kind];
+    if (!em_have[kind]) {
+        snprintf(a, sizeof a, "em%02d_amh.bin", kind);
+        snprintf(t, sizeof t, "em%02d_tex.bin", kind);
+        snprintf(b, sizeof b, "em%02d_tbl.bin", kind);
+        if (monster_load(e, a, t, b, 0) != 0) {
+            fprintf(stderr, "monster kind %d: model %s not loaded\n", kind, a);
+            return;
+        }
+        em_have[kind] = 1;
+    }
+    if (e->tbl.p)
+        rt_em_motion_create(slot, kind, e->tbl.p);
+}
+
+/* every monster in use on this stage but the host's Rathian (em_work[0]
+ * with the em01 set-up above), posed by the game's motion player; also
+ * their joint matrices for the game's hit checks */
+static void monsters_sync(int draw, const fl_light *L)
+{
+    extern uint8_t em_work[];
+    static flmat jw[128];
+    int i, j, nb;
+    for (i = 0; i < 20; i++) {
+        uint8_t *em = em_work + 0xA10 * i;
+        monster *m;
+        flmat w;
+        float s[3], r[3], t[3];
+        int kind = em[2];
+        if (!em[0] || em[0x1E] || (i == 0 && rathian.game && kind == 1) || kind <= 0 || kind >= 40 || !em_have[kind])
+            continue;
+        if (em[0x736] != (uint8_t)rt_game_stage())
+            continue;
+        m = &em_mdl[kind];
+        rt_monster_pose(i, &m->skel);
+        memcpy(s, em + 0xB8, sizeof s);
+        if (s[0] == 0.0f) s[0] = s[1] = s[2] = 1.0f;
+        r[0] = 0;
+        r[1] = (float)(*(int32_t *)(em + 0xA4) & 0xFFFF) * (6.2831853f / 65536.0f);
+        r[2] = 0;
+        memcpy(t, em + 0xAC, sizeof t);
+        flmat_srt(w, s, r, t);
+        nb = m->skel.skel.nbone < 128 ? m->skel.skel.nbone : 128;
+        for (j = 0; j < nb; j++)
+            flmat_mul(jw[j], m->skel.world[j], w);
+        rt_monster_joints(i, &jw[0][0], nb);
+        if (draw) {
+            fl_model_pose(&m->model, (const flmat *)m->skel.world, L);
+            gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
+            draw_model_attr(&m->model, -1);
+        }
+    }
+}
+
+/* Village NPC models (npc_create_model -> here): slot = NPC kind. */
+static monster npc_mdl[4];
+static int npc_have[4];
+static void npc_model_load(int slot, int amh, int tex)
+{
+    monster *e = &npc_mdl[slot];
+    fmt_blob link, tx, amo, ahi;
+    if (npc_have[slot] || amh < 0 || (uint32_t)amh >= afs.count || tex < 0 || (uint32_t)tex >= afs.count)
+        return;
+    link = load(afs.name[amh], &e->mem[0]);
+    tx = load(afs.name[tex], &e->mem[1]);
+    if (!link.p)
+        return;
+    amo = fmt_link_entry(link, 0, FMT_LE);
+    ahi = fmt_link_entry(link, 1, FMT_LE);
+    if (fl_model_create(&e->model, amo, ahi, tx, 1, FMT_LE) != 0 || fl_skel_create(&e->skel, ahi, FMT_LE) != 0) {
+        fprintf(stderr, "npc model %d (%s): load failed\n", slot, afs.name[amh]);
+        return;
+    }
+    npc_have[slot] = 1;
+    if (getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "village: npc model %d = %s, %d parts, %d bones\n", slot, afs.name[amh], e->model.npart, e->skel.skel.nbone);
+}
+
+/* The NPCs on this stage (em_work slots with +0x1E): their model, posed by
+ * the game's motion player, placed and scaled like Lb_npc_mk; villagers
+ * (kind 0) show only their own parts (+0x4E6 per part, lb_npc_trans). */
+static void npc_draw(const fl_light *L)
+{
+    extern uint8_t em_work[];
+    int i, k;
+    for (i = 0; i < 20; i++) {
+        uint8_t *em = em_work + 0xA10 * i;
+        monster *m;
+        flmat w;
+        float s[3], r[3], t[3];
+        int kind = em[0x34F];
+        if (!em[0] || !em[0x1E] || !em[1] || em[0x736] != (uint8_t)rt_game_stage() || kind > 3 || !npc_have[kind])
+            continue;
+        m = &npc_mdl[kind];
+        rt_monster_pose(i, &m->skel);
+        fl_model_pose(&m->model, (const flmat *)m->skel.world, L);
+        memcpy(s, em + 0xB8, sizeof s);
+        r[0] = 0;
+        r[1] = (float)(*(int32_t *)(em + 0xA4) & 0xFFFF) * (6.2831853f / 65536.0f);
+        r[2] = 0;
+        memcpy(t, em + 0xAC, sizeof t);
+        flmat_srt(w, s, r, t);
+        gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
+        for (k = 0; k < m->model.npart; k++) {
+            if (kind == 0 && (k >= 0x20 || !em[0x4E6 + k]))
+                continue;
+            rt_clay_attr_set(part_attr(&m->model, k));
+            gfx_execute_clay(m->model.part[k].clay);
+            rt_clay_attr_reset();
+        }
+    }
+}
+
+/* The quest accepted in the village (game mode 0 -> game1/10/11/12/13 on
+ * the PS2): Quest_init + Quest_start (rt_quest_load), the hunt starts on
+ * the quest's own start stage (the base camp, game_w.stage), the hunter at
+ * its start position (pl_init), the stage's monsters (Quest_em_init_set). */
+static void quest_from_village(void)
+{
+    int st;
+    float p[3] = { rx, 0, rz };
+    rt_monster_clear_all();
+    if (rt_quest_load(quest_no) != 0) {
+        fprintf(stderr, "quest %d: no mission file\n", quest_no);
+        return;
+    }
+    st = rt_game_stage();
+    if (st != stage_no)
+        load_stage_models(st);
+    stage_no = st;
+    rt_game_init(stage_no);
+    rt_hud_init();
+    rt_player_game_init(0);
+    rt_monster_spawn(1, p, 0);
+    if (game_cam)
+        rt_cam_init(stage_no);
+    if (getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "village: quest %d starts on stage %d\n", quest_no, stage_no);
+}
+
+/* After the reward screen (game mode 6): the village, as on the PS2
+ * (rt_village.c runs lobby.bin's Local_main); a quest accepted at the
+ * counter starts when the hunter leaves through the gate. RT_NO_VILLAGE=1
+ * restarts the same quest instead (the old stand-in). */
+static void village_step(void)
+{
+    int q;
+    if (getenv("RT_NO_VILLAGE")) {
+        quest_back();
+        return;
+    }
+    if (!rt_village_active())
+        rt_village_enter();
+    q = rt_village_tick();
+    if (q > 0) {
+        if (getenv("RT_QUEST_TRACE"))
+            fprintf(stderr, "village: quest %d accepted, leaving the village\n", q);
+        quest_no = q;
+        quest_from_village();
+    } else if (q < 0) {
+        quest_back();
+    }
+}
+
 int main(int argc, char **argv)
 {
     for (i = 1; i < argc; i++) {
@@ -685,9 +868,13 @@ int main(int argc, char **argv)
     {
         uint8_t *ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "game.bin"), &n);   /* stored raw */
         rt_set_overlay(ovl, ovl ? n : 0);
+        ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "lobby.bin"), &n);           /* the village overlay */
+        rt_set_lobby(ovl, ovl ? n : 0);
     }
     if (rt_import_data() != 0)
         fprintf(stderr, "some game data tables are missing\n");
+    if (rt_import_lobby() != 0)
+        fprintf(stderr, "some lobby data tables are missing\n");
     if (gfx_init(W, H, "MH1 PC viewer", shot != NULL) != 0)
         return 1;
     if (script && !pad_script_set(script)) {
@@ -698,6 +885,7 @@ int main(int argc, char **argv)
         pad_init();
 
     rt_set_file_loader(afs_entry);
+    rt_set_em_model_loader(em_model_load);  /* before the quest's em_create_model calls */
     if (quest_no) {
         /* --quest N: the mission file's monsters (rt_em.c); the hunt's
          * stage is where the quest's own monster starts */
@@ -867,6 +1055,10 @@ int main(int argc, char **argv)
     rt_flow_set_core(sim_tick);
     rt_set_stage_loader(load_stage_models);
     rt_flow_set_back(quest_back);
+    rt_flow_set_village(village_step);
+    rt_set_npc_model_loader(npc_model_load);
+    if (quest_no && getenv("RT_VILLAGE_START"))   /* test aid: straight to the village (game mode 6) */
+        rt_flow_set_mode(6);
     t0 = SDL_GetTicks();
     while (running) {
         SDL_Event ev;
@@ -904,6 +1096,9 @@ int main(int argc, char **argv)
             if (keys[SDL_SCANCODE_SPACE]) cam[1] += spd;
             if (keys[SDL_SCANCODE_C]) cam[1] -= spd;
         }
+        if (getenv("RT_CAM_DEBUG"))
+            fprintf(stderr, "frame %d: eye %.0f %.0f %.0f fwd %.2f %.2f %.2f game_cam %d have_view %d\n", frame_no,
+                    camw[12], camw[13], camw[14], -camw[8], -camw[9], -camw[10], game_cam, have_view);
         flmat_invert_affine(view, camw);
         rt_set_camera(camw);            /* rview_mat / rview_matY for game billboards */
         /* the game's angle of view taken as the vertical fov [guess] */
@@ -922,7 +1117,10 @@ int main(int argc, char **argv)
                     else
                         pad_read(&ps, 1);
                     rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
-                    rt_pad_tick();
+                    if (rt_flow_mode() == 6)
+                        rt_pad_read();      /* the village's Lb_pl_move runs swset */
+                    else
+                        rt_pad_tick();
                 }
                 rt_flow_tick();         /* game2 / game3 / game5 (f_game.c): game_core = sim_tick */
             }
@@ -963,6 +1161,20 @@ int main(int argc, char **argv)
         if (weapon.game && pl.game && play)
             weapon_pose(&light);
 
+        /* the view of this frame, from the camera the ticks above left
+         * (the game camera or the follow camera moved with the hunter) */
+        if (game_cam && have_view) {
+            lookat_world(camw, gc_eye, gc_tar);
+        } else {
+            float s3[3] = { 1, 1, 1 }, r3[3], t3[3];
+            r3[0] = cam[4]; r3[1] = cam[3]; r3[2] = 0;
+            t3[0] = cam[0]; t3[1] = cam[1]; t3[2] = cam[2];
+            flmat_srt(camw, s3, r3, t3);
+        }
+        flmat_invert_affine(view, camw);
+        rt_set_camera(camw);
+        flmat_perspective(proj, game_cam && have_view ? gc_fov : 1.0f, (float)W / H, 10.0f, 80000.0f);
+
         gfx_begin_frame(0x8098B8);
         gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);
         gfx_set_render_state(GFX_RS_VIEW, (uintptr_t)view);
@@ -986,6 +1198,10 @@ int main(int argc, char **argv)
             for (s = 0; s < HUNTER_PARTS; s++)
                 draw_model_attr(&pl.part[s], -1);
         }
+        if (rt_village_active())
+            npc_draw(&light);
+        else
+            monsters_sync(1, &light);
         if (weapon.game && pl.game && play) {
             static flmat wid;
             flmat_identity(wid);
