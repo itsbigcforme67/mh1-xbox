@@ -1355,3 +1355,8 @@ main 0x00235BF0 0x00235C4C net/cpinet03
 main 0x00235E00 0x00235E3C net/cpinet04
 main 0x00236110 0x0023615C net/cpinet05
 main 0x00236370 0x002368BC net/cpinet06
+main 0x002352E0 0x00235344 net/cpinet07
+main 0x00235370 0x002355B4 net/cpinet08
+main 0x00235600 0x0023571C net/cpinet09
+main 0x00235850 0x002358D8 net/cpinet10
+main 0x00235940 0x0023596C net/cpinet11
