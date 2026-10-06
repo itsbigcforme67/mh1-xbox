@@ -15,4 +15,4 @@ case "$1" in
     village) export RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1; set -- --quest 10 ;;
     *)       set -- --quest 10 ;;
 esac
-exec build/pc/mhview disc/mh1 --size 1280x960 "$@"
+exec build/pc/mhview disc/mh1 --play --size 1280x960 "$@"
