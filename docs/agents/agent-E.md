@@ -707,3 +707,40 @@ Lessons (function that shows it):
 7. Order of 3 independent init statements decides the prologue schedule: try all permutations (concat_bslen: c=0; h=&hchar[pos]; n=0). Declaration-order hill climb: tools/declhill.py only works for brace-on-same-line; my scratch variant handled both.
 8. `x >= 0x21` gives slti into v1, `x > 0x20` into at (is_jis). `loop: while (a && (len = f()) != 0)` (select_subtostr).
 9. decomp-permuter solved GetPlayerShagamiData in 20 s (unused local `GKIND *k;` and direct `u8 idx = (&tbl[..])->f;`); 8 other runs of 9 minutes found nothing. tools/tweak.py --apply can corrupt a file (it replaced the wrong span in sk_nm.c): never use it without git diff.
+
+## Assignment 10 (6 Oct, long round): single-player breadth, whole-TU linking
+Ranges: main 0x160000-0x1C0000 (Capcom parts), 0x1C0000-0x24A240 (IME, skipping Sofdec/ADX 0x1C4000-0x216000) and 0x2814E0-0x293B68.
+Linked (main OK x5, see git log): fl/amo_all (0x190600-0x192DC8: the whole AMO model file: plAMO* readers, mesh getters, clay converters; 7 raw holdouts incl.
+ConvertModelMeshAMO_NormalModel/WeightModel), fl/res_all (0x18F0B0-0x1905F8: AAN/AHI readers and the whole motion-set creator: plCreateMotionSetFromAAN,
+plCreateMotionFromAAN, the 7 Fcurve creators, motion start/end time; 2 raw), fl/pltim_all (0x1935C0-0x194890: TIM2 reader, pixel contexts, plDrawPixel, plGetColor,
+plConvertContext, plReport, plMemset; 6 raw), fl/plbmp01, fl/flsys02 (flInitialize, system_work_init, flFlip, flPS2VramFullClear; system_hard_init and
+flPS2VSyncCallback raw), fl/fldma01 (VIF1 DMA queue: InitControl, AddQueue, Wait, Terminate, IopModuleLoad/Start; AddQueue2, Interrupt, Send, the store-image handler raw),
+fl/fltex01 (texture/palette handle creation: 0x187D10-0x1887F8; 3 raw), IME runs imerun01-07 (clear_allrtime, ask_strncmp, fl_check, make_chmem, make_bsmem,
+kouho_makedisp, inc_gun: the "close ones", fixed in ime_nm.c).
+Not mine: Gun_level_up / Gun_option_ck (0x274690/0x274760) sit in agent B's range now.
+Near-matches left (off/instructions): GetTim2PictureHead 22/30, GetTim2PictureData 49/100, CheckTIM2FileHeader 17/52 (it needs the dead `if (CLT)` test the compiler removes),
+GetTim2ClutData 2/35, plCalcAddress 2/46, plAMOGetModelMatrixlist 23/72, GetWeightAMOModelMesh 6/81, GetPrimVertexNum/CullType/VertexIndex 24-26/140, plGetInitMotionSetSizeFromAHI 3/23,
+plCreateInitMotionSetFromAHI 5/138, plMemmove 96/128 (original copies through temp pointers), system_hard_init 4/108 (arg load order of the last flPS2IopModuleLoad),
+flPS2DmaAddQueue2 19/112 (backward gotos become direct branches here, the original has `bnez; nop; b enq`), flPS2GetTextureInfoFromContext 2/135, flPS2GetVramTransAdrs 11/60,
+flPS2GetPaletteInfoFromContext 18/94, flfntSetPalData 18, flfntPrintf 45, SdrSeReq 9, SdrSeChg 10, enemy_trans 15, flGetHierarchyData2 / SISub / MAYASub 2 each, page_gc 16, add_dummy_chmem 18.
+Lessons (function that shows it):
+1. THE BIG ONE: a file-static callee changes the register use of every caller defined AFTER it in the same file. LOCAL symbols (docs/survey/mh1_symbols.csv bind) in a run of
+   functions mark one original source file: put the whole run in ONE translation unit in address order, statics defined before their users, and keep unfinished functions as
+   raw `static asm` holdouts (config/c_rawfuncs.txt, tools/b_rawwrap.py style; /tmp-style helper rawwrap: wrap the C in #ifdef __MWERKS__ asm ... #else C #endif). amo_all went from
+   many 40-70 off functions to 0 for 15 of them; res_all, pltim_all the same. The permuter (tools/perm.py) drops `static` from its copy, so it is useless for these.
+2. `x = r = call(); if (r == -1)` (copy into the variable in the branch delay slot, test on v0): clear_allrtime, make_chmem, GetAllPrimitiveNumAMOModelMesh, plAMOCreateClayFromImage.
+   `l = f(); if (l == -1) return; list = l;` (make_bsmem: the walker variable receives the call result).
+3. `return n ? n : 1;` for `bnez; nop; li; move v0` (inc_gun); `} while (n-- != 0)` (make_chmem); `buf += n; n += g(...)` in place (kouho_makedisp).
+4. `d += 0xC; return d + idx * 12;` gives addu v0,v1,v0 (GetVertexAMOModelMesh); `if (d == 0) return 0; ...` gives `bnez; nop; b END; daddu v0,0` (all AMO getters).
+5. switch: ladder tests the cases in REVERSE source order (write ascending to get a descending ladder), the delay slots stay nops (so a `n == 0x20 || ...` chain becomes
+   `switch (n) { case 0x400: ... case 0x20: break; default: log; return 0; }`: flPS2GetTextureInfoFromContext); a jump-table switch needs the dense case set (plAMO... AddQueue2).
+6. int fields beat pointers: `c->base + c->stride * y + x` with `int base` (plCalcAddress) removes the addu operand swap; `u32 tag` vs `unsigned long tag`: `(unsigned long)tag & 0xFFFFFFFUL`
+   is dsll32 4 / dsrl32 4 on the zero-extended register (flPS2DmaAddQueue2); `int v; (s16)v` instead of `long` kills dsll32 0/dsra32 0 (flPS2VramTrans).
+7. Calls with fewer arguments than the callee takes: declare the callee K&R (`int flPS2GetTextureBuffWidth();`) and pass two; the third register stays stale (fltex01).
+8. `0 < tries` vs `tries > 0` (slt at vs blez, flPS2IopModuleLoad); `!(a < b)` gives `sltu at` (flPS2DmaAddQueue); `(h & 0xFFFF0000) >> 16` explicit mask (flCreatePaletteHandle).
+9. varargs: `int plReport(char *fmt, ...) { va_list ap; va_start(ap, fmt); vsprintf(plReportMessage, fmt, ap); return 1; }` with include/va.h.
+10. A loop that polls a hardware word is `volatile int *p` (flPS2DmaWait); `for` loops over small constant counts are unrolled by the compiler itself when the body is simple
+    (plCreateInitMotionSetFromAHI: three rows by index inside `for j<4`).
+11. Statements that wrote 8 + stack args (flPS2VIF1MakeLoadImage has 11 arguments: 8 in registers, 3 `sd` on the stack, passed as `long`).
+12. Helper scripts (kept in the scratchpad, not the repo): tv.py (try source variants of one snippet and keep the best only if it beats the baseline), declperm (all declaration
+    orders of a function, found improvements in GetTim2PictureHead/PrimVertexNum/plGetColor 74 -> 0), dfn.py (one function's diff from tools/alignall.py -v), unm.py (unmatched list).

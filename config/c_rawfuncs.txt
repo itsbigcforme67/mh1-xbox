@@ -87,3 +87,6 @@ main 0x16E6E0 0xAC IntGsStoreImageHandler
 main 0x16EAE0 0x31C flPS2DmaInterrupt
 main 0x16EE00 0x1D0 flPS2DmaSend
 main 0x16E920 0x1c0 flPS2DmaAddQueue2
+main 0x187DF0 0x21c flPS2GetTextureInfoFromContext
+main 0x188330 0xf0 flPS2GetVramTransAdrs
+main 0x188570 0x178 flPS2GetPaletteInfoFromContext
