@@ -364,7 +364,7 @@ void flfntDrawTerm(void) {
         *(u128 *)(tail + 4) = 0;
         np->dcur += 0x20;
         flPS2GetSystemTmpBuff(np->dcur - np->dbuf, 0x10, head);
-        flPS2DmaAddQueue2(0, (u64)(np->dbuf << 4) >> 4, tail, flPs2VIF1Control);
+        flPS2DmaAddQueue2(0, (u64)np->dbuf & 0xFFFFFFFULL, tail, flPs2VIF1Control);
     }
 }
 
@@ -598,7 +598,8 @@ void flfntFontPuts(char *str, FREQ *r) {
             if (c2 == 0) {
                 return;
             }
-            c = c << 8 | c2;
+            c <<= 8;
+            c |= c2;
             str++;
             full = 0;
         } else {

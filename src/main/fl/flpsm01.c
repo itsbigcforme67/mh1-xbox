@@ -1,4 +1,4 @@
-/* Near-match (not linked): flPS2psAddQueue (0x00175120), 5 of 43 instructions differ (the original keeps the 28-bit masked address in v1 instead of v0). */
+/* SLPM_654.95 0x00175120-0x001751CC: flPS2psAddQueue .. flPS2psAddQueue. See flps_misc_nm.c. */
 #include "types.h"
 
 typedef unsigned long u64;
@@ -10,6 +10,7 @@ extern u8 flPs2VIF1Control[];
 u64 flPS2GetSystemTmpBuff(int, int);
 void flPS2_Mem_move16_16A(void *, u64, int);
 void flPS2DmaAddQueue2(int, u64, u64, void *);
+
 
 int flPS2psAddQueue(u32 *p) {
     int n;
