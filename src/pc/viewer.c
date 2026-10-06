@@ -1302,6 +1302,17 @@ int main(int argc, char **argv)
          * have run their init and queued their prims) */
         if (shot && shot_next > 2 + (int)fr)
             shot_next = 0;              /* RT_SHOTS past --time: dropped */
+        /* RT_PROF=1: host time per game tick (logic) and per drawn frame
+         * (CPU side of the draw: posing, skinning, GL calls), every 300 ticks */
+        static int prof = -1, prof_ticks0, prof_n, prof_fr;
+        static double prof_logic, prof_draw;
+        static Uint64 prof_t;
+        if (prof < 0)
+            prof = getenv("RT_PROF") != NULL;
+        if (prof) {
+            prof_t = SDL_GetPerformanceCounter();
+            prof_ticks0 = ticks;
+        }
         while (ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
             if (booting) {      /* ACRMain: pad, then the task scheduler */
                 pad_state ps;
@@ -1359,6 +1370,12 @@ int main(int argc, char **argv)
                 fprintf(stderr, "T %d m%d st%d pl %.2f %.2f %.2f %04X em %.2f\n", ticks, rt_flow_mode(),
                         rt_game_stage(), p[0], p[1], p[2], a & 0xFFFF, es);
             }
+        }
+        if (prof) {
+            Uint64 t1 = SDL_GetPerformanceCounter();
+            prof_logic += (double)(t1 - prof_t) * 1000.0 / (double)SDL_GetPerformanceFrequency();
+            prof_n += ticks - prof_ticks0;
+            prof_t = t1;
         }
         if (booting) {          /* the boot screens: the last tick's picture */
             gfx_begin_frame(0);
@@ -1497,6 +1514,16 @@ int main(int argc, char **argv)
             printf("wrote %s (%dx%d, motion frame %.1f)\n", shot, W, H, fr);
             free(rgb);
             running = 0;
+        }
+        if (prof) {
+            prof_draw += (double)(SDL_GetPerformanceCounter() - prof_t) * 1000.0 / (double)SDL_GetPerformanceFrequency();
+            prof_fr++;
+            if (prof_n >= 300 || prof_fr >= 300) {
+                fprintf(stderr, "prof: logic %.2f ms/tick (%d ticks), draw %.2f ms/frame CPU (%d frames)\n",
+                        prof_n ? prof_logic / prof_n : 0.0, prof_n, prof_draw / prof_fr, prof_fr);
+                prof_logic = prof_draw = 0;
+                prof_n = prof_fr = 0;
+            }
         }
         gfx_end_frame();
     }
