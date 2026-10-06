@@ -734,3 +734,47 @@ New matching lessons (each confirmed by a match):
 - `i = (s16)n + lbShop.x6C * 7;` (explicit cast, plain `int` sum) matched lb_armor2_listItem where `i = lbShop.x6C*7; i += n` did not.
 - `get_quest_info()` is called with no argument in lb_select_room_list (the m2c draft passed a stale 7).
 - Permuter on these tiny near-matches (connecting_00, cmcs_00...) found nothing below the base score in 5-10 minutes each (base scores include relocation noise); not worth the CPU.
+
+# Lobby round 7 (agent B, 6-7 Oct 2026): village first
+Linked (all in src/lobby/b/lb_by135-146.c, registered in config/c_files.txt as `lobby ... b/lb_byNNN`; rebuild OK for all five modules):
+- by135 lb_set_npc, by136 lb_npc_move, by137 lb_put_shopList, by138 shop_armor2_question, by139 Lb_shop_trans2, by140 tk_lever_ck,
+  by141 Put_page_num, by142 lb_mix_item_select, by143 lb_shop_item_select, by144 Lb_process_shop, by145 npcPigEXIT, by146 lb_mix_makeMixList.
+  All village (NPC placement/walk, shop list/detail/select, forge, armor shop, talk lever, pig NPC). None is online-only.
+New matching lessons (each confirmed by a match):
+- A callee with narrow parameters (`flfntLocate(int x, s16 y)`, `Lb_put_icon_free(s16, s16, int, int, int)`, `Lb_mix_item_checkMax(u16 id, s8 qty)`)
+  declared in the file makes the CALLER narrow each argument at the call and stops MWCC from CSE-ing the mask / sign extension into a
+  saved register (lb_put_shopList y, Put_page_num x/y, lb_mix_item_select / lb_shop_item_select id). The headers declare these K&R, so
+  rename the header declaration first: `#define flfntLocate flfntLocate_hdr` before the include, `#undef` after, then declare yours.
+  Writing `(s16)x - 0x18` inline in each argument (no x/y temporaries) matched Put_page_num; a temporary made the allocator swap s0/s2.
+- `u16 key = lbShop.key` loaded first and a separate `int k = key & 0xFFFF;` (not `key = key & 0xFFFF`, which the compiler folds away) gives
+  the original `lhu` ... `andi` pair; put the mask inside the `if (armor_shop_r == 0)` block when the original does (shop_armor2_question).
+  Same for lb_mix_item_select (`keys = lbShop.key;` first, `k = keys & 0xFFFF;` after the id load).
+- A shared `return 2;` after an if/else block: when the original's `addiu v0,zero,2` sits at the very end after the `return 0` path, the
+  source is `if (a == 0) { ... (no return) } else { ... return 0; } return 2;` (shop_armor_question / shop_armor2_question).
+- Last case of a switch ending in `return;` adds a stray `b`: use `break` (npcPigEXIT). A switch whose "matched" cases all go straight to
+  `return;` with the real work AFTER the switch gives `beq ...; b skip; L: b end` (lb_npc_move: the 9 slot kinds that skip ground snap).
+- `if (cond1 == 0 || cond2) { state = 1; } else { state = 0; }` lays out the else (state = 0) after the then, the original order, where
+  `if (A && B) state = 0 else state = 1` does not (lb_mix_makeMixList). `md->price > funds` gives `slt at` where `funds < md->price` gave `slt v0`.
+- Declaration order picks saved registers in reverse of first use: lb_mix_makeMixList wanted `num, rt, idx, sl, rec, md, j, no, tb` (the old
+  nm file had them in the opposite order and every s register was permuted). A 10th local that does not fit (8 s regs + fp) is spilled to the
+  stack (the 8-bit `cnt` read: `sw v0,0xA0(sp); lw v0,0xA0(sp)`).
+- Loop counters: `i = 0` moved INTO the `if` that guards the loop changes which s register `i` gets (lb_mix_item_select).
+- `(u8)kind` in all four uses (not `kind & 0xFF`, not mixed) was needed in lb_armor_put_itemDetail to keep the mask un-CSE'd.
+- gp-relative globals must be declared with a size <= 8 (wait_157[4], D_38A82E[2], r_no_process, armor_shop_tmp is not gp).
+- ANSI vs K&R: `s32 f()` vs `s32 f(void)` made no difference to codegen here.
+Near-matches (village) after this round, with the real remaining difference (counts exclude relocation noise):
+- lb_mix_decide (4): `lui s0; sll; addiu` order of `mixData + cur` and the `sll v0,a0,9` register for `&player_work[idx]`.
+- lb_mix_put_itemDetail / lb_shop_put_itemDetail (6): `(s16)have` sign-extension goes to t0 in the original, v1 here, plus lw/sll order in case 1.
+  Permuter (-j1, 15 min on a standalone copy) found nothing.
+- lb_npc_old_guild (2): the constant 105 uses a2 (the register holding `mv`) in the original, v1 here.
+- draw_dialog_square (8), event_eat_trans_ot0 (9): see round 6; event_eat: the x load after the y load only fails for the three
+  `y = M[1] + 0x16; flfntLocate(M[0], y)` sites that are followed by a one-argument font_print.
+- lb_process_use_item (14): base `shopList + 0x26` indexing is right, but n*40 uses a0 as the destination in mine, v1/a1 in the original.
+- Lb_put_materialItem (17): saved-register order of id/need (s3/s1); compare forms tried.
+- shop_armor_question (3): cur/tbl load order and register of the entry address; everything after matches.
+- lb_armor_put_itemDetail (about 10, prologue only): body matches.
+- lb_shop_tag_decide: the original shares `cnt` between the two branches (`pages = cnt/7` after the if/else) and its loop in mode 0 uses 5 s regs
+  (the Item array pointer `it` is not live there); not reproduced.
+- lb_process_select: the original keeps the mode in v1 and constant 1 in v0; mine swaps them; not reproduced.
+Online-flavoured functions that the round-6 graph listed as village but are really the in-game web browser: Analysis_TagCode,
+Analysis_StringData, Split_TagCode, tk_dialog_mv02 (nwDispStr_Html). Not attempted.
