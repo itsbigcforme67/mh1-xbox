@@ -865,3 +865,42 @@ Plaza_chatlog_mv 5, lb_process_kyoukaListProg (lim extension lands in v0 not v1;
 ## Lobby round 10b (agent B)
 BsBody00_ReqSrc matched (lb_au07.c): the original is `if (hide) { switch (MMBB_LOGIN) { case 2: case 1: ...; break; default: break; } } else {...}` (no early returns; the switch exit jumps straight to the epilogue).
 Owner paused browser work mid-round. Plaza_chatlog_mv still 5 (u8 PZ_TOP decrement lands in v0 not in place), itembox_cursor_mv still 2 (daddiu 9; tried int/u8/u16/long/ternary forms). tagAct_600/601 drafted in scratch only: bsw field reads must be `(bsw + bsw[0xE96C])[0xE96C]` with the first read not CSE'd; not finished.
+
+# Main module 0x24A240-0x2814E0 (agent B, 7 Oct 2026)
+Map (all functions in this range that were not yet in a linked run; E's sk13-18/20 and D's pl_snd01 are merged first):
+- 0x24A240-0x2542E0 player sound script (pl_snd01, linked by D). 0x254300-0x25F980 PS2 kernel stubs, sceSif/Fs/Tty/Timer/Deci2 SDK: skipped (not Capcom).
+- 0x25F980-0x262A90 soft keyboard (sk_*, DispSoftkeyboard): chat/name text entry, offline and online. 0x263140-0x2671E0 candidate table, hard keyboard (hk_*), kbd_*, cmd_*.
+- 0x2671E0-0x26D2F0 online: ms_network_bb_*, net file, net_connect_draw. 0x26D310 disp_spr_sub (11.9 KB, network connection screen sprites), 0x2703F0-0x271050 ncm message drawing,
+  0x2712C0 server_connect / connect_error: online, last.
+- 0x271EA0-0x273B50 user data (Set_userdata, Ud_item_stack, Set_mini_data_to_pl, Get_bowgun_atk): single player. 0x274EC0-0x27BF80 pit menu: list/page select, item valid check,
+  frame/list/message drawing, chat log, NPC messages, player status / equipment windows (single player; chat log is shared with online).
+- 0x27C020-0x27CA10 Softkey app glue and Sony base64/scf/rtc library (skipped). 0x27CF10-0x27D4A0 cnLBS file download (online). 0x27F1C0-0x2814E0 memory card (mc*), save selection UI.
+Linked this round (all five modules OK): ListSelect, PageSelect, Item_valid_chk (pit04/05); chat24-43: Chat_init, ChatKinsoku_chk, Menu_chatlog_mv, Put_receive_mark, Join_pl_chk, Put_PageArrow,
+disp_cursorC, Disp_help_mess, NPC_Message, PutSpriteDiv3, Put_mini_sight, Disp_NPC_message, Get_equip_icon_uv, PutButtonICON, ChatLogAdd_Q, Pit_disp_chat_log, EquipmentDescriptionWindowA,
+EquipmentCompareWindowA, Monster_list_search, Chat_move; ud13 Set_mini_data_to_pl; hk19 cmd_delete; sk21/23/24 disp_keybase, sk_board_ptr_replace, key_mask_check.
+Header edit: include/menu.h PitMenu.x0C s16 -> u16 (Chat_init/Menu_chatlog_mv store the chained `x0F = x0C = 0` through andi 0xFFFF). Aliases added to config/main_aliases.txt:
+flfntLocate_i, Equip_moji_color_rare_i, Put_PageArrow_s, EquipmentDescriptionWindowA_s (same function, a second prototype so one TU can call it narrowed or raw; tools/mkruns3.py strips `_i`/`_s` when comparing call names).
+Matching lessons (each confirmed by a match):
+- Compare ladder of beq with a trailing `beq; nop; b` = a `switch` with `break` (yn_mask_char_check, mh_char_make_check); `r = 0` before the switch.
+- A shared `li v0,1` return label at the end of a function = `switch` whose cases `break` and a final `return 1` (Item_valid_chk); the early exits `return 0`.
+- Stray extra argument in a call (`se_req(7, 0x16, 0, v)`) put the variable in t0 instead of a3 (ListSelect/PageSelect). A call with FEWER args than the callee has: leave the arguments out
+  (sk_backspace(1) etc. in SoftKeyboard_move), declare the callee `void f();`.
+- `(u8)n` at every use (not `n & 0xFF`) keeps the mask un-CSE'd (Put_receive_mark, Disp_help_mess: `(u8)kind`, `(u16)id`).
+- Parameters of the callee decide narrowing at the call: Put_PageArrow / EquipmentDescriptionWindowA take raw ints in their own definition but their callers narrow (two prototypes via alias).
+  `u8` as last parameter of Put_PageArrow and return type u8 of EquipmentDescriptionWindowA removed the masks around `pages`.
+- A float parameter shows as `mov.s $f20,$f12` in the prologue: Put_mini_sight(f32 scale, s16 ofs, int col). Hoisted `x0 = 1.25f * scale` goes after the last call before the loop.
+- `int t = u1 - d` (int temp) instead of s16 saves the second sign extension (PutSpriteDiv3). Chained store `a = b = 0` stores the right-hand variable first.
+- Struct with u8/u16 views of the same bytes (`KM`: `k->v.w`, `k->v.s.lo`) stops MWCC from forming a `k+2` pointer register (key_mask_check, EQD in EquipmentDescriptionWindowA).
+- Per-branch stores `*(u8 **)lpSKey = X` in each case (not one temp `b` stored after the switch) (sk_board_ptr_replace). Reading `lpSKey->field` through a local pointer lets MWCC keep the pointer;
+  reading through the global every time reloads it like the original (setup_rw_sub, disp_keybase: no `sc` temp). int instead of u16 for a position variable kills `andi` copies (cmd_delete).
+  Declaration order is reverse of register order (cmd_delete: `p, s, n, pos` gave s0 = pos).
+- A compare `if (0 < x)` / `x > left` vs `left < x` flips the `slt` result register (NPC_Message `PitMenu.x08 > left`). Both-branch values assigned once: `if (c == 0xA) { s += 1; } else {...}` order.
+- Colour built from three sines: `(R | 0xFF000000 | G) | B` with each channel `(((s8)(K * s) + C) & 0xFF) << n` (EquipmentCompareWindowA); tried 7 orders with a script, four match.
+- Shift/sign helpers: `u8 pg = page` extra copy lets `page &= 3` stay in its register; locals of struct/array size decide the frame (buf[0x40] vs [0x20] in Chat_move/Disp_NPC_message/ItemListWindow).
+- Permuter (-j1, 7 min per function) found zero scores for Monster_list_search and Chat_move (applied with tools/permapply.py; formatting of those two functions is the permuter's).
+Near-matches left (real remaining difference in instructions, C in the *_nm.c files): PlayerEquipmentWindow 2 (init store order), server_connect 2, connect_error 4, net_overlay_request 4,
+hk_key_kata_hira 5 (empty then-block layout), sk_pltchange 5 (saved register order f/e), Chat_log_add / Plaza_chat_log_add 6 (a0 in the jal delay slot), HardKeyboard_move 7, hk_key_backspace 8,
+disp_keybase2 9, sk_key_repeat 11 (return type is s16), sk_palette_cursor_set 11, hk_key_end 13, hk_cursor_mv 15, setup_rw_sub 29, Get_bowgun_atk 27, ItemListWindow 62,
+ng_word_sub 67 (8 saved registers vs 7), PlayerStatusWindow 88 (pl/tab/t/noRank register order), SoftKeyboard_move 38 (callee prototypes now K&R; layout of the timer decrement block), equip_exp_core 965,
+DispFrameMessageA 606, DispFrameListA 348. mc_act_unformat (11) needs mc_unformat/mc_act_return in the SAME translation unit (the original keeps a0 across both calls: MWCC register info of an earlier callee).
+Not started: online code (disp_spr_sub, net_connect_draw, ms_network_*, ncm_*), mc disp/low, Ud_item_stack / Ud_u_item_stack.
