@@ -3994,7 +3994,7 @@ static void em_atk21_005F3440(EMW *em, EM20W *w) {
         w->dang = (u16) (w->dang - em->ang[1]);
         em20_senkai_sub(em, 3, 1);
         temp_f1 = em->adj_z;
-        if (temp_f1 > 100.0f) {
+        if (100.0f < temp_f1) {
             em->adj_z = temp_f1 - 2.0f;
         } else if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 3000.0f) {
             em->x05 += 1;
@@ -4006,7 +4006,7 @@ static void em_atk21_005F3440(EMW *em, EM20W *w) {
         speed_add(em, w->spd);
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
-        if (temp_v1 <= 0) {
+        if (0 >= temp_v1) {
             kyusyu_senkai_ret_005FCBA0(em);
         }
         break;
@@ -4015,7 +4015,7 @@ static void em_atk21_005F3440(EMW *em, EM20W *w) {
             kyusyu_senkai_ret_005FCBA0(em);
         } else {
             temp_f1_2 = em->adj_z;
-            if (temp_f1_2 > 80.0f) {
+            if (80.0f < temp_f1_2) {
                 em->adj_z = temp_f1_2 - 1.0f;
             }
             temp_s2 = em->x617;
@@ -4026,7 +4026,7 @@ static void em_atk21_005F3440(EMW *em, EM20W *w) {
             em20_senkai_sub(em, 3, 1);
             temp_v1_2 = w->dang;
             if (((s32) temp_v1_2 < 0x801) || ((s32) temp_v1_2 >= 0xF800)) {
-                if (!(CalcDistanceXZ(em->pos, sp50) > 4000.0f)) {
+                if (!(4000.0f < CalcDistanceXZ(em->pos, sp50))) {
                     kyusyu_senkai_ret_005FCBA0(em);
                 } else {
                     em->x05 += 1;
@@ -4193,7 +4193,7 @@ block_80:
         w->spd[1] = (s32) em->ang[1];
         w->spd[2] = 0;
         speed_add_g(em, w->spd);
-        if (em->pos[1] <= em->x5AC) {
+        if (em->x5AC >= em->pos[1]) {
             em->x05 += 1;
             em->ang[0] = 0;
             em->ang[2] = 0;
@@ -7474,7 +7474,7 @@ void em20_material_sub(EMW *em, int type, u8 *tbl) {
     EM20W *w = (EM20W *)em->ex;
     s32 *p = (s32 *)(tbl + type * 0x8C);
 
-    if (p[1] > 0) {
+    if (0 < p[1]) {
         s32 *num = &p[1];
 
         do {

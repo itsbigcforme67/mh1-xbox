@@ -202,6 +202,8 @@ segments:
       - [0x037804, asm, text/em_fly10_0056B190]
       - [0x037810, c, em/em01_aie]
       - [0x03A7DC, asm, text/em_atk11_0056E160]
+      - [0x03A7E0, c, em/em01_ai01]
+      - [0x03AD68, asm, text/em_atk12_0056E6F0]
       - [0x03AD70, c, em/em01_aif]
       - [0x041148, asm, text/em01_uvmove]
       - [0x041150, c, em/em01_uv]

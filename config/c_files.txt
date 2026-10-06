@@ -450,6 +450,7 @@ game 0x0056B190 0x0056E15C em/em01_aie
 game 0x0056E6F0 0x00574AC8 em/em01_aif
 game 0x00574CD0 0x0057A778 em/em01_aig
 game 0x0057A7E0 0x0057AB58 em/em01_aih
+game 0x0056E160 0x0056E6E8 em/em01_ai01
 game:rodata 0x00685B30 0x00685B50 em/em01_aie
 game:rodata 0x00685B50 0x00685EF0 em/em01_aif
 game:rodata 0x00685EF0 0x00686078 em/em01_aig

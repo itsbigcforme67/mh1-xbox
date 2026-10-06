@@ -1174,7 +1174,7 @@ u8 *em_cmd_pl_ang_sel(EMW *em, u8 *p) {
     case 0:
         n = *p;
         p += 3;
-        if (!(n > 0)) {
+        if (!(0 < n)) {
         } else {
             v = *p;
             t = em->x844;
@@ -3111,7 +3111,7 @@ u8 *em_cmd_rnd32(EMW *em, u8 *p) {
         cum = 0;
         i = 0;
         q += 2;
-        if (n > 0) {
+        if (0 < n) {
             rnd = em->x39A & 0x1F & 0xFFFF;
 loop:
             r = cmd_end_search(em, q, 0x80, 0xFF);

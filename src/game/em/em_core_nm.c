@@ -815,7 +815,7 @@ int smell_ck(EMW *em, int joint) {
     f32 hit[3];
     int r;
 
-    if (em_hungry_tbl[em->kind]->smell >= em->hungry && em->x388 == 0) {
+    if (em->hungry <= em_hungry_tbl[em->kind]->smell && em->x388 == 0) {
         for (i = 0; i < game_w.pl_num; i++) {
             pl = &player_work[i];
             if (pl->be_flag == 0 || Pl_stg_ck_tw(em, pl) == 0) {

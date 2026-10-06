@@ -3188,7 +3188,7 @@ static void em_atk11_0056E160(EMW *em, EM01W *w) {
         em->adj_z = 100.0f;
         em->x3C0[2] = 10.0f;
         t = (int)((flSqrt(2.0f * em->x3C0[2] * EM_F3AC(em) + em->adj_z * em->adj_z) - em->adj_z) / em->x3C0[2]) + 1;
-        if (t >= --em->work08) {
+        if (--em->work08 <= t) {
             em->x05++;
         }
         break;
