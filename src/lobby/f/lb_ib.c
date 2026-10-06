@@ -729,7 +729,6 @@ s32 itembox_pickup(s32 pad) {
     u8 *u;
     u8 *w;
     u8 *p5;
-    u8 *pb;
     int sel;
     int cur;
     int id16;
@@ -761,13 +760,14 @@ s32 itembox_pickup(s32 pad) {
             } else {
                 F(u8, ib, 0x1F) = 0;
                 F(u8, ib, 0xB) = 0;
-                pb = ib + 0xB;
-                while (*pb < 0x14 && *(u16 *)(u + (*pb & 0xFF) * 4 + 0x37C) != *(u16 *)(u + F(u8, ib, 8) * 4 + 0x1C4)) {
-                    *pb = *pb + 1;
-                    pb = ib + 0xB;
+                while (F(u8, ib, 0xB) < 0x14) {
+                    if (*(u16 *)(u + (F(u8, ib, 0xB) & 0xFF) * 4 + 0x37C) == *(u16 *)(u + F(u8, ib, 8) * 4 + 0x1C4)) {
+                        break;
+                    }
+                    F(u8, ib, 0xB) += 1;
                 }
-                if (*pb < 0x14) {
-                    cur = *pb & 0xFF;
+                if (F(u8, ib, 0xB) < 0x14) {
+                    cur = F(u8, ib, 0xB);
                     id16 = *(u16 *)(cur * 4 + (int)u + 0x37C) * 0x10;
                     mx = D_3396D3[id16];
                     if (mx != 0xFF && *(s16 *)(F(u8, ib, 0xB) * 4 + (int)u + 0x37E) < mx) {
@@ -801,7 +801,7 @@ s32 itembox_pickup(s32 pad) {
                         se_req(7, 0x15, 0);
                     }
                 } else {
-                    *pb = 0;
+                    F(u8, ib, 0xB) = 0;
                     pad = 0;
                     for (e = 0; e < 0x14; e++) {
                         if (*(u16 *)(u + e * 4 + 0x37C) == 0) {
