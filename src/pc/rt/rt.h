@@ -34,6 +34,8 @@ int rt_import_data(void);
 int rt_import_lobby(void);
 /* Pointer words (R_MIPS_32 relocations of the ELF) and symbols. */
 int rt_load_relocs(void);
+/* main's pointer words into lobby.bin: n pairs (PS2 address, PS2 value) */
+size_t rt_main_lobby_ptrs(const uint32_t **pairs);
 int rt_is_pointer(uint32_t va);
 void rt_relocate_range(uint32_t va, uint8_t *dst, size_t size, void *(*map)(uint32_t));
 void rt_relocate_images(void *(*map)(uint32_t));

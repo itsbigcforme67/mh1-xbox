@@ -316,24 +316,20 @@ int rt_import_lobby(void)
     memcpy(rt_lb_mem, img, n);
     memset(rt_lb_mem + n, 0, LB_SPAN - n);
     rt_lb_relocate_range(LB_VRAM, rt_lb_mem, n, map_lb);
-    {   /* main's pit_help_str_tbl[4] / [5] (0x351E90) point at lobby.bin data
-         * (lb_menu_help 0x64E2C0, pit_help_itembox_str 0x6539E0); game.bin
-         * shares that vram, so rt_import_data could not map them. Only the
-         * village/town menus use these two kinds (Disp_menu_help). */
-        extern void *pit_help_str_tbl[];
-        pit_help_str_tbl[4] = map_lb(0x64E2C0);
-        pit_help_str_tbl[5] = map_lb(0x6539E0);
-    }
-    {   /* main's shop_default_tag_00389E90 (the item shop's "buy" / "sell"
-         * tags, lb_shop_init) points at lobby.bin strings 0x65E020/28 */
-        extern void *shop_default_tag_00389E90[];
-        shop_default_tag_00389E90[0] = map_lb(0x65E020);
-        shop_default_tag_00389E90[1] = map_lb(0x65E028);
-    }
-    {   /* main's hint_tbl[0] (0x389F80) points at lobby.bin's village hint
-         * strings 0x64F1F0 (Lb_put_hint); [1] is main's own */
-        extern void *hint_tbl[];
-        hint_tbl[0] = map_lb(0x64F1F0);
+    {   /* main's data words that point into lobby.bin (the ELF's .relmain
+         * names their symbol's section): game.bin shares that vram, so
+         * rt_import_data sent them into game.bin. pit_help_str_tbl[4]/[5]
+         * (village menu help), shop_default_tag (item shop "buy"/"sell"),
+         * my_job_str (the forge's "blademaster"/"gunner" title), hint_tbl[0]
+         * (spot hints), armor_shop_tblA/B, plaza menus, ... 72 words. */
+        const uint32_t *pr;
+        size_t k, np = rt_main_lobby_ptrs(&pr);
+        for (k = 0; k < np; k++) {
+            uint8_t *dst = map_ptr(pr[2 * k]);
+            void *h = map_lb(pr[2 * k + 1]);
+            if (dst)
+                memcpy(dst, &h, sizeof h);
+        }
     }
     lb_image_n = n;
     lb_image = malloc(n);       /* the freshly loaded overlay, for rt_lb_reload */
