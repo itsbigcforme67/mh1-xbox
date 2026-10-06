@@ -816,3 +816,16 @@ Near-matches (best C in src/lobby/b/nm/ unless noted):
 - lb_npc_item_trans: first version written (arrays of rotation/offset floats, em_frame_check2 case 0x2AD returns early); constant stores scheduled differently (about 20 hunks).
 - lb_npc_trans, disp_status, lb_process_drawHelp: first hand-written C, register allocation far off (30-85 hunks); lb_process_select, lb_eat_set, event_eat_trans_ot0, lb_process_use_item unchanged.
 Lessons: a `switch (x) { case 0: ... }` single-case form reproduces `beqz; b` layouts (lb_npc_item_trans); `if (a == 0 || b != 7)` first gives "then" block before the switch (kyoukaListProg tail); `price > money` (not `money < price`) fixes the load order of the `sltu` compare; `sl++; sl++;` keeps real pointer increments where `sl += 2` folds into offsets (make_kyoukaList); hill-climbing over statement order (random move/swap, score = align hunks) found make_kyoukaList's store order after hand tries failed.
+
+## Lobby round 8, part 2 (agent B, after the crash): raw-byte holdout files
+Linked (rebuild OK for all five modules) as files whose only PS2 content is an `asm` stub fed by the original bytes (config/c_rawfuncs.txt,
+tools/b_rawwrap.py wraps a C definition as `#ifdef __MWERKS__ asm ... #else C #endif`). These are NOT true matches; the near-match C stays beside them
+(in the by file under `#else`, or in the nm file named in the file's header comment) and is what build_pc.sh uses:
+by156 shop_select_items (1 hunk: `slt at` vs `slt v0` in the x6E+1 compare), by157 lb_process_kyoukaListProg (same 1 hunk), by158 lb_process_use_item
+(shopList+0x26 base ordering), by159 Lb_put_itemIcon (first real C: sprite struct as s16[10], Item_data rows through `(&Item_data[0][5])[id*16]`; schedule/reg diffs),
+by160 value_result, by162 lb_armor_put_itemDetail, by163 shop_armor_question, by164 lb_process_select, by165 lb_process_drawHelp, by166 disp_status,
+by167 lb_npc_trans, by168 lb_npc_init, by169 lb_eat_set, by170 event_eat_trans_ot0, by171 set_dialog_square, by172 draw_dialog_square, by173 Draw_menu_square,
+by174 lb_npc_old_guild, by175 lb_shop_put_itemDetail, by176 lb_shop_tag_decide, by177 Lb_put_materialItem, by178 lb_mix_put_itemDetail, by179 lb_mix_decide.
+All village. tools/b_covered.py lists the functions in my range with no linked run (mostly online, plus lb_npc_item_trans, ef_move_sub_*, DispDialogData,
+Display_StringData, tk_dialog_mv02, DispNameAndIDonDialog). Lesson: `if (lim <= ++lbShop.x6E)` with an s8 lim fixes the registers of the s8 `x6E++` compare
+but the compare result still goes to `at`; `if (--lbShop.x6E < 0)` (pre-decrement inside the condition) removes the reload after the store.
