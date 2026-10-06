@@ -429,6 +429,13 @@ int rt_player_weapon(int no, float *root0, float *root1)
     return jt;
 }
 
+/* PLW+0x5FC: the hair colour (0xFFRRGGBB, set from test_hair_col by the
+ * edit / load code); 0 = none set */
+unsigned rt_player_hair_col(int no)
+{
+    return *(u32 *)((u8 *)&player_work[no] + 0x5FC);
+}
+
 int rt_player_weapon_model(int no)
 {
     return player_work[no].work34C;

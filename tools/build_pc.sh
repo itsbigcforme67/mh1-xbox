@@ -170,6 +170,9 @@ LOBBY2="src/lobby/f/lb_ib.c src/lobby/f/lb_tu_ib.c src/lobby/f/lb_ad.c src/lobby
 # linked as they are; the near-match / stand-in copies of the same
 # functions in other lobby objects are weakened after compiling (BMATCH)
 BMATCH="$(ls src/lobby/b/lb_by13[5-9].c src/lobby/b/lb_by14[0-9].c src/lobby/b/lb_by15[0-2].c 2>/dev/null | tr '\n' ' ')"
+# every other matched lobby file whose functions the PC took from a near-match
+# copy or a stand-in (list: tools/pc_lobby_matched.txt)
+BMATCH="$BMATCH $(grep -v '^#' tools/pc_lobby_matched.txt | tr '\n' ' ')"
 # matched lobby functions that were stand-ins (gen_rt_auto) until now:
 # NPC sound types, the guild-hall board / status init, the village menu
 # sounds (cnWrap_SoundRequest), the forge's value_result, lobby client
@@ -243,7 +246,7 @@ for f in $GAME; do
     src/main/stage/f_stage.c) ABI="-Dhit_point_cbd=rtabi_hit_point_cbd" ;;
     # lobby C: frame_check2 / em_frame_check declared with the float first
     # (include/lobby_f.h, the lobby NPC files) or second (include/lbnpc.h)
-    src/lobby/lb/lb_em*_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
+    src/lobby/lb/lb_em*_nm.c|src/lobby/lb/lbem*.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
     src/lobby/lb/lbnpc_nm.c) ABI="-Dframe_check2=rtabi_frame_check2_em" ;;
     src/lobby/f/*) ABI="-Dframe_check2=rtabi_frame_check2" ;;
     # game_core (swset, move, trans, hit_check) is the host tick (rt_quest.c)
@@ -278,11 +281,11 @@ for f in $GAME; do
     # lobby C that gcc rejects as is: a 128-bit quadword copy (lq/sq on the
     # PS2), a static that the header declares global, a call without the
     # argument the header gives
-    src/lobby/f/lb_f.c|src/lobby/f/lb_d.c|src/lobby/f/lb_n.c)
+    src/lobby/f/lb_f.c|src/lobby/f/lb_d.c|src/lobby/f/lb_n.c|src/lobby/f/lb_q01.c|src/lobby/f/lb_u.c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/^typedef unsigned __int128 u128;/typedef struct { unsigned int w[4]; } u128;/;
              s/^static s8 check_sender0()/s8 check_sender0()/;
-             s/^    Lbc_init_network_work();/    Lbc_init_network_work(0);/' "$f" > "$src"
+             s/^\( *\)Lbc_init_network_work();/\1Lbc_init_network_work(0);/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
     # ItemPickingDeclaration calls Pl_master_ck() with its own a0 (arg) left over
     src/main/menu/menu_nm.c)
@@ -325,9 +328,11 @@ for f in $GAME; do
     OBJS="$OBJS $o"
 done
 # the matched lobby functions win over other lobby objects' copies
+BOBJS=$(for f in $BMATCH; do printf 'build/pc/lb__%s.o ' "$(basename "$f" .c)"; done)
 BSYMS=$(for f in $BMATCH; do $NM --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && $2 == "T" {print $3}'; done | sort -u)
 for o in $OBJS; do
-    case "$o" in build/pc/lb__lb_by13[5-9].o|build/pc/lb__lb_by14[0-9].o|build/pc/lb__lb_by15[0-2].o) continue ;; build/pc/lb__*) ;; *) continue ;; esac
+    case " $BOBJS " in *" $o "*) continue ;; esac
+    case "$o" in build/pc/lb__*) ;; *) continue ;; esac
     W=$($NM --defined-only -g "$o" | awk 'NF == 3 {print $3}' | sort -u | comm -12 - "$(printf '%s\n' $BSYMS | sort -u > build/pc/.bsyms; echo build/pc/.bsyms)")
     [ -n "$W" ] && $OBJCOPY $(for w in $W; do printf -- '--weaken-symbol=%s ' "$w"; done) "$o"
 done

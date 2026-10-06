@@ -16,6 +16,25 @@ stops the build so a stale patch is noticed. Found with tools/argregs.py
 import sys
 
 PATCHES = {
+    # Lb_npc_mv passes its em on to the step functions (a0 left over);
+    # lb_npc_erase hands it to push_em_work (tools/argregs.py, round 19)
+    "src/lobby/b/lb_by71.c": [
+        ("        lb_npc_init();", "        lb_npc_init(arg0);"),
+        ("        lb_npc_move();", "        lb_npc_move(arg0);"),
+        ("        lb_npc_die();", "        lb_npc_die(arg0);"),
+        ("        lb_npc_erase();", "        lb_npc_erase(arg0);"),
+    ],
+    "src/lobby/b/lb_bz62.c": [
+        ("void lb_npc_erase(void) {\n    push_em_work();", "void lb_npc_erase(u8 *arg0) {\n    push_em_work(arg0);"),
+    ],
+    # calc_vec_ang2(from, to): a1 = the caller's 2nd argument (the target position)
+    "src/lobby/f/lb_gac01.c": [
+        ("calc_vec_ang2(p + 0xAC)", "calc_vec_ang2(p + 0xAC, unused)"),
+    ],
+    # lb_insert_target_list(list, tgt): a1 = tgt from the lb_target_angle call (0x5CF698)
+    "src/lobby/f/lb_gac03.c": [
+        ("        lb_insert_target_list(list);", "        lb_insert_target_list(list, tgt);"),
+    ],
     # lb_npc_move: Lb_pl_timer_calc(em) (a0 = em left over)
     "src/lobby/b/lb_by136.c": [
         ("    Lb_pl_timer_calc();", "    Lb_pl_timer_calc(em);"),
