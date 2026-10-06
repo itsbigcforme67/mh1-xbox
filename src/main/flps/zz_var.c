@@ -30,7 +30,7 @@ void flmatInvert();
 #define W(o) (*(u32 *)((u8 *)p + (o)))
 #define F(o) (*(f32 *)((u8 *)p + (o)))
 #define LF(o) (*(f32 *)(flLIGHT + (o)))
-#define PB(o) (p + ((o) >> 2))
+#define PB(o) ((u8 *)p + (o))
 #define AMB (m->mat->a)
 #define HEAD(sz, cnt, w7) \
     p = flPS2GetSystemTmpBuff(sz, 0x10); \
@@ -874,12 +874,14 @@ void flPS2AddMatrix_002D(AMDL *m, u32 id, u32 n) {
 
 void * flPS2AddMatrix_002E(AMDL *m, u32 id, u32 n) {
     u32 *p;
+    u32 *q;
     f32 v[12];
     HEAD(0x250, 0x20000024, 0x6C220000)
+    q = p + 16;
     FOG(0x30)
-    flPS2matMulNormalize33(PB(0x100), PB(0x40), flMATRIX, flMATRIX + 0x840);
-    flPS2matMul(PB(0x80), PB(0x40), flPS2VIEWPROJ);
-    flPS2matMul(PB(0xc0), PB(0x40), flPS2CLIPPROJ);
+    flPS2matMulNormalize33(PB(0x100), q, flMATRIX, flMATRIX + 0x840);
+    flPS2matMul(PB(0x80), q, flPS2VIEWPROJ);
+    flPS2matMul(PB(0xc0), q, flPS2CLIPPROJ);
     PS2SHADER_ADD_UVSCROLL(PB(0x130));
     v[3] = 1.0f;
     v[7] = 1.0f;
@@ -1024,7 +1026,7 @@ void flPS2AddMatrix_0031(AMDL *m, u32 id, u32 n) {
     v[0] = -LF(0x34);
     v[1] = -LF(0x38);
     v[2] = -LF(0x3C);
-    v[4] = -LF(0x9C);
+    v[3] = -LF(0x9C);
     v[5] = -LF(0xA0);
     v[6] = -LF(0xA4);
     p = flPS2SHADER_ADD_SVEC2(PB(0x180), v, flMATRIX + 0x840);
@@ -1113,7 +1115,7 @@ void flPS2AddMatrix_0033(AMDL *m, u32 id, u32 n) {
     v[0] = -LF(0x34);
     v[1] = -LF(0x38);
     v[2] = -LF(0x3C);
-    v[4] = -LF(0x9C);
+    v[3] = -LF(0x9C);
     v[5] = -LF(0xA0);
     v[6] = -LF(0xA4);
     p = flPS2SHADER_ADD_SVEC2(PB(0x190), v, flMATRIX + 0x840);
@@ -1230,7 +1232,7 @@ void flPS2AddMatrix_0037(AMDL *m, u32 id, u32 n) {
     v[0] = -LF(0x34);
     v[1] = -LF(0x38);
     v[2] = -LF(0x3C);
-    v[4] = -LF(0x9C);
+    v[3] = -LF(0x9C);
     v[5] = -LF(0xA0);
     v[6] = -LF(0xA4);
     p = flPS2SHADER_ADD_SVEC2(PB(0x150), v, flMATRIX + 0x840);
@@ -1401,7 +1403,7 @@ void flPS2AddMatrix_003B(AMDL *m, u32 id, u32 n) {
     v[0] = -LF(0x34);
     v[1] = -LF(0x38);
     v[2] = -LF(0x3C);
-    v[4] = -LF(0x9C);
+    v[3] = -LF(0x9C);
     v[5] = -LF(0xA0);
     v[6] = -LF(0xA4);
     p = flPS2SHADER_ADD_SVEC2(PB(0x1c0), v, flMATRIX + 0x840);
