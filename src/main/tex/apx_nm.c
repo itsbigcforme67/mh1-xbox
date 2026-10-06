@@ -1,4 +1,4 @@
-/* Near-matches of apx01.c (not built): GetAPXPixelMipmapAdrs is 12 instructions off (the original compares
+/* Superseded: both functions now match in apx01.c as file-statics (see its header). Old notes: near-matches of apx01.c (not built): GetAPXPixelMipmapAdrs is 12 instructions off (the original compares
  * `mip >= count` into $at and keeps the walking pointer in t5, the counter in t2), GetAPXPaletteAdrs 50 off
  * (the original calls GetAPXFileHeader and GetAPXPixelMipmapAdrs without re-passing the image argument: a0 is
  * never saved across the first call; no source form found that does that). */
@@ -7,13 +7,13 @@
 
 u8 *GetAPXPixelMipmapAdrs(void *img, int mip) {
     APXHDR *h;
-    u8 *p;
+    int i;
     int w;
     int ht;
-    int i;
+    u8 *p;
     int bpp;
 
-    if (mip >= plAPXGetMipmapTextureNum(img)) {
+    if (plAPXGetMipmapTextureNum(img) <= mip) {
         return 0;
     }
     h = GetAPXFileHeader(img);
