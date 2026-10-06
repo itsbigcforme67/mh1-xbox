@@ -25,6 +25,12 @@ extern f32 flPS2FadeColor[4];
 
 u32 *flPS2GetSystemTmpBuff(int size, int align);
 void flmatInvert();
+void flmatMul(void *dst, void *a, void *b);
+void flvecNormalize(void *v);
+void flvecApplyMat33(void *d, void *s, void *m);
+void flmatTranspose(void *m);
+void flmatMul33(void *d, void *a, void *b);
+void flmatNormalize33(void *m);
 
 /* packet field accessors (byte offsets from the packet base p) and the recurring packet pieces */
 #define W(o) (*(u32 *)((u8 *)p + (o)))
@@ -168,6 +174,8 @@ static asm u32 *PS2SHADER_FLMATRIX_COPY(void *dst, u32 mask)
 #include "PS2SHADER_FLMATRIX_COPY.inc"
 }
 
+
+
 void flPS2AddMatrix_0000(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -203,6 +211,37 @@ void flPS2AddMatrix_0000(AMDL *m, u32 id, u32 n) {
     p[75] = 0;
 }
 
+void flPS2AddMatrix_0001(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    HEAD(0xf30, 0x200000f2, 0x6cf00000)
+    p = flPS2matMul(p + 12, flMATRIX + 0x840, flPS2VIEWPROJ);
+    p = flPS2matMul(p + 28, flMATRIX + 0x840, flPS2CLIPPROJ);
+    F(0xb0) = -LF(0x34);
+    F(0xb4) = -LF(0x38);
+    F(0xb8) = -LF(0x3c);
+    F(0xc0) = -LF(0x9c);
+    F(0xc4) = -LF(0xa0);
+    F(0xc8) = -LF(0xa4);
+    F(0xd0) = -LF(0x104);
+    F(0xd4) = -LF(0x108);
+    F(0xd8) = -LF(0x10c);
+    p = PS2SHADER_FLMATRIX_COPY(p + 72, *(u32 *)((u8 *)m + 0x54));
+    p = PS2SHADER_ADD_LIGHTCOL3(AMB, p + 56);
+    TAIL(0xf20)
+}
+
+/* original bytes kept: flPS2AddMatrix_0002 (near-match C in fladdm_nm.c), see config/c_rawfuncs.txt */
+asm void flPS2AddMatrix_0002(void)
+{
+#include "flPS2AddMatrix_0002.inc"
+}
+
+/* original bytes kept: flPS2AddMatrix_0003 (near-match C in fladdm_nm.c), see config/c_rawfuncs.txt */
+asm void flPS2AddMatrix_0003(void)
+{
+#include "flPS2AddMatrix_0003.inc"
+}
+
 void flPS2AddMatrix_0005(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -225,6 +264,7 @@ void flPS2AddMatrix_0005(AMDL *m, u32 id, u32 n) {
     p[46] = 0;
     p[47] = 0;
 }
+
 void flPS2AddMatrix_0006(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -297,6 +337,25 @@ void flPS2AddMatrix_000B(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_UVSCROLL(p + 44);
     FOG(0xe0)
     TAIL(0xf0)
+}
+
+void flPS2AddMatrix_000C(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    f32 tmp[16];
+    HEAD(0x120, 0x20000011, 0x6C0F0000)
+    FADE
+    p = flPS2matMul2(PB(0x80), tmp, flMATRIX, flMATRIX + 0x840, flPS2VIEWPROJ);
+    p = flPS2matNormalize33(tmp, tmp);
+    *(M64 *)PB(0x40) = *(M64 *)tmp;
+    p = flPS2matMul(PB(0xC0), tmp, flPS2CLIPPROJ);
+    FOG(0x100)
+    TAIL(0x110)
+}
+
+/* original bytes kept: flPS2AddMatrix_000D (does not match as C yet, see config/c_rawfuncs.txt) */
+asm void flPS2AddMatrix_000D(void)
+{
+#include "flPS2AddMatrix_000D.inc"
 }
 
 void flPS2AddMatrix_000E(AMDL *m, u32 id, u32 n) {
@@ -403,88 +462,6 @@ void flPS2AddMatrix_0015(AMDL *m, u32 id, u32 n) {
     TAIL(0x100)
 }
 
-void flPS2AddMatrix_001B(AMDL *m, u32 id, u32 n) {
-    u32 *p;
-    HEAD(0x8d0, 0x2000008c, 0x6c8a0000)
-    FADE
-    p = flPS2matMul(p + 16, flMATRIX + 0x840, flPS2VIEWPROJ);
-    p = flPS2matMul(p + 32, flMATRIX + 0x840, flPS2CLIPPROJ);
-    p = PS2SHADER_FLMATRIX_COPY(p + 48, *(u32 *)((u8 *)m + 0x54));
-    TAIL(0x8c0)
-}
-
-void flPS2AddMatrix_001E(AMDL *m, u32 id, u32 n) {
-    u32 *p;
-    HEAD(0xf40, 0x200000f3, 0x6cf10000)
-    p = flPS2matMul(p + 12, flMATRIX + 0x840, flPS2VIEWPROJ);
-    p = flPS2matMul(p + 28, flMATRIX + 0x840, flPS2CLIPPROJ);
-    F(0xb0) = -LF(0x34);
-    F(0xb4) = -LF(0x38);
-    F(0xb8) = -LF(0x3c);
-    F(0xc0) = -LF(0x9c);
-    F(0xc4) = -LF(0xa0);
-    F(0xc8) = -LF(0xa4);
-    F(0xd0) = -LF(0x104);
-    F(0xd4) = -LF(0x108);
-    F(0xd8) = -LF(0x10c);
-    p = PS2SHADER_FLMATRIX_COPY(p + 76, *(u32 *)((u8 *)m + 0x54));
-    p = PS2SHADER_ADD_LIGHTCOL3(AMB, p + 56);
-    FOG(0x120)
-    TAIL(0xf30)
-}
-
-void flPS2AddMatrix_0020(AMDL *m, u32 id, u32 n) {
-    u32 *p;
-    HEAD(0x8e0, 0x2000008d, 0x6c8b0000)
-    FADE
-    p = flPS2matMul(p + 20, flMATRIX + 0x840, flPS2VIEWPROJ);
-    p = flPS2matMul(p + 36, flMATRIX + 0x840, flPS2CLIPPROJ);
-    p = PS2SHADER_FLMATRIX_COPY(p + 52, *(u32 *)((u8 *)m + 0x54));
-    FOG(0x40)
-    TAIL(0x8d0)
-}
-
-void flPS2AddMatrix_0021(AMDL *m, u32 id, u32 n) {
-    u32 *p;
-    HEAD(0xf60, 0x200000f5, 0x6cf30000)
-    p = flPS2matMul(p + 12, flMATRIX + 0x840, flPS2VIEWPROJ);
-    p = flPS2matMul(p + 28, flMATRIX + 0x840, flPS2CLIPPROJ);
-    p = PS2SHADER_ADD_UVSCROLL(p + 72);
-    F(0xb0) = -LF(0x34);
-    F(0xb4) = -LF(0x38);
-    F(0xb8) = -LF(0x3c);
-    F(0xc0) = -LF(0x9c);
-    F(0xc4) = -LF(0xa0);
-    F(0xc8) = -LF(0xa4);
-    F(0xd0) = -LF(0x104);
-    F(0xd4) = -LF(0x108);
-    F(0xd8) = -LF(0x10c);
-    p = PS2SHADER_FLMATRIX_COPY(p + 84, *(u32 *)((u8 *)m + 0x54));
-    p = PS2SHADER_ADD_LIGHTCOL3(AMB, p + 56);
-    TAIL(0xf50)
-}
-
-void flPS2AddMatrix_004E(AMDL *m, u32 id, u32 n) {
-    u32 *p;
-    HEAD(0xf70, 0x200000f6, 0x6cf40000)
-    p = flPS2matMul(p + 12, flMATRIX + 0x840, flPS2VIEWPROJ);
-    p = flPS2matMul(p + 28, flMATRIX + 0x840, flPS2CLIPPROJ);
-    F(0xb0) = -LF(0x34);
-    F(0xb4) = -LF(0x38);
-    F(0xb8) = -LF(0x3c);
-    F(0xc0) = -LF(0x9c);
-    F(0xc4) = -LF(0xa0);
-    F(0xc8) = -LF(0xa4);
-    F(0xd0) = -LF(0x104);
-    F(0xd4) = -LF(0x108);
-    F(0xd8) = -LF(0x10c);
-    p = PS2SHADER_FLMATRIX_COPY(p + 88, *(u32 *)((u8 *)m + 0x54));
-    p = PS2SHADER_ADD_LIGHTCOL3(AMB, p + 56);
-    FOG(0x120)
-    p = PS2SHADER_ADD_UVSCROLL(p + 76);
-    TAIL(0xf60)
-}
-
 void flPS2AddMatrix_0016(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -553,6 +530,16 @@ void flPS2AddMatrix_001A(AMDL *m, u32 id, u32 n) {
     TAIL(0x110)
 }
 
+void flPS2AddMatrix_001B(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    HEAD(0x8d0, 0x2000008c, 0x6c8a0000)
+    FADE
+    p = flPS2matMul(p + 16, flMATRIX + 0x840, flPS2VIEWPROJ);
+    p = flPS2matMul(p + 32, flMATRIX + 0x840, flPS2CLIPPROJ);
+    p = PS2SHADER_FLMATRIX_COPY(p + 48, *(u32 *)((u8 *)m + 0x54));
+    TAIL(0x8c0)
+}
+
 void flPS2AddMatrix_001C(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
@@ -574,6 +561,26 @@ void flPS2AddMatrix_001D(AMDL *m, u32 id, u32 n) {
     TAIL(0x100)
 }
 
+void flPS2AddMatrix_001E(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    HEAD(0xf40, 0x200000f3, 0x6cf10000)
+    p = flPS2matMul(p + 12, flMATRIX + 0x840, flPS2VIEWPROJ);
+    p = flPS2matMul(p + 28, flMATRIX + 0x840, flPS2CLIPPROJ);
+    F(0xb0) = -LF(0x34);
+    F(0xb4) = -LF(0x38);
+    F(0xb8) = -LF(0x3c);
+    F(0xc0) = -LF(0x9c);
+    F(0xc4) = -LF(0xa0);
+    F(0xc8) = -LF(0xa4);
+    F(0xd0) = -LF(0x104);
+    F(0xd4) = -LF(0x108);
+    F(0xd8) = -LF(0x10c);
+    p = PS2SHADER_FLMATRIX_COPY(p + 76, *(u32 *)((u8 *)m + 0x54));
+    p = PS2SHADER_ADD_LIGHTCOL3(AMB, p + 56);
+    FOG(0x120)
+    TAIL(0xf30)
+}
+
 void flPS2AddMatrix_001F(AMDL *m, u32 id, u32 n) {
     u32 *p;
     HEAD(0xf70, 0x200000f6, 0x6cf40000)
@@ -592,6 +599,37 @@ void flPS2AddMatrix_001F(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTCOL3(AMB, p + 56);
     *(M64 *)((u8 *)p + 0x120) = flPS2VIEWPORT;
     TAIL(0xf60)
+}
+
+void flPS2AddMatrix_0020(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    HEAD(0x8e0, 0x2000008d, 0x6c8b0000)
+    FADE
+    p = flPS2matMul(p + 20, flMATRIX + 0x840, flPS2VIEWPROJ);
+    p = flPS2matMul(p + 36, flMATRIX + 0x840, flPS2CLIPPROJ);
+    p = PS2SHADER_FLMATRIX_COPY(p + 52, *(u32 *)((u8 *)m + 0x54));
+    FOG(0x40)
+    TAIL(0x8d0)
+}
+
+void flPS2AddMatrix_0021(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    HEAD(0xf60, 0x200000f5, 0x6cf30000)
+    p = flPS2matMul(p + 12, flMATRIX + 0x840, flPS2VIEWPROJ);
+    p = flPS2matMul(p + 28, flMATRIX + 0x840, flPS2CLIPPROJ);
+    p = PS2SHADER_ADD_UVSCROLL(p + 72);
+    F(0xb0) = -LF(0x34);
+    F(0xb4) = -LF(0x38);
+    F(0xb8) = -LF(0x3c);
+    F(0xc0) = -LF(0x9c);
+    F(0xc4) = -LF(0xa0);
+    F(0xc8) = -LF(0xa4);
+    F(0xd0) = -LF(0x104);
+    F(0xd4) = -LF(0x108);
+    F(0xd8) = -LF(0x10c);
+    p = PS2SHADER_FLMATRIX_COPY(p + 84, *(u32 *)((u8 *)m + 0x54));
+    p = PS2SHADER_ADD_LIGHTCOL3(AMB, p + 56);
+    TAIL(0xf50)
 }
 
 void flPS2AddMatrix_0022(AMDL *m, u32 id, u32 n) {
@@ -650,85 +688,16 @@ void flPS2AddMatrix_0026(AMDL *m, u32 id, u32 n) {
     TAIL(0x120)
 }
 
-void flPS2AddMatrix_0051(AMDL *m, u32 id, u32 n) {
+void flPS2AddMatrix_0027(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 tmp[16];
-    HEAD(0x140, 0x20000013, 0x6c110000)
-    FADE
-    p = flPS2matMul2(p + 16, tmp, flMATRIX, flMATRIX + 0x840, flPS2VIEWPROJ);
-    p = flPS2matMul(p + 32, tmp, flPS2CLIPPROJ);
-    p = PS2SHADER_ADD_UVSCROLL(p + 48);
-    *(M64 *)((u8 *)p + 0xf0) = flPS2VIEWPORT;
+    HEAD(0x140, 0x20000013, 0x6C110000)
+    p = PS2SHADER_ADD_UVSCROLL(PB(0xc0));
+    FOG(0xb0)
+    p = flPS2matMul2(PB(0x30), tmp, flMATRIX, flMATRIX + 0x840, flPS2VIEWPROJ);
+    p = flPS2matMul(PB(0x70), tmp, flPS2CLIPPROJ);
+    *(M64 *)PB(0xF0) = flPS2VIEWPORT;
     TAIL(0x130)
-}
-
-void flPS2AddMatrix_0001(AMDL *m, u32 id, u32 n) {
-    u32 *p;
-    HEAD(0xf30, 0x200000f2, 0x6cf00000)
-    p = flPS2matMul(p + 12, flMATRIX + 0x840, flPS2VIEWPROJ);
-    p = flPS2matMul(p + 28, flMATRIX + 0x840, flPS2CLIPPROJ);
-    F(0xb0) = -LF(0x34);
-    F(0xb4) = -LF(0x38);
-    F(0xb8) = -LF(0x3c);
-    F(0xc0) = -LF(0x9c);
-    F(0xc4) = -LF(0xa0);
-    F(0xc8) = -LF(0xa4);
-    F(0xd0) = -LF(0x104);
-    F(0xd4) = -LF(0x108);
-    F(0xd8) = -LF(0x10c);
-    p = PS2SHADER_FLMATRIX_COPY(p + 72, *(u32 *)((u8 *)m + 0x54));
-    p = PS2SHADER_ADD_LIGHTCOL3(AMB, p + 56);
-    TAIL(0xf20)
-}
-
-void flPS2AddMatrix_000C(AMDL *m, u32 id, u32 n) {
-    u32 *p;
-    f32 tmp[16];
-    HEAD(0x120, 0x20000011, 0x6C0F0000)
-    FADE
-    p = flPS2matMul2(PB(0x80), tmp, flMATRIX, flMATRIX + 0x840, flPS2VIEWPROJ);
-    p = flPS2matNormalize33(tmp, tmp);
-    *(M64 *)PB(0x40) = *(M64 *)tmp;
-    p = flPS2matMul(PB(0xC0), tmp, flPS2CLIPPROJ);
-    FOG(0x100)
-    TAIL(0x110)
-}
-
-void flPS2AddMatrix_002C(AMDL *m, u32 id, u32 n) {
-    u32 *p;
-    f32 v[12];
-    int i;
-    u8 *mp, *sp2, *dp;
-    HEAD(0xF70, 0x200000F6, 0x6CF40000)
-    FOG(0x30)
-    *(M64 *)PB(0x40) = *(M64 *)flPS2VIEWPROJ;
-    *(M64 *)PB(0x80) = *(M64 *)flPS2CLIPPROJ;
-    i = 0;
-    mp = flMATRIX;
-    sp2 = (u8 *)p;
-    dp = (u8 *)p;
-    for (; i < 32; i++) {
-        if (m->flags & (1 << i))
-            p = flPS2matMulNormalize33(dp + 0x960, sp2 + 0x160, mp, flMATRIX + 0x840);
-        mp += 0x40;
-        sp2 += 0x40;
-        dp += 0x30;
-    }
-    v[3] = 1.0f;
-    v[7] = 1.0f;
-    v[11] = 1.0f;
-    v[0] = -LF(0x34);
-    v[1] = -LF(0x38);
-    v[2] = -LF(0x3C);
-    v[4] = LF(0xA8);
-    v[5] = LF(0xAC);
-    v[6] = LF(0xB0);
-    v[8] = LF(0x110);
-    v[9] = LF(0x114);
-    v[10] = LF(0x118);
-    p = PS2SHADER_ADD_LIGHTVECD1P2_2(PB(0xC0), PB(0xF0), flMATRIX + 0x840, v);
-    p = PS2SHADER_ADD_LIGHTCOL3_2(AMB, PB(0x100));
-    TAIL(0xF60)
 }
 
 void *flPS2AddMatrix_0028(AMDL *m, u32 id, u32 n) {
@@ -744,18 +713,6 @@ void *flPS2AddMatrix_0028(AMDL *m, u32 id, u32 n) {
     PS2SHADER_ADD_LIGHTCOL1(AMB, PB(0xF0), PB(0x100));
     TAIL(0x110)
     return p;
-}
-
-void flPS2AddMatrix_0027(AMDL *m, u32 id, u32 n) {
-    u32 *p;
-    f32 tmp[16];
-    HEAD(0x140, 0x20000013, 0x6C110000)
-    p = PS2SHADER_ADD_UVSCROLL(PB(0xc0));
-    FOG(0xb0)
-    p = flPS2matMul2(PB(0x30), tmp, flMATRIX, flMATRIX + 0x840, flPS2VIEWPROJ);
-    p = flPS2matMul(PB(0x70), tmp, flPS2CLIPPROJ);
-    *(M64 *)PB(0xF0) = flPS2VIEWPORT;
-    TAIL(0x130)
 }
 
 void * flPS2AddMatrix_0029(AMDL *m, u32 id, u32 n) {
@@ -833,6 +790,43 @@ void * flPS2AddMatrix_002B(AMDL *m, u32 id, u32 n) {
     PS2SHADER_ADD_LIGHTCOL3_3(AMB, PB(0x100));
     TAIL(0x150)
     return p;
+}
+
+void flPS2AddMatrix_002C(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    f32 v[12];
+    int i;
+    u8 *mp, *sp2, *dp;
+    HEAD(0xF70, 0x200000F6, 0x6CF40000)
+    FOG(0x30)
+    *(M64 *)PB(0x40) = *(M64 *)flPS2VIEWPROJ;
+    *(M64 *)PB(0x80) = *(M64 *)flPS2CLIPPROJ;
+    i = 0;
+    mp = flMATRIX;
+    sp2 = (u8 *)p;
+    dp = (u8 *)p;
+    for (; i < 32; i++) {
+        if (m->flags & (1 << i))
+            p = flPS2matMulNormalize33(dp + 0x960, sp2 + 0x160, mp, flMATRIX + 0x840);
+        mp += 0x40;
+        sp2 += 0x40;
+        dp += 0x30;
+    }
+    v[3] = 1.0f;
+    v[7] = 1.0f;
+    v[11] = 1.0f;
+    v[0] = -LF(0x34);
+    v[1] = -LF(0x38);
+    v[2] = -LF(0x3C);
+    v[4] = LF(0xA8);
+    v[5] = LF(0xAC);
+    v[6] = LF(0xB0);
+    v[8] = LF(0x110);
+    v[9] = LF(0x114);
+    v[10] = LF(0x118);
+    p = PS2SHADER_ADD_LIGHTVECD1P2_2(PB(0xC0), PB(0xF0), flMATRIX + 0x840, v);
+    p = PS2SHADER_ADD_LIGHTCOL3_2(AMB, PB(0x100));
+    TAIL(0xF60)
 }
 
 void flPS2AddMatrix_002D(AMDL *m, u32 id, u32 n) {
@@ -1191,6 +1185,41 @@ void flPS2AddMatrix_0035(AMDL *m, u32 id, u32 n) {
     p = PS2SHADER_ADD_LIGHTVECD2P1_2(PB(0x100), PB(0x130), flMATRIX + 0x840, v);
     p = PS2SHADER_ADD_LIGHTCOL3_3(AMB, PB(0x140));
     TAIL(0xf90)
+}
+
+void * flPS2AddMatrix_0036(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    f32 v[12];
+    HEAD(0x220, 0x20000021, 0x6C1F0000)
+    FOG(0x30)
+    flPS2matMulNormalize33(PB(0x100), PB(0x40), flMATRIX, flMATRIX + 0x840);
+    flmatMul(PB(0x80), PB(0x40), flPS2VIEWPROJ);
+    flmatMul(PB(0xc0), PB(0x40), flPS2CLIPPROJ);
+    v[3] = 1.0f;
+    v[7] = 1.0f;
+    v[11] = 1.0f;
+    v[0] = -LF(0x34);
+    v[1] = -LF(0x38);
+    v[2] = -LF(0x3C);
+    v[4] = -LF(0x9C);
+    v[5] = -LF(0xA0);
+    v[6] = -LF(0xA4);
+    v[8] = LF(0x110);
+    v[9] = LF(0x114);
+    v[10] = LF(0x118);
+    PS2SHADER_ADD_LIGHTVECD2P1(PB(0x130), PB(0x160), flMATRIX, v);
+    PS2SHADER_ADD_LIGHTCOL3_3(AMB, PB(0x170));
+    flPS2SHADER_ADD_SVEC2(PB(0x1c0), v, flMATRIX + 0x840);
+    F(0x1f0) = LF(0x14);
+    F(0x1f4) = LF(0x18);
+    F(0x1f8) = LF(0x1C);
+    F(0x1fc) = LF(0x20);
+    F(0x200) = LF(0x7C);
+    F(0x204) = LF(0x80);
+    F(0x208) = LF(0x84);
+    F(0x20c) = LF(0x88);
+    TAIL(0x210)
+    return p;
 }
 
 void flPS2AddMatrix_0037(AMDL *m, u32 id, u32 n) {
@@ -1713,11 +1742,22 @@ void flPS2AddMatrix_0045(AMDL *m, u32 id, u32 n) {
     f32 v[12];
     int i;
     u8 *mp, *sp2, *dp;
-    HEAD(0x1040, 0x20000103, 0)
+    p = flPS2GetSystemTmpBuff(0x1040, 0x10);
+    W(0) = 0x20000103;
+    W(4) = n;
+    *(s64 *)((u8 *)p + 8) = 0;
+    W(0xA20) = 0x13000000;
+    W(0x10) = 0x13000000;
+    W(0xA24) = 0;
+    W(0x14) = 0;
+    W(0xA28) = 0x01000404;
+    W(0x18) = 0x01000404;
+    W(0x1C) = 0x6CA00000;
+    W(0xA2C) = 0x6C6000A0;
     F(0x20) = flPS2Ambient[0] * AMB;
     F(0x24) = flPS2Ambient[1] * AMB;
     F(0x28) = flPS2Ambient[2] * AMB;
-    F(0x2c) = flPS2Ambient[3];
+    F(0x2C) = flPS2Ambient[3];
     FADE
     FOG(0x40)
     *(M64 *)PB(0x50) = *(M64 *)flPS2VIEWPROJ;
@@ -1996,6 +2036,27 @@ void * flPS2AddMatrix_004D(AMDL *m, u32 id, u32 n) {
     return p;
 }
 
+void flPS2AddMatrix_004E(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    HEAD(0xf70, 0x200000f6, 0x6cf40000)
+    p = flPS2matMul(p + 12, flMATRIX + 0x840, flPS2VIEWPROJ);
+    p = flPS2matMul(p + 28, flMATRIX + 0x840, flPS2CLIPPROJ);
+    F(0xb0) = -LF(0x34);
+    F(0xb4) = -LF(0x38);
+    F(0xb8) = -LF(0x3c);
+    F(0xc0) = -LF(0x9c);
+    F(0xc4) = -LF(0xa0);
+    F(0xc8) = -LF(0xa4);
+    F(0xd0) = -LF(0x104);
+    F(0xd4) = -LF(0x108);
+    F(0xd8) = -LF(0x10c);
+    p = PS2SHADER_FLMATRIX_COPY(p + 88, *(u32 *)((u8 *)m + 0x54));
+    p = PS2SHADER_ADD_LIGHTCOL3(AMB, p + 56);
+    FOG(0x120)
+    p = PS2SHADER_ADD_UVSCROLL(p + 76);
+    TAIL(0xf60)
+}
+
 void flPS2AddMatrix_004F(AMDL *m, u32 id, u32 n) {
     u32 *p;
     f32 v[12];
@@ -2053,3 +2114,14 @@ void * flPS2AddMatrix_0050(AMDL *m, u32 id, u32 n) {
     return p;
 }
 
+void flPS2AddMatrix_0051(AMDL *m, u32 id, u32 n) {
+    u32 *p;
+    f32 tmp[16];
+    HEAD(0x140, 0x20000013, 0x6c110000)
+    FADE
+    p = flPS2matMul2(p + 16, tmp, flMATRIX, flMATRIX + 0x840, flPS2VIEWPROJ);
+    p = flPS2matMul(p + 32, tmp, flPS2CLIPPROJ);
+    p = PS2SHADER_ADD_UVSCROLL(p + 48);
+    *(M64 *)((u8 *)p + 0xf0) = flPS2VIEWPORT;
+    TAIL(0x130)
+}
