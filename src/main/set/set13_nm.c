@@ -54,12 +54,16 @@ void hit_cap_pk(SET13_CAP *, void *);
 u8 hit_cap_sphr_m(void *k, f32 *c, void *out, f32 r);   /* hit2c.c */
 
 void set13_disp_pos_calc(f32 *out, f32 *dir, f32 d) {
+    f32 x = dir[0];
     f32 y = dir[1];
     f32 z = dir[2];
+    f32 a = d * x;
+    f32 b = d * y;
+    f32 c = d * z;
 
-    out[0] = rview_mat[3][0] + d * dir[0];
-    out[1] = rview_mat[3][1] + d * y;
-    out[2] = rview_mat[3][2] + d * z;
+    out[0] = rview_mat[3][0] + a;
+    out[1] = rview_mat[3][1] + b;
+    out[2] = rview_mat[3][2] + c;
 }
 
 

@@ -1921,18 +1921,17 @@ void pad_timer_calc_sub(PLW *pl, int mask) {
 
 
 int rate_g_calc(PLW *pl, int t) {
-    int n;
-    f32 v;
     f32 a;
-    n = (s16)t;
-    n = (s16)(n / 2);
+    f32 v;
+    int m = (s16)t;
+    t = (s16)(m / 2);
     v = pl->vel[1];
     a = -1.0f * v;
-    if (n < 2 || v < 0.0f) {
+    if (t <= 1 || v < 0.0f) {
         pl->acc[1] = a;
         return 1;
     }
-    a /= (f32)n;
+    a /= (f32)t;
     pl->acc[1] = a;
     return 0;
 }
@@ -2232,13 +2231,12 @@ void Pl_horm_adj(PLW *pl, int part) {
 
 void Pl_vital_calc_item(PLW *pl, int dv) {
     int n;
-    s16 v;
     if (Pl_Skill_ck(pl, 0x1A) == 1 && (n = (s16)dv, n > 0)) {
-        v = (s16)(n + n / 4);
+        n = (s16)(n + n / 4);
     } else {
-        v = (s16)dv;
+        n = (s16)dv;
     }
-    Pl_vital_calc(pl, v);
+    Pl_vital_calc(pl, n);
 }
 
 

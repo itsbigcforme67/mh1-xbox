@@ -143,7 +143,7 @@ main 0x00102BD0 0x00103A38 eft/eft06
 main:rodata 0x003579C0 0x00357A08 eft/eft06
 main 0x00104D30 0x00105B10 eft/eft06b
 main:rodata 0x00357A70 0x00357A98 eft/eft06b
-main 0x00158E00 0x00158F18 set/set13c
+main 0x00158DB0 0x00158F18 set/set13c
 main 0x00105B10 0x00105B94 eft/eft13
 main 0x00106DB0 0x00107C50 eft/eft13b
 main:rodata 0x00357C50 0x00357CDC eft/eft13b
@@ -1893,6 +1893,7 @@ main 0x001003B0 0x001004D0 sys/adxs06
 main 0x002358E0 0x00235940 net/cpinet14
 main 0x00235970 0x002359D0 net/cpinet15
 main 0x00151350 0x001513A0 pl/plx05
+main 0x001513B0 0x00151430 pl/plx08
 main 0x0011D450 0x0011D554 item/item04
 main 0x00235720 0x00235850 net/cpinet16
 main:rodata 0x0036CE20 0x0036CE50 net/cpinet16
@@ -1948,3 +1949,4 @@ lobby 0x005DA880 0x005DA99C f/lb_gdr25
 main 0x001BA8E0 0x001BB000 net/netsyn10
 main 0x0016B060 0x0016B10C fl/clay02
 main 0x0016D8F0 0x0016D9C0 fl/clay03
+main 0x001534E0 0x0015355C pl/plx07
