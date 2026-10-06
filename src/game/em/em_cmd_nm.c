@@ -503,7 +503,9 @@ u8 *em_cmd_area_move_ck(EMW *em, u8 *p) {
         stg = em->x73A;
         q += 1;
         if (em->stg != stg && stg != 0xFF && (v = tbl[stg]) != 0) {
-            if (v != 2 && v != 1) {
+            if (v == 2) {
+            } else if (v == 1) {
+            } else {
             }
         } else {
             em->x827 = 0;

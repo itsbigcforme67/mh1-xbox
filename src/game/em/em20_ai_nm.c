@@ -5925,13 +5925,13 @@ block_79:
         } else if (em->kind == 0x14) {
             temp_t0 = em->x792;
             temp_a2 = em->x302;
-            if (temp_t0 * 0x1E / 100 >= temp_a2) {
+            if (temp_a2 <= temp_t0 * 0x1E / 100) {
                 if (em->x39A % 100 < 0x1E) {
                     em20_act_set(em, 4, 0x10, 2);
                 } else {
                     goto block_111;
                 }
-            } else if (temp_t0 * 0x32 / 100 >= temp_a2 && em->x39A % 100 < 0x14) {
+            } else if (temp_a2 <= temp_t0 * 0x32 / 100 && em->x39A % 100 < 0x14) {
                 em20_act_set(em, 4, 0x10, 2);
             } else {
                 goto block_111;
