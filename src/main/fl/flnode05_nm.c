@@ -195,6 +195,8 @@ int flGetFcurveValue(f32 t, MOT *mot, f32 *unused, f32 *v, s16 *hint) {
 
     if (mot != 0) {
         switch (mot->flags & 0xF000) {
+            if (c) {
+            }
         case 0x1000:
             j = 0;
             c = (CURVE *)(mot->off + base_addr_0038A25C);

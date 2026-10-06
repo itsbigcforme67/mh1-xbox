@@ -1,4 +1,4 @@
-/* flsnd04 - SLPM_654.95 0x00215AA0-0x00215FC0: flSndRequest and flSndChange. Both walk a sound-effect chain in tsb2
+/* flsnd04 - SLPM_654.95 0x00215AA0-0x00216004: flSndRequest, flSndChange and flSndStatGet. Both walk a sound-effect chain in tsb2
  * (1 KB per bank = 128 entries of 8 bytes: [0] 0xFF ends the list, [1] pan override (0xFF none), [2] sound number
  * (7 bits), [3] bit 0 flag, [4] volume jitter, [5] pitch jitter, [6] base volume, [7] next entry (0xFF none)),
  * apply random jitter to volume and pitch, and hand each entry to the sound driver (SdrSeReq / SdrSeChg).
@@ -100,4 +100,17 @@ int flSndChange(int bank, u32 no, int vol, int pan, int pitch, int x)
         }
         return 0;
     }
+}
+
+int SdrGetState(int, int);
+
+/* sound number of table entry (bank, no) packed with the bank and entry into one status query */
+int flSndStatGet(int bank, int no)
+{
+    u32 v = *(tsb2 + 2 + (bank << 10) + no * 8);
+
+    if (v == 0xFF) {
+        v = 0;
+    }
+    return SdrGetState(4, (((bank & 0x7F) << 16) | ((no & 0x7F) << 8)) | (v & 0x7F));
 }
