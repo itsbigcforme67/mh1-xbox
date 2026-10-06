@@ -1262,6 +1262,8 @@ segments:
       - [0x12FE10, c, boot/boot02]
       - [0x130060, c, net/cnmsg01]
       - [0x1306BC, asm, text/CCnNetMsg_CnReadSeek]
+      - [0x1306C0, c, net/cnmsg02]
+      - [0x130704, asm, text/CCnNetMsgBob_CnReadU16]
       - [0x130710, c, net/cnmsg03]
       - [0x130758, asm, text/mcsls_init]
       - [0x130C10, c, net/mcsls_r01]
