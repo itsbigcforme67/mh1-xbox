@@ -2354,21 +2354,20 @@ int dic_getallnum(u8 *s, int len, u8 *out, int *cnt)
 int ask_strncmp(u8 *a, u8 *b, int n)
 {
     int d;
-    u8 c;
+    s8 c;
 
-    n--;
-    while (n != -1) {
-        c = *a;
-        d = c - *b;
-        if (d != 0) {
+    while (n-- != 0) {
+        c = *(s8 *)a;
+        d = (u8)c - *b;
+        if (d == 0) {
+            if (c == 0) {
+                return 0;
+            }
+        } else {
             return d;
-        }
-        if (c == 0) {
-            return 0;
         }
         a++;
         b++;
-        n--;
     }
     return 0;
 }
@@ -2527,8 +2526,11 @@ int chk_entry2(u8 *key, int len)
 void set_entry2(u8 *key, int len)
 {
     int b;
+    int row;
+    u8 *q;
 
     if (key[0] >= 0xA1) {
+        row = key[0] - 0xA1;
         if ((s16)len == 1) {
             b = 0;
         } else {
@@ -2537,7 +2539,8 @@ void set_entry2(u8 *key, int len)
             }
             b = key[1] - 0xA0;
         }
-        entry2code[(b >> 3) + (key[0] - 0xA1) * 0xB] |= (1 << (b & 7)) & 0xFF;
+        q = &entry2code[(b >> 3) + row * 0xB];
+        *q |= (1 << (b & 7)) & 0xFF;
         entry2upd = 1;
     }
 }
@@ -3568,22 +3571,23 @@ int muhenkan(int pos, int end)
 
 void fl_check(int pos, int end)
 {
-    int n;
     void *found;
     int hit;
     u8 *p;
+    int n;
     HCHAR *h;
 
     n = end - pos;
-    p = kana_ustr + pos;
     h = &hchar[pos];
+    p = kana_ustr + pos;
     while (n > 0) {
         if (h->x00 == -1) {
             found = srch_pword(p, n, &hit);
-            if (found != (void *)-1) {
-                h->x18 = hit;
-                h->x00 = (int)found;
+            if (found == (void *)-1) {
+                return;
             }
+            h->x18 = hit;
+            h->x00 = (int)found;
         }
         n--;
         p++;
@@ -4448,7 +4452,11 @@ KH *null_kouho(int len)
     return k;
 }
 
-KH *create_kouho(u8 *buf, PW *pw, int len, KH **out)
+KH *create_kouho(buf, pw, len, out)
+u8 *buf;
+PW *pw;
+int len;
+KH **out;
 {
     u8 *s;
     int n;
@@ -4517,12 +4525,15 @@ int kstrncpy(u8 *dst, u8 *src, int n)
 KH *raw_kouho(int pos, int len, int mode)
 {
     KH *out;
+    int cnt;
+    u8 *w;
 
-    ((u16 *)wdsbuf)[0] = 0xFFFF;
-    ((u16 *)wdsbuf)[1] = 0;
-    ((u8 *)wdsbuf)[4] = 0;
-    trans_roman((u8 *)wdsbuf + 5, pos, len, mode);
-    return create_kouho((u8 *)wdsbuf, 0, len, &out);
+    w = (u8 *)wdsbuf;
+    *(u16 *)w = 0xFFFF;
+    ((u16 *)w)[1] = 0;
+    w[4] = 0;
+    trans_roman(w + 5, pos, len, mode);
+    return create_kouho(w, 0, len, &out, &cnt);
 }
 
 void khmem_raw(mode)
@@ -4892,20 +4903,24 @@ int back_gun(int disp, int wrap)
 }
 
 int is_jis(c)
-int c;
+u16 c;
 {
+    int hi;
+    int lo;
     int a;
     int b;
     int r;
 
+    hi = c >> 8;
+    lo = c & 0xFF;
     a = 0;
     r = 0;
-    if (((c & 0xFFFF) >> 8 & 0xFF) > 0x20 && ((c & 0xFFFF) >> 8 & 0xFF) < 0x7F) {
+    if ((hi & 0xFF) >= 0x21 && (hi & 0xFF) < 0x7F) {
         a = 1;
     }
     if (a != 0) {
         b = 0;
-        if ((c & 0xFF) >= 0x21 && (c & 0xFF) < 0x7F) {
+        if ((lo & 0xFF) >= 0x21 && (lo & 0xFF) < 0x7F) {
             b = 1;
         }
         if (b != 0) {
@@ -4914,7 +4929,6 @@ int c;
     }
     return r;
 }
-
 int is_kanji(int c)
 {
     c = c & 0xFF;
