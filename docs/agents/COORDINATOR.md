@@ -65,6 +65,8 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
+Priority (owner, 6 Oct 2026): offline village and single player before online-only code (docs/DECISIONS.md).
+
 - A (Opus): PC runtime: quest starts at base camp, starting items/supply box, playability pass (owner played with an Xbox controller; ARM box target too).
 - B (Sonnet): lobby overlay 0x533980-0x5C4E60 (round 4: link its ~98 KB of near-match C, then login/logout, dialogs, plaza; skip libs).
 - C (Sonnet): main 0x100000-0x160000 and 0x230000-0x23E500.
