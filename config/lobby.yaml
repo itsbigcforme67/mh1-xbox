@@ -1449,6 +1449,8 @@ segments:
       - [0x090FF4, asm, text/ashi_sd_req_005C4980]
       - [0x091000, c, b/lbsnd03]
       - [0x091064, asm, text/ef_move_sub_005C49F0]
+      - [0x091070, c, b/lb_vs01]
+      - [0x091368, asm, text/lb_npc_ef_move]
       - [0x091370, c, b/lb_by23]
       - [0x0913BC, asm, text/Lobby_main]
       - [0x0913C0, c, b/lb_bz133]
