@@ -165,7 +165,12 @@ LOBBY2="src/lobby/f/lb_ib.c src/lobby/f/lb_tu_ib.c src/lobby/f/lb_ad.c src/lobby
         src/lobby/b/nm/Put_page_num.c src/lobby/b/nm/shop_process_after.c \
         src/lobby/b/lb_by44.c src/lobby/b/lb_by46.c src/lobby/b/lb_by47.c src/lobby/b/lb_by48.c src/lobby/b/lb_by52.c src/lobby/b/lb_by53.c src/lobby/b/lb_by57.c src/lobby/b/lb_by58.c src/lobby/b/lb_by59.c src/lobby/b/lb_by78.c src/lobby/b/lb_by81.c src/lobby/b/lb_by83.c src/lobby/b/nm/lb_armor_tag_decide01.c src/lobby/b/nm/lb_process_make_kyoukaList.c src/lobby/b/nm/lb_process_set_armorList.c src/lobby/b/nm/lb_process_set_weaponList.c src/lobby/b/nm/Lb_put_armorIcon.c src/lobby/b/nm/Lb_put_job_limit.c src/lobby/b/nm/shop_armor2_question.c src/lobby/b/nm/shop_armor2_stack.c src/lobby/b/nm/shop_armor_question.c src/lobby/f/lb_ax.c src/lobby/f/lb_s14.c \
         src/lobby/b/lb_by55.c src/lobby/b/nm/item_to_stack.c src/lobby/b/nm/lb_process_kyoukaListProg.c src/lobby/b/nm/lb_process_use_item.c"
-LOBBY="$LOBBY $LOBBY2"
+# agent B's matched village functions (lobby round 7: NPC placement and
+# walk, pig/cat NPCs, shop list/select, forge, armour shop, start menu):
+# linked as they are; the near-match / stand-in copies of the same
+# functions in other lobby objects are weakened after compiling (BMATCH)
+BMATCH="$(ls src/lobby/b/lb_by13[5-9].c src/lobby/b/lb_by14[0-9].c src/lobby/b/lb_by15[0-2].c 2>/dev/null | tr '\n' ' ')"
+LOBBY="$LOBBY $LOBBY2 $BMATCH"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
 WEAK="mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT"
@@ -304,6 +309,13 @@ for f in $GAME; do
     # empty dummy_em_prog: main's f_em one wins)
     case "$b" in lb__lb_em*_nm) $OBJCOPY --weaken-symbol=dummy_em_prog "$o" ;; esac
     OBJS="$OBJS $o"
+done
+# the matched lobby functions win over other lobby objects' copies
+BSYMS=$(for f in $BMATCH; do $NM --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && $2 == "T" {print $3}'; done | sort -u)
+for o in $OBJS; do
+    case "$o" in build/pc/lb__lb_by13[5-9].o|build/pc/lb__lb_by14[0-9].o|build/pc/lb__lb_by15[0-2].o) continue ;; build/pc/lb__*) ;; *) continue ;; esac
+    W=$($NM --defined-only -g "$o" | awk 'NF == 3 {print $3}' | sort -u | comm -12 - "$(printf '%s\n' $BSYMS | sort -u > build/pc/.bsyms; echo build/pc/.bsyms)")
+    [ -n "$W" ] && $OBJCOPY $(for w in $W; do printf -- '--weaken-symbol=%s ' "$w"; done) "$o"
 done
 # data tables (names in src/pc/rt/tables.txt; bytes come from the disc at run time)
 python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c

@@ -16,6 +16,10 @@ stops the build so a stale patch is noticed. Found with tools/argregs.py
 import sys
 
 PATCHES = {
+    # lb_npc_move: Lb_pl_timer_calc(em) (a0 = em left over)
+    "src/lobby/b/lb_by136.c": [
+        ("    Lb_pl_timer_calc();", "    Lb_pl_timer_calc(em);"),
+    ],
     # m2c dropped arguments (as the two other calls of this file have them)
     "src/lobby/b/nm/lb_process_set_weaponList.c": [
         ("var_s1_2 = Get_equip_name(F(u8, var_s0, 0));", "var_s1_2 = Get_equip_name(F(u8, var_s0, 0), F(u16, var_s0, 2));"),

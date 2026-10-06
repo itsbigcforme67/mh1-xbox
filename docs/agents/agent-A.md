@@ -528,3 +528,25 @@ Not checked / for the owner to judge on the real thing:
   (viewer.c parts[]), whatever the game's equipment says; a new character
   in the game wears no armour. Not changed (how the PS2 draws "no armour"
   was not checked).
+
+## Assignment 18: power-on to the village, saves, village features (8 Oct 2026)
+Details in docs/pc.md "Power-on, new game / continue, memory card, village
+features". All PC-side (src/pc, tools/build_pc.sh, tools/pc_patch.py,
+tools/gen_rt_auto.py); no include/ or PS2-built files edited.
+- Boot runs the game's own tasks (select.bin + main omake/fade/tsk/option);
+  their draws are recorded per tick and replayed per frame (gfx_rec.c).
+- libmc on host files (rt_mc.c): the game's card C saves/loads unchanged.
+- Hunter look from the save (Pl_model_id_set from the asm).
+- Village: item box, item shop (buy list), forge/armour shop pieces linked;
+  agent B's matched lobby round-7 functions (lb_by135-152) now win over the
+  stand-ins (BMATCH in build_pc.sh weakens other copies).
+- Lessons: `objcopy --weaken` also weakens undefined references (a weak
+  undefined data table is NULL, no stand-in gets generated): weaken only
+  defined symbols. Main data tables that point into lobby.bin
+  (shop_default_tag_00389E90, pit_help_str_tbl) need mapping by hand, since
+  game.bin shares the vram.
+Not done / not checked: the character screen's 3D preview (editpl models
+are not drawn), hair colour, the soft keyboard (typing stand-in), opening
+movie, options screen not tried, shop purchase with money, forge/armour
+screens not opened, the stale talk window stays under the shop list, save
+after a quest (op 9) not exercised, ARM speed of the boot not measured.
