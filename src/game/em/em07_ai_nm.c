@@ -1873,14 +1873,10 @@ void em07_main(EMW *em) {
             em->x87F = 0;
         }
     }
-    if (w->x1E != 0 && em->mode != 6) {
-        tm = w->x1E - 1;
-        if (em->x8C3 == 0) {
-            w->x1E = tm;
-            if ((s16)tm <= 0) {
-                w->x1E = 0x96;
-                net_send_em(em, 2, 0);
-            }
+    if (w->x1E != 0 && em->mode != 6 && em->x8C3 == 0) {
+        if (--w->x1E <= 0) {
+            w->x1E = 0x96;
+            net_send_em(em, 2, 0);
         }
     }
     switch (Em_Dmg_Sys(em, dmg)) {
@@ -1920,11 +1916,7 @@ void em07_main(EMW *em) {
                 if (em->hagi[em->x38E].cnt >= 2) {
                     Quest_enemy_hagi_set(em, 0x8000);
                 }
-            case 1:
-            case 7:
-            blk41:
-                em07_act_set(em, 4, 3, 2);
-                break;
+                goto blk41;
             case 4:
                 if (em->hagi[em->x38E].cnt >= 3) {
                     Quest_enemy_hagi_set(em, 0x10000);
@@ -1939,7 +1931,11 @@ void em07_main(EMW *em) {
                 if (em->hagi[em->x38E].cnt >= 2) {
                     Quest_enemy_hagi_set(em, 0x40000);
                 }
-                goto blk41;
+            case 1:
+            case 7:
+            blk41:
+                em07_act_set(em, 4, 3, 2);
+                break;
             case 2:
                 if (em->hagi[em->x38E].cnt >= 2) {
                     em07_act_set(em, 4, 0, 2);
@@ -1980,12 +1976,18 @@ void em07_main(EMW *em) {
                 }
             }
             goto cmd;
+        default:
+            goto cmd;
         }
     } else {
 cmd:
-        if (em->x734 == 3 && em->x839 != 0) {
-            em_cmd_ck(em);
-            em->x839 = 0;
+        switch (em->x734) {
+        case 3:
+            if (em->x839 != 0) {
+                em_cmd_ck(em);
+                em->x839 = 0;
+            }
+            break;
         }
     }
     em07_main_sub(em);

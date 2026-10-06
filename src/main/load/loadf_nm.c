@@ -228,7 +228,6 @@ void *flCreateTextureFromApx_mem(void *, int);
 
 /* Loads file `id` (a link of APX textures) and registers up to 0x32 of them from mem_tex[base]. */
 int load_texlist(int id, int base, int type) {
-    u32 *dst;
     int i;
     int n;
     void *p = data_load_ptr;
@@ -238,10 +237,8 @@ int load_texlist(int id, int base, int type) {
     if (n > 0x32) {
         n = 0x32;
     }
-    dst = &mem_tex[base];
     for (i = 0; i < n; i++) {
-        *dst = (u32)flCreateTextureFromApx_mem(GetLinkFileAddress(p, i), f_type[type]);
-        dst++;
+        mem_tex[base++] = (u32)flCreateTextureFromApx_mem(GetLinkFileAddress(p, i), f_type[type]);
     }
     return n;
 }

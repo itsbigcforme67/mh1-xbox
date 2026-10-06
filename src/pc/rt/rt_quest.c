@@ -142,6 +142,8 @@ void Gold_add(int n)
         *g = 9999999;
     if (*g < 0)
         *g = 0;
+    if (getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "rt_quest: Gold_add(%d) -> money %d\n", n, *g);
 }
 /* Quest_price_return (0x290E50): give back the quest fee once */
 void Quest_price_return(void)

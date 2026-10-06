@@ -28,7 +28,7 @@ typedef struct LBSYS {         /* lb_sys 0x90 bytes */
     u16 x66;                   /* 0x66 chair number (sent as a packet) */
     s32 x68;                   /* 0x68 */
     s32 x6C;                   /* 0x6C */
-    u8 _pad70;
+    u8 x70;                    /* 0x70 lobby players loaded flag (Lb_load_player_all) */
     s8 x71;                    /* 0x71 */
     s8 x72;                    /* 0x72 set01 message timer */
     u8 _pad73;
