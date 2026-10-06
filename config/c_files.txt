@@ -2451,3 +2451,4 @@ lobby:rodata 0x0065DC50 0x0065DC68 f/lb_pz07
 lobby 0x00594410 0x00594840 f/lb_pz08
 lobby:rodata 0x0065DC30 0x0065DC50 f/lb_pz08
 lobby 0x005961D0 0x00596850 f/lb_pz09
+lobby 0x00596850 0x0059722C f/lb_pz10
