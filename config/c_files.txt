@@ -2269,3 +2269,7 @@ lobby 0x005C9590 0x005C9908 f/lb_x01
 lobby 0x005D2FF0 0x005D31E0 f/lb_fz01
 lobby 0x005C4E60 0x005C50F0 f/lb_fz02
 lobby:rodata 0x0065ECA0 0x0065ECE8 f/lb_fz02
+lobby 0x005D22B0 0x005D25EC f/lb_fz03
+lobby 0x005CF700 0x005CFA44 f/lb_fz04
+lobby 0x005CF1C0 0x005CF5F8 f/lb_fz05
+lobby:rodata 0x00664CE0 0x00664D50 f/lb_tu_act
