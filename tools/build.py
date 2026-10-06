@@ -45,6 +45,7 @@ def gen_raw():
     if not os.path.exists(path):
         return
     os.makedirs(os.path.join(ROOT, "build/raw"), exist_ok=True)
+    labels = {}
     for line in open(path):
         f = line.split("#", 1)[0].split()
         if not f:
@@ -56,10 +57,18 @@ def gen_raw():
             sys.exit("c_rawfuncs: only main and lobby supported")
         words = [int.from_bytes(data[vram - base + i:vram - base + i + 4], "little")
                  for i in range(0, size, 4)]
+        # jump tables of the data asm refer to .Lxxxxxxxx labels that lived inside the original function: define them as
+        # absolute linker symbols (every word address of the raw function)
+        labels.setdefault(mod, []).extend(".L%08X = 0x%08X;\n" % (vram + i, vram + i) for i in range(0, size, 4))
         out = os.path.join(ROOT, "build/raw", name + ".inc")
         text = "".join("    .word 0x%08X;\n" % w for w in words)
         if not os.path.exists(out) or open(out).read() != text:
             open(out, "w").write(text)
+    for mod, lines in labels.items():
+        lp = os.path.join(ROOT, "build/raw", "labels_%s.ld" % mod)
+        text = "".join(lines)
+        if not os.path.exists(lp) or open(lp).read() != text:
+            open(lp, "w").write(text)
 
 
 def run(cmd):
@@ -176,6 +185,8 @@ def link_and_check(module):
                "-T", "config/%s_undefined_funcs_auto.txt" % module]
               + (["-T", "config/%s_aliases.txt" % module]
                  if os.path.exists(os.path.join(ROOT, "config/%s_aliases.txt" % module)) else [])
+              + (["-T", "build/raw/labels_%s.ld" % module]
+                 if os.path.exists(os.path.join(ROOT, "build/raw/labels_%s.ld" % module)) else [])
               + ["-o", elf])
     if err:
         print(err[:4000])
