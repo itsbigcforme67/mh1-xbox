@@ -268,9 +268,9 @@ void DispFrameListOptionArrowC(void *fr, int col) {
     *(u32 *)&q.uv[0] = 0x1A00A6;
     *(u32 *)&q.uv[2] = 0x2E0094;
     flps0008(&q);
-    q.p[0] = 0.8f * ((8.0f + (f32)(FS16(fr, 0) + (u8)(F8(fr, 4) * F8(fr, 6)))) - 18.0f);
-    *(u32 *)&q.uv[0] = 0x94;
-    *(u32 *)&q.uv[2] = 0xA6;
+    q.p[0] = 0.8f * ((8.0f + (f32)(FS16(fr, 0) + (F8(fr, 4) * F8(fr, 6)))) - 18.0f);
+    q.uv[0] = 0x94;
+    q.uv[2] = 0xA6;
     flps0008(&q);
 }
 
