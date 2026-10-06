@@ -104,6 +104,8 @@ segments:
       - [0x0131C0, asm, text/hit_hit_sub_em]
       - [0x014280, c, hit/hitb]
       - [0x014318, asm, text/hit_calc_shl]
+      - [0x014320, c, hit/hitd]
+      - [0x014878, asm, text/hit_data_on_shl_sub]
       - [0x014880, c, hit/hitc]
       - [0x014A88, asm, text/g_Hit_id_init]
       - [0x014A90, c, hit/hitid01]
