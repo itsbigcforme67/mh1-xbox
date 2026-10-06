@@ -65,7 +65,7 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
-- A (Opus): PC runtime: windowed crash + windowed/headless divergence in the village run, cart model, SpritePut, free-play crash hunt.
+- A (Opus): PC runtime: quest starts at base camp, starting items/supply box, playability pass (owner played with an Xbox controller; ARM box target too).
 - B (Sonnet): lobby overlay 0x533980-0x5C4E60 (round 4: link its ~98 KB of near-match C, then login/logout, dialogs, plaza; skip libs).
 - C (Sonnet): main 0x100000-0x160000 and 0x230000-0x23E500.
 - D (Sonnet): lobby 0x5EE618-end (main ranges 0x1C0000-0x230000, 0x24A240-0x2814E0 parked: 78 hard functions in agent-D.md).
