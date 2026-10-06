@@ -108,17 +108,17 @@ void BsBody00_ReqSrc(void) {
         switch (MMBB_LOGIN) {
         case 2:
         case 1:
+            PostLbsInfoGetOrGameEnd();
+            To_BodyMain_RcvSrc();
             break;
         default:
-            return;
+            break;
         }
-        PostLbsInfoGetOrGameEnd();
+    } else {
+        BsRequestHtmlGetCached(bsUrl);
+        bsIsOnRequesting = 1;
         To_BodyMain_RcvSrc();
-        return;
     }
-    BsRequestHtmlGetCached(bsUrl);
-    bsIsOnRequesting = 1;
-    To_BodyMain_RcvSrc();
 }
 void To_ReqCancelWait(int a, int b, int c) {
     int s;
