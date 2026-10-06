@@ -1164,8 +1164,11 @@ int main(int argc, char **argv)
         float p[3] = { rx, gy, rz };
         if (getenv("RT_EM_STANDIN"))     /* old host stand-in: root motion and collision only */
             rt_monster_place(0, 1, p, (int)(0.6f * 65536.0f / 6.2831853f));
-        else                            /* the game's monster code: enemy_mv / em01 (rt_em.c) */
+        else {                          /* the game's monster code: enemy_mv / em01 (rt_em.c) */
+            if (getenv("RT_EM_KIND"))   /* test aid: another kind, with its own model */
+                em_model_load(0, atoi(getenv("RT_EM_KIND")));
             rt_monster_spawn(1, p, (int)(0.6f * 65536.0f / 6.2831853f));
+        }
         rathian.skel.root_lock = 1;
     }
     hunter_pose(&pl, 0, &light);
