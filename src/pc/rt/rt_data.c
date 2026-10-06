@@ -287,6 +287,13 @@ static void *map_lb(uint32_t v)
                     return (uint8_t *)h + off;
             }
         }
+        {   /* the other way round: the map has the plain name of a file
+             * static whose C carries the address suffix (em10_local_init) */
+            char sfx[160];
+            snprintf(sfx, sizeof sfx, "%s_%08X", name, (unsigned)(v - off));
+            if ((h = dlsym(RTLD_DEFAULT, sfx)) != NULL)
+                return (uint8_t *)h + off;
+        }
         if (getenv("RT_TRACE"))
             fprintf(stderr, "rt: lobby pointer to unported function %s+0x%X\n", name, (unsigned)off);
         return NULL;
