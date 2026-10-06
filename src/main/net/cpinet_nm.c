@@ -136,11 +136,9 @@ s16 CpInetDnsLookUp(void) {
     case -6:
         return -2;
     case -2:
-        return -3;
-    default:
-        return r;
+        r = -3;
     }
-}
+    return r;}
 
 s16 CpInetPppInitialize(void) {
     s16 r = Ave_PppInit();
