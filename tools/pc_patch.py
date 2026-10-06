@@ -16,6 +16,22 @@ stops the build so a stale patch is noticed. Found with tools/argregs.py
 import sys
 
 PATCHES = {
+    # the mc_* step machines call mc_sync() with a0 = w left over
+    "src/main/mc/mclow_nm.c": [
+        ("(mc_sync() >= 0)", "(mc_sync(w) >= 0)"),
+    ],
+    # the near-match copy (linked weak, for mc_sel_ck)
+    "src/main/mc/mccomb_nm.c": [
+        ("int decode_to_ck();\n", "static int decode_to_ck();\n"),
+    ],
+    # card_data_init(w) after mc_r_no_set(w, n) (a0 = w left over);
+    # mc_remove_ck passes its port on to McActNewChk
+    "src/main/mc/mccomb.c": [
+        ("    card_data_init();\n", "    card_data_init(w);\n"),
+        ("    if (McActNewChk() != 0) return 1;", "    if (McActNewChk(port) != 0) return 1;"),
+        # declared global, defined static (MWCC accepts it, gcc does not)
+        ("int decode_to_ck();\n", "static int decode_to_ck();\n"),
+    ],
     # Lb_put_msg2 / Lb_pl_chr_set0 / Lb_Pl_act_set2 pass their own a0-t0 on
     "src/lobby/f/lb_c.c": [
         ("void Lb_put_msg2(int a0, int a1, char *msg) {\n    flfntLocate();",

@@ -127,8 +127,14 @@ LOBBY="$(ls src/lobby/f/lb_[a-p].c src/lobby/f/lb_z*.c | tr '\n' ' ') src/lobby/
 # the menu's move and draw (b/nm near-matches, b/lb_menu_nm.c from the asm)
 LOBBY="$LOBBY src/lobby/b/lb_bz15.c src/lobby/b/lb_bz17.c src/lobby/b/lb_bz19.c src/lobby/b/lb_bz135.c \
        src/lobby/b/nm/Lb_menu_move_Core.c src/lobby/b/lb_by86.c src/lobby/b/lb_menu_nm.c"
-WEAK="set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
-GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY"
+# Memory card (main f_mc): the save screens (mccomb.c, matched; its
+# mc_sel_ck is original bytes on the PS2, so the near-match copy in
+# mccomb_nm.c, weak, gives it here), the McAct layer and the low-level
+# step machines (whole-file near-matches); libmc under them is host code
+# on save files (src/pc/rt/rt_mc.c)
+MC="src/main/mc/mclow_nm.c src/main/mc/mcact_nm.c src/main/mc/mcdisp_nm.c src/main/mc/mccomb.c src/main/mc/mccomb_nm.c"
+WEAK="mccomb_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
+GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC"
 
 SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}
 CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
@@ -251,7 +257,11 @@ for f in $GAME; do
         fi
     fi
     $CC $INC $GAMEFLAGS $ABI $SYS -c "$src" -o "$o"
-    case " $WEAK " in *" $b "*) $OBJCOPY --weaken "$o" ;; esac
+    # only the symbols the file defines: "objcopy --weaken" would also make
+    # its undefined references weak, and a weak reference nothing defines
+    # is NULL (gen_rt_auto.py never sees it: mccomb_nm's mc_sel_tbl)
+    case " $WEAK " in *" $b "*)
+        $OBJCOPY $($NM --defined-only -g "$o" | awk 'NF == 3 {printf "--weaken-symbol=%s ", $3}') "$o" ;; esac
     # single symbols that another file also defines (the lobby NPC files'
     # empty dummy_em_prog: main's f_em one wins)
     case "$b" in lb__lb_em*_nm) $OBJCOPY --weaken-symbol=dummy_em_prog "$o" ;; esac
@@ -263,7 +273,7 @@ python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 $CC $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc; do
     # shellcheck disable=SC2086
     $CC $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"
