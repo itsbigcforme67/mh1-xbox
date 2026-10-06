@@ -1380,26 +1380,30 @@ void ext_pick_point_fifo_ck(void)
     int i;
     s8 *t;
 
-    n = quest_w.x3B - 1;
-    if (quest_w.x3B >= 20) {
+    n = quest_w.x3B;
+    if (n >= 20) {
+        n--;
         i = 0;
-        if (n > 0) {
+        if (0 < n) {
             t = stiem_stack_tbl;
-            for (; i < n; i++, t++) {
+            do {
                 if (!(StiEM_data[*t].x19 & 1)) {
                     break;
                 }
-            }
+                i++;
+                t++;
+            } while (i < n);
         }
         Ext_pick_point_clr(stiem_stack_tbl[i]);
     }
 }
 
-void ext_pick_point_tbl_clr(n)
-s8 n;
+void ext_pick_point_tbl_clr(arg)
+int arg;
 {
-    int last;
+    int n = (s8)arg;
     s8 *t;
+    int last;
 
     last = quest_w.x3B - 1;
     if (n < last) {

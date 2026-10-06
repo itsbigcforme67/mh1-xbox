@@ -1805,3 +1805,4 @@ main 0x002162C0 0x002162EC sound/flsnd02
 main 0x0022FE00 0x0022FE0C boot/boot03
 main 0x002268A0 0x00226900 quest/qstb05
 main 0x00226920 0x002269E0 quest/qstb06
+main 0x00229570 0x00229684 quest/qstb07
