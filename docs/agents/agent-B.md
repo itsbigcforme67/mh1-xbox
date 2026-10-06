@@ -736,10 +736,18 @@ New matching lessons (each confirmed by a match):
 - Permuter on these tiny near-matches (connecting_00, cmcs_00...) found nothing below the base score in 5-10 minutes each (base scores include relocation noise); not worth the CPU.
 
 # Lobby round 7 (agent B, 6-7 Oct 2026): village first
-Linked (all in src/lobby/b/lb_by135-146.c, registered in config/c_files.txt as `lobby ... b/lb_byNNN`; rebuild OK for all five modules):
+Linked (all in src/lobby/b/lb_by135-152.c, registered in config/c_files.txt as `lobby ... b/lb_byNNN`; rebuild OK for all five modules):
 - by135 lb_set_npc, by136 lb_npc_move, by137 lb_put_shopList, by138 shop_armor2_question, by139 Lb_shop_trans2, by140 tk_lever_ck,
-  by141 Put_page_num, by142 lb_mix_item_select, by143 lb_shop_item_select, by144 Lb_process_shop, by145 npcPigEXIT, by146 lb_mix_makeMixList.
-  All village (NPC placement/walk, shop list/detail/select, forge, armor shop, talk lever, pig NPC). None is online-only.
+  by141 Put_page_num, by142 lb_mix_item_select, by143 lb_shop_item_select, by144 Lb_process_shop, by145 npcPigEXIT, by146 lb_mix_makeMixList,
+  by147 npcCatWAITER (2448 bytes, jump table rodata 0x65DEA0-0x65DEC8), by148 npcPigWALK2, by149 npcPigTOPL, by150 npcPigSLEEP,
+  by151 Lb_menu_move_Core (village / lobby start menu, two jump tables 0x65E6A0-0x65E720), by152 Disp_lb_menu.
+  All village (NPC placement/walk/serve, shop list/detail/select, forge, armor shop, talk lever, pig NPCs, start menu). None is online-only,
+  though Lb_menu_move_Core's pages 8-15 are the online menu entries.
+Biggest lesson of the round: the m2c-style drafts were far closer than their check.py counts said. Run `python3 tools/align.py FILE FUNC --module lobby`
+(not the "N/M differ" figure, which counts every shifted instruction) and fix what the asm really does: m2c drafts passed junk arguments
+(`Lb_get_angle(pl->pos, player_work, off)` is really `Lb_get_angle(em, pl->pos)`; `pl_flag_set(pl, ..)` is really `(em, ..)`; `Menu_x_i(lbmw)` is
+`Menu_x_i()` with a0 left over; a "stage4" second argument was a stale register) and a stray `int off` variable. Removing those, plus `break` for a
+trailing `return;`, turned 28-379 differing lines into 0 for npcPig*/npcCatWAITER/Lb_menu_move_Core.
 New matching lessons (each confirmed by a match):
 - A callee with narrow parameters (`flfntLocate(int x, s16 y)`, `Lb_put_icon_free(s16, s16, int, int, int)`, `Lb_mix_item_checkMax(u16 id, s8 qty)`)
   declared in the file makes the CALLER narrow each argument at the call and stops MWCC from CSE-ing the mask / sign extension into a
@@ -778,3 +786,24 @@ Near-matches (village) after this round, with the real remaining difference (cou
 - lb_process_select: the original keeps the mode in v1 and constant 1 in v0; mine swaps them; not reproduced.
 Online-flavoured functions that the round-6 graph listed as village but are really the in-game web browser: Analysis_TagCode,
 Analysis_StringData, Split_TagCode, tk_dialog_mv02 (nwDispStr_Html). Not attempted.
+
+More lessons from the second half of round 7:
+- A function whose conditions are `x68 != 0x11 || s6 == 6 || s6 == 7` first and the real work after: write the leave-branch as the then-part
+  (`if (cond) { leave; return; } work`), not `if (!cond-ish) { work } else { leave }`; the original lays the leave block out first
+  (npcCatWAITER cases 5, 6, 7).
+- `((s32 **)&((u8 *)tbl)[0x3C])[stage]` keeps `tbl+0x3C` as one address constant (`addiu v1,v1,sym+0x3C`) instead of folding 0x3C into the lw offset.
+- Declaring `PLW *pl` before a K&R-style `int off` or using `pl = &player_work[game_w.master]` matters: m2c's `(u8 *)player_work + off` form gives a0/a1 swaps.
+- `int n; page = (u32)n >> 3; sel = n % 8;` reproduces `srl` + the signed-mod fix-up of Disp_lb_menu (the nm had `u8 n` and `& 7`).
+- `u16 r = Menu_xxx_mv(keys)` for int-returning callees gives the `andi v0,v0,0xFFFF` after each call and `daddiu` for a u16 default constant;
+  keep the *_i handlers `int` (their result is copied with `daddu s0,v0,zero`, no mask).
+- Tried and not solved (register/ordering only): lb_npc_init (typed near-match now in b/nm/lb_npc_init.c; the original clears the 32 flag bytes
+  at em+0x4E6 with a counter in a0 and `em+a0` recomputed per iteration, my loops always strength-reduce it), lb_eat_set (the original keeps a dead
+  `k++` counter in s18: 7 saved registers), lb_process_select, lb_shop_tag_decide (shared `cnt` after the if/else), draw_dialog_square
+  (float registers f1/f2 swapped on the `0.025f * (20.0f * tw)` expression, expression order did not help), ef_move_sub_0053E360 (compare ladder uses
+  a1/v1 where mine uses v1/v0, 17 instructions of register names only), set_dialog_square (the original keeps `addiu $11,$11,0x28` between the three
+  table rows, MWCC folds pointer steps into offsets in every form I tried).
+PC build (tools/build_pc.sh, docs/pc.md "Village"): functions I matched whose PC version is a near-match or stand-in: lb_set_npc and lb_npc_move (stand-ins in
+lb_village_nm.c), Lb_menu_move_Core (src/lobby/b/nm/Lb_menu_move_Core.c, m2c draft that passes lbmw to the *_i handlers; lb_by151.c calls them without
+arguments as the asm does), Disp_lb_menu (lb_menu_nm.c, matched form differs only by `int n` / `n % 8`), npcPigEXIT/WALK2/TOPL/SLEEP and npcCatWAITER
+(lbnpc_nm.c: corrected in place, see above; PC behaviour changes where the drafts passed wrong arguments), lb_mix_item_select / lb_mix_makeMixList
+(lb_mix_nm.c) and lb_shop_item_select (lbshop2_nm.c) unchanged. The by files themselves are not compiled by build_pc.sh.
