@@ -331,6 +331,8 @@ void rt_font_tick_begin(void)
     strpos = 0;
     font_reset_flag = 0;
 }
+/* the boot screens draw while their tick runs (rt_boot.c, recorded) */
+void rt_font_set_draw(int on) { in_draw = on; }
 void rt_font_frame_begin(void)
 {
     int i;

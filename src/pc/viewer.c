@@ -490,6 +490,7 @@ static int16_t *dump_pcm = NULL;
 static size_t dump_n = 0, dump_cap = 0;   /* game_cam: the game's CameraMove drives the view */
 static float gc_eye[3] = { 0 }, gc_tar[3] = { 0 }, gc_roll = 0, gc_fov = 1.0f;   /* --play camera: distance, height, pitch */
 static int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter */
+static int boot = 0, booting = 0;           /* --boot: from power-on (rt_boot.c) */
 static const char *script = NULL;
 static float hunter_yoff = 0;
 
@@ -663,6 +664,10 @@ static void quest_back(void)
     rt_player_game_init(0);
     if (game_cam)
         rt_cam_init(stage_no);
+    {   /* game13's last step: the hunt fades in */
+        void fade_set(int n);
+        fade_set(2);
+    }
 }
 
 /* Quest monsters other than the Rathian of the host's own set-up (the
@@ -813,6 +818,10 @@ static void quest_from_village(void)
     rt_monster_spawn(1, p, 0);
     if (game_cam)
         rt_cam_init(stage_no);
+    {   /* game13's last step: the hunt fades in */
+        void fade_set(int n);
+        fade_set(2);
+    }
     if (getenv("RT_QUEST_TRACE"))
         fprintf(stderr, "village: quest %d starts on stage %d\n", quest_no, stage_no);
 }
@@ -853,6 +862,7 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--stage") && i + 1 < argc) { stage_no = (int)strtol(argv[++i], NULL, 0); stage_given = 1; }
         else if (!strcmp(argv[i], "--quest") && i + 1 < argc) quest_no = (int)strtol(argv[++i], NULL, 0);
         else if (!strcmp(argv[i], "--play")) play = 1;
+        else if (!strcmp(argv[i], "--boot")) { boot = 1; play = 1; }
         else if (!strcmp(argv[i], "--input") && i + 1 < argc) { script = argv[++i]; play = 1; }
         else if (!strcmp(argv[i], "--sw-trace")) sw_trace = 1;
         else if (!strcmp(argv[i], "--audio-dump") && i + 1 < argc) audio_dump = argv[++i];
@@ -879,11 +889,17 @@ int main(int argc, char **argv)
         rt_set_overlay(ovl, ovl ? n : 0);
         ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "lobby.bin"), &n);           /* the village overlay */
         rt_set_lobby(ovl, ovl ? n : 0);
+        ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "select.bin"), &n);          /* the boot overlay (title, new hunter, load) */
+        rt_set_select(ovl, ovl ? n : 0);
     }
     if (rt_import_data() != 0)
         fprintf(stderr, "some game data tables are missing\n");
     if (rt_import_lobby() != 0)
         fprintf(stderr, "some lobby data tables are missing\n");
+    if (rt_import_select() != 0)
+        fprintf(stderr, "select.bin is missing: no title screen\n");
+    if (boot && !quest_no)
+        quest_no = 10;      /* the set-up below as for a quest; the boot ends in the village (game mode 6) */
     if (gfx_init(W, H, "MH1 PC viewer", shot != NULL) != 0)
         return 1;
     if (script && !pad_script_set(script)) {
@@ -1078,6 +1094,11 @@ int main(int argc, char **argv)
     rt_set_npc_model_loader(npc_model_load);
     if (quest_no && getenv("RT_VILLAGE_START"))   /* test aid: straight to the village (game mode 6) */
         rt_flow_set_mode(6);
+    if (boot) {         /* power-on: the game's boot tasks until Game_task (rt_boot.c) */
+        rt_boot_init();
+        booting = 1;
+    } else
+        rt_sys_init();  /* the system tasks the boot would have started (Fade_task) */
     tick_trace = getenv("RT_TICK_TRACE") != NULL;
     t0 = SDL_GetTicks();
     while (running) {
@@ -1127,6 +1148,23 @@ int main(int argc, char **argv)
         /* game logic ticks at 30 per second (at least 2, so set objects
          * have run their init and queued their prims) */
         while (ticks < 2 + (int)fr) {
+            if (booting) {      /* ACRMain: pad, then the task scheduler */
+                pad_state ps;
+                if (script)
+                    pad_script_next(&ps);
+                else
+                    pad_read(&ps, 1);
+                rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
+                rt_pad_tick();
+                if (rt_boot_tick()) {
+                    booting = 0;
+                    rt_flow_set_mode(6);    /* Game_task offline: the village */
+                }
+                if (snd == 0)
+                    rt_snd_tick();
+                ticks++;
+                continue;
+            }
             if (quest_no) {
                 /* outside game2 the host tick (sim_tick) does not run: the
                  * pad is still read every tick (result / reward screens) */
@@ -1143,6 +1181,7 @@ int main(int argc, char **argv)
                         rt_pad_tick();
                 }
                 rt_flow_tick();         /* game2 / game3 / game5 (f_game.c): game_core = sim_tick */
+                rt_sys_tick();          /* Fade_task (the scheduler's system tasks) */
             }
             else
                 sim_tick();
@@ -1165,6 +1204,11 @@ int main(int argc, char **argv)
                 fprintf(stderr, "T %d m%d st%d pl %.2f %.2f %.2f %04X em %.2f\n", ticks, rt_flow_mode(),
                         rt_game_stage(), p[0], p[1], p[2], a & 0xFFFF, es);
             }
+        }
+        if (booting) {          /* the boot screens: the last tick's picture */
+            gfx_begin_frame(0);
+            rt_boot_draw();
+            goto frame_done;
         }
         if (game_cam) {
             rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
@@ -1247,6 +1291,8 @@ int main(int argc, char **argv)
             draw_model_attr(&weapon.model, -1);
         }
         rt_game_draw_2d();              /* screen layers: HUD, info banner, text (after the 3D scene) */
+        rt_fade_draw();                 /* fade_draw: the screen fade (Fade_task) */
+    frame_done:
 
         frame_no++;
         if (getenv("RT_FPS")) {         /* drawn frames per second (the game ticks at 30 regardless) */

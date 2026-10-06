@@ -163,6 +163,8 @@ void gfx_release_texture(gfx_texture *t)
 
 void gfx_set_render_state(int state, uintptr_t v)
 {
+    if (gfx_rec_state(state, v))
+        return;
     switch (state) {
     case GFX_RS_TEXTURE:
         G.tex = (gfx_texture *)v;
@@ -275,6 +277,8 @@ void gfx_update_clay(gfx_clay *c, const float *pos, const uint8_t *col)
 
 void gfx_execute_clay(gfx_clay *c)
 {
+    if (gfx_rec_clay(c))
+        return;
     int b;
     const uint8_t *col = c->col;
 
@@ -325,6 +329,8 @@ void gfx_execute_clay(gfx_clay *c)
 
 void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, const uint8_t *col)
 {
+    if (gfx_rec_2d(w, h, nvert, pos, st, col))
+        return;
     gfx_texture *t = st ? G.tex : NULL;
     GLboolean dt = glIsEnabled(GL_DEPTH_TEST);
     GLboolean dm;

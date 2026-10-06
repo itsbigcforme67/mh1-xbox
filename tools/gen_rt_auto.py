@@ -15,6 +15,7 @@ and this tool writes a C file that defines each one:
   linker alias into rt_lb_mem, the host copy of the whole overlay (image +
   .bss, filled from lobby.bin by rt_import_lobby), so tables the code reads
   past their symbol's end see the same neighbours as on the PS2;
+- select.bin data (select.txt symbols): the same, into rt_sel_mem;
 - functions: a weak stand-in that returns 0 and, with RT_TRACE=1, says
   once that it ran ("rt: <name> not ported").
 
@@ -57,6 +58,7 @@ def main():
     defined = set(l.strip() for l in open(sys.argv[2]))
     main_s = load("config/symbols/main.txt")
     lb_s = load("config/symbols/lobby.txt")
+    sel_s = load("config/symbols/select.txt")
     main_addrs = sorted(v[0] for v in main_s.values())
     lb_addrs = sorted(v[0] for v in lb_s.values() if v[0] >= OVL)
     names = set(l.strip() for l in open(sys.argv[1]) if l.strip())
@@ -80,9 +82,12 @@ def main():
         if k not in defined:
             names.add(k)
     names = sorted(names)
-    data, funcs, lbalias = [], [], {}
+    data, funcs, lbalias, selalias = [], [], {}, {}
     for n in names:
         ent = None
+        if n in sel_s and sel_s[n][1] != "func" and n not in lb_s and n not in main_s:
+            selalias[n] = sel_s[n][0] - OVL     # select.bin data: alias into rt_sel_mem
+            continue
         if n in main_s and main_s[n][0] < OVL:
             ent = ("main",) + main_s[n]
         elif n in lb_s:
@@ -120,8 +125,9 @@ def main():
         out.append("__attribute__((weak)) int %s() { static int o; if (!o++) note(\"%s\"); return 0; }" % (n, n))
     open(sys.argv[3], "w").write("\n".join(out) + "\n")
     open(sys.argv[4], "w").write("".join("-Wl,--defsym,%s=%s+0x%X\n" % (n, k, off) for n, (k, off) in sorted(alias.items())) +
-                                 "".join("-Wl,--defsym,%s=rt_lb_mem+0x%X\n" % (n, off) for n, off in sorted(lbalias.items())))
-    print("gen_rt_auto: %d data, %d function stand-ins, %d aliases, %d lobby.bin symbols" % (len(data), len(funcs), len(alias), len(lbalias)))
+                                 "".join("-Wl,--defsym,%s=rt_lb_mem+0x%X\n" % (n, off) for n, off in sorted(lbalias.items())) +
+                                 "".join("-Wl,--defsym,%s=rt_sel_mem+0x%X\n" % (n, off) for n, off in sorted(selalias.items())))
+    print("gen_rt_auto: %d data, %d function stand-ins, %d aliases, %d lobby.bin symbols, %d select.bin symbols" % (len(data), len(funcs), len(alias), len(lbalias), len(selalias)))
 
 
 if __name__ == "__main__":
