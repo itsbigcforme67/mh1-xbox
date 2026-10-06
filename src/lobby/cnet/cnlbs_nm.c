@@ -3544,10 +3544,10 @@ int __cnet_Recv_UserIDandHandle(void) {
 
     memset(CnetSys_w.login_users, 0, 0x170);
     p = GetRecvData8(&n, recv_work);
-    if (n >= 4) n = 3;
+    if (n > 3) n = 3;
     CnetSys_w.n_login_user = n;
     i = 0;
-    if (n > 0) {
+    if (0 < n) {
         s0 = (u8 *)&CnetSys_w;
         do {
             p = GetRecvDataOption3(s0 + 0x147E, 0x40, GetRecvDataOption3(s0 + 0x146A, 0x10, GetRecvDataOption3(s0 + 0x1462, 8, p)));
@@ -3710,17 +3710,17 @@ int cnLBS_Read_MatchInfomation(int cb) {
 }
 
 void _cnet_RecvFromLbs_MatchJoin(void) {
-    union { CNET_RES r; u8 b[8]; } u;
-
     if (CnetSys_w.burst[7].state != 0) {
         if (CnetSys_w.rcat == 2) {
             if (CnetSys_w.rres == 0) {
-                __cnet_Recv_Byte(&u.b[7]);
-                CNW(u8, 0x30310) = u.b[7];
+                u8 v;
+                __cnet_Recv_Byte(&v);
+                CNW(u8, 0x30310) = v;
             } else {
-                u.r.val = -1;
+                CNET_RES res;
+                res.val = -1;
                 __cnet_Recv_ServerMessage();
-                __cnet_Return_MatchInformation(u.r);
+                __cnet_Return_MatchInformation(res);
                 return;
             }
         }
@@ -3752,7 +3752,7 @@ void _cnet_RecvFromLbs_MatchPlSide(void) {
 
 void _cnet_RecvFromLbs_MatchOpponentInfo(void) {
     u8 idx;
-    s8 r;
+    CNET_RES r;
     u8 *p;
 
     if (CNW(u8, 0xF34) != 0 && CnetSys_w.rcat != 0x10) {
@@ -3762,9 +3762,9 @@ void _cnet_RecvFromLbs_MatchOpponentInfo(void) {
                 GetRecvData8(p + (idx - 1) * 0x98 + 0x1A9, GetRecvDataString(p + (idx - 1) * 0x98 + 0x170, GetRecvDataString(p + (idx - 1) * 0x98 + 0x130, GetRecvDataString(p + (idx - 1) * 0x98 + 0x11C, GetRecvDataString(p + (idx - 1) * 0x98 + 0x114, GetRecvData8(p + (idx - 1) * 0x98 + 0x1AA, GetRecvData8(&idx, recv_work)))))));
                 (p + idx * 0x98)[0x110] = idx;
             } else {
-                r = -1;
-                __cnet_Recv_ServerMessage(CnetSys_w.rcat, recv_work);
-                __cnet_Return_MatchInformation((long long)r);
+                r.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(r);
                 return;
             }
         }
@@ -3946,15 +3946,15 @@ void cnLBS_Get_GameServerAddress(u32 *addr, u16 *port) {
 
 void _cnet_RecvFromLbs_NoticePatchStart(void) {
     if (CnetSys_w.burst[0].state != 0) {
-        switch (CnetSys_w.rcat) {
-        case 16:
-            __cnet_Recv_PatchStart(CnetSys_w.rcat);
+        if (CnetSys_w.rcat == 16) {
+            __cnet_Recv_PatchStart();
             CnetSys_w.patch_cnt = 0;
             CnetSys_w.x1004 = 0;
             CnetSys_w.patch_ptr = CNW(s32, 0x1054);
             return;
-        case 2:
-            break;
+        }
+        if (CnetSys_w.rcat == 2) {
+            return;
         }
     }
 }
@@ -3977,11 +3977,11 @@ void _cnet_RecvFromLbs_NoticePatchData(void) {
 }
 
 void __cnet_Recv_PatchData(void) {
-    u16 a = 0;
-    u16 b = 0;
+    u16 a;
+    u16 b;
 
-    GetRecvDataOption(CNW(s32, 0xFFC), GetRecvData16(&a, GetRecvData16(&b, recv_work)), a);
-    CNW(s32, 0xFFC) += a;
+    GetRecvDataOption(CnetSys_w.patch_ptr, GetRecvData16(&a, GetRecvData16(&b, recv_work)), a);
+    CnetSys_w.patch_ptr += a;
 }
 
 void _cnet_RecvFromLbs_ReqestPatchLineCheck(void) {
@@ -4100,7 +4100,9 @@ int arg;
         if (arg != 0) {
             _cnetEvent_JumpCallBack(arg, 0);
         }
-    } else if (CnetSys_w.rcat == 2) {
+        return;
+    }
+    if (CnetSys_w.rcat == 2) {
         if (CnetSys_w.rres == 0) {
             res.val = 0;
         } else {
@@ -4382,10 +4384,10 @@ int GetRecvDataString(dst, src)
 char *dst;
 u8 *src;
 {
-    int n;
+    u16 n;
     int m;
 
-    n = (((src[0] << 8) & 0xFFFF) | src[1]) & 0xFFFF;
+    n = (u16)(src[0] << 8) | src[1];
     memcpy(dst, src + 2, n);
     m = n & 0xFFFF;
     dst[m] = 0;
@@ -4598,9 +4600,9 @@ u32 v;
 void SetSendStringData(w, src, len)
 SEND_WORK *w;
 void *src;
-int len;
+u16 len;
 {
-    memcpy((u8 *)w + w->len + 0x10, src, len & 0xFFFF);
+    memcpy((u8 *)w + w->len + 0x10, src, len);
     w->total += len;
     w->len += len;
 }
@@ -4610,11 +4612,11 @@ SEND_WORK *w;
 char *src;
 int len;
 {
-    char buf[0x100];
+    char buf[0x108];
     int n;
 
     n = lbs_encode_ex(buf, src, (((w->seq_h << 8) & 0xFFFF) + w->seq_l) & 0xFFFF, len & 0xFFFF, CnetSys_w.xfee);
-    SetSendData16(w, ((len & 0xFFFF) + 2) & 0xFFFF);
+    SetSendData16(w, ((u16)len + 2) & 0xFFFF);
     SetSendData16(w, n & 0xFFFF);
     SetSendStringData(w, buf, len);
 }
@@ -4624,11 +4626,11 @@ SEND_WORK *w;
 char *src;
 int len;
 {
-    char buf[0x100];
+    char buf[0x108];
     int n;
 
     n = lbs_encode_ex(buf, src, (((w->seq_h << 8) & 0xFFFF) + w->seq_l) & 0xFFFF, len & 0xFFFF, CnetSys_w.xfee);
-    SetSendData16(w, ((len & 0xFFFF) + 2) & 0xFFFF);
+    SetSendData16(w, ((u16)len + 2) & 0xFFFF);
     SetSendData16(w, n & 0xFFFF);
     SetSendStringData(w, buf, len);
 }
