@@ -1,4 +1,56 @@
 main 0x281ED0 0x1D0 mc_sel_ck
+lobby 0x005E61B0 0xA4 bs_route_queue_free_reverse
+lobby 0x005E6580 0x80 bs_cache_queue_get
+lobby 0x005E66D0 0x374 BsCacheInitialize
+lobby 0x005E6E80 0x1DC BsRequestPostAdd
+lobby 0x005CEA40 0x47C Lb_put_unique_act_hint
+lobby 0x00609770 0x7C Lb_ItemBox_open
+lobby 0x006097F0 0x204 Lb_ItemBox_mv
+lobby 0x00609A00 0x1DC itembox_cursor_mv
+lobby 0x00609BE0 0x238 itembox_stock
+lobby 0x00609E20 0x874 itembox_pickup
+lobby 0x0060A6A0 0x714 itembox_equipchange
+lobby 0x0060ADC0 0x344 itembox_sortup
+lobby 0x0060B190 0x670 itembox_sellout
+lobby 0x0060B9E0 0x190 kosuu_select
+lobby 0x0060BB70 0xA0 sortup_idx_chk
+lobby 0x0060BE20 0xC8 equip_ok_chk
+lobby 0x0060BF10 0xD0C ItemboxWindowX
+lobby 0x0060CC40 0x1B8 ItemboxWindowCursorX
+lobby 0x0060CE50 0x5B8 Disp_lb_item_box
+lobby 0x005E7120 0x150 bs_cache_request_html_core
+lobby 0x005E7270 0xE4 bs_cache_request_image_core
+lobby 0x005E73B0 0x134 bs_cache_request_create_texture
+lobby 0x005E74F0 0x1A4 bs_request_check_task_http
+lobby 0x005E76A0 0x114 bs_request_set_task_core
+lobby 0x005E77C0 0x174 bs_request_set_task_html
+lobby 0x005E7940 0x144 bs_request_set_task_image
+lobby 0x005E7A90 0xE0 BsRequestTask
+lobby 0x005E7B70 0x5AC BsRequestCheck
 main 0x28CEB0 0x100 hit_sphr_sphr2
 main 0x28D0A0 0x1394 hit_cap_cap2_m
 main 0x28F270 0xEC4 hit_cap_cap3_m
+main 0x218360 0x134 GetAPXPixelMipmapAdrs
+main 0x2184A0 0xE8 GetAPXPaletteAdrs
+main 0x17BE20 0x78 flPS2matMul mn
+main 0x17BEA0 0xD8 flPS2matMul2 mn
+main 0x17BF80 0x74 flPS2matNormalize33 mn
+main 0x17C000 0xD8 flPS2matMulNormalize33 mn
+main 0x17C0E0 0xE0 PS2SHADER_ADD_LIGHTVECD3 mn
+main 0x17C1C0 0x9C PS2SHADER_ADD_LIGHTVECP1 mn
+main 0x17C260 0xF4 PS2SHADER_ADD_LIGHTVECP3 mn
+main 0x17C360 0x130 PS2SHADER_ADD_LIGHTVECD1P2 mn
+main 0x17C490 0x13C PS2SHADER_ADD_LIGHTVECD2P1 mn
+main 0x17C5D0 0xB0 PS2SHADER_ADD_LIGHTVECD1P2_2 mn
+main 0x17C680 0xBC PS2SHADER_ADD_LIGHTVECD2P1_2 mn
+main 0x17C740 0x44 flPS2SHADER_ADD_SVEC1 mn
+main 0x17C790 0x60 flPS2SHADER_ADD_SVEC2 mn
+main 0x17C7F0 0x168 PS2SHADER_ADD_LIGHTCOL3 mn
+main 0x17C960 0x188 PS2SHADER_ADD_LIGHTCOL3_2 mn
+main 0x17CAF0 0x174 PS2SHADER_ADD_LIGHTCOL3_3 mn
+main 0x17CC70 0xB8 PS2SHADER_ADD_LIGHTCOL1 mn
+main 0x17CD30 0x28 PS2SHADER_ADD_UVSCROLL mn
+main 0x17CD60 0x58 PS2SHADER_FLMATRIX_COPY mn
+main 0x17D150 0x2F0 flPS2AddMatrix_0002
+main 0x17D440 0x25C flPS2AddMatrix_0003
+main 0x17E310 0x3B0 flPS2AddMatrix_000D

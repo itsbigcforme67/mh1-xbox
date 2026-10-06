@@ -468,3 +468,29 @@ darkening quad still missing), the cart's model, other small monster
 kinds' tables (only em16's game.bin tables are imported:
 src/pc/rt/tables.txt), set01 field messages on faint not checked on
 screen, nobody compared any of it with the PS2.
+
+## Assignment 16: windowed crash, determinism, village menu, sprites (7 Oct 2026)
+Done (each step committed; details in docs/pc.md "Windowed = headless"):
+- Windowed segfault ~63 s into the accept script: a drawn frame between
+  the village's last tick and the quest start drew eft13 prims of effects
+  rt_eft_init had just cleared (eft13_t, ew->work NULL). rt_game_init now
+  empties the prim queues. The "hunter not at the gate" report was the
+  run being mid-walk when it crashed: the traces match tick for tick.
+- Windowed and --shot runs now run the same per-tick host work (joint
+  sync after every tick); RT_TICK_TRACE=1 prints a per-tick line to diff.
+- Free roam fixes: village start menu (was a NULL lbmw crash), eft06_m
+  null-table test, unported monster programs not spawned, area exits.
+- Cart (em18) already drawn; SpritePut + flps0D00 for game3's fade.
+- Shared files: no include/ edits. Near-match files edited: eft06_nm.c
+  (tt0), DispLobbyMenu.c (took main's version at merge). New: 
+  src/lobby/b/lb_menu_nm.c, src/main/sprite/spriteput_nm.c (both from the
+  asm, not linked for the PS2). build_pc.sh: main's hit2 restructure
+  (hit2.c/hit2b.c/hit2c.c gone, hit2all.c has raw asm functions) -> the PC
+  takes the f_hit_28CE00 tests from hit2_nm.c alone (no longer weak).
+- Lesson: an m2c pointer that is stepped in a loop and also tested for
+  NULL needs two variables when the asm keeps the base in another
+  register (eft06_m: s8 base, s6 cursor); on the PS2 the bad read is
+  harmless (address 2), on the PC it segfaults.
+- Lesson: headless --time runs do every tick before the first frame, so
+  host work done per drawn frame (joint sync) made windowed runs
+  diverge; anything that writes game state must run per tick.

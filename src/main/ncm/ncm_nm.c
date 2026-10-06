@@ -183,8 +183,8 @@ void Ncm_mssage_disp(int no) {
 
 void Ncm_mssage_disp_option(int no) {
     s16 y;
-    s16 size;
     s16 col2;
+    s16 size;
     s16 step;
     char **lines;
 
@@ -298,10 +298,6 @@ void Ncm_br_mc_mssage_disp(int no) {
 
 void Ncm_menu_disp(u32 no) {
     int i;
-    int *np;
-    s16 **pp;
-    char ***sp;
-    s16 *pos;
     s16 x;
     s16 y;
     s16 size;
@@ -320,16 +316,12 @@ void Ncm_menu_disp(u32 no) {
     case 9:
     case 10:
     case 11:
-        np = &menu_num_tbl[no];
-        pp = &net_menu_pos_tbl[no];
-        sp = &menu_str_tbl[no];
-        for (i = 0; i < *np; i++) {
-            pos = *pp + i * 4;
-            x = pos[0];
-            y = pos[1];
-            size = pos[2];
-            col = pos[3];
-            str = (*sp)[i];
+        for (i = 0; i < menu_num_tbl[no]; i++) {
+            x = net_menu_pos_tbl[no][i * 4];
+            y = net_menu_pos_tbl[no][i * 4 + 1];
+            size = net_menu_pos_tbl[no][i * 4 + 2];
+            col = net_menu_pos_tbl[no][i * 4 + 3];
+            str = menu_str_tbl[no][i];
             if (x == -1) {
                 x = ncm_center_x(str, size);
             }
@@ -340,15 +332,11 @@ void Ncm_menu_disp(u32 no) {
         }
         break;
     case 1:
-        np = &menu_num_tbl[no];
-        pp = &net_menu_pos_tbl[no];
-        sp = &menu_str_tbl[no];
-        for (i = 0; i < *np; i++) {
-            pos = *pp + i * 4;
-            x = pos[0];
-            y = pos[1];
-            size = pos[2];
-            col = pos[3];
+        for (i = 0; i < menu_num_tbl[no]; i++) {
+            x = net_menu_pos_tbl[no][i * 4];
+            y = net_menu_pos_tbl[no][i * 4 + 1];
+            size = net_menu_pos_tbl[no][i * 4 + 2];
+            col = net_menu_pos_tbl[no][i * 4 + 3];
             if (i == 1) {
                 if (*(s8 *)(CNFile + 0xC80) == 0) {
                     col = 10;
@@ -358,7 +346,7 @@ void Ncm_menu_disp(u32 no) {
                     col = 10;
                 }
             }
-            str = (*sp)[i];
+            str = menu_str_tbl[no][i];
             if (x == -1) {
                 x = ncm_center_x(str, size);
             }
