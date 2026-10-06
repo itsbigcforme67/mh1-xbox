@@ -198,7 +198,7 @@ static void sound_call_parts_005BCC00(EMW *em, int frame, int se, int joint, u8 
 static void quake_call_005BCCA0(EMW *em, int frame, int arg);
 void Em_set_quake_sub(EMW *, int);
 static void move_default_005BCCF0(EMW *em);
-static void ef_move_sub_005BCD40(EMW *em, EM14W *w);
+static void ef_move_sub_005BCD40();
 void em14_effect_move(EMW *em);
 static void ground_land_eff_set_005C1120(EMW *em);
 void em14_atk_end_sel(EMW *em, EM14W *w);
@@ -4072,7 +4072,10 @@ static void move_default_005BCCF0(EMW *em) {
     M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
 }
 
-static void ef_move_sub_005BCD40(EMW *em, EM14W *w) {
+static void ef_move_sub_005BCD40(em, w)
+EMW *em;
+EM14W *w;
+{
     f32 sp50[3];
     FLMAT m50;
     f32 v3[3];
@@ -5155,7 +5158,7 @@ void em14_effect_move(EMW *em) {
         w->eff = temp_a2 + 1;
         break;
     case 1:
-        ef_move_sub_005BCD40(em, w);
+        ef_move_sub_005BCD40(em, w, temp_a2);
         break;
     }
     em14_uvmove(em);
