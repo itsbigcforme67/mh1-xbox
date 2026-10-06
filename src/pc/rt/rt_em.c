@@ -21,6 +21,7 @@ static void once(const char *n) { if (getenv("RT_TRACE")) fprintf(stderr, "rt_em
 #define PU8(p, o) (*(u8 *)((u8 *)(p) + (o)))
 #define PS8(p, o) (*(s8 *)((u8 *)(p) + (o)))
 #define PS16(p, o) (*(s16 *)((u8 *)(p) + (o)))
+#define PU16(p, o) (*(u16 *)((u8 *)(p) + (o)))
 #define PS32(p, o) (*(s32 *)((u8 *)(p) + (o)))
 #define PF(p, o) (*(f32 *)((u8 *)(p) + (o)))
 
@@ -288,6 +289,7 @@ WEAK void wyvern_kill_cnt_up(void *u, int n) { (void)u; (void)n; }
 void rt_quest_mem_init(void);
 void Quest_init(void);
 void Quest_start(void);
+void Start_item_init(void);
 void Quest_timer_reset(void);
 void Quest_em_init_set(int stage);
 s32 *Em_data_com_adrs_get(s32 *p, int which);
@@ -309,6 +311,14 @@ int rt_quest_load(int no)
     *((u8 *)&select_w + 0xAC) = (u8)no;
     *((u8 *)&select_w + 0xAD) = 0;
     Quest_start();
+    Start_item_init();      /* game11: the quest's supply box (game_w+0x128 list, dsp03) */
+    if (getenv("RT_QUEST_TRACE")) {
+        int i;
+        fprintf(stderr, "rt_quest: quest %d supply box:", no);
+        for (i = 0; i < 32 && PU16(&game_w, 0x128 + 4 * i); i++)
+            fprintf(stderr, " %d:%d", PU16(&game_w, 0x128 + 4 * i), PS16(&game_w, 0x12A + 4 * i));
+        fprintf(stderr, "\n");
+    }
     /* game13's start of the hunt: mode 2 (game2), timers */
     game_w.mode = 2;
     game_w.step = 0;
