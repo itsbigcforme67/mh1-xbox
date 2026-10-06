@@ -966,3 +966,82 @@ frames per second.
   character screen's 3D hunter, forge list icons / page title (garbage),
   greeting window under the item shop's buy list, colour streaks over a
   CLEAR!! quest card. Nothing here compared with the PS2.
+
+### Village glitches, character screen hunter, monster breadth (agent A, round 20, 6 Oct 2026)
+Fixes (all PC side; PS2 rebuild all five OK):
+- Forge list: the yellow page title is main's my_job_str, whose pointers go
+  into lobby.bin. rt_import_lobby now finds every main data word whose
+  ELF relocation symbol lies in the lobby.bin section (72 words: my_job_str,
+  shop tags, menu help, armour shop tables, plaza menus ...) instead of
+  three hand-mapped tables. Icons: matched Lb_put_job / Lb_put_icon
+  (lb_ag01/02) and Lb_put_itemIcon / Lb_put_materialItem (were stand-ins)
+  linked; 30 more matched shop/forge/dialog files in
+  tools/pc_lobby_matched.txt (the forge list now has 2 pages of early
+  weapons instead of 13 pages of everything). lb_process_drawHelp near-
+  match: missing arguments added (argregs.py).
+- Item shop greeting window and CLEAR!! card streaks: not seen any more
+  after the above (shots of the buy list and the Elder's five ★1 cards, one
+  marked CLEAR!!). Each card has a green smudge top left; whether the PS2
+  card has it was not compared.
+- Character creation / continue screens: player_trans called from the
+  screens' prims now records a host draw (gfx_rec_call) of player_work[no]
+  with the game's view (lpView). Continue: the save's look; creation: bare
+  parts of the chosen sex/face/hair (the PS2 uses editpl_*_amh.bin, the
+  same parts in one file — the picture was not compared).
+- Monsters: em20 (Kut-Ku, Gypceros), em17 (Gravios, Basarios), em27
+  (Velocidrome, Gendrome, Iodrome), em19 (Vespoid, Hornetaur), em04
+  (Mosswine, Bullfango), em09 (Felyne, Melynx), em08 (Cephadrome,
+  Cephalos), em21 (Plesioth), em14 (Diablos, Monoblos), em15 (Khezu), em03
+  (Kelbi) linked (build_pc.sh EM, near-match copies weak via WEAK_EM), their
+  game.bin tables in tables.txt. Lessons:
+  - game.bin data an overlay C file names but tables.txt lacks becomes a
+    *function* stand-in in rt_gen.c, read as data (em20 crashed on its fly
+    height table). Check after adding files: weak `int NAME()` stand-ins
+    whose symbol has no type:func.
+  - em_prog_tbl entries point at file statics whose C carries the address
+    suffix; map_ptr now tries NAME_ADDR (Mosswine/Melynx were "not ported").
+  - Model / texture / motion files per kind come from main's tables
+    0x2EC7A0 / 0x2EEE20 / 0x2EC830 (dromes use em16/em13/em30 models and
+    em16 motions; Genprey had no motions before).
+  - Monster slot 0 was always drawn with the host's em01 object; all
+    monsters shared one joint-matrix buffer (rt_actor_joints keeps the
+    pointer), so hit checks used the last monster's skeleton.
+  - Per-file ABI adaptors (rt_abi.c) for em_frame_check(2), Eft13_set_em_scl,
+    Eft15_set3, Eft02_set3; a0-left-over calls fixed in the drafts.
+  - Quest event demos (evdemo.c) were NOPs: first-encounter monsters (Kut-Ku
+    148, Cephadrome 154, Monoblos 171) wait for game_w+0x21F and never woke.
+- Test aids: `RT_CAM_EM=slot,dist,height,yaw` (free camera on a monster),
+  `RT_PROF=1` (host ms per game tick and per drawn frame), the monster trace
+  shows act/sub/step.
+
+Monster state (scripted runs from `--quest N` with RT_QUEST_STAGE=1, the
+hunter warped next to the monster and slashing with RT_DMG_MUL, GOD mode;
+"clear" = monster killed with RT_EM_HP/RT_DMG_MUL test aids, quest clear
+(D5 3), carving checked through the pouch). Nothing compared with the PS2.
+
+| kind | monster | code | state |
+|---|---|---|---|
+| 1 | Rathian | em01 | as before (quest 10, 170) |
+| 11 | Rathalos | em01 | runs: sleeps in its nest (138), flies, attacks, flinches; kill not tested in a hunt quest |
+| 6 | Yian Kut-Ku | em20 | runs (144, 148, 150): attacks, flies, flinches, flees to another area when weak; killed -> quest clear, 3 carves |
+| 20 | Gypceros | em20 | runs (159): attacks, takes damage |
+| 22 | Basarios | em17 | runs (173): rock disguise, attacks; killed -> clear, carve |
+| 17 | Gravios | em17 | runs (172): attacks |
+| 27/28/31 | Velocidrome / Gendrome / Iodrome | em27 | run (137, 156, 160): attack, flinch, die; 137 killed -> clear; no carve seen |
+| 8/34 | Cephadrome / Cephalos | em08 | wake after the intro demo (154), swim in sand, attack; sword hits did not land while it swam (a sound bomb is the PS2 way; not tried) |
+| 14/26 | Diablos / Monoblos | em14 | run (174, 171): burrow, attack; little damage taken in the test |
+| 15 | Khezu | em15 | runs (175): attacks |
+| 21 | Plesioth | em21 | runs (165): swims; not hit in the test (stays in water) |
+| 19/24, 4/5/32, 9/23, 3, 13/16/30, 12, 29 | small monsters | em19/em04/em09/em03/em16/em12/em29 | spawn and run without crashes in all village quests |
+| 2, 7, 10, 33 | Fatalis, Lao-Shan Lung, ... | em02/em07/em10/em33 | not linked (town quests only); "not ported, not spawned" |
+
+All quests 1-177 start on their monster's stage and run 450 ticks
+(village 131-177: 1800-tick fights) without a crash.
+
+Frame rate (x86, this machine, RT_PROF=1): game logic 0.22-0.33 ms per tick
+in big-monster fights (Rathian quest 0.23, Kut-Ku 0.33, Basarios 0.32): cheap.
+The host's per-frame work is the CPU skinning of every visible model
+(fl_model_pose, per monster and per hunter part) plus the GL calls; the
+monster count on a stage is what grows it. The character screen poses and
+skins its hunter once per drawn frame (replay), not per tick. Not measured on
+the ARM box: run with `RT_PROF=1 RT_FPS=1`.
