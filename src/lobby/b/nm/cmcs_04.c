@@ -1,63 +1,51 @@
 #include "lobby_a.h"
 extern s16 Vs_Cnt_0;
 extern u8 COM_R_No_1;
-extern char recv_header[];
-extern char recv_header[];
+extern u8 recv_header[];
+extern u8 recv_work[];
 extern char D_3A3B71[];
-extern char send_work[];
-extern char send_work[];
-extern char send_work[];
-extern char send_work[];
-extern char send_work[];
-extern char send_work[];
-extern char send_work[];
-extern char send_work[];
-extern char send_work[];
-extern char recv_work[];
+typedef struct { u16 total; u16 len; u8 x04[6]; u8 seq_h; u8 seq_l; u8 x0C[4]; u8 data[0x300]; } SW;
+extern SW send_work;
 void cmcs_04(void) {
-    int sp3C;
-    int sp30;
-    int sp20;
-    s16 temp_a0;
-    s32 temp_v0;
-    int temp_s0;
+    char pkt[0x20];
+    char enc[0x10];
+    s16 cnt;
+    int len;
 
-    temp_a0 = Vs_Cnt_0;
-    Vs_Cnt_0 = (s16) (temp_a0 - 1);
-    if (temp_a0 < 0) {
+    cnt = Vs_Cnt_0;
+    Vs_Cnt_0 = (s16) (cnt - 1);
+    if (cnt < 0) {
         COM_R_No_1 = 7U;
         *(s8 *)0x4E4723 = 5;
         return;
     }
-    temp_v0 = select_ps2(*(s32 *)0x4E36F4, &recv_header, &recv_work, 0x600);
-    switch (temp_v0) {                              /* irregular */
+    switch (select_ps2(*(s32 *)0x4E36F4, recv_header, recv_work, 0x600)) {
+    case 1:
+        break;
     case 0:
         return;
     case -1:
         COM_R_No_1 = 7U;
         *(u8 *)0x4E4723 = 5;
         return;
-    default:
-    case 1:
-        if (((((F(u8, &recv_header, 2) << 8) & 0xFFFF) | F(u8, &recv_header, 3)) & 0xFFFF) != 0x1031) {
-            return;
-        }
-        mmbbc_encode(&sp20, &D_3A3B71, (((F(u8, &recv_header, 6) << 8) & 0xFFFF) + F(u8, &recv_header, 7)) & 0xFFFF);
+    }
+    switch (((u16)(recv_header[2] << 8) | recv_header[3]) & 0xFFFF) {
+    case 0x1031:
+        mmbbc_encode(enc, &D_3A3B71, ((u16)(recv_header[6] << 8) + recv_header[7]) & 0xFFFF);
         Mcs_SetSendCommand(&send_work, 0x1031);
         SetSendCategory(&send_work, 2);
-        F(u8, &send_work, 0xA) = (u8) F(u8, &recv_header, 6);
-        F(u8, &send_work, 0xB) = (u8) F(u8, &recv_header, 7);
-        SetSendStringData(&send_work, &sp20, 0xA);
+        send_work.seq_h = recv_header[6];
+        send_work.seq_l = recv_header[7];
+        SetSendStringData(&send_work, enc, 0xA);
         SetSendCommandLen(&send_work);
-        memcpy(&sp30, (int)&send_work + 4, 0xCU);
-        memcpy(&sp3C, (int)&send_work + 0x10, F(u16, &send_work, 0));
-        temp_s0 = F(u16, &send_work, 0) + 0xC;
-        if (temp_s0 != CpInetTcpSend(*(u8 *)0x4E36F4, &sp30,  (temp_s0 << 0x30) >> 0x30)) {
+        memcpy(pkt, (u8 *)&send_work + 4, 0xC);
+        memcpy(pkt + 0xC, send_work.data, send_work.total);
+        len = send_work.total + 0xC;
+        if (len != CpInetTcpSend(*(s32 *)0x4E36F4, pkt, (s16) len)) {
             COM_R_No_1 = 7U;
             *(u8 *)0x4E4723 = 5;
             return;
         }
         COM_R_No_1 = (u8) (COM_R_No_1 + 1);
-        return;
     }
 }

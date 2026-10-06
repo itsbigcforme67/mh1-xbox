@@ -4233,8 +4233,8 @@ int cnLBS_RecvData(int sock) {
     do {
         CnetSys_w.rlen = select_ps2(CnetSys_w.sock, recv_header, recv_work, 0x600);
         if (CnetSys_w.rlen != -1 && CnetSys_w.rlen != 0) {
-            got = 1;
             __cnetSub_RecvThreeData();
+            got = 1;
         }
         i++;
     } while (i < 4);

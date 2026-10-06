@@ -2282,6 +2282,9 @@ lobby 0x005C31A0 0x005C34F8 b/lb_vs02
 lobby 0x00592B50 0x00593070 b/lb_by180
 lobby 0x00593B80 0x00593CA8 b/lb_by181
 lobby 0x0059D680 0x0059D814 b/lb_by182
+lobby 0x005B6270 0x005B6418 b/lb_ss01
+lobby 0x005B6420 0x005B65B8 b/lb_ss02
+lobby 0x005B8980 0x005B8B88 b/lb_lg01
 lobby 0x005A2A20 0x005A2FA4 cnet/cnlbs
 lobby 0x005A3180 0x005A6EC4 cnet/cnlbsb
 lobby 0x005A7240 0x005A72E4 cnet/cnlbsc
