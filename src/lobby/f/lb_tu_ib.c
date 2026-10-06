@@ -119,46 +119,60 @@ void Lb_ItemBox_init(void) {
 }
 
 /* original bytes: build/raw/Lb_ItemBox_open.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int Lb_ItemBox_open()
 {
 #include "Lb_ItemBox_open.inc"
 }
+#endif
 
 /* original bytes: build/raw/Lb_ItemBox_mv.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int Lb_ItemBox_mv()
 {
 #include "Lb_ItemBox_mv.inc"
 }
+#endif
 
 /* original bytes: build/raw/itembox_cursor_mv.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm void itembox_cursor_mv()
 {
 #include "itembox_cursor_mv.inc"
 }
+#endif
 
 /* original bytes: build/raw/itembox_stock.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int itembox_stock()
 {
 #include "itembox_stock.inc"
 }
+#endif
 
 /* original bytes: build/raw/itembox_pickup.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int itembox_pickup()
 {
 #include "itembox_pickup.inc"
 }
+#endif
 
 /* original bytes: build/raw/itembox_equipchange.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int itembox_equipchange()
 {
 #include "itembox_equipchange.inc"
 }
+#endif
 
 /* original bytes: build/raw/itembox_sortup.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int itembox_sortup()
 {
 #include "itembox_sortup.inc"
 }
+#endif
 
 void yes_no_select(u16 pad) {
     u8 *t;
@@ -177,10 +191,12 @@ void yes_no_select(u16 pad) {
 }
 
 /* original bytes: build/raw/itembox_sellout.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int itembox_sellout()
 {
 #include "itembox_sellout.inc"
 }
+#endif
 
 static int u_item_chk(int a) {
     u16 id;
@@ -241,17 +257,21 @@ static int pick_kosuu_sel_chk() {
 
 
 /* original bytes: build/raw/kosuu_select.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm void kosuu_select(int pad, int c)
 {
 #include "kosuu_select.inc"
 }
+#endif
 
 
 /* original bytes: build/raw/sortup_idx_chk.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm u8 * sortup_idx_chk(int a)
 {
 #include "sortup_idx_chk.inc"
 }
+#endif
 
 
 /* number / page selection sub-state shared by the item box tabs (returns the pad with consumed bits cleared, 0x40 = cancel) */
@@ -342,20 +362,24 @@ int ItemboxWindow(int a) {
 }
 
 /* original bytes: build/raw/ItemboxWindowX.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int ItemboxWindowX(f32, int)
 {
 #include "ItemboxWindowX.inc"
 }
+#endif
 
 int ItemboxWindowCursor(int a, int b, int c) {
     return ItemboxWindowCursorX(306.0f, a, b, c);
 }
 
 /* original bytes: build/raw/ItemboxWindowCursorX.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int ItemboxWindowCursorX(f32, int, int, int)
 {
 #include "ItemboxWindowCursorX.inc"
 }
+#endif
 
 /* flps0008 textured icon */
 
@@ -370,10 +394,12 @@ int disp_itembox_cmd(int a) {
 }
 
 /* original bytes: build/raw/Disp_lb_item_box.inc (config/c_rawfuncs.txt) */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C */
 asm int Disp_lb_item_box()
 {
 #include "Disp_lb_item_box.inc"
 }
+#endif
 
 /* flps0008 textured icon */
 
