@@ -15,7 +15,6 @@ typedef struct NPKH {
 } NPKH;
 
 void net_receive_host(int slot, u8 *buf) {
-    u8 *p;
     u8 s;
     int v;
     int bit;
@@ -23,6 +22,7 @@ void net_receive_host(int slot, u8 *buf) {
     NPLV *pl;
     NITEM *it;
     u8 who;
+    u8 *p;
 
     if (Online_ck() != 0) {
         u8 kind = buf[0];

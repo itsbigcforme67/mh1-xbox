@@ -6,6 +6,7 @@
 
 /* net sync slots stored inside the work blocks */
 typedef struct NPSLOT { s16 timer; u8 x2[2]; f32 x, y, z; } NPSLOT;   /* 0x10: pending position */
+typedef struct NEMDUR { u8 x0, x1, cnt, x3, x4, x5, x6, x7; } NEMDUR;   /* 8 bytes per status slot */
 typedef struct NEMACT {                                               /* 0x34: pending enemy action */
     s16 timer; u8 kind; u8 x3;
     f32 x, y, z;
@@ -117,7 +118,9 @@ typedef struct NEMV {
     f32    posz;              /* 0x0B4 */
     u8  x0B8_[0x302 - 0xB8];
     s16    x302;              /* 0x302 */
-    u8  x304_[0x39A - 0x304];
+    u8  x304_[0x308 - 0x304];
+    NEMDUR x308[8];           /* 0x308 */
+    u8  x348_[0x39A - 0x348];
     u16    x39A;              /* 0x39A */
     u8  x39C_[0x45C - 0x39C];
     u8     x45C;              /* 0x45C */
@@ -129,7 +132,9 @@ typedef struct NEMV {
     u8     x489;              /* 0x489 */
     u8  x48A_[0x56A - 0x48A];
     u8     x56A;              /* 0x56A */
-    u8  x56B_[0x736 - 0x56B];
+    u8  x56B_[0x572 - 0x56B];
+    s16    x572;              /* 0x572 */
+    u8  x574_[0x736 - 0x574];
     u8     x736;              /* 0x736 */
     u8  x737_[0x794 - 0x737];
     u8     x794;              /* 0x794 */
@@ -139,11 +144,20 @@ typedef struct NEMV {
     u8  x798_[0x7A8 - 0x798];
     u8     x7A8;              /* 0x7A8 */
     u8     x7A9;              /* 0x7A9 */
-    u8  x7AA_[0x7D3 - 0x7AA];
+    u8  x7AA_[0x7B8 - 0x7AA];
+    s16    x7B8;              /* 0x7B8 */
+    u8  x7BA_[0x7C0 - 0x7BA];
+    s16    x7C0;              /* 0x7C0 */
+    u8  x7C2_[0x7D3 - 0x7C2];
     u8     x7D3;              /* 0x7D3 */
-    u8  x7D4_[0x86F - 0x7D4];
+    u8  x7D4_[0x827 - 0x7D4];
+    u8     x827;              /* 0x827 */
+    u8     x828;              /* 0x828 */
+    u8     x829;              /* 0x829 */
+    u8  x82A_[0x86F - 0x82A];
     u8     x86F;              /* 0x86F */
-    u8  x870_[0x87E - 0x870];
+    u8  x870_[0x87D - 0x870];
+    u8     x87D;              /* 0x87D */
     u8     x87E;              /* 0x87E */
     u8  x87F_[0x881 - 0x87F];
     u8     x881;              /* 0x881 */
@@ -155,11 +169,17 @@ typedef struct NEMV {
     u8     x888;              /* 0x888 */
     u8  x889_[0x88B - 0x889];
     u8     x88B;              /* 0x88B */
-    u8  x88C_[0x8B6 - 0x88C];
+    u8  x88C_[0x88E - 0x88C];
+    u8     x88E;              /* 0x88E */
+    u8  x88F_[0x8B0 - 0x88F];
+    s16    x8B0;              /* 0x8B0 */
+    u8  x8B2_[0x8B6 - 0x8B2];
     u8     x8B6;              /* 0x8B6 */
     u8  x8B7_[0x8C3 - 0x8B7];
     u8     x8C3;              /* 0x8C3 */
-    u8  x8C4_[0x94E - 0x8C4];
+    u8  x8C4_[0x949 - 0x8C4];
+    u8     x949;              /* 0x949 */
+    u8  x94A_[0x94E - 0x94A];
     s16    x94E;              /* 0x94E */
     u8  x950_[0x954 - 0x950];
     u16    x954;              /* 0x954 */
@@ -206,7 +226,8 @@ typedef struct NGW {
     u8     pl_state[8];       /* 0x208 */
     u8  x210_[0x21B - 0x210];
     u8     x21B;              /* 0x21B */
-    u8  x21C_[0x21E - 0x21C];
+    u8  x21C_[0x21D - 0x21C];
+    s8     x21D;              /* 0x21D */
     u8     x21E;              /* 0x21E */
 } NGW;
 

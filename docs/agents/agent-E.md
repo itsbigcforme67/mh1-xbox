@@ -567,3 +567,16 @@ Lessons:
 - tools/declhill.py (declaration order hill-climb) found the register assignment of net_send_sys (pl/sw order); worth running on every near-match with many locals.
 - Calls with stale argument registers: `Quest_error_set2()` has no arguments here (m2c invented four), `net_send_sys` takes two.
 - Switch case order: ladder is the reverse of source order (`case 1: case 2:` for a ladder 2,1,0).
+
+### Later in assignment 5 (after the net sync pass)
+- net_send_em (netsyn10.c, 1824 B) matched on the first full attempt: m2c order + per-kind packet union (struct per kind, union padded to the frame size 0x40) + the flag byte as
+  `u8 f; if (x & 4) f |= 1; ...`. Linked 0x1BA8E0-0x1BB000. Unions must be padded up to the original frame (net_send_em/net_send_host/net_send_sys all needed a `pad[]`).
+- net_receive_em complete in netsyn11_nm.c (all four kinds; payload read through PU8/PS16/... byte-offset macros on a `u8 *p`): only the s0/s1 swap and load scheduling differ.
+  All five net_receive_* functions (pl, host, chat, sys, em) share one symptom: the original puts the payload pointer p = buf + 4 in the LOWER s-register and the incoming buf
+  in the higher one (net_receive_host: p=s0, buf=s1, then `s` reuses s1); this build gives buf the lower register. Declaring p last (net_receive_host 76 -> 71 diffs), p first,
+  extra/unused parameters, in-place `buf += 4`, 3-parameter prototypes and tools/declhill.py (net_receive_sys, 118 diffs, no change) did not fix it. A future agent could try
+  the permuter with a longer budget on net_receive_host (smallest, 432 B).
+- fl clay: flPS2CreateClay (`if (shader != -1) {calls} else { return 0; } flClayNum++; return 1;` is the layout) and flReleaseClayHandle (`flPS2DmaTerminate(h)` takes the 1-based handle,
+  not the index; `if (h > 0x180)` instead of `>= 0x181` keeps the compare in v0) linked: src/main/fl/clay02.c, clay03.c. Near-matches: flCreateClayHandle (clay01_nm.c, 4 instructions: the two
+  independent argument loads of the second flMemcpy come in the other order), flPS2GetMLCLAY (clay02_nm.c, 20/28: s0/s1 roles).
+- reward_mv (9 off): permuter 10 min, best score 195 -> 55, no zero; mutations tried by hand (`new_var = w->xB < 0` in the condition, dead `PitMenu.x12 = 0`) do not transfer.

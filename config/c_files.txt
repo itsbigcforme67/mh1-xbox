@@ -1893,3 +1893,5 @@ main:rodata 0x0035EC70 0x0035ECA4 net/netsyn08
 lobby 0x005D9B20 0x005D9C68 f/lb_gdr24
 lobby 0x005DA880 0x005DA99C f/lb_gdr25
 main 0x001BA8E0 0x001BB000 net/netsyn10
+main 0x0016B060 0x0016B10C fl/clay02
+main 0x0016D8F0 0x0016D9C0 fl/clay03
