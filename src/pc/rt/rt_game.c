@@ -313,11 +313,16 @@ void rt_game_init(int stage)
 
 void rt_font_tick_begin(void);
 /* ot_init: the ordering tables are emptied at the start of every tick */
+extern s16 spr_list_no;
+extern u8 *sprite_area;
 void rt_prims_reset(void)
 {
     int i;
     for (i = 0; i < OT_N; i++)
         nqueue[i] = 0;
+    spr_list_no = 0;        /* the Scheduler empties the sprite list every tick too */
+    if (!sprite_area)       /* 0x100 entries of 0x50 (ioread: app_mem_top + 0x10D200) */
+        sprite_area = calloc(0x101, 0x50);
 }
 void rt_game_move(void)
 {
@@ -398,6 +403,13 @@ void rt_game_draw_2d(void)
     void InitRenderState(int soft);
     InitRenderState(1);     /* trans() ends with it: forgets the cached texture stage etc.
                              * (the host's 3D draws bound other textures since) */
+    {   /* trans_sprite (sprite/trans2.c): SpritePut's list, before ot5 as in trans() */
+        void trans_sprite(void);
+        if (sprite_area && spr_list_no > 0) {
+            trans_sprite();
+            rt_fl_reset_states();
+        }
+    }
     rt_font_frame_begin();
     for (i = 0; i < 5; i++) {
         int t = order[i];

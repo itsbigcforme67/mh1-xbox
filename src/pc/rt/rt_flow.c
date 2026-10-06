@@ -137,4 +137,4 @@ NOP(EvDemoInitialize) NOP(em_yobi_init) NOP(em_effect_pull) NOP(ear_init) NOP(Di
 NOP(Copy_user_id) NOP(Disp_NowLoading2)
 
 /* ------------------------------------------------ 2D (replaced as it is ported) */
-NOP(SpritePut) NOP(trans)
+NOP(trans)

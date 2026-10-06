@@ -62,6 +62,28 @@ void flSetRenderState(int state, u32 value)
     }
     case 0x6D:   /* alpha test method (GS TEST 0x7000 bits): 3 normal, 7 set13 glare [not traced] */
         break;
+    case 0x0F:   /* fog colour (GS FOGCOL); fog is only switched on by 0x12, which
+                  * nothing calls yet: InitRenderState(0) sets 0x0F-0x11 */
+        gfx_set_render_state(GFX_RS_FOG_COLOR, value & 0xFFFFFF);
+        break;
+    case 0x10:   /* fog start / end: the float's bits */
+    case 0x11: {
+        static float fog[2];
+        memcpy(&fog[state - 0x10], &value, 4);
+        gfx_set_render_state(state == 0x10 ? GFX_RS_FOG_START : GFX_RS_FOG_END, (uintptr_t)&fog[state - 0x10]);
+        break;
+    }
+    case 0x5F:   /* Z test mode 0-7 -> RenderOperation (mode << 19) -> GS TEST
+                  * (flSetRenderState's table lit_482, 0x35BE50). The game passes
+                  * 4 (InitRenderState(0)): the normal depth test. Taken as a
+                  * compare-function index whose last value (7) is "always"
+                  * [guess]: 7 turns the host depth test off, the rest on. */
+        gfx_set_render_state(GFX_RS_ZTEST, (value & 7) != 7);
+        break;
+    case 0x01:   /* shader kind / family / ambient: the host lights clays itself */
+    case 0x0E:   /* (fl_model's VU1-style lighting) */
+    case 0x15:
+        break;
     default:
         if (state >= 0 && state < 0x100 && !warned[state]) {
             warned[state] = 1;
