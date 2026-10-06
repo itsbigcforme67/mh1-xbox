@@ -935,3 +935,23 @@ DeviceUpdateStatus 11 (netdev_nm.c), InetDnsSetAll 21 and CpInetPppStart ~18 (ne
 ipaddr_from_string 0x002368E0 is the same text), release_model 7, menu_data_monster_sub 5 (declbf/declhill/permuter found nothing for these), se_req2 7, pl_light_change
 (new C in no file yet: logic as in the m2c draft; the original keeps the stage 12/13/14/28/30 test as five separate compares), parts_init (m2c draft: three loops,
 the 21-iteration one is unrolled 7x by MWCC; our version differs in register allocation of w/q/i).
+
+## Eleventh assignment: single player first (Sonnet worker C, 6 Oct 2026)
+Remaining unmatched functions in my ranges: 236 functions, 208 KB (list from config/c_files.txt + c_rawfuncs; sizes in bytes).
+Split by caller: single player = reached from Game_task/round_init/em/pl/menu/village paths; online = cp/net/inet/mcsls/ppp/USB-keyboard-for-chat stack.
+
+Single player (work these first, largest first):
+- stage/models: trans_stage 15152, em_material_sub 7500, set13_m 4264, set13_trans 3100, mkModel4/mkModel/mkModel3, armor_create_model, Pl_model_id_set
+- effects: eft06_m 4848, eft13_m 2688, eft13_set_pos_em 2720, eft13_set_pos 2512, eft13_i 1924, eft13_set_sub_em 1388, eft_rgba_linear 944
+- collision: PushAdjust3 4024, hit_hit_sub_em 3208, GetEyeHitLine 2568, GetWallHitBitPl/Em 2196/2164, GetWallHitLine 2096, sphr_face_o3/o4, GetGroundHit* family, hit_calc_shl 1368, hit_hit_sub_pl 1072, GetFloorSlide, HitWallPlayer
+- game flow: Game_task 3096, em_move 2648, mlCalcTransEM 1712, em_ride_sub 1632, round_init 1036, init_pl_work 520, load_shadow 196
+- player: basic_com_ck 2368, pl_move_sub 2144, timer_calc_sub_pl 1700, body_hit_*, Pl_item_stack, pl_mv021, sougun/gun_adj_sub, egg_com_ck, pl_egg*, pl_at*
+- menus/HUD: disp_item_sub_select 3872, trans_box 2556, Menu_mix_mv 2120, player_info_sub 1836, disp_whole_map, Pit_mv 1528, Pit_mv_lb 416, disp_partial_map, item_stock_mv, disp_pachinger, gage_disp, disp_timer
+- sound/sprites: SpritePut 2048, se_req2 872, Put_sprite_rotate 840, armor_sd_req, snd_joint_load
+- omake/mode menus at 0x23A000-0x23E000 (called from the title/mode select, not the net): disp_mode_menu, mode_sel, Sel_menu_disp, disp_omake_menu, npc_move/npc_trans, Sel_back_disp, key_rept_du
+- library, skip: _start/_root/_exit, Adx_init (CRI), ioRead/ioread_sub/ioRead2 (known unmatched), MakeMediaVersion
+
+Online (last): prot_01 3260, prot_00 2796, mcsls_recv 1876, mcsls_r0_pingpong 884, mcsls_send_command_app_data, mcsls_send_size_get, InetDisconnectAll 1588,
+CpInetPppStart 720, CpInetTcpOpen, Ave_TcpSend, DeviceUpdateStatus, InetDnsSetAll, InetIPAddrFromString, ipaddr_from_string, module_load/loadhigh/unload,
+SetResult*/rpccall_end/USB keyboard (cnv_keycode, vblank_e_handler, push/pop/clear_repbuf, usbkbdm_*, getPS2KbData, usbKbConnectChk), Menu_chatcnfg_mv,
+menu_chcnfg_sendpl, lb_disp_chat_cnfg_sendpl (chat config UI).
