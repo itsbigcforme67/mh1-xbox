@@ -947,3 +947,21 @@ reward_item_base
 reward_w
 verify_button_00387D30
 em18_act_tbl
+# em16 (Velociprey): fly height/forward correction tables, escape positions per stage
+fly_adjy2_hosei_tbl_006669A0
+fly_adjz2_hosei_tbl_00666A30
+st02_pos_tbl
+st09_pos_tbl
+st18_pos_tbl
+st31_pos_tbl
+st38_pos_tbl_00663520
+st39_pos_tbl_006635A0
+st46_pos_tbl
+st49_pos_tbl_00663690
+st51_pos_tbl_00663720
+st53_pos_tbl_00663750
+st58_pos_tbl
+st63_pos_tbl
+st66_pos_tbl
+st69_pos_tbl
+st71_pos_tbl

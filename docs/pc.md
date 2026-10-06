@@ -434,13 +434,45 @@ With `--quest N` the PC runs the game's own quest flow (6 Oct 2026, agent A):
   free-hunt tables and shows the HUD too (free_play_hud.png). Nobody
   compared any of it with the PS2 side by side.
 - Not done: SpritePut and the sprite prims flps0D00/0F00/1300/1400/1600
-  (game3's darkening quad), the cart's and other small monsters' models
-  (they run but are not drawn), quest failure after three faints (not
-  tested), map markers (flvecrRotTransPers), menu list/page selection
-  (ListSelect/PageSelect/Menu_select_mv: the pause menu), item combining
-  (Item_preparation*), the village after the reward (mode 6: the host
-  restarts the quest instead), game3's quest-clear text sits under the
-  missing darkening quad.
+  (game3's darkening quad; game3's text sits on the field picture), the
+  cart's model, map markers (flvecrRotTransPers), item combining
+  (Item_preparation*).
+
+### Village, pause menu, small monsters, quest failure (agent A, 6 Oct 2026)
+- Village (game mode 6, offline): rt_village.c does what Game_task does
+  (all_reset: monsters and set objects cleared; Clear_lobby_ram) and then
+  runs lobby.bin's Local_main every tick (src/lobby/f, src/lobby/lb and
+  src/lobby/f/lb_village_nm.c). Local_main returns 1 when a quest was
+  accepted and the hunter walked out through the gate; the host then
+  starts that quest (select_w+0xAC) as `--quest` does. Kokoto = stage 87,
+  the hunter's house = 86; the Village Elder (talk kind 71, npc01) is the
+  quest counter; the gate is unique spot kind 6 at (10650, 15225), left
+  with square. lobby.bin shares its vram with game.bin: its data and bss
+  live in rt_lb_mem (one host block), its symbols are aliases into it
+  (tools/gen_rt_auto.py), absolute addresses in C go through
+  tools/pc_abs.py. Village motions: com_motion_load(1) (lbcom_tbl); NPC
+  models npc00/npc01/em09/em32 (npc_create_model).
+- Pause menu (start in the field): menu_nm.c / menu_disp_nm.c with
+  ListSelect / PageSelect / Menu_select_mv (listsel_nm.c) and
+  DispFrameMessageA (dispframe_nm.c): item list, discard, quest info,
+  retire (D5 7 -> game3 -> game5 -> village).
+- Small monsters: every em_work slot is ticked (rt_monster_tick) and
+  drawn with its own model, texture and motion table (em%02d files by
+  kind, loaded from em_create_model). Velociprey (em16) AI is built; its
+  game.bin tables are in src/pc/rt/tables.txt.
+- Quest failure: the third faint sets D5 5 -> game3 -> game5 shows the
+  "quest failed" score -> circle -> village.
+- Verified 6 Oct 2026 (scripted runs, shots in build/show/A/): quest 131
+  accepted from the Elder and started at the base camp; pause menu pages
+  and discard; quest 10 stage 40 Velocipreys attack (small/v_6.png);
+  `RT_PL_DIE=60,1400,2700 --quest 10 --input "idle*6600,circle*3,idle*2000"
+  --time 250` -> carted twice, failure score (faint/f_200.png), village
+  (faint/village.png). Not compared with the PS2.
+- Test aids: `RT_VILLAGE_START=1` (start in the village), 
+  `RT_VILLAGE_SKIP_INTRO=1` (first-visit event marked seen),
+  `RT_VILLAGE_TRACE=1` (NPCs, spots, talk states, camera), `RT_NO_VILLAGE=1`
+  (mode 6 restarts the quest as before), `RT_CAM_DEBUG=1`,
+  `RT_PL_DIE="t1,t2,..."` (the hunter faints at those player ticks).
 
 ### Collision (stage HITS, game C)
 

@@ -133,6 +133,9 @@ static const struct {
 /* the generated list (build/pc/rt_tables.c from tables.txt) */
 struct rt_table { const char *name; uint32_t va; void *dst; size_t size; };
 extern const struct rt_table rt_auto_tables[];
+/* data the linked overlay C needs that nothing else defines
+ * (build/pc/rt_gen.c from tools/gen_rt_auto.py): main and lobby.bin */
+extern const struct rt_table rt_gen_main_tables[];
 
 /* PS2 address -> host pointer (see the header comment) */
 static int map_tables;     /* 1 while relocating the host tables (for RT_TRACE) */
@@ -145,6 +148,9 @@ static void *map_ptr(uint32_t v)
     const char *name;
     void *h;
     for (t = rt_auto_tables; t->name; t++)
+        if (v >= t->va && v < t->va + t->size)
+            return (uint8_t *)t->dst + (v - t->va);
+    for (t = rt_gen_main_tables; t->name; t++)
         if (v >= t->va && v < t->va + t->size)
             return (uint8_t *)t->dst + (v - t->va);
     for (i = 0; i < sizeof tables / sizeof tables[0]; i++)
@@ -173,11 +179,29 @@ const void *rt_ptr_at(uint32_t va)
     return (const void *)(uintptr_t)h;
 }
 
+static int import_list(const struct rt_table *t)
+{
+    int missing = 0;
+    for (; t->name; t++) {
+        const uint8_t *p = rt_addr(t->va, t->size);
+        if (p) {
+            memcpy(t->dst, p, t->size);
+        } else if (rt_in_bss(t->va, t->size)) {
+            memset(t->dst, 0, t->size);
+        } else {
+            fprintf(stderr, "rt: data table %s (0x%X) not found\n", t->name, (unsigned)t->va);
+            missing++;
+        }
+    }
+    return missing;
+}
+
 int rt_import_data(void)
 {
     size_t i;
     int k, missing = 0;
     const struct rt_table *t;
+    missing += import_list(rt_gen_main_tables);
     for (t = rt_auto_tables; t->name; t++) {
         const uint8_t *p = rt_addr(t->va, t->size);
         if (p) {
@@ -216,6 +240,8 @@ int rt_import_data(void)
         map_tables = 1;
         for (t = rt_auto_tables; t->name; t++)
             rt_relocate_range(t->va, t->dst, t->size, map_ptr);
+        for (t = rt_gen_main_tables; t->name; t++)
+            rt_relocate_range(t->va, t->dst, t->size, map_ptr);
         for (i = 0; i < sizeof tables / sizeof tables[0]; i++)
             rt_relocate_range(tables[i].va, tables[i].dst, tables[i].size, map_ptr);
         map_tables = 0;
@@ -224,4 +250,62 @@ int rt_import_data(void)
         fprintf(stderr, "rt: no relocations in the ELF: pointers in data tables stay PS2 addresses\n");
     }
     return missing;
+}
+
+/* ------------------------------------------------------------ lobby.bin
+ * The lobby/village overlay's data: one host block, rt_lb_mem, holds the
+ * whole overlay (image + .bss) at its PS2 layout, and every lobby data
+ * symbol the C uses is a linker alias into it (tools/gen_rt_auto.py), so a
+ * table read past its end sees its PS2 neighbours. rt_import_lobby copies
+ * the image in and turns its pointer words (.rellobby.bin) into host
+ * pointers: lobby functions to the host function of that name (dlsym),
+ * lobby data into rt_lb_mem, main addresses as for the ELF (map_ptr).
+ * Call after rt_import_data. */
+#define LB_VRAM 0x533980u
+#define LB_SPAN 0x220000u       /* lobby.bin 0x134E00 + .bss 0xEA680, rounded up */
+uint8_t rt_lb_mem[LB_SPAN] __attribute__((aligned(16)));
+
+static void *map_lb(uint32_t v)
+{
+    uint32_t off;
+    int func = 0;
+    const char *name;
+    void *h;
+    if (!rt_lb_in_range(v))
+        return map_ptr(v);
+    name = rt_lb_sym_at(v, &off, &func);
+    if (func && name) {
+        if ((h = dlsym(RTLD_DEFAULT, name)) != NULL)
+            return (uint8_t *)h + off;
+        {   /* em10_local_init_0053DCE0: the C has the plain name */
+            size_t n = strlen(name);
+            char plain[128];
+            if (n > 9 && n < sizeof plain && name[n - 9] == '_' && strspn(name + n - 8, "0123456789ABCDEF") == 8) {
+                memcpy(plain, name, n - 9);
+                plain[n - 9] = 0;
+                if ((h = dlsym(RTLD_DEFAULT, plain)) != NULL)
+                    return (uint8_t *)h + off;
+            }
+        }
+        if (getenv("RT_TRACE"))
+            fprintf(stderr, "rt: lobby pointer to unported function %s+0x%X\n", name, (unsigned)off);
+        return NULL;
+    }
+    return v - LB_VRAM < LB_SPAN ? rt_lb_mem + (v - LB_VRAM) : NULL;
+}
+
+int rt_import_lobby(void)
+{
+    const uint8_t *img = rt_lb_addr(LB_VRAM, 4);
+    uint32_t n = 0;
+    if (!img)
+        return 1;
+    while (n + 0x1000 <= LB_SPAN && rt_lb_addr(LB_VRAM + n, 0x1000))
+        n += 0x1000;
+    while (n < LB_SPAN && rt_lb_addr(LB_VRAM + n, 1))
+        n++;
+    memcpy(rt_lb_mem, img, n);
+    memset(rt_lb_mem + n, 0, LB_SPAN - n);
+    rt_lb_relocate_range(LB_VRAM, rt_lb_mem, n, map_lb);
+    return 0;
 }
