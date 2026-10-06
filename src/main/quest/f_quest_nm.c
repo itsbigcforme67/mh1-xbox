@@ -2122,7 +2122,7 @@ again:
                             break;
                         }
                     } else if (t == -2) {
-                        if (pl->kind == 0 || (u8)(pl->kind - 2) < 2 || pl->kind == 4) {
+                        if (pl->kind == 0 || (u8)(pl->kind - 2) <= 1 || pl->kind == 4) {
                             break;
                         }
                     } else if (t == -4 || pl->kind == t) {

@@ -154,7 +154,7 @@ void hk_kbd_input(void) {
                         int lead = (c0 >= 0x80 && c0 < 0xA0) || (c0 >= 0xE0 && c0 < 0x100);
                         if (lead) {
                             u8 c1 = s[i + 1];
-                            if ((c1 >= 0x60 && c1 < 0x7A) || (c1 >= 0x81 && c1 < 0x9B)) {
+                            if ((c1 >= 0x60 && c1 <= 0x79) || (c1 >= 0x81 && c1 < 0x9B)) {
                                 n = sk_letlenU(s, i, 1, s + i);
                                 if (i < (int)strlen(s) && n != 0) {
                                     s[i] = 0;
@@ -269,21 +269,21 @@ han:
             if ((f & 0x10) && (c < 0x30 || c >= 0x3A)) {
                 return;
             }
-            if ((f & 0x20) && (c < 0x30 || c >= 0x3A) && c != 0x2D) {
+            if ((f & 0x20) && (c < 0x30 || c > 0x39) && c != 0x2D) {
                 return;
             }
-            if ((f & 0x40) && (c < 0x30 || c >= 0x3A) && (c < 0x41 || c >= 0x5B)) {
+            if ((f & 0x40) && (c < 0x30 || c > 0x39) && (c < 0x41 || c > 0x5A)) {
                 return;
             }
-            if ((f & 0x80) && !((c >= 0x30 && c < 0x3A) || c == 0x2D || c == 0x2A || c == 0x23)) {
+            if ((f & 0x80) && !((c >= 0x30 && c <= 0x39) || c == 0x2D || c == 0x2A || c == 0x23)) {
                 return;
             }
             if (sk_yn_check() == 1) {
-                if (c != 0x2C && (c < 0x20 || c >= 0x7F)) {
+                if (c != 0x2C && (c < 0x20 || c > 0x7E)) {
                     return;
                 }
             } else if (SKB(0x1D) == 0xF) {
-                if ((c < 0x5B || c >= 0x5F) && (c >= 0x7B && c < 0x7E) == 0) {
+                if ((c < 0x5B || c > 0x5E) && (c >= 0x7B && c < 0x7E) == 0) {
                     return;
                 }
             }
@@ -749,7 +749,7 @@ void hk_cursor_mv(int dir) {
         } else if (dir == 1) {
             s[0x24]++;
             s = lpSKey;
-            if (SKB(0x24) >= 0x15) {
+            if (SKB(0x24) > 0x14) {
                 SKB(0x24) = 1;
             }
         }
@@ -1275,7 +1275,7 @@ void kbd_disp_input(f32 x, s16 y) {
         cnt = SKU16(0x2A) + strlen((char *)s + 0x358) + strlen((char *)s + 0x458);
     }
     cnt -= SKS32(0x3C);
-    if (cnt >= 0x2B) {
+    if (cnt > 0x2A) {
         SKS32(0x3C) += cnt - 0x26;
     }
     i = SKS32(0x3C);

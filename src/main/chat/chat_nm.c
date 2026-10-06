@@ -378,7 +378,7 @@ s8 Monster_list_search(s8 cur, s8 dir) {
             i = 0;
         } else {
             i = cur + dir;
-            if (i >= 30) {
+            if (i > 29) {
                 i = 0;
             }
             if (i < 0) {
@@ -391,7 +391,7 @@ s8 Monster_list_search(s8 cur, s8 dir) {
             }
             if (dir >= 0) {
                 i++;
-                if (i >= 30) {
+                if (i > 29) {
                     i = 0;
                 }
             } else if (i <= 0) {
@@ -421,7 +421,7 @@ void Disp_help_mess(int kind, int id) {
     u8 *it;
 
     if (k < 7 && n != 0xFFFF) {
-        if (k == 1 && n >= 0x19) {
+        if (k == 1 && n > 0x18) {
             DispFrameMessage(help_mess_00354680, 0);
             flfntSetSize(0x12, 0x12);
             flfntLocate(0x168, 0x166);
@@ -698,7 +698,7 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
     PitMenu.logtop++;
     PitMenu.lognum++;
     PitMenu.logtop &= 0x3F;
-    if (PitMenu.lognum >= 0x41) {
+    if (PitMenu.lognum > 0x40) {
         PitMenu.lognum = 0x40;
     }
     room = 0x16;
@@ -722,7 +722,7 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
                 l->nline++;
                 return;
             }
-            if ((u8)c < 0x80 || (u8)c >= 0xA0) {
+            if ((u8)c < 0x80 || (u8)c > 0x9F) {
                 if ((u8)c >= 0xE0) {
                     goto dbl;
                 }
@@ -815,9 +815,9 @@ void ChatLogAdd_Q(int who, int mask, s8 *msg) {
     strcpy(e.uid, (char *)player_work + p * 0xA00 + 0x8D4);
     strcpy(e.name, room_member_id[p]);
     chat_log_add(who, msg, (PIT_CHAT *)&e);
-    if ((u32)Get_chat_line_num() >= 0xC) {
+    if ((u32)Get_chat_line_num() > 0xB) {
         PitMenu.logscr++;
-        if (PitMenu.logscr >= 0x40) {
+        if (PitMenu.logscr > 0x3F) {
             PitMenu.logscr = 0x3F;
         }
     }
@@ -845,11 +845,11 @@ u32 chat_log_disp_line(u8 top);
 int Menu_chatlog_mv(int sw) {
     PitMenu.x10 = 0;
     PitMenu.x22 = 0x80;
-    if ((u32)Get_chat_line_num() >= 0xC) {
+    if ((u32)Get_chat_line_num() > 0xB) {
         if (PitMenu.logscr != 0) {
             PitMenu.x22 |= 2;
         }
-        if (chat_log_disp_line(PitMenu.logscr) >= 0xC) {
+        if (chat_log_disp_line(PitMenu.logscr) > 0xB) {
             PitMenu.x22 |= 1;
             if (((sw & 0xFFFF) & 0x2000) && PitMenu.logscr < PitMenu.lognum - 1) {
                 PitMenu.x21 = 0;
@@ -926,7 +926,7 @@ void disp_chat_log_sub(int top, s16 yofs, int a) {
 
     if (PitMenu.lognum != 0) {
         flfntSetSize(0x15, 0x12);
-        if ((u32)Get_chat_line_num() >= 0xC && !(a & 0xFF)) {
+        if ((u32)Get_chat_line_num() > 0xB && !(a & 0xFF)) {
             top &= 0xFF;
             y = 0x18F;
             cnt = PitMenu.lognum - top;
@@ -1044,7 +1044,7 @@ void Put_receive_mark(int n) {
         if ((n & 0xFF) == 1) {
             DispFrameMessage(pf_receive_mark, 0);
         }
-        if ((System_timer & 0x1F) >= 0xD) {
+        if ((System_timer & 0x1F) > 0xC) {
             Put_megaphone(receive_mark_pos[n & 0xFF][0], receive_mark_pos[n & 0xFF][1], 0);
         }
         flfntSetSize(0x15, 0x12);
@@ -1206,7 +1206,7 @@ void ItemListWindow(int page, int cursel, int mode) {
             font_print_uf(lit_3512);
         } else {
             font_print_uf(item_str[it->id]);
-            if (Item_data[it->id][3] >= 2) {
+            if (Item_data[it->id][3] > 1) {
                 flfntLocate(0x24D, y);
                 if (Item_data[it->id][3] == 0xFF) {
                     font_print_uf(lit_3513);
@@ -1529,7 +1529,7 @@ void equip_exp_core(u8 *eq, s16 x, s16 y, int page, u8 *cmp) {
 
     font_set_palette(5);
     kind = eq[1];
-    if (kind != 7 && pg >= 2) {
+    if (kind != 7 && pg > 1) {
         pg = 1;
     }
     switch (pg & 0xFF) {

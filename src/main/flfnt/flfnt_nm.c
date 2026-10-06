@@ -551,7 +551,7 @@ int flnecCheckString(void) {
                 if (c == 0xA) {
                     continue;
                 }
-                if (c >= 0x80 && c < 0xA0 || c >= 0xE0 && c < 0x100) {
+                if (c > 0x7F && c < 0xA0 || c >= 0xE0 && c < 0x100) {
                     int c2 = *s;
                     if (c2 == 0) {
                         break;
@@ -597,7 +597,7 @@ void flfntFontPuts(char *str, FREQ *r) {
             np->py += r->sh;
             continue;
         }
-        if (c >= 0x80 && c < 0xA0 || c >= 0xE0 && c < 0x100) {
+        if (c >= 0x80 && c <= 0x9F || c >= 0xE0 && c < 0x100) {
             int c2 = *(u8 *)str;
             if (c2 == 0) {
                 return;
