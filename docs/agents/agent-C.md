@@ -904,3 +904,34 @@ in s0), DeviceUpdateStatus (written, 12/83 with declbf; in build/scr only, not c
 - omake/ncm menus 0x23A000: disp_mode_menu 992, mode_sel 824, Sel_menu_disp 792, disp_omake_menu 656, npc_move 936, npc_trans 576
 - Library (skip): sceNetGlue* / ipaddr_from_string / InetIPAddrFromString-like Sony netglue (0x236B70-0x237800), sceUsbKb* (0x23BE10-0x23D870), flPS2Dma*, ADX/CRI
   (0x100008-0x117E50 front part), Sony sce/newlib/SJ/mpv (0x170000+, not mine).
+
+## Tenth assignment: small near-matches, field checks, device/session code (Sonnet worker C, 6 Oct 2026)
+Ranges: main 0x100000-0x160000 and 0x230000-0x23E500. Linked, all `tools/rebuild.sh` OK for all five modules (all in `config/c_files.txt`):
+pl/pl_itemck extended down to 0x152BC0 (Pl_item_num_ck2), pl/plx07 (Pl_vital_calc_item), pl/plx08 (rate_g_calc), set/set13c extended to 0x158DB0
+(set13_disp_pos_calc), hit/shit2a (BlockPlaceCgeck, GroundFieldInCheck, WallFieldInCheck, AreaFieldInCheck), net/netdev12-17
+(DeviceModuleInitialize_blocking, DeviceLoadDriver2, DeviceLoadDriver, DeviceRollbackDriver, prot_02, InetDnsGetIPAddress), net/mcsls_i01 (mcsls_init),
+net/mcsls_m01 (mcsls_move). Header edit: include/mcsls.h carved pad14/pad28/pad3C/pad44/pad16A into dt, t_prev, t_sec, nsent_prev, nrecv_prev, x16A
+(proven by mcsls_init/mcsls_move; no other header touched). shit2.c (all five grid helpers) stays for the PC build; shit2a.c is the linked run.
+Lessons (function that shows it):
+- `if (x < 8.0f || (z = p[2]) < 8.0f) return 0;` gives the original's single shared return-0 stub where nested `if (!(x < 8)) { z = ..; if (z < 8) return 0; ..}`
+  adds a second one (AreaFieldInCheck, Ground/WallFieldInCheck); the second value is loaded inside the condition.
+- Two divisions feeding one result: write the integer conversions first (`iz = (int)(z / cz); ix = (int)(x / cx);`) and combine afterwards; the original
+  does both divides before the compares (BlockPlaceCgeck). A random order of the declaration lines found the register assignment (all 8 locals matter).
+- `0 <= f()` (not `f() >= 0`) gives `slt at,v0,zero; bne` for a negative-result test; `x16A >= w` vs `w <= x16A` flips `slt v0` to `slt at` (mcsls_move).
+- A switch whose compare ladder is in descending order needs the cases written in the reverse of the ladder: DeviceLoadDriver2 wants `case 2: break; case 1: {..} case 3: break;`
+  (the ladder tests 3, 1, 2); DeviceLoadDriver wants `switch (sub) { case 4: ..; default: ..; }` for an `if (sub == 4) else` pair that compiles as `beq; nop; b`.
+- A shared `return 0` at the very end of a function with an exhaustive switch: `case 1` bodies that `goto z;` to a final `z: return 0;` reproduces
+  `b end; nop` (DeviceRollbackDriver); with `default: return 0;` plus an inner `return 0;` the two returns do not merge. A case that ends with `*b = 0;` then `break;`
+  to a final `return 0;` is the original's layout (InetDnsGetIPAddress).
+- Four-way float copy `out[i] = base[i] + d * dir[i]`: load the three direction values into locals first and make `a = d * x; b = d * y; c = d * z;` temporaries,
+  then add the base (set13_disp_pos_calc). `(f32)(f10 + dt)` with the stored value read back from the struct (`mcsls_w.dt`) keeps one mov out (mcsls_move).
+- Ternary instead of if for `v = (D < C) ? D + 1 : C; store v` removed a nop (prot_02). `int r = (s16)t; t = (s16)(r / 2);` keeps the parameter in its own register
+  and `t <= 1` instead of `t < 2` selects `slt at` (rate_g_calc). Junk `if ((pl && pl) && pl) {}` before `return 0xFF;` as in Pl_item_num_ck3 (Pl_item_num_ck2).
+- Same-file IPA: when a callee defined earlier in the same original file is tiny, MWCC keeps the caller's loop variable in a caller-saved register (ioRead uses a2 across
+  `jal ioread_sub`). ioread_sub (0x11FA30) keeps its two dead loads and a dead `li`, which no C form reproduces, so ioRead/ioread_sub/ioRead2 stay unmatched.
+Parked near-matches (not built, kept in the nm files): hit_hit_sub_pl 2 (add.s operand order, `def + 80.0f` is canonicalised), hit_calc_shl 4 / egg_com_ck 4
+(extra `b end` stub, the original does not thread it), load_shadow 2 (li t0 / dsra32 order), Pit_mv 4 / Pit_mv_lb 3 (now/hold copy register), CpInetTcpOpen 3,
+DeviceUpdateStatus 11 (netdev_nm.c), InetDnsSetAll 21 and CpInetPppStart ~18 (netdev2_nm.c, new C), InetIPAddrFromString 2 (netdev2_nm.c, new C; also
+ipaddr_from_string 0x002368E0 is the same text), release_model 7, menu_data_monster_sub 5 (declbf/declhill/permuter found nothing for these), se_req2 7, pl_light_change
+(new C in no file yet: logic as in the m2c draft; the original keeps the stage 12/13/14/28/30 test as five separate compares), parts_init (m2c draft: three loops,
+the 21-iteration one is unrolled 7x by MWCC; our version differs in register allocation of w/q/i).
