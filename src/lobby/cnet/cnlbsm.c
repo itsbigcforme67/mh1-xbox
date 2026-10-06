@@ -1,33 +1,42 @@
-/* cnlbs, run 13: cnLBS_Init_LobbyBgProcess .. __cnetSub_Set_BgProcess (lobby.bin 0x005AD240-0x005AD308): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 13: write_col_numeric .. read_col_numeric (lobby.bin 0x005AE5C0-0x005AE840): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
 
 typedef struct { s16 a, b, c; } CPLACE3;
 
-void cnLBS_Init_LobbyBgProcess(void) {
-    memset((u8 *)&CnetSys_w + 0x18, 0, 0xE00);
-}
-
-void cnLBS_Init_LobbyBgBurstProcess(void) {
-    memset((u8 *)&CnetSys_w + 0xE18, 0, 0x1B0);
-}
-
-int __cnetSub_Set_BgProcess(kind, arg1, arg2)
-s8 kind;
-int arg1;
-int arg2;
+int write_col_numeric(buf, val, n)
+char *buf;
+int val;
+int n;
 {
     int i;
 
-    for (i = 0; i < 0x80; i++) {
-        if (CnetSys_w.bg[i].state == 0) {
-            CnetSys_w.bg[i].state = kind;
-            CnetSys_w.bg[i].x19 = 0;
-            CnetSys_w.bg[i].done = (void (*)())arg2;
-            CnetSys_w.bg[i].cb = (void (*)())arg1;
-            return i;
-        }
+    buf += n - 1;
+    for (i = 0; i < n; i++) {
+        *buf = val % 10 + 0x30;
+        buf--;
+        val /= 10;
     }
-    return -1;
+    return 0;
+}
+
+int read_col_numeric(str, n)
+char *str;
+int n;
+{
+    int v = 0;
+    int i;
+    int d;
+
+    for (i = 0; i < n; i++) {
+        char c = *str;
+        if (c >= 0x30 && c < 0x3A) {
+            d = c - 0x30;
+            v = v * 10;
+            v += d;
+        }
+        str++;
+    }
+    return v;
 }

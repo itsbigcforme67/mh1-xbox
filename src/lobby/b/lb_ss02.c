@@ -1,3 +1,4 @@
+/* lb_ss02 - agent C 0x005B6420-0x005B65B8: server_select_01 (next server / retry; get_next_server takes no args). */
 #include "lobby_f.h"
 extern s8 COM_R_No_2;
 extern s8 COM_R_No_3;
@@ -9,30 +10,22 @@ extern u8 mcs_connect_flag;
 typedef struct { u8 pad00[0x4]; u8 x04; u8 x05; u8 padEND[0x2A]; } CNW;
 extern CNW CnetWork;
 s32 server_select_01(void) {
-    s32 var_s0;
-    u8 temp_v0;
+    s32 ret = 0;
 
-    var_s0 = 0;
-    switch (CnetWork.x05) {        /* irregular */
-    case 0:
+    if (CnetWork.x05 == 0) {
         CnetWork.x04 = (u8) (CnetWork.x04 + 1);
         if (CnetWork.x04 < BsLbsCount) {
-            if (get_next_server(CnetWork.x05) == 0) {
+            if (get_next_server() == 0) {
                 return -1;
             }
-            var_s0 = 1;
-            goto block_23;
+            ret = 1;
+        } else {
+            PPP_ErrorStatus = -0x11;
+            ret = -2;
         }
-        PPP_ErrorStatus = -0x11;
-        var_s0 = -2;
-block_23:
-    default:
-        return var_s0;
-    case 2:
-        /* fallthrough */
-    case 1:
+    } else if (CnetWork.x05 == 1 || CnetWork.x05 == 2) {
         if (BsLbsCount == 1) {
-            var_s0 = -2;
+            ret = -2;
             PPP_ErrorStatus = -0x11;
         } else {
             COM_R_No_2 = 0;
@@ -42,23 +35,21 @@ block_23:
             F(s8, pNet, 6) = 1;
             cnLbc_MoveMenuServerSelect(&network_work);
         }
-        goto block_23;
-    case 3:
-        temp_v0 = mcs_connect_flag;
-        if ((temp_v0 == 1) || (temp_v0 == 2)) {
-            mcs_connect_flag = 0U;
+    } else if (CnetWork.x05 == 3) {
+        if (mcs_connect_flag == 1 || mcs_connect_flag == 2) {
+            mcs_connect_flag = 0;
         } else {
             CnetWork.x04 = (u8) (CnetWork.x04 + 1);
         }
         if (CnetWork.x04 < BsLbsCount) {
-            if (get_next_server(1U, CnetWork.x05) == 0) {
+            if (get_next_server() == 0) {
                 return -1;
             }
-            var_s0 = 1;
-            goto block_23;
+            ret = 1;
+        } else {
+            PPP_ErrorStatus = -0x11;
+            ret = -2;
         }
-        PPP_ErrorStatus = -0x11;
-        var_s0 = -2;
-        goto block_23;
     }
+    return ret;
 }
