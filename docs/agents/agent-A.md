@@ -415,3 +415,56 @@ em18 (cart) and other small monsters, pause-menu list selection
 (ListSelect/PageSelect/Menu_select_mv), item combining
 (Item_preparation*), map markers (flvecrRotTransPers), quest failure after
 three faints (untested), the village.
+
+## Assignment 15: village, pause menu, small monsters, quest failure (6 Oct 2026)
+Done (committed step by step; scripted --input runs, traces and --shot
+screenshots in build/show/A/; details in docs/pc.md "Village"):
+1. Village: after the money screen (game mode 6) the PC runs the lobby
+   overlay's own offline loop: Clear_lobby_ram + Local_main each tick
+   (lobby.bin's step table vs_square_*), Kokoto (stage 87) and the house
+   (86) with the intro and the wake-up. The hunter walks with the game's
+   player code (village lbcom motions), NPCs walk and talk (lbnpc_nm.c),
+   the Village Elder is the quest counter: gift talk, level list, quest
+   list, accept (quest 131 checked: cw+0x35D3 set), leave through the gate
+   (square at the spot kind 6) -> Local_main returns 1 -> the quest starts
+   (stage 21 base camp). Script: build/lbvil/accept_script.txt.
+2. Pause menu in the field: start -> pages 1/2, item list with cursor,
+   discard with confirm (pouch count drops), quest info, combine/data
+   screens, retire -> game3 -> game5 -> village.
+3. Small monsters: Velociprey (em16) AI built (em16_nm.c / em16.c); every
+   monster slot is ticked and drawn with its own model/motions per kind
+   (quest 10, stage 40: four Velocipreys notice, run, jump, attack,
+   v_6.png). The cart (em18) ticks too.
+4. Quest failure: three faints (RT_PL_DIE test aid = the game's
+   Pl_die_set) -> carted twice -> third: D5 5 -> game3 -> game5 "quest
+   failed" score screen (0z) -> circle -> village (house wake-up).
+Native PC replacements (platform parts, not game logic):
+- rt_village.c: rt_village_enter/tick (what Game_task mode 6 and
+  move()/trans() do around Local_main), Disp_NowLoading no-op,
+  com_motion_load / em_motion_load / npc_create_model (file loading for
+  the host's model/motion loaders), clr_set_work on the host set pool.
+- rt_lb_mem: lobby.bin data+bss as one host block (vram shared with
+  game.bin); tools/gen_rt_auto.py makes weak stand-ins for missing
+  functions and aliases lobby data into it; tools/pc_abs.py maps absolute
+  addresses in C to host symbols; tools/pc_patch.py fixes x86 argument
+  passing in matched files at build time (list in the file).
+- Lbc_set_prim's stack words 0/1/2 for lobby prims [guess].
+New C from the asm (not built for the PS2, not checked):
+src/lobby/f/lb_village_nm.c (Local_main and the village/guild/NPC/target
+functions listed in its header), src/main/chat/dispframe_nm.c
+(DispFrameMessageA), src/main/menu/listsel_nm.c (ListSelect, PageSelect,
+Menu_select_mv). Edits to near-match files: chat_nm.c (disp_cursorC
+arguments, DispFrameListA tile height), menu_disp_nm.c / menu_nm.c
+(stack text buffers 64 bytes: sprintf overran them), em01_ai_nm.c
+(Em_Next_Stage_Pos / Quest_enemy_capture get em, em_char_set2 gets the
+part number; checked in the asm: a0/t0 left over). No include/ headers
+edited.
+New tools: tools/argregs.py (which argument registers each function
+reads, --check FILE.c lists calls with too few arguments),
+tools/gen_rt_auto.py, tools/pc_abs.py, tools/pc_patch.py.
+Not done: SpritePut + sprite prims (0x15A6D0, ~0x1A00 bytes of asm with
+flps0D00..1600: builds a sprite list via CalcPoint; not cheap, game3's
+darkening quad still missing), the cart's model, other small monster
+kinds' tables (only em16's game.bin tables are imported:
+src/pc/rt/tables.txt), set01 field messages on faint not checked on
+screen, nobody compared any of it with the PS2.
