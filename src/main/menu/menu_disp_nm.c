@@ -920,7 +920,7 @@ void disp_item(void) {
         id = pl->item[pl->work888].id;
         if (pl->item[pl->work888].num > 0) {
             d = &Item_data[id][3];
-            if (*d >= 2) {
+            if (*d > 1) {
                 flfntSetSize(0x12, 0x12);
                 flfntLocate(0x212, 0x178);
                 font_set_palette(0);
@@ -1407,9 +1407,9 @@ void disp_timer(void) {
     q.uv1 = 0x710047;
     q.s[0] = 0x10;
     q.s[1] = 0x10;
-    if (t0 >= 0x2329) {
+    if (t0 > 0x2328) {
         q.col = -1;
-    } else if (t0 >= 0x709) {
+    } else if (t0 > 0x708) {
         v = ((System_timer & 0x1F) << 11) & 0xFFFF;
         a = (s8)(60.0f * flSin(0.0000958738f * (f32)v)) + 0xC0;
         q.col = (a << 8) | 0xFFFF0000 | a;

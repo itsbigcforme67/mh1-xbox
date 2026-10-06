@@ -12,6 +12,46 @@
 #include <string.h>
 
 static SDL_GameController *ctl;
+static int text_mode;                   /* typing a name: the keyboard is not the pad */
+static char text_buf[64];
+static int text_n;
+
+void pad_text_mode(int on)
+{
+    text_mode = on;
+    text_n = 0;
+    if (on)
+        SDL_StartTextInput();
+    else
+        SDL_StopTextInput();
+}
+
+/* the viewer passes every SDL event here (typed text, Backspace, Enter) */
+void pad_event(const void *ev)
+{
+    const SDL_Event *e = ev;
+    if (!text_mode)
+        return;
+    if (e->type == SDL_TEXTINPUT) {
+        const char *t = e->text.text;
+        for (; *t && text_n < (int)sizeof text_buf; t++)
+            if ((unsigned char)*t < 0x80)
+                text_buf[text_n++] = *t;
+    } else if (e->type == SDL_KEYDOWN && text_n < (int)sizeof text_buf) {
+        if (e->key.keysym.sym == SDLK_BACKSPACE)
+            text_buf[text_n++] = '\b';
+        else if (e->key.keysym.sym == SDLK_RETURN || e->key.keysym.sym == SDLK_KP_ENTER)
+            text_buf[text_n++] = '\n';
+    }
+}
+
+int pad_text_take(char *out, int n)
+{
+    int k = text_n < n ? text_n : n;
+    memcpy(out, text_buf, (size_t)k);
+    text_n = 0;
+    return k;
+}
 
 void pad_init(void)
 {
@@ -70,7 +110,7 @@ void pad_read(pad_state *p, int keyboard)
         p->rx = axis(SDL_CONTROLLER_AXIS_RIGHTX);
         p->ry = axis(SDL_CONTROLLER_AXIS_RIGHTY);
     }
-    if (keyboard) {
+    if (keyboard && !text_mode) {
         const Uint8 *k = SDL_GetKeyboardState(NULL);
         for (i = 0; i < sizeof kmap / sizeof kmap[0]; i++)
             if (k[kmap[i].k])

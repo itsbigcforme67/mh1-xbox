@@ -16,6 +16,58 @@ stops the build so a stale patch is noticed. Found with tools/argregs.py
 import sys
 
 PATCHES = {
+    # lb_npc_move: Lb_pl_timer_calc(em) (a0 = em left over)
+    "src/lobby/b/lb_by136.c": [
+        ("    Lb_pl_timer_calc();", "    Lb_pl_timer_calc(em);"),
+    ],
+    # m2c dropped arguments (as the two other calls of this file have them)
+    "src/lobby/b/nm/lb_process_set_weaponList.c": [
+        ("var_s1_2 = Get_equip_name(F(u8, var_s0, 0));", "var_s1_2 = Get_equip_name(F(u8, var_s0, 0), F(u16, var_s0, 2));"),
+        ("strcpy(var_s5 + 4);", "strcpy(var_s5 + 4, (char *)var_s1_2);"),
+    ],
+    # item box: the sell screen's quantity select gets (pad, 1) (a0/a1 at
+    # the branch, 0x60B260); equip_ok_chk passes its e on
+    "src/lobby/f/lb_ib.c": [
+        ("                kosuu_select(1);", "                kosuu_select(pad, 1);"),
+    ],
+    "src/lobby/f/lb_tu_ib.c": [
+        ("  new_var[0] = Get_equip_data_ptr()[2];", "  new_var[0] = Get_equip_data_ptr(e)[2];"),
+    ],
+    "src/lobby/f/lb_aa.c": [
+        ("    mini = GetAdrsMiniData();", "    mini = GetAdrsMiniData(a);"),
+    ],
+    # icon wrappers pass their 5th argument on (t0)
+    "src/lobby/f/lb_ag.c": [
+        ("        Lb_put_icon_free2(a, b, c, d);", "        Lb_put_icon_free2(a, b, c, d, f);"),
+        ("    Lb_put_icon_free(a, b, c, d);", "    Lb_put_icon_free(a, b, c, d, f);"),
+    ],
+    "src/lobby/b/lb_bz01.c": [
+        ("    flfntLocate();", "    flfntLocate(arg0, arg1);"),
+    ],
+    # Put_page_num's 5th argument is 1 (t0 in the delay slot, 0x537990)
+    "src/lobby/b/nm/Lb_shop_trans2.c": [
+        ("Put_page_num(0x20E, 0x38, lbShop.x6C, lbShop.x6D);", "Put_page_num(0x20E, 0x38, lbShop.x6C, lbShop.x6D, 1);"),
+    ],
+    # mode_sel_end's default case exits its own task (a0 = tsk left over)
+    "src/main/omake/omake_nm.c": [
+        ("        Tsk_Exit();\n        Tsk_Execute(D_533BE0, 3);", "        Tsk_Exit(tsk);\n        Tsk_Execute(D_533BE0, 3);"),
+    ],
+    # the mc_* step machines call mc_sync() with a0 = w left over
+    "src/main/mc/mclow_nm.c": [
+        ("(mc_sync() >= 0)", "(mc_sync(w) >= 0)"),
+    ],
+    # the near-match copy (linked weak, for mc_sel_ck)
+    "src/main/mc/mccomb_nm.c": [
+        ("int decode_to_ck();\n", "static int decode_to_ck();\n"),
+    ],
+    # card_data_init(w) after mc_r_no_set(w, n) (a0 = w left over);
+    # mc_remove_ck passes its port on to McActNewChk
+    "src/main/mc/mccomb.c": [
+        ("    card_data_init();\n", "    card_data_init(w);\n"),
+        ("    if (McActNewChk() != 0) return 1;", "    if (McActNewChk(port) != 0) return 1;"),
+        # declared global, defined static (MWCC accepts it, gcc does not)
+        ("int decode_to_ck();\n", "static int decode_to_ck();\n"),
+    ],
     # Lb_put_msg2 / Lb_pl_chr_set0 / Lb_Pl_act_set2 pass their own a0-t0 on
     "src/lobby/f/lb_c.c": [
         ("void Lb_put_msg2(int a0, int a1, char *msg) {\n    flfntLocate();",
@@ -27,7 +79,7 @@ PATCHES = {
     ],
     # a K&R block-scope redeclaration gcc rejects (lobby_f.h has the prototype)
     "src/lobby/f/lb_a.c": [
-        ("    LBTRADE2 t;\n    void Ud_item_stack();\n", "    LBTRADE2 t;\n"),
+        ("    LBTRADE2 t;\n    void Ud_item_stack(u16, int);\n", "    LBTRADE2 t;\n"),
     ],
     # lb_menu_item_mv / lb_menu_mix_mv pass Lb_menu_move_Core's pad (a0) on
     "src/lobby/b/lb_bz17.c": [

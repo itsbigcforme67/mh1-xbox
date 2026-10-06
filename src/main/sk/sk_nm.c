@@ -347,7 +347,7 @@ void sk_cursor_mv(s16 k, s16 sw) {
                 }
             } else if (k & 0x400) {
                 s[0x24]++;
-                if (SKB(0x24) >= 0x15) {
+                if (SKB(0x24) > 0x14) {
                     SKB(0x24) = 0;
                 }
             }

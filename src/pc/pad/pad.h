@@ -33,6 +33,13 @@ void pad_init(void);
  * select, T/F/G/H d-pad). */
 void pad_read(pad_state *p, int keyboard);
 
+/* Typing (a name): while on, the keyboard does not drive the pad; typed
+ * ASCII, '\b' (Backspace) and '\n' (Enter) collect for pad_text_take.
+ * pad_event takes every SDL_Event the app polls (as const void *). */
+void pad_text_mode(int on);
+void pad_event(const void *ev);
+int  pad_text_take(char *out, int n);
+
 /* Scripted input for offscreen tests: "name+name*ticks,..." with names
  * up/down/left/right (left stick), cam_l/cam_r/cam_u/cam_d (right stick),
  * cross, circle, square, triangle, l1, r1, l2, r2, l3, r3, start, select,

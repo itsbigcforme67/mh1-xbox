@@ -198,7 +198,86 @@ void Pl_light_init(void *pl)
 void net_send_pl(void *pl, int a, int b) { (void)pl; (void)a; (void)b; }
 /* models: the viewer builds the hunter's models itself */
 void weapon_create_model(int a, int b, int c) { (void)a; (void)b; (void)c; }
-void armor_create_model(void *pl) { (void)pl; }
+/* Pl_model_id_set (main 0x123F60, written from the asm): the model
+ * number of each of the hunter's six parts (PLW+0x358.. : 0 legs "reg",
+ * 1 face, 2 hair, 3 body, 4 arms, 5 waist) from the equipped armour
+ * (PLW+0x352..0x357, Set_equip_data). An armour piece names a male (+0)
+ * and a female (+1) model, +2 bit 0/1 = the model exists for that sex;
+ * otherwise the bare part (0) is used. Face = PLW+0x353 - 1, its skin
+ * colour PLW+0x607 = skin_col_tbl_m/_f[face]; no helmet = the hair style
+ * PLW+0x34E. */
+extern u8 Armor_Head_Data[][0x14], Armor_Body_Data[][0x14], Armor_Arm_Data[][0x14],
+    Armor_Waist_Data[][0x14], Armor_Leg_Data[][0x14];
+extern u8 skin_col_tbl_m[], skin_col_tbl_f[];
+extern s16 reg_nude_model[], body_nude_model[], arm_nude_model[];   /* [sex * 4 + skin] each */
+static u8 armor_model(const u8 (*tbl)[0x14], int piece, int sex, u8 none)
+{
+    const u8 *e = tbl[piece];
+    if (sex == 0)
+        return (e[2] & 1) ? e[0] : none;
+    return (e[2] & 2) ? e[1] : none;
+}
+void Pl_model_id_set(void *pl)
+{
+    int sex = PU8(pl, 0x11);
+    u8 f = PU8(pl, 0x353);
+    PU8(pl, 0x358) = armor_model(Armor_Leg_Data, PU8(pl, 0x352), sex, 0);
+    PU8(pl, 0x359) = (u8)(f - 1);       /* (a parts_max_tbl range check that cannot fire) */
+    PU8(pl, 0x607) = (sex ? skin_col_tbl_f : skin_col_tbl_m)[PU8(pl, 0x359)];
+    PU8(pl, 0x35A) = PU8(pl, 0x354) ? armor_model(Armor_Head_Data, PU8(pl, 0x354), sex, PU8(pl, 0x34E)) : PU8(pl, 0x34E);
+    PU8(pl, 0x35B) = armor_model(Armor_Body_Data, PU8(pl, 0x355), sex, 0);
+    PU8(pl, 0x35C) = armor_model(Armor_Arm_Data, PU8(pl, 0x356), sex, 0);
+    PU8(pl, 0x35D) = armor_model(Armor_Waist_Data, PU8(pl, 0x357), sex, 0);
+}
+
+/* armor_create_model (main 0x124310): Pl_model_id_set, then per part the
+ * model (load_armor_model: armor_model_dataNN_m/_f[id] -> AFS entry) and
+ * its textures (parts_tex). Legs, body and arms without armour (or with
+ * the "bare" numbers 13-15 / 11-13 legs, 16-18 / 12-14 body and arms) use
+ * the skin coloured bare model reg_nude_model[...][PLW+0x607]. The PC
+ * records the six numbers per player; the viewer builds the hunter from
+ * m_/f_<part><number> (rt_player_look). */
+static struct { int gen, sex, id[6]; } look[8];
+static int look_gen;
+void armor_create_model(void *pl)
+{
+    int no = PU16(pl, 0xC) & 7, sex = PU8(pl, 0x11), i;
+    u8 v;
+    Pl_model_id_set(pl);
+    v = PU8(pl, 0x607);
+    for (i = 0; i < 6; i++) {
+        int id = PU8(pl, 0x358 + i);
+        int bare = 0, k = 0;
+        switch (i) {
+        case 0: bare = sex ? (id == 0 || id == 11 || id == 12 || id == 13) : (id == 0 || id == 13 || id == 14 || id == 15); break;
+        case 3: bare = sex ? (id == 0 || id == 12 || id == 13 || id == 14) : (id == 0 || id == 16 || id == 17 || id == 18); break;
+        case 4: bare = sex ? (id == 0 || id == 12 || id == 13 || id == 14) : (id == 0 || id == 16 || id == 17 || id == 18); break;
+        }
+        k = sex * 4 + v;
+        if (bare && v < 4)
+            id = (i == 0 ? reg_nude_model : i == 3 ? body_nude_model : arm_nude_model)[k];
+        look[no].id[i] = id;
+    }
+    look[no].sex = sex;
+    look[no].gen = ++look_gen;
+    if (getenv("RT_PL_TRACE"))
+        fprintf(stderr, "rt_pl: player %d look: %s reg %d face %d hair %d body %d arm %d wst %d (skin %d)\n", no, sex ? "female" : "male",
+                look[no].id[0], look[no].id[1], look[no].id[2], look[no].id[3], look[no].id[4], look[no].id[5], v);
+}
+
+/* the parts armor_create_model chose for player no (0 = none yet; the
+ * result changes whenever the game builds the model again) */
+int rt_player_look(int no, int *sex, int id[6])
+{
+    int i;
+    no &= 7;
+    if (!look[no].gen)
+        return 0;
+    *sex = look[no].sex;
+    for (i = 0; i < 6; i++)
+        id[i] = look[no].id[i];
+    return look[no].gen;
+}
 void yure_init(void *pl) { (void)pl; }        /* hair/cloth sway */
 /* the player's draw callbacks (trans_pl_sub, weapon_nm.c, calls these):
  * the viewer draws the hunter and the weapon itself */

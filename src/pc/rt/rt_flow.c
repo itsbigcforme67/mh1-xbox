@@ -127,14 +127,13 @@ int snd_joint_load_pl() { return 1; }
 /* ------------------------------------------------ loading / system (no-ops) */
 NOP(flFlip) NOP(flSndPortStop) NOP0(flSndPackLoadStatus) NOP0(load_busy_ck) NOP(FlushCache)
 NOP(snd_joint_load_init) NOP(load_bin_req) NOP(flSndPackLoadBG2) NOP(flSndPackLoadBG)
-NOP(all_reset) NOP(view_reset) NOP(stage_bgm_set) 
-NOP(round_init) NOP(flCompact) NOP(fade_set) NOP(Zero_rev_set) NOP(vib_stop_all)
-NOP(Tsk_Execute) NOP(stage_load) NOP(stage_init)
+NOP(view_reset) NOP(stage_bgm_set) 
+NOP(round_init) NOP(flCompact) NOP(Zero_rev_set) NOP(vib_stop_all)
+NOP(stage_load) NOP(stage_init)
 NOP(stage_free)  NOP(smoke_init) NOP(smell_init) NOP(senko_init) NOP(prim_init)
 NOP(Plsel_task) NOP(ot_init) NOP0(net_start_ck) NOP(net_receive_pl_pos_set) NOP(Load_overlay)
 NOP(init_light_work) NOP(flInitPhaseStarted) NOP(flInitPhaseFinished) NOP(EvDemoMove)
 NOP(EvDemoInitialize) NOP(em_yobi_init) NOP(em_effect_pull) NOP(ear_init) NOP(Disp_load_start)
 NOP(Copy_user_id) NOP(Disp_NowLoading2)
 
-/* ------------------------------------------------ 2D (replaced as it is ported) */
-NOP(trans)
+/* trans: rt_boot.c (draws only while the boot screens run) */

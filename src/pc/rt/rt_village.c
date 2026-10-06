@@ -68,10 +68,31 @@ int rt_village_tick(void)
     rt_font_tick_begin();
     rt_prims_reset();
     rt_game_move();                     /* set objects and effects (move_set / move_eft) */
+    if (getenv("RT_LB_WARP")) {         /* test aid: "tick,x,z[,ang];...": put the hunter there at that village tick */
+        const char *s = getenv("RT_LB_WARP");
+        while (s && *s) {
+            int t = 0, a = -1;
+            float x, z;
+            int n = sscanf(s, "%d,%f,%f,%x", &t, &x, &z, &a);
+            if (n >= 3 && t == tick) {
+                *(float *)(player_work + 0xAC) = x;
+                *(float *)(player_work + 0xB4) = z;
+                if (n == 4)
+                    *(u16 *)(player_work + 0xE) = (u16)a;
+                fprintf(stderr, "rt_village: tick %d hunter warped to %.0f %.0f\n", tick, x, z);
+            }
+            s = strchr(s, ';');
+            if (s)
+                s++;
+        }
+    }
     r = Local_main();
-    if (getenv("RT_VILLAGE_TRACE") && tick == 20) {     /* the stage's unique spots (exits, chairs ...) */
+    static int spots_stage = -1;
+    if (getenv("RT_VILLAGE_TRACE") && game_w[0x14] != spots_stage && lb_sys[3] == 4) {     /* the stage's unique spots (exits, chairs ...) */
+        spots_stage = game_w[0x14];
         void *Stage_unique_data_get(int st);
         u8 *r = Stage_unique_data_get(game_w[0x14]);
+        fprintf(stderr, "rt_village: stage %d spots:\n", game_w[0x14]);
         for (; r && *(float *)(r + 4) != -1.0f; r += 0x18)
             fprintf(stderr, "rt_village:   spot kind %d at %.0f %.0f %.0f r %.0f ang %04X\n", *(u16 *)(r + 2),
                     *(float *)(r + 4), *(float *)(r + 8), *(float *)(r + 0xC), *(float *)(r + 0x10), *(u16 *)(r + 0x14));
@@ -121,6 +142,15 @@ int rt_village_tick(void)
         }
         last_step = lb_sys[3];
         last_x68 = *(s32 *)(lb_sys + 0x68);
+    }
+    if (getenv("RT_SHOP_TRACE")) {      /* the shop step machines (lbShop: step +0x14, sub +0x15, mode +0x19) */
+        extern u8 lbShop[];
+        static int last = -1;
+        int v = lbShop[0x14] | lbShop[0x15] << 8 | lbShop[0x19] << 16 | lbShop[0x1B] << 24;
+        if (v != last)
+            fprintf(stderr, "rt_village: tick %d shop step %d sub %d mode %d x1B %d x68 %d\n", tick, (s8)lbShop[0x14],
+                    (s8)lbShop[0x15], (s8)lbShop[0x19], lbShop[0x1B], *(s32 *)(lb_sys + 0x68));
+        last = v;
     }
     if (r == 1 || r == -1) {
         void com_motion_load(int n);

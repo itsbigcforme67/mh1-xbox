@@ -287,6 +287,67 @@ static float se_cnfvol(void)
     return fmt_f32(se_cnfvol_tbl + 4 * se_cfg, FMT_LE);
 }
 
+/* se_req_bgm_vol (main f_sound, src/main/sound/snd_nm.c): flSndRequest
+ * at the option's SE volume, centred */
+void se_req_bgm_vol(int port, int code, int id)
+{
+    int vol;
+    if (code == 0xFFFF)
+        return;
+    vol = (int)(127.0f * se_cnfvol());
+    if (vol)
+        fl_snd(0, port, code, vol, 0x40, 0x2000, id);
+}
+
+/* ------------------------------------------------------------ pack loads
+ * load_bin (main 0x1003B0): file 0x10000 | n is AFS01 entry n (the sound
+ * packs); flSndPackLoad(buffer, port) then hands the loaded pack to the
+ * IOP for that port. The host remembers which entry went to which buffer
+ * and loads it from the disc into the port. Other load_bin files (AFS_DATA)
+ * are not used by the code that runs on the PC. */
+static const void *bin_dst;
+static int bin_idx = -1;
+int load_bin(int id, void *dst)
+{
+    if ((id & 0xFFFF0000) == 0x10000) {
+        bin_idx = id & 0xFFFF;
+        bin_dst = dst;
+        return 1;
+    }
+    if (getenv("RT_TRACE"))
+        fprintf(stderr, "snd: load_bin(0x%X) not ported\n", (unsigned)id);
+    return 0;
+}
+
+void flSndPackLoad(void *p, int port)
+{
+    if (!snd_on || port < 0 || port >= NPORT || p != bin_dst || bin_idx < 0)
+        return;
+    port_clear(port);
+    port_add(port, bin_idx);
+}
+
+/* Menu_snd_load / edit_se_load (snd_nm.c): the menu and character
+ * screen packs (flSndPortStop stays a no-op, rt_flow.c: the village
+ * follows it with background loads the PC does not do, and a pack load
+ * replaces the port anyway) */
+extern u8 *data_load_ptr;
+void Menu_snd_load(void)
+{
+    load_bin(0x10002, data_load_ptr);
+    flSndPackLoad(data_load_ptr, 1);
+    load_bin(0x10006, data_load_ptr);
+    flSndPackLoad(data_load_ptr, 7);
+}
+int edit_se_load(void)
+{
+    load_bin(0x10002, data_load_ptr);
+    flSndPackLoad(data_load_ptr, 1);
+    load_bin(0x10005, data_load_ptr);
+    flSndPackLoad(data_load_ptr, 6);
+    return 1;
+}
+
 /* se_req (0x159450) */
 void se_req(int port, int code, int id)
 {
