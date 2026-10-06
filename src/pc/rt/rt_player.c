@@ -259,6 +259,23 @@ void rt_player_tick(int no)
             s8 hp = (s8)tg[0x88D];
             f32 *t = hp >= 0 ? (f32 *)(StiEM_data + 0x1C * hp) : (f32 *)(tg + 0xAC), cap[8], sph[4], r = 120.0f;
             u8 *bd = em_body_tbl[tg[2]];
+            if (hp < 0 && *(s16 *)(tg + 0x302) <= 0) {
+                /* dead, without EMW+0x88D: the nearest pick point the
+                 * monster set itself (Fatalis' three, em02_hagi_set) */
+                int k;
+                f32 best = 1e9f;
+                for (k = 0; k < 20; k++) {
+                    u8 *e = StiEM_data + 0x1C * k;
+                    f32 *ep = (f32 *)e, dx = ep[0] - *(f32 *)(tg + 0xAC), dz = ep[2] - *(f32 *)(tg + 0xB4);
+                    if (*(u16 *)(e + 0x10) == 0xFFFF || *(s16 *)(e + 0x14) != 2 || e[0x18] != tg[0x736])
+                        continue;
+                    if (dx * dx + dz * dz < best) {
+                        best = dx * dx + dz * dz;
+                        t = ep;
+                        hp = (s8)k;
+                    }
+                }
+            }
             if (hp < 0 && bd) {     /* alive: its first body sphere (or the first capsule's middle) */
                 u8 *b;
                 int k = -1;
