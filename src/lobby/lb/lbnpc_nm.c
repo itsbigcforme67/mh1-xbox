@@ -1930,8 +1930,7 @@ void npcPigEXIT(em)
 EMW *em;
 {
     VEC3 v;
-    int stage4 = game_w.stage * 4;
-    f32 *p = *(f32 **)((u8 *)St_unique_tbl + stage4);
+    f32 *p = St_unique_tbl[game_w.stage];
 
     v.x = p[1];
     v.y = p[2];
@@ -1940,7 +1939,7 @@ EMW *em;
     case 0:
         em->x05++;
         em->work08 = 0xA;
-        em->x0E = Lb_get_angle(&v, stage4);
+        em->x0E = Lb_get_angle(em, &v);
         Lb_pl_chr_set0(em, 0x3F7, 2, 0, 0);
         return;
     case 1:
@@ -1954,7 +1953,7 @@ EMW *em;
         if (em->work08 >= 0x1F4) {
             Lb_act_set(em, 0, 0);
         }
-        return;
+        break;
     }
 }
 
