@@ -58,8 +58,8 @@ void net_receive_host(int slot, u8 *buf) {
                     pl->x91F = 0;
                     if ((s & 0xFF) != 0xFF) {
                         it = &game_w.item[s & 0xFF];
-                        Pl_item_stack(pl, it->id, game_w.item[s & 0xFF].num);
-                        Item_box_get_item(it->id, s);
+                        Pl_item_stack(pl, (&game_w.item[s & 0xFF])->id, game_w.item[s & 0xFF].num);
+                        Item_box_get_item((&game_w.item[s & 0xFF])->id, s);
                     }
                 }
                 game_w.x1A8[0] |= *(s32 *)(p + 4);
