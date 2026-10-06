@@ -792,38 +792,49 @@ int cmn_mongon_set(s8 *e, s8 *out, int max) {
 int cmn_mongon_check_sub(s8 *str) {
     s8 flt[0x50];
     s8 buf[0x50];
-    s8 *f;
     s8 *tbl;
     s8 *p;
     s8 *q;
-    s8 *sp2;
-    int len = strlen(str);
-    int pos = 0;
+    int j;
+    int len;
+    int pos;
     int found;
     int n;
     int r;
     s8 c;
+    s8 pc;
+    s8 d;
+    s8 *base = check_mongon;
+
+    len = strlen(str);
+    pos = 0;
     cmn_mongon_check_filter(flt, str, len);
-    f = flt;
-    if (*f != 0) {
+    if (flt[0] != 0) {
         do {
             found = 0;
-            tbl = check_mongon;
+            tbl = base;
             if (*tbl != 0) {
                 do {
                     r = cmn_mongon_set(tbl, buf, len);
                     if (r != -1) {
-                        p = buf;
                         q = flt + pos;
                         n = 0;
-                        sp2 = str + pos;
-                        while (*p != 0 && *sp2 != 0) {
+                        j = pos;
+                        p = buf;
+                        while (*p != 0 && str[j] != 0) {
                             if (_ctype_[1 + *q] & 7) {
-                                if (*q != *p) {
-                                    if (*sp2 == 0x31 || *sp2 == 0x21) {
-                                        if (*p != 0x4C) break;
-                                    } else if (*sp2 == 0x28 || *sp2 == 0x3C) {
-                                        if (n != 0) break;
+                                pc = *p;
+                                if (*q != pc) {
+                                    d = str[j];
+                                    if (d == 0x31 || d == 0x21) {
+                                        if (pc != 0x4C) {
+                                            break;
+                                        }
+                                    } else if (d == 0x28 || d == 0x3C) {
+                                        if (n != 0) {
+                                            break;
+                                        }
+                                        goto next;
                                     } else {
                                         break;
                                     }
@@ -832,17 +843,18 @@ int cmn_mongon_check_sub(s8 *str) {
                                 p++;
                                 if (n == r) {
                                     found = 1;
-                                    sp2++;
+                                    j++;
                                     break;
                                 }
                             }
+                        next:
                             q++;
-                            sp2++;
+                            j++;
                         }
                         if (found == 1) {
-                            if (_ctype_[1 + *sp2] & 7) {
+                            if (_ctype_[1 + str[j]] & 7) {
                                 found = 0;
-                                if (cmn_mongon_look(sp2) != 0) {
+                                if (cmn_mongon_look(flt + j) != 0) {
                                     return 0;
                                 }
                             } else {
@@ -853,24 +865,24 @@ int cmn_mongon_check_sub(s8 *str) {
                     tbl += 0x10;
                 } while (*tbl != 0);
             }
-            c = *f;
+            c = flt[pos];
             if (c != 0) {
-                while (found == 0) {
-                    f++;
+                do {
+                    if (found != 0) {
+                        break;
+                    }
+                    d = str[pos];
                     pos++;
-                    if (!(_ctype_[1 + str[pos]] & 7)) {
-                        c = *f;
-                        if (!(_ctype_[1 + c] & 7)) {
-                            c = *f;
-                            if (c == 0) break;
-                            continue;
+                    if (!(_ctype_[1 + d] & 7)) {
+                        c = flt[pos];
+                        if (_ctype_[1 + c] & 7) {
+                            break;
                         }
                     }
-                    c = *f;
-                    if (c == 0) break;
-                }
+                    c = flt[pos];
+                } while (c != 0);
             }
-        } while (*f != 0);
+        } while (c != 0);
     }
     return 1;
 }

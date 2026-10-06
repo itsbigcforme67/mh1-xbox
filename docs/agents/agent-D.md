@@ -985,3 +985,65 @@ Lessons (each confirmed by a match):
 - A static-sized local that the original allocates but the compiler would drop: `SW4 tmp4` / `SW6 tmp6` in the item box keep the 80-byte frame.
 - Permuter on raw/registered functions: the asm is not in asm/lobby/text; make a copy with `config/lobby.yaml` where the registered range is turned into an `asm` subsegment
   (see build/lobby_ib.yaml idea: replace `[0x0D5DD0, c, f/lb_tu_ib]` by `[0x0D5DD0, asm, text/ibtu]`, `asm_path: build/asmib/lobby`, run splat) and use PERM_ASM_DIR=build/asmib.
+
+## Game overlay leftovers round (agent D, 11 Oct 2026)
+Linked (rebuild OK, all five modules): em21_main, em20_main, em_atk11_0056E160, the hire group of em21 and em08
+(hire_move_sub1/sub2/hire_move, 6 functions), em21_target_ang_calc, em01_frame_reset, em01_reset_char_set,
+em_dm03_0058D4E0, em_fly03_005B7EE0, em_dmg07_005B9ED0, em_cmd_pl_ride_ck, area_route_rnd32.
+Method that paid off: small throwaway scripts that try ONE source mutation at a time and keep it when the real
+difference count (tools/alignall.py, not check.py's count which includes shifted code) drops:
+- operand-order flips of every comparison (`a >= b` -> `b <= a`): found em_atk11 (`t >= --em->work08`) and em20_main
+  (`temp_a2 <= temp_t0 * 0x1E / 100`); hire_move_sub2 needed `0 >= x`-style flips too.
+- declaration-order permutations (tools/declbf.py; for 5-6 locals run all 120-720 orders in the background).
+Lessons (each confirmed by a match):
+- `for (...) { if (match) break; } if (i >= n) { ... }` where the original jumps straight past the if-body on a match:
+  write `if (match) goto skip;` with the label at the end of the enclosing block (em21_main). A local that is compared
+  against a loaded byte may need `u8` (not int) to get the original register (em21_main `u8 n`).
+- `w->x--; if (w->x <= 0)` on an s8/s16 field: the original has the decrement INSIDE the condition: `if (--w->x <= 0)`
+  (dsll32/dsra32 on the compared value shows it). hire_move_sub2.
+- A two-value `switch (mode) { case 1: ...; case 2: ...; }` that the original compiles as two `bne`: write
+  `if (mode == 2) {...} else if (mode == 1) {...}` (order = the original's first test). hire_move_sub1/2.
+- Two switch cases `case 2:` / `case 3:` that differ only in a table (original has the body twice, case 2 ends with
+  `b end`): write both bodies out instead of sharing (hire_move_sub1). `u16 cnt = s16 field` gives lhu: use
+  `s16 cnt0 = field; ... u16 cnt = cnt0;` to get lh + later andi. `if (k != 0 && p->t == 0)` on a u8 k: the original
+  materialises `!(k != 0)` (sltu/xori): write `if (k && !p->t)`.
+- A function that walks its pointer parameter (`a += 3`, `return a`) must use the parameter itself, not a copy `q`
+  (area_route_rnd32); `int cum; cum = (cum + w) & 0xFF;` and `int w; (u8)w == 0xFF` give the original's unmasked adds;
+  declaration order of cum/i then fixed the temp registers.
+- `if (A) { x } else { y }` with an empty first body is kept by MWCC only when written with an explicit (empty) else:
+  `if (v == 2) {} else if (v == 1) {} else {}` (em_cmd_area_move_ck, partly).
+- A calling function that passes a u16/s16 parameter: callee prototype `s16` instead of `u16` removes the andi at the
+  call (edit_pl_init_new; select Edit_task/Cont_task are already linked in edit04.c).
+- check.py/mkruns3 --verify cannot verify a function whose plain name also exists in another overlay (em10 em_act03:
+  the compare picks the em01 one); give such statics their address suffix or test with rebuild.sh.
+More linked later in this round: em_cmd_boss_atk_ck, em_cmd_before_stage_ck, em_cmd_boss_same_stage_ck, em_cmd_rnd32,
+em_cmd_area_move_ck, smell_ck, shell06_move_sub, shell22_h, em_fly08_005F02E0, em_hagitori_lv_up (about 28 functions in all).
+More lessons (each confirmed by a match):
+- A switch ladder keeps a compare only for case labels that are not adjacent to `default:`. When the original has a
+  compare whose target is the next instruction (`beq a0,v0,L; nop; nop; L:`) or a compare the compiler drops, add or
+  reorder empty case labels: shell06_move_sub `default: case 0: case 1:`, shell22_h `case 0: case 1: default:`
+  (try both orders). An empty `if (v == 2) {} else if (v == 1) {}` is dropped; write the switch instead
+  (em_cmd_area_move_ck: `switch (v) { case 1: break; case 2: break; case 0: clr: ... }` with `goto clr` from the
+  other tests).
+- CMD_SKIP loops that keep their condition in a variable: write the skip loop out as `while (flag) { ... }` and set
+  the flag in BOTH arms: `flag = 1; if (b == NULL) { flag = 1; } else { if (cond) break; flag = 1; }` (the first assignment
+  is the `andi s0,v1,0xFF` in the branch delay slot, the second a `daddiu`). em_cmd_boss_atk_ck, before_stage_ck,
+  boss_same_stage_ck.
+- Two table pointers `tbl[em->kind]` loaded before a switch and used in different cases must be written as two locals
+  assigned before the switch (em_fly08: `hu = em_hungry_tbl[kind]; th = em_thirst_tbl[kind];`), and the if-arm that the
+  original lays out first is the one that is `==` (`if (a == b || b == 0xFF) {A} else {B}` instead of
+  `if (a != b) { if (b == 0xFF) goto A; ...} else { A }`).
+- Saved-register numbers follow declaration order: a pointer that the original keeps in the LOWEST saved register is
+  the one declared LAST (em_hagitori_lv_up: `h` after the arrays, and `flmatCopy(&mat, get_joint_wmat_em(em, tbl[j].joint))`
+  reading the joint straight from the table). Permute all declaration orders in a scratch copy (tools/declbf.py or
+  a loop over itertools.permutations): em20_material_sub 14 -> 1, smell_ck 21 -> 0.
+- `u8 r; r = GetWallHitLine(...); if (!(u8)r)`: a u8 local keeps the second andi (smell_ck); `int` drops it.
+- One experiment loop per function works best on a scratch copy of the *_nm.c (src/game/em/zz_x.c, never commit) so
+  that a background sweep on the real file cannot overwrite your edit (it did, twice).
+Left as near-matches (alignall real differences): em20_act_set 1 (addiu vs daddiu on `kind = 3`; u16 K&R param gives
+the daddiu but loses the register), the 12 *_effect_move (4: the original uses v1 for the constant and for a2+1, mine v0;
+unchanged by 20 source forms and two permuter runs; with no call after the switch the compiler picks v1, so something
+in the original makes it behave as if there were none), em_cmd_range_ck 6, em10_turn_sub 10, em_act_search 9,
+em_cdm_act_flag_ck 10, em_eye_search_set 10, em_cmd_rnd32 6, em_cmd_flag_clear 19, cmn_mongon_check_sub (select) about
+120: structure now matches the original (index `flt[pos]`, `base = check_mongon` hoisted, pointer p/q loop), the rest
+is the inner-loop register choice; disp_color (select) not started (m2c draft, 231 of 293).

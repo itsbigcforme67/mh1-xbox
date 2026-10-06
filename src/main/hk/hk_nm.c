@@ -20,7 +20,7 @@ int strncmp(const char *, const char *, int);
 char *strncpy(char *, const char *, int);
 char *strchr(const char *, int);
 
-void hk_kbd_input(void);
+void hk_kbd_input();
 void hk_kbd_input_sub(u8 *);
 void hk_key_esc(void);
 void hk_key_space(int);
@@ -101,15 +101,20 @@ void Han2zen(char *, char *);
 int backspace_all(char *, int);
 void delete_all(char *, int);
 
-void HardKeyboard_move(void) {
+void HardKeyboard_move(a)
+int a;
+{
+    u8 *q;
+
     SKB(0x661) = SKB(0x660);
     SKB(0x660) = SKB(0x658);
-    if (SKB(0x65F) & 0x80) {
-        SKB(0x65F) = 0;
+    q = &SKB(0x65F);
+    if (*q & 0x80) {
+        *q = 0;
     }
     if (SKB(0x660) != 0 && SKB(0x660) != SKB(0x661)) {
         SKB(0x65F) = 0x9E;
-        hk_kbd_input();
+        hk_kbd_input(a);
     }
 }
 
@@ -415,20 +420,20 @@ void hk_key_space(int a) {
 }
 
 void hk_key_backspace(void) {
-    if (SKB(0x2F) == 0) {
-        if (hk_ctrl_key_ck() == 0) {
-            goto bs;
-        }
+    u16 *p;
+
+    if (SKB(0x2F) != 0 || hk_ctrl_key_ck() == 0) {
+        sk_backspace(1);
+    } else {
         if (SKB(0x158) != 0) {
-            SKU16(0x2C) -= backspace_all((char *)lpSKey + 0x158, SKU16(0x2C));
+            p = &SKU16(0x2C);
+            *p = *p - backspace_all((char *)lpSKey + 0x158, *p);
         } else {
-            SKU16(0x2A) -= backspace_all((char *)lpSKey + 0x44, SKU16(0x2A));
+            p = &SKU16(0x2A);
+            *p = *p - backspace_all((char *)lpSKey + 0x44, *p);
         }
         se_req(7, 0x16, 0);
-        return;
     }
-bs:
-    sk_backspace(1);
 }
 
 void hk_key_dakuten(void) {
@@ -931,7 +936,8 @@ void hk_key_kata_hira(void) {
     }
     if (SKB(0x1E) != 6) {
         m = SKS32(0x20);
-        if (!(m & 2)) {
+        if (m & 2) {
+        } else {
             if (m & 1) {
             } else {
                 if (hk_shift_key_ck() != 0 && SKB(0x1E) != 1) {
@@ -991,10 +997,10 @@ void hk_key_muhenkan(void) {
 }
 
 void cmd_delete(void) {
-    int n;
-    u16 pos;
-    char *s;
     char *p;
+    char *s;
+    int n;
+    int pos;
 
     if (SKB(0x2F) == 0) {
         s = (char *)lpSKey + 0x158;
@@ -1006,9 +1012,9 @@ void cmd_delete(void) {
             s = (char *)lpSKey + 0x44;
             n = sk_letlenU(s, pos);
         }
-        if ((int)pos < (int)strlen(s)) {
-            p = s + pos;
+        if (pos < (int)strlen(s)) {
             if (n != 0) {
+                p = s + pos;
                 *p = 0;
                 strcat(p, p + n);
                 SKS8(0x28) = 0;

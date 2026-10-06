@@ -502,10 +502,17 @@ u8 *em_cmd_area_move_ck(EMW *em, u8 *p) {
         tbl = em_area_mv_tbl[em->kind];
         stg = em->x73A;
         q += 1;
-        if (em->stg != stg && stg != 0xFF && (v = tbl[stg]) != 0) {
-            if (v != 2 && v != 1) {
-            }
-        } else {
+        if (em->stg == stg || stg == 0xFF) {
+            goto clr;
+        }
+        v = tbl[stg];
+        switch (v) {
+        case 1:
+            break;
+        case 2:
+            break;
+        case 0:
+        clr:
             em->x827 = 0;
             em->x828 = 0;
             em->x829 = 0;
@@ -513,6 +520,7 @@ u8 *em_cmd_area_move_ck(EMW *em, u8 *p) {
             em->x882 = 0;
             em->x883 = 0;
             CMD_SKIP(em, q, 3);
+            break;
         }
         break;
     case 1:
@@ -657,10 +665,10 @@ u8 *em_cmd_flag_set(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_flag_clear(EMW *em, u8 *p) {
-    s32 n;
     s32 i;
+    s32 n;
     u8 *ex;
-    u8 kind;
+    int kind;
 
     kind = *p++;
     if (kind == 0) {
@@ -671,7 +679,7 @@ u8 *em_cmd_flag_clear(EMW *em, u8 *p) {
     }
     ex = em->ex;
     for (i = 0; i < n; i++) {
-        switch (kind) {
+        switch ((u8)kind) {
         case 1:
             em->x88B = 0;
             break;
@@ -880,7 +888,7 @@ u8 *em_cmd_angle_ck(EMW *em, u8 *p) {
             if (var_a0 >= 0x8001) {
                 var_a0 = (0x10000 - var_a0) & 0xFFFF;
             }
-            if ((var_a0 & 0xFFFF) < (temp_s0 & 0xFFFF)) {
+            if ((temp_s0 & 0xFFFF) > (var_a0 & 0xFFFF)) {
                 var_s1 = 1;
             }
         } else {
@@ -1177,7 +1185,7 @@ u8 *em_cmd_pl_ang_sel(EMW *em, u8 *p) {
             v = *p;
             t = em->x844;
             p += 1;
-            if (((s32)(0.5f + ((65536.0f * v) / 360.0f)) & 0xFFFF) >= em->x904[t] && t != -1) {
+            if (em->x904[t] <= ((s32)(0.5f + ((65536.0f * v) / 360.0f)) & 0xFFFF)&& t != -1) {
             } else {
                 more = 1;
                 do {
@@ -1732,33 +1740,33 @@ u8 *em_cmd_boss_work_ck(EMW *em, u8 *p) {
 u8 *em_cmd_boss_atk_ck(EMW *em, u8 *p) {
     u8 *q;
     EMW *b;
-    u8 ok;
+    u8 flag;
 
     q = p;
     switch (*q++) {
     case 0:
         b = em->boss;
-        ok = 1;
-        if (b == NULL || b->x888 != 1 || b->stg != em->stg) {
-            ok = 1;
-            if (ok) {
-                for (;;) {
-                    if (q[0] == 0x3C && q[1] == 1) {
-                        break;
-                    }
-                    if (q[0] == 0x3C && q[1] == 2) {
-                        break;
-                    }
-                    q = cmd_end_search(em, q, 0x3C, 2);
-                    if (!ok) {
-                        break;
-                    }
-                }
+        flag = 1;
+        if (b == NULL) {
+            flag = 1;
+        } else {
+            if (b->x888 == 1 && b->stg == em->stg) {
+                break;
             }
-            q = next_cmd_search(em, q);
+            flag = 1;
+        }
+        while (flag) {
+            if (q[0] == 0x3C && q[1] == 1) {
+                break;
+            }
             if (q[0] == 0x3C && q[1] == 2) {
-                q = next_cmd_search(em, q);
+                break;
             }
+            q = cmd_end_search(em, q, 0x3C, 2);
+        }
+        q = next_cmd_search(em, q);
+        if (q[0] == 0x3C && q[1] == 2) {
+            q = next_cmd_search(em, q);
         }
         break;
     case 1:
@@ -1771,55 +1779,44 @@ u8 *em_cmd_boss_atk_ck(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_before_stage_ck(EMW *em, u8 *p) {
-    u8 temp_a0;
-    s32 var_s0;
-    u8 *temp_v0;
-    u8 *var_a1;
-    u8 temp_v1;
-    u8 temp_v1_2;
-    u8 temp_v1_3;
+    u8 *q;
+    u8 v;
+    u8 flag;
 
-    var_a1 = p;
-    switch (*var_a1++) {
+    q = p;
+    switch (*q++) {
     case 0:
-        temp_v1_2 = *var_a1;
-        var_a1 += 1;
-        if (temp_v1_2 == 0xFF) {
-            var_s0 = 1 & 0xFF;
-            goto loop_16;
+        v = *q++;
+        if (v == 0xFF) {
+            flag = 1;
+        } else {
+            flag = 1;
+            if (em->x92E == v) {
+                break;
+            }
+            flag = 1;
         }
-        var_s0 = 1 & 0xFF;
-        if (em->x92E != temp_v1_2) {
-loop_16:
-            if (var_s0 != 0) {
-                temp_a0 = EM_FIELD(var_a1, u8 *, 0);
-                if ((temp_a0 != 0x3D) || (EM_FIELD(var_a1, u8 *, 1) != 1)) {
-                    if (temp_a0 == 0x3D) {
-                        if (EM_FIELD(var_a1, u8 *, 1) != 2) {
-                            goto block_15;
-                        }
-                    } else {
-block_15:
-                        var_a1 = cmd_end_search(em, var_a1, 0x3D, 2);
-                        goto loop_16;
-                    }
-                }
+        while (flag) {
+            if (q[0] == 0x3D && q[1] == 1) {
+                break;
             }
-            temp_v0 = next_cmd_search(em, var_a1);
-            temp_v1_3 = EM_FIELD(temp_v0, u8 *, 0);
-            var_a1 = temp_v0;
-            if ((temp_v1_3 == 0x3D) && (EM_FIELD(var_a1, u8 *, 1) == 2)) {
-                var_a1 = next_cmd_search(em, var_a1);
+            if (q[0] == 0x3D && q[1] == 2) {
+                break;
             }
+            q = cmd_end_search(em, q, 0x3D, 2);
+        }
+        q = next_cmd_search(em, q);
+        if (q[0] == 0x3D && q[1] == 2) {
+            q = next_cmd_search(em, q);
         }
         break;
     case 1:
-        var_a1 = else_ck(em, var_a1, 0x3D);
+        q = else_ck(em, q, 0x3D);
         break;
     case 2:
         break;
     }
-    return var_a1;
+    return q;
 }
 
 CMD_SEL_FUNC_W(em_cmd_before_stage_sel, 0x3E, u8, u8, em->x92E)
@@ -2070,13 +2067,32 @@ block_27:
 u8 *em_cmd_boss_same_stage_ck(EMW *em, u8 *p) {
     u8 *q;
     EMW *b;
+    u8 flag;
 
     q = p;
     switch (*q++) {
     case 0:
         b = em->boss;
-        if (b == NULL || em->stg != b->stg) {
-            CMD_SKIP(em, q, 0x44);
+        if (b == NULL) {
+            flag = 1;
+        } else {
+            if (em->stg == b->stg) {
+                break;
+            }
+            flag = 1;
+        }
+        while (flag) {
+            if (q[0] == 0x44 && q[1] == 1) {
+                break;
+            }
+            if (q[0] == 0x44 && q[1] == 2) {
+                break;
+            }
+            q = cmd_end_search(em, q, 0x44, 2);
+        }
+        q = next_cmd_search(em, q);
+        if (q[0] == 0x44 && q[1] == 2) {
+            q = next_cmd_search(em, q);
         }
         break;
     case 1:
@@ -2411,7 +2427,7 @@ u8 *em_cmd_samestage_pl_target_sel(EMW *em, u8 *p) {
     if (em->x88F != 0) {
         m = 0;
         j = 0;
-        if ((s32) * (u8 *)0x3F34C3 > 0) {
+        if (0 < (s32) * (u8 *)0x3F34C3) {
             do {
                 bit = 1 << j;
                 if ((em->x88F & bit) && Pl_stg_ck_tw(em, &player_work[j]) != 0 && player_work[j].be_flag != 0) {
@@ -2747,7 +2763,7 @@ u8 *em_cmd_st25_pl_target_sel(EMW *em, u8 *p) {
     if (em->x88F != 0) {
         m = 0;
         j = 0;
-        if ((s32) * (u8 *)0x3F34C3 > 0) {
+        if (0 < (s32) * (u8 *)0x3F34C3) {
             do {
                 bit = 1 << j;
                 if ((em->x88F & bit) && Pl_stg_ck_tw(em, &player_work[j]) != 0 && player_work[j].be_flag != 0) {
@@ -2773,7 +2789,7 @@ u8 *em_cmd_st25_pl_target_sel(EMW *em, u8 *p) {
             }
         } else {
             j = 0;
-            if ((s32) * (u8 *)0x3F34C3 > 0) {
+            if (0 < (s32) * (u8 *)0x3F34C3) {
                 do {
                     bit = 1 << j;
                     if ((m & 0xFF & bit) && (t = player_work[j].x70E, !((s32)t < 4)) && (s32)t < 0xB) {
@@ -2786,7 +2802,7 @@ u8 *em_cmd_st25_pl_target_sel(EMW *em, u8 *p) {
         }
         i = 0;
         n = 0;
-        if ((s32) * (u8 *)0x3F34C3 > 0) {
+        if (0 < (s32) * (u8 *)0x3F34C3) {
             do {
                 if (em->x918[i] == 0xC350 && (m & 0xFF & (1 << i))) {
                     list[n] = i;
@@ -3094,34 +3110,35 @@ u8 *em_cmd_em_cmd_reset(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_rnd32(EMW *em, u8 *p) {
-    u8 *q;
-    u8 *r;
     u8 n;
-    u8 w;
-    s32 cum;
-    s32 i;
-    s32 rnd;
+    int w;
+    u16 i;
+    int cum;
+    u16 rnd;
 
-    q = p;
-    switch (*q) {
+    switch (*p) {
     case 0:
-        n = q[1];
+        n = p[1];
         cum = 0;
         i = 0;
-        q += 2;
-        if (n > 0) {
-            rnd = em->x39A & 0x1F & 0xFFFF;
-loop:
-            r = cmd_end_search(em, q, 0x80, 0xFF);
-            w = r[2];
-            q = r + 3;
-            if (w == 0 || ((w & 0xFF) != 0xFF && (cum = (cum + w) & 0xFF, !(rnd < cum)))) {
-                i = (i + 1) & 0xFFFF;
-                if (i >= n) {
-                } else {
-                    goto loop;
+        rnd = em->x39A & 0x1F;
+        p += 2;
+        if (0 < n) {
+            do {
+                p = cmd_end_search(em, p, 0x80, 0xFF);
+                w = p[2];
+                p += 3;
+                if (w != 0) {
+                    if ((u8)w == 0xFF) {
+                        break;
+                    }
+                    cum = (cum + w) & 0xFF;
+                    if (rnd < cum) {
+                        break;
+                    }
                 }
-            }
+                i++;
+            } while (i < n);
         }
         break;
     case 1:
@@ -3134,22 +3151,21 @@ loop:
     case 8:
     case 9:
     case 10:
-        r = q + 2;
+        p += 2;
         for (;;) {
-            r = cmd_end_search(em, r, 0x80, 0xFF);
-            if (r[1] != 0xFF) {
-                r = r + 3;
-                continue;
+            p = cmd_end_search(em, p, 0x80, 0xFF);
+            if (p[1] == 0xFF) {
+                p += 2;
+                break;
             }
-            break;
+            p += 3;
         }
-        q = r + 2;
         break;
     case 0xFF:
-        q += 1;
+        p += 1;
         break;
     }
-    return q;
+    return p;
 }
 
 u8 *em_cmd_contents(EMW *em, u8 *p) {
@@ -4592,32 +4608,33 @@ void em_cdm_act_flag_ck(EMW *em) {
 
 u8 *area_route_rnd32(EMW *em, u8 *a) {
     u8 n;
-    u8 cum;
     u16 i;
+    int cum;
     u16 rnd;
-    u8 w;
-    u8 *q;
+    int w;
 
     n = a[2];
     cum = 0;
     i = 0;
-    q = a + 3;
     rnd = em->x39A & 0x1F;
+    a += 3;
     for (; i < n; i++) {
-        w = q[2];
-        q += 3;
-        if (w != 0) {
-            if (w == 0xFF) {
+        w = a[2];
+        a += 3;
+        if (w == 0) {
+            a += 1;
+        } else {
+            if ((u8)w == 0xFF) {
                 break;
             }
-            cum = cum + w;
+            cum = (cum + w) & 0xFF;
             if (rnd < cum) {
                 break;
             }
+            a += 1;
         }
-        q += 1;
     }
-    return q;
+    return a;
 }
 
 u8 *set_cmd(EMW *em) {

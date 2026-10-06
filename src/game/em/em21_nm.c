@@ -3522,7 +3522,7 @@ static void em_demo00_00606B70(EMW *em, EM21W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05 = temp_v1 + 1;
-            Quest_enemy_capture();
+            Quest_enemy_capture(em);   /* PC: a0 = em left over in the asm */
         }
         break;
     case 2:
@@ -4152,7 +4152,7 @@ void em21_main(EMW *em) {
     u8 r;
     PLW *pl;
     int i;
-    int n;
+    u8 n;
 
     var_s0 = 0;
     if (em->x8C3 == 0 && em->x04 == 1) {
@@ -4161,23 +4161,22 @@ void em21_main(EMW *em) {
             pl = player_work;
             for (i = 0; i < n; i++, pl++) {
                 if (em->stg == pl->stg) {
-                    break;
+                    goto skip_stg;
                 }
             }
-            if (i >= n) {
-                if (em->mode < 5) {
-                    if (em->x388 != 4) {
-                        if (!M2(0x16)) {
-                            em_cmd_reset(em);
-                            em->x839 = 0;
-                            em21_act_set(em, 2, 0x16, 2);
-                        }
-                    } else if (!M2(0)) {
+            if (em->mode < 5) {
+                if (em->x388 != 4) {
+                    if (!M2(0x16)) {
                         em_cmd_reset(em);
-                        em21_act_set(em, 2, 0, 2);
+                        em->x839 = 0;
+                        em21_act_set(em, 2, 0x16, 2);
                     }
+                } else if (!M2(0)) {
+                    em_cmd_reset(em);
+                    em21_act_set(em, 2, 0, 2);
                 }
             }
+        skip_stg:;
         } else if (game_w.x2E == 6) {
             em_no_floor_ck(em);
             if (em->x388 == 0) {
@@ -5263,25 +5262,20 @@ extern HIRE_ADD *hire_down_add_tbl_0066EE40[4];
 static void hire_move_sub2_0060BAD0(EMW *em, EM21W *w, int i) {
     switch (w->hire_st[i][1]) {
     case 0:
-        switch (w->hire_mode) {
-        case 1:
-            if (w->hire_ang[i][0] != 0) {
-                w->hire_st[i][1] = 1;
-                w->hire_cnt2[i] = 20;
-            }
-            break;
-        case 3:
-        case 2:
+        if (w->hire_mode == 2 || w->hire_mode == 3) {
             if (w->hire_ang[i][0] != hire_down_angx_003893F0[i]) {
                 w->hire_st[i][1] = 2;
                 w->hire_cnt2[i] = 20;
             }
-            break;
+        } else if (w->hire_mode == 1) {
+            if (w->hire_ang[i][0] != 0) {
+                w->hire_st[i][1] = 1;
+                w->hire_cnt2[i] = 20;
+            }
         }
         break;
     case 1:
-        w->hire_cnt2[i]--;
-        if (w->hire_cnt2[i] <= 0) {
+        if (--w->hire_cnt2[i] <= 0) {
             w->hire_ang[i][0] = 0;
             w->hire_st[i][1] = 0;
             return;
@@ -5289,8 +5283,7 @@ static void hire_move_sub2_0060BAD0(EMW *em, EM21W *w, int i) {
         w->hire_ang[i][0] += (u16)((s32)(0x10000 - w->hire_ang[i][0]) / w->hire_cnt2[i]);
         break;
     case 2:
-        w->hire_cnt2[i]--;
-        if (w->hire_cnt2[i] <= 0) {
+        if (--w->hire_cnt2[i] <= 0) {
             w->hire_ang[i][0] = hire_down_angx_003893F0[i];
             w->hire_st[i][1] = 0;
             return;
@@ -5305,20 +5298,16 @@ static void hire_move_sub2_0060BAD0(EMW *em, EM21W *w, int i) {
 static void hire_move_sub1_0060BCA0(EMW *em, EM21W *w, int i) {
     switch (w->hire_st[i][0]) {
     case 0:
-        switch (w->hire_mode) {
-        case 1:
-            w->hire_st[i][0]++;
-            w->hire_tm[i] = hire_start_timer_tbl0_003893D0[i];
-            break;
-        case 2:
+        if (w->hire_mode == 2) {
             w->hire_st[i][0]++;
             w->hire_tm[i] = hire_start_timer_tbl1_003893D8[i];
-            break;
+        } else if (w->hire_mode == 1) {
+            w->hire_st[i][0]++;
+            w->hire_tm[i] = hire_start_timer_tbl0_003893D0[i];
         }
         break;
     case 1:
-        w->hire_tm[i]--;
-        if (w->hire_tm[i] <= 0) {
+        if (--w->hire_tm[i] <= 0) {
             if (w->hire_mode == 2) {
                 w->hire_st[i][0] = 3;
             } else {
@@ -5328,24 +5317,62 @@ static void hire_move_sub1_0060BCA0(EMW *em, EM21W *w, int i) {
             w->hire_cnt[i] = 0;
         }
         break;
-    case 2:
-    case 3: {
+    case 2: {
         HIRE_ADD *tbl;
         HIRE_ADD *p;
+        s16 cnt0;
         u16 cnt;
         u8 k;
 
-        cnt = w->hire_cnt[i];
-        w->hire_cnt[i] = cnt + 1;
-        if (w->hire_st[i][0] == 2) {
-            tbl = hire_normal_add_tbl_0066ED90[i];
-        } else {
-            tbl = hire_down_add_tbl_0066EE40[i];
-        }
+        cnt0 = w->hire_cnt[i];
+        w->hire_cnt[i] = cnt0 + 1;
+        cnt = cnt0;
+        tbl = hire_normal_add_tbl_0066ED90[i];
         p = tbl;
         k = 0;
         for (;;) {
-            if (k != 0 && p->t == 0) {
+            if (k && !p->t) {
+                k |= 0x80;
+                break;
+            }
+            if (p->t < cnt) {
+                p++;
+                k++;
+                continue;
+            }
+            break;
+        }
+        if (k & 0x80) {
+            if (w->hire_mode == 2) {
+                w->hire_st[i][0] = 1;
+                w->hire_tm[i] = hire_remove_timer_tbl1_003893E8[i];
+            } else if (w->hire_mode == 1) {
+                w->hire_st[i][0] = 1;
+                w->hire_tm[i] = hire_remove_timer_tbl0_003893E0[i];
+            } else {
+                w->hire_st[i][0] = 0;
+            }
+            w->hire_ang[i][1] = tbl[k & 0x7F].add;
+            return;
+        }
+        w->hire_ang[i][1] += tbl[k].add;
+        break;
+    }
+    case 3: {
+        HIRE_ADD *tbl;
+        HIRE_ADD *p;
+        s16 cnt0;
+        u16 cnt;
+        u8 k;
+
+        cnt0 = w->hire_cnt[i];
+        w->hire_cnt[i] = cnt0 + 1;
+        cnt = cnt0;
+        tbl = hire_down_add_tbl_0066EE40[i];
+        p = tbl;
+        k = 0;
+        for (;;) {
+            if (k && !p->t) {
                 k |= 0x80;
                 break;
             }

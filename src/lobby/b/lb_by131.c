@@ -54,7 +54,11 @@ s32 shop_armor2_stack(int kind, int id) {
             }
         }
     } else {
+#ifdef __MWERKS__
         idx = item_to_stack() & 0xFF;
+#else
+        idx = item_to_stack(kind, id) & 0xFF;  /* PC: a0/a1 are still kind/id in the asm (argregs.py) */
+#endif
     }
     return idx;
 }

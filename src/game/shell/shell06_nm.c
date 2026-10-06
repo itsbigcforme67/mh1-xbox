@@ -431,6 +431,7 @@ void shell06_move_sub(SHLW *sh) {
     flvecCopy(&sh->pos0, &sh->pos2);
     switch (p->kind) {
     default:
+    case 0:
     case 1:
         len = flSqrt(sh->rate[0] * sh->rate[0] + sh->rate[2] * sh->rate[2]);
         wb[1] = p->wobble_y * len * rand_sub(calc_rand(sh->xB8, sh->char0, 0x147F, 2), 14);

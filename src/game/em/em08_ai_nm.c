@@ -3875,7 +3875,7 @@ static void em_die03_005A1F70(EMW *em, EM08W *w) {
 static void em_die04_005A21F0(EMW *em, EM08W *w) {
     switch (em->x05) {
     case 0:
-        if (Quest_enemy_revival_ck() == 1) {
+        if (Quest_enemy_revival_ck(em) == 1   /* PC: a0 = em left over */) {
             Quest_enemy_revival_set(em);
             em_status_init(em);
             em08_init(em);
@@ -5387,8 +5387,7 @@ static void hire_move_sub2_005A69A0(EMW *em, EM08W *w, int i) {
         }
         break;
     case 1:
-        w->tmr[i]--;
-        if (w->tmr[i] <= 0) {
+        if (--w->tmr[i] <= 0) {
             w->ang[i].a = 0;
             w->st[i].b = 0;
             return;
@@ -5396,8 +5395,7 @@ static void hire_move_sub2_005A69A0(EMW *em, EM08W *w, int i) {
         w->ang[i].a += ((0x10000 - w->ang[i].a) / w->tmr[i]) & 0xFFFF;
         break;
     case 2:
-        w->tmr[i]--;
-        if (w->tmr[i] <= 0) {
+        if (--w->tmr[i] <= 0) {
             w->ang[i].a = hire_down_angx_003887E8[i];
             w->st[i].b = 0;
             return;
@@ -5408,27 +5406,18 @@ static void hire_move_sub2_005A69A0(EMW *em, EM08W *w, int i) {
 }
 
 static void hire_move_sub1_005A6B70(EMW *em, EM08W *w, int i) {
-    HIRE_E *e;
-    HIRE_E *p;
-    int c;
-    s16 t;
-
     switch (w->st[i].a) {
     case 0:
-        switch (w->xF) {
-        case 2:
+        if (w->xF == 2) {
             w->st[i].a++;
             w->tm[i] = hire_start_timer_tbl1_003887D0[i];
-            break;
-        case 1:
+        } else if (w->xF == 1) {
             w->st[i].a++;
             w->tm[i] = hire_start_timer_tbl0_003887C8[i];
-            break;
         }
         break;
     case 1:
-        w->tm[i]--;
-        if (w->tm[i] <= 0) {
+        if (--w->tm[i] <= 0) {
             if (w->xF == 2) {
                 w->st[i].a = 3;
             } else {
@@ -5438,21 +5427,32 @@ static void hire_move_sub1_005A6B70(EMW *em, EM08W *w, int i) {
             w->cnt[i] = 0;
         }
         break;
-    case 2:
-        t = w->cnt[i];
-        w->cnt[i] = t + 1;
-        e = hire_normal_add_tbl_00659250[i];
-        p = e;
-        c = 0;
-    loop2:
-        if (c != 0 && p->t == 0) {
-            c = (c | 0x80) & 0xFF;
-        } else if (p->t < (t & 0xFFFF)) {
-            p++;
-            c = (c + 1) & 0xFF;
-            goto loop2;
+    case 2: {
+        HIRE_E *tbl;
+        HIRE_E *p;
+        s16 cnt0;
+        u16 cnt;
+        u8 k;
+
+        cnt0 = w->cnt[i];
+        w->cnt[i] = cnt0 + 1;
+        cnt = cnt0;
+        tbl = hire_normal_add_tbl_00659250[i];
+        p = tbl;
+        k = 0;
+        for (;;) {
+            if (k && !p->t) {
+                k |= 0x80;
+                break;
+            }
+            if (p->t < cnt) {
+                p++;
+                k++;
+                continue;
+            }
+            break;
         }
-        if (c & 0x80) {
+        if (k & 0x80) {
             if (w->xF == 2) {
                 w->st[i].a = 1;
                 w->tm[i] = hire_remove_timer_tbl1_003887E0[i];
@@ -5462,26 +5462,38 @@ static void hire_move_sub1_005A6B70(EMW *em, EM08W *w, int i) {
             } else {
                 w->st[i].a = 0;
             }
-            w->ang[i].b = e[c & 0x7F].v;
+            w->ang[i].b = tbl[k & 0x7F].v;
             return;
         }
-        w->ang[i].b += e[c].v;
+        w->ang[i].b += tbl[k].v;
         break;
-    case 3:
-        t = w->cnt[i];
-        w->cnt[i] = t + 1;
-        e = hire_down_add_tbl_00659300[i];
-        p = e;
-        c = 0;
-    loop3:
-        if (c != 0 && p->t == 0) {
-            c = (c | 0x80) & 0xFF;
-        } else if (p->t < (t & 0xFFFF)) {
-            p++;
-            c = (c + 1) & 0xFF;
-            goto loop3;
+    }
+    case 3: {
+        HIRE_E *tbl;
+        HIRE_E *p;
+        s16 cnt0;
+        u16 cnt;
+        u8 k;
+
+        cnt0 = w->cnt[i];
+        w->cnt[i] = cnt0 + 1;
+        cnt = cnt0;
+        tbl = hire_down_add_tbl_00659300[i];
+        p = tbl;
+        k = 0;
+        for (;;) {
+            if (k && !p->t) {
+                k |= 0x80;
+                break;
+            }
+            if (p->t < cnt) {
+                p++;
+                k++;
+                continue;
+            }
+            break;
         }
-        if (c & 0x80) {
+        if (k & 0x80) {
             if (w->xF == 2) {
                 w->st[i].a = 1;
                 w->tm[i] = hire_remove_timer_tbl1_003887E0[i];
@@ -5491,11 +5503,12 @@ static void hire_move_sub1_005A6B70(EMW *em, EM08W *w, int i) {
             } else {
                 w->st[i].a = 0;
             }
-            w->ang[i].b = e[c & 0x7F].v;
+            w->ang[i].b = tbl[k & 0x7F].v;
             return;
         }
-        w->ang[i].b += e[c].v;
+        w->ang[i].b += tbl[k].v;
         break;
+    }
     }
 }
 
@@ -5572,7 +5585,7 @@ void em21_target_ang_calc(EMW *em, int arg1)
   t = t & 0xFFFF;
   if (((d - a) & 0xFFFF) < 0x8001)
   {
-    em->pos = em->pos;
+    /* (a permuter no-op "em->pos = em->pos;" removed: not C for gcc) */
     if (0, ((d - a) & 0xFFFF) < t)
     {
       em->ang[1] = a + ((d - a) & 0xFFFF);

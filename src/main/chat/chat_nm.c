@@ -4,6 +4,7 @@
 #include "types.h"
 #include "menu.h"
 #include "ud.h"
+#include "pl.h"
 
 #define F8(p, o) (*(u8 *)((u8 *)(p) + (o)))
 #define FS8(p, o) (*(s8 *)((u8 *)(p) + (o)))
@@ -26,7 +27,7 @@ void SetTextureStage(int);
 void SetFilterMode(int);
 void SetTrnslMode(int, int);
 void reload_tex(int, int);
-void flfntLocate(int, s16);
+void flfntLocate(s16, s16);
 void flfntSetSize(int, int);
 void font_set_palette(int);
 void font_print(void *, ...);
@@ -37,17 +38,19 @@ void DispFrameList(void *, char *, int);
 void DispFrameListOptionArrowC(void *, int);
 void DispFrameMessageA(void *, void *, int);
 void DispFrameMessage(void *, void *);
-void PutButtonICON(void *, int);
-void disp_cursorC(s16, s16, s16, s16, s16, int);
+void PutButtonICON(u8 *, u8);
+void disp_cursorC(s16, s16, s16, s16, int, int);
 void Disp_help_mess(int, int);
 u8 Equip_moji_color_rare(u8);
+int Equip_moji_color_rare_i(u8);
 
+typedef struct S2 { s16 a, b; } S2;
 typedef struct PFLP4 { s16 p[4]; u32 col; } PFLP4;
 typedef struct PFLP8 { s16 p[4]; u32 col; s16 uv[4]; } PFLP8;
 
 /* the highlight bar of row n of a list at y with rows h high, from x0 to
  * x1 (rect {x0, y0, x1, y1}; asm 0x2755D0) */
-void disp_cursorC(s16 x, s16 x1, s16 y, s16 h, s16 n, int col) {
+void disp_cursorC(s16 x, s16 x1, s16 y, s16 h, int n, int col) {
     PFLP4 q;
     u16 t;
 
@@ -78,25 +81,21 @@ void Disp_name_or_id(s16 v) {
 
 extern u8 button_icon_uv[][8];
 
-void PutButtonICON(void *b, int n) {
+void PutButtonICON(u8 *p, u8 n) {
     PFLP8 q;
-    u8 *p = b;
-    u8 cnt = n;
 
     reload_tex(1, 0x157);
     SetTextureStage(0x157);
-    while (cnt > 0) {
+    while (n > 0) {
         q.p[0] = 0.8f * (f32)FS16(p, 0);
         q.p[1] = FS16(p, 2);
         q.p[2] = 0.8f * (f32)FS16(p, 4);
         q.p[3] = FS16(p, 4);
-        q.uv[0] = FS16(button_icon_uv[F8(p, 6)], 0);
-        q.uv[1] = FS16(button_icon_uv[F8(p, 6)], 2);
-        q.uv[2] = FS16(button_icon_uv[F8(p, 6)], 4);
-        q.uv[3] = FS16(button_icon_uv[F8(p, 6)], 6);
+        *(S2 *)&q.uv[0] = *(S2 *)(button_icon_uv[F8(p, 6)] + 0);
+        *(S2 *)&q.uv[2] = *(S2 *)(button_icon_uv[F8(p, 6)] + 4);
         q.col = (F8(p, 7) << 24) | 0xFFFFFF;
         flps0008(&q);
-        cnt--;
+        n--;
         p += 8;
     }
 }
@@ -282,15 +281,15 @@ void PutSpriteDiv3(PFLP8 *q, s16 w, s16 d) {
     s16 ow = q->p[2];
     s16 u0 = q->uv[0];
     s16 u1 = q->uv[2];
-    s16 t;
+    int t;
 
     q->p[2] = w;
     q->uv[2] = q->uv[0] + d;
     flps0008(q);
-    t = u1 - d;
     q->p[0] = q->p[0] + q->p[2];
-    q->p[2] = ow - w * 2;
+    q->p[2] = ow - (w + w);
     q->uv[0] = u0 + d;
+    t = u1 - d;
     q->uv[2] = t;
     flps0008(q);
     q->p[0] = q->p[0] + q->p[2];
@@ -329,25 +328,27 @@ void PutArrow(s16 x0, s16 y, s16 x1, s16 h, int col, int flag) {
 
 extern u8 minisight_tbl[4][10];
 
-void Put_mini_sight(s16 ofs, int col) {
+void Put_mini_sight(f32 scale, s16 ofs, int col) {
     PFLP8 q;
     u8 (*e)[10];
-    int i;
+    u32 i;
+    s16 x0;
 
     SetFilterMode(1);
     reload_tex(1, 0x11A);
     SetTextureStage(0x11A);
+    x0 = 1.25f * scale;
     q.uv[1] = 0xD8;
     q.col = col;
-    q.uv[0] = 0x100;
+    q.uv[2] = 0x100;
     e = minisight_tbl;
-    q.uv[2] = 0xEC;
+    q.uv[3] = 0xEC;
     for (i = 4; i != 0; i--, e++) {
-        q.p[0] = (s16)(1.25f * (f32)ofs) + FS16(e, 0);
+        q.p[0] = x0 + FS16(e, 0);
         q.p[1] = ofs + FS16(e, 2);
         q.p[2] = FS16(e, 4);
         q.p[3] = FS16(e, 6);
-        q.uv[3] = q.uv[0] - q.p[2];
+        q.uv[0] = q.uv[2] - q.p[2];
         Put_sprite_rotate(&q, FS8(e, 8));
     }
 }
@@ -369,39 +370,56 @@ int Monster_list_num(void) {
     return (v & 0xFFFF) + ((v & 0xFFFF0000) >> 16);
 }
 
-s8 Monster_list_search(s8 cur, s8 dir) {
-    int n;
-    s8 i;
-
-    if (F32(&User_data, 0x3F0) != 0) {
-        if (cur < 0) {
-            i = 0;
-        } else {
-            i = cur + dir;
-            if (i > 29) {
-                i = 0;
-            }
-            if (i < 0) {
-                i = 29;
-            }
-        }
-        for (n = 30; n != 0; n--) {
-            if (F32(&User_data, 0x3F0) & (1 << i)) {
-                return i;
-            }
-            if (dir >= 0) {
-                i++;
-                if (i > 29) {
-                    i = 0;
-                }
-            } else if (i <= 0) {
-                i = 29;
-            } else {
-                i--;
-            }
-        }
+s8 Monster_list_search(s8 cur, char dir)
+{
+  int n;
+  u32 f;
+  f = *((u32 *) (((u8 *) (&User_data)) + 0x3F0));
+  if (f != 0)
+  {
+    if (cur < 0)
+    {
+      cur = 0;
     }
-    return -1;
+    else
+    {
+      cur += dir;
+      if (cur > 29)
+      {
+        cur = 0;
+      }
+      if (cur < 0)
+      {
+        cur = 29;
+      }
+    }
+    for (n = 30; n != 0; n--)
+    {
+      if (f & (1 << cur))
+      {
+        return cur;
+      }
+      if (((s8) dir) >= 0)
+      {
+        cur++;
+        if (cur > 29)
+        {
+          cur = 0;
+        }
+      }
+      else
+        if (cur <= 0)
+      {
+        cur = 29;
+      }
+      else
+      {
+        cur--;
+      }
+    }
+
+  }
+  return -1;
 }
 
 void Disp_menu_help(void) {
@@ -411,23 +429,21 @@ void Disp_menu_help(void) {
 extern u8 Item_data[][16];
 extern u8 help_mess_00354680[];
 extern u32 item_col_tbl[];
-extern char lit_2796[8];
+extern char lit_2796[];
 extern s32 *pit_help_str_tbl[];
 
 void Disp_help_mess(int kind, int id) {
     PFLP8 q;
-    int k = kind & 0xFF;
-    int n = id & 0xFFFF;
     u8 *it;
 
-    if (k < 7 && n != 0xFFFF) {
-        if (k == 1 && n > 0x18) {
+    if ((u8)kind < 7 && (u16)id != 0xFFFF) {
+        if ((u8)kind == 1 && (u16)id > 0x18) {
             DispFrameMessage(help_mess_00354680, 0);
             flfntSetSize(0x12, 0x12);
             flfntLocate(0x168, 0x166);
             font_set_palette(FS16(help_mess_00354680, 8));
-            font_print_sp((void *)pit_help_str_tbl[1][n]);
-            it = Item_data[n - 0x18];
+            font_print_sp((void *)pit_help_str_tbl[1][(u16)id]);
+            it = Item_data[(u16)id - 0x18];
             reload_tex(1, 0x118);
             SetTextureStage(0x118);
             q.p[0] = 0xF4;
@@ -448,11 +464,11 @@ void Disp_help_mess(int kind, int id) {
             }
             flfntSetSize(0x10, 0x10);
             flfntLocate(0x132, 0x192);
-            font_set_palette(Equip_moji_color_rare(it[2]));
+            font_set_palette(Equip_moji_color_rare_i(it[2]));
             font_print(lit_2796, it[2] + 1);
             return;
         }
-        DispFrameMessage(help_mess_00354680, (void *)pit_help_str_tbl[k][n]);
+        DispFrameMessage(help_mess_00354680, (void *)pit_help_str_tbl[(u8)kind][(u16)id]);
     }
 }
 
@@ -497,8 +513,9 @@ extern PSWC Psw;
 int NPC_Message(s8 *s, u32 left, int mode, int flag) {
     s16 cnt;
     u32 w;
-    u32 pos = 0;
+    u32 pos;
     s8 c;
+    u16 v;
 
     if (PitMenu.open != 0) {
         return -1;
@@ -507,7 +524,7 @@ int NPC_Message(s8 *s, u32 left, int mode, int flag) {
         PitMenu.x06 = 0x10;
         return 0;
     }
-    if (left < PitMenu.x08 || *(s8 **)&PitMenu.x00 != s) {
+    if (PitMenu.x08 > left || *(s8 **)&PitMenu.x00 != s) {
         PitMenu.x04 = 0;
         PitMenu.x07 = 0;
     }
@@ -515,20 +532,19 @@ int NPC_Message(s8 *s, u32 left, int mode, int flag) {
     *(s8 **)&PitMenu.x00 = s;
     PitMenu.x06 = 1;
     c = *s;
+    pos = 0;
     while (c != 0) {
         pos++;
-        if (c != 0xA) {
-            switch (((c << 8) + s[1]) & 0xFFFF) {
-            case 0x8142:
-            case 0x8148:
+        if (c == 0xA) {
+            s += 1;
+        } else {
+            v = ((c << 8) + s[1]) & 0xFFFF;
+            if (v == 0x8142 || v == 0x8148) {
                 w = 0xF;
-                break;
-            case 0x8141:
+            } else if (v == 0x8141) {
                 w = 8;
-                break;
-            default:
+            } else {
                 w = 3;
-                break;
             }
             if (left < w) {
                 if (PitMenu.x04 < pos) {
@@ -543,8 +559,6 @@ int NPC_Message(s8 *s, u32 left, int mode, int flag) {
             }
             left -= w;
             s += 2;
-        } else {
-            s += 1;
         }
         c = *s;
     }
@@ -598,7 +612,6 @@ void Chat_move(int);
 
 void Chat_init(void) {
     int k = 0;
-    u16 z = 0;
 
     if (GW(0x1DC) != 0 && NPCZoomInCameraCheck() == 1) {
         k = 4;
@@ -606,8 +619,7 @@ void Chat_init(void) {
     PitMenu.open++;
     SoftKeyboard_pos_set(80.0f, 0x50);
     SoftKeyboard_set(k, 0xE, 0x2C, 0);
-    PitMenu.x0C = 0;
-    PitMenu.x0F = z;
+    PitMenu.x0F = PitMenu.x0C = 0;
     se_req(7, 0x11, 0);
     Chat_move(0);
 }
@@ -618,55 +630,71 @@ void SoftKeyboard_exit(void);
 s8 SoftKeyboard_move(s8 *, s16, s16);
 void chat_log_add(int, s8 *, PIT_CHAT *);
 void func_5CB100(u8, s8 *, u8);
-void net_send_chat(u8, int, s8 *, int);
+void net_send_chat(u8, int, s8 *, u8);
 void set01_set(int, int, int);
 
 
-void Chat_move(int a) {
-    u16 sw0;
-    u16 sw1;
-    s8 buf[0x30];
-    s8 r;
-    u8 *pl;
-    int v;
-
-    if (PitMenu.x18 != 0) {
-        set01_set(0, 0x14, 0);
-        PitMenu.x18 = 0;
-    }
-    chat_sw_set(&sw0, &sw1);
-    buf[0] = 0;
-    r = SoftKeyboard_move(buf, sw0, sw1);
-    if (r != 0) {
-        if (buf[0] != 0 && r > 0 && ChatKinsoku_chk((u8 *)buf) != 0) {
-            pl = (u8 *)&player_work[GW(0xD1)];
-            if (GW(0x1DC) == 0) {
-                if (PitMenu.x15 != 0) {
-                    v = 0xFF;
-                } else {
-                    v = PitMenu.x16 & PitMenu.x19 & 0xFF;
-                }
-                chat_log_add(F8(pl, 0xC), buf, 0);
-                net_send_chat(F8(pl, 0xC), 1, buf, v & 0xFF);
-            } else {
-                func_5CB100(F8(pl, 0xC), buf, PitMenu.x17);
-            }
-            PitMenu.x0F = 1;
-            PitMenu.x0E = 1;
-            PitMenu.x0C = 0x12C;
+void Chat_move(int a)
+{
+  u16 sw0;
+  int new_var;
+  u16 sw1;
+  s8 buf[0x40];
+  s8 r;
+  u8 w;
+  int v;
+  struct 
+  {
+    u8 _p[12];
+    u8 id;
+  } *pl;
+  if (((u8) PitMenu.x18) != 0)
+  {
+    set01_set(0, 0x14, 0);
+    PitMenu.x18 = 0;
+  }
+  chat_sw_set(&sw0, &sw1);
+  buf[0] = 0;
+  r = SoftKeyboard_move(buf, sw0, sw1);
+  if (r != 0)
+  {
+    if (((buf[0] != 0) && (r > 0)) && (ChatKinsoku_chk((u8 *) buf) != 0))
+    {
+      pl = (void *) (&player_work[*((u8 *) (((u8 *) (&game_w)) + 0xD1))]);
+      if ((*((u8 *) (((u8 *) (&game_w)) + 0x1DC))) == 0)
+      {
+        if (PitMenu.x15 != 0)
+        {
+          v = 0xFF;
         }
-        SoftKeyboard_exit();
-        PitMenu.open = 0;
-        Menu_chatlog_i();
-        return;
+        else
+        {
+          v = PitMenu.x19;
+          v = (PitMenu.x16 & v) & 0xFF;
+        }
+ new_var = 0; do { w = v; } while (new_var);
+        chat_log_add(pl->id, buf, 0);
+        net_send_chat(pl->id, 1, buf, w);
+      }
+      else
+      {
+        func_5CB100(pl->id, buf, PitMenu.x17);
+      }
+      PitMenu.x0F = 1;
+      PitMenu.x0E = 1;
+      PitMenu.x0C = 0x12C;
     }
-    PitMenu.x0C = 0;
-    PitMenu.x0F = 0;
+    SoftKeyboard_exit();
+    PitMenu.open = 0;
+    Menu_chatlog_i();
+    return;
+  }
+  PitMenu.x0F = (PitMenu.x0C = 0);
 }
 
 char *strcpy(char *, const char *);
-extern u8 chat_font_color[];
-extern u8 chat_cnfg_font_color[];
+extern u8 chat_font_color[8];
+extern u8 chat_cnfg_font_color[8];
 extern u8 my_user_id[];
 
 void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
@@ -675,6 +703,7 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
     int i;
     int room;
     s8 c;
+    int uc;
 
     if (*s == 0) {
         return;
@@ -690,8 +719,8 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
         strcpy(l->name, (char *)src + 8);
     } else {
         l->col[0] = 0;
-        l->col[2] = l->col[1] = chat_font_color[l->who];
-        l->col[3] = chat_cnfg_font_color[PitMenu.x17];
+        l->col[1] = l->col[2] = chat_font_color[l->who];
+        l->col[3] = chat_cnfg_font_color[(u8)PitMenu.x17];
         strcpy(l->uid, (char *)my_user_id);
         strcpy(l->name, (char *)player_work + l->who * 0xA00 + 0x8D4);
     }
@@ -702,7 +731,7 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
         PitMenu.lognum = 0x40;
     }
     room = 0x16;
-    if (who == 0xFF) {
+    if ((who & 0xFF) == 0xFF) {
         room = 0x1E;
     }
     l->nline = 0;
@@ -722,16 +751,8 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
                 l->nline++;
                 return;
             }
-            if ((u8)c < 0x80 || (u8)c > 0x9F) {
-                if ((u8)c >= 0xE0) {
-                    goto dbl;
-                }
-                *d = c;
-                s++;
-                d++;
-                left--;
-            } else {
-dbl:
+            uc = c & 0xFF;
+            if ((uc >= 0x80 && uc < 0xA0) || (uc >= 0xE0 && uc < 0x100)) {
                 if (left >= 2) {
                     *d = c;
                     left -= 2;
@@ -741,6 +762,11 @@ dbl:
                 } else {
                     break;
                 }
+            } else {
+                *d = c;
+                s++;
+                d++;
+                left--;
             }
             if (left <= 0) {
                 break;
@@ -794,9 +820,9 @@ int Online_ck();
 extern char room_member_id[][8];
 
 void ChatLogAdd_Q(int who, int mask, s8 *msg) {
-    struct { char uid[8]; char name[8]; u8 col[4]; } e;
-    int k;
-    int p = who & 0xFF;
+    struct { char name[8]; char uid[0x114]; u8 col[4]; } e;
+    u8 k;
+    int p;
     u8 c;
 
     KinshiYogo_chk((char *)msg);
@@ -807,11 +833,12 @@ void ChatLogAdd_Q(int who, int mask, s8 *msg) {
     } else {
         k = 2;
     }
-    e.col[3] = 0;
+    p = who & 0xFF;
+    e.col[0] = 0;
     c = chat_font_color[p];
     e.col[2] = c;
     e.col[1] = c;
-    e.col[0] = chat_cnfg_font_color[k & 0xFF];
+    e.col[3] = chat_cnfg_font_color[k & 0xFF];
     strcpy(e.uid, (char *)player_work + p * 0xA00 + 0x8D4);
     strcpy(e.name, room_member_id[p]);
     chat_log_add(who, msg, (PIT_CHAT *)&e);
@@ -871,8 +898,7 @@ int Menu_chatlog_mv(int sw) {
         }
     }
     if (PitMenu.logscr == 0) {
-        PitMenu.x0C = 0;
-        PitMenu.x0F = 0;
+        PitMenu.x0F = PitMenu.x0C = 0;
     }
     return sw;
 }
@@ -983,29 +1009,35 @@ next:
 }
 
 void Pit_disp_chat_log(void) {
-    s16 t;
+    u32 t;
     int col;
-    s16 a1;
-    s16 a2;
+    int c;
+    s16 y;
+    s16 y2;
 
     SetFilterMode(0);
     DispFrameMessage(pf_chat_log_base, 0);
-    t = (System_timer & 0x1F) << 11;
-    a1 = 0xB6;
+    t = (u16)((System_timer & 0x1F) << 11);
     col = (((s8)(48.0f * flSin(0.0000958738f * (f32)t)) + 0xCF) << 24) | 0x1ACC8E;
+    y = 0xB6;
     if (PitMenu.x22 & 1) {
+        c = col;
         if (PitMenu.x22 & 4) {
-            a1 = 0xB4;
+            y -= 2;
         }
+    } else {
+        c = 0xA0606060;
     }
-    PutArrow(0x80, a1, 0x1B, 0xF, col, 0);
-    a2 = 0x198;
+    PutArrow(0x80, y, 0x1B, 0xF, c, 2);
+    y2 = 0x198;
     if (PitMenu.x22 & 2) {
         if (PitMenu.x22 & 8) {
-            a2 = 0x19A;
+            y2 += 2;
         }
+    } else {
+        col = 0xA0606060;
     }
-    PutArrow(0x80, a2, 0x1B, 0xF, col, 2);
+    PutArrow(0x80, y2, 0x1B, 0xF, col, 3);
     disp_chat_log_sub(PitMenu.logscr, -0xA, PitMenu.x21);
     Put_receive_mark(0);
 }
@@ -1041,7 +1073,7 @@ extern char lit_3351[];
 
 void Put_receive_mark(int n) {
     if ((u8)PitMenu.x0F != 0) {
-        if ((n & 0xFF) == 1) {
+        if ((u8)n == 1) {
             DispFrameMessage(pf_receive_mark, 0);
         }
         if ((System_timer & 0x1F) > 0xC) {
@@ -1072,16 +1104,15 @@ void Join_pl_chk(void) {
     PitMenu._pad1A = 0;
     PitMenu.x19 = 0;
     if (GW(0x1DC) == 0) {
-        g = (u8 *)&game_w;
-        for (i = 0; i < 4; i++, g++) {
-            if (GW(0xD1) != i && g[0x208] == 1) {
+        for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
+            if (game_w.master != i && g[0x208] == 1) {
                 PitMenu.x19 |= (1 << i) & 0xFF;
                 PitMenu._pad1A++;
             }
         }
     } else {
         for (i = 0; i < 8; i++) {
-            if (GW(0xD1) != i && func_5D8370(i) == 0) {
+            if (game_w.master != i && func_5D8370(i) == 0) {
                 PitMenu.x19 |= (1 << i) & 0xFF;
                 PitMenu._pad1A++;
             }
@@ -1104,12 +1135,12 @@ extern char lit_3441[];
 extern char lit_3442[];
 
 void Disp_NPC_message(void) {
-    char buf[0x20];
-    char *d;
-    s8 *s;
-    s16 left;
+    char buf[0x40];
+    int left;
     s16 y;
+    s8 *s;
     int room;
+    char *d;
 
     if (!(PitMenu.x06 & 0x10)) {
         DispFrameMessage(pf_chat_log_base, lit_3439);
@@ -1167,17 +1198,17 @@ extern u8 Item_data[][16];
 int Item_preparation_one_ck(s16);
 
 void ItemListWindow(int page, int cursel, int mode) {
-    char buf[0x40];
+    char buf[0x20];
     s16 base;
-    s16 i;
     s16 sel;
     s16 y;
     s16 cnt;
     s16 pal;
     UD_ITEM *it;
+    u8 *w;
 
     base = (s16)(page / 10) * 10;
-    it = (UD_ITEM *)((u8 *)&player_work[GW(0xD1)] + 0x828) + base;
+    w = (u8 *)&player_work[GW(0xD1)] + 0x828;
     SetTrnslMode(4, 5);
     if (cursel != 0) {
         FS32(item_list_frame, 0x10) = cursel;
@@ -1192,6 +1223,7 @@ void ItemListWindow(int page, int cursel, int mode) {
     }
     SetFilterMode(0);
     flfntSetSize(0x12, 0x12);
+    it = (UD_ITEM *)w + base;
     y = 0x3E;
     for (cnt = 10; cnt > 0; cnt--, it++) {
         y += 0x16;
@@ -1241,7 +1273,7 @@ int Event_flag_ck(int);
 void Get_hunter_status(void *, u8 *, int *, int *);
 int Get_weapon_job2(u8, u16);
 void PrintPlayerJob(void *);
-void PlayerEquipmentWindow(void *);
+void PlayerEquipmentWindow(PLW *);
 void Put_comment(int, int, int, void *);
 
 void PlayerStatusWindow(u8 *pl, int tab) {
@@ -1308,7 +1340,7 @@ void PlayerStatusWindow(u8 *pl, int tab) {
         Put_comment(0x132, 0x126, 0x14, (u8 *)&User_data + 0x3F4);
         return;
     case 1:
-        PlayerEquipmentWindow(pl);
+        PlayerEquipmentWindow((PLW *)pl);
         if (F8(pl, 0x910) == 0) {
             flfntLocate(0x132, 0x13A);
             font_print_uf(Skill_name[0]);
@@ -1330,37 +1362,36 @@ extern u8 Armor_Arm_Data[][0x14];
 extern u8 Armor_Waist_Data[][0x14];
 extern u8 Armor_Leg_Data[][0x14];
 extern u8 menu_stat_icon_tbl1[5];
-extern u8 menu_stat_icon_tbl2[];
+extern u8 menu_stat_icon_tbl2[8];
 extern char lit_3652[];
 int Get_equip_name(u8, u16);
-u8 Get_equip_rare(u8, u16);
+int Get_equip_rare(u8, u16);
 
-void PlayerEquipmentWindow(void *plv) {
-    u8 *pl = plv;
+void PlayerEquipmentWindow(PLW *pl) {
     PFLP8 q;
     u8 *eq[5];
     s16 y;
-    s16 i;
-    s16 ty;
+    u32 i;
+    int ty;
 
-    eq[0] = Armor_Head_Data[F8(pl, 0x354)];
-    eq[1] = Armor_Body_Data[F8(pl, 0x355)];
-    eq[2] = Armor_Arm_Data[F8(pl, 0x356)];
-    eq[3] = Armor_Waist_Data[F8(pl, 0x357)];
-    eq[4] = Armor_Leg_Data[F8(pl, 0x352)];
+    eq[0] = Armor_Head_Data[pl->work352[2]];
+    eq[1] = Armor_Body_Data[pl->work352[3]];
+    eq[2] = Armor_Arm_Data[pl->work352[4]];
+    eq[3] = Armor_Waist_Data[pl->work352[5]];
+    eq[4] = Armor_Leg_Data[pl->work352[0]];
     SetFilterMode(1);
     reload_tex(1, 0x118);
     SetTextureStage(0x118);
     q.p[0] = 0xF8;
-    y = 0x55;
     q.p[2] = 0x20;
+    y = 0x55;
     q.p[3] = 0x20;
     q.p[1] = 0x55;
-    q.uv[0] = menu_stat_icon_tbl2[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF];
+    q.uv[0] = menu_stat_icon_tbl2[Get_weapon_job2(pl->work35F, pl->wpn_kind) & 0xFF];
     q.uv[2] = q.uv[0] + 0x20;
     q.uv[1] = 0xA0;
     q.uv[3] = 0xC0;
-    q.col = Equip_icon_color_rare(Get_equip_rare(F8(pl, 0x35F), F16(pl, 0x360)), 0xFF, 0);
+    q.col = Equip_icon_color_rare(Get_equip_rare(pl->work35F, pl->wpn_kind), 0xFF, 0);
     flps0008(&q);
     q.uv[1] = 0xC0;
     q.uv[3] = 0xE0;
@@ -1374,9 +1405,8 @@ void PlayerEquipmentWindow(void *plv) {
     }
     flfntSetSize(0x12, 0x12);
     flfntLocate(0x168, 0x5C);
-    font_print_sp(lit_3652, Get_equip_name(F8(pl, 0x35F), F16(pl, 0x360)));
-    ty = 0x7C;
-    for (i = 0; i < 5; i++) {
+    font_print_sp(lit_3652, Get_equip_name(pl->work35F, pl->wpn_kind));
+    for (i = 0, ty = 0x7C; i < 5; i++) {
         flfntLocate(0x168, ty);
         font_print_sp(lit_3652, FS32(eq[i], 0x10));
         ty += 0x20;
@@ -1389,28 +1419,31 @@ void PrintPlayerJob(void *pl) {
     font_print_uf(menu_stat_job_str[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF]);
 }
 
-int EquipmentDescriptionWindowA(u8 *, s16, s16, int, u8 *, int);
+typedef struct EQD { u8 be; u8 kind; u16 id; } EQD;
+u8 EquipmentDescriptionWindowA_s(EQD *, s16, s16, int, u8 *, int);
+u8 EquipmentDescriptionWindowA(EQD *, int, int, int, u8 *, int);
 
 void EquipmentDescriptionWindow(u8 *a, s16 b, s16 c, int d, u8 *e) {
-    EquipmentDescriptionWindowA(a, b, c, d, e, 0xB2);
+    EquipmentDescriptionWindowA((EQD *)a, b, c, d, e, 0xB2);
 }
 
 extern char lit_3701[];
 extern char lit_3702[];
-void Put_PageArrow(s16, s16, int, int);
-void equip_exp_core(u8 *, s16, s16, int, u8 *);
+void Put_PageArrow(int, int, int, u8);
+void Put_PageArrow_s(s16, s16, int, u8);
+void flfntLocate_i(int, int);
+void equip_exp_core(u8 *, int, int, int, u8 *);
 void Get_equip_icon_uv(u8 *, s16 *, s16 *);
 
-int EquipmentDescriptionWindowA(u8 *eq, s16 x, s16 y, int page, u8 *cmp, int alpha) {
-    struct { s16 x; s16 y; s16 sp0; s16 sp1; u8 w; u8 h; u8 a; u8 b; } fr;
+u8 EquipmentDescriptionWindowA(EQD *eq, int x, int y, int page, u8 *cmp, int alpha) {
+    struct { s16 x; s16 y; u8 w; u8 h; u8 a; u8 b; s16 sp0; s16 sp1; } fr;
     PFLP8 q;
-    s16 uv[2];
-    s16 uv2[2];
-    int pages;
-    int pg;
+    u8 pages;
+    u8 pg;
+    u8 pb;
 
-    fr.w = 0x12;
     fr.h = 0x12;
+    fr.w = 0x12;
     fr.x = x;
     fr.y = y;
     fr.a = 0x11;
@@ -1418,44 +1451,45 @@ int EquipmentDescriptionWindowA(u8 *eq, s16 x, s16 y, int page, u8 *cmp, int alp
     fr.sp0 = 0;
     fr.sp1 = 0;
     DispFrameMessageA(&fr, 0, alpha);
-    if (eq != 0 && eq[0] != 0) {
-        if (F16(eq, 2) != 0x3E7) {
-            if (eq[1] != 7) {
+    if (eq != 0 && eq->be != 0) {
+        if (eq->id != 0x3E7) {
+            pb = page;
+            if (eq->kind != 7) {
                 pages = 2;
-                pg = page & 1;
+                page = page & 1;
             } else {
                 pages = 4;
-                pg = page & 3;
+                page = page & 3;
             }
-            if (!(page & 0xFF & 0x80)) {
-                Put_PageArrow(x + 0xE1, y + 0x64, ((pg & 0xFF) + 1) & 0xFF, pages);
+            if (!(pb & 0x80)) {
+                Put_PageArrow_s((s16)x + 0xE1, (s16)y + 0x64, ((page & 0xFF) + 1) & 0xFF, pages);
             }
-            if ((pg & 0xFF) < 2) {
+            pg = page;
+            if (pg < 2) {
                 SetFilterMode(1);
                 reload_tex(1, 0x118);
                 SetTextureStage(0x118);
+                q.p[0] = 0.8f * (5.0f + (f32)x);
                 q.p[2] = 0x20;
                 q.p[3] = 0x20;
-                q.p[0] = 0.8f * (5.0f + (f32)x);
-                q.col = Equip_icon_color_rare(Get_equip_rare(eq[1], F16(eq, 2)), 0xFF, 0);
-                Get_equip_icon_uv(eq, uv, uv2);
+                q.col = Equip_icon_color_rare(Get_equip_rare(eq->kind, eq->id), 0xFF, 0);
+                Get_equip_icon_uv((u8 *)eq, &q.uv[0], &q.uv[2]);
                 q.p[1] = y;
-                if ((pg & 0xFF) == 1) {
+                if (pg == 1) {
                     q.p[1] += 0xE;
                 }
-                *(s16 *)&q.uv[0] = uv[0];
                 flps0008(&q);
             }
-            equip_exp_core(eq, x, y, pg, cmp);
+            equip_exp_core((u8 *)eq, x, y, page, cmp);
             return pages;
         }
         font_set_palette(0);
-        flfntLocate(x + 0x36, y + 0xA);
+        flfntLocate((s16)x + 0x36, (s16)y + 0xA);
         font_print_uf(lit_3701);
         return 0;
     }
     font_set_palette(0);
-    flfntLocate(x + 0x36, y + 0xA);
+    flfntLocate((s16)x + 0x36, (s16)y + 0xA);
     font_print_uf(lit_3702);
     return 0;
 }
@@ -1500,13 +1534,13 @@ void *Get_equip_data_ptr(void *);
 void font_print_strings(int, int, void *, int);
 int Get_bowgun_atk(void *);
 int Get_weapon_job(void *);
-u8 Get_equip_rare(u8, u16);
+int Get_equip_rare(u8, u16);
 void sword_zokusei(u8 *, int, s16);
 void slash_level_bar(u8 *, s16);
 
 #define ATKCONV(v, job) ((u16)((f32)(v) * job_atk_adj_tbl[job]))
 
-void equip_exp_core(u8 *eq, s16 x, s16 y, int page, u8 *cmp) {
+void equip_exp_core(u8 *eq, int x, int y, int page, u8 *cmp) {
     u8 rare = Get_equip_rare(eq[1], F16(eq, 2));
     int job = Get_weapon_job(eq) & 0xFF;
     int pg = page & 0xFF;
@@ -1870,16 +1904,18 @@ void EquipmentCompareWindow(u8 *cur, u8 *other, s16 x, s16 y, int page) {
 }
 
 void EquipmentCompareWindowA(u8 *cur, u8 *other, s16 x, s16 y, int page, int alpha) {
-    s16 t;
+    u32 t;
+    f32 s;
 
-    EquipmentDescriptionWindowA(cur, x, y, page, 0, alpha);
-    EquipmentDescriptionWindowA(other, x, y + 0x90, page, cur, alpha);
+    EquipmentDescriptionWindowA_s((EQD *)cur, x, y, page, 0, alpha);
+    EquipmentDescriptionWindowA_s((EQD *)other, x, y + 0x90, page, cur, alpha);
     SetFilterMode(1);
     reload_tex(1, 0x11A);
     SetTextureStage(0x11A);
-    t = (System_timer & 0x1F) << 11;
-    flSin(0.0000958738f * (f32)t);
-    PutArrow(x + 0x89, y + 0x7A, 0x20, 0x10, 0, 0);
+    t = (u16)((System_timer & 0x1F) << 11);
+    s = flSin(0.0000958738f * (f32)t);
+    PutArrow(x + 0x89, y + 0x7A, 0x20, 0x10,
+             (((((s8)(96.0f * s) + 0x90) & 0xFF) << 16) | 0xFF000000 | ((((s8)(20.0f * s) + 0xE4) & 0xFF) << 8)) | (((s8)(7.0f * s) + 0xF7) & 0xFF), 3);
 }
 
 extern u8 Battle_type[];
@@ -1942,24 +1978,24 @@ void slash_level_bar(u8 *pl, s16 y) {
 
 extern char lit_4368[];
 
-void Put_PageArrow(s16 x, s16 y, int a, int b) {
+void Put_PageArrow(int x, int y, int a, u8 b) {
     PFLP8 q;
 
-    q.p[3] = 0x12;
     q.p[2] = 0xE;
+    q.p[3] = 0x12;
     q.p[1] = y;
     q.col = 0xFF20FF30;
-    q.p[0] = 0.8f * (f32)(x - 0x18);
+    q.p[0] = 0.8f * (f32)((s16)x - 0x18);
     *(u32 *)&q.uv[0] = 0x1A00A6;
     *(u32 *)&q.uv[2] = 0x2E0094;
     flps0008(&q);
-    q.p[0] = 0.8f * (f32)(x + 0x36);
-    *(u32 *)&q.uv[0] = 0x94;
-    *(u32 *)&q.uv[2] = 0xA6;
+    q.p[0] = 0.8f * (f32)((s16)x + 0x36);
+    q.uv[0] = 0x94;
+    q.uv[2] = 0xA6;
     flps0008(&q);
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
-    flfntLocate(x, y);
+    flfntLocate_i(x, y);
     font_print(lit_4368, a & 0xFF, b & 0xFF);
 }
 
@@ -1973,25 +2009,23 @@ void Put_shousai(void) {
     PutButtonICON(setumei_shousai_4372, 1);
 }
 
-extern s16 equip_icon_u_tbl[];
-extern s16 weapon_icon_u_tbl[];
+extern u8 equip_icon_u_tbl[8];
+extern u8 weapon_icon_u_tbl[8];
 
 void Get_equip_icon_uv(u8 *eq, s16 *a, s16 *b) {
-    s16 v;
     u8 k = eq[1];
 
     if (k == 6 || k == 7) {
-        v = 0xBF;
         a[0] = weapon_icon_u_tbl[Get_weapon_job(eq) & 0xFF] + 1;
         b[0] = a[0] + 0x1E;
         a[1] = 0xA1;
+        b[1] = 0xBF;
     } else {
-        v = 0xDF;
         a[0] = equip_icon_u_tbl[k] + 1;
         b[0] = a[0] + 0x1E;
         a[1] = 0xC1;
+        b[1] = 0xDF;
     }
-    b[1] = v;
 }
 
 extern char *ng_word_tbl_0[];
@@ -2088,12 +2122,12 @@ int ChatKinsoku_chk(u8 *s) {
     u8 c = *p;
 
     while (c != 0) {
-        if (c == 0x81 && p[1] == 0x40) {
-            p += 2;
-            c = *p;
-        } else {
+        if (c != 0x81 || p[1] != 0x40) {
+            KinshiYogo_chk((char *)s);
             return 1;
         }
+        p += 2;
+        c = *p;
     }
     return 0;
 }

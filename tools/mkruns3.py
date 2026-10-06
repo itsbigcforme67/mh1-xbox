@@ -22,7 +22,7 @@ for l in al.split('\n'):
     if m: real[m.group(2)] = int(m.group(3))
 rows = []
 cur = None
-def strip(n): return re.sub(r'_[0-9A-F]{6,8}$', '', n)
+def strip(n): return re.sub(r'_(?:[0-9A-F]{6,8}|i|s)$', '', n)   # _i = alias with a different prototype (config/main_aliases.txt)
 for l in chk.split('\n'):
     m = re.match(r'^(OK|--)  (\S+)\s+%s\s+0x([0-9A-F]+)\s+(\d+) bytes' % mod, l)
     if m:

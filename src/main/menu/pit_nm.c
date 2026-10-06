@@ -57,7 +57,7 @@ int ListSelect(u8 *p, int pad, int n) {
     }
     if (v != old) {
         *p = v;
-        se_req(7, 0x16, 0, v);
+        se_req(7, 0x16, 0);
         return 1;
     }
     return 0;
@@ -84,7 +84,7 @@ int PageSelect(u8 *p, int pad, int n) {
     }
     if (v != old) {
         *p = v;
-        se_req(7, 0x16, 0, v);
+        se_req(7, 0x16, 0);
         return 1;
     }
     return 0;
@@ -190,7 +190,7 @@ int Item_valid_chk(u16 id) {
         if (Pl_trap_use_ck(pl) < 0) {
             return 0;
         }
-        return 1;
+        break;
     case 0x81:
     case 0x143:
         return Nikuyaki_ck(pl);
@@ -201,7 +201,7 @@ int Item_valid_chk(u16 id) {
         if (pl->kind == 1 || pl->kind == 5) {
             return 0;
         }
-        return 1;
+        break;
     case 0x20:
         return Taru_ok_ck();
     case 0x12:
@@ -218,7 +218,7 @@ int Item_valid_chk(u16 id) {
         if (a != 3) {
             return 0;
         }
-        return 1;
+        break;
     case 0x86:
     case 0x87:
     case 0x88:
@@ -228,7 +228,7 @@ int Item_valid_chk(u16 id) {
         if (a != 4) {
             return 0;
         }
-        return 1;
+        break;
     case 0xA2:
         p = pl->fish878;
         if (p == 0) {
@@ -237,7 +237,7 @@ int Item_valid_chk(u16 id) {
         if (*(u16 *)(p + 2) != 0x11) {
             return 0;
         }
-        return 1;
+        break;
     case 0xA5:
         return Modori_dama_ck();
     default:
@@ -249,8 +249,8 @@ int Item_valid_chk(u16 id) {
             if (*(u16 *)(p + 2) != 2) {
                 return 0;
             }
-            return 1;
         }
-        return 1;
+        break;
     }
+    return 1;
 }
