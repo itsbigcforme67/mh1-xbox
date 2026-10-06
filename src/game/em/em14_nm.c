@@ -210,9 +210,11 @@ void em14_local_init(EMW *em) {
     eft01_set((PLW *) em, 0);
 }
 
+void eft09_set(EMW *);
+
 void em14_init(EMW *em) {
     EM14W *w = (EM14W *)em->ex;
-    int hp;
+    s16 hp;
     u8 temp_a0;
     u8 temp_v1_2;
 
@@ -248,11 +250,12 @@ void em14_init(EMW *em) {
     if (em->kind == 0xE) {
         hp = em_hp_vital_set2(em, 0x7D0, 0x5DC);
         em->x302 = hp;
+        em->x792 = hp;
     } else {
         hp = em_hp_vital_set2(em, 0x640, 0x578);
         em->x302 = hp;
+        em->x792 = hp;
     }
-    em->x792 = hp;
     em->x839 = 1;
     em->x88B = 1;
     em->x765 = 1;
@@ -279,7 +282,7 @@ void em14_init(EMW *em) {
         case 0xE:
         case 0x1A:
             em->ex[0xA3] = 0;
-            eft09_set(em, 0x2000, 0x200, 0x100);
+            eft09_set(em); /* original passes no argument but em */
             break;
         }
     }
@@ -3973,84 +3976,55 @@ void em14_main_sub(EMW *em, EM14W *w) {
     }
 }
 
-void em14_uvmove(EMW *em) {
-    EMW *var_t1;
-    EMW *var_t2;
-    s32 temp_t7;
-    s32 temp_t7_2;
-    s32 var_t3;
-    s32 var_t5;
-    s32 var_t5_2;
-    u16 temp_t4;
-    u16 temp_t5;
-    u16 temp_t5_2;
-    u8 temp_t4_3;
-    void *temp_t4_2;
+#define UVR(i) \
+    do { \
+        em->uv[i][0] = 0.0f; \
+        em->uv[i][1] = 0.0f; \
+        em->uvtm[i] = 0xFFFF; \
+        em->uvty[i] = 0xFF; \
+    } while (0)
 
-    var_t3 = 0;
-    var_t2 = em;
-    var_t1 = em;
-    do {
-        temp_t4 = M2C_FIELD(var_t2, u16 *, 0x5F0);
-        if (temp_t4 != 0xFFFF) {
-            M2C_FIELD(var_t2, u16 *, 0x5F0) = (u16) (temp_t4 + 1);
+void em14_uvmove(EMW *em) {
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        if (em->uvtm[i] != 0xFFFF) {
+            em->uvtm[i]++;
         }
-        temp_t4_2 = em + var_t3;
-        temp_t4_3 = M2C_FIELD(temp_t4_2, u8 *, 0x5F8);
-        switch (temp_t4_3) {                        /* irregular */
+        switch (em->uvty[i]) {
+        case 0:
+            UVR(i);
+            break;
+        case 1:
+            if (em->uvtm[i] >= 0x3E) {
+                UVR(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 1;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 8);
+                em->uv[i][1] = 0.25f * (f32)(k / 8 % 4);
+            }
+            break;
+        case 2:
+            em->uv[i][0] = 0.125f;
+            em->uv[i][1] = 0.0f;
+            em->uvtm[i] = 0xFFFF;
+            em->uvty[i] = 0xFF;
+            break;
+        case 3:
+            if (em->uvtm[i] >= 0xC) {
+                UVR(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 2;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 4);
+                em->uv[i][1] = 0.25f * (f32)(k / 4 % 4);
+            }
+            break;
         case 0xFF:
             break;
-        case 0x0:
-            M2C_FIELD(var_t1, f32 *, 0x5C0) = 0.0f;
-            M2C_FIELD(var_t1, f32 *, 0x5C4) = 0.0f;
-            M2C_FIELD(var_t2, u16 *, 0x5F0) = 0xFFFF;
-            M2C_FIELD(temp_t4_2, u8 *, 0x5F8) = 0xFF;
-            break;
-        case 0x1:
-            temp_t5 = M2C_FIELD(var_t2, u16 *, 0x5F0);
-            if ((s32) temp_t5 >= 0x3E) {
-                M2C_FIELD(var_t1, f32 *, 0x5C0) = 0.0f;
-                M2C_FIELD(var_t1, f32 *, 0x5C4) = 0.0f;
-                M2C_FIELD(var_t2, u16 *, 0x5F0) = 0xFFFF;
-                M2C_FIELD(temp_t4_2, u8 *, 0x5F8) = 0xFF;
-            } else {
-                temp_t7 = (temp_t5 >> 1) + 1;
-                var_t5 = temp_t7 >> 3;
-                M2C_FIELD(var_t1, f32 *, 0x5C0) = (f32) (0.125f * (f32) (temp_t7 % 8));
-                if (temp_t7 < 0) {
-                    var_t5 = (s32) (temp_t7 + 7) >> 3;
-                }
-                M2C_FIELD(var_t1, f32 *, 0x5C4) = (f32) (0.25f * (f32) (var_t5 % 4));
-            }
-            break;
-        case 0x2:
-            M2C_FIELD(var_t1, f32 *, 0x5C0) = 0.125f;
-            M2C_FIELD(var_t1, f32 *, 0x5C4) = 0.0f;
-            M2C_FIELD(var_t2, u16 *, 0x5F0) = 0xFFFF;
-            M2C_FIELD(temp_t4_2, u8 *, 0x5F8) = 0xFF;
-            break;
-        case 0x3:
-            temp_t5_2 = M2C_FIELD(var_t2, u16 *, 0x5F0);
-            if ((s32) temp_t5_2 >= 0xC) {
-                M2C_FIELD(var_t1, f32 *, 0x5C0) = 0.0f;
-                M2C_FIELD(var_t1, f32 *, 0x5C4) = 0.0f;
-                M2C_FIELD(var_t2, u16 *, 0x5F0) = 0xFFFF;
-                M2C_FIELD(temp_t4_2, u8 *, 0x5F8) = 0xFF;
-            } else {
-                temp_t7_2 = (temp_t5_2 >> 1) + 2;
-                var_t5_2 = temp_t7_2 >> 2;
-                M2C_FIELD(var_t1, f32 *, 0x5C0) = (f32) (0.125f * (f32) (temp_t7_2 % 4));
-                if (temp_t7_2 < 0) {
-                    var_t5_2 = (s32) (temp_t7_2 + 3) >> 2;
-                }
-                M2C_FIELD(var_t1, f32 *, 0x5C4) = (f32) (0.25f * (f32) (var_t5_2 % 4));
-            }
-            break;
         }
-        var_t3 += 1;
-        var_t2 += 2;
-        var_t1 += 0xC;
-    } while (var_t3 < 4);
+    }
 }
 
 static void sound_call_sub_005BCB30(EMW *em, int se, int joint) {
