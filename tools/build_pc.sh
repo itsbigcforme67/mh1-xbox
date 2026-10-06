@@ -96,6 +96,12 @@ QUEST="src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tu
 for f in src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c; do
     [ -f "$f" ] && EM="$EM $f"
 done
+# More monster families (round 20): the AI draft (emNN_ai_nm.c or the
+# whole-file emNN_nm.c), the matched setter files, and the setters'
+# near-match copy linked weak (WEAK_EM) for what is still asm there.
+# kind 6 Yian Kut-Ku / 20 Gypceros: em20
+EM="$EM src/game/em/em20_ai_nm.c src/game/em/em20.c src/game/em/em20b.c src/game/em/em20_horm.c src/game/em/em20_nm.c"
+WEAK_EM="em20_nm"
 # Monster C that is still on other agents' branches (not merged into main):
 # when this checkout has the branch and main does not have the file yet, the
 # file and that branch's include/ are exported to build/pc/ext/<branch>/
@@ -184,7 +190,7 @@ LOBBY3="src/lobby/b/lb_by122.c src/lobby/b/lb_by123.c src/lobby/b/lb_bz98.c src/
 PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint"
 LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*}"; done)"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
-WEAK="mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
+WEAK="$WEAK_EM mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT"
 
 SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}

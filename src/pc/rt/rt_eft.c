@@ -538,13 +538,13 @@ void flvecRotX(f32 *v, f32 a)
  * matrices over each frame (rt_actor_joints); actors without them use
  * their position (stand-in). */
 static FLMAT joint_m;
-static struct { const void *chr; const f32 *m; int n; } joints[8];
+static struct { const void *chr; const f32 *m; int n; } joints[32];   /* 4 players + 20 monsters + spare */
 
 u8 *rt_actor_nodes(const void *work, int *max);
 void rt_actor_joints(const void *chr, const float *mats, int n)
 {
     int i, f = -1;
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < 32; i++) {
         if (joints[i].chr == chr) { f = i; break; }
         if (f < 0 && !joints[i].chr) f = i;
     }
@@ -564,7 +564,7 @@ void rt_actor_joints(const void *chr, const float *mats, int n)
 static const f32 *joint_mat(const void *chr, int j)
 {
     int i;
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < 32; i++)
         if (joints[i].chr == chr && joints[i].m && j >= 0 && j < joints[i].n)
             return joints[i].m + 16 * j;
     return NULL;

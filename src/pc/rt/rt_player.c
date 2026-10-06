@@ -259,9 +259,22 @@ void rt_player_tick(int no)
             s8 hp = (s8)tg[0x88D];
             f32 *t = hp >= 0 ? (f32 *)(StiEM_data + 0x1C * hp) : (f32 *)(tg + 0xAC), cap[8], sph[4], r = 120.0f;
             u8 *bd = em_body_tbl[tg[2]];
-            if (hp < 0 && bd && *(s16 *)bd != -1) {     /* alive: its main body sphere */
-                hit_data_expand(tg, bd, cap, sph);
-                if (sph[3] > 0) {
+            if (hp < 0 && bd) {     /* alive: its first body sphere (or the first capsule's middle) */
+                u8 *b;
+                int k = -1;
+                for (b = bd; *(s16 *)b != -1 && k != 0; b += 0x28) {
+                    int r1 = hit_data_expand(tg, b, cap, sph);
+                    if (r1 == 0 && sph[3] > 0) {
+                        k = 0;
+                    } else if (r1 == 1 && k < 0) {
+                        sph[0] = (cap[0] + cap[3]) / 2;
+                        sph[1] = (cap[1] + cap[4]) / 2;
+                        sph[2] = (cap[2] + cap[5]) / 2;
+                        sph[3] = cap[6];
+                        k = 1;
+                    }
+                }
+                if (k >= 0 && sph[3] > 0) {
                     t = sph;
                     r = sph[3] + 40.0f;
                 }

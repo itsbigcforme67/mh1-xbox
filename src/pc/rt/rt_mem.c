@@ -168,7 +168,7 @@ static void load_main_to_lobby(void)
         for (n = 0; n < size / 8; n++) {
             uint32_t loc = rd32(elf + off + 8 * n), info = rd32(elf + off + 8 * n + 4), sym = info >> 8;
             const uint8_t *st = elf + symoff + 16 * sym, *w;
-            if ((info & 0xFF) != 2 || sym >= nsym || (st[14] | st[15] << 8) != lbsec || rd32(st + 4) == 0)
+            if ((info & 0xFF) != 2 || sym >= nsym || (uint32_t)(st[14] | st[15] << 8) != lbsec || rd32(st + 4) == 0)
                 continue;                   /* R_MIPS_32 to a lobby.bin symbol (VU code labels have value 0) */
             if ((w = rt_addr(loc, 4)) == NULL)
                 continue;

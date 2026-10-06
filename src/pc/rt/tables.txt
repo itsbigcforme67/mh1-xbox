@@ -974,3 +974,13 @@ st51_pos_tbl_0065BC20 0x65BC20 0x60
 st53_pos_tbl_0065BC80 0x65BC80 0x60
 st56_pos_tbl 0x65BCE0 0x78
 em29_type_tbl 0x675600 0x54
+# em20 (Yian Kut-Ku / Gypceros) and em21 tables (round 20)
+em20_act_add
+em20_runaway_timer_tbl
+em20_stay_timer_tbl
+em21_runaway_timer_tbl
+em21_stay_timer_tbl
+fly_adjy2_hosei_tbl_0066EAD0
+fly_adjy_hosei_tbl_0066E660
+fly_adjz2_hosei_tbl_0066ECD0
+gero_tbl
