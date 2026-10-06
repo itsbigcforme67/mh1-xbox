@@ -18,10 +18,12 @@ void net_receive_host(int slot, u8 *buf) {
     u8 s;
     int v;
     int bit;
-    u16 t;
-    NPLV *pl;
-    NITEM *it;
     u8 who;
+    u16 a;
+    NPLV *pl;
+    unsigned int t;
+    NITEM *it;
+
     u8 *p;
 
     if (Online_ck() != 0) {
@@ -32,13 +34,14 @@ void net_receive_host(int slot, u8 *buf) {
             break;
         case 1:
         case 2:
+            a = p[0];
             s = p[3];
             if (kind == 1) {
                 if (game_w.master == game_w.x21B) {
                     v = s & 0xFF;
-                    game_w.x1E2 = p[0];
+                    game_w.x1E2 = a;
                     bit = 1 << (v % 32);
-                    t = s & 0xFF;
+                    t = s;
                     if (game_w.x1A8[t >> 5] & bit) {
                         game_w.x1E4 = 0xFF;
                     } else {
@@ -55,7 +58,7 @@ void net_receive_host(int slot, u8 *buf) {
                     pl->x91F = 0;
                     if ((s & 0xFF) != 0xFF) {
                         it = &game_w.item[s & 0xFF];
-                        Pl_item_stack(pl, it->id, it->num);
+                        Pl_item_stack(pl, it->id, game_w.item[s & 0xFF].num);
                         Item_box_get_item(it->id, s);
                     }
                 }
