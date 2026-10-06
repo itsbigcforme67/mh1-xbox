@@ -1011,8 +1011,8 @@ void Pit_disp_chat_log(void) {
 }
 
 void Receive_mess_move(void) {
-    if (F8(&PitMenu, 6) != 0) {
-        if (PitMenu.x0F == 0) {
+    if (FS8(&PitMenu, 6) != 0) {
+        if (F8(&PitMenu, 0xF) == 0) {
             PitMenu.x0C = 0;
         }
         return;
@@ -1020,7 +1020,7 @@ void Receive_mess_move(void) {
     if (!(PitMenu.x22 & 0x80) && F8(&PitMenu, 0x1C) == 0) {
         PitMenu.x0F = 0;
         if (F16(&PitMenu, 0xC) > 0) {
-            PitMenu.x0C--;
+            PitMenu.x0C = F16(&PitMenu, 0xC) - 1;
         }
     }
 }
@@ -2074,17 +2074,11 @@ set:
 int zen_kigou_suuji_chk(u8 *p) {
     u8 c = p[0];
 
-    switch (c) {
-    case 0x81:
-        if (p[1] >= 0x40 && p[1] < 0xED) {
-            return 1;
-        }
-        break;
-    case 0x82:
-        if (p[1] >= 0x4F && p[1] < 0x59) {
-            return 1;
-        }
-        break;
+    if (c == 0x81 && p[1] >= 0x40 && p[1] < 0xED) {
+        return 1;
+    }
+    if (c == 0x82 && p[1] >= 0x4F && p[1] < 0x59) {
+        return 1;
     }
     return 0;
 }
