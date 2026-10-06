@@ -55,8 +55,10 @@ void rt_village_enter(void)
     lb_sys[4] = 0;
     active = 1;
     tick = 0;
-    if (getenv("RT_QUEST_TRACE"))
-        fprintf(stderr, "rt_village: enter (Clear_lobby_ram, Local_main from step 0)\n");
+    if (getenv("RT_QUEST_TRACE")) {
+        extern u8 User_data[];
+        fprintf(stderr, "rt_village: enter (Clear_lobby_ram, Local_main from step 0), money %d\n", *(s32 *)(User_data + 0x20));
+    }
 }
 
 /* One village tick. Returns the quest number when Local_main reports an
