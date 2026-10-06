@@ -1499,6 +1499,7 @@ segments:
       - [0x094DCC, asm, text/lb_rule_seet_trans_ot2]
       - [0x094DD0, c, f/lb_c01]
       - [0x094E84, asm, text/lb_select_quest_level_trans]
+      - [0x094E90, c, f/lb_v07]
       - [0x0953F0, c, f/lb_v03]
       - [0x095570, c, f/lb_n06]
       - [0x095610, c, f/lb_t01]
