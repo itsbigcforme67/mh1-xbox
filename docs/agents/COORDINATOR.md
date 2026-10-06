@@ -70,9 +70,9 @@ Priority (owner, 6 Oct 2026): offline village and single player before online-on
 - A (Opus): PC runtime: boot flow (title -> char creation -> village), saving to a host file, village item box/shops/house.
 - B (Sonnet): lobby 0x533980-0x5C4E60, village/offline first (traced from Local_main), online last.
 - C (Sonnet): main 0x100000-0x160000 and 0x230000-0x23E500.
-- D (Sonnet): lobby 0x5EE618-end
+- D (Sonnet): game overlay leftovers (87.8%, 139 hard functions) with the newer tricks; select leftovers.
 - E (Sonnet): main: own ranges + D's parked 0x1C0000-0x230000 and 0x24A240-0x2814E0, single player first (fonts, Quest_start, reward, staff), net last.
-- F (Sonnet): lobby 0x5C4E60-0x5EE618, item box and guild first (village), online last.
+- F (Sonnet): lobby 0x5C4E60-end (took D's tail): item box, guild, eft25 first; browser and plaza chat (online) last.
 - Parked: near-matches everywhere (register allocation); online code in main.
 
 ## Other running threads
