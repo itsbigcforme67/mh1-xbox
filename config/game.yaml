@@ -57,7 +57,7 @@ segments:
       - [0x006140, c, em/em_master]
       - [0x006310, asm, text/Em_Taisei_Set]
       - [0x006380, c, em/em_master_b]
-      - [0x007D50, asm, text/em_hagitori_lv_up]
+      - [0x007D50, c, em/em_master_r01]
       - [0x007F20, c, em/em_master_c]
       - [0x0080CC, asm, text/eft17_ran_suu_sub]
       - [0x0080D0, c, eft/eft17]
