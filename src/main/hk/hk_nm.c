@@ -420,20 +420,20 @@ void hk_key_space(int a) {
 }
 
 void hk_key_backspace(void) {
-    if (SKB(0x2F) == 0) {
-        if (hk_ctrl_key_ck() == 0) {
-            goto bs;
-        }
+    u16 *p;
+
+    if (SKB(0x2F) != 0 || hk_ctrl_key_ck() == 0) {
+        sk_backspace(1);
+    } else {
         if (SKB(0x158) != 0) {
-            SKU16(0x2C) -= backspace_all((char *)lpSKey + 0x158, SKU16(0x2C));
+            p = &SKU16(0x2C);
+            *p = *p - backspace_all((char *)lpSKey + 0x158, *p);
         } else {
-            SKU16(0x2A) -= backspace_all((char *)lpSKey + 0x44, SKU16(0x2A));
+            p = &SKU16(0x2A);
+            *p = *p - backspace_all((char *)lpSKey + 0x44, *p);
         }
         se_req(7, 0x16, 0);
-        return;
     }
-bs:
-    sk_backspace(1);
 }
 
 void hk_key_dakuten(void) {
@@ -997,10 +997,10 @@ void hk_key_muhenkan(void) {
 }
 
 void cmd_delete(void) {
-    int n;
-    u16 pos;
-    char *s;
     char *p;
+    char *s;
+    int n;
+    int pos;
 
     if (SKB(0x2F) == 0) {
         s = (char *)lpSKey + 0x158;
@@ -1012,9 +1012,9 @@ void cmd_delete(void) {
             s = (char *)lpSKey + 0x44;
             n = sk_letlenU(s, pos);
         }
-        if ((int)pos < (int)strlen(s)) {
-            p = s + pos;
+        if (pos < (int)strlen(s)) {
             if (n != 0) {
+                p = s + pos;
                 *p = 0;
                 strcat(p, p + n);
                 SKS8(0x28) = 0;

@@ -370,40 +370,56 @@ int Monster_list_num(void) {
     return (v & 0xFFFF) + ((v & 0xFFFF0000) >> 16);
 }
 
-s8 Monster_list_search(s8 cur, int dir) {
-    int n;
-    u32 f;
-
-    f = F32(&User_data, 0x3F0);
-    if (f != 0) {
-        if (cur < 0) {
-            cur = 0;
-        } else {
-            cur += dir;
-            if (cur > 29) {
-                cur = 0;
-            }
-            if (cur < 0) {
-                cur = 29;
-            }
-        }
-        for (n = 30; n != 0; n--) {
-            if (f & (1 << cur)) {
-                return cur;
-            }
-            if ((s8)dir >= 0) {
-                cur++;
-                if (cur > 29) {
-                    cur = 0;
-                }
-            } else if (cur <= 0) {
-                cur = 29;
-            } else {
-                cur--;
-            }
-        }
+s8 Monster_list_search(s8 cur, char dir)
+{
+  int n;
+  u32 f;
+  f = *((u32 *) (((u8 *) (&User_data)) + 0x3F0));
+  if (f != 0)
+  {
+    if (cur < 0)
+    {
+      cur = 0;
     }
-    return -1;
+    else
+    {
+      cur += dir;
+      if (cur > 29)
+      {
+        cur = 0;
+      }
+      if (cur < 0)
+      {
+        cur = 29;
+      }
+    }
+    for (n = 30; n != 0; n--)
+    {
+      if (f & (1 << cur))
+      {
+        return cur;
+      }
+      if (((s8) dir) >= 0)
+      {
+        cur++;
+        if (cur > 29)
+        {
+          cur = 0;
+        }
+      }
+      else
+        if (cur <= 0)
+      {
+        cur = 29;
+      }
+      else
+      {
+        cur--;
+      }
+    }
+
+  }
+  return -1;
 }
 
 void Disp_menu_help(void) {
@@ -618,47 +634,62 @@ void net_send_chat(u8, int, s8 *, u8);
 void set01_set(int, int, int);
 
 
-void Chat_move(int a) {
-    u16 sw0;
-    u16 sw1;
-    s8 buf[0x40];
-    s8 r;
-    u8 w;
-    int v;
-    struct { u8 _p[12]; u8 id; } *pl;
-
-    if ((u8)PitMenu.x18 != 0) {
-        set01_set(0, 0x14, 0);
-        PitMenu.x18 = 0;
-    }
-    chat_sw_set(&sw0, &sw1);
-    buf[0] = 0;
-    r = SoftKeyboard_move(buf, sw0, sw1);
-    if (r != 0) {
-        if (buf[0] != 0 && r > 0 && ChatKinsoku_chk((u8 *)buf) != 0) {
-            pl = (void *)&player_work[GW(0xD1)];
-            if (GW(0x1DC) == 0) {
-                if (PitMenu.x15 != 0) {
-                    v = 0xFF;
-                } else {
-                    v = PitMenu.x16 & PitMenu.x19 & 0xFF;
-                }
-                w = v;
-                chat_log_add(pl->id, buf, 0);
-                net_send_chat(pl->id, 1, buf, w);
-            } else {
-                func_5CB100(pl->id, buf, PitMenu.x17);
-            }
-            PitMenu.x0F = 1;
-            PitMenu.x0E = 1;
-            PitMenu.x0C = 0x12C;
+void Chat_move(int a)
+{
+  u16 sw0;
+  int new_var;
+  u16 sw1;
+  s8 buf[0x40];
+  s8 r;
+  u8 w;
+  int v;
+  struct 
+  {
+    u8 _p[12];
+    u8 id;
+  } *pl;
+  if (((u8) PitMenu.x18) != 0)
+  {
+    set01_set(0, 0x14, 0);
+    PitMenu.x18 = 0;
+  }
+  chat_sw_set(&sw0, &sw1);
+  buf[0] = 0;
+  r = SoftKeyboard_move(buf, sw0, sw1);
+  if (r != 0)
+  {
+    if (((buf[0] != 0) && (r > 0)) && (ChatKinsoku_chk((u8 *) buf) != 0))
+    {
+      pl = (void *) (&player_work[*((u8 *) (((u8 *) (&game_w)) + 0xD1))]);
+      if ((*((u8 *) (((u8 *) (&game_w)) + 0x1DC))) == 0)
+      {
+        if (PitMenu.x15 != 0)
+        {
+          v = 0xFF;
         }
-        SoftKeyboard_exit();
-        PitMenu.open = 0;
-        Menu_chatlog_i();
-        return;
+        else
+        {
+          v = PitMenu.x19;
+          v = (PitMenu.x16 & v) & 0xFF;
+        }
+ new_var = 0; do { w = v; } while (new_var);
+        chat_log_add(pl->id, buf, 0);
+        net_send_chat(pl->id, 1, buf, w);
+      }
+      else
+      {
+        func_5CB100(pl->id, buf, PitMenu.x17);
+      }
+      PitMenu.x0F = 1;
+      PitMenu.x0E = 1;
+      PitMenu.x0C = 0x12C;
     }
-    PitMenu.x0F = PitMenu.x0C = 0;
+    SoftKeyboard_exit();
+    PitMenu.open = 0;
+    Menu_chatlog_i();
+    return;
+  }
+  PitMenu.x0F = (PitMenu.x0C = 0);
 }
 
 char *strcpy(char *, const char *);
