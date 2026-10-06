@@ -166,8 +166,8 @@ u8 page;
                 logo_disp(e->x, y, e->size);
                 break;
             }
-            e++;
             y += (s16)(size + 4);
+            e++;
         } while (e->x != 0x3E7);
     }
 }

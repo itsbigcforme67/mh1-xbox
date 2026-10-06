@@ -126,3 +126,6 @@ anything the coordinator must know to merge. Then stop.
   compile it and takes the near-match C instead (keep that in a *_nm.c the PC build links weak).
 - Never `pkill -f` a broad pattern (permuter, python, mwcc): other agents' jobs match too, and the
   pattern can match your own shell. Kill your own jobs by PID.
+- The c_rawfuncs fallback is only for one or two holdouts in a file whose OTHER functions are real
+  C matches. A file made only of raw functions is not progress (progress.py does not count it):
+  don't link functions that way, spend the time on real matches instead.

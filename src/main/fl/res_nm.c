@@ -5,7 +5,7 @@
 
 extern int tree_model_num;
 
-void *GetFileHeadAAN(void *f);
+static void *GetFileHeadAAN(void *f);
 static void *GetFileHeadAHI(void *f);
 u8 *GetDataHeadAHI(u8 *f, u32 type);
 u8 *GetModelDataAHI(u8 *f, u32 idx);
@@ -13,7 +13,7 @@ static void GetTreeModelNum(void *f, int model);
 int plAHIGetTreeNum(void *f);
 int plAHIGetTreeModelNum(void *f, int tree);
 
-void *GetFileHeadAAN(void *f) {
+static void *GetFileHeadAAN(void *f) {
     return f;
 }
 

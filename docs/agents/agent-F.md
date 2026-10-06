@@ -418,3 +418,48 @@ daddiu but premasks), itembox_pickup (check.py 461/541 but align.py 256 lines: p
 itembox_sellout (check.py 34/412 differing insns, align.py 42 lines, nearly all one register shift: w in a1/const 1 in a0 where the original has a2/a1), Disp_lb_item_box (about 110: w in t0 not v1),
 ItemboxWindowX (about 840), eft25_m/t (frame 336 vs 320, an f20 callee-saved float the original does not use), lb_rule_seet_set (500+), Lb_room_member (1: `addu v1,a0,v0` vs
 `addu v1,v0,a0`), lb_set_pl_stage (47), Plaza_chatlog_mv (5: v0/v1 swap in the scroll-up block), Plaza_disp_chatlog, plaza_disp_chat_log_sub.
+
+## Lobby session 9 (village first, lobby tail 0x5C4E60-end)
+Linked (tools/rebuild.sh all five OK; village unless marked): Lb_PlStatusSet (permuter), Lb_get_pl_stat2, Lb_put_hint, Lb_put_job, lb_select_quest_level, Lb_load_player_all,
+lb_set_key_quest_local, Lb_PlayerStatus, Lb_put_button, Lb_put_icon (+ its jump table as `lobby:rodata`), Lb_put_gold, pl_sleeping, Lb_talk_check_default, Lb_move_common,
+vs_square_event, vs_square_init_init, vs_square_init, lb_member_outCheck/changeCheck/inCheck, lb_rule_seet_trans_ot (permuter). Nothing online-only was linked.
+Finding: most `*_nm.c` / whole-file drafts (lb_af.c, lb_ab.c, lb_ag.c, lb_aa.c, lb_p.c ...) are one or two source-form fixes away; run `python3 tools/check.py FILE --module lobby -v`
+(`--module lobby` matters: names such as Lb_put_icon and lb_put_room_member also exist in game) and read the `>>` lines.
+Source-form lessons (each confirmed by a match):
+- Local aggregate initializers are `.data` objects, not rodata literals: `f32 q[3] = {0.0f, 20.0f, 0.0f};` (pl_sleeping) and `IBICON t = {460, 28, 140, 22, 0x80FFFFFF, ...};` (Lb_put_gold)
+  compile to the original `ld/lwc1` / `lq/lwc1` copy through pointer registers; register the object with a `lobby:data START END file` slot over the old `lit_NNN` address.
+  A switch with a jump table needs its table as a `lobby:rodata` slot too (Lb_put_icon 0x664C50-0x664CB0).
+- A 4-byte `typedef struct UV { s16 u, v; }` copied as a whole (`q.uv0 = b->a; q.uv1 = b->b;`) gives the lh/lh/sh/sh pairs through pointer registers (Lb_put_button/Lb_put_icon);
+  member-wise s16 copies interleave the loads. Pointers to struct members (`s16 *py = &q.y`) are assigned where first used and declared in the order the registers go (t, ph, py, pw).
+- Calls with fewer arguments than m2c shows: the extra register values are stale (Lb_put_hint `sprintf(buf, fmt)`; Disp_NowLoading(), fade_set(0xA), Lb_move_common(m)).
+  Calls with MORE arguments than the draft: lb_check_mini_data(i, c, c + 0x1C), add_prim(..., 0).
+- `return cond ? 1 : 0;` for a bool from a compare (Lb_get_pl_stat2).
+- Return-block layout: an explicit `return 0;` that the original keeps as its own block (`b epilogue` with the value in the slot) must follow the whole if/else it belongs to,
+  the last `return 0` is plain fall-through (Lb_talk_check_default). A `return;` after an inner switch becomes `break;` when the original jumps straight to the epilogue (vs_square_event);
+  an extra trailing `return;` in the last case emits an extra `b` (vs_square_init_init).
+- A function whose result nothing keeps is `void` (Lb_move_common: `int` + `r` cost a callee-saved register).
+- `(u16)ran_suu(1) % n` instead of `(ran_suu(1) & 0xFFFF) % n` (ran_suu is s16 in the header). `0 > f()` gives `slt at,v0,zero` where `f() < 0` gives bgez.
+  `0 < n` gives `slt at,zero,n; beq` where `n > 0` gives blez.
+- `u8 *p3 = (k = cw) + 3;` used by the compare and the memcmp hoists the `addiu a0,v0,3` before the lb (Lb_move_common).
+- s8 loop counters: `int i; ... i = (s8)(i + 1);` (no sign extension before the calls) and `(s8)i` only where the original extends it; `s8 i; i = i + 1` or `i++` add extensions.
+- Declaration order decides which callee-saved register a local gets: the FIRST declared local gets the HIGHEST s-register (lb_member_outCheck: s5 result, i, c, off, pl, lp = s5..s0).
+  `u8 *base;` declared first (it sits in a0 only) then i, c, off, c2, pl matched lb_member_inCheck. tools/declperm.py (or a script permuting the declaration lines) found changeCheck.
+- An absolute-address byte array of its own (`extern u8 D_6EABD9[16]; D_6EABD9 = 0x6EABD9` in config/lobby_aliases.txt) gives `lui; addiu; addu idx` instead of a folded offset (lb_set_key_quest_local).
+- `my_user_id` is declared 16 bytes in lb_gaf06.c so that it is not gp-addressed (the real object is 8 bytes).
+- Header: LBSYS `_pad70` renamed `x70` (lb_gq01.c and lb_q.c updated; proven by Lb_load_player_all/Lb_stage_load matching).
+- Permuter noise that matches: lb_rule_seet_trans_ot needs an empty `if (mhRule.x4F && mhRule.x4F) {}` (scheduling of the lui).
+Still near-matches (counts are check.py differing instructions): Lb_room_member 1 (addu operand order), lb_send_data 3 (delay-slot fill of the second switch compare), lb_insert_target_list 8 (head in a2: decl order did not
+help), Lb_put_room_message 11 (y/len registers), lb_put_room_member_005CB220 9 (y/i registers), Lb_draw_square ~37 (pointer registers), Lb_send_chat_plus ~23 (params get the lowest s-registers in the
+original, the highest in mine), lb_pl_turn_sub ~54 (temp registers), Lb_pl_to_chair ~80 (registers only, loop shape matches), get_flag_quest/get_new_quest ~25, lb_select_quest ~100, itembox_cursor_mv 2 (daddiu for the
+constants 9/0: no integer type tried gives it), itembox_sellout 34 (w in a1 instead of a2; declaration order irrelevant), itembox_pickup, ItemboxWindowX, Disp_lb_item_box, eft25_m/t (frame 336 vs 320).
+Not tried: lb_rule_seet_set, lb_guild_make_room, lb_questpage_trans, lb_set_questpage_info, Lb_make_quest_tbl(_local), lb_disp_name, Lb_put_help, lb_put_sprite, Lb_check_target, lb_target_angle (drafts are far).
+Also linked late in the session: lb_questpage_trans (`if (Lbs_InRoomCheck() == 0 || i != 3) Put_msg(p)` shares one call; s3,s2,s1,s0 declared first, second loop with its own p2/j declared after i/p).
+Near-match worth finishing: lb_guild_make_room (15 differing insns: only the mhRule.x5C bit-field update order; cases must `break` to one shared `return 2`, inner switch case labels in source order 0,1).
+
+## Lobby session 10 (range 0x5C4E60-0x5EE618)
+Linked (rebuild OK x5): Lb_pl_to_chair, Lb_check_receipt, lb_pl_mv088, Lb_check_target, lb_target_angle (src/lobby/f/lb_fz01-05.c), Lb_put_unique_act_hint (now C inside lb_tu_act.c, raw entry removed, jump table rodata 0x664CE0-0x664D50).
+Lessons: m2c-style drafts hide the real structure; re-derive from the asm. `int t = p[0]` (not u8) lets a call arg be raw `daddu a2,s0` while the switch scrutinee is masked (Lb_check_receipt);
+`switch` ladders (not `||` chains) when the asm has separate beq compares (merged into range tests otherwise); a float param placed LAST in the prototype puts `mov.s f12` in the call delay slot (lb_check_target);
+u32 args converted with `(f32)` give the bltz/srl unsigned convert, int locals for `0xFFFF - d` (lb_target_angle); `e += n;` before the `if (i >= max || e == 0 ...) return;` puts it in the delay slot (Lb_pl_to_chair);
+loop-carried counters kept in a u16 var that is summed but never used survive (cnt in Lb_check_target); u16 local used in `pad & 0x20` gives the double andi.
+Near-matches: lb_guild_make_room 15 (x5C update order), Lb_put_room_message 2 (delay slot of beq on x load), Lb_room_member 1 (addu order), lb_send_data 3 (if-false branch lands on a `b end` block), lb_insert_target_list 8, lb_pl_turn_sub ~43, get_flag_quest 28, lb_set_pl_stage 47. Item box / eft25 / browser moved to agent B.

@@ -106,7 +106,7 @@ void GetPlayerShagamiData(u8 kind, f32 *pos, PWK *w) {
     u8 idx = k->shagami;
     GAREA *a;
 
-    if (idx == 0) {
+    if (!idx) {
         *out = 0;
     } else if (shagami_tbl_add[w->stg] == 0) {
         *out = 0;
