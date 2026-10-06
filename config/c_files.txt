@@ -2074,3 +2074,6 @@ main 0x00163420 0x001635D8 font/disp2_02
 main 0x001BC200 0x001BC688 net/netsyn09
 main:rodata 0x0035ECB0 0x0035ECE4 net/netsyn09
 lobby 0x005C4220 0x005C4324 b/lb_by135
+lobby 0x005C4330 0x005C4480 b/lb_by136
+lobby 0x00537F60 0x005381C4 b/lb_by137
+lobby 0x0053B230 0x0053B580 b/lb_by138
