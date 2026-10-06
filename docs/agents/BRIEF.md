@@ -131,3 +131,8 @@ anything the coordinator must know to merge. Then stop.
 - The c_rawfuncs fallback is only for one or two holdouts in a file whose OTHER functions are real
   C matches. A file made only of raw functions is not progress (progress.py does not count it):
   don't link functions that way, spend the time on real matches instead.
+- Big lesson (agent E, 7 Oct 2026): functions that came from one original source file must be
+  compiled as ONE translation unit, in original address order, with their statics defined
+  (static) before their callers. MWCC's register allocation and inlining depend on it; it fixed
+  dozens of "40-70 off" functions at once. Before polishing a stubborn function, check whether its
+  neighbours/static helpers belong in the same file (bind column in docs/survey/mh1_symbols.csv).
