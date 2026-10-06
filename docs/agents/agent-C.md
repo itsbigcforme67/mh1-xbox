@@ -997,3 +997,18 @@ Also linked later in the pass: pl_mv060 (pl/plx12, 0x13EA40), edit_create_model 
 Still near-match, tried this pass without success: Pit_mv 4 / Pit_mv_lb 3 (the original loads `now` into a0 and copies it to the saved register; assignment
 inside the argument, int/u16/u32 types, a hold variable and statement orders all give the same 3), load_shadow 2, menu_data_monster_sub 5, pl_dm008/pl_at012
 (the original re-copies a0 from s0 in the first call block), Pl_slash_lv_ck, se_req2 7 (permuter ran 15 minutes), em_dur_set 8, release_model 7.
+
+## Fourteenth pass (Sonnet worker C, after the crash restart)
+Remaining unmatched main-module functions in my ranges are all written in C now (nm files) except network/library code (prot_00, npc_trans is C but 30 off,
+sceUsbKb*, _start). Linked (all five `tools/rebuild.sh` OK): Pit_disp_menu_equipment (menu/menu41.c, 0x1337A0) and release_tex_sub (tex/reltex.c, now
+0x11E910-0x11E9D8 with release_texture). No header edits. Lessons:
+- Pit_disp_menu_equipment: `u32 v` (not int) for `(f32)v` gives the unsigned-convert branch; EquipmentDescriptionWindow takes a 5th int argument (original sets t0=0),
+  so the prototype in menu_disp_nm.c was widened (the menuNN.c files that call it with four args still match, the extra register is only set by this caller);
+  assigning `q.s[0]` before `q.s[2]` fixed the constant load order.
+- release_tex_sub: `for (i = 0; i < n; i++) { p = &mem_tex[start]; ...; start++; }` (pointer recomputed from a counter that is bumped at the end) puts the address
+  computation behind the guard and keeps the loop in registers; pointer-walk and pre-loop pointer forms hoist it. Same idea as load_texlist.
+- tools/mkone.py NM.c OUT.c FUNC HEADER builds a one-function file from an nm file in one step.
+Still near-match, tried again: Pl_light_set 5 (lp/pb swap s6/s7, all 24 orders of the four pointer locals tried), WallHitInit/GroundHitInit 6 (decl order, block scopes,
+`int e = -1`: no change; tweak.py and a 15 minute permuter run found nothing), key_rept_du 5, em_dur_set 4-17, pl_dm008 2 (if/else forms are worse: 6-11),
+atck_data_set_shl2 4 hunks (the original copies 24 bytes as three 8-byte lw/sw pairs; 8-byte s32 struct, u32 pair and loop forms all give lwc1/swc1 or a rolled loop),
+aan_ofs_calc ~31 (the original keeps `aan` copy in v0 and consumes a0).

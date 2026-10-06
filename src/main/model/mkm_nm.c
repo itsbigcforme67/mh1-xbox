@@ -69,14 +69,14 @@ void set_used_hierarchy(int, int);
    skeleton per tree of the AHI file at amo + 0x128000. */
 void Sethierarchy(int amo, MDLW *w, int type) {
     int ahi;
-    int n;
     int h;
-    int i;
-    int k;
+    int n;
     u8 *b0;
     u8 *b1;
-    u8 *q;
+    int k;
     MDLW *p;
+    u8 *q;
+    int i;
     u8 tmp[16];
 
     w->type = type;
