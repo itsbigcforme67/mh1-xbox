@@ -456,16 +456,16 @@ void ItemboxWindowCursorX(f32 base, int idx, int color, int mode) {
     SetTextureStage(0x118);
     if (!(mode & 0xFF)) {
         i = (s16)idx;
+        r.x = 0.8f * (153.0f + base - 146.0f + 28.8f * (f32)(i % 10));
+        r.y = i / 10 * 0x19 + 0x3B;
         r.w = 0x19;
         r.h = 0x19;
-        r.y = i / 10 * 0x19 + 0x3B;
-        r.x = 0.8f * (153.0f + base - 146.0f + 28.8f * (f32)(i % 10));
     } else {
         i = (s16)idx;
+        r.x = 0.8f * (153.0f + base - 146.0f + 36.0f * (f32)(i & 7));
         r.y = (i >> 3 << 5) + 0x3B;
         r.w = 0x20;
         r.h = 0x20;
-        r.x = 0.8f * (153.0f + base - 146.0f + 36.0f * (f32)(i & 7));
     }
     r.size = 0x200020;
     r.color = color;
