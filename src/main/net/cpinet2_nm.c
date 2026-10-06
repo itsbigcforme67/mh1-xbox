@@ -40,8 +40,8 @@ int CpInetTcpConnected(void) {
     return Inet_interface_status[0] == 3;
 }
 
-void CpInetInterfaceProblemEnable(int on) {
-    Inet_interface_problem_disable[0] = !on;
+int CpInetInterfaceProblemEnable(int on) {
+    return Inet_interface_problem_disable[0] = !on;
 }
 
 /* Polls for network trouble (device change, DHCP lease lost, PPP drop) and latches it in Inet_interface_problem_status
@@ -182,12 +182,13 @@ int CpInetTcpClose(int *sock) {
     int t;
 
     t = *sock;
-    if (t >= 0) {
+    if (0 <= t) {
         r = (s16)Ave_TcpClose((s16)t);
         *sock = -1;
-        return common_error(r);
+        r = common_error(r);
+    } else {
+        *sock = -1;
     }
-    *sock = -1;
     return r;
 }
 
@@ -200,11 +201,12 @@ int CpInetTcpDelete(int *sock) {
     int t;
 
     t = *sock;
-    if (t >= 0) {
+    if (0 <= t) {
         r = (s16)Ave_TcpDelete((s16)t);
         *sock = -1;
-        return common_error(r);
+        r = common_error(r);
+    } else {
+        *sock = -1;
     }
-    *sock = -1;
     return r;
 }

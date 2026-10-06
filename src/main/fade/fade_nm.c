@@ -83,11 +83,14 @@ void Fade_task(FTASK *t) {
 /* 0: idle, 1: fading, 2: reached the end value */
 int Fade_busy_ck(void) {
     FADE_W *w = &fade_w;
+    FADE_ENT *d;
 
     if (fade_w.state != 0 && w->req != 0) {
-        return (w->alpha == fade_data[w->cur - 1].end) ? 2 : 1;
+    } else {
+        return 0;
     }
-    return 0;
+    d = &fade_data[w->cur - 1];
+    return (w->alpha != d->end) ? 1 : 2;
 }
 
 void fade_draw(void) {

@@ -107,3 +107,11 @@ goes there. Cost: a modern 64-bit PC needs 32-bit libraries (gcc-multilib,
 or tools/setup_pc32.sh without root). Alternative, not taken yet: a 64-bit
 build with the pointer-holding fields widened (game C edited for the port).
 Confirmed by the owner, 5 Oct 2026: 32-bit it is.
+
+## Village before online (decided 6 Oct 2026)
+
+The owner asked to prioritise the offline village (single player) over online multiplayer.
+Both live in the lobby overlay: decompilation there takes Local_main and everything the
+offline village reaches first (NPCs, shops, item box, quest counter, house, farm, village
+menus), and online-only code (login/logout, plaza chat, mail, browser, rooms) last. The same
+order applies to main's network code versus its single-player code.

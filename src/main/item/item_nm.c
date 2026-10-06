@@ -199,10 +199,10 @@ s16 b;
     int n;
 
     if (a > b) {
-        s16 t = a;
+        s16 t = b;
 
-        a = b;
-        b = t;
+        b = a;
+        a = t;
     }
     n = *(u8 *)((u8 *)Item_preparation_tbl + (a + a));
     if (n == 0) {
@@ -265,13 +265,14 @@ s8 Item_preparation_rate_0(IPREP *e, int mode) {
             i++;
             p++;
         } while (i < 5);
-        rate = rate + pre_manual_rate_tbl[i];
-        if (rate >= 0x65) {
-            rate = 0x64;
-        }
-        return rate;
+        rate += pre_manual_rate_tbl[i];
+    } else {
+        return 0x64;
     }
-    return 0x64;
+    if (rate > 0x64) {
+        rate = 0x64;
+    }
+    return rate;
 }
 
 s8 Item_preparation_rate(a, b, mode)

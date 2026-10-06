@@ -1909,6 +1909,9 @@ extern u16 for_pad_timer_tbl[4];
 void pad_timer_calc_sub(PLW *pl, int mask) {
     u16 *t = &pl->work5B8;
     u16 *tbl = for_pad_timer_tbl;
+
+    if (pl && pl && pl) { /* no-op test found by the permuter: it makes the table address load as addiu from gp */
+    }
     if ((u16)mask & *tbl) {
         *t = 0;
     } else if (*t < 0xFFFF) {
