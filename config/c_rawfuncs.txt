@@ -91,3 +91,15 @@ main 0x187DF0 0x21c flPS2GetTextureInfoFromContext
 main 0x188330 0xf0 flPS2GetVramTransAdrs
 main 0x188570 0x178 flPS2GetPaletteInfoFromContext
 main 0x192E40 0x80 plFCVFcurveInterpolateHermite
+main 0x00275930 0x65C DispFrameListA
+main 0x00277D30 0x274 chat_log_add_277D30
+main 0x00277FB0 0xC4 Chat_log_add
+main 0x00278080 0x78 Plaza_chat_log_add
+main 0x002785E0 0x2D8 disp_chat_log_sub
+main 0x00278F70 0x288 ItemListWindow
+main 0x00279200 0x4FC PlayerStatusWindow
+main 0x00279CB0 0x13D8 equip_exp_core
+main 0x0027B090 0x15C sword_zokusei
+main 0x0027B3D0 0x3B8 slash_level_bar
+main 0x0027BA80 0x19C ng_word_sub
+main 0x00276170 0xCF4 DispFrameMessageA
