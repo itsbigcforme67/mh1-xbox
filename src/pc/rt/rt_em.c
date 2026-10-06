@@ -312,6 +312,17 @@ int rt_quest_load(int no)
     *((u8 *)&select_w + 0xAD) = 0;
     Quest_start();
     Start_item_init();      /* game11: the quest's supply box (game_w+0x128 list, dsp03) */
+    {   /* game11 next: the quest's event demos (first sight of a monster:
+         * Kut-Ku 148, Cephadrome 154, Monoblos 171 ...; evdemo.c). The
+         * monster waits (game_w+0x21F) until its demo has run. */
+        void EvDemoInitialize(void);
+        extern u8 event_demo[];
+        if (PU16(&game_w, 0x2C) == 0)
+            PU16(&game_w, 0x2C) = (u16)no;
+        EvDemoInitialize();
+        if (getenv("RT_QUEST_TRACE"))
+            fprintf(stderr, "rt_quest: quest %d event demo slot: %d\n", PU16(&game_w, 0x2C), event_demo[4]);
+    }
     if (getenv("RT_QUEST_TRACE")) {
         int i;
         fprintf(stderr, "rt_quest: quest %d supply box:", no);
@@ -454,8 +465,8 @@ int rt_monster_tick(int no)
     if (!em->be_flag)
         return 0;
     if (getenv("RT_EM_TRACE"))
-        printf("em%d: step %d act %d/%d char %d frame %.1f pos %.0f %.0f %.0f ang %04X hp %d mode %d mt %d/%.0f/%d\n",
-                no, em->x04, PU8(em, 0x14), PU8(em, 0x15), PS16(em, 0x2DC), PF(em, 0x19C),
+        printf("em%d: step %d act %d/%d/%d char %d frame %.1f pos %.0f %.0f %.0f ang %04X hp %d mode %d mt %d/%.0f/%d\n",
+                no, em->x04, PU8(em, 0x14), PU8(em, 0x15), PU8(em, 0x05), PS16(em, 0x2DC), PF(em, 0x19C),
                 em->pos[0], em->pos[1], em->pos[2], em->ang[1] & 0xFFFF, PS16(em, 0x302), PU8(em, 0x888),
                 PS32(em, 0x194), PF(em, 0x1A8), PS32(em, 0x1C8));
     return enemy_mv(em);

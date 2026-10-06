@@ -278,12 +278,42 @@ int rt_player_look(int no, int *sex, int id[6])
         id[i] = look[no].id[i];
     return look[no].gen;
 }
+/* The character creation screen's hunter (Edit_task, new game): the PS2
+ * draws it from editpl_m/_f_amh.bin (all faces, hairs and bare parts in one
+ * file, Ed_player_trans); the PC takes the same parts from the single part
+ * files. There PLW+0x353 = face + 1 and +0x354 = hair + 1 (param_change,
+ * select 0x536280), no armour: bare legs/body/arms in the face's skin
+ * colour, waist 0. Returns a value that changes with the look. */
+int rt_player_edit_look(int no, int *sex, int id[6])
+{
+    u8 *pl = player_work_ptr(no);
+    int face = PU8(pl, 0x353) ? PU8(pl, 0x353) - 1 : 0, hair = PU8(pl, 0x354) ? PU8(pl, 0x354) - 1 : 0;
+    int sx = PU8(pl, 0x11) ? 1 : 0, v, k;
+    v = (sx ? skin_col_tbl_f : skin_col_tbl_m)[face];
+    k = sx * 4 + (v < 4 ? v : 0);
+    id[0] = reg_nude_model[k];
+    id[1] = face;
+    id[2] = hair;
+    id[3] = body_nude_model[k];
+    id[4] = arm_nude_model[k];
+    id[5] = 0;
+    *sex = sx;
+    return 0x1000000 | sx << 16 | face << 8 | hair;
+}
 void yure_init(void *pl) { (void)pl; }        /* hair/cloth sway */
 /* the player's draw callbacks (trans_pl_sub, weapon_nm.c, calls these):
- * the viewer draws the hunter and the weapon itself */
-void player_trans(void *pl, int a) { (void)pl; (void)a; }
+ * in the game and the village the viewer draws the hunter and the weapon
+ * itself; during the boot (character creation / continue screens, whose
+ * trans() runs the prims) the viewer's hook draws player_work[no] there */
+void (*rt_hunter_draw_hook)(int no);
+static void boot_hunter(void *pl)
+{
+    if (rt_hunter_draw_hook && rt_boot_active())
+        rt_hunter_draw_hook((int)(((u8 *)pl - (u8 *)player_work) / 0xA00));
+}
+void player_trans(void *pl, int a) { (void)a; boot_hunter(pl); }
 void Lb_player_trans(void *pl, int a) { (void)pl; (void)a; }
-void Ed_player_trans(void *pl, int a) { (void)pl; (void)a; }
+void Ed_player_trans(void *pl, int a) { (void)a; boot_hunter(pl); }
 /* lighting from the ground material (GetGroundCameraData ...) */
 void GetPlayerMaterialData(void *pl) { (void)pl; }
 /* messages, sounds not ported */

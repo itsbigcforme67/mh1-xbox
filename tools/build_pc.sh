@@ -83,7 +83,7 @@ EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c sr
 # Quest flow (agent C/E): f_quest (whole file near-match) and its first
 # part f_quest0_nm.c (accessors, Quest_init; written from the asm), the
 # tutorial checks it calls (game.bin tutorial.c)
-QUEST="src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c \
+QUEST="src/main/evdemo/evdemo.c src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c \
        src/main/game/f_game.c src/main/game/f_gameb.c src/main/font/dsp01.c \
        src/main/menu/menu_nm.c src/main/menu/menu_disp_nm.c \
        src/main/chat/chat_nm.c src/main/chat/dispframe_nm.c src/main/menu/listsel_nm.c src/main/font/fontst_nm.c \
@@ -96,6 +96,32 @@ QUEST="src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tu
 for f in src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c; do
     [ -f "$f" ] && EM="$EM $f"
 done
+# More monster families (round 20): the AI draft (emNN_ai_nm.c or the
+# whole-file emNN_nm.c), the matched setter files, and the setters'
+# near-match copy linked weak (WEAK_EM) for what is still asm there.
+# kind 6 Yian Kut-Ku / 20 Gypceros: em20
+EM="$EM src/game/em/em20_ai_nm.c src/game/em/em20.c src/game/em/em20b.c src/game/em/em20_horm.c src/game/em/em20_nm.c"
+# kind 17 Gravios / 22 Basarios: em17
+EM="$EM src/game/em/em17_nm.c src/game/em/em17.c src/game/em/em17_horm.c"
+# kind 27 Velocidrome / 28 Gendrome / 31 Iodrome: em27 (matched parts + whole-file weak)
+EM="$EM src/game/em/em27a.c src/game/em/em27b.c src/game/em/em27c.c src/game/em/em27_uv.c src/game/em/em27.c \
+    src/game/em/em27_area.c src/game/em/em27_nm.c"
+# kind 19 Vespoid / 24 Hornetaur: em19 (+ fly.c, the flight curves)
+EM="$EM src/game/em/em19b.c src/game/em/em19_flyinit.c src/game/em/em19_init.c src/game/em/em19_move.c src/game/em/fly.c"
+# kind 4/5/32 Mosswine (and kin): em04
+EM="$EM src/game/em/em04.c src/game/em/em04b.c src/game/em/em04c.c src/game/em/em04_init.c src/game/em/em04_act.c src/game/em/em04_nm.c"
+# kind 9 Felyne / 23 Melynx: em09
+EM="$EM src/game/em/em09.c src/game/em/em09b.c src/game/em/em09c.c src/game/em/em09d.c src/game/em/em09_init.c src/game/em/em09_nm.c"
+# kind 8 Cephadrome / 34 Cephalos: em08
+EM="$EM src/game/em/em08_ai_nm.c src/game/em/em08.c src/game/em/em08_area.c"
+# kind 21 Plesioth: em21
+EM="$EM src/game/em/em21_nm.c src/game/em/em21.c"
+# kind 14 Diablos / 26 Monoblos: em14; kind 15 Khezu: em15
+EM="$EM src/game/em/em14_nm.c src/game/em/em14.c src/game/em/em14_horm.c src/game/em/em14_area.c"
+EM="$EM src/game/em/em15_nm.c src/game/em/em15.c src/game/em/em15_senkai.c"
+# kind 3 Kelbi: em03
+EM="$EM src/game/em/em03.c"
+WEAK_EM="em20_nm em17_nm em27_nm em04_nm em09_nm em08_ai_nm em21_nm em14_nm em15_nm"
 # Monster C that is still on other agents' branches (not merged into main):
 # when this checkout has the branch and main does not have the file yet, the
 # file and that branch's include/ are exported to build/pc/ext/<branch>/
@@ -184,7 +210,7 @@ LOBBY3="src/lobby/b/lb_by122.c src/lobby/b/lb_by123.c src/lobby/b/lb_bz98.c src/
 PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint"
 LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*}"; done)"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
-WEAK="mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
+WEAK="$WEAK_EM mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT"
 
 SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}
@@ -263,6 +289,16 @@ for f in $GAME; do
     # Eft06_set2: the PC one is in rt_em.c
     src/game/em/em_master_nm.c) ABI="-DEft02_set3=rtabi_Eft02_set3 -DEft06_set=rtabi_Eft06_set \
              -Dem_sleep_eff_set=rtabi_em_sleep_eff_set_ps2" ;;
+    # round 20 monster families: their prototypes of the shared helpers
+    # (grep the file's own declarations; the adaptors are in rt_abi.c)
+    src/game/em/em08_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
+             -DEft15_set3=rtabi_Eft15_set3 -DEft02_set3=rtabi_Eft02_set3" ;;
+    src/game/em/em09*.c|src/game/em/em27*.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
+    src/game/em/em03.c) ABI="-Dem_frame_check2=rtabi_em_frame_check2 -DEft13_set_em_scl=rtabi_Eft13_set_em_scl" ;;
+    src/game/em/em04_act.c|src/game/em/em04_nm.c|src/game/em/em20_ai_nm.c|src/game/em/em21_nm.c)
+        ABI="-DEft13_set_em_scl=rtabi_Eft13_set_em_scl" ;;
+    src/game/em/em14_nm.c|src/game/em/em15_nm.c|src/game/em/em17_nm.c)
+        ABI="-DEft13_set_em_scl=rtabi_Eft13_set_em_scl -DEft15_set3=rtabi_Eft15_set3" ;;
     esac
     INC=""
     src="$f"

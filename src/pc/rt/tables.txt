@@ -974,3 +974,60 @@ st51_pos_tbl_0065BC20 0x65BC20 0x60
 st53_pos_tbl_0065BC80 0x65BC80 0x60
 st56_pos_tbl 0x65BCE0 0x78
 em29_type_tbl 0x675600 0x54
+# em20 (Yian Kut-Ku / Gypceros) and em21 tables (round 20)
+em20_act_add
+em20_runaway_timer_tbl
+em20_stay_timer_tbl
+em21_runaway_timer_tbl
+em21_stay_timer_tbl
+fly_adjy2_hosei_tbl_0066EAD0
+fly_adjy_hosei_tbl_0066E660
+fly_adjz2_hosei_tbl_0066ECD0
+gero_tbl
+# monster families em03/04/08/09/14/15/17/19/21/27 (round 20)
+em04_act_tbl
+em05_rev_set_tbl_st18
+em05_rev_set_tbl_st69
+em06_runaway_timer_tbl
+em08_runaway_timer_tbl
+em08_stay_timer_tbl
+em09_act_tbl
+em09_rev_set_tbl_st53
+em09_rev_set_tbl_st53A
+em14_act_add
+em14_runaway_timer_tbl
+em14_stay_timer_tbl
+em15_runaway_timer_tbl
+em15_stay_timer_tbl
+em17_act_add
+em17_runaway_timer_tbl
+em17_stay_timer_tbl
+em19_act_tbl
+em27_runaway_timer_tbl
+em27_stay_timer_tbl
+fly_adjy2_hosei_tbl_00659560
+fly_adjy2_hosei_tbl_0065F260
+fly_adjy2_hosei_tbl_006630C0
+fly_adjy2_hosei_tbl_00664AF0
+fly_adjy2_hosei_tbl_00668130
+fly_adjy2_hosei_tbl_006712B0
+fly_adjy2_hosei_tbl_006741E0
+fly_adjy_hosei_tbl_0065EE60
+fly_adjy_hosei_tbl_00662C00
+fly_adjy_hosei_tbl_006646E0
+fly_adjz2_hosei_tbl_006596C8
+fly_adjz2_hosei_tbl_0065F420
+fly_adjz2_hosei_tbl_00663300
+fly_adjz2_hosei_tbl_00664CB0
+fly_adjz2_hosei_tbl_00668360
+fly_adjz2_hosei_tbl_00671418
+fly_adjz2_hosei_tbl_00674270
+hire_down_add_tbl_00659300
+hire_down_add_tbl_0066EE40
+hire_normal_add_tbl_00659250
+hire_normal_add_tbl_0066ED90
+st01_pos_tbl
+st34_pos_tbl
+st38_pos_tbl_00671470
+st39_pos_tbl_006714A0
+st53_pos_tbl_00671500

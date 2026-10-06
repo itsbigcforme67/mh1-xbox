@@ -581,3 +581,22 @@ character-screen 3D preview, forge list glitches (weapon-class icons and the
 yellow page title are garbage), the item shop's buy list still shows the
 greeting talk window on its left (sell list does not; whether the PS2 keeps
 it is unknown), colour streaks over a quest card marked CLEAR!!.
+
+## Assignment 20: village glitches, character-screen hunter, monster breadth (6 Oct 2026)
+Details in docs/pc.md "Village glitches, character screen hunter, monster
+breadth". PC-side files, PC-only fixes in not-built drafts (em04_nm,
+em08_ai_nm, em15_nm, em20_ai_nm, em21_nm, nm/lb_process_drawHelp) and in
+#else / #ifndef __MWERKS__ branches (lb_by165, lb_by131); no include/ edits;
+rebuild all five OK.
+- Forge title/icons/contents, item icons fixed; 32 more matched lobby files
+  linked; main->lobby pointers from the ELF's .relmain symbols.
+- 3D hunter on character creation and continue screens.
+- Kut-Ku, Basarios, Gravios, dromes, Cephadrome, Diablos/Monoblos, Khezu,
+  Plesioth, Gypceros and all village small monsters run; event demos linked.
+Lessons: see docs/pc.md (data stand-ins read as code, address-suffixed
+statics in pointer tables, per-kind file tables, shared joint buffer).
+A sed that adds an argument to calls also hits K&R declarations
+(`void f(em);`): MWCC rejects it — the PS2 rebuild compiles *_nm.c files too.
+Not done: Cephadrome/Plesioth hit while submerged (sound bomb not tried),
+drome carving not seen, the demo camera during intro demos not checked,
+em02/em07/em10/em33, ARM frame rate.

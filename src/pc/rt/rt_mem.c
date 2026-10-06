@@ -128,8 +128,67 @@ static int cmp_u32(const void *a, const void *b)
 }
 
 static void load_rel_sections(const char *a, const char *b, uint32_t **out, size_t *nout);
+/* main's pointer words whose relocation symbol is in lobby.bin's section
+ * (strings, tables and functions of the village overlay): game.bin shares
+ * that vram, so map_ptr sends them into game.bin; rt_import_lobby fixes
+ * them. Pairs (PS2 address of the word, its PS2 value), read before the
+ * images are relocated. */
+static uint32_t *main_to_lb;
+static size_t nmain_to_lb;
+
+static void load_main_to_lobby(void)
+{
+    uint32_t shoff, i, n, shn, shstr, so, lbsec = 0, symoff = 0, nsym = 0;
+    if (elf_n < 52)
+        return;
+    shoff = rd32(elf + 32);
+    shn = elf[48] | elf[49] << 8;
+    shstr = elf[50] | elf[51] << 8;
+    if (shoff + 40 * shn > elf_n || shstr >= shn)
+        return;
+    so = rd32(elf + shoff + 40 * shstr + 16);
+    for (i = 0; i < shn; i++) {
+        const uint8_t *sh = elf + shoff + 40 * i;
+        const char *name = (const char *)elf + so + rd32(sh);
+        if (!strcmp(name, "lobby.bin"))
+            lbsec = i;
+        if (rd32(sh + 4) == 2) {            /* SHT_SYMTAB */
+            symoff = rd32(sh + 16);
+            nsym = rd32(sh + 20) / 16;
+        }
+    }
+    if (!lbsec || !symoff || symoff + 16 * nsym > elf_n)
+        return;
+    for (i = 0; i < shn; i++) {
+        const uint8_t *sh = elf + shoff + 40 * i;
+        const char *name = (const char *)elf + so + rd32(sh);
+        uint32_t off = rd32(sh + 16), size = rd32(sh + 20);
+        if (rd32(sh + 4) != 9 || strcmp(name, ".relmain") || off + size > elf_n)
+            continue;
+        for (n = 0; n < size / 8; n++) {
+            uint32_t loc = rd32(elf + off + 8 * n), info = rd32(elf + off + 8 * n + 4), sym = info >> 8;
+            const uint8_t *st = elf + symoff + 16 * sym, *w;
+            if ((info & 0xFF) != 2 || sym >= nsym || (uint32_t)(st[14] | st[15] << 8) != lbsec || rd32(st + 4) == 0)
+                continue;                   /* R_MIPS_32 to a lobby.bin symbol (VU code labels have value 0) */
+            if ((w = rt_addr(loc, 4)) == NULL)
+                continue;
+            main_to_lb = realloc(main_to_lb, (nmain_to_lb + 1) * 2 * sizeof *main_to_lb);
+            main_to_lb[2 * nmain_to_lb] = loc;
+            main_to_lb[2 * nmain_to_lb + 1] = rd32(w);
+            nmain_to_lb++;
+        }
+    }
+}
+
+size_t rt_main_lobby_ptrs(const uint32_t **pairs)
+{
+    *pairs = main_to_lb;
+    return nmain_to_lb;
+}
+
 int rt_load_relocs(void)
 {
+    load_main_to_lobby();
     load_rel_sections(".relmain", ".relgame.bin", &rel32, &nrel32);
     load_rel_sections(".rellobby.bin", NULL, &rel32_lb, &nrel32_lb);
     load_rel_sections(".relselect.bin", NULL, &rel32_sel, &nrel32_sel);

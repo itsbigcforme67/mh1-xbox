@@ -242,23 +242,23 @@ int lb_guild_startMsg(void) {
     return 0;
 }
 int lb_guild_make_room(void) {
+    int s1;
     int var_s0;
     s16 temp_v1;
     int pad;
-    s8 s1;
+    int q;
     pad = Get_sw2(0) & 0xFFFF;
     pNet[0xC] = 0;
     switch (lb_sys.x07) {
     case 0:
         switch (Lbc_ReadRoomInfo(lb_sys.x07, pad)) {
-        case 1:
-            break;
         case 0:
             lb_sys.x07 = lb_sys.x07 + 1;
             break;
+        case 1:
+            break;
         }
-    default:
-        return 2;
+        break;
     case 1:
         switch (Lbc_ReserveRoom(lb_sys.x07, pad)) {
         case 0:
@@ -270,12 +270,12 @@ int lb_guild_make_room(void) {
             lb_sys.x07 = 6;
             break;
         }
-        return 2;
+        break;
     case 2:
         if (Lbc_GetRoomRule(lb_sys.x07, pad) == 1) {
             memcpy(RoomRule + 2, mhRule.pass, 9);
             s1 = 0;
-            if (RoomRule[0x97] > 0) {
+            if (0 < RoomRule[0x97]) {
                 var_s0 = (int)RoomRule;
                 do {
                     if (strcmp(lb_rule_member[mhRule.x00], (char *)var_s0 + 0xBD) == 0) {
@@ -288,20 +288,21 @@ int lb_guild_make_room(void) {
             }
             lb_sys.x07 = lb_sys.x07 + 1;
         }
-        return 2;
+        break;
     case 3:
         if (Lbc_SetRoomRule(lb_sys.x07, pad) == 1) {
             lb_sys.x07 = lb_sys.x07 + 1;
         }
-        return 2;
+        break;
     case 4:
         lb_sys.x07 = lb_sys.x07 + 1;
+        q = mhRule.quest;
+        mhRule.x5C = (mhRule.x5C & ~0x1FE) | ((q & 0xFF) * 2);
+        *(s16 *)0x3F33DC = q;
         temp_v1 = *(s16 *)0x3C6FDA;
-        *(s16 *)0x3F33DC = mhRule.quest;
         *(s16 *)0x3F3608 = temp_v1;
-        mhRule.x5C = (mhRule.x5C & ~0x1FE) | ((mhRule.quest & 0xFF) * 2);
         mhRule.x5C = (mhRule.x5C & 0xFE0001FF) | ((temp_v1 & 0xFFFF) << 9);
-        return 2;
+        break;
     case 5:
         switch (Lbc_SetPropaty(mhRule.x5C, pad)) {
         case 0:
@@ -312,7 +313,7 @@ int lb_guild_make_room(void) {
             SetDialogData_HTML(cw + 0x32D1);
             *(u8 *)0x3F36AB = 0;
             lb_sys.x07 = 6;
-            return 2;
+            break;
         }
         break;
     case 6:
@@ -322,8 +323,9 @@ int lb_guild_make_room(void) {
             cnWrap_SoundRequest(3);
             return 1;
         }
-        return 2;
+        break;
     }
+    return 2;
 }
 int guild_input_message(int a) {
     u8 *p;

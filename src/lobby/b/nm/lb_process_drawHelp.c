@@ -49,7 +49,7 @@ void lb_process_drawHelp(void) {
                 var_s0 = 1;
             }
             if (*(s16 *)(&shopList2[0x24] + (lbShop.x70 * 0x28)) == 2) {
-                Lb_draw_square(0x11F, 0xFC, 0x141, 2);
+                Lb_draw_square(0x11F, 0xFC, 0x141, 2, 0xFF602020, 1);   /* t0, t1 (asm 0x53B780) */
                 Lb_put_my_job();
                 return;
             }
@@ -59,7 +59,7 @@ void lb_process_drawHelp(void) {
         var_s1 = F(u16, var_s4, 2);
         var_s2 = (u16) F(u8, var_s4, 0);
         if (*(s16 *)((int)&shopList + 0x24 + (lbShop.x70 * 0x28)) == 2) {
-            Lb_draw_square(0x11F, 0xFC, 0x141, 2);
+            Lb_draw_square(0x11F, 0xFC, 0x141, 2, 0xFF602020, 1);   /* t0, t1 (asm 0x53B780) */
             Lb_put_my_job();
             return;
         }
@@ -69,7 +69,7 @@ void lb_process_drawHelp(void) {
     var_s1 = F(u16, var_s4, 2);
     var_s2 = (u16) F(u8, var_s4, 0);
     if (*(s16 *)((int)&shopList + 0x24 + (lbShop.x70 * 0x28)) == 2) {
-        Lb_draw_square(0x11F, 0xFC, 0x141, 2);
+        Lb_draw_square(0x11F, 0xFC, 0x141, 2, 0xFF602020, 1);   /* t0, t1 (asm 0x53B780) */
         Lb_put_my_job();
         return;
     }
@@ -85,9 +85,9 @@ block_12:
             return;
         }
     case 0:
-        Lb_draw_square(0x11F, 0xFC, 0x141, 2);
+        Lb_draw_square(0x11F, 0xFC, 0x141, 2, 0xFF602020, 1);   /* t0, t1 (asm 0x53B780) */
         if (((s8)var_s0) == 0) {
-            Lb_put_armorIcon(0x122, 0x102, 0x36, (s16)var_s2);
+            Lb_put_armorIcon(0x122, 0x102, 0x36, (s16)var_s2, (s16)var_s1);   /* t0 = id (asm 0x53B968) */
             var_s4_2 = var_s1 & 0xFFFF;
             if (var_s4_2 == 0x3E7) {
                 Lb_put_itemRare(0x12A, 0x136, 4);
@@ -95,7 +95,7 @@ block_12:
                 Lb_put_itemRare(0x12A, 0x136,  (Get_equip_rare(var_s2 & 0xFF, var_s1) << 0x38) >> 0x38);
             }
         } else {
-            Lb_put_armorIcon(0x122, 0x102, 0x36, 7);
+            Lb_put_armorIcon(0x122, 0x102, 0x36, 7, (s16)var_s1);
             var_s4_2 = var_s1 & 0xFFFF;
             if (var_s4_2 == 0x3E7) {
                 Lb_put_itemRare(0x12A, 0x136, 4);
@@ -121,7 +121,7 @@ block_32:
             if (var_s4_2 != 0x3E7) {
                 Lb_put_button(0x212, 0x12F, 3);
                 Lb_put_msg_type2(&lb_shop_msg[0x20]);
-                Lb_put_job_limit((u8) var_s2);
+                Lb_put_job_limit(var_s2, var_s1);   /* a0 s2, a1 s1 (asm 0x53BAEC) */
                 font_set_palette(0);
             }
             if (var_s0 == 0) {
@@ -148,7 +148,7 @@ block_32:
         Lb_put_materialBase();
         font_set_palette(0);
         if (((s8)var_s0) == 0) {
-            Lb_put_armorIcon(0x130, 0xD0, 0x20, (s16)var_s2);
+            Lb_put_armorIcon(0x130, 0xD0, 0x20, (s16)var_s2, (s16)var_s1);
         }
         var_s3_2 = 0;
         var_s2_2 = var_s5;
