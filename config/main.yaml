@@ -1281,6 +1281,7 @@ segments:
       - [0x132D00, asm, text/f_module]
       - [0x133B10, c, net/ave01]
       - [0x134260, asm, text/Ave_TcpSend]
+      - [0x1343D0, c, net/ave03]
       - [0x1344F0, c, net/ave02]
       - [0x13525C, asm, text/g_CpInetInitialize]
       - [0x135260, c, net/cpinet01]
