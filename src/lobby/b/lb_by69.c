@@ -1,3 +1,4 @@
+/* lb_by69 - agent B promoted near-match 0x005BE150-0x005BE25C: lbc_game_ready_04 (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern s32 netr_ret;
 extern s8 COM_R_No_0;
@@ -12,8 +13,7 @@ extern u16 System_timer;
 extern char CallBack_Result_Match_Logout[];
 extern char jtbl_2977[];
 extern char CnetWork[];
-extern char CnetWork[];
-extern char CnetWork[];
+
 void lbc_game_ready_04(void) {
     u8 temp_a1;
     int temp_a2;
@@ -46,7 +46,7 @@ void lbc_game_ready_04(void) {
         cnLBS_LogoutLobbyServer(&CallBack_Result_Match_Logout);
         return;
     case 4:
-        Check_CallBackWait(&jtbl_2977, temp_a1, temp_a2);
+        Check_CallBackWait();
         return;
     case 5:
         F(s32, &CnetWork, 8) = 0;

@@ -1,5 +1,7 @@
+/* lb_by68 - agent B promoted near-match 0x005BE020-0x005BE124: lbc_game_ready_02 (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern s8 net_char_change;
+
 void lbc_game_ready_02(int arg0, int arg1, s32 arg2) {
     s32 var_a2;
     s32 var_a3;
@@ -17,7 +19,7 @@ void lbc_game_ready_02(int arg0, int arg1, s32 arg2) {
         F(s8, (u8 *)cw, 0x2C48) = 0;
         F(s8, (u8 *)cw, 0x2C49) = 0;
         var_a3 = 0;
-        if (F(u8, (u8 *)cw, 0x2C47) > 0) {
+        if (0 < F(u8, (u8 *)cw, 0x2C47)) {
             var_a2 = 0;
             do {
                 temp_v0 = F(u8, ((u8 *)cw + var_a2), 0x7B1);
@@ -39,6 +41,6 @@ void lbc_game_ready_02(int arg0, int arg1, s32 arg2) {
             F(u8, temp_a0, 0x2C33) = (u8) (F(u8, temp_a0, 0x2C33) + 1);
             F(u8, (u8 *)cw, 0x2C34) = 0U;
         }
-        return;
+        break;
     }
 }

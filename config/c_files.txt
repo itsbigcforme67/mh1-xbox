@@ -1860,3 +1860,15 @@ main 0x00216890 0x0021691C flfnt/flfnt02
 main 0x00216AC0 0x00216DD4 flfnt/flfnt03
 main 0x00217480 0x00217544 flfnt/flfnt04
 main 0x00217DE0 0x00217E48 flfnt/flfnt05
+lobby 0x0053C1B0 0x0053C21C b/lb_by61
+lobby 0x0053D760 0x0053D7CC b/lb_by62
+lobby 0x005B69E0 0x005B6A5C b/lb_by63
+lobby 0x005B7B90 0x005B7C8C b/lb_by64
+lobby 0x005B9460 0x005B952C b/lb_by65
+lobby 0x005BAD50 0x005BAE2C b/lb_by66
+lobby 0x005BC9B0 0x005BCA74 b/lb_by67
+lobby 0x005BE020 0x005BE124 b/lb_by68
+lobby 0x005BE150 0x005BE25C b/lb_by69
+lobby:rodata 0x0065EA20 0x0065EA38 b/lb_by69
+lobby 0x005BE580 0x005BE604 b/lb_by70
+lobby 0x005C44A0 0x005C45B0 b/lb_by71

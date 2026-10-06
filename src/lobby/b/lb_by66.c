@@ -1,5 +1,7 @@
+/* lb_by66 - agent B promoted near-match 0x005BAD50-0x005BAE2C: lbc_in_plaza_03 (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern char CallBack_Result_Plaza_PlazaExit[];
+
 void lbc_in_plaza_03(void) {
     u8 var_a0;
     int temp_a1;
@@ -17,19 +19,17 @@ void lbc_in_plaza_03(void) {
         /* fallthrough */
     case 1:
         F(s8, pNet, 0xC) = 1;
-        var_a0 = (u8) (u8 *)cw;
-        F(s32, var_a0, 0x2C4C) = (F(s32, var_a0, 0x2C4C) - 1);
+        F(s32, (u8 *)cw, 0x2C4C) = (F(s32, (u8 *)cw, 0x2C4C) - 1);
         if (F(s32, (u8 *)cw, 0x2C4C) <= 0) {
         case 2:
             F(u8, (u8 *)cw, 0x2C34) = (u8) (F(u8, (u8 *)cw, 0x2C34) + 1);
-            CallBackWaitInit((u8 *) var_a0);
+            CallBackWaitInit();
             F(s8, (u8 *)cw, 0x2C45) = 9;
             cnLBS_PlazaExit(&CallBack_Result_Plaza_PlazaExit);
             return;
         }
-        return;
-    case 3:
-        Check_CallBackWait(var_a0, temp_a1, temp_a2);
         break;
+    case 3:
+        Check_CallBackWait();
     }
 }
