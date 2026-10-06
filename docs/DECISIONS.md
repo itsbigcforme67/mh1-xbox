@@ -115,3 +115,6 @@ Both live in the lobby overlay: decompilation there takes Local_main and everyth
 offline village reaches first (NPCs, shops, item box, quest counter, house, farm, village
 menus), and online-only code (login/logout, plaza chat, mail, browser, rooms) last. The same
 order applies to main's network code versus its single-player code.
+- Update 6 Oct 2026 (evening): the offline village code in the lobby overlay has been mapped and
+  mostly written; what's left there is near-matches and online-only code (login, rooms, plaza,
+  browser). Lobby agents now take online code too, after their village near-matches.
