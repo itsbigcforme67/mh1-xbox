@@ -985,6 +985,8 @@ main 0x00267350 0x002673D0 net/netbgm03
 main 0x00274E10 0x00274EBC menu/pit01
 main 0x00275020 0x00275230 menu/pit02
 main 0x00275540 0x002755C8 menu/pit03
+main 0x00274EC0 0x0027501C menu/pit04
+main 0x00275290 0x00275538 menu/pit05
 main 0x0026C770 0x0026CB58 net/ncmreq01
 main:rodata 0x003708B0 0x00370D28 net/ncmreq01
 main 0x0026A2F0 0x0026AA94 net/netwk01
