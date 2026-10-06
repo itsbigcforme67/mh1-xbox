@@ -105,6 +105,10 @@ void Game_task(u8 *t)
     if (!boot_done && getenv("RT_BOOT_TRACE"))
         fprintf(stderr, "rt_boot: tick %d Game_task started: to the village\n", boot_ticks);
     boot_done = 1;
+    if (system_w[0x10]) {       /* "go to town" (network mode): not on the PC yet */
+        fprintf(stderr, "rt_boot: network mode is not available on the PC: going to the village\n");
+        system_w[0x10] = 0;
+    }
     Tsk_Exit(t);
 }
 
@@ -128,6 +132,12 @@ void all_reset(void)
     system_w[0x3C] = 0;
     system_w[0x12] = 1;
 }
+
+/* PatchLoadinDNAS_Init / _Main (main f_net): after a load, the online
+ * patch kept in the save is checked through DNAS. No network on the PC:
+ * done at once (the auto-load screen CardAtld14 waits for it). */
+void PatchLoadinDNAS_Init(void) {}
+int PatchLoadinDNAS_Main(void) { return 1; }
 
 /* ------------------------------------------------------------ movies
  * The opening and the extras' movies are Sofdec streams (main f_movie);

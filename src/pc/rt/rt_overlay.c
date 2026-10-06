@@ -99,3 +99,13 @@ void Eft14_set4(struct PLW *pl, int arg);
 void Eft21_set(struct PLW *pl, int arg);
 void func_54BA40(struct PLW *pl, int a) { Eft14_set4(pl, a); }
 void func_555020(struct PLW *pl, int a) { Eft21_set(pl, a); }
+
+/* select.bin (character screen): CardCmsv08 (mccomb.c, the save of a new
+ * hunter) copies the edited character into its card slot with
+ * user_data_copy (0x534650, src/select/edit_nm.c) */
+void user_data_copy(void *src, u8 slot);
+void func_534650(void *src, u8 slot) { user_data_copy(src, slot); }
+/* Init_task (0x533A00, the select overlay's entry task: a soft reset
+ * starts the boot again with it) */
+void Init_task(void *t);
+void func_533A00(void *t) { Init_task(t); }
