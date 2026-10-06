@@ -173,8 +173,8 @@ void Quest_start(void)
     int i;
 
     game_w.x0D0 = 0;
-    game_w.x0D5 = 2;
     quest_w.no = game_w.quest = select_w.xAC;
+    game_w.x0D5 = 2;
     game_w.x1E7 = func_63AF40(game_w.quest);
     Ext_pick_point_init();
     for (i = 0; i < 32; i++) {
@@ -237,7 +237,7 @@ void Quest_start(void)
         }
         m = (MISSION *)mission_area;
         Quest_pl_stage_init(0xFF);
-        quest_w.x94 = (MISSION2 *)(m->o[0] + (int)mission_area);
+        quest_w.x94 = (MISSION2 *)((int)mission_area + m->o[0]);
         quest_w.x10 = Quest_time_get(1);
         quest_w.xAF = quest_w.x10 / 9000;
         if (quest_w.xAF > 2) {

@@ -503,12 +503,14 @@ void hk_key_eisuu(void) {
             }
             return;
         }
-set:
-        sk_disp_palette_set();
-        sk_palette_cursor_set();
-        sk_set_etc_data();
-        se_req(7, 0x16, 0);
+        goto set;
     }
+    return;
+set:
+    sk_disp_palette_set();
+    sk_palette_cursor_set();
+    sk_set_etc_data();
+    se_req(7, 0x16, 0);
 }
 
 void hk_key_f1(void) {
