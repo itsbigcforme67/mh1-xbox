@@ -133,8 +133,7 @@ block_32:
         if (var_s4_2 == 0x3E7) {
             font_print_ex(0x1B0, 0x11A, 0, &lit_1226_006555D8);
         } else {
-            Lb_get_armor_num((u8) var_s2);
-            font_print_ex(0x1B0, 0x11A, 0, &lit_1227_006555E0);
+            font_print_ex(0x1B0, 0x11A, 0, &lit_1227_006555E0, Lb_get_armor_num((u8) var_s2, var_s1));  /* asm 0x53BB60: a0 s2, a1 s1, t0 = result */
         }
         flfntSetSize(0x12, 0x12);
         Lb_put_my_job();
