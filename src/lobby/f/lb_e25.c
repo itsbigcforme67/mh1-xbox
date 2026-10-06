@@ -156,8 +156,8 @@ void eft25_i(E25 *e) {
     f32 v[3];
     f32 m[16];
     E25P *p;
-    s16 *lag;
     s16 i;
+    s16 *lag;
     s16 n;
     long nn;
     u8 ty;
@@ -202,7 +202,7 @@ void eft25_i(E25 *e) {
     }
     nn = n;
     i = 0;
-    if (nn > 0) {
+    if (0 < nn) {
         lag = eft25_type0_lag;
         do {
             p->prim = get_prim();
@@ -267,13 +267,13 @@ void eft25_i(E25 *e) {
                     break;
                 case 4:
                     switch (p->idx) {
-                    case 1:
                     case 0:
+                    case 1:
                         p->ang = 0;
                         break;
                     default:
-                    case 3:
                     case 2:
+                    case 3:
                         p->ang = (u16)ran_suu(1);
                         break;
                     }
@@ -296,7 +296,7 @@ void eft25_i(E25 *e) {
                     p->angspd = 0;
                     break;
                 case 7:
-                    p->time = p->idx * -5 - 10;
+                    p->time = -i * 5 - 10;
                     p->ang = 0x2000;
                     p->angspd = 0;
                     break;
@@ -311,13 +311,13 @@ void eft25_i(E25 *e) {
                 }
                 p->pr = get_prim_ptr(p->prim);
                 *(E25 **)(p->pr + 0x18) = e;
-                *(s32 *)(p->pr + 0x1C) = p->idx;
+                *(s32 *)(p->pr + 0x1C) = i;
                 *(void **)(p->pr + 0x14) = eft25_t;
             } else {
                 p->pr = 0;
             }
             p += 1;
-            i = (s16)(i + 1);
+            i++;
             lag += 1;
         } while (i < nn);
     }
@@ -399,7 +399,7 @@ void eft25_m(E25 *e) {
     }
     nn = n;
     k = 0;
-    if (nn > 0) {
+    if (0 < nn) {
         tp = tbl;
         rot = 0;
         do {
