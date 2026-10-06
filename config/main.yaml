@@ -87,6 +87,8 @@ segments:
       - [0x00EC18, asm, text/g_Fade_task]
       - [0x00EC20, c, fade/fd01]
       - [0x00ED6C, asm, text/Fade_busy_ck]
+      - [0x00ED70, c, fade/fd03]
+      - [0x00EDD8, asm, text/fade_draw]
       - [0x00EDE0, c, fade/fd02]
       - [0x00F044, asm, text/Game_task]
       - [0x00F050, asm, text/f_game]

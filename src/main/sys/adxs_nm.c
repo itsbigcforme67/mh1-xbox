@@ -56,7 +56,8 @@ int load_bin(u32 id, void *buf) {
         do {
             h = ADXF_OpenAfs(part, file);
         } while (h == 0);
-        ADXF_ReadNw(h, ADXF_GetFsizeSct(h), buf);
+        st = ADXF_GetFsizeSct(h);
+        ADXF_ReadNw(h, st, buf);
         for (;;) {
             st = ADXF_GetStat(h);
             if (st != 2) {
