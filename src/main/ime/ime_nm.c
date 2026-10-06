@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -1385,7 +1385,7 @@ int setu_end(int a0, int flag)
     }
 }
 
-int dic_open(u8 *name)
+int dic_open(char *name)
 {
     int r;
 
@@ -1410,11 +1410,10 @@ int dic_open(u8 *name)
     }
     init_page();
     init_temp();
-    r = 3;
     if (dic_rw == 0x8000) {
-        r = -6;
+        return -6;
     }
-    return r;
+    return 3;
 }
 
 int dic_close(void)
@@ -2728,7 +2727,7 @@ int set_entid_tab(int a, int b, int c, int rt)
     return free;
 }
 
-u16 get_entid_tab(unsigned int id, int *b, int *c, int *rt)
+int get_entid_tab(unsigned long id, int *b, int *c, int *rt)
 {
     ENTID *e;
 
@@ -2979,7 +2978,7 @@ int tmpoffset(u8 *p)
     int d;
 
     d = p - temp_pages[0];
-    return ((d >> 10) << 12) | (d % 1024);
+    return ((d / 1024) << 12) | (d % 1024);
 }
 
 u8 *load_temp(int off)
@@ -3328,10 +3327,7 @@ void getkbuf(u8 *dst, u8 *src, u8 *end)
 int iskanji(int c)
 {
     c = c & 0xFF;
-    if (c >= 0x80 && c < 0xA0) {
-        return 1;
-    }
-    if (c >= 0xE0 && c < 0xFD) {
+    if ((c >= 0x80 && c <= 0x9F) || (c >= 0xE0 && c <= 0xFC)) {
         return 1;
     }
     return 0;
@@ -6089,7 +6085,7 @@ int api_funcent(int *req)
     int cmd;
 
     cmd = *req;
-    if (cmd <= 0 || (u32)cmd >= 0x40) {
+    if (cmd <= 0 || (u32)cmd > 0x3F) {
         return -1;
     }
     return D_0034ABEC[cmd]((u8 *)req + 4);
@@ -6323,7 +6319,7 @@ int api_dicopen(void)
     if (lock_mode == 0) {
         return -1;
     }
-    if (dic_open(dic_name) == -7) {
+    if (dic_open((char *)dic_name) == -7) {
         return 1;
     }
     into_editing(0);
