@@ -1503,6 +1503,7 @@ segments:
       - [0x095570, c, f/lb_n06]
       - [0x095610, c, f/lb_t01]
       - [0x095664, asm, text/lb_set_questpage_info]
+      - [0x095670, c, f/lb_v06]
       - [0x095C10, c, f/lb_x01]
       - [0x095F88, asm, text/guild_trans_ot0]
       - [0x095F90, c, f/lb_gv05]
