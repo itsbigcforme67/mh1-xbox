@@ -9,19 +9,18 @@ extern int sbuff_idx[];
 
 int makebuff_tq(u32 cmd, int a, int b, int c, int d) {
     u32 f;
+    u8 *q;
+    int n;
     int fa;
     int fb;
     int fc;
-    int n;
-    u8 *p;
-    u8 *q;
     int v;
 
     f = cmd >> 0x18;
     fa = f & 1;
     n = 4;
     if (fa != 0) {
-        n = 5;
+        n += 1;
     }
     fb = f & 2;
     if (fb != 0) {
@@ -35,27 +34,23 @@ int makebuff_tq(u32 cmd, int a, int b, int c, int d) {
         return -1;
     }
     q = sbuff + sbuff_idx[0];
-    q[0] = f;
-    q[1] = cmd >> 0x10;
-    q[2] = cmd >> 8;
-    q[3] = cmd;
-    p = q + 4;
+    *q++ = f;
+    *q++ = cmd >> 0x10;
+    *q++ = cmd >> 8;
+    *q++ = cmd;
     if (fa != 0) {
-        *p = a;
-        p++;
+        *q++ = a;
     }
     if (fb != 0) {
-        *p = b;
-        p++;
+        *q++ = b;
     }
     v = c & 0xFFFF;
     if (fc != 0) {
-        p[0] = v >> 8;
-        p[1] = v;
-        p += 2;
+        *q++ = v >> 8;
+        *q++ = v;
     }
-    *p = d;
+    *q = d;
     sbuff_idx[0] += n + 1;
-    p[1] = 0xFF;
+    q[1] = 0xFF;
     return 0;
 }
