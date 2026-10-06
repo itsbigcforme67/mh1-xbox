@@ -191,3 +191,72 @@ void InetDnsSetAll(void) {
         CpInetHttpResolvCacheInitialize();
     }
 }
+
+/* InetIPAddrFromString (0x00237950, 544 bytes) and its twin ipaddr_from_string (0x002368E0): 2 instructions off (the two temporaries of the
+   `(a & 0xFF) | (b part)` swap a1/a2). The validation loop and the four atoi/strlen scans match. */
+int atoi();
+u32 strlen();
+
+u32 InetIPAddrFromString(char *s) {
+    int dots;
+    int digits;
+    char *p;
+    char c;
+    u32 i;
+    int a;
+    int b;
+    int d;
+    int e;
+
+    dots = 0;
+    digits = 0;
+    c = *s;
+    p = s;
+    if (c != 0) {
+        for (;;) {
+            if (c >= '0' && c < ':') {
+                digits++;
+                if (digits == 4) {
+                    return 0;
+                }
+            } else if (c == '.') {
+                dots++;
+                if (dots == 4) {
+                    return 0;
+                }
+                digits = 0;
+            } else {
+                return 0;
+            }
+            p++;
+            c = *p;
+            if (c == 0) {
+                break;
+            }
+        }
+    }
+    i = 0;
+    a = atoi(s) & 0xFF;
+    while (i < strlen(s) && s[i] != '.') {
+        i++;
+    }
+    if (i < strlen(s)) {
+        i++;
+    }
+    b = atoi(&s[i]) & 0xFF;
+    while (i < strlen(s) && s[i] != '.') {
+        i++;
+    }
+    if (i < strlen(s)) {
+        i++;
+    }
+    d = atoi(&s[i]) & 0xFF;
+    while (i < strlen(s) && s[i] != '.') {
+        i++;
+    }
+    if (i < strlen(s)) {
+        i++;
+    }
+    e = atoi(&s[i]) & 0xFF;
+    return ((e << 24) & 0xFF000000) | ((((d & 0xFF) << 16) & 0xFF0000) | ((((b & 0xFF) << 8) & 0xFF00) | (a & 0xFF)));
+}

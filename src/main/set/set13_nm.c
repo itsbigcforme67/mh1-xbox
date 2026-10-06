@@ -1,9 +1,6 @@
 /* set13_nm - NOT BUILT. Near-match C for the set13 functions still in asm:
  * set13_m and set13_trans (logic from m2c drafts + asm, not matched) and
- * set13_disp_pos_calc, which is 13
- * instructions off: the original loads dir[1] and dir[2] before the first
- * store. Was set13c 0x00158DB0-0x00158F18 (see set13.c). Helpers for
- * set13_m: a point at distance d from the camera along dir, and a test
+ * set13_disp_pos_calc (now matched, in set13c.c). Helpers for set13_m: a test
  * whether the line from the camera to a point is blocked by one of the
  * stage's spheres (stage_sphr_tbl: r,x,y,z quads ending with r = -1). */
 #include "set.h"
@@ -53,18 +50,8 @@ void SetFilterMode(int);
 void hit_cap_pk(SET13_CAP *, void *);
 u8 hit_cap_sphr_m(void *k, f32 *c, void *out, f32 r);   /* hit2c.c */
 
-void set13_disp_pos_calc(f32 *out, f32 *dir, f32 d) {
-    f32 x = dir[0];
-    f32 y = dir[1];
-    f32 z = dir[2];
-    f32 a = d * x;
-    f32 b = d * y;
-    f32 c = d * z;
-
-    out[0] = rview_mat[3][0] + a;
-    out[1] = rview_mat[3][1] + b;
-    out[2] = rview_mat[3][2] + c;
-}
+/* set13_disp_pos_calc matches and lives in set13c.c. */
+void set13_disp_pos_calc(f32 *out, f32 *dir, f32 d);
 
 
 /* Is the player inside the box x0 < x < x1, z0 < z < z1? */
