@@ -1393,7 +1393,7 @@ int main(int argc, char **argv)
             if (shot_list && *shot_list == ',')
                 shot_list++;
         }
-        if (shot && frame_no >= frames && shot_next <= 0) {
+        if (shot && frame_no >= frames && shot_next <= 0 && (!shot_list || ticks >= 2 + (int)fr)) {
             uint8_t *rgb = malloc((size_t)W * H * 3);
             gfx_read_pixels(rgb);
             write_png(shot, W, H, rgb);
