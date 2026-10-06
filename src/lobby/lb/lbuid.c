@@ -1,4 +1,4 @@
-/* lbui, run 4: DispSceneTitle .. DispSceneSubTitle (lobby.bin 0x00593070-0x005931AC): the matching functions of lbui_nm.c. */
+/* lbui, run 4: SetSceneTitle .. SetHelpLineMsg (lobby.bin 0x00591E30-0x00591EF8): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
@@ -18,25 +18,37 @@ void put_button_help(int a, int b, int c, u16 d);
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
-void DispSceneTitle(void) {
-    reload_tex(1, 0x157);
-    SetTextureStage(0x157);
-    SetFilterMode(1);
-    flSetRenderState(0x60, 0);
-    Put_2TF(helpLineTbl);
-    if (pSceneTitle != 0) {
-        flfntSetSize(0x1E, 0x1E);
-        font_print_double(pSceneTitle->x, pSceneTitle->y, 1, 0, pSceneTitle->s);
-    }
+void SetSceneTitle(a, b)
+int a;
+int b;
+{
+    pSceneTitle = text_lobby_msg[a];
+    pSceneTitle = pSceneTitle + b;
 }
 
-void DispSceneSubTitle(void) {
-    flfntSetSize(0x12, 0x12);
-    if (CW->x35D5 != 0 && *(s8 *)(game_w.master + (int)cw + 0x2BFE) != 0) {
-        Draw_menu_square(0xD4, 0x30, 0xC0, 0x20, 0, 0);
-        font_print_double(pSceneSubTitle->x, 0x38, 1, 0, pSceneSubTitle->s);
-        return;
-    }
-    Draw_menu_square(0xD4, 0x44, 0xC0, 0x20, 1, subTitleCol);
-    font_print_double(pSceneSubTitle->x, pSceneSubTitle->y, 1, 0, pSceneSubTitle->s);
+void SetSceneSubTitle(a, b, c)
+int a;
+int b;
+char *c;
+{
+    subTitleCol = 0xFF2A0000;
+    pSceneSubTitle = text_lobby_msg[a];
+    pSceneSubTitle = pSceneSubTitle + b;
+    strcpy(pSceneSubTitle->s, c);
+}
+
+void SetSceneSubTitleColor(c)
+int c;
+{
+    subTitleCol = c;
+}
+
+void SetHelpLineMsg(a, b)
+int a;
+int b;
+{
+    *(u8 **)helpLineStr = (u8 *)text_lobby_msg[a];
+    *(int *)(helpLineStr + 4) = 0;
+    *(int *)(helpLineStr + 8) = 0;
+    *(u8 **)helpLineStr = *(u8 **)helpLineStr + b * 8;
 }

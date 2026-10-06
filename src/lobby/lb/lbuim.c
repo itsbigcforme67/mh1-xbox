@@ -1,4 +1,4 @@
-/* lbui, run 13: Lb_clearChatID .. plaza_checkChatLog (lobby.bin 0x00599020-0x00599278): the matching functions of lbui_nm.c. */
+/* lbui, run 13: lb_chatMemberCheck .. Lb_checkChatID (lobby.bin 0x00598B80-0x00598DB0): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 
@@ -18,73 +18,67 @@ void put_button_help(int a, int b, int c, u16 d);
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 
-void Lb_clearChatID(id)
+int lb_chatMemberCheck(void) {
+    u8 *p;
+    s16 i;
+    LB_NETW *n;
+
+    switch (pNet->x04) {
+    case 0:
+        p = (u8 *)chatIDList + pNet->idx * 8;
+        if ((s8)p[0] != 0) {
+            memcpy(CW->x2F80, p, 8);
+            pNet->x04++;
+            break;
+        }
+        return 0;
+    case 1:
+        switch (Lbs_SeekId()) {
+        case 0:
+            if (ClassInfo.plaza == CW->x30B4 && CW->x30B6 == 0) {
+                n = pNet;
+                chatListFlag = chatListFlag | (1 << n->idx);
+            } else {
+                n = pNet;
+                chatListFlag = chatListFlag & ~(1 << n->idx);
+            }
+            i = n->idx + 1;
+            n->idx = i;
+            if (i < 8) {
+                pNet->x04 = 0;
+                break;
+            }
+            return 0;
+        case 1:
+            n = pNet;
+            chatListFlag = chatListFlag & ~(1 << n->idx);
+            i = n->idx + 1;
+            n->idx = i;
+            if (i < 8) {
+                pNet->x04 = 0;
+                break;
+            }
+            return 0;
+        }
+        break;
+    }
+    return 2;
+}
+
+int Lb_checkChatID(id)
 u8 *id;
 {
-    int i;
+    s8 i;
     u8 *p = (u8 *)chatIDList;
 
     for (i = 0; ; ) {
         if (memcmp(p, id, 8) == 0) {
-            Lb_clearChatMember(i);
-            return;
+            return 1;
         }
-        i = (s8)(i + 1);
+        i++;
         p += 8;
         if (i >= 7) {
-            return;
+            return 0;
         }
-    }
-}
-
-void Lb_clearChatList(void) {
-    s8 i = 0;
-    u8 *a = (u8 *)chatIDList;
-    u8 *b = (u8 *)chatHandleList;
-
-    CW->chatmode = 0;
-    do {
-        memset(a, 0, 8);
-        memset(b, 0, 0x10);
-        i++;
-        a += 8;
-        b += 0x10;
-    } while (i < 7);
-}
-
-void plaza_ReibunEdit(void) {
-    int sw = Get_sw2(0) & 0xFFFF;
-
-    switch (pNet->step) {
-    case 0:
-        Plaza_ReibunEdit_i();
-        pNet->step++;
-        break;
-    case 1:
-        pNet->x28 = Get_sw_on2(0);
-        if ((u16)Plaza_ReibunEdit_mv(sw) & 0x40) {
-            tl_exit_sub_menu(0);
-        }
-        break;
-    }
-}
-
-void plaza_checkChatLog(void) {
-    int sw = Get_sw2(0) & 0xFFFF;
-
-    switch (pNet->step) {
-    case 0:
-        Plaza_chatlog_i();
-        pNet->step++;
-        break;
-    case 1:
-        pNet->x28 = Get_sw_on2(0);
-        if ((u16)sw & 0x40) {
-            Plaza_chatlog_i();
-            tl_exit_sub_menu(0);
-            break;
-        }
-        Plaza_chatlog_mv(sw);
-        break;
     }
 }

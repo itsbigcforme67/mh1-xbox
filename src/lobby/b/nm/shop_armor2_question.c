@@ -1,92 +1,91 @@
 #include "lobby_s.h"
 extern s8 armor_shop_r;
-extern char buki_sei_tbl[];
-extern char bou_sei_tbl[];
+extern u8 buki_sei_tbl[];
+extern u8 bou_sei_tbl[];
 extern char User_data[];
-extern char User_data[];
+void Lb_put_set01();
+void armor_set_myArmor();
+s32 shop_armor2_stack();
 s32 shop_armor2_question(void) {
-    s32 temp_s0;
-    s32 temp_v1_2;
-    s32 temp_v1_3;
-    s32 var_a2;
-    u16 var_a0;
-    u16 var_a1;
-    u8 temp_a3;
-    int temp_a1;
-    int temp_a1_2;
-    int temp_v1;
+    s32 key;
+    s32 r;
+    u16 kind;
+    u16 id;
+    u16 *lp;
+    int c;
+    u8 *e;
+    u8 *f;
+    u8 m;
 
-    var_a2 = lbShop.cur;
-    temp_a1 = (int)lbShop.tbl + (var_a2 * 8);
+    c = lbShop.cur;
+    e = (u8 *)lbShop.tbl + c * 8;
+    key = lbShop.key;
     if (lbShop.mode == 0) {
         if (lbShop.x1A == 1) {
-            var_a0 = F(u16, temp_a1, 0);
-            var_a1 = F(u16, temp_a1, 4);
+            kind = *(u16 *)e;
+            id = *(u16 *)(e + 4);
         } else {
-            var_a2 = *(s32 *)((int)&shopList + 0x26 + (var_a2 * 0x28));
-            temp_a1_2 = (int)&buki_sei_tbl + (var_a2 * 0x18);
-            var_a0 = (u16) F(u8, temp_a1_2, 0);
-            var_a1 = F(u16, temp_a1_2, 2);
-            if (var_a1 == 0x3E7) {
-                var_a0 = (u16) F(u8, &lbShop, 0x5B);
-                var_a1 = F(u16, &lbShop, 0x5C);
+            f = buki_sei_tbl + ((u16 *)&((u8 *)shopList)[0x26])[c * 20] * 0x18;
+            kind = f[0];
+            id = *(u16 *)(f + 2);
+            if (id == 0x3E7) {
+                kind = lbShop.x5A[1];
+                id = *(u16 *)&lbShop.x5A[2];
             }
         }
     } else {
-        temp_v1 = (int)&bou_sei_tbl + (*(s32 *)((int)&shopList + 0x26 + (var_a2 * 0x28)) * 0x18);
-        var_a0 = (u16) F(u8, temp_v1, 0);
-        var_a1 = F(u16, temp_v1, 2);
+        f = bou_sei_tbl + ((u16 *)&((u8 *)shopList)[0x26])[c * 20] * 0x18;
+        kind = f[0];
+        id = *(u16 *)(f + 2);
     }
-    temp_v1_2 = lbShop.key & 0xFFFF;
+    key = key & 0xFFFF;
     if (armor_shop_r == 0) {
-        if (temp_v1_2 & 0x20) {
-            temp_s0 = shop_armor2_stack(var_a0 & 0xFFFF, var_a1 & 0xFFFF, (u16) var_a2) & 0xFF;
+        if (key & 0x20) {
+            r = shop_armor2_stack(kind, id) & 0xFF;
             if (lbShop.x78 == 0) {
                 cnWrap_SoundRequest(0x10);
                 cnWrap_SoundRequest(0);
-                Warehouse_equip(&User_data);
-                armor_shop_r = (s8) (armor_shop_r + 1);
-                goto block_30;
+                Warehouse_equip(User_data, r);
+                armor_shop_r++;
+                return 2;
             }
             cnWrap_SoundRequest(3);
             Lb_put_set01(0xC);
             return 3;
         }
-        if (temp_v1_2 & 0x40) {
+        if (key & 0x40) {
             if (lbShop.x78 != 1) {
-                cnWrap_SoundRequest(3, var_a1, (u16) var_a2);
+                cnWrap_SoundRequest(3);
                 lbShop.x78 = 1;
-                goto block_30;
+                return 2;
             }
-            shop_armor2_stack(var_a0 & 0xFFFF, var_a1 & 0xFFFF, (u16) var_a2);
+            shop_armor2_stack(kind, id);
             cnWrap_SoundRequest(3);
             Lb_put_set01(0xC);
             return 3;
         }
-        if (temp_v1_2 & 0x800) {
+        if (key & 0x800) {
             if (lbShop.x78 != 0) {
                 lbShop.x78 = 0;
-                cnWrap_SoundRequest(1, var_a1, (u16) var_a2);
+                cnWrap_SoundRequest(1);
             }
-        } else if ((temp_v1_2 & 0x400) && (lbShop.x78 != 1)) {
+        } else if ((key & 0x400) && lbShop.x78 != 1) {
             lbShop.x78 = 1;
-            cnWrap_SoundRequest(1, var_a1, (u16) var_a2);
+            cnWrap_SoundRequest(1);
         }
-block_30:
         return 2;
     }
-    temp_v1_3 = var_a0 & 0xFFFF;
-    if ((temp_v1_3 != 7) && (temp_v1_3 != 6)) {
-        armor_set_myArmor((u8) var_a0, var_a1, (u16) var_a2);
-    } else if (*(u8 *)0x3C738D != temp_v1_3) {
-        armor_set_myArmor((u8) var_a0, var_a1, (u16) var_a2);
+    if (kind != 7 && kind != 6) {
+        armor_set_myArmor((u8)kind, id);
+    } else if (*(u8 *)0x3C738D != kind) {
+        armor_set_myArmor((u8)kind, id);
     } else {
-        Set_equip_idx(&User_data, var_a1, (u16) var_a2);
+        Set_equip_idx(User_data, id);
     }
-    F(s8, &lb_sys, 0x78) = 1;
-    Set_userdata((int)&player_work + (game_w.master * 0xA00));
-    Lb_set_mini_data((s32)cw + (game_w.master * 0x2FC) + 0x1346);
-    temp_a3 = game_w.master;
-    memcpy((int)&lbCommer + (temp_a3 * 0x5C) + 0x1C, (s32)cw + (temp_a3 * 0x2FC) + 0x1346, 0x40);
+    lb_sys.x78 = 1;
+    Set_userdata((u8 *)player_work + game_w.master * 0xA00);
+    Lb_set_mini_data(cw + game_w.master * 0x2FC + 0x1346);
+    m = game_w.master;
+    memcpy((u8 *)lbCommer + m * 0x5C + 0x1C, cw + m * 0x2FC + 0x1346, 0x40);
     return 0;
 }

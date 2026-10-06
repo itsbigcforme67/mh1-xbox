@@ -319,10 +319,10 @@ void *memset();
 int Ud_item_search_space_();
 
 void lb_mix_tag_decide(void) {
-    LB_SHOPITEM *sl = shopList;
     UD_ITEM *it = User_data[0].item;
-    int cnt;
     int i;
+    int cnt;
+    LB_SHOPITEM *sl = shopList;
     int v;
     int pages;
 

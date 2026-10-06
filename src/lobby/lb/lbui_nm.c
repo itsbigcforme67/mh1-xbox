@@ -52,7 +52,7 @@ void Lb_eat()
             lb_sys.x68 = 0;
             Lbc_init_network_work(pl);
         }
-        break;
+        return;
     case 7:
         if (lb_sys.x76 == 0) {
             lb_sys.x06 = 0;
@@ -60,7 +60,7 @@ void Lb_eat()
             Lb_Pl_act_set(pl, 0, 0x4D, 0);
             Lbc_init_network_work();
         }
-        break;
+        return;
     case 8:
         break;
     }
@@ -562,7 +562,8 @@ void draw_dialog_square(void) {
         sp.y += (s16)(sp.h - 1);
     }
     sp.h = t->y + t->h - sp.y;
-    sp.v1 = sp.v0 + (s16)(0.025f * ((f32)sp.h * 20.0f));
+    tw = sp.h;
+    sp.v1 = sp.v0 + (s16)(0.025f * (20.0f * tw));
     Put_2TF(&sp);
     t = (DLGSPR *)((u8 *)helpLineTbl + 0x78);
     *(DLGF5 *)&sp = *(DLGF5 *)t;
@@ -573,7 +574,8 @@ void draw_dialog_square(void) {
         sp.y += (s16)(sp.h - 1);
     }
     sp.h = t->y + t->h - sp.y;
-    sp.v1 = sp.v0 + (s16)(0.025f * ((f32)sp.h * 20.0f));
+    tw = sp.h;
+    sp.v1 = sp.v0 + (s16)(0.025f * (20.0f * tw));
     Put_2TF(&sp);
     t = (DLGSPR *)((u8 *)helpLineTbl + 0x3C);
     *(DLGF5 *)&sp = *(DLGF5 *)t;
