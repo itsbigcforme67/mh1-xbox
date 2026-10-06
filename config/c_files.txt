@@ -378,6 +378,8 @@ main 0x00292D40 0x002932BC reward/f_reward4
 main:rodata 0x003868F0 0x0038690C reward/f_reward3
 main 0x002932C0 0x00293364 reward/f_rewardb
 main 0x00293420 0x00293684 reward/f_rewardc
+main 0x002270A0 0x002270FC quest/f_quest03
+main 0x00227160 0x00227238 quest/f_quest04
 main 0x00227100 0x0022715C quest/f_quest
 main 0x00227240 0x00227764 quest/f_questb
 main 0x00227770 0x00227CEC quest/f_questc
@@ -2254,6 +2256,7 @@ main:rodata 0x0036E580 0x0036E5C0 sk/sk12
 main 0x002454F0 0x002455C0 ime/imebw
 main 0x00272010 0x002720D4 ud/udmisc03
 main 0x00217550 0x00217618 flfnt/flfntx01
+main 0x00217D70 0x00217DD8 flfnt/flfntx02
 main 0x00175120 0x001751CC fl/flpsm01
 main 0x00290AE0 0x00290C54 staff/staff01
 main 0x00216DE0 0x00216F90 flfnt/flfnty01

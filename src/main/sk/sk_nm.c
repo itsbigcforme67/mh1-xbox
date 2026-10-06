@@ -685,8 +685,8 @@ void sk_pltchange(int back) {
     int tries = 0;
     int ok = 0;
     u8 f = SKB(0x1F);
-    u8 e = SKB(0x1E);
     s8 p = f;
+    u8 e = SKB(0x1E);
     int v;
 
     while (1) {

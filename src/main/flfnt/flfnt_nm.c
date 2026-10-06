@@ -517,12 +517,12 @@ int flnecAscii2Sjis(int c) {
 
 void flnecCheckFont(int idx) {
     FNP *p = np;
-    u16 *slot = &p->cache[(u16)idx];
+    u16 *slot = (u16 *)((int)((u16)idx << 1) + (int)p) + 413;
 
     if (*slot == 0xFF) {
         *slot = p->next;
         np->next++;
-        np->load[np->x60] = idx;
+        np->load[np->x60] = (s16)idx;
         np->x60++;
     }
 }
