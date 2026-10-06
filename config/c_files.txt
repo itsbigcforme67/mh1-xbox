@@ -1704,7 +1704,7 @@ main 0x00131FB0 0x00132160 menu/menu37
 main 0x0012B5A0 0x0012B688 menu/menu38
 main 0x00152BC0 0x00152D48 pl/pl_itemck
 main 0x00100230 0x00100238 sys/adx_err
-main 0x0011E9D0 0x0011E9D8 tex/reltex
+main 0x0011E910 0x0011E9D8 tex/reltex
 main 0x00162E20 0x00162F08 font/dsp03
 main 0x00161DE0 0x00162014 font/fsp01
 main 0x001623F0 0x00162634 font/fsp02
@@ -2269,6 +2269,7 @@ lobby 0x005CD2C0 0x005CD384 f/lb_ab03
 lobby 0x005CD390 0x005CD49C f/lb_ab02
 lobby 0x005C8660 0x005C874C f/lb_v04
 lobby 0x005C9590 0x005C9908 f/lb_x01
+main 0x001337A0 0x001338D8 menu/menu41
 lobby 0x005AF2C0 0x005AF42C b/lb_by159
 lobby 0x0053B580 0x0053B658 b/lb_by160
 lobby 0x0053D450 0x0053D718 b/lb_by162
