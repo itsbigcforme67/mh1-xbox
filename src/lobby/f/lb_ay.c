@@ -16,14 +16,14 @@ int u_item_chk(int a) {
     if (id == 0) {
         return 0;
     }
-    return D_3396D5[id * 0x10] != 0xFF;
+    return D_3396D5[id * 0x10] != 0xFF ? 1 : 0;
 }
 int u_equip_chk(int a) {
-    int v;
     u8 *u;
-    v = a & 0xFF;
+    int v;
     u = User_data;
-    if (u[v * 6 + 0x44] == 0) {
+    v = a & 0xFF;
+    if (*(u8 *)(v * 6 + u + 0x44) == 0) {
         return -1;
     }
     if (v == u[0x457] || v == u[0x458] || v == u[0x459] || v == u[0x45A] || v == u[0x45B] || v == u[0x456]) {
@@ -34,22 +34,30 @@ int u_equip_chk(int a) {
 int item_kosuu_sel_chk() {
     int a0;
     u8 *p;
+    u8 *u = User_data;
+    u8 *new_var2;
+    unsigned long long new_var;
     a0 = ib[8] * 4;
-    if (D_3396D3[*(u16 *)((u8 *)D_3C7184 + a0) * 0x10] == 0xFF) {
+    new_var2 = D_3396D3;
+    new_var = new_var2[(*((u16 *)(((u8 *)D_3C7184) + a0))) * 0x10];
+    if (new_var == 0xFF) {
         return 0;
     }
-    p = a0 + User_data;
-    if (D_3396D3[*(u16 *)(p + 0x1C4) * 0x10] == 1) {
+    p = (u8 *)(a0 + (int)u);
+    if (new_var2[(*((u16 *)(p + 0x1C4))) * 0x10] == 1) {
         return 0;
     }
-    return *(s16 *)(p + 0x1C6) != 1;
+    return *(s16 *)(p + 0x1C6) != 1 ? 1 : 0;
 }
-int pick_kosuu_sel_chk(int a0, int a1, int a2, u8 *a3) {
+int pick_kosuu_sel_chk() {
     u8 *v;
-    if (item_kosuu_sel_chk(User_data) == 0) {
+    int i;
+    u8 *u = User_data;
+    if (item_kosuu_sel_chk() == 0) {
         return 0;
     }
-    v = a3 + ib[0xB] * 4;
+    i = ib[0xB] * 4;
+    v = (u8 *)(i + (int)u);
     return (D_3396D3[*(u16 *)(v + 0x37C) * 0x10] - *(s16 *)(v + 0x37E)) >= 2;
 }
 u8 *sortup_idx_chk(int a) {
@@ -77,30 +85,29 @@ u8 *sortup_idx_chk(int a) {
     }
     return r;
 }
+/* permuter form: r holds the constant 6 shared with the compares */
 int equip_ok_chk(u8 *e) {
-    int r;
-    u8 a1;
-    u8 t;
-    t = e[1];
-    if (t != 6) {
-        if (t == 7) {
-            goto b3;
-        }
-        a1 = Get_equip_data_ptr()[2];
-        if (!(a1 & (((*(u8 *)0x3C6FC1 != 0) ? 2 : 1) & 0xFF))) {
-            return 0;
-        }
-        r = 8;
-        if (User_data[User_data[0x456] * 6 + 0x45] == 6) {
-            r = 4;
-        }
-        if (!(a1 & (r & 0xFF))) {
-            return 0;
-        }
-        return 1;
-    }
-b3:
+  int r;
+  int new_var[2];
+  u8 *u;
+  new_var[1] = e[1];
+  r = 6;
+  if ((e[1] == r) || (new_var[1] == 7))
+  {
     return 1;
+  }
+  u = User_data;
+  new_var[0] = Get_equip_data_ptr()[2];
+  if (!(new_var[0] & ((((*((u8 *) 0x3C6FC1)) == 0) ? (1) : (2)) & 0xFF)))
+  {
+    return 0;
+  }
+  r = (u[(u[0x456] * r) + 0x45] == 6) ? (4) : (8);
+  if (!(new_var[0] & (r & 0xFF)))
+  {
+    return 0;
+  }
+  return 1;
 }
 void yes_no_select(u16 pad) {
     u8 *t;

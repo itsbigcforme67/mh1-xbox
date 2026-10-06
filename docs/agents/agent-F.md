@@ -313,3 +313,10 @@ Source-form findings (verified by matching):
 - `(1 << *p) & mask` vs `mask & (1 << (*p & 0xFF))`: the second gave the original operand order of `and` (lb_check_chair).
 - Local copies of the arguments (`int x = *(s16 *)A; int y = *(s16 *)B; buf[0] = 0; f(buf, x, y);`) move the store out of the delay slot (Plaza_chat_move).
 - Using `lbCommer[id].name` again instead of the cached `name` pointer changed the s0/s1 order (lb_commer_message).
+- `return x != 1 ? 1 : 0;` (not `return x != 1;`) gives the original branch-to-epilogue layout in small checkers (item_kosuu_sel_chk, u_item_chk); `if (id == 0) return 0; return X ? 1 : 0;`.
+- A local `u8 *u = User_data;` declared BEFORE the int copy of the parameter (`u8 *u; int v; v = a & 0xFF; u = User_data;`) puts `u` into the freed a0 and `v` into v1 (u_equip_chk);
+  `(u8 *)(i + (int)u)` / `(u8 *)(a0 + (int)u)` gives `addu idx,base` (the original operand order) where `u + i` gives `addu base,idx`.
+- Callee register use matters even for register-allocated locals of the CALLER: pick_kosuu_sel_chk keeps `User_data` in a3 across the call only if item_kosuu_sel_chk
+  is a static defined earlier in the same file AND itself matches (its a0-a2 usage is what makes a3 the first free register).
+- The permuter works on a translation-unit function: build a file with the declarations plus that single function (strip `static`, asm stubs) and run
+  `tools/perm.py lobby FUNC file -j1`; it needs asm/lobby/text to still contain the function, so run it BEFORE the function's range is registered.

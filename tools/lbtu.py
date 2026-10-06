@@ -75,7 +75,7 @@ for a, b, r in runs:
         if n is None:
             for ln in t.split('\n'):
                 k = ln.strip()
-                if not k or k in seen:
+                if not k or k in seen or k == '#include "lobby_a.h"':
                     continue
                 seen.add(k); decls.append(ln)
         else:
@@ -122,7 +122,12 @@ rawlines = []
 for ad, n, t in items:
     if t is None:
         sz = sizes[ad]
-        out.append('/* original bytes: build/raw/%s.inc (config/c_rawfuncs.txt) */\nasm int %s()\n{\n#include "%s.inc"\n}\n' % (n, n, n))
+        mt = re.search(r'^([A-Za-z_][\w \*]*?)\b%s\(([^)]*)\);' % re.escape(n), body, re.M)
+        if mt and not mt.group(1).strip().startswith(('asm', 'static', 'extern', 'typedef')):
+            sig = '%s %s(%s)' % (mt.group(1).strip(), n, mt.group(2))
+        else:
+            sig = 'int %s()' % n
+        out.append('/* original bytes: build/raw/%s.inc (config/c_rawfuncs.txt) */\nasm %s\n{\n#include "%s.inc"\n}\n' % (n, sig, n))
         rawlines.append('lobby 0x%08X 0x%X %s' % (ad, sz, n))
     else:
         out.append(t)
