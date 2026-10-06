@@ -71,7 +71,7 @@ void lb_process_make_kyoukaList(void) {
             F(s16, var_s2, 0x24) = 0;
             temp_a1_2 = F(u16, var_s3, 0xC);
             if (temp_a1_2 != 0) {
-                strcpy(var_s2 + 4, Get_equip_name(6, temp_a1_2));
+                strcpy(var_s2 + 4, Get_equip_name(6));
                 F(u32, var_s2, 0) = (u32) (Get_equip_price(6, F(u16, var_s3, 0xC)) >> 1);
                 F(s16, var_s2, 0x24) = 0;
                 var_s4 = 0;

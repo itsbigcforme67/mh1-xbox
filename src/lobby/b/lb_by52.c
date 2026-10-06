@@ -1,5 +1,7 @@
+/* lb_by52 - agent B promoted near-match 0x005383D0-0x0053845C: Lb_make_price_str (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern char shopStr[];
+
 char *Lb_make_price_str(char *arg0, int arg1) {
     char *temp_v0;
 

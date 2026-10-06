@@ -44,7 +44,7 @@ s32 shop_armor2_question(void) {
             if (lbShop.x78 == 0) {
                 cnWrap_SoundRequest(0x10);
                 cnWrap_SoundRequest(0);
-                Warehouse_equip(&User_data, temp_s0);
+                Warehouse_equip(&User_data);
                 armor_shop_r = (s8) (armor_shop_r + 1);
                 goto block_30;
             }
@@ -87,6 +87,6 @@ block_30:
     Set_userdata((int)&player_work + (game_w.master * 0xA00));
     Lb_set_mini_data((s32)cw + (game_w.master * 0x2FC) + 0x1346);
     temp_a3 = game_w.master;
-    memcpy((int)&lbCommer + (temp_a3 * 0x5C) + 0x1C, (s32)cw + (temp_a3 * 0x2FC) + 0x1346, 0x40, temp_a3);
+    memcpy((int)&lbCommer + (temp_a3 * 0x5C) + 0x1C, (s32)cw + (temp_a3 * 0x2FC) + 0x1346, 0x40);
     return 0;
 }

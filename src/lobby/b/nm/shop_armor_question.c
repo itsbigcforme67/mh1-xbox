@@ -22,7 +22,7 @@ s32 shop_armor_question(void) {
             if (F(s8, &lbShop, 0x78) == 0) {
                 cnWrap_SoundRequest(0x10);
                 cnWrap_SoundRequest(0);
-                Warehouse_equip(&User_data, temp_s0);
+                Warehouse_equip(&User_data);
                 armor_shop_r = (s8) (armor_shop_r + 1);
                 goto block_24;
             }
@@ -33,7 +33,7 @@ s32 shop_armor_question(void) {
         }
         if (temp_v1_2 & 0x40) {
             if (F(s8, &lbShop, 0x78) != 1) {
-                cnWrap_SoundRequest(3, temp_a1, temp_a2);
+                cnWrap_SoundRequest(3);
                 F(s8, &lbShop, 0x78) = 1;
                 goto block_24;
             }
@@ -46,27 +46,27 @@ s32 shop_armor_question(void) {
         if (temp_v1_2 & 0x800) {
             if (F(s8, &lbShop, 0x78) != 0) {
                 F(s8, &lbShop, 0x78) = 0;
-                cnWrap_SoundRequest(1, temp_a1, temp_a2);
+                cnWrap_SoundRequest(1);
             }
         } else if ((temp_v1_2 & 0x400) && (F(s8, &lbShop, 0x78) != 1)) {
             F(s8, &lbShop, 0x78) = 1;
-            cnWrap_SoundRequest(1, temp_a1, temp_a2);
+            cnWrap_SoundRequest(1);
         }
 block_24:
         return 2;
     }
     if ((temp_a1 != 7) && (temp_a1 != 6)) {
-        armor_set_myArmor(F(u16, &lbShop, 0x8C), temp_a1, temp_a2);
+        armor_set_myArmor(F(u16, &lbShop, 0x8C));
     } else if (*(u8 *)0x3C738D != temp_a1) {
-        armor_set_myArmor(F(u16, &lbShop, 0x8C), temp_a1, temp_a2);
+        armor_set_myArmor(F(u16, &lbShop, 0x8C));
     } else {
-        Set_equip_idx(&User_data, temp_a1, temp_a2);
+        Set_equip_idx(&User_data);
     }
     F(s8, &lb_sys, 0x78) = 1;
     Set_userdata((int)&player_work + (game_w.master * 0xA00));
     Lb_set_mini_data((s32)cw + (game_w.master * 0x2FC) + 0x1346);
     temp_a3 = game_w.master;
-    memcpy((int)&lbCommer + (temp_a3 * 0x5C) + 0x1C, (s32)cw + (temp_a3 * 0x2FC) + 0x1346, 0x40, temp_a3);
+    memcpy((int)&lbCommer + (temp_a3 * 0x5C) + 0x1C, (s32)cw + (temp_a3 * 0x2FC) + 0x1346, 0x40);
     lb_armor_tag_decide01();
     return 0;
 }

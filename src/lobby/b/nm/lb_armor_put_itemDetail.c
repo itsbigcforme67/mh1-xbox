@@ -45,7 +45,7 @@ block_7:
         flfntLocate(0x168, 0x104);
         temp_s2 = Get_equip_name(var_s1 & 0xFF,  var_s0);
         font_set_palette(Equip_moji_color_rare(Get_equip_rare(var_s1 & 0xFF,  var_s0)));
-        font_print(&lit_551_00655880, temp_s2);
+        font_print(&lit_551_00655880);
         font_set_palette(0);
         Lb_put_msg_type2((int)&lb_shop_msg + 0x18);
         flfntSetSize(0x1C, 0x14);

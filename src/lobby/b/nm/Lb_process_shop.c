@@ -9,9 +9,6 @@ extern char lb_process_decide[];
 extern char lb_process_drawHelp[];
 extern char shop_process_after[];
 extern char lb_armor2_listItem[];
-extern char lb_pit[];
-extern char lb_pit[];
-extern char lb_pit[];
 extern char armor_shop_tmp[];
 extern char armor_shop_tmp[];
 extern char armor_shop_tmp[];
@@ -20,15 +17,6 @@ extern char armor_shop_tmp[];
 extern char armor_shop_tmp[];
 extern char armor_shop_tmp[];
 extern char armor_shop_tmp[];
-extern char lb_pit[];
-extern char lb_pit[];
-extern char lb_pit[];
-extern char lb_pit[];
-extern char lb_pit[];
-extern char lb_pit[];
-extern char lb_pit[];
-extern char lb_pit[];
-extern char lb_pit[];
 extern char npc_dialog_table[];
 void Lb_process_shop(void) {
     s8 sx1;
@@ -76,16 +64,16 @@ void Lb_process_shop(void) {
         F(s32, &armor_shop_tmp, 0x10) = -1;
         F(s32, &armor_shop_tmp, 0x14) = -1;
         F(s32, &armor_shop_tmp, 0x18) = -1;
-        cnWrap_SoundRequest(0xC, temp_a1_2);
+        cnWrap_SoundRequest(0xC);
         Lbc_set_prim(0, 0, 0);
         break;
     case 1:
-        if ((sx1 = Lb_talk_check_default(0, temp_a1, temp_a2)) != 0) {
+        if ((sx1 = Lb_talk_check_default(0)) != 0) {
             lbShop.step = (s8) (lbShop.step + 1);
         }
         break;
     case 2:
-        temp_v0 = Lb_shop_move(lbShop.step, temp_a1, temp_a2);
+        temp_v0 = Lb_shop_move(lbShop.step);
         if ((temp_v0 != 3) && (temp_v0 != 0)) {
 
         } else {
@@ -112,7 +100,7 @@ void Lb_process_shop(void) {
         }
         break;
     case 3:
-        if ((sx2 = Lb_talk_check_default(0, temp_a1, temp_a2)) != 0) {
+        if ((sx2 = Lb_talk_check_default(0)) != 0) {
             if (F(s8, &lb_pit, 9) == 0) {
                 lbShop.step = 0;
                 F(s8, &lb_pit, 8) = 0;
@@ -126,7 +114,7 @@ void Lb_process_shop(void) {
         }
         break;
     case 4:
-        if ((sx3 = Lb_talk_check_default(0, temp_a1, temp_a2)) != 0) {
+        if ((sx3 = Lb_talk_check_default(0)) != 0) {
             lbShop.x1B = 0;
             F(s8, &lb_sys, 0x87) = 0x14;
             F(s32, &lb_sys, 0x68) = 0;

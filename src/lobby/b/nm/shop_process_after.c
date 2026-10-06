@@ -57,7 +57,7 @@ s32 shop_process_after(void) {
             }
             if ((lbShop.mode == 0) && (lbShop.x1A == 1)) {
                 if (Now_equip_ck(&User_data, armorIndex) == 1) {
-                    shop_armor2_stack(var_s1, temp_s0);
+                    shop_armor2_stack(var_s1);
                     lbShop.f38 = (int (*)())0;
                     lb_process_tag_decide01();
                     r_no_process = 0;
@@ -109,14 +109,14 @@ block_47:
             r_no_process = temp_a2_2;
             lbShop.help = F(s32, &shop_process2_help, 0x18);
             if (F(s32, ((lbShop.cur * 8) + (int)lbShop.tbl), 4) == 0x3E7) {
-                random_stack((int)lbShop.tbl, F(s32, &shop_process2_help, 0x18), temp_a2_2, temp_a3);
+                random_stack((int)lbShop.tbl, F(s32, &shop_process2_help, 0x18));
             }
             temp_v1_3 = (int)lbShop.tbl + (lbShop.cur * 8);
             sp49 = (s8) F(s32, temp_v1_3, 0);
             sp4A = (s16) F(s32, temp_v1_3, 4);
             if (Equip_ok_ck(&User_data, &sp48) == 0) {
                 lbShop.help = F(s32, &shop_process2_help, 8);
-                shop_armor2_stack(var_s1, temp_s0);
+                shop_armor2_stack(var_s1);
                 r_no_process = 0;
                 lbShop.f38 = (int (*)())0;
                 lb_process_tag_decide01();
@@ -125,7 +125,7 @@ block_47:
             }
             if ((lbShop.mode == 0) && (lbShop.x1A == 1) && (Now_equip_ck(&User_data, armorIndex) == 1)) {
                 lbShop.help = F(s32, &shop_process2_help, 8);
-                shop_armor2_stack(var_s1, temp_s0);
+                shop_armor2_stack(var_s1);
                 r_no_process = 0;
                 lbShop.f38 = (int (*)())0;
                 lb_process_tag_decide01();
@@ -146,7 +146,7 @@ block_41:
         }
         goto block_47;
     case 3:
-        if (shop_armor2_question(temp_a0, temp_a1, temp_a2, temp_a3) != 2) {
+        if (shop_armor2_question(temp_a0) != 2) {
             r_no_process = 0;
             lb_process_tag_decide01();
             return 0;

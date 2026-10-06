@@ -30,7 +30,7 @@ s32 shop_armor2_stack(s8 arg0, s16 arg1, int arg2) {
             *((u8 *)&D_3C7006 + temp_a3) = arg1;
             *((u8 *)&D_3C7008 + temp_a3) = 0;
             if (var_s0 == *(u8 *)0x3C7416) {
-                Set_equip_idx(&User_data, 1, temp_a3);
+                Set_equip_idx(&User_data, 1);
                 Set_userdata((u8 *)&player_work + (game_w.master * 0xA00));
             }
         } else {
@@ -40,22 +40,22 @@ s32 shop_armor2_stack(s8 arg0, s16 arg1, int arg2) {
                 Gun_level_up(&User_data, (s16)temp_t0, 1, temp_a3);
                 break;
             case 1:
-                Gun_Silencer_set(&User_data, (s16)temp_t0, 0, temp_a3);
+                Gun_Silencer_set(&User_data, (s16)temp_t0, 0);
                 break;
             case 2:
-                Gun_Silencer_set(&User_data, (s16)temp_t0, 1, temp_a3);
+                Gun_Silencer_set(&User_data, (s16)temp_t0, 1);
                 break;
             case 3:
-                Gun_barrel_set(&User_data, (s16)temp_t0, 0, temp_a3);
+                Gun_barrel_set(&User_data, (s16)temp_t0, 0);
                 break;
             case 4:
-                Gun_barrel_set(&User_data, (s16)temp_t0, 1, temp_a3);
+                Gun_barrel_set(&User_data, (s16)temp_t0, 1);
                 break;
             case 5:
-                Gun_Scope_set(&User_data, (s16)temp_t0, 0, temp_a3);
+                Gun_Scope_set(&User_data, (s16)temp_t0, 0);
                 break;
             case 6:
-                Gun_Scope_set(&User_data, (s16)temp_t0, 1, temp_a3);
+                Gun_Scope_set(&User_data, (s16)temp_t0, 1);
                 break;
             }
             if (Now_equip_ck(&User_data, armorIndex) == 1) {

@@ -37,7 +37,7 @@ block_3:
         return;
     }
     temp_s0_2 = temp_s2 & 0xFFFF;
-    temp_s0_3 = Equip_icon_color_rare(Get_equip_rare(arg3 & 0xFF, temp_s0_2) & 0xFF, 0xFF, 0);
-    Get_weapon_job2(arg3 & 0xFF, temp_s0_2);
-    Lb_put_job(arg0, arg1, arg2, temp_s0_3);
+    temp_s0_3 = Equip_icon_color_rare(Get_equip_rare(arg3 & 0xFF) & 0xFF, 0xFF, 0);
+    Get_weapon_job2(arg3 & 0xFF);
+    Lb_put_job(arg0, arg1, arg2);
 }

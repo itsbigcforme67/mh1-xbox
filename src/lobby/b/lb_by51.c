@@ -1,3 +1,4 @@
+/* lb_by51 - agent B promoted near-match 0x00537AD0-0x00537B98: Lb_shop_trans_sub (first drafted by tools/lbauto.py). */
 #include "lobby_s.h"
 
 void Lb_shop_trans_sub(int arg0) {

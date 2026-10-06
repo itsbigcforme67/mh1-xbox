@@ -16,7 +16,7 @@ void Lb_put_job_limit(s8 arg0, s16 arg1) {
     if ((temp_a2 != 7) && (temp_a2 != 6)) {
         sp29 = arg0;
         sp2A = arg1;
-        temp_a2_2 = Get_equip_bit(&User_data, &sp28, temp_a2) & 0xFF;
+        temp_a2_2 = Get_equip_bit(&User_data, &sp28) & 0xFF;
         var_s0 = 0xFF;
         if ((temp_a2_2 & 3) != 3) {
             temp_a0 = temp_a2_2 & 0xC;
@@ -55,7 +55,7 @@ void Lb_put_job_limit(s8 arg0, s16 arg1) {
             }
         }
         if ((var_s0 & 0xFF) != 0xFF) {
-            font_set_palette(5, 3, temp_a2_2);
+            font_set_palette(5, 3);
             flfntLocate(0x1D0, 0x11B);
             font_print(&lit_543_00655878, *(s32 *)((int)&shop_warning + ((var_s0 & 0xFF) * 4)));
         }

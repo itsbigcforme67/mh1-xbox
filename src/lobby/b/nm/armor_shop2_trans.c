@@ -1,6 +1,4 @@
 #include "lobby_s.h"
-extern char lb_pit[];
-extern char lb_pit[];
 void armor_shop2_trans(void) {
     int temp_a1;
 

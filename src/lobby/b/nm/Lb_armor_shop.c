@@ -7,9 +7,6 @@ extern char lb_armor_sel2Prog[];
 extern char lb_armor_decide[];
 extern char lb_armor_put_itemDetail[];
 extern char lb_armor_listItem[];
-extern char lb_pit[];
-extern char lb_pit[];
-extern char lb_pit[];
 extern char armor_shop_tmp[];
 extern char armor_shop_tmp[];
 extern char armor_shop_tmp[];
@@ -17,8 +14,6 @@ extern char armor_shop_tmp[];
 extern char armor_shop_tmp[];
 extern char armor_shop_tmp[];
 extern char armor_shop_tmp[];
-extern char lb_pit[];
-extern char lb_pit[];
 extern char npc_dialog_table[];
 void Lb_armor_shop(void) {
     s8 sx1;
@@ -61,12 +56,12 @@ void Lb_armor_shop(void) {
         F(s32, &armor_shop_tmp, 0x18) = -1;
         break;
     case 1:
-        if ((sx1 = Lb_talk_check_default(0, temp_a1, temp_a2)) != 0) {
+        if ((sx1 = Lb_talk_check_default(0)) != 0) {
             lbShop.step = (s8) (lbShop.step + 1);
         }
         break;
     case 2:
-        temp_v0 = Lb_shop_move(lbShop.step, temp_a1, temp_a2);
+        temp_v0 = Lb_shop_move(lbShop.step);
         if ((temp_v0 != 3) && (temp_v0 != 0)) {
 
         } else {
@@ -77,7 +72,7 @@ void Lb_armor_shop(void) {
         }
         break;
     case 4:
-        if ((sx2 = Lb_talk_check_default(0, temp_a1, temp_a2)) != 0) {
+        if ((sx2 = Lb_talk_check_default(0)) != 0) {
             lbShop.x1B = 0;
             F(s8, &lb_sys, 0x87) = 0x14;
             F(s32, &lb_sys, 0x68) = 0;

@@ -45,7 +45,7 @@ s32 lb_process_set_armorList(void) {
     var_s3 = 0;
     lbShop.list = (void *)shopList;
     var_s1 = (int)&bou_sei_tbl;
-    temp_fp = (Warehouse_search_space(&User_data, lbShop.x1A, temp_a2) & 0xFF) == 0xFF;
+    temp_fp = (Warehouse_search_space(&User_data, lbShop.x1A) & 0xFF) == 0xFF;
 loop_31:
     if (F(u8, var_s1, 0) != 0xFF) {
         temp_v0 = Seisan_ok_ck(0,  (var_s3 << 0x30) >> 0x30, 0);

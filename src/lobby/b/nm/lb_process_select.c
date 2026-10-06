@@ -55,7 +55,7 @@ block_20:
                     goto block_20;
                 }
                 lbShop.x1C = 0;
-                cnWrap_SoundRequest(0, 2, temp_a2, temp_a3);
+                cnWrap_SoundRequest(0, 2);
                 return 1;
             }
             return 0;

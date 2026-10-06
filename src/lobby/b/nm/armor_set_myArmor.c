@@ -7,7 +7,7 @@ void armor_set_myArmor(void) {
 
     temp_a1 = game_w.master;
     temp_s0 = (int)&player_work + (temp_a1 * 0xA00);
-    Set_equip_idx(&User_data, temp_a1);
+    Set_equip_idx(&User_data);
     Lb_player_release(temp_s0);
     flCompact();
     F(s8, &lb_sys, 0x8D) = 3;

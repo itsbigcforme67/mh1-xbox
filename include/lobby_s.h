@@ -3,8 +3,20 @@
 /* lobby_a.h plus a typed lbShop / shopList for the lobby shop files (types copied from include/lobby.h).
  * lobby_a.h declares lbShop as an untyped u8[0x90]; keep that one under another name. */
 #define lbShop lbShop_hdr   /* lobby_a.h declares lbShop as an untyped u8[0x90]; keep that one under another name */
+#define lb_pit lb_pit_hdr   /* same for lb_pit (untyped char[]) */
 #include "lobby_a.h"
 #undef lbShop
+#undef lb_pit
+/* lb_pit (0x006EAE40, size 0xC): current NPC talk script position (include/lobby.h) */
+typedef struct LB_PIT {
+    s32 x0;
+    u8 *pos;            /* current talk script entry (8-byte entries: u16 type, s32 text at +4) */
+    s8 x08;             /* talk script block index (x8 bytes) */
+    s8 x09;
+    s8 step;            /* 0x0A talk step: 0 init, 1 running */
+    u8 _pad0B;
+} LB_PIT;
+extern LB_PIT lb_pit;
 
 typedef struct LB_SHOP {
     s16 pos[5][2];      /* 0x00 tag positions (x, y) */

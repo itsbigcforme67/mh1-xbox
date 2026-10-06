@@ -1564,6 +1564,16 @@ lobby 0x00538620 0x0053863C b/lb_by47
 lobby 0x00539E40 0x00539F7C b/lb_by48
 lobby 0x0053C220 0x0053C23C b/lb_by49
 lobby 0x0053CC30 0x0053CD44 b/lb_by50
+lobby 0x00537AD0 0x00537B98 b/lb_by51
+lobby 0x005383D0 0x0053845C b/lb_by52
+lobby 0x00537F20 0x00537F58 b/lb_by53
+lobby 0x00538A00 0x00538A68 b/lb_by54
+lobby 0x00539460 0x00539504 b/lb_by55
+lobby 0x0053BF30 0x0053BFCC b/lb_by56
+lobby 0x0053CBF0 0x0053CC30 b/lb_by57
+lobby 0x0053D230 0x0053D280 b/lb_by58
+lobby 0x0053D3D0 0x0053D444 b/lb_by59
+lobby 0x0053D720 0x0053D758 b/lb_by60
 lobby 0x005A2A20 0x005A2FA4 cnet/cnlbs
 lobby 0x005A3180 0x005A6EC4 cnet/cnlbsb
 lobby 0x005A7240 0x005A72E4 cnet/cnlbsc

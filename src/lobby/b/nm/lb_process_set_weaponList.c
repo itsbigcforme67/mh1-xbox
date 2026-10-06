@@ -65,7 +65,7 @@ void lb_process_set_weaponList(void) {
                         var_v0 = 0x3E8;
                         var_s1_2 = F(s32, &shop_process2_help, 0x1C);
                     } else {
-                        var_s1_2 = Get_equip_name(F(u8, var_s0, 0), temp_a1_2);
+                        var_s1_2 = Get_equip_name(F(u8, var_s0, 0));
                         var_v0 = Get_equip_price(F(u8, var_s0, 0), F(u16, var_s0, 2)) >> 1;
                     }
                     F(u32, var_s5, 0) = var_v0;

@@ -83,7 +83,7 @@ s32 lb_process_kyoukaListProg(void) {
         goto block_64;
     }
     if (lbShop.key & 0x40) {
-        cnWrap_SoundRequest(3, temp_a1);
+        cnWrap_SoundRequest(3);
         if (lbShop.x1C == 0) {
             lbShop.x70 = 0;
             lb_process_tag_decide01();
@@ -94,7 +94,7 @@ s32 lb_process_kyoukaListProg(void) {
     }
     if (lbShop.key & 0x200) {
         if (F(s16, temp_s0, 0x24) != 2) {
-            cnWrap_SoundRequest(0xE, temp_a1);
+            cnWrap_SoundRequest(0xE);
             if (lbShop.x1C != 1) {
                 lbShop.x1C = 1;
                 lbShop.x6E = 0;
@@ -102,25 +102,25 @@ s32 lb_process_kyoukaListProg(void) {
                 lbShop.x1C = 0;
             }
         } else {
-            cnWrap_SoundRequest(7, temp_a1);
+            cnWrap_SoundRequest(7);
         }
     } else if (lbShop.key & 0x80) {
         temp_a1_3 = armorIndex;
         if (*(s32 *)((int)&D_3C7005 + (temp_a1_3 * 6)) != 7) {
             if (F(s16, temp_s0, 0x24) != 2) {
-                cnWrap_SoundRequest(0xF, temp_a1_3);
+                cnWrap_SoundRequest(0xF);
                 if (lbShop.x1C != 2) {
                     lbShop.x1C = 2;
                 } else {
                     lbShop.x1C = 0;
                 }
             } else {
-                cnWrap_SoundRequest(7, temp_a1_3);
+                cnWrap_SoundRequest(7);
             }
         }
     } else if (lbShop.key & 0x2000) {
         if (lbShop.x1C == 0) {
-            cnWrap_SoundRequest(1, temp_a1);
+            cnWrap_SoundRequest(1);
             temp_v0 = lbShop.x70 - 1;
             lbShop.x70 = temp_v0;
             if (temp_v0 < 0) {
@@ -129,7 +129,7 @@ s32 lb_process_kyoukaListProg(void) {
         }
     } else if (lbShop.key & 0x1000) {
         if (lbShop.x1C == 0) {
-            cnWrap_SoundRequest(1, temp_a1);
+            cnWrap_SoundRequest(1);
             temp_v1_2 = lbShop.x70 + 1;
             lbShop.x70 = temp_v1_2;
             if (temp_v1_2 >= lbShop.count) {
@@ -138,7 +138,7 @@ s32 lb_process_kyoukaListProg(void) {
         }
     } else if (lbShop.key & 0x800) {
         if (lbShop.x1C == 1) {
-            cnWrap_SoundRequest(1, temp_a1);
+            cnWrap_SoundRequest(1);
             var_v0_2 = 2;
             if (lbShop.tbl[(lbShop.cur) * 2] == 7) {
                 var_v0_2 = 4;
@@ -150,7 +150,7 @@ s32 lb_process_kyoukaListProg(void) {
             }
         }
     } else if ((lbShop.key & 0x400) && (lbShop.x1C == 1)) {
-        cnWrap_SoundRequest(1, temp_a1);
+        cnWrap_SoundRequest(1);
         var_v0_3 = 2;
         if (lbShop.tbl[(lbShop.cur) * 2] == 7) {
             var_v0_3 = 4;
