@@ -602,3 +602,35 @@ Lessons:
   store block (flps/disp: Disp_button matched when `q.col = -1` moved after the last field store). check.py's count for calls to functions in other modules always shows one
   diff per unresolved call (func_NNNNNN names): that is not a real difference.
 - `if (...) return 0; return 1;` is not the same as `return !(...)` for float compares (flPS2CheckGSClip).
+
+## Assignment 7 (6 Oct): single-player first, own ranges plus agent D's parked main ranges
+Linked this pass (rebuild OK x5): sound driver host side src/main/sound/sdr02-sdr07, sdr09 (Sdr* queue writers, SIF RPC status calls, makebuff*,
+SdrSendReq, sending_req 1036 B), flsnd04 (flSndRequest, flSndChange, flSndStatGet), flsnd05 (flSndModuleInit .. flSndPackLoadStatus), flsnd02 (flSndJointSet),
+flsnd06; fl clay01 (flCreateClayHandle), flnode05e (flGetFcurveValue); flfnt07 (flfntSjis2Index); hk18 (hk_key_eisuu); ime runs imeaw..imebd (is_kuten,
+alloc_record, set_wds, flush_head, newwdlen, get_entid_tab). Near-matches left: SdrSeReq/SdrSeChg (sdr01_nm.c), sdr_dmaadr_set/SdrDmaLoadReq (sdr08_nm.c),
+staff_disp 21 off (down from 75), flGetHierarchy3 5 off, flPS2GetMLCLAY 12 off, reward_mv 9 off, reward_itembox, flGetHierarchyData2 2 off.
+Not done: Sofdec/ADX/CRI (skipped as told), wait_alarm (asm, uses ei), net_receive_* (online, last).
+Lessons (each shown by the named function):
+- memcpy/flMemcpy size parameter must be unsigned: `void flMemcpy(void *, void *, u32)` changes the order in which the two argument loads of consecutive
+  calls are scheduled (flCreateClayHandle, flSndJointSet).
+- A function whose callee's result is returned in v0 must return it: `int f() { int r = g(); if (r > 0) return r; return h(); }` (flSndPackLoadStatus,
+  SdrGetState, flSndOutputMode, flSndPackLoadBG2: a void version gives different branch layout).
+- `int & 0xFFFFFF` compiles to dsll32 8 / dsrl32 8; the final command word `(x & 0xFFFFFF) | 0x4A000000` is plain int code (SdrPortStop). An unsigned long
+  mask or shifts through `long` do not (they fold or add a sign extension before the sw).
+- Globals of 8 bytes or less are gp-relative only when their size is known: `extern int sque_w_idx[];` (unknown size) gives lui/addiu; `volatile` there made
+  the compiler re-read it after the byte stores like the original (SdrAllStop, SdrSeReq).
+- Separate lui/addiu for every field of a queue entry (`sndque_tbl+4+off`) is `sndque_tbl[idx].field` through a global array of structs, not a pointer; a
+  local pointer q gives `4(q)` offsets and is used where the original does (SdrSetRev, sdr_dmaadr_set).
+- `*p++ = a; *p++ = b;` (pointer bumped by 2 after pairs of byte stores) vs `p[0]/p[1]` offsets (makebuff_tq, flush_head). Declaration order of 7 locals found with
+  tools/declhill.py (makebuff_tq).
+- A long nested if ladder with no jump table that tests `x & 0xF0` groups is ONE switch with the cases in reverse ladder order, `case 0x60: case 0x50:` for a
+  ladder 0x50, 0x60 (sending_req); a `switch` whose failure paths jump straight to the function end has the shared tail code as a label INSIDE the switch,
+  after `default: return;` (hk_key_eisuu).
+- A switch with sparse cases compiled as compare ladder where `||` chains of != failed: write the switch (is_kuten).
+- `x < K` of an unsigned subtraction: `(u32)(op - 0x39) <= 2` gives the `at` form. `n >= 5` vs `n > 4` the same (makebuff).
+- A 64-bit parameter matters: `get_entid_tab(unsigned long id, ...)` (the callers pass s64 list entries) removed a sign extension and also improved dic_learn,
+  dic_get1wd and dic_getallwd by 10 each. Return type int, not u16.
+- A dead statement can fix register allocation: `if (c) {}` inside the switch of flGetFcurveValue (found by the permuter; output-0 had `if ((c && c) && c) {}`).
+- In-place parameter updates (`depth |= (mode + 1) << 6;`, `size0 = (size0 + 15) & ~15;`) keep the original register (SdrSetRev).
+- tools/rebuild.sh takes about 4-8 minutes now; run the permuter with PERM_ASM_DIR pointing at a snapshot of asm/ because the rebuild wipes it.
+- The scratchpad directory is shared between agents: keep your own files in a subdirectory (mine: .../scratchpad/E).
