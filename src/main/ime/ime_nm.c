@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -3063,23 +3063,17 @@ int updwdlen(WD *w)
 
 void set_record(u8 *r, int len, WD *w, int rt)
 {
-    u8 *p;
-    u8 *q;
-
-    r[0] = len % 256;
-    r[1] = len / 256;
-    r[2] = w->len;
-    p = r + 3;
-    strncpy(p, w->yomi, w->len);
-    q = p + w->len;
-    q[0] = w->x07;
-    q[1] = rt;
-    p = q + 2;
+    *r++ = len % 256;
+    *r++ = len / 256;
+    *r++ = w->len;
+    strncpy(r, w->yomi, w->len);
+    r += w->len;
+    *r++ = w->x07;
+    *r++ = rt;
     if (w->x08 != 0 || w->x07 >= 0x2D) {
-        q[2] = w->x08;
-        p++;
+        *r++ = w->x08;
     }
-    setkbuf(w->tango, p);
+    setkbuf(w->tango, r);
 }
 
 void upd_record(u8 *r, int add, WD *w, int rt)
