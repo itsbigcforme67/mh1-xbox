@@ -876,10 +876,13 @@ int n;
 
 char *Quest_str_get(int n)
 {
+    s32 *p;
     if (game_w.x1DC) {
         return func_5C5E20();
     }
-    return (char *)(mission_area + quest_w.x84[n]);
+    p = quest_w.x84;
+    p += n;
+    return (char *)(*p + mission_area);
 }
 
 static s16 stolen_item_num_ck(item)
@@ -1377,26 +1380,30 @@ void ext_pick_point_fifo_ck(void)
     int i;
     s8 *t;
 
-    n = quest_w.x3B - 1;
-    if (quest_w.x3B >= 20) {
+    n = quest_w.x3B;
+    if (n >= 20) {
+        n--;
         i = 0;
-        if (n > 0) {
+        if (0 < n) {
             t = stiem_stack_tbl;
-            for (; i < n; i++, t++) {
+            do {
                 if (!(StiEM_data[*t].x19 & 1)) {
                     break;
                 }
-            }
+                i++;
+                t++;
+            } while (i < n);
         }
         Ext_pick_point_clr(stiem_stack_tbl[i]);
     }
 }
 
-void ext_pick_point_tbl_clr(n)
-s8 n;
+void ext_pick_point_tbl_clr(arg)
+int arg;
 {
-    int last;
+    int n = (s8)arg;
     s8 *t;
+    int last;
 
     last = quest_w.x3B - 1;
     if (n < last) {

@@ -282,12 +282,10 @@ void CCnNetMsg_CnPurgeData(NM *m, int n) {
 }
 
 void CCnNetMsg_CnReadSeek(NM *m, int n) {
-    int t = m->rd + n;
-
-    if (m->size < t) {
+    if (m->size < m->rd + n) {
         mcsls_critical_error(1);
     } else {
-        m->rd = t;
+        m->rd = m->rd + n;
     }
 }
 

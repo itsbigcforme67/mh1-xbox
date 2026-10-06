@@ -575,9 +575,9 @@ int a;
     spr.h = 0x1C0;
     spr.y = 0;
     spr.v = 0;
+    spr.col = (a & 0xFF) | (((a & 0xFF) << 16) | 0xFF000000 | ((a & 0xFF) << 8));
     spr.u2 = 0xFF;
     spr.v2 = 0xFF;
-    spr.col = (a & 0xFF) | (((a & 0xFF) << 16) | 0xFF000000 | ((a & 0xFF) << 8));
     spr.u = 0;
     Put_2TF(&spr, a & 0xFF);
 }

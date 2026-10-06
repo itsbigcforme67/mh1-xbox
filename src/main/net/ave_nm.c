@@ -1,4 +1,4 @@
-/* ave_nm (whole file, ave01/ave02 are the linked parts; Ave_TcpSend and Ave_TcpRecv are near-matches) - SLPM_654.95 0x00233B10-0x002351B0 (f_ave.s): "Ave" layer, thin wrappers that pack arguments into the
+/* ave_nm (whole file, ave01/ave02 are the linked parts; Ave_TcpRecv is linked as ave03, Ave_TcpSend is a near-match) - SLPM_654.95 0x00233B10-0x002351B0 (f_ave.s): "Ave" layer, thin wrappers that pack arguments into the
    1 KB SifRpcWork buffer and call the IOP network module through sceSifCallRpc (one RPC number per call, results
    come back as s16 in the same buffer). Every call is bracketed by the RPC semaphore. Working file. */
 #include "types.h"
@@ -302,33 +302,36 @@ int Ave_TcpSend(s16 sock, u8 *buf, s16 len) {
     return r;
 }
 
-int Ave_TcpRecv(s16 sock, void *buf, s16 len) {
+int Ave_TcpRecv(s16 sock, void *buf, int len) {
     int r;
     s16 *p;
     int n;
+    s16 l;
 
-    if (len <= 0) {
+    l = len;
+    if (l <= 0) {
         return 0;
     }
     Ave_SifCallRpcSemaWait();
-    if (len >= 0x3CB) {
+    if (l > 0x3CA) {
         len = 0x3CA;
     }
+    l = len;
     p = (s16 *)(SifRpcWork + 0x1C);
     p[0] = sock;
     p[1] = len;
-    r = Ave_SifCallRpc(0x13, len + 0x26, len + 0x26);
+    r = Ave_SifCallRpc(0x13, l + 0x26, l + 0x26);
     FlushCache(0);
-    if (r < 0) {
+    if ((s16)r < 0) {
         Ave_SifCallRpcSemaSignal();
         return r;
     }
     n = W32(0x18);
-    if (!(len < n)) {
-        len = n;
+    if (n <= l) {
+        len = (s16)n;
     }
-    if (len > 0) {
-        memcpy(buf, p + 2, len);
+    if (0 < (s16)len) {
+        memcpy(buf, p + 2, (s16)len);
     }
     Ave_SifCallRpcSemaSignal();
     return len;

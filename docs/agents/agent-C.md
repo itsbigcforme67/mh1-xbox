@@ -815,3 +815,92 @@ Lessons:
 - `for (i = 0; i < n + 1 ...)` with `i = 0` first, and `c <= 0x9F` instead of `c < 0xA0` (Ck_hankaku); `(int)base + (n << 9)` order (get_heap_ptr).
 - declbf killed by a timeout leaves the file in a worse permutation: always `git diff` the nm file after a killed run.
 - mk1.py silently overwrites an existing run file: check `ls` for the name first.
+
+## Ninth assignment: near-match pass + remaining-area list (Sonnet worker C, 5 Oct 2026)
+Ranges: main 0x100000-0x160000 and 0x230000-0x23E500. Linked (all five modules rebuild OK): net/cnmsg02 (CCnNetMsg_CnReadSeek),
+net/ave03 (Ave_TcpRecv), net/cpinet13 (CpInetInterfaceProblemEnable), menu/menu40 (disp_needle), item/item01 extended to 0x11D328
+(Item_preparation_adrs), fade/fd03 (Fade_busy_ck). No shared header edits.
+Lessons (function that shows it):
+- Result of an assignment as the return value: `int f(int on) { return g[0] = !on; }` keeps the value in v0 (the plain `void` version used v1)
+  (CpInetInterfaceProblemEnable).
+- Param copies: when the original keeps `s0 = a2` raw and a second register holds the normalised value, the param is an `int` and there is a
+  separate `s16 l = len;` used for compares and arguments, with `len = (s16)n;` where the original normalises (Ave_TcpRecv). `if (n <= len)`
+  and `if (0 < len)` give `slt at` where `!(len < n)` and `len > 0` give v0 / blez; `len > 0x3CA` instead of `>= 0x3CB` sets `at`.
+- An int-to-float cast of a nested int expression: `k = k / 5 * 5; flSinCos((f32)k * C - D, ...)` gives the original's register order for
+  the cvt (a single expression `(f32)(k / 5 * 5) * C` swaps f1/f2) (disp_needle).
+- Swap of two s16 parameters: `s16 t = b; b = a; a = t;` (the other direction `t = a; a = b; b = t` swaps two instructions) (Item_preparation_adrs).
+- `if (A && B) {} else { return 0; } i = x - 1; return (p != q) ? 1 : 2;` gives the early-exit stub layout and the branch sense (Fade_busy_ck);
+  a pointer `FADE_ENT *d = &fade_data[w->cur - 1]` stops the (cur-1)*28 being folded into the symbol offset.
+- MWCC does not unroll `if (n > 0) do { sum += a[pos + j]; j++; } while (j < n);` but unrolls the equivalent `for`/`while` (get_start_* in
+  getsh_nm.c: do-while form is 16 of 52 instructions off, the original is a non-unrolled loop with an explicit `slt at,j,n` test that no source
+  form reproduced). The first search loop is `if (pos < N) { p = &heap[pos]; do { if (*p == 0) break; pos++; p++; } while (pos < N); }`.
+- `goto test;` / `top:` / `test: if (len > 0) goto top;` reproduces a loop whose test is at the bottom entered by `b test` (Ave_TcpSend, still 76/90 off:
+  an extra callee-saved register for the normalised len).
+- Also linked later in this pass: pl/plx03 (pl_work_clr), pl/plx04 (stick_pow_get, rodata 0x35A7B0-0x35A7C8), sys/adxs06 (load_bin), net/cpinet14+15
+  (CpInetTcpClose/Delete), item/item04 (Item_preparation_rate_0), pl/plx05 (pad_timer_calc_sub).
+- A K&R definition `f(pl, no, prog) PLW *pl; int no; ...` keeps `no` raw in its saved register where the u8 prototype normalises it (pl_work_clr); when a
+  shared header declares the prototype, put the function in its own run file and rename the name around the include
+  (`#define pl_work_clr pl_work_clr_proto_unused` before the headers, `#undef` after, then `void pl_work_clr();`): no header edit (plx03/plx04).
+- A function whose result variable is u8 and whose original returns it unmasked but tests it masked: give the definition a `u8` return type and test
+  `(r & 0xFF)`; `int r` makes the constant loads addiu where the original has daddiu (stick_pow_get).
+- `0 <= t` (not `t >= 0`) gives `slt at,t,zero; bne` and `if (..) { r = f(); *p = -1; r = g(r); } else { *p = -1; } return r;` the original layout (CpInetTcpClose).
+- `if (mode == 0) { A } else { return 0x64; } if (rate > 0x64) rate = 0x64; return rate;` puts the else stub before the join (Item_preparation_rate_0);
+  `rate += tbl[i]` on a u8 keeps the value in its saved register.
+- The permuter's junk: `st = part;` (dead store before a call, load_bin) and `if (pl && pl && pl) {}` (pad_timer_calc_sub) are kept with comments. 330 s runs, one at a time,
+  solved both after 240 s runs had found nothing.
+- NEW C written (no earlier C existed) and linked, all `rebuild OK`: net/cpinet16-26 (CpInetTcpGetStatus, CpInetPppGetDns, CpInetPppGetATScript, CpInetHttpInitialize,
+  CpInetHttpResolvCacheInitialize, http_wait_thread/CpInetHttpSignalThread, CpInetDelayThread, InetDnsCacheInitialize, InetConnectAll, wait/signal_http_static_sema,
+  CpInetPppGetStatus), net/netdev01-11 (DeviceGetOptionalStatus, bind_rpc_blocking, set_device_no, _device_check, _reset_recognize, _reset_dialtype,
+  search_sif_call_rpc, DeviceSelectInitialize, rpc_initialize, _decide_dialtype, InetConnectAllCore), model/light04 (light_move), model/yure01 (yure_move).
+  All are from m2c drafts (tools/draft.py) fixed by hand; the field names are guesses from use.
+- Lessons from the new C:
+  * A m2c `switch` whose cases map a state code to a state code is a jump table when the case values are dense (CpInetTcpGetStatus 12 cases at 0x36CE20, CpInetPppGetStatus
+    two tables): register `main:rodata` with ONE range per object, from the first table to the end of the last (0x36CEA0-0x36CF08, the 8 bytes between the tables
+    are the 16-byte alignment). Two rodata lines for one object gave a link that was 16 bytes too long ("MISMATCH built N want M").
+  * `default:` written between the numeric cases keeps the original block order (CpInetTcpGetStatus, CpInetPppGetStatus); `case 2: case 3:` listed in ascending order
+    for a compare chain that tests 3 first (DeviceGetOptionalStatus), `if (k != 3 && k != 2) return;` gives a different layout than the switch.
+  * `for (;;) { if (p->id == 0) break; ...; p++; }` gives the original's test-at-top loop where `for (p = x; p->id != 0; p++)` is inverted (set_device_no).
+  * An 8-argument callee (InetConnectAllCore) passes args 5-8 through; a callee with `(void)` prototype that m2c shows with fewer args often has more: check the
+    registers a0-a3, t0-t3 in the caller (InetConnectAll passes eight pointers into InetSys).
+  * `int f(...) { r = (s16)call(); if (r >= 0) {} else { return r; } ...; return r; }`: a function that ends with the call result still in v0 returns int r
+    (CpInetPppGetDns, CpInetTcpGetStatus); with a void return the stub layout differs.
+  * Far (non-gp) globals again need a declared size > 8 (`extern s32 Inet_http_static_sema[4]`), near ones must NOT (PppRecognize u8 stays gp).
+  * Sony-sample style code (module_load/module_loadhigh/module_unload with 8-nop gaps) and the USB keyboard files look like library code: not attempted.
+  * declbf found the register order for light_move (w, p, q, i, in, out) after 5 minutes; start it in the background and poll.
+Near-match status now: load_bin 5 (part/file saved registers swapped; declaration order irrelevant), stick_pow_get 3 (masks the test, ours masks
+the return instead; int r, (u8)r, copies did not help), Pit_mv 4 / Pit_mv_lb 3 (of which 2 and 1 are the real now/hold register copy, the rest are
+cosmetic func_NNNN names of other modules; the caller needs `int pit_key_repeat(u16,u16)` which both nm and a split file have), hit_hit_sub_pl 2 (one
+add.s operand order: constant first in ours, no source form changes it), hit_calc_shl 4 and egg_com_ck 4 (a `nop` before the final `b end`),
+CpInetTcpOpen 12 (original copies the pointer: `daddu v0,a0`), CpInetTcpClose/Delete 19, em_dur_set 17, load_shadow 2 (order of `li t0,0x900` and
+dsra32), release_model 7 (prologue schedule), menu_data_monster_sub 5 (m and the &lpPit->x82 pointer swap registers), pad_timer_calc_sub 2 (original
+has `addiu v1,gp,off; lhu 0(v1)` for the gp array; no declaration or cast form gives it), Sel_back_disp 7 (statement order [w,x,h,y,v,col,u2,v2,u]
+is the best of 120; the col expression is scheduled differently), Ave_TcpSend 76, em_search_set 57, eft_rgba_linear 179, font_print_sp 167.
+Permuter (-j1, 240 s each) found nothing better for: load_shadow, Item_preparation_adrs (solved by hand), hit_hit_sub_pl, stick_pow_get, egg_com_ck,
+menu_data_monster_sub, load_bin, hit_calc_shl.
+
+Update (later in the same pass): load_bin, stick_pow_get, pad_timer_calc_sub, CpInetTcpClose/Delete, Pl_hold_item_ck, Item_preparation_adrs, Item_preparation_rate_0,
+disp_needle, Fade_busy_ck, pl_work_clr and Ave_TcpRecv from the list above are now LINKED (see the file names in the first lines of this section); the near-match
+numbers quoted for them are the state before they were solved. Still near-match: Pit_mv 4 / Pit_mv_lb 3, hit_hit_sub_pl 2, hit_calc_shl 4, egg_com_ck 4, CpInetTcpOpen 3
+(`o++; o--` junk gets it to 3: the original copies the pointer with `daddu v0,a0`), em_dur_set 17, load_shadow 2, release_model 7, menu_data_monster_sub 5, Sel_back_disp 7,
+get_start_* 16 each (do-while form), light_init (written, 146/146: the original copies the three floats with `lwc1 0; lwc1 4; addiu a0,8; lwc1 0` and keeps `light_work`
+in s0), DeviceUpdateStatus (written, 12/83 with declbf; in build/scr only, not committed), rpccall_end 2 (`lui v0` instead of `lui at` for the semaphore id).
+
+### Unmatched Capcom code left in my ranges (after this pass; the network device/IOP helpers and light_move/yure_move listed above are now done), largest first. Sizes in bytes; "C" = C exists in a *_nm.c (written, not matching),
+"-" = no C yet. Library (not worth matching) is noted separately.
+- 0x15C000 trans_stage 15152 (C, stage model transform), 0x10C000 em_material_sub 7500 (-, called from weapon3_nm.c only)
+- effects: eft06_m 4848, eft13_m 2688, eft13_set_pos 2512, eft13_set_pos_em 2720, eft13_set_sub_em 1388, eft13_i 1924 (all C, far off), eft_rgba_linear 944
+- set13: set13_m 4264, set13_trans 3100 (C)
+- hit (0x113000-0x11D000): PushAdjust3 4024, hit_hit_sub_em 3208 (106 off), sphr_face_o3/o4 1936/2016, GetEyeHitLine 2568, GetWallHitLine 2096, GetWallHitBitPl/Em
+  2196/2164, GetWallHitBit2 1668, GetGroundHitStatusAreaEm/Pl 1768/1408, GetGroundHitArea* ~1000 each, GetFloorSlide 1088, HitWallPlayer 868 (all C)
+- menu/HUD (0x127000-0x134000): disp_item_sub_select 3872, trans_box 2556, Menu_mix_mv 2120, player_info_sub 1836, disp_whole_map 1564, Pit_mv 1528 (4 off),
+  disp_partial_map 1252, item_stock_mv 1160, disp_pachinger 1092, gage_disp 812, disp_timer 756 (all C)
+- game flow: Game_task 3096 (C), round_init 1036 and init_pl_work 520 (C, ~260 off), load_shadow 196 (2 off), em_move 2648 (C), mlCalcTransEM 1712 (-?), em_ride_sub 1632
+- player (0x136000-0x14C000): basic_com_ck 2368, pl_move_sub 2144, timer_calc_sub_pl 1700, sougun_adj_sub 972, gun_adj_sub 928, pl_mv021 988, egg_com_ck 916 (4 off)
+- model/light/io (0x11D000-0x125000): yure_move_hair 1864, mkModel4 1184, ioRead_sub 1140, flash_move 1048, mkModel 1040, Pl_model_id_set 944, armor_create_model 964
+- body hit / items: body_hit_sub_em/new/body_hit 1220/964/864, Pl_item_stack 1020, Pl_horm_adj 680, Pl_box_select 780
+- sound/sprite: se_req2 872 (7 off), armor_sd_req 736, snd_joint_load 568, SpritePut 2048, Put_sprite_rotate 840
+- network 0x230000-0x23E500: prot_01 3260, prot_00 2796, InetDisconnectAll 1588, mcsls_recv 1876, mcsls_r0_pingpong 884, mcsls_move 632, mcsls_init 556,
+  CpInetPppStart 720, DeviceLoadDriver* (~1.6 KB, IOP module loading), SetResult_Read 1396 and cnv_keycode/vblank_e_handler/push_repbuf (USB keyboard, no C)
+- omake/ncm menus 0x23A000: disp_mode_menu 992, mode_sel 824, Sel_menu_disp 792, disp_omake_menu 656, npc_move 936, npc_trans 576
+- Library (skip): sceNetGlue* / ipaddr_from_string / InetIPAddrFromString-like Sony netglue (0x236B70-0x237800), sceUsbKb* (0x23BE10-0x23D870), flPS2Dma*, ADX/CRI
+  (0x100008-0x117E50 front part), Sony sce/newlib/SJ/mpv (0x170000+, not mine).

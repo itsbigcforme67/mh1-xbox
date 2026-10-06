@@ -12,6 +12,7 @@ build/src/main/load/mkmap.c.o .rodata .data
 build/src/main/menu/menu03.c.o .rodata .data
 build/src/main/menu/menu26.c.o .rodata .data
 build/src/main/pl/pl05.c.o .rodata .data
+build/src/main/pl/plx04.c.o .rodata .data
 build/src/main/pl/pl09.c.o .rodata .data
 build/src/main/pl/pl12.c.o .rodata .data
 build/src/main/pl/pl22.c.o .rodata .data

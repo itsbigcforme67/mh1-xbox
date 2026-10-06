@@ -62,6 +62,8 @@ def gen_raw():
         labels.setdefault(mod, []).extend(".L%08X = 0x%08X;\n" % (vram + i, vram + i) for i in range(0, size, 4))
         out = os.path.join(ROOT, "build/raw", name + ".inc")
         text = "".join("    .word 0x%08X;\n" % w for w in words)
+        if "mn" in f[4:]:
+            text = raw_mnemonics(data, base, vram, size, words)
         if not os.path.exists(out) or open(out).read() != text:
             open(out, "w").write(text)
     for mod, lines in labels.items():
@@ -69,6 +71,66 @@ def gen_raw():
         text = "".join(lines)
         if not os.path.exists(lp) or open(lp).read() != text:
             open(lp, "w").write(text)
+
+
+_SYMS = None
+
+
+def func_name_at(addr):
+    global _SYMS
+    if _SYMS is None:
+        import csv
+        _SYMS = {}
+        for r in csv.DictReader(open(os.path.join(ROOT, "docs/survey/mh1_symbols.csv"), encoding="utf-8")):
+            if r["type"] == "FUNC" and r["section"] == "main":
+                _SYMS.setdefault(int(r["addr"], 16), r["name"])
+    return _SYMS.get(addr)
+
+
+def raw_mnemonics(data, base, vram, size, words):
+    """Original bytes as real MWCC asm mnemonics (build-time only, from disc/). Needed when the
+    compiler must SEE which registers a hand-written asm helper writes (it keeps values in
+    caller-saved registers across calls to such a static asm function). VU0 macro instructions
+    stay `.word`: they touch no GPR. jal targets become symbol names (no reloc differences:
+    the linked bytes are identical)."""
+    open(os.path.join(ROOT, "build/raw.tmp"), "wb").write(data[vram - base:vram - base + size])
+    p = subprocess.run([BU + "objdump", "-D", "-b", "binary", "-m", "mips:5900", "-EL", "-M", "no-aliases",
+                        "--adjust-vma=0x%x" % vram, os.path.join(ROOT, "build/raw.tmp")],
+                       capture_output=True, text=True)
+    rows = []
+    for l in p.stdout.split("\n"):
+        parts = l.split("\t")
+        if len(parts) >= 3 and parts[0].strip().endswith(":") and len(parts[1].strip()) == 8:
+            rows.append((int(parts[0].strip()[:-1], 16), parts[1].strip(), parts[2].strip(),
+                         parts[3].strip() if len(parts) > 3 else ""))
+    labels = set()
+    for a, enc, op, args in rows:
+        if op.startswith(("b", "j")) and op not in ("jr", "jalr", "break") and not op.startswith("jal"):
+            labels.add(int(args.split(",")[-1], 16))
+    out = []
+    for a, enc, op, args in rows:
+        if a in labels:
+            out.append("L%X:\n" % a)
+        w = int(enc, 16)
+        vu = op.startswith("v") or op in ("lqc2", "sqc2", "qmfc2", "qmtc2", "cfc2", "ctc2", "ctc2") or "$vf" in args
+        if vu:
+            out.append("    .word 0x%08X;\n" % w)
+            continue
+        if op == "sll" and args == "zero,zero,0x0":
+            out.append("    nop\n")
+            continue
+        args = args.replace("$f", "f")
+        if op == "jal":
+            tgt = int(args, 16)
+            nm = func_name_at(tgt)
+            out.append("    jal %s\n" % (nm or "0x%X" % tgt))
+        elif op.startswith("b") and op != "break":
+            a2 = args.split(",")
+            a2[-1] = "L%X" % int(a2[-1], 16)
+            out.append("    %s %s\n" % (op, ", ".join(a2)))
+        else:
+            out.append("    %s %s\n" % (op, args.replace(",", ", ")))
+    return "".join(out)
 
 
 def run(cmd):
