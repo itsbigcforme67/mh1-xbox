@@ -235,3 +235,19 @@ void SetFilterMode(int);
 void SetTrnslMode(int, int);
 void SetOpeMode(int);
 void Eft_rendope_set(int);
+
+/* AFS file size in bytes (sectors * 0x800). */
+int afs_file_length(u32 id) {
+    u16 file = id;
+    u16 part = id >> 16;
+    int h;
+    int n;
+
+    do {
+        n = part;
+        h = ADXF_OpenAfs(n, file);
+    } while (h == 0);
+    n = ADXF_GetFsizeSct(h);
+    ADXF_Close(h);
+    return n << 11;
+}

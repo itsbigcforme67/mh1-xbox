@@ -1320,7 +1320,7 @@ main 0x00162E20 0x00162F08 font/dsp03
 main 0x00161DE0 0x00162014 font/fsp01
 main 0x001623F0 0x00162634 font/fsp02
 main 0x00100380 0x001003A4 sys/adxs01
-main 0x001004D0 0x0010089C sys/adxs02
+main 0x001004D0 0x0010090C sys/adxs02
 main 0x00100910 0x00100E18 sys/adxs03
 main 0x00100E20 0x00101508 sys/adxs04
 main 0x001018C0 0x00101E38 sys/adxs05
@@ -1342,3 +1342,8 @@ main 0x00154D00 0x00154D90 pl/pl_ammo
 main 0x0011F9E0 0x0011FA24 sys/ior01
 main 0x00163D20 0x00163E3C weapon/wtrans01
 main 0x0014EF60 0x0014EF94 pl/pl_flagck
+main 0x00122D50 0x00122E64 model/mkm01
+main 0x00159380 0x001593B8 pl/taru01
+main 0x0011E4C0 0x0011E540 model/light01
+main 0x0011E860 0x0011E904 model/light02
+main 0x00123C70 0x00123C80 model/light03

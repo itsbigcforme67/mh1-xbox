@@ -221,7 +221,8 @@ int afs_file_length(u32 id) {
     int n;
 
     do {
-        h = ADXF_OpenAfs(part, file);
+        n = part;
+        h = ADXF_OpenAfs(n, file);
     } while (h == 0);
     n = ADXF_GetFsizeSct(h);
     ADXF_Close(h);
