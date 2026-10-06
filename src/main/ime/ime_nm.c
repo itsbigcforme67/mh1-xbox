@@ -1650,7 +1650,7 @@ int dic_getsyn(u8 *key, int len, SYNR *r)
 int main_getsyn(u8 *key, int len0, SRCH *r)
 {
     s16 len;
-    s16 page;
+    int page;
     s16 klen;
     u8 *base;
     u8 *e;
@@ -1662,13 +1662,12 @@ int main_getsyn(u8 *key, int len0, SRCH *r)
         return 0;
     }
     page = srch_page(key);
-    base = load_page(page);
-    e = base;
+    e = base = load_page(page);
     while (ELEN(e) != 0) {
         klen = e[2];
         c = ask_strncmp(e + 3, key, klen);
         if (c == 0) {
-            if (klen == len) {
+            if ((s16)klen == len) {
                 break;
             }
         } else if (c > 0) {
@@ -5427,10 +5426,12 @@ void bs_prefix(int pos)
 void bs_ctd(BS *b, int pos, int end)
 {
     BS *n;
-    s16 pt;
+    int pt;
     int p;
+    int len;
 
-    if (b->x02 == 0xFF || (p = pos + b->len) >= end) {
+    len = b->len;
+    if (b->x02 == 0xFF || (p = pos + len) >= end) {
         return;
     }
     n = hchar[p].bs;
