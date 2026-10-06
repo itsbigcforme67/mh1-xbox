@@ -1016,6 +1016,30 @@ Lessons (each confirmed by a match):
   call (edit_pl_init_new; select Edit_task/Cont_task are already linked in edit04.c).
 - check.py/mkruns3 --verify cannot verify a function whose plain name also exists in another overlay (em10 em_act03:
   the compare picks the em01 one); give such statics their address suffix or test with rebuild.sh.
+More linked later in this round: em_cmd_boss_atk_ck, em_cmd_before_stage_ck, em_cmd_boss_same_stage_ck, em_cmd_rnd32,
+em_cmd_area_move_ck, smell_ck, shell06_move_sub, shell22_h, em_fly08_005F02E0, em_hagitori_lv_up (about 28 functions in all).
+More lessons (each confirmed by a match):
+- A switch ladder keeps a compare only for case labels that are not adjacent to `default:`. When the original has a
+  compare whose target is the next instruction (`beq a0,v0,L; nop; nop; L:`) or a compare the compiler drops, add or
+  reorder empty case labels: shell06_move_sub `default: case 0: case 1:`, shell22_h `case 0: case 1: default:`
+  (try both orders). An empty `if (v == 2) {} else if (v == 1) {}` is dropped; write the switch instead
+  (em_cmd_area_move_ck: `switch (v) { case 1: break; case 2: break; case 0: clr: ... }` with `goto clr` from the
+  other tests).
+- CMD_SKIP loops that keep their condition in a variable: write the skip loop out as `while (flag) { ... }` and set
+  the flag in BOTH arms: `flag = 1; if (b == NULL) { flag = 1; } else { if (cond) break; flag = 1; }` (the first assignment
+  is the `andi s0,v1,0xFF` in the branch delay slot, the second a `daddiu`). em_cmd_boss_atk_ck, before_stage_ck,
+  boss_same_stage_ck.
+- Two table pointers `tbl[em->kind]` loaded before a switch and used in different cases must be written as two locals
+  assigned before the switch (em_fly08: `hu = em_hungry_tbl[kind]; th = em_thirst_tbl[kind];`), and the if-arm that the
+  original lays out first is the one that is `==` (`if (a == b || b == 0xFF) {A} else {B}` instead of
+  `if (a != b) { if (b == 0xFF) goto A; ...} else { A }`).
+- Saved-register numbers follow declaration order: a pointer that the original keeps in the LOWEST saved register is
+  the one declared LAST (em_hagitori_lv_up: `h` after the arrays, and `flmatCopy(&mat, get_joint_wmat_em(em, tbl[j].joint))`
+  reading the joint straight from the table). Permute all declaration orders in a scratch copy (tools/declbf.py or
+  a loop over itertools.permutations): em20_material_sub 14 -> 1, smell_ck 21 -> 0.
+- `u8 r; r = GetWallHitLine(...); if (!(u8)r)`: a u8 local keeps the second andi (smell_ck); `int` drops it.
+- One experiment loop per function works best on a scratch copy of the *_nm.c (src/game/em/zz_x.c, never commit) so
+  that a background sweep on the real file cannot overwrite your edit (it did, twice).
 Left as near-matches (alignall real differences): em20_act_set 1 (addiu vs daddiu on `kind = 3`; u16 K&R param gives
 the daddiu but loses the register), the 12 *_effect_move (4: the original uses v1 for the constant and for a2+1, mine v0;
 unchanged by 20 source forms and two permuter runs; with no call after the switch the compiler picks v1, so something
