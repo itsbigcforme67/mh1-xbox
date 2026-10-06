@@ -22,8 +22,8 @@ void flPS2GetMLCLAY(CLAYS *c, MLCLAY *out) {
 
     q = flPS2GetSystemBuffAdrs(c->x14);
     h = q;
-    flMemcpy(out, q, 0x24);
     h += 0x30;
+    flMemcpy(out, q, 0x24);
     out->x08 = (s32)h;
     h += (*(s32 *)(q + 0x1C) + 0xF) & ~0xF;
     out->x10 = (s32)h;

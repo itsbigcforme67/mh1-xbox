@@ -22,8 +22,6 @@ lobby 0x005E7B70 0x5AC BsRequestCheck
 main 0x28CEB0 0x100 hit_sphr_sphr2
 main 0x28D0A0 0x1394 hit_cap_cap2_m
 main 0x28F270 0xEC4 hit_cap_cap3_m
-main 0x218360 0x134 GetAPXPixelMipmapAdrs
-main 0x2184A0 0xE8 GetAPXPaletteAdrs
 main 0x17BE20 0x78 flPS2matMul mn
 main 0x17BEA0 0xD8 flPS2matMul2 mn
 main 0x17BF80 0x74 flPS2matNormalize33 mn
@@ -46,3 +44,5 @@ main 0x17CD60 0x58 PS2SHADER_FLMATRIX_COPY mn
 main 0x17D150 0x2F0 flPS2AddMatrix_0002
 main 0x17D440 0x25C flPS2AddMatrix_0003
 main 0x17E310 0x3B0 flPS2AddMatrix_000D
+main 0x274690 0x74 Gun_level_up
+main 0x274760 0x54 Gun_option_ck
