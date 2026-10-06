@@ -2313,3 +2313,7 @@ lobby 0x005C1BC0 0x005C1D48 b/lb_nt01
 lobby 0x005C1D50 0x005C1F18 b/lb_nt02
 lobby 0x005C3020 0x005C30B4 b/lb_gs01
 lobby 0x005C2280 0x005C2370 b/lb_dsi01
+lobby 0x005B0A80 0x005B0B98 b/lb_crr01
+lobby:rodata 0x0065E240 0x0065E25C b/lb_crr01
+lobby 0x005B08F0 0x005B0A7C b/lb_jip01
+lobby 0x005B2CD0 0x005B2E3C b/lb_lmp01

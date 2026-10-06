@@ -1,0 +1,133 @@
+/* lbc_login_init (0x5B74C0, login step machine). Logic complete; frame/layout match (-144). 257/267 instr differ only because st/stp land in a1/a2 instead of a0/a1: the original computes the stp address before the step load (a0 reused). Not built. */
+#include "lobby_a.h"
+extern s32 netr_ret;
+extern char text_lobby_trans_ot0[];
+extern char MediaVersion[];
+extern char D_3A3B71[];
+extern char bsCsvWork[];
+extern char patch_buff[];
+extern char CallBack_Result_LoginLobbyServer[];
+extern char CallBack_Event_AdminMessage[];
+extern char CallBack_Event_ChatMessage[];
+extern char CallBack_Event_ChatMessageTU[];
+extern char CallBack_Event_LbsBinary[];
+extern char CallBack_Event_LobbyCommer[];
+extern char CallBack_Event_LobbyFull[];
+extern char CallBack_Event_LobbyJoinUser[];
+extern char CallBack_Event_LobbyLeaver[];
+extern char CallBack_Event_LobbyRemove[];
+extern char CallBack_Event_MatchCancel[];
+extern char CallBack_Event_MatchEntryUser[];
+extern char CallBack_Event_MatchStart[];
+extern char CallBack_Event_PlazaJoinUser[];
+extern char CallBack_Event_PlazaName[];
+extern char CallBack_Event_PlazaRemove[];
+extern char CallBack_Event_RecvMail[];
+extern char CallBack_Event_RoomCapacity[];
+extern char CallBack_Event_RoomCommer[];
+extern char CallBack_Event_RoomJoinUser[];
+extern char CallBack_Event_RoomLeaver[];
+extern char CallBack_Event_RoomName[];
+extern char CallBack_Event_RoomPasswordInfo[];
+extern char CallBack_Event_RoomProperty[];
+extern char CallBack_Event_RoomRemove[];
+extern char CallBack_Event_RoomStatus[];
+extern char CallBack_Event_ShutDownOpponent[];
+extern char CallBack_Event_System_ShutDown[];
+extern char CallBack_NoticeUserMiniData[];
+
+typedef struct { u8 pad0[0x2C34]; u8 step; u8 pad2C35[0x13]; s8 x2C08_; } CWS_li_dummy;
+typedef struct { u8 b10, b11, b12, b13; char ver[0x10]; s16 h[8]; } LFD;
+typedef struct { u8 x00; s8 x01; char key[0xB]; char pass[0x13]; char *patch; u8 pad24[0x24]; } LLG;
+void lbc_login_init(void) {
+    LFD fd;
+    LLG lg;
+    s16 sp8E, sp8C, sp8A, sp88;
+    u8 st;
+    u8 *stp;
+
+    stp = cw + 0x2C34;
+    st = cw[0x2C34];
+    switch (st) {
+    case 0:
+        all_reset();
+        Lbc_init_network_work();
+        Lbc_set_prim(text_lobby_trans_ot0, 0, 0);
+        Lbs_load();
+        netr_ret = 1;
+        cw[0x2C34]++;
+        cw[0x35EF] = 1;
+        *(s32 *)(cw + 0x35F0) = 0;
+        cw[0x2C08] = 1;
+        memset(cw + 0x2C5C, 0, 0x31C);
+        memset(cw + 0x35FE, 0, 0x1004);
+        memset(cw + 0x4602, 0, 0x1004);
+        cnLBS_Init_LoginLobbyServer();
+    cnLBS_Set_CallBackNoticeEvent(0x1, CallBack_Event_MatchStart);
+    cnLBS_Set_CallBackNoticeEvent(0x2, CallBack_Event_System_ShutDown);
+    cnLBS_Set_CallBackNoticeEvent(0x5, CallBack_Event_ChatMessage);
+    cnLBS_Set_CallBackNoticeEvent(0x2A, CallBack_Event_ChatMessageTU);
+    cnLBS_Set_CallBackNoticeEvent(0x3, CallBack_Event_RecvMail);
+    cnLBS_Set_CallBackNoticeEvent(0x4, CallBack_Event_AdminMessage);
+    cnLBS_Set_CallBackNoticeEvent(0x6, CallBack_Event_ShutDownOpponent);
+    cnLBS_Set_CallBackNoticeEvent(0x7, CallBack_Event_MatchCancel);
+    cnLBS_Set_CallBackNoticeEvent(0x8, CallBack_Event_LobbyFull);
+    cnLBS_Set_CallBackNoticeEvent(0xF, CallBack_Event_PlazaJoinUser);
+    cnLBS_Set_CallBackNoticeEvent(0xE, CallBack_Event_PlazaName);
+    cnLBS_Set_CallBackNoticeEvent(0x15, CallBack_Event_LobbyJoinUser);
+    cnLBS_Set_CallBackNoticeEvent(0x14, CallBack_Event_LobbyJoinUser);
+    cnLBS_Set_CallBackNoticeEvent(0x26, CallBack_Event_LobbyCommer);
+    cnLBS_Set_CallBackNoticeEvent(0x27, CallBack_Event_LobbyLeaver);
+    cnLBS_Set_CallBackNoticeEvent(0x18, CallBack_Event_RoomName);
+    cnLBS_Set_CallBackNoticeEvent(0x1A, CallBack_Event_RoomStatus);
+    cnLBS_Set_CallBackNoticeEvent(0x29, CallBack_Event_RoomProperty);
+    cnLBS_Set_CallBackNoticeEvent(0x19, CallBack_Event_RoomJoinUser);
+    cnLBS_Set_CallBackNoticeEvent(0x1D, CallBack_Event_RoomCapacity);
+    cnLBS_Set_CallBackNoticeEvent(0x1E, CallBack_Event_RoomPasswordInfo);
+    cnLBS_Set_CallBackNoticeEvent(0x9, CallBack_Event_PlazaRemove);
+    cnLBS_Set_CallBackNoticeEvent(0xA, CallBack_Event_LobbyRemove);
+    cnLBS_Set_CallBackNoticeEvent(0xB, CallBack_Event_RoomRemove);
+    cnLBS_Set_CallBackNoticeEvent(0x1F, CallBack_Event_RoomCommer);
+    cnLBS_Set_CallBackNoticeEvent(0x20, CallBack_Event_RoomLeaver);
+    cnLBS_Set_CallBackNoticeEvent(0x21, CallBack_Event_MatchEntryUser);
+    cnLBS_Set_CallBackNoticeEvent(0xC, CallBack_Event_LbsBinary);
+        memset(&fd, 0, 0x24);
+        DeviceGetOptionalStatus(&sp8E, &sp8C, &sp8A, &sp88);
+        fd.b11 = 1;
+        fd.b12 = 4;
+        fd.b10 = 0;
+        strncpy(fd.ver, MediaVersion, 0xA);
+        fd.h[2] = sp8E;
+        fd.h[3] = sp8C;
+        fd.h[4] = sp8A;
+        fd.h[5] = sp88;
+        fd.h[6] = 0;
+        fd.h[7] = 0;
+        fd.h[8] = 0;
+        fd.h[9] = 0;
+        cnLBS_Set_LoginFirstData(&fd);
+        SetSceneTitle(0, 0);
+        SetDialogData(0, 5);
+        F(s8, pNet, 0xC) = 1;
+        break;
+    case 1:
+        *stp = st + 1;
+        F(s8, pNet, 0xC) = 2;
+    case 2:
+        cw[0x2C34]++;
+        F(s8, pNet, 0xC) = 1;
+        memset(&lg, 0, 0x40);
+        lg.x00 = 1;
+        lg.x01 = *(s8 *)0x3A6EA2;
+        lg.patch = patch_buff;
+        strncpy(lg.key, D_3A3B71, 0xA);
+        strncpy(lg.pass, bsCsvWork, 0x10);
+        CallBackWaitInit();
+        cnLBS_LoginLobbyServer(&lg, CallBack_Result_LoginLobbyServer);
+        break;
+    case 3:
+        F(s8, pNet, 0xC) = 1;
+        Check_CallBackWait();
+        break;
+    }
+}
