@@ -1537,6 +1537,7 @@ segments:
       - [0x097EAC, asm, text/Lb_equip_set]
       - [0x097EB0, c, f/lb_e03]
       - [0x098000, asm, text/lb_disp_name]
+      - [0x098C10, c, f/lb_ag03]
       - [0x098FA0, c, f/lb_ag02]
       - [0x099240, c, f/lb_ag01]
       - [0x099310, c, f/lb_e04]
