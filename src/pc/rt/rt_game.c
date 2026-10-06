@@ -357,6 +357,11 @@ void rt_game_move(void)
             set_pool[i].w.move(&set_pool[i].w);
         }
     rt_eft_move();          /* move_shell, move_eft (order after sets: a guess) */
+    {   /* move() (0x125xxx) then: move_item, move_senko, move_smoke */
+        void move_senko(void), move_smoke(void);
+        move_senko();
+        move_smoke();
+    }
 }
 
 void trans_stage(void);
