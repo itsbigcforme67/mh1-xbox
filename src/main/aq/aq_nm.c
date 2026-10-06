@@ -737,7 +737,7 @@ void host_change(void) {
     u8 *base;
 
     i = 0;
-    if (game_w[0xD3] > 0) {
+    if (0 < game_w[0xD3]) {
         p = game_w;
         do {
             if (p[0x208] == 1) {
@@ -747,7 +747,7 @@ void host_change(void) {
                 if (*pl != 0) {
                     *pl = 0;
                 }
-                break;
+                return;
             }
             i++;
             p++;

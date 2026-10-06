@@ -39,7 +39,7 @@ f32 ZoomRateCalc(f32 x, f32 *z) {
     if (z[3] == z[2]) {
         return 0.5f * (z[4] + z[5]);
     }
-    return (z[5] - z[4]) / (z[3] - z[2]) * (x - z[2]) + z[4];
+    return (z[5] - z[4]) * (x - z[2]) / (z[3] - z[2]) + z[4];
 }
 
 f32 ZoomBaseAngleRail(f32 t, f32 *rail, int i)

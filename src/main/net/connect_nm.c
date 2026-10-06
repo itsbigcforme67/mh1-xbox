@@ -297,9 +297,9 @@ int connect_error(void) {
             break;
         case -0x32:
         case -0x11:
+            COM_R_No_0++;
             COM_R_No_2 = 0;
             COM_R_No_1 = 3;
-            COM_R_No_0++;
             break;
         default:
             COM_R_No_0 = 4;

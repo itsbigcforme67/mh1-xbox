@@ -805,17 +805,17 @@ s8 smell_search(EMW *em, int joint, f32 *out) {
 
 int smell_ck(EMW *em, int joint) {
     f32 min = -1.0f;
-    u8 found = 0;
     u8 i;
-    u8 best;
     PLW *pl;
     EM_SMELL *s;
+    u8 found = 0;
+    u8 best;
     f32 d;
     f32 p[3];
     f32 hit[3];
-    int r;
+    u8 r;
 
-    if (em_hungry_tbl[em->kind]->smell >= em->hungry && em->x388 == 0) {
+    if (em->hungry <= em_hungry_tbl[em->kind]->smell && em->x388 == 0) {
         for (i = 0; i < game_w.pl_num; i++) {
             pl = &player_work[i];
             if (pl->be_flag == 0 || Pl_stg_ck_tw(em, pl) == 0) {
@@ -825,8 +825,9 @@ int smell_ck(EMW *em, int joint) {
         if (found == game_w.pl_num) {
             found = 0;
         } else {
+            i = 0;
             found = 0;
-            for (i = 0; i < 32; i++) {
+            for (; i < 32; i++) {
                 s = smell_stack[i];
                 if (s != 0 && s->stg == em->stg) {
                     d = flvecCalcDistance(em->pos, s->pos);
@@ -844,7 +845,7 @@ int smell_ck(EMW *em, int joint) {
             }
         }
     }
-    if (!found) {
+    if (found == 0) {
         em->x951 = 0xFF;
         em->x952 = 0xFF;
         em->x950 = 0xFF;

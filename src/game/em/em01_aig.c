@@ -1,4 +1,4 @@
-/* em01 AI, run 7: sound_call_sub_00574CD0 .. ef_move_sub_00574EE0 (game.bin 0x00574CD0-0x0057A778). Matching functions of em01_ai_nm.c (that file holds the
+/* em01 AI, run 7 (with em01_uvmove 0x00574AD0 as a static before its callers, and em01_effect_move after ef_move_sub: one translation unit, as in the original): sound_call_sub_00574CD0 .. ef_move_sub_00574EE0 (game.bin 0x00574AD0-0x0057A7E0). Matching functions of em01_ai_nm.c (that file holds the
  * whole AI including the near-matches). See em01_ai_nm.c for the description. */
 #include "em.h"
 #include "game.h"
@@ -149,7 +149,57 @@ int kyusyu_char_set_0057A9F0(EMW *em);
 int kyusyu_char_set2_0057AAA0(EMW *em);
 void kyusyu_senkai_ret_0057AB40(EMW *em, EM01W *w);
 void ef_move_sub_00574EE0(EMW *em, EM01W *w);
-void em01_uvmove(EMW *em);
+#define UVR(i) \
+    do { \
+        em->uv[i][0] = 0.0f; \
+        em->uv[i][1] = 0.0f; \
+        em->uvtm[i] = 0xFFFF; \
+        em->uvty[i] = 0xFF; \
+    } while (0)
+
+static void em01_uvmove(EMW *em) {
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        if (em->uvtm[i] != 0xFFFF) {
+            em->uvtm[i]++;
+        }
+        switch (em->uvty[i]) {
+        case 0:
+            UVR(i);
+            break;
+        case 1:
+            if (em->uvtm[i] >= 0x3E) {
+                UVR(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 1;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 8);
+                em->uv[i][1] = 0.25f * (f32)(k / 8 % 4);
+            }
+            break;
+        case 2:
+            em->uv[i][0] = 0.125f;
+            em->uv[i][1] = 0.0f;
+            em->uvtm[i] = 0xFFFF;
+            em->uvty[i] = 0xFF;
+            break;
+        case 3:
+            if (em->uvtm[i] >= 0xC) {
+                UVR(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 2;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 4);
+                em->uv[i][1] = 0.25f * (f32)(k / 4 % 4);
+            }
+            break;
+        case 0xFF:
+            break;
+        }
+    }
+}
+
 void em01_senkai_sub2(EMW *, int, int);
 void em01_senkai_sub3(EMW *, int, int);
 int em01_horm_main(EMW *);
@@ -1671,4 +1721,18 @@ void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         move_default_00574E90(em);
         break;
     }
+}
+
+void em01_effect_move(EMW *em) {
+    EM01W *w = (EM01W *)em->ex;
+
+    switch (w->eff) {
+    case 0:
+        w->eff++;
+        break;
+    case 1:
+        ef_move_sub_00574EE0(em, w);
+        break;
+    }
+    em01_uvmove(em);
 }

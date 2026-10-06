@@ -2409,9 +2409,11 @@ static void em_fly08_005F02E0(EMW *em, EM20W *w) {
     s32 temp_v1_4;
     u8 temp_a2;
     u8 temp_v1_3;
+    FLYNEED *hu;
     FLYNEED *temp_a3;
 
     temp_a2 = em->x05;
+    hu = em_hungry_tbl[em->kind];
     temp_a3 = em_thirst_tbl[em->kind];
     switch (temp_a2) {                              /* irregular */
     case 0:
@@ -2445,7 +2447,7 @@ static void em_fly08_005F02E0(EMW *em, EM20W *w) {
         } else {
             em->thirst = 0;
         }
-        temp_a0_2 = em_hungry_tbl[em->kind]->x14;
+        temp_a0_2 = hu->x14;
         temp_v1_2 = em->hungry;
         if (temp_a0_2 < temp_v1_2) {
             em->hungry = temp_v1_2 - temp_a0_2;
@@ -2458,22 +2460,18 @@ static void em_fly08_005F02E0(EMW *em, EM20W *w) {
         em->work08 = 0x258;
         Em_Next_Stage_Pos(em);
         temp_v1_3 = em->x92F;
-        if ((u16) em->x73A != temp_v1_3) {
-            if (temp_v1_3 == 0xFF) {
-                goto block_19;
-            }
+        if ((u16)em->x73A == temp_v1_3 || temp_v1_3 == 0xFF) {
+            WyvernAreaMove(em);
+            em20_act_set(em, 2, 9, 1);
+        } else {
             if (em->x8C3 == 0) {
-                em->x73A = (s16) temp_v1_3;
+                em->x73A = (s16)temp_v1_3;
                 em->x829 = temp_v1_3 & 0xFFFF;
                 em->x827 = 3;
                 cmd_target_kind_set(em, em->tgt_pos);
             }
             em20_act_set(em, 2, 0xD, 1);
             WyvernAreaMove(em);
-        } else {
-block_19:
-            WyvernAreaMove(em);
-            em20_act_set(em, 2, 9, 1);
         }
         break;
     case 4:
@@ -3592,7 +3590,7 @@ static void em_atk08_005F2680(EMW *em, EM20W *w) {
         speed_add(em, w->spd);
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
-        if (temp_v1 <= 0) {
+        if (0 >= temp_v1) {
             kyusyu_senkai_ret_005FCBA0(em);
         }
         break;
@@ -3648,7 +3646,7 @@ block_23:
         }
         if (em_frame_check2(em, 0, 46.0f) != 0) {
             temp_f1_3 = em->adj_z;
-            if (temp_f1_3 > 50.0f) {
+            if (50.0f < temp_f1_3) {
                 em->adj_z = temp_f1_3 - 0.1f;
             }
         }
@@ -3995,7 +3993,7 @@ static void em_atk21_005F3440(EMW *em, EM20W *w) {
         w->dang = (u16) (w->dang - em->ang[1]);
         em20_senkai_sub(em, 3, 1);
         temp_f1 = em->adj_z;
-        if (temp_f1 > 100.0f) {
+        if (100.0f < temp_f1) {
             em->adj_z = temp_f1 - 2.0f;
         } else if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 3000.0f) {
             em->x05 += 1;
@@ -4007,7 +4005,7 @@ static void em_atk21_005F3440(EMW *em, EM20W *w) {
         speed_add(em, w->spd);
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
-        if (temp_v1 <= 0) {
+        if (0 >= temp_v1) {
             kyusyu_senkai_ret_005FCBA0(em);
         }
         break;
@@ -4016,7 +4014,7 @@ static void em_atk21_005F3440(EMW *em, EM20W *w) {
             kyusyu_senkai_ret_005FCBA0(em);
         } else {
             temp_f1_2 = em->adj_z;
-            if (temp_f1_2 > 80.0f) {
+            if (80.0f < temp_f1_2) {
                 em->adj_z = temp_f1_2 - 1.0f;
             }
             temp_s2 = em->x617;
@@ -4027,7 +4025,7 @@ static void em_atk21_005F3440(EMW *em, EM20W *w) {
             em20_senkai_sub(em, 3, 1);
             temp_v1_2 = w->dang;
             if (((s32) temp_v1_2 < 0x801) || ((s32) temp_v1_2 >= 0xF800)) {
-                if (!(CalcDistanceXZ(em->pos, sp50) > 4000.0f)) {
+                if (!(4000.0f < CalcDistanceXZ(em->pos, sp50))) {
                     kyusyu_senkai_ret_005FCBA0(em);
                 } else {
                     em->x05 += 1;
@@ -4194,7 +4192,7 @@ block_80:
         w->spd[1] = (s32) em->ang[1];
         w->spd[2] = 0;
         speed_add_g(em, w->spd);
-        if (em->pos[1] <= em->x5AC) {
+        if (em->x5AC >= em->pos[1]) {
             em->x05 += 1;
             em->ang[0] = 0;
             em->ang[2] = 0;
@@ -5926,13 +5924,13 @@ block_79:
         } else if (em->kind == 0x14) {
             temp_t0 = em->x792;
             temp_a2 = em->x302;
-            if (temp_t0 * 0x1E / 100 >= temp_a2) {
+            if (temp_a2 <= temp_t0 * 0x1E / 100) {
                 if (em->x39A % 100 < 0x1E) {
                     em20_act_set(em, 4, 0x10, 2);
                 } else {
                     goto block_111;
                 }
-            } else if (temp_t0 * 0x32 / 100 >= temp_a2 && em->x39A % 100 < 0x14) {
+            } else if (temp_a2 <= temp_t0 * 0x32 / 100 && em->x39A % 100 < 0x14) {
                 em20_act_set(em, 4, 0x10, 2);
             } else {
                 goto block_111;
@@ -7470,16 +7468,17 @@ static void kyusyu_senkai_ret_005FCBA0(EMW *em) {
 }
 
 void em20_material_sub(EMW *em, int type, u8 *tbl) {
-    int i = 0;
     u8 *base = *(u8 **)((u8 *)em->mdl + 0x10);
+    int i = 0;
     EM20W *w = (EM20W *)em->ex;
-    s32 *p = (s32 *)(tbl + type * 0x8C);
+    s32 *p = (s32 *)((u8 *)(type * 0x8C) + (int)tbl);
+    u8 *m;
 
-    if (p[1] > 0) {
+    if (0 < p[1]) {
         s32 *num = &p[1];
 
         do {
-            u8 *m = base + p[2] * 0x4C;
+            m = base + p[2] * 0x4C;
 
             *(f32 *)(m + 0x10) = em->x798;
             switch (type) {

@@ -528,3 +528,20 @@ Online (non-browser) functions left in the range, largest first (all are near-ma
 Village near-matches: lb_disp_name 1456 bytes (lb_v08_nm.c, now 160 insns: stack layout fixed by declaring sp100, spF0, spB0 in that order; the (s16)(1.25f * spF0[0]) of the second locate has no (s32) cast; s-register map still off: original keeps
 (cw + off + 0x1346) in s23 via `c = cw + off; q = c + 0x1346; t = c[0x1347]`, x in s21, y in s17, i in s20, row in s22, off in s30), lb_pl_turn_sub 520 bytes (lb_v11_nm.c, 31: a1 is a u16 with daddiu constants, loaded half-word goes to a0 and the +0x300 sum to v1 in the original, swapped in mine;
 final clamp is `if (a0 >= 0x8000) 0xF600 else 0xA00`).
+
+## Lobby session 14 (range 0x5C4E60-0x5EE618, long round)
+Linked (rebuild OK x5): lb_rule_seet_set (village, lb_w.c, text 0x5C78F0-0x5C8224 + `lobby:rodata 0x664A70-0x664A90`; 589 insns, from 505 differing to 0) and
+Lb_send_chat_plus (online chat target list, lb_aa02.c). Lobby 32.06% -> 32.41%.
+How lb_rule_seet_set went (all confirmed by the match):
+- Read the asm and note where each path ends: `b epilogue` with `daddu v0,zero,zero` in the slot is an explicit `return 0`; a plain jump to the shared `daddu v0` block is `break` (the function ends in `return 0`). Outer `switch (x08)` case 0 / case 1, inner `switch (x4F)` has no default.
+- `u16 pad = Get_sw2(0);` gives the original `andi s0,v0,0xFFFF` plus one `andi v1,s0,0xFFFF` per case that is then reused for every `pad & 0x...` test.
+- A branch whose original asm has the `x4F = 7` byte store FIRST and the lui/ori constant after is written with the constant stores first in the source (`RDT(8) = K; RDT(0x1C) = K; mhRule.x4F = 7;`): the scheduler hoists the sb above them. Same for the init block's `mhRule.x00 = 3;`, which must sit after RDT(0x94) and before RDT(8) in the source.
+- The first element of a pointer array passed to sprintf is `lb_rule_msg_etc[0]` (a `lw`), not the array name.
+Lb_send_chat_plus (found with a script, not by hand): the original calls Lb_send_chat with THREE args (a, b, c); the s-register order then needed the statement order `bit = 1; cw[0x32BE] = 1; i = 0; p = ..; id = ..; bit = 1;`
+(a repeated `bit = 1` is permuter noise that matches, like the empty `if` in lb_rule_seet_trans_ot) and `bit += bit`. Method: tools/perm.py found that a duplicated initialiser changes the s-register ranking; then a script tried every statement order of the 5 initialisers
+(plus one duplicate) x declaration orders. Scratch scripts for that were not committed (loop over permutations, call check.py on a temp copy under src/lobby/f/zz_*.c, delete it).
+Do NOT trust a permuter output blindly: several "improved" outputs change meaning (they assign to a parameter); read diff.txt first.
+Near-matches left (check.py differing insns): lb_guild_make_room 16 (the two mhRule.x5C updates: original loads quest, then x5C, does the `and`, then the two sh stores, then or/sw; every statement order, temp variant, bit-field and chained-store variant tried: 15-17),
+lb_send_data 3 (original fills the first switch-ladder `beq` delay slot with the next compare's `addiu`, and the Lbs flag branch lands on the `b end` block; permuter 7000 iterations found nothing), Lb_room_member 1 (`addu v1,v0,a0` operand order; ~400 spellings),
+lb_insert_target_list 8 (head in a2: making `c` and `ang` extra K&R params gives a2/a3 but then prev/cur/loaded half-word registers move; 9), lb_pl_turn_sub 34 (lb_v11_nm.c: a1 is `u16` for the daddiu constants, work750 stores duplicated per branch, the original has no mask on a1 and the loaded half-word in a0, sum in v1),
+lb_disp_name 138 (lb_v08_nm.c, stack layout now right with sp100, spF0, spB0 declared first; s-register map still off, original keeps `-1` in a register across the job and status calls, `q = cw + off + 0x1346` in s23).

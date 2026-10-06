@@ -3211,7 +3211,7 @@ static void em_demo00_005DFDF0(EMW *em, EM17W *w) {
         w->dang = (u16)(w->dang - em->ang[1]);
         em17_senkai_sub(em, 3, 1);
         temp_f1 = em->adj_z;
-        if (temp_f1 > 100.0f) {
+        if (100.0f < temp_f1) {
             em->adj_z = temp_f1 - 2.0f;
         } else if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 3000.0f) {
             em->x05 += 1;
@@ -3224,7 +3224,7 @@ static void em_demo00_005DFDF0(EMW *em, EM17W *w) {
         break;
     case 2:
         temp_f1_2 = em->adj_z;
-        if (temp_f1_2 > 80.0f) {
+        if (80.0f < temp_f1_2) {
             em->adj_z = temp_f1_2 - 1.0f;
         }
         w->dang = Em_Calc_angY(em->pos, dst);
@@ -3232,7 +3232,7 @@ static void em_demo00_005DFDF0(EMW *em, EM17W *w) {
         em17_senkai_sub(em, 3, 1);
         temp_v1 = w->dang;
         if (temp_v1 >= 0x801 && temp_v1 < 0xF800) {
-        } else if (CalcDistanceXZ(em->pos, dst) > 4000.0f) {
+        } else if (4000.0f < CalcDistanceXZ(em->pos, dst)) {
             em->x05 += 1;
             w->turn = 0x100;
             em_char_set(em, 0x2C, 0, 0);
@@ -3259,7 +3259,7 @@ static void em_demo00_005DFDF0(EMW *em, EM17W *w) {
         }
         if (em_frame_check2(em, 0, 46.0f) != 0) {
             temp_f1_3 = em->adj_z;
-            if (temp_f1_3 > 50.0f) {
+            if (50.0f < temp_f1_3) {
                 em->adj_z = temp_f1_3 - 0.1f;
             }
         }

@@ -968,13 +968,13 @@ int em_sleep_hp_add(EMW *em, s16 n, s16 max, s16 step) {
 }
 
 void em_hagitori_lv_up(EMW *em, u8 bits) {
-    EM_HAGI_EFT *h;
     s16 i;
     s16 j;
     u8 m = 1;
     FLMAT mat;
     f32 p[3];
     f32 v[3];
+    EM_HAGI_EFT *h;
 
     if ((u8)Em_stg_ck(em)) {
         for (i = 0; i < 8; m <<= 1, i++) {
@@ -985,7 +985,7 @@ void em_hagitori_lv_up(EMW *em, u8 bits) {
                 if (em->kind == hagitori_eft_tbl[j].kind && i == hagitori_eft_tbl[j].part &&
                     em->hagi[i].cnt == hagitori_eft_tbl[j].lv) {
                     h = &hagitori_eft_tbl[j];
-                    flmatCopy(&mat, get_joint_wmat_em(em, h->joint));
+                    flmatCopy(&mat, get_joint_wmat_em(em, hagitori_eft_tbl[j].joint));
                     flvecCopy(v, h->ofs);
                     flvecApplyMat33_2(v, &mat);
                     p[0] = mat[3][0] + v[0];
