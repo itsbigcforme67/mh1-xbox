@@ -2383,3 +2383,9 @@ lobby 0x005CBF30 0x005CC584 f/lb_v15
 lobby 0x005CAAF0 0x005CB0E0 f/lb_v17
 lobby:rodata 0x00664AC0 0x00664AD8 f/lb_v17
 lobby 0x005CA3D0 0x005CA8C0 f/lb_v16
+main 0x0025F9C0 0x0025FA84 sk/sk19
+main 0x002677B0 0x00267FC4 net/netbgm04
+main:rodata 0x003706C0 0x003706E0 net/netbgm04
+main 0x0026BBC0 0x0026BC60 net/netwk12
+main 0x0026C400 0x0026C490 net/netwk13
+main 0x002714C0 0x0027187C net/connect03

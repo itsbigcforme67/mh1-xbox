@@ -932,7 +932,7 @@ int net_swdata(void) {
 
     if (f & 1) {
         o = game_w[0x20];
-        sw = 0 | (Psw[o].x04 | Psw[o].x18);
+        sw |= Psw[o].x04 | Psw[o].x18;
     }
     if (f & 2) {
         o = game_w[0x21];
@@ -1092,12 +1092,12 @@ void Ncm_spr_kill(int m) {
     net_common_w.x2C = net_common_w.x2C & ~m;
     if (m == 0x100) {
         net_common_w.x3E = 0;
-        net_common_w.x3F = 1;
         net_common_w.x2C = net_common_w.x2C | 0x400000;
+        net_common_w.x3F = 1;
     } else if (m == 0x100000) {
         net_common_w.x3E = 0;
-        net_common_w.x3F = 1;
         net_common_w.x2C = net_common_w.x2C | 0x800000;
+        net_common_w.x3F = 1;
     }
 }
 
