@@ -692,8 +692,7 @@ int Seisan_ok_ck(u16 kind, s16 idx, int mode) {
     any = 0;
     cnt = 0;
     ok = 0;
-    e = ent;
-    for (j = 0; j < 4; j++, e += 4) {
+    for (j = 0, e = ent; j < 4; j++, e += 4) {
         s16 tmp;
         if (*(u16 *)(e + 4) == 0 || *(s16 *)(e + 6) == 0) {
             ok |= 1 << j;
@@ -724,7 +723,7 @@ int Seisan_ok_ck(u16 kind, s16 idx, int mode) {
             ok |= 1 << j;
         }
     }
-    if ((u8)cnt != 0 || (u8)any != 0) {
+    if ((u8)cnt == 0 || (u8)any != 0) {
         if (ok == 0xF) {
             return 2;
         }

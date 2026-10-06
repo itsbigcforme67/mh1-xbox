@@ -1721,3 +1721,4 @@ lobby 0x005E9660 0x005E96C8 f/lb_gap02
 lobby 0x005FDFE0 0x005FE140 f/lb_gaq01
 lobby 0x005CA8C0 0x005CA9C0 f/lb_gy01
 lobby:rodata 0x00664AA0 0x00664AB8 f/lb_gy01
+main 0x002743E0 0x00274654 ud/ud12
