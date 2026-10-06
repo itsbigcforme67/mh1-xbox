@@ -22,9 +22,8 @@ void player_init0(PLW *pl) {
     pl->work350 = 0;
     pl->work351 = -1;
     if (pl->work616 != 0) {
-        mx = parts_max_tbl;
         eq = &equip_set[pl->work616 * 6 + pl->work011 * 0x24];
-        for (i = 0; i < 6; i++) {
+        for (i = 0, mx = parts_max_tbl; i < 6; i++) {
             if (*eq < 0) {
                 pl->work352[i] = (ran_suu(1) & 0xFFFF) % mx[pl->work011 * 6] + 1;
             } else if (i == 2 && pl->work011 != 0 && softdip_ck(0x50) != 0) {
@@ -979,7 +978,11 @@ void pl_mv060(PLW *pl) {
     switch (s) {
     case 0:
         pl->x05 = s + 1;
-        v = (pl->char0 == 0x25) ? 0xC : 8;
+        if (pl->char0 == 0x25) {
+            v = 0xC;
+        } else {
+            v = 8;
+        }
         Pl_basic_flagset(pl, 0x8001, 0, 0);
         pl_chr_set2(pl, 8, v, 0);
         pl->work08 = 0;
@@ -1373,10 +1376,7 @@ void pl_egg03(PLW *pl, s32 arg1) {
         Pl_basic_flagset(pl, 0, 0, 0);
         break;
     case 1:
-        v = 0x72;
-        if (arg1 == 1) {
-            v = 4;
-        }
+        v = (arg1 == 1) ? 4 : 0x72;
         if (frame_check((f32)v, pl, 0) != 0) {
             pl->x05++;
             pl->work56B = pl->work56B & 0xF0;
@@ -2172,22 +2172,19 @@ int St_pick_ck2(PLW *pl) {
             dz = pl->pos[2] - d->pos[2];
             if (flSqrt(dx * dx + dz * dz) <= d->r) {
                 if (d->num > 0) {
-                    r = Item_get_ck(d->id & 0x7FFF);
+                    r = Item_get_ck(d->id & 0x7FFF) & 0xFFFF;
                     if (r != 0 && r != 0xFFFF && d->num != 0xFF) {
                         rn = ran_suu(1);
-                        if (!(rn & 7)) {
-                            if (Pl_Skill_ck(pl, 0x2F) == 1) {
-                                goto dec;
-                            }
-                            d->num = 0;
-                        } else {
-dec:
+                        if ((rn & 7) != 0 || Pl_Skill_ck(pl, 0x2F) == 1) {
                             d->num--;
+                        } else {
+                            d->num = 0;
                         }
                     }
-                    return r;
+                } else {
+                    return 0xFFFE;
                 }
-                return 0xFFFE;
+                return r;
             }
         }
         d++;
@@ -2476,7 +2473,7 @@ void pl_light_ck(PLW *pl) {
             dx = pl->pos[0] - e->pos[0];
             dz = pl->pos[2] - e->pos[2];
             d = flSqrt(dx * dx + dz * dz);
-            if (PU8(e, 0x612) == 2) {
+            if (*(u8 *)((int)e + 0x612) == 2) {
                 lim = 300.0f;
                 hlim = 300.0f;
             } else {

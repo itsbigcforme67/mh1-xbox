@@ -959,3 +959,30 @@ menu_chcnfg_sendpl, lb_disp_chat_cnfg_sendpl (chat config UI).
 ## Twelfth pass (Sonnet worker C, after the network cut-off)
 Linked: egg_com_ck (pl/plegg.c, 0x14A6B0-0x14AA44): `return;` instead of `break;` after the dash branch (early-return form). The single-player / online split of the
 remaining list is the "Eleventh assignment" section above. load_shadow: `(s16)(i + 0x127)` is far worse (23 off); stays at 2 off. Remaining near-matches unchanged.
+
+## Thirteenth pass (Sonnet worker C, single-player list, all `tools/rebuild.sh` OK)
+Linked (main module, single player): Put_sprite_rotate (sprite/putspr3, 0x15B300), flash_move (model/light05, 0x11DE60), Pl_model_id_set
+(model/crmdl03 + rodata 0x358480-0x358498), parts_chg + yure_init (cp/cp03, 0x121280-0x121380), player_init0 (pl/plx09), hit_hit_sub_pl
+(hit/hite, 0x113E50), St_pick_ck2 (pl/plx10), pl_light_ck (pl/plx11), pl_egg03 (pl/plegg2). No header edits. No online code touched.
+Lessons (function that shows it):
+- A struct/array local with `addiu v0,sp,off; sh r,0(v0)` stores is just `a = b = x` chained assignments (the inner one is stored first); declare the
+  bigger local FIRST to get the lower stack slot (Put_sprite_rotate: TRI before SPR).
+- A counted loop is NOT unrolled when written `i = 0; do { ... i++; } while (i < n);` (yure_init: orig is a single 10-store loop), but a `for` is
+  unrolled 4-8x; and a `for` whose body has 9 statements is not unrolled while one with 8 is (the unroller has a body-size limit, parts_init).
+- `j = sum = 0; for (; j < n; j++)` keeps `slt at,j,n` with j in a register (no folding of the first test), `for (j = 0; ...)` folds it (get_start_*, 7 off).
+- Switch whose compare ladder is 2,1,0 wants the cases written 0,1,2 (flash_move, parts_chg wants 0x12 before 0xE: the reverse of the ladder).
+- `(f32)p[2]` of a u8 gives the unsigned-convert branch only with `(u32)`: `1.0f / (u32)p[2]` (flash_move). Pointer walks that must not fold
+  (`d[1] = a[0]; d[2] = a[1]; a++; a++; d[3] = a[0];`) need `a++; a++;`, not `a += 2` (flash_move).
+- `f32 k = 80.0f; pw - pw * def / (def + k)` keeps the operand order of add.s that `80.0f + def` / `def + 80.0f` flip (hit_hit_sub_pl).
+- `for (i = 0, mx = tbl; i < 6; i++)` (init inside the for) and `eq = ..; ` before it fixes the order of `daddu s2,zero` vs `addiu s0` (player_init0).
+- The order of the `return` stubs at the end of a function is the textual order of the return statements: `if (n > 0) {..} else { return 0xFFFE; } return r;`
+  puts the 0xFFFE stub first (St_pick_ck2). An `int r` assigned `(u16)f()` gives `andi s0,v0,0xFFFF` once and a plain `daddu v0,s0` at the return.
+- `*(u8 *)((int)e + 0x612)` for the second use stops MWCC making a hoisted `addiu s3,s0,0x612` pointer that the original does not have (pl_light_ck).
+- `v = (arg1 == 1) ? 4 : 0x72;` instead of `v = 0x72; if (arg1 == 1) v = 4;` moves the int-to-float `mtc1` to the join point like the original (pl_egg03).
+Near-matches after this pass (all in the *_nm.c files): armor_create_model (written in the thirteenth pass, instructions identical, only the s-register
+numbering of i/p2/p4/off differs: orig i=s2 p2=s1 p4=s7 off=s6 id=s3 h=s4; declbf/declhill found nothing; the s16-id version needs `int id = (s16)mdl[i]`,
+`(u32)(id - 13) <= 1`, the model_work_set2 arg `(u16)(skin + sex * 4)` and explicit pointer counters `p2 += 2; p4 += 4; off += 2`), get_start_material and
+friends 7 off (j and the pointer IV swap a2/a3), key_rept_du 5 (idx4 and the `on` pointer swap t0/a3), em_dur_set 8 (the `n * 2` is computed before the table
+address in the original), weapon_create_model/edit_create_model 10, Sel_back_disp (the OR order of the colour; best expression shape gets 2 lines off),
+pl_egg05 32 (the original does not fill two branch delay slots and has a `nop` before an aligned block), parts_init (original unrolls the 21-iteration
+loop 7x and keeps nine stores per iteration, ours is not unrolled: the unroll limit), mode_sel (the original has `nop nop` padding in front of case 0).
