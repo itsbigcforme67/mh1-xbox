@@ -51,34 +51,31 @@ typedef struct TRANSPL {
 void trans_pl_sub(TRANSPL *t) {
     PLW *pl = &player_work[t->pl];
 
-    if (pl->be_flag != 0) {
-        if (pl->x01 == 0) {
-        } else {
-            player_trans(pl, 0);
-        }
+    if (pl->be_flag != 0 && pl->x01 != 0) {
+    } else {
+        return;
     }
+    player_trans(pl, 0);
 }
 
 void Lb_trans_pl(TRANSPL *t) {
     PLW *pl = &player_work[t->pl];
 
-    if (pl->be_flag != 0) {
-        if (pl->x01 == 0) {
-        } else {
-            Lb_player_trans(pl, 0);
-        }
+    if (pl->be_flag != 0 && pl->x01 != 0) {
+    } else {
+        return;
     }
+    Lb_player_trans(pl, 0);
 }
 
 void Ed_trans_pl(TRANSPL *t) {
     PLW *pl = &player_work[t->pl];
 
-    if (pl->be_flag != 0) {
-        if (pl->x01 == 0) {
-        } else {
-            Ed_player_trans(pl, 0);
-        }
+    if (pl->be_flag != 0 && pl->x01 != 0) {
+    } else {
+        return;
     }
+    Ed_player_trans(pl, 0);
 }
 
 /* weapon_joint_calc (0x164410, 2376 bytes): complete, ~440 of 594 instructions

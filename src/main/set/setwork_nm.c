@@ -73,8 +73,8 @@ void init_set_work(void) {
     SETW *p;
     memset(set_work, 0, 0x2000);
     set_w_top = 0;
-    set_sp = (SETW **)set_work;
     p = (SETW *)(set_work + 0x1FC0);
+    set_sp = (SETW **)set_work;
     for (i = 0; i < 0x80; i++) {
         *--set_sp = p;
         p--;
