@@ -125,7 +125,7 @@ static void act_dist_select_005EC0E0(EMW *em);
 void em20_to_normal(EMW *em, s16 a, s16 b);
 void em20_dmg_to_normal(EMW *em, s16 a, s16 b);
 void em20_to_fly(EMW *em, int flag);
-static void item_theft_005EC560(PLW *arg1);
+static void item_theft_005EC560(EMW *em, PLW *pl);
 void em20_frame_reset(EMW *em, int i);
 static void em_act00_005EC740(EMW *em, EM20W *w);
 static void em_act01_005EC820(EMW *em, EM20W *w);
@@ -527,7 +527,7 @@ void em20_to_fly(EMW *em, int flag) {
     }
 }
 
-static void item_theft_005EC560(PLW *pl) {
+static void item_theft_005EC560(EMW *em, PLW *pl) {
     int list[20];
     int n;
     int i;
@@ -536,8 +536,7 @@ static void item_theft_005EC560(PLW *pl) {
 
     if (pl->id == game_w.master && Quest_clear_ck(1) == 0) {
         if (Pl_Skill_ck(pl, 0x2B) != 1) {
-            n = 0;
-            for (i = 0; i < 20; i++) {
+            for (i = 0, n = 0; i < 20; i++) {
                 id = pl->item[i].id;
                 if (id != 0) {
                     if (Item_data[id][0] == 0 && Item_data[id][2] < 4) {
@@ -548,7 +547,9 @@ static void item_theft_005EC560(PLW *pl) {
             if (n != 0) {
                 sel = (s16)pl->item[list[(u16)ran_suu(1) % n]].id;
                 Pl_item_stack(pl, sel & 0xFFFF, -1);
-                set01_set(1, 6, sel);
+                if (pl->id == game_w.master) {
+                    set01_set(1, 6, sel);
+                }
             }
         }
     }
@@ -3004,7 +3005,7 @@ static void em_fly18_005F1530(EMW *em, EM20W *w) {
             }
             em->ang[2] = (s32) (u16) M2C_FIELD(em, s32 *, 0xA8);
         }
-        if (em20_fly_adjy2(em, temp_a1, 2) & 0xFF) {
+        if (em20_fly_adjy2(em) & 0xFF) {
             em->x05 += 1;
             em_rate_clear(em);
             em->work08 = 0x12C;
@@ -3209,14 +3210,14 @@ static void em_fly22_005F1B80(EMW *em, EM20W *w) {
             }
             em->ang[2] = (s32) (u16) M2C_FIELD(em, s32 *, 0xA8);
         }
-        if (em20_fly_adjy2(em, temp_a1, 2) & 0xFF) {
+        if (em20_fly_adjy2(em) & 0xFF) {
             em->x05 += 1;
             em_rate_clear(em);
             em20_to_fly(em, 0);
         }
         break;
     case 2:
-        em20_fly_adjy2((EMW *) temp_a1, 2);
+        em20_fly_adjy2(); /* original: no argument set up, a0 still holds em (K&R call for the byte match) */
         break;
     }
 }
@@ -3886,7 +3887,7 @@ static void em_atk11_005F3170(EMW *em, EM20W *w) {
                 temp_a2 = temp_t0->id;
                 if (((s32) temp_a2 < 4) && (temp_t0 == &player_work[temp_a2]) && (em->x7A4->kind == 0x11) && (temp_t0->be_flag != 0)) {
                     em->x05 = temp_a3 + 1;
-                    item_theft_005EC560(em->x7A0);
+                    item_theft_005EC560(em, em->x7A0);
                 }
             }
         }
@@ -4230,7 +4231,7 @@ static void em_atk26_005F3CE0(EMW *em, EM20W *w, int idx) {
         }
         break;
     case 2:
-        if (em_frame_check(em, 0, 2.0f * (f32)(u32)gero_tbl[idx][0]) != 0) {
+        if (em_frame_check(em, 0, (f32)(u32)gero_tbl[idx][0]) != 0) {
             if (em->kind == 6) {
                 Shell08_set_ang(em, 0x22, 3, 0, gero_tbl[idx][1], 0);
             } else {
@@ -4334,7 +4335,7 @@ static void em_atk30_005F4090(EMW *em, EM20W *w) {
         em_char_set(em, 0x2F, 0, 0);
         break;
     case 1:
-        if (em_frame_check(em, 0, 2.0f * (f32)(u32)gero_tbl[0][0]) != 0) {
+        if (em_frame_check(em, 0, (f32)(u32)gero_tbl[0][0]) != 0) {
             if (em->kind == 6) {
                 Shell08_set_ang(em, 0x22, 3, 0, gero_tbl[0][1], 0);
             } else {

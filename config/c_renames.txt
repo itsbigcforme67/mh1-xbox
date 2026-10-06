@@ -103,6 +103,7 @@ build/src/game/em/em20_r20.c.o .rodata .data
 build/src/game/em/em20.c.o .rodata .data
 build/src/game/em/em20b.c.o .rodata .data
 build/src/game/em/em21_r07.c.o .rodata .data
+build/src/game/em/em21_r25.c.o .rodata .data
 build/src/game/em/em21_r10.c.o .rodata .data
 build/src/game/em/em21_r11.c.o .rodata .data
 build/src/game/em/em21.c.o .rodata .data
