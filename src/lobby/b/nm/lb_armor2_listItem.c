@@ -1,24 +1,33 @@
-#include "lobby_f.h"
-extern char buki_sei_tbl[];
-extern char bou_sei_tbl[];
-extern char shopList[];
-extern char shopList[];
-void lb_armor2_listItem(int arg0, int arg1, int arg2, int arg3) {
-    s32 temp_t0;
-    u16 var_t0;
+#include "lobby_s.h"
+extern u8 buki_sei_tbl[];
+extern u8 bou_sei_tbl[];
+void Lb_put_armorIcon(int x, int y, int z, s16 kind, s16 id);
+void lb_armor2_listItem(int x, int y, int z, s16 n) {
+    u16 kind;
+    u16 id;
+    u8 *e;
+    int i;
+    u8 *f;
 
-    temp_t0 = ( (arg3 << 0x30) >> 0x30) + (F(s8, &lbShop, 0x6C) * 7);
-    if (F(s8, &lbShop, 0x19) == 0) {
-        if (F(s8, &lbShop, 0x1A) == 1) {
-            var_t0 = F(u16, (F(s32, &lbShop, 0x64) + (temp_t0 * 8)), 0);
-            if (var_t0 == 7) {
-
+    i = lbShop.x6C * 7;
+    i += n;
+    e = (u8 *)lbShop.tbl + i * 8;
+    if (lbShop.mode == 0) {
+        if (lbShop.x1A == 1) {
+            kind = *(u16 *)e;
+            id = *(u16 *)(e + 4);
+            if (kind == 7) {
+                id = *(u16 *)&lbShop.x54[2];
             }
         } else {
-            var_t0 = (u16) F(u8, ((u8 *)&buki_sei_tbl + (*((u8 *)&shopList + 0x26 + (temp_t0 * 0x28)) * 0x18)), 0);
+            f = buki_sei_tbl + ((u16 *)&((u8 *)shopList)[0x26])[i * 20] * 0x18;
+            kind = f[0];
+            id = *(u16 *)(f + 2);
         }
     } else {
-        var_t0 = (u16) F(u8, ((u8 *)&bou_sei_tbl + (*((u8 *)&shopList + 0x26 + (temp_t0 * 0x28)) * 0x18)), 0);
+        f = bou_sei_tbl + ((u16 *)&((u8 *)shopList)[0x26])[i * 20] * 0x18;
+        kind = f[0];
+        id = *(u16 *)(f + 2);
     }
-    Lb_put_armorIcon((s16)var_t0);
+    Lb_put_armorIcon(x, y, z, kind, id);
 }
