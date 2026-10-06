@@ -114,7 +114,7 @@ int em_sleep_hp_add(EMW *em, s16 n, s16 max, s16 step);
 void em_niku_eat_set(EMW *em);
 void em_sleep2_dmg_timer_set(EMW *em);
 void Eft14_set3(f32 *pos, s16 arg, f32 scale, PLW *pl);
-void Quest_enemy_capture(em);   /* PC: a0 = em left over in the asm */
+void Quest_enemy_capture();
 void Quest_enemy_hagi_set();
 extern s16 em20_stay_timer_tbl[];
 extern s16 em20_runaway_timer_tbl[];

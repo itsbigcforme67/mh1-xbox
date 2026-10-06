@@ -83,7 +83,7 @@ EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c sr
 # Quest flow (agent C/E): f_quest (whole file near-match) and its first
 # part f_quest0_nm.c (accessors, Quest_init; written from the asm), the
 # tutorial checks it calls (game.bin tutorial.c)
-QUEST="src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c \
+QUEST="src/main/evdemo/evdemo.c src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c \
        src/main/game/f_game.c src/main/game/f_gameb.c src/main/font/dsp01.c \
        src/main/menu/menu_nm.c src/main/menu/menu_disp_nm.c \
        src/main/chat/chat_nm.c src/main/chat/dispframe_nm.c src/main/menu/listsel_nm.c src/main/font/fontst_nm.c \

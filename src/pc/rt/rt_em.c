@@ -312,6 +312,17 @@ int rt_quest_load(int no)
     *((u8 *)&select_w + 0xAD) = 0;
     Quest_start();
     Start_item_init();      /* game11: the quest's supply box (game_w+0x128 list, dsp03) */
+    {   /* game11 next: the quest's event demos (first sight of a monster:
+         * Kut-Ku 148, Cephadrome 154, Monoblos 171 ...; evdemo.c). The
+         * monster waits (game_w+0x21F) until its demo has run. */
+        void EvDemoInitialize(void);
+        extern u8 event_demo[];
+        if (PU16(&game_w, 0x2C) == 0)
+            PU16(&game_w, 0x2C) = (u16)no;
+        EvDemoInitialize();
+        if (getenv("RT_QUEST_TRACE"))
+            fprintf(stderr, "rt_quest: quest %d event demo slot: %d\n", PU16(&game_w, 0x2C), event_demo[4]);
+    }
     if (getenv("RT_QUEST_TRACE")) {
         int i;
         fprintf(stderr, "rt_quest: quest %d supply box:", no);

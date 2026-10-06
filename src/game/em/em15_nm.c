@@ -86,7 +86,7 @@ void em_hp_add(EMW *em, s16 n);
 void em_ana_loop_cnt_set(EMW *em);
 int em_sleep_hp_add(EMW *em, s16 n, s16 max, s16 step);
 void em_niku_eat_set(EMW *em);
-void Quest_enemy_capture(em);   /* PC: a0 = em left over in the asm */
+void Quest_enemy_capture();
 extern s16 em15_stay_timer_tbl[];
 extern s16 em15_runaway_timer_tbl[];
 
