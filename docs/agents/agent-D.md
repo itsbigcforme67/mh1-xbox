@@ -721,3 +721,29 @@ move_default and ef_move_sub (39 760 bytes, the per-motion sound/effect script o
 - `0 < r` instead of `r > 0` gives `slt at, zero, v0` + beq (instead of blez) for an int result.
 - Shared header edit: include/netcw.h: x7E/x7F/x84(s32)/x8B named from padding, x89/x8A are u8 (lbu in
   ms_net_patch_set); ms_nm.c/ms01-03 users still match.
+
+## Eighth assignment, later additions
+Linked by the permuter queue and by hand (all main OK): bgm (lobby_bgm_set, stage_bgm_set), cmd (cmd_prev_bun, cmd_prev_kouho,
+Set_KouhoTable), cngmsg (Write, WriteFloat32/ReadFloat32, CnInetNetworkInitialize_online, swapb), aqcmd (AQQuickSortSub),
+netwk (return_to_net_top_menu, Net_kb_input_init2, net_swdata3), camr (ZoomBaseAngleRail, RollAngleRail, dDivComplex),
+camarea03-04 (default_area_data + StageCamInit + CamAreaAttribChk), ud (Copy_user_id, Gun/Equip helpers), hk (key_delete,
+l_cursor and others), qstb04 (Modori_dama_ck). Main had duplicates of some of these from another agent (ud11/12, cmd05,
+aqcmd04, sndb01/02): the merge keeps main's runs and pl_snd01 (a superset of sndb01/02).
+More lessons (each confirmed by a match):
+- A callee defined EARLIER in the same file and `static` keeps the caller's argument registers alive: StageCamInit does
+  not save cw across `default_area_data(cw)` only when default_area_data is static in the same translation unit; the
+  callee therefore has to match too (it was linked together with StageCamInit in camarea03).
+- `(u32)float_value` written directly produces the original's inline c.le.s / sub.s / or sequence; a helper function
+  (even `static inline`) does not (Get_cam_grid_XZ).
+- `u8 field` read where the header says s8: cast at the use `(u8)PitMenu.x0F` (lbu) rather than changing the header.
+- Tables of at most 8 bytes are gp-relative: `extern s16 receive_mark_pos[2][2];` (Put_receive_mark), unsized `[]` is not.
+- Integer + pointer operand order: `v + (s32)mission_area` gives the original `addu v0,v0,v1`, `mission_area + v` the
+  reverse (Em_data_com_adrs_get, Em_data_st_adrs_get, Start_item_data_adrs_get); `p += idx; *p` where the original
+  advances the pointer register.
+- `which != 0 ? a : b` vs `which == 0 ? b : a` swaps the branch sense and which load comes first.
+- `c = x14 != 0 || x15 < 0x27 || x15 > 0x2B` (CamAreaAttribChk): `> 0x2B` (not `>= 0x2C`) keeps the compare result in `at`.
+- A switch's case labels are tested in the REVERSE of their source order, and that holds for groups: hk_key_eisuu needed
+  `case 2: case 7:` then `case 10: case 15:` then `case 0, 1, 6, 8, 9, 14` (descending compare chain in the asm).
+- Not solved (left near-match): hk_key_eisuu (2 off: one `b`+nop pair), Seisan_ok_ck (register naming of locals, 8 locals),
+  Get_cam_grid_XZ (10), Em_direct_set (register naming, K&R parameter), str_gattai (needs MWCC's own va_start; the nm
+  file's `va_start` is an implicit call), quest_condition_prog (124 off), the *_effect_move family.
