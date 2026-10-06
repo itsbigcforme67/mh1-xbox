@@ -414,7 +414,7 @@ Lessons (each confirmed by a match unless marked):
   permuter a file = lb_tu_ib.c header + the one function (static prototypes made extern). 2 iterations/s for 100-insn functions, 0.3/s for 500+. Scratch helpers
   (put.py, sc.sh, dperm.py, permprep.sh) lived in build/scr2 and are not committed.
 Still near-matches: itembox_cursor_mv (cm6 variant: only `daddiu` vs `addiu` for the constants 9/0 in the decimal block; int lo/hi gives the right registers, u8 gives
-daddiu but premasks), itembox_pickup (about 256 differing lines: p5 = w + 5 lands in a1 where the original has t0, loop registers shifted by one),
-itembox_sellout (about 42 lines, nearly all one register shift: w in a1/const 1 in a0 where the original has a2/a1), Disp_lb_item_box (about 110: w in t0 not v1),
+daddiu but premasks), itembox_pickup (check.py 461/541 but align.py 256 lines: p5 = w + 5 lands in a1 where the original has t0, loop registers shifted by one),
+itembox_sellout (check.py 34/412 differing insns, align.py 42 lines, nearly all one register shift: w in a1/const 1 in a0 where the original has a2/a1), Disp_lb_item_box (about 110: w in t0 not v1),
 ItemboxWindowX (about 840), eft25_m/t (frame 336 vs 320, an f20 callee-saved float the original does not use), lb_rule_seet_set (500+), Lb_room_member (1: `addu v1,a0,v0` vs
 `addu v1,v0,a0`), lb_set_pl_stage (47), Plaza_chatlog_mv (5: v0/v1 swap in the scroll-up block), Plaza_disp_chatlog, plaza_disp_chat_log_sub.
