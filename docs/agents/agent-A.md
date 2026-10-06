@@ -524,5 +524,7 @@ Not checked / for the owner to judge on the real thing:
   the hunter's push radius (push00: 48) differ.
 - The camera can sit inside camp bushes (no collision with plants; the PS2
   likely does the same).
-- Hunter armour: the host always draws one armour set; the game's new
-  character has none (only the head part changes on screen).
+- Hunter armour: the host always draws armour set 1 with head part 0
+  (viewer.c parts[]), whatever the game's equipment says; a new character
+  in the game wears no armour. Not changed (how the PS2 draws "no armour"
+  was not checked).
