@@ -1950,3 +1950,10 @@ main 0x001BA8E0 0x001BB000 net/netsyn10
 main 0x0016B060 0x0016B10C fl/clay02
 main 0x0016D8F0 0x0016D9C0 fl/clay03
 main 0x001534E0 0x0015355C pl/plx07
+main 0x00233A00 0x00233B04 net/netdev12
+main 0x00233420 0x00233540 net/netdev13
+main 0x002332C0 0x00233420 net/netdev15
+main 0x00233540 0x002337E4 net/netdev14
+main 0x00230760 0x0023098C net/mcsls_i01
+main 0x00230990 0x00230C08 net/mcsls_m01
+main 0x002399A0 0x00239AB0 net/netdev16
