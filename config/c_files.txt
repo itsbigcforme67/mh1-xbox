@@ -2165,3 +2165,6 @@ lobby 0x005B3ED0 0x005B4330 b/lb_by151
 lobby:rodata 0x0065E6A0 0x0065E720 b/lb_by151
 lobby 0x005B4B20 0x005B4D2C b/lb_by152
 main 0x0011DE60 0x0011E278 model/light05
+main 0x00123F60 0x00124310 model/crmdl03
+main:rodata 0x00358480 0x00358498 model/crmdl03
+main 0x00121280 0x00121380 cp/cp03
