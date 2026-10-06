@@ -1,4 +1,6 @@
 # Decompiled code that replaces disassembly. One line per C file:
+game 0x005A69A0 0x005A6F04 em/em08_r01
+game 0x005A71A0 0x005A724C em/em08_r02
 game 0x00592FE0 0x005934D4 em/em07_ai_r01
 game:rodata 0x006867E0 0x00686840 em/em07_ai_r01
 main 0x002246F0 0x00224718 cam/camr01
@@ -1222,6 +1224,7 @@ game 0x00608B00 0x00608CF4 em/em21_r26
 game 0x0060C0C0 0x0060C180 em/em21_r27
 game 0x00607CE0 0x006089E8 em/em21_r28
 game:rodata 0x00689850 0x006898B0 em/em21_r28
+game 0x0060BAD0 0x0060C034 em/em21_r29
 lobby 0x00533A00 0x00535238 lb/lb_talk
 lobby:rodata 0x00654AD0 0x00654B1C lb/lb_talk
 lobby 0x00604520 0x006045AC f/lb_z131

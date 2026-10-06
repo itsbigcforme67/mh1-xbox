@@ -792,7 +792,6 @@ int cmn_mongon_set(s8 *e, s8 *out, int max) {
 int cmn_mongon_check_sub(s8 *str) {
     s8 flt[0x50];
     s8 buf[0x50];
-    s8 *f;
     s8 *tbl;
     s8 *p;
     s8 *q;
@@ -805,15 +804,15 @@ int cmn_mongon_check_sub(s8 *str) {
     s8 c;
     s8 pc;
     s8 d;
+    s8 *base = check_mongon;
 
     len = strlen(str);
     pos = 0;
     cmn_mongon_check_filter(flt, str, len);
-    f = flt;
-    if (*f != 0) {
+    if (flt[0] != 0) {
         do {
             found = 0;
-            tbl = check_mongon;
+            tbl = base;
             if (*tbl != 0) {
                 do {
                     r = cmn_mongon_set(tbl, buf, len);
@@ -866,22 +865,21 @@ int cmn_mongon_check_sub(s8 *str) {
                     tbl += 0x10;
                 } while (*tbl != 0);
             }
-            c = *f;
+            c = flt[pos];
             if (c != 0) {
                 do {
                     if (found != 0) {
                         break;
                     }
                     d = str[pos];
-                    f++;
                     pos++;
                     if (!(_ctype_[1 + d] & 7)) {
-                        c = *f;
+                        c = flt[pos];
                         if (_ctype_[1 + c] & 7) {
                             break;
                         }
                     }
-                    c = *f;
+                    c = flt[pos];
                 } while (c != 0);
             }
         } while (c != 0);

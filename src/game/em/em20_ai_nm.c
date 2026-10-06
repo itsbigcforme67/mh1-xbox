@@ -3591,7 +3591,7 @@ static void em_atk08_005F2680(EMW *em, EM20W *w) {
         speed_add(em, w->spd);
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
-        if (temp_v1 <= 0) {
+        if (0 >= temp_v1) {
             kyusyu_senkai_ret_005FCBA0(em);
         }
         break;
@@ -3647,7 +3647,7 @@ block_23:
         }
         if (em_frame_check2(em, 0, 46.0f) != 0) {
             temp_f1_3 = em->adj_z;
-            if (temp_f1_3 > 50.0f) {
+            if (50.0f < temp_f1_3) {
                 em->adj_z = temp_f1_3 - 0.1f;
             }
         }

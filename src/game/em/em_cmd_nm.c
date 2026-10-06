@@ -882,7 +882,7 @@ u8 *em_cmd_angle_ck(EMW *em, u8 *p) {
             if (var_a0 >= 0x8001) {
                 var_a0 = (0x10000 - var_a0) & 0xFFFF;
             }
-            if ((var_a0 & 0xFFFF) < (temp_s0 & 0xFFFF)) {
+            if ((temp_s0 & 0xFFFF) > (var_a0 & 0xFFFF)) {
                 var_s1 = 1;
             }
         } else {
@@ -2413,7 +2413,7 @@ u8 *em_cmd_samestage_pl_target_sel(EMW *em, u8 *p) {
     if (em->x88F != 0) {
         m = 0;
         j = 0;
-        if ((s32) * (u8 *)0x3F34C3 > 0) {
+        if (0 < (s32) * (u8 *)0x3F34C3) {
             do {
                 bit = 1 << j;
                 if ((em->x88F & bit) && Pl_stg_ck_tw(em, &player_work[j]) != 0 && player_work[j].be_flag != 0) {
@@ -2749,7 +2749,7 @@ u8 *em_cmd_st25_pl_target_sel(EMW *em, u8 *p) {
     if (em->x88F != 0) {
         m = 0;
         j = 0;
-        if ((s32) * (u8 *)0x3F34C3 > 0) {
+        if (0 < (s32) * (u8 *)0x3F34C3) {
             do {
                 bit = 1 << j;
                 if ((em->x88F & bit) && Pl_stg_ck_tw(em, &player_work[j]) != 0 && player_work[j].be_flag != 0) {
@@ -2775,7 +2775,7 @@ u8 *em_cmd_st25_pl_target_sel(EMW *em, u8 *p) {
             }
         } else {
             j = 0;
-            if ((s32) * (u8 *)0x3F34C3 > 0) {
+            if (0 < (s32) * (u8 *)0x3F34C3) {
                 do {
                     bit = 1 << j;
                     if ((m & 0xFF & bit) && (t = player_work[j].x70E, !((s32)t < 4)) && (s32)t < 0xB) {
@@ -2788,7 +2788,7 @@ u8 *em_cmd_st25_pl_target_sel(EMW *em, u8 *p) {
         }
         i = 0;
         n = 0;
-        if ((s32) * (u8 *)0x3F34C3 > 0) {
+        if (0 < (s32) * (u8 *)0x3F34C3) {
             do {
                 if (em->x918[i] == 0xC350 && (m & 0xFF & (1 << i))) {
                     list[n] = i;
