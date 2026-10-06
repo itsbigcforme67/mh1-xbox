@@ -1093,6 +1093,8 @@ segments:
       - [0x116DD4, asm, text/flfntFontPuts]
       - [0x117480, c, flfnt/flfnt04]
       - [0x117544, asm, text/flfntDrawTerm]
+      - [0x117760, c, flfnt/flfnt06]
+      - [0x117A54, asm, text/flnecExpandFont]
       - [0x117DE0, c, flfnt/flfnt05]
       - [0x117E48, asm, text/plAPXGetMipmapTextureNum]
       - [0x117E50, c, tex/apx01]
