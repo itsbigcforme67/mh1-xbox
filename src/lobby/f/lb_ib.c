@@ -724,8 +724,6 @@ cursor:
 }
 
 /* item box "pickup" tab: move an item from the pouch into the item box (stacking onto an existing slot when possible) */
-typedef struct SW4 { s16 a, b; } SW4;            /* pouch item (id, amount) */
-typedef struct SW6 { s16 a, b, c; } SW6;         /* equipment slot */
 s32 itembox_pickup(s32 pad) {
     SW4 tmp4;
     u8 *u;
