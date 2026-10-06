@@ -67,6 +67,9 @@ void rt_boot_init(void);
 int  rt_boot_tick(void);        /* 1: boot over */
 void rt_boot_draw(void);
 int  rt_boot_active(void);
+/* set by the app: draws player_work[no] from the boot screens' prims
+ * (player_trans during rt_boot_tick, inside the gfx recording) */
+extern void (*rt_hunter_draw_hook)(int no);
 void rt_sys_init(void);         /* system tasks without a boot (Fade_task) */
 void rt_sys_tick(void);
 void rt_fade_draw(void);
@@ -74,6 +77,7 @@ void rt_fade_draw(void);
  * (0 male) and model numbers of reg, face, hair, body, arm, wst. Returns
  * a counter that changes on every new choice, 0 = none yet. */
 int  rt_player_look(int no, int *sex, int id[6]);
+int  rt_player_edit_look(int no, int *sex, int id[6]);   /* character creation (no armour) */
 
 /* ------------------------------------------------------------ clays */
 /* Register a host clay; the result is the handle the game passes to

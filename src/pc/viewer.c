@@ -235,7 +235,9 @@ typedef struct {
     flmat *pw[HUNTER_PARTS];         /* per part bone world matrices */
     flmat world;
     fmt_blob tbl;                    /* plcom_tbl.bin */
-    int game;                        /* 1: posed by the game's motion code (player_work[0]) */
+    int game;                        /* 1: posed by the game's motion code (player_work[no]) */
+    int no;                          /* player_work index */
+    int look[HUNTER_PARTS], sex, look_gen;  /* the parts loaded (hunter_relook) */
     uint8_t *mem[HUNTER_PARTS * 2 + 1];
 } hunter;
 
@@ -329,7 +331,7 @@ static void hunter_pose(hunter *h, float frame, const fl_light *L)
 {
     int s, i;
     if (h->game)
-        rt_player_pose(0, &h->master);   /* frame_move's motion player */
+        rt_player_pose(h->no, &h->master);   /* frame_move's motion player */
     else
         fl_skel_update(&h->master, frame);
     for (s = 0; s < HUNTER_PARTS; s++) {
@@ -368,7 +370,7 @@ static void hunter_pose(hunter *h, float frame, const fl_light *L)
         }
         free(ok);
         if (s == 2 && h->game) {        /* player_trans: hair colour (PLW+0x5FC) on the head part's first material */
-            unsigned c = rt_player_hair_col(0);
+            unsigned c = rt_player_hair_col(h->no);
             m->has_tint = c != 0;
             m->tint[0] = ((c >> 16) & 0xFF) / 255.0f;
             m->tint[1] = ((c >> 8) & 0xFF) / 255.0f;
@@ -416,7 +418,6 @@ static int hunter_load(hunter *h, const int *num, int legs_id, int upper_id)
 /* The hunter the game asked for (armor_create_model, rt_pl.c: sex and the
  * six part numbers from the save's character and armour): reload the
  * parts that differ. A part file that cannot be loaded keeps the old one. */
-static int hunter_look[HUNTER_PARTS], hunter_sex, hunter_look_gen;
 static void hunter_relook(hunter *h, int sex, const int *num)
 {
     int s;
@@ -425,7 +426,7 @@ static void hunter_relook(hunter *h, int sex, const int *num)
         uint8_t *m0, *m1;
         fmt_blob link, tex, ahi;
         fl_model nm;
-        if (num[s] == hunter_look[s] && sex == hunter_sex)
+        if (num[s] == h->look[s] && sex == h->sex)
             continue;
         snprintf(name, sizeof name, "%c_%s%03d_amh.bin", sex ? 'f' : 'm', pl_slot[s], num[s]);
         snprintf(tname, sizeof tname, "%c_%s%03d.apx", sex ? 'f' : 'm', pl_slot[s], num[s]);
@@ -463,8 +464,8 @@ static void hunter_relook(hunter *h, int sex, const int *num)
         h->pw[s] = calloc(h->part[s].skel.nbone + 1, sizeof(flmat));
     }
     for (s = 0; s < HUNTER_PARTS; s++)
-        hunter_look[s] = num[s];
-    hunter_sex = sex;
+        h->look[s] = num[s];
+    h->sex = sex;
 }
 
 static void place(flmat w, float x, float y, float z, float yaw)
@@ -556,6 +557,61 @@ static int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter
 static int boot = 0, booting = 0;           /* --boot: from power-on (rt_boot.c) */
 static const char *script = NULL;
 static float hunter_yoff = 0;
+
+/* ------------------------------------------------------------ boot hunters
+ * The character creation and continue screens draw their hunter from a
+ * prim (trans_pl_sub -> player_trans) inside the task's trans(): rt_pl.c
+ * calls rt_hunter_draw_hook(no) there, which records a host draw at that
+ * point of the tick's gfx list (gfx_rec_call); each replay poses
+ * player_work[no] with the game's motion and draws it with the game's view
+ * (lpView, as in the village). One host hunter per player_work slot. */
+static hunter ed_h[3];
+static int ed_loaded[3];
+static void ed_hunter_draw(void *arg)
+{
+    int no = (int)(intptr_t)arg, sx, ids[HUNTER_PARTS], g, s, a;
+    hunter *h;
+    float eye[3], tar[3], roll, fov, p[3];
+    flmat camw, view, proj;
+    if (no < 0 || no >= 3)
+        return;
+    h = &ed_h[no];
+    if (!ed_loaded[no]) {
+        static const int dflt[HUNTER_PARTS] = { 1, 0, 1, 1, 1, 1 };
+        ed_loaded[no] = hunter_load(h, dflt, 1, 101) == 0 ? 1 : -1;
+        memcpy(h->look, dflt, sizeof h->look);
+        h->no = no;
+        h->game = 1;
+    }
+    if (ed_loaded[no] < 0)
+        return;
+    g = rt_player_look(no, &sx, ids);      /* continue screen: armor_create_model */
+    if (!g)
+        g = rt_player_edit_look(no, &sx, ids);     /* character creation */
+    if (g && g != h->look_gen) {
+        h->look_gen = g;
+        hunter_relook(h, sx, ids);
+    }
+    rt_player_get(no, p, &a);
+    place(h->world, p[0], p[1], p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
+    hunter_pose(h, 0, &light);
+    rt_cam_view(eye, tar, &roll, &fov);
+    lookat_world(camw, eye, tar);
+    flmat_invert_affine(view, camw);
+    flmat_perspective(proj, fov > 0.01f ? fov : 1.0f, (float)W / H, 10.0f, 80000.0f);
+    gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);
+    gfx_set_render_state(GFX_RS_VIEW, (uintptr_t)view);
+    gfx_set_render_state(GFX_RS_ALPHA_REF, 0x40);
+    gfx_set_render_state(GFX_RS_BLEND, 1);
+    gfx_set_render_state(GFX_RS_ZWRITE, 1);
+    gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)h->world);
+    for (s = 0; s < HUNTER_PARTS; s++)
+        draw_model_attr(&h->part[s], -1);
+}
+static void ed_hunter_hook(int no)
+{
+    gfx_rec_call(ed_hunter_draw, (void *)(intptr_t)no);
+}
 
 
 /* ------------------------------------------------------------ stage files
@@ -1051,7 +1107,7 @@ int main(int argc, char **argv)
     }
     if (hunter_load(&pl, parts, 1, 101) != 0)
         fprintf(stderr, "hunter load failed\n");
-    memcpy(hunter_look, parts, sizeof hunter_look);
+    memcpy(pl.look, parts, sizeof pl.look);
 
     /* lighting: the VU1 model, 3 directional + ambient */
     memset(&light, 0, sizeof light);
@@ -1165,6 +1221,7 @@ int main(int argc, char **argv)
     if (boot) {         /* power-on: the game's boot tasks until Game_task (rt_boot.c) */
         rt_boot_init();
         booting = 1;
+        rt_hunter_draw_hook = ed_hunter_hook;
     } else
         rt_sys_init();  /* the system tasks the boot would have started (Fade_task) */
     tick_trace = getenv("RT_TICK_TRACE") != NULL;
@@ -1311,8 +1368,8 @@ int main(int argc, char **argv)
         }
         {   /* the hunter the game built last (character, armour) */
             int sx, ids[HUNTER_PARTS], g = rt_player_look(0, &sx, ids);
-            if (g && g != hunter_look_gen) {
-                hunter_look_gen = g;
+            if (g && g != pl.look_gen) {
+                pl.look_gen = g;
                 hunter_relook(&pl, sx, ids);
             }
         }
