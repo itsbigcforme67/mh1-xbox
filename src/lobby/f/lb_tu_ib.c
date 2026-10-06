@@ -66,7 +66,7 @@ static int u_item_chk();
 static int pick_kosuu_sel_chk();
 static int item_kosuu_sel_chk();
 void kosuu_select();
-void yes_no_select(u16 pad);
+void yes_no_select();
 int Ud_u_item_stack2();
 int Chk_lb_status();
 void Disp_menu_help();
@@ -575,7 +575,9 @@ s32 itembox_sortup(s32 pad) {
     return pad;
 }
 
-void yes_no_select(u16 pad) {
+void yes_no_select(pad)
+u16 pad;
+{
     u8 *t;
     u8 *q;
     t = ib;
