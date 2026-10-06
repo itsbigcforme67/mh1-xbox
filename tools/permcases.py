@@ -4,9 +4,11 @@
 import itertools, re, subprocess, sys
 p, func = sys.argv[1:3]
 ind = ' ' * (int(sys.argv[3]) if len(sys.argv) > 3 else 4)
+occ = int(sys.argv[4]) if len(sys.argv) > 4 else 0
 s0 = open(p).read()
 a = s0.index(func + '(')
-sw = re.compile(r'^%sswitch .*\{.*\n' % ind, re.M).search(s0, a)
+sws = list(re.compile(r'^%sswitch .*\{.*\n' % ind, re.M).finditer(s0, a))
+sw = sws[occ]
 body_start = sw.end()
 end = re.compile(r'^%s\}\n' % ind, re.M).search(s0, body_start).start()
 body = s0[body_start:end]

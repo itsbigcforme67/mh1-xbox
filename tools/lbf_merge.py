@@ -71,9 +71,13 @@ def emit(group):
     if os.environ.get("DBG"): build(group, path); os.system("cp %s /tmp/dbg.c" % path)
     if build(group, path) and ok(path, group):
         lines.append('lobby 0x%08X 0x%08X %s/%s%02d' % (info[group[0]][0], info[group[-1]][0] + info[group[-1]][1], LD, prefix, num))
-        for n in group:
-            for a, e in lbf_jt.ranges(n):
-                lines.append('lobby:rodata 0x%08X 0x%08X %s/%s%02d' % (a, e, LD, prefix, num)); print('  jump table', n, lines[-1])
+        tabs = sorted(set(r for n in group for r in lbf_jt.ranges(n)))
+        merged = []
+        for a, e in tabs:   # one rodata slot per object: tables only separated by alignment padding are one range
+            if merged and a - merged[-1][1] < 16: merged[-1][1] = max(merged[-1][1], e)
+            else: merged.append([a, e])
+        for a, e in merged:
+            lines.append('lobby:rodata 0x%08X 0x%08X %s/%s%02d' % (a, e, LD, prefix, num)); print('  jump table', lines[-1])
         print(lines[-1], '#', ', '.join(group)); num += 1
     else:
         if os.path.exists(path): os.remove(path)
