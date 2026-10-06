@@ -854,6 +854,7 @@ segments:
       - [0x05E580, c, b/lb_by172]
       - [0x05EA60, c, b/lb_by173]
       - [0x05F1C8, asm, text/DispDialogData]
+      - [0x05F1D0, c, b/lb_by180]
       - [0x05F6F0, c, lb/lbuie]
       - [0x05F82C, asm, text/put_button_help]
       - [0x05F830, c, b/lb_by41]
