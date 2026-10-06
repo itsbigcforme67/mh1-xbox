@@ -2050,6 +2050,7 @@ main 0x001BBE60 0x001BC1FC net/netsyn08
 main:rodata 0x0035EC70 0x0035ECA4 net/netsyn08
 lobby 0x005D7050 0x005D778C f/lb_gq01
 lobby 0x005C9910 0x005C9A50 f/lb_gv05
+lobby 0x005C9A50 0x005C9DE4 f/lb_x02
 lobby 0x005F7110 0x005F7188 f/lb_gau03
 lobby 0x005FFCB0 0x005FFD1C f/lb_gdr2x01
 main 0x001BA8E0 0x001BB000 net/netsyn10
