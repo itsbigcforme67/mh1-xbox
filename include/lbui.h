@@ -8,13 +8,13 @@
 typedef struct LB_DIALOG {
     int id;             /* 0x00 message number */
     s16 x04;            /* 0x04 */
-    s16 x06;            /* 0x06 */
+    u16 x06;            /* 0x06 (u16: lhu in DispDialogData) */
     u8 _pad08[4];
     char *msg;          /* 0x0C message text */
     s8 lines;           /* 0x10 number of text lines */
     u8 _pad11;
     s8 html;            /* 0x12 dialog kind (SetDialogData's second argument) */
-    u8 yesno;           /* 0x13 */
+    s8 yesno;           /* 0x13 (s8: lb in DispDialogData) */
 } LB_DIALOG;
 
 /* net window state pointed to by pNet (main .sbss); also the argument of tl_menu_cursor_up/down */

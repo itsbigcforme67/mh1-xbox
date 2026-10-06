@@ -455,3 +455,11 @@ constants 9/0: no integer type tried gives it), itembox_sellout 34 (w in a1 inst
 Not tried: lb_rule_seet_set, lb_guild_make_room, lb_questpage_trans, lb_set_questpage_info, Lb_make_quest_tbl(_local), lb_disp_name, Lb_put_help, lb_put_sprite, Lb_check_target, lb_target_angle (drafts are far).
 Also linked late in the session: lb_questpage_trans (`if (Lbs_InRoomCheck() == 0 || i != 3) Put_msg(p)` shares one call; s3,s2,s1,s0 declared first, second loop with its own p2/j declared after i/p).
 Near-match worth finishing: lb_guild_make_room (15 differing insns: only the mhRule.x5C bit-field update order; cases must `break` to one shared `return 2`, inner switch case labels in source order 0,1).
+
+## Lobby session 10 (range 0x5C4E60-0x5EE618)
+Linked (rebuild OK x5): Lb_pl_to_chair, Lb_check_receipt, lb_pl_mv088, Lb_check_target, lb_target_angle (src/lobby/f/lb_fz01-05.c), Lb_put_unique_act_hint (now C inside lb_tu_act.c, raw entry removed, jump table rodata 0x664CE0-0x664D50).
+Lessons: m2c-style drafts hide the real structure; re-derive from the asm. `int t = p[0]` (not u8) lets a call arg be raw `daddu a2,s0` while the switch scrutinee is masked (Lb_check_receipt);
+`switch` ladders (not `||` chains) when the asm has separate beq compares (merged into range tests otherwise); a float param placed LAST in the prototype puts `mov.s f12` in the call delay slot (lb_check_target);
+u32 args converted with `(f32)` give the bltz/srl unsigned convert, int locals for `0xFFFF - d` (lb_target_angle); `e += n;` before the `if (i >= max || e == 0 ...) return;` puts it in the delay slot (Lb_pl_to_chair);
+loop-carried counters kept in a u16 var that is summed but never used survive (cnt in Lb_check_target); u16 local used in `pad & 0x20` gives the double andi.
+Near-matches: lb_guild_make_room 15 (x5C update order), Lb_put_room_message 2 (delay slot of beq on x load), Lb_room_member 1 (addu order), lb_send_data 3 (if-false branch lands on a `b end` block), lb_insert_target_list 8, lb_pl_turn_sub ~43, get_flag_quest 28, lb_set_pl_stage 47. Item box / eft25 / browser moved to agent B.

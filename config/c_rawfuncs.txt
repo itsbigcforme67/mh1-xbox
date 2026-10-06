@@ -3,7 +3,6 @@ lobby 0x005E61B0 0xA4 bs_route_queue_free_reverse
 lobby 0x005E6580 0x80 bs_cache_queue_get
 lobby 0x005E66D0 0x374 BsCacheInitialize
 lobby 0x005E6E80 0x1DC BsRequestPostAdd
-lobby 0x005CEA40 0x47C Lb_put_unique_act_hint
 lobby 0x00609A00 0x1DC itembox_cursor_mv
 lobby 0x00609E20 0x874 itembox_pickup
 lobby 0x0060B190 0x670 itembox_sellout
@@ -49,8 +48,6 @@ lobby 0x00539F80 0x5E0 lb_process_kyoukaListProg
 lobby 0x0053A560 0x1AC lb_process_use_item
 lobby 0x005AF2C0 0x16C Lb_put_itemIcon
 lobby 0x0053B580 0xD8 value_result
-lobby 0x0053D450 0x2C8 lb_armor_put_itemDetail
-lobby 0x0053CF60 0x2C0 shop_armor_question
 lobby 0x00539A90 0x3A4 lb_process_select
 lobby 0x0053B660 0x69C lb_process_drawHelp
 lobby 0x0059AE60 0x7D8 disp_status

@@ -1,18 +1,10 @@
-/* lb_by162 - agent B 0x0053D450-0x0053D718: lb_armor_put_itemDetail (near-match C kept for the PC build; the PS2 build links the original bytes, see c_rawfuncs.txt). */
-/* lb_armor_put_itemDetail near-match: body identical to the original, only the prologue (cur / tbl load order, registers of the entry address) differs by about 10 instructions. */
+/* lb_by162 - agent B 0x0053D450-0x0053D718: lb_armor_put_itemDetail. */
 #include "lobby_s.h"
 extern char User_data[];
 extern char lit_551_00655880[];
 extern char lit_585_00655888[];
 extern char lb_shop_msg[];
 void Lb_put_armorIcon(int x, int y, int z, s16 kind, s16 id);
-/* original bytes: build/raw/lb_armor_put_itemDetail.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
-#ifdef __MWERKS__
-asm void lb_armor_put_itemDetail(void)
-{
-#include "lb_armor_put_itemDetail.inc"
-}
-#else
 void lb_armor_put_itemDetail(void) {
     int name;
     int kind;
@@ -22,11 +14,11 @@ void lb_armor_put_itemDetail(void) {
     int c;
 
     c = lbShop.cur;
-    ud = (u8 *)User_data + c * 12 + 0x44;
     e = (u8 *)lbShop.tbl + c * 8;
+    ud = (u8 *)User_data + c * 12 + 0x44;
     if (lbShop.mode == 0) {
-        id = *(u16 *)(e + 4);
         kind = *(u16 *)e;
+        id = *(u16 *)(e + 4);
     } else {
         kind = ud[1];
         id = *(u16 *)(ud + 2);
@@ -69,4 +61,3 @@ void lb_armor_put_itemDetail(void) {
         EquipmentCompareWindow(lbShop.x54, lbShop.x5A, 0x126, 0x3C, *(u8 *)&lbShop.x6E);
     }
 }
-#endif

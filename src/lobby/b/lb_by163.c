@@ -1,33 +1,23 @@
-/* lb_by163 - agent B 0x0053CF60-0x0053D220: shop_armor_question (near-match C kept for the PC build; the PS2 build links the original bytes, see c_rawfuncs.txt). */
+/* lb_by163 - agent B 0x0053CF60-0x0053D220: shop_armor_question. */
 #include "lobby_s.h"
 extern s8 armor_shop_r;
 extern char User_data[];
 void armor_set_myArmor();
 void Lb_put_set01();
 void lb_armor_tag_decide01();
-/* original bytes: build/raw/shop_armor_question.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
-#ifdef __MWERKS__
-asm s32 shop_armor_question(void)
-{
-#include "shop_armor_question.inc"
-}
-#else
 s32 shop_armor_question(void) {
     s32 id;
     s32 kind;
     int key;
     s32 k;
     s32 c;
-    u8 *e;
     u8 m;
     s32 r;
 
     key = lbShop.key;
-    e = (u8 *)lbShop.tbl;
     c = lbShop.cur;
-    e = e + c * 8;
-    id = *(s32 *)(e + 4);
-    kind = *(s32 *)e;
+    kind = lbShop.tbl[c * 2];
+    id = lbShop.tbl[c * 2 + 1];
     if (armor_shop_r == 0) {
         k = key & 0xFFFF;
         if (k & 0x20) {
@@ -83,4 +73,3 @@ s32 shop_armor_question(void) {
     }
     return 2;
 }
-#endif
