@@ -1884,3 +1884,14 @@ lobby 0x00539370 0x00539458 b/lb_by78
 lobby:rodata 0x00655530 0x00655550 b/lb_by78
 lobby 0x005AFB00 0x005AFC8C b/lb_by79
 lobby 0x0053C240 0x0053C518 b/lbarm01
+lobby 0x00539220 0x00539364 b/lb_by80
+lobby 0x0053A710 0x0053A9A4 b/lb_by81
+lobby 0x0053C520 0x0053C610 b/lb_by82
+lobby 0x0053CAB0 0x0053CBEC b/lb_by83
+lobby 0x0053CD50 0x0053CF5C b/lb_by84
+lobby 0x005B2270 0x005B2314 b/lb_by85
+lobby 0x005B4980 0x005B4B1C b/lb_by86
+lobby:rodata 0x0065E720 0x0065E760 b/lb_by86
+lobby 0x005B7FF0 0x005B816C b/lb_by87
+lobby:rodata 0x0065E890 0x0065E8B0 b/lb_by87
+lobby 0x005B8820 0x005B8974 b/lb_by88

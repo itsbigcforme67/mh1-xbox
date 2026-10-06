@@ -1,20 +1,8 @@
+/* lb_by86 - agent B promoted near-match 0x005B4980-0x005B4B1C: DispLobbyMenu (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern int lbmw;
 extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
-extern char jtbl_460_0065E720[];
+
 void DispLobbyMenu(void) {
     u8 temp_a0;
     u8 temp_v1;
@@ -34,49 +22,51 @@ void DispLobbyMenu(void) {
         temp_v1 = F(u8, temp_a1, 4);
         switch (temp_v1) {                          /* switch 2 */
         case 0:                                     /* switch 2 */
-            Pit_disp_quest(&jtbl_460_0065E720);
+            Pit_disp_quest();
             break;
         case 1:                                     /* switch 2 */
-            Pit_disp_item_list(&jtbl_460_0065E720);
+            Pit_disp_item_list();
             break;
         case 2:                                     /* switch 2 */
-            Pit_disp_item_mix(&jtbl_460_0065E720);
+            Pit_disp_item_mix();
             break;
         case 3:                                     /* switch 2 */
-            Pit_disp_data(&jtbl_460_0065E720);
+            Pit_disp_data();
             break;
         case 4:                                     /* switch 2 */
-            Pit_disp_menu_status(&jtbl_460_0065E720);
+            Pit_disp_menu_status();
             break;
         case 5:                                     /* switch 2 */
-            Pit_disp_menu_equipment(&jtbl_460_0065E720);
+            Pit_disp_menu_equipment();
             break;
         case 6:                                     /* switch 2 */
-            Pit_disp_chat_cnfg(&jtbl_460_0065E720);
+            Pit_disp_chat_cnfg();
             break;
         case 7:                                     /* switch 2 */
-            Pit_disp_chat_log(&jtbl_460_0065E720);
+            Pit_disp_chat_log();
             break;
         case 8:                                     /* switch 2 */
-            lm_place_trans(&jtbl_460_0065E720);
+            lm_place_trans();
             break;
         case 10:                                    /* switch 2 */
-            disp_lm_room_member(&jtbl_460_0065E720);
+            disp_lm_room_member();
             break;
         case 9:                                     /* switch 2 */
-            lm_member_trans(&jtbl_460_0065E720);
+            lm_member_trans();
             break;
         case 11:                                    /* switch 2 */
-            lm_friend_list_trans(&jtbl_460_0065E720);
+            lm_friend_list_trans();
             break;
         case 12:                                    /* switch 2 */
-            lm_mail_box_trans(&jtbl_460_0065E720);
+            lm_mail_box_trans();
             break;
         case 14:                                    /* switch 2 */
-            lm_net_status_trans(&jtbl_460_0065E720);
+            lm_net_status_trans();
             break;
         case 13:                                    /* switch 2 */
-            lm_introduction_trans(&jtbl_460_0065E720);
+            lm_introduction_trans();
+            break;
+        case 15:
             break;
         }
         break;

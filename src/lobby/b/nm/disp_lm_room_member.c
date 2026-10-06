@@ -39,7 +39,7 @@ void disp_lm_room_member(void) {
             var_a2 = F(u8, temp_v1, 0xA);
         }
         F(int, &pf_room_member, 0xC) = (int)&sp30;
-        DispFrameList(&pf_room_member, 0, var_a2);
+        DispFrameList(&pf_room_member, 0);
         return;
     case 2:
     case 1:

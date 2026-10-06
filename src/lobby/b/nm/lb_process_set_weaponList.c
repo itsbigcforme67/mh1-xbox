@@ -69,7 +69,7 @@ void lb_process_set_weaponList(void) {
                         var_v0 = Get_equip_price(F(u8, var_s0, 0), F(u16, var_s0, 2)) >> 1;
                     }
                     F(u32, var_s5, 0) = var_v0;
-                    strcpy(var_s5 + 4, var_s1_2);
+                    strcpy(var_s5 + 4);
                     F(s16, var_s5, 0x26) = (s16) var_s3;
                     F(s32, var_s4, 0) = F(u8, var_s0, 0);
                     F(s32, var_s4, 4) = F(u16, var_s0, 2);
@@ -120,7 +120,7 @@ void lb_process_set_weaponList(void) {
         if ((temp_v1 == 6) || (temp_v1 == 7)) {
             strcpy(var_s5 + 4, Get_equip_name(F(u8, var_s1, 1), F(u16, var_s1, 2)));
             F(s32, var_s5, 0) = -1;
-            Now_equip_ck(&User_data, var_s0_2);
+            Now_equip_ck(&User_data);
             F(s16, var_s5, 0x24) = 0;
         } else {
             strcpy(var_s5 + 4, Get_equip_name(F(u8, var_s1, 1), F(u16, var_s1, 2)));

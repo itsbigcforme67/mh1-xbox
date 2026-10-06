@@ -14,10 +14,10 @@ void plaza_moveMain(void) {
         tl_exit_sub_menu(0);
         return;
     case 1:
-        plaza_movePlaza(temp_a0);
+        plaza_movePlaza();
         return;
     case 2:
-        plaza_backToServer(temp_a0);
+        plaza_backToServer();
         return;
     case 3:
         if (plaza_checkFriend(temp_a0) != 3) {
@@ -26,13 +26,13 @@ void plaza_moveMain(void) {
         tl_exit_sub_menu(0);
         return;
     case 5:
-        plaza_searchAll(temp_a0);
+        plaza_searchAll();
         return;
     case 6:
-        plaza_searchMember(temp_a0);
+        plaza_searchMember();
         return;
     case 7:
-        plaza_checkMyStatus(temp_a0);
+        plaza_checkMyStatus();
         return;
     case 8:
         if (plaza_setMyComment(temp_a0) != 3) {
@@ -47,22 +47,22 @@ void plaza_moveMain(void) {
         tl_exit_sub_menu(0);
         return;
     case 9:
-        plaza_setChatMode(temp_a0);
+        plaza_setChatMode();
         return;
     case 10:
-        plaza_ReibunEdit(temp_a0);
+        plaza_ReibunEdit();
         return;
     case 11:
-        plaza_checkChatLog(temp_a0);
+        plaza_checkChatLog();
         return;
     case 12:
-        plaza_capcomPage(temp_a0);
+        plaza_capcomPage();
         return;
     case 13:
-        plaza_logOut(temp_a0);
+        plaza_logOut();
         return;
     default:
-        plaza_chatMain(temp_a0);
+        plaza_chatMain();
         return;
     }
 }

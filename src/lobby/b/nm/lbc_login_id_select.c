@@ -65,7 +65,7 @@ void lbc_login_id_select(void) {
         return;
     case 1:                                         /* switch 1 */
         F(u8, temp_v1, 0x2C34) = (u8) (temp_a1 + 1);
-        Lbc_init_network_work(&jtbl_650_0065E8B0);
+        Lbc_init_network_work();
         F(u8, pNet, 6) = (u8) F(u8, (u8 *)cw, 2);
         F(u8, pNet, 8) = (u8) F(u8, (u8 *)cw, 1);
         return;
@@ -115,7 +115,7 @@ void lbc_login_id_select(void) {
         cnetGet_Login_DecideUserHandle((u8 *)cw + 0x448);
         return;
     case 6:                                         /* switch 1 */
-        Check_CallBackWait(&jtbl_650_0065E8B0);
+        Check_CallBackWait();
         break;
     }
 }

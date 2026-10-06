@@ -28,14 +28,14 @@ loop_6:
             }
         }
         F(u8, temp_v1, 0x2C35) = (u8) (F(u8, temp_v1, 0x2C35) + 1);
-        CallBackWaitInit(var_a0, temp_a1, var_a2);
+        CallBackWaitInit(var_a0);
         F(s8, (u8 *)cw, 0x2C45) = 0xF;
         cnLBS_RoomCreate(cnLbc_CheckInFloorOrder(2) & 0xFFFF, &CallBack_Result_Lobby_RoomCreate);
 block_16:
     default:
         return 2;
     case 1:
-        Check_CallBackWait(temp_a0, temp_a1);
+        Check_CallBackWait();
         goto block_16;
     case 2:
         F(u8, temp_v1, 0x2C35) = 0U;

@@ -27,7 +27,7 @@ s32 Plaza_add_friend(s32 arg0) {
     switch (temp_a0) {                              /* switch 1 */
     case 0:                                         /* switch 1 */
         F(u8, temp_a1, 5) = (u8) (temp_a0 + 1);
-        SetDialogData(0x1D, 2, temp_a2, temp_a3);
+        SetDialogData(0x1D, 2, temp_a2);
         SetDialogYesNo(0);
         F(s8, (u8 *)cw, 0x2C08) = 0;
         *(s8 *)0x3F36AB = 0;
@@ -35,7 +35,7 @@ s32 Plaza_add_friend(s32 arg0) {
 block_55:
         return 2;
     case 1:                                         /* switch 1 */
-        temp_v0 = Lb_select(temp_a0);
+        temp_v0 = Lb_select();
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_v1 = (int)pNet;
@@ -63,10 +63,10 @@ block_55:
         }
         goto block_55;
     case 2:                                         /* switch 1 */
-        temp_v0_2 = Lb_select(temp_a0);
+        temp_v0_2 = Lb_select();
         switch (temp_v0_2) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
-            var_v0 = net_Check_FriendData(&Friend_data, 0x32, arg0);
+            var_v0 = net_Check_FriendData(&Friend_data, 0x32);
             if (var_v0 == -1) {
                 var_v0 = net_Check_FriendFree(&Friend_data, 0x32);
                 if (var_v0 == -1) {
@@ -98,7 +98,7 @@ block_55:
     case 3:                                         /* switch 1 */
         temp_v0_3 = F(u8, temp_a1, 0x12);
         if (temp_v0_3 == 0) {
-            temp_v0_4 = SaveNetFile_ForLobby(temp_a0);
+            temp_v0_4 = SaveNetFile_ForLobby();
             switch (temp_v0_4) {                    /* switch 4; irregular */
             case -1:                                /* switch 4 */
                 str_pause(0, 0);

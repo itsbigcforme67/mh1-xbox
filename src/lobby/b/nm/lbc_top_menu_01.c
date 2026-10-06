@@ -18,7 +18,7 @@ loop_2:
             var_s0 += 1;
             var_s1 += 0x15C;
             if (var_s0 == temp_a1) {
-                To_LogOut(1, temp_a1);
+                To_LogOut(1);
             }
             if (var_s0 >= F(u16, &ClassInfo, 2)) {
 

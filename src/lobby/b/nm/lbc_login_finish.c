@@ -18,7 +18,7 @@ void lbc_login_finish(void) {
     temp_a0 = F(u8, (u8 *)cw, 0x2C34);
     switch (temp_a0) {                              /* irregular */
     case 0:
-        CallBackWaitInit(temp_a0);
+        CallBackWaitInit();
         if (F(u8, &CnetWork, 5) == 0) {
             if (F(u8, (u8 *)cw, 0x35D2) == 0) {
                 var_a1 = 0x4C;
@@ -51,10 +51,10 @@ block_12:
         ((CWS_lbc_login_finish *)cw)->x2C34 = (u8) (((CWS_lbc_login_finish *)cw)->x2C34 + 1);
         return;
     case 1:
-        Check_CallBackWait(temp_a0);
+        Check_CallBackWait();
         return;
     case 2:
-        cnLbc_Init_NgServerId(temp_a0);
+        cnLbc_Init_NgServerId();
         if ((F(u8, &CnetWork, 5) == 0) && (BsLbsCount == 1)) {
             F(u8, &CnetWork, 5) = 1U;
         }

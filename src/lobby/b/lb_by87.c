@@ -1,9 +1,7 @@
+/* lb_by87 - agent B promoted near-match 0x005B7FF0-0x005B816C: lbc_login_patch (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 extern char jtbl_575_0065E890[];
-extern char jtbl_575_0065E890[];
-extern char jtbl_575_0065E890[];
-extern char jtbl_575_0065E890[];
-extern char jtbl_575_0065E890[];
+
 void lbc_login_patch(void) {
     s32 temp_v0;
     u8 temp_a1;
@@ -18,7 +16,7 @@ void lbc_login_patch(void) {
     case 0:
         F(u8, temp_a2, 0x2C34) = (u8) (temp_a1 + 1);
         F(s8, (u8 *)cw, 0x2C08) = 0;
-        cnLBS_Get_PatchInformation((u8 *)cw + 0xBF20, temp_a1, temp_a2, temp_a3);
+        cnLBS_Get_PatchInformation((u8 *)cw + 0xBF20, temp_a1, temp_a2);
         ms_net_patch_set_init();
         all_reset();
         F(s8, &network_work, 0x11) = 1;
@@ -29,7 +27,7 @@ void lbc_login_patch(void) {
         return;
     case 2:
         F(s8, &network_work, 0x11) = 1;
-        temp_v0 = ms_net_patch_set(&jtbl_575_0065E890);
+        temp_v0 = ms_net_patch_set();
         if (temp_v0 == 1) {
             temp_v1 = (int)cw;
             F(u8, temp_v1, 0x2C34) = (u8) (F(u8, temp_v1, 0x2C34) + 1);
@@ -42,21 +40,21 @@ void lbc_login_patch(void) {
         return;
     case 3:
         F(u8, temp_a2, 0x2C34) = (u8) (temp_a1 + 1);
-        Lbs_load(&jtbl_575_0065E890);
+        Lbs_load();
         F(s8, &network_work, 0x11) = 0;
         return;
     case 4:
         F(u8, temp_a2, 0x2C34) = (u8) (temp_a1 + 1);
         F(s8, (u8 *)cw, 0x2C08) = 1;
-        CallBackWaitInit(&jtbl_575_0065E890);
+        CallBackWaitInit();
         cnLBS_Answer_PatchFinish();
         return;
     case 5:
-        Check_CallBackWait(&jtbl_575_0065E890);
+        Check_CallBackWait();
         return;
     case 6:
         F(u8, temp_a2, 0x2C34) = (u8) (temp_a1 + 1);
-        Lbs_load(&jtbl_575_0065E890);
+        Lbs_load();
         F(s8, &network_work, 0x11) = 0;
         return;
     case 7:

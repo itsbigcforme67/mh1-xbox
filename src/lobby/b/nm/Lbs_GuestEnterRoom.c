@@ -13,17 +13,17 @@ s32 Lbs_GuestEnterRoom(void) {
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         F(u8, temp_v1, 0x2C35) = (u8) (temp_v1_2 + 1);
-        CallBackWaitInit(temp_a0);
+        CallBackWaitInit();
         F(s8, (u8 *)cw, 0x2C45) = 0x15;
         F(s8, &ClassInfo, 8) = (s8) (F(u8, &lb_sys, 0x73) + 1);
         cnLBS_RoomEntry(cnLbc_CheckInFloorOrder(2) & 0xFFFF, (int)&RoomRule + 2, &CallBack_Result_Lobby_RoomEntry);
         break;
     case 1:
-        Check_CallBackWait(temp_a0);
+        Check_CallBackWait();
         break;
     case 2:
         F(u8, temp_v1, 0x2C35) = 0U;
-        To_EnterRoom(temp_a0);
+        To_EnterRoom();
         return 0;
     case 3:
         F(u8, temp_v1, 0x2C35) = 0U;

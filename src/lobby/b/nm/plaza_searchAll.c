@@ -162,7 +162,7 @@ void plaza_searchAll(void) {
                         F(u8, temp_a0_7, 0xA) = 0U;
                     }
                 }
-                cnWrap_SoundRequest(1, var_a1);
+                cnWrap_SoundRequest(1);
                 return;
             }
         }
@@ -184,7 +184,7 @@ void plaza_searchAll(void) {
         F(u8, pNet, 3) = 6U;
         return;
     case 9:                                         /* switch 1 */
-        temp_v0_7 = getUserInfo(temp_a0);
+        temp_v0_7 = getUserInfo();
         switch (temp_v0_7) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
             temp_a0_8 = (int)pNet;

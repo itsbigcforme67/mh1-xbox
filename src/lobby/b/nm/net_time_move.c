@@ -51,7 +51,7 @@ void net_time_move(ARG_net_time_move_arg0 *arg0) {
             if (((s16)temp_v0) == 0) {
                 arg0->x0005 = (u8) (arg0->x0005 + 1);
             }
-            net_time_str(0x3F800000, 1, 2, temp_a2);
+            net_time_str(0x3F800000, 1, 2);
             break;
         case 2:                                     /* switch 3 */
             if (F(s8, (u8 *)cw, 0x2C30) != 0) {
@@ -64,7 +64,7 @@ void net_time_move(ARG_net_time_move_arg0 *arg0) {
                     arg0->x0005 = 0U;
                     arg0->x0001 = 0;
                 }
-                net_time_str(0x3F800000, 1, 2, temp_a2);
+                net_time_str(0x3F800000, 1, 2);
             }
             break;
         }

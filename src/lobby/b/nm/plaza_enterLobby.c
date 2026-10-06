@@ -77,7 +77,7 @@ block_48:
 block_19:
                 F(u8, temp_v0, 0xA) = (u8) (F(u8, temp_v0, 0xA) - 7);
             }
-            cnWrap_SoundRequest(1, (u8 *) temp_a1_2);
+            cnWrap_SoundRequest(1);
         } else if (temp_a1_2 & 0xC00) {
             temp_v0_2 = (int)pNet;
             temp_v1_4 = F(u8, temp_v0_2, 0xA);
@@ -88,12 +88,12 @@ block_19:
                 var_v0_2 = temp_v1_4 + 7;
             }
             F(u8, temp_v0_2, 0xA) = var_v0_2;
-            cnWrap_SoundRequest(1, (u8 *) temp_a1_2);
+            cnWrap_SoundRequest(1);
         } else if (temp_a1_2 & 0x100) {
             temp_a2_3 = (int)pNet;
             temp_a1_3 = F(u8, temp_a2_3, 0xA);
             F(s8, temp_a2_3, 6) = (s8) (*(int *)((u8 *)&D_3A1622 + (temp_a1_3 * 0x15C)));
-            cnWrap_SoundRequest(6, (u8 *) temp_a1_3);
+            cnWrap_SoundRequest(6);
             memset(&tl_member_buff, 0, 0x17E0);
             temp_v1_5 = (int)pNet;
             F(u8, temp_v1_5, 3) = (u8) (F(u8, temp_v1_5, 3) + 1);
@@ -114,7 +114,7 @@ block_19:
         goto block_48;
     case 4:                                         /* switch 1 */
         F(s8, temp_a1, 0xC) = 1;
-        temp_v0_3 = Lbs_request_enter_lobby(temp_a0);
+        temp_v0_3 = Lbs_request_enter_lobby();
         switch (temp_v0_3) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_v1_7 = (int)pNet;
@@ -130,7 +130,7 @@ block_19:
         goto block_48;
     case 5:                                         /* switch 1 */
         F(s8, temp_a1, 0xC) = 1;
-        temp_v0_4 = Lbc_DownloadQuest(temp_a0);
+        temp_v0_4 = Lbc_DownloadQuest();
         switch (temp_v0_4) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
             fade_set(0xA);

@@ -41,7 +41,7 @@ void lbc_login_finish_after(void) {
     case 2:
         temp_a0_2 = Fade_busy_ck(temp_a0, 2) & 0xFF;
         if (temp_a0_2 != 1) {
-            cnLBS_Send_LoginFinish(temp_a0_2);
+            cnLBS_Send_LoginFinish();
             if (F(u8, &CnetWork, 5) == 3) {
                 To_MyLobby();
                 F(s8, (u8 *)cw, 0x35D2) = 1;

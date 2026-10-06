@@ -69,7 +69,7 @@ void plaza_enterLobbyTrans(int arg0, int arg1) {
                     font_print_double( (temp_s6 << 0x30) >> 0x30, var_s4, 1, 4);
                 } else {
                     font_set_palette(0);
-                    flfntLocate( (temp_s0 << 0x30) >> 0x30, var_s4);
+                    flfntLocate((temp_s0 << 0x30) >> 0x30);
                     font_print(&lit_2316, &spC0);
                     flfntLocate( (temp_s6 << 0x30) >> 0x30, var_s4);
                     font_print(&lit_2316, &sp100);
@@ -80,7 +80,7 @@ void plaza_enterLobbyTrans(int arg0, int arg1) {
                     font_print_double( (temp_s0 << 0x30) >> 0x30, var_s4, 1, 4);
                 } else {
                     font_set_palette(0);
-                    flfntLocate( (temp_s0 << 0x30) >> 0x30, var_s4);
+                    flfntLocate((temp_s0 << 0x30) >> 0x30);
                     font_print(&lit_2316, &sp100);
                 }
             }
@@ -90,7 +90,7 @@ void plaza_enterLobbyTrans(int arg0, int arg1) {
             var_s7 += 1;
         } while (var_s3 < 7);
         temp_s0_2 = spA0 + 0x13C;
-        flfntLocate( (temp_s0_2 << 0x30) >> 0x30, var_s4);
+        flfntLocate((temp_s0_2 << 0x30) >> 0x30);
         temp_v1_3 = (int)pNet;
         Put_page_num( (temp_s0_2 << 0x30) >> 0x30, var_s4,  (((F(u8, temp_v1_3, 0xA) / 7) + ((u8) F(u8, temp_v1_3, 0xA) >> 0x1F)) << 0x30) >> 0x30, 2);
     } else {

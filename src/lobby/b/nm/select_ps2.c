@@ -42,7 +42,7 @@ block_15:
         temp_v1 = ReadedDataLength;
         var_a0 = LobbyDataLength - temp_v1;
         if (var_a0 == 0) {
-            init_select_flags(var_a0);
+            init_select_flags();
             return 1;
         }
         temp_v0_2 = *(u8 *)0x4E371A;

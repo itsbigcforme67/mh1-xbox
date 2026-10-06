@@ -153,7 +153,7 @@ void plaza_setChatMode(ARG_plaza_setChatMode_arg0 *arg0, int arg1, int arg2) {
         }
         break;
     case 3:
-        temp_v0_6 = lb_chatMemberCheck(temp_a0);
+        temp_v0_6 = lb_chatMemberCheck();
         if ((temp_v0_6 != 3) && (temp_v0_6 != 0)) {
             return;
         }

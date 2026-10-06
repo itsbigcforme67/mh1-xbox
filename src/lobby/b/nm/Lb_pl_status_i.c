@@ -6,7 +6,7 @@ void Lb_pl_status_i(void) {
     void *temp_s0;
 
     temp_a0 = game_w.master;
-    Lbc_init_network_work(temp_a0);
+    Lbc_init_network_work();
     Lbc_set_prim(0, &Lb_pl_status_t, 0);
     temp_s0 = F(void *, ((u8 *)&player_work + (temp_a0 * 0xA00)), 0x3B0);
     Lb_get_comment((u8 *)&lb_player + (F(u16, temp_s0, 0xC) * 0x38) + 0x24);

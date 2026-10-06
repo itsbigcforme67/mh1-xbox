@@ -32,7 +32,7 @@ void lbc_logout_01(void) {
     temp_a1 = Get_sw2(0) & 0xFFFF;
     switch (temp_v1) {
     case 0:
-        Lbc_init_network_work(&jtbl_3219);
+        Lbc_init_network_work();
         F(s8, pNet, 0x11) = 1;
         temp_v1_2 = (int)cw;
         F(u8, temp_v1_2, 0x2C34) = (u8) (F(u8, temp_v1_2, 0x2C34) + 1);
@@ -79,7 +79,7 @@ void lbc_logout_01(void) {
         if (temp_a0_3 != 1) {
             temp_v1_4 = (int)cw;
             F(u8, temp_v1_4, 0x2C34) = (u8) (F(u8, temp_v1_4, 0x2C34) + 1);
-            tk_logout_init(temp_a0_3);
+            tk_logout_init();
             fade_set(2);
             SetDialogData(7, 5);
             SoftKeyboard_exit();
@@ -135,7 +135,7 @@ void lbc_logout_01(void) {
     case 10:
         temp_a0_6 = Fade_busy_ck(&jtbl_3219) & 0xFF;
         if (temp_a0_6 != 1) {
-            all_reset(temp_a0_6);
+            all_reset();
             F(s8, pNet, 0x11) = 1;
             *(s8 *)0x3F33F1 = 4;
             COM_R_No_0 = 1;

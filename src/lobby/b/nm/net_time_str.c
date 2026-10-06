@@ -15,7 +15,7 @@ void net_time_str(void) {
     } else {
         var_a3 = ((F(u32, &CnetWork, 8) % 216000) / 3600) + ((u32) (F(u32, &CnetWork, 8) % 216000) >> 0x1F);
     }
-    sprintf(sp30, &lit_291_0065EC10, (u32) var_s1, var_a3);
+    sprintf(sp30, &lit_291_0065EC10, (u32) var_s1);
     var_s0 = 1;
     if (((var_s1 / 10) + ((u32) var_s1 >> 0x1F)) > 0) {
         var_s0 = 2;

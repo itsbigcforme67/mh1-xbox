@@ -80,7 +80,7 @@ void lbc_login_warning_message(void) {
         return;
     case 6:
         F(u8, temp_a2, 0x2C34) = (u8) (temp_a1 + 1);
-        CallBackWaitInit(&jtbl_548_0065E870);
+        CallBackWaitInit();
         cnLBS_Answer_LoginWarningMessage(1);
         return;
     case 7:

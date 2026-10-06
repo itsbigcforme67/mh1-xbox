@@ -220,7 +220,7 @@ block_46:
             } else {
                 var_v0 = lb_quest_all[temp_v1_2];
             }
-            Lb_menu_quest_info(var_v0);
+            Lb_menu_quest_info();
             temp_a1 = Lb_get_quest_type(var_v0) | 0x10;
             (*(int *)((u8 *)&D_3E5506 + (game_w.master * 0xA00))) = temp_a1;
             temp_v0_7 = (u8 *)Lbs_GetRoomInfo(lb_sys.x73);
@@ -229,7 +229,7 @@ block_46:
             *(s16 *)0x3F33DC = (s16) temp_a0;
             F(u32, &mhRule, 0x54) = temp_a0;
             *(s16 *)0x3F3608 = (s16) ((F(s32, temp_v0_7, 0x158) & 0x01FFFE00) >> 9);
-            Lbc_SendMiniData(temp_a0);
+            Lbc_SendMiniData();
             Lb_set_mini_data((u8 *)cw + (game_w.master * 0x2FC) + 0x1346);
             Lb_set_mini_data((int)&lbCommer + (game_w.master * 0x5C) + 0x1C);
             temp_s0_2 = F(int, var_v0, 0x18);

@@ -11,11 +11,13 @@ int arg0;
 {
     s32 var_s0;
     u8 st;
+    u8 cs;
 
     var_s0 = 0;
-    switch (COM_R_No_Logout) {
+    cs = COM_R_No_Logout;
+    switch (cs) {
     case 0:
-        COM_R_No_Logout = COM_R_No_Logout + 1;
+        COM_R_No_Logout = cs + 1;
         break;
     case 1:
         TKCW->x2C4C = 0x708;
@@ -24,8 +26,7 @@ int arg0;
             case 0:
             case 2:
             case 7:
-                st = COM_R_No_Logout + 1;
-                COM_R_No_Logout = st;
+                COM_R_No_Logout = COM_R_No_Logout + 1;
                 TKCW->x2C45 = 0x26;
                 cnLBS_LogoutLobbyServer(&CallBack_Logout_ShutDown);
                 break;
@@ -33,8 +34,7 @@ int arg0;
             case 3:
             case 4:
             case 5:
-                st = COM_R_No_Logout + 1;
-                COM_R_No_Logout = st;
+                COM_R_No_Logout = COM_R_No_Logout + 1;
                 TKCW->x2C45 = 0x26;
                 cnLBS_ShutDownLobbyServer(&CallBack_Logout_ShutDown);
                 break;
@@ -48,11 +48,7 @@ int arg0;
         break;
     case 2:
         TKCW->x2C4C = TKCW->x2C4C - 1;
-        if (CpInetGetStatus() == 0) {
-            if (TKCW->x2C4C < 0) {
-                COM_R_No_Logout = COM_R_No_Logout + 1;
-            }
-        } else {
+        if (CpInetGetStatus() != 0 || TKCW->x2C4C < 0) {
             COM_R_No_Logout = COM_R_No_Logout + 1;
         }
         tk_logout_message_sub(0, arg0);
@@ -67,8 +63,7 @@ int arg0;
         tk_logout_message_sub(0, arg0);
         break;
     case 4:
-        TKCW->x2C4C = TKCW->x2C4C - 1;
-        if (TKCW->x2C4C < 0) {
+        if (--TKCW->x2C4C < 0) {
             COM_R_No_Disconnect = 0;
             COM_R_No_Logout = COM_R_No_Logout + 1;
         }

@@ -120,7 +120,7 @@ block_32:
             if (var_s4_2 != 0x3E7) {
                 Lb_put_button(0x212, 0x12F, 3);
                 Lb_put_msg_type2((int)&lb_shop_msg + 0x20);
-                Lb_put_job_limit((u8) var_s2, var_s1);
+                Lb_put_job_limit((u8) var_s2);
                 font_set_palette(0);
             }
             if (var_s0 == 0) {
@@ -133,7 +133,7 @@ block_32:
         if (var_s4_2 == 0x3E7) {
             font_print_ex(0x1B0, 0x11A, 0, &lit_1226_006555D8);
         } else {
-            Lb_get_armor_num((u8) var_s2, var_s1);
+            Lb_get_armor_num((u8) var_s2);
             font_print_ex(0x1B0, 0x11A, 0, &lit_1227_006555E0);
         }
         flfntSetSize(0x12, 0x12);
