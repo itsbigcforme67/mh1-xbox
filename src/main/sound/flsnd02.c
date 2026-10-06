@@ -8,7 +8,7 @@ extern int hdpack[];
 void *memcpy(void *, const void *, unsigned int);
 
 typedef struct SNDPK {
-    u8 _pad00[8];
+    u8 x00[8];
     int hdoff;      /* 0x08 */
     int hdsize;     /* 0x0C */
     int bdoff;      /* 0x10 */
