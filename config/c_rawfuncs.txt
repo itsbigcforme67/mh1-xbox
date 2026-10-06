@@ -12,11 +12,8 @@ lobby 0x00609E20 0x874 itembox_pickup
 lobby 0x0060A6A0 0x714 itembox_equipchange
 lobby 0x0060ADC0 0x344 itembox_sortup
 lobby 0x0060B190 0x670 itembox_sellout
-lobby 0x0060B9E0 0x190 kosuu_select
-lobby 0x0060BB70 0xA0 sortup_idx_chk
 lobby 0x0060BE20 0xC8 equip_ok_chk
 lobby 0x0060BF10 0xD0C ItemboxWindowX
-lobby 0x0060CC40 0x1B8 ItemboxWindowCursorX
 lobby 0x0060CE50 0x5B8 Disp_lb_item_box
 lobby 0x005E7120 0x150 bs_cache_request_html_core
 lobby 0x005E7270 0xE4 bs_cache_request_image_core

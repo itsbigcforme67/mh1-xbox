@@ -3204,7 +3204,7 @@ s32 Lb_ck_target(u8 *pl, f32 *pos, s32 deg) {
 
     d = (((M2C_FIELD(pl, s32 *, 0xA4) - (((calc_vec_ang2(pl + 0xAC, pos) & 0xFFFF) + 0x4000) & 0xFFFF)) & 0xFFFF) - 0x8000) & 0xFFFF;
     lim = (s32)(0.5f + ((65536.0f * (f32)deg) / 360.0f)) & 0xFFFF;
-    if (((0xFFFF - lim) < d) || (d < lim)) {
+    if ((d > (0xFFFF - lim)) || (d < lim)) {
         return 1;
     }
     return 0;

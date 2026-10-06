@@ -1883,3 +1883,4 @@ main 0x00217480 0x00217544 flfnt/flfnt04
 main 0x00217DE0 0x00217E48 flfnt/flfnt05
 lobby 0x005D9B20 0x005D9C68 f/lb_gdr24
 lobby 0x005DA880 0x005DA99C f/lb_gdr25
+lobby 0x005C44A0 0x005C45B0 f/lb_gv04

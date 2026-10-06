@@ -1230,6 +1230,7 @@ segments:
       - [0x090158, asm, text/set_se_type]
       - [0x090B00, c, b/lb_bz62]
       - [0x090B18, asm, text/Lb_npc_mv]
+      - [0x090B20, c, f/lb_gv04]
       - [0x090C30, c, b/lb_bz96]
       - [0x090CE0, asm, text/Lb_npc_mk]
       - [0x090F10, c, lb/lbuiw]

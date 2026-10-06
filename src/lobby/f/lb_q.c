@@ -146,17 +146,13 @@ void Lb_stage_load(int stage) {
             LBPLACE(pl, p);
             break;
         default:
-            u = &St_unique_tbl[stage][lb_sys.x71];
-            *(LBV3 *)pl->pos = u->pos;
-            pl->ang[1] = u->ang;
-            pl->ang_y = u->ang;
+            *(LBV3 *)pl->pos = *(LBV3 *)stage_start_pos[stage];
+            pl->ang[1] = pl->ang_y = 0;
             break;
         }
     } else {
-        u = &St_unique_tbl[stage][lb_sys.x71];
-        *(LBV3 *)pl->pos = u->pos;
-        pl->ang[1] = u->ang;
-        pl->ang_y = u->ang;
+        *(LBV3 *)pl->pos = *(LBV3 *)stage_start_pos[stage];
+        pl->ang[1] = pl->ang_y = 0;
     }
     pl->x3B0 = 0;
     if (lb_sys.x68 != 0x21) {
