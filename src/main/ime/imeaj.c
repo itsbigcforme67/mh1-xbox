@@ -469,33 +469,26 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void change_kind(u16 *p, int n, int kind)
+int next_gun(int disp, int wrap)
 {
-    u16 k;
+    KH *old;
+    int n;
 
-    k = (kind & 0xFFFF) << 12;
-    while (n-- != 0) {
-        *p = (*p & 0xFFF) | k;
-        p++;
-    }
-}
-
-int shiftlen(int x)
-{
-    int c;
-    int h;
-
-    c = x & 0xFFFF;
-    h = c & 0xFF00;
-    switch (h) {
-    case 0x8000:
-    case 0x8500:
-        return 1;
-    case 0x8600:
-        if ((c & 0xFF) < 0x9E) {
-            return 1;
+    old = top_kh;
+    top_kh = take_kouho(old, gun_num);
+    n = inc_gun(top_kh);
+    if (n == 0) {
+        if (wrap == 0) {
+            top_kh = old;
+            return 0;
         }
-    default:
-        return 2;
+        init_kouho(0, 0);
+    } else {
+        gun_num = n;
     }
+    gun_nkh = 0;
+    if (disp == 1) {
+        disp_kouho();
+    }
+    return 1;
 }

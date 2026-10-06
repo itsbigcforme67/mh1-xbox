@@ -78,21 +78,24 @@ int b;
         return 1;
     }
     s0 = (s8)a;
-    if (s1 >= s0) {
-        if ((sx1 = lb_get_quest_level(0)) >= s0) {
-            return 0;
-        }
-        return 1;
+    if (s0 > s1) {
+        goto rest;
     }
-    if (s0 == (sx2 = get_questLevelNum())) {
+    sx1 = lb_get_quest_level(0);
+    if (s0 > sx1) {
+        goto ret1;
+    }
+    return 0;
+rest:
+    sx2 = get_questLevelNum();
+    if (s0 == sx2) {
         if (key_quest_num != 0) {
             return 0;
         }
-        return 1;
-    }
-    if (Online_ck() == 1 && *(s8 *)(cw + 0x2C2F) != 0 && s0 == 7) {
+    } else if (Online_ck() == 1 && *(s8 *)(cw + 0x2C2F) != 0 && s0 == 7) {
         return 0;
     }
+ret1:
     return 1;
 }
 int lb_select_quest_level(void) {
@@ -209,8 +212,7 @@ int lb_guild_startMsg(void) {
             }
         }
         lb_pit[8] = 0;
-    default:
-        return 0;
+        break;
     case 1:
         if (Online_ck() == 0) {
             if (Event_flag_ck(1) == 0 && Quest_clear_bit_ck(0x8B) == 1) {
@@ -236,8 +238,8 @@ int lb_guild_startMsg(void) {
             lb_sys.x07 = 0;
             return 1;
         }
-        return 0;
     }
+    return 0;
 }
 int lb_guild_make_room(void) {
     int var_s0;
@@ -325,58 +327,63 @@ int lb_guild_make_room(void) {
 }
 int guild_input_message(int a) {
     u8 *p;
+    u8 *q;
     int v;
     Get_sw(0);
     Get_kb_input();
     p = pNet;
+    q = p + 2;
     switch (p[2]) {
     case 0:
-        p[2] = p[2] + 1;
+        *q = p[2] + 1;
         SoftKeyboard_pos_set(80.0f, 0x3A);
         SoftKeyboard_set(1, 0, 0x3D, a);
         Lbc_set_prim(0, Lb_guild_trans, lb_rule_seet_trans_ot2);
         *(s8 *)0x3F36AB = 0;
-    default:
-        return 0;
+        break;
     case 1:
         v = (s8)SoftKeyboard_move(a, *(s16 *)0x3F3710, *(s16 *)0x3F3714);
-        if (v != -1 && v != 1) {
-        } else {
+        switch (v) {
+        case 1:
+        case -1:
             pNet[2] = pNet[2] + 1;
         }
-        return 0;
+        break;
     case 2:
-        SoftKeyboard_exit(p + 2);
+        SoftKeyboard_exit();
         pNet[2] = 0;
         *(u8 *)0x3F36AB = 1;
         return 1;
     }
+    return 0;
 }
 int guild_input_pass(int a) {
     u8 *p;
+    u8 *q;
     s8 sx1;
     Get_sw(0);
     p = pNet;
+    q = p + 2;
     switch (p[2]) {
     case 0:
-        p[2] = p[2] + 1;
+        *q = p[2] + 1;
         SoftKeyboard_pos_set(80.0f, 0x3A);
         SoftKeyboard_set(3, 6, 8, a);
         Lbc_set_prim(0, Lb_guild_trans, lb_rule_seet_trans_ot2);
         *(s8 *)0x3F36AB = 0;
-    default:
-        return 0;
+        break;
     case 1:
         if ((sx1 = SoftKeyboard_move(a, *(s16 *)0x3F3710, *(s16 *)0x3F3714)) != 0) {
             pNet[2] = pNet[2] + 1;
         }
-        return 0;
+        break;
     case 2:
-        SoftKeyboard_exit(p + 2);
+        SoftKeyboard_exit();
         pNet[2] = 0;
         *(u8 *)0x3F36AB = 1;
         return 1;
     }
+    return 0;
 }
 void lb_rule_seet_trans(int a, int b, int c) {
     u8 *s1;

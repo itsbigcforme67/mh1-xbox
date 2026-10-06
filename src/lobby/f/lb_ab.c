@@ -137,8 +137,19 @@ b5:
             }
             lb_sys.chair_mask = 0;
             st = D_3E4C05[game_w.master * 0xA00];
-            if (st != 0x2B && st != 0x29 && st != 0x2A && st != 0x4E && st != 0x60 && st != 0x5E && st != 0x5D && st != 0x5C && st != 0x5A && st != 0x59 && st != 0x54 && st != 0x4C) {
-            } else {
+            switch (st) {
+            case 0x4C:
+            case 0x54:
+            case 0x59:
+            case 0x5A:
+            case 0x5C:
+            case 0x5D:
+            case 0x5E:
+            case 0x60:
+            case 0x4E:
+            case 0x2A:
+            case 0x29:
+            case 0x2B:
                 Lb_send_myChair();
             }
             return;
@@ -248,10 +259,9 @@ u8 *c;
     *(s8 *)(pl + 0x4D4) = 1;
     s = *(s16 *)(pl + 0x568);
     if (s != -1) {
-        pr = (u8 *)get_prim_ptr(s);
-        *(u8 **)(pl + 0x564) = pr;
-        *(s32 *)(pr + 0x18) = *(u16 *)(pl + 0xC);
-        *(void **)(pr + 0x14) = Lb_trans_pl;
+        *(u8 **)(pl + 0x564) = (u8 *)get_prim_ptr(s);
+        *(s32 *)(*(u8 **)(pl + 0x564) + 0x18) = *(u16 *)(pl + 0xC);
+        *(void **)(*(u8 **)(pl + 0x564) + 0x14) = Lb_trans_pl;
     }
     *(s8 *)(pl + 0x8F0) = 1;
     Lb_pl_to_normal(pl, 0, 0, 0);

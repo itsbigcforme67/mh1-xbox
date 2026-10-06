@@ -907,18 +907,18 @@ int ms_net_end_wait(void) {
     return 1;
 }
 
-void return_to_net_top_menu(void) {
-    net_common_w.step = 0;
-    MMBB_LOGIN = 0;
-    net_common_w.sub = 0;
-    net_common_w.x00 = 3;
-    net_common_w.x11 = 1;
-    net_common_w.x03 = 0;
-    net_common_w.x0E = 0;
-    net_common_w.x10 = 0;
-    net_common_w.x13 = 0;
-    net_common_w.x12 = 0;
-    net_common_w.x15 = 0;
+void return_to_net_top_menu(void)
+{
+  net_common_w.sub = (net_common_w.step = 0);
+  MMBB_LOGIN = 0;
+  net_common_w.x00 = 3;
+  net_common_w.x11 = 1;
+  net_common_w.x03 = 0;
+  net_common_w.x0E = 0;
+  net_common_w.x10 = 0;
+  net_common_w.x13 = 0;
+  net_common_w.x12 = 0;
+  net_common_w.x15 = 0;
 }
 
 void net_set_se_cur(void) {
@@ -941,15 +941,17 @@ int net_swdata(void) {
     return sw;
 }
 
-int net_swdata3(s8 p) {
-    int sw = 0;
-    int idx;
-
-    if (system_w[0] & (1 << p)) {
-        idx = game_w[0x20 + p];
-        sw = 0 | Psw[idx].x00;
-    }
-    return sw;
+int net_swdata3(s8 p)
+{
+  int sw = 0;
+  int idx;
+  if (system_w[0] & (1 << p))
+  {
+    idx = game_w[0x20 + p];
+    sw = 0;
+    sw = sw | Psw[idx].x00;
+  }
+  return sw;
 }
 
 int net_joy_ok_ck_each(s8 p) {
@@ -1204,12 +1206,17 @@ typedef struct SKMODE {
 } SKMODE;
 extern SKMODE skey_mode_tbl_910[];
 
-void Net_kb_input_init2(int x, int y, char *str, int w, int mode) {
-    SoftKeyboard_pos_set((f32)x, (s16)y);
-    SoftKeyboard_set(skey_mode_tbl_910[mode].a, (u8)skey_mode_tbl_910[mode].b, w & 0xFFFF, str);
-    memset(SoftKeyWork + 4, 0, 0x100);
-    strcpy((char *)SoftKeyWork + 4, str);
-    SoftKey_onoff(1);
+void Net_kb_input_init2(int x, int y, char *str, int w, int mode)
+{
+  char *new_var;
+  long long new_var2;
+  SoftKeyboard_pos_set((f32) x, (s16) y);
+  new_var2 = skey_mode_tbl_910[mode].a;
+  SoftKeyboard_set(new_var2, (u8) skey_mode_tbl_910[mode].b, w & 0xFFFF, str);
+  memset(SoftKeyWork + 4, 0, 0x100);
+  new_var = (char *) SoftKeyWork;
+  strcpy(new_var + 4, str);
+  SoftKey_onoff(1);
 }
 
 u8 *SoftKey_Getstr(void) {

@@ -32,8 +32,8 @@ u8 hit_point_cbd(f32 *p, f32 *a, f32 *b, f32 h, f32 w) {
     d[0] = b[0] - a[0];
     d[1] = b[1] - a[1];
     d[2] = b[2] - a[2];
-    n[1] = 0.0f;
     n[0] = -h * d[2];
+    n[1] = 0.0f;
     n[2] = d[0] * h;
     flvecNormalize(n);
     v[0] = p[0] - a[0];

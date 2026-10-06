@@ -750,3 +750,47 @@ Lessons:
 - Calls whose callee takes s16 args load with lh: prototype SoftKeyboard_move(s8 *, s16, s16) (Reibun_Edit_Core).
 - Local `u8 *sw = select_w;` keeps the base in a saved register (player_sel/player_wait). tools/flipcmp.py tries operand flips per function.
 - The unnamed 0x24A240+ and 0x1C0000-0x230000 runs linked here are now agent D's range; all were committed before the hand-over.
+
+## Seventh assignment: main coverage sweep (Sonnet worker C, 5 Oct 2026)
+Range: all of main except agent D (0x1C0000-0x230000, 0x24A240-0x2814E0) and agent E (IME, memory card). All five modules rebuild OK.
+Tools added: tools/mk1.py (write a run file from a *_nm.c by brace matching: `mk1.py NM.c OUT.c "header" func...`; keeps the
+non-function chunks, K&R definitions are NOT recognised: delete the stray copy by hand), include/va.h (original va_start expansion).
+The per-function scripts used (try replacements, brute-force declaration moves) were throw-away; the permuter (tools/perm.py, -j1,
+one at a time) found 8 matches in the end: pef_get_alpha, Pit_disp_chat_cnfg, Pl_item_num_ck3, menu_chcnfg_reibun, frame_move,
+menu_data_mix_sub, hit_point_cbd, Pl_scope_ck/silencer/barrel, Taru_ok_ck, afs_file_length. Its junk edits (`if (p && p) {}`,
+`new_var`, `do {} while (0)`) are kept with a comment because they give the original bytes; none changes the logic.
+Linked (matched C, all rebuild OK): sys/adxs01-05 (0x100380-0x101E38: ADX server, file load queue, BGM streams, effect work pool,
+effect draw helpers), em/emsrch01-03 + emmk01 (durability slots, joint accessors, enemy_mk, ride_ofs_calc, em_effect_pull),
+font/fsp01-02 + fprint01 + dsp03 (font_sp_ck, print helpers, Start_item_init), sys/view201, hit/hitid01, hit/hitpk01, hit/hit3
+(hit_point_cbd), model/mkm01, crmdl01-02, light01-03, net/cnmsg01+03 (Inet message queue, CngNetTimeGet, mcsls accessors),
+net/cpinet01-06 + 07-11 (CpInet* wrappers), plsel/plsel00, reward/rwkey01-02, set/setwork2 (init_set_work), frame f_frameb
+(frame_move), pl/pl_wall, pl_demo, pl_itemck, pl_ammo, pl_flagck, weapon/wtrans01, menu37-39, sys/ior01, tex/reltex, sys/adx_err.
+hit/hit2all.c: the whole 0x28CE00-0x290560 range is one file with three raw functions (hit_sphr_sphr2, hit_cap_cap2_m,
+hit_cap_cap3_m via config/c_rawfuncs.txt) so the static hit_point_sphr keeps its calling convention and hit_cap_sphr2_m (1060) and
+hit_line_sphr2 (408) link. progress.py counts raw functions as done (9048 bytes), they are NOT matched.
+Not linked / near-match now (logic complete): hit_cap_cap2_m 41/1253 and hit_cap_cap3_m 90/945 (only f20/f22 and i/j register swap,
+dsw moves of the declarations do not fix it), hit_hit_sub_em 106/802, hit_hit_sub_pl 2, hit_calc_shl 4, egg_com_ck 4, Pit_mv 4 and
+Pit_mv_lb 3 (need `int pit_key_repeat(u16,u16)` seen by the caller, split file), load_bin 8, eft_rgba_linear 179, em_search_set 58,
+get_start_material/hierarchy/clay/mdlw/heap (5 functions, the sum loop: original keeps j in a register, ours folds j=0),
+Sethierarchy (127), crmdl_nm.c pl/weapon/em/npc/set/edit_create_model + release_enemy_model, font_print_sp 167/245 (fsp_nm.c),
+CpInetTcpOpen/Close/Delete + ProblemEnable, CCnNetMsg_CnReadSeek 5, CpInetDnsLookUp 2, ioread_sub (dead stores kept by the original).
+Lessons (function that shows it):
+- Early exits as `if (A && B) {} else { return; } stmt;` or `if (r >= 0) {} else { return r; } return f();` give the original's
+  `bgez; nop; b end` stub layout (trans_pl_sub, CpInetTcpGetOption). `return;` in place of `break;` at the end of a case adds the
+  `b end` stub (load_task). `if (x == 0) {} else {}` with the flag compare as `== 0` gives the original block order (pl_flag_ck).
+- A one-case switch with a default (`switch (v) { case 5: ...; default: ... }`) is the original for `beq; nop; b else` (CpInetTcpInitialize);
+  `switch (r) { case -33: case -1: r = -1; }` for the error mapping in the CpInetDns* wrappers.
+- `if ((r = f()) < 0)` (assignment in the condition) tests v0 before copying to the saved register (pull_eft_work, CnInetMcsReceive);
+  `while (ok && size())` not `while (ok != 0 && size() != 0)` (CnInetMcsReceive).
+- `kind - 6` range tests: `(u32)(kind - 6) <= 2` writes sltiu into `at` (enemy_mk); `x <= 0x9F` vs `x < 0xA0` too (font_print2).
+- MWCC unrolls `for (i = 0; i < 64; i++) a[i].k = -1;` 8 times itself (load_work_init); `*--sp = p--` pointer stacks likewise.
+- Varargs: `ap = (char *)__builtin_next_arg(parm) - (__builtin_args_info(2) >= 8 ? 0 : (8 - __builtin_args_info(2)) * 8)` is the
+  original va_start (include/va.h); callers pass named args via real prototypes.
+- (s16)f() results of an int-typed callee: declare the function `int` and write `return (s16)Ave_X();` (no re-extension at callers,
+  CpInetTcpNbCallEnd); `s16` returns make every caller extend.
+- Far (non-gp) 1/4 byte globals must be declared with a size > 8 (`extern s32 Inet_interface_status[4];`) to get lui/addiu.
+- Unsigned/int/s16 of loop variables decides extensions: armor_model_free uses `int i` with an s16 field read, release_stage_model
+  `s16 i` with a separate `s16 t = i` for the calls.
+- `r = *t++; g = *t++; b = *t;` (not t[0..2]) gives the original's advanced pointer (setBGcolor).
+- Several statements `a = x; b = y` at the top of a function change which saved register a variable gets; a stray initialisation
+  `s16 cur = 0` at the declaration hoists the `li` into the prologue (font_print_sp, not fixed).

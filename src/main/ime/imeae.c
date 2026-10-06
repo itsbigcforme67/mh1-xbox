@@ -469,32 +469,27 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void khmem_raw(mode)
-int mode;
+void free_kouholists(KL *l)
 {
-    HCHAR *h;
-
-    h = &hchar[cur_pos];
-    free_khmemlist(h->kh);
-    h->kh = raw_kouho(cur_pos, cur_len, mode);
+    while (l != 0) {
+        free_mem(l->kh);
+        l = l->next;
+    }
 }
 
-void kh_mergesort(int pos, KL *list)
+KH *null_kouho(int len)
 {
-    KH *head;
-    KH *tail;
     KH *k;
-    HCHAR *h;
 
-    h = &hchar[pos];
-    head = h->kh;
-    tail = kh_endof(head);
-    kh_append_init(pos, head);
-    while ((k = (KH *)kh_merge_getone(list)) != 0) {
-        kh_append(pos, &head, &tail, k);
+    k = alloc_khmem();
+    if (k != 0) {
+        k->flag = 0x80;
+        k->str[0] = 0;
+        k->x06 = len;
+        k->x07 = 0;
+        k->pw = 0;
+        k->x0C = 0xFFFF;
+        k->next = 0;
     }
-    if ((k = null_kouho(cur_len)) != 0) {
-        kh_append(pos, &head, &tail, k);
-    }
-    h->kh = head;
+    return k;
 }

@@ -70,7 +70,7 @@ int hk_roma_ck(int);
 int hk_yn_hardkeyboard_check(void *);
 void sk_backspace(int);
 void sk_pltchange(int);
-void sk_henkan_sub(void *);
+void sk_henkan_sub();
 void sk_zen_han_chg(void);
 void sk_disp_palette_set(void);
 void sk_palette_cursor_set(void);
@@ -78,7 +78,7 @@ void sk_set_etc_data();
 void sk_set_yn_kigou_f(void);
 void kbd_free_set(void);
 int palette_ng_sub(int, u8 *, u8 *);
-void cmd_henkan(void *);
+void cmd_henkan();
 void cmd_dakuten(void);
 void cmd_handakuten(void);
 void cmd_muhenkan(void);
@@ -402,7 +402,7 @@ void hk_key_space(int a) {
                 }
             }
         } else {
-            sk_henkan_sub(lpSKey);
+            sk_henkan_sub();
         }
     } else {
         se_req(7, 0x16, 0);
@@ -433,7 +433,7 @@ bs:
 
 void hk_key_dakuten(void) {
     if (SKB(0x2F) == 0) {
-        if (hk_kanainp_ck() != 0) {
+        if (hk_kanainp_ck()) {
             cmd_dakuten();
             return;
         }
@@ -443,7 +443,7 @@ void hk_key_dakuten(void) {
 
 void hk_key_handakuten(void) {
     if (SKB(0x2F) == 0) {
-        if (hk_kanainp_ck() != 0) {
+        if (hk_kanainp_ck()) {
             cmd_handakuten();
             return;
         }
@@ -457,8 +457,8 @@ void hk_key_eisuu(void) {
     u32 mask;
 
     switch (m) {
-    case 7:
     case 2:
+    case 7:
         if (!(SKB(0x33) & 1) && hk_shift_key_ck() != 0) {
             e = SKB(0x1E);
             if (!(SKS32(0x20) & (1 << (e + 8)))) {
@@ -466,9 +466,9 @@ void hk_key_eisuu(void) {
                 goto set;
             }
         }
-        return;
-    case 15:
+        break;
     case 10:
+    case 15:
         if (!(SKB(0x33) & 1) && hk_shift_key_ck() != 0) {
             e = SKB(0x1E);
             if (!(SKS32(0x20) & (1 << (e - 8)))) {
@@ -477,12 +477,12 @@ void hk_key_eisuu(void) {
             }
         }
         break;
-    case 14:
-    case 9:
-    case 8:
-    case 6:
-    case 1:
     case 0:
+    case 1:
+    case 6:
+    case 8:
+    case 9:
+    case 14:
         if (hk_shift_key_ck() == 0) {
             mask = SKS32(0x20);
             if (!(mask & 4)) {
@@ -503,12 +503,14 @@ void hk_key_eisuu(void) {
             }
             return;
         }
-set:
-        sk_disp_palette_set();
-        sk_palette_cursor_set();
-        sk_set_etc_data();
-        se_req(7, 0x16, 0);
+        goto set;
     }
+    return;
+set:
+    sk_disp_palette_set();
+    sk_palette_cursor_set();
+    sk_set_etc_data();
+    se_req(7, 0x16, 0);
 }
 
 void hk_key_f1(void) {
@@ -579,16 +581,16 @@ void hk_key_f6(void) {
 b5:
         if (SKB(0x2F) == 0) {
             if (SKS8(0x36) != 0) {
-                sk_henkan_sub(lpSKey);
+                sk_henkan_sub();
                 return;
             }
-            cmd_henkan(lpSKey);
+            cmd_henkan();
             v = apiask_33_LongerKouho(lpSKey + 0x458, lpSKey + 0x558);
             while (v != 0) {
                 SKS32(0x150) = v;
                 v = apiask_33_LongerKouho(lpSKey + 0x458, lpSKey + 0x558);
             }
-            if (SKS32(0x150) >= 2) {
+            if (SKS32(0x150) > 1) {
                 apiask_38_FirstHenkanToHira(lpSKey + 0x458, lpSKey + 0x558);
                 kata_kouho_set();
                 SKS32(0x150) = get_kouho_suu();
@@ -602,7 +604,7 @@ b5:
             goto end;
         }
         if (SKS8(0x36) == 0) {
-            if (SKS32(0x150) >= 2) {
+            if (SKS32(0x150) > 1) {
                 apiask_38_FirstHenkanToHira(lpSKey + 0x458, lpSKey + 0x558);
                 kata_kouho_set();
                 SKS32(0x150) = get_kouho_suu();
@@ -634,10 +636,10 @@ void hk_key_f7(void) {
 b5:
         if (SKB(0x2F) == 0) {
             if (SKS8(0x36) != 0) {
-                sk_henkan_sub(lpSKey);
+                sk_henkan_sub();
                 return;
             }
-            cmd_henkan(lpSKey);
+            cmd_henkan();
             v = apiask_33_LongerKouho(lpSKey + 0x458, lpSKey + 0x558);
             while (v != 0) {
                 SKS32(0x150) = v;
@@ -663,33 +665,44 @@ void hk_key_home(void) {
         if (SKB(0x158) != 0) {
             p = (s16 *)(lpSKey + 0x2C);
             if (SKU16(0x2C) != 0) {
-                goto z;
+                *p = 0;
             }
         } else {
             p = (s16 *)(lpSKey + 0x2A);
             if (SKU16(0x2A) != 0) {
-z:
                 *p = 0;
             }
         }
     }
+    SKB(0x28) = 0;
     se_req(7, 0x16, 0);
 }
 
-void hk_key_delete(void) {
-    int snd = 0x15;
-
-    if (SKB(0x2F) == 0) {
-        snd = 0x16;
-        if (hk_ctrl_key_ck() == 0) {
-            cmd_delete();
-        } else if (SKB(0x158) != 0) {
-            delete_all((char *)lpSKey + 0x158, SKU16(0x2C));
-        } else {
-            delete_all((char *)lpSKey + 0x44, SKU16(0x2A));
-        }
+void hk_key_delete(void)
+{
+  int snd = 0x15;
+  if ((*((u8 *) (lpSKey + 0x2F))) == 0)
+  {
+    snd = 0x16;
+    if (hk_ctrl_key_ck() == 0)
+    {
+      cmd_delete();
     }
-    se_req(7, snd, 0);
+    else
+    {
+      char *s = ((char *) lpSKey) + 0x158;
+      if ((*((u8 *) (lpSKey + 0x158))) != 0)
+      {
+        delete_all(s, *((u16 *) (lpSKey + 0x2C)));
+      }
+      else
+      {
+        u8 *k = lpSKey;
+        delete_all(((char *) k) + 0x44, *((u16 *) (k + 0x2A)));
+      }
+    }
+  }
+  se_req(7, snd, 0);
 }
 
 void delete_all(char *s, int n) {
@@ -824,48 +837,65 @@ void hk_key_r_cursor(void) {
     }
 }
 
-void hk_key_l_cursor(void) {
-    int v;
-
-    if (hk_cursor_check() == 1) {
-        hk_cursor_mv(0);
-        return;
+void hk_key_l_cursor(void)
+{
+  int v;
+  if (hk_cursor_check() == 1)
+  {
+    hk_cursor_mv(0);
+    return;
+  }
+  if ((*((u8 *) (lpSKey + 0x2F))) == 0)
+  {
+    if ((*((u8 *) (lpSKey + 0x158))) != 0)
+    {
+      if ((*((u16 *) (lpSKey + 0x2C))) != 0)
+      {
+        if (hk_ctrl_key_ck() == 0)
+        {
+          *((u16 *) (lpSKey + 0x2C)) -= 2;
+        }
+        else
+        {
+          *((u16 *) (lpSKey + 0x2C)) = 0;
+        }
+        *((s8 *) (lpSKey + 0x28)) = 0;
+        se_req(7, 0x17, 0);
+      }
     }
-    if (SKB(0x2F) == 0) {
-        if (SKB(0x158) != 0) {
-            if (SKU16(0x2C) != 0) {
-                if (hk_ctrl_key_ck() == 0) {
-                    SKU16(0x2C) -= 2;
-                } else {
-                    SKU16(0x2C) = 0;
-                }
-                SKS8(0x28) = 0;
-                se_req(7, 0x17, 0);
-            }
-        } else if (SKU16(0x2A) != 0) {
-            if (hk_ctrl_key_ck() == 0) {
-                SKU16(0x2A) -= sk_letlenB(lpSKey + 0x44, SKU16(0x2A));
-            } else {
-                SKU16(0x2A) = 0;
-            }
-            SKS8(0x28) = 0;
-            se_req(7, 0x17, 0);
-        }
-    } else {
-        if (SKS8(0x30) == 0 && hk_shift_key_ck() == 0) {
-            cmd_prev_bun();
-            se_req(7, 0x17, 0);
-            return;
-        }
-        v = apiask_34_ShorterKouho(lpSKey + 0x458, lpSKey + 0x558);
-        if (v > 0) {
-            SKS32(0x150) = v;
-            kata_kouho_set();
-            SKS32(0x150) = get_kouho_suu();
-            Set_KouhoTable();
-            se_req(7, 0x17, 0);
-        }
+    else
+      if ((*((u16 *) (lpSKey + 0x2A))) != 0)
+    {
+      if (hk_ctrl_key_ck() == 0)
+      {
+        *((u16 *) (lpSKey + 0x2A)) = (*((u16 *) (lpSKey + 0x2A))) - sk_letlenB(lpSKey + 0x44, *((u16 *) (lpSKey + 0x2A)));
+      }
+      else
+      {
+        *((u16 *) (lpSKey + 0x2A)) = 0;
+      }
+      *((s8 *) (lpSKey + 0x28)) = 0;
+      se_req(7, 0x17, 0);
     }
+  }
+  else
+  {
+    if (((*((s8 *) (lpSKey + 0x30))) == 0) && (hk_shift_key_ck() == 0))
+    {
+      cmd_prev_bun();
+      se_req(7, 0x17, 0);
+      return;
+    }
+    v = apiask_34_ShorterKouho(lpSKey + 0x458, lpSKey + 0x558);
+    if (v > 0)
+    {
+      *((s32 *) (lpSKey + 0x150)) = v;
+      kata_kouho_set();
+      *((s32 *) (lpSKey + 0x150)) = get_kouho_suu();
+      Set_KouhoTable();
+      se_req(7, 0x17, 0);
+    }
+  }
 }
 
 void hk_key_u_cursor(void) {
@@ -929,11 +959,11 @@ void hk_key_henkan(void) {
     }
     if (SKB(0x2F) == 0) {
         if (SKS8(0x36) != 0) {
-            sk_henkan_sub(lpSKey);
+            sk_henkan_sub();
             return;
         }
         if (SKB(0x158) != 0) {
-            cmd_henkan(lpSKey);
+            cmd_henkan();
             SKS32(0x150) = get_kouho_suu();
             Set_KouhoTable();
             se_req(7, 0x16, 0);
@@ -1100,7 +1130,8 @@ int hk_roma_ck(int mode) {
     if (b[6] == 0x59 || b[6] == 0x79) {
         return 0;
     }
-    strncpy((char *)lpSKey + (SKU16(0x2C) - 4) + 0x158, nn_tbl[mode], 2);
+    p = (char *)lpSKey + (SKU16(0x2C) - 4);
+    strncpy(p + 0x158, nn_tbl[mode], 2);
     return 1;
 }
 
@@ -1145,7 +1176,7 @@ void cmd_kakutei_all(void) {
         }
         n = kbd_insert(lpSKey + 0x44, lpSKey + 0x258, SKU16(0x2A), SKU16(0x3A));
         memset(lpSKey + 0x158, 0, 0x100);
-        SKU16(0x2A) += n;
+        SKU16(0x2A) = SKU16(0x2A) + n;
         SKS16(0x2C) = 0;
         SKS8(0x28) = 0;
     }
@@ -1185,9 +1216,11 @@ void sk_set_yn_kigou_f(void) {
 
     if (sk_yn_check() == 1) {
         e = SKB(0x1E);
-        if (e != 3 && e != 0xB) {
-        } else {
+        switch (e) {
+        case 0xB:
+        case 3:
             v = 5;
+            break;
         }
     }
     SKS8(0x36) = v;
@@ -1196,7 +1229,7 @@ void sk_set_yn_kigou_f(void) {
 void sk_yn_kigou_func(u8 *key) {
     if (SKB(0x2F) == 0) {
         sk_set_etc_data();
-        sk_henkan_sub(key);
+        sk_henkan_sub();
         return;
     }
     kbd_yn_kigou_kakutei();

@@ -13,11 +13,7 @@ u8 *Get_equip_data_ptr();
 int u_item_chk(int a) {
     u16 id;
     id = D_3C7184[a & 0xFF].id;
-    if (id != 0) {
-        return D_3396D5[id * 0x10] != 0xFF;
-    } else {
-        return 0;
-    }
+    return id != 0 ? D_3396D5[id * 0x10] != 0xFF : 0;
 }
 int u_equip_chk(int a) {
     int v;

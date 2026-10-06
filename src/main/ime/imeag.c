@@ -469,17 +469,32 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int jiritu_makedisp(KH *k, u16 *buf)
+void khmem_raw(mode)
+int mode;
 {
-    int n;
+    HCHAR *h;
 
-    n = 0;
-    for (;;) {
-        n += sstrtom(buf + n, k->str, 6);
-        if (!(k->flag & 1)) {
-            break;
-        }
-        k = k->next;
+    h = &hchar[cur_pos];
+    free_khmemlist(h->kh);
+    h->kh = raw_kouho(cur_pos, cur_len, mode);
+}
+
+void kh_mergesort(int pos, KL *list)
+{
+    KH *head;
+    KH *tail;
+    KH *k;
+    HCHAR *h;
+
+    h = &hchar[pos];
+    head = h->kh;
+    tail = kh_endof(head);
+    kh_append_init(pos, head);
+    while ((k = (KH *)kh_merge_getone(list)) != 0) {
+        kh_append(pos, &head, &tail, k);
     }
-    return n;
+    if ((k = null_kouho(cur_len)) != 0) {
+        kh_append(pos, &head, &tail, k);
+    }
+    h->kh = head;
 }

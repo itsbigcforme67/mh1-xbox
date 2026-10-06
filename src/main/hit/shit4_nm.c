@@ -144,18 +144,21 @@ void add_vec_sub2(f32 *v, f32 *b, f32 r) {
 /* 0x0011C920: slide vector for a polygon pl under entity e (pos at +0xAC):
  * plane distance of the point lowered by ang/10000*scale, written to out. */
 int check_slide(HPOLY *pl, u8 *e, s32 *ang, f32 *out, f32 scale) {
-    f32 nn, t;
+    f32 nn;
+    int new_var; /* permuter: matching register choice */
+    f32 t;
     f32 py;
 
+    new_var = 1;
     if (*ang < 0x1500) return 0;
     if (*ang == 0x4000) *ang = 0;
-    py = *(f32 *)(e + 0xB0) - (f32)*ang / 10000.0f * scale;
-    nn = pl->n[0] * pl->n[0] + pl->n[1] * pl->n[1] + pl->n[2] * pl->n[2];
-    t = pl->d + (pl->n[0] * *(f32 *)(e + 0xAC) + pl->n[1] * py + pl->n[2] * *(f32 *)(e + 0xB4));
+    py = *(f32 *)(e + 0xB0) - (f32)((f32)*ang / 10000.0f) * scale;
+    nn = pl->n[0] * pl->n[0] + pl->n[new_var] * pl->n[new_var] + pl->n[2] * pl->n[2];
+    t = pl->d + (pl->n[0] * *(f32 *)(e + 0xAC) + pl->n[new_var] * py + pl->n[2] * *(f32 *)(e + 0xB4));
     out[0] = -(pl->n[0] * t / nn);
-    out[1] = -(pl->n[1] * t / nn);
+    out[new_var] = -(pl->n[new_var] * t / nn);
     out[2] = -(pl->n[2] * t / nn);
-    return 1;
+    return new_var;
 }
 
 /* 0x0011C9F0: angle (0x10000 = 360 degrees) between normal n and up. */

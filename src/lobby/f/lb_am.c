@@ -106,10 +106,9 @@ BSNODE *bs_route_queue_free_reverse(BSNODE *head, BSNODE *keep) {
     }
     return r;
 }
+typedef struct PAIR2 { u8 a, b; } PAIR2;
 void bs_route_commit(BSNODE *head, BSNODE *req, void *c) {
     s8 k;
-    u8 a;
-    u8 b;
     k = req->x10C;
     switch (k) {
     case 4:
@@ -119,58 +118,54 @@ void bs_route_commit(BSNODE *head, BSNODE *req, void *c) {
         BcRoute_cur = bs_route_queue_back(head, BcRoute_cur);
         return;
     case 6:
-        a = req->x108;
-        b = req->x109;
-        BcRoute_cur->x108 = a;
-        BcRoute_cur->x109 = b;
+        *(PAIR2 *)&BcRoute_cur->x108 = *(PAIR2 *)&req->x108;
         return;
     default:
-        BcRoute_cur = bs_route_queue_free_after(head);
+        BcRoute_cur = bs_route_queue_free_after(head, BcRoute_cur);
         BcRoute_cur = bs_route_queue_add(head, c);
-        a = req->x108;
-        b = req->x109;
-        BcRoute_cur->x108 = a;
-        BcRoute_cur->x109 = b;
+        *(PAIR2 *)&BcRoute_cur->x108 = *(PAIR2 *)&req->x108;
         return;
     }
 }
 void bs_page_status_flag_set(u8 *p, int bit, int on) {
+    u8 m;
     if (on != 0) {
         p[1] = p[1] | bit;
     } else {
-        p[1] = p[1] & (u8)(~(bit & 0xFF));
+        m = bit;
+        p[1] &= ~m;
     }
 }
 BSNODE *bs_cache_queue_check(BSNODE *head, char *url) {
-    BSNODE *s0;
-    BSNODE *s3;
-    BSNODE *s1;
-    BSNODE *s2;
-    BSNODE *s4;
-    s4 = head;
-    s2 = 0;
-    s1 = 0;
+    BSNODE *p;
+    BSNODE *prev;
+    BSNODE *found;
+    BSNODE *fprev;
+    BSNODE *n;
+    p = head;
+    found = 0;
+    fprev = 0;
     for (;;) {
-        s0 = s4->next;
-        if (s0 != 0) {
-            s3 = s4;
-            s4 = s0;
-            if (s0->used != 0 && BsUrlCompare_SS(s0->url, url) == 0) {
-                s2 = s0;
-                s1 = s3;
+        n = p->next;
+        if (n != 0) {
+            prev = p;
+            p = n;
+            if (n->used != 0 && BsUrlCompare_SS(n->url, url) == 0) {
+                found = n;
+                fprev = prev;
             } else {
                 continue;
             }
         }
         break;
     }
-    if (s2 != 0) {
-        if (s2 != head->next) {
-            s1->next = s2->next;
-            s2->next = head->next;
-            head->next = s2;
+    if (found != 0) {
+        if (found != head->next) {
+            fprev->next = found->next;
+            found->next = head->next;
+            head->next = found;
         }
-        return s2;
+        return found;
     }
     return 0;
 }
@@ -204,8 +199,8 @@ void bs_cache_queue_free_node(BSNODE *head, BSNODE *node) {
 }
 BSNODE *bs_cache_queue_get(BSNODE *head) {
     BSNODE *s0;
-    BSNODE *prev;
     BSNODE *p;
+    BSNODE *prev;
     p = head;
     for (;;) {
         s0 = p->next;
@@ -220,7 +215,7 @@ BSNODE *bs_cache_queue_get(BSNODE *head) {
                 s0->next = head->next;
                 head->next = s0;
             }
-            BsUrlCopy_SS(s0->url, p);
+            BsUrlCopy_SS(s0->url);
             s0->used = 1;
             return s0;
         }

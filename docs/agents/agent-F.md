@@ -242,3 +242,53 @@ Registered since the first note: lb_ao (cell allocator), lb_ap (BsUrlBaseClear, 
 inflateInit_, _png_malloc, font_data_clear, ItemboxWindow/Cursor, http_test_12), lb_as (mode dispatchers: BsPosterMode ... BsQuitMain), lb_at (BsBody07-15 wait-cancel
 states), lb_au (BsQuit02_Push2, BsPoster00/06, BsPullPageWork/BsPushPageWork, BsCsMove06_CapWarn, To_ReqCancelWait, SetNextURL), lb_av (work pool, BsTextureFreeAll/Load),
 lb_aw (tagoutprintf*, pos_cr), lb_ax (line buffers, tagprintf_cr), lb_ay (yes_no_select), lb_s15-26 (more tag handlers, parsetag_init, http_test_10 ...).
+
+
+## Lobby session 4 (9 Oct 2026): near-match sweep, item box, plaza chat, eft25
+Overlay 0x5C4E60-end. `tools/rebuild.sh` prints OK for all five modules after each batch. Everything below is in src/lobby/f/ and registered
+as `lb_gNN` runs (lbf_runs.py with prefix lb_g<file>).
+Third-party library code (not worth writing, skip): zlib + libpng glue 0x5E9ED0-0x5EE618 (inflate_blocks_reset .. _png_read_row; the Capcom
+wrappers around it, plPNGSetContextFromImage and later, are game code). The crypto/SSL code is in agent B's range below 0x5C4E60.
+New helper: tools/lbdbf.py FILE FUNC 'decl1|decl2|..' (tries every order of the given contiguous local
+declaration lines, 3 compiles in parallel, keeps the best). It fixed s0/s1/s2 register swaps in bs_cache_queue_check, BsWorkInitAll, Plaza_log_id_chk,
+plaza_chat_log_disp_line. More than 5 declarations is too slow (n!).
+Idioms learned (all verified by matching):
+- Leftover argument registers are real in K&R calls. When the original keeps a callee's argument registers untouched (`jal f; nop` with no `daddu a0,...`),
+  write the call with fewer arguments (`Lb_move_common();`, `Lb_send_commer();`, `Fade_busy_ck();`, `BsRouteCurrent()`), and a parameter that is then no
+  longer used after a call stops being saved in s1. Conversely `Lb_get_lb_rank(*(u8 *)0x3C733B)` and `font_print_uf(buf, 0xA, w, -0x7E)` pass real
+  extra arguments (constants kept in a1/a3 by chance of the allocator).
+- `if (a != 0) X else Y` with `beq/bne; nop; b` is a one-case `switch`: BsPoster05_RcvData (`switch (r[4]) { case 0: ...; break; default: x01 = 2; }`).
+  m2c turns if-chains into switches and vice versa: Local_main is `if (x == 32) {...} if (x == 37) {...} return 0;` (code layout follows the if order).
+- A shared final `return 1` is a label: `goto ret1;` from the middle (check_questLevelSelect); a case that ends `return 0;` and a trailing `return 0;` after the
+  switch are two different layouts (guild_input_pass/message: `break` in the cases and one `return 0` after the switch, no `default:`).
+- The last statement of the function decides whether an extra `b end; nop` is emitted: drop the final `return;`/`break;` of the last case
+  (vs_square_exit, eft25_move), or add one (http_test_14: both blocks end with `return;`).
+- Two-element byte copies (`r->x108 = a; r->x109 = b`) are a 2-byte struct copy `*(PAIR2 *)&r->x108 = *(PAIR2 *)&n->x108;` (loads both, then stores both).
+- `*d++ = a; *d++ = b; *d = 0;` keeps `addiu d,2` before the last store, `d[1] = ..; d += 2;` gets merged (plaza_name_sprint, BsUrlEncode: three `*dst++ =`).
+- u8 local `v` incremented in place: `u8 v = a1 & 0xF; v += 1; d[0x51] = (a1 & 0xF0) | v;` (tagAct_043/044). `u16 len` as a function parameter keeps the raw
+  register and masks at the use site, with `daddiu` constants (stockTextField). K&R `long a` + `*(s8 *)&a` gives `sd a0,24(sp); lb a0,24(sp)`
+  (CallBack_Result_SendChatMessageTU). `(u16)x & 0x40` (cast) is kept as andi+andi, `x & 0xFFFF & 0x40` is folded to one andi.
+- `if (cond) return v; v = 3; return v;` (Lb_check_hotel) vs `if (a >= b) {} else v = 3`: the first gives the original `slt v1; bne`.
+- Array-of-struct index (`cw[pl->id + 0x2BFE]`, `(s8)cw[id + 0x2BFE]`) fixed `addu v1,v0,a0` order in lb_check_mini_data / Lb_player_load. A cast pointer
+  `(u8 *)(int)cw + (a & 0xFF) * 0x2FC` fixed the registers of Lb_room_member (only the addu order is left, see below).
+- Counted loop `while (n-- != 0)` (BsWorkInitAll: `n = 0x200; if (n-- != 0) do { ... } while (n-- != 0);`).
+- `(f32)` of a u16/u32 value produces the unsigned-int-to-float sequence, `(u32)(255.0f * a)` the float-to-unsigned sequence (eft25_t).
+- Struct pointer args: `PLW *pl; (f32 *)(pl + 0xAC)` is pointer arithmetic by sizeof(PLW): cast to `(u8 *)` first (lb_check_target had this bug).
+Header edit: include/lobby_f.h LBSYS.x78 is now u8 (lbu in vs_square_exit); nothing else read it as signed.
+Written, not linked (compiles, believed equivalent; src/lobby/f/lb_ib.c, lb_pc.c, lb_e25.c are whole-file working copies):
+- Item box 0x609770-0x60CE00 and the rest of the screen: Lb_ItemBox_open/mv, itembox_cursor_mv, itembox_stock/pickup/equipchange/sortup/sellout, ItemboxWindowX,
+  ItemboxWindowCursorX, Disp_lb_item_box, kosuu/selling/yes_no/disp_cmd helpers. Matched exactly: ib_select_sub, disp_itembox_cmd, item_explanation,
+  kosuu_disp_sub, selling_price_disp_sub, yes_no_disp_sub. The others differ by scheduling/register choices only (itembox_stock: the four `addu v0,s0,v0`
+  vs `v0,v0,s0`; ItemboxWindowCursorX and ItemboxWindowX: float add order/registers). The original has `andi rX,zero,0xFFFF` constants
+  (`ib[0xB] = (u16)0` in Lb_ItemBox_open, `(s16)(0 & 0xFF)` in Lb_ItemBox_mv): no source form found that stops MWCC folding them.
+- Plaza chat (0x60D710-0x60E330): all 13 functions written. Matched: Plaza_chat_init, plaza_chat_log_disp_line, plaza_name_sprint, Plaza_log_id_chk,
+  Plaza_ReibunEdit_i/mv. Near: Plaza_chat_move (2 insns swapped), Plaza_chatlog_mv (8), Plaza_disp_ReibunEdit (6), Plaza_disp_chatlog, plaza_disp_chat_log_sub.
+- eft25 (0x60E330-0x610300): Eft25_set_pos, eft25_move/e matched; eft25_d, eft25_i, eft25_m, eft25_t written (struct E25/E25P in lb_e25.c,
+  particle layout from the code: prim, idx, col[3], pos[3], alpha[2], ang, angspd, scale, prim ptr, time, rnd).
+Near-matches left (real instruction differences, files in src/lobby/f): delay-slot class where the original fills/does not fill a branch slot with
+the next compare constant (bs_url_slash, BsBody00_ReqSrc, Lb_get_pl_stat2, u_item_chk, lb_send_data, lb_check_chair: 1-2 insns); static-callee IPA
+(BsRouteReload, BsRequestHtmlPost, Lb_act_set, pick_kosuu_sel_chk: callee must be a static earlier in the same registered run); tagAct_500..504
+(register order of three temporaries, tried permuter 12000 iterations and 5 source forms); Lb_PlStatusSet (a3/a0 base order); vs_square_event (one branch
+target), vs_square_init (a0 reuse), stockButtonImage (`bgtz; nop; nop; b end` layout); BsQuit00_Init (store order); loops of the form
+`bne; nop; b exit; nop; nop; b top` (bs_route_queue_free_reverse, bs_url_end, bs_url_last_slash); rodata struct copy of 12 bytes (pl_sleeping, Lb_put_gold).
+The big ones (Lb_guild, lb_basic_master, Lb_stage_load, lb_rule_seet_set, quest table functions) were not touched this session.

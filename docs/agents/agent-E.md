@@ -371,3 +371,126 @@ with K&R definitions (it turns them into declarations), so run it on a small sta
   original loads *src straight into a0 for is_kanji), not_bhead 7/50 (layout only), setu_point (original: u8 `a`, `p->id == (u32)-1`
   is addiu+dsrl32 not ori/dsll/ori), josi_match, ch_check, to_roman untouched beyond a look (all control-flow/allocation differences).
 - tools/relink_runs.py takes 3-4 minutes on ime_nm.c; run it in the background.
+
+### Session notes (IME leftovers, yn overlay 11.5% -> about 55%)
+Workflow that worked (yn): scratch copy of an nm file with only the target function (tools/check.py runs in under a second on it), try several
+source forms in one go, `tools/align.py FILE FUNC` for the real differences, then link as a small run file `src/yn/ncNN.c/uiNN.c`
+(`yn START END name` in config/c_files.txt, END = START + size from check.py; one `yn:rodata START END name` line per jump table, the table symbol
+sizes are in config/symbols/yn.txt). `tools/rebuild.sh yn` takes about 30 s and must print OK. New near-match drafts for yn live in
+src/yn/ui2_nm.c (UI text/draw functions, own header) next to ui_nm.c and netcnf_nm.c; the linked run files are generated from them.
+IME (src/main/ime): kstrncpy (`int c; while ((c = *src) && n > 0) ... is_kanji(c)`), not_bhead (it is a `switch (c & 0xFF)` with 13 case labels
+returning 1; the ladder of beq in the asm was a switch, not an if chain). Still near-match: set_num (42/139: the k selection layout; original has
+`k = 1` hoisted into the delay slot of the first branch and keeps kind-1 in the delay slot of the second), henkan, ch_check (u32 n, u32 e, `*(s8 *)p`
+instead of a char variable, register assignment differs: orig pos=s5 end=s0 n=s3 p=s2 h=s4 kind=s6 k=s1), setu_point (u8 a/c/t, `p->id == (u32)-1`),
+josi_match (c in v1/k in t0 in the original; a1/d reloaded with andi at each use), to_roman. A 15 minute permuter run on josi_match only found
+cosmetic rewrites (best 435 of base 1115, not a match).
+yn lessons (each shown by the named function):
+- A `switch` whose ladder leaves a stray `addiu reg,zero,N` (a dead constant load) has an extra `case N:` merged with `default:` in the source:
+  yn_netcnf_dev_to_work, yn_netcnf_work_to_dev (`case 0: default:`), yn_setup_allwork (`case 1: default:`).
+- Strength reduction: write `arg0 + i * 0x1340 + K` indexing and let MWCC build the pointer induction variables (net_allload, search_usr_name);
+  hand-written running pointers give different registers.
+- Big offsets (> 0x7FFF) from a work pointer: use a struct with the field at that offset (`NCW`, `IFCW`, `WRKW` in netcnf_nm.c); M2C_FIELD with
+  the same offset makes lui/ori/addu instead of lui/addu/lw.
+- Early returns that share the epilogue: `break` out of the switch and `return 0;` after it (file_search, set_main); `||` for the two button tests
+  (`if ((pad & 0x20) || (pad & 0x40))`) gives the shared block that m2c prints as a goto.
+- `-(a != b)` is `if (a != b) return -1; return 0;` (pastproxy_check). A copy of a 520 byte block is a struct assignment of `struct { s32 w[130]; }`.
+- A 16-bit compare of an int local needs the ints, not s64: write m2c's `(s64)(x << 0x30) >> 0x30` as `(s16)x`, keep the loop counter an `int` and
+  cast with `(s8)(i + 1)` where m2c shows the 0x38 shifts (hard_more_font_sub, help_font).
+- Table switch vs ladder: yn_button_font only became a jump table once the table pointer was a local (`char **tbl = yn_button_mes_tbl`).
+- Locals that are not used must still be sized to match the frame: ifc/dev/name in pastdata_check (`struct { IFCW x; u8 pad[0x30]; }`, `name[0x200]`).
+- yn_center_x returns s16 in its own file (uc00.c) but its callers do not sign-extend, so every other file declares it `int`.
+- The yn SCE library functions (sceNetcnfif*, sce_*) were built by gcc (sd/ld saves, absolute addressing): they cannot match with MWCC.
+Linked in yn: netcnf (init1/exit, pastproxy, ip_check, set_current, get_num, get_list, net_allload, magicno_check_sub, ip_to_num, search_usr_name,
+setup_devwork, work_to_dev, dev_to_work, work_to_ifc, pastdata_check), ui (title_font, backup_allwork, proxy_wk_load/save, center_x, strconv, hard_more/
+prname/adname font subs, dialog_draw, shot_cancel, button_draw/font, message_font_sub, hard_font_sub, memcard_font_sub, dialog_font_sub/without_yesno/
+memcard/ip_sub/font/setting, help_font, id_pw_font_sub, ipadrs_font_sub, keyboard_init, setup_allwork, file_search, set_main).
+Near-match / open in yn (check.py differing instructions): message_font 23/170 (arg0 pointer lands in a0 instead of a1), port_font_sub 51/151
+(registers), dialog_font_once 9/29 (arg0*8 register), connect_font_sub 4/141 (operand order of one addu), sprite_draw_sub (argument evaluation order;
+the draft in ui2_nm.c is complete), strconv2 45/78 (the third byte copy is not merged in the original), utf8_to_sjis/sjis_to_utf8 (~45 diffs, registers),
+module_load/unload (empty loops with 8 nops in the original), mc_device_check_all, auto_connect (no draft), sprite_draw/sprite_draw_each (no draft),
+select_provider (5.5 KB; the m2c draft keeps `ynw` in callee-saved temps, the original reloads it everywhere: replace every `temp = ynw` alias by `ynw`
+and rewrite case by case).
+
+### Session notes (yn / select, 5 Oct 2026, second pass)
+Linked this pass (each checked with check.py and `tools/rebuild.sh` printing OK for all five modules):
+- select: edit_pl_init_new (edit08.c, 0x534820-0x5349CC) and edit_pl_init (edit09.c, 0x534A80-0x534C20). Remaining select asm: disp_edit_spr, disp_color, Edit_task, Cont_task, cmn_mongon_check_sub, cmn_mongon_set.
+- yn: yn_sprite_draw (ui30.c, 0x537770-0x538114, jump table lit_3823 at 0x540BE0), yn_auto_connect (ui31.c, 0x535DC0-0x5360D8,
+  jump table lit_664 at 0x540B70).
+Shared header edit: include/select.h `edit_top[]` -> `edit_top[2]` (the symbol is 8 bytes; a sized array makes MWCC use gp-relative
+sdata access, which the original has).
+Lessons (function that shows it):
+- Position table read through three symbols: edit_pl_init(_new) reads `stage_start_pos` x/y/z as `stage_start_pos[stage*3]`,
+  `D_2F2624[stage*3]`, `D_2F2628[stage*3]` (the two extra names are the auto-generated undefined symbols; declare them `extern f32 X[];`).
+- `EDIT_W *e = &edit_w;` as a local makes MWCC hoist the base the way the original does (edit_pl_init_new), a bare `&edit_w + 4` does not.
+- A call that passes fewer arguments than m2c shows: pl_create_model(id) and weapon_create_model(a, b, 0) take exactly what the original
+  loads; extra stage*12 arguments were guesses of m2c.
+- switch(x) { case 1: A; default: B; case -2: ...; case 0: ... } where case 1 falls into the default body when its test fails and the
+  tests of the other cases are laid out AFTER case 1's body is an if/else-if chain in C: `if (r == 1) { ...; if (ok) break; }
+  else if (r == -2) return -2; else if (r == 0) break;` followed by the default body (yn_auto_connect, yn_select_provider case 18).
+- `x >= 9` vs `x <= 8` flips slt into `at` (yn_select_provider: `(v >= 6 && v <= 8)`), a `(cond) ? 4 : 2` assigned to a field gets the
+  delay-slot constant load the original has where an `if` + local does not (select_provider case 1).
+- Operand order of `index*20 + base`: a named int local (`off = b * 0x14; M2C_FIELD(off + (int)ynw, ...)`) gives `addu idx, base`;
+  an inline expression does not (auto_connect, select_provider case 18).
+- Per-case local `u16 pad;` in a big switch gives the register choices of the original better than one function-wide variable.
+- m2c's `yn_cur2_sd(ptr + 0xD)`: read-modify-write of a field and pass its address: `t = ynw; p = t + o; *p = (t[o] + n) % n; call(p)`.
+- yn_sprite_draw: compares `x > 2` / `x > 3` (not >= 3 / >= 4) and the inner switch cases listed 0, 1, 2 (ladder tests in reverse).
+Not linked (near-match, own notes):
+- yn_select_provider (5536 bytes): full C in src/yn/ui3_nm.c, 216 of 1384 instructions differ, no structural difference left. What
+  differs is register choice (case 3 loop pointer a1/a2, case 4 hoisted masks a0/t0/a2/a3, case 12 pad in a1 and the digit loop) and
+  the delay slot of the -2 compare after yn_mc_gmfile_check/save (the original copies the result to s0 in the delay slot).
+- yn_sprite_draw_each (draft in ui2_nm.c, 96 of 152) and yn_sprite_draw_sub (needs it): frame size and the stack block layout
+  (rect at +0xA0, col at +0xA8, uv at +0xAC) are right; the s16 loads into v1/v0/a3/a2 and the u1/v1 temporaries take other registers.
+  declbf over the six s16 temporaries did not help (best 94).
+- yn_dialog_font_once (9/29): the original builds `sll arg0*8` before loading ynw and the table address; tried local table pointer,
+  `&((YMSG *)tbl[i])[arg0]`, an `off` local: all keep the order below.
+- yn_connect_font_sub stays at 4 differing instructions (register of the ynw load before `lb 12(...)` and one addu operand order).
+- yn_utf8_to_sjis 7 of 76 (u16 code, `code = src[1] << 8; src += 2; code += *src; src += 1;` is the form that reproduces the lazy
+  pointer increments; the original masks after the add, not after the shift, and keeps hi bits in the same register as the byte).
+- module_load/unload: `asm { nop; ... }` inside the loops compiles but the loop is not rotated like the original (the original is
+  `b test; nop*8; test: call; bltz body`), skipped. The gcc-built sce* functions in yn stay asm (0x53B2E8 on, see config/symbols/yn.txt).
+- select: disp_edit_spr 123 of 214 after int i / s16 y, the `case 3: w[6]; case 4: w[7]; case 5: colour` order and `*(u32 *)(w + 8)`;
+  the original keeps only s0-s3 (task in s0 shared with the menu pointer), mine allocates six. cmn_mongon_set 94/96 (hand-unrolled
+  copy loops with separate out/in cursors), disp_color needs `s.x = 96.0f` style float stores (the original converts floats to s16 with
+  cvt.w.s for every field) and was not rewritten; Edit_task/Cont_task untouched.
+
+### Session notes (select overlay + yn leftovers, 5 Oct 2026, third pass)
+Linked this pass (rebuild.sh OK for all five modules): select cmn_mongon_set (edit10), Edit_task + Cont_task (edit04, now
+0x535F30-0x538028 with rodata 0x53B8E0-0x53B964; edit05 was merged into it), disp_edit_spr (edit11, jump table 0x53B660-0x53B678);
+yn yn_sprite_draw_each (ui32), yn_dialog_font_once (ui33). select is at about 87%.
+Shared-header edits (all proven by matched loads/stores): select.h EDIT_W x3C/x3D are u8 (lbu in Edit_task); SoftKeyboard_move is
+`s8 (s8 *, s16, s16)` (lh loads of Psw, s8 return); SEL_W got `xB6` carved out of padding (Edit_task/Cont_task store the slot at
+select_w+0xB6); font_print_ex is now `void (s16, s16, int, char *, ...)` (see lessons).
+New config file: config/select_aliases.txt (`roll_move = 0x00536470;`) because roll_move is file-static in edit04.c.
+Lessons (each shown by the named function):
+- A file-static (or just earlier-defined, leaf) callee tells MWCC which registers it clobbers, so the caller keeps loop variables in
+  a0/a1 across `roll_move(pl, i)` calls. Edit_task/Cont_task only matched after `static void roll_move` in the same file; asm callers
+  then need a `name = addr;` alias in config/<module>_aliases.txt.
+- An unprototyped call passes an s16 local after a lazy sign extension and CSEs that extension across calls (extra callee-saved
+  register). With a prototype whose parameter is s16 the compiler converts per call and keeps no copy: disp_edit_spr only matched after
+  font_print_ex got `s16 x, s16 y`; Edit_task needed `edit_pl_init_new(PLW *, s16, s16)` to pass i raw.
+- Repeated reads of a global u16 array (Psw) are re-read, not CSE'd, when stores through u16 fields sit between them: reading through
+  `*(volatile u16 *)&Psw[i]` at the top of Edit_task reproduces that (only there; later in the function the original does CSE).
+  Operand order of `a == b` follows the load order in the original: `PSWV(1) == PSWV(0)` loaded Psw[1] first.
+- check.py ignores both relocation addends and jump-table contents; Edit_task passed check.py with the wrong Psw index and
+  disp_edit_spr with its switch cases in the wrong order (cases 5, 3, 4 sit in the order 2, 5, 3, 4 in memory). Always run rebuild.sh.
+- `all_model_free(t->step++)` gives the original delay-slot store; `if (++e->x38 >= 0x3C)` gives `andi 0xFFFF; slti` without `at`;
+  `A || B` conditions that share one body (cancel) must be written once: `else if (((p & 0x20) && x == 1) || (p & 0x40))`.
+- `for (i = 0; i < 2; i++) f(&player_work[i])` instead of a `pl++` pointer swaps which of i/pl gets the lower saved register.
+- Declaration order mattered a lot in Cont_task: tools/declhill.py (hill-climb over the declaration order, ~5 min) found the order
+  that tools/declbf.py cannot reach with 8 variables. tools/vt.py + tools/mkscratch.py test source variants on one function with the
+  other functions as K&R declarations (`DECLS="void f(int, s16)" python3 tools/mkscratch.py nm.c scratch.c FUNC ...`).
+  tools/cc.sh compiles and disassembles a file (micro experiments), tools/vtry.py tries whole-function variants.
+Near-match left (not linked):
+- cmn_mongon_check_sub 136/155: callee-saved allocation differs (mine strength-reduces `flt + pos` into a pointer and needs s7; the
+  original recomputes it from sp each outer iteration and uses s0-s6). The rest of the structure (do/while nest, `idx = pos` copy,
+  `look(&flt[idx])`, found/c handling) is right.
+- disp_color 269/293: contents match the original instruction by instruction in both loops (per-case `s.w`, u32 colour bytes,
+  `s.x = 0.8f * fx0` with a float local so the cvt stays; a `flfntLocate(int, s16)` prototype was tried and left out), but the original keeps the first loop's test at the
+  bottom with the s16 copy of i computed there and the pointer hoists in an out-of-line preheader after the second loop; mine rotates
+  the loop. Not found how to provoke that (while/do forms, int/s16 variants, goto-free).
+- yn_utf8_to_sjis and yn_sjis_to_utf8 stay 2 instructions off each (`andi t4, t4, 0xFFFF` is done in place before `sra` in the original,
+  in a fresh register in mine; u16/int/u32 code, (u16) casts, `&= 0xFFFF`, separate out variable all tried). The matching shapes are
+  `code = (src[1] << 8) + *(src += 2); src += 1;` and three `*dst++` stores.
+- yn_sprite_draw_sub 15/119 (scheduling of the first call's two byte loads), yn_connect_font_sub 3/141 (ynw/(i+1) register pair),
+  yn_select_provider still 216/1384: the permuter at -j1 managed only 51 iterations in 25 minutes (about 30 s per candidate on the
+  5.5 KB function) and found nothing better than the base.

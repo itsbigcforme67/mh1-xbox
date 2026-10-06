@@ -469,27 +469,26 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void free_kouholists(KL *l)
+int not_bhead(int c)
 {
-    while (l != 0) {
-        free_mem(l->kh);
-        l = l->next;
+    if (henkan_mode == 1 || henkan_mode == 2) {
+        return 0;
     }
-}
-
-KH *null_kouho(int len)
-{
-    KH *k;
-
-    k = alloc_khmem();
-    if (k != 0) {
-        k->flag = 0x80;
-        k->str[0] = 0;
-        k->x06 = len;
-        k->x07 = 0;
-        k->pw = 0;
-        k->x0C = 0xFFFF;
-        k->next = 0;
+    switch (c & 0xFF) {
+    case 0x9D:
+    case 0xA1:
+    case 0xA3:
+    case 0xA5:
+    case 0xA7:
+    case 0xA9:
+    case 0xC3:
+    case 0xE3:
+    case 0xE5:
+    case 0xE7:
+    case 0xEE:
+    case 0xF2:
+    case 0xF3:
+        return 1;
     }
-    return k;
+    return 0;
 }

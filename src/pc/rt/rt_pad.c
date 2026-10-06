@@ -129,6 +129,15 @@ static void read_port0(void)
     }
 }
 
+/* The pad driver only (the village's Lb_pl_move runs swset itself). */
+void rt_pad_read(void)
+{
+    read_port0();
+    game_w.pad_on = 1;
+    game_w.port[0] = 0;
+    game_w.port[1] = 1;
+}
+
 /* Once per game tick, before the player code: pad driver + swset(). */
 void rt_pad_tick(void)
 {

@@ -63,6 +63,8 @@ void net_send_sys(int kind, int pl) { (void)kind; (void)pl; }
  * program (em_prog_tbl, game.bin) is not ported yet gets no model slot
  * (game_w+0x28[slot] back to 0), so Em_direct_set does not spawn it. */
 extern void *em_prog_tbl[];
+static void (*em_model_fn)(int slot, int kind);
+void rt_set_em_model_loader(void (*fn)(int slot, int kind)) { em_model_fn = fn; }
 void em_create_model(int slot)
 {
     int kind = PU8(&game_w, 0x28 + slot);
@@ -74,6 +76,8 @@ void em_create_model(int slot)
     }
     if (qtrace())
         fprintf(stderr, "rt_quest: em_create_model slot %d kind %d\n", slot, kind);
+    if (em_model_fn)
+        em_model_fn(slot, kind);      /* the host's model and the motions of the slot */
 }
 void release_enemy_model(int slot)
 {

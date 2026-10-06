@@ -469,25 +469,17 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int is_kanji(int c)
+int jiritu_makedisp(KH *k, u16 *buf)
 {
-    c = c & 0xFF;
-    if (c < 0x81 || c >= 0xFD || (c >= 0xA0 && c < 0xE0)) {
-        return 0;
-    }
-    return 1;
-}
+    int n;
 
-int is_shift(int c)
-{
-    u8 lo;
-
-    lo = c;
-    if (is_kanji((c & 0xFFFF) >> 8 & 0xFF) == 0) {
-        return 0;
+    n = 0;
+    for (;;) {
+        n += sstrtom(buf + n, k->str, 6);
+        if (!(k->flag & 1)) {
+            break;
+        }
+        k = k->next;
     }
-    if (lo < 0x40 || lo >= 0xFD || lo == 0x7F) {
-        return 0;
-    }
-    return 1;
+    return n;
 }

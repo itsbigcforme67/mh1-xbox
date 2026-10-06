@@ -45,14 +45,16 @@ u8 Equip_moji_color_rare(u8);
 typedef struct PFLP4 { s16 p[4]; u32 col; } PFLP4;
 typedef struct PFLP8 { s16 p[4]; u32 col; s16 uv[4]; } PFLP8;
 
-void disp_cursorC(s16 x, s16 y, s16 base, s16 n, s16 step, int col) {
+/* the highlight bar of row n of a list at y with rows h high, from x0 to
+ * x1 (rect {x0, y0, x1, y1}; asm 0x2755D0) */
+void disp_cursorC(s16 x, s16 x1, s16 y, s16 h, s16 n, int col) {
     PFLP4 q;
     s16 t;
 
     q.p[0] = x;
-    q.p[1] = y;
-    q.p[2] = base - 3 + n * step;
-    q.p[3] = q.p[2] + n + 3;
+    q.p[2] = x1;
+    q.p[1] = y - 3 + h * n;
+    q.p[3] = q.p[1] + h + 3;
     t = (System_timer & 0x3F) << 10;
     q.col = (col & 0xFFFFFF) | (((s8)(48.0f * flSin(0.0000958738f * (f32)t)) + 0xBF) << 24);
     flps0004(&q);
@@ -174,19 +176,19 @@ void DispFrameListA(void *fr, char *title, int cur, int alpha) {
     }
     r.col = (alpha << 24) | 0xFFFFFF;
     r.p[1] = y0;
-    r.p[2] = 0;
+    r.p[3] = 0;     /* p[3] is the height, p[2] the width (as DispFrameMessageA) */
     for (line = 0; line < rows; line++) {
-        r.p[1] = r.p[1] + r.p[2];
-        r.p[2] = h;
+        r.p[1] = r.p[1] + r.p[3];
+        r.p[3] = h;
         r.uv[1] = 0xBC;
         r.uv[3] = 0xD0;
         if (line == 0) {
             r.p[1] -= 8;
-            r.p[2] += 8;
+            r.p[3] += 8;
             r.uv[1] -= 8;
         }
         if (line >= rows - 1) {
-            r.p[2] += 8;
+            r.p[3] += 8;
             r.uv[3] += 8;
         }
         xx = x0;
@@ -220,7 +222,7 @@ void DispFrameListA(void *fr, char *title, int cur, int alpha) {
         if (title != 0) {
             cur++;
         }
-        disp_cursorC(0.8f * (x0 - 2.0f), 0.8f * (2.0f + (x0 + colw * (f32)F8(fr, 6))), FS16(fr, 2), h, 0, 0);
+        disp_cursorC(0.8f * (x0 - 2.0f), 0.8f * (2.0f + (x0 + colw * (f32)F8(fr, 6))), FS16(fr, 2), h, cur, FS32(fr, 0x10));
     }
     if (FS32(fr, 0xC) != 0) {
         py = FS16(fr, 2);
@@ -1033,12 +1035,12 @@ void Pit_disp_receive_mes(void) {
     }
 }
 
-extern s16 receive_mark_pos[][2];
+extern s16 receive_mark_pos[2][2];
 extern u8 pf_receive_mark[];
 extern char lit_3351[];
 
 void Put_receive_mark(int n) {
-    if (PitMenu.x0F != 0) {
+    if ((u8)PitMenu.x0F != 0) {
         if ((n & 0xFF) == 1) {
             DispFrameMessage(pf_receive_mark, 0);
         }

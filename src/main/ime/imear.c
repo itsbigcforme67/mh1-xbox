@@ -469,127 +469,31 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int api_henkan(int *a)
+u16 kh_priority(BS *b, int v)
 {
-    u8 *in;
-    u8 *kana;
-    u8 *kj;
-
-    if (func_mode == 0) {
-        return -1;
+    v = v & 0xFFFF;
+    if (v != 0) {
+        return (v + 0x3E8) & 0xFFFF;
     }
-    in = (u8 *)a[0];
-    kana = (u8 *)a[1];
-    kj = (u8 *)a[2];
-    if (in != 0) {
-        if (func_mode >= 2) {
-            init_edit0();
-        }
-        if (add_kana_buf(in) < 0) {
-            return -1;
-        }
-    }
-    if (kana_len <= 0) {
-        *kana = 0;
-        *kj = 0;
-        return 0;
-    }
-    henkan(0, kana_len, 0, -1);
-    cur_pos = 0;
-    cur_len = bunsetu_len(0);
-    init_kouho(0, 1);
-    get_kouhostr(kana, kj);
-    func_mode = 3;
-    return kh_count(hchar[0].kh);
+    return b->x08;
 }
 
-int get_kouhostr(u8 *a, u8 *b)
+int is_alphanum(int c)
 {
-    strcpy(a, select_subtostr(cur_pos, cur_len));
-    strcpy(b, select_subtostr(cur_pos + cur_len, kana_len - cur_pos - cur_len));
+    return rmtype[c & 0xFF] & 0xC0;
 }
 
-int api_movekh(int *a)
+int is_num(int c)
 {
-    int cnt;
-    u8 *p;
-    u8 *q;
-    int n;
-
-    if (func_mode != 3) {
-        return 0;
-    }
-    p = (u8 *)a[0];
-    q = (u8 *)a[1];
-    switch (a[-1]) {
-    case 20:
-        if (gun_nkh > 0) {
-            gun_nkh--;
-        } else if (back_gun(0, 0) == 0) {
-            init_kouho(0, 1);
-            n = gun_num;
-            while (next_gun(0, 0) != 0) {
-                n += gun_num;
-            }
-            init_kouho(n - 1, 1);
-        } else {
-            gun_nkh = gun_num - 1;
-        }
-        break;
-    case 21:
-        if (gun_nkh < gun_num - 1) {
-            gun_nkh++;
-        } else if (next_gun(0, 0) == 0) {
-            init_kouho(0, 1);
-        }
-        break;
-    }
-    get_kouhostr(p, q);
-    return gun_nkh + 1;
+    return rmtype[c & 0xFF] & 0x80;
 }
 
-int api_moveblk(int *a)
+int is_alpha(int c)
 {
-    int fail;
-    u8 *p;
-    u8 *q;
-
-    fail = 0;
-    if (func_mode != 3) {
-        return 0;
-    }
-    p = (u8 *)a[0];
-    q = (u8 *)a[1];
-    switch (a[-1]) {
-    case 22:
-        if (back_gun(0, 0) == 0) {
-            fail = 1;
-        }
-        break;
-    case 23:
-        if (next_gun(0, 0) == 0) {
-            fail = 1;
-        }
-        break;
-    }
-    get_kouhostr(p, q);
-    if (fail != 0) {
-        return 0;
-    }
-    return gun_num;
+    return rmtype[c & 0xFF] & 0x40;
 }
 
-int api_allfix(int *a)
+int is_paren(int c)
 {
-    u8 *out;
-
-    if (func_mode != 3) {
-        return -1;
-    }
-    out = (u8 *)a[0];
-    wd_learn(0, kana_len);
-    strcpy(out, select_tostr());
-    init_edit0();
-    func_mode = 1;
-    return 0;
+    return rmtype[c & 0xFF] & 0x20;
 }

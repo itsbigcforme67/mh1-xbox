@@ -103,11 +103,9 @@ void BsPushPageWork(void) {
     }
 }
 void BsBody00_ReqSrc(void) {
-    u8 a0;
     MoveAndTransSet();
     if (bsGoHidePage != 0) {
-        a0 = MMBB_LOGIN;
-        switch (a0) {
+        switch (MMBB_LOGIN) {
         case 2:
         case 1:
             break;
@@ -183,18 +181,14 @@ BSWK *BsPullPageWork(void) {
     }
     return w;
 }
-void BsInit00_BootInit(int a) {
+void BsInit00_BootInit(void) {
     bsMainRetVal = 0;
-    if (strcmp(FirstURL, bsCsv + 0x1C) != 0) {
-        if (strcmp(FirstURL, bsCsv + 0x11D) == 0) {
-            goto b3;
-        }
-        bsGoHidePage = 0;
-    } else {
-b3:
+    if (strcmp(FirstURL, bsCsv + 0x1C) == 0 || strcmp(FirstURL, bsCsv + 0x11D) == 0) {
         bsGoHidePage = 1;
+    } else {
+        bsGoHidePage = 0;
     }
-    flfntInit(a);
+    flfntInit();
     sbfptr = bssbuf;
     bsSys->x02 = bsSys->x02 + 1;
     bsSys->x03 = 0;
@@ -227,9 +221,8 @@ void BsPoster05_RcvData(void) {
     r = (u8 *)BsRequestCheck(bsUrl);
     if (r != 0) {
         bsIsOnRequesting = 0;
-        if (*(s8 *)(r + 4) != 0) {
-            bsSys->x01 = 2;
-        } else {
+        switch (*(s8 *)(r + 4)) {
+        case 0:
             if (*(s8 *)(r + 5) == 9) {
                 v = bsRetryCtr + 1;
                 bsRetryCtr = v;
@@ -242,6 +235,9 @@ void BsPoster05_RcvData(void) {
                 bsSys->x01 = 2;
                 return;
             }
+            bsSys->x01 = 2;
+            break;
+        default:
             bsSys->x01 = 2;
         }
     }
