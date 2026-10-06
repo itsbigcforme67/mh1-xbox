@@ -34,8 +34,8 @@ u8 *cam_data_area;
 static f32 view[16];
 f32 *lpView = view;
 
-/* em_body_tbl of lobby.bin (monsters in the lobby, not loaded): none */
-void *D_610370[64];
+/* em_body_tbl of lobby.bin (D_610370: the NPCs' body volumes the camera
+ * keeps out of) comes from lobby.bin (tools/gen_rt_auto.py) */
 
 /* ------------------------------------------------------------ helpers */
 void RollView(f32 r) { lpView[0x34 / 4] = r; }

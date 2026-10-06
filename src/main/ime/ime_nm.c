@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -649,17 +649,12 @@ void prev_learn(KH *kh)
         wd.yomi = prev_yomi;
         wd.len = strlen(prev_yomi);
         wd.x06 = 0;
-        if (kh != 0) {
-            pw = kh->pw;
-            if (pw == 0) {
-                goto none;
-            }
-            wd.x07 = pw->x02;
-            wd.x08 = pw->x03;
-        } else {
-none:
+        if (kh == 0 || (pw = kh->pw) == 0) {
             wd.x08 = 0;
             wd.x07 = 0x28;
+        } else {
+            wd.x07 = pw->x02;
+            wd.x08 = pw->x03;
         }
         wd.tango = prev_tango;
         dic_tmptouroku(&wd);
@@ -1142,7 +1137,7 @@ int whence;
         break;
     case 1:
         r = gAskRom.rest - off;
-        if (r < 0 || r >= 0x97C01) {
+        if (r < 0 || r > 0x97C00) {
             return -1;
         }
         gAskRom.rest = r;
@@ -1159,13 +1154,15 @@ int whence;
     return gAskRom.cur - ask_load_adrs;
 }
 
-u16 to_zenkaku(int c)
+u16 to_zenkaku(c)
+u16 c;
 {
     u16 r;
 
     r = asc2jis[c & 0xFF];
     if ((r & 0xFF00) == 0x2500 && !(c & 0x100)) {
         r = (r & 0xFF) | 0x2400;
+        return r;
     }
     return r;
 }
@@ -1359,7 +1356,7 @@ int setu_end(int a0, int flag)
     case 0xA7:
     case 0xA8:
     case 0xB1:
-        if ((b > 4 && b < 9) || b >= 0xA) {
+        if ((b > 4 && b <= 8) || b >= 0xA) {
             return 1;
         }
         return 0;
@@ -1385,7 +1382,7 @@ int setu_end(int a0, int flag)
     }
 }
 
-int dic_open(u8 *name)
+int dic_open(char *name)
 {
     int r;
 
@@ -1410,11 +1407,10 @@ int dic_open(u8 *name)
     }
     init_page();
     init_temp();
-    r = 3;
     if (dic_rw == 0x8000) {
-        r = -6;
+        return -6;
     }
-    return r;
+    return 3;
 }
 
 int dic_close(void)
@@ -1651,7 +1647,7 @@ int dic_getsyn(u8 *key, int len, SYNR *r)
 int main_getsyn(u8 *key, int len0, SRCH *r)
 {
     s16 len;
-    s16 page;
+    int page;
     s16 klen;
     u8 *base;
     u8 *e;
@@ -1663,13 +1659,12 @@ int main_getsyn(u8 *key, int len0, SRCH *r)
         return 0;
     }
     page = srch_page(key);
-    base = load_page(page);
-    e = base;
+    e = base = load_page(page);
     while (ELEN(e) != 0) {
         klen = e[2];
         c = ask_strncmp(e + 3, key, klen);
         if (c == 0) {
-            if (klen == len) {
+            if ((s16)klen == len) {
                 break;
             }
         } else if (c > 0) {
@@ -1757,16 +1752,15 @@ u8 *end;
 int tag;
 {
     s16 *w = w0;
-    u8 *p;
 
     w[0] = tag;
     w[1] = rec[1];
-    p = rec + 2;
+    rec += 2;
     ((u8 *)w)[4] = 0;
-    if (p[0] < 0xC) {
-        p++;
+    if (rec[0] < 0xC) {
+        rec++;
     }
-    getkbuf(p);
+    getkbuf((u8 *)w + 5, rec);
 }
 
 int dic_getallwd(int id, int a, int b, u8 *out)
@@ -2181,25 +2175,26 @@ int delwd(u8 *ent, WD *w)
 
 int dic_tmptouroku(WD *w)
 {
-    u8 buf[0x30];
+    u8 buf[0x50];
 
-    if (gaku_mode != 0) {
-        if (dic_fd == -1) {
-            return -3;
-        }
-        strncpy(buf, w->yomi, w->len);
-        if (w->x07 == 0x28 || w->x07 == 0x29) {
-            w->x07 = 0x27;
-        }
-        buf[w->len] = 0;
-        tmp_touroku(buf, w, 1);
+    if (gaku_mode == 0) {
+        return 3;
     }
+    if (dic_fd == -1) {
+        return -3;
+    }
+    strncpy(buf, w->yomi, w->len);
+    if (w->x07 == 0x28 || w->x07 == 0x29) {
+        w->x07 = 0x27;
+    }
+    buf[w->len] = 0;
+    tmp_touroku(buf, w, 1);
     return 3;
 }
 
 int dic_newlearn(WD *w, s64 *list, int n)
 {
-    u8 buf[0x30];
+    u8 buf[0x50];
     int rt;
 
     if (gaku_mode == 0) {
@@ -2213,7 +2208,8 @@ int dic_newlearn(WD *w, s64 *list, int n)
     if (isnum(buf) != 0) {
         w->x07 = 0x1F;
     }
-    rt = get_maxtime(list, n) + 1;
+    rt = get_maxtime(list, n);
+    rt++;
     if (rt == 0xFF) {
         clear_allrtime(list, n);
         rt = 1;
@@ -2479,14 +2475,12 @@ int flush_head(void)
     if (temp_page == old_temp && suji_mode == old_suji && entry2upd == 0) {
         return 0;
     }
-    p[0] = temp_page % 256;
-    p[1] = temp_page / 256;
-    p += 2;
-    p[0] = gaku_mode % 256;
-    p[1] = gaku_mode / 256;
-    p += 2;
-    p[0] = suji_mode % 256;
-    p[1] = suji_mode / 256;
+    *p++ = temp_page % 256;
+    *p++ = temp_page / 256;
+    *p++ = gaku_mode % 256;
+    *p++ = gaku_mode / 256;
+    *p++ = suji_mode % 256;
+    *p = suji_mode / 256;
     if (seek_dic(0) == -1) {
         return -1;
     }
@@ -2731,7 +2725,7 @@ int set_entid_tab(int a, int b, int c, int rt)
     return free;
 }
 
-u16 get_entid_tab(unsigned int id, int *b, int *c, int *rt)
+int get_entid_tab(unsigned long id, int *b, int *c, int *rt)
 {
     ENTID *e;
 
@@ -2903,7 +2897,7 @@ u8 *alloc_record(int len)
 {
     u8 *r;
 
-    if ((u32)(temp_end - len - 2) < (u32)temp_top) {
+    if ((u32)temp_top > (u32)(temp_end - len - 2)) {
         page_gc();
     }
     r = temp_top;
@@ -2982,7 +2976,7 @@ int tmpoffset(u8 *p)
     int d;
 
     d = p - temp_pages[0];
-    return ((d >> 10) << 12) | (d % 1024);
+    return ((d / 1024) << 12) | (d % 1024);
 }
 
 u8 *load_temp(int off)
@@ -3047,14 +3041,10 @@ int newwdlen(WD *w)
 {
     int extra;
 
-    if (w->x08 == 0) {
-        if (w->x07 >= 0x2D) {
-            goto three;
-        }
-        extra = 2;
-    } else {
-three:
+    if (w->x08 != 0 || w->x07 >= 0x2D) {
         extra = 3;
+    } else {
+        extra = 2;
     }
     return w->len + 3 + extra + setkbuflen(w->tango);
 }
@@ -3073,23 +3063,17 @@ int updwdlen(WD *w)
 
 void set_record(u8 *r, int len, WD *w, int rt)
 {
-    u8 *p;
-    u8 *q;
-
-    r[0] = len % 256;
-    r[1] = len / 256;
-    r[2] = w->len;
-    p = r + 3;
-    strncpy(p, w->yomi, w->len);
-    q = p + w->len;
-    q[0] = w->x07;
-    q[1] = rt;
-    p = q + 2;
+    *r++ = len % 256;
+    *r++ = len / 256;
+    *r++ = w->len;
+    strncpy(r, w->yomi, w->len);
+    r += w->len;
+    *r++ = w->x07;
+    *r++ = rt;
     if (w->x08 != 0 || w->x07 >= 0x2D) {
-        q[2] = w->x08;
-        p++;
+        *r++ = w->x08;
     }
-    setkbuf(w->tango, p);
+    setkbuf(w->tango, r);
 }
 
 void upd_record(u8 *r, int add, WD *w, int rt)
@@ -3335,10 +3319,7 @@ void getkbuf(u8 *dst, u8 *src, u8 *end)
 int iskanji(int c)
 {
     c = c & 0xFF;
-    if (c >= 0x80 && c < 0xA0) {
-        return 1;
-    }
-    if (c >= 0xE0 && c < 0xFD) {
+    if ((c >= 0x80 && c <= 0x9F) || (c >= 0xE0 && c <= 0xFC)) {
         return 1;
     }
     return 0;
@@ -3491,7 +3472,7 @@ prefer:
                 len = cur;
             } else {
                 len = concat_bslen(pos, end);
-                if (len < 0) {
+                if (len <= -1) {
                     break;
                 }
                 if (len == 0) {
@@ -3572,10 +3553,15 @@ int muhenkan(int pos, int end)
     u8 *p;
 
     k = pos + 1;
-    p = kana_ustr + k;
-    while (k < end && not_bhead(*p) != 0) {
-        k++;
-        p++;
+    if (k < end) {
+        p = kana_ustr + k;
+        do {
+            if (not_bhead(*p) == 0) {
+                break;
+            }
+            k++;
+            p++;
+        } while (k < end);
     }
     return k - pos;
 }
@@ -3806,9 +3792,11 @@ CH *c;
 {
     void **pp;
     CH *p;
+    HCHAR *h;
 
-    pp = &hchar[pos].ch;
-    p = hchar[pos].ch;
+    h = &hchar[pos];
+    pp = &h->ch;
+    p = h->ch;
     while (p != 0) {
         pp = (void **)&p->next;
         p = p->next;
@@ -4224,10 +4212,21 @@ int is_kuten(int c)
     if (c >= 0xA0) {
         return 0;
     }
-    if (c != 0x9C && c != 0x9B && c != 0x98 && c != 0x3F && c != 0x3B && c != 0x3A && c != 0x2E && c != 0x2C && c != 0x21 && c != 0x20) {
+    switch (c) {
+    case 0x20:
+    case 0x21:
+    case 0x2C:
+    case 0x2E:
+    case 0x3A:
+    case 0x3B:
+    case 0x3F:
+    case 0x98:
+    case 0x9B:
+    case 0x9C:
+        return 1;
+    default:
         return 0;
     }
-    return 1;
 }
 
 void first_kouho(int pos, int len)
@@ -4875,11 +4874,14 @@ int back_gun(int disp, int wrap)
         }
         old = 0;
     }
-    while (take_kouho(top_kh, gun_num) != old) {
+    for (;;) {
+        if (take_kouho(top_kh, gun_num) == old) {
+            break;
+        }
         next_gun(0, 1);
     }
     if (disp == 1) {
-        disp_kouho(0);
+        disp_kouho();
     }
     return 1;
 }
@@ -4893,7 +4895,7 @@ int c;
 
     a = 0;
     r = 0;
-    if (((c & 0xFFFF) >> 8 & 0xFF) >= 0x21 && ((c & 0xFFFF) >> 8 & 0xFF) < 0x7F) {
+    if (((c & 0xFFFF) >> 8 & 0xFF) > 0x20 && ((c & 0xFFFF) >> 8 & 0xFF) < 0x7F) {
         a = 1;
     }
     if (a != 0) {
@@ -5117,7 +5119,7 @@ int ask_sjis2jis(int c)
 
     lo = c & 0xFF;
     hi = ((c & 0xFFFF) >> 8) & 0xFF;
-    if (lo >= 0x40 && lo < 0xFD) {
+    if (lo > 0x3F && lo < 0xFD) {
         if (lo == 0x7F) {
             return 0;
         }
@@ -5166,7 +5168,7 @@ int ask_jis2sjis(int c)
             a = (a + 1) & 0xFF;
         }
         r = t + 0x71;
-        if (t >= 0x2F) {
+        if (t > 0x2E) {
             r = t + 0xB1;
         }
         return (((r & 0xFF) << 8) | (a & 0xFF)) & 0xFFFF;
@@ -5425,10 +5427,12 @@ void bs_prefix(int pos)
 void bs_ctd(BS *b, int pos, int end)
 {
     BS *n;
-    s16 pt;
+    int pt;
     int p;
+    int len;
 
-    if (b->x02 == 0xFF || (p = pos + b->len) >= end) {
+    len = b->len;
+    if (b->x02 == 0xFF || (p = pos + len) >= end) {
         return;
     }
     n = hchar[p].bs;
@@ -5500,7 +5504,7 @@ int setu_point(BS *b, BS *n)
             pt += 3;
         } else if (k == 0x1A) {
             pt += 2;
-        } else if (k < 0x1A || k >= 0x1F) {
+        } else if (k <= 0x19 || k >= 0x1F) {
             pt += 1;
         }
     }
@@ -5563,7 +5567,7 @@ int base;
             if (a >= 0x80 && a < 0x8F) {
                 return base + 0xF;
             }
-            if (a == 0x92 || a == 0x94 || a == 0xA0 || a == 0xA2 || (u32)(a - 0xAE) < 2 || a == 0xB1 || a == 1) {
+            if (a == 0x92 || a == 0x94 || a == 0xA0 || a == 0xA2 || (u32)(a - 0xAE) <= 1 || a == 0xB1 || a == 1) {
                 return base + 0xF;
             }
             if (a >= 0xA && a < 0xD) {
@@ -5630,7 +5634,7 @@ int base;
     p = b->pw;
     if (p != 0) {
         t = p->x02;
-        if ((t >= 0x14 && t < 0x1A) || t == 0x32) {
+        if ((t >= 0x14 && t <= 0x19) || t == 0x32) {
             k = 1;
             if (p->x00 + 1 == b->len) {
                 k = 2;
@@ -5664,8 +5668,8 @@ int base;
         }
         return base;
     default:
-        if ((u32)(c - 0xC4) < 2 || (c >= 0xCE && c < 0xD2)) {
-            if ((d > 0 && d < 0xE) || (d >= 0x16 && d < 0x18)) {
+        if ((u32)(c - 0xC4) <= 1 || (c >= 0xCE && c < 0xD2)) {
+            if ((d > 0 && d <= 0xD) || (d >= 0x16 && d < 0x18)) {
                 return base + 5;
             }
             return base;
@@ -5707,7 +5711,7 @@ int extra;
     b = b & 0xFF;
     switch (a & 0xFF) {
     case 0:
-        if ((b >= 0x14 && b < 0x1A) || b == 0x32) {
+        if ((b >= 0x14 && b <= 0x19) || b == 0x32) {
             r = 0xF;
         }
         break;
@@ -5737,9 +5741,7 @@ int extra;
             if (b > 0 && b < 0xE) {
                 r = 0xF;
             }
-        } else if (b >= 0x80 && b < 0x8C && c == 4) {
-            r = 0xF;
-        } else if (b == 0xD && c == 0) {
+        } else if ((b >= 0x80 && b < 0x8C && c == 4) || (b == 0xD && c == 0)) {
             r = 0xF;
         }
         break;
@@ -5756,7 +5758,7 @@ int extra;
         }
         break;
     case 8:
-        if ((b >= 0x14 && b < 0x1A) || (b > 0 && b < 0xE)) {
+        if ((b >= 0x14 && b <= 0x19) || (b > 0 && b < 0xE)) {
             r = 0x14;
         }
         break;
@@ -5817,7 +5819,7 @@ int to_roman(u16 *src, int n, u16 *out, int *cnt)
             e = rmtab + 1;
             goto got;
         }
-        if (kind < 9 || roman_japan == 0) {
+        if (kind <= 8 || roman_japan == 0) {
             out[0] = to_zenkaku(src[0] & 0xFF);
         } else {
             out[0] = to_zenkaku_spec(src[0] & 0xFF);
@@ -5868,7 +5870,7 @@ int to_roman(u16 *src, int n, u16 *out, int *cnt)
         }
         return 2;
     }
-    if (sub >= 2 || (kind >= 6 && kind < 0xF && sub == 1)) {
+    if (sub >= 2 || (kind > 5 && kind < 0xF && sub == 1)) {
         return 1;
     }
     step = 2;
@@ -6067,17 +6069,29 @@ int add_kana_buf(u8 *s)
 
 int bytesin_kana_buf(KANA *a, KANA *b)
 {
+    int r = 0;
+
     for (; a < b; a++) {
         if (a->ch & 0xFF00) {
+            r += 2;
+        } else {
+            r += 1;
         }
     }
+    return r;
 }
 
 int count_byte_kana_buf(int a, int n)
 {
+    KANA *p = &kana_buf[a];
+    int r = 0;
+
     while (n > 0) {
+        r += p->n;
         n--;
+        p++;
     }
+    return r;
 }
 
 int api_funcent(int *req)
@@ -6085,7 +6099,7 @@ int api_funcent(int *req)
     int cmd;
 
     cmd = *req;
-    if (cmd <= 0 || (u32)cmd >= 0x40) {
+    if (cmd <= 0 || (u32)cmd > 0x3F) {
         return -1;
     }
     return D_0034ABEC[cmd]((u8 *)req + 4);
@@ -6319,7 +6333,7 @@ int api_dicopen(void)
     if (lock_mode == 0) {
         return -1;
     }
-    if (dic_open(dic_name) == -7) {
+    if (dic_open((char *)dic_name) == -7) {
         return 1;
     }
     into_editing(0);
@@ -6351,7 +6365,7 @@ int api_touroku(int *a)
     int u;
     int r;
 
-    if (im_state >= 2) {
+    if (im_state > 1) {
         return 4;
     }
     if (func_mode >= 2) {
@@ -6413,14 +6427,10 @@ int api_touroku(int *a)
 int syn_2to3(int n)
 {
     n = n - 1;
-    if (n >= 0) {
-        if (n >= 0x1E) {
-            goto bad;
-        }
-        return tab_2to3[n];
+    if (n < 0 || n >= 0x1E) {
+        return -1;
     }
-bad:
-    return -1;
+    return tab_2to3[n];
 }
 
 int apis_dicname(int *a)

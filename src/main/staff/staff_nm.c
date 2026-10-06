@@ -38,9 +38,9 @@ void SetFilterMode();
 void reload_tex();
 void SetTextureStage();
 void flps0008();
-void flfntSetSize();
-void font_print_ex();
-int strlen();
+void flfntSetSize(u8, u8);
+void font_print_ex(s16, s16, int, char *, ...);
+u32 strlen();
 void staff_disp();
 
 void Staff_init(void)
@@ -108,10 +108,7 @@ typedef struct {
     s16 u, v, u2, v2;   /* 0x0C */
 } SPR;
 
-void logo_disp(x, y, no)
-s16 x;
-s16 y;
-u8 no;
+void logo_disp(s16 x, s16 y, u8 no)
 {
     SPR spr;
     int i = no * 5;
@@ -146,11 +143,12 @@ u8 page;
     if (e->x != 0x3E7) {
         do {
             if (e->y != 0) {
-                y = e->y;
+                y = (int)e->y;
             }
             switch (e->kind) {
-            default:
+            case 1:
             case 0:
+            default:
                 if (e->size == 0) {
                     size = 0x12;
                 } else {

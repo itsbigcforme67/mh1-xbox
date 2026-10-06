@@ -156,8 +156,9 @@ int Plaza_chatlog_mv(int arg) {
             a = PZ_TOP;
             if (a > 0) {
                 a--;
-                PZ_ARROWS = PZ_ARROWS | 8;
+                r = PZ_ARROWS | 8;
                 PZ_TOP = a;
+                PZ_ARROWS = r;
                 r = se_req(7, 0x16, 0);
                 PZ_ATEND = 0;
             }

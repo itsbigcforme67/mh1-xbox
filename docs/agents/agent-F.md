@@ -363,3 +363,58 @@ functions 0x5DBA80-0x5E0F00 (drawInnerImg5/6, DrawPageObj, DrawPulldown, ...).
 - `(int)row + idx * 24` (not idx first) fixed the St_unique_tbl row address order. A static inline helper is not copied into lbf_runs run files: add it by hand.
 - Tools used (scratch, build/scr, not committed): hill-climb on safe source edits (>= / > swaps, ++ forms, adjacent assignment swaps) scored by the align metric took Lb_guild 39->10, lb_basic_master 21->12 differing insns.
 - Still near-match: item box itembox_stock (4), cursor_mv, sortup, pickup, equipchange, sellout, ItemboxWindowX, Disp_lb_item_box, Lb_ItemBox_mv (6, scheduling only); eft25_m/t (frame differs); Plaza_chatlog_mv (7), Plaza_disp_chatlog, plaza_disp_chat_log_sub; Lb_guild (~10), lb_basic_master (~12), lb_rule_seet_set (large).
+
+## Lobby session 7 (village first): item box, Lb_guild, Clear_lobby_ram
+Linked (tools/rebuild.sh all five OK): Lb_ItemBox_mv, itembox_stock, itembox_equipchange (in src/lobby/f/lb_tu_ib.c, removed from c_rawfuncs; jump table
+rodata 0x668440-0x668460 registered), Lb_guild (src/lobby/f/lb_u.c, run 0x5C5F30-0x5C6F34 + rodata), Clear_lobby_ram (new src/lobby/f/lb_n09.c).
+Findings (verified by matching):
+- A store through an absolute-address cast (`*(s16 *)0x39DAD2 = x`) makes MWCC assume it may alias any pointer, so it re-reads globals (ib, cw, mhRule index)
+  after the store. Declaring the address as its own extern object (`extern s16 D_39DAD2[16];` plus `D_39DAD2 = 0x39DAD2;` in config/lobby_aliases.txt) removes the
+  reload and matches the original (itembox_stock, Lb_ItemBox_mv, Lb_guild: D_3F360A/D_3F33DC, Clear_lobby_ram: D_3F3415). Objects larger than 8 bytes avoid gp addressing.
+  Use the s16 form where the original stores with sh; casting to u8 gives sb.
+- `F(s16, ib, 8) = F(u8, ib, 0xB) = 0;` chain assignment explains `andi t0,zero,0xFF` (Lb_ItemBox_mv).
+- Address of `base + idx*4` in the original is `addu idx,base`: write `(F(u8, ib, 0xB) << 2) + (int)u` (itembox_stock); the `u = User_data` local at function
+  top makes the original's s-register (pickup/sellout/equipchange keep it in s1/s2).
+- `u8 *sp5 = w + 5; switch (*sp5)` and one later `*sp5 = x` gives the original's hoisted `addiu a2,a1,5`; `u8 *p = w + 0x1F;` assigned before the `if` gives the hoisted
+  `addiu a0,v1,31` in the branch delay slot (equipchange). One shared `return pad;` after the switch (cases `break`) removes duplicated delay-slot moves.
+- A byte compared in `st & (cond ? 1 : 2)` allocates differently when `st` is int instead of u8 (equipchange); inlining a temp mask removes an extra register.
+- Statement order of three independent stores before a call matters (permute them), see itembox_equipchange `-1; 0xFF store; pad = 0`.
+- Permuter on a raw-asm function: write the .inc words into a snapshot `.s` (glabel/endlabel) and use PERM_ASM_DIR (relocation penalties are constant).
+Still near-match: itembox_cursor_mv (decimal part matches with int temporaries, `daddiu` slot fill and hex-part registers differ), itembox_sortup/pickup/sellout
+(original keeps pad, User_data and a third value in s0-s2, frame 80; mine allocates two), ItemboxWindowX, Disp_lb_item_box, lb_rule_seet_set, lb_basic_master (delay-slot
+fills), Lb_room_member (`addu` operand order, 1 insn), lb_trade_result (arg load order in the call delay slot).
+
+## Lobby session 8 (village first, lobby tail 0x5C4E60-end): item box, lb_basic_master, lb_a
+Linked (tools/rebuild.sh all five OK): itembox_sortup (lb_tu_ib.c), lb_basic_master (src/lobby/f/lb_r.c, rodata 0x664DA0-0x664E3C as ONE
+`lobby:rodata` line: two lines for one object push the later rodata by 16 bytes), lb_trade_result / lb_set_pl_status / lb_set_pl_pos (lb_a04-06.c).
+yes_no_select is now a K&R definition (`void yes_no_select(pad) u16 pad; {`, declared `void yes_no_select();`) so callers pass the raw register
+(`daddu a0,s2,zero` instead of a re-masked copy); it still matches.
+Lessons (each confirmed by a match unless marked):
+- tools/align.py hides branch-target differences. lb_basic_master looked "4 off" there while four early exits jumped to the wrong block (the original
+  returns straight to the epilogue, mine fell through to the tail code); only check.py (or rebuild) shows them. Judge by check.py, not align.py.
+  A rebuild mismatch of +16 bytes whose first difference is a lui/addiu low half far later = a rodata slot problem, not a code problem.
+- Early exits that the original jumps to the epilogue for: `if (!(cond)) goto done;` plus a final `done: return;` (a plain `return` gives an inverted
+  branch around a `b`). A case ending `return` vs `break` decides whether its branch goes to the epilogue or to the shared tail; an empty-looking
+  `default: return;` that the original does not have must be dropped (the default target is then the end of the switch).
+  `if (a == 0 || a == 0x55) { body } return;` instead of `if (a != 0 && a != 0x55) return;` moves a branch target to the case's own return.
+- A pointer local that the compiler would fold away (`p3 = w + 3`) but that is used by a call argument in a case (`ListSelect(p3, pad, 2)`) is hoisted by
+  the scheduler into the delay slot of the first switch compare; that is how sortup gets `addiu a0,a1,3` there. Without it a0 stays the pad register
+  and the constants/temps shift by one register.
+- `first != F(u8, ib, 0xA)` (re-reading instead of using the local `second`) was found by the permuter and fixed the last diff of sortup.
+- Slot index and idx*6: `((SW6 *)(u + 0x44))[idx]` gives `addu t0,idx6,s1` (index first) where `idx * 6 + (int)u` gave `addu s1,idx6`; `(u8 *)((int)(ib + 8) + col)`
+  keeps `addiu v0,v1,8` as its own instruction.
+- Absolute-address stores `*(s8 *)0x39DAD0 = 0` should use the extern objects D_39DAD0/D_39DAD2 everywhere in the item box functions (sellout 96 -> 60 differing
+  lines, sortup the `lui at` hoist and nop slots); then the store sits in the delay slot of the `b` to the return block like the original.
+- Prototype of a callee decides the order of argument loads around `jal`: `void Ud_item_stack(u16, int)` (lb_trade_result) gave `lhu a0` before the call and `lh a1`
+  in the slot; with `(u16,u16)` the second load becomes lhu.
+- Declaration order of two pointers (`PLW *pl; LBSTAT *st;` with separate assignments) swapped s0/s1 in lb_set_pl_status and lb_set_pl_pos; chain assignment
+  `pl->ang[1] = *(u16 *)&pl->ang_y = p->ang;` removed a reload.
+- `Disp_lb_item_box`: a temp for the flSin result computed before `w = ib` (permuter) removed 14 differing lines.
+- A permuter run on a function that is only a raw `asm` stub in the TU: write the .inc words into a snapshot `.s` (glabel/endlabel), set PERM_ASM_DIR, give the
+  permuter a file = lb_tu_ib.c header + the one function (static prototypes made extern). 2 iterations/s for 100-insn functions, 0.3/s for 500+. Scratch helpers
+  (put.py, sc.sh, dperm.py, permprep.sh) lived in build/scr2 and are not committed.
+Still near-matches: itembox_cursor_mv (cm6 variant: only `daddiu` vs `addiu` for the constants 9/0 in the decimal block; int lo/hi gives the right registers, u8 gives
+daddiu but premasks), itembox_pickup (check.py 461/541 but align.py 256 lines: p5 = w + 5 lands in a1 where the original has t0, loop registers shifted by one),
+itembox_sellout (check.py 34/412 differing insns, align.py 42 lines, nearly all one register shift: w in a1/const 1 in a0 where the original has a2/a1), Disp_lb_item_box (about 110: w in t0 not v1),
+ItemboxWindowX (about 840), eft25_m/t (frame 336 vs 320, an f20 callee-saved float the original does not use), lb_rule_seet_set (500+), Lb_room_member (1: `addu v1,a0,v0` vs
+`addu v1,v0,a0`), lb_set_pl_stage (47), Plaza_chatlog_mv (5: v0/v1 swap in the scroll-up block), Plaza_disp_chatlog, plaza_disp_chat_log_sub.

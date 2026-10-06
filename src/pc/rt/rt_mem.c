@@ -118,6 +118,8 @@ static uint32_t *rel32;            /* sorted PS2 addresses of pointer words */
 static size_t nrel32;
 static uint32_t *rel32_lb;         /* the same for lobby.bin (.rellobby.bin) */
 static size_t nrel32_lb;
+static uint32_t *rel32_sel;        /* and select.bin (.relselect.bin) */
+static size_t nrel32_sel;
 
 static int cmp_u32(const void *a, const void *b)
 {
@@ -130,6 +132,7 @@ int rt_load_relocs(void)
 {
     load_rel_sections(".relmain", ".relgame.bin", &rel32, &nrel32);
     load_rel_sections(".rellobby.bin", NULL, &rel32_lb, &nrel32_lb);
+    load_rel_sections(".relselect.bin", NULL, &rel32_sel, &nrel32_sel);
     return nrel32 ? 0 : -1;
 }
 
@@ -215,8 +218,8 @@ void rt_relocate_images(void *(*map)(uint32_t))
  * target of a pointer: rt_sym_at(va, &off) gives the symbol that contains
  * va, the offset into it and whether it is a function, or NULL. */
 typedef struct { uint32_t va, size; const char *name; int func; } rt_sym;
-static rt_sym *symset[2];          /* 0: main + game.bin, 1: main + lobby.bin */
-static size_t nsymset[2];
+static rt_sym *symset[3];          /* 0: main + game.bin, 1: main + lobby.bin, 2: main + select.bin */
+static size_t nsymset[3];
 
 static int cmp_sym(const void *a, const void *b)
 {
@@ -227,7 +230,7 @@ static int cmp_sym(const void *a, const void *b)
 static void load_syms(int set)
 {
     uint32_t shoff, shn, i, k;
-    unsigned ovl_sec = set ? 12 : 8;    /* section index of the overlay (readelf -S) */
+    unsigned ovl_sec = set == 2 ? 6 : set ? 12 : 8;    /* section index of the overlay (readelf -S) */
     if (symset[set] || elf_n < 52)
         return;
     shoff = rd32(elf + 32);
@@ -359,4 +362,45 @@ void rt_lb_relocate_image(void *(*map)(uint32_t))
     for (k = 0; k < nrel32_lb; k++)
         if (lb_img && rel32_lb[k] >= OVL_GAME_VRAM && rel32_lb[k] - OVL_GAME_VRAM + 4 <= lb_n)
             rt_lb_relocate_range(rel32_lb[k], lb_img + (rel32_lb[k] - OVL_GAME_VRAM), 4, map);
+}
+
+/* ------------------------------------------------------------ select.bin
+ * The boot overlay (select.bin: title, logos, character creation and the
+ * continue screen; vram 0x533980 too, no .bss): its own image, pointer
+ * words (.relselect.bin) and symbols, as for lobby.bin. */
+static uint8_t *sel_img;
+static size_t sel_n;
+
+void rt_set_select(uint8_t *bin, size_t n)
+{
+    free(sel_img);
+    sel_img = bin;
+    sel_n = bin ? n : 0;
+}
+
+const uint8_t *rt_sel_addr(uint32_t va, size_t n)
+{
+    if (sel_img && va >= OVL_GAME_VRAM && va - OVL_GAME_VRAM + n <= sel_n)
+        return sel_img + (va - OVL_GAME_VRAM);
+    if (va < OVL_GAME_VRAM)
+        return rt_addr(va, n);
+    return NULL;
+}
+
+int rt_sel_in_range(uint32_t va)
+{
+    return sel_img && va >= OVL_GAME_VRAM && va < OVL_GAME_VRAM + sel_n;
+}
+
+const char *rt_sel_sym_at(uint32_t va, uint32_t *off, int *func) { return sym_at(2, va, off, func); }
+
+void rt_sel_relocate_range(uint32_t va, uint8_t *dst, size_t size, void *(*map)(uint32_t))
+{
+    size_t k;
+    for (k = rel_lower_in(rel32_sel, nrel32_sel, va); k < nrel32_sel && rel32_sel[k] + 4 <= va + size; k++) {
+        uint32_t v, h;
+        memcpy(&v, dst + (rel32_sel[k] - va), 4);
+        h = v ? (uint32_t)(uintptr_t)map(v) : 0;
+        memcpy(dst + (rel32_sel[k] - va), &h, 4);
+    }
 }

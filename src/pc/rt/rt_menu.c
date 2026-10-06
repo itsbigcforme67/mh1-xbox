@@ -102,21 +102,91 @@ void *func_5B4D30(s32 a) { return Lb_get_player_id(a); }
 int func_5CB310(void) { Lobby_quest_print(); return 0; }
 int func_5D8370(int a) { return Lb_get_pl_stat2(a); }
 void func_609750(void) { Lb_ItemBox_init(); }
+/* the item box screen (trans_pit_1_lb -> 0x60CE50, lobby f/lb_ib.c) */
+void Disp_lb_item_box(void);
+void func_60CE50(void) { Disp_lb_item_box(); }
 
 /* ------------------------------------------------ online / lobby only (no-ops) */
 u8 D_6EAC80[0x400];
-void SoftKeyboard_set() {}
-void SoftKeyboard_move() {}
+/* The soft keyboard (main f_sk, src/main/sk/sk_nm.c: the on-screen
+ * keyboard with kana/kanji conversion) is not ported. The PC's stand-in
+ * is plain typing: SoftKeyboard_set starts host text input (the viewer
+ * feeds it, rt_set_text_input), SoftKeyboard_move copies what was typed
+ * so far into the caller's buffer as full-width characters (han2zen, as
+ * the keyboard writes them) and reports done on Enter or the pad's start
+ * button; an empty name then becomes "HUNTER". Scripted runs: RT_NAME=xxx
+ * is typed at once. Used by the character screen's name (Edit_task). */
+static void (*text_begin_fn)(int on);
+static int (*text_take_fn)(char *out, int n);
+void rt_set_text_input(void (*begin)(int on), int (*take)(char *out, int n))
+{
+    text_begin_fn = begin;
+    text_take_fn = take;
+}
+static int sk_on, sk_max;
+static char sk_text[40];
+void han2zen(u8 *src, u8 *dst);
+void SoftKeyboard_set(int type, int mode, int maxlen, char *init)
+{
+    (void)type; (void)mode;
+    sk_on = 1;
+    sk_max = maxlen > 0 && maxlen < 16 ? maxlen : 8;
+    sk_text[0] = 0;
+    if (text_begin_fn)
+        text_begin_fn(1);
+    (void)init;
+}
+int SoftKeyboard_move(char *buf, int held, int push)
+{
+    char in[64];
+    int n, i, len, done = 0;
+    (void)held;
+    if (!sk_on)
+        return 1;
+    if (getenv("RT_NAME")) {
+        snprintf(sk_text, sizeof sk_text, "%.*s", sk_max, getenv("RT_NAME"));
+        done = 1;
+    } else {
+        n = text_take_fn ? text_take_fn(in, sizeof in) : 0;
+        for (len = 0; sk_text[len]; len++)
+            ;
+        for (i = 0; i < n; i++) {
+            if (in[i] == '\b') {
+                if (len)
+                    sk_text[--len] = 0;
+            } else if (in[i] == '\n') {
+                done = 1;
+            } else if (in[i] >= 0x20 && in[i] < 0x7F && len < sk_max) {
+                sk_text[len++] = in[i];
+                sk_text[len] = 0;
+            }
+        }
+        if (push & 0x8000)
+            done = 1;
+    }
+    if (done && !sk_text[0])
+        snprintf(sk_text, sizeof sk_text, "HUNTER");
+    han2zen((u8 *)sk_text, (u8 *)in);
+    for (i = 0; in[i]; i++)
+        buf[i] = in[i];
+    buf[i] = 0;
+    return done;
+}
 void SoftKeyboard_pos_set() {}
-void SoftKeyboard_exit() {}
-int SoftKeyboard_alive_check() { return 0; }
+int SoftKeyboard_exit(void)
+{
+    if (sk_on && text_begin_fn)
+        text_begin_fn(0);
+    sk_on = 0;
+    return 0;
+}
+int SoftKeyboard_alive_check() { return sk_on; }
 void DispSoftkeyboard() {}
 void net_send_chat() {}
 void Reibun_print() {}
 int Reibun_select_mv() { return 0; }
 int func_5BD520() { return 0; }
 int func_5CB100() { return 0; }
-void func_60CE50() {}
 /* tutorial overlay pieces (game.bin 0x63B0C0 / 0x63B470): only in the
  * village tutorial */
 int func_63B0C0() { return 0; }

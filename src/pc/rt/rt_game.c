@@ -388,6 +388,20 @@ void rt_game_draw(void)
         }
 }
 
+/* draw_prim (one ordering table now): the boot screens' trans() (rt_boot.c) */
+void rt_draw_ot(int t)
+{
+    int k;
+    if (t < 0 || t >= OT_N)
+        return;
+    for (k = 0; k < nqueue[t]; k++) {
+        PRIM *p = queue[t][k].p;
+        if (p->trans)
+            p->trans(p);
+        rt_fl_reset_states();
+    }
+}
+
 /* add_prim2 (0x169710): queue on a multi-entry ordering table; entry idx
  * of n (drawn high idx first on the PS2: plplAdd(ot + n - 1 - idx)) */
 int add_prim2(void *ot, PRIM *p, int idx, int n)
