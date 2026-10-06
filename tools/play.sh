@@ -8,6 +8,7 @@
 #   RB guard, LB camera reset, d-pad camera, Start pause menu.
 # Keyboard: W/A/S/D move, arrow keys attack, K roll, L sheathe, J item,
 #   E guard, Q camera reset, T/F/G/H camera, Enter pause menu.
+# Esc or closing the window quits.
 cd "$(dirname "$0")/.."
 [ -x build/pc/mhview ] || tools/build_pc.sh || exit 1
 case "$1" in
@@ -15,4 +16,4 @@ case "$1" in
     village) export RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1; set -- --quest 10 ;;
     *)       set -- --quest 10 ;;
 esac
-exec build/pc/mhview disc/mh1 --play --size 1280x960 "$@"
+exec build/pc/mhview disc/mh1 --play --size 1024x768 "$@"
