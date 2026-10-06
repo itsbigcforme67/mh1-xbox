@@ -1758,16 +1758,10 @@ void em09_effect_move_005AC940(EMW *em) {
         w->x44 = (u16)ran_suu(1) & 0xF;
         break;
     case 1:
-        switch (em->mode) {
-        case 4:
+        if (em->mode == 4 || em->mode == 5) {
             w->x4A = 3;
             w->x44 = 2;
-            break;
-        case 5:
-            w->x4A = 3;
-            w->x44 = 2;
-            break;
-        default:
+        } else {
             if (em->char0 != 0x42B) {
                 w->x44++;
                 switch ((w->x44 >> 1) % 20) {
@@ -1785,7 +1779,6 @@ void em09_effect_move_005AC940(EMW *em) {
                 w->x44 = 0;
                 w->x4A = 2;
             }
-            break;
         }
         ef_move_sub_005AB750(em, w);
         break;

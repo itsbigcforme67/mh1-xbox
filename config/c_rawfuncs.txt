@@ -22,8 +22,6 @@ lobby 0x005E7B70 0x5AC BsRequestCheck
 main 0x28CEB0 0x100 hit_sphr_sphr2
 main 0x28D0A0 0x1394 hit_cap_cap2_m
 main 0x28F270 0xEC4 hit_cap_cap3_m
-main 0x218360 0x134 GetAPXPixelMipmapAdrs
-main 0x2184A0 0xE8 GetAPXPaletteAdrs
 main 0x17BE20 0x78 flPS2matMul mn
 main 0x17BEA0 0xD8 flPS2matMul2 mn
 main 0x17BF80 0x74 flPS2matNormalize33 mn
@@ -69,3 +67,5 @@ lobby 0x005AF4E0 0x2D0 lb_shop_tag_decide
 lobby 0x0053BE00 0x130 Lb_put_materialItem
 lobby 0x00535840 0x3B4 lb_mix_put_itemDetail
 lobby 0x00536460 0x1B8 lb_mix_decide
+main 0x274690 0x74 Gun_level_up
+main 0x274760 0x54 Gun_option_ck
