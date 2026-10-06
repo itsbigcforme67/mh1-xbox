@@ -707,7 +707,7 @@ segments:
       - [0x08EED0, c, fl/flpad02]
       - [0x08F0A8, asm, text/GetFileHeadAAN]
       - [0x08F0B0, c, fl/rs03]
-      - [0x08F180, asm, text/plGetLoopInfoAan]
+      - [0x08F17C, asm, text/plGetLoopInfoAan]
       - [0x090080, c, fl/rs02]
       - [0x090370, asm, text/g_plGetInitMotionSetSizeFromAHI]
       - [0x090600, asm, text/f_convertmodelmeshamo]
