@@ -1,4 +1,4 @@
-/* eft02_nm - NOT BUILT. Whole eft02 file; eft02_t is 12 instructions off
+/* eft02_nm - NOT BUILT (eft02.c + eft02b.c are the linked copies; eft02_t matches since 6 Oct 2026). Whole eft02 file. eft02_t was 12 instructions off
  * (register a1/a2 and one scheduling slot in case 9-11). eft02 - SLPM_654.95 0x0027D6E0-0x0027EF58. Hit sparks and blood: one
  * model per effect, picked by arg (0-11), animated by stepping through
  * consecutive clay models every two frames (clay[timer / 2]), with its own
@@ -368,8 +368,8 @@ static void eft02_t(PRIM *pr) {
             flmatMakeScale(&m, ew->scale, ew->scale, ew->scale);
             flmatRotXYZ33(&m, DEG2RAD(ANG2DEG(ew->x07 << 8)), DEG2RAD(ANG2DEG(ew->u0A.joint)),
                           DEG2RAD(ANG2DEG(ew->stg << 8)));
-            col = -1;
             cl = mw->clay + ew->timer / 2 + 134;
+            col = -1;
             if (ew->arg == 9) {
                 r = 0xFF;
                 g = r;

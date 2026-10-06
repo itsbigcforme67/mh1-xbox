@@ -16,7 +16,7 @@ typedef struct EM17W {
     u8 has_tgt;           /* 0x17  */
     s8 x18;               /* 0x18  */
     u8 x19;               /* 0x19  */
-    u8 x1A;               /* 0x1A attack variant (atk 4) */
+    s8 x1A;               /* 0x1A attack variant (atk 4) */
     u8 x1B;               /* 0x1B  */
     s32 turn_left;        /* 0x1C  */
     s32 bank_max;         /* 0x20 bank limit for senkai_sub */

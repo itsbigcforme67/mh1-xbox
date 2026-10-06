@@ -42,7 +42,7 @@ void Lb_stage_load(int stage) {
     LBSP *p;
     LBUNI *u;
     u16 ang;
-    if (lb_sys._pad70 == 0) {
+    if (lb_sys.x70 == 0) {
         Lb_load_player_all();
     }
     flCompact();

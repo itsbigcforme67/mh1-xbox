@@ -315,6 +315,14 @@ void rt_game_init(int stage)
         for (; r && *(float *)(r + 4) != -1.0f; r += 0x18)
             fprintf(stderr, "rt_game: stage %d spot kind %d at %.0f %.0f %.0f r %.0f ang %04X\n", stage, *(u16 *)(r + 2),
                     *(float *)(r + 4), *(float *)(r + 8), *(float *)(r + 0xC), *(float *)(r + 0x10), *(u16 *)(r + 0x14));
+        {   /* the exits (stage_mv_ck's STG_MV list, 0x34 bytes each) */
+            void *Stage_mv_data_get(int st, int pl);
+            u8 *m = Stage_mv_data_get(stage, 0);
+            for (; m && *(u16 *)m != 0xFFFF; m += 0x34)
+                fprintf(stderr, "rt_game: stage %d exit to %d kind %d at %.0f %.0f %.0f r %.0f h %.0f box %.0f %.0f %.0f\n", stage,
+                        *(u16 *)m, *(s16 *)(m + 2), *(float *)(m + 4), *(float *)(m + 8), *(float *)(m + 0xC),
+                        *(float *)(m + 0x10), *(float *)(m + 0x14), *(float *)(m + 0x18), *(float *)(m + 0x1C), *(float *)(m + 0x20));
+        }
     }
 }
 

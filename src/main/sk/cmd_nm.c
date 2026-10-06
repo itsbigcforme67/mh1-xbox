@@ -151,8 +151,8 @@ void cmd_henkan(void) {
             return;
         }
         while ((s8)p[0] != 0) {
+            c = p[2];
             if ((s8)p[0] == 0x4E || (s8)p[0] == 0x6E) {
-                c = p[2];
                 if (c != 0x59 && c != 0x79) {
                     strncpy((char *)p, *(char **)(nn_tbl + (s8)p[1] * 4 - 4), 2);
                 }

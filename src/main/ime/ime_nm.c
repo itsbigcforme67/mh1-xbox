@@ -3943,9 +3943,9 @@ BS *make_bsmem(int pos, int end, CH *ch)
 
 static BS *ins_bsmem(BS *list, BS *n)
 {
-    s16 len;
-    BS *prev;
     BS *cur;
+    BS *prev;
+    int len;
 
     len = n->len;
     if (list == 0 || list->len < len) {
@@ -3954,9 +3954,14 @@ static BS *ins_bsmem(BS *list, BS *n)
     }
     cur = list->next;
     prev = list;
-    while (cur != 0 && cur->len >= len) {
-        prev = cur;
-        cur = cur->next;
+    if (cur != 0) {
+        do {
+            if (cur->len < len) {
+                break;
+            }
+            prev = cur;
+            cur = cur->next;
+        } while (cur != 0);
     }
     prev->next = n;
     n->next = cur;

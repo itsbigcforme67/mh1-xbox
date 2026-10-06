@@ -197,6 +197,25 @@ int rt_player_uses_game(void)
     return use_game;
 }
 
+/* test aids RT_PL_AIM / RT_PL_WARP_EM / RT_DMG_MUL work on monster slot 0,
+ * or on the slot RT_PL_TARGET="tick:slot,tick:slot,..." names from that
+ * player tick on */
+static int pl_ticks;
+int rt_test_target(void)
+{
+    const char *s = getenv("RT_PL_TARGET");
+    int slot = 0;
+    while (s && *s) {
+        int t, n;
+        if (sscanf(s, "%d:%d", &t, &n) == 2 && pl_ticks >= t)
+            slot = n;
+        s = strchr(s, ',');
+        if (s)
+            s++;
+    }
+    return slot >= 0 && slot < 20 ? slot : 0;
+}
+
 void rt_player_tick(int no)
 {
     if (!rt_player_uses_game()) {
@@ -204,39 +223,76 @@ void rt_player_tick(int no)
         return;
     }
     rt_pad_tick();
+    pl_ticks++;
     if (getenv("RT_PL_AIM")) {      /* test aid: face monster 0 while standing (scripted fights) */
         extern u8 em_work[];
         u16 Em_Calc_angY(f32 *a, f32 *b);
         PLW *p = &player_work[no];
-        if (em_work[0] && (p->flag14 == 0 || p->flag14 == 1) && (p->flag15 == 0 || p->flag15 == 2 || p->flag15 == 3 || p->flag15 == 4))
-            p->ang[1] = Em_Calc_angY(p->pos, (f32 *)(em_work + 0xAC));
+        u8 *tg = em_work + 0xA10 * rt_test_target();
+        if (tg[0] && (p->flag14 == 0 || p->flag14 == 1) && (p->flag15 == 0 || p->flag15 == 2 || p->flag15 == 3 || p->flag15 == 4))
+            p->ang[1] = Em_Calc_angY(p->pos, (f32 *)(tg + 0xAC));
     }
-    if (getenv("RT_PL_WARP_EM")) {  /* test aid: at tick N, next to monster 0's carve point (or body), facing it */
+    if (getenv("RT_PL_WARP_EM")) {  /* test aid: at ticks "t1,t2-t3,..", next to monster 0's carve point (or its first body volume), facing it */
         static int tk;
         extern u8 em_work[], StiEM_data[];
+        extern u8 *em_body_tbl[];
+        int hit_data_expand(void *chr, void *body, f32 *cap, f32 *sph);
         u16 Em_Calc_angY(f32 *a, f32 *b);
-        if (++tk == atoi(getenv("RT_PL_WARP_EM")) && em_work[0]) {
+        const char *s = getenv("RT_PL_WARP_EM");
+        u8 *tg = em_work + 0xA10 * rt_test_target();
+        int hit = 0;
+        tk++;
+        for (; *s; s++) {       /* "t" or a range "t1-t2" (every tick in it) */
+            int a = atoi(s), b = a;
+            const char *dash = strchr(s, '-'), *comma = strchr(s, ',');
+            if (dash && (!comma || dash < comma))
+                b = atoi(dash + 1);
+            if (tk >= a && tk <= b)
+                hit = 1;
+            while (*s && *s != ',')
+                s++;
+            if (!*s)
+                break;
+        }
+        if (hit && tg[0]) {
             PLW *p = &player_work[no];
-            s8 hp = (s8)em_work[0x88D];
-            f32 *t = hp >= 0 ? (f32 *)(StiEM_data + 0x1C * hp) : (f32 *)(em_work + 0xAC);
+            s8 hp = (s8)tg[0x88D];
+            f32 *t = hp >= 0 ? (f32 *)(StiEM_data + 0x1C * hp) : (f32 *)(tg + 0xAC), cap[8], sph[4], r = 120.0f;
+            u8 *bd = em_body_tbl[tg[2]];
+            if (hp < 0 && bd && *(s16 *)bd != -1) {     /* alive: its main body sphere */
+                hit_data_expand(tg, bd, cap, sph);
+                if (sph[3] > 0) {
+                    t = sph;
+                    r = sph[3] + 40.0f;
+                }
+            }
             f32 d[2] = { p->pos[0] - t[0], p->pos[2] - t[2] }, l = sqrtf(d[0] * d[0] + d[1] * d[1]);
             if (l < 1) { d[0] = 1; l = 1; }
-            p->pos[0] = t[0] + d[0] / l * 120.0f;
-            p->pos[2] = t[2] + d[1] / l * 120.0f;
-            p->pos[1] = t[1];
+            p->pos[0] = t[0] + d[0] / l * r;
+            p->pos[2] = t[2] + d[1] / l * r;
+            if (hp >= 0)
+                p->pos[1] = t[1];
             p->ang[1] = Em_Calc_angY(p->pos, t);
-            fprintf(stderr, "rt_player: warped to %.0f %.0f (carve point %d at %.0f %.0f %.0f)\n",
-                    p->pos[0], p->pos[2], hp, t[0], t[1], t[2]);
+            if (getenv("RT_PL_TRACE") || getenv("RT_QUEST_TRACE"))
+            fprintf(stderr, "rt_player: tick %d warped to %.0f %.0f (carve point %d at %.0f %.0f %.0f)\n",
+                    tk, p->pos[0], p->pos[2], hp, t[0], t[1], t[2]);
         }
     }
-    if (getenv("RT_PL_WARP")) {     /* test aid: "tick,x,z": put the hunter at x,z (same height) at that tick */
+    if (getenv("RT_PL_WARP")) {     /* test aid: "tick,x,z[;tick,x,z...]": put the hunter at x,z (same height) at those player ticks */
         static int tk;
-        int t = 0;
-        float x, z;
-        if (sscanf(getenv("RT_PL_WARP"), "%d,%f,%f", &t, &x, &z) == 3 && ++tk == t) {
-            player_work[no].pos[0] = x;
-            player_work[no].pos[2] = z;
-            fprintf(stderr, "rt_player: warped to %.0f %.0f\n", x, z);
+        const char *s = getenv("RT_PL_WARP");
+        tk++;
+        while (s && *s) {
+            int t = 0;
+            float x, z;
+            if (sscanf(s, "%d,%f,%f", &t, &x, &z) == 3 && tk == t) {
+                player_work[no].pos[0] = x;
+                player_work[no].pos[2] = z;
+                fprintf(stderr, "rt_player: tick %d warped to %.0f %.0f\n", tk, x, z);
+            }
+            s = strchr(s, ';');
+            if (s)
+                s++;
         }
     }
     if (getenv("RT_PL_DIE")) {      /* test aid: "t1,t2,..": the hunter faints (the game's Pl_die_set) at those ticks */
@@ -397,7 +453,7 @@ void hit_check(void);
 void rt_hit_check(void)
 {
     static int tr = -1;
-    u8 *e = em_work;
+    u8 *e = em_work + 0xA10 * rt_test_target();
     hit_check();
     if (e[0x38D] && getenv("RT_DMG_MUL")) {     /* test aid: scale this tick's damage to monster 0 */
         int k, m = atoi(getenv("RT_DMG_MUL"));
@@ -422,6 +478,8 @@ void rt_hit_check(void)
                            *(s16 *)b, *(s16 *)(b + 2), k, cap[0], cap[1], cap[2], cap[3], cap[4], cap[5], cap[6],
                            sph[0], sph[1], sph[2], sph[3]);
                 }
+                printf("  em0 be %d x10 %d mode %d stg %d (game %d) x40C %d x40A %d dm %d\n", e[0], e[0x10], e[0x14], e[0x736],
+                       rt_game_stage(), PF(e, u16, 0x40C), e[0x40A], e[0x38D]);
                 for (b = em_body_tbl[e[2]]; b && *(s16 *)b != -1; b += 0x28) {
                     k = hit_data_expand(e, b, cap, sph);
                     printf("  eb j %d t %d -> %d cap %.0f %.0f %.0f - %.0f %.0f %.0f r %.0f sph %.0f %.0f %.0f r %.0f\n",

@@ -77,10 +77,10 @@ void mode_sel();
 void mode_sel_end();
 void mode_sel_exit();
 int ck_start_sw();
-int key_rept_du();
+int key_rept_du(int, u16, u16);
 void sel_sel_sub();
 
-int key_rept_du();
+int key_rept_du(int, u16, u16);
 void sel_sel_sub();
 
 typedef struct SPR {
@@ -450,15 +450,10 @@ SELT *tsk;
     }
 }
 
-int key_rept_du(pad, held, push)
-int pad;
-u16 held;
-u16 push;
-{
+int key_rept_du(int pad, u16 held, u16 push) {
     int v = push;
-    KT *t;
+    s16 n;
     s16 *w;
-    s16 *c;
 
     if (v & 0x3000) {
         key_timer[pad].on = 0;
@@ -466,25 +461,25 @@ u16 push;
         return v;
     }
     if (held & 0x3000) {
-        t = &key_timer[pad];
         v = 0;
-        if (t->on != 0) {
+        if (key_timer[pad].on != 0) {
             w = &key_wait[pad];
             *w = 4;
         } else {
             w = &key_wait[pad];
             *w = 10;
         }
-        c = &key_timer[pad].cnt;
-        if (*w < (*c = *c + 1)) {
-            *c = 0;
-            t->on = 1;
-            return held;
+        n = key_timer[pad].cnt + 1;
+        key_timer[pad].cnt = n;
+        if (*w < n) {
+            key_timer[pad].cnt = 0;
+            key_timer[pad].on = 1;
+            v = held;
         }
-        return v;
+    } else {
+        key_timer[pad].on = 0;
+        key_timer[pad].cnt = 0;
     }
-    key_timer[pad].on = 0;
-    key_timer[pad].cnt = 0;
     return v;
 }
 

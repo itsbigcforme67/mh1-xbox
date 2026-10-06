@@ -3328,18 +3328,18 @@ static void em_dmg19_005A0F50(EMW *em, EM08W *w) {
 
 static void em_demo00_005A0FF0(EMW *em, EM08W *w) {
     f32 temp_f1;
-    f32 temp_f1_2;
     f32 temp_f1_3;
     f32 temp_f1_4;
     f32 temp_f1_5;
     f32 var_a3;
     u32 spd;
-    s32 temp_a2_2;
     s32 temp_t0;
     u16 temp_a1;
+    f32 temp_f1_2;
     u16 temp_a1_2;
     u32 temp_a2_3;
     u32 temp_a3;
+    s32 temp_a2_2;
     u8 temp_a3_2;
 
     em->x9E1 = 5;
@@ -5560,26 +5560,37 @@ void swim_eff_set2_005A7120(f32 scale, EMW *em) {
     }
 }
 
-void em21_target_ang_calc(EMW *em, int arg1) {
-    int d;
-    int a;
-    int t;
-
-    d = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
-    a = em->ang[1];
-    d = (d - a) & 0xFFFF;
-    t = arg1 & 0xFFFF;
-    if (d < 0x8001) {
-        if (d < t) {
-            em->ang[1] = a + d;
-        } else {
-            em->ang[1] = a + t;
-        }
-    } else if (0x10000 - t < d) {
-        em->ang[1] = a + d;
-    } else {
-        em->ang[1] = a - t;
+void em21_target_ang_calc(EMW *em, int arg1)
+{
+  int d;
+  int a;
+  int t;
+  d = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+  a = em->ang[1];
+  ;
+  t = arg1;
+  t = t & 0xFFFF;
+  if (((d - a) & 0xFFFF) < 0x8001)
+  {
+    em->pos = em->pos;
+    if (0, ((d - a) & 0xFFFF) < t)
+    {
+      em->ang[1] = a + ((d - a) & 0xFFFF);
     }
+    else
+    {
+      em->ang[1] = a + t;
+    }
+  }
+  else
+    if ((0x10000 - t) < ((d - a) & 0xFFFF))
+  {
+    em->ang[1] = a + ((d - a) & 0xFFFF);
+  }
+  else
+  {
+    em->ang[1] = a - t;
+  }
 }
 
 void atk_shell_set(EMW *em, int no) {

@@ -35,7 +35,7 @@ void rt_game_move(void);
 void rt_font_tick_begin(void);
 void rt_prims_reset(void);
 
-static int active, tick, last_step = -1, last_x68 = -1, last_6 = -1;
+static int active, tick, all_ticks, last_step = -1, last_x68 = -1, last_6 = -1;
 
 int rt_village_active(void) { return active; }
 
@@ -45,6 +45,12 @@ void rt_village_enter(void)
     memset(em_work, 0, 0xA10 * 20);     /* the quest's monsters are gone (all_reset) */
     clr_set_work();                     /* and the quest stage's set objects (all_reset -> clr_stg_work) */
     rt_cam_init(game_w[0x14]);          /* camera work (also with the host's own camera) */
+    {
+        void rt_lb_reload(void);
+        static int visits;
+        if (visits++)                   /* Load_overlay(3): lobby.bin data and .bss as loaded */
+            rt_lb_reload();
+    }
     Clear_lobby_ram();
     game_w[0x1DC] = 1;                  /* in the lobby overlay (Game_task step 1): lobby HUD prims, NPC talk sounds */
     if (getenv("RT_VILLAGE_SKIP_INTRO")) {  /* test aid (no save data): the first-visit event seen */
@@ -55,8 +61,10 @@ void rt_village_enter(void)
     lb_sys[4] = 0;
     active = 1;
     tick = 0;
-    if (getenv("RT_QUEST_TRACE"))
-        fprintf(stderr, "rt_village: enter (Clear_lobby_ram, Local_main from step 0)\n");
+    if (getenv("RT_QUEST_TRACE")) {
+        extern u8 User_data[];
+        fprintf(stderr, "rt_village: enter (Clear_lobby_ram, Local_main from step 0), money %d\n", *(s32 *)(User_data + 0x20));
+    }
 }
 
 /* One village tick. Returns the quest number when Local_main reports an
@@ -65,21 +73,23 @@ int rt_village_tick(void)
 {
     s32 r;
     tick++;
+    all_ticks++;
     rt_font_tick_begin();
     rt_prims_reset();
     rt_game_move();                     /* set objects and effects (move_set / move_eft) */
-    if (getenv("RT_LB_WARP")) {         /* test aid: "tick,x,z[,ang];...": put the hunter there at that village tick */
+    if (getenv("RT_LB_WARP")) {         /* test aid: "tick,x,z[,ang];...": put the hunter there at that village tick
+                                         * (counted over all village visits of the run) */
         const char *s = getenv("RT_LB_WARP");
         while (s && *s) {
             int t = 0, a = -1;
             float x, z;
             int n = sscanf(s, "%d,%f,%f,%x", &t, &x, &z, &a);
-            if (n >= 3 && t == tick) {
+            if (n >= 3 && t == all_ticks) {
                 *(float *)(player_work + 0xAC) = x;
                 *(float *)(player_work + 0xB4) = z;
                 if (n == 4)
                     *(u16 *)(player_work + 0xE) = (u16)a;
-                fprintf(stderr, "rt_village: tick %d hunter warped to %.0f %.0f\n", tick, x, z);
+                fprintf(stderr, "rt_village: tick %d (all %d) hunter warped to %.0f %.0f\n", tick, all_ticks, x, z);
             }
             s = strchr(s, ';');
             if (s)
