@@ -36,7 +36,7 @@ extern s32 set_mdlw;
 extern s32 stage_model;
 extern s32 set_model_data[];
 extern s32 SET_TEX[];
-extern s32 EDIT_TEX[2];
+extern s32 EDIT_TEX[];
 extern s32 edit_mdlw[2];
 extern s32 edit_top[2];
 
@@ -140,9 +140,10 @@ void edit_create_model(void) {
     int a;
     int h;
     int i;
-    s16 y;
+    int y;
 
-    for (i = 0, y = 10; i < 2; i++, y += 0x32) {
+    y = 10;
+    for (i = 0; i < 2; i++) {
         load_edit_model(i);
         a = pl_area_top;
         h = get_start_mdlw(1);
@@ -152,7 +153,8 @@ void edit_create_model(void) {
         edit_top[i] = h;
         edit_mdlw[i] = (s32)get_mdlw_ptr(h);
         set_used_mdlw(h, 1);
-        model_work_set((s16)h, a, y, EDIT_TEX[i], 0x900, 2);
+        model_work_set((s16)h, a, (s16)y, EDIT_TEX[i], 0x900, 2);
+        y += 0x32;
     }
 }
 
