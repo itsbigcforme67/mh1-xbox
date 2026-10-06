@@ -848,6 +848,25 @@ Lessons (function that shows it):
   `rate += tbl[i]` on a u8 keeps the value in its saved register.
 - The permuter's junk: `st = part;` (dead store before a call, load_bin) and `if (pl && pl && pl) {}` (pad_timer_calc_sub) are kept with comments. 330 s runs, one at a time,
   solved both after 240 s runs had found nothing.
+- NEW C written (no earlier C existed) and linked, all `rebuild OK`: net/cpinet16-26 (CpInetTcpGetStatus, CpInetPppGetDns, CpInetPppGetATScript, CpInetHttpInitialize,
+  CpInetHttpResolvCacheInitialize, http_wait_thread/CpInetHttpSignalThread, CpInetDelayThread, InetDnsCacheInitialize, InetConnectAll, wait/signal_http_static_sema,
+  CpInetPppGetStatus), net/netdev01-11 (DeviceGetOptionalStatus, bind_rpc_blocking, set_device_no, _device_check, _reset_recognize, _reset_dialtype,
+  search_sif_call_rpc, DeviceSelectInitialize, rpc_initialize, _decide_dialtype, InetConnectAllCore), model/light04 (light_move), model/yure01 (yure_move).
+  All are from m2c drafts (tools/draft.py) fixed by hand; the field names are guesses from use.
+- Lessons from the new C:
+  * A m2c `switch` whose cases map a state code to a state code is a jump table when the case values are dense (CpInetTcpGetStatus 12 cases at 0x36CE20, CpInetPppGetStatus
+    two tables): register `main:rodata` with ONE range per object, from the first table to the end of the last (0x36CEA0-0x36CF08, the 8 bytes between the tables
+    are the 16-byte alignment). Two rodata lines for one object gave a link that was 16 bytes too long ("MISMATCH built N want M").
+  * `default:` written between the numeric cases keeps the original block order (CpInetTcpGetStatus, CpInetPppGetStatus); `case 2: case 3:` listed in ascending order
+    for a compare chain that tests 3 first (DeviceGetOptionalStatus), `if (k != 3 && k != 2) return;` gives a different layout than the switch.
+  * `for (;;) { if (p->id == 0) break; ...; p++; }` gives the original's test-at-top loop where `for (p = x; p->id != 0; p++)` is inverted (set_device_no).
+  * An 8-argument callee (InetConnectAllCore) passes args 5-8 through; a callee with `(void)` prototype that m2c shows with fewer args often has more: check the
+    registers a0-a3, t0-t3 in the caller (InetConnectAll passes eight pointers into InetSys).
+  * `int f(...) { r = (s16)call(); if (r >= 0) {} else { return r; } ...; return r; }`: a function that ends with the call result still in v0 returns int r
+    (CpInetPppGetDns, CpInetTcpGetStatus); with a void return the stub layout differs.
+  * Far (non-gp) globals again need a declared size > 8 (`extern s32 Inet_http_static_sema[4]`), near ones must NOT (PppRecognize u8 stays gp).
+  * Sony-sample style code (module_load/module_loadhigh/module_unload with 8-nop gaps) and the USB keyboard files look like library code: not attempted.
+  * declbf found the register order for light_move (w, p, q, i, in, out) after 5 minutes; start it in the background and poll.
 Near-match status now: load_bin 5 (part/file saved registers swapped; declaration order irrelevant), stick_pow_get 3 (masks the test, ours masks
 the return instead; int r, (u8)r, copies did not help), Pit_mv 4 / Pit_mv_lb 3 (of which 2 and 1 are the real now/hold register copy, the rest are
 cosmetic func_NNNN names of other modules; the caller needs `int pit_key_repeat(u16,u16)` which both nm and a split file have), hit_hit_sub_pl 2 (one
@@ -859,7 +878,7 @@ is the best of 120; the col expression is scheduled differently), Ave_TcpSend 76
 Permuter (-j1, 240 s each) found nothing better for: load_shadow, Item_preparation_adrs (solved by hand), hit_hit_sub_pl, stick_pow_get, egg_com_ck,
 menu_data_monster_sub, load_bin, hit_calc_shl.
 
-### Unmatched Capcom code left in my ranges (after this pass), largest first. Sizes in bytes; "C" = C exists in a *_nm.c (written, not matching),
+### Unmatched Capcom code left in my ranges (after this pass; the network device/IOP helpers and light_move/yure_move listed above are now done), largest first. Sizes in bytes; "C" = C exists in a *_nm.c (written, not matching),
 "-" = no C yet. Library (not worth matching) is noted separately.
 - 0x15C000 trans_stage 15152 (C, stage model transform), 0x10C000 em_material_sub 7500 (-, called from weapon3_nm.c only)
 - effects: eft06_m 4848, eft13_m 2688, eft13_set_pos 2512, eft13_set_pos_em 2720, eft13_set_sub_em 1388, eft13_i 1924 (all C, far off), eft_rgba_linear 944
