@@ -6067,17 +6067,29 @@ int add_kana_buf(u8 *s)
 
 int bytesin_kana_buf(KANA *a, KANA *b)
 {
+    int r = 0;
+
     for (; a < b; a++) {
         if (a->ch & 0xFF00) {
+            r += 2;
+        } else {
+            r += 1;
         }
     }
+    return r;
 }
 
 int count_byte_kana_buf(int a, int n)
 {
+    KANA *p = &kana_buf[a];
+    int r = 0;
+
     while (n > 0) {
+        r += p->n;
         n--;
+        p++;
     }
+    return r;
 }
 
 int api_funcent(int *req)
