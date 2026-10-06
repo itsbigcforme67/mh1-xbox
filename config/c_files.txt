@@ -1874,3 +1874,7 @@ main 0x00216AC0 0x00216DD4 flfnt/flfnt03
 main 0x00217480 0x00217544 flfnt/flfnt04
 main 0x00217DE0 0x00217E48 flfnt/flfnt05
 main 0x0017BE20 0x00187C50 flps/fladdm
+main 0x001B9F70 0x001BA2B8 net/netsyn01
+main:rodata 0x0035EC10 0x0035EC34 net/netsyn01
+main 0x001BCCF0 0x001BCD7C net/netsyn04
+main 0x001BD260 0x001BD660 net/netsyn03
