@@ -53,6 +53,6 @@ void lb_process_use_item(s32 arg0) {
             var_s0_3 += 1;
             var_s1_3 += 4;
         } while (var_s0_3 < 4);
-        return;
+        break;
     }
 }

@@ -9,7 +9,7 @@ void plaza_moveMain(void) {
     switch (temp_v0) {
     case 0:
         if (plaza_enterLobby(temp_a0) != 3) {
-            return;
+            break;
         }
         tl_exit_sub_menu(0);
         return;

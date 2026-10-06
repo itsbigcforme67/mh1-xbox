@@ -63,7 +63,7 @@ void lbc_login_id_select(void) {
     default:                                        /* switch 1 */
     case -2:                                        /* switch 2 */
     case -1:                                        /* switch 2 */
-        return;
+        break;
     case 1:                                         /* switch 1 */
         F(u8, temp_v1, 0x2C34) = (u8) (temp_a1 + 1);
         Lbc_init_network_work();

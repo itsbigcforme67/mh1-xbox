@@ -1,3 +1,4 @@
+/* lb_by115 - agent B promoted near-match 0x005C2B10-0x005C2CF0: server_select_sub_04 (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 typedef struct { s16 x0000; s8 x0002; u8 x0003; u8 pad0004[0x7]; u8 x000B; s8 x000C; } ARG_server_select_sub_04_arg0;
 
@@ -20,7 +21,7 @@ void server_select_sub_04(ARG_server_select_sub_04_arg0 *arg0) {
             arg0->x0003 = (u8) (arg0->x0003 + 1);
             return;
         }
-        return;
+        break;
     case 2:
         arg0->x000C = 1;
         if (tk_sw_on_ck(0x20, 2) != 0) {
@@ -41,7 +42,7 @@ void server_select_sub_04(ARG_server_select_sub_04_arg0 *arg0) {
         }
         tk_lever_ck((u8 *)arg0 + 0xB, 1, 3);
         SetDialogYesNo(arg0->x000B);
-        return;
+        break;
     case 3:
         arg0->x0000 = (s16) (arg0->x0000 - 1);
         if (arg0->x0000 < 0) {
@@ -51,7 +52,7 @@ void server_select_sub_04(ARG_server_select_sub_04_arg0 *arg0) {
         break;
     case 4:
         arg0->x0000 = (s16) (arg0->x0000 - 1);
-        if (0 > arg0->x0000) {
+        if (arg0->x0000 < 0) {
             if (arg0->x000B == 0) {
                 arg0->x0002 = 2;
                 arg0->x0003 = 2U;

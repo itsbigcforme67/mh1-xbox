@@ -33,7 +33,7 @@ void plaza_capcomPage(void) {
             return;
         }
     default:                                        /* switch 1 */
-        return;
+        break;
     case 2:                                         /* switch 1 */
         if (F(u8, (u8 *)cw, 0x2C44) == 2) {
             F(u8, temp_a2, 3) = (u8) (temp_a1 + 1);
