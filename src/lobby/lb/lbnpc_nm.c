@@ -1748,13 +1748,12 @@ void npcPigSLEEP(em, kind)
 EMW *em;
 s8 kind;
 {
-    int off = game_w.master * 0xA00;
-    PLW *pl = (PLW *)((u8 *)player_work + off);
+    PLW *pl = &player_work[game_w.master];
 
     switch (em->x05) {
     case 0:
         em->x05++;
-        pl_flag_set(pl, 0x20000);
+        pl_flag_set((PLW *)em, 0x20000);
         if (kind == 0) {
             Lb_pl_chr_set0(em, 0x432, 0, 0x58, 0);
             return;
@@ -1763,7 +1762,7 @@ s8 kind;
         return;
     case 1:
         if (((EMW *)pl)->x15 != 0x33 && ((EMW *)pl)->x15 != 0x34) {
-            pl_flag_clr(pl, 0x20000);
+            pl_flag_clr((PLW *)em, 0x20000);
             Lb_pl_chr_set0(em, 0x431, 4, 0, 0);
             em->x05++;
             return;
@@ -1787,12 +1786,10 @@ s8 kind;
 void npcPigTOPL(em)
 EMW *em;
 {
-    u8 step = em->x05;
-    int off = game_w.master * 0xA00;
-    PLW *pl = (PLW *)((u8 *)player_work + off);
+    PLW *pl = &player_work[game_w.master];
     VEC3 d;
 
-    switch (step) {
+    switch (em->x05) {
     case 0:
         em->x05++;
         Lb_act_set(pl, 0, 0x58);
@@ -1826,7 +1823,7 @@ EMW *em;
         }
         break;
     case 3:
-        em->ang[1] += (s16)(u16)Lb_get_angle(pl->pos, player_work, off) / 5;
+        em->ang[1] += (s16)(u16)Lb_get_angle(em, pl->pos) / 5;
         break;
     }
 }
@@ -2024,10 +2021,8 @@ EMW *em;
 void npcPigWALK2(em)
 EMW *em;
 {
-    int off = game_w.master * 0xA00;
-    PLW *pl = (PLW *)((u8 *)player_work + off);
+    PLW *pl = &player_work[game_w.master];
     f32 d;
-    u32 t;
 
     switch (em->x05) {
     case 0:
@@ -2035,10 +2030,9 @@ EMW *em;
         Lb_pl_chr_set0(em, 0x3EB, 4, 0, 0);
         return;
     case 1:
-        em->x0E = Lb_get_angle(pl->pos, player_work, off);
-        t = (u32)em->x0E >> 31;
-        em->ang[1] += em->x0E / 10 + t;
-        d = flvecCalcDistance(em->pos, pl->pos, t);
+        em->x0E = Lb_get_angle(em, pl->pos);
+        em->ang[1] += em->x0E / 10;
+        d = flvecCalcDistance(em->pos, pl->pos);
         if (((EMW *)pl)->x15 == 0x33 || ((EMW *)pl)->x15 == 0x34) {
             if (d < 65.0f) {
                 em->x05++;
@@ -2049,7 +2043,6 @@ EMW *em;
                 Lb_pl_chr_set0(em, 0x3EB, 2, 0, 0);
                 return;
             }
-            return;
         } else {
             if (d < 130.0f) {
                 if (em->char0 != 0x3E9) {
