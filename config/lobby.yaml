@@ -2121,6 +2121,7 @@ segments:
       - [0x0CC39C, asm, text/tagAct_603]
       - [0x0CC3A0, c, f/lb_z129]
       - [0x0CC40C, asm, text/tagAct_500]
+      - [0x0CC410, c, f/lb_aq03]
       - [0x0CC640, c, f/lb_gz04]
       - [0x0CC698, asm, text/tagAct_318]
       - [0x0CC6A0, c, f/lb_gz05]
