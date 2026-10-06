@@ -1947,6 +1947,8 @@ segments:
       - [0x178DB8, asm, text/Disp_NPC_message]
       - [0x178DC0, c, chat/chat36]
       - [0x178F68, asm, text/ItemListWindow]
+      - [0x179700, c, chat/chat44]
+      - [0x1799A8, asm, text/PrintPlayerJob]
       - [0x1799B0, c, chat/chat13]
       - [0x1799F8, asm, text/EquipmentDescriptionWindowA]
       - [0x179A00, c, chat/chat40]
