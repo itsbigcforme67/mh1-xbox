@@ -1,4 +1,4 @@
-#include "lobby_a.h"
+#include "lobby_b.h"
 
 void CallBack_Event_ChatMessageTU(int arg0, int arg1, int arg2, int arg3) {
     u8 sp13F;

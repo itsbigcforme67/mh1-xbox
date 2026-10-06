@@ -28,7 +28,7 @@ void Lb_shop(void) {
     temp_a0 = (*(int *)((u8 *)&D_3E4FA0 + temp_a1));
     switch (F(s8, &lbShop, 0x14)) {       /* irregular */
     case 0:
-        Lb_shop_init_member(temp_a0, temp_a1, temp_a2);
+        Lb_shop_init_member(temp_a0);
         F(s8, &lbShop, 0x16) = 0;
         F(s8, &lbShop, 0x17) = 2;
         F(s8, &lbShop, 0x18) = 1;
@@ -46,16 +46,16 @@ void Lb_shop(void) {
         F(s32, &lb_pit, 4) = (*(int *)((u8 *)&npc_dialog_table + temp_a1_2));
         F(s8, &lbShop, 0x14) = (s8) (F(s8, &lbShop, 0x14) + 1);
         F(s8, &lb_pit, 8) = 0;
-        cnWrap_SoundRequest(0xC, temp_a1_2);
+        cnWrap_SoundRequest(0xC);
         Lbc_set_prim(0, 0, 0);
         break;
     case 1:
-        if ((sx1 = Lb_talk_check_default(0, temp_a1, temp_a2)) != 0) {
+        if ((sx1 = Lb_talk_check_default(0)) != 0) {
             F(s8, &lbShop, 0x14) = (s8) (F(s8, &lbShop, 0x14) + 1);
         }
         break;
     case 2:
-        temp_v0 = Lb_shop_move(temp_a0, temp_a1, temp_a2);
+        temp_v0 = Lb_shop_move(temp_a0);
         if ((temp_v0 != 3) && (temp_v0 != 0)) {
 
         } else {
@@ -66,7 +66,7 @@ void Lb_shop(void) {
         }
         break;
     case 3:
-        if ((sx2 = Lb_talk_check_default(0, temp_a1, temp_a2)) != 0) {
+        if ((sx2 = Lb_talk_check_default(0)) != 0) {
             F(s8, &lbShop, 0x14) = (s8) (F(s8, &lbShop, 0x14) + 1);
         }
         break;
@@ -76,7 +76,7 @@ void Lb_shop(void) {
         F(s32, &lb_sys, 0x6C) = 0;
         F(s8, &lbShop, 0x14) = 0;
         F(s8, &lbShop, 0x19) = 0;
-        NPCZoomInCameraCancel(temp_a0, temp_a1, temp_a2);
+        NPCZoomInCameraCancel(temp_a0);
         F(s8, &lb_sys, 0x87) = 0x14;
         break;
     }

@@ -21,9 +21,14 @@ for f in glob.glob('src/lobby/*/*.c'):
 heads = list(re.finditer(r'^([A-Za-z_][\w \*]*?\b(\w+)\([^;{]*\)(?:\n[^;{\n]*;)*\s*\{)\n', t, re.M))
 chunks = []
 for m in heads:
-    e = t.index('\n}\n', m.end()) + 3
+    e = t.index('\n}\n', m.end() - 1) + 3
     chunks.append((m.group(2), m.start(), e))
 header = t[:chunks[0][1]]
+# declarations between the functions are visible to every run (gaps in the near-match file)
+for (n1, s1, e1), (n2, s2, e2) in zip(chunks, chunks[1:]):
+    gap = t[e1:s2]
+    if gap.strip():
+        header += gap
 text = {n: t[s:e] for n, s, e in chunks}
 out = subprocess.run([sys.executable, 'tools/check.py', nm] + sys.argv[4:], capture_output=True, text=True).stdout
 st = {}

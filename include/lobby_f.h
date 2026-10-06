@@ -12,7 +12,7 @@ extern u8 *cw;                 /* client work (D_6DD7E0, 0xBF40 bytes): u8 acces
 typedef struct LBCOMMER { s8 mac[6]; u8 _pad06[2]; char name[0x10]; u8 _pad18[0x5C - 0x18]; } LBCOMMER; /* 0x5C bytes x8 at lbCommer */
 extern LBCOMMER lbCommer[8];
 
-typedef struct LBPLAYER { PLW *pl; u8 x04[0x10]; u8 _pad14[0x38 - 0x14]; } LBPLAYER; /* lb_player 0x38 x8 */
+typedef struct LBPLAYER { PLW *pl; u8 x04[0x10]; u8 _pad14[0x24 - 0x14]; s8 x24; u8 _pad25[0x38 - 0x25]; } LBPLAYER; /* lb_player 0x38 x8 */
 extern LBPLAYER lb_player[8];
 
 typedef struct LBSYS {         /* lb_sys 0x90 bytes */

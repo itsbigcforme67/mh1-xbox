@@ -22,7 +22,7 @@ void id_select_01(ARG_id_select_01_arg0 *arg0) {
                 var_v0 = temp_v0 - 1;
             }
             arg0->x0008 = var_v0;
-            cnWrap_SoundRequest(1, temp_a1_2);
+            cnWrap_SoundRequest(1);
             return;
         }
         if (temp_a1_2 & 0x1000) {
@@ -31,13 +31,13 @@ void id_select_01(ARG_id_select_01_arg0 *arg0) {
             if ((temp_v0_2 & 0xFF) >= 3) {
                 arg0->x0008 = 0U;
             }
-            cnWrap_SoundRequest(1, temp_a1_2);
+            cnWrap_SoundRequest(1);
             return;
         }
         if (temp_a1_2 & 0x20) {
             arg0->x0003 = (u8) (temp_a0 + 1);
             arg0->x0000 = 0x28;
-            cnWrap_SoundRequest(0, temp_a1_2);
+            cnWrap_SoundRequest(0);
             return;
         }
         return;

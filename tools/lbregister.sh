@@ -6,7 +6,12 @@ python3 tools/lbfieldcheck.py || exit 1
 FAMILIES="cnet/cnlbs_nm.c cnet/cnlbs cnet/cnlbs
 lb/lbnpc_nm.c lb/lbnpc lb/lbnpc
 lb/lbui_nm.c lb/lbui lb/lbui
-lb/lbshop2_nm.c lb/lbshop2 lb/lbshop2"
+lb/lbshop2_nm.c lb/lbshop2 lb/lbshop2
+lb/lb_mix_nm.c lb/lbmix lb/lbmix
+lb/lb_shop_nm.c lb/lbshp lb/lbshp
+lb/lb_em04_nm.c lb/lbem04 lb/lbem04
+lb/lb_em09_nm.c lb/lbem09 lb/lbem09
+lb/lb_em10_nm.c lb/lbem10 lb/lbem10"
 : > /tmp/c_files.add
 grep -v '^$' config/c_files.txt > /tmp/c_files.new
 echo "$FAMILIES" | while read nm prefix regdir; do
@@ -34,6 +39,28 @@ for l in open('config/lbnet_rodata.txt'):
     l = l.split('#')[0].split()
     if l and l[2] in runs:
         out.append('lobby:rodata %s %s %s' % (l[0], l[1], runs[l[2]]))
+# jump tables of the functions in the family runs (tools/lbf_jt.py)
+import sys
+sys.path.insert(0, 'tools')
+import lbf_jt
+have = set(l.strip() for l in open('config/c_files.txt')) | set(out)
+rng = [(int(q[1], 16), int(q[2], 16)) for q in (l.split() for l in list(open('config/c_files.txt')) + out) if len(q) == 4 and q[0] == 'lobby:rodata']
+for l in open('config/c_files.txt'):
+    p = l.split()
+    if len(p) == 4 and p[0] == 'lobby' and re.match(r'lb/lb(npc|ui|mix|shp|shop2|em)|cnet/cnlbs', p[3]):
+        tabs = []
+        for fn in re.findall(r'^[A-Za-z_][\w \*]*?\b(\w+)\([^;{]*\)(?:\n[^;{\n]*;)*\s*\{', open('src/lobby/' + p[3] + '.c').read(), re.M):
+            tabs += lbf_jt.ranges(fn)
+        tabs = sorted(set(tabs))
+        # one slot per object: merge tables that are only separated by alignment padding
+        merged = []
+        for a, e in tabs:
+            if merged and a - merged[-1][1] < 16: merged[-1][1] = max(merged[-1][1], e)
+            else: merged.append([a, e])
+        for a, e in merged:
+            ln = 'lobby:rodata 0x%08X 0x%08X %s' % (a, e, p[3])
+            if ln not in have and not any(x < e and a < y for x, y in rng):
+                out.append(ln); have.add(ln); rng.append((a, e)); print('jump table', p[3], ln)
 open('config/c_files.txt', 'a').write('\n'.join(out) + '\n')
 PY
-echo "registered $(grep -c '^lobby 0x.* \(cnet/cnlbs\|lb/lbnpc\|lb/lbui\|lb/lbshop2\)' config/c_files.txt) runs"
+echo "registered $(grep -c '^lobby 0x.* \(cnet/cnlbs\|lb/lbnpc\|lb/lbui\|lb/lbshop2\|lb/lbmix\|lb/lbshp\|lb/lbem\)' config/c_files.txt) runs"

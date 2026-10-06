@@ -135,7 +135,7 @@ def compare(mine, masks, orig, base, calls=None, names=None, module=None):
         if same and calls and i in calls and names is not None:
             tgt = ((base + i + 4) & 0xF0000000) | ((a & 0x3FFFFFF) << 2)
             want = names.get((module, tgt), set()) | names.get(("main", tgt), set())
-            if calls[i] not in want:
+            if calls[i] not in want and re.sub(r'_[0-9A-F]{8}$', '', calls[i]) not in want:
                 same = False
                 note = "   (calls %s, original calls %s)" % (calls[i], "/".join(sorted(want)) or "?")
         ok = ok and same

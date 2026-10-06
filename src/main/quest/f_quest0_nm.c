@@ -18,10 +18,17 @@ void *memset(void *, int, unsigned int);
  * does not forbid it (flag 0x1000). */
 int Modori_dama_ck(void)
 {
-    if (*((u8 *)&game_w + 0x2F) == *((u8 *)&game_w + 0x14)) {
-        return 0;
-    }
-    return (quest_w.x40 & 0x1000) == 0;
+  unsigned char new_var;
+  if ((*(((u8 *) (&game_w)) + 0x2F)) == (*(((u8 *) (&game_w)) + 0x14)))
+  {
+    return 0;
+  }
+  new_var = (quest_w.x40 & 0x1000) == 0;
+  new_var = (quest_w.x40 & 0x1000) == 0;
+  if ((!(&quest_w)) && (!(&quest_w)))
+  {
+  }
+  return new_var;
 }
 
 /* 0x226830 */

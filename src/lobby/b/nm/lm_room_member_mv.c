@@ -64,7 +64,7 @@ block_11:
         if (!(temp_s0 & 0x40)) {
             *(s8 *)0x39DAD0 = 1;
             *(u8 *)0x39DAD2 = 0x11;
-            if (ListSelect(temp_a3 + 0xA, var_s2, 3, temp_a3) != 0) {
+            if (ListSelect(temp_a3 + 0xA, var_s2, 3) != 0) {
                 F(u8, lbmw, 0xB) = 0U;
             }
             if (temp_s0 & 0x20) {
@@ -101,7 +101,7 @@ block_11:
             if ((F(u8, temp_v1_5, 0xB) == 0) && (temp_s0_2 & 0x200)) {
                 temp_v0_4 = Lb_room_member(F(u8, temp_v1_5, 0xC), 0);
                 if (temp_v0_4 != 0) {
-                    Lb_frendlist_entry(lbmw + 0x11, temp_v0_4);
+                    Lb_frendlist_entry(lbmw + 0x11);
                     temp_v1_6 = lbmw;
                     F(u8, temp_v1_6, 9) = (u8) (F(u8, temp_v1_6, 9) + 1);
                 } else {

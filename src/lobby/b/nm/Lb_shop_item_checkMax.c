@@ -47,7 +47,7 @@ block_23:
         goto block_24;
     }
     temp_a1 = (s8)arg1;
-    if ((temp_v1_2 >= temp_a1) && (CheckItemPrice_005AFEE0(arg0, temp_a1) == 1)) {
+    if ((temp_v1_2 >= temp_a1) && (CheckItemPrice_005AFEE0(arg0) == 1)) {
         return 1;
     }
 block_24:

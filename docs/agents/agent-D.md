@@ -661,3 +661,131 @@ em_atk04_005DE3F0 79/1 (em17_nm); em20_act_set 92/1 (em20_nm); em_cmd_sub_conten
   a version 0 that differs only in branch targets, do not trust it for branch shape), em20_act_set (addiu vs daddiu on
   `kind = 3`), Set20_set (delay-slot nops), eft04_t (colour packing order), em_cmd_sub_contents, print_tuto_message
   (s1/s2 swap of loop variables), fish_type_set, em_fly22 (float register numbers), em15 fly10 (copy of w to s0 first).
+
+# Eighth assignment: main module 0x1C0000-0x230000 and 0x24A240-0x2814E0 (agent D, 5 Oct 2026)
+Scope: Capcom game code only (CRI Sofdec/ADX 0x1C1958-0x217xxx and Sony/MWCC runtime skipped). Almost every
+Capcom function in these ranges already had C in an *_nm.c file, so the work was turning near-matches into
+byte matches and linking them. Tools:
+- `tools/new_game_runs.py` and `tools/mkruns3.py` now work for main (module taken from the path src/main/...).
+  mkruns3 also finds main jump tables (rodata 0x340000-0x3C0000) and accepts calls whose original target has no
+  symbol ("?"); it no longer runs off the end of the image when a table scan misfires.
+- `tools/permapply.py FILE FUNC`: copies the zero-score function from `tools/perm.py main FUNC FILE -j1
+  --stop-on-zero` (build/perm/FUNC/output-0-*) back into the near-match file. A queue of small near-matches
+  (1-25 instructions off) run one after the other found about a third of them within 4 minutes each. The result
+  often contains junk like `if ((m && m) && m) {}` or a `new_var` temporary: it only reproduces a branch layout.
+  (Do not run the queue while tools/rebuild.sh runs: rebuild wipes asm/.)
+- `tools/lbdraft_jt.py` takes MOD=main (m2c draft of main functions that use jump tables).
+- config/main_aliases.txt (new; the build already adds config/<module>_aliases.txt): `frame_check_001263F0` is
+  frame_check under a second name so one file can call it with its real float-LAST prototype
+  `(PLW *, int, f32)` next to plf.h's float-first guess (the float variable's mov.s is then scheduled last).
+
+## Linked this pass (main OK, all five OK)
+hk10-hk15 (10 more f_hk functions), sk10-11, ud09-12, netbgm03, ms03, ms04 (ms_net_patch_set, 6920 B), and
+pl_snd01 = 0x24A240-0x2542E0: pl_local_init, pl01_effect_move, sound_call*, wall_sd_req, ashi_*, yoroi_sd_req,
+move_default and ef_move_sub (39 760 bytes, the per-motion sound/effect script of player kind 1).
+
+## ef_move_sub (pl_snd_nm.c) - what turned 8620 differing instructions into 0
+- `GW8(0xD3)` -> the named field `game_w.pl_num`; `for (i = 0; i < n; i++) { p = &player_work[i]; ...}` (the
+  compiler's own pointer induction gives the original's `lui s2` AFTER the loop guard; `p = player_work` in the
+  for header put it before); `s16 i`; `p++, i++` order in the header was irrelevant once p became inductive.
+- The ladder of compare constants keeps registers a0-a3 alive when a case body later uses the same constant: the
+  original's "stale argument" calls are real constants. `Code_Make(STALE, 2, STALE, 2)` was `Code_Make(35, 2, 36, 2)`
+  (a1 = 35 and a2 = 36 left over from the ladder), `sound_call2(pl, STALE, STALE)` was `(pl, 42, 41)`, and
+  `sound_call(pl, 4, STALE)` was `(pl, 4, 64)`. Replacing the placeholders made the whole ladder match.
+  Lesson: when the original passes an argument without a load, look at the compare ladder above for the constant.
+- A call that passes one extra stale argument (`move_default(pl, w)`: a1 = w) needs the extra parameter in the C
+  signature, not just a call with one argument.
+- Eft20_set_pl is (f32 scale, PLW *, s16, s16) and was called with the wrong prototype in the nm file.
+- Float loop variable: `f32 f = 26.0f; for (...) { if (frame_check(f, ...)) ...; f += 4.0f; }` (not constants).
+- Two consecutive calls with the same float variable: `pl = (q = pl);` between them and the second call using `q`
+  reorders the second mov.s (found with the permuter on a 20-line harness, tools/perm.py-style dir with a
+  hand-written target.s; scratch harness compiled with the same flags).
+- The switch on `pl->kind` (jump table 0x36E0F0) has kind 0 as `case 0: default:` placed LAST, kinds 1, 2, 5, 3, 4
+  before it: the table content is only checked by rebuild.sh, not by check.py/alignall (they ignore the table).
+
+## Other lessons confirmed by matches this pass
+- A call with arguments the original does not set (`hk_key_space` -> `sk_henkan_sub()`, `cmd_henkan()`,
+  `Net_fade_check()`, `net_swdata()`, `net_shot_ng_ck()`, `Ncm_mmbb_spr_load()`) is declared unprototyped `int f();`
+  and called without arguments; a pointer that is then no longer passed also frees its register (hk_key_f7/f6).
+- `if (hk_kanainp_ck() != 0)` on a u8-returning function adds an andi; `if (hk_kanainp_ck())` does not.
+- `u16 field += n` adds an `andi` of n; `field = field + n` does not (cmd_kakutei_all, sk_reibun_input).
+- `switch (x) { case 0xB: case 3: ...}` for an `x == 3 || x == 11` with beq/beq/b layout (sk_set_yn_kigou_f).
+- Small extern objects (<= 8 bytes) are gp-relative; an unsized `extern T x[]` gives lui/addiu (dakuten_1257 needs
+  `[2]`, NET_CON_TEX and D_6E9700 need `[]`).
+- Absolute reads of an overlay address are best written as an extern unsized array (`D_6E9700[0]`): the compiler
+  then sees no aliasing with net_common_w and hoists the load above the stores like the original does.
+- Statement order for `field = const; x89++`: write the increment first (the original's li/lbu register choice).
+- A jump-table switch whose cases are written in the original's BLOCK order (Equip_ok_ck/Get_equip_bit: kinds 2,3,5,4,0)
+  is needed for the table; alignall reports 0 for the wrong order because it ignores table addends.
+- `x >= y` on two s16 fields compiled as `slt at` with the loads in the original order when written `y <= x`.
+- `0 < r` instead of `r > 0` gives `slt at, zero, v0` + beq (instead of blez) for an int result.
+- Shared header edit: include/netcw.h: x7E/x7F/x84(s32)/x8B named from padding, x89/x8A are u8 (lbu in
+  ms_net_patch_set); ms_nm.c/ms01-03 users still match.
+
+## Eighth assignment, later additions
+Linked by the permuter queue and by hand (all main OK): bgm (lobby_bgm_set, stage_bgm_set), cmd (cmd_prev_bun, cmd_prev_kouho,
+Set_KouhoTable), cngmsg (Write, WriteFloat32/ReadFloat32, CnInetNetworkInitialize_online, swapb), aqcmd (AQQuickSortSub),
+netwk (return_to_net_top_menu, Net_kb_input_init2, net_swdata3), camr (ZoomBaseAngleRail, RollAngleRail, dDivComplex),
+camarea03-04 (default_area_data + StageCamInit + CamAreaAttribChk), ud (Copy_user_id, Gun/Equip helpers), hk (key_delete,
+l_cursor and others), qstb04 (Modori_dama_ck). Main had duplicates of some of these from another agent (ud11/12, cmd05,
+aqcmd04, sndb01/02): the merge keeps main's runs and pl_snd01 (a superset of sndb01/02).
+More lessons (each confirmed by a match):
+- A callee defined EARLIER in the same file and `static` keeps the caller's argument registers alive: StageCamInit does
+  not save cw across `default_area_data(cw)` only when default_area_data is static in the same translation unit; the
+  callee therefore has to match too (it was linked together with StageCamInit in camarea03).
+- `(u32)float_value` written directly produces the original's inline c.le.s / sub.s / or sequence; a helper function
+  (even `static inline`) does not (Get_cam_grid_XZ).
+- `u8 field` read where the header says s8: cast at the use `(u8)PitMenu.x0F` (lbu) rather than changing the header.
+- Tables of at most 8 bytes are gp-relative: `extern s16 receive_mark_pos[2][2];` (Put_receive_mark), unsized `[]` is not.
+- Integer + pointer operand order: `v + (s32)mission_area` gives the original `addu v0,v0,v1`, `mission_area + v` the
+  reverse (Em_data_com_adrs_get, Em_data_st_adrs_get, Start_item_data_adrs_get); `p += idx; *p` where the original
+  advances the pointer register.
+- `which != 0 ? a : b` vs `which == 0 ? b : a` swaps the branch sense and which load comes first.
+- `c = x14 != 0 || x15 < 0x27 || x15 > 0x2B` (CamAreaAttribChk): `> 0x2B` (not `>= 0x2C`) keeps the compare result in `at`.
+- A switch's case labels are tested in the REVERSE of their source order, and that holds for groups: hk_key_eisuu needed
+  `case 2: case 7:` then `case 10: case 15:` then `case 0, 1, 6, 8, 9, 14` (descending compare chain in the asm).
+- Not solved (left near-match): hk_key_eisuu (2 off: one `b`+nop pair), Seisan_ok_ck (register naming of locals, 8 locals),
+  Get_cam_grid_XZ (10), Em_direct_set (register naming, K&R parameter), str_gattai (needs MWCC's own va_start; the nm
+  file's `va_start` is an implicit call), quest_condition_prog (124 off), the *_effect_move family.
+
+# Fourth assignment (main module 0x1C0000-0x230000, 0x24A240-0x2814E0)
+
+Linked, all five modules OK (rebuild.sh):
+- ud12.c Seisan_ok_ck (0x2743E0-0x274654). Fix: the final test is `cnt == 0 || any != 0`
+  (the older C had it inverted), and `for (j = 0, e = ent; ...)` puts j=0 first.
+- boot01.c/boot02.c: main (0x22FDD0), SlashToBackslash, InetDbgPrint (varargs stub with four
+  named params), InetConnectInitialize, LobbyToMcsInitSocket, LobbyToMcsInit. cnNet_ModuleLoad
+  (0x22FE00, 12 bytes) sits between main and SlashToBackslash and stays asm: always check
+  tools symbol list for hidden functions between two linked ones.
+  `switch (*CurDevice) { case 2: case 3: ...; break; default: break; }` gives the original
+  "beq, beq, b" with the empty fall-through (the if/else forms do not).
+- camq1.c Fish Wyvern / Legend Sword camera requests (0x225F50).
+- ncm01-03.c network connection message drawing (ncm_char_length, ncm_get_char_size_num,
+  ncm_center_x, Ncm_mssage_disp, Ncm_err_mssage_disp). ncm_char_length must return u8 with a
+  u8 result variable (daddiu constants). Spilled s16 parameters of the callee are `int` params.
+  A `do {} while` guarded by `if (*lines != 0)` and a copy `x0 = x` inside the guard
+  matches the original compare of the first x only.
+- flfnt01-05.c: the Capcom "fl" bitmap font library (0x216490-0x217E48, 27 functions, no C
+  before). Linked: Create, GetSystemMemorySize, StackReset, Init, CacheFlush, SetSize, Locate,
+  SetZ, SetPalette (`(s16)pal % 32`), SetHalftype, Draw, DrawAll, MakeHandle, PaletteTrans,
+  DrawStart, flnecAscii2Sjis. np (gp pointer) is the font work FNP (struct in flfnt_nm.c):
+  five request lists of 0x80 FREQ (0x10 bytes), string buffer, glyph cache, texture and
+  palette handles, DMA packet cursor. Whole library with near-matches in flfnt_nm.c.
+  Near-matches (compile, logic believed right): flfntSetPalData (99/108, the original steps
+  the destination by 2 twice, no way found to stop MWCC folding it), flfntPrintf (73/103,
+  hand-made va_list: &fmt + 0x48 - 56; original re-reads np for every field), flfntFontPuts
+  (18/108, char register a0 instead of a1), flfntDrawTerm (18/54, the 36-bit mask is
+  dsll32/dsrl32 in the original, MWCC folds it to and), flfntSjis2Index (6/21),
+  flfntSjis2Jis (51), flnecCheckFont (12), flnecCheckString (32), flnecExpandFont (88; the
+  original steps the output pointer after every pixel pair), flnecReloadTexture (7/189).
+  Not written: flfntFontPutc (GS packet builder, 1260 bytes).
+- ncm_nm.c also holds Ncm_mssage_disp_option (37/86), Ncm_br_mc_mssage_disp (95/200),
+  Ncm_menu_disp (139/162; the switch needs explicit case 0, 2..11 for the jump table at
+  0x373460, not yet registered) and ncm_str_disp_sub (34/156, saved-register order of s/x/size;
+  declbf over six locals found nothing better).
+Near-matches left: Quest_start (10 off: `mission_area` loaded before `m->o[0]`, the original
+loads o[0] first; tried operand order, temp variable), Get_cam_grid_XZ (the original loads the
+cell origin after the float conversion, u8 result), hk_key_eisuu (original returns straight to
+the epilogue from the failed tests; every if/else, break and return form compiled to a stub).
+Not Capcom, skipped: Sofdec/ADX/CRI middleware (0x1C4000-0x216000), PS2 kernel stubs (0x254300+),
+libcdvd-style RTC helpers (0x27C698).
