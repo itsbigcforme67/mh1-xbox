@@ -1,3 +1,4 @@
+/* lb_lid01 - agent C 0x005B8170-0x005B84CC: login id select (separate index/offset locals fix s0/s1). */
 #include "lobby_a.h"
 extern char D_3C6FC8[];
 typedef struct { u8 pad00[0x5]; u8 x05; u8 padEND[0x2A]; } CNW;
@@ -10,6 +11,8 @@ void lbc_login_id_select(void) {
     s32 s2;
     s32 s1;
     s32 s0;
+    s32 ix;
+    s32 of;
     u8 st;
     u8 *stp;
     s32 r;
@@ -81,16 +84,16 @@ void lbc_login_id_select(void) {
         }
     case 5:
         cw[0x2C34]++;
-        s1 = F(u8, pNet, 8);
-        cw[1] = s1;
+        ix = F(u8, pNet, 8);
+        cw[1] = ix;
         CallBackWaitInit();
         Set_userdata((int)&player_work + (game_w.master * 0xA00));
-        s0 = s1 * 0x11;
-        memcpy(cw + s0 + 0x2B, D_3C6FC8, 0x10);
-        if ((s8)cw[0xB + s1 * 8] == 0) {
-            cnLBS_Send_LoginUserAccount(0, cw + s0 + 0x2B, cw + (s1 << 6) + 0x6F);
+        of = ix * 0x11;
+        memcpy(cw + of + 0x2B, D_3C6FC8, 0x10);
+        if ((s8)cw[0xB + ix * 8] == 0) {
+            cnLBS_Send_LoginUserAccount(0, cw + of + 0x2B, cw + (ix << 6) + 0x6F);
         } else {
-            cnLBS_Send_LoginUserAccount(cw + s1 * 8 + 0xB, cw + s0 + 0x2B, cw + (s1 << 6) + 0x6F);
+            cnLBS_Send_LoginUserAccount(cw + ix * 8 + 0xB, cw + of + 0x2B, cw + (ix << 6) + 0x6F);
         }
         cnetGet_Login_DecideUserID(cw + 0x440);
         cnetGet_Login_DecideUserHandle(cw + 0x448);

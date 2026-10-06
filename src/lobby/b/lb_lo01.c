@@ -1,3 +1,4 @@
+/* lb_lo01 - agent C 0x005BE6F0-0x005BEA54: logout step machine (game_w.step instead of a literal address fixes scheduling). */
 #include "lobby_a.h"
 extern s8 COM_R_No_0;
 extern s8 COM_R_No_1;
@@ -92,14 +93,14 @@ void lbc_logout_00(void) {
             return;
         }
         if (CWX->x2C46 == 0) {
-            *(s8 *)0x3F33F1 = 1;
+            game_w.step = 1;
             COM_R_No_0 = 0;
             COM_R_No_1 = 0;
             COM_R_No_2 = 0;
             COM_R_No_3 = 0;
             COM_R_No_4 = 0;
         } else if (CWX->x2C46 == 2) {
-            *(u8 *)0x3F33F1 = 4;
+            game_w.step = 4;
             COM_R_No_0 = 1;
             COM_R_No_1 = 0;
             COM_R_No_2 = 0;
@@ -107,7 +108,7 @@ void lbc_logout_00(void) {
             COM_R_No_4 = 0;
             MMBB_LOGIN = 0;
         } else if (CWX->x2C46 == 1) {
-            *(u8 *)0x3F33F1 = 4;
+            game_w.step = 4;
             COM_R_No_1 = 0;
             COM_R_No_0 = 4;
             COM_R_No_2 = 0;
