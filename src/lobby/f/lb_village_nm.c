@@ -2815,9 +2815,9 @@ void lb_npc_chr_sub(u8 *em) {
                 M2C_FIELD(em, u8 *, 0x2FC) = 1;
                 frame_init(em, M2C_FIELD(em, u16 *, 0x2E4), M2C_FIELD(em, s16 *, 0x2EC), 0);
             }
-            if (M2C_FIELD(em, u8 *, 0x2FD) == 0 && M2C_FIELD(em, u16 *, 0x300) >= 2) {
-                M2C_FIELD(em, u8 *, 0x2FD) = 1;
+            if (M2C_FIELD(em, u8 *, 0 == 0x2FD) && M2C_FIELD(em, u16 *, 0x300) >= 2) {
                 frame_init(em, M2C_FIELD(em, u16 *, 0x2E6), M2C_FIELD(em, s16 *, 0x2EE), 1);
+                M2C_FIELD(em, u8 *, 0x2FD) = 1;
             }
             frame_move(em);
         }
@@ -4785,12 +4785,12 @@ block_4:
         }
         var_s1 += 1;
         var_s2 += 0x14;
-    } while (var_s1 < 4);
+    } while (var_s1 <= 3);
     Lb_put_button(0x1E6, 0x134, 3);
     if ((M2C_FIELD(lb_sys, s32 *, 0x68) == 2) && (M2C_FIELD(lb_sys, s8 *, 6) < 0xA)) {
         temp_s1 = M2C_FIELD(mhRule, u8 *, 0x58);
         if ((s32) temp_s1 >= (((s8)(get_questLevelNum(M2C_FIELD(lb_sys, s32 *, 0x68)))))) {
-            if (key_quest_num >= 2) {
+            if (key_quest_num > 1) {
                 goto block_11;
             }
         } else {
