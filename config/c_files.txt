@@ -1920,3 +1920,5 @@ main 0x00154BD0 0x00154C68 pl/plx06
 main 0x00236160 0x00236370 net/cpinet26
 main:rodata 0x0036CEA0 0x0036CF08 net/cpinet26
 main 0x00238110 0x002381F0 net/netdev11
+main 0x0011DD60 0x0011DE60 model/light04
+main 0x00121380 0x00121414 model/yure01
