@@ -4152,7 +4152,7 @@ void em21_main(EMW *em) {
     u8 r;
     PLW *pl;
     int i;
-    int n;
+    u8 n;
 
     var_s0 = 0;
     if (em->x8C3 == 0 && em->x04 == 1) {
@@ -4161,23 +4161,22 @@ void em21_main(EMW *em) {
             pl = player_work;
             for (i = 0; i < n; i++, pl++) {
                 if (em->stg == pl->stg) {
-                    break;
+                    goto skip_stg;
                 }
             }
-            if (i >= n) {
-                if (em->mode < 5) {
-                    if (em->x388 != 4) {
-                        if (!M2(0x16)) {
-                            em_cmd_reset(em);
-                            em->x839 = 0;
-                            em21_act_set(em, 2, 0x16, 2);
-                        }
-                    } else if (!M2(0)) {
+            if (em->mode < 5) {
+                if (em->x388 != 4) {
+                    if (!M2(0x16)) {
                         em_cmd_reset(em);
-                        em21_act_set(em, 2, 0, 2);
+                        em->x839 = 0;
+                        em21_act_set(em, 2, 0x16, 2);
                     }
+                } else if (!M2(0)) {
+                    em_cmd_reset(em);
+                    em21_act_set(em, 2, 0, 2);
                 }
             }
+        skip_stg:;
         } else if (game_w.x2E == 6) {
             em_no_floor_ck(em);
             if (em->x388 == 0) {
