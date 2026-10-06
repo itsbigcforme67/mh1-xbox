@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -2503,11 +2503,13 @@ int read_index(void)
 int chk_entry2(u8 *key, int len)
 {
     int b;
-    int r;
+    int row;
+    u8 *q;
 
     if (key[0] < 0xA1) {
         return 0;
     }
+    row = key[0] - 0xA1;
     if ((s16)len == 1) {
         b = 0;
     } else {
@@ -2516,11 +2518,11 @@ int chk_entry2(u8 *key, int len)
         }
         b = key[1] - 0xA0;
     }
-    r = 1;
-    if ((1 << (b & 7)) & entry2code[(b >> 3) + (key[0] - 0xA1) * 0xB]) {
-        r = 0;
+    q = &entry2code[(b >> 3) + row * 0xB];
+    if ((1 << (b & 7)) & *q) {
+        return 0;
     }
-    return r;
+    return 1;
 }
 
 void set_entry2(u8 *key, int len)
@@ -2860,10 +2862,12 @@ void init_hash_tab(void)
 void reset_temp(void)
 {
     int i;
+    u8 *p;
 
     for (i = 0; i < 8; i++) {
-        temp_pages[i][0] = 0;
-        temp_pages[i][1] = 0;
+        p = temp_pages[i];
+        p[1] = 0;
+        p[0] = 0;
     }
     temp_top = temp_pages[0];
     temp_end = temp_pages[1];
@@ -3811,7 +3815,7 @@ CH *c;
 void add_dummy_chmem(int pos, int len, int kind)
 {
     CH *c;
-    s8 k;
+    int k;
 
     c = alloc_chmem();
     if (c != 0) {
@@ -3819,7 +3823,7 @@ void add_dummy_chmem(int pos, int len, int kind)
         c->x02 = kind;
         c->x03 = 0;
         k = len + 1;
-        c->id = 0;
+        c->id = -1;
         c->x10 = 0;
         c->next = 0;
         hchar[pos].x17 = k;
@@ -3883,10 +3887,10 @@ int bs_check(int pos, int end)
 
 BS *make_bsmem(int pos, int end, CH *ch)
 {
-    s16 clen;
     int p;
-    PWM *list;
+    s16 clen;
     PWM *l;
+    PWM *list;
     BS *first;
     BS *prev;
     BS *b;
@@ -3895,7 +3899,7 @@ BS *make_bsmem(int pos, int end, CH *ch)
     clen = ch->len;
     prev = 0;
     p = pos + clen;
-    list = pword_list(p, ch->x02, ch->x03);
+    list = pword_list(p, end, ch->x02, ch->x03);
     if (list == (PWM *)-1) {
         return (BS *)-1;
     }
@@ -4568,15 +4572,15 @@ void kh_mergesort(int pos, KL *list)
 
 int kh_merge_getone(KL *list)
 {
-    u16 best;
-    KL *sel;
+    int best;
     KH *r;
+    KL *sel;
     KL *l;
 
     best = 0;
     sel = 0;
     for (l = list; l != 0; l = l->next) {
-        if (l->kh != 0 && (sel == 0 || best < (u16)l->pri)) {
+        if (l->kh != 0 && (sel == 0 || (u16)l->pri > (u16)best)) {
             best = l->pri;
             sel = l;
         }
@@ -4586,11 +4590,7 @@ int kh_merge_getone(KL *list)
     }
     r = sel->kh;
     sel->kh = kh_skip(r, best);
-    if (sel->kh == 0) {
-        sel->pri = 0;
-    } else {
-        sel->pri = kh_priority(sel->bs, sel->kh->x0E) & 0xFFFF;
-    }
+    sel->pri = (sel->kh == 0) ? 0 : (kh_priority(sel->bs, sel->kh->x0E) & 0xFFFF);
     return (int)r;
 }
 
@@ -4832,12 +4832,9 @@ int inc_gun(KH *k)
     w = 0;
     n = 0;
     room = kwin_len - 0xA;
-    while (n <= 8) {
-        if (p == 0) {
-            break;
-        }
+    while (n <= 8 && p != 0) {
         w += kh_length(p) + 4;
-        if (room < w) {
+        if (w > room) {
             break;
         }
         n++;
@@ -5298,11 +5295,11 @@ void free_chmemlist(CH *c)
     CH *n;
     s64 prev;
 
-    prev = 0;
+    prev = -1;
     while (c != 0) {
         n = c->next;
-        if (prev == 0 || c->id != prev) {
-            if (c->id != 0) {
+        if (prev == -1 || c->id != prev) {
+            if (c->id != -1) {
                 dic_freeentid(c->id);
             }
         }
@@ -5360,26 +5357,23 @@ int bs_prefer(int pos, int end, int len)
             }
         }
     }
-    if (h != 0) {
-        best = h->bs;
-        if (best == 0) {
-            return -1;
-        }
+    if (h == 0 || (best = h->bs) == 0) {
+        return -1;
+    } else {
         for (p = best->next; p != 0; p = p->next) {
-            if (best->x08 < p->x08) {
+            if (p->x08 > best->x08) {
                 best = p;
             }
         }
         bs_ctd(best, pos, end);
         return best->len;
     }
-    return -1;
 }
 
 int calc_point(int pos, BS *b, BS *next)
 {
-    s16 a;
-    s16 c;
+    int a;
+    int c;
     int f;
     u16 pri;
 
@@ -5393,7 +5387,7 @@ int calc_point(int pos, BS *b, BS *next)
         f = 0;
     }
     pri = b->x0A;
-    return f * 0x32 + (pri + (c * 0x10 + a * 0x11) + setu_point(b, next, pri));
+    return f * 0x32 + (pri + (c * 0x10 + a * 0x11) + setu_point(b, next));
 }
 
 int bs_point(BS *b, int pos, int end)
