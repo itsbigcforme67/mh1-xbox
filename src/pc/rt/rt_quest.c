@@ -68,7 +68,9 @@ void rt_set_em_model_loader(void (*fn)(int slot, int kind)) { em_model_fn = fn; 
 void em_create_model(int slot)
 {
     int kind = PU8(&game_w, 0x28 + slot);
-    if (!em_prog_tbl[kind] || !*(void **)em_prog_tbl[kind]) {
+    if (!em_prog_tbl[kind] || !((void **)em_prog_tbl[kind])[0] || !((void **)em_prog_tbl[kind])[3]) {
+        /* [0] local init and [3] the per-tick effect script (em_effect_move)
+         * are called unconditionally: both must be ported */
         if (qtrace())
             fprintf(stderr, "rt_quest: monster kind %d not ported, not spawned\n", kind);
         PU8(&game_w, 0x28 + slot) = 0;

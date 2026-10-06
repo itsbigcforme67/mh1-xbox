@@ -204,21 +204,17 @@ int flPS2GetTextureBuffWidth(s16 w) {
 int flPS2GetPaletteVramBlock(TEXH *p) {
     int r;
     if (p->h == 1) {
-        r = 2;
-    } else {
-        switch (p->x20) {
-        case 0:
-        case 1:
-            r = 4;
-            break;
-        case 2:
-            r = 4;
-            break;
-        }
+        return 2;
+    }
+    switch (p->x20) {
+    case 0:
+    case 1:
+        return 4;
+    case 2:
+        r = 4;
     }
     return r;
 }
-
 int flPS2GetTextureSize(int fmt, int w, int h, int levels) {
     int size = 0;
     int i;

@@ -251,10 +251,20 @@ void flps000C(s16 *q)
     gfx_draw_2d(SCR_W, SCR_H, 3, pos, cur_tex ? st : NULL, col);
 }
 
+/* flps0D00 (0x176470): screen sprite of the sprite list (SpritePut kind 0,
+ * trans_spr_sub) { f32 x0, y0, z, w; f32 x1, y1, z, w; u32 col }: a GS
+ * SPRITE between the two corners in frame coordinates (flPS2ConvScreenFX/
+ * FY: minus the screen offset, y halved in field mode), one colour */
+void flps0D00(f32 *q)
+{
+    u32 c = *(u32 *)(q + 8), cc[4] = { c, c, c, c };
+    quad(q[0], q[1], q[4], q[5], cc, NULL);
+}
+
 /* other primitive kinds (sprite list types 0x0D, 0x0F, 0x13, 0x14, 0x16):
  * not used by the HUD; reported once */
 #define PRIM_TODO(n) void n(void *q) { static int o; (void)q; if (!o++ && getenv("RT_TRACE")) fprintf(stderr, "rt_2d: %s not ported\n", #n); }
-PRIM_TODO(flps0D00) PRIM_TODO(flps0F00) PRIM_TODO(flps1300) PRIM_TODO(flps1400) PRIM_TODO(flps1600)
+PRIM_TODO(flps0F00) PRIM_TODO(flps1300) PRIM_TODO(flps1400) PRIM_TODO(flps1600)
 
 /* ------------------------------------------------------------ prim lists */
 typedef struct { u8 d[0x20]; } PIT_PRIM_H;

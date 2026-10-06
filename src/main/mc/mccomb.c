@@ -438,10 +438,12 @@ int mc_yn_ck(CARDW *w, int x, s16 y, u8 *sel)
 }
 
 /* original bytes kept (does not match as C yet): build/raw/mc_sel_ck.inc, see config/c_rawfuncs.txt */
+#ifdef __MWERKS__   /* PS2 only; the PC build takes the near-match C (weak) */
 asm int mc_sel_ck(CARDW *w, s16 x, s16 y, u8 *sel, int hide)
 {
 #include "mc_sel_ck.inc"
 }
+#endif
 
 int mc_ok_ck(CARDW *w, s16 x, s16 y, int kind)
 {
