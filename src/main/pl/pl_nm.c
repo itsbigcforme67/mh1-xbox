@@ -2433,8 +2433,8 @@ s32 Pl_barrel_ck(PLW *pl) {
 
 
 s32 Sansai_talk_ck(PLW *pl) {
-    s16 i;
     EMW *e = em_work;
+    s16 i;
     for (i = 0; i < 20; i++, e++) {
         if (e->kind == 0xA && flvecCalcDistance(pl->pos, e->pos) <= 300.0f) {
             return 1;
