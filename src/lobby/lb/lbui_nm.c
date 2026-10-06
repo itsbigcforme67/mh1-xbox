@@ -541,6 +541,219 @@ int b;
     *(u8 **)helpLineStr = *(u8 **)helpLineStr + b * 8;
 }
 
+/* sprite template for Put_2TF / Put_sprite_rotate (helpLineTbl entries, stride 0x14) */
+typedef struct { s16 x; s16 y; s16 w; s16 h; u8 pad08[4]; s16 u0; s16 v0; s16 u1; s16 v1; } DLGSPR;
+typedef struct { f32 f[5]; } DLGF5;
+void Put_sprite_rotate();
+
+/* dialog frame: top/bottom edge strips of 0x28 high tiles then the two rotated side strips (near-match) */
+void draw_dialog_square(void) {
+    DLGSPR sp;
+    DLGSPR *t;
+    s16 tw;
+
+    Put_2TF((u8 *)helpLineTbl + 0x28);
+    t = (DLGSPR *)((u8 *)helpLineTbl + 0x64);
+    *(DLGF5 *)&sp = *(DLGF5 *)t;
+    sp.h = 0x28;
+    sp.w = 0xA;
+    while (sp.y < t->y + t->h - sp.h) {
+        Put_2TF(&sp);
+        sp.y += (s16)(sp.h - 1);
+    }
+    sp.h = t->y + t->h - sp.y;
+    sp.v1 = sp.v0 + (s16)(0.025f * (20.0f * sp.h));
+    Put_2TF(&sp);
+    t = (DLGSPR *)((u8 *)helpLineTbl + 0x78);
+    *(DLGF5 *)&sp = *(DLGF5 *)t;
+    sp.h = 0x28;
+    sp.w = 0xA;
+    while (sp.y < t->y + t->h - sp.h) {
+        Put_2TF(&sp);
+        sp.y += (s16)(sp.h - 1);
+    }
+    sp.h = t->y + t->h - sp.y;
+    sp.v1 = sp.v0 + (s16)(0.025f * (20.0f * sp.h));
+    Put_2TF(&sp);
+    t = (DLGSPR *)((u8 *)helpLineTbl + 0x3C);
+    *(DLGF5 *)&sp = *(DLGF5 *)t;
+    sp.h = 8;
+    sp.w = 0x33;
+    sp.x -= 7;
+    while (sp.x < (t->x + t->w) + 0x10 - sp.w) {
+        Put_sprite_rotate(&sp, 2);
+        sp.x += (s16)(sp.w - 2);
+    }
+    sp.w = (t->x + t->w) + 8 - sp.x;
+    tw = sp.w;
+    sp.v1 = sp.v0 + (s16)(0.025f * ((f32)tw * 20.0f));
+    Put_sprite_rotate(&sp, 2, tw);
+    t = (DLGSPR *)((u8 *)helpLineTbl + 0x50);
+    *(DLGF5 *)&sp = *(DLGF5 *)t;
+    sp.h = 8;
+    sp.w = 0x32;
+    sp.x -= 7;
+    while (sp.x < (t->x + t->w) + 0x10 - sp.w) {
+        Put_sprite_rotate(&sp, 2);
+        sp.x += (s16)(sp.w - 2);
+    }
+    sp.w = (t->x + t->w) + 8 - sp.x;
+    tw = sp.w;
+    sp.v1 = sp.v0 + (s16)(0.025f * ((f32)tw * 20.0f));
+    Put_sprite_rotate(&sp, 2, tw);
+}
+
+void Paint_square();
+
+/* menu frame: filled body (Paint_square or 5-high strips) + four 20-unit edge strips + four 7x6 corners (near-match) */
+int Draw_menu_square(arg0, arg1, w, h, mode, col)
+s16 arg0;
+s16 arg1;
+s16 w;
+s16 h;
+s8 mode;
+int col;
+{
+    DLGSPR sp;
+    DLGSPR *t;
+    int x6;
+    int y6;
+    int xr;
+    int var_s0;
+    int var_fp;
+    int temp_s3;
+    int temp_s3_2;
+    int temp_s7;
+    int temp_s6;
+    s16 temp_s5;
+    s16 temp_s2;
+    s16 temp_s0;
+    s16 tw;
+    struct { s16 y; s16 x; } pos;
+
+    pos.x = arg0;
+    pos.y = arg1;
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
+    if (mode == 1) {
+        var_s0 = w;
+        var_fp = h;
+        y6 = pos.y + 6;
+        x6 = pos.x + 6;
+        Paint_square(x6, y6, var_s0 - 12, var_fp - 12, col);
+    } else {
+        t = (DLGSPR *)((u8 *)helpLineTbl + 0x8C);
+        var_s0 = w;
+        var_fp = h;
+        x6 = pos.x + 6;
+        y6 = pos.y + 6;
+        *(DLGF5 *)&sp = *(DLGF5 *)t;
+        temp_s3 = var_fp + pos.y - 6;
+        sp.x = x6;
+        sp.y = y6;
+        sp.w = var_s0 - 12;
+        sp.h = 5;
+        while (temp_s3 >= sp.y + sp.h) {
+            Put_2TF(&sp);
+            sp.y += (s16)(sp.h - 1);
+        }
+        tw = sp.h;
+        sp.h = tw - ((sp.y + tw) - temp_s3);
+        Put_2TF(&sp);
+    }
+    t = (DLGSPR *)((u8 *)helpLineTbl + 0xA0);
+    t->x = x6;
+    t->y = pos.y;
+    t->w = 0x14;
+    t->h = 6;
+    xr = var_s0 + pos.x;
+    temp_s3_2 = xr - 6;
+    *(DLGF5 *)&sp = *(DLGF5 *)t;
+    while (temp_s3_2 >= sp.x + sp.w) {
+        Put_2TF(&sp);
+        sp.x += (s16)(sp.w - 1);
+    }
+    tw = sp.w;
+    temp_s7 = var_s0 + pos.x;
+    temp_s6 = temp_s7 - 6;
+    sp.w = tw - ((sp.x + tw) - temp_s6);
+    sp.u1 = sp.u0 + (s16)(0.05f * (20.0f * sp.w));
+    Put_2TF(&sp);
+    t = (DLGSPR *)((u8 *)helpLineTbl + 0xB4);
+    temp_s5 = pos.y + var_fp - 6;
+    t->y = temp_s5;
+    t->x = x6;
+    t->w = 0x14;
+    t->h = 6;
+    *(DLGF5 *)&sp = *(DLGF5 *)t;
+    while (temp_s6 >= sp.x + sp.w) {
+        Put_2TF(&sp);
+        sp.x += (s16)(sp.w - 1);
+    }
+    tw = sp.w;
+    sp.w = tw - ((sp.x + tw) - temp_s3_2);
+    sp.u1 = sp.u0 + (s16)(0.05f * (20.0f * sp.w));
+    Put_2TF(&sp);
+    t = (DLGSPR *)((u8 *)helpLineTbl + 0xC8);
+    t->x = pos.x - 1;
+    t->y = y6;
+    t->w = 7;
+    t->h = 0x14;
+    *(DLGF5 *)&sp = *(DLGF5 *)t;
+    if (sp.y + sp.h < temp_s5) {
+        do {
+            Put_2TF(&sp);
+            sp.y += (s16)(sp.h - 1);
+        } while (sp.y + sp.h < temp_s5);
+    }
+    temp_s2 = var_fp + pos.y - 6;
+    tw = sp.h;
+    sp.h = tw - ((sp.y + tw) - temp_s2);
+    sp.v1 = sp.v0 + (s16)(0.05f * (20.0f * sp.h));
+    Put_2TF(&sp);
+    t = (DLGSPR *)((u8 *)helpLineTbl + 0xDC);
+    t->x = xr - 7;
+    t->y = y6;
+    t->h = 0x14;
+    t->w = 7;
+    *(DLGF5 *)&sp = *(DLGF5 *)t;
+    if (sp.y + sp.h < temp_s2) {
+        do {
+            Put_2TF(&sp);
+            sp.y += (s16)(sp.h - 1);
+        } while (sp.y + sp.h < temp_s5);
+    }
+    tw = sp.h;
+    sp.h = tw - ((sp.y + tw) - temp_s2);
+    sp.v1 = sp.v0 + (s16)(0.05f * (20.0f * sp.h));
+    Put_2TF(&sp);
+    t = (DLGSPR *)((u8 *)helpLineTbl + 0xF0);
+    t->x = pos.x;
+    t->y = pos.y;
+    t->w = 7;
+    t->h = 6;
+    Put_2TF(t);
+    t = (DLGSPR *)((u8 *)helpLineTbl + 0x104);
+    temp_s0 = temp_s7 - 8;
+    t->x = temp_s0;
+    t->y = pos.y;
+    t->w = 7;
+    t->h = 6;
+    Put_2TF(t);
+    t = (DLGSPR *)((u8 *)helpLineTbl + 0x118);
+    t->x = pos.x;
+    t->y = temp_s2;
+    t->w = 7;
+    t->h = 6;
+    Put_2TF(t);
+    t = (DLGSPR *)((u8 *)helpLineTbl + 0x12C);
+    t->x = temp_s0;
+    t->y = temp_s2;
+    t->w = 7;
+    t->h = 6;
+    Put_2TF(t);
+}
+
 void DispSceneTitle(void) {
     reload_tex(1, 0x157);
     SetTextureStage(0x157);
