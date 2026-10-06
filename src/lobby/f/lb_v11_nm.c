@@ -4,10 +4,10 @@ int Lb_act_ck();
 void lb_pl_turn_sub(PLW *pl) {
     int t1;
     u32 t0;
-    u16 a3;
+    int a3;
     int a2;
     int v1;
-    u16 a1;
+    int a1;
     u16 a0;
     if ((s16)Lb_act_ck(pl, 0, 1) != 0 || (s16)Lb_act_ck(pl, 0, 0x24) != 0) {
         t1 = 0x71C;
@@ -21,7 +21,7 @@ void lb_pl_turn_sub(PLW *pl) {
         }
     }
     a2 = pl->ang[1];
-    a3 = pl->ang_y;
+    a3 = *(u16 *)&pl->ang_y;
     a0 = pl->char0;
     t0 = (a3 - (a2 & 0xFFFF)) & 0xFFFF;
     switch (a0) {
