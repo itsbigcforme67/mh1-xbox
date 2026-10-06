@@ -46,11 +46,7 @@ void Lb_shop_init();
 void Lb_pl_to_chair();
 void Lb_Pl_adj_calc();
 extern u8 *cw;
-static void sound_call_005D3640(u8 *a, int b) {
-    lb_sys.x80 = (s32)a;
-    lb_sys.x84 = b;
-    lb_sys.x7C = 20;
-}
+void sound_call_005D3640();
 void lb_basic_master(PLW *pl) {
     f32 pos[3];
     f32 off[4];
@@ -65,6 +61,7 @@ void lb_basic_master(PLW *pl) {
     u8 *tgt;
     u8 *em;
     u8 *fh;
+    u8 *fh2;
     u8 *pm;
     u8 *ri;
     u16 ang;
@@ -258,13 +255,16 @@ block_119:
     fh = (u8 *)pl->fish878;
     if (fh != 0 && ((pl->sw.trg & 0x200) || (pl->sw.trg & 0x40)) && (lb_sys.x68 == 0 || lb_sys.x68 == 8)) {
         a = pl->sw.trg & 0x200;
-        if ((a != 0 || *(u16 *)(fh + 2) == 0x13 || *(u16 *)(fh + 2) == 0x14) && lb_sys.x87 == 0 && (lb_sys.x68 != 8 || *(u16 *)(fh + 2) == 6)) {
+        if (!((a != 0 || *(u16 *)(fh + 2) == 0x13 || *(u16 *)(fh + 2) == 0x14) && lb_sys.x87 == 0 && (lb_sys.x68 != 8 || *(u16 *)(fh + 2) == 6))) {
+            goto done;
+        }
+        {
             pos[0] = *(f32 *)(fh + 4);
             pos[1] = *(f32 *)((u8 *)pl->fish878 + 8);
-            fh = (u8 *)pl->fish878;
             pos[2] = *(f32 *)((u8 *)pl->fish878 + 0xC);
-            ang = *(u16 *)(fh + 0x14);
-            switch ((u32) * (u16 *)(fh + 2)) {
+            fh2 = (u8 *)pl->fish878;
+            ang = *(u16 *)(fh2 + 0x14);
+            switch ((u32) * (u16 *)(fh2 + 2)) {
             case 0:
             case 2:
             case 3:
@@ -278,33 +278,32 @@ block_119:
                 return;
             case 1:
                 a = pl->flag15;
-                if (a != 0 && a != 0x55) {
-                    return;
-                }
-                n = *(u16 *)fh;
-                if (!(lb_sys.chair_mask & (1 << n))) {
-                    if (game_w.stage == 0x4D) {
-                        lb_sys.x66 = n;
-                        if (memcmp(cw + 3, cw + 0x440, 8) == 0) {
-                            lb_sys.x74 = 0x96;
-                            lb_sys.x68 = 0x18;
-                            lb_sys.x6C = 1;
-                            Lb_send_data_to_myself(2, 4, pl->fish878);
+                if (a == 0 || a == 0x55) {
+                    n = *(u16 *)fh2;
+                    if (!(lb_sys.chair_mask & (1 << n))) {
+                        if (game_w.stage == 0x4D) {
+                            lb_sys.x66 = n;
+                            if (memcmp(cw + 3, cw + 0x440, 8) == 0) {
+                                lb_sys.x74 = 0x96;
+                                lb_sys.x68 = 0x18;
+                                lb_sys.x6C = 1;
+                                Lb_send_data_to_myself(2, 4, pl->fish878);
+                            } else {
+                                lb_sys.x74 = 0x96;
+                                lb_sys.x68 = 0x18;
+                                lb_sys.x6C = 1;
+                                Lb_send_chair_req(pl);
+                            }
                         } else {
-                            lb_sys.x74 = 0x96;
-                            lb_sys.x68 = 0x18;
-                            lb_sys.x6C = 1;
-                            Lb_send_chair_req(pl);
+                            lb_sys.x66 = n;
+                            Lb_pl_to_chair();
                         }
-                    } else {
-                        lb_sys.x66 = n;
-                        Lb_pl_to_chair();
                     }
                 }
                 return;
             case 26:
                 if (cw[0x35D6] == 0) {
-                    lb_sys.x66 = *(u16 *)fh;
+                    lb_sys.x66 = *(u16 *)fh2;
                     lb_sys.x68 = 0x11;
                     Lb_pl_to_chair();
                 }
@@ -326,8 +325,7 @@ block_119:
                     pl->x73A = 0x4C;
                     lb_sys.x03 = 5;
                     lb_sys.x71 = 1;
-                default:
-                    return;
+                    break;
                 case 0x4F:
                     lb_sys.x68 = 0x14;
                     pl->x73A = 0x4C;
@@ -413,7 +411,7 @@ block_119:
                         lb_sys.x68 = 0x1E;
                         fade_set(1);
                     }
-                    return;
+                    break;
                 case 0x4E:
                     pl->x73A = 0x4C;
                     lb_sys.x03 = 5;
@@ -535,7 +533,7 @@ block_119:
                         if ((Warehouse_search_space(User_data) & 0xFF) == 0xFF) {
                             Lb_put_set01(8);
                         } else {
-                            LegendSwordCameraRequest(8);
+                            LegendSwordCameraRequest();
                             Lb_Pl_act_set(pl, 0, 0x52, 0);
                             pl_flag_set(pl, 0x20000);
                             Event_flag_set(1);
@@ -574,4 +572,6 @@ block_119:
         Lb_Pl_act_set2(pl, 0, 0x2D, 0x10);
         Lb_send_trade_start(pl);
     }
+done:
+    return;
 }

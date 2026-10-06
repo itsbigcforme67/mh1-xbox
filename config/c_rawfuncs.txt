@@ -6,7 +6,6 @@ lobby 0x005E6E80 0x1DC BsRequestPostAdd
 lobby 0x005CEA40 0x47C Lb_put_unique_act_hint
 lobby 0x00609A00 0x1DC itembox_cursor_mv
 lobby 0x00609E20 0x874 itembox_pickup
-lobby 0x0060ADC0 0x344 itembox_sortup
 lobby 0x0060B190 0x670 itembox_sellout
 lobby 0x0060BE20 0xC8 equip_ok_chk
 lobby 0x0060BF10 0xD0C ItemboxWindowX

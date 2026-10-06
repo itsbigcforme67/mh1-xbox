@@ -2135,6 +2135,11 @@ main 0x001751D0 0x00175288 fl/flps_misc01
 main 0x00163420 0x001635D8 font/disp2_02
 main 0x001BC200 0x001BC688 net/netsyn09
 main:rodata 0x0035ECB0 0x0035ECE4 net/netsyn09
+lobby 0x005D3660 0x005D4948 f/lb_r
+lobby:rodata 0x00664DA0 0x00664E3C f/lb_r
+lobby 0x005C5380 0x005C5434 f/lb_a04
+lobby 0x005C5680 0x005C5844 f/lb_a05
+lobby 0x005C5850 0x005C5974 f/lb_a06
 lobby 0x005C4220 0x005C4324 b/lb_by135
 lobby 0x005C4330 0x005C4480 b/lb_by136
 lobby 0x00537F60 0x005381C4 b/lb_by137
