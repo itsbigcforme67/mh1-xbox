@@ -545,3 +545,25 @@ Held back as raw (config/c_rawfuncs.txt, not counted by progress.py): flPS2AddMa
 register numbering of the lights loop: orig counter s0 and pointers s4/s3/s2, mine s4/s3/s2/s1; tried decl order, init order, for/do, scoping) and _000D (toon shader, not written).
 flPS2matMulNormalize33 is also referenced from a data table: config/main_aliases.txt keeps its symbol (the helper is static in C).
 Small find: flPS2GetPaletteVramBlock (tex_nm.c) matches as `int r; if (h == 1) r = 2; else switch (...) {case 0: case 1: r = 4; break; case 2: r = 4;} return r;` (last case falls out, no jump).
+
+### Network play sync (0x1B9F70-0x1BD660): src/main/net/netsyn01..09*.c, include/netsyn.h (new)
+Capcom's online session sync: packets built in a local union of per-kind layouts (`cmd, len, 0, 0, then fields`), queued with AQ_data_put, applied by net_receive_*.
+include/netsyn.h holds typed offset views (NPLV player work, NEMV enemy work, NGW game_w, NPSLOT/NEMACT pending slots) and the packet unions NPLPK / NPLRX; it is
+GENERATED from an offset table (each view is a struct with u8 padding between the fields) so the types stay exactly what the matched loads show. It does not touch
+pl.h/game.h/em.h (no shared header edits).
+Linked (rebuild OK): net_send_pl (netsyn01), net_game_w_clear (04), net_plpos_set, net_receive_pl_pos_set, net_emact_set, net_receive_em_act (03), net_send_host (05),
+net_send_chat (06), net_send_sys (08); jump tables 0x35EC10-0x35EC34 (send_pl) and 0x35EC70-0x35ECA4 (send_sys) registered.
+Near-match, all complete, only register numbering differs (netsyn02_nm.c net_receive_pl 296/390: orig payload pointer in s0 and player in s1, mine the other way; netsyn05_nm.c
+net_receive_host 76/108 same pattern; netsyn06_nm.c net_receive_chat 41/114: orig length a2 / text pointer a1 / counter a3; netsyn07_nm.c net_start_ck 244/309: the orig
+loop test `if (pl_state[i] != 0xFF) goto next` compiles to `beq body; b next`, not reproduced). Not written: net_send_em (1824), net_receive_em (3672).
+Lessons:
+- `u8 kind` as an ANSI parameter plus `k = kind;` inside the master check reproduces `andi a0, s1, 0xFF` placed after the Pl_master_ck call (net_send_pl); a local
+  `int k` hoisted before the call, or `(kind & 0xFF)`, moves it into an s-register or makes the `sb kind` reuse the masked copy.
+- `for (i = 0; i < 2; i++) { if (pl->slot[i].timer == 0) {...} }` with `s8 i` and slots as a struct array in the work block gives the original
+  pointer-for-the-test / index-for-the-store pair (net_plpos_set, net_emact_set, net_receive_em_act); do NOT write a separate pointer variable.
+- `if (x == a) {..} ` with the same value compared twice: the second compare uses the loaded value, not the constant (net_start_ck `old != pl_state[i]`).
+- A global struct read many times in one function is hoisted into an s-register only if you write `u8 *sw = (u8 *)&select_w;` and use `sw[off]` / `*(u16 *)(sw + off)`
+  (net_send_sys); `select_w.field` typed access did not hoist.
+- tools/declhill.py (declaration order hill-climb) found the register assignment of net_send_sys (pl/sw order); worth running on every near-match with many locals.
+- Calls with stale argument registers: `Quest_error_set2()` has no arguments here (m2c invented four), `net_send_sys` takes two.
+- Switch case order: ladder is the reverse of source order (`case 1: case 2:` for a ladder 2,1,0).
