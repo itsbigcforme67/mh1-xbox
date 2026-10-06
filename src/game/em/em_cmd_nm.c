@@ -659,10 +659,10 @@ u8 *em_cmd_flag_set(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_flag_clear(EMW *em, u8 *p) {
-    s32 n;
     s32 i;
+    s32 n;
     u8 *ex;
-    u8 kind;
+    int kind;
 
     kind = *p++;
     if (kind == 0) {
@@ -673,7 +673,7 @@ u8 *em_cmd_flag_clear(EMW *em, u8 *p) {
     }
     ex = em->ex;
     for (i = 0; i < n; i++) {
-        switch (kind) {
+        switch ((u8)kind) {
         case 1:
             em->x88B = 0;
             break;
@@ -3096,34 +3096,35 @@ u8 *em_cmd_em_cmd_reset(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_rnd32(EMW *em, u8 *p) {
-    u8 *q;
-    u8 *r;
     u8 n;
-    u8 w;
-    s32 cum;
-    s32 i;
-    s32 rnd;
+    int w;
+    int cum;
+    u16 i;
+    u16 rnd;
 
-    q = p;
-    switch (*q) {
+    switch (*p) {
     case 0:
-        n = q[1];
-        cum = 0;
+        n = p[1];
         i = 0;
-        q += 2;
+        cum = 0;
+        rnd = em->x39A & 0x1F;
+        p += 2;
         if (0 < n) {
-            rnd = em->x39A & 0x1F & 0xFFFF;
-loop:
-            r = cmd_end_search(em, q, 0x80, 0xFF);
-            w = r[2];
-            q = r + 3;
-            if (w == 0 || ((w & 0xFF) != 0xFF && (cum = (cum + w) & 0xFF, !(rnd < cum)))) {
-                i = (i + 1) & 0xFFFF;
-                if (i >= n) {
-                } else {
-                    goto loop;
+            do {
+                p = cmd_end_search(em, p, 0x80, 0xFF);
+                w = p[2];
+                p += 3;
+                if (w != 0) {
+                    if ((u8)w == 0xFF) {
+                        break;
+                    }
+                    cum = (cum + w) & 0xFF;
+                    if (rnd < cum) {
+                        break;
+                    }
                 }
-            }
+                i++;
+            } while (i < n);
         }
         break;
     case 1:
@@ -3136,22 +3137,21 @@ loop:
     case 8:
     case 9:
     case 10:
-        r = q + 2;
+        p += 2;
         for (;;) {
-            r = cmd_end_search(em, r, 0x80, 0xFF);
-            if (r[1] != 0xFF) {
-                r = r + 3;
-                continue;
+            p = cmd_end_search(em, p, 0x80, 0xFF);
+            if (p[1] == 0xFF) {
+                p += 2;
+                break;
             }
-            break;
+            p += 3;
         }
-        q = r + 2;
         break;
     case 0xFF:
-        q += 1;
+        p += 1;
         break;
     }
-    return q;
+    return p;
 }
 
 u8 *em_cmd_contents(EMW *em, u8 *p) {
@@ -4594,32 +4594,33 @@ void em_cdm_act_flag_ck(EMW *em) {
 
 u8 *area_route_rnd32(EMW *em, u8 *a) {
     u8 n;
-    u8 cum;
     u16 i;
+    int cum;
     u16 rnd;
-    u8 w;
-    u8 *q;
+    int w;
 
     n = a[2];
     cum = 0;
     i = 0;
-    q = a + 3;
     rnd = em->x39A & 0x1F;
+    a += 3;
     for (; i < n; i++) {
-        w = q[2];
-        q += 3;
-        if (w != 0) {
-            if (w == 0xFF) {
+        w = a[2];
+        a += 3;
+        if (w == 0) {
+            a += 1;
+        } else {
+            if ((u8)w == 0xFF) {
                 break;
             }
-            cum = cum + w;
+            cum = (cum + w) & 0xFF;
             if (rnd < cum) {
                 break;
             }
+            a += 1;
         }
-        q += 1;
     }
-    return q;
+    return a;
 }
 
 u8 *set_cmd(EMW *em) {
