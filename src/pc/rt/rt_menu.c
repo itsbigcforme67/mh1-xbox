@@ -102,6 +102,9 @@ void *func_5B4D30(s32 a) { return Lb_get_player_id(a); }
 int func_5CB310(void) { Lobby_quest_print(); return 0; }
 int func_5D8370(int a) { return Lb_get_pl_stat2(a); }
 void func_609750(void) { Lb_ItemBox_init(); }
+/* the item box screen (trans_pit_1_lb -> 0x60CE50, lobby f/lb_ib.c) */
+void Disp_lb_item_box(void);
+void func_60CE50(void) { Disp_lb_item_box(); }
 
 /* ------------------------------------------------ online / lobby only (no-ops) */
 u8 D_6EAC80[0x400];
@@ -184,7 +187,6 @@ void Reibun_print() {}
 int Reibun_select_mv() { return 0; }
 int func_5BD520() { return 0; }
 int func_5CB100() { return 0; }
-void func_60CE50() {}
 /* tutorial overlay pieces (game.bin 0x63B0C0 / 0x63B470): only in the
  * village tutorial */
 int func_63B0C0() { return 0; }

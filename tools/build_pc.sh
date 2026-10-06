@@ -144,6 +144,21 @@ MC="$MC src/main/ud/udmisc_nm.c"
 # rt_boot.c)
 BOOT="src/select/select00.c src/select/demo.c src/select/edit_nm.c src/main/omake/omake_nm.c \
       src/main/option/option_nm.c src/main/fade/fade_nm.c src/main/sys/tsk_nm.c src/main/weapon/trans.c"
+# Village features beyond the walk-and-talk loop (agent F's lobby f/ files,
+# agent B's b/ runs and b/nm near-matches): the item box (lb_ib.c whole
+# file; Lb_ItemBox_init from lb_tu_ib.c), the shops (item shop, forge
+# Lb_process_shop, armour shop, materials), chairs, the player status
+# screens. Linked weak (only their defined symbols): a copy already linked
+# elsewhere wins.
+LOBBY2="src/lobby/f/lb_ib.c src/lobby/f/lb_tu_ib.c src/lobby/f/lb_ad.c src/lobby/f/lb_aa.c src/lobby/f/lb_s08.c \
+        src/lobby/f/lb_ag.c \
+        src/lobby/b/lb_by89.c src/lobby/b/lb_by90.c src/lobby/b/lb_by91.c src/lobby/b/lb_by43.c src/lobby/b/lb_by92.c \
+        src/lobby/b/lb_by51.c src/lobby/b/lb_bz70.c src/lobby/b/lbarm01.c src/lobby/b/lb_by56.c src/lobby/b/lb_bz01.c \
+        src/lobby/b/lb_by07.c src/lobby/b/lb_by20.c \
+        src/lobby/b/nm/Lb_shop_trans2.c src/lobby/b/nm/Lb_process_shop.c src/lobby/b/nm/lb_cat_material.c \
+        src/lobby/b/nm/lb_normal_material.c"
+LOBBY="$LOBBY $LOBBY2"
+WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
 WEAK="mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT"
 
@@ -275,7 +290,7 @@ for f in $GAME; do
     # only the symbols the file defines: "objcopy --weaken" would also make
     # its undefined references weak, and a weak reference nothing defines
     # is NULL (gen_rt_auto.py never sees it: mccomb_nm's mc_sel_tbl)
-    case " $WEAK " in *" $b "*)
+    case " $WEAK $WEAK_LB2 " in *" $b "*)
         $OBJCOPY $($NM --defined-only -g "$o" | awk 'NF == 3 {printf "--weaken-symbol=%s ", $3}') "$o" ;; esac
     # single symbols that another file also defines (the lobby NPC files'
     # empty dummy_em_prog: main's f_em one wins)
