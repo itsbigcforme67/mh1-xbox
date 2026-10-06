@@ -118,10 +118,20 @@ void Lb_ItemBox_init(void) {
     F(s16, ib, 2) = 0;
 }
 
-/* original bytes: build/raw/Lb_ItemBox_open.inc (config/c_rawfuncs.txt) */
-asm int Lb_ItemBox_open()
-{
-#include "Lb_ItemBox_open.inc"
+s32 Lb_ItemBox_open() {
+    u16 z;
+    z = 0;
+    F(s32, ib, 4) = 0;
+    F(s16, ib, 2) = 0;
+    F(s16, ib, 8) = 0;
+    F(s8, ib, 0xB) = z;
+    F(s8, ib, 0x1F) = 0;
+    F(u8, ib, 0x20) = 0xFF;
+    *(s8 *)0x39DAD1 = 5;
+    *(s8 *)0x39DAD0 = 0;
+    *(s16 *)0x39DAD2 = 0;
+    se_req(7, 0x11, 0, 0xFF);
+    return 1;
 }
 
 /* original bytes: build/raw/Lb_ItemBox_mv.inc (config/c_rawfuncs.txt) */

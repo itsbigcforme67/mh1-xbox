@@ -327,6 +327,8 @@ s32 itembox_stock(s32 pad) {
     u16 left;
     u8 *w;
     u8 *u;
+    u8 *v;
+    int k;
     u = User_data;
     w = ib;
     switch (F(u8, w, 5)) {
@@ -344,20 +346,25 @@ s32 itembox_stock(s32 pad) {
         }
         Menu_select_mv(ib + 0xB, pad, 0x14);
         if ((u16)pad & 0x20) {
-            if (IBID(u, F(u8, ib, 0xB)) != 0) {
-                left = Ud_u_item_stack(IBID(u, F(u8, ib, 0xB)), IBNUM(u, F(u8, ib, 0xB))) & 0xFFFF;
+            k = F(u8, ib, 0xB) * 4;
+            if (*(u16 *)(k + (int)u + 0x37C) != 0) {
+                left = Ud_u_item_stack(*(u16 *)(k + (int)u + 0x37C), *(u16 *)(k + (int)u + 0x37E)) & 0xFFFF;
                 if (left == 0) {
-                    IBNUM(u, F(u8, ib, 0xB)) = 0;
-                    IBID(u, F(u8, ib, 0xB)) = 0;
+                    k = F(u8, ib, 0xB) * 4;
+                    *(s16 *)(k + (int)u + 0x37E) = 0;
+                    k = F(u8, ib, 0xB) * 4;
+                    *(u16 *)(k + (int)u + 0x37C) = 0;
                     F(s8, ib, 0x1D) = 1;
                     se_req(7, 0x2C, 0, left);
                 } else {
-                    IBNUM(u, F(u8, ib, 0xB)) = left;
+                    k = F(u8, ib, 0xB) * 4;
+                    *(s16 *)(k + (int)u + 0x37E) = left;
                     F(s8, ib, 0x1D) = 2;
                     se_req(7, 0x15, 0, left);
                 }
-                *(s16 *)0x39DAD2 = F(s8, ib, 0x1D);
-                F(u8, ib, 0x1F) = 0;
+                v = ib;
+                *(s16 *)0x39DAD2 = F(s8, v, 0x1D);
+                F(u8, v, 0x1F) = 0;
                 F(u8, ib, 5) = F(u8, ib, 5) + 1;
             } else {
                 se_req(7, 0x15, 0);
@@ -365,11 +372,12 @@ s32 itembox_stock(s32 pad) {
         }
         break;
     case 1:
-        *(s16 *)0x39DAD2 = F(s8, ib, 0x1D);
-        F(u8, ib, 0x20) = F(u8, ib, 0x20) + 1;
+        *(s16 *)0x39DAD2 = F(s8, w, 0x1D);
+        F(u8, w, 0x20) = F(u8, w, 0x20) + 1;
         if ((u16)pad & 0x20) {
+            v = ib;
             *(s16 *)0x39DAD2 = 0;
-            F(u8, ib, 5) = 0;
+            F(u8, v, 5) = 0;
             F(u8, ib, 0x1F) = 0;
             F(u8, ib, 0x20) = 0xFF;
             se_req(7, 9, 0);
