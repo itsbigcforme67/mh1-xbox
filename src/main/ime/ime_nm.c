@@ -3796,9 +3796,11 @@ CH *c;
 {
     void **pp;
     CH *p;
+    HCHAR *h;
 
-    pp = &hchar[pos].ch;
-    p = hchar[pos].ch;
+    h = &hchar[pos];
+    pp = &h->ch;
+    p = h->ch;
     while (p != 0) {
         pp = (void **)&p->next;
         p = p->next;
@@ -6414,14 +6416,10 @@ int api_touroku(int *a)
 int syn_2to3(int n)
 {
     n = n - 1;
-    if (n >= 0) {
-        if (n >= 0x1E) {
-            goto bad;
-        }
-        return tab_2to3[n];
+    if (n < 0 || n >= 0x1E) {
+        return -1;
     }
-bad:
-    return -1;
+    return tab_2to3[n];
 }
 
 int apis_dicname(int *a)
