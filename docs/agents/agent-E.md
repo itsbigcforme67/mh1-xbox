@@ -580,3 +580,25 @@ Lessons:
   not the index; `if (h > 0x180)` instead of `>= 0x181` keeps the compare in v0) linked: src/main/fl/clay02.c, clay03.c. Near-matches: flCreateClayHandle (clay01_nm.c, 4 instructions: the two
   independent argument loads of the second flMemcpy come in the other order), flPS2GetMLCLAY (clay02_nm.c, 20/28: s0/s1 roles).
 - reward_mv (9 off): permuter 10 min, best score 195 -> 55, no zero; mutations tried by hand (`new_var = w->xB < 0` in the condition, dead `PitMenu.x12 = 0`) do not transfer.
+
+## Assignment 6 (6 Oct): net sync receivers, fl hierarchy and pad layer (main 0x160000-0x1C0000)
+Linked this pass (rebuild OK x5 each time, build_pc.sh builds): flpad01/02 (flpad_ram_clear, flPADInitialize/Destroy/WorkClear, padconf_setup_depth,
+flupdate_pad_stick_dir/button_data/on_cnt, flPADFixedAnalogSelectSwitch), plpl01 (plplInit/Add/Next), pl_ps2io01/02 (ps2McModuleInit, flPS2PADModuleInit),
+tarpad01 (tarPADDestroy, FixedAnalogSelectSwitch, flPADConfigSetACRtoXX, tarPADRead, ps2PADWorkClear), flnode01 (flCalcTrans, flSetSkinTrans,
+flSetSkinTransMatrixList), flnode02 (flSetMotionExSub, flFindGroupRoot), flmotion01/02 (flGetMotionSetTime/LoopInfo, flGetMotionMatrix), flnode03/04
+(flPlayMotionExSI, flCalcTransSI/Sub), flnode05a-d (hierarchy build: flGetHierarchySI, flGetHierarchy3_sub, flInitPostureHierarchySI/MAYA, flGetMatrixWithoutScale/SI/MAYA),
+flps_misc01 (flPS2CheckGSClip), disp2_02 (Disp_button), net_receive_host (netsyn05.c now covers 0x1BCA20-0x1BCCF0) and net_receive_sys (netsyn09.c, 0x1BC200-0x1BC688 + jump table 0x35ECB0-0x35ECE4).
+Near-matches left in this pass (all in *_nm.c): flPADConfigSet (10/32), flPADGetALL (flpad03_nm.c, 4/86), ps2McInit (2/34), tarPADInit (tarpad02_nm.c, 68/163),
+flSetMatrixList (11/36), flPlayMotionExSISub (3/63), flnode05_nm.c: flGetHierarchy3 (11/74), flInitPostureHierarchySISub/MAYASub (2 each), flGetHierarchyData2 (2),
+flGetFcurveValue (7), flPS2psAddQueue (5/43), flCreateClayHandle (4/101), flPS2GetMLCLAY, net_receive_chat (24/114: len/d/tmp registers), net_receive_pl, net_receive_em, net_start_ck, disp_load_msg (2/50), reward_mv (9/351).
+Lessons:
+- The node tree walk (child at +0xD0, sibling +0xCC, parent +0xC8) is `loop: work; if (n->child) {n = n->child; goto loop;} if (n->sib) {n = n->sib; goto loop;}
+  while (n != top) { while (n->sib) {...} n = n->parent; }` written with goto; the walker's own params must be the loop variables (`void f(FLNODE *n, FLNODE *p) { FLNODE *top = n; ...`).
+- Tail-recursive list code (plplNext) is a `for (;;)` loop in the original; in-place parameter modification (`dst += last;`) reproduces unfolded adds (flGetHierarchyData2: `p += 0x10; p += i << 6;`).
+- struct assignment of two s16 fields copies as lh,lh,sh,sh (flPADConfigSet-style `*dst++ = *src++`), 128-bit lq/sq copies need `unsigned __int128` members.
+- `a = p[0];` hoisted into its own declared local (u16) before the compare changes the scheduling of the loads (net_receive_host); the permuter then found
+  `(unsigned long)(*(s32 *)(p + 4))` on the |= loads and an extra `int idx = s & 0xFF;` local. Order of statements and one temp each: use tools/perm.py -j1 for 10-15 minutes.
+- Statement/declaration permutation scripts (kept out of the repo) beat hand tweaks for register swaps: permute the declaration lines (hill climb with pair swaps) or the
+  store block (flps/disp: Disp_button matched when `q.col = -1` moved after the last field store). check.py's count for calls to functions in other modules always shows one
+  diff per unresolved call (func_NNNNNN names): that is not a real difference.
+- `if (...) return 0; return 1;` is not the same as `return !(...)` for float compares (flPS2CheckGSClip).

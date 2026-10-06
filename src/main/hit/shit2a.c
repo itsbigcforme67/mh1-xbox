@@ -1,9 +1,7 @@
-/* shit2 - SLPM_654.95 0x00116540-0x001169FC (f_sphr part 3): grid helpers of
- * the stage hit data. BlockPlaceCgeck returns the quadrant (bit 0: x, bit 1:
- * z) of its grid cell that a position lies in; *FieldInCheck tell whether a
- * position is inside the loaded wall / ground / stage area (8 units
- * margin); GetWallTblAdrs returns the wall cell list for a position.
- * Cell sizes and counts are unsigned (u32 to float conversions). */
+/* shit2a - SLPM_654.95 0x00116540-0x00116938 (f_sphr part 3): grid helpers of the stage hit data. BlockPlaceCgeck returns the quadrant (bit 0: x,
+   bit 1: z) of its grid cell that a position lies in; *FieldInCheck tell whether a position is inside the loaded wall / ground / stage area (8 units
+   margin). Cell sizes and counts are unsigned (u32 to float conversions). GetWallTblAdrs is linked from shit15.c; shit2.c holds all five for the PC build.
+   `x < 8.0f || (z = p[2]) < 8.0f` gives the original's shared return-0 stub. */
 #include "types.h"
 #include "hit3.h"
 
@@ -64,13 +62,4 @@ int AreaFieldInCheck(int stg, f32 *p) {
     if (x < 8.0f || (z = p[2]) < 8.0f) return 0;
     if (x < sd->sx - 8.0f && z < sd->sz - 8.0f) return 1;
     return 0;
-}
-
-s32 GetWallTblAdrs(f32 *p) {
-    f32 csz = (u32)diorama_w.wcsz;
-    f32 csx = (u32)diorama_w.wcsx;
-    int iz = (int)(p[2] / csz);
-    int ix = (int)(p[0] / csx);
-
-    return (s32)diorama_w.wtbl[iz + ix * diorama_w.wnz];
 }

@@ -93,11 +93,11 @@ void Disp_button(f32 scale, int kind, int x, int y) {
     SetFilterMode(0);
     reload_tex(1, 0x157);
     SetTextureStage(0x157);
-    q.col = -1;
     q.x0 = x;
     q.y0 = y;
     q.x1 = w * scale;
     q.y1 = 24.0f * scale;
+    q.col = -1;
     if (k == 9) {
         q.uv0.a = 0xE0;
     } else {

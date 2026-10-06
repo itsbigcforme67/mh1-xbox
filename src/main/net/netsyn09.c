@@ -31,7 +31,9 @@ void net_receive_sys(int slot0, u8 *buf) {
     u8 who;
     int v;
     int bit;
-    u16 t;
+    unsigned int t;
+    int idx;
+    u16 a;
     s8 i;
     int j;
     u8 *q;
@@ -113,28 +115,32 @@ void net_receive_sys(int slot0, u8 *buf) {
             break;
         case 7:
         case 10:
+            a = p[0];
             s = p[3];
             if (kind == 7) {
                 if (game_w.master == game_w.x21B) {
                     v = s & 0xFF;
-                    game_w.x1E2 = p[0];
+                    game_w.x1E2 = a;
                     bit = 1 << (v % 32);
-                    t = s & 0xFF;
+                    t = s;
                     if (game_w.x1A8[t >> 5] & bit) {
                         game_w.x1E4 = 0xFF;
                     } else {
                         game_w.x1A8[t >> 5] |= bit;
-                        game_w.x1E4 = t;
+                        game_w.x1E4 = s;
                     }
                     net_send_sys(0xA, 0);
                 }
             } else {
                 who = p[2];
-                if (who == game_w.master && (s & 0xFF) != 0xFF) {
-                    Pl_item_stack(player_work + who * 0xA00, game_w.item[s & 0xFF].id, game_w.item[s & 0xFF].num);
+                if (who == game_w.master) {
+                    idx = s & 0xFF;
+                    if (idx != 0xFF) {
+                    Pl_item_stack(player_work + who * 0xA00, game_w.item[idx].id, game_w.item[idx].num);
+                    }
                 }
-                game_w.x1A8[0] |= *(s32 *)(p + 4);
-                game_w.x1A8[1] |= *(s32 *)(p + 8);
+                game_w.x1A8[0] |= (unsigned long)(*(s32 *)(p + 4));
+                game_w.x1A8[1] |= (unsigned long)(*(s32 *)(p + 8));
             }
             break;
         case 9:
