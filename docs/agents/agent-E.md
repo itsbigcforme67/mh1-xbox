@@ -634,3 +634,24 @@ Lessons (each shown by the named function):
 - In-place parameter updates (`depth |= (mode + 1) << 6;`, `size0 = (size0 + 15) & ~15;`) keep the original register (SdrSetRev).
 - tools/rebuild.sh takes about 4-8 minutes now; run the permuter with PERM_ASM_DIR pointing at a snapshot of asm/ because the rebuild wipes it.
 - The scratchpad directory is shared between agents: keep your own files in a subdirectory (mine: .../scratchpad/E).
+
+### Assignment 7, second half (IME, chat UI, more lessons)
+Linked in the ime runs (imeaw .. imebu): is_kuten, alloc_record, set_wds, flush_head, newwdlen, get_entid_tab, dic_open, iskanji, tmpoffset, api_funcent,
+dic_tmptouroku, dic_newlearn, bs_ctd, main_getsyn, setu_match (jump table 0x36E090-0x36E0B4 is registered with it), syn_2to3, hchar_addchmem, prev_learn,
+to_zenkaku, bytesin_kana_buf, count_byte_kana_buf (both were empty stubs), back_gun, muhenkan, set_record. Chat UI runs chat19-chat23: DispFrameListOptionArrowC,
+sword_zokusei, Receive_mess_move, zen_kigou_suuji_chk, DispFrameListOptionArrow. New helper scripts are NOT in the repo (they lived in my scratch directory): a
+function-local variant tester (replace text inside one function, run alignall, print the count), a "make a run file from an nm file" script (all declarations of
+the nm file plus the chosen functions) and a greedy comparison flipper (tools/greedy_sub.py with `>= K` -> `> K-1` and `< K` -> `<= K-1`).
+More lessons (each shown by the named function):
+- K&R definition `u16 to_zenkaku(c) u16 c;` keeps the call sites with two arguments legal and gives the original's single widening at entry.
+- `u16 t` instead of `s16 t` for a timer phase makes `(f32)t` the unsigned conversion with the bltz fix-up (DispFrameListOptionArrow, disp_cursorC 48 -> 4 off).
+- A 64-bit parameter: `get_entid_tab(unsigned long id, ...)`; `char *name` plus `*name == 0` gives `lb`; `int page` instead of `s16 page` removes a sign extension when the
+  callee already returns the value in a sign-extended register (main_getsyn); `(s16)klen == len` re-extends klen at the compare.
+- `if (k < end) { p = ...; do { if (!test(*p)) break; k++; p++; } while (k < end); }` is the shape of `while (k < end && test(*p))` here (muhenkan).
+- `if (cond1) { if (cond2) return 1; } if (cond3) {...}` is not a switch: the failed first test falls into the second test (zen_kigou_suuji_chk, ladder with
+  fall-through into the next compare); a stack buffer can be bigger than the used length (`u8 buf[0x50]` in dic_tmptouroku / dic_newlearn: the frame size shows it).
+- `if (kh == 0 || (pw = kh->pw) == 0) { else-branch values } else { ... }` puts the else-branch code first, as the original does (prev_learn).
+- `disp_kouho()` with no argument where the original passes a stale a0 (back_gun); `rt = f(); rt++;` instead of `rt = f() + 1;` (dic_newlearn).
+- Unprototyped callers that pass a second argument (`to_zenkaku(c | 0x100, c)`) force the callee to stay K&R in the whole-file C.
+- flfntLocate(int, s16) is the prototype that makes an s16 argument pass without a re-extension.
+- A greedy pass over `>=`/`<` rewrites on a 6000-line near-match file (ime_nm.c, 25 minutes) found improvements in josi_match (67 -> 30), setu_match, FAskRom_Seek and others.
