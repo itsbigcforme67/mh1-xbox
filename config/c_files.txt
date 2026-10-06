@@ -2093,3 +2093,6 @@ main 0x001BC200 0x001BC688 net/netsyn09
 main:rodata 0x0035ECB0 0x0035ECE4 net/netsyn09
 lobby 0x005D3660 0x005D4948 f/lb_r
 lobby:rodata 0x00664DA0 0x00664E3C f/lb_r
+lobby 0x005C5380 0x005C5434 f/lb_a04
+lobby 0x005C5680 0x005C5844 f/lb_a05
+lobby 0x005C5850 0x005C5974 f/lb_a06

@@ -51,7 +51,7 @@ void lb_trade_check(int a0, u8 *data) {
 void lb_trade_result(u8 *data) {
     PLW *pl = &player_work[game_w.master];
     LBTRADE2 t;
-    void Ud_item_stack();
+    void Ud_item_stack(u16, int);
     if ((s16)act_ck(pl, 0, 0x2E) != 0) {
         memcpy(&t, data, 0xE);
         if (t.result == 0) {
@@ -106,8 +106,8 @@ int Lb_get_plID(u8 *mac) {
 
 void lb_set_pl_status(u8 id, u8 *src) {
     u8 buf[0x10];
-    LBSTAT *st;
     PLW *pl;
+    LBSTAT *st;
     pl = &player_work[id];
     flMemcpy(buf, src, 0x10);
     st = (LBSTAT *)buf;
@@ -148,8 +148,9 @@ void lb_set_pl_status(u8 id, u8 *src) {
 
 void lb_set_pl_pos(u8 id, u8 *src, u8 mode) {
     u8 buf[0xC];
+    PLW *pl;
     LBPOS *p;
-    PLW *pl = &player_work[id];
+    pl = &player_work[id];
     flMemcpy(buf, src, 0xC);
     p = (LBPOS *)buf;
     if (mode == 0) {
@@ -168,8 +169,7 @@ void lb_set_pl_pos(u8 id, u8 *src, u8 mode) {
         pl->work808 = p->z;
         *(LBV3 *)pl->pos = *(LBV3 *)&pl->work800;
         *(LBV3 *)&pl->work5A0 = *(LBV3 *)pl->pos;
-        pl->ang_y = p->ang;
-        pl->ang[1] = p->ang;
+        pl->ang[1] = *(u16 *)&pl->ang_y = p->ang;
     }
 }
 
