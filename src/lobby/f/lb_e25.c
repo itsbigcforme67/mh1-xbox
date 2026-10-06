@@ -126,12 +126,12 @@ void eft25_d(E25 *e) {
         release_prim(e->x3C, np, e->type * 2);
     }
     i = 0;
-    if (n > 0) {
+    if (0 < n) {
         do {
             if (p->pr != 0) {
                 release_prim(p->prim);
             }
-            i = (s16)(i + 1);
+            i++;
             p += 1;
         } while (i < n);
     }
