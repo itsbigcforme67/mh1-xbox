@@ -292,3 +292,24 @@ the next compare constant (bs_url_slash, BsBody00_ReqSrc, Lb_get_pl_stat2, u_ite
 target), vs_square_init (a0 reuse), stockButtonImage (`bgtz; nop; nop; b end` layout); BsQuit00_Init (store order); loops of the form
 `bne; nop; b exit; nop; nop; b top` (bs_route_queue_free_reverse, bs_url_end, bs_url_last_slash); rodata struct copy of 12 bytes (pl_sleeping, Lb_put_gold).
 The big ones (Lb_guild, lb_basic_master, Lb_stage_load, lb_rule_seet_set, quest table functions) were not touched this session.
+
+## Lobby session 5 (10 Oct 2026): translation-unit groups (static callees), raw functions, near-match fixes
+Overlay 0x5C4E60-end. New tools: tools/lbtu.py (merge the registered runs of an address range plus the not-yet-C functions into ONE C file,
+unmatched/unwritten functions become `asm` stubs fed by config/c_rawfuncs.txt; build.py gen_raw now supports lobby), tools/check.py has
+-Ibuild/raw, tools/progress.py no longer counts raw functions as decompiled.
+Why: MWCC only uses a callee's register usage ("IPA") when the callee is a `static` function defined EARLIER in the SAME file and every caller is
+in that file. The original has such statics: a global loaded into a1 and still in a1 after the call (BsRouteForwardCheck), `r` kept in a0 across
+`bs_route_current_page_status(r)` (BsRouteReload), a counter temp in v1 instead of v0 because `bs_page_status_flag_set` is static (BsRequestHtmlPost).
+A static whose callers are partly outside the group cannot link (callers in raw functions are fine: they hold absolute jal targets).
+Rules that held: scratch files must NOT live in src/ while tools/rebuild.sh runs (it compiles src/lobby/zz*.c); compile scratch copies in build/scr.
+Source-form findings (verified by matching):
+- `if (0 < n)` for a loop guard whose count is an s16 loaded value gives `slt at,zero,s0; beq` (original) where `n > 0` gives `blez` (eft25_i, eft25_d);
+  `i++` on an s16 loop counter avoids the extra sign extension before the add that `i = (s16)(i + 1)` produces.
+- switch label order: the compare ladder in the asm is the REVERSE of the order of the case labels in the source (eft25_i case 4: `case 0: case 1: ... default: case 2: case 3:`).
+- `p->time = -i * 5 - 10;` (not `i * -5 - 10`) for the s16 particle index.
+- A 20-byte float struct copy compiles to lwc1 x4 / swc1 x4 / lwc1 / swc1 only when the struct has f32 members: `struct F5 {f32 a,b,c,d,e;} t; t = *(struct F5 *)p;`
+  and then access the s16 halves with casts `*(s16 *)&t.a`, `*(s16 *)&t.b` (Lb_put_2TF). An s16/u8 struct gives ldr/ldl copies instead.
+- if/else-if chains (not switch) when the original compares the same u8 against 6, 7, 8 one after the other (eft25_m start).
+- `(1 << *p) & mask` vs `mask & (1 << (*p & 0xFF))`: the second gave the original operand order of `and` (lb_check_chair).
+- Local copies of the arguments (`int x = *(s16 *)A; int y = *(s16 *)B; buf[0] = 0; f(buf, x, y);`) move the store out of the delay slot (Plaza_chat_move).
+- Using `lbCommer[id].name` again instead of the cached `name` pointer changed the s0/s1 order (lb_commer_message).

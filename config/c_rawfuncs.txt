@@ -1,1 +1,5 @@
 main 0x281ED0 0x1D0 mc_sel_ck
+lobby 0x005E61B0 0xA4 bs_route_queue_free_reverse
+lobby 0x005E6580 0x80 bs_cache_queue_get
+lobby 0x005E66D0 0x374 BsCacheInitialize
+lobby 0x005E6E80 0x1DC BsRequestPostAdd
