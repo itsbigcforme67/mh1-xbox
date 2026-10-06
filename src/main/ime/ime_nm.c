@@ -1142,7 +1142,7 @@ int whence;
         break;
     case 1:
         r = gAskRom.rest - off;
-        if (r < 0 || r >= 0x97C01) {
+        if (r < 0 || r > 0x97C00) {
             return -1;
         }
         gAskRom.rest = r;
@@ -1359,7 +1359,7 @@ int setu_end(int a0, int flag)
     case 0xA7:
     case 0xA8:
     case 0xB1:
-        if ((b > 4 && b < 9) || b >= 0xA) {
+        if ((b > 4 && b <= 8) || b >= 0xA) {
             return 1;
         }
         return 0;
@@ -3481,7 +3481,7 @@ prefer:
                 len = cur;
             } else {
                 len = concat_bslen(pos, end);
-                if (len < 0) {
+                if (len <= -1) {
                     break;
                 }
                 if (len == 0) {
@@ -4894,7 +4894,7 @@ int c;
 
     a = 0;
     r = 0;
-    if (((c & 0xFFFF) >> 8 & 0xFF) >= 0x21 && ((c & 0xFFFF) >> 8 & 0xFF) < 0x7F) {
+    if (((c & 0xFFFF) >> 8 & 0xFF) > 0x20 && ((c & 0xFFFF) >> 8 & 0xFF) < 0x7F) {
         a = 1;
     }
     if (a != 0) {
@@ -5118,7 +5118,7 @@ int ask_sjis2jis(int c)
 
     lo = c & 0xFF;
     hi = ((c & 0xFFFF) >> 8) & 0xFF;
-    if (lo >= 0x40 && lo < 0xFD) {
+    if (lo > 0x3F && lo < 0xFD) {
         if (lo == 0x7F) {
             return 0;
         }
@@ -5167,7 +5167,7 @@ int ask_jis2sjis(int c)
             a = (a + 1) & 0xFF;
         }
         r = t + 0x71;
-        if (t >= 0x2F) {
+        if (t > 0x2E) {
             r = t + 0xB1;
         }
         return (((r & 0xFF) << 8) | (a & 0xFF)) & 0xFFFF;
@@ -5503,7 +5503,7 @@ int setu_point(BS *b, BS *n)
             pt += 3;
         } else if (k == 0x1A) {
             pt += 2;
-        } else if (k < 0x1A || k >= 0x1F) {
+        } else if (k <= 0x19 || k >= 0x1F) {
             pt += 1;
         }
     }
@@ -5566,7 +5566,7 @@ int base;
             if (a >= 0x80 && a < 0x8F) {
                 return base + 0xF;
             }
-            if (a == 0x92 || a == 0x94 || a == 0xA0 || a == 0xA2 || (u32)(a - 0xAE) < 2 || a == 0xB1 || a == 1) {
+            if (a == 0x92 || a == 0x94 || a == 0xA0 || a == 0xA2 || (u32)(a - 0xAE) <= 1 || a == 0xB1 || a == 1) {
                 return base + 0xF;
             }
             if (a >= 0xA && a < 0xD) {
@@ -5633,7 +5633,7 @@ int base;
     p = b->pw;
     if (p != 0) {
         t = p->x02;
-        if ((t >= 0x14 && t < 0x1A) || t == 0x32) {
+        if ((t >= 0x14 && t <= 0x19) || t == 0x32) {
             k = 1;
             if (p->x00 + 1 == b->len) {
                 k = 2;
@@ -5667,8 +5667,8 @@ int base;
         }
         return base;
     default:
-        if ((u32)(c - 0xC4) < 2 || (c >= 0xCE && c < 0xD2)) {
-            if ((d > 0 && d < 0xE) || (d >= 0x16 && d < 0x18)) {
+        if ((u32)(c - 0xC4) <= 1 || (c >= 0xCE && c < 0xD2)) {
+            if ((d > 0 && d <= 0xD) || (d >= 0x16 && d < 0x18)) {
                 return base + 5;
             }
             return base;
@@ -5710,7 +5710,7 @@ int extra;
     b = b & 0xFF;
     switch (a & 0xFF) {
     case 0:
-        if ((b >= 0x14 && b < 0x1A) || b == 0x32) {
+        if ((b >= 0x14 && b <= 0x19) || b == 0x32) {
             r = 0xF;
         }
         break;
@@ -5740,9 +5740,7 @@ int extra;
             if (b > 0 && b < 0xE) {
                 r = 0xF;
             }
-        } else if (b >= 0x80 && b < 0x8C && c == 4) {
-            r = 0xF;
-        } else if (b == 0xD && c == 0) {
+        } else if ((b >= 0x80 && b < 0x8C && c == 4) || (b == 0xD && c == 0)) {
             r = 0xF;
         }
         break;
@@ -5759,7 +5757,7 @@ int extra;
         }
         break;
     case 8:
-        if ((b >= 0x14 && b < 0x1A) || (b > 0 && b < 0xE)) {
+        if ((b >= 0x14 && b <= 0x19) || (b > 0 && b < 0xE)) {
             r = 0x14;
         }
         break;
@@ -5820,7 +5818,7 @@ int to_roman(u16 *src, int n, u16 *out, int *cnt)
             e = rmtab + 1;
             goto got;
         }
-        if (kind < 9 || roman_japan == 0) {
+        if (kind <= 8 || roman_japan == 0) {
             out[0] = to_zenkaku(src[0] & 0xFF);
         } else {
             out[0] = to_zenkaku_spec(src[0] & 0xFF);
@@ -5871,7 +5869,7 @@ int to_roman(u16 *src, int n, u16 *out, int *cnt)
         }
         return 2;
     }
-    if (sub >= 2 || (kind >= 6 && kind < 0xF && sub == 1)) {
+    if (sub >= 2 || (kind > 5 && kind < 0xF && sub == 1)) {
         return 1;
     }
     step = 2;
@@ -6354,7 +6352,7 @@ int api_touroku(int *a)
     int u;
     int r;
 
-    if (im_state >= 2) {
+    if (im_state > 1) {
         return 4;
     }
     if (func_mode >= 2) {
