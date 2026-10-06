@@ -2022,3 +2022,5 @@ lobby 0x005FFCB0 0x005FFD1C f/lb_gdr2x01
 main 0x001BA8E0 0x001BB000 net/netsyn10
 main 0x0016B060 0x0016B10C fl/clay02
 main 0x0016D8F0 0x0016D9C0 fl/clay03
+lobby 0x005C5F30 0x005C6F34 f/lb_u
+lobby:rodata 0x006649F0 0x00664A3C f/lb_u
