@@ -564,7 +564,7 @@ void em_mov01_005B06E0(EMW *em) {
                     em_char_set(em, 0x22, 0, 0);
                     em->x07 = 0;
                     w->x0A = 0;
-                } else if ((u16)(em->horm_ang - em->ang[1]) >= 0xD001) {
+                } else if ((u16)(em->horm_ang - em->ang[1]) > 0xD000) {
                     em->x05 = 4;
                     em_char_set(em, 0x21, 0, 0);
                     em->x07 = 1;

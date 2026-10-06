@@ -216,6 +216,8 @@ game:rodata 0x00686B60 0x00686C40 em/em09c
 game 0x005ACC40 0x005ACC58 em/em09d
 game 0x005AF530 0x005B06E0 em/em12
 game:rodata 0x006882E0 0x00688318 em/em12
+game 0x005B06E0 0x005B0AE0 em/em12_d
+game:rodata 0x00688320 0x00688338 em/em12_d
 game 0x005B0AE0 0x005B3A44 em/em12b
 game:rodata 0x00688340 0x006883CC em/em12b
 game 0x005B40D0 0x005B5248 em/em12c
