@@ -65,10 +65,7 @@ void flPADGetALL(void) {
         j = 8;
         do {
             j--;
-            x = s->a;
-            y = s->b;
-            d->a = x;
-            d->b = y;
+            *d = *s;
             s++;
             d++;
         } while (j > 0);

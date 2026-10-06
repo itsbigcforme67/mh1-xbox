@@ -237,15 +237,15 @@ void Quest_start(void)
         }
         m = (MISSION *)mission_area;
         Quest_pl_stage_init(0xFF);
-        quest_w.x94 = (MISSION2 *)((int)mission_area + m->o[0]);
+        quest_w.x94 = (MISSION2 *)((u32)m->o[0] + (int)mission_area);
         quest_w.x10 = Quest_time_get(1);
         quest_w.xAF = quest_w.x10 / 9000;
         if (quest_w.xAF > 2) {
             quest_w.xAF = 2;
         }
         quest_w.x64 = m;
-        quest_w.x38 = 0;
         quest_w.x6C = (s32 *)(m->o[4] + (int)mission_area);
+        quest_w.x38 = 0;
         quest_w.x36 = 0;
         quest_w.x7C = (s32 *)(m->o[7] + (int)mission_area);
         quest_w.x70 = (s32 *)(m->o[12] + (int)mission_area);
@@ -882,7 +882,7 @@ char *Quest_str_get(int n)
     }
     p = quest_w.x84;
     p += n;
-    return (char *)(*p + mission_area);
+    return (char *)((u32)*p + (int)mission_area);
 }
 
 static s16 stolen_item_num_ck(item)

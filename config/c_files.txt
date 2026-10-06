@@ -133,8 +133,8 @@ game:rodata 0x006861F0 0x0068626C em/em02
 main 0x0027CA50 0x0027CF10 eft/eft26
 main 0x00101E40 0x00102BC8 eft/eft01
 main 0x00225FC0 0x002267EC set/set21
-main 0x0027D6E0 0x0027DDB8 eft/eft02
-main:rodata 0x00384170 0x003841F0 eft/eft02
+main 0x0027D6E0 0x0027E940 eft/eft02
+main:rodata 0x00384170 0x00384220 eft/eft02
 main 0x0027E940 0x0027EF58 eft/eft02b
 main:rodata 0x00384220 0x00384240 eft/eft02b
 main 0x001569E0 0x00157080 set/set13
@@ -2160,3 +2160,14 @@ lobby 0x005A1B40 0x005A1CAC b/lb_by150
 lobby 0x005B3ED0 0x005B4330 b/lb_by151
 lobby:rodata 0x0065E6A0 0x0065E720 b/lb_by151
 lobby 0x005B4B20 0x005B4D2C b/lb_by152
+main 0x00174810 0x00174938 fl/flhier01
+main 0x0016F900 0x0016F98C fl/flsys01
+main 0x002804D0 0x00280884 mc/mcact01
+main 0x0022FC50 0x0022FDD0 movie/movie01
+main 0x00226C30 0x002270A0 quest/f_quest01
+main 0x00228370 0x002283C4 quest/f_quest02
+main 0x00262D10 0x00262E50 sk/cmd07
+main 0x00162F80 0x00163048 font/disp1_01
+main 0x0025FC60 0x0025FDF4 sk/sk12
+main:rodata 0x0036E580 0x0036E5C0 sk/sk12
+main 0x002454F0 0x002455C0 ime/imebw
