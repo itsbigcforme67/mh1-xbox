@@ -374,9 +374,12 @@ main:rodata 0x003865A0 0x003865EC reward/f_reward
 main 0x00291D30 0x0029250C reward/f_reward2
 main:rodata 0x003866F0 0x0038672C reward/f_reward2
 main 0x00292510 0x00292D34 reward/f_reward3
+main 0x00292D40 0x002932BC reward/f_reward4
 main:rodata 0x003868F0 0x0038690C reward/f_reward3
 main 0x002932C0 0x00293364 reward/f_rewardb
 main 0x00293420 0x00293684 reward/f_rewardc
+main 0x002270A0 0x002270FC quest/f_quest03
+main 0x00227160 0x00227238 quest/f_quest04
 main 0x00227100 0x0022715C quest/f_quest
 main 0x00227240 0x00227764 quest/f_questb
 main 0x00227770 0x00227CEC quest/f_questc
@@ -526,6 +529,13 @@ main 0x00262070 0x0026216C sk/sk06
 main 0x00262470 0x00262490 sk/sk07
 main 0x002624F0 0x002625A8 sk/sk08
 main 0x002627B0 0x0026280C sk/sk09
+main 0x00262810 0x0026290C sk/sk13
+main 0x00260B30 0x00260B88 sk/sk14
+main 0x00262490 0x002624E8 sk/sk15
+main 0x00262A40 0x00262A90 sk/sk16
+main 0x0025F980 0x0025F9B8 sk/sk17
+main 0x002640C0 0x0026417C sk/sk18
+main 0x0027BF80 0x0027C0AC sk/sk20
 main 0x00260A40 0x00260AEC sk/sk10
 main 0x00262010 0x00262070 sk/sk11
 main 0x002756C0 0x0027573C chat/chat01
@@ -592,7 +602,7 @@ main 0x0015B650 0x0015B810 sprite/putspr
 main 0x00169300 0x001698A4 prim/prim2
 main 0x00169DA0 0x0016A004 emw/emw01
 main 0x0016A860 0x0016A890 emw/gmat01
-main 0x0016AAE0 0x0016ABAC emw/gmat02
+main 0x0016AA20 0x0016ABAC emw/gmat02
 main 0x00120240 0x001209F4 cp/cp01
 main 0x00120C80 0x00120F84 cp/cp02
 main 0x0011EBA0 0x0011EC20 load/lf01
@@ -1040,7 +1050,7 @@ main 0x00125080 0x001251F8 sys/tsk_01
 main 0x00290800 0x002909B8 staff/staff_01
 main 0x0018D9D0 0x0018DB24 fl/plmem_01
 main 0x0018DE50 0x0018DF0C fl/plmem_02
-main 0x0018E1B0 0x0018E200 fl/plmem_03
+main 0x0018E1B0 0x0018E278 fl/plmem_03
 main 0x00190FC0 0x00190FF4 fl/amo2_01
 main 0x00191270 0x001912A4 fl/amo2_02
 main 0x0028B2E0 0x0028B328 mc/netfile2b_01
@@ -1464,7 +1474,7 @@ main 0x001118E0 0x00111B1C game/flow02
 main 0x002814E0 0x002862E4 mc/mccomb
 main:rodata 0x00384EF0 0x0038506C mc/mccomb
 main 0x0023E500 0x0023E7F4 ime/imeb
-main 0x0023E8E0 0x0023E91C ime/imec
+main 0x0023E8E0 0x0023EA04 ime/imec
 main 0x0023ED70 0x0023ED7C ime/imed
 main 0x0023EE70 0x0023F234 ime/imee
 main 0x0023F6C0 0x0023F730 ime/imef
@@ -1480,8 +1490,10 @@ main 0x00241F90 0x00242088 ime/imeo
 main 0x002422C0 0x00242398 ime/imep
 main 0x00242420 0x002425C4 ime/imeq
 main 0x002427F0 0x00242844 ime/imer
+main 0x00242850 0x00242990 ime/imebz
 main 0x00242990 0x00242EC8 ime/imes
 main 0x00243010 0x00243358 ime/imet
+main 0x00243360 0x002433F8 ime/imece
 main 0x00243400 0x00243480 ime/imeu
 main 0x00243780 0x002437B0 ime/imev
 main 0x00243920 0x00243974 ime/imew
@@ -1489,12 +1501,15 @@ main 0x002439F0 0x00243A44 ime/imex
 main 0x00243BB0 0x00243CC8 ime/imey
 main 0x002440D0 0x002442A0 ime/imez
 main 0x002442F0 0x002444C8 ime/imeaa
+main 0x002448E0 0x00244990 ime/imecf
 main 0x002451B0 0x00245334 ime/imeab
 main 0x002455C0 0x00245700 ime/imeac
 main 0x00245B50 0x00245C18 ime/imead
 main 0x00246280 0x00246320 ime/imeae
 main 0x00246460 0x0024651C ime/imeaf
+main 0x00246520 0x0024658C ime/imeby
 main 0x00246590 0x002466C0 ime/imeag
+main 0x002466C0 0x00246784 ime/imecc
 main 0x00246790 0x00246C04 ime/imeah
 main 0x00246F50 0x00246FC4 ime/imeai
 main 0x00247080 0x00247130 ime/imeaj
@@ -1503,10 +1518,11 @@ main 0x00247440 0x002474F0 ime/imeal
 main 0x002475D0 0x0024770C ime/imeam
 main 0x002479D0 0x00247C10 ime/imean
 main 0x00247CB0 0x00247D70 ime/imeao
+main 0x00247D70 0x00247F2C ime/imecb
 main 0x00248050 0x002480C0 ime/imeap
 main 0x00248180 0x002481C0 ime/imeaq
 main 0x00248A80 0x00248B2C ime/imear
-main 0x00248E90 0x00248EC0 ime/imeas
+main 0x00248E90 0x00248FC4 ime/imeas
 main 0x00249540 0x00249940 ime/imeat
 main 0x00249A90 0x00249B44 ime/imeau
 main 0x00249D60 0x0024A238 ime/imeav
@@ -1533,6 +1549,7 @@ main 0x0023FB40 0x0023FB90 ime/imebq
 main 0x002492C0 0x00249308 ime/imebr
 main 0x00249310 0x00249350 ime/imebs
 main 0x00247130 0x002471FC ime/imebt
+main 0x00247200 0x00247270 ime/imebx
 main 0x00244990 0x00244A08 ime/imebu
 main 0x00243A50 0x00243B1C ime/imebv
 yn 0x00533A00 0x00533A80 nc05
@@ -2060,6 +2077,7 @@ lobby 0x005FFCB0 0x005FFD1C f/lb_gdr2x01
 main 0x001BA8E0 0x001BB000 net/netsyn10
 main 0x0016AEC0 0x0016B054 fl/clay01
 main 0x0016B060 0x0016B10C fl/clay02
+main 0x0016B110 0x0016B180 fl/clay02b
 main 0x0016D8F0 0x0016D9C0 fl/clay03
 lobby 0x005C5F30 0x005C6F34 f/lb_u
 lobby:rodata 0x006649F0 0x00664A3C f/lb_u
@@ -2254,6 +2272,7 @@ main:rodata 0x0036E580 0x0036E5C0 sk/sk12
 main 0x002454F0 0x002455C0 ime/imebw
 main 0x00272010 0x002720D4 ud/udmisc03
 main 0x00217550 0x00217618 flfnt/flfntx01
+main 0x00217D70 0x00217DD8 flfnt/flfntx02
 main 0x00175120 0x001751CC fl/flpsm01
 main 0x00290AE0 0x00290C54 staff/staff01
 main 0x00216DE0 0x00216F90 flfnt/flfnty01
@@ -2315,3 +2334,4 @@ lobby 0x005D7C30 0x005D7D60 f/lb_v09
 lobby 0x005C5980 0x005C5AB4 f/lb_v10
 lobby 0x005CA080 0x005CA228 f/lb_v12
 lobby 0x005C9DF0 0x005C9F80 f/lb_v13
+lobby 0x005F3020 0x005F309C f/lb_au07

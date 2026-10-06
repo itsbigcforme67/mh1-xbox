@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -578,23 +578,23 @@ u8 *select_tostr(void)
 
 u8 *select_subtostr(int arg0, int n)
 {
-    u16 *p;
-    int len;
     int k;
     int pos;
+    u16 *p;
+    int len;
+    int end;
 
     p = meanbuf;
-    for (pos = arg0; pos < arg0 + n; pos += len) {
-        len = bunsetu_len(pos);
-        if (len == 0) {
-            break;
-        }
+    pos = arg0;
+    end = arg0 + n;
+    while (pos < end && (len = bunsetu_len(pos)) != 0) {
         if (pos == cur_pos) {
             k = current_makedisp(pos, len, p);
         } else {
             k = first_makedisp(pos, len, p);
         }
         p += k;
+        pos += len;
     }
     meantosjis(meanbuf, outbuf, p - meanbuf);
     return outbuf;
@@ -1833,7 +1833,7 @@ u8 *ins_wds(u8 *p, int rt, int len, int total)
 
     end = p + total;
     while (p < end) {
-        if (*(s16 *)(p + 2) >= rt) {
+        if (*(u16 *)(p + 2) < rt) {
             break;
         }
         p += 5;
@@ -2354,21 +2354,20 @@ int dic_getallnum(u8 *s, int len, u8 *out, int *cnt)
 int ask_strncmp(u8 *a, u8 *b, int n)
 {
     int d;
-    u8 c;
+    s8 c;
 
-    n--;
-    while (n != -1) {
-        c = *a;
-        d = c - *b;
-        if (d != 0) {
+    while (n-- != 0) {
+        c = *(s8 *)a;
+        d = (u8)c - *b;
+        if (d == 0) {
+            if (c == 0) {
+                return 0;
+            }
+        } else {
             return d;
-        }
-        if (c == 0) {
-            return 0;
         }
         a++;
         b++;
-        n--;
     }
     return 0;
 }
@@ -2504,11 +2503,13 @@ int read_index(void)
 int chk_entry2(u8 *key, int len)
 {
     int b;
-    int r;
+    int row;
+    u8 *q;
 
     if (key[0] < 0xA1) {
         return 0;
     }
+    row = key[0] - 0xA1;
     if ((s16)len == 1) {
         b = 0;
     } else {
@@ -2517,18 +2518,21 @@ int chk_entry2(u8 *key, int len)
         }
         b = key[1] - 0xA0;
     }
-    r = 1;
-    if ((1 << (b & 7)) & entry2code[(b >> 3) + (key[0] - 0xA1) * 0xB]) {
-        r = 0;
+    q = &entry2code[(b >> 3) + row * 0xB];
+    if ((1 << (b & 7)) & *q) {
+        return 0;
     }
-    return r;
+    return 1;
 }
 
 void set_entry2(u8 *key, int len)
 {
     int b;
+    int row;
+    u8 *q;
 
     if (key[0] >= 0xA1) {
+        row = key[0] - 0xA1;
         if ((s16)len == 1) {
             b = 0;
         } else {
@@ -2537,7 +2541,8 @@ void set_entry2(u8 *key, int len)
             }
             b = key[1] - 0xA0;
         }
-        entry2code[(b >> 3) + (key[0] - 0xA1) * 0xB] |= (1 << (b & 7)) & 0xFF;
+        q = &entry2code[(b >> 3) + row * 0xB];
+        *q |= (1 << (b & 7)) & 0xFF;
         entry2upd = 1;
     }
 }
@@ -2857,10 +2862,12 @@ void init_hash_tab(void)
 void reset_temp(void)
 {
     int i;
+    u8 *p;
 
     for (i = 0; i < 8; i++) {
-        temp_pages[i][0] = 0;
-        temp_pages[i][1] = 0;
+        p = temp_pages[i];
+        p[1] = 0;
+        p[0] = 0;
     }
     temp_top = temp_pages[0];
     temp_end = temp_pages[1];
@@ -3523,12 +3530,12 @@ prefer:
 int concat_bslen(int pos, int end)
 {
     int n;
-    s8 c;
     HCHAR *h;
+    int c;
 
     c = 0;
-    n = 0;
     h = &hchar[pos];
+    n = 0;
     while (pos < end) {
         c = h->x15;
         if (c == 0) {
@@ -3568,22 +3575,23 @@ int muhenkan(int pos, int end)
 
 void fl_check(int pos, int end)
 {
-    int n;
     void *found;
     int hit;
     u8 *p;
+    int n;
     HCHAR *h;
 
     n = end - pos;
-    p = kana_ustr + pos;
     h = &hchar[pos];
+    p = kana_ustr + pos;
     while (n > 0) {
         if (h->x00 == -1) {
             found = srch_pword(p, n, &hit);
-            if (found != (void *)-1) {
-                h->x18 = hit;
-                h->x00 = (int)found;
+            if (found == (void *)-1) {
+                return;
             }
+            h->x18 = hit;
+            h->x00 = (int)found;
         }
         n--;
         p++;
@@ -3746,13 +3754,13 @@ loop:
 
 CH *make_chmem(int pos, SYNR *r)
 {
-    SYN *s;
-    CH *first;
-    CH *prev;
     CH *c;
     s16 len;
     s64 id;
     int n;
+    SYN *s;
+    CH *first;
+    CH *prev;
 
     s = r->syn;
     first = 0;
@@ -3807,7 +3815,7 @@ CH *c;
 void add_dummy_chmem(int pos, int len, int kind)
 {
     CH *c;
-    s8 k;
+    int k;
 
     c = alloc_chmem();
     if (c != 0) {
@@ -3815,7 +3823,7 @@ void add_dummy_chmem(int pos, int len, int kind)
         c->x02 = kind;
         c->x03 = 0;
         k = len + 1;
-        c->id = 0;
+        c->id = -1;
         c->x10 = 0;
         c->next = 0;
         hchar[pos].x17 = k;
@@ -3879,10 +3887,10 @@ int bs_check(int pos, int end)
 
 BS *make_bsmem(int pos, int end, CH *ch)
 {
-    s16 clen;
     int p;
-    PWM *list;
+    s16 clen;
     PWM *l;
+    PWM *list;
     BS *first;
     BS *prev;
     BS *b;
@@ -3891,7 +3899,7 @@ BS *make_bsmem(int pos, int end, CH *ch)
     clen = ch->len;
     prev = 0;
     p = pos + clen;
-    list = pword_list(p, ch->x02, ch->x03);
+    list = pword_list(p, end, ch->x02, ch->x03);
     if (list == (PWM *)-1) {
         return (BS *)-1;
     }
@@ -4448,7 +4456,11 @@ KH *null_kouho(int len)
     return k;
 }
 
-KH *create_kouho(u8 *buf, PW *pw, int len, KH **out)
+KH *create_kouho(buf, pw, len, out)
+u8 *buf;
+PW *pw;
+int len;
+KH **out;
 {
     u8 *s;
     int n;
@@ -4517,12 +4529,15 @@ int kstrncpy(u8 *dst, u8 *src, int n)
 KH *raw_kouho(int pos, int len, int mode)
 {
     KH *out;
+    int cnt;
+    u8 *w;
 
-    ((u16 *)wdsbuf)[0] = 0xFFFF;
-    ((u16 *)wdsbuf)[1] = 0;
-    ((u8 *)wdsbuf)[4] = 0;
-    trans_roman((u8 *)wdsbuf + 5, pos, len, mode);
-    return create_kouho((u8 *)wdsbuf, 0, len, &out);
+    w = (u8 *)wdsbuf;
+    *(u16 *)w = 0xFFFF;
+    ((u16 *)w)[1] = 0;
+    w[4] = 0;
+    trans_roman(w + 5, pos, len, mode);
+    return create_kouho(w, 0, len, &out, &cnt);
 }
 
 void khmem_raw(mode)
@@ -4557,15 +4572,15 @@ void kh_mergesort(int pos, KL *list)
 
 int kh_merge_getone(KL *list)
 {
-    u16 best;
-    KL *sel;
+    int best;
     KH *r;
+    KL *sel;
     KL *l;
 
     best = 0;
     sel = 0;
     for (l = list; l != 0; l = l->next) {
-        if (l->kh != 0 && (sel == 0 || best < (u16)l->pri)) {
+        if (l->kh != 0 && (sel == 0 || (u16)l->pri > (u16)best)) {
             best = l->pri;
             sel = l;
         }
@@ -4575,11 +4590,7 @@ int kh_merge_getone(KL *list)
     }
     r = sel->kh;
     sel->kh = kh_skip(r, best);
-    if (sel->kh == 0) {
-        sel->pri = 0;
-    } else {
-        sel->pri = kh_priority(sel->bs, sel->kh->x0E) & 0xFFFF;
-    }
+    sel->pri = (sel->kh == 0) ? 0 : (kh_priority(sel->bs, sel->kh->x0E) & 0xFFFF);
     return (int)r;
 }
 
@@ -4785,11 +4796,12 @@ int kouho_makedisp(int pos, int len, KH *k, u16 *buf)
 {
     int n;
 
-    if (k != 0 && !(k->flag & 0x80)) {
+    if (k == 0 || (k->flag & 0x80)) {
+        return roman_makedisp(pos, len, buf, 0);
+    } else {
         n = jiritu_makedisp(k, buf);
         return n + roman_makedisp(pos + k->x06, len - k->x06, buf + n, 0);
     }
-    return roman_makedisp(pos, len, buf, 0);
 }
 
 int jiritu_makedisp(KH *k, u16 *buf)
@@ -4821,12 +4833,9 @@ int inc_gun(KH *k)
     w = 0;
     n = 0;
     room = kwin_len - 0xA;
-    while (n <= 8) {
-        if (p == 0) {
-            break;
-        }
+    while (n <= 8 && p != 0) {
         w += kh_length(p) + 4;
-        if (room < w) {
+        if (w > room) {
             break;
         }
         n++;
@@ -4892,20 +4901,24 @@ int back_gun(int disp, int wrap)
 }
 
 int is_jis(c)
-int c;
+u16 c;
 {
+    int hi;
+    int lo;
     int a;
     int b;
     int r;
 
+    hi = c >> 8;
+    lo = c & 0xFF;
     a = 0;
     r = 0;
-    if (((c & 0xFFFF) >> 8 & 0xFF) > 0x20 && ((c & 0xFFFF) >> 8 & 0xFF) < 0x7F) {
+    if ((hi & 0xFF) >= 0x21 && (hi & 0xFF) < 0x7F) {
         a = 1;
     }
     if (a != 0) {
         b = 0;
-        if ((c & 0xFF) >= 0x21 && (c & 0xFF) < 0x7F) {
+        if ((lo & 0xFF) >= 0x21 && (lo & 0xFF) < 0x7F) {
             b = 1;
         }
         if (b != 0) {
@@ -4914,7 +4927,6 @@ int c;
     }
     return r;
 }
-
 int is_kanji(int c)
 {
     c = c & 0xFF;
@@ -5284,11 +5296,11 @@ void free_chmemlist(CH *c)
     CH *n;
     s64 prev;
 
-    prev = 0;
+    prev = -1;
     while (c != 0) {
         n = c->next;
-        if (prev == 0 || c->id != prev) {
-            if (c->id != 0) {
+        if (prev == -1 || c->id != prev) {
+            if (c->id != -1) {
                 dic_freeentid(c->id);
             }
         }
@@ -5346,26 +5358,23 @@ int bs_prefer(int pos, int end, int len)
             }
         }
     }
-    if (h != 0) {
-        best = h->bs;
-        if (best == 0) {
-            return -1;
-        }
+    if (h == 0 || (best = h->bs) == 0) {
+        return -1;
+    } else {
         for (p = best->next; p != 0; p = p->next) {
-            if (best->x08 < p->x08) {
+            if (p->x08 > best->x08) {
                 best = p;
             }
         }
         bs_ctd(best, pos, end);
         return best->len;
     }
-    return -1;
 }
 
 int calc_point(int pos, BS *b, BS *next)
 {
-    s16 a;
-    s16 c;
+    int a;
+    int c;
     int f;
     u16 pri;
 
@@ -5379,7 +5388,7 @@ int calc_point(int pos, BS *b, BS *next)
         f = 0;
     }
     pri = b->x0A;
-    return f * 0x32 + (pri + (c * 0x10 + a * 0x11) + setu_point(b, next, pri));
+    return f * 0x32 + (pri + (c * 0x10 + a * 0x11) + setu_point(b, next));
 }
 
 int bs_point(BS *b, int pos, int end)
@@ -5927,12 +5936,11 @@ int ToUpper(int c)
 
 u8 *getrda2(u16 *a, u16 *b)
 {
-    int n;
     u8 *p;
+    int n;
     u16 *q;
     int k;
     int len;
-    u8 key;
 
     n = b - a;
     p = rmspec;
@@ -5943,11 +5951,9 @@ u8 *getrda2(u16 *a, u16 *b)
             q = a;
             k = n;
             while (k > 0) {
-                key = *p;
-                if (key != (ToUpper(*q) & 0xFF)) {
+                if (*p != (ToUpper(*(u8 *)q++) & 0xFF)) {
                     break;
                 }
-                q++;
                 k--;
                 p++;
             }

@@ -1,4 +1,4 @@
-/* gmat02 - ground material data 0x0016AAE0-0x0016ABAC: GetPlayerMaterialData, GetEmMaterialData, GetWaterData. Whole file in groundmat_nm.c. */
+/* gmat02 - ground material data 0x0016AA20-0x0016ABAC: GetPlayerShagamiData, GetPlayerMaterialData, GetEmMaterialData, GetWaterData. Whole file in groundmat_nm.c. */
 #include "types.h"
 
 typedef struct GKIND {          /* 16 bytes per ground kind */
@@ -53,13 +53,25 @@ extern u8 *diffuse_tbl_add[];
 extern GAREA *shagami_tbl_add[];
 f32 flvecCalcDistance(f32 *, f32 *);
 
+void GetPlayerShagamiData(u8 kind, f32 *pos, PWK *w) {
+    u8 *out = &w->shagami;
+    GKIND *k;
+    u8 idx = (&ground_tbl_add[w->stg][kind])->shagami;
+    GAREA *a;
 
-
-
-
-
-
-
+    if (!idx) {
+        *out = 0;
+    } else if (shagami_tbl_add[w->stg] == 0) {
+        *out = 0;
+    } else {
+        a = (GAREA *)((u8 *)shagami_tbl_add[w->stg] + idx * 16);
+        if (flvecCalcDistance(a->pos, pos) <= a->r_in) {
+            *out = 1;
+        } else {
+            *out = 0;
+        }
+    }
+}
 
 void GetPlayerMaterialData(PWK *w) {
     GetGroundCameraData(w->gkind, &w->cam, w);

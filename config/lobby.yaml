@@ -1946,6 +1946,8 @@ segments:
       - [0x0BF66C, asm, text/BsBodyMain]
       - [0x0BF670, c, f/lb_as04]
       - [0x0BF694, asm, text/BsBody00_ReqSrc]
+      - [0x0BF6A0, c, f/lb_au07]
+      - [0x0BF71C, asm, text/BsBody01_RcvSrc]
       - [0x0BF720, c, f/lb_dd03]
       - [0x0BF91C, asm, text/BsBody02_PrsInit]
       - [0x0BF920, c, f/lb_z51]
