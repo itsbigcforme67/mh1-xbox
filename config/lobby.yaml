@@ -1423,6 +1423,8 @@ segments:
       - [0x08F7CC, asm, text/ss_text_lobby_trans_ot]
       - [0x08F7D0, c, b/lb_bz61]
       - [0x08F814, asm, text/lb_npc_item_trans]
+      - [0x08F820, c, b/lb_vs02]
+      - [0x08FB78, asm, text/lb_npc_trans]
       - [0x08FB80, c, b/lb_by167]
       - [0x08FF48, asm, text/lb_normal_material]
       - [0x08FF50, c, b/lb_by120]
