@@ -14,7 +14,7 @@ typedef struct EM15W {
     u8 adj_z;           /* 0x06 */
     u8 adj_type;        /* 0x07 table row */
     s16 adj_tm;         /* 0x08 time into the table */
-    u8 x0A;             /* 0x0A 4 when circling (fly 29/30) */
+    s8 x0A;             /* 0x0A 4 when circling (fly 29/30) */
     u8 _pad0B[5];
     f32 dist;           /* 0x10 distance to the target (1000 with none) */
     u16 tgt_ang;        /* 0x14 angle toward the target (em15.c calls it dang) */

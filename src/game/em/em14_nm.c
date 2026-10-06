@@ -198,7 +198,7 @@ static void sound_call_parts_005BCC00(EMW *em, int frame, int se, int joint, u8 
 static void quake_call_005BCCA0(EMW *em, int frame, int arg);
 void Em_set_quake_sub(EMW *, int);
 static void move_default_005BCCF0(EMW *em);
-static void ef_move_sub_005BCD40(EMW *em, EM14W *w);
+static void ef_move_sub_005BCD40(EMW *em, EM14W *w, int z);
 void em14_effect_move(EMW *em);
 static void ground_land_eff_set_005C1120(EMW *em);
 void em14_atk_end_sel(EMW *em, EM14W *w);
@@ -210,9 +210,11 @@ void em14_local_init(EMW *em) {
     eft01_set((PLW *) em, 0);
 }
 
+void eft09_set(EMW *);
+
 void em14_init(EMW *em) {
     EM14W *w = (EM14W *)em->ex;
-    int hp;
+    s16 hp;
     u8 temp_a0;
     u8 temp_v1_2;
 
@@ -248,11 +250,12 @@ void em14_init(EMW *em) {
     if (em->kind == 0xE) {
         hp = em_hp_vital_set2(em, 0x7D0, 0x5DC);
         em->x302 = hp;
+        em->x792 = hp;
     } else {
         hp = em_hp_vital_set2(em, 0x640, 0x578);
         em->x302 = hp;
+        em->x792 = hp;
     }
-    em->x792 = hp;
     em->x839 = 1;
     em->x88B = 1;
     em->x765 = 1;
@@ -279,7 +282,7 @@ void em14_init(EMW *em) {
         case 0xE:
         case 0x1A:
             em->ex[0xA3] = 0;
-            eft09_set(em, 0x2000, 0x200, 0x100);
+            eft09_set(em); /* original passes no argument but em */
             break;
         }
     }
@@ -1604,7 +1607,6 @@ static void em_fly03_005B7EE0(EMW *em, EM14W *w) {
     f32 temp_f1;
     u32 var_a2;
     s32 temp_v1;
-    u16 var_v1;
     u32 temp_a1;
     u8 temp_a0;
 
@@ -1621,9 +1623,9 @@ static void em_fly03_005B7EE0(EMW *em, EM14W *w) {
     case 1:
         temp_f1 = 409.6f * em->act_spd;
         var_a2 = (u32)temp_f1;
+        temp_a1 = (w->tgt_ang - (u16)em->ang[1]) & 0xFFFF;
         temp_v1 = em->work08 - 1;
         em->work08 = temp_v1;
-        temp_a1 = (w->tgt_ang - M2C_FIELD(em, u16 *, 0xA4)) & 0xFFFF;
         if (temp_v1 <= 0) {
             if ((u32) ((temp_a1 + var_a2) & 0xFFFF) < (u32) (var_a2 * 2)) {
                 em->x05 += 1;
@@ -1634,13 +1636,12 @@ static void em_fly03_005B7EE0(EMW *em, EM14W *w) {
             return;
         }
         if ((u32) ((temp_a1 + var_a2) & 0xFFFF) < (u32) (var_a2 * 2)) {
-            var_v1 = w->tgt_ang;
+            em->ang[1] = w->tgt_ang;
         } else if (temp_a1 < 0x8000) {
-            var_v1 = (em->ang[1] + var_a2) & 0xFFFF;
+            em->ang[1] = (em->ang[1] + var_a2) & 0xFFFF;
         } else {
-            var_v1 = (em->ang[1] - var_a2) & 0xFFFF;
+            em->ang[1] = (em->ang[1] - var_a2) & 0xFFFF;
         }
-        em->ang[1] = (s32) var_v1;
         break;
     }
 }
@@ -2651,8 +2652,8 @@ static void em_dmg06_005B9D60(EMW *em, EM14W *w) {
 
 static void em_dmg07_005B9ED0(EMW *em, EM14W *w) {
     FLMAT m50;
-    f32 v[3];
     f32 v2[3];
+    f32 v[3];
     f32 var_f0;
     u8 temp_a0;
     u8 temp_a1;
@@ -3690,9 +3691,11 @@ static void em_move06_005BBC30(EMW *em, EM14W *w) {
     }
 }
 
+#define M4(n) (em->mode == 4 && em->x15 == (n))
+#define M0(n) (em->mode == 0 && em->x15 == (n))
 void em14_main(EMW *em) {
     EM14W *w = (EM14W *)em->ex;
-    u8 sp3C;
+    u8 dmg[4];
     f32 temp_f1;
     f32 temp_f1_2;
     f32 temp_f1_3;
@@ -3704,8 +3707,8 @@ void em14_main(EMW *em) {
     u8 temp_a0_3;
     u8 temp_a0_4;
     u8 temp_a0_5;
-    u8 temp_v0;
-    u8 temp_v0_2;
+    s8 temp_v0;
+    s8 temp_v0_2;
     u8 temp_v0_5;
     u8 temp_v0_6;
     u8 temp_v0_7;
@@ -3720,7 +3723,7 @@ void em14_main(EMW *em) {
         case 0:                                     /* switch 1 */
             temp_v0 = (s8) w->x1B + 1;
             w->x1B = temp_v0;
-            if ((s8)temp_v0 >= 0x3D) {
+            if ((s8)temp_v0 > 0x3C) {
                 w->x1B = 0x3C;
                 em->x8B7 += 1;
             }
@@ -3751,206 +3754,59 @@ void em14_main(EMW *em) {
     if (temp_v0_3 != 0) {
         w->x06 = (s16) (temp_v0_3 - 1);
     }
-    temp_v0_4 = Em_Dmg_Sys(em, &sp3C) & 0xFF;
-    switch (temp_v0_4) {                            /* switch 2 */
-    case 1:                                         /* switch 2 */
-    case 2:                                         /* switch 2 */
-        temp_v1_2 = em->x388;
-        if (temp_v1_2 == 2) {
+    temp_v0_4 = Em_Dmg_Sys(em, dmg) & 0xFF;
+    switch (temp_v0_4) {
+    case 1:
+    case 2:
+        if (em->x388 == 2) {
             em14_act_set(em, 5, 2, 2);
-        } else if ((temp_v1_2 != 4) && ((temp_a0 = em->mode, (temp_a0 != 4)) || (em->x15 != 6))) {
-            if (temp_a0 == 4) {
-                if (em->x15 != 0xD) {
-                    goto block_31;
-                }
-                goto block_40;
-            }
-block_31:
-            if (temp_a0 == 4) {
-                if (em->x15 != 0xE) {
-                    goto block_34;
-                }
-                goto block_40;
-            }
-block_34:
-            if (temp_a0 == 4) {
-                if (em->x15 != 0x11) {
-                    goto block_37;
-                }
-                goto block_40;
-            }
-block_37:
-            if ((temp_a0 == 4) && (em->x15 == 0x12)) {
-                goto block_40;
-            }
-            em14_act_set(em, 5, 0, 2);
-        } else {
-block_40:
+        } else if (em->x388 == 4 || M4(6) || M4(0xD) || M4(0xE) || M4(0x11) || M4(0x12)) {
             em14_act_set(em, 5, 1, 2);
+        } else {
+            em14_act_set(em, 5, 0, 2);
         }
         break;
-    case 15:                                        /* switch 2 */
-    case 16:                                        /* switch 2 */
+    case 15:
+    case 16:
         if (em->x388 == 4) {
-            if (em->mode == 4) {
-                if (em->x15 != 6) {
-                    goto block_48;
-                }
-            } else {
-block_48:
+            if (!M4(6)) {
                 em14_act_set(em, 4, 6, 2);
             }
         }
         break;
-    case 5:                                         /* switch 2 */
-        if ((em->mode != 4) || (em->x15 != 8)) {
+    case 5:
+        if (!M4(8)) {
             em14_act_set(em, 4, 8, 2);
         }
         break;
-    case 6:                                         /* switch 2 */
-        temp_v0_5 = em->mode;
-        if ((temp_v0_5 != 4) || (em->x15 != 0xE)) {
-            if ((em->x388 != 4) && ((temp_v0_5 != 4) || (em->x15 != 6)) && ((temp_v0_5 != 0) || (em->x15 != 0x1D))) {
-                if (temp_v0_5 == 4) {
-                    if (em->x15 != 0xD) {
-                        goto block_64;
-                    }
-                    goto block_70;
-                }
-block_64:
-                if (temp_v0_5 == 4) {
-                    if (em->x15 != 0x11) {
-                        goto block_67;
-                    }
-                    goto block_70;
-                }
-block_67:
-                if ((temp_v0_5 == 4) && (em->x15 == 0x12)) {
-                    goto block_70;
-                }
-                if (temp_v0_5 == 4) {
-                    if (em->x15 != 0xB) {
-                        goto block_75;
-                    }
-                } else {
-block_75:
-                    if (temp_v0_5 == 4) {
-                        if (em->x15 != 8) {
-                            goto block_78;
-                        }
-                    } else {
-block_78:
-                        em_mahi_dmg_timer_set(em);
-                        em14_act_set(em, 4, 0xB, 2);
-                    }
-                }
-            } else {
-block_70:
-                em_mahi_dmg_timer_set(em);
-                em14_act_set(em, 4, 0xE, 2);
-            }
+    case 6:
+        if (M4(0xE)) {
+        } else if (em->x388 == 4 || M4(6) || M0(0x1D) || M4(0xD) || M4(0x11) || M4(0x12)) {
+            em_mahi_dmg_timer_set(em);
+            em14_act_set(em, 4, 0xE, 2);
+        } else if (!M4(0xB) && !M4(8)) {
+            em_mahi_dmg_timer_set(em);
+            em14_act_set(em, 4, 0xB, 2);
         }
         break;
-    case 7:                                         /* switch 2 */
-        temp_a0_2 = em->mode;
-        if (temp_a0_2 == 0) {
-            if (em->x15 != 0x1D) {
-                goto block_83;
-            }
-        } else {
-block_83:
-            if ((em->x388 != 4) && ((temp_a0_2 != 4) || (em->x15 != 6))) {
-                if (temp_a0_2 == 4) {
-                    if (em->x15 != 0xE) {
-                        goto block_89;
-                    }
-                    goto block_98;
-                }
-block_89:
-                if (temp_a0_2 == 4) {
-                    if (em->x15 != 0xD) {
-                        goto block_92;
-                    }
-                    goto block_98;
-                }
-block_92:
-                if (temp_a0_2 == 4) {
-                    if (em->x15 != 0x11) {
-                        goto block_95;
-                    }
-                    goto block_98;
-                }
-block_95:
-                if ((temp_a0_2 == 4) && (em->x15 == 0x12)) {
-                    goto block_98;
-                }
-                if ((temp_a0_2 != 0) || (em->x15 != 0x1B)) {
-                    if (temp_a0_2 == 4) {
-                        if (em->x15 != 8) {
-                            goto block_105;
-                        }
-                    } else {
-block_105:
-                        em_sleep2_dmg_timer_set(em);
-                        em14_act_set(em, 0, 0x1B, 2);
-                    }
-                }
-            } else {
-block_98:
-                em_sleep2_dmg_timer_set(em);
-                em14_act_set(em, 0, 0x1D, 2);
-            }
+    case 7:
+        if (M0(0x1D)) {
+        } else if (em->x388 == 4 || M4(6) || M4(0xE) || M4(0xD) || M4(0x11) || M4(0x12)) {
+            em_sleep2_dmg_timer_set(em);
+            em14_act_set(em, 0, 0x1D, 2);
+        } else if (!M0(0x1B) && !M4(8)) {
+            em_sleep2_dmg_timer_set(em);
+            em14_act_set(em, 0, 0x1B, 2);
         }
         break;
-    case 8:                                         /* switch 2 */
-        temp_a0_3 = em->mode;
-        if (temp_a0_3 == 0) {
-            if (em->x15 != 0x1D) {
-                goto block_110;
-            }
-        } else {
-block_110:
-            if ((em->x388 != 4) && ((temp_a0_3 != 4) || (em->x15 != 6))) {
-                if (temp_a0_3 == 4) {
-                    if (em->x15 != 0xE) {
-                        goto block_116;
-                    }
-                    goto block_125;
-                }
-block_116:
-                if (temp_a0_3 == 4) {
-                    if (em->x15 != 0xD) {
-                        goto block_119;
-                    }
-                    goto block_125;
-                }
-block_119:
-                if (temp_a0_3 == 4) {
-                    if (em->x15 != 0x11) {
-                        goto block_122;
-                    }
-                    goto block_125;
-                }
-block_122:
-                if ((temp_a0_3 == 4) && (em->x15 == 0x12)) {
-                    goto block_125;
-                }
-                if ((temp_a0_3 != 0) || (em->x15 != 0x14)) {
-                    if (temp_a0_3 == 4) {
-                        if (em->x15 != 8) {
-                            goto block_132;
-                        }
-                    } else {
-block_132:
-                        em_sleep_dmg_timer_set(em);
-                        em14_act_set(em, 0, 0x14, 2);
-                    }
-                }
-            } else {
-block_125:
-                em_sleep2_dmg_timer_set(em);
-                em14_act_set(em, 0, 0x1D, 2);
-            }
+    case 8:
+        if (M0(0x1D)) {
+        } else if (em->x388 == 4 || M4(6) || M4(0xE) || M4(0xD) || M4(0x11) || M4(0x12)) {
+            em_sleep2_dmg_timer_set(em);
+            em14_act_set(em, 0, 0x1D, 2);
+        } else if (!M0(0x14) && !M4(8)) {
+            em_sleep_dmg_timer_set(em);
+            em14_act_set(em, 0, 0x14, 2);
         }
         break;
     case 10:                                        /* switch 2 */
@@ -3990,20 +3846,12 @@ block_125:
             case 6:                                 /* switch 4 */
                 if (em->kind == 0xE) {
                     temp_v1_4 = w->x1A;
-                    if (temp_v1_4 == 0) {
-                        if ((s32) M2C_FIELD(((temp_a0_4 * 8) + em), u8 *, 0x30A) <= 0) {
-                            goto block_160;
-                        }
-                        goto block_163;
-                    }
-block_160:
-                    if ((temp_v1_4 == 1) && ((s32) M2C_FIELD((((temp_a0_4 & 0xFF) * 8) + em), u8 *, 0x30A) >= 2)) {
-block_163:
+                    if ((temp_v1_4 == 0 && em->hagi[temp_a0_4].cnt > 0) || (temp_v1_4 == 1 && em->hagi[temp_a0_4].cnt >= 2)) {
                         em14_act_set(em, 4, 7, 2);
                     } else {
                         em14_act_set(em, 4, 2, 2);
                     }
-                } else if ((w->x1A == 0) && ((s32) M2C_FIELD(((temp_a0_4 * 8) + em), u8 *, 0x30A) >= 2)) {
+                } else if ((w->x1A == 0) && em->hagi[temp_a0_4].cnt >= 2) {
                     em14_act_set(em, 4, 7, 2);
                 } else {
                     em14_act_set(em, 4, 2, 2);
@@ -4017,7 +3865,7 @@ block_163:
                 em14_act_set(em, 4, 3, 2);
                 break;
             default:                                /* switch 4 */
-                if ((s32) M2C_FIELD((((temp_a0_4 & 0xFF) * 8) + em), u8 *, 0x30A) >= 2) {
+                if (em->hagi[temp_a0_4].cnt >= 2) {
                     em14_act_set(em, 4, 5, 2);
                     if ((u8) em->x38E != 3) {
                         em14_act_set(em, 4, 5, 2);
@@ -4043,11 +3891,15 @@ block_163:
         if ((*(u8 *)0x3F360F == 1) && (em->mode != 6)) {
             em14_act_set(em, 6, 0, 1);
         }
-    } else if (em->x734 != 3) {
-
-    } else if (em->x839 != 0) {
-        em_cmd_ck(em);
-        em->x839 = 0;
+    } else {
+        switch (em->x734) {
+        case 3:
+            if (em->x839 != 0) {
+                em_cmd_ck(em);
+                em->x839 = 0;
+            }
+            break;
+        }
     }
     em14_main_sub(em, w);
     if (em->x6FF != 0) {
@@ -4122,84 +3974,55 @@ void em14_main_sub(EMW *em, EM14W *w) {
     }
 }
 
-void em14_uvmove(EMW *em) {
-    EMW *var_t1;
-    EMW *var_t2;
-    s32 temp_t7;
-    s32 temp_t7_2;
-    s32 var_t3;
-    s32 var_t5;
-    s32 var_t5_2;
-    u16 temp_t4;
-    u16 temp_t5;
-    u16 temp_t5_2;
-    u8 temp_t4_3;
-    void *temp_t4_2;
+#define UVR(i) \
+    do { \
+        em->uv[i][0] = 0.0f; \
+        em->uv[i][1] = 0.0f; \
+        em->uvtm[i] = 0xFFFF; \
+        em->uvty[i] = 0xFF; \
+    } while (0)
 
-    var_t3 = 0;
-    var_t2 = em;
-    var_t1 = em;
-    do {
-        temp_t4 = M2C_FIELD(var_t2, u16 *, 0x5F0);
-        if (temp_t4 != 0xFFFF) {
-            M2C_FIELD(var_t2, u16 *, 0x5F0) = (u16) (temp_t4 + 1);
+void em14_uvmove(EMW *em) {
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        if (em->uvtm[i] != 0xFFFF) {
+            em->uvtm[i]++;
         }
-        temp_t4_2 = em + var_t3;
-        temp_t4_3 = M2C_FIELD(temp_t4_2, u8 *, 0x5F8);
-        switch (temp_t4_3) {                        /* irregular */
+        switch (em->uvty[i]) {
+        case 0:
+            UVR(i);
+            break;
+        case 1:
+            if (em->uvtm[i] >= 0x3E) {
+                UVR(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 1;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 8);
+                em->uv[i][1] = 0.25f * (f32)(k / 8 % 4);
+            }
+            break;
+        case 2:
+            em->uv[i][0] = 0.125f;
+            em->uv[i][1] = 0.0f;
+            em->uvtm[i] = 0xFFFF;
+            em->uvty[i] = 0xFF;
+            break;
+        case 3:
+            if (em->uvtm[i] >= 0xC) {
+                UVR(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 2;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 4);
+                em->uv[i][1] = 0.25f * (f32)(k / 4 % 4);
+            }
+            break;
         case 0xFF:
             break;
-        case 0x0:
-            M2C_FIELD(var_t1, f32 *, 0x5C0) = 0.0f;
-            M2C_FIELD(var_t1, f32 *, 0x5C4) = 0.0f;
-            M2C_FIELD(var_t2, u16 *, 0x5F0) = 0xFFFF;
-            M2C_FIELD(temp_t4_2, u8 *, 0x5F8) = 0xFF;
-            break;
-        case 0x1:
-            temp_t5 = M2C_FIELD(var_t2, u16 *, 0x5F0);
-            if ((s32) temp_t5 >= 0x3E) {
-                M2C_FIELD(var_t1, f32 *, 0x5C0) = 0.0f;
-                M2C_FIELD(var_t1, f32 *, 0x5C4) = 0.0f;
-                M2C_FIELD(var_t2, u16 *, 0x5F0) = 0xFFFF;
-                M2C_FIELD(temp_t4_2, u8 *, 0x5F8) = 0xFF;
-            } else {
-                temp_t7 = (temp_t5 >> 1) + 1;
-                var_t5 = temp_t7 >> 3;
-                M2C_FIELD(var_t1, f32 *, 0x5C0) = (f32) (0.125f * (f32) (temp_t7 % 8));
-                if (temp_t7 < 0) {
-                    var_t5 = (s32) (temp_t7 + 7) >> 3;
-                }
-                M2C_FIELD(var_t1, f32 *, 0x5C4) = (f32) (0.25f * (f32) (var_t5 % 4));
-            }
-            break;
-        case 0x2:
-            M2C_FIELD(var_t1, f32 *, 0x5C0) = 0.125f;
-            M2C_FIELD(var_t1, f32 *, 0x5C4) = 0.0f;
-            M2C_FIELD(var_t2, u16 *, 0x5F0) = 0xFFFF;
-            M2C_FIELD(temp_t4_2, u8 *, 0x5F8) = 0xFF;
-            break;
-        case 0x3:
-            temp_t5_2 = M2C_FIELD(var_t2, u16 *, 0x5F0);
-            if ((s32) temp_t5_2 >= 0xC) {
-                M2C_FIELD(var_t1, f32 *, 0x5C0) = 0.0f;
-                M2C_FIELD(var_t1, f32 *, 0x5C4) = 0.0f;
-                M2C_FIELD(var_t2, u16 *, 0x5F0) = 0xFFFF;
-                M2C_FIELD(temp_t4_2, u8 *, 0x5F8) = 0xFF;
-            } else {
-                temp_t7_2 = (temp_t5_2 >> 1) + 2;
-                var_t5_2 = temp_t7_2 >> 2;
-                M2C_FIELD(var_t1, f32 *, 0x5C0) = (f32) (0.125f * (f32) (temp_t7_2 % 4));
-                if (temp_t7_2 < 0) {
-                    var_t5_2 = (s32) (temp_t7_2 + 3) >> 2;
-                }
-                M2C_FIELD(var_t1, f32 *, 0x5C4) = (f32) (0.25f * (f32) (var_t5_2 % 4));
-            }
-            break;
         }
-        var_t3 += 1;
-        var_t2 += 2;
-        var_t1 += 0xC;
-    } while (var_t3 < 4);
+    }
 }
 
 static void sound_call_sub_005BCB30(EMW *em, int se, int joint) {
@@ -4249,7 +4072,8 @@ static void move_default_005BCCF0(EMW *em) {
     M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
 }
 
-static void ef_move_sub_005BCD40(EMW *em, EM14W *w) {
+static void ef_move_sub_005BCD40(EMW *em, EM14W *w, int z)
+{
     f32 sp50[3];
     FLMAT m50;
     f32 v3[3];
@@ -5332,7 +5156,7 @@ void em14_effect_move(EMW *em) {
         w->eff = temp_a2 + 1;
         break;
     case 1:
-        ef_move_sub_005BCD40(em, w);
+        ef_move_sub_005BCD40(em, w, temp_a2);
         break;
     }
     em14_uvmove(em);

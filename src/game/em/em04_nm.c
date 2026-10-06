@@ -98,7 +98,7 @@ u16 no;
         }
         break;
     case 1: {
-        f32 (*p)[2];
+        f32 *q;
         switch ((u16)no) {
         case 1:
         case 2:
@@ -110,21 +110,19 @@ u16 no;
             em->work08 = 600;
             switch (em->stg) {
             case 0x12:
-                p = (f32 (*)[2])em05_rev_set_tbl_st18[em->type];
+                q = em05_rev_set_tbl_st18[em->type];
                 break;
             case 0x45:
             default:
-                p = (f32 (*)[2])em05_rev_set_tbl_st69[em->type];
+                q = em05_rev_set_tbl_st69[em->type];
                 break;
             }
-            em->pos[0] = (*p)[0];
-            em->pos[1] = (*p)[1];
-            p++;
-            em->pos[2] = (*p)[0];
-            em->tgt_pos[0] = (*p)[1];
-            p++;
-            em->tgt_pos[1] = (*p)[0];
-            em->tgt_pos[2] = (*p)[1];
+            em->pos[0] = *q++;
+            em->pos[1] = *q++;
+            em->pos[2] = *q++;
+            em->tgt_pos[0] = *q++;
+            em->tgt_pos[1] = *q++;
+            em->tgt_pos[2] = *q++;
             break;
         }
         break;
