@@ -3273,6 +3273,7 @@ u8 *em_cmd_target_set(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_range_ck(EMW *em, u8 *p) {
+    f32 lim;
     f32 f;
     f32 v;
     u8 n;
@@ -3301,9 +3302,10 @@ u8 *em_cmd_range_ck(EMW *em, u8 *p) {
             *(f32 *)&em->x3AC = f;
             if (0 < n) {
                 w = (f32 *)em;
+                lim = *(f32 *)&em->x3AC;
                 for (;;) {
                     v = EM_FIELD(w, f32 *, 0x810);
-                    if (*(f32 *)&em->x3AC <= v) {
+                    if (lim <= v) {
                         if (!(v < 0.0f)) {
                             break;
                         }

@@ -106,8 +106,6 @@ segments:
       - [0x023660, c, eft/eft22b]
       - [0x023AF4, asm, text/eft23_move]
       - [0x023B00, c, eft/eft23]
-      - [0x024E78, asm, text/fish_type_set]
-      - [0x024FE0, c, eft/eft23b]
       - [0x0250F4, asm, text/Eft24_set]
       - [0x025100, c, eft/eft24]
       - [0x0258DC, asm, text/g_Em_Taisei_Damage_Check]
