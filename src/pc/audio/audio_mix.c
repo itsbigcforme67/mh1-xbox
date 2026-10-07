@@ -37,6 +37,8 @@ static int next_id = 1;
 static int driven;
 int audio_live(void) { return driven || audio_device_open(); }
 void audio_set_driven(int on) { driven = on; }
+static int mono_out;
+void audio_set_mono(int on) { audio_lock(); mono_out = on; audio_unlock(); }
 
 /* ------------------------------------------------------------ reverb
  * Schroeder: 4 parallel damped combs + 2 series allpasses per channel (the
@@ -452,6 +454,9 @@ void audio_mix(int16_t *out, int frames)
                 }
             }
         }
+        if (mono_out)                   /* options: monaural output (str_outmode 0) */
+            for (i = 0; i < nf; i++)
+                acc[2 * i] = acc[2 * i + 1] = (acc[2 * i] + acc[2 * i + 1]) * 0.5f;
         for (i = 0; i < 2 * nf; i++) {
             float s = acc[i];
             out[2 * done + i] = (int16_t)(s > 32767.0f ? 32767 : s < -32768.0f ? -32768 : s);

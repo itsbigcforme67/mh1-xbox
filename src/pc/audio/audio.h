@@ -35,6 +35,7 @@ void audio_reset(void);
  * --audio-dump): the movie then takes its clock from the audio. */
 int  audio_live(void);
 void audio_set_driven(int on);
+void audio_set_mono(int on);                                    /* mix both channels into both (options: monaural) */
 /* Start a voice; pcm must stay valid until the voice ends or is stopped.
  * loop = loop start sample or -1. vol 0..1, pan -1..1, pitch = rate
  * multiplier. Returns a voice id (> 0) or 0 if no voice is free. */

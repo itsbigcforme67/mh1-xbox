@@ -490,7 +490,12 @@ int rt_monster_tick(int no)
         /* the world matrix at EMW+0x60, as enemy_mk (0x10AEB0) builds it in trans():
          * the host poses the skeleton itself, but game code reads this matrix
          * (demo cameras relative to the monster, em10's throw direction) */
-        int r = enemy_mv(em);
+        int r;
+        /* RT_EM_BLIND=1 (test aid): the monster's eyes are shut every tick (x88B = 0 makes
+         * em_eye_search_set clear x88C), so it stays idle; frog fishing needs an idle Plesioth */
+        if (getenv("RT_EM_BLIND"))
+            PU8(em, 0x88B) = 0;
+        r = enemy_mv(em);
         if (em->be_flag)
             rt_em_world_mat(em);
         return r;
