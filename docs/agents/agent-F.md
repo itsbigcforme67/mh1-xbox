@@ -598,3 +598,17 @@ Tools (scratch, not committed): adiff.py (aligns check.py -v output with difflib
 - Village TU attempt 0x59DB40-0x5A2A1C (lbnpc, incl. lb_npc_old_guild): lbtu3 output compiles except for the two header families (lobby_b.h vs lobby.h: Item_data, lbShop, lb_pit, lb_sys, em_work, Lb_act_set ...); the
   `#define name name_hb` around the first include fixes all but lb_sys (a header-defined `lb_sys` macro). Not finished.
 - set_dialog_square (lbui_nm.c, 36/43): the original keeps `t3 += 40` as real adds between record groups; every pointer/struct spelling tried gets folded into constant offsets by MWCC.
+
+## Lobby session 19 (village whole-file TUs)
+- The village runs (lbnpc*, lbmix*, lbui*) include lobby.h-family headers, NOT lobby_b.h: the header-family clash of session 18 disappears if the TU does not include lobby_b.h at all.
+  tools/lbtu3.py now has `LBTU_NOB=1` (do not seed/emit lobby_b.h) and `LBTU_HDR=lbui_proto.h` (header every run includes first: seeded and emitted at the top). Then no lb_sys macro clash.
+- Registered: f/lb_npc.c (0x59DB40-0x5A2A1C, 38 fns OK + lb_npc_old_guild as asm stub; C version still 2 off: the original loads 0x69 into a2, mine into v1; mv scope/recompute variants only made it worse),
+  f/lb_mix.c (0x535240-0x536724; lb_mix_decide stays asm, 4 off: sll placement of mixData + cur and of player_work[...]), f/lb_ui.c (0x590D40-0x5931B0). All five modules OK.
+- draw_dialog_square MATCHES in the TU: the near-match C passed a spurious third argument `Put_sprite_rotate(&sp, 2, tw)`; the original calls it with two (the K&R callee hid that).
+- Lessons for TU building by hand: (1) a function K&R-defined in one run but ANSI-prototyped in another (CheckItemPrice, put_button_help, font_print_double, Draw_square) must keep its ANSI proto for those callers:
+  lbtu3 now keeps the ANSI proto next to the K&R definition; for incompatible pairs use a `_a`/`_u` alias name with the ANSI proto in the callers + a line in config/lobby_aliases.txt. (2) Functions whose symbol has an
+  address suffix (CheckItemPrice_005366D0) are looked up by suffix. (3) `_k` rename only if the function is really called (not just used as a pointer). (4) `#ifdef __MWERKS__ asm ... #else C #endif` b/ files
+  (lb_by158/164/157) confuse lbtu3's chunking: delete the #else C by hand. (5) `Draw_menu_square` raw asm needs `asm int` (the header declares int).
+- PC build: tools/pc_lobby_matched.txt and build_pc.sh still compile the old run files (src/lobby/lb/lbmix*.c, lbui*.c, b/lb_by89.c, b/lb_by180.c), so those were restored unregistered next to the new TUs. Do not delete them without editing the lists.
+- lb_process_use_item (0x53A560): the b/ region 0x539220-0x53A9A4 forms a TU with lbtu3 (LBTU_NOB=1 LBTU_HDR=lobby_s.h, hand-delete the #else C of by164/157/158): everything OK except use_item, 14 off: the original forms
+  `lui 0x67; addiu -9274` (shopList+0x26 as an address constant) after `i = 0` and adds n*40 to it, mine keeps the symbol base and folds +0x26 into the lhu displacement. Not registered (no gain yet).

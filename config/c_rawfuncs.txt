@@ -56,7 +56,6 @@ lobby 0x005C3C10 0x4CC lb_npc_init
 lobby 0x00590F40 0x198 lb_eat_set
 lobby 0x00591600 0x3D4 event_eat_trans_ot0
 lobby 0x00591D80 0xAC set_dialog_square
-lobby 0x00591F00 0x4E0 draw_dialog_square
 lobby 0x005923E0 0x768 Draw_menu_square
 lobby 0x005A06F0 0x360 lb_npc_old_guild
 lobby 0x005AEF70 0x2F0 lb_shop_put_itemDetail
