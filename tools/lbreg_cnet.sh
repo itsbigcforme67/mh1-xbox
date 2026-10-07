@@ -12,11 +12,26 @@ echo "$FAMILIES" | while read nm prefix regdir; do
     dir=$(dirname "src/lobby/$prefix")
     ls "$dir"/$base.c "$dir"/$base[a-z].c "$dir"/$base[a-z][a-z].c "$dir"/$base[0-9]*.c 2>/dev/null | grep -v '_nm.c' | xargs -r rm -f
     python3 tools/lbruns.py "src/lobby/$nm" "src/lobby/$prefix" "$regdir" > /tmp/lbruns.txt 2>/tmp/lbruns.$base.err || { cat /tmp/lbruns.$base.err; exit 1; }
-    grep -v " $regdir[a-z0-9]*\$" /tmp/c_files.new | grep -v "^lobby:rodata .* $regdir[a-z0-9]*\$" > /tmp/c_files.new2
+    # drop only the old text runs; rodata/data lines are kept (the final step warns about orphans and removes exact duplicates)
+    grep -v "^lobby 0x.* $regdir[a-z0-9]*\$" /tmp/c_files.new > /tmp/c_files.new2
     mv /tmp/c_files.new2 /tmp/c_files.new
     grep -v '^$' /tmp/lbruns.txt >> /tmp/c_files.new
 done
 cp /tmp/c_files.new config/c_files.txt
+python3 - <<'PY'
+import re
+L = [l.rstrip('\n') for l in open('config/c_files.txt')]
+runs = set(l.split()[3] for l in L if len(l.split()) == 4 and l.split()[0] == 'lobby')
+seen = set(); out = []
+for l in L:
+    p = l.split()
+    if l in seen and l.strip(): continue
+    seen.add(l)
+    if len(p) == 4 and p[0].startswith('lobby:') and p[3].startswith('cnet/cnlbs') and p[3] not in runs:
+        print('WARNING: orphan rodata line (run file gone):', l)
+    out.append(l)
+open('config/c_files.txt', 'w').write('\n'.join(out) + '\n')
+PY
 # rodata slots (string literals, jump tables; config/lbnet_rodata.txt): attach each to the run file holding its function
 python3 - <<'PY'
 import re, glob
