@@ -680,3 +680,15 @@ Details in docs/pc.md (handover summary at the top, round 23 at the end).
   (lesson: any float feedback loop - reverb, filters - needs an anti-denormal offset on x87/P3).
 - Lesson: contention from other agents makes wall-clock profiles useless here; measure thread
   CPU time (CLOCK_THREAD_CPUTIME_ID).
+
+## Round 5 (7 Oct 2026)
+
+- Village sound: Snd_server now per host tick in every mode (as ACRMain); --quest runs set the
+  option defaults (volumes were 0 since the options-sound merge).
+- RT_PROF sub-zones (motion, joints, stage draw, prims, 2D) + skeleton-evaluation count; pose
+  cache in fl_skel_pose_groups (19 -> 10 evaluations per frame), checked identical with RT_POSE_ALL.
+- Xbox: static clays in GPU buffers, sphere near-plane test, fade as a shader constant; libmpeg2 MMX
+  (vendored from the same tree agent B used, /tmp/claude-1000/mpg), movie YUY2 on the GPU; RT_PROF
+  report to DbgPrint + E:\mh1_prof.txt.
+- Lesson: wall clock and even thread CPU time are inflated on this shared machine (load ~7.5/8);
+  compare counts (evaluations, vertices) and A/B runs taken back to back.

@@ -415,6 +415,82 @@ or a YUY2 texture) to fit.
 5. Movies: libmpeg2 MMX, YUV -> RGB on the GPU, a streaming texture
    instead of creating one per frame.
 
+### Round 5 (agent A, 7 Oct 2026): inside the host work, stage geometry, movies
+
+**New zones.** RT_PROF now also splits out:
+- motion evaluation (keys -> bone matrices);
+- the host's joint matrices for the game C;
+- the stage draw code, the game's prims and the 2D/HUD;
+- a count of skeleton evaluations per frame.
+
+Two runs of `tools/prof_scenes.sh` on this machine, while other agents were
+working: the load average was ~7.5 on 8 hardware threads. Even thread CPU
+time is inflated there, because a hyperthread shares its core, so these
+numbers are upper bounds.
+
+| ms per tick (CPU) | village | Rathian | Fatalis |
+|---|---|---|---|
+| game logic (game C + glue) | 0.20–0.35 | 0.38–0.44 | 0.23–0.28 |
+| motion evaluation | 0.40–0.46 | 0.41–0.46 | 0.14–0.16 |
+| joint matrices | 0.02 | 0.14 | 0.08 |
+| sets + effects + sound tick | 0.07 | 0.11 | 0.09 |
+| mixer | 0.26–0.37 | 0.56–0.64 | 0.42–0.48 |
+| host draw code (stage, prims, 2D, rest) | 0.33 | 0.47 | 0.31 |
+| skinning (GPU on the Xbox) | (3.8) | (3.3) | (2.9) |
+
+**Projection at 20x**, per frame: CPU work + NV2A backend 3–5 ms
+[estimate]:
+- village: ~25–33 ms;
+- Rathian fight: ~35–42 ms;
+- Fatalis: ~25–30 ms.
+
+On an idle host these would likely come out lower, so take them as the
+pessimistic side. The Rathian fight is the one scene above 33 ms; the mixer
+and motion evaluation are its largest items.
+
+**Done this round:**
+- **Motion.** The same skeleton pose was evaluated up to three times per
+  tick: game_core's joint sync, the end-of-tick sync, and the draw.
+  fl_skel_pose_groups now skips a pose that is identical to its last one.
+  Rathian scene: 19 -> 10 evaluations per frame, 0.45 -> 0.20 ms. The
+  quest-loop end and 28 urgent-hunt screenshots are identical with the
+  cache on and off (`RT_POSE_ALL=1`).
+- **Stage geometry (Xbox).** Clays that never change, which is the stage
+  and its set models, keep their vertices in a GPU-visible buffer. They are
+  drawn from it without the per-frame copy into the ring. A bounding-sphere
+  test skips the per-vertex near-plane check when the whole clay is in
+  front of the camera. The fade colour is now a shader constant, so it no
+  longer forces a copy.
+- **Movies (Xbox):**
+  - libmpeg2's MMX/MMXEXT IDCT and motion compensation are compiled in
+    (`idct_mmx.c`, `motion_comp_mmx.c`, `mmx.h`, vendored from the same
+    0.5.1 tree). On the PC, decoding dropped from 0.69 to 0.42 ms per
+    frame, with 61.5 dB PSNR against the C decoder over 1200 frames.
+  - The colour conversion moved to the GPU: one YUY2 texture
+    (`LC_IMAGE_CR8YB8CB8YA8`) updated in place, so the CPU only moves
+    bytes.
+  - At 20x: decode ~8–14 ms, packing ~2 ms, so a movie should fit in a
+    frame.
+  - Not checked: the NV2A's YUV -> RGB matrix (assumed BT.601 studio
+    range).
+- **Sound in the village.** Snd_server (ADX streams) ran only inside
+  game_core, so on the PC the village's music ring ran dry. It now runs
+  every tick in every mode, as ACRMain does. Quest runs started without
+  `--boot` also had silent audio (zero option volumes) and now set the
+  option defaults.
+
+**RT_PROF on the Xbox** is always on (the Xbox has no environment
+variables). Its report goes to the kernel debug output (DbgPrint) and is
+appended to `E:\mh1_prof.txt` every 300 ticks (10 s). The first xemu or
+console run therefore gives real numbers for every table above.
+
+Next for the frame rate:
+- Mixer (~0.5 ms here): mix at 24 kHz, or in 16-bit integer arithmetic.
+- Motion evaluation: the AAN key search per bone per frame. A cursor per
+  curve would avoid searching from the start.
+- Village NPCs: one skeleton per NPC kind, posed per instance; give each
+  NPC instance its own pose cache.
+
 ## Why 32-bit x86 helps
 
 The game C keeps pointers in u32 fields and depends on PS2 struct offsets. The
