@@ -1157,3 +1157,93 @@ Off = real differing instructions of the C in that TU (tools/alignall.py), blank
 | 0x005546E0 | 104 | LOCAL | eft18_set_com | 2 | eft/eft18_nm.c |
 | 0x005665F0 | 60 | GLOBAL | em01_local_area_move_init |  |  |
 | 0x00639DD0 | 20 | GLOBAL | Pl_piyo_ck |  |  |
+
+## Game overlay round 4 (agent D, 14 Oct 2026)
+Game overlay 93.24% -> 95.3% (functions linked, every module rebuild OK; see the commit log). All linked with rebuild.sh printing OK for all five modules.
+New C (these had no source at all): Pl_piyo_ck (u8 return, `x7AA >= 0x32`), Pl_poison_add, Em_Mode_Chg + em01_local_area_move_init (em_modechg.c; the loop walks
+`player_work[i]` directly, `em->x7EE & (1 << i)` in that order, `s16 mode2` parameter). The PC build's hand-written stand-ins for Pl_piyo_ck / Pl_poison_add were removed.
+Linked after real work: eft16 (whole file as ONE TU, eft16_m included), set14 (whole file, set14_trans included), ef_move_sub_0058E500 (em04d.c), em_atk08, em_atk21,
+em_eye_search_set + senko_ck (em_core_eye.c), em_hate_suu_set (em_core_hate.c), em_cmd_near_pos_ck (em_cmd_r97.c), em_mv00_005DC550 (em17_mv00.c).
+Lessons (each confirmed by a match):
+- Spill slots: MWCC gives spilled values stack slots in REVERSE order of creation (declared first = highest address; compiler induction variables are created last, so they
+  sit lowest). eft16_m's `i * 5` induction variable sits at the HIGHEST slot in the original, so it is a user variable declared first: `int x5` (spilled) and `int y15`
+  (the `i * 5 + 15` one, in a register), both stepped in the loop condition: `i = 0; if (i < n) { y15 = 15; x5 = 0; do { ... } while (x5 += 5, y15 += 5, i++, i < n); }`
+  (the order of the two initialisations matters; `continue` still reaches the increments). A for-loop with the init in the header hoists the store above the guard.
+- Call operand order: `Em_Calc_angY(...) + e->fov - e->ang` loads e->fov BEFORE the call and keeps it in a saved register; assign the call result to a local first
+  (`t = Em_Calc_angY(...); f = e->fov; ... t + f - e->ang`) to load after the call (senko_ck, em_mv00 `temp_v0 = Em_Calc_angY(..) & 0xFFFF; temp_v1 = em->ang[1];`).
+- A float temp that the original keeps in $f20 across a call is a variable assigned from the byte directly: `lim = 100.0f * *q;` (em_cmd_near_pos_ck); via a u32 local
+  `v = *q; ... 100.0f * v` the multiply is sunk below the call.
+- u8 parameter + compound assignment: `u8 type; type += 8;` gives `addiu v0,s3,8; andi s3,v0,0xFF` (raw add, mask after) with `daddiu` constants, while `type = type + 8`
+  masks first (em_hate_suu_set). That one also needs `int n` for the player number although the callers' prototype says u8, so it lives in its own TU (em_core_hate.c).
+- `u8 ok; if (x == val) ok = 0; else ok = 1;` (not `ok = x != val`) gives the original's branches; `ok` is uninitialised on the kind-5/6/7 paths (em_cmd_flag_ck).
+  A u8 counter that the original steps without a mask: put it in the for header `for (i = 0; i < n; i++, kind++)` (em_cmd_flag_set/clear), `kind++` in the body masks each time.
+- An EMPTY non-static function defined earlier in the TU is inlined away; the original keeps the call. In em04 the default case of ef_move_sub calls the empty
+  move_default_0058E4F0 (0x58E4F0, 8 bytes): declared `static` and defined right before ef_move_sub in one TU (em04d.c, range 0x58E4F0-0x58F3E0) the call is kept
+  and the whole function matches (76 off -> 0; the missing call made the compiler place `daddu s0,a0` in the first delay slot). Check this whenever a function's
+  PROLOGUE differs and a `default:` / tail calls something trivial.
+- m2c drafts: `x > 100.0f` -> `100.0f < x` (c.lt vs c.le), `(s32)x < 0x801` -> `x <= 0x800` (compare result in `at`), `0 >= x` -> `x <= 0` (bgtz),
+  `temp_a1 = em->x05; switch (temp_a1) ... em->x05 = temp_a1 + 1` -> `switch (em->x05)`, `em->x05 += 1` (the early load pins a saved register),
+  `player_work[i].stg` -> `pl = &player_work[i]; pl->stg` (otherwise the 0x736 offset folds into the address), and m2c dropped a second argument:
+  `kyusyu_senkai_ret_005FCBA0(em, w)` (the callee ignores w but the original loads it). em_atk08 39 -> 0, em_atk21 34 -> 0 with these.
+- tools: tools/alignall.py takes `CHECK_MODULE=game` so scratch copies can live OUTSIDE src/ (the build compiles every src/**/*.c; a scratch file that disappears mid-build
+  breaks it). Hill-climbs used (scripts were in the scratch directory, not committed): declaration order (alignall score), order of top-level statements, ADJACENT STATEMENT
+  SWAPS anywhere in the function (set14_trans 15 -> 0: the u/v assignment order in two uv-scroll cases), types of scalar locals, comparison forms against literals.
+- Shared header edit: include/em_cmd.h `Stage_data_get(u8)` -> `Stage_data_get(int)` (NextStage_Dir_Set passes a u16 and the original loads it with lhu; every em_cmd file that
+  uses it still matches). set14.c/eft16.c replace their *_nm.c; tools/build_pc.sh lists them.
+Near-matches (off = instructions) and what is known: see the table at the end of this section. Highlights: em20_act_set 1 and em09_effect_move 4 / eft18_set_com 2 (original leaves
+a branch delay slot EMPTY where mine fills it; set05_m 2 and shell22_i have the opposite), em_cmd_flag_set/clear 2 (the original computes `ex = em->ex` after the loop guard),
+eft04_t 5 (hoisting of `srl v0,a1,16` into the arms of the u32 conversion diamond; a toy compile with 1000 expression shapes never reproduced it), eft22_end_init 4 (second
+35.0f constant in v1, not v0), em_hate_suu_set matches only in its own TU.
+
+### Unmatched game-overlay functions at the end of round 4 (46 functions, 50,088 bytes)
+
+Off = real differing instructions of the C in the whole-file near-match TU (tools/alignall.py); blank = none measured.
+
+| address | bytes | function | off | near-match file |
+|---|---|---|---|---|
+| 0x0062EA20 | 7584 | shell08_m | 240 | shell/shell08_nm.c |
+| 0x006309A0 | 6320 | shell08_trans | 561 | shell/shell08_nm.c |
+| 0x005412B0 | 5064 | eft04_t | 5 | eft/eft04_nm.c |
+| 0x005638B0 | 2276 | em_cmd_end_command | 289 | em/em_cmd_nm.c |
+| 0x00534730 | 1956 | em_neck_move_sub | 642 | em/em_core_nm.c |
+| 0x0061FB50 | 1800 | set05_m | 2 | set/set05_nm.c |
+| 0x005B3A50 | 1660 | em12_main | 183 | em/em12_nm.c |
+| 0x00534EE0 | 1392 | neck_ang_set | 251 | em/em_core_nm.c |
+| 0x005395F0 | 1224 | Em_Master_Change | 158 | em/em_master_nm.c |
+| 0x00638500 | 1188 | shell22_i | 11 | shell/shell22_nm.c |
+| 0x00543200 | 1160 | eft05_t | 65 | eft/eft05_nm.c |
+| 0x00562640 | 1132 | em_cmd_st25_pl_target_sel | 273 | em/em_cmd_nm.c |
+| 0x005615C0 | 1052 | em_cmd_samestage_pl_target_sel | 249 | em/em_cmd_nm.c |
+| 0x005600C0 | 1012 | em_cmd_ground_area_move | 171 | em/em_cmd_nm.c |
+| 0x00632AC0 | 944 | shell08_rgba | 43 | shell/shell08_nm.c |
+| 0x00534200 | 936 | em_char_set | 85 | em/em_core_nm.c |
+| 0x00561230 | 900 | em_cmd_all_pl_target_sel | 213 | em/em_cmd_nm.c |
+| 0x00625840 | 872 | set17_trans | 73 | set/set17_nm.c |
+| 0x00565840 | 856 | NextStage_No_Set | 113 | em/em_cmd_nm.c |
+| 0x0055D7F0 | 812 | em_cmd_escape_area_set | 109 | em/em_cmd_nm.c |
+| 0x0055D140 | 700 | em_cmd_angle_ck | 76 | em/em_cmd_nm.c |
+| 0x00545F20 | 672 | eft11_i | 165 | eft/eft11_nm.c |
+| 0x0055ECE0 | 608 | em_cmd_flag_ck | 6 | em/em_cmd_nm.c |
+| 0x005605D0 | 584 | em_cmd_horm_pos_ang_ck | 94 | em/em_cmd_nm.c |
+| 0x00556DA0 | 564 | eft22_end_init | 4 | eft/eft22_nm.c |
+| 0x00565BA0 | 540 | NextStage_Dir_Set | 30 | em/em_cmd_nm.c |
+| 0x00562BF0 | 520 | em_cmd_dansa_sel | 118 | em/em_cmd_nm.c |
+| 0x0055DF60 | 520 | em_cmd_pl_ang_sel | 48 | em/em_cmd_nm.c |
+| 0x005F0730 | 516 | em_fly10 | 18 | em/em20_ai_nm.c |
+| 0x005C6430 | 500 | em_fly10 | 18 | em/em15_nm.c |
+| 0x005ACA60 | 480 | em09_material_sub | 13 | em/em09_nm.c |
+| 0x005636F0 | 448 | em_cmd_range_ck | 6 | em/em_cmd_nm.c |
+| 0x005A8210 | 408 | em09_act_set | 45 | em/em09_nm.c |
+| 0x005FD8A0 | 368 | em20_act_set | 1 | em/em20_nm.c |
+| 0x00558800 | 340 | fish_type_set | 6 | eft/eft23_nm.c |
+| 0x005AC940 | 288 | em09_effect_move | 4 | em/em09_nm.c |
+| 0x0055C920 | 288 | em_cmd_flag_set | 2 | em/em_cmd_nm.c |
+| 0x0055CA40 | 272 | em_cmd_flag_clear | 2 | em/em_cmd_nm.c |
+| 0x00626E70 | 232 | Set20_set | 8 | set/set20_nm.c |
+| 0x00565DC0 | 216 | em_cdm_act_flag_ck | 10 | em/em_cmd_nm.c |
+| 0x00536040 | 204 | em_act_search | 10 | em/em_core_nm.c |
+| 0x00536BC0 | 180 | em_range_set | 13 | em/em_core_nm.c |
+| 0x0063BA80 | 160 | print_tuto_message | 8 | tuto/tuto_nm.c |
+| 0x00562220 | 128 | em_cmd_ninshiki_timer_sub | 10 | em/em_cmd_nm.c |
+| 0x00539C90 | 108 | Em_Taisei_Set | 26 | em/em_master_nm.c |
+| 0x005546E0 | 104 | eft18_set_com | 2 | eft/eft18_nm.c |

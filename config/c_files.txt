@@ -109,7 +109,7 @@ game:rodata 0x00685760 0x006857EC eft/eft18
 game 0x00552D00 0x005546DC eft/eft18b
 game:rodata 0x006857F0 0x00685838 eft/eft18b
 game 0x00554750 0x0055497C eft/eft18c
-game 0x006229B0 0x006233F8 set/set14
+game 0x006229B0 0x0062404C set/set14
 game 0x00637F60 0x006384F4 shell/shell22
 game:rodata 0x0068A470 0x0068A490 shell/shell22
 game 0x00638D50 0x00638E50 shell/shell22_r01
@@ -2444,3 +2444,4 @@ game 0x005F2680 0x005F2FD8 em/em20_atk08
 game 0x005F3440 0x005F3CD8 em/em20_atk21
 game:rodata 0x00689080 0x006890A0 em/em20_atk08
 game:rodata 0x006890A0 0x006890C0 em/em20_atk21
+game 0x005DC550 0x005DC6AC em/em17_mv00
