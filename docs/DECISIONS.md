@@ -132,3 +132,7 @@ new work there. If a game function turns out to call into it, stub that call on 
 The owner will provide a real modded original Xbox to deploy and test builds on, with a capture
 card attached so Claude can see the screen, and later a controller emulator Claude can drive.
 Xbox work starts on 8 Oct 2026; until then the PC build stays the reference.
+Plan: both. xemu (emulator) for day-to-day iteration — fast, scriptable, screenshots without
+hardware — and the real Xbox for regular checks of what xemu gets wrong (64 MB memory limit, GPU
+details, timing, disc/HDD speed). xemu needs the owner's own BIOS, MCPX boot ROM and HDD image,
+dumped from their modded Xbox (never committed).
