@@ -227,6 +227,11 @@ WEAK="$WEAK_EM mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage
 # item combining (item_nm.c: the recipe lookup; its dropped-item pool keeps the host stand-ins, renamed)
 SK="src/main/item/item_nm.c src/main/tu/sk_all.c src/main/tu/hk_all.c src/main/sk/sk20.c src/main/sk/cmd_nm.c"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT $SK"
+# Stand-ins replaced by the game's own C (round 22, agent F; list in docs/pc.md "Stand-ins wired"):
+# only the named functions are taken from each file
+PICK_X="src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set"
+GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
+PICK_MAIN="$PICK_MAIN $PICK_X"
 
 SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}
 CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
