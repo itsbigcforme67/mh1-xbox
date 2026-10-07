@@ -2194,7 +2194,7 @@ main 0x00194A00 0x00194A48 fl/pl_ps2io01
 main 0x00194AE0 0x00194B5C fl/pl_ps2io02
 main 0x00194DF0 0x00194FF4 fl/tarpad01
 main 0x00173E60 0x00174058 fl/flnode01
-main 0x00174170 0x00174290 fl/flnode02
+main 0x001740F0 0x00174290 fl/flnode02
 main 0x00174290 0x00174300 fl/flmotion01
 main 0x00174300 0x00174544 fl/flmotion02
 main 0x00174550 0x00174594 fl/flnode03
@@ -2439,3 +2439,8 @@ lobby 0x005B7DD0 0x005B7FE4 b/lb_lwm01
 lobby:rodata 0x0065E870 0x0065E890 b/lb_lwm01
 main 0x0018D790 0x0018D874 fl/fllog01
 main 0x00189CE0 0x00189EDC fl/tx05b
+main 0x001701A0 0x00170228 fl/flcnv01
+main 0x00173A50 0x00173E54 fl/flmotion03
+main 0x00174A20 0x00174B34 fl/flnode05f
+main 0x00174B60 0x00174C84 fl/flnode05g
+main 0x001745A0 0x0017469C fl/flnode03b

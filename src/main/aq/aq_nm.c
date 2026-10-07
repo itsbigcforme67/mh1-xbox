@@ -514,8 +514,8 @@ typedef struct OTHBUF {
 
 void set_other_data(u8 *d, int flag) {
     OTHBUF buf;
-    OTHBUF *b = &buf;
     u8 *src = d + 8;
+    OTHBUF *b = &buf;
     u16 pl = *(u16 *)(d + 4);
     int n;
 
