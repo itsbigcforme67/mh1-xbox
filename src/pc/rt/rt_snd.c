@@ -51,7 +51,9 @@ static fmt_afs afs00, afs01;
 const fmt_afs *rt_snd_afs00(void) { return afs00.fp ? &afs00 : NULL; }
 static int snd_on;
 static int trace;
-static int se_cfg = 7, bgm_cfg = 7;     /* system_w+0x37 / +0x36: options volume 0..7 (7 = max) */
+extern uint8_t system_w[];
+#define bgm_cfg (system_w[0x36] & 7)   /* system_w+0x36 / +0x37: options volume 0..7 (7 = max) */
+#define se_cfg (system_w[0x37] & 7)
 
 /* ------------------------------------------------------------ ports */
 #define NPORT 16
@@ -478,6 +480,29 @@ void str_stop(int ch)
     strw[ch].ended = 0;
     audio_stream_clear(ch);
 }
+
+/* str_master_vol (0x100B40): the channels' maximum volume from the options (channel 0 BGM, 1 SE);
+ * update == 1 also applies it to the playing volume */
+void str_master_vol(int update)
+{
+    int i;
+    for (i = 0; i < 2; i++) {
+        strw[i].max = adx_cnfvol_tbl[i == 0 ? bgm_cfg : se_cfg];
+        if (update == 1)
+            str_volume(i, strw[i].max);
+    }
+}
+
+/* str_stop_all (0x100B10): str_init + str_master_vol(0) */
+void str_stop_all(void)
+{
+    str_stop(0);
+    str_stop(1);
+    str_master_vol(0);
+}
+
+/* str_outmode (0x100C70): 1 stereo, 0 monaural (ADXT_SetOutputMono(mode ^ 1) + flSndOutputMode) */
+void str_outmode(int mode) { audio_set_mono(mode == 0); }
 
 void str_pause(int ch, int on) { strw[ch].paused = on; }
 
