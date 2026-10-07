@@ -1251,7 +1251,7 @@ frame n+1 = ours n). The picture on screen (headless screenshot) shows the
 opening's sky/Rathalos shot at the right aspect. Audio: ADX output differs
 from ffmpeg's adpcm_adx by a small amount (mean 124 of 32768 over the first 20 s):
 our decoder (snd.c, used for the BGM too) takes scale+1, ffmpeg's takes the
-scale as is; which one CRI uses was not checked against hardware.
+scale as is; CRI's own decoder (ADX_DecodeMono4, main 0x1F86F8) computes ((word ^ key) & 0x1FFF) + 1 and multiplies the nibble by that, so our scale+1 is right and ffmpeg's differs; snd.c now also masks with 0x1FFF as CRI does (checked by reading the asm, 7 Oct).
 Decode time per frame (this PC, -O2, one core): OPENING 0.8-1.7 ms average,
 worst 3-29 ms (a few slow outliers); the other eight 1.7-5.5 ms average, worst
 13-50 ms (one 194 ms spike while other jobs ran). 256x512 is small: 29.97 fps
@@ -1328,3 +1328,20 @@ Still stand-ins that a player could notice (not wired; reason):
 - Sound: cnWrap_Bgm* are online-side names; BGM goes through the host's rt_snd.c. flPADShockSet (vibration) is not wired.
 New stand-ins appear when a wired function calls something else not ported (SetPartsTrans, weapon_dat_make*, light_change_normal, ...);
 none of them ran in the tests.
+
+Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item 125 from (11200, 10850)):
+- The idle script runs in 352-tick cycles. em_cmd_pl_fishing_ck (0x45) is evaluated once at the start of each
+  idle cycle (tick 1 in a fresh stage: no hunter fishing yet).
+- The Plesioth rises 2 units per tick from y -1990 while idle. At tick 352 (y -830, 880 below the hunter, inside
+  the 1000 "down" limit; inside its 30 degree cone) the eye test (em_eye_search_set) sets x88C and
+  Em_Mode_Chg(1) flips x888 in the same tick the second cycle starts, so main script's mode_ck jumps to the combat
+  tables and the fishing check of cycle 2 never runs (checked at 5 hunter positions, every one noticed by tick ~352,
+  except positions inside the water where the hunter sinks).
+- x886 (combat timer) is NOT a bug: em_move (src/main/em/f_em_nm.c:421) resets it to em_atk_mode_timer_tbl[kind]
+  every tick while pl_ninshiki_ck reports the hunter noticed (x88F). em_mode_timer_sub's own code (em_master_b.c, a
+  matched file) is identical to the near-match copy. Combat ends only when the hunter is unseen for the
+  ninshiki timer plus the combat timer.
+- So on the PC a frog bite is only possible if the Plesioth is still idle at a cycle start with the float already
+  out. What differs on the PS2 (rise speed, the hunter being outside the cone while the Plesioth is high, or the
+  hunter's flag14 == 3, which the eye test skips) is not known; fishing_ck/Kaeru_ck/em_fly17/18 are linked and
+  untouched.

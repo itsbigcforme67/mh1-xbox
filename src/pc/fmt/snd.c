@@ -219,7 +219,7 @@ void fmt_adx_row(const adx_info *h, const uint8_t *in, int32_t (*hist)[2], int16
     int c, k;
     for (c = 0; c < h->ch; c++) {
         const uint8_t *fr = in + c * h->block;
-        int scale = fmt_u16(fr, FMT_BE) + 1;
+        int scale = (fmt_u16(fr, FMT_BE) & 0x1FFF) + 1;   /* ADX_DecodeMono4 (main 0x1F86F8): (word ^ key) & 0x1FFF, plus 1 */
         int32_t h1 = hist[c][0], h2 = hist[c][1];
         for (k = 0; k < 32; k++) {
             int nib = (fr[2 + k / 2] >> ((k & 1) ? 0 : 4)) & 0xF;
