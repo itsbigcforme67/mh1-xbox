@@ -1089,3 +1089,71 @@ delay slot plus a nop), em09_material_sub 13 (switch x4A in v0 vs a2; declaratio
 loop gets n/y/r in the wrong registers), em_eye_search_set 9, em_cdm_act_flag_ck 9, em_cmd_range_ck 6, em_cmd_flag_clear 24, em_fly10 (em15/em20) 16
 (copy of w to s0 is scheduled after the load of em->x05), em20_act_set 1, em_range_set 13 (post-increment form), em_mv00_005DC550 50, eft22_end_init 4,
 eft18_set_com 7, set05_m 2, em12_main (register allocation shifted by one saved register).
+
+## Game overlay: remaining unmatched functions (agent D, round 4 start, game 93.24%)
+
+Source file: the survey CSV has no source name for these (bind column is only LOCAL/GLOBAL), so the file is the near-match TU that holds the C.
+Off = real differing instructions of the C in that TU (tools/alignall.py), blank = no C yet.
+
+| address | bytes | bind | function | off | near-match file |
+|---|---|---|---|---|---|
+| 0x0062EA20 | 7584 | LOCAL | shell08_m | 240 | shell/shell08_nm.c |
+| 0x0054DC30 | 7032 | LOCAL | eft16_m | 10 | eft/eft16_nm.c |
+| 0x006309A0 | 6320 | LOCAL | shell08_trans | 561 | shell/shell08_nm.c |
+| 0x005412B0 | 5064 | LOCAL | eft04_t | 5 | eft/eft04_nm.c |
+| 0x0058E500 | 3808 | LOCAL | ef_move_sub | 76 | em/em04_nm.c |
+| 0x00623400 | 3148 | LOCAL | set14_trans | 15 | set/set14_nm.c |
+| 0x005F2680 | 2392 | LOCAL | em_atk08 | 39 | em/em20_ai_nm.c |
+| 0x005638B0 | 2276 | LOCAL | em_cmd_end_command | 289 | em/em_cmd_nm.c |
+| 0x005F3440 | 2200 | LOCAL | em_atk21 | 34 | em/em20_ai_nm.c |
+| 0x00534730 | 1956 | GLOBAL | em_neck_move_sub | 642 | em/em_core_nm.c |
+| 0x0061FB50 | 1800 | LOCAL | set05_m | 2 | set/set05_nm.c |
+| 0x005B3A50 | 1660 | GLOBAL | em12_main | 183 | em/em12_nm.c |
+| 0x00534EE0 | 1392 | LOCAL | neck_ang_set | 251 | em/em_core_nm.c |
+| 0x00533A00 | 1380 | GLOBAL | em_eye_search_set | 10 | em/em_core_nm.c |
+| 0x005395F0 | 1224 | GLOBAL | Em_Master_Change | 158 | em/em_master_nm.c |
+| 0x00638500 | 1188 | LOCAL | shell22_i | 11 | shell/shell22_nm.c |
+| 0x00543200 | 1160 | LOCAL | eft05_t | 65 | eft/eft05_nm.c |
+| 0x00562640 | 1132 | LOCAL | em_cmd_st25_pl_target_sel | 273 | em/em_cmd_nm.c |
+| 0x005615C0 | 1052 | LOCAL | em_cmd_samestage_pl_target_sel | 249 | em/em_cmd_nm.c |
+| 0x005600C0 | 1012 | LOCAL | em_cmd_ground_area_move | 171 | em/em_cmd_nm.c |
+| 0x00632AC0 | 944 | LOCAL | shell08_rgba | 43 | shell/shell08_nm.c |
+| 0x00534200 | 936 | GLOBAL | em_char_set | 85 | em/em_core_nm.c |
+| 0x00561230 | 900 | LOCAL | em_cmd_all_pl_target_sel | 213 | em/em_cmd_nm.c |
+| 0x00625840 | 872 | LOCAL | set17_trans | 73 | set/set17_nm.c |
+| 0x00565840 | 856 | GLOBAL | NextStage_No_Set | 114 | em/em_cmd_nm.c |
+| 0x0055D7F0 | 812 | LOCAL | em_cmd_escape_area_set | 115 | em/em_cmd_nm.c |
+| 0x0055D140 | 700 | LOCAL | em_cmd_angle_ck | 76 | em/em_cmd_nm.c |
+| 0x00545F20 | 672 | LOCAL | eft11_i | 165 | eft/eft11_nm.c |
+| 0x0055ECE0 | 608 | LOCAL | em_cmd_flag_ck | 101 | em/em_cmd_nm.c |
+| 0x005605D0 | 584 | LOCAL | em_cmd_horm_pos_ang_ck | 94 | em/em_cmd_nm.c |
+| 0x00556DA0 | 564 | LOCAL | eft22_end_init | 4 | eft/eft22_nm.c |
+| 0x00565BA0 | 540 | GLOBAL | NextStage_Dir_Set | 30 | em/em_cmd_nm.c |
+| 0x00562BF0 | 520 | LOCAL | em_cmd_dansa_sel | 118 | em/em_cmd_nm.c |
+| 0x0055DF60 | 520 | LOCAL | em_cmd_pl_ang_sel | 48 | em/em_cmd_nm.c |
+| 0x005F0730 | 516 | LOCAL | em_fly10 | 18 | em/em20_ai_nm.c |
+| 0x005C6430 | 500 | LOCAL | em_fly10 | 18 | em/em15_nm.c |
+| 0x005ACA60 | 480 | GLOBAL | em09_material_sub | 13 | em/em09_nm.c |
+| 0x005636F0 | 448 | LOCAL | em_cmd_range_ck | 6 | em/em_cmd_nm.c |
+| 0x005A8210 | 408 | GLOBAL | em09_act_set | 45 | em/em09_nm.c |
+| 0x00533F70 | 400 | LOCAL | senko_ck | 29 | em/em_core_nm.c |
+| 0x0055E2B0 | 372 | LOCAL | em_cmd_near_pos_ck | 30 | em/em_cmd_nm.c |
+| 0x005FD8A0 | 368 | GLOBAL | em20_act_set | 1 | em/em20_nm.c |
+| 0x00539490 | 352 | GLOBAL | em_hate_suu_set | 52 | em/em_core_nm.c |
+| 0x005DC550 | 348 | LOCAL | em_mv00 | 54 | em/em17_nm.c |
+| 0x00558800 | 340 | LOCAL | fish_type_set | 6 | eft/eft23_nm.c |
+| 0x005AC940 | 288 | LOCAL | em09_effect_move | 4 | em/em09_nm.c |
+| 0x0055C920 | 288 | LOCAL | em_cmd_flag_set | 50 | em/em_cmd_nm.c |
+| 0x0055CA40 | 272 | LOCAL | em_cmd_flag_clear | 19 | em/em_cmd_nm.c |
+| 0x00566500 | 240 | GLOBAL | Em_Mode_Chg |  |  |
+| 0x00626E70 | 232 | GLOBAL | Set20_set | 8 | set/set20_nm.c |
+| 0x00565DC0 | 216 | GLOBAL | em_cdm_act_flag_ck | 10 | em/em_cmd_nm.c |
+| 0x00536040 | 204 | GLOBAL | em_act_search | 10 | em/em_core_nm.c |
+| 0x00639DF0 | 180 | GLOBAL | Pl_poison_add |  |  |
+| 0x00536BC0 | 180 | GLOBAL | em_range_set | 23 | em/em_core_nm.c |
+| 0x0063BA80 | 160 | LOCAL | print_tuto_message | 8 | tuto/tuto_nm.c |
+| 0x00562220 | 128 | LOCAL | em_cmd_ninshiki_timer_sub | 10 | em/em_cmd_nm.c |
+| 0x00539C90 | 108 | GLOBAL | Em_Taisei_Set | 26 | em/em_master_nm.c |
+| 0x005546E0 | 104 | LOCAL | eft18_set_com | 2 | eft/eft18_nm.c |
+| 0x005665F0 | 60 | GLOBAL | em01_local_area_move_init |  |  |
+| 0x00639DD0 | 20 | GLOBAL | Pl_piyo_ck |  |  |
