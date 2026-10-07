@@ -33,7 +33,7 @@
 #define GW8(o)  PU8(&game_w, o)
 #define GW16(o) PU16(&game_w, o)
 
-#define STUB(name) { static int o_; if (!o_++ && rt_pl_trace()) fprintf(stderr, "rt_pl: %s not ported (stub)\n", name); }
+#define STUB(name) { static int o_; if (!o_++) rt_log_standin(name); if (o_ == 1 && rt_pl_trace()) fprintf(stderr, "rt_pl: %s not ported (stub)\n", name); }
 
 typedef u8 PL;   /* the player work, PLW (0xA00 bytes), by raw offset */
 

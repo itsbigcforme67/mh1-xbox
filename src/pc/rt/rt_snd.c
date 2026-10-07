@@ -107,6 +107,7 @@ static int port_add(int n, int afs_idx)
     }
     if (!p->data || fmt_snd_open(&p->pk, p->data, len) != 0) {
         fprintf(stderr, "snd: AFS01 entry %d is not a sound pack\n", afs_idx);
+        rt_warn_once("snd-pack", "sound: AFS01 entry %d is not a sound pack (missing or damaged file?)", afs_idx);
         free(p->data);
         p->data = NULL;
         return -1;
@@ -559,6 +560,7 @@ static int str_start(int ch, int id)
     s->id = -1;
     if (fmt_adx_header(&s->h, head, n) != 0) {
         fprintf(stderr, "snd: AFS00 entry %d is not a 4-bit ADX\n", id);
+        rt_warn_once("snd-adx", "sound: AFS00 entry %d is not a 4-bit ADX stream", id);
         return -1;
     }
     s->id = id;
@@ -842,11 +844,13 @@ int rt_snd_init(const char *disc, int device)
     snprintf(path, sizeof path, "%s/AFS00.AFS", disc);
     if (fmt_afs_open(&afs00, path) != 0) {
         fprintf(stderr, "snd: no %s: no sound\n", path);
+        rt_warn("missing file %s: running without sound", rt_log_path(path));
         return -1;
     }
     snprintf(path, sizeof path, "%s/AFS01.AFS", disc);
     if (fmt_afs_open(&afs01, path) != 0) {
         fprintf(stderr, "snd: no %s: no sound\n", path);
+        rt_warn("missing file %s: running without sound", rt_log_path(path));
         fmt_afs_close(&afs00);
         return -1;
     }

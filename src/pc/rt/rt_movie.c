@@ -17,6 +17,7 @@
  * game tick (30 per second). RT_NOMOVIE=1 skips movies (tests).
  */
 #include "rt.h"
+#include "rt_log.h"
 #include "rt_prof.h"
 #include "types.h"
 #include "../audio/audio.h"
@@ -73,6 +74,8 @@ void rt_movie_stop(void)
         int fr;
         double tot, mx;
         sfd_stats(mv.s, &fr, &tot, &mx);
+        rt_log("movie %d %s after %d frames (decode %.1f ms/frame, worst %.1f ms)", mv.no,
+               mv.ended ? "ended" : mv.playing ? "skipped / stopped" : "closed unplayed", fr, fr ? tot / fr : 0.0, mx);
         if (getenv("RT_TRACE") || getenv("RT_MOVIE_TRACE"))
             fprintf(stderr, "movie: closed after %d frames, decode %.2f ms/frame (worst %.1f ms)\n", fr, fr ? tot / fr : 0.0, mx);
         audio_stream_clear(AUDIO_STREAM_MOVIE);
@@ -89,15 +92,19 @@ int movie_start(int no)
     const fmt_afs *afs = rt_snd_afs00();
     const u8 *t;
     rt_movie_stop();
-    if (getenv("RT_NOMOVIE") || !afs || no < 0 || no > 8)
+    if (getenv("RT_NOMOVIE") || !afs || no < 0 || no > 8) {
+        rt_log("movie %d not played (%s)", no, getenv("RT_NOMOVIE") ? "RT_NOMOVIE" : !afs ? "AFS00.AFS not found" : "no such movie");
         return -1;
+    }
     t = tbl(no);
     mv.s = sfd_open(afs, (int)rd32(t));
     if (!mv.s) {
         fprintf(stderr, "movie: table entry %d (AFS00 %u) is not a movie\n", no, rd32(t));
+        rt_warn("movie %d: AFS00 entry %u is not a movie", no, rd32(t));
         return -1;
     }
     mv.no = no;
+    rt_log("movie %d start: %s (%dx%d)", no, afs->name[rd32(t)], (int)rd16(t + 0xA), (int)rd16(t + 0xC));
     mv.w = (int)rd16(t + 0xA);
     mv.h = (int)rd16(t + 0xC);
     if (getenv("RT_TRACE") || getenv("RT_MOVIE_TRACE"))

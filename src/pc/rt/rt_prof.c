@@ -4,12 +4,15 @@
  * performance counter on the Xbox.
  */
 #include "rt_prof.h"
+#include "rt_plat.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef _WIN32     /* the Xbox build (nxdk targets win32) */
+#if defined(MH1_XBOX)     /* the Xbox build (nxdk targets win32) */
 #include <windows.h>
 #include <xboxkrnl/xboxkrnl.h>
+#elif defined(MH1_WINDOWS)
+#include <windows.h>
 #else
 #include <time.h>
 #endif
@@ -36,7 +39,11 @@ void rt_prof_count(int c, long n)
 
 static double now_ms(void)
 {
-#ifdef _WIN32     /* the Xbox build (nxdk targets win32) */
+#if defined(MH1_WINDOWS)       /* this thread's CPU time (kernel + user) */
+    FILETIME c, e, k, u;
+    GetThreadTimes(GetCurrentThread(), &c, &e, &k, &u);
+    return (((double)k.dwHighDateTime * 4294967296.0 + k.dwLowDateTime) + ((double)u.dwHighDateTime * 4294967296.0 + u.dwLowDateTime)) / 10000.0;
+#elif defined(MH1_XBOX)     /* the Xbox build (nxdk targets win32) */
     LARGE_INTEGER c, f;
     QueryPerformanceCounter(&c);
     QueryPerformanceFrequency(&f);
@@ -51,7 +58,7 @@ static double now_ms(void)
 int rt_prof_on(void)
 {
     if (on < 0)
-#ifdef _WIN32
+#ifdef MH1_XBOX
         on = 1;         /* the Xbox has no environment: always on (two clock reads per zone) */
 #else
         on = getenv("RT_PROF") != NULL;
@@ -70,7 +77,7 @@ static void out(const char *fmt, ...)
     va_start(ap, fmt);
     vsnprintf(buf, sizeof buf, fmt, ap);
     va_end(ap);
-#ifdef _WIN32
+#ifdef MH1_XBOX
     DbgPrint("%s", buf);
     if (!logf)
         logf = fopen("E:\\mh1_prof.txt", "a");
@@ -159,7 +166,7 @@ void rt_prof_frame(void)
         cnt[z] = cnt_max[z] = 0;
     }
     nticks = nframes = 0;
-#ifdef _WIN32
+#ifdef MH1_XBOX
     if (logf) {
         fclose(logf);
         logf = NULL;

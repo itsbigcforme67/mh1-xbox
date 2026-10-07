@@ -23,7 +23,7 @@ def main():
             if not n.startswith(pfx):
                 continue
             n = n[len(pfx):]
-        if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', n) or n.startswith('__') or n in ('main', 'rt_symtab', 'rt_symtab_n', 'rt_host_sym'):
+        if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', n) or n.startswith('__') or n in ('main', 'rt_symtab', 'rt_symtab_n', 'rt_host_sym', 'rt_host_symname'):
             continue
         names.add(n)
     names = sorted(names)
@@ -42,7 +42,21 @@ void *rt_host_sym(const char *name)
     const void *e = bsearch(name, rt_symtab, %d, sizeof rt_symtab[0], cmp);
     return e ? ((void *const *)e)[1] : 0;
 }
-''' % len(names))
+/* the symbol at or just before addr (the debug log's crash backtrace, rt_log.c); NULL when none within 8 KB */
+const char *rt_host_symname(const void *addr, unsigned *off)
+{
+    size_t i, best = (size_t)-1;
+    unsigned long long a = (unsigned long long)(size_t)addr, bv = 0;
+    for (i = 0; i < %d; i++) {
+        unsigned long long v = (unsigned long long)(size_t)rt_symtab[i].p;
+        if (v <= a && v >= bv) { bv = v; best = i; }
+    }
+    if (best == (size_t)-1 || a - bv > 0x2000)
+        return 0;
+    if (off) *off = (unsigned)(a - bv);
+    return rt_symtab[best].n;
+}
+''' % (len(names), len(names)))
     print('gen_symtab: %d names' % len(names))
 
 if __name__ == '__main__':

@@ -252,4 +252,6 @@ void rt_set_stage_loader(int (*fn)(int));
 int rt_monster_shown(int no);   /* em_work[no] in use and on the current stage */
 void rt_pad_tick(void);         /* Psw from the host pad + swset (rt_pad.c) */
 
+#include "rt_log.h"          /* the automatic debug log */
+
 #endif

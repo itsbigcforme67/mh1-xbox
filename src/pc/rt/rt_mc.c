@@ -25,9 +25,10 @@
  * (exists, mc_mkdir treats it as success).
  */
 #define _DEFAULT_SOURCE
+#include "rt_plat.h"
+#include "rt_log.h"
 #include <dirent.h>
 #include <errno.h>
-#include <fnmatch.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,13 +36,48 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
+#ifdef MH1_WINDOWS
+#include <direct.h>
+#define mkdir(p, m) _mkdir(p)
+#define localtime_r(t, tmv) (localtime_s((tmv), (t)), (tmv))
+#endif
 
 #define CARD_KB 8000
+
+/* fnmatch(pat, s, 0) for the two wildcards the game uses (* and ?); not in mingw */
+static int mc_match(const char *p, const char *s)
+{
+    for (; *p; p++, s++) {
+        if (*p == '*') {
+            while (p[1] == '*')
+                p++;
+            for (;; s++) {
+                if (!mc_match(p + 1, s))
+                    return 0;
+                if (!*s)
+                    return 1;
+            }
+        }
+        if (!*s || (*p != '?' && *p != *s))
+            return 1;
+    }
+    return *s != 0;
+}
+#define fnmatch(p, s, f) mc_match((p), (s))
 
 static int pending, last_cmd, last_res;
 static int new_card[2] = { 1, 1 };
 static char root[512];
 static FILE *fds[8];
+static char fd_name[8][48];       /* for the debug log: card file name, bytes moved, written or read */
+static long fd_bytes[8];
+static int fd_wrote[8];
+
+static void log_close(int i)
+{
+    if (fd_bytes[i] || fd_wrote[i])
+        rt_log("memory card: %s %s, %ld bytes", fd_wrote[i] ? "saved" : "loaded", fd_name[i], fd_bytes[i]);
+}
 
 static int trace(void)
 {
@@ -66,10 +102,11 @@ static void mkdirs(const char *p)
     char *s;
     snprintf(tmp, sizeof tmp, "%s", p);
     for (s = tmp + 1; *s; s++)
-        if (*s == '/') {
+        if (*s == '/' || *s == '\\') {
+            char c = *s;
             *s = 0;
             mkdir(tmp, 0755);
-            *s = '/';
+            *s = c;
         }
     mkdir(tmp, 0755);
 }
@@ -79,12 +116,21 @@ const char *rt_mc_root(void)
 {
     if (!root[0]) {
         const char *e = getenv("MH1_SAVE_DIR"), *x = getenv("XDG_DATA_HOME"), *h = getenv("HOME");
+#ifdef MH1_WINDOWS     /* %APPDATA%\\mh1pc\\memcard0 */
+        const char *ad = getenv("APPDATA");
+        if (e && *e)
+            snprintf(root, sizeof root, "%s", e);
+        else
+            snprintf(root, sizeof root, "%s/mh1pc/memcard0", ad && *ad ? ad : ".");
+        (void)x; (void)h;
+#else
         if (e && *e)
             snprintf(root, sizeof root, "%s", e);
         else if (x && *x)
             snprintf(root, sizeof root, "%s/mh1pc/memcard0", x);
         else
             snprintf(root, sizeof root, "%s/.local/share/mh1pc/memcard0", h ? h : ".");
+#endif
         mkdirs(root);
     }
     return root;
@@ -271,9 +317,16 @@ int sceMcOpen(int port, int slot, const char *name, int mode)
     else
         m = "r+b";
     if (!(fds[fd] = fopen(path, m))) {
+        if ((mode & 3) != 1)
+            rt_warn("memory card: cannot open %s for writing (%s): save failed?", name, strerror(errno));
+        else
+            rt_log("memory card: %s not found (mode %X)", name, mode);
         done(3, -4);
         return 0;
     }
+    snprintf(fd_name[fd], sizeof fd_name[fd], "%s", name);
+    fd_bytes[fd] = 0;
+    fd_wrote[fd] = 0;
     if (trace())
         fprintf(stderr, "rt_mc: open %s mode %X -> fd %d\n", path, mode, fd);
     done(3, fd);
@@ -288,12 +341,14 @@ int sceMcClose(int fd)
          * result: close whatever is open (only one file at a time is) */
         for (i = 0; i < 8; i++)
             if (fds[i]) {
+                log_close(i);
                 fclose(fds[i]);
                 fds[i] = NULL;
             }
         done(4, 0);
         return 0;
     }
+    log_close(fd);
     fclose(fds[fd]);
     fds[fd] = NULL;
     done(4, 0);
@@ -308,6 +363,9 @@ int sceMcRead(int fd, void *buf, int size)
         return 0;
     }
     n = fread(buf, 1, (size_t)size, fds[fd]);
+    fd_bytes[fd] += (long)n;
+    if ((int)n != size)
+        rt_log("memory card: read of %s returned %d of %d bytes", fd_name[fd], (int)n, size);
     done(5, (int)n);
     return 0;
 }
@@ -321,6 +379,10 @@ int sceMcWrite(int fd, const void *buf, int size)
     }
     n = fwrite(buf, 1, (size_t)size, fds[fd]);
     fflush(fds[fd]);
+    fd_bytes[fd] += (long)n;
+    fd_wrote[fd] = 1;
+    if ((int)n != size)
+        rt_warn("memory card: write to %s stored %d of %d bytes (disk full?)", fd_name[fd], (int)n, size);
     done(6, (int)n);
     return 0;
 }
@@ -339,7 +401,13 @@ int sceMcMkdir(int port, int slot, const char *name)
         done(0xB, -4);
         return 0;
     }
-    done(0xB, mkdir(path, 0755) == 0 ? 0 : -5);
+    if (mkdir(path, 0755) != 0) {
+        rt_warn("memory card: cannot create folder %s (%s)", name, strerror(errno));
+        done(0xB, -5);
+        return 0;
+    }
+    rt_log("memory card: created folder %s", name);
+    done(0xB, 0);
     return 0;
 }
 
@@ -359,6 +427,7 @@ int sceMcDelete(int port, int slot, const char *name)
         return 0;
     }
     host_path(path, sizeof path, name);
+    rt_log("memory card: delete %s", name);
     done(0xD, remove(path) == 0 ? 0 : -4);
     return 0;
 }
@@ -366,6 +435,7 @@ int sceMcDelete(int port, int slot, const char *name)
 int sceMcFormat(int port, int slot)
 {
     (void)port; (void)slot;
+    rt_log("memory card: format requested (the host card is always formatted)");
     done(0x10, 0);              /* the host card is always formatted */
     return 0;
 }

@@ -23,7 +23,7 @@ void rt_font_tick_begin(void);
 void rt_prims_reset(void);
 
 #define WEAK __attribute__((weak))
-static void once(const char *n) { if (getenv("RT_TRACE")) fprintf(stderr, "rt_flow: %s not ported (no-op)\n", n); }
+static void once(const char *n) { rt_log_standin(n); if (getenv("RT_TRACE")) fprintf(stderr, "rt_flow: %s not ported (no-op)\n", n); }
 #define NOP(name) void name() { static int o; if (!o++) once(#name); }
 #define NOP0(name) int name() { static int o; if (!o++) once(#name); return 0; }
 
@@ -55,6 +55,10 @@ int rt_flow_tick(void)
     int m = game_w[0];
     u32 st = game_w[0] | game_w[1] << 8 | game_w[0xD5] << 16 | (u32)(quest_w[0] | quest_w[1] << 4 | (quest_w[6] & 0xF) << 8) << 24 ^ (u32)*(s16 *)(quest_w + 0x30) * 0x9E3779B1u ^ (u32)*(s16 *)(quest_w + 0x32) * 0x85EBCA6Bu;
     tick++;
+    {   /* the debug log: mode / stage / quest changes (quest id = select_w+0xAC) */
+        extern u8 select_w[];
+        rt_log_game(m, game_w[1], game_w[0x14], select_w[0xAC], game_w[0xD5]);
+    }
     rt_font_tick_begin();       /* the text of the previous tick is replaced */
     rt_prims_reset();           /* ot_init */
     if (getenv("RT_QUEST_TRACE")) {     /* the master player's pouch (PLW+0x828, 20 x {id, n}: ItemCopy copies 0x50 bytes) when it changes */

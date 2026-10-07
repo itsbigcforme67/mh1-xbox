@@ -234,7 +234,9 @@ GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
 PICK_MAIN="$PICK_MAIN $PICK_X"
 
 SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}
-CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
+# build id shown in the debug log header (rt_log.c): git hash, "+" when the tree has changes
+: ${MH1_VERSION:=$(git rev-parse --short=10 HEAD 2>/dev/null || echo unknown)$(git diff --quiet HEAD 2>/dev/null || echo +)}
+CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L $EXTRA_CFLAGS"
 # -fno-aggressive-loop-optimizations: decompiled loops index past declared
 # array ends (EMW.hagi[8] read with i == 8 in Em_Dmg_Sys): without it gcc
 # drops the loop exit
@@ -245,7 +247,8 @@ CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOUR
 # 94 without setting it: the hunter flew off to z = 1e21 and the screen
 # went blank. Zero is what such a slot ends near in every case seen.
 GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -ftrivial-auto-var-init=zero -Iinclude -w"
-LIBS="-lSDL2 -lGL -lm"   # host symbols by name: build/pc/rt_symtab.c (tools/gen_symtab.py), no dlsym
+LIBS=${LIBS:-"-lSDL2 -lGL -lm"}
+EXE=${EXE:-}               # ".exe" for the Windows build (tools/build_win.sh)   # host symbols by name: build/pc/rt_symtab.c (tools/gen_symtab.py), no dlsym
 # Compile one object and remember the command (tools/pc_link_adapt.py
 # compiles it again with build/pc/adapt/NAME.h when weak symbols or aliases
 # change); an existing adapt header is always included.
@@ -453,9 +456,10 @@ OBJS="$OBJS build/pc/rt_tables.o"
 MEMSTAT="-include src/pc/rt/rt_memstat.h"
 $CC $CFLAGS $SYS -c src/pc/rt/rt_memstat.c -o build/pc/rt_memstat.o
 OBJS="$OBJS build/pc/rt_memstat.o"
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie rt_prof; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie rt_prof rt_log; do
     # shellcheck disable=SC2086
-    cc_obj $f "$CC $CFLAGS $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o"
+    XF=""; [ $f = rt_log ] && XF="-D_GNU_SOURCE"   # ucontext / sigaltstack
+    cc_obj $f "$CC $CFLAGS $XF -DMH1_VERSION=\\\"$MH1_VERSION\\\" $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o"
     OBJS="$OBJS build/pc/$f.o"
 done
 # the objects in link order (pc_link_adapt.py, tools/build_xbox.py). rt_gen.o
@@ -481,13 +485,13 @@ struct rt_table { const char *name; unsigned va; void *dst; size_t size; };
 const struct rt_table rt_gen_main_tables[1];' > build/pc/rt_gen.c
 $CC $CFLAGS $SYS -c build/pc/rt_gen.c -o build/pc/rt_gen.o
 # the symbol table rt_data.c looks names up in: empty for the first links
-echo 'void *rt_host_sym(const char *n) { (void)n; return 0; }' > build/pc/rt_symtab.c
+echo 'void *rt_host_sym(const char *n) { (void)n; return 0; } const char *rt_host_symname(const void *a, unsigned *o) { (void)a; (void)o; return 0; }' > build/pc/rt_symtab.c
 $CC $CFLAGS $SYS -c build/pc/rt_symtab.c -o build/pc/rt_symtab.o
 # shellcheck disable=SC2086
-$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview.tmp $LIBS \
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview.tmp$EXE $LIBS \
     -Wl,--warn-unresolved-symbols 2> build/pc/link1.log || { cat build/pc/link1.log; exit 1; }
 sed -n "s/.*undefined reference to \`\([^']*\)'.*/\1/p" build/pc/link1.log | sort -u > build/pc/undefined.txt
-rm -f build/pc/mhview.tmp
+rm -f build/pc/mhview.tmp$EXE
 # shellcheck disable=SC2086
 $NM --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined.txt
 # the aliases this build's headers already define came from gen_rt_auto.py:
@@ -504,11 +508,22 @@ echo build/pc/rt_gen.o >> build/pc/objs.txt
 sed -n 's/^-Wl,--defsym,\([^=]*\)=\([^+]*\)+\?\(.*\)$/alias \1 \2 \3/p' build/pc/rt_gen.defsym | sed 's/ $/ 0/' >> $REQ
 python3 tools/pc_link_adapt.py $REQ || exit 1
 # shellcheck disable=SC2086
-$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview $LIBS \
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview$EXE $LIBS \
     
 # now the real symbol table: every global the binary defines, then link again
-$NM --defined-only -g build/pc/mhview | python3 tools/gen_symtab.py build/pc/rt_symtab.c
+if [ -n "$SYMTAB_ARGS" ]; then
+    # Windows: the exe also holds the C runtime's symbols (extern char malloc[] would clash with
+    # <stdlib.h>), so the table comes from our own objects only, front-end files included
+    FRONTO=""; mkdir -p build/pc/front
+    for f in $PC src/pc/rt/rt_mem.c; do
+        o=build/pc/front/$(basename "$f" .c).o
+        $CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT -c "$f" -o "$o"; FRONTO="$FRONTO $o"
+    done
+    $NM --defined-only -g $OBJS build/pc/rt_gen.o $FRONTO | python3 tools/gen_symtab.py build/pc/rt_symtab.c $SYMTAB_ARGS
+else
+    $NM --defined-only -g build/pc/mhview | python3 tools/gen_symtab.py build/pc/rt_symtab.c
+fi
 $CC $CFLAGS $SYS -w -c build/pc/rt_symtab.c -o build/pc/rt_symtab.o
 # shellcheck disable=SC2086
-$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview $LIBS
-echo "built build/pc/mhview (32-bit)"
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview$EXE $LIBS
+echo "built build/pc/mhview$EXE (32-bit)"

@@ -8,6 +8,7 @@
  */
 #include "gfx.h"
 #include "../rt/rt_prof.h"
+#include "../rt/rt_log.h"
 
 #include <SDL.h>
 #include <GL/gl.h>
@@ -70,6 +71,16 @@ int gfx_init(int width, int height, const char *title, int hidden)
         return -1;
     }
     SDL_GL_SetSwapInterval(1);
+    {
+        const char *v = (const char *)glGetString(GL_VENDOR), *r = (const char *)glGetString(GL_RENDERER),
+                   *ver = (const char *)glGetString(GL_VERSION);
+        SDL_version cv, rv;
+        SDL_VERSION(&cv);
+        SDL_GetVersion(&rv);
+        rt_log("GPU: %s / %s, OpenGL %s", v ? v : "?", r ? r : "?", ver ? ver : "?");
+        rt_log("SDL %d.%d.%d (built with %d.%d.%d), video driver %s", rv.major, rv.minor, rv.patch, cv.major, cv.minor, cv.patch,
+               SDL_GetCurrentVideoDriver() ? SDL_GetCurrentVideoDriver() : "?");
+    }
     G.w = width;
     G.h = height;
     memcpy(G.view, ident, sizeof ident);
