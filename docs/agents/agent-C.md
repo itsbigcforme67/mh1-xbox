@@ -1294,3 +1294,11 @@ Misses (15-minute cap): lobby_client_admin_message 7 (if-chain instead of switch
 - disp_savesel: with the declaration order and register assignment now right, only statement scheduling of `s = option_w + 0x10; y = 90;` against the frame stores and the flfntSetSize call differs; all 100 insertion positions of the two statements tried, best 26 (wip/disp_savesel_nm.c).
 - kbd_Disp_KouhoGun: 250 random declaration orders (7 locals): 26 -> 25 hunks. ItemListWindow: 300 random declaration orders: stays 20 (parameters page/mode land in s5/s4 instead of s4/s2; pure register naming).
 - Remaining C-free code in 0x24A240-0x2814E0 is online/SDK only; nothing further attempted.
+
+## Round 18 (village/lobby near-misses of agent F, retried with the harness; nothing closed)
+- Lb_room_member (1, addu operand order): 20 more spellings (array of 0x2FC structs, `idx * 0x2FC + (u8 *)cw`, int arithmetic, u8 id temp, `m += ...`): every one that changes the order costs 3-7 extra diffs (the cw load lands in another register), so the 1-off form stays.
+- itembox_cursor_mv (2, `daddiu t0,zero,9` vs `addiu`): `lo = 9`, `(u16)9`, `9U`, `(long)9`, and types long/u32/u16/s16/char for lo/hi: no change (long/u16 are far worse).
+- lb_npc_old_guild (2, 0x69 in a2 vs v1): mv declared uninitialised and assigned at the start of `case 0x64`, and a block-scoped mv: 74 off (worse), as F found.
+- lb_mix_decide (4, sll between lui/addiu of mixData): `&mixData[cur]`, `mixData + cur`, `cur + mixData`, byte-offset cast (39 off), `(s16)cur`, declaration order: 4-6 off, same as before.
+- lb_guild_make_room (14): reordering the x5C updates (stores first, early x5C load into a local x of types u32/int/u16, constant-mask first): 15-23.
+- Gun_level_up / value_result share the shape `lv >= 4 ? 4 : lv + 1` and the same unexplained `slti v1` + `daddiu v1,0,4` in the branch delay slot: tried `>=`, `<`, `3 < l`, `4 <= l`, min-style, goto-shaped, u16 locals: 9+ off every time. A fix for one would fix both (and probably Gun_option_ck, HardKeyboard_move).

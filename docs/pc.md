@@ -1363,3 +1363,19 @@ Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item
   verified. Not a PC bug as far as found: the eye angle follows the head joint matrix correctly (checked against
   the bearing), the casting and bite code is unmodified game C.
 - tools/test_frog.sh runs it: cast at tick 14, bite at tick ~1179, circle at 1200; passes on the em act log.
+### Stand-ins, round 23 (agent F)
+- Options sound: str_master_vol / str_stop_all / str_outmode are now host functions in rt_snd.c. Volumes come from system_w+0x36 (BGM) / +0x37 (SE) live (the SE
+  volume used a constant 7 before); str_outmode(0) mixes both channels into both (audio_set_mono in audio_mix.c). Init_rev_set / Zero_rev_set: rev01.c from game C
+  (calls the host flSndSetRev, so agent A's reverb approximation stays the single place that interprets the settings).
+- Put_sprite_rotate (putspr3.c) and Draw_square (putspr_nm.c) were no-ops in rt_menu.c: now game C. smoke_init, smell_init, senko_init, ear_init, em_yobi_init
+  (emw02.c; clear the monster state stacks the wired push/pull functions use) were no-ops in rt_flow.c: now game C.
+- The "newly exposed" callees (SetPartsTrans*, weapon_dat_make*, sight_disp*, em_trans_sub, flmatAddTrans2, light_change_normal, func_5ACA60/5FCBB0/60E330/618F00) did not run
+  in any of the five tests (RT_TRACE=1): they are only referenced by weapon3_nm.c / f_stage_nm.c functions that are weakened. Weapon and armour models are drawn by the host (rt_player.c) so nothing visible is missing there.
+- trans_shell / trans_set / trans_eft: no GS packet layer needed. They are three small list walkers that call each object's trans(); the host does the same walks in
+  rt_game.c / rt_eft.c (rt_eft_draw), so the stand-ins are never reached. Nothing to wire.
+- Lighting is the real gap. The host lights every model with one fixed set (viewer.c, "lighting: the VU1 model"); the game's per-stage lights are not used:
+  light_init (original bytes 0x11DB04, not decompiled, a stand-in), light_work (2 x 0x140 bytes, 3 lights of 0x68), light_change_normal / pl_light_change (stage direction rows
+  from pl_light_tbl), light_move + flash_move (thunder), Pl_light_set (blend with the player's colour override), and light_set which hands the three light blocks to
+  flSetRenderState(0x5A..0x5C) and ambient to state 1. Estimated job: decompile light_init (~0x260 bytes), fix the 0x68-byte light block layout (direction at +4..+0xC is known;
+  colour and the VU1 matrix fields are not), have rt_fl.c capture states 0x5A-0x5C/1 into the fl_model Light, and use it for hunter, monsters, NPCs. About one to two days; the
+  visible effect is per-stage/time-of-day lighting and the thunder flash on the storm stage.
