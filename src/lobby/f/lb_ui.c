@@ -44,7 +44,7 @@ void Lb_eat_to_rcpt();
 void Lb_eat_to_eat();
 void Lb_eat_to_end();
 int event_eat_rcpt();
-asm void event_eat_trans_ot0();
+void event_eat_trans_ot0();
 void event_eat_set_msg();
 void event_eat_trans_ot1();
 void SetDialogData_HTML();
@@ -279,9 +279,84 @@ LB_NETW *w;
     return 2;
 }
 
-asm void event_eat_trans_ot0()
+void event_eat_trans_ot0(a)
+u8 *a;
 {
-#include "event_eat_trans_ot0.inc"
+    s16 x;
+    s16 y;
+    s16 i;
+
+    font_set_stack_no(*(int *)(a + 0x18));
+    if (LBS8(6) == 3) {
+        x = pfl_menu_449[0];
+        y = pfl_menu_449[1];
+        flfntSetSize(0x12, 0x12);
+        font_set_palette(0);
+        i = 0;
+        do {
+            y += 0x16;
+            flfntLocate(x, y);
+            font_print(lit_473_0065B948, eat_data_name[i]);
+            i++;
+        } while (i < 10);
+        switch (pNet->depth) {
+        case 0:
+            DispFrameList(pfl_menu_449, lit_474_0065B950, pNet->menu);
+            DispFrameMessage(frame_matA_450, 0);
+            font_set_palette(5);
+            flfntLocate(frame_matA_450[0], frame_matA_450[1]);
+            font_print(lit_475_0065B960);
+            font_set_palette(3);
+            y = frame_matA_450[1] + 0x16;
+            x = frame_matA_450[0];
+            flfntLocate(x, y);
+            font_print(lit_476_0065B970);
+            break;
+        case 1:
+            DispFrameList(pfl_menu_449, lit_474_0065B950, pNet->cur);
+            DispFrameMessage(frame_matA_450, 0);
+            font_set_palette(5);
+            flfntLocate(frame_matA_450[0], frame_matA_450[1]);
+            font_print(lit_475_0065B960);
+            font_set_palette(0);
+            y = frame_matA_450[1] + 0x16;
+            x = frame_matA_450[0];
+            flfntLocate(x, y);
+            font_print(lit_473_0065B948, eat_data_name[pNet->menu]);
+            DispFrameMessage(frame_matB_451, 0);
+            font_set_palette(5);
+            flfntLocate(frame_matB_451[0], frame_matB_451[1]);
+            font_print(lit_477_0065B980);
+            font_set_palette(3);
+            y = frame_matB_451[1] + 0x16;
+            x = frame_matB_451[0];
+            flfntLocate(x, y);
+            font_print(lit_476_0065B970);
+            break;
+        case 2:
+            DispFrameList(pfl_menu_449, lit_474_0065B950, -1);
+            DispFrameMessage(frame_matA_450, 0);
+            font_set_palette(5);
+            flfntLocate(frame_matA_450[0], frame_matA_450[1]);
+            font_print(lit_475_0065B960);
+            font_set_palette(0);
+            y = frame_matA_450[1] + 0x16;
+            x = frame_matA_450[0];
+            flfntLocate(x, y);
+            font_print(lit_473_0065B948, eat_data_name[pNet->menu]);
+            DispFrameMessage(frame_matB_451, 0);
+            font_set_palette(5);
+            flfntLocate(frame_matB_451[0], frame_matB_451[1]);
+            font_print(lit_477_0065B980);
+            font_set_palette(0);
+            y = frame_matB_451[1] + 0x16;
+            x = frame_matB_451[0];
+            flfntLocate(x, y);
+            font_print(lit_473_0065B948, eat_data_name[pNet->cur]);
+            DispFrameList(eat_command_452, 0, (u8)pNet->x0A);
+            break;
+        }
+    }
 }
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
