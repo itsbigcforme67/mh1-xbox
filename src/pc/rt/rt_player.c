@@ -205,6 +205,26 @@ int rt_test_target(void)
 {
     const char *s = getenv("RT_PL_TARGET");
     int slot = 0;
+    if (s && s[0] == 'k') {     /* "kN": the nearest living monster of kind N on the hunter's stage */
+        extern u8 em_work[];
+        PLW *p = &player_work[0];
+        int kind = atoi(s + 1), i;
+        float best = -1;
+        for (i = 0; i < 20; i++) {
+            u8 *e = em_work + 0xA10 * i;
+            float dx, dz, d;
+            if (!e[0] || e[2] != kind || e[0x736] != p->stg || *(s16 *)(e + 0x302) <= 0)
+                continue;
+            dx = *(f32 *)(e + 0xAC) - p->pos[0];
+            dz = *(f32 *)(e + 0xB4) - p->pos[2];
+            d = dx * dx + dz * dz;
+            if (best < 0 || d < best) {
+                best = d;
+                slot = i;
+            }
+        }
+        return slot;
+    }
     while (s && *s) {
         int t, n;
         if (sscanf(s, "%d:%d", &t, &n) == 2 && pl_ticks >= t)
