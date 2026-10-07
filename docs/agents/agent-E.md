@@ -917,3 +917,12 @@ with bne/nop/beq; return forms, switch, pragmas optimization_level 0-3 do not gi
 (declaration order: `stg, k, diff, out, ...` via tools/declhill.py; the remaining diffs are the original's non-threaded jump chain), AQ_data_put 31, pl_AQ_put 12.
 flMemcpy (240 bytes, 57/60): the original is the 8x unrolled byte loop with every `s++` materialised in its own temporary and the loads delayed; none of the usual C forms give it.
 Dead end again: flps0002..flps1600 (needs flPS2CheckGSClip in the same TU) and flSinCos (needs the asm routine flPS2SinCosFast visible in the same TU, which sits 0x2000 bytes away).
+
+## Assignment 15 (7 Oct, never-attempted functions)
+After `git merge main`, the C-free functions in 0x160000-0x220000 and 0x2814E0-end that are not SDK/libc/CRI: only flPS2StoreImageB (1312) and PADReadSub (2488, scePad2 calls plus three 16 word table copies, not tried).
+flPS2StoreImageB: draft in src/main/fl/flstimg01_nm.c (not linked), same length as the original (328 instructions), 209/328 differ by the diff metric but the remaining real differences are:
+the frame (original 256 bytes: sbp/x/psm spilled at 0xFE/0xFC/0xAE, `h` copy at 0xB0, the two 64 bit temporaries at 0xC0 and 0xD0 and chunks at 0xE0, i.e. every local on its own 16 byte slot; ours packs them into 240),
+register numbering of sbw/rows/ch (declhill: u32 i, int n, u8 *ch, s16 rows, u8 *p, u32 chunks, long bitblt, long trxpos), the order in which bitblt/trxpos are built, and the DMA-channel bit clears
+(original `andi v0, zero, 1; sll 6` i.e. a bit-field store of a variable that is 0). Useful findings: the parameter list is (dst, size, sbp, sbw, psm, x, y, w, h) with h the 9th argument on the stack;
+`flPs2VIF1Control` must be declared as an array (lui/lw absolute, not gp-relative); `0 < chunks` gives `sltu at, zero, v`; `/ 2` gives the bgez rounding fix-up the original has for `>> 1` of a signed product.
+Next step would be the stack-slot spacing (try u128-aligned locals / a struct of 16 byte members) and then the register order.
