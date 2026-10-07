@@ -247,7 +247,7 @@ if [ -n "$ONLINE" ]; then
            src/lobby/b/lb_bz20.c src/lobby/b/lb_c509.c src/lobby/b/lb_bz81.c src/lobby/b/lb_tcp01.c"
     GAME="$GAME $NETMAIN $NETLB"
     WEAK="$WEAK lb__cnlbs_nm"
-    NETFRONT="src/pc/net/net_cpinet.c src/pc/net/net_dnas.c"
+    NETFRONT="src/pc/net/net_cpinet.c src/pc/net/net_dnas.c src/pc/net/net_netcnf.c"
     NETRT="rt_net"
     PC="$PC $NETFRONT"
     EXTRA_CFLAGS="$EXTRA_CFLAGS -DMH1_ONLINE=1"

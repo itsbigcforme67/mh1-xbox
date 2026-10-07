@@ -137,10 +137,28 @@ static void cb_login(CNET_RES res, void *p)
     }
 }
 
+int cnLBS_Get_ChatMessage(void *d);
+int cnLBS_Send_ChatMessage(char *text, int len);
+
 static void cb_notice(CNET_RES res, void *p)
 {
     (void)p;
-    note("notice event %d", res.id);
+    switch (res.id) {
+    case 5: {       /* chat */
+        CNET_CHAT c;
+        cnLBS_Get_ChatMessage(&c);
+        note("notice: chat from \"%.8s\" (%.16s): \"%.60s\"", c.from, c.x, c.msg);
+        break;
+    }
+    case 0x26:
+        note("notice: \"%.8s\" (%.16s) came into the lobby", CnetSys_w.leave_user.b, CnetSys_w.leave_user.b + 8);
+        break;
+    case 0x27:
+        note("notice: \"%.8s\" left the lobby", CnetSys_w.leave_user.b);
+        break;
+    default:
+        note("notice event %d", res.id);
+    }
 }
 
 static int send_wait(int rc)
@@ -190,9 +208,25 @@ static int issue(int ph)
     case P_LOBBY_MEMBERS:
         note("read the member list of lobby 1");
         return send_wait(cnLBS_Read_LobbyMemberList(1, (void (*)())cb_done));
-    case P_LOGOUT:
+    case P_LOGOUT: {
+        /* RT_NET_CHAT=text: say something in the lobby; RT_NET_HOLD_MS: stay (and listen) before logging out */
+        const char *chat = getenv("RT_NET_CHAT");
+        const char *hold = getenv("RT_NET_HOLD_MS");
+        if (chat && *chat) {
+            note("say \"%s\" in the lobby", chat);
+            cnLBS_Send_ChatMessage((char *)chat, (int)strlen(chat));
+        }
+        if (hold && atoi(hold) > 0) {
+            int k;
+            note("staying %d ms", atoi(hold));
+            for (k = 0; k < atoi(hold) / 5; k++) {
+                cnLBS_RecvData(*(s32 *)(ConnWork + 4));
+                SLEEP_MS(5);
+            }
+        }
         note("log out");
         return send_wait(cnLBS_LogoutLobbyServer((void (*)())cb_done));
+    }
     }
     return 1;
 }
@@ -313,6 +347,8 @@ int rt_net_test(const char *scenario)
             cnLBS_Set_CallBackNoticeEvent(5, (void (*)())cb_notice);    /* chat */
             cnLBS_Set_CallBackNoticeEvent(0xF, (void (*)())cb_notice);  /* plaza join user */
             cnLBS_Set_CallBackNoticeEvent(0x15, (void (*)())cb_notice);
+            cnLBS_Set_CallBackNoticeEvent(0x26, (void (*)())cb_notice);  /* lobby commer / leaver */
+            cnLBS_Set_CallBackNoticeEvent(0x27, (void (*)())cb_notice);
             fd.b11 = 1;
             fd.b12 = 4;
             strncpy(fd.ver, "1.00", 0xA);

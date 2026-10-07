@@ -79,13 +79,31 @@ class Registry:
         self.lock = threading.Lock()
         self.where = {}             # client -> {kind: id}
 
+    _next = [0]
+
+    def new_id(self):
+        with self.lock:
+            self._next[0] += 1
+            return "%06d" % self._next[0]
+
     def enter(self, cl, kind, i):
         with self.lock:
             self.where.setdefault(cl, {})[kind] = i
 
-    def leave(self, cl):
+    def leave(self, cl, kind=None):
+        """kind None: the client is gone; else it left that kind of place. Returns the id it left (or None)."""
         with self.lock:
-            self.where.pop(cl, None)
+            w = self.where.get(cl)
+            if w is None:
+                return None
+            if kind is None:
+                self.where.pop(cl, None)
+                return w.get(1)
+            return w.pop(kind, None)
+
+    def others(self, cl, kind, i):
+        with self.lock:
+            return [c for c, w in self.where.items() if c is not cl and w.get(kind) == i]
 
     def members(self, kind, i):
         with self.lock:
@@ -105,7 +123,7 @@ class Client(socketserver.BaseRequestHandler):
         self.seq = 0x100
         self.xfee = 0x1234
         self.user_handle = ""
-        self.user_id = "000001"
+        self.user_id = REG.new_id()
         self.echoes = 0
         self.buf = b""
         self.lock = threading.Lock()
@@ -161,7 +179,10 @@ class Client(socketserver.BaseRequestHandler):
         except (ConnectionError, OSError):
             pass
         finally:
-            REG.leave(self)
+            lobby = REG.leave(self)
+            if lobby is not None:
+                for o in REG.others(self, 1, lobby):
+                    o.safe_send(NOTE, 0x6410, str16(self.user_id))
             log("client gone")
 
     def login_start(self):
@@ -249,7 +270,7 @@ class Client(socketserver.BaseRequestHandler):
             self.h[(c["join"], REQ)] = lambda seq, p, k=kind, c=c: self.piece_join(k, c, seq, p)
             self.h[(c["explain"], REQ)] = lambda seq, p, k=kind, c=c: self.piece_explain(k, c, seq, p)
             self.h[(c["entry"], REQ)] = lambda seq, p, k=kind, c=c: self.piece_entry(k, c, seq, p)
-            self.h[(c["exit"], REQ)] = lambda seq, p, k=kind, c=c: self.send(ANS, c["exit"], b"", seq=seq)
+            self.h[(c["exit"], REQ)] = lambda seq, p, k=kind, c=c: self.piece_exit(k, c, seq, p)
 
     def piece_name(self, k, c, seq, p):
         i = struct.unpack(">H", p[:2])[0]
@@ -271,6 +292,32 @@ class Client(socketserver.BaseRequestHandler):
         i = struct.unpack(">H", p[:2])[0]
         REG.enter(self, k, i)
         self.send(ANS, c["entry"], b"", seq=seq)
+        if k == 1:      # tell the others in the lobby (NoticeLobbyCommer)
+            for o in REG.others(self, 1, i):
+                o.safe_send(NOTE, 0x6411, str16(self.user_id) + str16(self.user_handle[:16]) + str16(self.mini))
+
+    def piece_exit(self, k, c, seq, p):
+        i = REG.leave(self, k)
+        self.send(ANS, c["exit"], b"", seq=seq)
+        if k == 1 and i is not None:
+            for o in REG.others(self, 1, i):
+                o.safe_send(NOTE, 0x6410, str16(self.user_id))
+
+    def safe_send(self, *a, **kw):
+        try:
+            self.send(*a, **kw)
+        except OSError:
+            pass
+
+    def on_6701_16(self, seq, p):           # chat message to the lobby (text obfuscated, then a flag byte)
+        text, off = self.enc_string(p, 0, seq)
+        lobby = REG.where.get(self, {}).get(1)
+        log("chat %r in lobby %s" % (text, lobby))
+        if lobby is None:
+            return
+        out = str16(self.user_id) + str16(self.user_handle[:16]) + str16(text) + bytes([0, 0, 0, 0])
+        for o in REG.others(self, 1, lobby):
+            o.safe_send(NOTE, 0x6702, out)
 
     def on_630A_1(self, seq, p):            # lobby member list: u16 ?, u8 fields per entry, u8 count, entries
         i = struct.unpack(">H", p[:2])[0]
