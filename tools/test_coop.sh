@@ -27,7 +27,8 @@ run() {
     k=1
     shift
     while [ $k -lt $n ]; do
-        timeout 120 "$BIN" "$DISC" --join 127.0.0.1 --port $port --mute --input "$1" \
+        w=156; [ $k = 2 ] && w=1          # player 2 carries a great sword (another weapon class's motions)
+        RT_WEAPON=$w timeout 120 "$BIN" "$DISC" --join 127.0.0.1 --port $port --mute --input "$1" \
             --shot build/show/coop_${n}_slot$k.png --time 8 > $OUT/p${n}_$k.log 2>&1 &
         pids="$pids $!"
         k=$((k + 1))
@@ -67,8 +68,19 @@ sys.exit(0 if ok else 1)
 EOF
 }
 
+refusals() {
+    # a public address and an MH Oldschool address are refused before any socket is opened
+    for a in 8.8.8.8 34.75.107.68; do
+        timeout 30 "$BIN" "$DISC" --join $a --mute > $OUT/refuse.log 2>&1
+        grep -q "refusing $a" $OUT/refuse.log || { echo "coop: --join $a was not refused"; return 1; }
+    done
+    timeout 30 "$BIN" "$DISC" --host 8.8.8.8 --quest 131 --mute > $OUT/refuse.log 2>&1
+    grep -q "will not listen on 8.8.8.8" $OUT/refuse.log || { echo "coop: --host 8.8.8.8 was not refused"; return 1; }
+    echo "coop: public / MH Oldschool addresses refused"
+}
+
 if [ -n "$1" ]; then
-    run "$1"
+    run "$1" && refusals
 else
-    run 2 && run 4
+    run 2 && run 4 && refusals
 fi

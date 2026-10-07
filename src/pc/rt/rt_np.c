@@ -95,6 +95,43 @@ int rt_np_arg(int argc, char **argv, int *i)
 
 int rt_np_wanted(void) { return want_role; }
 
+
+/* The Elder's offline quests, as the port has played them (docs/pc.md "All offline quests
+ * played"; goals as the port's tests read them from the mission files, monster kinds by
+ * their em number). Shown when --host is given without --quest. */
+static const struct { int no, stars; const char *goal; } quests[] = {
+    { 131, 1, "deliver items (the first gathering quest)" }, { 132, 1, "deliver items" }, { 133, 1, "deliver items" },
+    { 134, 1, "deliver items" }, { 135, 1, "deliver items" },
+    { 136, 2, "hunt 3 Velociprey (urgent)" }, { 141, 2, "deliver items" }, { 142, 2, "deliver items" }, { 143, 2, "deliver items" },
+    { 138, 2, "deliver an egg" },
+    { 137, 3, "Velocidrome (urgent)" }, { 152, 3, "Velocidrome" }, { 144, 3, "monster kind 6" }, { 148, 3, "monster kind 6" },
+    { 145, 3, "10 Velociprey" }, { 146, 3, "deliver an egg" }, { 147, 3, "deliver items" }, { 149, 3, "deliver items" },
+    { 150, 4, "item + monster kind 6" }, { 151, 4, "15 Velociprey + Rathalos" }, { 153, 4, "2 eggs" }, { 154, 4, "monster kind 8" },
+    { 155, 4, "15 monsters kind 13" }, { 156, 4, "Gendrome" }, { 157, 4, "3 eggs" }, { 158, 4, "15 Vespoid" },
+    { 159, 4, "deliver items" }, { 160, 4, "Iodrome" },
+    { 139, 5, "Rathalos" }, { 140, 5, "item + Rathalos" }, { 161, 5, "20 Velociprey + Rathalos" }, { 162, 5, "Velocidrome" },
+    { 163, 5, "3 eggs" }, { 165, 5, "20 monsters kind 13 + Plesioth" }, { 166, 5, "Gendrome" }, { 167, 5, "Iodrome" },
+    { 168, 5, "Vespoid + Plesioth" }, { 171, 5, "Monoblos" },
+};
+
+static int ask_quest(void)
+{
+    char line[64];
+    int k, q;
+    fprintf(stderr, "\nCo-op host: pick the quest everyone plays (quest number, Enter = 131):\n");
+    for (k = 0; k < (int)(sizeof quests / sizeof quests[0]); k++)
+        fprintf(stderr, "  %3d  %d*  %s\n", quests[k].no, quests[k].stars, quests[k].goal);
+    fprintf(stderr, "quest> ");
+    if (!fgets(line, sizeof line, stdin))
+        return 0;
+    q = line[0] == '\n' ? 131 : (int)strtol(line, NULL, 0);
+    if (q < 1 || q > 0xB1) {
+        fprintf(stderr, "co-op: no quest %s", line);
+        return 0;
+    }
+    return q;
+}
+
 /* Before the quest is set up: host waits for the joiners and announces the quest; a joiner
  * connects and waits for it. Returns the quest number, 0 = no co-op, -1 = failed. */
 int rt_np_setup(int quest_no)
@@ -104,8 +141,10 @@ int rt_np_setup(int quest_no)
     if (!want_role)
         return 0;
     if (want_role == 1) {
+        if (!quest_no)
+            quest_no = ask_quest();     /* the list on the console */
         if (!quest_no) {
-            fprintf(stderr, "co-op: --host needs --quest N (the quest everyone plays)\n");
+            fprintf(stderr, "co-op: --host needs a quest (--quest N, or pick one from the list)\n");
             return -1;
         }
         if (np_host(want_addr, want_port, wid) != 0)
@@ -232,6 +271,15 @@ void rt_np_tick(void)
         n_ticks++;
     }
     np_poll();
+    if (rt_online) {        /* a player who left: as mcsls_force_drop marks it (pl_state 0xFF), and no longer shown */
+        int s;
+        for (s = 0; s < game_w.pl_num; s++)
+            if (s != game_w.master && np_gone(s) && game_w.pl_state[s] != 0xFF) {
+                game_w.pl_state[s] = 0xFF;
+                player_work[s].x01 = 0;
+                fprintf(stderr, "co-op: player %d left the quest\n", s);
+            }
+    }
     while ((n = np_recv(&from, &type, buf, sizeof buf)) >= 0) {
         st_rx++;
         if (n < 4 || buf[2] == game_w.master) {

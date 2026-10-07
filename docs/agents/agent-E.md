@@ -936,3 +936,17 @@ Files: src/pc/net/*, src/pc/rt/rt_net.c, tools/mh1_testserver.py, tools/test_onl
 tools/pc_patch.py (cnet argument fixes), tools/build_pc.sh (ONLINE block), src/pc/viewer.c (--nettest, MH1_ONLINE only).
 Lesson: the cnet C passes completion callbacks through argument registers (`cnLBS_Send_UserMiniData(a, b)` calls
 `__cnetSub_Set_BgProcess(1, 0)` and the callee reads a2); tools/argregs.py --check finds them, tools/pc_patch.py fixes them for the PC.
+
+## Co-op over direct connect (round 2, 7 Oct 2026)
+
+Scoping and design in docs/network.md sections 1a and 3.4. Short version:
+- The PS2 hunt is relayed TCP through Capcom's game server, but the server only forwards records: every game decision
+  is made by the clients. So the port lets the host's game relay, and cuts in at `AQ_data_put` / `self_data_ctrl`
+  (the game's own `net_send_pl` / `net_receive_pl` are linked unchanged, netsyn01/02_nm/03).
+- Done: M1 + M2 (2 and 4 players see each other walk; `tools/test_coop.sh`, 0 units off at the end).
+- Lesson: `System_timer` is not counted by the PC's `rt_sys_tick` (the PS2 Scheduler counts it every frame); game code
+  keyed on it (`pl_move_sub`'s kind-2 send) never fires. Counted only during a co-op quest for now so single player
+  stays tick-identical; worth checking what else reads it.
+- Lesson: headless instances run as fast as they can; co-op ticks are paced to 30/s so the players stay together.
+- Next: monsters (netsyn10/11 + `Em_Master_Change` hand-over), sys channel (quest clear/fail/timer), supply box,
+  remote look (mini data) and weapons.

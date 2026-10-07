@@ -61,6 +61,7 @@ static hsock lsock = HS_BAD;        /* host: listening socket */
 static PEER peer[NP_MAX];           /* host: [slot] for joiners (slot 0 unused); joiner: [0] = the host */
 static int my_slot, nplayers = 1, quest, started;
 static uint16_t weapons[NP_MAX];
+static int gone[NP_MAX];           /* players who left (or whose connection broke) */
 
 /* received game packets, in order */
 #define QCAP 512
@@ -83,8 +84,11 @@ static void nodelay(hsock s)
     setsockopt(s, IPPROTO_TCP, TCP_NODELAY, (const char *)&one, sizeof one);
 }
 
+static void relay(const uint8_t *f, int len, int except);
+static int frame(uint8_t *out, int from, int type, const void *d, int n);
 static void drop(PEER *p, const char *why)
 {
+    int was_up = p->up;
     if (p->fd != HS_BAD)
         hs_close(p->fd);
     p->fd = HS_BAD;
@@ -92,6 +96,17 @@ static void drop(PEER *p, const char *why)
         fprintf(stderr, "net_peer: connection closed (%s)\n", why);
     p->up = 0;
     p->rxn = 0;
+    if (was_up && role == 1 && p != &peer[0]) {     /* host: a joiner left; tell the others */
+        int s = (int)(p - peer);
+        uint8_t f[4];
+        gone[s] = 1;
+        relay(f, frame(f, s, NP_BYE, NULL, 0), s);
+    } else if (was_up && role == 2) {               /* joiner: the host is gone, and with it everyone */
+        int s;
+        for (s = 0; s < NP_MAX; s++)
+            if (s != my_slot)
+                gone[s] = 1;
+    }
 }
 
 /* send all of buf (blocking briefly: frames are small and the link is local) */
@@ -192,6 +207,8 @@ static void handle(int src, int from, int type, const uint8_t *d, int n)
         break;
     case NP_BYE:
         fprintf(stderr, "net_peer: player %d left\n", from);
+        if (from >= 0 && from < NP_MAX)
+            gone[from] = 1;
         break;
     default:
         enqueue(from, type, d, n);
@@ -228,6 +245,8 @@ static void read_peer(int src)
             if (p->rxn < len + 2)
                 break;
             handle(src, p->rx[2], p->rx[3], p->rx + 4, len - 2);
+            if (!p->up)         /* the frame closed the connection (a goodbye) */
+                return;
             memmove(p->rx, p->rx + len + 2, p->rxn - (len + 2));
             p->rxn -= len + 2;
         }
@@ -405,6 +424,7 @@ int np_players(void) { return nplayers; }
 int np_started(void) { return started; }
 int np_quest(void) { return quest; }
 int np_weapon(int slot) { return slot >= 0 && slot < NP_MAX ? weapons[slot] : 0; }
+int np_gone(int slot) { return slot >= 0 && slot < NP_MAX && gone[slot]; }
 int np_connected(int slot)
 {
     if (role == 1)
@@ -419,6 +439,7 @@ void np_close(void)
     for (s = 0; s < NP_MAX; s++)
         if (peer[s].up) {
             send_all(&peer[s], f, frame(f, my_slot, NP_BYE, NULL, 0));
+            peer[s].up = 0;
             drop(&peer[s], "closing");
         }
     if (lsock != HS_BAD)

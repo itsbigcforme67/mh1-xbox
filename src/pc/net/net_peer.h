@@ -22,5 +22,6 @@ int np_started(void);
 int np_quest(void);
 int np_weapon(int slot);
 int np_connected(int slot);
+int np_gone(int slot);                  /* that player left the session */
 void np_close(void);
 #endif
