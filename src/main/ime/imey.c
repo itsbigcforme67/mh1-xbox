@@ -470,49 +470,98 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int ToUpper(int c)
+int add_kana_buf(u8 *s)
 {
-    int u;
+    KANA *kb;
+    u8 *us;
+    int len;
+    int bytes;
+    int lead;
+    int code;
+    int c;
 
-    u = c & 0xFF;
-    if (u >= 0x61 && u < 0x7B) {
-        return (u - 0x20) & 0xFF;
+    kb = pkana_buf;
+    lead = 0;
+    us = p_ustr;
+    len = kana_len;
+    bytes = bytesin_kana_buf(kana_buf, kb);
+    while ((c = *s) != 0) {
+        if (lead != 0) {
+            code = ask_sjis2jis((((lead & 0xFFFF) << 8) | (c & 0xFF)) & 0xFFFF) & 0xFFFF;
+            if (code != 0) {
+                if (len >= 0x24 || bytes >= 0x4E) {
+                    return -1;
+                }
+                kb->ch = code;
+                kb->n = 2;
+                kb++;
+                *us = to_ucode(code);
+                len++;
+                us++;
+                bytes += 2;
+            }
+            lead = 0;
+        } else if (is_kanji(c) != 0) {
+            lead = *s;
+        } else {
+            if ((*s >= 0x20 && *s < 0x7F) || (*s >= 0xA0 && *s < 0xE0)) {
+                if (len >= 0x24 || bytes >= 0x4F) {
+                    return -1;
+                }
+                kb->ch = *s;
+                len++;
+                bytes++;
+                kb->n = 1;
+                lead = 0;
+                *us = 0;
+                kb++;
+                us++;
+            }
+        }
+        s++;
     }
-    return c;
+    pkana_buf = kb;
+    ekana_buf = kb;
+    kana_len = len;
+    p_ustr = us;
+    e_ustr = us;
+    return len;
 }
 
-u8 *getrda2(u16 *a, u16 *b)
+static int bytesin_kana_buf(KANA *a, KANA *b)
 {
-    u8 *p;
-    int n;
-    u16 *q;
-    int k;
-    int len;
+    int r = 0;
 
-    n = b - a;
-    p = rmspec;
-    while (*p != 0) {
-        len = *p;
-        p++;
-        if (n == len) {
-            q = a;
-            k = n;
-            while (k > 0) {
-                if (*p != (ToUpper(*(u8 *)q++) & 0xFF)) {
-                    break;
-                }
-                k--;
-                p++;
-            }
-            if (k == 0) {
-                return p;
-            }
-            p += k;
+    for (; a < b; a++) {
+        if (a->ch & 0xFF00) {
+            r += 2;
         } else {
-            p += len;
-        }
-        while (*p++ != 0) {
+            r += 1;
         }
     }
-    return 0;
+    return r;
+}
+
+int count_byte_kana_buf(int a, int n)
+{
+    KANA *p = &kana_buf[a];
+    int r = 0;
+
+    while (n > 0) {
+        r += p->n;
+        n--;
+        p++;
+    }
+    return r;
+}
+
+int api_funcent(int *req)
+{
+    int cmd;
+
+    cmd = *req;
+    if (cmd <= 0 || (u32)cmd > 0x3F) {
+        return -1;
+    }
+    return D_0034ABEC[cmd]((u8 *)req + 4);
 }

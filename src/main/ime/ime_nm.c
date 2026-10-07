@@ -1865,9 +1865,8 @@ int dic_learn(u64 id, int code, u64 *list, int n)
     int rt;
     int page;
     int c;
-    int istmp;
     u8 *base;
-    u8 *e;
+    u8 *p;
 
     if (gaku_mode == 0) {
         return 3;
@@ -1889,8 +1888,8 @@ int dic_learn(u64 id, int code, u64 *list, int n)
         return 0;
     }
     c = code & 0xFFFF;
-    istmp = c & 0x8000;
-    if (istmp != 0) {
+    code = c & 0x8000;
+    if (code != 0) {
         if (tmp == -1) {
             return 0;
         }
@@ -1902,21 +1901,20 @@ int dic_learn(u64 id, int code, u64 *list, int n)
         base = load_page(page, -1) + off;
     }
     rt = get_maxtime(list, n);
-    e = base + (c & 0xFFFF7FFF);
-    if (e[1] != 0 && e[1] == rt) {
-        if (istmp != 0) {
+    p = base + (c & 0xFFFF7FFF) + 1;
+    if (*p != 0 && (*p & 0xFF) == rt) {
+        if (code != 0) {
             shift_temp(tmp);
             update_nowtmp();
         }
         return 3;
     }
-    rt = rt + 1;
-    if (rt == 0xFF) {
+    if (++rt == 0xFF) {
         clear_allrtime(list, n);
         rt = 1;
     }
-    e[1] = rt;
-    if (istmp != 0) {
+    *p = rt;
+    if (code != 0) {
         shift_temp(tmp);
         update_nowtmp();
     } else {
@@ -2106,7 +2104,7 @@ int dic_delete(WD *w)
         klen = e[2];
         c = ask_strncmp(e + 3, buf, klen);
         if (c == 0) {
-            if (klen == w->len) {
+            if ((s16)klen == w->len) {
                 none = 0;
                 break;
             }
@@ -2135,7 +2133,7 @@ int dic_delete(WD *w)
 
 int delwd(u8 *ent, WD *w)
 {
-    u8 buf[0x50];
+    u8 buf[0x80];
     int len;
     int tot;
     int n;
@@ -2153,11 +2151,12 @@ int delwd(u8 *ent, WD *w)
     p = ent + ent[2] + 3;
     start = p;
     while (p < end) {
-        q = p + 2;
-        if (p[2] < 0xC) {
-            q++;
+        p += 2;
+        if (*p < 0xC) {
+            p++;
         }
-        p = next_wd(q, end);
+        q = p;
+        p = next_wd(p, end);
         cl = p - q;
         if (*start == w->x07 && cl == len && ask_strncmp(q, buf, cl) == 0) {
             break;

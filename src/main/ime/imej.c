@@ -470,69 +470,83 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void clear_rtime(u8 *ent)
+u8 *end_page(u8 *p)
 {
-    u8 *end;
-    u8 *p;
+    int n;
 
-    end = ent + ELEN(ent);
-    p = ent + ent[2] + 3;
-    if (p < end) {
-        do {
-            p[1] = 0;
-            p += 2;
-            if (*p < 0xC) {
-                p++;
-            }
-            p = next_wd(p, end);
-        } while (p < end);
+    n = ELEN(p);
+    while (n != 0) {
+        p += n;
+        n = ELEN(p);
     }
+    return p;
 }
 
-void clear_allrtime(u64 *list, int n)
+void shiftpage(u8 *from, u8 *end, int d)
 {
-    int off;
-    int tmp;
-    int unused;
-    int page;
-    int i;
-    int r;
-
-    for (i = 0; i < n; i++) {
-        page = r = get_entid_tab(list[i], &off, &tmp, &unused);
-        if (r != -1) {
-            if (off != -1) {
-                clear_rtime(load_page(page, -1) + off);
-                update_nowpage();
-            }
-            if (tmp != -1) {
-                clear_rtime(load_temp(tmp));
-                update_nowtmp();
-            }
+    if (d > 0) {
+        end--;
+        while (end >= from) {
+            end[d] = *end;
+            end--;
+        }
+    } else if (d < 0) {
+        while (from < end) {
+            from[d] = *from;
+            from++;
         }
     }
 }
 
-int max_rtime(u8 *ent)
+int dic_delete(WD *w)
 {
-    int m;
+    int c;
+    int d;
+    int r;
+    s16 klen;
+    u8 buf[0x50];
+    u8 *e;
     u8 *end;
-    u8 *p;
+    int none;
 
-    end = ent + ELEN(ent);
-    p = ent + ent[2] + 3;
-    m = 0;
-    if (p < end) {
-        do {
-            if (m < p[1]) {
-                m = p[1];
-            }
-            p += 2;
-            if (*p < 0xC) {
-                p++;
-            }
-            p = next_wd(p, end);
-        } while (p < end);
+    none = 1;
+    if (dic_fd == -1) {
+        return -3;
     }
-    return m;
+    if (dic_rw == 0x8000) {
+        return -6;
+    }
+    strncpy(buf, w->yomi, w->len);
+    buf[w->len] = 0;
+    e = load_page(srch_page(buf));
+    end = end_page(e);
+    while (e < end) {
+        klen = e[2];
+        c = ask_strncmp(e + 3, buf, klen);
+        if (c == 0) {
+            if ((s16)klen == w->len) {
+                none = 0;
+                break;
+            }
+        } else if (c > 0) {
+            break;
+        }
+        e += ELEN(e);
+    }
+    if (none != 0) {
+        return 0;
+    }
+    r = delwd(e, w);
+    if (r == 0) {
+        return 0;
+    }
+    if (r == -1) {
+        d = ELEN(e);
+        shiftpage(e + d, end + 2, -d);
+    } else {
+        shiftpage(e + ELEN(e) + r, end + 2, -r);
+    }
+    init_entid_tab();
+    update_nowpage();
+    return 3;
 }

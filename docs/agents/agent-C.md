@@ -1313,7 +1313,8 @@ prototype of the same name exists earlier in the file), tools/declhill2.py in th
 nm file: never `git add src/main/ime` while one is running, use `git add -u`).
 Matched this round (all inside ime_nm.c, linked through relinked runs; rebuild OK): shiftpage, set_entid_tab, upd_record, ins_wds, page_gc,
 read_temp, unify_khmem, sstrtom, kouho_set_num, set_num, read_head, FAskRom_Seek, add_prevwd, syn_match, all_kouho, init_kouho,
-dic_get1wd, dic_getallwd, getallwd, get1wd, api_select, create_kouho, goku_connect, to_hankaku, plus k_HitWallCamera (cam/camr7.c).
+dic_get1wd, dic_getallwd, getallwd, get1wd, api_select, create_kouho, goku_connect, to_hankaku, add_kana_buf, first_kouho, get_kouholist,
+free_chmemlist, dic_learn, dic_delete, plus k_HitWallCamera (cam/camr7.c) and the two empty functions (sys/empty_23E4E0.c).
 Lessons (function that shows it):
 - Reuse a parameter instead of a new local when the original does: shiftpage (`end--; while (end >= from) { end[d] = *end; end--; }`, no
   `s`), upd_record (`add += old; r[0] = ...; r += old;`, no q/total), ins_wds (`u8 *rt` param reused as the backwards cursor: `rt = end - 1`;
@@ -1326,7 +1327,8 @@ Lessons (function that shows it):
 - Callee with MORE parameters than the m2c call showed: the original passes t0/t1/t2 (5th-7th args). dic_get1wd/dic_getallwd call get1wd/getallwd
   with (&best, out, tag), create_kouho takes a 5th `KH **tail` (stores the last node), dic_getallwd(id, a, b, buf, int *cnt_out). Look at
   `daddu t0,..` / `sw ..,16(sp)` before a jal in `check.py -v` whenever a caller "looks right" but the frame is too small.
-- Frame too small by 48: an `u8 key[0x20]` buffer that must be `[0x50]` (dic_getsyn, dic_snssyn).
+- Frame too small by 48: an `u8 key[0x20]` buffer that must be `[0x50]` (dic_getsyn, dic_snssyn); dic_delete/dic_touroku buf[0x30] -> [0x50], delwd buf -> [0x80].
+  dic_learn: `istmp` was the `code` parameter reused, `e[1]` a pointer `p = base + (c & 0x7FFF) + 1`, `if (++rt == 0xFF)`.
 - LOCAL (static) callees: docs/survey/mh1_symbols.csv has the bind column. A leaf `static` callee defined earlier in the TU (g2jodo, getbit) lets
   the caller keep a1/a3 across the call (goku_connect 74 -> 3 after `static`). The nm file now has `static` on add_prevwd, getbit, g2jodo,
   kh_merge_getone, kh_append_init, kh_append, kouho_set_num, bytesin_kana_buf, get_kouhostr, ins_bsmem, exist_kouho.
@@ -1348,7 +1350,7 @@ Lessons (function that shows it):
   `u8 hit` -> `int hit; if ((u8)hit != 0)` produced the original andi. (camr5_nm.c is in the PC build: same logic, kept in sync.)
 - THE `pcpyld` MYSTERY IS SOLVED: `addiu v0,zero,-1 ; pcpyld v0,zero,v0 ; bne/beq x,v0` (the `.word` in check.py output) is a 64-bit compare of an UNSIGNED 64-bit
   value with -1. Declare the field/variable `unsigned long long` (u64), not s64: `if (pw->id != -1)` on a `u64 id`. With s64 MWCC emits a plain `addiu -1`/`nor`.
-  Fixed by it: get_kouholist, first_kouho, free_chmemlist (PW.id and CH.id are u64; wdsbuf stays s64 because it is also passed around as s64 *).
+  Fixed by it: get_kouholist, first_kouho, free_chmemlist, dic_learn (which also needed `get_entid_tab(id, &off, &tmp, &rt)` and `id == -1`) (PW.id and CH.id are u64; wdsbuf stays s64 because it is also passed around as s64 *).
   Also add_dummy_chmem (`c->id = -1`, CH.id u64), kh_learn (prev/last locals u64). Probably every other `.word` before a `bne x,-1` in the old notes.
 - Shared `goto none` tail: when several failure branches all end in the same `kh = null_kouho(len)` the original has ONE block laid out right after the first
   test (null case first, then the loop): `if (b == (BS *)-1) { none: h->kh = null_kouho(len); } else { ...; if (bad) goto none; ... }` (first_kouho, get_kouholist).

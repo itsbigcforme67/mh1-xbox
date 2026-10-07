@@ -678,3 +678,136 @@ u8 *ins_wds(u8 *p, u8 *rt, int len, int total)
     }
     return p;
 }
+
+int dic_learn(u64 id, int code, u64 *list, int n)
+{
+    int off;
+    int tmp;
+    int rt;
+    int page;
+    int c;
+    u8 *base;
+    u8 *p;
+
+    if (gaku_mode == 0) {
+        return 3;
+    }
+    if (dic_fd == -1) {
+        return -3;
+    }
+    if (id == -1) {
+        c = code & 0xFFFF;
+        if (c >= 0 && c < 4) {
+            suji_mode = c;
+            clear_allrtime(list, n);
+            update_entid_rtime(list, n, 0);
+            return 3;
+        }
+    }
+    page = get_entid_tab(id, &off, &tmp, &rt);
+    if (page == -1) {
+        return 0;
+    }
+    c = code & 0xFFFF;
+    code = c & 0x8000;
+    if (code != 0) {
+        if (tmp == -1) {
+            return 0;
+        }
+        base = load_temp(tmp, -1);
+    } else {
+        if (off == -1) {
+            return 0;
+        }
+        base = load_page(page, -1) + off;
+    }
+    rt = get_maxtime(list, n);
+    p = base + (c & 0xFFFF7FFF) + 1;
+    if (*p != 0 && (*p & 0xFF) == rt) {
+        if (code != 0) {
+            shift_temp(tmp);
+            update_nowtmp();
+        }
+        return 3;
+    }
+    if (++rt == 0xFF) {
+        clear_allrtime(list, n);
+        rt = 1;
+    }
+    *p = rt;
+    if (code != 0) {
+        shift_temp(tmp);
+        update_nowtmp();
+    } else {
+        update_nowpage();
+    }
+    update_entid_rtime(list, n, rt);
+    return 3;
+}
+
+void clear_rtime(u8 *ent)
+{
+    u8 *end;
+    u8 *p;
+
+    end = ent + ELEN(ent);
+    p = ent + ent[2] + 3;
+    if (p < end) {
+        do {
+            p[1] = 0;
+            p += 2;
+            if (*p < 0xC) {
+                p++;
+            }
+            p = next_wd(p, end);
+        } while (p < end);
+    }
+}
+
+void clear_allrtime(u64 *list, int n)
+{
+    int off;
+    int tmp;
+    int unused;
+    int page;
+    int i;
+    int r;
+
+    for (i = 0; i < n; i++) {
+        page = r = get_entid_tab(list[i], &off, &tmp, &unused);
+        if (r != -1) {
+            if (off != -1) {
+                clear_rtime(load_page(page, -1) + off);
+                update_nowpage();
+            }
+            if (tmp != -1) {
+                clear_rtime(load_temp(tmp));
+                update_nowtmp();
+            }
+        }
+    }
+}
+
+int max_rtime(u8 *ent)
+{
+    int m;
+    u8 *end;
+    u8 *p;
+
+    end = ent + ELEN(ent);
+    p = ent + ent[2] + 3;
+    m = 0;
+    if (p < end) {
+        do {
+            if (m < p[1]) {
+                m = p[1];
+            }
+            p += 2;
+            if (*p < 0xC) {
+                p++;
+            }
+            p = next_wd(p, end);
+        } while (p < end);
+    }
+    return m;
+}
