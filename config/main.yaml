@@ -1785,7 +1785,6 @@ segments:
       - [0x162A90, c, sk/cmd01]
       - [0x162D10, c, sk/cmd07]
       - [0x162E50, c, sk/cmd02]
-      - [0x163140, asm, text/Set_KouhoTableSub]
       - [0x1633A0, c, sk/cmd06]
       - [0x163554, asm, text/cmd_prev_kouho]
       - [0x163560, c, sk/cmd05]
