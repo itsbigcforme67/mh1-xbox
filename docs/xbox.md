@@ -39,7 +39,7 @@ records every compile command, then replay the `-c` commands with `nxdk-cc`
 sysroot, SDL include path, -g, -fno-aggressive-loop-optimizations). Objects in
 build/xbox/obj (gitignored). Result, 7 Oct 2026:
 
-- 706 of 708 files compile: all game C the PC links (main, game, lobby, select
+- 699 of 701 files compile (after main merged the lobby-client files into f/lb_cli.c): all game C the PC links (main, game, lobby, select
   overlays, matched and near-match files, ABI patch copies) and the PC runtime
   glue. The struct-size checks in src/pc/rt/rt_game.c (PLW 0xA00, GAME_W
   0x224, CLAY 0x8C, SETW/PRIM/STAGE_WORK offsets) pass under the MSVC-style
