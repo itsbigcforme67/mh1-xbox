@@ -75,6 +75,10 @@ int rt_np_arg(int argc, char **argv, int *i)
             want_addr = argv[++*i];
         return 1;
     }
+    if (!strcmp(a, "--coop")) {         /* ask in dialogs */
+        want_role = 3;
+        return 1;
+    }
     if (!strcmp(a, "--join") && *i + 1 < argc) {
         want_role = 2;
         want_addr = argv[++*i];
@@ -96,6 +100,7 @@ int rt_np_arg(int argc, char **argv, int *i)
 int rt_np_wanted(void) { return want_role; }
 
 
+
 /* The Elder's offline quests, as the port has played them (docs/pc.md "All offline quests
  * played"; goals as the port's tests read them from the mission files, monster kinds by
  * their em number). Shown when --host is given without --quest. */
@@ -114,7 +119,7 @@ static const struct { int no, stars; const char *goal; } quests[] = {
     { 168, 5, "Vespoid + Plesioth" }, { 171, 5, "Monoblos" },
 };
 
-static int ask_quest(void)
+static int quest_list_ask(void)
 {
     char line[64];
     int k, q;
@@ -130,6 +135,86 @@ static int ask_quest(void)
         return 0;
     }
     return q;
+}
+
+/* --coop: ask host / join, the quest, the players or the host's address in small OS dialogs
+ * (zenity or kdialog on Linux; the fixed command lines below never contain what the player
+ * typed). Without either tool, or on Windows, the console asks instead. 0 = cancelled. */
+#ifndef _WIN32
+static int run_dialog(const char *cmd, char *out, int max)
+{
+    FILE *f = popen(cmd, "r");
+    int n = 0;
+    if (!f)
+        return -1;
+    if (fgets(out, max, f))
+        n = (int)strlen(out);
+    while (n > 0 && (out[n - 1] == '\n' || out[n - 1] == '\r'))
+        out[--n] = 0;
+    return pclose(f) == 0 ? n : -1;
+}
+static int have_tool(const char *t)
+{
+    char cmd[64];
+    snprintf(cmd, sizeof cmd, "command -v %s >/dev/null 2>&1", t);
+    return system(cmd) == 0;
+}
+#endif
+static char ask_addr[64];
+static int ask_coop(int *quest_no)
+{
+    char line[64];
+#ifndef _WIN32
+    int z = have_tool("zenity"), kd = !z && have_tool("kdialog");
+    if (getenv("RT_NO_GUI"))
+        z = kd = 0;
+    if (z || kd) {
+        char cmd[8192];
+        int k, n;
+        if (run_dialog(z ? "zenity --list --title='MH1 co-op' --text='Play a quest together' --column=Choice 'Host a quest' 'Join a host' 2>/dev/null"
+                         : "kdialog --title 'MH1 co-op' --menu 'Play a quest together' host 'Host a quest' join 'Join a host' 2>/dev/null",
+                       line, sizeof line) <= 0)
+            return 0;
+        if (line[0] == 'H' || line[0] == 'h') {
+            n = snprintf(cmd, sizeof cmd, z ? "zenity --list --title='MH1 co-op: quest' --height=600 --column=Quest --column=Stars --column=Goal"
+                                            : "kdialog --title 'MH1 co-op: quest' --menu 'The quest everyone plays'");
+            for (k = 0; k < (int)(sizeof quests / sizeof quests[0]); k++)
+                n += snprintf(cmd + n, sizeof cmd - n, z ? " %d %d '%s'" : " %d '%d* %s'", quests[k].no, quests[k].stars, quests[k].goal);
+            snprintf(cmd + n, sizeof cmd - n, " 2>/dev/null");
+            if (run_dialog(cmd, line, sizeof line) <= 0)
+                return 0;
+            *quest_no = atoi(line);
+            if (run_dialog(z ? "zenity --scale --title='MH1 co-op' --text='Players (you included)' --min-value=2 --max-value=4 --value=2 2>/dev/null"
+                             : "kdialog --title 'MH1 co-op' --menu 'Players (you included)' 2 2 3 3 4 4 2>/dev/null", line, sizeof line) > 0)
+                want_players = atoi(line) < 2 ? 2 : atoi(line) > 4 ? 4 : atoi(line);
+            return 1;
+        }
+        if (run_dialog(z ? "zenity --entry --title='MH1 co-op' --text=\"The host computer's LAN address (e.g. 192.168.1.20)\" --entry-text=127.0.0.1 2>/dev/null"
+                         : "kdialog --title 'MH1 co-op' --inputbox 'The host computer LAN address (e.g. 192.168.1.20)' 127.0.0.1 2>/dev/null",
+                       ask_addr, sizeof ask_addr) <= 0)
+            return 0;
+        want_addr = ask_addr;
+        return 2;
+    }
+#endif
+    fprintf(stderr, "Co-op: (h)ost a quest or (j)oin a host? ");
+    if (!fgets(line, sizeof line, stdin))
+        return 0;
+    if (line[0] == 'h' || line[0] == 'H') {
+        *quest_no = quest_list_ask();
+        fprintf(stderr, "players (2-4, Enter = 2): ");
+        if (fgets(line, sizeof line, stdin) && atoi(line) >= 2 && atoi(line) <= 4)
+            want_players = atoi(line);
+        return *quest_no ? 1 : 0;
+    }
+    fprintf(stderr, "host address (Enter = 127.0.0.1): ");
+    if (!fgets(ask_addr, sizeof ask_addr, stdin))
+        return 0;
+    ask_addr[strcspn(ask_addr, "\r\n")] = 0;
+    if (!ask_addr[0])
+        strcpy(ask_addr, "127.0.0.1");
+    want_addr = ask_addr;
+    return 2;
 }
 
 /* This player's mini data (Lb_set_mini_data's layout, lb_village_nm.c; docs/network.md 1a):
@@ -190,10 +275,15 @@ int rt_np_setup(int quest_no)
     int wait_s = getenv("RT_NP_WAIT") ? atoi(getenv("RT_NP_WAIT")) : 300, t;
     if (!want_role)
         return 0;
+    if (want_role == 3) {
+        want_role = ask_coop(&quest_no);
+        if (!want_role)
+            return -1;
+    }
     make_mini(mini);
     if (want_role == 1) {
         if (!quest_no)
-            quest_no = ask_quest();     /* the list on the console */
+            quest_no = quest_list_ask();    /* the list on the console */
         if (!quest_no) {
             fprintf(stderr, "co-op: --host needs a quest (--quest N, or pick one from the list)\n");
             return -1;

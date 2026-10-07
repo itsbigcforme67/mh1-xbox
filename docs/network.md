@@ -17,7 +17,7 @@ known MH Oldschool addresses and every public address (see "Safety"). All develo
 | Server | `tools/mh1_testserver.py`, Python standard library only, listens on 127.0.0.1, written from the client code (section 5) |
 | Test | `tools/test_online.sh` (about 12 s, headless): connect by address and by name, login, mini data, login finish, top information, current place, plaza list and plaza entry, lobby list and lobby entry, lobby member list, logout, then two clients at once with join / leave notices and chat, and three refused destinations |
 | Furthest point | inside a lobby: member list, notices, chat. Not reached: rooms, matching, a game session, patches, the portal web pages (section 7) |
-| Co-op (direct connect) | `--host` / `--join IP`: 2-4 players on one quest stage see each other walk (section 3.4, `tools/test_coop.sh`). Monsters, quest results and the supply box are not shared yet |
+| Co-op (direct connect) | `--coop` (dialogs) or `--host` / `--join IP`: 2-4 players hunt one quest together: hunters with their armour and weapons, shared monsters (one machine owns each, the others follow its packets), kills, quest clear, the host-decided supply box (section 3.4, `tools/test_coop.sh`) |
 
 What "reaches the lobby" means here, honestly: the headless test (`--nettest`, `src/pc/rt/rt_net.c`) calls the
 game's `cnLBS_*` functions in the order the lobby UI (`src/lobby/f/lb_cli.c`: `lbc_login_init`, `lbc_login_*`,
@@ -332,41 +332,50 @@ is exactly "return 1 at once", which `net_dnas.c` does. The internal `sceDNAS2*`
 
 ### 3.4 Co-op over direct connect (agent E, 7 Oct 2026, round 2)
 
-Milestones M1 (two players see each other walk on a quest stage) and M2 (four players) are reached, tested headless on
-127.0.0.1. M3 (a whole hunt with shared monster health) is not started. Why it is built this way: section 1a.
+Milestones M1 (two players see each other walk on a quest stage), M2 (four players) and M3 (a whole hunt to the clear
+with shared monster health) are reached, tested headless on 127.0.0.1 (round 3 added M3). Why it is built this way:
+section 1a.
 
 Run it (ONLINE=1 build only):
 
     build/pc/mhview_online disc/mh1 --host --quest 131 --players 2      # host: waits for 1 more player, then starts
     build/pc/mhview_online disc/mh1 --join 192.168.1.20                  # a joiner, by the host's LAN address
+    build/pc/mhview_online disc/mh1 --coop                               # asks host / join, quest, players or address
 
 | Option | |
 |---|---|
 | `--host [IP]` | host the quest; listens on 127.0.0.1, or on the given private LAN address of this machine. Without `--quest` it prints the Elder's quests on the console and asks for a number |
+| `--coop` | ask in small dialogs (zenity, else kdialog; on Windows or without them, on the console): host or join, then the quest and the number of players, or the host's address |
 | `--join IP` | join the host at IP (loopback or private addresses only; MH Oldschool and public addresses are refused) |
 | `--port N` | TCP port, default 10300 (both sides) |
 | `--players N` | host: start when N players (2-4) are in; after `RT_NP_WAIT` seconds (default 300) it starts with whoever came |
-| `RT_WEAPON=id` | each player's weapon (Ken_data id), sent to the others at joining |
-| `RT_NP_TRACE=1`, `RT_NP_POS=n` | test aids: every packet; every player's position, angle and action every n ticks |
+| `RT_WEAPON=id` | the player's weapon (Ken_data id), sent to the others in the mini data |
+| `RT_PL_LOOK=sex,face,hair,legs,head,body,arms,waist[,hair colour]` | the player's look and armour (Armor_*_Data rows; default male, armour 5): co-op starts without a save yet |
+| `RT_NP_TRACE=1`, `RT_NP_POS=n`, `RT_NP_EM=n` | test aids: every packet; every player's position, action, the box bits and first pouch slot; every monster's HP, owner and action, every n ticks |
 
 What happens:
 
-1. `net_peer.c`: joiners open one TCP connection to the host and send their weapon. The host gives each joiner the next
-   slot (1-3, joining order), then sends everyone the quest number, the player count and every slot's weapon. After that the
+1. `net_peer.c`: joiners open one TCP connection to the host and send their mini data (the 0x18 used bytes, as
+   `Lb_set_mini_data` lays them out: weapon, sex, face, hair, armour). The host gives each joiner the next slot (1-3,
+   joining order), then sends everyone the quest number, the player count and every slot's mini data. After that the
    host passes each frame on to the other joiners and hands it to its own game (as Capcom's game server relayed records).
    Frames: `u16 n, u8 sender slot, u8 type`, then the game's packet; type 1-10 is the AQ channel.
 2. `rt_np.c`: `rt_player_game_init` -> `rt_np_init_slots` does what `Game_task` step 3 and `init_pl_work` do online:
-   `game_w.master` = this machine's slot, `pl_num`, `pl_state[]`, the other slots' player works (`be_flag`, `id`, stage,
-   weapon), the network delay `game_w+0x1B0` = 2 frames, and switches `Online_ck()` on. `pl_init` then initialises every
-   slot.
+   `game_w.master` = this machine's slot, `pl_num`, `pl_state[]`, the other slots' player works (`be_flag`, `id`, stage),
+   every slot's equipment and look from its mini data (as `Set_mini_data_to_pl`), the HUD's own hunter (`lpPit->pl`), the
+   same random seed on every machine, the network delay `game_w+0x1B0` = 2 frames, and switches `Online_ck()` on.
+   `pl_init` then initialises every slot, `armor_create_model` builds every hunter's look, and a start barrier (what
+   `net_start_ck` does in `game13`) waits until every player has loaded.
 3. Sending is the game's own: `net_send_pl` (netsyn01.c) builds the packet and calls `AQ_data_put`, which on the PC goes to
    the transport. The local hunter sends kind 3 at start, kind 1 on every action change, kind 2 every 20 ticks
    (`System_timer % 20 == slot`; the PC now counts `System_timer` during a co-op quest).
-4. Receiving: each tick before the players move, `rt_np_tick` takes the frames and calls the game's `net_receive_pl`
-   (netsyn02_nm.c) for channels 1-4, as `self_data_ctrl` does. The remote hunter then replays the action (`Pl_act_set`),
+4. Receiving: each tick before the players move, `rt_np_tick` takes the frames and dispatches them as `self_data_ctrl`
+   does: `net_receive_pl` (netsyn02_nm.c) for channels 1-4, `net_receive_host` (netsyn05.c) for 7, `net_receive_em`
+   (netsyn11_nm.c) for 8, `net_receive_sys` (netsyn09.c) for 10. A machine's own channel-7 packets come back to it too
+   (mcsls loops a player's own data back; the host answers its own supply-box requests that way). The remote hunter then replays the action (`Pl_act_set`),
    turns toward the sent angle and slides to the sent position (`Pl_adj_calc` / `Pl_pos_adj`).
-5. The viewer draws the other hunters on this player's area (`remote_hunters`), posed by the game's motion player, and
-   gives the game C their joint matrices. The local hunter is `player_work[game_w.master]` (`lp` in viewer.c), no longer
+5. The viewer draws the other hunters on this player's area (`remote_hunters`) in their own armour, with their weapons,
+   posed by the game's motion player, and gives the game C their joint matrices. The local hunter is `player_work[game_w.master]` (`lp` in viewer.c), no longer
    always slot 0.
 6. A co-op quest runs at 30 ticks a second also headless (otherwise test instances run at different speeds). A player
    whose connection ends gets `pl_state = 0xFF` and is hidden (the host tells the others).
@@ -378,17 +387,41 @@ arrows, the other hunters are drawn). Also: a joiner leaving early, and refusals
 and `--host 8.8.8.8`. While a hunter runs and turns, the others see it up to a few hundred units off for up to 20 ticks
 (only kind 2 corrects the position); this is how the PS2 code works too, not measured against a PS2.
 
-Not done yet (M3 and polish), in the order they matter:
-* **Monsters are not shared**: each machine runs its own. `Em_Master_Change` already runs (pl_num > 1) and hands monsters
-  between slots, but `net_send_em` / `net_receive_em` (netsyn10.c, netsyn11_nm.c) are not linked: next step. Same for
-  channel 10 (`net_send_sys` / `net_receive_sys`: quest clear / fail / timer / kills, sys kinds 2-6) and channel 7 (the
-  host's supply box). Those packets are already carried; `rt_np_tick` counts them as unused.
-* The other hunters' **look** is the default armour (no mini data is exchanged; the host's table carries only the weapon),
-  and their **weapon is not drawn**.
-* Area changes: a hunter on another area is hidden; switching areas has not been tested with two players.
-* Connection UI: command line plus the console quest list; no window. The Windows build is untested (Winsock code is in
-  `net_peer.c`).
-* Results after the quest (reward screen, back to the village) are each machine's own.
+**Monsters (M3, round 3).** The game's own scheme, now running: each monster has one owner (`EMW+0x8C3 == 0` on the
+owning machine; `pull_enemy_work` gives every monster to the host at the start). The owner runs its AI and sends kind 1 / 3
+on every action (position, angles, action, **HP**, status flags), the others apply it (`net_receive_em`) and play the
+action. `Em_Master_Change` hands a monster to a player on its area when the owner is not there (or leaves), with kind 4.
+Kills and the quest's events go over the sys channel (`q_net_send_em_die` -> sys 6 code 7, `Quest_net_sub`).
+Finding (confirmed by the tests): damage a non-owner deals to its own copy is overwritten by the owner's next packet;
+what counts is the owner's copy, where the other hunters' attacks are replayed (`Pl_act_set`) and hit there. So a hit
+only lands if it also lands in the owner's replay (the PS2 game works the same way; the replay is 2 frames late).
+Fixed on the way: `netsyn11_nm.c` read HP and four other fields with the wrong width in kinds 3 and 4 (checked against the
+asm; HP as a byte), and used the unnamed `D_642160` (= `em_atk_mode_timer_tbl`); `trans_box` (menu_disp_nm.c, the
+supply-box screen, **single player too**) passed the `item_str` table instead of `item_str[0]` to `sprintf` and overflowed
+its buffer once the cursor slot was empty.
+
+Tested (`tools/test_coop.sh`, about 2 minutes; parts: `2`, `4`, `hunt`, `handover`, `box`):
+* `2` / `4`: as above.
+* `hunt`: quest 137 (one Velocidrome on stage 34). Both players walk 21 -> 39 -> 35 -> 34 (area changes with two players);
+  the host fights with the test aids of test_all_quests (warp next to it, damage x40, no damage taken), the joiner watches.
+  Both machines see the same HP values (500, 180, 0), the host as owner on both, the kill, the clear on the same tick
+  (802 / 803), and each other on stage 34. Screenshots `build/show/coop_hunt_slot*.png` (the joiner's view: its own great
+  sword and armour, the dead Velocidrome, the host).
+* `handover`: the host stays at the camp, the joiner fights: the monster is handed to the joiner (owner slot 1 on both),
+  the host's copy follows the joiner's packets to HP 0, both clear.
+* `box`: the joiner takes the first supply-box item: the host decides (channel 7), the joiner gets it (pouch 142:1), both
+  see the slot taken, the host does not get it.
+
+Not done yet, in the order they matter:
+* Not tested: quest failure and the abandon / timer messages (sys 6 codes 4/10, 5, 0xC), capture, giving items between
+  players (kinds 7/8), a player fainting and the cart, more than one big monster, 3-4 player hunts, a player leaving during
+  a hunt (`Em_Master_Change` should hand his monsters on).
+* The quest timers drift: a player who changes areas more often has the timer stopped longer (stage loading); the game
+  sends its timer every 9000 ticks (5 minutes) and the lower one wins, so they only meet then.
+* A player's equipment comes from `RT_WEAPON` / `RT_PL_LOOK`, not from the save; the reward / village after the quest are
+  each machine's own; no in-quest chat (channel 6); names are "HUNTER n".
+* The zenity / kdialog dialogs were checked for shell syntax only (a run would open windows on the desktop); the console
+  fallback is tested. No Windows dialog (Windows uses the console or the flags); the Winsock path is untested.
 
 ## 4. Run it
 

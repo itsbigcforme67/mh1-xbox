@@ -950,3 +950,12 @@ Scoping and design in docs/network.md sections 1a and 3.4. Short version:
 - Lesson: headless instances run as fast as they can; co-op ticks are paced to 30/s so the players stay together.
 - Next: monsters (netsyn10/11 + `Em_Master_Change` hand-over), sys channel (quest clear/fail/timer), supply box,
   remote look (mini data) and weapons.
+
+### Co-op round 3 (M3)
+- Mini data exchanged (looks + weapons drawn), monsters shared (netsyn10/11_nm linked, ownership hand-over works),
+  sys channel (kills, clear), supply box via the host, start barrier, `--coop` dialogs. Tests: `tools/test_coop.sh`
+  (2, 4, hunt, handover, box).
+- Near-match bugs found by running online code: netsyn11_nm.c load widths (HP read as u8), `trans_box` sprintf arg
+  (single-player crash once the box cursor slot is empty). Lesson: near-matches with the right instruction count can
+  still have wrong load widths; check lb/lh/lbu against the asm when a value looks truncated.
+- Lesson: PC glue that hardcoded `player_work[0]` (test aids, stage sounds, HUD) must use `game_w.master` online.
