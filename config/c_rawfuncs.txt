@@ -111,11 +111,6 @@ main 0x18E3B0 0x80 plmemDeleteBlockList mn
 main 0x16D5C0 0x330 flExecuteClay
 main 0x16ABB0 0x78 fmsInitialize
 main 0x16AC30 0x60 fmsAllocMemory
-lobby 0x005B74C0 0x42C lbc_login_init
-lobby 0x005B9030 0x2BC CallBack_Result_LoginLobbyServer
-lobby 0x005BB070 0x2FC Lbc_ConditionSearch
-lobby 0x005BC150 0x284 Lbc_GetRoomRule
-lobby 0x005BEF30 0x154 lobby_client_admin_message
 main 0x00264180 0x7C HardKeyboard_move
 main 0x00264200 0x5A4 hk_kbd_input
 main 0x002647B0 0x5B8 hk_kbd_input_sub
@@ -125,3 +120,7 @@ main 0x00265FC0 0x114 hk_key_kata_hira
 main 0x00266350 0x330 roma_ck_sub
 main 0x00266B80 0x618 kbd_disp_input
 lobby 0x005BF4F0 0x70 tk_logout_message_sub
+lobby 0x005B9030 0x2BC CallBack_Result_LoginLobbyServer
+lobby 0x005B74C0 0x42C lbc_login_init
+lobby 0x005BEF30 0x154 lobby_client_admin_message
+lobby 0x005BC150 0x284 Lbc_GetRoomRule

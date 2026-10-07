@@ -2242,12 +2242,44 @@ void CallBack_Result_Plaza_ReadLobbyAllocation(CNET_RES res) {
     }
 }
 
-#ifdef __MWERKS__
-asm int Lbc_ConditionSearch()
+typedef struct { char c[0x44]; } CSI;
+s32 Lbc_ConditionSearch(arg0, arg1)
+CSI *arg0;
+int arg1;
 {
-#include "Lbc_ConditionSearch.inc"
+    struct { s8 a; s8 n; u8 p[2]; CSI item[8]; } sp;
+    int i;
+    s8 n;
+    u8 st;
+
+    st = F(u8, (u8 *)cw, 0x2C35);
+    switch (st) {
+    case 0:
+        F(u8, (u8 *)cw, 0x2C35) = st + 1;
+        sp.a = 0x50;
+        i = 0;
+        n = arg1;
+        sp.n = arg1;
+        for (; i < n; i++) {
+            sp.item[i] = *arg0++;
+        }
+        CallBackWaitInit();
+        F(s8, (u8 *)cw, 0x2C45) = 0xA;
+        cnLBS_ConditionSearchUser(&sp, CallBack_Result_ConditionSearchUser);
+        break;
+    case 1:
+        Check_CallBackWait();
+        break;
+    case 2:
+        cnLBS_Get_ConditionSearchUser(&SearchResult);
+        F(u8, (u8 *)cw, 0x2C35) = 0;
+        return 0;
+    case 3:
+        F(u8, (u8 *)cw, 0x2C35) = 0;
+        return 1;
+    }
+    return 2;
 }
-#endif
 
 void CallBack_Result_ConditionSearchUser(CNET_RES res) {
     int temp_a1;
