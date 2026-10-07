@@ -1,3 +1,4 @@
+/* lobby_client_admin_message (0x5BEF30): 7/85 differ: cw reload register. if-chain instead of switch. Not built. */
 #include "lobby_a.h"
 extern char lbc_admin_message_jmp_3260[];
 s32 lobby_client_admin_message(void) {
@@ -15,14 +16,10 @@ s32 lobby_client_admin_message(void) {
         return 0;
     }
     temp_v1 = F(u8, temp_a0, 0x2C31);
-    switch (temp_v1) {                              /* irregular */
-    case 0:
-        return 0;
-    case 5:
-        return 0;
-    case 4:
-        return 0;
-    default:
+    if (temp_v1 == 0) return 0;
+    if (temp_v1 == 5) return 0;
+    if (temp_v1 == 4) return 0;
+    {
         if ((F(u8, temp_a0, 0x35D5) != 0) && ((sx1 = SoftKeyboard_alive_check(temp_a0)) != 0)) {
             return 0;
         }
@@ -32,7 +29,7 @@ s32 lobby_client_admin_message(void) {
         }
         if (F(s8, temp_v1_2, 0x2C30) != 0) {
             F(s8, temp_v1_2, 0x2C30) = 0;
-            F(s8, (u8 *)cw, 0x2F79) = 0xFF;
+            F(u8, (u8 *)cw, 0x2F79) = 0xFF;
             F(u8, (u8 *)cw, 0x2F78) = 0U;
             cnLbc_EraseDialog(0x4C);
         }

@@ -1213,3 +1213,10 @@ More lessons from the same round (each from a function that matched):
   runs (lobby_a/b K&R vs lobby_f ANSI): about 90 call/prototype mismatches remain (e.g. lbc_browser(2) vs `lbc_browser()`, Lbs_MatchStart void vs int)
   and every matched function must be re-verified in the merged file. Not committed to config; run
   `python3 tools/lbtu3.py lb_cli 0x5B7020 0x5BF808 /tmp/cli.c` and `python3 tools/check.py /tmp/cli.c` to continue.
+
+## Round 7 (agent C)
+Matched (rebuild OK): lbc_admin_message_01 (`extern u16 Get_sw2();`, stp/c locals), lbc_admin_message_00 (m2c `x/60 + (x>>31)` is just `x/60`; float prototypes
+cnWrap_SetFontSize(f32)/cnWrap_FontDisp(f32,f32,f32,char *); last case falls out of the switch).
+Misses (15-minute cap): lobby_client_admin_message 7 (if-chain instead of switch fixed 69 -> 7; cw reload lands in a0 instead of v1), check_halfcode 10
+(Split_TagCode() takes no argument; loop end shape), server_select_05 9 (with u16 Get_sw; two branch delay slots the original leaves as nop).
+`extern u16 Get_sw2();` / `Get_sw()` is worth trying first on every function that masks the result.
