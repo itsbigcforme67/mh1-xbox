@@ -15,6 +15,12 @@ NAME=mh1pc-win32-$(date +%Y%m%d)-$HASH
 S=build/release/$NAME
 rm -rf "$S"; mkdir -p "$S/licenses"
 cp build/win/mhview.exe build/win/SDL2.dll build/win/play.bat build/win/bug_report.bat build/win/bug_report.ps1 "$S/"
+# no debug info in a release: it holds the build machine's paths (crash backtraces use the
+# program's own symbol table, rt_host_symname, which stripping keeps)
+STRIP=$(ls "$HOME"/mh1win/llvm-mingw-*/bin/llvm-strip 2>/dev/null | head -1)
+[ -n "$STRIP" ] || { echo "llvm-strip not found in ~/mh1win"; exit 1; }
+"$STRIP" --strip-debug "$S/mhview.exe"
+if strings "$S/mhview.exe" "$S/SDL2.dll" | grep -q "$HOME"; then echo "REFUSED: build paths in the binaries"; exit 1; fi
 cp third_party/libmpeg2/COPYING "$S/licenses/libmpeg2-COPYING.txt"
 cp "$SDLLIC" "$S/licenses/SDL2-LICENSE.txt"
 cat > "$S/licenses/NOTICE-GPL.txt" <<'EOT'
@@ -64,8 +70,9 @@ Bug reports
 
 Credits and legal
   Monster Hunter is (c) CAPCOM CO., LTD. This project is not affiliated with, endorsed by or sponsored by
-  Capcom. No Capcom code or data is included: the program needs your own copy of the game. See the licenses
-  folder (libmpeg2 is GPL, SDL2 is zlib).
+  Capcom. The program is built from C code reconstructed (decompiled) from the Japanese PS2 game; none of
+  the game's data (models, textures, sound, movies, text) is included, so it needs your own copy of the
+  game. See the licenses folder (libmpeg2 is GPL, SDL2 is zlib).
 EOT
 # ---- guard: nothing large, nothing named like game data
 MAXFILE=$((25 * 1024 * 1024)); MAXTOTAL=$((40 * 1024 * 1024)); TOTAL=0
