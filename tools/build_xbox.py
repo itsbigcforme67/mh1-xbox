@@ -52,8 +52,29 @@ def run(job):
     r = subprocess.run(args, capture_output=True, text=True)
     return name, r.returncode, r.stderr
 
+def shaders():
+    """src/pc/xbox/shaders/*.cg -> build/xbox/shaders/*.inl (nxdk's cgc + vp20/fp20compiler)"""
+    out = OUT + '/shaders'
+    os.makedirs(out, exist_ok=True)
+    import platform
+    cgc = NXDK + '/tools/cg/linux/' + ('cgc' if platform.machine() == 'x86_64' else 'cgc.i386')
+    for src in glob.glob('src/pc/xbox/shaders/*.cg'):
+        name, kind = os.path.basename(src).split('.')[:2]
+        prof, conv = ('vp20', 'vp20compiler') if kind == 'vs' else ('fp20', 'fp20compiler')
+        tmp = '%s/%s.%s' % (out, name, prof)
+        subprocess.run([cgc, '-profile', prof, '-o', tmp, src], check=True, capture_output=True)
+        inl = subprocess.run([NXDK + '/tools/%s/%s' % (conv, conv), tmp], check=True, capture_output=True, text=True).stdout
+        open('%s/%s.inl' % (out, name), 'w').write(inl)
+    return out
+
 def main():
+    # --gfx null (default: draws nothing, for a first headless boot) or nv2a (pbkit, gfx_nv2a.c)
+    gfx = sys.argv[sys.argv.index('--gfx') + 1] if '--gfx' in sys.argv else 'null'
+    FRONT[FRONT.index('src/pc/xbox/gfx_null.c')] = 'src/pc/xbox/gfx_%s.c' % gfx
+    dst = OUT if gfx == 'null' else OUT + '/' + gfx      # where main.exe / default.xbe / the ISO go
     os.makedirs(OBJ, exist_ok=True)
+    os.makedirs(dst, exist_ok=True)
+    sdl_extra = ['-I' + shaders()] if gfx == 'nv2a' else []
     jobs = []
     # only the objects the PC build links (build/pc/objs.txt, link order); build/pc
     # can hold stale objects of files no longer built
@@ -73,7 +94,7 @@ def main():
             open(t, 'w').write('void __xtag_%s(void) {}\n' % b.replace('-', '_'))
             args += ['-include', t, '-include', h]
         jobs.append((b, args + ['-include', COMPAT]))
-    sdl = ['-I' + NXDK + '/lib/sdl/SDL2/include', '-DXBOX']
+    sdl = ['-I' + NXDK + '/lib/sdl/SDL2/include', '-DXBOX'] + sdl_extra
     for f in FRONT + ['src/pc/rt/rt_memstat.c']:
         b = 'x_' + os.path.basename(f)[:-2]
         args = ['nxdk-cc', '-std=gnu99', '-O2', '-Iinclude', '-Isrc/pc'] + RELAX + sdl
@@ -94,6 +115,7 @@ def main():
     if bad:
         sys.exit(1)
     objs = ['%s/%s.obj' % (OBJ, j[0]) for j in jobs]
+    objs = [o for o in objs if os.path.basename(o) not in ('x_gfx_null.obj', 'x_gfx_nv2a.obj')] + ['%s/x_gfx_%s.obj' % (OBJ, gfx)]
     nm = subprocess.run(['llvm-nm', '--defined-only', '-g'] + [o for o in objs if 'x_xbox_' not in o], capture_output=True, text=True).stdout
     subprocess.run([sys.executable, 'tools/gen_symtab.py', OUT + '/rt_symtab.c', '--prefix', '_'], input=nm, text=True, check=True)
     subprocess.run(['nxdk-cc', '-O2', '-w', '-c', OUT + '/rt_symtab.c', '-o', OBJ + '/rt_symtab.obj'], check=True)
@@ -102,26 +124,26 @@ def main():
     import coff_weak                            # GNU-ld weak rules for lld-link
     objs, nfix = coff_weak.resolve(objs, OUT + '/linkobj')
     print('coff_weak: %d losing weak definitions made references' % nfix)
-    link = ['nxdk-link', '-include:_automount_d_drive', '-stack:0x100000', '-out:' + OUT + '/main.exe', '-map:' + OUT + '/main.map'] \
+    link = ['nxdk-link', '-include:_automount_d_drive', '-stack:0x100000', '-out:' + dst + '/main.exe', '-map:' + dst + '/main.map'] \
         + objs + [NXDK + '/lib/' + l for l in LIBS]
     r = subprocess.run(link, capture_output=True, text=True)
-    open(OUT + '/link.log', 'w').write(r.stdout + r.stderr)
+    open(dst + '/link.log', 'w').write(r.stdout + r.stderr)
     if r.returncode:
         und = sorted(set(l.split('undefined symbol: ')[1] for l in (r.stdout + r.stderr).splitlines() if 'undefined symbol:' in l))
         print('link failed: %d undefined symbols (build/xbox/link.log): %s' % (len(und), ' '.join(und[:40])))
         sys.exit(1)
-    subprocess.run([NXDK + '/tools/cxbe/cxbe', '-OUT:' + OUT + '/default.xbe', '-TITLE:MH1 port', OUT + '/main.exe'],
+    subprocess.run([NXDK + '/tools/cxbe/cxbe', '-OUT:' + dst + '/default.xbe', '-TITLE:MH1 port', dst + '/main.exe'],
                    check=True, capture_output=True)
-    print('built %s/default.xbe (%d bytes)' % (OUT, os.path.getsize(OUT + '/default.xbe')))
+    print('built %s/default.xbe (%d bytes)' % (dst, os.path.getsize(dst + '/default.xbe')))
     # an XISO holding only the XBE (the game's data files are not shipped; docs/xbox.md)
-    iso_dir = OUT + '/iso'
+    iso_dir = dst + '/iso'
     os.makedirs(iso_dir, exist_ok=True)
-    shutil.copy(OUT + '/default.xbe', iso_dir + '/default.xbe')
-    if os.path.exists(OUT + '/mh1.iso'):
-        os.remove(OUT + '/mh1.iso')
-    subprocess.run([NXDK + '/tools/extract-xiso/build/extract-xiso', '-c', iso_dir, OUT + '/mh1.iso'],
+    shutil.copy(dst + '/default.xbe', iso_dir + '/default.xbe')
+    if os.path.exists(dst + '/mh1.iso'):
+        os.remove(dst + '/mh1.iso')
+    subprocess.run([NXDK + '/tools/extract-xiso/build/extract-xiso', '-c', iso_dir, dst + '/mh1.iso'],
                    check=True, capture_output=True)
-    print('built %s/mh1.iso (%d bytes)' % (OUT, os.path.getsize(OUT + '/mh1.iso')))
+    print('built %s/mh1.iso (%d bytes)' % (dst, os.path.getsize(dst + '/mh1.iso')))
 
 if __name__ == '__main__':
     main()

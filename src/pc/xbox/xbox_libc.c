@@ -47,3 +47,8 @@ FILE *xbox_fopen(const char *name, const char *mode)
         p[i] = name[i] == '/' ? '\\' : name[i];
     return fopen(p, mode);
 }
+
+/* Data the game C names but gcc's PC build never references (gcc drops the
+ * unused strchr(num_tbl, c) in hk_kbd_input_sub; nxdk's clang keeps the
+ * call). The result is unused, so the contents do not matter. */
+char num_tbl[16] = "0123456789";
