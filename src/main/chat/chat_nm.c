@@ -1102,20 +1102,20 @@ void Join_pl_chk(void) {
     u32 i;
     u8 *g;
 
-    PitMenu._pad1A = 0;
+    PitMenu.x1A = 0;
     PitMenu.x19 = 0;
     if (GW(0x1DC) == 0) {
         for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
             if (game_w.master != i && g[0x208] == 1) {
                 PitMenu.x19 |= (1 << i) & 0xFF;
-                PitMenu._pad1A++;
+                PitMenu.x1A++;
             }
         }
     } else {
         for (i = 0; i < 8; i++) {
             if (game_w.master != i && func_5D8370(i) == 0) {
                 PitMenu.x19 |= (1 << i) & 0xFF;
-                PitMenu._pad1A++;
+                PitMenu.x1A++;
             }
         }
     }
