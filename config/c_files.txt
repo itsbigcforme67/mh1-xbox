@@ -2428,3 +2428,4 @@ lobby:rodata 0x0065DF10 0x0065DF30 cnet/cnlbs
 lobby:rodata 0x0065DED0 0x0065DEEC cnet/cnlbs
 lobby 0x005BCDE0 0x005BCF6C b/lb_in0300
 lobby 0x005B7DD0 0x005B7FE4 b/lb_lwm01
+lobby:rodata 0x0065E870 0x0065E890 b/lb_lwm01
