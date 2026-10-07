@@ -104,7 +104,7 @@ EM="$EM src/game/em/em20_ai_nm.c src/game/em/em20.c src/game/em/em20b.c src/game
 # kind 17 Gravios / 22 Basarios: em17
 EM="$EM src/game/em/em17_nm.c src/game/em/em17.c src/game/em/em17_horm.c"
 # kind 27 Velocidrome / 28 Gendrome / 31 Iodrome: em27 (matched parts + whole-file weak)
-EM="$EM src/game/em/em27a.c src/game/em/em27b.c src/game/em/em27c.c src/game/em/em27_uv.c src/game/em/em27.c \
+EM="$EM src/game/em/em27a.c src/game/em/em27b.c src/game/em/em27c.c src/game/em/em27.c \
     src/game/em/em27_area.c src/game/em/em27_nm.c"
 # kind 19 Vespoid / 24 Hornetaur: em19 (+ fly.c, the flight curves)
 EM="$EM src/game/em/em19b.c src/game/em/em19_flyinit.c src/game/em/em19_init.c src/game/em/em19_move.c src/game/em/fly.c"

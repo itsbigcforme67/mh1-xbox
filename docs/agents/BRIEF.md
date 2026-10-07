@@ -136,3 +136,7 @@ anything the coordinator must know to merge. Then stop.
   (static) before their callers. MWCC's register allocation and inlining depend on it; it fixed
   dozens of "40-70 off" functions at once. Before polishing a stubborn function, check whether its
   neighbours/static helpers belong in the same file (bind column in docs/survey/mh1_symbols.csv).
+- Lesson (agent C, 7 Oct 2026): m2c drafts often access globals through literal addresses
+  (`*(u8 *)0x3F33F1`). MWCC schedules stores differently for those than for named objects:
+  replace them with the real symbol and field (game_w.step, ConnWork.x, ...). That closed many
+  "3-10 off" near-matches at once.
