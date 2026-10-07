@@ -451,7 +451,7 @@ OBJS="$OBJS build/pc/rt_tables.o"
 MEMSTAT="-include src/pc/rt/rt_memstat.h"
 $CC $CFLAGS $SYS -c src/pc/rt/rt_memstat.c -o build/pc/rt_memstat.o
 OBJS="$OBJS build/pc/rt_memstat.o"
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie rt_prof; do
     # shellcheck disable=SC2086
     cc_obj $f "$CC $CFLAGS $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o"
     OBJS="$OBJS build/pc/$f.o"

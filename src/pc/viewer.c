@@ -18,6 +18,7 @@
 #include <SDL.h>
 #include <stdio.h>
 #include "rt/rt_memstat.h"
+#include "rt/rt_prof.h"
 #include <stdlib.h>
 #include <string.h>
 #ifdef XBOX
@@ -600,7 +601,9 @@ static void audio_dump_tick(void)
         dump_cap = dump_cap ? dump_cap * 2 : 1 << 20;
         dump_pcm = realloc(dump_pcm, dump_cap * sizeof *dump_pcm);
     }
+    rt_prof_begin(RTP_MIX);
     audio_mix(dump_pcm + dump_n, 1600);
+    rt_prof_end(RTP_MIX);
     dump_n += 1600 * 2;
 }
 
@@ -972,6 +975,8 @@ static void npc_draw(const fl_light *L)
             continue;
         m = &npc_mdl[kind];
         rt_monster_pose(i, &m->skel);
+        for (k = 0; k < m->model.npart; k++)    /* villagers: only their own parts are drawn, so only those are skinned */
+            m->model.part[k].skip = kind == 0 && (k >= 0x20 || !em[0x4E6 + k]) && !getenv("RT_POSE_ALL");
         fl_model_pose(&m->model, (const flmat *)m->skel.world, L);
         memcpy(s, em + 0xB8, sizeof s);
         r[0] = 0;
@@ -1359,7 +1364,15 @@ int main(int argc, char **argv)
     t0 = SDL_GetTicks();
     while (running) {
         SDL_Event ev;
-        float t = fixed_time >= 0 ? fixed_time : (SDL_GetTicks() - t0) / 1000.0f;
+        /* RT_STEP=1 with --time S: one game tick per drawn frame up to S
+         * (a frame per tick, as at 30 fps: for RT_PROF's draw numbers) */
+        static int step = -1;
+        float t;
+        if (step < 0)
+            step = getenv("RT_STEP") != NULL && fixed_time >= 0;
+        t = fixed_time >= 0 ? fixed_time : (SDL_GetTicks() - t0) / 1000.0f;
+        if (step && frame_no / 30.0f < fixed_time)
+            t = frame_no / 30.0f;
         float fr = t * 30.0f;                      /* game motions run at 30 fps */
         flmat proj, camw, view;
         const Uint8 *keys;
@@ -1406,18 +1419,10 @@ int main(int argc, char **argv)
          * have run their init and queued their prims) */
         if (shot && shot_next > 2 + (int)fr)
             shot_next = 0;              /* RT_SHOTS past --time: dropped */
-        /* RT_PROF=1: host time per game tick (logic) and per drawn frame
-         * (CPU side of the draw: posing, skinning, GL calls), every 300 ticks */
-        static int prof = -1, prof_ticks0, prof_n, prof_fr;
-        static double prof_logic, prof_draw;
-        static Uint64 prof_t;
-        if (prof < 0)
-            prof = getenv("RT_PROF") != NULL;
-        if (prof) {
-            prof_t = SDL_GetPerformanceCounter();
-            prof_ticks0 = ticks;
-        }
+        /* RT_PROF=1: CPU time per subsystem (rt_prof.c), per game tick and
+         * per drawn frame, every 300 ticks */
         while (ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
+            rt_prof_begin(RTP_LOGIC);
             if (booting) {      /* ACRMain: pad, then the task scheduler */
                 pad_state ps;
                 if (script)
@@ -1436,6 +1441,8 @@ int main(int argc, char **argv)
                 }
                 ticks++;
                 mem_tick(ticks);
+                rt_prof_end(RTP_LOGIC);
+                rt_prof_tick();
                 continue;
             }
             if (quest_no) {
@@ -1478,13 +1485,10 @@ int main(int argc, char **argv)
                 fprintf(stderr, "T %d m%d st%d pl %.2f %.2f %.2f %04X em %.2f\n", ticks, rt_flow_mode(),
                         rt_game_stage(), p[0], p[1], p[2], a & 0xFFFF, es);
             }
+            rt_prof_end(RTP_LOGIC);
+            rt_prof_tick();
         }
-        if (prof) {
-            Uint64 t1 = SDL_GetPerformanceCounter();
-            prof_logic += (double)(t1 - prof_t) * 1000.0 / (double)SDL_GetPerformanceFrequency();
-            prof_n += ticks - prof_ticks0;
-            prof_t = t1;
-        }
+        rt_prof_begin(RTP_DRAW);
         if (booting) {          /* the boot screens: the last tick's picture */
             gfx_begin_frame(0);
             rt_boot_draw();
@@ -1523,7 +1527,8 @@ int main(int argc, char **argv)
             rt_monster_pose(0, &rathian.skel);
         else
             fl_skel_update(&rathian.skel, fr);
-        fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
+        if ((rt_monster_shown(0) && slot0_rathian()) || getenv("RT_POSE_ALL"))     /* skinned only when drawn (below) */
+            fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
         hunter_pose(&pl, fr, &light);
         if (pl.game && play)            /* joint world matrices for the game C (parts, get_joint_pos) */
             sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
@@ -1615,7 +1620,8 @@ int main(int argc, char **argv)
             if (shot_list && *shot_list == ',')
                 shot_list++;
         }
-        if (shot && frame_no >= frames && shot_next <= 0 && (!shot_list || ticks >= 2 + (int)fr)) {
+        if (shot && frame_no >= frames && shot_next <= 0 && (!shot_list || ticks >= 2 + (int)fr)
+            && (!step || frame_no / 30.0f >= fixed_time)) {
             uint8_t *rgb = malloc((size_t)W * H * 3);
             gfx_read_pixels(rgb);
             write_png(shot, W, H, rgb);
@@ -1623,17 +1629,11 @@ int main(int argc, char **argv)
             free(rgb);
             running = 0;
         }
-        if (prof) {
-            prof_draw += (double)(SDL_GetPerformanceCounter() - prof_t) * 1000.0 / (double)SDL_GetPerformanceFrequency();
-            prof_fr++;
-            if (prof_n >= 300 || prof_fr >= 300) {
-                fprintf(stderr, "prof: logic %.2f ms/tick (%d ticks), draw %.2f ms/frame CPU (%d frames)\n",
-                        prof_n ? prof_logic / prof_n : 0.0, prof_n, prof_draw / prof_fr, prof_fr);
-                prof_logic = prof_draw = 0;
-                prof_n = prof_fr = 0;
-            }
-        }
+        rt_prof_begin(RTP_GFX);
         gfx_end_frame();
+        rt_prof_end(RTP_GFX);
+        rt_prof_end(RTP_DRAW);
+        rt_prof_frame();
     }
     (void)n;
     if (audio_dump && dump_pcm) {

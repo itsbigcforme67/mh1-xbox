@@ -7,6 +7,7 @@
  * which is exactly OpenGL's column-major memory layout, so they load as-is.
  */
 #include "gfx.h"
+#include "../rt/rt_prof.h"
 
 #include <SDL.h>
 #include <GL/gl.h>
@@ -108,11 +109,18 @@ void gfx_size(int *w, int *h)
     *h = G.h;
 }
 
-void gfx_begin_frame(uint32_t c)
+static void gfx_begin_frame_gl(uint32_t c)
 {
     glDepthMask(GL_TRUE);
     glClearColor(((c >> 16) & 255) / 255.0f, ((c >> 8) & 255) / 255.0f, (c & 255) / 255.0f, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void gfx_begin_frame(uint32_t c)
+{
+    rt_prof_begin(RTP_GFX);
+    gfx_begin_frame_gl(c);
+    rt_prof_end(RTP_GFX);
 }
 
 void gfx_end_frame(void)
@@ -285,11 +293,15 @@ void gfx_update_clay(gfx_clay *c, const float *pos, const uint8_t *col)
         memcpy(c->col, col, 4 * (size_t)c->nvert);
 }
 
-void gfx_execute_clay(gfx_clay *c)
+static void gfx_execute_clay_gl(gfx_clay *c)
 {
     if (gfx_rec_clay(c))
         return;
     int b;
+    rt_prof_count(RTPC_DRAW_VERTS, c->nvert);
+    for (b = 0; b < c->nbatch; b++)
+        rt_prof_count(RTPC_DRAW_TRIS, c->batch[b].count / 3);
+    rt_prof_count(RTPC_DRAWS, c->nbatch);
     const uint8_t *col = c->col;
 
     if (G.fade != 0xFFFFFFFFu) {            /* fl state 0x67: per-draw multiply */
@@ -337,10 +349,20 @@ void gfx_execute_clay(gfx_clay *c)
     glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, const uint8_t *col)
+void gfx_execute_clay(gfx_clay *c)
+{
+    rt_prof_begin(RTP_GFX);
+    gfx_execute_clay_gl(c);
+    rt_prof_end(RTP_GFX);
+}
+
+static void gfx_draw_2d_gl(int w, int h, int nvert, const float *pos, const float *st, const uint8_t *col)
 {
     if (gfx_rec_2d(w, h, nvert, pos, st, col))
         return;
+    rt_prof_count(RTPC_DRAW_VERTS, nvert);
+    rt_prof_count(RTPC_DRAW_TRIS, nvert / 3);
+    rt_prof_count(RTPC_DRAWS, 1);
     gfx_texture *t = st ? G.tex : NULL;
     GLboolean dt = glIsEnabled(GL_DEPTH_TEST);
     GLboolean dm;
@@ -381,6 +403,13 @@ void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, con
     if (dt)
         glEnable(GL_DEPTH_TEST);
     glDepthMask(dm);
+}
+
+void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, const uint8_t *col)
+{
+    rt_prof_begin(RTP_GFX);
+    gfx_draw_2d_gl(w, h, nvert, pos, st, col);
+    rt_prof_end(RTP_GFX);
 }
 
 void gfx_release_clay(gfx_clay *c)

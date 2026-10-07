@@ -8,6 +8,7 @@
  * gfx_batch per texture) and skinning/lighting run on the CPU.
  */
 #include "fl.h"
+#include "../rt/rt_prof.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -215,6 +216,7 @@ void fl_model_pose(fl_model *m, const flmat *bone_world_mats, const fl_light *L)
     int pi, nb = m->skel.nbone;
     flmat *skin = NULL;
 
+    rt_prof_begin(RTP_SKIN);
     if (bone_world_mats && nb) {
         int b;
         skin = malloc(sizeof(flmat) * nb);
@@ -225,7 +227,7 @@ void fl_model_pose(fl_model *m, const flmat *bone_world_mats, const fl_light *L)
         amo_part *p = &m->amo.part[pi];
         fl_part *fp = &m->part[pi];
         int v;
-        if (!fp->skinpos)
+        if (!fp->skinpos || fp->skip)
             continue;
         if (m->has_tint && pi == 0 && !m->tint_mask && p->nstrip > 0) {   /* part 0's first material */
             int s, k, mat0 = p->strip[0].material;
@@ -289,9 +291,13 @@ void fl_model_pose(fl_model *m, const flmat *bone_world_mats, const fl_light *L)
             }
             fp->skincol[4 * v + 3] = (uint8_t)(p->col ? p->col[4 * v + 3] : 255);
         }
+        rt_prof_count(RTPC_SKIN_VERTS, p->nvert);
+        rt_prof_begin(RTP_GFX);
         gfx_update_clay(fp->clay, fp->skinpos, fp->skincol);
+        rt_prof_end(RTP_GFX);
     }
     free(skin);
+    rt_prof_end(RTP_SKIN);
 }
 
 void fl_model_draw(fl_model *m, int sky)

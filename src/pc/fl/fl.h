@@ -32,6 +32,7 @@ typedef struct {
     float *skinpos;         /* work buffers for dynamic parts */
     uint8_t *skincol;
     int is_sky;             /* attribute +0x10 set: background part */
+    int skip;               /* set by the caller: not drawn this frame, fl_model_pose leaves it */
 } fl_part;
 
 typedef struct {
