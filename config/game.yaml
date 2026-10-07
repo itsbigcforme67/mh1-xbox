@@ -134,6 +134,8 @@ segments:
       - [0x02A5D4, asm, text/em_cmd_pl_ang_sel]
       - [0x02A7F0, c, em/em_cmd_r07]
       - [0x02A924, asm, text/em_cmd_near_pos_ck]
+      - [0x02A930, c, em/em_cmd_r97]
+      - [0x02AAA4, asm, text/em_cmd_emtype_ck]
       - [0x02AAB0, c, em/em_cmd_r08]
       - [0x02ADC0, c, em/em_cmd_r30]
       - [0x02AF94, asm, text/em_cmd_all_pl_same_stage_ck]

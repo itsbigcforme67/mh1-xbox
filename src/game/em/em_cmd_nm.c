@@ -612,11 +612,11 @@ u8 *em_cmd_mode_ck(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_flag_set(EMW *em, u8 *p) {
-    s32 n;
-    s32 i;
-    u8 *ex;
     u8 kind;
     u8 val;
+    s32 i;
+    s32 n;
+    u8 *ex;
 
     kind = *p++;
     val = *p++;
@@ -628,13 +628,13 @@ u8 *em_cmd_flag_set(EMW *em, u8 *p) {
     }
     ex = em->ex;
     {
-        for (i = 0; i < n; i++) {
+        for (i = 0; i < n; i++, kind++) {
             switch (kind) {
             case 1:
                 em->x88B = val;
                 break;
             case 2:
-                EM_FIELD(em, u8 *, 0x8C0) = val;
+                *(u8 *)&em->x8C0 = val;
                 break;
             case 3:
                 em->x9E1 = (s8)val;
@@ -658,8 +658,7 @@ u8 *em_cmd_flag_set(EMW *em, u8 *p) {
                 }
                 break;
             }
-            kind = kind + 1;
-        }
+                    }
     }
     return p;
 }
@@ -1236,14 +1235,14 @@ u8 *em_cmd_thirst_ck(EMW *em, u8 *p) {
 
 u8 *em_cmd_near_pos_ck(EMW *em, u8 *p) {
     u8 *q;
-    u32 v;
+    f32 lim;
 
     q = p;
     switch (*q++) {
     case 0:
-        v = *q;
+        lim = 100.0f * *q;
         q += 1;
-        if (!(CalcDistanceXZ(em->pos, em->tgt_pos) <= 100.0f * v)) {
+        if (!(CalcDistanceXZ(em->pos, em->tgt_pos) <= lim)) {
             CMD_SKIP(em, q, 0x22);
         }
         break;
