@@ -105,7 +105,11 @@ static int port_add(int n, int afs_idx)
     if (pt->n >= NPACK)
         return -1;
     p = &pt->p[pt->n];
-    p->data = fmt_afs_read(&afs01, afs_idx, &len);
+    {
+        const char *o = rt_ms_push("audio packs as on disc (PS2 ADPCM)");
+        p->data = fmt_afs_read(&afs01, afs_idx, &len);
+        rt_ms_pop(o);
+    }
     if (!p->data || fmt_snd_open(&p->pk, p->data, len) != 0) {
         fprintf(stderr, "snd: AFS01 entry %d is not a sound pack\n", afs_idx);
         free(p->data);

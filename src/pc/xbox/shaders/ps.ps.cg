@@ -1,0 +1,11 @@
+/* gfx_nv2a.c pixel shader: texture x vertex colour (untextured draws bind a
+ * 1x1 white texture) */
+struct vOut {
+	float4 col  : COLOR;
+	float4 tex0 : TEXCOORD0;
+};
+
+float4 main(vOut I, uniform sampler2D tex) : COLOR
+{
+	return tex2D(tex, I.tex0.xy) * I.col;
+}

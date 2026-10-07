@@ -1,0 +1,25 @@
+/* gfx_nv2a.c vertex program: position through one combined matrix
+ * (world * view * projection * viewport, row vectors), pre-lit colour,
+ * texture coordinates through the texture matrix (fl state 0x19). */
+struct vIn {
+	float4 pos : POSITION;
+	float4 col : DIFFUSE;
+	float4 tex : TEXCOORD0;
+};
+
+struct vOut {
+	float4 pos  : POSITION;
+	float4 col  : COLOR;
+	float4 tex0 : TEXCOORD0;
+};
+
+vOut main(vIn I, uniform float4x4 m_mvp, uniform float4x4 m_tex)
+{
+	vOut r;
+	float4 p = mul(float4(I.pos.xyz, 1.0), m_mvp);
+	p.xyz = p.xyz / p.w;
+	r.pos = p;
+	r.col = I.col;
+	r.tex0 = mul(float4(I.tex.xy, 0.0, 1.0), m_tex);
+	return r;
+}

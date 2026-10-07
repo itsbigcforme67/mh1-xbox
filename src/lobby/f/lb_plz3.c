@@ -808,12 +808,54 @@ int y;
     }
 }
 
-#ifdef __MWERKS__
-asm int plaza_disp_mail()
+void plaza_disp_mail(int a, s16 x, s16 y)
 {
-#include "plaza_disp_mail.inc"
+    char buf[0x80];
+    char *p;
+    int len;
+    int i;
+
+    font_set_palette(0);
+    flfntLocate(x, y);
+    font_print(lit_2316, *(int *)(tl_mail_tbl + 8));
+    flfntLocate(x + 0x3C, y);
+    flfntSetSize(0x16, 0x12);
+    font_print(lit_2316, (char *)cw + 0x2F88);
+    flfntSetSize(0x12, 0x12);
+    y += 0x16;
+    flfntLocate(x, y);
+    font_print(lit_2316, *(int *)(tl_mail_tbl + 0xC));
+    flfntLocate(x + 0x3C, y);
+    han2zen((char *)cw + 0x2F80, buf);
+    font_print(lit_2316, buf);
+    flfntLocate(x, y + 0x16);
+    font_print(lit_2316, *(int *)(tl_mail_tbl + 0x10));
+    font_set_palette(0);
+    p = (char *)cw + 0x2F99;
+    KinshiYogo_chk(p);
+    for (i = 0; i < 4; i++) {
+        if (p == 0) break;
+        len = strlen(p);
+        strcpy(buf, p);
+        if (len > 0x23) {
+            if (Ck_hankaku(buf, 0x23) == 0) {
+                buf[0x24] = 0;
+                p += 0x24;
+            } else {
+                buf[0x23] = 0;
+                p += 0x23;
+            }
+            y += 0x16;
+            flfntLocate(x + 0x3C, y);
+            font_print(lit_2316, buf);
+        } else {
+            flfntLocate(x + 0x3C, y + 0x16);
+            font_print(lit_2316, buf);
+            break;
+        }
+    }
+    font_set_palette(0);
 }
-#endif
 
 /* button help line of the plaza menus: which of the four buttons are shown for each menu / sub menu step (near-match) */
 

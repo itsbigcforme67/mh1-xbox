@@ -63,7 +63,10 @@ def main():
     out = CAST.sub(fix, src)
     if not used:
         sys.exit(1)
-    head = "".join('extern unsigned char rt_abs_%s[] __asm__("%s");\n' % (n, n) for n in sorted(used) if n != "rt_lb_mem")
+    # asm labels carry the target's symbol prefix ("_" on win32 / the Xbox)
+    head = ('#define RTAB_S_(x) #x\n#define RTAB_S(x) RTAB_S_(x)\n'
+            '#define RTAB_P RTAB_S(__USER_LABEL_PREFIX__)\n')
+    head += "".join('extern unsigned char rt_abs_%s[] __asm__(RTAB_P "%s");\n' % (n, n) for n in sorted(used) if n != "rt_lb_mem")
     if "rt_lb_mem" in used:
         head += "extern unsigned char rt_lb_mem[];\n"
     open(sys.argv[2], "w").write(head + out)

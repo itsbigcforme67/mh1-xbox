@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct gfx_texture { GLuint id; int w, h; };
+struct gfx_texture { GLuint id; int w, h, src; };
 
 struct gfx_clay {
     int nvert, nindex, nbatch;
@@ -138,11 +138,16 @@ int gfx_read_pixels(uint8_t *rgb)
     return 0;
 }
 
+int gfx_tex_src_hint;
 gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
 {
     gfx_texture *t = calloc(1, sizeof *t);
     t->w = w;
     t->h = h;
+    t->src = gfx_tex_src_hint;
+    gfx_tex_src_hint = 0;
+    rt_ms_add("textures in GPU memory (RGBA8, GPU)", (long)w * h * 4);
+    rt_ms_add("textures as on disc (4/8-bit+CLUT, GPU)", t->src);
     glGenTextures(1, &t->id);
     glBindTexture(GL_TEXTURE_2D, t->id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -158,6 +163,8 @@ void gfx_release_texture(gfx_texture *t)
     if (!t)
         return;
     glDeleteTextures(1, &t->id);
+    rt_ms_add("textures in GPU memory (RGBA8, GPU)", -(long)t->w * t->h * 4);
+    rt_ms_add("textures as on disc (4/8-bit+CLUT, GPU)", -(long)t->src);
     free(t);
 }
 
