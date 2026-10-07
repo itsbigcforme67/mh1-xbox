@@ -1159,3 +1159,31 @@ Lessons (each from a function that matched):
   RoomLeaver 22, Get_GameServerAddress 3 (original ORs the new part first into a fresh register), RecvThreeData (original has a frame; we emit a tail call j),
   Lbc_SetPropaty 23 (original keeps arg1 in a1 across the static helper CallBackWaitInit; needs the 0x5B7020 TU), lm_member_list_mv 190
   (literals 0x39DAD0/2 = PitMenu.x10/x12 do not change the count; its ladder is if/else over 2,1,0 and registers differ).
+
+## Lobby online round 5 (agent C, 8 Oct 2026): ladder constants, index loops, static callees
+Matched this round (rebuild OK): cnLBS_Get_GameServerAddress, __cnetSub_Return_BgProcess, lbs_encode_ex, mmbbc_encode (cnlbs runs),
+lbc_game_ready_00 (lb_c503), lm_member_trans (lb_c504), lbc_login_top_information (lb_c505), check_erase_dialog + tk_dialog_mv02 (lb_c506, one TU),
+disp_lm_room_member (lb_c507), Lbc_SetRoomRule (lb_c508), select_ps2 (lb_c509), lb_select_room (lb_c512). Notes on what worked, each from a function that matched:
+- A constant that ends up in a0 inside a switch ladder is the argument of a later call: `Disp_lb_menu(1)` (original calls it with 1 and no `li`),
+  `cnWrap_PushWork(arg0)` (a0 is the untouched incoming argument). The ladder then keeps the switch variable in a1 (lm_member_trans, disp_lm_room_member,
+  tk_dialog_mv02). When a call in the original has no argument setup at all, pass the value that already sits in that register.
+- Locals: later declaration = lower saved register (lbc_game_ready_00: e, o, id, hd, mn, i gave s5..s0; lbs_encode_ex: `u8 c; int i; int sum` ).
+  Temporaries in a/t registers follow the same pattern. mmbbc_encode needed `v2, v1, a` order.
+- Index loops beat pointer-bump loops: MWCC strength-reduces `tbl[i]`, `P[i].f` itself and lm_member_trans went 139 -> 0, create_server_table 40 -> 16.
+- A global declared as a struct (`typedef struct { u8 pad[0x54]; u8 n; } RRH; extern RRH RoomRule;`) makes the compiler reload `RoomRule.n` after byte stores;
+  declared as `u8 RoomRule[]` it keeps the value in a register (Lbc_SetRoomRule).
+- One-case switch (`switch (d) { case 0: ...; break; }`) gives `beqz; nop; b end; nop` and the init block after it; an `if (d == 0)` gives different code (lb_select_room).
+- `x > C-1` goes through `at`, `x >= C` through v0 (lb_select_room `tm > 2`, lb_select_set_data `q->x2 <= 3`).
+- Static callee: check_erase_dialog (LOCAL) has to be defined above tk_dialog_mv02 in the same file, otherwise a0 is saved in s1. Same reason Lbc_GetRoomRule cannot match:
+  the original keeps v0 of cnLbc_CheckInFloorOrder across CallBackWaitInit (static in the 0x5B7020 TU), which we cannot express without that TU.
+- cnet statics: write_col_numeric/read_col_numeric are static callees too; pass ALL arguments (`read_col_numeric(str + 4, 4)`), the compiler drops the redundant `li`.
+- ConnWork is at 0x4E36F0 (not ..F4): sock +4, st +0x24 (s16), rx +0x28 (u16), rx2 +0x2A (u16). 0x4E3714/18/1A in select_ps2 are st/rx/rx2.
+- `u16` values compared with a literal that must stay unsigned: write `>= 0xCU` (sltiu).
+- Scheduling of stores in select_ps2's header block depended on statement order only (Lobby += hdr[5]; Lobby = (u16)Lobby; rx2 -= 12; Readed = 0).
+- Several files in src/lobby/b/nm/ are STALE copies of functions that are already matched elsewhere (tk_lever_ck, Lb_ck_menu, check_erase_dialog,
+  Lb_gh_board ...). Before working on one, check config/c_files.txt for its address. The list of really unmatched functions: see tools/unmatched.py output
+  (functions in config/symbols/lobby.txt not covered by a `lobby` run).
+Still near: lb_select_trans 6 (n2/j register swap in the last loop), lb_select_set_data 18, create_server_table 16 (original keeps a dead `found++` alive),
+lm_member_list_mv (switch variable lands in v1 instead of a1), lm_room_member_mv 142 (original keeps the `i < 4` guard before the loop; we fold it),
+test_server_sel_disp 20 (original adds 0x28 to the text pointer instead of folding), disp_string_handle 7, RoomLeaver 22, MatchEntryUser 39 (delay slot),
+select_ps2 done, tk_logout (needs the static message_sub), cnLBS_RecvData 5.
