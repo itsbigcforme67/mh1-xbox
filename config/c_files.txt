@@ -898,6 +898,8 @@ main 0x00263560 0x002636DC sk/cmd05
 main 0x002633A0 0x00263554 sk/cmd06
 main 0x002710A0 0x002712BC net/connect01
 main 0x00271880 0x00271E94 net/connect02
+main 0x00271EA0 0x00271FB0 net/mcsave_ret
+main 0x002811C0 0x002814D8 mc/savesel
 main:rodata 0x003734B0 0x003734E8 net/connect02
 main 0x002671A0 0x002671D4 net/netbgm01
 main 0x00267290 0x00267348 net/netbgm02
