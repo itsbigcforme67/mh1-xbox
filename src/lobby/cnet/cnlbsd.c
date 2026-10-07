@@ -5,6 +5,8 @@
 
 typedef struct { s16 a, b, c; } CPLACE3;
 
+typedef struct { s8 val; u8 pad[6]; } R7;
+
 int cnLBS_Get_AllocationProgressCount(u16 *arg0) {
     *arg0 = CNW(u16, 0x1032);
     return 0;

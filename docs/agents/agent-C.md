@@ -1129,3 +1129,33 @@ net_Check_FriendData, __cnet_SendReq_ConditionSearchUser: 11 functions. No share
   after LbsInfoWork fields), RoomLeaver 22 (all 120 declaration orders tried), cnLBS_Get_GameServerAddress 3 (OR-chain temps), cnLBS_RecvData 4 (an extra nop
   from branch-target alignment), CheckItemPrice_005AFEE0 24 (original keeps both price compares as explicit slt/beq blocks, ours folds to xori; if/else, early
   return, flag variable, cost variable all tried; User_gold in place of the literal made it worse).
+
+## Lobby online round 4 (agent C, 8 Oct 2026): by-value records, u16 Get_sw2, static callee
+Lobby 33.885% -> about 34.2%. Matched (rebuild OK, all five modules): CheckItemPrice_005AFEE0 (lb_cip01), cmcs_02 (lb_cmcs02),
+get_font_col + CallBack_Event_ChatMessage + CallBack_Event_ChatMessageTU (lb_cb05, ONE TU), _cnet_RecvFromLbs_MatchJoin/PlSide/
+OpponentInfo/OpponentStatus (cnlbsg run), lbc_in_lobby_03_00 (lb_in0300), lbc_login_warning_message (lb_lwm01): 11 functions.
+No shared-header edits (Get_sw2 is declared `extern u16 Get_sw2();` locally in the two files; lbui.h says int, which is wrong
+for the original but left alone because other matched files compile with it).
+Lessons (each from a function that matched):
+- The "frame hole" in the callback/result functions is a BY-VALUE struct parameter or record. `void CallBack_Event_ChatMessage(CNET_RES res)`
+  (8-byte struct param, spilled to the stack) gives the 16-byte frame the original has; with (int, int) params the frame is 16 short.
+- MatchJoin/PlSide/OpponentInfo/OpponentStatus: the result record that is passed on by value is 7 bytes (`typedef struct { s8 val; u8 pad[6]; } R7;`),
+  declared AFTER the received byte local (`u8 v; R7 res;`). The record then lands at sp+24 and the byte at sp+31 exactly like the original
+  (ld a0, 24(sp) reads 8 bytes). With an 8-byte struct the byte could not overlap. __cnet_Recv_ServerMessage() takes no arguments here.
+- A static callee in the same TU matters (get_font_col): with an extern callee the compiler saves caller values across the call (32/32 differ).
+  A static function in a split file must live in the same registered run as every asm caller, otherwise the link fails with an undefined
+  symbol (here the run is 0x5C0B10-0x5C0C8C, the TU function after the padding gap included).
+- Get_sw2 returns u16: `sw = Get_sw2(0)` with an `extern u16 Get_sw2();` makes the cw pointer take the lower register (lbc_in_lobby_03_00,
+  lbc_login_warning_message); then try all declaration orders (sw, st, stp, c worked). Do not mask by hand.
+- Comparison operand order: `if (qty * price > gold) return 0; ... return 1;` (CheckItemPrice) instead of `gold < qty*price` changes where the
+  compiler loads `gold`. Same-structure early-return form `if (a) { if (x) return 0; } else { if (y) return 0; } return 1;`.
+- cmcs_02: ConnWork struct fields (sock, st) instead of literal 0x4E36F4; `COM_R_No_1 = COM_R_No_1 - 1;` before the `Vs_Cnt_0 = 0xA` store;
+  the first line stays `temp = Vs_Cnt_0 - 1; Vs_Cnt_0 = temp; if ((s16)temp <= 0)`.
+- cnLBS_RecvData: `got = 1;` written BEFORE the call __cnetSub_RecvThreeData() puts it in the jal delay slot (like the original); the
+  remaining 5 diffs are an alignment nop before the jal and the `return 0` delay slot (not solved).
+- Still near: warning_message done; disp_lm_room_member 10 (switch operand register: original keeps the lbmw base in a0 and loads the
+  byte into a1), disp_string_handle 7 (original materialises the ternary in v0 and sign-extends later; PitMenu.x14 replaces literal
+  0x39DAD4 already), create_server_table 40 (was 45; third loop needs its own index variable `l`, second loop original has i in s0),
+  RoomLeaver 22, Get_GameServerAddress 3 (original ORs the new part first into a fresh register), RecvThreeData (original has a frame; we emit a tail call j),
+  Lbc_SetPropaty 23 (original keeps arg1 in a1 across the static helper CallBackWaitInit; needs the 0x5B7020 TU), lm_member_list_mv 190
+  (literals 0x39DAD0/2 = PitMenu.x10/x12 do not change the count; its ladder is if/else over 2,1,0 and registers differ).
