@@ -9,6 +9,7 @@
 #include "em.h"
 #include "game.h"
 #include "quest.h"
+#include "fl.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -473,6 +474,7 @@ int rt_monster_spawn(int kind, const float pos[3], int ang_y)
     return em->id;
 }
 
+void rt_em_world_mat(EMW *em);
 /* One game tick of monster no: the game's enemy_mv (src/main/em/f_em_nm.c). */
 int rt_monster_tick(int no)
 {
@@ -484,7 +486,29 @@ int rt_monster_tick(int no)
                 no, em->x04, PU8(em, 0x14), PU8(em, 0x15), PU8(em, 0x05), PS16(em, 0x2DC), PF(em, 0x19C),
                 em->pos[0], em->pos[1], em->pos[2], em->ang[1] & 0xFFFF, PS16(em, 0x302), PU8(em, 0x888),
                 PS32(em, 0x194), PF(em, 0x1A8), PS32(em, 0x1C8));
-    return enemy_mv(em);
+    {
+        /* the world matrix at EMW+0x60, as enemy_mk (0x10AEB0) builds it in trans():
+         * the host poses the skeleton itself, but game code reads this matrix
+         * (demo cameras relative to the monster, em10's throw direction) */
+        int r = enemy_mv(em);
+        if (em->be_flag)
+            rt_em_world_mat(em);
+        return r;
+    }
+}
+
+void flmatMakeScale(FLMAT *m, f32 x, f32 y, f32 z);
+FLMAT *cpRotMatrixYXZ2(s32 *ang, FLMAT *m);
+void flmatSetTrans(FLMAT *m, f32 x, f32 y, f32 z);
+void flmatMul33_2(FLMAT *a, FLMAT *b);
+void rt_em_world_mat(EMW *em)
+{
+    FLMAT m, sc;
+    flmatMakeScale(&sc, em->scale[0], em->scale[1], em->scale[2]);
+    cpRotMatrixYXZ2(em->ang, &m);
+    flmatSetTrans(&m, em->pos[0], em->pos[1], em->pos[2]);
+    flmatMul33_2(&m, &sc);
+    memcpy((u8 *)em + 0x60, &m, 0x40);
 }
 
 /* em_sleep_eff_set (game 0x53xxxx, em_master_nm.c): sleep bubbles at

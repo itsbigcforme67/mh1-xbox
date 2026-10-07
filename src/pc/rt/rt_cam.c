@@ -136,6 +136,15 @@ void rt_cam_tick(void)
                 CameraWork.cam_no, (void *)CameraWork.area, CameraWork.area ? CameraWork.area->type : -1,
                 CameraWork.zoom, CameraWork.sw_on, cs->ang & 0xFFFF, d->ang & 0xFFFF, d->wall,
                 lpView[0], lpView[1], lpView[2], lpView[3], lpView[4], lpView[5], lpView[0x2C / 4]);
+        {
+            int k;
+            for (k = 2; k < 5; k++)
+                if (CameraWork.sl[k].act)
+                    fprintf(stderr, "cam:   slot %d act %d mode %d step %d cnt %d eye %.0f %.0f %.0f fov %.2f demo pos %d/%d tar %d/%d\n", k,
+                            CameraWork.sl[k].act, CameraWork.sl[k].mode.w, CameraWork.sl[k].step.w, CameraWork.sl[k].cnt,
+                            CameraWork.sl[k].eye[0], CameraWork.sl[k].eye[1], CameraWork.sl[k].eye[2], CameraWork.sl[k].fov,
+                            CameraWork.sl[k].d.demo.pos_mode, CameraWork.sl[k].d.demo.pos_part, CameraWork.sl[k].d.demo.tar_mode, CameraWork.sl[k].d.demo.tar_part);
+        }
     }
 }
 

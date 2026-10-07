@@ -347,6 +347,27 @@ void rt_player_tick(int no)
         }
     }
     pl_move();
+    {   /* PLW+0x60: the world matrix player_modify (weapon3.c, run from trans() on the
+         * PS2) builds; the host poses the skeleton itself, but game code reads it
+         * (demo cameras relative to the hunter: cmd_set_pos mode 0) */
+        void cpAng2Rad_all(s32 *ang, f32 *out);
+        void flmatMakeScale(FLMAT *m, f32 x, f32 y, f32 z);
+        void flmatRotXYZ33(FLMAT *m, f32 x, f32 y, f32 z);
+        void flmatSetTrans(FLMAT *m, f32 x, f32 y, f32 z);
+        int k;
+        for (k = 0; k < 8; k++) {
+            PLW *p = &player_work[k];
+            f32 a[3];
+            FLMAT m;
+            if (!p->be_flag || !p->x01)
+                continue;
+            cpAng2Rad_all((s32 *)&p->ang, a);
+            flmatMakeScale(&m, p->scl[0], p->scl[1], p->scl[2]);
+            flmatRotXYZ33(&m, a[0], a[1], a[2]);
+            flmatSetTrans(&m, p->pos[0], p->pos[1], p->pos[2]);
+            memcpy((u8 *)p + 0x60, &m, sizeof m);    /* 0x60-0x9F, as flmatCopy */
+        }
+    }
     if (getenv("RT_PL_GOD")) {      /* test aid: the hunter's vital (+0x302) back to 100 each tick, no stun gauge (+0x7AA) */
         PF(&player_work[no], s16, 0x302) = 100;
         PF(&player_work[no], s16, 0x7AA) = 0;
