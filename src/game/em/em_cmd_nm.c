@@ -2487,7 +2487,7 @@ u8 *em_cmd_samestage_pl_target_sel(EMW *em, u8 *p) {
         } else if (n == 1) {
             v = list[0];
         } else {
-            pn = *(u8 *)0x3F34C3;
+            pn = game_w.pl_num;
             i = 0;
             n = 0;
             for (; (s32)i < (s32)pn; i++) {
@@ -2843,7 +2843,7 @@ u8 *em_cmd_st25_pl_target_sel(EMW *em, u8 *p) {
         } else if (n == 1) {
             v = list[0];
         } else {
-            pn = *(u8 *)0x3F34C3;
+            pn = game_w.pl_num;
             i = 0;
             n = 0;
             for (; (s32)i < (s32)pn; i++) {
