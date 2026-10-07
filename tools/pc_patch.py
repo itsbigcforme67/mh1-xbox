@@ -174,6 +174,38 @@ PATCHES = {
         ("            if (--em->work08 <= 0) {\n                Lb_act_set(em, 0);",
          "            if (--em->work08 <= 0) {\n                Lb_act_set(em, 0, 0);"),
     ],
+    # lobby-server client (src/lobby/cnet, ONLINE=1 builds; docs/network.md): the completion callback
+    # (a2) and a request argument are passed through to the next call unchanged on the PS2
+    "src/lobby/cnet/cnlbs.c": [
+        ("int cnLBS_SendMessage(int arg0, int arg1) {\n    int slot = __cnetSub_Set_BgProcess(1, 0);",
+         "int cnLBS_SendMessage(int arg0, int arg1, int cb) {\n    int slot = __cnetSub_Set_BgProcess(1, 0, cb);"),
+        ("int cnLBS_RoomEntry(arg0, arg1)\nint arg0;\nint arg1;\n{\n    int slot = __cnetSub_Set_BgProcess(1, 0);",
+         "int cnLBS_RoomEntry(arg0, arg1, cb)\nint arg0;\nint arg1;\nint cb;\n{\n    int slot = __cnetSub_Set_BgProcess(1, 0, cb);"),
+    ],
+    "src/lobby/cnet/cnlbse.c": [
+        ("int cnLBS_Send_UserMiniData(int arg0, int arg1) {\n    int slot = __cnetSub_Set_BgProcess(1, 0);",
+         "int cnLBS_Send_UserMiniData(int arg0, int arg1, int cb) {\n    int slot = __cnetSub_Set_BgProcess(1, 0, cb);"),
+    ],
+    "src/lobby/cnet/cnlbsf.c": [
+        ("int cnLBS_Answer_LoginWarningMessage(void) {\n    __cnet_SendAns_WarningMessage();",
+         "int cnLBS_Answer_LoginWarningMessage(int ok) {\n    __cnet_SendAns_WarningMessage(ok);"),
+    ],
+    "src/lobby/cnet/cnlbsg.c": [
+        ("void cnLBS_Send_ChatBinary(void) {\n    __cnet_SendSet_ChatBinary();",
+         "void cnLBS_Send_ChatBinary(int a, int b) {\n    __cnet_SendSet_ChatBinary(a, b);"),
+    ],
+    "src/lobby/cnet/cnlbs_nm.c": [
+        ("int cnLBS_SendMessage(int arg0, int arg1) {\n    int slot = __cnetSub_Set_BgProcess(1, 0);",
+         "int cnLBS_SendMessage(int arg0, int arg1, int cb) {\n    int slot = __cnetSub_Set_BgProcess(1, 0, cb);"),
+        ("int cnLBS_RoomEntry(arg0, arg1)\nint arg0;\nint arg1;\n{\n    int slot = __cnetSub_Set_BgProcess(1, 0);",
+         "int cnLBS_RoomEntry(arg0, arg1, cb)\nint arg0;\nint arg1;\nint cb;\n{\n    int slot = __cnetSub_Set_BgProcess(1, 0, cb);"),
+        ("int cnLBS_Send_UserMiniData(int arg0, int arg1) {\n    int slot = __cnetSub_Set_BgProcess(1, 0);",
+         "int cnLBS_Send_UserMiniData(int arg0, int arg1, int cb) {\n    int slot = __cnetSub_Set_BgProcess(1, 0, cb);"),
+        ("int cnLBS_Answer_LoginWarningMessage(void) {\n    __cnet_SendAns_WarningMessage();",
+         "int cnLBS_Answer_LoginWarningMessage(int ok) {\n    __cnet_SendAns_WarningMessage(ok);"),
+        ("void cnLBS_Send_ChatBinary(void) {\n    __cnet_SendSet_ChatBinary();",
+         "void cnLBS_Send_ChatBinary(int a, int b) {\n    __cnet_SendSet_ChatBinary(a, b);"),
+    ],
 }
 
 

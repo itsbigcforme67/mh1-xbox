@@ -65,6 +65,8 @@ int cnLBS_Read_LobbyAllocation(int unused, int what, void (*cb)());
 int cnLBS_Get_LobbyCount(u16 *n);
 int cnLBS_Get_LobbyName(int idx, char *d);
 int cnLBS_LobbyEntry(int id, void (*cb)());
+int cnLBS_Read_LobbyMemberList(int id, void (*cb)());
+int cnLBS_Get_LobbyMemberList(int idx, char *id, char *name, void *mini);
 int cnLBS_LogoutLobbyServer(void (*cb)());
 int cnLBS_Get_ServerMessage(char *d);
 
@@ -77,12 +79,12 @@ static unsigned char t_mini[0x40];
 
 enum {
     P_CONNECT, P_LOGIN, P_LOGIN_WAIT, P_MINI, P_FINISH, P_TOPINFO, P_PLACE, P_PLAZAS, P_PLAZA_ENTRY,
-    P_LOBBIES, P_LOBBY_ENTRY, P_LOGOUT, P_DONE
+    P_LOBBIES, P_LOBBY_ENTRY, P_LOBBY_MEMBERS, P_LOGOUT, P_DONE
 };
 
 static const char *phase_name[] = {
     "connect", "login", "login (waiting for the server)", "mini data", "login finish", "top information",
-    "current place", "plaza list", "plaza entry", "lobby list", "lobby entry", "logout", "done"
+    "current place", "plaza list", "plaza entry", "lobby list", "lobby entry", "lobby members", "logout", "done"
 };
 
 static void note(const char *fmt, ...)
@@ -101,10 +103,12 @@ static void note(const char *fmt, ...)
 static void cb_done(CNET_RES res, void *p)
 {
     (void)p;
+    if (res.val == 2)       /* progress report of a multi-request job (allocation reads): not the end */
+        return;
     t_last_val = res.val;
     t_last_id = res.id;
     t_wait = 0;
-    if (res.val != 0 && res.val != 2) {
+    if (res.val != 0) {
         t_fail = 1;
         cnLBS_Get_ServerMessage(t_server_msg);
     }
@@ -183,6 +187,9 @@ static int issue(int ph)
     case P_LOBBY_ENTRY:
         note("enter lobby 1");
         return send_wait(cnLBS_LobbyEntry(1, (void (*)())cb_done));
+    case P_LOBBY_MEMBERS:
+        note("read the member list of lobby 1");
+        return send_wait(cnLBS_Read_LobbyMemberList(1, (void (*)())cb_done));
     case P_LOGOUT:
         note("log out");
         return send_wait(cnLBS_LogoutLobbyServer((void (*)())cb_done));
@@ -221,6 +228,17 @@ static void finished(int ph)
             note("  plaza %d \"%s\" status %d users %u/%u", i, name, st, a, b);
         }
         break;
+    case P_LOBBY_MEMBERS:
+        for (i = 0; i < 8; i++) {
+            char mid[0x10], mname[0x20];
+            u8 mini[0x40];
+            memset(mid, 0, sizeof mid);
+            memset(mname, 0, sizeof mname);
+            cnLBS_Get_LobbyMemberList(i, mid, mname, mini);
+            if (mid[0])
+                note("  member %d: id \"%s\" name \"%s\"", i, mid, mname);
+        }
+        break;
     case P_LOBBIES:
         cnLBS_Get_LobbyCount(&n);
         note("lobbies: %u", n);
@@ -253,6 +271,8 @@ int rt_net_test(const char *scenario)
         upto = P_LOBBIES;
     else if (scenario && !strcmp(scenario, "lobby"))
         upto = P_LOGOUT;
+    else if (scenario && !strcmp(scenario, "full"))
+        upto = P_DONE;
     note("scenario %s against %s:%s", scenario ? scenario : "full", host, port);
     CpInetInitialize();
 
