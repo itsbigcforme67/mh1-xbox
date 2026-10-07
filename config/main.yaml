@@ -1638,6 +1638,8 @@ segments:
       - [0x143B1C, asm, text/upd_record]
       - [0x143BB0, c, ime/imey]
       - [0x143CC8, asm, text/tmp_snssyn]
+      - [0x143E80, c, ime/imeqz]
+      - [0x143F94, asm, text/shift_temp]
       - [0x1440D0, c, ime/imez]
       - [0x1442A0, c, ime/imebf]
       - [0x1442E8, asm, text/init_hchar]

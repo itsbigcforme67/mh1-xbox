@@ -1361,6 +1361,7 @@ main 0x00243780 0x002437B0 ime/imev
 main 0x00243920 0x00243974 ime/imew
 main 0x002439F0 0x00243A44 ime/imex
 main 0x00243BB0 0x00243CC8 ime/imey
+main 0x00243E80 0x00243F94 ime/imeqz
 main 0x002440D0 0x002442A0 ime/imez
 main 0x002442F0 0x002444C8 ime/imeaa
 main 0x002448E0 0x00244990 ime/imecf
