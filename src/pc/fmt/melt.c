@@ -75,7 +75,10 @@ uint8_t *fmt_melt(const uint8_t *src, size_t srclen, size_t *outlen, int be)
         mask >>= 1;
     }
     *outlen = n;
-    return out;
+    {   /* the buffer grew in steps (4x the input first): give the rest back */
+        uint8_t *fit = realloc(out, n ? n : 1);
+        return fit ? fit : out;
+    }
 bad:
     free(out);
     return NULL;

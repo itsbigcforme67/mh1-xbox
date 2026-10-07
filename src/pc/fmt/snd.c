@@ -143,29 +143,35 @@ int fmt_snd_vag(const snd_pack *p, int vag, uint32_t *off, int *rate)
 
 static const int vag_coef[5][2] = { {0, 0}, {60, 0}, {115, -52}, {98, -55}, {122, -60} };
 
-int16_t *fmt_vag_decode(const uint8_t *src, size_t max, int *nsamples, int *loop)
+void fmt_vag_block(const uint8_t *q, int *h1, int *h2, int16_t *out)
+{
+    int shift = q[0] & 0xF, filt = q[0] >> 4, k;
+    int c0 = filt < 5 ? vag_coef[filt][0] : 0, c1 = filt < 5 ? vag_coef[filt][1] : 0;
+    int a = *h1, b = *h2;
+    for (k = 0; k < 28; k++) {
+        int nib = (q[2 + k / 2] >> ((k & 1) * 4)) & 0xF;
+        int s = (int16_t)(nib << 12);
+        s = (s >> shift) + ((a * c0 + b * c1) >> 6);
+        if (s > 32767) s = 32767;
+        if (s < -32768) s = -32768;
+        out[k] = (int16_t)s;
+        b = a;
+        a = s;
+    }
+    *h1 = a;
+    *h2 = b;
+}
+
+void fmt_vag_scan(const uint8_t *src, size_t max, int *nsamples, int *loop)
 {
     size_t frames = max / 16, f;
-    int16_t *out = malloc((frames ? frames : 1) * 28 * sizeof *out);
-    int h1 = 0, h2 = 0, n = 0, k;
-
+    int n = 0;
     *loop = -1;
     for (f = 0; f < frames; f++) {
-        const uint8_t *q = src + 16 * f;
-        int shift = q[0] & 0xF, filt = q[0] >> 4, flags = q[1];
-        int c0 = filt < 5 ? vag_coef[filt][0] : 0, c1 = filt < 5 ? vag_coef[filt][1] : 0;
+        int flags = src[16 * f + 1];
         if (flags & 4)
             *loop = n;
-        for (k = 0; k < 28; k++) {
-            int nib = (q[2 + k / 2] >> ((k & 1) * 4)) & 0xF;
-            int s = (int16_t)(nib << 12);
-            s = (s >> shift) + ((h1 * c0 + h2 * c1) >> 6);
-            if (s > 32767) s = 32767;
-            if (s < -32768) s = -32768;
-            out[n++] = (int16_t)s;
-            h2 = h1;
-            h1 = s;
-        }
+        n += 28;
         if (flags & 1) {                    /* end; with bit 2 it jumps to the loop start */
             if (!(flags & 2))
                 *loop = -1;
@@ -173,6 +179,16 @@ int16_t *fmt_vag_decode(const uint8_t *src, size_t max, int *nsamples, int *loop
         }
     }
     *nsamples = n;
+}
+
+int16_t *fmt_vag_decode(const uint8_t *src, size_t max, int *nsamples, int *loop)
+{
+    int16_t *out;
+    int h1 = 0, h2 = 0, f;
+    fmt_vag_scan(src, max, nsamples, loop);
+    out = malloc((*nsamples ? *nsamples : 1) * sizeof *out);
+    for (f = 0; f < *nsamples / 28; f++)
+        fmt_vag_block(src + 16 * f, &h1, &h2, out + 28 * f);
     return out;
 }
 

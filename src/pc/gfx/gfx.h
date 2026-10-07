@@ -35,6 +35,12 @@ int  gfx_read_pixels(uint8_t *rgb);
 gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba);
 extern int gfx_tex_src_hint;   /* memory report only: the next texture's size as stored on the disc (4/8-bit + CLUT) */
 void gfx_release_texture(gfx_texture *t);
+/* gfx_pal.c: <= 256 colours -> palette (RGBA words) + indices (idx may be
+ * NULL); returns the colour count or -1. And the bytes the Xbox backend
+ * keeps for such a texture (P8 + palette when it can, else RGBA8). */
+int  gfx_to_indexed(const uint32_t *src, int n, uint32_t *pal, uint8_t *idx);
+long gfx_xbox_texture_bytes(int w, int h, const uint8_t *rgba);
+int  gfx_clip_tri(const float w[3], float cw, int a[4], int b[4], float t[4]);
 
 /* ------------------------------------------------------------ render state */
 enum {

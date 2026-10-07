@@ -40,7 +40,18 @@ static fmt_blob load(const char *name, uint8_t **keep)
     }
     b.p = *keep;
     b.n = n;
+    if (getenv("RT_MEM_FILES"))
+        fprintf(stderr, "memstat: file %s %zu\n", name, n);
     return b;
+}
+
+/* A file whose contents fl_model_create has copied (geometry, skeleton,
+ * textures): not needed any more (memory: docs/xbox.md). Motion tables
+ * (*_tbl.bin) stay: the motion players read their keys in place. */
+static void drop(uint8_t **keep)
+{
+    free(*keep);
+    *keep = NULL;
 }
 
 /* File of a stage from one of the per-stage AFS index tables in main
@@ -121,6 +132,8 @@ static void load_eft_models(void)
             at[i] = part_attr(&eft_models[k], i);
         }
         rt_bind_eft_model(k, c, at, eft_models[k].npart);
+        drop(&eft_keep[2 * k]);
+        drop(&eft_keep[2 * k + 1]);
         if (eft_models[k].skel.nbone > 0)
             rt_bind_eft_skin(k, eft_models[k].skel.nbone, eft_skin);
         free(c);
@@ -330,6 +343,8 @@ static int monster_load(monster *e, const char *amh, const char *tex, const char
     ahi = fmt_link_entry(link, 1, FMT_LE);
     if (fl_model_create(&e->model, amo, ahi, tx, 1, FMT_LE) != 0 || fl_skel_create(&e->skel, ahi, FMT_LE) != 0)
         return -1;
+    drop(&e->mem[0]);
+    drop(&e->mem[1]);
     /* em tables: one bank per group, bank 2g (motion.md 3) */
     for (g = 0; g < 3; g++)
         if (tb.p)
@@ -410,6 +425,8 @@ static int hunter_load(hunter *h, const int *num, int legs_id, int upper_id)
             return -1;
         if (s == 0 && fl_skel_create(&h->master, ahi, FMT_LE) != 0)
             return -1;
+        drop(&h->mem[k - 2]);
+        drop(&h->mem[k - 1]);
         h->pw[s] = calloc(h->part[s].skel.nbone + 1, sizeof(flmat));
         h->ptmat[s] = tbl ? rt_ptr_at(0x3018F0 + 4 * (uint32_t)s) : NULL;   /* relocated by rt_import_data */
     }
@@ -468,8 +485,10 @@ static void hunter_relook(hunter *h, int sex, const int *num)
         fl_model_release(&h->part[s]);
         free(h->mem[2 * s]);
         free(h->mem[2 * s + 1]);
-        h->mem[2 * s] = m0;
-        h->mem[2 * s + 1] = m1;
+        h->mem[2 * s] = NULL;      /* copied by fl_model_create */
+        h->mem[2 * s + 1] = NULL;
+        free(m0);
+        free(m1);
         h->part[s] = nm;
         free(h->pw[s]);
         h->pw[s] = calloc(h->part[s].skel.nbone + 1, sizeof(flmat));
@@ -678,6 +697,8 @@ static int load_stage_models(int st)
     if (set_link.p)
         fl_model_create(&set, fmt_link_entry(set_link, 0, FMT_LE), fmt_link_entry(set_link, 1, FMT_LE),
                         set_tex, 0, FMT_LE);
+    for (k = 0; k < 4; k++)
+        drop(&keep[k]);
     {                           /* the area model to the game C (stage_work.mdl) */
         gfx_clay *c[64];
         uint32_t at[64];
@@ -928,6 +949,8 @@ static void npc_model_load(int slot, int amh, int tex)
         return;
     }
     npc_have[slot] = 1;
+    drop(&e->mem[0]);
+    drop(&e->mem[1]);
     if (getenv("RT_QUEST_TRACE"))
         fprintf(stderr, "village: npc model %d = %s, %d parts, %d bones\n", slot, afs.name[amh], e->model.npart, e->skel.skel.nbone);
 }
@@ -1031,6 +1054,8 @@ static void mem_tick(int t)
         if (atoi(m) == t) {
             snprintf(where, sizeof where, "tick %d", t);
             rt_ms_report(where);
+            rt_area_report();
+            rt_stack_report(where);
         }
         while (*m && *m != ',')
             m++;
@@ -1041,6 +1066,7 @@ static void mem_tick(int t)
 
 int main(int argc, char **argv)
 {
+    rt_stack_paint();
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shot") && i + 1 < argc) shot = argv[++i];
         else if (!strcmp(argv[i], "--frames") && i + 1 < argc) frames = atoi(argv[++i]);
@@ -1109,6 +1135,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "some lobby data tables are missing\n");
     if (rt_import_select() != 0)
         fprintf(stderr, "select.bin is missing: no title screen\n");
+    if (!getenv("RT_NO_TRIM"))
+        rt_mem_trim();
     if (boot && !quest_no)
         quest_no = 10;      /* the set-up below as for a quest; the boot ends in the village (game mode 6) */
     if (gfx_init(W, H, "MH1 PC viewer", shot != NULL) != 0)
@@ -1284,6 +1312,8 @@ int main(int argc, char **argv)
                                                           fmt_link_entry(link, 1, FMT_LE), tx, 1, FMT_LE) == 0
                                 && fl_skel_create(&weapon.skel, fmt_link_entry(link, 1, FMT_LE), FMT_LE) == 0)
                                 weapon.game = 1;
+                            drop(&weapon.mem[0]);
+                            drop(&weapon.mem[1]);
                         }
                     }
                 }
@@ -1614,5 +1644,6 @@ int main(int argc, char **argv)
         rt_snd_shutdown();
     gfx_shutdown();
     fmt_afs_close(&afs);
+    rt_stack_report("at exit");
     return 0;
 }
