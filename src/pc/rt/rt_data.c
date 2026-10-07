@@ -8,14 +8,14 @@
  * for byte; then every pointer word in them (the ELF's R_MIPS_32
  * relocations) is turned into a host pointer: to the host copy of a table
  * if it points into one, else to the host symbol of that name (functions,
- * work areas; found with dlsym, the binary is linked -rdynamic), else to
+ * work areas; found in the generated symbol table rt_symtab.c), else to
  * the same bytes in the loaded image (which is relocated the same way).
  */
-#define _GNU_SOURCE 1   /* dlsym RTLD_DEFAULT */
 #include "rt.h"
 #include "types.h"
 
-#include <dlfcn.h>
+/* host symbols by name: build/pc/rt_symtab.c (tools/gen_symtab.py) */
+void *rt_host_sym(const char *name);
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -157,13 +157,13 @@ static void *map_ptr(uint32_t v)
         if (v >= tables[i].va && v < tables[i].va + tables[i].size)
             return (uint8_t *)tables[i].dst + (v - tables[i].va);
     name = rt_sym_at(v, &off, &func);
-    if (name && (h = dlsym(RTLD_DEFAULT, name)) != NULL)
+    if (name && (h = rt_host_sym(name)) != NULL)
         return (uint8_t *)h + off;
     if (name) {         /* a file static whose C carries the address suffix
                          * (em04_effect_move -> em04_effect_move_0058F3E0) */
         char sfx[160];
         snprintf(sfx, sizeof sfx, "%s_%08X", name, (unsigned)(v - off));
-        if ((h = dlsym(RTLD_DEFAULT, sfx)) != NULL)
+        if ((h = rt_host_sym(sfx)) != NULL)
             return (uint8_t *)h + off;
     }
     if (func) {         /* code that is not ported: leave no MIPS address behind */
@@ -265,7 +265,7 @@ int rt_import_data(void)
  * symbol the C uses is a linker alias into it (tools/gen_rt_auto.py), so a
  * table read past its end sees its PS2 neighbours. rt_import_lobby copies
  * the image in and turns its pointer words (.rellobby.bin) into host
- * pointers: lobby functions to the host function of that name (dlsym),
+ * pointers: lobby functions to the host function of that name (rt_host_sym),
  * lobby data into rt_lb_mem, main addresses as for the ELF (map_ptr).
  * Call after rt_import_data. */
 #define LB_VRAM 0x533980u
@@ -284,7 +284,7 @@ static void *map_lb(uint32_t v)
         return map_ptr(v);
     name = rt_lb_sym_at(v, &off, &func);
     if (func && name) {
-        if ((h = dlsym(RTLD_DEFAULT, name)) != NULL)
+        if ((h = rt_host_sym(name)) != NULL)
             return (uint8_t *)h + off;
         {   /* em10_local_init_0053DCE0: the C has the plain name */
             size_t n = strlen(name);
@@ -292,7 +292,7 @@ static void *map_lb(uint32_t v)
             if (n > 9 && n < sizeof plain && name[n - 9] == '_' && strspn(name + n - 8, "0123456789ABCDEF") == 8) {
                 memcpy(plain, name, n - 9);
                 plain[n - 9] = 0;
-                if ((h = dlsym(RTLD_DEFAULT, plain)) != NULL)
+                if ((h = rt_host_sym(plain)) != NULL)
                     return (uint8_t *)h + off;
             }
         }
@@ -300,7 +300,7 @@ static void *map_lb(uint32_t v)
              * static whose C carries the address suffix (em10_local_init) */
             char sfx[160];
             snprintf(sfx, sizeof sfx, "%s_%08X", name, (unsigned)(v - off));
-            if ((h = dlsym(RTLD_DEFAULT, sfx)) != NULL)
+            if ((h = rt_host_sym(sfx)) != NULL)
                 return (uint8_t *)h + off;
         }
         if (getenv("RT_TRACE"))
@@ -377,7 +377,7 @@ static void *map_sel(uint32_t v)
         return map_ptr(v);
     name = rt_sel_sym_at(v, &off, &func);
     if (func && name) {
-        if ((h = dlsym(RTLD_DEFAULT, name)) != NULL)
+        if ((h = rt_host_sym(name)) != NULL)
             return (uint8_t *)h + off;
         if (getenv("RT_TRACE"))
             fprintf(stderr, "rt: select pointer to unported function %s+0x%X\n", name, (unsigned)off);

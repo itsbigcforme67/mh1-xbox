@@ -237,7 +237,7 @@ CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOUR
 # 94 without setting it: the hunter flew off to z = 1e21 and the screen
 # went blank. Zero is what such a slot ends near in every case seen.
 GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -ftrivial-auto-var-init=zero -Iinclude -w"
-LIBS="-lSDL2 -lGL -lm -ldl -rdynamic"   # -rdynamic: rt_data.c finds host symbols with dlsym
+LIBS="-lSDL2 -lGL -lm"   # host symbols by name: build/pc/rt_symtab.c (tools/gen_symtab.py), no dlsym
 # Compile one object and remember the command (tools/pc_link_adapt.py
 # compiles it again with build/pc/adapt/NAME.h when weak symbols or aliases
 # change); an existing adapt header is always included.
@@ -437,7 +437,7 @@ done
 # the generated aliases of the last build too, so their objects are not
 # compiled again twice per build (gen_rt_auto.py output is stable)
 [ -f build/pc/rt_gen.defsym ] && sed -n 's/^-Wl,--defsym,\([^=]*\)=\([^+]*\)+\?\(.*\)$/alias \1 \2 \3/p' build/pc/rt_gen.defsym | sed 's/ $/ 0/' >> $REQ
-python3 tools/pc_link_adapt.py $REQ || exit 1
+python3 tools/pc_link_adapt.py $REQ --lenient || exit 1
 # Symbols nothing defines yet (callees and data of the linked overlay C):
 # link once allowing them, list them, and let tools/gen_rt_auto.py define
 # them (data filled from the disc, functions as stand-ins); then link.
@@ -446,19 +446,34 @@ echo '#include <stddef.h>
 struct rt_table { const char *name; unsigned va; void *dst; size_t size; };
 const struct rt_table rt_gen_main_tables[1];' > build/pc/rt_gen.c
 $CC $CFLAGS $SYS -c build/pc/rt_gen.c -o build/pc/rt_gen.o
+# the symbol table rt_data.c looks names up in: empty for the first links
+echo 'void *rt_host_sym(const char *n) { (void)n; return 0; }' > build/pc/rt_symtab.c
+$CC $CFLAGS $SYS -c build/pc/rt_symtab.c -o build/pc/rt_symtab.o
 # shellcheck disable=SC2086
-$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview.tmp $LIBS \
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview.tmp $LIBS \
     -Wl,--warn-unresolved-symbols 2> build/pc/link1.log || { cat build/pc/link1.log; exit 1; }
 sed -n "s/.*undefined reference to \`\([^']*\)'.*/\1/p" build/pc/link1.log | sort -u > build/pc/undefined.txt
 rm -f build/pc/mhview.tmp
 # shellcheck disable=SC2086
 $NM --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined.txt
+# the aliases this build's headers already define came from gen_rt_auto.py:
+# hand them to it again as undefined, so its output does not depend on the
+# previous build
+sed -n 's/^-Wl,--defsym,\([^=]*\)=.*/\1/p' build/pc/rt_gen.defsym 2>/dev/null | sort -u |
+    { grep -vxF "$(for a in $ALIASES; do echo "${a%%=*}"; done)" || true; } > build/pc/aliased.txt
+sort -u build/pc/undefined.txt build/pc/aliased.txt -o build/pc/undefined.txt
+comm -23 build/pc/defined.txt build/pc/aliased.txt > build/pc/defined.tmp && mv build/pc/defined.tmp build/pc/defined.txt
 python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
 cc_obj rt_gen "$CC $CFLAGS $SYS -w -c build/pc/rt_gen.c -o build/pc/rt_gen.o"
 # the generated D_xxxx aliases (gen_rt_auto.py writes them as --defsym lines)
 sed -n 's/^-Wl,--defsym,\([^=]*\)=\([^+]*\)+\?\(.*\)$/alias \1 \2 \3/p' build/pc/rt_gen.defsym | sed 's/ $/ 0/' >> $REQ
 python3 tools/pc_link_adapt.py $REQ || exit 1
 # shellcheck disable=SC2086
-$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview $LIBS \
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview $LIBS \
     
+# now the real symbol table: every global the binary defines, then link again
+$NM --defined-only -g build/pc/mhview | python3 tools/gen_symtab.py build/pc/rt_symtab.c
+$CC $CFLAGS $SYS -w -c build/pc/rt_symtab.c -o build/pc/rt_symtab.o
+# shellcheck disable=SC2086
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview $LIBS
 echo "built build/pc/mhview (32-bit)"

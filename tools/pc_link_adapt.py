@@ -14,7 +14,7 @@ compiled again:
   - for an alias D = TARGET + off, an assembler `.set` in the object that
     defines TARGET (an alias of an undefined symbol is not possible in COFF).
 
-    python3 tools/pc_link_adapt.py REQUESTS
+    python3 tools/pc_link_adapt.py REQUESTS [--lenient]
 REQUESTS: lines "weak OBJ SYMBOL" and "alias SYMBOL TARGET OFFSET" (TARGET's
 defining object is found with nm). Each object's compile command is in
 build/pc/cmd/<obj>.sh (written by tools/build_pc.sh). An object is compiled
@@ -60,8 +60,9 @@ def main():
     for s, t, off in alias:
         o = defs.get(t)
         if not o:
-            print('pc_link_adapt: no definition of %s for alias %s' % (t, s), file=sys.stderr)
-            missing += 1
+            if '--lenient' not in sys.argv:     # first pass: the generated tables may not exist yet
+                print('pc_link_adapt: no definition of %s for alias %s' % (t, s), file=sys.stderr)
+                missing += 1
             continue
         hdr.setdefault(o, []).append(
             '__asm__(".globl " RTLA_P "%s\\n.set " RTLA_P "%s, " RTLA_P "%s + %d");' % (s, s, t, off))
