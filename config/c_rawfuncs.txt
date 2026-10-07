@@ -62,7 +62,6 @@ lobby 0x005A06F0 0x360 lb_npc_old_guild
 lobby 0x005AEF70 0x2F0 lb_shop_put_itemDetail
 lobby 0x005AF4E0 0x2D0 lb_shop_tag_decide
 lobby 0x0053BE00 0x130 Lb_put_materialItem
-lobby 0x00535840 0x3B4 lb_mix_put_itemDetail
 lobby 0x00536460 0x1B8 lb_mix_decide
 main 0x274690 0x74 Gun_level_up
 main 0x274760 0x54 Gun_option_ck
