@@ -143,3 +143,8 @@ Community pages change, so recheck anything a decision depends on.
 - Whether there is video that needs a decoder.
 - Whether the network-delivered patches are needed for normal play.
 - Anything about the lobby protocol's actual format.
+
+## Online play: details (7 Oct 2026)
+
+See docs/network.md section 2 (MH Oldschool's DNS / DNAS / portal hosts, open-source status, which layers of the
+game's network stack are decompiled) and section 5 (the lobby-server protocol read from the client).

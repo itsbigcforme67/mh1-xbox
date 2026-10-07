@@ -926,3 +926,13 @@ register numbering of sbw/rows/ch (declhill: u32 i, int n, u8 *ch, s16 rows, u8 
 (original `andi v0, zero, 1; sll 6` i.e. a bit-field store of a variable that is 0). Useful findings: the parameter list is (dst, size, sbp, sbw, psm, x, y, w, h) with h the 9th argument on the stack;
 `flPs2VIF1Control` must be declared as an array (lui/lw absolute, not gp-relative); `0 < chunks` gives `sltu at, zero, v`; `/ 2` gives the bgez rounding fix-up the original has for `>> 1` of a signed product.
 Next step would be the stack-slot spacing (try u128-aligned locals / a struct of 16 byte members) and then the register order.
+
+## Online multiplayer groundwork (7 Oct 2026, new assignment)
+Research, the PC network backend, the lobby-server protocol notes, the local test server and the online test are in
+docs/network.md (read it first). Summary: `ONLINE=1 tools/build_pc.sh` -> build/pc/mhview_online; `tools/test_online.sh`
+runs the game's own cnet client against tools/mh1_testserver.py on 127.0.0.1 through login, plaza and lobby lists,
+lobby members, chat. Nothing connects to MH Oldschool: the backend refuses their addresses and every public one.
+Files: src/pc/net/*, src/pc/rt/rt_net.c, tools/mh1_testserver.py, tools/test_online.sh, tools/lbs_cmdtab.py,
+tools/pc_patch.py (cnet argument fixes), tools/build_pc.sh (ONLINE block), src/pc/viewer.c (--nettest, MH1_ONLINE only).
+Lesson: the cnet C passes completion callbacks through argument registers (`cnLBS_Send_UserMiniData(a, b)` calls
+`__cnetSub_Set_BgProcess(1, 0)` and the callee reads a2); tools/argregs.py --check finds them, tools/pc_patch.py fixes them for the PC.

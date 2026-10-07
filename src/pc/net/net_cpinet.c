@@ -406,6 +406,10 @@ int CpInetTcpSetOption(int h, int buf)
 int CpInetGetStatus(void) { return 0; }                 /* no interface problem */
 int CpInetInterfaceProblemEnable(int on) { (void)on; return 0; }
 int CpInetInterfaceGetStatus(void) { return 3; }        /* interface up */
+int CpInetTcpConnected(void) { return 1; }               /* interface status == 3 (up) */
+int CpInetInterfaceProblem(int kind, int dhcp) { (void)kind; (void)dhcp; return 0; }
+int CpInetPppGetStatus(void *st) { (void)st; return -1; }  /* no modem / PPP on the host */
+int CpInetHttpInitialize(void) { return 0; }             /* the in-game browser's HTTP layer is not ported */
 int CpInetTcpNbCallEnd(void) { return 1; }
 int CpInetDevChanged(int *n) { if (n) *n = 0; return 0; }
 int CpInetDevSelect(int dev) { (void)dev; return 0; }

@@ -35,9 +35,17 @@ AP=$!
 sleep 2.0
 RT_NET_PORT=$PORT RT_NET_CHAT="hello from B" timeout 60 $BIN disc/mh1 --nettest full > $OUT/b.out 2>&1 || fail "client B stopped early"
 wait $AP || fail "client A stopped early"
-kill $SP 2>/dev/null
 grep -q "came into the lobby" $OUT/a.out || fail "A was not told that B came in"
 grep -q 'chat from .*"hello from B"' $OUT/a.out || fail "A did not hear the chat"
 grep -q "left the lobby" $OUT/a.out || fail "A was not told that B left"
 [ "$(grep -c 'member [0-9]: id' $OUT/b.out)" = 2 ] || fail "B did not see two members"
-echo "online OK: login, top information, plaza and lobby lists, lobby members, two clients with notices and chat (server 127.0.0.1:$PORT)"
+# the name path: the server table names "localhost", resolved by the backend's DNS (CpInetDnsGetTicket / LookUp)
+RT_NET_HOST=localhost RT_NET_PORT=$PORT timeout 60 $BIN disc/mh1 --nettest top > $OUT/dns.out 2>&1 || fail "the connection by name failed"
+grep -q "tcp connected" $OUT/dns.out || fail "no connection by name"
+kill $SP 2>/dev/null
+# safety: the MH Oldschool addresses and any public address are refused before a socket is opened
+for h in 34.75.107.68 151.80.238.99 8.8.8.8; do
+    RT_NET_HOST=$h RT_NET_PORT=$PORT timeout 30 $BIN disc/mh1 --nettest connect > $OUT/refuse.out 2>&1 && fail "$h was not refused"
+    grep -q "net: refusing $h" $OUT/refuse.out || fail "$h: no refusal message"
+done
+echo "online OK: login, top information, plaza and lobby lists, lobby members, two clients with notices and chat, connection by name, public / MH Oldschool addresses refused (server 127.0.0.1:$PORT)"
