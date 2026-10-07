@@ -1050,3 +1050,5 @@ fly_adjy2_hosei_tbl_00654420
 fly_adjz2_hosei_tbl_006544A0
 hagi_r_tbl_006544B0
 hagi_r_tbl_00657788
+# fishing spots (Fish_set, round 21)
+Fish_hani_tbl

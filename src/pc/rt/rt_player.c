@@ -308,16 +308,20 @@ void rt_player_tick(int no)
                     tk, p->pos[0], p->pos[2], hp, t[0], t[1], t[2]);
         }
     }
-    if (getenv("RT_PL_WARP")) {     /* test aid: "tick,x,z[;tick,x,z...]": put the hunter at x,z (same height) at those player ticks */
+    if (getenv("RT_PL_WARP")) {     /* test aid: "tick,x,z[,ang][;...]": put the hunter at x,z (same height), facing ang (hex) at those player ticks */
         static int tk;
         const char *s = getenv("RT_PL_WARP");
         tk++;
         while (s && *s) {
             int t = 0;
+            unsigned a;
             float x, z;
-            if (sscanf(s, "%d,%f,%f", &t, &x, &z) == 3 && tk == t) {
+            int nf = sscanf(s, "%d,%f,%f,%x", &t, &x, &z, &a);
+            if (nf >= 3 && tk == t) {
                 player_work[no].pos[0] = x;
                 player_work[no].pos[2] = z;
+                if (nf == 4)            /* optional facing angle (hex) */
+                    player_work[no].ang[1] = (s32)(a & 0xFFFF);
                 fprintf(stderr, "rt_player: tick %d warped to %.0f %.0f\n", tk, x, z);
             }
             s = strchr(s, ';');
@@ -349,10 +353,10 @@ void rt_player_tick(int no)
     }
     if (getenv("RT_PL_TRACE")) {
         PLW *pl = &player_work[no];
-        printf("pl: act %d/%d step %d chr %d/%d fr %.1f spd %.1f pos %.0f %.0f %.0f ang %04X st %d sw %04X/%04X hp %d\n",
+        printf("pl: act %d/%d step %d chr %d/%d fr %.1f spd %.1f pos %.0f %.0f %.0f ang %04X st %d sw %04X/%04X hp %d bite %d\n",
                pl->flag14, pl->flag15, PF(pl, u8, 5), PF(pl, u16, 0x2DC), PF(pl, u16, 0x2DE),
                PF(pl, f32, 0x19C), PF(pl, f32, 0x1A0), pl->pos[0], pl->pos[1], pl->pos[2],
-               pl->ang[1] & 0xFFFF, pl->st, pl->sw.now, pl->sw.trg, PF(pl, s16, 0x302));
+               pl->ang[1] & 0xFFFF, pl->st, pl->sw.now, pl->sw.trg, PF(pl, s16, 0x302), pl->x881);
     }
 }
 
