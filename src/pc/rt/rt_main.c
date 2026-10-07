@@ -106,8 +106,8 @@ WEAK void Pit_mv(void) {}
 WEAK void move_eft(void) {}
 WEAK void move_shell(void) {}
 WEAK void move_set(void) {}
-WEAK void move_senko(void) {}
-WEAK void move_smoke(void) {}
+
+
 /* Em_max_parts_get (main 0x10B770): number of motion part groups of
  * monster kind em (em_parts_num[(s16)em]); create_em_motion builds 2 banks
  * per group. */

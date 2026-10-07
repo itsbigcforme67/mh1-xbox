@@ -1,3 +1,4 @@
+/* em08 run: em08_uvmove (static), sound/effect script, hire_move group and em08_effect_move as one translation unit (0x005A3AA0-0x005A6F8C) */
 /* em08_ai, run 10: sound_call_sub_005A3CA0 .. ef_move_sub_005A3E50 (game.bin 0x005A3CA0-0x005A699C). Matching functions of em08_ai_nm.c (that file holds the
  * whole code including the near-matches); see it for the description. */
 #include "em.h"
@@ -167,7 +168,57 @@ void ground_land_eff_set_005A7050(EMW *em);
 void swim_eff_set_005A7070(f32 scale, EMW *em);
 void swim_eff_set2_005A7120(f32 scale, EMW *em);
 void em21_target_ang_calc(EMW *em, int arg1);
-void em08_uvmove(EMW *em);
+#define UVR(i) \
+    do { \
+        em->uv[i][0] = 0.0f; \
+        em->uv[i][1] = 0.0f; \
+        em->uvtm[i] = 0xFFFF; \
+        em->uvty[i] = 0xFF; \
+    } while (0)
+
+static void em08_uvmove(EMW *em) {
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        if (em->uvtm[i] != 0xFFFF) {
+            em->uvtm[i] += 1;
+        }
+        switch (em->uvty[i]) {
+        case 0:
+            UVR(i);
+            break;
+        case 1:
+            if (em->uvtm[i] >= 0x3E) {
+                UVR(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 1;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 8);
+                em->uv[i][1] = 0.25f * (f32)(k / 8 % 4);
+            }
+            break;
+        case 2:
+            em->uv[i][0] = 0.125f;
+            em->uv[i][1] = 0.0f;
+            em->uvtm[i] = 0xFFFF;
+            em->uvty[i] = 0xFF;
+            break;
+        case 3:
+            if (em->uvtm[i] >= 0xC) {
+                UVR(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 2;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 4);
+                em->uv[i][1] = 0.25f * (f32)(k / 4 % 4);
+            }
+            break;
+        case 0xFF:
+            break;
+        }
+    }
+}
+
 void sound_call_sub_005A3CA0(EMW *em, int se, int joint);
 static void sound_call_005A3D10(EMW *em, int frame, int se, int joint);
 static void quake_call_005A3DB0(EMW *em, int frame, int v);
@@ -990,4 +1041,176 @@ static void ef_move_sub_005A3E50(EMW *em, EM08W *w) {
         move_default_005A3E00(em);
         break;
     }
+}
+
+extern HIRE_E *hire_normal_add_tbl_00659250[4];
+extern HIRE_E *hire_down_add_tbl_00659300[4];
+
+
+static void hire_move_sub2_005A69A0(EMW *em, EM08W *w, int i) {
+    switch (w->st[i].b) {
+    case 0:
+        if (w->xF == 2 || w->xF == 3) {
+            if (w->ang[i].a != hire_down_angx_003887E8[i]) {
+                w->st[i].b = 2;
+                w->tmr[i] = 0x14;
+            }
+        } else if (w->xF == 1) {
+            if (w->ang[i].a != 0) {
+                w->st[i].b = 1;
+                w->tmr[i] = 0x14;
+            }
+        }
+        break;
+    case 1:
+        if (--w->tmr[i] <= 0) {
+            w->ang[i].a = 0;
+            w->st[i].b = 0;
+            return;
+        }
+        w->ang[i].a += ((0x10000 - w->ang[i].a) / w->tmr[i]) & 0xFFFF;
+        break;
+    case 2:
+        if (--w->tmr[i] <= 0) {
+            w->ang[i].a = hire_down_angx_003887E8[i];
+            w->st[i].b = 0;
+            return;
+        }
+        w->ang[i].a -= (((0x10000 - (hire_down_angx_003887E8[i] - w->ang[i].a)) & 0xFFFF) / w->tmr[i]) & 0xFFFF;
+        break;
+    }
+}
+
+static void hire_move_sub1_005A6B70(EMW *em, EM08W *w, int i) {
+    switch (w->st[i].a) {
+    case 0:
+        if (w->xF == 2) {
+            w->st[i].a++;
+            w->tm[i] = hire_start_timer_tbl1_003887D0[i];
+        } else if (w->xF == 1) {
+            w->st[i].a++;
+            w->tm[i] = hire_start_timer_tbl0_003887C8[i];
+        }
+        break;
+    case 1:
+        if (--w->tm[i] <= 0) {
+            if (w->xF == 2) {
+                w->st[i].a = 3;
+            } else {
+                w->st[i].a = 2;
+            }
+            w->tm[i] = 0;
+            w->cnt[i] = 0;
+        }
+        break;
+    case 2: {
+        HIRE_E *tbl;
+        HIRE_E *p;
+        s16 cnt0;
+        u16 cnt;
+        u8 k;
+
+        cnt0 = w->cnt[i];
+        w->cnt[i] = cnt0 + 1;
+        cnt = cnt0;
+        tbl = hire_normal_add_tbl_00659250[i];
+        p = tbl;
+        k = 0;
+        for (;;) {
+            if (k && !p->t) {
+                k |= 0x80;
+                break;
+            }
+            if (p->t < cnt) {
+                p++;
+                k++;
+                continue;
+            }
+            break;
+        }
+        if (k & 0x80) {
+            if (w->xF == 2) {
+                w->st[i].a = 1;
+                w->tm[i] = hire_remove_timer_tbl1_003887E0[i];
+            } else if (w->xF == 1) {
+                w->st[i].a = 1;
+                w->tm[i] = hire_remove_timer_tbl0_003887D8[i];
+            } else {
+                w->st[i].a = 0;
+            }
+            w->ang[i].b = tbl[k & 0x7F].v;
+            return;
+        }
+        w->ang[i].b += tbl[k].v;
+        break;
+    }
+    case 3: {
+        HIRE_E *tbl;
+        HIRE_E *p;
+        s16 cnt0;
+        u16 cnt;
+        u8 k;
+
+        cnt0 = w->cnt[i];
+        w->cnt[i] = cnt0 + 1;
+        cnt = cnt0;
+        tbl = hire_down_add_tbl_00659300[i];
+        p = tbl;
+        k = 0;
+        for (;;) {
+            if (k && !p->t) {
+                k |= 0x80;
+                break;
+            }
+            if (p->t < cnt) {
+                p++;
+                k++;
+                continue;
+            }
+            break;
+        }
+        if (k & 0x80) {
+            if (w->xF == 2) {
+                w->st[i].a = 1;
+                w->tm[i] = hire_remove_timer_tbl1_003887E0[i];
+            } else if (w->xF == 1) {
+                w->st[i].a = 1;
+                w->tm[i] = hire_remove_timer_tbl0_003887D8[i];
+            } else {
+                w->st[i].a = 0;
+            }
+            w->ang[i].b = tbl[k & 0x7F].v;
+            return;
+        }
+        w->ang[i].b += tbl[k].v;
+        break;
+    }
+    }
+}
+
+void hire_move_005A6EB0(EMW *em, EM08W *w) {
+    int i;
+
+    i = 0;
+    do {
+        hire_move_sub1_005A6B70(em, w, i);
+        hire_move_sub2_005A69A0(em, w, i);
+        i++;
+    } while (i < 4);
+}
+
+void em08_effect_move(EMW *em) {
+    EM08W *w = (EM08W *)em->ex;
+    u8 e = em->ex[0];
+
+    switch (e) {
+    case 0:
+        *(u8 *)w = e + 1;
+        break;
+    case 1:
+        ef_move_sub_005A3E50(em, w);
+        hire_move_005A6EB0(em, w);
+        break;
+    }
+    em08_uvmove(em);
 }

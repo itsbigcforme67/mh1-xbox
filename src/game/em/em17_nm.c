@@ -3177,7 +3177,9 @@ static void em_demo00_005DFDF0(EMW *em, EM17W *w) {
     s32 ang[3];
     f32 vF0[3];
     f32 outE0[3];
+    s32 ang2[3];
     FLMAT m;
+    FLMAT m2;
     EMW *temp_s1;
     STAGE_DATA *temp_s0;
     f32 temp_f1;
@@ -3231,12 +3233,13 @@ static void em_demo00_005DFDF0(EMW *em, EM17W *w) {
         w->dang = (u16)(w->dang - em->ang[1]);
         em17_senkai_sub(em, 3, 1);
         temp_v1 = w->dang;
-        if (temp_v1 >= 0x801 && temp_v1 < 0xF800) {
-        } else if (4000.0f < CalcDistanceXZ(em->pos, dst)) {
-            em->x05 += 1;
-            w->turn = 0x100;
-            em_char_set(em, 0x2C, 0, 0);
-            em->work08 = 0x708;
+        if (temp_v1 <= 0x800 || temp_v1 >= 0xF800) {
+            if (4000.0f < CalcDistanceXZ(em->pos, dst)) {
+                em->x05 += 1;
+                w->turn = 0x100;
+                em_char_set(em, 0x2C, 0, 0);
+                em->work08 = 0x708;
+            }
         }
         w->spd[0] = em->ang[0];
         w->spd[1] = em->ang[1];
@@ -3341,12 +3344,12 @@ static void em_demo00_005DFDF0(EMW *em, EM17W *w) {
             }
         }
         if (temp_s1 != 0) {
-            ang[0] = 0;
-            ang[1] = em->ang[1];
-            ang[2] = 0;
+            ang2[0] = 0;
+            ang2[1] = em->ang[1];
+            ang2[2] = 0;
             SetVector(vF0, 0.0f, 0.0f, 600.0f);
-            cpRotMatrixYXZ2(ang, &m);
-            flvecApplyMat33(outE0, vF0, &m[0][0]);
+            cpRotMatrixYXZ2(ang2, &m2);
+            flvecApplyMat33(outE0, vF0, &m2[0][0]);
             temp_s1->pos[0] = em->pos[0] + outE0[0];
             temp_s1->pos[2] = em->pos[2] + outE0[2];
             temp_s1->x40E = 5;
@@ -5309,12 +5312,10 @@ block_381:
 
 void em17_effect_move(EMW *em) {
     EM17W *w = (EM17W *)em->ex;
-    u8 temp_a2;
 
-    temp_a2 = w->eff;
-    switch (temp_a2) {                              /* irregular */
+    switch (w->eff) {
     case 0:
-        w->eff = temp_a2 + 1;
+        w->eff++;
         break;
     case 1:
         ef_move_sub_005E21D0(em, w);

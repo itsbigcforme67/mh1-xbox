@@ -13,7 +13,7 @@ def score(path,fn):
     return out,n
 def try_variants(file,mark,fn,variants,apply=None):
     src=open(file).read(); a,b=fn_span(src,mark); base=src[a:b]
-    z=os.path.join(os.path.dirname(file),'zzv.c')
+    z=os.path.join(os.path.dirname(file),'zzv%d.c'%os.getpid())
     res=[]
     for i,v in enumerate(variants):
         t=base

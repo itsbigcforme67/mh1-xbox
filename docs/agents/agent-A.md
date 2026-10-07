@@ -600,3 +600,17 @@ A sed that adds an argument to calls also hits K&R declarations
 Not done: Cephadrome/Plesioth hit while submerged (sound bomb not tried),
 drome carving not seen, the demo camera during intro demos not checked,
 em02/em07/em10/em33, ARM frame rate.
+
+## Assignment 21: last monsters, bombs, intro demos, gathering, fishing (6 Oct 2026)
+Details in docs/pc.md "Last monsters, items, intro demos, gathering and
+fishing". PC side only; no include/ edits; no PS2-built file changed.
+- Fatalis, Lao-Shan Lung, the em10 trader and Kirin run (all kinds linked).
+- Flash bombs (push_senko/move_senko/move_smoke), sound bomb on Cephadrome,
+  intro demo camera, carving Velocidrome and Fatalis, gathering (herbs,
+  mining, bugs) and fishing checked.
+Lessons: grep rt_quest.c / rt_main.c for no-op stand-ins of real game
+functions (func_XXXXXX wrappers, WEAK move_*): three gameplay features
+(fish, flashes, Lao-Shan quest condition) were missing only because of
+them. Shots with RT_SHOTS land on drawn frames, which can lag ticks by one.
+Not done: Plesioth with a sound bomb, Lao-Shan kill, em10 trading, forge
+greeting linger (not reproduced on x86).

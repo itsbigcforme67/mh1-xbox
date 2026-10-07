@@ -728,6 +728,16 @@ static void sim_tick(void)
     } else if (pl.game) {
         rt_player_motion_tick(0);
     }
+    if (pl.game && play && ticks < 2 && game_cam) {
+        /* the camera also runs on the first ticks: a quest's event demo
+         * (game2 -> EvDemoMove) can request its demo camera on tick 0 and
+         * ends at once when CameraMove has not taken the request */
+        flmat cw;
+        rt_cam_tick();
+        rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
+        lookat_world(cw, gc_eye, gc_tar);
+        rt_set_camera(cw);
+    }
     if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
         sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
         monsters_sync(0, &light);
@@ -1164,8 +1174,11 @@ int main(int argc, char **argv)
         float p[3] = { rx, gy, rz };
         if (getenv("RT_EM_STANDIN"))     /* old host stand-in: root motion and collision only */
             rt_monster_place(0, 1, p, (int)(0.6f * 65536.0f / 6.2831853f));
-        else                            /* the game's monster code: enemy_mv / em01 (rt_em.c) */
+        else {                          /* the game's monster code: enemy_mv / em01 (rt_em.c) */
+            if (getenv("RT_EM_KIND"))   /* test aid: another kind, with its own model */
+                em_model_load(0, atoi(getenv("RT_EM_KIND")));
             rt_monster_spawn(1, p, (int)(0.6f * 65536.0f / 6.2831853f));
+        }
         rathian.skel.root_lock = 1;
     }
     hunter_pose(&pl, 0, &light);

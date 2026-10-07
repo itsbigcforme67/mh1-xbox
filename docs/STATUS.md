@@ -729,3 +729,15 @@ All five modules byte-identical after every merge; main pushed.
   range overlap; D push game overlay to 100%; E (background permuter on mc_sel_ck; restart
   E when it finishes: memory-card run, IME near-matches); F lobby 0x5C4E60-end.
 - Owner said (5 Oct): keep going until told to stop; no scheduled usage checks.
+
+## 7 Oct 2026 checkpoint (coordinator)
+
+- 55.3% matched overall (6902 / 12585 functions): game 93.2%, select 90.8%, yn 68.9%, main ~39%, lobby ~35.5%.
+- PC build: power-on -> title -> character creation -> Kokoto -> quests -> reward -> save/continue
+  works; every monster kind runs; gathering, fishing, flash/sound bombs, intro cutscenes work.
+  tools/play.sh (boot) / play.sh quest. ARM box (RK3518): ~25 fps at 960x720 in fights, 48 at 640x480.
+- Owner decisions today: village (single player) before online; in-game web browser paused
+  (website/subscriptions only). Open question to the owner: when to start the original Xbox (nxdk) build.
+- Agent ranges: see docs/agents/COORDINATOR.md. Lessons for agents: end of docs/agents/BRIEF.md
+  (one TU per original file; literal addresses -> symbol fields; never pkill -f).
+- Coordinator: check-then-push only (rebuild all five OK + build_pc builds), one check at a time.

@@ -77,7 +77,7 @@ PL="$(ls src/main/pl/pl[0-9][0-9].c | tr '\n' ' ') src/main/pl/pl_nm.c src/main/
 # AI files are added when they exist (agent B's em01_ai_nm.c; agent D's
 # em_cmd_nm.c, the command interpreter); src/pc/rt/rt_em.c has weak
 # stand-ins for what is missing.
-EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c src/game/em/em_taisei_nm.c \
+EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c src/game/em/em_taisei.c \
     src/game/em/em01.c src/game/em/em01_horm.c src/game/em/em18_init.c src/game/em/em18b.c \
     src/game/em/em16_nm.c src/game/em/em16.c src/game/em/em12_nm.c src/game/em/em29.c"
 # Quest flow (agent C/E): f_quest (whole file near-match) and its first
@@ -104,7 +104,7 @@ EM="$EM src/game/em/em20_ai_nm.c src/game/em/em20.c src/game/em/em20b.c src/game
 # kind 17 Gravios / 22 Basarios: em17
 EM="$EM src/game/em/em17_nm.c src/game/em/em17.c src/game/em/em17_horm.c"
 # kind 27 Velocidrome / 28 Gendrome / 31 Iodrome: em27 (matched parts + whole-file weak)
-EM="$EM src/game/em/em27a.c src/game/em/em27b.c src/game/em/em27c.c src/game/em/em27_uv.c src/game/em/em27.c \
+EM="$EM src/game/em/em27a.c src/game/em/em27b.c src/game/em/em27c.c src/game/em/em27.c \
     src/game/em/em27_area.c src/game/em/em27_nm.c"
 # kind 19 Vespoid / 24 Hornetaur: em19 (+ fly.c, the flight curves)
 EM="$EM src/game/em/em19b.c src/game/em/em19_flyinit.c src/game/em/em19_init.c src/game/em/em19_move.c src/game/em/fly.c"
