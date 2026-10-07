@@ -23,7 +23,7 @@ RELAX = ['-Wno-error=implicit-function-declaration', '-Wno-error=implicit-int', 
 FRONT = ['src/pc/viewer.c', 'src/pc/fl/fl_model.c', 'src/pc/xbox/gfx_null.c', 'src/pc/fmt/afs.c', 'src/pc/fmt/melt.c',
          'src/pc/fmt/amo.c', 'src/pc/fmt/apx.c', 'src/pc/fmt/ahi.c', 'src/pc/fmt/aan.c', 'src/pc/fmt/hits.c',
          'src/pc/pad/pad_sdl.c', 'src/pc/fmt/snd.c', 'src/pc/movie/sfd.c', 'src/pc/audio/audio_mix.c', 'src/pc/audio/audio_sdl.c',
-         'src/pc/gfx/gfx_rec.c', 'src/pc/gfx/gfx_pal.c', 'src/pc/rt/rt_mem.c', 'src/pc/xbox/mc_null.c', 'src/pc/xbox/xbox_libc.c']
+         'src/pc/gfx/gfx_rec.c', 'src/pc/gfx/gfx_pal.c', 'src/pc/gfx/gfx_skin.c', 'src/pc/rt/rt_mem.c', 'src/pc/xbox/mc_null.c', 'src/pc/xbox/xbox_libc.c']
 COMPAT = 'src/pc/xbox/xbox_compat.h'     # fopen with '/' -> '\\' (xbox_libc.c)
 SKIP = {'rt_mc', 'rt_symtab', 'rt_memstat'}
 LIBS = ['xboxkrnl/libxboxkrnl.lib', 'libpdclib.lib', 'winmm.lib', 'libwinapi.lib', 'libnxdk_hal.lib', 'libnxdk.lib',
@@ -52,6 +52,25 @@ def run(job):
     r = subprocess.run(args, capture_output=True, text=True)
     return name, r.returncode, r.stderr
 
+# where gfx_nv2a.c uploads each program's constants: cgc's allocation must match
+VP_CONSTS = {
+    'vs': {'m_mvp': 0, 'm_tex': 4, 'fog_kb': 8, 'fog_col': 9, 'const': 10},
+    'skin': {'m_mvp': 0, 'm_tex': 4, 'fog_kb': 8, 'fog_col': 9, 'ldir[0]': 10, 'lcol[0]': 13, 'amb': 16,
+             'tint': 17, 'mode': 18, 'fade': 19, 'bones[0]': 20, 'const': 92},
+}
+
+def check_constants(name, text):
+    import re
+    want = VP_CONSTS.get(name)
+    if not want:
+        return
+    got = {m.group(1): int(m.group(2)) for m in re.finditer(r'#var \S+ (\S+) :\s*: c\[(\d+)\]', text)}
+    got.update({'const': int(m.group(1)) for m in re.finditer(r'#const c\[(\d+)\]', text)})
+    bad = [k for k, v in want.items() if got.get(k) != v]
+    if bad:
+        sys.exit('build_xbox: %s: cgc put %s elsewhere than gfx_nv2a.c expects: %s'
+                 % (name, ', '.join(bad), {k: got.get(k) for k in bad}))
+
 def shaders():
     """src/pc/xbox/shaders/*.cg -> build/xbox/shaders/*.inl (nxdk's cgc + vp20/fp20compiler)"""
     out = OUT + '/shaders'
@@ -63,6 +82,7 @@ def shaders():
         prof, conv = ('vp20', 'vp20compiler') if kind == 'vs' else ('fp20', 'fp20compiler')
         tmp = '%s/%s.%s' % (out, name, prof)
         subprocess.run([cgc, '-profile', prof, '-o', tmp, src], check=True, capture_output=True)
+        check_constants(name, open(tmp).read())
         inl = subprocess.run([NXDK + '/tools/%s/%s' % (conv, conv), tmp], check=True, capture_output=True, text=True).stdout
         open('%s/%s.inl' % (out, name), 'w').write(inl)
     return out

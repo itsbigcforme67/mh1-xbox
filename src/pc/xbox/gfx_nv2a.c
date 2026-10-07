@@ -49,7 +49,17 @@ struct gfx_clay {
     uint8_t *col, *drawcol;
     uint16_t *index;
     gfx_batch *batch;
+    /* GPU skinning (gfx_clay_set_skin): the regrouped batches, their
+     * vertices in contiguous memory (SKIN_STRIDE bytes each), this frame's
+     * pose */
+    gfx_skin_mesh *skin;
+    uint8_t *svb;
+    int nbone;
+    float *pose;                /* nbone * 16, or NULL = bind pose */
+    int posed;
+    gfx_light light;
 };
+#define SKIN_STRIDE 80          /* pos 3f, nrm 3f, col 4ub, st 2f, w 4f, slot*3 4f, flag 2f */
 
 typedef struct {
     float pos[3];
@@ -92,11 +102,28 @@ static void push1(uint32_t reg, uint32_t v)
     pb_end(p);
 }
 
+/* two vertex programs in the 136-slot program memory: vs.vs.cg at 0, the
+ * skinning one (skin.vs.cg) after it */
+static const uint32_t vs_program[] = {
+#include "vs.inl"
+};
+static const uint32_t skin_program[] = {
+#include "skin.inl"
+};
+#define SKIN_START (sizeof vs_program / 16)
+typedef char vp_fit[(sizeof vs_program + sizeof skin_program) / 16 <= 136 ? 1 : -1];
+static int cur_prog;
+
+static void use_program(int skin)
+{
+    if (cur_prog != skin) {
+        push1(NV097_SET_TRANSFORM_PROGRAM_START, skin ? (uint32_t)SKIN_START : 0);
+        cur_prog = skin;
+    }
+}
+
 static void load_shaders(void)
 {
-    static const uint32_t vs_program[] = {
-#include "vs.inl"
-    };
     uint32_t *p;
     unsigned i;
 
@@ -112,6 +139,13 @@ static void load_shaders(void)
         p = pb_begin();
         pb_push(p++, NV097_SET_TRANSFORM_PROGRAM, 4);
         memcpy(p, &vs_program[i * 4], 16);
+        p += 4;
+        pb_end(p);
+    }
+    for (i = 0; i < sizeof skin_program / 16; i++) {     /* loads on after the first one */
+        p = pb_begin();
+        pb_push(p++, NV097_SET_TRANSFORM_PROGRAM, 4);
+        memcpy(p, &skin_program[i * 4], 16);
         p += 4;
         pb_end(p);
     }
@@ -657,7 +691,7 @@ static void vtx_lerp(vtx *o, const vtx *a, const vtx *b, float t)
 static uint16_t *clip_buf;          /* the batches' index lists after clipping (grows) */
 static int clip_cap, clip_first[256], clip_count[256];
 
-void gfx_execute_clay(gfx_clay *c)
+static void execute_cpu(gfx_clay *c)
 {
     float mvp[16], tm[16];
     unsigned f[4] = { 255, 255, 255, 255 };
@@ -815,6 +849,14 @@ void gfx_release_clay(gfx_clay *c)
 {
     if (!c)
         return;
+    if (c->skin) {
+        wait_idle();
+        gfx_skin_free(c->skin);
+        free(c->skin);
+        if (c->svb)
+            MmFreeContiguousMemory(c->svb);
+        free(c->pose);
+    }
     free(c->pos);
     free(c->st);
     free(c->col);
@@ -822,4 +864,188 @@ void gfx_release_clay(gfx_clay *c)
     free(c->index);
     free(c->batch);
     free(c);
+}
+
+/* ------------------------------------------------------------ GPU skinning */
+int gfx_skin_capable(void) { return 1; }
+
+int gfx_clay_set_skin(gfx_clay *c, const gfx_skin_desc *s)
+{
+    gfx_clay_desc d;
+    gfx_skin_mesh *m = calloc(1, sizeof *m);
+    int i, k;
+    if (!m)
+        return -1;
+    memset(&d, 0, sizeof d);
+    d.nvert = c->nvert;
+    d.pos = c->pos;
+    d.st = c->st;
+    d.col = c->col;
+    d.nindex = c->nindex;
+    d.index = c->index;
+    d.nbatch = c->nbatch;
+    d.batch = c->batch;
+    if (gfx_skin_build(m, &d, s) != 0) {
+        free(m);
+        return -1;              /* stays a CPU clay (fl_model skins it) */
+    }
+    c->svb = MmAllocateContiguousMemoryEx((size_t)m->nv * SKIN_STRIDE, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
+    if (!c->svb) {
+        gfx_skin_free(m);
+        free(m);
+        return -1;
+    }
+    rt_ms_add("skinned vertex buffers (GPU)", (long)m->nv * SKIN_STRIDE);
+    for (i = 0; i < m->nv; i++) {
+        uint8_t *v = c->svb + (size_t)i * SKIN_STRIDE;
+        float f[4];
+        memcpy(v, m->pos + 3 * i, 12);
+        memcpy(v + 12, m->nrm + 3 * i, 12);
+        memcpy(v + 24, m->col + 4 * i, 4);
+        memcpy(v + 28, m->st + 2 * i, 8);
+        memcpy(v + 36, m->w + 4 * i, 16);
+        for (k = 0; k < 4; k++)
+            f[k] = 3.0f * m->slot[4 * i + k];
+        memcpy(v + 52, f, 16);
+        memcpy(v + 68, m->flag + 2 * i, 8);
+    }
+    /* the mesh keeps only what drawing needs (batches, indices) */
+    free(m->pos); free(m->nrm); free(m->st); free(m->w); free(m->slot); free(m->col); free(m->flag); free(m->src);
+    m->pos = m->nrm = m->st = m->w = m->flag = NULL;
+    m->slot = m->col = NULL;
+    m->src = NULL;
+    c->skin = m;
+    c->nbone = s->nbone;
+    return 0;
+}
+
+void gfx_clay_pose(gfx_clay *c, const float (*skin)[16], const gfx_light *L)
+{
+    if (!c->skin)
+        return;
+    if (skin && c->nbone > 0) {
+        if (!c->pose)
+            c->pose = malloc(sizeof(float) * 16 * (size_t)c->nbone);
+        if (c->pose)
+            memcpy(c->pose, skin, sizeof(float) * 16 * (size_t)c->nbone);
+    } else {
+        free(c->pose);          /* bind pose: identity bones (gfx.h) */
+        c->pose = NULL;
+    }
+    c->light = *L;
+    c->posed = 1;
+}
+
+static void set_skin_arrays(const uint8_t *v)
+{
+    uint32_t base = (uint32_t)(uintptr_t)v & 0x03ffffff, *p;
+    static const struct { int attr, type, size, off; } a[7] = {
+        { 0, NV097_SET_VERTEX_DATA_ARRAY_FORMAT_TYPE_F, 3, 0 },     /* pos */
+        { 2, NV097_SET_VERTEX_DATA_ARRAY_FORMAT_TYPE_F, 3, 12 },    /* normal */
+        { 3, NV097_SET_VERTEX_DATA_ARRAY_FORMAT_TYPE_UB_OGL, 4, 24 },  /* base colour */
+        { 9, NV097_SET_VERTEX_DATA_ARRAY_FORMAT_TYPE_F, 2, 28 },    /* TEX0: st */
+        { 10, NV097_SET_VERTEX_DATA_ARRAY_FORMAT_TYPE_F, 4, 36 },   /* TEX1: weights */
+        { 11, NV097_SET_VERTEX_DATA_ARRAY_FORMAT_TYPE_F, 4, 52 },   /* TEX2: 3 * palette slot */
+        { 12, NV097_SET_VERTEX_DATA_ARRAY_FORMAT_TYPE_F, 2, 68 },   /* TEX3: rigid, tinted */
+    };
+    int i;
+    p = pb_begin();
+    pb_push(p++, NV097_SET_VERTEX_DATA_ARRAY_FORMAT, 16);
+    for (i = 0; i < 16; i++)
+        *p++ = NV097_SET_VERTEX_DATA_ARRAY_FORMAT_TYPE_F;
+    for (i = 0; i < 7; i++) {
+        p = pb_push1(p, NV097_SET_VERTEX_DATA_ARRAY_FORMAT + a[i].attr * 4,
+                     MASK(NV097_SET_VERTEX_DATA_ARRAY_FORMAT_TYPE, a[i].type)
+                     | MASK(NV097_SET_VERTEX_DATA_ARRAY_FORMAT_SIZE, a[i].size)
+                     | MASK(NV097_SET_VERTEX_DATA_ARRAY_FORMAT_STRIDE, SKIN_STRIDE));
+        p = pb_push1(p, NV097_SET_VERTEX_DATA_ARRAY_OFFSET + a[i].attr * 4, base + (uint32_t)a[i].off);
+    }
+    pb_end(p);
+}
+
+static void push_consts(uint32_t first, const float *v, int n4)
+{
+    uint32_t *p = pb_begin();
+    p = pb_push1(p, NV097_SET_TRANSFORM_CONSTANT_LOAD, 96 + first);
+    while (n4 > 0) {
+        int k = n4 > 8 ? 8 : n4;            /* 32 floats per push */
+        pb_push(p++, NV097_SET_TRANSFORM_CONSTANT, 4 * k);
+        memcpy(p, v, 16 * (size_t)k);
+        p += 4 * k;
+        v += 4 * k;
+        n4 -= k;
+    }
+    pb_end(p);
+}
+
+/* skin.vs.cg's constants (tools/build_xbox.py checks cgc's layout):
+ * c0 mvp, c4 texture matrix, c8 fog (k, b), c9 fog colour, c10-12 light
+ * directions, c13-15 light colours, c16 ambient, c17 tint, c18 mode
+ * (x: lit), c19 fade colour, c20.. bone rows (3 per palette slot), c92 (1, 0, 0.5) */
+static void draw_skinned(gfx_clay *c, const float *mvp)
+{
+    static const float id[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
+    gfx_skin_mesh *m = c->skin;
+    float k[20 * 4], tm[16], rows[GFX_SKIN_PALETTE * 3 * 4], c91[4] = { 1, 0, 0.5f, 0 };
+    int b, i, j, l;
+    memset(k, 0, sizeof k);
+    memcpy(k, mvp, 64);
+    if (G.fog_on && G.fog_end != G.fog_start) {
+        k[32] = 1.0f / (G.fog_end - G.fog_start);
+        k[33] = -G.fog_start / (G.fog_end - G.fog_start);
+    }
+    memcpy(k + 36, G.fog_col, 12);
+    for (l = 0; l < 3; l++) {
+        memcpy(k + 40 + 4 * l, c->light.dir[l], 12);
+        memcpy(k + 52 + 4 * l, c->light.col[l], 12);
+    }
+    memcpy(k + 64, c->light.ambient, 12);
+    if (c->light.tint)
+        memcpy(k + 68, c->light.tint_rgb, 12);
+    else
+        k[68] = k[69] = k[70] = 1;
+    k[72] = c->light.lit ? 1.0f : 0.0f;
+    for (i = 0; i < 4; i++)                  /* fl state 0x67, as the CPU path multiplies it in */
+        k[76 + i] = G.fade == 0xFFFFFFFFu ? 1.0f : ((G.fade >> (i == 3 ? 24 : 16 - 8 * i)) & 255) / 255.0f;
+    use_program(1);
+    push_consts(92, c91, 1);
+    for (b = 0; b < m->nbatch; b++) {
+        const gfx_skin_batch *bt = &m->batch[b];
+        gfx_texture *t = bt->tex ? bt->tex : G.tex;
+        if (!c->st)
+            t = NULL;
+        for (i = 0; i < bt->nbone; i++) {
+            const float *M = c->pose ? c->pose + 16 * bt->bone[i] : id;
+            for (j = 0; j < 3; j++) {           /* row j = column j of the row-vector matrix */
+                rows[12 * i + 4 * j] = M[j];
+                rows[12 * i + 4 * j + 1] = M[4 + j];
+                rows[12 * i + 4 * j + 2] = M[8 + j];
+                rows[12 * i + 4 * j + 3] = M[12 + j];
+            }
+        }
+        bind_texture(t);
+        tex_matrix(t, tm);
+        memcpy(k + 16, tm, 64);
+        push_consts(0, k, 20);
+        if (bt->nbone)
+            push_consts(20, rows, 3 * bt->nbone);
+        set_skin_arrays(c->svb + (size_t)bt->vfirst * SKIN_STRIDE);
+        draw_indexed(m->index + bt->first, bt->count);
+    }
+    use_program(0);
+}
+
+void gfx_execute_clay(gfx_clay *c)
+{
+    float mvp[16];
+    if (!c->skin || !c->posed) {
+        execute_cpu(c);
+        return;
+    }
+    if (gfx_rec_clay(c))                    /* skinned and lit by skin.vs.cg */
+        return;
+    mat_mul(mvp, G.world, G.view);
+    mat_mul(mvp, mvp, G.proj);
+    mat_mul(mvp, mvp, G.viewport);
+    draw_skinned(c, mvp);
 }

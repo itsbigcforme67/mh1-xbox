@@ -51,3 +51,8 @@ gfx_clay *gfx_create_clay(const gfx_clay_desc *d)
 void gfx_update_clay(gfx_clay *c, const float *pos, const uint8_t *col) { (void)c; (void)pos; (void)col; }
 void gfx_execute_clay(gfx_clay *c) { (void)c; }
 void gfx_release_clay(gfx_clay *c) { free(c); }
+
+/* no GPU skinning here: fl_model skins on the CPU (gfx.h) */
+int gfx_skin_capable(void) { return 0; }
+int gfx_clay_set_skin(gfx_clay *c, const gfx_skin_desc *s) { (void)c; (void)s; return -1; }
+void gfx_clay_pose(gfx_clay *c, const float (*skin)[16], const gfx_light *L) { (void)c; (void)skin; (void)L; }

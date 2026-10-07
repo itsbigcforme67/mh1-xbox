@@ -5,7 +5,7 @@
 #include "rt_prof.h"
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef XBOX
+#ifdef _WIN32     /* the Xbox build (nxdk targets win32) */
 #include <windows.h>
 #else
 #include <time.h>
@@ -30,7 +30,7 @@ void rt_prof_count(int c, long n)
 
 static double now_ms(void)
 {
-#ifdef XBOX
+#ifdef _WIN32     /* the Xbox build (nxdk targets win32) */
     LARGE_INTEGER c, f;
     QueryPerformanceCounter(&c);
     QueryPerformanceFrequency(&f);
