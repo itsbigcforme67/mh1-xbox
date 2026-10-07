@@ -319,9 +319,10 @@ Numbers are ms of CPU, after this round's fixes (below):
 | vertices skinned / drawn per frame | 20k / 36k | 16k / 34k | 12k / 30k | |
 | triangles / draw calls per frame | 32k / 121 | 32k / 154 | 24k / 68 | |
 
-\* The village runs no sound tick on the PC yet (no village sound path in
-the viewer), so no mixer time was measured there; assume the Fatalis
-figure.
+\* The village run measured no sound tick and no mixing: in the viewer, rt_snd_tick
+and the --audio-dump mixing run from sim_tick (quests) and the boot screens
+only, not in the village's game mode 6 (worth checking whether the village
+is silent on the PC). The Fatalis mixer figure is assumed there.
 
 ### Projection to the Xbox
 
