@@ -2422,3 +2422,7 @@ lobby:rodata 0x0065DEF0 0x0065DF10 cnet/cnlbs
 lobby:rodata 0x0065DFE0 0x0065E000 cnet/cnlbse
 lobby:rodata 0x0065DF10 0x0065DF30 cnet/cnlbs
 lobby:rodata 0x0065DED0 0x0065DEEC cnet/cnlbs
+game 0x005A0FF0 0x005A16F4 em/em08_demo
+game:rodata 0x006868E0 0x00686914 em/em08_demo
+game 0x005DFDF0 0x005E06E4 em/em17_demo
+game:rodata 0x00688CD0 0x00688D00 em/em17_demo
