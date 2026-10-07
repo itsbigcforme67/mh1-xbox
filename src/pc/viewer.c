@@ -877,10 +877,8 @@ static void sim_tick(void)
     }
     if (quest_no || play)
         rt_hud_tick();                  /* Pit_mv: HUD layers (last step of move()) */
-    if (snd == 0) {
-        rt_snd_tick();
-        audio_dump_tick();
-    }
+    if (snd == 0)
+        rt_snd_stage_tick();            /* move_stage's river / waterfall loops (Snd_server runs per tick below) */
 }
 
 /* After the reward screen (game mode 6) the PS2 goes back to the village,
@@ -1277,6 +1275,11 @@ int main(int argc, char **argv)
     rt_game_init(stage_no);
     if (quest_no || play)
         rt_hud_init();                  /* load_pit, Pit_init, info banner */
+    if (!boot) {                        /* --quest / free play: the options' defaults, as the boot's
+                                         * InitSystemData sets them (sound volumes come from system_w) */
+        void option_default_set(void);
+        option_default_set();
+    }
     if (!mute)
         snd = rt_snd_init(disc, audio_dump == NULL && shot == NULL);
 
@@ -1522,6 +1525,11 @@ int main(int argc, char **argv)
             }
             else
                 sim_tick();
+            if (snd == 0) {             /* Snd_server: ACRMain runs it every frame, in every game mode
+                                         * (the village had no music on the PC without it) */
+                rt_snd_tick();
+                audio_dump_tick();
+            }
             ticks++;
                 mem_tick(ticks);
             /* the joint matrices the next tick reads are those of the state
