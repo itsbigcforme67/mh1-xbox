@@ -92,7 +92,9 @@ def seed(path, done=set()):
         if k is not None: seen[k] = norm(u)
 INC = re.compile(r'^#include "(lobby_f|lobby_b|lobby_a|lobby_s|lbui_proto|lbnet)\.h"$')
 NOB = bool(os.environ.get('LBTU_NOB'))  # village TUs: runs include lobby.h, not the lobby_b.h family
+HDR = [h for h in os.environ.get('LBTU_HDR', '').split(',') if h]  # headers every run includes first (seeded + emitted at the top)
 if not NOB: seed('include/lobby_b.h'); seed('include/lbnet.h')
+for h in HDR: seed('include/' + h)
 for ri, (a, b, r) in enumerate(runs):
     s = open('src/lobby/%s.c' % r).read()
     s = re.sub(r'^/\*.*?\*/\n', '', s, count=1, flags=re.S)
@@ -177,7 +179,7 @@ for ad, n, tx in items:
     else: fwd.append('%s %s(%s);' % (ret, n, params))
 decls = decls + fwd + sorted(set(knr))
 body = '\n'.join(decls)
-out = ['/* %s - one translation unit 0x%08X-0x%08X (lbtu3). */' % (name, S, E) + ('' if NOB else '\n#define Lbs_MatchStart Lbs_MatchStart_hdr\n#include "lobby_b.h"\n#undef Lbs_MatchStart\ntypedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;'), body]
+out = ['/* %s - one translation unit 0x%08X-0x%08X (lbtu3). */' % (name, S, E) + (''.join('\n#include "%s"' % h for h in HDR) if NOB else '\n#define Lbs_MatchStart Lbs_MatchStart_hdr\n#include "lobby_b.h"\n#undef Lbs_MatchStart\ntypedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;'), body]
 raw = []
 for ad, n, t in items:
     if t is None:
