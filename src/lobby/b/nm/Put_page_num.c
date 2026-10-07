@@ -21,11 +21,11 @@ void Put_page_num(int arg0, int arg1, int arg2, int arg3, int arg4) {
     temp_s2 = arg4;
     temp_s1 = Lb_get_cursor_col();
     font_set_palette(0);
-    temp_s0 =  (arg3 << 0x30) >> 0x30;
+    temp_s0 =  (s16)(arg3);
     if (temp_s0 < 0xA) {
-        sprintf(sp90, &lit_2418, ( (arg2 << 0x30) >> 0x30) + 1, F(s32, &lb_num_str, 0x2C));
+        sprintf(sp90, &lit_2418, ( (s16)(arg2)) + 1, F(s32, &lb_num_str, 0x2C));
     } else {
-        sprintf(sp90, &lit_2419, ( (arg2 << 0x30) >> 0x30) + 1, F(s32, &lb_num_str, 0x2C));
+        sprintf(sp90, &lit_2419, ( (s16)(arg2)) + 1, F(s32, &lb_num_str, 0x2C));
     }
     han2zen(sp90, &sp70);
     flfntSetSize(0x12, 0x12);
@@ -41,28 +41,28 @@ void Put_page_num(int arg0, int arg1, int arg2, int arg3, int arg4) {
         SetTextureStage(0x157);
         if (temp_s2 != 0) {
             if (temp_s0 < 0xA) {
-                temp_s0_2 =  (arg0 << 0x30) >> 0x30;
-                temp_s2_2 = ( (arg1 << 0x30) >> 0x30) - 1;
-                Lb_put_icon_free( ((temp_s0_2 - 0x18) << 0x30) >> 0x30,  (temp_s2_2 << 0x30) >> 0x30, 0x14, temp_s1);
-                Lb_put_icon_free( ((temp_s0_2 + 0x28) << 0x30) >> 0x30,  (temp_s2_2 << 0x30) >> 0x30, 0x14, temp_s1);
+                temp_s0_2 =  (s16)(arg0);
+                temp_s2_2 = ( (s16)(arg1)) - 1;
+                Lb_put_icon_free( (s16)((temp_s0_2 - 0x18)),  (s16)(temp_s2_2), 0x14, temp_s1);
+                Lb_put_icon_free( (s16)((temp_s0_2 + 0x28)),  (s16)(temp_s2_2), 0x14, temp_s1);
                 return;
             }
-            temp_s2_3 = ( (arg1 << 0x30) >> 0x30) - 1;
-            temp_s0_3 =  (arg0 << 0x30) >> 0x30;
-            Lb_put_icon_free( ((temp_s0_3 - 0x18) << 0x30) >> 0x30,  (temp_s2_3 << 0x30) >> 0x30, 0x14, temp_s1);
-            Lb_put_icon_free( ((temp_s0_3 + 0x3A) << 0x30) >> 0x30,  (temp_s2_3 << 0x30) >> 0x30, 0x14, temp_s1);
+            temp_s2_3 = ( (s16)(arg1)) - 1;
+            temp_s0_3 =  (s16)(arg0);
+            Lb_put_icon_free( (s16)((temp_s0_3 - 0x18)),  (s16)(temp_s2_3), 0x14, temp_s1);
+            Lb_put_icon_free( (s16)((temp_s0_3 + 0x3A)),  (s16)(temp_s2_3), 0x14, temp_s1);
             return;
         }
         if (temp_s0 < 0xA) {
-            temp_s0_4 =  (arg0 << 0x30) >> 0x30;
-            temp_s2_4 = ( (arg1 << 0x30) >> 0x30) - 3;
-            Lb_put_icon( ((temp_s0_4 - 0x1A) << 0x30) >> 0x30,  (temp_s2_4 << 0x30) >> 0x30, 0, temp_s1);
-            Lb_put_icon( ((temp_s0_4 + 0x36) << 0x30) >> 0x30,  (temp_s2_4 << 0x30) >> 0x30, 1, temp_s1);
+            temp_s0_4 =  (s16)(arg0);
+            temp_s2_4 = ( (s16)(arg1)) - 3;
+            Lb_put_icon( (s16)((temp_s0_4 - 0x1A)),  (s16)(temp_s2_4), 0, temp_s1);
+            Lb_put_icon( (s16)((temp_s0_4 + 0x36)),  (s16)(temp_s2_4), 1, temp_s1);
             return;
         }
-        temp_s2_5 = ( (arg1 << 0x30) >> 0x30) - 3;
-        temp_s0_5 =  (arg0 << 0x30) >> 0x30;
-        Lb_put_icon( ((temp_s0_5 - 0x1A) << 0x30) >> 0x30,  (temp_s2_5 << 0x30) >> 0x30, 0, temp_s1);
-        Lb_put_icon( ((temp_s0_5 + 0x5A) << 0x30) >> 0x30,  (temp_s2_5 << 0x30) >> 0x30, 1, temp_s1);
+        temp_s2_5 = ( (s16)(arg1)) - 3;
+        temp_s0_5 =  (s16)(arg0);
+        Lb_put_icon( (s16)((temp_s0_5 - 0x1A)),  (s16)(temp_s2_5), 0, temp_s1);
+        Lb_put_icon( (s16)((temp_s0_5 + 0x5A)),  (s16)(temp_s2_5), 1, temp_s1);
     }
 }
