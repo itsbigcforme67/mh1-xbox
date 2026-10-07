@@ -134,7 +134,5 @@ main 0x002617D0 0x694 DispSoftkeyboard
 main 0x00262170 0x1E0 palette_ng_sub
 main 0x002625B0 0x68 sk_palette_cursor_set
 lobby 0x005BF4F0 0x70 tk_logout_message_sub
-lobby 0x005B9030 0x2BC CallBack_Result_LoginLobbyServer
 lobby 0x005B74C0 0x42C lbc_login_init
-lobby 0x005BEF30 0x154 lobby_client_admin_message
 lobby 0x005BC150 0x284 Lbc_GetRoomRule

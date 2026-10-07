@@ -1346,12 +1346,85 @@ void lbc_login_finish_after() {
     }
 }
 
-#ifdef __MWERKS__
-asm int CallBack_Result_LoginLobbyServer()
-{
-#include "CallBack_Result_LoginLobbyServer.inc"
+extern u8 my_user_id[];
+void CallBack_Result_LoginLobbyServer(CNET_RES res) {
+    int sw;
+
+    sw = res.id;
+    if (res.val != -1) {
+        switch ((s8)sw) {
+        case 4:
+            F(s8, (u8 *)cw, 0x2C33) = 2;
+            F(u8, (u8 *)cw, 0x2C34) = 0;
+            cnLBS_Get_LoginWarningMessage((u8 *)cw + 0x35FE, res.id);
+            return;
+        case 1:
+            switch (F(u8, &CnetWork, 5)) {
+            case 0:
+                F(s8, (u8 *)cw, 0x2C33) = 4;
+                F(u8, (u8 *)cw, 0x2C34) = 0;
+                F(s8, (u8 *)cw, 0x2C35) = 0;
+                fade_set(1);
+                return;
+            case 1:
+            case 2:
+                F(s8, (u8 *)cw, 0x2C33) = 4;
+                F(u8, (u8 *)cw, 0x2C34) = 6;
+                F(s8, (u8 *)cw, 0x2C35) = 0;
+                CallBackWaitInit();
+                cnLBS_Send_LoginUserAccount((u8 *)cw + 0x440, (u8 *)cw + 0x448, &my_user_mini_data);
+                return;
+            case 3:
+                F(s8, (u8 *)cw, 0x2C33) = 4;
+                F(u8, (u8 *)cw, 0x2C34) = 6;
+                F(s8, (u8 *)cw, 0x2C35) = 0;
+                CallBackWaitInit();
+                cnLBS_Send_LoginUserAccount(my_user_id, my_user_handle, &my_user_mini_data);
+                return;
+            }
+            break;
+        case 2:
+            cnetGet_Login_DecideUserID((u8 *)cw + 0x440, res.id);
+            memcpy(my_user_id, (u8 *)cw + 0x440, 8);
+            cnetGet_Login_DecideUserHandle((u8 *)cw + 0x448);
+            memcpy(my_user_handle, (u8 *)cw + 0x448, 0x12);
+            F(u8, (u8 *)cw, 0x2C34) = F(u8, (u8 *)cw, 0x2C34) + 1;
+            return;
+        case 5:
+            F(s8, (u8 *)cw, 0x2C33) = 1;
+            F(u8, (u8 *)cw, 0x2C34) = 0;
+            return;
+        case 3:
+            F(s8, (u8 *)cw, 0x2C33) = 3;
+            F(u8, (u8 *)cw, 0x2C34) = 0;
+            return;
+        case 0:
+            F(s8, (u8 *)cw, 0x2C33) = 7;
+            F(u8, (u8 *)cw, 0x2C34) = 0;
+            return;
+        }
+    } else {
+        switch ((s8)sw) {
+        case 7:
+            F(s8, (u8 *)cw, 0x2C33) = 6;
+            F(u8, (u8 *)cw, 0x2C34) = 0;
+            F(s8, (u8 *)cw, 2) = 1;
+            fade_set(1);
+            cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1);
+            return;
+        case 8:
+            F(s8, (u8 *)cw, 0x2C33) = 6;
+            F(u8, (u8 *)cw, 0x2C34) = 0;
+            F(s8, (u8 *)cw, 2) = 2;
+            cnLBS_Get_ServerMessage((u8 *)cw + 0x32D1, res.id);
+            return;
+        case 9:
+            To_LogOut(4);
+        default:
+            break;
+        }
+    }
 }
-#endif
 
 void lbc_browser() {
     ((int (**)())lbc_user_regist_jmp_939)[F(u8, (u8 *)cw, 0x2C43)]();
@@ -4066,12 +4139,48 @@ void CallBack_Result_GotoTop(CNET_RES res) {
     }
 }
 
-#ifdef __MWERKS__
-asm int lobby_client_admin_message()
-{
-#include "lobby_client_admin_message.inc"
+extern char lbc_admin_message_jmp_3260[];
+s32 lobby_client_admin_message() {
+    s8 sx1;
+    u8 temp_v1;
+    int temp_a0;
+    int temp_a0_2;
+    int temp_v1_2;
+
+    temp_a0 = (int)cw;
+    if (F(u8, temp_a0, 0x2C5C) == 0) {
+        return 0;
+    }
+    if (F(s8, temp_a0, 0x2C08) == 0) {
+        return 0;
+    }
+    temp_v1 = F(u8, temp_a0, 0x2C31);
+    if (temp_v1 == 0) return 0;
+    if (temp_v1 == 5) return 0;
+    if (temp_v1 == 4) return 0;
+    {
+        if ((F(u8, temp_a0, 0x35D5) != 0) && ((sx1 = SoftKeyboard_alive_check()) != 0)) {
+            return 0;
+        }
+        temp_a0 = (int)cw;
+        temp_v1_2 = temp_a0;
+        if (F(s8, temp_v1_2, 0x2C0C) != 0) {
+            return 0;
+        }
+        if (F(s8, temp_v1_2, 0x2C30) != 0) {
+            F(s8, temp_v1_2, 0x2C30) = 0;
+            F(u8, (u8 *)cw, 0x2F79) = 0xFF;
+            F(u8, (u8 *)cw, 0x2F78) = 0U;
+            cnLbc_EraseDialog(0x4C);
+        }
+        temp_a0_2 = (int)cw;
+        if ((F(u8, temp_a0_2, 0x2F78) != 0) && (F(u8, temp_a0_2, 0x2C5C) != 2)) {
+            return 0;
+        }
+        ((int (**)())&lbc_admin_message_jmp_3260)[F(u8, temp_a0_2, 0x2F6E)](temp_a0_2);
+        return 1;
+    }
 }
-#endif
 
 void lbc_admin_message_00() {
     char sp10[0x20];
