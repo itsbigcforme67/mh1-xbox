@@ -489,6 +489,8 @@ void str_master_vol(int update)
     int i;
     for (i = 0; i < 2; i++) {
         strw[i].max = adx_cnfvol_tbl[i == 0 ? bgm_cfg : se_cfg];
+        if (trace)
+            printf("snd: tick %d str_master_vol(%d): ch %d max %d (cfg %d %d)\n", tick_no, update, i, strw[i].max, bgm_cfg, se_cfg);
         if (update == 1)
             str_volume(i, strw[i].max);
     }
@@ -541,6 +543,8 @@ void str_fadein_vol(int ch, int n, int vol)
     s->from = s->vol;
     s->to = (s16)vol;
     s->n = s->total = (s16)n;
+    if (trace)
+        printf("snd: tick %d str %d fade %d -> %d over %d (max %d)\n", tick_no, ch, s->from, vol, n, s->max);
 }
 
 void str_fadein(int ch, int n) { str_fadein_vol(ch, n, strw[ch].max); }
@@ -666,8 +670,9 @@ static void stage_se_move(void)
     f32 pos[3], best = -1.0f, px, pz;
     int cnt, n, i;
     PLW *pl = &player_work[0];
+    static int se_tick;
 
-    if (tick_no & 3)
+    if (!snd_on || (++se_tick & 3))     /* its own count: game_core ticks only */
         return;
     pos[1] = 0;
     switch (game_w.stage) {
@@ -852,10 +857,22 @@ int rt_snd_init(const char *disc, int device)
     /* str_master_vol (0x100B40): channel 0 from the BGM option, 1 from the SE option */
     strw[0].max = adx_cnfvol_tbl[bgm_cfg];
     strw[1].max = adx_cnfvol_tbl[se_cfg];
+    if (trace)
+        printf("snd: init: option volumes %d %d -> max %d %d\n", bgm_cfg, se_cfg, strw[0].max, strw[1].max);
     snd_on = 1;
     return 0;
 }
 
+/* move_stage's part (game_core ticks): the stage's river / waterfall loops */
+void rt_snd_stage_tick(void)
+{
+    rt_prof_begin(RTP_SND);
+    stage_se_move();
+    rt_prof_end(RTP_SND);
+}
+
+/* Snd_server (ACRMain 0x100xxx: every frame after render_end, whatever the
+ * game mode): ADX streams and the host's voice bookkeeping */
 static void snd_tick(void);
 void rt_snd_tick(void)
 {
@@ -869,7 +886,6 @@ static void snd_tick(void)
     if (!snd_on)
         return;
     tick_no++;
-    stage_se_move();
     for (i = 0; i < AUDIO_VOICES; i++)          /* change-driven loops nobody refreshes */
         if (rv[i].voice && rv[i].refresh >= 0 && tick_no - rv[i].refresh > 12) {
             audio_voice_stop(rv[i].voice);

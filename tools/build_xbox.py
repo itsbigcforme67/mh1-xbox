@@ -74,7 +74,7 @@ def run(job):
 
 # where gfx_nv2a.c uploads each program's constants: cgc's allocation must match
 VP_CONSTS = {
-    'vs': {'m_mvp': 0, 'm_tex': 4, 'fog_kb': 8, 'fog_col': 9, 'const': 10},
+    'vs': {'m_mvp': 0, 'm_tex': 4, 'fog_kb': 8, 'fog_col': 9, 'fade': 10, 'const': 11},
     'skin': {'m_mvp': 0, 'm_tex': 4, 'fog_kb': 8, 'fog_col': 9, 'ldir[0]': 10, 'lcol[0]': 13, 'amb': 16,
              'tint': 17, 'mode': 18, 'fade': 19, 'bones[0]': 20, 'const': 92},
 }
@@ -141,8 +141,15 @@ def main():
             os.makedirs(os.path.dirname(t), exist_ok=True)
             open(t, 'w').write('void __xtag_%s(void) {}\n' % b.replace('-', '_'))
             args += ['-include', t, '-include', h]
+        if b.startswith('mpeg2_'):             # libmpeg2: its MMX / MMXEXT paths (the P3 has both)
+            args.insert(1, '-DARCH_X86')
         jobs.append((b, args + ['-include', COMPAT]))
-    sdl = ['-I' + NXDK + '/lib/sdl/SDL2/include', '-DXBOX'] + sdl_extra
+        if b == 'mpeg2_idct':                  # and the MMX files the PC build does not compile
+            for extra in ('idct_mmx', 'motion_comp_mmx'):
+                a2 = [x.replace('third_party/libmpeg2/idct.c', 'third_party/libmpeg2/%s.c' % extra)
+                       .replace('/mpeg2_idct.obj', '/mpeg2_%s.obj' % extra) for x in args]
+                jobs.append(('mpeg2_' + extra, a2 + ['-include', COMPAT]))
+    sdl = ['-I' + NXDK + '/lib/sdl/SDL2/include', '-DXBOX', '-DMH1_MPEG2_MMX', '-Ithird_party/libmpeg2'] + sdl_extra
     for f in FRONT + ['src/pc/rt/rt_memstat.c']:
         b = 'x_' + os.path.basename(f)[:-2]
         args = ['nxdk-cc', '-std=gnu99', '-O2', '-Iinclude', '-Isrc/pc'] + RELAX + sdl

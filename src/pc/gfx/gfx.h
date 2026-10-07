@@ -35,6 +35,13 @@ int  gfx_read_pixels(uint8_t *rgb);
 gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba);
 extern int gfx_tex_src_hint;   /* memory report only: the next texture's size as stored on the disc (4/8-bit + CLUT) */
 void gfx_release_texture(gfx_texture *t);
+/* Video frames (the movies): planar 4:2:0 YUV, BT.601 studio range. A
+ * backend that converts on the GPU (gfx_yuv_capable() 1: gfx_nv2a.c, a
+ * YUY2 texture the NV2A samples as RGB) keeps one texture and updates it
+ * per frame; the others get RGBA from the caller (gfx_create_texture). */
+int  gfx_yuv_capable(void);
+gfx_texture *gfx_create_texture_yuv(int w, int h);
+void gfx_update_texture_yuv(gfx_texture *t, const uint8_t *y, const uint8_t *u, const uint8_t *v);
 /* gfx_pal.c: <= 256 colours -> palette (RGBA words) + indices (idx may be
  * NULL); returns the colour count or -1. And the bytes the Xbox backend
  * keeps for such a texture (P8 + palette when it can, else RGBA8). */
