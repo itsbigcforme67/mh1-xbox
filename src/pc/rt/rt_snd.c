@@ -48,6 +48,7 @@ u8 Em_stg_ck(void *);
 u32 ran_suu(int ch);
 
 static fmt_afs afs00, afs01;
+const fmt_afs *rt_snd_afs00(void) { return afs00.fp ? &afs00 : NULL; }
 static int snd_on;
 static int trace;
 static int se_cfg = 7, bgm_cfg = 7;     /* system_w+0x37 / +0x36: options volume 0..7 (7 = max) */
@@ -468,7 +469,7 @@ typedef struct {
     int ended;              /* played to its end (no loop): str_getstat's PLAYEND */
 } rt_str;
 
-static rt_str strw[AUDIO_STREAMS];
+static rt_str strw[AUDIO_STREAM_MOVIE];      /* the game's two channels; the movie has its own */
 
 /* str_volume (0x100BE0): index min(v, master) into adx_vol_tbl (0.1 dB) */
 void str_volume(int ch, int v)
@@ -632,7 +633,7 @@ static void str_feed(int ch)
 static void str_server(void)
 {
     int ch;
-    for (ch = 0; ch < AUDIO_STREAMS; ch++) {
+    for (ch = 0; ch < AUDIO_STREAM_MOVIE; ch++) {
         rt_str *s = &strw[ch];
         if (s->n > 0) {
             s->n--;

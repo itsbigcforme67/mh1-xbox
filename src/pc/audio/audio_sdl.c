@@ -35,6 +35,8 @@ int audio_open(void)
     return 0;
 }
 
+int audio_device_open(void) { return dev != 0; }
+
 void audio_close(void)
 {
     if (dev)

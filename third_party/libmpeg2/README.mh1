@@ -1,0 +1,3 @@
+libmpeg2 0.5.1 (mpeg2dec), GPL v2 (see COPYING). Plain C files only: no asm,
+no CPU acceleration, no libvo/convert. Unmodified except config.h (ours).
+Source: https://libmpeg2.sourceforge.io/ (Debian mpeg2dec_0.5.1.orig.tar.gz).

@@ -121,12 +121,14 @@ void TransReset(void);
 void fade_reset(void);
 void se_stop_all(void);
 void font_stack_reset(void);
+void rt_movie_stop(void);       /* rt_movie.c */
 void all_reset(void)
 {
     TransReset();
     fade_reset();
     se_stop_all();
     font_stack_reset();
+    rt_movie_stop();            /* a movie left running when its task was killed */
     system_w[0x32] = 0;
     system_w[0x1B] = 1;
     system_w[0x33] = 0;
@@ -139,25 +141,6 @@ void all_reset(void)
  * done at once (the auto-load screen CardAtld14 waits for it). */
 void PatchLoadinDNAS_Init(void) {}
 int PatchLoadinDNAS_Main(void) { return 1; }
-
-/* ------------------------------------------------------------ movies
- * The opening and the extras' movies are Sofdec streams (main f_movie);
- * the PC has no player for them yet. movie_server reports "not playing";
- * the opening demo (demo_w.mode 5) waits on its own timer for the movie,
- * so that wait is ended at once and the title follows. */
-extern u8 demo_w[];
-void movie_reset(void) {}
-void movie_start(int n) { (void)n; }
-void movie_request(int a, int b) { (void)a; (void)b; }
-int movie_server(void)
-{
-    if (boot_active && demo_w[0] == 5 && demo_w[1] == 2)
-        *(s16 *)(demo_w + 0xA) = 0;
-    return 0;
-}
-void movie_draw(void) {}
-void movie_exit(void) {}
-int movie_status_ck(void) { return 0; }
 
 /* ------------------------------------------------------------ boot */
 void rt_boot_init(void)

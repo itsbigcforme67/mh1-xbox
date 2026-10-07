@@ -22,7 +22,7 @@ RELAX = ['-Wno-error=implicit-function-declaration', '-Wno-error=implicit-int', 
 # the PC front-end (tools/build_pc.sh PC=) with the Xbox stand-ins instead of OpenGL and the host card
 FRONT = ['src/pc/viewer.c', 'src/pc/fl/fl_model.c', 'src/pc/xbox/gfx_null.c', 'src/pc/fmt/afs.c', 'src/pc/fmt/melt.c',
          'src/pc/fmt/amo.c', 'src/pc/fmt/apx.c', 'src/pc/fmt/ahi.c', 'src/pc/fmt/aan.c', 'src/pc/fmt/hits.c',
-         'src/pc/pad/pad_sdl.c', 'src/pc/fmt/snd.c', 'src/pc/audio/audio_mix.c', 'src/pc/audio/audio_sdl.c',
+         'src/pc/pad/pad_sdl.c', 'src/pc/fmt/snd.c', 'src/pc/movie/sfd.c', 'src/pc/audio/audio_mix.c', 'src/pc/audio/audio_sdl.c',
          'src/pc/gfx/gfx_rec.c', 'src/pc/rt/rt_mem.c', 'src/pc/xbox/mc_null.c', 'src/pc/xbox/xbox_libc.c']
 COMPAT = 'src/pc/xbox/xbox_compat.h'     # fopen with '/' -> '\\' (xbox_libc.c)
 SKIP = {'rt_mc', 'rt_symtab', 'rt_memstat'}
