@@ -237,12 +237,80 @@ def main():
         sys.exit("not matching: " + ", ".join(failed))
 
 
+
+def split_rodata_objects(module):
+    """An object whose .rodata sections are interleaved with other objects' rodata in the linker script (one slot per
+    original function, e.g. a merged TU) gets its k-th .rodata section renamed .rodata.k in a copy under build/rn/ and
+    the k-th script entry pointed at it. Returns the script path to link with."""
+    import re, struct
+    ld = os.path.join(ROOT, "build/%s.ld" % module)
+    lines = open(ld).read().split("\n")
+    pat = re.compile(r"^(\s*)(build/\S+\.c\.o)\(\.rodata\);\s*$")
+    cnt = {}
+    for l in lines:
+        m = pat.match(l)
+        if m:
+            cnt[m.group(2)] = cnt.get(m.group(2), 0) + 1
+    multi = set()
+    last = None
+    prev = {}
+    for i, l in enumerate(lines):
+        m = pat.match(l)
+        if m:
+            o = m.group(2)
+            # interleaved: another rodata entry (any object) sits between two entries of the same object
+            if o in prev and prev[o] != i - 1 and any("(.rodata" in x and o not in x for x in lines[prev[o] + 1:i]):
+                multi.add(o)
+            prev[o] = i
+    if not multi:
+        return "build/%s.ld" % module
+    seen = {}
+    for i, l in enumerate(lines):
+        for o in multi:
+            if "\t" + o + "(" in l or " " + o + "(" in l:
+                lines[i] = l = l.replace(o, o.replace("build/", "build/rn/", 1))
+        m = pat.match(l.replace("build/rn/", "build/", 1))
+        if m and m.group(2) in multi:
+            o = m.group(2)
+            k = seen.get(o, 0)
+            seen[o] = k + 1
+            lines[i] = "%s%s(.rodata.%d);" % (m.group(1), o.replace("build/", "build/rn/", 1), k)
+    for o in multi:
+        src = os.path.join(ROOT, o)
+        dst = os.path.join(ROOT, o.replace("build/", "build/rn/", 1))
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        d = bytearray(open(src, "rb").read())
+        shoff, = struct.unpack_from("<I", d, 0x20)
+        shentsize, shnum, shstrndx = struct.unpack_from("<HHH", d, 0x2E)
+        hdr = [list(struct.unpack_from("<10I", d, shoff + i * shentsize)) for i in range(shnum)]
+        st = hdr[shstrndx]
+        tab = bytes(d[st[4]:st[4] + st[5]])
+        add = b""
+        k = 0
+        for h in hdr:
+            nm = tab[h[0]:tab.index(b"\0", h[0])]
+            if nm == b".rodata":
+                h[0] = len(tab) + len(add)
+                add += (".rodata.%d" % k).encode() + b"\0"
+                k += 1
+        while len(d) % 4:
+            d.append(0)
+        newoff = len(d)
+        d += tab + add
+        st[4], st[5] = newoff, len(tab) + len(add)
+        for i, h in enumerate(hdr):
+            struct.pack_into("<10I", d, shoff + i * shentsize, *h)
+        open(dst, "wb").write(d)
+    out = os.path.join(ROOT, "build/%s.rn.ld" % module)
+    open(out, "w").write("\n".join(lines))
+    return "build/%s.rn.ld" % module
+
 def link_and_check(module):
     elf = "build/%s.elf" % module
     out = os.path.join(ROOT, "build/%s.bin" % module)
     err = run([BU + "ld", "-EL", "-nostdlib", "--no-warn-mismatch",
                "-Map", "build/%s.map" % module,
-               "-T", "build/%s.ld" % module,
+               "-T", split_rodata_objects(module),
                "-T", "config/%s_undefined_syms_auto.txt" % module,
                "-T", "config/%s_undefined_funcs_auto.txt" % module]
               + (["-T", "config/%s_aliases.txt" % module]

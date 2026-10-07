@@ -1,3 +1,4 @@
+/* server_select_05 (0x5B6730): 9/170 differ: two branch delay slots (original leaves nop). Get_sw is u16. Not built. */
 #include "lobby_a.h"
 extern s16 Vs_Cnt_0;
 extern s8 BS_MODE_R_NO;
@@ -10,12 +11,13 @@ extern char Disp_back[];
 extern char FirstURL[];
 extern char ss_text_lobby_trans_ot[];
 extern char D_3A3C7D[];
+extern u16 Get_sw();
 s32 server_select_05(void) {
-    s32 sw;
+    u16 sw;
     s32 ret;
     u8 no;
 
-    sw = Get_sw(0) & 0xFFFF;
+    sw = Get_sw(0);
     no = COM_R_No_3;
     ret = 0;
     switch (no) {

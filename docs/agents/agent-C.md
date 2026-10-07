@@ -1204,3 +1204,25 @@ More lessons from the same round (each from a function that matched):
   the lobby client TU 0x5B7020-0x5BF800 (CallBackWaitInit, Check_CallBackWait static). Not done here (169 runs from b/ with clashing local typedefs, and
   already matched functions could change). Lbc_GetRoomRule, Lbc_ConditionSearch, Lbs_ExitAndEnterPlaza, Lbc_SetPropaty, lbc_login_init,
   CallBack_Result_LoginLobbyServer and tk_logout need it (tools/unmatched.py lobby 0x5B7020 0x5C1B00).
+
+## Round 6 notes (agent C)
+- Removed 65 stale src/lobby/b/nm copies of already matched functions (tools/unmatched.py shows what is really left).
+- Lobby client TU (0x5B7020-0x5BF800): tools/lbtu3.py (new, WIP) merges the 155 C functions + 11 asm stubs of that range and resolves clashing
+  declarations by renaming them per run (extern objects get a linker alias line, config/lobby_aliases.txt format). Status: the clashes of
+  typedefs/externs are solved (1 compile error left, the missing build/raw .inc until c_rawfuncs lines exist), but prototype styles differ between
+  runs (lobby_a/b K&R vs lobby_f ANSI): about 90 call/prototype mismatches remain (e.g. lbc_browser(2) vs `lbc_browser()`, Lbs_MatchStart void vs int)
+  and every matched function must be re-verified in the merged file. Not committed to config; run
+  `python3 tools/lbtu3.py lb_cli 0x5B7020 0x5BF808 /tmp/cli.c` and `python3 tools/check.py /tmp/cli.c` to continue.
+
+## Round 7 (agent C)
+Matched (rebuild OK): lbc_admin_message_01 (`extern u16 Get_sw2();`, stp/c locals), lbc_admin_message_00 (m2c `x/60 + (x>>31)` is just `x/60`; float prototypes
+cnWrap_SetFontSize(f32)/cnWrap_FontDisp(f32,f32,f32,char *); last case falls out of the switch).
+Misses (15-minute cap): lobby_client_admin_message 7 (if-chain instead of switch fixed 69 -> 7; cw reload lands in a0 instead of v1), check_halfcode 10
+(Split_TagCode() takes no argument; loop end shape), server_select_05 9 (with u16 Get_sw; two branch delay slots the original leaves as nop).
+`extern u16 Get_sw2();` / `Get_sw()` is worth trying first on every function that masks the result.
+
+## Round 8: lobby-client TU registered (src/lobby/f/lb_cli.c, 0x5B7020-0x5BF808)
+- Built with `python3 tools/lbtu3.py lb_cli 0x5B7020 0x5BF808 OUT.c` (merged runs, `_cN`/`_k`/`_o` renames + alias lines, header `#define Lbs_MatchStart Lbs_MatchStart_hdr` trick, `typedef CNET_W5D4`, 9 raw asm stubs). 0 compile errors; all five modules rebuild OK.
+- Link problem and fix: MWCC emits one `.rodata` section per function, but splat's ld script lists the object once per rodata slot, interleaved with asm rodata. ld puts ALL of an object's .rodata at the first entry (+80 bytes, jump tables shifted). Fix in tools/build.py `split_rodata_objects`: for objects whose rodata entries are interleaved with other objects, link a copy in build/rn/ with sections renamed `.rodata.K` and the K-th script entry pointed at the K-th section (requires object section order == slot address order). Written to build/<mod>.rn.ld.
+- Per-function check.py: ~153 OK, 13 with 1-3 diffs (alias jal names; Check_InterruptFlag 3 diffs not yet inspected).
+- Not done this round: the blocked functions (Lbc_GetRoomRule, Lbc_ConditionSearch, Lbs_ExitAndEnterPlaza, Lbc_SetPropaty, lbc_login_init, CallBack_Result_LoginLobbyServer, tk_logout) - next step now that the TU is registered (make helpers static, add aliases for statics still called from asm).
