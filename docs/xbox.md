@@ -116,8 +116,7 @@ On the Xbox (`#ifdef XBOX` in viewer.c) there is no command line: it mounts
 E:, looks for AFS_DATA.AFS in `D:\data` (next to the XBE) then
 `E:\Games\MH1\data`, and boots like `--boot` (title screen from power-on).
 SDL2 (nxdk port) is used for the pad and the audio output, as on the PC.
-The memory card is a null libmc (src/pc/xbox/mc_null.c: "no card", the game
-plays without saving).
+The memory card is src/pc/xbox/mc_xbox.c (see "Saves on the Xbox" below).
 
 Not run anywhere yet (no xemu files): whether it boots, whether 64 MB is
 enough with the PC-side waste still in (it is not: see the memory budget
@@ -336,3 +335,57 @@ Xbox too (clang supports both).
 3. Boot build/xbox/default.xbe (null graphics) in xemu with the game files
    in D:\data or E:\Games\MH1\data; see where it stops (memory, stack).
 4. gfx_nv2a.c: textured clays, then the HUD/2D; then pad and audio.
+
+
+## Saves on the Xbox (agent B, 9 Oct 2026; written, linked, not run)
+
+src/pc/xbox/mc_xbox.c replaces mc_null.c: libmc (sceMc*) on the hard disk through nxdk's
+winapi (CreateDirectoryA, FindFirstFileA, GetFileAttributesA, DeleteFileA) and pdclib's
+fopen (xbox_fopen turns '/' into '\'). E: is mounted by viewer.c (nxMountDrive) before
+the game's first sceMcInit. The game still sees one card in port 0 holding the PS2 save
+directory `BISLPM-65495MH` (data file of 0x11450 bytes as encode_data writes it,
+icon.sys, icon00.ico), the same bytes and names as rt_mc.c writes on the PC, so a PC
+save file could be copied over (not tried). On disk:
+
+    E:\UDATA\4D480001\TitleMeta.xbx                     "TitleName=Monster Hunter" (UTF-16LE + BOM)
+    E:\UDATA\4D480001\4D48000100000001\SaveMeta.xbx    "Name=Monster Hunter save"  (made when the game creates the save dir)
+    E:\UDATA\4D480001\4D48000100000001\BISLPM-65495MH, icon.sys, icon00.ico
+
+The card path BISLPM-65495MH/... maps to the save id directory and back in listings;
+the two .xbx files are hidden from the game's directory listings. Title id, names and
+save id are constants in src/pc/xbox/xbox_title.h (placeholder id 0x4D480001 "MH1X"; the
+XBE certificate's title id must be set to the same value, which the build does not do
+yet; the owner may supply a real one). Free space is reported as 8000 KB minus the
+files, as on the PC.
+Untested: everything (no hardware / xemu run). In particular the .xbx meta layout is from
+memory of the dashboard format (UTF-16LE text with a BOM), the dashboard icon images
+(SaveImage.xbx, TitleImage.xbx) are not written so it will show a default icon, and
+whether the dashboard accepts a save directory name made only of hex digits that is
+not a hash of anything is unverified.
+
+## Xbox controller mapping (checked against nxdk's SDL, 9 Oct 2026; not run)
+
+nxdk's SDL2 joystick driver (lib/sdl/SDL2/src/joystick/xbox/SDL_xboxjoystick.c) gives the
+Duke/S controller 6 axes, 1 hat and 10 buttons and installs the game-controller mapping
+"Original Xbox Controller": a:b0 b:b1 x:b2 y:b3 leftshoulder:b4 rightshoulder:b5 back:b6
+start:b7 leftstick:b8 rightstick:b9 lefttrigger:a2 righttrigger:a5, sticks a0/a1 and
+a3/a4 (Y already inverted), d-pad on the hat. The analog face buttons are digital here
+(threshold 0x20). Crucially the driver reports WHITE as leftshoulder and BLACK as
+rightshoulder (the XID report's analog buttons 8 and 9), and the analog triggers as
+trigger axes. pad_sdl.c needs no change: it already maps leftshoulder/rightshoulder to
+L1/R1 and trigger axes above 16000 to L2/R2. On the Duke/S:
+
+| Xbox | PS2 role |
+|---|---|
+| A / B / X / Y | cross / circle / square / triangle |
+| WHITE / BLACK | L1 / R1 (camera reset / guard) |
+| left / right trigger | L2 / R2 |
+| Back / Start | select / start |
+| left / right stick click | L3 / R3 |
+| d-pad | d-pad (camera turn / zoom in the hunt) |
+| left / right stick | left / right stick |
+
+White and black are small buttons and R1 (guard) is used a lot in a fight; if that feels
+bad on hardware, swap to BLACK = camera and RT = guard in pad_sdl.c (not decided
+without hardware). A Controller S (Xbox 360-style button order) report is covered by the
+same mapping through SDL's own names.
