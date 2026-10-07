@@ -1276,3 +1276,24 @@ the cast), so the script that contains the fishing check is not reached from
 Plesioth's normal swim loop here (em_cmd_ninshiki_ck 10 times, sensor/find once).
 Which precondition (distance, the hunter being sensed, a mind/ikari state) selects
 that script was not found. Not done: the bite, the pull, the camera.
+
+Update (frog fishing, same day): what selects the script. em_cmd_ck's main script
+(table 0) ends `eye_dmg_ck (0x39), mode_ck (0x0B), main_jump (0x07)`: mode_ck compares
+em->x888 (0 = idle, 1 = combat, set by Em_Mode_Chg) and jumps to table 1 (idle: its
+`stage_no_sel` 0x15 picks the per-stage block, stage 0x36 block 8 holds
+all_pl_same_stage_ck 0x28 -> pl_fishing_ck 0x45) or to tables 2/3/4 (combat: target
+select, then the attack loop; none has the fishing check). So the frog bite is only
+evaluated while the Plesioth is idle (x888 = 0), once per idle script cycle. Plesioth
+leaves idle when pl_ninshiki_ck/the eye test (em_core_nm.c: search table kind 21:
+dist 5000 horizontal, fov +-5461 (30 deg), down 1000 / xC 1200 vertical: a hunter more
+than 1000 above the Plesioth is not seen, so it must be near the surface; no line-of-
+sight test unless game_w.gate_open, which only quests 0x66-0x6A/0xCF set) sets x88F.
+On the PC the Plesioth notices the hunter in the second script cycle and then x886
+(the 900-tick combat timer) stays at 900 for 4000+ ticks while x88F is set, so the idle
+script (and the fishing check) is never reached again. Not found: how the PS2 flow gets
+the Plesioth idle while a frog float sits in the water (hunter outside its 30 degree
+cone, or the Plesioth deep: at y -1990 the hunter, 2040 above, is not seen), nor why x886
+does not run down here. Next test: cast while the Plesioth is deep (first ~60 ticks) or
+from behind its cone, with gdb on em_cmd_pl_fishing_ck.
+Build note: libmpeg2 compiles through cc_obj (objects build/pc/mpeg2_*.o); sfd.c is in
+build_xbox.py's FRONT list; tools/build_xbox.py links (default.xbe built).

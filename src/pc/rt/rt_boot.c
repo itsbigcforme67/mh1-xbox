@@ -121,6 +121,7 @@ void TransReset(void);
 void fade_reset(void);
 void se_stop_all(void);
 void font_stack_reset(void);
+void rt_movie_stop(void);       /* rt_movie.c */
 void all_reset(void)
 {
     TransReset();
@@ -140,9 +141,6 @@ void all_reset(void)
  * done at once (the auto-load screen CardAtld14 waits for it). */
 void PatchLoadinDNAS_Init(void) {}
 int PatchLoadinDNAS_Main(void) { return 1; }
-
-/* movies: rt_movie.c */
-void rt_movie_stop(void);
 
 /* ------------------------------------------------------------ boot */
 void rt_boot_init(void)

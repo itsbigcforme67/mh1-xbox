@@ -423,9 +423,8 @@ for o in $OBJS; do
 done
 sort -u -o $REQ $REQ
 # libmpeg2 0.5.1 (third_party/libmpeg2, GPL v2, plain C): the movies' MPEG-2 video
-mkdir -p build/pc/mpeg2
 for f in alloc cpu_accel cpu_state decode header idct motion_comp slice; do
-    o=build/pc/mpeg2/$f.o
+    o=build/pc/mpeg2_$f.o
     cc_obj mpeg2_$f "$CC $M32 -std=gnu99 -O2 -w -Ithird_party/libmpeg2 $SYS -c third_party/libmpeg2/$f.c -o $o"
     OBJS="$OBJS $o"
 done

@@ -52,12 +52,7 @@ static struct {
     int dump_n;                 /* RT_MOVIE_DUMP=dir: frames written */
 } mv;
 
-static double wall_s(void)
-{
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return ts.tv_sec + ts.tv_nsec / 1e9;
-}
+static double wall_s(void) { return (double)time(NULL); }   /* trace only: whole seconds */
 static const u8 *tbl(int no) { return sfd_tbl + 16 * no; }
 static u32 rd32(const u8 *p) { return p[0] | p[1] << 8 | p[2] << 16 | (u32)p[3] << 24; }
 static u32 rd16(const u8 *p) { return p[0] | p[1] << 8; }

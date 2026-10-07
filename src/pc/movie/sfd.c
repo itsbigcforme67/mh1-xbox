@@ -45,12 +45,7 @@ struct sfd {
     double st_total, st_max;
 };
 
-static double cpu_ms(void)
-{
-    struct timespec t;
-    clock_gettime(CLOCK_MONOTONIC, &t);
-    return t.tv_sec * 1000.0 + t.tv_nsec / 1e6;
-}
+static double cpu_ms(void) { return (double)clock() * 1000.0 / CLOCKS_PER_SEC; }   /* CPU time: portable C */
 
 /* ------------------------------------------------------------ byte queue */
 static void bq_add(bq *q, const uint8_t *d, size_t n)
