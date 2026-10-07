@@ -122,6 +122,13 @@ PATCHES = {
     "src/lobby/b/lb_bz162.c": [
         ("    (**(void (***)())(em + 0x3CC))();", "    (**(void (***)())(em + 0x3CC))(em);"),
     ],
+    # Get_equip_data_ptr(e), GetAdrsMiniData(id): a0 left over
+    "src/lobby/f/lb_ay.c": [
+        ("  new_var[0] = Get_equip_data_ptr()[2];", "  new_var[0] = Get_equip_data_ptr(e)[2];"),
+    ],
+    "src/lobby/f/lb_e.c": [
+        ("    mini = (s16 *)GetAdrsMiniData();", "    mini = (s16 *)GetAdrsMiniData(id);"),
+    ],
     "src/lobby/f/lb_a.c": [
         ("    LBTRADE2 t;\n    void Ud_item_stack(u16, int);\n", "    LBTRADE2 t;\n"),
         # Lb_chat_receipt: Lb_get_plID(mac) gets msg (a0 left over)

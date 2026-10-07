@@ -1850,7 +1850,7 @@ void disp_menu(int sw, PIT_W *p) {
     int v;
 
     if (game_w.x1DC != 0) {
-        func_5B4B20();
+        func_5B4B20(sw);
         return;
     }
     n = lpPit->x41 / 5;

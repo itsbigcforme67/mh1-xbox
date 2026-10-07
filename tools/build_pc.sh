@@ -259,7 +259,7 @@ cc_obj() {
 # tasks by address (Demo_task, Edit_task, Cont_task)
 # (aliases, made by tools/pc_link_adapt.py in the defining objects)
 # lbtu3 alias names used by lb_uif.c (config/lobby_aliases.txt)
-ALIASES="put_button_help_a1=put_button_help Draw_square_a3=Draw_square font_print_double_a3=font_print_double helpLineTbl_c2=helpLineTbl helpLineStr_c2=helpLineStr \
+ALIASES="EquipmentDescriptionWindowA_s=EquipmentDescriptionWindowA put_button_help_a1=put_button_help Draw_square_a3=Draw_square font_print_double_a3=font_print_double helpLineTbl_c2=helpLineTbl helpLineStr_c2=helpLineStr \
  D_3F2080=rview_mat+0x20 D_3F2090=rview_mat+0x30 D_63BC40=enemy_shadow_size D_63BD60=enemy_mahi_size \
       D_63FC50=em_hit_push_tbl D_63FA10=em_body_tbl D_3E4C9C=player_work+0xAC \
       D_533BE0=Demo_task D_5367F0=Edit_task D_5375F0=Cont_task"

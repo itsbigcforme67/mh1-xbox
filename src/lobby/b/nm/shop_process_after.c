@@ -48,7 +48,7 @@ s32 shop_process_after(void) {
             if (Equip_ok_ck(&User_data, &sp48) == 0) {
                 cnWrap_SoundRequest(0x11);
                 lbShop.help = F(s32, &shop_process2_help, 8);
-                shop_armor2_stack(var_s1, temp_s0);
+                shop_armor2_stack(sp49 & 0xFF, sp4A & 0xFFFF);
                 r_no_process = 0;
                 lbShop.f38 = (int (*)())0;
                 lb_process_tag_decide01();
@@ -57,7 +57,7 @@ s32 shop_process_after(void) {
             }
             if ((lbShop.mode == 0) && (lbShop.x1A == 1)) {
                 if (Now_equip_ck(&User_data, armorIndex) == 1) {
-                    shop_armor2_stack();
+                    shop_armor2_stack(sp49 & 0xFF, sp4A & 0xFFFF);
                     lbShop.f38 = (int (*)())0;
                     lb_process_tag_decide01();
                     r_no_process = 0;
@@ -116,7 +116,7 @@ block_47:
             sp4A = (s16) F(s32, temp_v1_3, 4);
             if (Equip_ok_ck(&User_data, &sp48) == 0) {
                 lbShop.help = F(s32, &shop_process2_help, 8);
-                shop_armor2_stack(var_s1);
+                shop_armor2_stack(sp49 & 0xFF, sp4A & 0xFFFF);
                 r_no_process = 0;
                 lbShop.f38 = (int (*)())0;
                 lb_process_tag_decide01();
@@ -125,7 +125,7 @@ block_47:
             }
             if ((lbShop.mode == 0) && (lbShop.x1A == 1) && (Now_equip_ck(&User_data, armorIndex) == 1)) {
                 lbShop.help = F(s32, &shop_process2_help, 8);
-                shop_armor2_stack(var_s1);
+                shop_armor2_stack(sp49 & 0xFF, sp4A & 0xFFFF);
                 r_no_process = 0;
                 lbShop.f38 = (int (*)())0;
                 lb_process_tag_decide01();
