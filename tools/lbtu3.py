@@ -65,6 +65,16 @@ def ident(u):
     if m: return ('fn', m.group(1))
     return None
 def norm(u): return re.sub(r'\s+', ' ', u.strip())
+ansi = set(); allnames = set(n for ad, (sz, n) in syms.items() if S <= ad < E)
+for a, b, r in runs:
+    s0 = open('src/lobby/%s.c' % r).read()
+    for mm in pat.finditer(s0):
+        first = mm.group(0).split('{')[0]
+        par = re.search(r'\w\(([^)]*)\)', first)
+        if par and par.group(1).strip() not in ('', 'void') and not re.search(r'\)\s*\n\s*\w', first.strip()):
+            ansi.add(mm.group(1))
+print('ansi', len(ansi), file=sys.stderr)
+knr = []
 seen = {}  # (kind,name) -> normalized text
 decls = []; aliases = []; items = []; renamed = {}
 def seed(path, done=set()):
@@ -97,6 +107,15 @@ for ri, (a, b, r) in enumerate(runs):
             if k[0] == 'obj':
                 if k[1] in symaddr: aliases.append('%s = 0x%08X;' % (nn, symaddr[k[1]]))
                 else: print('NO ADDRESS for', k[1], file=sys.stderr)
+    defhere = set(n for n, tx in cks if n)
+    bodytxt = '\n'.join(tx for n, tx in cks if n)
+    for u in pre_units:
+        k = ident(u)
+        if k and k[0] == 'obj' and k[1] in allnames and k[1] not in defhere and k[1] not in ren:
+            ren[k[1]] = k[1] + '_o'; aliases.append('%s_o = 0x%08X;' % (k[1], symaddr[k[1]]))
+    for n0 in sorted(ansi):
+        if n0 not in defhere and n0 not in ren and re.search(r'\b%s\b' % re.escape(n0), bodytxt):
+            ren[n0] = n0 + '_k'; aliases.append('%s_k = 0x%08X;' % (n0, symaddr[n0])); knr.append('int %s_k();' % n0)
     changed = True
     while changed:
         changed = False
@@ -122,7 +141,7 @@ for ri, (a, b, r) in enumerate(runs):
                 if re.match(r'extern\s+\w+\s+(s64|u64|s32|u32|u8|s8|u16|s16|int|char|f32)\[', u2.strip()): continue
                 decls.append(u2)
         else:
-            items.append((symaddr[n], n, rn(t)))
+            items.append((symaddr[n], n, re.sub(r'\b%s\(void\)(\s*\{)' % re.escape(n), r'%s()\1' % n, rn(t))))
 cn = set(i[1] for i in items); caddrs = set(i[0] for i in items)
 sizes = {ad: sz for ad, (sz, n) in syms.items()}
 for ad, (sz, n) in sorted(syms.items()):
@@ -134,22 +153,20 @@ items.sort()
 cdefs = set(i[1] for i in items if i[2] is not None) | set(n for ad, (sz, n) in syms.items() if S <= ad < E)
 def keep(u):
     k = ident(u)
-    return not (k is not None and k[0] in ('fn', 'obj') and k[1] in cdefs)
+    return not (k is not None and k[0] in ('fn', 'obj') and k[1] in cdefs and not k[1].endswith(('_o', '_k')))
 decls = [u for u in decls if keep(u)]
 fwd = []
 for ad, n, tx in items:
     if tx is None: continue
-    m = re.match(r'((?:static\s+)?[A-Za-z_][\w \*]*?)\b%s\(([^)]*)\)\s*(\n[^{]*)?\{' % re.escape(n), tx[tx.index(n + '(') - 60 if tx.index(n + '(') > 60 else 0:] if False else re.search(r'^(?:[A-Za-z_][\w \*]*?)\b%s\(' % re.escape(n), tx, re.M).group(0) + tx[re.search(r'^(?:[A-Za-z_][\w \*]*?)\b%s\(' % re.escape(n), tx, re.M).end():], re.S)
-    if not m: continue
-    ret = m.group(1).strip(); params = m.group(2).strip(); kr = m.group(3)
+    mm = re.search(r'^((?:static\s+)?[A-Za-z_][\w \*]*?)\b%s\(([^)]*)\)([^{]*)\{' % re.escape(n), tx, re.M)
+    if not mm: continue
+    ret = mm.group(1).strip(); params = mm.group(2).strip(); kr = mm.group(3).strip()
     if ret.startswith('static'): ret = ret[6:].strip()
-    if kr and kr.strip(): fwd.append('%s %s();' % (ret, n))
-    elif params and not re.match(r'^(void|\w[\w ]*\*?\s*\w+(\s*,.*)?)$', params): fwd.append('%s %s();' % (ret, n))
-    elif re.search(r'\b(int|u8|u16|s8|s16|s32|u32|f32|void|char|\w+)\s*\*?\s*\w+\s*(,|$)', params) and ' ' in params: fwd.append('%s %s(%s);' % (ret, n, params))
+    if kr or params in ('', 'void') or not re.search(r'\w\s+\**\w+$|\*', params.split(',')[0]): fwd.append('%s %s();' % (ret, n))
     else: fwd.append('%s %s(%s);' % (ret, n, params))
-decls = decls + fwd
+decls = decls + fwd + sorted(set(knr))
 body = '\n'.join(decls)
-out = ['/* %s - one translation unit 0x%08X-0x%08X (lbtu3). */\n#include "lobby_b.h"' % (name, S, E), body]
+out = ['/* %s - one translation unit 0x%08X-0x%08X (lbtu3). */\n#define Lbs_MatchStart Lbs_MatchStart_hdr\n#include "lobby_b.h"\n#undef Lbs_MatchStart\ntypedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;' % (name, S, E), body]
 raw = []
 for ad, n, t in items:
     if t is None:

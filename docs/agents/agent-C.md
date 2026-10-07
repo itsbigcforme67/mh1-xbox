@@ -1220,3 +1220,9 @@ cnWrap_SetFontSize(f32)/cnWrap_FontDisp(f32,f32,f32,char *); last case falls out
 Misses (15-minute cap): lobby_client_admin_message 7 (if-chain instead of switch fixed 69 -> 7; cw reload lands in a0 instead of v1), check_halfcode 10
 (Split_TagCode() takes no argument; loop end shape), server_select_05 9 (with u16 Get_sw; two branch delay slots the original leaves as nop).
 `extern u16 Get_sw2();` / `Get_sw()` is worth trying first on every function that masks the result.
+
+## Round 8: lobby-client TU registered (src/lobby/f/lb_cli.c, 0x5B7020-0x5BF808)
+- Built with `python3 tools/lbtu3.py lb_cli 0x5B7020 0x5BF808 OUT.c` (merged runs, `_cN`/`_k`/`_o` renames + alias lines, header `#define Lbs_MatchStart Lbs_MatchStart_hdr` trick, `typedef CNET_W5D4`, 9 raw asm stubs). 0 compile errors; all five modules rebuild OK.
+- Link problem and fix: MWCC emits one `.rodata` section per function, but splat's ld script lists the object once per rodata slot, interleaved with asm rodata. ld puts ALL of an object's .rodata at the first entry (+80 bytes, jump tables shifted). Fix in tools/build.py `split_rodata_objects`: for objects whose rodata entries are interleaved with other objects, link a copy in build/rn/ with sections renamed `.rodata.K` and the K-th script entry pointed at the K-th section (requires object section order == slot address order). Written to build/<mod>.rn.ld.
+- Per-function check.py: ~153 OK, 13 with 1-3 diffs (alias jal names; Check_InterruptFlag 3 diffs not yet inspected).
+- Not done this round: the blocked functions (Lbc_GetRoomRule, Lbc_ConditionSearch, Lbs_ExitAndEnterPlaza, Lbc_SetPropaty, lbc_login_init, CallBack_Result_LoginLobbyServer, tk_logout) - next step now that the TU is registered (make helpers static, add aliases for statics still called from asm).
