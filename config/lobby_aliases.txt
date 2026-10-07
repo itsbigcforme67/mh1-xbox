@@ -163,3 +163,4 @@ shop_armor_help_c2 = 0x00610C00;
 Lb_get_armor_num_k = 0x0053D230;
 Lb_put_job_limit_k = 0x0053D280;
 D_3C7004_c10 = 0x003C7004;
+shop_tex_tbl_c3 = 0x00617590;
