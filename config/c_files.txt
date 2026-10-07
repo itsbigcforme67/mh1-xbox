@@ -2437,3 +2437,5 @@ lobby 0x005B7DD0 0x005B7FE4 b/lb_lwm01
 lobby:rodata 0x0065E870 0x0065E890 b/lb_lwm01
 game 0x00566500 0x0056662C em/em_modechg
 game 0x0055E2B0 0x0055E424 em/em_cmd_r97
+game 0x00533A00 0x00534100 em/em_core_eye
+game 0x00539490 0x005395F0 em/em_core_hate

@@ -4,7 +4,9 @@ Prints "OK/--  name  real-diff-count" (relocation / branch-address noise ignored
 prints each differing hunk."""
 import sys,subprocess,re,difflib
 f=sys.argv[1]; verbose='-v' in sys.argv
-out=subprocess.run(['python3','tools/check.py',f,'-v'],capture_output=True,text=True).stdout
+import os
+mod=['--module',os.environ['CHECK_MODULE']] if os.environ.get('CHECK_MODULE') else []
+out=subprocess.run(['python3','tools/check.py',f,'-v']+mod,capture_output=True,text=True).stdout
 lines=out.split('\n')
 heads=[k for k,l in enumerate(lines) if re.match(r'^(OK|--)  ',l)]
 def key(s):

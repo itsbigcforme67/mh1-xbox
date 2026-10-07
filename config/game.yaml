@@ -38,7 +38,7 @@ segments:
     subsegments:
       - [0x000000, textbin, header]
       - [0x000040, asm, text/em_eye_search_set]
-      - [0x000080, asm, text/f_em]
+      - [0x000080, c, em/em_core_eye]
       - [0x000780, c, em/em_core]
       - [0x00087C, asm, text/em_char_set]
       - [0x000C30, c, em/em_core_b]
@@ -53,6 +53,7 @@ segments:
       - [0x003234, asm, text/em_range_set]
       - [0x003300, c, em/em_core_g]
       - [0x005B0C, asm, text/em_hate_suu_set]
+      - [0x005B10, c, em/em_core_hate]
       - [0x005C70, asm, text/g_Em_Master_Change]
       - [0x006140, c, em/em_master]
       - [0x006310, asm, text/Em_Taisei_Set]
