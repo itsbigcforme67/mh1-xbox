@@ -2238,3 +2238,9 @@ main 0x001789B0 0x00178C88 fl/flrs04
 main 0x00178C90 0x001793E0 fl/flrs05
 main:rodata 0x0035BE70 0x0035BEA8 fl/flrs05
 main 0x0025F980 0x00262A90 sk/f_sk
+lobby:rodata 0x0065EAC0 0x0065EAE0 f/lb_cli
+lobby:rodata 0x0065EAE0 0x0065EB00 f/lb_cli
+lobby:rodata 0x0065EB00 0x0065EB18 f/lb_cli
+lobby:rodata 0x0065E970 0x0065E988 f/lb_cli
+lobby:rodata 0x0065E930 0x0065E948 f/lb_cli
+lobby:rodata 0x0065DD00 0x0065DD34 f/lb_plz

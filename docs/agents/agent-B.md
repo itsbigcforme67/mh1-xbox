@@ -959,3 +959,30 @@ hk_cursor_mv 4, hk_key_r_cursor 6, McActAvailSet 9, roma_ck_sub 31, hk_kbd_input
 sk (not a TU, see above) in its own scratch TU: sk_zen_han_chg matches only with the statics around it; sk_pltchange 3, sk_backspace 3, setup_rw_sub 5,
 setup_rw_moji 5, Han2zen 4, disp_keybase2 4, sk_palette_cursor_set 6, sk_key_repeat 6.
 Not started: online code (server_connect, net_overlay_request, AnswerFileDownloadHeader, disp_spr_sub, ncm_*).
+
+# Main module round 3 (agent B, 7 Oct 2026): sk stubs, chat near-matches
+New real matches (rebuild OK, all five modules): setup_rw_moji, sk_palette_cursor_set, sk_backspace (sk/f_sk raw stubs replaced by C).
+Lessons (function that shows it):
+- Long runs of `a.x = b.x = ...` that look like m2c copies are chained STRUCT assignments (setup_rw_moji): `RWP(t1) = RWP(t2) = ... = *f;` with
+  `typedef struct { s16 a, b; } RW2` makes MWCC store, reload from the last store and store again (the original "sh; lh; sh" pattern), the leftmost
+  target is stored last. All address constants (lui/addiu) then get hoisted with the 24-register spill pattern. A `char *k = (char *)lpSKey;` local
+  (type char *, not u8 * / void * / s32: the pointer type changes sq vs sw for its spill slot, only char * gave sq) and
+  `(u8 *)&free_rw_tbl[0][2] + idx * 0xC` (symbol+8 kept as a separate constant, not folded into lh) fixed the last hunks.
+- `SKB(0x24) = palette_set_tbl[(u8)f * 2]` (explicit u8 cast on a u8 local) reproduces the redundant `andi` (sk_palette_cursor_set).
+- A callee prototype with a u16 parameter makes the caller emit `andi 0xFFFF` on the argument; the original had none, so declare the parameter
+  `int` in the TU's own prototype (sk_letlenB(void *, int)); int, not u16, for the local n; `x = x - len` instead of `x -= len` (sk_backspace).
+- Declaration order picks saved registers: `int len; u8 *s; int n;` gave the original s0/s1/s2 assignment in sk_backspace. tools: build/b_scratch/dperm.py
+  style random shuffles of the declaration block (about 3 s per try under load) found 31 -> 20 for ItemListWindow; try this before the permuter.
+- PlayerStatusWindow 45 -> 33: the casts `(u8)pt`, `(u8)FS16(..)`, `(u8)(s16)f32` were wrong (original loads lw/lh/lhu and uses dsll32+dsra32 for the
+  s16 conversion); the skill loop is `do { q = pl + i; if (F8(q,0x910) == 0) break; ...; i++; } while (i < 5)` with `u32 i`. Remaining diff is the
+  saved-register assignment (pl=s0, t=s1, tab=s2, noRank=s3 in the original).
+- Pattern seen in server_connect and net_overlay_request: the compare-ladder constants of a switch land in a0 (original) instead of v0 (mine); no
+  source variation tried (ret init, local copy of the switch value, extra parameter, (int) cast) changed it.
+- align.py prints nothing, so scripts counted 0 hunks, when the scratch file does not compile (C89: a statement before declarations). Always
+  confirm a 0 with `tools/check.py FILE -v | grep NAME`.
+- tools/b_tu/hunks.sh breaks on paths with spaces (quote $S); cc1.sh has a stray `$` in the default output name; set B_SCRATCH to an absolute path
+  and call tools/align.py directly.
+Near-matches now: sk_key_repeat 3 (original keeps the masked hold value in a1: the two copies `h` live in different registers in mine), disp_keybase2 4,
+setup_rw_sub 5 (the original hoists all five table address constants to the top), sk_pltchange 3 (f/e saved-register swap, decl shuffles of all 6
+lines tried), Han2zen 4 (`c = *src++` temp register layout), dakuten_ck 5 (the original does `t += 2` in the compare's delay slot and reads t[0]
+after it), ng_word_sub 28 (mode is sign-extended in place in s0 in the original), ItemListWindow 20, PlayerStatusWindow 33.
