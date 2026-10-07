@@ -68,6 +68,17 @@ void fl_model_draw(fl_model *m, int sky);
 /* ------------------------------------------------------------ skeleton */
 #define FL_MAX_GROUPS 4
 
+/* One AHI group's pose: motion m at frame t (no looping: the caller keeps
+ * t in range, as frame_move does), optionally blended with m2 at t2:
+ * channels = wa * m + wb * m2 (flBlendMotionEx; rotations take the short
+ * way round). m NULL = bind pose. */
+typedef struct {
+    const aan_motion *m;
+    float t;
+    const aan_motion *m2;
+    float t2, wa, wb;
+} fl_group_pose;
+
 typedef struct {
     ahi_skel skel;
     aan_motion mot[FL_MAX_GROUPS];   /* per AHI group; nbone 0 = none */
@@ -80,6 +91,10 @@ typedef struct {
                                         value; the game moves the actor by it */
     float (*chan)[9];                /* per bone: current channels */
     flmat *world;                    /* per bone: world matrices */
+    /* fl_skel_pose_groups' last inputs: the same pose asked again (the
+     * host asks up to three times per tick) is not evaluated again */
+    fl_group_pose last[FL_MAX_GROUPS];
+    int last_ok, last_lock;
 } fl_skel;
 
 int  fl_skel_create(fl_skel *s, fmt_blob ahi, int be);
@@ -90,16 +105,6 @@ int  fl_skel_set_motion(fl_skel *s, int group, fmt_blob tbl, int id, int be);
 /* Evaluate at frame t (loops on end) and compute world matrices. */
 void fl_skel_update(fl_skel *s, float t);
 
-/* One AHI group's pose: motion m at frame t (no looping: the caller keeps
- * t in range, as frame_move does), optionally blended with m2 at t2:
- * channels = wa * m + wb * m2 (flBlendMotionEx; rotations take the short
- * way round). m NULL = bind pose. */
-typedef struct {
-    const aan_motion *m;
-    float t;
-    const aan_motion *m2;
-    float t2, wa, wb;
-} fl_group_pose;
 void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS]);
 
 #endif

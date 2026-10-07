@@ -14,14 +14,17 @@
 
 static const char *const zname[RTP_N] = {
     "logic (rest)", "set objects", "effects move", "sound tick + ADX", "mixer", "movie video",
-    "movie audio", "draw (rest)", "skinning + light", "effects draw", "gfx backend"
+    "movie audio", "draw (rest)", "skinning + light", "effects draw", "gfx backend",
+    "motion eval", "joint matrices", "stage draw code", "game prims", "2D / HUD"
 };
-static const int per_frame[RTP_N] = { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1 };
+/* per frame (draw) or per tick; motion and joints run in both and are
+ * reported per tick (one frame per tick at 30 fps) */
+static const int per_frame[RTP_N] = { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1 };
 static int on = -1, stack[16], depth;
 static double last, cur[RTP_N], sum[RTP_N], mx[RTP_N], fcur[RTP_N];
 static int nticks, nframes;
 static long cnt[RTPC_N], cnt_max[RTPC_N], cnt_cur[RTPC_N];
-static const char *const cname[RTPC_N] = { "vertices skinned+lit", "vertices drawn", "triangles drawn", "draw calls" };
+static const char *const cname[RTPC_N] = { "vertices skinned+lit", "vertices drawn", "triangles drawn", "draw calls", "skeleton evaluations" };
 
 void rt_prof_count(int c, long n)
 {

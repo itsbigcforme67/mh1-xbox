@@ -845,8 +845,10 @@ static void sim_tick(void)
         rt_set_camera(cw);
     }
     if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
+        rt_prof_begin(RTP_JOINTS);
         sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
         monsters_sync(0, light_cur());
+        rt_prof_end(RTP_JOINTS);
         rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
     }
     if (ticks >= 2 && !getenv("RT_EM_STANDIN")) {
@@ -1536,9 +1538,11 @@ int main(int argc, char **argv)
              * this tick left, whether or not a frame is drawn in between
              * (windowed and --shot runs stay tick-for-tick the same) */
             if (pl.game && play && ticks >= 2) {
+                rt_prof_begin(RTP_JOINTS);
                 sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
                 if (!rt_village_active())
                     monsters_sync(0, light_cur());
+                rt_prof_end(RTP_JOINTS);
             }
             if (tick_trace) {           /* RT_TICK_TRACE=1: compare windowed and headless runs */
                 extern uint8_t em_work[];
@@ -1636,9 +1640,13 @@ int main(int argc, char **argv)
             flmat_identity(id);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
             gfx_set_render_state(GFX_RS_ZWRITE, 1);
+            rt_prof_begin(RTP_STAGE_DRAW);
             rt_stage_draw();            /* trans_stage: area model + placed set parts */
+            rt_prof_end(RTP_STAGE_DRAW);
         }
+        rt_prof_begin(RTP_PRIMS);
         rt_game_draw();                 /* game C prims (set14 waterfalls) */
+        rt_prof_end(RTP_PRIMS);
         if (rt_monster_shown(0) && slot0_rathian()) {     /* in use and on this stage */
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)rathian.world);
             draw_model_attr(&rathian.model, -1);
@@ -1659,8 +1667,10 @@ int main(int argc, char **argv)
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)wid);
             draw_model_attr(&weapon.model, -1);
         }
+        rt_prof_begin(RTP_2D);
         rt_game_draw_2d();              /* screen layers: HUD, info banner, text (after the 3D scene) */
         rt_fade_draw();                 /* fade_draw: the screen fade (Fade_task) */
+        rt_prof_end(RTP_2D);
     frame_done:
 
         frame_no++;
