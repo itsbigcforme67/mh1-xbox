@@ -1,4 +1,4 @@
-/* lm_member_trans (0x5B3220): 5/146 differ: the switch variable lands in a0 instead of a1 (original keeps pNet live across the ladder). Rewritten with array indexing (pointer-bump form was 139 off). Not built. */
+/* lb_c504 - agent C round 5 0x005B3220-0x005B3468: lm_member_trans (member list window; indexed loops, Disp_lb_menu(1) keeps the ladder constant in a0 like the original). */
 #include "lobby_b.h"
 extern char *pl_name_tbl[];
 extern char plData[];
@@ -9,14 +9,13 @@ void lm_member_trans(void) {
     int i;
     int j;
     int y;
-    int k;
     s32 sel;
     u8 st;
 
     st = pNet->depth;
     switch (st) {
     case 0:
-        Disp_lb_menu();
+        Disp_lb_menu(1);
         j = 0;
         for (i = 0; i < 8; i++) {
             if (i != game_w.master) {

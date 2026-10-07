@@ -1734,16 +1734,16 @@ void __cnet_bgProg_ReadPlazaAllocation(void) {
             }
             n = k + 1;
             b->a0C++;
-            if (CNW(u16, 0x404E) < n || n > 0xA) {
+            if (n > CNW(u16, 0x404E) || n > 0xA) {
                 b->x21++;
             }
             break;
         }
         case 4: {
-            int n;
-            int ok;
-            int k;
             int i;
+            int ok;
+            int n;
+            int k;
             n = CNW(u16, 0x404E);
             ok = 1;
             for (k = 0, i = 0; ; ) {
@@ -1877,16 +1877,16 @@ void __cnet_bgProg_ReadLobbyAllocation(void) {
             }
             n = k + 1;
             b->a0C++;
-            if (CNW(u16, 0x4050) < n || n > 0xE) {
+            if (n > CNW(u16, 0x4050) || n > 0xE) {
                 b->x21++;
             }
             break;
         }
         case 4: {
-            int n;
-            int ok;
-            int k;
             int i;
+            int ok;
+            int n;
+            int k;
             n = CNW(u16, 0x4050);
             ok = 1;
             for (k = 0, i = 0; ; ) {
@@ -2032,16 +2032,16 @@ void __cnet_bgProg_ReadRoomAllocation(void) {
             }
             n = k + 1;
             b->a0C++;
-            if (CNW(u16, 0x4052) < n || n > 8) {
+            if (n > CNW(u16, 0x4052) || n > 8) {
                 b->x21++;
             }
             break;
         }
         case 4: {
-            int n;
-            int ok;
-            int k;
             int i;
+            int ok;
+            int n;
+            int k;
             n = CNW(u16, 0x4052);
             ok = 1;
             for (k = 0, i = 0; ; ) {
@@ -3941,10 +3941,14 @@ int cnLBS_Get_MatchInfomation(CNET_W5D4 *d) {
 void cnLBS_Get_GameServerAddress(u32 *addr, u16 *port) {
     int p;
     u32 v;
-    v = CnetSys_w.gsaddr[0];
-    v |= CnetSys_w.gsaddr[1] << 8 & 0xFF00;
-    v = (CnetSys_w.gsaddr[2] << 16 & 0xFF0000) | v;
-    v = (CnetSys_w.gsaddr[3] << 24 & 0xFF000000) | v;
+    u32 a, b, c;
+    a = CnetSys_w.gsaddr[0];
+    b = (CnetSys_w.gsaddr[1] << 8) & 0xFF00;
+    a = a | b;
+    c = (CnetSys_w.gsaddr[2] << 16) & 0xFF0000;
+    c = c | a;
+    v = (CnetSys_w.gsaddr[3] << 24) & 0xFF000000;
+    v = v | c;
     *addr = v;
     p = (CnetSys_w.gsport[1] + (CnetSys_w.gsport[0] << 8)) & 0xFFFF;
     *port = (p << 8 & 0xFF00) | (p >> 8 & 0xFF);
@@ -4147,28 +4151,22 @@ int arg2;
 }
 
 int __cnetSub_Return_BgProcess(CNET_RES res, int mode, int slot) {
-    CNET_RES sp28 = res;
-    int i;
-
-    switch (mode) {
-    case 1:
-        for (i = 0; i < 0x80; i++) {
-            if (mode == 1 && CnetSys_w.rseq == CnetSys_w.bg[i].cmd) {
-                CnetSys_w.bg[i].state = 0;
-                CnetSys_w.bg[i].x19 = 0;
-                if (CnetSys_w.bg[i].done != 0) CnetSys_w.bg[i].done(sp28, &sp28, &CnetSys_w.bg[i]);
-                return i;
+    if (mode == 1) {
+        for (slot = 0; slot < 0x80; slot++) {
+            if (mode == 1 && CnetSys_w.rseq == CnetSys_w.bg[slot].cmd) {
+                CnetSys_w.bg[slot].state = 0;
+                CnetSys_w.bg[slot].x19 = 0;
+                if (CnetSys_w.bg[slot].done != 0) CnetSys_w.bg[slot].done(res, &res);
+                return slot;
             }
         }
-        return -1;
-    case 2:
+    } else if (mode == 2) {
         CnetSys_w.bg[slot].state = 0;
         CnetSys_w.bg[slot].x19 = 0;
-        if (CnetSys_w.bg[slot].done != 0) CnetSys_w.bg[slot].done(sp28, &sp28);
+        if (CnetSys_w.bg[slot].done != 0) CnetSys_w.bg[slot].done(res, &res);
         return slot;
-    default:
-        return -1;
     }
+    return -1;
 }
 
 void __cnetSub_Run_BgProcess(void) {
@@ -4239,8 +4237,8 @@ int cnLBS_RecvData(int sock) {
     do {
         CnetSys_w.rlen = select_ps2(CnetSys_w.sock, recv_header, recv_work, 0x600);
         if (CnetSys_w.rlen != -1 && CnetSys_w.rlen != 0) {
-            __cnetSub_RecvThreeData();
             got = 1;
+            __cnetSub_RecvThreeData();
         }
         i++;
     } while (i < 4);
@@ -4654,13 +4652,17 @@ int key;
 int len;
 int extra;
 {
-    int sum = 0;
+    u8 c;
     int i;
+    int sum = 0;
 
     if (out == 0 || in == 0) return -1;
     for (i = 0; i < len; i++) {
-        out[i] = in[i] ^ encrypt_str[i & 7] ^ (extra + (key & 0xFF) + i);
-        sum += in[i];
+        c = *in;
+        *out = c ^ encrypt_str[i & 7] ^ (extra + ((key & 0xFF) + i));
+        sum += c;
+        in++;
+        out++;
     }
     return sum & 0x7FFF;
 }
@@ -4706,16 +4708,16 @@ char *out;
 char *str;
 int seq;
 {
-    int a;
-    int v1;
     int v2;
+    int v1;
+    int a;
 
     if (out == 0 || str == 0) return -1;
     a = seq & 0xFFFF;
     v1 = a + read_col_numeric(str, 4);
-    v2 = a + read_col_numeric(str + 4);
+    v2 = a + read_col_numeric(str + 4, 4);
     write_col_numeric(out, v1, 5);
-    write_col_numeric(out + 5, v2);
+    write_col_numeric(out + 5, v2, 5);
     out[10] = 0;
     return 0;
 }
