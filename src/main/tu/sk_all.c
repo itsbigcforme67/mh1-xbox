@@ -342,6 +342,11 @@ s8 SoftKeyboard_move(char *out, s16 sw, s16 hold) {
                     case 4:
                         Softkey_free_1(lpSKey + 0x44, lpSKey + 0x2A, c[3]);
                         break;
+                    default:
+                        /* a plain character key: its code is c[2] (> 4) */
+                        sk_cmd_input(c);
+                        SKB(0x28) = 0;
+                        break;
                     }
                 }
             } else {

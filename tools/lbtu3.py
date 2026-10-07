@@ -16,7 +16,7 @@ for l in open('config/symbols/lobby.txt'):
         symaddr[m.group(1)] = int(m.group(2), 16)
         m2 = re.search(r'type:func size:0x([0-9A-Fa-f]+)', m.group(3))
         if m2: syms[int(m.group(2), 16)] = (int(m2.group(1), 16), m.group(1))
-for l in open('config/symbols/main.txt'):
+for l in list(open('config/symbols/main.txt')) + list(open('config/lobby_undefined_syms_auto.txt')):
     m = re.match(r'(\S+)\s*=\s*0x([0-9A-Fa-f]+)', l)
     if m: symaddr.setdefault(m.group(1), int(m.group(2), 16))
 runs = []
@@ -70,11 +70,12 @@ sfx = {}  # base name -> address-suffixed symbol name (functions defined in the 
 for ad, (sz, n) in syms.items():
     m = re.match(r'(.*)_[0-9A-F]{6,8}$', n)
     if m and S <= ad < E and m.group(1) not in symaddr: sfx[m.group(1)] = n
-ansi = set(); allnames = set(n for ad, (sz, n) in syms.items() if S <= ad < E)
+alldefs = set(); ansi = set(); allnames = set(n for ad, (sz, n) in syms.items() if S <= ad < E)
 for a, b, r in runs:
     s0 = open('src/lobby/%s.c' % r).read()
     for mm in pat.finditer(s0):
         first = mm.group(0).split('{')[0]
+        alldefs.add(mm.group(1))
         par = re.search(r'\w\(([^)]*)\)', first)
         if par and par.group(1).strip() not in ('', 'void') and not re.search(r'\)\s*\n\s*\w', first.strip()):
             ansi.add(mm.group(1))
@@ -127,6 +128,14 @@ for ri, (a, b, r) in enumerate(runs):
                 if k[1] in symaddr: aliases.append('%s = 0x%08X;' % (nn, symaddr[k[1]]))
                 else: print('NO ADDRESS for', k[1], file=sys.stderr)
     defhere = set(n for n, tx in cks if n)
+    for u in pre_units:  # ANSI prototype in this run that differs from an earlier run's declaration: private alias name
+        k = ident(u)
+        if k is None or k[0] != 'fn' or k[1] in ren or k[1] in defhere or INC.match(u.strip()): continue
+        if u.lstrip().startswith(('extern', 'asm', 'static')): continue
+        par = re.search(r'\w\(([^)]*)\)\s*;', u)
+        if not par or par.group(1).strip() in ('', 'void') or not re.search(r'\w\s+\**\w+\s*(,|$)|\*', par.group(1)): continue
+        if ((k in seen and seen[k] != norm(u)) or k[1] in ansi or k[1] in alldefs) and k[1] in symaddr:
+            ren[k[1]] = '%s_a%d' % (k[1], ri); aliases.append('%s = 0x%08X;' % (ren[k[1]], symaddr[k[1]]))
     bodytxt = '\n'.join(tx for n, tx in cks if n)
     for u in pre_units:
         k = ident(u)
