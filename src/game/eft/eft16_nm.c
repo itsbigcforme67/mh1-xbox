@@ -229,6 +229,7 @@ static void eft16_i(EFTW *ew) {
 }
 
 static void eft16_m(EFTW *ew) {
+    int x5;
     FLMAT m;
     f32 v[3];
     f32 o[3];
@@ -410,7 +411,7 @@ static void eft16_m(EFTW *ew) {
         }
     }
     n = num;
-    for (i = 0; i < n; i++) {
+    for (x5 = 0, i = 0; i < n; x5 += 5, i++) {
         switch (ew->arg) {
         case 0:
         case 8:
@@ -637,7 +638,7 @@ static void eft16_m(EFTW *ew) {
                 }
                 v[0] = 0.0f;
                 v[1] = 0.0f;
-                v[2] = -(i * 5);
+                v[2] = -x5;
                 flvecApplyMat33_2(v, &rview_mat);
                 p->pos[1] += 3.0f + 0.001f * (f32)((u16)ran_suu(1) & 0x3FF);
                 p->prim->pos[0] = p->pos[0] + v[0];

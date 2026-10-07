@@ -668,7 +668,7 @@ u8 *em_cmd_flag_clear(EMW *em, u8 *p) {
     s32 i;
     s32 n;
     u8 *ex;
-    int kind;
+    u8 kind;
 
     kind = *p++;
     if (kind == 0) {
@@ -678,8 +678,8 @@ u8 *em_cmd_flag_clear(EMW *em, u8 *p) {
         n = 1;
     }
     ex = em->ex;
-    for (i = 0; i < n; i++) {
-        switch ((u8)kind) {
+    for (i = 0; i < n; i++, kind++) {
+        switch (kind) {
         case 1:
             em->x88B = 0;
             break;
@@ -708,8 +708,7 @@ u8 *em_cmd_flag_clear(EMW *em, u8 *p) {
             }
             break;
         }
-        kind = kind + 1;
-    }
+            }
     return p;
 }
 
@@ -1420,10 +1419,9 @@ u8 *em_cmd_flag_ck(EMW *em, u8 *p) {
     u8 *q;
     u8 kind;
     u8 val;
-    s32 ok;
+    u8 ok;
 
     q = p;
-    ok = 0;
     switch (*q++) {
     case 0:
         kind = q[0];
@@ -1431,30 +1429,58 @@ u8 *em_cmd_flag_ck(EMW *em, u8 *p) {
         q += 2;
         switch (kind) {
         case 1:
-            ok = em->x88B != val;
+            if (em->x88B == val) {
+                ok = 0;
+            } else {
+                ok = 1;
+            }
             break;
         case 2:
-            ok = em->x8C0 != val;
+            if ((u8)em->x8C0 == val) {
+                ok = 0;
+            } else {
+                ok = 1;
+            }
             break;
         case 3:
-            ok = em->x9E1 != val;
+            if (em->x9E1 == val) {
+                ok = 0;
+            } else {
+                ok = 1;
+            }
             break;
         case 4:
-            ok = em->x83A != val;
+            if (em->x83A == val) {
+                ok = 0;
+            } else {
+                ok = 1;
+            }
             break;
         case 5:
             if (em->kind == 7) {
-                ok = EM_FIELD(em, u8 *, 0x45C) != val;
+                if (EM_FIELD(em, u8 *, 0x45C) == val) {
+                ok = 0;
+            } else {
+                ok = 1;
+            }
             }
             break;
         case 6:
             if (em->kind == 0xF) {
-                ok = EM_FIELD(em, u8 *, 0x488) != val;
+                if (EM_FIELD(em, u8 *, 0x488) == val) {
+                ok = 0;
+            } else {
+                ok = 1;
+            }
             }
             break;
         case 7:
             if (em->kind == 0xF) {
-                ok = EM_FIELD(em, u8 *, 0x489) != val;
+                if (EM_FIELD(em, u8 *, 0x489) == val) {
+                ok = 0;
+            } else {
+                ok = 1;
+            }
             }
             break;
         }
