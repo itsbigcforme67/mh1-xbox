@@ -156,7 +156,12 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
     gfx_tex_src_hint = 0;
     rt_ms_add("textures in GPU memory (RGBA8, GPU)", (long)w * h * 4);
     rt_ms_add("textures as on disc (4/8-bit+CLUT, GPU)", t->src);
-    t->xbox = gfx_xbox_texture_bytes(w, h, rgba);
+    {   /* the Xbox estimate costs a colour count per texture: only for RT_MEM */
+        static int mem = -1;
+        if (mem < 0)
+            mem = getenv("RT_MEM") != NULL;
+        t->xbox = mem ? gfx_xbox_texture_bytes(w, h, rgba) : 0;
+    }
     rt_ms_add("textures as the Xbox keeps them (P8/RGBA8, GPU)", t->xbox);
     glGenTextures(1, &t->id);
     glBindTexture(GL_TEXTURE_2D, t->id);

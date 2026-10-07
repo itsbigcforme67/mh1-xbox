@@ -284,6 +284,137 @@ in the three PC tests, the title and the Rathian runs (gcc -O2, 32-bit;
 the game C keeps its work in static areas). The XBE gets 256 KB
 (`-stack:0x40000` in tools/build_xbox.py; nxdk's default is 64 KB).
 
+## CPU budget (733 MHz Pentium III, 30 fps)
+
+### Measured on the PC (agent A, 7 Oct 2026, round 4)
+
+`RT_PROF=1` (src/pc/rt/rt_prof.c) splits the CPU time into subsystems.
+Zones nest, and time goes to the innermost one. Logic zones are reported
+per game tick and draw zones per drawn frame, every 300 ticks, with the
+mean and the worst. On the PC it counts this thread's CPU time, so other
+jobs on the machine don't distort it; on the Xbox it uses the performance
+counter. `RT_STEP=1` with `--time S` runs one tick per drawn frame, as at
+30 fps. It also counts vertices skinned, vertices drawn, triangles and
+draw calls per frame. `tools/prof_scenes.sh` runs the four points below:
+- village: CONTINUE, walking about;
+- Rathian: quest 10 at her nest, hunter warped to her, attacking, GOD;
+- Fatalis: quest 103, the same;
+- movie: the opening movie.
+All runs use `--audio-dump`, so the mixer runs in the tick and is measured.
+
+Host: Core i5-10300H at ~4.0 GHz (turbo), gcc -O2 -m32 (x87 floats).
+Numbers are ms of CPU, after this round's fixes (below):
+
+| zone | village | Rathian | Fatalis | movie |
+|---|---|---|---|---|
+| game logic + host glue, per tick | 0.41 | 0.82 | 0.39 | 0.06 |
+| set objects + effects move | 0.05 | 0.05 | 0.02 | 0 |
+| sound tick + ADX stream decode | 0 * | 0.06 | 0.05 | 0.04 |
+| mixer (48 kHz, ADPCM decoded while mixing, reverb) | 0 * | 0.54 | 0.39 | 0.33 |
+| movie (MPEG-2 decode 1.5, colour conversion, texture) | | | | 2.7 |
+| draw: host draw code (poses, game draw C, 2D) | 0.86 | 0.77 | 0.36 | 0.02 |
+| draw: CPU skinning + lighting | 3.81 | 3.90 | 3.52 | |
+| draw: GL backend (not representative of NV2A) | 2.94 | 3.11 | 2.81 | 0.47 |
+| effects draw | 0.005 | 0.005 | 0.003 | |
+| vertices skinned / drawn per frame | 20k / 36k | 16k / 34k | 12k / 30k | |
+| triangles / draw calls per frame | 32k / 121 | 32k / 154 | 24k / 68 | |
+
+\* The village runs no sound tick on the PC yet (no village sound path in
+the viewer), so no mixer time was measured there; assume the Fatalis
+figure.
+
+### Projection to the Xbox
+
+Assumption: the Xbox CPU is about **20x slower** than this host for this
+code (range 15–30x). That is 5.4x for the clock (4.0 GHz vs 733 MHz) times
+about 3.5x per clock: the modern core issues more per cycle, predicts
+better, and has much larger caches. The Xbox's Pentium III has a 128 KB L2
+cache and a 133 MHz front-side bus. Not measured: no hardware yet. The
+first xemu or console run with RT_PROF replaces this guess; it would need
+its report sent to the debug output instead of stderr.
+
+At 30 fps one frame is 33.3 ms, with one game tick and one drawn frame.
+Before this round, at 20x:
+- skinning alone: 3.5–3.9 ms -> 70–80 ms, and 16 ms -> 320 ms in the
+  village, where every villager body variant was skinned;
+- mixer: 0.7 ms -> 14 ms;
+- movie: 5.6 ms -> 112 ms.
+
+After this round (fights, 20x):
+
+| | Rathian | Fatalis | village |
+|---|---|---|---|
+| logic + sound | 18.6 | 9.2 | 9.2 |
+| mixer | 10.8 | 7.8 | ~7.8 |
+| host draw code | 15.4 | 7.2 | 17.2 |
+| skinning | ~0 (GPU) | ~0 | ~0 |
+| NV2A backend: pushbuffer, copies of unskinned geometry [estimate] | 3–5 | 3–5 | 3–5 |
+| **total** | **~48–50** | **~27–29** | **~37–39** |
+
+So at 20x: Fatalis holds 30 fps, while the village and the busiest Rathian
+fight run at about 20–27 fps. At 15x all three fit in 33 ms except the
+Rathian fight (~37 ms); at 30x none do. The movie projects to decode 30 +
+conversion 12 + texture upload ~10 ms, about 50 ms per frame. That needs
+libmpeg2's MMX code (it has it; not enabled in this build) and the YUV ->
+RGB conversion done on the GPU (register combiners on three 8-bit planes,
+or a YUY2 texture) to fit.
+
+### What was done this round
+
+- **Skinning moved to the GPU on the Xbox** (gfx.h "GPU skinning"):
+  - `src/pc/xbox/shaders/skin.vs.cg`: 117 of 128 instructions. It blends
+    the matrix rows of up to 24 palette bones per vertex, transforms the
+    position and normal, does VU1-style lighting (3 directional lights +
+    ambient, clamped), tint, fade and fog.
+  - `gfx_skin.c` regroups each clay's triangles into batches of at most
+    24 bones. Measured at quests 10 and 103: 75 batches from 69 material
+    batches, and 4% more vertices from copies.
+  - `gfx_nv2a.c` keeps skinned clays in a static vertex buffer (80 bytes
+    per vertex, ~1.1 MB per scene) and uploads only bone matrices and
+    lights per draw.
+  - The PC/GL backend keeps the CPU path (`gfx_skin_capable() == 0`).
+  - Checked on the PC: `RT_SKIN_CHECK=1` runs a C model of the vertex
+    program (`gfx_skin_eval`) on every vertex copy and compares it with
+    `fl_model_pose`'s CPU result. Quests 10, 103, 144, 173 and the village:
+    39 M vertices, worst position error 2e-5 relative, colours within 1
+    (truncation).
+  - `build_xbox.py` checks that cgc's constant layout matches what
+    `gfx_nv2a.c` uploads.
+  - Not checked: the NV2A program itself, on xemu or hardware.
+  - Skinned clays are not near-clipped: the clip happens on the CPU and
+    needs the skinned positions.
+- **Village:** the villagers' model holds every body variant (0x20 parts)
+  and all were skinned per NPC; now only the parts that are drawn are
+  skinned. The hidden Rathian model is no longer skinned either. Village
+  skinning went from 16 to 4 ms on the PC. Screenshots are unchanged;
+  `RT_POSE_ALL=1` gives the old behaviour.
+- **Mixer**, about 2x cheaper:
+  - The reverb tails had decayed into denormal floats, the slow path on
+    x87 and on the Pentium III. A 1e-15 offset keeps them out: reverb went
+    from 0.3 to 0.06 ms per tick.
+  - Voices use 32.32 fixed-point positions and decode a block only when
+    they leave it.
+  - A 60 s Rathian audio dump differs from before by 1 LSB on 0.3% of
+    samples.
+- **Movie on the PC:** the Xbox texture-size estimate (a colour count per
+  texture) now runs only with RT_MEM. It was half the movie time.
+
+### Next for the frame rate (in order of the projected gain)
+
+1. The host draw code ("draw (rest)", 0.4–0.9 ms -> 7–17 ms): profile
+   inside it. It holds the hunter's per-part bone matrices, joint syncing,
+   the game's draw C (`trans_stage`, prims) and the 2D layers.
+2. Game logic ("logic (rest)"): 0.4–0.8 ms -> 8–16 ms. Profile by task;
+   check that clang/SSE (`-mfpmath=sse` is not set by nxdk) helps the
+   float-heavy monster code.
+3. Mixer: about 8–11 ms. Options: mix at 24 kHz, use 16-bit integer
+   arithmetic, or later the Xbox APU (its voices take ADPCM, but nxdk has
+   no APU driver).
+4. NV2A backend: keep the static stage geometry in GPU memory instead of
+   copying it into the ring every frame.
+5. Movies: libmpeg2 MMX, YUV -> RGB on the GPU, a streaming texture
+   instead of creating one per frame.
+
 ## Why 32-bit x86 helps
 
 The game C keeps pointers in u32 fields and depends on PS2 struct offsets. The
