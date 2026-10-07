@@ -295,7 +295,7 @@ for f in $GAME; do
              -Dem_sleep_eff_set=rtabi_em_sleep_eff_set_ps2" ;;
     # round 20 monster families: their prototypes of the shared helpers
     # (grep the file's own declarations; the adaptors are in rt_abi.c)
-    src/game/em/em08_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
+    src/game/em/em08_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl -DEft10_set=rtabi_Eft10_set \
              -DEft15_set3=rtabi_Eft15_set3 -DEft02_set3=rtabi_Eft02_set3" ;;
     src/game/em/em09*.c|src/game/em/em27*.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
     src/game/em/em03.c) ABI="-Dem_frame_check2=rtabi_em_frame_check2 -DEft13_set_em_scl=rtabi_Eft13_set_em_scl" ;;
@@ -304,7 +304,7 @@ for f in $GAME; do
     # round 21: Fatalis (em02), Lao-Shan Lung (em07), em33
     src/game/em/em02_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
              -DEft15_set3=rtabi_Eft15_set3" ;;
-    src/game/em/em07_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
+    src/game/em/em07_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl -DEft10_set=rtabi_Eft10_set \
              -DEft15_set3=rtabi_Eft15_set3 -DEft02_set3=rtabi_Eft02_set3" ;;
     src/game/em/em33.c) ABI="-Dem_frame_check2=rtabi_em_frame_check2 -DEft13_set_em_scl=rtabi_Eft13_set_em_scl" ;;
     src/game/em/em14_nm.c|src/game/em/em15_nm.c|src/game/em/em17_nm.c)

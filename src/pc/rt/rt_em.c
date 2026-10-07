@@ -482,8 +482,8 @@ int rt_monster_tick(int no)
     if (!em->be_flag)
         return 0;
     if (getenv("RT_EM_TRACE"))
-        printf("em%d: step %d act %d/%d/%d char %d frame %.1f pos %.0f %.0f %.0f ang %04X hp %d mode %d mt %d/%.0f/%d\n",
-                no, em->x04, PU8(em, 0x14), PU8(em, 0x15), PU8(em, 0x05), PS16(em, 0x2DC), PF(em, 0x19C),
+        printf("em%d: stg %d step %d act %d/%d/%d char %d frame %.1f pos %.0f %.0f %.0f ang %04X hp %d mode %d mt %d/%.0f/%d\n",
+                no, em->stg, em->x04, PU8(em, 0x14), PU8(em, 0x15), PU8(em, 0x05), PS16(em, 0x2DC), PF(em, 0x19C),
                 em->pos[0], em->pos[1], em->pos[2], em->ang[1] & 0xFFFF, PS16(em, 0x302), PU8(em, 0x888),
                 PS32(em, 0x194), PF(em, 0x1A8), PS32(em, 0x1C8));
     {
