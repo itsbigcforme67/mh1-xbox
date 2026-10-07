@@ -165,7 +165,7 @@ game 0x006307C0 0x0063099C shell/shell08b
 game 0x00632250 0x00632AB8 shell/shell08c
 game:rodata 0x0068A210 0x0068A240 shell/shell08c
 game 0x00632E70 0x006331C0 shell/shell08d
-game 0x00639EB0 0x0063A008 pl/pl_damage
+game 0x00639DD0 0x0063A008 pl/pl_damage
 game 0x0063A0F0 0x0063AC9C pl/pl_damageb
 game:rodata 0x0068A4F0 0x0068A52C pl/pl_damageb
 game 0x0063ACA0 0x0063B020 tuto/tutorial
@@ -2436,3 +2436,4 @@ game:rodata 0x00688CD0 0x00688D00 em/em17_demo
 lobby 0x005BCDE0 0x005BCF6C b/lb_in0300
 lobby 0x005B7DD0 0x005B7FE4 b/lb_lwm01
 lobby:rodata 0x0065E870 0x0065E890 b/lb_lwm01
+game 0x00566500 0x0056662C em/em_modechg

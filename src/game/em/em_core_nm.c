@@ -1363,26 +1363,22 @@ extern f32 (*em_range_data_tbl[])[2];
 extern u16 (*em_range_ang_data_tbl[])[2];
 
 void em_range_set(EMW *em, s8 no) {
-    f32 (*r)[2] = &em_range_data_tbl[em->kind][(u8)no * 4];
-    u16 (*a)[2] = &em_range_ang_data_tbl[em->kind][(u8)no * 2];
+    f32 *r = (f32 *)&em_range_data_tbl[em->kind][(u8)no * 4];
+    u16 *a = (u16 *)&em_range_ang_data_tbl[em->kind][(u8)no * 2];
 
     em->range_no = no;
-    em->x810 = (*r)[0];
-    em->x814 = (*r)[1];
-    r++;
-    em->x818 = (*r)[0];
-    em->x81C = (*r)[1];
-    r++;
-    em->x8E4[0] = (*r)[0];
-    em->x90C[0] = (*a)[0];
-    em->x8E4[1] = (*r)[1];
-    em->x90C[1] = (*a)[1];
-    r++;
-    a++;
-    em->x8E4[2] = (*r)[0];
-    em->x90C[2] = (*a)[0];
-    em->x8E4[3] = (*r)[1];
-    em->x90C[3] = (*a)[1];
+    em->x810 = *r++;
+    em->x814 = *r++;
+    em->x818 = *r++;
+    em->x81C = *r++;
+    em->x8E4[0] = *r++;
+    em->x90C[0] = *a++;
+    em->x8E4[1] = *r++;
+    em->x90C[1] = *a++;
+    em->x8E4[2] = *r++;
+    em->x90C[2] = *a++;
+    em->x8E4[3] = *r++;
+    em->x90C[3] = *a++;
 }
 
 typedef struct STAGE_DATA {

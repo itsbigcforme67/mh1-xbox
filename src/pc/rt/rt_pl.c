@@ -360,21 +360,7 @@ int Code_Make(int a, int n, int b, int m)
     return 0xFFFF;
 }
 
-/* Pl_poison_add (game 0x639DF0): poison gauge +0x7BA (skills 0xE immune,
- * 9 half, 0x13 double), timer +0x7BE = 30 */
-int Pl_Skill_ck(void *, int);
-void Pl_poison_add(void *pl, int v)
-{
-    s16 d = (s16)v;
-    if (Pl_Skill_ck(pl, 0xE) == 1) {
-        PS16(pl, 0x7BA) = 0;
-        return;
-    }
-    if (Pl_Skill_ck(pl, 9) == 1) d = (s16)(d / 2);
-    if (Pl_Skill_ck(pl, 0x13) == 1) d = (s16)(d * 2);
-    PS16(pl, 0x7BA) += d;
-    PS16(pl, 0x7BE) = 30;
-}
+/* Pl_poison_add now comes from src/game/pl/pl_damage.c */
 
 /* Stage_mv_data_get (f_quest): the stage's exits list; none on the PC
  * (stage changes are not ported) */
