@@ -2307,6 +2307,8 @@ segments:
       - [0x12A2F0, .rodata, f/lb_pz13]
       - [0x12A330, .rodata, f/lb_plz]
       - [0x12A360, rodata, data/rodata_65DCE0]
+      - [0x12A380, .rodata, f/lb_plz]
+      - [0x12A3B4, rodata, data/rodata_65DD34]
       - [0x12A520, .rodata, b/lb_by147]
       - [0x12A548, rodata, data/rodata_65DEC8]
       - [0x12A550, .rodata, cnet/cnlbs]
