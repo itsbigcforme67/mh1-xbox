@@ -347,7 +347,7 @@ game 0x0058BA40 0x0058BCB8 em/em04_act
 game:rodata 0x00686590 0x006865A8 em/em04_act
 game 0x0058BCC0 0x0058D4D8 em/em04
 game:rodata 0x006865B0 0x00686648 em/em04
-game 0x0058D600 0x0058E4F8 em/em04b
+game 0x0058D600 0x0058E4F0 em/em04b
 game:rodata 0x00686650 0x006866F0 em/em04b
 game 0x0058F3E0 0x0058F498 em/em04c
 game 0x006147D0 0x00618C9C em/em33
@@ -2439,3 +2439,8 @@ game 0x00566500 0x0056662C em/em_modechg
 game 0x0055E2B0 0x0055E424 em/em_cmd_r97
 game 0x00533A00 0x00534100 em/em_core_eye
 game 0x00539490 0x005395F0 em/em_core_hate
+game 0x0058E4F0 0x0058F3E0 em/em04d
+game 0x005F2680 0x005F2FD8 em/em20_atk08
+game 0x005F3440 0x005F3CD8 em/em20_atk21
+game:rodata 0x00689080 0x006890A0 em/em20_atk08
+game:rodata 0x006890A0 0x006890C0 em/em20_atk21
