@@ -88,27 +88,65 @@ shared.
 
 ## Memory budget (64 MB, shared with the GPU)
 
-Measured on the PC (7 Oct 2026, `/usr/bin/time -v`): peak resident set
-101-110 MB for a quest (Rathian, Lao-Shan) or the village. That number
-includes things the Xbox does not have or will not need: the desktop GL
-driver and SDL (tens of MB on Mesa), the whole 5.6 MB ELF kept in memory
-for the data import, shadow copies of overlay data, and PCM caches of every
-decoded sound pack (PS2 ADPCM is 3.5x smaller than 16-bit PCM). The PS2
-game itself runs in 32 MB main RAM + 4 MB GS VRAM + 2 MB sound RAM.
+### Measured on the PC build (round 25, 7 Oct 2026)
 
-Rough Xbox plan (estimates; to be measured with a per-category counter
-before the first Xbox run):
-- XBE code + game C + nxdk libraries: 6-10 MB.
-- Game work areas and loaded files (what the PS2 keeps in its 32 MB): up
-  to ~24 MB, close to the PS2 layout since the same loaders run.
-- Framebuffers (2 x 640x480x32 + depth): ~3.7 MB. Textures kept palettised:
-  similar to the PS2's per-stage texture sets, est. 4-8 MB.
-- Audio: keep packs ADPCM-compressed (decode per voice while mixing), est.
-  2-4 MB; ADX streamed from disk.
-- Left for the kernel and slack: ~10 MB.
-It fits on paper, with no room for keeping whole AFS indexes, the full ELF
-or PCM caches resident. Drop the ELF after the data import (copy only the
-tables used), and free per-quest data on village entry as the PS2 does.
+`RT_MEM=t1,t2,...` makes mhview print live heap bytes per category at those
+host ticks (src/pc/rt/rt_memstat.c: the port's own malloc/free are counted
+through a forced include; the decompiled game C does not allocate, it uses
+fixed areas). `tools/pc_memstat.py` lists the static .data/.bss. Runs:
+title = `--boot` tick 500; village = CONTINUE, tick 2500 (village after a
+quest's files were loaded at start); Rathian = `--quest 10` with
+RT_QUEST_STAGE=1, tick 300 (nest, Rathian awake). In KB:
+
+| category | title | village | Rathian |
+|---|---|---|---|
+| program file copy (SLPM_654.95, for the data import) | 5516 | 5516 | 5516 |
+| overlay binaries (game/lobby/select.bin as read) | 2657 | 2657 | 2657 |
+| overlay data copies + relocation tables (rt_mem) | 4436 | 4436 | 4436 |
+| main data tables imported from the ELF (rt_data) | 1235 | 1235 | 1235 |
+| files for the game's loaders (load_file_mdl copies kept) | 2472 | 9540 | 2472 |
+| files kept by the host renderer (models, stage) | 20108 | 21748 | 19547 |
+| collision areas (rt_hit: 2 x 4 MB fixed) | 8192 | 8192 | 8192 |
+| 2D / camera / font work areas (rt_2d 4096, rt_cam 1024, rt_font 976) | 6096 | 6096 | 6096 |
+| host models (clays, skinning buffers) + skeletons/motions | 3623 | 5841 | 3510 |
+| renderer CPU-side vertex arrays | 1523 | 2102 | 1108 |
+| audio packs as on disc (PS2 ADPCM) | 1558 | 1737 | 1776 |
+| audio decoded to 16-bit PCM (cache) | 86 | 599 (peak 7059) | 20079 |
+| other runtime heap | ~255 | ~255 | ~255 |
+| **CPU heap total** | **57745** | **69946** | **76873** |
+| textures in GPU memory as RGBA8 | 19640 | 22415 (peak 25967) | 11716 |
+| the same textures as on disc (4/8-bit + CLUT) | 4792 | 5419 | 2842 |
+| static .data/.bss of the binary (`size`) | 4090 | 4090 | 4090 |
+| code (.text) | 3099 | 3099 | 3099 |
+| process RSS (incl. SDL, Mesa GL driver, libc) | 105476 | 113644 | 104724 |
+
+(The title already holds quest-10 data: the viewer sets up a quest before the
+boot. The village column is after the first quest's files.)
+
+### What that means for 64 MB
+
+Naively the PC needs ~75 MB of heap plus ~20 MB of RGBA textures: too much.
+But most of it is PC-side waste with a clear fix:
+- Program file copy 5.4 MB: copy only the tables used, then free -> ~0.5 MB.
+- Overlay binaries + data copies (7 MB): the PS2 holds one overlay at a time
+  (game.bin 1.4 MB or lobby.bin 1.3 MB) in place; one copy -> ~1.5 MB.
+- Host renderer keeps whole model/stage files (~20 MB) after building its
+  clays: keep only what drawing needs (vertex data and texture handles); the
+  PS2 itself keeps these files in its 32 MB, so ~8-10 MB is the realistic
+  floor here.
+- Collision areas fixed at 2 x 4 MB: size them to the stage's files (the PS2
+  area is much smaller [not measured]); est. 1-2 MB.
+- Audio PCM cache (20 MB in the Rathian nest): decode PS2 ADPCM per voice
+  while mixing (28 samples per 16-byte block, cheap) or keep a small LRU
+  -> ~2 MB with the 1.8 MB of packed data.
+- Textures: NV2A supports 8-bit palettised textures; 4-bit ones would be
+  expanded to 8-bit: about 1.5x the disc size -> 4-8 MB instead of 12-26 MB.
+- 2D/camera/font areas (6 MB fixed): check against the PS2 sizes.
+
+Estimated Xbox total after those changes: code+static ~7.5 MB, game files
+and work areas ~16-20 MB, host model data ~8-10 MB, textures 4-8 MB, audio
+~4 MB, framebuffers ~3.7 MB, nxdk/kernel ~4 MB: about 47-57 MB of 64. It
+fits, with little room; the trims above are required, not optional.
 
 ## Why 32-bit x86 helps
 

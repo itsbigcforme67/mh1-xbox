@@ -402,9 +402,14 @@ python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 $CC $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
+# rt_memstat.h (forced include): the port's own malloc/free counted per
+# category for the RT_MEM memory report; the game C is not wrapped
+MEMSTAT="-include src/pc/rt/rt_memstat.h"
+$CC $CFLAGS $SYS -c src/pc/rt/rt_memstat.c -o build/pc/rt_memstat.o
+OBJS="$OBJS build/pc/rt_memstat.o"
 for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot; do
     # shellcheck disable=SC2086
-    $CC $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
+    $CC $CFLAGS $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"
 done
 # Symbols nothing defines yet (callees and data of the linked overlay C):
@@ -416,7 +421,7 @@ struct rt_table { const char *name; unsigned va; void *dst; size_t size; };
 const struct rt_table rt_gen_main_tables[1];' > build/pc/rt_gen.c
 $CC $CFLAGS $SYS -c build/pc/rt_gen.c -o build/pc/rt_gen.o
 # shellcheck disable=SC2086
-$CC $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview.tmp $LIBS \
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview.tmp $LIBS \
     -Wl,--warn-unresolved-symbols 2> build/pc/link1.log || { cat build/pc/link1.log; exit 1; }
 sed -n "s/.*undefined reference to \`\([^']*\)'.*/\1/p" build/pc/link1.log | sort -u > build/pc/undefined.txt
 rm -f build/pc/mhview.tmp
@@ -425,6 +430,6 @@ $NM --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined
 python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
 $CC $CFLAGS $SYS -w -c build/pc/rt_gen.c -o build/pc/rt_gen.o
 # shellcheck disable=SC2086
-$CC $CFLAGS $SYS $SDL_CFLAGS $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview $LIBS \
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o -o build/pc/mhview $LIBS \
     $(cat build/pc/rt_gen.defsym)
 echo "built build/pc/mhview (32-bit)"

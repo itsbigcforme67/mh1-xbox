@@ -28,7 +28,11 @@ int rt_load_elf(const char *path)
     n = ftell(f);
     fseek(f, 0, SEEK_SET);
     free(elf);
-    elf = malloc((size_t)n);
+    {
+        const char *o = rt_ms_push("program file copy (SLPM_654.95)");
+        elf = malloc((size_t)n);
+        rt_ms_pop(o);
+    }
     elf_n = elf && fread(elf, 1, (size_t)n, f) == (size_t)n ? (size_t)n : 0;
     fclose(f);
     return elf_n ? 0 : -1;

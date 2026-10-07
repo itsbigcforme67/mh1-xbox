@@ -59,6 +59,7 @@ int fmt_apx_decode(apx_image *img, fmt_blob f, int be)
     img->w = (int)w;
     img->h = (int)h;
     img->rgba = malloc((size_t)w * h * 4);
+    img->src_bytes = (int)(w * h * bpp / 8) + (bpp == 4 ? 16 : bpp == 8 ? 256 : 0) * (int)pbpp / 8;
 
     if (bpp == 4 || bpp == 8) {
         unsigned n = bpp == 4 ? 16 : 256;

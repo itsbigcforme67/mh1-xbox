@@ -117,7 +117,7 @@ int  fmt_amo_load(amo_model *m, fmt_blob f, int be);
 void fmt_amo_free(amo_model *m);
 
 /* ------------------------------------------------------------ apx */
-typedef struct { int w, h; uint8_t *rgba; } apx_image;  /* rgba malloc'd, alpha 0-255 */
+typedef struct { int w, h; uint8_t *rgba; int src_bytes; } apx_image;  /* rgba malloc'd, alpha 0-255; src_bytes: pixels + CLUT as stored on the disc */
 
 int  fmt_apx_decode(apx_image *img, fmt_blob f, int be);
 int  fmt_apx_is_bare(fmt_blob f, int be);   /* bare APX vs *_tex.bin link file */
