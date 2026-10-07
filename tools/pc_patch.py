@@ -16,6 +16,15 @@ stops the build so a stale patch is noticed. Found with tools/argregs.py
 import sys
 
 PATCHES = {
+    # a0 = em left over (were -D macros in build_pc.sh; clang rejects the
+    # macro expanding inside the K&R prototype, so patch the calls only)
+    "src/game/em/em_core_nm.c": [
+        ("void NextStage_No_Set(void);", "void NextStage_No_Set();"),
+        ("        NextStage_No_Set();", "        NextStage_No_Set(em);"),
+    ],
+    "src/game/em/em_cmd_nm.c": [
+        ("        if (GetWaterData() == 0) {", "        if (GetWaterData(em) == 0) {"),
+    ],
     # Lb_npc_mv passes its em on to the step functions (a0 left over);
     # lb_npc_erase hands it to push_em_work (tools/argregs.py, round 19)
     "src/lobby/b/lb_by71.c": [

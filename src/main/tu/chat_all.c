@@ -1457,15 +1457,15 @@ extern u8 Item_data[][16];
 int Item_preparation_one_ck(s16);
 
 void ItemListWindow(int page, int cursel, int mode) {
-    char buf[0x20];
-    s16 sel;
     s16 y;
-    s16 cnt;
+    s16 sel;
+    char buf[0x20];
     s16 pal;
     UD_ITEM *it;
-    s16 base;
-    s16 pg;
     u8 *w;
+    s16 base;
+    s16 cnt;
+    s16 pg;
 
     w = (u8 *)&player_work[GW(0xD1)] + 0x828;
     pg = page / 10;
@@ -1542,11 +1542,14 @@ void PlayerStatusWindow(u8 *pl, int tab) {
     u8 rank;
     int pt;
     int nxt;
-    int noRank = Event_flag_ck(4) != 1;
-    int t = tab & 0xFF;
-    int i;
+    int noRank;
+    int t;
+    u32 i;
+    u8 *q;
     s16 y;
 
+    noRank = Event_flag_ck(4) != 1;
+    t = tab & 0xFF;
     sprintf(buf, lit_3587, t + 1);
     frame_status_main_00354770[0].list = (s32 *)menu_status_str_003546E0[noRank];
     DispFrameList(&frame_status_main_00354770[(u8)tab], buf, -1);
@@ -1573,31 +1576,31 @@ void PlayerStatusWindow(u8 *pl, int tab) {
             font_print(lit_3588_003837D0, rank, hunter_appellation[rank]);
             flfntLocate(0x17A, 0xA2);
             if (rank < 0x14) {
-                font_print(lit_3589, (u8)pt, nxt);
+                font_print(lit_3589, pt, nxt);
             } else {
-                font_print(lit_3590, (u8)pt);
+                font_print(lit_3590, pt);
             }
             flfntLocate(0x17A, 0xB6);
         } else {
             flfntLocate(0x17A, 0x8E);
         }
-        font_print(lit_3591, (u8)F32(&User_data, 0x20));
+        font_print(lit_3591, F32(&User_data, 0x20));
         flfntLocate(0x18C, 0xCA);
-        font_print(lit_3592, (u8)FS16(pl, 0x792));
+        font_print(lit_3592, FS16(pl, 0x792));
         flfntLocate(0x18C, 0xDE);
         font_print(lit_3592, FS16(pl, 0x882) / 3);
         flfntLocate(0x18C, 0xF2);
         font_print(lit_3592, (u16)((f32)F16(pl, 0x6AC) * job_atk_adj_tbl[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF]));
         flfntLocate(0x18C, 0x106);
-        font_print(lit_3592, (u8)F16(pl, 0x6AE));
+        font_print(lit_3592, F16(pl, 0x6AE));
         flfntLocate(0x21C, 0xCA);
-        font_print(lit_3593, (u8)(s16)*(f32 *)(pl + 0x920));
+        font_print(lit_3593, (s16)*(f32 *)(pl + 0x920));
         flfntLocate(0x21C, 0xDE);
-        font_print(lit_3593, (u8)(s16)*(f32 *)(pl + 0x924));
+        font_print(lit_3593, (s16)*(f32 *)(pl + 0x924));
         flfntLocate(0x21C, 0xF2);
-        font_print(lit_3593, (u8)(s16)*(f32 *)(pl + 0x928));
+        font_print(lit_3593, (s16)*(f32 *)(pl + 0x928));
         flfntLocate(0x21C, 0x106);
-        font_print(lit_3593, (u8)(s16)*(f32 *)(pl + 0x92C));
+        font_print(lit_3593, (s16)*(f32 *)(pl + 0x92C));
         Put_comment(0x132, 0x126, 0x14, (u8 *)&User_data + 0x3F4);
         return;
     case 1:
@@ -1608,11 +1611,17 @@ void PlayerStatusWindow(u8 *pl, int tab) {
             return;
         }
         y = 0x13A;
-        for (i = 0; i < 5 && F8(pl, 0x910 + i) != 0; i++) {
+        i = 0;
+        do {
+            q = pl + i;
+            if (F8(q, 0x910) == 0) {
+                break;
+            }
             flfntLocate(0x132, y);
-            font_print(lit_3594, (u8)(s32)Skill_name[F8(pl, 0x910 + i)]);
+            font_print(lit_3594, Skill_name[F8(q, 0x910)]);
             y += 0x14;
-        }
+            i++;
+        } while (i < 5);
         return;
     }
 }
