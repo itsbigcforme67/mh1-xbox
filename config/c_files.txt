@@ -2445,3 +2445,11 @@ main 0x00174A20 0x00174B34 fl/flnode05f
 main 0x00174B60 0x00174C84 fl/flnode05g
 main 0x001745A0 0x0017469C fl/flnode03b
 main 0x0016FA00 0x00170198 fl/flcreate01
+main 0x001738C0 0x00173A48 fl/flfov01
+main 0x00171E50 0x00171E84 fl/flmat03
+main 0x00171EA0 0x00171ED4 fl/flmat04
+main 0x00171EE0 0x00171EFC fl/flmat05
+main 0x00172CE0 0x00172D2C fl/flmat07
+main 0x001715E0 0x001717B8 fl/flproj01
+main 0x001717C0 0x001718AC fl/flview01
+main 0x00195510 0x0019583C fl/tarpad03
