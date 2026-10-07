@@ -763,3 +763,36 @@ BlockConv8to32 23/65 (the original does not merge the `e++` increments: hand-unr
 ime_nm.c (66-219 off), the near ones are page_gc 16, add_dummy_chmem 18, getallwd 19, unify_khmem 19.
 0x2814E0-0x293B68 (23.6 KB, network last): NetFileCreate 6780, hit_cap_cap2_m 5012, hit_cap_cap3_m 3780, NetFileLoad 3124, reward_itembox 1240 (35 off), nb_flps0009, PatchExecCS, net_flps0008, net_flps0004.
 Network functions with small gaps (nm files, off/instr): CpInetTcpOpen 3/13, CngSessionStart_online 3/55, CngNetMcsP2PPoll 3/102, InetIPAddrFromString 2/136, AQ_init 5/89, CngNetAQSessionWait 8/13.
+
+## Assignment 11 (7 Oct, long round, single player first)
+Main line 38.669% at the start (after merging main), 38.962% at the end (my links: fl/dmatag, fl/clay05, fl/fms, quest_em_init_sub2).
+Linked (main OK x5, tools/build_pc.sh builds):
+- fl/dmatag 0x16D9C0-0x16DC98: the whole DMA/VIF tag file as ONE TU (replaces dt01/dt02). The 3-5 off holdouts (Next/Ref/Refe/Call tag) are solved:
+  parameter `u32 addr` and `int a = addr & 0x0FFFFFFF; int spr = 0; ... spr = (int)0x80000000; p[1] = a | spr;` (all int/u32, NOT unsigned long/long:
+  long gave the extra dsll32/dsra32 sign extension before the sw). tools/vt.py sweep over (param type x temp types x mask form) found it in 4 minutes.
+- fl/clay05 0x16C690-0x16D8F0: material DMA packets (HalfColorSub, MakeMaterialDmaData, SetMaterialData, RetouchMaterialTexData, _sub, _sub_mult),
+  ClayMakeTextureList, ClayRetouchMaterialTag(+_sub); flExecuteClay stays raw (12 instructions off: the original moves the GetSystemTmpBuff result into
+  its saved register in the delay slot of the NEXT call; every ordering I tried gave the move before the argument set-up). Rodata 0x35BD20-0x35BD58 (two jump tables).
+- fl/fms 0x16ABB0-0x16ACC8 (frame memory stack, 4 functions as one file, replaces the fmsGetFrame stand-in): fmsInitialize / fmsAllocMemory raw (8 and 11 off, pure
+  scheduling: the original starts with the `addiu v0,a3,-1` of the mask before the first store).
+- quest_em_init_sub2 (added to f_questl.c): `if (quest_w.no == 0) { q = (s32 *)(int)q; } else {...}` instead of an empty then-branch gives `bne; nop; b` instead of `beq`.
+Lessons:
+1. A parameter that is only used after the dispatch of a switch: take it as `void *b0` and declare `u8 *buf = (u8 *)b0;` INSIDE each case block. The original copies the
+   argument into its saved register per case (`daddu s0,a1` after the jump table); with a plain `u8 *buf` parameter MWCC copies it before the switch and takes a1 as a
+   temporary (flPS2SetMaterialData: 393 off -> 0). Sweep param type (void*/u32/int) x local type with tools/vt.py.
+2. A call with more arguments than the callee's definition: declare the callee K&R in the file (`void flPS2DmaAddCallTag();`) and pass all arguments the original passes
+   (flPS2DmaAddCallTag(buf, qwc, addr, 0, 0): the fifth is `daddu t0,zero,zero` in the delay slot). A callee defined EARLIER in the same file with fewer parameters needs the
+   extra (unused) parameter in its definition instead (flPS2ClayMakeTextureList(c, unused)).
+3. Pointer-sized small globals used gp-relative: `extern int flTextureStage[2];` (size known and small) gives lw x(gp); `extern int x[];` gives lui/lw.
+4. `n = (u8 *)(*(int *)(w + 4) - (int)old); n += (int)b;` fixes the operand order of an `addu` (a - b) + c on pointers (flPS2ClayRetouchMaterialTag_sub).
+5. Statement order inside a function body can matter for loads (`nb = buf + c->cnt * *sz;` before `nprim = ...` fixed 21 diffs in flExecuteClay).
+Tools added (tools/): declhill2.py (hill climb over local declaration order; works for K&R and brace-on-same-line headers and initialisers), nm_scan.py (every *_nm.c,
+unmatched functions in my ranges sorted by difference count), unm_range.py (unlinked functions of an address range), reorder_tu.py (sort a near-match file's functions
+into address order, types hoisted); vt.py now uses a per-process temp file so several sweeps can run at once.
+Near-matches left (off/instructions): flExecuteClay 12/204 (raw), fmsInitialize 8/30, fmsAllocMemory 11/24, flPS2ClayMakeTextureList / MaterialDmaData done,
+plmemDeleteBlockList 7/32 (the original reuses the register that held 0xFFFF for `next`; every form I tried keeps the constant live), flGetHierarchyData2 2 (sll v1,a2,6
+before the addiu), flInitPostureHierarchySISub/MAYASub 2 each (mov.s f12 before daddu a1 in the sibling call; a permuter run of 13000 iterations found nothing),
+ps2McInit 2 (daddu a1,zero after the first addiu), GetPlayerDiffuseData 19/100 (src/main/emw/gmat_nm.c: the original keeps a `b L; nop` jump-to-jump the optimiser removes here),
+stolen_item_stack 6, Em_hagi_point_cnt_ck 20/50 (the original keeps `em` in a0 across the first call and loads n into a2), Quest_next_em_set 17, font_print_sp 69.
+Quest file sweep: no literal-address accesses are left in src/main/quest/*.c (everything uses quest_w/game_w fields); the remaining quest near-matches are
+register-allocation problems, not address problems.
