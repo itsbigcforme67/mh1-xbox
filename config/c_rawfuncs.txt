@@ -95,3 +95,4 @@ main 0x18DB30 0x31C plmemRegisterS
 main 0x18DFE0 0x1D0 plmemCompact
 main 0x18E280 0x128 plmemAppendBlockList mn
 main 0x18E3B0 0x80 plmemDeleteBlockList mn
+main 0x16D5C0 0x330 flExecuteClay

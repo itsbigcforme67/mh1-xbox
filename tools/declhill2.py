@@ -15,7 +15,7 @@ a = src.index(mark)
 b = src.index('\n}\n', a) + 3
 func = src[a:b]
 lines = func.split('\n')
-k = next(i for i, l in enumerate(lines) if l.strip() == '{') + 1
+k = next(i for i, l in enumerate(lines) if l.strip() == '{' or l.rstrip().endswith('{')) + 1
 decl = []
 while re.match(r'^\s+[A-Za-z_][\w\s\*\[\]]*[\w\]];\s*$', lines[k + len(decl)]) and '(' not in lines[k + len(decl)]:
     decl.append(lines[k + len(decl)])
