@@ -1,4 +1,4 @@
-/* DMA/VIF tag builders. SLPM_654.95 0x0016D9C0-0x0016DCA0 (g_flReleaseClayHandle second part).
+/* DMA/VIF tag builders. SLPM_654.95 0x0016D9C0-0x0016DC98 (whole file, one TU).
  * Each returns the next free quadword. Tag word 0 = qwc | id << 28 | irq << 31, word 1 = address
  * (bit 31 set when the address is scratchpad 0x7xxxxxxx). */
 #include "types.h"
@@ -14,16 +14,15 @@ u32 *flPS2DmaAddCntTag(u32 *p, int qwc, int irq) {
     return p + 4;
 }
 
-u32 *flPS2DmaAddNextTag(u32 *p, int qwc, unsigned long addr, int irq) {
-    unsigned long a = addr & 0x0FFFFFFF;
-    long spr = 0;
-    u32 w;
+u32 *flPS2DmaAddNextTag(u32 *p, int qwc, u32 addr, int irq) {
+    int a = addr & 0x0FFFFFFF;
+    int spr = 0;
+
     if ((addr & 0x70000000) == 0x70000000) {
         spr = (int)0x80000000;
     }
-    w = qwc + 0x20000000;
     *(u128 *)p = 0;
-    p[0] = w;
+    p[0] = qwc + 0x20000000;
     p[1] = a | spr;
     if (irq == 1) {
         p[0] |= 0x80000000;
@@ -31,9 +30,9 @@ u32 *flPS2DmaAddNextTag(u32 *p, int qwc, unsigned long addr, int irq) {
     return p + 4;
 }
 
-u32 *flPS2DmaAddRefTag(u32 *p, int qwc, unsigned long addr, int irq) {
-    unsigned long a = addr & 0x0FFFFFFF;
-    unsigned long spr = 0;
+u32 *flPS2DmaAddRefTag(u32 *p, int qwc, u32 addr, int irq) {
+    int a = addr & 0x0FFFFFFF;
+    int spr = 0;
 
     if ((addr & 0x70000000) == 0x70000000) {
         spr = (int)0x80000000;
@@ -47,9 +46,9 @@ u32 *flPS2DmaAddRefTag(u32 *p, int qwc, unsigned long addr, int irq) {
     return p + 4;
 }
 
-u32 *flPS2DmaAddRefeTag(u32 *p, int qwc, unsigned long addr, int irq) {
-    unsigned long a = addr & 0x0FFFFFFF;
-    unsigned long spr = 0;
+u32 *flPS2DmaAddRefeTag(u32 *p, int qwc, u32 addr, int irq) {
+    int a = addr & 0x0FFFFFFF;
+    int spr = 0;
 
     if ((addr & 0x70000000) == 0x70000000) {
         spr = (int)0x80000000;
@@ -63,9 +62,9 @@ u32 *flPS2DmaAddRefeTag(u32 *p, int qwc, unsigned long addr, int irq) {
     return p + 4;
 }
 
-u32 *flPS2DmaAddCallTag(u32 *p, int qwc, unsigned long addr, int irq) {
-    unsigned long a = addr & 0x0FFFFFFF;
-    unsigned long spr = 0;
+u32 *flPS2DmaAddCallTag(u32 *p, int qwc, u32 addr, int irq) {
+    int a = addr & 0x0FFFFFFF;
+    int spr = 0;
 
     if ((addr & 0x70000000) == 0x70000000) {
         spr = (int)0x80000000;
