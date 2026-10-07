@@ -1,4 +1,4 @@
-/* CallBack_Event_RoomLeaver (0x5C18A0): logic complete (shift following room members down); 22/152 differ only in s0-s3 naming of j/off/o2. Not built. */
+/* CallBack_Event_RoomLeaver (0x5C18A0): 15/152 differ: only j/off register naming (j = found++ was the fix). Not built. */
 #include "lobby_b.h"
 extern char lit_4622[];
 typedef struct { u8 pad[0x1C]; char msg[0x100]; u8 a, b, c, d; } CHATM;
@@ -33,9 +33,8 @@ void CallBack_Event_RoomLeaver(CNET_RES res) {
         i++;
         off += 0x2FC;
     } while (i < 4);
-    j = found;
+    j = found++;
     if (j < 4) {
-        found = found + 1;
         off = j * 0x2FC;
         o2 = found * 0x2FC;
         do {

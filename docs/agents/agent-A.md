@@ -628,3 +628,10 @@ PC side only; no include/ edits, no PS2-built file changed.
 Lesson: any matrix the PS2 builds in trans() (enemy_mk, player_modify) is
 read by move-side code too (demo cameras, em10). When the host replaces the
 draw path, rebuild those fields per tick.
+
+## Assignment 23: urgent quests for real, Plesioth, reverb (7 Oct 2026)
+Details in docs/pc.md (handover summary at the top, round 23 at the end).
+- tools/test_urgent.sh: real clears of 136 and 137 open 2 and 3 stars.
+- Plesioth swims, attacks from water and ashore, can be hit ashore; frog-bait
+  check (Kaeru_ck) and its camera were stand-ins, now linked.
+- Reverb added (approximation). No include/ edits, no PS2-built file changed.

@@ -1,7 +1,7 @@
 #include "lobby_a.h"
 extern s8 *html_string_ptr;
 extern u8 *dp;
-void Split_TagCode(int);
+void Split_TagCode();
 void Analysis_TagCode();
 void check_halfcode(void) {
     s32 var_a2;
@@ -30,7 +30,7 @@ loop_3:
         }
         if ((var_a2 == 0) && (temp_a0_2 == 0x3C)) {
             html_string_ptr = html_string_ptr + 1;
-            Split_TagCode(temp_a0_2);
+            Split_TagCode();
             Analysis_TagCode();
             if (*(s32 *)(dp + 4) & 0x188) {
 

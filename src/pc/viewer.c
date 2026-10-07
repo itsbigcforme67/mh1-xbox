@@ -1072,7 +1072,7 @@ int main(int argc, char **argv)
          * village does. Test aid RT_QUEST_STAGE=1: start on the stage of
          * the quest's own monster instead (the old scripted-test set-up);
          * --stage N overrides both. */
-        int k, st;
+        int k = -1, st;
         if (rt_quest_load(quest_no) != 0)
             fprintf(stderr, "quest %d: no mission file\n", quest_no);
         else {

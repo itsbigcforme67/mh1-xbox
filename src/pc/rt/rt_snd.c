@@ -494,8 +494,27 @@ void str_pause(int ch, int on) { strw[ch].paused = on; }
  * 0 stopped or never started */
 int str_getstat(int ch) { return strw[ch].id >= 0 ? 3 : strw[ch].ended ? 5 : 0; }
 
-/* flSndSetRev: the IOP's reverb settings per core; the mixer has no reverb */
-void flSndSetRev(int core, int type, int depth, int a, int b) { (void)core; (void)type; (void)depth; (void)a; (void)b; }
+/* flSndSetRev(core, type, depth, ...): the SPU2 reverb of one core, as
+ * stage_bgm_set / lobby_bgm_set set it per stage from Snd_rev_set_tbl (type
+ * 0 = off; the game uses 4, the SPU2's "studio C"; depth 0..0x7FFF). The
+ * host has one approximate reverb on all sound-effect voices: wet from the
+ * larger depth of the two cores, room size from it too [guess: which voices
+ * each core carries is the IOP driver's business and was not traced]. */
+static int rev_depth[2];
+void flSndSetRev(int core, int type, int depth, int a, int b)
+{
+    int d;
+    (void)a; (void)b;
+    if (core < 0 || core > 1)
+        return;
+    rev_depth[core] = type ? depth : 0;
+    d = rev_depth[0] > rev_depth[1] ? rev_depth[0] : rev_depth[1];
+    if (getenv("RT_NO_REVERB"))
+        d = 0;
+    audio_reverb(d > 0 ? 0.6f * d / 32767.0f : 0.0f, d / 10240.0f > 1.0f ? 1.0f : d / 10240.0f);
+    if (trace)
+        printf("snd: reverb core %d type %d depth %d -> wet %.2f\n", core, type, depth, 0.6f * d / 32767.0f);
+}
 
 /* str_fadein_vol / str_fadein / str_fadeout (0x100D30 / 0x100CF0 / 0x100CC0) */
 void str_fadein_vol(int ch, int n, int vol)
