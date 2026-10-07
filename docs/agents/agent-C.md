@@ -1204,3 +1204,12 @@ More lessons from the same round (each from a function that matched):
   the lobby client TU 0x5B7020-0x5BF800 (CallBackWaitInit, Check_CallBackWait static). Not done here (169 runs from b/ with clashing local typedefs, and
   already matched functions could change). Lbc_GetRoomRule, Lbc_ConditionSearch, Lbs_ExitAndEnterPlaza, Lbc_SetPropaty, lbc_login_init,
   CallBack_Result_LoginLobbyServer and tk_logout need it (tools/unmatched.py lobby 0x5B7020 0x5C1B00).
+
+## Round 6 notes (agent C)
+- Removed 65 stale src/lobby/b/nm copies of already matched functions (tools/unmatched.py shows what is really left).
+- Lobby client TU (0x5B7020-0x5BF800): tools/lbtu3.py (new, WIP) merges the 155 C functions + 11 asm stubs of that range and resolves clashing
+  declarations by renaming them per run (extern objects get a linker alias line, config/lobby_aliases.txt format). Status: the clashes of
+  typedefs/externs are solved (1 compile error left, the missing build/raw .inc until c_rawfuncs lines exist), but prototype styles differ between
+  runs (lobby_a/b K&R vs lobby_f ANSI): about 90 call/prototype mismatches remain (e.g. lbc_browser(2) vs `lbc_browser()`, Lbs_MatchStart void vs int)
+  and every matched function must be re-verified in the merged file. Not committed to config; run
+  `python3 tools/lbtu3.py lb_cli 0x5B7020 0x5BF808 /tmp/cli.c` and `python3 tools/check.py /tmp/cli.c` to continue.
