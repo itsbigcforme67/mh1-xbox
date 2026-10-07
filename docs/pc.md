@@ -61,6 +61,15 @@ straight from the user's disc files at run time, with nothing extracted to
 disk, and shows a stage (default 4, st04; `--stage N` for others) with the Rathian
 (em01) and a hunter standing in it. Both play their motions in real time. Camera is free-fly.
 
+Screenshot caveats (agent D, 7 Oct 2026, gallery pass): `--follow` switches to the host follow camera, which has
+no wall collision, so it ends up inside rock in caves and nests (stages 40, 36, 37, 18, 14); use the game camera
+(no `--follow`) for shots. RT_PL_WARP / RT_PL_WARP_EM teleport the hunter without resetting the game camera, so the
+eye stays pinned thousands of units away (k_HitWallCamera/GetWallHitBit2 pushing it back); a real stage change calls
+rt_cam_init and is fine. Free-cam `--stage N` shots (no `--quest`) show the village minimap, a flat blue sky, and
+near-black views for stages 21/42/20/48 where the camera sits in geometry; with `--quest N --stage S` and the game
+camera every stage is lit normally. The Fortress start (stage 14, quest 101) is a rampart: the game's own intro
+camera pulls out below the wall at tick ~200, which looks like a wall niche but is not a spawn bug.
+
 ## Build
 
 The build is 32-bit (`gcc -m32`, see "Port runtime" below and
