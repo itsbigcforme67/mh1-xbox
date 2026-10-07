@@ -114,7 +114,7 @@ int Lb_PlayerStatus(u8 *pl, int idx) {
                 n = (int)pl + j;
                 if (*(u8 *)(n + 0x910) != 0) {
                     flfntLocate(0x132, y);
-                    font_print(lit_352_00664BD0, (u8)Skill_name[*(u8 *)(n + 0x910)]);
+                    font_print(lit_352_00664BD0, Skill_name[*(u8 *)(n + 0x910)]);
                     j += 1;
                     y = (s16)(y + 0x14);
                 } else {
