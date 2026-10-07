@@ -1294,3 +1294,7 @@ Tricks (each confirmed by a match):
 - alignall.py on a *_nm.c file shows false diffs for functions that are already linked from another file (e.g. emNN_effect_move, Edit_task/Cont_task): the nm TU
   sees the callee as a same-TU static. tools/unmatched.py is the real list.
 - cmn_mongon_check_sub 36 -> 27 off by declhill2 (declaration order: tbl, q, j, len, pos, found, n, p, r ...); the rest is the loop-exit layout (`found` tests) and which of p/q/n gets t4-t7.
+- Round 7 (coordinator's "bigger functions" pass): em_cmd_nm.c NextStage_Dir_Set 30 -> 11 off (`Stage_data_get((u16)em->x73A)` gives the lhu, and computing dx BEFORE dz).
+  game_w.pl_num instead of literal 0x3F34C3 helped only em_cmd_st25_pl_target_sel (273 -> 161) and em_cmd_samestage_pl_target_sel (249 -> 241); tools/greedy_sub.py
+  (CHECK_MODULE=game) applies such a substitution one occurrence at a time. declhill2 and a 128-combination type search on em_cmd_all_pl_target_sel (31 off) found nothing;
+  the 1000-instruction em_cmd_* selectors are register-allocation bound, not structure bound, so no whole-TU rewrite helped.
