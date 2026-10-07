@@ -545,3 +545,23 @@ Near-matches left (check.py differing insns): lb_guild_make_room 16 (the two mhR
 lb_send_data 3 (original fills the first switch-ladder `beq` delay slot with the next compare's `addiu`, and the Lbs flag branch lands on the `b end` block; permuter 7000 iterations found nothing), Lb_room_member 1 (`addu v1,v0,a0` operand order; ~400 spellings),
 lb_insert_target_list 8 (head in a2: making `c` and `ang` extra K&R params gives a2/a3 but then prev/cur/loaded half-word registers move; 9), lb_pl_turn_sub 34 (lb_v11_nm.c: a1 is `u16` for the daddiu constants, work750 stores duplicated per branch, the original has no mask on a1 and the loaded half-word in a0, sum in v1),
 lb_disp_name 138 (lb_v08_nm.c, stack layout now right with sp100, spF0, spB0 declared first; s-register map still off, original keeps `-1` in a register across the job and status calls, `q = cw + off + 0x1346` in s23).
+
+## Lobby session 15 (plaza, 0x594260-0x59DB3C, plus village near-matches)
+Linked (rebuild OK): plaza_moveMain, plaza_enterLobby, plaza_movePlaza, getFriendNow, plaza_searchAll, plaza_searchMember, plaza_setMyComment,
+plaza_setChatMode, lb_put_comment, Lbs_plaza_trans, put_member_info, Lb_put_new_mail (all online/plaza, runs f/lb_pz01..11, TU f/lb_plz).
+Lobby 33.356% -> 35.2%. Header edits: include/lbui.h plaza_moveMain int->void, LB_NETW.x0E carved from _pad0E. Aliases (config/lobby_aliases.txt):
+D_3A2940, D_3A1622 (absolute reads of PlazaInfo/LobbyInfo entries), get_page_num (static in lb_plz.c).
+Lessons (each confirmed by a match):
+- `u16 sw = Get_sw2(0);` then `LB_NETW *a = pNet;` AFTER the call keeps `a` in a temp register (a before the call goes to an s register).
+- One-case `switch (f()) { case 3: ... break; }` gives `beq v0,v1; nop; b end` (plaza_moveMain); `if (r == 3)` does not.
+- Every path ending in `return 2` is `break` out of the switch plus one final `return 2` (shared exit); explicit `return 0/1/3` stay.
+- `if (x > 1)` instead of `x >= 2` flips `slti at` vs `slti v0` (put_mail_input_square, plaza_setChatMode).
+- K&R int params with explicit `(s16)` casts at calls: a variable that is only ever used narrowed gets narrowed once at definition; use int + cast per call (put_member_info, lb_put_comment).
+- A call whose result is kept in an argument register after the call (`a2` read after get_page_num) needs the callee as a static function defined EARLIER in the same TU:
+  tools/lbtu2.py (copy of lbtu.py that accepts runs in lb/ and b/ too) merges registered runs + asm stubs into one TU. lb_plz.c = 0x595F70-0x598DB0 does that.
+  A TU holding several jump tables must cover its whole rodata range contiguously (objects have one .rodata): that blocked merging 0x594260 and up while plaza_checkFriend is not C.
+- Statement-order search (24 permutations of 4 stores) fixed plaza_searchMember case 3; declaration order alone often changes nothing for temporaries.
+Near-matches left: plaza_checkFriend 199/937 (src/lobby/f/lb_pz13_nm.c), Plaza_add_friend 15 (lb_pz12_nm.c: register numbers of sw/a/st), put_mail_input_square 17,
+plaza_disp_mail ~73 (needs int ty narrowed per use), Lb_addChatMember 10 / Lb_clearChatMember 20 (lbui_nm.c), draw_dialog_square 8 (20.0f/tw float register order),
+ConditionSearchUser 3, lb_mix_put_itemDetail 2 / lb_mix_decide 4 / shop_select_items / kyoukaListProg / lb_npc_old_guild 2 (village: whole-file TU of lb_mix_nm.c gave the same diffs).
+Warning: tools/build.py compiles EVERY src/**/*.c, so never leave scratch files under src/ while a rebuild runs.

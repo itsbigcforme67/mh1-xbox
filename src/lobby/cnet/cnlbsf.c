@@ -5,6 +5,8 @@
 
 typedef struct { s16 a, b, c; } CPLACE3;
 
+typedef struct { s8 val; u8 pad[6]; } R7;
+
 void cnLBS_Get_LoginWarningMessage(CNET_H1004 *d) {
     *d = CnetSys_w.warnmsg;
 }

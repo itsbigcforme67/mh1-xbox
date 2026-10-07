@@ -336,12 +336,40 @@ static void stack_pull(void **st, s8 *cnt, void *p)
         }
 }
 
-int push_senko(void *p) { return stack_push(senko_stack, &senko_cnt, p); }
+/* push_senko (0x16A570) also runs Em_Senko_Ck(p) (game.bin 0x539340: the
+ * flash blinds the monsters that see it) when it takes the entry. */
+int Em_Senko_Ck(void *p);
+int push_senko(void *p)
+{
+    int i;
+    if (senko_cnt >= 32)
+        return 0;
+    for (i = 0; i < 32; i++)
+        if (!senko_stack[i]) {
+            Em_Senko_Ck(p);
+            senko_stack[i] = p;
+            senko_cnt++;
+            return 1;
+        }
+    return 0;
+}
 void pull_senko(void *p) { stack_pull(senko_stack, &senko_cnt, p); }
 int push_smoke(void *p) { return stack_push(smoke_stack, &smoke_cnt, p); }
 void pull_smoke(void *p) { stack_pull(smoke_stack, &smoke_cnt, p); }
 int push_smell(void *p) { return stack_push(smell_stack, &smell_cnt, p); }
 void pull_smell(void *p) { stack_pull(smell_stack, &smell_cnt, p); }
+
+/* move_senko / move_smoke (0x16A670 / 0x16A4A0), once per tick: count
+ * down each entry's s8 life at +0x15 and pull it when it reaches 0 */
+static void stack_move(void **st, s8 *cnt)
+{
+    int i;
+    for (i = 0; i < 32; i++)
+        if (st[i] && --((s8 *)st[i])[0x15] <= 0)
+            stack_pull(st, cnt, st[i]);
+}
+void move_senko(void) { stack_move(senko_stack, &senko_cnt); }
+void move_smoke(void) { stack_move(smoke_stack, &smoke_cnt); }
 
 /* ------------------------------------------------------------ eft helpers */
 /* eft_vec_linear (0x1013B0): keyframes {t, x, y, z} ending with t = -1;

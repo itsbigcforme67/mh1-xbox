@@ -95,11 +95,26 @@ void em_act_set(EMW *em, int kind, u16 no);
 int func_63AF40(void) { return Tutorial_quest_ck(); }
 void func_63ACA0(void) { Tutorial_prog(); }
 void func_535D20(EMW *em, int kind, int no) { em_act_set(em, kind, (u16)no); }
-/* Bdora_hp_ck (0x53B5C0), Fish_set (0x5589F0), Em09_item_sub (0x5A8170):
- * other monsters / the fishing spot; not on the PC yet */
-int func_53B5C0(void) { return 0; }
-void func_5589F0(int n) { (void)n; }
-void func_5A8170(void *e) { (void)e; }
+/* Bdora_hp_ck (0x53B5C0, em_master: Fatalis' hit points), Fish_set
+ * (0x5589F0: a stage's fish, eft23) and Em09_item_sub (0x5A8170) */
+int Bdora_hp_ck(void);
+void Em09_item_sub(EMW *em);
+void Eft23_set(int arg, f32 *pos);
+int func_53B5C0(void) { return Bdora_hp_ck(); }
+void func_5A8170(void *e) { Em09_item_sub((EMW *)e); }
+/* Fish_set (game.bin 0x5589F0; matched C in eft23b.c, which the PC does
+ * not build because eft23_nm.c holds Eft23_set too): every fish of the
+ * stage's spot table Fish_hani_tbl[stage] (0x18-byte entries {pos, range,
+ * kind (<0 ends), count}) */
+extern s32 *Fish_hani_tbl[];
+void func_5589F0(int stage)
+{
+    s32 *sp = Fish_hani_tbl[stage];
+    int n;
+    for (; sp && sp[4] >= 0; sp += 6)
+        for (n = sp[5]; n > 0; n--)
+            Eft23_set(sp[4], (f32 *)sp);
+}
 /* Lb_get_quest_str2 (lobby 0x5C5E20): online quest names */
 static char empty_str[1];
 char *func_5C5E20(void) { return empty_str; }
