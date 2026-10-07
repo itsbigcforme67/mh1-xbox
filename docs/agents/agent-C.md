@@ -1187,3 +1187,20 @@ Still near: lb_select_trans 6 (n2/j register swap in the last loop), lb_select_s
 lm_member_list_mv (switch variable lands in v1 instead of a1), lm_room_member_mv 142 (original keeps the `i < 4` guard before the loop; we fold it),
 test_server_sel_disp 20 (original adds 0x28 to the text pointer instead of folding), disp_string_handle 7, RoomLeaver 22, MatchEntryUser 39 (delay slot),
 select_ps2 done, tk_logout (needs the static message_sub), cnLBS_RecvData 5.
+More lessons from the same round (each from a function that matched):
+- ANSI prototype with a narrow parameter (`int cnLBS_Get_RoomRuleAllocation(u16, u8 *)`, `Lb_room_member(u8, int)`) and passing the plain variable makes the
+  compiler mask at the CALL SITE (andi in the delay slot) and keep the wide value in the saved register. Writing `r & 0xFFFF` yourself makes MWCC hoist the
+  mask into the definition (Lbc_GuestReadRoom 116 -> 38 -> OK).
+- Post-increment inside a condition: `if (CWX->x2C4C++ >= 0x258 || ...)` loads the pointer into a1 and the value into a0 (lbc_login_users_personal_data);
+  `r = c->x2C4C++; if (r >= ...)` swaps them. `j = found++;` (RoomLeaver) puts the add into the branch delay slot like the original.
+- The second of two sequential loops often REUSES the first loop's counter (lb_select_trans: `i = 0` again instead of a new `j`).
+- `if (CWX->step++ ...)`/`break` instead of `return` at the end of a case: the original shares one exit block (Lbc_SetRoomRule, Lbc_GuestReadRoom `break` + one `return 2`).
+- Struct assignment of a 0x1D0-byte record (`tmpPersonalData = BrPersonalData;`) gives the lq/sq loop of the original; statement order around it matters (step++ first).
+- Big local buffers: frame 0x29530 = `u8 buf[0x294B0]` (Lbc_GetRoomRule / GuestReadRoom); the m2c "arg28" is that buffer.
+- font_print_double's first two arguments are s16: write `(s16)(t.x + 0x28)`; evaluate order of x/y then follows the original (lb_select_tag 297 -> 185).
+- `unsigned` cvt: `10.0f * (u32)strlen(p)` gives the branchy u32->float conversion of test_server_sel_disp.
+- text_lobby_msg is `LB_TXT *[3]`, an ARRAY of pointers (absolute `lui/lw` addressing); declared as a single pointer it becomes gp-relative.
+- tools/lbtu2.py (main) merges runs into one translation unit with asm stubs for unwritten functions: that is the way to get static callee knowledge for
+  the lobby client TU 0x5B7020-0x5BF800 (CallBackWaitInit, Check_CallBackWait static). Not done here (169 runs from b/ with clashing local typedefs, and
+  already matched functions could change). Lbc_GetRoomRule, Lbc_ConditionSearch, Lbs_ExitAndEnterPlaza, Lbc_SetPropaty, lbc_login_init,
+  CallBack_Result_LoginLobbyServer and tk_logout need it (tools/unmatched.py lobby 0x5B7020 0x5C1B00).
