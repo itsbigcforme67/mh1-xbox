@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,13 +469,27 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int write_temp(void)
+void free_kouholists(KL *l)
 {
-    if (seek_dic(0x1400) == -1) {
-        return -1;
+    while (l != 0) {
+        free_mem(l->kh);
+        l = l->next;
     }
-    if (d_write(dic_fd, temp_pages, 0x2000) != 0x2000) {
-        return -1;
+}
+
+KH *null_kouho(int len)
+{
+    KH *k;
+
+    k = alloc_khmem();
+    if (k != 0) {
+        k->flag = 0x80;
+        k->str[0] = 0;
+        k->x06 = len;
+        k->x07 = 0;
+        k->pw = 0;
+        k->x0C = 0xFFFF;
+        k->next = 0;
     }
-    return 0;
+    return k;
 }

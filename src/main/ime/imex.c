@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,14 +469,223 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int updwdlen(WD *w)
+int kstrncpy(u8 *dst, u8 *src, int n)
 {
-    int extra;
+    int total;
+    int c;
 
-    if (w->x08 != 0 || w->x07 >= 0x2D) {
-        extra = 3;
-    } else {
-        extra = 2;
+    total = n;
+    while ((c = *src) && n > 0) {
+        if (is_kanji(c) != 0) {
+            if (n <= 1) {
+                break;
+            }
+            n--;
+            *dst++ = *src++;
+        }
+        n--;
+        *dst++ = *src++;
     }
-    return extra + setkbuflen(w->tango);
+    *dst = 0;
+    return total - n;
+}
+
+KH *raw_kouho(int pos, int len, int mode)
+{
+    KH *out;
+    int cnt;
+    u8 *w;
+
+    w = (u8 *)wdsbuf;
+    *(u16 *)w = 0xFFFF;
+    ((u16 *)w)[1] = 0;
+    w[4] = 0;
+    trans_roman(w + 5, pos, len, mode);
+    return create_kouho(w, 0, len, &out, &cnt);
+}
+
+void khmem_raw(mode)
+int mode;
+{
+    HCHAR *h;
+
+    h = &hchar[cur_pos];
+    free_khmemlist(h->kh);
+    h->kh = raw_kouho(cur_pos, cur_len, mode);
+}
+
+void kh_mergesort(int pos, KL *list)
+{
+    KH *head;
+    KH *tail;
+    KH *k;
+    HCHAR *h;
+
+    h = &hchar[pos];
+    head = h->kh;
+    tail = kh_endof(head);
+    kh_append_init(pos, head);
+    while ((k = (KH *)kh_merge_getone(list)) != 0) {
+        kh_append(pos, &head, &tail, k);
+    }
+    if ((k = null_kouho(cur_len)) != 0) {
+        kh_append(pos, &head, &tail, k);
+    }
+    h->kh = head;
+}
+
+int kh_merge_getone(KL *list)
+{
+    int best;
+    KH *r;
+    KL *sel;
+    KL *l;
+
+    best = 0;
+    sel = 0;
+    for (l = list; l != 0; l = l->next) {
+        if (l->kh != 0 && (sel == 0 || (u16)l->pri > (u16)best)) {
+            best = l->pri;
+            sel = l;
+        }
+    }
+    if (sel == 0) {
+        return 0;
+    }
+    r = sel->kh;
+    sel->kh = kh_skip(r, best);
+    sel->pri = (sel->kh == 0) ? 0 : (kh_priority(sel->bs, sel->kh->x0E) & 0xFFFF);
+    return (int)r;
+}
+
+void kh_append_init(int pos, KH *k)
+{
+    int n;
+
+    e_khstr = (u8 *)wdsbuf;
+    while (k != 0) {
+        n = meantosjis(meanbuf, e_khstr + 1, kouho_makedisp(pos, cur_len, k, meanbuf));
+        *e_khstr = n;
+        e_khstr++;
+        e_khstr += n;
+        k = kh_followed(k);
+    }
+}
+
+void kh_append(pos, head, tail, k)
+int pos;
+KH **head;
+KH **tail;
+KH *k;
+{
+    int n;
+
+    n = meantosjis(meanbuf, outbuf, kouho_makedisp(pos, cur_len, k, meanbuf));
+    if (exist_kouho(outbuf, n) != 0) {
+        free_khmemlist(k);
+        return;
+    }
+    if ((u32)(e_khstr + n + 1) <= (u32)mem) {
+        *e_khstr = n;
+        e_khstr++;
+        strncpy(e_khstr, outbuf, n);
+        e_khstr += n;
+    }
+    if (*head == 0) {
+        *tail = k;
+        *head = k;
+    } else {
+        (*tail)->next = k;
+    }
+    *tail = kh_endof(k);
+}
+
+static int exist_kouho(u8 *s, int n)
+{
+    u8 *p;
+    int len;
+
+    for (p = (u8 *)wdsbuf; p < e_khstr;) {
+        len = *p;
+        p++;
+        if (len == n && ask_strncmp(p, s, len) == 0) {
+            return 1;
+        }
+        p += len;
+    }
+    return 0;
+}
+
+KH *kh_skip(KH *k)
+{
+    KH *r;
+
+    while (k->flag & 1) {
+        k = k->next;
+    }
+    r = k->next;
+    k->next = 0;
+    return r;
+}
+
+KH *kh_followed(KH *k)
+{
+    while (k->flag & 1) {
+        k = k->next;
+    }
+    return k->next;
+}
+
+KH *kh_endof(KH *k)
+{
+    KH *n;
+
+    if (k == 0) {
+        return 0;
+    }
+    for (;;) {
+        n = k->next;
+        if (n == 0) {
+            break;
+        }
+        k = n;
+    }
+    return k;
+}
+
+int kh_count(KH *k)
+{
+    int n;
+
+    n = 0;
+    while (k != 0) {
+        k = kh_followed(k);
+        n++;
+    }
+    return n;
+}
+
+int kh_length(KH *k)
+{
+    int n;
+    int len;
+
+    if (k->flag == 0x80) {
+        return cur_len * 2;
+    }
+    n = (cur_len - k->x06) * 2;
+    while (k->flag & 1) {
+        len = strlen(k->str);
+        k = k->next;
+        n += len;
+    }
+    return n + strlen(k->str);
+}
+
+KH *take_kouho(KH *k, int n)
+{
+    while (n-- != 0) {
+        k = kh_followed(k);
+    }
+    return k;
 }

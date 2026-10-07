@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -545,4 +545,62 @@ int len;
 u16 *buf;
 {
     return kouho_makedisp(pos, len, hchar[pos].kh, buf);
+}
+
+void unify_khmem(int pos, int flag)
+{
+    KH **pk;
+    KH *k;
+    KH *next;
+    KH *top;
+
+    pk = (KH **)((u8 *)&hchar[0].kh + pos * 28);
+    k = *pk;
+    if (k != 0) {
+        if (flag == 1 && (sel_job == 1 || func_mode >= 3)) {
+            top = take_kouho(top_kh, gun_nkh);
+            if (k != 0) {
+                do {
+                    if (k == top) {
+                        break;
+                    }
+                    next = kh_followed(k);
+                    free_mem(k);
+                    k = next;
+                } while (next != 0);
+            }
+            *pk = k;
+        }
+        free_khmemlist(kh_skip(k));
+    }
+}
+
+u8 *select_tostr(void)
+{
+    meantosjis(meanbuf, outbuf, disp_select());
+    return outbuf;
+}
+
+u8 *select_subtostr(int arg0, int n)
+{
+    int k;
+    int pos;
+    u16 *p;
+    int len;
+    int end;
+
+    p = meanbuf;
+    pos = arg0;
+    end = arg0 + n;
+    while (pos < end && (len = bunsetu_len(pos)) != 0) {
+        if (pos == cur_pos) {
+            k = current_makedisp(pos, len, p);
+        } else {
+            k = first_makedisp(pos, len, p);
+        }
+        p += k;
+        pos += len;
+    }
+    meantosjis(meanbuf, outbuf, p - meanbuf);
+    return outbuf;
 }

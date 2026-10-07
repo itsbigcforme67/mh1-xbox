@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,134 +469,127 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void kh_append_init(int pos, KH *k)
+int api_henkan(int *a)
 {
-    int n;
+    u8 *in;
+    u8 *kana;
+    u8 *kj;
 
-    e_khstr = (u8 *)wdsbuf;
-    while (k != 0) {
-        n = meantosjis(meanbuf, e_khstr + 1, kouho_makedisp(pos, cur_len, k, meanbuf));
-        *e_khstr = n;
-        e_khstr++;
-        e_khstr += n;
-        k = kh_followed(k);
+    if (func_mode == 0) {
+        return -1;
     }
-}
-
-void kh_append(pos, head, tail, k)
-int pos;
-KH **head;
-KH **tail;
-KH *k;
-{
-    int n;
-
-    n = meantosjis(meanbuf, outbuf, kouho_makedisp(pos, cur_len, k, meanbuf));
-    if (exist_kouho(outbuf, n) != 0) {
-        free_khmemlist(k);
-        return;
-    }
-    if ((u32)(e_khstr + n + 1) <= (u32)mem) {
-        *e_khstr = n;
-        e_khstr++;
-        strncpy(e_khstr, outbuf, n);
-        e_khstr += n;
-    }
-    if (*head == 0) {
-        *tail = k;
-        *head = k;
-    } else {
-        (*tail)->next = k;
-    }
-    *tail = kh_endof(k);
-}
-
-static int exist_kouho(u8 *s, int n)
-{
-    u8 *p;
-    int len;
-
-    for (p = (u8 *)wdsbuf; p < e_khstr;) {
-        len = *p;
-        p++;
-        if (len == n && ask_strncmp(p, s, len) == 0) {
-            return 1;
+    in = (u8 *)a[0];
+    kana = (u8 *)a[1];
+    kj = (u8 *)a[2];
+    if (in != 0) {
+        if (func_mode >= 2) {
+            init_edit0();
         }
-        p += len;
+        if (add_kana_buf(in) < 0) {
+            return -1;
+        }
     }
-    return 0;
-}
-
-KH *kh_skip(KH *k)
-{
-    KH *r;
-
-    while (k->flag & 1) {
-        k = k->next;
-    }
-    r = k->next;
-    k->next = 0;
-    return r;
-}
-
-KH *kh_followed(KH *k)
-{
-    while (k->flag & 1) {
-        k = k->next;
-    }
-    return k->next;
-}
-
-KH *kh_endof(KH *k)
-{
-    KH *n;
-
-    if (k == 0) {
+    if (kana_len <= 0) {
+        *kana = 0;
+        *kj = 0;
         return 0;
     }
-    for (;;) {
-        n = k->next;
-        if (n == 0) {
-            break;
+    henkan(0, kana_len, 0, -1);
+    cur_pos = 0;
+    cur_len = bunsetu_len(0);
+    init_kouho(0, 1);
+    get_kouhostr(kana, kj);
+    func_mode = 3;
+    return kh_count(hchar[0].kh);
+}
+
+int get_kouhostr(u8 *a, u8 *b)
+{
+    strcpy(a, select_subtostr(cur_pos, cur_len));
+    strcpy(b, select_subtostr(cur_pos + cur_len, kana_len - cur_pos - cur_len));
+}
+
+int api_movekh(int *a)
+{
+    int cnt;
+    u8 *p;
+    u8 *q;
+    int n;
+
+    if (func_mode != 3) {
+        return 0;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    switch (a[-1]) {
+    case 20:
+        if (gun_nkh > 0) {
+            gun_nkh--;
+        } else if (back_gun(0, 0) == 0) {
+            init_kouho(0, 1);
+            n = gun_num;
+            while (next_gun(0, 0) != 0) {
+                n += gun_num;
+            }
+            init_kouho(n - 1, 1);
+        } else {
+            gun_nkh = gun_num - 1;
         }
-        k = n;
+        break;
+    case 21:
+        if (gun_nkh < gun_num - 1) {
+            gun_nkh++;
+        } else if (next_gun(0, 0) == 0) {
+            init_kouho(0, 1);
+        }
+        break;
     }
-    return k;
+    get_kouhostr(p, q);
+    return gun_nkh + 1;
 }
 
-int kh_count(KH *k)
+int api_moveblk(int *a)
 {
-    int n;
+    int fail;
+    u8 *p;
+    u8 *q;
 
-    n = 0;
-    while (k != 0) {
-        k = kh_followed(k);
-        n++;
+    fail = 0;
+    if (func_mode != 3) {
+        return 0;
     }
-    return n;
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    switch (a[-1]) {
+    case 22:
+        if (back_gun(0, 0) == 0) {
+            fail = 1;
+        }
+        break;
+    case 23:
+        if (next_gun(0, 0) == 0) {
+            fail = 1;
+        }
+        break;
+    }
+    get_kouhostr(p, q);
+    if (fail != 0) {
+        return 0;
+    }
+    return gun_num;
 }
 
-int kh_length(KH *k)
+int api_allfix(int *a)
 {
-    int n;
-    int len;
+    u8 *out;
 
-    if (k->flag == 0x80) {
-        return cur_len * 2;
+    if (func_mode != 3) {
+        return -1;
     }
-    n = (cur_len - k->x06) * 2;
-    while (k->flag & 1) {
-        len = strlen(k->str);
-        k = k->next;
-        n += len;
-    }
-    return n + strlen(k->str);
-}
-
-KH *take_kouho(KH *k, int n)
-{
-    while (n-- != 0) {
-        k = kh_followed(k);
-    }
-    return k;
+    out = (u8 *)a[0];
+    wd_learn(0, kana_len);
+    strcpy(out, select_tostr());
+    init_edit0();
+    func_mode = 1;
+    return 0;
 }

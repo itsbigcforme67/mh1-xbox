@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,29 +469,47 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-u16 to_zenkaku_spec(int c)
+int dic_open(char *name)
 {
-    u8 *k;
-    u16 *t;
-    u16 r;
+    int r;
 
-    k = spec_key_19;
-    t = spec_tran_20;
-    while (*k != 0) {
-        if ((*k & 0xFF) == (c & 0xFF)) {
-            r = *t;
-            if ((r & 0xFF00) == 0x2500 && !((u16)c & 0x100)) {
-                return (r & 0xFF) | 0x2400;
-            }
-            return r;
-        }
-        k++;
-        t++;
+    if (*name == 0) {
+        return -1;
     }
-    return 0;
+    set_dicname();
+    r = open_dic();
+    if (r != 0) {
+        if (r == -1) {
+            return -7;
+        }
+        return -8;
+    }
+    if (read_head() == -1) {
+        close_dic();
+        return -2;
+    }
+    if (read_index() == -1) {
+        close_dic();
+        return -2;
+    }
+    init_page();
+    init_temp();
+    if (dic_rw == 0x8000) {
+        return -6;
+    }
+    return 3;
 }
 
-int ext_jis(int c, u16 hi)
+int dic_close(void)
 {
-    return ((c & 0xFF) | ((hi & 0x100) + 0x2400)) & 0xFFFF;
+    if (dic_fd == -1) {
+        return -3;
+    }
+    flush_head();
+    flush_temp();
+    flush_pages();
+    if (close_dic() == -1) {
+        return -2;
+    }
+    return 3;
 }

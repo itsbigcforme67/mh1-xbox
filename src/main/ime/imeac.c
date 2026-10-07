@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,45 +469,56 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void unify_bsmem(int pos, int len)
+void bs_prefix(int pos)
 {
-    BS **pp;
     BS *b;
+    PW *pw;
+    HCHAR *h;
 
-    pp = &hchar[pos].bs;
-    b = *pp;
-    while (b != 0) {
-        if (b->len == len) {
-            pp = &b->next;
-        } else {
-            *pp = b->next;
-            free_mem(b);
+    h = &hchar[pos];
+    for (b = h->bs; b != 0; b = b->next) {
+        b->x0A = 0;
+        pw = b->pw;
+        if (pw != 0 && pw->x02 == 0x19 && pw->x00 == 0) {
+            b->x0A = 0xA;
         }
-        b = *pp;
     }
 }
 
-int bunsetu_len(pos)
-int pos;
+void bs_ctd(BS *b, int pos, int end)
 {
-    HCHAR *h;
+    BS *n;
+    int pt;
+    int p;
+    int len;
 
-    if (pos >= kana_len) {
-        return 0;
+    len = b->len;
+    if (b->x02 == 0xFF || (p = pos + len) >= end) {
+        return;
     }
-    h = &hchar[pos];
-    if (im_state == 2 && h->x14 == 0) {
-        return 0;
+    n = hchar[p].bs;
+    if (n == 0) {
+        return;
     }
-    return h->x15;
+    while (n != 0) {
+        n->x0A = 0;
+        if (ignore_syn(n) == 0) {
+            pt = setu_point(b, n);
+            if (pt > 0) {
+                n->x0A = pt;
+            }
+        }
+        n = n->next;
+    }
 }
 
-void save_fst_bslen(int pos)
+int ignore_syn(BS *b)
 {
-    HCHAR *h;
+    PW *pw;
 
-    h = &hchar[pos];
-    if (h->x16 == 0 && h->x14 != 0) {
-        h->x16 = h->x15;
+    pw = b->pw;
+    if (pw != 0 && (pw->x02 == 0x28 || pw->x02 == 0x29)) {
+        return 1;
     }
+    return 0;
 }

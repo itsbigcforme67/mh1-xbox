@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,32 +469,40 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void khmem_raw(mode)
-int mode;
+int bytesin_kana_buf(KANA *a, KANA *b)
 {
-    HCHAR *h;
+    int r = 0;
 
-    h = &hchar[cur_pos];
-    free_khmemlist(h->kh);
-    h->kh = raw_kouho(cur_pos, cur_len, mode);
+    for (; a < b; a++) {
+        if (a->ch & 0xFF00) {
+            r += 2;
+        } else {
+            r += 1;
+        }
+    }
+    return r;
 }
 
-void kh_mergesort(int pos, KL *list)
+int count_byte_kana_buf(int a, int n)
 {
-    KH *head;
-    KH *tail;
-    KH *k;
-    HCHAR *h;
+    KANA *p = &kana_buf[a];
+    int r = 0;
 
-    h = &hchar[pos];
-    head = h->kh;
-    tail = kh_endof(head);
-    kh_append_init(pos, head);
-    while ((k = (KH *)kh_merge_getone(list)) != 0) {
-        kh_append(pos, &head, &tail, k);
+    while (n > 0) {
+        r += p->n;
+        n--;
+        p++;
     }
-    if ((k = null_kouho(cur_len)) != 0) {
-        kh_append(pos, &head, &tail, k);
+    return r;
+}
+
+int api_funcent(int *req)
+{
+    int cmd;
+
+    cmd = *req;
+    if (cmd <= 0 || (u32)cmd > 0x3F) {
+        return -1;
     }
-    h->kh = head;
+    return D_0034ABEC[cmd]((u8 *)req + 4);
 }

@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,26 +469,39 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int not_bhead(int c)
+int syn_match(a, b, base)
+int a;
+int b;
+int base;
 {
-    if (henkan_mode == 1 || henkan_mode == 2) {
-        return 0;
+    a = a & 0xFF;
+    b = b & 0xFF;
+    if (a >= 0x14 && a < 0x19) {
+        if (b >= 0x14 && b < 0x19) {
+            return base + 3;
+        }
+        return base;
     }
-    switch (c & 0xFF) {
-    case 0x9D:
-    case 0xA1:
-    case 0xA3:
-    case 0xA5:
-    case 0xA7:
-    case 0xA9:
-    case 0xC3:
-    case 0xE3:
-    case 0xE5:
-    case 0xE7:
-    case 0xEE:
-    case 0xF2:
-    case 0xF3:
-        return 1;
+    if (a == 0x1F) {
+        if (b == 0x1F) {
+            return base + 0xF;
+        }
     }
-    return 0;
+    if (a == 0x21 || a == 0x26 || a == 0x27) {
+        return base + 0x14;
+    }
+    if (a == 0x20 || a == 0x22) {
+        return base + 0xF;
+    }
+    if (a == 0x1B) {
+        if (b == 0x1C) {
+            return base + 0x14;
+        }
+    }
+    if (a == 0x1A) {
+        if (b == 0x1A) {
+            return base + 5;
+        }
+    }
+    return base;
 }

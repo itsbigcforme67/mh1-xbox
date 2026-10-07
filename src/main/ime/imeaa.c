@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,63 +469,100 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void init_hchar(void)
+void init_univmem(void)
 {
-    HCHAR *h;
+    u8 *p;
 
-    for (h = hchar; (u8 *)h < (u8 *)wdsbuf; h++) {
-        clear_hchar(h);
+    free_univ = mem;
+    for (p = mem; p < mem + 0x11928; p += 0x18) {
+        *(u8 **)p = p + 0x18;
+    }
+    *(u8 **)p = 0;
+    first_init_5 = 0;
+}
+
+void *alloc_mem(void)
+{
+    void *r;
+
+    r = free_univ;
+    if (r == 0) {
+        return 0;
+    }
+    free_univ = *(void **)r;
+    return r;
+}
+
+void free_mem(void *p)
+{
+    if (p != 0) {
+        *(void **)p = free_univ;
+        free_univ = p;
     }
 }
 
-void clear_hchar(HCHAR *h)
+CH *alloc_chmem(void)
 {
-    h->x00 = -1;
-    h->ch = 0;
-    h->bs = 0;
-    h->kh = 0;
-    h->x10 = 0;
-    h->x14 = 0;
-    h->x15 = 0;
-    h->x16 = 0;
-    h->x17 = -1;
-    h->x18 = -1;
-    h->x19 = -1;
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
 }
 
-void free_hchar(int from, int to, int keep)
+BS *alloc_bsmem(void)
 {
-    HCHAR *h;
-    HCHAR *end;
+    void *r;
 
-    end = hchar + to;
-    for (h = hchar + from; h < end; h++) {
-        free_hchar_one(h, keep);
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
+    return 0;
 }
 
-void free_hchar_one(HCHAR *h, int keep)
+PWM *alloc_pwmem(void)
 {
-    if (keep == 0) {
-        h->x00 = -1;
-        h->x18 = -1;
-        if (h->ch != (void *)-1) {
-            free_chmemlist(h->ch);
-        }
-        h->ch = 0;
-        h->x17 = -1;
-        h->x19 = -1;
-        h->x16 = 0;
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
-    if (h->bs != 0 && h->bs != (BS *)-1) {
-        free_bsmemlist(h->bs);
+    return 0;
+}
+
+KH *alloc_khmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
-    h->bs = 0;
-    if (h->kh != 0) {
-        free_khmemlist(h->kh);
+    return 0;
+}
+
+KL *alloc_klmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
-    h->kh = 0;
-    h->x10 = 0;
-    h->x14 = 0;
-    h->x15 = 0;
+    return 0;
+}
+
+void free_pwmemlist(PWM *p)
+{
+    PWM *n;
+
+    while (p != 0) {
+        n = p->next;
+        free_mem(p);
+        p = n;
+    }
 }

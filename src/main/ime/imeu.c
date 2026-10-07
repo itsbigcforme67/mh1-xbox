@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,28 +469,49 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int hashfunc(u8 *key)
+int not_bhead(int c)
 {
-    if (key[0] >= 0xA0 && key[0] < 0xF0) {
-        return key[0] - 0xA0;
+    if (henkan_mode == 1 || henkan_mode == 2) {
+        return 0;
+    }
+    switch (c & 0xFF) {
+    case 0x9D:
+    case 0xA1:
+    case 0xA3:
+    case 0xA5:
+    case 0xA7:
+    case 0xA9:
+    case 0xC3:
+    case 0xE3:
+    case 0xE5:
+    case 0xE7:
+    case 0xEE:
+    case 0xF2:
+    case 0xF3:
+        return 1;
     }
     return 0;
 }
 
-NODE *alloc_node(void)
+int is_kuten(int c)
 {
-    NODE *n;
-
-    if (freelist == 0) {
-        page_gc();
+    c = c & 0xFF;
+    if (c >= 0xA0) {
+        return 0;
     }
-    n = freelist;
-    freelist = n->next;
-    return n;
-}
-
-void free_node(NODE *n)
-{
-    n->next = freelist;
-    freelist = n;
+    switch (c) {
+    case 0x20:
+    case 0x21:
+    case 0x2C:
+    case 0x2E:
+    case 0x3A:
+    case 0x3B:
+    case 0x3F:
+    case 0x98:
+    case 0x9B:
+    case 0x9C:
+        return 1;
+    default:
+        return 0;
+    }
 }

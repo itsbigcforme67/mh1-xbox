@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,16 +469,41 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int dic_close(void)
+int main_getsyn(u8 *key, int len0, SRCH *r)
 {
-    if (dic_fd == -1) {
-        return -3;
+    s16 len;
+    int page;
+    s16 klen;
+    u8 *base;
+    u8 *e;
+    int c;
+
+    len = len0;
+    if (len < 3 && chk_entry2() != 0) {
+        r->off = -1;
+        return 0;
     }
-    flush_head();
-    flush_temp();
-    flush_pages();
-    if (close_dic() == -1) {
-        return -2;
+    page = srch_page(key);
+    e = base = load_page(page);
+    while (ELEN(e) != 0) {
+        klen = e[2];
+        c = ask_strncmp(e + 3, key, klen);
+        if (c == 0) {
+            if ((s16)klen == len) {
+                break;
+            }
+        } else if (c > 0) {
+            r->off = -1;
+            return 0;
+        }
+        e += ELEN(e);
     }
-    return 3;
+    if (ELEN(e) == 0) {
+        r->off = -1;
+        return 0;
+    }
+    r->page = page;
+    r->off = e - base;
+    r->ent = e;
+    return 1;
 }

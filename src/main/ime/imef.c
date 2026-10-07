@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,17 +469,123 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void into_editing(int mode)
+int FAskRom_Open(void)
 {
-    int n;
+    gAskRom.rest = 0x97C00;
+    gAskRom.cur = ask_load_adrs;
+    return 1;
+}
 
-    learn_on = dic_getgaku();
-    init_univmem();
-    init_hchar();
-    init_edit0();
-    if (mode == 1) {
-        n = nwin_length() - 1;
-        kana_buf_size = n / 2;
-        im_state = 1;
+int FAskRom_Close(void)
+{
+    return 0;
+}
+
+int FAskRom_Read(fd, buf, n)
+int fd;
+void *buf;
+int n;
+{
+    int len;
+
+    len = gAskRom.rest;
+    if (len >= n) {
+        len = n;
     }
+    memcpy(buf, gAskRom.cur, len);
+    gAskRom.rest = gAskRom.rest - len;
+    gAskRom.cur = gAskRom.cur + len;
+    return len;
+}
+
+int FAskRom_Write(fd, buf, n)
+int fd;
+void *buf;
+int n;
+{
+    int len;
+
+    len = gAskRom.rest;
+    if (n < len) {
+        len = n;
+    }
+    memcpy(gAskRom.cur, buf, n);
+    gAskRom.rest = gAskRom.rest - len;
+    gAskRom.cur = gAskRom.cur + len;
+    return len;
+}
+
+int FAskRom_Seek(fd, off, whence)
+int fd;
+s64 off;
+int whence;
+{
+    s64 r;
+
+    switch (whence) {
+    case 0:
+        if (off < 0) {
+            return -1;
+        }
+        gAskRom.rest = 0x97C00 - off;
+        gAskRom.cur = ask_load_adrs + off;
+        break;
+    case 1:
+        r = gAskRom.rest - off;
+        if (r < 0 || r > 0x97C00) {
+            return -1;
+        }
+        gAskRom.rest = r;
+        gAskRom.cur = gAskRom.cur + off;
+        break;
+    case 2:
+        if (off > 0) {
+            return -1;
+        }
+        gAskRom.rest = 0 - off;
+        gAskRom.cur = ask_load_adrs + off + 0x97BFF;
+        break;
+    }
+    r = gAskRom.cur - ask_load_adrs;
+    return r;
+}
+
+u16 to_zenkaku(c)
+u16 c;
+{
+    u16 r;
+
+    r = asc2jis[c & 0xFF];
+    if ((r & 0xFF00) == 0x2500 && !(c & 0x100)) {
+        r = (r & 0xFF) | 0x2400;
+        return r;
+    }
+    return r;
+}
+
+u16 to_zenkaku_spec(int c)
+{
+    u8 *k;
+    u16 *t;
+    u16 r;
+
+    k = spec_key_19;
+    t = spec_tran_20;
+    while (*k != 0) {
+        if ((*k & 0xFF) == (c & 0xFF)) {
+            r = *t;
+            if ((r & 0xFF00) == 0x2500 && !((u16)c & 0x100)) {
+                return (r & 0xFF) | 0x2400;
+            }
+            return r;
+        }
+        k++;
+        t++;
+    }
+    return 0;
+}
+
+int ext_jis(int c, u16 hi)
+{
+    return ((c & 0xFF) | ((hi & 0x100) + 0x2400)) & 0xFFFF;
 }

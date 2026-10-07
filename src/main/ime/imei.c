@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,57 +469,30 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int can_daku(int c)
+int exist_synref(SYN *p, SYN *e)
 {
-    u8 buf[4];
-
-    if (is_shift() != 0) {
-        c = ask_sjis2jis(c) & 0xFFFF;
-    }
-    if (to_hankaku(buf, c) != 1) {
-        return 0;
-    }
-    return (rmtype[buf[0]] & 0xF) == 0xA;
-}
-
-int can_handaku(int c)
-{
-    u8 buf[4];
-
-    if (is_shift() != 0) {
-        c = ask_sjis2jis(c) & 0xFFFF;
-    }
-    if (to_hankaku(buf, c) != 1) {
-        return 0;
-    }
-    return (rmtype[buf[0]] & 0xF) == 0xB;
-}
-
-int srch_ucode(int code)
-{
-    u8 *p;
-
-    for (p = btoudata; p < btoudata + 180; p += 4) {
-        if (*(u16 *)p == (u16)code) {
-            return p[2];
-        }
-        if (*(u16 *)p > (u16)code) {
-            break;
+    for (; p < e; p++) {
+        if (p->x00 == e->x00 && p->x01 == e->x01) {
+            if (p->x04 < e->x04) {
+                p->x04 = e->x04;
+            }
+            return 1;
         }
     }
     return 0;
 }
 
-int getbit(s16 n)
+u8 *next_wd(p, end)
+u8 *p;
+u8 *end;
 {
-    return bitpool[n >> 3] & power[n & 7];
-}
-
-int g2jodo(int c)
-{
-    c = c & 0xFF;
-    if (c > 0 && c < 0xE) {
-        return (c + 0x7F) & 0xFF;
+    if (p < end) {
+        do {
+            if ((int)(*p) <= 0x38) {
+                break;
+            }
+            p += 2;
+        } while (p < end);
     }
-    return 0;
+    return p;
 }

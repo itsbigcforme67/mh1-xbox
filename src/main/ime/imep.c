@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,28 +469,185 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int dic_getallnum(u8 *s, int len, u8 *out, int *cnt)
+void page_gc(void)
 {
-    int k;
-    u8 *r;
+    NODE *nd;
+    NODE **link;
+    u8 *p;
+    s16 klen;
+    u8 key[0x50];
 
-    if (dic_fd == -1) {
-        return -3;
-    }
-    *cnt = 0;
-    r = set_num(s, len, out, suji_mode);
-    if (r != 0) {
-        out = r;
-        (*cnt)++;
-    }
-    for (k = 0; k < 4; k++) {
-        if (k != suji_mode) {
-            r = set_num(s, len, out, k);
-            if (r != 0) {
-                out = r;
-                (*cnt)++;
+    *temp_top = 0;
+    temp_top++;
+    *temp_top = 0;
+    temp_page = (temp_page + 1) % 8;
+    temp_top = temp_pages[temp_page];
+    p = temp_top;
+    temp_end = p + 0x400;
+    while (ELEN(p) != 0) {
+        klen = p[2];
+        if (klen != 0) {
+            strncpy(key, p + 3, (int)klen);
+            key[(s16)klen] = 0;
+            link = srch_node(key, klen, &nd);
+            if (nd->rec == p) {
+                *link = nd->next;
+                free_node(nd);
             }
         }
+        p += ELEN(p);
     }
-    return 1;
+    clear_entid_tmpall(temp_page);
+}
+
+int tmpoffset(u8 *p)
+{
+    int d;
+
+    d = p - temp_pages[0];
+    return ((d / 1024) << 12) | (d % 1024);
+}
+
+u8 *load_temp(int off)
+{
+    return temp_pages[(s16)(off >> 12)] + (s16)(off & 0xFFF);
+}
+
+int read_temp(void)
+{
+    NODE *nd;
+    NODE **link;
+    NODE *n;
+    u8 *p;
+    int i;
+    u8 *pg;
+    s16 klen;
+    u8 key[0x50];
+
+    if (seek_dic(0x1400) == -1) {
+        return -1;
+    }
+    if (d_read(dic_fd, temp_pages, 0x2000) != 0x2000) {
+        return -1;
+    }
+    for (i = 0, pg = temp_pages[0]; i < 8; i++) {
+        p = pg;
+        while (ELEN(p) != 0) {
+            klen = p[2];
+            if (klen != 0) {
+                strncpy(key, p + 3, (int)klen);
+                key[(s16)klen] = 0;
+                link = srch_node(key, klen, &nd);
+                n = alloc_node();
+                n->rec = p;
+                n->next = nd;
+                *link = n;
+            }
+            p += ELEN(p);
+        }
+        if (temp_page == i) {
+            temp_top = p;
+            temp_end = pg + 0x400;
+        }
+        pg += 0x400;
+    }
+    return 0;
+}
+
+int write_temp(void)
+{
+    if (seek_dic(0x1400) == -1) {
+        return -1;
+    }
+    if (d_write(dic_fd, temp_pages, 0x2000) != 0x2000) {
+        return -1;
+    }
+    return 0;
+}
+
+int newwdlen(WD *w)
+{
+    int extra;
+
+    if (w->x08 != 0 || w->x07 >= 0x2D) {
+        extra = 3;
+    } else {
+        extra = 2;
+    }
+    return w->len + 3 + extra + setkbuflen(w->tango);
+}
+
+int updwdlen(WD *w)
+{
+    int extra;
+
+    if (w->x08 != 0 || w->x07 >= 0x2D) {
+        extra = 3;
+    } else {
+        extra = 2;
+    }
+    return extra + setkbuflen(w->tango);
+}
+
+void set_record(u8 *r, int len, WD *w, int rt)
+{
+    *r++ = len % 256;
+    *r++ = len / 256;
+    *r++ = w->len;
+    strncpy(r, w->yomi, w->len);
+    r += w->len;
+    *r++ = w->x07;
+    *r++ = rt;
+    if (w->x08 != 0 || w->x07 >= 0x2D) {
+        *r++ = w->x08;
+    }
+    setkbuf(w->tango, r);
+}
+
+void upd_record(u8 *r, int add, WD *w, int rt)
+{
+    int old;
+
+    old = ELEN(r);
+    add += old;
+    r[0] = add % 256;
+    r[1] = add / 256;
+    r += old;
+    r[0] = w->x07;
+    r[1] = rt;
+    r += 2;
+    if (w->x08 != 0 || w->x07 >= 0x2D) {
+        *r = w->x08;
+        r++;
+    }
+    setkbuf(w->tango, r);
+}
+
+int tmp_touroku(u8 *key, WD *w, int rt)
+{
+    NODE *nd;
+    NODE **link;
+    NODE *n;
+    u8 *rec;
+    int need;
+    int len;
+
+    temp_updated = 1;
+    link = srch_node(key, w->len, &nd);
+    len = w->len;
+    rec = nd->rec;
+    if (rec[2] == len && ask_strncmp(key, rec + 3, len) == 0) {
+        rec[2] = 0;
+        *link = nd->next;
+        clear_entid_tmp(tmpoffset(nd->rec));
+        free_node(nd);
+    }
+    n = alloc_node();
+    rec = alloc_record(need = newwdlen(w));
+    set_record(rec, need, w, rt);
+    link = srch_node(key, w->len, &nd);
+    n->rec = rec;
+    n->next = nd;
+    *link = n;
+    return 0;
 }

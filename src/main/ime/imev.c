@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,7 +469,44 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-u8 *load_temp(int off)
+void all_kouho(void)
 {
-    return temp_pages[(s16)(off >> 12)] + (s16)(off & 0xFFF);
+    KH *kh;
+    KL *n;
+    KL *head;
+    KL *tail;
+    HCHAR *h;
+    BS *b;
+
+    h = &hchar[cur_pos];
+    b = h->bs;
+    if (b != (BS *)-1) {
+        head = 0;
+        tail = 0;
+        while (b != 0) {
+            if (b->len == cur_len) {
+                if ((n = alloc_klmem()) == 0) {
+                    free_kouholists(head);
+                    head = 0;
+                    break;
+                } else {
+                    kh = get_kouholist(b);
+                    n->kh = kh;
+                    n->bs = b;
+                    n->pri = (kh == 0) ? 0 : (kh_priority(b, kh->x0E) & 0xFFFF);
+                    n->next = 0;
+                    if (head == 0) {
+                        tail = n;
+                        head = n;
+                    } else {
+                        tail->next = n;
+                        tail = n;
+                    }
+                }
+            }
+            b = b->next;
+        }
+        kh_mergesort(cur_pos, head);
+        free_klmemlist(head);
+    }
 }

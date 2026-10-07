@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,56 +469,83 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int bs_check(int pos, int end)
+void free_bsmemlist(BS *b)
 {
-    HCHAR *h;
-    CH *c;
-    BS *r;
-    BS *r2;
+    BS *n;
+
+    while (b != 0) {
+        n = b->next;
+        free_mem(b);
+        b = n;
+    }
+}
+
+void free_khmemlist(KH *k)
+{
+    KH *n;
+
+    while (k != 0) {
+        n = k->next;
+        free_mem(k);
+        k = n;
+    }
+}
+
+void free_klmemlist(KL *l)
+{
+    KL *n;
+
+    while (l != 0) {
+        n = l->next;
+        free_mem(l);
+        l = n;
+    }
+}
+
+int bs_prefer(int pos, int end, int len)
+{
     BS *b;
+    BS *best;
+    BS *p;
+    HCHAR *h;
 
     h = &hchar[pos];
-    c = h->ch;
-    if (c != (CH *)-1 && c != 0) {
-        do {
-            r = make_bsmem(pos, end, c);
-            if (r == (BS *)-1) {
-                if (h->bs != 0) {
-                    free_bsmemlist(h->bs);
-                    h->bs = 0;
-                }
-                return 0;
+    for (b = h->bs; b != 0; b = b->next) {
+        if (len < 0 || b->len == len) {
+            if (bs_point(b, pos, end) == -1) {
+                return -1;
             }
-            if (r != 0) {
-                hchar_addbsmem(pos, r);
+        }
+    }
+    if (h == 0 || (best = h->bs) == 0) {
+        return -1;
+    } else {
+        for (p = best->next; p != 0; p = p->next) {
+            if (p->x08 > best->x08) {
+                best = p;
             }
-            c = c->next;
-        } while (c != 0);
-    }
-    r2 = make_bsmem(pos, end, &null_chmem);
-    if (r2 == (BS *)-1) {
-        if (h->bs != 0) {
-            free_bsmemlist(h->bs);
-            h->bs = 0;
         }
-        return 0;
+        bs_ctd(best, pos, end);
+        return best->len;
     }
-    if (r2 != 0) {
-        hchar_addbsmem(pos, r2);
+}
+
+int calc_point(int pos, BS *b, BS *next)
+{
+    int a;
+    int c;
+    int f;
+    u16 pri;
+
+    if (next == 0) {
+        a = b->len;
+        c = 0;
+        f = 1;
+    } else {
+        c = b->len;
+        a = next->len;
+        f = 0;
     }
-    if (h->bs == 0) {
-        if ((b = alloc_bsmem()) == 0) {
-            return -1;
-        }
-        b->len = muhenkan(pos, end);
-        b->x02 = 0x28;
-        b->x03 = 0;
-        b->pw = 0;
-        b->x08 = 0;
-        b->x0A = 0;
-        b->next = 0;
-        h->bs = b;
-        return 1;
-    }
-    return 1;
+    pri = b->x0A;
+    return f * 0x32 + (pri + (c * 0x10 + a * 0x11) + setu_point(b, next));
 }

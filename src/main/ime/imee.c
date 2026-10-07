@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,167 +469,17 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-WD *raw_newwd(int pos, int len, KH *kh)
+void into_editing(int mode)
 {
-    strncpy(yomi_buf, kana_ustr + pos, len);
-    yomi_buf[len] = 0;
-    meantosjis(meanbuf, tango_buf, kouho_makedisp(pos, len, kh, meanbuf));
-    newwd_219.len = len;
-    newwd_219.yomi = yomi_buf;
-    newwd_219.x07 = 0x19;
-    newwd_219.tango = tango_buf;
-    newwd_219.x06 = 0;
-    newwd_219.x08 = 0;
-    return &newwd_219;
-}
+    int n;
 
-void apiask_19_Henkan(int a, int b, int c)
-{
-    int req[4];
-
-    req[1] = a;
-    req[2] = b;
-    req[3] = c;
-    req[0] = 0x13;
-    api_funcent(req);
-}
-
-void apiask_20_PrevKouho(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x14;
-    api_funcent(req);
-}
-
-void apiask_21_NextKouho(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x15;
-    api_funcent(req);
-}
-
-void apiask_24_AllKakutei(int a)
-{
-    int req[2];
-
-    req[1] = a;
-    req[0] = 0x18;
-    api_funcent(req);
-}
-
-void apiask_25_FirstKakutei(int a, int b, int c, int d, int e)
-{
-    int req[6];
-
-    req[1] = a;
-    req[2] = b;
-    req[3] = c;
-    req[0] = 0x19;
-    req[4] = d;
-    req[5] = e;
-    api_funcent(req);
-}
-
-void apiask_28_OpenDic(void)
-{
-    int req[1];
-
-    req[0] = 0x1C;
-    api_funcent(req);
-}
-
-void apiask_33_LongerKouho(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x21;
-    api_funcent(req);
-}
-
-void apiask_34_ShorterKouho(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x22;
-    api_funcent(req);
-}
-
-void apiask_35_PrevBunsetu(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x23;
-    api_funcent(req);
-}
-
-void apiask_36_NextBunsetu(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x24;
-    api_funcent(req);
-}
-
-void apiask_37_FirstHenkanToKata(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x25;
-    api_funcent(req);
-}
-
-void apiask_38_FirstHenkanToHira(int a, int b)
-{
-    int req[3];
-
-    req[1] = a;
-    req[2] = b;
-    req[0] = 0x26;
-    api_funcent(req);
-}
-
-int kwin_length()
-{
-    return 0x48;
-}
-
-int nwin_length()
-{
-    return 0x48;
-}
-
-void init_roman(void)
-{
-    kana_len = 0;
-    einpc_buf = inpc_buf;
-    cinpc_buf = inpc_buf;
-    qinpc_buf = inpc_buf;
-    pinpc_buf = inpc_buf;
-    ekana_buf = kana_buf;
-    pkana_buf = kana_buf;
-    e_ustr = kana_ustr;
-    p_ustr = kana_ustr;
-}
-
-void init_edit0(void)
-{
-    init_roman();
-    free_hchar(0, 0x50, 0);
-    clear_prevwd();
+    learn_on = dic_getgaku();
+    init_univmem();
+    init_hchar();
+    init_edit0();
+    if (mode == 1) {
+        n = nwin_length() - 1;
+        kana_buf_size = n / 2;
+        im_state = 1;
+    }
 }

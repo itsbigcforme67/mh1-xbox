@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,158 +469,61 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int srch_page(u8 *key)
+CH *make_chmem(int pos, SYNR *r)
 {
-    int hi;
-    int lo;
-    int mid;
-    int c;
-
-    lo = mainlower;
-    hi = mainupper;
-    while (lo + 1 < hi) {
-        mid = (hi + lo) / 2;
-        c = ask_strncmp(key, mainindex + mid * 4, 4);
-        if (c == 0) {
-            return mid;
-        }
-        if (c > 0) {
-            lo = mid;
-        } else {
-            hi = mid;
-        }
-    }
-    if (ask_strncmp(key, mainindex + lo * 4, 4) < 0) {
-        lo--;
-    }
-    return lo;
-}
-
-int page_fix(int page, u8 *key)
-{
-    return key[prefix(mainindex + (page + 1) * 4, key, 4)] != 0;
-}
-
-int calc_pulen(int page, u8 *key)
-{
+    CH *c;
+    s16 len;
+    s64 id;
     int n;
+    SYN *s;
+    CH *first;
+    CH *prev;
 
-    n = prefix(mainindex + page * 4, key, 4);
-    if (n >= 4) {
-        return n;
-    }
-    if (key[n] == 0) {
-        return n;
-    }
-    return n + 1;
-}
-
-int prefix(u8 *a, u8 *b, int n)
-{
-    int i;
-
-    i = 0;
-    while (i < n) {
-        if (*a != *b || *a == 0) {
-            break;
-        }
-        i++;
-        a++;
-        b++;
-    }
-    return i;
-}
-
-void init_page_tab(void)
-{
-    PAGE *p;
-
-    page_top = page_tab;
-    for (p = page_tab; p < page_tab + 9; p++) {
-        p->id = -1;
-        p->dirty = 0;
-        p->next = p + 1;
-    }
-    p->id = -1;
-    p->dirty = 0;
-    p->next = 0;
-}
-
-int write_page(PAGE *p)
-{
-    if (seek_dic(((s64)p->id << 10) + 0x3400) == -1) {
-        return -1;
-    }
-    if (d_write(dic_fd, p->data, 0x400) != 0x400) {
-        return -1;
-    }
-    return 0;
-}
-
-int read_page(PAGE *p)
-{
-    if (seek_dic(((s64)p->id << 10) + 0x3400) == -1) {
-        return -1;
-    }
-    d_read(dic_fd, p->data, 0x400);
-    return 0;
-}
-
-u8 *load_page(int id)
-{
-    PAGE *p;
-    PAGE *prev;
-
+    s = r->syn;
+    first = 0;
     prev = 0;
-    p = page_top;
-    for (;;) {
-        if (p->id == id) {
-            if (prev != 0) {
-                prev->next = p->next;
-                p->next = page_top;
-                page_top = p;
+    len = r->x00;
+    id = r->id;
+    n = r->x14 - 1;
+    if (r->x14 != 0) {
+        do {
+            c = alloc_chmem();
+            if (c == 0) {
+                break;
             }
-            return p->data;
-        }
-        if (p->next == 0) {
-            break;
-        }
-        prev = p;
+            if (first == 0) {
+                first = c;
+            }
+            c->len = len;
+            c->x02 = s->x00;
+            c->x03 = s->x01;
+            c->id = id;
+            c->x10 = s->x04;
+            c->next = 0;
+            if (prev != 0) {
+                prev->next = c;
+            }
+            prev = c;
+            s++;
+        } while (n-- != 0);
+    }
+    return first;
+}
+
+void hchar_addchmem(pos, c)
+int pos;
+CH *c;
+{
+    void **pp;
+    CH *p;
+    HCHAR *h;
+
+    h = &hchar[pos];
+    pp = &h->ch;
+    p = h->ch;
+    while (p != 0) {
+        pp = (void **)&p->next;
         p = p->next;
     }
-    prev->next = 0;
-    p->next = page_top;
-    page_top = p;
-    if (p->dirty == 1) {
-        write_page(p);
-    }
-    p->id = id;
-    p->dirty = 0;
-    read_page(p);
-    return p->data;
-}
-
-void update_nowpage(void)
-{
-    page_top->dirty = 1;
-}
-
-void flush_pages(void)
-{
-    PAGE *p;
-
-    for (p = page_top; p != 0; p = p->next) {
-        if (p->dirty == 1) {
-            write_page(p);
-        }
-    }
-}
-
-void init_entid_tab(void)
-{
-    int i;
-
-    for (i = 0; i < 128; i++) {
-        entid_tab[i].cnt = 0;
-    }
+    *pp = c;
 }

@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,23 +469,49 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int kstrncpy(u8 *dst, u8 *src, int n)
+int ToUpper(int c)
 {
-    int total;
-    int c;
+    int u;
 
-    total = n;
-    while ((c = *src) && n > 0) {
-        if (is_kanji(c) != 0) {
-            if (n <= 1) {
-                break;
-            }
-            n--;
-            *dst++ = *src++;
-        }
-        n--;
-        *dst++ = *src++;
+    u = c & 0xFF;
+    if (u >= 0x61 && u < 0x7B) {
+        return (u - 0x20) & 0xFF;
     }
-    *dst = 0;
-    return total - n;
+    return c;
+}
+
+u8 *getrda2(u16 *a, u16 *b)
+{
+    u8 *p;
+    int n;
+    u16 *q;
+    int k;
+    int len;
+
+    n = b - a;
+    p = rmspec;
+    while (*p != 0) {
+        len = *p;
+        p++;
+        if (n == len) {
+            q = a;
+            k = n;
+            while (k > 0) {
+                if (*p != (ToUpper(*(u8 *)q++) & 0xFF)) {
+                    break;
+                }
+                k--;
+                p++;
+            }
+            if (k == 0) {
+                return p;
+            }
+            p += k;
+        } else {
+            p += len;
+        }
+        while (*p++ != 0) {
+        }
+    }
+    return 0;
 }

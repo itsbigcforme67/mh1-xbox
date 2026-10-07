@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,73 +469,100 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void update_nowtmp(void)
+void change_kind(u16 *p, int n, int kind)
 {
-    temp_updated = 1;
-}
+    u16 k;
 
-int setkbuflen(u8 *p)
-{
-    int n;
-
-    n = 0;
-    while (*p != 0) {
-        if (iskanji(*p) != 0) {
-            p += 2;
-        } else {
-            p += 1;
-        }
-        n += 2;
-    }
-    return n;
-}
-
-void setkbuf(u8 *src, u8 *dst)
-{
-    while (*src != 0) {
-        if (iskanji(*src) != 0) {
-            *dst = *src;
-            src++;
-            dst++;
-        } else {
-            *dst = 0xFF;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
+    k = (kind & 0xFFFF) << 12;
+    while (n-- != 0) {
+        *p = (*p & 0xFFF) | k;
+        p++;
     }
 }
 
-int getkbuflen(u8 *p, u8 *end)
+int shiftlen(int x)
 {
-    int n;
+    int c;
+    int h;
 
-    n = 0;
-    while (p < end && *p >= 0x39) {
-        if (*p == 0xFF) {
-            n++;
-        } else {
-            n += 2;
+    c = x & 0xFFFF;
+    h = c & 0xFF00;
+    switch (h) {
+    case 0x8000:
+    case 0x8500:
+        return 1;
+    case 0x8600:
+        if ((c & 0xFF) < 0x9E) {
+            return 1;
         }
-        p += 2;
+    default:
+        return 2;
     }
-    return n;
 }
 
-void getkbuf(u8 *dst, u8 *src, u8 *end)
+int sstrtom(u16 *out, u8 *s, int kind)
 {
-    while (src < end && *src >= 0x39) {
-        if (*src == 0xFF) {
-            src++;
+    u16 *p;
+    int c;
+
+    p = out;
+    while (*s != 0) {
+        c = *s;
+        if (c < 0x80 || (c >= 0xA0 && c < 0xE0)) {
+            p += setmean(p, *s++, kind);
         } else {
-            *dst = *src;
-            src++;
-            dst++;
+            p += setmean(p, ((c << 8) | s[1]) & 0xFFFF, kind);
+            s += 2;
         }
-        *dst = *src;
-        src++;
-        dst++;
     }
-    *dst = 0;
+    return p - out;
+}
+
+int to_ucode(int x)
+{
+    int c;
+
+    c = x & 0xFFFF;
+    if (c > 0x20 && c < 0x7F) {
+        return 0;
+    }
+    switch (c & 0xFF00) {
+    case 0x2300:
+        return c & 0x7F;
+    case 0x2400:
+        return ((c & 0x7F) | 0x80) & 0xFF;
+    case 0x2500:
+        return 0;
+    default:
+        return srch_ucode(x);
+    }
+}
+
+int is_kata(c, flag)
+u16 c;
+int flag;
+{
+    if (flag != 0 && c == 0x213C) {
+        return 1;
+    }
+    if ((c & 0xFF00) == 0x2500) {
+        return 1;
+    }
+    return 0;
+}
+
+int is_jisknj(int c)
+{
+    return (c & 0xFFFF) >= 0x3020;
+}
+
+int is_jiskig(int x)
+{
+    int c;
+
+    c = x & 0xFFFF;
+    if (c >= 0x2120 && c < 0x3020) {
+        return is_kata(x, 0) ? 0 : 1;
+    }
+    return 0;
 }

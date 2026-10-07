@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,21 +469,28 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void clear_rtime(u8 *ent)
+u8 *ins_wds(u8 *p, u8 *rt, int len, int total)
 {
     u8 *end;
-    u8 *p;
 
-    end = ent + ELEN(ent);
-    p = ent + ent[2] + 3;
-    if (p < end) {
-        do {
-            p[1] = 0;
-            p += 2;
-            if (*p < 0xC) {
-                p++;
-            }
-            p = next_wd(p, end);
-        } while (p < end);
+    end = p + total;
+    while (p < end) {
+        if (*(u16 *)(p + 2) < (int)rt) {
+            break;
+        }
+        p += 5;
+        while (*p++ != 0) {
+        }
+        if ((u32)p & 1) {
+            p++;
+        }
     }
+    rt = end - 1;
+    if (p < end) {
+        while (rt >= p) {
+            rt[len] = *rt;
+            rt--;
+        }
+    }
+    return p;
 }

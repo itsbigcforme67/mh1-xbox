@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,30 +469,20 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int exist_synref(SYN *p, SYN *e)
-{
-    for (; p < e; p++) {
-        if (p->x00 == e->x00 && p->x01 == e->x01) {
-            if (p->x04 < e->x04) {
-                p->x04 = e->x04;
-            }
-            return 1;
-        }
-    }
-    return 0;
-}
-
-u8 *next_wd(p, end)
-u8 *p;
+void set_wds(w0, rec, end, tag)
+void *w0;
+u8 *rec;
 u8 *end;
+int tag;
 {
-    if (p < end) {
-        do {
-            if ((int)(*p) <= 0x38) {
-                break;
-            }
-            p += 2;
-        } while (p < end);
+    s16 *w = w0;
+
+    w[0] = tag;
+    w[1] = rec[1];
+    rec += 2;
+    ((u8 *)w)[4] = 0;
+    if (rec[0] < 0xC) {
+        rec++;
     }
-    return p;
+    getkbuf((u8 *)w + 5, rec);
 }

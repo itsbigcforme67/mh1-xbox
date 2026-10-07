@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,27 +469,102 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void free_kouholists(KL *l)
+int setu_match(a, b, c, base, extra)
+int a;
+int b;
+int c;
+int base;
+int extra;
 {
-    while (l != 0) {
-        free_mem(l->kh);
-        l = l->next;
+    int r;
+
+    r = 0;
+    b = b & 0xFF;
+    switch (a & 0xFF) {
+    case 0:
+        if ((b >= 0x14 && b <= 0x19) || b == 0x32) {
+            r = 0xF;
+        }
+        break;
+    case 1:
+        if (b == 0x1A) {
+            r = 0xF;
+        }
+        break;
+    case 2:
+        if (b == 0x1B || b == 0x1C) {
+            r = 0x14;
+        }
+        break;
+    case 3:
+        if (b == 0x1F || b == 0x38) {
+            r = 0x14;
+        }
+        break;
+    case 4:
+        if (b == 0x16) {
+            r = 0x14;
+        }
+        break;
+    case 5:
+        c = c & 0xFF;
+        if (c == 0xFF) {
+            if (b > 0 && b < 0xE) {
+                r = 0xF;
+            }
+        } else if ((b >= 0x80 && b < 0x8C && c == 4) || (b == 0xD && c == 0)) {
+            r = 0xF;
+        }
+        break;
+    case 6:
+        if (b >= 0x14 && b < 0x1A) {
+            r = 0xF;
+        } else if (b == 0x1F || b == 0x38) {
+            r = 0x14;
+        }
+        break;
+    case 7:
+        if (b == 0x1D) {
+            r = 0xF;
+        }
+        break;
+    case 8:
+        if ((b >= 0x14 && b <= 0x19) || (b > 0 && b < 0xE)) {
+            r = 0x14;
+        }
+        break;
     }
+    if (r == 0) {
+        return base;
+    }
+    return extra + (base + r);
 }
 
-KH *null_kouho(int len)
+u16 kh_priority(BS *b, int v)
 {
-    KH *k;
-
-    k = alloc_khmem();
-    if (k != 0) {
-        k->flag = 0x80;
-        k->str[0] = 0;
-        k->x06 = len;
-        k->x07 = 0;
-        k->pw = 0;
-        k->x0C = 0xFFFF;
-        k->next = 0;
+    v = v & 0xFFFF;
+    if (v != 0) {
+        return (v + 0x3E8) & 0xFFFF;
     }
-    return k;
+    return b->x08;
+}
+
+int is_alphanum(int c)
+{
+    return rmtype[c & 0xFF] & 0xC0;
+}
+
+int is_num(int c)
+{
+    return rmtype[c & 0xFF] & 0x80;
+}
+
+int is_alpha(int c)
+{
+    return rmtype[c & 0xFF] & 0x40;
+}
+
+int is_paren(int c)
+{
+    return rmtype[c & 0xFF] & 0x20;
 }

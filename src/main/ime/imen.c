@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -479,4 +479,20 @@ u8 *end_page(u8 *p)
         n = ELEN(p);
     }
     return p;
+}
+
+void shiftpage(u8 *from, u8 *end, int d)
+{
+    if (d > 0) {
+        end--;
+        while (end >= from) {
+            end[d] = *end;
+            end--;
+        }
+    } else if (d < 0) {
+        while (from < end) {
+            from[d] = *from;
+            from++;
+        }
+    }
 }

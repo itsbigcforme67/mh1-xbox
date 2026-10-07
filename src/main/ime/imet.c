@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,114 +469,206 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int get_maxtime(int *ids, int n)
+int bs_check(int pos, int end)
 {
-    int i;
-    int m;
-    int id;
+    HCHAR *h;
+    CH *c;
+    BS *r;
+    BS *r2;
+    BS *b;
 
-    m = 0;
-    for (i = 0; i < n; i++) {
-        id = ids[i * 2];
-        if (id >= 0 && id < 0x80) {
-            if (entid_tab[id].cnt > 0) {
-                if (m < entid_tab[id].rtime) {
-                    m = entid_tab[id].rtime;
+    h = &hchar[pos];
+    c = h->ch;
+    if (c != (CH *)-1 && c != 0) {
+        do {
+            r = make_bsmem(pos, end, c);
+            if (r == (BS *)-1) {
+                if (h->bs != 0) {
+                    free_bsmemlist(h->bs);
+                    h->bs = 0;
+                }
+                return 0;
+            }
+            if (r != 0) {
+                hchar_addbsmem(pos, r);
+            }
+            c = c->next;
+        } while (c != 0);
+    }
+    r2 = make_bsmem(pos, end, &null_chmem);
+    if (r2 == (BS *)-1) {
+        if (h->bs != 0) {
+            free_bsmemlist(h->bs);
+            h->bs = 0;
+        }
+        return 0;
+    }
+    if (r2 != 0) {
+        hchar_addbsmem(pos, r2);
+    }
+    if (h->bs == 0) {
+        if ((b = alloc_bsmem()) == 0) {
+            return -1;
+        }
+        b->len = muhenkan(pos, end);
+        b->x02 = 0x28;
+        b->x03 = 0;
+        b->pw = 0;
+        b->x08 = 0;
+        b->x0A = 0;
+        b->next = 0;
+        h->bs = b;
+        return 1;
+    }
+    return 1;
+}
+
+BS *make_bsmem(int pos, int end, CH *ch)
+{
+    int p;
+    s16 clen;
+    PWM *l;
+    PWM *list;
+    BS *first;
+    BS *prev;
+    BS *b;
+
+    first = 0;
+    clen = ch->len;
+    prev = 0;
+    p = pos + clen;
+    l = pword_list(p, end, ch->x02, ch->x03);
+    if (l == (PWM *)-1) {
+        return (BS *)-1;
+    }
+    list = l;
+    while (l != 0) {
+        b = alloc_bsmem();
+        if (b == 0) {
+            break;
+        }
+        if (first == 0) {
+            first = b;
+        }
+        b->len = clen + l->len;
+        b->x02 = l->x04;
+        b->x03 = l->x05;
+        b->pw = (PW *)ch;
+        b->x08 = 0;
+        b->x0A = 0;
+        b->next = 0;
+        if (prev != 0) {
+            prev->next = b;
+        }
+        l = l->next;
+        prev = b;
+    }
+    free_pwmemlist(list);
+    if (clen > 0 && setu_end(ch->x02, ch->x03) != 0) {
+        if (p >= end || not_bhead(kana_ustr[p]) == 0) {
+            b = alloc_bsmem();
+            if (b != 0) {
+                if (first == 0) {
+                    first = b;
+                }
+                b->len = clen;
+                b->x02 = ch->x02;
+                b->x03 = ch->x03;
+                b->pw = (PW *)ch;
+                b->x08 = 0;
+                b->x0A = 0;
+                b->next = 0;
+                if (prev != 0) {
+                    prev->next = b;
                 }
             }
         }
     }
-    return m;
+    return first;
 }
 
-int update_entid_rtime(int *ids, int n, int rt)
+static BS *ins_bsmem(BS *list, BS *n)
 {
-    int i;
-    int id;
+    BS *cur;
+    BS *prev;
+    int len;
 
-    for (i = 0; i < n; i++) {
-        id = ids[i * 2];
-        if (id >= 0 && id < 0x80) {
-            if (entid_tab[id].cnt > 0) {
-                entid_tab[id].rtime = rt;
+    len = n->len;
+    if (list == 0 || list->len < len) {
+        n->next = list;
+        return n;
+    }
+    cur = list->next;
+    prev = list;
+    if (cur != 0) {
+        do {
+            if (cur->len < len) {
+                break;
             }
+            prev = cur;
+            cur = cur->next;
+        } while (cur != 0);
+    }
+    prev->next = n;
+    n->next = cur;
+    return list;
+}
+
+void hchar_addbsmem(int pos, BS *list)
+{
+    BS *l;
+    BS *next;
+    BS *head;
+
+    head = hchar[pos].bs;
+    l = list;
+    while (l != 0) {
+        next = l->next;
+        head = ins_bsmem(head, l);
+        l = next;
+    }
+    hchar[pos].bs = head;
+}
+
+void unify_bsmem(int pos, int len)
+{
+    BS **pp;
+    BS *b;
+
+    pp = &hchar[pos].bs;
+    b = *pp;
+    while (b != 0) {
+        if (b->len == len) {
+            pp = &b->next;
+        } else {
+            *pp = b->next;
+            free_mem(b);
         }
-    }
-    return 0;
-}
-
-int free_entid_tab(unsigned int id)
-{
-    ENTID *e;
-    s64 i;
-
-    if (id >= 0x80) {
-        return -1;
-    }
-    i = (int)id;
-    e = &entid_tab[i];
-    if (e->cnt == 0) {
-        return -1;
-    }
-    e->cnt--;
-    return 0;
-}
-
-void clear_entid_tmpall(int pg)
-{
-    int i;
-
-    for (i = 0; i < 128; i++) {
-        if (pg == (s16)(entid_tab[i].c >> 12)) {
-            entid_tab[i].c = -1;
-        }
+        b = *pp;
     }
 }
 
-void clear_entid_tmp(int v)
+int bunsetu_len(pos)
+int pos;
 {
-    int i;
+    HCHAR *h;
 
-    for (i = 0; i < 128; i++) {
-        if (v == entid_tab[i].c) {
-            entid_tab[i].c = -1;
-        }
+    if (pos >= kana_len) {
+        return 0;
     }
+    h = &hchar[pos];
+    if (im_state == 2 && h->x14 == 0) {
+        return 0;
+    }
+    return h->x15;
 }
 
-void init_temp(void)
+void save_fst_bslen(int pos)
 {
-    init_node_tab();
-    init_hash_tab();
-    if (read_temp() == -1) {
-        reset_temp();
-    }
-    temp_updated = 0;
-}
+    HCHAR *h;
 
-void flush_temp(void)
-{
-    if (temp_updated != 0) {
-        write_temp();
-    }
-}
-
-void init_node_tab(void)
-{
-    NODE *n;
-
-    for (n = node_tab; n < node_tab + 511; n++) {
-        n->next = n + 1;
-    }
-    n->next = 0;
-    freelist = node_tab;
-}
-
-void init_hash_tab(void)
-{
-    int i;
-
-    for (i = 0; i < 80; i++) {
-        hash_tab[i] = 0;
+    h = &hchar[pos];
+    if (h->x16 == 0 && h->x14 != 0) {
+        h->x16 = h->x15;
     }
 }

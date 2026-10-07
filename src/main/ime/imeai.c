@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,17 +469,26 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int jiritu_makedisp(KH *k, u16 *buf)
+int api_dicopen(void)
 {
-    int n;
-
-    n = 0;
-    for (;;) {
-        n += sstrtom(buf + n, k->str, 6);
-        if (!(k->flag & 1)) {
-            break;
-        }
-        k = k->next;
+    if (lock_mode == 0) {
+        return -1;
     }
-    return n;
+    if (dic_open((char *)dic_name) == -7) {
+        return 1;
+    }
+    into_editing(0);
+    func_mode = 1;
+    return 0;
+}
+
+int api_dicclose(void)
+{
+    if (lock_mode == 0) {
+        return -1;
+    }
+    init_edit0();
+    dic_close();
+    func_mode = 0;
+    return 0;
 }

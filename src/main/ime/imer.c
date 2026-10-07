@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,13 +469,74 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int read_index(void)
+int concat_bslen(int pos, int end)
 {
-    if (seek_dic(0x400) == -1) {
-        return -1;
+    int n;
+    HCHAR *h;
+    int c;
+
+    c = 0;
+    h = &hchar[pos];
+    n = 0;
+    while (pos < end) {
+        c = h->x15;
+        if (c == 0) {
+            return -1;
+        }
+        if (h->bs != 0 && h->bs != (BS *)-1 && h->bs->x02 != 0x28) {
+            break;
+        }
+        pos += c;
+        n += c;
+        h += c;
     }
-    if (d_read(dic_fd, mainindex, 0x1000) != 0x1000) {
-        return -1;
+    if (n == 0 || pos >= end) {
+        return n;
     }
-    return 0;
+    return n + c;
+}
+
+int muhenkan(int pos, int end)
+{
+    int k;
+    u8 *p;
+
+    k = pos + 1;
+    if (k < end) {
+        p = kana_ustr + k;
+        do {
+            if (not_bhead(*p) == 0) {
+                break;
+            }
+            k++;
+            p++;
+        } while (k < end);
+    }
+    return k - pos;
+}
+
+void fl_check(int pos, int end)
+{
+    void *found;
+    int hit;
+    HCHAR *h;
+    int n;
+    u8 *p;
+
+    n = end - pos;
+    h = &hchar[pos];
+    p = kana_ustr + pos;
+    while (n > 0) {
+        if (h->x00 == -1) {
+            found = srch_pword(p, n, &hit);
+            if (found == (void *)-1) {
+                return;
+            }
+            h->x18 = hit;
+            h->x00 = (int)found;
+        }
+        n--;
+        p++;
+        h++;
+    }
 }

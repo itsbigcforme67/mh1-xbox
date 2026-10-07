@@ -55,7 +55,7 @@ struct PWM {
 typedef struct KL KL;
 struct KL {
     BS *bs;         /* 0x00 */
-    s16 pri;        /* 0x04 */
+    u16 pri;        /* 0x04 */
     KH *kh;         /* 0x08 */
     KL *next;       /* 0x0C */
 };
@@ -76,7 +76,7 @@ struct BS {
     u8 x02;
     u8 x03;
     PW *pw;         /* 0x04 */
-    s16 x08;
+    u16 x08;
     s16 x0A;
     BS *next;       /* 0x0C */
 };
@@ -210,7 +210,7 @@ int set_entid_tab();
 int set_synref();
 int exist_synref();
 u8 *next_wd();
-u16 get_entid_tab();
+int get_entid_tab();
 u8 *load_page();
 u8 *load_temp();
 void get1wd();
@@ -469,75 +469,143 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int d_open()
+void update_nowtmp(void)
 {
-    return FAskRom_Open();
+    temp_updated = 1;
 }
 
-int d_read()
+int setkbuflen(u8 *p)
 {
-    return FAskRom_Read();
-}
+    int n;
 
-int d_write()
-{
-    return FAskRom_Write();
-}
-
-int d_close()
-{
-    return FAskRom_Close();
-}
-
-int d_seek()
-{
-    return FAskRom_Seek();
-}
-
-void set_dicname(u8 *name)
-{
-    strcpy(mydicname, name);
-}
-
-int open_dic(void)
-{
-    int fd;
-
-    fd = d_open(mydicname, dic_rw);
-    if (fd == -1) {
-        dic_fd = -1;
-        return -1;
-    }
-    dic_fd = fd;
-    return 0;
-}
-
-int close_dic(void)
-{
-    if (d_close(dic_fd) == -1) {
-        dic_fd = -1;
-        return -1;
-    }
-    dic_fd = -1;
-    return 0;
-}
-
-int seek_dic(pos)
-int pos;
-{
-    if (d_seek(dic_fd, pos, 0) == -1) {
-        if (open_dic() != 0) {
-            return -1;
+    n = 0;
+    while (*p != 0) {
+        if (iskanji(*p) != 0) {
+            p += 2;
+        } else {
+            p += 1;
         }
-        if (d_seek(dic_fd, pos, 0) == -1) {
-            return -1;
+        n += 2;
+    }
+    return n;
+}
+
+void setkbuf(u8 *src, u8 *dst)
+{
+    while (*src != 0) {
+        if (iskanji(*src) != 0) {
+            *dst = *src;
+            src++;
+            dst++;
+        } else {
+            *dst = 0xFF;
+            dst++;
         }
+        *dst = *src;
+        src++;
+        dst++;
+    }
+}
+
+int getkbuflen(u8 *p, u8 *end)
+{
+    int n;
+
+    n = 0;
+    while (p < end && *p >= 0x39) {
+        if (*p == 0xFF) {
+            n++;
+        } else {
+            n += 2;
+        }
+        p += 2;
+    }
+    return n;
+}
+
+void getkbuf(u8 *dst, u8 *src, u8 *end)
+{
+    while (src < end && *src >= 0x39) {
+        if (*src == 0xFF) {
+            src++;
+        } else {
+            *dst = *src;
+            src++;
+            dst++;
+        }
+        *dst = *src;
+        src++;
+        dst++;
+    }
+    *dst = 0;
+}
+
+int iskanji(int c)
+{
+    c = c & 0xFF;
+    if ((c >= 0x80 && c <= 0x9F) || (c >= 0xE0 && c <= 0xFC)) {
+        return 1;
     }
     return 0;
 }
 
-void init_page(void)
+void init_hchar(void)
 {
-    init_page_tab();
-    init_entid_tab();
+    HCHAR *h;
+
+    for (h = hchar; (u8 *)h < (u8 *)wdsbuf; h++) {
+        clear_hchar(h);
+    }
+}
+
+void clear_hchar(HCHAR *h)
+{
+    h->x00 = -1;
+    h->ch = 0;
+    h->bs = 0;
+    h->kh = 0;
+    h->x10 = 0;
+    h->x14 = 0;
+    h->x15 = 0;
+    h->x16 = 0;
+    h->x17 = -1;
+    h->x18 = -1;
+    h->x19 = -1;
+}
+
+void free_hchar(int from, int to, int keep)
+{
+    HCHAR *h;
+    HCHAR *end;
+
+    end = hchar + to;
+    for (h = hchar + from; h < end; h++) {
+        free_hchar_one(h, keep);
+    }
+}
+
+void free_hchar_one(HCHAR *h, int keep)
+{
+    if (keep == 0) {
+        h->x00 = -1;
+        h->x18 = -1;
+        if (h->ch != (void *)-1) {
+            free_chmemlist(h->ch);
+        }
+        h->ch = 0;
+        h->x17 = -1;
+        h->x19 = -1;
+        h->x16 = 0;
+    }
+    if (h->bs != 0 && h->bs != (BS *)-1) {
+        free_bsmemlist(h->bs);
+    }
+    h->bs = 0;
+    if (h->kh != 0) {
+        free_khmemlist(h->kh);
+    }
+    h->kh = 0;
+    h->x10 = 0;
+    h->x14 = 0;
+    h->x15 = 0;
 }
