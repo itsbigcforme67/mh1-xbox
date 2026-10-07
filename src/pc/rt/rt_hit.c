@@ -40,8 +40,11 @@ uint8_t *rt_file_load(int idx, size_t *n)
 }
 
 /* The PS2 loads the wall / ground HITS files into fixed RAM areas
- * (stage_hit_area_w / _f hold their addresses). Here: two host buffers. */
-#define HIT_AREA_SIZE (4u << 20)
+ * (stage_hit_area_w / _f hold their addresses). Here: two host buffers.
+ * The largest files on the disc, decompressed: lg045.bin 164352 bytes
+ * (ground), lw032.bin 81204 (wall), so 512 KB each leaves room (was 4 MB
+ * each; docs/xbox.md memory). RT_MEM reports how much the game used. */
+#define HIT_AREA_SIZE (512u << 10)
 s32 stage_hit_area_w;
 s32 stage_hit_area_f;
 static uint8_t *hit_area[2];
@@ -78,6 +81,10 @@ int rt_load_stage_hit(int stage)
     for (k = 0; k < 2; k++)
         if (!hit_area[k] && !(hit_area[k] = malloc(HIT_AREA_SIZE)))
             return -1;
+    if (getenv("RT_MEM")) {         /* fill pattern for the high-water check below */
+        memset(hit_area[0], 0xCD, HIT_AREA_SIZE);
+        memset(hit_area[1], 0xCD, HIT_AREA_SIZE);
+    }
     memset(hit_area[0], 0xFF, 64);
     memset(hit_area[1], 0xFF, 64);
     stage_hit_area_w = (s32)hit_area[0];
@@ -86,6 +93,14 @@ int rt_load_stage_hit(int stage)
         quest_w.x80 = (s32 *)St_data;
     memset(&diorama_w, 0, sizeof diorama_w);
     load_stage_hit(stage);
+    if (getenv("RT_MEM"))
+        for (k = 0; k < 2; k++) {
+            size_t top = HIT_AREA_SIZE;
+            while (top > 0 && hit_area[k][top - 1] == 0xCD)
+                top--;
+            fprintf(stderr, "memstat: stage %d %s collision area used %zu of %u bytes\n", stage,
+                    k ? "ground" : "wall", top, HIT_AREA_SIZE);
+        }
     return diorama_w.gtbl ? 0 : -1;
 }
 
