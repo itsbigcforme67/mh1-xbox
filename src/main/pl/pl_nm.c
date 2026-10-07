@@ -2776,7 +2776,7 @@ s16 Pl_item_num_ck(PLW *, int);
 /* Item box (village storage): game_w+0x128 holds {u16 item, s16 count} per slot (32 slots), game_w+0x1A8 a taken-bitmask. */
 void box_get(PLW *pl) {
     pl->work8F3 = 0x1E;
-    Item_box_get_efct();
+    Item_box_get_efct(pl);
     if (Online_ck() == 1) {
         pl->work932 = 0x384;
         pl->work91F = 1;

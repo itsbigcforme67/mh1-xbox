@@ -181,8 +181,8 @@ void bgm_server(void) {
     }
 }
 
-void adx_se_set(int a0, int id) {
-    if (Pl_master_ck() == 1) {
+void adx_se_set(int a0, int id) {  /* PC: Pl_master_ck gets a0 (the player), as on the PS2 where a0 is left over */
+    if (Pl_master_ck(a0) == 1) {
         str_play(1, id);
         *(s16 *)(game_w + 0x1E0) = id;
         if (game_w[0x11] != 0 && Quest_clear_ck(1) == 0) {
@@ -192,8 +192,8 @@ void adx_se_set(int a0, int id) {
     }
 }
 
-void adx_se_stop(void) {
-    if (Pl_master_ck() == 1) {
+void adx_se_stop(void *pl) {
+    if (Pl_master_ck(pl) == 1) {
         if (*(u16 *)(game_w + 0x1E0) == 0xA) {
             str_stop(1, *(u16 *)(game_w + 0x1E0));
         }

@@ -1557,13 +1557,59 @@ config/c_files.txt was touched):
   return u8/s8/u16/s16 and are called through an implicit `int` prototype
   work with this gcc (checked in the object code: the value is always
   extended before ret).
-- Not fixed, noted: chat_nm.c slash_level_bar stores `0x40A00000` (5.0f bits,
-  m2c) into an s16: it becomes 0 (what an `sh` of that word does on the
-  PS2 too). hk_all.c/sk_all.c declare `flfntLocate(f32, int)` while the
-  function takes ints; the keyboard letters draw correctly (checked in
-  build/show/name/keyboard.png), only the hard-keyboard text cursor path
-  could be off. 186 -Wmaybe-uninitialized warnings were not triaged
-  (-ftrivial-auto-var-init=zero hides them).
+- (second round, below) slash_level_bar and the flfntLocate prototype are fixed.
 - 64-bit `long`: the only uses are `long int` return types and the u64/s64
   fields the code does want (32-bit gcc: long is 32 bits like the PS2's int,
   long long is 64).
+
+### Idiom sweep, second round (agent D, 7 Oct 2026)
+Screens checked (shots in build/show/d1/, scripted with the existing aids):
+- Extras/gallery menu: the button icons at the bottom (circle "play movie", cross
+  "cancel") draw (omake_nm.c Disp_button fix). The mode menu and options show no icons.
+- Weapon workshop buy list (RT_LB_WARP to 9700,12120, then square, circle x3):
+  the rarity line under the item icon shows "RARE-1" (was RARE-0 before the s8 fix).
+  The detail window (square) is EquipmentCompareWindow, still a no-op stand-in.
+  Not reachable offline: the player-status screen Lb_PlayerStatus with the skill
+  names (it is the online plaza's view of another hunter); that fix is by the
+  compiler warning only.
+Real bugs found at run time (no warning shows them):
+- Put_page_num (lobby/b/nm): `int sp70` was used as a 0x20-byte string buffer
+  (han2zen writes 2 bytes per character): stack smash, the forge/shop list
+  crashed with a segfault in han2zen. Now `char sp70[0x20]`. (Only the
+  forge page counter; the page number shows as "1/156": the 156 comes from
+  lb_num_str+0x2C, not checked against the PS2.)
+- slash_level_bar (chat_nm.c, the sword's sharpness bar in equipment
+  windows): read from the asm (0x27B3D0). The near-match took x as the pointer
+  and the item data as an integer (a crash if ever reached), drew the two end
+  caps as quads and stored 5.0f's bits as a coordinate. Rewritten: (pl, y, f32 x),
+  caps are flps0009 triangles {6 s16, colour}.
+- flfntLocate(f32, int) in hk_all.c / sk_all.c: the asm converts x with cvt.w.s
+  into a0 (0x266DF0); prototype is now (int, int).
+- Calls that lose the register argument ("a0 left over" on the PS2) and
+  read a garbage stack slot on x86: Pl_stg_ck()/Em_stg_ck() in
+  Pl_set_quake_sub / Em_set_quake_sub / Pachinger_set_quake_sub (cam_nm.c),
+  Npc_se_req(_com) (sndc03.c, via pc_patch.py), Pl_master_ck() in adx_se_set /
+  adx_se_stop (bgm_nm.c: the hunter's item/status sounds) and Pile_on
+  (f_stage.c, via pc_patch.py), Item_box_get_efct() in box_get. Under
+  -fsanitize=undefined 14 quests crashed at start (a null pl in Pl_stg_ck from the
+  Gypceros-class quake effects); with the arguments passed all 38 quests pass
+  there too. Still missing an argument (found by tools-side scan, not
+  fixed, lobby/menu): Ud_item_num_ck/_ck3 in the lbmix* files, Lb_check_newCommer,
+  Lb_pl_init, GetAdrsMiniData in lb_e.c, Get_equip_data_ptr in lb_ay, item_to_stack,
+  shop_armor2_stack, func_5B4B20 in menu_disp_nm.c, Lbs_GetRoomInfo (online).
+- lobby_bgm_set: see "tools/test_audio.sh" in the handover summary (village BGM
+  was dead after entering the house).
+How it was found: a copy of the tree built with `-fsanitize=undefined` in the
+game C and the link (copy tools/build_pc.sh, set GAMEFLAGS and LIBS; the
+first full build needs a second build_pc.sh run for pc_link_adapt). The test set
+runs under it (about 3x slower). Findings left as they are (harmless on the PC):
+`x << 24` into the sign bit (colours; many files), `1 << 31` masks (shit11_nm),
+pointer + offset wraps when the stage hit data is relocated (shit1_nm), reads of
+player fields past PLW.part[2] and set00's tbl[i][2] on arrays declared too short
+(real members follow), pl05.c:119 `pl->item[255]` (Pl_shell_set returns 0xFF when
+the hunter has no item: the PS2 reads the next bytes, as the PC does), the HAGI
+tables read with index 8 (see -fno-aggressive-loop-optimizations).
+-Wmaybe-uninitialized: the player/monster/menu ones read (pl_nm Pl_item_stack,
+f_frame_nm frame_init, f_stage stage_mv_ck, em_core/em_cmd locals, omake_nm
+disp_mode_menu, menu_disp_nm Pit_disp_item_list): all are switch paths without a
+default or a branch that cannot happen (system_error); none was a live bug.
