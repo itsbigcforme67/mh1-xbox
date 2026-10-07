@@ -387,6 +387,7 @@ main 0x00228F10 0x002290A4 quest/f_questh
 main 0x00229130 0x00229568 quest/f_questi
 main 0x00229690 0x0022997C quest/f_questj
 main 0x00229A50 0x00229AE0 quest/f_questk
+main 0x00229AE0 0x00229B40 quest/strg01
 main 0x00229B40 0x00229F54 quest/f_questl
 main 0x00229F60 0x0022A218 quest/f_questm
 main 0x0022A390 0x0022A404 quest/f_questn
@@ -2253,3 +2254,10 @@ main 0x00178530 0x0017881C fl/flrs03
 main 0x001789B0 0x00178C88 fl/flrs04
 main 0x00178C90 0x001793E0 fl/flrs05
 main:rodata 0x0035BE70 0x0035BEA8 fl/flrs05
+main 0x001710E0 0x001715E0 fl/flvu01
+main 0x00171CE0 0x00171E50 fl/flvu02
+main 0x00171F00 0x00172808 fl/flvu03
+main 0x00172970 0x00172CA8 fl/flvu04
+main 0x00172D30 0x00172FE8 fl/flvu05
+main 0x001730F0 0x001732F4 fl/flvu06
+main 0x00173680 0x001736A8 fl/flvu07
