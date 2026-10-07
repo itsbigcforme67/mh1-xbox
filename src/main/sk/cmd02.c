@@ -1,4 +1,4 @@
-/* Soft keyboard conversion (0x00262E50-0x00263140): cmd_muhenkan .. yn_kigou_inbuf_set. See cmd_nm.c. */
+/* Soft keyboard conversion (0x00262E50-0x002633A0): cmd_muhenkan .. yn_kigou_inbuf_set. See cmd_nm.c. */
 #include "types.h"
 
 extern u8 *lpSKey;
@@ -155,4 +155,60 @@ void yn_kigou_inbuf_set(void) {
     memset(lpSKey + 0x458, 0, 0x100);
     strcpy((char *)lpSKey + 0x458, (char *)kouho_work + (SKS32(0x144) % 3) * 0x101 + 1);
     strcpy((char *)lpSKey + 0x158, (char *)lpSKey + 0x458);
+}
+
+void Set_KouhoTableSub(int start, int rev) {
+    char b320[0x100];
+    char b64[0x100];
+    int n;
+    int cnt;
+    int i;
+
+    memset(kouho_work, 0, 0x10100);
+    memset(kouhogun, 0, 0x300);
+    if (rev == 0) {
+        if (SKS32(0x150) >= start + 3) {
+            n = 3;
+        } else {
+            n = SKS32(0x150) - start;
+        }
+        if (SKS8(0x36) != 0) {
+            for (i = 0; i < n; i++) {
+                yn_kouho_work_set(i, start);
+            }
+            yn_kigou_inbuf_set();
+        } else {
+            for (i = 0; i < n; i++) {
+                kouho_work[i * 0x101] = apiask_21_NextKouho(kouho_work + i * 0x101 + 1, lpSKey + 0x558);
+            }
+            for (i = 0; i < n - 1; i++) {
+                apiask_20_PrevKouho(b320, b64);
+            }
+        }
+        for (i = 0; i < 3; i++) {
+            kouhogun_table_set(i);
+        }
+    } else {
+        if (SKS32(0x150) >= start + 3) {
+            n = 3;
+        } else {
+            n = SKS32(0x150) - start;
+        }
+        if (SKS8(0x36) != 0) {
+            for (i = n - 1; i >= 0; i--) {
+                yn_kouho_work_set(i, start);
+            }
+            yn_kigou_inbuf_set();
+        } else {
+            for (i = n - 1; i >= 0; i--) {
+                kouho_work[i * 0x101] = apiask_20_PrevKouho(kouho_work + i * 0x101 + 1, lpSKey + 0x558);
+            }
+            for (i = 0; i < n - 1; i++) {
+                apiask_21_NextKouho(b320, b64);
+            }
+        }
+        for (i = 2; i >= 0; i--) {
+            kouhogun_table_set(i);
+        }
+    }
 }
