@@ -134,8 +134,25 @@ void Info_Initialization(void);
 void rt_font_init(void);
 void SoftKeyboard_init(void);
 extern unsigned char *lpSKey;
+/* RT_MIXTEST=1: list the item combining recipes the game's own code finds (item_nm.c) */
+void *Item_preparation_adrs(short a, short b);
+static void mix_test(void)
+{
+    int a, b, n = 0;
+    for (a = 1; a < 0x100; a++)
+        for (b = a; b < 0x100; b++) {
+            short *e = Item_preparation_adrs((short)a, (short)b);
+            if (e) {
+                n++;
+                fprintf(stderr, "mix: %d + %d -> %d (rate idx %d)\n", a, b, e[1], ((signed char *)e)[4]);
+            }
+        }
+    fprintf(stderr, "mix: %d recipes\n", n);
+}
 void rt_hud_init(void)
 {
+    if (getenv("RT_MIXTEST"))
+        mix_test();
     if (!lpSKey)
         SoftKeyboard_init();       /* Pit_init calls SoftKeyboard_exit */
     rt_2d_init();
