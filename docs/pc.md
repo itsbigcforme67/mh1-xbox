@@ -33,6 +33,9 @@ Movies (agent B, 7 Oct 2026): the opening, the extras' movies and the title's
 idle loop (logos -> opening -> title, the game's own demo task) play from
 AFS00.AFS; see "Movies (libmpeg2)" below. The soft keyboard is the game's own.
 
+- `tools/test_all_quests.sh` (agent D, 7 Oct 2026; ~2.5 minutes, headless): every offline quest of the Elder's star
+  levels 1-5 (131-171) started with `--quest N`, played to quest clear, reward screen, money, village. Table below.
+
 Known gaps: reverb is an
 approximation, online play, ARM frame rate measured only up to round 20
 (25-28 fps at 960x720), nothing systematically compared with the PS2.
@@ -1329,6 +1332,54 @@ Still stand-ins that a player could notice (not wired; reason):
 New stand-ins appear when a wired function calls something else not ported (SetPartsTrans, weapon_dat_make*, light_change_normal, ...);
 none of them ran in the tests.
 
+
+## All offline quests played (agent D, 7 Oct 2026; `tools/test_all_quests.sh`)
+
+Each quest is started with `--quest N` (no village), planned from its own condition program, monster lists
+(`RT_QEM_DUMP` now also prints `kind:x04:x05` per entry) and the start stage's spots, and run to the reward and the village.
+Delivery: items into the pouch (`RT_PL_ITEMS`), warp to the camp box (spot kind 21), circle. Hunting: `RT_PL_GOTO` (stage list,
+or `tick,f` = follow the boss), `RT_PL_TARGET=kN`, `RT_PL_WARP_EM`, `RT_DMG_MUL`, `RT_PL_GOD`, a repeating pad pattern
+(attack flicks, circle = carve / take, cross, ddown + circle = "end receiving"). New aids: `RT_PL_SLAY="tick[,kind]"` (a lethal
+hit each tick on that kind, for a boss that stays out of reach), `RT_GOTO_TRACE`, `RT_PRIM_TRACE` (prims still held at exit and
+where they came from). RT_PL_GOTO takes a list of stages and wraps; after two failed warps to an exit it takes the exit as
+stage_mv_ck does (the warp lands on ground above the exit's height window on stage 37 -> 40). RT_PL_TARGET=kN now falls back to
+a dead monster of that kind, then to an unused slot (so WARP_EM / DMG_MUL do nothing when none is on the stage).
+
+| quest | stars | goal | result | bug found / fixed |
+|---|---|---|---|---|
+| 131-135 | 1 | deliver items (18x2; 20; 65x2+119; 1x2; 95) | clear, reward, village | none (131 was already walked for real by test_quest_loop.sh); gathering itself is not scripted except 131 |
+| 136 | 2 | 3 Velociprey | OK | none (urgent test hunts it for real) |
+| 141, 142, 143 | 2 | deliver 77x7, 242x5, 20x5 | OK | none |
+| 138 | 2 | deliver egg (145) | OK | nest pick point (stage 40, stage pick id 131 -> item 145, unlimited), carried to the camp box; see the egg fix below |
+| 137, 152 | 3 | Velocidrome (27) | OK | none |
+| 148, 144 | 3 | Rathian-class (6) | OK | none |
+| 145 | 3 | 10 Velociprey over 3 stages | OK | RT_PL_GOTO could not leave stage 37 for 40 (see above, test aid) |
+| 146 | 3 | egg 145 | OK | as 138 |
+| 147, 149 | 3 | deliver 219x3, 77x10 | OK | none |
+| 150 | 4 | item 144 + monster 6 | OK | reward list is empty (no `rewards:` line) |
+| 151 | 4 | 15 Velociprey (4 stages) + Rathalos (11) | OK (boss slain by aid) | none |
+| 153 | 4 | 2 eggs (145) | OK | two trips |
+| 157 | 4 | 3 eggs (146) | OK | nest on stage 49 (pick id 36, point below the warp's ground height: RT_PL_WARP now takes a 5th field y), three trips |
+| 154 | 4 | Diablos-class (8) | OK | none |
+| 155 | 4 | 15 kind-13 over 3 desert stages | OK | none; small monsters respawn per `x04` |
+| 156 | 4 | kind 28 | OK | none |
+| 158 | 4 | 15 kind-19 | OK | none |
+| 159 | 4 | deliver 77x10 | OK | none |
+| 160, 167 | 4, 5 | kind 31 (boss, stage 1) | OK | **prim pool exhausted -> crash** (set14_m / enemy_mv wrote through a NULL prim, tick ~9000): the PS2 clears all prims at every stage change (prim_init from game2 step 2 / all_reset), the PC had it as a no-op, so every stage change leaked the old stage's slots (set14 never releases its prim). Fixed: PC `prim_init` (rt_game.c) frees the pool; pool is 512 slots like the PS2 (was 256) |
+| 161 | 5 | 20 Velociprey + Rathalos | OK | not a PC bug: the monster lists have a second wave (program op 32 sets quest_w.x3A = 1 at "10 left"; `RT_QEM_DUMP` shows waves as stage+100): stage 34 gets 3 entries x10; the plan now visits those stages again; Rathalos dies by the aid |
+| 162 | 5 | Velocidrome | OK | none |
+| 163 | 5 | 3 eggs (145) | OK | three trips |
+| 139 | 5 | Rathalos (11, flies) | OK (boss slain by aid) | the Rathalos does land (about 40% of its ticks it is on the ground, ground attacks 3/x) and hits do count (2000 -> 1840 hp in 4500 ticks with DMG_MUL 40); the aid hunter just rarely reaches it, so the sweep slays it after 8000 ticks. **crash in em12_blood_req**: Eft02_set4 float-first ABI: adaptor rtabi_Eft02_set4 |
+| 165 | 5 | 20 kind-13 + Plesioth (21, stage 54) | OK | second wave (stages 49, 54 ...) as 161; the Plesioth is hit every 120 ticks by the aid and dies once ashore (below) |
+| 166 | 5 | kind 28 | OK | none |
+| 168 | 5 | 24+ kind-19 over 6 stages + kind 21 | OK (boss slain by aid) | none |
+| 140 | 5 | item 144 + Rathalos | OK | none |
+| 171 | 5 | kind 26 (stage 53) | OK | none |
+
+Counts: 38 offline quests, all 38 OK (no skips, no known failures). "OK (boss slain by aid)" means
+the monster that cannot be reached is brought down by RT_PL_SLAY, so those runs test the clear / reward path, not combat
+against that monster. The other hunts use real hits (DMG_MUL 40 on the target only). Not covered: real gathering and
+fishing for the delivery quests, carving rewards, the eggs, urgent 136/137 clears for real (test_urgent.sh does those).
 Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item 125 from (11200, 10850)):
 - The idle script runs in 352-tick cycles. em_cmd_pl_fishing_ck (0x45) is evaluated once at the start of each
   idle cycle (tick 1 in a fresh stage: no hunter fishing yet).
@@ -1428,3 +1479,21 @@ Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item
 - The zero ambient rows of 44 stages (pl_light_ambientNN, .bss) are all-zero static tables, so those stages (5 among them) have no ambient on the PS2 either: lit only by the directional rows, hunter dark on the side away from them.
   Whether the PS2 really looks that dark is not verifiable here (no reference screenshots); the likely missing piece is the material ambient qword (vf30), which multiplies a zero ambient anyway, so it would not help stage 5.
   Hence the game lights stay opt-in (RT_LIGHT_GAME=1) until someone compares against a PS2 capture of stage 5.
+
+Findings of the second pass (agent D, 7 Oct 2026)
+- **161 / 165 "18 of 20"**: the missing monsters are the second wave. Condition program op 32 (`quest_w.x3A = a`, "32/1/0/0" right after
+  the "10 left" message) switches the quest to monster-list variant 1 (Em_data_st_adrs_get's last argument); Quest_next_em_set spawns
+  that variant's entries when a stage is entered. 161: stage 34 gets three entries of 10 each; 165: stages 49 and 54. Nothing missing on the PC.
+- **Plesioth at 1 hp while swimming is the original design**: Em_Dmg_Sys floors hp at 1 while `x8BB != 0`, and em21's swim action
+  (em_fly18, em21_nm.c) sets `x8BB = 5` every tick; it can only die while ashore. A lethal hit every tick also keeps re-triggering
+  its flinch, so RT_PL_SLAY now hits every 120 ticks.
+- **Eggs**: Pl_item_stack burned a held egg (145/146, "hold" items) at once on the PC. Cause: pl_nm.c's `(int)(act_ck(...) << 0x30) >> 0x30`
+  (m2c's 64-bit register idiom): gcc -m32 folds a shift by 48 to 0, so the "is the hunter in a pickup/carry act" tests were always
+  true and timer_calc_sub_pl broke the held item every tick. Replaced by `(s16)(...)` in src/main/pl/pl_nm.c (4 places, also the
+  Stage_env_ck test and the vital_red regeneration) and in the lobby near-matches the village runs (Put_page_num, lb_process_drawHelp,
+  Lb_put_armorIcon, lb_normal_material, lb_process_set_armorList / _weaponList: shop and forge lists). The plaza_*.c and yn/ui_nm.c copies
+  (online / unused on the PC) and src/main/fl/*_nm.c still have the idiom: grep `<< 0x30` before trusting a PC bug in them.
+  Egg quests: a monster's hit makes the hunter drop the egg, so the run slays every monster in the quest first (RT_PL_SLAY takes
+  "tick,kind,kind,..."), then per egg: RT_PL_GOTO2 ("tick,stage;..." timed goals) to the nest, warp + circle at the pick point
+  (stage 40 (11400,12100) = item 145, stage 49 (9500,-109,11000) = item 146), goal = camp, warp to the box (spot kind 21), circle.
+  Gather points: `RT_SPOT_TRACE` now lists the items each pick id gives.

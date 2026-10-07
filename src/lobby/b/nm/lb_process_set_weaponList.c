@@ -55,12 +55,12 @@ void lb_process_set_weaponList(void) {
         if (*(u8 *)0x333030 != 0xFF) {
             var_s0 = (int)&buki_sei_tbl;
             do {
-                temp_v0 = Seisan_ok_ck(1,  (var_s3 << 0x30) >> 0x30, 0);
+                temp_v0 = Seisan_ok_ck(1,  (s16)(var_s3), 0);
                 spA9 = F(u8, var_s0, 0);
                 spAA = F(u16, var_s0, 2);
                 if ((temp_v0 != 0) && ((1 << F(u8, ((int)&player_work + (temp_a1 * 0xA00)), 0x11)) & (Get_equip_bit(&User_data, &spA8) & 0xFF))) {
                     temp_a1_2 = F(u16, var_s0, 2);
-                    temp_s6 = Seisan_ok_ck(1,  (var_s3 << 0x30) >> 0x30, 1);
+                    temp_s6 = Seisan_ok_ck(1,  (s16)(var_s3), 1);
                     if (temp_a1_2 == 0x3E7) {
                         var_v0 = 0x3E8;
                         var_s1_2 = F(s32, &shop_process2_help, 0x1C);
@@ -76,7 +76,7 @@ void lb_process_set_weaponList(void) {
                     if (((s8)temp_s0) == 1) {
                         F(s16, var_s5, 0x24) = 1;
                     } else if (((u32) *(u32 *)0x3C6FE0 < (u32) F(u32, var_s5, 0)) || (temp_s6 != 2)) {
-                        if ((Seisan_ok_ck(1,  (var_s3 << 0x30) >> 0x30, 0) == 2) && (F(s16, var_s5, 0x24) == 0)) {
+                        if ((Seisan_ok_ck(1,  (s16)(var_s3), 0) == 2) && (F(s16, var_s5, 0x24) == 0)) {
                             F(s16, var_s5, 0x24) = 3;
                         } else {
                             F(s16, var_s5, 0x24) = 1;

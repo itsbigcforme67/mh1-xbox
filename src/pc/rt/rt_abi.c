@@ -82,3 +82,9 @@ void rtabi_NextStage_No_Set(void *em) { NextStage_No_Set(em); }
  * is (em, arg, x07, scale). Without this the Lao-Shan's dying dust crashed. */
 void Eft10_set(void *em, int arg, int x07, f32 scale);
 void rtabi_Eft10_set(f32 scale, void *em, int arg, int x07) { Eft10_set(em, arg, x07, scale); }
+
+/* em12_nm.c (em12_blood_req) calls Eft02_set4(scale, a, ang, 3, pos) as m2c read the asm (scale in f12 on the PS2); the
+ * definition (src/main/eft/eft02_nm.c) is (a, ang, arg, pos, scale). Without this the Aptonoth's blood spray, and so a
+ * Rathalos hunt that passed one, crashed on garbage arguments (quest 139). */
+void Eft02_set4(unsigned short a, int ang, int arg, float *pos, float scale);
+void rtabi_Eft02_set4(float scale, int a, int ang, int arg, float *pos) { Eft02_set4((unsigned short)a, ang, arg, pos, scale); }

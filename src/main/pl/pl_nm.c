@@ -175,9 +175,9 @@ void timer_calc_sub_pl(PLW *pl) {
     Pl_stamina_reduce(pl);
     temp_a0 = pl->flag14;
     if ((temp_a0 != 2) && (temp_a0 != 3)) {
-        if (((((int) (Stage_env_ck(pl->stg) << 0x30) >> 0x30) != 1) || (Pl_Skill_ck(pl, 0x2D) != 0) || (pl->work918 != 0)) && (pl->x7BA == 0) && !(PU16(&game_w, 0x1E) & 0x3F) && (pl->vital < pl->vital_red)) {
+        if (((((s16)(Stage_env_ck(pl->stg))) != 1) || (Pl_Skill_ck(pl, 0x2D) != 0) || (pl->work918 != 0)) && (pl->x7BA == 0) && !(PU16(&game_w, 0x1E) & 0x3F) && (pl->vital < pl->vital_red)) {
             if ((Pl_Skill_ck(pl, 0x1B) == 1) || (pl->work91C != 0)) {
-                var_a1 = (int) ((pl->vital_red - pl->vital) << 0x30) >> 0x30;
+                var_a1 = (s16)((pl->vital_red - pl->vital));
                 if (var_a1 >= 4) {
                     var_a1 = 3;
                 }
@@ -215,12 +215,12 @@ void timer_calc_sub_pl(PLW *pl) {
         pl->work56B = temp_a1;
         pl->work56B = (u8) (pl->work56B - 1);
         pl->work56B = (u8) (pl->work56B | (temp_a2 & 0xF0 & 0xFF));
-    } else if ((((int) (act_ck(pl, 0, 0x47) << 0x30) >> 0x30) == 0) && (((int) (act_ck(pl, 0, 0x4A) << 0x30) >> 0x30) == 0) && (((int) (act_ck(pl, 0, 0x51) << 0x30) >> 0x30) == 0) && (((int) (act_ck(pl, 0, 0x5D) << 0x30) >> 0x30) == 0) && (((int) (act_ck(pl, 0, 0x60) << 0x30) >> 0x30) == 0)) {
+    } else if ((((s16)(act_ck(pl, 0, 0x47))) == 0) && (((s16)(act_ck(pl, 0, 0x4A))) == 0) && (((s16)(act_ck(pl, 0, 0x51))) == 0) && (((s16)(act_ck(pl, 0, 0x5D))) == 0) && (((s16)(act_ck(pl, 0, 0x60))) == 0)) {
         temp_s1 = Pl_hold_item_ck(pl) & 0xFFFF;
         if (temp_s1 != 0xFFFF) {
             if ((Pl_master_ck(pl) == 1) && (Game_clear_ck(1) == 0)) {
                 unmei_se(pl);
-                set01_set(1, 5, (int) (temp_s1 << 0x30) >> 0x30);
+                set01_set(1, 5, (s16)(temp_s1));
             }
             Pl_item_stack(pl, temp_s1, -0xA);
         }
