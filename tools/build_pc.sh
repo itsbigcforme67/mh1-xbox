@@ -14,7 +14,7 @@ mkdir -p build/pc
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
     src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c \
-    src/pc/fmt/snd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c"
+    src/pc/fmt/snd.c src/pc/movie/sfd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c"
 RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_game.c src/pc/rt/rt_fl.c src/pc/rt/rt_overlay.c src/pc/rt/rt_main.c src/pc/rt/rt_eft.c src/pc/rt/rt_hit.c src/pc/rt/rt_cam.c"   # (listing only)
 # Decompiled game C run natively. set14_nm.c is the whole set14 file
 # (set14_trans is a near-match on the PS2 side, believed equivalent).
@@ -405,13 +405,23 @@ for o in $OBJS; do
     W=$($NM --defined-only -g "$o" | awk 'NF == 3 {print $3}' | sort -u | comm -12 - "$(printf '%s\n' $BSYMS | sort -u > build/pc/.bsyms; echo build/pc/.bsyms)")
     [ -n "$W" ] && $OBJCOPY $(for w in $W; do printf -- '--weaken-symbol=%s ' "$w"; done) "$o"
 done
+# libmpeg2 0.5.1 (third_party/libmpeg2, GPL v2, plain C): the movies' MPEG-2 video
+mkdir -p build/pc/mpeg2
+for f in alloc cpu_accel cpu_state decode header idct motion_comp slice; do
+    o=build/pc/mpeg2/$f.o
+    if [ ! -f "$o" ] || [ "$o" -ot "third_party/libmpeg2/$f.c" ] || [ "$o" -ot tools/build_pc.sh ]; then
+        # shellcheck disable=SC2086
+        $CC $M32 -std=gnu99 -O2 -w -Ithird_party/libmpeg2 $SYS -c third_party/libmpeg2/$f.c -o "$o"
+    fi
+    OBJS="$OBJS $o"
+done
 # data tables (names in src/pc/rt/tables.txt; bytes come from the disc at run time)
 python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 # shellcheck disable=SC2086
 $CC $CFLAGS $SYS -c build/pc/rt_tables.c -o build/pc/rt_tables.o
 OBJS="$OBJS build/pc/rt_tables.o"
 # runtime files that include the game headers
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie; do
     # shellcheck disable=SC2086
     $CC $CFLAGS $SYS $SDL_CFLAGS -Iinclude -c src/pc/rt/$f.c -o build/pc/$f.o
     OBJS="$OBJS build/pc/$f.o"

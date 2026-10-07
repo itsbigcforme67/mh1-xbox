@@ -20,11 +20,15 @@ typedef struct {
     int rate;
     double frac;
     float vol;
+    uint64_t played;        /* source frames consumed since the last clear */
 } stream;
 
 static voice voices[AUDIO_VOICES];
 static stream streams[AUDIO_STREAMS];
 static int next_id = 1;
+static int driven;
+int audio_live(void) { return driven || audio_device_open(); }
+void audio_set_driven(int on) { driven = on; }
 
 /* ------------------------------------------------------------ reverb
  * Schroeder: 4 parallel damped combs + 2 series allpasses per channel (the
@@ -231,7 +235,17 @@ void audio_stream_clear(int s)
     audio_lock();
     streams[s].rd = streams[s].wr = 0;
     streams[s].frac = 0;
+    streams[s].played = 0;
     audio_unlock();
+}
+
+uint64_t audio_stream_consumed(int s)
+{
+    uint64_t r;
+    audio_lock();
+    r = streams[s].played;
+    audio_unlock();
+    return r;
 }
 
 void audio_stream_vol(int s, float vol)
@@ -296,6 +310,7 @@ void audio_mix(int16_t *out, int frames)
                 while (st->frac >= 1.0 && st->rd != st->wr) {
                     st->frac -= 1.0;
                     st->rd = (st->rd + 1) % RING;
+                    st->played++;
                 }
             }
         }

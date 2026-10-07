@@ -560,6 +560,20 @@ static const char *audio_dump = NULL;      /* --audio-dump out.wav: mix each gam
 static int mute = 0, snd = -1;
 static int16_t *dump_pcm = NULL;
 static size_t dump_n = 0, dump_cap = 0;   /* game_cam: the game's CameraMove drives the view */
+/* --audio-dump: 1/30 s of mixer output per game tick */
+static void audio_dump_tick(void)
+{
+    if (!audio_dump)
+        return;
+    audio_set_driven(1);        /* the movie's clock follows what is mixed */
+    if (dump_n + 1600 * 2 > dump_cap) {
+        dump_cap = dump_cap ? dump_cap * 2 : 1 << 20;
+        dump_pcm = realloc(dump_pcm, dump_cap * sizeof *dump_pcm);
+    }
+    audio_mix(dump_pcm + dump_n, 1600);
+    dump_n += 1600 * 2;
+}
+
 static float gc_eye[3] = { 0 }, gc_tar[3] = { 0 }, gc_roll = 0, gc_fov = 1.0f;   /* --play camera: distance, height, pitch */
 static int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter */
 static int boot = 0, booting = 0;           /* --boot: from power-on (rt_boot.c) */
@@ -773,14 +787,7 @@ static void sim_tick(void)
         rt_hud_tick();                  /* Pit_mv: HUD layers (last step of move()) */
     if (snd == 0) {
         rt_snd_tick();
-        if (audio_dump) {           /* 1/30 s of mixer output per tick */
-            if (dump_n + 1600 * 2 > dump_cap) {
-                dump_cap = dump_cap ? dump_cap * 2 : 1 << 20;
-                dump_pcm = realloc(dump_pcm, dump_cap * sizeof *dump_pcm);
-            }
-            audio_mix(dump_pcm + dump_n, 1600);
-            dump_n += 1600 * 2;
-        }
+        audio_dump_tick();
     }
 }
 
@@ -1343,8 +1350,10 @@ int main(int argc, char **argv)
                     booting = 0;
                     rt_flow_set_mode(6);    /* Game_task offline: the village */
                 }
-                if (snd == 0)
+                if (snd == 0) {
                     rt_snd_tick();
+                    audio_dump_tick();
+                }
                 ticks++;
                 continue;
             }

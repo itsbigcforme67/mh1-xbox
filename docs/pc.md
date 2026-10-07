@@ -29,8 +29,11 @@ tick). Test aids are environment variables (RT_*), listed in the "Run"
 section and the round sections below; RT_PL_GOTO, RT_PL_TARGET=kN and
 RT_QCLEAR are the newest.
 
-Known gaps: opening and attract movies (Sofdec, open question in
-DECISIONS.md), the soft keyboard (typed-ASCII stand-in), reverb is an
+Movies (agent B, 7 Oct 2026): the opening, the extras' movies and the title's
+idle loop (logos -> opening -> title, the game's own demo task) play from
+AFS00.AFS; see "Movies (libmpeg2)" below. The soft keyboard is the game's own.
+
+Known gaps: reverb is an
 approximation, online play, ARM frame rate measured only up to round 20
 (25-28 fps at 960x720), nothing systematically compared with the PS2.
 
@@ -1203,3 +1206,57 @@ All PC side; no include/ or PS2-built file changed.
   (quest 10 nest: depth 10240 -> wet 0.19); nobody listened.
 - Small fix: `--quest` printed a garbage monster kind for quests without a
   big monster.
+
+
+## Movies (libmpeg2) (agent B, 7 Oct 2026)
+
+What plays: OPENING.sfd at boot (the game's opening_demo, select/demo.c; it
+runs after the logos and again whenever the title sits idle, then Start skips
+it through the game's own Select_task), and the extras menu's movies
+(omake_play). All nine .sfd in AFS00.AFS decode (sfd_tbl, imported from the
+disc, gives AFS entry and size).
+
+Parts:
+- third_party/libmpeg2: libmpeg2 0.5.1 (GPL v2, COPYING in the directory),
+  the plain-C files only (no asm, no libvo/convert), unmodified except our
+  config.h. Built by tools/build_pc.sh into build/pc/mpeg2/ (also in the ARM
+  build, which uses the same script; not run on ARM yet).
+- src/pc/movie/sfd.c: demux of the .sfd (an MPEG-1 system stream, 2048-byte
+  packs; video stream 0xE0 = MPEG-2 video, stream 0xC0 = ADX, header in the
+  first packet), libmpeg2 for the video, snd.c's ADX decoder for the audio,
+  YUV 4:2:0 -> RGBA (BT.601 limited). No platform calls.
+- src/pc/rt/rt_movie.c: the game's movie_reset/start/request/server/draw/
+  status_ck/exit on that. movie_draw is f_movie's: the 256x512 picture
+  (rows 32..479 shown) stretched over the 512x448 screen, sp_mh.sfd (320x448)
+  at its own size. all_reset stops a movie whose task was killed (Start at the
+  title).
+- Audio is the clock: stream 2 of the mixer (AUDIO_STREAM_MOVIE) counts the
+  frames it played (audio_stream_consumed); the video is decoded up to the
+  frame that time calls for (at most 4 per tick to catch up). Without an
+  audio device the game tick (30/s) is the clock; --audio-dump counts as
+  audio (the viewer now also dumps during the boot).
+- Env: RT_NOMOVIE=1 skips movies (the old behaviour; the scripted tests
+  set it, a 190 s movie would only lengthen them), RT_MOVIE_TRACE=1 logs
+  every 600 ticks (frame, audio and wall seconds, decode ms), RT_MOVIE_DUMP=dir
+  writes every 100th frame as PPM.
+- tools/test_movie.sh: headless boot, checks OPENING.sfd opens and frames
+  that are not blank reach the screen.
+
+Checked: sfd_test (src/pc/movie/sfd_test.c, standalone) writes frames as raw
+yuv420p. Against ffmpeg's output of the same OPENING.sfd (extracted to a temp
+dir, never committed) frames 0-399 match the planes bit for bit while the
+picture is black and at 65-70 dB PSNR afterwards (max pixel difference 6-10:
+different IDCT rounding; one extra black frame at the start in ours, so ffmpeg
+frame n+1 = ours n). The picture on screen (headless screenshot) shows the
+opening's sky/Rathalos shot at the right aspect. Audio: ADX output differs
+from ffmpeg's adpcm_adx by a small amount (mean 124 of 32768 over the first 20 s):
+our decoder (snd.c, used for the BGM too) takes scale+1, ffmpeg's takes the
+scale as is; which one CRI uses was not checked against hardware.
+Decode time per frame (this PC, -O2, one core): OPENING 0.8-1.7 ms average,
+worst 3-29 ms (a few slow outliers); the other eight 1.7-5.5 ms average, worst
+13-50 ms (one 194 ms spike while other jobs ran). 256x512 is small: 29.97 fps
+needs 33 ms. The Cortex-A53 / 733 MHz Xbox figure is not measured.
+Not checked: listening (no audio device here; with SDL's dummy device the
+audio clock ran 5% slow against wall time, that is the dummy driver pacing),
+the extras menu path by eye (decode and the draw code are shared with the
+opening), ARM, the window at other sizes, a real controller's Start skip.
