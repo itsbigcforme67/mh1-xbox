@@ -126,3 +126,9 @@ code, PNG/BMP glue; mostly 0x5EE618-0x609700): the port will probably use its ow
 instead of the original. The owner's understanding: it was only used for Capcom's website and buying
 the online subscription, not for any game function. Already-matched browser functions stay; no
 new work there. If a game function turns out to call into it, stub that call on the PC side.
+
+## Original Xbox port starts 8 Oct 2026 (decided 7 Oct 2026)
+
+The owner will provide a real modded original Xbox to deploy and test builds on, with a capture
+card attached so Claude can see the screen, and later a controller emulator Claude can drive.
+Xbox work starts on 8 Oct 2026; until then the PC build stays the reference.
