@@ -213,6 +213,8 @@ void die_bgm_set(void) {
     str_play_f_vol(0, 0x4A, 0xF, 0x7F);
 }
 
+/* PC: the 'same track, keep playing' branches also need the stream to be alive: vs_square_event (entering a house) calls str_stop_all just before, and without this the village stayed silent from then on */
+int str_getstat(int);
 void lobby_bgm_set(int n)
 {
   int s2;
@@ -223,7 +225,7 @@ void lobby_bgm_set(int n)
   int x;
   if (((n & 0xFF) == 0x57) && (Quest_clear_bit_ck(0xAB) == 1))
   {
-    if (game_w[0x25] == 0x1B)
+    if (game_w[0x25] == 0x1B && str_getstat(0) != 0)
     {
       str_pause(0, 0);
       str_volume(0, 0);
@@ -240,7 +242,7 @@ void lobby_bgm_set(int n)
     s2 = (n & 0xFF) * 2;
     t = Snd_bgm_tbl + s2;
     b = t[0];
-    if (game_w[0x25] == b)
+    if (game_w[0x25] == b && str_getstat(0) != 0)
     {
       str_pause(0, 0);
       str_volume(0, 0);

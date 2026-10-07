@@ -17,6 +17,17 @@ Checks to run after changes (all headless, about a minute together):
   the save.
 - `tools/test_urgent.sh`: urgent quests 136 and 137 hunted for real; each
   clear opens the next star level.
+- `tools/test_audio.sh` (agent D, 7 Oct 2026; ~10 s): headless audio dumps of the
+  title, the village (walking) and a quest fight; fails on a near-silent
+  second (RMS < 150) or a BGM stream that stops partway. Caught: entering the
+  house calls str_stop_all and lobby_bgm_set then "kept" a stream that no
+  longer played (the village stayed silent for good; bgm_nm.c now checks
+  str_getstat).
+- The whole PC test set, run it in this order after any change (build_pc.sh
+  alone first): test_quest_loop, test_progression, test_urgent,
+  test_name_entry, test_movie, test_frog, test_audio, test_all_quests
+  (~2.5 min), then `. ~/xboxdev/env.sh; python3 tools/build_xbox.py` and
+  `tools/rebuild.sh`.
 - `tools/rebuild.sh`: the PS2 rebuild (all five OK) when game C was touched.
 
 How the PC wires game C (where most bugs were): no-op stand-ins generated
