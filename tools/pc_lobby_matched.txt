@@ -1,7 +1,6 @@
 # matched lobby files (config/c_files.txt) linked on the PC in place of near-match copies
 # (round 19: matched functions the PC had taken from *_nm objects)
 src/lobby/b/lb_by71.c
-src/lobby/b/lb_bz104.c
 src/lobby/b/lb_bz16.c
 src/lobby/b/lb_bz162.c
 src/lobby/b/lb_bz62.c
@@ -50,13 +49,10 @@ src/lobby/lb/lbuiq.c
 src/lobby/lb/lbuir.c
 src/lobby/lb/lbuis.c
 src/lobby/lb/lbuiu.c
-src/lobby/lb/lbuiv.c
-src/lobby/lb/lbuiw.c
 src/lobby/f/lb_gac01.c
 src/lobby/f/lb_gac03.c
 # round 20: shop / forge / armour shop / NPC / dialog functions the PC took from *_nm copies or
 # gen_rt_auto stand-ins (Lb_put_itemIcon, Lb_put_materialItem were stand-ins: no icons)
-src/lobby/b/lb_by103.c
 src/lobby/b/lb_by116.c
 src/lobby/b/lb_by119.c
 src/lobby/b/lb_by120.c
@@ -77,7 +73,6 @@ src/lobby/b/lb_by180.c
 src/lobby/b/lb_by182.c
 src/lobby/b/lb_by23.c
 src/lobby/b/lb_bz05.c
-src/lobby/b/lb_bz29.c
 src/lobby/b/lb_vs01.c
 src/lobby/b/lb_vs02.c
 src/lobby/b/lb_by159.c
@@ -86,3 +81,4 @@ src/lobby/f/lb_gaf01.c
 src/lobby/f/lb_ge2501.c
 src/lobby/f/lb_ag01.c
 src/lobby/f/lb_ag02.c
+src/lobby/f/lb_cli.c

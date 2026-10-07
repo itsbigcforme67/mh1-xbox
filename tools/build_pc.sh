@@ -188,7 +188,7 @@ LOBBY2="src/lobby/f/lb_ib.c src/lobby/f/lb_tu_ib.c src/lobby/f/lb_ad.c src/lobby
         src/lobby/f/lb_ag.c \
         src/lobby/b/lb_by89.c src/lobby/b/lb_by90.c src/lobby/b/lb_by91.c src/lobby/b/lb_by43.c src/lobby/b/lb_by92.c \
         src/lobby/b/lb_by51.c src/lobby/b/lb_bz70.c src/lobby/b/lbarm01.c src/lobby/b/lb_by56.c src/lobby/b/lb_bz01.c \
-        src/lobby/b/lb_by07.c src/lobby/b/lb_by20.c \
+        src/lobby/b/lb_by07.c  \
         src/lobby/b/nm/Lb_shop_trans2.c src/lobby/b/nm/Lb_process_shop.c src/lobby/b/nm/lb_cat_material.c \
         src/lobby/b/nm/lb_normal_material.c src/lobby/f/lb_ay.c src/lobby/f/lb_aw.c src/lobby/f/lb_dr2.c \
         src/lobby/b/lb_by82.c src/lobby/b/lb_by61.c src/lobby/b/lb_by62.c src/lobby/b/lb_by84.c src/lobby/b/lb_by49.c \
@@ -212,7 +212,7 @@ BMATCH="$BMATCH $(grep -v '^#' tools/pc_lobby_matched.txt | tr '\n' ' ')"
 # sounds (cnWrap_SoundRequest), the forge's value_result, lobby client
 # helpers (round 19)
 LOBBY3="src/lobby/b/lb_by122.c src/lobby/b/lb_by123.c src/lobby/b/lb_bz98.c src/lobby/b/lb_bz145.c \
-        src/lobby/b/lb_bz137.c src/lobby/b/lb_bz110.c src/lobby/b/nm/value_result.c"
+        src/lobby/b/nm/value_result.c"
 # PICK: whole-file C from which only the named functions are wanted (all its
 # other definitions are weakened: the copies already linked win)
 PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint"

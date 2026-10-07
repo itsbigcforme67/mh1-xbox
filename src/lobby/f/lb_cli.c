@@ -82,7 +82,11 @@ extern s8 BsLbsErrNum_c23;
 extern s8 net_char_change;
 extern s8 BS_MODE_R_NO;
 extern char FirstURL[];
+#ifdef __MWERKS__
 typedef struct BRPD { unsigned __int128 q[29]; } BRPD;
+#else
+typedef struct BRPD { unsigned int q[29][4] __attribute__((aligned(16))); } BRPD;
+#endif
 extern BRPD BrPersonalData_c24;
 extern BRPD tmpPersonalData_c24;
 typedef struct { u8 pad2C08[0x2C08]; s8 x2C08; u8 pad2C09[0x2C43 - 0x2C09]; u8 x2C43; } CWS_b3;
