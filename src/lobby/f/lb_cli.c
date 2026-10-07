@@ -304,8 +304,9 @@ typedef struct { u8 pad0[0x2F6E]; u8 x2F6E; u8 x2F6F; u8 pad2F70[4]; s16 x2F74; 
 extern s8 COM_R_No_Disconnect;
 extern s8 COM_R_No_Logout;
 extern u8 COM_R_No_Logout_c142;
+extern u8 COM_R_No_Logout_t;
 s32 internet_connect_minimum_cleanup();
-void CallBackWaitInit();
+static void CallBackWaitInit();
 s32 Check_CallBackWait();
 s32 internet_lobby_act();
 void Lbc_connect();
@@ -474,7 +475,7 @@ s32 internet_connect_minimum_cleanup() {
     return 2;
 }
 
-void CallBackWaitInit() {
+static void CallBackWaitInit() {
     F(s32, (u8 *)cw, 0x35DC) = 0xE10;
     F(s8, (u8 *)cw, 0x35D9) = 0;
 }
@@ -1702,12 +1703,37 @@ void CallBack_Result_Plaza_PlazaEntry(CNET_RES res) {
     }
 }
 
-#ifdef __MWERKS__
-asm int Lbs_ExitAndEnterPlaza()
+s32 Lbs_ExitAndEnterPlaza(arg0)
+int arg0;
 {
-#include "Lbs_ExitAndEnterPlaza.inc"
+    switch (F(u8, (u8 *)cw, 0x2C35)) {
+    case 0:
+        F(u8, (u8 *)cw, 0x2C35)++;
+        CallBackWaitInit();
+        F(s8, (u8 *)cw, 0x2C45) = 9;
+        cnLBS_PlazaExit(CallBack_Result_Plaza_PlazaExit2);
+        break;
+    case 1:
+        Check_CallBackWait();
+        break;
+    case 2:
+        F(u8, (u8 *)cw, 0x2C35)++;
+        CallBackWaitInit();
+        F(s8, (u8 *)cw, 0x2C45) = 4;
+        cnLBS_PlazaEntry(arg0 & 0xFFFF, CallBack_Result_Plaza_PlazaEntry2);
+        break;
+    case 3:
+        Check_CallBackWait();
+        break;
+    case 4:
+        F(u8, (u8 *)cw, 0x2C35) = 0;
+        return 0;
+    case 5:
+        F(u8, (u8 *)cw, 0x2C35) = 0;
+        return 1;
+    }
+    return 2;
 }
-#endif
 
 void CallBack_Result_Plaza_PlazaExit2(CNET_RES res) {
     u8 temp_a0_2;
@@ -3332,12 +3358,28 @@ void CallBack_Result_InRoom_MatchEntry(CNET_RES res) {
     }
 }
 
-#ifdef __MWERKS__
-asm int Lbc_SetPropaty()
+s32 Lbc_SetPropaty(arg1)
+int arg1;
 {
-#include "Lbc_SetPropaty.inc"
+    switch (F(u8, (u8 *)cw, 0x2C35)) {
+    case 0:
+        F(u8, (u8 *)cw, 0x2C35)++;
+        CallBackWaitInit();
+        F(s8, (u8 *)cw, 0x2C45) = 0x1B;
+        cnLBS_Set_RoomProperty(arg1, CallBack_Result_SetRoomPropaty);
+        break;
+    case 1:
+        Check_CallBackWait();
+        break;
+    case 2:
+        F(u8, (u8 *)cw, 0x2C35) = 0;
+        return 0;
+    case 3:
+        F(u8, (u8 *)cw, 0x2C35) = 0;
+        return 1;
+    }
+    return 2;
 }
-#endif
 
 void CallBack_Result_SetRoomPropaty(CNET_RES res) {
     u8 *temp_a0;
@@ -4159,18 +4201,101 @@ void tk_logout_init() {
 }
 
 #ifdef __MWERKS__
-asm int tk_logout_message_sub()
+static asm int tk_logout_message_sub()
 {
 #include "tk_logout_message_sub.inc"
 }
 #endif
 
-#ifdef __MWERKS__
-asm int tk_logout()
+typedef struct { u8 pad0000[0x2C45]; s8 x2C45; u8 pad2C46[6]; s32 x2C4C; } CWS_tk_logout;
+#define TKCW ((CWS_tk_logout *)cw)
+
+s32 tk_logout(arg0)
+int arg0;
 {
-#include "tk_logout.inc"
+    s32 var_s0;
+    u8 st;
+    u8 cs;
+
+    var_s0 = 0;
+    cs = COM_R_No_Logout_c142;
+    switch (cs) {
+    case 0:
+        COM_R_No_Logout_c142 = cs + 1;
+        break;
+    case 1:
+        TKCW->x2C4C = 0x708;
+        if (*(u8 *)0x3F35CC != 0) {
+            switch (arg0 & 0xFF) {
+            case 0:
+            case 2:
+            case 7:
+                COM_R_No_Logout_c142 = COM_R_No_Logout_t + 1;
+                TKCW->x2C45 = 0x26;
+                cnLBS_LogoutLobbyServer(CallBack_Logout_ShutDown);
+                break;
+            case 1:
+            case 3:
+            case 4:
+            case 5:
+                COM_R_No_Logout_c142 = COM_R_No_Logout_t + 1;
+                TKCW->x2C45 = 0x26;
+                cnLBS_ShutDownLobbyServer(CallBack_Logout_ShutDown);
+                break;
+            case 6:
+                COM_R_No_Logout_c142 = 3;
+                break;
+            }
+        } else {
+            COM_R_No_Logout_c142 = 3;
+        }
+        break;
+    case 2:
+        TKCW->x2C4C = TKCW->x2C4C - 1;
+        if (CpInetGetStatus() != 0 || TKCW->x2C4C < 0) {
+            COM_R_No_Logout_c142 = COM_R_No_Logout_c142 + 1;
+        }
+        tk_logout_message_sub(0, arg0);
+        break;
+    case 3:
+        COM_R_No_Logout_c142 = COM_R_No_Logout_c142 + 1;
+        if (*(u8 *)0x3F35CC != 0) {
+            TKCW->x2C4C = 0x3C;
+        } else {
+            TKCW->x2C4C = 1;
+        }
+        tk_logout_message_sub(0, arg0);
+        break;
+    case 4:
+        if (--TKCW->x2C4C < 0) {
+            COM_R_No_Disconnect = 0;
+            COM_R_No_Logout_c142 = COM_R_No_Logout_t + 1;
+        }
+        tk_logout_message_sub(0, arg0);
+        break;
+    case 5:
+        switch (arg0 & 0xFF) {
+        case 0:
+        case 2:
+        case 7:
+            var_s0 = 1;
+            break;
+        case 1:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+            if (disconnect() != 0) {
+                var_s0 = 1;
+            } else {
+                tk_logout_message_sub(1, arg0);
+            }
+            break;
+        }
+        break;
+    }
+    return var_s0;
 }
-#endif
 
 void CallBack_Logout_ShutDown() {
     u8 temp_a0_2;
