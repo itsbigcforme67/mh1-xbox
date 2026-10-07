@@ -75,8 +75,8 @@ void RollView(f32);
 void SetAngleOfView(f32);
 void quake_sub(CAMQUAKE *);
 void set_to_std_cam(s32);
-s32 Pl_stg_ck(void);
-s32 Em_stg_ck(void);
+s32 Pl_stg_ck(void *);
+s32 Em_stg_ck(void *);
 f32 flSin(f32);
 f32 flvecCalcDistance(f32 *, f32 *);
 s32 Game_clear_ck(s32);
@@ -636,7 +636,7 @@ void set_quake_sub2(s32 type) {
 void Pl_set_quake_sub(PLW *pl, s32 type) {
     CAMQUAKE *q = &CameraWork.qk[0];
 
-    if (Pl_stg_ck() & 0xFF) {
+    if (Pl_stg_ck(pl) & 0xFF) {
         q->on = 1;
         q->type = type;
         q->time = quake_time_tbl[type];
@@ -649,7 +649,7 @@ void Pl_set_quake_sub(PLW *pl, s32 type) {
 void Em_set_quake_sub(PLW *em, s32 type) {
     CAMQUAKE *q = &CameraWork.qk[0];
 
-    if (Em_stg_ck() & 0xFF) {
+    if (Em_stg_ck(em) & 0xFF) {
         q->on = 1;
         q->type = type;
         q->time = quake_time_tbl[type];
@@ -662,7 +662,7 @@ void Em_set_quake_sub(PLW *em, s32 type) {
 void Pachinger_set_quake_sub(PLW *pl, s32 type) {
     CAMQUAKE *q = &CameraWork.qk[1];
 
-    if (Pl_stg_ck() & 0xFF) {
+    if (Pl_stg_ck(pl) & 0xFF) {
         q->on = 1;
         q->type = type;
         q->time = quake_time_tbl[type];

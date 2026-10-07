@@ -1251,7 +1251,7 @@ void sk_yn_kigou_func(u8 *key) {
     se_req(7, 0x16, 0);
 }
 
-void flfntLocate(f32, int);
+void flfntLocate(int, int); /* was (f32, int): the asm converts x with cvt.w.s into a0 */
 void flfntSetSize(int, int);
 void font_print(void *, ...);
 void font_set_palette(int);

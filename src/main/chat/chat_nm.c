@@ -1537,7 +1537,7 @@ int Get_bowgun_atk(void *);
 int Get_weapon_job(void *);
 int Get_equip_rare(u8, u16);
 void sword_zokusei(u8 *, int, s16);
-void slash_level_bar(u8 *, s16);
+void slash_level_bar(u8 *, s16, f32);
 
 #define ATKCONV(v, job) ((u16)((f32)(v) * job_atk_adj_tbl[job]))
 
@@ -1595,7 +1595,7 @@ void equip_exp_core(u8 *eq, int x, int y, int page, u8 *cmp) {
             ty = y + 0x28;
             flfntLocate(x + 0x48, ty);
             font_print(lit_3592, atk);
-            slash_level_bar((u8 *)(s32)(4.0f + (153.0f + (f32)x)), y + 0x3E);
+            slash_level_bar(d, y + 0x3E, 4.0f + (153.0f + (f32)x));
             sword_zokusei(d, x, y + 0x50);
             str = equip_exp_str_sword;
             break;
@@ -1924,8 +1924,9 @@ extern s16 *Pl_slash_tbl[];
 extern int slash_bar_color[];
 f32 flps0009(void *);
 
-void slash_level_bar(u8 *pl, s16 y) {
-    PFLP4 a;
+/* asm 0x27B3D0: the two end caps are triangles (flps0009: 3 points + colour); m2c had them as a 4-short quad */
+void slash_level_bar(u8 *pl, s16 y, f32 x) {
+    struct { s16 p[6]; u32 col; } a;
     PFLP4 b;
     f32 xr;
     f32 xs;
@@ -1935,17 +1936,20 @@ void slash_level_bar(u8 *pl, s16 y) {
     int i;
 
     yy = y - 3;
-    xr = (f32)(s32)pl - 36.0f;
+    xr = x - 36.0f;
     a.col = 0xFF968A63;
-    a.p[3] = yy + 0xB;
+    a.p[1] = yy + 0xB;
     a.p[0] = 0.8f * xr;
-    a.p[2] = 0x40A00000;
-    a.p[1] = yy;
+    a.p[2] = 0.8f * (5.0f + xr);
+    a.p[3] = yy;
+    a.p[4] = a.p[2];
+    a.p[5] = yy + 0x15;
     flps0009(&a);
     a.p[0] = 0.8f * (140.0f + xr);
     a.p[2] = 0.8f * (135.0f + xr);
+    a.p[4] = a.p[2];
     flps0009(&a);
-    b.p[0] = 0.8f * (140.0f + xr);
+    b.p[0] = 0.8f * (5.0f + xr);
     b.p[2] = 0.8f * (130.0f + (5.0f + xr));
     b.p[1] = yy;
     b.p[3] = b.p[1] + 0x15;

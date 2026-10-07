@@ -5,7 +5,7 @@ extern char lit_2316[];
 extern char lit_2316[];
 void Put_page_num(int arg0, int arg1, int arg2, int arg3, int arg4) {
     char sp90[0x2C];
-    int sp70;
+    char sp70[0x20];
     s32 temp_s1;
     s32 temp_s2;
     int temp_s0;
@@ -27,12 +27,12 @@ void Put_page_num(int arg0, int arg1, int arg2, int arg3, int arg4) {
     } else {
         sprintf(sp90, &lit_2419, ( (s16)(arg2)) + 1, F(s32, &lb_num_str, 0x2C));
     }
-    han2zen(sp90, &sp70);
+    han2zen(sp90, sp70);
     flfntSetSize(0x12, 0x12);
     flfntLocate(arg0);
     font_set_palette(0);
     if (!(temp_s2 & 0xFF)) {
-        font_print(&lit_2316, &sp70);
+        font_print(&lit_2316, sp70);
     } else {
         font_print(&lit_2316, sp90);
     }
