@@ -1102,6 +1102,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "some lobby data tables are missing\n");
     if (rt_import_select() != 0)
         fprintf(stderr, "select.bin is missing: no title screen\n");
+    if (!getenv("RT_NO_TRIM"))
+        rt_mem_trim();
     if (boot && !quest_no)
         quest_no = 10;      /* the set-up below as for a quest; the boot ends in the village (game mode 6) */
     if (gfx_init(W, H, "MH1 PC viewer", shot != NULL) != 0)

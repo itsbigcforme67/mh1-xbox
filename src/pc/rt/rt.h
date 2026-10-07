@@ -61,6 +61,8 @@ const char *rt_sel_sym_at(uint32_t va, uint32_t *off, int *func);
 void rt_sel_relocate_range(uint32_t va, uint8_t *dst, size_t size, void *(*map)(uint32_t));
 /* After rt_import_data and rt_set_select: select.bin's data (rt_data.c) */
 int rt_import_select(void);
+/* after all rt_import_* calls: free what only the import needed (rt_mem.c) */
+void rt_mem_trim(void);
 /* Power-on (rt_boot.c): the game's boot tasks (title, new hunter, load)
  * until Game_task starts; then the host flow runs the village. */
 void rt_boot_init(void);

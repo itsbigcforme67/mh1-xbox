@@ -1,5 +1,6 @@
 /* audio_mix.c - portable software mixer behind audio.h. */
 #include "audio.h"
+#include "../fmt/fmt.h"
 
 #include <string.h>
 
@@ -10,6 +11,12 @@ typedef struct {
     double pos, step;       /* in source samples */
     int rate;
     float vol, pan, pitch;
+    /* ADPCM voices (audio_voice_play_vag): two decoded blocks in play
+     * order, blk then nxt (blk + 1, or the loop block after the last) */
+    const uint8_t *vag;
+    int blk, nxt, nblk, loop_blk;
+    int h1, h2, lh1, lh2, lh_ok;     /* history; history before the loop block's first decode */
+    int16_t buf[56];
 } voice;
 
 #define RING (AUDIO_RATE)   /* one second of stereo frames */
@@ -114,15 +121,50 @@ static voice *find(int id)
     return NULL;
 }
 
-int audio_voice_play(const int16_t *pcm, int n, int loop, int rate, float vol, float pan, float pitch)
+static int vag_next(const voice *v, int b)
+{
+    return b + 1 < v->nblk ? b + 1 : v->loop_blk;
+}
+
+/* decode block b into buf+off; a jump back to the loop block restarts from
+ * the history it had when first decoded (as the old whole-sample decode) */
+static void vag_decode(voice *v, int b, int off, int jump)
+{
+    if (b < 0) {
+        memset(v->buf + off, 0, 28 * sizeof v->buf[0]);
+        return;
+    }
+    if (b == v->loop_blk) {
+        if (!v->lh_ok) {
+            v->lh1 = v->h1;
+            v->lh2 = v->h2;
+            v->lh_ok = 1;
+        } else if (jump) {
+            v->h1 = v->lh1;
+            v->h2 = v->lh2;
+        }
+    }
+    fmt_vag_block(v->vag + 16 * b, &v->h1, &v->h2, v->buf + off);
+}
+
+static void vag_seek(voice *v, int b)       /* make block b the current one */
+{
+    int guard = v->nblk + 2;
+    while (v->blk != b && v->nxt >= 0 && guard--) {
+        int n;
+        memcpy(v->buf, v->buf + 28, 28 * sizeof v->buf[0]);
+        v->blk = v->nxt;
+        n = vag_next(v, v->blk);
+        vag_decode(v, n, 28, n != v->blk + 1);
+        v->nxt = n;
+    }
+}
+
+static voice *voice_alloc(void)          /* with the lock held */
 {
     int i, best = -1;
     double best_left = 1e30;
     voice *v;
-
-    if (!pcm || n <= 0 || rate <= 0)
-        return 0;
-    audio_lock();
     for (i = 0; i < AUDIO_VOICES; i++) {
         double left;
         if (!voices[i].id) {
@@ -137,13 +179,52 @@ int audio_voice_play(const int16_t *pcm, int n, int loop, int rate, float vol, f
         }
     }
     v = &voices[best];
+    memset(v, 0, sizeof *v);
     v->id = next_id++;
     if (next_id <= 0)
         next_id = 1;
+    return v;
+}
+
+int audio_voice_play_vag(const uint8_t *vag, int n, int loop, int rate, float vol, float pan, float pitch)
+{
+    voice *v;
+    int i;
+    if (!vag || n <= 0 || rate <= 0)
+        return 0;
+    audio_lock();
+    v = voice_alloc();
+    v->vag = vag;
+    v->n = n;
+    v->loop = loop < n ? loop : -1;
+    v->nblk = n / 28;
+    v->loop_blk = v->loop >= 0 ? v->loop / 28 : -1;
+    v->blk = 0;
+    vag_decode(v, 0, 0, 0);
+    v->nxt = vag_next(v, 0);
+    vag_decode(v, v->nxt, 28, v->nxt != 1);
+    v->rate = rate;
+    v->vol = vol;
+    v->pan = pan;
+    v->pitch = pitch;
+    v->step = (double)rate * pitch / AUDIO_RATE;
+    i = v->id;
+    audio_unlock();
+    return i;
+}
+
+int audio_voice_play(const int16_t *pcm, int n, int loop, int rate, float vol, float pan, float pitch)
+{
+    voice *v;
+    int i;
+
+    if (!pcm || n <= 0 || rate <= 0)
+        return 0;
+    audio_lock();
+    v = voice_alloc();
     v->pcm = pcm;
     v->n = n;
     v->loop = loop < n ? loop : -1;
-    v->pos = 0;
     v->rate = rate;
     v->vol = vol;
     v->pan = pan;
@@ -190,13 +271,16 @@ int audio_voice_playing(int id)
     return r;
 }
 
-void audio_voice_stop_buffer(const int16_t *pcm, int n)
+void audio_voice_stop_buffer(const void *p, size_t bytes)
 {
+    const uint8_t *a = p, *b = a + bytes, *s;
     int i;
     audio_lock();
-    for (i = 0; i < AUDIO_VOICES; i++)
-        if (voices[i].id && voices[i].pcm >= pcm && voices[i].pcm < pcm + n)
+    for (i = 0; i < AUDIO_VOICES; i++) {
+        s = voices[i].vag ? voices[i].vag : (const uint8_t *)voices[i].pcm;
+        if (voices[i].id && s >= a && s < b)
             voices[i].id = 0;
+    }
     audio_unlock();
 }
 
@@ -263,7 +347,14 @@ void audio_mix(int16_t *out, int frames)
                 int q = p + 1;
                 if (q >= v->n)
                     q = v->loop >= 0 ? v->loop : p;
-                s = v->pcm[p] + (v->pcm[q] - v->pcm[p]) * f;
+                if (v->vag) {
+                    int sp, sq;
+                    vag_seek(v, p / 28);
+                    sp = v->buf[p % 28];
+                    sq = q / 28 == v->blk ? v->buf[q % 28] : v->buf[28 + q % 28];
+                    s = sp + (sq - sp) * f;
+                } else
+                    s = v->pcm[p] + (v->pcm[q] - v->pcm[p]) * f;
                 acc[2 * i] += s * gl;
                 acc[2 * i + 1] += s * gr;
                 v->pos += v->step;
