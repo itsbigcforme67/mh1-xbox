@@ -25,6 +25,137 @@ the wire are built and parsed entirely by the game's C. The village overlay itse
 the town stages, the portal pages and the plaza / lobby screens still need the lobby overlay's online mode
 (`Online_ck()`) to be switched on and fed by this layer.
 
+## 1a. Co-op over direct connect: findings (agent E, 7 Oct 2026, round 2)
+
+Goal (owner): bare-minimum 4-player co-op by direct connect. A host picks a quest, up to 3 others join by IP, all
+hunters are on the same quest stage. No lobby, town, matchmaking or chat. Everything stays behind `ONLINE=1`.
+
+"Confirmed" below means read in the decompiled C or the asm (function and file named). "Guess" means inferred.
+
+### Is the hunt peer-to-peer?
+
+**In the logic, yes. On the wire, no: every packet goes through a game server that only relays.**
+
+* Confirmed: after matching, each client opens **one TCP connection** to the address the lobby gives in the 6916
+  answer (`_cnet_RecvFromLbs_MatchGameServerAddr`, cnlbsg.c; `cmcs_01` -> `connect_ps2`). `cmcs_04` answers the
+  server's 0x1031 with a 0x82 packet (the login key, `mmbbc_encode`); that is the **only** 0x82 packet the client ever
+  sends. `cmcs_06` -> `AQSession_init_online` -> `CngSessionStart_online` (cng_nm.c) -> `mcsls_init` runs the whole
+  session on that same socket.
+* Confirmed: there is **no UDP** and **no connection to another player's address**. `udp_send_buff` / `rudp_send_buff`
+  are only cleared (`mcsls_init`). All sends are `CpInetTcpSend(mcsls_w.sock)` (`mcsls_send`), all receives
+  `CpInetTcpRecv` (`CnInetMcsReceive`).
+* Confirmed: the "P2P" functions are leftovers. `CngNetMcsP2PPoll` (0x22E450) runs every frame but in the retail state
+  it only calls `mcsls_move`; its connect states call `InetConnectStart`, a stub returning 1 (cnmsg_nm.c), and nothing
+  sets them. `CngNetAQHostIPSet` stores one of four Capcom LAN addresses (`adrs_tbl`) that no code reads.
+* Confirmed: the session stream is not 0x82 packets (section 5.5 said so; corrected there). It is records
+  `[u8 len][u8 cmd<<4 | sender]`: 0x20 ping, 0x30 pong, 0x40 / 0x50 app data (whole / fragment), 0x70 / 0x80 the same
+  padded, 0x90 sync flag, 0xF0 keep-alive. Records carry **no destination**: every record is for everyone. The receiver
+  takes the sender from the low nibble and ignores its own id, and loops its own app data back locally. The client
+  never makes a record whose length byte is 0x28, because server packets start with 0x28 (12-byte header, command
+  big endian at 2-3: 0x1021 health check, 0x1032). So the server must **forward each client's records unchanged to the
+  other members** and must not echo them back.
+* What the server does during a quest (confirmed from the client side): relay, the 0x1021 health check, and
+  presumably closing a session whose sockets drop. **Nothing in the game logic is decided by the server**: sync flags,
+  the 8-round ping, the start timing, the quest timer, clear / fail, the supply box, monster control and the host
+  change are all decided by the clients. The lowest-numbered player still connected is the session master and the
+  "host" (`mcsls_calc_master_id`, `host_change`, aq_nm.c).
+* Battle result 6138: the client answers with `CnetSys_w.batres`, which the decompiled code only ever clears (0xFF).
+  Guess: quest results were not reported to the server in MH1, or somewhere we have not found.
+* Guess: the real server also consumed / forwarded the 0xF0 keep-alives and the 0x1032 is an ack.
+
+Consequence for the port: the in-quest protocol is **"a dumb relay + clients that agree among themselves"**. A
+direct-connect port can let the hosting player's game do the relaying; no server program is needed.
+
+### The layers, and where the port plugs in
+
+    game code: net_send_pl / net_send_em / net_send_sys / net_send_host / net_send_chat   (src/main/net/netsyn*.c)
+        -> AQ_data_put(channel, packet)                     (aq_nm.c; timestamped queue, "AQ")
+        -> CngNetAQ* (cng*.c, aqcmd*.c)                      (batching, time order)
+        -> mcsls_* (mcsls_*.c)                               (records, ping, sync, fragments)
+        -> CpInetTcp* to the game server                     (net_cpinet.c on the PC)
+    and back up: ... -> AQ_exec -> AQ_recv -> self_data_ctrl(channel) -> net_receive_pl / _em / _sys / _host / _chat
+
+Channels (confirmed, `self_data_ctrl`): 1-4 = player slot + 1 (`net_send_pl`), 6 chat, 7 host (supply box),
+8 monsters (`net_send_em`), 10 sys (`net_send_sys`). Byte 2 of every packet is the sender's slot (`AQ_data_put` writes
+`game_w.master` there) and the receiver drops packets with its own slot.
+
+**Decision for the port (M1):** cut at `AQ_data_put` / `self_data_ctrl`, not at `CpInetTcp*`. The AQ / Cng / mcsls
+stack exists to time-order and fragment packets over a slow relayed modem link and to talk to Capcom's server; on a
+LAN the game's own packets can go straight between the players over one TCP connection per joiner, with the host
+relaying (`src/pc/net/net_peer.c`). The game's packet builders and handlers (`netsyn*.c`) are used unchanged. The full
+mcsls stack stays available for a later "talk to a PS2" mode.
+
+### What an online quest start needs (confirmed, `Game_task` / `game0`-`game13`, f_game*.c, flow_nm.c)
+
+| State | Where it lives | Set by (PS2) | Read by |
+|---|---|---|---|
+| online flag | `system_w.online` (+0x10), `Online_ck()` | `mode_sel_end` (omake_nm.c) | everything below |
+| player count | `game_w.pl_num` (+0xD3) | `Game_task` step 3 = `AQ_join_num_get()` | monster sight / hate loops, `Em_Master_Change`, quest judging |
+| per-slot state | `game_w.pl_state[8]` (+0x208): 1 in, 0 empty, 0xFF dropped | `Game_task` step 3 | `stage_load`, `net_start_ck`, `host_change` |
+| local slot | `game_w.master` (+0xD1). Despite the name: **this machine's** slot | lobby member list, then `AQSession_wait` = `CngNetAQConnectIdGet()` | `Pl_master_ck`, `pl_sw_set`, `game2`, every send |
+| host slot | `game_w.x21B` (guess from `host_change`) | `host_change` | supply box (`net_send_host`), sys kinds 7 / 10 |
+| user id per slot | `game_w.x1E8[slot][8]` | own: `Copy_user_id`; others: `net_receive_sys` kind 2 | `Set_mini_data_to_pl` |
+| room members | `room_member_id[4][8]`, `_handle[4][0x11]`, `_mini_data[4][0x40]` (0x3A36D0-0x3A3840) | `lbc_game_ready_01`, `CallBack_Event_MatchStart` | `Get_pl_id` / `Set_mini_data_to_pl` (f_ud.c) |
+| mini data (0x40, 0x18 used) | weapon job, sex, hair colour (PLW+0x5FC), weapon triple (+0x35E/0x360/0x362), armour + face (+0x352[6]), +0x8D3 ... | `Lb_set_mini_data` (lb_village_nm.c) | `Set_mini_data_to_pl` -> remote PLWs in `init_pl_work` |
+| quest number | `select_w.xAC` -> `game_w.quest`, `quest_w.no` | room creator / quest board / joiner (`Lb_join`); re-sent by slot 0 in sys kind 2 | `Quest_start` (f_quest01.c) |
+| character select | `select_w.x8C[i]`, `x54[i]` | `player_sel` / `sel_default_set`, sys kind 2 | `game11` |
+| start sync / delay | `game_w.xD6` steps, `game_w.x1B0` (frames of network delay) | `net_start_ck` (netsyn07_nm.c, from `game13`) | `net_plpos_set`, `net_emact_set` |
+| random seed | none exchanged: `Rnd_w` is seeded from the clock (`init_ran_suu`) | | the monster's owner decides, so no shared seed is needed |
+
+Spawning (confirmed, flow_nm.c): `stage_load` -> `init_pl_work` gives every slot `i < pl_num` with `pl_state == 1`
+`be_flag`, `id = i`, then the local slot `Set_userdata`, the others `Set_mini_data_to_pl(game_w.x1E8[i])`; then
+`player_all_load(i)` loads each slot's models and motions. `pl_init` (pl01.c) initialises every slot with `be_flag`.
+`TimingValue` 6890 is only used by the town (shops, talk), not by the quest.
+
+### What the quest code does online, and its PC status
+
+Remote hunters are **driven by replayed state, not by pad input** (confirmed): `pl_sw_set` reads the pad only into
+`player_work[game_w.master]`; `basic_com_ck` returns at once for other slots. The local hunter sends `net_send_pl`
+(netsyn01.c) kind 1 on every action change (`act_set` / `Pl_act_set`, `to_normal`), kind 2 every 20 ticks (position,
+vital), 3 at start / respawn (`pl_init`), 4 on fainting, 5 on an area change (guess), 6 item use, 7 / 8 giving an
+item. `net_receive_pl` (netsyn02_nm.c) writes into `player_work[slot]`: position (snapped, or a target that
+`Pl_adj_calc` slides towards), angle, `Pl_act_set` (the remote hunter plays the same action and motion locally),
+vital and the rest.
+
+Monsters (confirmed): ownership is per monster. `EMW+0x8C3 == 0` = this machine runs its AI, `+0x88E` = owner slot.
+`Em_Master_Change` (em_master_nm.c, every frame, only when `pl_num > 1`) hands a monster on when its owner drops or
+leaves its area, and sends `net_send_em` kind 4. The owner sends kinds 1 / 3 on each action (`net_act_set` in
+`em_act_set2`), with position, angles, **HP** and status. Hate is per hunter (`Em_Hate_Add`, `EMW+0x918[pl]`). Guess
+(not traced hit by hit): there is no "damage dealt" packet; remote hunters replay their attacks locally, so the
+owner's machine computes the hits itself and its HP overwrites everyone else's.
+
+Quest level (confirmed): sys kind 6 (`Quest_net_sub`, f_quest_nm.c): 1 delivery, 2 / 11 clear, 4 / 10 fail, 5 timer
+(the lower one wins), 7 monster killed (only the owner sends), 8 captured, 9 shared item, 12 / 13 reward data;
+sys 0xC abandon. Supply box: host arbitrated (channel 7, `box_get` -> `net_send_host(1)`).
+
+| Part | Functions | Source | PC status before this round |
+|---|---|---|---|
+| online flag | `Online_ck` | rt_main.c | stand-in, always 0 |
+| hunter send / receive | `net_send_pl`, `net_receive_pl` | netsyn01.c (matched), netsyn02_nm.c (near-match) | not compiled; no-op stand-in for the send |
+| position delay | `net_plpos_set`, `net_receive_pl_pos_set` | netsyn03.c (matched) | not compiled; no-op stand-in |
+| callers of the send | `act_set`, `Pl_act_set`, `pl_init`, `pl_die000`, `pl_mv014`, `trade_get_ck` | pl51.c, pl01.c, pl39.c, pl14.c, pl10.c | matched C, linked |
+| local-hunter gates | `Pl_master_ck`, `pl_sw_set`, `basic_com_ck`, `pl_dm_value_sub` | matched / pl_nm.c near-match | linked |
+| monster ownership / sends | `Em_Master_Change`, `net_act_set`, `em_type_act_set`, `em_cmd_em_master_ck`, hate | em_master_nm.c, em_core_nm.c, em_cmd_nm.c (near-matches) | linked, never run online |
+| monster send / receive | `net_send_em`, `net_receive_em`, `net_emact_set`, `net_receive_em_act` | netsyn10.c, netsyn11_nm.c, netsyn03.c | not compiled; weak no-ops in rt_em.c |
+| sys / quest sync | `net_send_sys`, `net_receive_sys`, `net_start_ck`, `Quest_net_sub` | netsyn08.c, netsyn09.c, netsyn07_nm.c, f_quest_nm.c | send no-op, receive not compiled, `net_start_ck` returns 0 |
+| supply box / chat | `net_send_host` / `_receive_host`, `net_send_chat` / `_receive_chat` | netsyn05.c, netsyn06*.c | stubs / not compiled |
+| session pump | `AQ_*`, `CngNetAQ*`, `mcsls_*` | aq_nm.c, cng*.c, aqcmd*.c, mcsls_*.c | not compiled (replaced, see above) |
+| session loop | `Game_task` steps 1-3 | f_game_nm.c | the PC has its own flow (rt_boot.c / rt_flow.c) |
+
+### Estimates
+
+* **M1, two players see each other walk on a quest stage**: about one agent session. Transport (TCP, host relays),
+  flags, slot set-up from the host's choice, link netsyn01/02/03, draw the remote hunters, a headless two-instance
+  test. Monsters run separately on each machine.
+* **M2, four players**: small once M1 works (the slot code is generic): about half a session, mostly the test and
+  the joiners' start sync.
+* **M3, a full hunt to clear with shared monster health**: several sessions (estimate 3-6). Needs: true global slots
+  (each machine's local hunter in its own slot, so monster owner ids and the host slot agree everywhere; the PC glue
+  assumes the local hunter is slot 0 in many places), `net_send_em` / `net_receive_em` and the ownership hand-over,
+  sys kinds 2-6 and `net_start_ck` (start sync and the network delay), quest clear / fail / timer (`Quest_net_sub`),
+  the host-arbitrated supply box, remote weapons drawn, and testing the near-match monster code on paths it has never
+  run (risk: they were matched for size, not tested online).
+
 ## 2. Research
 
 Web pages were read as data. Facts that are only on the web are marked with their source; facts read from the
@@ -155,7 +286,7 @@ is exactly "return 1 at once", which `net_dnas.c` does. The internal `sceDNAS2*`
 4. `tcp_init`: finds the chosen server's `host:port` in that table, resolves the name, opens the TCP connection.
 5. The lobby-server protocol (section 5): login, plaza / lobby / room lists, chat, mail, matching.
 6. For a match: the lobby tells both clients a game server address (`cnLBS_Get_GameServerAddress`); the clients open TCP to
-   it and run the `mcsls` session protocol (packets with magic 0x82).
+   it and run the `mcsls` session protocol (records relayed by the server; section 1a).
 
 ## 3. The port
 
@@ -296,9 +427,10 @@ the shutdown / line check codes (6001-6007).
 
 ### 5.5 The in-game session (`mcsls`, not linked)
 
-After matching the clients connect to a game server address (`cnLBS_Get_GameServerAddress`, port from the lobby) and
-exchange `Mcs` packets with magic 0x82, `Mcs_SetSendCommand` (cnlbsh.c) and the `mcsls_*` state machines in main.
-Their packet formats have not been derived yet.
+After matching the clients connect by TCP to the game server address (`cnLBS_Get_GameServerAddress`). The server sends
+0x1031 and the client answers once with a 0x82 packet (`cmcs_04`); after that the stream is `mcsls` records
+(`[u8 len][u8 cmd<<4 | sender]`), which the server relays to the other members. Section 1a has the details (an
+earlier version of this section called the whole session "0x82 packets", which was wrong).
 
 ## 6. Test results (7 Oct 2026)
 
