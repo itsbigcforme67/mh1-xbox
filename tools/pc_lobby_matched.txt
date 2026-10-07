@@ -45,8 +45,6 @@ src/lobby/lb/lbuib.c
 src/lobby/lb/lbuic.c
 src/lobby/lb/lbuie.c
 src/lobby/lb/lbuii.c
-src/lobby/lb/lbuik.c
-src/lobby/lb/lbuim.c
 src/lobby/lb/lbuin.c
 src/lobby/lb/lbuiq.c
 src/lobby/lb/lbuir.c
