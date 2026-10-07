@@ -188,6 +188,9 @@ Owner to decide.
 - Players report bugs by attaching the zip from tools/bug_report to a GitHub
   issue (issue template); no automatic upload from the game (it would need an
   embedded GitHub token). A relay server can be revisited later.
-- Windows (32-bit, cross-compiled) builds are made for testing. Sharing
-  ready-made builds with a small trusted group of testers is OK; no public
-  binary releases. Players always supply their own disc files.
+- Windows (32-bit, cross-compiled) builds are made for testing. Update the
+  same day: the owner approved public test builds on GitHub Releases (the repo
+  is public already). The exe contains no Capcom data; a one-time install
+  copies the game files from the player's own Japanese ISO. Releases are
+  marked as test builds, say a Japanese disc is required, and credit Capcom.
+  Keep a backup of the repo elsewhere in case of a takedown.
