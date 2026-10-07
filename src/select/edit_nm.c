@@ -793,13 +793,13 @@ int cmn_mongon_check_sub(s8 *str) {
     s8 flt[0x50];
     s8 buf[0x50];
     s8 *tbl;
-    s8 *p;
     s8 *q;
     int j;
     int len;
     int pos;
     int found;
     int n;
+    s8 *p;
     int r;
     s8 c;
     s8 pc;

@@ -842,17 +842,19 @@ static int dakuten_ck(char *tbl) {
 }
 
 void Han2zen(s8 *src, s8 *dst) {
-    s8 c = *src++;
+    s8 c;
+    int d;
 
-    while (c != 0) {
-        if (c >= 0x41 && c < 0x5B) {
+    while ((c = *src++) != 0) {
+        d = c;
+        if (d >= 0x41 && d < 0x5B) {
             dst[0] = 0x82;
-            dst[1] = c + 0x1F;
+            dst[1] = d + 0x1F;
             src++;
             dst += 2;
-        } else if (c >= 0x61 && c < 0x7B) {
+        } else if (d >= 0x61 && d < 0x7B) {
             dst[0] = 0x82;
-            dst[1] = c + 0x20;
+            dst[1] = d + 0x20;
             src++;
             dst += 2;
         } else {
@@ -861,8 +863,6 @@ void Han2zen(s8 *src, s8 *dst) {
             src++;
             dst += 2;
         }
-        c = *src;
-        src++;
     }
     *dst = 0;
 }

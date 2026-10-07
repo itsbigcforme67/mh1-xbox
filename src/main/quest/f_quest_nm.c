@@ -818,7 +818,7 @@ int n;
     em_next_tbl_ck();
     func_5589F0(n);
     if (n == game_w.x2F) {
-        for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
+        for (g = (u8 *)&game_w, i = 0; i < 4; i++, g++) {
             if (g[0x28] <= 0) {
                 game_w.x28[i] = 0x12;
                 em_create_model(i);
@@ -840,10 +840,10 @@ int n;
     if (l0 != 0) {
         for (;;) {
             v = *l0;
-            if (v == -1) {
+            if (*l0 == -1) {
                 break;
             }
-            for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
+            for (g = (u8 *)&game_w, i = 0; i < 4; i++, g++) {
                 if (g[0x28] == v) {
                     break;
                 }

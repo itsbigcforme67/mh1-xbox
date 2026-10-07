@@ -635,3 +635,20 @@ Details in docs/pc.md (handover summary at the top, round 23 at the end).
 - Plesioth swims, attacks from water and ashore, can be hit ashore; frog-bait
   check (Kaeru_ck) and its camera were stand-ins, now linked.
 - Reverb added (approximation). No include/ edits, no PS2-built file changed.
+
+## Xbox round (7 Oct 2026, continued)
+
+- Memory report (RT_MEM): numbers for title / village / Rathian against 64 MB
+  are in docs/xbox.md (commit 4990f881).
+- Xbox link works: `python3 tools/build_xbox.py [--gfx nv2a]` after
+  tools/build_pc.sh -> build/xbox/default.xbe (3.13 MB, null graphics) and
+  build/xbox/nv2a/default.xbe (3.19 MB, pbkit), each with an ISO (3.7 MB).
+  Scheme in docs/xbox.md "Linking for the Xbox": #pragma weak headers,
+  tools/coff_weak.py (GNU weak rules for lld-link), per-object tag symbol,
+  generated symbol table, prefixed asm labels.
+- Checked: PC build + test_quest_loop / test_progression / test_urgent pass
+  with the shared link scheme; tools/rebuild.sh all OK. Not run on xemu or
+  hardware (no files yet). gfx_nv2a.c is a first version, never displayed.
+- Lesson: lld-link 18 errors on two COFF weak definitions of one symbol seen
+  before a strong one; and clang's `.weak.X.default.Y` names collide when Y is
+  a shared `__real@` constant. Both handled in build_xbox.py.

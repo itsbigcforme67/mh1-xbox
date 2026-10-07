@@ -52,10 +52,10 @@ void GetGroundCameraData(u8 kind, u8 *out, PWK *w) {
 }
 
 void GetPlayerDiffuseData(u8 kind, f32 *pos, PWK *w) {
-    u8 **out = &w->diffuse;
     u8 stg = w->stg;
     GKIND *k = &ground_tbl_add[w->stg][kind];
     u8 *diff = diffuse_tbl_add[w->stg];
+    u8 **out = &w->diffuse;
     int shadow = k->shadow;
     int light = k->light;
     GAREA *a;

@@ -59,6 +59,8 @@ void Set20_set(int arg) {
 
     if (quest_w.x08 != 0) {
         switch (quest_w.data->no) {
+        default:
+            return;
         case 0x66:
         case 0x67:
             game_w.gate_open = 0;
@@ -69,8 +71,6 @@ void Set20_set(int arg) {
         case 0xCF:
             game_w.gate_open = 1;
             break;
-        default:
-            return;
         }
     }
     sw = pull_set_work(0);

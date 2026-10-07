@@ -80,7 +80,7 @@ extern u8 player_work[];
 extern char lit_253_0036C910[];
 extern char lit_254_0036C930[];
 u8 *CngNetAQDataSearch();
-int CngNetAQDataTrans2Work();
+int CngNetAQDataTrans2Work(void *, void *, u8);
 int CngReceiveBuffAdjust();
 int CngNetAQPacketReceive();
 int CngNetAQDisconnectUserIDGet();
@@ -516,13 +516,16 @@ void set_other_data(u8 *d, int flag) {
     OTHBUF buf;
     u8 *src = d + 8;
     OTHBUF *b = &buf;
-    u16 pl = *(u16 *)(d + 4);
+    int pl = *(u16 *)(d + 4);
     int n;
 
-    b->a = 1;
-    b->b = *(s32 *)d;
+    {
+        s32 t = *(s32 *)d;
+        b->a = 1;
+        b->b = t;
+    }
     n = d[9];
-    if (n >= 0x21) {
+    if (n > 0x20) {
         n = 0x20;
     }
     memcpy(b->data, src, n);
@@ -677,7 +680,7 @@ void pl_AQ_put(void) {
     u8 *q;
     PLPUT *pb = &pl_put_buf;
 
-    if (pl_put_buf.pl != -1 && pb->len != 0 && aq_work.buff >= 2) {
+    if (pl_put_buf.pl != -1 && pb->len != 0 && aq_work.buff > 1) {
         buf[0] = *pb->top;
         buf[1] = (u8)pb->len + 4;
         q = buf + 2;

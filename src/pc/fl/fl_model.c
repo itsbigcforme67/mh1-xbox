@@ -163,6 +163,7 @@ int fl_model_create(fl_model *m, fmt_blob amo, fmt_blob ahi, fmt_blob tex, int l
             {
                 apx_image img;
                 if (fmt_apx_decode(&img, tex, be) == 0) {
+                    gfx_tex_src_hint = img.src_bytes;
                     m->tex[0] = gfx_create_texture(img.w, img.h, img.rgba);
                     free(img.rgba);
                 }
@@ -173,6 +174,7 @@ int fl_model_create(fl_model *m, fmt_blob amo, fmt_blob ahi, fmt_blob tex, int l
             for (i = 0; i < m->ntex; i++) {
                 apx_image img;
                 if (fmt_apx_decode(&img, fmt_link_entry(tex, i, be), be) == 0) {
+                    gfx_tex_src_hint = img.src_bytes;
                     m->tex[i] = gfx_create_texture(img.w, img.h, img.rgba);
                     free(img.rgba);
                 }

@@ -33,6 +33,7 @@ int  gfx_read_pixels(uint8_t *rgb);
 
 /* ------------------------------------------------------------ textures */
 gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba);
+extern int gfx_tex_src_hint;   /* memory report only: the next texture's size as stored on the disc (4/8-bit + CLUT) */
 void gfx_release_texture(gfx_texture *t);
 
 /* ------------------------------------------------------------ render state */

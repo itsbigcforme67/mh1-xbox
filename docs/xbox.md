@@ -59,13 +59,87 @@ build/xbox/obj (gitignored). Result, 7 Oct 2026:
     (name -> address) instead of the dynamic symbol table.
   - `src/pc/rt/rt_mc.c` (memory card on a host directory) uses dirent.h. On
     the Xbox: FindFirstFile/CreateFile from nxdk's winapi, under E:\UDATA.
-- Not tried yet: linking. The PC link relies on GNU tools the Xbox link does
-  not have in the same form: `objcopy --weaken-symbol` on game objects (to let
-  matched copies win over near-match copies), `--defsym` aliases for D_xxxx
-  data, `-rdynamic` + dlsym. With lld-link these become: /alternatename or
-  weak externals, a generated alias .c/.def file, and the generated symbol
-  table above. Also `audio_sdl.c`, `gfx_gl.c` and the viewer front-end were not
-  compiled (they are the parts that get Xbox backends).
+- (The rt_data.c / dlsym and rt_mc.c points above are solved: rt_data.c now
+  uses a generated symbol table on both builds, and the Xbox links a null
+  memory card for now.)
+
+## Linking for the Xbox (done 7 Oct 2026: links, not run yet)
+
+    tools/build_pc.sh                       # first; the Xbox build reuses its commands
+    . ~/xboxdev/env.sh
+    python3 tools/build_xbox.py             # null graphics -> build/xbox/default.xbe, mh1.iso
+    python3 tools/build_xbox.py --gfx nv2a  # pbkit graphics -> build/xbox/nv2a/default.xbe, mh1.iso
+
+About 2 minutes. build_xbox.py takes the objects the PC build links
+(build/pc/objs.txt, in link order) with their recorded compile commands
+(build/pc/cmd/), compiles them again with nxdk-cc, compiles the PC front-end
+(viewer, fl_model, formats, SDL pad, audio mixer + SDL audio output) with the
+Xbox stand-ins from src/pc/xbox/, makes the symbol table for rt_data.c, links
+with nxdk-link, then cxbe (XBE) and extract-xiso (an ISO holding only the
+XBE; the game files are never shipped).
+
+How the GNU-only link tricks were replaced (same scheme on the PC build, so
+the PC tests check it):
+- `objcopy --weaken-symbol` -> tools/pc_link_adapt.py writes a header per
+  object with `#pragma weak NAME` lines (force-included when it is compiled
+  again). On COFF that gives a weak external with a default.
+- lld-link 18 rejects two weak definitions of one name met before a strong
+  one ("duplicate symbol"); GNU ld takes the first strong, else the first
+  weak. tools/coff_weak.py applies the GNU rule after compiling: in every
+  object whose weak definition loses, the weak external is rewritten into a
+  plain undefined reference (the aux record becomes an absolute static
+  symbol so indices stay). That object's own calls then go to the winner,
+  as on ELF. Checked on a 3-object test: all calls went to the strong copy.
+  421 losing definitions are rewritten in the game link.
+- clang names a COFF weak default `.weak.NAME.default.FIRST` after the
+  object's first external definition; when that was a shared `__real@...`
+  float constant, two objects collided. build_xbox.py force-includes a
+  unique `__xtag_<object>` function first.
+- `ld --defsym D_xxxx=table+off` -> `.set` aliases in the defining object's
+  header (pc_link_adapt.py).
+- `-rdynamic` + dlsym -> tools/gen_symtab.py table (name -> address).
+- asm labels (`__asm__("game_w")` in pc_abs.py output and rt_ps2abs.h) now
+  carry `__USER_LABEL_PREFIX__` ("_" on win32).
+- Small libc gaps in nxdk's pdclib: atof (src/pc/xbox/xbox_libc.c). Paths:
+  `fopen` is renamed to a wrapper that turns '/' into '\'
+  (src/pc/xbox/xbox_compat.h, force-included in the host C).
+- `num_tbl`: gcc drops an unused `strchr(num_tbl, c)` in hk_all.c, clang
+  keeps the call; a dummy definition in xbox_libc.c.
+
+Result (7 Oct 2026): 715 objects compile, link with no undefined symbols.
+default.xbe 3.13 MB (null graphics) / 3.19 MB (nv2a); ISO 3.7 MB. Sections
+of main.exe: .text 2780 KB, .rdata 298 KB, .data+.bss 4085 KB (7.2 MB loaded
+before any heap). Main thread stack set to 1 MB (`-stack:0x100000`; nxdk's
+default is 64 KB, the PC has 8 MB; not measured what the game needs).
+
+On the Xbox (`#ifdef XBOX` in viewer.c) there is no command line: it mounts
+E:, looks for AFS_DATA.AFS in `D:\data` (next to the XBE) then
+`E:\Games\MH1\data`, and boots like `--boot` (title screen from power-on).
+SDL2 (nxdk port) is used for the pad and the audio output, as on the PC.
+The memory card is a null libmc (src/pc/xbox/mc_null.c: "no card", the game
+plays without saving).
+
+Not run anywhere yet (no xemu files): whether it boots, whether 64 MB is
+enough with the PC-side waste still in (it is not: see the memory budget
+below; the first boot may run out of memory before the title), stack depth,
+SDL audio/pad on nxdk with this code.
+
+### gfx_nv2a.c (started, untested)
+
+src/pc/xbox/gfx_nv2a.c implements gfx.h on pbkit: one Cg vertex program
+(src/pc/xbox/shaders/vs.vs.cg: one combined world*view*proj*viewport matrix,
+pre-lit colour, texture matrix) and one pixel shader (texture x colour; a 1x1
+white texture for untextured draws), compiled at build time with nxdk's cgc
++ vp20compiler/fp20compiler into build/xbox/shaders/*.inl. Vertices are
+copied per draw into a 6 MB ring of contiguous memory (24 bytes each).
+Power-of-two textures are swizzled A8B8G8R8 (repeat works), others linear
+"rect" textures (clamp only, texel coordinates through the texture
+matrix). Blend factors/equation, alpha test (GREATER ref), depth test/write,
+filter and clamp follow gfx_gl.c; fade colour is multiplied on the CPU.
+Missing: fog, clipping of triangles that cross the camera plane (the w
+divide is done in the vertex program, as nxdk's samples do), palettised
+textures, GPU skinning. It compiles without warnings; nothing about it has
+been seen on a screen.
 
 ## How the platform layer maps to nxdk
 
@@ -88,27 +162,65 @@ shared.
 
 ## Memory budget (64 MB, shared with the GPU)
 
-Measured on the PC (7 Oct 2026, `/usr/bin/time -v`): peak resident set
-101-110 MB for a quest (Rathian, Lao-Shan) or the village. That number
-includes things the Xbox does not have or will not need: the desktop GL
-driver and SDL (tens of MB on Mesa), the whole 5.6 MB ELF kept in memory
-for the data import, shadow copies of overlay data, and PCM caches of every
-decoded sound pack (PS2 ADPCM is 3.5x smaller than 16-bit PCM). The PS2
-game itself runs in 32 MB main RAM + 4 MB GS VRAM + 2 MB sound RAM.
+### Measured on the PC build (round 25, 7 Oct 2026)
 
-Rough Xbox plan (estimates; to be measured with a per-category counter
-before the first Xbox run):
-- XBE code + game C + nxdk libraries: 6-10 MB.
-- Game work areas and loaded files (what the PS2 keeps in its 32 MB): up
-  to ~24 MB, close to the PS2 layout since the same loaders run.
-- Framebuffers (2 x 640x480x32 + depth): ~3.7 MB. Textures kept palettised:
-  similar to the PS2's per-stage texture sets, est. 4-8 MB.
-- Audio: keep packs ADPCM-compressed (decode per voice while mixing), est.
-  2-4 MB; ADX streamed from disk.
-- Left for the kernel and slack: ~10 MB.
-It fits on paper, with no room for keeping whole AFS indexes, the full ELF
-or PCM caches resident. Drop the ELF after the data import (copy only the
-tables used), and free per-quest data on village entry as the PS2 does.
+`RT_MEM=t1,t2,...` makes mhview print live heap bytes per category at those
+host ticks (src/pc/rt/rt_memstat.c: the port's own malloc/free are counted
+through a forced include; the decompiled game C does not allocate, it uses
+fixed areas). `tools/pc_memstat.py` lists the static .data/.bss. Runs:
+title = `--boot` tick 500; village = CONTINUE, tick 2500 (village after a
+quest's files were loaded at start); Rathian = `--quest 10` with
+RT_QUEST_STAGE=1, tick 300 (nest, Rathian awake). In KB:
+
+| category | title | village | Rathian |
+|---|---|---|---|
+| program file copy (SLPM_654.95, for the data import) | 5516 | 5516 | 5516 |
+| overlay binaries (game/lobby/select.bin as read) | 2657 | 2657 | 2657 |
+| overlay data copies + relocation tables (rt_mem) | 4436 | 4436 | 4436 |
+| main data tables imported from the ELF (rt_data) | 1235 | 1235 | 1235 |
+| files for the game's loaders (load_file_mdl copies kept) | 2472 | 9540 | 2472 |
+| files kept by the host renderer (models, stage) | 20108 | 21748 | 19547 |
+| collision areas (rt_hit: 2 x 4 MB fixed) | 8192 | 8192 | 8192 |
+| 2D / camera / font work areas (rt_2d 4096, rt_cam 1024, rt_font 976) | 6096 | 6096 | 6096 |
+| host models (clays, skinning buffers) + skeletons/motions | 3623 | 5841 | 3510 |
+| renderer CPU-side vertex arrays | 1523 | 2102 | 1108 |
+| audio packs as on disc (PS2 ADPCM) | 1558 | 1737 | 1776 |
+| audio decoded to 16-bit PCM (cache) | 86 | 599 (peak 7059) | 20079 |
+| other runtime heap | ~255 | ~255 | ~255 |
+| **CPU heap total** | **57745** | **69946** | **76873** |
+| textures in GPU memory as RGBA8 | 19640 | 22415 (peak 25967) | 11716 |
+| the same textures as on disc (4/8-bit + CLUT) | 4792 | 5419 | 2842 |
+| static .data/.bss of the binary (`size`) | 4090 | 4090 | 4090 |
+| code (.text) | 3099 | 3099 | 3099 |
+| process RSS (incl. SDL, Mesa GL driver, libc) | 105476 | 113644 | 104724 |
+
+(The title already holds quest-10 data: the viewer sets up a quest before the
+boot. The village column is after the first quest's files.)
+
+### What that means for 64 MB
+
+Naively the PC needs ~75 MB of heap plus ~20 MB of RGBA textures: too much.
+But most of it is PC-side waste with a clear fix:
+- Program file copy 5.4 MB: copy only the tables used, then free -> ~0.5 MB.
+- Overlay binaries + data copies (7 MB): the PS2 holds one overlay at a time
+  (game.bin 1.4 MB or lobby.bin 1.3 MB) in place; one copy -> ~1.5 MB.
+- Host renderer keeps whole model/stage files (~20 MB) after building its
+  clays: keep only what drawing needs (vertex data and texture handles); the
+  PS2 itself keeps these files in its 32 MB, so ~8-10 MB is the realistic
+  floor here.
+- Collision areas fixed at 2 x 4 MB: size them to the stage's files (the PS2
+  area is much smaller [not measured]); est. 1-2 MB.
+- Audio PCM cache (20 MB in the Rathian nest): decode PS2 ADPCM per voice
+  while mixing (28 samples per 16-byte block, cheap) or keep a small LRU
+  -> ~2 MB with the 1.8 MB of packed data.
+- Textures: NV2A supports 8-bit palettised textures; 4-bit ones would be
+  expanded to 8-bit: about 1.5x the disc size -> 4-8 MB instead of 12-26 MB.
+- 2D/camera/font areas (6 MB fixed): check against the PS2 sizes.
+
+Estimated Xbox total after those changes: code+static ~7.5 MB, game files
+and work areas ~16-20 MB, host model data ~8-10 MB, textures 4-8 MB, audio
+~4 MB, framebuffers ~3.7 MB, nxdk/kernel ~4 MB: about 47-57 MB of 64. It
+fits, with little room; the trims above are required, not optional.
 
 ## Why 32-bit x86 helps
 
@@ -132,8 +244,8 @@ Xbox too (clang supports both).
   of the port. xemu helps; real hardware checks catch what xemu gets wrong.
 - Memory (above): no virtual memory; running out is a hard crash. Needs a
   memory report from the PC build first.
-- Link step: the PC build relies on GNU objcopy/ld features (weakening
-  symbols, --defsym, dlsym); these need a different scheme with lld-link.
+- Link step: solved (see "Linking for the Xbox"); watch for new GNU-only
+  tricks in tools/build_pc.sh.
 - Implicit declarations: clang treats them as errors in C99 by default; we
   pass -Wno-error, but a wrong implicit return type (pointer returned as int)
   is a real bug risk on any target. Worth adding prototypes over time.
@@ -157,7 +269,7 @@ Xbox too (clang supports both).
 ## Next steps (when the files arrive)
 
 1. xemu running the nxdk `hello` and `sdl` samples from this machine.
-2. A memory report from the PC build (per category), then trim.
-3. Link the game C for the Xbox with stub platform backends (no graphics):
-   boot to the village logic headless, print to the debug output.
+2. Trim memory (the per-category report above is done; trims listed there).
+3. Boot build/xbox/default.xbe (null graphics) in xemu with the game files
+   in D:\data or E:\Games\MH1\data; see where it stops (memory, stack).
 4. gfx_nv2a.c: textured clays, then the HUD/2D; then pad and audio.

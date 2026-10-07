@@ -398,6 +398,7 @@ game 0x005345B0 0x00534728 em/em_core_b
 game 0x00535450 0x005355A0 em/em_core_c
 game 0x00535830 0x0053603C em/em_core_d
 game:rodata 0x00685080 0x0068510C em/em_core_d
+game 0x00536040 0x0053610C em/em_core_act
 game 0x00536110 0x00536440 em/em_core_e
 game 0x00536440 0x00536BB4 em/em_core_f
 game 0x00536C80 0x0053948C em/em_core_g
@@ -646,6 +647,7 @@ game 0x00560960 0x0056122C em/em_cmd_r13
 game 0x005619E0 0x00561D8C em/em_cmd_r14
 game 0x00561F80 0x0056221C em/em_cmd_r15
 game 0x005622A0 0x0056263C em/em_cmd_r16
+game 0x00562220 0x005622A0 em/em_cmd_r99
 game 0x00562AB0 0x00562BE4 em/em_cmd_r17
 game 0x00562E00 0x00563078 em/em_cmd_r18
 game 0x005631E0 0x00563328 em/em_cmd_r19
@@ -883,10 +885,13 @@ main 0x0021DF80 0x0021E268 sound/bgm04
 main 0x0021E270 0x0021E304 sound/rev01
 main 0x0022CB80 0x0022CBE4 aq/aq01
 main 0x0022CD60 0x0022D2E8 aq/aq02
+main 0x0022D2F0 0x0022D4E8 aq/aq10
 main 0x0022D4F0 0x0022D68C aq/aq03
 main 0x0022D7C0 0x0022D9C0 aq/aq04
 main 0x0022DCC0 0x0022DDF4 aq/aq05
+main 0x0022DE00 0x0022DE4C aq/aq08
 main 0x0022DE50 0x0022DE94 aq/aq06
+main 0x0022D740 0x0022D7B8 aq/aq09
 main 0x0022D690 0x0022D734 aq/aq07
 main:rodata 0x0036C950 0x0036C97C aq/aq07
 main:rodata 0x0036C980 0x0036C9A4 aq/aq04
@@ -898,6 +903,8 @@ main 0x00263560 0x002636DC sk/cmd05
 main 0x002633A0 0x00263554 sk/cmd06
 main 0x002710A0 0x002712BC net/connect01
 main 0x00271880 0x00271E94 net/connect02
+main 0x00271EA0 0x00271FB0 net/mcsave_ret
+main 0x002811C0 0x002814D8 mc/savesel
 main:rodata 0x003734B0 0x003734E8 net/connect02
 main 0x002671A0 0x002671D4 net/netbgm01
 main 0x00267290 0x00267348 net/netbgm02
@@ -2100,6 +2107,7 @@ main 0x001738C0 0x00173A48 fl/flfov01
 main 0x00171E50 0x00171E84 fl/flmat03
 main 0x00171EA0 0x00171ED4 fl/flmat04
 main 0x00171EE0 0x00171EFC fl/flmat05
+main 0x00172CB0 0x00172CD4 fl/flmat08
 main 0x00172CE0 0x00172D2C fl/flmat07
 main 0x001715E0 0x001717B8 fl/flproj01
 main 0x001717C0 0x001718AC fl/flview01

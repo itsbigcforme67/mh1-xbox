@@ -17,8 +17,12 @@
 
 #include <SDL.h>
 #include <stdio.h>
+#include "rt/rt_memstat.h"
 #include <stdlib.h>
 #include <string.h>
+#ifdef XBOX
+#include <nxdk/mount.h>
+#endif
 
 /* ------------------------------------------------------------ data */
 static fmt_afs afs;
@@ -27,7 +31,9 @@ static fmt_blob load(const char *name, uint8_t **keep)
 {
     fmt_blob b = { NULL, 0 };
     size_t n;
+    const char *o = rt_ms_push("files kept for host models/stage (viewer)");
     *keep = fmt_afs_load(&afs, name, &n);
+    rt_ms_pop(o);
     if (!*keep) {
         fprintf(stderr, "missing or bad AFS entry %s\n", name);
         return b;
@@ -127,7 +133,12 @@ static uint8_t *afs_entry(int idx, size_t *n)
 {
     if (idx < 0 || (uint32_t)idx >= afs.count)
         return NULL;
-    return fmt_afs_load(&afs, afs.name[idx], n);
+    {
+        const char *o = rt_ms_push("files for the game's loaders (load_file_mdl, kept copies)");
+        uint8_t *p = fmt_afs_load(&afs, afs.name[idx], n);
+        rt_ms_pop(o);
+        return p;
+    }
 }
 
 static uint32_t crc_table[256];
@@ -1004,6 +1015,23 @@ static void village_step(void)
     }
 }
 
+/* RT_MEM="t1,t2,...": the memory report (rt_memstat.c) at those host ticks */
+static void mem_tick(int t)
+{
+    const char *m = getenv("RT_MEM");
+    char where[32];
+    while (m && *m) {
+        if (atoi(m) == t) {
+            snprintf(where, sizeof where, "tick %d", t);
+            rt_ms_report(where);
+        }
+        while (*m && *m != ',')
+            m++;
+        if (*m)
+            m++;
+    }
+}
+
 int main(int argc, char **argv)
 {
     for (i = 1; i < argc; i++) {
@@ -1025,8 +1053,28 @@ int main(int argc, char **argv)
             follow_given = sscanf(argv[++i], "%f,%f,%f", &follow[0], &follow[1], &follow[2]) > 0;
         else if (argv[i][0] != '-') disc = argv[i];
     }
+#ifdef XBOX
+    /* Xbox (tools/build_xbox.py): no command line. Boot the game from
+     * power-on with the player's own disc files next to the XBE (D:\data)
+     * or on the hard disk (E:\Games\MH1\data, docs/xbox.md). */
     if (!disc) {
-        fprintf(stderr, "usage: %s DISC_DIR [--shot out.png] [--frames N] [--time S] "
+        static const char *dirs[] = { "D:\\data", "E:\\Games\\MH1\\data" };
+        FILE *t;
+        int d;
+        nxMountDrive('E', "\\Device\\Harddisk0\\Partition1\\");
+        for (d = 0; d < 2 && !disc; d++) {
+            snprintf(path, sizeof path, "%s\\AFS_DATA.AFS", dirs[d]);
+            if ((t = fopen(path, "rb")) != NULL) {
+                fclose(t);
+                disc = dirs[d];
+            }
+        }
+        boot = 1;
+        play = 1;
+    }
+#endif
+    if (!disc) {
+        fprintf(stderr, "usage:%s DISC_DIR [--shot out.png] [--frames N] [--time S] "
                 "[--size WxH] [--cam x,y,z,yaw,pitch] [--stage N] [--play] [--input SCRIPT]\n", argv[0]);
         return 1;
     }
@@ -1039,12 +1087,14 @@ int main(int argc, char **argv)
     if (rt_load_elf(path) != 0)
         fprintf(stderr, "cannot read %s: no game data tables\n", path);
     {
+        const char *mso = rt_ms_push("overlay binaries (game/lobby/select.bin)");
         uint8_t *ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "game.bin"), &n);   /* stored raw */
         rt_set_overlay(ovl, ovl ? n : 0);
         ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "lobby.bin"), &n);           /* the village overlay */
         rt_set_lobby(ovl, ovl ? n : 0);
         ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "select.bin"), &n);          /* the boot overlay (title, new hunter, load) */
         rt_set_select(ovl, ovl ? n : 0);
+        rt_ms_pop(mso);
     }
     if (rt_import_data() != 0)
         fprintf(stderr, "some game data tables are missing\n");
@@ -1346,6 +1396,7 @@ int main(int argc, char **argv)
                 if (snd == 0)
                     rt_snd_tick();
                 ticks++;
+                mem_tick(ticks);
                 continue;
             }
             if (quest_no) {
@@ -1369,6 +1420,7 @@ int main(int argc, char **argv)
             else
                 sim_tick();
             ticks++;
+                mem_tick(ticks);
             /* the joint matrices the next tick reads are those of the state
              * this tick left, whether or not a frame is drawn in between
              * (windowed and --shot runs stay tick-for-tick the same) */
