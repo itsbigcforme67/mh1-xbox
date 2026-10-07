@@ -565,3 +565,25 @@ Near-matches left: plaza_checkFriend 199/937 (src/lobby/f/lb_pz13_nm.c), Plaza_a
 plaza_disp_mail ~73 (needs int ty narrowed per use), Lb_addChatMember 10 / Lb_clearChatMember 20 (lbui_nm.c), draw_dialog_square 8 (20.0f/tw float register order),
 ConditionSearchUser 3, lb_mix_put_itemDetail 2 / lb_mix_decide 4 / shop_select_items / kyoukaListProg / lb_npc_old_guild 2 (village: whole-file TU of lb_mix_nm.c gave the same diffs).
 Warning: tools/build.py compiles EVERY src/**/*.c, so never leave scratch files under src/ while a rebuild runs.
+
+## Lobby session 16 (plaza, village near-matches)
+Linked (rebuild OK x5): plaza_checkFriend (f/lb_pz13, standalone run; online/plaza), plaza_movePlazaTrans (f/lb_pz15, online), put_mail_input_square (f/lb_pz16, online),
+lb_mix_put_itemDetail (lb/lbmixe, village; replaces the raw asm run b/lb_by178 and its c_rawfuncs line). Lobby 35.53% -> 36.25%. No shared header edits.
+Lessons (each confirmed by a match):
+- plaza_checkFriend went from 199 to 0 differing insns with: `u8 *q = &a->x12; if (*q == 0) ... *q = *q - 1;` (pointer computed before the test: the original has `addiu v1,a0,18` in the bne delay slot);
+  `switch (SaveNetFile_ForLobby()) { case 1: case -1: ...; return 3; } break;` (a two-case switch gives `beq; addiu(next compare); beq; nop; b end`, labels in REVERSE order of the compare ladder);
+  `switch (getFriendNow(...)) { case 0: ...; break; }` for a lone `== 0` that ends the function; the `0x3F36AB` byte is `system_w.softkey` (include/sysw.h): use the symbol, the scheduler then hoists the lw like the original;
+  the memcpy shift loop needs `int kk` (not u8) with `memset(tl + (u8)kk * 0x2FC ...)` and a separate pointer `u8 *pp` declared after it.
+- MWCC narrows an `int` that is only ever used as `(s16)v` ONCE AT THE DEFINITION. The original instead narrows per use (dsll32/dsra32 before every call) because the callee has a PROTOTYPE with s16 parameters. The headers
+  declare these functions unprototyped (`int font_print_double();`), so a redeclaration is an error. Fix in the .c file (no header edit): `#define font_print_double font_print_double_hdr` before the include, `#undef` after, then
+  `int font_print_double(s16, s16, int, int, char *);`. Same for flfntLocate(s16, s16) (not in lbui headers), put_titles(s16, s16, char *) and Put_page_num(s16, s16, int, int, int). Then pass `x2 = sx + 0xFC` un-cast, and keep
+  `s16 y; ... y += 0x16;` for values the original passes raw (see lb_pz15.c). Do NOT put the prototype in a shared header: it inserts extra dsll32/dsra32 in every other caller (tried: lobby grew by 32 bytes).
+- put_mail_input_square: `s16 q[6]` plus pointer locals p1 = &q[1], p2 = &q[2], p3 = &q[3] and `u32 *pc = (u32 *)&q[4]` assigned INSIDE both arms of the first colour if/else (the original has `addiu s1,sp,152` in each arm);
+  declaration order (f, p2, p3, pc, sx, sy, p1) found with a script that tries every single-move reordering of the declaration block (check.py on a copy outside src/); a hill climb over declaration moves is cheap and worked.
+- lb_mix_put_itemDetail: `*(int *)0x351E84` is `pit_help_str_tbl[1]`; `pit_help_str_tbl[1][id + 0x18]` gives the original operand order (idx first).
+- `lb_by178.c` was a raw-asm run of the same address: when adding a C run, search c_files.txt AND c_rawfuncs.txt for the address first, otherwise the build is bigger (here +32 bytes, first difference far from the new code).
+Near-matches (not linked, check.py differing insns): plaza_mailBox 4 (src/lobby/f/lb_pz14_nm.c: after the sw tests the original loads x26 into a1 with pNet in v0; mine v0/v1; every declaration order tried),
+Plaza_add_friend 12 (lb_pz12_nm.c: sw/a/st are a1/a2/a3 in mine, a3/a1/a2 in the original), plaza_disp_mail ~110 (params are (a0 unused, x, z): x and z are passed raw to flfntLocate and t = (s16)x + 0x3C is narrowed per use;
+ANSI `s16 x, s16 z` params plus a flfntLocate(s16, s16) prototype got closest, the register map and z update still differ), plaza_setMyCommentTrans ~175, plaza_enterLobbyTrans ~270 (draft with prototypes in this session was not kept),
+draw_dialog_square 8 (float register order of 20.0f * tw, tried 3 spellings), lb_mix_decide 4 (m = mixData + cur: original puts the sll between lui and addiu), lb_npc_old_guild 2 (mv recomputed vs kept in a2).
+Tools (scratch, not committed): adiff.py (aligns check.py -v output with difflib and prints only real differences, ignoring relocation noise), hill/rand declaration-order searchers.
