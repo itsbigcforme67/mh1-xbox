@@ -94,7 +94,6 @@ WEAK int npc_mv(void *w) { (void)w; return 1; }
 WEAK void npc_mk(void *w) { (void)w; }
 WEAK void item_check(void) {}
 WEAK void body_hit(void) {}
-WEAK void bgm_server(void) {}
 WEAK void player_mk(void) {}
 WEAK void yure_move(void) {}
 WEAK void CameraMove(void) {}

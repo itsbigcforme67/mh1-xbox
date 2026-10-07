@@ -41,6 +41,10 @@ int  audio_stream_free(int s);                                   /* frames that 
 void audio_stream_write(int s, const int16_t *lr, int frames, int rate);
 void audio_stream_clear(int s);
 void audio_stream_vol(int s, float vol);
+/* Reverb on the voices (sound effects; streams stay dry): wet 0..1 (0 =
+ * off), size 0..1 (small room .. hall). A plain Schroeder reverb, not the
+ * SPU2's reverb programs. */
+void audio_reverb(float wet, float size);
 /* Mix `frames` stereo frames into out (called by the backend, or by the
  * viewer's --audio-dump without a device). */
 void audio_mix(int16_t *out, int frames);

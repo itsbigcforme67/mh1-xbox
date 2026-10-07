@@ -904,3 +904,58 @@ disp_keybase2 9, sk_key_repeat 11 (return type is s16), sk_palette_cursor_set 11
 ng_word_sub 67 (8 saved registers vs 7), PlayerStatusWindow 88 (pl/tab/t/noRank register order), SoftKeyboard_move 38 (callee prototypes now K&R; layout of the timer decrement block), equip_exp_core 965,
 DispFrameMessageA 606, DispFrameListA 348. mc_act_unformat (11) needs mc_unformat/mc_act_return in the SAME translation unit (the original keeps a0 across both calls: MWCC register info of an earlier callee).
 Not started: online code (disp_spr_sub, net_connect_draw, ms_network_*, ncm_*), mc disp/low, Ud_item_stack / Ud_u_item_stack.
+
+# Main module round 2 (agent B, 7 Oct 2026): whole files, single player first
+Method (the lesson from agent E, applied to f_chat, mc, hk, ud): one source file = one translation unit, address order, file-static
+functions `static` (the symbol table marks them LOCAL), matched bodies and near-match C side by side, unmatched functions as raw `asm`
+stubs (config/c_rawfuncs.txt) so the file still links. Helpers in tools/b_tu/ (subst2.py puts the matched bodies into the nm file,
+mergetu.py merges several nm files, mkstatic.py, gen2.py writes src + c_files/c_rawfuncs lines, trywith.py / hunks.sh / stperm.py
+try a rewrite and count real differences, pq.sh runs the permuter on one function of a scratch TU) and tools/b_od.py (original
+disassembly of one function from disc/, with callee names). B_SCRATCH (default build/b_scratch) holds the scratch files. The all-C versions of the four TUs (the C
+for the raw-stubbed functions, best known state) are kept in src/main/tu/*_all.c (not built; check.py compiles them).
+Registered TUs (all five modules OK):
+- chat/f_chat 0x2755D0-0x27BF80 (pit-menu windows, chat log, reibun): replaces chat01-44, chatb01, chatc01. Raw stubs: DispFrameMessageA,
+  disp_chat_log_sub, ItemListWindow, PlayerStatusWindow, equip_exp_core, slash_level_bar, ng_word_sub.
+- mc/f_mc 0x27EF60-0x280EF0 (card access + act layer): replaces mclow*/mcact*. Raw stub: McActAvailSet.
+- hk/f_hk 0x264180-0x267198 (hardware keyboard). Raw stubs: HardKeyboard_move, hk_kbd_input, hk_kbd_input_sub, hk_cursor_mv,
+  hk_key_r_cursor, hk_key_kata_hira, roma_ck_sub, kbd_disp_input.
+- ud/f_ud 0x271FB0-0x274E10 (user data): ONE rodata slot 0x3734F0-0x3735D0 (the three old slots were one object). Raw stubs: Set_userdata,
+  Ud_item_stack, Ud_u_item_stack, Get_bowgun_atk, Gun_level_up, Gun_option_ck.
+New real matches (rebuild OK): Chat_log_add, Plaza_chat_log_add, chat_log_add, sword_zokusei, DispFrameListA, mc_check_card, mc_delete_dir,
+mc_act_unformat, hk_key_backspace, hk_key_end, kbd_insert.
+Link rules learned:
+- Statics that the original DATA refers to by name (mc_act_jmp table, hk key tables) need an absolute alias in config/main_aliases.txt
+  (C static + alias of the same name is fine). A static function that stays a raw stub but is called by a matched function changes how the
+  caller compiles: make that stub non-static and drop its alias (roma_ck_sub / hk_roma_ck lost 24 bytes otherwise; link then fails on
+  `small-data section too large`, which is just a shifted .sdata).
+- A file with rodata (jump tables, short strings) can only be one TU when ALL its rodata comes from C: sk/f_sk would also need the tables and
+  strings that belong to still-raw functions (0x36E580-0x36E5F8, plus lit_628_0036E5C0 "\x81\x40"), so sk was NOT converted.
+- build/raw/NAME.inc is opened through wibo, which is case-insensitive: chat_log_add and Chat_log_add collided (the stub for the static one is
+  called chat_log_add_277D30 in c_rawfuncs.txt). K&R parameter lists on an `asm` stub do not compile: write the ANSI header.
+- tools/align.py ignores relocations completely, check.py checks call names but not addends, rebuild.sh is the only judge.
+Matching lessons (function that shows it):
+- Typed struct for a frame/window descriptor (FRL: x,y,colw,h,cols,rows,pal,mode,list,col; DispFrameListA) instead of F8()/F16() byte
+  macros: the macros make MWCC CSE `fr+4`, `fr+5` address constants and spill them (frame 400 vs 320). A `switch (mode & 3)` with default
+  first, then case 1, case 2 reproduces the `beq; nop` ladder; `u8` locals for the uv constants (daddiu + andi); `(alpha & 0xFF) << 24`;
+  `for (j = rows; j > 0; j--) { ...; tl++; py += h; }` (increment as a statement inside) fixed the last scheduling hunk.
+- Labels inside nested blocks reproduce original block order: mc_check_card (`again:`/`retry:` live inside `case -2: if (type == 2) {...}`,
+  `done:` after the switch), mc_delete_dir (`err:` inside the then-block of the GetDir test, `rm_self:`/`rm:` after the r==1 block of case 2,
+  `if (xA0 == 0) goto next; return 0;`). sceMcGetDir's 4th parameter `unsigned` flips the load order of cnt/port.
+- if/else instead of `x = 0x16; if (c) x = 0x1E;` removes the extra nop before the loop (chat_log_add). `u8 *p` taken from the
+  global (`new_var = (char *)lpSKey + 0x158;`) kept apart from the later reads: hk_key_backspace and hk_key_end (found by the permuter in
+  7 minutes each; hand variants never produced it).
+- int, not u16, for parameters whose original has no andi (kbd_insert pos/max), `/ 2` not `>> 1` for the bgez fix-up, one `(int)strlen()` for
+  a signed compare; call with 5 arguments where the original loads t0 (font_print_double2(…, buf)); `buf[0x20]` not [0x40] from the frame size.
+- `slash_level_bar(u8 *d, s16 y, f32 x)`: m2c's `(u8 *)(s32)(4.0f + ...)` first argument is really the float x in f12 (EABI passes it
+  independently of a0/a1); the two flps0009 calls draw a triangle (6 x s16 + colour at +12).
+Near-matches left (hunks = real differences after tools/align.py, best C in src/main/tu/{chat,mc,hk,ud}_all.c):
+DispFrameMessageA 135 (struct FRM written; y0 and lh swap register vs spill, 9 spill slots in the original), equip_exp_core 183,
+PlayerStatusWindow 45 (second `andi` of the tab index found: `[(u8)tab]`; saved-register order of pl/tab/noRank still differs),
+ItemListWindow 20-31, slash_level_bar 55, ng_word_sub 28 (8 saved registers vs 7: the sign extension of `mode` lands in a new register),
+disp_chat_log_sub 5 (else-block c/l registers), Set_userdata 8 (the original unrolls the name copy 6x, mine strength-reduces),
+Ud_u_item_stack 15, Ud_item_stack 35, Get_bowgun_atk 7, Gun_level_up 3 / Gun_option_ck 3 (then-block out of line + `slti v1` +
+`daddiu` in the delay slot: same layout class as HardKeyboard_move and hk_key_kata_hira, 2 hunks each; never reproduced),
+hk_cursor_mv 4, hk_key_r_cursor 6, McActAvailSet 9, roma_ck_sub 31, hk_kbd_input*/kbd_disp_input untouched.
+sk (not a TU, see above) in its own scratch TU: sk_zen_han_chg matches only with the statics around it; sk_pltchange 3, sk_backspace 3, setup_rw_sub 5,
+setup_rw_moji 5, Han2zen 4, disp_keybase2 4, sk_palette_cursor_set 6, sk_key_repeat 6.
+Not started: online code (server_connect, net_overlay_request, AnswerFileDownloadHeader, disp_spr_sub, ncm_*).

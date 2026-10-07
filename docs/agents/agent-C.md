@@ -1159,3 +1159,70 @@ Lessons (each from a function that matched):
   RoomLeaver 22, Get_GameServerAddress 3 (original ORs the new part first into a fresh register), RecvThreeData (original has a frame; we emit a tail call j),
   Lbc_SetPropaty 23 (original keeps arg1 in a1 across the static helper CallBackWaitInit; needs the 0x5B7020 TU), lm_member_list_mv 190
   (literals 0x39DAD0/2 = PitMenu.x10/x12 do not change the count; its ladder is if/else over 2,1,0 and registers differ).
+
+## Lobby online round 5 (agent C, 8 Oct 2026): ladder constants, index loops, static callees
+Matched this round (rebuild OK): cnLBS_Get_GameServerAddress, __cnetSub_Return_BgProcess, lbs_encode_ex, mmbbc_encode (cnlbs runs),
+lbc_game_ready_00 (lb_c503), lm_member_trans (lb_c504), lbc_login_top_information (lb_c505), check_erase_dialog + tk_dialog_mv02 (lb_c506, one TU),
+disp_lm_room_member (lb_c507), Lbc_SetRoomRule (lb_c508), select_ps2 (lb_c509), lb_select_room (lb_c512). Notes on what worked, each from a function that matched:
+- A constant that ends up in a0 inside a switch ladder is the argument of a later call: `Disp_lb_menu(1)` (original calls it with 1 and no `li`),
+  `cnWrap_PushWork(arg0)` (a0 is the untouched incoming argument). The ladder then keeps the switch variable in a1 (lm_member_trans, disp_lm_room_member,
+  tk_dialog_mv02). When a call in the original has no argument setup at all, pass the value that already sits in that register.
+- Locals: later declaration = lower saved register (lbc_game_ready_00: e, o, id, hd, mn, i gave s5..s0; lbs_encode_ex: `u8 c; int i; int sum` ).
+  Temporaries in a/t registers follow the same pattern. mmbbc_encode needed `v2, v1, a` order.
+- Index loops beat pointer-bump loops: MWCC strength-reduces `tbl[i]`, `P[i].f` itself and lm_member_trans went 139 -> 0, create_server_table 40 -> 16.
+- A global declared as a struct (`typedef struct { u8 pad[0x54]; u8 n; } RRH; extern RRH RoomRule;`) makes the compiler reload `RoomRule.n` after byte stores;
+  declared as `u8 RoomRule[]` it keeps the value in a register (Lbc_SetRoomRule).
+- One-case switch (`switch (d) { case 0: ...; break; }`) gives `beqz; nop; b end; nop` and the init block after it; an `if (d == 0)` gives different code (lb_select_room).
+- `x > C-1` goes through `at`, `x >= C` through v0 (lb_select_room `tm > 2`, lb_select_set_data `q->x2 <= 3`).
+- Static callee: check_erase_dialog (LOCAL) has to be defined above tk_dialog_mv02 in the same file, otherwise a0 is saved in s1. Same reason Lbc_GetRoomRule cannot match:
+  the original keeps v0 of cnLbc_CheckInFloorOrder across CallBackWaitInit (static in the 0x5B7020 TU), which we cannot express without that TU.
+- cnet statics: write_col_numeric/read_col_numeric are static callees too; pass ALL arguments (`read_col_numeric(str + 4, 4)`), the compiler drops the redundant `li`.
+- ConnWork is at 0x4E36F0 (not ..F4): sock +4, st +0x24 (s16), rx +0x28 (u16), rx2 +0x2A (u16). 0x4E3714/18/1A in select_ps2 are st/rx/rx2.
+- `u16` values compared with a literal that must stay unsigned: write `>= 0xCU` (sltiu).
+- Scheduling of stores in select_ps2's header block depended on statement order only (Lobby += hdr[5]; Lobby = (u16)Lobby; rx2 -= 12; Readed = 0).
+- Several files in src/lobby/b/nm/ are STALE copies of functions that are already matched elsewhere (tk_lever_ck, Lb_ck_menu, check_erase_dialog,
+  Lb_gh_board ...). Before working on one, check config/c_files.txt for its address. The list of really unmatched functions: see tools/unmatched.py output
+  (functions in config/symbols/lobby.txt not covered by a `lobby` run).
+Still near: lb_select_trans 6 (n2/j register swap in the last loop), lb_select_set_data 18, create_server_table 16 (original keeps a dead `found++` alive),
+lm_member_list_mv (switch variable lands in v1 instead of a1), lm_room_member_mv 142 (original keeps the `i < 4` guard before the loop; we fold it),
+test_server_sel_disp 20 (original adds 0x28 to the text pointer instead of folding), disp_string_handle 7, RoomLeaver 22, MatchEntryUser 39 (delay slot),
+select_ps2 done, tk_logout (needs the static message_sub), cnLBS_RecvData 5.
+More lessons from the same round (each from a function that matched):
+- ANSI prototype with a narrow parameter (`int cnLBS_Get_RoomRuleAllocation(u16, u8 *)`, `Lb_room_member(u8, int)`) and passing the plain variable makes the
+  compiler mask at the CALL SITE (andi in the delay slot) and keep the wide value in the saved register. Writing `r & 0xFFFF` yourself makes MWCC hoist the
+  mask into the definition (Lbc_GuestReadRoom 116 -> 38 -> OK).
+- Post-increment inside a condition: `if (CWX->x2C4C++ >= 0x258 || ...)` loads the pointer into a1 and the value into a0 (lbc_login_users_personal_data);
+  `r = c->x2C4C++; if (r >= ...)` swaps them. `j = found++;` (RoomLeaver) puts the add into the branch delay slot like the original.
+- The second of two sequential loops often REUSES the first loop's counter (lb_select_trans: `i = 0` again instead of a new `j`).
+- `if (CWX->step++ ...)`/`break` instead of `return` at the end of a case: the original shares one exit block (Lbc_SetRoomRule, Lbc_GuestReadRoom `break` + one `return 2`).
+- Struct assignment of a 0x1D0-byte record (`tmpPersonalData = BrPersonalData;`) gives the lq/sq loop of the original; statement order around it matters (step++ first).
+- Big local buffers: frame 0x29530 = `u8 buf[0x294B0]` (Lbc_GetRoomRule / GuestReadRoom); the m2c "arg28" is that buffer.
+- font_print_double's first two arguments are s16: write `(s16)(t.x + 0x28)`; evaluate order of x/y then follows the original (lb_select_tag 297 -> 185).
+- `unsigned` cvt: `10.0f * (u32)strlen(p)` gives the branchy u32->float conversion of test_server_sel_disp.
+- text_lobby_msg is `LB_TXT *[3]`, an ARRAY of pointers (absolute `lui/lw` addressing); declared as a single pointer it becomes gp-relative.
+- tools/lbtu2.py (main) merges runs into one translation unit with asm stubs for unwritten functions: that is the way to get static callee knowledge for
+  the lobby client TU 0x5B7020-0x5BF800 (CallBackWaitInit, Check_CallBackWait static). Not done here (169 runs from b/ with clashing local typedefs, and
+  already matched functions could change). Lbc_GetRoomRule, Lbc_ConditionSearch, Lbs_ExitAndEnterPlaza, Lbc_SetPropaty, lbc_login_init,
+  CallBack_Result_LoginLobbyServer and tk_logout need it (tools/unmatched.py lobby 0x5B7020 0x5C1B00).
+
+## Round 6 notes (agent C)
+- Removed 65 stale src/lobby/b/nm copies of already matched functions (tools/unmatched.py shows what is really left).
+- Lobby client TU (0x5B7020-0x5BF800): tools/lbtu3.py (new, WIP) merges the 155 C functions + 11 asm stubs of that range and resolves clashing
+  declarations by renaming them per run (extern objects get a linker alias line, config/lobby_aliases.txt format). Status: the clashes of
+  typedefs/externs are solved (1 compile error left, the missing build/raw .inc until c_rawfuncs lines exist), but prototype styles differ between
+  runs (lobby_a/b K&R vs lobby_f ANSI): about 90 call/prototype mismatches remain (e.g. lbc_browser(2) vs `lbc_browser()`, Lbs_MatchStart void vs int)
+  and every matched function must be re-verified in the merged file. Not committed to config; run
+  `python3 tools/lbtu3.py lb_cli 0x5B7020 0x5BF808 /tmp/cli.c` and `python3 tools/check.py /tmp/cli.c` to continue.
+
+## Round 7 (agent C)
+Matched (rebuild OK): lbc_admin_message_01 (`extern u16 Get_sw2();`, stp/c locals), lbc_admin_message_00 (m2c `x/60 + (x>>31)` is just `x/60`; float prototypes
+cnWrap_SetFontSize(f32)/cnWrap_FontDisp(f32,f32,f32,char *); last case falls out of the switch).
+Misses (15-minute cap): lobby_client_admin_message 7 (if-chain instead of switch fixed 69 -> 7; cw reload lands in a0 instead of v1), check_halfcode 10
+(Split_TagCode() takes no argument; loop end shape), server_select_05 9 (with u16 Get_sw; two branch delay slots the original leaves as nop).
+`extern u16 Get_sw2();` / `Get_sw()` is worth trying first on every function that masks the result.
+
+## Round 8: lobby-client TU registered (src/lobby/f/lb_cli.c, 0x5B7020-0x5BF808)
+- Built with `python3 tools/lbtu3.py lb_cli 0x5B7020 0x5BF808 OUT.c` (merged runs, `_cN`/`_k`/`_o` renames + alias lines, header `#define Lbs_MatchStart Lbs_MatchStart_hdr` trick, `typedef CNET_W5D4`, 9 raw asm stubs). 0 compile errors; all five modules rebuild OK.
+- Link problem and fix: MWCC emits one `.rodata` section per function, but splat's ld script lists the object once per rodata slot, interleaved with asm rodata. ld puts ALL of an object's .rodata at the first entry (+80 bytes, jump tables shifted). Fix in tools/build.py `split_rodata_objects`: for objects whose rodata entries are interleaved with other objects, link a copy in build/rn/ with sections renamed `.rodata.K` and the K-th script entry pointed at the K-th section (requires object section order == slot address order). Written to build/<mod>.rn.ld.
+- Per-function check.py: ~153 OK, 13 with 1-3 diffs (alias jal names; Check_InterruptFlag 3 diffs not yet inspected).
+- Not done this round: the blocked functions (Lbc_GetRoomRule, Lbc_ConditionSearch, Lbs_ExitAndEnterPlaza, Lbc_SetPropaty, lbc_login_init, CallBack_Result_LoginLobbyServer, tk_logout) - next step now that the TU is registered (make helpers static, add aliases for statics still called from asm).

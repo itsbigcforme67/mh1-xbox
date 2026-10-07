@@ -1,5 +1,39 @@
 # PC viewer (first piece of the PC port)
 
+## Handover summary (agent A, 7 Oct 2026; read this first)
+
+The PC build (`tools/build_pc.sh` -> `build/pc/mhview`, 32-bit x86; ARM via
+`tools/build_arm.sh`) plays MH1 offline from power-on: logos, title, new
+hunter / continue, memory card on host files, the village (Elder, shops,
+forge, item box, house bed save), quests from the Elder, every monster kind,
+items (gathering, fishing, bombs), quest clear / failure, reward, and the
+star-level progression. Game logic is the decompiled C (matched files and
+*_nm near-matches); src/pc/ holds the platform side and the glue.
+
+Checks to run after changes (all headless, about a minute together):
+- `tools/test_quest_loop.sh`: power-on -> new game -> quest 131 -> reward ->
+  bed save -> CONTINUE (1550z).
+- `tools/test_progression.sh`: star levels 1 -> 3 with marked clears, kept by
+  the save.
+- `tools/test_urgent.sh`: urgent quests 136 and 137 hunted for real; each
+  clear opens the next star level.
+- `tools/rebuild.sh`: the PS2 rebuild (all five OK) when game C was touched.
+
+How the PC wires game C (where most bugs were): no-op stand-ins generated
+for missing functions (build/pc/rt_gen.c, tools/gen_rt_auto.py) — grep them
+first when a feature does nothing; per-file ABI adaptors for calls whose
+PS2 argument registers differ from the C prototype (src/pc/rt/rt_abi.c, ABI=
+lines in build_pc.sh; tools/argregs.py); fields the PS2 fills in trans()
+that move-side code reads (world matrices at EMW/PLW+0x60 are rebuilt per
+tick). Test aids are environment variables (RT_*), listed in the "Run"
+section and the round sections below; RT_PL_GOTO, RT_PL_TARGET=kN and
+RT_QCLEAR are the newest.
+
+Known gaps: opening and attract movies (Sofdec, open question in
+DECISIONS.md), the soft keyboard (typed-ASCII stand-in), reverb is an
+approximation, online play, ARM frame rate measured only up to round 20
+(25-28 fps at 960x720), nothing systematically compared with the PS2.
+
 `build/pc/mhview` is a real-time viewer written in C99. It loads MH1 data
 straight from the user's disc files at run time, with nothing extracted to
 disk, and shows a stage (default 4, st04; `--stage N` for others) with the Rathian
@@ -1034,11 +1068,11 @@ hunter warped next to the monster and slashing with RT_DMG_MUL, GOD mode;
 | 8/34 | Cephadrome / Cephalos | em08 | wake after the intro demo (154), swim in sand, attack; a sound bomb drives it out of the sand (round 21) |
 | 14/26 | Diablos / Monoblos | em14 | run (174, 171): burrow, attack; little damage taken in the test |
 | 15 | Khezu | em15 | runs (175): attacks |
-| 21 | Plesioth | em21 | runs (165): swims; its code reacts to sound (damage type 15 while swimming, as em08) but the test could not get a bomb next to it (the warp put the hunter under the water) |
+| 21 | Plesioth | em21 | runs (165): swims; a sound bomb from the shore (11800,9300) while it is surfaced at ~10340,8920 makes it leap and fall back (act 4/17), then it swims on (round 22; without the bomb it does not) |
 | 19/24, 4/5/32, 9/23, 3, 13/16/30, 12, 29 | small monsters | em19/em04/em09/em03/em16/em12/em29 | spawn and run without crashes in all village quests |
 | 2 | Fatalis | em02 | runs (103-106): attacks (killed the god-mode-less hunter in 15 s); killed -> clear; its three pick points carved twice (round 21) |
-| 7 | Lao-Shan Lung | em07 | runs (101, 102, 107): walks through the fortress; its hit points stop at 1000 outside the last area (stage 12), as the game's code says; kill not tested |
-| 10 | trader NPC (red hair, backpack) | em10 | spawns on stages 5, 16, 41 (Quest_next_em_set adds kind 10 there), idles; talking/trading not tested |
+| 7 | Lao-Shan Lung | em07 | runs (101, 102, 107): walks 14 -> 30 -> 28 -> 11 -> 12 (stage 12 at tick ~44000 in quest 101); its hit points stop at 1000 outside stage 12; killed on stage 12 -> quest clear -> reward (round 22) |
+| 10 | trader NPC (red hair, backpack) | em10 | spawns on stages 5, 16, 41 (Quest_next_em_set adds kind 10 there); circle within 300 talks (hints, random gifts); trading checked on stage 41: a herb-class item (71) traded twice for item 77 with yes/no (round 22) |
 | 33 | Kirin | em33 | in no quest on the disc (start positions only for quest 0); runs in free play with RT_EM_KIND=33 |
 
 All quests 1-177 start on their monster's stage and run 450 ticks
@@ -1097,3 +1131,75 @@ no include/ header changed.
 - Not done: Lao-Shan kill on its last stage, trading with the em10 trader,
   sound bomb next to a swimming Plesioth, frame rate on the ARM box (no new
   per-frame host work except the fish effects on fishing stages).
+
+### Progression, trader, demo camera, Lao-Shan kill, music (agent A, round 22)
+All PC side; no include/ or PS2-built file changed.
+- Star levels: the game's own code (Lb_make_quest_tbl_local, lb_get_quest_level,
+  get_flag_quest; main tables quest_local_tbl / flag_quest_tbl_local /
+  key_quest_tbl) already runs. How MH1 offline works, read from the tables:
+  1 star = 131-135 (0x83-0x87); clearing all five offers the urgent quest 136
+  (0x88, "first monster hunt"); clearing 136 opens 2 stars. 2 stars need 138
+  and 142 (0x8A, 0x8E) for the urgent 137 (Velocidrome); 3 stars 0x90/0x93/0x94
+  for 154 (0x9A); 4 stars 0x96/0x9C/0x9E for 139 (0x8B); 5 stars
+  0xA2/0xA6/0xA7/0x8C for 171 (0xAB), which opens the hidden sixth list.
+  The Elder shows the urgent quest as a single card; afterwards the level list
+  (cleared levels marked CLEAR!!, locked ones grey, "????" last).
+- `tools/test_progression.sh` (~10 s, after test_quest_loop.sh): RT_QCLEAR
+  marks quests cleared (hex list, "84-87,8a"), the bed save writes them,
+  CONTINUE must show the level and the urgent quest (trace lines
+  "rt_village: level N, cleared: ..." and "quest list (key XX)" with
+  RT_QUEST_TRACE). Walked: 1 star -> urgent 136 -> 2 stars (kept by the save)
+  -> urgent 137 -> 3 stars (kept). Screens: build/show/prog/. The real
+  clear path (f_reward's Quest_clear_bit_set) is the one test_quest_loop.sh
+  checks with quest 131; the urgent quests 136/137 were not played.
+- Trader (em10): talk = circle within 300 units (Sansai_talk_ck -> pl_mv091),
+  messages page with circle, yes/no with d-pad left/right. Trade tables per map
+  (map2/4/6_trade_sp/_nm) work as written; checked one trade path only.
+- Intro demo grey ground fixed: demo cuts placed relative to the monster read
+  EMW+0x60 (its world matrix), which only enemy_mk in trans() wrote; the PC
+  now builds it (and PLW+0x60 as player_modify does) every tick. Quest 154's
+  middle cuts now follow the fin through the sand.
+- Flash bomb facing: Em_Senko_Ck / senko_ck work from the monster's head
+  joint direction and its search fov (Rathian 0x1555 = 30 degrees each side).
+  A flash landing in front of her head blinds her (act 4 + the eye damage
+  path); one landing behind her head or 31 degrees off does not. Item 27 is
+  the flash bomb.
+- Lao-Shan: `RT_PL_GOTO="tick,stage"` walks the hunter through the area exits
+  (breadth-first over the STG_MV lists). Quest 101: hunter to stage 12, the
+  monster arrives at tick ~44000, killed there (RT_EM_HP=1300 to save time)
+  -> clear -> reward. The death dust crashed: Eft10_set needed an ABI adaptor
+  for em07/em08 (rtabi_Eft10_set).
+- Music: bgm_server and the game's stage_bgm_set (src/main/sound/bgm_nm.c)
+  are linked: monster-found and fight music (S_FOUND1 -> S_FIGHT2), quest
+  clear (S_CLEAR1), faint (S_DEATH1), ADX one-shots (adx_se_set). Still no
+  reverb (flSndSetRev is a no-op). Weapon swings, hunter voices, monster
+  calls, ambience and village music were already there.
+- Not done: Plesioth sound bomb beyond the one case above; whether the PS2
+  Plesioth reacts the same; opening movie (see DECISIONS.md); ARM frame rate.
+
+### Urgent quests for real, Plesioth, reverb (agent A, round 23, 7 Oct 2026)
+- `tools/test_urgent.sh`: 136 (three Velociprey, area 40) and 137
+  (Velocidrome, area 34) accepted at the Elder, hunted, rewarded, saved; a
+  real clear moves 1 -> 2 stars and 2 -> 3 stars (CONTINUE checks the save).
+  The required non-urgent quests are marked cleared with RT_QCLEAR (setup
+  only). New aid: `RT_PL_TARGET=kN` = the nearest living monster of kind N
+  on the hunter's stage (for WARP_EM / AIM / DMG_MUL).
+- Plesioth (quest 165, stage 54 cave lake): swims deep (y -1990) and near the
+  surface (-660), spits at a hunter on the shore (act 3/4), leaps ashore
+  (2/14 -> 0/4), walks and attacks on land (1/x, 3/2), goes back (2/16).
+  Hits land while it is ashore (starter sword: 1 damage per hit; the Rathian
+  takes 1-5, so plausible). It cannot be reached while submerged, as the
+  hunter cannot swim. Kaeru_ck (frog-bait check that lets a hooked Plesioth
+  be pulled out) and FishWyvernCameraRequest were no-op stand-ins: now the
+  game's (PICK_MAIN in build_pc.sh links one function of a main file).
+  Frog fishing itself was not reproduced (which bait item is the frog was
+  not found; items 124/125 cast but nothing bit in 3000 ticks).
+- Reverb: cheap. The game sets it per stage with flSndSetRev(core, type 4,
+  depth) from Snd_rev_set_tbl (caves/nests deeper). audio_mix.c now has a
+  small Schroeder reverb (4 combs + 2 allpasses per channel, ~12
+  multiply-adds per sample) on the sound-effect voices; music streams stay
+  dry. Not the SPU2's reverb program; which voices each SPU2 core carries
+  was not traced. `RT_NO_REVERB=1` turns it off. Checked offscreen only
+  (quest 10 nest: depth 10240 -> wet 0.19); nobody listened.
+- Small fix: `--quest` printed a garbage monster kind for quests without a
+  big monster.

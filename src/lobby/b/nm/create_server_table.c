@@ -1,3 +1,4 @@
+/* create_server_table (0x5B5DD0): 16/225 differ: only register naming in the connected-server loop (the original keeps the dead 'found' counter alive, ours folds it into the pointer). Index form in the loops is what fixed the first two loops. Not built. */
 /* create_server_table (0x5B5DD0): logic complete (server list: counts, free slots, sort by free desc, move the connected server first); 51/225 differ in register naming and load/store scheduling. Not built. */
 #include "lobby_a.h"
 extern u8 BsLbsCount;
@@ -13,43 +14,26 @@ u8 mode;
 int unused;
 {
     LBSW tmp[10];
+    s32 found;
     int tot[10];
     int cur[10];
-    int free[10];
-    s32 j;
     s32 i;
-    s32 found;
-    char *q;
-    s32 l;
-    char *p;
-    LBSW *w2;
-    int *a;
-    int *b;
+    s32 j;
     LBSW *w;
-    int *c;
+    LBSW *w2;
+    int free[10];
+    s32 l;
 
     CnetWork.x04 = 0;
     if (mode == 0) {
         memset(LbsInfoWork, 0, 0xC8);
-        i = 0;
-        if (0 < BsLbsCount) {
-            p = bsCsvWork;
-            a = tot;
-            b = cur;
-            c = free;
-            do {
-                *a = atoi(p + 0x266C);
-                *b = atoi(p + 0x2522);
-                *c = *a - *b;
-                if (*c < 0) {
-                    *c = 0;
-                }
-                i++;
-                p += 0x21;
-                a++;
-                b++;
-                c++;
-            } while (i < BsLbsCount);
+        for (i = 0; i < BsLbsCount; i++) {
+            tot[i] = atoi(bsCsvWork + 0x266C + i * 0x21);
+            cur[i] = atoi(bsCsvWork + 0x2522 + i * 0x21);
+            free[i] = tot[i] - cur[i];
+            if (free[i] < 0) {
+                free[i] = 0;
+            }
         }
         if (BsLbsCount == 1) {
             memcpy(LbsInfoWork, BsLbsInfo, 0xC);
@@ -57,25 +41,11 @@ int unused;
             LbsInfoWork[0].h0E = cur[0];
             LbsInfoWork[0].h12 = free[0];
         } else {
-            i = 0;
-            if (0 < BsLbsCount) {
-                q = BsLbsInfo;
-                w = LbsInfoWork;
-                a = tot;
-                b = cur;
-                c = free;
-                do {
-                    memcpy(w, q, 0xC);
-                    i++;
-                    q += 0x102;
-                    w->h10 = *a;
-                    a++;
-                    w->h0E = *b;
-                    b++;
-                    w->h12 = *c;
-                    c++;
-                    w++;
-                } while (i < BsLbsCount);
+            for (i = 0; i < BsLbsCount; i++) {
+                memcpy(&LbsInfoWork[i], BsLbsInfo + i * 0x102, 0xC);
+                LbsInfoWork[i].h10 = tot[i];
+                LbsInfoWork[i].h0E = cur[i];
+                LbsInfoWork[i].h12 = free[i];
             }
             l = 0;
             w = LbsInfoWork;
@@ -115,19 +85,11 @@ int unused;
                 w++;
             } while (i < BsLbsCount);
         }
-        i = 0;
-        if (0 < BsLbsCount) {
-            w2 = LbsInfoWork;
-            w = &tmp[found];
-            do {
-                if (strncmp(ConnectLbsId, (char *)w2, 0xC) != 0) {
-                    memcpy(w, w2, 0x14);
-                    w++;
-                    found++;
-                }
-                i++;
-                w2++;
-            } while (i < BsLbsCount);
+        for (i = 0; i < BsLbsCount; i++) {
+            if (strncmp(ConnectLbsId, (char *)&LbsInfoWork[i], 0xC) != 0) {
+                memcpy(&tmp[found], &LbsInfoWork[i], 0x14);
+                found++;
+            }
         }
         memcpy(LbsInfoWork, tmp, 0xC8);
     }
