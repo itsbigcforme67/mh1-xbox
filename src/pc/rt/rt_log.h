@@ -15,6 +15,7 @@
  * first lines and install the crash handler. disc = the disc directory. */
 void rt_log_init(const char *disc, int argc, char **argv);
 void rt_log_shutdown(void);
+int rt_log_started(void);       /* rt_log_init has run */
 
 /* an event / a header line */
 void rt_log(const char *fmt, ...) RT_LOG_PRINTF(1, 2);

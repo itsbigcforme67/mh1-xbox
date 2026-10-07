@@ -16,6 +16,9 @@
 #include "audio/audio.h"
 
 #include <SDL.h>
+#ifndef XBOX
+#include "install.h"
+#endif
 #include <stdio.h>
 #include "rt/rt_memstat.h"
 #include "rt/rt_prof.h"
@@ -569,7 +572,8 @@ static void write_wav(const char *path, const int16_t *pcm, size_t frames)
 }
 
 /* main()'s state (file scope so the game tick can run as game_core) */
-static const char *disc = NULL, *shot = NULL;
+static const char *disc = NULL, *shot = NULL, *install_iso = NULL, *install_dir = NULL;
+static int install_only;
 static int frames = 1, W = 1280, H = 720, i, running = 1, frame_no = 0;
 static float cam[5] = { 11900, 700, 8900, 0.75f, -0.2f };   /* x y z yaw pitch */
 static float fixed_time = -1;
@@ -1151,6 +1155,8 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--mute")) mute = 1;
         else if (!strcmp(argv[i], "--follow") && i + 1 < argc)
             follow_given = sscanf(argv[++i], "%f,%f,%f", &follow[0], &follow[1], &follow[2]) > 0;
+        else if (!strcmp(argv[i], "--install") && i + 1 < argc) { install_iso = argv[++i]; install_only = 1; }
+        else if (!strcmp(argv[i], "--install-dir") && i + 1 < argc) install_dir = argv[++i];
         else if (argv[i][0] != '-') disc = argv[i];
     }
 #ifdef XBOX
@@ -1173,12 +1179,56 @@ int main(int argc, char **argv)
         play = 1;
     }
 #endif
+#ifndef XBOX
+    /* The game's files come from the player's own ISO, installed once into a data folder:
+     * an .iso given as the disc (drag and drop onto the exe, play.bat) or --install FILE.iso, or no
+     * data found anywhere (then ask for the ISO). docs/pc.md "Installing from an ISO". */
+    {
+        static char found[1024], dest[1024];
+        const char *iso = install_iso;
+        int asked = 0;
+        if (!iso && disc && install_is_iso_name(disc))
+            iso = disc;
+        if (!iso && (!disc || (disc && !install_has_data(disc))) && !shot) {
+            if (install_find_data(found, sizeof found))
+                disc = found;
+            else if (!disc) {
+                char got[1024];
+                if (install_prompt(got, sizeof got) == 0) {
+                    snprintf(found, sizeof found, "%s", got);
+                    iso = found;
+                    asked = 1;
+                }
+            }
+        }
+        rt_log_init(disc ? disc : iso, argc, argv);
+        if (iso) {
+            static char final[1024];
+            if (install_dir)
+                snprintf(dest, sizeof dest, "%s", install_dir);
+            else
+                install_default_dir(dest, sizeof dest);
+            if (install_from_iso(iso, dest, !getenv("RT_NO_GUI")) != 0)
+                return 1;
+            snprintf(final, sizeof final, "%s", dest);
+            disc = final;
+            if (install_only)
+                return 0;
+            if (!script && !quest_no && !play && !shot) {   /* dropped on the exe: start the game */
+                boot = 1;
+                play = 1;
+            }
+            (void)asked;
+        }
+    }
+#endif
     if (!disc) {
         fprintf(stderr, "usage:%s DISC_DIR [--shot out.png] [--frames N] [--time S] "
                 "[--size WxH] [--cam x,y,z,yaw,pitch] [--stage N] [--play] [--input SCRIPT]\n", argv[0]);
         return 1;
     }
-    rt_log_init(disc, argc, argv);
+    if (!rt_log_started())
+        rt_log_init(disc, argc, argv);
     snprintf(path, sizeof path, "%s/AFS_DATA.AFS", disc);
     if (fmt_afs_open(&afs, path) != 0) {
         fprintf(stderr, "cannot open %s\n", path);

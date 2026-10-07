@@ -220,17 +220,35 @@ Running it under Wine (checked 7 Oct 2026; `export WINEPREFIX=~/mh1win/prefix WI
 and cleared, reward, bed save, CONTINUE 1550z; the log shows the whole sequence), and `tools/test_log.sh`
 passes with a Windows crash section. The Windows exe starts the same game C (same stand-in counts as Linux).
 
-How a Windows player runs it (they need their own disc files; nothing of Capcom's is in the build):
-1. From their own Japanese Monster Hunter PS2 disc or image (SLPM-65495), copy `AFS_DATA.AFS`, `AFS00.AFS`,
-   `AFS01.AFS` and `SLPM_654.95` (about 925 MB) into one folder. Windows 10 and 11 can mount the .iso
-   (right-click, Mount); 7-Zip opens it too (`7z x "Monster Hunter (Japan).iso" AFS_DATA.AFS AFS00.AFS
-   AFS01.AFS SLPM_654.95`). These are the same four files used on Linux (`disc/mh1`).
-2. Put that folder next to `mhview.exe` as `disc`, or write its path as the first line of `disc_dir.txt`
-   next to it, or give it as an argument: `play.bat D:\mh\files`.
-3. `play.bat` (power-on, title, new game / continue), `play.bat quest`, `play.bat easy`, `play.bat village`
-   (same as tools/play.sh; window 1024x768, `set MH_SIZE=1280x720` first to change). Keys and pad as in
-   play.sh. Saves in `%APPDATA%\mh1pc\memcard0`, logs in `%APPDATA%\mh1pc\logs`. After a problem run
-   `bug_report.bat`.
+Installing from an ISO (src/pc/install.c; Linux and Windows, same code): the player's own Japanese
+disc image is read directly (a small ISO9660 reader, no external tools; 64-bit seeks because the ISO is
+4 GB) and AFS_DATA.AFS, AFS00.AFS, AFS01.AFS, SLPM_654.95 and SYSTEM.CNF (about 925 MB; nothing else is read by
+the PC build) are copied into a data folder: `data` next to the exe if writable (Windows), else
+`%APPDATA%\mh1pc\data` / `~/.local/share/mh1pc/data`. Checks: SLPM_654.95 must be on the image, sizes and
+CRC32 of every file must be the known ones (a wrong disc or a damaged image gives a message box / stderr
+text and installs nothing; a copy goes to `*.part` and is renamed after its checksum matched). A small
+progress bar window shows the copy; `installed.ok` lists the files and CRC32s. Later launches find the
+folder themselves (exe/data, exe/disc, the user folder) and never touch the ISO. Ways in:
+`mhview --install FILE.iso [--install-dir DIR]` (installs, exits), an `.iso` as the disc argument or dropped on
+mhview.exe / play.bat (installs, then starts the game from power-on), and with no data found a prompt
+(message box, then a window that takes a dropped file via SDL_DROPFILE; on Windows Enter opens a file
+dialog). `RT_NO_GUI=1` keeps it to stderr. The result is in the debug log (`install: ...`).
+Checked 7 Oct 2026: Linux `--install` of the owner's ISO into /tmp (3.8 s) gives files byte-identical to
+disc/mh1 and the game boots from it; the same under Wine (9 s, incl. the >2 GB seeks); a text file named
+.iso is refused. Not checked: the file dialog, the drop window with a real drag (only the
+progress window ran), a read-only exe folder, non-ASCII paths (fopen with UTF-8 names on Windows).
+
+How a Windows player runs it (nothing of Capcom's is in the build):
+1. Drag their own Japanese Monster Hunter PS2 ISO (SLPM-65495) onto `mhview.exe` or `play.bat` once.
+2. `play.bat` afterwards (power-on, title, new game / continue), `play.bat quest`, `play.bat easy`,
+   `play.bat village` (same as tools/play.sh; window 1024x768, `set MH_SIZE=1280x720` first to change).
+   An extracted folder works too: `play.bat D:\mh\files` or its path in `disc_dir.txt`. Saves in
+   `%APPDATA%\mh1pc\memcard0`, logs in `%APPDATA%\mh1pc\logs`; after a problem run `bug_report.bat`.
+
+Test release zip: `tools/package_win.sh` (after build_win.sh) makes `build/release/mh1pc-win32-<date>-<hash>.zip`
+with the exe, SDL2.dll, play.bat, bug_report.bat/.ps1, a README.txt for testers and the licenses (libmpeg2 GPL,
+SDL2 zlib, a GPL notice). It refuses to zip a file over 25 MB, a total over 40 MB, or any name like game data
+(AFS*, SLPM*, SYSTEM.CNF, *.iso, *.bin ...), and checks the finished zip again. It does not publish anything.
 
 Untested on real Windows: everything. Only Wine 9 on Linux (its OpenGL is the host Mesa) has run the exe; no
 real Windows, no real GPU driver of Windows (the GL path asks for a 2.1 context and uses the fixed

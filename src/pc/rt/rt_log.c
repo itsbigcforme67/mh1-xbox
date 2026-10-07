@@ -729,6 +729,8 @@ void rt_log_init(const char *disc, int argc, char **argv)
     }
 }
 
+int rt_log_started(void) { return inited; }
+
 void rt_log_shutdown(void)
 {
     unsigned long ms;
