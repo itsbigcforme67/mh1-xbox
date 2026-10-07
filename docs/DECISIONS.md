@@ -180,3 +180,14 @@ Options (estimates, not measured):
 Recommendation from agent A: A, after the single-player game is complete, since
 it keeps "own disc only, no extra tools" and also covers the attract movies.
 Owner to decide.
+
+## Debug logs, bug reports and Windows test builds (owner, 8 Oct 2026)
+
+- Every run writes a local debug log automatically (no memory dumps, no
+  usernames/home paths, nothing sent anywhere).
+- Players report bugs by attaching the zip from tools/bug_report to a GitHub
+  issue (issue template); no automatic upload from the game (it would need an
+  embedded GitHub token). A relay server can be revisited later.
+- Windows (32-bit, cross-compiled) builds are made for testing. Sharing
+  ready-made builds with a small trusted group of testers is OK; no public
+  binary releases. Players always supply their own disc files.
