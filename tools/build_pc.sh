@@ -223,7 +223,10 @@ PICK="$PICK src/lobby/f/lb_cli.c:lbc_text_lobby_trans,Lbs_GetRoomInfo,Lbc_set_pr
 LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*}"; done)"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
 WEAK="$WEAK_EM mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
-GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT"
+# soft keyboard (main f_sk, all-C TU; sk20.c has the texture load/blend helpers)
+# item combining (item_nm.c: the recipe lookup; its dropped-item pool keeps the host stand-ins, renamed)
+SK="src/main/item/item_nm.c src/main/tu/sk_all.c src/main/tu/hk_all.c src/main/sk/sk20.c src/main/sk/cmd_nm.c"
+GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT $SK"
 
 SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}
 CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
@@ -345,6 +348,11 @@ for f in $GAME; do
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/typedef struct BRPD { unsigned __int128 q\[29\]; } BRPD;/typedef struct BRPD { struct { unsigned int w[4]; } q[29]; } BRPD;/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
+    # sk_all.c declares sk_henkan_sub both with and without a parameter list (MWCC takes the call as written)
+    src/main/tu/sk_all.c)
+        src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
+        sed 's/^void sk_henkan_sub(void \*, int, void \*);/void sk_henkan_sub();/' "$f" > "$src"
+        INC="$INC -I$(dirname "$f")" ;;
     # ItemPickingDeclaration calls Pl_master_ck() with its own a0 (arg) left over
     src/main/menu/menu_nm.c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
@@ -369,6 +377,7 @@ for f in $GAME; do
             INC="$INC -I$(dirname "$f")"
         fi
     fi
+    case "$f" in src/main/item/item_nm.c) ABI="-Dinit_item_work=ps2_init_item_work -Dclr_item_work=ps2_clr_item_work -Dmove_item=ps2_move_item -Ditem_check=ps2_item_check -Dpush_item_work=ps2_push_item_work" ;; src/main/tu/sk_all.c) ABI="-DSoftKeyboard_set=sk_real_set -DSoftKeyboard_move=sk_real_move -DSoftKeyboard_exit=sk_real_exit" ;; esac
     $CC $INC $GAMEFLAGS $ABI $SYS -c "$src" -o "$o"
     # only the symbols the file defines: "objcopy --weaken" would also make
     # its undefined references weak, and a weak reference nothing defines

@@ -138,5 +138,4 @@ lobby 0x0059B820 0x528 plaza_searchMemberTrans
 lobby 0x0059BD50 0x598 plaza_mailBoxTrans
 lobby 0x0059C330 0x328 plaza_setMyCommentTrans
 lobby 0x0059C750 0x548 plaza_setChatModeTrans
-lobby 0x0059CFF0 0x25C plaza_disp_mail
 lobby 0x0059D320 0x358 plaza_trans_ot0
