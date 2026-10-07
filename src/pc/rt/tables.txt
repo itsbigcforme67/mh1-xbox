@@ -1052,3 +1052,18 @@ hagi_r_tbl_006544B0
 hagi_r_tbl_00657788
 # fishing spots (Fish_set, round 21)
 Fish_hani_tbl
+str_tbl_free0
+key_tbl_0
+key_tbl_1
+key_map_0
+key_map_1
+moji_tbl_abn_yn
+moji_tbl_abn_s_yn
+moji_tbl_mark_yn
+moji_tbl_abn_h_yn
+moji_tbl_abn_h_id
+moji_tbl_abn_sh_yn
+moji_tbl_num_h
+moji_tbl_num_h_ol
+nn_tbl
+yn_kigou_tbl

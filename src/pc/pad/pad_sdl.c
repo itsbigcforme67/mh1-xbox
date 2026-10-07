@@ -27,9 +27,14 @@ void pad_text_mode(int on)
 }
 
 /* the viewer passes every SDL event here (typed text, Backspace, Enter) */
+int pad_kb_wanted;                      /* the game's soft keyboard is up: Tab switches typing on/off */
 void pad_event(const void *ev)
 {
     const SDL_Event *e = ev;
+    if (pad_kb_wanted && e->type == SDL_KEYDOWN && e->key.keysym.sym == SDLK_TAB) {
+        pad_text_mode(!text_mode);
+        return;
+    }
     if (!text_mode)
         return;
     if (e->type == SDL_TEXTINPUT) {
