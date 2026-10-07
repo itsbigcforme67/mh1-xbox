@@ -1260,3 +1260,19 @@ Not checked: listening (no audio device here; with SDL's dummy device the
 audio clock ran 5% slow against wall time, that is the dummy driver pacing),
 the extras menu path by eye (decode and the draw code are shared with the
 opening), ARM, the window at other sizes, a real controller's Start skip.
+
+### Frog bait fishing: investigation, not finished (agent B, 7 Oct 2026)
+Setup that works: `RT_PL_ITEMS="125:5" RT_PL_WARP="10,11200,10850,C667"` with
+`--quest 165 --stage 54 --play` and an input script (square at tick 60): item 125
+(0x7D, the only bait that makes pl_mv079 call Eft22_set with arg 1 = frog float)
+is cast from the stage-54 spot (10930, 10740, r 400), the hunter waits in act 80
+with flag 0x80000 set. Facts read from the C: Plesioth (em21) notices a fisher
+only through its command script: em_cmd_pl_fishing_ck (opcode 0x45, any hunter
+with flag 0x80000 on its stage) -> em_cmd_target_pl_act_ck -> action 2/0x11
+(em_fly17: Kaeru_ck(player) finds the arg-1 float, sets the hunter's x881 = bite)
+-> 2/0x12 (em_fly18: pulls the hunter, FishWyvernCameraRequest). In 7000 ticks
+(gdb hit counts) em_cmd_ck ran 52 times but em_cmd_pl_fishing_ck only once (before
+the cast), so the script that contains the fishing check is not reached from
+Plesioth's normal swim loop here (em_cmd_ninshiki_ck 10 times, sensor/find once).
+Which precondition (distance, the hunter being sensed, a mind/ikari state) selects
+that script was not found. Not done: the bite, the pull, the camera.
