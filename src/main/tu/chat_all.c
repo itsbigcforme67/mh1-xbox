@@ -1,3 +1,7 @@
+/* chat_all: the whole source file as ONE all-C translation unit (statics defined before their callers), best known C for every function.
+ * NOT built by tools/build.py: src/main/chat/f_chat.c is the linked version, in which these functions are raw asm stubs (config/c_rawfuncs.txt):
+ * DispFrameMessageA, disp_chat_log_sub, ItemListWindow, PlayerStatusWindow, equip_exp_core, slash_level_bar, ng_word_sub.
+ * Everything else here compiles to the original bytes (tools/check.py on this file, tools/b_tu/ to work on it). Not in build_pc.sh. */
 /* chat_nm - f_chat (SLPM_654.95 0x001755D0-0x0017BF80, main.bin): sprite/frame helpers, chat log, pit-menu
  * windows (status, equipment), reibun (preset phrases). Near-match C, not built; matching runs are
  * built from it as chatNN.c. Field meanings are guesses. */
@@ -15,7 +19,7 @@
 #define PM ((u8 *)&PitMenu)
 void KinshiYogo_chk(char *);
 struct PIT_CHAT;
-void chat_log_add(int, s8 *, struct PIT_CHAT *);
+static void chat_log_add(int, s8 *, struct PIT_CHAT *);
 int Get_chat_line_num(void);
 int Plaza_get_chat_line_num(void);
 
@@ -33,13 +37,15 @@ void font_set_palette(int);
 void font_print(void *, ...);
 void font_print_sp(void *, ...);
 void Put_sprite_rotate(void *, int);
-void DispFrameListA(void *, char *, int, int);
+struct FRL;
+void DispFrameListA(struct FRL *, char *, int, int);
 void DispFrameList(void *, char *, int);
 void DispFrameListOptionArrowC(void *, int);
-void DispFrameMessageA(void *, void *, int);
+struct FRM;
+void DispFrameMessageA(struct FRM *, char *, int);
 void DispFrameMessage(void *, void *);
 void PutButtonICON(u8 *, u8);
-void disp_cursorC(s16, s16, s16, s16, int, int);
+static void disp_cursorC(s16, s16, s16, s16, int, int);
 void Disp_help_mess(int, int);
 u8 Equip_moji_color_rare(u8);
 int Equip_moji_color_rare_i(u8);
@@ -50,7 +56,7 @@ typedef struct PFLP8 { s16 p[4]; u32 col; s16 uv[4]; } PFLP8;
 
 /* the highlight bar of row n of a list at y with rows h high, from x0 to
  * x1 (rect {x0, y0, x1, y1}; asm 0x2755D0) */
-void disp_cursorC(s16 x, s16 x1, s16 y, s16 h, int n, int col) {
+static void disp_cursorC(s16 x, s16 x1, s16 y, s16 h, int n, int col) {
     PFLP4 q;
     u16 t;
 
@@ -121,61 +127,73 @@ void DispFrameList(void *a, char *b, int c) {
 
 extern u8 lit_2244[];
 
-void DispFrameListA(void *fr, char *title, int cur, int alpha) {
-    PFLP8 q;
+typedef struct FRL {
+    s16 x;          /* 0x00 left */
+    s16 y;          /* 0x02 top */
+    u8 colw;        /* 0x04 character cell width (font size) */
+    u8 h;           /* 0x05 row height (font size) */
+    u8 cols;        /* 0x06 columns */
+    u8 rows;        /* 0x07 rows */
+    s16 pal;        /* 0x08 font palette */
+    u16 mode;       /* 0x0A frame style (low 2 bits) */
+    s32 *list;      /* 0x0C text lines */
+    int col;        /* 0x10 cursor colour */
+    int x14;        /* 0x14 */
+} FRL;
+
+void DispFrameListA(FRL *fr, char *title, int cur, int alpha) {
     PFLP8 r;
     PFLP4 ln;
-    s16 line;
     s16 i;
-    s16 j;
+    s16 line;
     f32 x0;
     f32 colw;
     f32 xx;
     f32 xn;
     s16 y0;
     s16 h;
-    s16 uvx0;
-    s16 uvx1;
+    u8 uvx0;
+    u8 uvx1;
     s16 rows;
-    s16 tp;
-    s16 ty;
-    s16 tx;
     int m;
     s32 *tl;
+    s16 j;
     s16 py;
 
     SetFilterMode(1);
     SetTrnslMode(4, 5);
     reload_tex(1, 0x157);
     SetTextureStage(0x157);
-    x0 = (f32)FS16(fr, 0);
-    colw = (f32)F8(fr, 4);
-    m = F16(fr, 0xA) & 3;
-    if (m != 2) {
-        if (m != 1) {
-            uvx0 = 0xC0;
-            uvx1 = 0xD4;
-            y0 = FS16(fr, 2) - 1;
-            h = F8(fr, 5) + 2;
-        } else {
-            uvx0 = 0xE4;
-            uvx1 = 0xF8;
-            y0 = FS16(fr, 2) - 2;
-            h = F8(fr, 5) + 4;
-        }
-    } else {
+    x0 = (f32)fr->x;
+    colw = (f32)fr->colw;
+    m = fr->mode & 3;
+    switch (m) {
+    default:
+        uvx0 = 0xC0;
+        uvx1 = 0xD4;
+        y0 = fr->y - 1;
+        h = fr->h + 2;
+        break;
+    case 1:
+        uvx0 = 0xE4;
+        uvx1 = 0xF8;
+        y0 = fr->y - 2;
+        h = fr->h + 4;
+        break;
+    case 2:
         uvx0 = 0x9C;
         uvx1 = 0xB0;
-        y0 = FS16(fr, 2) - 2;
-        h = F8(fr, 5) + 4;
+        y0 = fr->y - 2;
+        h = fr->h + 4;
+        break;
     }
-    rows = F8(fr, 7);
+    rows = fr->rows;
     if (title != 0) {
         rows++;
     }
-    r.col = (alpha << 24) | 0xFFFFFF;
+    r.col = ((alpha & 0xFF) << 24) | 0xFFFFFF;
     r.p[1] = y0;
-    r.p[3] = 0;     /* p[3] is the height, p[2] the width (as DispFrameMessageA) */
+    r.p[3] = 0;
     for (line = 0; line < rows; line++) {
         r.p[1] = r.p[1] + r.p[3];
         r.p[3] = h;
@@ -191,7 +209,7 @@ void DispFrameListA(void *fr, char *title, int cur, int alpha) {
             r.uv[3] += 8;
         }
         xx = x0;
-        for (i = 0; i < F8(fr, 6); i++) {
+        for (i = 0; i < fr->cols; i++) {
             xn = xx;
             xx += colw;
             r.uv[0] = uvx0;
@@ -200,53 +218,54 @@ void DispFrameListA(void *fr, char *title, int cur, int alpha) {
                 xn -= 8.0f;
                 r.uv[0] -= 8;
             }
-            if (i >= F8(fr, 6) - 1) {
+            if (i >= fr->cols - 1) {
                 xx += 8.0f;
                 r.uv[2] += 8;
             }
             r.p[0] = 0.8f * xn;
-            r.p[2] = (s16)(0.8f * xx) - (s16)(0.8f * xn);
+            r.p[2] = (s16)(0.8f * xx) - r.p[0];
             flps0008(&r);
         }
     }
     if (title != 0) {
         ln.p[0] = 0.8f * x0;
+        ln.p[2] = 0.8f * (x0 + colw * (f32)fr->cols);
         ln.p[1] = y0;
         ln.p[3] = y0 + h;
         ln.col = 0x30FFFFFF;
-        ln.p[2] = 0.8f * (x0 + colw * (f32)F8(fr, 6));
         flps0004(&ln);
     }
     if (cur >= 0) {
         if (title != 0) {
             cur++;
         }
-        disp_cursorC(0.8f * (x0 - 2.0f), 0.8f * (2.0f + (x0 + colw * (f32)F8(fr, 6))), FS16(fr, 2), h, cur, FS32(fr, 0x10));
+        disp_cursorC(0.8f * (x0 - 2.0f), 0.8f * (2.0f + (x0 + colw * (f32)fr->cols)), fr->y, h, cur, fr->col);
     }
-    if (FS32(fr, 0xC) != 0) {
-        py = FS16(fr, 2);
+    if (fr->list != 0) {
+        py = fr->y;
         SetTrnslMode(4, 5);
-        flfntSetSize(F8(fr, 4), F8(fr, 5));
-        font_set_palette(FS16(fr, 8));
+        flfntSetSize(fr->colw, fr->h);
+        font_set_palette(fr->pal);
         if (title != 0) {
-            flfntLocate(FS16(fr, 0), py);
+            flfntLocate(fr->x, py);
             font_print_sp(lit_2244, title);
             py += h;
         }
-        tl = (s32 *)FS32(fr, 0xC);
-        for (j = F8(fr, 7); j > 0; j--, tl++) {   /* asm: addiu 4 (one pointer) */
+        tl = fr->list;
+        for (j = fr->rows; j > 0; j--) {
             if (*tl == 0) {
                 break;
             }
-            flfntLocate(FS16(fr, 0), py);
+            flfntLocate(fr->x, py);
             font_print_sp(lit_2244, *tl);
+            tl++;
             py += h;
         }
     } else if (title != 0) {
         SetTrnslMode(4, 5);
-        flfntSetSize(F8(fr, 4), F8(fr, 5));
-        font_set_palette(FS16(fr, 8));
-        flfntLocate(FS16(fr, 0), FS16(fr, 2));
+        flfntSetSize(fr->colw, fr->h);
+        font_set_palette(fr->pal);
+        flfntLocate(fr->x, fr->y);
         font_print_sp(lit_2244, title);
     }
 }
@@ -275,6 +294,243 @@ void DispFrameListOptionArrowC(void *fr, int col) {
 
 void DispFrameMessage(void *a, void *b) {
     DispFrameMessageA(a, b, 0xB2);
+}
+
+typedef struct FRM {
+    s16 x;          /* 0x00 left */
+    s16 y;          /* 0x02 top */
+    u8 colw;        /* 0x04 character cell width (font size) */
+    u8 h;           /* 0x05 row height (font size) */
+    u8 cols;        /* 0x06 columns */
+    u8 rows;        /* 0x07 rows */
+    s16 pal;        /* 0x08 font palette */
+    u16 mode;       /* 0x0A frame style: low 2 bits, 0x8000 = bordered */
+    u32 col;        /* 0x0C background colour (bordered style) */
+} FRM;
+
+#define SX(v) ((s16)(s32)(0.8f * (v)))
+
+void DispFrameMessageA(FRM *fr, char *text, int alpha) {
+    PFLP8 q;
+    PFLP4 r;
+    f32 x, cw, xl, f, f2;
+    u8 u0, u1b;
+    s32 xs, n, i, j, rows, cols, last;
+    s16 y0, lh, yb, ty;
+    u16 fl;
+    char buf[0x80];
+    char *d;
+
+    SetFilterMode(1);
+    SetTrnslMode(4, 5);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
+    x = (f32)fr->x;
+    cw = (f32)fr->colw;
+    fl = fr->mode;
+    switch (fl & 3) {
+    case 1:
+        u0 = 228;
+        u1b = 248;
+        y0 = fr->y - 2;
+        lh = fr->h + 4;
+        break;
+    case 3:
+        u0 = 156;
+        u1b = 176;
+        y0 = fr->y - 2;
+        lh = fr->h + 4;
+        break;
+    default:
+        u0 = 192;
+        u1b = 212;
+        y0 = fr->y - 1;
+        lh = fr->h + 2;
+        break;
+    }
+    cols = fr->cols;
+    rows = fr->rows;
+    if (fl & 0x8000) {
+        r.col = fr->col;
+        if (!(fl & 1)) {
+            r.p[0] = SX(x);
+            r.p[2] = SX(x + cw * (f32)cols);
+            r.p[1] = y0 - 2;
+            r.p[3] = y0;
+            flps0004(&r);
+            r.p[1] = y0 + lh * rows;
+            r.p[3] = r.p[1] + 2;
+            flps0004(&r);
+            r.p[0] = SX(x - 2.5f);
+            r.p[2] = SX(2.5f + (x + cw * (f32)cols));
+        } else {
+            r.p[0] = SX(x - 1.4f);
+            r.p[2] = SX(1.4f + (x + cw * (f32)cols));
+        }
+        r.p[1] = y0;
+        r.p[3] = y0 + lh * rows;
+        flps0004(&r);
+        q.col = ((u32)(alpha & 0xFF) << 24) | 0xFFFFFF;
+        xl = 0.8f * (x - 8.0f);
+        xs = SX(x);
+        yb = y0 + lh * rows;
+        q.p[0] = (s16)(s32)xl;
+        q.p[2] = xs - q.p[0];
+        q.p[1] = y0 - 8;
+        q.p[3] = 8;
+        q.uv[0] = u0 - 8;
+        q.uv[2] = u0;
+        q.uv[1] = 180;
+        q.uv[3] = 188;
+        flps0008(&q);
+        q.uv[0] = u0;
+        q.uv[2] = u1b;
+        f = x;
+        if (!(fl & 1)) {
+            q.p[3] = 6;
+            q.uv[3] = 186;
+        }
+        for (n = cols; n > 0; n--) {
+            q.p[0] = SX(f);
+            f += cw;
+            q.p[2] = SX(f) - q.p[0];
+            flps0008(&q);
+        }
+        q.p[0] = SX(f);
+        q.p[2] = 6;
+        q.p[3] = 8;
+        q.uv[0] = u0 + 20;
+        q.uv[2] = u0 + 28;
+        flps0008(&q);
+        q.p[0] = (s16)(s32)xl;
+        q.p[2] = xs - q.p[0];
+        q.p[1] = yb;
+        q.p[3] = 8;
+        q.uv[0] = u0 - 8;
+        q.uv[2] = u0;
+        q.uv[1] = 208;
+        q.uv[3] = 216;
+        flps0008(&q);
+        q.uv[0] = u0;
+        q.uv[2] = u1b;
+        f = x;
+        if (!(fl & 1)) {
+            q.p[1] += 2;
+            q.p[3] = 6;
+            q.uv[1] += 2;
+        }
+        for (n = cols; n > 0; n--) {
+            q.p[0] = SX(f);
+            f += cw;
+            q.p[2] = SX(f) - q.p[0];
+            flps0008(&q);
+        }
+        q.p[0] = SX(f);
+        q.p[2] = 6;
+        q.p[1] = yb;
+        q.p[3] = 8;
+        q.uv[0] = u0 + 20;
+        q.uv[2] = u0 + 28;
+        flps0008(&q);
+        q.p[0] = (s16)(s32)xl;
+        q.p[1] = y0;
+        q.p[3] = lh;
+        q.uv[0] = u0 - 8;
+        q.uv[1] = 188;
+        q.uv[3] = 208;
+        if (!(fl & 1)) {
+            q.p[2] = 4;
+            q.uv[2] = u0 - 2;
+        } else {
+            q.p[2] = 5;
+            q.uv[2] = u0 - 1;
+        }
+        for (n = rows; n > 0; n--) {
+            flps0008(&q);
+            q.p[1] += lh;
+        }
+        q.p[1] = y0;
+        q.p[3] = lh;
+        q.uv[2] = u0 + 28;
+        q.uv[1] = 188;
+        q.uv[3] = 208;
+        if (!(fl & 1)) {
+            q.p[0] = SX(2.5f + (x + cw * (f32)cols));
+            q.p[2] = 4;
+            q.uv[0] = u0 + 22;
+        } else {
+            q.p[0] = SX(1.4f + (x + cw * (f32)cols));
+            q.p[2] = 5;
+            q.uv[0] = u0 + 21;
+        }
+        for (n = rows; n > 0; n--) {
+            flps0008(&q);
+            q.p[1] += lh;
+        }
+    } else {
+        q.col = ((u32)(alpha & 0xFF) << 24) | 0xFFFFFF;
+        q.p[1] = y0;
+        q.p[3] = 0;
+        last = rows - 1;
+        for (i = 0; i < rows; i++) {
+            q.p[1] += q.p[3];
+            q.p[3] = lh;
+            q.uv[1] = 188;
+            q.uv[3] = 208;
+            if (i == 0) {
+                q.p[1] -= 8;
+                q.p[3] += 8;
+                q.uv[1] -= 8;
+            }
+            if (!(i < last)) {
+                q.p[3] += 8;
+                q.uv[3] += 8;
+            }
+            f = x;
+            for (j = 0; j < cols; j++) {
+                f2 = f;
+                f += cw;
+                q.uv[0] = (s16)(u0 & 0xFF);
+                q.uv[2] = (s16)u1b;
+                if (j == 0) {
+                    f2 -= 8.0f;
+                    q.uv[0] -= 8;
+                } else if (!(j < cols - 1)) {
+                    f += 8.0f;
+                    q.uv[2] += 8;
+                }
+                q.p[0] = SX(f2);
+                q.p[2] = SX(f) - q.p[0];
+                flps0008(&q);
+            }
+        }
+    }
+    if (text != 0) {
+        ty = fr->y;
+        SetTrnslMode(4, 5);
+        flfntSetSize(fr->colw, fr->h);
+        font_set_palette(fr->pal);
+        for (n = rows; n > 0; n--) {
+            d = buf;
+            for (;;) {
+                if (*text == '\n') {
+                    *d = 0;
+                    text++;
+                    break;
+                }
+                *d = *text;
+                if (*text == 0) {
+                    n = 0;
+                    break;
+                }
+                text++;
+                d++;
+            }
+            flfntLocate(fr->x, ty);
+            font_print_sp(lit_2244, buf);
+            ty = (s16)(ty + lh);
+        }
+    }
 }
 
 void PutSpriteDiv3(PFLP8 *q, s16 w, s16 d) {
@@ -592,7 +848,7 @@ int NPC_Message(s8 *s, u32 left, int mode, int flag) {
     return 0;
 }
 
-void chat_sw_set(u16 *a, u16 *b) {
+static void chat_sw_set(u16 *a, u16 *b) {
     *a = Psw.x0;
     *b = Psw.x4;
     if (Psw.x8 & 0x20) { *a |= 0x2000; }
@@ -628,7 +884,7 @@ int ChatKinsoku_chk(u8 *);
 int Menu_chatlog_i(void);
 void SoftKeyboard_exit(void);
 s8 SoftKeyboard_move(s8 *, s16, s16);
-void chat_log_add(int, s8 *, PIT_CHAT *);
+static void chat_log_add(int, s8 *, PIT_CHAT *);
 void func_5CB100(u8, s8 *, u8);
 void net_send_chat(u8, int, s8 *, u8);
 void set01_set(int, int, int);
@@ -697,12 +953,14 @@ extern u8 chat_font_color[8];
 extern u8 chat_cnfg_font_color[8];
 extern u8 my_user_id[];
 
-void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
+static void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
     PIT_CHAT *l;
-    s8 *o;
-    int i;
-    int room;
     s8 c;
+    int i;
+    int left;
+    int room;
+    s8 *d;
+    s8 *o;
     int uc;
 
     if (*s == 0) {
@@ -730,16 +988,16 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
     if (PitMenu.lognum > 0x40) {
         PitMenu.lognum = 0x40;
     }
-    room = 0x16;
     if ((who & 0xFF) == 0xFF) {
         room = 0x1E;
+    } else {
+        room = 0x16;
     }
     l->nline = 0;
     i = 0;
     o = (s8 *)l->text[0];
     for (; i < 2; i++, o += 0x1F) {
-        int left;
-        s8 *d = o;
+        d = o;
         if (*s == 0) {
             *o = 0;
             return;
@@ -753,7 +1011,7 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
                 return;
             }
             uc = c & 0xFF;
-            if ((uc >= 0x80 && uc < 0xA0) || (uc >= 0xE0 && uc < 0x100)) {
+            if ((uc >= 0x80 && uc <= 0x9F) || (uc >= 0xE0 && uc <= 0xFF)) {
                 if (left >= 2) {
                     *d = uc;
                     left -= 2;
@@ -779,7 +1037,7 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
 }
 
 
-void Chat_log_add(int who, int msg) {
+void Chat_log_add(int who, u8 *msg) {
     KinshiYogo_chk((char *)(msg + 0x1C));
     chat_log_add(who, (s8 *)(msg + 0x1C), (PIT_CHAT *)msg);
     if ((u32)Get_chat_line_num() > 0xB) {
@@ -796,7 +1054,7 @@ void Chat_log_add(int who, int msg) {
     }
 }
 
-void Plaza_chat_log_add(int msg) {
+void Plaza_chat_log_add(u8 *msg) {
     KinshiYogo_chk((char *)(msg + 0x1C));
     chat_log_add(255, (s8 *)(msg + 0x1C), (PIT_CHAT *)msg);
     if ((u32)Plaza_get_chat_line_num() > 9) {
@@ -810,9 +1068,9 @@ void Plaza_chat_log_add(int msg) {
 extern u8 chat_font_color[];
 int sprintf(char *, const char *, ...);
 void font_print_uf(void *, ...);
-void font_print_double2(int, int, int, int);
+void font_print_double2(int, int, int, int, char *);
 void Put_megaphone(int, int, int);
-void disp_chat_log_sub(int, s16, int);
+static void disp_chat_log_sub(int, s16, int);
 void Put_receive_mark(int);
 int Get_chat_line_num(void);
 int Plaza_get_chat_line_num(void);
@@ -868,7 +1126,7 @@ int Menu_chatlog_i(void) {
     return 0;
 }
 
-u32 chat_log_disp_line(u8 top);
+static u32 chat_log_disp_line(u8 top);
 
 int Menu_chatlog_mv(int sw) {
     PitMenu.x10 = 0;
@@ -904,7 +1162,7 @@ int Menu_chatlog_mv(int sw) {
     return sw;
 }
 
-u32 chat_log_disp_line(u8 top) {
+static u32 chat_log_disp_line(u8 top) {
     int n = 0;
     int i = (PitMenu.logtop - 1) - top;
     int c = PitMenu.lognum - top;
@@ -935,7 +1193,7 @@ void Pit_disp_chat(void) {
 
 extern char lit_3181_00383570[];
 
-void chat_log_name(char *buf, PIT_CHAT *l) {
+static void chat_log_name(char *buf, PIT_CHAT *l) {
     if (PitMenu.x14 == 0) {
         sprintf(buf, lit_3181_00383570, l->name);
         return;
@@ -943,23 +1201,24 @@ void chat_log_name(char *buf, PIT_CHAT *l) {
     sprintf(buf, lit_3181_00383570, l->uid);
 }
 
-void disp_chat_log_sub(int top, s16 yofs, int a) {
-    char buf[0x40];
-    int cnt;
+static void disp_chat_log_sub(int top, s16 yofs, int a) {
+    char buf[0x20];
     int i;
-    s16 y;
-    s16 k;
     PIT_CHAT *l;
+    int cnt;
+    int k;
+    s16 y;
 
     if (PitMenu.lognum != 0) {
         flfntSetSize(0x15, 0x12);
         if ((u32)Get_chat_line_num() > 0xB && !(a & 0xFF)) {
             top &= 0xFF;
             y = 0x18F;
-            cnt = PitMenu.lognum - top;
             i = (PitMenu.logtop - 1) - top;
-            for (; cnt != 0; cnt--, i = (i & 0x3F) - 1) {
-                l = &PitMenu.log[i & 0x3F];
+            cnt = PitMenu.lognum - top;
+            for (; cnt != 0; cnt--, i--) {
+                i &= 0x3F;
+                l = &PitMenu.log[i];
                 font_set_palette(l->col[3]);
                 k = l->nline - 1;
                 for (; k >= 0; k--) {
@@ -967,29 +1226,28 @@ void disp_chat_log_sub(int top, s16 yofs, int a) {
                     font_print_uf(l->text[k]);
                     y -= 0x13;
                     if (y < 0xD1) {
-                        goto next;
+                        return;
                     }
                 }
                 if (l->uid[0] != 0) {
                     chat_log_name(buf, l);
-                    font_print_double2(0x1E, (s16)(y + yofs), 1, l->col[2]);
+                    font_print_double2(0x1E, (s16)(y + yofs), 1, l->col[2], buf);
                     y -= 0x13;
                     if (y < 0xD1) {
-                        goto next;
+                        return;
                     }
                 }
-next:
-                continue;
             }
         } else {
-            u8 c = PitMenu.lognum;
+            int c = PitMenu.lognum;
             y = 0xD1;
             i = PitMenu.logtop - c;
-            for (; c != 0; c--, i = (i & 0x3F) + 1) {
-                l = &PitMenu.log[i & 0x3F];
+            for (; c != 0; c--, i++) {
+                i &= 0x3F;
+                l = &PitMenu.log[i];
                 if (l->uid[0] != 0) {
                     chat_log_name(buf, l);
-                    font_print_double2(0x1E, (s16)(y + yofs), 1, l->col[2]);
+                    font_print_double2(0x1E, (s16)(y + yofs), 1, l->col[2], buf);
                     y += 0x13;
                     if (y >= 0x190) {
                         continue;
@@ -1188,7 +1446,7 @@ void Disp_NPC_message(void) {
     }
 }
 
-extern u8 item_list_frame[];
+extern FRL item_list_frame;
 extern char *item_list_title[];
 extern char lit_3511[];
 extern char lit_3512[];
@@ -1200,27 +1458,29 @@ int Item_preparation_one_ck(s16);
 
 void ItemListWindow(int page, int cursel, int mode) {
     char buf[0x20];
-    s16 base;
     s16 sel;
     s16 y;
     s16 cnt;
     s16 pal;
     UD_ITEM *it;
+    s16 base;
+    s16 pg;
     u8 *w;
 
-    base = (s16)(page / 10) * 10;
     w = (u8 *)&player_work[GW(0xD1)] + 0x828;
+    pg = page / 10;
+    base = pg * 10;
     SetTrnslMode(4, 5);
     if (cursel != 0) {
-        FS32(item_list_frame, 0x10) = cursel;
+        item_list_frame.col = cursel;
         sel = page - base;
     } else {
         sel = -1;
     }
-    sprintf(buf, lit_3511, item_list_title[mode & 1], (page / 10) + 1);
-    DispFrameList(item_list_frame, buf, sel);
+    sprintf(buf, lit_3511, item_list_title[mode & 1], pg + 1);
+    DispFrameList(&item_list_frame, buf, sel);
     if (mode & 8) {
-        DispFrameListOptionArrow(item_list_frame);
+        DispFrameListOptionArrow(&item_list_frame);
     }
     SetFilterMode(0);
     flfntSetSize(0x12, 0x12);
@@ -1254,8 +1514,8 @@ void ItemListWindow(int page, int cursel, int mode) {
     }
 }
 
-extern u8 frame_status_main_00354770[][0x18];
-extern u8 frame_status_sub_003547A0[][0x10];
+extern FRL frame_status_main_00354770[];
+extern FRM frame_status_sub_003547A0[];
 extern char lit_3587[];
 extern char *menu_status_str_003546E0[][10];
 extern char *status_sub_str_00387C60[];
@@ -1282,16 +1542,16 @@ void PlayerStatusWindow(u8 *pl, int tab) {
     u8 rank;
     int pt;
     int nxt;
-    int t = tab & 0xFF;
     int noRank = Event_flag_ck(4) != 1;
+    int t = tab & 0xFF;
     int i;
     s16 y;
 
     sprintf(buf, lit_3587, t + 1);
-    FS32(frame_status_main_00354770, 0xC) = (s32)menu_status_str_003546E0[noRank];
-    DispFrameList(frame_status_main_00354770[t], buf, -1);
+    frame_status_main_00354770[0].list = (s32 *)menu_status_str_003546E0[noRank];
+    DispFrameList(&frame_status_main_00354770[(u8)tab], buf, -1);
     DispFrameListOptionArrow(frame_status_main_00354770);
-    DispFrameMessage(frame_status_sub_003547A0[t], status_sub_str_00387C60[t]);
+    DispFrameMessage(&frame_status_sub_003547A0[(u8)tab], status_sub_str_00387C60[(u8)tab]);
     switch (t) {
     case 0:
         font_set_palette(0);
@@ -1425,15 +1685,16 @@ u8 EquipmentDescriptionWindowA_s(EQD *, s16, s16, int, u8 *, int);
 u8 EquipmentDescriptionWindowA(EQD *, int, int, int, u8 *, int);
 
 void EquipmentDescriptionWindow(u8 *a, s16 b, s16 c, int d, u8 *e) {
-    EquipmentDescriptionWindowA((EQD *)a, b, c, d, e, 0xB2);
+    EquipmentDescriptionWindowA_s((EQD *)a, b, c, d, e, 0xB2);
 }
 
 extern char lit_3701[];
 extern char lit_3702[];
-void Put_PageArrow(int, int, int, u8);
+void Put_PageArrow(int, int, int, int);
 void Put_PageArrow_s(s16, s16, int, u8);
 void flfntLocate_i(int, int);
-void equip_exp_core(u8 *, int, int, int, u8 *);
+void flfntLocate_s(int, s16);
+static void equip_exp_core(u8 *, s16, s16, int, u8 *);
 void Get_equip_icon_uv(u8 *, s16 *, s16 *);
 
 u8 EquipmentDescriptionWindowA(EQD *eq, int x, int y, int page, u8 *cmp, int alpha) {
@@ -1451,7 +1712,7 @@ u8 EquipmentDescriptionWindowA(EQD *eq, int x, int y, int page, u8 *cmp, int alp
     fr.b = 6;
     fr.sp0 = 0;
     fr.sp1 = 0;
-    DispFrameMessageA(&fr, 0, alpha);
+    DispFrameMessageA((struct FRM *)&fr, 0, alpha);
     if (eq != 0 && eq->be != 0) {
         if (eq->id != 0x3E7) {
             pb = page;
@@ -1536,12 +1797,12 @@ void font_print_strings(int, int, void *, int);
 int Get_bowgun_atk(void *);
 int Get_weapon_job(void *);
 int Get_equip_rare(u8, u16);
-void sword_zokusei(u8 *, int, s16);
-void slash_level_bar(u8 *, s16);
+static void sword_zokusei(u8 *, int, s16);
+static void slash_level_bar(u8 *, s16, f32);
 
 #define ATKCONV(v, job) ((u16)((f32)(v) * job_atk_adj_tbl[job]))
 
-void equip_exp_core(u8 *eq, int x, int y, int page, u8 *cmp) {
+static void equip_exp_core(u8 *eq, s16 x, s16 y, int page, u8 *cmp) {
     u8 rare = Get_equip_rare(eq[1], F16(eq, 2));
     int job = Get_weapon_job(eq) & 0xFF;
     int pg = page & 0xFF;
@@ -1595,7 +1856,7 @@ void equip_exp_core(u8 *eq, int x, int y, int page, u8 *cmp) {
             ty = y + 0x28;
             flfntLocate(x + 0x48, ty);
             font_print(lit_3592, atk);
-            slash_level_bar((u8 *)(s32)(4.0f + (153.0f + (f32)x)), y + 0x3E);
+            slash_level_bar(d, y + 0x3E, 4.0f + (153.0f + (f32)x));
             sword_zokusei(d, x, y + 0x50);
             str = equip_exp_str_sword;
             break;
@@ -1866,7 +2127,7 @@ extern char *equip_exp_str_sw_attr[];
 extern char lit_4221[];
 extern char lit_4222[];
 
-void sword_zokusei(u8 *w, int x, s16 y) {
+static void sword_zokusei(u8 *w, int x, s16 y) {
     int k;
 
     flfntSetSize(0x12, 0x12);
@@ -1888,12 +2149,12 @@ void sword_zokusei(u8 *w, int x, s16 y) {
         k = 6;
     }
     if (k >= 0) {
-        flfntLocate(x, y);
+        flfntLocate_s(x, y);
         font_print(lit_4221, equip_exp_str_sw_attr[k]);
         y += 0x14;
     }
     if (w[0xA] != 0) {
-        flfntLocate(x, y);
+        flfntLocate_s(x, y);
         font_print(lit_4222, (int)w[0xA]);
     }
 }
@@ -1924,8 +2185,10 @@ extern s16 *Pl_slash_tbl[];
 extern int slash_bar_color[];
 f32 flps0009(void *);
 
-void slash_level_bar(u8 *pl, s16 y) {
-    PFLP4 a;
+typedef struct PFLP9 { s16 x0, y0, x1, y1, x2, y2; u32 col; } PFLP9;
+
+static void slash_level_bar(u8 *pl, s16 y, f32 x) {
+    PFLP9 a;
     PFLP4 b;
     f32 xr;
     f32 xs;
@@ -1935,17 +2198,18 @@ void slash_level_bar(u8 *pl, s16 y) {
     int i;
 
     yy = y - 3;
-    xr = (f32)(s32)pl - 36.0f;
+    xr = x - 36.0f;
     a.col = 0xFF968A63;
-    a.p[3] = yy + 0xB;
-    a.p[0] = 0.8f * xr;
-    a.p[2] = 0x40A00000;
-    a.p[1] = yy;
+    a.x0 = 0.8f * xr;
+    a.y1 = yy;
+    a.y0 = yy + 11;
+    a.x1 = a.x2 = 0.8f * (5.0f + xr);
+    a.y2 = yy + 21;
     flps0009(&a);
-    a.p[0] = 0.8f * (140.0f + xr);
-    a.p[2] = 0.8f * (135.0f + xr);
+    a.x0 = 0.8f * (140.0f + xr);
+    a.x1 = a.x2 = 0.8f * (135.0f + xr);
     flps0009(&a);
-    b.p[0] = 0.8f * (140.0f + xr);
+    b.p[0] = 0.8f * (5.0f + xr);
     b.p[2] = 0.8f * (130.0f + (5.0f + xr));
     b.p[1] = yy;
     b.p[3] = b.p[1] + 0x15;
@@ -1979,7 +2243,7 @@ void slash_level_bar(u8 *pl, s16 y) {
 
 extern char lit_4368[];
 
-void Put_PageArrow(int x, int y, int a, u8 b) {
+void Put_PageArrow(int x, int y, int a, int b) {
     PFLP8 q;
 
     q.p[2] = 0xE;
@@ -2031,7 +2295,7 @@ void Get_equip_icon_uv(u8 *eq, s16 *a, s16 *b) {
 
 extern char *ng_word_tbl_0[];
 extern char *ng_word_tbl_2[];
-int ng_word_sub(char *, char *, s8);
+static int ng_word_sub(char *, char *, s8);
 
 void KinshiYogo_chk(char *s) {
     char **p;
@@ -2050,9 +2314,9 @@ void KinshiYogo_chk(char *s) {
 
 u32 strlen(const char *);
 char *strstr(const char *, const char *);
-int zen_kigou_suuji_chk(u8 *);
+static int zen_kigou_suuji_chk(u8 *);
 
-int ng_word_sub(char *text, char *ng, s8 mode) {
+static int ng_word_sub(char *text, char *ng, s8 mode) {
     char *p;
     char *rest;
     int len;
@@ -2106,7 +2370,7 @@ set:
     return 0;
 }
 
-int zen_kigou_suuji_chk(u8 *p) {
+static int zen_kigou_suuji_chk(u8 *p) {
     u8 c = p[0];
 
     if (c == 0x81 && p[1] >= 0x40 && p[1] < 0xED) {
@@ -2178,7 +2442,7 @@ void Init_reibun(void) {
     } while (--n != 0);
 }
 
-void chcnfg_reibun_set(s8 *src, int no) {
+static void chcnfg_reibun_set(s8 *src, int no) {
     REIBUN *r = &str_tbl_reibun0[no & 0xFF];
     u32 n = 0x16;
     s8 *d = r->edit;
