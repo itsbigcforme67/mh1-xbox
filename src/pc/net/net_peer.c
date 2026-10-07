@@ -7,9 +7,9 @@
  *
  * Frame (both directions, little endian): u16 n, u8 from (sender slot), u8 type, n - 2 bytes.
  *   type 1..10   a game packet for AQ channel `type` (net_send_pl / _em / _sys ...; rt_np.c)
- *   NP_HELLO     joiner -> host: u16 weapon id
+ *   NP_HELLO     joiner -> host: the joiner's mini data (NP_MINI bytes, Lb_set_mini_data's layout)
  *   NP_WELCOME   host -> joiner: u8 your slot
- *   NP_START     host -> all: u8 quest, u8 players, u16 weapon id per slot
+ *   NP_START     host -> all: u8 quest, u8 players, the mini data of each slot
  *   NP_BYE       a peer leaves
  *
  * Safety (CLAUDE.md): only loopback / private addresses (net_dest_allowed in net_cpinet.c,
@@ -60,7 +60,7 @@ static int role;                    /* 0 off, 1 host, 2 joiner */
 static hsock lsock = HS_BAD;        /* host: listening socket */
 static PEER peer[NP_MAX];           /* host: [slot] for joiners (slot 0 unused); joiner: [0] = the host */
 static int my_slot, nplayers = 1, quest, started;
-static uint16_t weapons[NP_MAX];
+static uint8_t minis[NP_MAX][NP_MINI];
 static int gone[NP_MAX];           /* players who left (or whose connection broke) */
 
 /* received game packets, in order */
@@ -173,8 +173,8 @@ static void handle(int src, int from, int type, const uint8_t *d, int n)
 {
     if (role == 1) {
         if (type == NP_HELLO) {
-            weapons[src] = n >= 2 ? (uint16_t)(d[0] | d[1] << 8) : 0;
-            fprintf(stderr, "net_peer: player %d joined (weapon %d)\n", src, weapons[src]);
+            memcpy(minis[src], d, n < NP_MINI ? n : NP_MINI);
+            fprintf(stderr, "net_peer: player %d joined\n", src);
             return;
         }
         if (type == NP_BYE) {
@@ -200,8 +200,8 @@ static void handle(int src, int from, int type, const uint8_t *d, int n)
             int k;
             quest = d[0];
             nplayers = d[1];
-            for (k = 0; k < nplayers && k < NP_MAX && 2 + 2 * k + 1 < n; k++)
-                weapons[k] = (uint16_t)(d[2 + 2 * k] | d[3 + 2 * k] << 8);
+            for (k = 0; k < nplayers && k < NP_MAX && 2 + NP_MINI * (k + 1) <= n; k++)
+                memcpy(minis[k], d + 2 + NP_MINI * k, NP_MINI);
             started = 1;
         }
         break;
@@ -262,7 +262,7 @@ static int parse_addr(const char *s, uint32_t *a)
     return 0;
 }
 
-int np_host(const char *bind_ip, int port, int my_weapon)
+int np_host(const char *bind_ip, int port, const uint8_t *my_mini)
 {
     struct sockaddr_in sa;
     uint32_t a;
@@ -295,16 +295,16 @@ int np_host(const char *bind_ip, int port, int my_weapon)
     role = 1;
     my_slot = 0;
     nplayers = 1;
-    weapons[0] = (uint16_t)my_weapon;
+    memcpy(minis[0], my_mini, NP_MINI);
     fprintf(stderr, "net_peer: hosting on %s:%d\n", bind_ip, port);
     return 0;
 }
 
-int np_join(const char *host_ip, int port, int my_weapon)
+int np_join(const char *host_ip, int port, const uint8_t *my_mini)
 {
     struct sockaddr_in sa;
     uint32_t a;
-    uint8_t f[8], w[2];
+    uint8_t f[NP_MINI + 4];
     int s;
     if (CpInetInitialize() != 0)
         return -1;
@@ -333,9 +333,8 @@ int np_join(const char *host_ip, int port, int my_weapon)
     nodelay(peer[0].fd);
     peer[0].up = 1;
     role = 2;
-    w[0] = (uint8_t)my_weapon;
-    w[1] = (uint8_t)(my_weapon >> 8);
-    send_all(&peer[0], f, frame(f, 0xFF, NP_HELLO, w, 2));
+    memcpy(minis[0], my_mini, NP_MINI);     /* (overwritten by the host's START) */
+    send_all(&peer[0], f, frame(f, 0xFF, NP_HELLO, my_mini, NP_MINI));
     fprintf(stderr, "net_peer: connected to %s:%d\n", host_ip, port);
     return 0;
 }
@@ -374,18 +373,16 @@ void np_poll(void)
 
 int np_host_start(int quest_no)
 {
-    uint8_t d[2 + 2 * NP_MAX], f[sizeof d + 4];
+    uint8_t d[2 + NP_MINI * NP_MAX], f[sizeof d + 4];
     int k, len;
     if (role != 1)
         return -1;
     quest = quest_no;
     d[0] = (uint8_t)quest_no;
     d[1] = (uint8_t)nplayers;
-    for (k = 0; k < NP_MAX; k++) {
-        d[2 + 2 * k] = (uint8_t)weapons[k];
-        d[3 + 2 * k] = (uint8_t)(weapons[k] >> 8);
-    }
-    len = frame(f, 0, NP_START, d, 2 + 2 * nplayers);
+    for (k = 0; k < nplayers; k++)
+        memcpy(d + 2 + NP_MINI * k, minis[k], NP_MINI);
+    len = frame(f, 0, NP_START, d, 2 + NP_MINI * nplayers);
     relay(f, len, -1);
     started = 1;
     return 0;
@@ -418,12 +415,19 @@ int np_recv(int *from, int *type, uint8_t *buf, int max)
     return n;
 }
 
+/* a packet of this machine's own, back to itself (mcsls loops a player's own app data back
+ * locally; self_data_ctrl then uses the supply-box channel's own packets) */
+void np_loopback(int type, const void *d, int n)
+{
+    enqueue(my_slot, type, d, n);
+}
+
 int np_role(void) { return role; }
 int np_slot(void) { return my_slot; }
 int np_players(void) { return nplayers; }
 int np_started(void) { return started; }
 int np_quest(void) { return quest; }
-int np_weapon(int slot) { return slot >= 0 && slot < NP_MAX ? weapons[slot] : 0; }
+const uint8_t *np_mini(int slot) { return minis[slot & (NP_MAX - 1)]; }
 int np_gone(int slot) { return slot >= 0 && slot < NP_MAX && gone[slot]; }
 int np_connected(int slot)
 {

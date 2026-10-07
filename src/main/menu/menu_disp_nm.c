@@ -2599,7 +2599,7 @@ void trans_box(void) {
                 }
             } else {
 none:
-                sprintf(buf, (char *)lit_3253, item_str);
+                sprintf(buf, (char *)lit_3253, item_str[0]);   /* lw item_str: the first entry (was the table address: overflowed buf) */
                 flfntLocate((s16)(0x1CB - (strlen(buf) * 9 >> 1)), 0xEE);
                 font_print_uf(buf);
                 id = 0;

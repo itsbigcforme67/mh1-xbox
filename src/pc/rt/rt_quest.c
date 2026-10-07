@@ -54,7 +54,9 @@ u8 Get_hunter_rank(u8 *u)
 }
 
 /* ------------------------------------------------ network (offline) */
+#ifndef MH1_ONLINE     /* ONLINE=1: the game's (netsyn08.c, co-op) */
 void net_send_sys(int kind, int pl) { (void)kind; (void)pl; }
+#endif
 
 /* ------------------------------------------------ monster models (main 0x124820)
  * em_create_model(slot) loads the model of kind game_w+0x28[slot] into

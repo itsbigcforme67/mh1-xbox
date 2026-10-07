@@ -306,12 +306,13 @@ static monster weapon;              /* the hunter's weapon (--play with the game
 
 /* weapon bones: hierarchy roots from rt_player_weapon (weapon_trans's
  * placement), the rest from their bind pose under the parent */
-static void weapon_pose(const fl_light *L)
+static void weapon_pose_of(monster *weapon_m, int no, const fl_light *L)
 {
+#define weapon (*weapon_m)
     float r0[16], r1[16];
     int i, roots = 0;
     ahi_skel *k = &weapon.skel.skel;
-    if (rt_player_weapon(lp, r0, r1) < 0)
+    if (rt_player_weapon(no, r0, r1) < 0)
         return;
     for (i = 0; i < k->nbone; i++) {
         const ahi_bone *b = &k->bone[i];
@@ -324,7 +325,9 @@ static void weapon_pose(const fl_light *L)
         }
     }
     fl_model_pose(&weapon.model, (const flmat *)weapon.skel.world, L);
+#undef weapon
 }
+static void weapon_pose(const fl_light *L) { weapon_pose_of(&weapon, lp, L); }
 
 static float min_y_of(const fl_model *m)
 {
@@ -807,6 +810,21 @@ static int load_stage_models(int st)
     return 0;
 }
 
+/* the weapon model of player no: weapon_model_data / WEAPON_TEX[PLW+0x34C] (AFS indices) */
+static void weapon_load(monster *w, int no)
+{
+    int mi = rt_weapon_afs(rt_player_weapon_model(no), 0), ti = rt_weapon_afs(rt_player_weapon_model(no), 1);
+    if (mi > 0 && mi < (int)afs.count && ti > 0 && ti < (int)afs.count) {
+        fmt_blob link = load(afs.name[mi], &w->mem[0]), tx = load(afs.name[ti], &w->mem[1]);
+        if (link.p && fl_model_create(&w->model, fmt_link_entry(link, 0, FMT_LE),
+                                      fmt_link_entry(link, 1, FMT_LE), tx, 1, FMT_LE) == 0
+            && fl_skel_create(&w->skel, fmt_link_entry(link, 1, FMT_LE), FMT_LE) == 0)
+            w->game = 1;
+        drop(&w->mem[0]);
+        drop(&w->mem[1]);
+    }
+}
+
 /* ------------------------------------------------------------ co-op hunters
  * The other players' hunters (ONLINE=1, rt_np.c): their player works are moved by the
  * game's own code from the packets (net_receive_pl -> Pl_act_set, Pl_adj_calc); the host
@@ -821,6 +839,7 @@ int rt_np_visible(int slot);
 void rt_np_tick(void);
 void rt_np_close(void);
 static hunter rh[4];
+static monster rw[4];               /* their weapons */
 static int rh_ok[4];
 static uint8_t *rh_wmem[4];
 static void remote_motion_start(void)
@@ -844,6 +863,8 @@ static void remote_weapons(void)
         wt = load(wname, &rh_wmem[s]);
         if (wt.p)
             rt_motion_load_pl(s, wt.p);
+        if (!rw[s].game)
+            weapon_load(&rw[s], s);
     }
 }
 static void remote_hunters(int draw, const fl_light *L)
@@ -884,6 +905,13 @@ static void remote_hunters(int draw, const fl_light *L)
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)h->world);
         for (j = 0; j < HUNTER_PARTS; j++)
             draw_model_attr(&h->part[j], -1);
+        if (rw[s].game) {
+            static flmat wid;
+            weapon_pose_of(&rw[s], s, L);
+            flmat_identity(wid);
+            gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)wid);
+            draw_model_attr(&rw[s].model, -1);
+        }
     }
 }
 #else
@@ -1561,18 +1589,7 @@ int main(int argc, char **argv)
                         rt_motion_load_pl(lp, wt.p);
                     else
                         fprintf(stderr, "no %s: weapon motions missing\n", wname);
-                    {   /* the weapon model: weapon_model_data / WEAPON_TEX[PLW+0x34C] (AFS indices) */
-                        int mi = rt_weapon_afs(rt_player_weapon_model(lp), 0), ti = rt_weapon_afs(rt_player_weapon_model(lp), 1);
-                        if (mi > 0 && mi < (int)afs.count && ti > 0 && ti < (int)afs.count) {
-                            fmt_blob link = load(afs.name[mi], &weapon.mem[0]), tx = load(afs.name[ti], &weapon.mem[1]);
-                            if (link.p && fl_model_create(&weapon.model, fmt_link_entry(link, 0, FMT_LE),
-                                                          fmt_link_entry(link, 1, FMT_LE), tx, 1, FMT_LE) == 0
-                                && fl_skel_create(&weapon.skel, fmt_link_entry(link, 1, FMT_LE), FMT_LE) == 0)
-                                weapon.game = 1;
-                            drop(&weapon.mem[0]);
-                            drop(&weapon.mem[1]);
-                        }
-                    }
+                    weapon_load(&weapon, lp);
                 }
             }
             hunter_yoff = -lo;

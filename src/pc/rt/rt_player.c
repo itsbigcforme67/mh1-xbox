@@ -75,6 +75,12 @@ void rt_player_game_init(int no)
     }
 #endif
     pl_init(0);
+#ifdef MH1_ONLINE
+    {
+        void rt_np_after_init(void);
+        rt_np_after_init();
+    }
+#endif
     if (getenv("RT_PL_ITEMS")) {    /* no save data: pouch "id:n,id:n" (slots at +0x828, 4 bytes) */
         const char *q = getenv("RT_PL_ITEMS");
         int k = 0, id, num, used;

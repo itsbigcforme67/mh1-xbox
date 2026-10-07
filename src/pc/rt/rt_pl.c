@@ -421,7 +421,9 @@ void init_eft_work(void) { STUB("init_eft_work") }
 void init_item_work(void) { STUB("init_item_work") }
 void init_set_work(void) { STUB("init_set_work") }
 void init_shell_work(void) { STUB("init_shell_work") }
+#ifndef MH1_ONLINE     /* ONLINE=1: the game's (netsyn05.c, co-op) */
 void net_send_host(void) { STUB("net_send_host") }
+#endif
 /* overlay calls by address (as rt_overlay.c): Eft12_set4, Shell12_set, Pl_poison_add */
 void Eft12_set4(void *, int, int);
 void Shell12_set(void *, int);

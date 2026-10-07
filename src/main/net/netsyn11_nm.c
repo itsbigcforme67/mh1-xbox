@@ -1,11 +1,12 @@
 /* Network play sync, enemy packets (SLPM_654.95 0x001BB000-0x001BBE58): net_receive_em, applies the four enemy packet kinds of net_send_em to
- * em_work[idx] (0xA10 bytes each): position, angles, counters, then the flag byte (status effects) and the status duration mask. */
+ * em_work[idx] (0xA10 bytes each): position, angles, counters, then the flag byte (status effects) and the status duration mask.
+ * Load widths of kinds 3 and 4 (HP +0x302, +0x08, +0x7C0, +0x881..0x883, +0x828) corrected against the asm (agent E, co-op). */
 #include "types.h"
 #include "netsyn.h"
 
 extern NGW game_w;
 extern u8 em_work[];
-extern s16 D_642160[];
+extern s16 em_atk_mode_timer_tbl[];
 
 void func_535A10(NEMV *, int, int, int);
 void func_536110(NEMV *, s16);
@@ -129,7 +130,7 @@ void net_receive_em(int slot0, u8 *buf) {
                 if (PU8(0x1B) == 0) {
                     func_566500(em, 0, 0);
                 } else {
-                    func_566500(em, 1, D_642160[em->x02]);
+                    func_566500(em, 1, em_atk_mode_timer_tbl[em->x02]);
                 }
                 if (em->x04 > 0) {
                     if (em->x02 == 0x1F || em->x02 == 0x1C || em->x02 == 0x1B) {
@@ -180,7 +181,7 @@ void net_receive_em(int slot0, u8 *buf) {
                 if (PU8(0x1B) == 0) {
                     func_566500(em, 0, 0);
                 } else {
-                    func_566500(em, 1, D_642160[em->x02]);
+                    func_566500(em, 1, em_atk_mode_timer_tbl[em->x02]);
                 }
                 if (em->x04 > 0) {
                     if (em->x14 != a) {
@@ -232,9 +233,9 @@ void net_receive_em(int slot0, u8 *buf) {
                 em->xA0 = PS16(0xC);
                 em->xA4 = PS16(0xE);
                 em->xA8 = PS16(0x10);
-                em->x881 = PU16(0x1C);
+                em->x881 = PU8(0x1C);
                 em->x882 = PU8(0x1D);
-                em->x883 = PS16(0x1E);
+                em->x883 = PU8(0x1E);
                 em->xA00 = PU8(0x24);
                 if (em->xA00 != 0) {
                     em->xA00 = 0;
@@ -246,7 +247,7 @@ void net_receive_em(int slot0, u8 *buf) {
                 if (PU8(0x1F) == 0) {
                     func_566500(em, 0, 0);
                 } else {
-                    func_566500(em, 1, D_642160[em->x02]);
+                    func_566500(em, 1, em_atk_mode_timer_tbl[em->x02]);
                 }
                 b = PU8(0x13);
                 a = PU8(0x12);
@@ -272,9 +273,9 @@ void net_receive_em(int slot0, u8 *buf) {
                         break;
                     }
                 }
-                em->x302 = PU8(0x16);
-                em->x954 = PS16(0x18);
-                em->x08 = (s16)PU8(0x1A);
+                em->x302 = PS16(0x16);
+                em->x954 = PU16(0x18);
+                em->x08 = PS16(0x1A);
                 fl = PU8(0x14);
                 EM_FLAGS_AB(fl)
                 if (fl & 0x40) {
@@ -310,16 +311,16 @@ void net_receive_em(int slot0, u8 *buf) {
                 em->xA4 = PS16(0xE);
                 em->xA8 = PS16(0x10);
             }
-            em->x302 = PU8(0x12);
+            em->x302 = PS16(0x12);
             em->x56A = PU8(0x17);
             em->x572 = PS16(0x18);
             em->x88E = PU8(0x14);
             em->x827 = PU8(0x1B);
-            em->x828 = PU16(0x1C);
+            em->x828 = PU8(0x1C);
             em->x829 = PU8(0x1D);
             em->xA00 = PU8(0x20);
             em->x88B = PU8(0x21);
-            em->x7C0 = PS8(0x22);
+            em->x7C0 = PS16(0x22);
             em->x881 = em->x827;
             em->x882 = em->x828;
             em->x883 = em->x829;

@@ -4,7 +4,8 @@
 # Passes when every instance ends with every player in the quest, on the same stage, and
 # each player's position as the others see it within 60 units of where that player itself
 # says it is. Screenshots: build/show/coop_N_slotK.png (the host's from a high follow camera).
-#   tools/test_coop.sh [N]      (N = 2..4, default runs 2 then 4)
+#   tools/test_coop.sh [N|hunt]   (N = 2..4 walking; hunt = 2 players hunt quest 137 to the clear;
+#                                  box = the supply box decided by the host; default: all)
 # Starts only its own processes and stops them (by PID).
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/pc/mhview_online}
@@ -68,6 +69,87 @@ sys.exit(0 if ok else 1)
 EOF
 }
 
+hunt() {
+    # 2 players hunt quest 137 (one Velocidrome, kind 27, stage 34): the host walks there and fights it with the
+    # test aids of test_all_quests (warp next to it, damage x40, no damage taken); the joiner walks there and only
+    # watches. The host's machine owns the monster (EMW+0x8C3), so the joiner's copy moves, loses HP and dies only
+    # from the host's packets (net_send_em / net_receive_em), and the kill and clear come over the sys channel.
+    port=$((PORT + 9))
+    cyc=$(python3 -c "print('idle*60' + (',cam_u*2,idle*30'*4 + ',circle*2,idle*28'*6)*40)")
+    common="RT_NOMOVIE=1 RT_QUEST_TRACE=1 RT_NP_EM=30 RT_NP_POS=30 RT_PL_GOD=1 RT_PL_GOTO=60,f RT_PL_TARGET=k27"
+    env $common RT_PL_WARP_EM=100-90000 RT_DMG_MUL=40 RT_PL_LOOK=0,2,3,5,5,5,5,5 \
+        timeout 300 "$BIN" "$DISC" --host --quest 137 --players 2 --port $port --mute --input "$cyc" \
+        --shot build/show/coop_hunt_slot0.png --time 60 > $OUT/hunt_0.log 2>&1 &
+    p0=$!
+    sleep 1
+    env $common RT_WEAPON=1 RT_PL_LOOK=1,2,2,10,10,10,10,10 \
+        timeout 300 "$BIN" "$DISC" --join 127.0.0.1 --port $port --mute --input "idle*99999" \
+        --shot build/show/coop_hunt_slot1.png --time 60 > $OUT/hunt_1.log 2>&1 &
+    p1=$!
+    wait $p0 || { echo "coop hunt: host failed"; return 1; }
+    wait $p1 || { echo "coop hunt: joiner failed"; return 1; }
+    python3 - "$OUT" <<'EOF2'
+import re, sys
+out = sys.argv[1]
+hp, own, clear, pos = {}, {}, {}, {}
+for me in (0, 1):
+    hp[me], own[me] = {}, set()
+    for l in open(f"{out}/hunt_{me}.log", errors="replace"):
+        m = re.match(r"np-em: tick (\d+) me \d+ em (\d+) kind 27 stg \d+ hp (-?\d+) owner (\d+)", l)
+        if m:
+            hp[me][int(m[1])] = int(m[3])
+            if int(m[1]) > 150:
+                own[me].add(int(m[4]))
+        m = re.match(r"rt_flow: tick (\d+) mode 2 step 0 D5 3", l)
+        if m and me not in clear:
+            clear[me] = int(m[1])
+        m = re.match(r"np-pos: tick \d+ me \d+ slot (\d+) stg (\d+)", l)
+        if m:
+            pos[(me, int(m[1]))] = int(m[2])
+ok = True
+seq = {me: [v for t, v in sorted(hp[me].items())] for me in (0, 1)}
+dist = {me: sorted(set(seq[me]), reverse=True) for me in (0, 1)}
+print(f"coop hunt: Velocidrome HP on the host {dist[0]}, on the joiner {dist[1]}")
+if not seq[0] or seq[0][-1] > 0 or seq[1][-1] > 0:
+    print("coop hunt: the monster did not die on both"); ok = False
+if dist[0] != dist[1]:
+    print("coop hunt: the two machines saw different HP values"); ok = False
+if own[1] != {0}:
+    print(f"coop hunt: the joiner's monster owner was {own[1]}, expected the host (0)"); ok = False
+for me in (0, 1):
+    if me not in clear:
+        print(f"coop hunt: no quest clear on instance {me}"); ok = False
+if len(clear) == 2:
+    print(f"coop hunt: quest clear at tick {clear[0]} (host) and {clear[1]} (joiner)")
+    if abs(clear[0] - clear[1]) > 30:
+        print("coop hunt: the clears are more than a second apart"); ok = False
+if pos.get((0, 1)) != 34 or pos.get((1, 0)) != 34:
+    print(f"coop hunt: the players do not see each other on stage 34 ({pos})"); ok = False
+print("coop hunt: " + ("OK" if ok else "FAILED"))
+sys.exit(0 if ok else 1)
+EOF2
+}
+
+box() {
+    # the supply box is decided by the host (net_send_host / net_receive_host): the joiner takes the first item, then
+    # the host tries the same one. Expected: the joiner has it, both see it taken, the host gets nothing.
+    port=$((PORT + 10))
+    RT_NP_POS=30 RT_PL_WARP="200,9500,9500,7000" timeout 120 "$BIN" "$DISC" --host --quest 137 --players 2 --port $port --mute \
+        --input "idle*260,circle*2,idle*20,circle*2,idle*60,circle*2,idle*300" --shot build/show/coop_box_slot0.png --time 20 > $OUT/box_0.log 2>&1 &
+    p0=$!
+    sleep 1
+    RT_NP_POS=30 RT_PL_WARP="40,9500,9500,7000" timeout 120 "$BIN" "$DISC" --join 127.0.0.1 --port $port --mute \
+        --input "idle*80,circle*2,idle*20,circle*2,idle*60,circle*2,idle*300" --shot build/show/coop_box_slot1.png --time 20 > $OUT/box_1.log 2>&1 &
+    p1=$!
+    wait $p0 || { echo "coop box: host failed"; return 1; }
+    wait $p1 || { echo "coop box: joiner failed"; return 1; }
+    h=$(grep "me 0 slot 0 " $OUT/box_0.log | tail -1 | sed 's/.*box \([0-9A-F]*\) pouch \(.*\)/\1 \2/')
+    j=$(grep "me 1 slot 1 " $OUT/box_1.log | tail -1 | sed 's/.*box \([0-9A-F]*\) pouch \(.*\)/\1 \2/')
+    echo "coop box: host sees box bits / own first pouch slot: $h; joiner: $j"
+    [ "$h" = "00000001 0:0" ] && [ "${j%% *}" = "00000001" ] && [ "${j#* }" != "0:0" ] || { echo "coop box: FAILED"; return 1; }
+    echo "coop box: OK"
+}
+
 refusals() {
     # a public address and an MH Oldschool address are refused before any socket is opened
     for a in 8.8.8.8 34.75.107.68; do
@@ -79,8 +161,10 @@ refusals() {
     echo "coop: public / MH Oldschool addresses refused"
 }
 
-if [ -n "$1" ]; then
+if [ "$1" = hunt ] || [ "$1" = box ]; then
+    $1
+elif [ -n "$1" ]; then
     run "$1" && refusals
 else
-    run 2 && run 4 && refusals
+    run 2 && run 4 && hunt && box && refusals
 fi

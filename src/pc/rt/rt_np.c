@@ -132,14 +132,65 @@ static int ask_quest(void)
     return q;
 }
 
+/* This player's mini data (Lb_set_mini_data's layout, lb_village_nm.c; docs/network.md 1a):
+ *   0 weapon job, 3 sex (PLW+0x11), 4 s32 hair colour (+0x5FC), 8/A/C the weapon triple
+ *   (+0x35E/0x360/0x362: type 6 sword or 7 gun in the high byte of the first, the id),
+ *   E..13 armour and face (+0x352..0x357: legs, face + 1, head, body, arms, waist),
+ *   0x14 hair style (+0x34E), 0x16 (+0x8D3).
+ * The PS2 builds it from the hunter in the town; the co-op start has no town, so it comes
+ * from RT_WEAPON and RT_PL_LOOK="sex,face,hair,legs,head,body,arms,waist[,hair colour hex]"
+ * (armour ids as Armor_*_Data rows, 0 = none; face and hair from 1; default: male, armour 5 all over:
+ * there is no save in a co-op start yet). */
+static void make_mini(u8 *m)
+{
+    int v[9] = { 0, 1, 1, 5, 5, 5, 5, 5, 0 }, wid = getenv("RT_WEAPON") ? atoi(getenv("RT_WEAPON")) : 156;
+    const char *l = getenv("RT_PL_LOOK");
+    if (l)
+        sscanf(l, "%d,%d,%d,%d,%d,%d,%d,%d,%x", &v[0], &v[1], &v[2], &v[3], &v[4], &v[5], &v[6], &v[7], (unsigned *)&v[8]);
+    if (wid <= 0 || wid >= 234)
+        wid = 156;
+    memset(m, 0, NP_MINI);
+    m[0] = Battle_type[Ken_data[wid][0]];
+    m[3] = (u8)(v[0] != 0);
+    *(s32 *)(m + 4) = v[8];
+    *(s16 *)(m + 8) = 6 << 8;           /* +0x35E = 0, +0x35F = 6 (sword) */
+    *(u16 *)(m + 0xA) = (u16)wid;
+    m[0xE] = (u8)v[3];
+    m[0xF] = (u8)(v[1] > 0 ? v[1] : 1);
+    m[0x10] = (u8)v[4];
+    m[0x11] = (u8)v[5];
+    m[0x12] = (u8)v[6];
+    m[0x13] = (u8)v[7];
+    m[0x14] = (u8)(v[2] > 0 ? v[2] - 1 : 0);
+}
+
+/* Set_mini_data_to_pl (f_ud.c, not in the PC build): a player's equipment and look from
+ * the mini data, as init_pl_work does for the other players online */
+u8 Get_weapon_id(void *e);
+static void apply_mini(PLW *pl, const u8 *m)
+{
+    u8 *p = (u8 *)pl;
+    *(s32 *)(p + 0x5FC) = *(const s32 *)(m + 4);
+    p[0x11] = m[3];
+    p[0x34E] = m[0x14];
+    *(s16 *)(p + 0x35E) = *(const s16 *)(m + 8);
+    *(s16 *)(p + 0x360) = *(const s16 *)(m + 0xA);
+    *(s16 *)(p + 0x362) = *(const s16 *)(m + 0xC);
+    p[0x8D3] = m[0x16];
+    p[0x34C] = Get_weapon_id(p + 0x35E);
+    memcpy(p + 0x352, m + 0xE, 6);
+    pl->kind = Battle_type[pl->work34C];
+}
+
 /* Before the quest is set up: host waits for the joiners and announces the quest; a joiner
  * connects and waits for it. Returns the quest number, 0 = no co-op, -1 = failed. */
 int rt_np_setup(int quest_no)
 {
-    int wid = getenv("RT_WEAPON") ? atoi(getenv("RT_WEAPON")) : 156;
+    u8 mini[NP_MINI];
     int wait_s = getenv("RT_NP_WAIT") ? atoi(getenv("RT_NP_WAIT")) : 300, t;
     if (!want_role)
         return 0;
+    make_mini(mini);
     if (want_role == 1) {
         if (!quest_no)
             quest_no = ask_quest();     /* the list on the console */
@@ -147,7 +198,7 @@ int rt_np_setup(int quest_no)
             fprintf(stderr, "co-op: --host needs a quest (--quest N, or pick one from the list)\n");
             return -1;
         }
-        if (np_host(want_addr, want_port, wid) != 0)
+        if (np_host(want_addr, want_port, mini) != 0)
             return -1;
         fprintf(stderr, "co-op: quest %d, waiting for %d more player(s) on port %d\n", quest_no, want_players - 1, want_port);
         for (t = 0; np_players() < want_players && t < wait_s * 100; t++) {
@@ -157,11 +208,11 @@ int rt_np_setup(int quest_no)
         np_poll();
         if (np_players() < want_players)
             fprintf(stderr, "co-op: only %d player(s) after %d s, starting anyway\n", np_players(), wait_s);
-        sleep_ms(100);          /* the joiners' HELLO (their weapons) */
+        sleep_ms(100);          /* the joiners' HELLO (their mini data) */
         np_poll();
         np_host_start(quest_no);
     } else {
-        if (np_join(want_addr, want_port, wid) != 0)
+        if (np_join(want_addr, want_port, mini) != 0)
             return -1;
         for (t = 0; !np_started() && np_connected(0) && t < wait_s * 100; t++) {
             np_poll();
@@ -179,11 +230,10 @@ int rt_np_setup(int quest_no)
 
 int rt_np_slot(void) { return want_role ? np_slot() : 0; }
 int rt_np_players(void) { return want_role ? np_players() : 1; }
-int rt_np_weapon(int slot) { return np_weapon(slot); }
 
 /* rt_player_game_init, before pl_init: the session's slots, as Game_task step 3 and
- * init_pl_work do online (the other slots' equipment from the host's table, which stands in
- * for the mini data). */
+ * init_pl_work do online (every slot's equipment and look from its mini data, which the host
+ * collected and sent to all). */
 void rt_np_init_slots(void)
 {
     int n = np_players(), me = np_slot(), s;
@@ -191,30 +241,47 @@ void rt_np_init_slots(void)
         return;
     game_w.master = (u8)me;
     game_w.pl_num = (u8)n;
+    {   /* the HUD's own hunter (Pit_init: lpPit->pl = player_work[game_w.master]; it ran before the
+         * slots were known) */
+        extern u8 *lpPit;
+        if (lpPit)
+            *(PLW **)(lpPit + 8) = &player_work[me];
+    }
     GW8(0x21B) = 0;                 /* host slot (host_change; guess) */
     GW8(0x1B0) = 2;                 /* frames of network delay (net_start_ck computes it from the ping) */
     for (s = 0; s < 8; s++)
         game_w.pl_state[s] = s < n ? 1 : 0;
     for (s = 0; s < n; s++) {
         PLW *pl = &player_work[s];
-        int wid = np_weapon(s);
-        if (s == me)
-            continue;
-        if (wid <= 0 || wid >= 234)
-            wid = 156;
-        pl->be_flag = 1;
-        pl->id = (u16)s;
-        pl->stg = game_w.stage;
-        PF(pl, u8, 0x10) = 0;
-        PF(pl, u8, 0x35E) = 0;
-        PF(pl, u8, 0x35F) = 6;
-        pl->wpn_kind = (u16)wid;
-        pl->work34C = Ken_data[wid][0];
-        pl->kind = Battle_type[pl->work34C];
+        if (s != me) {
+            pl->be_flag = 1;
+            pl->id = (u16)s;
+            pl->stg = game_w.stage;
+            PF(pl, u8, 0x10) = 0;
+        }
+        snprintf(pl->name, sizeof pl->name, "HUNTER %d", s + 1);   /* (no handles are exchanged yet) */
+        apply_mini(pl, np_mini(s));
+    }
+    {   /* the same random numbers to start with on every machine (the PS2 seeds them from its
+         * clock, init_ran_suu): the quest's set-up then places the same things */
+        extern u16 Rnd_w[];
+        Rnd_w[0] = Rnd_w[1] = (u16)(0x1234 + np_quest());
     }
     rt_online = 1;
     if (trace < 0)
         trace = getenv("RT_NP_TRACE") != NULL;
+}
+
+/* after pl_init: every hunter's models from its equipment (player_all_load ->
+ * armor_create_model; the viewer builds the look rt_player_look reports) */
+void armor_create_model(void *pl);
+void rt_np_after_init(void)
+{
+    int s;
+    if (!rt_online)
+        return;
+    for (s = 0; s < game_w.pl_num; s++)
+        armor_create_model(&player_work[s]);
 }
 
 /* AQ_data_put (aq_nm.c): queue a game packet for everyone. Byte 1 is the packet's length
@@ -233,6 +300,8 @@ int AQ_data_put(int ch, u8 *d, int mode)
     if (n > NP_PKT_MAX)
         return -6;
     np_send(ch, d, n);
+    if (ch == 7)            /* the host channel: the sender handles its own packets too (self_data_ctrl) */
+        np_loopback(ch, d, n);
     st_tx++;
     if (trace)
         fprintf(stderr, "np: tx ch %d kind %d len %d\n", ch, d[0], n);
@@ -243,6 +312,38 @@ int AQ_data_put(int ch, u8 *d, int mode)
 int net_start_ck(void) { return 1; }
 
 void net_receive_pl(int no, u8 *buf, int force);
+void net_receive_em(int slot, u8 *buf);
+void net_receive_sys(int slot, u8 *buf);
+void net_receive_host(int slot, u8 *buf);
+
+/* netsyn11_nm.c calls game.bin functions by address (m2c names): the named ones */
+void em_type_act_set(void *em, int kind, u16 no, u16 arg);
+void em_ikari_add(void *em, s16 n);
+void ikari_flag_set(void *em);
+void target_kind_set(void *em, f32 *pos);
+void em_area_move_init(void *em);
+void em_hungry_add(void *em, s32 n);
+void em_hagitori_lv_up(void *em, u8 bits);
+void em_tail_off_sub(void *em);
+void em_niku_eat_set(void *em);
+void em_eye_dmg_act_set(void *em);
+void poison_stock_set(void *em, int n);
+void em_cmd_reset(void *em);
+int Em_Mode_Chg(void *em, int mode, s16 mode2);
+extern s16 em_atk_mode_timer_tbl[];
+void func_535A10(void *em, int a, int b, int c) { em_type_act_set(em, a, (u16)b, (u16)c); }
+void func_536110(void *em, s16 n) { em_ikari_add(em, n); }
+void func_536320(void *em) { ikari_flag_set(em); }
+void func_537620(void *em, void *pos) { target_kind_set(em, pos); }
+void func_538580(void *em) { em_area_move_init(em); }
+void func_53A630(void *em, int n) { em_hungry_add(em, n); }
+void func_53B6D0(void *em, u8 bits) { em_hagitori_lv_up(em, bits); }
+void func_53B8A0(void *em) { em_tail_off_sub(em); }
+void func_53B9C0(void *em) { em_niku_eat_set(em); }
+void func_559320(void *em) { em_eye_dmg_act_set(em); }
+void func_55A440(void *em, s16 n) { poison_stock_set(em, n); }
+void func_5655D0(void *em) { em_cmd_reset(em); }
+void func_566500(void *em, int mode, int mode2) { Em_Mode_Chg(em, mode, (s16)mode2); }
 
 /* every game tick, before the players move: the received packets, as AQ_recv /
  * self_data_ctrl dispatch them */
@@ -282,7 +383,7 @@ void rt_np_tick(void)
     }
     while ((n = np_recv(&from, &type, buf, sizeof buf)) >= 0) {
         st_rx++;
-        if (n < 4 || buf[2] == game_w.master) {
+        if (n < 4 || (buf[2] == game_w.master && type != 7)) {
             st_drop++;
             continue;
         }
@@ -298,7 +399,16 @@ void rt_np_tick(void)
             }
             net_receive_pl(type, buf, 0);
             break;
-        default:            /* 6 chat, 7 host, 8 monsters, 10 sys: not wired yet (M3) */
+        case 7:             /* the supply box, decided by the host (net_send_host) */
+            net_receive_host(type, buf);
+            break;
+        case 8:             /* monsters: the owner's actions, HP, hand-over (net_send_em) */
+            net_receive_em(type, buf);
+            break;
+        case 10:            /* session / quest events (net_send_sys: quest clear, fail, timer, kills ...) */
+            net_receive_sys(type, buf);
+            break;
+        default:            /* 6 chat: not wired */
             st_drop++;
             break;
         }
@@ -309,11 +419,23 @@ void rt_np_tick(void)
         ++k;
         if (trace && k % 300 == 0)
             fprintf(stderr, "np: %lu sent, %lu received, %lu not used\n", st_tx, st_rx, st_drop);
+        if (getenv("RT_NP_EM") && rt_online && k % atoi(getenv("RT_NP_EM")) == 0) {   /* test aid: the monsters as this machine has them */
+            extern u8 em_work[];
+            for (s = 0; s < 20; s++) {
+                u8 *e = em_work + 0xA10 * s;
+                if (!e[0] || e[2] == 0)
+                    continue;
+                fprintf(stderr, "np-em: tick %d me %d em %d kind %d stg %d hp %d owner %d net %d act %d/%d pos %.0f %.0f\n", k, game_w.master, s,
+                        e[2], e[0x736], *(s16 *)(e + 0x302), e[0x8C3] ? e[0x88E] : game_w.master, e[0x9E2], e[0x14], e[0x15],
+                        *(f32 *)(e + 0xAC), *(f32 *)(e + 0xB4));
+            }
+        }
         if (getenv("RT_NP_POS") && rt_online && k % atoi(getenv("RT_NP_POS")) == 0)   /* test aid: every player's position as this machine sees it */
             for (s = 0; s < game_w.pl_num; s++) {
                 PLW *p = &player_work[s];
-                fprintf(stderr, "np-pos: tick %d me %d slot %d stg %d pos %.0f %.0f %.0f ang %04X/%04X act %d/%d\n", k, game_w.master, s,
-                        p->stg, p->pos[0], p->pos[1], p->pos[2], p->ang[1] & 0xFFFF, p->ang_y & 0xFFFF, p->flag14, p->flag15);
+                fprintf(stderr, "np-pos: tick %d me %d slot %d stg %d pos %.0f %.0f %.0f ang %04X/%04X act %d/%d box %08X pouch %d:%d\n", k,
+                        game_w.master, s, p->stg, p->pos[0], p->pos[1], p->pos[2], p->ang[1] & 0xFFFF, p->ang_y & 0xFFFF, p->flag14,
+                        p->flag15, *(u32 *)((u8 *)&game_w + 0x1A8), PF(p, s16, 0x828), PF(p, s16, 0x82A));
             }
     }
 }

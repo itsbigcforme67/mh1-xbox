@@ -242,7 +242,8 @@ if [ -n "$ONLINE" ]; then
     # the game's own network C that is linked (the lobby-server client, the connect / DNS helpers).
     # CpInet* / Ave_* are replaced by src/pc/net/net_cpinet.c (docs/network.md: why)
     NETMAIN="src/main/net/netdev01.c src/main/net/netdev17.c src/main/net/cnlbs01.c src/main/net/cnlbs02.c src/main/net/cnlbs03.c \
-             src/main/net/netsyn01.c src/main/net/netsyn02_nm.c src/main/net/netsyn03.c"
+             src/main/net/netsyn01.c src/main/net/netsyn02_nm.c src/main/net/netsyn03.c \
+             src/main/net/netsyn05.c src/main/net/netsyn08.c src/main/net/netsyn09.c src/main/net/netsyn10.c src/main/net/netsyn11_nm.c"
     NETLB="src/lobby/cnet/cnlbs.c src/lobby/cnet/cnlbsb.c src/lobby/cnet/cnlbsc.c src/lobby/cnet/cnlbsd.c src/lobby/cnet/cnlbse.c \
            src/lobby/cnet/cnlbsf.c src/lobby/cnet/cnlbsg.c src/lobby/cnet/cnlbsh.c src/lobby/cnet/cnlbs_nm.c \
            src/lobby/b/lb_bz20.c src/lobby/b/lb_c509.c src/lobby/b/lb_bz81.c src/lobby/b/lb_tcp01.c"
