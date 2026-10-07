@@ -82,6 +82,35 @@ void rt_village_enter(void)
                 fprintf(stderr, " %02x", q);
         fprintf(stderr, "\n");
     }
+    {   /* test aids (no save data), first visit only: RT_MONEY=n, RT_BOX_ITEMS="id:n,..." (item box = User_data+0x1C4, 100 slots),
+         * RT_WARE="kind:id,..." (stored equipment: kind 0 weapon .. as the box lists them; User_data+0x44, 6 bytes each) */
+        extern u8 User_data[];
+        static int done;
+        if (!done) {
+            const char *q;
+            int id, n, used, k;
+            done = 1;
+            if (getenv("RT_MONEY"))
+                *(s32 *)(User_data + 0x20) = atoi(getenv("RT_MONEY"));
+            if ((q = getenv("RT_BOX_ITEMS")))
+                for (k = 0; k < 100 && sscanf(q, "%i:%i%n", &id, &n, &used) == 2; k++) {
+                    *(u16 *)(User_data + 0x1C4 + 4 * k) = (u16)id;
+                    *(s16 *)(User_data + 0x1C6 + 4 * k) = (s16)n;
+                    q += used;
+                    if (*q++ != ',')
+                        break;
+                }
+            if ((q = getenv("RT_WARE")))
+                for (k = 0; k < 64 && sscanf(q, "%i:%i%n", &n, &id, &used) == 2; k++) {
+                    User_data[0x44 + 6 * k] = 1;
+                    User_data[0x45 + 6 * k] = (u8)n;
+                    *(u16 *)(User_data + 0x46 + 6 * k) = (u16)id;
+                    q += used;
+                    if (*q++ != ',')
+                        break;
+                }
+        }
+    }
     lb_sys[3] = 0;                      /* vs_square_init_pre */
     lb_sys[4] = 0;
     active = 1;
@@ -122,6 +151,30 @@ int rt_village_tick(void)
         }
     }
     r = Local_main();
+    if (getenv("RT_QUEST_TRACE")) {     /* the saved hunter's data when it changes: money, pouch, item box, stored equipment, worn gear */
+        extern u8 User_data[];
+        static u8 last[0x460];
+        static int first = 1;
+        if (first || memcmp(last, User_data, 0x460)) {
+            int k;
+            first = 0;
+            memcpy(last, User_data, 0x460);
+            fprintf(stderr, "rt_village: tick %d ud money %d pouch:", tick, *(s32 *)(User_data + 0x20));
+            for (k = 0; k < 20; k++)
+                if (*(u16 *)(User_data + 0x37C + 4 * k))
+                    fprintf(stderr, " %d:%d", *(u16 *)(User_data + 0x37C + 4 * k), *(s16 *)(User_data + 0x37E + 4 * k));
+            fprintf(stderr, " | box:");
+            for (k = 0; k < 100; k++)
+                if (*(u16 *)(User_data + 0x1C4 + 4 * k))
+                    fprintf(stderr, " %d:%d", *(u16 *)(User_data + 0x1C4 + 4 * k), *(s16 *)(User_data + 0x1C6 + 4 * k));
+            fprintf(stderr, " | ware:");
+            for (k = 0; k < 64; k++)
+                if (User_data[0x44 + 6 * k])
+                    fprintf(stderr, " %d/%d/%d", User_data[0x45 + 6 * k], *(u16 *)(User_data + 0x46 + 6 * k), *(u16 *)(User_data + 0x48 + 6 * k));
+            fprintf(stderr, " | wear: w%d/%d/%x a %d %d %d %d %d\n", User_data[0x3CD], *(u16 *)(User_data + 0x3CE), *(u16 *)(User_data + 0x3D0),
+                    User_data[0x3D2], User_data[0x3D3], User_data[0x3D4], User_data[0x3D5], User_data[0x3D6]);
+        }
+    }
     static int spots_stage = -1;
     if (getenv("RT_VILLAGE_TRACE") && game_w[0x14] != spots_stage && lb_sys[3] == 4) {     /* the stage's unique spots (exits, chairs ...) */
         spots_stage = game_w[0x14];

@@ -280,7 +280,7 @@ int a;
 int b;
 int mode;
 {
-    IPREP *e = Item_preparation_adrs();
+    IPREP *e = Item_preparation_adrs(a, b);   /* (the PS2 passes a0/a1 through; x86 must pass them) */
 
     if (e == 0) {
         return -1;
@@ -311,8 +311,8 @@ void Add_to_Item_preparation_list_0(IPREP *e) {
     User_data[0x3D8 + (b >> 3)] |= (1 << (b & 7)) & 0xFF;
 }
 
-int Item_preparation_list_chk(void) {
-    IPREP *e = Item_preparation_adrs();
+int Item_preparation_list_chk(int a, int b) {
+    IPREP *e = Item_preparation_adrs(a, b);
     s8 bit;
 
     if (e == 0) {

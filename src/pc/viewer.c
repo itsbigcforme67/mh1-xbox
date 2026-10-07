@@ -1417,6 +1417,7 @@ int main(int argc, char **argv)
         return 1;
     }
     rt_log("boot: window %dx%d%s", W, H, shot ? " (hidden, screenshot run)" : "");
+    { extern void rt_seed_random(int); rt_seed_random(script != NULL); }
     if (script && !pad_script_set(script)) {
         fprintf(stderr, "bad --input script\n");
         rt_warn("bad --input script");

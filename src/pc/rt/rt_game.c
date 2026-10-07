@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 /* The game C stores pointers in u32 fields: only a 32-bit build works. */
 _Static_assert(sizeof(void *) == 4, "build the port runtime and game C with -m32");
@@ -142,16 +143,41 @@ int rt_bind_stage_model(gfx_clay *const *c, const uint32_t *attr, int n)
 }
 
 /* ------------------------------------------------------------ random */
-/* ran_suu (0x161230): per-channel Lehmer generator, x = x * 176 mod 65363,
- * seeded from the RTC (init_ran_suu); a zero state counts as 1. */
-static u16 rnd_w[2] = { 1, 1 };
+/* ran_suu (0x161230): per-channel Lehmer generator, x = x * 176 mod 65363, state Rnd_w[ch]
+ * (the game's own variable: the co-op start seeds it); a zero state counts as 1. The PS2 seeds
+ * it from the RTC (init_ran_suu); viewer.c seeds it from the clock unless a test script runs
+ * (scripted runs stay deterministic, RT_SEED=n forces a seed). */
+extern u16 Rnd_w[2];
 
 u32 ran_suu(int ch)
 {
-    u32 x = rnd_w[ch] ? rnd_w[ch] : 1;
-    rnd_w[ch] = (u16)(x * 176 % 0xFF53);
-    return rnd_w[ch];
+    u32 x = Rnd_w[ch] ? Rnd_w[ch] : 1;
+    Rnd_w[ch] = (u16)(x * 176 % 0xFF53);
+    return Rnd_w[ch];
 }
+
+static unsigned rnd_seed;
+static void rnd_apply(void)
+{
+    Rnd_w[0] = Rnd_w[1] = 0;
+    if (rnd_seed) {
+        Rnd_w[0] = (u16)(rnd_seed % 0xFF52 + 1);
+        Rnd_w[1] = (u16)((rnd_seed >> 7) % 0xFF52 + 1);
+    }
+}
+
+void rt_seed_random(int scripted)
+{
+    const char *e = getenv("RT_SEED");
+    if (e)
+        rnd_seed = (unsigned)strtoul(e, NULL, 0);
+    else if (!scripted)
+        rnd_seed = (unsigned)time(NULL) * 2654435761u >> 8;
+    rnd_apply();
+}
+
+/* init_ran_suu (sysw.c, WEAK): the game calls it at power-on; same seed again */
+void init_ran_suu(void) { rnd_apply(); }
 
 /* ------------------------------------------------------------ set objects */
 /* set_work (0x396A00) is 0x2000 bytes; 64 entries of 0x80 is a guess.
