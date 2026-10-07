@@ -32,6 +32,9 @@ typedef struct {
     float *skinpos;         /* work buffers for dynamic parts */
     uint8_t *skincol;
     int is_sky;             /* attribute +0x10 set: background part */
+    int skip;               /* set by the caller: not drawn this frame, fl_model_pose leaves it */
+    int gpu;                /* skinned and lit by the backend (gfx_clay_pose), not here */
+    gfx_skin_mesh *check;   /* RT_SKIN_CHECK=1: the GPU data, compared with the CPU result */
 } fl_part;
 
 typedef struct {

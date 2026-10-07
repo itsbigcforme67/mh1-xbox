@@ -11,6 +11,7 @@
  * What is a guess is marked as such.
  */
 #include "rt.h"
+#include "rt_prof.h"
 #include "types.h"
 #include "set.h"
 #include "game.h"
@@ -356,6 +357,7 @@ void rt_game_move(void)
         nqueue[i] = 0;
     stage_work.timer++;
     (*(u16 *)((u8 *)&game_w + 0x1E))++;     /* per-tick counter (0x10F060) */
+    rt_prof_begin(RTP_SETS);
     for (i = 0; i < SET_MAX; i++)
         if (set_used[i] && set_pool[i].w.move) {
             if (!set_seen[i] && getenv("RT_TRACE")) {
@@ -364,7 +366,10 @@ void rt_game_move(void)
             }
             set_pool[i].w.move(&set_pool[i].w);
         }
+    rt_prof_end(RTP_SETS);
+    rt_prof_begin(RTP_EFT_MOVE);
     rt_eft_move();          /* move_shell, move_eft (order after sets: a guess) */
+    rt_prof_end(RTP_EFT_MOVE);
     {   /* move() (0x125xxx) then: move_item, move_senko, move_smoke */
         void move_senko(void), move_smoke(void);
         move_senko();
@@ -394,7 +399,9 @@ void rt_game_draw(void)
                         o ? o->type : -1, o ? o->arg : -1, queue[t][k].p->pos[0], queue[t][k].p->pos[1], queue[t][k].p->pos[2]);
             }
     }
+    rt_prof_begin(RTP_EFT_DRAW);
     rt_eft_draw();          /* trans_shell, trans_eft, trans_eft_up (before the prims: a guess) */
+    rt_prof_end(RTP_EFT_DRAW);
     rt_fl_reset_states();
     for (t = 0; t < 5; t++)
         for (k = 0; k < (t == 2 ? 0 : nqueue[t]); k++) {   /* ot2: screen layer (rt_game_draw_2d) */

@@ -17,6 +17,7 @@
  * game tick (30 per second). RT_NOMOVIE=1 skips movies (tests).
  */
 #include "rt.h"
+#include "rt_prof.h"
 #include "types.h"
 #include "../audio/audio.h"
 #include "../gfx/gfx.h"
@@ -207,7 +208,10 @@ int movie_server(void)
         fprintf(stderr, "movie: tick %ld frame %d, audio %.2f s, wall %.2f s, decode %.2f ms/frame (worst %.1f ms)\n", mv.ticks, fr,
                 (double)audio_stream_consumed(AUDIO_STREAM_MOVIE) / AUDIO_RATE, wall_s() - mv.wall0, tot / (fr ? fr : 1), mx);
     }
+    rt_prof_begin(RTP_MOVIE_AUDIO);
     audio_feed();
+    rt_prof_end(RTP_MOVIE_AUDIO);
+    rt_prof_begin(RTP_MOVIE);
     t = clock_now();
     want = (int)(t * sfd_fps(mv.s)) + 1;
     if (mv.ticks == 1)
@@ -239,6 +243,7 @@ int movie_server(void)
             }
         }
     }
+    rt_prof_end(RTP_MOVIE);
     return mv.ready;
 }
 

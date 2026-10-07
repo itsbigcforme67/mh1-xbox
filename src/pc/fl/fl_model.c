@@ -8,9 +8,40 @@
  * gfx_batch per texture) and skinning/lighting run on the CPU.
  */
 #include "fl.h"
+#include "../rt/rt_prof.h"
 
+#include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* part 0's first material's vertices (player_trans' hair colour) */
+static uint8_t *first_material_mask(const amo_part *p)
+{
+    uint8_t *mask;
+    int s, k, mat0;
+    if (p->nstrip <= 0)
+        return NULL;
+    mask = calloc((size_t)p->nvert + 1, 1);
+    mat0 = p->strip[0].material;
+    for (s = 0; s < p->nstrip; s++)
+        if (p->strip[s].material == mat0)
+            for (k = 0; k < p->strip[s].count; k++)
+                if (p->index[p->strip[s].first + k] < p->nvert)
+                    mask[p->index[p->strip[s].first + k]] = 1;
+    return mask;
+}
+
+/* RT_SKIN_CHECK=1: the vertex program's C model against the CPU skinning */
+static double chk_pos, chk_col;
+static long chk_n, chk_parts, chk_v0, chk_v1, chk_batches, chk_mb0;
+static void chk_report(void)
+{
+    fprintf(stderr, "skin check: %ld vertices, worst position error %.6f (relative), worst colour %.2f\n",
+            chk_n, chk_pos, chk_col);
+    fprintf(stderr, "skin check: %ld parts built: %ld vertices -> %ld in the GPU batches, %ld batches (%ld material batches)\n",
+            chk_parts, chk_v0, chk_v1, chk_batches, chk_mb0);
+}
 
 static void build_part(fl_model *m, int pi)
 {
@@ -98,6 +129,41 @@ static void build_part(fl_model *m, int pi)
     d.dynamic = fp->skinned || fp->lit;
     fp->clay = gfx_create_clay(&d);
     if (d.dynamic) {
+        static int check = -1;
+        gfx_skin_desc sd;
+        uint8_t *tmask = pi == 0 ? first_material_mask(p) : NULL;
+        memset(&sd, 0, sizeof sd);
+        sd.nvert = p->nvert;
+        sd.nrm = p->nrm;
+        sd.infl_n = p->infl_n;
+        sd.infl_bone = p->infl_bone;
+        sd.infl_w = p->infl_w;
+        sd.nbone = m->skel.nbone;
+        sd.skinned = fp->skinned && m->skel.nbone > 0;
+        sd.tint_mask = tmask;
+        if (check < 0) {
+            check = getenv("RT_SKIN_CHECK") != NULL;
+            if (check)
+                atexit(chk_report);
+        }
+        if (gfx_skin_capable() && gfx_clay_set_skin(fp->clay, &sd) == 0) {
+            fp->gpu = 1;
+        } else if (check) {
+            fp->check = calloc(1, sizeof *fp->check);
+            if (fp->check && gfx_skin_build(fp->check, &d, &sd) != 0) {
+                free(fp->check);
+                fp->check = NULL;
+            } else if (fp->check) {
+                chk_parts++;
+                chk_v0 += d.nvert;
+                chk_v1 += fp->check->nv;
+                chk_batches += fp->check->nbatch;
+                chk_mb0 += d.nbatch;
+            }
+        }
+        free(tmask);
+    }
+    if (d.dynamic && !fp->gpu) {
         fp->skinpos = malloc(sizeof(float) * 3 * (p->nvert + 1));
         fp->skincol = malloc(4 * (size_t)(p->nvert + 1));
     }
@@ -194,6 +260,10 @@ void fl_model_release(fl_model *m)
 {
     int i;
     for (i = 0; i < m->npart; i++) {
+        if (m->part[i].check) {
+            gfx_skin_free(m->part[i].check);
+            free(m->part[i].check);
+        }
         gfx_release_clay(m->part[i].clay);
         free(m->part[i].skinpos);
         free(m->part[i].skincol);
@@ -215,6 +285,7 @@ void fl_model_pose(fl_model *m, const flmat *bone_world_mats, const fl_light *L)
     int pi, nb = m->skel.nbone;
     flmat *skin = NULL;
 
+    rt_prof_begin(RTP_SKIN);
     if (bone_world_mats && nb) {
         int b;
         skin = malloc(sizeof(flmat) * nb);
@@ -225,8 +296,25 @@ void fl_model_pose(fl_model *m, const flmat *bone_world_mats, const fl_light *L)
         amo_part *p = &m->amo.part[pi];
         fl_part *fp = &m->part[pi];
         int v;
-        if (!fp->skinpos)
+        gfx_light gl;
+        if (fp->skip || (!fp->skinpos && !fp->gpu))
             continue;
+        memset(&gl, 0, sizeof gl);
+        gl.lit = fp->lit && L;
+        if (gl.lit) {
+            memcpy(gl.dir, L->dir, sizeof gl.dir);
+            memcpy(gl.col, L->col, sizeof gl.col);
+            memcpy(gl.ambient, L->ambient, sizeof gl.ambient);
+        }
+        gl.tint = m->has_tint && pi == 0;
+        memcpy(gl.tint_rgb, m->tint, sizeof gl.tint_rgb);
+        if (fp->gpu) {
+            rt_prof_count(RTPC_SKIN_VERTS, p->nvert);
+            rt_prof_begin(RTP_GFX);
+            gfx_clay_pose(fp->clay, (const float (*)[16])skin, &gl);
+            rt_prof_end(RTP_GFX);
+            continue;
+        }
         if (m->has_tint && pi == 0 && !m->tint_mask && p->nstrip > 0) {   /* part 0's first material */
             int s, k, mat0 = p->strip[0].material;
             m->tint_mask = calloc((size_t)p->nvert + 1, 1);
@@ -289,9 +377,37 @@ void fl_model_pose(fl_model *m, const flmat *bone_world_mats, const fl_light *L)
             }
             fp->skincol[4 * v + 3] = (uint8_t)(p->col ? p->col[4 * v + 3] : 255);
         }
+        if (fp->check) {        /* RT_SKIN_CHECK: the GPU path's result for every copy of every vertex */
+            const gfx_skin_mesh *cm = fp->check;
+            int b, k;
+            for (b = 0; b < cm->nbatch; b++)
+                for (k = 0; k < cm->batch[b].nv; k++) {
+                    float q[3], rgba[4], scale = 1, e = 0;
+                    int sv = cm->src[cm->batch[b].vfirst + k], c;
+                    gfx_skin_eval(cm, b, k, (const float (*)[16])(skin && fp->skinned ? skin : NULL), &gl, q, rgba);
+                    for (c = 0; c < 3; c++) {
+                        float a = fp->skinpos[3 * sv + c];
+                        scale = fabsf(a) > scale ? fabsf(a) : scale;
+                        e = fabsf(q[c] - a) > e ? fabsf(q[c] - a) : e;
+                    }
+                    if (e / scale > chk_pos)
+                        chk_pos = e / scale;
+                    for (c = 0; c < 4; c++) {
+                        float vc = rgba[c] > 255 ? 255 : rgba[c] < 0 ? 0 : rgba[c];
+                        double dc = fabs(vc - fp->skincol[4 * sv + c]);
+                        if (dc > chk_col)
+                            chk_col = dc;
+                    }
+                    chk_n++;
+                }
+        }
+        rt_prof_count(RTPC_SKIN_VERTS, p->nvert);
+        rt_prof_begin(RTP_GFX);
         gfx_update_clay(fp->clay, fp->skinpos, fp->skincol);
+        rt_prof_end(RTP_GFX);
     }
     free(skin);
+    rt_prof_end(RTP_SKIN);
 }
 
 void fl_model_draw(fl_model *m, int sky)

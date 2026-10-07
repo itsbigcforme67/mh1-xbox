@@ -1,0 +1,68 @@
+/* gfx_nv2a.c skinning vertex program (gfx.h "GPU skinning"): the matrix
+ * rows of up to 24 palette bones blended per vertex (idx = 3 * slot), plus
+ * the rigid part (flag.x), position and normal through them; VU1-style
+ * lighting (3 directional lights + ambient, clamped), tint where flag.y;
+ * then as vs.vs.cg (mvp, fog in COLOR1, texture matrix). 116 of 128
+ * instructions; constants c[0..92] (see gfx_nv2a.c skin_constants). The C
+ * model of it is gfx_skin_eval (src/pc/gfx/gfx_skin.c). */
+struct vIn {
+	float4 pos  : POSITION;
+	float4 nrm  : NORMAL;
+	float4 col  : DIFFUSE;
+	float4 tex  : TEXCOORD0;
+	float4 w    : TEXCOORD1;
+	float4 idx  : TEXCOORD2;
+	float4 flag : TEXCOORD3;
+};
+struct vOut {
+	float4 pos  : POSITION;
+	float4 col  : COLOR0;
+	float4 col1 : COLOR1;
+	float4 tex0 : TEXCOORD0;
+};
+vOut main(vIn I,
+	uniform float4x4 m_mvp,
+	uniform float4x4 m_tex,
+	uniform float4 fog_kb,
+	uniform float4 fog_col,
+	uniform float4 ldir[3],
+	uniform float4 lcol[3],
+	uniform float4 amb,
+	uniform float4 tint,
+	uniform float4 mode,
+	uniform float4 fade,
+	uniform float4 bones[72])
+{
+	vOut r;
+	/* blended matrix rows: rigid part (flag.x) + sum of w_k * bone_k; idx = 3 * palette slot */
+	float4 r0 = I.flag.x * float4(1, 0, 0, 0);
+	float4 r1 = I.flag.x * float4(0, 1, 0, 0);
+	float4 r2 = I.flag.x * float4(0, 0, 1, 0);
+	for (int k = 0; k < 4; k++) {
+		int b = (int)I.idx[k];
+		r0 += bones[b] * I.w[k];
+		r1 += bones[b + 1] * I.w[k];
+		r2 += bones[b + 2] * I.w[k];
+	}
+	float4 p0 = float4(I.pos.xyz, 1.0);
+	float4 n0 = float4(I.nrm.xyz, 0.0);
+	float3 p = float3(dot(p0, r0), dot(p0, r1), dot(p0, r2));
+	float3 n = float3(dot(n0, r0), dot(n0, r1), dot(n0, r2));
+	float4 hp = mul(float4(p, 1.0), m_mvp);
+	r.col1 = float4(fog_col.xyz, saturate(hp.w * fog_kb.x + fog_kb.y));
+	hp.xyz = hp.xyz / hp.w;
+	r.pos = hp;
+	float3 lc = float3(1, 1, 1);
+	if (mode.x > 0.5) {
+		float len2 = dot(n, n);
+		n = len2 > 0 ? n * rsqrt(len2) : n;
+		lc = amb.xyz;
+		for (int l = 0; l < 3; l++)
+			lc += max(-dot(n, ldir[l].xyz), 0) * lcol[l].xyz;
+	}
+	lc = min(lc, float3(1, 1, 1));
+	lc = I.flag.y > 0.5 ? lc * tint.xyz : lc;
+	r.col = float4(I.col.xyz * lc, I.col.w) * fade;
+	r.tex0 = mul(float4(I.tex.xy, 0.0, 1.0), m_tex);
+	return r;
+}

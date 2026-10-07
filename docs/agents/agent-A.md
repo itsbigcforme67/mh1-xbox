@@ -669,3 +669,14 @@ Details in docs/pc.md (handover summary at the top, round 23 at the end).
   undefined symbols); it now stops with a message.
 - Lesson: never `pgrep -f` a pattern in a wait loop: the loop's own command
   line matches it (my wait loop never ended; killed by PID).
+
+## Round 4 (7 Oct 2026): CPU profile, projection, GPU skinning
+
+- RT_PROF per subsystem (rt_prof.c, thread CPU time), RT_STEP, tools/prof_scenes.sh.
+- Projection at an assumed 20x slowdown and the reasoning: docs/xbox.md "CPU budget".
+- GPU skinning for nv2a (skin.vs.cg + gfx_skin.c), checked by RT_SKIN_CHECK against the CPU path
+  (39 M vertices); PC keeps CPU skinning.
+- Village skinned every villager body variant (16 -> 4 ms on the PC); mixer reverb hit denormals
+  (lesson: any float feedback loop - reverb, filters - needs an anti-denormal offset on x87/P3).
+- Lesson: contention from other agents makes wall-clock profiles useless here; measure thread
+  CPU time (CLOCK_THREAD_CPUTIME_ID).

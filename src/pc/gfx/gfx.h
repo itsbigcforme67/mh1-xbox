@@ -117,6 +117,68 @@ int  gfx_rec_state(int state, uintptr_t v);
 int  gfx_rec_2d(int w, int h, int n, const float *pos, const float *st, const uint8_t *col);
 int  gfx_rec_clay(gfx_clay *c);
 
+/* ------------------------------------------------------------ GPU skinning
+ * Backends that skin and light on the GPU (gfx_nv2a.c: a vertex program
+ * with a 24-bone palette) get the bind-pose data once and a pose per
+ * frame instead of gfx_update_clay. The GL backend does not
+ * (gfx_skin_capable() 0): fl_model keeps skinning on the CPU there.
+ * The math is fl_model_pose's: pos = rigid * bind + sum w_k * (bind * M_k)
+ * (row vectors, weights as stored, not normalised), the normal likewise,
+ * normalised; colour = base * min(ambient + sum max(0, -n.dir) col, 1),
+ * times the tint where the tint mask is set; alpha = base alpha. */
+#define GFX_SKIN_INFL 4
+#define GFX_SKIN_PALETTE 24
+typedef struct {
+    int nvert;
+    const float *nrm;             /* 3 per vertex, or NULL (then the normal is (0,1,0)) */
+    const uint8_t *infl_n;        /* per vertex, or NULL = all rigid */
+    const int16_t *infl_bone;     /* nvert * GFX_SKIN_INFL */
+    const float *infl_w;
+    int nbone;                    /* bones the matrices of gfx_clay_pose cover */
+    int skinned;                  /* 0: rigid part (lighting only) */
+    const uint8_t *tint_mask;     /* per vertex 1 = tinted, or NULL */
+} gfx_skin_desc;
+typedef struct {
+    int lit;                      /* 0: colour = base (times fade) */
+    float dir[3][3], col[3][3], ambient[3];
+    int tint;                     /* tint the masked vertices */
+    float tint_rgb[3];
+} gfx_light;
+int  gfx_skin_capable(void);
+/* after gfx_create_clay (whose desc gave positions, st, base colours,
+ * indices); 0 = the backend skins this clay from now on */
+int  gfx_clay_set_skin(gfx_clay *c, const gfx_skin_desc *s);
+/* this frame's pose: skin[b] = inverse bind * bone world (row vectors), or
+ * NULL = bind pose; L as above */
+void gfx_clay_pose(gfx_clay *c, const float (*skin)[16], const gfx_light *L);
+
+/* gfx_skin.c: the GPU skinning data, shared (and checked on the PC):
+ * triangles regrouped into batches that use at most GFX_SKIN_PALETTE
+ * bones, vertices copied per batch with palette-local bone slots. */
+typedef struct {
+    int first, count;             /* into gfx_skin_mesh.index */
+    int vfirst, nv;               /* this batch's vertices */
+    int nbone;
+    int16_t bone[GFX_SKIN_PALETTE];   /* palette slot -> model bone */
+    gfx_texture *tex;
+} gfx_skin_batch;
+typedef struct {
+    int nv;
+    float *pos, *nrm, *st, *w;    /* 3, 3, 2, 4 per vertex */
+    uint8_t *slot;                /* 4 per vertex: palette slots */
+    uint8_t *col;                 /* 4 per vertex, base RGBA */
+    float *flag;                  /* 2 per vertex: rigid weight, tinted */
+    int *src;                     /* per vertex: the clay's vertex */
+    uint16_t *index;
+    int nindex, nbatch;
+    gfx_skin_batch *batch;
+} gfx_skin_mesh;
+int  gfx_skin_build(gfx_skin_mesh *m, const gfx_clay_desc *d, const gfx_skin_desc *s);
+void gfx_skin_free(gfx_skin_mesh *m);
+/* what the vertex program computes for vertex v (a C model of it) */
+void gfx_skin_eval(const gfx_skin_mesh *m, int b, int v, const float (*skin)[16], const gfx_light *L,
+                   float pos[3], float rgba[4]);
+
 gfx_clay *gfx_create_clay(const gfx_clay_desc *d);
 /* Replace positions and/or colours (either may be NULL). */
 void gfx_update_clay(gfx_clay *c, const float *pos, const uint8_t *col);

@@ -23,6 +23,7 @@
  * marked [guess] where it matters.
  */
 #include "rt.h"
+#include "rt_prof.h"
 #include "types.h"
 #include "game.h"
 #include "pl.h"
@@ -855,7 +856,14 @@ int rt_snd_init(const char *disc, int device)
     return 0;
 }
 
+static void snd_tick(void);
 void rt_snd_tick(void)
+{
+    rt_prof_begin(RTP_SND);
+    snd_tick();
+    rt_prof_end(RTP_SND);
+}
+static void snd_tick(void)
 {
     int i;
     if (!snd_on)

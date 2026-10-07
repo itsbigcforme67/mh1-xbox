@@ -18,6 +18,7 @@
 #include <SDL.h>
 #include <stdio.h>
 #include "rt/rt_memstat.h"
+#include "rt/rt_prof.h"
 #include <stdlib.h>
 #include <string.h>
 #ifdef XBOX
@@ -579,6 +580,55 @@ static fl_model stage, set;
 static monster rathian;
 static hunter pl;
 static fl_light light;
+extern unsigned char light_work[];
+
+/* The game's lights for the host's CPU lighting (docs/pc.md "Lighting"). light_work set 1 (light_work + 0x140: the
+ * hunter / monster / NPC set that Pl_light_set hands to flSetRenderState(0x5A..0x5C)) holds three light blocks of
+ * 0x68 bytes from +0x158: +0x04 colour rgb, +0x24 the ambient part of that light (the PS2 shader adds each light's
+ * ambient row), +0x34 direction the light travels (the shader negates it). light_init fills them from
+ * pl_light_tbl[stage], light_change_normal re-reads the stage rows, flash_move (thunder) blends the colours.
+ * Returns 0 when light_work is still empty (no stage lights yet): the caller keeps its default. */
+static int rt_light_from_game(fl_light *L)
+{
+    int i, k, any = 0;
+    float amb[3] = { 0, 0, 0 };
+    for (i = 0; i < 3; i++) {
+        const unsigned char *b = light_work + 0x158 + 0x68 * i;
+        float d[3], len;
+        memcpy(d, b + 0x34, sizeof d);
+        len = sqrtf(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
+        for (k = 0; k < 3; k++) {
+            float c, a;
+            memcpy(&c, b + 4 + 4 * k, 4);
+            memcpy(&a, b + 0x24 + 4 * k, 4);
+            L->dir[i][k] = len > 1e-6f ? d[k] / len : 0.0f;
+            L->col[i][k] = len > 1e-6f ? c : 0.0f;      /* an unused light has no direction row */
+            amb[k] += a;
+            any |= c != 0.0f || a != 0.0f;
+        }
+    }
+    if (!any)
+        return 0;
+    for (k = 0; k < 3; k++)
+        L->ambient[k] = amb[k];
+    return 1;
+}
+static fl_light light_game;          /* the game's stage lights (light_work), else the fixed default above */
+static const fl_light *light_cur(void)
+{
+    if (getenv("RT_LIGHT_GAME") && rt_light_from_game(&light_game)) {
+        static int shown;
+        if (getenv("RT_LIGHT_TRACE") && shown++ % 600 == 0) {
+            int i;
+            for (i = 0; i < 3; i++)
+                fprintf(stderr, "light %d dir %.2f %.2f %.2f col %.2f %.2f %.2f\n", i, light_game.dir[i][0], light_game.dir[i][1],
+                        light_game.dir[i][2], light_game.col[i][0], light_game.col[i][1], light_game.col[i][2]);
+            fprintf(stderr, "light ambient %.2f %.2f %.2f\n", light_game.ambient[0], light_game.ambient[1], light_game.ambient[2]);
+        }
+        return &light_game;
+    }
+    return &light;
+}
 static const int parts[HUNTER_PARTS] = { 1, 0, 1, 1, 1, 1 };
 static float hx = 10900, hz = 7700, rx = 10000, rz = 6700, gy;
 static Uint32 t0;
@@ -600,7 +650,9 @@ static void audio_dump_tick(void)
         dump_cap = dump_cap ? dump_cap * 2 : 1 << 20;
         dump_pcm = realloc(dump_pcm, dump_cap * sizeof *dump_pcm);
     }
+    rt_prof_begin(RTP_MIX);
     audio_mix(dump_pcm + dump_n, 1600);
+    rt_prof_end(RTP_MIX);
     dump_n += 1600 * 2;
 }
 
@@ -646,7 +698,7 @@ static void ed_hunter_draw(void *arg)
     }
     rt_player_get(no, p, &a);
     place(h->world, p[0], p[1], p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
-    hunter_pose(h, 0, &light);
+    hunter_pose(h, 0, light_cur());
     rt_cam_view(eye, tar, &roll, &fov);
     lookat_world(camw, eye, tar);
     flmat_invert_affine(view, camw);
@@ -719,6 +771,14 @@ static int load_stage_models(int st)
         }
         set_h0 = rt_bind_set_model(c, at, nc);
     }
+    {                           /* the stage's light rows into light_work (init_light_work in the game's stage change) */
+        extern unsigned char game_w[];
+        extern void light_init(void);
+        unsigned char old = game_w[0x14];
+        game_w[0x14] = (unsigned char)st;
+        light_init();
+        game_w[0x14] = old;
+    }
     if (reload) {
         fl_model_release(&old_stage);
         if (old_set.npart)
@@ -786,7 +846,7 @@ static void sim_tick(void)
     }
     if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
         sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
-        monsters_sync(0, &light);
+        monsters_sync(0, light_cur());
         rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
     }
     if (ticks >= 2 && !getenv("RT_EM_STANDIN")) {
@@ -972,6 +1032,8 @@ static void npc_draw(const fl_light *L)
             continue;
         m = &npc_mdl[kind];
         rt_monster_pose(i, &m->skel);
+        for (k = 0; k < m->model.npart; k++)    /* villagers: only their own parts are drawn, so only those are skinned */
+            m->model.part[k].skip = kind == 0 && (k >= 0x20 || !em[0x4E6 + k]) && !getenv("RT_POSE_ALL");
         fl_model_pose(&m->model, (const flmat *)m->skel.world, L);
         memcpy(s, em + 0xB8, sizeof s);
         r[0] = 0;
@@ -1249,7 +1311,7 @@ int main(int argc, char **argv)
     /* stand both on the ground: pose at frame 0, put the lowest vertex on
      * the collision floor */
     fl_skel_update(&rathian.skel, 0);
-    fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
+    fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, light_cur());
     if (getenv("RT_EM_POS"))            /* test placement of the Rathian: "x,z" */
         sscanf(getenv("RT_EM_POS"), "%f,%f", &rx, &rz);
     gy = 0;
@@ -1270,7 +1332,7 @@ int main(int argc, char **argv)
         }
         rathian.skel.root_lock = 1;
     }
-    hunter_pose(&pl, 0, &light);
+    hunter_pose(&pl, 0, light_cur());
     {
         float lo = 1e30f;
         int s;
@@ -1359,7 +1421,15 @@ int main(int argc, char **argv)
     t0 = SDL_GetTicks();
     while (running) {
         SDL_Event ev;
-        float t = fixed_time >= 0 ? fixed_time : (SDL_GetTicks() - t0) / 1000.0f;
+        /* RT_STEP=1 with --time S: one game tick per drawn frame up to S
+         * (a frame per tick, as at 30 fps: for RT_PROF's draw numbers) */
+        static int step = -1;
+        float t;
+        if (step < 0)
+            step = getenv("RT_STEP") != NULL && fixed_time >= 0;
+        t = fixed_time >= 0 ? fixed_time : (SDL_GetTicks() - t0) / 1000.0f;
+        if (step && frame_no / 30.0f < fixed_time)
+            t = frame_no / 30.0f;
         float fr = t * 30.0f;                      /* game motions run at 30 fps */
         flmat proj, camw, view;
         const Uint8 *keys;
@@ -1406,18 +1476,10 @@ int main(int argc, char **argv)
          * have run their init and queued their prims) */
         if (shot && shot_next > 2 + (int)fr)
             shot_next = 0;              /* RT_SHOTS past --time: dropped */
-        /* RT_PROF=1: host time per game tick (logic) and per drawn frame
-         * (CPU side of the draw: posing, skinning, GL calls), every 300 ticks */
-        static int prof = -1, prof_ticks0, prof_n, prof_fr;
-        static double prof_logic, prof_draw;
-        static Uint64 prof_t;
-        if (prof < 0)
-            prof = getenv("RT_PROF") != NULL;
-        if (prof) {
-            prof_t = SDL_GetPerformanceCounter();
-            prof_ticks0 = ticks;
-        }
+        /* RT_PROF=1: CPU time per subsystem (rt_prof.c), per game tick and
+         * per drawn frame, every 300 ticks */
         while (ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
+            rt_prof_begin(RTP_LOGIC);
             if (booting) {      /* ACRMain: pad, then the task scheduler */
                 pad_state ps;
                 if (script)
@@ -1436,6 +1498,8 @@ int main(int argc, char **argv)
                 }
                 ticks++;
                 mem_tick(ticks);
+                rt_prof_end(RTP_LOGIC);
+                rt_prof_tick();
                 continue;
             }
             if (quest_no) {
@@ -1466,7 +1530,7 @@ int main(int argc, char **argv)
             if (pl.game && play && ticks >= 2) {
                 sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
                 if (!rt_village_active())
-                    monsters_sync(0, &light);
+                    monsters_sync(0, light_cur());
             }
             if (tick_trace) {           /* RT_TICK_TRACE=1: compare windowed and headless runs */
                 extern uint8_t em_work[];
@@ -1478,13 +1542,10 @@ int main(int argc, char **argv)
                 fprintf(stderr, "T %d m%d st%d pl %.2f %.2f %.2f %04X em %.2f\n", ticks, rt_flow_mode(),
                         rt_game_stage(), p[0], p[1], p[2], a & 0xFFFF, es);
             }
+            rt_prof_end(RTP_LOGIC);
+            rt_prof_tick();
         }
-        if (prof) {
-            Uint64 t1 = SDL_GetPerformanceCounter();
-            prof_logic += (double)(t1 - prof_t) * 1000.0 / (double)SDL_GetPerformanceFrequency();
-            prof_n += ticks - prof_ticks0;
-            prof_t = t1;
-        }
+        rt_prof_begin(RTP_DRAW);
         if (booting) {          /* the boot screens: the last tick's picture */
             gfx_begin_frame(0);
             rt_boot_draw();
@@ -1523,12 +1584,13 @@ int main(int argc, char **argv)
             rt_monster_pose(0, &rathian.skel);
         else
             fl_skel_update(&rathian.skel, fr);
-        fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
-        hunter_pose(&pl, fr, &light);
+        if ((rt_monster_shown(0) && slot0_rathian()) || getenv("RT_POSE_ALL"))     /* skinned only when drawn (below) */
+            fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, light_cur());
+        hunter_pose(&pl, fr, light_cur());
         if (pl.game && play)            /* joint world matrices for the game C (parts, get_joint_pos) */
             sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
         if (weapon.game && pl.game && play)
-            weapon_pose(&light);
+            weapon_pose(light_cur());
 
         if (getenv("RT_CAM_EM")) {      /* test aid "slot,dist,height,yaw": free camera on monster slot */
             float p[3], d = 1500, hh = 600, yw = 0;
@@ -1580,9 +1642,9 @@ int main(int argc, char **argv)
                 draw_model_attr(&pl.part[s], -1);
         }
         if (rt_village_active())
-            npc_draw(&light);
+            npc_draw(light_cur());
         else
-            monsters_sync(1, &light);
+            monsters_sync(1, light_cur());
         if (weapon.game && pl.game && play) {
             static flmat wid;
             flmat_identity(wid);
@@ -1615,7 +1677,8 @@ int main(int argc, char **argv)
             if (shot_list && *shot_list == ',')
                 shot_list++;
         }
-        if (shot && frame_no >= frames && shot_next <= 0 && (!shot_list || ticks >= 2 + (int)fr)) {
+        if (shot && frame_no >= frames && shot_next <= 0 && (!shot_list || ticks >= 2 + (int)fr)
+            && (!step || frame_no / 30.0f >= fixed_time)) {
             uint8_t *rgb = malloc((size_t)W * H * 3);
             gfx_read_pixels(rgb);
             write_png(shot, W, H, rgb);
@@ -1623,17 +1686,11 @@ int main(int argc, char **argv)
             free(rgb);
             running = 0;
         }
-        if (prof) {
-            prof_draw += (double)(SDL_GetPerformanceCounter() - prof_t) * 1000.0 / (double)SDL_GetPerformanceFrequency();
-            prof_fr++;
-            if (prof_n >= 300 || prof_fr >= 300) {
-                fprintf(stderr, "prof: logic %.2f ms/tick (%d ticks), draw %.2f ms/frame CPU (%d frames)\n",
-                        prof_n ? prof_logic / prof_n : 0.0, prof_n, prof_draw / prof_fr, prof_fr);
-                prof_logic = prof_draw = 0;
-                prof_n = prof_fr = 0;
-            }
-        }
+        rt_prof_begin(RTP_GFX);
         gfx_end_frame();
+        rt_prof_end(RTP_GFX);
+        rt_prof_end(RTP_DRAW);
+        rt_prof_frame();
     }
     (void)n;
     if (audio_dump && dump_pcm) {
