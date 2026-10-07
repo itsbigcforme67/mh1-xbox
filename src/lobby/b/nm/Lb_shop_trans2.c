@@ -48,7 +48,7 @@ block_10:
             case 2:
                 Lb_put_gold(lbShop.x84);
                 flfntSetSize(0x12, 0x12);
-                EquipmentCompareWindow((int)&lbShop + 0x54, (int)&lbShop + 0x5A, 0x126, 0x3C);
+                EquipmentCompareWindow((int)&lbShop + 0x54, (int)&lbShop + 0x5A, 0x126, 0x3C, 0x80);   /* as the matched lb_by139 */
                 break;
             }
             lb_put_shopHelp();

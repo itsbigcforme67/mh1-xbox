@@ -643,10 +643,10 @@ void Disp_lb_item_box(void) {
                     ItemboxWindow(F(u8, ib, 9), pos);
                     return;
                 case 1:
-                    EquipmentCompareWindow(F(s32, w, 0x10), F(s32, w, 0x14), 0x132, 0x38);
+                    EquipmentCompareWindow(F(s32, w, 0x10), F(s32, w, 0x14), 0x132, 0x38, F(u8, w, 0x18));   /* t0 (asm 0x60D154) */
                     return;
                 case 2:
-                    EquipmentDescriptionWindow(F(s32, w, 0x14), 0x132, 0x38, F(u8, w, 0x18));
+                    EquipmentDescriptionWindow(F(s32, w, 0x14), 0x132, 0x38, F(u8, w, 0x18), 0);   /* t0 = 0 (asm 0x60D17C) */
                     return;
                 }
                 break;
@@ -1606,7 +1606,7 @@ void ItemboxWindowX(int cur, int flags, f32 base) {
                 Disp_help_mess(1, (u16)(*(u16 *)(User_data + cur * 4 + 0x1C4) + 0x18));
             } else {
                 if (*(User_data + cur * 6 + 0x44) != 0) {
-                    EquipmentDescriptionWindow(User_data + cur * 6 + 0x44, 0xB8, flags & 3);
+                    EquipmentDescriptionWindow(User_data + cur * 6 + 0x44, (int)base, 0xB8, flags & 3, 0);   /* asm 0x60CBB8: x = base, t0 = 0 */
                 }
             }
         }

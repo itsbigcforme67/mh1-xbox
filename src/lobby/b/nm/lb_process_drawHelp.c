@@ -81,7 +81,7 @@ block_12:
     switch (lbShop.x1C) {       /* irregular */
     case 1:
         if ((var_s1 & 0xFFFF) != 0x3E7) {
-            EquipmentCompareWindow((int)&lbShop + 0x54, (int)&lbShop + 0x5A, 0x126, 0x3C);
+            EquipmentCompareWindow((int)&lbShop + 0x54, (int)&lbShop + 0x5A, 0x126, 0x3C, *(u8 *)&lbShop.x6E);   /* t0 = lbShop+0x6E (asm 0x53B914) */
             return;
         }
     case 0:

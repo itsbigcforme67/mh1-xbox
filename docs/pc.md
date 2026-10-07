@@ -1617,3 +1617,25 @@ tables read with index 8 (see -fno-aggressive-loop-optimizations).
 f_frame_nm frame_init, f_stage stage_mv_ck, em_core/em_cmd locals, omake_nm
 disp_mode_menu, menu_disp_nm Pit_disp_item_list): all are switch paths without a
 default or a branch that cannot happen (system_error); none was a live bug.
+
+### Idiom sweep, third round (agent D, 7 Oct 2026)
+- Workshop detail window (square on a buy-list weapon): it was never a stand-in. EquipmentCompareWindow
+  is chat_nm.c's game C and ran, but (1) its callee EquipmentDescriptionWindowA_s (config/main_aliases.txt:
+  the same address as EquipmentDescriptionWindowA with s16 x/y) was a generated no-op on the PC, now an
+  ALIASES entry in build_pc.sh, and (2) the callers dropped the 5th argument (t0: page / compare flag).
+  Passed from the asm: lb_process_drawHelp (lbShop+0x6E, 0x53B914), Lb_shop_trans2 (0x80, as the matched
+  lb_by139), the item box's compare / description windows (lb_ib.c, 0x60D154, 0x60D17C, 0x60CBB8: the
+  description call also lost its x = base). Checked with a shot: both weapons' name, attack and
+  sharpness gauge draw, current above, the shop's weapon below.
+- Dropped register arguments, rest of the list: shop_armor2_stack (shop_process_after: kind/id =
+  the shop table entry, sp49/sp4A), func_5B4B20(sw) in disp_menu, Get_equip_data_ptr(e) in lb_ay.c and
+  GetAdrsMiniData(id) in lb_e.c (pc_patch.py). Not bugs after all (the scan matched declarations or
+  the argument is unused): Ud_item_num_ck/_ck3, Lb_check_newCommer, Lb_pl_init, item_to_stack.
+- BGM after entering a house: the question was whether the PS2's str_stop_all only pauses. It does not:
+  str_stop_all = str_init = ADXT_Stop + ADXT_Pause(0) + memset of str_w (0x100910), ADXT_Pause does
+  nothing on a stopped stream (0x203FA0 acts only in states 3/4), str_getstat is str_w[ch]+0, the
+  ADXT_GetStat copied in each tick by str_server (0x100D60), and lobby_bgm_set is as decompiled (the
+  same track id keeps "playing" without a restart). The village (stage 87) and the house (stage 86) share
+  track 0x1A in Snd_bgm_tbl, so by the code the PS2 would also be silent after the house door; either
+  the real game is, or something not decompiled restarts it. The PC keeps the str_getstat guard in
+  lobby_bgm_set (music continues): a deliberate deviation.
