@@ -201,6 +201,7 @@ int rt_player_uses_game(void)
  * or on the slot RT_PL_TARGET="tick:slot,tick:slot,..." names from that
  * player tick on */
 static int pl_ticks;
+int rt_tick_count(void) { return pl_ticks; }
 int rt_test_target(void)
 {
     const char *s = getenv("RT_PL_TARGET");
@@ -210,18 +211,30 @@ int rt_test_target(void)
         PLW *p = &player_work[0];
         int kind = atoi(s + 1), i;
         float best = -1;
-        for (i = 0; i < 20; i++) {
-            u8 *e = em_work + 0xA10 * i;
-            float dx, dz, d;
-            if (!e[0] || e[2] != kind || e[0x736] != p->stg || *(s16 *)(e + 0x302) <= 0)
-                continue;
-            dx = *(f32 *)(e + 0xAC) - p->pos[0];
-            dz = *(f32 *)(e + 0xB4) - p->pos[2];
-            d = dx * dx + dz * dz;
-            if (best < 0 || d < best) {
-                best = d;
-                slot = i;
+        int pass, none = 0;
+        for (pass = 0; pass < 2 && best < 0; pass++) {      /* living first, then a dead one still lying there (carving) */
+            for (i = 0; i < 20; i++) {
+                u8 *e = em_work + 0xA10 * i;
+                float dx, dz, d;
+                int alive = *(s16 *)(e + 0x302) > 0;
+                if (!e[0] || e[2] != kind || e[0x736] != p->stg || alive != (pass == 0))
+                    continue;
+                dx = *(f32 *)(e + 0xAC) - p->pos[0];
+                dz = *(f32 *)(e + 0xB4) - p->pos[2];
+                d = dx * dx + dz * dz;
+                if (best < 0 || d < best) {
+                    best = d;
+                    slot = i;
+                }
             }
+        }
+        if (best < 0) {     /* none on this stage: an unused slot, so WARP_EM / DMG_MUL / AIM do nothing */
+            for (i = 0; i < 20; i++)
+                if (!em_work[0xA10 * i]) {
+                    none = i;
+                    break;
+                }
+            slot = none;
         }
         return slot;
     }
@@ -356,6 +369,45 @@ void rt_player_tick(int no)
         PLW *p = &player_work[no];
         tk++;
         sscanf(getenv("RT_PL_GOTO"), "%d,%d", &t0, &goal);
+        if (strstr(getenv("RT_PL_GOTO"), ",f") && getenv("RT_PL_TARGET") && getenv("RT_PL_TARGET")[0] == 'k') {
+            /* "tick,f" with RT_PL_TARGET=kN: follow the monster, goal = the stage a living monster of kind N is on now
+             * (large monsters walk between areas) */
+            extern u8 em_work[];
+            int kind = atoi(getenv("RT_PL_TARGET") + 1), i;
+            goal = -1;
+            for (i = 0; i < 20 && goal < 0; i++) {
+                u8 *e = em_work + 0xA10 * i;
+                if (e[0] && e[2] == kind && *(s16 *)(e + 0x302) > 0 && e[0x736] < 0x58)
+                    goal = e[0x736];
+            }
+        } else {   /* "tick,stageA,stageB,...": with RT_PL_TARGET=kN, go on to the next stage once no living monster of kind N is
+             * left on the goal stage for 90 ticks (multi-stage hunts, tools/test_all_quests.py) */
+            static int idx, calm;
+            const char *g = getenv("RT_PL_GOTO"), *tt = getenv("RT_PL_TARGET");
+            int n = 0, i;
+            extern u8 em_work[];
+            for (i = 0, g = strchr(g, ','); g; g = strchr(g + 1, ','), i++)
+                ;
+            if (idx >= i)       /* past the last stage: start over (stages restock when re-entered) */
+                idx = 0;
+            for (i = 0, g = strchr(getenv("RT_PL_GOTO"), ','); g; g = strchr(g + 1, ','), i++)
+                if (i == idx)
+                    goal = atoi(g + 1), n = 1;
+            if (n && tk >= t0 && p->stg == goal && tt && tt[0] == 'k') {
+                int alive = 0, kind = atoi(tt + 1);
+                for (i = 0; i < 20; i++) {
+                    u8 *e = em_work + 0xA10 * i;
+                    if (e[0] && e[2] == kind && e[0x736] == p->stg && *(s16 *)(e + 0x302) > 0)
+                        alive++;
+                }
+                calm = alive ? 0 : calm + 1;
+                if (calm > 90) {
+                    idx++;
+                    calm = 0;
+                    fprintf(stderr, "rt_player: tick %d stage %d cleared of kind %d, next goal\n", tk, p->stg, kind);
+                }
+            }
+        }
         if (tk >= t0 && goal >= 0 && p->stg != goal && p->x738 == 0 && tk - last > 30) {
             void *Stage_mv_data_get(int st, int pl);
             static s16 prev[0x58];
@@ -384,7 +436,29 @@ void rt_player_tick(int no)
                             p->pos[1] = e[1] + 1.0f;
                             p->pos[2] = kind == 1 ? (e[2] + e[7]) * 0.5f : e[2];
                             fprintf(stderr, "rt_player: tick %d stage %d -> exit to %d (goal %d)\n", tk, p->stg, nx, goal);
+                            if (getenv("RT_GOTO_TRACE"))
+                                fprintf(stderr, "  exit kind %d pos %.0f %.0f %.0f r/h %.0f %.0f box %.0f %.0f %.0f dest %.0f %.0f %.0f\n", kind,
+                                        e[0], e[1], e[2], e[3], e[4], e[5], e[6], e[7], e[8], e[9], e[10]);
                             last = tk;
+                            {   /* the warp lands on the ground, which may be above the exit's height window (stage 37 -> 40
+                                 * stands at y 1000, the window is 500-1000): after two tries take the exit as stage_mv_ck
+                                 * does when it hits (f_stage.c) */
+                                static int tries, tnx = -1, tst = -1;
+                                void Pl_ofs_set(PLW *pl, f32 *out, u16 ang);
+                                tries = (tnx == nx && tst == p->stg) ? tries + 1 : 0;
+                                tnx = nx; tst = p->stg;
+                                if (tries >= 2) {
+                                    PF(p, u8, 0x738) = 1;
+                                    PF(p, u16, 0x73A) = (u16)nx;
+                                    PF(p, f32, 0x73C) = e[8];
+                                    PF(p, f32, 0x740) = e[9];
+                                    PF(p, f32, 0x744) = e[10];
+                                    PF(p, u16, 0x570) = (u16)(*(u16 *)(m + 0x30) + 0x4000);
+                                    Pl_ofs_set(p, (f32 *)((u8 *)p + 0x73C), PF(p, u16, 0x570));
+                                    fprintf(stderr, "rt_player: tick %d exit to %d taken directly\n", tk, nx);
+                                    tries = 0;
+                                }
+                            }
                             break;
                         }
                 }
@@ -582,6 +656,23 @@ void rt_hit_check(void)
     static int tr = -1;
     u8 *e = em_work + 0xA10 * rt_test_target();
     hit_check();
+    if (getenv("RT_PL_SLAY")) {     /* test aid "tick[,kind]": from that player tick on, the living monsters of that kind (default: the
+                                       RT_PL_TARGET one) take a lethal hit each tick, as if hit_check had found one: a boss that
+                                       stays out of reach (Rathalos aloft, a submerged Plesioth) still ends the quest
+                                       (tools/test_all_quests.py) */
+        int t = 0, kind = -1, i;
+        sscanf(getenv("RT_PL_SLAY"), "%d,%d", &t, &kind);
+        for (i = 0; i < 20 && rt_tick_count() >= t; i++) {
+            u8 *tg = em_work + 0xA10 * i;
+            if (tg[0] && *(s16 *)(tg + 0x302) > 0 && (kind >= 0 ? tg[2] == kind : tg == e)) {
+                static int once;
+                tg[0x38D] = 1;
+                PF(tg, s16, 0x766) = 30000;
+                if (!once++)
+                    fprintf(stderr, "rt_player: RT_PL_SLAY: monster slot %d (kind %d) takes a lethal hit\n", i, tg[2]);
+            }
+        }
+    }
     if (e[0x38D] && getenv("RT_DMG_MUL")) {     /* test aid: scale this tick's damage to monster 0 */
         int k, m = atoi(getenv("RT_DMG_MUL"));
         for (k = 0; k < 8; k++)

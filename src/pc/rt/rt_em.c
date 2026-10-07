@@ -335,6 +335,10 @@ int rt_quest_load(int no)
             for (; l->id >= 0; l++)
                 fprintf(stderr, " %d", l->id);
             fprintf(stderr, "\n");
+            fprintf(stderr, "rt_quest: quest %d stage %d counts:", no, st);      /* kind:x04 (kills it can give, respawns): x05 (counts for x34) */
+            for (l = (QEM *)Em_data_st_adrs_get(quest_w.x74, st, 1, quest_w.x3A); l->id >= 0; l++)
+                fprintf(stderr, " %d:%d:%d", l->id, l->x04, l->x05);
+            fprintf(stderr, "\n");
         }
     }
     if (getenv("RT_QUEST_TRACE")) {

@@ -211,7 +211,7 @@ void clr_set_work(void)
 /* get_prim hands out slots, add_prim queues one on an ordering table for
  * this tick; rt_game_draw walks ot0..ot4 in order. Priority order inside a
  * table (low first) is a guess. */
-#define PRIM_MAX 256
+#define PRIM_MAX 512   /* the PS2 has 0x200 prim slots (prim2.c); 256 ran out in quests 160/167 (set14_m then wrote through NULL) */
 #define OT_N 9
 #define QUEUE_MAX 512
 u8 ot0[0x20], ot1[0x20], ot2[0x20], ot3[0x20], ot4[0x20];
@@ -222,16 +222,44 @@ static unsigned char prim_used[PRIM_MAX];
 static struct { PRIM *p; int pri; } queue[OT_N][QUEUE_MAX];
 static int nqueue[OT_N];
 
+static void *prim_caller[PRIM_MAX];
+int get_prim(void);
+static void prim_report(void)       /* RT_PRIM_TRACE=1: prims still held at exit, by the get_prim caller (leak hunting) */
+{
+    int i, n = 0;
+    for (i = 0; i < PRIM_MAX; i++)
+        if (prim_used[i]) {
+            n++;
+            fprintf(stderr, "rt_prim: slot %d held, allocated from get_prim%+ld, draw get_prim%+ld\n", i, (long)((char *)prim_caller[i] - (char *)get_prim),
+                    (long)((char *)prim_pool[i].p.trans - (char *)get_prim));
+        }
+    fprintf(stderr, "rt_prim: %d of %d slots held\n", n, PRIM_MAX);
+}
+
 int get_prim(void)
 {
     int i;
+    static int reg;
+    if (!reg++ && getenv("RT_PRIM_TRACE"))
+        atexit(prim_report);
     for (i = 0; i < PRIM_MAX; i++)
         if (!prim_used[i]) {
             prim_used[i] = 1;
+            prim_caller[i] = __builtin_return_address(0);
             memset(&prim_pool[i], 0, sizeof prim_pool[i]);
             return i;
         }
     return -1;
+}
+
+/* prim_init (0x169230, src/main/prim/prim_init.c): every prim slot free again. The PS2 calls it from all_reset and from
+ * game2's stage change (step 2), and the sets/effects that held prims are rebuilt after it (stage_set_set, pl_init(1)); the
+ * PC's pool is its own, so without this every stage change leaked the old stage's slots (set14 never releases its prim) and
+ * a long hunt through 20+ areas ran the pool dry (quests 160/167 crashed in set14_m / enemy_mv at tick ~11000). */
+void prim_init(void)
+{
+    memset(prim_used, 0, sizeof prim_used);
+    memset(prim_pool, 0, sizeof prim_pool);
 }
 
 void release_prim(s16 no)

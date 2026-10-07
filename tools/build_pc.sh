@@ -311,7 +311,9 @@ for f in $GAME; do
     # trans() is the host's (rt_boot.c); TransSet/GameTrans are the game's
     src/main/weapon/trans.c) ABI="-Dtrans=ps2_trans" ;;
     # em_cmd_nm.c GetWaterData / em_core_nm.c NextStage_No_Set: a0 = em left over (tools/pc_patch.py)
-    src/game/em/em16_nm.c|src/game/em/em12_nm.c|src/game/em/em29.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
+    # em12_nm.c calls Eft02_set4 with the float first (PS2: scale in f12); the definition is (a, ang, arg, pos, scale)
+    src/game/em/em12_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft02_set4=rtabi_Eft02_set4" ;;
+    src/game/em/em16_nm.c|src/game/em/em29.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
     */em01_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
              -DEft15_set3=rtabi_Eft15_set3" ;;
     # em_sleep_eff_set: callers pass (em, joint, f32 *pos, f32 scale), the

@@ -33,6 +33,9 @@ Movies (agent B, 7 Oct 2026): the opening, the extras' movies and the title's
 idle loop (logos -> opening -> title, the game's own demo task) play from
 AFS00.AFS; see "Movies (libmpeg2)" below. The soft keyboard is the game's own.
 
+- `tools/test_all_quests.sh` (agent D, 7 Oct 2026; ~2.5 minutes, headless): every offline quest of the Elder's star
+  levels 1-5 (131-171) started with `--quest N`, played to quest clear, reward screen, money, village. Table below.
+
 Known gaps: reverb is an
 approximation, online play, ARM frame rate measured only up to round 20
 (25-28 fps at 960x720), nothing systematically compared with the PS2.
@@ -1328,3 +1331,51 @@ Still stand-ins that a player could notice (not wired; reason):
 - Sound: cnWrap_Bgm* are online-side names; BGM goes through the host's rt_snd.c. flPADShockSet (vibration) is not wired.
 New stand-ins appear when a wired function calls something else not ported (SetPartsTrans, weapon_dat_make*, light_change_normal, ...);
 none of them ran in the tests.
+
+
+## All offline quests played (agent D, 7 Oct 2026; `tools/test_all_quests.sh`)
+
+Each quest is started with `--quest N` (no village), planned from its own condition program, monster lists
+(`RT_QEM_DUMP` now also prints `kind:x04:x05` per entry) and the start stage's spots, and run to the reward and the village.
+Delivery: items into the pouch (`RT_PL_ITEMS`), warp to the camp box (spot kind 21), circle. Hunting: `RT_PL_GOTO` (stage list,
+or `tick,f` = follow the boss), `RT_PL_TARGET=kN`, `RT_PL_WARP_EM`, `RT_DMG_MUL`, `RT_PL_GOD`, a repeating pad pattern
+(attack flicks, circle = carve / take, cross, ddown + circle = "end receiving"). New aids: `RT_PL_SLAY="tick[,kind]"` (a lethal
+hit each tick on that kind, for a boss that stays out of reach), `RT_GOTO_TRACE`, `RT_PRIM_TRACE` (prims still held at exit and
+where they came from). RT_PL_GOTO takes a list of stages and wraps; after two failed warps to an exit it takes the exit as
+stage_mv_ck does (the warp lands on ground above the exit's height window on stage 37 -> 40). RT_PL_TARGET=kN now falls back to
+a dead monster of that kind, then to an unused slot (so WARP_EM / DMG_MUL do nothing when none is on the stage).
+
+| quest | stars | goal | result | bug found / fixed |
+|---|---|---|---|---|
+| 131-135 | 1 | deliver items (18x2; 20; 65x2+119; 1x2; 95) | clear, reward, village | none (131 was already walked for real by test_quest_loop.sh); gathering itself is not scripted except 131 |
+| 136 | 2 | 3 Velociprey | OK | none (urgent test hunts it for real) |
+| 141, 142, 143 | 2 | deliver 77x7, 242x5, 20x5 | OK | none |
+| 138 | 2 | deliver egg (145) | not automated | egg is a carried hold item: Pl_item_stack burns it down 10 per tick unless carried (act 0x47-0x60), so RT_PL_ITEMS cannot stand in; needs nest pickup + carry script |
+| 137, 152 | 3 | Velocidrome (27) | OK | none |
+| 148, 144 | 3 | Rathian-class (6) | OK | none |
+| 145 | 3 | 10 Velociprey over 3 stages | OK | RT_PL_GOTO could not leave stage 37 for 40 (see above, test aid) |
+| 146 | 3 | egg 145 | not automated | as 138 |
+| 147, 149 | 3 | deliver 219x3, 77x10 | OK | none |
+| 150 | 4 | item 144 + monster 6 | OK | reward list is empty (no `rewards:` line) |
+| 151 | 4 | 15 Velociprey (4 stages) + Rathalos (11) | OK (boss slain by aid) | none |
+| 153, 157 | 4 | egg | not automated | as 138 |
+| 154 | 4 | Diablos-class (8) | OK | none |
+| 155 | 4 | 15 kind-13 over 3 desert stages | OK | none; small monsters respawn per `x04` |
+| 156 | 4 | kind 28 | OK | none |
+| 158 | 4 | 15 kind-19 | OK | none |
+| 159 | 4 | deliver 77x10 | OK | none |
+| 160, 167 | 4, 5 | kind 31 (boss, stage 1) | OK | **prim pool exhausted -> crash** (set14_m / enemy_mv wrote through a NULL prim, tick ~9000): the PS2 clears all prims at every stage change (prim_init from game2 step 2 / all_reset), the PC had it as a no-op, so every stage change leaked the old stage's slots (set14 never releases its prim). Fixed: PC `prim_init` (rt_game.c) frees the pool; pool is 512 slots like the PS2 (was 256) |
+| 161 | 5 | 20 Velociprey + Rathalos | known failure | the lists hold 18 (x04 = 1 each): "kills left 2", nothing left to spawn; Rathalos dies by the aid. Not understood: a monster list read wrong, or a spawn source missing (PS2 not compared) |
+| 162 | 5 | Velocidrome | OK | none |
+| 163 | 5 | egg | not automated | as 138 |
+| 139 | 5 | Rathalos (11, flies) | OK (boss slain by aid) | 8000 ticks of real hits never landed (it stays aloft; hunter cannot hit it); **crash in em12_blood_req**: `Eft02_set4` was called with the float first (PS2 ABI) on x86: new adaptor rtabi_Eft02_set4 (rt_abi.c, ABI= line for em12_nm.c) |
+| 165 | 5 | 20 kind-13 + Plesioth (21, stage 54) | known failure | 18 of 20 obtainable like 161; the submerged Plesioth takes the aid's lethal hit but does not die (hp stays 1) |
+| 166 | 5 | kind 28 | OK | none |
+| 168 | 5 | 24+ kind-19 over 6 stages + kind 21 | OK (boss slain by aid) | none |
+| 140 | 5 | item 144 + Rathalos | OK | none |
+| 171 | 5 | kind 26 (stage 53) | OK | none |
+
+Counts: 38 offline quests, 28 OK, 5 egg quests not automated, 2 known failures (161, 165). "OK (boss slain by aid)" means
+the monster that cannot be reached is brought down by RT_PL_SLAY, so those runs test the clear / reward path, not combat
+against that monster. The other hunts use real hits (DMG_MUL 40 on the target only). Not covered: real gathering and
+fishing for the delivery quests, carving rewards, the eggs, urgent 136/137 clears for real (test_urgent.sh does those).
