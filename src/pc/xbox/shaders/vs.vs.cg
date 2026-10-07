@@ -1,6 +1,8 @@
 /* gfx_nv2a.c vertex program: position through one combined matrix
  * (world * view * projection * viewport, row vectors), pre-lit colour,
- * texture coordinates through the texture matrix (fl state 0x19). */
+ * texture coordinates through the texture matrix (fl state 0x19), and
+ * linear fog: COLOR1 = (fog colour, factor), factor = saturate(w * k + b)
+ * with w the clip w (the view depth). */
 struct vIn {
 	float4 pos : POSITION;
 	float4 col : DIFFUSE;
@@ -9,14 +11,16 @@ struct vIn {
 
 struct vOut {
 	float4 pos  : POSITION;
-	float4 col  : COLOR;
+	float4 col  : COLOR0;
+	float4 col1 : COLOR1;
 	float4 tex0 : TEXCOORD0;
 };
 
-vOut main(vIn I, uniform float4x4 m_mvp, uniform float4x4 m_tex)
+vOut main(vIn I, uniform float4x4 m_mvp, uniform float4x4 m_tex, uniform float4 fog_kb, uniform float4 fog_col)
 {
 	vOut r;
 	float4 p = mul(float4(I.pos.xyz, 1.0), m_mvp);
+	r.col1 = float4(fog_col.xyz, saturate(p.w * fog_kb.x + fog_kb.y));
 	p.xyz = p.xyz / p.w;
 	r.pos = p;
 	r.col = I.col;
