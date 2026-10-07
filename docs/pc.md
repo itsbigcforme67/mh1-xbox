@@ -1398,3 +1398,21 @@ Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item
   flSetRenderState(0x5A..0x5C) and ambient to state 1. Estimated job: decompile light_init (~0x260 bytes), fix the 0x68-byte light block layout (direction at +4..+0xC is known;
   colour and the VU1 matrix fields are not), have rt_fl.c capture states 0x5A-0x5C/1 into the fl_model Light, and use it for hunter, monsters, NPCs. About one to two days; the
   visible effect is per-stage/time-of-day lighting and the thunder flash on the storm stage.
+
+### Lighting from the game's stage lights (agent F, round 24)
+- light_init (0x11DB10, 584 bytes) is decompiled as a near-match copy for the PC: src/main/model/light_init_nm.c (the PS2 build keeps the original bytes; -O4 inlines the helper so an exact match
+  would need the two loops written out). With light_change_normal (light_nm.c), light_move (light04.c) and flash_move (light05.c) it is linked through PICK_X; init_light_work (rt_flow.c) and
+  viewer.c's load_stage_models call it at every stage load.
+- light_work layout: two sets of 0x140 bytes (set 0 = the stage set from stg_light_tbl, colours x10, light_set(0) in trans_stage; set 1 = the actor set from pl_light_tbl[stage], used by hunters,
+  monsters, NPCs, effects through pl_light_change + Pl_light_set). Set + 0x10 + 8 + i*0x68 is the LGT block of light i (flSetRenderState 0x5A+i copies it into flLIGHT):
+  +0x04 rgb colour (a), +0x14 second row (all 1.0 in the tables; sent to the shader as a per-light row), +0x24 rgb row c, +0x34 direction (the light travels along it; the shader negates it),
+  +0x40 fourth row, +0x50 attenuation. Table rows (per stage, 5 pointers): [0] +0x40 row, [1] directions (12 bytes per light), [2] colours a, [3] rows c, [4] second rows (16 bytes per light).
+  PS2SHADER_ADD_LIGHTCOL3 hands the a rows to the VU1 as the three light colours and the sum of the c rows as the ambient (docs/formats/graphics.md: mem 12-14 colours, mem 15 ambient).
+- Host: viewer.c `rt_light_from_game` reads set 1 (+0x158 + 0x68*i) into the fl_light that fl_model_pose (CPU lighting) uses: dir = block+0x34 normalised, col = block+4, ambient = sum of block+0x24.
+  `light_cur()` is used for the hunter, weapon, monsters and NPCs. `RT_LIGHT_FIXED=1` brings back the old fixed set (before/after), `RT_LIGHT_TRACE=1` prints the three lights. Lighting is on the CPU (vertex colours), so
+  the GL and nv2a backends need nothing.
+- Not done: per-actor adjustments (pl_light_change near-monster rows for stages 12/13/14/28/30 and the actor's own light table; Pl_light_set's blend with the player colour override), the stage set (set 0) for
+  set objects, and the thunder flash: flash_move is linked but nothing decompiled starts it (no C writes the light_work flag byte; it is set from code not yet ported).
+- Before/after (--stage N --play --follow 350,160,-0.15, 640x360, RT_LIGHT_FIXED=1 vs default), hunter in the middle, build/show/light/cmp*.png: stage 4 (waterfall plain): warmer key light from the
+  upper right, shadow side a lot darker, more contrast; stage 5 (dark jungle): the table has no ambient row, so the hunter is nearly black on the shadow side (the old fixed set lit him evenly);
+  stage 13 / 17 / 28 (cave and rock stages): slightly dimmer and bluer hunter; stage 6 (marsh grass): nearly unchanged. Village hunter (quest tests): a little darker with a visible light side.
