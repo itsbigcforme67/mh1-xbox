@@ -1247,3 +1247,26 @@ Off = real differing instructions of the C in the whole-file near-match TU (tool
 | 0x00562220 | 128 | em_cmd_ninshiki_timer_sub | 10 | em/em_cmd_nm.c |
 | 0x00539C90 | 108 | Em_Taisei_Set | 26 | em/em_master_nm.c |
 | 0x005546E0 | 104 | eft18_set_com | 2 | eft/eft18_nm.c |
+
+## Game overlay round 5 (agent D, 6-7 Oct 2026)
+Linked: eft23 (ONE TU eft23.c = old eft23.c + eft23b.c + fish_type_set + Fish_set, range 0x557480-0x558A74; remember to carry EVERY function of the old runs into the merged file,
+a missing function shows up as a link-size mismatch far away, e.g. "first difference at 0x860" = an address in the data region moved by the missing bytes),
+em_fly10 x2 (em20_fly10.c, em15_fly10.c, new run files made with a small cut-one-function-out-of-the-nm-file script), em_cdm_act_flag_ck (em_cmd_r98.c).
+Tricks (each confirmed by a match):
+- tools/perm.py WORKS and found two of these in 3 minutes each (`python3 tools/perm.py game FUNC src/x_nm.c -j5 --stop-on-zero`, wrapped in `timeout 170`; run several
+  functions one after another from a script; do not run tools/rebuild.sh meanwhile, it wipes asm/). The permuter source is noisy (reformatted) and it sometimes "fixes" a
+  function by changing semantics (a dead `new_var = 2; new_var = x;` assignment and a changed argument), so read its diff for the IDEA and re-apply by hand.
+- fish_type_set / em_act_search: a second u16 accumulator for the pick loop (`sum = 0; ... sum += w; if (r < sum)`) is NOT a new variable: reuse the first accumulator
+  (`total = 0;` again). Two accumulators gave swapped argument registers.
+- m2c invents arguments: `em20_senkai_target(em, 2)` in em_fly10 was really `em20_senkai_target(em)` (the callee ignores a1; the original passes whatever a1 held). Both
+  em_fly10 copies matched at once after the extra argument went. When a function differs only by which register holds a small constant, check for invented arguments.
+- em_cmd_range_ck: a float loop limit that the original keeps in $f2 across the loop (`lwc1 $f2` before the loop, loop value in $f1) is a local declared FIRST:
+  `f32 lim; ... lim = *(f32 *)&em->x3AC;` before the loop and `if (lim <= v)`.
+- em_cdm_act_flag_ck: reuse the first loop's counter `i` for the second search loop (no extra `j`), and end case 1 with `break` instead of `return` (an explicit
+  `return;` makes an extra branch to the epilogue).
+- A loop test `while (*p != 0 && str[j] != 0)` that the original compiles to `lb; sltu v,zero,c; xori v,1; bnez v,exit; ...; lb d; bnez d,body` is written
+  `while (!(!*p || !str[j]))` (cmn_mongon_check_sub 60 -> 36 off; `!(!a || !b)` is the only form I found that makes MWCC materialize `!(c != 0)` with sltu/xori).
+- Delay slots: `beq x,zero,L; nop` where mine fills the slot (or the reverse) is NOT fixed by source tricks I tried (pragmas peephole/scheduling, early return, ternary);
+  em20_act_set, eft18_set_com, em09_effect_move, set05_m, Set20_set, shell22_i, print_tuto_message stay near-matches.
+- Scratch scripts used (in the session scratchpad, not committed): typeall (exhaustive product of scalar local types, scored by alignall), declsub (every order of chosen
+  declaration lines), typehill, mkrun_nm (cut one function plus the file preamble out of a *_nm.c into its own run file).

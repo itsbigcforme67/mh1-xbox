@@ -2339,12 +2339,12 @@ u8 *em_cmd_swim_ck(EMW *em, u8 *p) {
 
 u8 *em_cmd_all_pl_target_sel(EMW *em, u8 *p) {
     u8 list[4];
-    u8 v;
     u8 pn;
-    u8 i;
-    u8 k;
-    s32 n;
-    s32 flag;
+    int i;
+    int k;
+    int n;
+    u8 v;
+    u8 flag;
 
     if (em->x88F != 0) {
         /* players that hate us a lot (>= 50000) */
