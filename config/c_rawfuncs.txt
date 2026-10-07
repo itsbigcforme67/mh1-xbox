@@ -99,3 +99,4 @@ main 0x00279CB0 0x13D8 equip_exp_core
 main 0x0027B3D0 0x3B8 slash_level_bar
 main 0x0027BA80 0x19C ng_word_sub
 main 0x00276170 0xCF4 DispFrameMessageA
+main 0x00280D50 0xFC McActAvailSet

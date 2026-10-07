@@ -12,3 +12,14 @@ Equip_moji_color_rare_i = 0x00275900;   /* same function, int result (no u8 mask
 Put_PageArrow_s = 0x0027B790;   /* Put_PageArrow called with narrowing s16 x/y (caller side) */
 EquipmentDescriptionWindowA_s = 0x00279A00;   /* EquipmentDescriptionWindowA called with narrowing s16 x/y (EquipmentCompareWindowA) */
 flfntLocate_s = 0x002168B0;   /* flfntLocate with raw int x and s16 y (chat/sword_zokusei): same function, second prototype */
+/* mc_act_* are file-static in mc/f_mc.c but listed in the mc_act_jmp table of the original data */
+mc_act_stop = 0x0027FEC0;
+mc_act_check = 0x0027FF40;
+mc_act_load = 0x00280030;
+mc_act_save0 = 0x00280220;
+mc_act_save = 0x002804D0;
+mc_act_format = 0x002808D0;
+mc_act_unformat = 0x00280940;
+mc_act_delete = 0x002809B0;
+mc_act_remove = 0x00280B00;
+mc_act_list = 0x00280BE0;
