@@ -2508,7 +2508,7 @@ void remuneration_item_set(void)
         default:
             break;
         }
-        tbl = (REMI *)((int)mission_area + e->tbl);
+        tbl = (REMI *)(e->tbl + (u32)mission_area);
         for (i = 0;; i++) {
             if (e->id == 0x8000) {
                 if (Pl_Skill_ck(pl, 0x34) == 1) {

@@ -1393,3 +1393,8 @@ the table address without the andi that `h & 0xFFFF` adds), dic_getsyn.
   jumps to the loop through a stub `b`; removing the second return 0 made it worse), add_dummy_chmem (param order of saved registers:
   declaration order, K&R, reuse of locals, HCHAR pointer: no change), GetOrthogonalPoint (loop pretest / types of k: no change),
   dic_snssyn (one `&buf[len]` pointer for both `= 0` stores, original: worse).
+Round 20b (coordinator's follow-up): remuneration_item_set 28 -> 26 (`e->tbl + (u32)mission_area`). Remaining diffs there are only the
+placement of the literal-address lui/addiu and one inner-loop `andi` (r masked at loop entry; `u16 r`, `(u16)r < acc` made it worse).
+quest_condition_prog: the stores in case -1 are emitted in SOURCE order by the original (sh x182, sb x06, sb D5, sh x184, sh x186, sb x181,
+each with its own `lui at`) while MWCC here groups the three sh stores first; casts through `(u8 *)&quest_w + off` or literal addresses did
+not fix it (not understood). No fresh rewrite was attempted beyond this; k_HitEmCamera untouched.
