@@ -134,3 +134,7 @@ Lbc_set_prim_k = 0x005B7460;
 To_LobbyExit_k = 0x005BCC80;
 To_PlazaExit_k = 0x005BB520;
 COM_R_No_Logout_c142 = 0x0038A858;
+COM_R_No_Logout_t = 0x0038A858;
+CallBackWaitInit = 0x005B7050;
+mail_input3 = 0x00595F70;
+plaza_req_input3 = 0x00597B10;

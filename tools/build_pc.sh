@@ -21,7 +21,7 @@ RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_gam
 # stage_set.c (main) spawns each stage's set objects; its calls into the
 # overlay go through src/pc/rt/rt_overlay.c. set13_nm.c holds set13_m /
 # set13_trans (near-matches on the PS2 side, believed equivalent).
-GAME="src/game/set/set14_nm.c src/game/set/set00.c src/main/stage/stage_set.c \
+GAME="src/game/set/set14.c src/game/set/set00.c src/main/stage/stage_set.c \
       src/main/set/set13.c src/main/set/set13b.c src/main/set/set13c.c src/main/set/set13_nm.c \
       src/game/set/set09.c src/game/set/set17.c src/game/set/set17_nm.c \
       src/game/set/set03.c src/game/set/set04.c src/game/set/set05_nm.c src/game/set/set07.c src/game/set/set08.c src/game/set/set10.c src/game/set/set11.c src/game/set/set15.c src/game/set/set16.c src/game/set/set18.c src/game/set/set19.c src/game/set/set20_nm.c src/game/set/set22.c \
@@ -57,7 +57,7 @@ EFT="src/game/eft/eft00.c src/main/eft/eft01.c src/main/eft/eft02_nm.c src/game/
      src/game/eft/eft07.c src/game/eft/eft08.c src/game/eft/eft09.c src/game/eft/eft10.c \
      src/game/eft/eft11_nm.c src/game/eft/eft12.c src/main/eft/eft13.c src/main/eft/eft13b.c \
      src/main/eft/eft13d.c src/main/eft/eft13e.c src/main/eft/eft13_nm.c src/game/eft/eft14.c \
-     src/game/eft/eft15.c src/game/eft/eft16_nm.c src/game/eft/eft17.c src/game/eft/eft18_nm.c \
+     src/game/eft/eft15.c src/game/eft/eft16.c src/game/eft/eft17.c src/game/eft/eft18_nm.c \
      src/game/eft/eft19.c src/main/eft/eft20.c src/main/eft/eft20c.c src/main/eft/eft20d.c \
      src/main/eft/eft20_nm.c src/game/eft/eft21.c src/game/eft/eft22_nm.c src/game/eft/eft23_nm.c \
      src/game/eft/eft24.c src/main/eft/eft26.c \
@@ -188,7 +188,7 @@ LOBBY2="src/lobby/f/lb_ib.c src/lobby/f/lb_tu_ib.c src/lobby/f/lb_ad.c src/lobby
         src/lobby/f/lb_ag.c \
         src/lobby/b/lb_by89.c src/lobby/b/lb_by90.c src/lobby/b/lb_by91.c src/lobby/b/lb_by43.c src/lobby/b/lb_by92.c \
         src/lobby/b/lb_by51.c src/lobby/b/lb_bz70.c src/lobby/b/lbarm01.c src/lobby/b/lb_by56.c src/lobby/b/lb_bz01.c \
-        src/lobby/b/lb_by07.c  \
+        src/lobby/b/lb_by07.c \
         src/lobby/b/nm/Lb_shop_trans2.c src/lobby/b/nm/Lb_process_shop.c src/lobby/b/nm/lb_cat_material.c \
         src/lobby/b/nm/lb_normal_material.c src/lobby/f/lb_ay.c src/lobby/f/lb_aw.c src/lobby/f/lb_dr2.c \
         src/lobby/b/lb_by82.c src/lobby/b/lb_by61.c src/lobby/b/lb_by62.c src/lobby/b/lb_by84.c src/lobby/b/lb_by49.c \
@@ -216,6 +216,10 @@ LOBBY3="src/lobby/b/lb_by122.c src/lobby/b/lb_by123.c src/lobby/b/lb_bz98.c src/
 # PICK: whole-file C from which only the named functions are wanted (all its
 # other definitions are weakened: the copies already linked win)
 PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint"
+# main merged the lobby-client b/ files (lb_by20, lb_by103, lb_bz29, lb_bz104,
+# lb_bz110, lb_bz137, lbuiv, lbuiw) into one TU, f/lb_cli.c (8 Oct 2026):
+# the functions the PC used from them
+PICK="$PICK src/lobby/f/lb_cli.c:lbc_text_lobby_trans,Lbs_GetRoomInfo,Lbc_set_prim,Lbc_init_network_work,Lbc_connect,text_lobby_trans_ot3,GetRoomRule,Lbs_MatchStart"
 LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*}"; done)"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
 WEAK="$WEAK_EM mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
@@ -287,8 +291,7 @@ for f in $GAME; do
     src/main/game/f_gameb.c) ABI="-Dgame_core=ps2_game_core" ;;
     # trans() is the host's (rt_boot.c); TransSet/GameTrans are the game's
     src/main/weapon/trans.c) ABI="-Dtrans=ps2_trans" ;;
-    */em_cmd_nm.c) ABI="-DGetWaterData()=GetWaterData(em)" ;;   # a0 = em left over
-    src/game/em/em_core_nm.c) ABI="-DNextStage_No_Set(...)=rtabi_NextStage_No_Set(em)" ;;   # a0 = em left over
+    # em_cmd_nm.c GetWaterData / em_core_nm.c NextStage_No_Set: a0 = em left over (tools/pc_patch.py)
     src/game/em/em16_nm.c|src/game/em/em12_nm.c|src/game/em/em29.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
     */em01_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
              -DEft15_set3=rtabi_Eft15_set3" ;;
@@ -337,6 +340,11 @@ for f in $GAME; do
              s/^static s8 check_sender0()/s8 check_sender0()/;
              s/^\( *\)Lbc_init_network_work();/\1Lbc_init_network_work(0);/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
+    # lb_cli.c: a struct of 128-bit quadwords (lq/sq copies on the PS2)
+    src/lobby/f/lb_cli.c)
+        src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
+        sed 's/typedef struct BRPD { unsigned __int128 q\[29\]; } BRPD;/typedef struct BRPD { struct { unsigned int w[4]; } q[29]; } BRPD;/' "$f" > "$src"
+        INC="$INC -I$(dirname "$f")" ;;
     # ItemPickingDeclaration calls Pl_master_ck() with its own a0 (arg) left over
     src/main/menu/menu_nm.c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
@@ -379,7 +387,9 @@ for f in $GAME; do
 done
 # the matched lobby functions win over other lobby objects' copies
 BOBJS=$(for f in $BMATCH; do printf 'build/pc/lb__%s.o ' "$(basename "$f" .c)"; done)
-BSYMS=$(for f in $BMATCH; do $NM --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && $2 == "T" {print $3}'; done | sort -u)
+BSYMS=$( (for f in $BMATCH; do $NM --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && $2 == "T" {print $3}'; done
+          for p in $PICK; do echo "${p#*:}" | tr , '\n'; done) | sort -u)   # PICKed lobby functions win too
+BOBJS="$BOBJS $(for p in $PICK; do printf 'build/pc/lb__%s.o ' "$(basename "${p%%:*}" .c)"; done)"
 for o in $OBJS; do
     case " $BOBJS " in *" $o "*) continue ;; esac
     case "$o" in build/pc/lb__*) ;; *) continue ;; esac

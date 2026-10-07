@@ -109,8 +109,8 @@ s8 em_eye_search_set(EMW *em) {
         eye[0] = em->pos[0];
         eye[1] = 100.0f + em->pos[1];
         eye[2] = em->pos[2];
-        ang = em->ang[1];
         y = em->pos[1];
+        ang = em->ang[1];
         break;
     default:
         eye[0] = em->pos[0];
@@ -122,11 +122,11 @@ s8 em_eye_search_set(EMW *em) {
     }
     s = em->search;
     dist = s->dist;
-    fov = s->fov;
-    e.pos = eye;
     up = s->up;
     down = s->down;
     xC = s->xC;
+    fov = s->fov;
+    e.pos = eye;
     e.ang = ang;
     e.fov = fov;
     for (i = 0; i < 4; i++, pl++) {
@@ -191,8 +191,10 @@ s8 em_eye_search_set(EMW *em) {
 
 void senko_ck(EMW *em, int pl, EM_EYE *e) {
     int i;
+    int t;
+    int f;
 
-    if (em->x40C > 0 || em->x8BB > 0 || em->x8C3 != 0) {
+    if ((u16)em->x40C > 0 || em->x8BB > 0 || em->x8C3 != 0) {
         return;
     }
     if (em->kind == 2 || em->kind == 5 || em->kind == 7 || em->kind == 8 || em->kind == 15 ||
@@ -209,7 +211,9 @@ void senko_ck(EMW *em, int pl, EM_EYE *e) {
     for (i = 0; i < 32; i++) {
         EM_SPOT *s = senko_stack[i];
         if (s != 0 && flvecCalcDistance(s->pos, e->pos) <= s->range) {
-            if ((u16)(Em_Calc_angY(e->pos, s->pos) + e->fov - e->ang) <= e->fov * 2) {
+            t = Em_Calc_angY(e->pos, s->pos);
+            f = e->fov;
+            if ((u16)(t + f - e->ang) <= f * 2) {
                 em->x8BC = 1;
             }
         }
@@ -1363,26 +1367,22 @@ extern f32 (*em_range_data_tbl[])[2];
 extern u16 (*em_range_ang_data_tbl[])[2];
 
 void em_range_set(EMW *em, s8 no) {
-    f32 (*r)[2] = &em_range_data_tbl[em->kind][(u8)no * 4];
-    u16 (*a)[2] = &em_range_ang_data_tbl[em->kind][(u8)no * 2];
+    f32 *r = (f32 *)&em_range_data_tbl[em->kind][(u8)no * 4];
+    u16 *a = (u16 *)&em_range_ang_data_tbl[em->kind][(u8)no * 2];
 
     em->range_no = no;
-    em->x810 = (*r)[0];
-    em->x814 = (*r)[1];
-    r++;
-    em->x818 = (*r)[0];
-    em->x81C = (*r)[1];
-    r++;
-    em->x8E4[0] = (*r)[0];
-    em->x90C[0] = (*a)[0];
-    em->x8E4[1] = (*r)[1];
-    em->x90C[1] = (*a)[1];
-    r++;
-    a++;
-    em->x8E4[2] = (*r)[0];
-    em->x90C[2] = (*a)[0];
-    em->x8E4[3] = (*r)[1];
-    em->x90C[3] = (*a)[1];
+    em->x810 = *r++;
+    em->x814 = *r++;
+    em->x818 = *r++;
+    em->x81C = *r++;
+    em->x8E4[0] = *r++;
+    em->x90C[0] = *a++;
+    em->x8E4[1] = *r++;
+    em->x90C[1] = *a++;
+    em->x8E4[2] = *r++;
+    em->x90C[2] = *a++;
+    em->x8E4[3] = *r++;
+    em->x90C[3] = *a++;
 }
 
 typedef struct STAGE_DATA {

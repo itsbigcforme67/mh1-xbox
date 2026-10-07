@@ -377,7 +377,7 @@ int pl_flag_ck(PLW *, int);
 s8 *st_mv_ptr_ck(EMW *);
 s16 act_ck(EMW *, u16, u16);
 EM_STG_POS *gp_ck(EMW *, EM_STG_POS *, s16);
-EM_STG_BOX *Stage_data_get(u8);
+EM_STG_BOX *Stage_data_get(int);
 int em_cancel_act_ck(EMW *, u8);
 u16 Em_Calc_angY(f32 *, f32 *);
 u32 ran_suu(int);

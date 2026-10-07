@@ -61,7 +61,6 @@ lobby 0x005923E0 0x768 Draw_menu_square
 lobby 0x005A06F0 0x360 lb_npc_old_guild
 lobby 0x005AEF70 0x2F0 lb_shop_put_itemDetail
 lobby 0x005AF4E0 0x2D0 lb_shop_tag_decide
-lobby 0x0053BE00 0x130 Lb_put_materialItem
 lobby 0x00536460 0x1B8 lb_mix_decide
 main 0x190600 0x120 plAMOGetModelMatrixlist
 main 0x191420 0x22c GetPrimVertexNumAMOModelMesh
@@ -103,7 +102,6 @@ main 0x00273B50 0xC8 Get_bowgun_atk
 main 0x00274690 0x74 Gun_level_up
 main 0x00274760 0x54 Gun_option_ck
 lobby 0x00597640 0x4C4 Plaza_add_friend
-lobby 0x00597DA0 0x898 plaza_mailBox
 main 0x18DB30 0x31C plmemRegisterS
 main 0x18DFE0 0x1D0 plmemCompact
 main 0x18E280 0x128 plmemAppendBlockList mn
@@ -111,15 +109,6 @@ main 0x18E3B0 0x80 plmemDeleteBlockList mn
 main 0x16D5C0 0x330 flExecuteClay
 main 0x16ABB0 0x78 fmsInitialize
 main 0x16AC30 0x60 fmsAllocMemory
-lobby 0x005B74C0 0x42C lbc_login_init
-lobby 0x005B9030 0x2BC CallBack_Result_LoginLobbyServer
-lobby 0x005B9DF0 0xF4 Lbs_ExitAndEnterPlaza
-lobby 0x005BB070 0x2FC Lbc_ConditionSearch
-lobby 0x005BC150 0x284 Lbc_GetRoomRule
-lobby 0x005BDB30 0xBC Lbc_SetPropaty
-lobby 0x005BEF30 0x154 lobby_client_admin_message
-lobby 0x005BF4F0 0x70 tk_logout_message_sub
-lobby 0x005BF560 0x268 tk_logout
 main 0x00264180 0x7C HardKeyboard_move
 main 0x00264200 0x5A4 hk_kbd_input
 main 0x002647B0 0x5B8 hk_kbd_input_sub
@@ -128,3 +117,20 @@ main 0x00265B50 0x1E0 hk_key_r_cursor
 main 0x00265FC0 0x114 hk_key_kata_hira
 main 0x00266350 0x330 roma_ck_sub
 main 0x00266B80 0x618 kbd_disp_input
+main 0x0025FE00 0xC0 sk_key_repeat
+main 0x0025FEC0 0x4AC SoftKeyboard_move
+main 0x00260370 0x308 sk_cursor_mv
+main 0x00260720 0x318 sk_moji_input
+main 0x00260C30 0x1A0 sk_backspace
+main 0x00260E60 0x19C sk_pltchange
+main 0x00261000 0x104 setup_rw_sub
+main 0x00261110 0x314 setup_rw_moji
+main 0x00261430 0xD8 dakuten_ck
+main 0x00261510 0xA0 Han2zen
+main 0x00261670 0x154 disp_keybase2
+main 0x002617D0 0x694 DispSoftkeyboard
+main 0x00262170 0x1E0 palette_ng_sub
+main 0x002625B0 0x68 sk_palette_cursor_set
+lobby 0x005BF4F0 0x70 tk_logout_message_sub
+lobby 0x005B74C0 0x42C lbc_login_init
+lobby 0x005BC150 0x284 Lbc_GetRoomRule

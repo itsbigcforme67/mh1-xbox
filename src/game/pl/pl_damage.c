@@ -1,4 +1,4 @@
-/* pl_damage - game.bin 0x00639EB0-0x0063A008: mahi_dm_ck to Guard_dir_ck.
+/* pl_damage - game.bin 0x00639DD0-0x0063A008: Pl_piyo_ck, Pl_poison_add, then mahi_dm_ck to Guard_dir_ck.
  * Player damage: death, guarding (direction check, stamina cost, recoil)
  * and the reaction when hit. pl_guard_ck (next) is still assembly (near-match
  * in pl_damage_nm.c); the rest is in pl_damageb.c. */
@@ -17,10 +17,29 @@ int Pl_master_ck(PLW *);
 void Pl_vital_calc(PLW *, s16);
 int Pl_Skill_ck(PLW *, int);
 void Pl_poison_add(PLW *, s16);
-int Pl_piyo_ck(PLW *);
+u8 Pl_piyo_ck(PLW *);
 void vib_set_pl(PLW *, int);
 int Code_Make(int, int, int, int);
 void Pl_se_req2(PLW *, int, int, f32 *, int, int);
+
+u8 Pl_piyo_ck(PLW *pl) {
+    return pl->x7AA >= 0x32;
+}
+
+void Pl_poison_add(PLW *pl, s16 add) {
+    if (Pl_Skill_ck(pl, 0xE) == 1) {
+        pl->x7BA = 0;
+    } else {
+        if (Pl_Skill_ck(pl, 9) == 1) {
+            add /= 2;
+        }
+        if (Pl_Skill_ck(pl, 0x13) == 1) {
+            add *= 2;
+        }
+        pl->x7BA += add;
+        pl->work7BE = 0x1E;
+    }
+}
 
 int mahi_dm_ck(PLW *pl) {
     if (act_ck(pl, 2, 0x16) != 0 || act_ck(pl, 2, 0x18) != 0) {

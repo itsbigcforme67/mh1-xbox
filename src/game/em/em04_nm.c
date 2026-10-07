@@ -65,7 +65,7 @@ void em04_init(EMW *);
 void em04_act_set();
 #define em04_act_set_k em04_act_set
 void em04_main_sub(EMW *em);
-void move_default_0058E4F0(EMW *em);
+static void move_default_0058E4F0(EMW *em);
 void Eft13_set_em_scl(EMW *, int, f32, int);
 int Code_Make(int, int, int, int);
 void Em_se_req2(EMW *, int, int, f32 *, int, int);
@@ -1204,13 +1204,13 @@ void em04_main_sub(EMW *em) {
     }
 }
 
-void move_default_0058E4F0(EMW *em) {
+static void move_default_0058E4F0(EMW *em) {
 }
 
 /* Sound and effect script per animation: sound_call(em, frame, se) plays
  * the sound code se once when the animation reaches frame. */
 void ef_move_sub_0058E500(EMW *em, EM04W *w) {   /* not static: em04c.c calls it */
-    if (w->anim != em->char0) {
+    if (em->char0 != w->anim) {
         w->anim = em->char0;
     }
     switch (w->anim) {
