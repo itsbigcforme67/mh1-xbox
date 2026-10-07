@@ -398,6 +398,7 @@ game 0x005345B0 0x00534728 em/em_core_b
 game 0x00535450 0x005355A0 em/em_core_c
 game 0x00535830 0x0053603C em/em_core_d
 game:rodata 0x00685080 0x0068510C em/em_core_d
+game 0x00536040 0x0053610C em/em_core_act
 game 0x00536110 0x00536440 em/em_core_e
 game 0x00536440 0x00536BB4 em/em_core_f
 game 0x00536C80 0x0053948C em/em_core_g
@@ -646,6 +647,7 @@ game 0x00560960 0x0056122C em/em_cmd_r13
 game 0x005619E0 0x00561D8C em/em_cmd_r14
 game 0x00561F80 0x0056221C em/em_cmd_r15
 game 0x005622A0 0x0056263C em/em_cmd_r16
+game 0x00562220 0x005622A0 em/em_cmd_r99
 game 0x00562AB0 0x00562BE4 em/em_cmd_r17
 game 0x00562E00 0x00563078 em/em_cmd_r18
 game 0x005631E0 0x00563328 em/em_cmd_r19
