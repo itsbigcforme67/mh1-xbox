@@ -77,7 +77,7 @@ extern char *ten_moji;
 void sk_set_etc_data();
 extern u8 palette_set_tbl[];
 extern s8 han_zen_tbl_671[];
-int sk_letlenB(void *, u16);
+int sk_letlenB(void *, int);
 void kbd_free_set(void);
 int palette_ng_sub(int, u8 *, u8 *);
 void sk_henkan_sub();
@@ -374,13 +374,58 @@ void sk_zen_han_chg(void) {
     se_req(7, snd, 0);
 }
 
-/* original bytes: build/raw/sk_backspace.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__
-asm void sk_backspace(int a, int b, void *c)
-{
-#include "sk_backspace.inc"
+void sk_backspace(int a, int b, void *c) {
+    u8 m = SKB(0x1D);
+    int len;
+    u8 *s;
+    int n;
+
+    if (m != 0xC && m != 0xD && SKB(0x158) == 0 && SKB(0x44) == 0) {
+        SKS8(0x32) = 1;
+        se_req(7, 0x14, 0);
+        return;
+    }
+    if (SKB(0x2F) == 0) {
+        s = lpSKey + 0x158;
+        if (SKB(0x158) != 0) {
+            n = SKU16(0x2C);
+            if (n != 0) {
+                s8 *t = (s8 *)(s + n);
+                t[-2] = 0;
+                strcat((char *)s, (char *)t);
+                SKU16(0x2C) -= 2;
+                if (SKU16(0x2C) == 0) {
+                    sk_key_repeat(0, 0);
+                }
+                goto done;
+            }
+        } else {
+            n = SKU16(0x2A);
+            s = lpSKey + 0x44;
+            if (n != 0) {
+                len = sk_letlenB(s, n);
+                *(s + n - len) = 0;
+                strcat((char *)s, (char *)s + n);
+                SKU16(0x2A) = SKU16(0x2A) - len;
+                if (SKU16(0x2A) == 0) {
+                    sk_key_repeat(0, 0);
+                }
+done:
+                SKS8(0x28) = 0;
+                se_req(7, 0x16, 0);
+            }
+        }
+    } else {
+        SKB(0x2F) = 0;
+        SKS8(0x28) = 0;
+        SKS8(0x26) = 0;
+        if (SKS8(0x36) != 0) {
+            SKU16(0x2C) = 0;
+            SKB(0x158) = 0;
+        }
+        se_req(7, 0x16, 0);
+    }
 }
-#endif
 
 
 void sk_speaking(int a, int b, void *c) {
