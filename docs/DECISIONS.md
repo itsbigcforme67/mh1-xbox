@@ -137,7 +137,18 @@ hardware — and the real Xbox for regular checks of what xemu gets wrong (64 MB
 details, timing, disc/HDD speed). xemu needs the owner's own BIOS, MCPX boot ROM and HDD image,
 dumped from their modded Xbox (never committed).
 
-## Open: the opening movie (Sofdec) (agent A, round 22)
+## Movies (Sofdec): libmpeg2 (decided 7 Oct 2026)
+
+Owner's decision: play the movies from the player's own disc with a ready-made
+decoder, libmpeg2 (GPL v2; used by XBMC on the original Xbox), plus our own
+program-stream demux and the existing ADX decoder. No ffmpeg step, no
+converted files. Same code for PC, ARM and Xbox, attract movies included.
+The port's source is therefore shared under the GPL when distributed (the repo
+is public already). Not chosen: own decoder (1-2 weeks), ffmpeg pre-convert
+with pl_mpeg, capture/re-encode (quality loss, Capcom data per player).
+Agent B does it after the soft keyboard.
+
+### Earlier notes (agent A, round 22)
 
 The movies are Sofdec files in AFS00.AFS: OPENING.sfd (79.6 MB, about 3.5 min),
 sp_mh.sfd (84 MB) and seven short attract movies (WTR, FEED, HORN, SQURE, PUB,
