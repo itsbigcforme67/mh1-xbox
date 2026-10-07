@@ -224,7 +224,7 @@ LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
 WEAK="$WEAK_EM mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 # soft keyboard (main f_sk, all-C TU; sk20.c has the texture load/blend helpers)
-SK="src/main/tu/sk_all.c src/main/tu/hk_all.c src/main/sk/sk20.c"
+SK="src/main/tu/sk_all.c src/main/tu/hk_all.c src/main/sk/sk20.c src/main/sk/cmd_nm.c"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT $SK"
 
 SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}
