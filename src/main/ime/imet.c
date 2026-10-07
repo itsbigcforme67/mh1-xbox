@@ -470,200 +470,56 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void init_univmem(void)
-{
-    u8 *p;
-
-    free_univ = mem;
-    for (p = mem; p < mem + 0x11928; p += 0x18) {
-        *(u8 **)p = p + 0x18;
-    }
-    *(u8 **)p = 0;
-    first_init_5 = 0;
-}
-
-void *alloc_mem(void)
-{
-    void *r;
-
-    r = free_univ;
-    if (r == 0) {
-        return 0;
-    }
-    free_univ = *(void **)r;
-    return r;
-}
-
-void free_mem(void *p)
-{
-    if (p != 0) {
-        *(void **)p = free_univ;
-        free_univ = p;
-    }
-}
-
-CH *alloc_chmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
-    }
-    return 0;
-}
-
-BS *alloc_bsmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
-    }
-    return 0;
-}
-
-PWM *alloc_pwmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
-    }
-    return 0;
-}
-
-KH *alloc_khmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
-    }
-    return 0;
-}
-
-KL *alloc_klmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
-    }
-    return 0;
-}
-
-void free_pwmemlist(PWM *p)
-{
-    PWM *n;
-
-    while (p != 0) {
-        n = p->next;
-        free_mem(p);
-        p = n;
-    }
-}
-
-void free_chmemlist(CH *c)
-{
-    CH *n;
-    u64 prev;
-
-    prev = -1;
-    while (c != 0) {
-        n = c->next;
-        if (prev == -1 || c->id != prev) {
-            if (c->id != -1) {
-                dic_freeentid(c->id);
-            }
-        }
-        prev = c->id;
-        free_mem(c);
-        c = n;
-    }
-}
-
-void free_bsmemlist(BS *b)
-{
-    BS *n;
-
-    while (b != 0) {
-        n = b->next;
-        free_mem(b);
-        b = n;
-    }
-}
-
-void free_khmemlist(KH *k)
-{
-    KH *n;
-
-    while (k != 0) {
-        n = k->next;
-        free_mem(k);
-        k = n;
-    }
-}
-
-void free_klmemlist(KL *l)
-{
-    KL *n;
-
-    while (l != 0) {
-        n = l->next;
-        free_mem(l);
-        l = n;
-    }
-}
-
-int bs_prefer(int pos, int end, int len)
+void bs_prefix(int pos)
 {
     BS *b;
-    BS *best;
-    BS *p;
+    PW *pw;
     HCHAR *h;
 
     h = &hchar[pos];
     for (b = h->bs; b != 0; b = b->next) {
-        if (len < 0 || b->len == len) {
-            if (bs_point(b, pos, end) == -1) {
-                return -1;
-            }
+        b->x0A = 0;
+        pw = b->pw;
+        if (pw != 0 && pw->x02 == 0x19 && pw->x00 == 0) {
+            b->x0A = 0xA;
         }
-    }
-    if (h == 0 || (best = h->bs) == 0) {
-        return -1;
-    } else {
-        for (p = best->next; p != 0; p = p->next) {
-            if (p->x08 > best->x08) {
-                best = p;
-            }
-        }
-        bs_ctd(best, pos, end);
-        return best->len;
     }
 }
 
-int calc_point(int pos, BS *b, BS *next)
+void bs_ctd(BS *b, int pos, int end)
 {
-    int a;
-    int c;
-    int f;
-    u16 pri;
+    BS *n;
+    int pt;
+    int p;
+    int len;
 
-    if (next == 0) {
-        a = b->len;
-        c = 0;
-        f = 1;
-    } else {
-        c = b->len;
-        a = next->len;
-        f = 0;
+    len = b->len;
+    if (b->x02 == 0xFF || (p = pos + len) >= end) {
+        return;
     }
-    pri = b->x0A;
-    return f * 0x32 + (pri + (c * 0x10 + a * 0x11) + setu_point(b, next));
+    n = hchar[p].bs;
+    if (n == 0) {
+        return;
+    }
+    while (n != 0) {
+        n->x0A = 0;
+        if (ignore_syn(n) == 0) {
+            pt = setu_point(b, n);
+            if (pt > 0) {
+                n->x0A = pt;
+            }
+        }
+        n = n->next;
+    }
+}
+
+int ignore_syn(BS *b)
+{
+    PW *pw;
+
+    pw = b->pw;
+    if (pw != 0 && (pw->x02 == 0x28 || pw->x02 == 0x29)) {
+        return 1;
+    }
+    return 0;
 }

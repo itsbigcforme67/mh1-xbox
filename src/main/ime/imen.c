@@ -470,74 +470,61 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int concat_bslen(int pos, int end)
+CH *make_chmem(int pos, SYNR *r)
 {
+    CH *c;
+    s16 len;
+    s64 id;
     int n;
-    HCHAR *h;
-    int c;
+    SYN *s;
+    CH *first;
+    CH *prev;
 
-    c = 0;
-    h = &hchar[pos];
-    n = 0;
-    while (pos < end) {
-        c = h->x15;
-        if (c == 0) {
-            return -1;
-        }
-        if (h->bs != 0 && h->bs != (BS *)-1 && h->bs->x02 != 0x28) {
-            break;
-        }
-        pos += c;
-        n += c;
-        h += c;
-    }
-    if (n == 0 || pos >= end) {
-        return n;
-    }
-    return n + c;
-}
-
-int muhenkan(int pos, int end)
-{
-    int k;
-    u8 *p;
-
-    k = pos + 1;
-    if (k < end) {
-        p = kana_ustr + k;
+    s = r->syn;
+    first = 0;
+    prev = 0;
+    len = r->x00;
+    id = r->id;
+    n = r->x14 - 1;
+    if (r->x14 != 0) {
         do {
-            if (not_bhead(*p) == 0) {
+            c = alloc_chmem();
+            if (c == 0) {
                 break;
             }
-            k++;
-            p++;
-        } while (k < end);
+            if (first == 0) {
+                first = c;
+            }
+            c->len = len;
+            c->x02 = s->x00;
+            c->x03 = s->x01;
+            c->id = id;
+            c->x10 = s->x04;
+            c->next = 0;
+            if (prev != 0) {
+                prev->next = c;
+            }
+            prev = c;
+            s++;
+        } while (n-- != 0);
     }
-    return k - pos;
+    return first;
 }
 
-void fl_check(int pos, int end)
+void hchar_addchmem(pos, c)
+int pos;
+CH *c;
 {
-    void *found;
-    int hit;
+    void **pp;
+    CH *p;
     HCHAR *h;
-    int n;
-    u8 *p;
 
-    n = end - pos;
     h = &hchar[pos];
-    p = kana_ustr + pos;
-    while (n > 0) {
-        if (h->x00 == -1) {
-            found = srch_pword(p, n, &hit);
-            if (found == (void *)-1) {
-                return;
-            }
-            h->x18 = hit;
-            h->x00 = (int)found;
-        }
-        n--;
-        p++;
-        h++;
+    pp = &h->ch;
+    p = h->ch;
+    while (p != 0) {
+        pp = (void **)&p->next;
+        p = p->next;
     }
+    *pp = c;
 }

@@ -2332,14 +2332,14 @@ void remuneration_item_set(void)
     u8 *out;
     int i;
     int th;
-    int j;
     u8 *a;
     u8 *b;
+    int j;
     u8 *g;
     REMI *q;
-    u16 *q16;
     s8 *sel;
     int r;
+    u16 *q16;
     int acc;
     u16 *tb;
     int ck;
@@ -2508,7 +2508,7 @@ void remuneration_item_set(void)
         default:
             break;
         }
-        tbl = (REMI *)(e->tbl + (int)mission_area);
+        tbl = (REMI *)((int)mission_area + e->tbl);
         for (i = 0;; i++) {
             if (e->id == 0x8000) {
                 if (Pl_Skill_ck(pl, 0x34) == 1) {
@@ -2533,7 +2533,7 @@ void remuneration_item_set(void)
                     q = (REMI *)((u8 *)q + 6);
                 } while (q->w != 0xFFFF);
             }
-            r = (u16)ran_suu(0) % (u16)th;
+            r = (u16)((u16)ran_suu(0) % (u16)th);
             if (e->id == 0x8000 && i == 0) {
                 r = 0;
             }
