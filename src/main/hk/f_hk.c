@@ -65,7 +65,7 @@ void sk_speaking(void);
 void sk_yn_kigou_func(u8 *);
 int sk_yn_check();
 int sk_zenkaku_ck();
-int kbd_insert(void *, void *, u16, u16);
+int kbd_insert();
 static int hk_roma_ck(int);
 static int hk_yn_hardkeyboard_check(void *);
 void sk_backspace(int);
@@ -826,14 +826,21 @@ void cmd_kakutei_all(void) {
     }
 }
 
-/* original bytes: build/raw/kbd_insert.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__
-asm int kbd_insert(void *dst, void *src, u16 pos, u16 max)
-{
-#include "kbd_insert.inc"
-}
-#endif
+int kbd_insert(char *d, char *s, int pos, int max) {
+    char tail[0x100];
+    int cur = strlen(d);
+    int v;
 
+    if (max < cur + (int)strlen(s)) {
+        v = (max - cur) / 2;
+        s[v * 2] = 0;
+    }
+    strcpy(tail, d + pos);
+    d[pos] = 0;
+    strcat(d, s);
+    strcat(d, tail);
+    return strlen(s);
+}
 
 int sk_yn_check(void) {
     u8 m = SKB(0x1D);

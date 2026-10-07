@@ -2304,7 +2304,6 @@ lobby 0x005BA940 0x005BABF4 b/lb_cbpl01
 main 0x002755D0 0x0027BF80 chat/f_chat
 main 0x0027EF60 0x00280EE4 mc/f_mc
 main 0x00271FB0 0x00274E10 ud/f_ud
-main 0x00264180 0x00267198 hk/f_hk
 lobby 0x00594260 0x0059440C f/lb_pz01
 lobby:rodata 0x0065DBF0 0x0065DC2C f/lb_pz01
 lobby 0x0059C660 0x0059C74C f/lb_pz02
@@ -2348,3 +2347,4 @@ game:rodata 0x00688CD0 0x00688D00 em/em17_demo
 lobby 0x005BCDE0 0x005BCF6C b/lb_in0300
 lobby 0x005B7DD0 0x005B7FE4 b/lb_lwm01
 lobby:rodata 0x0065E870 0x0065E890 b/lb_lwm01
+main 0x00264180 0x00267198 hk/f_hk
