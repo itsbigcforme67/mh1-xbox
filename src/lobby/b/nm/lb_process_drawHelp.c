@@ -157,17 +157,17 @@ block_32:
         do {
             if (var_s5 != 0) {
                 temp_a0 = F(u16, var_s2_2, 0);
-                if ((temp_a0 != 0) && (( (var_s3_2 << 0x30) >> 0x30) != 3)) {
-                    Lb_put_materialItem( (var_s1_2 << 0x30) >> 0x30, (s16)temp_a0, F(s16, var_s2_2, 2));
+                if ((temp_a0 != 0) && (( (s16)(var_s3_2)) != 3)) {
+                    Lb_put_materialItem( (s16)(var_s1_2), (s16)temp_a0, F(s16, var_s2_2, 2));
                 }
             } else if (var_s4 != 0) {
                 temp_v0 = F(u16, var_s0_2, 4);
                 if (temp_v0 != 0) {
-                    Lb_put_materialItem( (var_s1_2 << 0x30) >> 0x30, (s16)temp_v0, F(s16, var_s0_2, 6));
+                    Lb_put_materialItem( (s16)(var_s1_2), (s16)temp_v0, F(s16, var_s0_2, 6));
                 }
             }
             var_s2_2 += 4;
-            var_s3_2 =  ((var_s3_2 + 1) << 0x30) >> 0x30;
+            var_s3_2 =  (s16)((var_s3_2 + 1));
             var_s1_2 += 0x14;
             var_s0_2 += 4;
         } while (var_s3_2 < 4);

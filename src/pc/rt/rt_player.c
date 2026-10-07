@@ -348,13 +348,15 @@ void rt_player_tick(int no)
         while (s && *s) {
             int t = 0;
             unsigned a;
-            float x, z;
-            int nf = sscanf(s, "%d,%f,%f,%x", &t, &x, &z, &a);
+            float x, z, y = 0;
+            int nf = sscanf(s, "%d,%f,%f,%x,%f", &t, &x, &z, &a, &y);
             if (nf >= 3 && tk == t) {
                 player_work[no].pos[0] = x;
                 player_work[no].pos[2] = z;
-                if (nf == 4)            /* optional facing angle (hex) */
+                if (nf >= 4)            /* optional facing angle (hex) */
                     player_work[no].ang[1] = (s32)(a & 0xFFFF);
+                if (nf == 5)            /* optional height (a pick point below the ground level the warp lands on) */
+                    player_work[no].pos[1] = y;
                 fprintf(stderr, "rt_player: tick %d warped to %.0f %.0f\n", tk, x, z);
             }
             s = strchr(s, ';');
@@ -368,8 +370,23 @@ void rt_player_tick(int no)
         int t0 = 0, goal = -1;
         PLW *p = &player_work[no];
         tk++;
+        int goto2_active = 0;
         sscanf(getenv("RT_PL_GOTO"), "%d,%d", &t0, &goal);
-        if (strstr(getenv("RT_PL_GOTO"), ",f") && getenv("RT_PL_TARGET") && getenv("RT_PL_TARGET")[0] == 'k') {
+        if (getenv("RT_PL_GOTO2")) {        /* "tick,stage;tick,stage;...": from each tick on the goal is that stage (egg trips to the nest and the camp) */
+            const char *g2 = getenv("RT_PL_GOTO2");
+            int t2, s2;
+            while (g2 && *g2) {
+                if (sscanf(g2, "%d,%d", &t2, &s2) == 2 && tk >= t2) {
+                    t0 = 0, goal = s2;
+                    goto2_active = 1;
+                }
+                g2 = strchr(g2, ';');
+                if (g2)
+                    g2++;
+            }
+        }
+        if (goto2_active) {
+        } else if (strstr(getenv("RT_PL_GOTO"), ",f") && getenv("RT_PL_TARGET") && getenv("RT_PL_TARGET")[0] == 'k') {
             /* "tick,f" with RT_PL_TARGET=kN: follow the monster, goal = the stage a living monster of kind N is on now
              * (large monsters walk between areas) */
             extern u8 em_work[];
@@ -660,11 +677,19 @@ void rt_hit_check(void)
                                        RT_PL_TARGET one) take a lethal hit each tick, as if hit_check had found one: a boss that
                                        stays out of reach (Rathalos aloft, a submerged Plesioth) still ends the quest
                                        (tools/test_all_quests.py) */
-        int t = 0, kind = -1, i;
-        sscanf(getenv("RT_PL_SLAY"), "%d,%d", &t, &kind);
-        for (i = 0; i < 20 && rt_tick_count() >= t; i++) {
+        int t = 0, kind = -1, i, nk = 0, kinds[16];
+        const char *g = getenv("RT_PL_SLAY");
+        t = atoi(g);
+        while ((g = strchr(g, ',')) != NULL && nk < 16)       /* "tick,kind,kind,...": every monster of these kinds */
+            kinds[nk++] = atoi(++g);
+        if (nk)
+            kind = 0;
+        for (i = 0; i < 20 && rt_tick_count() >= t && (rt_tick_count() - t) % 120 == 0; i++) {   /* every 120 ticks: a hit every tick keeps a reacting monster in its flinch (the Plesioth in fly18 sets x8BB, which floors hp at 1) */
             u8 *tg = em_work + 0xA10 * i;
-            if (tg[0] && *(s16 *)(tg + 0x302) > 0 && (kind >= 0 ? tg[2] == kind : tg == e)) {
+            int match = 0, k;
+            for (k = 0; k < nk; k++)
+                match |= tg[2] == kinds[k];
+            if (tg[0] && *(s16 *)(tg + 0x302) > 0 && (kind >= 0 ? match : tg == e)) {
                 static int once;
                 tg[0x38D] = 1;
                 PF(tg, s16, 0x766) = 30000;

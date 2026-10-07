@@ -346,10 +346,16 @@ void rt_game_init(int stage)
         {   /* gathering points (St_pick_ck's ST_ITEM list: x14 3 = mining, 4 = bugs) */
             void *Stage_item_data_get(int st);
             u8 *d = Stage_item_data_get(stage);
-            for (; d && *(float *)d != -1.0f; d += 0x18)
-                fprintf(stderr, "rt_game: stage %d pick id %d kind %d num %d at %.0f %.0f %.0f r %.0f\n", stage,
+            u16 *Stage_item_probability_get(int);
+            for (; d && *(float *)d != -1.0f; d += 0x18) {
+                u16 *pr = Stage_item_probability_get(*(u16 *)(d + 0x10) & 0x7FFF);
+                fprintf(stderr, "rt_game: stage %d pick id %d kind %d num %d at %.0f %.0f %.0f r %.0f items", stage,
                         *(u16 *)(d + 0x10), *(u16 *)(d + 0x14), *(u16 *)(d + 0x12), *(float *)d, *(float *)(d + 4),
                         *(float *)(d + 8), *(float *)(d + 0xC));
+                for (; pr && *pr != 0xFFFF; pr += 2)
+                    fprintf(stderr, " %d:%d%%", pr[1], pr[0]);
+                fprintf(stderr, "\n");
+            }
         }
         {   /* the exits (stage_mv_ck's STG_MV list, 0x34 bytes each) */
             void *Stage_mv_data_get(int st, int pl);

@@ -1350,32 +1350,33 @@ a dead monster of that kind, then to an unused slot (so WARP_EM / DMG_MUL do not
 | 131-135 | 1 | deliver items (18x2; 20; 65x2+119; 1x2; 95) | clear, reward, village | none (131 was already walked for real by test_quest_loop.sh); gathering itself is not scripted except 131 |
 | 136 | 2 | 3 Velociprey | OK | none (urgent test hunts it for real) |
 | 141, 142, 143 | 2 | deliver 77x7, 242x5, 20x5 | OK | none |
-| 138 | 2 | deliver egg (145) | not automated | egg is a carried hold item: Pl_item_stack burns it down 10 per tick unless carried (act 0x47-0x60), so RT_PL_ITEMS cannot stand in; needs nest pickup + carry script |
+| 138 | 2 | deliver egg (145) | OK | nest pick point (stage 40, stage pick id 131 -> item 145, unlimited), carried to the camp box; see the egg fix below |
 | 137, 152 | 3 | Velocidrome (27) | OK | none |
 | 148, 144 | 3 | Rathian-class (6) | OK | none |
 | 145 | 3 | 10 Velociprey over 3 stages | OK | RT_PL_GOTO could not leave stage 37 for 40 (see above, test aid) |
-| 146 | 3 | egg 145 | not automated | as 138 |
+| 146 | 3 | egg 145 | OK | as 138 |
 | 147, 149 | 3 | deliver 219x3, 77x10 | OK | none |
 | 150 | 4 | item 144 + monster 6 | OK | reward list is empty (no `rewards:` line) |
 | 151 | 4 | 15 Velociprey (4 stages) + Rathalos (11) | OK (boss slain by aid) | none |
-| 153, 157 | 4 | egg | not automated | as 138 |
+| 153 | 4 | 2 eggs (145) | OK | two trips |
+| 157 | 4 | 3 eggs (146) | OK | nest on stage 49 (pick id 36, point below the warp's ground height: RT_PL_WARP now takes a 5th field y), three trips |
 | 154 | 4 | Diablos-class (8) | OK | none |
 | 155 | 4 | 15 kind-13 over 3 desert stages | OK | none; small monsters respawn per `x04` |
 | 156 | 4 | kind 28 | OK | none |
 | 158 | 4 | 15 kind-19 | OK | none |
 | 159 | 4 | deliver 77x10 | OK | none |
 | 160, 167 | 4, 5 | kind 31 (boss, stage 1) | OK | **prim pool exhausted -> crash** (set14_m / enemy_mv wrote through a NULL prim, tick ~9000): the PS2 clears all prims at every stage change (prim_init from game2 step 2 / all_reset), the PC had it as a no-op, so every stage change leaked the old stage's slots (set14 never releases its prim). Fixed: PC `prim_init` (rt_game.c) frees the pool; pool is 512 slots like the PS2 (was 256) |
-| 161 | 5 | 20 Velociprey + Rathalos | known failure | the lists hold 18 (x04 = 1 each): "kills left 2", nothing left to spawn; Rathalos dies by the aid. Not understood: a monster list read wrong, or a spawn source missing (PS2 not compared) |
+| 161 | 5 | 20 Velociprey + Rathalos | OK | not a PC bug: the monster lists have a second wave (program op 32 sets quest_w.x3A = 1 at "10 left"; `RT_QEM_DUMP` shows waves as stage+100): stage 34 gets 3 entries x10; the plan now visits those stages again; Rathalos dies by the aid |
 | 162 | 5 | Velocidrome | OK | none |
-| 163 | 5 | egg | not automated | as 138 |
-| 139 | 5 | Rathalos (11, flies) | OK (boss slain by aid) | 8000 ticks of real hits never landed (it stays aloft; hunter cannot hit it); **crash in em12_blood_req**: `Eft02_set4` was called with the float first (PS2 ABI) on x86: new adaptor rtabi_Eft02_set4 (rt_abi.c, ABI= line for em12_nm.c) |
-| 165 | 5 | 20 kind-13 + Plesioth (21, stage 54) | known failure | 18 of 20 obtainable like 161; the submerged Plesioth takes the aid's lethal hit but does not die (hp stays 1) |
+| 163 | 5 | 3 eggs (145) | OK | three trips |
+| 139 | 5 | Rathalos (11, flies) | OK (boss slain by aid) | the Rathalos does land (about 40% of its ticks it is on the ground, ground attacks 3/x) and hits do count (2000 -> 1840 hp in 4500 ticks with DMG_MUL 40); the aid hunter just rarely reaches it, so the sweep slays it after 8000 ticks. **crash in em12_blood_req**: Eft02_set4 float-first ABI: adaptor rtabi_Eft02_set4 |
+| 165 | 5 | 20 kind-13 + Plesioth (21, stage 54) | OK | second wave (stages 49, 54 ...) as 161; the Plesioth is hit every 120 ticks by the aid and dies once ashore (below) |
 | 166 | 5 | kind 28 | OK | none |
 | 168 | 5 | 24+ kind-19 over 6 stages + kind 21 | OK (boss slain by aid) | none |
 | 140 | 5 | item 144 + Rathalos | OK | none |
 | 171 | 5 | kind 26 (stage 53) | OK | none |
 
-Counts: 38 offline quests, 31 OK, 5 egg quests not automated, 2 known failures (161, 165). "OK (boss slain by aid)" means
+Counts: 38 offline quests, all 38 OK (no skips, no known failures). "OK (boss slain by aid)" means
 the monster that cannot be reached is brought down by RT_PL_SLAY, so those runs test the clear / reward path, not combat
 against that monster. The other hunts use real hits (DMG_MUL 40 on the target only). Not covered: real gathering and
 fishing for the delivery quests, carving rewards, the eggs, urgent 136/137 clears for real (test_urgent.sh does those).
@@ -1466,3 +1467,21 @@ Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item
 - Before/after (--stage N --play --follow 350,160,-0.15, 640x360, RT_LIGHT_FIXED=1 vs default), hunter in the middle, build/show/light/cmp*.png: stage 4 (waterfall plain): warmer key light from the
   upper right, shadow side a lot darker, more contrast; stage 5 (dark jungle): the table has no ambient row, so the hunter is nearly black on the shadow side (the old fixed set lit him evenly);
   stage 13 / 17 / 28 (cave and rock stages): slightly dimmer and bluer hunter; stage 6 (marsh grass): nearly unchanged. Village hunter (quest tests): a little darker with a visible light side.
+
+Findings of the second pass (agent D, 7 Oct 2026)
+- **161 / 165 "18 of 20"**: the missing monsters are the second wave. Condition program op 32 (`quest_w.x3A = a`, "32/1/0/0" right after
+  the "10 left" message) switches the quest to monster-list variant 1 (Em_data_st_adrs_get's last argument); Quest_next_em_set spawns
+  that variant's entries when a stage is entered. 161: stage 34 gets three entries of 10 each; 165: stages 49 and 54. Nothing missing on the PC.
+- **Plesioth at 1 hp while swimming is the original design**: Em_Dmg_Sys floors hp at 1 while `x8BB != 0`, and em21's swim action
+  (em_fly18, em21_nm.c) sets `x8BB = 5` every tick; it can only die while ashore. A lethal hit every tick also keeps re-triggering
+  its flinch, so RT_PL_SLAY now hits every 120 ticks.
+- **Eggs**: Pl_item_stack burned a held egg (145/146, "hold" items) at once on the PC. Cause: pl_nm.c's `(int)(act_ck(...) << 0x30) >> 0x30`
+  (m2c's 64-bit register idiom): gcc -m32 folds a shift by 48 to 0, so the "is the hunter in a pickup/carry act" tests were always
+  true and timer_calc_sub_pl broke the held item every tick. Replaced by `(s16)(...)` in src/main/pl/pl_nm.c (4 places, also the
+  Stage_env_ck test and the vital_red regeneration) and in the lobby near-matches the village runs (Put_page_num, lb_process_drawHelp,
+  Lb_put_armorIcon, lb_normal_material, lb_process_set_armorList / _weaponList: shop and forge lists). The plaza_*.c and yn/ui_nm.c copies
+  (online / unused on the PC) and src/main/fl/*_nm.c still have the idiom: grep `<< 0x30` before trusting a PC bug in them.
+  Egg quests: a monster's hit makes the hunter drop the egg, so the run slays every monster in the quest first (RT_PL_SLAY takes
+  "tick,kind,kind,..."), then per egg: RT_PL_GOTO2 ("tick,stage;..." timed goals) to the nest, warp + circle at the pick point
+  (stage 40 (11400,12100) = item 145, stage 49 (9500,-109,11000) = item 146), goal = camp, warp to the box (spot kind 21), circle.
+  Gather points: `RT_SPOT_TRACE` now lists the items each pick id gives.

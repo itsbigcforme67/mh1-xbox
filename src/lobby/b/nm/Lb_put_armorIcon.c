@@ -6,7 +6,7 @@ void Lb_put_armorIcon(s32 arg0, int arg1, int arg2, int arg3, int arg4) {
     int temp_s0;
     int temp_s2;
 
-    temp_s0 =  (arg3 << 0x30) >> 0x30;
+    temp_s0 =  (s16)(arg3);
     temp_s2 = arg4;
     if (temp_s0 != 7) {
         if (temp_s0 == 6) {
@@ -32,7 +32,7 @@ void Lb_put_armorIcon(s32 arg0, int arg1, int arg2, int arg3, int arg4) {
         return;
     }
 block_3:
-    if (( (temp_s2 << 0x30) >> 0x30) == 0x3E7) {
+    if (( (s16)(temp_s2)) == 0x3E7) {
         Lb_put_job(arg0, arg1, arg2, -1);
         return;
     }
