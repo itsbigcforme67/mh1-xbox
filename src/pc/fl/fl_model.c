@@ -465,6 +465,9 @@ int fl_skel_set_motion(fl_skel *s, int group, fmt_blob tbl, int id, int be)
 void fl_skel_update(fl_skel *s, float t)
 {
     int g;
+    rt_prof_begin(RTP_MOTION);
+    rt_prof_count(RTPC_SKEL_EVALS, 1);
+    s->last_ok = 0;
     bind_channels(&s->skel, s->chan);
     for (g = 0; g < FL_MAX_GROUPS; g++) {
         const aan_motion *m = &s->mot[g];
@@ -486,6 +489,7 @@ void fl_skel_update(fl_skel *s, float t)
     }
     s->frame = t;
     bone_world(&s->skel, (const float (*)[9])s->chan, s->world);
+    rt_prof_end(RTP_MOTION);
 }
 
 static void eval_group(const ahi_skel *sk, int g, const aan_motion *m, float t, float (*chan)[9])
@@ -502,6 +506,14 @@ void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])
 {
     int gi, i, c;
     float (*tmp)[9] = NULL;
+    if (s->last_ok && s->last_lock == s->root_lock && !memcmp(s->last, g, sizeof s->last)
+        && !getenv("RT_POSE_ALL"))
+        return;                             /* this pose is what chan / world hold */
+    rt_prof_begin(RTP_MOTION);
+    rt_prof_count(RTPC_SKEL_EVALS, 1);
+    memcpy(s->last, g, sizeof s->last);
+    s->last_ok = 1;
+    s->last_lock = s->root_lock;
     bind_channels(&s->skel, s->chan);
     for (gi = 0; gi < FL_MAX_GROUPS; gi++) {
         if (!g[gi].m)
@@ -540,4 +552,5 @@ void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])
         }
     }
     bone_world(&s->skel, (const float (*)[9])s->chan, s->world);
+    rt_prof_end(RTP_MOTION);
 }

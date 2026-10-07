@@ -18,12 +18,17 @@ enum {
     RTP_SKIN,           /* fl_model_pose: CPU skinning + lighting */
     RTP_EFT_DRAW,       /* trans_shell / trans_eft (effect prims) */
     RTP_GFX,            /* inside the graphics backend (GL driver on the PC) */
+    RTP_MOTION,         /* skeleton motion evaluation (keys -> channels -> bone matrices) */
+    RTP_JOINTS,         /* host joint matrices for the game C (sync_joints, monsters_sync) */
+    RTP_STAGE_DRAW,     /* trans_stage: area + set models (game C draw code) */
+    RTP_PRIMS,          /* the game's prims (ordering tables) */
+    RTP_2D,             /* HUD, text, menus, fade */
     RTP_N
 };
 void rt_prof_begin(int zone);
 void rt_prof_end(int zone);
 /* counters per drawn frame */
-enum { RTPC_SKIN_VERTS, RTPC_DRAW_VERTS, RTPC_DRAW_TRIS, RTPC_DRAWS, RTPC_N };
+enum { RTPC_SKIN_VERTS, RTPC_DRAW_VERTS, RTPC_DRAW_TRIS, RTPC_DRAWS, RTPC_SKEL_EVALS, RTPC_N };
 void rt_prof_count(int counter, long n);
 void rt_prof_tick(void);        /* one game tick done */
 void rt_prof_frame(void);       /* one frame drawn; prints every 300 ticks */

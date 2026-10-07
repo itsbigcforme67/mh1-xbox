@@ -1,3 +1,5 @@
-libmpeg2 0.5.1 (mpeg2dec), GPL v2 (see COPYING). Plain C files only: no asm,
-no CPU acceleration, no libvo/convert. Unmodified except config.h (ours).
+libmpeg2 0.5.1 (mpeg2dec), GPL v2 (see COPYING). The plain C files, plus
+idct_mmx.c, motion_comp_mmx.c and mmx.h (from include/) for the Xbox build's
+MMX/MMXEXT paths (tools/build_xbox.py compiles them with -DARCH_X86; the PC
+build stays plain C). No libvo/convert. Unmodified except config.h (ours).
 Source: https://libmpeg2.sourceforge.io/ (Debian mpeg2dec_0.5.1.orig.tar.gz).
