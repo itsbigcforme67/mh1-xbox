@@ -13,7 +13,10 @@ void *rt_ms_malloc(size_t n, const char *file);
 void *rt_ms_calloc(size_t k, size_t n, const char *file);
 void *rt_ms_realloc(void *p, size_t n, const char *file);
 void rt_ms_free(void *p);
-#ifndef RT_MEMSTAT_IMPL
+/* A file that includes a library header using these names otherwise (a
+ * struct member or callback called free, e.g. libmpeg2) can opt out with
+ * -DRT_MEMSTAT_NO_MACROS; its allocations are then not counted. */
+#if !defined(RT_MEMSTAT_IMPL) && !defined(RT_MEMSTAT_NO_MACROS)
 #define malloc(n) rt_ms_malloc((n), __FILE__)
 #define calloc(k, n) rt_ms_calloc((k), (n), __FILE__)
 #define realloc(p, n) rt_ms_realloc((p), (n), __FILE__)

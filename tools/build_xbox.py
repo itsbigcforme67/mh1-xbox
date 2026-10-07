@@ -79,9 +79,17 @@ def main():
     # only the objects the PC build links (build/pc/objs.txt, link order); build/pc
     # can hold stale objects of files no longer built
     linked = [os.path.basename(l.strip())[:-2] for l in open('build/pc/objs.txt') if l.strip()]
+    if 'rt_gen' not in linked or not os.path.exists('build/pc/mhview') \
+            or os.path.getmtime('build/pc/mhview') < os.path.getmtime('build/pc/objs.txt'):
+        sys.exit('build_xbox: the PC build did not finish (build/pc/objs.txt has no rt_gen.o or is newer '
+                 'than build/pc/mhview); run tools/build_pc.sh first')
+    nocmd = [b for b in linked if b not in SKIP and not os.path.exists('build/pc/cmd/%s.sh' % b)]
+    if nocmd:       # e.g. rt_gen (gen_rt_auto's tables) skipped -> dozens of undefined symbols
+        sys.exit('build_xbox: no recorded compile command for %s; run tools/build_pc.sh (to the end) first'
+                 % ' '.join(nocmd[:10]))
     for b in linked:
         c = 'build/pc/cmd/%s.sh' % b
-        if b in SKIP or not os.path.exists(c):
+        if b in SKIP:
             continue
         args = xcmd(open(c).read().strip(), '%s/%s.obj' % (OBJ, b))
         h = 'build/pc/adapt/%s.h' % b
