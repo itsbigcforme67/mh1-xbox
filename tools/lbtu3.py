@@ -65,6 +65,10 @@ def ident(u):
     if m: return ('fn', m.group(1))
     return None
 def norm(u): return re.sub(r'\s+', ' ', u.strip())
+sfx = {}  # base name -> address-suffixed symbol name (functions defined in the range whose symbol carries _ADDR)
+for ad, (sz, n) in syms.items():
+    m = re.match(r'(.*)_[0-9A-F]{6,8}$', n)
+    if m and S <= ad < E and m.group(1) not in symaddr: sfx[m.group(1)] = n
 ansi = set(); allnames = set(n for ad, (sz, n) in syms.items() if S <= ad < E)
 for a, b, r in runs:
     s0 = open('src/lobby/%s.c' % r).read()
@@ -87,7 +91,8 @@ def seed(path, done=set()):
         k = ident(u)
         if k is not None: seen[k] = norm(u)
 INC = re.compile(r'^#include "(lobby_f|lobby_b|lobby_a|lobby_s|lbui_proto|lbnet)\.h"$')
-seed('include/lobby_b.h'); seed('include/lbnet.h')
+NOB = bool(os.environ.get('LBTU_NOB'))  # village TUs: runs include lobby.h, not the lobby_b.h family
+if not NOB: seed('include/lobby_b.h'); seed('include/lbnet.h')
 for ri, (a, b, r) in enumerate(runs):
     s = open('src/lobby/%s.c' % r).read()
     s = re.sub(r'^/\*.*?\*/\n', '', s, count=1, flags=re.S)
@@ -114,7 +119,7 @@ for ri, (a, b, r) in enumerate(runs):
         if k and k[0] == 'obj' and k[1] in allnames and k[1] not in defhere and k[1] not in ren:
             ren[k[1]] = k[1] + '_o'; aliases.append('%s_o = 0x%08X;' % (k[1], symaddr[k[1]]))
     for n0 in sorted(ansi):
-        if n0 not in defhere and n0 not in ren and re.search(r'\b%s\b' % re.escape(n0), bodytxt):
+        if n0 not in defhere and n0 not in ren and re.search(r'\b%s\s*\(' % re.escape(n0), bodytxt):
             ren[n0] = n0 + '_k'; aliases.append('%s_k = 0x%08X;' % (n0, symaddr[n0])); knr.append('int %s_k();' % n0)
     changed = True
     while changed:
@@ -133,6 +138,7 @@ for ri, (a, b, r) in enumerate(runs):
             for u in units(t):
                 u2 = rn(u); k = ident(u2)
                 if INC.match(u.strip()): continue
+                if k is not None and k[0] == 'fn' and k[1].endswith('_k') and k[1][:-2] in ansi: continue
                 if k is not None:
                     if k in seen and seen[k] == norm(u2): continue
                     if k in seen and k[0] == 'fn': continue
@@ -141,7 +147,7 @@ for ri, (a, b, r) in enumerate(runs):
                 if re.match(r'extern\s+\w+\s+(s64|u64|s32|u32|u8|s8|u16|s16|int|char|f32)\[', u2.strip()): continue
                 decls.append(u2)
         else:
-            items.append((symaddr[n], n, re.sub(r'\b%s\(void\)(\s*\{)' % re.escape(n), r'%s()\1' % n, rn(t))))
+            items.append((symaddr[sfx.get(n, n)], n, re.sub(r'\b%s\(void\)(\s*\{)' % re.escape(n), r'%s()\1' % n, rn(t))))
 cn = set(i[1] for i in items); caddrs = set(i[0] for i in items)
 sizes = {ad: sz for ad, (sz, n) in syms.items()}
 for ad, (sz, n) in sorted(syms.items()):
@@ -154,6 +160,10 @@ cdefs = set(i[1] for i in items if i[2] is not None) | set(n for ad, (sz, n) in 
 def keep(u):
     k = ident(u)
     return not (k is not None and k[0] in ('fn', 'obj') and k[1] in cdefs and not k[1].endswith(('_o', '_k')))
+protos = {}
+for u in decls:
+    k = ident(u)
+    if k and k[0] == 'fn' and not u.lstrip().startswith(('extern', 'asm', 'static')) and re.search(r'\w\s+\**\w+[,)]|\*', u[u.index('('):] if '(' in u else '') and not re.search(r'\(\s*(void)?\s*\)', u): protos.setdefault(k[1], u)
 decls = [u for u in decls if keep(u)]
 fwd = []
 for ad, n, tx in items:
@@ -162,11 +172,12 @@ for ad, n, tx in items:
     if not mm: continue
     ret = mm.group(1).strip(); params = mm.group(2).strip(); kr = mm.group(3).strip()
     if ret.startswith('static'): ret = ret[6:].strip()
+    if kr and n in protos: fwd.append(protos[n]); continue
     if kr or params in ('', 'void') or not re.search(r'\w\s+\**\w+$|\*', params.split(',')[0]): fwd.append('%s %s();' % (ret, n))
     else: fwd.append('%s %s(%s);' % (ret, n, params))
 decls = decls + fwd + sorted(set(knr))
 body = '\n'.join(decls)
-out = ['/* %s - one translation unit 0x%08X-0x%08X (lbtu3). */\n#define Lbs_MatchStart Lbs_MatchStart_hdr\n#include "lobby_b.h"\n#undef Lbs_MatchStart\ntypedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;' % (name, S, E), body]
+out = ['/* %s - one translation unit 0x%08X-0x%08X (lbtu3). */' % (name, S, E) + ('' if NOB else '\n#define Lbs_MatchStart Lbs_MatchStart_hdr\n#include "lobby_b.h"\n#undef Lbs_MatchStart\ntypedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;'), body]
 raw = []
 for ad, n, t in items:
     if t is None:

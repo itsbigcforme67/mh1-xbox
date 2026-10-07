@@ -138,3 +138,7 @@ COM_R_No_Logout_t = 0x0038A858;
 CallBackWaitInit = 0x005B7050;
 mail_input3 = 0x00595F70;
 plaza_req_input3 = 0x00597B10;
+lb_mix_checkItemMake_k = 0x00535C00;
+Lb_mix_item_checkMax_k = 0x00535540;
+Lb_mix_item_checkMax_u = 0x00535540;
+lb_mix_makeMixList_k = 0x00535C80;
