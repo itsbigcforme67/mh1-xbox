@@ -1047,6 +1047,7 @@ static void mem_tick(int t)
         if (atoi(m) == t) {
             snprintf(where, sizeof where, "tick %d", t);
             rt_ms_report(where);
+            rt_area_report();
         }
         while (*m && *m != ',')
             m++;

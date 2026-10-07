@@ -26,7 +26,7 @@
 /* ------------------------------------------------------------ data */
 /* cam_data_area (0x38A204): where LoadCameraData puts the stage camera
  * file (or default_area_data builds its one area). */
-#define CAM_AREA_SIZE (1u << 20)
+#define CAM_AREA_SIZE (64u << 10)    /* largest camera file 3460 bytes (st004cmd.bin); was 1 MB */
 u8 *cam_data_area;
 
 /* lpView (0x38A110): the view the camera writes: eye 0x00, target 0x0C,
@@ -111,8 +111,11 @@ void CameraMove(void);
  * the game's stage start is a guess). */
 void rt_cam_init(int stage)
 {
-    if (!cam_data_area && !(cam_data_area = calloc(1, CAM_AREA_SIZE)))
-        return;
+    if (!cam_data_area) {
+        if (!(cam_data_area = calloc(1, CAM_AREA_SIZE)))
+            return;
+        rt_area_register(cam_data_area, CAM_AREA_SIZE, "cam_data_area");
+    }
     memset(cam_data_area, 0, CAM_AREA_SIZE);
     CameraWorkInit();
     Q_camera_init();

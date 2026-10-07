@@ -92,10 +92,11 @@ void flReloadTexture(int n, void *p) { (void)n; (void)p; }
  * data_load_ptr (rt_motion.c) is where the PS2 loads files before
  * converting them; a host buffer here. */
 extern u8 *data_load_ptr;
+#define DATA_LOAD_SIZE (2u << 20)        /* 838 KB used in the tests, 725 KB the largest model file; was 4 MB */
 void rt_2d_init(void)
 {
-    if (!data_load_ptr)
-        data_load_ptr = malloc(4u << 20);
+    if (!data_load_ptr && (data_load_ptr = malloc(DATA_LOAD_SIZE)))
+        rt_area_register(data_load_ptr, DATA_LOAD_SIZE, "data_load_ptr");
 }
 
 extern u8 game_w[];

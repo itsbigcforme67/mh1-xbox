@@ -63,6 +63,9 @@ void rt_sel_relocate_range(uint32_t va, uint8_t *dst, size_t size, void *(*map)(
 int rt_import_select(void);
 /* after all rt_import_* calls: free what only the import needed (rt_mem.c) */
 void rt_mem_trim(void);
+/* fixed load areas (rt_hit.c): register, and print their use (RT_MEM) */
+void rt_area_register(void *p, size_t size, const char *name);
+void rt_area_report(void);
 /* Power-on (rt_boot.c): the game's boot tasks (title, new hunter, load)
  * until Game_task starts; then the host flow runs the village. */
 void rt_boot_init(void);
