@@ -4151,28 +4151,22 @@ int arg2;
 }
 
 int __cnetSub_Return_BgProcess(CNET_RES res, int mode, int slot) {
-    CNET_RES sp28 = res;
-    int i;
-
-    switch (mode) {
-    case 1:
-        for (i = 0; i < 0x80; i++) {
-            if (mode == 1 && CnetSys_w.rseq == CnetSys_w.bg[i].cmd) {
-                CnetSys_w.bg[i].state = 0;
-                CnetSys_w.bg[i].x19 = 0;
-                if (CnetSys_w.bg[i].done != 0) CnetSys_w.bg[i].done(sp28, &sp28, &CnetSys_w.bg[i]);
-                return i;
+    if (mode == 1) {
+        for (slot = 0; slot < 0x80; slot++) {
+            if (mode == 1 && CnetSys_w.rseq == CnetSys_w.bg[slot].cmd) {
+                CnetSys_w.bg[slot].state = 0;
+                CnetSys_w.bg[slot].x19 = 0;
+                if (CnetSys_w.bg[slot].done != 0) CnetSys_w.bg[slot].done(res, &res);
+                return slot;
             }
         }
-        return -1;
-    case 2:
+    } else if (mode == 2) {
         CnetSys_w.bg[slot].state = 0;
         CnetSys_w.bg[slot].x19 = 0;
-        if (CnetSys_w.bg[slot].done != 0) CnetSys_w.bg[slot].done(sp28, &sp28);
+        if (CnetSys_w.bg[slot].done != 0) CnetSys_w.bg[slot].done(res, &res);
         return slot;
-    default:
-        return -1;
     }
+    return -1;
 }
 
 void __cnetSub_Run_BgProcess(void) {
@@ -4658,13 +4652,17 @@ int key;
 int len;
 int extra;
 {
-    int sum = 0;
+    u8 c;
     int i;
+    int sum = 0;
 
     if (out == 0 || in == 0) return -1;
     for (i = 0; i < len; i++) {
-        out[i] = in[i] ^ encrypt_str[i & 7] ^ (extra + (key & 0xFF) + i);
-        sum += in[i];
+        c = *in;
+        *out = c ^ encrypt_str[i & 7] ^ (extra + ((key & 0xFF) + i));
+        sum += c;
+        in++;
+        out++;
     }
     return sum & 0x7FFF;
 }
@@ -4710,16 +4708,16 @@ char *out;
 char *str;
 int seq;
 {
-    int a;
-    int v1;
     int v2;
+    int v1;
+    int a;
 
     if (out == 0 || str == 0) return -1;
     a = seq & 0xFFFF;
     v1 = a + read_col_numeric(str, 4);
-    v2 = a + read_col_numeric(str + 4);
+    v2 = a + read_col_numeric(str + 4, 4);
     write_col_numeric(out, v1, 5);
-    write_col_numeric(out + 5, v2);
+    write_col_numeric(out + 5, v2, 5);
     out[10] = 0;
     return 0;
 }
