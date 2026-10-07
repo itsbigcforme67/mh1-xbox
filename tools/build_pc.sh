@@ -219,7 +219,7 @@ PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint"
 # main merged the lobby-client b/ files (lb_by20, lb_by103, lb_bz29, lb_bz104,
 # lb_bz110, lb_bz137, lbuiv, lbuiw) into one TU, f/lb_cli.c (8 Oct 2026):
 # the functions the PC used from them
-PICK="$PICK src/lobby/f/lb_v17.c:Lb_make_quest_tbl src/lobby/f/lb_t.c:get_CA_size src/lobby/f/lb_uif.c:put_button_help"
+PICK="$PICK src/lobby/f/lb_v17.c:Lb_make_quest_tbl src/lobby/f/lb_t.c:get_CA_size src/lobby/f/lb_uif.c:put_button_help src/lobby/f/lb_gy01.c:lb_guild_check_keyQuest src/lobby/b/lbsnd02.c:sound_req_com src/lobby/b/lbsnd03.c:ashi_sd_req_005C4980"
 PICK="$PICK src/lobby/f/lb_cli.c:lbc_text_lobby_trans,Lbs_GetRoomInfo,Lbc_set_prim,Lbc_init_network_work,Lbc_connect,text_lobby_trans_ot3,GetRoomRule,Lbs_MatchStart"
 LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*}"; done)"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
