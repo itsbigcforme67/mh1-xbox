@@ -1,5 +1,39 @@
 # PC viewer (first piece of the PC port)
 
+## Handover summary (agent A, 7 Oct 2026; read this first)
+
+The PC build (`tools/build_pc.sh` -> `build/pc/mhview`, 32-bit x86; ARM via
+`tools/build_arm.sh`) plays MH1 offline from power-on: logos, title, new
+hunter / continue, memory card on host files, the village (Elder, shops,
+forge, item box, house bed save), quests from the Elder, every monster kind,
+items (gathering, fishing, bombs), quest clear / failure, reward, and the
+star-level progression. Game logic is the decompiled C (matched files and
+*_nm near-matches); src/pc/ holds the platform side and the glue.
+
+Checks to run after changes (all headless, about a minute together):
+- `tools/test_quest_loop.sh`: power-on -> new game -> quest 131 -> reward ->
+  bed save -> CONTINUE (1550z).
+- `tools/test_progression.sh`: star levels 1 -> 3 with marked clears, kept by
+  the save.
+- `tools/test_urgent.sh`: urgent quests 136 and 137 hunted for real; each
+  clear opens the next star level.
+- `tools/rebuild.sh`: the PS2 rebuild (all five OK) when game C was touched.
+
+How the PC wires game C (where most bugs were): no-op stand-ins generated
+for missing functions (build/pc/rt_gen.c, tools/gen_rt_auto.py) — grep them
+first when a feature does nothing; per-file ABI adaptors for calls whose
+PS2 argument registers differ from the C prototype (src/pc/rt/rt_abi.c, ABI=
+lines in build_pc.sh; tools/argregs.py); fields the PS2 fills in trans()
+that move-side code reads (world matrices at EMW/PLW+0x60 are rebuilt per
+tick). Test aids are environment variables (RT_*), listed in the "Run"
+section and the round sections below; RT_PL_GOTO, RT_PL_TARGET=kN and
+RT_QCLEAR are the newest.
+
+Known gaps: opening and attract movies (Sofdec, open question in
+DECISIONS.md), the soft keyboard (typed-ASCII stand-in), reverb is an
+approximation, online play, ARM frame rate measured only up to round 20
+(25-28 fps at 960x720), nothing systematically compared with the PS2.
+
 `build/pc/mhview` is a real-time viewer written in C99. It loads MH1 data
 straight from the user's disc files at run time, with nothing extracted to
 disk, and shows a stage (default 4, st04; `--stage N` for others) with the Rathian
@@ -1142,3 +1176,30 @@ All PC side; no include/ or PS2-built file changed.
   calls, ambience and village music were already there.
 - Not done: Plesioth sound bomb beyond the one case above; whether the PS2
   Plesioth reacts the same; opening movie (see DECISIONS.md); ARM frame rate.
+
+### Urgent quests for real, Plesioth, reverb (agent A, round 23, 7 Oct 2026)
+- `tools/test_urgent.sh`: 136 (three Velociprey, area 40) and 137
+  (Velocidrome, area 34) accepted at the Elder, hunted, rewarded, saved; a
+  real clear moves 1 -> 2 stars and 2 -> 3 stars (CONTINUE checks the save).
+  The required non-urgent quests are marked cleared with RT_QCLEAR (setup
+  only). New aid: `RT_PL_TARGET=kN` = the nearest living monster of kind N
+  on the hunter's stage (for WARP_EM / AIM / DMG_MUL).
+- Plesioth (quest 165, stage 54 cave lake): swims deep (y -1990) and near the
+  surface (-660), spits at a hunter on the shore (act 3/4), leaps ashore
+  (2/14 -> 0/4), walks and attacks on land (1/x, 3/2), goes back (2/16).
+  Hits land while it is ashore (starter sword: 1 damage per hit; the Rathian
+  takes 1-5, so plausible). It cannot be reached while submerged, as the
+  hunter cannot swim. Kaeru_ck (frog-bait check that lets a hooked Plesioth
+  be pulled out) and FishWyvernCameraRequest were no-op stand-ins: now the
+  game's (PICK_MAIN in build_pc.sh links one function of a main file).
+  Frog fishing itself was not reproduced (which bait item is the frog was
+  not found; items 124/125 cast but nothing bit in 3000 ticks).
+- Reverb: cheap. The game sets it per stage with flSndSetRev(core, type 4,
+  depth) from Snd_rev_set_tbl (caves/nests deeper). audio_mix.c now has a
+  small Schroeder reverb (4 combs + 2 allpasses per channel, ~12
+  multiply-adds per sample) on the sound-effect voices; music streams stay
+  dry. Not the SPU2's reverb program; which voices each SPU2 core carries
+  was not traced. `RT_NO_REVERB=1` turns it off. Checked offscreen only
+  (quest 10 nest: depth 10240 -> wet 0.19); nobody listened.
+- Small fix: `--quest` printed a garbage monster kind for quests without a
+  big monster.
