@@ -1734,16 +1734,16 @@ void __cnet_bgProg_ReadPlazaAllocation(void) {
             }
             n = k + 1;
             b->a0C++;
-            if (CNW(u16, 0x404E) < n || n > 0xA) {
+            if (n > CNW(u16, 0x404E) || n > 0xA) {
                 b->x21++;
             }
             break;
         }
         case 4: {
-            int n;
-            int ok;
-            int k;
             int i;
+            int ok;
+            int n;
+            int k;
             n = CNW(u16, 0x404E);
             ok = 1;
             for (k = 0, i = 0; ; ) {
@@ -1877,16 +1877,16 @@ void __cnet_bgProg_ReadLobbyAllocation(void) {
             }
             n = k + 1;
             b->a0C++;
-            if (CNW(u16, 0x4050) < n || n > 0xE) {
+            if (n > CNW(u16, 0x4050) || n > 0xE) {
                 b->x21++;
             }
             break;
         }
         case 4: {
-            int n;
-            int ok;
-            int k;
             int i;
+            int ok;
+            int n;
+            int k;
             n = CNW(u16, 0x4050);
             ok = 1;
             for (k = 0, i = 0; ; ) {
@@ -2032,16 +2032,16 @@ void __cnet_bgProg_ReadRoomAllocation(void) {
             }
             n = k + 1;
             b->a0C++;
-            if (CNW(u16, 0x4052) < n || n > 8) {
+            if (n > CNW(u16, 0x4052) || n > 8) {
                 b->x21++;
             }
             break;
         }
         case 4: {
-            int n;
-            int ok;
-            int k;
             int i;
+            int ok;
+            int n;
+            int k;
             n = CNW(u16, 0x4052);
             ok = 1;
             for (k = 0, i = 0; ; ) {
