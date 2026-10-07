@@ -71,8 +71,8 @@ In-game web browser: paused (owner, 6 Oct 2026) — no new work on Bs*/tagAct_*/
 - A (Opus): PC: quest -> reward -> village -> save -> continue loop, shops with money, forge, char screen polish, swap in matched village C.
 - B (Sonnet): main 0x24A240-0x2814E0 (from E; ~91 KB Capcom unmatched), single player first.
 - C (Sonnet): lobby 0x5AB000-0x5C4E60, village first (main ranges done apart from near-matches listed in agent-C.md).
-- D (Sonnet): game overlay leftovers (87.8%, 139 hard functions) with the newer tricks; select leftovers.
-- E (Sonnet): main: own ranges + D's parked 0x1C0000-0x230000 and 0x24A240-0x2814E0, single player first (fonts, Quest_start, reward, staff), net last.
+- D (Sonnet): game overlay leftovers (93.2%), file by file with one-TU; select at the end.
+- E (Sonnet): main 0x160000-0x24A240 (Capcom parts, no Sofdec/ADX) and 0x2814E0-end.
 - F (Sonnet): lobby 0x5C4E60-0x5EE618, village first.
 - Parked: near-matches everywhere (register allocation); online code in main.
 

@@ -52,9 +52,9 @@ def gen_raw():
             continue
         mod, vram, size, name = f[0], int(f[1], 16), int(f[2], 16), f[3]
         data = open(os.path.join(ROOT, "disc/mh1/split/%s.bin" % mod), "rb").read()
-        base = {"main": 0x100000, "lobby": 0x533980}.get(mod)
+        base = {"main": 0x100000, "game": 0x533980, "lobby": 0x533980}.get(mod)
         if base is None:
-            sys.exit("c_rawfuncs: only main and lobby supported")
+            sys.exit("c_rawfuncs: only main, game and lobby supported")
         words = [int.from_bytes(data[vram - base + i:vram - base + i + 4], "little")
                  for i in range(0, size, 4)]
         # jump tables of the data asm refer to .Lxxxxxxxx labels that lived inside the original function: define them as

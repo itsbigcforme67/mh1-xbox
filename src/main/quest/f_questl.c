@@ -286,3 +286,49 @@ int *cnt;
         p += 4;
     }
 }
+
+void quest_em_init_sub2(p, cnt)
+s32 *p;
+int *cnt;
+{
+    s32 *l0;
+    QEM *e;
+    s32 *q;
+
+    for (;;) {
+        q = (s32 *)*p;
+        if (q == 0) {
+            break;
+        }
+        if (quest_w.no == 0) {
+            q = (s32 *)(int)q;
+        } else {
+            q = (s32 *)((int)q + (int)mission_area);
+        }
+        for (;;) {
+            l0 = Em_data_com_adrs_get(q, 0);
+            e = (QEM *)Em_data_com_adrs_get(q, 1);
+            q += 4;
+            if (l0 == 0) {
+                break;
+            }
+            if (e != 0) {
+                for (;;) {
+                if (e->id == -1) {
+                    break;
+                }
+                    e->x2E = 2;
+                    e->x08 = -1;
+                    e->x0A = -1;
+                    e->x2C = *cnt;
+                    if (e->x05 != 0) {
+                        quest_w.x34 += e->x04;
+                    }
+                    e++;
+                    (*cnt)++;
+                }
+            }
+        }
+        p++;
+    }
+}
