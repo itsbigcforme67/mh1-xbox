@@ -136,3 +136,36 @@ Plan: both. xemu (emulator) for day-to-day iteration — fast, scriptable, scree
 hardware — and the real Xbox for regular checks of what xemu gets wrong (64 MB memory limit, GPU
 details, timing, disc/HDD speed). xemu needs the owner's own BIOS, MCPX boot ROM and HDD image,
 dumped from their modded Xbox (never committed).
+
+## Open: the opening movie (Sofdec) (agent A, round 22)
+
+The movies are Sofdec files in AFS00.AFS: OPENING.sfd (79.6 MB, about 3.5 min),
+sp_mh.sfd (84 MB) and seven short attract movies (WTR, FEED, HORN, SQURE, PUB,
+VOL, CAV; 7-32 MB). Read from the opening's first megabyte: an MPEG program
+stream; the video is MPEG-2 Main Profile @ Main Level, progressive sequence,
+4:2:0, 29.97 fps, about 3 Mbit/s (the sequence header says 256x512, which looks
+odd and needs a second look); the audio is the stream 0xC0 holding a stereo
+48 kHz 4-bit ADX, which the port already decodes. The PC now skips the movie.
+
+Options (estimates, not measured):
+- A. Own decoder in the repo, plain C, no library: program-stream demux
+  (~150 lines), ADX into the existing stream mixer (~100), MPEG-2 video for
+  progressive MP@ML only (I/P/B frames, VLC tables, IDCT, motion compensation;
+  field pictures / dual prime can be left out because the stream is
+  progressive): ~2500-3500 lines, about one to two weeks of agent time
+  including checking it against a reference decoder frame by frame. Speed:
+  MPEG-2 SD in C is roughly 5-15 ms per frame on a desktop core; the ARM box's
+  Cortex-A53 cores and the 733 MHz Xbox CPU are several times slower, so 30 fps
+  there is likely but not certain (the game is not running during the movie,
+  so the whole frame budget is available; YUV->RGB can go to the GPU).
+  Upside: works from the disc alone, like the rest of the port.
+- B. A pre-converted file the player makes from their own disc (a script that
+  extracts OPENING.sfd and runs ffmpeg into something trivial to play, e.g.
+  MPEG-1 for a small MPEG-1-only decoder, or low-resolution frames). Cheaper
+  for us (~2-4 days with a small decoder), but every player needs ffmpeg and
+  an extra setup step, and the converted file is Capcom data the player must
+  keep next to the port. The Xbox build would still need some decoder.
+- C. Keep skipping the movies (today's state).
+Recommendation from agent A: A, after the single-player game is complete, since
+it keeps "own disc only, no extra tools" and also covers the attract movies.
+Owner to decide.

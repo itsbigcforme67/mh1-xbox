@@ -1,3 +1,4 @@
+/* lb_c507 - agent C round 5 0x005B4D60-0x005B4EC4: disp_lm_room_member (room member window draw; Disp_lb_menu(1) keeps the ladder constant in a0 like the original). */
 #include "lobby_a.h"
 extern s32 no_pl;
 extern struct { u8 _pad00[0x14]; u8 x14; } PitMenu;
@@ -14,7 +15,7 @@ void disp_lm_room_member(void) {
 
     switch (lbmw[9]) {
     case 0:
-        Disp_lb_menu();
+        Disp_lb_menu(1);
         j = 0;
         pp = arr;
         do {

@@ -76,3 +76,9 @@ void rtabi_Eft02_set3(f32 scale, void *em, int ang, int arg, int joint, f32 *pos
  * over in the asm); the definition (agent D's em_cmd_nm.c) takes em. */
 void NextStage_No_Set(void *em);
 void rtabi_NextStage_No_Set(void *em) { NextStage_No_Set(em); }
+
+/* Eft10_set: em07_ai_nm.c / em08_ai_nm.c call it as (f32 scale, EMW *, arg,
+ * x07) (PS2: scale in f12, em in a0); the definition (src/game/eft/eft10.c)
+ * is (em, arg, x07, scale). Without this the Lao-Shan's dying dust crashed. */
+void Eft10_set(void *em, int arg, int x07, f32 scale);
+void rtabi_Eft10_set(f32 scale, void *em, int arg, int x07) { Eft10_set(em, arg, x07, scale); }
