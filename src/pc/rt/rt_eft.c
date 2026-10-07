@@ -792,8 +792,7 @@ int Em_area_ck(int a)
 int softdip_ck(void) { return 0; }   /* 0x1593D0: returns 0 */
 
 STUB_V(vib_set_pl, (void *pl, int a))
-STUB_V(pl_light_change, (void *em, int a))
-STUB_V(Pl_light_set, (void *em))
+/* pl_light_change / Pl_light_set: src/main/model/light_nm.c (PICK_X); the host reads what they hand to flSetRenderState(0x5A..) in rt_light.c */
 /* Get_atk_value (f_ud, src/main/ud/ud_nm.c): element/ailment value kind
  * (0-6) of the weapon, Ken_data[PLW+0x360][0xB + kind] when PLW+0x35F == 6 */
 extern unsigned char Ken_data[][0x18];
