@@ -7,6 +7,7 @@
 #include "types.h"
 
 typedef long long s64;
+typedef unsigned long long u64;
 typedef struct NODE NODE;
 typedef struct BS BS;
 typedef struct KH KH;
@@ -16,7 +17,7 @@ typedef struct PW {
     u8 x02;
     u8 x03;
     s32 x04;
-    s64 id;         /* 0x08 dictionary word id */
+    u64 id;         /* 0x08 dictionary word id */
 } PW;
 
 struct KH {
@@ -36,7 +37,7 @@ struct CH {
     u8 x02;
     u8 x03;
     s32 x04;
-    s64 id;         /* 0x08 */
+    u64 id;         /* 0x08 */
     u16 x10;
     u16 x12;
     CH *next;       /* 0x14 */
@@ -107,7 +108,7 @@ extern int cur_len, cur_pos, func_mode, gun_nkh, sel_job, im_state, learn_on;
 extern KH *top_kh;
 extern u16 meanbuf[152];
 extern u8 outbuf[152];
-extern s64 wdsbuf[128];
+extern u64 wdsbuf[128];
 extern u8 prev_yomi[80];
 extern u8 prev_tango[80];
 extern u8 yomi_buf[80];
@@ -469,49 +470,156 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int ToUpper(int c)
+int syn_2to3(int n)
 {
-    int u;
-
-    u = c & 0xFF;
-    if (u >= 0x61 && u < 0x7B) {
-        return (u - 0x20) & 0xFF;
+    n = n - 1;
+    if (n < 0 || n >= 0x1E) {
+        return -1;
     }
-    return c;
+    return tab_2to3[n];
 }
 
-u8 *getrda2(u16 *a, u16 *b)
+int apis_dicname(int *a)
+{
+    strcpy(dic_name, a[0]);
+    return 0;
+}
+
+int api_khlong(int *a)
 {
     u8 *p;
-    int n;
-    u16 *q;
-    int k;
+    u8 *q;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    if (cur_pos + cur_len >= kana_len) {
+        return 0;
+    }
+    save_fst_bslen(cur_pos);
+    free_hchar(cur_pos, kana_len, 1);
+    cur_len++;
+    henkan(cur_pos, kana_len, 1, cur_len);
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
+    return kh_count(hchar[cur_pos].kh);
+}
+
+int api_khshort(int *a)
+{
+    u8 *p;
+    u8 *q;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    if (cur_len < 2) {
+        return 0;
+    }
+    save_fst_bslen(cur_pos);
+    free_hchar(cur_pos, kana_len, 1);
+    cur_len--;
+    henkan(cur_pos, kana_len, 1, cur_len);
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
+    return kh_count(hchar[cur_pos].kh);
+}
+
+int api_backbunsetu(int *a)
+{
+    u8 *p;
+    u8 *q;
+    int pos;
     int len;
 
-    n = b - a;
-    p = rmspec;
-    while (*p != 0) {
-        len = *p;
-        p++;
-        if (n == len) {
-            q = a;
-            k = n;
-            while (k > 0) {
-                if (*p != (ToUpper(*(u8 *)q++) & 0xFF)) {
-                    break;
-                }
-                k--;
-                p++;
-            }
-            if (k == 0) {
-                return p;
-            }
-            p += k;
-        } else {
-            p += len;
-        }
-        while (*p++ != 0) {
-        }
+    len = 0;
+    if (func_mode != 3) {
+        return -1;
     }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    if (cur_pos == 0) {
+        return 0;
+    }
+    unify_khmem(cur_pos, 0);
+    pos = 0;
+    while (pos < cur_pos) {
+        len = bunsetu_len(pos);
+        if (pos + len >= cur_pos) {
+            break;
+        }
+        pos += len;
+    }
+    cur_pos = pos;
+    cur_len = len;
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
+    return kh_count(hchar[cur_pos].kh);
+}
+
+int api_nextbunsetu(int *a)
+{
+    u8 *p;
+    u8 *q;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    if (cur_pos + cur_len >= kana_len) {
+        return 0;
+    }
+    unify_khmem(cur_pos, 0);
+    cur_pos += cur_len;
+    cur_len = bunsetu_len(cur_pos);
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
+    return kh_count(hchar[cur_pos].kh);
+}
+
+int api_khhenkan(int *a)
+{
+    int mode;
+    u8 *p;
+    u8 *q;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    switch (a[-1]) {
+    case 37:
+        mode = 2;
+        break;
+    case 38:
+        mode = 1;
+        break;
+    case 39:
+        mode = 3;
+        break;
+    case 40:
+        mode = 4;
+        break;
+    default:
+        mode = 4;
+        break;
+    }
+    khmem_raw(mode);
+    if (hchar[cur_pos].kh == 0) {
+        return -1;
+    }
+    init_kouho(0, 1);
+    get_kouhostr(p, q);
     return 0;
+}
+
+int api_none(void)
+{
+    return -1;
 }

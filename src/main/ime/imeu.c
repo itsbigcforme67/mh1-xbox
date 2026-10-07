@@ -7,6 +7,7 @@
 #include "types.h"
 
 typedef long long s64;
+typedef unsigned long long u64;
 typedef struct NODE NODE;
 typedef struct BS BS;
 typedef struct KH KH;
@@ -16,7 +17,7 @@ typedef struct PW {
     u8 x02;
     u8 x03;
     s32 x04;
-    s64 id;         /* 0x08 dictionary word id */
+    u64 id;         /* 0x08 dictionary word id */
 } PW;
 
 struct KH {
@@ -36,7 +37,7 @@ struct CH {
     u8 x02;
     u8 x03;
     s32 x04;
-    s64 id;         /* 0x08 */
+    u64 id;         /* 0x08 */
     u16 x10;
     u16 x12;
     CH *next;       /* 0x14 */
@@ -107,7 +108,7 @@ extern int cur_len, cur_pos, func_mode, gun_nkh, sel_job, im_state, learn_on;
 extern KH *top_kh;
 extern u16 meanbuf[152];
 extern u8 outbuf[152];
-extern s64 wdsbuf[128];
+extern u64 wdsbuf[128];
 extern u8 prev_yomi[80];
 extern u8 prev_tango[80];
 extern u8 yomi_buf[80];
@@ -469,188 +470,200 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-static void kouho_set_num(int n, u8 *out)
+void init_univmem(void)
 {
-    int h;
-    int t;
+    u8 *p;
 
-    if (n < 0) {
-        n = 0;
+    free_univ = mem;
+    for (p = mem; p < mem + 0x11928; p += 0x18) {
+        *(u8 **)p = p + 0x18;
     }
-    h = n / 100;
-    if (h != 0) {
-        *out++ = h + 0x30;
-    } else {
-        *out++ = 0x20;
-    }
-    n = n % 100;
-    t = n / 10;
-    if (t != 0 || out[-1] != 0x20) {
-        *out++ = t + 0x30;
-    } else {
-        *out++ = 0x20;
-    }
-    n = n % 10;
-    *out = n + 0x30;
+    *(u8 **)p = 0;
+    first_init_5 = 0;
 }
 
-int kouho_makedisp(int pos, int len, KH *k, u16 *buf)
+void *alloc_mem(void)
 {
-    int n;
+    void *r;
 
-    if (k == 0 || (k->flag & 0x80)) {
-        return roman_makedisp(pos, len, buf, 0);
-    } else {
-        n = jiritu_makedisp(k, buf);
-        buf += n;
-        n += roman_makedisp(pos + k->x06, len - k->x06, buf, 0);
-        return n;
-    }
-}
-
-int jiritu_makedisp(KH *k, u16 *buf)
-{
-    int n;
-
-    n = 0;
-    for (;;) {
-        n += sstrtom(buf + n, k->str, 6);
-        if (!(k->flag & 1)) {
-            break;
-        }
-        k = k->next;
-    }
-    return n;
-}
-
-int inc_gun(KH *k)
-{
-    int n;
-    int w;
-    int room;
-    KH *p;
-
-    if (k == 0) {
+    r = free_univ;
+    if (r == 0) {
         return 0;
     }
-    p = k;
-    w = 0;
-    n = 0;
-    room = kwin_len - 0xA;
-    while (n <= 8 && p != 0) {
-        w += kh_length(p) + 4;
-        if (w > room) {
-            break;
-        }
-        n++;
-        p = kh_followed(p);
-    }
-    if (n == 0) {
-        return 1;
-    }
-    return n;
-}
-
-int next_gun(int disp, int wrap)
-{
-    KH *old;
-    int n;
-
-    old = top_kh;
-    top_kh = take_kouho(old, gun_num);
-    n = inc_gun(top_kh);
-    if (n == 0) {
-        if (wrap == 0) {
-            top_kh = old;
-            return 0;
-        }
-        init_kouho(0, 0);
-    } else {
-        gun_num = n;
-    }
-    gun_nkh = 0;
-    if (disp == 1) {
-        disp_kouho();
-    }
-    return 1;
-}
-
-int back_gun(int disp, int wrap)
-{
-    KH *old;
-    int num;
-
-    old = top_kh;
-    num = gun_num;
-    init_kouho(0, 0);
-    if (old == top_kh) {
-        if (wrap == 0) {
-            top_kh = old;
-            gun_num = num;
-            gun_nkh = 0;
-            return 0;
-        }
-        old = 0;
-    }
-    for (;;) {
-        if (take_kouho(top_kh, gun_num) == old) {
-            break;
-        }
-        next_gun(0, 1);
-    }
-    if (disp == 1) {
-        disp_kouho();
-    }
-    return 1;
-}
-
-int is_jis(c)
-u16 c;
-{
-    int hi;
-    int lo;
-    int a;
-    int b;
-    int r;
-
-    hi = c >> 8;
-    lo = c & 0xFF;
-    a = 0;
-    r = 0;
-    if ((hi & 0xFF) >= 0x21 && (hi & 0xFF) < 0x7F) {
-        a = 1;
-    }
-    if (a != 0) {
-        b = 0;
-        if ((lo & 0xFF) >= 0x21 && (lo & 0xFF) < 0x7F) {
-            b = 1;
-        }
-        if (b != 0) {
-            r = 1;
-        }
-    }
+    free_univ = *(void **)r;
     return r;
 }
 
-int is_kanji(int c)
+void free_mem(void *p)
 {
-    c = c & 0xFF;
-    if (c < 0x81 || c >= 0xFD || (c >= 0xA0 && c < 0xE0)) {
-        return 0;
+    if (p != 0) {
+        *(void **)p = free_univ;
+        free_univ = p;
     }
-    return 1;
 }
 
-int is_shift(int c)
+CH *alloc_chmem(void)
 {
-    u8 lo;
+    void *r;
 
-    lo = c;
-    if (is_kanji((c & 0xFFFF) >> 8 & 0xFF) == 0) {
-        return 0;
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
-    if (lo < 0x40 || lo >= 0xFD || lo == 0x7F) {
-        return 0;
+    return 0;
+}
+
+BS *alloc_bsmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
-    return 1;
+    return 0;
+}
+
+PWM *alloc_pwmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+KH *alloc_khmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+KL *alloc_klmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+void free_pwmemlist(PWM *p)
+{
+    PWM *n;
+
+    while (p != 0) {
+        n = p->next;
+        free_mem(p);
+        p = n;
+    }
+}
+
+void free_chmemlist(CH *c)
+{
+    CH *n;
+    u64 prev;
+
+    prev = -1;
+    while (c != 0) {
+        n = c->next;
+        if (prev == -1 || c->id != prev) {
+            if (c->id != -1) {
+                dic_freeentid(c->id);
+            }
+        }
+        prev = c->id;
+        free_mem(c);
+        c = n;
+    }
+}
+
+void free_bsmemlist(BS *b)
+{
+    BS *n;
+
+    while (b != 0) {
+        n = b->next;
+        free_mem(b);
+        b = n;
+    }
+}
+
+void free_khmemlist(KH *k)
+{
+    KH *n;
+
+    while (k != 0) {
+        n = k->next;
+        free_mem(k);
+        k = n;
+    }
+}
+
+void free_klmemlist(KL *l)
+{
+    KL *n;
+
+    while (l != 0) {
+        n = l->next;
+        free_mem(l);
+        l = n;
+    }
+}
+
+int bs_prefer(int pos, int end, int len)
+{
+    BS *b;
+    BS *best;
+    BS *p;
+    HCHAR *h;
+
+    h = &hchar[pos];
+    for (b = h->bs; b != 0; b = b->next) {
+        if (len < 0 || b->len == len) {
+            if (bs_point(b, pos, end) == -1) {
+                return -1;
+            }
+        }
+    }
+    if (h == 0 || (best = h->bs) == 0) {
+        return -1;
+    } else {
+        for (p = best->next; p != 0; p = p->next) {
+            if (p->x08 > best->x08) {
+                best = p;
+            }
+        }
+        bs_ctd(best, pos, end);
+        return best->len;
+    }
+}
+
+int calc_point(int pos, BS *b, BS *next)
+{
+    int a;
+    int c;
+    int f;
+    u16 pri;
+
+    if (next == 0) {
+        a = b->len;
+        c = 0;
+        f = 1;
+    } else {
+        c = b->len;
+        a = next->len;
+        f = 0;
+    }
+    pri = b->x0A;
+    return f * 0x32 + (pri + (c * 0x10 + a * 0x11) + setu_point(b, next));
 }

@@ -7,6 +7,7 @@
 #include "types.h"
 
 typedef long long s64;
+typedef unsigned long long u64;
 typedef struct NODE NODE;
 typedef struct BS BS;
 typedef struct KH KH;
@@ -16,7 +17,7 @@ typedef struct PW {
     u8 x02;
     u8 x03;
     s32 x04;
-    s64 id;         /* 0x08 dictionary word id */
+    u64 id;         /* 0x08 dictionary word id */
 } PW;
 
 struct KH {
@@ -36,7 +37,7 @@ struct CH {
     u8 x02;
     u8 x03;
     s32 x04;
-    s64 id;         /* 0x08 */
+    u64 id;         /* 0x08 */
     u16 x10;
     u16 x12;
     CH *next;       /* 0x14 */
@@ -107,7 +108,7 @@ extern int cur_len, cur_pos, func_mode, gun_nkh, sel_job, im_state, learn_on;
 extern KH *top_kh;
 extern u16 meanbuf[152];
 extern u8 outbuf[152];
-extern s64 wdsbuf[128];
+extern u64 wdsbuf[128];
 extern u8 prev_yomi[80];
 extern u8 prev_tango[80];
 extern u8 yomi_buf[80];
@@ -469,100 +470,39 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void init_univmem(void)
+int syn_match(a, b, base)
+int a;
+int b;
+int base;
 {
-    u8 *p;
-
-    free_univ = mem;
-    for (p = mem; p < mem + 0x11928; p += 0x18) {
-        *(u8 **)p = p + 0x18;
+    a = a & 0xFF;
+    b = b & 0xFF;
+    if (a >= 0x14 && a < 0x19) {
+        if (b >= 0x14 && b < 0x19) {
+            return base + 3;
+        }
+        return base;
     }
-    *(u8 **)p = 0;
-    first_init_5 = 0;
-}
-
-void *alloc_mem(void)
-{
-    void *r;
-
-    r = free_univ;
-    if (r == 0) {
-        return 0;
+    if (a == 0x1F) {
+        if (b == 0x1F) {
+            return base + 0xF;
+        }
     }
-    free_univ = *(void **)r;
-    return r;
-}
-
-void free_mem(void *p)
-{
-    if (p != 0) {
-        *(void **)p = free_univ;
-        free_univ = p;
+    if (a == 0x21 || a == 0x26 || a == 0x27) {
+        return base + 0x14;
     }
-}
-
-CH *alloc_chmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
+    if (a == 0x20 || a == 0x22) {
+        return base + 0xF;
     }
-    return 0;
-}
-
-BS *alloc_bsmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
+    if (a == 0x1B) {
+        if (b == 0x1C) {
+            return base + 0x14;
+        }
     }
-    return 0;
-}
-
-PWM *alloc_pwmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
+    if (a == 0x1A) {
+        if (b == 0x1A) {
+            return base + 5;
+        }
     }
-    return 0;
-}
-
-KH *alloc_khmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
-    }
-    return 0;
-}
-
-KL *alloc_klmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
-    }
-    return 0;
-}
-
-void free_pwmemlist(PWM *p)
-{
-    PWM *n;
-
-    while (p != 0) {
-        n = p->next;
-        free_mem(p);
-        p = n;
-    }
+    return base;
 }

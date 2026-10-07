@@ -7,6 +7,7 @@
 #include "types.h"
 
 typedef long long s64;
+typedef unsigned long long u64;
 typedef struct NODE NODE;
 typedef struct BS BS;
 typedef struct KH KH;
@@ -16,7 +17,7 @@ typedef struct PW {
     u8 x02;
     u8 x03;
     s32 x04;
-    s64 id;         /* 0x08 dictionary word id */
+    u64 id;         /* 0x08 dictionary word id */
 } PW;
 
 struct KH {
@@ -36,7 +37,7 @@ struct CH {
     u8 x02;
     u8 x03;
     s32 x04;
-    s64 id;         /* 0x08 */
+    u64 id;         /* 0x08 */
     u16 x10;
     u16 x12;
     CH *next;       /* 0x14 */
@@ -107,7 +108,7 @@ extern int cur_len, cur_pos, func_mode, gun_nkh, sel_job, im_state, learn_on;
 extern KH *top_kh;
 extern u16 meanbuf[152];
 extern u8 outbuf[152];
-extern s64 wdsbuf[128];
+extern u64 wdsbuf[128];
 extern u8 prev_yomi[80];
 extern u8 prev_tango[80];
 extern u8 yomi_buf[80];
@@ -607,10 +608,10 @@ u8 *select_subtostr(int arg0, int n)
 
 void kh_learn(int pos, int len, KH *kh, BS *list)
 {
-    s64 *out;
+    u64 *out;
     PW *pw;
-    s64 last;
-    s64 first;
+    u64 last;
+    u64 first;
     int n;
 
     pw = 0;
@@ -618,17 +619,16 @@ void kh_learn(int pos, int len, KH *kh, BS *list)
         out = wdsbuf;
         if (list == 0 || list == (BS *)-1) {
             if (pw != 0) {
-                wdsbuf[0] = pw->id;
-                out = wdsbuf + 1;
+                *out++ = pw->id;
             }
         } else {
-            first = 0;
-            last = first;
+            first = -1;
             do {
                 if (list->pw != 0) {
-                    if (list->pw->id != last && list->pw->id != first) {
-                        *out = list->pw->id;
-                        first = list->pw->id;
+                    last = list->pw->id;
+                    if (last != -1 && last != first) {
+                        *out = last;
+                        first = last;
                         out++;
                     }
                 }
@@ -1858,7 +1858,7 @@ u8 *ins_wds(u8 *p, u8 *rt, int len, int total)
     return p;
 }
 
-int dic_learn(s64 id, int code, s64 *list, int n)
+int dic_learn(u64 id, int code, u64 *list, int n)
 {
     int off;
     int tmp;
@@ -1875,7 +1875,7 @@ int dic_learn(s64 id, int code, s64 *list, int n)
     if (dic_fd == -1) {
         return -3;
     }
-    if (id == 0) {
+    if (id == -1) {
         c = code & 0xFFFF;
         if (c >= 0 && c < 4) {
             suji_mode = c;
@@ -1884,7 +1884,7 @@ int dic_learn(s64 id, int code, s64 *list, int n)
             return 3;
         }
     }
-    page = get_entid_tab(&off, &tmp, &rt);
+    page = get_entid_tab(id, &off, &tmp, &rt);
     if (page == -1) {
         return 0;
     }
@@ -1945,7 +1945,7 @@ void clear_rtime(u8 *ent)
     }
 }
 
-void clear_allrtime(s64 *list, int n)
+void clear_allrtime(u64 *list, int n)
 {
     int off;
     int tmp;
@@ -1999,7 +1999,7 @@ int dic_touroku(WD *w)
     int need;
     int c;
     s16 klen;
-    u8 buf[0x30];
+    u8 buf[0x50];
     u8 *base;
     u8 *end;
     u8 *e;
@@ -2082,14 +2082,14 @@ void shiftpage(u8 *from, u8 *end, int d)
 
 int dic_delete(WD *w)
 {
-    int none;
     int c;
     int d;
     int r;
     s16 klen;
-    u8 buf[0x30];
+    u8 buf[0x50];
     u8 *e;
     u8 *end;
+    int none;
 
     none = 1;
     if (dic_fd == -1) {
@@ -2135,7 +2135,7 @@ int dic_delete(WD *w)
 
 int delwd(u8 *ent, WD *w)
 {
-    u8 buf[0x30];
+    u8 buf[0x50];
     int len;
     int tot;
     int n;
@@ -2196,7 +2196,7 @@ int dic_tmptouroku(WD *w)
     return 3;
 }
 
-int dic_newlearn(WD *w, s64 *list, int n)
+int dic_newlearn(WD *w, u64 *list, int n)
 {
     u8 buf[0x50];
     int rt;
@@ -3814,8 +3814,7 @@ void add_dummy_chmem(int pos, int len, int kind)
     CH *c;
     int k;
 
-    c = alloc_chmem();
-    if (c != 0) {
+    if ((c = alloc_chmem()) != 0) {
         c->len = len;
         c->x02 = kind;
         c->x03 = 0;
@@ -4246,7 +4245,7 @@ void first_kouho(int pos, int len)
     BS *best;
     PW *pw;
     int pri;
-    int p;
+    u16 p;
     KH *kh;
     KH *out;
     KH *tl;
@@ -4256,7 +4255,10 @@ void first_kouho(int pos, int len)
     h = &hchar[pos];
     if (h->kh == 0) {
         b = h->bs;
-        if (b != (BS *)-1) {
+        if (b == (BS *)-1) {
+none:
+            h->kh = null_kouho(len);
+        } else {
             while (b != 0) {
                 if (b->len == len) {
                     if (b->pw == 0) {
@@ -4264,33 +4266,30 @@ void first_kouho(int pos, int len)
                     } else {
                         p = kh_priority(b, ((CH *)b->pw)->x10) & 0xFFFF;
                     }
-                    if ((pri & 0xFFFF) < p || best == 0) {
-                        pri = p & 0xFFFF;
+                    if (p > (pri & 0xFFFF) || best == 0) {
+                        pri = p;
                         best = b;
                     }
                 }
                 b = b->next;
             }
-            pw = best != 0 ? best->pw : 0;
-            if (best != 0 && pw != 0 && pw->x00 != 0) {
-                if (pw->id == 0) {
-                    if (pw->x02 == 0x1F && dic_get1num(kana_ustr + pos, pw->x00, (u8 *)wdsbuf) > 0) {
-                        kh = create_kouho(wdsbuf, pw, pw->x00, &out, &tl);
-                    } else {
-                        kh = null_kouho(len);
-                    }
-                } else if (dic_get1wd(pw->id, pw->x02, pw->x03, (u8 *)wdsbuf) > 0) {
-                    kh = create_kouho(wdsbuf, pw, pw->x00, &out, &tl);
-                } else {
-                    kh = null_kouho(len);
-                }
-            } else {
-                kh = null_kouho(len);
+            if (best == 0) {
+                goto none;
             }
-        } else {
-            kh = null_kouho(len);
+            pw = best->pw;
+            if (pw == 0 || pw->x00 == 0) {
+                goto none;
+            }
+            if (pw->id == -1) {
+                if (pw->x02 != 0x1F || dic_get1num(kana_ustr + pos, pw->x00, (u8 *)wdsbuf) <= 0) {
+                    goto none;
+                }
+            } else if (dic_get1wd(pw->id, pw->x02, pw->x03, (u8 *)wdsbuf) <= 0) {
+                goto none;
+            }
+            kh = create_kouho(wdsbuf, pw, pw->x00, &out, &tl);
+            h->kh = kh;
         }
-        h->kh = kh;
     }
 }
 
@@ -4381,10 +4380,10 @@ KH *get_kouholist(BS *b)
     int cnt;
     KH *out;
     KH *tl;
-    KH *last;
-    KH *first;
     PW *pw;
+    KH *last;
     u8 *p;
+    KH *first;
 
     pw = b->pw;
     if (pw == 0 || pw->x00 == 0) {
@@ -4407,8 +4406,8 @@ none:
             return 0;
         }
         if (first == 0) {
-            last = tl;
             first = out;
+            last = tl;
         } else {
             last->next = out;
             last = tl;
@@ -5285,7 +5284,7 @@ void free_pwmemlist(PWM *p)
 void free_chmemlist(CH *c)
 {
     CH *n;
-    s64 prev;
+    u64 prev;
 
     prev = -1;
     while (c != 0) {

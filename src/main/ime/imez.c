@@ -7,6 +7,7 @@
 #include "types.h"
 
 typedef long long s64;
+typedef unsigned long long u64;
 typedef struct NODE NODE;
 typedef struct BS BS;
 typedef struct KH KH;
@@ -16,7 +17,7 @@ typedef struct PW {
     u8 x02;
     u8 x03;
     s32 x04;
-    s64 id;         /* 0x08 dictionary word id */
+    u64 id;         /* 0x08 dictionary word id */
 } PW;
 
 struct KH {
@@ -36,7 +37,7 @@ struct CH {
     u8 x02;
     u8 x03;
     s32 x04;
-    s64 id;         /* 0x08 */
+    u64 id;         /* 0x08 */
     u16 x10;
     u16 x12;
     CH *next;       /* 0x14 */
@@ -107,7 +108,7 @@ extern int cur_len, cur_pos, func_mode, gun_nkh, sel_job, im_state, learn_on;
 extern KH *top_kh;
 extern u16 meanbuf[152];
 extern u8 outbuf[152];
-extern s64 wdsbuf[128];
+extern u64 wdsbuf[128];
 extern u8 prev_yomi[80];
 extern u8 prev_tango[80];
 extern u8 yomi_buf[80];
@@ -469,39 +470,98 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int syn_match(a, b, base)
-int a;
-int b;
-int base;
+int add_kana_buf(u8 *s)
 {
-    a = a & 0xFF;
-    b = b & 0xFF;
-    if (a >= 0x14 && a < 0x19) {
-        if (b >= 0x14 && b < 0x19) {
-            return base + 3;
+    KANA *kb;
+    u8 *us;
+    int len;
+    int bytes;
+    int lead;
+    int code;
+    int c;
+
+    kb = pkana_buf;
+    lead = 0;
+    us = p_ustr;
+    len = kana_len;
+    bytes = bytesin_kana_buf(kana_buf, kb);
+    while ((c = *s) != 0) {
+        if (lead != 0) {
+            code = ask_sjis2jis((((lead & 0xFFFF) << 8) | (c & 0xFF)) & 0xFFFF) & 0xFFFF;
+            if (code != 0) {
+                if (len >= 0x24 || bytes >= 0x4E) {
+                    return -1;
+                }
+                kb->ch = code;
+                kb->n = 2;
+                kb++;
+                *us = to_ucode(code);
+                len++;
+                us++;
+                bytes += 2;
+            }
+            lead = 0;
+        } else if (is_kanji(c) != 0) {
+            lead = *s;
+        } else {
+            if ((*s >= 0x20 && *s < 0x7F) || (*s >= 0xA0 && *s < 0xE0)) {
+                if (len >= 0x24 || bytes >= 0x4F) {
+                    return -1;
+                }
+                kb->ch = *s;
+                len++;
+                bytes++;
+                kb->n = 1;
+                lead = 0;
+                *us = 0;
+                kb++;
+                us++;
+            }
         }
-        return base;
+        s++;
     }
-    if (a == 0x1F) {
-        if (b == 0x1F) {
-            return base + 0xF;
+    pkana_buf = kb;
+    ekana_buf = kb;
+    kana_len = len;
+    p_ustr = us;
+    e_ustr = us;
+    return len;
+}
+
+static int bytesin_kana_buf(KANA *a, KANA *b)
+{
+    int r = 0;
+
+    for (; a < b; a++) {
+        if (a->ch & 0xFF00) {
+            r += 2;
+        } else {
+            r += 1;
         }
     }
-    if (a == 0x21 || a == 0x26 || a == 0x27) {
-        return base + 0x14;
+    return r;
+}
+
+int count_byte_kana_buf(int a, int n)
+{
+    KANA *p = &kana_buf[a];
+    int r = 0;
+
+    while (n > 0) {
+        r += p->n;
+        n--;
+        p++;
     }
-    if (a == 0x20 || a == 0x22) {
-        return base + 0xF;
+    return r;
+}
+
+int api_funcent(int *req)
+{
+    int cmd;
+
+    cmd = *req;
+    if (cmd <= 0 || (u32)cmd > 0x3F) {
+        return -1;
     }
-    if (a == 0x1B) {
-        if (b == 0x1C) {
-            return base + 0x14;
-        }
-    }
-    if (a == 0x1A) {
-        if (b == 0x1A) {
-            return base + 5;
-        }
-    }
-    return base;
+    return D_0034ABEC[cmd]((u8 *)req + 4);
 }

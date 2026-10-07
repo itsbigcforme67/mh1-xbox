@@ -1346,6 +1346,14 @@ Lessons (function that shows it):
   `code = (u16)(code & 0x24FF)` for the second andi).
 - k_HitWallCamera (camr5_nm.c -> new cam/camr7.c): deleting the four `f32 *ay = &a[1]`-style alias locals fixed the address-of-local scheduling;
   `u8 hit` -> `int hit; if ((u8)hit != 0)` produced the original andi. (camr5_nm.c is in the PC build: same logic, kept in sync.)
+- THE `pcpyld` MYSTERY IS SOLVED: `addiu v0,zero,-1 ; pcpyld v0,zero,v0 ; bne/beq x,v0` (the `.word` in check.py output) is a 64-bit compare of an UNSIGNED 64-bit
+  value with -1. Declare the field/variable `unsigned long long` (u64), not s64: `if (pw->id != -1)` on a `u64 id`. With s64 MWCC emits a plain `addiu -1`/`nor`.
+  Fixed by it: get_kouholist, first_kouho, free_chmemlist (PW.id and CH.id are u64; wdsbuf stays s64 because it is also passed around as s64 *).
+  Also add_dummy_chmem (`c->id = -1`, CH.id u64), kh_learn (prev/last locals u64). Probably every other `.word` before a `bne x,-1` in the old notes.
+- Shared `goto none` tail: when several failure branches all end in the same `kh = null_kouho(len)` the original has ONE block laid out right after the first
+  test (null case first, then the loop): `if (b == (BS *)-1) { none: h->kh = null_kouho(len); } else { ...; if (bad) goto none; ... }` (first_kouho, get_kouholist).
+- add_kana_buf: `while ((c = *s) != 0)` with `c` only used before the calls, and `ask_sjis2jis((((lead & 0xFFFF) << 8) | (c & 0xFF)) & 0xFFFF) & 0xFFFF`
+  (the argument is masked to u16 explicitly too).
 Tooling gotchas:
 - Making a function `static` in an nm TU (to give its later callers register knowledge) breaks the link when asm callers or other runs still
   reference it by name ("undefined reference to g2jodo"): add `name = 0xADDR;` lines to config/main_aliases.txt (done for add_prevwd, g2jodo,

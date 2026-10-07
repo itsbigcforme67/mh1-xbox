@@ -7,6 +7,7 @@
 #include "types.h"
 
 typedef long long s64;
+typedef unsigned long long u64;
 typedef struct NODE NODE;
 typedef struct BS BS;
 typedef struct KH KH;
@@ -16,7 +17,7 @@ typedef struct PW {
     u8 x02;
     u8 x03;
     s32 x04;
-    s64 id;         /* 0x08 dictionary word id */
+    u64 id;         /* 0x08 dictionary word id */
 } PW;
 
 struct KH {
@@ -36,7 +37,7 @@ struct CH {
     u8 x02;
     u8 x03;
     s32 x04;
-    s64 id;         /* 0x08 */
+    u64 id;         /* 0x08 */
     u16 x10;
     u16 x12;
     CH *next;       /* 0x14 */
@@ -107,7 +108,7 @@ extern int cur_len, cur_pos, func_mode, gun_nkh, sel_job, im_state, learn_on;
 extern KH *top_kh;
 extern u16 meanbuf[152];
 extern u8 outbuf[152];
-extern s64 wdsbuf[128];
+extern u64 wdsbuf[128];
 extern u8 prev_yomi[80];
 extern u8 prev_tango[80];
 extern u8 yomi_buf[80];
@@ -469,102 +470,191 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int setu_match(a, b, c, base, extra)
-int a;
-int b;
-int c;
-int base;
-int extra;
+int api_henkan(int *a)
 {
-    int r;
+    u8 *in;
+    u8 *kana;
+    u8 *kj;
 
-    r = 0;
-    b = b & 0xFF;
-    switch (a & 0xFF) {
-    case 0:
-        if ((b >= 0x14 && b <= 0x19) || b == 0x32) {
-            r = 0xF;
+    if (func_mode == 0) {
+        return -1;
+    }
+    in = (u8 *)a[0];
+    kana = (u8 *)a[1];
+    kj = (u8 *)a[2];
+    if (in != 0) {
+        if (func_mode >= 2) {
+            init_edit0();
         }
-        break;
-    case 1:
-        if (b == 0x1A) {
-            r = 0xF;
+        if (add_kana_buf(in) < 0) {
+            return -1;
         }
-        break;
-    case 2:
-        if (b == 0x1B || b == 0x1C) {
-            r = 0x14;
-        }
-        break;
-    case 3:
-        if (b == 0x1F || b == 0x38) {
-            r = 0x14;
-        }
-        break;
-    case 4:
-        if (b == 0x16) {
-            r = 0x14;
-        }
-        break;
-    case 5:
-        c = c & 0xFF;
-        if (c == 0xFF) {
-            if (b > 0 && b < 0xE) {
-                r = 0xF;
+    }
+    if (kana_len <= 0) {
+        *kana = 0;
+        *kj = 0;
+        return 0;
+    }
+    henkan(0, kana_len, 0, -1);
+    cur_pos = 0;
+    cur_len = bunsetu_len(0);
+    init_kouho(0, 1);
+    get_kouhostr(kana, kj);
+    func_mode = 3;
+    return kh_count(hchar[0].kh);
+}
+
+static int get_kouhostr(u8 *a, u8 *b)
+{
+    strcpy(a, select_subtostr(cur_pos, cur_len));
+    strcpy(b, select_subtostr(cur_pos + cur_len, kana_len - cur_pos - cur_len));
+}
+
+int api_movekh(int *a)
+{
+    int cnt;
+    u8 *p;
+    u8 *q;
+    int n;
+
+    if (func_mode != 3) {
+        return 0;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    switch (a[-1]) {
+    case 20:
+        if (gun_nkh > 0) {
+            gun_nkh--;
+        } else if (back_gun(0, 0) == 0) {
+            init_kouho(0, 1);
+            n = gun_num;
+            while (next_gun(0, 0) != 0) {
+                n += gun_num;
             }
-        } else if ((b >= 0x80 && b < 0x8C && c == 4) || (b == 0xD && c == 0)) {
-            r = 0xF;
+            init_kouho(n - 1, 1);
+        } else {
+            gun_nkh = gun_num - 1;
         }
         break;
-    case 6:
-        if (b >= 0x14 && b < 0x1A) {
-            r = 0xF;
-        } else if (b == 0x1F || b == 0x38) {
-            r = 0x14;
-        }
-        break;
-    case 7:
-        if (b == 0x1D) {
-            r = 0xF;
-        }
-        break;
-    case 8:
-        if ((b >= 0x14 && b <= 0x19) || (b > 0 && b < 0xE)) {
-            r = 0x14;
+    case 21:
+        if (gun_nkh < gun_num - 1) {
+            gun_nkh++;
+        } else if (next_gun(0, 0) == 0) {
+            init_kouho(0, 1);
         }
         break;
     }
-    if (r == 0) {
-        return base;
+    get_kouhostr(p, q);
+    return gun_nkh + 1;
+}
+
+int api_moveblk(int *a)
+{
+    int fail;
+    u8 *p;
+    u8 *q;
+
+    fail = 0;
+    if (func_mode != 3) {
+        return 0;
     }
-    return extra + (base + r);
-}
-
-u16 kh_priority(BS *b, int v)
-{
-    v = v & 0xFFFF;
-    if (v != 0) {
-        return (v + 0x3E8) & 0xFFFF;
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    switch (a[-1]) {
+    case 22:
+        if (back_gun(0, 0) == 0) {
+            fail = 1;
+        }
+        break;
+    case 23:
+        if (next_gun(0, 0) == 0) {
+            fail = 1;
+        }
+        break;
     }
-    return b->x08;
+    get_kouhostr(p, q);
+    if (fail != 0) {
+        return 0;
+    }
+    return gun_num;
 }
 
-int is_alphanum(int c)
+int api_allfix(int *a)
 {
-    return rmtype[c & 0xFF] & 0xC0;
+    u8 *out;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    out = (u8 *)a[0];
+    wd_learn(0, kana_len);
+    strcpy(out, select_tostr());
+    init_edit0();
+    func_mode = 1;
+    return 0;
 }
 
-int is_num(int c)
+int api_select(int *a)
 {
-    return rmtype[c & 0xFF] & 0x80;
+    u8 *k1;
+    u8 *k2;
+    s16 *cnt;
+    u8 *out;
+    int r;
+    int n;
+    int pos;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    n = a[0];
+    if (n <= 0 || gun_num < n) {
+        return 0;
+    }
+    out = (u8 *)a[1];
+    k1 = (u8 *)a[2];
+    k2 = (u8 *)a[3];
+    cnt = (s16 *)a[4];
+    gun_nkh = n - 1;
+    strcpy(out, select_subtostr(cur_pos, cur_len));
+    unify_khmem(cur_pos, 1);
+    r = count_byte_kana_buf(cur_pos, cur_len);
+    pos = cur_pos;
+    cur_pos = pos + cur_len;
+    if (cur_pos >= kana_len) {
+        *k1 = 0;
+        *k2 = 0;
+        *cnt = 0;
+        return r;
+    }
+    cur_len = bunsetu_len(cur_pos, pos);
+    init_kouho(0, 1);
+    get_kouhostr(k1, k2);
+    *cnt = kh_count(hchar[cur_pos].kh);
+    return r;
 }
 
-int is_alpha(int c)
+int api_dicopen(void)
 {
-    return rmtype[c & 0xFF] & 0x40;
+    if (lock_mode == 0) {
+        return -1;
+    }
+    if (dic_open((char *)dic_name) == -7) {
+        return 1;
+    }
+    into_editing(0);
+    func_mode = 1;
+    return 0;
 }
 
-int is_paren(int c)
+int api_dicclose(void)
 {
-    return rmtype[c & 0xFF] & 0x20;
+    if (lock_mode == 0) {
+        return -1;
+    }
+    init_edit0();
+    dic_close();
+    func_mode = 0;
+    return 0;
 }
