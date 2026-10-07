@@ -242,8 +242,8 @@ SELT *tsk;
 }
 
 void sel_sel_sub(held, push, p, n)
-int held;
-int push;
+u16 held;
+u16 push;
 u8 *p;
 u8 n;
 {
@@ -570,7 +570,7 @@ int a;
     spr.h = 0x1C0;
     spr.y = 0;
     spr.v = 0;
-    spr.col = (a & 0xFF) | (((a & 0xFF) << 16) | 0xFF000000 | ((a & 0xFF) << 8));
+    spr.col = (a & 0xFF) | ((a & 0xFF) << 8) | (((a & 0xFF) << 16) | 0xFF000000);
     spr.u2 = 0xFF;
     spr.v2 = 0xFF;
     spr.u = 0;

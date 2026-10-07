@@ -688,7 +688,7 @@ segments:
       - [0x08A4E8, asm, text/flPS2ConvertTextureFromContext]
       - [0x08B3A4, asm, text/g_flPS2VramInit]
       - [0x08B3B0, c, fl/vr01]
-      - [0x08B9F8, asm, text/flPS2SearchVramSpace]
+      - [0x08BAE0, asm, text/flPS2SearchVramChange]
       - [0x08BD90, c, fl/flsys02]
       - [0x08C304, asm, text/flPS2InitRenderBuff]
       - [0x08D874, asm, text/g_flInitPhaseStarted]
