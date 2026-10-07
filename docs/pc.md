@@ -1362,3 +1362,21 @@ Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item
   flSetRenderState(0x5A..0x5C) and ambient to state 1. Estimated job: decompile light_init (~0x260 bytes), fix the 0x68-byte light block layout (direction at +4..+0xC is known;
   colour and the VU1 matrix fields are not), have rt_fl.c capture states 0x5A-0x5C/1 into the fl_model Light, and use it for hunter, monsters, NPCs. About one to two days; the
   visible effect is per-stage/time-of-day lighting and the thunder flash on the storm stage.
+
+### Frog fishing works end to end (agent B, round 3)
+- flag14 == 3 is the "damaged" action kind (Pl_act_set(pl, 3, ...) in pl_damage.c), not fishing; the fishing hunter has
+  flag14 0 (act 0/0x50 waiting), so the eye test does see him. That candidate is refuted.
+- With the Plesioth kept idle (new test aid `RT_EM_BLIND=1`: x88B = 0 before enemy_mv each tick, so
+  em_eye_search_set clears x88C) the whole chain runs on the game's own code with no PC changes: the idle script's
+  stage-54 block (contents 8) passes em_cmd_pl_fishing_ck, em21 starts act 2/17 (em_fly17: Kaeru_ck finds the frog float
+  Eft22 arg 1), the hunter reels (circle, act 0/0x53 = 83), act 2/18 pulls the Plesioth out (195 ticks), then 4/15
+  (landed, steps 1-7) and it walks on land (1/x). Which fishing check passes is random per idle cycle (x39A): in the run
+  FISHCK ran at ticks 496, 617, 1178 and only the last led to 2/17.
+- Why it does not happen without the aid: the idle script's first cycle (352 ticks) starts when the stage loads, with
+  no float out, so it targets the hunter (target kind player) and its closing act 2/3 turns the Plesioth toward him; the
+  30 degree eye cone sweeps over the hunter, x88C is set, Em_Mode_Chg(1) and the Plesioth fights for as long as it
+  sees him (x886 is reset every tick while noticed; that is the original). Whether the PS2 shows the same (a real
+  player probably leaves its sight, waits for it to calm down, then casts before an idle cycle starts) is not
+  verified. Not a PC bug as far as found: the eye angle follows the head joint matrix correctly (checked against
+  the bearing), the casting and bite code is unmodified game C.
+- tools/test_frog.sh runs it: cast at tick 14, bite at tick ~1179, circle at 1200; passes on the em act log.
