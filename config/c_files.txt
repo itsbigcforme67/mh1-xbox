@@ -2448,3 +2448,4 @@ lobby 0x005B8570 0x005B8794 b/lb_c514
 lobby:rodata 0x0065E8E0 0x0065E904 b/lb_c514
 lobby 0x005BC6C0 0x005BC9A8 b/lb_c515
 lobby:rodata 0x0065E9E0 0x0065E9F8 b/lb_c515
+lobby 0x005B1A50 0x005B1CD8 b/lb_c516
