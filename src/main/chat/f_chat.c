@@ -33,10 +33,12 @@ void font_set_palette(int);
 void font_print(void *, ...);
 void font_print_sp(void *, ...);
 void Put_sprite_rotate(void *, int);
-void DispFrameListA(void *, char *, int, int);
+struct FRL;
+void DispFrameListA(struct FRL *, char *, int, int);
 void DispFrameList(void *, char *, int);
 void DispFrameListOptionArrowC(void *, int);
-void DispFrameMessageA(void *, void *, int);
+struct FRM;
+void DispFrameMessageA(struct FRM *, char *, int);
 void DispFrameMessage(void *, void *);
 void PutButtonICON(u8 *, u8);
 static void disp_cursorC(s16, s16, s16, s16, int, int);
@@ -121,14 +123,147 @@ void DispFrameList(void *a, char *b, int c) {
 
 extern u8 lit_2244[];
 
-/* original bytes: build/raw/DispFrameListA.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__
-asm void DispFrameListA(void *fr, char *title, int cur, int alpha)
-{
-#include "DispFrameListA.inc"
-}
-#endif
+typedef struct FRL {
+    s16 x;          /* 0x00 left */
+    s16 y;          /* 0x02 top */
+    u8 colw;        /* 0x04 character cell width (font size) */
+    u8 h;           /* 0x05 row height (font size) */
+    u8 cols;        /* 0x06 columns */
+    u8 rows;        /* 0x07 rows */
+    s16 pal;        /* 0x08 font palette */
+    u16 mode;       /* 0x0A frame style (low 2 bits) */
+    s32 *list;      /* 0x0C text lines */
+    int col;        /* 0x10 cursor colour */
+} FRL;
 
+void DispFrameListA(FRL *fr, char *title, int cur, int alpha) {
+    PFLP8 r;
+    PFLP4 ln;
+    s16 i;
+    s16 line;
+    f32 x0;
+    f32 colw;
+    f32 xx;
+    f32 xn;
+    s16 y0;
+    s16 h;
+    u8 uvx0;
+    u8 uvx1;
+    s16 rows;
+    int m;
+    s32 *tl;
+    s16 j;
+    s16 py;
+
+    SetFilterMode(1);
+    SetTrnslMode(4, 5);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
+    x0 = (f32)fr->x;
+    colw = (f32)fr->colw;
+    m = fr->mode & 3;
+    switch (m) {
+    default:
+        uvx0 = 0xC0;
+        uvx1 = 0xD4;
+        y0 = fr->y - 1;
+        h = fr->h + 2;
+        break;
+    case 1:
+        uvx0 = 0xE4;
+        uvx1 = 0xF8;
+        y0 = fr->y - 2;
+        h = fr->h + 4;
+        break;
+    case 2:
+        uvx0 = 0x9C;
+        uvx1 = 0xB0;
+        y0 = fr->y - 2;
+        h = fr->h + 4;
+        break;
+    }
+    rows = fr->rows;
+    if (title != 0) {
+        rows++;
+    }
+    r.col = ((alpha & 0xFF) << 24) | 0xFFFFFF;
+    r.p[1] = y0;
+    r.p[3] = 0;
+    for (line = 0; line < rows; line++) {
+        r.p[1] = r.p[1] + r.p[3];
+        r.p[3] = h;
+        r.uv[1] = 0xBC;
+        r.uv[3] = 0xD0;
+        if (line == 0) {
+            r.p[1] -= 8;
+            r.p[3] += 8;
+            r.uv[1] -= 8;
+        }
+        if (line >= rows - 1) {
+            r.p[3] += 8;
+            r.uv[3] += 8;
+        }
+        xx = x0;
+        for (i = 0; i < fr->cols; i++) {
+            xn = xx;
+            xx += colw;
+            r.uv[0] = uvx0;
+            r.uv[2] = uvx1;
+            if (i == 0) {
+                xn -= 8.0f;
+                r.uv[0] -= 8;
+            }
+            if (i >= fr->cols - 1) {
+                xx += 8.0f;
+                r.uv[2] += 8;
+            }
+            r.p[0] = 0.8f * xn;
+            r.p[2] = (s16)(0.8f * xx) - r.p[0];
+            flps0008(&r);
+        }
+    }
+    if (title != 0) {
+        ln.p[0] = 0.8f * x0;
+        ln.p[2] = 0.8f * (x0 + colw * (f32)fr->cols);
+        ln.p[1] = y0;
+        ln.p[3] = y0 + h;
+        ln.col = 0x30FFFFFF;
+        flps0004(&ln);
+    }
+    if (cur >= 0) {
+        if (title != 0) {
+            cur++;
+        }
+        disp_cursorC(0.8f * (x0 - 2.0f), 0.8f * (2.0f + (x0 + colw * (f32)fr->cols)), fr->y, h, cur, fr->col);
+    }
+    if (fr->list != 0) {
+        py = fr->y;
+        SetTrnslMode(4, 5);
+        flfntSetSize(fr->colw, fr->h);
+        font_set_palette(fr->pal);
+        if (title != 0) {
+            flfntLocate(fr->x, py);
+            font_print_sp(lit_2244, title);
+            py += h;
+        }
+        tl = fr->list;
+        for (j = fr->rows; j > 0; j--) {
+            if (*tl == 0) {
+                break;
+            }
+            flfntLocate(fr->x, py);
+            font_print_sp(lit_2244, *tl);
+            tl++;
+            py += h;
+        }
+    } else if (title != 0) {
+        SetTrnslMode(4, 5);
+        flfntSetSize(fr->colw, fr->h);
+        font_set_palette(fr->pal);
+        flfntLocate(fr->x, fr->y);
+        font_print_sp(lit_2244, title);
+    }
+}
 
 void DispFrameListOptionArrow(void *fr) {
     u16 t = (System_timer & 0x3F) << 10;
@@ -156,13 +291,28 @@ void DispFrameMessage(void *a, void *b) {
     DispFrameMessageA(a, b, 0xB2);
 }
 
+typedef struct FRM {
+    s16 x;          /* 0x00 left */
+    s16 y;          /* 0x02 top */
+    u8 colw;        /* 0x04 character cell width (font size) */
+    u8 h;           /* 0x05 row height (font size) */
+    u8 cols;        /* 0x06 columns */
+    u8 rows;        /* 0x07 rows */
+    s16 pal;        /* 0x08 font palette */
+    u16 mode;       /* 0x0A frame style: low 2 bits, 0x8000 = bordered */
+    u32 col;        /* 0x0C background colour (bordered style) */
+} FRM;
+
+#define SX(v) ((s16)(s32)(0.8f * (v)))
+
 /* original bytes: build/raw/DispFrameMessageA.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
-asm void DispFrameMessageA(void *fr, void *text, int alpha)
+asm void DispFrameMessageA(FRM *fr, char *text, int alpha)
 {
 #include "DispFrameMessageA.inc"
 }
 #endif
+
 
 void PutSpriteDiv3(PFLP8 *q, s16 w, s16 d) {
     s16 ow = q->p[2];
@@ -1166,7 +1316,7 @@ u8 EquipmentDescriptionWindowA(EQD *eq, int x, int y, int page, u8 *cmp, int alp
     fr.b = 6;
     fr.sp0 = 0;
     fr.sp1 = 0;
-    DispFrameMessageA(&fr, 0, alpha);
+    DispFrameMessageA((struct FRM *)&fr, 0, alpha);
     if (eq != 0 && eq->be != 0) {
         if (eq->id != 0x3E7) {
             pb = page;
