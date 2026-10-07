@@ -1,3 +1,4 @@
+/* NEAR-MATCH (not linked): flPS2DrawPreparation, 56 of 103 instructions differ (colour pack / 64 bit or chains schedule differently). */
 /* fl library (SLPM_654.95 0x0018D5F0-0x0018D78C): flPS2DrawPreparation fills the draw-start GIF packet (flPs2DrawStart: scissor, xyoffset,
  * test/frame/zbuf copies, background colour) from flPs2State, copies it into a system temp buffer and queues it. */
 #include "types.h"
