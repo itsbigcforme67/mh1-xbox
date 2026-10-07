@@ -1,6 +1,7 @@
 /* aq_nm - f_aq (SLPM_654.95 0x0022CBA0-, main.bin): AQ network session layer (per-player packet buffers,
  * session start/exit, send/receive pump) as near-match C. Not built; matching runs are built from it. */
 #include "types.h"
+#include "game.h"
 
 void *memset(void *, int, int);
 void *memcpy(void *, const void *, int);
@@ -46,7 +47,6 @@ typedef struct AQU {
     s32 x24;
 } AQU;
 
-extern u8 game_w[];
 extern char err_str[];
 extern f32 session_time;
 int Online_ck();
@@ -215,7 +215,7 @@ void AQ_exec(void) {
 
     if (system_w.x35 == 0) {
         w = &aq_work;
-        game_w[0x21C] = game_w[0x21B];
+        ((u8 *)&game_w)[0x21C] = ((u8 *)&game_w)[0x21B];
         switch (aq_work.mode) {
         case 0:
             break;
@@ -235,8 +235,8 @@ void AQ_exec(void) {
                 get_AQdata();
                 if (aq_work.session == 0) {
                     w->mode++;
-                    q = game_w + 0x208;
-                    p = q + game_w[0xD1];
+                    q = ((u8 *)&game_w) + 0x208;
+                    p = q + game_w.master;
                     v = *p;
                     if (v != 0xFF) {
                         *p = 0xFF;
@@ -277,7 +277,7 @@ void AQ_exec_load(void) {
 
     if (Online_ck() != 0 && system_w.x34 != 0) {
         w = &aq_work;
-        game_w[0x21C] = game_w[0x21B];
+        ((u8 *)&game_w)[0x21C] = ((u8 *)&game_w)[0x21B];
         switch (aq_work.mode) {
         case 0:
             break;
@@ -297,8 +297,8 @@ void AQ_exec_load(void) {
                 get_AQdata();
                 if (aq_work.session == 0) {
                     w->mode++;
-                    q = game_w + 0x208;
-                    p = q + game_w[0xD1];
+                    q = ((u8 *)&game_w) + 0x208;
+                    p = q + game_w.master;
                     v = *p;
                     if (v != 0xFF) {
                         *p = 0xFF;
@@ -330,7 +330,7 @@ int AQSession_wait(void) {
         w->id = CngNetAQConnectIdGet(cng_netAQ);
         w->host = CngNetAQIsHost(cng_netAQ);
         r = 1;
-        game_w[0xD1] = w->id;
+        game_w.master = w->id;
     }
     return r;
 }
@@ -395,7 +395,7 @@ void get_AQdata(void) {
         break;
     case 4:
         id = CngNetAQDisconnectUserIDGet(cng_netAQ);
-        q = game_w + 0x208;
+        q = ((u8 *)&game_w) + 0x208;
         p = q + id;
         if (*p != 0xFF) {
             *p = 0xFF;
@@ -409,8 +409,8 @@ void get_AQdata(void) {
         }
         break;
     case 0x40:
-        q = game_w + 0x208;
-        p = q + game_w[0xD1];
+        q = ((u8 *)&game_w) + 0x208;
+        p = q + game_w.master;
         v = *p;
         if (v != 0xFF) {
             *p = 0xFF;
@@ -465,7 +465,7 @@ void AQ_recv(int kind) {
 }
 
 void self_data_ctrl(int pl, u8 *d) {
-    if (pl >= 0 && (pl == 7 || d[2] != game_w[0xD1])) {
+    if (pl >= 0 && (pl == 7 || d[2] != game_w.master)) {
         switch (pl) {
         case 1:
         case 2:
@@ -596,7 +596,7 @@ int kind;
             break;
         case 1:
             p->pl = 7;
-            p->id = game_w[0xD1] + 1;
+            p->id = game_w.master + 1;
             p->x0B = 0x80;
             break;
         }
@@ -624,7 +624,7 @@ int AQ_data_put(int pl, u8 *d, int mode) {
     if (pl >= 0xB) {
         return -4;
     }
-    d[2] = game_w[0xD1];
+    d[2] = game_w.master;
     if (pl > 0 && pl < 5 && mode == 0) {
         pl_data_put();
         return 1;
@@ -681,7 +681,7 @@ void pl_AQ_put(void) {
         buf[0] = *pb->top;
         buf[1] = (u8)pb->len + 4;
         q = buf + 2;
-        q[0] = game_w[0xD1];
+        q[0] = game_w.master;
         q[1] = 0;
         *pb->top = *pb->top & 0x7F;
         memcpy(q + 2, pb->top, pb->len);
@@ -716,7 +716,7 @@ void item_ans_send(int a, int b) {
     buf.e = a + 1;
     buf.a = 0;
     buf.d = 0;
-    buf.c = game_w[0xD1];
+    buf.c = game_w.master;
     send_my_data(7, (u8 *)&buf, 0);
 }
 
@@ -737,13 +737,13 @@ void host_change(void) {
     u8 *base;
 
     i = 0;
-    if (0 < game_w[0xD3]) {
-        p = game_w;
+    if (0 < ((u8 *)&game_w)[0xD3]) {
+        p = (u8 *)&game_w;
         do {
             if (p[0x208] == 1) {
-                game_w[0x21B] = i;
+                ((u8 *)&game_w)[0x21B] = i;
                 base = player_work + 0x91F;
-                pl = base + game_w[0xD1] * 0xA00;
+                pl = base + game_w.master * 0xA00;
                 if (*pl != 0) {
                     *pl = 0;
                 }
@@ -751,6 +751,6 @@ void host_change(void) {
             }
             i++;
             p++;
-        } while (i < game_w[0xD3]);
+        } while (i < ((u8 *)&game_w)[0xD3]);
     }
 }

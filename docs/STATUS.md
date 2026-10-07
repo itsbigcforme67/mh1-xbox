@@ -741,3 +741,36 @@ All five modules byte-identical after every merge; main pushed.
 - Agent ranges: see docs/agents/COORDINATOR.md. Lessons for agents: end of docs/agents/BRIEF.md
   (one TU per original file; literal addresses -> symbol fields; never pkill -f).
 - Coordinator: check-then-push only (rebuild all five OK + build_pc builds), one check at a time.
+
+## 2026-10-07 checkpoint: paused at the weekly usage limit
+
+All agents stopped cleanly by the coordinator. main = origin/main, verified:
+rebuild.sh OK x5, build_pc.sh builds, test_quest_loop / test_progression /
+test_urgent pass.
+
+Progress: 57.5% (7049 / 12585 functions). game 95.3%, select 90.8%,
+yn 68.9% (rest is Sony netcnf library, not worth a round), main 41.2%
+(about half the remainder is CRI Sofdec/ADX and Sony libs, parked),
+lobby 38.0%.
+
+Unmerged agent work (on branches, NOT verified; each agent was stopped
+mid-round). Merge each with the usual procedure and check_push only after a
+full rebuild + PC build:
+- agent-A: 3 commits + 3 uncommitted files (Xbox: memory report RT_MEM, link
+  scheme, first null-backend Xbox link in progress). nxdk in ~/xboxdev.
+- agent-B: 2 commits + 3 uncommitted (PC: real soft keyboard from sk/; then
+  movies via libmpeg2, see DECISIONS.md "Movies (Sofdec): libmpeg2").
+- agent-C: 1 commit (unify tools/lbtu3.py + lbtu3c.py; plaza *Trans rewrites).
+- agent-D: 2 commits + 3 uncommitted (game near-matches; em_fly10 found score 0).
+- agent-E: nothing new.
+- agent-F: 4 commits + 9 uncommitted (village whole-file TUs: shops/forge).
+
+Next when resuming:
+1. Merge the branches above (verify each).
+2. Xbox port (owner brings a modded Xbox + capture card): A needs from the
+   owner the xemu BIOS / MCPX / HDD dumps, how the Xbox is modded and its
+   dashboard, HDD size, FTP/IP, video cable. Plan in docs/xbox.md.
+3. B: soft keyboard, then libmpeg2 movies, then rt_gen stand-ins, frog fishing.
+4. Decomp agents: whole-file TUs (lbtu3, split_rodata_objects) are what still
+   gains; near-match grinding mostly doesn't.
+5. Owner may play-test the PC build and report bugs (tools/play.sh).

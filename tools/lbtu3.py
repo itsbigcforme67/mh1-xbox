@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# env: LBTU_NOB=1 LBTU_HDR=a.h,b.h (village TUs, agent F); LBHDR=lbui_proto (plaza TUs: base header of the run family, agent C; also renames ANSI-prototype clashes to name_pN/name_k).
 """lbtu3.py NAME START END OUTFILE: like lbtu2.py but resolves conflicting declarations between the merged runs:
 a declaration (extern object, typedef, #define) whose identifier is already declared differently by an earlier run is
 renamed inside its own run (name_cN); renamed externs get a linker alias line printed to OUTFILE.alias
@@ -15,7 +16,7 @@ for l in open('config/symbols/lobby.txt'):
         symaddr[m.group(1)] = int(m.group(2), 16)
         m2 = re.search(r'type:func size:0x([0-9A-Fa-f]+)', m.group(3))
         if m2: syms[int(m.group(2), 16)] = (int(m2.group(1), 16), m.group(1))
-for l in open('config/symbols/main.txt'):
+for l in list(open('config/symbols/main.txt')) + list(open('config/lobby_undefined_syms_auto.txt')):
     m = re.match(r'(\S+)\s*=\s*0x([0-9A-Fa-f]+)', l)
     if m: symaddr.setdefault(m.group(1), int(m.group(2), 16))
 runs = []
@@ -65,15 +66,27 @@ def ident(u):
     if m: return ('fn', m.group(1))
     return None
 def norm(u): return re.sub(r'\s+', ' ', u.strip())
-ansi = set(); allnames = set(n for ad, (sz, n) in syms.items() if S <= ad < E)
+sfx = {}  # base name -> address-suffixed symbol name (functions defined in the range whose symbol carries _ADDR)
+for ad, (sz, n) in syms.items():
+    m = re.match(r'(.*)_[0-9A-F]{6,8}$', n)
+    if m and S <= ad < E and m.group(1) not in symaddr: sfx[m.group(1)] = n
+alldefs = set(); ansi = set(); allnames = set(n for ad, (sz, n) in syms.items() if S <= ad < E)
 for a, b, r in runs:
     s0 = open('src/lobby/%s.c' % r).read()
     for mm in pat.finditer(s0):
         first = mm.group(0).split('{')[0]
+        alldefs.add(mm.group(1))
         par = re.search(r'\w\(([^)]*)\)', first)
         if par and par.group(1).strip() not in ('', 'void') and not re.search(r'\)\s*\n\s*\w', first.strip()):
             ansi.add(mm.group(1))
-print('ansi', len(ansi), file=sys.stderr)
+ansi_decl = set()  # functions some run declares with typed (ANSI) parameters
+for a, b, r in runs:
+    s0 = open('src/lobby/%s.c' % r).read()
+    for u in units(s0):
+        k = ident(u)
+        if k and k[0] == 'fn' and not re.search(r'\(\s*(void)?\s*\)', u) and re.search(r'\(\s*(?:const\s+)?(?:s8|u8|s16|u16|s32|u32|int|char|f32|float)\b', u) and not u.strip().startswith('asm'):
+            ansi_decl.add(k[1])
+print('ansi', len(ansi), 'ansi_decl', len(ansi_decl), file=sys.stderr)
 knr = []
 seen = {}  # (kind,name) -> normalized text
 decls = []; aliases = []; items = []; renamed = {}
@@ -87,7 +100,12 @@ def seed(path, done=set()):
         k = ident(u)
         if k is not None: seen[k] = norm(u)
 INC = re.compile(r'^#include "(lobby_f|lobby_b|lobby_a|lobby_s|lbui_proto|lbnet)\.h"$')
-seed('include/lobby_b.h'); seed('include/lbnet.h')
+NOB = bool(os.environ.get('LBTU_NOB'))  # village TUs: runs include lobby.h, not the lobby_b.h family
+HDR = [h for h in os.environ.get('LBTU_HDR', '').split(',') if h]  # headers every run includes first (seeded + emitted at the top)
+BASEH = os.environ.get('LBHDR', 'lobby_b')
+if not NOB: INC = re.compile(INC.pattern.replace('lbui_proto|', 'lbui_proto|lbui|'))  # base header of the run family (e.g. lbui_proto for the plaza TUs)
+if not NOB: seed('include/%s.h' % BASEH); seed('include/lbnet.h')
+for h in HDR: seed('include/' + h)
 for ri, (a, b, r) in enumerate(runs):
     s = open('src/lobby/%s.c' % r).read()
     s = re.sub(r'^/\*.*?\*/\n', '', s, count=1, flags=re.S)
@@ -102,19 +120,35 @@ for ri, (a, b, r) in enumerate(runs):
     for u in pre_units:
         k = ident(u)
         if k is None or INC.match(u.strip()): continue
+        if k is not None and k[0] == 'fn' and k in seen and seen[k] != norm(u) and re.search(r'\(\s*(?:const\s+)?(?:s8|u8|s16|u16|s32|u32|int|char|f32|float|void\s*\*|\w+\s*\*)[^)]*\)', u) and not re.search(r'\(\s*(void)?\s*\)', u) and k[1] not in allnames and k[1] in symaddr:
+            nn = '%s_p%d' % (k[1], ri); ren[k[1]] = nn; aliases.append('%s = 0x%08X;' % (nn, symaddr[k[1]]))
         if k in seen and seen[k] != norm(u) and k[0] in ('obj', 'type', 'def'):
             nn = '%s_c%d' % (k[1], ri); ren[k[1]] = nn
             if k[0] == 'obj':
                 if k[1] in symaddr: aliases.append('%s = 0x%08X;' % (nn, symaddr[k[1]]))
                 else: print('NO ADDRESS for', k[1], file=sys.stderr)
     defhere = set(n for n, tx in cks if n)
+    for u in pre_units:  # ANSI prototype in this run that differs from an earlier run's declaration: private alias name
+        k = ident(u)
+        if k is None or k[0] != 'fn' or k[1] in ren or k[1] in defhere or INC.match(u.strip()): continue
+        if u.lstrip().startswith(('extern', 'asm', 'static')): continue
+        par = re.search(r'\w\(([^)]*)\)\s*;', u)
+        if not par or par.group(1).strip() in ('', 'void') or not re.search(r'\w\s+\**\w+\s*(,|$)|\*', par.group(1)): continue
+        if ((k in seen and seen[k] != norm(u)) or k[1] in ansi or k[1] in alldefs) and k[1] in symaddr:
+            ren[k[1]] = '%s_a%d' % (k[1], ri); aliases.append('%s = 0x%08X;' % (ren[k[1]], symaddr[k[1]]))
     bodytxt = '\n'.join(tx for n, tx in cks if n)
     for u in pre_units:
         k = ident(u)
         if k and k[0] == 'obj' and k[1] in allnames and k[1] not in defhere and k[1] not in ren:
             ren[k[1]] = k[1] + '_o'; aliases.append('%s_o = 0x%08X;' % (k[1], symaddr[k[1]]))
     for n0 in sorted(ansi):
-        if n0 not in defhere and n0 not in ren and re.search(r'\b%s\b' % re.escape(n0), bodytxt):
+        if n0 not in defhere and n0 not in ren and any(ident(u) == ('fn', n0) for u in pre_units) and re.search(r'\b%s\b' % re.escape(n0), bodytxt):
+            ren[n0] = '%s_p%d' % (n0, ri); aliases.append('%s = 0x%08X;' % (ren[n0], symaddr[n0]))
+        if n0 not in defhere and n0 not in ren and re.search(r'\b%s\s*\(' % re.escape(n0), bodytxt):
+            ren[n0] = n0 + '_k'; aliases.append('%s_k = 0x%08X;' % (n0, symaddr[n0])); knr.append('int %s_k();' % n0)
+    for n0 in sorted(ansi_decl):
+        declared_here = any((ident(u) == ('fn', n0)) for u in pre_units)
+        if not declared_here and n0 not in defhere and n0 not in ren and n0 in symaddr and re.search(r'\b%s\b' % re.escape(n0), bodytxt):
             ren[n0] = n0 + '_k'; aliases.append('%s_k = 0x%08X;' % (n0, symaddr[n0])); knr.append('int %s_k();' % n0)
     changed = True
     while changed:
@@ -133,6 +167,7 @@ for ri, (a, b, r) in enumerate(runs):
             for u in units(t):
                 u2 = rn(u); k = ident(u2)
                 if INC.match(u.strip()): continue
+                if k is not None and k[0] == 'fn' and k[1].endswith('_k') and k[1][:-2] in ansi: continue
                 if k is not None:
                     if k in seen and seen[k] == norm(u2): continue
                     if k in seen and k[0] == 'fn': continue
@@ -141,7 +176,7 @@ for ri, (a, b, r) in enumerate(runs):
                 if re.match(r'extern\s+\w+\s+(s64|u64|s32|u32|u8|s8|u16|s16|int|char|f32)\[', u2.strip()): continue
                 decls.append(u2)
         else:
-            items.append((symaddr[n], n, re.sub(r'\b%s\(void\)(\s*\{)' % re.escape(n), r'%s()\1' % n, rn(t))))
+            items.append((symaddr[sfx.get(n, n)], n, re.sub(r'\b%s\(void\)(\s*\{)' % re.escape(n), r'%s()\1' % n, rn(t))))
 cn = set(i[1] for i in items); caddrs = set(i[0] for i in items)
 sizes = {ad: sz for ad, (sz, n) in syms.items()}
 for ad, (sz, n) in sorted(syms.items()):
@@ -154,6 +189,10 @@ cdefs = set(i[1] for i in items if i[2] is not None) | set(n for ad, (sz, n) in 
 def keep(u):
     k = ident(u)
     return not (k is not None and k[0] in ('fn', 'obj') and k[1] in cdefs and not k[1].endswith(('_o', '_k')))
+protos = {}
+for u in decls:
+    k = ident(u)
+    if k and k[0] == 'fn' and not u.lstrip().startswith(('extern', 'asm', 'static')) and re.search(r'\w\s+\**\w+[,)]|\*', u[u.index('('):] if '(' in u else '') and not re.search(r'\(\s*(void)?\s*\)', u): protos.setdefault(k[1], u)
 decls = [u for u in decls if keep(u)]
 fwd = []
 for ad, n, tx in items:
@@ -162,11 +201,12 @@ for ad, n, tx in items:
     if not mm: continue
     ret = mm.group(1).strip(); params = mm.group(2).strip(); kr = mm.group(3).strip()
     if ret.startswith('static'): ret = ret[6:].strip()
+    if kr and n in protos: fwd.append(protos[n]); continue
     if kr or params in ('', 'void') or not re.search(r'\w\s+\**\w+$|\*', params.split(',')[0]): fwd.append('%s %s();' % (ret, n))
     else: fwd.append('%s %s(%s);' % (ret, n, params))
 decls = decls + fwd + sorted(set(knr))
 body = '\n'.join(decls)
-out = ['/* %s - one translation unit 0x%08X-0x%08X (lbtu3). */\n#define Lbs_MatchStart Lbs_MatchStart_hdr\n#include "lobby_b.h"\n#undef Lbs_MatchStart\ntypedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;' % (name, S, E), body]
+out = ['/* %s - one translation unit 0x%08X-0x%08X (lbtu3). */' % (name, S, E) + (''.join('\n#include "%s"' % h for h in HDR) if NOB else '\n#define Lbs_MatchStart Lbs_MatchStart_hdr\n#include "%s.h"\n#undef Lbs_MatchStart\ntypedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;' % BASEH), body]
 raw = []
 for ad, n, t in items:
     if t is None:
