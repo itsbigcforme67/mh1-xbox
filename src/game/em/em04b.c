@@ -418,5 +418,3 @@ void em04_main_sub(EMW *em) {
     }
 }
 
-void move_default_0058E4F0(EMW *em) {
-}

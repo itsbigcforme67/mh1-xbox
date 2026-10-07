@@ -1389,33 +1389,31 @@ static void em_mv00_005DC550(EMW *em, EM17W *w) {
     s32 temp_v0;
     s32 temp_v1;
     s32 temp_v1_2;
-    s32 var_v0;
     u8 temp_a1;
 
-    temp_a1 = em->x05;
-    switch (temp_a1) {                              /* irregular */
+    switch (em->x05) {
     case 0:
-        em->x05 = temp_a1 + 1;
+        em->x05 += 1;
         em->x388 = 0;
         em->x3F4 = 0;
         em_char_set(em, 2, 0, 0);
         break;
     case 1:
         if (w->has_tgt != 0) {
+            temp_v0 = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
             temp_v1 = em->ang[1];
-            temp_v0 = ((Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF) - temp_v1) & 0xFFFF;
-            if (temp_v0 < 0x8001) {
+            temp_v0 = (temp_v0 - temp_v1) & 0xFFFF;
+            if (temp_v0 <= 0x8000) {
                 if (temp_v0 < 0x80) {
-                    var_v0 = temp_v1 + temp_v0;
+                    em->ang[1] = temp_v1 + temp_v0;
                 } else {
-                    var_v0 = temp_v1 + 0x80;
+                    em->ang[1] = temp_v1 + 0x80;
                 }
-            } else if (temp_v0 >= 0xFF81) {
-                var_v0 = temp_v1 + temp_v0;
+            } else if (temp_v0 > 0xFF80) {
+                em->ang[1] = temp_v1 + temp_v0;
             } else {
-                var_v0 = temp_v1 - 0x80;
+                em->ang[1] = temp_v1 - 0x80;
             }
-            em->ang[1] = var_v0;
             mot_miration_ret(em, sp30);
             temp_f1 = w->dist - sp30[2];
             w->dist = temp_f1;

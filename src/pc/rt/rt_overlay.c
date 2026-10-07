@@ -92,8 +92,8 @@ void func_63A260(struct PLW *pl) { Pl_damage_sub(pl); }
 void func_62A6C0(struct PLW *pl, int a, int joint) { shell06_set(pl, a, joint); }
 void func_558A80(struct PLW *pl, int a) { Eft24_set(pl, a); }
 void func_54B7E0(f32 *pos, int a, f32 scale) { eft14_set(pos, (s16)a, scale); }
-/* Pl_piyo_ck (game 0x639DD0, 5 instructions): stun gauge +0x7AA >= 50 */
-int Pl_piyo_ck(struct PLW *pl) { return *(s16 *)((u8 *)pl + 0x7AA) >= 50; }
+/* Pl_piyo_ck now comes from src/game/pl/pl_damage.c */
+int Pl_piyo_ck(struct PLW *pl);
 int func_639DD0(struct PLW *pl) { return Pl_piyo_ck(pl); }
 void Eft14_set4(struct PLW *pl, int arg);
 void Eft21_set(struct PLW *pl, int arg);

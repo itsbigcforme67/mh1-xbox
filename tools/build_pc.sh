@@ -21,7 +21,7 @@ RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_gam
 # stage_set.c (main) spawns each stage's set objects; its calls into the
 # overlay go through src/pc/rt/rt_overlay.c. set13_nm.c holds set13_m /
 # set13_trans (near-matches on the PS2 side, believed equivalent).
-GAME="src/game/set/set14_nm.c src/game/set/set00.c src/main/stage/stage_set.c \
+GAME="src/game/set/set14.c src/game/set/set00.c src/main/stage/stage_set.c \
       src/main/set/set13.c src/main/set/set13b.c src/main/set/set13c.c src/main/set/set13_nm.c \
       src/game/set/set09.c src/game/set/set17.c src/game/set/set17_nm.c \
       src/game/set/set03.c src/game/set/set04.c src/game/set/set05_nm.c src/game/set/set07.c src/game/set/set08.c src/game/set/set10.c src/game/set/set11.c src/game/set/set15.c src/game/set/set16.c src/game/set/set18.c src/game/set/set19.c src/game/set/set20_nm.c src/game/set/set22.c \
@@ -57,7 +57,7 @@ EFT="src/game/eft/eft00.c src/main/eft/eft01.c src/main/eft/eft02_nm.c src/game/
      src/game/eft/eft07.c src/game/eft/eft08.c src/game/eft/eft09.c src/game/eft/eft10.c \
      src/game/eft/eft11_nm.c src/game/eft/eft12.c src/main/eft/eft13.c src/main/eft/eft13b.c \
      src/main/eft/eft13d.c src/main/eft/eft13e.c src/main/eft/eft13_nm.c src/game/eft/eft14.c \
-     src/game/eft/eft15.c src/game/eft/eft16_nm.c src/game/eft/eft17.c src/game/eft/eft18_nm.c \
+     src/game/eft/eft15.c src/game/eft/eft16.c src/game/eft/eft17.c src/game/eft/eft18_nm.c \
      src/game/eft/eft19.c src/main/eft/eft20.c src/main/eft/eft20c.c src/main/eft/eft20d.c \
      src/main/eft/eft20_nm.c src/game/eft/eft21.c src/game/eft/eft22_nm.c src/game/eft/eft23_nm.c \
      src/game/eft/eft24.c src/main/eft/eft26.c \
