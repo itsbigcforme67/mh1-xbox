@@ -195,7 +195,9 @@ void Pl_light_init(void *pl)
 
 /* ------------------------------------------------ stubs */
 /* network (single player on the PC) */
+#ifndef MH1_ONLINE     /* ONLINE=1: the game's (netsyn01.c, co-op) */
 void net_send_pl(void *pl, int a, int b) { (void)pl; (void)a; (void)b; }
+#endif
 /* models: the viewer builds the hunter's models itself */
 void weapon_create_model(int a, int b, int c) { (void)a; (void)b; (void)c; }
 /* Pl_model_id_set (main 0x123F60, written from the asm): the model

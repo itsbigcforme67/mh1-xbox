@@ -119,7 +119,9 @@ u8 Em_max_parts_get(int em) { return em_parts_num[(s16)em]; }
 extern u16 for_pad_timer_tbl[];
 
 /* Online_ck (0x162D60): system_w+0x10 != 0. The port runs offline. */
+#ifndef MH1_ONLINE     /* ONLINE=1: rt_np.c (on during a co-op quest) */
 int Online_ck(void) { return 0; }
+#endif
 /* Cockpit_menu_chk (0x1279F0): 1 while a cockpit menu has the pad. No menus yet. */
 WEAK int Cockpit_menu_chk(void) { return 0; }
 /* player state changes called from pl_normal2.c (agent F's area, not ported) */

@@ -139,7 +139,10 @@ void init_light_work(void) { light_init(); }
 NOP(round_init) NOP(flCompact) NOP(vib_stop_all)
 NOP(stage_load) NOP(stage_init)
 NOP(stage_free)
-NOP(Plsel_task) NOP(ot_init) NOP0(net_start_ck) NOP(net_receive_pl_pos_set) NOP(Load_overlay)
+NOP(Plsel_task) NOP(ot_init) NOP(Load_overlay)
+#ifndef MH1_ONLINE     /* ONLINE=1: rt_np.c / netsyn03.c (co-op) */
+NOP0(net_start_ck) NOP(net_receive_pl_pos_set)
+#endif
 NOP(flInitPhaseStarted) NOP(flInitPhaseFinished)
 /* EvDemoInitialize / EvDemoMove: src/main/evdemo/evdemo.c (round 20) */ NOP(em_effect_pull) NOP(Disp_load_start)
 NOP(Copy_user_id) NOP(Disp_NowLoading2)

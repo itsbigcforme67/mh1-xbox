@@ -301,6 +301,7 @@ static void lookat_world(flmat camw, const float *eye, const float *tar)
     camw[15] = 1;
 }
 
+static int lp = 0;                    /* this machine's player slot (game_w.master); 0 offline, co-op: rt_np.c */
 static monster weapon;              /* the hunter's weapon (--play with the game's player code) */
 
 /* weapon bones: hierarchy roots from rt_player_weapon (weapon_trans's
@@ -310,7 +311,7 @@ static void weapon_pose(const fl_light *L)
     float r0[16], r1[16];
     int i, roots = 0;
     ahi_skel *k = &weapon.skel.skel;
-    if (rt_player_weapon(0, r0, r1) < 0)
+    if (rt_player_weapon(lp, r0, r1) < 0)
         return;
     for (i = 0; i < k->nbone; i++) {
         const ahi_bone *b = &k->bone[i];
@@ -532,13 +533,13 @@ static void sync_joints(hunter *h, float hyoff, monster *e, float eyoff)
     float p[3];
     int a, nb, j;
     if (h->game) {
-        rt_player_pose(0, &h->master);
-        rt_player_get(0, p, &a);
+        rt_player_pose(lp, &h->master);
+        rt_player_get(lp, p, &a);
         place(h->world, p[0], p[1] + hyoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
         nb = h->master.skel.nbone < 128 ? h->master.skel.nbone : 128;
         for (j = 0; j < nb; j++)
             flmat_mul(jw[j], h->master.world[j], h->world);
-        rt_player_parts(0, &jw[0][0], nb);
+        rt_player_parts(lp, &jw[0][0], nb);
     }
     if (e->game && e->skel.root_lock && slot0_rathian()) {
         rt_monster_get(0, p, &a);
@@ -806,6 +807,91 @@ static int load_stage_models(int st)
     return 0;
 }
 
+/* ------------------------------------------------------------ co-op hunters
+ * The other players' hunters (ONLINE=1, rt_np.c): their player works are moved by the
+ * game's own code from the packets (net_receive_pl -> Pl_act_set, Pl_adj_calc); the host
+ * draws them like the local hunter, with default parts until the game builds their look. */
+#ifdef MH1_ONLINE
+int rt_np_arg(int argc, char **argv, int *i);
+int rt_np_wanted(void);
+int rt_np_setup(int quest_no);
+int rt_np_slot(void);
+int rt_np_players(void);
+int rt_np_visible(int slot);
+void rt_np_tick(void);
+void rt_np_close(void);
+static hunter rh[4];
+static int rh_ok[4];
+static uint8_t *rh_wmem[4];
+static void remote_motion_start(void)
+{
+    int s;
+    for (s = 0; s < 4 && s < rt_np_players(); s++)
+        if (s != lp && pl.tbl.p)
+            rt_player_motion_start(s, pl.tbl.p, 1, 101);
+}
+static void remote_weapons(void)
+{
+    int s;
+    for (s = 0; s < 4 && s < rt_np_players(); s++) {
+        char wname[32];
+        fmt_blob wt;
+        if (s == lp)
+            continue;
+        snprintf(wname, sizeof wname, "w%02d_tbl.bin", rt_player_job(s));
+        free(rh_wmem[s]);
+        rh_wmem[s] = NULL;
+        wt = load(wname, &rh_wmem[s]);
+        if (wt.p)
+            rt_motion_load_pl(s, wt.p);
+    }
+}
+static void remote_hunters(int draw, const fl_light *L)
+{
+    static flmat jw[128];
+    int s;
+    for (s = 0; s < 4; s++) {
+        hunter *h = &rh[s];
+        float p[3];
+        int a, nb, j, sx, ids[HUNTER_PARTS], g;
+        if (s == lp || !rt_np_visible(s))
+            continue;
+        if (!rh_ok[s]) {
+            rh_ok[s] = hunter_load(h, parts, 1, 101) == 0 ? 1 : -1;
+            memcpy(h->look, parts, sizeof h->look);
+            h->game = 1;
+            h->no = s;
+            h->master.root_lock = 1;
+        }
+        if (rh_ok[s] < 0)
+            continue;
+        g = rt_player_look(s, &sx, ids);
+        if (g && g != h->look_gen) {
+            h->look_gen = g;
+            hunter_relook(h, sx, ids);
+        }
+        rt_player_get(s, p, &a);
+        place(h->world, p[0], p[1] + hunter_yoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
+        if (!draw) {        /* the joint matrices the game C reads (hit volumes of the parts) */
+            rt_player_pose(s, &h->master);
+            nb = h->master.skel.nbone < 128 ? h->master.skel.nbone : 128;
+            for (j = 0; j < nb; j++)
+                flmat_mul(jw[j], h->master.world[j], h->world);
+            rt_player_parts(s, &jw[0][0], nb);
+            continue;
+        }
+        hunter_pose(h, 0, L);
+        gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)h->world);
+        for (j = 0; j < HUNTER_PARTS; j++)
+            draw_model_attr(&h->part[j], -1);
+    }
+}
+#else
+static void remote_motion_start(void) {}
+static void remote_weapons(void) {}
+static void remote_hunters(int draw, const fl_light *L) { (void)draw; (void)L; }
+#endif
+
 /* ------------------------------------------------------------ one game tick
  * What game_core does on the PS2 (swset, move, trans, hit_check), done by
  * the host pieces in the PS2 order. With --quest it runs inside the game's
@@ -821,7 +907,10 @@ static void sim_tick(void)
         else
             pad_read(&ps, 1);
         rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
-        rt_player_tick(0);
+#ifdef MH1_ONLINE
+        rt_np_tick();           /* co-op: the other players' packets (net_receive_pl) */
+#endif
+        rt_player_tick(lp);
         if (game_cam) {
             flmat cw;
             rt_cam_tick();      /* CameraMove (src/main/cam) */
@@ -838,13 +927,13 @@ static void sim_tick(void)
             int now, ang, pw;
             float p[3];
             int a;
-            rt_player_sw(0, &now, &ang, &pw);
-            rt_player_get(0, p, &a);
+            rt_player_sw(lp, &now, &ang, &pw);
+            rt_player_get(lp, p, &a);
             printf("tick %d: sw %04X stick ang %04X pow %d -> pos %.0f %.0f %.0f ang %04X\n",
                    ticks, now, ang, pw, p[0], p[1], p[2], a & 0xFFFF);
         }
     } else if (pl.game) {
-        rt_player_motion_tick(0);
+        rt_player_motion_tick(lp);
     }
     if (pl.game && play && ticks < 2 && game_cam) {
         /* the camera also runs on the first ticks: a quest's event demo
@@ -859,6 +948,7 @@ static void sim_tick(void)
     if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
         rt_prof_begin(RTP_JOINTS);
         sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
+        remote_hunters(0, light_cur());
         monsters_sync(0, light_cur());
         rt_prof_end(RTP_JOINTS);
         rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
@@ -913,7 +1003,9 @@ static void quest_back(void)
     rt_game_init(stage_no);
     rt_hud_init();
     rt_monster_spawn(1, p, (int)(0.6f * 65536.0f / 6.2831853f));
-    rt_player_game_init(0);
+    remote_motion_start();
+    rt_player_game_init(lp);
+    remote_weapons();
     if (game_cam)
         rt_cam_init(stage_no);
     {   /* game13's last step: the hunt fades in */
@@ -1084,7 +1176,9 @@ static void quest_from_village(void)
     stage_no = st;
     rt_game_init(stage_no);
     rt_hud_init();
-    rt_player_game_init(0);
+    remote_motion_start();
+    rt_player_game_init(lp);
+    remote_weapons();
     rt_monster_spawn(1, p, 0);
     if (game_cam)
         rt_cam_init(stage_no);
@@ -1157,6 +1251,7 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--sw-trace")) sw_trace = 1;
 #ifdef MH1_ONLINE
         else if (!strcmp(argv[i], "--nettest") && i + 1 < argc) nettest = argv[++i];
+        else if (rt_np_arg(argc, argv, &i)) ;      /* co-op: --host [IP] / --join IP, --port, --players */
 #endif
         else if (!strcmp(argv[i], "--audio-dump") && i + 1 < argc) audio_dump = argv[++i];
         else if (!strcmp(argv[i], "--mute")) mute = 1;
@@ -1275,6 +1370,15 @@ int main(int argc, char **argv)
 #ifdef MH1_ONLINE
     if (nettest)        /* headless online test (src/pc/rt/rt_net.c, docs/network.md) */
         return rt_net_test(nettest);
+    if (rt_np_wanted()) {   /* co-op (rt_np.c): the host waits for the others and names the quest */
+        int q = rt_np_setup(quest_no);
+        if (q <= 0)
+            return 1;
+        quest_no = q;
+        play = 1;
+        lp = rt_np_slot();
+        rt_log("co-op: quest %d, %d players, slot %d", quest_no, rt_np_players(), lp);
+    }
 #endif
     if (!getenv("RT_NO_TRIM"))
         rt_mem_trim();
@@ -1434,28 +1538,31 @@ int main(int argc, char **argv)
         place(pl.world, hx, gy - lo, hz, 2.6f);
         {   /* the hunter is the master player (player_work[0]) for the game C */
             float p[3] = { hx, gy, hz };
-            rt_set_player(0, p);
+            rt_set_player(lp, p);
             rt_debug_spawn(p);          /* RT_SPAWN test effects at the hunter */
             if (pl.tbl.p && !getenv("RT_HOST_MOTION")) {   /* animate with the game's frame_init/frame_move */
-                rt_player_motion_start(0, pl.tbl.p, 1, 101);
+                rt_player_motion_start(lp, pl.tbl.p, 1, 101);
                 pl.game = 1;
+                pl.no = lp;
                 pl.master.root_lock = 1;    /* the game moves the actor by the root motion */
-                rt_player_set_ang(0, (int)(2.6f * 65536.0f / 6.2831853f));
+                rt_player_set_ang(lp, (int)(2.6f * 65536.0f / 6.2831853f));
                 if (play && rt_player_uses_game()) {
                     /* the weapon class's own motions (ids >= 1000): wNN_tbl.bin,
                      * NN = job (PLW+2), like create_pl_motion's table */
                     static uint8_t *wmem;
                     char wname[32];
                     fmt_blob wt;
-                    rt_player_game_init(0);     /* the game's pl_init: start position, idle */
-                    snprintf(wname, sizeof wname, "w%02d_tbl.bin", rt_player_job(0));
+                    remote_motion_start();
+                    rt_player_game_init(lp);    /* the game's pl_init: start position, idle */
+                    remote_weapons();
+                    snprintf(wname, sizeof wname, "w%02d_tbl.bin", rt_player_job(lp));
                     wt = load(wname, &wmem);
                     if (wt.p)
-                        rt_motion_load_pl(0, wt.p);
+                        rt_motion_load_pl(lp, wt.p);
                     else
                         fprintf(stderr, "no %s: weapon motions missing\n", wname);
                     {   /* the weapon model: weapon_model_data / WEAPON_TEX[PLW+0x34C] (AFS indices) */
-                        int mi = rt_weapon_afs(rt_player_weapon_model(0), 0), ti = rt_weapon_afs(rt_player_weapon_model(0), 1);
+                        int mi = rt_weapon_afs(rt_player_weapon_model(lp), 0), ti = rt_weapon_afs(rt_player_weapon_model(lp), 1);
                         if (mi > 0 && mi < (int)afs.count && ti > 0 && ti < (int)afs.count) {
                             fmt_blob link = load(afs.name[mi], &weapon.mem[0]), tx = load(afs.name[ti], &weapon.mem[1]);
                             if (link.p && fl_model_create(&weapon.model, fmt_link_entry(link, 0, FMT_LE),
@@ -1625,6 +1732,7 @@ int main(int argc, char **argv)
             if (pl.game && play && ticks >= 2) {
                 rt_prof_begin(RTP_JOINTS);
                 sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
+                remote_hunters(0, light_cur());
                 if (!rt_village_active())
                     monsters_sync(0, light_cur());
                 rt_prof_end(RTP_JOINTS);
@@ -1633,7 +1741,7 @@ int main(int argc, char **argv)
                 extern uint8_t em_work[];
                 float p[3], es = 0;
                 int a, k;
-                rt_player_get(0, p, &a);
+                rt_player_get(lp, p, &a);
                 for (k = 0; k < 20; k++)
                     es += ((float *)(em_work + 0xA10 * k + 0xAC))[0] + ((float *)(em_work + 0xA10 * k + 0xAC))[2];
                 fprintf(stderr, "T %d m%d st%d pl %.2f %.2f %.2f %04X em %.2f\n", ticks, rt_flow_mode(),
@@ -1655,7 +1763,7 @@ int main(int argc, char **argv)
         if (pl.game && play) {          /* hunter from player_work[0]; camera follows */
             float p[3];
             int a;
-            rt_player_get(0, p, &a);
+            rt_player_get(lp, p, &a);
             place(pl.world, p[0], p[1] + hunter_yoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
             if (!game_cam) {
             cam[0] = p[0] + sinf(cam[3]) * follow[0];
@@ -1671,7 +1779,7 @@ int main(int argc, char **argv)
             place(rathian.world, p[0], p[1] + rathian_yoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
         }
         {   /* the hunter the game built last (character, armour) */
-            int sx, ids[HUNTER_PARTS], g = rt_player_look(0, &sx, ids);
+            int sx, ids[HUNTER_PARTS], g = rt_player_look(lp, &sx, ids);
             if (g && g != pl.look_gen) {
                 pl.look_gen = g;
                 hunter_relook(&pl, sx, ids);
@@ -1742,6 +1850,8 @@ int main(int argc, char **argv)
             for (s = 0; s < HUNTER_PARTS; s++)
                 draw_model_attr(&pl.part[s], -1);
         }
+        if (!rt_village_active())
+            remote_hunters(1, light_cur());     /* co-op: the other players' hunters */
         if (rt_village_active())
             npc_draw(light_cur());
         else
@@ -1801,6 +1911,9 @@ int main(int argc, char **argv)
         write_wav(audio_dump, dump_pcm, dump_n / 2);
         printf("wrote %s (%.2fs)\n", audio_dump, dump_n / 2 / 48000.0);
     }
+#ifdef MH1_ONLINE
+    rt_np_close();
+#endif
     if (snd == 0)
         rt_snd_shutdown();
     gfx_shutdown();

@@ -110,6 +110,9 @@ static int dest_allowed(uint32_t addr)
     return 0;
 }
 
+/* the same policy for the co-op transport (net_peer.c) */
+int net_dest_allowed(uint32_t addr) { return dest_allowed(addr); }
+
 /* ---- helpers ---- */
 
 static void sock_nonblock(hsock s)

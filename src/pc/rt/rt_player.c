@@ -68,6 +68,12 @@ void rt_player_game_init(int no)
     PF(User_data, u8, 0x3CD) = (u8)type;
     PF(User_data, u16, 0x3CE) = (u16)wid;
     game_w.pl_state[no] = 1;
+#ifdef MH1_ONLINE
+    {   /* co-op (rt_np.c): the session's slots, as init_pl_work sets them up online */
+        void rt_np_init_slots(void);
+        rt_np_init_slots();
+    }
+#endif
     pl_init(0);
     if (getenv("RT_PL_ITEMS")) {    /* no save data: pouch "id:n,id:n" (slots at +0x828, 4 bytes) */
         const char *q = getenv("RT_PL_ITEMS");
