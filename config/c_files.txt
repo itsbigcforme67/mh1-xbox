@@ -1900,8 +1900,6 @@ lobby 0x00591E30 0x00591EF8 lb/lbuid
 lobby 0x00593070 0x005931AC lb/lbuie
 lobby 0x00593360 0x00593A64 lb/lbuif
 lobby 0x00593CB0 0x00594260 lb/lbuig
-lobby 0x00594C20 0x00594D70 lb/lbuih
-lobby 0x00594FD0 0x005950B8 lb/lbuii
 lobby 0x00599020 0x00599278 lb/lbuin
 lobby 0x00599460 0x005997C0 lb/lbuio
 lobby 0x00599CB0 0x00599F54 lb/lbuip
@@ -2149,21 +2147,15 @@ lobby 0x005B5640 0x005B5974 b/lb_tcp01
 main 0x002755D0 0x0027BF80 chat/f_chat
 main 0x0027EF60 0x00280EE4 mc/f_mc
 main 0x00271FB0 0x00274E10 ud/f_ud
-lobby 0x00594260 0x0059440C f/lb_pz01
-lobby:rodata 0x0065DBF0 0x0065DC2C f/lb_pz01
+lobby:rodata 0x0065DBF0 0x0065DC2C f/lb_plz2
 lobby 0x0059C660 0x0059C74C f/lb_pz02
 lobby 0x00599B10 0x00599CB0 f/lb_pz03
 lobby 0x0059B640 0x0059B818 f/lb_pz04
 lobby 0x005997C0 0x00599B08 f/lb_pz05
-lobby 0x00594D70 0x00594FD0 f/lb_pz06
-lobby 0x00594840 0x00594C1C f/lb_pz07
-lobby:rodata 0x0065DC50 0x0065DC68 f/lb_pz07
-lobby 0x00594410 0x00594840 f/lb_pz08
-lobby:rodata 0x0065DC30 0x0065DC50 f/lb_pz08
-lobby:rodata 0x0065DCB0 0x0065DCE0 f/lb_plz
-lobby 0x005950C0 0x00595F64 f/lb_pz13
-lobby:rodata 0x0065DC70 0x0065DCB0 f/lb_pz13
-lobby 0x00595F70 0x00598DB0 f/lb_plz
+lobby:rodata 0x0065DC50 0x0065DC68 f/lb_plz2
+lobby:rodata 0x0065DC30 0x0065DC50 f/lb_plz2
+lobby:rodata 0x0065DCB0 0x0065DCE0 f/lb_plz2
+lobby:rodata 0x0065DC70 0x0065DCB0 f/lb_plz2
 lobby 0x005B2AA0 0x005B2B2C b/lb_ncf01
 lobby 0x005AFEE0 0x005AFFA0 b/lb_cip01
 lobby 0x005B6B80 0x005B6C64 b/lb_cmcs02
@@ -2243,4 +2235,6 @@ lobby:rodata 0x0065EAE0 0x0065EB00 f/lb_cli
 lobby:rodata 0x0065EB00 0x0065EB18 f/lb_cli
 lobby:rodata 0x0065E970 0x0065E988 f/lb_cli
 lobby:rodata 0x0065E930 0x0065E948 f/lb_cli
-lobby:rodata 0x0065DD00 0x0065DD34 f/lb_plz
+lobby:rodata 0x0065DD00 0x0065DD34 f/lb_plz2
+
+lobby 0x00594260 0x00598DB0 f/lb_plz2

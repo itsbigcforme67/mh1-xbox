@@ -101,7 +101,6 @@ main 0x00272D60 0x154 Ud_u_item_stack
 main 0x00273B50 0xC8 Get_bowgun_atk
 main 0x00274690 0x74 Gun_level_up
 main 0x00274760 0x54 Gun_option_ck
-lobby 0x00597640 0x4C4 Plaza_add_friend
 main 0x18DB30 0x31C plmemRegisterS
 main 0x18DFE0 0x1D0 plmemCompact
 main 0x18E280 0x128 plmemAppendBlockList mn
@@ -134,3 +133,4 @@ main 0x002625B0 0x68 sk_palette_cursor_set
 lobby 0x005BF4F0 0x70 tk_logout_message_sub
 lobby 0x005B74C0 0x42C lbc_login_init
 lobby 0x005BC150 0x284 Lbc_GetRoomRule
+lobby 0x00597640 0x4C4 Plaza_add_friend
