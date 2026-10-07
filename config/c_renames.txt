@@ -32,6 +32,7 @@ build/src/main/stage/stage_set.c.o .rodata .data
 build/src/main/font/dsp01.c.o .rodata .data
 build/src/main/font/dsp02.c.o .rodata .data
 build/src/main/fl/clay05.c.o .rodata .data
+build/src/main/fl/flrs05.c.o .rodata .data
 build/src/select/demo.c.o .rodata .data
 build/src/select/edit11.c.o .rodata .data
 build/src/select/edit03.c.o .rodata .data
