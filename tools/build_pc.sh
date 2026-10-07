@@ -287,8 +287,7 @@ for f in $GAME; do
     src/main/game/f_gameb.c) ABI="-Dgame_core=ps2_game_core" ;;
     # trans() is the host's (rt_boot.c); TransSet/GameTrans are the game's
     src/main/weapon/trans.c) ABI="-Dtrans=ps2_trans" ;;
-    */em_cmd_nm.c) ABI="-DGetWaterData()=GetWaterData(em)" ;;   # a0 = em left over
-    src/game/em/em_core_nm.c) ABI="-DNextStage_No_Set(...)=rtabi_NextStage_No_Set(em)" ;;   # a0 = em left over
+    # em_cmd_nm.c GetWaterData / em_core_nm.c NextStage_No_Set: a0 = em left over (tools/pc_patch.py)
     src/game/em/em16_nm.c|src/game/em/em12_nm.c|src/game/em/em29.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
     */em01_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
              -DEft15_set3=rtabi_Eft15_set3" ;;
