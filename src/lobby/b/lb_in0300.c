@@ -1,4 +1,6 @@
+/* lb_in0300 - agent C 0x005BCDE0-0x005BCF6C: lbc_in_lobby_03_00: Get_sw2 returns u16 (declared locally; header says int). */
 #include "lobby_a.h"
+extern u16 Get_sw2();
 typedef struct { u8 pad0[0x2C31]; s8 x2C31; s8 x2C32; s8 x2C33; s8 x2C34; u8 x2C35; u8 pad2C36[0x16]; s32 x2C4C; u8 pad2C50[0x66F]; u8 x32BF; } CWS_l300;
 #define CWX ((CWS_l300 *)cw)
 void lbc_in_lobby_03_00(void) {

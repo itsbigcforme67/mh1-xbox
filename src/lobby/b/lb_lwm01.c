@@ -1,13 +1,15 @@
+/* lb_lwm01 - agent C 0x005B7DD0-0x005B7FE4: lbc_login_warning_message: Get_sw2 returns u16 (local extern), declaration order sw, st, stp, c. */
 #include "lobby_a.h"
+extern u16 Get_sw2();
 extern char lit_547_0065E850[];
 typedef struct { u8 pad0[0x2C34]; u8 step; u8 pad2C35[0x17]; s32 x2C4C; s32 x2C50; u8 pad2C54[0x9AA]; u8 x35FE; u8 pad35FF; u16 x3600; u8 x3602[4]; } CWS_lw;
 #define CWX ((CWS_lw *)cw)
 void cnWrap_FontDisp(f32, f32, f32, char *);
 void lbc_login_warning_message(void) {
     u16 sw;
-    CWS_lw *c;
     u8 st;
     u8 *stp;
+    CWS_lw *c;
 
     sw = Get_sw2(0);
     c = CWX;
