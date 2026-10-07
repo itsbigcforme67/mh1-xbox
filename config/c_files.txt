@@ -2430,3 +2430,5 @@ lobby 0x005AD7E0 0x005AE320 cnet/cnlbsi
 lobby 0x005AE5C0 0x005AE840 cnet/cnlbsj
 lobby 0x005BDD50 0x005BDF6C b/lb_c503
 lobby 0x005B3220 0x005B3468 b/lb_c504
+lobby 0x005B8C70 0x005B8E78 b/lb_c505
+lobby:rodata 0x0065E910 0x0065E930 b/lb_c505
