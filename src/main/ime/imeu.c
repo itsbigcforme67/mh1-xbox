@@ -470,39 +470,102 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int syn_match(a, b, base)
+int setu_match(a, b, c, base, extra)
 int a;
 int b;
+int c;
 int base;
+int extra;
 {
-    a = a & 0xFF;
+    int r;
+
+    r = 0;
     b = b & 0xFF;
-    if (a >= 0x14 && a < 0x19) {
-        if (b >= 0x14 && b < 0x19) {
-            return base + 3;
+    switch (a & 0xFF) {
+    case 0:
+        if ((b >= 0x14 && b <= 0x19) || b == 0x32) {
+            r = 0xF;
         }
+        break;
+    case 1:
+        if (b == 0x1A) {
+            r = 0xF;
+        }
+        break;
+    case 2:
+        if (b == 0x1B || b == 0x1C) {
+            r = 0x14;
+        }
+        break;
+    case 3:
+        if (b == 0x1F || b == 0x38) {
+            r = 0x14;
+        }
+        break;
+    case 4:
+        if (b == 0x16) {
+            r = 0x14;
+        }
+        break;
+    case 5:
+        c = c & 0xFF;
+        if (c == 0xFF) {
+            if (b > 0 && b < 0xE) {
+                r = 0xF;
+            }
+        } else if ((b >= 0x80 && b < 0x8C && c == 4) || (b == 0xD && c == 0)) {
+            r = 0xF;
+        }
+        break;
+    case 6:
+        if (b >= 0x14 && b < 0x1A) {
+            r = 0xF;
+        } else if (b == 0x1F || b == 0x38) {
+            r = 0x14;
+        }
+        break;
+    case 7:
+        if (b == 0x1D) {
+            r = 0xF;
+        }
+        break;
+    case 8:
+        if ((b >= 0x14 && b <= 0x19) || (b > 0 && b < 0xE)) {
+            r = 0x14;
+        }
+        break;
+    }
+    if (r == 0) {
         return base;
     }
-    if (a == 0x1F) {
-        if (b == 0x1F) {
-            return base + 0xF;
-        }
+    return extra + (base + r);
+}
+
+u16 kh_priority(BS *b, int v)
+{
+    v = v & 0xFFFF;
+    if (v != 0) {
+        return (v + 0x3E8) & 0xFFFF;
     }
-    if (a == 0x21 || a == 0x26 || a == 0x27) {
-        return base + 0x14;
-    }
-    if (a == 0x20 || a == 0x22) {
-        return base + 0xF;
-    }
-    if (a == 0x1B) {
-        if (b == 0x1C) {
-            return base + 0x14;
-        }
-    }
-    if (a == 0x1A) {
-        if (b == 0x1A) {
-            return base + 5;
-        }
-    }
-    return base;
+    return b->x08;
+}
+
+int is_alphanum(int c)
+{
+    return rmtype[c & 0xFF] & 0xC0;
+}
+
+int is_num(int c)
+{
+    return rmtype[c & 0xFF] & 0x80;
+}
+
+int is_alpha(int c)
+{
+    return rmtype[c & 0xFF] & 0x40;
+}
+
+int is_paren(int c)
+{
+    return rmtype[c & 0xFF] & 0x20;
 }

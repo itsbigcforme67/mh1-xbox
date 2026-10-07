@@ -1371,3 +1371,25 @@ Near-misses left (align lines / instructions): setmean 3 (daddiu constants), get
 (len copy register), set_synref, ktu_match/josi_match (single shared `return base` tail, tried result-variable form), ask_sjis2jis/ask_jis2sjis (return-0 block
 placement), disp_kouho (tail loop is entered by a jump to the test: unreproduced), api_touroku (frame 144 vs 128), cam_sub_stg (spl address in s5 lives
 across ty), Quest_next_em_set 13, stolen_item_stack 6 (a0/v1 naming), ZoomRateCalc 8 (z[2] lands in f0 not f1), Em_hagi_point_cnt_ck 20.
+
+## Round 20 (agent C, continuing 0x220000-0x24A240)
+Start 42.015% of main (637176 bytes), end see last line of this section. Matched: srch_node (`return &hash_tab[(u32)h]` stops the CSE of
+the table address without the andi that `h & 0xFFFF` adds), dic_getsyn.
+- Config hygiene: the stale imerun01-07 runs (restored by hand after the round-19 relinks) overlapped imei/imek/imen/imeo/imep/imer; the
+  imeXX runs are the current set. Removed the runs and files; there are no imerun files any more, so tools/relink_runs.py now runs
+  cleanly. It renumbers the letters (adjacent runs merge): afterwards point `main:rodata 0x0036E090 0x0036E0B4` at the run that contains
+  0x248890 and run `git add -A src config` (it deletes the surplus letter file). Overlap check: sort the `main 0x.. 0x.. path` lines
+  and compare neighbours; none overlap now.
+- u64 -1 search (task 1): the only functions with pcpyld in unmatched code outside libc/VU code are IME ones (kh_learn, dic_getsyn,
+  dic_snssyn, add_dummy_chmem, setu_point); no other module's *_nm.c or notes show the pattern (agent-E.md:699 mentions add_dummy_chmem).
+  Files touched outside the IME TU: none. dic_getsyn: the compare is on a LOCAL `u64 id = (int)set_entid_tab(..); r->id = id; if (id == -1)`
+  (31 -> 23 diffs), then `buf[(int)(s16)len] = 0` (the extra (int) cast stops the reuse of the sign-extended len across strncpy) -> OK.
+  setu_point: `p->id == -1` (was 0xFFFFFFFF) is right but the function stays 135/151 off (control-flow layout of the n/p tests differs).
+- remuneration_item_set 51 -> 28 (tools/declhill2.py on the 20 locals: a/b/j/g order; `r = (u16)((u16)ran_suu(0) % (u16)th)`; `(int)mission_area + e->tbl`).
+  The rest is scheduling around the literal-address globals.
+- WARNING (quest_condition_prog case 0xA): replacing `p = (QCMD *)((u8 *)p + 4)` by `p++` looked like 215 -> 156 diff lines but
+  sizeof(QCMD) is 8, so it changes the logic (and the PC build uses this file). Check semantics before keeping any "improvement".
+- Tried and left: setmean (daddiu constant loads: c as long long / u16 local / constant casts do not change it), getrda1 (the original
+  jumps to the loop through a stub `b`; removing the second return 0 made it worse), add_dummy_chmem (param order of saved registers:
+  declaration order, K&R, reuse of locals, HCHAR pointer: no change), GetOrthogonalPoint (loop pretest / types of k: no change),
+  dic_snssyn (one `&buf[len]` pointer for both `= 0` stores, original: worse).

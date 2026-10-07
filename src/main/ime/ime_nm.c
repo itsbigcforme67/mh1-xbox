@@ -1617,6 +1617,7 @@ int dic_getsyn(u8 *key, int len, SYNR *r)
     int n;
     int m;
     int cnt;
+    u64 id;
     u8 buf[0x50];
     SRCH a;
     SRCH b;
@@ -1625,7 +1626,7 @@ int dic_getsyn(u8 *key, int len, SYNR *r)
         return -3;
     }
     strncpy(buf, key, (s16)len);
-    buf[(s16)len] = 0;
+    buf[(int)(s16)len] = 0;
     n = main_getsyn(buf, len, &a);
     m = tmp_getsyn(buf, len, &b);
     if (n == 0 && m == 0) {
@@ -1642,8 +1643,9 @@ int dic_getsyn(u8 *key, int len, SYNR *r)
     if (m == 1) {
         r->x14 = set_synref(b.ent, r->syn, r->x14, &cnt);
     }
-    r->id = (int)set_entid_tab(a.page, a.off, b.off, cnt);
-    if (r->id == -1) {
+    id = (int)set_entid_tab(a.page, a.off, b.off, cnt);
+    r->id = id;
+    if (id == -1) {
         return 0;
     }
     return 1;

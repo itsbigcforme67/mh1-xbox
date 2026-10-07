@@ -470,56 +470,39 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void bs_prefix(int pos)
+int syn_match(a, b, base)
+int a;
+int b;
+int base;
 {
-    BS *b;
-    PW *pw;
-    HCHAR *h;
-
-    h = &hchar[pos];
-    for (b = h->bs; b != 0; b = b->next) {
-        b->x0A = 0;
-        pw = b->pw;
-        if (pw != 0 && pw->x02 == 0x19 && pw->x00 == 0) {
-            b->x0A = 0xA;
+    a = a & 0xFF;
+    b = b & 0xFF;
+    if (a >= 0x14 && a < 0x19) {
+        if (b >= 0x14 && b < 0x19) {
+            return base + 3;
+        }
+        return base;
+    }
+    if (a == 0x1F) {
+        if (b == 0x1F) {
+            return base + 0xF;
         }
     }
-}
-
-void bs_ctd(BS *b, int pos, int end)
-{
-    BS *n;
-    int pt;
-    int p;
-    int len;
-
-    len = b->len;
-    if (b->x02 == 0xFF || (p = pos + len) >= end) {
-        return;
+    if (a == 0x21 || a == 0x26 || a == 0x27) {
+        return base + 0x14;
     }
-    n = hchar[p].bs;
-    if (n == 0) {
-        return;
+    if (a == 0x20 || a == 0x22) {
+        return base + 0xF;
     }
-    while (n != 0) {
-        n->x0A = 0;
-        if (ignore_syn(n) == 0) {
-            pt = setu_point(b, n);
-            if (pt > 0) {
-                n->x0A = pt;
-            }
+    if (a == 0x1B) {
+        if (b == 0x1C) {
+            return base + 0x14;
         }
-        n = n->next;
     }
-}
-
-int ignore_syn(BS *b)
-{
-    PW *pw;
-
-    pw = b->pw;
-    if (pw != 0 && (pw->x02 == 0x28 || pw->x02 == 0x29)) {
-        return 1;
+    if (a == 0x1A) {
+        if (b == 0x1A) {
+            return base + 5;
+        }
     }
-    return 0;
+    return base;
 }
