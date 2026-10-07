@@ -1409,10 +1409,22 @@ Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item
   +0x40 fourth row, +0x50 attenuation. Table rows (per stage, 5 pointers): [0] +0x40 row, [1] directions (12 bytes per light), [2] colours a, [3] rows c, [4] second rows (16 bytes per light).
   PS2SHADER_ADD_LIGHTCOL3 hands the a rows to the VU1 as the three light colours and the sum of the c rows as the ambient (docs/formats/graphics.md: mem 12-14 colours, mem 15 ambient).
 - Host: viewer.c `rt_light_from_game` reads set 1 (+0x158 + 0x68*i) into the fl_light that fl_model_pose (CPU lighting) uses: dir = block+0x34 normalised, col = block+4, ambient = sum of block+0x24.
-  `light_cur()` is used for the hunter, weapon, monsters and NPCs. `RT_LIGHT_FIXED=1` brings back the old fixed set (before/after), `RT_LIGHT_TRACE=1` prints the three lights. Lighting is on the CPU (vertex colours), so
+  `light_cur()` is used for the hunter, weapon, monsters and NPCs. **Default is the old fixed set again (round 25); `RT_LIGHT_GAME=1` switches to the game's stage lights** (the stage 5 hunter is almost black with them, see below), `RT_LIGHT_TRACE=1` prints the three lights. Lighting is on the CPU (vertex colours), so
   the GL and nv2a backends need nothing.
 - Not done: per-actor adjustments (pl_light_change near-monster rows for stages 12/13/14/28/30 and the actor's own light table; Pl_light_set's blend with the player colour override), the stage set (set 0) for
   set objects, and the thunder flash: flash_move is linked but nothing decompiled starts it (no C writes the light_work flag byte; it is set from code not yet ported).
 - Before/after (--stage N --play --follow 350,160,-0.15, 640x360, RT_LIGHT_FIXED=1 vs default), hunter in the middle, build/show/light/cmp*.png: stage 4 (waterfall plain): warmer key light from the
   upper right, shadow side a lot darker, more contrast; stage 5 (dark jungle): the table has no ambient row, so the hunter is nearly black on the shadow side (the old fixed set lit him evenly);
   stage 13 / 17 / 28 (cave and rock stages): slightly dimmer and bluer hunter; stage 6 (marsh grass): nearly unchanged. Village hunter (quest tests): a little darker with a visible light side.
+
+### Lighting mapping decoded from the asm (agent F, round 25)
+- flSetRenderState(0x5A+i, block) copies the 0x68-byte block into flLIGHT[i] (flrs07_nm.c); the shader packet builders (fladdm_nm.c, `flPS2AddMatrix_0001`: `PS2SHADER_ADD_LIGHTCOL3(AMB, PB(0xE0))`)
+  put it into VU1 memory: packet offset 0x20 + 16*mem. mem 0 = flPS2Ambient * AMB (material ambient factor), mem 1-11 matrices and the light-direction matrix (mem 9-11 hold -dir transformed to object space, one light per column).
+  PS2SHADER_ADD_LIGHTCOL3 (VU0 macro code, decoded with the COP2 table): mem 12-14 = the three a rows (block+0x04, w zeroed), mem 15 = c0 + c1 + c2 (block+0x24 rows, VADDA/VMADDw), w = 128.0. The rows at block+0x14 (all 1.0) and the
+  +vec rows go to other shader families (0003 etc.), not to 0001.
+- Vu1Code_0001_0002 (tools/vu_dis.py): MATERIAL: vf24-26 = a_i * material colour (vf29); vf12-14 = min(128, 128 * that); vf15 = min(128, (mem15 + mem0) * material ambient qword vf30). MAIN: per vertex dots = max(0, n.(-dir_k)) for the three lights;
+  colour = min(128, sum_k dots_k * vf(12+k) + vf15) (128 = 1.0). So the host mapping (col = a, ambient = sum of c) matches the asm; two things the host does not model: the material's own colour and ambient qword
+  (the model's material, flSetRenderState(0x3A+i)), and flPS2Ambient (flAmbient is 0: the game only ever calls flSetRenderState(0xE, 0)).
+- The zero ambient rows of 44 stages (pl_light_ambientNN, .bss) are all-zero static tables, so those stages (5 among them) have no ambient on the PS2 either: lit only by the directional rows, hunter dark on the side away from them.
+  Whether the PS2 really looks that dark is not verifiable here (no reference screenshots); the likely missing piece is the material ambient qword (vf30), which multiplies a zero ambient anyway, so it would not help stage 5.
+  Hence the game lights stay opt-in (RT_LIGHT_GAME=1) until someone compares against a PS2 capture of stage 5.

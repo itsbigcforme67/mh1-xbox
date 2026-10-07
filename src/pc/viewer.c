@@ -615,7 +615,7 @@ static int rt_light_from_game(fl_light *L)
 static fl_light light_game;          /* the game's stage lights (light_work), else the fixed default above */
 static const fl_light *light_cur(void)
 {
-    if (!getenv("RT_LIGHT_FIXED") && rt_light_from_game(&light_game)) {
+    if (getenv("RT_LIGHT_GAME") && rt_light_from_game(&light_game)) {
         static int shown;
         if (getenv("RT_LIGHT_TRACE") && shown++ % 600 == 0) {
             int i;
