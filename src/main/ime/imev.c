@@ -469,44 +469,188 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void all_kouho(void)
+void kouho_set_num(int n, u8 *out)
 {
-    KH *kh;
-    KL *n;
-    KL *head;
-    KL *tail;
-    HCHAR *h;
-    BS *b;
+    int h;
+    int t;
 
-    h = &hchar[cur_pos];
-    b = h->bs;
-    if (b != (BS *)-1) {
-        head = 0;
-        tail = 0;
-        while (b != 0) {
-            if (b->len == cur_len) {
-                if ((n = alloc_klmem()) == 0) {
-                    free_kouholists(head);
-                    head = 0;
-                    break;
-                } else {
-                    kh = get_kouholist(b);
-                    n->kh = kh;
-                    n->bs = b;
-                    n->pri = (kh == 0) ? 0 : (kh_priority(b, kh->x0E) & 0xFFFF);
-                    n->next = 0;
-                    if (head == 0) {
-                        tail = n;
-                        head = n;
-                    } else {
-                        tail->next = n;
-                        tail = n;
-                    }
-                }
-            }
-            b = b->next;
-        }
-        kh_mergesort(cur_pos, head);
-        free_klmemlist(head);
+    if (n < 0) {
+        n = 0;
     }
+    h = n / 100;
+    if (h != 0) {
+        *out++ = h + 0x30;
+    } else {
+        *out++ = 0x20;
+    }
+    n = n % 100;
+    t = n / 10;
+    if (t != 0 || out[-1] != 0x20) {
+        *out++ = t + 0x30;
+    } else {
+        *out++ = 0x20;
+    }
+    n = n % 10;
+    *out = n + 0x30;
+}
+
+int kouho_makedisp(int pos, int len, KH *k, u16 *buf)
+{
+    int n;
+
+    if (k == 0 || (k->flag & 0x80)) {
+        return roman_makedisp(pos, len, buf, 0);
+    } else {
+        n = jiritu_makedisp(k, buf);
+        buf += n;
+        n += roman_makedisp(pos + k->x06, len - k->x06, buf, 0);
+        return n;
+    }
+}
+
+int jiritu_makedisp(KH *k, u16 *buf)
+{
+    int n;
+
+    n = 0;
+    for (;;) {
+        n += sstrtom(buf + n, k->str, 6);
+        if (!(k->flag & 1)) {
+            break;
+        }
+        k = k->next;
+    }
+    return n;
+}
+
+int inc_gun(KH *k)
+{
+    int n;
+    int w;
+    int room;
+    KH *p;
+
+    if (k == 0) {
+        return 0;
+    }
+    p = k;
+    w = 0;
+    n = 0;
+    room = kwin_len - 0xA;
+    while (n <= 8 && p != 0) {
+        w += kh_length(p) + 4;
+        if (w > room) {
+            break;
+        }
+        n++;
+        p = kh_followed(p);
+    }
+    if (n == 0) {
+        return 1;
+    }
+    return n;
+}
+
+int next_gun(int disp, int wrap)
+{
+    KH *old;
+    int n;
+
+    old = top_kh;
+    top_kh = take_kouho(old, gun_num);
+    n = inc_gun(top_kh);
+    if (n == 0) {
+        if (wrap == 0) {
+            top_kh = old;
+            return 0;
+        }
+        init_kouho(0, 0);
+    } else {
+        gun_num = n;
+    }
+    gun_nkh = 0;
+    if (disp == 1) {
+        disp_kouho();
+    }
+    return 1;
+}
+
+int back_gun(int disp, int wrap)
+{
+    KH *old;
+    int num;
+
+    old = top_kh;
+    num = gun_num;
+    init_kouho(0, 0);
+    if (old == top_kh) {
+        if (wrap == 0) {
+            top_kh = old;
+            gun_num = num;
+            gun_nkh = 0;
+            return 0;
+        }
+        old = 0;
+    }
+    for (;;) {
+        if (take_kouho(top_kh, gun_num) == old) {
+            break;
+        }
+        next_gun(0, 1);
+    }
+    if (disp == 1) {
+        disp_kouho();
+    }
+    return 1;
+}
+
+int is_jis(c)
+u16 c;
+{
+    int hi;
+    int lo;
+    int a;
+    int b;
+    int r;
+
+    hi = c >> 8;
+    lo = c & 0xFF;
+    a = 0;
+    r = 0;
+    if ((hi & 0xFF) >= 0x21 && (hi & 0xFF) < 0x7F) {
+        a = 1;
+    }
+    if (a != 0) {
+        b = 0;
+        if ((lo & 0xFF) >= 0x21 && (lo & 0xFF) < 0x7F) {
+            b = 1;
+        }
+        if (b != 0) {
+            r = 1;
+        }
+    }
+    return r;
+}
+
+int is_kanji(int c)
+{
+    c = c & 0xFF;
+    if (c < 0x81 || c >= 0xFD || (c >= 0xA0 && c < 0xE0)) {
+        return 0;
+    }
+    return 1;
+}
+
+int is_shift(int c)
+{
+    u8 lo;
+
+    lo = c;
+    if (is_kanji((c & 0xFFFF) >> 8 & 0xFF) == 0) {
+        return 0;
+    }
+    if (lo < 0x40 || lo >= 0xFD || lo == 0x7F) {
+        return 0;
+    }
+    return 1;
 }

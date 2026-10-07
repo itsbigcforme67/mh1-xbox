@@ -469,74 +469,206 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int concat_bslen(int pos, int end)
+int bs_check(int pos, int end)
 {
-    int n;
     HCHAR *h;
-    int c;
+    CH *c;
+    BS *r;
+    BS *r2;
+    BS *b;
 
-    c = 0;
     h = &hchar[pos];
-    n = 0;
-    while (pos < end) {
-        c = h->x15;
-        if (c == 0) {
+    c = h->ch;
+    if (c != (CH *)-1 && c != 0) {
+        do {
+            r = make_bsmem(pos, end, c);
+            if (r == (BS *)-1) {
+                if (h->bs != 0) {
+                    free_bsmemlist(h->bs);
+                    h->bs = 0;
+                }
+                return 0;
+            }
+            if (r != 0) {
+                hchar_addbsmem(pos, r);
+            }
+            c = c->next;
+        } while (c != 0);
+    }
+    r2 = make_bsmem(pos, end, &null_chmem);
+    if (r2 == (BS *)-1) {
+        if (h->bs != 0) {
+            free_bsmemlist(h->bs);
+            h->bs = 0;
+        }
+        return 0;
+    }
+    if (r2 != 0) {
+        hchar_addbsmem(pos, r2);
+    }
+    if (h->bs == 0) {
+        if ((b = alloc_bsmem()) == 0) {
             return -1;
         }
-        if (h->bs != 0 && h->bs != (BS *)-1 && h->bs->x02 != 0x28) {
+        b->len = muhenkan(pos, end);
+        b->x02 = 0x28;
+        b->x03 = 0;
+        b->pw = 0;
+        b->x08 = 0;
+        b->x0A = 0;
+        b->next = 0;
+        h->bs = b;
+        return 1;
+    }
+    return 1;
+}
+
+BS *make_bsmem(int pos, int end, CH *ch)
+{
+    int p;
+    s16 clen;
+    PWM *l;
+    PWM *list;
+    BS *first;
+    BS *prev;
+    BS *b;
+
+    first = 0;
+    clen = ch->len;
+    prev = 0;
+    p = pos + clen;
+    l = pword_list(p, end, ch->x02, ch->x03);
+    if (l == (PWM *)-1) {
+        return (BS *)-1;
+    }
+    list = l;
+    while (l != 0) {
+        b = alloc_bsmem();
+        if (b == 0) {
             break;
         }
-        pos += c;
-        n += c;
-        h += c;
+        if (first == 0) {
+            first = b;
+        }
+        b->len = clen + l->len;
+        b->x02 = l->x04;
+        b->x03 = l->x05;
+        b->pw = (PW *)ch;
+        b->x08 = 0;
+        b->x0A = 0;
+        b->next = 0;
+        if (prev != 0) {
+            prev->next = b;
+        }
+        l = l->next;
+        prev = b;
     }
-    if (n == 0 || pos >= end) {
+    free_pwmemlist(list);
+    if (clen > 0 && setu_end(ch->x02, ch->x03) != 0) {
+        if (p >= end || not_bhead(kana_ustr[p]) == 0) {
+            b = alloc_bsmem();
+            if (b != 0) {
+                if (first == 0) {
+                    first = b;
+                }
+                b->len = clen;
+                b->x02 = ch->x02;
+                b->x03 = ch->x03;
+                b->pw = (PW *)ch;
+                b->x08 = 0;
+                b->x0A = 0;
+                b->next = 0;
+                if (prev != 0) {
+                    prev->next = b;
+                }
+            }
+        }
+    }
+    return first;
+}
+
+static BS *ins_bsmem(BS *list, BS *n)
+{
+    BS *cur;
+    BS *prev;
+    int len;
+
+    len = n->len;
+    if (list == 0 || list->len < len) {
+        n->next = list;
         return n;
     }
-    return n + c;
-}
-
-int muhenkan(int pos, int end)
-{
-    int k;
-    u8 *p;
-
-    k = pos + 1;
-    if (k < end) {
-        p = kana_ustr + k;
+    cur = list->next;
+    prev = list;
+    if (cur != 0) {
         do {
-            if (not_bhead(*p) == 0) {
+            if (cur->len < len) {
                 break;
             }
-            k++;
-            p++;
-        } while (k < end);
+            prev = cur;
+            cur = cur->next;
+        } while (cur != 0);
     }
-    return k - pos;
+    prev->next = n;
+    n->next = cur;
+    return list;
 }
 
-void fl_check(int pos, int end)
+void hchar_addbsmem(int pos, BS *list)
 {
-    void *found;
-    int hit;
-    HCHAR *h;
-    int n;
-    u8 *p;
+    BS *l;
+    BS *next;
+    BS *head;
 
-    n = end - pos;
-    h = &hchar[pos];
-    p = kana_ustr + pos;
-    while (n > 0) {
-        if (h->x00 == -1) {
-            found = srch_pword(p, n, &hit);
-            if (found == (void *)-1) {
-                return;
-            }
-            h->x18 = hit;
-            h->x00 = (int)found;
+    head = hchar[pos].bs;
+    l = list;
+    while (l != 0) {
+        next = l->next;
+        head = ins_bsmem(head, l);
+        l = next;
+    }
+    hchar[pos].bs = head;
+}
+
+void unify_bsmem(int pos, int len)
+{
+    BS **pp;
+    BS *b;
+
+    pp = &hchar[pos].bs;
+    b = *pp;
+    while (b != 0) {
+        if (b->len == len) {
+            pp = &b->next;
+        } else {
+            *pp = b->next;
+            free_mem(b);
         }
-        n--;
-        p++;
-        h++;
+        b = *pp;
+    }
+}
+
+int bunsetu_len(pos)
+int pos;
+{
+    HCHAR *h;
+
+    if (pos >= kana_len) {
+        return 0;
+    }
+    h = &hchar[pos];
+    if (im_state == 2 && h->x14 == 0) {
+        return 0;
+    }
+    return h->x15;
+}
+
+void save_fst_bslen(int pos)
+{
+    HCHAR *h;
+
+    h = &hchar[pos];
+    if (h->x16 == 0 && h->x14 != 0) {
+        h->x16 = h->x15;
     }
 }

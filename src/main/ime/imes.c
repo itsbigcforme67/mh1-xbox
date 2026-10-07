@@ -469,61 +469,49 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-CH *make_chmem(int pos, SYNR *r)
+int not_bhead(int c)
 {
-    CH *c;
-    s16 len;
-    s64 id;
-    int n;
-    SYN *s;
-    CH *first;
-    CH *prev;
-
-    s = r->syn;
-    first = 0;
-    prev = 0;
-    len = r->x00;
-    id = r->id;
-    n = r->x14 - 1;
-    if (r->x14 != 0) {
-        do {
-            c = alloc_chmem();
-            if (c == 0) {
-                break;
-            }
-            if (first == 0) {
-                first = c;
-            }
-            c->len = len;
-            c->x02 = s->x00;
-            c->x03 = s->x01;
-            c->id = id;
-            c->x10 = s->x04;
-            c->next = 0;
-            if (prev != 0) {
-                prev->next = c;
-            }
-            prev = c;
-            s++;
-        } while (n-- != 0);
+    if (henkan_mode == 1 || henkan_mode == 2) {
+        return 0;
     }
-    return first;
+    switch (c & 0xFF) {
+    case 0x9D:
+    case 0xA1:
+    case 0xA3:
+    case 0xA5:
+    case 0xA7:
+    case 0xA9:
+    case 0xC3:
+    case 0xE3:
+    case 0xE5:
+    case 0xE7:
+    case 0xEE:
+    case 0xF2:
+    case 0xF3:
+        return 1;
+    }
+    return 0;
 }
 
-void hchar_addchmem(pos, c)
-int pos;
-CH *c;
+int is_kuten(int c)
 {
-    void **pp;
-    CH *p;
-    HCHAR *h;
-
-    h = &hchar[pos];
-    pp = &h->ch;
-    p = h->ch;
-    while (p != 0) {
-        pp = (void **)&p->next;
-        p = p->next;
+    c = c & 0xFF;
+    if (c >= 0xA0) {
+        return 0;
     }
-    *pp = c;
+    switch (c) {
+    case 0x20:
+    case 0x21:
+    case 0x2C:
+    case 0x2E:
+    case 0x3A:
+    case 0x3B:
+    case 0x3F:
+    case 0x98:
+    case 0x9B:
+    case 0x9C:
+        return 1;
+    default:
+        return 0;
+    }
 }

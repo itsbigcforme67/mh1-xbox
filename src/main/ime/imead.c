@@ -469,39 +469,40 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int syn_match(a, b, base)
-int a;
-int b;
-int base;
+int bytesin_kana_buf(KANA *a, KANA *b)
 {
-    a = a & 0xFF;
-    b = b & 0xFF;
-    if (a >= 0x14 && a < 0x19) {
-        if (b >= 0x14 && b < 0x19) {
-            return base + 3;
-        }
-        return base;
-    }
-    if (a == 0x1F) {
-        if (b == 0x1F) {
-            return base + 0xF;
+    int r = 0;
+
+    for (; a < b; a++) {
+        if (a->ch & 0xFF00) {
+            r += 2;
+        } else {
+            r += 1;
         }
     }
-    if (a == 0x21 || a == 0x26 || a == 0x27) {
-        return base + 0x14;
+    return r;
+}
+
+int count_byte_kana_buf(int a, int n)
+{
+    KANA *p = &kana_buf[a];
+    int r = 0;
+
+    while (n > 0) {
+        r += p->n;
+        n--;
+        p++;
     }
-    if (a == 0x20 || a == 0x22) {
-        return base + 0xF;
+    return r;
+}
+
+int api_funcent(int *req)
+{
+    int cmd;
+
+    cmd = *req;
+    if (cmd <= 0 || (u32)cmd > 0x3F) {
+        return -1;
     }
-    if (a == 0x1B) {
-        if (b == 0x1C) {
-            return base + 0x14;
-        }
-    }
-    if (a == 0x1A) {
-        if (b == 0x1A) {
-            return base + 5;
-        }
-    }
-    return base;
+    return D_0034ABEC[cmd]((u8 *)req + 4);
 }

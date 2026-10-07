@@ -469,56 +469,49 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void bs_prefix(int pos)
+int ToUpper(int c)
 {
-    BS *b;
-    PW *pw;
-    HCHAR *h;
+    int u;
 
-    h = &hchar[pos];
-    for (b = h->bs; b != 0; b = b->next) {
-        b->x0A = 0;
-        pw = b->pw;
-        if (pw != 0 && pw->x02 == 0x19 && pw->x00 == 0) {
-            b->x0A = 0xA;
-        }
+    u = c & 0xFF;
+    if (u >= 0x61 && u < 0x7B) {
+        return (u - 0x20) & 0xFF;
     }
+    return c;
 }
 
-void bs_ctd(BS *b, int pos, int end)
+u8 *getrda2(u16 *a, u16 *b)
 {
-    BS *n;
-    int pt;
-    int p;
+    u8 *p;
+    int n;
+    u16 *q;
+    int k;
     int len;
 
-    len = b->len;
-    if (b->x02 == 0xFF || (p = pos + len) >= end) {
-        return;
-    }
-    n = hchar[p].bs;
-    if (n == 0) {
-        return;
-    }
-    while (n != 0) {
-        n->x0A = 0;
-        if (ignore_syn(n) == 0) {
-            pt = setu_point(b, n);
-            if (pt > 0) {
-                n->x0A = pt;
+    n = b - a;
+    p = rmspec;
+    while (*p != 0) {
+        len = *p;
+        p++;
+        if (n == len) {
+            q = a;
+            k = n;
+            while (k > 0) {
+                if (*p != (ToUpper(*(u8 *)q++) & 0xFF)) {
+                    break;
+                }
+                k--;
+                p++;
             }
+            if (k == 0) {
+                return p;
+            }
+            p += k;
+        } else {
+            p += len;
         }
-        n = n->next;
-    }
-}
-
-int ignore_syn(BS *b)
-{
-    PW *pw;
-
-    pw = b->pw;
-    if (pw != 0 && (pw->x02 == 0x28 || pw->x02 == 0x29)) {
-        return 1;
+        while (*p++ != 0) {
+        }
     }
     return 0;
 }

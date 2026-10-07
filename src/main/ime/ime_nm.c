@@ -173,7 +173,7 @@ void strncpy();
 void clear_prevwd();
 void kh_learn();
 void prev_learn();
-void add_prevwd();
+static void add_prevwd();
 int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
@@ -188,8 +188,8 @@ int dic_getgaku();
 void init_univmem();
 void init_hchar();
 void init_edit0();
-int g2jodo();
-int getbit(s16);
+static int g2jodo();
+static int getbit(s16);
 int is_shift();
 void *memcpy();
 int close_dic();
@@ -330,14 +330,14 @@ extern int first_init_5;
 KH *raw_kouho();
 KH *kh_endof();
 void khmem_raw();
-void kh_append_init();
-void kh_append();
-int kh_merge_getone();
+static void kh_append_init();
+static void kh_append();
+static int kh_merge_getone();
 static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
-void kouho_set_num();
+static void kouho_set_num();
 int jiritu_makedisp();
 int next_gun();
 int back_gun();
@@ -361,10 +361,10 @@ int ToUpper();
 u8 *getrda1();
 u8 *getrda2();
 int add_kana_buf();
-int bytesin_kana_buf();
+static int bytesin_kana_buf();
 int count_byte_kana_buf();
 int api_funcent();
-int get_kouhostr();
+static int get_kouhostr();
 int syn_2to3();
 void wd_learn();
 u8 *select_tostr();
@@ -711,7 +711,7 @@ void clear_prevwd(void)
     prev_yomi[0] = 0;
 }
 
-void add_prevwd(int pos, int len, KH *kh, int cont)
+static void add_prevwd(int pos, int len, KH *kh, int cont)
 {
     u8 *yomi;
     u8 *tango;
@@ -1282,12 +1282,12 @@ int srch_ucode(int code)
     return 0;
 }
 
-int getbit(s16 n)
+static int getbit(s16 n)
 {
     return bitpool[n >> 3] & power[n & 7];
 }
 
-int g2jodo(int c)
+static int g2jodo(int c)
 {
     c = c & 0xFF;
     if (c > 0 && c < 0xE) {
@@ -1319,10 +1319,10 @@ int goku_connect(int a, int b, int c)
     } else {
         cn = &cntab[(u8)c - 0x41];
     }
-    if ((u8)a >= 0x80 && (u8)a < 0xC0) {
-        return getbit(cn->b + om + (b & 0xFF) - 1);
+    if ((u8)a < 0x80 || (u8)a >= 0xC0) {
+        return getbit(cn->a + (s16)om);
     }
-    return getbit(cn->a + om);
+    return getbit(cn->b + (s16)om + (b & 0xFF) - 1);
 }
 
 int setu_end(int a0, int flag)
@@ -1438,7 +1438,7 @@ int dic_snssyn(u8 *key, int len, SYNR *r)
     int n;
     int m;
     int cnt;
-    u8 buf[0x20];
+    u8 buf[0x50];
     SRCH a;
     SRCH b;
 
@@ -1553,22 +1553,21 @@ int set_synref(u8 *ent, SYN *out, int n, int *maxv)
 {
     u8 *p;
     u8 *end;
-    u8 *q;
     SYN *o;
 
-    o = out + n;
     end = ent + ELEN(ent);
     p = ent + ent[2] + 3;
+    o = out + n;
     while (p < end) {
-        o->x00 = p[0];
-        o->x04 = p[1];
-        q = p + 2;
-        if (*maxv < p[1]) {
+        o->x00 = *p++;
+        o->x04 = *p;
+        if (*maxv < *p) {
             *maxv = o->x04;
         }
-        if (p[2] < 0xC) {
-            o->x01 = p[2];
-            q++;
+        p++;
+        if (*p < 0xC) {
+            o->x01 = *p;
+            p++;
         } else {
             o->x01 = 0;
         }
@@ -1580,7 +1579,7 @@ int set_synref(u8 *ent, SYN *out, int n, int *maxv)
                 break;
             }
         }
-        p = next_wd(q, end);
+        p = next_wd(p, end);
     }
     return n;
 }
@@ -1689,7 +1688,7 @@ int main_getsyn(u8 *key, int len0, SRCH *r)
     return 1;
 }
 
-int dic_get1wd(int id, int a, int b, u8 *out)
+int dic_get1wd(s64 id, int a, int b, u8 *out)
 {
     int off;
     int tmp;
@@ -1719,13 +1718,13 @@ int dic_get1wd(int id, int a, int b, u8 *out)
 
 void get1wd(u8 *ent, int a, int b, int *best, int out, int tag)
 {
-    int old;
-    u8 *end;
     u8 *p;
-    u8 *q;
+    u8 *rec;
+    u8 *end;
     u8 *hit;
-    int rt;
     int k;
+    int rt;
+    int old;
 
     old = *best;
     end = ent + ELEN(ent);
@@ -1733,18 +1732,19 @@ void get1wd(u8 *ent, int a, int b, int *best, int out, int tag)
     hit = 0;
     while (p < end) {
         rt = p[1];
-        q = p + 2;
-        k = p[2];
+        rec = p;
+        p += 2;
+        k = p[0];
         if (k < 0xC) {
-            q++;
+            p++;
         } else {
             k = 0;
         }
-        if (a == p[0] && b == k && *best < rt) {
+        if (a == rec[0] && b == k && *best < rt) {
             *best = rt;
-            hit = p;
+            hit = rec;
         }
-        p = next_wd(q, end, p);
+        p = next_wd(p, end);
     }
     if (old < *best) {
         set_wds(out, hit, end, tag | (hit - ent));
@@ -1769,7 +1769,7 @@ int tag;
     getkbuf((u8 *)w + 5, rec);
 }
 
-int dic_getallwd(int id, int a, int b, int buf, int *out)
+int dic_getallwd(s64 id, int a, int b, int buf, int *out)
 {
     int off;
     int tmp;
@@ -1800,9 +1800,9 @@ int dic_getallwd(int id, int a, int b, int buf, int *out)
 
 void getallwd(u8 *ent, int a, int b, int *cnt, int *pos, int buf, int tag)
 {
-    u8 *end;
     u8 *p;
-    u8 *q;
+    u8 *end;
+    u8 *rec;
     int rt;
     int k;
     int len;
@@ -1811,23 +1811,24 @@ void getallwd(u8 *ent, int a, int b, int *cnt, int *pos, int buf, int tag)
     p = ent + ent[2] + 3;
     while (p < end) {
         rt = p[1];
-        q = p + 2;
-        k = p[2];
+        rec = p;
+        p += 2;
+        k = p[0];
         if (k < 0xC) {
-            q++;
+            p++;
         } else {
             k = 0;
         }
-        if (a == p[0] && b == k) {
-            len = getkbuflen(q, end) + 6;
+        if (a == rec[0] && b == k) {
+            len = getkbuflen(p, end) + 6;
             if (len & 1) {
                 len++;
             }
-            set_wds(ins_wds(buf, rt, len, *pos), p, end, tag | (p - ent));
+            set_wds(ins_wds(buf, rt, len, *pos), rec, end, tag | (rec - ent));
             *pos += len;
             (*cnt)++;
         }
-        p = next_wd(q, end);
+        p = next_wd(p, end);
     }
 }
 
@@ -4248,6 +4249,7 @@ void first_kouho(int pos, int len)
     int p;
     KH *kh;
     KH *out;
+    KH *tl;
 
     best = 0;
     pri = 0;
@@ -4273,12 +4275,12 @@ void first_kouho(int pos, int len)
             if (best != 0 && pw != 0 && pw->x00 != 0) {
                 if (pw->id == 0) {
                     if (pw->x02 == 0x1F && dic_get1num(kana_ustr + pos, pw->x00, (u8 *)wdsbuf) > 0) {
-                        kh = create_kouho(wdsbuf, pw, pw->x00, &out);
+                        kh = create_kouho(wdsbuf, pw, pw->x00, &out, &tl);
                     } else {
                         kh = null_kouho(len);
                     }
                 } else if (dic_get1wd(pw->id, pw->x02, pw->x03, (u8 *)wdsbuf) > 0) {
-                    kh = create_kouho(wdsbuf, pw, pw->x00, &out);
+                    kh = create_kouho(wdsbuf, pw, pw->x00, &out, &tl);
                 } else {
                     kh = null_kouho(len);
                 }
@@ -4378,17 +4380,18 @@ KH *get_kouholist(BS *b)
 {
     int cnt;
     KH *out;
+    KH *tl;
     KH *last;
     KH *first;
-    KH *k;
     PW *pw;
     u8 *p;
 
     pw = b->pw;
     if (pw == 0 || pw->x00 == 0) {
-        goto none;
+none:
+        return null_kouho(b->len);
     }
-    if (pw->id == 0) {
+    if (pw->id == -1) {
         if (pw->x02 != 0x1F || dic_getallnum(kana_ustr + cur_pos, pw->x00, (u8 *)wdsbuf, &cnt) <= 0) {
             goto none;
         }
@@ -4399,16 +4402,16 @@ KH *get_kouholist(BS *b)
     first = 0;
     p = (u8 *)wdsbuf;
     while (cnt > 0) {
-        if (create_kouho(p, pw, pw->x00, &out) == 0) {
+        if (create_kouho(p, pw, pw->x00, &out, &tl) == 0) {
             free_khmemlist(first);
             return 0;
         }
         if (first == 0) {
-            last = k;
+            last = tl;
             first = out;
         } else {
             last->next = out;
-            last = k;
+            last = tl;
         }
         p += 5;
         while (*p++ != 0) {
@@ -4419,8 +4422,6 @@ KH *get_kouholist(BS *b)
         cnt--;
     }
     return first;
-none:
-    return null_kouho(b->len);
 }
 
 void free_kouholists(KL *l)
@@ -4448,24 +4449,22 @@ KH *null_kouho(int len)
     return k;
 }
 
-KH *create_kouho(buf, pw, len, out)
+KH *create_kouho(buf, pw, len, out, tail)
 u8 *buf;
 PW *pw;
 int len;
 KH **out;
+KH **tail;
 {
     u8 *s;
     int n;
     int m;
     KH *k;
     KH *k2;
-    KH *last;
 
     s = buf + 5;
     n = strlen(s);
-    k = alloc_khmem();
-    last = k;
-    if (k == 0) {
+    if ((k = alloc_khmem()) == 0) {
         return 0;
     }
     k->flag = 0;
@@ -4480,20 +4479,20 @@ KH **out;
     k->next = 0;
     *out = k;
     while (n > 0) {
-        k2 = alloc_khmem();
-        if (k2 == 0) {
+        if ((k2 = alloc_khmem()) == 0) {
             free_khmemlist(*out);
             return 0;
         }
-        last->flag |= 1;
+        k->flag |= 1;
         k2->flag = 2;
         m = kstrncpy(k2->str, s, 0xE);
         k2->next = 0;
         n -= m;
-        last->next = k2;
+        k->next = k2;
         s += m;
-        last = k2;
+        k = k2;
     }
+    *tail = k;
     return *out;
 }
 
@@ -4562,7 +4561,7 @@ void kh_mergesort(int pos, KL *list)
     h->kh = head;
 }
 
-int kh_merge_getone(KL *list)
+static int kh_merge_getone(KL *list)
 {
     int best;
     KH *r;
@@ -4586,7 +4585,7 @@ int kh_merge_getone(KL *list)
     return (int)r;
 }
 
-void kh_append_init(int pos, KH *k)
+static void kh_append_init(int pos, KH *k)
 {
     int n;
 
@@ -4600,7 +4599,7 @@ void kh_append_init(int pos, KH *k)
     }
 }
 
-void kh_append(pos, head, tail, k)
+static void kh_append(pos, head, tail, k)
 int pos;
 KH **head;
 KH **tail;
@@ -4758,7 +4757,7 @@ void disp_kouho()
     }
 }
 
-void kouho_set_num(int n, u8 *out)
+static void kouho_set_num(int n, u8 *out)
 {
     int h;
     int t;
@@ -5386,8 +5385,8 @@ int calc_point(int pos, BS *b, BS *next)
 int bs_point(BS *b, int pos, int end)
 {
     BS *n;
-    s16 best;
-    s16 v;
+    u16 best;
+    u16 v;
     int p;
 
     if (ignore_syn() != 0) {
@@ -5395,7 +5394,7 @@ int bs_point(BS *b, int pos, int end)
         return 0;
     }
     if (b->x02 == 0xFF || (p = pos + b->len) >= end) {
-        best = calc_point(pos, b, 0) & 0xFFFF;
+        best = calc_point(pos, b, 0);
     } else {
         n = hchar[p].bs;
         if (n == 0 && henkan_mode >= 3) {
@@ -5403,8 +5402,8 @@ int bs_point(BS *b, int pos, int end)
         }
         best = 0;
         while (n != 0) {
-            v = calc_point(pos, b, n) & 0xFFFF;
-            if ((best & 0xFFFF) < v) {
+            v = calc_point(pos, b, n);
+            if (best < v) {
                 best = v;
             }
             n = n->next;
@@ -5555,17 +5554,16 @@ int base;
     }
     b = b & 0xFF;
     if (b >= 4 && b < 7 && (c & 0xFF) > 0 && (c & 0xFF) < 0x18) {
-        switch (a) {
-        case 0x8E:
+        if (a == 0x8E) {
             if (b == 6) {
                 return base + 0xA;
             }
             return base;
-        case 0x8D:
-            return base + 0xA;
-        default:
-            return base + 3;
         }
+        if (a == 0x8D) {
+            return base + 0xA;
+        }
+        return base + 3;
     }
     if (b == 8) {
         c = c & 0xFF;
@@ -5970,20 +5968,19 @@ u8 *getrda1(u16 *a, u16 *b)
     int up;
 
     n = b - a;
-    switch (n) {
-    case 0:
+    if (n == 0) {
         return rmtab + 1;
-    case 2:
-    case 1:
+    }
+    if (n == 1 || n == 2) {
         c = a[0] & 0xFF;
         if (c >= 0x61 && c < 0x7B) {
-            idx = c - 0x61;
+            c -= 0x61;
         } else if (c >= 0x41 && c < 0x5B) {
-            idx = c - 0x41;
+            c -= 0x41;
         } else {
             return 0;
         }
-        tp = (u32 *)prmtab + idx;
+        tp = (u32 *)prmtab + c;
         e = (u8 *)*tp;
         if (n == 1) {
             return e + 1;
@@ -5992,8 +5989,8 @@ u8 *getrda1(u16 *a, u16 *b)
             tp++;
             end = (u8 *)*tp;
         } while (end == 0);
+        up = ToUpper(*(u8 *)(a + 1)) & 0xFF;
         e += 0xB;
-        up = ToUpper(a[1]) & 0xFF;
         while (e < end) {
             if (*e == up) {
                 return e + 1;
@@ -6001,9 +5998,8 @@ u8 *getrda1(u16 *a, u16 *b)
             e += 0xB;
         }
         return 0;
-    default:
-        return 0;
     }
+    return 0;
 }
 
 int add_kana_buf(u8 *s)
@@ -6067,7 +6063,7 @@ int add_kana_buf(u8 *s)
     return len;
 }
 
-int bytesin_kana_buf(KANA *a, KANA *b)
+static int bytesin_kana_buf(KANA *a, KANA *b)
 {
     int r = 0;
 
@@ -6197,7 +6193,7 @@ int api_henkan(int *a)
     return kh_count(hchar[0].kh);
 }
 
-int get_kouhostr(u8 *a, u8 *b)
+static int get_kouhostr(u8 *a, u8 *b)
 {
     strcpy(a, select_subtostr(cur_pos, cur_len));
     strcpy(b, select_subtostr(cur_pos + cur_len, kana_len - cur_pos - cur_len));
@@ -6290,9 +6286,9 @@ int api_allfix(int *a)
 
 int api_select(int *a)
 {
-    s16 *cnt;
     u8 *k1;
     u8 *k2;
+    s16 *cnt;
     u8 *out;
     int r;
     int n;
@@ -6302,30 +6298,30 @@ int api_select(int *a)
         return -1;
     }
     n = a[0];
-    if (n > 0 && gun_num >= n) {
-        out = (u8 *)a[1];
-        k1 = (u8 *)a[2];
-        k2 = (u8 *)a[3];
-        cnt = (s16 *)a[4];
-        gun_nkh = n - 1;
-        strcpy(out, select_subtostr(cur_pos, cur_len));
-        unify_khmem(cur_pos, 1);
-        r = count_byte_kana_buf(cur_pos, cur_len);
-        pos = cur_pos;
-        cur_pos = pos + cur_len;
-        if (cur_pos >= kana_len) {
-            *k1 = 0;
-            *k2 = 0;
-            *cnt = 0;
-            return r;
-        }
-        cur_len = bunsetu_len(cur_pos, pos);
-        init_kouho(0, 1);
-        get_kouhostr(k1, k2);
-        *cnt = kh_count(hchar[cur_pos].kh);
+    if (n <= 0 || gun_num < n) {
+        return 0;
+    }
+    out = (u8 *)a[1];
+    k1 = (u8 *)a[2];
+    k2 = (u8 *)a[3];
+    cnt = (s16 *)a[4];
+    gun_nkh = n - 1;
+    strcpy(out, select_subtostr(cur_pos, cur_len));
+    unify_khmem(cur_pos, 1);
+    r = count_byte_kana_buf(cur_pos, cur_len);
+    pos = cur_pos;
+    cur_pos = pos + cur_len;
+    if (cur_pos >= kana_len) {
+        *k1 = 0;
+        *k2 = 0;
+        *cnt = 0;
         return r;
     }
-    return 0;
+    cur_len = bunsetu_len(cur_pos, pos);
+    init_kouho(0, 1);
+    get_kouhostr(k1, k2);
+    *cnt = kh_count(hchar[cur_pos].kh);
+    return r;
 }
 
 int api_dicopen(void)

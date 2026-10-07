@@ -469,20 +469,69 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void set_wds(w0, rec, end, tag)
-void *w0;
-u8 *rec;
-u8 *end;
-int tag;
+void clear_rtime(u8 *ent)
 {
-    s16 *w = w0;
+    u8 *end;
+    u8 *p;
 
-    w[0] = tag;
-    w[1] = rec[1];
-    rec += 2;
-    ((u8 *)w)[4] = 0;
-    if (rec[0] < 0xC) {
-        rec++;
+    end = ent + ELEN(ent);
+    p = ent + ent[2] + 3;
+    if (p < end) {
+        do {
+            p[1] = 0;
+            p += 2;
+            if (*p < 0xC) {
+                p++;
+            }
+            p = next_wd(p, end);
+        } while (p < end);
     }
-    getkbuf((u8 *)w + 5, rec);
+}
+
+void clear_allrtime(s64 *list, int n)
+{
+    int off;
+    int tmp;
+    int unused;
+    int page;
+    int i;
+    int r;
+
+    for (i = 0; i < n; i++) {
+        page = r = get_entid_tab(list[i], &off, &tmp, &unused);
+        if (r != -1) {
+            if (off != -1) {
+                clear_rtime(load_page(page, -1) + off);
+                update_nowpage();
+            }
+            if (tmp != -1) {
+                clear_rtime(load_temp(tmp));
+                update_nowtmp();
+            }
+        }
+    }
+}
+
+int max_rtime(u8 *ent)
+{
+    int m;
+    u8 *end;
+    u8 *p;
+
+    end = ent + ELEN(ent);
+    p = ent + ent[2] + 3;
+    m = 0;
+    if (p < end) {
+        do {
+            if (m < p[1]) {
+                m = p[1];
+            }
+            p += 2;
+            if (*p < 0xC) {
+                p++;
+            }
+            p = next_wd(p, end);
+        } while (p < end);
+    }
+    return m;
 }

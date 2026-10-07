@@ -469,143 +469,61 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void update_nowtmp(void)
+CH *make_chmem(int pos, SYNR *r)
 {
-    temp_updated = 1;
-}
-
-int setkbuflen(u8 *p)
-{
+    CH *c;
+    s16 len;
+    s64 id;
     int n;
+    SYN *s;
+    CH *first;
+    CH *prev;
 
-    n = 0;
-    while (*p != 0) {
-        if (iskanji(*p) != 0) {
-            p += 2;
-        } else {
-            p += 1;
-        }
-        n += 2;
+    s = r->syn;
+    first = 0;
+    prev = 0;
+    len = r->x00;
+    id = r->id;
+    n = r->x14 - 1;
+    if (r->x14 != 0) {
+        do {
+            c = alloc_chmem();
+            if (c == 0) {
+                break;
+            }
+            if (first == 0) {
+                first = c;
+            }
+            c->len = len;
+            c->x02 = s->x00;
+            c->x03 = s->x01;
+            c->id = id;
+            c->x10 = s->x04;
+            c->next = 0;
+            if (prev != 0) {
+                prev->next = c;
+            }
+            prev = c;
+            s++;
+        } while (n-- != 0);
     }
-    return n;
+    return first;
 }
 
-void setkbuf(u8 *src, u8 *dst)
+void hchar_addchmem(pos, c)
+int pos;
+CH *c;
 {
-    while (*src != 0) {
-        if (iskanji(*src) != 0) {
-            *dst = *src;
-            src++;
-            dst++;
-        } else {
-            *dst = 0xFF;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
-    }
-}
-
-int getkbuflen(u8 *p, u8 *end)
-{
-    int n;
-
-    n = 0;
-    while (p < end && *p >= 0x39) {
-        if (*p == 0xFF) {
-            n++;
-        } else {
-            n += 2;
-        }
-        p += 2;
-    }
-    return n;
-}
-
-void getkbuf(u8 *dst, u8 *src, u8 *end)
-{
-    while (src < end && *src >= 0x39) {
-        if (*src == 0xFF) {
-            src++;
-        } else {
-            *dst = *src;
-            src++;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
-    }
-    *dst = 0;
-}
-
-int iskanji(int c)
-{
-    c = c & 0xFF;
-    if ((c >= 0x80 && c <= 0x9F) || (c >= 0xE0 && c <= 0xFC)) {
-        return 1;
-    }
-    return 0;
-}
-
-void init_hchar(void)
-{
+    void **pp;
+    CH *p;
     HCHAR *h;
 
-    for (h = hchar; (u8 *)h < (u8 *)wdsbuf; h++) {
-        clear_hchar(h);
+    h = &hchar[pos];
+    pp = &h->ch;
+    p = h->ch;
+    while (p != 0) {
+        pp = (void **)&p->next;
+        p = p->next;
     }
-}
-
-void clear_hchar(HCHAR *h)
-{
-    h->x00 = -1;
-    h->ch = 0;
-    h->bs = 0;
-    h->kh = 0;
-    h->x10 = 0;
-    h->x14 = 0;
-    h->x15 = 0;
-    h->x16 = 0;
-    h->x17 = -1;
-    h->x18 = -1;
-    h->x19 = -1;
-}
-
-void free_hchar(int from, int to, int keep)
-{
-    HCHAR *h;
-    HCHAR *end;
-
-    end = hchar + to;
-    for (h = hchar + from; h < end; h++) {
-        free_hchar_one(h, keep);
-    }
-}
-
-void free_hchar_one(HCHAR *h, int keep)
-{
-    if (keep == 0) {
-        h->x00 = -1;
-        h->x18 = -1;
-        if (h->ch != (void *)-1) {
-            free_chmemlist(h->ch);
-        }
-        h->ch = 0;
-        h->x17 = -1;
-        h->x19 = -1;
-        h->x16 = 0;
-    }
-    if (h->bs != 0 && h->bs != (BS *)-1) {
-        free_bsmemlist(h->bs);
-    }
-    h->bs = 0;
-    if (h->kh != 0) {
-        free_khmemlist(h->kh);
-    }
-    h->kh = 0;
-    h->x10 = 0;
-    h->x14 = 0;
-    h->x15 = 0;
+    *pp = c;
 }

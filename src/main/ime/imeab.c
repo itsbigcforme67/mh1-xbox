@@ -469,83 +469,102 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void free_bsmemlist(BS *b)
+int setu_match(a, b, c, base, extra)
+int a;
+int b;
+int c;
+int base;
+int extra;
 {
-    BS *n;
+    int r;
 
-    while (b != 0) {
-        n = b->next;
-        free_mem(b);
-        b = n;
-    }
-}
-
-void free_khmemlist(KH *k)
-{
-    KH *n;
-
-    while (k != 0) {
-        n = k->next;
-        free_mem(k);
-        k = n;
-    }
-}
-
-void free_klmemlist(KL *l)
-{
-    KL *n;
-
-    while (l != 0) {
-        n = l->next;
-        free_mem(l);
-        l = n;
-    }
-}
-
-int bs_prefer(int pos, int end, int len)
-{
-    BS *b;
-    BS *best;
-    BS *p;
-    HCHAR *h;
-
-    h = &hchar[pos];
-    for (b = h->bs; b != 0; b = b->next) {
-        if (len < 0 || b->len == len) {
-            if (bs_point(b, pos, end) == -1) {
-                return -1;
-            }
+    r = 0;
+    b = b & 0xFF;
+    switch (a & 0xFF) {
+    case 0:
+        if ((b >= 0x14 && b <= 0x19) || b == 0x32) {
+            r = 0xF;
         }
-    }
-    if (h == 0 || (best = h->bs) == 0) {
-        return -1;
-    } else {
-        for (p = best->next; p != 0; p = p->next) {
-            if (p->x08 > best->x08) {
-                best = p;
-            }
+        break;
+    case 1:
+        if (b == 0x1A) {
+            r = 0xF;
         }
-        bs_ctd(best, pos, end);
-        return best->len;
+        break;
+    case 2:
+        if (b == 0x1B || b == 0x1C) {
+            r = 0x14;
+        }
+        break;
+    case 3:
+        if (b == 0x1F || b == 0x38) {
+            r = 0x14;
+        }
+        break;
+    case 4:
+        if (b == 0x16) {
+            r = 0x14;
+        }
+        break;
+    case 5:
+        c = c & 0xFF;
+        if (c == 0xFF) {
+            if (b > 0 && b < 0xE) {
+                r = 0xF;
+            }
+        } else if ((b >= 0x80 && b < 0x8C && c == 4) || (b == 0xD && c == 0)) {
+            r = 0xF;
+        }
+        break;
+    case 6:
+        if (b >= 0x14 && b < 0x1A) {
+            r = 0xF;
+        } else if (b == 0x1F || b == 0x38) {
+            r = 0x14;
+        }
+        break;
+    case 7:
+        if (b == 0x1D) {
+            r = 0xF;
+        }
+        break;
+    case 8:
+        if ((b >= 0x14 && b <= 0x19) || (b > 0 && b < 0xE)) {
+            r = 0x14;
+        }
+        break;
     }
+    if (r == 0) {
+        return base;
+    }
+    return extra + (base + r);
 }
 
-int calc_point(int pos, BS *b, BS *next)
+u16 kh_priority(BS *b, int v)
 {
-    int a;
-    int c;
-    int f;
-    u16 pri;
-
-    if (next == 0) {
-        a = b->len;
-        c = 0;
-        f = 1;
-    } else {
-        c = b->len;
-        a = next->len;
-        f = 0;
+    v = v & 0xFFFF;
+    if (v != 0) {
+        return (v + 0x3E8) & 0xFFFF;
     }
-    pri = b->x0A;
-    return f * 0x32 + (pri + (c * 0x10 + a * 0x11) + setu_point(b, next));
+    return b->x08;
+}
+
+int is_alphanum(int c)
+{
+    return rmtype[c & 0xFF] & 0xC0;
+}
+
+int is_num(int c)
+{
+    return rmtype[c & 0xFF] & 0x80;
+}
+
+int is_alpha(int c)
+{
+    return rmtype[c & 0xFF] & 0x40;
+}
+
+int is_paren(int c)
+{
+    return rmtype[c & 0xFF] & 0x20;
 }

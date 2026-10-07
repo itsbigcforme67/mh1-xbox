@@ -469,28 +469,30 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-u8 *ins_wds(u8 *p, u8 *rt, int len, int total)
+u8 *end_page(u8 *p)
 {
-    u8 *end;
+    int n;
 
-    end = p + total;
-    while (p < end) {
-        if (*(u16 *)(p + 2) < (int)rt) {
-            break;
-        }
-        p += 5;
-        while (*p++ != 0) {
-        }
-        if ((u32)p & 1) {
-            p++;
-        }
-    }
-    rt = end - 1;
-    if (p < end) {
-        while (rt >= p) {
-            rt[len] = *rt;
-            rt--;
-        }
+    n = ELEN(p);
+    while (n != 0) {
+        p += n;
+        n = ELEN(p);
     }
     return p;
+}
+
+void shiftpage(u8 *from, u8 *end, int d)
+{
+    if (d > 0) {
+        end--;
+        while (end >= from) {
+            end[d] = *end;
+            end--;
+        }
+    } else if (d < 0) {
+        while (from < end) {
+            from[d] = *from;
+            from++;
+        }
+    }
 }

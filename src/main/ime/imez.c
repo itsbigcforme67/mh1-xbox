@@ -469,100 +469,56 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void change_kind(u16 *p, int n, int kind)
+void bs_prefix(int pos)
 {
-    u16 k;
+    BS *b;
+    PW *pw;
+    HCHAR *h;
 
-    k = (kind & 0xFFFF) << 12;
-    while (n-- != 0) {
-        *p = (*p & 0xFFF) | k;
-        p++;
-    }
-}
-
-int shiftlen(int x)
-{
-    int c;
-    int h;
-
-    c = x & 0xFFFF;
-    h = c & 0xFF00;
-    switch (h) {
-    case 0x8000:
-    case 0x8500:
-        return 1;
-    case 0x8600:
-        if ((c & 0xFF) < 0x9E) {
-            return 1;
-        }
-    default:
-        return 2;
-    }
-}
-
-int sstrtom(u16 *out, u8 *s, int kind)
-{
-    u16 *p;
-    int c;
-
-    p = out;
-    while (*s != 0) {
-        c = *s;
-        if (c < 0x80 || (c >= 0xA0 && c < 0xE0)) {
-            p += setmean(p, *s++, kind);
-        } else {
-            p += setmean(p, ((c << 8) | s[1]) & 0xFFFF, kind);
-            s += 2;
+    h = &hchar[pos];
+    for (b = h->bs; b != 0; b = b->next) {
+        b->x0A = 0;
+        pw = b->pw;
+        if (pw != 0 && pw->x02 == 0x19 && pw->x00 == 0) {
+            b->x0A = 0xA;
         }
     }
-    return p - out;
 }
 
-int to_ucode(int x)
+void bs_ctd(BS *b, int pos, int end)
 {
-    int c;
+    BS *n;
+    int pt;
+    int p;
+    int len;
 
-    c = x & 0xFFFF;
-    if (c > 0x20 && c < 0x7F) {
-        return 0;
+    len = b->len;
+    if (b->x02 == 0xFF || (p = pos + len) >= end) {
+        return;
     }
-    switch (c & 0xFF00) {
-    case 0x2300:
-        return c & 0x7F;
-    case 0x2400:
-        return ((c & 0x7F) | 0x80) & 0xFF;
-    case 0x2500:
-        return 0;
-    default:
-        return srch_ucode(x);
+    n = hchar[p].bs;
+    if (n == 0) {
+        return;
+    }
+    while (n != 0) {
+        n->x0A = 0;
+        if (ignore_syn(n) == 0) {
+            pt = setu_point(b, n);
+            if (pt > 0) {
+                n->x0A = pt;
+            }
+        }
+        n = n->next;
     }
 }
 
-int is_kata(c, flag)
-u16 c;
-int flag;
+int ignore_syn(BS *b)
 {
-    if (flag != 0 && c == 0x213C) {
+    PW *pw;
+
+    pw = b->pw;
+    if (pw != 0 && (pw->x02 == 0x28 || pw->x02 == 0x29)) {
         return 1;
-    }
-    if ((c & 0xFF00) == 0x2500) {
-        return 1;
-    }
-    return 0;
-}
-
-int is_jisknj(int c)
-{
-    return (c & 0xFFFF) >= 0x3020;
-}
-
-int is_jiskig(int x)
-{
-    int c;
-
-    c = x & 0xFFFF;
-    if (c >= 0x2120 && c < 0x3020) {
-        return is_kata(x, 0) ? 0 : 1;
     }
     return 0;
 }

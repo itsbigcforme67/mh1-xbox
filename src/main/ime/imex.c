@@ -469,223 +469,100 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int kstrncpy(u8 *dst, u8 *src, int n)
-{
-    int total;
-    int c;
-
-    total = n;
-    while ((c = *src) && n > 0) {
-        if (is_kanji(c) != 0) {
-            if (n <= 1) {
-                break;
-            }
-            n--;
-            *dst++ = *src++;
-        }
-        n--;
-        *dst++ = *src++;
-    }
-    *dst = 0;
-    return total - n;
-}
-
-KH *raw_kouho(int pos, int len, int mode)
-{
-    KH *out;
-    int cnt;
-    u8 *w;
-
-    w = (u8 *)wdsbuf;
-    *(u16 *)w = 0xFFFF;
-    ((u16 *)w)[1] = 0;
-    w[4] = 0;
-    trans_roman(w + 5, pos, len, mode);
-    return create_kouho(w, 0, len, &out, &cnt);
-}
-
-void khmem_raw(mode)
-int mode;
-{
-    HCHAR *h;
-
-    h = &hchar[cur_pos];
-    free_khmemlist(h->kh);
-    h->kh = raw_kouho(cur_pos, cur_len, mode);
-}
-
-void kh_mergesort(int pos, KL *list)
-{
-    KH *head;
-    KH *tail;
-    KH *k;
-    HCHAR *h;
-
-    h = &hchar[pos];
-    head = h->kh;
-    tail = kh_endof(head);
-    kh_append_init(pos, head);
-    while ((k = (KH *)kh_merge_getone(list)) != 0) {
-        kh_append(pos, &head, &tail, k);
-    }
-    if ((k = null_kouho(cur_len)) != 0) {
-        kh_append(pos, &head, &tail, k);
-    }
-    h->kh = head;
-}
-
-int kh_merge_getone(KL *list)
-{
-    int best;
-    KH *r;
-    KL *sel;
-    KL *l;
-
-    best = 0;
-    sel = 0;
-    for (l = list; l != 0; l = l->next) {
-        if (l->kh != 0 && (sel == 0 || (u16)l->pri > (u16)best)) {
-            best = l->pri;
-            sel = l;
-        }
-    }
-    if (sel == 0) {
-        return 0;
-    }
-    r = sel->kh;
-    sel->kh = kh_skip(r, best);
-    sel->pri = (sel->kh == 0) ? 0 : (kh_priority(sel->bs, sel->kh->x0E) & 0xFFFF);
-    return (int)r;
-}
-
-void kh_append_init(int pos, KH *k)
-{
-    int n;
-
-    e_khstr = (u8 *)wdsbuf;
-    while (k != 0) {
-        n = meantosjis(meanbuf, e_khstr + 1, kouho_makedisp(pos, cur_len, k, meanbuf));
-        *e_khstr = n;
-        e_khstr++;
-        e_khstr += n;
-        k = kh_followed(k);
-    }
-}
-
-void kh_append(pos, head, tail, k)
-int pos;
-KH **head;
-KH **tail;
-KH *k;
-{
-    int n;
-
-    n = meantosjis(meanbuf, outbuf, kouho_makedisp(pos, cur_len, k, meanbuf));
-    if (exist_kouho(outbuf, n) != 0) {
-        free_khmemlist(k);
-        return;
-    }
-    if ((u32)(e_khstr + n + 1) <= (u32)mem) {
-        *e_khstr = n;
-        e_khstr++;
-        strncpy(e_khstr, outbuf, n);
-        e_khstr += n;
-    }
-    if (*head == 0) {
-        *tail = k;
-        *head = k;
-    } else {
-        (*tail)->next = k;
-    }
-    *tail = kh_endof(k);
-}
-
-static int exist_kouho(u8 *s, int n)
+void init_univmem(void)
 {
     u8 *p;
-    int len;
 
-    for (p = (u8 *)wdsbuf; p < e_khstr;) {
-        len = *p;
-        p++;
-        if (len == n && ask_strncmp(p, s, len) == 0) {
-            return 1;
-        }
-        p += len;
+    free_univ = mem;
+    for (p = mem; p < mem + 0x11928; p += 0x18) {
+        *(u8 **)p = p + 0x18;
+    }
+    *(u8 **)p = 0;
+    first_init_5 = 0;
+}
+
+void *alloc_mem(void)
+{
+    void *r;
+
+    r = free_univ;
+    if (r == 0) {
+        return 0;
+    }
+    free_univ = *(void **)r;
+    return r;
+}
+
+void free_mem(void *p)
+{
+    if (p != 0) {
+        *(void **)p = free_univ;
+        free_univ = p;
+    }
+}
+
+CH *alloc_chmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
     return 0;
 }
 
-KH *kh_skip(KH *k)
+BS *alloc_bsmem(void)
 {
-    KH *r;
+    void *r;
 
-    while (k->flag & 1) {
-        k = k->next;
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
-    r = k->next;
-    k->next = 0;
-    return r;
+    return 0;
 }
 
-KH *kh_followed(KH *k)
+PWM *alloc_pwmem(void)
 {
-    while (k->flag & 1) {
-        k = k->next;
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
-    return k->next;
+    return 0;
 }
 
-KH *kh_endof(KH *k)
+KH *alloc_khmem(void)
 {
-    KH *n;
+    void *r;
 
-    if (k == 0) {
-        return 0;
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
-    for (;;) {
-        n = k->next;
-        if (n == 0) {
-            break;
-        }
-        k = n;
-    }
-    return k;
+    return 0;
 }
 
-int kh_count(KH *k)
+KL *alloc_klmem(void)
 {
-    int n;
+    void *r;
 
-    n = 0;
-    while (k != 0) {
-        k = kh_followed(k);
-        n++;
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
-    return n;
+    return 0;
 }
 
-int kh_length(KH *k)
+void free_pwmemlist(PWM *p)
 {
-    int n;
-    int len;
+    PWM *n;
 
-    if (k->flag == 0x80) {
-        return cur_len * 2;
+    while (p != 0) {
+        n = p->next;
+        free_mem(p);
+        p = n;
     }
-    n = (cur_len - k->x06) * 2;
-    while (k->flag & 1) {
-        len = strlen(k->str);
-        k = k->next;
-        n += len;
-    }
-    return n + strlen(k->str);
-}
-
-KH *take_kouho(KH *k, int n)
-{
-    while (n-- != 0) {
-        k = kh_followed(k);
-    }
-    return k;
 }
