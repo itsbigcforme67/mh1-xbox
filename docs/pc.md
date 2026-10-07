@@ -1621,6 +1621,25 @@ Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item
   Whether the PS2 really looks that dark is not verifiable here (no reference screenshots); the likely missing piece is the material ambient qword (vf30), which multiplies a zero ambient anyway, so it would not help stage 5.
   Hence the game lights stay opt-in (RT_LIGHT_GAME=1) until someone compares against a PS2 capture of stage 5.
 
+### Per-actor lighting, thunder, set lights (agent F, round 26; all under RT_LIGHT_GAME=1, default unchanged)
+- Per actor (src/pc/rt/rt_light.c, `rt_light_get`): before the host poses a hunter or NPC it runs the game's own steps, as PC copies in src/main/model/light_nm.c (PICK_X): `pl_light_change` (colour rows: stage rows;
+  pl_light_tbl2 rows when work+0x613 is set on stages 12/13/14/28/30 (all three lights get the same row); the actor's own rows at work+0x710 for lights 0 and 1) and `Pl_light_set` (new near-match copy
+  from the asm: eases each light colour toward the colour it had last time, stored at work+0x578 as 0xFFRRGGBB, new = target + (block - target) / 5, then flSetRenderState(0x5A+i)). rt_fl.c keeps what it got in `rt_light_blk`;
+  light_change_normal(1) restores the stage rows afterwards, like the end of the hunter's trans. Monsters and set objects get set 1 as the stage rows leave it: nothing in the game calls pl_light_change for a monster body
+  (only eft09, the NPC draw, the hunter draw). The 0x710 ground table of hunters is computed in rt_light.c (GetPlayerDiffuseData logic; the PC stubs GetPlayerMaterialData). The weapon uses the hunter's light.
+- `light_move` was never called by the PC outside the village: sim_tick stands in for game_core (where f_frame_nm.c calls it), so light 2 of set 1 (turned with the view matrix) never moved. It is now called in sim_tick.
+- Thunder: no game code ever starts flash_move. light_work set + 0x10/0x11 (state, run flag) are written by nothing in the C or asm (searched all of src/ and asm/ for light_work); light_tbl (the data flash_move blends toward) is the old
+  stage-1 light01 set. The flash_flag / flash_timer pair in f_stage.c is a different thing (screen flash of the sun glare, set by eft14 type 5). So there is no storm stage that uses it: dead code in the shipped game. Test aid `RT_LIGHT_FLASH=N`
+  starts it every N ticks (--stage shots run ~45 game ticks in 90 frames, so N=40): visible as a brighter hunter for about 30 ticks.
+- Set 0 / set objects: trans_stage calls light_set(0) for the area model only; set objects are drawn in trans_set after light_set(1), i.e. set 1. Sweep of all 88 stages (RT_LIGHT_TRACE=2 prints each part's attr +0x14 lighting type): every area part has type 0 (unlit);
+  the only lit parts are set-model parts of stages 5, 16, 25, 40, 41 (type 2, family 1). So set 0 is unused for lit geometry. Lighting those set parts would need per-instance world normals (the host draws them unlit, vertex colours): NOT done.
+- Material qwords (RT_LIGHT_TRACE=3 lists them): diffuse colour B (mat+0x04, the vf29 qword) is 1.0 in every model checked (hunter, Rathian, NPCs, weapons), so the light colours need no factor. The ambient qword A (mat+0x24) is 0.5 everywhere.
+  PS2SHADER_ADD_LIGHTCOL3 (decoded again): mem15 = min(sum of c rows * AMB, AMB), AMB = the model's mat+0x24 = 0.5; Vu1Code_0001 then multiplies it by A and adds it to a colour whose 1.0 is 128, so the literal ambient is about 0.002: a nearly black shadow side.
+  `RT_LIGHT_VU=1` applies that literal formula (hunter from behind on stage 4 goes almost black). I do not believe the actors really use family 0001 (their parts carry no attribute chunk; the family comes from the render state, which Pl_light_set's flSetRenderState(1,1) clears
+  to 0 in flrs07), so the default of RT_LIGHT_GAME stays ambient = sum of c rows. Unverified either way.
+- Shots (build/show/light/, game camera, no --follow, 960x540, before = fixed light, after = RT_LIGHT_GAME=1): stage 4 almost identical (key light 1.0 plus ambient 0.6 saturates a lot); stage 5 hunter darker (no ambient row); stages 13 and 28 slightly bluer/brighter with a cool
+  tint, light 2 now follows the camera; Rathian in the stage 40 cave a bit darker and greyer; flash: hunter brighter. Monster shots are not tick-identical (different game timing), so only the overall tint is comparable.
+
 Findings of the second pass (agent D, 7 Oct 2026)
 - **161 / 165 "18 of 20"**: the missing monsters are the second wave. Condition program op 32 (`quest_w.x3A = a`, "32/1/0/0" right after
   the "10 left" message) switches the quest to monster-list variant 1 (Em_data_st_adrs_get's last argument); Quest_next_em_set spawns
