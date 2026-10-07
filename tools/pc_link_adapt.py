@@ -23,14 +23,16 @@ again when its header changed. Standard library only.
 import os, subprocess, sys
 
 def nm_defs(objs, nm):
-    """symbol -> object for strong global definitions (first wins)"""
+    """symbol -> [objects defining it, in link order] (W/V count too: an
+    object compiled with an earlier header shows its weak ones)"""
     out = {}
     for o in objs:
         r = subprocess.run([nm, '--defined-only', '-g', o], capture_output=True, text=True).stdout
         for l in r.splitlines():
             p = l.split()
-            if len(p) == 3 and p[1] in 'TDBRCGS':
-                out.setdefault(p[2].lstrip('_') if nm_prefix else p[2], o)
+            if len(p) == 3 and p[1] in 'TDBRCGSWV':
+                n = p[2][1:] if nm_prefix and p[2].startswith('_') else p[2]
+                out.setdefault(n, []).append(o)
     return out
 
 nm_prefix = False
@@ -51,14 +53,32 @@ def main():
             a = (p[1], p[2], int(p[3], 0))
             if a not in alias:
                 alias.append(a)
-    objs = sorted(set(os.path.join('build/pc', f) for f in os.listdir('build/pc') if f.endswith('.o')))
-    defs = nm_defs(objs, nm) if alias else {}
+    if os.path.exists('build/pc/objs.txt'):         # link order (tools/build_pc.sh)
+        objs = [l.strip() for l in open('build/pc/objs.txt') if l.strip()]
+    else:
+        objs = sorted(set(os.path.join('build/pc', f) for f in os.listdir('build/pc') if f.endswith('.o')))
+    defs = nm_defs(objs, nm)
+    # a symbol every definer of which was asked to be weak: the first one in
+    # link order stays strong (what GNU ld picks anyway; lld-link refuses two
+    # weak definitions without a strong one)
+    req_by = {}
+    for o, syms in weak.items():
+        for sym in syms:
+            req_by.setdefault(sym, []).append(o)
+    for sym, os_ in req_by.items():
+        if any(o not in os_ for o in defs.get(sym, [])):
+            continue                                 # a strong definition exists elsewhere
+        firsts = [o for o in objs if o in os_]
+        if firsts:
+            weak[firsts[0]].discard(sym)
     hdr = {}
     for o, syms in weak.items():
         hdr.setdefault(o, []).extend('#pragma weak %s' % s for s in sorted(syms))
     missing = 0
     for s, t, off in alias:
-        o = defs.get(t)
+        cand = defs.get(t, [])
+        strong = [o for o in cand if t not in weak.get(o, ())]
+        o = (strong or cand or [None])[0]
         if not o:
             if '--lenient' not in sys.argv:     # first pass: the generated tables may not exist yet
                 print('pc_link_adapt: no definition of %s for alias %s' % (t, s), file=sys.stderr)

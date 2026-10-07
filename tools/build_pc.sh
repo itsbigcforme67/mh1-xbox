@@ -429,6 +429,8 @@ for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_p
     cc_obj $f "$CC $CFLAGS $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o"
     OBJS="$OBJS build/pc/$f.o"
 done
+# the objects in link order (pc_link_adapt.py, tools/build_xbox.py)
+echo $OBJS build/pc/rt_gen.o | tr ' ' '\n' | grep -v '^$' > build/pc/objs.txt
 # weak definitions and the fixed aliases (tools/pc_link_adapt.py)
 for a in $ALIASES; do
     t=${a#*=}; case "$t" in *+*) off=${t#*+}; t=${t%%+*} ;; *) off=0 ;; esac

@@ -20,6 +20,9 @@
 #include "rt/rt_memstat.h"
 #include <stdlib.h>
 #include <string.h>
+#ifdef XBOX
+#include <nxdk/mount.h>
+#endif
 
 /* ------------------------------------------------------------ data */
 static fmt_afs afs;
@@ -1050,8 +1053,28 @@ int main(int argc, char **argv)
             follow_given = sscanf(argv[++i], "%f,%f,%f", &follow[0], &follow[1], &follow[2]) > 0;
         else if (argv[i][0] != '-') disc = argv[i];
     }
+#ifdef XBOX
+    /* Xbox (tools/build_xbox.py): no command line. Boot the game from
+     * power-on with the player's own disc files next to the XBE (D:\data)
+     * or on the hard disk (E:\Games\MH1\data, docs/xbox.md). */
     if (!disc) {
-        fprintf(stderr, "usage: %s DISC_DIR [--shot out.png] [--frames N] [--time S] "
+        static const char *dirs[] = { "D:\\data", "E:\\Games\\MH1\\data" };
+        FILE *t;
+        int d;
+        nxMountDrive('E', "\\Device\\Harddisk0\\Partition1\\");
+        for (d = 0; d < 2 && !disc; d++) {
+            snprintf(path, sizeof path, "%s\\AFS_DATA.AFS", dirs[d]);
+            if ((t = fopen(path, "rb")) != NULL) {
+                fclose(t);
+                disc = dirs[d];
+            }
+        }
+        boot = 1;
+        play = 1;
+    }
+#endif
+    if (!disc) {
+        fprintf(stderr, "usage:%s DISC_DIR [--shot out.png] [--frames N] [--time S] "
                 "[--size WxH] [--cam x,y,z,yaw,pitch] [--stage N] [--play] [--input SCRIPT]\n", argv[0]);
         return 1;
     }
