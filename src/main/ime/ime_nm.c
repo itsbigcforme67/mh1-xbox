@@ -2940,7 +2940,7 @@ NODE **found;
     }
     *found = n;
     if (prev == 0) {
-        return &hash_tab[h & 0xFFFF];
+        return &hash_tab[(u32)h];
     }
     return &prev->next;
 }
@@ -5493,7 +5493,7 @@ int setu_point(BS *b, BS *n)
             if (t == 0x28) {
                 return 0;
             }
-            if (t == 0x29 || (t == 0x19 && p->x00 > 0) || (t == 0x1F && p->id == 0xFFFFFFFF)) {
+            if (t == 0x29 || (t == 0x19 && p->x00 > 0) || (t == 0x1F && p->id == -1)) {
                 pt += 0x14;
             }
         }
