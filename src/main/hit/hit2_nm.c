@@ -506,6 +506,7 @@ u8 hit_cap_cap2_m(HPK *k1, HPK *k2, f32 *out) {
     default:
         return 0;
     }
+    return 0;
 }
 
 static void hit_cap_cap2_sub(f32 *a, f32 *v, f32 *out, f32 len, f32 r) {
@@ -1124,6 +1125,7 @@ u8 hit_cap_cap3_m(HPK *k1, HPK *k2, f32 *out) {
     default:
         return 0;
     }
+    return 0;
 }
 
 static void hit_cap_cap3_sub(f32 *v, f32 *out, f32 r, f32 d) {

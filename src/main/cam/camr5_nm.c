@@ -179,6 +179,7 @@ u8 hit_sphr_sphr3(f32 *, f32 *, f32 *, f32, f32);
         (a) -= (b);                                 \
     }
 
+u8 hit_cap_sphr_m(HPK *, f32 *, f32 *, f32); /* was implicit: the radius went as a double */
 void k_HitEmCamera(f32 *cam) {
     HBODY *body;
     HCAP cap;

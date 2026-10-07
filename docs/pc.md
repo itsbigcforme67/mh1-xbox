@@ -1497,3 +1497,62 @@ Findings of the second pass (agent D, 7 Oct 2026)
   "tick,kind,kind,..."), then per egg: RT_PL_GOTO2 ("tick,stage;..." timed goals) to the nest, warp + circle at the pick point
   (stage 40 (11400,12100) = item 145, stage 49 (9500,-109,11000) = item 146), goal = camp, warp to the box (spot kind 21), circle.
   Gather points: `RT_SPOT_TRACE` now lists the items each pick id gives.
+
+## Idiom sweep (agent D, 7 Oct 2026)
+
+Every object build_pc.sh compiles (the commands it records in
+build/pc/cmd/*.sh, 728 of them, including the patched/abs copies) was
+compiled again with `-w` replaced by -Wshift-count-overflow,
+-Wshift-count-negative, -Woverflow, -Wint-conversion,
+-Wincompatible-pointer-types, -Wreturn-type, -Wuninitialized,
+-Wimplicit-function-declaration, -Wpointer-to-int-cast,
+-Wint-to-pointer-cast and -Wdouble-promotion, plus `-aux-info` to list every
+implicit declaration against the real definitions. The game C is normally
+built with `-w`, so none of this was visible.
+
+Findings and fixes (PC-built copies only; no file registered in
+config/c_files.txt was touched):
+- `<< 0x38 >> 0x38` (s8 idiom) on a 32-bit value: only one file still had
+  it, src/lobby/b/nm/lb_process_drawHelp.c (2 calls of Lb_put_itemRare in the
+  forge/shop item detail: the rarity stars were always 0). Now `(s8)`.
+  Grep over every built source (also the abs/patch copies and include/) for
+  shifts of 32..63 finds nothing else; the u64 code in src/pc/audio is
+  real 64-bit arithmetic.
+- Float passed to a function with no prototype (gcc promotes it to a
+  double, so the callee reads the wrong 4 bytes and every later argument is
+  shifted). `-Wdouble-promotion` finds exactly these:
+  * src/main/omake/omake_nm.c `Disp_button();` called with 1.0f: the button
+    icons of the mode/extras menu got scale 0 and a wrong kind. Prototype added.
+  * src/main/eft/eft13_nm.c `flvecRotY(v, angle)` implicit (the angle went as
+    a double): effect directions of eft13 (shell/chr-relative offsets) wrong.
+    Prototype added.
+  * src/main/cam/camr5_nm.c `hit_cap_sphr_m(..., radius)` implicit, radius as a
+    double: the game camera's push-out against capsule hit bodies used a
+    garbage radius. Prototype added.
+- `(u8)Skill_name[i]`, a pointer cut to 8 bits (src/lobby/f/lb_aa.c, the
+  hunter status screen's skill list; -Wpointer-to-int-cast). Cast removed.
+- Missing `return` at the end of a function whose switch falls out
+  (hit_cap_cap2_m / hit_cap_cap3_m in hit2_nm.c, BsParseCheck, lb_process_select):
+  `return 0;` added (the inner switches always return, so this only guards
+  out-of-range values). Left alone: Lb_menu_move_Core, lb_tu_ib's
+  ItemboxWindowCursorX / item_explanation / kosuu_disp_sub /
+  selling_price_disp_sub and lbui_nm's Draw_menu_square are int by m2c's
+  default but their results are not used.
+- Lb_chat_receipt called Lb_get_plID() without its argument (a0 left over
+  on the PS2): tools/pc_patch.py now passes msg (online play only).
+- Implicit calls (about 580 names, mostly the generated stand-ins and
+  lobby helpers): none returns a float or a 64-bit value and none takes a
+  non-pointer float argument other than the ones fixed above. Functions that
+  return u8/s8/u16/s16 and are called through an implicit `int` prototype
+  work with this gcc (checked in the object code: the value is always
+  extended before ret).
+- Not fixed, noted: chat_nm.c slash_level_bar stores `0x40A00000` (5.0f bits,
+  m2c) into an s16: it becomes 0 (what an `sh` of that word does on the
+  PS2 too). hk_all.c/sk_all.c declare `flfntLocate(f32, int)` while the
+  function takes ints; the keyboard letters draw correctly (checked in
+  build/show/name/keyboard.png), only the hard-keyboard text cursor path
+  could be off. 186 -Wmaybe-uninitialized warnings were not triaged
+  (-ftrivial-auto-var-init=zero hides them).
+- 64-bit `long`: the only uses are `long int` return types and the u64/s64
+  fields the code does want (32-bit gcc: long is 32 bits like the PS2's int,
+  long long is 64).

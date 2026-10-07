@@ -99,4 +99,5 @@ s32 lb_process_select(void) {
     default:
         return 0;
     }
+    return 0;
 }

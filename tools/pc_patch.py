@@ -108,6 +108,8 @@ PATCHES = {
     # a K&R block-scope redeclaration gcc rejects (lobby_f.h has the prototype)
     "src/lobby/f/lb_a.c": [
         ("    LBTRADE2 t;\n    void Ud_item_stack(u16, int);\n", "    LBTRADE2 t;\n"),
+        # Lb_chat_receipt: Lb_get_plID(mac) gets msg (a0 left over)
+        ("    Chat_log_add(Lb_get_plID() & 0xFF, msg);", "    Chat_log_add(Lb_get_plID(msg) & 0xFF, msg);"),
     ],
     # lb_menu_item_mv / lb_menu_mix_mv pass Lb_menu_move_Core's pad (a0) on
     "src/lobby/b/lb_bz17.c": [
