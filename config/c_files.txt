@@ -1526,16 +1526,10 @@ lobby 0x005931B0 0x00593360 b/lb_by41
 lobby 0x00593A70 0x00593B78 b/lb_by42
 lobby 0x00537BA0 0x00537C0C b/lb_by43
 lobby 0x00537C10 0x00539A90 f/lb_sh1a
-lobby 0x0053CA20 0x0053CAA4 b/lb_by45
-lobby 0x0053D220 0x0053D228 b/lb_by46
+lobby 0x0053C520 0x0053D7CC f/lb_arm
 lobby 0x00539E40 0x0053AB50 f/lb_sh1b
 lobby 0x0053AB50 0x0053C23C f/lb_sh1c
-lobby 0x0053CC30 0x0053CD44 b/lb_by50
 lobby 0x00537AD0 0x00537B98 b/lb_by51
-lobby 0x0053CBF0 0x0053CC30 b/lb_by57
-lobby 0x0053D230 0x0053D280 b/lb_by58
-lobby 0x0053D3D0 0x0053D444 b/lb_by59
-lobby 0x0053D720 0x0053D758 b/lb_by60
 main 0x00131FB0 0x00132160 menu/menu37
 main 0x0012B5A0 0x0012B688 menu/menu38
 main 0x00152BC0 0x00152D48 pl/pl_itemck
@@ -1742,7 +1736,6 @@ main 0x00216890 0x0021691C flfnt/flfnt02
 main 0x00216AC0 0x00216DD4 flfnt/flfnt03
 main 0x00217480 0x00217544 flfnt/flfnt04
 main 0x00217DE0 0x00217E48 flfnt/flfnt05
-lobby 0x0053D760 0x0053D7CC b/lb_by62
 lobby 0x005B69E0 0x005B6A5C b/lb_by63
 lobby:rodata 0x0065EA20 0x0065EA38 f/lb_cli
 lobby 0x005C44A0 0x005C45B0 b/lb_by71
@@ -1751,9 +1744,6 @@ lobby:rodata 0x0065EA00 0x0065EA18 f/lb_cli
 lobby:rodata 0x00655530 0x00655550 f/lb_sh1a
 lobby 0x005AFB00 0x005AFC8C b/lb_by79
 lobby 0x0053C240 0x0053C518 b/lbarm01
-lobby 0x0053C520 0x0053C610 b/lb_by82
-lobby 0x0053CAB0 0x0053CBEC b/lb_by83
-lobby 0x0053CD50 0x0053CF5C b/lb_by84
 lobby 0x005B2270 0x005B2314 b/lb_by85
 lobby 0x005B4980 0x005B4B1C b/lb_by86
 lobby:rodata 0x0065E720 0x0065E760 b/lb_by86
@@ -1909,10 +1899,7 @@ lobby:rodata 0x0065B920 0x0065B944 f/lb_ui
 lobby:rodata 0x0065DA50 0x0065DAFC lb/lbuif
 lobby:rodata 0x00654D80 0x00654DA4 lb/lbshp
 lobby 0x0059D890 0x0059DA34 b/lb_by124
-lobby 0x0053D280 0x0053D3C8 b/lb_by126
 lobby 0x005C4660 0x005C488C b/lb_by127
-lobby 0x0053C7F0 0x0053CA14 b/lb_by128
-lobby 0x0053C610 0x0053C7EC b/lb_by129
 lobby:rodata 0x00655570 0x0065558C f/lb_sh1b
 lobby:rodata 0x00655590 0x006555AC f/lb_sh1c
 lobby 0x005B0BA0 0x005B0CDC b/lb_by132
@@ -2018,8 +2005,6 @@ lobby 0x005CF1C0 0x005CF5F8 f/lb_fz05
 lobby:rodata 0x00664CE0 0x00664D50 f/lb_tu_act
 main 0x001337A0 0x001338D8 menu/menu41
 lobby 0x005AF2C0 0x005AF42C b/lb_by159
-lobby 0x0053D450 0x0053D718 b/lb_by162
-lobby 0x0053CF60 0x0053D220 b/lb_by163
 lobby 0x00539A90 0x00539E34 b/lb_by164
 lobby 0x0059AE60 0x0059B638 b/lb_by166
 lobby 0x005C3500 0x005C38C8 b/lb_by167

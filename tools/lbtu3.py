@@ -15,7 +15,7 @@ for l in open('config/symbols/lobby.txt'):
         symaddr[m.group(1)] = int(m.group(2), 16)
         m2 = re.search(r'type:func size:0x([0-9A-Fa-f]+)', m.group(3))
         if m2: syms[int(m.group(2), 16)] = (int(m2.group(1), 16), m.group(1))
-for l in open('config/symbols/main.txt'):
+for l in list(open('config/symbols/main.txt')) + list(open('config/lobby_undefined_syms_auto.txt')):
     m = re.match(r'(\S+)\s*=\s*0x([0-9A-Fa-f]+)', l)
     if m: symaddr.setdefault(m.group(1), int(m.group(2), 16))
 runs = []
