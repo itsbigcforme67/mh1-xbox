@@ -102,7 +102,6 @@ main 0x00273B50 0xC8 Get_bowgun_atk
 main 0x00274690 0x74 Gun_level_up
 main 0x00274760 0x54 Gun_option_ck
 lobby 0x00597640 0x4C4 Plaza_add_friend
-lobby 0x00597DA0 0x898 plaza_mailBox
 main 0x18DB30 0x31C plmemRegisterS
 main 0x18DFE0 0x1D0 plmemCompact
 main 0x18E280 0x128 plmemAppendBlockList mn
