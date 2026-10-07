@@ -354,8 +354,9 @@ save file could be copied over (not tried). On disk:
 The card path BISLPM-65495MH/... maps to the save id directory and back in listings;
 the two .xbx files are hidden from the game's directory listings. Title id, names and
 save id are constants in src/pc/xbox/xbox_title.h (placeholder id 0x4D480001 "MH1X"; the
-XBE certificate's title id must be set to the same value, which the build does not do
-yet; the owner may supply a real one). Free space is reported as 8000 KB minus the
+XBE certificate's title id is set to the same value by tools/build_xbox.py (cxbe always
+writes 0xFFFF0002, so the build patches the certificate in default.xbe from xbox_title.h
+after cxbe; the title name "Monster Hunter" goes in through cxbe's -TITLE); the owner may supply a real id). Free space is reported as 8000 KB minus the
 files, as on the PC.
 Untested: everything (no hardware / xemu run). In particular the .xbx meta layout is from
 memory of the dashboard format (UTF-16LE text with a BOM), the dashboard icon images
@@ -389,3 +390,53 @@ White and black are small buttons and R1 (guard) is used a lot in a fight; if th
 bad on hardware, swap to BLACK = camera and RT = guard in pad_sdl.c (not decided
 without hardware). A Controller S (Xbox 360-style button order) report is covered by the
 same mapping through SDL's own names.
+
+
+## XBE identity and save icons (agent B, 9 Oct 2026)
+
+build_xbox.py reads XBOX_TITLE_ID / XBOX_TITLE_NAME from src/pc/xbox/xbox_title.h, passes the name
+to cxbe (-TITLE) and patches the title id into the certificate of default.xbe (header base address
+at 0x104, certificate address at 0x118, id at certificate +8); it prints "XBE certificate: title
+id 4D480001, title name ...". Checked by reading the XBE back. The XBE is unsigned (cxbe does not
+sign); xemu and softmodded consoles do not check.
+
+Save icons (SaveImage.xbx, TitleImage.xbx) are NOT done. What is needed: the dashboard shows a
+64x64 (SaveImage) / 128x128 (TitleImage) picture stored as an XPR0 container holding one swizzled
+DXT1 texture; the exact XPR0 header fields (resource table, data offset, D3D texture header for
+that size/format), the swizzle and whether the dashboard wants a particular mip layout were not
+verified without a console or the dashboard, and a wrong file may just show no icon (or worse,
+confuse the memory manager), so it is skipped. Source of the picture would be the game's own PS2
+save icon (icon00.ico, which mc_file_tbl / the game's save code builds from its data: a 128x128
+texture), converted at run time and written next to SaveMeta.xbx / TitleMeta.xbx, never committed.
+When someone can look at a real dashboard (or xemu with the owner's dashboard HDD), a reference
+SaveImage.xbx from any homebrew save gives the exact header to copy.
+
+## Running in xemu (prepared, not run; waiting for the owner's files)
+
+xemu 0.8.136 (open source, github.com/xemu-project/xemu) is in ~/xboxdev/xemu (outside the repo;
+x86_64 AppImage; it starts on this machine). It needs files only the owner can supply, none of
+which we download or commit:
+
+- `xbox_files/mcpx.bin`: MCPX boot ROM dump (512 bytes, "mcpx_1.0.bin"),
+- `xbox_files/bios.bin`: BIOS (flash ROM) dump, 256 KB to 1 MB,
+- `xbox_files/hdd.img`: raw HDD image. Optional: tools/run_xemu.sh makes a blank sparse 8 GB one;
+  whether the kernel formats it on first boot is untested. A formatted image (E: with room for
+  E:\UDATA) is what saving needs.
+
+`xbox_files/` is gitignored. Then:
+
+    tools/run_xemu.sh                          # boots build/xbox/mh1.iso (XBE only)
+    tools/run_xemu.sh --data ~/path/to/disc/mh1  # ISO with the owner's files as D:\data (~925 MB, local)
+    tools/run_xemu.sh --gfx nv2a               # build/xbox/nv2a/ instead of the null-graphics build
+    tools/run_xemu.sh --shot out.png --after 90   # screenshot after 90 s, then quit
+
+The script writes xemu's config (BIOS, MCPX, HDD, DVD paths) into xbox_files/xemu_home/ (it sets
+XDG_DATA_HOME, so ~/.local/share/xemu is not touched), starts xemu, and for --shot drives it over
+a QMP socket. xemu 0.8.136's QMP has no `screendump`, so the screenshot falls back to ffmpeg
+x11grab of the whole display: xemu always opens a window (no headless mode, and Xvfb is not
+installed here), so this needs the desktop and shows everything on screen. Checked here: the script
+runs end to end with dummy 512-byte / 256 KB ROM files (xemu starts, rejects the dummy BIOS, the
+screenshot fallback and the clean-up of xemu's processes work); nothing with real files.
+Untested: real boot, the --data ISO build (extract-xiso on a 925 MB tree), HDD formatting, the
+nv2a build. The first things to look for: the BIOS logo, then our XBE starting (title screen from
+power-on, docs above), "free memory" lines, the E:\UDATA\4D480001 folder appearing after a save.

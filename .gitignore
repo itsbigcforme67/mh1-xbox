@@ -31,3 +31,6 @@ config/*undefined_*_auto.txt
 tools/m2c/
 tools/permuter/
 tools/ps2recomp/
+
+# owner-supplied Xbox files for xemu (BIOS, MCPX ROM, HDD image): never committed
+xbox_files/
