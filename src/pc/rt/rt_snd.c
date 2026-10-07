@@ -51,7 +51,9 @@ static fmt_afs afs00, afs01;
 const fmt_afs *rt_snd_afs00(void) { return afs00.fp ? &afs00 : NULL; }
 static int snd_on;
 static int trace;
-static int se_cfg = 7, bgm_cfg = 7;     /* system_w+0x37 / +0x36: options volume 0..7 (7 = max) */
+extern uint8_t system_w[];
+#define bgm_cfg (system_w[0x36] & 7)   /* system_w+0x36 / +0x37: options volume 0..7 (7 = max) */
+#define se_cfg (system_w[0x37] & 7)
 
 /* ------------------------------------------------------------ ports */
 #define NPORT 16
@@ -60,9 +62,8 @@ static int se_cfg = 7, bgm_cfg = 7;     /* system_w+0x37 / +0x36: options volume
 typedef struct {
     int afs_idx;
     uint8_t *data;
-    snd_pack pk;
-    int16_t **pcm;          /* per VAG, decoded on first use */
-    int *len, *loop;
+    size_t size;
+    snd_pack pk;            /* samples stay PS2 ADPCM; the mixer decodes them while playing */
 } pack;
 
 typedef struct {
@@ -74,17 +75,9 @@ static port ports[NPORT];
 
 static void pack_free(pack *p)
 {
-    int i;
     if (!p->data)
         return;
-    for (i = 0; i < p->pk.nvagi; i++)
-        if (p->pcm[i]) {
-            audio_voice_stop_buffer(p->pcm[i], p->len[i]);
-            free(p->pcm[i]);
-        }
-    free(p->pcm);
-    free(p->len);
-    free(p->loop);
+    audio_voice_stop_buffer(p->data, p->size);
     free(p->data);
     memset(p, 0, sizeof *p);
 }
@@ -118,25 +111,21 @@ static int port_add(int n, int afs_idx)
         return -1;
     }
     p->afs_idx = afs_idx;
-    p->pcm = calloc(p->pk.nvagi, sizeof *p->pcm);
-    p->len = calloc(p->pk.nvagi, sizeof *p->len);
-    p->loop = calloc(p->pk.nvagi, sizeof *p->loop);
+    p->size = len;
     pt->n++;
     if (trace)
         printf("snd: port %d + %s\n", n, afs01.name[afs_idx]);
     return 0;
 }
 
-static const int16_t *vag_pcm(pack *p, int vag, int *len, int *loop, int *rate)
+/* a sample's ADPCM, its length and loop start (scanned from the block flags) */
+static const uint8_t *vag_adpcm(pack *p, int vag, int *len, int *loop, int *rate)
 {
     uint32_t off;
     if (fmt_snd_vag(&p->pk, vag, &off, rate) != 0)
         return NULL;
-    if (!p->pcm[vag])
-        p->pcm[vag] = fmt_vag_decode(p->pk.bd + off, p->pk.bd_size - off, &p->len[vag], &p->loop[vag]);
-    *len = p->len[vag];
-    *loop = p->loop[vag];
-    return p->pcm[vag];
+    fmt_vag_scan(p->pk.bd + off, p->pk.bd_size - off, len, loop);
+    return p->pk.bd + off;
 }
 
 /* ------------------------------------------------------------ the IOP side */
@@ -197,7 +186,7 @@ static void sdr_se(int chg, int key, int vol, int pan, int pitch, int id)
     snd_note nt;
     pack *pk = NULL;
     int i, prog, len, loop, rate;
-    const int16_t *pcm;
+    const uint8_t *pcm;
     float v, pa;
     rt_voice *r;
 
@@ -224,7 +213,7 @@ static void sdr_se(int chg, int key, int vol, int pan, int pitch, int id)
             printf("snd: port %d code 0x%02X prog %d note 0x%02X: no sample\n", pn, code, prog, e[3]);
         return;
     }
-    if (!(pcm = vag_pcm(pk, nt.vag, &len, &loop, &rate)) || len == 0)
+    if (!(pcm = vag_adpcm(pk, nt.vag, &len, &loop, &rate)) || len == 0)
         return;
     if (slot) {                                 /* same slot on the port: replace [guess] */
         for (i = 0; i < AUDIO_VOICES; i++)
@@ -236,7 +225,7 @@ static void sdr_se(int chg, int key, int vol, int pan, int pitch, int id)
     v = nt.vol * 0.9f;                          /* SE level under the streams [taste] */
     pa = nt.pan;
     r = rv_new();
-    r->voice = audio_voice_play(pcm, len, loop, rate, v * vol / 127.0f,
+    r->voice = audio_voice_play_vag(pcm, len, loop, rate, v * vol / 127.0f,
                                 fminf(1, fmaxf(-1, pa + pan_f(pan))), nt.ratio * pitch_f(pitch, &nt));
     r->port = pn;
     r->code = code;
@@ -491,6 +480,29 @@ void str_stop(int ch)
     strw[ch].ended = 0;
     audio_stream_clear(ch);
 }
+
+/* str_master_vol (0x100B40): the channels' maximum volume from the options (channel 0 BGM, 1 SE);
+ * update == 1 also applies it to the playing volume */
+void str_master_vol(int update)
+{
+    int i;
+    for (i = 0; i < 2; i++) {
+        strw[i].max = adx_cnfvol_tbl[i == 0 ? bgm_cfg : se_cfg];
+        if (update == 1)
+            str_volume(i, strw[i].max);
+    }
+}
+
+/* str_stop_all (0x100B10): str_init + str_master_vol(0) */
+void str_stop_all(void)
+{
+    str_stop(0);
+    str_stop(1);
+    str_master_vol(0);
+}
+
+/* str_outmode (0x100C70): 1 stereo, 0 monaural (ADXT_SetOutputMono(mode ^ 1) + flSndOutputMode) */
+void str_outmode(int mode) { audio_set_mono(mode == 0); }
 
 void str_pause(int ch, int on) { strw[ch].paused = on; }
 

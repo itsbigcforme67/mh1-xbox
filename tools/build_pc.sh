@@ -14,7 +14,7 @@ mkdir -p build/pc
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
     src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c \
-    src/pc/fmt/snd.c src/pc/movie/sfd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c"
+    src/pc/fmt/snd.c src/pc/movie/sfd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c src/pc/gfx/gfx_pal.c"
 RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_game.c src/pc/rt/rt_fl.c src/pc/rt/rt_overlay.c src/pc/rt/rt_main.c src/pc/rt/rt_eft.c src/pc/rt/rt_hit.c src/pc/rt/rt_cam.c"   # (listing only)
 # Decompiled game C run natively. set14_nm.c is the whole set14 file
 # (set14_trans is a near-match on the PS2 side, believed equivalent).
@@ -229,7 +229,7 @@ WEAK="$WEAK_EM mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage
 SK="src/main/item/item_nm.c src/main/tu/sk_all.c src/main/tu/hk_all.c src/main/sk/sk20.c src/main/sk/cmd_nm.c"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT $SK"
 # Stand-ins replaced by the game's own C (docs/pc.md "Stand-ins wired"): only the named functions are taken
-PICK_X="src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
+PICK_X="src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
 GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
 PICK_MAIN="$PICK_MAIN $PICK_X"
 
@@ -458,8 +458,11 @@ for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_p
     cc_obj $f "$CC $CFLAGS $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o"
     OBJS="$OBJS build/pc/$f.o"
 done
-# the objects in link order (pc_link_adapt.py, tools/build_xbox.py)
-echo $OBJS build/pc/rt_gen.o | tr ' ' '\n' | grep -v '^$' > build/pc/objs.txt
+# the objects in link order (pc_link_adapt.py, tools/build_xbox.py). rt_gen.o
+# is added only once this build has generated it: in the first pass the old
+# one is stale (and may have no recorded command yet), which made the first
+# pc_link_adapt run fail now and then.
+echo $OBJS | tr ' ' '\n' | grep -v '^$' > build/pc/objs.txt
 # weak definitions and the fixed aliases (tools/pc_link_adapt.py)
 for a in $ALIASES; do
     t=${a#*=}; case "$t" in *+*) off=${t#*+}; t=${t%%+*} ;; *) off=0 ;; esac
@@ -496,6 +499,7 @@ sort -u build/pc/undefined.txt build/pc/aliased.txt -o build/pc/undefined.txt
 comm -23 build/pc/defined.txt build/pc/aliased.txt > build/pc/defined.tmp && mv build/pc/defined.tmp build/pc/defined.txt
 python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
 cc_obj rt_gen "$CC $CFLAGS $SYS -w -c build/pc/rt_gen.c -o build/pc/rt_gen.o"
+echo build/pc/rt_gen.o >> build/pc/objs.txt
 # the generated D_xxxx aliases (gen_rt_auto.py writes them as --defsym lines)
 sed -n 's/^-Wl,--defsym,\([^=]*\)=\([^+]*\)+\?\(.*\)$/alias \1 \2 \3/p' build/pc/rt_gen.defsym | sed 's/ $/ 0/' >> $REQ
 python3 tools/pc_link_adapt.py $REQ || exit 1

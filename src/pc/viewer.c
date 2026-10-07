@@ -40,7 +40,18 @@ static fmt_blob load(const char *name, uint8_t **keep)
     }
     b.p = *keep;
     b.n = n;
+    if (getenv("RT_MEM_FILES"))
+        fprintf(stderr, "memstat: file %s %zu\n", name, n);
     return b;
+}
+
+/* A file whose contents fl_model_create has copied (geometry, skeleton,
+ * textures): not needed any more (memory: docs/xbox.md). Motion tables
+ * (*_tbl.bin) stay: the motion players read their keys in place. */
+static void drop(uint8_t **keep)
+{
+    free(*keep);
+    *keep = NULL;
 }
 
 /* File of a stage from one of the per-stage AFS index tables in main
@@ -121,6 +132,8 @@ static void load_eft_models(void)
             at[i] = part_attr(&eft_models[k], i);
         }
         rt_bind_eft_model(k, c, at, eft_models[k].npart);
+        drop(&eft_keep[2 * k]);
+        drop(&eft_keep[2 * k + 1]);
         if (eft_models[k].skel.nbone > 0)
             rt_bind_eft_skin(k, eft_models[k].skel.nbone, eft_skin);
         free(c);
@@ -330,6 +343,8 @@ static int monster_load(monster *e, const char *amh, const char *tex, const char
     ahi = fmt_link_entry(link, 1, FMT_LE);
     if (fl_model_create(&e->model, amo, ahi, tx, 1, FMT_LE) != 0 || fl_skel_create(&e->skel, ahi, FMT_LE) != 0)
         return -1;
+    drop(&e->mem[0]);
+    drop(&e->mem[1]);
     /* em tables: one bank per group, bank 2g (motion.md 3) */
     for (g = 0; g < 3; g++)
         if (tb.p)
@@ -410,6 +425,8 @@ static int hunter_load(hunter *h, const int *num, int legs_id, int upper_id)
             return -1;
         if (s == 0 && fl_skel_create(&h->master, ahi, FMT_LE) != 0)
             return -1;
+        drop(&h->mem[k - 2]);
+        drop(&h->mem[k - 1]);
         h->pw[s] = calloc(h->part[s].skel.nbone + 1, sizeof(flmat));
         h->ptmat[s] = tbl ? rt_ptr_at(0x3018F0 + 4 * (uint32_t)s) : NULL;   /* relocated by rt_import_data */
     }
@@ -468,8 +485,10 @@ static void hunter_relook(hunter *h, int sex, const int *num)
         fl_model_release(&h->part[s]);
         free(h->mem[2 * s]);
         free(h->mem[2 * s + 1]);
-        h->mem[2 * s] = m0;
-        h->mem[2 * s + 1] = m1;
+        h->mem[2 * s] = NULL;      /* copied by fl_model_create */
+        h->mem[2 * s + 1] = NULL;
+        free(m0);
+        free(m1);
         h->part[s] = nm;
         free(h->pw[s]);
         h->pw[s] = calloc(h->part[s].skel.nbone + 1, sizeof(flmat));
@@ -560,6 +579,55 @@ static fl_model stage, set;
 static monster rathian;
 static hunter pl;
 static fl_light light;
+extern unsigned char light_work[];
+
+/* The game's lights for the host's CPU lighting (docs/pc.md "Lighting"). light_work set 1 (light_work + 0x140: the
+ * hunter / monster / NPC set that Pl_light_set hands to flSetRenderState(0x5A..0x5C)) holds three light blocks of
+ * 0x68 bytes from +0x158: +0x04 colour rgb, +0x24 the ambient part of that light (the PS2 shader adds each light's
+ * ambient row), +0x34 direction the light travels (the shader negates it). light_init fills them from
+ * pl_light_tbl[stage], light_change_normal re-reads the stage rows, flash_move (thunder) blends the colours.
+ * Returns 0 when light_work is still empty (no stage lights yet): the caller keeps its default. */
+static int rt_light_from_game(fl_light *L)
+{
+    int i, k, any = 0;
+    float amb[3] = { 0, 0, 0 };
+    for (i = 0; i < 3; i++) {
+        const unsigned char *b = light_work + 0x158 + 0x68 * i;
+        float d[3], len;
+        memcpy(d, b + 0x34, sizeof d);
+        len = sqrtf(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
+        for (k = 0; k < 3; k++) {
+            float c, a;
+            memcpy(&c, b + 4 + 4 * k, 4);
+            memcpy(&a, b + 0x24 + 4 * k, 4);
+            L->dir[i][k] = len > 1e-6f ? d[k] / len : 0.0f;
+            L->col[i][k] = len > 1e-6f ? c : 0.0f;      /* an unused light has no direction row */
+            amb[k] += a;
+            any |= c != 0.0f || a != 0.0f;
+        }
+    }
+    if (!any)
+        return 0;
+    for (k = 0; k < 3; k++)
+        L->ambient[k] = amb[k];
+    return 1;
+}
+static fl_light light_game;          /* the game's stage lights (light_work), else the fixed default above */
+static const fl_light *light_cur(void)
+{
+    if (!getenv("RT_LIGHT_FIXED") && rt_light_from_game(&light_game)) {
+        static int shown;
+        if (getenv("RT_LIGHT_TRACE") && shown++ % 600 == 0) {
+            int i;
+            for (i = 0; i < 3; i++)
+                fprintf(stderr, "light %d dir %.2f %.2f %.2f col %.2f %.2f %.2f\n", i, light_game.dir[i][0], light_game.dir[i][1],
+                        light_game.dir[i][2], light_game.col[i][0], light_game.col[i][1], light_game.col[i][2]);
+            fprintf(stderr, "light ambient %.2f %.2f %.2f\n", light_game.ambient[0], light_game.ambient[1], light_game.ambient[2]);
+        }
+        return &light_game;
+    }
+    return &light;
+}
 static const int parts[HUNTER_PARTS] = { 1, 0, 1, 1, 1, 1 };
 static float hx = 10900, hz = 7700, rx = 10000, rz = 6700, gy;
 static Uint32 t0;
@@ -627,7 +695,7 @@ static void ed_hunter_draw(void *arg)
     }
     rt_player_get(no, p, &a);
     place(h->world, p[0], p[1], p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
-    hunter_pose(h, 0, &light);
+    hunter_pose(h, 0, light_cur());
     rt_cam_view(eye, tar, &roll, &fov);
     lookat_world(camw, eye, tar);
     flmat_invert_affine(view, camw);
@@ -678,6 +746,8 @@ static int load_stage_models(int st)
     if (set_link.p)
         fl_model_create(&set, fmt_link_entry(set_link, 0, FMT_LE), fmt_link_entry(set_link, 1, FMT_LE),
                         set_tex, 0, FMT_LE);
+    for (k = 0; k < 4; k++)
+        drop(&keep[k]);
     {                           /* the area model to the game C (stage_work.mdl) */
         gfx_clay *c[64];
         uint32_t at[64];
@@ -697,6 +767,14 @@ static int load_stage_models(int st)
             at[k] = part_attr(&set, k);
         }
         set_h0 = rt_bind_set_model(c, at, nc);
+    }
+    {                           /* the stage's light rows into light_work (init_light_work in the game's stage change) */
+        extern unsigned char game_w[];
+        extern void light_init(void);
+        unsigned char old = game_w[0x14];
+        game_w[0x14] = (unsigned char)st;
+        light_init();
+        game_w[0x14] = old;
     }
     if (reload) {
         fl_model_release(&old_stage);
@@ -765,7 +843,7 @@ static void sim_tick(void)
     }
     if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
         sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
-        monsters_sync(0, &light);
+        monsters_sync(0, light_cur());
         rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
     }
     if (ticks >= 2 && !getenv("RT_EM_STANDIN")) {
@@ -928,6 +1006,8 @@ static void npc_model_load(int slot, int amh, int tex)
         return;
     }
     npc_have[slot] = 1;
+    drop(&e->mem[0]);
+    drop(&e->mem[1]);
     if (getenv("RT_QUEST_TRACE"))
         fprintf(stderr, "village: npc model %d = %s, %d parts, %d bones\n", slot, afs.name[amh], e->model.npart, e->skel.skel.nbone);
 }
@@ -1031,6 +1111,8 @@ static void mem_tick(int t)
         if (atoi(m) == t) {
             snprintf(where, sizeof where, "tick %d", t);
             rt_ms_report(where);
+            rt_area_report();
+            rt_stack_report(where);
         }
         while (*m && *m != ',')
             m++;
@@ -1041,6 +1123,7 @@ static void mem_tick(int t)
 
 int main(int argc, char **argv)
 {
+    rt_stack_paint();
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shot") && i + 1 < argc) shot = argv[++i];
         else if (!strcmp(argv[i], "--frames") && i + 1 < argc) frames = atoi(argv[++i]);
@@ -1109,6 +1192,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "some lobby data tables are missing\n");
     if (rt_import_select() != 0)
         fprintf(stderr, "select.bin is missing: no title screen\n");
+    if (!getenv("RT_NO_TRIM"))
+        rt_mem_trim();
     if (boot && !quest_no)
         quest_no = 10;      /* the set-up below as for a quest; the boot ends in the village (game mode 6) */
     if (gfx_init(W, H, "MH1 PC viewer", shot != NULL) != 0)
@@ -1221,7 +1306,7 @@ int main(int argc, char **argv)
     /* stand both on the ground: pose at frame 0, put the lowest vertex on
      * the collision floor */
     fl_skel_update(&rathian.skel, 0);
-    fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
+    fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, light_cur());
     if (getenv("RT_EM_POS"))            /* test placement of the Rathian: "x,z" */
         sscanf(getenv("RT_EM_POS"), "%f,%f", &rx, &rz);
     gy = 0;
@@ -1242,7 +1327,7 @@ int main(int argc, char **argv)
         }
         rathian.skel.root_lock = 1;
     }
-    hunter_pose(&pl, 0, &light);
+    hunter_pose(&pl, 0, light_cur());
     {
         float lo = 1e30f;
         int s;
@@ -1284,6 +1369,8 @@ int main(int argc, char **argv)
                                                           fmt_link_entry(link, 1, FMT_LE), tx, 1, FMT_LE) == 0
                                 && fl_skel_create(&weapon.skel, fmt_link_entry(link, 1, FMT_LE), FMT_LE) == 0)
                                 weapon.game = 1;
+                            drop(&weapon.mem[0]);
+                            drop(&weapon.mem[1]);
                         }
                     }
                 }
@@ -1436,7 +1523,7 @@ int main(int argc, char **argv)
             if (pl.game && play && ticks >= 2) {
                 sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
                 if (!rt_village_active())
-                    monsters_sync(0, &light);
+                    monsters_sync(0, light_cur());
             }
             if (tick_trace) {           /* RT_TICK_TRACE=1: compare windowed and headless runs */
                 extern uint8_t em_work[];
@@ -1493,12 +1580,12 @@ int main(int argc, char **argv)
             rt_monster_pose(0, &rathian.skel);
         else
             fl_skel_update(&rathian.skel, fr);
-        fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, &light);
-        hunter_pose(&pl, fr, &light);
+        fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, light_cur());
+        hunter_pose(&pl, fr, light_cur());
         if (pl.game && play)            /* joint world matrices for the game C (parts, get_joint_pos) */
             sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
         if (weapon.game && pl.game && play)
-            weapon_pose(&light);
+            weapon_pose(light_cur());
 
         if (getenv("RT_CAM_EM")) {      /* test aid "slot,dist,height,yaw": free camera on monster slot */
             float p[3], d = 1500, hh = 600, yw = 0;
@@ -1550,9 +1637,9 @@ int main(int argc, char **argv)
                 draw_model_attr(&pl.part[s], -1);
         }
         if (rt_village_active())
-            npc_draw(&light);
+            npc_draw(light_cur());
         else
-            monsters_sync(1, &light);
+            monsters_sync(1, light_cur());
         if (weapon.game && pl.game && play) {
             static flmat wid;
             flmat_identity(wid);
@@ -1614,5 +1701,6 @@ int main(int argc, char **argv)
         rt_snd_shutdown();
     gfx_shutdown();
     fmt_afs_close(&afs);
+    rt_stack_report("at exit");
     return 0;
 }

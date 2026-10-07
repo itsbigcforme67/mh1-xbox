@@ -116,8 +116,7 @@ On the Xbox (`#ifdef XBOX` in viewer.c) there is no command line: it mounts
 E:, looks for AFS_DATA.AFS in `D:\data` (next to the XBE) then
 `E:\Games\MH1\data`, and boots like `--boot` (title screen from power-on).
 SDL2 (nxdk port) is used for the pad and the audio output, as on the PC.
-The memory card is a null libmc (src/pc/xbox/mc_null.c: "no card", the game
-plays without saving).
+The memory card is src/pc/xbox/mc_xbox.c (see "Saves on the Xbox" below).
 
 Not run anywhere yet (no xemu files): whether it boots, whether 64 MB is
 enough with the PC-side waste still in (it is not: see the memory budget
@@ -136,10 +135,15 @@ Power-of-two textures are swizzled A8B8G8R8 (repeat works), others linear
 "rect" textures (clamp only, texel coordinates through the texture
 matrix). Blend factors/equation, alpha test (GREATER ref), depth test/write,
 filter and clamp follow gfx_gl.c; fade colour is multiplied on the CPU.
-Missing: fog, clipping of triangles that cross the camera plane (the w
-divide is done in the vertex program, as nxdk's samples do), palettised
-textures, GPU skinning. It compiles without warnings; nothing about it has
-been seen on a screen.
+Second round: palettised textures (P8, see the memory section),
+near-plane clipping on the CPU (only clays with a triangle behind w = 1;
+the cut is done in object space with the shared gfx_clip_tri, checked on
+200k random triangles), linear fog in the shaders (the vertex program
+writes COLOR1 = fog colour + factor from the clip w, the pixel shader
+lerps; NV2A's own fog unit is not used). Guesses to check on xemu: the
+palette's DMA context bit, whether COLOR1 needs SPECULAR_ENABLE. Missing:
+GPU skinning. It compiles without warnings; nothing about it has been
+seen on a screen.
 
 ## How the platform layer maps to nxdk
 
@@ -222,6 +226,63 @@ and work areas ~16-20 MB, host model data ~8-10 MB, textures 4-8 MB, audio
 ~4 MB, framebuffers ~3.7 MB, nxdk/kernel ~4 MB: about 47-57 MB of 64. It
 fits, with little room; the trims above are required, not optional.
 
+### After the trims (agent A, 7 Oct 2026, second round)
+
+Done, on the PC and the Xbox alike (`tools/mem_report.sh` re-measures the
+three points; RT_MEM_FILES=1 lists every file the viewer loads):
+- Sound effects stay PS2 ADPCM and are decoded while mixing (the mixer keeps
+  two 28-sample blocks per voice; audio_voice_play_vag). The PCM cache (up
+  to 20 MB) is gone. A 60 s Rathian audio dump is byte-identical to before.
+- The program file (5.5 MB) is freed after the import; only main's data
+  part (1.2 MB) stays, in its own block, because imported tables point
+  into it. The ELF symbol and relocation tables (3 MB) and the raw
+  lobby/select.bin go too (rt_mem_trim); .bss shadows are per symbol
+  (233 small blocks instead of 1.7 MB).
+- Model and texture files are freed once fl_model_create has copied them
+  (motion tables stay: the motion players read them in place).
+- Meltw output buffers are shrunk to their size (they were allocated at 4x
+  the packed size and kept so).
+- Fixed areas sized from the data, with a size check on every load and a
+  use report (RT_MEM): collision 2 x 512 KB (largest files 160 / 80 KB;
+  were 4 MB each), data_load_ptr 2 MB (838 KB used; was 4 MB),
+  cam_data_area 64 KB (largest camera file 3.4 KB; was 1 MB), glyph
+  texture table per glyph (was 1 MB of pointers).
+- Xbox textures: gfx_nv2a.c keeps power-of-two textures with <= 256
+  colours (all the 4/8-bit APX ones) as NV2A P8 + palette.
+
+Checked: the three PC tests pass; screenshots of the title, the Rathian
+nest, the village, stage 4 and the quest-loop end are byte-identical to
+before the trims.
+
+Now (KB, same three points as above):
+
+| | title | village | Rathian |
+|---|---|---|---|
+| CPU heap total (was) | 18433 (57745) | 23558 (69946) | 18421 (76873) |
+| textures as the Xbox keeps them (P8/RGBA8) | 5097 | 5981 (peak 6890) | 2984 |
+| (the same as RGBA8, the PC) | 19640 | 22415 | 11716 |
+
+Estimated Xbox total in the village (the largest): heap 23.6 MB + textures
+6.9 MB + vertex ring 6 MB (gfx_nv2a.c) + the XBE loaded 7.2 MB (code 2.8,
+data/bss 4.1, of which rt_lb_mem 2.2) + framebuffers 3.7 MB + kernel and
+nxdk ~4 MB [estimate] = about 51 MB of 64. Start-up peaks higher for a
+moment (program file + relocation tables, ~9 MB, freed before any model is
+loaded). Not measured on an Xbox: allocator overhead and fragmentation of
+pdclib's malloc, and what SDL takes.
+
+Left (not needed to fit, worth doing later): the host keeps model data
+twice (fl_model's AMO arrays and the renderer's clay copies, ~4-6 MB);
+lobby.bin is held three ways at run time (rt_lb_mem 2.2 MB static, a 1.2 MB
+reload copy, game.bin 1.4 MB beside it) where the PS2 swaps one overlay;
+the vertex ring could be smaller.
+
+### Stack
+
+RT_STACK=1 paints 2 MB below main and reports the deepest byte used: 35 KB
+in the three PC tests, the title and the Rathian runs (gcc -O2, 32-bit;
+the game C keeps its work in static areas). The XBE gets 256 KB
+(`-stack:0x40000` in tools/build_xbox.py; nxdk's default is 64 KB).
+
 ## Why 32-bit x86 helps
 
 The game C keeps pointers in u32 fields and depends on PS2 struct offsets. The
@@ -242,8 +303,8 @@ Xbox too (clang supports both).
 - GPU backend from scratch: pbkit is low level (push buffers, register
   combiners for blending/texture modes, no driver). Most work and most risk
   of the port. xemu helps; real hardware checks catch what xemu gets wrong.
-- Memory (above): no virtual memory; running out is a hard crash. Needs a
-  memory report from the PC build first.
+- Memory (above): no virtual memory; running out is a hard crash. The
+  trims bring the estimate to ~51 of 64 MB; to be confirmed on xemu.
 - Link step: solved (see "Linking for the Xbox"); watch for new GNU-only
   tricks in tools/build_pc.sh.
 - Implicit declarations: clang treats them as errors in C99 by default; we
@@ -269,7 +330,113 @@ Xbox too (clang supports both).
 ## Next steps (when the files arrive)
 
 1. xemu running the nxdk `hello` and `sdl` samples from this machine.
-2. Trim memory (the per-category report above is done; trims listed there).
+2. Check the memory estimate on the console (debug output of the free
+   memory at the title, village and a hunt).
 3. Boot build/xbox/default.xbe (null graphics) in xemu with the game files
    in D:\data or E:\Games\MH1\data; see where it stops (memory, stack).
 4. gfx_nv2a.c: textured clays, then the HUD/2D; then pad and audio.
+
+
+## Saves on the Xbox (agent B, 9 Oct 2026; written, linked, not run)
+
+src/pc/xbox/mc_xbox.c replaces mc_null.c: libmc (sceMc*) on the hard disk through nxdk's
+winapi (CreateDirectoryA, FindFirstFileA, GetFileAttributesA, DeleteFileA) and pdclib's
+fopen (xbox_fopen turns '/' into '\'). E: is mounted by viewer.c (nxMountDrive) before
+the game's first sceMcInit. The game still sees one card in port 0 holding the PS2 save
+directory `BISLPM-65495MH` (data file of 0x11450 bytes as encode_data writes it,
+icon.sys, icon00.ico), the same bytes and names as rt_mc.c writes on the PC, so a PC
+save file could be copied over (not tried). On disk:
+
+    E:\UDATA\4D480001\TitleMeta.xbx                     "TitleName=Monster Hunter" (UTF-16LE + BOM)
+    E:\UDATA\4D480001\4D48000100000001\SaveMeta.xbx    "Name=Monster Hunter save"  (made when the game creates the save dir)
+    E:\UDATA\4D480001\4D48000100000001\BISLPM-65495MH, icon.sys, icon00.ico
+
+The card path BISLPM-65495MH/... maps to the save id directory and back in listings;
+the two .xbx files are hidden from the game's directory listings. Title id, names and
+save id are constants in src/pc/xbox/xbox_title.h (placeholder id 0x4D480001 "MH1X"; the
+XBE certificate's title id is set to the same value by tools/build_xbox.py (cxbe always
+writes 0xFFFF0002, so the build patches the certificate in default.xbe from xbox_title.h
+after cxbe; the title name "Monster Hunter" goes in through cxbe's -TITLE); the owner may supply a real id). Free space is reported as 8000 KB minus the
+files, as on the PC.
+Untested: everything (no hardware / xemu run). In particular the .xbx meta layout is from
+memory of the dashboard format (UTF-16LE text with a BOM), the dashboard icon images
+(SaveImage.xbx, TitleImage.xbx) are not written so it will show a default icon, and
+whether the dashboard accepts a save directory name made only of hex digits that is
+not a hash of anything is unverified.
+
+## Xbox controller mapping (checked against nxdk's SDL, 9 Oct 2026; not run)
+
+nxdk's SDL2 joystick driver (lib/sdl/SDL2/src/joystick/xbox/SDL_xboxjoystick.c) gives the
+Duke/S controller 6 axes, 1 hat and 10 buttons and installs the game-controller mapping
+"Original Xbox Controller": a:b0 b:b1 x:b2 y:b3 leftshoulder:b4 rightshoulder:b5 back:b6
+start:b7 leftstick:b8 rightstick:b9 lefttrigger:a2 righttrigger:a5, sticks a0/a1 and
+a3/a4 (Y already inverted), d-pad on the hat. The analog face buttons are digital here
+(threshold 0x20). Crucially the driver reports WHITE as leftshoulder and BLACK as
+rightshoulder (the XID report's analog buttons 8 and 9), and the analog triggers as
+trigger axes. pad_sdl.c needs no change: it already maps leftshoulder/rightshoulder to
+L1/R1 and trigger axes above 16000 to L2/R2. On the Duke/S:
+
+| Xbox | PS2 role |
+|---|---|
+| A / B / X / Y | cross / circle / square / triangle |
+| WHITE / BLACK | L1 / R1 (camera reset / guard) |
+| left / right trigger | L2 / R2 |
+| Back / Start | select / start |
+| left / right stick click | L3 / R3 |
+| d-pad | d-pad (camera turn / zoom in the hunt) |
+| left / right stick | left / right stick |
+
+White and black are small buttons and R1 (guard) is used a lot in a fight; if that feels
+bad on hardware, swap to BLACK = camera and RT = guard in pad_sdl.c (not decided
+without hardware). A Controller S (Xbox 360-style button order) report is covered by the
+same mapping through SDL's own names.
+
+
+## XBE identity and save icons (agent B, 9 Oct 2026)
+
+build_xbox.py reads XBOX_TITLE_ID / XBOX_TITLE_NAME from src/pc/xbox/xbox_title.h, passes the name
+to cxbe (-TITLE) and patches the title id into the certificate of default.xbe (header base address
+at 0x104, certificate address at 0x118, id at certificate +8); it prints "XBE certificate: title
+id 4D480001, title name ...". Checked by reading the XBE back. The XBE is unsigned (cxbe does not
+sign); xemu and softmodded consoles do not check.
+
+Save icons (SaveImage.xbx, TitleImage.xbx) are NOT done. What is needed: the dashboard shows a
+64x64 (SaveImage) / 128x128 (TitleImage) picture stored as an XPR0 container holding one swizzled
+DXT1 texture; the exact XPR0 header fields (resource table, data offset, D3D texture header for
+that size/format), the swizzle and whether the dashboard wants a particular mip layout were not
+verified without a console or the dashboard, and a wrong file may just show no icon (or worse,
+confuse the memory manager), so it is skipped. Source of the picture would be the game's own PS2
+save icon (icon00.ico, which mc_file_tbl / the game's save code builds from its data: a 128x128
+texture), converted at run time and written next to SaveMeta.xbx / TitleMeta.xbx, never committed.
+When someone can look at a real dashboard (or xemu with the owner's dashboard HDD), a reference
+SaveImage.xbx from any homebrew save gives the exact header to copy.
+
+## Running in xemu (prepared, not run; waiting for the owner's files)
+
+xemu 0.8.136 (open source, github.com/xemu-project/xemu) is in ~/xboxdev/xemu (outside the repo;
+x86_64 AppImage; it starts on this machine). It needs files only the owner can supply, none of
+which we download or commit:
+
+- `xbox_files/mcpx.bin`: MCPX boot ROM dump (512 bytes, "mcpx_1.0.bin"),
+- `xbox_files/bios.bin`: BIOS (flash ROM) dump, 256 KB to 1 MB,
+- `xbox_files/hdd.img`: raw HDD image. Optional: tools/run_xemu.sh makes a blank sparse 8 GB one;
+  whether the kernel formats it on first boot is untested. A formatted image (E: with room for
+  E:\UDATA) is what saving needs.
+
+`xbox_files/` is gitignored. Then:
+
+    tools/run_xemu.sh                          # boots build/xbox/mh1.iso (XBE only)
+    tools/run_xemu.sh --data ~/path/to/disc/mh1  # ISO with the owner's files as D:\data (~925 MB, local)
+    tools/run_xemu.sh --gfx nv2a               # build/xbox/nv2a/ instead of the null-graphics build
+    tools/run_xemu.sh --shot out.png --after 90   # screenshot after 90 s, then quit
+
+The script writes xemu's config (BIOS, MCPX, HDD, DVD paths) into xbox_files/xemu_home/ (it sets
+XDG_DATA_HOME, so ~/.local/share/xemu is not touched), starts xemu, and for --shot drives it over
+a QMP socket. xemu 0.8.136's QMP has no `screendump`, so the screenshot falls back to ffmpeg
+x11grab of the whole display: xemu always opens a window (no headless mode, and Xvfb is not
+installed here), so this needs the desktop and shows everything on screen. Checked here: the script
+runs end to end with dummy 512-byte / 256 KB ROM files (xemu starts, rejects the dummy BIOS, the
+screenshot fallback and the clean-up of xemu's processes work); nothing with real files.
+Untested: real boot, the --data ISO build (extract-xiso on a 925 MB tree), HDD formatting, the
+nv2a build. The first things to look for: the BIOS logo, then our XBE starting (title screen from
+power-on, docs above), "free memory" lines, the E:\UDATA\4D480001 folder appearing after a save.

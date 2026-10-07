@@ -14,6 +14,7 @@
 #ifndef MH_AUDIO_H
 #define MH_AUDIO_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 #define AUDIO_RATE    48000
@@ -34,6 +35,7 @@ void audio_reset(void);
  * --audio-dump): the movie then takes its clock from the audio. */
 int  audio_live(void);
 void audio_set_driven(int on);
+void audio_set_mono(int on);                                    /* mix both channels into both (options: monaural) */
 /* Start a voice; pcm must stay valid until the voice ends or is stopped.
  * loop = loop start sample or -1. vol 0..1, pan -1..1, pitch = rate
  * multiplier. Returns a voice id (> 0) or 0 if no voice is free. */
@@ -41,7 +43,11 @@ int  audio_voice_play(const int16_t *pcm, int n, int loop, int rate, float vol, 
 int  audio_voice_set(int id, float vol, float pan, float pitch);  /* 0 if the voice ended */
 void audio_voice_stop(int id);
 int  audio_voice_playing(int id);
-void audio_voice_stop_buffer(const int16_t *pcm, int n);         /* stop voices reading pcm[0..n) */
+/* The same from PS2 SPU ADPCM (VAG blocks, 16 bytes -> 28 samples), decoded
+ * while mixing: n / loop in samples as fmt_vag_scan gives them. vag must
+ * stay valid until the voice ends or is stopped. */
+int  audio_voice_play_vag(const uint8_t *vag, int n, int loop, int rate, float vol, float pan, float pitch);
+void audio_voice_stop_buffer(const void *p, size_t bytes);       /* stop voices reading [p, p+bytes) */
 /* Streams: stereo frames at `rate`. */
 int  audio_stream_free(int s);                                   /* frames that fit */
 void audio_stream_write(int s, const int16_t *lr, int frames, int rate);

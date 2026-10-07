@@ -18,10 +18,51 @@ static size_t elf_n, ovl_n;
 
 static uint32_t rd32(const uint8_t *p) { return p[0] | p[1] << 8 | p[2] << 16 | (uint32_t)p[3] << 24; }
 
+/* The program headers, kept after the file copy is freed (rt_mem_trim). */
+#define MAXPH 16
+static struct { uint32_t type, off, vaddr, filesz, memsz; } ph[MAXPH];
+static unsigned nph;
+/* The data part of main's loaded segment (from the lowest data symbol to the
+ * end of the file data): a block of its own that stays after rt_mem_trim,
+ * because the imported tables keep pointers into it (map_ptr's fallback).
+ * Main's code below it is only in the file copy. */
+static uint8_t *main_img;
+static uint32_t main_va, main_n;
+
+static void load_main_img(void)
+{
+    uint32_t shoff = rd32(elf + 32), i, k, lo = 0xFFFFFFFFu;
+    unsigned shn = elf[48] | elf[49] << 8;
+    for (i = 0; i < shn && shoff + 40 * (i + 1) <= elf_n; i++) {
+        const uint8_t *sh = elf + shoff + 40 * i;
+        uint32_t off = rd32(sh + 16), size = rd32(sh + 20);
+        if (rd32(sh + 4) != 2 || off + size > elf_n)
+            continue;
+        for (k = 0; k < size / 16; k++) {           /* lowest OBJECT symbol in main (section 4) */
+            const uint8_t *sy = elf + off + 16 * k;
+            if ((sy[14] | sy[15] << 8) == 4 && (sy[12] & 0xF) == 1 && rd32(sy + 4) && rd32(sy + 4) < lo)
+                lo = rd32(sy + 4);
+        }
+    }
+    for (i = 0; i < nph; i++)
+        if (ph[i].type == 1 && ph[i].filesz && lo >= ph[i].vaddr && lo < ph[i].vaddr + ph[i].filesz) {
+            lo &= ~15u;
+            main_va = lo;
+            main_n = ph[i].vaddr + ph[i].filesz - lo;
+            main_img = malloc(main_n);
+            if (main_img)
+                memcpy(main_img, elf + ph[i].off + (lo - ph[i].vaddr), main_n);
+            else
+                main_n = 0;
+            return;
+        }
+}
+
 int rt_load_elf(const char *path)
 {
     FILE *f = fopen(path, "rb");
     long n;
+    unsigned i;
     if (!f)
         return -1;
     fseek(f, 0, SEEK_END);
@@ -29,13 +70,33 @@ int rt_load_elf(const char *path)
     fseek(f, 0, SEEK_SET);
     free(elf);
     {
-        const char *o = rt_ms_push("program file copy (SLPM_654.95)");
+        const char *o = rt_ms_push("program file copy (SLPM_654.95, freed after the import)");
         elf = malloc((size_t)n);
         rt_ms_pop(o);
     }
     elf_n = elf && fread(elf, 1, (size_t)n, f) == (size_t)n ? (size_t)n : 0;
     fclose(f);
-    return elf_n ? 0 : -1;
+    if (elf_n < 52)
+        return -1;
+    {
+        uint32_t phoff = rd32(elf + 28);
+        unsigned ph_n = elf[44] | elf[45] << 8;
+        for (i = 0, nph = 0; i < ph_n && nph < MAXPH && phoff + 32 * (i + 1) <= elf_n; i++) {
+            const uint8_t *p = elf + phoff + 32 * i;
+            ph[nph].type = rd32(p);
+            ph[nph].off = rd32(p + 4);
+            ph[nph].vaddr = rd32(p + 8);
+            ph[nph].filesz = rd32(p + 16);
+            ph[nph].memsz = rd32(p + 20);
+            nph++;
+        }
+    }
+    {
+        const char *o = rt_ms_push("main data image (SLPM_654.95 data, kept)");
+        load_main_img();
+        rt_ms_pop(o);
+    }
+    return 0;
 }
 
 void rt_set_overlay(uint8_t *bin, size_t n)
@@ -47,18 +108,17 @@ void rt_set_overlay(uint8_t *bin, size_t n)
 
 const uint8_t *rt_addr(uint32_t va, size_t n)
 {
-    if (elf_n >= 52) {
-        uint32_t phoff = rd32(elf + 28);
-        unsigned i, ph_n = elf[44] | elf[45] << 8;
-        for (i = 0; i < ph_n && phoff + 32 * (i + 1) <= elf_n; i++) {
-            const uint8_t *ph = elf + phoff + 32 * i;
-            uint32_t off = rd32(ph + 4), vaddr = rd32(ph + 8), filesz = rd32(ph + 16);
-            if (rd32(ph) == 1 && va >= vaddr && va + n <= vaddr + filesz && off + (va - vaddr) + n <= elf_n)
-                return elf + off + (va - vaddr);
-        }
-    }
+    unsigned i;
+    if (main_img && va >= main_va && va + n <= main_va + main_n)
+        return main_img + (va - main_va);
+    for (i = 0; elf && i < nph; i++)          /* main's code (only while the file copy exists) */
+        if (ph[i].type == 1 && va >= ph[i].vaddr && va + n <= ph[i].vaddr + ph[i].filesz
+            && ph[i].off + (va - ph[i].vaddr) + n <= elf_n)
+            return elf + ph[i].off + (va - ph[i].vaddr);
     if (ovl && va >= OVL_GAME_VRAM && va - OVL_GAME_VRAM + n <= ovl_n)
         return ovl + (va - OVL_GAME_VRAM);
+    if (!elf && main_img && va < main_va && nph && va >= ph[0].vaddr)
+        fprintf(stderr, "rt: read of main code at 0x%X after rt_mem_trim (not kept)\n", (unsigned)va);
     return NULL;
 }
 
@@ -66,16 +126,10 @@ const uint8_t *rt_addr(uint32_t va, size_t n)
  * overlay: tables there start as zeros. */
 int rt_in_bss(uint32_t va, size_t n)
 {
-    if (elf_n >= 52) {
-        uint32_t phoff = rd32(elf + 28);
-        unsigned i, ph_n = elf[44] | elf[45] << 8;
-        for (i = 0; i < ph_n && phoff + 32 * (i + 1) <= elf_n; i++) {
-            const uint8_t *ph = elf + phoff + 32 * i;
-            uint32_t vaddr = rd32(ph + 8), filesz = rd32(ph + 16), memsz = rd32(ph + 20);
-            if (rd32(ph) == 1 && filesz && va >= vaddr + filesz && va + n <= vaddr + memsz)
-                return 1;
-        }
-    }
+    unsigned i;
+    for (i = 0; i < nph; i++)
+        if (ph[i].type == 1 && ph[i].filesz && va >= ph[i].vaddr + ph[i].filesz && va + n <= ph[i].vaddr + ph[i].memsz)
+            return 1;
     return ovl && va >= OVL_GAME_VRAM + ovl_n && va + n <= OVL_GAME_VRAM + ovl_n + OVL_GAME_BSS;
 }
 
@@ -83,30 +137,68 @@ int rt_in_bss(uint32_t va, size_t n)
  * in data tables that point at zero-initialised PS2 memory that has no host
  * table of its own (e.g. wall_tbl_add -> st04_wall_tbl): zeros, like the
  * PS2 at boot. Allocated on first use, one block per image. */
+typedef struct { uint32_t va, size; const char *name; int func; } rt_sym;
+static rt_sym *symset[3];          /* 0: main + game.bin, 1: main + lobby.bin, 2: main + select.bin */
+static size_t nsymset[3];
+static const char *sym_at(int set, uint32_t va, uint32_t *off, int *func);
+
+/* Shadows are made per symbol (the sized ELF symbol that holds va), so
+ * only the objects that tables point at take memory, not the whole 1.7 MB
+ * main .bss; a pointer with no sized symbol gets the whole-image block. */
+#define MAXSHADOW 256
+static struct { uint32_t va, size; uint8_t *mem; } sshadow[MAXSHADOW];
+static int nsshadow;
+
 void *rt_bss_shadow(uint32_t va)
 {
     static uint8_t *shadow[2];
     static uint32_t base[2], size[2];
-    int k;
+    uint32_t off;
+    int k, func = 0;
     if (!rt_in_bss(va, 1))
         return NULL;
+    for (k = 0; k < nsshadow; k++)
+        if (va >= sshadow[k].va && va < sshadow[k].va + sshadow[k].size)
+            return sshadow[k].mem + (va - sshadow[k].va);
+    if (nsshadow < MAXSHADOW && sym_at(0, va, &off, &func) && !func) {
+        /* sym_at found a sized symbol holding va (or an unsized one at va) */
+        const rt_sym *s = NULL;
+        size_t i;
+        for (i = 0; i < nsymset[0]; i++)
+            if (symset[0][i].va == va - off && symset[0][i].size > off) {
+                s = &symset[0][i];
+                break;
+            }
+        if (s) {
+            const char *o = rt_ms_push("overlay data copies + relocations");
+            uint8_t *m = calloc(1, s->size + 64);     /* zeros past the end too, as the neighbours in .bss */
+            rt_ms_pop(o);
+            if (m) {
+                sshadow[nsshadow].va = s->va;
+                sshadow[nsshadow].size = s->size;
+                sshadow[nsshadow].mem = m;
+                nsshadow++;
+                if (getenv("RT_TRACE"))
+                    fprintf(stderr, "rt: .bss shadow %s 0x%X (%u bytes)\n", s->name, (unsigned)s->va, (unsigned)s->size);
+                return m + off;
+            }
+        }
+    }
     if (ovl && va >= OVL_GAME_VRAM + ovl_n) {
         k = 1;
         base[1] = OVL_GAME_VRAM + (uint32_t)ovl_n;
         size[1] = OVL_GAME_BSS;
     } else {
-        uint32_t phoff = rd32(elf + 28);
-        unsigned i, ph_n = elf[44] | elf[45] << 8;
+        unsigned i;
         k = 0;
-        for (i = 0; i < ph_n; i++) {
-            const uint8_t *ph = elf + phoff + 32 * i;
-            uint32_t vaddr = rd32(ph + 8), filesz = rd32(ph + 16), memsz = rd32(ph + 20);
-            if (rd32(ph) == 1 && va >= vaddr + filesz && va < vaddr + memsz) {
-                base[0] = vaddr + filesz;
-                size[0] = memsz - filesz;
+        for (i = 0; i < nph; i++)
+            if (ph[i].type == 1 && va >= ph[i].vaddr + ph[i].filesz && va < ph[i].vaddr + ph[i].memsz) {
+                base[0] = ph[i].vaddr + ph[i].filesz;
+                size[0] = ph[i].memsz - ph[i].filesz;
             }
-        }
     }
+    if (getenv("RT_TRACE"))
+        fprintf(stderr, "rt: whole .bss shadow for 0x%X (no sized symbol)\n", (unsigned)va);
     if (!shadow[k] && !(shadow[k] = calloc(1, size[k])))
         return NULL;
     return shadow[k] + (va - base[k]);
@@ -247,9 +339,20 @@ static size_t rel_lower_in(const uint32_t *rel32, size_t nrel32, uint32_t va)
 
 static size_t rel_lower(uint32_t va) { return rel_lower_in(rel32, nrel32, va); }
 
+/* after rt_mem_trim: one bit per word of main_img and of game.bin */
+static uint32_t *ptr_bits_main, *ptr_bits_ovl;
+
 int rt_is_pointer(uint32_t va)
 {
-    size_t k = rel_lower(va);
+    size_t k;
+    if (!rel32) {
+        if (ptr_bits_main && va >= main_va && va < main_va + main_n && !(va & 3))
+            return ptr_bits_main[(va - main_va) >> 7] >> ((va - main_va) >> 2 & 31) & 1;
+        if (ptr_bits_ovl && va >= OVL_GAME_VRAM && va < OVL_GAME_VRAM + ovl_n && !(va & 3))
+            return ptr_bits_ovl[(va - OVL_GAME_VRAM) >> 7] >> ((va - OVL_GAME_VRAM) >> 2 & 31) & 1;
+        return 0;
+    }
+    k = rel_lower(va);
     return k < nrel32 && rel32[k] == va;
 }
 
@@ -280,9 +383,6 @@ void rt_relocate_images(void *(*map)(uint32_t))
  * The ELF's own symbol table (main and game.bin sections only), to name the
  * target of a pointer: rt_sym_at(va, &off) gives the symbol that contains
  * va, the offset into it and whether it is a function, or NULL. */
-typedef struct { uint32_t va, size; const char *name; int func; } rt_sym;
-static rt_sym *symset[3];          /* 0: main + game.bin, 1: main + lobby.bin, 2: main + select.bin */
-static size_t nsymset[3];
 
 static int cmp_sym(const void *a, const void *b)
 {
@@ -466,4 +566,41 @@ void rt_sel_relocate_range(uint32_t va, uint8_t *dst, size_t size, void *(*map)(
         h = v ? (uint32_t)(uintptr_t)map(v) : 0;
         memcpy(dst + (rel32_sel[k] - va), &h, 4);
     }
+}
+
+/* ------------------------------------------------------------ trim
+ * After every rt_import_* call: free what only the import needs (the
+ * program file copy with its symbol and relocation sections, the symbol
+ * tables, the relocation lists, the raw lobby.bin / select.bin as read).
+ * rt_addr keeps working for main's data (main_img) and game.bin;
+ * rt_is_pointer through a bitmap; rt_sym_at no longer names anything. */
+void rt_mem_trim(void)
+{
+    size_t k;
+    int i;
+    if (rel32) {
+        const char *o = rt_ms_push("overlay data copies + relocations");
+        ptr_bits_main = calloc((main_n >> 7) + 1, 4);
+        ptr_bits_ovl = calloc((ovl_n >> 7) + 1, 4);
+        rt_ms_pop(o);
+        for (k = 0; k < nrel32; k++) {
+            uint32_t va = rel32[k];
+            if (ptr_bits_main && va >= main_va && va < main_va + main_n)
+                ptr_bits_main[(va - main_va) >> 7] |= 1u << ((va - main_va) >> 2 & 31);
+            else if (ptr_bits_ovl && va >= OVL_GAME_VRAM && va < OVL_GAME_VRAM + ovl_n)
+                ptr_bits_ovl[(va - OVL_GAME_VRAM) >> 7] |= 1u << ((va - OVL_GAME_VRAM) >> 2 & 31);
+        }
+    }
+    free(rel32); rel32 = NULL; nrel32 = 0;
+    free(rel32_lb); rel32_lb = NULL; nrel32_lb = 0;
+    free(rel32_sel); rel32_sel = NULL; nrel32_sel = 0;
+    free(main_to_lb); main_to_lb = NULL; nmain_to_lb = 0;
+    for (i = 0; i < 3; i++) {
+        free(symset[i]);
+        symset[i] = NULL;
+        nsymset[i] = 0;
+    }
+    free(elf); elf = NULL; elf_n = 0;
+    rt_set_lobby(NULL, 0);
+    rt_set_select(NULL, 0);
 }

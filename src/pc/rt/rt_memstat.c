@@ -165,3 +165,41 @@ void rt_ms_report(const char *where)
     fprintf(stderr, "memstat: %-38s %8ld\n", "tracked heap total (CPU)", tot / 1024);
     fprintf(stderr, "memstat: %-38s %8ld   (whole process incl. SDL/GL driver, libc, binary)\n", "process RSS", rss);
 }
+
+/* ------------------------------------------------------------ stack
+ * RT_STACK=1: how deep the main thread's stack gets (for the Xbox's stack
+ * size, set in tools/build_xbox.py). rt_stack_paint, called first thing in
+ * main, fills the stack below it with a pattern; rt_stack_report finds the
+ * deepest byte that changed. Linux maps the main stack on demand (8 MB). */
+#define STACK_PAINT (2u << 20)
+static volatile uint8_t *stk_lo;
+static uintptr_t stk_top;
+
+static void __attribute__((noinline)) paint(void)
+{
+    volatile uint8_t buf[STACK_PAINT];
+    size_t i;
+    for (i = 0; i < sizeof buf; i++)
+        buf[i] = 0xA5;
+    stk_lo = buf;
+}
+
+void rt_stack_paint(void)
+{
+    volatile int here;
+    if (!getenv("RT_STACK"))
+        return;
+    stk_top = (uintptr_t)&here;
+    paint();
+}
+
+void rt_stack_report(const char *where)
+{
+    size_t i;
+    if (!stk_lo)
+        return;
+    for (i = 0; i < STACK_PAINT && stk_lo[i] == 0xA5; i++)
+        ;
+    fprintf(stderr, "memstat: stack %s: %lu KB used below main (painted %u KB)\n", where,
+            (unsigned long)((stk_top - (uintptr_t)(stk_lo + i)) >> 10), STACK_PAINT >> 10);
+}

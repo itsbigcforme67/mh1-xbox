@@ -1254,7 +1254,7 @@ frame n+1 = ours n). The picture on screen (headless screenshot) shows the
 opening's sky/Rathalos shot at the right aspect. Audio: ADX output differs
 from ffmpeg's adpcm_adx by a small amount (mean 124 of 32768 over the first 20 s):
 our decoder (snd.c, used for the BGM too) takes scale+1, ffmpeg's takes the
-scale as is; which one CRI uses was not checked against hardware.
+scale as is; CRI's own decoder (ADX_DecodeMono4, main 0x1F86F8) computes ((word ^ key) & 0x1FFF) + 1 and multiplies the nibble by that, so our scale+1 is right and ffmpeg's differs; snd.c now also masks with 0x1FFF as CRI does (checked by reading the asm, 7 Oct).
 Decode time per frame (this PC, -O2, one core): OPENING 0.8-1.7 ms average,
 worst 3-29 ms (a few slow outliers); the other eight 1.7-5.5 ms average, worst
 13-50 ms (one 194 ms spike while other jobs ran). 256x512 is small: 29.97 fps
@@ -1379,3 +1379,90 @@ Counts: 38 offline quests, 31 OK, 5 egg quests not automated, 2 known failures (
 the monster that cannot be reached is brought down by RT_PL_SLAY, so those runs test the clear / reward path, not combat
 against that monster. The other hunts use real hits (DMG_MUL 40 on the target only). Not covered: real gathering and
 fishing for the delivery quests, carving rewards, the eggs, urgent 136/137 clears for real (test_urgent.sh does those).
+Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item 125 from (11200, 10850)):
+- The idle script runs in 352-tick cycles. em_cmd_pl_fishing_ck (0x45) is evaluated once at the start of each
+  idle cycle (tick 1 in a fresh stage: no hunter fishing yet).
+- The Plesioth rises 2 units per tick from y -1990 while idle. At tick 352 (y -830, 880 below the hunter, inside
+  the 1000 "down" limit; inside its 30 degree cone) the eye test (em_eye_search_set) sets x88C and
+  Em_Mode_Chg(1) flips x888 in the same tick the second cycle starts, so main script's mode_ck jumps to the combat
+  tables and the fishing check of cycle 2 never runs (checked at 5 hunter positions, every one noticed by tick ~352,
+  except positions inside the water where the hunter sinks).
+- x886 (combat timer) is NOT a bug: em_move (src/main/em/f_em_nm.c:421) resets it to em_atk_mode_timer_tbl[kind]
+  every tick while pl_ninshiki_ck reports the hunter noticed (x88F). em_mode_timer_sub's own code (em_master_b.c, a
+  matched file) is identical to the near-match copy. Combat ends only when the hunter is unseen for the
+  ninshiki timer plus the combat timer.
+- So on the PC a frog bite is only possible if the Plesioth is still idle at a cycle start with the float already
+  out. What differs on the PS2 (rise speed, the hunter being outside the cone while the Plesioth is high, or the
+  hunter's flag14 == 3, which the eye test skips) is not known; fishing_ck/Kaeru_ck/em_fly17/18 are linked and
+  untouched.
+
+### Stand-ins, round 23 (agent F)
+- Options sound: str_master_vol / str_stop_all / str_outmode are now host functions in rt_snd.c. Volumes come from system_w+0x36 (BGM) / +0x37 (SE) live (the SE
+  volume used a constant 7 before); str_outmode(0) mixes both channels into both (audio_set_mono in audio_mix.c). Init_rev_set / Zero_rev_set: rev01.c from game C
+  (calls the host flSndSetRev, so agent A's reverb approximation stays the single place that interprets the settings).
+- Put_sprite_rotate (putspr3.c) and Draw_square (putspr_nm.c) were no-ops in rt_menu.c: now game C. smoke_init, smell_init, senko_init, ear_init, em_yobi_init
+  (emw02.c; clear the monster state stacks the wired push/pull functions use) were no-ops in rt_flow.c: now game C.
+- The "newly exposed" callees (SetPartsTrans*, weapon_dat_make*, sight_disp*, em_trans_sub, flmatAddTrans2, light_change_normal, func_5ACA60/5FCBB0/60E330/618F00) did not run
+  in any of the five tests (RT_TRACE=1): they are only referenced by weapon3_nm.c / f_stage_nm.c functions that are weakened. Weapon and armour models are drawn by the host (rt_player.c) so nothing visible is missing there.
+- trans_shell / trans_set / trans_eft: no GS packet layer needed. They are three small list walkers that call each object's trans(); the host does the same walks in
+  rt_game.c / rt_eft.c (rt_eft_draw), so the stand-ins are never reached. Nothing to wire.
+- Lighting is the real gap. The host lights every model with one fixed set (viewer.c, "lighting: the VU1 model"); the game's per-stage lights are not used:
+  light_init (original bytes 0x11DB04, not decompiled, a stand-in), light_work (2 x 0x140 bytes, 3 lights of 0x68), light_change_normal / pl_light_change (stage direction rows
+  from pl_light_tbl), light_move + flash_move (thunder), Pl_light_set (blend with the player's colour override), and light_set which hands the three light blocks to
+  flSetRenderState(0x5A..0x5C) and ambient to state 1. Estimated job: decompile light_init (~0x260 bytes), fix the 0x68-byte light block layout (direction at +4..+0xC is known;
+  colour and the VU1 matrix fields are not), have rt_fl.c capture states 0x5A-0x5C/1 into the fl_model Light, and use it for hunter, monsters, NPCs. About one to two days; the
+  visible effect is per-stage/time-of-day lighting and the thunder flash on the storm stage.
+
+
+### Frog fishing works end to end (agent B, round 3)
+- flag14 == 3 is the "damaged" action kind (Pl_act_set(pl, 3, ...) in pl_damage.c), not fishing; the fishing hunter has
+  flag14 0 (act 0/0x50 waiting), so the eye test does see him. That candidate is refuted.
+- With the Plesioth kept idle (new test aid `RT_EM_BLIND=1`: x88B = 0 before enemy_mv each tick, so
+  em_eye_search_set clears x88C) the whole chain runs on the game's own code with no PC changes: the idle script's
+  stage-54 block (contents 8) passes em_cmd_pl_fishing_ck, em21 starts act 2/17 (em_fly17: Kaeru_ck finds the frog float
+  Eft22 arg 1), the hunter reels (circle, act 0/0x53 = 83), act 2/18 pulls the Plesioth out (195 ticks), then 4/15
+  (landed, steps 1-7) and it walks on land (1/x). Which fishing check passes is random per idle cycle (x39A): in the run
+  FISHCK ran at ticks 496, 617, 1178 and only the last led to 2/17.
+- Why it does not happen without the aid: the idle script's first cycle (352 ticks) starts when the stage loads, with
+  no float out, so it targets the hunter (target kind player) and its closing act 2/3 turns the Plesioth toward him; the
+  30 degree eye cone sweeps over the hunter, x88C is set, Em_Mode_Chg(1) and the Plesioth fights for as long as it
+  sees him (x886 is reset every tick while noticed; that is the original). Whether the PS2 shows the same (a real
+  player probably leaves its sight, waits for it to calm down, then casts before an idle cycle starts) is not
+  verified. Not a PC bug as far as found: the eye angle follows the head joint matrix correctly (checked against
+  the bearing), the casting and bite code is unmodified game C.
+- tools/test_frog.sh runs it: cast at tick 14, bite at tick ~1179, circle at 1200; passes on the em act log.
+
+### Stand-ins, round 23 (agent F)
+- Options sound: str_master_vol / str_stop_all / str_outmode are now host functions in rt_snd.c. Volumes come from system_w+0x36 (BGM) / +0x37 (SE) live (the SE
+  volume used a constant 7 before); str_outmode(0) mixes both channels into both (audio_set_mono in audio_mix.c). Init_rev_set / Zero_rev_set: rev01.c from game C
+  (calls the host flSndSetRev, so agent A's reverb approximation stays the single place that interprets the settings).
+- Put_sprite_rotate (putspr3.c) and Draw_square (putspr_nm.c) were no-ops in rt_menu.c: now game C. smoke_init, smell_init, senko_init, ear_init, em_yobi_init
+  (emw02.c; clear the monster state stacks the wired push/pull functions use) were no-ops in rt_flow.c: now game C.
+- The "newly exposed" callees (SetPartsTrans*, weapon_dat_make*, sight_disp*, em_trans_sub, flmatAddTrans2, light_change_normal, func_5ACA60/5FCBB0/60E330/618F00) did not run
+  in any of the five tests (RT_TRACE=1): they are only referenced by weapon3_nm.c / f_stage_nm.c functions that are weakened. Weapon and armour models are drawn by the host (rt_player.c) so nothing visible is missing there.
+- trans_shell / trans_set / trans_eft: no GS packet layer needed. They are three small list walkers that call each object's trans(); the host does the same walks in
+  rt_game.c / rt_eft.c (rt_eft_draw), so the stand-ins are never reached. Nothing to wire.
+- Lighting is the real gap. The host lights every model with one fixed set (viewer.c, "lighting: the VU1 model"); the game's per-stage lights are not used:
+  light_init (original bytes 0x11DB04, not decompiled, a stand-in), light_work (2 x 0x140 bytes, 3 lights of 0x68), light_change_normal / pl_light_change (stage direction rows
+  from pl_light_tbl), light_move + flash_move (thunder), Pl_light_set (blend with the player's colour override), and light_set which hands the three light blocks to
+  flSetRenderState(0x5A..0x5C) and ambient to state 1. Estimated job: decompile light_init (~0x260 bytes), fix the 0x68-byte light block layout (direction at +4..+0xC is known;
+  colour and the VU1 matrix fields are not), have rt_fl.c capture states 0x5A-0x5C/1 into the fl_model Light, and use it for hunter, monsters, NPCs. About one to two days; the
+  visible effect is per-stage/time-of-day lighting and the thunder flash on the storm stage.
+
+### Lighting from the game's stage lights (agent F, round 24)
+- light_init (0x11DB10, 584 bytes) is decompiled as a near-match copy for the PC: src/main/model/light_init_nm.c (the PS2 build keeps the original bytes; -O4 inlines the helper so an exact match
+  would need the two loops written out). With light_change_normal (light_nm.c), light_move (light04.c) and flash_move (light05.c) it is linked through PICK_X; init_light_work (rt_flow.c) and
+  viewer.c's load_stage_models call it at every stage load.
+- light_work layout: two sets of 0x140 bytes (set 0 = the stage set from stg_light_tbl, colours x10, light_set(0) in trans_stage; set 1 = the actor set from pl_light_tbl[stage], used by hunters,
+  monsters, NPCs, effects through pl_light_change + Pl_light_set). Set + 0x10 + 8 + i*0x68 is the LGT block of light i (flSetRenderState 0x5A+i copies it into flLIGHT):
+  +0x04 rgb colour (a), +0x14 second row (all 1.0 in the tables; sent to the shader as a per-light row), +0x24 rgb row c, +0x34 direction (the light travels along it; the shader negates it),
+  +0x40 fourth row, +0x50 attenuation. Table rows (per stage, 5 pointers): [0] +0x40 row, [1] directions (12 bytes per light), [2] colours a, [3] rows c, [4] second rows (16 bytes per light).
+  PS2SHADER_ADD_LIGHTCOL3 hands the a rows to the VU1 as the three light colours and the sum of the c rows as the ambient (docs/formats/graphics.md: mem 12-14 colours, mem 15 ambient).
+- Host: viewer.c `rt_light_from_game` reads set 1 (+0x158 + 0x68*i) into the fl_light that fl_model_pose (CPU lighting) uses: dir = block+0x34 normalised, col = block+4, ambient = sum of block+0x24.
+  `light_cur()` is used for the hunter, weapon, monsters and NPCs. `RT_LIGHT_FIXED=1` brings back the old fixed set (before/after), `RT_LIGHT_TRACE=1` prints the three lights. Lighting is on the CPU (vertex colours), so
+  the GL and nv2a backends need nothing.
+- Not done: per-actor adjustments (pl_light_change near-monster rows for stages 12/13/14/28/30 and the actor's own light table; Pl_light_set's blend with the player colour override), the stage set (set 0) for
+  set objects, and the thunder flash: flash_move is linked but nothing decompiled starts it (no C writes the light_work flag byte; it is set from code not yet ported).
+- Before/after (--stage N --play --follow 350,160,-0.15, 640x360, RT_LIGHT_FIXED=1 vs default), hunter in the middle, build/show/light/cmp*.png: stage 4 (waterfall plain): warmer key light from the
+  upper right, shadow side a lot darker, more contrast; stage 5 (dark jungle): the table has no ambient row, so the hunter is nearly black on the shadow side (the old fixed set lit him evenly);
+  stage 13 / 17 / 28 (cave and rock stages): slightly dimmer and bluer hunter; stage 6 (marsh grass): nearly unchanged. Village hunter (quest tests): a little darker with a visible light side.

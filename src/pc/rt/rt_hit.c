@@ -40,11 +40,53 @@ uint8_t *rt_file_load(int idx, size_t *n)
 }
 
 /* The PS2 loads the wall / ground HITS files into fixed RAM areas
- * (stage_hit_area_w / _f hold their addresses). Here: two host buffers. */
-#define HIT_AREA_SIZE (4u << 20)
+ * (stage_hit_area_w / _f hold their addresses). Here: two host buffers.
+ * The largest files on the disc, decompressed: lg045.bin 164352 bytes
+ * (ground), lw032.bin 81204 (wall), so 512 KB each leaves room (was 4 MB
+ * each; docs/xbox.md memory). RT_MEM reports how much the game used. */
+#define HIT_AREA_SIZE (512u << 10)
 s32 stage_hit_area_w;
 s32 stage_hit_area_f;
 static uint8_t *hit_area[2];
+
+/* Host buffers standing in for the PS2's fixed load areas: their size, and
+ * how much of them files used (RT_MEM: rt_area_report). load_file_mdl
+ * refuses a file that would run past the end of its area. */
+#define MAXAREA 8
+static struct { uint8_t *p; size_t size, high; const char *name; } areas[MAXAREA];
+void rt_area_register(void *p, size_t size, const char *name)
+{
+    int k;
+    for (k = 0; k < MAXAREA; k++)
+        if (!areas[k].p || areas[k].p == p) {
+            areas[k].p = p;
+            areas[k].size = size;
+            areas[k].name = name;
+            return;
+        }
+}
+/* 0 if n bytes at dst fit (or dst is in no known area) */
+static int area_check(const uint8_t *dst, size_t n)
+{
+    int k;
+    for (k = 0; k < MAXAREA && areas[k].p; k++)
+        if (dst >= areas[k].p && dst < areas[k].p + areas[k].size) {
+            size_t end = (size_t)(dst - areas[k].p) + n;
+            if (end > areas[k].size)
+                return -1;
+            if (end > areas[k].high)
+                areas[k].high = end;
+            return 0;
+        }
+    return 0;
+}
+void rt_area_report(void)
+{
+    int k;
+    for (k = 0; k < MAXAREA && areas[k].p; k++)
+        fprintf(stderr, "memstat: area %-24s %8zu KB, files used up to %zu KB\n", areas[k].name,
+                areas[k].size >> 10, areas[k].high >> 10);
+}
 
 /* load_file_mdl (0x11ED20): AFS entry idx, Meltw-decompressed, to dst.
  * 1 loaded, 0 failed, -1 no file (idx < 0). */
@@ -57,12 +99,12 @@ int load_file_mdl(s32 dst, s32 idx)
         return -1;
     if (!file_loader || !(p = file_loader(idx, &n)))
         return 0;
-    for (k = 0; k < 2; k++)
-        if ((uint8_t *)dst == hit_area[k] && n > HIT_AREA_SIZE) {
-            fprintf(stderr, "rt: hit file %d too big (%zu)\n", idx, n);
-            free(p);
-            return 0;
-        }
+    (void)k;
+    if (area_check((const uint8_t *)dst, n) != 0) {
+        fprintf(stderr, "rt: file %d (%zu bytes) does not fit its load area\n", idx, n);
+        free(p);
+        return 0;
+    }
     memcpy((void *)dst, p, n);
     free(p);
     return 1;
@@ -76,8 +118,15 @@ int rt_load_stage_hit(int stage)
 {
     int k;
     for (k = 0; k < 2; k++)
-        if (!hit_area[k] && !(hit_area[k] = malloc(HIT_AREA_SIZE)))
-            return -1;
+        if (!hit_area[k]) {
+            if (!(hit_area[k] = malloc(HIT_AREA_SIZE)))
+                return -1;
+            rt_area_register(hit_area[k], HIT_AREA_SIZE, k ? "ground collision" : "wall collision");
+        }
+    if (getenv("RT_MEM")) {         /* fill pattern for the high-water check below */
+        memset(hit_area[0], 0xCD, HIT_AREA_SIZE);
+        memset(hit_area[1], 0xCD, HIT_AREA_SIZE);
+    }
     memset(hit_area[0], 0xFF, 64);
     memset(hit_area[1], 0xFF, 64);
     stage_hit_area_w = (s32)hit_area[0];
@@ -86,6 +135,14 @@ int rt_load_stage_hit(int stage)
         quest_w.x80 = (s32 *)St_data;
     memset(&diorama_w, 0, sizeof diorama_w);
     load_stage_hit(stage);
+    if (getenv("RT_MEM"))
+        for (k = 0; k < 2; k++) {
+            size_t top = HIT_AREA_SIZE;
+            while (top > 0 && hit_area[k][top - 1] == 0xCD)
+                top--;
+            fprintf(stderr, "memstat: stage %d %s collision area used %zu of %u bytes\n", stage,
+                    k ? "ground" : "wall", top, HIT_AREA_SIZE);
+        }
     return diorama_w.gtbl ? 0 : -1;
 }
 

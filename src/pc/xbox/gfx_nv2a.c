@@ -39,6 +39,8 @@ struct gfx_texture {
     int w, h, src, rect;
     uint8_t *mem;                        /* contiguous */
     uint32_t pitch;
+    uint32_t *pal;                       /* palettised (P8): 256 x A8R8G8B8, contiguous; else NULL */
+    size_t bytes;                        /* GPU memory taken (pixels + palette) */
 };
 
 struct gfx_clay {
@@ -64,6 +66,8 @@ static struct {
     uint8_t *ring;
     uint32_t ring_used;
     int zwrite, ztest;
+    int fog_on;
+    float fog_start, fog_end, fog_col[4];
 } G;
 
 static const float ident[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
@@ -126,7 +130,8 @@ static void fixed_state(void)
     p = pb_push1(p, NV097_SET_ALPHA_REF, 0);
     p = pb_push1(p, NV097_SET_BLEND_ENABLE, 0);
     p = pb_push1(p, NV097_SET_BLEND_EQUATION, NV097_SET_BLEND_EQUATION_V_FUNC_ADD);
-    p = pb_push1(p, NV097_SET_FOG_ENABLE, 0);
+    p = pb_push1(p, NV097_SET_FOG_ENABLE, 0);     /* fog is done in the shaders (COLOR1) */
+    p = pb_push1(p, NV097_SET_SPECULAR_ENABLE, 1);  /* let COLOR1 through [guess: needed with vertex programs] */
     pb_end(p);
     /* texture stages 1-3 off */
     p = pb_begin();
@@ -269,6 +274,42 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
     t->src = gfx_tex_src_hint;
     gfx_tex_src_hint = 0;
     t->rect = !(is_pow2(w) && is_pow2(h));
+    if (!t->rect && w * h >= 256) {
+        /* palettised when the image has <= 256 colours: 1 byte per texel
+         * instead of 4 (NV2A SZ_I8_A8R8G8B8; swizzled, power-of-two only) */
+        static uint32_t pal[256];
+        uint8_t *idx = malloc((size_t)w * h);
+        int np = idx ? gfx_to_indexed((const uint32_t *)rgba, w * h, pal, idx) : -1;
+        if (np >= 0) {
+            t->pal = MmAllocateContiguousMemoryEx(1024, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
+            t->mem = t->pal ? MmAllocateContiguousMemoryEx((size_t)w * h, 0, GPU_MAXRAM, 0,
+                                                            PAGE_READWRITE | PAGE_WRITECOMBINE) : NULL;
+        }
+        if (np >= 0 && t->mem) {
+            uint32_t mx, my;
+            int x, y, i;
+            for (i = 0; i < 256; i++) {          /* RGBA bytes -> A8R8G8B8 word */
+                uint32_t c = i < np ? pal[i] : 0;
+                t->pal[i] = (c & 0xFF00FF00u) | (c & 0xFF) << 16 | (c >> 16 & 0xFF);
+            }
+            swizzle_masks(w, h, &mx, &my);
+            for (y = 0; y < h; y++) {
+                uint32_t oy = deposit((uint32_t)y, my);
+                for (x = 0; x < w; x++)
+                    t->mem[oy | deposit((uint32_t)x, mx)] = idx[y * w + x];
+            }
+            free(idx);
+            t->pitch = (uint32_t)w;
+            t->bytes = (size_t)w * h + 1024;
+            rt_ms_add("textures in GPU memory (P8 or RGBA8, GPU)", (long)t->bytes);
+            rt_ms_add("textures as on disc (4/8-bit+CLUT, GPU)", t->src);
+            return t;
+        }
+        free(idx);
+        if (t->pal)
+            MmFreeContiguousMemory(t->pal);
+        t->pal = NULL;
+    }
     t->pitch = (uint32_t)w * 4;
     size = (size_t)t->pitch * h;
     t->mem = MmAllocateContiguousMemoryEx(size, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
@@ -276,7 +317,8 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
         free(t);
         return NULL;
     }
-    rt_ms_add("textures in GPU memory (RGBA8, GPU)", (long)size);
+    t->bytes = size;
+    rt_ms_add("textures in GPU memory (P8 or RGBA8, GPU)", (long)size);
     rt_ms_add("textures as on disc (4/8-bit+CLUT, GPU)", t->src);
     if (t->rect) {
         memcpy(t->mem, rgba, size);
@@ -299,9 +341,11 @@ void gfx_release_texture(gfx_texture *t)
     if (!t)
         return;
     wait_idle();                       /* the GPU may still read it this frame */
-    rt_ms_add("textures in GPU memory (RGBA8, GPU)", -(long)t->pitch * t->h);
+    rt_ms_add("textures in GPU memory (P8 or RGBA8, GPU)", -(long)t->bytes);
     rt_ms_add("textures as on disc (4/8-bit+CLUT, GPU)", -(long)t->src);
     MmFreeContiguousMemory(t->mem);
+    if (t->pal)
+        MmFreeContiguousMemory(t->pal);
     if (G.tex == t)
         G.tex = NULL;
     free(t);
@@ -315,7 +359,8 @@ static void bind_texture(gfx_texture *t)
     if (t->rect)
         fmt = MASK(NV097_SET_TEXTURE_FORMAT_COLOR, NV097_SET_TEXTURE_FORMAT_COLOR_LU_IMAGE_A8B8G8R8);
     else
-        fmt = MASK(NV097_SET_TEXTURE_FORMAT_COLOR, NV097_SET_TEXTURE_FORMAT_COLOR_SZ_A8B8G8R8)
+        fmt = MASK(NV097_SET_TEXTURE_FORMAT_COLOR, t->pal ? NV097_SET_TEXTURE_FORMAT_COLOR_SZ_I8_A8R8G8B8
+                                                          : NV097_SET_TEXTURE_FORMAT_COLOR_SZ_A8B8G8R8)
             | MASK(NV097_SET_TEXTURE_FORMAT_BASE_SIZE_U, log2i(t->w))
             | MASK(NV097_SET_TEXTURE_FORMAT_BASE_SIZE_V, log2i(t->h))
             | MASK(NV097_SET_TEXTURE_FORMAT_BASE_SIZE_P, 0);
@@ -331,6 +376,10 @@ static void bind_texture(gfx_texture *t)
     p = pb_push1(p, NV097_SET_TEXTURE_ADDRESS, wrap);
     p = pb_push1(p, NV097_SET_TEXTURE_CONTROL0, 0x4003ffc0);
     p = pb_push1(p, NV097_SET_TEXTURE_FILTER, filt);
+    if (t->pal)     /* 256 entries; DMA B as the texture (CONTEXT_DMA 2 above) [guess: untested] */
+        p = pb_push1(p, NV097_SET_TEXTURE_PALETTE, ((uint32_t)(uintptr_t)t->pal & 0x03ffffc0)
+                     | MASK(NV097_SET_TEXTURE_PALETTE_LENGTH, NV097_SET_TEXTURE_PALETTE_LENGTH_256)
+                     | NV097_SET_TEXTURE_PALETTE_CONTEXT_DMA);
     pb_end(p);
 }
 
@@ -344,10 +393,19 @@ void gfx_set_render_state(int state, uintptr_t v)
         G.tex = (gfx_texture *)v;
         break;
     case GFX_RS_FOG_COLOR:
+        G.fog_col[0] = ((v >> 16) & 255) / 255.0f;
+        G.fog_col[1] = ((v >> 8) & 255) / 255.0f;
+        G.fog_col[2] = (v & 255) / 255.0f;
+        break;
     case GFX_RS_FOG_START:
+        G.fog_start = *(const float *)v;
+        break;
     case GFX_RS_FOG_END:
+        G.fog_end = *(const float *)v;
+        break;
     case GFX_RS_FOG_ENABLE:
-        break;                          /* fog: not yet (see the header) */
+        G.fog_on = v != 0;
+        break;
     case GFX_RS_VIEW:
         memcpy(G.view, (const float *)v, sizeof G.view);
         break;
@@ -415,12 +473,19 @@ void gfx_set_render_state_f(int state, float value)
 }
 
 /* ------------------------------------------------------------ drawing */
-/* vertex program constants: c[0..3] the combined matrix, c[4..7] the
- * texture matrix, c[8].x = 0 (cgc's constant; see shaders/vs.vs.cg) */
-static void upload_constants(const float *mvp, const float *tex)
+/* vertex program constants (cgc's allocation, see shaders/vs.vs.cg):
+ * c[0..3] the combined matrix, c[4..7] the texture matrix, c[8] fog
+ * (k, b): factor = saturate(w * k + b), c[9] fog colour, c[10] = (0, 1)
+ * cgc's own constant. fog: 0 for 2D draws. */
+static void upload_constants(const float *mvp, const float *tex, int fog)
 {
-    static const float zero[4] = { 0, 0, 0, 0 };
+    static const float c10[4] = { 0, 1, 0, 0 };
+    float kb[4] = { 0, 0, 0, 0 };
     uint32_t *p = pb_begin();
+    if (fog && G.fog_on && G.fog_end != G.fog_start) {     /* GL linear fog, w as the eye distance */
+        kb[0] = 1.0f / (G.fog_end - G.fog_start);
+        kb[1] = -G.fog_start / (G.fog_end - G.fog_start);
+    }
     p = pb_push1(p, NV097_SET_TRANSFORM_CONSTANT_LOAD, 96);
     pb_push(p++, NV097_SET_TRANSFORM_CONSTANT, 16);
     memcpy(p, mvp, 64);
@@ -429,7 +494,13 @@ static void upload_constants(const float *mvp, const float *tex)
     memcpy(p, tex, 64);
     p += 16;
     pb_push(p++, NV097_SET_TRANSFORM_CONSTANT, 4);
-    memcpy(p, zero, 16);
+    memcpy(p, kb, 16);
+    p += 4;
+    pb_push(p++, NV097_SET_TRANSFORM_CONSTANT, 4);
+    memcpy(p, G.fog_col, 16);
+    p += 4;
+    pb_push(p++, NV097_SET_TRANSFORM_CONSTANT, 4);
+    memcpy(p, c10, 16);
     p += 4;
     pb_end(p);
 }
@@ -559,17 +630,74 @@ void gfx_update_clay(gfx_clay *c, const float *pos, const uint8_t *col)
         memcpy(c->col, col, 4 * (size_t)c->nvert);
 }
 
+/* ------------------------------------------------------------ near clipping
+ * The vertex program divides by w; a triangle with a vertex at or behind
+ * the eye would come out wrapped across the screen. Triangles that cross
+ * the plane w = CLIP_W are cut here on the CPU, in object space (a clip
+ * space plane is a plane there too, and the attributes interpolate the
+ * same way); triangles wholly behind it are dropped. Only clays with such
+ * triangles pay for it. */
+#define CLIP_W 1.0f
+static float clip_w_of(const float *mvp, const float *p)
+{
+    return p[0] * mvp[3] + p[1] * mvp[7] + p[2] * mvp[11] + mvp[15];
+}
+
+static void vtx_lerp(vtx *o, const vtx *a, const vtx *b, float t)
+{
+    int k;
+    for (k = 0; k < 3; k++)
+        o->pos[k] = a->pos[k] + (b->pos[k] - a->pos[k]) * t;
+    for (k = 0; k < 4; k++)
+        o->col[k] = (uint8_t)(a->col[k] + (b->col[k] - a->col[k]) * t + 0.5f);
+    for (k = 0; k < 2; k++)
+        o->st[k] = a->st[k] + (b->st[k] - a->st[k]) * t;
+}
+
+static uint16_t *clip_buf;          /* the batches' index lists after clipping (grows) */
+static int clip_cap, clip_first[256], clip_count[256];
+
 void gfx_execute_clay(gfx_clay *c)
 {
     float mvp[16], tm[16];
     unsigned f[4] = { 255, 255, 255, 255 };
-    int i, k, b, fade = G.fade != 0xFFFFFFFFu;
+    int i, k, b, fade = G.fade != 0xFFFFFFFFu, ncross = 0, nv;
+    float *w = NULL;
+    const uint16_t *clip_idx = NULL;
     vtx *v;
 
     if (gfx_rec_clay(c))
         return;
-    if (!c->nvert || !(v = ring_alloc(c->nvert)))
+    if (!c->nvert)
         return;
+    mat_mul(mvp, G.world, G.view);          /* row vectors: v * world * view * proj * viewport */
+    mat_mul(mvp, mvp, G.proj);
+    mat_mul(mvp, mvp, G.viewport);
+    /* which triangles cross the near plane (w per vertex: one dot product) */
+    if (c->nbatch <= 256 && (w = malloc(sizeof(float) * c->nvert)) != NULL) {
+        int any_out = 0;
+        for (i = 0; i < c->nvert; i++)
+            if ((w[i] = clip_w_of(mvp, c->pos + 3 * i)) < CLIP_W)
+                any_out = 1;
+        if (any_out)
+            for (b = 0; b < c->nbatch; b++)
+                for (i = 0; i + 2 < c->batch[b].count; i += 3) {
+                    const uint16_t *t = c->index + c->batch[b].first + i;
+                    int in = (w[t[0]] >= CLIP_W) + (w[t[1]] >= CLIP_W) + (w[t[2]] >= CLIP_W);
+                    if (in < 3)
+                        ncross++;
+                }
+        if (!ncross || c->nvert + 2 * ncross > 65535) {
+            free(w);
+            w = NULL;
+            ncross = 0;
+        }
+    }
+    nv = c->nvert + 2 * ncross;
+    if (!(v = ring_alloc(nv))) {
+        free(w);
+        return;
+    }
     if (fade) {
         f[0] = (G.fade >> 16) & 255;
         f[1] = (G.fade >> 8) & 255;
@@ -585,9 +713,48 @@ void gfx_execute_clay(gfx_clay *c)
         else
             v[i].st[0] = v[i].st[1] = 0;
     }
-    mat_mul(mvp, G.world, G.view);          /* row vectors: v * world * view * proj * viewport */
-    mat_mul(mvp, mvp, G.proj);
-    mat_mul(mvp, mvp, G.viewport);
+    if (ncross) {
+        /* new index lists: kept triangles as they are, crossing ones cut
+         * (1 vertex in: 1 triangle; 2 in: a quad = 2 triangles) */
+        int nidx = 0, nnew = c->nvert;
+        for (b = 0; b < c->nbatch; b++)
+            nidx += c->batch[b].count + 3 * ncross;
+        if (nidx > clip_cap) {
+            free(clip_buf);
+            clip_buf = malloc(sizeof *clip_buf * (size_t)nidx);
+            clip_cap = clip_buf ? nidx : 0;
+        }
+        if (!clip_buf) {
+            free(w);
+            return;
+        }
+        clip_idx = clip_buf;
+        nidx = 0;
+        for (b = 0; b < c->nbatch; b++) {
+            clip_first[b] = nidx;
+            for (i = 0; i + 2 < c->batch[b].count; i += 3) {
+                const uint16_t *t = c->index + c->batch[b].first + i;
+                uint16_t poly[4];
+                float tw[3] = { w[t[0]], w[t[1]], w[t[2]] }, tt[4];
+                int np, e, ea[4], eb[4];
+                np = gfx_clip_tri(tw, CLIP_W, ea, eb, tt);
+                for (e = 0; e < np; e++)
+                    if (tt[e] == 0.0f) {
+                        poly[e] = t[ea[e]];
+                    } else {
+                        vtx_lerp(&v[nnew], &v[t[ea[e]]], &v[t[eb[e]]], tt[e]);
+                        poly[e] = (uint16_t)nnew++;
+                    }
+                for (e = 1; e + 1 < np; e++) {
+                    clip_buf[nidx++] = poly[0];
+                    clip_buf[nidx++] = poly[e];
+                    clip_buf[nidx++] = poly[e + 1];
+                }
+            }
+            clip_count[b] = nidx - clip_first[b];
+        }
+        free(w);
+    }
     set_arrays(v);
     for (b = 0; b < c->nbatch; b++) {
         gfx_texture *t = c->batch[b].tex ? c->batch[b].tex : G.tex;
@@ -595,8 +762,11 @@ void gfx_execute_clay(gfx_clay *c)
             t = NULL;
         bind_texture(t);
         tex_matrix(t, tm);
-        upload_constants(mvp, tm);
-        draw_indexed(c->index + c->batch[b].first, c->batch[b].count);
+        upload_constants(mvp, tm, 1);
+        if (clip_idx)
+            draw_indexed(clip_idx + clip_first[b], clip_count[b]);
+        else
+            draw_indexed(c->index + c->batch[b].first, c->batch[b].count);
     }
 }
 
@@ -635,7 +805,7 @@ void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, con
     push1(NV097_SET_DEPTH_MASK, 0);
     set_arrays(v);
     bind_texture(t);
-    upload_constants(m, tm);
+    upload_constants(m, tm, 0);
     draw_arrays(nvert);
     push1(NV097_SET_DEPTH_TEST_ENABLE, G.ztest);
     push1(NV097_SET_DEPTH_MASK, G.zwrite);

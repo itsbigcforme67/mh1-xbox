@@ -11,6 +11,7 @@ then linked with nxdk-link and turned into build/xbox/default.xbe by cxbe.
     . ~/xboxdev/env.sh; python3 tools/build_xbox.py      # see docs/xbox.md
 Standard library only.
 """
+import re
 import concurrent.futures as cf, glob, os, shlex, shutil, subprocess, sys
 
 NXDK = os.environ.get('NXDK_DIR', os.path.expanduser('~/xboxdev/nxdk'))
@@ -23,11 +24,30 @@ RELAX = ['-Wno-error=implicit-function-declaration', '-Wno-error=implicit-int', 
 FRONT = ['src/pc/viewer.c', 'src/pc/fl/fl_model.c', 'src/pc/xbox/gfx_null.c', 'src/pc/fmt/afs.c', 'src/pc/fmt/melt.c',
          'src/pc/fmt/amo.c', 'src/pc/fmt/apx.c', 'src/pc/fmt/ahi.c', 'src/pc/fmt/aan.c', 'src/pc/fmt/hits.c',
          'src/pc/pad/pad_sdl.c', 'src/pc/fmt/snd.c', 'src/pc/movie/sfd.c', 'src/pc/audio/audio_mix.c', 'src/pc/audio/audio_sdl.c',
-         'src/pc/gfx/gfx_rec.c', 'src/pc/rt/rt_mem.c', 'src/pc/xbox/mc_null.c', 'src/pc/xbox/xbox_libc.c']
+         'src/pc/gfx/gfx_rec.c', 'src/pc/gfx/gfx_pal.c', 'src/pc/rt/rt_mem.c', 'src/pc/xbox/mc_xbox.c', 'src/pc/xbox/xbox_libc.c']
 COMPAT = 'src/pc/xbox/xbox_compat.h'     # fopen with '/' -> '\\' (xbox_libc.c)
 SKIP = {'rt_mc', 'rt_symtab', 'rt_memstat'}
 LIBS = ['xboxkrnl/libxboxkrnl.lib', 'libpdclib.lib', 'winmm.lib', 'libwinapi.lib', 'libnxdk_hal.lib', 'libnxdk.lib',
         'libnxdk_automount_d.lib', 'libpbkit.lib', 'nxdk_usb.lib', 'libxboxrt.lib', 'libzlib.lib', 'libSDL2.lib']
+
+def title_identity():
+    """title id and name from src/pc/xbox/xbox_title.h (the same constants the save code uses)"""
+    h = open('src/pc/xbox/xbox_title.h').read()
+    tid = int(re.search(r'XBOX_TITLE_ID\s+(0x[0-9A-Fa-f]+)', h).group(1), 16)
+    name = re.search(r'XBOX_TITLE_NAME\s+"([^"]*)"', h).group(1)
+    return tid, name
+
+def patch_xbe_title_id(path, tid):
+    """cxbe writes a fixed title id (0xFFFF0002) into the certificate; set ours.
+    XBE header: base address at 0x104, certificate address at 0x118; the title id is
+    at certificate +8. (No signature is checked by xemu or a softmodded console.)"""
+    import struct
+    b = bytearray(open(path, 'rb').read())
+    assert b[:4] == b'XBEH'
+    base, cert = struct.unpack_from('<II', b, 0x104)[0], struct.unpack_from('<I', b, 0x118)[0]
+    off = cert - base
+    struct.pack_into('<I', b, off + 8, tid)
+    open(path, 'wb').write(b)
 
 def xcmd(cmd, out):
     """a recorded gcc command -> nxdk-cc arguments"""
@@ -79,9 +99,17 @@ def main():
     # only the objects the PC build links (build/pc/objs.txt, link order); build/pc
     # can hold stale objects of files no longer built
     linked = [os.path.basename(l.strip())[:-2] for l in open('build/pc/objs.txt') if l.strip()]
+    if 'rt_gen' not in linked or not os.path.exists('build/pc/mhview') \
+            or os.path.getmtime('build/pc/mhview') < os.path.getmtime('build/pc/objs.txt'):
+        sys.exit('build_xbox: the PC build did not finish (build/pc/objs.txt has no rt_gen.o or is newer '
+                 'than build/pc/mhview); run tools/build_pc.sh first')
+    nocmd = [b for b in linked if b not in SKIP and not os.path.exists('build/pc/cmd/%s.sh' % b)]
+    if nocmd:       # e.g. rt_gen (gen_rt_auto's tables) skipped -> dozens of undefined symbols
+        sys.exit('build_xbox: no recorded compile command for %s; run tools/build_pc.sh (to the end) first'
+                 % ' '.join(nocmd[:10]))
     for b in linked:
         c = 'build/pc/cmd/%s.sh' % b
-        if b in SKIP or not os.path.exists(c):
+        if b in SKIP:
             continue
         args = xcmd(open(c).read().strip(), '%s/%s.obj' % (OBJ, b))
         h = 'build/pc/adapt/%s.h' % b
@@ -124,7 +152,10 @@ def main():
     import coff_weak                            # GNU-ld weak rules for lld-link
     objs, nfix = coff_weak.resolve(objs, OUT + '/linkobj')
     print('coff_weak: %d losing weak definitions made references' % nfix)
-    link = ['nxdk-link', '-include:_automount_d_drive', '-stack:0x100000', '-out:' + dst + '/main.exe', '-map:' + dst + '/main.map'] \
+    # main thread stack: 256 KB. The PC build's deepest main-thread stack in the
+    # three PC tests and the title / Rathian runs was 35 KB (RT_STACK=1); nxdk's
+    # default is 64 KB.
+    link = ['nxdk-link', '-include:_automount_d_drive', '-stack:0x40000', '-out:' + dst + '/main.exe', '-map:' + dst + '/main.map'] \
         + objs + [NXDK + '/lib/' + l for l in LIBS]
     r = subprocess.run(link, capture_output=True, text=True)
     open(dst + '/link.log', 'w').write(r.stdout + r.stderr)
@@ -132,8 +163,11 @@ def main():
         und = sorted(set(l.split('undefined symbol: ')[1] for l in (r.stdout + r.stderr).splitlines() if 'undefined symbol:' in l))
         print('link failed: %d undefined symbols (build/xbox/link.log): %s' % (len(und), ' '.join(und[:40])))
         sys.exit(1)
-    subprocess.run([NXDK + '/tools/cxbe/cxbe', '-OUT:' + dst + '/default.xbe', '-TITLE:MH1 port', dst + '/main.exe'],
+    tid, tname = title_identity()
+    subprocess.run([NXDK + '/tools/cxbe/cxbe', '-OUT:' + dst + '/default.xbe', '-TITLE:' + tname, dst + '/main.exe'],
                    check=True, capture_output=True)
+    patch_xbe_title_id(dst + '/default.xbe', tid)
+    print('XBE certificate: title id %08X, title name "%s"' % (tid, tname))
     print('built %s/default.xbe (%d bytes)' % (dst, os.path.getsize(dst + '/default.xbe')))
     # an XISO holding only the XBE (the game's data files are not shipped; docs/xbox.md)
     iso_dir = dst + '/iso'

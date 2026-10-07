@@ -52,7 +52,9 @@ static u8 size_w = 20, size_h = 20;
 static s16 cur_pal;
 static int halftype;
 static u32 pal[32][4];          /* RGBA bytes as a word: R | G << 8 | B << 16 | A << 24 */
-static gfx_texture **glyph_tex; /* [NGLYPH * 32] */
+/* glyph textures per glyph and palette: glyph_tex[glyph] -> 32 slots,
+ * allocated when the glyph is first drawn (a flat table was 1 MB) */
+static gfx_texture ***glyph_tex; /* [NGLYPH] */
 static int in_draw;
 
 extern int font_reset_flag;
@@ -64,10 +66,13 @@ void rt_2d_restore_texture(void);
 void flfntCacheFlush(void)
 {
     int i;
+    int k;
     if (glyph_tex)
-        for (i = 0; i < NGLYPH * 32; i++)
+        for (i = 0; i < NGLYPH; i++)
             if (glyph_tex[i]) {
-                gfx_release_texture(glyph_tex[i]);
+                for (k = 0; k < 32; k++)
+                    gfx_release_texture(glyph_tex[i][k]);
+                free(glyph_tex[i]);
                 glyph_tex[i] = NULL;
             }
 }
@@ -102,9 +107,9 @@ void flfntSetPalData(int n, u32 a, u32 b, u32 c, u32 d)
     }
     if (glyph_tex)                  /* this palette's glyphs are rebuilt on next use */
         for (i = 0; i < NGLYPH; i++)
-            if (glyph_tex[i * 32 + n]) {
-                gfx_release_texture(glyph_tex[i * 32 + n]);
-                glyph_tex[i * 32 + n] = NULL;
+            if (glyph_tex[i] && glyph_tex[i][n]) {
+                gfx_release_texture(glyph_tex[i][n]);
+                glyph_tex[i][n] = NULL;
             }
 }
 
@@ -114,7 +119,7 @@ void flfntCreate(void *mem)
 {
     (void)mem;
     if (!glyph_tex)
-        glyph_tex = calloc(NGLYPH * 32, sizeof *glyph_tex);
+        glyph_tex = calloc(NGLYPH, sizeof *glyph_tex);
     flfntSetPalData(0, 0, 0xFF333333, 0xFF999999, 0xFFFFFFFF);
 }
 
@@ -231,7 +236,10 @@ static unsigned ascii2sjis(unsigned c)
 
 static gfx_texture *glyph(int idx, int p)
 {
-    gfx_texture **slot = &glyph_tex[idx * 32 + (p & 31)];
+    gfx_texture **slot;
+    if (!glyph_tex[idx] && !(glyph_tex[idx] = calloc(32, sizeof **glyph_tex)))
+        return NULL;
+    slot = &glyph_tex[idx][p & 31];
     if (!*slot) {
         u8 rgba[20 * 20 * 4];
         const u8 *g = font_data + idx * 100;

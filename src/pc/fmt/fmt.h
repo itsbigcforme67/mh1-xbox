@@ -198,6 +198,11 @@ int fmt_snd_vag(const snd_pack *p, int vag, uint32_t *off, int *rate);
 /* PS2 SPU ADPCM -> malloc'd s16 mono until the end flag (max bytes);
  * *loop = loop start sample or -1. */
 int16_t *fmt_vag_decode(const uint8_t *src, size_t max, int *nsamples, int *loop);
+/* The same without decoding: sample count and loop start from the block
+ * flags (for decoding while mixing, audio_voice_play_vag). */
+void fmt_vag_scan(const uint8_t *src, size_t max, int *nsamples, int *loop);
+/* One 16-byte block -> 28 samples; h1, h2 = decoder history (in/out). */
+void fmt_vag_block(const uint8_t *q, int *h1, int *h2, int16_t *out);
 
 /* ------------------------------------------------------------ adx */
 typedef struct {

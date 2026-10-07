@@ -219,6 +219,6 @@ void ItemCopy_Ud2Pl(PLW *pl) { __builtin_memcpy((u8 *)pl + 0x828, (u8 *)User_dat
 /* ------------------------------------------------ not ported yet (no-ops) */
 #define NOP(name) void name() { static int o; if (!o++ && getenv("RT_TRACE")) fprintf(stderr, "rt_menu: %s not ported\n", #name); }
 #define NOP0(name) int name() { static int o; if (!o++ && getenv("RT_TRACE")) fprintf(stderr, "rt_menu: %s not ported\n", #name); return 0; }
-NOP(Put_sprite_rotate)
-NOP(set_viewproj) NOP(Draw_square)
+
+NOP(set_viewproj)
 /* fonts: rt_font.c */

@@ -1,11 +1,13 @@
 /* gfx_nv2a.c pixel shader: texture x vertex colour (untextured draws bind a
- * 1x1 white texture) */
+ * 1x1 white texture), then fog: rgb = lerp(rgb, COLOR1.rgb, COLOR1.a) */
 struct vOut {
-	float4 col  : COLOR;
+	float4 col  : COLOR0;
+	float4 col1 : COLOR1;
 	float4 tex0 : TEXCOORD0;
 };
 
 float4 main(vOut I, uniform sampler2D tex) : COLOR
 {
-	return tex2D(tex, I.tex0.xy) * I.col;
+	float4 c = tex2D(tex, I.tex0.xy) * I.col;
+	return float4(lerp(c.rgb, I.col1.rgb, I.col1.a), c.a);
 }
