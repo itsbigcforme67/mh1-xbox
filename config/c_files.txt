@@ -2433,6 +2433,4 @@ lobby 0x005AAA40 0x005AACCC cnet/cnlbsf
 lobby 0x005AADE0 0x005AD61C cnet/cnlbsg
 lobby 0x005AD7E0 0x005AE8CC cnet/cnlbsh
 lobby 0x005B5420 0x005B563C b/lb_c509
-lobby 0x005B2370 0x005B256C b/lb_c510
-lobby 0x005B3DA0 0x005B3E1C b/lb_c511
 lobby 0x005B1160 0x005B134C b/lb_c512
