@@ -440,13 +440,14 @@ numbers are upper bounds.
 
 **Projection at 20x**, per frame: CPU work + NV2A backend 3–5 ms
 [estimate]:
-- village: ~25–33 ms;
-- Rathian fight: ~35–42 ms;
-- Fatalis: ~25–30 ms.
+- village: ~29–37 ms;
+- Rathian fight: ~44–50 ms;
+- Fatalis: ~28–33 ms.
 
 On an idle host these would likely come out lower, so take them as the
-pessimistic side. The Rathian fight is the one scene above 33 ms; the mixer
-and motion evaluation are its largest items.
+pessimistic side. The Rathian fight is clearly above 33 ms; its largest
+items are the mixer (11–13 ms at 20x), motion evaluation (8–9 ms) and the
+game logic (8–9 ms).
 
 **Done this round:**
 - **Motion.** The same skeleton pose was evaluated up to three times per
