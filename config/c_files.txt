@@ -2429,3 +2429,4 @@ lobby 0x005AD440 0x005AD61C cnet/cnlbsh
 lobby 0x005AD7E0 0x005AE320 cnet/cnlbsi
 lobby 0x005AE5C0 0x005AE840 cnet/cnlbsj
 lobby 0x005BDD50 0x005BDF6C b/lb_c503
+lobby 0x005B3220 0x005B3468 b/lb_c504
