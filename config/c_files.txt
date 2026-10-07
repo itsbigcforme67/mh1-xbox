@@ -15,7 +15,7 @@ main 0x00152030 0x00152044 pl/pl_stg_ck_tw
 main 0x0014FC20 0x0014FC38 pl/pl_master_ck
 main 0x00123A40 0x00123A60 clay/get_clay_ptr
 main 0x00171E90 0x00171EA0 fl/flmatSetTrans
-main 0x0016AC90 0x0016ACAC fl/fmsGetFrame
+main 0x0016ABB0 0x0016ACC8 fl/fms
 main 0x001567C0 0x001569D8 set/set12
 main 0x0014F030 0x0014F0C4 pl/pl_normal
 main 0x0014F330 0x0014F850 pl/pl_normal2

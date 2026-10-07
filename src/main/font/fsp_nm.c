@@ -160,8 +160,8 @@ void font_print_sp(char *fmt, ...) {
     s16 x;
     s16 w;
     s16 code;
-    u8 *p = (u8 *)tmpstr_562;
     s16 y;
+    u8 *p = (u8 *)tmpstr_562;
     u8 *b;
     u8 c;
 

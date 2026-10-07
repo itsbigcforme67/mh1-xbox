@@ -17,7 +17,7 @@ func = src[a:b]
 lines = func.split('\n')
 k = next(i for i, l in enumerate(lines) if l.strip() == '{' or l.rstrip().endswith('{')) + 1
 decl = []
-while re.match(r'^\s+[A-Za-z_][\w\s\*\[\]]*[\w\]];\s*$', lines[k + len(decl)]) and '(' not in lines[k + len(decl)]:
+while re.match(r'^\s+[A-Za-z_][\w\s\*\[\]]*[\w\]](\s*=[^;]*)?;\s*$', lines[k + len(decl)]) and ('(' not in lines[k + len(decl)] or '=' in lines[k + len(decl)]):
     decl.append(lines[k + len(decl)])
 head, rest = lines[:k], lines[k + len(decl):]
 z = os.path.join(os.path.dirname(f), 'zzh%d.c' % os.getpid())
