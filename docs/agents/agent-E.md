@@ -799,7 +799,7 @@ register-allocation problems, not address problems.
 
 ## Assignment 12 (7 Oct, long round, single player first)
 Ranges: main 0x160000-0x1C0000 (Capcom parts), 0x1C0000-0x24A240 (skip Sofdec/ADX 0x1C4000-0x216000) and 0x2814E0-0x293B68.
-Main line: 38.962% at the start of the round (my branch), 39.037% after merging main, see the end of this section for the final figure.
+Main line: 38.962% at the start of the round (my branch), 39.037% after the first merge of main, 39.860% at the end (my runs add about 13.7 KB, roughly +0.8 points; the rest came with merges).
 Largest unmatched single-player stretches left in my ranges (bytes, address; "no C" = nothing written yet), 7 Oct after this round:
 - no C, GS packet / shader code: flPS2SetShaderParam 8264 0x179DD0, flSetRenderState 3572 0x177720, flPS2InitRenderBuff 3056 0x18C310, flPS2LockTexture 2548 0x188C90,
   flPS2SendRenderState_ALPHA 1872 0x178C90, flPS2SwapDBuff 1772 0x18CF00, flPS2SetTextureRegister 1440 0x1795E0, flPS2UnlockTexture 1360 0x189770, flPS2StoreImageB 1312
@@ -810,3 +810,40 @@ Largest unmatched single-player stretches left in my ranges (bytes, address; "no
   0x164410-0x168F00 (nm C 270-1300 off), stage_spr_disp, quest_condition_prog, remuneration_item_set.
 - libc / libm / SCE / Sofdec code (0x195xxx-0x1BFxxx: vfprintf, dtoa, strtod, malloc, __ieee754_*, sceCd*, sceDbc*, sceMc*, sceVu0*, Sfd/MPEG decoders) is not MWCC code: skipped.
 - network last: NetFileCreate 6780, NetFileLoad 3124, net_receive_em 3672, prot_00/01 (0x2381F0), mcsls_recv 1876, InetDisconnectAll 1588.
+
+Linked (main OK x5 after each batch of links, tools/build_pc.sh builds), address order:
+- fl/flcreate01 0x16FA00-0x170198 flCreateTextureFromApx_mem + flCreateTextureFromTim2_mem (two 1 KB functions, matched at the first try from the asm: locals declared in the
+  order i, w, ht; `0 <= mips` for the loop guard), fl/flcnv01 flPS2ConvertAlpha, fl/flview01 flmatrMakeViewport, fl/flproj01 0x1715E0-0x1717B8 (flmatrMakeProjection,
+  flmatMakeProjection, flPS2MakeClipProjection), fl/flmat03-05,07 (flmatScaleFactor33 with `f32 t[16]`, AddTrans2, GetTrans, Copy33), fl/flvec01 flvecRotX/RotY,
+  fl/flquat01 flQuatSetRot, fl/flfov01 flCheckMeshFOV, fl/flcolor01 flPS2ConvColor, fl/flpstex01 flPS2SendTextureRegister, fl/flsettex01 flPS2SetTextureRegister (1440 bytes of GS
+  TEX0/TEX1/MIPTBP bit packing), fl/flrs01-05 the GS render state packets FOGCOL, TEX1, ZBUF, SCISSOR, TEST and ALPHA (1872 bytes, two jump tables: main:rodata 0x35BE70-0x35BEA8),
+  fl/tarpad03 0x195510-0x19583C (update_pad_stick_dir with the soft-float calls, lever_analog_to_digital, PADDeviceInit, PADPortOpen, PADDeviceDestroy).
+- fl/vr01 now the whole VRAM list file 0x18B3B0-0x18BAE0 (flPS2SearchVramSpace: `p = (aligned + len >= 0x4000) ? (VRC *)-1 : p;`), fl/tx02 + flReleasePaletteHandle_NOWAITDMA,
+  fl/tx05b flPS2ReloadTexture, fl/fllog01 flLogOut (varargs, 0x800 byte buffer), fl/flmotion03 0x173A50-0x173E54 (motion set handles, flCalcTransVelocity, flBlendMotionEx + static
+  flBlendMotionExSub), fl/flnode02 + flSetMotionEx, fl/flnode03b flPlayMotionExSISub, fl/flnode05f/g flInitPostureHierarchySISub/MAYASub (the two "2 off" functions of last round).
+- Also moved in nm files: sel_sel_sub 0, Sel_back_disp 2 (omake_nm.c).
+Lessons (function that shows it):
+1. REGISTER ORDER FOLLOWS DECLARATION ORDER: of the locals that compete for registers the LAST declared gets the LOWEST register (saved registers s0.. and temporaries
+   alike). Declare one variable per line, no initialisers, and try all orders (tools/declperm.py, or my scratch permdecl.py: all N! orders of the first N declaration lines).
+   flPS2ReloadTexture (26 -> 0 by the order t,k,cnt,tex,pal,...), flPS2ConvertAlpha (x before y), flSetMotion/Create*Handle, flPS2SendRenderState_TEST (atst, aref, ztst).
+2. THE PARAMETER ORDER OF THE CALLEE DECIDES THE ARGUMENT SET-UP ORDER OF A CALL: floats and ints are numbered separately (f12.. / a0..), so a prototype can be written with the
+   float in any position without changing the registers. The original's "mov.s f12 before daddu a1" is a call to a function whose float parameter sits in the middle:
+   flInitPostureHierarchySISub(n, sx, parent, sy, sz), flGetFcurveValue(mot, init, v, t, hint), flBlendMotionExSub(a, b, w0, id, w1), flGetMotionMatrix(mot, init, t, v, mat, hint)
+   (fixed three "2-3 off" functions). Try every position of the float parameter.
+3. A 64 bit packet built with a `u128 *` cursor: `p++` per quadword, `*(u64 *)p = ..; ((u64 *)p)[1] = ..;` and `top = p` saved before (typedef long u64, NOT unsigned long: the
+   unsigned type adds dsra32/dsll32 pairs). With u64 * / u8 * cursors the compiler folds the advance into offsets and the stack/register shape never matches
+   (FOGCOL, TEX1, ZBUF, SCISSOR, TEST, ALPHA). `(long)(u32)((K * 16) & 0xFFF) << 32` gives a bare dsll32; `(long)(int-expr) << 32` adds a sign extension pair.
+4. `u8` constants load with daddiu (flPS2ConvertAlpha), `if (x > r) return 0;` for float tests gives the original delay slot filling (flCheckMeshFOV), a one-case switch
+   `switch (rs & 0xF0) { case 0: v = 2; break; default: return 0; }` gives the ladder with the return block after the case (ALPHA), `a = ...; if (a == 0) a = 1` etc.
+5. An address-taken local needs a struct, not an array: `FV3 t; t = *(FV3 *)v;` keeps the temporary in memory (flvecRotX), arrays of floats are kept in registers.
+6. Calls that pass a leftover register: a callee that takes more arguments than the caller names: declare K&R and pass the real list (flPS2SendTextureRegister passes 8 arguments,
+   m2c shows 3). flmatMakeProjection takes (m, far, near, fov, aspect) in f12-f15.
+7. `i = 0; if (0 < n) { do {} while }` was not needed for a `for (i = 0; i < t->mips - 1; i++)` loop (flPS2SetTextureRegister): the for form gives `sltu at,zero,v0`.
+Near-matches left (off/instructions): flPS2GetClaySize 19/212 (src/main/fl/clay06_nm.c: only the flags/vertex-size temp and the loop counter swap s5/t7), flCalcTransVelocity done,
+flPS2VIF1MakeLoadImage 248/299 (flldimg01_nm.c: logic complete, spill slots), flPS2InitRenderState 60/108 (flrs06_nm.c), flmatMakeViewport 142/214 and flPS2MakeClipViewport 47/64
+(flview01_nm.c), flQuatCnv 63/67 (flquat01_nm.c, register numbering), flmatCopy 6/9, flPS2DrawPreparation 87/105 (kept in my scratch only), fmsInitialize 8, fmsAllocMemory 10
+(all 24 declaration orders x statement orders tried), flGetHierarchyData2 2, ps2McInit 2, plmemDeleteBlockList 7, Em_hagi_point_cnt_ck 20, stolen_item_stack 6, ZoomRateCalc 8,
+flPADConfigSet 10, flSetMatrixList 11, flFCVGetValue2 13, em_status_ck 15.
+Tool notes: tools/check.py reads the disc (not asm/), so it keeps working while tools/rebuild.sh regenerates asm/; align.py and draft.py need asm/.
+Scratch helpers (not in the repo): fv.py (apply text variants to a whole file, print the check.py difference count), swaphill.py (greedy swaps of adjacent statements),
+declmove.py, permdecl.py (all orders of the first N declarations).
