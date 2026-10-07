@@ -16,15 +16,16 @@ int unused;
     int tot[10];
     int cur[10];
     int free[10];
-    s32 i;
     s32 j;
+    s32 i;
     s32 found;
-    char *p;
-    LBSW *w;
-    LBSW *w2;
     char *q;
+    s32 l;
+    char *p;
+    LBSW *w2;
     int *a;
     int *b;
+    LBSW *w;
     int *c;
 
     CnetWork.x04 = 0;
@@ -52,9 +53,9 @@ int unused;
         }
         if (BsLbsCount == 1) {
             memcpy(LbsInfoWork, BsLbsInfo, 0xC);
-            *(s16 *)0x3A39A0 = tot[0];
-            *(s16 *)0x3A399E = cur[0];
-            *(s16 *)0x3A39A2 = free[0];
+            LbsInfoWork[0].h10 = tot[0];
+            LbsInfoWork[0].h0E = cur[0];
+            LbsInfoWork[0].h12 = free[0];
         } else {
             i = 0;
             if (0 < BsLbsCount) {
@@ -76,11 +77,11 @@ int unused;
                     w++;
                 } while (i < BsLbsCount);
             }
-            i = 0;
+            l = 0;
             w = LbsInfoWork;
             if (0 < BsLbsCount - 1) {
                 do {
-                    j = i + 1;
+                    j = l + 1;
                     if (j < BsLbsCount) {
                         w2 = &LbsInfoWork[j];
                         do {
@@ -93,9 +94,9 @@ int unused;
                             w2++;
                         } while (j < BsLbsCount);
                     }
-                    i++;
+                    l++;
                     w++;
-                } while (i < BsLbsCount - 1);
+                } while (l < BsLbsCount - 1);
             }
         }
     } else if (mode == 1) {

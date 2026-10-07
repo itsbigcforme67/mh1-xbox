@@ -1,9 +1,11 @@
-/* cnlbs, run 7: __cnet_Login_Return .. cnLBS_Read_MatchInfomation (lobby.bin 0x005AADE0-0x005AC150): the matching functions of cnlbs_nm.c. */
+/* cnlbs, run 7: __cnet_Login_Return .. cnLBS_Get_MatchInfomation (lobby.bin 0x005AADE0-0x005ACB84): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
 #pragma readonly_strings on
 
 
 typedef struct { s16 a, b, c; } CPLACE3;
+
+typedef struct { s8 val; u8 pad[6]; } R7;
 
 void __cnet_Login_Return(void) {
     CNET_RES res;
@@ -364,4 +366,227 @@ int cnLBS_Read_MatchInfomation(int cb) {
         return 0;
     }
     return -1;
+}
+
+void _cnet_RecvFromLbs_MatchJoin(void) {
+    u8 v;
+    R7 res;
+    if (CnetSys_w.burst[7].state != 0) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                __cnet_Recv_Byte(&v);
+                CNW(u8, 0x30310) = v;
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        __cnet_SendReq_MatchPlSide(0);
+    }
+}
+
+void _cnet_RecvFromLbs_MatchPlSide(void) {
+    u8 v;
+    R7 res;
+
+    if (CnetSys_w.burst[7].state != 0) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                __cnet_Recv_Byte(&v);
+                if (v != 0) v -= 1;
+                CNW(u8, 0x30311) = v;
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        pl_infoget_ctr = 1;
+        __cnet_SendReq_MatchOpponentInfo(1);
+    }
+}
+
+void _cnet_RecvFromLbs_MatchOpponentInfo(void) {
+    u8 idx;
+    R7 r;
+    u8 *p;
+
+    if (CNW(u8, 0xF34) != 0 && CnetSys_w.rcat != 0x10) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                p = CNWP(0x30310);
+                GetRecvData8(p + (idx - 1) * 0x98 + 0x1A9, GetRecvDataString(p + (idx - 1) * 0x98 + 0x170, GetRecvDataString(p + (idx - 1) * 0x98 + 0x130, GetRecvDataString(p + (idx - 1) * 0x98 + 0x11C, GetRecvDataString(p + (idx - 1) * 0x98 + 0x114, GetRecvData8(p + (idx - 1) * 0x98 + 0x1AA, GetRecvData8(&idx, recv_work)))))));
+                (p + idx * 0x98)[0x110] = idx;
+            } else {
+                r.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(r);
+                return;
+            }
+        }
+        pl_infoget_ctr++;
+        if (pl_infoget_ctr <= CNW(u8, 0x30310)) {
+            __cnet_SendReq_MatchOpponentInfo(pl_infoget_ctr);
+            return;
+        }
+        pl_infoget_ctr = 1;
+        __cnet_SendReq_MatchOpponentStatus(1);
+    }
+}
+
+void _cnet_RecvFromLbs_MatchOpponentStatus(void) {
+    u8 idx;
+    R7 res;
+    u8 *p;
+
+    if (CNW(u8, 0xF34) != 0 && CnetSys_w.rcat != 0x10) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                p = CNWP(0x30310);
+                GetRecvData32(p + (idx - 1) * 0x98 + 0x1A4, GetRecvData32(p + (idx - 1) * 0x98 + 0x1A0, GetRecvData32(p + (idx - 1) * 0x98 + 0x19C, GetRecvData32(p + (idx - 1) * 0x98 + 0x198, GetRecvData32(p + (idx - 1) * 0x98 + 0x194, GetRecvData16(p + (idx - 1) * 0x98 + 0x190, GetRecvData8(&idx, recv_work)))))));
+                (p + idx * 0x98)[0x110] = idx;
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        pl_infoget_ctr++;
+        if (pl_infoget_ctr <= CNW(u8, 0x30310)) {
+            __cnet_SendReq_MatchOpponentStatus(pl_infoget_ctr);
+            return;
+        }
+        __cnet_SendReq_MatchBattleCode();
+    }
+}
+
+void _cnet_RecvFromLbs_MatchBattleCode(void) {
+    CNET_RES res;
+    u8 *p;
+
+    if (CnetSys_w.burst[7].state != 0 && CnetSys_w.rcat != 0x10) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                GetRecvDataString(CNWP(0x30312), recv_work);
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        __cnet_SendReq_MatchGameRule();
+    }
+}
+
+void _cnet_RecvFromLbs_MatchGameRule(void) {
+    CNET_RES res;
+    u8 *p;
+
+    if (CnetSys_w.burst[7].state != 0 && CnetSys_w.rcat != 0x10) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                GetRecvDataString(CNWP(0x30323), recv_work);
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        __cnet_SendReq_MatchMcsIpAddr();
+    }
+}
+
+void _cnet_RecvFromLbs_MatchGameServerAddr(void) {
+    CNET_RES res;
+
+    if (CNW(u8, 0xF34) != 0) {
+        if (CnetSys_w.rcat == 2) {
+            if (CnetSys_w.rres == 0) {
+                res.val = 0;
+                GetRecvDataString(CNWP(0x30308), GetRecvDataString(CNWP(0x30300), recv_work));
+            } else {
+                res.val = -1;
+                __cnet_Recv_ServerMessage();
+                __cnet_Return_MatchInformation(res);
+                return;
+            }
+        }
+        res.val = 0;
+        __cnet_Return_MatchInformation(res);
+    }
+}
+
+void __cnet_Return_MatchInformation(CNET_RES res) {
+    if (res.val == -1) {
+        __cnet_SendReq_MatchRejection(res.val);
+    }
+    if (CnetSys_w.burst[7].cb != 0) {
+        CnetSys_w.burst[7].state = 0;
+        CnetSys_w.burst[7].x21 = 0;
+        CnetSys_w.burst[7].cb(res, &res);
+    }
+}
+
+int __cnet_SendReq_MatchJoin(void) {
+    int cmd = SetSendCommand(&send_work, 0xA3) & 0xFFFF;
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+void __cnet_SendReq_MatchPlSide(int arg0) {
+    SetSendCommand(&send_work, 0xA5);
+    SetSendData8(&send_work, arg0);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+void __cnet_SendReq_MatchOpponentInfo(int arg0) {
+    SetSendCommand(&send_work, 0xA9);
+    SetSendData8(&send_work, arg0);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+void __cnet_SendReq_MatchOpponentStatus(int arg0) {
+    SetSendCommand(&send_work, 0xAB);
+    SetSendData8(&send_work, arg0);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+void __cnet_SendReq_MatchGameRule(void) {
+    SetSendCommand(&send_work, 0xA7);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+void __cnet_SendReq_MatchBattleCode(void) {
+    SetSendCommand(&send_work, 0xAE);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+void __cnet_SendReq_MatchMcsIpAddr(void) {
+    SetSendCommand(&send_work, 0xB0);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+}
+
+int __cnet_SendReq_MatchRejection(void) {
+    int cmd = SetSendCommand(&send_work, 0xAD) & 0xFFFF;
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+int cnLBS_Get_MatchInfomation(CNET_W5D4 *d) {
+    *d = CnetSys_w.matchinfo;
+    return 0;
 }

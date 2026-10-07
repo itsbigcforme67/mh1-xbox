@@ -1720,6 +1720,7 @@ int *cnt;
             break;
         }
         if (quest_w.no == 0) {
+            q = (s32 *)(int)q;
         } else {
             q = (s32 *)((int)q + (int)mission_area);
         }

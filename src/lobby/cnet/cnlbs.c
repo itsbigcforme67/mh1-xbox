@@ -5,6 +5,8 @@
 
 typedef struct { s16 a, b, c; } CPLACE3;
 
+typedef struct { s8 val; u8 pad[6]; } R7;
+
 void _cnet_RecvFromLbs_NoticeMailMessage(void) {
     __cnet_Recv_MailMessage();
     _cnetEvent_JumpCallBack(3, 0);

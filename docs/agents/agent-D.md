@@ -1060,3 +1060,32 @@ Still near-matches: em20_act_set 1 (daddiu on `kind = 3`; u16 K&R param gives it
 em_act_search 9 (n/x/r registers in the second loop; every local type and declaration order tried), em_eye_search_set 10, em_cdm_act_flag_ck 10,
 em10_turn_sub 10, em09_material_sub 13, em09_effect_move 4, em_cmd_flag_clear 19, em_fly10 (em15/em20) 18. Select overlay not attempted.
 The *_effect_move copies left in the *_nm.c files are stale (the linked versions are in the run files).
+
+## Game overlay leftovers round 3 (agent D, 13 Oct 2026)
+Linked (rebuild OK, all five modules): em10 as ONE translation unit (em_act03 is the new match; em10_turn_sub too), em08 em_demo00, em17 em_demo00,
+em_taisei whole file (Em_Dmg_Sys matched, three runs merged into one em/em_taisei).
+Findings (each confirmed by a match):
+- em04, em10, em12 effect_move were already linked from the earlier one-TU fix; only em09 is left of that family (see below).
+- A static helper that the original inlines into its callers (em10_msg_set into em_act03) must be in the same TU, but a static copy of
+  it in a second TU is emitted as an extra function and breaks the layout. So the whole file has to be one TU; a holdout function that
+  does not match yet can stay original bytes in the middle of it: config/c_rawfuncs.txt now accepts `game` (base 0x533980), see
+  em10_turn_sub in the history of em10.c (it matched later and the raw stub is gone).
+- Block-scoped temporaries per switch case change register choice: em08 em_demo00 case 4 matches with `{ s32 tt; u32 sp; u16 aa; u32 dd; ... }`
+  declared in the case block (order tt, sp, aa, dd; found by trying all 24 orders).
+- em17 em_demo00: when the original frame is 80 bytes bigger and only stack offsets differ, the two uses of one local array/matrix are
+  separate locals in the original (ang/a120/out110/m and ang2/vF0/outE0/m2): use two sets, declared in the order of the offsets.
+  `if (v >= 0x801 && v < 0xF800) {} else if (X)` is `if (v <= 0x800 || v >= 0xF800) { if (X) ... }`.
+- em10_turn_sub: `d = (tgt - (ang & 0xFFFF)) & 0xFFFF; if ((u32)((d + spd) & 0xFFFF) < (u32)(spd * 2))` with declaration order spd, tgt, d, ang
+  (the same shape as in em08 em_demo00, tried all 24 orders).
+- Em_Dmg_Sys: `r = 0xD; if ((u8)x762 != 3) { body }; goto fin;` is really `if (x762 == 3) { r = 0xD; goto fin; } body...` (the original lays
+  the `b fin` before the body); and `HAGI_CNT(i)++` must be `c = HAGI_CNT(i); m = 1 << i; HAGI_CNT(i) = c + 1;` with `hit = 1` first.
+- `*(u8 *)0x3F34C3` etc are game_w.pl_num / master / stage; replacing them (em_cmd_nm) did not change any result here.
+- The build compiles every src/**/*.c: keep scratch .c files OUT of src (it compiled a zz_ file and failed).
+Stale effect_move copies: the copies in the *_nm.c files are the same text as the linked ones for em01/02/04/07/10/12/16/27; the other six (em08, 15, 17, 20, 21)
+were synced with the linked text. They cannot be deleted: the PC build (tools/build_pc.sh) links the *_nm.c versions of those functions; check.py shows
+them as 6 off only because the nm TU is not the original TU. em14_nm keeps its old 3-argument ef_move_sub call.
+Still near-matches (instructions off): em09_effect_move 4 (switch `case 5: case 4:` gives the right size and 4 off, the original has an unfilled
+delay slot plus a nop), em09_material_sub 13 (switch x4A in v0 vs a2; declaration orders done), em09_act_set 90, em_act_search 5 (block-scoped second
+loop gets n/y/r in the wrong registers), em_eye_search_set 9, em_cdm_act_flag_ck 9, em_cmd_range_ck 6, em_cmd_flag_clear 24, em_fly10 (em15/em20) 16
+(copy of w to s0 is scheduled after the load of em->x05), em20_act_set 1, em_range_set 13 (post-increment form), em_mv00_005DC550 50, eft22_end_init 4,
+eft18_set_com 7, set05_m 2, em12_main (register allocation shifted by one saved register).
