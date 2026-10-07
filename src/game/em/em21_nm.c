@@ -5413,18 +5413,15 @@ static void hire_move_0060BFE0(EMW *em, EM21W *w) {
 
 void em21_effect_move(EMW *em) {
     EM21W *w = (EM21W *)em->ex;
-    u8 *temp_s0;
-    u8 temp_a1;
+    u8 e = em->ex[0];
 
-    temp_a1 = w->eff;
-    temp_s0 = em->ex;
-    switch (temp_a1) {
+    switch (e) {
     case 0:
-        w->eff = temp_a1 + 1;
+        *(u8 *)w = e + 1;
         break;
     case 1:
-        ef_move_sub_00608E70(em, (EM21W *)temp_s0);
-        hire_move_0060BFE0(em, (EM21W *)temp_s0);
+        ef_move_sub_00608E70(em, w);
+        hire_move_0060BFE0(em, w);
         break;
     }
     em21_uvmove(em);

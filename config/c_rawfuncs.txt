@@ -91,7 +91,12 @@ main 0x187DF0 0x21c flPS2GetTextureInfoFromContext
 main 0x188330 0xf0 flPS2GetVramTransAdrs
 main 0x188570 0x178 flPS2GetPaletteInfoFromContext
 main 0x192E40 0x80 plFCVFcurveInterpolateHermite
+lobby 0x00597640 0x4C4 Plaza_add_friend
+lobby 0x00597DA0 0x898 plaza_mailBox
 main 0x18DB30 0x31C plmemRegisterS
 main 0x18DFE0 0x1D0 plmemCompact
 main 0x18E280 0x128 plmemAppendBlockList mn
 main 0x18E3B0 0x80 plmemDeleteBlockList mn
+main 0x16D5C0 0x330 flExecuteClay
+main 0x16ABB0 0x78 fmsInitialize
+main 0x16AC30 0x60 fmsAllocMemory

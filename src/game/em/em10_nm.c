@@ -451,20 +451,20 @@ void em10_to_normal(EMW *em, int flag, int a, int b) {
 
 void em10_turn_sub(EMW *em) {
     u32 spd;
-    s32 ang;
     u16 tgt;
     u32 d;
+    s32 ang;
 
     spd = act_ck(em, 0, 3) != 0 ? 0x71C : 0xFA4;
     ang = em->ang[1];
     tgt = em->x0E;
-    d = (u16)(tgt - (u16)ang);
-    if ((u16)(d + spd) < (u32)(spd * 2)) {
-        em->ang[1] = tgt;
-    } else if (d < 0x8000) {
-        em->ang[1] = (u16)(ang + spd);
+    d = (tgt - (ang & 0xFFFF)) & 0xFFFF;
+    if ((u32)((d + spd) & 0xFFFF) < (u32)(spd * 2)) {
+        em->ang[1] = (s32)tgt;
+    } else if (d < 0x8000U) {
+        em->ang[1] = (ang + spd) & 0xFFFF;
     } else {
-        em->ang[1] = (u16)(ang - spd);
+        em->ang[1] = (ang - spd) & 0xFFFF;
     }
 }
 

@@ -32,7 +32,7 @@ typedef struct LB_NETW {
     u8 _pad0B;
     u8 x0C;             /* 0x0C 1 = dialog is shown (plaza_trans_ot1 draws it once) */
     s8 x0D;             /* 0x0D */
-    u8 _pad0E;
+    s8 x0E;             /* 0x0E (plaza_searchMember sets it to 1) */
     u8 yesno;           /* 0x0F */
     u8 x10;             /* 0x10 */
     u8 _pad11;
@@ -130,7 +130,7 @@ int flSetRenderState();
 int Put_2TF();
 int Lbc_set_prim();
 int lobby_bgm_set2();
-int plaza_moveMain();
+void plaza_moveMain();
 int Plaza_chat_init();
 int Plaza_chat_move();
 int Put_megaphone();
