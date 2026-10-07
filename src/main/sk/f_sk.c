@@ -84,6 +84,8 @@ void sk_henkan_sub();
 extern u8 board_tbl[][0x14];
 extern s32 free_rw_tbl[][3];
 extern s32 reibun_rw_tbl[][3];
+typedef struct RW2 { s16 a; s16 b; } RW2;
+#define RWP(t, o) (*(RW2 *)((t) + (o)))
 extern u8 moji_tbl_abn[], moji_tbl_abn_h[], moji_tbl_abn_s[], moji_tbl_abn_sh[], moji_tbl_free[];
 extern u8 moji_tbl_hira[], moji_tbl_hira_s[], moji_tbl_illust[], moji_tbl_kata[], moji_tbl_kata_h[];
 extern u8 moji_tbl_kata_s[], moji_tbl_kata_sh[], moji_tbl_mark[];
@@ -413,13 +415,19 @@ asm static void setup_rw_sub(int n)
 #endif
 
 
-/* original bytes: build/raw/setup_rw_moji.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__
-asm static void setup_rw_moji(void)
-{
-#include "setup_rw_moji.inc"
+static void setup_rw_moji(void) {
+    char *k = (char *)lpSKey;
+    RW2 *f = (RW2 *)((u8 *)&free_rw_tbl[0][2] + *(s32 *)(*(u8 **)((u8 *)k + 0x10) + 0x20) * 0xC);
+    RW2 *r;
+
+    RWP(moji_tbl_hira, 0x10) = RWP(moji_tbl_hira_s, 0x10) = RWP(moji_tbl_kata, 0x10) = RWP(moji_tbl_kata_s, 0x10)
+        = RWP(moji_tbl_kata_h, 0x10) = RWP(moji_tbl_kata_sh, 0x10) = RWP(moji_tbl_abn, 0x10) = RWP(moji_tbl_abn_s, 0x10)
+        = RWP(moji_tbl_abn_h, 0x10) = RWP(moji_tbl_abn_sh, 0x10) = RWP(moji_tbl_mark, 0x10) = RWP(moji_tbl_illust, 0x10) = *f;
+    r = (RW2 *)((u8 *)&reibun_rw_tbl[0][2] + *(s32 *)(*(u8 **)((u8 *)k + 0x10) + 0x28) * 0xC);
+    RWP(moji_tbl_hira, 0x14) = RWP(moji_tbl_hira_s, 0x14) = RWP(moji_tbl_kata, 0x14) = RWP(moji_tbl_kata_h, 0x14)
+        = RWP(moji_tbl_kata_s, 0x14) = RWP(moji_tbl_kata_sh, 0x14) = RWP(moji_tbl_abn, 0x14) = RWP(moji_tbl_abn_s, 0x14)
+        = RWP(moji_tbl_abn_h, 0x14) = RWP(moji_tbl_abn_sh, 0x14) = RWP(moji_tbl_mark, 0x14) = RWP(moji_tbl_free, 0x14) = *r;
 }
-#endif
 
 
 /* original bytes: build/raw/dakuten_ck.inc (config/c_rawfuncs.txt) */
@@ -662,13 +670,19 @@ void sk_daisyo_chg(void) {
     se_req(7, snd, 0);
 }
 
-/* original bytes: build/raw/sk_palette_cursor_set.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__
-asm void sk_palette_cursor_set(void)
-{
-#include "sk_palette_cursor_set.inc"
+void sk_palette_cursor_set(void) {
+    u8 f = SKB(0x1F);
+
+    if (f != 4) {
+        if (f == 5) {
+            goto set;
+        }
+    } else {
+set:
+        SKB(0x24) = palette_set_tbl[(u8)f * 2];
+        SKB(0x25) = palette_set_tbl[SKB(0x1F) * 2 + 1];
+    }
 }
-#endif
 
 
 static void sk_board_ptr_replace(void) {
