@@ -115,6 +115,14 @@ for ri, (a, b, r) in enumerate(runs):
                 if k[1] in symaddr: aliases.append('%s = 0x%08X;' % (nn, symaddr[k[1]]))
                 else: print('NO ADDRESS for', k[1], file=sys.stderr)
     defhere = set(n for n, tx in cks if n)
+    for u in pre_units:  # ANSI prototype in this run that differs from an earlier run's declaration: private alias name
+        k = ident(u)
+        if k is None or k[0] != 'fn' or k[1] in ren or k[1] in defhere or INC.match(u.strip()): continue
+        if u.lstrip().startswith(('extern', 'asm', 'static')): continue
+        par = re.search(r'\w\(([^)]*)\)\s*;', u)
+        if not par or par.group(1).strip() in ('', 'void') or not re.search(r'\w\s+\**\w+\s*(,|$)|\*', par.group(1)): continue
+        if ((k in seen and seen[k] != norm(u)) or k[1] in ansi) and k[1] in symaddr:
+            ren[k[1]] = '%s_a%d' % (k[1], ri); aliases.append('%s = 0x%08X;' % (ren[k[1]], symaddr[k[1]]))
     bodytxt = '\n'.join(tx for n, tx in cks if n)
     for u in pre_units:
         k = ident(u)

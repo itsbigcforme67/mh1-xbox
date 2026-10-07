@@ -163,6 +163,6 @@ build/src/yn/ui12.c.o .rodata .data
 build/src/yn/ui24.c.o .rodata .data
 build/src/lobby/lb/lb_talk.c.o .rodata .data
 build/src/lobby/lb/lbshp.c.o .rodata .data
-build/src/lobby/b/lb_by78.c.o .rodata .data
-build/src/lobby/b/lb_by130.c.o .rodata .data
-build/src/lobby/b/lb_by131.c.o .rodata .data
+build/src/lobby/f/lb_sh1a.c.o .rodata .data
+build/src/lobby/f/lb_sh1b.c.o .rodata .data
+build/src/lobby/f/lb_sh1c.c.o .rodata .data
