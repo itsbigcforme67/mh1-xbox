@@ -56,3 +56,11 @@ void gfx_release_clay(gfx_clay *c) { free(c); }
 int gfx_skin_capable(void) { return 0; }
 int gfx_clay_set_skin(gfx_clay *c, const gfx_skin_desc *s) { (void)c; (void)s; return -1; }
 void gfx_clay_pose(gfx_clay *c, const float (*skin)[16], const gfx_light *L) { (void)c; (void)skin; (void)L; }
+
+/* no GPU YUV here: the movie converts to RGBA itself (gfx.h) */
+int gfx_yuv_capable(void) { return 0; }
+gfx_texture *gfx_create_texture_yuv(int w, int h) { (void)w; (void)h; return NULL; }
+void gfx_update_texture_yuv(gfx_texture *t, const uint8_t *y, const uint8_t *u, const uint8_t *v)
+{
+    (void)t; (void)y; (void)u; (void)v;
+}

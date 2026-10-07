@@ -8,7 +8,7 @@
 # Prints the last 300-tick window of each. Headless, a few minutes.
 cd "$(dirname "$0")/.."
 OUT=build/show/prof; mkdir -p $OUT
-show() { echo "== $1"; grep '^prof:' $OUT/$1.log | tail -17 | sed 's/^prof: //'; }
+show() { echo "== $1"; grep '^prof:' $OUT/$1.log | tail -22 | sed 's/^prof: //'; }
 ATK=$(python3 -c "print(','.join(['idle*40'] + ['triangle*2,idle*14'] * 120))")
 fight() {   # name quest
     RT_STEP=1 RT_PROF=1 RT_QUEST_STAGE=1 RT_PL_WARP_EM=30-1900 RT_PL_GOD=1 RT_PL_TARGET=0:0 RT_NOMOVIE=1 \

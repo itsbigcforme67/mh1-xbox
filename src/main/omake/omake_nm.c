@@ -118,7 +118,7 @@ void font_set_palette();
 void font_print_ex();
 void font_reset();
 void DispFrameMessage();
-void Disp_button();
+void Disp_button(f32, int, int, int, int); /* was K&R: 1.0f went as a double (PC) */
 int strlen();
 
 extern u16 check_bit_no[];

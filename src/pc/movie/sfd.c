@@ -202,6 +202,11 @@ sfd *sfd_open(const fmt_afs *afs, int idx)
     s->afs = afs;
     s->idx = idx;
     s->size = afs->size[idx];
+#ifdef MH1_MPEG2_MMX
+    /* the Xbox build (tools/build_xbox.py): libmpeg2's MMX / MMXEXT (SSE
+     * integer) IDCT and motion compensation; the Pentium III has both */
+    mpeg2_accel(MPEG2_ACCEL_X86_MMXEXT);
+#endif
     s->dec = mpeg2_init();
     if (!s->dec) {
         free(s);

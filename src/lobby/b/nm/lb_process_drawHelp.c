@@ -92,7 +92,7 @@ block_12:
             if (var_s4_2 == 0x3E7) {
                 Lb_put_itemRare(0x12A, 0x136, 4);
             } else {
-                Lb_put_itemRare(0x12A, 0x136,  (Get_equip_rare(var_s2 & 0xFF, var_s1) << 0x38) >> 0x38);
+                Lb_put_itemRare(0x12A, 0x136,  (s8)Get_equip_rare(var_s2 & 0xFF, var_s1));
             }
         } else {
             Lb_put_armorIcon(0x122, 0x102, 0x36, 7, (s16)var_s1);
@@ -100,7 +100,7 @@ block_12:
             if (var_s4_2 == 0x3E7) {
                 Lb_put_itemRare(0x12A, 0x136, 4);
             } else {
-                Lb_put_itemRare(0x12A, 0x136,  (Get_equip_rare(var_s2 & 0xFF, var_s1) << 0x38) >> 0x38);
+                Lb_put_itemRare(0x12A, 0x136,  (s8)Get_equip_rare(var_s2 & 0xFF, var_s1));
             }
         }
         flfntSetSize(0x12, 0x12);

@@ -845,8 +845,10 @@ static void sim_tick(void)
         rt_set_camera(cw);
     }
     if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
+        rt_prof_begin(RTP_JOINTS);
         sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
         monsters_sync(0, light_cur());
+        rt_prof_end(RTP_JOINTS);
         rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
     }
     if (ticks >= 2 && !getenv("RT_EM_STANDIN")) {
@@ -877,10 +879,8 @@ static void sim_tick(void)
     }
     if (quest_no || play)
         rt_hud_tick();                  /* Pit_mv: HUD layers (last step of move()) */
-    if (snd == 0) {
-        rt_snd_tick();
-        audio_dump_tick();
-    }
+    if (snd == 0)
+        rt_snd_stage_tick();            /* move_stage's river / waterfall loops (Snd_server runs per tick below) */
 }
 
 /* After the reward screen (game mode 6) the PS2 goes back to the village,
@@ -1277,6 +1277,11 @@ int main(int argc, char **argv)
     rt_game_init(stage_no);
     if (quest_no || play)
         rt_hud_init();                  /* load_pit, Pit_init, info banner */
+    if (!boot) {                        /* --quest / free play: the options' defaults, as the boot's
+                                         * InitSystemData sets them (sound volumes come from system_w) */
+        void option_default_set(void);
+        option_default_set();
+    }
     if (!mute)
         snd = rt_snd_init(disc, audio_dump == NULL && shot == NULL);
 
@@ -1522,15 +1527,22 @@ int main(int argc, char **argv)
             }
             else
                 sim_tick();
+            if (snd == 0) {             /* Snd_server: ACRMain runs it every frame, in every game mode
+                                         * (the village had no music on the PC without it) */
+                rt_snd_tick();
+                audio_dump_tick();
+            }
             ticks++;
                 mem_tick(ticks);
             /* the joint matrices the next tick reads are those of the state
              * this tick left, whether or not a frame is drawn in between
              * (windowed and --shot runs stay tick-for-tick the same) */
             if (pl.game && play && ticks >= 2) {
+                rt_prof_begin(RTP_JOINTS);
                 sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
                 if (!rt_village_active())
                     monsters_sync(0, light_cur());
+                rt_prof_end(RTP_JOINTS);
             }
             if (tick_trace) {           /* RT_TICK_TRACE=1: compare windowed and headless runs */
                 extern uint8_t em_work[];
@@ -1628,9 +1640,13 @@ int main(int argc, char **argv)
             flmat_identity(id);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
             gfx_set_render_state(GFX_RS_ZWRITE, 1);
+            rt_prof_begin(RTP_STAGE_DRAW);
             rt_stage_draw();            /* trans_stage: area model + placed set parts */
+            rt_prof_end(RTP_STAGE_DRAW);
         }
+        rt_prof_begin(RTP_PRIMS);
         rt_game_draw();                 /* game C prims (set14 waterfalls) */
+        rt_prof_end(RTP_PRIMS);
         if (rt_monster_shown(0) && slot0_rathian()) {     /* in use and on this stage */
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)rathian.world);
             draw_model_attr(&rathian.model, -1);
@@ -1651,8 +1667,10 @@ int main(int argc, char **argv)
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)wid);
             draw_model_attr(&weapon.model, -1);
         }
+        rt_prof_begin(RTP_2D);
         rt_game_draw_2d();              /* screen layers: HUD, info banner, text (after the 3D scene) */
         rt_fade_draw();                 /* fade_draw: the screen fade (Fade_task) */
+        rt_prof_end(RTP_2D);
     frame_done:
 
         frame_no++;

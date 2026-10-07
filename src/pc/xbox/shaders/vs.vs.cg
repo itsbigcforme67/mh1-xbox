@@ -16,14 +16,15 @@ struct vOut {
 	float4 tex0 : TEXCOORD0;
 };
 
-vOut main(vIn I, uniform float4x4 m_mvp, uniform float4x4 m_tex, uniform float4 fog_kb, uniform float4 fog_col)
+vOut main(vIn I, uniform float4x4 m_mvp, uniform float4x4 m_tex, uniform float4 fog_kb, uniform float4 fog_col,
+	uniform float4 fade)
 {
 	vOut r;
 	float4 p = mul(float4(I.pos.xyz, 1.0), m_mvp);
 	r.col1 = float4(fog_col.xyz, saturate(p.w * fog_kb.x + fog_kb.y));
 	p.xyz = p.xyz / p.w;
 	r.pos = p;
-	r.col = I.col;
+	r.col = I.col * fade;     /* fl state 0x67 (1,1,1,1 when off) */
 	r.tex0 = mul(float4(I.tex.xy, 0.0, 1.0), m_tex);
 	return r;
 }

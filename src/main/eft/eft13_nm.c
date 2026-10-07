@@ -8,6 +8,7 @@
 #include "prim.h"
 #include "fl.h"
 #include "clay.h"
+void flvecRotY(f32 *, f32); /* was implicit: the angle went as a double */
 
 typedef struct EFT_MDLW {
     u8 flag;            /* 0x00 */
