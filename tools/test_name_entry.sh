@@ -7,16 +7,17 @@
 # screenshots in build/show/name/ show the keyboard and the NAME row
 # (look at them). Headless, about 1 minute.
 cd "$(dirname "$0")/.."
+BIN=${BIN:-build/pc/mhview}   # RUN=wine BIN=build/win/mhview.exe: the Windows build under Wine
 export RT_NOMOVIE=1   # the opening movie would only lengthen the scripted boot (test_movie.sh covers it)
 OUT=build/show/name; mkdir -p $OUT
 D=tools/pc_scripts
 # the base script is cut where the keyboard is up (tick 1010)
 K="1040:dright*2;1070:circle*4;1110:dright*2;1140:circle*4"
 S=$(CUT=1010 python3 tools/mk_input.py $D/newgame.txt "$K" 1200)
-RT_SK_TRACE=1 timeout 200 build/pc/mhview disc/mh1 --boot --input "$S" --shot $OUT/keyboard.png --time 42 \
+RT_SK_TRACE=1 timeout 200 $RUN $BIN disc/mh1 --boot --input "$S" --shot $OUT/keyboard.png --time 42 \
     2> $OUT/run1.log >/dev/null
 S=$(CUT=1010 python3 tools/mk_input.py $D/newgame.txt "$K;1180:start*2" 1260)
-RT_SK_TRACE=1 timeout 200 build/pc/mhview disc/mh1 --boot --input "$S" --shot $OUT/name.png --time 44 \
+RT_SK_TRACE=1 timeout 200 $RUN $BIN disc/mh1 --boot --input "$S" --shot $OUT/name.png --time 44 \
     2> $OUT/run2.log >/dev/null
 grep -q "sk: text now 3 bytes: 41 41 42" $OUT/run1.log || { echo "name entry FAILED: AAB not typed (see $OUT)"; exit 1; }
 grep -q 'sk: confirmed "AAB"' $OUT/run2.log || { echo "name entry FAILED: start did not confirm AAB (see $OUT)"; exit 1; }

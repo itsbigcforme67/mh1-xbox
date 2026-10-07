@@ -32,9 +32,9 @@ export M32="" PC_SYS=" " EXE=.exe SYMTAB_ARGS="--prefix _" SYM_PREFIX=_
 export LINK1_OPTS="-Wl,--error-limit=0" LINK1_TOLERANT=1
 export OBJCOPY=llvm-objcopy NM=llvm-nm
 export SDL_CFLAGS="-I$SDL/include/SDL2 -DSDL_MAIN_HANDLED"
-export LIBS="-L$SDL/lib -lSDL2 -lopengl32 -lcomdlg32 -lwinmm -lm"
+export LIBS="-L$SDL/lib -lSDL2 -lopengl32 -lcomdlg32 -lshell32 -lwinmm -lm"
 export GAME_EXTRA="$RELAX -w -fno-builtin"   # as nxdk-cc: the game headers declare memset() K&R
-export EXTRA_CFLAGS="-DMH1_WIN" GAME_NOAGG=""
+export EXTRA_CFLAGS="-DMH1_WIN -include src/pc/rt/win_utf8.h" GAME_NOAGG=""
 sh $T/tools/build_pc.sh
 mkdir -p build/win
 cp $T/build/pc/mhview.exe build/win/mhview.exe

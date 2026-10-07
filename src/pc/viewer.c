@@ -16,6 +16,10 @@
 #include "audio/audio.h"
 
 #include <SDL.h>
+#ifdef MH1_WIN
+#include <fcntl.h>
+#include <io.h>
+#endif
 #ifndef XBOX
 #include "install.h"
 #endif
@@ -1263,6 +1267,23 @@ static void mem_tick(int t)
 
 int main(int argc, char **argv)
 {
+#ifdef MH1_WIN       /* text-mode stdout / stderr would write CRLF into redirected logs (the tests grep them) */
+    _setmode(_fileno(stdout), _O_BINARY);
+    _setmode(_fileno(stderr), _O_BINARY);
+    {   /* the command line as UTF-8 (the ANSI argv mangles non-ASCII paths, e.g. a dropped ISO) */
+        int wn, i8;
+        wchar_t **wa = CommandLineToArgvW(GetCommandLineW(), &wn);
+        if (wa && wn == argc) {
+            char **na = (char **)calloc((size_t)wn + 1, sizeof *na);
+            for (i8 = 0; i8 < wn; i8++) {
+                int len = WideCharToMultiByte(CP_UTF8, 0, wa[i8], -1, NULL, 0, NULL, NULL);
+                na[i8] = (char *)malloc((size_t)len);
+                WideCharToMultiByte(CP_UTF8, 0, wa[i8], -1, na[i8], len, NULL, NULL);
+            }
+            argv = na;
+        }
+    }
+#endif
     rt_stack_paint();
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shot") && i + 1 < argc) shot = argv[++i];

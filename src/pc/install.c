@@ -20,7 +20,7 @@
 #ifdef MH1_WINDOWS
 #include <direct.h>
 #include <windows.h>
-#define MKDIR(p) _mkdir(p)
+#define MKDIR(p) mh1_mkdir(p)
 #else
 #define MKDIR(p) mkdir((p), 0755)
 #endif

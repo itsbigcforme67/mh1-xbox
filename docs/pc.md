@@ -259,6 +259,20 @@ with the exe, SDL2.dll, play.bat, bug_report.bat/.ps1, a README.txt for testers 
 SDL2 zlib, a GPL notice). It refuses to zip a file over 25 MB, a total over 40 MB, or any name like game data
 (AFS*, SLPM*, SYSTEM.CNF, *.iso, *.bin ...), and checks the finished zip again. It does not publish anything.
 
+Hardening (7 Oct 2026, second pass): the whole single-player set passes on the Windows exe under Wine
+(`RUN=wine BIN=build/win/mhview.exe tools/test_<name>.sh`, all scripts take RUN / BIN; test_all_quests.py too).
+Windows-only bugs found and fixed: stdout / stderr were text mode (CRLF in redirected logs broke the
+`$`-anchored greps of test_progression / test_urgent: now `_setmode` binary); paths were ANSI (new
+src/pc/rt/win_utf8.h, force-included into the host-side C of the Windows build: fopen / remove / rename /
+mkdir / stat / opendir / getenv go through the wide-character functions, and main converts the command line
+to UTF-8; checked with a save, log and screenshot folder named "utf8 José 日本" under Wine). All other fopen
+calls were already "rb" / "wb". Struct alignment of double / long long: no failure found (all 38 quests and the
+tests pass), nothing changed. play.bat checked under `wine cmd /c` (quest mode with a disc folder: log shows the
+window, WASAPI audio device, controller line); bug_report.bat could not run (Wine 9 has no PowerShell), the
+.ps1 got a fix by reading (extra args with a param block would have failed).
+tools/package_win.sh now strips the exe (llvm-strip: 12 MB -> 2.5 MB, no build paths) and refuses when the
+user name appears anywhere in the package.
+
 Untested on real Windows: everything. Only Wine 9 on Linux (its OpenGL is the host Mesa) has run the exe; no
 real Windows, no real GPU driver of Windows (the GL path asks for a 2.1 context and uses the fixed
 pipeline, so any driver should do), no Windows audio (the hidden-window test runs have no audio device),

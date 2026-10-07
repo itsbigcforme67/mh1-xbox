@@ -11,6 +11,7 @@
 # Input timings are absolute ticks; D shifts the post-hunt part (the
 # Velocidrome takes ~510 ticks longer to kill). Headless, ~40 s on x86.
 cd "$(dirname "$0")/.."
+BIN=${BIN:-build/pc/mhview}   # RUN=wine BIN=build/win/mhview.exe: the Windows build under Wine
 export RT_NOMOVIE=1   # the opening movie would only lengthen the scripted boot (test_movie.sh covers it)
 P=build/show/urg; mkdir -p $P
 [ -f build/show/loop/card/BISLPM-65495MH/BISLPM-65495MH ] || tools/test_quest_loop.sh >/dev/null || exit 1
@@ -19,7 +20,7 @@ C=tools/pc_scripts/continue.txt
 fail() { echo "urgent FAILED: $1 (see $P)"; exit 1; }
 setup() {   # mark quests cleared, sleep in the bed (save)
     S=$(python3 tools/mk_input.py $C "2090:square*2;2200:$(cat tools/pc_scripts/bed_save.txt)" 3300)
-    RT_QCLEAR="$1" RT_LB_WARP="400,11225,14400,0;500,2259,745,4001" build/pc/mhview disc/mh1 --boot \
+    RT_QCLEAR="$1" RT_LB_WARP="400,11225,14400,0;500,2259,745,4001" $RUN $BIN disc/mh1 --boot \
         --input "$S" --shot $P/setup.png --time 112 2>/dev/null >/dev/null
 }
 hunt() {    # hunt NAME STAGE KIND D: Elder -> gate -> hunt -> reward -> bed save
@@ -31,9 +32,9 @@ hunt() {    # hunt NAME STAGE KIND D: Elder -> gate -> hunt -> reward -> bed sav
     S=$(python3 tools/mk_input.py $C "${EV#;}" $((7000 + D)))
     RT_QUEST_TRACE=1 RT_LB_WARP="400,10901,12409,38AB;1000,10650,15225;1145,11225,14400,0;1245,2259,745,4001" \
     RT_PL_GOTO="60,$2" RT_PL_TARGET=k$3 RT_PL_WARP_EM=200-1800 RT_DMG_MUL=40 RT_PL_GOD=1 \
-        build/pc/mhview disc/mh1 --boot --input "$S" --shot $P/$1.png --size 640x360 \
+        $RUN $BIN disc/mh1 --boot --input "$S" --shot $P/$1.png --size 640x360 \
         --time $(((7000 + D) / 30 + 1)) 2> $P/$1.log >/dev/null
-    RT_QUEST_TRACE=1 build/pc/mhview disc/mh1 --boot --input "$(cat $C)" --shot $P/$1_cont.png --time 60 \
+    RT_QUEST_TRACE=1 $RUN $BIN disc/mh1 --boot --input "$(cat $C)" --shot $P/$1_cont.png --time 60 \
         2> $P/$1_cont.log >/dev/null
     grep -m1 "accepted 1" $P/$1.log | sed 's/.*quest/  accepted quest/'
     grep -m1 "D5 3" $P/$1.log >/dev/null && echo "  quest clear (D5 3)"

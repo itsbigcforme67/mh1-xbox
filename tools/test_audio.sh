@@ -12,22 +12,23 @@
 # second; quests started without --boot were silent after the options-sound
 # merge. About 2 minutes.
 cd "$(dirname "$0")/.."
+BIN=${BIN:-build/pc/mhview}   # RUN=wine BIN=build/win/mhview.exe: the Windows build under Wine
 export RT_NOMOVIE=1
 OUT=build/show/audio; mkdir -p $OUT; rm -f $OUT/*.wav
 D=tools/pc_scripts
 # title: logos until ~tick 600, then the title
-RT_NAME=TEST build/pc/mhview disc/mh1 --boot --input "idle*1300" --size 640x480 \
+RT_NAME=TEST $RUN $BIN disc/mh1 --boot --input "idle*1300" --size 640x480 \
     --audio-dump $OUT/title.wav --shot $OUT/title.png --time 44 2> $OUT/title.log >/dev/null
 # village: the new-game script ends in the hunter's house; RT_LB_WARP puts him
 # out at the weapon workshop (village tick 1300 = host tick ~2780), then he
 # walks about for ~50 s
 WALK=$(python3 tools/mk_input.py $D/newgame.txt "2960:up*100;3100:left*100;3250:down*150;3450:right*150;3650:up*100" 4400)
-RT_NAME=TEST RT_LB_WARP="1300,2290,1000,4000;1360,9700,12120,4000" build/pc/mhview disc/mh1 --boot --input "$WALK" --size 640x480 \
+RT_NAME=TEST RT_LB_WARP="1300,2290,1000,4000;1360,9700,12120,4000" $RUN $BIN disc/mh1 --boot --input "$WALK" --size 640x480 \
     --audio-dump $OUT/village.wav --shot $OUT/village.png --time 146 2> $OUT/village.log >/dev/null
 # fight: the Rathian on her stage, hunter attacking (no --boot)
 ATK=$(python3 -c "print(','.join(['idle*40'] + ['triangle*2,idle*14'] * 60))")
 RT_QUEST_STAGE=1 RT_PL_WARP_EM=30-1000 RT_PL_GOD=1 RT_PL_TARGET=0:0 \
-    build/pc/mhview disc/mh1 --quest 10 --play --input "$ATK" --size 640x480 \
+    $RUN $BIN disc/mh1 --quest 10 --play --input "$ATK" --size 640x480 \
     --audio-dump $OUT/fight.wav --shot $OUT/fight.png --time 36 2> $OUT/fight.log >/dev/null
 python3 - "$OUT" <<'PY'
 import sys, wave, struct, array, math

@@ -14,7 +14,10 @@ git diff --quiet HEAD 2>/dev/null || { echo "note: the working tree has uncommit
 NAME=mh1pc-win32-$(date +%Y%m%d)-$HASH
 S=build/release/$NAME
 rm -rf "$S"; mkdir -p "$S/licenses"
-cp build/win/mhview.exe build/win/SDL2.dll build/win/play.bat build/win/bug_report.bat build/win/bug_report.ps1 "$S/"
+cp build/win/mhview.exe "$S/mhview.exe"
+LLVM=$(ls -d "$W"/llvm-mingw-*msvcrt* 2>/dev/null | grep -v '\.tar' | head -1)
+"$LLVM/bin/llvm-strip" --strip-all "$S/mhview.exe"   # no debug info / symbol table: smaller, no build paths (the crash report uses its own table)
+cp build/win/SDL2.dll build/win/play.bat build/win/bug_report.bat build/win/bug_report.ps1 "$S/"
 # no debug info in a release: it holds the build machine's paths (crash backtraces use the
 # program's own symbol table, rt_host_symname, which stripping keeps)
 STRIP=$(ls "$HOME"/mh1win/llvm-mingw-*/bin/llvm-strip 2>/dev/null | head -1)
@@ -74,6 +77,11 @@ Credits and legal
   the game's data (models, textures, sound, movies, text) is included, so it needs your own copy of the
   game. See the licenses folder (libmpeg2 is GPL, SDL2 is zlib).
 EOT
+# ---- guard: no home directory or user name in any file (build paths in debug info, scripts ...)
+ME=$(id -un)
+if grep -rl -a -e "$ME" "$S" >/dev/null 2>&1; then
+    echo "REFUSING: the user name '$ME' (a home path?) is inside the package:"; grep -rl -a -e "$ME" "$S"; exit 1
+fi
 # ---- guard: nothing large, nothing named like game data
 MAXFILE=$((25 * 1024 * 1024)); MAXTOTAL=$((40 * 1024 * 1024)); TOTAL=0
 for f in $(cd "$S" && find . -type f | sed 's|^\./||'); do
