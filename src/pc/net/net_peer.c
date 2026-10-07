@@ -11,6 +11,7 @@
  *   NP_WELCOME   host -> joiner: u8 your slot
  *   NP_START     host -> all: u8 quest, u8 players, the mini data of each slot
  *   NP_BYE       a peer leaves
+ *   NP_READY     u8 round: this player has loaded the stage (the start barrier, as net_start_ck)
  *
  * Safety (CLAUDE.md): only loopback / private addresses (net_dest_allowed in net_cpinet.c,
  * which also refuses the MH Oldschool addresses); the host listens on 127.0.0.1 unless given a
@@ -61,7 +62,8 @@ static hsock lsock = HS_BAD;        /* host: listening socket */
 static PEER peer[NP_MAX];           /* host: [slot] for joiners (slot 0 unused); joiner: [0] = the host */
 static int my_slot, nplayers = 1, quest, started;
 static uint8_t minis[NP_MAX][NP_MINI];
-static int gone[NP_MAX];           /* players who left (or whose connection broke) */
+static int gone[NP_MAX];
+static int ready[NP_MAX];          /* the last start-barrier round each player reached */           /* players who left (or whose connection broke) */
 
 /* received game packets, in order */
 #define QCAP 512
@@ -181,6 +183,8 @@ static void handle(int src, int from, int type, const uint8_t *d, int n)
             drop(&peer[src], "left");
             return;
         }
+        if (type == NP_READY && n >= 1)
+            ready[src] = d[0];
         from = src;     /* the host knows who sent it */
         {
             uint8_t f[NP_PKT_MAX + 4];
@@ -204,6 +208,10 @@ static void handle(int src, int from, int type, const uint8_t *d, int n)
                 memcpy(minis[k], d + 2 + NP_MINI * k, NP_MINI);
             started = 1;
         }
+        break;
+    case NP_READY:
+        if (n >= 1 && from >= 0 && from < NP_MAX)
+            ready[from] = d[0];
         break;
     case NP_BYE:
         fprintf(stderr, "net_peer: player %d left\n", from);
@@ -420,6 +428,19 @@ int np_recv(int *from, int *type, uint8_t *buf, int max)
 void np_loopback(int type, const void *d, int n)
 {
     enqueue(my_slot, type, d, n);
+}
+
+int np_ready(int round)
+{
+    uint8_t r = (uint8_t)round;
+    int s, n = 0;
+    if (ready[my_slot] != round) {
+        ready[my_slot] = round;
+        np_send(NP_READY, &r, 1);
+    }
+    for (s = 0; s < nplayers; s++)
+        n += ready[s] == round || gone[s];
+    return n;
 }
 
 int np_role(void) { return role; }

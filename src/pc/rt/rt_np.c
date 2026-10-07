@@ -282,6 +282,18 @@ void rt_np_after_init(void)
         return;
     for (s = 0; s < game_w.pl_num; s++)
         armor_create_model(&player_work[s]);
+    {   /* the start barrier (net_start_ck's job, game13): every player has loaded the stage
+         * before anyone's hunt starts, so slow machines do not miss the first packets */
+        static int round;
+        int t;
+        round++;
+        for (t = 0; np_ready(round) < np_players() && t < 3000; t++) {
+            np_poll();
+            sleep_ms(10);
+        }
+        if (t >= 3000)
+            fprintf(stderr, "co-op: not every player was ready after 30 s, starting anyway\n");
+    }
 }
 
 /* AQ_data_put (aq_nm.c): queue a game packet for everyone. Byte 1 is the packet's length

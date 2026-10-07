@@ -671,7 +671,7 @@ static void stage_se_move(void)
     const f32 *p;
     f32 pos[3], best = -1.0f, px, pz;
     int cnt, n, i;
-    PLW *pl = &player_work[0];
+    PLW *pl = &player_work[game_w.master];    /* the local hunter (co-op: not always slot 0) */
     static int se_tick;
 
     if (!snd_on || (++se_tick & 3))     /* its own count: game_core ticks only */
@@ -744,7 +744,7 @@ void stage_bgm_set(int n);
 void rt_snd_stage(int stage, const int *em_kinds, int nem)
 {
     int i, map, w, v;
-    PLW *pl = &player_work[0];
+    PLW *pl = &player_work[game_w.master];    /* the local hunter (co-op: not always slot 0) */
     char *env = getenv("RT_SND_MAP");
 
     if (!snd_on)

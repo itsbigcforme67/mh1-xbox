@@ -220,7 +220,7 @@ int rt_test_target(void)
     int slot = 0;
     if (s && s[0] == 'k') {     /* "kN": the nearest living monster of kind N on the hunter's stage */
         extern u8 em_work[];
-        PLW *p = &player_work[0];
+        PLW *p = &player_work[game_w.master];   /* the local hunter (co-op: not always slot 0) */
         int kind = atoi(s + 1), i;
         float best = -1;
         int pass, none = 0;

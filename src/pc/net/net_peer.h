@@ -8,7 +8,7 @@
 #define NP_DEFAULT_PORT 10300
 #define NP_MINI 0x18          /* the used part of the 0x40-byte mini data (docs/network.md 1a) */
 
-enum { NP_HELLO = 0x40, NP_WELCOME, NP_START, NP_BYE };
+enum { NP_HELLO = 0x40, NP_WELCOME, NP_START, NP_BYE, NP_READY };
 
 int np_host(const char *bind_ip, int port, const uint8_t *my_mini);  /* listen; slot 0 */
 int np_join(const char *host_ip, int port, const uint8_t *my_mini);  /* connect to the host */
@@ -25,5 +25,6 @@ const uint8_t *np_mini(int slot);      /* that slot's mini data (NP_MINI bytes) 
 int np_connected(int slot);
 int np_gone(int slot);                  /* that player left the session */
 void np_loopback(int type, const void *d, int n);  /* queue an own packet to be received too */
+int np_ready(int round);                /* say this player is ready (round n); returns how many players are */
 void np_close(void);
 #endif
