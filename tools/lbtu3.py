@@ -69,11 +69,12 @@ sfx = {}  # base name -> address-suffixed symbol name (functions defined in the 
 for ad, (sz, n) in syms.items():
     m = re.match(r'(.*)_[0-9A-F]{6,8}$', n)
     if m and S <= ad < E and m.group(1) not in symaddr: sfx[m.group(1)] = n
-ansi = set(); allnames = set(n for ad, (sz, n) in syms.items() if S <= ad < E)
+alldefs = set(); ansi = set(); allnames = set(n for ad, (sz, n) in syms.items() if S <= ad < E)
 for a, b, r in runs:
     s0 = open('src/lobby/%s.c' % r).read()
     for mm in pat.finditer(s0):
         first = mm.group(0).split('{')[0]
+        alldefs.add(mm.group(1))
         par = re.search(r'\w\(([^)]*)\)', first)
         if par and par.group(1).strip() not in ('', 'void') and not re.search(r'\)\s*\n\s*\w', first.strip()):
             ansi.add(mm.group(1))
@@ -121,7 +122,7 @@ for ri, (a, b, r) in enumerate(runs):
         if u.lstrip().startswith(('extern', 'asm', 'static')): continue
         par = re.search(r'\w\(([^)]*)\)\s*;', u)
         if not par or par.group(1).strip() in ('', 'void') or not re.search(r'\w\s+\**\w+\s*(,|$)|\*', par.group(1)): continue
-        if ((k in seen and seen[k] != norm(u)) or k[1] in ansi) and k[1] in symaddr:
+        if ((k in seen and seen[k] != norm(u)) or k[1] in ansi or k[1] in alldefs) and k[1] in symaddr:
             ren[k[1]] = '%s_a%d' % (k[1], ri); aliases.append('%s = 0x%08X;' % (ren[k[1]], symaddr[k[1]]))
     bodytxt = '\n'.join(tx for n, tx in cks if n)
     for u in pre_units:
