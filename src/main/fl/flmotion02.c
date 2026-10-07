@@ -20,7 +20,7 @@ f32 flFCVGetValue2(f32, CURVE *, s16 *);
 void flmatMakeScale(f32, f32, f32, void *);
 void flmatRotXYZ33(f32, f32, f32, void *);
 
-int flGetMotionMatrix(f32 t, MOT *mot, f32 *init, f32 *v, f32 *mat, s16 *hint) {
+int flGetMotionMatrix(MOT *mot, f32 *init, f32 t, f32 *v, f32 *mat, s16 *hint) {
     int i;
     int j;
     f32 *d;

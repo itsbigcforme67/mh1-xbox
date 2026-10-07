@@ -55,8 +55,8 @@ void flmatMul2(void *, void *);
 void flmatInvert(void *, void *);
 int flInitPostureHierarchySI(FLNODE *);
 int flInitPostureHierarchyMAYA(FLNODE *);
-int flInitPostureHierarchySISub(FLNODE *, f32 *, f32, f32, f32);
-int flInitPostureHierarchyMAYASub(FLNODE *, f32 *, f32, f32, f32);
+int flInitPostureHierarchySISub(FLNODE *, f32, f32 *, f32, f32);
+int flInitPostureHierarchyMAYASub(FLNODE *, f32, f32 *, f32, f32);
 int flGetMatrixSI(f32 *, f32 *, f32, f32, f32);
 int flGetMatrixMAYA(f32 *, f32 *, f32, f32, f32);
 int flGetMatrixWithoutScale(f32 *, f32 *);
@@ -113,7 +113,7 @@ int flGetHierarchy3(FLNODE *nodes, int h, int unused, int mode) {
     return 1;
 }
 
-int flInitPostureHierarchySISub(FLNODE *n, f32 *p, f32 sx, f32 sy, f32 sz) {
+int flInitPostureHierarchySISub(FLNODE *n, f32 sx, f32 *p, f32 sy, f32 sz) {
     int i;
     u8 *q;
     f32 m[16];
@@ -133,15 +133,15 @@ int flInitPostureHierarchySISub(FLNODE *n, f32 *p, f32 sx, f32 sy, f32 sz) {
     flmatMul(m, n->mat, p);
     flmatInvert(n->inv, m);
     if (n->child != 0) {
-        flInitPostureHierarchySISub(n->child, m, sx * n->cur[0], sy * n->cur[1], sz * n->cur[2]);
+        flInitPostureHierarchySISub(n->child, sx * n->cur[0], m, sy * n->cur[1], sz * n->cur[2]);
     }
     if (n->sib != 0) {
-        flInitPostureHierarchySISub(n->sib, p, sx, sy, sz);
+        flInitPostureHierarchySISub(n->sib, sx, p, sy, sz);
     }
     return 1;
 }
 
-int flInitPostureHierarchyMAYASub(FLNODE *n, f32 *p, f32 sx, f32 sy, f32 sz) {
+int flInitPostureHierarchyMAYASub(FLNODE *n, f32 sx, f32 *p, f32 sy, f32 sz) {
     int i;
     u8 *q;
     f32 m2[16];
@@ -163,10 +163,10 @@ int flInitPostureHierarchyMAYASub(FLNODE *n, f32 *p, f32 sx, f32 sy, f32 sz) {
     flmatMul(m2, m1, p);
     flmatInvert(n->inv, m2);
     if (n->child != 0) {
-        flInitPostureHierarchyMAYASub(n->child, m2, sx * n->cur[0], sy * n->cur[1], sz * n->cur[2]);
+        flInitPostureHierarchyMAYASub(n->child, sx * n->cur[0], m2, sy * n->cur[1], sz * n->cur[2]);
     }
     if (n->sib != 0) {
-        flInitPostureHierarchyMAYASub(n->sib, p, sx, sy, sz);
+        flInitPostureHierarchyMAYASub(n->sib, sx, p, sy, sz);
     }
     return 1;
 }

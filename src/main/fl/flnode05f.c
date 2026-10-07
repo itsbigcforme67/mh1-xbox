@@ -1,4 +1,5 @@
-/* fl hierarchy build, node layout see flnode05_nm.c (SLPM_654.95 0x00174B40-0x00174B5C): flInitPostureHierarchyMAYA. */
+/* fl node hierarchy: initial posture of a node tree (SLPM_654.95 0x00174A20-0x00174B34). flInitPostureHierarchySISub (skin/SI node data).
+ * The recursive static takes (node, sx, parent matrix, sy, sz): that parameter order gives the original argument set-up order of its calls. Node layout: see flnode05_nm.c. */
 #include "types.h"
 
 typedef struct FLNODE FLNODE;
@@ -59,6 +60,30 @@ int flGetHierarchyData2(FLNODE *, u8 *, int);
 int flGetHierarchy3(FLNODE *, int, int, int);
 int flGetHierarchy3_sub(FLNODE *, FLNODE *, FLNODE *);
 
-int flInitPostureHierarchyMAYA(FLNODE *n) {
-    return flInitPostureHierarchyMAYASub(n, 1.0f, flPS2INITMATRIX, 1.0f, 1.0f);
+int flInitPostureHierarchySISub(FLNODE *n, f32 sx, f32 *p, f32 sy, f32 sz) {
+    int i;
+    u8 *q;
+    f32 m[16];
+
+    i = 0;
+    q = (u8 *)n;
+    do {
+        i += 5;
+        *(f32 *)(q + 0x104) = *(f32 *)(q + 0xDC);
+        *(f32 *)(q + 0x108) = *(f32 *)(q + 0xE0);
+        *(f32 *)(q + 0x10C) = *(f32 *)(q + 0xE4);
+        *(f32 *)(q + 0x110) = *(f32 *)(q + 0xE8);
+        *(f32 *)(q + 0x114) = *(f32 *)(q + 0xEC);
+        q += 0x14;
+    } while (i < 10);
+    flGetMatrixSI(n->mat, n->cur, sx, sy, sz);
+    flmatMul(m, n->mat, p);
+    flmatInvert(n->inv, m);
+    if (n->child != 0) {
+        flInitPostureHierarchySISub(n->child, sx * n->cur[0], m, sy * n->cur[1], sz * n->cur[2]);
+    }
+    if (n->sib != 0) {
+        flInitPostureHierarchySISub(n->sib, sx, p, sy, sz);
+    }
+    return 1;
 }

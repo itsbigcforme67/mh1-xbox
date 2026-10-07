@@ -1,4 +1,6 @@
-/* vr01 - VRAM list 0x0018B3B0-0x0018B9F8: flPS2VramInit, flPS2PullVramWork, flPS2PushVramWork, flPS2ChainVramWork, flPS2SearchVramList, flPS2AddVramList, flPS2RewriteVramList, flPS2DeleteAllVramList, flPS2DeleteVramList, flPS2GetVramFreeArea. Whole file in vram_nm.c. */
+/* VRAM page list. SLPM_654.95 0x0018B3B0-0x0018BAE0 (g_flPS2VramInit, one source file): a doubly linked list of
+ * used VRAM ranges (flVramList, entries from the flVramControl pool of 0x200), plus the 3 static
+ * areas. Textures/palettes (TEXH) remember their start page at +0x14 and a "resident" flag at +0x35. */
 #include "types.h"
 
 typedef struct VRC {            /* 0x1C bytes */
@@ -39,20 +41,6 @@ VRC *flPS2PullVramWork();
 VRC *flPS2SearchVramList(TEXH *);
 int flPS2AddVramList(VRC *, TEXH *);
 VRC *flPS2SearchVramSpace(u32, int);
-
-
-
-
-
-
-
-
-
-
-
-extern TEXH flTexture[];
-extern TEXH flPalette[];
-
 
 void flPS2VramInit(void) {
     int i;
@@ -214,6 +202,9 @@ int flPS2DeleteVramList(TEXH *owner) {
     return 1;
 }
 
+extern TEXH flTexture[];
+extern TEXH flPalette[];
+
 /* For each packed (palette << 16 | texture) handle of the list, makes sure the resident
  * texture/palette has VRAM space; returns 0 if some placement failed. */
 int flPS2GetVramFreeArea(u32 *list, int n) {
@@ -250,4 +241,45 @@ int flPS2GetVramFreeArea(u32 *list, int n) {
         }
     }
     return 1;
+}
+
+VRC *flPS2SearchVramSpace(u32 len, int align) {
+    VRC *p = flVramList;
+    VRC *next;
+    u32 aligned;
+    int end;
+    int mask;
+
+    if (p == 0) {
+        return 0;
+    }
+    if (p->page != flPs2State.vram_top) {
+        if (!((u32)(p->page - flPs2State.vram_top) < len)) {
+            return 0;
+        }
+    }
+    goto pre;
+loop:
+    end = p->page;
+    end += p->len;
+    next = p->next;
+    aligned = mask & (end + align);
+    if (next == 0) {
+        if (end >= 0x4000) {
+            return (VRC *)-1;
+        }
+        p = (aligned + len >= 0x4000) ? (VRC *)-1 : p;
+        return p;
+    }
+    if (aligned < next->page) {
+        if (!((u32)(next->page - aligned) < len)) {
+            return p;
+        }
+    }
+    p = next;
+    goto loop;
+pre:
+    align--;
+    mask = ~align;
+    goto loop;
 }

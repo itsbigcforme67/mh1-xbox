@@ -1,6 +1,7 @@
-/* Near-match (not linked): flPlayMotionExSISub (0x001745A0), 3 of 63 instructions differ (the original loads the f-curve argument registers
- * in a different order around the base address load). Node fields: +0xCC next sibling, +0xD0 first child, +0xD4 motion handle, +0xD8 curve offset,
- * +0xDC initial values (10 floats), +0x104 current values, +0x15C curve work. */
+/* fl motion: flPlayMotionExSISub (SLPM_654.95 0x001745A0-0x0017469C), file-static recursive part of flPlayMotionExSI: copies the initial values of the
+ * node into its current values, evaluates the f-curves of its motion (flGetFcurveValue takes the curve data address, init, current values, t, work),
+ * builds the node matrix and recurses into child and sibling. Node fields: +0xCC next sibling, +0xD0 first child, +0xD4 motion handle,
+ * +0xD8 curve offset, +0xDC initial values (10 floats), +0x104 current values, +0x15C curve work. */
 #include "types.h"
 
 typedef struct FLNODE FLNODE;

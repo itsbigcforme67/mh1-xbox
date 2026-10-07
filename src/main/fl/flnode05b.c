@@ -50,8 +50,8 @@ void flmatMul2(void *, void *);
 void flmatInvert(void *, void *);
 int flInitPostureHierarchySI(FLNODE *);
 int flInitPostureHierarchyMAYA(FLNODE *);
-int flInitPostureHierarchySISub(FLNODE *, f32 *, f32, f32, f32);
-int flInitPostureHierarchyMAYASub(FLNODE *, f32 *, f32, f32, f32);
+int flInitPostureHierarchySISub(FLNODE *, f32, f32 *, f32, f32);
+int flInitPostureHierarchyMAYASub(FLNODE *, f32, f32 *, f32, f32);
 int flGetMatrixSI(f32 *, f32 *, f32, f32, f32);
 int flGetMatrixMAYA(f32 *, f32 *, f32, f32, f32);
 int flGetMatrixWithoutScale(f32 *, f32 *);
@@ -74,5 +74,5 @@ int flGetHierarchy3_sub(FLNODE *nodes, FLNODE *n, FLNODE *parent) {
 }
 
 int flInitPostureHierarchySI(FLNODE *n) {
-    return flInitPostureHierarchySISub(n, flPS2INITMATRIX, 1.0f, 1.0f, 1.0f);
+    return flInitPostureHierarchySISub(n, 1.0f, flPS2INITMATRIX, 1.0f, 1.0f);
 }

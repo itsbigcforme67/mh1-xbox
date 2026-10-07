@@ -21,7 +21,7 @@ struct FLNODE {
 extern int base_addr_0038A25C;
 FLNODE *flFindGroupRoot(FLNODE *, int);
 void flMotionSetBaseAddress(int);
-void flGetFcurveValue(f32, int, f32 *, f32 *, u8 *);
+void flGetFcurveValue(int, f32 *, f32 *, f32, u8 *);
 void flGetMatrixWithoutScale(void *, void *);
 void flmatInit(void *);
 void flmatMakeScale(void *, f32, f32, f32);

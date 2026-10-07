@@ -1,4 +1,4 @@
-/* tx02 - texture handles 0x00188800-0x00188A80: flPS2GetPaletteHandle, flReleaseTextureHandle, flReleaseTextureHandle_NOWAITDMA, flReleasePaletteHandle. Whole file in tex_nm.c. */
+/* tx02 - texture handles 0x00188800-0x00188A80: flPS2GetPaletteHandle, flReleaseTextureHandle, flReleaseTextureHandle_NOWAITDMA, flReleasePaletteHandle, flReleasePaletteHandle_NOWAITDMA. Whole file in tex_nm.c. */
 #include "types.h"
 
 typedef struct TEXH {
@@ -113,6 +113,27 @@ int flReleasePaletteHandle(u32 h) {
         return 0;
     }
     flPS2DmaTerminate();
+    flPS2DeleteVramList(t);
+    if (t->sysmem != 0) {
+        flPS2ReleaseSystemMemory(t->sysmem);
+    }
+    flMemset(t, 0, 0x38);
+    flPTNum--;
+    return 1;
+}
+
+int flReleasePaletteHandle_NOWAITDMA(u32 h) {
+    TEXH *t = &flPalette[h - 1];
+
+    if (h == 0) {
+        return 0;
+    }
+    if (h > 0x100) {
+        return 0;
+    }
+    if (t->used == 0) {
+        return 0;
+    }
     flPS2DeleteVramList(t);
     if (t->sysmem != 0) {
         flPS2ReleaseSystemMemory(t->sysmem);

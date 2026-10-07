@@ -152,9 +152,10 @@ int fmsInitialize(FMSTK *p, u32 base, u32 size, u32 align) {
 /* Allocates size bytes (rounded up to the alignment) from the low end, or from the high end
  * when fromTop is set. Returns the address or 0 when the two ends would meet. */
 u32 fmsAllocMemory(FMSTK *p, u32 size, int fromTop) {
+    u32 al = p->align;
     u32 cur = p->cur;
+    u32 sz = ~(al - 1) & (size + al - 1);
     u32 top = p->top;
-    u32 sz = ~(p->align - 1) & (size + p->align - 1);
 
     if (top < cur + sz) {
         return 0;

@@ -1,4 +1,4 @@
-/* fl hierarchy (node tree) group search (SLPM_654.95 0x00174170-0x00174290): flSetMotionExSub, flFindGroupRoot. Node layout as in flnode01.c (+0xC6 group id). */
+/* fl motion set (SLPM_654.95 0x001740F0-0x00174290): flSetMotionEx (copies the curve data addresses of a motion into a node tree), flSetMotionExSub (file-static), flFindGroupRoot (group search). Node layout as in flnode01.c (+0xC6 group id). */
 #include "types.h"
 
 typedef struct FLNODE FLNODE;
@@ -14,8 +14,28 @@ struct FLNODE {
 };
 
 extern int cur_handle;
+extern int base_addr_0038A25C;
+int flPS2GetSystemBuffAdrs();
+static int flSetMotionExSub(FLNODE *n, int *src, int id);
+FLNODE *flFindGroupRoot(FLNODE *n, int id);
 
-int flSetMotionExSub(FLNODE *n, int *src, int id) {
+int flSetMotionEx(FLNODE *n, int handle, int id) {
+    int *src;
+    FLNODE *r;
+    int *b;
+
+    b = (int *)flPS2GetSystemBuffAdrs(handle);
+    base_addr_0038A25C = (int)b;
+    src = (int *)(b[4] + base_addr_0038A25C);
+    cur_handle = handle;
+    r = flFindGroupRoot(n, id);
+    if (r != 0) {
+        flSetMotionExSub(r, src, id);
+    }
+    return 1;
+}
+
+static int flSetMotionExSub(FLNODE *n, int *src, int id) {
     FLNODE *top;
     u16 g = id;
 
