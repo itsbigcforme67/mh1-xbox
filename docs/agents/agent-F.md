@@ -587,3 +587,14 @@ Plaza_add_friend 12 (lb_pz12_nm.c: sw/a/st are a1/a2/a3 in mine, a3/a1/a2 in the
 ANSI `s16 x, s16 z` params plus a flfntLocate(s16, s16) prototype got closest, the register map and z update still differ), plaza_setMyCommentTrans ~175, plaza_enterLobbyTrans ~270 (draft with prototypes in this session was not kept),
 draw_dialog_square 8 (float register order of 20.0f * tw, tried 3 spellings), lb_mix_decide 4 (m = mixData + cur: original puts the sll between lui and addiu), lb_npc_old_guild 2 (mv recomputed vs kept in a2).
 Tools (scratch, not committed): adiff.py (aligns check.py -v output with difflib and prints only real differences, ignoring relocation noise), hill/rand declaration-order searchers.
+
+## Lobby session 17/18 (whole-file TUs, village)
+- Lb_put_materialItem matched (lb_by177.c, replaces the raw asm run): reuse `id` as the stock variable, cast `(s16)` per use, `if ((s16)need <= (s16)num + (s16)id)`.
+- Plaza one-unit TU 0x594260-0x598DB0 (wip/lb_plz2_tu.c, NOT registered; agent C owns it now): `python3 tools/lbtu2.py lb_plz2 0x594260 0x598DB0` works. Needed by hand: rename clashing header declarations
+  (`#define plaza_movePlaza plaza_movePlaza_hdr` ... around the include, then forward declarations), `X0A(p)` -> `X0Ap(p)` (function-like vs object-like macro clash) with `#undef/#define X0A` before plaza_movePlaza
+  (a-based) and again before plaza_backToServer (pNet-based), `getUserInfo()` stub unprototyped. Result: all 23 functions OK on PS2, rebuild OK x5 (rodata slots handled by split_rodata_objects), BUT build_pc failed:
+  `static get_page_num` clashes with the header's extern and the `asm` stubs include `.inc` files that gcc cannot read: wrap the asm stubs in `#ifdef __MWERKS__` and make get_page_num non-static for gcc.
+  Putting the C versions of plaza_mailBox / Plaza_add_friend into the TU gave the same 4 / 12 differences as standalone.
+- Village TU attempt 0x59DB40-0x5A2A1C (lbnpc, incl. lb_npc_old_guild): lbtu3 output compiles except for the two header families (lobby_b.h vs lobby.h: Item_data, lbShop, lb_pit, lb_sys, em_work, Lb_act_set ...); the
+  `#define name name_hb` around the first include fixes all but lb_sys (a header-defined `lb_sys` macro). Not finished.
+- set_dialog_square (lbui_nm.c, 36/43): the original keeps `t3 += 40` as real adds between record groups; every pointer/struct spelling tried gets folded into constant offsets by MWCC.
