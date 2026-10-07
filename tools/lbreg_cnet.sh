@@ -18,20 +18,6 @@ echo "$FAMILIES" | while read nm prefix regdir; do
     grep -v '^$' /tmp/lbruns.txt >> /tmp/c_files.new
 done
 cp /tmp/c_files.new config/c_files.txt
-python3 - <<'PY'
-import re
-L = [l.rstrip('\n') for l in open('config/c_files.txt')]
-runs = set(l.split()[3] for l in L if len(l.split()) == 4 and l.split()[0] == 'lobby')
-seen = set(); out = []
-for l in L:
-    p = l.split()
-    if l in seen and l.strip(): continue
-    seen.add(l)
-    if len(p) == 4 and p[0].startswith('lobby:') and p[3].startswith('cnet/cnlbs') and p[3] not in runs:
-        print('WARNING: orphan rodata line (run file gone):', l)
-    out.append(l)
-open('config/c_files.txt', 'w').write('\n'.join(out) + '\n')
-PY
 # rodata slots (string literals, jump tables; config/lbnet_rodata.txt): attach each to the run file holding its function
 python3 - <<'PY'
 import re, glob
@@ -69,5 +55,19 @@ for l in open('config/c_files.txt'):
             if ln not in have and not any(x < e and a < y for x, y in rng):
                 out.append(ln); have.add(ln); rng.append((a, e)); print('jump table', p[3], ln)
 open('config/c_files.txt', 'a').write('\n'.join(out) + '\n')
+PY
+python3 - <<'PY'
+import re
+L = [l.rstrip('\n') for l in open('config/c_files.txt')]
+runs = set(l.split()[3] for l in L if len(l.split()) == 4 and l.split()[0] == 'lobby')
+seen = set(); out = []
+for l in L:
+    p = l.split()
+    if l in seen and l.strip(): continue
+    seen.add(l)
+    if len(p) == 4 and p[0].startswith('lobby:') and p[3].startswith('cnet/cnlbs') and p[3] not in runs:
+        print('WARNING: orphan rodata line (run file gone):', l)
+    out.append(l)
+open('config/c_files.txt', 'w').write('\n'.join(out) + '\n')
 PY
 echo "registered $(grep -c '^lobby 0x.* \(cnet/cnlbs\|lb/lbnpc\|lb/lbui\|lb/lbshop2\|lb/lbmix\|lb/lbshp\|lb/lbem\)' config/c_files.txt) runs"

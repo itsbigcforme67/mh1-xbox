@@ -3941,10 +3941,14 @@ int cnLBS_Get_MatchInfomation(CNET_W5D4 *d) {
 void cnLBS_Get_GameServerAddress(u32 *addr, u16 *port) {
     int p;
     u32 v;
-    v = CnetSys_w.gsaddr[0];
-    v |= CnetSys_w.gsaddr[1] << 8 & 0xFF00;
-    v = (CnetSys_w.gsaddr[2] << 16 & 0xFF0000) | v;
-    v = (CnetSys_w.gsaddr[3] << 24 & 0xFF000000) | v;
+    u32 a, b, c;
+    a = CnetSys_w.gsaddr[0];
+    b = (CnetSys_w.gsaddr[1] << 8) & 0xFF00;
+    a = a | b;
+    c = (CnetSys_w.gsaddr[2] << 16) & 0xFF0000;
+    c = c | a;
+    v = (CnetSys_w.gsaddr[3] << 24) & 0xFF000000;
+    v = v | c;
     *addr = v;
     p = (CnetSys_w.gsport[1] + (CnetSys_w.gsport[0] << 8)) & 0xFFFF;
     *port = (p << 8 & 0xFF00) | (p >> 8 & 0xFF);
@@ -4239,8 +4243,8 @@ int cnLBS_RecvData(int sock) {
     do {
         CnetSys_w.rlen = select_ps2(CnetSys_w.sock, recv_header, recv_work, 0x600);
         if (CnetSys_w.rlen != -1 && CnetSys_w.rlen != 0) {
-            __cnetSub_RecvThreeData();
             got = 1;
+            __cnetSub_RecvThreeData();
         }
         i++;
     } while (i < 4);
