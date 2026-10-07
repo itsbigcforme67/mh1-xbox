@@ -1375,7 +1375,7 @@ a dead monster of that kind, then to an unused slot (so WARP_EM / DMG_MUL do not
 | 140 | 5 | item 144 + Rathalos | OK | none |
 | 171 | 5 | kind 26 (stage 53) | OK | none |
 
-Counts: 38 offline quests, 28 OK, 5 egg quests not automated, 2 known failures (161, 165). "OK (boss slain by aid)" means
+Counts: 38 offline quests, 31 OK, 5 egg quests not automated, 2 known failures (161, 165). "OK (boss slain by aid)" means
 the monster that cannot be reached is brought down by RT_PL_SLAY, so those runs test the clear / reward path, not combat
 against that monster. The other hunts use real hits (DMG_MUL 40 on the target only). Not covered: real gathering and
 fishing for the delivery quests, carving rewards, the eggs, urgent 136/137 clears for real (test_urgent.sh does those).
