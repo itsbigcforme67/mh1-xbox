@@ -4,9 +4,10 @@
 # Passes when every instance ends with every player in the quest, on the same stage, and
 # each player's position as the others see it within 60 units of where that player itself
 # says it is. Screenshots: build/show/coop_N_slotK.png (the host's from a high follow camera).
-#   tools/test_coop.sh [N|hunt]   (N = 2..4 walking; hunt = 2 players hunt quest 137 to the clear;
-#                                  box = the supply box decided by the host;
-#                                  handover = the joiner fights, the monster is handed to it; default: all)
+#   tools/test_coop.sh [N|hunt2|hunt4|handover|leave|box]
+#     N = 2..4 walking; hunt2 / hunt4 / handover / leave = hunts of quest 137 to the clear, the reward and the
+#     village with each player's own saved hunter (tools/test_coop_hunt.py); box = the supply box decided by the
+#     host; default: all (about 6 minutes)
 # Starts only its own processes and stops them (by PID).
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/pc/mhview_online}
@@ -15,6 +16,8 @@ DISC=${DISC:-disc/mh1}
 OUT=build/coop; mkdir -p $OUT build/show
 PORT=${PORT:-10310}
 export RT_NO_GUI=1 RT_NP_POS=30
+# never the player's own card: an empty one (no save: RT_WEAPON / RT_PL_LOOK); the hunts copy their own cards
+export MH1_SAVE_DIR="$PWD/$OUT/nocard"; rm -rf "$MH1_SAVE_DIR"
 
 run() {
     n=$1
@@ -70,78 +73,6 @@ sys.exit(0 if ok else 1)
 EOF
 }
 
-hunt() {
-    # $1 = handover: the host stays at the camp and the joiner fights; Em_Master_Change then hands the monster to the
-    # joiner (the player on its area), so the host's copy is driven by the joiner's packets. Otherwise:
-    # 2 players hunt quest 137 (one Velocidrome, kind 27, stage 34): the host walks there and fights it with the
-    # test aids of test_all_quests (warp next to it, damage x40, no damage taken); the joiner walks there and only
-    # watches. The host's machine owns the monster (EMW+0x8C3), so the joiner's copy moves, loses HP and dies only
-    # from the host's packets (net_send_em / net_receive_em), and the kill and clear come over the sys channel.
-    port=$((PORT + 9))
-    fight="RT_PL_WARP_EM=100-90000 RT_DMG_MUL=40"; watch=""; owner=0; tag=hunt
-    if [ "$1" = handover ]; then
-        port=$((PORT + 11)); owner=1; tag=handover
-    fi
-    cyc=$(python3 -c "print('idle*60' + (',cam_u*2,idle*30'*4 + ',circle*2,idle*28'*6)*40)")
-    common="RT_NOMOVIE=1 RT_QUEST_TRACE=1 RT_NP_EM=30 RT_NP_POS=30 RT_PL_GOD=1 RT_PL_GOTO=60,f RT_PL_TARGET=k27"
-    # the joiner sets off later (RT_PL_GOTO from tick 300): the monster's area must see the host first, or
-    # Em_Master_Change hands the monster to the joiner (that case is the handover test)
-    hin="$cyc"; jin="idle*99999"; hx="$fight $common"; jx="$common RT_PL_GOTO=300,f"
-    [ $owner = 1 ] && { hin="idle*99999"; jin="$cyc"; hx="RT_NOMOVIE=1 RT_QUEST_TRACE=1 RT_NP_EM=30 RT_NP_POS=30 RT_PL_GOD=1"; jx="$fight $common"; }
-    env $hx RT_PL_LOOK=0,2,3,5,5,5,5,5 \
-        timeout 300 "$BIN" "$DISC" --host --quest 137 --players 2 --port $port --mute --input "$hin" \
-        --shot build/show/coop_${tag}_slot0.png --time 60 > $OUT/${tag}_0.log 2>&1 &
-    p0=$!
-    sleep 1
-    env $jx RT_WEAPON=1 RT_PL_LOOK=1,2,2,10,10,10,10,10 \
-        timeout 300 "$BIN" "$DISC" --join 127.0.0.1 --port $port --mute --input "$jin" \
-        --shot build/show/coop_${tag}_slot1.png --time 60 > $OUT/${tag}_1.log 2>&1 &
-    p1=$!
-    wait $p0 || { echo "coop hunt: host failed"; return 1; }
-    wait $p1 || { echo "coop hunt: joiner failed"; return 1; }
-    python3 - "$OUT" $tag $owner <<'EOF2'
-import re, sys
-out, tag, owner = sys.argv[1], sys.argv[2], int(sys.argv[3])
-hp, own, clear, pos = {}, {}, {}, {}
-for me in (0, 1):
-    hp[me], own[me] = {}, set()
-    for l in open(f"{out}/{tag}_{me}.log", errors="replace"):
-        m = re.match(r"np-em: tick (\d+) me \d+ em (\d+) kind 27 stg \d+ hp (-?\d+) owner (\d+)", l)
-        if m:
-            hp[me][int(m[1])] = int(m[3])
-            if 150 < int(m[1]) < 1500:
-                own[me].add(int(m[4]))
-        m = re.match(r"rt_flow: tick (\d+) mode 2 step 0 D5 3", l)
-        if m and me not in clear:
-            clear[me] = int(m[1])
-        m = re.match(r"np-pos: tick \d+ me \d+ slot (\d+) stg (\d+)", l)
-        if m:
-            pos[(me, int(m[1]))] = int(m[2])
-ok = True
-seq = {me: [v for t, v in sorted(hp[me].items())] for me in (0, 1)}
-dist = {me: sorted(set(seq[me]), reverse=True) for me in (0, 1)}
-print(f"coop {tag}: Velocidrome HP on the host {dist[0]}, on the joiner {dist[1]}")
-if not seq[0] or seq[0][-1] > 0 or seq[1][-1] > 0:
-    print(f"coop {tag}: the monster did not die on both"); ok = False
-if dist[0] != dist[1]:
-    print(f"coop {tag}: the two machines saw different HP values"); ok = False
-for me in (0, 1):
-    if own[me] != {owner}:
-        print(f"coop {tag}: instance {me} had monster owner(s) {own[me]}, expected slot {owner}"); ok = False
-for me in (0, 1):
-    if me not in clear:
-        print(f"coop {tag}: no quest clear on instance {me}"); ok = False
-if len(clear) == 2:
-    print(f"coop {tag}: quest clear at tick {clear[0]} (host) and {clear[1]} (joiner)")
-    if abs(clear[0] - clear[1]) > 30:
-        print(f"coop {tag}: the clears are more than a second apart"); ok = False
-if owner == 0 and (pos.get((0, 1)) != 34 or pos.get((1, 0)) != 34):
-    print(f"coop {tag}: the players do not see each other on stage 34 ({pos})"); ok = False
-print(f"coop {tag}: " + ("OK" if ok else "FAILED"))
-sys.exit(0 if ok else 1)
-EOF2
-}
-
 box() {
     # the supply box is decided by the host (net_send_host / net_receive_host): the joiner takes the first item, then
     # the host tries the same one. Expected: the joiner has it, both see it taken, the host gets nothing.
@@ -162,6 +93,30 @@ box() {
     echo "coop box: OK"
 }
 
+mksave() {
+    # a card with one hunter named $1 after quest 131 (test_quest_loop.sh's first run): build/coop/save_$1
+    [ -f "$OUT/save_$1/BISLPM-65495MH/BISLPM-65495MH" ] && [ "$OUT/save_$1/BISLPM-65495MH/BISLPM-65495MH" -nt "$BIN" ] && return 0
+    D=tools/pc_scripts
+    EV="2860:square*2"
+    i=0; while [ $i -lt 30 ]; do EV="$EV;$((2930 + 27 * i)):circle*2"; i=$((i + 1)); done
+    EV="$EV;3770:square*2"
+    S="$(python3 tools/mk_input.py $D/newgame.txt "$EV" 3787),$(cat $D/quest131_hunt.txt)"
+    S=$(echo "$S" > $OUT/chain.txt; CUT=8100 python3 tools/mk_input.py $OUT/chain.txt "8129:square*2;8229:$(cat $D/bed_save.txt)" 9500)
+    rm -rf "$OUT/save_$1"
+    (unset RT_NP_POS; MH1_SAVE_DIR="$PWD/$OUT/save_$1" RT_NOMOVIE=1 RT_NAME=$1 \
+     RT_LB_WARP="1300,2290,1000,4000;1360,10901,12409,38AB;2210,10650,15225;2301,11225,14400,0;2391,2259,745,4001" \
+     RT_PL_TARGET="0:0,1250:1" RT_PL_WARP="10,12250,10000;2400,6750,11900;2500,10350,10500" \
+     RT_PL_WARP_EM=90-520,600,1270-1700,1780 RT_DMG_MUL=40 \
+        "$BIN" "$DISC" --boot --input "$S" --shot $OUT/save_$1.png --time 316 2> $OUT/save_$1.log >/dev/null)
+    [ -f "$OUT/save_$1/BISLPM-65495MH/BISLPM-65495MH" ] || { echo "coop: could not make the save of $1"; return 1; }
+}
+
+hunts() {
+    # co-op hunts with each player's own saved hunter (tools/test_coop_hunt.py): $@ = scenarios
+    for nm in ANNA BOB CARL DAVE; do mksave $nm || return 1; done
+    python3 tools/test_coop_hunt.py "$@" | grep -v "^$"
+}
+
 refusals() {
     # a public address and an MH Oldschool address are refused before any socket is opened
     for a in 8.8.8.8 34.75.107.68; do
@@ -173,12 +128,9 @@ refusals() {
     echo "coop: public / MH Oldschool addresses refused"
 }
 
-if [ "$1" = hunt ] || [ "$1" = box ]; then
-    $1
-elif [ "$1" = handover ]; then
-    hunt handover
-elif [ -n "$1" ]; then
-    run "$1" && refusals
-else
-    run 2 && run 4 && hunt && hunt handover && box && refusals
-fi
+case "$1" in
+box) box ;;
+hunt2|hunt4|handover|leave) shift 0; hunts "$@" ;;
+"") run 2 && run 4 && hunts hunt2 hunt4 handover leave && box && refusals ;;
+*) run "$1" && refusals ;;
+esac

@@ -6,7 +6,8 @@
 #define NP_MAX 4            /* players in a quest (PS2: 4) */
 #define NP_PKT_MAX 0x200    /* largest game packet carried */
 #define NP_DEFAULT_PORT 10300
-#define NP_MINI 0x18          /* the used part of the 0x40-byte mini data (docs/network.md 1a) */
+#define NP_MINI 0x2C          /* the used 0x18 bytes of the PS2's 0x40-byte mini data, then the name (0x12, the PS2 sends
+                                 * the handle separately), 2 spare */
 
 enum { NP_HELLO = 0x40, NP_WELCOME, NP_START, NP_BYE, NP_READY };
 
