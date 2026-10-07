@@ -1270,3 +1270,27 @@ Tricks (each confirmed by a match):
   em20_act_set, eft18_set_com, em09_effect_move, set05_m, Set20_set, shell22_i, print_tuto_message stay near-matches.
 - Scratch scripts used (in the session scratchpad, not committed): typeall (exhaustive product of scalar local types, scored by alignall), declsub (every order of chosen
   declaration lines), typehill, mkrun_nm (cut one function plus the file preamble out of a *_nm.c into its own run file).
+
+## Game overlay round 6 (agent D, 7 Oct 2026)
+Linked: em_cmd_ninshiki_timer_sub (em_cmd_r99.c), em_act_search (em_core_act.c). Game 95.447% -> see commit log; select unchanged (cmn_mongon_check_sub 36 off, disp_color 67 off).
+Run-file ranges: END = start + function size (em_cmd_ninshiki_timer_sub 0x562220 + 128 = 0x5622A0); a range 4 bytes short shifts everything after it (game MISMATCH +16).
+Tricks (each confirmed by a match):
+- em_cmd_ninshiki_timer_sub: `for (i = 0; i < game_w.pl_num; i++) { switch (v) { case 0: if (!(em->x88C & (1 << i))) em->x890[i] = 0; break; } }`.
+  The m2c form (a walking `s16 *w` pointer + EM_FIELD(w, s16 *, 0x890), literal 0x3F34C3) was 13 off; indexing the real array field with the loop counter
+  gave 3, and keeping the one-case `switch` (not `if (v == 0)`) gave 0. When a draft walks a pointer in step with the counter, try `field[i]`.
+- em_act_search: the second pick loop must read the table twice (`while (tbl->rate != 0xFFFF) { sum += tbl->rate; ...`), not through a temp `x = tbl->rate`
+  (the temp took the wrong argument register). The first loop (sum of weights) keeps its temp.
+- Compare ladders that leave every branch delay slot as a `nop` in the original (Set20_set): putting `default: return;` FIRST in the switch took 8 off to 6
+  (the unfilled slots appear); still not 0, `#pragma scheduling off` / `peephole off` / `optimization_level` change nothing.
+- `u16 kind` instead of `int kind` turns `kind = 3` into daddiu (what em20_act_set's original has) but then moves the switch temp; no form found for both.
+- em_cmd_flag_set/clear: where `ex = em->ex` is written decides where its addiu is scheduled (it follows the source position); the original has it AFTER the jump-table
+  `lui` (= compiler-hoisted). Writing `em->ex[0x44]` in the cases removes the register altogether (16 off). Moving the assignment before `kind = *p++` gives 4/3 off.
+- em_cmd_flag_ck: original shape of the skip loop is "outer test -> jump into the loop's bottom test, which is also the inner `if (ok)` test"; our CMD_SKIPF and a
+  `while (ok)` rewrite both emit a duplicate entry test (6 off). Not solved.
+- print_tuto_message: s1/s2 swapped for y and n; no declaration order, loop form or type combination (47 tried) changes it.
+- Em_Taisei_Set: all 24 x 24 orders of (pointer loads, stores) with locals tried; never better than the pointer-to-pointer form (26 off).
+- tools/perm.py takes `select` as module too (permuter score is noisy: score 1270 for cmn_mongon_check_sub from a base of 1565 gave no usable idea).
+- tools/declhill2.py works on edit_nm.c (select) but needs ~2 s per try; run it under timeout in the background.
+- alignall.py on a *_nm.c file shows false diffs for functions that are already linked from another file (e.g. emNN_effect_move, Edit_task/Cont_task): the nm TU
+  sees the callee as a same-TU static. tools/unmatched.py is the real list.
+- cmn_mongon_check_sub 36 -> 27 off by declhill2 (declaration order: tbl, q, j, len, pos, found, n, p, r ...); the rest is the loop-exit layout (`found` tests) and which of p/q/n gets t4-t7.

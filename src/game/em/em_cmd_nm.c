@@ -2688,21 +2688,18 @@ u8 *em_cmd_target_land_no_ck(EMW *em, u8 *p) {
 u8 *em_cmd_ninshiki_timer_sub(EMW *em, u8 *p) {
     u8 v;
     s8 i;
-    s16 *w;
 
     v = *p;
-    w = (s16 *)em;
-    for (i = 0; i < *(u8 *)0x3F34C3; i++, w++) {
+    for (i = 0; i < game_w.pl_num; i++) {
         switch (v) {
         case 0:
             if (!(em->x88C & (1 << i))) {
-                EM_FIELD(w, s16 *, 0x890) = 0;
+                em->x890[i] = 0;
             }
-            break;
-        default:
             break;
         }
     }
+
     return p + 1;
 }
 

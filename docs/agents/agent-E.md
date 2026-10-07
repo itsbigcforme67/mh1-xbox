@@ -889,3 +889,31 @@ already in a register), CngSessionStart_online / CngNetMcsP2PPoll 3 (original `h
 flPADGetALL 3 (struct copy `*d = *s` of two s8: the original loads with lb, we load lbu).
 Dead ends worth knowing: flps0002 and the other flps00xx primitive helpers (0x175290-0x177040, ~9 KB) need flPS2CheckGSClip defined in the same TU (the original keeps the
 y value in v1 across that call) and they address the scratchpad packet through a saved pointer s0 = 0x70000028 stepped by 0x10; I could not find the C shape that does both.
+
+## Assignment 14 (7 Oct, agent E, small near-matches then whole-file work)
+Main line: 41.245% at the start (after `git merge main`), 41.293% after my links (+736 bytes: item_ans_send 76, set_other_data 120, get_AQdata 504, flmatCopy 36; main OK x5, build_pc builds).
+Linked: aq/aq08 item_ans_send, aq/aq09 set_other_data, aq/aq10 get_AQdata, fl/flmat08 flmatCopy (inline asm: lq/sq with a2,a3,t0,t1; the C u128 form never got the register order,
+the routine sits in the middle of the VU0 asm files and was most likely asm too).
+New lessons (function that shows it):
+1. A local that holds a small packet can be bigger than the bytes used: item_ans_send's `struct {u8 a..f;} buf` put the buffer at sp+24, the original has it at sp+16. A 16 byte
+   struct (`u8 a,b,c,d,e,f,g,h; u8 i[8]`) gives sp+16 and OK. When a stack offset is off by 8, enlarge the local to 16 before anything else.
+2. A K&R callee prototype `int f();` hides the argument type: CngNetAQDataTrans2Work(void *, void *, u8) (third parameter u8) changed the order in which get_AQdata evaluates
+   `&aqwork[id-1]` and `d[0xB]` (16 off -> OK). Real prototype types matter even when the callee takes more arguments than the caller names: try u8/s16 on the odd parameter.
+3. `int pl = *(u16 *)(d + 4)` (int local, not u16) removes the `andi v0, s0, 0xFFFF` before `pl - 1` (set_other_data). A local that the original never masks is an int.
+4. `if (n >= 0x21)` vs `if (n > 0x20)` flips whether the slti result is in `at` or a real register (set_other_data: 2 off -> OK). Load-then-store order of two struct
+   words: `s32 t = *(s32 *)d; b->a = 1; b->b = t;` gives the original's lw before the first sw.
+5. Several same-type loop heads in one function: the order inside `for (i = 0, g = &x; ...)` vs `for (g = &x, i = 0; ...)` changes which temp gets a0/a1/a2
+   (Quest_next_em_set 17 -> 13 with the first and third loop as `g, i`, the second as `i, g`); try each loop head separately (2^n combos).
+6. Whole-function register pressure shows up as a 9th saved register (`fp`): flPADACRConf (src/main/fl/flpad04_nm.c, 1716 bytes, structure complete): MWCC hoists &tmp[1], &tmp[2], &tmp[3]
+   of a local u8[16] out of the surrounding do-while into saved registers whenever a call sits in an inner loop that also indexes tmp (reproduced in a 25 line test), while the original
+   stores tmp[1..3] with immediate sp offsets. I did not find the C shape that avoids it (struct wrapper, pointer, separate counters, index vs pointer all give the same).
+7. tools/fz.py FILE FUNC [rounds]: new greedy mutation search for one near-match function (narrow/wide local types, compare flips, operand swaps, `+=`, buffer growth).
+   It only finds what a human would try first; it did not solve anything that these hand attempts missed, so use it as a cheap first pass, not a last resort.
+Tried and left (off/instructions, all with at least a dozen forms): flPS2VIF1MakeEndLoadImage 2/25 and ps2McInit 2/34 (the same instruction pair: the original sets the constant argument
+register before the second one; typed/K&R/u8/long prototypes, locals, casts, struct wrappers tried), flPADGetALL 3/86 (lb vs lbu in the s8 pair copy: s8/signed char/array/field forms),
+CngSessionStart_online 3 and CngNetMcsP2PPoll 3 (movn: ternary, if, local, `!x`, int/s8 temps), CngNetAQSessionWait 9 and CngNetAQPoll 10 (the original keeps `==3 ? 1 : 0` as a branch
+with bne/nop/beq; return forms, switch, pragmas optimization_level 0-3 do not give it), flPS2GetSystemTmpBuff 4 (a3/v0 numbering only), flPADConfigSet 10 (t0/a3 swap), flGetHierarchyData2 2
+(addiu/sll order of `p += 0x10; p += i << 6`), InetIPAddrFromString 2, key_rept_du 5, ZoomRateCalc 8, stolen_item_stack 6, mcsls_send_size_get 13, GetPlayerDiffuseData 21 -> 11
+(declaration order: `stg, k, diff, out, ...` via tools/declhill.py; the remaining diffs are the original's non-threaded jump chain), AQ_data_put 31, pl_AQ_put 12.
+flMemcpy (240 bytes, 57/60): the original is the 8x unrolled byte loop with every `s++` materialised in its own temporary and the loads delayed; none of the usual C forms give it.
+Dead end again: flps0002..flps1600 (needs flPS2CheckGSClip in the same TU) and flSinCos (needs the asm routine flPS2SinCosFast visible in the same TU, which sits 0x2000 bytes away).

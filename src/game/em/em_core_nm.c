@@ -1106,8 +1106,8 @@ u16 em_act_search(EM_ACTRATE *tbl) {
     }
     r = ran_suu(0) % sum;
     sum = 0;
-    while ((x = tbl->rate) != 0xFFFF) {
-        sum += x;
+    while (tbl->rate != 0xFFFF) {
+        sum += tbl->rate;
         if (r < sum) {
             return tbl->act;
         }
