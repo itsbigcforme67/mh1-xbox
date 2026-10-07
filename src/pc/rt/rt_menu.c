@@ -108,14 +108,14 @@ void func_60CE50(void) { Disp_lb_item_box(); }
 
 /* ------------------------------------------------ online / lobby only (no-ops) */
 u8 D_6EAC80[0x400];
-/* The soft keyboard (main f_sk, src/main/sk/sk_nm.c: the on-screen
- * keyboard with kana/kanji conversion) is not ported. The PC's stand-in
- * is plain typing: SoftKeyboard_set starts host text input (the viewer
- * feeds it, rt_set_text_input), SoftKeyboard_move copies what was typed
- * so far into the caller's buffer as full-width characters (han2zen, as
- * the keyboard writes them) and reports done on Enter or the pad's start
- * button; an empty name then becomes "HUNTER". Scripted runs: RT_NAME=xxx
- * is typed at once. Used by the character screen's name (Edit_task). */
+/* The soft keyboard is the game's own (src/main/tu/sk_all.c: the on-screen
+ * kana/ASCII keyboard, driven by the pad), compiled with its three entry
+ * points renamed sk_real_* (build_pc.sh). The wrappers below add two PC
+ * extras: RT_NAME=xxx (scripted runs: the name is entered at once) and host
+ * typing, switched on with Tab while the keyboard is up (the pad keys of
+ * the keyboard layout would otherwise type letters): typed ASCII goes into
+ * the game's text buffer as full-width characters (han2zen, as the
+ * keyboard writes them), Backspace deletes, Enter confirms. */
 static void (*text_begin_fn)(int on);
 static int (*text_take_fn)(char *out, int n);
 void rt_set_text_input(void (*begin)(int on), int (*take)(char *out, int n))
@@ -123,67 +123,83 @@ void rt_set_text_input(void (*begin)(int on), int (*take)(char *out, int n))
     text_begin_fn = begin;
     text_take_fn = take;
 }
-static int sk_on, sk_max;
-static char sk_text[40];
+extern unsigned char *lpSKey;
+char *strcpy(char *, const char *);
+int strcmp(const char *, const char *);
 void han2zen(u8 *src, u8 *dst);
-void SoftKeyboard_set(int type, int mode, int maxlen, char *init)
+void sk_real_set(int type, u8 mode, s16 maxlen, char *init);
+s8 sk_real_move(char *out, s16 sw, s16 hold);
+void sk_real_exit(void);
+s8 SoftKeyboard_alive_check(void);
+extern int pad_kb_wanted;
+void SoftKeyboard_set(int type, u8 mode, s16 maxlen, char *init)
 {
-    (void)type; (void)mode;
-    sk_on = 1;
-    sk_max = maxlen > 0 && maxlen < 16 ? maxlen : 8;
-    sk_text[0] = 0;
+    sk_real_set(type, mode, maxlen, init);
+    pad_kb_wanted = 1;
     if (text_begin_fn)
-        text_begin_fn(1);
-    (void)init;
-}
-int SoftKeyboard_move(char *buf, int held, int push)
-{
-    char in[64];
-    int n, i, len, done = 0;
-    (void)held;
-    if (!sk_on)
-        return 1;
-    if (getenv("RT_NAME")) {
-        snprintf(sk_text, sizeof sk_text, "%.*s", sk_max, getenv("RT_NAME"));
-        done = 1;
-    } else {
-        n = text_take_fn ? text_take_fn(in, sizeof in) : 0;
-        for (len = 0; sk_text[len]; len++)
-            ;
-        for (i = 0; i < n; i++) {
-            if (in[i] == '\b') {
-                if (len)
-                    sk_text[--len] = 0;
-            } else if (in[i] == '\n') {
-                done = 1;
-            } else if (in[i] >= 0x20 && in[i] < 0x7F && len < sk_max) {
-                sk_text[len++] = in[i];
-                sk_text[len] = 0;
-            }
-        }
-        if (push & 0x8000)
-            done = 1;
-    }
-    if (done && !sk_text[0])
-        snprintf(sk_text, sizeof sk_text, "HUNTER");
-    han2zen((u8 *)sk_text, (u8 *)in);
-    for (i = 0; in[i]; i++)
-        buf[i] = in[i];
-    buf[i] = 0;
-    return done;
-}
-void SoftKeyboard_pos_set() {}
-int SoftKeyboard_exit(void)
-{
-    if (sk_on && text_begin_fn)
         text_begin_fn(0);
-    sk_on = 0;
+}
+s8 SoftKeyboard_move(char *out, s16 sw, s16 hold)
+{
+    int maxlen = *(s16 *)(lpSKey + 0x3A), done = 0;
+    char in[64];
+    int n, i;
+    if (getenv("RT_NAME")) {
+        char tmp[40];
+        snprintf(tmp, sizeof tmp, "%.*s", maxlen / 2, getenv("RT_NAME"));
+        han2zen((u8 *)tmp, (u8 *)out);
+        return 1;
+    }
+    n = text_take_fn ? text_take_fn(in, sizeof in) : 0;
+    for (i = 0; i < n; i++) {
+        u16 *len = (u16 *)(lpSKey + 0x2A);
+        char *txt = (char *)lpSKey + 0x44;
+        if (in[i] == '\b') {
+            /* drop the last character: one byte, or two for a Shift-JIS pair */
+            u16 k = 0, last = 0;
+            while (k < *len) {
+                last = k;
+                k += ((u8)txt[k] >= 0x81 && (u8)txt[k] <= 0x9F) || ((u8)txt[k] >= 0xE0 && (u8)txt[k] <= 0xFC) ? 2 : 1;
+            }
+            if (*len) {
+                *len = last;
+                txt[*len] = 0;
+            }
+        } else if (in[i] == '\n') {
+            done = 1;
+        } else if (in[i] >= 0x20 && in[i] < 0x7F && *len + 1 <= maxlen) {
+            txt[*len] = in[i];      /* the ASCII palette stores half-width characters */
+            *len += 1;
+            txt[*len] = 0;
+        }
+    }
+    if (getenv("RT_SK_TRACE")) {
+        static char last[64];
+        (void)sw; (void)hold;
+        if (strcmp(last, (char *)lpSKey + 0x44)) {
+            snprintf(last, sizeof last, "%s", (char *)lpSKey + 0x44);
+            fprintf(stderr, "sk: text now %d bytes: %02X %02X %02X %02X\n", *(u16 *)(lpSKey + 0x2A), last[0] & 255, last[1] & 255, last[2] & 255, last[3] & 255);
+        }
+    }
+    if (sk_real_move(out, sw, hold)) {
+        if (getenv("RT_SK_TRACE"))
+            fprintf(stderr, "sk: confirmed \"%s\"\n", out);
+        return 1;
+    }
+    if (done) {
+        strcpy(out, (char *)lpSKey + 0x44);
+        return 1;
+    }
     return 0;
 }
-int SoftKeyboard_alive_check() { return sk_on; }
-void DispSoftkeyboard() {}
+void SoftKeyboard_exit(void)
+{
+    sk_real_exit();
+    pad_kb_wanted = 0;
+    if (text_begin_fn)
+        text_begin_fn(0);
+}
 void net_send_chat() {}
-void Reibun_print() {}
 int Reibun_select_mv() { return 0; }
 int func_5BD520() { return 0; }
 int func_5CB100() { return 0; }
@@ -207,5 +223,5 @@ NOP(Add_to_Item_preparation_list_0) NOP0(Get_hunter_status)
 NOP0(Item_preparation) NOP0(Item_preparation_adrs) NOP0(Item_preparation_list_chk) NOP0(Item_preparation_list_chk_0)
 NOP0(Item_preparation_list_num) NOP0(Item_preparation_list_search) NOP0(Item_preparation_one_ck)
 NOP0(Item_preparation_rate_0) NOP(Put_sprite_rotate)
-NOP(set_viewproj) NOP(SetBlendingMode) NOP0(Get_bowgun_atk) NOP(Draw_square)
+NOP(set_viewproj) NOP0(Get_bowgun_atk) NOP(Draw_square)
 /* fonts: rt_font.c */

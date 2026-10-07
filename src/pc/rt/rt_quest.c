@@ -132,8 +132,12 @@ void Pit_init(void);
 void Pit_mv(void);
 void Info_Initialization(void);
 void rt_font_init(void);
+void SoftKeyboard_init(void);
+extern unsigned char *lpSKey;
 void rt_hud_init(void)
 {
+    if (!lpSKey)
+        SoftKeyboard_init();       /* Pit_init calls SoftKeyboard_exit */
     rt_2d_init();
     rt_font_init();
     load_pit();
