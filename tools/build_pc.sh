@@ -230,7 +230,7 @@ SK="src/main/item/item_nm.c src/main/tu/sk_all.c src/main/tu/hk_all.c src/main/s
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT $SK"
 # Stand-ins replaced by the game's own C (round 22, agent F; list in docs/pc.md "Stand-ins wired"):
 # only the named functions are taken from each file
-PICK_X="src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req"
+PICK_X="src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
 GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
 PICK_MAIN="$PICK_MAIN $PICK_X"
 
