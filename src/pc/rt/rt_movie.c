@@ -174,7 +174,25 @@ static double clock_now(void)
 static void upload(void)
 {
     int w, h;
-    const uint8_t *px = sfd_rgba(mv.s, &w, &h);
+    const uint8_t *px;
+    if (gfx_yuv_capable()) {        /* the Xbox: one YUY2 texture, converted by the GPU */
+        const uint8_t *pl[3];
+        sfd_planes(mv.s, pl, &w, &h);
+        if (!pl[0])
+            return;
+        if (mv.tw != w || mv.th != h || !mv.tex[0]) {
+            free_tex();
+            mv.tw = w;
+            mv.th = h;
+            mv.tex[0] = gfx_create_texture_yuv(w, h);
+        }
+        mv.ti = 0;
+        if (mv.tex[0])
+            gfx_update_texture_yuv(mv.tex[0], pl[0], pl[1], pl[2]);
+        mv.ready = mv.tex[0] != NULL;
+        return;
+    }
+    px = sfd_rgba(mv.s, &w, &h);
     if (!px)
         return;
     if (mv.tw != w || mv.th != h) {

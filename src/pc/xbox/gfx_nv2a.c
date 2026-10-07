@@ -26,6 +26,7 @@
 #include <pbkit/pbkit.h>
 #include <windows.h>
 #include <xboxkrnl/xboxkrnl.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -40,8 +41,15 @@ struct gfx_texture {
     uint8_t *mem;                        /* contiguous */
     uint32_t pitch;
     uint32_t *pal;                       /* palettised (P8): 256 x A8R8G8B8, contiguous; else NULL */
+    int yuv;                             /* YUY2 video texture (gfx_create_texture_yuv) */
     size_t bytes;                        /* GPU memory taken (pixels + palette) */
 };
+
+typedef struct {
+    float pos[3];
+    uint8_t col[4];
+    float st[2];
+} vtx;
 
 struct gfx_clay {
     int nvert, nindex, nbatch;
@@ -52,6 +60,8 @@ struct gfx_clay {
     /* GPU skinning (gfx_clay_set_skin): the regrouped batches, their
      * vertices in contiguous memory (SKIN_STRIDE bytes each), this frame's
      * pose */
+    vtx *vb;                    /* static clays: vertices in contiguous memory */
+    float center[3], radius;    /* bounding sphere */
     gfx_skin_mesh *skin;
     uint8_t *svb;
     int nbone;
@@ -61,11 +71,6 @@ struct gfx_clay {
 };
 #define SKIN_STRIDE 80          /* pos 3f, nrm 3f, col 4ub, st 2f, w 4f, slot*3 4f, flag 2f */
 
-typedef struct {
-    float pos[3];
-    uint8_t col[4];
-    float st[2];
-} vtx;
 
 static struct {
     int w, h;
@@ -390,7 +395,9 @@ static void bind_texture(gfx_texture *t)
     uint32_t fmt, *p, wrap, filt;
     if (!t)
         t = G.white;
-    if (t->rect)
+    if (t->yuv)     /* Y0 U Y1 V in memory; the sampler converts to RGB [guess: BT.601 studio range, untested] */
+        fmt = MASK(NV097_SET_TEXTURE_FORMAT_COLOR, NV097_SET_TEXTURE_FORMAT_COLOR_LC_IMAGE_CR8YB8CB8YA8);
+    else if (t->rect)
         fmt = MASK(NV097_SET_TEXTURE_FORMAT_COLOR, NV097_SET_TEXTURE_FORMAT_COLOR_LU_IMAGE_A8B8G8R8);
     else
         fmt = MASK(NV097_SET_TEXTURE_FORMAT_COLOR, t->pal ? NV097_SET_TEXTURE_FORMAT_COLOR_SZ_I8_A8R8G8B8
@@ -511,10 +518,19 @@ void gfx_set_render_state_f(int state, float value)
  * c[0..3] the combined matrix, c[4..7] the texture matrix, c[8] fog
  * (k, b): factor = saturate(w * k + b), c[9] fog colour, c[10] = (0, 1)
  * cgc's own constant. fog: 0 for 2D draws. */
+static void fade_rgba(float out[4])
+{
+    int i;
+    for (i = 0; i < 4; i++)
+        out[i] = G.fade == 0xFFFFFFFFu ? 1.0f : ((G.fade >> (i == 3 ? 24 : 16 - 8 * i)) & 255) / 255.0f;
+}
+
+/* vs.vs.cg: c0 mvp, c4 texture matrix, c8 fog (k, b), c9 fog colour,
+ * c10 fade colour, c11 (0, 1) cgc's own constant. fog / fade: 0 for 2D. */
 static void upload_constants(const float *mvp, const float *tex, int fog)
 {
-    static const float c10[4] = { 0, 1, 0, 0 };
-    float kb[4] = { 0, 0, 0, 0 };
+    static const float c11[4] = { 0, 1, 0, 0 };
+    float kb[4] = { 0, 0, 0, 0 }, fd[4] = { 1, 1, 1, 1 };
     uint32_t *p = pb_begin();
     if (fog && G.fog_on && G.fog_end != G.fog_start) {     /* GL linear fog, w as the eye distance */
         kb[0] = 1.0f / (G.fog_end - G.fog_start);
@@ -533,8 +549,13 @@ static void upload_constants(const float *mvp, const float *tex, int fog)
     pb_push(p++, NV097_SET_TRANSFORM_CONSTANT, 4);
     memcpy(p, G.fog_col, 16);
     p += 4;
+    if (fog)
+        fade_rgba(fd);
     pb_push(p++, NV097_SET_TRANSFORM_CONSTANT, 4);
-    memcpy(p, c10, 16);
+    memcpy(p, fd, 16);
+    p += 4;
+    pb_push(p++, NV097_SET_TRANSFORM_CONSTANT, 4);
+    memcpy(p, c11, 16);
     p += 4;
     pb_end(p);
 }
@@ -653,6 +674,38 @@ gfx_clay *gfx_create_clay(const gfx_clay_desc *d)
     memcpy(c->index, d->index, sizeof(uint16_t) * d->nindex);
     c->batch = malloc(sizeof(gfx_batch) * (d->nbatch + 1));
     memcpy(c->batch, d->batch, sizeof(gfx_batch) * d->nbatch);
+    {   /* bounding sphere (for the near-plane check) */
+        float lo[3] = { 1e30f, 1e30f, 1e30f }, hi[3] = { -1e30f, -1e30f, -1e30f }, r2 = 0;
+        int i, k;
+        for (i = 0; i < d->nvert; i++)
+            for (k = 0; k < 3; k++) {
+                if (d->pos[3 * i + k] < lo[k]) lo[k] = d->pos[3 * i + k];
+                if (d->pos[3 * i + k] > hi[k]) hi[k] = d->pos[3 * i + k];
+            }
+        for (k = 0; k < 3; k++)
+            c->center[k] = d->nvert ? (lo[k] + hi[k]) * 0.5f : 0;
+        for (i = 0; i < d->nvert; i++) {
+            float dx = d->pos[3 * i] - c->center[0], dy = d->pos[3 * i + 1] - c->center[1], dz = d->pos[3 * i + 2] - c->center[2];
+            if (dx * dx + dy * dy + dz * dz > r2)
+                r2 = dx * dx + dy * dy + dz * dz;
+        }
+        c->radius = sqrtf(r2);
+    }
+    if (!d->dynamic && d->nvert > 0) {      /* static geometry (the stage): its vertices stay in GPU-visible memory */
+        c->vb = MmAllocateContiguousMemoryEx(sizeof(vtx) * (size_t)d->nvert, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
+        if (c->vb) {
+            int i;
+            rt_ms_add("static vertex buffers (GPU)", (long)(sizeof(vtx) * (size_t)d->nvert));
+            for (i = 0; i < d->nvert; i++) {
+                memcpy(c->vb[i].pos, c->pos + 3 * i, 12);
+                memcpy(c->vb[i].col, c->col + 4 * i, 4);
+                if (c->st)
+                    memcpy(c->vb[i].st, c->st + 2 * i, 8);
+                else
+                    c->vb[i].st[0] = c->vb[i].st[1] = 0;
+            }
+        }
+    }
     return c;
 }
 
@@ -662,6 +715,14 @@ void gfx_update_clay(gfx_clay *c, const float *pos, const uint8_t *col)
         memcpy(c->pos, pos, sizeof(float) * 3 * c->nvert);
     if (col)
         memcpy(c->col, col, 4 * (size_t)c->nvert);
+    if (c->vb) {                            /* a static clay changed after all: refresh its buffer */
+        int i;
+        wait_idle();
+        for (i = 0; i < c->nvert; i++) {
+            memcpy(c->vb[i].pos, c->pos + 3 * i, 12);
+            memcpy(c->vb[i].col, c->col + 4 * i, 4);
+        }
+    }
 }
 
 /* ------------------------------------------------------------ near clipping
@@ -691,11 +752,18 @@ static void vtx_lerp(vtx *o, const vtx *a, const vtx *b, float t)
 static uint16_t *clip_buf;          /* the batches' index lists after clipping (grows) */
 static int clip_cap, clip_first[256], clip_count[256];
 
+/* the clay's bounding sphere entirely at w >= CLIP_W? (w = p . column 3 of mvp) */
+static int sphere_in_front(const gfx_clay *c, const float *mvp)
+{
+    float wc = clip_w_of(mvp, c->center);
+    float len = sqrtf(mvp[3] * mvp[3] + mvp[7] * mvp[7] + mvp[11] * mvp[11]);
+    return wc - c->radius * len >= CLIP_W;
+}
+
 static void execute_cpu(gfx_clay *c)
 {
     float mvp[16], tm[16];
-    unsigned f[4] = { 255, 255, 255, 255 };
-    int i, k, b, fade = G.fade != 0xFFFFFFFFu, ncross = 0, nv;
+    int i, k, b, ncross = 0, nv;
     float *w = NULL;
     const uint16_t *clip_idx = NULL;
     vtx *v;
@@ -707,8 +775,9 @@ static void execute_cpu(gfx_clay *c)
     mat_mul(mvp, G.world, G.view);          /* row vectors: v * world * view * proj * viewport */
     mat_mul(mvp, mvp, G.proj);
     mat_mul(mvp, mvp, G.viewport);
-    /* which triangles cross the near plane (w per vertex: one dot product) */
-    if (c->nbatch <= 256 && (w = malloc(sizeof(float) * c->nvert)) != NULL) {
+    /* which triangles cross the near plane (w per vertex: one dot product);
+     * a clay whose bounding sphere is in front of it is not checked */
+    if (c->nbatch <= 256 && !sphere_in_front(c, mvp) && (w = malloc(sizeof(float) * c->nvert)) != NULL) {
         int any_out = 0;
         for (i = 0; i < c->nvert; i++)
             if ((w[i] = clip_w_of(mvp, c->pos + 3 * i)) < CLIP_W)
@@ -727,21 +796,28 @@ static void execute_cpu(gfx_clay *c)
             ncross = 0;
         }
     }
+    if (!ncross && c->vb) {                 /* static geometry: drawn from its own buffer */
+        set_arrays(c->vb);
+        for (b = 0; b < c->nbatch; b++) {
+            gfx_texture *t = c->batch[b].tex ? c->batch[b].tex : G.tex;
+            if (!c->st)
+                t = NULL;
+            bind_texture(t);
+            tex_matrix(t, tm);
+            upload_constants(mvp, tm, 1);
+            draw_indexed(c->index + c->batch[b].first, c->batch[b].count);
+        }
+        return;
+    }
     nv = c->nvert + 2 * ncross;
     if (!(v = ring_alloc(nv))) {
         free(w);
         return;
     }
-    if (fade) {
-        f[0] = (G.fade >> 16) & 255;
-        f[1] = (G.fade >> 8) & 255;
-        f[2] = G.fade & 255;
-        f[3] = G.fade >> 24;
-    }
     for (i = 0; i < c->nvert; i++) {
         memcpy(v[i].pos, c->pos + 3 * i, 12);
         for (k = 0; k < 4; k++)
-            v[i].col[k] = fade ? (uint8_t)(c->col[4 * i + k] * f[k] / 255) : c->col[4 * i + k];
+            v[i].col[k] = c->col[4 * i + k];       /* the fade colour is a shader constant */
         if (c->st)
             memcpy(v[i].st, c->st + 2 * i, 8);
         else
@@ -849,6 +925,10 @@ void gfx_release_clay(gfx_clay *c)
 {
     if (!c)
         return;
+    if (c->vb) {
+        wait_idle();
+        MmFreeContiguousMemory(c->vb);
+    }
     if (c->skin) {
         wait_idle();
         gfx_skin_free(c->skin);
@@ -1048,4 +1128,44 @@ void gfx_execute_clay(gfx_clay *c)
     mat_mul(mvp, mvp, G.proj);
     mat_mul(mvp, mvp, G.viewport);
     draw_skinned(c, mvp);
+}
+
+/* ------------------------------------------------------------ video */
+int gfx_yuv_capable(void) { return 1; }
+
+gfx_texture *gfx_create_texture_yuv(int w, int h)
+{
+    gfx_texture *t = calloc(1, sizeof *t);
+    if (!t)
+        return NULL;
+    t->w = w;
+    t->h = h;
+    t->rect = 1;                    /* linear, texel coordinates */
+    t->yuv = 1;
+    t->pitch = (uint32_t)w * 2;
+    t->bytes = (size_t)t->pitch * h;
+    t->mem = MmAllocateContiguousMemoryEx(t->bytes, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
+    if (!t->mem) {
+        free(t);
+        return NULL;
+    }
+    rt_ms_add("textures in GPU memory (P8 or RGBA8, GPU)", (long)t->bytes);
+    return t;
+}
+
+/* 4:2:0 planes -> YUY2 (Y0 U Y1 V): byte moves only, the colour maths is
+ * the GPU's */
+void gfx_update_texture_yuv(gfx_texture *t, const uint8_t *y, const uint8_t *u, const uint8_t *v)
+{
+    int r, x, cw;
+    if (!t || !t->yuv)
+        return;
+    cw = t->w / 2;
+    wait_idle();                    /* the last frame may still be drawing from it */
+    for (r = 0; r < t->h; r++) {
+        const uint8_t *py = y + (size_t)r * t->w, *pu = u + (size_t)(r >> 1) * cw, *pv = v + (size_t)(r >> 1) * cw;
+        uint32_t *o = (uint32_t *)(t->mem + (size_t)r * t->pitch);
+        for (x = 0; x < cw; x++)
+            o[x] = py[2 * x] | (uint32_t)pu[x] << 8 | (uint32_t)py[2 * x + 1] << 16 | (uint32_t)pv[x] << 24;
+    }
 }
