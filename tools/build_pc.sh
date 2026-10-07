@@ -219,6 +219,7 @@ PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint"
 # main merged the lobby-client b/ files (lb_by20, lb_by103, lb_bz29, lb_bz104,
 # lb_bz110, lb_bz137, lbuiv, lbuiw) into one TU, f/lb_cli.c (8 Oct 2026):
 # the functions the PC used from them
+PICK="$PICK src/lobby/f/lb_v17.c:Lb_make_quest_tbl src/lobby/f/lb_t.c:get_CA_size src/lobby/f/lb_uif.c:put_button_help"
 PICK="$PICK src/lobby/f/lb_cli.c:lbc_text_lobby_trans,Lbs_GetRoomInfo,Lbc_set_prim,Lbc_init_network_work,Lbc_connect,text_lobby_trans_ot3,GetRoomRule,Lbs_MatchStart"
 LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*}"; done)"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
@@ -353,6 +354,11 @@ for f in $GAME; do
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/typedef struct BRPD { unsigned __int128 q\[29\]; } BRPD;/typedef struct BRPD { struct { unsigned int w[4]; } q[29]; } BRPD;/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
+    # lb_uif.c (TU): the cursor helpers are static after a global prototype
+    src/lobby/f/lb_uif.c)
+        src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
+        sed 's/^static void tl_menu_cursor_\(up\|down\)(m)/void tl_menu_cursor_\1(m)/' "$f" > "$src"
+        INC="$INC -I$(dirname "$f")" ;;
     # sk_all.c declares sk_henkan_sub both with and without a parameter list (MWCC takes the call as written)
     src/main/tu/sk_all.c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
@@ -392,6 +398,10 @@ for f in $GAME; do
     # single symbols that another file also defines (the lobby NPC files'
     # empty dummy_em_prog: main's f_em one wins)
     case "$b" in lb__lb_em*_nm) $OBJCOPY --weaken-symbol=dummy_em_prog "$o" ;; esac
+    # lb_uif.c: lbtu3 alias names (config/lobby_aliases.txt) for symbols the PC links under their plain names
+    case "$b" in lb__lb_uif) $OBJCOPY --redefine-sym put_button_help_a1=put_button_help --redefine-sym Draw_square_a3=Draw_square \
+        --redefine-sym font_print_double_a3=font_print_double --redefine-sym helpLineTbl_c2=helpLineTbl \
+        --redefine-sym helpLineStr_c2=helpLineStr "$o" ;; esac
     for p in $PICK $PICK_MAIN; do
         [ "${p%%:*}" = "$f" ] || continue
         KEEP=",${p#*:},"
