@@ -5,6 +5,11 @@
 #include <string.h>
 #include <time.h>
 
+/* mpeg2.h declares a member named malloc: leave out the port's malloc counting macros (rt_memstat.h) */
+#undef malloc
+#undef calloc
+#undef realloc
+#undef free
 #include "../../../third_party/libmpeg2/mpeg2.h"
 
 #define SECTOR 2048
