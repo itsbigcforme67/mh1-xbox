@@ -666,6 +666,10 @@ static void audio_dump_tick(void)
 
 static float gc_eye[3] = { 0 }, gc_tar[3] = { 0 }, gc_roll = 0, gc_fov = 1.0f;   /* --play camera: distance, height, pitch */
 static int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter */
+#ifdef MH1_ONLINE
+int rt_net_test(const char *scenario);
+static const char *nettest;               /* --nettest SCENARIO: headless online test, no window */
+#endif
 static int boot = 0, booting = 0;           /* --boot: from power-on (rt_boot.c) */
 static const char *script = NULL;
 static float hunter_yoff = 0;
@@ -1151,6 +1155,9 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--boot")) { boot = 1; play = 1; }
         else if (!strcmp(argv[i], "--input") && i + 1 < argc) { script = argv[++i]; play = 1; }
         else if (!strcmp(argv[i], "--sw-trace")) sw_trace = 1;
+#ifdef MH1_ONLINE
+        else if (!strcmp(argv[i], "--nettest") && i + 1 < argc) nettest = argv[++i];
+#endif
         else if (!strcmp(argv[i], "--audio-dump") && i + 1 < argc) audio_dump = argv[++i];
         else if (!strcmp(argv[i], "--mute")) mute = 1;
         else if (!strcmp(argv[i], "--follow") && i + 1 < argc)
@@ -1265,6 +1272,10 @@ int main(int argc, char **argv)
         rt_warn("select.bin is missing: no title screen");
     }
     rt_log("boot: game data tables imported");
+#ifdef MH1_ONLINE
+    if (nettest)        /* headless online test (src/pc/rt/rt_net.c, docs/network.md) */
+        return rt_net_test(nettest);
+#endif
     if (!getenv("RT_NO_TRIM"))
         rt_mem_trim();
     if (boot && !quest_no)

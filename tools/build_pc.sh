@@ -230,6 +230,28 @@ WEAK="$WEAK_EM mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage
 # item combining (item_nm.c: the recipe lookup; its dropped-item pool keeps the host stand-ins, renamed)
 SK="src/main/item/item_nm.c src/main/tu/sk_all.c src/main/tu/hk_all.c src/main/sk/sk20.c src/main/sk/cmd_nm.c"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT $SK"
+# Online play (docs/network.md): ONLINE=1 links the game's own network C (Capcom's
+# cnet / lobby-server client, the Ave_* RPC layer, CpInet*, the device code) and
+# src/pc/net (the host side of the IOP network stack on POSIX / Winsock sockets,
+# DNAS answering success). The result is build/pc/mhview_online; a plain build never
+# contains any of it, so single player and all tests are unaffected.
+MHV=mhview
+NETFILES=""; NETRT=""; NETFRONT=""
+if [ -n "$ONLINE" ]; then
+    MHV=mhview_online
+    # the game's own network C that is linked (the lobby-server client, the connect / DNS helpers).
+    # CpInet* / Ave_* are replaced by src/pc/net/net_cpinet.c (docs/network.md: why)
+    NETMAIN="src/main/net/netdev01.c src/main/net/netdev17.c src/main/net/cnlbs01.c src/main/net/cnlbs02.c src/main/net/cnlbs03.c"
+    NETLB="src/lobby/cnet/cnlbs.c src/lobby/cnet/cnlbsb.c src/lobby/cnet/cnlbsc.c src/lobby/cnet/cnlbsd.c src/lobby/cnet/cnlbse.c \
+           src/lobby/cnet/cnlbsf.c src/lobby/cnet/cnlbsg.c src/lobby/cnet/cnlbsh.c src/lobby/cnet/cnlbs_nm.c \
+           src/lobby/b/lb_c509.c src/lobby/b/lb_bz81.c src/lobby/b/lb_tcp01.c"
+    GAME="$GAME $NETMAIN $NETLB"
+    WEAK="$WEAK lb__cnlbs_nm"
+    NETFRONT="src/pc/net/net_cpinet.c src/pc/net/net_dnas.c"
+    NETRT="rt_net"
+    PC="$PC $NETFRONT"
+    EXTRA_CFLAGS="$EXTRA_CFLAGS -DMH1_ONLINE=1"
+fi
 # Stand-ins replaced by the game's own C (docs/pc.md "Stand-ins wired"): only the named functions are taken
 PICK_X="src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
 GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
@@ -460,7 +482,7 @@ OBJS="$OBJS build/pc/rt_tables.o"
 MEMSTAT="-include src/pc/rt/rt_memstat.h"
 $CC $CFLAGS $SYS -c src/pc/rt/rt_memstat.c -o build/pc/rt_memstat.o
 OBJS="$OBJS build/pc/rt_memstat.o"
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie rt_prof rt_log; do
+for f in $NETRT rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie rt_prof rt_log; do
     # shellcheck disable=SC2086
     XF=""; [ $f = rt_log ] && XF="-D_GNU_SOURCE"   # ucontext / sigaltstack
     cc_obj $f "$CC $CFLAGS $XF -DMH1_VERSION=\\\"$MH1_VERSION\\\" $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o"
@@ -492,12 +514,12 @@ $CC $CFLAGS $SYS -c build/pc/rt_gen.c -o build/pc/rt_gen.o
 echo 'void *rt_host_sym(const char *n) { (void)n; return 0; } const char *rt_host_symname(const void *a, unsigned *o) { (void)a; (void)o; return 0; }' > build/pc/rt_symtab.c
 $CC $CFLAGS $SYS -c build/pc/rt_symtab.c -o build/pc/rt_symtab.o
 # shellcheck disable=SC2086
-$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview.tmp$EXE $LIBS \
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/$MHV.tmp$EXE $LIBS \
     $LINK1_OPTS 2> build/pc/link1.log || [ -n "$LINK1_TOLERANT" ] || { cat build/pc/link1.log; exit 1; }
 { sed -n "s/.*undefined reference to \`\([^']*\)'.*/\1/p" build/pc/link1.log
   # lld (the Windows build): "undefined symbol: _name", the COFF C prefix is dropped
   sed -n "s/.*undefined symbol: _\?\(.*\)/\1/p" build/pc/link1.log ; } | sort -u > build/pc/undefined.txt
-rm -f build/pc/mhview.tmp$EXE
+rm -f build/pc/$MHV.tmp$EXE
 # shellcheck disable=SC2086
 nmc --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined.txt
 # the aliases this build's headers already define came from gen_rt_auto.py:
@@ -514,7 +536,7 @@ echo build/pc/rt_gen.o >> build/pc/objs.txt
 sed -n 's/^-Wl,--defsym,\([^=]*\)=\([^+]*\)+\?\(.*\)$/alias \1 \2 \3/p' build/pc/rt_gen.defsym | sed 's/ $/ 0/' >> $REQ
 python3 tools/pc_link_adapt.py $REQ || exit 1
 # shellcheck disable=SC2086
-$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview$EXE $LIBS \
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/$MHV$EXE $LIBS \
     
 # now the real symbol table: every global the binary defines, then link again
 if [ -n "$SYMTAB_ARGS" ]; then
@@ -527,9 +549,9 @@ if [ -n "$SYMTAB_ARGS" ]; then
     done
     $NM --defined-only -g $OBJS build/pc/rt_gen.o $FRONTO | python3 tools/gen_symtab.py build/pc/rt_symtab.c $SYMTAB_ARGS
 else
-    $NM --defined-only -g build/pc/mhview | python3 tools/gen_symtab.py build/pc/rt_symtab.c
+    $NM --defined-only -g build/pc/$MHV | python3 tools/gen_symtab.py build/pc/rt_symtab.c
 fi
 $CC $CFLAGS $SYS -w -c build/pc/rt_symtab.c -o build/pc/rt_symtab.o
 # shellcheck disable=SC2086
-$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview$EXE $LIBS
-echo "built build/pc/mhview$EXE (32-bit)"
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/$MHV$EXE $LIBS
+echo "built build/pc/$MHV$EXE (32-bit)"
