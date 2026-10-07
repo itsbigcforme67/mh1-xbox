@@ -26,6 +26,75 @@ static voice voices[AUDIO_VOICES];
 static stream streams[AUDIO_STREAMS];
 static int next_id = 1;
 
+/* ------------------------------------------------------------ reverb
+ * Schroeder: 4 parallel damped combs + 2 series allpasses per channel (the
+ * right channel's delays are a little longer for width). Fed with the voice
+ * mix only. About 12 multiply-adds per sample per channel. */
+#define RV_COMBS 4
+#define RV_APS 2
+#define RV_MAX 4096                 /* longest delay line (samples at 48 kHz) */
+static const int rv_comb_len[RV_COMBS] = { 1557, 1617, 1491, 1422 };   /* Freeverb tunings (44.1 kHz) */
+static const int rv_ap_len[RV_APS] = { 556, 341 };
+typedef struct { float buf[RV_MAX]; int len, pos; float store; } rv_line;
+static rv_line rv_comb[2][RV_COMBS], rv_ap[2][RV_APS];
+static float rv_wet, rv_fb, rv_damp;
+
+void audio_reverb(float wet, float size)
+{
+    int c, k;
+    audio_lock();
+    if (wet <= 0.0f) {
+        rv_wet = 0.0f;
+        for (c = 0; c < 2; c++)
+            for (k = 0; k < RV_COMBS; k++)
+                memset(rv_comb[c][k].buf, 0, sizeof rv_comb[c][k].buf);
+    } else {
+        float scale = 0.6f + 0.6f * size;           /* delay length with the room size */
+        rv_wet = wet;
+        rv_fb = 0.70f + 0.18f * size;               /* decay */
+        rv_damp = 0.35f;
+        for (c = 0; c < 2; c++) {
+            for (k = 0; k < RV_COMBS; k++) {
+                int n = (int)((rv_comb_len[k] + 23 * c) * scale * AUDIO_RATE / 44100);
+                rv_comb[c][k].len = n < RV_MAX ? n : RV_MAX;
+                if (rv_comb[c][k].pos >= rv_comb[c][k].len)
+                    rv_comb[c][k].pos = 0;
+            }
+            for (k = 0; k < RV_APS; k++) {
+                rv_ap[c][k].len = (rv_ap_len[k] + 23 * c) * AUDIO_RATE / 44100;
+                if (rv_ap[c][k].pos >= rv_ap[c][k].len)
+                    rv_ap[c][k].pos = 0;
+            }
+        }
+    }
+    audio_unlock();
+}
+
+static float rv_tick(int c, float in)
+{
+    float out = 0.0f, x;
+    int k;
+    for (k = 0; k < RV_COMBS; k++) {
+        rv_line *l = &rv_comb[c][k];
+        float y = l->buf[l->pos];
+        l->store = y * (1.0f - rv_damp) + l->store * rv_damp;
+        l->buf[l->pos] = in + l->store * rv_fb;
+        if (++l->pos >= l->len)
+            l->pos = 0;
+        out += y;
+    }
+    x = out * 0.25f;
+    for (k = 0; k < RV_APS; k++) {
+        rv_line *l = &rv_ap[c][k];
+        float b = l->buf[l->pos];
+        l->buf[l->pos] = x + b * 0.5f;
+        if (++l->pos >= l->len)
+            l->pos = 0;
+        x = b - x;
+    }
+    return x;
+}
+
 void audio_reset(void)
 {
     audio_lock();
@@ -208,6 +277,12 @@ void audio_mix(int16_t *out, int frames)
                 }
             }
         }
+        if (rv_wet > 0.0f)              /* the voices' mix through the reverb (before the dry streams) */
+            for (i = 0; i < nf; i++) {
+                float m = (acc[2 * i] + acc[2 * i + 1]) * 0.5f;
+                acc[2 * i] += rv_wet * rv_tick(0, m);
+                acc[2 * i + 1] += rv_wet * rv_tick(1, m);
+            }
         for (k = 0; k < AUDIO_STREAMS; k++) {
             stream *st = &streams[k];
             double step;
