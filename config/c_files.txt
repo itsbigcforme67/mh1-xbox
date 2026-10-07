@@ -421,6 +421,7 @@ main 0x00223E90 0x00223F8C cam/camr2
 main 0x00223F90 0x00223FDC cam/camr1
 main 0x00224790 0x002248B8 cam/camr4
 main 0x00225370 0x00225510 cam/camr7
+main 0x0023E4E0 0x0023E4F8 sys/empty_23E4E0
 main 0x00224CB0 0x00224D38 cam/camr3
 main 0x0012D5E0 0x0012D6F4 menu/menu19
 main 0x0012BCA0 0x0012BF48 menu/menu20

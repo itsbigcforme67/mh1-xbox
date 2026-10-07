@@ -1580,7 +1580,7 @@ segments:
       - [0x13DAB0, c, npc/npcb]
       - [0x13DEA8, asm, text/npc_move]
       - [0x13E260, c, npc/npcc]
-      - [0x13E4E0, asm, text/common_local_init_0023E4E0]
+      - [0x13E4E0, c, sys/empty_23E4E0]
       - [0x13E4F8, asm, text/g_Overlay_reset]
       - [0x13E500, c, ime/imeb]
       - [0x13EA04, asm, text/kh_learn]

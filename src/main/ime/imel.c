@@ -378,7 +378,7 @@ extern int roman_japan, lock_mode;
 extern u8 dic_name[128];
 extern int (*D_0034ABEC[])();
 extern CH null_chmem;
-extern u16 pwordmap[96];
+extern s16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
 int bs_prefer();

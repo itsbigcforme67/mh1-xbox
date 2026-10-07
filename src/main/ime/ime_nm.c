@@ -6009,18 +6009,17 @@ int add_kana_buf(u8 *s)
     int len;
     int bytes;
     int lead;
-    int c;
     int code;
+    int c;
 
     kb = pkana_buf;
     lead = 0;
     us = p_ustr;
     len = kana_len;
-    c = *s;
     bytes = bytesin_kana_buf(kana_buf, kb);
-    while (c != 0) {
+    while ((c = *s) != 0) {
         if (lead != 0) {
-            code = ask_sjis2jis(((lead & 0xFFFF) << 8) | (c & 0xFF)) & 0xFFFF;
+            code = ask_sjis2jis((((lead & 0xFFFF) << 8) | (c & 0xFF)) & 0xFFFF) & 0xFFFF;
             if (code != 0) {
                 if (len >= 0x24 || bytes >= 0x4E) {
                     return -1;
@@ -6037,12 +6036,11 @@ int add_kana_buf(u8 *s)
         } else if (is_kanji(c) != 0) {
             lead = *s;
         } else {
-            c = *s;
-            if ((c >= 0x20 && c < 0x7F) || (c >= 0xA0 && c < 0xE0)) {
+            if ((*s >= 0x20 && *s < 0x7F) || (*s >= 0xA0 && *s < 0xE0)) {
                 if (len >= 0x24 || bytes >= 0x4F) {
                     return -1;
                 }
-                kb->ch = c;
+                kb->ch = *s;
                 len++;
                 bytes++;
                 kb->n = 1;
@@ -6053,7 +6051,6 @@ int add_kana_buf(u8 *s)
             }
         }
         s++;
-        c = *s;
     }
     pkana_buf = kb;
     ekana_buf = kb;

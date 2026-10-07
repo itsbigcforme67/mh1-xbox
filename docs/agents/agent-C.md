@@ -1354,6 +1354,8 @@ Tooling gotchas:
   `main:rodata 0x0036E090 0x0036E0B4 ime/imeXX` line goes stale and the link fails with "multiple definition". After a relink restore the imerun files and
   point that rodata line at the run that contains 0x248890. scratch helper (not committed): backup imerun, relink, restore, sed the rodata line.
 - check.py's "(N/M instructions differ)" is positional: one inserted instruction makes everything after it count. Use `tools/align.py` line counts.
+Also: src/main/sys/empty_23E4E0.c = the two empty `jr ra` functions at 0x23E4E0/0x23E4F0 (common_local_init_0023E4E0, dummy_em_prog_0023E4F0; check for such
+8-byte unmatched functions in every range, they cost nothing).
 Near-misses left (align lines / instructions): setmean 3 (daddiu constants), getrda1 2 (extra `b` stub after the n==1 return), srch_node 3 (needs
 `&hash_tab[h & 0xFFFF]` to stop MWCC from CSE-ing the address: harmless but a hack), get_kouholist (original compares the s64 id with -1 through an MMI
 `.word` constant load, same as add_dummy_chmem), bs_point 3 (`p = pos + b->len` temp register), meantosjis (v lands in s5 not s2), dic_getsyn / dic_snssyn
