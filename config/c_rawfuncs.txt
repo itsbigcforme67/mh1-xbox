@@ -64,8 +64,6 @@ lobby 0x005AF4E0 0x2D0 lb_shop_tag_decide
 lobby 0x0053BE00 0x130 Lb_put_materialItem
 lobby 0x00535840 0x3B4 lb_mix_put_itemDetail
 lobby 0x00536460 0x1B8 lb_mix_decide
-main 0x274690 0x74 Gun_level_up
-main 0x274760 0x54 Gun_option_ck
 main 0x190600 0x120 plAMOGetModelMatrixlist
 main 0x191420 0x22c GetPrimVertexNumAMOModelMesh
 main 0x191650 0x234 GetPrimCullTypeAMOModelMesh
@@ -109,3 +107,9 @@ main 0x00265FC0 0x114 hk_key_kata_hira
 main 0x00266350 0x330 roma_ck_sub
 main 0x002669B0 0xBC kbd_insert
 main 0x00266B80 0x618 kbd_disp_input
+main 0x002720E0 0x1A0 Set_userdata
+main 0x00272770 0x288 Ud_item_stack
+main 0x00272D60 0x154 Ud_u_item_stack
+main 0x00273B50 0xC8 Get_bowgun_atk
+main 0x00274690 0x74 Gun_level_up
+main 0x00274760 0x54 Gun_option_ck
