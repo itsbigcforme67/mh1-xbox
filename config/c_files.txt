@@ -2243,3 +2243,4 @@ lobby:rodata 0x0065EAE0 0x0065EB00 f/lb_cli
 lobby:rodata 0x0065EB00 0x0065EB18 f/lb_cli
 lobby:rodata 0x0065E970 0x0065E988 f/lb_cli
 lobby:rodata 0x0065E930 0x0065E948 f/lb_cli
+lobby:rodata 0x0065DD00 0x0065DD34 f/lb_plz
