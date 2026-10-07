@@ -1030,13 +1030,16 @@ hunter warped next to the monster and slashing with RT_DMG_MUL, GOD mode;
 | 20 | Gypceros | em20 | runs (159): attacks, takes damage |
 | 22 | Basarios | em17 | runs (173): rock disguise, attacks; killed -> clear, carve |
 | 17 | Gravios | em17 | runs (172): attacks |
-| 27/28/31 | Velocidrome / Gendrome / Iodrome | em27 | run (137, 156, 160): attack, flinch, die; 137 killed -> clear; no carve seen |
-| 8/34 | Cephadrome / Cephalos | em08 | wake after the intro demo (154), swim in sand, attack; sword hits did not land while it swam (a sound bomb is the PS2 way; not tried) |
+| 27/28/31 | Velocidrome / Gendrome / Iodrome | em27 | run (137, 156, 160): attack, flinch, die; 137 killed -> clear, carved twice (round 21) |
+| 8/34 | Cephadrome / Cephalos | em08 | wake after the intro demo (154), swim in sand, attack; a sound bomb drives it out of the sand (round 21) |
 | 14/26 | Diablos / Monoblos | em14 | run (174, 171): burrow, attack; little damage taken in the test |
 | 15 | Khezu | em15 | runs (175): attacks |
-| 21 | Plesioth | em21 | runs (165): swims; not hit in the test (stays in water) |
+| 21 | Plesioth | em21 | runs (165): swims; its code reacts to sound (damage type 15 while swimming, as em08) but the test could not get a bomb next to it (the warp put the hunter under the water) |
 | 19/24, 4/5/32, 9/23, 3, 13/16/30, 12, 29 | small monsters | em19/em04/em09/em03/em16/em12/em29 | spawn and run without crashes in all village quests |
-| 2, 7, 10, 33 | Fatalis, Lao-Shan Lung, ... | em02/em07/em10/em33 | not linked (town quests only); "not ported, not spawned" |
+| 2 | Fatalis | em02 | runs (103-106): attacks (killed the god-mode-less hunter in 15 s); killed -> clear; its three pick points carved twice (round 21) |
+| 7 | Lao-Shan Lung | em07 | runs (101, 102, 107): walks through the fortress; its hit points stop at 1000 outside the last area (stage 12), as the game's code says; kill not tested |
+| 10 | trader NPC (red hair, backpack) | em10 | spawns on stages 5, 16, 41 (Quest_next_em_set adds kind 10 there), idles; talking/trading not tested |
+| 33 | Kirin | em33 | in no quest on the disc (start positions only for quest 0); runs in free play with RT_EM_KIND=33 |
 
 All quests 1-177 start on their monster's stage and run 450 ticks
 (village 131-177: 1800-tick fights) without a crash.
@@ -1048,3 +1051,49 @@ The host's per-frame work is the CPU skinning of every visible model
 monster count on a stage is what grows it. The character screen poses and
 skins its hunter once per drawn frame (replay), not per tick. Not measured on
 the ARM box: run with `RT_PROF=1 RT_FPS=1`.
+
+### Last monsters, items, intro demos, gathering and fishing (agent A, round 21, 6 Oct 2026)
+All PC side (src/pc, tools/build_pc.sh, tables.txt); no PS2-built file and
+no include/ header changed.
+- Monsters: em02 (Fatalis), em07 (Lao-Shan Lung), em10 (the trader) and em33
+  (Kirin) linked; every monster kind now has its code on the PC (table
+  above). PC versions of main's RedDragonEscapeCamera / F_DragonEscapeCamera
+  (0x225E90/0x225EA0, from the asm) and Em_se_req2_com. The scan of all
+  quests 1-177 (start stage and monster stage, RT_QEM_DUMP) found kind 33 in
+  none of them.
+- Items: flash bombs. push_senko now runs Em_Senko_Ck as the PS2 does, and
+  move_senko / move_smoke (0x16A670 / 0x16A4A0) count their entries down
+  each tick (they were no-ops: flashes and smoke never went away). Checked:
+  Genprey that face the flash take their damage reaction; the Rathian in the
+  test was looking away and was not blinded. Sound bomb (item 33, shell03
+  arg 9 -> Shell09 type 13) drives Cephadrome out of the sand (quest 154).
+- Intro demos (first sight of a monster): the camera now also ticks on the
+  first two ticks of a stage, so a demo requested on tick 0 plays instead of
+  ending at once. Quest 154: HUD hidden, the fin pass, the leap, a close-up.
+  For ~60 ticks mid-demo the ground is a flat grey plane (camera at sand
+  level); not compared with the PS2.
+- Forge greeting window: not reproduced on x86. At the weapon-workshop NPC
+  (lobby x68 14, at 9960,12120) the greeting closes 1-5 ticks after "next";
+  one earlier run showed it for one frame when the sub-menu opened. Since
+  the window is only drawn in shop steps 1 and 3 (Lb_shop_talk), a longer
+  linger on the ARM box would come from drawn frames lagging ticks, not from
+  the game logic. Not changed; PS2 behaviour not checked.
+- Single-player content (quests 131/154, --stage, scripted):
+  - herbs (circle at a pick point: 3 herbs, item 71), mining (pickaxe 131
+    at a kind-3 point: ore 109, pickaxe broke), bug catching (net 134 at a
+    kind-4 point: item 91): work. RT_SPOT_TRACE lists the points.
+  - fishing: works now. func_5589F0 (Fish_set) was a no-op stand-in, so
+    fishing spots had no fish. Stage 54 (desert): bait 122, cast, bite after
+    ~370 ticks, circle -> fish 94, one bait used.
+  - Also wired: Bdora_hp_ck (Lao-Shan half-HP quest condition) and
+    Em09_item_sub (Melynx's stolen item) instead of stand-ins that returned 0.
+  - Farm, Poogie and a training school: none in MH1's offline village (no
+    such code or NPC found). lobby.bin has a pig NPC (npcPig*, lbnpc*.c),
+    not in the village's NPC list; probably the online town [guess].
+- Test aids: `RT_QEM_DUMP=1` (each stage's monster list of a quest),
+  `RT_EM_KIND=n` (free play with monster kind n and its own model),
+  `RT_PL_WARP="t,x,z,ANG"` (optional facing, hex), RT_PL_WARP_EM goes to a dead
+  monster's own pick points, RT_PL_TRACE prints the fishing bite timer.
+- Not done: Lao-Shan kill on its last stage, trading with the em10 trader,
+  sound bomb next to a swimming Plesioth, frame rate on the ARM box (no new
+  per-frame host work except the fish effects on fishing stages).
