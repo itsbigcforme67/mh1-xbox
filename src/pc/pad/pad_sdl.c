@@ -5,6 +5,7 @@
  * LT L2, RT R2, Back select, Start start, stick clicks L3/R3.
  */
 #include "pad.h"
+#include "../rt/rt_log.h"
 
 #include <SDL.h>
 #include <stdio.h>
@@ -65,7 +66,15 @@ void pad_init(void)
         SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);
     for (i = 0; i < SDL_NumJoysticks() && !ctl; i++)
         if (SDL_IsGameController(i) && (ctl = SDL_GameControllerOpen(i)) != NULL)
-            fprintf(stderr, "pad: controller \"%s\"\n", SDL_GameControllerName(ctl));
+            {
+                fprintf(stderr, "pad: controller \"%s\"\n", SDL_GameControllerName(ctl));
+                rt_log("controller: \"%s\"", SDL_GameControllerName(ctl));
+            }
+    {
+        static int told;        /* pad_init runs again each frame while none is plugged in */
+        if (!ctl && !told++)
+            rt_log("controller: none found (keyboard only; %d joystick(s) seen); a pad plugged in later is picked up", SDL_NumJoysticks());
+    }
 }
 
 static int axis(SDL_GameControllerAxis a)
@@ -97,6 +106,7 @@ void pad_read(pad_state *p, int keyboard)
     size_t i;
     memset(p, 0, sizeof *p);
     if (ctl && !SDL_GameControllerGetAttached(ctl)) {
+        rt_log("controller: unplugged");
         SDL_GameControllerClose(ctl);
         ctl = NULL;
     }

@@ -217,8 +217,8 @@ void ItemCopy_Pl2Ud(PLW *pl) { __builtin_memcpy((u8 *)User_data + 0x37C, (u8 *)p
 void ItemCopy_Ud2Pl(PLW *pl) { __builtin_memcpy((u8 *)pl + 0x828, (u8 *)User_data + 0x37C, 0x50); }
 
 /* ------------------------------------------------ not ported yet (no-ops) */
-#define NOP(name) void name() { static int o; if (!o++ && getenv("RT_TRACE")) fprintf(stderr, "rt_menu: %s not ported\n", #name); }
-#define NOP0(name) int name() { static int o; if (!o++ && getenv("RT_TRACE")) fprintf(stderr, "rt_menu: %s not ported\n", #name); return 0; }
+#define NOP(name) void name() { static int o; if (!o++) rt_log_standin(#name); if (o == 1 && getenv("RT_TRACE")) fprintf(stderr, "rt_menu: %s not ported\n", #name); }
+#define NOP0(name) int name() { static int o; if (!o++) rt_log_standin(#name); if (o == 1 && getenv("RT_TRACE")) fprintf(stderr, "rt_menu: %s not ported\n", #name); return 0; }
 
 NOP(set_viewproj)
 /* fonts: rt_font.c */

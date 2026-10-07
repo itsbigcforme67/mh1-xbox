@@ -11,10 +11,12 @@ cd "$(dirname "$0")/.."
 # PC_SYS (skips the multilib check).
 CC=${CC:-gcc}; OBJCOPY=${OBJCOPY:-objcopy}; NM=${NM:-nm}; M32=${M32--m32}
 mkdir -p build/pc
+# nm with the target's C symbol prefix removed (SYM_PREFIX=_ for COFF i386, the Windows build)
+nmc() { if [ -n "$SYM_PREFIX" ]; then $NM "$@" | sed "s/^\\([0-9a-fA-F]* [A-Za-z] \\)$SYM_PREFIX/\\1/"; else $NM "$@"; fi; }
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
     src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c \
-    src/pc/fmt/snd.c src/pc/movie/sfd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c src/pc/gfx/gfx_pal.c src/pc/gfx/gfx_skin.c"
+    src/pc/fmt/snd.c src/pc/movie/sfd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c src/pc/gfx/gfx_pal.c src/pc/gfx/gfx_skin.c src/pc/install.c"
 RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_game.c src/pc/rt/rt_fl.c src/pc/rt/rt_overlay.c src/pc/rt/rt_main.c src/pc/rt/rt_eft.c src/pc/rt/rt_hit.c src/pc/rt/rt_cam.c"   # (listing only)
 # Decompiled game C run natively. set14_nm.c is the whole set14 file
 # (set14_trans is a near-match on the PS2 side, believed equivalent).
@@ -234,7 +236,9 @@ GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
 PICK_MAIN="$PICK_MAIN $PICK_X"
 
 SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}
-CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
+# build id shown in the debug log header (rt_log.c): git hash, "+" when the tree has changes
+: ${MH1_VERSION:=$(git rev-parse --short=10 HEAD 2>/dev/null || echo unknown)$(git diff --quiet HEAD 2>/dev/null || echo +)}
+CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L $EXTRA_CFLAGS"
 # -fno-aggressive-loop-optimizations: decompiled loops index past declared
 # array ends (EMW.hagi[8] read with i == 8 in Em_Dmg_Sys): without it gcc
 # drops the loop exit
@@ -244,8 +248,11 @@ CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOUR
 # the guard knock-back) adds sp30[2] to the hunter's position after frame
 # 94 without setting it: the hunter flew off to z = 1e21 and the screen
 # went blank. Zero is what such a slot ends near in every case seen.
-GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -ftrivial-auto-var-init=zero -Iinclude -w"
-LIBS="-lSDL2 -lGL -lm"   # host symbols by name: build/pc/rt_symtab.c (tools/gen_symtab.py), no dlsym
+GAME_NOAGG=${GAME_NOAGG--fno-aggressive-loop-optimizations}   # gcc only (empty for clang)
+GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing $GAME_NOAGG -ftrivial-auto-var-init=zero -Iinclude -w"
+LIBS=${LIBS:-"-lSDL2 -lGL -lm"}
+LINK1_OPTS=${LINK1_OPTS--Wl,--warn-unresolved-symbols}   # lld (Windows) has no such switch: LINK1_TOLERANT=1 and --error-limit=0
+EXE=${EXE:-}               # ".exe" for the Windows build (tools/build_win.sh)   # host symbols by name: build/pc/rt_symtab.c (tools/gen_symtab.py), no dlsym
 # Compile one object and remember the command (tools/pc_link_adapt.py
 # compiles it again with build/pc/adapt/NAME.h when weak symbols or aliases
 # change); an existing adapt header is always included.
@@ -414,25 +421,25 @@ for f in $GAME; do
     o="build/pc/$b.o"
     # every symbol the file defines (whole near-match files under matched ones)
     case " $WEAK $WEAK_LB2 " in *" $b "*)
-        $NM --defined-only -g "$o" | awk -v o="$o" 'NF == 3 {print "weak", o, $3}' >> $REQ ;; esac
+        nmc --defined-only -g "$o" | awk -v o="$o" 'NF == 3 {print "weak", o, $3}' >> $REQ ;; esac
     # single symbols that another file also defines (the lobby NPC files'
     # empty dummy_em_prog: main's f_em one wins)
     case "$b" in lb__lb_em*_nm) echo "weak $o dummy_em_prog" >> $REQ ;; esac
     for p in $PICK $PICK_MAIN; do
         [ "${p%%:*}" = "$f" ] || continue
         KEEP=",${p#*:},"
-        $NM --defined-only -g "$o" | awk -v k="$KEEP" -v o="$o" 'NF == 3 && index(k, "," $3 ",") == 0 {print "weak", o, $3}' >> $REQ
+        nmc --defined-only -g "$o" | awk -v k="$KEEP" -v o="$o" 'NF == 3 && index(k, "," $3 ",") == 0 {print "weak", o, $3}' >> $REQ
     done
 done
 # the matched lobby functions win over other lobby objects' copies
 BOBJS=$(for f in $BMATCH; do printf 'build/pc/lb__%s.o ' "$(basename "$f" .c)"; done)
-BSYMS=$( (for f in $BMATCH; do $NM --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && $2 == "T" {print $3}'; done
+BSYMS=$( (for f in $BMATCH; do nmc --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && $2 == "T" {print $3}'; done
           for p in $PICK; do echo "${p#*:}" | tr , '\n'; done) | sort -u)   # PICKed lobby functions win too
 BOBJS="$BOBJS $(for p in $PICK; do printf 'build/pc/lb__%s.o ' "$(basename "${p%%:*}" .c)"; done)"
 for o in $OBJS; do
     case " $BOBJS " in *" $o "*) continue ;; esac
     case "$o" in build/pc/lb__*) ;; *) continue ;; esac
-    W=$($NM --defined-only -g "$o" | awk 'NF == 3 {print $3}' | sort -u | comm -12 - "$(printf '%s\n' $BSYMS | sort -u > build/pc/.bsyms; echo build/pc/.bsyms)")
+    W=$(nmc --defined-only -g "$o" | awk 'NF == 3 {print $3}' | sort -u | comm -12 - "$(printf '%s\n' $BSYMS | sort -u > build/pc/.bsyms; echo build/pc/.bsyms)")
     for w in $W; do echo "weak $o $w"; done >> $REQ
 done
 sort -u -o $REQ $REQ
@@ -453,9 +460,10 @@ OBJS="$OBJS build/pc/rt_tables.o"
 MEMSTAT="-include src/pc/rt/rt_memstat.h"
 $CC $CFLAGS $SYS -c src/pc/rt/rt_memstat.c -o build/pc/rt_memstat.o
 OBJS="$OBJS build/pc/rt_memstat.o"
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie rt_prof; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie rt_prof rt_log; do
     # shellcheck disable=SC2086
-    cc_obj $f "$CC $CFLAGS $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o"
+    XF=""; [ $f = rt_log ] && XF="-D_GNU_SOURCE"   # ucontext / sigaltstack
+    cc_obj $f "$CC $CFLAGS $XF -DMH1_VERSION=\\\"$MH1_VERSION\\\" $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o"
     OBJS="$OBJS build/pc/$f.o"
 done
 # the objects in link order (pc_link_adapt.py, tools/build_xbox.py). rt_gen.o
@@ -481,15 +489,17 @@ struct rt_table { const char *name; unsigned va; void *dst; size_t size; };
 const struct rt_table rt_gen_main_tables[1];' > build/pc/rt_gen.c
 $CC $CFLAGS $SYS -c build/pc/rt_gen.c -o build/pc/rt_gen.o
 # the symbol table rt_data.c looks names up in: empty for the first links
-echo 'void *rt_host_sym(const char *n) { (void)n; return 0; }' > build/pc/rt_symtab.c
+echo 'void *rt_host_sym(const char *n) { (void)n; return 0; } const char *rt_host_symname(const void *a, unsigned *o) { (void)a; (void)o; return 0; }' > build/pc/rt_symtab.c
 $CC $CFLAGS $SYS -c build/pc/rt_symtab.c -o build/pc/rt_symtab.o
 # shellcheck disable=SC2086
-$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview.tmp $LIBS \
-    -Wl,--warn-unresolved-symbols 2> build/pc/link1.log || { cat build/pc/link1.log; exit 1; }
-sed -n "s/.*undefined reference to \`\([^']*\)'.*/\1/p" build/pc/link1.log | sort -u > build/pc/undefined.txt
-rm -f build/pc/mhview.tmp
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview.tmp$EXE $LIBS \
+    $LINK1_OPTS 2> build/pc/link1.log || [ -n "$LINK1_TOLERANT" ] || { cat build/pc/link1.log; exit 1; }
+{ sed -n "s/.*undefined reference to \`\([^']*\)'.*/\1/p" build/pc/link1.log
+  # lld (the Windows build): "undefined symbol: _name", the COFF C prefix is dropped
+  sed -n "s/.*undefined symbol: _\?\(.*\)/\1/p" build/pc/link1.log ; } | sort -u > build/pc/undefined.txt
+rm -f build/pc/mhview.tmp$EXE
 # shellcheck disable=SC2086
-$NM --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined.txt
+nmc --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined.txt
 # the aliases this build's headers already define came from gen_rt_auto.py:
 # hand them to it again as undefined, so its output does not depend on the
 # previous build
@@ -504,11 +514,22 @@ echo build/pc/rt_gen.o >> build/pc/objs.txt
 sed -n 's/^-Wl,--defsym,\([^=]*\)=\([^+]*\)+\?\(.*\)$/alias \1 \2 \3/p' build/pc/rt_gen.defsym | sed 's/ $/ 0/' >> $REQ
 python3 tools/pc_link_adapt.py $REQ || exit 1
 # shellcheck disable=SC2086
-$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview $LIBS \
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview$EXE $LIBS \
     
 # now the real symbol table: every global the binary defines, then link again
-$NM --defined-only -g build/pc/mhview | python3 tools/gen_symtab.py build/pc/rt_symtab.c
+if [ -n "$SYMTAB_ARGS" ]; then
+    # Windows: the exe also holds the C runtime's symbols (extern char malloc[] would clash with
+    # <stdlib.h>), so the table comes from our own objects only, front-end files included
+    FRONTO=""; mkdir -p build/pc/front
+    for f in $PC src/pc/rt/rt_mem.c; do
+        o=build/pc/front/$(basename "$f" .c).o
+        $CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT -c "$f" -o "$o"; FRONTO="$FRONTO $o"
+    done
+    $NM --defined-only -g $OBJS build/pc/rt_gen.o $FRONTO | python3 tools/gen_symtab.py build/pc/rt_symtab.c $SYMTAB_ARGS
+else
+    $NM --defined-only -g build/pc/mhview | python3 tools/gen_symtab.py build/pc/rt_symtab.c
+fi
 $CC $CFLAGS $SYS -w -c build/pc/rt_symtab.c -o build/pc/rt_symtab.o
 # shellcheck disable=SC2086
-$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview $LIBS
-echo "built build/pc/mhview (32-bit)"
+$CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview$EXE $LIBS
+echo "built build/pc/mhview$EXE (32-bit)"

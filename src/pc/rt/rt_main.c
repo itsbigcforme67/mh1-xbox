@@ -80,7 +80,7 @@ void flvecApplyMat33_2(f32 *v, f32 (*m)[4]) { flvecApplyMat33(v, v, m); }
 
 /* (Sound: rt_snd.c. Camera quake: set_quake_sub /
  * set_quake_sub2 are the game's own now, src/main/cam.) (The effects/shells set objects spawn now run as game C.) */
-#define STUB_ONCE(name) { static int once; if (!once++) fprintf(stderr, "rt: %s not ported yet (skipped)\n", name); }
+#define STUB_ONCE(name) { static int once; if (!once++) { rt_log_standin(name); fprintf(stderr, "rt: %s not ported yet (skipped)\n", name); } }
 
 /* Callees of the game tick move() (src/main/frame/f_frame_nm.c, 0x1265E0)
  * that are not ported yet. Weak, so a ported version wins when it is

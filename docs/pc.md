@@ -29,6 +29,11 @@ Checks to run after changes (all headless, about a minute together):
   (~2.5 min), then `. ~/xboxdev/env.sh; python3 tools/build_xbox.py` and
   `tools/rebuild.sh`.
 - `tools/rebuild.sh`: the PS2 rebuild (all five OK) when game C was touched.
+- `tools/test_log.sh` (agent B, 7 Oct 2026; ~3 s): the automatic debug log (below) is created, rotated
+  and, with RT_CRASH_TEST=1, gets a crash section. `RUN=wine BIN=build/win/mhview.exe` runs it (and
+  test_quest_loop.sh) on the Windows build.
+- Every run writes a debug log automatically (`~/.local/share/mh1pc/logs`, Windows `%APPDATA%\mh1pc\logs`),
+  and `tools/win/` + `tools/build_win.sh` make a Windows exe: see "Debug log" and "Windows build".
 
 How the PC wires game C (where most bugs were): no-op stand-ins generated
 for missing functions (build/pc/rt_gen.c, tools/gen_rt_auto.py) — grep them
@@ -138,6 +143,122 @@ pc_viewer_close_0.5.png / _2.0.png:
 - the Rathian stands on the plateau, and the two times show different
   frames of its motion;
 - the hunter stands on the stone path in its idle motion.
+
+## Debug log (agent B, 7 Oct 2026)
+
+Every run of mhview (Linux, Windows, Xbox) writes `logs/mh1_YYYYMMDD_HHMMSS.log` with no switch, in a
+folder next to the save directory: `~/.local/share/mh1pc/logs` (`$MH1_SAVE_DIR/../logs` when that is set),
+`%APPDATA%\mh1pc\logs` on Windows, `E:\Games\MH1\logs` on the Xbox (not in UDATA: the dashboard lists
+every folder there as a save). `MH1_LOG_DIR` overrides it. The newest 20 files are kept (only files named
+`mh1_*.log` are ever deleted). Code: src/pc/rt/rt_log.c / rt_log.h (also built into the Xbox XBE).
+
+- Header: build (git hash baked in by build_pc.sh, "+" when the tree had changes), platform and OS version
+  (Wine is named), CPU count, disc / save / log paths, arguments, GPU / OpenGL, SDL version, window size,
+  controller name (and plug / unplug), audio driver, device, rate.
+- Events (`I`): boot steps, game mode changes (init / loading / quest / quest clear / result / village), stage
+  changes, `quest N START`, `quest N CLEAR (result code 4)` / `FAILED` (codes 6, 7; game_w+0xD5), reward
+  screen, back in the village, memory card open / save / load / folder / delete, movie start / end / skipped.
+  The tick number (`tNNN`) is the game tick, the first column seconds since start.
+- Warnings (`W`, flushed at once): missing files (AFS00 / AFS01, a mission file, an AFS_DATA entry that
+  does not read), save write failures, the first call of every no-op stand-in function
+  (`stand-in called (not ported, does nothing): NAME`: every NOP / STUB macro in the rt_*.c files and the
+  generated rt_gen.c call rt_log_standin), audio underruns (the SDL callback measures the gap between calls and
+  its own mixing time; the main loop reports "audio underrun: N late callbacks").
+- Once a minute: `summary: fps, worst frame, game ticks, CPU % of one core, mode / stage / quest, warnings`.
+- Crash (SIGSEGV / SIGBUS / SIGFPE / SIGILL / SIGABRT on Linux; an unhandled exception or abort() on
+  Windows): a `===== CRASH =====` section with the reason (and fault address), the build, uptime, the game's
+  mode / step / stage / quest, a backtrace with function names (from the build's own symbol table,
+  rt_symtab.c: `rt_host_symname`; a static function shows as the global symbol before it, and frames
+  without a name are libc or the like), and the last 200 log lines (the stdio buffer is not flushed on a
+  crash, so these repeat the tail). Then fsync, and the process ends itself: no core file, no Windows error
+  report, no memory dump (it would hold the game's data). The Windows backtrace is a scan of the stack
+  for return addresses in the exe (no DbgHelp / PDB). The Xbox build has no crash handler.
+- Privacy: nothing is sent anywhere. Every line passes a scrub that turns `$HOME` / `%USERPROFILE%` and any
+  `/home/NAME/`, `/Users/NAME/`, `X:\Users\NAME\` into `~`; no environment values are written.
+- Cost: a 32 KB stdio buffer, flushed on warnings and every 3 s; about 60 fps with 16% of a core in
+  the windowed title screen on this machine (about the same as before).
+- Test aid: `RT_CRASH_TEST=1` writes a null pointer after 60 drawn frames (`=2`: abort()).
+- `tools/bug_report.sh [--with-save]` (Linux) / `bug_report.bat` (Windows, PowerShell) zip the newest two
+  logs and a listing of the save folder (names, sizes, dates; the save itself only with `--with-save`) into
+  `mh1_bug_report_<date>.zip` in the current folder and print the issue link
+  (https://github.com/itsbigcforme67/mh1-xbox/issues/new?template=bug_report.md; the template is
+  .github/ISSUE_TEMPLATE/bug_report.md).
+- Not verified: the Xbox part (rt_log.c compiles and links into the XBE, never ran in xemu / on a console);
+  Windows paths with a non-ASCII user name.
+
+## Windows build (agent B, 7 Oct 2026)
+
+`tools/build_win.sh` cross-compiles the PC build for 32-bit Windows on Linux (no root): it runs
+tools/build_pc.sh with llvm-mingw's `i686-w64-mingw32-clang` (the way build_arm.sh does for ARM), in the
+symlink tree `build/win/tree` so that build/pc (the Linux build) is not touched. Result: `build/win/`
+with `mhview.exe`, `SDL2.dll`, `play.bat`, `bug_report.bat` + `.ps1` (about 14 MB; the game's data is not in it).
+
+Tools, outside the repo in `~/mh1win` (`WINROOT` overrides; both are plain downloads, no install):
+- `llvm-mingw-20261006-msvcrt-ubuntu-22.04-x86_64` from github.com/mstorsjo/llvm-mingw/releases (the
+  msvcrt flavour: it runs on every Windows from 7 on. The ucrt flavour needs `WINCRT=ucrt`; it ran on
+  Wine 9 only up to a missing `powf`, a Wine gap, so msvcrt was chosen.)
+- `SDL2-2.32.10` from `SDL2-devel-2.32.10-mingw.tar.gz` (github.com/libsdl-org/SDL/releases), the
+  `i686-w64-mingw32` folder inside.
+
+What had to change (Windows side only, behind `MH1_WINDOWS` = `_WIN32` + `-DMH1_WIN`, see rt_plat.h; the
+Xbox is `_WIN32` without it):
+- build_pc.sh: `LIBS`, `EXE`, `EXTRA_CFLAGS`, `GAME_NOAGG` (clang has no `-fno-aggressive-loop-optimizations`),
+  `SYMTAB_ARGS` (COFF `_` prefix; the table is made from the objects, not the exe, whose C runtime symbols
+  clash with libc declarations), `nmc` (nm without the `_` prefix for the weak / alias requests),
+  `LINK1_OPTS` / `LINK1_TOLERANT` (lld has no `--warn-unresolved-symbols`: the first link's "undefined
+  symbol" errors are read instead). The recorded `-rdynamic` / dlsym of the old builds is gone since the
+  generated symbol table (rt_symtab.c) serves rt_data.c on all platforms.
+- Game C flags: `-fno-builtin` (the game headers declare `memset()` K&R; as nxdk-cc does) and the relaxed
+  clang 18 errors (implicit function declarations etc., as build_xbox.py).
+- rt_mc.c (memory card on host files): `_mkdir`, `localtime_s`, an own `*`/`?` glob instead of fnmatch,
+  `%APPDATA%\mh1pc\memcard0`. rt_prof.c: `GetThreadTimes` instead of clock_gettime. gfx_gl.c:
+  `GL_CLAMP_TO_EDGE` (opengl32's GL 1.1 header). The console subsystem stays (stderr is visible);
+  `-DSDL_MAIN_HANDLED`.
+
+Running it under Wine (checked 7 Oct 2026; `export WINEPREFIX=~/mh1win/prefix WINEDEBUG=-all`):
+`RUN=wine BIN=build/win/mhview.exe tools/test_quest_loop.sh` passes (power-on, new game, quest 131 played
+and cleared, reward, bed save, CONTINUE 1550z; the log shows the whole sequence), and `tools/test_log.sh`
+passes with a Windows crash section. The Windows exe starts the same game C (same stand-in counts as Linux).
+
+Installing from an ISO (src/pc/install.c; Linux and Windows, same code): the player's own Japanese
+disc image is read directly (a small ISO9660 reader, no external tools; 64-bit seeks because the ISO is
+4 GB) and AFS_DATA.AFS, AFS00.AFS, AFS01.AFS, SLPM_654.95 and SYSTEM.CNF (about 925 MB; nothing else is read by
+the PC build) are copied into a data folder: `data` next to the exe if writable (Windows), else
+`%APPDATA%\mh1pc\data` / `~/.local/share/mh1pc/data`. Checks: SLPM_654.95 must be on the image, sizes and
+CRC32 of every file must be the known ones (a wrong disc or a damaged image gives a message box / stderr
+text and installs nothing; a copy goes to `*.part` and is renamed after its checksum matched). A small
+progress bar window shows the copy; `installed.ok` lists the files and CRC32s. Later launches find the
+folder themselves (exe/data, exe/disc, the user folder) and never touch the ISO. Ways in:
+`mhview --install FILE.iso [--install-dir DIR]` (installs, exits), an `.iso` as the disc argument or dropped on
+mhview.exe / play.bat (installs, then starts the game from power-on), and with no data found a prompt
+(message box, then a window that takes a dropped file via SDL_DROPFILE; on Windows Enter opens a file
+dialog). `RT_NO_GUI=1` keeps it to stderr. The result is in the debug log (`install: ...`).
+Checked 7 Oct 2026: Linux `--install` of the owner's ISO into /tmp (3.8 s) gives files byte-identical to
+disc/mh1 and the game boots from it; the same under Wine (9 s, incl. the >2 GB seeks); a text file named
+.iso is refused. Not checked: the file dialog, the drop window with a real drag (only the
+progress window ran), a read-only exe folder, non-ASCII paths (fopen with UTF-8 names on Windows).
+
+How a Windows player runs it (nothing of Capcom's is in the build):
+1. Drag their own Japanese Monster Hunter PS2 ISO (SLPM-65495) onto `mhview.exe` or `play.bat` once.
+2. `play.bat` afterwards (power-on, title, new game / continue), `play.bat quest`, `play.bat easy`,
+   `play.bat village` (same as tools/play.sh; window 1024x768, `set MH_SIZE=1280x720` first to change).
+   An extracted folder works too: `play.bat D:\mh\files` or its path in `disc_dir.txt`. Saves in
+   `%APPDATA%\mh1pc\memcard0`, logs in `%APPDATA%\mh1pc\logs`; after a problem run `bug_report.bat`.
+
+Test release zip: `tools/package_win.sh` (after build_win.sh) makes `build/release/mh1pc-win32-<date>-<hash>.zip`
+with the exe, SDL2.dll, play.bat, bug_report.bat/.ps1, a README.txt for testers and the licenses (libmpeg2 GPL,
+SDL2 zlib, a GPL notice). It refuses to zip a file over 25 MB, a total over 40 MB, or any name like game data
+(AFS*, SLPM*, SYSTEM.CNF, *.iso, *.bin ...), and checks the finished zip again. It does not publish anything.
+
+Untested on real Windows: everything. Only Wine 9 on Linux (its OpenGL is the host Mesa) has run the exe; no
+real Windows, no real GPU driver of Windows (the GL path asks for a 2.1 context and uses the fixed
+pipeline, so any driver should do), no Windows audio (the hidden-window test runs have no audio device),
+no controller, `play.bat` / `bug_report.bat` / `bug_report.ps1` never executed (written from memory of
+batch and PowerShell syntax), the movie decoder (plain C libmpeg2, no MMX), Windows 7 / 8, antivirus
+reactions to an unsigned exe, paths with spaces or non-ASCII characters.
+Differences that may matter: the Win32 ABI aligns `double` / `long long` in structs to 8, the Linux i386 ABI
+to 4 (the Xbox build is the same as Windows here and works); clang instead of gcc compiled the game C
+(the test quests all ran under Wine, but only test_quest_loop and test_log, not all_quests / audio).
 
 ## Layout
 

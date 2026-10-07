@@ -757,6 +757,7 @@ void rt_eft_trace(void)
  * they do nothing (marked "stub"). */
 static void once(const char *name)
 {
+    rt_log_standin(name);
     if (getenv("RT_TRACE"))
         fprintf(stderr, "rt: %s is a stub\n", name);
 }

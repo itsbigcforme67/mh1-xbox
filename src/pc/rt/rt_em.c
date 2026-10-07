@@ -16,7 +16,7 @@
 #include <string.h>
 
 #define WEAK __attribute__((weak))
-static void once(const char *n) { if (getenv("RT_TRACE")) fprintf(stderr, "rt_em: %s not ported (stand-in)\n", n); }
+static void once(const char *n) { rt_log_standin(n); if (getenv("RT_TRACE")) fprintf(stderr, "rt_em: %s not ported (stand-in)\n", n); }
 #define WSTUB(name) WEAK void name(EMW *em) { static int o; (void)em; if (!o++) once(#name); }
 
 #define PU8(p, o) (*(u8 *)((u8 *)(p) + (o)))
@@ -303,8 +303,11 @@ s32 *Em_data_com_adrs_get(s32 *p, int which);
 s32 *Em_data_st_adrs_get(s32 *p, int id, int which, s8 idx);
 int rt_quest_load(int no)
 {
-    if (no <= 0 || no >= 0xB2)
+    if (no <= 0 || no >= 0xB2) {
+        rt_warn("quest %d: not a valid quest number", no);
         return -1;
+    }
+    rt_log("quest %d: loading the mission file (--quest or host start)", no);
     rt_quest_mem_init();
     Quest_init();
     game_w.master = 0;

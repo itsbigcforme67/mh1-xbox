@@ -8,6 +8,7 @@
  */
 #include "gfx.h"
 #include "../rt/rt_prof.h"
+#include "../rt/rt_log.h"
 
 #include <SDL.h>
 #include <GL/gl.h>
@@ -41,6 +42,10 @@ static struct {
 #define GL_FUNC_REVERSE_SUBTRACT 0x800B
 #endif
 
+#ifndef GL_CLAMP_TO_EDGE        /* GL 1.2: not in the Windows opengl32 header (GL 1.1) */
+#define GL_CLAMP_TO_EDGE 0x812F
+#endif
+
 /* fl blend factor codes (GFX_BF_*) */
 static const GLenum blend_factor[6] = {
     GL_ZERO, GL_ONE, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA
@@ -70,6 +75,16 @@ int gfx_init(int width, int height, const char *title, int hidden)
         return -1;
     }
     SDL_GL_SetSwapInterval(1);
+    {
+        const char *v = (const char *)glGetString(GL_VENDOR), *r = (const char *)glGetString(GL_RENDERER),
+                   *ver = (const char *)glGetString(GL_VERSION);
+        SDL_version cv, rv;
+        SDL_VERSION(&cv);
+        SDL_GetVersion(&rv);
+        rt_log("GPU: %s / %s, OpenGL %s", v ? v : "?", r ? r : "?", ver ? ver : "?");
+        rt_log("SDL %d.%d.%d (built with %d.%d.%d), video driver %s", rv.major, rv.minor, rv.patch, cv.major, cv.minor, cv.patch,
+               SDL_GetCurrentVideoDriver() ? SDL_GetCurrentVideoDriver() : "?");
+    }
     G.w = width;
     G.h = height;
     memcpy(G.view, ident, sizeof ident);

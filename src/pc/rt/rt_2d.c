@@ -265,7 +265,7 @@ void flps0D00(f32 *q)
 
 /* other primitive kinds (sprite list types 0x0D, 0x0F, 0x13, 0x14, 0x16):
  * not used by the HUD; reported once */
-#define PRIM_TODO(n) void n(void *q) { static int o; (void)q; if (!o++ && getenv("RT_TRACE")) fprintf(stderr, "rt_2d: %s not ported\n", #n); }
+#define PRIM_TODO(n) void n(void *q) { static int o; (void)q; if (!o++) rt_log_standin(#n); if (o == 1 && getenv("RT_TRACE")) fprintf(stderr, "rt_2d: %s not ported\n", #n); }
 PRIM_TODO(flps0F00) PRIM_TODO(flps1300) PRIM_TODO(flps1400) PRIM_TODO(flps1600)
 
 /* ------------------------------------------------------------ prim lists */

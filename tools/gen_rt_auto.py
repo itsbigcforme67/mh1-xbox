@@ -118,7 +118,7 @@ def main():
             if i == img:
                 out.append("    { \"%s\", 0x%08X, %s, 0x%X }," % (n, va, n, size))
         out += ["    { NULL, 0, NULL, 0 }", "};"]
-    out += ["", "static void note(const char *n)", "{",
+    out += ["", "void rt_log_standin(const char *name);", "static void note(const char *n)", "{", "    rt_log_standin(n);",
             "    if (getenv(\"RT_TRACE\"))",
             "        fprintf(stderr, \"rt: %s not ported (stand-in returns 0)\\n\", n);", "}"]
     for n in funcs:

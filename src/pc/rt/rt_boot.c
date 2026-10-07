@@ -105,6 +105,8 @@ void Game_task(u8 *t)
 {
     if (!boot_done && getenv("RT_BOOT_TRACE"))
         fprintf(stderr, "rt_boot: tick %d Game_task started: to the village\n", boot_ticks);
+    if (!boot_done)
+        rt_log("boot: title / new hunter / load finished (Game_task started after %d ticks): going to the village", boot_ticks);
     boot_done = 1;
     if (system_w[0x10]) {       /* "go to town" (network mode): not on the PC yet */
         fprintf(stderr, "rt_boot: network mode is not available on the PC: going to the village\n");
@@ -157,6 +159,7 @@ void rt_boot_init(void)
     system_w[0x0B] = 0;
     Tsk_Execute((void *)Init_task, 0);
     boot_active = 1;
+    rt_log("boot: power-on sequence started (logos, title)");
     boot_done = 0;
     boot_ticks = 0;
 }
@@ -168,6 +171,7 @@ int rt_boot_tick(void)
     if (!boot_active)
         return 1;
     boot_ticks++;
+    rt_log_boot_tick();
     rt_font_tick_begin();       /* font_stack_reset */
     rt_prims_reset();           /* ot_init */
     gfx_rec_begin();
