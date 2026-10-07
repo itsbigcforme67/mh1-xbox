@@ -12,7 +12,7 @@ set -e
 cd "$(dirname "$0")/.."
 TOP=$PWD
 W=${WINROOT:-$HOME/mh1win}
-LLVM=$(ls -d "$W"/llvm-mingw-* 2>/dev/null | grep -v '\.tar' | head -1)
+LLVM=$(ls -d "$W"/llvm-mingw-*${WINCRT:-msvcrt}* 2>/dev/null | grep -v "\.tar" | head -1)
 SDL=$(ls -d "$W"/SDL2-[0-9]* 2>/dev/null | grep -v '\.tar' | tail -1)/i686-w64-mingw32
 [ -x "$LLVM/bin/i686-w64-mingw32-clang" ] || { echo "no llvm-mingw in $W (docs/pc.md, Windows)"; exit 1; }
 [ -f "$SDL/lib/libSDL2.dll.a" ] || { echo "no SDL2 mingw development package in $W (docs/pc.md, Windows)"; exit 1; }
@@ -29,14 +29,15 @@ RELAX="-Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-err
  -Wno-error=incompatible-function-pointer-types -Wno-error=return-type -Wno-error=incompatible-pointer-types"
 export CC="i686-w64-mingw32-clang"
 export M32="" PC_SYS=" " EXE=.exe SYMTAB_ARGS="--prefix _" SYM_PREFIX=_
+export LINK1_OPTS="-Wl,--error-limit=0" LINK1_TOLERANT=1
 export OBJCOPY=llvm-objcopy NM=llvm-nm
 export SDL_CFLAGS="-I$SDL/include/SDL2 -DSDL_MAIN_HANDLED"
 export LIBS="-L$SDL/lib -lSDL2 -lopengl32 -lwinmm -lm"
-export GAME_EXTRA="$RELAX -w -fno-delete-null-pointer-checks"
-export EXTRA_CFLAGS="-DMH1_WIN"
+export GAME_EXTRA="$RELAX -w -fno-builtin"   # as nxdk-cc: the game headers declare memset() K&R
+export EXTRA_CFLAGS="-DMH1_WIN" GAME_NOAGG=""
 sh $T/tools/build_pc.sh
 mkdir -p build/win
 cp $T/build/pc/mhview.exe build/win/mhview.exe
 cp "$SDL/bin/SDL2.dll" build/win/SDL2.dll
-for f in play.bat bug_report.bat; do [ -f tools/win/$f ] && cp tools/win/$f build/win/$f; done
+for f in play.bat bug_report.bat bug_report.ps1; do [ -f tools/win/$f ] && cp tools/win/$f build/win/$f; done
 echo "built build/win/mhview.exe (32-bit Windows; SDL2.dll next to it)"

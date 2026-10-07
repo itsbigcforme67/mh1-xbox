@@ -171,6 +171,7 @@ int rt_boot_tick(void)
     if (!boot_active)
         return 1;
     boot_ticks++;
+    rt_log_boot_tick();
     rt_font_tick_begin();       /* font_stack_reset */
     rt_prims_reset();           /* ot_init */
     gfx_rec_begin();

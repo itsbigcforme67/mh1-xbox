@@ -37,6 +37,7 @@
 #include <windows.h>
 #ifdef MH1_WINDOWS
 #include <io.h>
+#include <signal.h>
 #endif
 #else
 #include <dirent.h>
@@ -67,7 +68,7 @@ static unsigned ring_n;                 /* lines ever written */
 static unsigned long t0;                /* ms at start */
 static int in_crash, inited;
 static char home[300];                  /* the user's home / profile directory (scrubbed from lines) */
-static unsigned long last_flush, last_sum;
+static unsigned long last_flush;
 static unsigned n_warn, n_standin, n_frames_total;
 static int cur_mode = -1, cur_step, cur_stage = -1, cur_quest, cur_tick, cur_result;
 static const char *const mode_name[] = { "init", "loading", "quest", "quest clear", "waiting for players", "result", "village" };
@@ -343,6 +344,9 @@ void rt_log_game(int mode, int step, int stage, int quest, int result)
     }
 }
 
+/* one tick of the boot sequence (the game modes call rt_log_game instead) */
+void rt_log_boot_tick(void) { cur_tick++; }
+
 /* ------------------------------------------------------------ periodic */
 static volatile int au_late, au_calls, au_late_total;
 static volatile double au_worst_gap, au_worst_work;
@@ -418,7 +422,6 @@ void rt_log_frame(void)
         worst = 0;
         last_ticks = cur_tick;
         au_worst_gap = au_worst_work = 0;
-        last_sum = now;
     }
 }
 
@@ -573,6 +576,15 @@ static void sig_handler(int sig, siginfo_t *si, void *uc)
     crash_report(what, fr, n);
     _exit(128 + sig);                       /* no core dump: it would hold the game's data */
 }
+static void term_handler(int sig)      /* killed from outside: keep what the log buffered */
+{
+    if (in_crash)
+        _exit(128 + sig);
+    rt_log("terminated by signal %d", sig);
+    if (lf)
+        fflush(lf);
+    _exit(128 + sig);
+}
 static void install_crash(void)
 {
     static const int sigs[] = { SIGSEGV, SIGBUS, SIGFPE, SIGILL, SIGABRT };
@@ -591,6 +603,8 @@ static void install_crash(void)
     sigemptyset(&sa.sa_mask);
     for (i = 0; i < sizeof sigs / sizeof sigs[0]; i++)
         sigaction(sigs[i], &sa, NULL);
+    signal(SIGTERM, term_handler);
+    signal(SIGHUP, term_handler);
 }
 #endif
 

@@ -11,6 +11,8 @@ cd "$(dirname "$0")/.."
 # PC_SYS (skips the multilib check).
 CC=${CC:-gcc}; OBJCOPY=${OBJCOPY:-objcopy}; NM=${NM:-nm}; M32=${M32--m32}
 mkdir -p build/pc
+# nm with the target's C symbol prefix removed (SYM_PREFIX=_ for COFF i386, the Windows build)
+nmc() { if [ -n "$SYM_PREFIX" ]; then $NM "$@" | sed "s/^\\([0-9a-fA-F]* [A-Za-z] \\)$SYM_PREFIX/\\1/"; else $NM "$@"; fi; }
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
     src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c \
@@ -246,8 +248,10 @@ CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOUR
 # the guard knock-back) adds sp30[2] to the hunter's position after frame
 # 94 without setting it: the hunter flew off to z = 1e21 and the screen
 # went blank. Zero is what such a slot ends near in every case seen.
-GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing -fno-aggressive-loop-optimizations -ftrivial-auto-var-init=zero -Iinclude -w"
+GAME_NOAGG=${GAME_NOAGG--fno-aggressive-loop-optimizations}   # gcc only (empty for clang)
+GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing $GAME_NOAGG -ftrivial-auto-var-init=zero -Iinclude -w"
 LIBS=${LIBS:-"-lSDL2 -lGL -lm"}
+LINK1_OPTS=${LINK1_OPTS--Wl,--warn-unresolved-symbols}   # lld (Windows) has no such switch: LINK1_TOLERANT=1 and --error-limit=0
 EXE=${EXE:-}               # ".exe" for the Windows build (tools/build_win.sh)   # host symbols by name: build/pc/rt_symtab.c (tools/gen_symtab.py), no dlsym
 # Compile one object and remember the command (tools/pc_link_adapt.py
 # compiles it again with build/pc/adapt/NAME.h when weak symbols or aliases
@@ -417,25 +421,25 @@ for f in $GAME; do
     o="build/pc/$b.o"
     # every symbol the file defines (whole near-match files under matched ones)
     case " $WEAK $WEAK_LB2 " in *" $b "*)
-        $NM --defined-only -g "$o" | awk -v o="$o" 'NF == 3 {print "weak", o, $3}' >> $REQ ;; esac
+        nmc --defined-only -g "$o" | awk -v o="$o" 'NF == 3 {print "weak", o, $3}' >> $REQ ;; esac
     # single symbols that another file also defines (the lobby NPC files'
     # empty dummy_em_prog: main's f_em one wins)
     case "$b" in lb__lb_em*_nm) echo "weak $o dummy_em_prog" >> $REQ ;; esac
     for p in $PICK $PICK_MAIN; do
         [ "${p%%:*}" = "$f" ] || continue
         KEEP=",${p#*:},"
-        $NM --defined-only -g "$o" | awk -v k="$KEEP" -v o="$o" 'NF == 3 && index(k, "," $3 ",") == 0 {print "weak", o, $3}' >> $REQ
+        nmc --defined-only -g "$o" | awk -v k="$KEEP" -v o="$o" 'NF == 3 && index(k, "," $3 ",") == 0 {print "weak", o, $3}' >> $REQ
     done
 done
 # the matched lobby functions win over other lobby objects' copies
 BOBJS=$(for f in $BMATCH; do printf 'build/pc/lb__%s.o ' "$(basename "$f" .c)"; done)
-BSYMS=$( (for f in $BMATCH; do $NM --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && $2 == "T" {print $3}'; done
+BSYMS=$( (for f in $BMATCH; do nmc --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && $2 == "T" {print $3}'; done
           for p in $PICK; do echo "${p#*:}" | tr , '\n'; done) | sort -u)   # PICKed lobby functions win too
 BOBJS="$BOBJS $(for p in $PICK; do printf 'build/pc/lb__%s.o ' "$(basename "${p%%:*}" .c)"; done)"
 for o in $OBJS; do
     case " $BOBJS " in *" $o "*) continue ;; esac
     case "$o" in build/pc/lb__*) ;; *) continue ;; esac
-    W=$($NM --defined-only -g "$o" | awk 'NF == 3 {print $3}' | sort -u | comm -12 - "$(printf '%s\n' $BSYMS | sort -u > build/pc/.bsyms; echo build/pc/.bsyms)")
+    W=$(nmc --defined-only -g "$o" | awk 'NF == 3 {print $3}' | sort -u | comm -12 - "$(printf '%s\n' $BSYMS | sort -u > build/pc/.bsyms; echo build/pc/.bsyms)")
     for w in $W; do echo "weak $o $w"; done >> $REQ
 done
 sort -u -o $REQ $REQ
@@ -489,11 +493,13 @@ echo 'void *rt_host_sym(const char *n) { (void)n; return 0; } const char *rt_hos
 $CC $CFLAGS $SYS -c build/pc/rt_symtab.c -o build/pc/rt_symtab.o
 # shellcheck disable=SC2086
 $CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/mhview.tmp$EXE $LIBS \
-    -Wl,--warn-unresolved-symbols 2> build/pc/link1.log || { cat build/pc/link1.log; exit 1; }
-sed -n "s/.*undefined reference to \`\([^']*\)'.*/\1/p" build/pc/link1.log | sort -u > build/pc/undefined.txt
+    $LINK1_OPTS 2> build/pc/link1.log || [ -n "$LINK1_TOLERANT" ] || { cat build/pc/link1.log; exit 1; }
+{ sed -n "s/.*undefined reference to \`\([^']*\)'.*/\1/p" build/pc/link1.log
+  # lld (the Windows build): "undefined symbol: _name", the COFF C prefix is dropped
+  sed -n "s/.*undefined symbol: _\?\(.*\)/\1/p" build/pc/link1.log ; } | sort -u > build/pc/undefined.txt
 rm -f build/pc/mhview.tmp$EXE
 # shellcheck disable=SC2086
-$NM --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined.txt
+nmc --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined.txt
 # the aliases this build's headers already define came from gen_rt_auto.py:
 # hand them to it again as undefined, so its output does not depend on the
 # previous build

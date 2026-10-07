@@ -8,6 +8,7 @@
 # RT_PL_WARP, RT_PL_WARP_EM, RT_PL_TARGET, RT_DMG_MUL. Saves go to
 # build/show/loop/card (deleted first). Headless, ~20 s on x86.
 cd "$(dirname "$0")/.."
+BIN=${BIN:-build/pc/mhview}   # RUN=wine BIN=build/win/mhview.exe: the Windows build under Wine (docs/pc.md)
 export RT_NOMOVIE=1   # the opening movie would only lengthen the scripted boot (test_movie.sh covers it)
 OUT=build/show/loop; mkdir -p $OUT
 export MH1_SAVE_DIR="$PWD/$OUT/card"; rm -rf "$MH1_SAVE_DIR"
@@ -21,8 +22,8 @@ RT_NAME=TEST RT_QUEST_TRACE=1 \
 RT_LB_WARP="1300,2290,1000,4000;1360,10901,12409,38AB;2210,10650,15225;2301,11225,14400,0;2391,2259,745,4001" \
 RT_PL_TARGET="0:0,1250:1" RT_PL_WARP="10,12250,10000;2400,6750,11900;2500,10350,10500" \
 RT_PL_WARP_EM=90-520,600,1270-1700,1780 RT_DMG_MUL=40 \
-    build/pc/mhview disc/mh1 --boot --input "$S" --shot $OUT/end1.png --time 316 2> $OUT/run1.log >/dev/null
+    $RUN $BIN disc/mh1 --boot --input "$S" --shot $OUT/end1.png --time 316 2> $OUT/run1.log >/dev/null
 grep -E "Gold_add\((1500|32)\)|rt_village: enter" $OUT/run1.log
-RT_QUEST_TRACE=1 build/pc/mhview disc/mh1 --boot --input "$(cat $D/continue.txt)" --shot $OUT/end2.png --time 60 \
+RT_QUEST_TRACE=1 $RUN $BIN disc/mh1 --boot --input "$(cat $D/continue.txt)" --shot $OUT/end2.png --time 60 \
     2> $OUT/run2.log >/dev/null
 if grep -q "money 1550" $OUT/run2.log; then echo "loop OK: CONTINUE has 1550z"; else echo "loop FAILED (see $OUT)"; exit 1; fi

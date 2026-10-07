@@ -42,6 +42,10 @@ static struct {
 #define GL_FUNC_REVERSE_SUBTRACT 0x800B
 #endif
 
+#ifndef GL_CLAMP_TO_EDGE        /* GL 1.2: not in the Windows opengl32 header (GL 1.1) */
+#define GL_CLAMP_TO_EDGE 0x812F
+#endif
+
 /* fl blend factor codes (GFX_BF_*) */
 static const GLenum blend_factor[6] = {
     GL_ZERO, GL_ONE, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA

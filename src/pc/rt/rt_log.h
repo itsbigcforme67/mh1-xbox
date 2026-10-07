@@ -30,6 +30,7 @@ const char *rt_log_path(const char *p);
 /* the game's state, called every game tick: logs mode / stage / quest changes
  * (quest start, clear, failure) and keeps the crash report's context */
 void rt_log_game(int mode, int step, int stage, int quest, int result);
+void rt_log_boot_tick(void);
 /* every drawn frame: timed flush, the once-a-minute fps / CPU line */
 void rt_log_frame(void);
 /* the audio device callback measures itself (any thread); the main loop prints it */
