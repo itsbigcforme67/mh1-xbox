@@ -3333,11 +3333,8 @@ static void em_demo00_005A0FF0(EMW *em, EM08W *w) {
     f32 temp_f1_5;
     f32 var_a3;
     u32 spd;
-    s32 temp_t0;
     u16 temp_a1;
     f32 temp_f1_2;
-    u16 temp_a1_2;
-    u32 temp_a2_3;
     u32 temp_a3;
     s32 temp_a2_2;
     u8 temp_a3_2;
@@ -3417,26 +3414,31 @@ static void em_demo00_005A0FF0(EMW *em, EM08W *w) {
         }
         swim_eff_set_005A7070(8.0f, em);
         break;
-    case 4:
-        spd = (u32)((32768.0f / (em->x1A8 / 2.0f)) * em->act_spd);
-        temp_t0 = em->ang[1];
-        temp_a1_2 = w->dang;
-        temp_a2_3 = (temp_a1_2 - (temp_t0 & 0xFFFF)) & 0xFFFF;
+    case 4: {
+        s32 tt;
+        u32 sp;
+        u16 aa;
+        u32 dd;
+        sp = (u32)((32768.0f / (em->x1A8 / 2.0f)) * em->act_spd);
+        tt = em->ang[1];
+        aa = w->dang;
+        dd = (aa - (tt & 0xFFFF)) & 0xFFFF;
         if (em->x194 == 0) {
             em->x05++;
             em_char_set(em, 0x66, 0, 0);
             break;
         }
-        if ((u32) ((temp_a2_3 + spd) & 0xFFFF) < (u32) (spd * 2)) {
-            em->ang[1] = (s32) temp_a1_2;
+        if ((u32) ((dd + sp) & 0xFFFF) < (u32) (sp * 2)) {
+            em->ang[1] = (s32) aa;
             break;
         }
-        if (temp_a2_3 < 0x8000U) {
-            em->ang[1] = (temp_t0 + spd) & 0xFFFF;
+        if (dd < 0x8000U) {
+            em->ang[1] = (tt + sp) & 0xFFFF;
             break;
         }
-        em->ang[1] = (temp_t0 - spd) & 0xFFFF;
+        em->ang[1] = (tt - sp) & 0xFFFF;
         break;
+        }
     case 5:
         em21_target_ang_calc(em, 0x40);
         w->vel[1] = (s32) em->ang[1];
@@ -5529,7 +5531,7 @@ void em08_effect_move(EMW *em) {
 
     switch (e) {
     case 0:
-        em->ex[0] = e + 1;
+        *(u8 *)w = e + 1;
         break;
     case 1:
         ef_move_sub_005A3E50(em, w);

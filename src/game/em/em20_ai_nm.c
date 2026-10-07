@@ -7369,12 +7369,10 @@ block_416:
 
 void em20_effect_move(EMW *em) {
     EM20W *w = (EM20W *)em->ex;
-    u8 temp_a2;
 
-    temp_a2 = w->eff;
-    switch (temp_a2) {                              /* irregular */
+    switch (w->eff) {
     case 0:
-        w->eff = temp_a2 + 1;
+        w->eff++;
         break;
     case 1:
         ef_move_sub_005F7800(em, w);

@@ -1,4 +1,4 @@
-/* em10, one translation unit: game.bin 0x005ACC60-0x005AF528 (em10_turn_sub stays original bytes, see config/c_rawfuncs.txt). Matching functions of em10_nm.c (that file holds the
+/* em10, one translation unit: game.bin 0x005ACC60-0x005AF528. Matching functions of em10_nm.c (that file holds the
  * whole code including the near-matches); see it for the description. */
 #include "em.h"
 #include "pl.h"
@@ -440,13 +440,24 @@ void em10_to_normal(EMW *em, int flag, int a, int b) {
     em->ex[0x90] = 1;
 }
 
-/* original bytes: build/raw/em10_turn_sub.inc (config/c_rawfuncs.txt); the near-match C is in em10_nm.c, used by the PC build */
-#ifdef __MWERKS__
-asm void em10_turn_sub(EMW *em)
-{
-#include "em10_turn_sub.inc"
+void em10_turn_sub(EMW *em) {
+    u32 spd;
+    u16 tgt;
+    u32 d;
+    s32 ang;
+
+    spd = act_ck(em, 0, 3) != 0 ? 0x71C : 0xFA4;
+    ang = em->ang[1];
+    tgt = em->x0E;
+    d = (tgt - (ang & 0xFFFF)) & 0xFFFF;
+    if ((u32)((d + spd) & 0xFFFF) < (u32)(spd * 2)) {
+        em->ang[1] = (s32)tgt;
+    } else if (d < 0x8000U) {
+        em->ang[1] = (ang + spd) & 0xFFFF;
+    } else {
+        em->ang[1] = (ang - spd) & 0xFFFF;
+    }
 }
-#endif
 
 void em_act00(EMW *em) {
     EM10W *w = (EM10W *)em->ex;
