@@ -4598,7 +4598,6 @@ void NextStage_Dir_Set(EMW *em, f32 *out) {
 void em_cdm_act_flag_ck(EMW *em) {
     s32 i;
     s32 cnt;
-    s32 j;
     u8 n;
     u8 m;
 
@@ -4623,13 +4622,13 @@ void em_cdm_act_flag_ck(EMW *em) {
         em->x881 = 1;
         em->x882 = 0;
         m = *(u8 *)0x3F34C3;
-        j = 0;
+        i = 0;
         if (0 < m) {
-            while (!(em->x914 & (1 << j)) && ++j < m) {
+            while (!(em->x914 & (1 << i)) && ++i < m) {
             }
         }
-        em->x883 = j;
-        return;
+        em->x883 = i;
+        break;
     }
 }
 
