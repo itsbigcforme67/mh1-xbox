@@ -1,5 +1,6 @@
 #include "lobby_a.h"
 extern s32 no_pl;
+extern struct { u8 _pad00[0x14]; u8 x14; } PitMenu;
 extern u8 *lbmw;
 extern char pf_room_member[];
 void disp_lm_room_member(void) {
@@ -19,7 +20,7 @@ void disp_lm_room_member(void) {
         do {
             m = lbmw[j + 0xD];
             if (m > 0) {
-                r = Lb_room_member(m & 0xFF, *(u8 *)0x39DAD4);
+                r = Lb_room_member(m & 0xFF, PitMenu.x14);
             } else {
                 r = no_pl;
             }

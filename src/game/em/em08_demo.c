@@ -1,4 +1,5 @@
-/* em08_r01 - near-match fixes: hire_move group, em21_target_ang_calc. Whole file in em08_ai_nm.c. 0x005A69A0-0x005A6F04: hire_move_sub2_005A69A0, hire_move_sub1_005A6B70, hire_move_005A6EB0. Whole file in em08_ai_nm.c. */
+/* em08, em_demo00 (game.bin 0x005A0FF0-0x005A16F4): the swim-in demo, kept as a file of its own between the em08_aig and
+ * em08_aih runs. Case 4 declares its temporaries in the block (that is what gives the original registers). */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -52,13 +53,10 @@ typedef struct HIRE_E {
     u16 v;
 } HIRE_E;
 
-
-
 extern GAME_W game_w;
 
-
 void Eft19_set(EMW *, int, int);
-void eft09_set(EMW *);
+void eft09_set(EMW *, int);
 void Eft20_set(f32, EMW *, int, int);
 void shell01_set(EMW *, int);
 s16 em_hp_vital_set2(EMW *, s16, s16);
@@ -234,12 +232,6 @@ void shell05_set4(EMW *, int, int);
 void bridge_eff_set(EMW *);
 void toride_eff_set(EMW *);
 
-
-
-
-
-
-
 #define EM08_TURN(em, tgt)                                                \
     do {                                                                  \
         int d;                                                            \
@@ -274,106 +266,6 @@ void toride_eff_set(EMW *);
         }                                                                 \
     } while (0)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #define UV_RESET(i)       \
     do {                  \
         uv[i][0] = 0.0f;  \
@@ -382,180 +274,196 @@ void toride_eff_set(EMW *);
         ty[i] = 0xFF;     \
     } while (0)
 
-#define UVR(i) \
-    do { \
-        em->uv[i][0] = 0.0f; \
-        em->uv[i][1] = 0.0f; \
-        em->uvtm[i] = 0xFFFF; \
-        em->uvty[i] = 0xFF; \
-    } while (0)
+void em_demo00_005A0FF0(EMW *em, EM08W *w) {
+    f32 temp_f1;
+    f32 temp_f1_3;
+    f32 temp_f1_4;
+    f32 temp_f1_5;
+    f32 var_a3;
+    u32 spd;
+    u16 temp_a1;
+    f32 temp_f1_2;
+    u32 temp_a3;
+    s32 temp_a2_2;
+    u8 temp_a3_2;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-static void hire_move_sub2_005A69A0(EMW *em, EM08W *w, int i) {
-    switch (w->st[i].b) {
+    em->x9E1 = 5;
+    em->x40C = 5;
+    switch (em->x05) {
     case 0:
-        if (w->xF == 2 || w->xF == 3) {
-            if (w->ang[i].a != hire_down_angx_003887E8[i]) {
-                w->st[i].b = 2;
-                w->tmr[i] = 0x14;
-            }
-        } else if (w->xF == 1) {
-            if (w->ang[i].a != 0) {
-                w->st[i].b = 1;
-                w->tmr[i] = 0x14;
-            }
-        }
+        em->x05 = 3;
+        em->x388 = 4;
+        em->pos[0] = 11900.0f;
+        em->pos[1] = -em->x7E0;
+        em->pos[2] = 5220.0f;
+        em->tgt_pos[0] = 16700.0f;
+        em->tgt_pos[1] = -em->x7E0;
+        em->tgt_pos[2] = 8450.0f;
+        em->ang[0] = 0;
+        em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+        em->ang[2] = 0;
+        w->dist = CalcDistanceXZ(em->pos, em->tgt_pos);
+        em_rate_clear(em);
+        em->adj_z = 50.0f;
+        em_char_set(em, 0x66, 0, 0);
+        w->vel[0] = 0;
+        w->vel[2] = 0;
         break;
     case 1:
-        if (--w->tmr[i] <= 0) {
-            w->ang[i].a = 0;
-            w->st[i].b = 0;
-            return;
+        em21_target_ang_calc(em, 0x40);
+        w->vel[1] = (s32) em->ang[1];
+        speed_add(em, w->vel);
+        w->dist = w->dist - em->adj_z;
+        if (w->dist <= 0.0f) {
+            em->x05++;
+            em->tgt_pos[0] = 16700.0f;
+            em->tgt_pos[1] = -em->x7E0;
+            em->tgt_pos[2] = 8450.0f;
+            w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+            w->dist = CalcDistanceXZ(em->pos, em->tgt_pos);
+            em_char_set(em, 0x6B, 0, 0);
+            break;
         }
-        w->ang[i].a += ((0x10000 - w->ang[i].a) / w->tmr[i]) & 0xFFFF;
+    default:
         break;
     case 2:
-        if (--w->tmr[i] <= 0) {
-            w->ang[i].a = hire_down_angx_003887E8[i];
-            w->st[i].b = 0;
-            return;
-        }
-        w->ang[i].a -= (((0x10000 - (hire_down_angx_003887E8[i] - w->ang[i].a)) & 0xFFFF) / w->tmr[i]) & 0xFFFF;
-        break;
-    }
-}
-
-static void hire_move_sub1_005A6B70(EMW *em, EM08W *w, int i) {
-    switch (w->st[i].a) {
-    case 0:
-        if (w->xF == 2) {
-            w->st[i].a++;
-            w->tm[i] = hire_start_timer_tbl1_003887D0[i];
-        } else if (w->xF == 1) {
-            w->st[i].a++;
-            w->tm[i] = hire_start_timer_tbl0_003887C8[i];
-        }
-        break;
-    case 1:
-        if (--w->tm[i] <= 0) {
-            if (w->xF == 2) {
-                w->st[i].a = 3;
-            } else {
-                w->st[i].a = 2;
-            }
-            w->tm[i] = 0;
-            w->cnt[i] = 0;
-        }
-        break;
-    case 2: {
-        HIRE_E *tbl;
-        HIRE_E *p;
-        s16 cnt0;
-        u16 cnt;
-        u8 k;
-
-        cnt0 = w->cnt[i];
-        w->cnt[i] = cnt0 + 1;
-        cnt = cnt0;
-        tbl = hire_normal_add_tbl_00659250[i];
-        p = tbl;
-        k = 0;
-        for (;;) {
-            if (k && !p->t) {
-                k |= 0x80;
-                break;
-            }
-            if (p->t < cnt) {
-                p++;
-                k++;
-                continue;
-            }
+        spd = (u32)((32768.0f / (em->x1A8 / 2.0f)) * em->act_spd);
+        temp_a2_2 = em->ang[1];
+        temp_a1 = w->dang;
+        temp_a3 = (temp_a1 - (temp_a2_2 & 0xFFFF)) & 0xFFFF;
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x66, 0, 0);
             break;
         }
-        if (k & 0x80) {
-            if (w->xF == 2) {
-                w->st[i].a = 1;
-                w->tm[i] = hire_remove_timer_tbl1_003887E0[i];
-            } else if (w->xF == 1) {
-                w->st[i].a = 1;
-                w->tm[i] = hire_remove_timer_tbl0_003887D8[i];
-            } else {
-                w->st[i].a = 0;
-            }
-            w->ang[i].b = tbl[k & 0x7F].v;
-            return;
-        }
-        w->ang[i].b += tbl[k].v;
-        break;
-    }
-    case 3: {
-        HIRE_E *tbl;
-        HIRE_E *p;
-        s16 cnt0;
-        u16 cnt;
-        u8 k;
-
-        cnt0 = w->cnt[i];
-        w->cnt[i] = cnt0 + 1;
-        cnt = cnt0;
-        tbl = hire_down_add_tbl_00659300[i];
-        p = tbl;
-        k = 0;
-        for (;;) {
-            if (k && !p->t) {
-                k |= 0x80;
-                break;
-            }
-            if (p->t < cnt) {
-                p++;
-                k++;
-                continue;
-            }
+        if ((u32) ((temp_a3 + spd) & 0xFFFF) < (u32) (spd * 2)) {
+            em->ang[1] = (s32) temp_a1;
             break;
         }
-        if (k & 0x80) {
-            if (w->xF == 2) {
-                w->st[i].a = 1;
-                w->tm[i] = hire_remove_timer_tbl1_003887E0[i];
-            } else if (w->xF == 1) {
-                w->st[i].a = 1;
-                w->tm[i] = hire_remove_timer_tbl0_003887D8[i];
-            } else {
-                w->st[i].a = 0;
-            }
-            w->ang[i].b = tbl[k & 0x7F].v;
-            return;
+        if (temp_a3 < 0x8000U) {
+            em->ang[1] = (temp_a2_2 + spd) & 0xFFFF;
+            break;
         }
-        w->ang[i].b += tbl[k].v;
+        em->ang[1] = (temp_a2_2 - spd) & 0xFFFF;
+        break;
+    case 3:
+        em21_target_ang_calc(em, 0x40);
+        w->vel[1] = (s32) em->ang[1];
+        speed_add(em, w->vel);
+        w->dist = w->dist - em->adj_z;
+        if (w->dist <= 0.0f) {
+            em->x05++;
+            em->tgt_pos[0] = 12728.0f;
+            em->tgt_pos[1] = -em->x7E0;
+            em->tgt_pos[2] = 13160.0f;
+            w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+            w->dist = CalcDistanceXZ(em->pos, em->tgt_pos);
+            em_char_set(em, 0x6A, 0, 0);
+        }
+        swim_eff_set_005A7070(8.0f, em);
+        break;
+    case 4: {
+        s32 tt;
+        u32 sp;
+        u16 aa;
+        u32 dd;
+        sp = (u32)((32768.0f / (em->x1A8 / 2.0f)) * em->act_spd);
+        tt = em->ang[1];
+        aa = w->dang;
+        dd = (aa - (tt & 0xFFFF)) & 0xFFFF;
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x66, 0, 0);
+            break;
+        }
+        if ((u32) ((dd + sp) & 0xFFFF) < (u32) (sp * 2)) {
+            em->ang[1] = (s32) aa;
+            break;
+        }
+        if (dd < 0x8000U) {
+            em->ang[1] = (tt + sp) & 0xFFFF;
+            break;
+        }
+        em->ang[1] = (tt - sp) & 0xFFFF;
+        break;
+        }
+    case 5:
+        em21_target_ang_calc(em, 0x40);
+        w->vel[1] = (s32) em->ang[1];
+        speed_add(em, w->vel);
+        w->dist = w->dist - em->adj_z;
+        if (w->dist <= 0.0f) {
+            em->x05++;
+            em->tgt_pos[0] = 14380.0f;
+            em->tgt_pos[1] = 0.0f;
+            em->tgt_pos[2] = 14930.0f;
+            em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+            em_char_set(em, 0x77, 0, 0);
+            em->adj_y = 132.0f;
+            em->adj_z = 60.0f;
+        }
+        swim_eff_set_005A7070(8.0f, em);
+        break;
+    case 6:
+        w->vel[1] = (s32) em->ang[1];
+        speed_add(em, w->vel);
+        if (!(em->pos[1] < (em->x7E4 - em->x7E0))) {
+            temp_a3_2 = em->x05;
+            em->x05 = temp_a3_2 + 1;
+            em->x388 = 2;
+            em->adj_y = 50.0f;
+            em->x3C0[1] = -5.0f;
+            swim_eff_set2_005A7120(8.0f, em);
+            break;
+        }
+        break;
+    case 7:
+        w->vel[1] = (s32) em->ang[1];
+        speed_add_g(em, w->vel);
+        if ((em->adj_y < 0.0f) && (em->pos[1] < em->x5AC)) {
+            em->x05++;
+            em->pos[1] = em->x5AC;
+            swim_eff_set2_005A7120(8.0f, em);
+            em->x388 = 0;
+            em_char_set(em, 0x79, 0, 0);
+            break;
+        }
+        break;
+    case 8:
+        if (em->x194 == 0) {
+            em->x05++;
+            em->x388 = 1;
+            em_char_set(em, 0x7A, 0, 0);
+            break;
+        }
+        break;
+    case 9:
+        if (em->x194 == 0) {
+            em->x05++;
+            em->x388 = 0;
+            em_char_set(em, 0x7C, 0, 0);
+            break;
+        }
+        break;
+    case 10:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x19, 0, 0);
+            break;
+        }
+        break;
+    case 11:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 1, 0, 0);
+            break;
+        }
+        break;
+    case 12:
+        if (Event_flag_ck(0x11) == 1) {
+            em->x05++;
+            em08_to_normal(em);
+        }
         break;
     }
-    }
-}
-
-void hire_move_005A6EB0(EMW *em, EM08W *w) {
-    int i;
-
-    i = 0;
-    do {
-        hire_move_sub1_005A6B70(em, w, i);
-        hire_move_sub2_005A69A0(em, w, i);
-        i++;
-    } while (i < 4);
 }

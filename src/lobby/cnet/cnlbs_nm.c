@@ -3714,15 +3714,16 @@ int cnLBS_Read_MatchInfomation(int cb) {
     return -1;
 }
 
+typedef struct { s8 val; u8 pad[6]; } R7;
 void _cnet_RecvFromLbs_MatchJoin(void) {
+    u8 v;
+    R7 res;
     if (CnetSys_w.burst[7].state != 0) {
         if (CnetSys_w.rcat == 2) {
             if (CnetSys_w.rres == 0) {
-                u8 v;
                 __cnet_Recv_Byte(&v);
                 CNW(u8, 0x30310) = v;
             } else {
-                CNET_RES res;
                 res.val = -1;
                 __cnet_Recv_ServerMessage();
                 __cnet_Return_MatchInformation(res);
@@ -3734,8 +3735,8 @@ void _cnet_RecvFromLbs_MatchJoin(void) {
 }
 
 void _cnet_RecvFromLbs_MatchPlSide(void) {
-    CNET_RES res;
     u8 v;
+    R7 res;
 
     if (CnetSys_w.burst[7].state != 0) {
         if (CnetSys_w.rcat == 2) {
@@ -3757,7 +3758,7 @@ void _cnet_RecvFromLbs_MatchPlSide(void) {
 
 void _cnet_RecvFromLbs_MatchOpponentInfo(void) {
     u8 idx;
-    CNET_RES r;
+    R7 r;
     u8 *p;
 
     if (CNW(u8, 0xF34) != 0 && CnetSys_w.rcat != 0x10) {
@@ -3784,9 +3785,9 @@ void _cnet_RecvFromLbs_MatchOpponentInfo(void) {
 }
 
 void _cnet_RecvFromLbs_MatchOpponentStatus(void) {
-    u8 *p;
-    CNET_RES res;
     u8 idx;
+    R7 res;
+    u8 *p;
 
     if (CNW(u8, 0xF34) != 0 && CnetSys_w.rcat != 0x10) {
         if (CnetSys_w.rcat == 2) {
@@ -3796,7 +3797,7 @@ void _cnet_RecvFromLbs_MatchOpponentStatus(void) {
                 (p + idx * 0x98)[0x110] = idx;
             } else {
                 res.val = -1;
-                __cnet_Recv_ServerMessage(CnetSys_w.rcat, recv_work);
+                __cnet_Recv_ServerMessage();
                 __cnet_Return_MatchInformation(res);
                 return;
             }
@@ -3806,7 +3807,7 @@ void _cnet_RecvFromLbs_MatchOpponentStatus(void) {
             __cnet_SendReq_MatchOpponentStatus(pl_infoget_ctr);
             return;
         }
-        __cnet_SendReq_MatchBattleCode(pl_infoget_ctr);
+        __cnet_SendReq_MatchBattleCode();
     }
 }
 

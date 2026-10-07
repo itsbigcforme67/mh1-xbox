@@ -14,3 +14,6 @@ D_3F3415 = 0x003F3415;
 D_6EABD9 = 0x006EABD9;
 D_6EAE5A = 0x006EAE5A;
 D_6EAE78 = 0x006EAE78;
+D_3A2940 = 0x003A2940;  /* PlazaInfo + 0x10 (plaza_movePlaza reads a byte of each 0x15C entry through an absolute address) */
+D_3A1622 = 0x003A1622;  /* LobbyInfo + 2 (plaza_enterLobby reads a halfword of each 0x15C entry) */
+get_page_num = 0x00596150;  /* static in lb_plz.c (callee register info), called by asm callers */

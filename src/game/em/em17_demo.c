@@ -1,4 +1,5 @@
-/* em17_r35 - agent D 7 Oct: uvmove copy, init fixes 0x005E1D80-0x005E1F74: em17_uvmove. Whole file in em17_nm.c. */
+/* em17, em_demo00 (game.bin 0x005DFDF0-0x005E06E4): the fly-in demo, a file of its own between the em17_r12 and em17_r25 runs (its two sets of
+ * temporaries - ang/a120/out110/m and ang2/vF0/outE0/m2 - are separate locals in the original; the check on the u16 angle is written as one || test). */
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -94,7 +95,7 @@ extern s16 em17_runaway_timer_tbl[];
 
 void em17_local_init(EMW *em);
 void em17_init(EMW *em);
-u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
+static u16 *em_act_search2_005DA580(EMW *em, u16 *tbl);
 void act_dist_select_005DA5C0(EMW *em);
 void em17_to_normal(EMW *em, s16 a, s16 b);
 void em17_to_fly(EMW *em, int flag);
@@ -227,165 +228,236 @@ extern u16 *em17_rail_half_add[1];
 
 extern u8 *em17_act_add[3];
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#define UVR(i) \
-    do { \
-        em->uv[i][0] = 0.0f; \
-        em->uv[i][1] = 0.0f; \
-        em->uvtm[i] = 0xFFFF; \
-        em->uvty[i] = 0xFF; \
-    } while (0)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void em17_uvmove(EMW *em) {
-    int i;
-
-    for (i = 0; i < 4; i++) {
-        if (em->uvtm[i] != 0xFFFF) {
-            em->uvtm[i]++;
+void em_demo00_005DFDF0(EMW *em, EM17W *w) {
+    f32 dst[3];
+    f32 a120[3];
+    f32 out110[3];
+    s32 ang[3];
+    f32 vF0[3];
+    f32 outE0[3];
+    s32 ang2[3];
+    FLMAT m;
+    FLMAT m2;
+    EMW *temp_s1;
+    STAGE_DATA *temp_s0;
+    f32 temp_f1;
+    f32 temp_f1_2;
+    f32 temp_f1_3;
+    f32 temp_f1_4;
+    s32 temp_v1_2;
+    s32 temp_v1_3;
+    u16 temp_v1;
+    u8 temp_a1;
+    u8 temp_v1_4;
+
+    temp_s1 = em->x944;
+    temp_s0 = Stage_data_get(em->stg);
+    if (temp_s1 == 0) {
+        SetVector(dst, 5000.0f, 0.0f, 5000.0f);
+    } else {
+        SetVector(dst, temp_s1->pos[0], temp_s1->pos[1], temp_s1->pos[2]);
+    }
+    temp_a1 = em->x05;
+    switch (temp_a1) {
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x3F4 = 0;
+        em->tgt_pos[0] = 3000.0f;
+        em->tgt_pos[1] = 2000.0f;
+        em->tgt_pos[2] = 9000.0f;
+        break;
+    case 1:
+        w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
+        w->dang = (u16)(w->dang - em->ang[1]);
+        em17_senkai_sub(em, 3, 1);
+        temp_f1 = em->adj_z;
+        if (100.0f < temp_f1) {
+            em->adj_z = temp_f1 - 2.0f;
+        } else if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 3000.0f) {
+            em->x05 += 1;
+            em->work08 = 0x384;
         }
-        switch (em->uvty[i]) {
-        case 0:
-            UVR(i);
-            break;
-        case 1:
-            if (em->uvtm[i] >= 0x3E) {
-                UVR(i);
-            } else {
-                int k = ((u32)em->uvtm[i] >> 1) + 1;
-
-                em->uv[i][0] = 0.125f * (f32)(k % 8);
-                em->uv[i][1] = 0.25f * (f32)(k / 8 % 4);
-            }
-            break;
-        case 2:
-            em->uv[i][0] = 0.125f;
-            em->uv[i][1] = 0.0f;
-            em->uvtm[i] = 0xFFFF;
-            em->uvty[i] = 0xFF;
-            break;
-        case 3:
-            if (em->uvtm[i] >= 0xC) {
-                UVR(i);
-            } else {
-                int k = ((u32)em->uvtm[i] >> 1) + 2;
-
-                em->uv[i][0] = 0.125f * (f32)(k % 4);
-                em->uv[i][1] = 0.25f * (f32)(k / 4 % 4);
-            }
-            break;
-        case 0xFF:
-            break;
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        break;
+    case 2:
+        temp_f1_2 = em->adj_z;
+        if (80.0f < temp_f1_2) {
+            em->adj_z = temp_f1_2 - 1.0f;
         }
+        w->dang = Em_Calc_angY(em->pos, dst);
+        w->dang = (u16)(w->dang - em->ang[1]);
+        em17_senkai_sub(em, 3, 1);
+        temp_v1 = w->dang;
+        if (temp_v1 <= 0x800 || temp_v1 >= 0xF800) {
+            if (4000.0f < CalcDistanceXZ(em->pos, dst)) {
+                em->x05 += 1;
+                w->turn = 0x100;
+                em_char_set(em, 0x2C, 0, 0);
+                em->work08 = 0x708;
+            }
+        }
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        temp_v1_2 = em->work08 - 1;
+        em->work08 = temp_v1_2;
+        if (temp_v1_2 <= 0 && em->x05 == 2) {
+            em->x05 = 0;
+        }
+        break;
+    case 3:
+        temp_v1_3 = em->ang[2];
+        if (temp_v1_3 != 0) {
+            if (temp_v1_3 < 0x8001) {
+                em->ang[2] = temp_v1_3 - w->bank_spd;
+            } else {
+                em->ang[2] = temp_v1_3 + w->bank_spd;
+            }
+        }
+        if (em_frame_check2(em, 0, 46.0f) != 0) {
+            temp_f1_3 = em->adj_z;
+            if (50.0f < temp_f1_3) {
+                em->adj_z = temp_f1_3 - 0.1f;
+            }
+        }
+        if (em->x194 == 0) {
+            em->x05 += 1;
+            em_char_set(em, 0x57, 0, 0);
+            em->adj_z = 100.0f;
+            em->work08 = 0x708;
+        }
+        SetVector(em->tgt_pos, dst[0], dst[1], dst[2]);
+        em17_senkai_target(em);
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0xF;
+        speed_add(em, w->spd);
+        em->pos[1] -= 1.0f;
+        break;
+    case 4:
+        if (em->pos[1] <= 1000.0f + temp_s0->floor_y) {
+            em->x05 = temp_a1 + 1;
+            em->work08 = 0x708;
+        }
+        if (kyusyu_char_set2_005E64A0(em) != 0) {
+            temp_v1_4 = em->x05;
+            if (temp_v1_4 == 4) {
+                em->x05 = temp_v1_4 + 1;
+                em->work08 = 0x708;
+            }
+        }
+        SetVector(em->tgt_pos, dst[0], dst[1], dst[2]);
+        em17_senkai_target(em);
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        xang_calc_target(em, w->spd, -3000.0f, 0.0f);
+        speed_add(em, w->spd);
+        break;
+    case 5:
+        kyusyu_char_set2_005E64A0(em);
+        SetVector(em->tgt_pos, dst[0], dst[1], dst[2]);
+        em17_senkai_target(em);
+        if (!(200.0f + em->tgt_pos[1] < em->pos[1])) {
+            xang_calc_target(em, w->spd, 0.0f, 0.0f);
+        } else {
+            xang_calc_target(em, w->spd, -2000.0f, 0.0f);
+        }
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add(em, w->spd);
+        if (CalcDistanceXZ(em->pos, dst) <= 600.0f || (em->char0 == 0x415 && (em_frame_check2(em, 0, 52.0f) != 0 || em->x194 == 0))) {
+            em->x05 += 1;
+            em->pos[1] = em->x5AC;
+            em->ang[0] = 0;
+            em->ang[2] = 0;
+            em->pos[1] = em->x5AC;
+            em->x388 = 0;
+            em_char_set(em, 0x29, 4, 0);
+            if (temp_s1 != 0) {
+                ang[0] = 0;
+                ang[1] = em->ang[1];
+                ang[2] = 0;
+                SetVector(a120, 0.0f, 0.0f, 600.0f);
+                cpRotMatrixYXZ2(ang, &m);
+                flvecApplyMat33(out110, a120, &m[0][0]);
+                temp_s1->pos[0] = em->pos[0] + out110[0];
+                temp_s1->pos[2] = em->pos[2] + out110[2];
+                if (temp_s1->mode != 6 || temp_s1->x15 != 1) {
+                    em_act_set(temp_s1, 6, 1);
+                    temp_s1->ang[1] = (em->ang[1] - 0x4000) & 0xFFFF;
+                }
+            }
+        }
+        break;
+    case 6:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em_char_set(em, 0x23, 0, 0);
+            if (temp_s1 != 0) {
+                em_act_set(temp_s1, 6, 2);
+            }
+        }
+        if (temp_s1 != 0) {
+            ang2[0] = 0;
+            ang2[1] = em->ang[1];
+            ang2[2] = 0;
+            SetVector(vF0, 0.0f, 0.0f, 600.0f);
+            cpRotMatrixYXZ2(ang2, &m2);
+            flvecApplyMat33(outE0, vF0, &m2[0][0]);
+            temp_s1->pos[0] = em->pos[0] + outE0[0];
+            temp_s1->pos[2] = em->pos[2] + outE0[2];
+            temp_s1->x40E = 5;
+        }
+        break;
+    case 7:
+        if (em_frame_check(em, 0, 60.0f) != 0 || em_frame_check(em, 0, 202.0f) != 0) {
+            Eft13_set_em(em, 0x1C, 6);
+        }
+        if (em_frame_check(em, 0, 52.0f) != 0 || em_frame_check(em, 0, 208.0f) != 0) {
+            Eft13_set_em(em, 0x16, 6);
+        }
+        if (em->x194 == 0) {
+            em->x05 += 1;
+            em_char_set(em, 0x4F, 0, 0);
+            if (temp_s1 != 0) {
+                em_act_set(temp_s1, 6, 3);
+            }
+        }
+        break;
+    case 8:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em_char_set(em, 0x3B, 0, 0);
+        }
+        break;
+    case 9:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em_char_set(em, 1, 0, 0);
+            if (temp_s1 != 0) {
+                temp_s1->act_spd = 0.0f;
+            }
+        }
+        break;
+    case 10:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em_char_set(em, 0x14, 0, 0);
+        }
+        break;
+    case 11:
+        if (em->x194 == 0) {
+            em->x05 = temp_a1 + 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+    temp_f1_4 = em->x5AC;
+    if (em->pos[1] < temp_f1_4) {
+        em->pos[1] = temp_f1_4;
     }
 }

@@ -5,6 +5,8 @@
 
 typedef struct { s16 a, b, c; } CPLACE3;
 
+typedef struct { s8 val; u8 pad[6]; } R7;
+
 void _cnet_CallBack_Result_RoomSetFinish(CNET_RES res) {
     if (res.val == 0) {
         CnetSys_w.burst[6].res = 1;
