@@ -56,7 +56,6 @@ lobby 0x005C3C10 0x4CC lb_npc_init
 lobby 0x00590F40 0x198 lb_eat_set
 lobby 0x00591600 0x3D4 event_eat_trans_ot0
 lobby 0x00591D80 0xAC set_dialog_square
-lobby 0x00591F00 0x4E0 draw_dialog_square
 lobby 0x005923E0 0x768 Draw_menu_square
 lobby 0x005A06F0 0x360 lb_npc_old_guild
 lobby 0x005AEF70 0x2F0 lb_shop_put_itemDetail
@@ -101,7 +100,6 @@ main 0x00272D60 0x154 Ud_u_item_stack
 main 0x00273B50 0xC8 Get_bowgun_atk
 main 0x00274690 0x74 Gun_level_up
 main 0x00274760 0x54 Gun_option_ck
-lobby 0x00597640 0x4C4 Plaza_add_friend
 main 0x18DB30 0x31C plmemRegisterS
 main 0x18DFE0 0x1D0 plmemCompact
 main 0x18E280 0x128 plmemAppendBlockList mn
@@ -131,3 +129,15 @@ main 0x00262170 0x1E0 palette_ng_sub
 lobby 0x005BF4F0 0x70 tk_logout_message_sub
 lobby 0x005B74C0 0x42C lbc_login_init
 lobby 0x005BC150 0x284 Lbc_GetRoomRule
+lobby 0x00597640 0x4C4 Plaza_add_friend
+lobby 0x00598DB0 0x11C Lb_addChatMember
+lobby 0x00598ED0 0x150 Lb_clearChatMember
+lobby 0x00599280 0x1D4 plaza_capcomPage
+lobby 0x00599F60 0x4F8 plaza_enterLobbyTrans
+lobby 0x0059AA50 0x404 plaza_checkFriendTrans
+lobby 0x0059B820 0x528 plaza_searchMemberTrans
+lobby 0x0059BD50 0x598 plaza_mailBoxTrans
+lobby 0x0059C330 0x328 plaza_setMyCommentTrans
+lobby 0x0059C750 0x548 plaza_setChatModeTrans
+lobby 0x0059CFF0 0x25C plaza_disp_mail
+lobby 0x0059D320 0x358 plaza_trans_ot0

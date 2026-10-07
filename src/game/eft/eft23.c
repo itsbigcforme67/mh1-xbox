@@ -1,5 +1,4 @@
-/* eft23 - game.bin 0x00557480-0x005589EC; fish_type_set is still assembly
- * (see eft23_nm.c), Eft23_set is in eft23b.c. A fish in a fishing spot. It
+/* eft23 - game.bin 0x00557480-0x005589EC. A fish in a fishing spot. It
  * appears (toujyou), wanders inside its range looking for a float
  * (eft22, found by uki_serch), nibbles and bites (atari), and once a
  * player hooks it (turare) it follows the float until landed. The fish
@@ -93,7 +92,7 @@ void vib_set_pl(void *, int);
 f32 Eft22_suimen_ck(EFTW *);
 void Eft20_set2(f32, f32 *, int, int);
 
-void eft23_move(EFTW *ew);
+static void eft23_move(EFTW *ew);
 static void eft23_i(EFTW *ew);
 static EFTW *uki_serch(EFTW *ew, FISH *w, int mode);
 static void eft23_toujyou_mv(EFTW *ew, FISH *w);
@@ -104,9 +103,9 @@ static void eft23_m(EFTW *ew);
 static void eft23_d(EFTW *ew);
 static void eft23_e(EFTW *ew);
 static void eft23_t(PRIM *pr);
-s8 fish_type_set(EFTW *ew);
+static s8 fish_type_set(EFTW *ew);
 
-void eft23_move(EFTW *ew) {
+static void eft23_move(EFTW *ew) {
     switch (ew->mode) {
     case 0:
         eft23_i(ew);
@@ -483,5 +482,84 @@ static void eft23_t(PRIM *pr) {
         clay_attr_set(cl->attr);
         flExecuteClay(cl->handle, 0);
         clay_attr_reset();
+    }
+}
+
+static s8 fish_type_set(EFTW *ew) {
+    FISH_CHANCE *p;
+    u16 total = 0;
+    u16 r;
+
+    if (quest_w.x14E > 0) {
+        p = fish_type_tbl[13 + ew->arg];
+    } else {
+        p = fish_type_tbl[ew->arg];
+    }
+    while (p->weight != 0xFFFF) {
+        total += p->weight;
+        p++;
+    }
+    r = (u16)ran_suu(0) % total;
+    total = 0;
+    if (quest_w.x14E > 0) {
+        p = fish_type_tbl[13 + ew->arg];
+    } else {
+        p = fish_type_tbl[ew->arg];
+    }
+    while (p->weight != 0xFFFF) {
+        total += p->weight;
+        if (r < total) {
+            return p->type;
+        }
+        p++;
+    }
+    return 0;
+}
+
+void Eft23_set(int arg, f32 *pos) {
+    EFTW *ew = pull_eft_work(1);
+    FISH *w;
+
+    if (ew != 0) {
+        w = ew->work;
+        ew->type = 23;
+        ew->move = eft23_move;
+        ew->work14 = 0;
+        ew->arg = arg;
+        w->home[0] = ew->pos[0] = *pos++;
+        w->home[1] = ew->pos[1] = *pos++;
+        w->home[2] = ew->pos[2] = *pos++;
+        w->range = *pos;
+    }
+}
+
+/* Fish spot: centre, range, fish type (negative ends the list) and how
+ * many fish of that type to spawn. */
+typedef struct FISH_SPOT {
+    f32 pos[3];         /* 0x00 */
+    f32 range;          /* 0x0C */
+    s32 kind;           /* 0x10 */
+    s32 num;            /* 0x14 */
+} FISH_SPOT;
+
+extern FISH_SPOT *Fish_hani_tbl[];
+
+/* Spawns every fish of a stage's spot table (stage argument). */
+void Fish_set(int stage) {
+    FISH_SPOT *sp = Fish_hani_tbl[stage];
+    int n;
+
+    if (sp != 0) {
+        for (;;) {
+            if (sp->kind < 0) {
+                break;
+            }
+            n = sp->num;
+            while (n > 0) {
+                Eft23_set(sp->kind, (f32 *)sp);
+                n--;
+            }
+            sp++;
+        }
     }
 }

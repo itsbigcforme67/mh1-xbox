@@ -807,8 +807,8 @@ int cmn_mongon_check_sub(s8 *str) {
     s8 *base = check_mongon;
 
     len = strlen(str);
-    pos = 0;
     cmn_mongon_check_filter(flt, str, len);
+    pos = 0;
     if (flt[0] != 0) {
         do {
             found = 0;
@@ -821,7 +821,7 @@ int cmn_mongon_check_sub(s8 *str) {
                         n = 0;
                         j = pos;
                         p = buf;
-                        while (*p != 0 && str[j] != 0) {
+                        while (!(!*p || !str[j])) {
                             if (_ctype_[1 + *q] & 7) {
                                 pc = *p;
                                 if (*q != pc) {

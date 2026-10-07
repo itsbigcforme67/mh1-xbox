@@ -59,7 +59,7 @@ EFT="src/game/eft/eft00.c src/main/eft/eft01.c src/main/eft/eft02_nm.c src/game/
      src/main/eft/eft13d.c src/main/eft/eft13e.c src/main/eft/eft13_nm.c src/game/eft/eft14.c \
      src/game/eft/eft15.c src/game/eft/eft16.c src/game/eft/eft17.c src/game/eft/eft18_nm.c \
      src/game/eft/eft19.c src/main/eft/eft20.c src/main/eft/eft20c.c src/main/eft/eft20d.c \
-     src/main/eft/eft20_nm.c src/game/eft/eft21.c src/game/eft/eft22_nm.c src/game/eft/eft23_nm.c \
+     src/main/eft/eft20_nm.c src/game/eft/eft21.c src/game/eft/eft22_nm.c src/game/eft/eft23.c \
      src/game/eft/eft24.c src/main/eft/eft26.c \
      src/game/shell/shell00.c src/game/shell/shell01.c src/game/shell/shell02.c src/game/shell/shell03.c \
      src/game/shell/shell04.c src/game/shell/shell05.c src/game/shell/shell06b.c src/game/shell/shell06_nm.c \

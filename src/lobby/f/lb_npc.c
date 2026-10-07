@@ -1,6 +1,44 @@
-/* lbnpc, run 1: Lb_npc_move_sub .. lb_npc_old_mix (lobby.bin 0x0059DB40-0x005A06EC): the matching functions of lbnpc_nm.c. */
+/* lb_npc - one translation unit 0x0059DB40-0x005A2A1C (lbtu3). */
 #include "lbnpc_proto.h"
-
+void Lb_npc_move_sub();
+void npcMvFOOTWORK();
+void npcMvWALK();
+void npcMvENJOY();
+void npcMvTALK();
+void npcMvWARP();
+void npcMvDOWN();
+void npcMvTOPL();
+void npcMvBOARD();
+void npcMvSHOP();
+void npcMvBEER();
+void npcMvDRUNKDOWN();
+void npcMvTOPL2();
+void npcMvRANDWAIT();
+void npcMvWALL();
+void npcMvKEGA();
+void npc_move_common();
+void lb_npc_bar_move();
+void lb_npc_mother_move();
+void lb_npc_father_move();
+void lb_npc_old_material();
+void lb_npc_old_mix();
+void lb_npc_old_guild();
+void npcCatSLEEP();
+void npcCatFOOTWORK();
+void npcCatRUN();
+void npcCatKYORO();
+void npcCatHELLO();
+void npcCatWAITER();
+void lb_npc_cat_move();
+void npcPigFOOTWORK();
+void npcPigSLEEP();
+void npcPigTOPL();
+void npcPigATACK();
+void npcPigJOY();
+void npcPigEXIT();
+void npcPigWALK();
+void npcPigWALK2();
+void lb_npc_pig_move();
 void Lb_npc_move_sub(em)
 EMW *em;
 {
@@ -1235,3 +1273,785 @@ EMW *em;
         break;
     }
 }
+
+#ifdef __MWERKS__
+asm void lb_npc_old_guild()
+{
+#include "lb_npc_old_guild.inc"
+}
+#endif
+
+void npcCatSLEEP(em)
+EMW *em;
+{
+    LB_NPCMV *mv = (LB_NPCMV *)em->ex;
+
+    mv->x28 = 2;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        mv->f0F = 1;
+        if (em->char0 != 0x431) {
+            Lb_pl_chr_set0(em, 0x431, 4, 0, 0);
+        }
+        break;
+    }
+}
+
+void npcCatFOOTWORK(em)
+EMW *em;
+{
+    LB_NPCMV *mv = (LB_NPCMV *)em->ex;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        mv->x28 = 0;
+        mv->f0F = 0;
+        em->work08 = ((ran_suu(1) & 0xFFFF) + 0xFF) & 0xFF;
+        Lb_pl_chr_set0(em, 0x3E9, 0x14, 0, 0);
+        return;
+    case 1:
+        if (mv->kind == 0x53) {
+            if (lb_sys.x68 == 0x11 && LBS8(9) == 0 && LBS8(6) == 2 && mv->x26 == 0) {
+                Lb_act_set(em, 0, 0x85);
+                return;
+            }
+        } else if (flvecCalcDistance(em->pos, (u8 *)&player_work[game_w.master] + 0xAC) < 130.0f) {
+            if (mv->x26 == 0) {
+                Lb_act_set(em, 0, 0x84);
+                mv->x26 = 1;
+                em->work08 = (ran_suu(1) & 0xFF) + 0xFF;
+                return;
+            }
+        } else {
+            if (--em->work08 <= 0) {
+                Lb_act_set(em, 0, 0x83);
+                return;
+            }
+            mv->x26 = 0;
+        }
+        break;
+    }
+}
+
+void npcCatRUN(em)
+EMW *em;
+{
+    LB_NPCMV *mv = (LB_NPCMV *)em->ex;
+    LB_ROUTE *r;
+    f32 d;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        if (em->char0 != 0x3F3) {
+            Lb_pl_chr_set0(em, 0x3F3, 4, 0, 0);
+            return;
+        }
+        break;
+    case 1:
+        r = &mv->route[mv->idx];
+        em->x0E = (s16)(u16)Lb_get_angle(em, r) / 10;
+        em->ang[1] += em->x0E;
+        d = flvecCalcDistance(em->pos, r);
+        if (d < 0.0f) {
+            d *= -1.0f;
+        }
+        if (d <= 130.0f) {
+            mv->idx++;
+            if (mv->route[mv->idx].wait == -1) {
+                mv->idx = 0;
+            }
+            r = &mv->route[mv->idx];
+            if (em->x15 != r->act) {
+                em->x05++;
+                Lb_act_set(em, 0, (u16)r->act);
+                mv->cnt = 0;
+                return;
+            }
+            em->x05 = 0;
+        }
+        break;
+    }
+}
+
+void npcCatKYORO(em)
+EMW *em;
+{
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        Lb_pl_chr_set0(em, 0x3EC, 4, 0, 0);
+        return;
+    case 1:
+        if (em->x194 <= 0) {
+            em->x05++;
+            Lb_pl_chr_set0(em, 0x3E9, 8, 0, 0);
+            return;
+        }
+        break;
+    case 2:
+        if (em->x194 <= 0) {
+            Lb_act_set(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void npcCatHELLO(em)
+EMW *em;
+{
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x0E = (s16)(u16)Lb_get_angle(em, (u8 *)&player_work[game_w.master] + 0xAC) / 10;
+        em->work08 = 0xA;
+        Lb_pl_chr_set0(em, 0x42F, 8, 0, 0);
+        return;
+    case 1:
+        if (--em->work08 <= 0) {
+            em->ang[1] += em->x0E;
+            em->x05++;
+        }
+        break;
+    case 2:
+        if (em->x194 <= 0) {
+            Lb_pl_chr_set0(em, 0x3E9, 0xA, 0, 0);
+            em->work08 = 0xA;
+            em->x05++;
+            return;
+        }
+        break;
+    case 3:
+        if (--em->work08 <= 0) {
+            em->ang[1] -= em->x0E;
+            Lb_act_set(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void npcCatWAITER(em)
+EMW *em;
+{
+    PLW *pl;
+    LB_WAITEX *ex;
+    f32 *route;
+    s32 *flags;
+    u8 step;
+    s32 t;
+    u8 m;
+    u8 stage;
+    f32 *r;
+
+    m = game_w.master;
+    pl = &player_work[m];
+    flags = ((s32 **)&((u8 *)waiter_tbl_03)[0x3C])[game_w.stage];
+    ex = (LB_WAITEX *)em->ex;
+    if (pl->fish878 == 0) {
+        Lb_act_set(em, 0, 0);
+        return;
+    }
+    step = em->x05;
+    route = ex->route;
+    switch (step) {
+    case 0:
+        em->x05 = step + 1;
+        stage = game_w.stage;
+        if ((u32)(stage - 0x51) <= 1 || stage == 0x53) {
+            em->work08 = 0x3C;
+            return;
+        }
+        em->work08 = 1;
+        return;
+    case 1:
+        t = em->work08 - 1;
+        em->work08 = t;
+        if (t <= 0) {
+            em->x05++;
+            ex->x26 = 1;
+            *(s16 *)((u8 *)&lb_sys + 0x76) = 1;
+            stage = game_w.stage;
+            if (stage == 0x56) {
+                r = waiter_tbl[1];
+            } else {
+                r = waiter_tbl[stage - 0x51 + (*(u16 *)pl->fish878 - 0xE)];
+            }
+            if (r != 0) {
+                ex->route = r;
+                ex->idx = 0;
+                em->x0E = Lb_get_angle(em, r + (ex->idx + 1) * 3);
+                em->work08 = 3;
+                stage = game_w.stage;
+                if (stage == 0x54 || stage == 0x55) {
+                    Lb_pl_chr_set0(em, 0x3F7, 4, 0, 0);
+                    return;
+                }
+                Lb_pl_chr_set0(em, 0x3F4, 4, 0, 0);
+                return;
+            }
+        }
+        break;
+    case 2:
+        t = em->work08 - 1;
+        em->work08 = t;
+        if (t >= 0) {
+            em->ang[1] += em->x0E / 3;
+        }
+        if (flvecCalcDistance(em->pos, route + (ex->idx + 1) * 3) < 50.0f) {
+            ex->idx++;
+            if (flags[ex->idx] == 1) {
+                em->x0E = Lb_get_angle(em, route + (ex->idx + 1) * 3);
+                em->work08 = 3;
+                return;
+            }
+            em->x05++;
+            em->x0E = Lb_get_angle(em, (u8 *)&player_work[game_w.master] + 0xAC);
+            em->work08 = 10;
+            Lb_pl_chr_set0(em, 0x430, 8, 0, 0);
+            return;
+        }
+        break;
+    case 3:
+        t = em->work08 - 1;
+        em->work08 = t;
+        if (t > 0) {
+            em->ang[1] += em->x0E / 10;
+            return;
+        }
+        if (frame_check2(em, 130.0f, 0) != 0) {
+            em->x05++;
+            Lb_eat_to_rcpt();
+            return;
+        }
+        break;
+    case 4:
+        if (LBS8(6) != 3) {
+            em->x05 = step + 1;
+            em->x0E = Lb_get_angle(em, route + ex->idx * 3);
+            em->work08 = 3;
+            Lb_pl_chr_set0(em, 0x3F4, 8, 0, 0);
+            return;
+        }
+        break;
+    case 5:
+        t = em->work08 - 1;
+        em->work08 = t;
+        if (t >= 0) {
+            em->ang[1] += em->x0E / 3;
+        }
+        if (flvecCalcDistance(em->pos, route + ex->idx * 3) < 50.0f) {
+            t = ex->idx - 1;
+            ex->idx = t;
+            if (t >= 0) {
+                em->x0E = Lb_get_angle(em, route + ex->idx * 3);
+                em->work08 = 3;
+                return;
+            }
+            if (*(s32 *)((u8 *)&lb_sys + 0x68) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
+                ex->x26 = 0;
+                *(s16 *)((u8 *)&lb_sys + 0x76) = 0;
+                Lb_act_set(em, 0, 0);
+                return;
+            }
+            em->x05++;
+            ex->idx = 3;
+            em->x0E = Lb_get_angle(em, route + (ex->idx + 1) * 3);
+            em->work08 = 3;
+            Set21_set(em, (s16)(*(u16 *)pl->fish878 - 0xE));
+            Lb_pl_chr_set0(em, 0x3F8, 4, 0, 0);
+            return;
+        }
+        break;
+    case 6:
+        if (*(s32 *)((u8 *)&lb_sys + 0x68) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
+            ex->x26 = 0;
+            *(s16 *)((u8 *)&lb_sys + 0x76) = 0;
+            ex->idx = 0;
+            em->x05 += 2;
+            return;
+        }
+        t = em->work08 - 1;
+        em->work08 = t;
+        if (t >= 0) {
+            em->ang[1] += em->x0E / 3;
+        }
+        if (flvecCalcDistance(em->pos, route + (ex->idx + 1) * 3) < 70.0f) {
+            ex->idx++;
+            if (flags[ex->idx] == 1) {
+                em->x0E = Lb_get_angle(em, route + (ex->idx + 1) * 3);
+                em->work08 = 3;
+                return;
+            }
+            em->x05++;
+            em->work08 = 100;
+            em->x0E = Lb_get_angle(em, (u8 *)&player_work[game_w.master] + 0xAC);
+            Lb_pl_chr_set0(em, 0x432, 8, 0, 0);
+            return;
+        }
+        break;
+    case 7:
+        if (*(s32 *)((u8 *)&lb_sys + 0x68) != 0x11 || LBS8(6) == 6 || LBS8(6) == 7) {
+            ex->x26 = 0;
+            *(s16 *)((u8 *)&lb_sys + 0x76) = 0;
+            ex->idx = 0;
+            em->x05++;
+            return;
+        }
+        t = em->work08 - 1;
+        em->work08 = t;
+        if (t >= 0x5A) {
+            em->ang[1] += em->x0E / 10;
+        } else if (em->work08 == 0x42) {
+            Lb_eat_to_eat();
+        }
+        if (em->x194 <= 0) {
+            em->x05++;
+            em->work08 = 100;
+            Lb_pl_chr_set0(em, 0x430, 6, 12, 0);
+            return;
+        }
+        break;
+    case 8:
+        if (em->x194 > 0) {
+            t = em->work08 - 1;
+            em->work08 = t;
+            if (t > 0) {
+                break;
+            }
+        }
+        em->x05++;
+        Lb_pl_chr_set0(em, 0x3F4, 4, 0, 0);
+        em->x0E = Lb_get_angle(em, route + ex->idx * 3);
+        em->ang[1] += em->x0E / 4;
+        return;
+    case 9:
+        em->x0E = Lb_get_angle(em, route + ex->idx * 3);
+        em->ang[1] += em->x0E / 4;
+        if (flvecCalcDistance(em->pos, route + ex->idx * 3) < 50.0f) {
+            t = ex->idx - 1;
+            ex->idx = t;
+            if (t >= 3) {
+                em->x0E = Lb_get_angle(em, route + ex->idx * 3);
+                em->work08 = 3;
+                return;
+            }
+            ex->x26 = 0;
+            *(s16 *)((u8 *)&lb_sys + 0x76) = 0;
+            Lb_act_set(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void lb_npc_cat_move(em)
+EMW *em;
+{
+    switch (em->x15) {
+    case 0:
+        npcCatFOOTWORK(em);
+        return;
+    case 1:
+        npcCatRUN(em);
+        return;
+    case 0x82:
+        npcCatSLEEP(em);
+        return;
+    case 0x64:
+        npcMvTOPL(em);
+        return;
+    case 0x83:
+        npcCatKYORO(em);
+        return;
+    case 0x84:
+        npcCatHELLO(em);
+        return;
+    case 0x85:
+        npcCatWAITER(em);
+        return;
+    case 0x90:
+        npcMvWARP(em);
+        break;
+    }
+}
+
+void npcPigFOOTWORK(em, kind)
+EMW *em;
+s8 kind;
+{
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        if (kind == 0) {
+            Lb_pl_chr_set0(em, 0x3E9, 2, 0, 0);
+            return;
+        }
+        Lb_pl_chr_set0(em, 0x3E9, 8, 0, 0);
+        break;
+    }
+}
+
+void npcPigSLEEP(em, kind)
+EMW *em;
+s8 kind;
+{
+    PLW *pl = &player_work[game_w.master];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        pl_flag_set((PLW *)em, 0x20000);
+        if (kind == 0) {
+            Lb_pl_chr_set0(em, 0x432, 0, 0x58, 0);
+            return;
+        }
+        Lb_pl_chr_set0(em, 0x432, 0xE, 0, 0);
+        return;
+    case 1:
+        if (((EMW *)pl)->x15 != 0x33 && ((EMW *)pl)->x15 != 0x34) {
+            pl_flag_clr((PLW *)em, 0x20000);
+            Lb_pl_chr_set0(em, 0x431, 4, 0, 0);
+            em->x05++;
+            return;
+        }
+        break;
+    case 2:
+        if (em->x194 <= 0) {
+            Lb_pl_chr_set0(em, 0x3E9, 0xA, 0, 0);
+            em->x05++;
+            return;
+        }
+        break;
+    case 3:
+        if (em->x194 <= 0) {
+            Lb_act_set(em, 0, 0x8C);
+        }
+        break;
+    }
+}
+
+void npcPigTOPL(em)
+EMW *em;
+{
+    PLW *pl = &player_work[game_w.master];
+    VEC3 d;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        Lb_act_set(pl, 0, 0x58);
+        em->work08 = 0xA;
+        em->x0E = Lb_get_angle(em, *(s32 *)((u8 *)em + 0x7A0) + 0xAC);
+        Lb_pl_chr_set0(em, 0x3EA, 2, 0, 0);
+        return;
+    case 1:
+        if (--em->work08 >= 0) {
+            em->ang[1] += em->x0E / 10;
+            return;
+        }
+        em->x05++;
+        return;
+    case 2:
+        if (flvecCalcDistance(em->pos, pl->pos) < 78.0f) {
+            d.x = em->pos[0] - pl->pos[0];
+            d.y = em->pos[1] - pl->pos[1];
+            d.z = em->pos[2] - pl->pos[2];
+            flvecNormalize(&d);
+            d.x = d.x * 78.0f;
+            d.y *= 78.0f;
+            d.z *= 78.0f;
+            EM_F32(em, 0x934) = pl->pos[0] + d.x;
+            EM_F32(em, 0x938) = pl->pos[1] + d.y;
+            EM_F32(em, 0x93C) = pl->pos[2] + d.z;
+            Lb_Em_adj_calc(em, 0x14);
+            Lb_pl_chr_set0(em, 0x3F2, 4, 0, 0);
+            em->x05++;
+            return;
+        }
+        break;
+    case 3:
+        em->ang[1] += (s16)(u16)Lb_get_angle(em, pl->pos) / 5;
+        break;
+    }
+}
+
+void npcPigATACK(em)
+EMW *em;
+{
+    LB_NPCMV *mv = (LB_NPCMV *)em->ex;
+    s16 idx;
+
+    if (em->x05 < 3) {
+        u16 t = mv->x26 - 1;
+        mv->x26 = t;
+        if ((s16)t <= 0) {
+            Eft25_set(em, 1);
+            mv->x26 = ((ran_suu(1) & 0xFFFF) % 5) + 3;
+        }
+    }
+    switch (em->x05) {
+    case 0:
+        idx = game_w.stage - 0x51;
+        if (idx < 0 || idx > 0x55) {
+            idx = 0;
+        }
+        lb_sys.x88[idx] = 1;
+        em->x05++;
+        EM_F32(em, 0x930) = 3.0f;
+        Lb_pl_chr_set0(em, 0x3F6, 4, 0x26, 0);
+        em->work08 = 0x14;
+        return;
+    case 1:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em->work08 = 5;
+            EM_F32(em, 0x930) = 1.0f;
+            Lb_pl_chr_set0(em, 0x3FA, 4, 0, 0);
+            Lb_act_set(&player_work[game_w.master], 0, 0x57);
+            return;
+        }
+        break;
+    case 2:
+        if (em->x194 <= 0) {
+            Lb_pl_chr_set0(em, 0x3E9, 4, 0, 0);
+            em->x05++;
+            return;
+        }
+        break;
+    case 3:
+        if (D_3E4C05[game_w.master * 0xA00] == 0) {
+            Lb_act_set(em, 0, 0x8A);
+        }
+        break;
+    }
+}
+
+void npcPigJOY(em)
+EMW *em;
+{
+    s16 idx;
+
+    switch (em->x05) {
+    case 0:
+        idx = game_w.stage - 0x51;
+        if (idx < 0 || idx > 0x55) {
+            idx = 0;
+        }
+        lb_sys.x88[idx] = 2;
+        em->x05++;
+        Lb_pl_chr_set0(em, 0x3F3, 4, 0, 0);
+        Eft25_set(em, 0);
+        return;
+    case 1:
+        if (em->x194 <= 0) {
+            Lb_pl_chr_set0(em, 0x3EF, 6, 0, 0);
+            em->x05++;
+            em->work08 = 0x64;
+            return;
+        }
+        break;
+    case 2:
+        if (--em->work08 <= 0) {
+            Lb_pl_chr_set0(em, 0x3E9, 0x18, 0, 0);
+            NPCZoomInCameraCancel();
+            lb_sys.x6C = 0;
+            lb_sys.x68 = 0;
+            em->x05++;
+            return;
+        }
+        break;
+    case 3:
+        if (em->x194 < 2) {
+            Lb_act_set(em, 0, 0x8C);
+        }
+        break;
+    }
+}
+
+void npcPigEXIT(em)
+EMW *em;
+{
+    VEC3 v;
+    f32 *p = St_unique_tbl[game_w.stage];
+
+    v.x = p[1];
+    v.y = p[2];
+    v.z = p[3];
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->work08 = 0xA;
+        em->x0E = Lb_get_angle(em, &v);
+        Lb_pl_chr_set0(em, 0x3F7, 2, 0, 0);
+        return;
+    case 1:
+        if (--em->work08 >= 0) {
+            em->ang[1] += em->x0E / 10;
+            return;
+        }
+        em->x05++;
+        return;
+    case 2:
+        if (em->work08 >= 0x1F4) {
+            Lb_act_set(em, 0, 0);
+        }
+        break;
+    }
+}
+
+void npcPigWALK(em)
+EMW *em;
+{
+    LB_NPCMV *mv = (LB_NPCMV *)em->ex;
+    LB_ROUTE *r;
+    f32 d;
+    s16 i;
+    LB_ROUTE *rt;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        if (em->char0 == 0x3EF) {
+            Lb_pl_chr_set0(em, 0x3EB, 8, 0, 0);
+            return;
+        }
+        Lb_pl_chr_set0(em, 0x3EB, 4, 0, 0);
+        return;
+    case 1:
+        r = &mv->route[mv->idx];
+        em->x0E = (s16)(u16)Lb_get_angle(em, r) / 10;
+        em->ang[1] += em->x0E;
+        d = flvecCalcDistance(em->pos, r);
+        if (d < 0.0f) {
+            d *= -1.0f;
+        }
+        if (d <= 50.0f) {
+            mv->idx++;
+            i = mv->idx;
+            rt = mv->route;
+            if (rt[i].wait == -1) {
+                mv->idx = 0;
+                return;
+            }
+            if ((u16)ran_suu(1) & 1) {
+                em->x05++;
+                em->work08 = ((u16)ran_suu(1) & 0x1F) + 0x136;
+                Lb_pl_chr_set0(em, 0x3EF, 0xA, 0, 0);
+                return;
+            }
+            r = &mv->route[mv->idx];
+            if (em->x15 != r->act) {
+                em->x05++;
+                Lb_act_set(em, 0, (u16)r->act);
+                mv->cnt = 0;
+                return;
+            }
+            em->x05 = 0;
+        }
+        break;
+    case 2:
+        if (--em->work08 <= 0) {
+            i = mv->idx;
+            r = &mv->route[i];
+            if (em->x15 != r->act) {
+                em->x05++;
+                Lb_act_set(em, 0, (u16)r->act, i);
+                mv->cnt = 0;
+                return;
+            }
+            em->x05 = 0;
+        }
+        break;
+    }
+}
+
+void npcPigWALK2(em)
+EMW *em;
+{
+    PLW *pl = &player_work[game_w.master];
+    f32 d;
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        Lb_pl_chr_set0(em, 0x3EB, 4, 0, 0);
+        return;
+    case 1:
+        em->x0E = Lb_get_angle(em, pl->pos);
+        em->ang[1] += em->x0E / 10;
+        d = flvecCalcDistance(em->pos, pl->pos);
+        if (((EMW *)pl)->x15 == 0x33 || ((EMW *)pl)->x15 == 0x34) {
+            if (d < 65.0f) {
+                em->x05++;
+                Lb_pl_chr_set0(em, 0x3E9, 4, 0, 0);
+                return;
+            }
+            if (em->char0 != 0x3EB) {
+                Lb_pl_chr_set0(em, 0x3EB, 2, 0, 0);
+                return;
+            }
+        } else {
+            if (d < 130.0f) {
+                if (em->char0 != 0x3E9) {
+                    Lb_pl_chr_set0(em, 0x3E9, 4, 0, 0);
+                    return;
+                }
+            } else if (em->char0 != 0x3EB) {
+                Lb_pl_chr_set0(em, 0x3EB, 2, 0, 0);
+                return;
+            }
+        }
+        break;
+    case 2:
+        if (em->x194 <= 0) {
+            em->x05++;
+            Lb_pl_chr_set0(em, 0x3EF, 0xA, 0, 0);
+            return;
+        }
+        break;
+    case 3:
+        if (em->x194 <= 0) {
+            Lb_act_set(em, 0, 0x87);
+        }
+        break;
+    }
+}
+
+void lb_npc_pig_move(em)
+EMW *em;
+{
+    switch (em->x15) {
+    case 0:
+        npcPigFOOTWORK(em, 0);
+        return;
+    case 0x8F:
+        npcPigFOOTWORK(em, 1);
+        return;
+    case 0x86:
+        npcPigSLEEP(em, 0);
+        return;
+    case 0x87:
+        npcPigSLEEP(em, 1);
+        return;
+    case 0x64:
+        npcPigTOPL(em);
+        return;
+    case 0x88:
+        npcPigATACK(em);
+        return;
+    case 0x89:
+        npcPigJOY(em);
+        return;
+    case 0x8A:
+        npcPigEXIT(em);
+        return;
+    case 0x8B:
+        npcPigWALK(em);
+        return;
+    case 0x8C:
+        npcPigWALK2(em);
+        break;
+    }
+}
+

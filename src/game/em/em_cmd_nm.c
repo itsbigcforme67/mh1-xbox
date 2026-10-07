@@ -2339,12 +2339,12 @@ u8 *em_cmd_swim_ck(EMW *em, u8 *p) {
 
 u8 *em_cmd_all_pl_target_sel(EMW *em, u8 *p) {
     u8 list[4];
-    u8 v;
     u8 pn;
-    u8 i;
-    u8 k;
-    s32 n;
-    s32 flag;
+    int i;
+    int k;
+    int n;
+    u8 v;
+    u8 flag;
 
     if (em->x88F != 0) {
         /* players that hate us a lot (>= 50000) */
@@ -3273,6 +3273,7 @@ u8 *em_cmd_target_set(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_range_ck(EMW *em, u8 *p) {
+    f32 lim;
     f32 f;
     f32 v;
     u8 n;
@@ -3301,9 +3302,10 @@ u8 *em_cmd_range_ck(EMW *em, u8 *p) {
             *(f32 *)&em->x3AC = f;
             if (0 < n) {
                 w = (f32 *)em;
+                lim = *(f32 *)&em->x3AC;
                 for (;;) {
                     v = EM_FIELD(w, f32 *, 0x810);
-                    if (*(f32 *)&em->x3AC <= v) {
+                    if (lim <= v) {
                         if (!(v < 0.0f)) {
                             break;
                         }
@@ -4596,7 +4598,6 @@ void NextStage_Dir_Set(EMW *em, f32 *out) {
 void em_cdm_act_flag_ck(EMW *em) {
     s32 i;
     s32 cnt;
-    s32 j;
     u8 n;
     u8 m;
 
@@ -4621,13 +4622,13 @@ void em_cdm_act_flag_ck(EMW *em) {
         em->x881 = 1;
         em->x882 = 0;
         m = *(u8 *)0x3F34C3;
-        j = 0;
+        i = 0;
         if (0 < m) {
-            while (!(em->x914 & (1 << j)) && ++j < m) {
+            while (!(em->x914 & (1 << i)) && ++i < m) {
             }
         }
-        em->x883 = j;
-        return;
+        em->x883 = i;
+        break;
     }
 }
 

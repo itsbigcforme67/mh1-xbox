@@ -1098,7 +1098,6 @@ u16 em_act_search(EM_ACTRATE *tbl) {
     EM_ACTRATE *p = tbl;
     u16 sum = 0;
     u16 r;
-    u16 n;
     u16 x;
 
     while ((x = p->rate) != 0xFFFF) {
@@ -1106,10 +1105,10 @@ u16 em_act_search(EM_ACTRATE *tbl) {
         p++;
     }
     r = ran_suu(0) % sum;
-    n = 0;
+    sum = 0;
     while ((x = tbl->rate) != 0xFFFF) {
-        n += x;
-        if (r < n) {
+        sum += x;
+        if (r < sum) {
             return tbl->act;
         }
         tbl++;
