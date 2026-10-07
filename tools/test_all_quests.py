@@ -13,7 +13,7 @@ PASS = quest clear (D5 3), reward list printed, money counted, village (game mod
 usage: test_all_quests.py [quest ...]   (default: all)"""
 import os, re, subprocess, sys, time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXE = os.path.join(ROOT, 'build/pc/mhview'); DISC = os.path.join(ROOT, 'disc/mh1')
+EXE = os.path.join(ROOT, os.environ.get('BIN', 'build/pc/mhview')); RUN = os.environ.get('RUN', '').split(); DISC = os.path.join(ROOT, 'disc/mh1')
 OUT = os.path.join(ROOT, 'build/show/allq'); os.makedirs(OUT, exist_ok=True)
 # quest_local_tbl rows (main 0x387D18.., 0x357758..): 1 star .. 5 stars (hex numbers)
 LEVELS = {1: [0x83, 0x84, 0x85, 0x86, 0x87], 2: [0x88, 0x8D, 0x8E, 0x8F, 0x8A],
@@ -33,7 +33,7 @@ def run(q, env, inp, secs, tag):
     t0 = time.time()
     try:
         with open(log, 'w') as f:
-            r = subprocess.run([EXE, DISC, '--quest', str(q), '--input', inp, '--shot', os.path.join(OUT, tag + '.png'),
+            r = subprocess.run(RUN + [EXE, DISC, '--quest', str(q), '--input', inp, '--shot', os.path.join(OUT, tag + '.png'),
                                 '--time', str(secs)], env=e, stdout=subprocess.DEVNULL, stderr=f, timeout=900)
         rc = r.returncode
     except subprocess.TimeoutExpired:
