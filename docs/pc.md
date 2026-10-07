@@ -1203,3 +1203,34 @@ All PC side; no include/ or PS2-built file changed.
   (quest 10 nest: depth 10240 -> wet 0.19); nobody listened.
 - Small fix: `--quest` printed a garbage monster kind for quests without a
   big monster.
+
+## Stand-ins wired to game C (agent F, round 22)
+
+How the list was made: `RT_TRACE=1` run through the three tests prints each stand-in that runs once
+("rt: NAME not ported"); the rest of the 414 weak stand-ins in build/pc/rt_gen.c were classified by name.
+Online (cnLBS_*, CallBack_*, lm_*, plaza_*, Bs*/sceHTTP*/stock*/tag* browser, ssl) is ignored.
+
+Wired this round (tools/build_pc.sh: `PICK_X` for main/game files, `PICK` for lobby files; only the named
+functions are taken from each file; all 3 tests pass after each step):
+- Monsters: clr_em_work, push_em_work_all (emw01.c), push_em_yobi, pull_em_yobi (emw02.c),
+  em_search_set, get_joint_mat_em (emsrch_nm.c). Monster work push/pop and joint lookups no longer no-ops.
+- Quests/village: Lb_make_quest_tbl (lb_v17.c, the elder's quest list), lb_guild_check_keyQuest (lb_gy01.c, key quests
+  in the list), get_CA_size (lb_t.c).
+- Menus: put_button_help (lb_uif.c, the help line; lbtu3 alias names are renamed back with objcopy in build_pc.sh).
+- Sets/objects: Set06_set, Set21_set (set06.c, set21.c).
+- Credits: Staff_init, Staff_main (staff_nm.c).
+- Sound: Npc_se_req (sndc03.c), sound_req_com, ashi_sd_req_005C4980 (village NPC voices and footsteps).
+- Visuals: stage_spr_disp (sun/sky sprites, f_stage_nm.c), lb_pl_item_trans (hunter item model in village, weapon3_nm.c).
+
+Still stand-ins that a player could notice (not wired; reason):
+- Village/menus: disp_status (hunter status screen, in lb_plz3.c, online TU), lb_rule_seet_set / lb_rule_seet_trans /
+  lb_guild_make_room (room rule sheet, online rooms), lb_member_*Check, Lb_join, DispNameAndIDonDialog, fillRect.
+- Items/equipment: EquipmentDescriptionWindowA_s, Equip_moji_color_rare_i, flfntLocate_i, Put_PageArrow_s (rename aliases of
+  chat_nm.c functions: need linker aliases), armor_model_free, edit_create_model (model memory is host side).
+- Effects/render: trans_shell, trans_set, trans_eft, trans_eft_up, draw_prim, SetDiffuseColor (the host draws these in rt_eft.c / rt_fl.c;
+  wiring needs the GS packet layer, not done).
+- Engine/loading (harmless on PC, run every start): View_init, init_view_work, light_init, load_eft, load_shadow,
+  model_work_init, flAdjustScreen, flExp, setBGcolor, str_outmode, str_master_vol, str_stop_all, release_texture, ADXM_Lock/Unlock.
+- Sound: cnWrap_Bgm* are online-side names; BGM goes through the host's rt_snd.c. flPADShockSet (vibration) is not wired.
+New stand-ins appear when a wired function calls something else not ported (SetPartsTrans, weapon_dat_make*, light_change_normal, ...);
+none of them ran in the tests.
