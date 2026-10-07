@@ -26,7 +26,8 @@ GAME="src/game/set/set14_nm.c src/game/set/set00.c src/main/stage/stage_set.c \
       src/game/set/set09.c src/game/set/set17.c src/game/set/set17_nm.c \
       src/game/set/set03.c src/game/set/set04.c src/game/set/set05_nm.c src/game/set/set07.c src/game/set/set08.c src/game/set/set10.c src/game/set/set11.c src/game/set/set15.c src/game/set/set16.c src/game/set/set18.c src/game/set/set19.c src/game/set/set20_nm.c src/game/set/set22.c \
       src/main/set/set12.c src/main/pl/pl_master_ck.c src/main/stage/trans_stage.c \
-      src/main/frame/f_frame_nm.c src/main/pad/pad_get.c src/main/pl/pl_normal2.c"
+      src/main/frame/f_frame_nm.c src/main/pad/pad_get.c src/main/pl/pl_normal2.c \
+      src/main/sound/bgm_nm.c"
 # Stage collision (f_sphr, agent D): the whole-file near-matches where they
 # exist (shit1_nm has load_stage_hit + WallHitInit/GroundHitInit, shit3_nm
 # GetGroundTblAdrs, shit4_nm NormalClipFace/add_vec_sub2/check_angle), plus
