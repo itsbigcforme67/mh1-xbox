@@ -331,8 +331,8 @@ chat and sees the other leave.
 > Hello MH Oldschool team,
 >
 > I am working on a hobby preservation project that ports the first Monster Hunter (PS2, NTSC-J) to PC and to the
-> original Xbox, from the owner's own disc: https://github.com/itsbigcforme67/mh1-xbox (the repository contains no
-> Capcom code or data). Thank you for keeping the PS2 games alive; the online part of the port depends on your servers.
+> original Xbox, from the owner's own disc: https://github.com/itsbigcforme67/mh1-xbox (the code is decompiled from
+> the game; no Capcom data is included, so players need their own disc). Thank you for keeping the PS2 games alive; the online part of the port depends on your servers.
 >
 > The port's network code is meant to behave exactly like a PS2 client on the wire (the game's own lobby-server
 > client, compiled for PC), with the DNAS step skipped locally. So far I have only tested against a small private
