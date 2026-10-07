@@ -59,7 +59,7 @@ void kbd_plt1_move(void *, void *);
 void kbd_reibun_input_sub(void *, void *);
 void sk_cmd_input(u8 *);
 int sk_letlenU(void *, int, ...);
-int sk_letlenB(void *, u16);
+int sk_letlenB(void *, int);
 void sk_skb_kill(int);
 void sk_speaking(void);
 void sk_yn_kigou_func(u8 *);
