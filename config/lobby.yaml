@@ -977,6 +977,8 @@ segments:
       - [0x07D9CC, asm, text/lb_select_tag]
       - [0x07DFB0, c, b/lb_c513]
       - [0x07E0C4, asm, text/lb_select_trans]
+      - [0x07E0D0, c, b/lb_c516]
+      - [0x07E358, asm, text/lb_join_talk]
       - [0x07E360, c, b/lb_bz134]
       - [0x07E480, c, b/lb_bz71]
       - [0x07E4F4, asm, text/cnLbc_EraseDialog]
