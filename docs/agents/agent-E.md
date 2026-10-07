@@ -847,3 +847,45 @@ flPADConfigSet 10, flSetMatrixList 11, flFCVGetValue2 13, em_status_ck 15.
 Tool notes: tools/check.py reads the disc (not asm/), so it keeps working while tools/rebuild.sh regenerates asm/; align.py and draft.py need asm/.
 Scratch helpers (not in the repo): fv.py (apply text variants to a whole file, print the check.py difference count), swaphill.py (greedy swaps of adjacent statements),
 declmove.py, permdecl.py (all orders of the first N declarations).
+
+## Assignment 13 (7 Oct, fresh agent E, rendering/GS and single player first)
+Main line: 40.142% at the start (after `git merge main`, nothing new to merge), 41.148% at the end (+1.0 point, 18.7 KB of real matches).
+Linked (rebuild.sh OK x5, tools/build_pc.sh builds):
+- fl/flvu01-07 (36 functions, 4.7 KB): the VU0 macro-mode routines of the fl library as MWCC INLINE ASSEMBLY (flFCVFcurveInterpolate*, flPS2SinFast/CosFast/SinCosFast,
+  flmatInit/Init33/MakeScale/MakeScale33/MakeTrans/Normalize33/RotX33/RotY33/RotZ33/SetXYZ33/SetZYX33/RotXYZ33/RotZXY33/Transpose/Transpose33/Mul/Mul2/Mul33/Mul33_2/Invert/Blend,
+  flvecApplyMat*/CalcLength/CalcDistance/Normalize/InnerProduct/OuterProduct, flSqrt). The original source surely was inline asm there (VU0 macro mode), so these are real
+  source-level matches, not .word dumps. They sit in `#ifdef __MWERKS__` (the PC build has its own rt_flmat.c and never compiles them).
+- fl/flps_ssp 0x179DD0-0x17BE18 flPS2SetShaderParam (8264 bytes in one function), fl/flm04 flmatrStore/flmatrLoad/flvecrRotTransPers, fl/flm05 flmatMakeLookAt,
+  aq/aq07 self_data_ctrl, ime/imeqz tmp_getsyn, quest/strg01 str_gattai.
+Lessons (function that shows it):
+1. mwccps2's inline assembler takes VU0/COP2 mnemonics: `lqc2 vf4, 0x0(v1)`, `vmul.xyz vf4, vf4, vf4`, `vsqrt Q, vf4x`, `vwaitq`, `qmtc2.ni t0, vf8`, `qmfc2.ni`, `ctc2.ni`,
+   `viaddi vi3, vi0, -0x2`, `vnop`, `la v1, sym` for a lui/addiu %hi/%lo pair (a bare `lui v1, sym@h` is rejected), labels `Lxxxx:`, `j label`. Registers without `$`.
+   tools/asm2mwcc.py converts a function of asm/main/text (unlinked ones only; the split drops linked functions) into that source; everything converted matched at the
+   first try (tools/check.py prints `j 0x000000C8 (reloc)` differences for jumps inside the function: those are fine, rebuild.sh is the judge).
+   Which functions are VU0: grep the split asm for `$vf`, `lqc2`, `vwaitq`. Sony libs (sceVu0*, 0x1B8710...) are left alone.
+2. A giant switch ladder (flPS2SetShaderParam, nested 3 levels, ~250 cases): m2c lists the cases in SOURCE order (body address order); MWCC tests them in reverse. Write the
+   m2c structure as is, but reverse the order of the case LABELS inside every group of labels that share a body (`case 0x21035: case 0x121035:` for m2c's 0x121035, 0x21035).
+   A level with a single case is `switch (key) { case K: ... break; }` (an `if (key == K)` gives bne instead of beq). Declaration order of the locals decided the register
+   assignment (c, key, f, hi: key must be declared before f). `u64 key = (u64)c & 0xFFFFFF` (unsigned long) gives dsll32/dsrl32 8; with `long` it is dsra32.
+3. A struct assignment of a 64 byte struct of ints (`typedef struct { int m[16]; } FM; *d = *(FM *)s;`) compiles to the 8 iteration lw/lw/sw/sw loop (flmatrStore/Load,
+   the same loop the matrix register copies in flSetRenderState use); a u128 member struct gives lq/sq (flmatCopy); a plain `for (i < 16)` copy is unrolled instead.
+4. Address-taken locals of struct type are laid out with the FIRST DECLARED at the HIGHEST address (flmatMakeLookAt: the original has upv at sp+80, fwd 96, top 112, side 128,
+   so declare side, top, fwd, upv). A 16 byte aligned temporary for flSinCos is `f32 t[4]`.
+5. A caller that sits in the same translation unit as a file-static `asm` routine knows which registers the routine clobbers and keeps its values in temporaries instead of saved
+   registers: flSinCos (original uses t1/a2 across the call to flPS2SinCosFast) matches only with `static asm void flPS2SinCosFast(f32 *o, f32 a)` defined above it in the same
+   file (and `f32 t[4]`). I built the whole 0x171240-0x173A50 file as one TU (asm + all C functions): everything that already matched kept matching, flSinCos became OK, but
+   flmatCopy / flmatMakeViewport / flPS2MakeClipViewport / flQuatCnv did not improve, so I did not link the merge (gain would have been 52 bytes). Recipe for it is in git history of this section only.
+6. A function extracted from a whole-file near-match into its own run file needs the real prototypes of the callees the near-match file DEFINED above it: tmp_getsyn only matched
+   with `int ask_strncmp(u8 *a, u8 *b, int n);` (the K&R `int ask_strncmp();` of the extracted copy lost the argument conversion and the hoisted s16 sign extension).
+7. `va_start` wrappers (str_gattai) match standalone with include/va.h; the near-match file's own typedef was the problem.
+8. flSetRenderState (near-match, flrs07_nm.c): arg1 is spilled to the stack at entry because floats are read through its address (`flFogStart = *(f32 *)&val`); the empty cases
+   (3, 8-0xB, 0x13, 0x65, 0x68) are explicit `case: break;` labels in the flat switch; `if (val == 0) break;` before an inner switch gives the leading `beqz`. Structure matches, registers do not.
+Near-matches written this round (not linked, off/instructions): flSetRenderState 594/895 (src/main/fl/flrs07_nm.c), flPS2InitRenderBuff 672/764 (flsys04_nm.c, structure right, the
+original re-materialises constants instead of reusing the compare constant), flPS2VIF1MakeEndLoadImage 2/25 (flldimg02_nm.c: the original sets a1 = 3 before a3 = 0 in the call),
+flPS2DrawPreparation 56/103 (flsys03_nm.c: the colour pack and the 64 bit `or` chains schedule differently; a 15 minute permuter run only reached 43), flmatCopy 6/9 (same register order
+problem with u128 temporaries in every declaration order), Sel_back_disp 2/36 (operand order of the last two `or` in the colour word: 20 forms tried), self-contained others from the list
+below are unchanged: ps2McInit 2 and flPS2VIF1MakeEndLoadImage have the same signature (the original sets the constant argument register before the one that is
+already in a register), CngSessionStart_online / CngNetMcsP2PPoll 3 (original `host = (x == 0) ? 1 : 0` compiles to `movn`, ours to xor/sltiu; no form I tried gives movn),
+flPADGetALL 3 (struct copy `*d = *s` of two s8: the original loads with lb, we load lbu).
+Dead ends worth knowing: flps0002 and the other flps00xx primitive helpers (0x175290-0x177040, ~9 KB) need flPS2CheckGSClip defined in the same TU (the original keeps the
+y value in v1 across that call) and they address the scratchpad packet through a saved pointer s0 = 0x70000028 stepped by 0x10; I could not find the C shape that does both.
