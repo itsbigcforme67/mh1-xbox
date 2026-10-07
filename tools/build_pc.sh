@@ -26,7 +26,8 @@ GAME="src/game/set/set14_nm.c src/game/set/set00.c src/main/stage/stage_set.c \
       src/game/set/set09.c src/game/set/set17.c src/game/set/set17_nm.c \
       src/game/set/set03.c src/game/set/set04.c src/game/set/set05_nm.c src/game/set/set07.c src/game/set/set08.c src/game/set/set10.c src/game/set/set11.c src/game/set/set15.c src/game/set/set16.c src/game/set/set18.c src/game/set/set19.c src/game/set/set20_nm.c src/game/set/set22.c \
       src/main/set/set12.c src/main/pl/pl_master_ck.c src/main/stage/trans_stage.c \
-      src/main/frame/f_frame_nm.c src/main/pad/pad_get.c src/main/pl/pl_normal2.c"
+      src/main/frame/f_frame_nm.c src/main/pad/pad_get.c src/main/pl/pl_normal2.c \
+      src/main/sound/bgm_nm.c"
 # Stage collision (f_sphr, agent D): the whole-file near-matches where they
 # exist (shit1_nm has load_stage_hit + WallHitInit/GroundHitInit, shit3_nm
 # GetGroundTblAdrs, shit4_nm NormalClipFace/add_vec_sub2/check_angle), plus
@@ -295,7 +296,7 @@ for f in $GAME; do
              -Dem_sleep_eff_set=rtabi_em_sleep_eff_set_ps2" ;;
     # round 20 monster families: their prototypes of the shared helpers
     # (grep the file's own declarations; the adaptors are in rt_abi.c)
-    src/game/em/em08_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
+    src/game/em/em08_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl -DEft10_set=rtabi_Eft10_set \
              -DEft15_set3=rtabi_Eft15_set3 -DEft02_set3=rtabi_Eft02_set3" ;;
     src/game/em/em09*.c|src/game/em/em27*.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
     src/game/em/em03.c) ABI="-Dem_frame_check2=rtabi_em_frame_check2 -DEft13_set_em_scl=rtabi_Eft13_set_em_scl" ;;
@@ -304,7 +305,7 @@ for f in $GAME; do
     # round 21: Fatalis (em02), Lao-Shan Lung (em07), em33
     src/game/em/em02_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
              -DEft15_set3=rtabi_Eft15_set3" ;;
-    src/game/em/em07_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl \
+    src/game/em/em07_ai_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft13_set_em_scl=rtabi_Eft13_set_em_scl -DEft10_set=rtabi_Eft10_set \
              -DEft15_set3=rtabi_Eft15_set3 -DEft02_set3=rtabi_Eft02_set3" ;;
     src/game/em/em33.c) ABI="-Dem_frame_check2=rtabi_em_frame_check2 -DEft13_set_em_scl=rtabi_Eft13_set_em_scl" ;;
     src/game/em/em14_nm.c|src/game/em/em15_nm.c|src/game/em/em17_nm.c)

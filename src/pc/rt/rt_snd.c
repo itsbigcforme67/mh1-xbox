@@ -461,6 +461,7 @@ typedef struct {
     s16 max, vol;           /* str_w +4 master, +6 current */
     s16 from, to, n, total; /* fade: str_w +0xA, +0xC, +0x10, +0xE */
     int paused;
+    int ended;              /* played to its end (no loop): str_getstat's PLAYEND */
 } rt_str;
 
 static rt_str strw[AUDIO_STREAMS];
@@ -482,10 +483,19 @@ void str_volume(int ch, int v)
 void str_stop(int ch)
 {
     strw[ch].id = -1;
+    strw[ch].ended = 0;
     audio_stream_clear(ch);
 }
 
 void str_pause(int ch, int on) { strw[ch].paused = on; }
+
+/* str_getstat: the ADXT state of the channel's stream, as bgm_server reads
+ * it (>= 4: decoding / playback finished): 3 playing, 5 played to the end,
+ * 0 stopped or never started */
+int str_getstat(int ch) { return strw[ch].id >= 0 ? 3 : strw[ch].ended ? 5 : 0; }
+
+/* flSndSetRev: the IOP's reverb settings per core; the mixer has no reverb */
+void flSndSetRev(int core, int type, int depth, int a, int b) { (void)core; (void)type; (void)depth; (void)a; (void)b; }
 
 /* str_fadein_vol / str_fadein / str_fadeout (0x100D30 / 0x100CF0 / 0x100CC0) */
 void str_fadein_vol(int ch, int n, int vol)
@@ -511,6 +521,7 @@ static int str_start(int ch, int id)
         return -1;
     }
     s->id = id;
+    s->ended = 0;
     s->byte = s->h.data;
     s->sample = 0;
     s->buf_len = 0;
@@ -563,6 +574,7 @@ static void str_feed(int ch)
                 s->byte = s->h.loop_start_byte;
             } else if (s->sample >= s->h.total) {
                 s->id = -1;
+                s->ended = 1;
                 break;
             }
             if (s->byte < s->buf_off || s->byte + rowb > s->buf_off + s->buf_len) {
@@ -684,6 +696,7 @@ void rt_snd_em_add(int kind)
 /* Ports as game12 (f_game, main) fills them: 1 common01, 7 the map's
  * pack, 2.. player weapon + voice, 6 the monsters on top of em_blank.
  * Port 0 (common00) is loaded at boot [guess: Menu_snd_load path]. */
+void stage_bgm_set(int n);
 void rt_snd_stage(int stage, const int *em_kinds, int nem)
 {
     int i, map, w, v;
@@ -713,17 +726,13 @@ void rt_snd_stage(int stage, const int *em_kinds, int nem)
         rt_snd_em_add(game_w.x28[i]);
     for (i = 0; i < nem; i++)
         rt_snd_em_add(em_kinds[i]);
-    /* stage_bgm_set (0x21DF80), no-quest path: the stage_bgm_etc_tbl
-     * stream on the first entry (game_w+0x10 == 0; st04 = S_M6CAMP, the
-     * base-camp music), else Snd_bgm_tbl[stage] = (AFS00 entry, volume) */
-    for (i = 0; stage_bgm_etc_tbl[i] != 0xFF; i += 2)
-        if (stage_bgm_etc_tbl[i] == (stage & 0xFF) && game_w.x10 == 0 && !getenv("RT_SND_AMBIENT")) {
-            str_play_f_vol(0, stage_bgm_etc_tbl[i + 1], 0xF, 0x7F);
-            game_w.x10 |= 1;
-            break;
-        }
-    if (stage_bgm_etc_tbl[i] == 0xFF)
-        str_play_f_vol(0, Snd_bgm_tbl[2 * stage], 0xF, Snd_bgm_tbl[2 * stage + 1]);
+    /* the game's stage_bgm_set (src/main/sound/bgm_nm.c): after a quest
+     * clear / failure the jingle, a fight in progress its music, on the first
+     * entry the stage_bgm_etc_tbl stream (st04 = S_M6CAMP, the base-camp
+     * music), else Snd_bgm_tbl[stage] = (AFS00 entry, volume) */
+    if (getenv("RT_SND_AMBIENT"))
+        game_w.x10 |= 1;
+    stage_bgm_set(stage);
     if (trace)
         printf("snd: stage %d map %d\n", stage, map);
 }

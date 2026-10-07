@@ -57,6 +57,31 @@ void rt_village_enter(void)
         void Event_flag_set(int);
         Event_flag_set(2);
     }
+    if (getenv("RT_QCLEAR")) {          /* test aid: "83,84-87,...": hex quest numbers marked cleared, as f_reward's
+                                           Quest_clear_bit_set does after a won quest (a save with these quests done) */
+        void Quest_clear_bit_set(int);
+        const char *s = getenv("RT_QCLEAR");
+        while (*s) {
+            char *e;
+            long a = strtol(s, &e, 16), b = a;
+            if (e == s)
+                break;
+            if (*e == '-')
+                b = strtol(e + 1, &e, 16);
+            for (; a <= b && a < 256; a++)
+                Quest_clear_bit_set((int)a);
+            s = *e ? e + 1 : e;
+        }
+    }
+    if (getenv("RT_QUEST_TRACE")) {     /* star level as the Elder computes it, and the cleared quests */
+        int lb_get_quest_level(int);
+        int Quest_clear_bit_ck(int), q;
+        fprintf(stderr, "rt_village: level %d, cleared:", lb_get_quest_level(1));
+        for (q = 1; q < 0xB2; q++)
+            if (Quest_clear_bit_ck(q))
+                fprintf(stderr, " %02x", q);
+        fprintf(stderr, "\n");
+    }
     lb_sys[3] = 0;                      /* vs_square_init_pre */
     lb_sys[4] = 0;
     active = 1;
@@ -152,6 +177,24 @@ int rt_village_tick(void)
         }
         last_step = lb_sys[3];
         last_x68 = *(s32 *)(lb_sys + 0x68);
+    }
+    if (getenv("RT_QUEST_TRACE")) {     /* the Elder's quest list (Lb_make_quest_tbl_local: 5 levels x 5, urgent at +0x19) */
+        extern u8 lb_quest_info[];
+        extern u8 key_quest;
+        static u8 last[0x28];
+        if (memcmp(last, lb_quest_info, 0x28)) {
+            int l, i;
+            memcpy(last, lb_quest_info, 0x28);
+            fprintf(stderr, "rt_village: tick %d quest list (key %02x):", tick, key_quest);
+            for (l = 0; l < 5; l++) {
+                fprintf(stderr, " %d*[", l + 1);
+                for (i = 0; i < 5; i++)
+                    fprintf(stderr, i ? " %02x" : "%02x", lb_quest_info[l * 5 + i]);
+                fprintf(stderr, "]");
+            }
+            fprintf(stderr, " urgent %02x %02x %02x %02x %02x\n", lb_quest_info[0x19], lb_quest_info[0x1A],
+                    lb_quest_info[0x1B], lb_quest_info[0x1C], lb_quest_info[0x1D]);
+        }
     }
     if (getenv("RT_SHOP_TRACE")) {      /* the shop step machines (lbShop: step +0x14, sub +0x15, mode +0x19) */
         extern u8 lbShop[];

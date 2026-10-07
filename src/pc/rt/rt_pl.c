@@ -317,9 +317,7 @@ void Ed_player_trans(void *pl, int a) { (void)a; boot_hunter(pl); }
 /* lighting from the ground material (GetGroundCameraData ...) */
 void GetPlayerMaterialData(void *pl) { (void)pl; }
 /* messages, sounds not ported */
-void adx_se_set(void *pl, int a) { (void)pl; (void)a; STUB("adx_se_set") }
-void adx_se_stop(void *pl) { (void)pl; }
-void die_bgm_set(void) { STUB("die_bgm_set") }
+/* adx_se_set / adx_se_stop / die_bgm_set: the game's (src/main/sound/bgm_nm.c) */
 void armor_sd_req(void *pl, int a) { (void)pl; (void)a; }
 /* camera requests (death / come back / pile bunker) */
 void PlayerDieCameraRequest(void) {}

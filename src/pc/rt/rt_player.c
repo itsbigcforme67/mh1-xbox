@@ -329,6 +329,51 @@ void rt_player_tick(int no)
                 s++;
         }
     }
+    if (getenv("RT_PL_GOTO")) {     /* test aid: "tick,stage": from that player tick, walk the area exits
+                                       (stage_mv_ck's STG_MV lists, shortest path) until the hunter is on that stage */
+        static int tk, last;
+        int t0 = 0, goal = -1;
+        PLW *p = &player_work[no];
+        tk++;
+        sscanf(getenv("RT_PL_GOTO"), "%d,%d", &t0, &goal);
+        if (tk >= t0 && goal >= 0 && p->stg != goal && p->x738 == 0 && tk - last > 30) {
+            void *Stage_mv_data_get(int st, int pl);
+            static s16 prev[0x58];
+            int q[0x58], qh = 0, qt = 0, st, nx = -1;
+            memset(prev, 0xFF, sizeof prev);
+            prev[p->stg] = p->stg;
+            q[qt++] = p->stg;
+            while (qh < qt && prev[goal] < 0) {         /* breadth first over the exit lists */
+                u8 *m = Stage_mv_data_get(st = q[qh++], 0);
+                for (; m && *(u16 *)m != 0xFFFF; m += 0x34)
+                    if (*(u16 *)m < 0x58 && prev[*(u16 *)m] < 0) {
+                        prev[*(u16 *)m] = (s16)st;
+                        q[qt++] = *(u16 *)m;
+                    }
+            }
+            if (prev[goal] >= 0) {
+                for (nx = goal; prev[nx] != p->stg; nx = prev[nx])
+                    ;
+                {
+                    u8 *m = Stage_mv_data_get(p->stg, 0);
+                    for (; m && *(u16 *)m != 0xFFFF; m += 0x34)
+                        if (*(u16 *)m == nx) {
+                            f32 *e = (f32 *)(m + 4);
+                            int kind = *(s16 *)(m + 2);
+                            p->pos[0] = kind == 1 ? (e[0] + e[5]) * 0.5f : e[0];
+                            p->pos[1] = e[1] + 1.0f;
+                            p->pos[2] = kind == 1 ? (e[2] + e[7]) * 0.5f : e[2];
+                            fprintf(stderr, "rt_player: tick %d stage %d -> exit to %d (goal %d)\n", tk, p->stg, nx, goal);
+                            last = tk;
+                            break;
+                        }
+                }
+            } else if (tk - last > 300) {
+                fprintf(stderr, "rt_player: tick %d no path from stage %d to %d\n", tk, p->stg, goal);
+                last = tk;
+            }
+        }
+    }
     if (getenv("RT_PL_DIE")) {      /* test aid: "t1,t2,..": the hunter faints (the game's Pl_die_set) at those ticks */
         static int tk;
         void Pl_die_set(PLW *pl);
@@ -347,6 +392,27 @@ void rt_player_tick(int no)
         }
     }
     pl_move();
+    {   /* PLW+0x60: the world matrix player_modify (weapon3.c, run from trans() on the
+         * PS2) builds; the host poses the skeleton itself, but game code reads it
+         * (demo cameras relative to the hunter: cmd_set_pos mode 0) */
+        void cpAng2Rad_all(s32 *ang, f32 *out);
+        void flmatMakeScale(FLMAT *m, f32 x, f32 y, f32 z);
+        void flmatRotXYZ33(FLMAT *m, f32 x, f32 y, f32 z);
+        void flmatSetTrans(FLMAT *m, f32 x, f32 y, f32 z);
+        int k;
+        for (k = 0; k < 8; k++) {
+            PLW *p = &player_work[k];
+            f32 a[3];
+            FLMAT m;
+            if (!p->be_flag || !p->x01)
+                continue;
+            cpAng2Rad_all((s32 *)&p->ang, a);
+            flmatMakeScale(&m, p->scl[0], p->scl[1], p->scl[2]);
+            flmatRotXYZ33(&m, a[0], a[1], a[2]);
+            flmatSetTrans(&m, p->pos[0], p->pos[1], p->pos[2]);
+            memcpy((u8 *)p + 0x60, &m, sizeof m);    /* 0x60-0x9F, as flmatCopy */
+        }
+    }
     if (getenv("RT_PL_GOD")) {      /* test aid: the hunter's vital (+0x302) back to 100 each tick, no stun gauge (+0x7AA) */
         PF(&player_work[no], s16, 0x302) = 100;
         PF(&player_work[no], s16, 0x7AA) = 0;
