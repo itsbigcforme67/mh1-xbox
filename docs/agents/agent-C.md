@@ -1373,7 +1373,7 @@ placement), disp_kouho (tail loop is entered by a jump to the test: unreproduced
 across ty), Quest_next_em_set 13, stolen_item_stack 6 (a0/v1 naming), ZoomRateCalc 8 (z[2] lands in f0 not f1), Em_hagi_point_cnt_ck 20.
 
 ## Round 20 (agent C, continuing 0x220000-0x24A240)
-Start 42.015% of main (637176 bytes), end see last line of this section. Matched: srch_node (`return &hash_tab[(u32)h]` stops the CSE of
+Start 42.015% of main (637176 bytes), end 42.054% (637772 bytes, +596). Matched: srch_node (`return &hash_tab[(u32)h]` stops the CSE of
 the table address without the andi that `h & 0xFFFF` adds), dic_getsyn.
 - Config hygiene: the stale imerun01-07 runs (restored by hand after the round-19 relinks) overlapped imei/imek/imen/imeo/imep/imer; the
   imeXX runs are the current set. Removed the runs and files; there are no imerun files any more, so tools/relink_runs.py now runs
