@@ -1266,3 +1266,10 @@ Misses (15-minute cap): lobby_client_admin_message 7 (if-chain instead of switch
 - plaza_enterLobbyTrans (wip/plaza_enterLobbyTrans_tu.c, 246/318): structure decoded (list of 7 lobbies / member list of 8 for step 2,3) but the s16/int split of x,y,bx is not pinned, orig spills (s16)x to the stack. plaza_setChatModeTrans: decoded only (10 saved registers, three pointer-stepped tables), not written.
 - plaza_trans_ot0 (wip/plaza_trans_ot0_tu_2diff.c): everything matches except ONE instruction pair: before the second `switch (pNet->sel)` the original loads pNet into a0 (`lw a0; lbu v0,7(a0)`), mine into v0. Tried local pointer, cast, int/u8 temp, duplicate expression: no change.
 - perm.py caution: a permutation script must write its temp .c file under a per-process name; two scripts sharing /tmp names gave a bogus "0 diff" for checkFriendTrans.
+
+## Round 14 (s16 lesson applied to the older drafts)
+- plaza_trans_ot0: still one pair (`lw a0` vs `lw v0` before the second switch). More tries: default case last (57 diffs), `p = &pNet->sel; switch (*p)`, `& 0xFF`, `+ 0`, ANSI parameter: all unchanged. The first switch matches exactly (p = &pNet->sel lives in a0 until the `lbu 0(a0)`).
+- plaza_searchMemberTrans: `y` as int with (s16) casts 105, y computed before put_titles2 43, `s16 i` 161; best stays 40 (register choice t/y/p).
+- plaza_setMyCommentTrans: re-done with ANSI `s16 x, s16 y, s8 mode` and ANSI s16 callees: 183/205 at best (137 for the older int version stays best). The original loads y raw (`addiu v1,y,40` then narrow on assignment) but `(s16)x` is narrowed at use, i.e. x behaves as s16 and y as raw int, yet every combination of s16/int for the two params (and casts) costs a saved register (frame -160 vs -144). wip/plaza_setMyCommentTrans_tu_s16.c.
+- plaza_capcomPage and Plaza_add_friend have no s16 arguments at all (register rotation of sw/a/st), so the lesson does not apply; not retried.
+- plaza_enterLobbyTrans / setChatModeTrans: not advanced beyond round 13.
