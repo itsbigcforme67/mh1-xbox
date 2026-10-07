@@ -78,13 +78,16 @@ extern char *ten_moji;
 void sk_set_etc_data();
 extern u8 palette_set_tbl[];
 extern s8 han_zen_tbl_671[];
-int sk_letlenB(void *, u16);
+int sk_letlenB(void *, int);
 void kbd_free_set(void);
 int palette_ng_sub(int, u8 *, u8 *);
 void sk_henkan_sub();
 extern u8 board_tbl[][0x14];
 extern s32 free_rw_tbl[][3];
 extern s32 reibun_rw_tbl[][3];
+typedef struct RW2 { s16 a; s16 b; } RW2;
+#define RWP(t, o) (*(RW2 *)((t) + (o)))
+
 extern u8 moji_tbl_abn[], moji_tbl_abn_h[], moji_tbl_abn_s[], moji_tbl_abn_sh[], moji_tbl_free[];
 extern u8 moji_tbl_hira[], moji_tbl_hira_s[], moji_tbl_illust[], moji_tbl_kata[], moji_tbl_kata_h[];
 extern u8 moji_tbl_kata_s[], moji_tbl_kata_sh[], moji_tbl_mark[];
@@ -669,9 +672,9 @@ void sk_zen_han_chg(void) {
 
 void sk_backspace(int a, int b, void *c) {
     u8 m = SKB(0x1D);
-    u8 *s;
-    u16 n;
     int len;
+    u8 *s;
+    int n;
 
     if (m != 0xC && m != 0xD && SKB(0x158) == 0 && SKB(0x44) == 0) {
         SKS8(0x32) = 1;
@@ -699,7 +702,7 @@ void sk_backspace(int a, int b, void *c) {
                 len = sk_letlenB(s, n);
                 *(s + n - len) = 0;
                 strcat((char *)s, (char *)s + n);
-                SKU16(0x2A) -= len;
+                SKU16(0x2A) = SKU16(0x2A) - len;
                 if (SKU16(0x2A) == 0) {
                     sk_key_repeat(0, 0);
                 }
@@ -794,34 +797,17 @@ static void setup_rw_sub(int n) {
 }
 
 static void setup_rw_moji(void) {
-    s16 *f = (s16 *)((u8 *)free_rw_tbl + 8 + *(s32 *)(SKP(0x10) + 0x20) * 0xC);
-    s16 *r;
+    char *k = (char *)lpSKey;
+    RW2 *f = (RW2 *)((u8 *)&free_rw_tbl[0][2] + *(s32 *)(*(u8 **)((u8 *)k + 0x10) + 0x20) * 0xC);
+    RW2 *r;
 
-    RW16(moji_tbl_illust, 0x10, f[0], f[1]);
-    RW16(moji_tbl_mark, 0x10, f[0], f[1]);
-    RW16(moji_tbl_abn_sh, 0x10, f[0], f[1]);
-    RW16(moji_tbl_abn_h, 0x10, f[0], f[1]);
-    RW16(moji_tbl_abn_s, 0x10, f[0], f[1]);
-    RW16(moji_tbl_abn, 0x10, f[0], f[1]);
-    RW16(moji_tbl_kata_sh, 0x10, f[0], f[1]);
-    RW16(moji_tbl_kata_h, 0x10, f[0], f[1]);
-    RW16(moji_tbl_kata_s, 0x10, f[0], f[1]);
-    RW16(moji_tbl_kata, 0x10, f[0], f[1]);
-    RW16(moji_tbl_hira_s, 0x10, f[0], f[1]);
-    RW16(moji_tbl_hira, 0x10, f[0], f[1]);
-    r = (s16 *)((u8 *)reibun_rw_tbl + 8 + *(s32 *)(SKP(0x10) + 0x28) * 0xC);
-    RW16(moji_tbl_free, 0x14, r[0], r[1]);
-    RW16(moji_tbl_mark, 0x14, r[0], r[1]);
-    RW16(moji_tbl_abn_sh, 0x14, r[0], r[1]);
-    RW16(moji_tbl_abn_h, 0x14, r[0], r[1]);
-    RW16(moji_tbl_abn_s, 0x14, r[0], r[1]);
-    RW16(moji_tbl_abn, 0x14, r[0], r[1]);
-    RW16(moji_tbl_kata_sh, 0x14, r[0], r[1]);
-    RW16(moji_tbl_kata_s, 0x14, r[0], r[1]);
-    RW16(moji_tbl_kata_h, 0x14, r[0], r[1]);
-    RW16(moji_tbl_kata, 0x14, r[0], r[1]);
-    RW16(moji_tbl_hira_s, 0x14, r[0], r[1]);
-    RW16(moji_tbl_hira, 0x14, r[0], r[1]);
+    RWP(moji_tbl_hira, 0x10) = RWP(moji_tbl_hira_s, 0x10) = RWP(moji_tbl_kata, 0x10) = RWP(moji_tbl_kata_s, 0x10)
+        = RWP(moji_tbl_kata_h, 0x10) = RWP(moji_tbl_kata_sh, 0x10) = RWP(moji_tbl_abn, 0x10) = RWP(moji_tbl_abn_s, 0x10)
+        = RWP(moji_tbl_abn_h, 0x10) = RWP(moji_tbl_abn_sh, 0x10) = RWP(moji_tbl_mark, 0x10) = RWP(moji_tbl_illust, 0x10) = *f;
+    r = (RW2 *)((u8 *)&reibun_rw_tbl[0][2] + *(s32 *)(*(u8 **)((u8 *)k + 0x10) + 0x28) * 0xC);
+    RWP(moji_tbl_hira, 0x14) = RWP(moji_tbl_hira_s, 0x14) = RWP(moji_tbl_kata, 0x14) = RWP(moji_tbl_kata_h, 0x14)
+        = RWP(moji_tbl_kata_s, 0x14) = RWP(moji_tbl_kata_sh, 0x14) = RWP(moji_tbl_abn, 0x14) = RWP(moji_tbl_abn_s, 0x14)
+        = RWP(moji_tbl_abn_h, 0x14) = RWP(moji_tbl_abn_sh, 0x14) = RWP(moji_tbl_mark, 0x14) = RWP(moji_tbl_free, 0x14) = *r;
 }
 
 static int dakuten_ck(char *tbl) {
@@ -1309,7 +1295,7 @@ void sk_palette_cursor_set(void) {
         }
     } else {
 set:
-        SKB(0x24) = palette_set_tbl[f * 2];
+        SKB(0x24) = palette_set_tbl[(u8)f * 2];
         SKB(0x25) = palette_set_tbl[SKB(0x1F) * 2 + 1];
     }
 }
