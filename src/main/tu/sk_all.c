@@ -105,7 +105,7 @@ static int key_mask_check(KM *);
 extern u8 moji_size[][4];
 extern char lit_1221_0036E5C8[];
 void flps0008(void *);
-void flfntLocate(f32, int);
+void flfntLocate(int, int); /* was (f32, int): the asm converts x with cvt.w.s into a0 */
 void flfntSetSize(int, int);
 void font_set_palette(int);
 void font_print(void *, ...);
