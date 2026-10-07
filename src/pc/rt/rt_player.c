@@ -259,6 +259,23 @@ void rt_player_tick(int no)
             s8 hp = (s8)tg[0x88D];
             f32 *t = hp >= 0 ? (f32 *)(StiEM_data + 0x1C * hp) : (f32 *)(tg + 0xAC), cap[8], sph[4], r = 120.0f;
             u8 *bd = em_body_tbl[tg[2]];
+            if (hp < 0 && *(s16 *)(tg + 0x302) <= 0) {
+                /* dead, without EMW+0x88D: the nearest pick point the
+                 * monster set itself (Fatalis' three, em02_hagi_set) */
+                int k;
+                f32 best = 1e9f;
+                for (k = 0; k < 20; k++) {
+                    u8 *e = StiEM_data + 0x1C * k;
+                    f32 *ep = (f32 *)e, dx = ep[0] - *(f32 *)(tg + 0xAC), dz = ep[2] - *(f32 *)(tg + 0xB4);
+                    if (*(u16 *)(e + 0x10) == 0xFFFF || *(s16 *)(e + 0x14) != 2 || e[0x18] != tg[0x736])
+                        continue;
+                    if (dx * dx + dz * dz < best) {
+                        best = dx * dx + dz * dz;
+                        t = ep;
+                        hp = (s8)k;
+                    }
+                }
+            }
             if (hp < 0 && bd) {     /* alive: its first body sphere (or the first capsule's middle) */
                 u8 *b;
                 int k = -1;
@@ -291,16 +308,20 @@ void rt_player_tick(int no)
                     tk, p->pos[0], p->pos[2], hp, t[0], t[1], t[2]);
         }
     }
-    if (getenv("RT_PL_WARP")) {     /* test aid: "tick,x,z[;tick,x,z...]": put the hunter at x,z (same height) at those player ticks */
+    if (getenv("RT_PL_WARP")) {     /* test aid: "tick,x,z[,ang][;...]": put the hunter at x,z (same height), facing ang (hex) at those player ticks */
         static int tk;
         const char *s = getenv("RT_PL_WARP");
         tk++;
         while (s && *s) {
             int t = 0;
+            unsigned a;
             float x, z;
-            if (sscanf(s, "%d,%f,%f", &t, &x, &z) == 3 && tk == t) {
+            int nf = sscanf(s, "%d,%f,%f,%x", &t, &x, &z, &a);
+            if (nf >= 3 && tk == t) {
                 player_work[no].pos[0] = x;
                 player_work[no].pos[2] = z;
+                if (nf == 4)            /* optional facing angle (hex) */
+                    player_work[no].ang[1] = (s32)(a & 0xFFFF);
                 fprintf(stderr, "rt_player: tick %d warped to %.0f %.0f\n", tk, x, z);
             }
             s = strchr(s, ';');
@@ -332,10 +353,10 @@ void rt_player_tick(int no)
     }
     if (getenv("RT_PL_TRACE")) {
         PLW *pl = &player_work[no];
-        printf("pl: act %d/%d step %d chr %d/%d fr %.1f spd %.1f pos %.0f %.0f %.0f ang %04X st %d sw %04X/%04X hp %d\n",
+        printf("pl: act %d/%d step %d chr %d/%d fr %.1f spd %.1f pos %.0f %.0f %.0f ang %04X st %d sw %04X/%04X hp %d bite %d\n",
                pl->flag14, pl->flag15, PF(pl, u8, 5), PF(pl, u16, 0x2DC), PF(pl, u16, 0x2DE),
                PF(pl, f32, 0x19C), PF(pl, f32, 0x1A0), pl->pos[0], pl->pos[1], pl->pos[2],
-               pl->ang[1] & 0xFFFF, pl->st, pl->sw.now, pl->sw.trg, PF(pl, s16, 0x302));
+               pl->ang[1] & 0xFFFF, pl->st, pl->sw.now, pl->sw.trg, PF(pl, s16, 0x302), pl->x881);
     }
 }
 

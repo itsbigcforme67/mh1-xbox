@@ -299,6 +299,7 @@ s32 *Em_data_com_adrs_get(s32 *p, int which);
  * loads the mission file questName[no] into mission_area, points quest_w
  * at its tables, sets the stage (Quest_pl_stage_init), the time limit and
  * the monster states (quest_em_init). src/main/quest/f_quest*_nm.c. */
+s32 *Em_data_st_adrs_get(s32 *p, int id, int which, s8 idx);
 int rt_quest_load(int no)
 {
     if (no <= 0 || no >= 0xB2)
@@ -322,6 +323,18 @@ int rt_quest_load(int no)
         EvDemoInitialize();
         if (getenv("RT_QUEST_TRACE"))
             fprintf(stderr, "rt_quest: quest %d event demo slot: %d\n", PU16(&game_w, 0x2C), event_demo[4]);
+    }
+    if (getenv("RT_QEM_DUMP")) {    /* test aid: every stage's monster list of this quest */
+        int st;
+        for (st = 1; st < 0x58; st++) {
+            QEM *l = (QEM *)Em_data_st_adrs_get(quest_w.x74, st, 1, quest_w.x3A);
+            if (l == NULL || l == (QEM *)-1)
+                continue;
+            fprintf(stderr, "rt_quest: quest %d stage %d kinds:", no, st);
+            for (; l->id >= 0; l++)
+                fprintf(stderr, " %d", l->id);
+            fprintf(stderr, "\n");
+        }
     }
     if (getenv("RT_QUEST_TRACE")) {
         int i;
@@ -433,6 +446,8 @@ int rt_monster_spawn(int kind, const float pos[3], int ang_y)
             PS16(em, 0x302) = (s16)atoi(getenv("RT_EM_HP"));
         return 0;
     }
+    if (getenv("RT_EM_KIND"))      /* test aid: free play with another monster kind */
+        kind = atoi(getenv("RT_EM_KIND"));
     q = &dflt;
     memset(&dflt, 0, sizeof dflt);
     dflt.id = (s16)kind;

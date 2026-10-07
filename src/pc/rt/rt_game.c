@@ -315,6 +315,14 @@ void rt_game_init(int stage)
         for (; r && *(float *)(r + 4) != -1.0f; r += 0x18)
             fprintf(stderr, "rt_game: stage %d spot kind %d at %.0f %.0f %.0f r %.0f ang %04X\n", stage, *(u16 *)(r + 2),
                     *(float *)(r + 4), *(float *)(r + 8), *(float *)(r + 0xC), *(float *)(r + 0x10), *(u16 *)(r + 0x14));
+        {   /* gathering points (St_pick_ck's ST_ITEM list: x14 3 = mining, 4 = bugs) */
+            void *Stage_item_data_get(int st);
+            u8 *d = Stage_item_data_get(stage);
+            for (; d && *(float *)d != -1.0f; d += 0x18)
+                fprintf(stderr, "rt_game: stage %d pick id %d kind %d num %d at %.0f %.0f %.0f r %.0f\n", stage,
+                        *(u16 *)(d + 0x10), *(u16 *)(d + 0x14), *(u16 *)(d + 0x12), *(float *)d, *(float *)(d + 4),
+                        *(float *)(d + 8), *(float *)(d + 0xC));
+        }
         {   /* the exits (stage_mv_ck's STG_MV list, 0x34 bytes each) */
             void *Stage_mv_data_get(int st, int pl);
             u8 *m = Stage_mv_data_get(stage, 0);
@@ -357,6 +365,11 @@ void rt_game_move(void)
             set_pool[i].w.move(&set_pool[i].w);
         }
     rt_eft_move();          /* move_shell, move_eft (order after sets: a guess) */
+    {   /* move() (0x125xxx) then: move_item, move_senko, move_smoke */
+        void move_senko(void), move_smoke(void);
+        move_senko();
+        move_smoke();
+    }
 }
 
 void trans_stage(void);
