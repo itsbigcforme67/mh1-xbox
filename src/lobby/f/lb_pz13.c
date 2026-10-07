@@ -1,9 +1,7 @@
-/* lb_pz13_nm - lobby.bin 0x005950C0-0x00595F64: plaza_checkFriend(), friend list menu. NEAR-MATCH, NOT linked (about 150 of 937 instructions differ).
-   Needs to live in ONE translation unit with the earlier statics of the plaza file (tools/lbtu2.py 0x594260..0x598D30) and a single rodata line
-   0x65DBF0-0x65DCE0 once it matches (the jump tables of plaza_moveMain..searchMember and this function share one object). Known diffs: the
-   cw reload before `*(s8 *)0x3F36AB = 0`, the memcpy loop register order (k in s0, p in s1). */
+/* lb_pz13 - lobby.bin 0x005950C0-0x00595F64: plaza_checkFriend(), friend list menu (online/plaza). Matches (rebuild OK). */
 #pragma readonly_strings on
 #include "lbui_proto.h"
+#include "sysw.h"
 extern u8 D_32D471[];
 int mail_input();
 void get_friend_page_num();
@@ -39,6 +37,9 @@ int plaza_checkFriend()
     u8 *e;
     u8 k;
     u8 *p;
+    u8 *pp;
+    u8 *q;
+    int kk;
 
     switch (*st) {
     case 0:
@@ -65,7 +66,7 @@ int plaza_checkFriend()
                 }
                 pNet->step = 0xB;
                 cw[0x2C08] = 0;
-                *(s8 *)0x3F36AB = 0;
+                system_w.softkey = 0;
                 if (cw[0x35D5] != 0) {
                     str_stop(1, 1);
                     str_pause(0, 1);
@@ -91,7 +92,7 @@ int plaza_checkFriend()
             cnWrap_SoundRequest(3);
             pNet->step = 0xB;
             cw[0x2C08] = 0;
-            *(s8 *)0x3F36AB = 0;
+            system_w.softkey = 0;
             str_pause(0, 1);
             str_pause(1, 1);
             *(u8 *)&pNet->x12 = 3;
@@ -313,26 +314,27 @@ int plaza_checkFriend()
             memcpy(cw + 0x2F80, Friend_data + (*(u8 *)&pNet->x0A + pNet->x24 * 7) * 0x30, 8);
             memcpy(cw + 0x2F88, Friend_data + (*(u8 *)&pNet->x0A + pNet->x24 * 7) * 0x30 + 8, 0x11);
             net_Delete_FriendData(Friend_data, (*(u8 *)&pNet->x0A + pNet->x24 * 7) & 0xFF, 0x32);
-            k = *(u8 *)&pNet->x0A;
-            if (k < 6) {
-                p = tl_member_buff + k * 0x2FC;
+            kk = *(u8 *)&pNet->x0A;
+            if (kk < 6) {
+                pp = tl_member_buff + kk * 0x2FC;
                 do {
-                    memcpy(p, tl_member_buff + (k + 1) * 0x2FC, 0x2FC);
-                    k = (k + 1) & 0xFF;
-                    p += 0x2FC;
-                } while (k < 6);
+                    memcpy(pp, tl_member_buff + (kk + 1) * 0x2FC, 0x2FC);
+                    kk = (kk + 1) & 0xFF;
+                    pp += 0x2FC;
+                } while (kk < 6);
             }
-            memset(tl_member_buff + k * 0x2FC, 0, 0x2FC);
+            memset(tl_member_buff + (u8)kk * 0x2FC, 0, 0x2FC);
             get_friend_page_num(pNet);
             if (pNet->x24 >= pNet->x26) {
                 pNet->x24 = pNet->x26 - 1;
             } else {
-                if (*(u8 *)&pNet->x0A != 0) {
-                    *(u8 *)&pNet->x0A = *(u8 *)&pNet->x0A - 1;
+                q = (u8 *)&pNet->x0A;
+                if (*q != 0) {
+                    *q = *q - 1;
                 }
             }
             cw[0x2C08] = 0;
-            *(s8 *)0x3F36AB = 0;
+            system_w.softkey = 0;
             pNet->step = 0xD;
             SetDialogData(0x17, 3);
             break;
@@ -342,21 +344,23 @@ int plaza_checkFriend()
         }
         break;
     case 11:
-        if (*(u8 *)&a->x12 == 0) {
-            r = SaveNetFile_ForLobby();
-            if (r != -1 && r != 1) {
-                break;
+        q = (u8 *)&a->x12;
+        if (*q == 0) {
+            switch (SaveNetFile_ForLobby()) {
+            case 1:
+            case -1:
+                cw[0x2C08] = 1;
+                system_w.softkey = 1;
+                str_pause(0, 0);
+                str_pause(1, 0);
+                if (cw[0x35D5] != 0) {
+                    str_fadein_vol(0, 0x1E, D_32D471[*(u8 *)0x3F3404 * 2]);
+                }
+                return 3;
             }
-            cw[0x2C08] = 1;
-            *(s8 *)0x3F36AB = 1;
-            str_pause(0, 0);
-            str_pause(1, 0);
-            if (cw[0x35D5] != 0) {
-                str_fadein_vol(0, 0x1E, D_32D471[*(u8 *)0x3F3404 * 2]);
-            }
-            return 3;
+            break;
         }
-        *(u8 *)&a->x12 = *(u8 *)&a->x12 - 1;
+        *q = *q - 1;
         break;
     case 12:
         a->x0C = 1;
@@ -373,8 +377,10 @@ int plaza_checkFriend()
         }
         break;
     case 14:
-        if (getFriendNow(a, 6, 1) == 0) {
+        switch (getFriendNow(a, 6, 1)) {
+        case 0:
             pNet->step = 2;
+            break;
         }
         break;
     }

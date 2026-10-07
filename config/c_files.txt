@@ -2139,6 +2139,8 @@ lobby 0x00594FD0 0x005950B8 lb/lbuii
 lobby 0x00599020 0x00599278 lb/lbuin
 lobby 0x00599460 0x005997C0 lb/lbuio
 lobby 0x00599CB0 0x00599F54 lb/lbuip
+lobby 0x0059A460 0x0059A6B8 f/lb_pz15
+lobby 0x0059CCA0 0x0059CFE4 f/lb_pz16
 lobby 0x0059A6C0 0x0059A754 lb/lbuiq
 lobby 0x0059C2F0 0x0059C324 lb/lbuir
 lobby 0x0059D250 0x0059D314 lb/lbuis
@@ -2155,6 +2157,7 @@ lobby 0x00535240 0x0053583C lb/lbmix
 lobby 0x00535C00 0x00535C80 lb/lbmixb
 lobby 0x00535E80 0x00536140 lb/lbmixc
 lobby 0x00536620 0x00536708 lb/lbmixd
+lobby 0x00535840 0x00535BF4 lb/lbmixe
 lobby 0x00536730 0x00536F1C lb/lbshp
 lobby 0x005376C0 0x00537854 lb/lbshpb
 lobby 0x0053E350 0x0053E358 lb/lbem04
@@ -2317,7 +2320,6 @@ lobby 0x005A06F0 0x005A0A50 b/lb_by174
 lobby 0x005AEF70 0x005AF260 b/lb_by175
 lobby 0x005AF4E0 0x005AF7B0 b/lb_by176
 lobby 0x0053BE00 0x0053BF30 b/lb_by177
-lobby 0x00535840 0x00535BF4 b/lb_by178
 lobby 0x00536460 0x00536618 b/lb_by179
 lobby 0x005C49F0 0x005C4CE8 b/lb_vs01
 lobby 0x005C31A0 0x005C34F8 b/lb_vs02
@@ -2406,6 +2408,8 @@ lobby:rodata 0x0065DC50 0x0065DC68 f/lb_pz07
 lobby 0x00594410 0x00594840 f/lb_pz08
 lobby:rodata 0x0065DC30 0x0065DC50 f/lb_pz08
 lobby:rodata 0x0065DCB0 0x0065DCE0 f/lb_plz
+lobby 0x005950C0 0x00595F64 f/lb_pz13
+lobby:rodata 0x0065DC70 0x0065DCB0 f/lb_pz13
 lobby 0x00595F70 0x00598DB0 f/lb_plz
 lobby 0x005B2AA0 0x005B2B2C b/lb_ncf01
 lobby 0x005AFEE0 0x005AFFA0 b/lb_cip01
