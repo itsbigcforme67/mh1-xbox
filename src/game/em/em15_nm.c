@@ -1936,7 +1936,7 @@ static void em_fly10_005C6430(EMW *em, EM15W *w) {
         NextStage_Dir_Set(em, em->tgt_pos);
         break;
     case 1:
-        em15_senkai_target(em, 2);
+        em15_senkai_target(em);
         em15_fly_adjy(em, 1);
         em->pos[1] += 100.0f;
         temp_f1 = em->pos[1];

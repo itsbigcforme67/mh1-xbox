@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# env: LBTU_NOB=1 LBTU_HDR=a.h,b.h (village TUs, agent F); LBHDR=lbui_proto (plaza TUs: base header of the run family, agent C; also renames ANSI-prototype clashes to name_pN/name_k).
 """lbtu3.py NAME START END OUTFILE: like lbtu2.py but resolves conflicting declarations between the merged runs:
 a declaration (extern object, typedef, #define) whose identifier is already declared differently by an earlier run is
 renamed inside its own run (name_cN); renamed externs get a linker alias line printed to OUTFILE.alias
@@ -78,7 +79,14 @@ for a, b, r in runs:
         par = re.search(r'\w\(([^)]*)\)', first)
         if par and par.group(1).strip() not in ('', 'void') and not re.search(r'\)\s*\n\s*\w', first.strip()):
             ansi.add(mm.group(1))
-print('ansi', len(ansi), file=sys.stderr)
+ansi_decl = set()  # functions some run declares with typed (ANSI) parameters
+for a, b, r in runs:
+    s0 = open('src/lobby/%s.c' % r).read()
+    for u in units(s0):
+        k = ident(u)
+        if k and k[0] == 'fn' and not re.search(r'\(\s*(void)?\s*\)', u) and re.search(r'\(\s*(?:const\s+)?(?:s8|u8|s16|u16|s32|u32|int|char|f32|float)\b', u) and not u.strip().startswith('asm'):
+            ansi_decl.add(k[1])
+print('ansi', len(ansi), 'ansi_decl', len(ansi_decl), file=sys.stderr)
 knr = []
 seen = {}  # (kind,name) -> normalized text
 decls = []; aliases = []; items = []; renamed = {}
@@ -94,7 +102,9 @@ def seed(path, done=set()):
 INC = re.compile(r'^#include "(lobby_f|lobby_b|lobby_a|lobby_s|lbui_proto|lbnet)\.h"$')
 NOB = bool(os.environ.get('LBTU_NOB'))  # village TUs: runs include lobby.h, not the lobby_b.h family
 HDR = [h for h in os.environ.get('LBTU_HDR', '').split(',') if h]  # headers every run includes first (seeded + emitted at the top)
-if not NOB: seed('include/lobby_b.h'); seed('include/lbnet.h')
+BASEH = os.environ.get('LBHDR', 'lobby_b')
+if not NOB: INC = re.compile(INC.pattern.replace('lbui_proto|', 'lbui_proto|lbui|'))  # base header of the run family (e.g. lbui_proto for the plaza TUs)
+if not NOB: seed('include/%s.h' % BASEH); seed('include/lbnet.h')
 for h in HDR: seed('include/' + h)
 for ri, (a, b, r) in enumerate(runs):
     s = open('src/lobby/%s.c' % r).read()
@@ -110,6 +120,8 @@ for ri, (a, b, r) in enumerate(runs):
     for u in pre_units:
         k = ident(u)
         if k is None or INC.match(u.strip()): continue
+        if k is not None and k[0] == 'fn' and k in seen and seen[k] != norm(u) and re.search(r'\(\s*(?:const\s+)?(?:s8|u8|s16|u16|s32|u32|int|char|f32|float|void\s*\*|\w+\s*\*)[^)]*\)', u) and not re.search(r'\(\s*(void)?\s*\)', u) and k[1] not in allnames and k[1] in symaddr:
+            nn = '%s_p%d' % (k[1], ri); ren[k[1]] = nn; aliases.append('%s = 0x%08X;' % (nn, symaddr[k[1]]))
         if k in seen and seen[k] != norm(u) and k[0] in ('obj', 'type', 'def'):
             nn = '%s_c%d' % (k[1], ri); ren[k[1]] = nn
             if k[0] == 'obj':
@@ -130,7 +142,13 @@ for ri, (a, b, r) in enumerate(runs):
         if k and k[0] == 'obj' and k[1] in allnames and k[1] not in defhere and k[1] not in ren:
             ren[k[1]] = k[1] + '_o'; aliases.append('%s_o = 0x%08X;' % (k[1], symaddr[k[1]]))
     for n0 in sorted(ansi):
+        if n0 not in defhere and n0 not in ren and any(ident(u) == ('fn', n0) for u in pre_units) and re.search(r'\b%s\b' % re.escape(n0), bodytxt):
+            ren[n0] = '%s_p%d' % (n0, ri); aliases.append('%s = 0x%08X;' % (ren[n0], symaddr[n0]))
         if n0 not in defhere and n0 not in ren and re.search(r'\b%s\s*\(' % re.escape(n0), bodytxt):
+            ren[n0] = n0 + '_k'; aliases.append('%s_k = 0x%08X;' % (n0, symaddr[n0])); knr.append('int %s_k();' % n0)
+    for n0 in sorted(ansi_decl):
+        declared_here = any((ident(u) == ('fn', n0)) for u in pre_units)
+        if not declared_here and n0 not in defhere and n0 not in ren and n0 in symaddr and re.search(r'\b%s\b' % re.escape(n0), bodytxt):
             ren[n0] = n0 + '_k'; aliases.append('%s_k = 0x%08X;' % (n0, symaddr[n0])); knr.append('int %s_k();' % n0)
     changed = True
     while changed:
@@ -188,7 +206,7 @@ for ad, n, tx in items:
     else: fwd.append('%s %s(%s);' % (ret, n, params))
 decls = decls + fwd + sorted(set(knr))
 body = '\n'.join(decls)
-out = ['/* %s - one translation unit 0x%08X-0x%08X (lbtu3). */' % (name, S, E) + (''.join('\n#include "%s"' % h for h in HDR) if NOB else '\n#define Lbs_MatchStart Lbs_MatchStart_hdr\n#include "lobby_b.h"\n#undef Lbs_MatchStart\ntypedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;'), body]
+out = ['/* %s - one translation unit 0x%08X-0x%08X (lbtu3). */' % (name, S, E) + (''.join('\n#include "%s"' % h for h in HDR) if NOB else '\n#define Lbs_MatchStart Lbs_MatchStart_hdr\n#include "%s.h"\n#undef Lbs_MatchStart\ntypedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;' % BASEH), body]
 raw = []
 for ad, n, t in items:
     if t is None:

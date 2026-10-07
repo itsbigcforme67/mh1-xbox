@@ -140,3 +140,7 @@ anything the coordinator must know to merge. Then stop.
   (`*(u8 *)0x3F33F1`). MWCC schedules stores differently for those than for named objects:
   replace them with the real symbol and field (game_w.step, ConnWork.x, ...). That closed many
   "3-10 off" near-matches at once.
+
+- Before deleting a run file that a whole-file TU replaces, grep tools/build_pc.sh
+  and tools/pc_lobby_matched.txt for it. If the PC build lists it, keep the file
+  (unregistered) or update the PC list in the same commit, then run build_pc.sh.
