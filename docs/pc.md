@@ -1590,7 +1590,9 @@ Real bugs found at run time (no warning shows them):
   Pl_set_quake_sub / Em_set_quake_sub / Pachinger_set_quake_sub (cam_nm.c),
   Npc_se_req(_com) (sndc03.c, via pc_patch.py), Pl_master_ck() in adx_se_set /
   adx_se_stop (bgm_nm.c: the hunter's item/status sounds) and Pile_on
-  (f_stage.c, via pc_patch.py), Item_box_get_efct() in box_get. Under
+  (f_stage.c, via pc_patch.py), Item_box_get_efct() in box_get, the NPC program's
+  init call in lb_npc_init_sub (lb_bz162.c, pc_patch.py; crashed under
+  -fstack-protector-all with em = 0). Under
   -fsanitize=undefined 14 quests crashed at start (a null pl in Pl_stg_ck from the
   Gypceros-class quake effects); with the arguments passed all 38 quests pass
   there too. Still missing an argument (found by tools-side scan, not
@@ -1602,7 +1604,9 @@ Real bugs found at run time (no warning shows them):
 How it was found: a copy of the tree built with `-fsanitize=undefined` in the
 game C and the link (copy tools/build_pc.sh, set GAMEFLAGS and LIBS; the
 first full build needs a second build_pc.sh run for pc_link_adapt). The test set
-runs under it (about 3x slower). Findings left as they are (harmless on the PC):
+runs under it (about 3x slower). `-fsanitize=address` does not start (the data tables
+the host fills by symbol name come up empty: pl01_adr_tbl null); `-fstack-protector-all`
+in the game C runs the whole set clean (it would catch a Put_page_num style smash). Findings left as they are (harmless on the PC):
 `x << 24` into the sign bit (colours; many files), `1 << 31` masks (shit11_nm),
 pointer + offset wraps when the stage hit data is relocated (shit1_nm), reads of
 player fields past PLW.part[2] and set00's tbl[i][2] on arrays declared too short

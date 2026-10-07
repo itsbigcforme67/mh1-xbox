@@ -118,6 +118,10 @@ PATCHES = {
         ("void Pile_on(void) {\n    game_w.x1B2 = 1;\n    if (Pl_master_ck() != 0) {",
          "void Pile_on(void *pl) {\n    game_w.x1B2 = 1;\n    if (Pl_master_ck(pl) != 0) {"),
     ],
+    # lb_npc_init_sub: the NPC program's init gets em (a0 left over)
+    "src/lobby/b/lb_bz162.c": [
+        ("    (**(void (***)())(em + 0x3CC))();", "    (**(void (***)())(em + 0x3CC))(em);"),
+    ],
     "src/lobby/f/lb_a.c": [
         ("    LBTRADE2 t;\n    void Ud_item_stack(u16, int);\n", "    LBTRADE2 t;\n"),
         # Lb_chat_receipt: Lb_get_plID(mac) gets msg (a0 left over)
