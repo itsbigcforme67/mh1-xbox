@@ -1,6 +1,7 @@
 /*
  * rt_prof.c - RT_PROF=1: CPU time per subsystem (see rt_prof.h). Clock:
- * clock_gettime on the PC, the performance counter on the Xbox.
+ * this thread's CPU time on the PC (other jobs on the machine do not count), the
+ * performance counter on the Xbox.
  */
 #include "rt_prof.h"
 #include <stdio.h>
@@ -37,7 +38,7 @@ static double now_ms(void)
     return (double)c.QuadPart * 1000.0 / (double)f.QuadPart;
 #else
     struct timespec t;
-    clock_gettime(CLOCK_MONOTONIC, &t);
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t);   /* CPU time of this thread: other jobs on the machine do not count */
     return t.tv_sec * 1000.0 + t.tv_nsec / 1e6;
 #endif
 }

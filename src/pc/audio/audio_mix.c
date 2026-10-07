@@ -2,6 +2,7 @@
 #include "audio.h"
 #include "../fmt/fmt.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 typedef struct {
@@ -54,6 +55,8 @@ void audio_reverb(float wet, float size)
 {
     int c, k;
     audio_lock();
+    if (getenv("RT_NOREVERB"))      /* test aid: mixer cost without the reverb */
+        wet = 0;
     if (wet <= 0.0f) {
         rv_wet = 0.0f;
         for (c = 0; c < 2; c++)
@@ -85,6 +88,7 @@ static float rv_tick(int c, float in)
 {
     float out = 0.0f, x;
     int k;
+    in += 1e-15f;       /* keeps the decaying tails out of denormal floats (very slow on x87 and the P3) */
     for (k = 0; k < RV_COMBS; k++) {
         rv_line *l = &rv_comb[c][k];
         float y = l->buf[l->pos];
@@ -339,6 +343,71 @@ void audio_stream_vol(int s, float vol)
     audio_unlock();
 }
 
+/* One voice into acc (nf stereo frames). Position in 32.32 fixed point
+ * (was a double per sample: the fraction, a float, is the same; the step
+ * rounds at 2^-32). ADPCM voices decode a block only when the position
+ * leaves the current one. */
+#define FX 4294967296.0
+static void mix_pcm(voice *v, float *acc, int nf, float gl, float gr)
+{
+    uint64_t pos = (uint64_t)(v->pos * FX), step = (uint64_t)(v->step * FX + 0.5);
+    uint64_t end = (uint64_t)v->n << 32, lp = v->loop >= 0 ? (uint64_t)v->loop << 32 : 0;
+    int i;
+    for (i = 0; i < nf; i++) {
+        int p = (int)(pos >> 32), q = p + 1;
+        float f = (float)(int)((uint32_t)pos >> 8) * (1.0f / 16777216.0f), s;
+        if (q >= v->n)
+            q = v->loop >= 0 ? v->loop : p;
+        s = v->pcm[p] + (v->pcm[q] - v->pcm[p]) * f;
+        acc[2 * i] += s * gl;
+        acc[2 * i + 1] += s * gr;
+        pos += step;
+        if (pos >= end) {
+            if (v->loop < 0) {
+                v->id = 0;
+                return;
+            }
+            while (pos >= end)
+                pos = lp + (pos - end);
+        }
+    }
+    v->pos = (double)pos / FX;
+}
+
+static void mix_vag(voice *v, float *acc, int nf, float gl, float gr)
+{
+    uint64_t pos = (uint64_t)(v->pos * FX), step = (uint64_t)(v->step * FX + 0.5);
+    uint64_t end = (uint64_t)v->n << 32, lp = v->loop >= 0 ? (uint64_t)v->loop << 32 : 0;
+    int i, b0 = v->blk * 28;
+    for (i = 0; i < nf; i++) {
+        int p = (int)(pos >> 32), q = p + 1, sp, sq;
+        float f = (float)(int)((uint32_t)pos >> 8) * (1.0f / 16777216.0f);
+        if (q >= v->n)
+            q = v->loop >= 0 ? v->loop : p;
+        if ((unsigned)(p - b0) >= 28u) {
+            vag_seek(v, p / 28);
+            b0 = v->blk * 28;
+        }
+        sp = v->buf[p - b0];
+        sq = (unsigned)(q - b0) < 28u ? v->buf[q - b0] : v->buf[28 + q % 28];
+        {
+            float s = sp + (sq - sp) * f;
+            acc[2 * i] += s * gl;
+            acc[2 * i + 1] += s * gr;
+        }
+        pos += step;
+        if (pos >= end) {
+            if (v->loop < 0) {
+                v->id = 0;
+                return;
+            }
+            while (pos >= end)
+                pos = lp + (pos - end);
+        }
+    }
+    v->pos = (double)pos / FX;
+}
+
 /* Called with the lock held by the backend (or by the dump path). */
 void audio_mix(int16_t *out, int frames)
 {
@@ -355,32 +424,10 @@ void audio_mix(int16_t *out, int frames)
                 continue;
             gl = v->vol * (v->pan > 0 ? 1.0f - v->pan : 1.0f);
             gr = v->vol * (v->pan < 0 ? 1.0f + v->pan : 1.0f);
-            for (i = 0; i < nf; i++) {
-                int p = (int)v->pos;
-                float f = (float)(v->pos - p), s;
-                int q = p + 1;
-                if (q >= v->n)
-                    q = v->loop >= 0 ? v->loop : p;
-                if (v->vag) {
-                    int sp, sq;
-                    vag_seek(v, p / 28);
-                    sp = v->buf[p % 28];
-                    sq = q / 28 == v->blk ? v->buf[q % 28] : v->buf[28 + q % 28];
-                    s = sp + (sq - sp) * f;
-                } else
-                    s = v->pcm[p] + (v->pcm[q] - v->pcm[p]) * f;
-                acc[2 * i] += s * gl;
-                acc[2 * i + 1] += s * gr;
-                v->pos += v->step;
-                if (v->pos >= v->n) {
-                    if (v->loop < 0) {
-                        v->id = 0;
-                        break;
-                    }
-                    while (v->pos >= v->n)
-                        v->pos = v->loop + (v->pos - v->n);
-                }
-            }
+            if (v->vag)
+                mix_vag(v, acc, nf, gl, gr);
+            else
+                mix_pcm(v, acc, nf, gl, gr);
         }
         if (rv_wet > 0.0f)              /* the voices' mix through the reverb (before the dry streams) */
             for (i = 0; i < nf; i++) {

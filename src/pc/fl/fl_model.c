@@ -34,11 +34,13 @@ static uint8_t *first_material_mask(const amo_part *p)
 
 /* RT_SKIN_CHECK=1: the vertex program's C model against the CPU skinning */
 static double chk_pos, chk_col;
-static long chk_n;
+static long chk_n, chk_parts, chk_v0, chk_v1, chk_batches, chk_mb0;
 static void chk_report(void)
 {
     fprintf(stderr, "skin check: %ld vertices, worst position error %.6f (relative), worst colour %.2f\n",
             chk_n, chk_pos, chk_col);
+    fprintf(stderr, "skin check: %ld parts built: %ld vertices -> %ld in the GPU batches, %ld batches (%ld material batches)\n",
+            chk_parts, chk_v0, chk_v1, chk_batches, chk_mb0);
 }
 
 static void build_part(fl_model *m, int pi)
@@ -151,6 +153,12 @@ static void build_part(fl_model *m, int pi)
             if (fp->check && gfx_skin_build(fp->check, &d, &sd) != 0) {
                 free(fp->check);
                 fp->check = NULL;
+            } else if (fp->check) {
+                chk_parts++;
+                chk_v0 += d.nvert;
+                chk_v1 += fp->check->nv;
+                chk_batches += fp->check->nbatch;
+                chk_mb0 += d.nbatch;
             }
         }
         free(tmask);
