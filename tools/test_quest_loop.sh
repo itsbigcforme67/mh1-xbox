@@ -8,6 +8,7 @@
 # RT_PL_WARP, RT_PL_WARP_EM, RT_PL_TARGET, RT_DMG_MUL. Saves go to
 # build/show/loop/card (deleted first). Headless, ~20 s on x86.
 cd "$(dirname "$0")/.."
+export RT_NOMOVIE=1   # the opening movie would only lengthen the scripted boot (test_movie.sh covers it)
 OUT=build/show/loop; mkdir -p $OUT
 export MH1_SAVE_DIR="$PWD/$OUT/card"; rm -rf "$MH1_SAVE_DIR"
 D=tools/pc_scripts

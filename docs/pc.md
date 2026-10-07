@@ -29,8 +29,11 @@ tick). Test aids are environment variables (RT_*), listed in the "Run"
 section and the round sections below; RT_PL_GOTO, RT_PL_TARGET=kN and
 RT_QCLEAR are the newest.
 
-Known gaps: opening and attract movies (Sofdec, open question in
-DECISIONS.md), the soft keyboard (typed-ASCII stand-in), reverb is an
+Movies (agent B, 7 Oct 2026): the opening, the extras' movies and the title's
+idle loop (logos -> opening -> title, the game's own demo task) play from
+AFS00.AFS; see "Movies (libmpeg2)" below. The soft keyboard is the game's own.
+
+Known gaps: reverb is an
 approximation, online play, ARM frame rate measured only up to round 20
 (25-28 fps at 960x720), nothing systematically compared with the PS2.
 
@@ -1203,3 +1206,125 @@ All PC side; no include/ or PS2-built file changed.
   (quest 10 nest: depth 10240 -> wet 0.19); nobody listened.
 - Small fix: `--quest` printed a garbage monster kind for quests without a
   big monster.
+
+
+## Movies (libmpeg2) (agent B, 7 Oct 2026)
+
+What plays: OPENING.sfd at boot (the game's opening_demo, select/demo.c; it
+runs after the logos and again whenever the title sits idle, then Start skips
+it through the game's own Select_task), and the extras menu's movies
+(omake_play). All nine .sfd in AFS00.AFS decode (sfd_tbl, imported from the
+disc, gives AFS entry and size).
+
+Parts:
+- third_party/libmpeg2: libmpeg2 0.5.1 (GPL v2, COPYING in the directory),
+  the plain-C files only (no asm, no libvo/convert), unmodified except our
+  config.h. Built by tools/build_pc.sh into build/pc/mpeg2/ (also in the ARM
+  build, which uses the same script; not run on ARM yet).
+- src/pc/movie/sfd.c: demux of the .sfd (an MPEG-1 system stream, 2048-byte
+  packs; video stream 0xE0 = MPEG-2 video, stream 0xC0 = ADX, header in the
+  first packet), libmpeg2 for the video, snd.c's ADX decoder for the audio,
+  YUV 4:2:0 -> RGBA (BT.601 limited). No platform calls.
+- src/pc/rt/rt_movie.c: the game's movie_reset/start/request/server/draw/
+  status_ck/exit on that. movie_draw is f_movie's: the 256x512 picture
+  (rows 32..479 shown) stretched over the 512x448 screen, sp_mh.sfd (320x448)
+  at its own size. all_reset stops a movie whose task was killed (Start at the
+  title).
+- Audio is the clock: stream 2 of the mixer (AUDIO_STREAM_MOVIE) counts the
+  frames it played (audio_stream_consumed); the video is decoded up to the
+  frame that time calls for (at most 4 per tick to catch up). Without an
+  audio device the game tick (30/s) is the clock; --audio-dump counts as
+  audio (the viewer now also dumps during the boot).
+- Env: RT_NOMOVIE=1 skips movies (the old behaviour; the scripted tests
+  set it, a 190 s movie would only lengthen them), RT_MOVIE_TRACE=1 logs
+  every 600 ticks (frame, audio and wall seconds, decode ms), RT_MOVIE_DUMP=dir
+  writes every 100th frame as PPM.
+- tools/test_movie.sh: headless boot, checks OPENING.sfd opens and frames
+  that are not blank reach the screen.
+
+Checked: sfd_test (src/pc/movie/sfd_test.c, standalone) writes frames as raw
+yuv420p. Against ffmpeg's output of the same OPENING.sfd (extracted to a temp
+dir, never committed) frames 0-399 match the planes bit for bit while the
+picture is black and at 65-70 dB PSNR afterwards (max pixel difference 6-10:
+different IDCT rounding; one extra black frame at the start in ours, so ffmpeg
+frame n+1 = ours n). The picture on screen (headless screenshot) shows the
+opening's sky/Rathalos shot at the right aspect. Audio: ADX output differs
+from ffmpeg's adpcm_adx by a small amount (mean 124 of 32768 over the first 20 s):
+our decoder (snd.c, used for the BGM too) takes scale+1, ffmpeg's takes the
+scale as is; which one CRI uses was not checked against hardware.
+Decode time per frame (this PC, -O2, one core): OPENING 0.8-1.7 ms average,
+worst 3-29 ms (a few slow outliers); the other eight 1.7-5.5 ms average, worst
+13-50 ms (one 194 ms spike while other jobs ran). 256x512 is small: 29.97 fps
+needs 33 ms. The Cortex-A53 / 733 MHz Xbox figure is not measured.
+Not checked: listening (no audio device here; with SDL's dummy device the
+audio clock ran 5% slow against wall time, that is the dummy driver pacing),
+the extras menu path by eye (decode and the draw code are shared with the
+opening), ARM, the window at other sizes, a real controller's Start skip.
+
+### Frog bait fishing: investigation, not finished (agent B, 7 Oct 2026)
+Setup that works: `RT_PL_ITEMS="125:5" RT_PL_WARP="10,11200,10850,C667"` with
+`--quest 165 --stage 54 --play` and an input script (square at tick 60): item 125
+(0x7D, the only bait that makes pl_mv079 call Eft22_set with arg 1 = frog float)
+is cast from the stage-54 spot (10930, 10740, r 400), the hunter waits in act 80
+with flag 0x80000 set. Facts read from the C: Plesioth (em21) notices a fisher
+only through its command script: em_cmd_pl_fishing_ck (opcode 0x45, any hunter
+with flag 0x80000 on its stage) -> em_cmd_target_pl_act_ck -> action 2/0x11
+(em_fly17: Kaeru_ck(player) finds the arg-1 float, sets the hunter's x881 = bite)
+-> 2/0x12 (em_fly18: pulls the hunter, FishWyvernCameraRequest). In 7000 ticks
+(gdb hit counts) em_cmd_ck ran 52 times but em_cmd_pl_fishing_ck only once (before
+the cast), so the script that contains the fishing check is not reached from
+Plesioth's normal swim loop here (em_cmd_ninshiki_ck 10 times, sensor/find once).
+Which precondition (distance, the hunter being sensed, a mind/ikari state) selects
+that script was not found. Not done: the bite, the pull, the camera.
+
+Update (frog fishing, same day): what selects the script. em_cmd_ck's main script
+(table 0) ends `eye_dmg_ck (0x39), mode_ck (0x0B), main_jump (0x07)`: mode_ck compares
+em->x888 (0 = idle, 1 = combat, set by Em_Mode_Chg) and jumps to table 1 (idle: its
+`stage_no_sel` 0x15 picks the per-stage block, stage 0x36 block 8 holds
+all_pl_same_stage_ck 0x28 -> pl_fishing_ck 0x45) or to tables 2/3/4 (combat: target
+select, then the attack loop; none has the fishing check). So the frog bite is only
+evaluated while the Plesioth is idle (x888 = 0), once per idle script cycle. Plesioth
+leaves idle when pl_ninshiki_ck/the eye test (em_core_nm.c: search table kind 21:
+dist 5000 horizontal, fov +-5461 (30 deg), down 1000 / xC 1200 vertical: a hunter more
+than 1000 above the Plesioth is not seen, so it must be near the surface; no line-of-
+sight test unless game_w.gate_open, which only quests 0x66-0x6A/0xCF set) sets x88F.
+On the PC the Plesioth notices the hunter in the second script cycle and then x886
+(the 900-tick combat timer) stays at 900 for 4000+ ticks while x88F is set, so the idle
+script (and the fishing check) is never reached again. Not found: how the PS2 flow gets
+the Plesioth idle while a frog float sits in the water (hunter outside its 30 degree
+cone, or the Plesioth deep: at y -1990 the hunter, 2040 above, is not seen), nor why x886
+does not run down here. Next test: cast while the Plesioth is deep (first ~60 ticks) or
+from behind its cone, with gdb on em_cmd_pl_fishing_ck.
+Build note: libmpeg2 compiles through cc_obj (objects build/pc/mpeg2_*.o); sfd.c is in
+build_xbox.py's FRONT list; tools/build_xbox.py links (default.xbe built).
+
+## Stand-ins wired to game C (agent F, round 22)
+
+How the list was made: `RT_TRACE=1` run through the three tests prints each stand-in that runs once
+("rt: NAME not ported"); the rest of the 414 weak stand-ins in build/pc/rt_gen.c were classified by name.
+Online (cnLBS_*, CallBack_*, lm_*, plaza_*, Bs*/sceHTTP*/stock*/tag* browser, ssl) is ignored.
+
+Wired this round (tools/build_pc.sh: `PICK_X` for main/game files, `PICK` for lobby files; only the named
+functions are taken from each file; all 3 tests pass after each step):
+- Monsters: clr_em_work, push_em_work_all (emw01.c), push_em_yobi, pull_em_yobi (emw02.c),
+  em_search_set, get_joint_mat_em (emsrch_nm.c). Monster work push/pop and joint lookups no longer no-ops.
+- Quests/village: Lb_make_quest_tbl (lb_v17.c, the elder's quest list), lb_guild_check_keyQuest (lb_gy01.c, key quests
+  in the list), get_CA_size (lb_t.c).
+- Menus: put_button_help (lb_uif.c, the help line; lbtu3 alias names are renamed back with objcopy in build_pc.sh).
+- Sets/objects: Set06_set, Set21_set (set06.c, set21.c).
+- Credits: Staff_init, Staff_main (staff_nm.c).
+- Sound: Npc_se_req (sndc03.c), sound_req_com, ashi_sd_req_005C4980 (village NPC voices and footsteps).
+- Visuals: stage_spr_disp (sun/sky sprites, f_stage_nm.c), lb_pl_item_trans (hunter item model in village, weapon3_nm.c).
+
+Still stand-ins that a player could notice (not wired; reason):
+- Village/menus: disp_status (hunter status screen, in lb_plz3.c, online TU), lb_rule_seet_set / lb_rule_seet_trans /
+  lb_guild_make_room (room rule sheet, online rooms), lb_member_*Check, Lb_join, DispNameAndIDonDialog, fillRect.
+- Items/equipment: EquipmentDescriptionWindowA_s, Equip_moji_color_rare_i, flfntLocate_i, Put_PageArrow_s (rename aliases of
+  chat_nm.c functions: need linker aliases), armor_model_free, edit_create_model (model memory is host side).
+- Effects/render: trans_shell, trans_set, trans_eft, trans_eft_up, draw_prim, SetDiffuseColor (the host draws these in rt_eft.c / rt_fl.c;
+  wiring needs the GS packet layer, not done).
+- Engine/loading (harmless on PC, run every start): View_init, init_view_work, light_init, load_eft, load_shadow,
+  model_work_init, flAdjustScreen, flExp, setBGcolor, str_outmode, str_master_vol, str_stop_all, release_texture, ADXM_Lock/Unlock.
+- Sound: cnWrap_Bgm* are online-side names; BGM goes through the host's rt_snd.c. flPADShockSet (vibration) is not wired.
+New stand-ins appear when a wired function calls something else not ported (SetPartsTrans, weapon_dat_make*, light_change_normal, ...);
+none of them ran in the tests.

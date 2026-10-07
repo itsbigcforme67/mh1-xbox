@@ -2452,14 +2452,14 @@ u8 *em_cmd_samestage_pl_target_sel(EMW *em, u8 *p) {
     if (em->x88F != 0) {
         m = 0;
         j = 0;
-        if (0 < (s32) * (u8 *)0x3F34C3) {
+        if (0 < game_w.pl_num) {
             do {
                 bit = 1 << j;
                 if ((em->x88F & bit) && Pl_stg_ck_tw(em, &player_work[j]) != 0 && player_work[j].be_flag != 0) {
                     m = (m | (bit & 0xFF)) & 0xFF;
                 }
                 j += 1;
-            } while (j < (s32) * (u8 *)0x3F34C3);
+            } while (j < game_w.pl_num);
         }
         if ((m & 0xFF) == 0) {
             em->x844 = 0xFF;
@@ -2468,14 +2468,14 @@ u8 *em_cmd_samestage_pl_target_sel(EMW *em, u8 *p) {
         /* players that hate us a lot (>= 50000) */
         i = 0;
         n = 0;
-        if ((s32) * (u8 *)0x3F34C3 > 0) {
+        if (game_w.pl_num > 0) {
             do {
                 if (em->x918[i] >= 0xC350 && (m & (1 << i))) {
                     list[n] = i;
                     n += 1;
                 }
                 i += 1;
-            } while ((s32)i < (s32) * (u8 *)0x3F34C3);
+            } while ((s32)i < game_w.pl_num);
         }
         if (n >= 2) {
             v = list[0];
@@ -2487,7 +2487,7 @@ u8 *em_cmd_samestage_pl_target_sel(EMW *em, u8 *p) {
         } else if (n == 1) {
             v = list[0];
         } else {
-            pn = *(u8 *)0x3F34C3;
+            pn = game_w.pl_num;
             i = 0;
             n = 0;
             for (; (s32)i < (s32)pn; i++) {
@@ -2507,7 +2507,7 @@ u8 *em_cmd_samestage_pl_target_sel(EMW *em, u8 *p) {
             } else if (n == 1) {
                 v = list[0];
             } else {
-                pn = *(u8 *)0x3F34C3;
+                pn = game_w.pl_num;
                 i = 0;
                 n = 0;
                 for (; (s32)i < (s32)pn; i++) {
@@ -2532,7 +2532,7 @@ u8 *em_cmd_samestage_pl_target_sel(EMW *em, u8 *p) {
                     }
                     if ((flag & 0xFF) == 1) {
                         i = 0;
-                        pn = *(u8 *)0x3F34C3;
+                        pn = game_w.pl_num;
                         n = 0;
                         for (; (s32)i < (s32)pn; i++) {
                             if (m & (1 << i)) {
@@ -2785,14 +2785,14 @@ u8 *em_cmd_st25_pl_target_sel(EMW *em, u8 *p) {
     if (em->x88F != 0) {
         m = 0;
         j = 0;
-        if (0 < (s32) * (u8 *)0x3F34C3) {
+        if (0 < game_w.pl_num) {
             do {
                 bit = 1 << j;
                 if ((em->x88F & bit) && Pl_stg_ck_tw(em, &player_work[j]) != 0 && player_work[j].be_flag != 0) {
                     m = (m | (bit & 0xFF)) & 0xFF;
                 }
                 j += 1;
-            } while (j < (s32) * (u8 *)0x3F34C3);
+            } while (j < game_w.pl_num);
         }
         if (!(m & 0xFF) || (t = em->x70E, (t == 0))) {
             em->x844 = 0xFF;
@@ -2800,18 +2800,18 @@ u8 *em_cmd_st25_pl_target_sel(EMW *em, u8 *p) {
         }
         if ((s32)t > 0 && (s32)t < 4) {
             j = 0;
-            if ((s32) * (u8 *)0x3F34C3 > 0) {
+            if (game_w.pl_num > 0) {
                 do {
                     bit = 1 << j;
                     if (!(m & 0xFF & bit) || (t = player_work[j].x70E, ((s32)t <= 0)) || ((s32)t >= 4)) {
                         m = m & (~bit & 0xFF) & 0xFF;
                     }
                     j += 1;
-                } while (j < (s32) * (u8 *)0x3F34C3);
+                } while (j < game_w.pl_num);
             }
         } else {
             j = 0;
-            if (0 < (s32) * (u8 *)0x3F34C3) {
+            if (0 < game_w.pl_num) {
                 do {
                     bit = 1 << j;
                     if ((m & 0xFF & bit) && (t = player_work[j].x70E, !((s32)t < 4)) && (s32)t < 0xB) {
@@ -2819,19 +2819,19 @@ u8 *em_cmd_st25_pl_target_sel(EMW *em, u8 *p) {
                         m = m & (~bit & 0xFF) & 0xFF;
                     }
                     j += 1;
-                } while (j < (s32) * (u8 *)0x3F34C3);
+                } while (j < game_w.pl_num);
             }
         }
         i = 0;
         n = 0;
-        if (0 < (s32) * (u8 *)0x3F34C3) {
+        if (0 < game_w.pl_num) {
             do {
                 if (em->x918[i] == 0xC350 && (m & 0xFF & (1 << i))) {
                     list[n] = i;
                     n += 1;
                 }
                 i += 1;
-            } while ((s32)i < (s32) * (u8 *)0x3F34C3);
+            } while ((s32)i < game_w.pl_num);
         }
         if (n >= 2) {
             v = list[0];
@@ -2843,7 +2843,7 @@ u8 *em_cmd_st25_pl_target_sel(EMW *em, u8 *p) {
         } else if (n == 1) {
             v = list[0];
         } else {
-            pn = *(u8 *)0x3F34C3;
+            pn = game_w.pl_num;
             i = 0;
             n = 0;
             for (; (s32)i < (s32)pn; i++) {
@@ -2863,7 +2863,7 @@ u8 *em_cmd_st25_pl_target_sel(EMW *em, u8 *p) {
             } else if (n == 1) {
                 v = list[0];
             } else {
-                pn = *(u8 *)0x3F34C3;
+                pn = game_w.pl_num;
                 i = 0;
                 n = 0;
                 for (; (s32)i < (s32)pn; i++) {
@@ -4556,11 +4556,11 @@ void NextStage_Dir_Set(EMW *em, f32 *out) {
     f32 dz;
     s8 flag;
 
-    to = Stage_data_get(em->x73A);
+    to = Stage_data_get((u16)em->x73A);
     cur = Stage_data_get(em->stg);
     flag = 0;
-    dz = (to->z + to->d / 2.0f) - (cur->z + cur->d / 2.0f);
     dx = (to->x + to->w / 2.0f) - (cur->x + cur->w / 2.0f);
+    dz = (to->z + to->d / 2.0f) - (cur->z + cur->d / 2.0f);
     if (dx <= cur->w / 3.0f) {
         out[0] = 0.0f;
     } else if (dx <= (2.0f * cur->w) / 3.0f) {

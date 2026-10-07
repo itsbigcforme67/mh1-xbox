@@ -14,7 +14,7 @@ mkdir -p build/pc
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
     src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c \
-    src/pc/fmt/snd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c src/pc/gfx/gfx_pal.c"
+    src/pc/fmt/snd.c src/pc/movie/sfd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c src/pc/gfx/gfx_pal.c"
 RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_game.c src/pc/rt/rt_fl.c src/pc/rt/rt_overlay.c src/pc/rt/rt_main.c src/pc/rt/rt_eft.c src/pc/rt/rt_hit.c src/pc/rt/rt_cam.c"   # (listing only)
 # Decompiled game C run natively. set14_nm.c is the whole set14 file
 # (set14_trans is a near-match on the PS2 side, believed equivalent).
@@ -220,6 +220,7 @@ PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint"
 # lb_bz110, lb_bz137, lbuiv, lbuiw) into one TU, f/lb_cli.c (8 Oct 2026):
 # the functions the PC used from them
 PICK="$PICK src/lobby/f/lb_cli.c:lbc_text_lobby_trans,Lbs_GetRoomInfo,Lbc_set_prim,Lbc_init_network_work,Lbc_connect,text_lobby_trans_ot3,GetRoomRule,Lbs_MatchStart"
+PICK="$PICK src/lobby/f/lb_v17.c:Lb_make_quest_tbl src/lobby/f/lb_t.c:get_CA_size src/lobby/f/lb_uif.c:put_button_help src/lobby/f/lb_gy01.c:lb_guild_check_keyQuest src/lobby/b/lbsnd02.c:sound_req_com src/lobby/b/lbsnd03.c:ashi_sd_req_005C4980"
 LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*}"; done)"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
 WEAK="$WEAK_EM mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
@@ -227,6 +228,10 @@ WEAK="$WEAK_EM mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage
 # item combining (item_nm.c: the recipe lookup; its dropped-item pool keeps the host stand-ins, renamed)
 SK="src/main/item/item_nm.c src/main/tu/sk_all.c src/main/tu/hk_all.c src/main/sk/sk20.c src/main/sk/cmd_nm.c"
 GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT $SK"
+# Stand-ins replaced by the game's own C (docs/pc.md "Stand-ins wired"): only the named functions are taken
+PICK_X="src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
+GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
+PICK_MAIN="$PICK_MAIN $PICK_X"
 
 SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}
 CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L"
@@ -253,7 +258,9 @@ cc_obj() {
 # (0x3F2060) and two game.bin tables; main's mode menu starts select.bin
 # tasks by address (Demo_task, Edit_task, Cont_task)
 # (aliases, made by tools/pc_link_adapt.py in the defining objects)
-ALIASES="D_3F2080=rview_mat+0x20 D_3F2090=rview_mat+0x30 D_63BC40=enemy_shadow_size D_63BD60=enemy_mahi_size \
+# lbtu3 alias names used by lb_uif.c (config/lobby_aliases.txt)
+ALIASES="put_button_help_a1=put_button_help Draw_square_a3=Draw_square font_print_double_a3=font_print_double helpLineTbl_c2=helpLineTbl helpLineStr_c2=helpLineStr \
+ D_3F2080=rview_mat+0x20 D_3F2090=rview_mat+0x30 D_63BC40=enemy_shadow_size D_63BD60=enemy_mahi_size \
       D_63FC50=em_hit_push_tbl D_63FA10=em_body_tbl D_3E4C9C=player_work+0xAC \
       D_533BE0=Demo_task D_5367F0=Edit_task D_5375F0=Cont_task"
 
@@ -357,6 +364,11 @@ for f in $GAME; do
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/typedef struct BRPD { unsigned __int128 q\[29\]; } BRPD;/typedef struct BRPD { struct { unsigned int w[4]; } q[29]; } BRPD;/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
+    # lb_uif.c (TU): the cursor helpers are static after a global prototype
+    src/lobby/f/lb_uif.c)
+        src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
+        sed 's/^static void tl_menu_cursor_\(up\|down\)(m)/void tl_menu_cursor_\1(m)/' "$f" > "$src"
+        INC="$INC -I$(dirname "$f")" ;;
     # sk_all.c declares sk_henkan_sub both with and without a parameter list (MWCC takes the call as written)
     src/main/tu/sk_all.c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
@@ -422,6 +434,12 @@ for o in $OBJS; do
     for w in $W; do echo "weak $o $w"; done >> $REQ
 done
 sort -u -o $REQ $REQ
+# libmpeg2 0.5.1 (third_party/libmpeg2, GPL v2, plain C): the movies' MPEG-2 video
+for f in alloc cpu_accel cpu_state decode header idct motion_comp slice; do
+    o=build/pc/mpeg2_$f.o
+    cc_obj mpeg2_$f "$CC $M32 -std=gnu99 -O2 -w -Ithird_party/libmpeg2 $SYS -c third_party/libmpeg2/$f.c -o $o"
+    OBJS="$OBJS $o"
+done
 # data tables (names in src/pc/rt/tables.txt; bytes come from the disc at run time)
 python3 tools/gen_rt_tables.py src/pc/rt/tables.txt build/pc/rt_tables.c
 # shellcheck disable=SC2086
@@ -433,7 +451,7 @@ OBJS="$OBJS build/pc/rt_tables.o"
 MEMSTAT="-include src/pc/rt/rt_memstat.h"
 $CC $CFLAGS $SYS -c src/pc/rt/rt_memstat.c -o build/pc/rt_memstat.o
 OBJS="$OBJS build/pc/rt_memstat.o"
-for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot; do
+for f in rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie; do
     # shellcheck disable=SC2086
     cc_obj $f "$CC $CFLAGS $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o"
     OBJS="$OBJS build/pc/$f.o"

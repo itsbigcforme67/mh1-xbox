@@ -7,6 +7,7 @@
 # screenshots in build/show/name/ show the keyboard and the NAME row
 # (look at them). Headless, about 1 minute.
 cd "$(dirname "$0")/.."
+export RT_NOMOVIE=1   # the opening movie would only lengthen the scripted boot (test_movie.sh covers it)
 OUT=build/show/name; mkdir -p $OUT
 D=tools/pc_scripts
 # the base script is cut where the keyboard is up (tick 1010)

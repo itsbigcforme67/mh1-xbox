@@ -652,3 +652,20 @@ Details in docs/pc.md (handover summary at the top, round 23 at the end).
 - Lesson: lld-link 18 errors on two COFF weak definitions of one symbol seen
   before a strong one; and clang's `.weak.X.default.Y` names collide when Y is
   a shared `__real@` constant. Both handled in build_xbox.py.
+
+## Round 3 (7 Oct 2026): memory trims, nv2a gaps, stack, build fixes
+
+- Memory: CPU heap title / village / Rathian 57.7 / 69.9 / 76.9 MB ->
+  18.4 / 23.6 / 18.4 MB; Xbox textures 3-7 MB as P8. Details and the ~51 of
+  64 MB estimate in docs/xbox.md. Checks: PC tests pass, five screenshots
+  byte-identical, 60 s audio dump byte-identical.
+- gfx_nv2a.c: P8 textures, near-plane clipping, fog (untested on xemu).
+- Stack: RT_STACK=1 watermark, 35 KB used; XBE stack 256 KB.
+- build_pc.sh flake ("no compile command for build/pc/rt_gen.o"): the first
+  pc_link_adapt pass included the previous build's rt_gen.o; when its
+  header changed and cmd/rt_gen.sh did not exist it failed (reproduced).
+  rt_gen.o now joins objs.txt only after it is generated. build_xbox.py
+  silently skipped objects without a recorded command (rt_gen -> the 20
+  undefined symbols); it now stops with a message.
+- Lesson: never `pgrep -f` a pattern in a wait loop: the loop's own command
+  line matches it (my wait loop never ended; killed by PID).

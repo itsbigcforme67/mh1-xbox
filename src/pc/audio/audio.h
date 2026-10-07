@@ -19,16 +19,22 @@
 
 #define AUDIO_RATE    48000
 #define AUDIO_VOICES  48        /* the PS2 SPU2 has 48 voices */
-#define AUDIO_STREAMS 2         /* str_w channels 0 (BGM) and 1 (jingles) */
+#define AUDIO_STREAMS 3         /* str_w channels 0 (BGM) and 1 (jingles); 2 = movie audio */
+#define AUDIO_STREAM_MOVIE 2
 
 /* backend (audio_sdl.c) */
 int  audio_open(void);          /* 0 = device open; -1 = silent (mixer still works) */
 void audio_close(void);
 void audio_lock(void);
 void audio_unlock(void);
+int  audio_device_open(void);   /* 1 = a device is pulling audio_mix */
 
 /* mixer (audio_mix.c) */
 void audio_reset(void);
+/* 1 = something drives audio_mix at the real rate (a device, or the viewer's
+ * --audio-dump): the movie then takes its clock from the audio. */
+int  audio_live(void);
+void audio_set_driven(int on);
 /* Start a voice; pcm must stay valid until the voice ends or is stopped.
  * loop = loop start sample or -1. vol 0..1, pan -1..1, pitch = rate
  * multiplier. Returns a voice id (> 0) or 0 if no voice is free. */
@@ -45,6 +51,8 @@ void audio_voice_stop_buffer(const void *p, size_t bytes);       /* stop voices 
 int  audio_stream_free(int s);                                   /* frames that fit */
 void audio_stream_write(int s, const int16_t *lr, int frames, int rate);
 void audio_stream_clear(int s);
+/* Source frames of stream s the mixer has played since the last clear. */
+uint64_t audio_stream_consumed(int s);
 void audio_stream_vol(int s, float vol);
 /* Reverb on the voices (sound effects; streams stay dry): wet 0..1 (0 =
  * off), size 0..1 (small room .. hall). A plain Schroeder reverb, not the

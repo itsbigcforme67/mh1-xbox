@@ -11,6 +11,7 @@
 # Input timings are absolute ticks; D shifts the post-hunt part (the
 # Velocidrome takes ~510 ticks longer to kill). Headless, ~40 s on x86.
 cd "$(dirname "$0")/.."
+export RT_NOMOVIE=1   # the opening movie would only lengthen the scripted boot (test_movie.sh covers it)
 P=build/show/urg; mkdir -p $P
 [ -f build/show/loop/card/BISLPM-65495MH/BISLPM-65495MH ] || tools/test_quest_loop.sh >/dev/null || exit 1
 export MH1_SAVE_DIR="$PWD/$P/card"; rm -rf "$MH1_SAVE_DIR"; cp -r build/show/loop/card "$MH1_SAVE_DIR"

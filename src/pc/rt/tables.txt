@@ -1067,3 +1067,4 @@ moji_tbl_num_h
 moji_tbl_num_h_ol
 nn_tbl
 yn_kigou_tbl
+sfd_tbl
