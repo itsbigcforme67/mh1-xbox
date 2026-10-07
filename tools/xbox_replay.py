@@ -28,6 +28,10 @@ def main():
                 continue
             n.append(x)
         jobs.append((src, n, os.path.join(out, os.path.basename(o)[:-2] + '.obj')))
+    last = {}                   # an object compiled twice (link-adapt header): the last command wins
+    for j in jobs:
+        last[j[2]] = j
+    jobs = list(last.values())
     # clang 18 makes these gcc warnings errors in C99; the decompiled C relies on them
     extra = ['-Wno-error=implicit-function-declaration', '-Wno-error=implicit-int', '-Wno-error=int-conversion',
              '-Wno-error=incompatible-function-pointer-types', '-Wno-error=return-type']

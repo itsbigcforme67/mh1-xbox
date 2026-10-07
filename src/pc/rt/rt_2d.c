@@ -60,6 +60,7 @@ void *flCreateTextureFromApx_mem(void *p, int type)
             fclose(f);
         }
     }
+    gfx_tex_src_hint = img.src_bytes;
     tex[ntex].t = gfx_create_texture(img.w, img.h, img.rgba);
     tex[ntex].w = img.w;
     tex[ntex].h = img.h;

@@ -45,6 +45,7 @@ void fade_draw(void);
 void system_w_init(void);
 void option_default_set(void);
 void User_data_init(void);
+void SoftKeyboard_init(void);
 void Default_reibun_set(void);
 void str_outmode(int);
 void str_master_vol(int);
@@ -166,6 +167,7 @@ void rt_boot_init(void)
     option_default_set();
     User_data_init();
     Default_reibun_set();
+    SoftKeyboard_init();
     system_w_set();
     /* ACRMain's first frame */
     SchedulerInit();
