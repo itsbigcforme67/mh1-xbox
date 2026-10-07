@@ -1345,3 +1345,21 @@ Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item
   out. What differs on the PS2 (rise speed, the hunter being outside the cone while the Plesioth is high, or the
   hunter's flag14 == 3, which the eye test skips) is not known; fishing_ck/Kaeru_ck/em_fly17/18 are linked and
   untouched.
+
+### Frog fishing works end to end (agent B, round 3)
+- flag14 == 3 is the "damaged" action kind (Pl_act_set(pl, 3, ...) in pl_damage.c), not fishing; the fishing hunter has
+  flag14 0 (act 0/0x50 waiting), so the eye test does see him. That candidate is refuted.
+- With the Plesioth kept idle (new test aid `RT_EM_BLIND=1`: x88B = 0 before enemy_mv each tick, so
+  em_eye_search_set clears x88C) the whole chain runs on the game's own code with no PC changes: the idle script's
+  stage-54 block (contents 8) passes em_cmd_pl_fishing_ck, em21 starts act 2/17 (em_fly17: Kaeru_ck finds the frog float
+  Eft22 arg 1), the hunter reels (circle, act 0/0x53 = 83), act 2/18 pulls the Plesioth out (195 ticks), then 4/15
+  (landed, steps 1-7) and it walks on land (1/x). Which fishing check passes is random per idle cycle (x39A): in the run
+  FISHCK ran at ticks 496, 617, 1178 and only the last led to 2/17.
+- Why it does not happen without the aid: the idle script's first cycle (352 ticks) starts when the stage loads, with
+  no float out, so it targets the hunter (target kind player) and its closing act 2/3 turns the Plesioth toward him; the
+  30 degree eye cone sweeps over the hunter, x88C is set, Em_Mode_Chg(1) and the Plesioth fights for as long as it
+  sees him (x886 is reset every tick while noticed; that is the original). Whether the PS2 shows the same (a real
+  player probably leaves its sight, waits for it to calm down, then casts before an idle cycle starts) is not
+  verified. Not a PC bug as far as found: the eye angle follows the head joint matrix correctly (checked against
+  the bearing), the casting and bite code is unmodified game C.
+- tools/test_frog.sh runs it: cast at tick 14, bite at tick ~1179, circle at 1200; passes on the em act log.
