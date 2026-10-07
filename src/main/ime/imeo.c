@@ -173,7 +173,7 @@ void strncpy();
 void clear_prevwd();
 void kh_learn();
 void prev_learn();
-void add_prevwd();
+static void add_prevwd();
 int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
@@ -188,8 +188,8 @@ int dic_getgaku();
 void init_univmem();
 void init_hchar();
 void init_edit0();
-int g2jodo();
-int getbit(s16);
+static int g2jodo();
+static int getbit(s16);
 int is_shift();
 void *memcpy();
 int close_dic();
@@ -330,14 +330,14 @@ extern int first_init_5;
 KH *raw_kouho();
 KH *kh_endof();
 void khmem_raw();
-void kh_append_init();
-void kh_append();
-int kh_merge_getone();
+static void kh_append_init();
+static void kh_append();
+static int kh_merge_getone();
 static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
-void kouho_set_num();
+static void kouho_set_num();
 int jiritu_makedisp();
 int next_gun();
 int back_gun();
@@ -361,10 +361,10 @@ int ToUpper();
 u8 *getrda1();
 u8 *getrda2();
 int add_kana_buf();
-int bytesin_kana_buf();
+static int bytesin_kana_buf();
 int count_byte_kana_buf();
 int api_funcent();
-int get_kouhostr();
+static int get_kouhostr();
 int syn_2to3();
 void wd_learn();
 u8 *select_tostr();
@@ -469,143 +469,74 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void update_nowtmp(void)
-{
-    temp_updated = 1;
-}
-
-int setkbuflen(u8 *p)
+int concat_bslen(int pos, int end)
 {
     int n;
+    HCHAR *h;
+    int c;
 
+    c = 0;
+    h = &hchar[pos];
     n = 0;
-    while (*p != 0) {
-        if (iskanji(*p) != 0) {
-            p += 2;
-        } else {
-            p += 1;
+    while (pos < end) {
+        c = h->x15;
+        if (c == 0) {
+            return -1;
         }
-        n += 2;
+        if (h->bs != 0 && h->bs != (BS *)-1 && h->bs->x02 != 0x28) {
+            break;
+        }
+        pos += c;
+        n += c;
+        h += c;
     }
-    return n;
+    if (n == 0 || pos >= end) {
+        return n;
+    }
+    return n + c;
 }
 
-void setkbuf(u8 *src, u8 *dst)
+int muhenkan(int pos, int end)
 {
-    while (*src != 0) {
-        if (iskanji(*src) != 0) {
-            *dst = *src;
-            src++;
-            dst++;
-        } else {
-            *dst = 0xFF;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
+    int k;
+    u8 *p;
+
+    k = pos + 1;
+    if (k < end) {
+        p = kana_ustr + k;
+        do {
+            if (not_bhead(*p) == 0) {
+                break;
+            }
+            k++;
+            p++;
+        } while (k < end);
     }
+    return k - pos;
 }
 
-int getkbuflen(u8 *p, u8 *end)
+void fl_check(int pos, int end)
 {
+    void *found;
+    int hit;
+    HCHAR *h;
     int n;
+    u8 *p;
 
-    n = 0;
-    while (p < end && *p >= 0x39) {
-        if (*p == 0xFF) {
-            n++;
-        } else {
-            n += 2;
+    n = end - pos;
+    h = &hchar[pos];
+    p = kana_ustr + pos;
+    while (n > 0) {
+        if (h->x00 == -1) {
+            found = srch_pword(p, n, &hit);
+            if (found == (void *)-1) {
+                return;
+            }
+            h->x18 = hit;
+            h->x00 = (int)found;
         }
-        p += 2;
+        n--;
+        p++;
+        h++;
     }
-    return n;
-}
-
-void getkbuf(u8 *dst, u8 *src, u8 *end)
-{
-    while (src < end && *src >= 0x39) {
-        if (*src == 0xFF) {
-            src++;
-        } else {
-            *dst = *src;
-            src++;
-            dst++;
-        }
-        *dst = *src;
-        src++;
-        dst++;
-    }
-    *dst = 0;
-}
-
-int iskanji(int c)
-{
-    c = c & 0xFF;
-    if ((c >= 0x80 && c <= 0x9F) || (c >= 0xE0 && c <= 0xFC)) {
-        return 1;
-    }
-    return 0;
-}
-
-void init_hchar(void)
-{
-    HCHAR *h;
-
-    for (h = hchar; (u8 *)h < (u8 *)wdsbuf; h++) {
-        clear_hchar(h);
-    }
-}
-
-void clear_hchar(HCHAR *h)
-{
-    h->x00 = -1;
-    h->ch = 0;
-    h->bs = 0;
-    h->kh = 0;
-    h->x10 = 0;
-    h->x14 = 0;
-    h->x15 = 0;
-    h->x16 = 0;
-    h->x17 = -1;
-    h->x18 = -1;
-    h->x19 = -1;
-}
-
-void free_hchar(int from, int to, int keep)
-{
-    HCHAR *h;
-    HCHAR *end;
-
-    end = hchar + to;
-    for (h = hchar + from; h < end; h++) {
-        free_hchar_one(h, keep);
-    }
-}
-
-void free_hchar_one(HCHAR *h, int keep)
-{
-    if (keep == 0) {
-        h->x00 = -1;
-        h->x18 = -1;
-        if (h->ch != (void *)-1) {
-            free_chmemlist(h->ch);
-        }
-        h->ch = 0;
-        h->x17 = -1;
-        h->x19 = -1;
-        h->x16 = 0;
-    }
-    if (h->bs != 0 && h->bs != (BS *)-1) {
-        free_bsmemlist(h->bs);
-    }
-    h->bs = 0;
-    if (h->kh != 0) {
-        free_khmemlist(h->kh);
-    }
-    h->kh = 0;
-    h->x10 = 0;
-    h->x14 = 0;
-    h->x15 = 0;
 }

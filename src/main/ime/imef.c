@@ -173,7 +173,7 @@ void strncpy();
 void clear_prevwd();
 void kh_learn();
 void prev_learn();
-void add_prevwd();
+static void add_prevwd();
 int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
@@ -188,8 +188,8 @@ int dic_getgaku();
 void init_univmem();
 void init_hchar();
 void init_edit0();
-int g2jodo();
-int getbit(s16);
+static int g2jodo();
+static int getbit(s16);
 int is_shift();
 void *memcpy();
 int close_dic();
@@ -330,14 +330,14 @@ extern int first_init_5;
 KH *raw_kouho();
 KH *kh_endof();
 void khmem_raw();
-void kh_append_init();
-void kh_append();
-int kh_merge_getone();
+static void kh_append_init();
+static void kh_append();
+static int kh_merge_getone();
 static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
-void kouho_set_num();
+static void kouho_set_num();
 int jiritu_makedisp();
 int next_gun();
 int back_gun();
@@ -361,10 +361,10 @@ int ToUpper();
 u8 *getrda1();
 u8 *getrda2();
 int add_kana_buf();
-int bytesin_kana_buf();
+static int bytesin_kana_buf();
 int count_byte_kana_buf();
 int api_funcent();
-int get_kouhostr();
+static int get_kouhostr();
 int syn_2to3();
 void wd_learn();
 u8 *select_tostr();
@@ -588,4 +588,129 @@ u16 to_zenkaku_spec(int c)
 int ext_jis(int c, u16 hi)
 {
     return ((c & 0xFF) | ((hi & 0x100) + 0x2400)) & 0xFFFF;
+}
+
+int to_hankaku(out, code)
+u8 *out;
+int code;
+{
+    int c;
+    int u;
+
+    c = code & 0xFFFF;
+    switch (c & 0xFF00) {
+    case 0x2300:
+    case 0x0:
+        out[0] = c;
+        return 1;
+    case 0x2500:
+        code = (u16)(code & 0x24FF);
+    case 0x2400:
+    case 0x2100:
+        u = to_ucode(code) & 0xFF;
+        if (u < 0x98 || u >= 0xF7) {
+            out[0] = u;
+            return 1;
+        }
+        {
+            u16 t = asc2jis[0x78 + u];
+            out[0] = t;
+            if (t & 0x8000) {
+                out[1] = 0xDE;
+                return 2;
+            }
+            if (t & 0x4000) {
+                out[1] = 0xDF;
+                return 2;
+            }
+            return 1;
+        }
+    default:
+        out[0] = 0x20;
+        return 1;
+    }
+}
+
+int can_daku(int c)
+{
+    u8 buf[4];
+
+    if (is_shift() != 0) {
+        c = ask_sjis2jis(c) & 0xFFFF;
+    }
+    if (to_hankaku(buf, c) != 1) {
+        return 0;
+    }
+    return (rmtype[buf[0]] & 0xF) == 0xA;
+}
+
+int can_handaku(int c)
+{
+    u8 buf[4];
+
+    if (is_shift() != 0) {
+        c = ask_sjis2jis(c) & 0xFFFF;
+    }
+    if (to_hankaku(buf, c) != 1) {
+        return 0;
+    }
+    return (rmtype[buf[0]] & 0xF) == 0xB;
+}
+
+int srch_ucode(int code)
+{
+    u8 *p;
+
+    for (p = btoudata; p < btoudata + 180; p += 4) {
+        if (*(u16 *)p == (u16)code) {
+            return p[2];
+        }
+        if (*(u16 *)p > (u16)code) {
+            break;
+        }
+    }
+    return 0;
+}
+
+static int getbit(s16 n)
+{
+    return bitpool[n >> 3] & power[n & 7];
+}
+
+static int g2jodo(int c)
+{
+    c = c & 0xFF;
+    if (c > 0 && c < 0xE) {
+        return (c + 0x7F) & 0xFF;
+    }
+    return 0;
+}
+
+int goku_connect(int a, int b, int c)
+{
+    s16 om;
+    CNTAB *cn;
+
+    if ((u8)c < 0x80) {
+        return 0;
+    }
+    if ((u8)a < 0x2D && b != 0) {
+        a = g2jodo(a) & 0xFF;
+        if (a == 0) {
+            return 0;
+        }
+    }
+    om = offsetmap[a & 0xFF];
+    if (om == 0xFF) {
+        return 0;
+    }
+    if ((u8)c >= 0xC0) {
+        cn = &cntab[(u8)c - 0xC0];
+    } else {
+        cn = &cntab[(u8)c - 0x41];
+    }
+    if ((u8)a < 0x80 || (u8)a >= 0xC0) {
+        return getbit(cn->a + (s16)om);
+    }
+    return getbit(cn->b + (s16)om + (b & 0xFF) - 1);
 }

@@ -173,7 +173,7 @@ void strncpy();
 void clear_prevwd();
 void kh_learn();
 void prev_learn();
-void add_prevwd();
+static void add_prevwd();
 int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
@@ -188,8 +188,8 @@ int dic_getgaku();
 void init_univmem();
 void init_hchar();
 void init_edit0();
-int g2jodo();
-int getbit(s16);
+static int g2jodo();
+static int getbit(s16);
 int is_shift();
 void *memcpy();
 int close_dic();
@@ -330,14 +330,14 @@ extern int first_init_5;
 KH *raw_kouho();
 KH *kh_endof();
 void khmem_raw();
-void kh_append_init();
-void kh_append();
-int kh_merge_getone();
+static void kh_append_init();
+static void kh_append();
+static int kh_merge_getone();
 static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
-void kouho_set_num();
+static void kouho_set_num();
 int jiritu_makedisp();
 int next_gun();
 int back_gun();
@@ -361,10 +361,10 @@ int ToUpper();
 u8 *getrda1();
 u8 *getrda2();
 int add_kana_buf();
-int bytesin_kana_buf();
+static int bytesin_kana_buf();
 int count_byte_kana_buf();
 int api_funcent();
-int get_kouhostr();
+static int get_kouhostr();
 int syn_2to3();
 void wd_learn();
 u8 *select_tostr();
@@ -469,211 +469,69 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int main_getsyn(u8 *key, int len0, SRCH *r)
+void clear_rtime(u8 *ent)
 {
-    s16 len;
-    int page;
-    s16 klen;
-    u8 *base;
-    u8 *e;
-    int c;
+    u8 *end;
+    u8 *p;
 
-    len = len0;
-    if (len < 3 && chk_entry2() != 0) {
-        r->off = -1;
-        return 0;
-    }
-    page = srch_page(key);
-    e = base = load_page(page);
-    while (ELEN(e) != 0) {
-        klen = e[2];
-        c = ask_strncmp(e + 3, key, klen);
-        if (c == 0) {
-            if ((s16)klen == len) {
-                break;
+    end = ent + ELEN(ent);
+    p = ent + ent[2] + 3;
+    if (p < end) {
+        do {
+            p[1] = 0;
+            p += 2;
+            if (*p < 0xC) {
+                p++;
             }
-        } else if (c > 0) {
-            r->off = -1;
-            return 0;
-        }
-        e += ELEN(e);
+            p = next_wd(p, end);
+        } while (p < end);
     }
-    if (ELEN(e) == 0) {
-        r->off = -1;
-        return 0;
-    }
-    r->page = page;
-    r->off = e - base;
-    r->ent = e;
-    return 1;
 }
 
-int dic_get1wd(s64 id, int a, int b, u8 *out)
+void clear_allrtime(s64 *list, int n)
 {
     int off;
     int tmp;
     int unused;
-    int best;
     int page;
+    int i;
+    int r;
 
-    if (dic_fd == -1) {
-        return -3;
-    }
-    page = get_entid_tab(id, &off, &tmp, &unused);
-    if (page == -1) {
-        return 0;
-    }
-    best = -1;
-    if (off != -1) {
-        get1wd(load_page(page) + off, a & 0xFF, b & 0xFF, &best, out, 0);
-    }
-    if (tmp != -1) {
-        get1wd(load_temp(tmp), a & 0xFF, b & 0xFF, &best, out, 0x8000);
-    }
-    if (best == -1) {
-        return 0;
-    }
-    return 1;
-}
-
-void get1wd(u8 *ent, int a, int b, int *best, int out, int tag)
-{
-    u8 *p;
-    u8 *rec;
-    u8 *end;
-    u8 *hit;
-    int k;
-    int rt;
-    int old;
-
-    old = *best;
-    end = ent + ELEN(ent);
-    p = ent + ent[2] + 3;
-    hit = 0;
-    while (p < end) {
-        rt = p[1];
-        rec = p;
-        p += 2;
-        k = p[0];
-        if (k < 0xC) {
-            p++;
-        } else {
-            k = 0;
-        }
-        if (a == rec[0] && b == k && *best < rt) {
-            *best = rt;
-            hit = rec;
-        }
-        p = next_wd(p, end);
-    }
-    if (old < *best) {
-        set_wds(out, hit, end, tag | (hit - ent));
-    }
-}
-
-void set_wds(w0, rec, end, tag)
-void *w0;
-u8 *rec;
-u8 *end;
-int tag;
-{
-    s16 *w = w0;
-
-    w[0] = tag;
-    w[1] = rec[1];
-    rec += 2;
-    ((u8 *)w)[4] = 0;
-    if (rec[0] < 0xC) {
-        rec++;
-    }
-    getkbuf((u8 *)w + 5, rec);
-}
-
-int dic_getallwd(s64 id, int a, int b, int buf, int *out)
-{
-    int off;
-    int tmp;
-    int cnt;
-    int pos;
-    int page;
-
-    if (dic_fd == -1) {
-        return -3;
-    }
-    page = get_entid_tab(id, &off, &tmp, &cnt);
-    if (page == -1) {
-        return 0;
-    }
-    cnt = 0;
-    pos = 0;
-    if (off != -1) {
-        getallwd(load_page(page) + off, a & 0xFF, b & 0xFF, &cnt, &pos, buf, 0);
-    }
-    if (tmp != -1) {
-        getallwd(load_temp(tmp), a & 0xFF, b & 0xFF, &cnt, &pos, buf, 0x8000);
-    }
-    if ((*out = cnt) == 0) {
-        return 0;
-    }
-    return 1;
-}
-
-void getallwd(u8 *ent, int a, int b, int *cnt, int *pos, int buf, int tag)
-{
-    u8 *p;
-    u8 *end;
-    u8 *rec;
-    int rt;
-    int k;
-    int len;
-
-    end = ent + ELEN(ent);
-    p = ent + ent[2] + 3;
-    while (p < end) {
-        rt = p[1];
-        rec = p;
-        p += 2;
-        k = p[0];
-        if (k < 0xC) {
-            p++;
-        } else {
-            k = 0;
-        }
-        if (a == rec[0] && b == k) {
-            len = getkbuflen(p, end) + 6;
-            if (len & 1) {
-                len++;
+    for (i = 0; i < n; i++) {
+        page = r = get_entid_tab(list[i], &off, &tmp, &unused);
+        if (r != -1) {
+            if (off != -1) {
+                clear_rtime(load_page(page, -1) + off);
+                update_nowpage();
             }
-            set_wds(ins_wds(buf, rt, len, *pos), rec, end, tag | (rec - ent));
-            *pos += len;
-            (*cnt)++;
+            if (tmp != -1) {
+                clear_rtime(load_temp(tmp));
+                update_nowtmp();
+            }
         }
-        p = next_wd(p, end);
     }
 }
 
-u8 *ins_wds(u8 *p, u8 *rt, int len, int total)
+int max_rtime(u8 *ent)
 {
+    int m;
     u8 *end;
+    u8 *p;
 
-    end = p + total;
-    while (p < end) {
-        if (*(u16 *)(p + 2) < (int)rt) {
-            break;
-        }
-        p += 5;
-        while (*p++ != 0) {
-        }
-        if ((u32)p & 1) {
-            p++;
-        }
-    }
-    rt = end - 1;
+    end = ent + ELEN(ent);
+    p = ent + ent[2] + 3;
+    m = 0;
     if (p < end) {
-        while (rt >= p) {
-            rt[len] = *rt;
-            rt--;
-        }
+        do {
+            if (m < p[1]) {
+                m = p[1];
+            }
+            p += 2;
+            if (*p < 0xC) {
+                p++;
+            }
+            p = next_wd(p, end);
+        } while (p < end);
     }
-    return p;
+    return m;
 }

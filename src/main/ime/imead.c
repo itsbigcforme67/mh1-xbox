@@ -173,7 +173,7 @@ void strncpy();
 void clear_prevwd();
 void kh_learn();
 void prev_learn();
-void add_prevwd();
+static void add_prevwd();
 int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
@@ -188,8 +188,8 @@ int dic_getgaku();
 void init_univmem();
 void init_hchar();
 void init_edit0();
-int g2jodo();
-int getbit(s16);
+static int g2jodo();
+static int getbit(s16);
 int is_shift();
 void *memcpy();
 int close_dic();
@@ -330,14 +330,14 @@ extern int first_init_5;
 KH *raw_kouho();
 KH *kh_endof();
 void khmem_raw();
-void kh_append_init();
-void kh_append();
-int kh_merge_getone();
+static void kh_append_init();
+static void kh_append();
+static int kh_merge_getone();
 static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
-void kouho_set_num();
+static void kouho_set_num();
 int jiritu_makedisp();
 int next_gun();
 int back_gun();
@@ -361,10 +361,10 @@ int ToUpper();
 u8 *getrda1();
 u8 *getrda2();
 int add_kana_buf();
-int bytesin_kana_buf();
+static int bytesin_kana_buf();
 int count_byte_kana_buf();
 int api_funcent();
-int get_kouhostr();
+static int get_kouhostr();
 int syn_2to3();
 void wd_learn();
 u8 *select_tostr();
@@ -469,40 +469,191 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int bytesin_kana_buf(KANA *a, KANA *b)
+int api_henkan(int *a)
 {
-    int r = 0;
+    u8 *in;
+    u8 *kana;
+    u8 *kj;
 
-    for (; a < b; a++) {
-        if (a->ch & 0xFF00) {
-            r += 2;
-        } else {
-            r += 1;
-        }
-    }
-    return r;
-}
-
-int count_byte_kana_buf(int a, int n)
-{
-    KANA *p = &kana_buf[a];
-    int r = 0;
-
-    while (n > 0) {
-        r += p->n;
-        n--;
-        p++;
-    }
-    return r;
-}
-
-int api_funcent(int *req)
-{
-    int cmd;
-
-    cmd = *req;
-    if (cmd <= 0 || (u32)cmd > 0x3F) {
+    if (func_mode == 0) {
         return -1;
     }
-    return D_0034ABEC[cmd]((u8 *)req + 4);
+    in = (u8 *)a[0];
+    kana = (u8 *)a[1];
+    kj = (u8 *)a[2];
+    if (in != 0) {
+        if (func_mode >= 2) {
+            init_edit0();
+        }
+        if (add_kana_buf(in) < 0) {
+            return -1;
+        }
+    }
+    if (kana_len <= 0) {
+        *kana = 0;
+        *kj = 0;
+        return 0;
+    }
+    henkan(0, kana_len, 0, -1);
+    cur_pos = 0;
+    cur_len = bunsetu_len(0);
+    init_kouho(0, 1);
+    get_kouhostr(kana, kj);
+    func_mode = 3;
+    return kh_count(hchar[0].kh);
+}
+
+static int get_kouhostr(u8 *a, u8 *b)
+{
+    strcpy(a, select_subtostr(cur_pos, cur_len));
+    strcpy(b, select_subtostr(cur_pos + cur_len, kana_len - cur_pos - cur_len));
+}
+
+int api_movekh(int *a)
+{
+    int cnt;
+    u8 *p;
+    u8 *q;
+    int n;
+
+    if (func_mode != 3) {
+        return 0;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    switch (a[-1]) {
+    case 20:
+        if (gun_nkh > 0) {
+            gun_nkh--;
+        } else if (back_gun(0, 0) == 0) {
+            init_kouho(0, 1);
+            n = gun_num;
+            while (next_gun(0, 0) != 0) {
+                n += gun_num;
+            }
+            init_kouho(n - 1, 1);
+        } else {
+            gun_nkh = gun_num - 1;
+        }
+        break;
+    case 21:
+        if (gun_nkh < gun_num - 1) {
+            gun_nkh++;
+        } else if (next_gun(0, 0) == 0) {
+            init_kouho(0, 1);
+        }
+        break;
+    }
+    get_kouhostr(p, q);
+    return gun_nkh + 1;
+}
+
+int api_moveblk(int *a)
+{
+    int fail;
+    u8 *p;
+    u8 *q;
+
+    fail = 0;
+    if (func_mode != 3) {
+        return 0;
+    }
+    p = (u8 *)a[0];
+    q = (u8 *)a[1];
+    switch (a[-1]) {
+    case 22:
+        if (back_gun(0, 0) == 0) {
+            fail = 1;
+        }
+        break;
+    case 23:
+        if (next_gun(0, 0) == 0) {
+            fail = 1;
+        }
+        break;
+    }
+    get_kouhostr(p, q);
+    if (fail != 0) {
+        return 0;
+    }
+    return gun_num;
+}
+
+int api_allfix(int *a)
+{
+    u8 *out;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    out = (u8 *)a[0];
+    wd_learn(0, kana_len);
+    strcpy(out, select_tostr());
+    init_edit0();
+    func_mode = 1;
+    return 0;
+}
+
+int api_select(int *a)
+{
+    u8 *k1;
+    u8 *k2;
+    s16 *cnt;
+    u8 *out;
+    int r;
+    int n;
+    int pos;
+
+    if (func_mode != 3) {
+        return -1;
+    }
+    n = a[0];
+    if (n <= 0 || gun_num < n) {
+        return 0;
+    }
+    out = (u8 *)a[1];
+    k1 = (u8 *)a[2];
+    k2 = (u8 *)a[3];
+    cnt = (s16 *)a[4];
+    gun_nkh = n - 1;
+    strcpy(out, select_subtostr(cur_pos, cur_len));
+    unify_khmem(cur_pos, 1);
+    r = count_byte_kana_buf(cur_pos, cur_len);
+    pos = cur_pos;
+    cur_pos = pos + cur_len;
+    if (cur_pos >= kana_len) {
+        *k1 = 0;
+        *k2 = 0;
+        *cnt = 0;
+        return r;
+    }
+    cur_len = bunsetu_len(cur_pos, pos);
+    init_kouho(0, 1);
+    get_kouhostr(k1, k2);
+    *cnt = kh_count(hchar[cur_pos].kh);
+    return r;
+}
+
+int api_dicopen(void)
+{
+    if (lock_mode == 0) {
+        return -1;
+    }
+    if (dic_open((char *)dic_name) == -7) {
+        return 1;
+    }
+    into_editing(0);
+    func_mode = 1;
+    return 0;
+}
+
+int api_dicclose(void)
+{
+    if (lock_mode == 0) {
+        return -1;
+    }
+    init_edit0();
+    dic_close();
+    func_mode = 0;
+    return 0;
 }

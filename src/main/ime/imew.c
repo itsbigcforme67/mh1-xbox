@@ -173,7 +173,7 @@ void strncpy();
 void clear_prevwd();
 void kh_learn();
 void prev_learn();
-void add_prevwd();
+static void add_prevwd();
 int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
@@ -188,8 +188,8 @@ int dic_getgaku();
 void init_univmem();
 void init_hchar();
 void init_edit0();
-int g2jodo();
-int getbit(s16);
+static int g2jodo();
+static int getbit(s16);
 int is_shift();
 void *memcpy();
 int close_dic();
@@ -330,14 +330,14 @@ extern int first_init_5;
 KH *raw_kouho();
 KH *kh_endof();
 void khmem_raw();
-void kh_append_init();
-void kh_append();
-int kh_merge_getone();
+static void kh_append_init();
+static void kh_append();
+static int kh_merge_getone();
 static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
-void kouho_set_num();
+static void kouho_set_num();
 int jiritu_makedisp();
 int next_gun();
 int back_gun();
@@ -361,10 +361,10 @@ int ToUpper();
 u8 *getrda1();
 u8 *getrda2();
 int add_kana_buf();
-int bytesin_kana_buf();
+static int bytesin_kana_buf();
 int count_byte_kana_buf();
 int api_funcent();
-int get_kouhostr();
+static int get_kouhostr();
 int syn_2to3();
 void wd_learn();
 u8 *select_tostr();
@@ -469,100 +469,100 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void change_kind(u16 *p, int n, int kind)
+void init_univmem(void)
 {
-    u16 k;
+    u8 *p;
 
-    k = (kind & 0xFFFF) << 12;
-    while (n-- != 0) {
-        *p = (*p & 0xFFF) | k;
-        p++;
+    free_univ = mem;
+    for (p = mem; p < mem + 0x11928; p += 0x18) {
+        *(u8 **)p = p + 0x18;
     }
+    *(u8 **)p = 0;
+    first_init_5 = 0;
 }
 
-int shiftlen(int x)
+void *alloc_mem(void)
 {
-    int c;
-    int h;
+    void *r;
 
-    c = x & 0xFFFF;
-    h = c & 0xFF00;
-    switch (h) {
-    case 0x8000:
-    case 0x8500:
-        return 1;
-    case 0x8600:
-        if ((c & 0xFF) < 0x9E) {
-            return 1;
-        }
-    default:
-        return 2;
-    }
-}
-
-int sstrtom(u16 *out, u8 *s, int kind)
-{
-    u16 *p;
-    int c;
-
-    p = out;
-    while (*s != 0) {
-        c = *s;
-        if (c < 0x80 || (c >= 0xA0 && c < 0xE0)) {
-            p += setmean(p, *s++, kind);
-        } else {
-            p += setmean(p, ((c << 8) | s[1]) & 0xFFFF, kind);
-            s += 2;
-        }
-    }
-    return p - out;
-}
-
-int to_ucode(int x)
-{
-    int c;
-
-    c = x & 0xFFFF;
-    if (c > 0x20 && c < 0x7F) {
+    r = free_univ;
+    if (r == 0) {
         return 0;
     }
-    switch (c & 0xFF00) {
-    case 0x2300:
-        return c & 0x7F;
-    case 0x2400:
-        return ((c & 0x7F) | 0x80) & 0xFF;
-    case 0x2500:
-        return 0;
-    default:
-        return srch_ucode(x);
+    free_univ = *(void **)r;
+    return r;
+}
+
+void free_mem(void *p)
+{
+    if (p != 0) {
+        *(void **)p = free_univ;
+        free_univ = p;
     }
 }
 
-int is_kata(c, flag)
-u16 c;
-int flag;
+CH *alloc_chmem(void)
 {
-    if (flag != 0 && c == 0x213C) {
-        return 1;
-    }
-    if ((c & 0xFF00) == 0x2500) {
-        return 1;
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
     return 0;
 }
 
-int is_jisknj(int c)
+BS *alloc_bsmem(void)
 {
-    return (c & 0xFFFF) >= 0x3020;
-}
+    void *r;
 
-int is_jiskig(int x)
-{
-    int c;
-
-    c = x & 0xFFFF;
-    if (c >= 0x2120 && c < 0x3020) {
-        return is_kata(x, 0) ? 0 : 1;
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
     }
     return 0;
+}
+
+PWM *alloc_pwmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+KH *alloc_khmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+KL *alloc_klmem(void)
+{
+    void *r;
+
+    r = alloc_mem();
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
+
+void free_pwmemlist(PWM *p)
+{
+    PWM *n;
+
+    while (p != 0) {
+        n = p->next;
+        free_mem(p);
+        p = n;
+    }
 }

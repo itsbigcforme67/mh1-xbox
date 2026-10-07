@@ -1302,3 +1302,61 @@ Misses (15-minute cap): lobby_client_admin_message 7 (if-chain instead of switch
 - lb_mix_decide (4, sll between lui/addiu of mixData): `&mixData[cur]`, `mixData + cur`, `cur + mixData`, byte-offset cast (39 off), `(s16)cur`, declaration order: 4-6 off, same as before.
 - lb_guild_make_room (14): reordering the x5C updates (stores first, early x5C load into a local x of types u32/int/u16, constant-mask first): 15-23.
 - Gun_level_up / value_result share the shape `lv >= 4 ? 4 : lv + 1` and the same unexplained `slti v1` + `daddiu v1,0,4` in the branch delay slot: tried `>=`, `<`, `3 < l`, `4 <= l`, min-style, goto-shaped, u16 locals: 9+ off every time. A fix for one would fix both (and probably Gun_option_ck, HardKeyboard_move).
+
+## Round 19 (agent C, main 0x220000-0x24A240: camera, quests, IME)
+Took over this range from agent E (E keeps 0x160000-0x220000). Almost all unmatched code left there is IME (src/main/ime/ime_nm.c,
+E's whole-file near-match TU), camera (cam*_nm.c, also linked by the PC build: keep their logic faithful) and quests (f_quest_nm.c).
+Start 41.403% of main, now 41.9%+ (see the end of this section). The IME TU was the best yield: its drafts were m2c-literal and most
+"40-100 off" functions were one structural idiom away. Workflow that worked: `tools/align.py NM FUNC` (diff without relocation noise),
+`tools/vt.py try_variants` (several textual variants per call, ~1 s each; use the mark `'void f()\n{'` including the brace when a K&R
+prototype of the same name exists earlier in the file), tools/declhill2.py in the background WITHOUT --apply (it writes zzhPID.c next to the
+nm file: never `git add src/main/ime` while one is running, use `git add -u`).
+Matched this round (all inside ime_nm.c, linked through relinked runs; rebuild OK): shiftpage, set_entid_tab, upd_record, ins_wds, page_gc,
+read_temp, unify_khmem, sstrtom, kouho_set_num, set_num, read_head, FAskRom_Seek, add_prevwd, syn_match, all_kouho, init_kouho,
+dic_get1wd, dic_getallwd, getallwd, get1wd, api_select, create_kouho, goku_connect, to_hankaku, plus k_HitWallCamera (cam/camr7.c).
+Lessons (function that shows it):
+- Reuse a parameter instead of a new local when the original does: shiftpage (`end--; while (end >= from) { end[d] = *end; end--; }`, no
+  `s`), upd_record (`add += old; r[0] = ...; r += old;`, no q/total), ins_wds (`u8 *rt` param reused as the backwards cursor: `rt = end - 1`;
+  declared `u8 *rt` and compared as `(int)rt`), kouho_set_num (`n = n % 100; ... n = n % 10;`, `*out++ = ...` inside each branch).
+- Walkers over dictionary records keep ONE cursor: `rec = p; p += 2; k = p[0]; if (k < 0xC) p++; else k = 0; ... p = next_wd(p, end);`
+  (get1wd, getallwd). Declaration order then fixes the s-registers (last declared = lowest).
+- s16 local used as an index or in arithmetic: the original re-sign-extends it at each use, MWCC does not unless written: `key[(s16)klen] = 0`
+  (page_gc, read_temp), `getbit(cn->a + (s16)om)` (goku_connect). Passing the same s16 to a call: `strncpy(key, p + 3, (int)klen)` gives the raw
+  register (page_gc went 19 -> 0 with those two casts).
+- Callee with MORE parameters than the m2c call showed: the original passes t0/t1/t2 (5th-7th args). dic_get1wd/dic_getallwd call get1wd/getallwd
+  with (&best, out, tag), create_kouho takes a 5th `KH **tail` (stores the last node), dic_getallwd(id, a, b, buf, int *cnt_out). Look at
+  `daddu t0,..` / `sw ..,16(sp)` before a jal in `check.py -v` whenever a caller "looks right" but the frame is too small.
+- Frame too small by 48: an `u8 key[0x20]` buffer that must be `[0x50]` (dic_getsyn, dic_snssyn).
+- LOCAL (static) callees: docs/survey/mh1_symbols.csv has the bind column. A leaf `static` callee defined earlier in the TU (g2jodo, getbit) lets
+  the caller keep a1/a3 across the call (goku_connect 74 -> 3 after `static`). The nm file now has `static` on add_prevwd, getbit, g2jodo,
+  kh_merge_getone, kh_append_init, kh_append, kouho_set_num, bytesin_kana_buf, get_kouhostr, ins_bsmem, exist_kouho.
+- m2c switches are often if-chains in the original (syn_match: independent `if (a == 0x1F) {...}` blocks, NOT else-if, because the failed nested
+  test falls into the next compare). Real switches: the compare ladder is the reverse of the label order (to_hankaku: labels 0x2300,0,0x2500,0x2400,0x2100).
+- Early-return shape: `if (n <= 0 || gun_num < n) return 0;` followed by the body (api_select) instead of `if (ok) { body } return 0;`.
+- `if ((n = f()) == 0)` (assignment in the condition) keeps the test on v0 (all_kouho, create_kouho, init_kouho).
+- Ternary for a constant arm: `idx = (kind == 2) ? 4 : 0;` fills the branch delay slot like the original, `if (...) idx = 4; else idx = 0;` and
+  `idx = 0; if (...) idx = 4;` do not (set_num). `k = (d > 0 && d <= 3) ? kind - 1 : 1;` (<= 3 gives `slti at`).
+- `hchar[pos].kh` style accesses: the original sometimes folds the field offset into the symbol address (`lui/addiu hchar+12`, no offset in the
+  lw) and sometimes not. To get the folded form write `*(KH **)((u8 *)&hchar[0].kh + pos * 28)` (unify_khmem, init_kouho); to avoid it write
+  `h = &hchar[pos]; b = h->bs;` (all_kouho). check.py/align.py do not see the difference (relocation addend), only the rebuild does.
+- Loop `if (k != 0) do { if (k == top) break; next = f(k); g(k); k = next; } while (next != 0);` is the original's `while (k != 0 && k != top)` (unify_khmem).
+- `end = kana_buf + (pos + n)` (one scaled add) vs `kana_buf + pos + n`.
+- ANSI vs K&R: `int setmean();` K&R definition with `int c` and `u16 k` for the flag word got to 3 off; the three left are `daddiu` constant loads
+  (see BRIEF: unexplained). A u16 K&R parameter makes MWCC mask at every call, an `int` one passes the raw register (to_hankaku: `int code` and
+  `code = (u16)(code & 0x24FF)` for the second andi).
+- k_HitWallCamera (camr5_nm.c -> new cam/camr7.c): deleting the four `f32 *ay = &a[1]`-style alias locals fixed the address-of-local scheduling;
+  `u8 hit` -> `int hit; if ((u8)hit != 0)` produced the original andi. (camr5_nm.c is in the PC build: same logic, kept in sync.)
+Tooling gotchas:
+- Making a function `static` in an nm TU (to give its later callers register knowledge) breaks the link when asm callers or other runs still
+  reference it by name ("undefined reference to g2jodo"): add `name = 0xADDR;` lines to config/main_aliases.txt (done for add_prevwd, g2jodo,
+  kouho_set_num, bytesin_kana_buf, get_kouhostr). The static copy and the alias coexist (local symbol vs linker-script symbol).
+- tools/relink_runs.py deletes src/main/ime/imerun0*.c (its glob `ime[a-z]*.c` matches them) and renames runs, so the single
+  `main:rodata 0x0036E090 0x0036E0B4 ime/imeXX` line goes stale and the link fails with "multiple definition". After a relink restore the imerun files and
+  point that rodata line at the run that contains 0x248890. scratch helper (not committed): backup imerun, relink, restore, sed the rodata line.
+- check.py's "(N/M instructions differ)" is positional: one inserted instruction makes everything after it count. Use `tools/align.py` line counts.
+Near-misses left (align lines / instructions): setmean 3 (daddiu constants), getrda1 2 (extra `b` stub after the n==1 return), srch_node 3 (needs
+`&hash_tab[h & 0xFFFF]` to stop MWCC from CSE-ing the address: harmless but a hack), get_kouholist (original compares the s64 id with -1 through an MMI
+`.word` constant load, same as add_dummy_chmem), bs_point 3 (`p = pos + b->len` temp register), meantosjis (v lands in s5 not s2), dic_getsyn / dic_snssyn
+(len copy register), set_synref, ktu_match/josi_match (single shared `return base` tail, tried result-variable form), ask_sjis2jis/ask_jis2sjis (return-0 block
+placement), disp_kouho (tail loop is entered by a jump to the test: unreproduced), api_touroku (frame 144 vs 128), cam_sub_stg (spl address in s5 lives
+across ty), Quest_next_em_set 13, stolen_item_stack 6 (a0/v1 naming), ZoomRateCalc 8 (z[2] lands in f0 not f1), Em_hagi_point_cnt_ck 20.

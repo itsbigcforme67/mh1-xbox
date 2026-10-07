@@ -173,7 +173,7 @@ void strncpy();
 void clear_prevwd();
 void kh_learn();
 void prev_learn();
-void add_prevwd();
+static void add_prevwd();
 int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
@@ -188,8 +188,8 @@ int dic_getgaku();
 void init_univmem();
 void init_hchar();
 void init_edit0();
-int g2jodo();
-int getbit(s16);
+static int g2jodo();
+static int getbit(s16);
 int is_shift();
 void *memcpy();
 int close_dic();
@@ -330,14 +330,14 @@ extern int first_init_5;
 KH *raw_kouho();
 KH *kh_endof();
 void khmem_raw();
-void kh_append_init();
-void kh_append();
-int kh_merge_getone();
+static void kh_append_init();
+static void kh_append();
+static int kh_merge_getone();
 static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
-void kouho_set_num();
+static void kouho_set_num();
 int jiritu_makedisp();
 int next_gun();
 int back_gun();
@@ -361,10 +361,10 @@ int ToUpper();
 u8 *getrda1();
 u8 *getrda2();
 int add_kana_buf();
-int bytesin_kana_buf();
+static int bytesin_kana_buf();
 int count_byte_kana_buf();
 int api_funcent();
-int get_kouhostr();
+static int get_kouhostr();
 int syn_2to3();
 void wd_learn();
 u8 *select_tostr();
@@ -469,49 +469,84 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int not_bhead(int c)
+void init_kouho(int idx, int flag)
 {
-    if (henkan_mode == 1 || henkan_mode == 2) {
-        return 0;
+    KH *k;
+    int n;
+
+    if (flag == 1) {
+        all_kouho();
     }
-    switch (c & 0xFF) {
-    case 0x9D:
-    case 0xA1:
-    case 0xA3:
-    case 0xA5:
-    case 0xA7:
-    case 0xA9:
-    case 0xC3:
-    case 0xE3:
-    case 0xE5:
-    case 0xE7:
-    case 0xEE:
-    case 0xF2:
-    case 0xF3:
-        return 1;
+    k = *(KH **)((u8 *)&hchar[0].kh + cur_pos * 28);
+    if (func_mode > 0) {
+        kwin_len = 0x50;
+    } else {
+        kwin_len = kwin_length(cur_pos * 0x1C, cur_pos);
     }
-    return 0;
+    n = inc_gun(k);
+    if (idx >= n) {
+        for (;;) {
+            idx -= n;
+            while (n-- != 0) {
+                k = kh_followed(k);
+            }
+            if ((n = inc_gun(k)) == 0) {
+                init_kouho(0, 0);
+                break;
+            }
+            if (idx < n) {
+                goto set;
+            }
+        }
+    } else {
+set:
+        top_kh = k;
+        gun_nkh = idx;
+        gun_num = n;
+    }
+    if (flag == 1 && func_mode == 0) {
+        disp_kouho();
+    }
 }
 
-int is_kuten(int c)
+void all_kouho(void)
 {
-    c = c & 0xFF;
-    if (c >= 0xA0) {
-        return 0;
-    }
-    switch (c) {
-    case 0x20:
-    case 0x21:
-    case 0x2C:
-    case 0x2E:
-    case 0x3A:
-    case 0x3B:
-    case 0x3F:
-    case 0x98:
-    case 0x9B:
-    case 0x9C:
-        return 1;
-    default:
-        return 0;
+    KH *kh;
+    KL *n;
+    KL *head;
+    KL *tail;
+    HCHAR *h;
+    BS *b;
+
+    h = &hchar[cur_pos];
+    b = h->bs;
+    if (b != (BS *)-1) {
+        head = 0;
+        tail = 0;
+        while (b != 0) {
+            if (b->len == cur_len) {
+                if ((n = alloc_klmem()) == 0) {
+                    free_kouholists(head);
+                    head = 0;
+                    break;
+                } else {
+                    kh = get_kouholist(b);
+                    n->kh = kh;
+                    n->bs = b;
+                    n->pri = (kh == 0) ? 0 : (kh_priority(b, kh->x0E) & 0xFFFF);
+                    n->next = 0;
+                    if (head == 0) {
+                        tail = n;
+                        head = n;
+                    } else {
+                        tail->next = n;
+                        tail = n;
+                    }
+                }
+            }
+            b = b->next;
+        }
+        kh_mergesort(cur_pos, head);
+        free_klmemlist(head);
     }
 }

@@ -138,27 +138,23 @@ f32 k_HitWallCamera(f32 *cam, f32 *tar, f32 *dist) {
     f32 b[3];
     f32 c[3];
     f32 (*pp)[4] = push01;
-    f32 *ay = &a[1];
-    f32 *az = &a[2];
-    f32 *by = &b[1];
-    f32 *bz = &b[2];
-    u8 hit;
+    int hit;
 
     if (pp[0][3] != -1.0f) {
         do {
             a[0] = tar[0] + (*pp)[0];
-            *ay = tar[1] + (*pp)[1];
-            *az = tar[2] + (*pp)[2];
+            a[1] = tar[1] + (*pp)[1];
+            a[2] = tar[2] + (*pp)[2];
             b[0] = cam[0] + (*pp)[0];
-            *by = cam[1] + (*pp)[1];
-            *bz = cam[2] + (*pp)[2];
+            b[1] = cam[1] + (*pp)[1];
+            b[2] = cam[2] + (*pp)[2];
             SetVector(c, cam[0], cam[1], cam[2]);
             if (game_w.gate_open != 0) {
                 hit = GetWallHitBit2((*pp)[3], a, b, cam, 0xC001);
             } else {
                 hit = GetWallHitBit2((*pp)[3], a, b, cam, 0x8001);
             }
-            if (hit != 0) {
+            if ((u8)hit != 0) {
                 *dist = flvecCalcDistance(c, cam);
             } else {
                 *dist = 0.0f;

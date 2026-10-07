@@ -173,7 +173,7 @@ void strncpy();
 void clear_prevwd();
 void kh_learn();
 void prev_learn();
-void add_prevwd();
+static void add_prevwd();
 int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
@@ -188,8 +188,8 @@ int dic_getgaku();
 void init_univmem();
 void init_hchar();
 void init_edit0();
-int g2jodo();
-int getbit(s16);
+static int g2jodo();
+static int getbit(s16);
 int is_shift();
 void *memcpy();
 int close_dic();
@@ -330,14 +330,14 @@ extern int first_init_5;
 KH *raw_kouho();
 KH *kh_endof();
 void khmem_raw();
-void kh_append_init();
-void kh_append();
-int kh_merge_getone();
+static void kh_append_init();
+static void kh_append();
+static int kh_merge_getone();
 static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
-void kouho_set_num();
+static void kouho_set_num();
 int jiritu_makedisp();
 int next_gun();
 int back_gun();
@@ -361,10 +361,10 @@ int ToUpper();
 u8 *getrda1();
 u8 *getrda2();
 int add_kana_buf();
-int bytesin_kana_buf();
+static int bytesin_kana_buf();
 int count_byte_kana_buf();
 int api_funcent();
-int get_kouhostr();
+static int get_kouhostr();
 int syn_2to3();
 void wd_learn();
 u8 *select_tostr();
@@ -469,49 +469,40 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int ToUpper(int c)
+static int bytesin_kana_buf(KANA *a, KANA *b)
 {
-    int u;
+    int r = 0;
 
-    u = c & 0xFF;
-    if (u >= 0x61 && u < 0x7B) {
-        return (u - 0x20) & 0xFF;
+    for (; a < b; a++) {
+        if (a->ch & 0xFF00) {
+            r += 2;
+        } else {
+            r += 1;
+        }
     }
-    return c;
+    return r;
 }
 
-u8 *getrda2(u16 *a, u16 *b)
+int count_byte_kana_buf(int a, int n)
 {
-    u8 *p;
-    int n;
-    u16 *q;
-    int k;
-    int len;
+    KANA *p = &kana_buf[a];
+    int r = 0;
 
-    n = b - a;
-    p = rmspec;
-    while (*p != 0) {
-        len = *p;
+    while (n > 0) {
+        r += p->n;
+        n--;
         p++;
-        if (n == len) {
-            q = a;
-            k = n;
-            while (k > 0) {
-                if (*p != (ToUpper(*(u8 *)q++) & 0xFF)) {
-                    break;
-                }
-                k--;
-                p++;
-            }
-            if (k == 0) {
-                return p;
-            }
-            p += k;
-        } else {
-            p += len;
-        }
-        while (*p++ != 0) {
-        }
     }
-    return 0;
+    return r;
+}
+
+int api_funcent(int *req)
+{
+    int cmd;
+
+    cmd = *req;
+    if (cmd <= 0 || (u32)cmd > 0x3F) {
+        return -1;
+    }
+    return D_0034ABEC[cmd]((u8 *)req + 4);
 }

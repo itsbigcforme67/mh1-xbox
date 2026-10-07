@@ -173,7 +173,7 @@ void strncpy();
 void clear_prevwd();
 void kh_learn();
 void prev_learn();
-void add_prevwd();
+static void add_prevwd();
 int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
@@ -188,8 +188,8 @@ int dic_getgaku();
 void init_univmem();
 void init_hchar();
 void init_edit0();
-int g2jodo();
-int getbit(s16);
+static int g2jodo();
+static int getbit(s16);
 int is_shift();
 void *memcpy();
 int close_dic();
@@ -330,14 +330,14 @@ extern int first_init_5;
 KH *raw_kouho();
 KH *kh_endof();
 void khmem_raw();
-void kh_append_init();
-void kh_append();
-int kh_merge_getone();
+static void kh_append_init();
+static void kh_append();
+static int kh_merge_getone();
 static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
-void kouho_set_num();
+static void kouho_set_num();
 int jiritu_makedisp();
 int next_gun();
 int back_gun();
@@ -361,10 +361,10 @@ int ToUpper();
 u8 *getrda1();
 u8 *getrda2();
 int add_kana_buf();
-int bytesin_kana_buf();
+static int bytesin_kana_buf();
 int count_byte_kana_buf();
 int api_funcent();
-int get_kouhostr();
+static int get_kouhostr();
 int syn_2to3();
 void wd_learn();
 u8 *select_tostr();
@@ -469,57 +469,47 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int can_daku(int c)
+int dic_open(char *name)
 {
-    u8 buf[4];
+    int r;
 
-    if (is_shift() != 0) {
-        c = ask_sjis2jis(c) & 0xFFFF;
+    if (*name == 0) {
+        return -1;
     }
-    if (to_hankaku(buf, c) != 1) {
-        return 0;
-    }
-    return (rmtype[buf[0]] & 0xF) == 0xA;
-}
-
-int can_handaku(int c)
-{
-    u8 buf[4];
-
-    if (is_shift() != 0) {
-        c = ask_sjis2jis(c) & 0xFFFF;
-    }
-    if (to_hankaku(buf, c) != 1) {
-        return 0;
-    }
-    return (rmtype[buf[0]] & 0xF) == 0xB;
-}
-
-int srch_ucode(int code)
-{
-    u8 *p;
-
-    for (p = btoudata; p < btoudata + 180; p += 4) {
-        if (*(u16 *)p == (u16)code) {
-            return p[2];
+    set_dicname();
+    r = open_dic();
+    if (r != 0) {
+        if (r == -1) {
+            return -7;
         }
-        if (*(u16 *)p > (u16)code) {
-            break;
-        }
+        return -8;
     }
-    return 0;
+    if (read_head() == -1) {
+        close_dic();
+        return -2;
+    }
+    if (read_index() == -1) {
+        close_dic();
+        return -2;
+    }
+    init_page();
+    init_temp();
+    if (dic_rw == 0x8000) {
+        return -6;
+    }
+    return 3;
 }
 
-int getbit(s16 n)
+int dic_close(void)
 {
-    return bitpool[n >> 3] & power[n & 7];
-}
-
-int g2jodo(int c)
-{
-    c = c & 0xFF;
-    if (c > 0 && c < 0xE) {
-        return (c + 0x7F) & 0xFF;
+    if (dic_fd == -1) {
+        return -3;
     }
-    return 0;
+    flush_head();
+    flush_temp();
+    flush_pages();
+    if (close_dic() == -1) {
+        return -2;
+    }
+    return 3;
 }

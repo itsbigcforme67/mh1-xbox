@@ -378,7 +378,7 @@ extern int roman_japan, lock_mode;
 extern u8 dic_name[128];
 extern int (*D_0034ABEC[])();
 extern CH null_chmem;
-extern u16 pwordmap[96];
+extern s16 pwordmap[96];
 extern u8 pword[1532];
 extern u8 pluswd[243];
 int bs_prefer();
@@ -614,7 +614,7 @@ void kh_learn(int pos, int len, KH *kh, BS *list)
     int n;
 
     pw = 0;
-    if (kh->x0C == 0xFFFF || (pw = kh->pw) != 0) {
+    if (kh->x0C == -1 || (pw = kh->pw) != 0) {
         out = wdsbuf;
         if (list == 0 || list == (BS *)-1) {
             if (pw != 0) {
@@ -1034,7 +1034,7 @@ int roman_makedisp(int pos, int n, u16 *buf, int flag)
     u16 *start;
 
     p = kana_buf + pos;
-    end = kana_buf + pos + n;
+    end = kana_buf + (pos + n);
     start = buf;
     first = 0;
     if (p < end) {
@@ -1200,27 +1200,29 @@ int ext_jis(int c, u16 hi)
     return ((c & 0xFF) | ((hi & 0x100) + 0x2400)) & 0xFFFF;
 }
 
-int to_hankaku(u8 *out, int code)
+int to_hankaku(out, code)
+u8 *out;
+int code;
 {
     int c;
     int u;
 
-    c = code;
-    switch ((s8)c & 0xFF00 ? ((s8)c & 0xFF00) : 0) {
-    default:
-        break;
-    }
+    c = code & 0xFFFF;
     switch (c & 0xFF00) {
-    case 0x0:
     case 0x2300:
+    case 0x0:
         out[0] = c;
         return 1;
     case 0x2500:
-        c = c & 0x24FF;
-    case 0x2100:
+        code = (u16)(code & 0x24FF);
     case 0x2400:
-        u = (s8)(to_ucode(c, c) & 0xFF);
-        if (u >= 0x98 && u < 0xF7) {
+    case 0x2100:
+        u = to_ucode(code) & 0xFF;
+        if (u < 0x98 || u >= 0xF7) {
+            out[0] = u;
+            return 1;
+        }
+        {
             u16 t = asc2jis[0x78 + u];
             out[0] = t;
             if (t & 0x8000) {
@@ -1233,8 +1235,6 @@ int to_hankaku(u8 *out, int code)
             }
             return 1;
         }
-        out[0] = u;
-        return 1;
     default:
         out[0] = 0x20;
         return 1;
@@ -4050,9 +4050,9 @@ void *srch_pword(u8 *key, int n, int *hit)
         *hit = 1;
         return 0;
     }
-    idx = ((key[0] - 0xA0) & 0xFF) * 2;
-    top = pword + pwordmap[idx / 2] * 4;
-    e = pword + pwordmap[idx / 2 + 1] * 4 - 4;
+    idx = (key[0] - 0xA0) & 0xFF;
+    top = pword + pwordmap[idx] * 4;
+    e = pword + pwordmap[idx + 1] * 4 - 4;
     while (e >= top) {
         a = key + 1;
         ka = n - 1;

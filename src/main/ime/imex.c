@@ -173,7 +173,7 @@ void strncpy();
 void clear_prevwd();
 void kh_learn();
 void prev_learn();
-void add_prevwd();
+static void add_prevwd();
 int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
@@ -188,8 +188,8 @@ int dic_getgaku();
 void init_univmem();
 void init_hchar();
 void init_edit0();
-int g2jodo();
-int getbit(s16);
+static int g2jodo();
+static int getbit(s16);
 int is_shift();
 void *memcpy();
 int close_dic();
@@ -330,14 +330,14 @@ extern int first_init_5;
 KH *raw_kouho();
 KH *kh_endof();
 void khmem_raw();
-void kh_append_init();
-void kh_append();
-int kh_merge_getone();
+static void kh_append_init();
+static void kh_append();
+static int kh_merge_getone();
 static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
-void kouho_set_num();
+static void kouho_set_num();
 int jiritu_makedisp();
 int next_gun();
 int back_gun();
@@ -361,10 +361,10 @@ int ToUpper();
 u8 *getrda1();
 u8 *getrda2();
 int add_kana_buf();
-int bytesin_kana_buf();
+static int bytesin_kana_buf();
 int count_byte_kana_buf();
 int api_funcent();
-int get_kouhostr();
+static int get_kouhostr();
 int syn_2to3();
 void wd_learn();
 u8 *select_tostr();
@@ -469,100 +469,83 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void init_univmem(void)
+void free_bsmemlist(BS *b)
 {
-    u8 *p;
+    BS *n;
 
-    free_univ = mem;
-    for (p = mem; p < mem + 0x11928; p += 0x18) {
-        *(u8 **)p = p + 0x18;
-    }
-    *(u8 **)p = 0;
-    first_init_5 = 0;
-}
-
-void *alloc_mem(void)
-{
-    void *r;
-
-    r = free_univ;
-    if (r == 0) {
-        return 0;
-    }
-    free_univ = *(void **)r;
-    return r;
-}
-
-void free_mem(void *p)
-{
-    if (p != 0) {
-        *(void **)p = free_univ;
-        free_univ = p;
+    while (b != 0) {
+        n = b->next;
+        free_mem(b);
+        b = n;
     }
 }
 
-CH *alloc_chmem(void)
+void free_khmemlist(KH *k)
 {
-    void *r;
+    KH *n;
 
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
+    while (k != 0) {
+        n = k->next;
+        free_mem(k);
+        k = n;
     }
-    return 0;
 }
 
-BS *alloc_bsmem(void)
+void free_klmemlist(KL *l)
 {
-    void *r;
+    KL *n;
 
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
+    while (l != 0) {
+        n = l->next;
+        free_mem(l);
+        l = n;
     }
-    return 0;
 }
 
-PWM *alloc_pwmem(void)
+int bs_prefer(int pos, int end, int len)
 {
-    void *r;
+    BS *b;
+    BS *best;
+    BS *p;
+    HCHAR *h;
 
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
+    h = &hchar[pos];
+    for (b = h->bs; b != 0; b = b->next) {
+        if (len < 0 || b->len == len) {
+            if (bs_point(b, pos, end) == -1) {
+                return -1;
+            }
+        }
     }
-    return 0;
+    if (h == 0 || (best = h->bs) == 0) {
+        return -1;
+    } else {
+        for (p = best->next; p != 0; p = p->next) {
+            if (p->x08 > best->x08) {
+                best = p;
+            }
+        }
+        bs_ctd(best, pos, end);
+        return best->len;
+    }
 }
 
-KH *alloc_khmem(void)
+int calc_point(int pos, BS *b, BS *next)
 {
-    void *r;
+    int a;
+    int c;
+    int f;
+    u16 pri;
 
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
+    if (next == 0) {
+        a = b->len;
+        c = 0;
+        f = 1;
+    } else {
+        c = b->len;
+        a = next->len;
+        f = 0;
     }
-    return 0;
-}
-
-KL *alloc_klmem(void)
-{
-    void *r;
-
-    r = alloc_mem();
-    if (r != 0) {
-        return r;
-    }
-    return 0;
-}
-
-void free_pwmemlist(PWM *p)
-{
-    PWM *n;
-
-    while (p != 0) {
-        n = p->next;
-        free_mem(p);
-        p = n;
-    }
+    pri = b->x0A;
+    return f * 0x32 + (pri + (c * 0x10 + a * 0x11) + setu_point(b, next));
 }

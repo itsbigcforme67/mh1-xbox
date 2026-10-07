@@ -73,3 +73,10 @@ palette_ng_sub2 = 0x00262350;
 sk_board_ptr_replace = 0x00262620;
 key_mask_check = 0x00262910;
 mh_char_make_check = 0x00262A40;
+/* LOCAL (static) functions of the IME file: their callers in the same C run see them as static (needed for register allocation, see
+ * agent-C.md round 19), asm callers and other runs reach them through these names. */
+add_prevwd = 0x0023ED80;
+g2jodo = 0x0023FF10;
+kouho_set_num = 0x00246DA0;
+bytesin_kana_buf = 0x002492C0;
+get_kouhostr = 0x00249630;

@@ -173,7 +173,7 @@ void strncpy();
 void clear_prevwd();
 void kh_learn();
 void prev_learn();
-void add_prevwd();
+static void add_prevwd();
 int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
@@ -188,8 +188,8 @@ int dic_getgaku();
 void init_univmem();
 void init_hchar();
 void init_edit0();
-int g2jodo();
-int getbit(s16);
+static int g2jodo();
+static int getbit(s16);
 int is_shift();
 void *memcpy();
 int close_dic();
@@ -330,14 +330,14 @@ extern int first_init_5;
 KH *raw_kouho();
 KH *kh_endof();
 void khmem_raw();
-void kh_append_init();
-void kh_append();
-int kh_merge_getone();
+static void kh_append_init();
+static void kh_append();
+static int kh_merge_getone();
 static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
-void kouho_set_num();
+static void kouho_set_num();
 int jiritu_makedisp();
 int next_gun();
 int back_gun();
@@ -361,10 +361,10 @@ int ToUpper();
 u8 *getrda1();
 u8 *getrda2();
 int add_kana_buf();
-int bytesin_kana_buf();
+static int bytesin_kana_buf();
 int count_byte_kana_buf();
 int api_funcent();
-int get_kouhostr();
+static int get_kouhostr();
 int syn_2to3();
 void wd_learn();
 u8 *select_tostr();
@@ -469,185 +469,143 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void page_gc(void)
+void update_nowtmp(void)
 {
-    NODE *nd;
-    NODE **link;
-    u8 *p;
-    s16 klen;
-    u8 key[0x50];
-
-    *temp_top = 0;
-    temp_top++;
-    *temp_top = 0;
-    temp_page = (temp_page + 1) % 8;
-    temp_top = temp_pages[temp_page];
-    p = temp_top;
-    temp_end = p + 0x400;
-    while (ELEN(p) != 0) {
-        klen = p[2];
-        if (klen != 0) {
-            strncpy(key, p + 3, (int)klen);
-            key[(s16)klen] = 0;
-            link = srch_node(key, klen, &nd);
-            if (nd->rec == p) {
-                *link = nd->next;
-                free_node(nd);
-            }
-        }
-        p += ELEN(p);
-    }
-    clear_entid_tmpall(temp_page);
-}
-
-int tmpoffset(u8 *p)
-{
-    int d;
-
-    d = p - temp_pages[0];
-    return ((d / 1024) << 12) | (d % 1024);
-}
-
-u8 *load_temp(int off)
-{
-    return temp_pages[(s16)(off >> 12)] + (s16)(off & 0xFFF);
-}
-
-int read_temp(void)
-{
-    NODE *nd;
-    NODE **link;
-    NODE *n;
-    u8 *p;
-    int i;
-    u8 *pg;
-    s16 klen;
-    u8 key[0x50];
-
-    if (seek_dic(0x1400) == -1) {
-        return -1;
-    }
-    if (d_read(dic_fd, temp_pages, 0x2000) != 0x2000) {
-        return -1;
-    }
-    for (i = 0, pg = temp_pages[0]; i < 8; i++) {
-        p = pg;
-        while (ELEN(p) != 0) {
-            klen = p[2];
-            if (klen != 0) {
-                strncpy(key, p + 3, (int)klen);
-                key[(s16)klen] = 0;
-                link = srch_node(key, klen, &nd);
-                n = alloc_node();
-                n->rec = p;
-                n->next = nd;
-                *link = n;
-            }
-            p += ELEN(p);
-        }
-        if (temp_page == i) {
-            temp_top = p;
-            temp_end = pg + 0x400;
-        }
-        pg += 0x400;
-    }
-    return 0;
-}
-
-int write_temp(void)
-{
-    if (seek_dic(0x1400) == -1) {
-        return -1;
-    }
-    if (d_write(dic_fd, temp_pages, 0x2000) != 0x2000) {
-        return -1;
-    }
-    return 0;
-}
-
-int newwdlen(WD *w)
-{
-    int extra;
-
-    if (w->x08 != 0 || w->x07 >= 0x2D) {
-        extra = 3;
-    } else {
-        extra = 2;
-    }
-    return w->len + 3 + extra + setkbuflen(w->tango);
-}
-
-int updwdlen(WD *w)
-{
-    int extra;
-
-    if (w->x08 != 0 || w->x07 >= 0x2D) {
-        extra = 3;
-    } else {
-        extra = 2;
-    }
-    return extra + setkbuflen(w->tango);
-}
-
-void set_record(u8 *r, int len, WD *w, int rt)
-{
-    *r++ = len % 256;
-    *r++ = len / 256;
-    *r++ = w->len;
-    strncpy(r, w->yomi, w->len);
-    r += w->len;
-    *r++ = w->x07;
-    *r++ = rt;
-    if (w->x08 != 0 || w->x07 >= 0x2D) {
-        *r++ = w->x08;
-    }
-    setkbuf(w->tango, r);
-}
-
-void upd_record(u8 *r, int add, WD *w, int rt)
-{
-    int old;
-
-    old = ELEN(r);
-    add += old;
-    r[0] = add % 256;
-    r[1] = add / 256;
-    r += old;
-    r[0] = w->x07;
-    r[1] = rt;
-    r += 2;
-    if (w->x08 != 0 || w->x07 >= 0x2D) {
-        *r = w->x08;
-        r++;
-    }
-    setkbuf(w->tango, r);
-}
-
-int tmp_touroku(u8 *key, WD *w, int rt)
-{
-    NODE *nd;
-    NODE **link;
-    NODE *n;
-    u8 *rec;
-    int need;
-    int len;
-
     temp_updated = 1;
-    link = srch_node(key, w->len, &nd);
-    len = w->len;
-    rec = nd->rec;
-    if (rec[2] == len && ask_strncmp(key, rec + 3, len) == 0) {
-        rec[2] = 0;
-        *link = nd->next;
-        clear_entid_tmp(tmpoffset(nd->rec));
-        free_node(nd);
+}
+
+int setkbuflen(u8 *p)
+{
+    int n;
+
+    n = 0;
+    while (*p != 0) {
+        if (iskanji(*p) != 0) {
+            p += 2;
+        } else {
+            p += 1;
+        }
+        n += 2;
     }
-    n = alloc_node();
-    rec = alloc_record(need = newwdlen(w));
-    set_record(rec, need, w, rt);
-    link = srch_node(key, w->len, &nd);
-    n->rec = rec;
-    n->next = nd;
-    *link = n;
+    return n;
+}
+
+void setkbuf(u8 *src, u8 *dst)
+{
+    while (*src != 0) {
+        if (iskanji(*src) != 0) {
+            *dst = *src;
+            src++;
+            dst++;
+        } else {
+            *dst = 0xFF;
+            dst++;
+        }
+        *dst = *src;
+        src++;
+        dst++;
+    }
+}
+
+int getkbuflen(u8 *p, u8 *end)
+{
+    int n;
+
+    n = 0;
+    while (p < end && *p >= 0x39) {
+        if (*p == 0xFF) {
+            n++;
+        } else {
+            n += 2;
+        }
+        p += 2;
+    }
+    return n;
+}
+
+void getkbuf(u8 *dst, u8 *src, u8 *end)
+{
+    while (src < end && *src >= 0x39) {
+        if (*src == 0xFF) {
+            src++;
+        } else {
+            *dst = *src;
+            src++;
+            dst++;
+        }
+        *dst = *src;
+        src++;
+        dst++;
+    }
+    *dst = 0;
+}
+
+int iskanji(int c)
+{
+    c = c & 0xFF;
+    if ((c >= 0x80 && c <= 0x9F) || (c >= 0xE0 && c <= 0xFC)) {
+        return 1;
+    }
     return 0;
+}
+
+void init_hchar(void)
+{
+    HCHAR *h;
+
+    for (h = hchar; (u8 *)h < (u8 *)wdsbuf; h++) {
+        clear_hchar(h);
+    }
+}
+
+void clear_hchar(HCHAR *h)
+{
+    h->x00 = -1;
+    h->ch = 0;
+    h->bs = 0;
+    h->kh = 0;
+    h->x10 = 0;
+    h->x14 = 0;
+    h->x15 = 0;
+    h->x16 = 0;
+    h->x17 = -1;
+    h->x18 = -1;
+    h->x19 = -1;
+}
+
+void free_hchar(int from, int to, int keep)
+{
+    HCHAR *h;
+    HCHAR *end;
+
+    end = hchar + to;
+    for (h = hchar + from; h < end; h++) {
+        free_hchar_one(h, keep);
+    }
+}
+
+void free_hchar_one(HCHAR *h, int keep)
+{
+    if (keep == 0) {
+        h->x00 = -1;
+        h->x18 = -1;
+        if (h->ch != (void *)-1) {
+            free_chmemlist(h->ch);
+        }
+        h->ch = 0;
+        h->x17 = -1;
+        h->x19 = -1;
+        h->x16 = 0;
+    }
+    if (h->bs != 0 && h->bs != (BS *)-1) {
+        free_bsmemlist(h->bs);
+    }
+    h->bs = 0;
+    if (h->kh != 0) {
+        free_khmemlist(h->kh);
+    }
+    h->kh = 0;
+    h->x10 = 0;
+    h->x14 = 0;
+    h->x15 = 0;
 }

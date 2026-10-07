@@ -173,7 +173,7 @@ void strncpy();
 void clear_prevwd();
 void kh_learn();
 void prev_learn();
-void add_prevwd();
+static void add_prevwd();
 int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
@@ -188,8 +188,8 @@ int dic_getgaku();
 void init_univmem();
 void init_hchar();
 void init_edit0();
-int g2jodo();
-int getbit(s16);
+static int g2jodo();
+static int getbit(s16);
 int is_shift();
 void *memcpy();
 int close_dic();
@@ -330,14 +330,14 @@ extern int first_init_5;
 KH *raw_kouho();
 KH *kh_endof();
 void khmem_raw();
-void kh_append_init();
-void kh_append();
-int kh_merge_getone();
+static void kh_append_init();
+static void kh_append();
+static int kh_merge_getone();
 static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
-void kouho_set_num();
+static void kouho_set_num();
 int jiritu_makedisp();
 int next_gun();
 int back_gun();
@@ -361,10 +361,10 @@ int ToUpper();
 u8 *getrda1();
 u8 *getrda2();
 int add_kana_buf();
-int bytesin_kana_buf();
+static int bytesin_kana_buf();
 int count_byte_kana_buf();
 int api_funcent();
-int get_kouhostr();
+static int get_kouhostr();
 int syn_2to3();
 void wd_learn();
 u8 *select_tostr();
@@ -469,102 +469,49 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-int setu_match(a, b, c, base, extra)
-int a;
-int b;
-int c;
-int base;
-int extra;
+int ToUpper(int c)
 {
-    int r;
+    int u;
 
-    r = 0;
-    b = b & 0xFF;
-    switch (a & 0xFF) {
-    case 0:
-        if ((b >= 0x14 && b <= 0x19) || b == 0x32) {
-            r = 0xF;
-        }
-        break;
-    case 1:
-        if (b == 0x1A) {
-            r = 0xF;
-        }
-        break;
-    case 2:
-        if (b == 0x1B || b == 0x1C) {
-            r = 0x14;
-        }
-        break;
-    case 3:
-        if (b == 0x1F || b == 0x38) {
-            r = 0x14;
-        }
-        break;
-    case 4:
-        if (b == 0x16) {
-            r = 0x14;
-        }
-        break;
-    case 5:
-        c = c & 0xFF;
-        if (c == 0xFF) {
-            if (b > 0 && b < 0xE) {
-                r = 0xF;
+    u = c & 0xFF;
+    if (u >= 0x61 && u < 0x7B) {
+        return (u - 0x20) & 0xFF;
+    }
+    return c;
+}
+
+u8 *getrda2(u16 *a, u16 *b)
+{
+    u8 *p;
+    int n;
+    u16 *q;
+    int k;
+    int len;
+
+    n = b - a;
+    p = rmspec;
+    while (*p != 0) {
+        len = *p;
+        p++;
+        if (n == len) {
+            q = a;
+            k = n;
+            while (k > 0) {
+                if (*p != (ToUpper(*(u8 *)q++) & 0xFF)) {
+                    break;
+                }
+                k--;
+                p++;
             }
-        } else if ((b >= 0x80 && b < 0x8C && c == 4) || (b == 0xD && c == 0)) {
-            r = 0xF;
+            if (k == 0) {
+                return p;
+            }
+            p += k;
+        } else {
+            p += len;
         }
-        break;
-    case 6:
-        if (b >= 0x14 && b < 0x1A) {
-            r = 0xF;
-        } else if (b == 0x1F || b == 0x38) {
-            r = 0x14;
+        while (*p++ != 0) {
         }
-        break;
-    case 7:
-        if (b == 0x1D) {
-            r = 0xF;
-        }
-        break;
-    case 8:
-        if ((b >= 0x14 && b <= 0x19) || (b > 0 && b < 0xE)) {
-            r = 0x14;
-        }
-        break;
     }
-    if (r == 0) {
-        return base;
-    }
-    return extra + (base + r);
-}
-
-u16 kh_priority(BS *b, int v)
-{
-    v = v & 0xFFFF;
-    if (v != 0) {
-        return (v + 0x3E8) & 0xFFFF;
-    }
-    return b->x08;
-}
-
-int is_alphanum(int c)
-{
-    return rmtype[c & 0xFF] & 0xC0;
-}
-
-int is_num(int c)
-{
-    return rmtype[c & 0xFF] & 0x80;
-}
-
-int is_alpha(int c)
-{
-    return rmtype[c & 0xFF] & 0x40;
-}
-
-int is_paren(int c)
-{
-    return rmtype[c & 0xFF] & 0x20;
+    return 0;
 }

@@ -173,7 +173,7 @@ void strncpy();
 void clear_prevwd();
 void kh_learn();
 void prev_learn();
-void add_prevwd();
+static void add_prevwd();
 int api_funcent();
 void free_hchar();
 int ask_jis2sjis();
@@ -188,8 +188,8 @@ int dic_getgaku();
 void init_univmem();
 void init_hchar();
 void init_edit0();
-int g2jodo();
-int getbit(s16);
+static int g2jodo();
+static int getbit(s16);
 int is_shift();
 void *memcpy();
 int close_dic();
@@ -330,14 +330,14 @@ extern int first_init_5;
 KH *raw_kouho();
 KH *kh_endof();
 void khmem_raw();
-void kh_append_init();
-void kh_append();
-int kh_merge_getone();
+static void kh_append_init();
+static void kh_append();
+static int kh_merge_getone();
 static int exist_kouho();
 int kh_length();
 int kh_count();
 KH *take_kouho();
-void kouho_set_num();
+static void kouho_set_num();
 int jiritu_makedisp();
 int next_gun();
 int back_gun();
@@ -361,10 +361,10 @@ int ToUpper();
 u8 *getrda1();
 u8 *getrda2();
 int add_kana_buf();
-int bytesin_kana_buf();
+static int bytesin_kana_buf();
 int count_byte_kana_buf();
 int api_funcent();
-int get_kouhostr();
+static int get_kouhostr();
 int syn_2to3();
 void wd_learn();
 u8 *select_tostr();
@@ -469,83 +469,56 @@ extern SYNR entbuf;
 
 /* learn the chosen candidate (pos, len unused) */
 
-void free_bsmemlist(BS *b)
-{
-    BS *n;
-
-    while (b != 0) {
-        n = b->next;
-        free_mem(b);
-        b = n;
-    }
-}
-
-void free_khmemlist(KH *k)
-{
-    KH *n;
-
-    while (k != 0) {
-        n = k->next;
-        free_mem(k);
-        k = n;
-    }
-}
-
-void free_klmemlist(KL *l)
-{
-    KL *n;
-
-    while (l != 0) {
-        n = l->next;
-        free_mem(l);
-        l = n;
-    }
-}
-
-int bs_prefer(int pos, int end, int len)
+void bs_prefix(int pos)
 {
     BS *b;
-    BS *best;
-    BS *p;
+    PW *pw;
     HCHAR *h;
 
     h = &hchar[pos];
     for (b = h->bs; b != 0; b = b->next) {
-        if (len < 0 || b->len == len) {
-            if (bs_point(b, pos, end) == -1) {
-                return -1;
-            }
+        b->x0A = 0;
+        pw = b->pw;
+        if (pw != 0 && pw->x02 == 0x19 && pw->x00 == 0) {
+            b->x0A = 0xA;
         }
-    }
-    if (h == 0 || (best = h->bs) == 0) {
-        return -1;
-    } else {
-        for (p = best->next; p != 0; p = p->next) {
-            if (p->x08 > best->x08) {
-                best = p;
-            }
-        }
-        bs_ctd(best, pos, end);
-        return best->len;
     }
 }
 
-int calc_point(int pos, BS *b, BS *next)
+void bs_ctd(BS *b, int pos, int end)
 {
-    int a;
-    int c;
-    int f;
-    u16 pri;
+    BS *n;
+    int pt;
+    int p;
+    int len;
 
-    if (next == 0) {
-        a = b->len;
-        c = 0;
-        f = 1;
-    } else {
-        c = b->len;
-        a = next->len;
-        f = 0;
+    len = b->len;
+    if (b->x02 == 0xFF || (p = pos + len) >= end) {
+        return;
     }
-    pri = b->x0A;
-    return f * 0x32 + (pri + (c * 0x10 + a * 0x11) + setu_point(b, next));
+    n = hchar[p].bs;
+    if (n == 0) {
+        return;
+    }
+    while (n != 0) {
+        n->x0A = 0;
+        if (ignore_syn(n) == 0) {
+            pt = setu_point(b, n);
+            if (pt > 0) {
+                n->x0A = pt;
+            }
+        }
+        n = n->next;
+    }
+}
+
+int ignore_syn(BS *b)
+{
+    PW *pw;
+
+    pw = b->pw;
+    if (pw != 0 && (pw->x02 == 0x28 || pw->x02 == 0x29)) {
+        return 1;
+    }
+    return 0;
 }
