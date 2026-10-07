@@ -327,13 +327,19 @@ int rt_quest_load(int no)
     }
     if (getenv("RT_QEM_DUMP")) {    /* test aid: every stage's monster list of this quest */
         int st;
+        int var;
+        for (var = 0; var < 4 && (var == 0 || quest_w.x74[var] != 0); var++)       /* wave variants: program op 32 (0x20) sets quest_w.x3A, the list used from then on */
         for (st = 1; st < 0x58; st++) {
-            QEM *l = (QEM *)Em_data_st_adrs_get(quest_w.x74, st, 1, quest_w.x3A);
+            QEM *l = (QEM *)Em_data_st_adrs_get(quest_w.x74, st, 1, (s8)var);
             if (l == NULL || l == (QEM *)-1)
                 continue;
-            fprintf(stderr, "rt_quest: quest %d stage %d kinds:", no, st);
+            fprintf(stderr, "rt_quest: quest %d stage %d kinds:", no, st + 100 * var);
             for (; l->id >= 0; l++)
                 fprintf(stderr, " %d", l->id);
+            fprintf(stderr, "\n");
+            fprintf(stderr, "rt_quest: quest %d stage %d counts:", no, st + 100 * var);      /* kind:x04 (kills it can give, respawns): x05 (counts for x34) */
+            for (l = (QEM *)Em_data_st_adrs_get(quest_w.x74, st, 1, (s8)var); l->id >= 0; l++)
+                fprintf(stderr, " %d:%d:%d", l->id, l->x04, l->x05);
             fprintf(stderr, "\n");
         }
     }

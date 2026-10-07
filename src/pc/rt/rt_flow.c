@@ -53,7 +53,7 @@ int rt_flow_tick(void)
     static u32 last = 0xFFFFFFFF;
     static int tick;
     int m = game_w[0];
-    u32 st = game_w[0] | game_w[1] << 8 | game_w[0xD5] << 16 | (u32)(quest_w[0] | quest_w[1] << 4 | (quest_w[6] & 0xF) << 8) << 24;
+    u32 st = game_w[0] | game_w[1] << 8 | game_w[0xD5] << 16 | (u32)(quest_w[0] | quest_w[1] << 4 | (quest_w[6] & 0xF) << 8) << 24 ^ (u32)*(s16 *)(quest_w + 0x30) * 0x9E3779B1u ^ (u32)*(s16 *)(quest_w + 0x32) * 0x85EBCA6Bu;
     tick++;
     rt_font_tick_begin();       /* the text of the previous tick is replaced */
     rt_prims_reset();           /* ot_init */
@@ -81,9 +81,10 @@ int rt_flow_tick(void)
         fprintf(stderr, "\n");
     }
     if (getenv("RT_QUEST_TRACE") && st != last) {   /* mode, step, game_w+0xD5, quest_w x00/x01/x06 */
-        fprintf(stderr, "rt_flow: tick %d mode %d step %d D5 %d quest x00 %d x01 %d x06 %d time %d monsters %d\n",
+        fprintf(stderr, "rt_flow: tick %d mode %d step %d D5 %d quest x00 %d x01 %d x06 %d time %d monsters %d kills left %d x %d, %d x %d\n",
                 tick, game_w[0], game_w[1], game_w[0xD5], (s8)quest_w[0], (s8)quest_w[1], (s8)quest_w[6],
-                *(s32 *)(quest_w + 0x10), *(s16 *)(quest_w + 0x34));
+                *(s32 *)(quest_w + 0x10), *(s16 *)(quest_w + 0x34),
+                *(s16 *)(quest_w + 0x30), *(s16 *)(quest_w + 0x2C), *(s16 *)(quest_w + 0x32), *(s16 *)(quest_w + 0x2E));
         last = st;
     }
     switch (m) {
@@ -133,7 +134,7 @@ void light_init(void);
 void init_light_work(void) { light_init(); }
 NOP(round_init) NOP(flCompact) NOP(vib_stop_all)
 NOP(stage_load) NOP(stage_init)
-NOP(stage_free)  NOP(prim_init)
+NOP(stage_free)
 NOP(Plsel_task) NOP(ot_init) NOP0(net_start_ck) NOP(net_receive_pl_pos_set) NOP(Load_overlay)
 NOP(flInitPhaseStarted) NOP(flInitPhaseFinished)
 /* EvDemoInitialize / EvDemoMove: src/main/evdemo/evdemo.c (round 20) */ NOP(em_effect_pull) NOP(Disp_load_start)
