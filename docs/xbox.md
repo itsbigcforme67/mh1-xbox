@@ -59,13 +59,87 @@ build/xbox/obj (gitignored). Result, 7 Oct 2026:
     (name -> address) instead of the dynamic symbol table.
   - `src/pc/rt/rt_mc.c` (memory card on a host directory) uses dirent.h. On
     the Xbox: FindFirstFile/CreateFile from nxdk's winapi, under E:\UDATA.
-- Not tried yet: linking. The PC link relies on GNU tools the Xbox link does
-  not have in the same form: `objcopy --weaken-symbol` on game objects (to let
-  matched copies win over near-match copies), `--defsym` aliases for D_xxxx
-  data, `-rdynamic` + dlsym. With lld-link these become: /alternatename or
-  weak externals, a generated alias .c/.def file, and the generated symbol
-  table above. Also `audio_sdl.c`, `gfx_gl.c` and the viewer front-end were not
-  compiled (they are the parts that get Xbox backends).
+- (The rt_data.c / dlsym and rt_mc.c points above are solved: rt_data.c now
+  uses a generated symbol table on both builds, and the Xbox links a null
+  memory card for now.)
+
+## Linking for the Xbox (done 7 Oct 2026: links, not run yet)
+
+    tools/build_pc.sh                       # first; the Xbox build reuses its commands
+    . ~/xboxdev/env.sh
+    python3 tools/build_xbox.py             # null graphics -> build/xbox/default.xbe, mh1.iso
+    python3 tools/build_xbox.py --gfx nv2a  # pbkit graphics -> build/xbox/nv2a/default.xbe, mh1.iso
+
+About 2 minutes. build_xbox.py takes the objects the PC build links
+(build/pc/objs.txt, in link order) with their recorded compile commands
+(build/pc/cmd/), compiles them again with nxdk-cc, compiles the PC front-end
+(viewer, fl_model, formats, SDL pad, audio mixer + SDL audio output) with the
+Xbox stand-ins from src/pc/xbox/, makes the symbol table for rt_data.c, links
+with nxdk-link, then cxbe (XBE) and extract-xiso (an ISO holding only the
+XBE; the game files are never shipped).
+
+How the GNU-only link tricks were replaced (same scheme on the PC build, so
+the PC tests check it):
+- `objcopy --weaken-symbol` -> tools/pc_link_adapt.py writes a header per
+  object with `#pragma weak NAME` lines (force-included when it is compiled
+  again). On COFF that gives a weak external with a default.
+- lld-link 18 rejects two weak definitions of one name met before a strong
+  one ("duplicate symbol"); GNU ld takes the first strong, else the first
+  weak. tools/coff_weak.py applies the GNU rule after compiling: in every
+  object whose weak definition loses, the weak external is rewritten into a
+  plain undefined reference (the aux record becomes an absolute static
+  symbol so indices stay). That object's own calls then go to the winner,
+  as on ELF. Checked on a 3-object test: all calls went to the strong copy.
+  421 losing definitions are rewritten in the game link.
+- clang names a COFF weak default `.weak.NAME.default.FIRST` after the
+  object's first external definition; when that was a shared `__real@...`
+  float constant, two objects collided. build_xbox.py force-includes a
+  unique `__xtag_<object>` function first.
+- `ld --defsym D_xxxx=table+off` -> `.set` aliases in the defining object's
+  header (pc_link_adapt.py).
+- `-rdynamic` + dlsym -> tools/gen_symtab.py table (name -> address).
+- asm labels (`__asm__("game_w")` in pc_abs.py output and rt_ps2abs.h) now
+  carry `__USER_LABEL_PREFIX__` ("_" on win32).
+- Small libc gaps in nxdk's pdclib: atof (src/pc/xbox/xbox_libc.c). Paths:
+  `fopen` is renamed to a wrapper that turns '/' into '\'
+  (src/pc/xbox/xbox_compat.h, force-included in the host C).
+- `num_tbl`: gcc drops an unused `strchr(num_tbl, c)` in hk_all.c, clang
+  keeps the call; a dummy definition in xbox_libc.c.
+
+Result (7 Oct 2026): 715 objects compile, link with no undefined symbols.
+default.xbe 3.13 MB (null graphics) / 3.19 MB (nv2a); ISO 3.7 MB. Sections
+of main.exe: .text 2780 KB, .rdata 298 KB, .data+.bss 4085 KB (7.2 MB loaded
+before any heap). Main thread stack set to 1 MB (`-stack:0x100000`; nxdk's
+default is 64 KB, the PC has 8 MB; not measured what the game needs).
+
+On the Xbox (`#ifdef XBOX` in viewer.c) there is no command line: it mounts
+E:, looks for AFS_DATA.AFS in `D:\data` (next to the XBE) then
+`E:\Games\MH1\data`, and boots like `--boot` (title screen from power-on).
+SDL2 (nxdk port) is used for the pad and the audio output, as on the PC.
+The memory card is a null libmc (src/pc/xbox/mc_null.c: "no card", the game
+plays without saving).
+
+Not run anywhere yet (no xemu files): whether it boots, whether 64 MB is
+enough with the PC-side waste still in (it is not: see the memory budget
+below; the first boot may run out of memory before the title), stack depth,
+SDL audio/pad on nxdk with this code.
+
+### gfx_nv2a.c (started, untested)
+
+src/pc/xbox/gfx_nv2a.c implements gfx.h on pbkit: one Cg vertex program
+(src/pc/xbox/shaders/vs.vs.cg: one combined world*view*proj*viewport matrix,
+pre-lit colour, texture matrix) and one pixel shader (texture x colour; a 1x1
+white texture for untextured draws), compiled at build time with nxdk's cgc
++ vp20compiler/fp20compiler into build/xbox/shaders/*.inl. Vertices are
+copied per draw into a 6 MB ring of contiguous memory (24 bytes each).
+Power-of-two textures are swizzled A8B8G8R8 (repeat works), others linear
+"rect" textures (clamp only, texel coordinates through the texture
+matrix). Blend factors/equation, alpha test (GREATER ref), depth test/write,
+filter and clamp follow gfx_gl.c; fade colour is multiplied on the CPU.
+Missing: fog, clipping of triangles that cross the camera plane (the w
+divide is done in the vertex program, as nxdk's samples do), palettised
+textures, GPU skinning. It compiles without warnings; nothing about it has
+been seen on a screen.
 
 ## How the platform layer maps to nxdk
 
@@ -170,8 +244,8 @@ Xbox too (clang supports both).
   of the port. xemu helps; real hardware checks catch what xemu gets wrong.
 - Memory (above): no virtual memory; running out is a hard crash. Needs a
   memory report from the PC build first.
-- Link step: the PC build relies on GNU objcopy/ld features (weakening
-  symbols, --defsym, dlsym); these need a different scheme with lld-link.
+- Link step: solved (see "Linking for the Xbox"); watch for new GNU-only
+  tricks in tools/build_pc.sh.
 - Implicit declarations: clang treats them as errors in C99 by default; we
   pass -Wno-error, but a wrong implicit return type (pointer returned as int)
   is a real bug risk on any target. Worth adding prototypes over time.
@@ -195,7 +269,7 @@ Xbox too (clang supports both).
 ## Next steps (when the files arrive)
 
 1. xemu running the nxdk `hello` and `sdl` samples from this machine.
-2. A memory report from the PC build (per category), then trim.
-3. Link the game C for the Xbox with stub platform backends (no graphics):
-   boot to the village logic headless, print to the debug output.
+2. Trim memory (the per-category report above is done; trims listed there).
+3. Boot build/xbox/default.xbe (null graphics) in xemu with the game files
+   in D:\data or E:\Games\MH1\data; see where it stops (memory, stack).
 4. gfx_nv2a.c: textured clays, then the HUD/2D; then pad and audio.
