@@ -176,7 +176,57 @@ void sound_call_mov2(EMW *em, int f0, int f1, int se, int joint, int vol);
 static void quake_call_00593A90(EMW *em, int frame, int v);
 static void move_default_00593AE0(EMW *em);
 static void ef_move_sub_00593B30(EMW *em, EM07W *w);
-void em_uvmove(EMW *em);
+#define UVR(i) \
+    do { \
+        em->uv[i][0] = 0.0f; \
+        em->uv[i][1] = 0.0f; \
+        em->uvtm[i] = 0xFFFF; \
+        em->uvty[i] = 0xFF; \
+    } while (0)
+
+static void em_uvmove(EMW *em) {
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        if (em->uvtm[i] != 0xFFFF) {
+            em->uvtm[i] += 1;
+        }
+        switch (em->uvty[i]) {
+        case 0:
+            UVR(i);
+            break;
+        case 1:
+            if (em->uvtm[i] >= 0x3E) {
+                UVR(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 1;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 8);
+                em->uv[i][1] = 0.25f * (f32)(k / 8 % 4);
+            }
+            break;
+        case 2:
+            em->uv[i][0] = 0.125f;
+            em->uv[i][1] = 0.0f;
+            em->uvtm[i] = 0xFFFF;
+            em->uvty[i] = 0xFF;
+            break;
+        case 3:
+            if (em->uvtm[i] >= 0xC) {
+                UVR(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 2;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 4);
+                em->uv[i][1] = 0.25f * (f32)(k / 4 % 4);
+            }
+            break;
+        case 0xFF:
+            break;
+        }
+    }
+}
+
 void net_send_em(EMW *, int, int);
 int Quest_clear_ck(int);
 void RedDragonEscapeCamera(EMW *);
@@ -1619,4 +1669,19 @@ static void ef_move_sub_00593B30(EMW *em, EM07W *w) {
         move_default_00593AE0(em);
         break;
     }
+}
+
+void em07_effect_move(EMW *em) {
+    u8 e = em->ex[1];
+    EM07W *w = (EM07W *)em->ex;
+
+    switch (e) {
+    case 0:
+        w->eff = e + 1;
+        break;
+    case 1:
+        ef_move_sub_00593B30(em, w);
+        break;
+    }
+    em_uvmove(em);
 }

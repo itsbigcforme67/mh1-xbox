@@ -120,6 +120,57 @@ void Quest_enemy_revival_set(EMW *);
 void em16_init(EMW *);
 void Quest_enemy_escape(EMW *);
 
+#define UV_RESET(i) \
+    do { \
+        em->uv[i][0] = 0.0f; \
+        em->uv[i][1] = 0.0f; \
+        em->uvtm[i] = 0xFFFF; \
+        em->uvty[i] = 0xFF; \
+    } while (0)
+
+static void em16_uvmove(EMW *em) {
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        if (em->uvtm[i] != 0xFFFF) {
+            em->uvtm[i]++;
+        }
+        switch (em->uvty[i]) {
+        case 0:
+            UV_RESET(i);
+            break;
+        case 1:
+            if (em->uvtm[i] >= 0x3E) {
+                UV_RESET(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 1;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 8);
+                em->uv[i][1] = 0.25f * (f32)(k / 8 % 4);
+            }
+            break;
+        case 2:
+            em->uv[i][0] = 0.125f;
+            em->uv[i][1] = 0.0f;
+            em->uvtm[i] = 0xFFFF;
+            em->uvty[i] = 0xFF;
+            break;
+        case 3:
+            if (em->uvtm[i] >= 0xC) {
+                UV_RESET(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 2;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 4);
+                em->uv[i][1] = 0.25f * (f32)(k / 4 % 4);
+            }
+            break;
+        case 0xFF:
+            break;
+        }
+    }
+}
+
 static void sound_call_005D7610(EMW *em, int frame, int se, int joint) {
     f32 pos[3];
 
@@ -349,4 +400,18 @@ void ef_move_sub_005D7700(EMW *em, EM16W *w) {
         move_default_005D76B0(em);
         break;
     }
+}
+
+void em16_effect_move(EMW *em) {
+    EM16W *w = (EM16W *)em->ex;
+
+    switch (w->eff) {
+    case 0:
+        w->eff++;
+        break;
+    case 1:
+        ef_move_sub_005D7700(em, w);
+        break;
+    }
+    em16_uvmove(em);
 }

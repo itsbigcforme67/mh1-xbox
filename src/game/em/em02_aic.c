@@ -197,7 +197,57 @@ static void sound_call_sub_00587280(EMW *em, int se, int joint);
 static void sound_call_005872F0(EMW *em, int frame, int se, int joint);
 static void move_default_00583BA0(EMW *em);
 static void ef_move_sub_00583BF0(EMW *em, EM02W *w);
-void em02_uvmove(EMW *em);
+#define UVR(i) \
+    do { \
+        em->uv[i][0] = 0.0f; \
+        em->uv[i][1] = 0.0f; \
+        em->uvtm[i] = 0xFFFF; \
+        em->uvty[i] = 0xFF; \
+    } while (0)
+
+static void em02_uvmove(EMW *em) {
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        if (em->uvtm[i] != 0xFFFF) {
+            em->uvtm[i] += 2;
+        }
+        switch (em->uvty[i]) {
+        case 0:
+            UVR(i);
+            break;
+        case 1:
+            if (em->uvtm[i] >= 0x3E) {
+                UVR(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 1;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 8);
+                em->uv[i][1] = 0.25f * (f32)(k / 8 % 4);
+            }
+            break;
+        case 2:
+            em->uv[i][0] = 0.125f;
+            em->uv[i][1] = 0.0f;
+            em->uvtm[i] = 0xFFFF;
+            em->uvty[i] = 0xFF;
+            break;
+        case 3:
+            if (em->uvtm[i] >= 0xC) {
+                UVR(i);
+            } else {
+                int k = ((u32)em->uvtm[i] >> 1) + 2;
+
+                em->uv[i][0] = 0.125f * (f32)(k % 4);
+                em->uv[i][1] = 0.25f * (f32)(k / 4 % 4);
+            }
+            break;
+        case 0xFF:
+            break;
+        }
+    }
+}
+
 static void em_uvset(EMW *em, u32 frame, u16 idx, s8 type);
 void Em_set_quake_sub(EMW *, int);
 void Em_se_req2(EMW *, int, int, f32 *, int, int);
@@ -1073,4 +1123,18 @@ static void sound_call_005872F0(EMW *em, int frame, int se, int joint) {
     if (em_frame_check(em, (f32)frame, 0)) {
         sound_call_sub_00587280(em, se, joint);
     }
+}
+
+void em02_effect_move(EMW *em) {
+    EM02W *w = (EM02W *)em->ex;
+
+    switch (w->eff) {
+    case 0:
+        w->eff++;
+        break;
+    case 1:
+        ef_move_sub_00583BF0(em, w);
+        break;
+    }
+    em02_uvmove(em);
 }
