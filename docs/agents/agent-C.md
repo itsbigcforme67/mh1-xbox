@@ -1306,7 +1306,7 @@ Misses (15-minute cap): lobby_client_admin_message 7 (if-chain instead of switch
 ## Round 19 (agent C, main 0x220000-0x24A240: camera, quests, IME)
 Took over this range from agent E (E keeps 0x160000-0x220000). Almost all unmatched code left there is IME (src/main/ime/ime_nm.c,
 E's whole-file near-match TU), camera (cam*_nm.c, also linked by the PC build: keep their logic faithful) and quests (f_quest_nm.c).
-Start 41.403% of main, now 41.9%+ (see the end of this section). The IME TU was the best yield: its drafts were m2c-literal and most
+Start 41.403% of main (627900 bytes), end 42.015% (637176 bytes, +9.3 KB; unmatched functions in 0x220000-0x24A240: 182 -> 150). The IME TU was the best yield: its drafts were m2c-literal and most
 "40-100 off" functions were one structural idiom away. Workflow that worked: `tools/align.py NM FUNC` (diff without relocation noise),
 `tools/vt.py try_variants` (several textual variants per call, ~1 s each; use the mark `'void f()\n{'` including the brace when a K&R
 prototype of the same name exists earlier in the file), tools/declhill2.py in the background WITHOUT --apply (it writes zzhPID.c next to the
@@ -1367,8 +1367,7 @@ Tooling gotchas:
 Also: src/main/sys/empty_23E4E0.c = the two empty `jr ra` functions at 0x23E4E0/0x23E4F0 (common_local_init_0023E4E0, dummy_em_prog_0023E4F0; check for such
 8-byte unmatched functions in every range, they cost nothing).
 Near-misses left (align lines / instructions): setmean 3 (daddiu constants), getrda1 2 (extra `b` stub after the n==1 return), srch_node 3 (needs
-`&hash_tab[h & 0xFFFF]` to stop MWCC from CSE-ing the address: harmless but a hack), get_kouholist (original compares the s64 id with -1 through an MMI
-`.word` constant load, same as add_dummy_chmem), bs_point 3 (`p = pos + b->len` temp register), meantosjis (v lands in s5 not s2), dic_getsyn / dic_snssyn
+`&hash_tab[h & 0xFFFF]` to stop MWCC from CSE-ing the address: harmless but a hack), add_dummy_chmem 9 (param saved-register order), kh_learn (condition layout, first/prev register), wd_learn / disp_kouho / delwd (the loop is entered by a jump to its bottom test), bs_point 3 (`p = pos + b->len` temp register), meantosjis (v lands in s5 not s2), dic_getsyn / dic_snssyn
 (len copy register), set_synref, ktu_match/josi_match (single shared `return base` tail, tried result-variable form), ask_sjis2jis/ask_jis2sjis (return-0 block
 placement), disp_kouho (tail loop is entered by a jump to the test: unreproduced), api_touroku (frame 144 vs 128), cam_sub_stg (spl address in s5 lives
 across ty), Quest_next_em_set 13, stolen_item_stack 6 (a0/v1 naming), ZoomRateCalc 8 (z[2] lands in f0 not f1), Em_hagi_point_cnt_ck 20.
