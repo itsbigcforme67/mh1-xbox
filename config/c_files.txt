@@ -2453,3 +2453,8 @@ main 0x00172CE0 0x00172D2C fl/flmat07
 main 0x001715E0 0x001717B8 fl/flproj01
 main 0x001717C0 0x001718AC fl/flview01
 main 0x00195510 0x0019583C fl/tarpad03
+main 0x001737C0 0x00173884 fl/flquat01
+main 0x00172FF0 0x001730F0 fl/flvec01
+main 0x00179570 0x001795DC fl/flpstex01
+main 0x001795E0 0x00179B80 fl/flsettex01
+main 0x00179CB0 0x00179DB0 fl/flcolor01

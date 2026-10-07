@@ -796,3 +796,17 @@ ps2McInit 2 (daddu a1,zero after the first addiu), GetPlayerDiffuseData 19/100 (
 stolen_item_stack 6, Em_hagi_point_cnt_ck 20/50 (the original keeps `em` in a0 across the first call and loads n into a2), Quest_next_em_set 17, font_print_sp 69.
 Quest file sweep: no literal-address accesses are left in src/main/quest/*.c (everything uses quest_w/game_w fields); the remaining quest near-matches are
 register-allocation problems, not address problems.
+
+## Assignment 12 (7 Oct, long round, single player first)
+Ranges: main 0x160000-0x1C0000 (Capcom parts), 0x1C0000-0x24A240 (skip Sofdec/ADX 0x1C4000-0x216000) and 0x2814E0-0x293B68.
+Main line: 38.962% at the start of the round (my branch), 39.037% after merging main, see the end of this section for the final figure.
+Largest unmatched single-player stretches left in my ranges (bytes, address; "no C" = nothing written yet), 7 Oct after this round:
+- no C, GS packet / shader code: flPS2SetShaderParam 8264 0x179DD0, flSetRenderState 3572 0x177720, flPS2InitRenderBuff 3056 0x18C310, flPS2LockTexture 2548 0x188C90,
+  flPS2SendRenderState_ALPHA 1872 0x178C90, flPS2SwapDBuff 1772 0x18CF00, flPS2SetTextureRegister 1440 0x1795E0, flPS2UnlockTexture 1360 0x189770, flPS2StoreImageB 1312
+  0x16E1C0 (pcpyld + hardware registers), flps1600 1276, flPS2GetTextureVramBlock 1176 0x189FF0, flPS2ConvertTextureFromContext 1060 0x18A4F0 and flPS2ConvertContext
+  872 0x18A920 (the pixel copy helpers are inlined, no calls), the flps00xx shader helpers (VU0 inline asm: raw only).
+- no C, other: flPS2ConvClayData 4536 0x16B4D0 (the draft has ~40 spilled locals), HdMerge 4280 0x21E310 (sound), flPADACRConf 1716, PADReadSub 2488 / PADRead_for_PS2 1296
+  (0x195000 pad layer: update_pad_stick_dir and the device open/close helpers are done now), eft20 (nm C, 15-40% off), cam_sub_std/cam_sub_stg/k_HitEmCamera, weapon/player draw
+  0x164410-0x168F00 (nm C 270-1300 off), stage_spr_disp, quest_condition_prog, remuneration_item_set.
+- libc / libm / SCE / Sofdec code (0x195xxx-0x1BFxxx: vfprintf, dtoa, strtod, malloc, __ieee754_*, sceCd*, sceDbc*, sceMc*, sceVu0*, Sfd/MPEG decoders) is not MWCC code: skipped.
+- network last: NetFileCreate 6780, NetFileLoad 3124, net_receive_em 3672, prot_00/01 (0x2381F0), mcsls_recv 1876, InetDisconnectAll 1588.
