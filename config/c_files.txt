@@ -2202,9 +2202,6 @@ game 0x005A0FF0 0x005A16F4 em/em08_demo
 game:rodata 0x006868E0 0x00686914 em/em08_demo
 game 0x005DFDF0 0x005E06E4 em/em17_demo
 game:rodata 0x00688CD0 0x00688D00 em/em17_demo
-lobby 0x005BCDE0 0x005BCF6C b/lb_in0300
-lobby 0x005B7DD0 0x005B7FE4 b/lb_lwm01
-lobby:rodata 0x0065E870 0x0065E890 b/lb_lwm01
 game 0x00566500 0x0056662C em/em_modechg
 game 0x0055E2B0 0x0055E424 em/em_cmd_r97
 game 0x00533A00 0x00534100 em/em_core_eye
