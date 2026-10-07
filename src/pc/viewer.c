@@ -1048,6 +1048,7 @@ static void mem_tick(int t)
             snprintf(where, sizeof where, "tick %d", t);
             rt_ms_report(where);
             rt_area_report();
+            rt_stack_report(where);
         }
         while (*m && *m != ',')
             m++;
@@ -1058,6 +1059,7 @@ static void mem_tick(int t)
 
 int main(int argc, char **argv)
 {
+    rt_stack_paint();
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shot") && i + 1 < argc) shot = argv[++i];
         else if (!strcmp(argv[i], "--frames") && i + 1 < argc) frames = atoi(argv[++i]);
@@ -1633,5 +1635,6 @@ int main(int argc, char **argv)
         rt_snd_shutdown();
     gfx_shutdown();
     fmt_afs_close(&afs);
+    rt_stack_report("at exit");
     return 0;
 }

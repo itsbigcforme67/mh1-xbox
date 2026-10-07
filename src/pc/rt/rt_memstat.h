@@ -29,4 +29,7 @@ void rt_ms_pop(const char *prev);
 /* counters the backends add to directly (GPU-side copies) */
 void rt_ms_add(const char *cat, long bytes);
 void rt_ms_report(const char *where);
+/* RT_STACK=1: stack depth watermark of the main thread (rt_memstat.c) */
+void rt_stack_paint(void);
+void rt_stack_report(const char *where);
 #endif

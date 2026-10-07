@@ -132,7 +132,10 @@ def main():
     import coff_weak                            # GNU-ld weak rules for lld-link
     objs, nfix = coff_weak.resolve(objs, OUT + '/linkobj')
     print('coff_weak: %d losing weak definitions made references' % nfix)
-    link = ['nxdk-link', '-include:_automount_d_drive', '-stack:0x100000', '-out:' + dst + '/main.exe', '-map:' + dst + '/main.map'] \
+    # main thread stack: 256 KB. The PC build's deepest main-thread stack in the
+    # three PC tests and the title / Rathian runs was 35 KB (RT_STACK=1); nxdk's
+    # default is 64 KB.
+    link = ['nxdk-link', '-include:_automount_d_drive', '-stack:0x40000', '-out:' + dst + '/main.exe', '-map:' + dst + '/main.map'] \
         + objs + [NXDK + '/lib/' + l for l in LIBS]
     r = subprocess.run(link, capture_output=True, text=True)
     open(dst + '/link.log', 'w').write(r.stdout + r.stderr)

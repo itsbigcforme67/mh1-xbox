@@ -136,10 +136,15 @@ Power-of-two textures are swizzled A8B8G8R8 (repeat works), others linear
 "rect" textures (clamp only, texel coordinates through the texture
 matrix). Blend factors/equation, alpha test (GREATER ref), depth test/write,
 filter and clamp follow gfx_gl.c; fade colour is multiplied on the CPU.
-Missing: fog, clipping of triangles that cross the camera plane (the w
-divide is done in the vertex program, as nxdk's samples do), palettised
-textures, GPU skinning. It compiles without warnings; nothing about it has
-been seen on a screen.
+Second round: palettised textures (P8, see the memory section),
+near-plane clipping on the CPU (only clays with a triangle behind w = 1;
+the cut is done in object space with the shared gfx_clip_tri, checked on
+200k random triangles), linear fog in the shaders (the vertex program
+writes COLOR1 = fog colour + factor from the clip w, the pixel shader
+lerps; NV2A's own fog unit is not used). Guesses to check on xemu: the
+palette's DMA context bit, whether COLOR1 needs SPECULAR_ENABLE. Missing:
+GPU skinning. It compiles without warnings; nothing about it has been
+seen on a screen.
 
 ## How the platform layer maps to nxdk
 
@@ -222,6 +227,63 @@ and work areas ~16-20 MB, host model data ~8-10 MB, textures 4-8 MB, audio
 ~4 MB, framebuffers ~3.7 MB, nxdk/kernel ~4 MB: about 47-57 MB of 64. It
 fits, with little room; the trims above are required, not optional.
 
+### After the trims (agent A, 7 Oct 2026, second round)
+
+Done, on the PC and the Xbox alike (`tools/mem_report.sh` re-measures the
+three points; RT_MEM_FILES=1 lists every file the viewer loads):
+- Sound effects stay PS2 ADPCM and are decoded while mixing (the mixer keeps
+  two 28-sample blocks per voice; audio_voice_play_vag). The PCM cache (up
+  to 20 MB) is gone. A 60 s Rathian audio dump is byte-identical to before.
+- The program file (5.5 MB) is freed after the import; only main's data
+  part (1.2 MB) stays, in its own block, because imported tables point
+  into it. The ELF symbol and relocation tables (3 MB) and the raw
+  lobby/select.bin go too (rt_mem_trim); .bss shadows are per symbol
+  (233 small blocks instead of 1.7 MB).
+- Model and texture files are freed once fl_model_create has copied them
+  (motion tables stay: the motion players read them in place).
+- Meltw output buffers are shrunk to their size (they were allocated at 4x
+  the packed size and kept so).
+- Fixed areas sized from the data, with a size check on every load and a
+  use report (RT_MEM): collision 2 x 512 KB (largest files 160 / 80 KB;
+  were 4 MB each), data_load_ptr 2 MB (838 KB used; was 4 MB),
+  cam_data_area 64 KB (largest camera file 3.4 KB; was 1 MB), glyph
+  texture table per glyph (was 1 MB of pointers).
+- Xbox textures: gfx_nv2a.c keeps power-of-two textures with <= 256
+  colours (all the 4/8-bit APX ones) as NV2A P8 + palette.
+
+Checked: the three PC tests pass; screenshots of the title, the Rathian
+nest, the village, stage 4 and the quest-loop end are byte-identical to
+before the trims.
+
+Now (KB, same three points as above):
+
+| | title | village | Rathian |
+|---|---|---|---|
+| CPU heap total (was) | 18433 (57745) | 23558 (69946) | 18421 (76873) |
+| textures as the Xbox keeps them (P8/RGBA8) | 5097 | 5981 (peak 6890) | 2984 |
+| (the same as RGBA8, the PC) | 19640 | 22415 | 11716 |
+
+Estimated Xbox total in the village (the largest): heap 23.6 MB + textures
+6.9 MB + vertex ring 6 MB (gfx_nv2a.c) + the XBE loaded 7.2 MB (code 2.8,
+data/bss 4.1, of which rt_lb_mem 2.2) + framebuffers 3.7 MB + kernel and
+nxdk ~4 MB [estimate] = about 51 MB of 64. Start-up peaks higher for a
+moment (program file + relocation tables, ~9 MB, freed before any model is
+loaded). Not measured on an Xbox: allocator overhead and fragmentation of
+pdclib's malloc, and what SDL takes.
+
+Left (not needed to fit, worth doing later): the host keeps model data
+twice (fl_model's AMO arrays and the renderer's clay copies, ~4-6 MB);
+lobby.bin is held three ways at run time (rt_lb_mem 2.2 MB static, a 1.2 MB
+reload copy, game.bin 1.4 MB beside it) where the PS2 swaps one overlay;
+the vertex ring could be smaller.
+
+### Stack
+
+RT_STACK=1 paints 2 MB below main and reports the deepest byte used: 35 KB
+in the three PC tests, the title and the Rathian runs (gcc -O2, 32-bit;
+the game C keeps its work in static areas). The XBE gets 256 KB
+(`-stack:0x40000` in tools/build_xbox.py; nxdk's default is 64 KB).
+
 ## Why 32-bit x86 helps
 
 The game C keeps pointers in u32 fields and depends on PS2 struct offsets. The
@@ -242,8 +304,8 @@ Xbox too (clang supports both).
 - GPU backend from scratch: pbkit is low level (push buffers, register
   combiners for blending/texture modes, no driver). Most work and most risk
   of the port. xemu helps; real hardware checks catch what xemu gets wrong.
-- Memory (above): no virtual memory; running out is a hard crash. Needs a
-  memory report from the PC build first.
+- Memory (above): no virtual memory; running out is a hard crash. The
+  trims bring the estimate to ~51 of 64 MB; to be confirmed on xemu.
 - Link step: solved (see "Linking for the Xbox"); watch for new GNU-only
   tricks in tools/build_pc.sh.
 - Implicit declarations: clang treats them as errors in C99 by default; we
@@ -269,7 +331,8 @@ Xbox too (clang supports both).
 ## Next steps (when the files arrive)
 
 1. xemu running the nxdk `hello` and `sdl` samples from this machine.
-2. Trim memory (the per-category report above is done; trims listed there).
+2. Check the memory estimate on the console (debug output of the free
+   memory at the title, village and a hunt).
 3. Boot build/xbox/default.xbe (null graphics) in xemu with the game files
    in D:\data or E:\Games\MH1\data; see where it stops (memory, stack).
 4. gfx_nv2a.c: textured clays, then the HUD/2D; then pad and audio.
