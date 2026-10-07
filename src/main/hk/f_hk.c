@@ -501,18 +501,33 @@ static void delete_all(char *s, int n) {
     }
 }
 
-/* original bytes: build/raw/hk_key_end.inc (config/c_rawfuncs.txt) */
-#ifdef __MWERKS__
-asm static void hk_key_end(void)
-{
-#include "hk_key_end.inc"
-}
-#endif
+static void hk_key_end(void) {
+    char *new_var;
+    char *s = (char *)lpSKey;
+    u16 n;
 
+    if ((u8)s[0x2F] == 0) {
+        new_var = s + 0x158;
+        if ((u8)s[0x158] != 0) {
+            n = *(u16 *)(s + 0x2C);
+            if (n < strlen(new_var)) {
+                SKU16(0x2C) = strlen(s + 0x158);
+            }
+        } else {
+            n = *(u16 *)(s + 0x2A);
+            if ((int)n < (int)(strlen(s + 0x44) & 0xFFFF)) {
+                SKU16(0x2A) = strlen(s + 0x44);
+            }
+        }
+    }
+    SKU16(0x2C) = strlen((char *)lpSKey + 0x158);
+    SKS8(0x28) = 0;
+    se_req(7, 0x16, 0);
+}
 
 /* original bytes: build/raw/hk_cursor_mv.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
-asm static void hk_cursor_mv(int dir)
+asm static void hk_cursor_mv(s16 dir)
 {
 #include "hk_cursor_mv.inc"
 }

@@ -2348,5 +2348,5 @@ lobby 0x005B5640 0x005B5974 b/lb_tcp01
 lobby 0x005BA940 0x005BABF4 b/lb_cbpl01
 main 0x002755D0 0x0027BF80 chat/f_chat
 main 0x0027EF60 0x00280EE4 mc/f_mc
-main 0x00264180 0x00267198 hk/f_hk
 main 0x00271FB0 0x00274E10 ud/f_ud
+main 0x00264180 0x00267198 hk/f_hk
