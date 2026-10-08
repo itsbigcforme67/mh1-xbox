@@ -141,87 +141,60 @@ out of the body cancel each other for that monster's body size (same family as t
 
 ---
 
-# Agent B: main module, PC copies against matched C
+# Agent B: main module, PC copies against matched C (8 Oct 2026)
 
-## What the PC actually runs (agent B, 8 Oct 2026)
+Method (tools/targets/, see docs/agents/agent-B.md): `nm.py` lists the main functions the PC links that are not inside a
+registered (byte-matched) range; `nm2.py` the functions that ARE matched but whose PC definition comes from another object (an
+`*_nm.c` copy or a hand-written `src/pc/rt/rt_*.c`); `standins.sh` the no-op stand-ins (build/pc/rt_gen.c) that game objects call.
 
-Method (tools/targets/): `nm.py` lists main functions the PC build links that are NOT inside a
-registered (byte-matched) range; `nm2.py` lists functions that ARE matched but whose PC definition
-comes from some other object (an `*_nm.c` copy or a hand-written `src/pc/rt/rt_*.c`). Stand-ins that
-really fire were collected from ~/.local/share/mh1pc/logs ("stand-in called").
+## 1. Matched in C but run as a copy on the PC: switched
+Before: 996 functions (219 KB). After: 544 (124 KB), all of them host replacements that must stay (loader, GS/SPU, memory card,
+fonts, sound, movie, model creation, the pools that the host owns) or the files kept on purpose (online chat; soft keyboard with
+its own entry points; memory card on host files; bgm, whose near-match has a PC fix). Switched (the near-match stays linked weak
+for the functions that are still unmatched): cp01-cp03 (math), pl (plx01-12, pl_wall, pl_itemck, pldmv, plegg, pl_snd01...),
+frame, hit (hit, hitb-e, shit1/2a/5/6/7/15/16/401, tri01), hit2/hit3, quest (f_quest* 40 files, qstb*), item, em/emw, emsrch, weapon3, wtrans01,
+light01-03, stage, reward key, eft02/eft20b, camera (cam*, camarea*, camr*), menu (menu01-41, pit*), option, omake, ud (f_ud).
+The tests pass with all of it. Text comparison of the pairs (tools/targets/cmpnm.py) found no behavioural difference, but the
+nm copies carried PC fixes that the matched files needed again (item 4 below).
 
-## A. Matched in C, but the PC ran a copy (996 functions, 219 KB; switch = free proof)
-Biggest groups by the object the PC linked instead of the matched file:
-chat_nm 68, hit2_nm 11 (13.7 KB), f_quest_nm 63, menu_nm 54, menu_disp_nm 20, ud_nm 38, sk_all/hk_all,
-pl_nm 24, f_frame_nm 17, cam_nm 29, cmd_nm, eft02_nm, mcact/mclow, omake_nm, bgm_nm, option_nm,
-and hand-written rt_*: rt_gen (63 no-op stand-ins whose C is matched: trans_eft, SetPartsTrans,
-weapon_dat_make, release_stage_model ...), rt_flmat 42 (math), rt_pl 23, rt_font 20, rt_flow 22,
-rt_main 14, rt_eft 20, rt_snd 22.
+## 2. Not matched, the PC runs a copy (232 functions, 252 KB), by player impact
+1. Monster attack capsules: hit_cap_cap2_m 5012 B (74/1255 instructions off: two float registers swapped, f20/f22), hit_cap_cap3_m 3780 B,
+   hit_sphr_sphr2 256 B (11/64). They are `c_rawfuncs` (original bytes) on the PS2 side, near-match C on the PC.
+2. Player: pl_nm.c (basic_com_ck 2368 B, pl_move_sub 2144 B, Pl_item_stack, pl_mv021, pl_at008/9/12, pl_dm003/8, pl_egg05, pl_turn_sub,
+   pl_horm_sub, Pl_horm_adj, Pl_box_select, Pl_basic_flagset, Pl_slash_*, Pl_shell_set, body_hit*, to_normal, timer_calc_sub_pl, em_ninshiki_ck).
+3. Collision: shit8-14 (GetGround*, GetWallHitBit*, sphr_face_o3/4 (1936/2016 B), PushAdjust3 (4024 B), GetWallHitLine, GetEyeHitLine), hitw_nm, tri_nm (VectorHitCheck).
+4. Monster: em_move (f_em_nm), em_search_set, em_dur_set, em_ride_sub (written, 448 vs 528 byte frame), em_material_sub (agent E's hand port is linked; emmat_nm.c is the m2c copy).
+5. Camera: cam_nm (cam_sub_std 2664 B, point_cam_sub, SetCameraData), camr4/5/6 (Spline, Cardano, k_HitEmCamera, GetOrthogonalPoint).
+6. Items/quest: f_quest_nm (quest_condition_prog 3420 B, remuneration_item_set, Quest_next_em_set, Share_item_*), item_nm, reward_itembox.
+7. HUD/menu: menu_nm (Pit_mv 4/382 off, Pit_mv_lb 3/104, Pit_init, Pit_reset, Menu_mix_mv), menu_disp_nm (disp_item_sub_select 3872 B ...), omake_nm.
+8. Effects/draw: eft06_m, eft13_*, eft20_*, light_*, set13_*, weapon3_nm (weapon_trans, pl_item_trans), trans_stage.c (PC rewrite, 15 KB).
+Almost there (instructions differing / total, check.py): Sel_back_disp 2/36 (two instructions swapped), Pit_mv_lb 3/104, Pit_mv 4/382
+(`now` goes through a0 in the original), menu_data_monster_sub 5/39, key_rept_du 5/60, GroundHitInit/WallHitInit 6/70, stolen_item_stack 6/138,
+ZoomRateCalc 8/34. 45-minute caps were reached on Pit_mv, Pit_slash_lv_ck, flMemcpy, hit_sphr_sphr2 (18 -> 11) and cap2_m.
 
-## B. Not matched, PC runs a copy (233 functions, 248 KB)
-Ranked by player impact:
-1. Player: pl_nm.c (basic_com_ck, pl_move_sub, pl_turn_sub, pl_horm_sub, pl_mv021, pl_at008/9/12,
-   pl_dm003/8, pl_egg05, Pl_item_stack, Pl_horm_adj, Pl_box_select, body_hit*, timer_calc_sub_pl, ...)
-2. Collision: shit*_nm.c (GetWallHitBitPl/Em/2, sphr_face_o3/o4, PushAdjust3, GetGround*, GetWallHitLine ...), hitw_nm, tri_nm
-3. Monster: em_move (f_em_nm), em_ride_sub (NO-OP in rt_main.c), em_material_sub (host stand-in, only raptors),
-   em_work_set / pull_enemy_work / em_create_model (host), em_search_set, Game_task (rt_boot.c), round_init (NO-OP)
-4. Camera: cam_nm.c / camr*_nm.c
-5. Items/quest flow: f_quest_nm.c (quest_condition_prog, remuneration_item_set, Share_item_*), item_nm.c, reward_itembox
-6. HUD/menu: menu_nm.c, menu_disp_nm.c (disp_item_sub_select ...), omake_nm.c
-7. Effects: eft06_m, eft13_*, eft20_* (nm), light_*, set13_*
-8. Draw: weapon3_nm.c (weapon_trans, pl_item_trans), trans_stage.c (PC rewrite, 15 KB)
+## 3. Stand-ins that fire or are called (rt_gen.c, 400 names)
+Platform (loaders, GS, SPU, vib, online Bs*/CallBack_*/cnLBS_*, IME apiask_*): correct as no-ops. Game-logic ones found and fixed here:
+flvecApplyMat, flMemcpy, flExp, flmatAddTrans2, ride_ofs_calc, Set09_set_ex / Eft25_set_pos (stage), frame_check_001263F0 (pl_snd01).
+Left: apiask_* (kanji conversion API of the soft keyboard), save_file_req (option menu), flSndChange / flSndStatGet / flSndAllStop
+(sndc03 sound parameter changes), Em_Senko_Ck (flash bomb, emw02 push_senko).
 
-## C. Stand-ins that fire in real play (log "stand-in called")
-load_bin_req, load_busy_ck, stage_free, ot_init, view_reset, vib_*, clr_item_work, init_set_work,
-em_effect_pull, round_init, load_shadow, load_eft, set_viewproj, flFlip, flCompact, flCalcTrans...
-Most are platform (loader, GS, SPU) and correct to skip; the game-logic ones are round_init,
-em_effect_pull, clr_item_work/init_set_work/init_item_work (matched C exists, item pool unused).
+## 4. Behaviour differences found (the "bugs just fixed")
+1. em_ride_sub (0x10B060, Lao-Shan Lung): was a weak empty function (rt_main.c). The Lao's back was never a floor, no hunter ever got
+   the riding state PLW+0x604 = 1/3 that the Lao AI (em_cmd_pl_ride_ck) reads, and nothing saved the joints' old matrices (sys_old_mat,
+   filled by old_pos_save in the game's move()). Written from the asm (src/main/em/emride_nm.c), ride_ofs_calc linked from its matched
+   file, run for kind 7 from rt_monster_tick with an old-matrix save. Checked for crashes only (quest 101 smoke run), not in a play session.
+2. em_material_sub: see agent E's section (hand port of all kinds, merged); my m2c copy src/main/emw/emmat_nm.c is not linked.
+3. flvecApplyMat (0x172EE0) was a no-op stand-in from the first frame on; flMemcpy (lobby chat/net buffers) and flExp (sysw.c gauss table)
+   too; flmatAddTrans2 (weapon3_nm). Found because linking the matched calc_mat_angY (which calls flvecApplyMat) broke the tranquilizer test.
+4. System_timer never counted offline (the PS2 Scheduler counts it every frame): map boss-icon pulse, extras menu glow, the blink tables
+   of em_material_sub kinds 9/18/23. rt_sys_tick counts it.
+5. Stage code (f_stage_nm / f_stageb) called Set09_set_ex and the lobby's Eft25_set_pos by address into no-op stand-ins; pl_snd01's
+   footstep/frame sounds called frame_check through an alias name that was a no-op stand-in.
+6. Wiring pitfalls (not game bugs): matched C that calls a file-static of its near-match (hit_hit_sub_em, eft02_move) ran a stand-in;
+   a linker alias binds to the object that defines the target, which was a weak near-match copy (Plesioth em21_init stuck idle);
+   `a0 left over` calls in matched C need the PC patches again (tools/pc_patch.py: Item_preparation_adrs, adx_se_set, Pl_stg_ck, Pl_master_ck);
+   str_gattai (strg01.c) uses the MWCC va_start (stdarg now); the bgm01-04 matched files lack the str_getstat check of bgm_nm.c (village
+   silent after the house): kept on bgm_nm.
 
-## Done (agent B, 8 Oct 2026)
-
-Wiring (tools/build_pc.sh, tools/pc_patch.py, tools/targets/):
-- cp01-cp03 (math library) linked from the matched files; the rt_*.c copies are weak.
-- 92 + 68 matched main files (batch A: pl, frame, hit, quest, item, em/emw, weapon, light, stage, sound (not bgm), eft02/20;
-  batch B: camera, hit2, menu, option, omake, ud) replace their `*_nm.c` near-match copies. The nm files stay linked weak for
-  the functions that are still unmatched. A host-owned symbol (src/pc/rt/rt_*.o strong definition) is weakened in the matched
-  object automatically, so the host version still wins where the game memory model is replaced (joint matrices, models,
-  sound, files). The build needs `tools/targets/pcbuild.sh` (loops until it links).
-- `func_XXXXXX` / `D_XXXXXX` names in matched main C (calls into game.bin, tables) are tail-jump shims / aliases to the
-  game module's real names (tools/targets/dalias.py).
-- argregs check of the newly linked files: calls that rely on "a0 left over" are patched for the PC in tools/pc_patch.py
-  (Item_preparation_adrs, adx_se_set, Pl_stg_ck/Em_stg_ck, Pl_master_ck).
-
-Byte matches: NormalClipCheckF3 and PointHitCheckF3 (cp01, now 0x120240-0x120C7C), both used by every ground query.
-Near-match improved: hit_sphr_sphr2 18 -> 11 of 64 instructions (declaring `d` reused for dx / dz*t).
-Not matched after the time cap: hit_cap_cap2_m (5012 B), hit_cap_cap3_m (3780 B), em_ride_sub (written, 448 vs 528 byte frame).
-
-## Behaviour differences found (the "bugs just fixed")
-1. em_ride_sub (0x10B060, Lao-Shan Lung): was a weak empty function in rt_main.c. The Lao's back was never a floor, no hunter
-   ever got the "riding" state PLW+0x604 = 1/3 that the Lao AI (em_cmd_pl_ride_ck) reads, and nothing saved the joints' old
-   matrices (sys_old_mat, filled by old_pos_save in move()). Now written from the asm (src/main/em/emride_nm.c) and run for kind 7
-   from rt_monster_tick together with the old-matrix save. Not byte-exact; checked only for crashes (quest 101 smoke run).
-2. em_material_sub (0x10CEA0): when this work started only the raptor case was ported; agent E ported the other kinds by hand
-   in rt_em.c at the same time (merged: theirs is linked). My independent m2c-based copy of the whole function is kept as
-   src/main/emw/emmat_nm.c (compiles on the PS2 side, 1875 instructions like the original, not linked on the PC): it can serve to
-   cross-check the hand port, or as the start of a byte match.
-2b. flvecApplyMat (0x172EE0, the 4x4 vector transform) was a no-op stand-in, called from the first frame on. The matched
-   calc_mat_angY (cp01) calls it, so linking the matched cp01 broke the tranquilizer test (the Rathian never fell asleep); host
-   implementation added (rt_flmat.c), along with flMemcpy (no-op: the village's net/chat buffers) and flExp (no-op: sysw.c's gauss
-   table); flmatAddTrans2 and ride_ofs_calc are linked from their matched files.
-2c. Stage code (f_stage_nm.c / f_stageb.c) calls Set09_set_ex (game.bin) and Eft25_set_pos (lobby overlay) by address: both ran as
-   no-op stand-ins (the stage item-point glitter and the village effect). Wired with -Dfunc_618F00= / -Dfunc_60E330=.
-3. System_timer never counted on the PC outside online play (the PS2 Scheduler does System_timer++ every frame): the map's boss icon
-   pulse, the extras menu glow, and the em_material_sub blink table of kinds 9/18/23 read it. rt_sys_tick counts it now.
-4. Wiring pitfalls found while switching (not game bugs): matched C that calls a file-static of its near-match
-   (hit_hit_sub_em, eft02_move) ran a no-op stand-in; an `ALIASES` alias binds to the object that defines the target, which was
-   the weak near-match copy (Plesioth em21_init: monster stuck idle); a symbol that is already weak must still be requested weak.
-5. Near-match copy vs matched C, text comparison (tools/targets/cmpnm.py): QuestClearCameraRequest, reward_key_repeat,
-   Menu_select_mv / ListSelect, Pl_light_set, parts_chg: same behaviour. The bgm_nm.c copy is NOT the same as the matched
-   bgm01-04 on purpose: it checks str_getstat before keeping a BGM stream (the PS2 code leaves the village silent after the house),
-   so bgm stays on the near-match (test_audio catches it).
-
-## Still ranked, not done
-hit_cap_cap2_m / cap3_m / sphr_sphr2 (monster attack capsules), the pl_nm.c player functions (46-60 % of the instructions
-differ at scheduling level, the C logic was compared), cam_nm.c (cam_sub_std ...), eft06_m/eft13/eft20 (effects), trans_stage.c
-(PC rewrite of 15 KB), Game_task (rt_boot.c), se_req2 (rt_snd.c), the chat/sk/hk/cmd/mc matched files (kept on nm: online chat,
-soft keyboard with its own entry points, memory card on host files).
+## 5. Byte matches
+NormalClipCheckF3 and PointHitCheckF3 (cp01, now 0x120240-0x120C7C): used by every ground query (shit8). main 42.054 % -> 42.095 %.
