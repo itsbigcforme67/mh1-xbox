@@ -77,7 +77,8 @@ void light_change_normal(int n) {
 }
 
 /* pl_light_change (0x0011E280, 340 bytes): logic complete, 49/85 off (the original keeps the stage 12/13/14/28/30 test as
-   five separate compares and three separate copy blocks; this form gets the layout but not the registers). Not linked. */
+   five separate compares and three separate copy blocks; this form gets the layout but not the registers). Linked on the PC
+   (PICK_X) only; the PS2 build keeps the original bytes. */
 typedef struct PLLC {
     u8 _pad00[0x613];
     u8 near_em;                 /* 0x613 near-monster light flag */
@@ -135,4 +136,49 @@ tail:
         w += 0x68;
         off += 0x10;
     } while (i < 3);
+}
+
+/* Pl_light_set (0x0011E540, 792 bytes), near-match copy for the PC (logic read from the asm, not compiled against it): hands the actor
+   set (light_work set 1) to flSetRenderState(0x5A + i) as three local copies of the 0x68-byte light blocks. pl->col[i] holds the
+   colour (0xFFRRGGBB) the actor was drawn with last time; when it is non-zero the copy gets target + (block colour - target) / 5 with
+   target = that colour / 255, and the byte colour of the result is stored back (when it is zero the block colour is used as it is, and
+   the store starts the easing). */
+static u32 pl_light_byte(f32 x) {
+    f32 y = 255.0f * x;
+    return (u8)(int)y;
+}
+
+void Pl_light_set(PLLIGHT *pl) {
+    u8 blk[0x68];
+    int i;
+    f32 *c = (f32 *)(blk + 4);
+
+    for (i = 0; i < 3; i++) {
+        u8 *src = light_work + 0x158 + i * 0x68;
+        u32 col;
+        f32 r, g, b;
+        int k;
+
+        for (k = 0; k < 0x68; k++) {
+            blk[k] = src[k];
+        }
+        col = (u32)pl->col[i];
+        r = c[0];
+        g = c[1];
+        b = c[2];
+        if (col != 0) {
+            f32 tr = (f32)((col >> 16) & 0xFF) / 255.0f;
+            f32 tg = (f32)((col >> 8) & 0xFF) / 255.0f;
+            f32 tb = (f32)(col & 0xFF) / 255.0f;
+            r = tr + (r - tr) / 5.0f;
+            g = tg + (g - tg) / 5.0f;
+            b = tb + (b - tb) / 5.0f;
+            c[0] = r;
+            c[1] = g;
+            c[2] = b;
+        }
+        pl->col[i] = (s32)(0xFF000000u | (pl_light_byte(r) << 16) | (pl_light_byte(g) << 8) | pl_light_byte(b));
+        flSetRenderState(0x5A + i, (int)blk);
+    }
+    flSetRenderState(1, 1);
 }

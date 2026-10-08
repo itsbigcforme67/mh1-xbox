@@ -247,6 +247,18 @@ int fl_model_create(fl_model *m, fmt_blob amo, fmt_blob ahi, fmt_blob tex, int l
             }
         }
     }
+    if (lit && getenv("RT_LIGHT_TRACE") && atoi(getenv("RT_LIGHT_TRACE")) >= 4) {
+        for (i = 0; i < m->amo.npart; i++)
+            fprintf(stderr, "lit model part %d: shader family %d, specular %d, lighting type %d\n", i, m->amo.part[i].attr[1], m->amo.part[i].attr[2],
+                    m->amo.part[i].attr[5]);
+    }
+    if (lit && getenv("RT_LIGHT_TRACE") && atoi(getenv("RT_LIGHT_TRACE")) >= 3) {
+        for (i = 0; i < m->amo.nmat; i++) {
+            const amo_material *q = &m->amo.mat[i];
+            fprintf(stderr, "material %d: B(diffuse) %.2f %.2f %.2f %.2f  A(ambient) %.2f %.2f %.2f %.2f\n", i, q->col_b[0], q->col_b[1], q->col_b[2],
+                    q->col_b[3], q->col_a[0], q->col_a[1], q->col_a[2], q->col_a[3]);
+        }
+    }
     m->npart = m->amo.npart;
     m->part = calloc(m->npart + 1, sizeof(fl_part));
     for (i = 0; i < m->npart; i++) {

@@ -255,7 +255,7 @@ if [ -n "$ONLINE" ]; then
     EXTRA_CFLAGS="$EXTRA_CFLAGS -DMH1_ONLINE=1"
 fi
 # Stand-ins replaced by the game's own C (docs/pc.md "Stand-ins wired"): only the named functions are taken
-PICK_X="src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
+PICK_X="src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
 GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
 PICK_MAIN="$PICK_MAIN $PICK_X"
 
@@ -484,9 +484,10 @@ OBJS="$OBJS build/pc/rt_tables.o"
 MEMSTAT="-include src/pc/rt/rt_memstat.h"
 $CC $CFLAGS $SYS -c src/pc/rt/rt_memstat.c -o build/pc/rt_memstat.o
 OBJS="$OBJS build/pc/rt_memstat.o"
-for f in $NETRT rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie rt_prof rt_log; do
+for f in $NETRT rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_light rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie rt_prof rt_log; do
     # shellcheck disable=SC2086
     XF=""; [ $f = rt_log ] && XF="-D_GNU_SOURCE"   # ucontext / sigaltstack
+    [ $f = rt_menu ] && XF="-DMH1_NO_UTF8"       # include/plf.h declares memset(void *, int, int)
     cc_obj $f "$CC $CFLAGS $XF -DMH1_VERSION=\\\"$MH1_VERSION\\\" $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o"
     OBJS="$OBJS build/pc/$f.o"
 done

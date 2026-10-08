@@ -6,8 +6,9 @@
 # in build/show/movie/; the test checks they are not blank) and the decode
 # time was logged. Look at the PPMs too. About 1-2 minutes.
 cd "$(dirname "$0")/.."
+BIN=${BIN:-build/pc/mhview}   # RUN=wine BIN=build/win/mhview.exe: the Windows build under Wine
 OUT=build/show/movie; rm -rf $OUT; mkdir -p $OUT
-RT_MOVIE_TRACE=1 RT_MOVIE_DUMP=$OUT timeout 300 build/pc/mhview disc/mh1 --boot --shot $OUT/screen.png --time ${MOVIE_TIME:-75} \
+RT_MOVIE_TRACE=1 RT_MOVIE_DUMP=$OUT timeout 300 $RUN $BIN disc/mh1 --boot --shot $OUT/screen.png --time ${MOVIE_TIME:-75} \
     2> $OUT/run.log >/dev/null
 grep -q "movie: 0 = OPENING.sfd" $OUT/run.log || { echo "movie FAILED: OPENING.sfd was not opened (see $OUT/run.log)"; exit 1; }
 N=$(ls $OUT/m0_*.ppm 2>/dev/null | wc -l)

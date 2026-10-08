@@ -16,6 +16,10 @@
 #include "audio/audio.h"
 
 #include <SDL.h>
+#ifdef MH1_WIN
+#include <fcntl.h>
+#include <io.h>
+#endif
 #ifndef XBOX
 #include "install.h"
 #endif
@@ -599,48 +603,35 @@ extern unsigned char light_work[];
  * 0x68 bytes from +0x158: +0x04 colour rgb, +0x24 the ambient part of that light (the PS2 shader adds each light's
  * ambient row), +0x34 direction the light travels (the shader negates it). light_init fills them from
  * pl_light_tbl[stage], light_change_normal re-reads the stage rows, flash_move (thunder) blends the colours.
- * Returns 0 when light_work is still empty (no stage lights yet): the caller keeps its default. */
-static int rt_light_from_game(fl_light *L)
+ * rt_light_get (rt_light.c) runs the game's own per-actor step (pl_light_change + Pl_light_set) for hunters and NPCs and gives
+ * the stage rows to monsters and sets. Without RT_LIGHT_GAME, or while light_work is still empty (no stage lights yet): the
+ * fixed default above. */
+int rt_light_get(void *actor, int hunter, float dir[3][3], float col[3][3], float amb[3]);
+void rt_light_tick(void);
+void light_move(void);
+void *rt_player_ptr(int no);
+static fl_light light_game;          /* the game's lights for the actor asked about, else the fixed default above */
+static const fl_light *light_for(void *actor, int hunter)
 {
-    int i, k, any = 0;
-    float amb[3] = { 0, 0, 0 };
-    for (i = 0; i < 3; i++) {
-        const unsigned char *b = light_work + 0x158 + 0x68 * i;
-        float d[3], len;
-        memcpy(d, b + 0x34, sizeof d);
-        len = sqrtf(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
-        for (k = 0; k < 3; k++) {
-            float c, a;
-            memcpy(&c, b + 4 + 4 * k, 4);
-            memcpy(&a, b + 0x24 + 4 * k, 4);
-            L->dir[i][k] = len > 1e-6f ? d[k] / len : 0.0f;
-            L->col[i][k] = len > 1e-6f ? c : 0.0f;      /* an unused light has no direction row */
-            amb[k] += a;
-            any |= c != 0.0f || a != 0.0f;
-        }
-    }
-    if (!any)
-        return 0;
-    for (k = 0; k < 3; k++)
-        L->ambient[k] = amb[k];
-    return 1;
-}
-static fl_light light_game;          /* the game's stage lights (light_work), else the fixed default above */
-static const fl_light *light_cur(void)
-{
-    if (getenv("RT_LIGHT_GAME") && rt_light_from_game(&light_game)) {
+    static int on = -1;
+    if (on < 0)
+        on = getenv("RT_LIGHT_GAME") != NULL;
+    if (on && rt_light_get(actor, hunter, light_game.dir, light_game.col, light_game.ambient)) {
         static int shown;
         if (getenv("RT_LIGHT_TRACE") && shown++ % 600 == 0) {
             int i;
             for (i = 0; i < 3; i++)
                 fprintf(stderr, "light %d dir %.2f %.2f %.2f col %.2f %.2f %.2f\n", i, light_game.dir[i][0], light_game.dir[i][1],
                         light_game.dir[i][2], light_game.col[i][0], light_game.col[i][1], light_game.col[i][2]);
-            fprintf(stderr, "light ambient %.2f %.2f %.2f\n", light_game.ambient[0], light_game.ambient[1], light_game.ambient[2]);
+            fprintf(stderr, "light ambient %.2f %.2f %.2f%s\n", light_game.ambient[0], light_game.ambient[1], light_game.ambient[2],
+                    actor ? (hunter ? " (hunter)" : " (npc)") : "");
         }
         return &light_game;
     }
     return &light;
 }
+static const fl_light *light_cur(void) { return light_for(NULL, 0); }
+static const fl_light *light_hunter(int no) { return light_for(rt_player_ptr(no), 1); }
 static const int parts[HUNTER_PARTS] = { 1, 0, 1, 1, 1, 1 };
 static float hx = 10900, hz = 7700, rx = 10000, rz = 6700, gy;
 static Uint32 t0;
@@ -714,7 +705,7 @@ static void ed_hunter_draw(void *arg)
     }
     rt_player_get(no, p, &a);
     place(h->world, p[0], p[1], p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
-    hunter_pose(h, 0, light_cur());
+    hunter_pose(h, 0, light_hunter(no));
     rt_cam_view(eye, tar, &roll, &fov);
     lookat_world(camw, eye, tar);
     flmat_invert_affine(view, camw);
@@ -765,6 +756,13 @@ static int load_stage_models(int st)
     if (set_link.p)
         fl_model_create(&set, fmt_link_entry(set_link, 0, FMT_LE), fmt_link_entry(set_link, 1, FMT_LE),
                         set_tex, 0, FMT_LE);
+    if (getenv("RT_LIGHT_TRACE") && atoi(getenv("RT_LIGHT_TRACE")) >= 2) {     /* lighting type (attr +0x14) of the area and set parts */
+        int q;
+        for (q = 0; q < stage.amo.npart; q++)
+            fprintf(stderr, "stage %d area part %d lighting type %d (attr +0x04 family %d)\n", st, q, stage.amo.part[q].attr[5], stage.amo.part[q].attr[1]);
+        for (q = 0; q < set.amo.npart; q++)
+            fprintf(stderr, "stage %d set part %d lighting type %d (attr +0x04 family %d)\n", st, q, set.amo.part[q].attr[5], set.amo.part[q].attr[1]);
+    }
     for (k = 0; k < 4; k++)
         drop(&keep[k]);
     {                           /* the area model to the game C (stage_work.mdl) */
@@ -902,6 +900,7 @@ static void remote_hunters(int draw, const fl_light *L)
             rt_player_parts(s, &jw[0][0], nb);
             continue;
         }
+        L = light_hunter(s);
         hunter_pose(h, 0, L);
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)h->world);
         for (j = 0; j < HUNTER_PARTS; j++)
@@ -974,6 +973,9 @@ static void sim_tick(void)
         lookat_world(cw, gc_eye, gc_tar);
         rt_set_camera(cw);
     }
+    light_move();               /* game_core's step after CameraMove (f_frame_nm.c): turns light 2 of set 1 with the view, runs the
+                                 * flash effect. The host's sim_tick stands in for game_core, so it has to call it (only
+                                 * the lights of RT_LIGHT_GAME read what it does) */
     if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
         rt_prof_begin(RTP_JOINTS);
         sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
@@ -1155,6 +1157,7 @@ static void npc_draw(const fl_light *L)
 {
     extern uint8_t em_work[];
     int i, k;
+    (void)L;                    /* each NPC gets its own (light_for) */
     for (i = 0; i < 20; i++) {
         uint8_t *em = em_work + 0xA10 * i;
         monster *m;
@@ -1167,7 +1170,7 @@ static void npc_draw(const fl_light *L)
         rt_monster_pose(i, &m->skel);
         for (k = 0; k < m->model.npart; k++)    /* villagers: only their own parts are drawn, so only those are skinned */
             m->model.part[k].skip = kind == 0 && (k >= 0x20 || !em[0x4E6 + k]) && !getenv("RT_POSE_ALL");
-        fl_model_pose(&m->model, (const flmat *)m->skel.world, L);
+        fl_model_pose(&m->model, (const flmat *)m->skel.world, light_for(em, 0));
         memcpy(s, em + 0xB8, sizeof s);
         r[0] = 0;
         r[1] = (float)(*(int32_t *)(em + 0xA4) & 0xFFFF) * (6.2831853f / 65536.0f);
@@ -1268,6 +1271,23 @@ static void mem_tick(int t)
 
 int main(int argc, char **argv)
 {
+#ifdef MH1_WIN       /* text-mode stdout / stderr would write CRLF into redirected logs (the tests grep them) */
+    _setmode(_fileno(stdout), _O_BINARY);
+    _setmode(_fileno(stderr), _O_BINARY);
+    {   /* the command line as UTF-8 (the ANSI argv mangles non-ASCII paths, e.g. a dropped ISO) */
+        int wn, i8;
+        wchar_t **wa = CommandLineToArgvW(GetCommandLineW(), &wn);
+        if (wa && wn == argc) {
+            char **na = (char **)calloc((size_t)wn + 1, sizeof *na);
+            for (i8 = 0; i8 < wn; i8++) {
+                int len = WideCharToMultiByte(CP_UTF8, 0, wa[i8], -1, NULL, 0, NULL, NULL);
+                na[i8] = (char *)malloc((size_t)len);
+                WideCharToMultiByte(CP_UTF8, 0, wa[i8], -1, na[i8], len, NULL, NULL);
+            }
+            argv = na;
+        }
+    }
+#endif
     rt_stack_paint();
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shot") && i + 1 < argc) shot = argv[++i];
@@ -1747,6 +1767,7 @@ int main(int argc, char **argv)
                 audio_dump_tick();
             }
             ticks++;
+            rt_light_tick();
                 mem_tick(ticks);
             /* the joint matrices the next tick reads are those of the state
              * this tick left, whether or not a frame is drawn in between
@@ -1813,11 +1834,11 @@ int main(int argc, char **argv)
             fl_skel_update(&rathian.skel, fr);
         if ((rt_monster_shown(0) && slot0_rathian()) || getenv("RT_POSE_ALL"))     /* skinned only when drawn (below) */
             fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, light_cur());
-        hunter_pose(&pl, fr, light_cur());
+        hunter_pose(&pl, fr, light_hunter(lp));
         if (pl.game && play)            /* joint world matrices for the game C (parts, get_joint_pos) */
             sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
         if (weapon.game && pl.game && play)
-            weapon_pose(light_cur());
+            weapon_pose(light_hunter(lp));
 
         if (getenv("RT_CAM_EM")) {      /* test aid "slot,dist,height,yaw": free camera on monster slot */
             float p[3], d = 1500, hh = 600, yw = 0;

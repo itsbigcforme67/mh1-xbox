@@ -11,6 +11,7 @@
 #   + 137 cleared, saved       -> CONTINUE: 3 stars
 # Headless, ~30 s on x86. Saves in build/show/prog/card.
 cd "$(dirname "$0")/.."
+BIN=${BIN:-build/pc/mhview}   # RUN=wine BIN=build/win/mhview.exe: the Windows build under Wine
 export RT_NOMOVIE=1   # the opening movie would only lengthen the scripted boot (test_movie.sh covers it)
 OUT=build/show/prog; mkdir -p $OUT
 [ -f build/show/loop/card/BISLPM-65495MH/BISLPM-65495MH ] || tools/test_quest_loop.sh >/dev/null || exit 1
@@ -19,7 +20,7 @@ C=tools/pc_scripts/continue.txt
 SAVE=$(python3 tools/mk_input.py $C "2090:square*2;2200:$(cat tools/pc_scripts/bed_save.txt)" 3300)
 fail() { echo "progression FAILED: $1 (see $OUT)"; exit 1; }
 run() {     # run NAME QCLEAR SCRIPT SECONDS [warps]
-    RT_QCLEAR="$2" RT_QUEST_TRACE=1 RT_LB_WARP="$5" build/pc/mhview disc/mh1 --boot --input "$3" \
+    RT_QCLEAR="$2" RT_QUEST_TRACE=1 RT_LB_WARP="$5" $RUN $BIN disc/mh1 --boot --input "$3" \
         --shot $OUT/$1.png --time $4 2> $OUT/$1.log >/dev/null
     grep -m1 "rt_village: level" $OUT/$1.log; grep -m1 "quest list" $OUT/$1.log | sed 's/.*(key/  key/;s/).*//'
 }
