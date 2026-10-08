@@ -143,10 +143,11 @@ void rt_cam_tick(void)
             int k;
             for (k = 2; k < 5; k++)
                 if (CameraWork.sl[k].act)
-                    fprintf(stderr, "cam:   slot %d act %d mode %d step %d cnt %d eye %.0f %.0f %.0f fov %.2f demo pos %d/%d tar %d/%d\n", k,
+                    fprintf(stderr, "cam:   slot %d act %d mode %d step %d cnt %d eye %.0f %.0f %.0f fov %.2f demo pos %d/%d tar %d/%d no %d state %d\n", k,
                             CameraWork.sl[k].act, CameraWork.sl[k].mode.w, CameraWork.sl[k].step.w, CameraWork.sl[k].cnt,
                             CameraWork.sl[k].eye[0], CameraWork.sl[k].eye[1], CameraWork.sl[k].eye[2], CameraWork.sl[k].fov,
-                            CameraWork.sl[k].d.demo.pos_mode, CameraWork.sl[k].d.demo.pos_part, CameraWork.sl[k].d.demo.tar_mode, CameraWork.sl[k].d.demo.tar_part);
+                            CameraWork.sl[k].d.demo.pos_mode, CameraWork.sl[k].d.demo.pos_part, CameraWork.sl[k].d.demo.tar_mode, CameraWork.sl[k].d.demo.tar_part,
+                            CameraWork.sl[k].d.demo.no, CameraWork.sl[k].d.demo.state);
         }
     }
 }

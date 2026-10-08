@@ -547,7 +547,10 @@ void rt_player_tick(int no)
                 break;
         }
     }
-    pl_move();
+    /* f_framec.c move(): `if (game_w.info_stop == 0) player_mv();` - during an event demo (first sight of a boss,
+     * the quest's tutorial demo) the hunter gets no pad input and does not move */
+    if (game_w.info_stop == 0 || getenv("RT_DEMO_FREE"))     /* RT_DEMO_FREE=1: test aid, input in demos as before */
+        pl_move();
     {   /* PLW+0x60: the world matrix player_modify (weapon3.c, run from trans() on the
          * PS2) builds; the host poses the skeleton itself, but game code reads it
          * (demo cameras relative to the hunter: cmd_set_pos mode 0) */
@@ -575,11 +578,11 @@ void rt_player_tick(int no)
     }
     if (getenv("RT_PL_TRACE")) {
         PLW *pl = &player_work[no];
-        printf("pl: act %d/%d step %d chr %d/%d fr %.1f spd %.1f pos %.0f %.0f %.0f ang %04X st %d sw %04X/%04X hp %d bite %d sh %d dr %d/%d/%d\n",
+        printf("pl: act %d/%d step %d chr %d/%d fr %.1f spd %.1f pos %.0f %.0f %.0f ang %04X st %d sw %04X/%04X hp %d bite %d sh %d dr %d/%d/%d is %d\n",
                pl->flag14, pl->flag15, PF(pl, u8, 5), PF(pl, u16, 0x2DC), PF(pl, u16, 0x2DE),
                PF(pl, f32, 0x19C), PF(pl, f32, 0x1A0), pl->pos[0], pl->pos[1], pl->pos[2],
                pl->ang[1] & 0xFFFF, pl->st, pl->sw.now, pl->sw.trg, PF(pl, s16, 0x302), pl->x881, PF(pl, s16, 0x87E),
-               PF(pl, s16, 0x918), PF(pl, s16, 0x91A), PF(pl, s16, 0x8C0));
+               PF(pl, s16, 0x918), PF(pl, s16, 0x91A), PF(pl, s16, 0x8C0), game_w.info_stop);
     }
 }
 

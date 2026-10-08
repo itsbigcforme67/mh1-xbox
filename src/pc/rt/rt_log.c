@@ -609,6 +609,34 @@ static void install_crash(void)
 #endif
 
 /* ------------------------------------------------------------ start / end */
+/* A test / scripted run (--input, --shot, --headless, --audio-dump, or any RT_* test aid in the environment) must never write
+ * into the player's log folder: the keep-the-newest-20 rotation deleted a player's real logs. Such runs log to
+ * build/test_logs (relative to the working directory) unless $MH1_LOG_DIR says otherwise. */
+static int test_run;
+#if !defined(MH1_WINDOWS) && !defined(MH1_XBOX)
+extern char **environ;
+#endif
+static void detect_test_run(int argc, char **argv)
+{
+    int i;
+    for (i = 1; i < argc; i++)
+        if (!strcmp(argv[i], "--input") || !strcmp(argv[i], "--shot") || !strcmp(argv[i], "--headless") ||
+            !strcmp(argv[i], "--audio-dump"))
+            test_run = 1;
+#if !defined(MH1_WINDOWS) && !defined(MH1_XBOX)
+    for (i = 0; environ && environ[i]; i++)
+        if (!strncmp(environ[i], "RT_", 3))
+            test_run = 1;
+#elif defined(MH1_WINDOWS)
+    {
+        extern char **_environ;
+        for (i = 0; _environ && _environ[i]; i++)
+            if (!strncmp(_environ[i], "RT_", 3))
+                test_run = 1;
+    }
+#endif
+}
+
 static void logs_dir(char *out, size_t n)
 {
     const char *e = getenv("MH1_LOG_DIR");
@@ -617,6 +645,12 @@ static void logs_dir(char *out, size_t n)
         snprintf(out, n, "%s", e);
         return;
     }
+#ifndef MH1_XBOX
+    if (test_run) {
+        snprintf(out, n, "build/test_logs");
+        return;
+    }
+#endif
 #ifdef MH1_XBOX
     snprintf(out, n, "E:\\Games\\MH1\\logs");
 #else
@@ -690,6 +724,7 @@ void rt_log_init(const char *disc, int argc, char **argv)
 #endif
     if (h && strlen(h) > 2 && strlen(h) < sizeof home)
         snprintf(home, sizeof home, "%s", h);
+    detect_test_run(argc, argv);
     logs_dir(dir, sizeof dir);
     make_dirs(dir);
     rotate(dir);
