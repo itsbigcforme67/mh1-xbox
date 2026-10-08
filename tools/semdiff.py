@@ -19,7 +19,7 @@ def norm(s):
         return op
     if op == 'jr' or op == 'jalr':
         return s
-    if op == 'lui' or '(at)' in s or '(gp)' in s or ', gp,' in s:
+    if (op == 'lui' and not re.match(r'lui \w+, 0x[0-9A-Fa-f]{3,}$', s) or (op == 'lui' and int(s.split('0x')[-1], 16) < 0x100)) or '(at)' in s or '(gp)' in s or ', gp,' in s:
         s = re.sub(r'-?0x[0-9A-Fa-f]+|-?\d+(?=\(|$)', 'N', s)
     elif op.startswith('b') or op in ('beq', 'bne'):
         s = re.sub(r'0x[0-9A-F]{8}', 'ADDR', s)
@@ -27,6 +27,11 @@ def norm(s):
         s = re.sub(r'-?\d+$', 'N', s)
     s = re.sub(r'(addiu \w+, \w+), 0$', r'\1, N', s)
     # all pure moves / sign extensions are scheduling-sensitive: keep opcode only for daddu x,y,zero
+    s = re.sub(r'\(sp\)', '(SP)', s)
+    s = re.sub(r', sp, ', ', SP, ', s)
+    if op == 'lui':
+        m = re.match(r'lui (\w+), 0x([0-9A-Fa-f]+)$', s)
+        if m and int(m.group(2), 16) >= 0x100: s = 'lui R, 0x%X' % int(m.group(2), 16)
     s = re.sub(r'\$f\d+', 'F', s)
     s = re.sub(r'\b(zero|at|v[01]|a[0-3]|t[0-9]|s[0-7]|gp|sp|fp|ra|k[01])\b', 'R', s)
     # branch direction is block order; a conditional branch is kept as op with its operand registers erased

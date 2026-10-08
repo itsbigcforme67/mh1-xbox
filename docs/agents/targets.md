@@ -113,3 +113,27 @@ eft22_end_init, print_tuto_message (no improvement), expression-order and type v
 * `tools/semdiff.py FILE.c [FUNC..]`: the equivalence screen described above.
 * `COV=1 tools/build_pc.sh` + `RT_COV=file` + `tools/cov_report.py`: function coverage.
 
+
+## Semantic review table (round 2, agent E)
+
+Screen: `tools/semdiff.py` over every `*_nm.c` (game, lobby, main), restricted to functions that are still unmatched,
+ranked by coverage (RAN) and by mismatching memory-op offsets/widths/signs (stack accesses ignored). About 370 functions
+are flagged; most are inlining, macro expansion or scheduling. Only the ones below were read against the asm.
+main files claimed by E for this review (B: please skip): pl_nm.c (pl_horm_sub, Pl_item_stack, gun_adj_sub), camr5_nm.c,
+camarea_nm.c, eft20_nm.c, eft06_nm.c, set13_nm.c, menu_disp_nm.c, light_nm.c. Left to B: shit*_nm.c, cp*, hit*_nm.c.
+
+| function | verdict | note |
+|---|---|---|
+| `pl_horm_sub` (main/pl_nm.c) | FIXED | `work81A` (the hunter's lean toward a locked-on monster) was read as s16; the original reads it as u16, so `v >= 0x8000` was never true for negative values and the near-zero band was snapped to 0 instead of stepping by 0x400 |
+| `em_cmd_ground_area_move`, `em12_main`, `lb_disp_name` | FIXED | see above |
+| `k_HitEmCamera` | equivalent | the original expands the sign test by hand (4 compares incl. -0.0); same result as `PUSH_ACC` |
+| `Get_cam_grid_XZ`, `NextStage_No_Set` (lh/lhu of x73A), `Pl_item_stack` (lh/lhu of work88E), `em_cmd_dansa_sel`, `em_cmd_angle_ck`, `em_cmd_escape_area_set`, `em_char_set` | equivalent | scheduling / sign of values that never reach 0x8000 |
+| `em_cmd_end_command` | area-route case equivalent | rest not re-read |
+| `eft20_m`, `eft06_m`, `set13_trans`, `Pl_light_set`, `light_init` | not decided | layout differs (switch order, unrolling, helper inlined); no constant or offset mismatch found yet |
+| `em_neck_move_sub`, `neck_ang_set`, `Em_Master_Change`, `shell08_m`, `shell08_trans` | not decided | logic read once, constants and offsets agree with m2c of the asm; not proven |
+
+Quest 154 (`tools/test_all_quests.sh 154`): not a game-logic regression. With `RT_BODY_HIT=0` it passes on the merged tree
+and on main's own binary, with the default (body_hit on since main 22db5619) it fails: the quest's boss is kind 8 on stage 56,
+the hunter reaches it, and the test aid then warps the hunter to the monster ("carve point -1", every tick) while the
+monster never takes damage and never dies. Most likely the test aid's warp into the monster and body_hit pushing the hunter
+out of the body cancel each other for that monster's body size (same family as the tail_cut fix in c3983857), not a monster AI bug.
