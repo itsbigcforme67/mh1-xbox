@@ -510,7 +510,20 @@ static void eval_group(const ahi_skel *sk, int g, const aan_motion *m, float t, 
     for (i = 0; i < sk->nbone && k < m->nbone; i++) {
         if (sk->bone[i].group != g)
             continue;
-        fmt_aan_eval(m, k++, t, chan[i]);
+        fmt_aan_eval(m, k, t, chan[i]);
+        /* The root-motion bone (second bone of group 0) carries the motion's own displacement; its AHI bind
+         * translation is only the model pivot (bone 2's bind is the opposite offset). A motion with no
+         * height curve for it (Aptonoth idle / walk / eat, ids 1001, 1004-1006) has no height, not the pivot's
+         * 427 units: the body hung 680 units above the ground on stages whose ground is not y = 0. */
+        if (g == 0 && k == 1) {
+            int c, has = 0;
+            for (c = 0; c < m->ncurve[k]; c++)
+                if (m->curve[k][c].channel == 7)
+                    has = 1;
+            if (!has)
+                chan[i][7] = 0.0f;
+        }
+        k++;
     }
 }
 

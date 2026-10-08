@@ -1116,6 +1116,19 @@ static void monsters_sync(int draw, const fl_light *L)
         for (j = 0; j < nb; j++)
             flmat_mul(jw[i][j], m->skel.world[j], w);
         rt_monster_joints(i, &jw[i][0][0], nb);
+        if (getenv("RT_POSE_CHECK")) {  /* test aid: highest joint above the monster's feet per kind (tools/test_activities.py herbivore_pose) */
+            static float hmax[40][1200];
+            int mo = ((uint16_t *)(em + 0x2DC))[0] % 1200;
+            float hh = 0;
+            for (j = 0; j < nb; j++)
+                if (jw[i][j][13] - t[1] > hh)
+                    hh = jw[i][j][13] - t[1];
+            if (hh > hmax[kind][mo] + 20.0f) {
+                hmax[kind][mo] = hh;
+                fprintf(stderr, "pose-check: kind %d slot %d joints up to %.0f above the feet (motion %d)\n", kind, i,
+                        hh, mo);
+            }
+        }
         if (draw) {
             fl_model_pose(&m->model, (const flmat *)m->skel.world, L);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);

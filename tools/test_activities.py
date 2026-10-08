@@ -92,6 +92,19 @@ def fishing():
     return False, 'no fish caught (bite never came or reel missed)'
 
 @test
+def herbivore_pose():
+    """Aptonoth (kind 12) walks / idles / eats on stage 39 (ground y = -680): no joint may hang far above the feet
+    (idle / walk motions had no root-height curve, the body floated 680 units up and could not be hit); then real
+    attacks (no damage aids) must reach it: RT_PL_WARP_EM only puts the hunter next to it, the hits are the pad's"""
+    atk = ',cam_u*2,idle*22,cam_r*2,idle*22,cam_u*2,idle*30,circle*2,idle*10' * 12
+    t = run('herbivore_pose', 'idle*700' + atk, 0, quest=131, stage=39, secs=40,
+            env={'RT_PL_GOD': 1, 'RT_PL_WARP_EM': '650-90000', 'RT_PL_AIM': 1, 'RT_PL_TARGET': 'k12', 'RT_POSE_CHECK': 1})
+    if crashed(t): return False, 'crash'
+    hs = [int(m.group(1)) for m in re.finditer(r'pose-check: kind 12 slot \d+ joints up to (-?\d+) above the feet \(motion 100[4-6]\)', t)]   # walk and eat motions only: a freshly respawned monster shows the unposed bind pose (motion not yet set) for a few ticks
+    if not hs: return False, 'no pose-check output'
+    return max(hs) < 350, 'highest Aptonoth joint %d above its feet (limit 350; the bug gave ~680)' % max(hs)
+
+@test
 def carve_small():
     """Aptonoth (kind 12) killed and carved: raw meat (18) and its other parts"""
     cyc = ',cam_u*2,idle*30' * 4 + ',circle*2,idle*28' * 6
