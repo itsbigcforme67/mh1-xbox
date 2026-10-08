@@ -9,6 +9,8 @@
 
 #define RT_SAVE_DIR "BISLPM-65495MH"
 
+const char *rt_mc_root(void);   /* rt_mc.c: the host folder that is the card in port 0 */
+
 /* 1 if the file at path is a PS2 save container (by its bytes, not its name) */
 int rt_save_looks_like(const char *path);
 /* Import a save container (psu/max/cbs/sps/xps or a card image holding BISLPM-65495MH) into

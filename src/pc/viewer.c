@@ -23,6 +23,7 @@
 #endif
 #ifndef XBOX
 #include "install.h"
+#include "rt/rt_save.h"
 #endif
 #include <stdio.h>
 #include "rt/rt_memstat.h"
@@ -786,6 +787,19 @@ static void write_wav(const char *path, const int16_t *pcm, size_t frames)
 
 /* main()'s state (file scope so the game tick can run as game_core) */
 static const char *disc = NULL, *shot = NULL, *install_iso = NULL, *install_dir = NULL;
+#ifndef XBOX
+/* PS2 saves given on the command line / dropped on the window (rt_save.c) */
+static const char *drop_save[8];
+static int ndrop_save;
+
+/* tell the player what an import did: stderr, plus a message box unless RT_NO_GUI (tests) is set */
+static void save_note(int ok, const char *msg)
+{
+    fprintf(ok ? stdout : stderr, "%s\n", msg);
+    if (!getenv("RT_NO_GUI"))
+        SDL_ShowSimpleMessageBox(ok ? SDL_MESSAGEBOX_INFORMATION : SDL_MESSAGEBOX_ERROR, ok ? "Save imported" : "Save not imported", msg, NULL);
+}
+#endif
 static int install_only;
 static int frames = 1, W = 1280, H = 720, i, running = 1, frame_no = 0;
 static float cam[5] = { 11900, 700, 8900, 0.75f, -0.2f };   /* x y z yaw pitch */
@@ -1600,6 +1614,10 @@ int main(int argc, char **argv)
             follow_given = sscanf(argv[++i], "%f,%f,%f", &follow[0], &follow[1], &follow[2]) > 0;
         else if (!strcmp(argv[i], "--install") && i + 1 < argc) { install_iso = argv[++i]; install_only = 1; }
         else if (!strcmp(argv[i], "--install-dir") && i + 1 < argc) install_dir = argv[++i];
+#ifndef XBOX
+        else if ((!strcmp(argv[i], "--import-save") || !strcmp(argv[i], "--export-save")) && i + 1 < argc) i++;   /* rt_save_cli below */
+        else if (argv[i][0] != '-' && ndrop_save < 8 && rt_save_looks_like(argv[i])) drop_save[ndrop_save++] = argv[i];   /* a PS2 save dropped on the exe */
+#endif
         else if (argv[i][0] != '-') disc = argv[i];
     }
 #ifdef XBOX
@@ -1623,6 +1641,24 @@ int main(int argc, char **argv)
     }
 #endif
 #ifndef XBOX
+    /* PS2 save import / export (docs/pc.md "Importing a PS2 save"): --import-save F, --export-save F, or save files
+     * dropped on the exe. No game data is needed for these. */
+    {
+        int rc = rt_save_cli(rt_mc_root(), argc, argv), k;
+        if (rc >= 0)
+            return rc;
+        for (k = 0; k < ndrop_save; k++) {
+            char msg[2000];
+            rc = rt_save_import(rt_mc_root(), drop_save[k], msg, sizeof msg);
+            save_note(rc == 0, msg);
+            if (rc != 0)
+                return 1;
+        }
+        if (ndrop_save && !disc && !install_iso && !script && !quest_no && !play && !shot) {   /* a save dropped on the exe: start the game */
+            boot = 1;
+            play = 1;
+        }
+    }
     /* The game's files come from the player's own ISO, installed once into a data folder:
      * an .iso given as the disc (drag and drop onto the exe, play.bat) or --install FILE.iso, or no
      * data found anywhere (then ask for the ISO). docs/pc.md "Installing from an ISO". */
@@ -1969,6 +2005,20 @@ int main(int argc, char **argv)
             pad_event(&ev);     /* typed text (the name entry) */
             if (ev.type == SDL_QUIT || (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE))
                 running = 0;
+#ifndef XBOX
+            else if (ev.type == SDL_DROPFILE) {     /* a PS2 save dropped on the window: import it (the game reads the card at CONTINUE) */
+                if (rt_save_looks_like(ev.drop.file)) {
+                    char msg[2200];
+                    Uint32 b = SDL_GetTicks();
+                    int rc = rt_save_import(rt_mc_root(), ev.drop.file, msg, sizeof msg);
+                    if (rc == 0)
+                        strcat(msg, "\n\nChoose CONTINUE on the title screen to load it. If you are already in the game, quit and start it again first: saving now would replace the imported save.");
+                    save_note(rc == 0, msg);
+                    t0 += SDL_GetTicks() - b;       /* the message box stopped the clock */
+                }
+                SDL_free(ev.drop.file);
+            }
+#endif
             else if (ev.type == SDL_MOUSEMOTION && !shot) {
                 cam[3] -= ev.motion.xrel * 0.003f;
                 cam[4] -= ev.motion.yrel * 0.003f;
