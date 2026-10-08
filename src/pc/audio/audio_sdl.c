@@ -51,6 +51,12 @@ int audio_open(void)
 
 int audio_device_open(void) { return dev != 0; }
 
+void audio_pause(int on)
+{
+    if (dev)
+        SDL_PauseAudioDevice(dev, on ? 1 : 0);
+}
+
 void audio_close(void)
 {
     if (dev)

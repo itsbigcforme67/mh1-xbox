@@ -15,6 +15,9 @@
  * first lines and install the crash handler. disc = the disc directory. */
 void rt_log_init(const char *disc, int argc, char **argv);
 void rt_log_shutdown(void);
+const char *rt_log_dir(void);   /* the logs folder (the reports folder is its sibling) */
+const char *rt_log_file(void);
+char *rt_log_tail(int n);       /* the last n log lines, malloc'ed */
 int rt_log_started(void);       /* rt_log_init has run */
 
 /* an event / a header line */

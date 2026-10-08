@@ -27,6 +27,7 @@ int  audio_open(void);          /* 0 = device open; -1 = silent (mixer still wor
 void audio_close(void);
 void audio_lock(void);
 void audio_unlock(void);
+void audio_pause(int on);       /* the bug reporter freezes the game: the device stops pulling audio */
 int  audio_device_open(void);   /* 1 = a device is pulling audio_mix */
 
 /* mixer (audio_mix.c) */

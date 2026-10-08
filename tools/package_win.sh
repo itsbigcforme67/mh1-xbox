@@ -64,11 +64,16 @@ Playing
   Saves: %APPDATA%\mh1pc\memcard0 (save in your house's bed or after a quest, load with CONTINUE).
 
 Bug reports
-  Every run writes a debug log to %APPDATA%\mh1pc\logs (the last 20 are kept). It holds the build, your
+  Press F8 in the game (or hold Back/View and press Start on a controller) when you see something wrong. The
+  game freezes. Click the broken things with the mouse (or drag a box around them; right-click undoes a pick),
+  type what is wrong, press Enter. Esc cancels. This saves a report folder with screenshots, which objects you
+  picked, the game state, the last seconds as a small clip and your inputs (so the problem can be replayed), in
+  %APPDATA%\mh1pc\reports. The screenshots show the game's graphics; nothing is sent anywhere.
+  Every run also writes a debug log to %APPDATA%\mh1pc\logs (the last 20 are kept). It holds the build, your
   Windows and graphics driver, game events, warnings and, after a crash, a backtrace and the last lines.
   It contains no user name or home folder, no game data, and nothing is ever sent anywhere.
-  After a problem run bug_report.bat: it makes mh1_bug_report_<date>.zip (the last two logs and a list of
-  your save folder's file names; not the save itself). Then open
+  After a problem run bug_report.bat: it makes mh1_bug_report_<date>.zip (the last two logs, your last three
+  F8 reports and a list of your save folder's file names; not the save itself). Then open
   https://github.com/itsbigcforme67/mh1-xbox/issues/new?template=bug_report.md and attach the zip.
 
 Credits and legal

@@ -1,18 +1,21 @@
 #!/bin/sh
-# Make a bug report: zips the newest two debug logs and the save's metadata (file names, sizes, dates:
+# Make a bug report: zips the newest two debug logs, the newest three in-game reports (F8) and the save's metadata (file names, sizes, dates:
 # NOT the save itself unless you pass --with-save) into mh1_bug_report_<date>.zip in the current
 # folder, and prints where to send it. Nothing is uploaded. Logs hold no user name or home path.
 #   tools/bug_report.sh [--with-save]
 if [ -n "$MH1_SAVE_DIR" ]; then BASE=$(dirname "$MH1_SAVE_DIR"); CARD=$MH1_SAVE_DIR
 else BASE=${XDG_DATA_HOME:-$HOME/.local/share}/mh1pc; CARD=$BASE/memcard0; fi
 LOGS=${MH1_LOG_DIR:-$BASE/logs}
+REPORTS=$(dirname "$LOGS")/reports       # in-game bug reports (F8): report_<date>/ folders next to the logs
 WITH=0; [ "$1" = "--with-save" ] && WITH=1
 STAMP=$(date +%Y%m%d_%H%M%S)
 TMP=$(mktemp -d) || exit 1
 mkdir -p "$TMP/mh1_bug_report"
 N=0
 for f in $(ls -1 "$LOGS"/mh1_*.log 2>/dev/null | sort | tail -2); do cp "$f" "$TMP/mh1_bug_report/"; N=$((N + 1)); done
-if [ $N -eq 0 ]; then echo "No debug log found in $LOGS - run the game once first."; rm -rf "$TMP"; exit 1; fi
+NR=0
+for d in $(ls -1d "$REPORTS"/report_* 2>/dev/null | sort | tail -3); do [ -d "$d" ] && cp -r "$d" "$TMP/mh1_bug_report/" && NR=$((NR + 1)); done
+if [ $N -eq 0 ] && [ $NR -eq 0 ]; then echo "No debug log or in-game report found in $LOGS - run the game once first."; rm -rf "$TMP"; exit 1; fi
 {
     echo "Save folder listing (names, sizes, modified times; no contents)"
     if [ -d "$CARD" ]; then (cd "$CARD" && find . -mindepth 1 -printf '%P  %s bytes  %TY-%Tm-%TdT%TH:%TM:%TS\n' | sort); else echo "(no save folder)"; fi
@@ -33,7 +36,7 @@ fi
 rm -rf "$TMP"
 echo
 echo "Made $ZIP"
-echo "It holds the newest $N log(s) and save_info.txt$([ $WITH = 1 ] && echo ', and your save' || echo ' (your save is NOT included; --with-save adds it)')."
+echo "It holds the newest $N log(s), $NR in-game report(s) (F8 in the game) and save_info.txt$([ $WITH = 1 ] && echo ', and your save' || echo ' (your save is NOT included; --with-save adds it)')."
 echo "The logs hold no user name or home path; they are plain text, check them if you like."
 echo
 echo "Open a bug report and attach the zip:"

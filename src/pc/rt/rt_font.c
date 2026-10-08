@@ -259,6 +259,7 @@ static void putc_glyph(int idx, const FNT_ENT *e)
     float pos[12] = { x0, y0, x1, y0, x0, y1, x1, y0, x1, y1, x0, y1 };
     float st[12] = { 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1 };
     gfx_set_render_state(GFX_RS_TEXTURE, (uintptr_t)glyph(idx, e->pal));
+    PICK(PK_TEXT, 0, idx, e->pal, 0);
     gfx_draw_2d(640, 448, 6, pos, st, NULL);
 }
 

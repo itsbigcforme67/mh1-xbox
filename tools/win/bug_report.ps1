@@ -2,13 +2,16 @@
 $WithSave = ($args -contains '--with-save') -or ($args -contains '-WithSave')
 $base = if ($env:MH1_SAVE_DIR) { Split-Path -Parent $env:MH1_SAVE_DIR } else { Join-Path $env:APPDATA 'mh1pc' }
 $logs = if ($env:MH1_LOG_DIR) { $env:MH1_LOG_DIR } else { Join-Path $base 'logs' }
+$reports = Join-Path (Split-Path -Parent $logs) 'reports'
 $card = if ($env:MH1_SAVE_DIR) { $env:MH1_SAVE_DIR } else { Join-Path $base 'memcard0' }
 $stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
 $tmp = Join-Path $env:TEMP "mh1_bug_$stamp"
 New-Item -ItemType Directory -Force -Path $tmp | Out-Null
 $newest = Get-ChildItem -Path $logs -Filter 'mh1_*.log' -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 2
-if (-not $newest) { Write-Host "No debug log found in $logs - run the game once first."; exit 1 }
+$reps = Get-ChildItem -Path $reports -Directory -Filter 'report_*' -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 3
+if ((-not $newest) -and (-not $reps)) { Write-Host "No debug log or in-game report found in $logs - run the game once first."; exit 1 }
 foreach ($f in $newest) { Copy-Item $f.FullName $tmp }
+foreach ($r in $reps) { Copy-Item $r.FullName (Join-Path $tmp $r.Name) -Recurse }
 $meta = Join-Path $tmp 'save_info.txt'
 "Save folder listing (names, sizes, modified times; no contents)" | Out-File $meta -Encoding utf8
 if (Test-Path $card) {
@@ -23,7 +26,7 @@ Compress-Archive -Path (Join-Path $tmp '*') -DestinationPath $zip -Force
 Remove-Item $tmp -Recurse -Force
 Write-Host ""
 Write-Host "Made $zip"
-Write-Host "It holds: $($newest.Name -join ', '), save_info.txt$(if ($WithSave) {', and your save'} else {' (your save is NOT included)'})"
+Write-Host "It holds: $($newest.Name -join ', '), $(@($reps).Count) in-game report(s) (F8 in the game), save_info.txt$(if ($WithSave) {', and your save'} else {' (your save is NOT included)'})"
 Write-Host "The logs hold no user name or home path; check them yourself if you like (they are plain text)."
 Write-Host ""
 Write-Host "Open a bug report and attach the zip:"

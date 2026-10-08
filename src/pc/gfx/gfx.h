@@ -85,6 +85,30 @@ void gfx_set_render_state(int state, uintptr_t value);
 /* convenience for float-valued states */
 void gfx_set_render_state_f(int state, float value);
 
+/* ------------------------------------------------------------ picking (in-game bug reporter)
+ * While gfx_pick_pass is set (the frozen frame is drawn once more, rt_pick.c / pick.c) the backend does not
+ * draw colours: every clay / 2D draw asks gfx_pick_cb for an id (it records the draw's render states from
+ * this struct and the current tag) and draws flat in that id's colour, so a click can be turned back into
+ * the draw call under it. Only the GL backend does this; other backends ignore it. */
+typedef struct {
+    int is2d, nvert;
+    unsigned tex;                 /* GL texture name (0 = untextured), tex_w x tex_h */
+    int tex_w, tex_h;
+    int blend_on, bsrc, bdst, bop;  /* GFX_BF_* codes, fl operation */
+    int ztest, zwrite, zfunc, afunc; /* afunc: GL compare - 0x200 (0 never .. 7 always) */
+    float aref;
+    int nearest, clamp, fog, noscroll;
+    uint32_t fade;
+    float texmat[16], world[16];
+    float bbox2d[4];              /* 2D draws: x0 y0 x1 y1 in the virtual screen (w x h below) */
+    int sw, sh;
+    const void *clay;
+} gfx_pick_info;
+extern int gfx_pick_pass;
+extern uint32_t (*gfx_pick_cb)(const gfx_pick_info *);
+void gfx_pick_matrices(float view[16], float proj[16]);
+int gfx_read_depth(float *d);                              /* GL backend: the depth buffer, top-down, window size */   /* GL backend: the view / projection of the last draw */
+
 /* ------------------------------------------------------------ clays */
 typedef struct {
     int first, count;          /* range in the index list (triangles) */

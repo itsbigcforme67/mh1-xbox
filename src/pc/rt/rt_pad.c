@@ -55,6 +55,7 @@ static int host_stick[4];   /* lx, ly, rx, ry: -127..127, y down */
 
 void rt_pad_set(uint16_t fl_bits, int lx, int ly, int rx, int ry)
 {
+    rt_pick_record_pad(fl_bits, lx, ly, rx, ry);
     host_bits = fl_bits;
     host_stick[0] = lx;
     host_stick[1] = ly;

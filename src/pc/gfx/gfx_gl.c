@@ -38,7 +38,11 @@ static struct {
     gfx_texture *tex;
     GLint filter, wrap;          /* fl 0x63 / 0x64, applied when a texture is bound */
     void (APIENTRY *blend_eq)(GLenum);   /* glBlendEquation (GL 1.4), may be NULL */
+    /* the states as set, for the bug reporter's pick info (gfx_pick_info) */
+    int blend_on, bsrc, bdst, bop, ztest, zwrite, zfunc, fog;
+    GLuint white;
 } G;
+
 
 #ifndef GL_FUNC_ADD
 #define GL_FUNC_ADD 0x8006
@@ -110,6 +114,12 @@ int gfx_init(int width, int height, const char *title, int hidden)
     glFogi(GL_FOG_MODE, GL_LINEAR);
     G.filter = GL_LINEAR;
     G.wrap = GL_REPEAT;
+    G.ztest = 1;
+    G.zwrite = 1;
+    G.zfunc = 3;
+    G.bsrc = GFX_BF_SRC_ALPHA;
+    G.bdst = GFX_BF_INV_SRC_ALPHA;
+    G.afunc = 0x204;
     G.blend_eq = (void (APIENTRY *)(GLenum))SDL_GL_GetProcAddress("glBlendEquation");
     return 0;
 }
@@ -133,6 +143,8 @@ void gfx_size(int *w, int *h)
 static void gfx_begin_frame_gl(uint32_t c)
 {
     glDepthMask(GL_TRUE);
+    if (gfx_pick_pass)
+        c = 0;                  /* the id pass: id 0 = nothing */
     glClearColor(((c >> 16) & 255) / 255.0f, ((c >> 8) & 255) / 255.0f, (c & 255) / 255.0f, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -162,6 +174,24 @@ int gfx_read_pixels(uint8_t *rgb)
         memcpy(tmp, rgb + y * row, row);
         memcpy(rgb + y * row, rgb + (G.h - 1 - y) * row, row);
         memcpy(rgb + (G.h - 1 - y) * row, tmp, row);
+    }
+    free(tmp);
+    return 0;
+}
+
+int gfx_read_depth(float *d)
+{
+    int y;
+    size_t row = (size_t)G.w;
+    float *tmp = malloc(row * sizeof(float));
+    glFinish();
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadBuffer(GL_BACK);
+    glReadPixels(0, 0, G.w, G.h, GL_DEPTH_COMPONENT, GL_FLOAT, d);
+    for (y = 0; y < G.h / 2; y++) {
+        memcpy(tmp, d + y * row, row * sizeof(float));
+        memcpy(d + y * row, d + (G.h - 1 - y) * row, row * sizeof(float));
+        memcpy(d + (G.h - 1 - y) * row, tmp, row * sizeof(float));
     }
     free(tmp);
     return 0;
@@ -225,6 +255,7 @@ void gfx_set_render_state(int state, uintptr_t v)
         glFogf(GL_FOG_END, *(const float *)v);
         break;
     case GFX_RS_FOG_ENABLE:
+        G.fog = v != 0;
         if (v) glEnable(GL_FOG); else glDisable(GL_FOG);
         break;
     case GFX_RS_VIEW:
@@ -248,26 +279,33 @@ void gfx_set_render_state(int state, uintptr_t v)
         glAlphaFunc(G.afunc, G.aref);
         break;
     case GFX_RS_ZFUNC:
+        G.zfunc = (int)v;
         glDepthFunc(v == 1 ? GL_LESS : v == 3 ? GL_LEQUAL : v == 7 ? GL_ALWAYS : GL_NEVER);
         break;
     case GFX_RS_FADE_COLOR:
         G.fade = (uint32_t)v;
         break;
     case GFX_RS_ZWRITE:
+        G.zwrite = v != 0;
         glDepthMask(v ? GL_TRUE : GL_FALSE);
         break;
     case GFX_RS_ZTEST:
+        G.ztest = v != 0;
         if (v) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
         break;
     case GFX_RS_BLEND_FUNC: {
         unsigned src = v & 15, dst = (v >> 4) & 15;
         if (src < 6 && dst < 6) {        /* others have no GS form: ignored like fl does */
+            G.blend_on = 1;
+            G.bsrc = (int)src;
+            G.bdst = (int)dst;
             glEnable(GL_BLEND);
             glBlendFunc(blend_factor[src], blend_factor[dst]);
         }
         break;
     }
     case GFX_RS_BLEND_OP:
+        G.bop = (int)v;
         if (G.blend_eq)
             G.blend_eq((v & 0xC00) == 0x400 ? GL_FUNC_SUBTRACT
                        : (v & 0xC00) == 0x800 ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD);
@@ -279,6 +317,9 @@ void gfx_set_render_state(int state, uintptr_t v)
         G.wrap = v ? GL_CLAMP_TO_EDGE : GL_REPEAT;
         break;
     case GFX_RS_BLEND:
+        G.blend_on = v != 0;
+        G.bsrc = GFX_BF_SRC_ALPHA;
+        G.bdst = GFX_BF_INV_SRC_ALPHA;
         if (v) {
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -328,18 +369,116 @@ void gfx_update_clay(gfx_clay *c, const float *pos, const uint8_t *col)
         memcpy(c->col, col, 4 * (size_t)c->nvert);
 }
 
+
+/* ------------------------------------------------------------ id pass (bug reporter, pick.c)
+ * Flat id colours: no blending / fog / dither, textures keep their alpha (alpha test, vertex alpha) but the
+ * colour is the id (texture environment: combine, constant colour). */
+#ifndef GL_COMBINE
+#define GL_COMBINE 0x8570
+#define GL_COMBINE_RGB 0x8571
+#define GL_COMBINE_ALPHA 0x8572
+#define GL_SOURCE0_RGB 0x8580
+#define GL_SOURCE1_RGB 0x8581
+#define GL_SOURCE0_ALPHA 0x8588
+#define GL_SOURCE1_ALPHA 0x8589
+#define GL_OPERAND0_RGB 0x8590
+#define GL_OPERAND0_ALPHA 0x8598
+#define GL_OPERAND1_ALPHA 0x8599
+#define GL_CONSTANT 0x8576
+#define GL_PRIMARY_COLOR 0x8577
+#endif
+
+static void pick_gl_on(uint32_t id)
+{
+    float c[4] = { (id & 255) / 255.0f, ((id >> 8) & 255) / 255.0f, ((id >> 16) & 255) / 255.0f, 1.0f };
+    if (!G.white) {
+        static const uint8_t w[4] = { 255, 255, 255, 255 };
+        glGenTextures(1, &G.white);
+        glBindTexture(GL_TEXTURE_2D, G.white);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, w);
+    }
+    glDisable(GL_FOG);
+    glDisable(GL_BLEND);
+    glDisable(GL_DITHER);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+    glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_REPLACE);
+    glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_CONSTANT);
+    glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+    glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+    glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_TEXTURE);
+    glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA, GL_PRIMARY_COLOR);
+    glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+    glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+    glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, c);
+}
+
+static void pick_gl_off(void)
+{
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glEnable(GL_DITHER);
+    if (G.fog) glEnable(GL_FOG);
+    if (G.blend_on) glEnable(GL_BLEND);
+}
+
+static void pick_fill(gfx_pick_info *gi, int is2d, int nvert, gfx_texture *t)
+{
+    memset(gi, 0, sizeof *gi);
+    gi->is2d = is2d;
+    gi->nvert = nvert;
+    if (t) {
+        gi->tex = t->id;
+        gi->tex_w = t->w;
+        gi->tex_h = t->h;
+    }
+    gi->blend_on = G.blend_on;
+    gi->bsrc = G.bsrc;
+    gi->bdst = G.bdst;
+    gi->bop = G.bop;
+    gi->ztest = is2d ? 0 : G.ztest;
+    gi->zwrite = G.zwrite;
+    gi->zfunc = G.zfunc;
+    gi->afunc = G.afunc - 0x200;
+    gi->aref = G.aref;
+    gi->nearest = G.filter == GL_NEAREST;
+    gi->clamp = G.wrap != GL_REPEAT;
+    gi->fog = G.fog;
+    gi->fade = G.fade;
+    memcpy(gi->texmat, G.texmat, sizeof gi->texmat);
+    memcpy(gi->world, G.world, sizeof gi->world);
+}
+
+/* the view / projection of the id pass for unprojecting a click (pick.c) */
+void gfx_pick_matrices(float view[16], float proj[16])
+{
+    memcpy(view, G.view, sizeof G.view);
+    memcpy(proj, G.proj, sizeof G.proj);
+}
+
 static void gfx_execute_clay_gl(gfx_clay *c)
 {
     if (gfx_rec_clay(c))
         return;
     int b;
+    uint32_t pid = 0;
+    if (gfx_pick_pass) {
+        gfx_pick_info gi;
+        pick_fill(&gi, 0, c->nvert, c->nbatch ? (c->batch[0].tex ? c->batch[0].tex : G.tex) : G.tex);
+        gi.noscroll = c->noscroll;
+        gi.clay = c;
+        if (!gfx_pick_cb || !(pid = gfx_pick_cb(&gi)))
+            return;
+    }
     rt_prof_count(RTPC_DRAW_VERTS, c->nvert);
     for (b = 0; b < c->nbatch; b++)
         rt_prof_count(RTPC_DRAW_TRIS, c->batch[b].count / 3);
     rt_prof_count(RTPC_DRAWS, c->nbatch);
     const uint8_t *col = c->col;
 
-    if (G.fade != 0xFFFFFFFFu) {            /* fl state 0x67: per-draw multiply */
+    if (pid)
+        pick_gl_on(pid);
+    if (G.fade != 0xFFFFFFFFu && !pid) {            /* fl state 0x67: per-draw multiply */
         unsigned f[4] = { (G.fade >> 16) & 255, (G.fade >> 8) & 255, G.fade & 255, G.fade >> 24 };
         int i, k;
         for (i = 0; i < c->nvert; i++)
@@ -383,6 +522,9 @@ static void gfx_execute_clay_gl(gfx_clay *c)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, G.filter);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, G.wrap);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, G.wrap);
+        } else if (pid) {
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, G.white);
         } else {
             glDisable(GL_TEXTURE_2D);
         }
@@ -391,6 +533,8 @@ static void gfx_execute_clay_gl(gfx_clay *c)
     glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
+    if (pid)
+        pick_gl_off();
 }
 
 void gfx_execute_clay(gfx_clay *c)
@@ -408,6 +552,24 @@ static void gfx_draw_2d_gl(int w, int h, int nvert, const float *pos, const floa
     rt_prof_count(RTPC_DRAW_TRIS, nvert / 3);
     rt_prof_count(RTPC_DRAWS, 1);
     gfx_texture *t = st ? G.tex : NULL;
+    uint32_t pid = 0;
+    if (gfx_pick_pass) {
+        gfx_pick_info gi;
+        int k;
+        pick_fill(&gi, 1, nvert, t);
+        gi.sw = w;
+        gi.sh = h;
+        gi.bbox2d[0] = gi.bbox2d[1] = 1e30f;
+        gi.bbox2d[2] = gi.bbox2d[3] = -1e30f;
+        for (k = 0; k < nvert; k++) {
+            if (pos[2 * k] < gi.bbox2d[0]) gi.bbox2d[0] = pos[2 * k];
+            if (pos[2 * k] > gi.bbox2d[2]) gi.bbox2d[2] = pos[2 * k];
+            if (pos[2 * k + 1] < gi.bbox2d[1]) gi.bbox2d[1] = pos[2 * k + 1];
+            if (pos[2 * k + 1] > gi.bbox2d[3]) gi.bbox2d[3] = pos[2 * k + 1];
+        }
+        if (!gfx_pick_cb || !(pid = gfx_pick_cb(&gi)))
+            return;
+    }
     GLboolean dt = glIsEnabled(GL_DEPTH_TEST);
     GLboolean dm;
     glGetBooleanv(GL_DEPTH_WRITEMASK, &dm);
@@ -420,6 +582,8 @@ static void gfx_draw_2d_gl(int w, int h, int nvert, const float *pos, const floa
     glOrtho(0, w, h, 0, -1, 1);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    if (pid)
+        pick_gl_on(pid);
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(2, GL_FLOAT, 0, pos);
     if (col) {
@@ -437,10 +601,15 @@ static void gfx_draw_2d_gl(int w, int h, int nvert, const float *pos, const floa
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, G.filter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, G.wrap);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, G.wrap);
+    } else if (pid) {
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, G.white);
     } else {
         glDisable(GL_TEXTURE_2D);
     }
     glDrawArrays(GL_TRIANGLES, 0, nvert);
+    if (pid)
+        pick_gl_off();
     glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);

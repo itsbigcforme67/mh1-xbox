@@ -142,9 +142,9 @@ void pad_read(pad_state *p, int keyboard)
 }
 
 /* ------------------------------------------------------------ script */
-#define MAX_STEPS 256
-static pad_state steps[MAX_STEPS];
-static int ticks[MAX_STEPS], nsteps, cur, left;
+/* steps grow as needed (a recorded session of the bug reporter has thousands) */
+static pad_state *steps;
+static int *ticks, nsteps, capsteps, cur, left;
 
 static int name_to(const char *n, size_t len, pad_state *p)
 {
@@ -173,13 +173,33 @@ static int name_to(const char *n, size_t len, pad_state *p)
     return 0;
 }
 
+/* Back / View + Start held together on the controller: the bug reporter's combo (pick.c) */
+int pad_combo_held(void)
+{
+    return ctl && SDL_GameControllerGetAttached(ctl) && SDL_GameControllerGetButton(ctl, SDL_CONTROLLER_BUTTON_BACK)
+        && SDL_GameControllerGetButton(ctl, SDL_CONTROLLER_BUTTON_START);
+}
+
 int pad_script_set(const char *s)
 {
     nsteps = cur = left = 0;
-    while (*s && nsteps < MAX_STEPS) {
+    while (*s) {
         pad_state p;
         const char *e = s;
         memset(&p, 0, sizeof p);
+        if (nsteps == capsteps) {
+            capsteps = capsteps ? capsteps * 2 : 512;
+            steps = (pad_state *)realloc(steps, (size_t)capsteps * sizeof *steps);
+            ticks = (int *)realloc(ticks, (size_t)capsteps * sizeof *ticks);
+        }
+        if (*e == 'x') {            /* a recorded state: xBITS:lx:ly:rx:ry (hex bits), see rt_pick.c */
+            unsigned b;
+            int n = 0;
+            if (sscanf(e + 1, "%x:%d:%d:%d:%d%n", &b, &p.lx, &p.ly, &p.rx, &p.ry, &n) != 5)
+                return 0;
+            p.bits = (uint16_t)b;
+            e += 1 + n;
+        } else
         for (;;) {
             size_t len = strcspn(e, "+*,");
             if (!name_to(e, len, &p))

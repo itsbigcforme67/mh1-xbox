@@ -12,6 +12,7 @@
  */
 #include "rt.h"
 #include "rt_prof.h"
+#include "rt_pick.h"
 #include "types.h"
 #include "set.h"
 #include "game.h"
@@ -106,6 +107,10 @@ static int rebind_clay(int old, gfx_clay *c)
     return rt_register_clay(c);
 }
 
+unsigned char rt_stage_sky_flags[64];
+int rt_stage_model_no;                  /* the stage the models being bound belong to (viewer.c load_stage_models) */     /* set by the viewer before rt_bind_stage_model: part k is a sky part */
+
+extern int rt_stage_model_no;
 int rt_bind_set_model(gfx_clay *const *c, const uint32_t *attr, int n)
 {
     int i, old[64];
@@ -115,6 +120,8 @@ int rt_bind_set_model(gfx_clay *const *c, const uint32_t *attr, int n)
     for (i = 0; i < 64; i++) {
         set_clay[i].handle = i < n ? rebind_clay(old[i], c[i]) : -1;
         set_clay[i].attr = i < n && attr ? (s32)attr[i] : 0;
+        if (i < n)
+            pick_note_handle(set_clay[i].handle, PK_SET, rt_stage_model_no, i, 1);
     }
     set_mdl.flag = 1;
     set_mdl.nclay = (s16)(n < 64 ? n : 64);
@@ -134,6 +141,8 @@ int rt_bind_stage_model(gfx_clay *const *c, const uint32_t *attr, int n)
     for (i = 0; i < 64; i++) {
         stage_clay[i].handle = i < n ? rebind_clay(old[i], c[i]) : -1;
         stage_clay[i].attr = i < n && attr ? (s32)attr[i] : 0;
+        if (i < n)
+            pick_note_handle(stage_clay[i].handle, rt_stage_sky_flags[i] ? PK_SKY : PK_STAGE, rt_stage_model_no, i, 0);
     }
     stage_mdl.flag = 1;
     stage_mdl.nclay = (s16)n;
@@ -166,6 +175,8 @@ static void rnd_apply(void)
         Rnd_w[1] = (u16)((m >> 3) % 0xFF52 + 1);
     }
 }
+
+int rt_seed_get(void) { return (int)rnd_seed; }
 
 void rt_seed_random(int scripted)
 {
@@ -438,10 +449,36 @@ void rt_game_move(void)
     }
 }
 
+/* the bug reporter's tag for a prim about to be drawn: its owner decides what it is (effect work, set object) */
+extern u8 eft_work[];
+static void pick_prim_tag(int ot, int k, PRIM *p)
+{
+    u8 *o = (u8 *)p->owner;
+    float pos[3] = { p->pos[0], p->pos[1], p->pos[2] };
+    int kind = PK_PRIM, w = k, ty = 0, ar = 0;
+    if (o >= eft_work && o < eft_work + 128 * 0x40) {
+        kind = PK_EFT;
+        w = (int)(o - eft_work) / 0x40;
+        ty = o[2];
+        ar = o[3];
+    } else if (o >= (u8 *)set_pool && o < (u8 *)(set_pool + SET_MAX)) {
+        kind = PK_SET;
+        w = (int)(o - (u8 *)set_pool) / (int)sizeof set_pool[0];
+        ty = ((SETW *)o)->type;
+        ar = ((SETW *)o)->arg;
+    } else if (o) {
+        kind = PK_SHELL;            /* shell works are neither: name the draw function */
+        ty = o[2];
+        ar = o[3];
+    }
+    PICK_FN(kind, w, ty, ar, ot, (const void *)p->trans, 0, pos);
+}
+
 void trans_stage(void);
 
 void rt_stage_draw(void)
 {
+    PICK(PK_OTHER, 0, 0, 0, 0);
     trans_stage();
     rt_fl_reset_states();
 }
@@ -485,10 +522,13 @@ void rt_game_draw(void)
                     continue;
                 }
             }
+            if (gfx_pick_pass)
+                pick_prim_tag(t, k, p);
             if (p->trans)
                 p->trans(p);
             rt_fl_reset_states();
         }
+    PICK(PK_OTHER, 0, 0, 0, 0);
 }
 
 /* draw_prim (one ordering table now): the boot screens' trans() (rt_boot.c) */
@@ -530,6 +570,7 @@ void rt_game_draw_2d(void)
     {   /* trans_sprite (sprite/trans2.c): SpritePut's list, before ot5 as in trans() */
         void trans_sprite(void);
         if (sprite_area && spr_list_no > 0) {
+            PICK(PK_HUD, 100, 0, 0, 0);
             trans_sprite();
             rt_fl_reset_states();
         }
@@ -539,10 +580,12 @@ void rt_game_draw_2d(void)
         int t = order[i];
         for (k = 0; k < nqueue[t]; k++) {
             PRIM *p = queue[t][k].p;
+            PICK_FN(PK_HUD, t, k, queue[t][k].pri, 0, (const void *)p->trans, 0, 0);
             if (p->trans)
                 p->trans(p);
             rt_fl_reset_states();
         }
+        PICK(PK_TEXT, fstack[i], 0, 0, 0);
         font_draw_stack_no(fstack[i]);
         rt_fl_reset_states();
     }
@@ -554,4 +597,5 @@ void rt_game_draw_2d(void)
             rt_fl_reset_states();
         }
     rt_font_frame_end();
+    PICK(PK_OTHER, 0, 0, 0, 0);
 }
