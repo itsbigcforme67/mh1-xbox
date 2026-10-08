@@ -50,7 +50,7 @@ assert len(d['marks'])==2 and d['objects'], d['marks']
 " || fail "UI path report content"
 # replay determinism
 env MH1_SAVE_DIR="$PWD/$OUT/r3/card" MH1_LOG_DIR="$PWD/$OUT/r3/logs" RT_PICK_AT=900 RT_PICK_CLICKS="320,240" RT_PICK_NOTE=replay \
-    $RUN $BIN disc/mh1 --quest 10 --play --input "@$R1/input.txt" --size 640x480 --shot $OUT/c.png --time 40 > $OUT/c.out 2>&1
+    RT_PICK_EXIT=1 RT_SEED=$(python3 -c "import json;print(json.load(open(\"$R1/report.json\"))[\"random_seed\"])") $RUN $BIN disc/mh1 --quest 10 --play --input "@$R1/input.txt" --size 640x480 > $OUT/c.out 2>&1
 R3=$(ls -d $OUT/r3/reports/report_* 2>/dev/null | head -1)
 [ -n "$R3" ] || fail "replay: no report"
 python3 - "$R1/report.json" "$R3/report.json" <<'PY' || fail "replay differs from the recorded session"
@@ -60,4 +60,5 @@ assert a == b, (a['hunter'], b['hunter'])
 PY
 python3 tools/show_report.py "$R1" > $OUT/show.txt || fail "show_report.py"
 grep -q "PICKED OBJECTS" $OUT/show.txt || fail "show_report output"
+python3 tools/show_report.py "$R1" --replay | grep -q "RT_PICK_AT=900 RT_PICK_EXIT=1 " || fail "show_report --replay does not print the RT_PICK_AT command"
 echo "pick OK: report with $(ls $R1 | wc -l) files, UI path, replay reaches the same state, show_report.py"

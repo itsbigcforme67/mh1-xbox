@@ -672,8 +672,8 @@ static char *report_json(const char *name)
         pick_json_str(as, sizeof as, rt_log_path(rt_pick_args()));
         jappend(&o, &n, &cap, " \"arguments\": %s,\n", as);
     }
-    jappend(&o, &n, &cap, " \"replay\": {\"input_file\": \"input.txt\", \"ticks\": %d, \"how\": \"RT_SEED=%u mhview <disc> [--boot or the same --quest/--stage] --input @input.txt --shot out.png --time <ticks/30> "
-            "(the pad state of every game tick from the start of the session; typed text of the name entry: RT_NAME)\"},\n", nticks, seed);
+    jappend(&o, &n, &cap, " \"replay\": {\"input_file\": \"input.txt\", \"ticks\": %d, \"how\": \"RT_SEED=%u RT_PICK_AT=<game.tick> mhview <disc> [--boot or the same --quest/--stage] --play --input @input.txt "
+            "(freezes at that tick and writes a new report folder with the same game state; do not stop with --time: it counts frames, and the recorded ticks are fewer than game.tick; typed text of the name entry: RT_NAME)\"},\n", nticks, seed);
     jappend(&o, &n, &cap, " \"marks\": [");
     for (k = 0; k < nmarks; k++) {
         mark_t *m = &marks[k];
@@ -777,6 +777,8 @@ static void save_report(void)
     write_gif(p);
     rt_log("bug report saved: %s (note: %d characters, %d objects picked)", rt_log_path(dir), (int)strlen(note), nsel);
     fprintf(stderr, "bug report saved: %s\n", dir);
+    if (getenv("RT_PICK_EXIT"))         /* headless replays: leave as soon as the report is written */
+        exit(0);
 }
 
 /* ------------------------------------------------------------ state machine */
