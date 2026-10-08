@@ -25,7 +25,7 @@ Checks to run after changes (all headless, about a minute together):
   str_getstat).
 - The whole PC test set, run it in this order after any change (build_pc.sh
   alone first): test_quest_loop, test_progression, test_urgent,
-  test_name_entry, test_movie, test_frog, test_audio, test_all_quests
+  test_name_entry, test_movie, test_frog, test_audio, test_activities, test_all_quests
   (~2.5 min), then `. ~/xboxdev/env.sh; python3 tools/build_xbox.py` and
   `tools/rebuild.sh`.
 - `tools/rebuild.sh`: the PS2 rebuild (all five OK) when game C was touched.
@@ -49,6 +49,9 @@ Movies (agent B, 7 Oct 2026): the opening, the extras' movies and the title's
 idle loop (logos -> opening -> title, the game's own demo task) play from
 AFS00.AFS; see "Movies (libmpeg2)" below. The soft keyboard is the game's own.
 
+- `tools/test_activities.sh` (agent C, 7 Oct 2026; ~15 s headless, 8 runs at a time): the activities the quest sweep does not
+  cover, one PASS/FAIL line each (gathering, fishing, carving, village shops / forge / item box, item combining, items used
+  in a quest, the field trader). Section "Activity tests" at the end of this file.
 - `tools/test_all_quests.sh` (agent D, 7 Oct 2026; ~2.5 minutes, headless): every offline quest of the Elder's star
   levels 1-5 (131-171) started with `--quest N`, played to quest clear, reward screen, money, village. Table below.
 
@@ -1769,3 +1772,81 @@ default or a branch that cannot happen (system_error); none was a live bug.
   track 0x1A in Snd_bgm_tbl, so by the code the PS2 would also be silent after the house door; either
   the real game is, or something not decompiled restarts it. The PC keeps the str_getstat guard in
   lobby_bgm_set (music continues): a deliberate deviation.
+
+## Activity tests (agent C, 7 Oct 2026; `tools/test_activities.sh`)
+
+Scripted headless runs (tools/test_activities.py, helpers in tools/act_lib.py; logs and the last screenshot of each run in
+build/show/act/<tag>.log / .png). 28 activities, one `PASS|FAIL name: what was measured` line each, 8 runs in parallel,
+~15 s in all. `tools/test_activities.sh name ...` runs single ones. The checks are on invariants, not on one lucky result: item
+ids must come from the stage's own pick table (RT_SPOT_TRACE), counts and prices are compared with what the shop's own list
+and prompt show (RT_FONT_TRACE), recipes are read from the executable's tables (recipe(), mix_recipes(), item_names() in
+act_lib.py), money/pouch/box/equipment come from a trace line the village prints after every change
+(`rt_village: tick N ud money M pouch: id:n .. | box: .. | ware: kind/id/opt .. | wear: ..`, RT_QUEST_TRACE).
+
+| activity | how it is driven | result |
+|---|---|---|
+| gather_herb | stage 39 pick id 20 (12200,10300), circle x4, RT_SEED 3/5/7 | PASS: herbs 82 / 87 only (the point's table), at most 3 per point (num 3), depleted afterwards |
+| gather_mine | stage 32 id 117, pickaxe 131 x3, square x4 | PASS: ores 104/106/107/109 from the table; the pickaxe breaks (3 -> 2 or 3 -> 0) |
+| gather_net | stage 36 id 124, net 134 x3 | PASS: bugs 89-93/124 from the table; net count drops |
+| fishing | stage 54 (11200,10850), bait 122, cast, reel on the trace's `bite` tick | PASS: a fish 94-103, bait 5 -> 4 |
+| carve_small | quest 131 stage 39, Aptonoth (kind 12) killed with RT_DMG_MUL, circle | PASS: raw meat 18, Aptonoth bone 227 |
+| carve_large | quest 10, Rathian (RT_EM_HP=30) | PASS: Rathian scale 183, shell 184 |
+| potion | RT_PL_HP=20:30, square | PASS: HP 30 -> 63, potion 3 -> 2 |
+| whetstone | RT_PL_POKE=20:87E:50 (sharpness), item 105 and 155 | PASS: sharpness 50 -> 150, stone 3 -> 2 |
+| paintball | pinned Rathian (RT_EM_PIN), thrown from 300/650/700 | PASS: monster mark EMW+0x56A set (the arc lands short at 400-600), ball used |
+| pitfall | trap 30 (carry limit 1) set, the Rathian walks into it | PASS: trap state 50/6 (x9EA/x959), monster act 4/12 |
+| tranq | trap + three tranquilizer balls 159 on the weakened Rathian | PASS: capture sleep (act 6/4), balls used |
+| barrel | small barrel bomb 31, large 32 | PASS: small -20 HP; large alone does nothing until something explodes next to it, then -100 in all |
+| bbq | spit 129 + raw meat 18, circle at the right frame (270-279 of the roast = well-done) | PASS: 19 (rare) / 20 (well-done) / 21 (burnt); spit stays, meat -1 |
+| drinks | stage 45 (Stg_env_type 1) and 54 (type 2), items 160 / 161 | PASS: see below |
+| combine | pause menu -> 調合, herb 65 + blue mushroom 79 = potion 1 (recipe table) | PASS after the fix below; a failed mix gives 143 |
+| trader | stage 41 em10, 30 talks, yes with d-pad left | PASS: 71 traded for 77 (seed 5); other seeds give gifts |
+| shop_buy / shop_sell / shop_qty | item shop NPC: Herb 20z, sells for 2z; quantity picker | PASS: money changes by the listed price; 50z buys 2 herbs, 10z none, carry limit 10 |
+| wshop_buy / wshop_sell, ashop_buy / ashop_sell | weapon + armour shop: Iron Sword 2100z, head piece 300z, sell at half | PASS (sell lists crashed before the fix below) |
+| forge_weapon / forge_armour / forge_upgrade | workshop: Iron Sword 1050z + 3 ore, head piece 150z, upgrade 1 -> 2 for 2 ore, 1350z | PASS: money, materials (from the pouch only) and the stored equipment match the recipe tables |
+| box_store / box_take / box_equip | house item box | PASS: store, take, change the wielded weapon (the compare window draws) |
+
+Bugs found and fixed (all PC side; `rebuild.sh` still OK for all five modules, the Xbox build links):
+- **Item combining never worked.** Item_preparation_rate and Item_preparation_list_chk (src/main/item/item_nm.c) call
+  `Item_preparation_adrs()` without arguments (K&R, the PS2 passes a0/a1 through); on x86 it read garbage, so the rate was
+  -1 and every mix failed (junk item 143), and the pause menu showed "???%". Both now pass (a, b). Herb + blue mushroom now
+  makes potions (rate table: item_pre_rate_tbl + the known-recipe list). This is the PS2 near-match copy used only by the PC;
+  item02.c (the matching one) is untouched.
+- **Segfault in the weapon/armour shop's sell list and in the item box's "take"** (ItemboxWindowX called with garbage). The
+  definition (lb_ib.c) is `(int cur, int flags, f32 base)`, the shop code (lb_by139.c, lb_shp.c) and the wrapper
+  ItemboxWindow in lb_tu_ib.c declare `(f32 x, int cur, int flags)` (PS2: x in f12). New `rtabi_ItemboxWindowX` in
+  src/pc/rt/rt_abi.c, the three files get `-DItemboxWindowX=rtabi_ItemboxWindowX` in tools/build_pc.sh.
+- **Page counter garbage in the shop lists** ("1/284" on the item shop's buy list, "1/1568594865" on its sell list):
+  src/lobby/b/nm/Put_page_num.c (m2c) built the "%d%s%d" text with two arguments, the page count was a stack leftover. Now
+  passes the third argument (the other copy, lb_plz3.c, already did). Pages show 1/5 (buy) and 1/3 (sell, 20 pouch slots).
+- **Random numbers:** the PC's ran_suu (rt_game.c) kept a private state starting at 1 and ignored `Rnd_w`, which the co-op
+  start seeds (so that seeding did nothing) and init_ran_suu sets. The first draw of the Lehmer generator
+  (x * 176 mod 65363) from 1 has all low bits clear, so the very first gather at any point always used it up (the PS2
+  checks `ran_suu(1) & 7`). ran_suu now uses Rnd_w; start-up seeds it from the clock (like the PS2's RTC) unless a
+  `--input` script runs (tests stay repeatable); `RT_SEED=n` forces a seed (the value is mixed, so 1, 2, 3 differ).
+
+Test aids added (tests only): village `RT_MONEY=n`, `RT_BOX_ITEMS="id:n,.."` (item box, 100 slots), `RT_WARE="kind:id,.."` (stored
+equipment; kind 6 weapon, 2 head); `RT_PL_HP="tick:hp,.."`; `RT_PL_POKE="tick:hexoffset:value,.."` (PLW s16, e.g. 87E sharpness,
+888 the selected pouch slot); `RT_EM_PIN="x,z"` (monster 0 put back each tick); `RT_SEED=n`. Traces: RT_PL_TRACE lines end
+with `sh <sharpness> dr <+0x918>/<+0x91A>/<+0x8C0>`, RT_EM_TRACE em lines with `pt <paint> tr <x9EA>/<x959>`, RT_QUEST_TRACE prints the
+`ud money` line in the village. The font trace only sees frames the host draws and a headless run draws few: use `RT_STEP=1`
+(a frame per tick) when a check reads texts (the shop tests do, ~7 s each).
+
+Findings that are not bugs (kept as the decompiled code has it):
+- Item bar after the last item of a kind is used: the selected slot stays on the now empty slot (Pl_item_erase leaves it;
+  only pressing L1/R1 cycles on), so the next square does nothing. The tests that use two items poke the slot.
+- Drinks: item 160 (cooler) sets +0x918, 161 (hot) sets +0x91A. Stage type 1 (stage 45, desert, hot) drains HP unless +0x918 is
+  set; type 2 (stage 54, cold cave) triples the stamina-gauge drain unless +0x91A is set. Names and effects agree.
+- A carried pitfall trap is limited to 1 (Item_data[30][3]); RT_PL_ITEMS="30:3" is clamped to 1 on the first use.
+- The large barrel bomb (32) sits until something hits it (a small bomb's blast, shell10 xB4); it does not go off by itself.
+- Capture: no offline quest has a capture goal (no program op 3 in quests 1-177); the capture sleep itself works (act 6/4).
+- Shock trap: no usable item exists in the offline item table (only 30 = pitfall; Shell12_set arg 1 is reached from netsyn only;
+  158 "Trap Tool" is a material). Not tested.
+- Farm / gathering spots in the village: none (the village's unique spots are the gate, the house door, a bench, and in the
+  house the bed and the box).
+- The hunter's gathering needs the weapon sheathed and the first circle after a warp is eaten by the landing action (tests
+  wait ~100 ticks).
+
+Not tested / still open: selling from the pouch at the house box ("持ち物を売る" works as a smoke test: +2z for a stored herb),
+"持ち物を整理する" (no visible effect in the smoke run), the trader's buy/sell variants beyond 71 -> 77 and gifts, shock trap
+(see above), a quest that actually asks for a capture.

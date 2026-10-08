@@ -9,7 +9,7 @@ Random outcomes (gathering, fishing, combining, trading) use RT_SEED so a run re
 
 Field: gather_herb gather_mine gather_net fishing carve_small carve_large
 Items in a quest: potion whetstone paintball pitfall tranq barrel bbq drinks combine trader
-Village: shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take
+Village: shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take box_equip
 """
 import math, re, sys, time
 from concurrent.futures import ThreadPoolExecutor
@@ -440,6 +440,15 @@ def box_take():
     if crashed(t) or len(u) < 2: return False, 'nothing taken (crash %s)' % crashed(t)
     f = u[-1]
     return f[1].get(66, 0) >= 1 and f[2].get(66) == 4 - f[1].get(66, 0), 'house box: took antidote herbs out, box %s, pouch %s' % (f[2], f[1])
+
+@test
+def box_equip():
+    """house box, 装備を変更する: the second stored weapon (Iron Sword + 改, id 2) becomes the wielded one"""
+    ev = {250: 'ddown*2', 265: 'ddown*2', 290: 'circle*2', 340: 'dright*2', 370: 'circle*2', 420: 'circle*2', 470: 'circle*2'}
+    t = house(ev, {'RT_PL_ITEMS': '65:5', 'RT_WARE': '6:1,6:2,2:1,2:5'}, 'box_equip', 560)
+    w = re.findall(r'wear: w(\d+)/(\d+)/', t)
+    if crashed(t) or not w: return False, 'no data'
+    return w[0] == ('6', '1') and w[-1] == ('6', '2'), 'wielded weapon (kind/id) %s -> %s' % ('/'.join(w[0]), '/'.join(w[-1]))
 
 # --------------------------------------------------------------------------------------------- driver
 def run_one(name):
