@@ -14,6 +14,7 @@
 #include <GL/gl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 struct gfx_texture { GLuint id; int w, h, src; long xbox; };
 
@@ -345,6 +346,15 @@ static void gfx_execute_clay_gl(gfx_clay *c)
             for (k = 0; k < 4; k++)
                 c->drawcol[4 * i + k] = (uint8_t)(c->col[4 * i + k] * f[k] / 255);
         col = c->drawcol;
+    }
+    if (getenv("RT_UV_TRACE") && !c->noscroll && memcmp(G.texmat, ident, sizeof ident)) {
+        static const void *seen[64]; static int ns; int k;
+        for (k = 0; k < ns && seen[k] != c; k++) ;
+        if (k == ns && ns < 64) {
+            seen[ns++] = c;
+            fprintf(stderr, "uv scroll applied to clay %p: %d verts, %d batches, tex %p, matrix t=(%.3f %.3f)\n", (const void *)c, c->nvert, c->nbatch,
+                    (void *)(c->nbatch ? c->batch[0].tex : 0), G.texmat[12], G.texmat[13]);
+        }
     }
     glMatrixMode(GL_TEXTURE);
     glLoadMatrixf(c->noscroll ? ident : G.texmat);       /* fl 0x19: UV scroll (set14), only for parts whose attribute asks for it */

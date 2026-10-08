@@ -759,9 +759,9 @@ static int load_stage_models(int st)
     if (getenv("RT_LIGHT_TRACE") && atoi(getenv("RT_LIGHT_TRACE")) >= 2) {     /* lighting type (attr +0x14) of the area and set parts */
         int q;
         for (q = 0; q < stage.amo.npart; q++)
-            fprintf(stderr, "stage %d area part %d lighting type %d (attr +0x04 family %d) uvscroll %d has_attr %d\n", st, q, stage.amo.part[q].attr[5], stage.amo.part[q].attr[1], stage.amo.part[q].attr[7], stage.amo.part[q].has_attr);
+            fprintf(stderr, "stage %d area part %d (%d verts) lighting type %d (attr +0x04 family %d) uvscroll %d has_attr %d\n", st, q, stage.amo.part[q].nvert, stage.amo.part[q].attr[5], stage.amo.part[q].attr[1], stage.amo.part[q].attr[7], stage.amo.part[q].has_attr);
         for (q = 0; q < set.amo.npart; q++)
-            fprintf(stderr, "stage %d set part %d lighting type %d (attr +0x04 family %d)\n", st, q, set.amo.part[q].attr[5], set.amo.part[q].attr[1]);
+            fprintf(stderr, "stage %d set part %d (%d verts) lighting type %d (attr +0x04 family %d) uvscroll %d has_attr %d\n", st, q, set.amo.part[q].nvert, set.amo.part[q].attr[5], set.amo.part[q].attr[1], set.amo.part[q].attr[7], set.amo.part[q].has_attr);
     }
     for (k = 0; k < 4; k++)
         drop(&keep[k]);
