@@ -258,6 +258,100 @@ fi
 PICK_X="src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
 # the matched cp math library (cp01-cp03, agent B 8 Oct): the rt_*.c copies are weak
 GAME="$GAME src/main/cp/cp01.c src/main/cp/cp02.c src/main/cp/cp03.c"
+# Matched C (byte-exact) replacing near-match copies, batch A (agent B, 8 Oct 2026): the *_nm.c versions stay linked weak
+# for the functions that are still unmatched. docs/agents/targets.md
+MATCHED_A="src/main/eft/eft02.c \
+    src/main/eft/eft02b.c \
+    src/main/eft/eft20b.c \
+    src/main/em/emsrch01.c \
+    src/main/em/emsrch02.c \
+    src/main/em/emsrch03.c \
+    src/main/emw/ems01.c \
+    src/main/emw/emt02.c \
+    src/main/emw/emu01.c \
+    src/main/emw/emu02.c \
+    src/main/emw/emu03.c \
+    src/main/frame/f_frame.c \
+    src/main/frame/f_frameb.c \
+    src/main/frame/f_framec.c \
+    src/main/hit/hit.c src/main/hit/hitb.c src/main/hit/hitd.c src/main/hit/hite.c \
+    src/main/hit/hit2all.c \
+    src/main/hit/hit3.c \
+    src/main/hit/hitc.c \
+    src/main/hit/shit1.c \
+    src/main/hit/shit15.c \
+    src/main/hit/shit16.c \
+    src/main/hit/shit2a.c \
+    src/main/hit/shit401.c \
+    src/main/hit/shit5.c \
+    src/main/hit/shit6.c \
+    src/main/hit/shit7.c \
+    src/main/hit/tri01.c \
+    src/main/item/item01.c \
+    src/main/item/item02.c \
+    src/main/item/item03.c \
+    src/main/item/item04.c \
+    src/main/model/light01.c \
+    src/main/model/light02.c \
+    src/main/model/light03.c \
+    src/main/pl/pl_ammo.c \
+    src/main/pl/pl_demo.c \
+    src/main/pl/pl_flagck.c \
+    src/main/pl/pl_itemck.c \
+    src/main/pl/pl_snd01.c \
+    src/main/pl/pl_wall.c \
+    src/main/pl/pldmv.c \
+    src/main/pl/plegg.c \
+    src/main/pl/plegg2.c \
+    src/main/pl/plx01.c \
+    src/main/pl/plx02.c \
+    src/main/pl/plx03.c \
+    src/main/pl/plx04.c \
+    src/main/pl/plx05.c \
+    src/main/pl/plx06.c \
+    src/main/pl/plx07.c \
+    src/main/pl/plx08.c \
+    src/main/pl/plx09.c \
+    src/main/pl/plx10.c \
+    src/main/pl/plx11.c \
+    src/main/pl/plx12.c \
+    src/main/quest/f_quest.c \
+    src/main/quest/f_quest01.c \
+    src/main/quest/f_quest02.c \
+    src/main/quest/f_quest03.c \
+    src/main/quest/f_quest04.c \
+    src/main/quest/f_questb.c \
+    src/main/quest/f_questc.c \
+    src/main/quest/f_queste.c \
+    src/main/quest/f_questg.c \
+    src/main/quest/f_questh.c \
+    src/main/quest/f_questi.c \
+    src/main/quest/f_questj.c \
+    src/main/quest/f_questk.c \
+    src/main/quest/f_questl.c \
+    src/main/quest/f_questm.c \
+    src/main/quest/f_questn.c \
+    src/main/quest/f_questo.c \
+    src/main/quest/f_questp.c \
+    src/main/quest/f_questq.c \
+    src/main/quest/f_questr.c \
+    src/main/quest/qstb01.c \
+    src/main/quest/qstb02.c \
+    src/main/quest/qstb03.c \
+    src/main/quest/qstb04.c \
+    src/main/quest/qstb05.c \
+    src/main/quest/qstb06.c \
+    src/main/quest/qstb07.c \
+    src/main/quest/strg01.c \
+    src/main/reward/rwkey02.c \
+    src/main/stage/f_stageb.c \
+    src/main/sys/empty_23E4E0.c \
+    src/main/weapon/weapon3.c \
+    src/main/weapon/wtrans01.c"
+[ -n "$MATCHED_SKIP" ] && MATCHED_A=$(echo $MATCHED_A | tr ' ' '\n' | grep -vE "$MATCHED_SKIP" | tr '\n' ' ')   # bisecting aid
+GAME="$GAME $MATCHED_A"
+WEAK_A="pl_nm f_frame_nm hit_nm hit2_nm hit3_nm tri_nm shit1_nm shit3_nm shit4_nm shit2 f_quest_nm f_quest0_nm item_nm f_em_nm emsrch_nm weapon3_nm weapon_nm light_nm f_stage_nm f_rewardb_nm f_sound_nm eft02_nm eft20_nm"
+WEAK="$WEAK $WEAK_A"
 GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
 PICK_MAIN="$PICK_MAIN $PICK_X"
 
@@ -297,6 +391,51 @@ ALIASES="EquipmentDescriptionWindowA_s=EquipmentDescriptionWindowA put_button_he
       D_63FC50=em_hit_push_tbl D_63FA10=em_body_tbl D_3E4C9C=player_work+0xAC \
       D_533BE0=Demo_task D_5367F0=Edit_task D_5375F0=Cont_task"
 
+# D_ / func_ names of the matched main C that the game module names (tools/targets/dalias.py)
+ALIASES_A="D_63BBB0=enemy_scale \
+ D_63BB80=enemy_size \
+ D_641240=em_hungry_tbl \
+ D_6413B0=em_suimin_tbl \
+ D_641310=em_thirst_tbl \
+ D_640540=em_pos_tbl \
+ func_55B060=em_cmd_init \
+ func_539C90=Em_Taisei_Set \
+ func_53B080=em_def_attack_set \
+ func_53B310=em_def_defence_set \
+ func_53A190=em_wall_bit_set \
+ func_5341D0=em_search_data_set \
+ func_536BC0=em_range_set \
+ func_539C40=Ikari_Data_Set \
+ func_53A2B0=em_tsuushin_set \
+ func_534680=em_neck_move \
+ func_5363C0=Em_Damage_Hate_Set \
+ func_536530=Em_Hate_Ck \
+ func_566670=em01_init \
+ func_57EFA0=em02_init \
+ func_5873D0=em03_init \
+ func_58B850=em04_init \
+ func_58F8B0=em07_init \
+ func_59A2C0=em08_init \
+ func_5A7F70=em09_init \
+ func_5AD5A0=em10_init \
+ func_5AF530=em12_init \
+ func_5B52D0=em14_init \
+ func_5C2AC0=em15_init \
+ func_5D0610=em16_init \
+ func_5D9F20=em17_init \
+ func_5E6C80=em18_init \
+ func_5E7920=em19_init \
+ func_5EBA50=em20_init \
+ func_600010=em21_init \
+ func_60D450=em27_init \
+ func_6140B0=em29_init \
+ func_6147D0=em33_init \
+ func_618F00=Set09_set_ex"
+# func_ names become tail-jump shims (build/pc/alias_shims.c): a linker alias binds to the object that
+# defines the target, which for functions with a weak near-match copy is the copy, not the matched winner
+ALIASES_FN=$(for a in $ALIASES_A; do case "$a" in func_*) echo "$a" ;; esac; done)
+ALIASES_A=$(for a in $ALIASES_A; do case "$a" in func_*) ;; *) echo "$a" ;; esac; done)
+ALIASES="$ALIASES $ALIASES_A"
 if [ -n "$PC_SYS" ]; then
     SYS="$PC_SYS"
 elif echo 'int main(void){return 0;}' | gcc -m32 -x c - -o build/pc/.m32test $LIBS 2>/dev/null; then
@@ -329,7 +468,7 @@ for f in $GAME; do
     # declaration orders float and int arguments unlike the definition
     ABI=""
     case "$f" in
-    src/main/pl/*|src/game/pl/*|src/main/hit/hit_nm.c|src/main/weapon/weapon_nm.c|src/main/sound/*)
+    src/main/pl/*|src/game/pl/*|src/main/hit/hit*.c|src/main/weapon/weapon_nm.c|src/main/sound/*)
         ABI="-Dframe_check=rtabi_frame_check -Dframe_check2=rtabi_frame_check2 -Dframe_check3=rtabi_frame_check3 \
              -DEft06_set=rtabi_Eft06_set -DEft02_set6=rtabi_Eft02_set6 \
              -DGetGroundHitStatusAreaPl=rtabi_GetGroundHitStatusAreaPl" ;;
@@ -435,10 +574,19 @@ for f in $GAME; do
             INC="$INC -I$(dirname "$f")"
         fi
     fi
+    # em_effect_pull (monster draw-prim setup + per-monster init) stays the host's no-op: the host draws and inits monsters itself
+    case "$f" in src/main/em/emsrch03.c) ABI="-Dem_effect_pull=ps2_em_effect_pull" ;; esac
     case "$f" in src/main/item/item_nm.c) ABI="-Dinit_item_work=ps2_init_item_work -Dclr_item_work=ps2_clr_item_work -Dmove_item=ps2_move_item -Ditem_check=ps2_item_check -Dpush_item_work=ps2_push_item_work" ;; src/main/tu/sk_all.c) ABI="-DSoftKeyboard_set=sk_real_set -DSoftKeyboard_move=sk_real_move -DSoftKeyboard_exit=sk_real_exit" ;; esac
     cc_obj "$b" "$CC $INC $GAMEFLAGS $ABI $SYS -c $src -o $o"
     OBJS="$OBJS $o"
 done
+# tail-jump shims for the func_XXXXXX names of the matched main C (see ALIASES_FN)
+{ echo '/* generated by tools/build_pc.sh */'
+  for a in $ALIASES_FN; do
+      printf '__asm__(".globl %s\\n.type %s, @function\\n%s:\\njmp %s");\n' "${a%%=*}" "${a%%=*}" "${a%%=*}" "${a#*=}"
+  done; } > build/pc/alias_shims.c
+cc_obj alias_shims "$CC $GAMEFLAGS $SYS -c build/pc/alias_shims.c -o build/pc/alias_shims.o"
+OBJS="$OBJS build/pc/alias_shims.o"
 # Which definitions are weak (the copy elsewhere wins): requests for
 # tools/pc_link_adapt.py, which compiles those objects again with a header of
 # "#pragma weak" lines (objcopy --weaken-symbol is ELF-only).
@@ -495,6 +643,19 @@ for f in $NETRT rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_moti
     cc_obj $f "$CC $CFLAGS $XF -DMH1_VERSION=\\\"$MH1_VERSION\\\" $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o"
     OBJS="$OBJS build/pc/$f.o"
 done
+# Matched main C (MATCHED_A) must not replace the host's own versions: a global that a strong definition in a
+# src/pc object (rt_*.o) also provides is weakened in the matched object, the host version wins (tools/targets)
+for f in $MATCHED_A; do
+    o="build/pc/$(basename "$f" .c).o"
+    [ -f "$o" ] || continue
+    for h in build/pc/rt_*.o build/pc/trans_stage.o; do
+        [ -f "$h" ] || continue
+        case "$h" in build/pc/rt_gen.o|build/pc/rt_tables.o|build/pc/rt_symtab.o) continue ;; esac
+        nmc --defined-only -g "$h" | awk '$2 == "T" {print $3}'
+    done | sort -u > build/pc/.hostsyms
+    nmc --defined-only -g "$o" | awk '$2 == "T" {print $3}' | sort -u | comm -12 - build/pc/.hostsyms | while read -r n; do echo "weak $o $n"; done >> $REQ
+done
+sort -u -o $REQ $REQ
 # the objects in link order (pc_link_adapt.py, tools/build_xbox.py). rt_gen.o
 # is added only once this build has generated it: in the first pass the old
 # one is stale (and may have no recorded command yet), which made the first

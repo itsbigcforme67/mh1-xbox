@@ -194,6 +194,27 @@ PATCHES = {
         ("void cnLBS_Send_ChatBinary(void) {\n    __cnet_SendSet_ChatBinary();",
          "void cnLBS_Send_ChatBinary(int a, int b) {\n    __cnet_SendSet_ChatBinary(a, b);"),
     ],
+    # matched files linked by the PC (agent B, 8 Oct 2026): calls whose arguments the PS2 leaves in a0/a1
+    "src/main/item/item02.c": [
+        ("    IPREP *e = Item_preparation_adrs();", "    IPREP *e = Item_preparation_adrs(a, b);"),
+    ],
+    "src/main/item/item03.c": [
+        ("int Item_preparation_list_chk(void) {\n    IPREP *e = Item_preparation_adrs();",
+         "int Item_preparation_list_chk(int a, int b) {\n    IPREP *e = Item_preparation_adrs(a, b);"),
+    ],
+    "src/main/sound/bgm01.c": [
+        ("void adx_se_set(int a0, int id) {\n    if (Pl_master_ck() == 1) {", "void adx_se_set(int a0, int id) {\n    if (Pl_master_ck(a0) == 1) {"),
+        ("void adx_se_stop(void) {\n    if (Pl_master_ck() == 1) {", "void adx_se_stop(void *pl) {\n    if (Pl_master_ck(pl) == 1) {"),
+    ],
+    # eft02.c (matched) uses the near-match's move callback
+    "src/main/eft/eft02_nm.c": [
+        ("static void eft02_move(EFTW *ew);", "void eft02_move(EFTW *ew);"),
+        ("static void eft02_move(EFTW *ew) {", "void eft02_move(EFTW *ew) {"),
+    ],
+    # hitd.c (matched) calls the near-match's monster shell hit
+    "src/main/hit/hit_nm.c": [
+        ("static void hit_hit_sub_em(", "void hit_hit_sub_em("),
+    ],
     "src/lobby/cnet/cnlbs_nm.c": [
         ("int cnLBS_SendMessage(int arg0, int arg1) {\n    int slot = __cnetSub_Set_BgProcess(1, 0);",
          "int cnLBS_SendMessage(int arg0, int arg1, int cb) {\n    int slot = __cnetSub_Set_BgProcess(1, 0, cb);"),
