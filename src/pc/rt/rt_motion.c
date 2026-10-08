@@ -319,6 +319,9 @@ void rt_player_pose(int no, void *skel)
     rt_motion_pose(skel, &player_work[no]);
 }
 
+/* the PLW of player no (the host's lighting reads its colour override and near-monster flag) */
+void *rt_player_ptr(int no) { return &player_work[no]; }
+
 /* Position and Y angle (0x10000 = 360 degrees) of player no. */
 void rt_player_get(int no, float pos[3], int *ang_y)
 {

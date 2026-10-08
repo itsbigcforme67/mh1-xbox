@@ -8,5 +8,5 @@
 # Not automated (SKIP) and known failures (KNOWN) are listed by tools/test_all_quests.py and in docs/pc.md.
 # usage: tools/test_all_quests.sh [quest numbers, decimal]   (~3 minutes for all). Logs: build/show/allq/qNNN.log
 cd "$(dirname "$0")/.."
-[ -x build/pc/mhview ] || tools/build_pc.sh >/dev/null || exit 1
+[ -x "${BIN:-build/pc/mhview}" ] || tools/build_pc.sh >/dev/null || exit 1
 exec python3 tools/test_all_quests.py "$@"

@@ -38,7 +38,7 @@
 #include <time.h>
 #ifdef MH1_WINDOWS
 #include <direct.h>
-#define mkdir(p, m) _mkdir(p)
+#define mkdir(p, m) mh1_mkdir(p)
 #define localtime_r(t, tmv) (localtime_s((tmv), (t)), (tmv))
 #endif
 

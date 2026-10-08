@@ -18,6 +18,7 @@
 #include <string.h>
 
 gfx_clay *rt_clay(int handle);
+unsigned char rt_light_blk[3][0x68];       /* flLIGHT[0..2] as flSetRenderState(0x5A + i) last got them */
 
 /* Defaults the host draw uses (viewer.c); restored after every prim. */
 #define RT_ALPHA_REF 0x40
@@ -79,6 +80,12 @@ void flSetRenderState(int state, u32 value)
                   * compare-function index whose last value (7) is "always"
                   * [guess]: 7 turns the host depth test off, the rest on. */
         gfx_set_render_state(GFX_RS_ZTEST, (value & 7) != 7);
+        break;
+    case 0x5A:   /* the three light blocks (0x68 bytes: Pl_light_set / light_set): the host reads them (rt_light.c) */
+    case 0x5B:
+    case 0x5C:
+        if (value)
+            memcpy(rt_light_blk[state - 0x5A], (const void *)(uintptr_t)value, 0x68);
         break;
     case 0x01:   /* shader kind / family / ambient: the host lights clays itself */
     case 0x0E:   /* (fl_model's VU1-style lighting) */

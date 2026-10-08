@@ -125,14 +125,14 @@ static void make_dirs(const char *path)
         if (*s == '/' || *s == '\\') {
             char c = *s;
             *s = 0;
-#if defined(MH1_WINDOWS) || defined(MH1_XBOX)
+#if defined(MH1_XBOX)
             CreateDirectoryA(tmp, NULL);
 #else
             mkdir(tmp, 0755);
 #endif
             *s = c;
         }
-#if defined(MH1_WINDOWS) || defined(MH1_XBOX)
+#if defined(MH1_XBOX)
     CreateDirectoryA(tmp, NULL);
 #else
     mkdir(tmp, 0755);
@@ -146,7 +146,7 @@ static void rotate(const char *dir)
 {
     static char names[256][48];
     int n = 0, i;
-#if defined(MH1_WINDOWS) || defined(MH1_XBOX)
+#if defined(MH1_XBOX)
     WIN32_FIND_DATAA fd;
     char pat[720];
     HANDLE h;
