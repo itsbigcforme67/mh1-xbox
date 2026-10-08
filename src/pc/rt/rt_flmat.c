@@ -106,7 +106,7 @@ void flmatSetXYZ33(FLMAT *m, f32 x, f32 y, f32 z)
 
 /* calc_mat_angY (0x120520): yaw of the matrix's local +z axis, 0x10000 per
  * turn: atan2(-dz, dx) of (0,0,1) * m - m's translation. */
-u16 calc_mat_angY(FLMAT *m)
+__attribute__((weak)) u16 calc_mat_angY(FLMAT *m)
 {
     f32 dx = (*m)[2][0], dz = (*m)[2][2];
     return (u16)(int)(65536.0f * atan2f(-dz, dx) / 6.2831855f + 0.5f);
@@ -238,9 +238,9 @@ static void rotate_pre(FLMAT *m, void (*rot)(FLMAT *, f32), f32 a)
     rot(&r, a);
     flmatMul33(m, &r, m);
 }
-void RotateX(FLMAT *m, f32 a) { rotate_pre(m, flmatRotX33, a); }
-void RotateY(FLMAT *m, f32 a) { rotate_pre(m, flmatRotY33, a); }
-void RotateZ(FLMAT *m, f32 a) { rotate_pre(m, flmatRotZ33, a); }
+__attribute__((weak)) void RotateX(FLMAT *m, f32 a) { rotate_pre(m, flmatRotX33, a); }
+__attribute__((weak)) void RotateY(FLMAT *m, f32 a) { rotate_pre(m, flmatRotY33, a); }
+__attribute__((weak)) void RotateZ(FLMAT *m, f32 a) { rotate_pre(m, flmatRotZ33, a); }
 
 /* flvecApplyMat33(out, v, m): out = v * m (3x3). */
 void flvecApplyMat33(f32 *out, f32 *v, FLMAT *m)
@@ -261,7 +261,7 @@ void flvecRotY(f32 *v, f32 a)
 
 /* calc_vec_ang (g_cpAng2Rad): angle of (x0 - x1, z0 - z1), 0x10000 per
  * turn: atan2(-dz, dx) of the normalised vector. */
-u16 calc_vec_ang(f32 x0, f32 z0, f32 x1, f32 z1)
+__attribute__((weak)) u16 calc_vec_ang(f32 x0, f32 z0, f32 x1, f32 z1)
 {
     f32 v[3] = { x0 - x1, 0.0f, z0 - z1 };
     flvecNormalize(v);
@@ -374,7 +374,7 @@ f32 flConvertStoR(u32 a)
 }
 
 /* cpRotMatrix (0x1202C0): m = Rx Ry Rz of three 0x10000-per-turn angles */
-FLMAT *cpRotMatrix(s32 *ang, FLMAT *m)
+__attribute__((weak)) FLMAT *cpRotMatrix(s32 *ang, FLMAT *m)
 {
     flmatInit(m);
     flmatSetXYZ33(m, flConvertStoR((u32)ang[0]), flConvertStoR((u32)ang[1]), flConvertStoR((u32)ang[2]));
@@ -382,7 +382,7 @@ FLMAT *cpRotMatrix(s32 *ang, FLMAT *m)
 }
 
 /* CalcDistanceXZ (0x120F20): distance in the XZ plane */
-f32 CalcDistanceXZ(f32 *a, f32 *b)
+__attribute__((weak)) f32 CalcDistanceXZ(f32 *a, f32 *b)
 {
     f32 dx = a[0] - b[0], dz = a[2] - b[2];
     return sqrtf(dx * dx + dz * dz);
@@ -392,7 +392,7 @@ f32 CalcDistanceXZ(f32 *a, f32 *b)
  * 1 Y, 2 Z) is the normalised v; another row comes from a cross product
  * with a fixed axis (a second one when v is parallel to the first,
  * |cross|^2 < 0.001), the third completes the frame. */
-void RotMatVec(f32 *v, FLMAT *m, int axis)
+__attribute__((weak)) void RotMatVec(f32 *v, FLMAT *m, int axis)
 {
     f32 u[3], x[3], y[3], z[3];
     flvecNormalize(v);

@@ -172,7 +172,7 @@ int Get_view_dir(void)
     return (int)(0.5f + 65536.0f * a / 6.2831855f) & 0xFFFF;
 }
 /* calc_vec_ang2 (0x120430): heading from b to a */
-int calc_vec_ang2(f32 *a, f32 *b)
+__attribute__((weak)) int calc_vec_ang2(f32 *a, f32 *b)
 {
     f32 v[3];
     v[0] = a[0] - b[0];
@@ -302,7 +302,7 @@ int rt_player_edit_look(int no, int *sex, int id[6])
     *sex = sx;
     return 0x1000000 | sx << 16 | face << 8 | hair;
 }
-void yure_init(void *pl) { (void)pl; }        /* hair/cloth sway */
+__attribute__((weak)) void yure_init(void *pl) { (void)pl; }        /* hair/cloth sway */
 /* the player's draw callbacks (trans_pl_sub, weapon_nm.c, calls these):
  * in the game and the village the viewer draws the hunter and the weapon
  * itself; during the boot (character creation / continue screens, whose
@@ -371,7 +371,7 @@ int fptodp(float f) { (void)f; return 0; }   /* hit_nm.c declares it int; debug 
 /* pl01 program (pl_local_init, pl01_effect_move, ef_move_sub ...):
  * src/main/sound/f_sound_nm.c. parts_chg (swap a hand's part model,
  * 0x1213xx?) is not ported: the viewer draws fixed parts. */
-void parts_chg(void *pl, int part, int no) { (void)pl; (void)part; (void)no; }
+__attribute__((weak)) void parts_chg(void *pl, int part, int no) { (void)pl; (void)part; (void)no; }
 void func_60E2B0(void *pl, int a) { (void)pl; (void)a; }   /* lobby Eft25_set */
 
 /* ------------------------------------------------ parts (0x120F90) */

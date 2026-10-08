@@ -245,3 +245,54 @@ f32 NormalClipF3(f32 *p0, f32 *p1, f32 *p2) {
     }
     return a - *(f32 *)pb;
 }
+
+/* Is p inside triangle abc (2D, x/y pairs)? 0 = outside or degenerate, 1 = inside a clockwise
+ * triangle, 2 = inside a counter-clockwise one; edges count as inside. */
+int NormalClipCheckF3(f32 *a, f32 *b, f32 *c, f32 *p) {
+    f32 d = NormalClipF3(a, b, c);
+
+    if (d == 0.0f) {
+        return 0;
+    }
+    if (d < 0.0f) {
+        if (!(NormalClipF3(a, b, p) <= 0.0f)) {
+            return 0;
+        }
+        if (!(NormalClipF3(b, c, p) <= 0.0f)) {
+            return 0;
+        }
+        return (u8)(((NormalClipF3(c, a, p) > 0.0f) ? 1 : 0) ^ 1);
+    }
+    if (NormalClipF3(a, b, p) < 0.0f) {
+        return 0;
+    }
+    if (NormalClipF3(b, c, p) < 0.0f) {
+        return 0;
+    }
+    return NormalClipF3(c, a, p) < 0.0f ? 0 : 2;
+}
+
+/* tri = 3 points, 3 floats apart (x, z, -); p = (x, z). 1 when p is inside. */
+int PointHitCheckF3(f32 *tri, f32 *p) {
+    s8 v;
+    int cw = (int)NormalClipF3(tri, tri + 3, tri + 6) <= 0;
+    int r;
+
+    v = 0;
+    r = NormalClipCheckF3(tri, tri + 3, tri + 6, p) & 0xFF;
+
+    if (r != 0) {
+        if (cw) {
+            if (r == 1) {
+                v = 1;
+            } else {
+                v--;
+            }
+        } else if (r == 2) {
+            v++;
+        } else {
+            v--;
+        }
+    }
+    return v > 0;
+}

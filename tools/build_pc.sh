@@ -225,7 +225,7 @@ PICK="$PICK src/lobby/f/lb_cli.c:lbc_text_lobby_trans,Lbs_GetRoomInfo,Lbc_set_pr
 PICK="$PICK src/lobby/f/lb_v17.c:Lb_make_quest_tbl src/lobby/f/lb_t.c:get_CA_size src/lobby/f/lb_uif.c:put_button_help src/lobby/f/lb_gy01.c:lb_guild_check_keyQuest src/lobby/b/lbsnd02.c:sound_req_com src/lobby/b/lbsnd03.c:ashi_sd_req_005C4980"
 LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*}"; done)"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
-WEAK="$WEAK_EM mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
+WEAK="$WEAK_EM camarea_nm mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 # soft keyboard (main f_sk, all-C TU; sk20.c has the texture load/blend helpers)
 # item combining (item_nm.c: the recipe lookup; its dropped-item pool keeps the host stand-ins, renamed)
 SK="src/main/item/item_nm.c src/main/tu/sk_all.c src/main/tu/hk_all.c src/main/sk/sk20.c src/main/sk/cmd_nm.c"
@@ -256,6 +256,8 @@ if [ -n "$ONLINE" ]; then
 fi
 # Stand-ins replaced by the game's own C (docs/pc.md "Stand-ins wired"): only the named functions are taken
 PICK_X="src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
+# the matched cp math library (cp01-cp03, agent B 8 Oct): the rt_*.c copies are weak
+GAME="$GAME src/main/cp/cp01.c src/main/cp/cp02.c src/main/cp/cp03.c"
 GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
 PICK_MAIN="$PICK_MAIN $PICK_X"
 

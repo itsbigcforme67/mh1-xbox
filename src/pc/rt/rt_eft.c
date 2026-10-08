@@ -580,11 +580,11 @@ int eft_trans_sub_opa(CLAY *clay, FLMAT *m, void *mat)
 }
 
 /* ------------------------------------------------------------ vectors */
-void SetVector(f32 *v, f32 x, f32 y, f32 z) { v[0] = x; v[1] = y; v[2] = z; }
-void AddVector(f32 *d, f32 *a, f32 *b) { d[0] = a[0] + b[0]; d[1] = a[1] + b[1]; d[2] = a[2] + b[2]; }
-void ScaleVector(f32 *d, f32 *a, f32 s) { d[0] = a[0] * s; d[1] = a[1] * s; d[2] = a[2] * s; }
+__attribute__((weak)) void SetVector(f32 *v, f32 x, f32 y, f32 z) { v[0] = x; v[1] = y; v[2] = z; }
+__attribute__((weak)) void AddVector(f32 *d, f32 *a, f32 *b) { d[0] = a[0] + b[0]; d[1] = a[1] + b[1]; d[2] = a[2] + b[2]; }
+__attribute__((weak)) void ScaleVector(f32 *d, f32 *a, f32 s) { d[0] = a[0] * s; d[1] = a[1] * s; d[2] = a[2] * s; }
 /* PointToPoint (g_cpAng2Rad): d = a - b (checked against the asm; was b - a) */
-void PointToPoint(f32 *d, f32 *a, f32 *b) { d[0] = a[0] - b[0]; d[1] = a[1] - b[1]; d[2] = a[2] - b[2]; }
+__attribute__((weak)) void PointToPoint(f32 *d, f32 *a, f32 *b) { d[0] = a[0] - b[0]; d[1] = a[1] - b[1]; d[2] = a[2] - b[2]; }
 
 /* flvecRotX (0x172FF0): rotate v about X by a radians */
 void flvecRotX(f32 *v, f32 a)

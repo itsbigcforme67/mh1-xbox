@@ -172,7 +172,7 @@ f32 plFCVFcurveInterpolateHermite(f32 t, f32 v0, f32 t0, f32 s0, f32 v1, f32 t1,
 
 /* cpApplyMatrix (0x120370): out = v * m (3x3); returns out on the PS2. */
 void flvecApplyMat33(f32 *out, f32 *v, FLMAT *m);
-void cpApplyMatrix(FLMAT *m, f32 *v, f32 *out)
+__attribute__((weak)) void cpApplyMatrix(FLMAT *m, f32 *v, f32 *out)
 {
     flvecApplyMat33(out, v, m);
 }

@@ -153,7 +153,7 @@ int rt_load_stage_hit(int stage)
  * points are (x, y) pairs (callers pass x/z). When the two products are
  * one float ulp apart the result is exactly 0 (the original compares the
  * bit patterns). */
-f32 NormalClipF3(f32 *a, f32 *b, f32 *c)
+__attribute__((weak)) f32 NormalClipF3(f32 *a, f32 *b, f32 *c)
 {
     union { f32 f; s32 i; } t1, t2;
     t1.f = (b[0] - a[0]) * (c[1] - a[1]);
@@ -168,7 +168,7 @@ f32 NormalClipF3(f32 *a, f32 *b, f32 *c)
 /* NormalClipCheckF3 (0x120A00): p inside triangle abc? 0 no (or a
  * degenerate triangle), 1 inside a clockwise triangle, 2 inside a
  * counter-clockwise one (edges count as inside). */
-int NormalClipCheckF3(f32 *a, f32 *b, f32 *c, f32 *p)
+__attribute__((weak)) int NormalClipCheckF3(f32 *a, f32 *b, f32 *c, f32 *p)
 {
     f32 d = NormalClipF3(a, b, c);
     if (d == 0.0f)
@@ -187,7 +187,7 @@ int NormalClipCheckF3(f32 *a, f32 *b, f32 *c, f32 *p)
 /* PointHitCheckF3 (0x120BA0): tri = 3 points with a stride of 3 floats
  * (x, z, -), p = (x, z). 1 when p is inside. The orientation test uses the
  * truncated integer of the cross product, as the original. */
-int PointHitCheckF3(f32 *tri, f32 *p)
+__attribute__((weak)) int PointHitCheckF3(f32 *tri, f32 *p)
 {
     int cw = (int)NormalClipF3(tri, tri + 3, tri + 6) <= 0;
     int r = NormalClipCheckF3(tri, tri + 3, tri + 6, p) & 0xFF;
@@ -209,7 +209,7 @@ f32 flAbs(f32);
 
 /* UnitNormalVectorCCW (0x1208D0): out = unit normal of triangle abc;
  * 0 when it has no length. */
-int UnitNormalVectorCCW(f32 *a, f32 *b, f32 *c, f32 *out)
+__attribute__((weak)) int UnitNormalVectorCCW(f32 *a, f32 *b, f32 *c, f32 *out)
 {
     f32 v1[4], v2[4];
     PointToPoint(v1, a, b);
@@ -221,7 +221,7 @@ int UnitNormalVectorCCW(f32 *a, f32 *b, f32 *c, f32 *out)
 
 /* NvecFloatAdjust (0x120C80): out = v with components below 0.001 in
  * magnitude set to 0. */
-void NvecFloatAdjust(f32 *out, f32 *v)
+__attribute__((weak)) void NvecFloatAdjust(f32 *out, f32 *v)
 {
     out[0] = v[0];
     out[1] = v[1];
@@ -237,7 +237,7 @@ void RotateY(FLMAT *, f32);
 void RotateZ(FLMAT *, f32);
 
 /* cpAng2Rad (u16 angle * 2pi/0x10000) for three s32 angles */
-void cpAng2Rad_all(s32 *ang, f32 *out)
+__attribute__((weak)) void cpAng2Rad_all(s32 *ang, f32 *out)
 {
     int k;
     for (k = 0; k < 3; k++)
@@ -246,7 +246,7 @@ void cpAng2Rad_all(s32 *ang, f32 *out)
 
 /* cpRotMatrixYXZ2 (0x120310): m = rotation by Y, then X, then Z
  * (each RotateN pre-multiplies). */
-FLMAT *cpRotMatrixYXZ2(s32 *ang, FLMAT *m)
+__attribute__((weak)) FLMAT *cpRotMatrixYXZ2(s32 *ang, FLMAT *m)
 {
     f32 r[3];
     cpAng2Rad_all(ang, r);

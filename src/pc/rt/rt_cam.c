@@ -42,7 +42,7 @@ void RollView(f32 r) { lpView[0x34 / 4] = r; }
 void SetAngleOfView(f32 a) { lpView[0x2C / 4] = a; }
 
 /* out = a * t + b * (1 - t) */
-void cpInterVector(f32 *out, f32 *a, f32 *b, f32 t)
+__attribute__((weak)) void cpInterVector(f32 *out, f32 *a, f32 *b, f32 t)
 {
     f32 u = 1.0f - t;
     out[0] = a[0] * t + b[0] * u;
@@ -50,7 +50,7 @@ void cpInterVector(f32 *out, f32 *a, f32 *b, f32 t)
     out[2] = a[2] * t + b[2] * u;
 }
 
-void SubVector(f32 *d, f32 *a, f32 *b)
+__attribute__((weak)) void SubVector(f32 *d, f32 *a, f32 *b)
 {
     d[0] = a[0] - b[0];
     d[1] = a[1] - b[1];
@@ -59,7 +59,7 @@ void SubVector(f32 *d, f32 *a, f32 *b)
 
 f32 flArcTan2(f32, f32);
 /* AarcTan2: flArcTan2 in 0x10000-per-turn units (10430.378 = 0x8000/pi) */
-s16 AarcTan2(f32 y, f32 x)
+__attribute__((weak)) s16 AarcTan2(f32 y, f32 x)
 {
     return (s16)(s32)(10430.378f * flArcTan2(y, x));
 }
