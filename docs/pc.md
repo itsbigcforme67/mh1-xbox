@@ -1936,3 +1936,26 @@ the dead monster there never got a carve point (small monsters without a carve t
 Not tested / still open: selling from the pouch at the house box ("持ち物を売る" works as a smoke test: +2z for a stored herb),
 "持ち物を整理する" (no visible effect in the smoke run), the trader's buy/sell variants beyond 71 -> 77 and gifts, shock trap
 (see above), a quest that actually asks for a capture.
+
+### Owner's play-session bugs (agent C, 7 Oct 2026)
+- **Test runs vs the player's logs.** rt_log.c: a run with `--input`, `--shot`, `--headless`, `--audio-dump` or any `RT_*` variable in
+  the environment (covers every tools/test_*.sh / .py, the co-op, online and Wine paths) logs to `build/test_logs`, never to
+  `~/.local/share/mh1pc/logs`; `MH1_LOG_DIR` still wins (test_log.sh sets it). The 20-newest rotation had deleted real play logs.
+  Not done: the memory card folder has no such default (tests set MH1_SAVE_DIR themselves).
+- **Map item did nothing.** disp_whole_map (menu_disp_nm.c, the HUD minimap and the full map) drew the explored-area window when the hunter
+  HAD item 142; the near-match had the test inverted (asm: `beqz` after Pl_item_num_ck(0x8E) jumps to the explored window, so only
+  WITHOUT the map). Fixed; test `map_item` (HUD corner has map lines with the item, none without).
+- **Walking during cutscenes.** The PS2's gate is f_framec.c `move()`: `if (game_w.info_stop == 0) player_mv();` (info_stop is set by
+  the event demos, EvDemoMove). The PC's rt_player_tick always ran pl_move(). Now skipped while info_stop is set (RT_DEMO_FREE=1 = old
+  behaviour, test aid). Quest 131's stage-39 tutorial demo holds the hunter for 509 ticks, quest 154's Cephadrome demo for 746;
+  test `demo_input`. test_all_quests: the boss hunts start their warp-to-monster aid at tick 900 (the aid itself used to put the hunter
+  next to a Cephadrome that never surfaced because he stood frozen under the sand).
+- **Camera after the Rathalos demo (quest 139).** Reproduced the quest (21 -> 39 -> 38 -> 33, demo camera 16 from tick 126 to 849, the event
+  releases at 849): the game camera comes back 5 ticks after the demo ends (distance to the hunter 510, normal follow camera, stage 33
+  camera data loaded) and stays sane while walking/turning; no broken camera found. A likely cause of the owner's report was the
+  walking-in-demo bug above (the hunter left the demo's place while the camera script ran). Not reproduced otherwise: if it still
+  happens, note the tick and what the screen shows. RT_CAM_TRACE now also prints the demo slot's `no` / `state`; RT_PL_TRACE ends with `is <info_stop>`.
+- **Vine climbing: not located.** The hunter's wall actions are acts 0x27-0x2C (wall hug, kabe_*), the ledge climb-ups 0x15/0x1B/0x1E
+  (pl_mv030 moves him 55 units and snaps to the ground above in one tick). No stage unique spot or set object for ivy/vines was found
+  (spot kinds present: 2 fishing, 3 box, 4, 16 bed, 17, 21 delivery, 24, 25 bench) and walking into walls on stages 33-40 never
+  started a climb. Needs the stage / quest where the owner saw it.

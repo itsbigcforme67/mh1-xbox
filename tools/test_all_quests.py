@@ -34,7 +34,7 @@ def run(q, env, inp, secs, tag):
     try:
         with open(log, 'w') as f:
             r = subprocess.run(RUN + [EXE, DISC, '--quest', str(q), '--input', inp, '--shot', os.path.join(OUT, tag + '.png'),
-                                '--time', str(secs)], env=e, stdout=subprocess.DEVNULL, stderr=f, timeout=900)
+                                '--time', str(secs)], env=e, stdout=(f if os.environ.get('RT_PL_TRACE') else subprocess.DEVNULL), stderr=f, timeout=900)
         rc = r.returncode
     except subprocess.TimeoutExpired:
         rc = 'timeout'
@@ -68,7 +68,7 @@ def test(q):
     env = {'RT_PL_GOD': '1'}
     ev = ''
     note = []
-    t_hunt = 60
+    t_hunt = 60      # (warps to the monster start at 900 at the earliest: intro demos freeze the hunter)
     eggs = {k: v for k, v in p['items'].items() if k in EGGS}
     if eggs:
         # egg quests: the egg is a carried "hold" item (one at a time): pick it at the nest, walk it to the camp, deliver it.
@@ -120,7 +120,7 @@ def test(q):
         order += sorted(wave)      # then the second wave's stages (wraps around)
         if wave: note.append('second wave on %s' % '+'.join('%d(%d)' % kv for kv in sorted(wave.items())))
         env.update(RT_PL_GOTO='%d,%s' % (t_hunt, 'f' if kind == p['boss'] else ','.join(map(str, order))),
-                   RT_PL_TARGET='k%d' % kind, RT_PL_WARP_EM='%d-90000' % (t_hunt + 40), RT_DMG_MUL='40')
+                   RT_PL_TARGET='k%d' % kind, RT_PL_WARP_EM='%d-90000' % (max(t_hunt + 40, 900) if kind == p['boss'] else t_hunt + 40), RT_DMG_MUL='40')
         note.append('hunt kind %d x%d on stage(s) %s%s' % (kind, need, '+'.join('%d(%d)' % (s, cand.get(s, wave.get(s, 0))) for s in order), ' (follows the monster)' if kind == p['boss'] else ''))
         secs = 1500
         if kind == p['boss']:

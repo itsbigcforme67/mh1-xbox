@@ -10,6 +10,7 @@ Random outcomes (gathering, fishing, combining, trading) use RT_SEED so a run re
 Field: gather_herb gather_mine gather_net fishing carve_small carve_large
 Items in a quest: potion whetstone paintball pitfall tranq barrel bbq drinks combine trader
 Village: shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take box_equip
+HUD / demo: demo_input map_item
 """
 import math, re, sys, time
 from concurrent.futures import ThreadPoolExecutor
@@ -462,6 +463,34 @@ def box_equip():
     w = re.findall(r'wear: w(\d+)/(\d+)/', t)
     if crashed(t) or not w: return False, 'no data'
     return w[0] == ('6', '1') and w[-1] == ('6', '2'), 'wielded weapon (kind/id) %s -> %s' % ('/'.join(w[0]), '/'.join(w[-1]))
+
+@test
+def demo_input():
+    """event demo (quest 131 stage 39 tutorial camera, game_w.info_stop = 1): pad input is ignored, the hunter stays put;
+    when the demo ends (info_stop 0) the same held stick walks him (f_framec.c move(): player_mv only when info_stop == 0)"""
+    t = run('demo_in', {10: 'up*700'}, 710, stage=39, env={'RT_PL_TRACE': 1})
+    P = [l for l in t.split('\n') if l.startswith('pl:')]
+    pos = lambda i: tuple(float(x) for x in re.search(r'pos (\S+) (\S+) (\S+)', P[i]).groups())
+    stop = [int(re.search(r' is (\d+)$', l).group(1)) for l in P]
+    if 1 not in stop or 0 not in stop[stop.index(1):]: return False, 'no event demo seen (info_stop never 1 -> 0)'
+    a = stop.index(1); b = a + stop[a:].index(0)
+    still = max(abs(pos(i)[0] - pos(a)[0]) + abs(pos(i)[2] - pos(a)[2]) for i in range(a, b))
+    moved = abs(pos(b + 150)[2] - pos(b)[2])
+    return still < 1 and moved > 100, 'demo ticks %d-%d: hunter moved %.0f units during it, %.0f in the 150 ticks after' % (a, b, still, moved)
+
+@test
+def map_item():
+    """map item (142) in the pouch: the HUD minimap shows the whole area map; without it only the explored part (nothing at the start)"""
+    try:
+        from PIL import Image
+    except ImportError:
+        return True, 'skipped (no PIL)'
+    px = {}
+    for tag, items in (('map_yes', '142:1,1:2'), ('map_no', '1:2')):
+        run(tag, 'idle*100', 100, stage=45, env={'RT_PL_ITEMS': items})
+        im = Image.open(os.path.join(OUT, tag + '.png')).convert('RGB').crop((900, 120, 1280, 420))
+        px[tag] = sum(1 for p in im.getdata() if p[1] > p[0] + 25 and p[1] > p[2] + 40)    # the map's olive-green lines
+    return px['map_yes'] > 50 and px['map_no'] < 10, 'green map pixels in the HUD corner: with the map %d, without %d' % (px['map_yes'], px['map_no'])
 
 # --------------------------------------------------------------------------------------------- driver
 def run_one(name):
