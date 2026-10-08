@@ -20,6 +20,8 @@ typedef struct PLW PLW;
 int frame_check(void *w, int n, f32 f);
 int frame_check2(void *w, int n, f32 f);
 int frame_check3(void *w, int n, f32 a, f32 b);
+/* pl_snd01.c (matched) calls the real (work, n, f32) order under the alias frame_check_001263F0 */
+int rtabi_frame_check_real(void *w, int n, f32 f) { return frame_check(w, n, f); }
 int rtabi_frame_check(f32 f, PLW *pl, int n) { return frame_check(pl, n, f); }
 int rtabi_frame_check2(f32 f, PLW *pl, int n) { return frame_check2(pl, n, f); }
 /* include/lbnpc.h (EMW *, f32, int): the lobby NPC scripts */

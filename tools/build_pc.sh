@@ -548,7 +548,7 @@ for f in $GAME; do
     case "$f" in
     src/main/pl/*|src/game/pl/*|src/main/hit/hit*.c|src/main/weapon/weapon_nm.c|src/main/sound/*)
         ABI="-Dframe_check=rtabi_frame_check -Dframe_check2=rtabi_frame_check2 -Dframe_check3=rtabi_frame_check3 \
-             -DEft06_set=rtabi_Eft06_set -DEft02_set6=rtabi_Eft02_set6 \
+             -Dframe_check_001263F0=rtabi_frame_check_real -DEft06_set=rtabi_Eft06_set -DEft02_set6=rtabi_Eft02_set6 \
              -DGetGroundHitStatusAreaPl=rtabi_GetGroundHitStatusAreaPl" ;;
     src/main/stage/f_stage.c) ABI="-Dhit_point_cbd=rtabi_hit_point_cbd" ;;
     # lobby C: frame_check2 / em_frame_check declared with the float first
