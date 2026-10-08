@@ -7,7 +7,7 @@
 #   tools/test_coop.sh [N|hunt2|hunt4|handover|leave|box]
 #     N = 2..4 walking; hunt2 / hunt4 / handover / leave = hunts of quest 137 to the clear, the reward and the
 #     village with each player's own saved hunter (tools/test_coop_hunt.py); box = the supply box decided by the
-#     host; default: all (about 6 minutes)
+#     host; wine = the Windows build under Wine joins (skipped without it); default: all (about 15 minutes)
 # Starts only its own processes and stops them (by PID).
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/pc/mhview_online}
@@ -117,6 +117,25 @@ hunts() {
     python3 tools/test_coop_hunt.py "$@" | grep -v "^$"
 }
 
+winepair() {
+    # the Windows build (Winsock, tools/build_win.sh with ONLINE=1) under Wine joins a Linux host
+    W=build/win/mhview_online.exe
+    if [ ! -f $W ] || ! command -v wine >/dev/null 2>&1; then echo "coop wine: skipped (no $W or no wine)"; return 0; fi
+    port=$((PORT + 12))
+    timeout 200 "$BIN" "$DISC" --host --quest 131 --players 2 --port $port --mute --input "idle*20,up*60,idle*400" \
+        --shot build/show/coop_wine_slot0.png --time 10 > $OUT/wine_0.log 2>&1 &
+    p0=$!
+    sleep 1
+    timeout 200 wine $W "$DISC" --join 127.0.0.1 --port $port --mute --input "idle*25,left*70,idle*400" \
+        --shot build/show/coop_wine_slot1.png --time 10 > $OUT/wine_1.log 2>&1 || { echo "coop wine: the Windows joiner failed"; return 1; }
+    wait $p0 || { echo "coop wine: host failed"; return 1; }
+    a=$(grep -a "np-pos: tick 300 me 0 slot 1 " $OUT/wine_0.log | sed 's/.* pos \([-0-9]* [-0-9]* [-0-9]*\).*/\1/')
+    b=$(grep -a "np-pos: tick 300 me 1 slot 1 " $OUT/wine_1.log | sed 's/.* pos \([-0-9]* [-0-9]* [-0-9]*\).*/\1/')
+    echo "coop wine: the Windows joiner is at $b; the Linux host sees it at $a"
+    [ -n "$a" ] && [ "$a" = "$b" ] || { echo "coop wine: FAILED"; return 1; }
+    echo "coop wine: OK"
+}
+
 refusals() {
     # a public address and an MH Oldschool address are refused before any socket is opened
     for a in 8.8.8.8 34.75.107.68; do
@@ -130,7 +149,8 @@ refusals() {
 
 case "$1" in
 box) box ;;
+wine) winepair ;;
 hunt2|hunt4|handover|leave|carts|timeout|abandon|multi) hunts "$@" ;;
-"") run 2 && run 4 && hunts hunt2 hunt4 handover leave carts timeout abandon multi && box && refusals ;;
+"") run 2 && run 4 && hunts hunt2 hunt4 handover leave carts timeout abandon multi && box && winepair && refusals ;;
 *) run "$1" && refusals ;;
 esac

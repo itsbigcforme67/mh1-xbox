@@ -33,11 +33,14 @@ export LINK1_OPTS="-Wl,--error-limit=0" LINK1_TOLERANT=1
 export OBJCOPY=llvm-objcopy NM=llvm-nm
 export SDL_CFLAGS="-I$SDL/include/SDL2 -DSDL_MAIN_HANDLED"
 export LIBS="-L$SDL/lib -lSDL2 -lopengl32 -lcomdlg32 -lwinmm -lm"
+# ONLINE=1: the online build (Winsock; build/win/mhview_online.exe, docs/network.md), passed on to build_pc.sh
+[ -n "$ONLINE" ] && LIBS="$LIBS -lws2_32 -lgdi32"
 export GAME_EXTRA="$RELAX -w -fno-builtin"   # as nxdk-cc: the game headers declare memset() K&R
 export EXTRA_CFLAGS="-DMH1_WIN" GAME_NOAGG=""
 sh $T/tools/build_pc.sh
 mkdir -p build/win
-cp $T/build/pc/mhview.exe build/win/mhview.exe
+EXE_NAME=mhview; [ -n "$ONLINE" ] && EXE_NAME=mhview_online
+cp $T/build/pc/$EXE_NAME.exe build/win/$EXE_NAME.exe
 cp "$SDL/bin/SDL2.dll" build/win/SDL2.dll
 for f in play.bat bug_report.bat bug_report.ps1; do [ -f tools/win/$f ] && cp tools/win/$f build/win/$f; done
-echo "built build/win/mhview.exe (32-bit Windows; SDL2.dll next to it)"
+echo "built build/win/$EXE_NAME.exe (32-bit Windows; SDL2.dll next to it)"

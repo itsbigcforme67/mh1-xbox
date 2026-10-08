@@ -166,10 +166,120 @@ static int have_tool(const char *t)
 }
 #endif
 static char ask_addr[64];
+#ifdef _WIN32
+/* Windows: one small window (no resource file): Host / Join, the quest list, the number of
+ * players, the host's address, OK / Cancel. Returns 1 host, 2 join, 0 cancelled. */
+enum { ID_HOST = 101, ID_JOIN, ID_QUEST, ID_PLAYERS, ID_ADDR, ID_OK, ID_CANCEL };
+static int dlg_result, dlg_sel, dlg_np;
+static HWND dlg_q, dlg_n, dlg_a, dlg_h;
+static LRESULT CALLBACK dlg_proc(HWND w, UINT m, WPARAM wp, LPARAM lp)
+{
+    if (m == WM_COMMAND) {
+        int id = LOWORD(wp);
+        if (id == ID_HOST || id == ID_JOIN) {
+            int host = id == ID_HOST;
+            EnableWindow(dlg_q, host);
+            EnableWindow(dlg_n, host);
+            EnableWindow(dlg_a, !host);
+        } else if (id == ID_OK) {
+            dlg_result = SendMessageA(dlg_h, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1 : 2;
+            dlg_sel = (int)SendMessageA(dlg_q, CB_GETCURSEL, 0, 0);
+            dlg_np = 2 + (int)SendMessageA(dlg_n, CB_GETCURSEL, 0, 0);
+            GetWindowTextA(dlg_a, ask_addr, sizeof ask_addr);
+            DestroyWindow(w);
+        } else if (id == ID_CANCEL) {
+            dlg_result = 0;
+            DestroyWindow(w);
+        }
+        return 0;
+    }
+    if (m == WM_CLOSE) {
+        dlg_result = 0;
+        DestroyWindow(w);
+        return 0;
+    }
+    if (m == WM_DESTROY) {
+        PostQuitMessage(0);
+        return 0;
+    }
+    return DefWindowProcA(w, m, wp, lp);
+}
+static int win_dialog(int *quest_no)
+{
+    WNDCLASSA wc;
+    HWND w;
+    HINSTANCE hi = GetModuleHandleA(NULL);
+    HFONT f = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+    MSG msg;
+    char buf[64];
+    int k, sel;
+    memset(&wc, 0, sizeof wc);
+    wc.lpfnWndProc = dlg_proc;
+    wc.hInstance = hi;
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
+    wc.lpszClassName = "mh1coop";
+    RegisterClassA(&wc);
+    w = CreateWindowA("mh1coop", "MH1 co-op", WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
+                      CW_USEDEFAULT, CW_USEDEFAULT, 440, 250, NULL, NULL, hi, NULL);
+#define CTL(cls, text, style, x, y, cw, ch, id) \
+    SendMessageA(CreateWindowA(cls, text, WS_CHILD | WS_VISIBLE | (style), x, y, cw, ch, w, (HMENU)(intptr_t)(id), hi, NULL), \
+                 WM_SETFONT, (WPARAM)f, 1)
+    dlg_h = CreateWindowA("BUTTON", "Host a quest", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP, 12, 10, 140, 20, w,
+                          (HMENU)ID_HOST, hi, NULL);
+    SendMessageA(dlg_h, WM_SETFONT, (WPARAM)f, 1);
+    SendMessageA(dlg_h, BM_SETCHECK, BST_CHECKED, 0);
+    CTL("BUTTON", "Join a host", BS_AUTORADIOBUTTON, 220, 10, 140, 20, ID_JOIN);
+    CTL("STATIC", "Quest", 0, 12, 40, 60, 20, 0);
+    dlg_q = CreateWindowA("COMBOBOX", "", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL, 80, 38, 330, 300, w,
+                          (HMENU)ID_QUEST, hi, NULL);
+    SendMessageA(dlg_q, WM_SETFONT, (WPARAM)f, 1);
+    for (k = 0; k < (int)(sizeof quests / sizeof quests[0]); k++) {
+        snprintf(buf, sizeof buf, "%d  %d*  %s", quests[k].no, quests[k].stars, quests[k].goal);
+        SendMessageA(dlg_q, CB_ADDSTRING, 0, (LPARAM)buf);
+    }
+    SendMessageA(dlg_q, CB_SETCURSEL, 0, 0);
+    CTL("STATIC", "Players", 0, 12, 72, 60, 20, 0);
+    dlg_n = CreateWindowA("COMBOBOX", "", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST, 80, 70, 60, 200, w, (HMENU)ID_PLAYERS, hi, NULL);
+    SendMessageA(dlg_n, WM_SETFONT, (WPARAM)f, 1);
+    SendMessageA(dlg_n, CB_ADDSTRING, 0, (LPARAM)"2");
+    SendMessageA(dlg_n, CB_ADDSTRING, 0, (LPARAM)"3");
+    SendMessageA(dlg_n, CB_ADDSTRING, 0, (LPARAM)"4");
+    SendMessageA(dlg_n, CB_SETCURSEL, 0, 0);
+    CTL("STATIC", "Host address (to join)", 0, 12, 106, 150, 20, 0);
+    dlg_a = CreateWindowA("EDIT", "127.0.0.1", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, 170, 104, 160, 22, w,
+                          (HMENU)ID_ADDR, hi, NULL);
+    SendMessageA(dlg_a, WM_SETFONT, (WPARAM)f, 1);
+    EnableWindow(dlg_a, 0);
+    CTL("BUTTON", "OK", BS_DEFPUSHBUTTON, 230, 170, 85, 26, ID_OK);
+    CTL("BUTTON", "Cancel", 0, 325, 170, 85, 26, ID_CANCEL);
+#undef CTL
+    dlg_result = 0;
+    while (GetMessageA(&msg, NULL, 0, 0) > 0) {
+        if (!IsDialogMessageA(w, &msg)) {
+            TranslateMessage(&msg);
+            DispatchMessageA(&msg);
+        }
+    }
+    if (dlg_result == 1) {
+        sel = dlg_sel;
+        *quest_no = sel >= 0 && sel < (int)(sizeof quests / sizeof quests[0]) ? quests[sel].no : 131;
+        want_players = dlg_np;
+        if (want_players < 2 || want_players > 4)
+            want_players = 2;
+    } else if (dlg_result == 2) {
+        want_addr = ask_addr;
+    }
+    return dlg_result;
+}
+#endif
 static int ask_coop(int *quest_no)
 {
     char line[64];
-#ifndef _WIN32
+#ifdef _WIN32
+    if (!getenv("RT_NO_GUI"))
+        return win_dialog(quest_no);
+#else
     int z = have_tool("zenity"), kd = !z && have_tool("kdialog");
     if (getenv("RT_NO_GUI"))
         z = kd = 0;
