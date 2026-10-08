@@ -13,7 +13,7 @@ OUT=build/show/pick; rm -rf $OUT; mkdir -p $OUT
 export RT_NOMOVIE=1 RT_QUEST_STAGE=1 RT_PL_GOD=1
 fail() { echo "pick test FAILED: $1 (see $OUT)"; exit 1; }
 INP=$(python3 -c "print(','.join(['idle*40'] + ['triangle*2,idle*14'] * 40 + ['up*60']))")
-env MH1_SAVE_DIR="$PWD/$OUT/r1/card" RT_PICK_AT=900 RT_PICK_CLICKS="320,240;100,300,500,450" RT_PICK_NOTE="scripted: the floor flickers" \
+env MH1_SAVE_DIR="$PWD/$OUT/r1/card" MH1_LOG_DIR="$PWD/$OUT/r1/logs" RT_PICK_AT=900 RT_PICK_CLICKS="320,240;100,300,500,450" RT_PICK_NOTE="scripted: the floor flickers" \
     $RUN $BIN disc/mh1 --quest 10 --play --input "$INP" --size 640x480 --shot $OUT/a.png --time 40 > $OUT/a.out 2>&1
 R1=$(ls -d $OUT/r1/reports/report_* 2>/dev/null | head -1)
 [ -n "$R1" ] || fail "no report folder"
@@ -38,7 +38,7 @@ PY
 grep -q "bug report saved" $OUT/a.out || fail "no pointer line on stderr"
 grep -q "bug report saved" $OUT/r1/logs/mh1_*.log || fail "no pointer line in the debug log"
 # the real event path
-env MH1_SAVE_DIR="$PWD/$OUT/r2/card" RT_PICK_UI=1 RT_PICK_AT=300 RT_PICK_CLICKS="320,240;100,300,500,450" RT_PICK_NOTE="ui path note" \
+env MH1_SAVE_DIR="$PWD/$OUT/r2/card" MH1_LOG_DIR="$PWD/$OUT/r2/logs" RT_PICK_UI=1 RT_PICK_AT=300 RT_PICK_CLICKS="320,240;100,300,500,450" RT_PICK_NOTE="ui path note" \
     $RUN $BIN disc/mh1 --quest 10 --play --size 640x480 --shot $OUT/b.png --time 20 > $OUT/b.out 2>&1
 R2=$(ls -d $OUT/r2/reports/report_* 2>/dev/null | head -1)
 [ -n "$R2" ] || fail "UI path: no report"
@@ -49,7 +49,7 @@ assert d['note']=='ui path note', d['note']
 assert len(d['marks'])==2 and d['objects'], d['marks']
 " || fail "UI path report content"
 # replay determinism
-env MH1_SAVE_DIR="$PWD/$OUT/r3/card" RT_PICK_AT=900 RT_PICK_CLICKS="320,240" RT_PICK_NOTE=replay \
+env MH1_SAVE_DIR="$PWD/$OUT/r3/card" MH1_LOG_DIR="$PWD/$OUT/r3/logs" RT_PICK_AT=900 RT_PICK_CLICKS="320,240" RT_PICK_NOTE=replay \
     $RUN $BIN disc/mh1 --quest 10 --play --input "@$R1/input.txt" --size 640x480 --shot $OUT/c.png --time 40 > $OUT/c.out 2>&1
 R3=$(ls -d $OUT/r3/reports/report_* 2>/dev/null | head -1)
 [ -n "$R3" ] || fail "replay: no report"

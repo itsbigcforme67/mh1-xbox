@@ -41,6 +41,7 @@ void audio_pause(int on);
 
 enum { PS_OFF, PS_ARMED, PS_PASS, PS_FROZEN };
 static int state, W, H;
+static int rel_mouse_was;               /* relative mouse mode before the freeze */
 static int manual;                      /* started by a key (else by RT_PICK_AT) */
 static uint8_t *shot, *disp;            /* the frozen frame; with highlights */
 static uint32_t *idbuf;                 /* per pixel: entry id */
@@ -815,6 +816,8 @@ static void end_session(void)
     audio_pause(0);
     SDL_StopTextInput();
     SDL_ShowCursor(SDL_DISABLE);
+    if (rel_mouse_was)                  /* back to the free camera's captured mouse */
+        SDL_SetRelativeMouseMode(SDL_TRUE);
     gfx_set_render_state(GFX_RS_ALPHA_FUNC, 4);
     gfx_set_render_state(GFX_RS_BLEND, 1);
     gfx_set_render_state(GFX_RS_TEX_CLAMP, 0);
@@ -907,6 +910,10 @@ int pick_frame_hook(void)
         manual = 1;
         state = PS_FROZEN;
         ui_script_start();
+        /* the viewer captures the mouse (relative mode, cursor hidden): release it so the
+         * player sees the cursor while clicking / dragging */
+        rel_mouse_was = SDL_GetRelativeMouseMode();
+        SDL_SetRelativeMouseMode(SDL_FALSE);
         SDL_ShowCursor(SDL_ENABLE);
         SDL_StartTextInput();
         frozen_ms0 = SDL_GetTicks();
