@@ -69,6 +69,8 @@ static u8 *eft_free[EFT_N];
 static int eft_ctr;
 static u8 *eft_w_top;
 static void *eft_heap[EFT_N];
+void *rt_eft_push_caller[EFT_N];
+int rt_eft_push_type[EFT_N];
 
 #define LNK_PREV(p) (*(u8 **)((p) + 0x0C))
 #define LNK_NEXT(p) (*(u8 **)((p) + 0x10))
@@ -140,6 +142,17 @@ EFTW *pull_eft_work2(int n)
 void push_eft_work(EFTW *ew)
 {
     u8 *p = (u8 *)ew;
+    rt_eft_push_caller[(p - EFT_RAW(0)) / EFT_SIZE] = __builtin_return_address(0);
+    rt_eft_push_type[(p - EFT_RAW(0)) / EFT_SIZE] = p[2];
+    if (getenv("RT_EFT_CHECK")) {   /* test aid: an effect freed twice sits twice on the free stack and is handed to two owners */
+        int i;
+        for (i = 0; i < eft_ctr; i++)
+            if (eft_free[i] == p) {
+                fprintf(stderr, "rt_eft: effect work %d (type %d) freed twice, caller %p\n", (int)(p - EFT_RAW(0)) / EFT_SIZE, p[2],
+                        __builtin_return_address(0));
+                return;
+            }
+    }
     if (!LNK_PREV(p))
         eft_w_top = LNK_NEXT(p);
     else
