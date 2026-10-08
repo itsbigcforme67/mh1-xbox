@@ -338,7 +338,7 @@ void rt_player_tick(int no)
                 }
                 if (k >= 0 && sph[3] > 0) {
                     t = sph;
-                    r = sph[3] + 40.0f;
+                    r = sph[3] + 40.0f + (getenv("RT_WARP_R") ? (float)atof(getenv("RT_WARP_R")) : 0.0f);
                 }
             }
             f32 d[2] = { p->pos[0] - t[0], p->pos[2] - t[2] }, l = sqrtf(d[0] * d[0] + d[1] * d[1]);
@@ -733,6 +733,9 @@ void rt_hit_check(void)
             kinds[nk++] = atoi(++g);
         if (nk)
             kind = 0;
+        if (rt_tick_count() == t || ((rt_tick_count() - t) % 1000 == 0 && rt_tick_count() > t && getenv("RT_SLAY_DEBUG")))
+            fprintf(stderr, "rt_player: RT_PL_SLAY armed at tick %d: target slot %d (kind %d, hp %d, stage %d, hunter stage %d)\n", rt_tick_count(),
+                    (int)((e - em_work) / 0xA10), e[2], *(s16 *)(e + 0x302), e[0x736], player_work[game_w.master].stg);
         for (i = 0; i < 20 && rt_tick_count() >= t && (rt_tick_count() - t) % 120 == 0; i++) {   /* every 120 ticks: a hit every tick keeps a reacting monster in its flinch (the Plesioth in fly18 sets x8BB, which floors hp at 1) */
             u8 *tg = em_work + 0xA10 * i;
             int match = 0, k;

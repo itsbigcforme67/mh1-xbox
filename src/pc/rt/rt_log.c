@@ -309,6 +309,14 @@ void rt_log_standin(const char *name)
 {
     /* the first call of each no-op stand-in; the stand-ins are few hundred at most */
     n_standin++;
+    {   /* test aid RT_STANDIN_FILE=path: one line per first call, appended (a sweep over many runs; the log folder keeps only 20) */
+        const char *f = getenv("RT_STANDIN_FILE");
+        FILE *o = f ? fopen(f, "a") : NULL;
+        if (o) {
+            fprintf(o, "%s\n", name);
+            fclose(o);
+        }
+    }
     rt_warn("stand-in called (not ported, does nothing): %s", name);
 }
 

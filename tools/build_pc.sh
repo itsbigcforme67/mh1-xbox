@@ -273,7 +273,10 @@ CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOUR
 # 94 without setting it: the hunter flew off to z = 1e21 and the screen
 # went blank. Zero is what such a slot ends near in every case seen.
 GAME_NOAGG=${GAME_NOAGG--fno-aggressive-loop-optimizations}   # gcc only (empty for clang)
-GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing $GAME_NOAGG -ftrivial-auto-var-init=zero -Iinclude -w"
+# x87 keeps float intermediates in 80 bits: `pos[1] < x7E4 - x7E0` in em08's die code compared a float against a longer
+# value and a dying Cephadrome never left the sand (the PS2 FPU is single precision). SSE gives single-precision arithmetic.
+FPSSE=""; [ "$M32" = "-m32" ] && [ "${CC:-gcc}" = gcc ] && FPSSE="-msse2 -mfpmath=sse"
+GAMEFLAGS="$M32 $FPSSE $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing $GAME_NOAGG -ftrivial-auto-var-init=zero -Iinclude -w"
 LIBS=${LIBS:-"-lSDL2 -lGL -lm"}
 LINK1_OPTS=${LINK1_OPTS--Wl,--warn-unresolved-symbols}   # lld (Windows) has no such switch: LINK1_TOLERANT=1 and --error-limit=0
 EXE=${EXE:-}               # ".exe" for the Windows build (tools/build_win.sh)   # host symbols by name: build/pc/rt_symtab.c (tools/gen_symtab.py), no dlsym
