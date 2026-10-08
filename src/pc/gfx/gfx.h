@@ -74,7 +74,9 @@ enum {
     /* port-only states */
     GFX_RS_PROJECTION   = 0x100, /* value: const float[16] */
     GFX_RS_BLEND        = 0x101, /* value: 0 off, 1 src-alpha/inv-src-alpha */
-    GFX_RS_ZTEST        = 0x102  /* value: 0/1 */
+    GFX_RS_ZTEST        = 0x102, /* value: 0/1 */
+    GFX_RS_BATCH_HIDE   = 0x103  /* value: bit b set = batch b (< 32) of the next clays is not drawn; 0 = all drawn.
+                                    The PS2 hides a material by writing 0 to its alpha (em_material_sub 0x10CEA0) */
 };
 /* Blend factor codes of fl state 0x5E, read from flPS2SendRenderState_ALPHA
  * (graphics.md 5a). The GS can only blend Cs and Cd with As, Ad or a fixed
@@ -195,6 +197,7 @@ typedef struct {
     int nbone;
     int16_t bone[GFX_SKIN_PALETTE];   /* palette slot -> model bone */
     gfx_texture *tex;
+    int src;                      /* the clay's batch (material) it came from (GFX_RS_BATCH_HIDE) */
 } gfx_skin_batch;
 typedef struct {
     int nv;

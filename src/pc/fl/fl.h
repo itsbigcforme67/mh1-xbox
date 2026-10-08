@@ -35,6 +35,7 @@ typedef struct {
     int skip;               /* set by the caller: not drawn this frame, fl_model_pose leaves it */
     int gpu;                /* skinned and lit by the backend (gfx_clay_pose), not here */
     gfx_skin_mesh *check;   /* RT_SKIN_CHECK=1: the GPU data, compared with the CPU result */
+    int16_t batch_mat[32];  /* the AMO material number of the clay's batch b (one batch per material), -1 none */
 } fl_part;
 
 typedef struct {
@@ -64,6 +65,9 @@ void fl_model_pose(fl_model *m, const flmat *bone_world, const fl_light *light);
 /* Draw all parts with the current WORLD matrix. sky: 1 = only sky parts,
  * 0 = only the rest, -1 = all. */
 void fl_model_draw(fl_model *m, int sky);
+/* The GFX_RS_BATCH_HIDE value that hides the AMO materials whose bit
+ * (material number < 32) is set in mat_hide, for part fp. */
+uint32_t fl_part_batch_hide(const fl_part *fp, uint32_t mat_hide);
 
 /* ------------------------------------------------------------ skeleton */
 #define FL_MAX_GROUPS 4

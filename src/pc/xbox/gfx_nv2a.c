@@ -77,6 +77,7 @@ static struct {
     int w, h;
     float view[16], proj[16], world[16], texmat[16], viewport[16];
     uint32_t fade;
+    uint32_t batch_hide;            /* GFX_RS_BATCH_HIDE */
     gfx_texture *tex, *white;
     int filter_point, clamp;
     uint8_t *ring;
@@ -472,6 +473,9 @@ void gfx_set_render_state(int state, uintptr_t v)
     case GFX_RS_FADE_COLOR:
         G.fade = (uint32_t)v;
         break;
+    case GFX_RS_BATCH_HIDE:
+        G.batch_hide = (uint32_t)v;
+        break;
     case GFX_RS_ZWRITE:
         G.zwrite = v != 0;
         push1(NV097_SET_DEPTH_MASK, G.zwrite);
@@ -808,6 +812,8 @@ static void execute_cpu(gfx_clay *c)
         set_arrays(c->vb);
         for (b = 0; b < c->nbatch; b++) {
             gfx_texture *t = c->batch[b].tex ? c->batch[b].tex : G.tex;
+            if (b < 32 && (G.batch_hide >> b & 1))
+                continue;
             if (!c->st)
                 t = NULL;
             bind_texture(t);
@@ -876,6 +882,8 @@ static void execute_cpu(gfx_clay *c)
     set_arrays(v);
     for (b = 0; b < c->nbatch; b++) {
         gfx_texture *t = c->batch[b].tex ? c->batch[b].tex : G.tex;
+        if (b < 32 && (G.batch_hide >> b & 1))
+            continue;
         if (!c->st)
             t = NULL;
         bind_texture(t);
@@ -1100,6 +1108,8 @@ static void draw_skinned(gfx_clay *c, const float *mvp)
     for (b = 0; b < m->nbatch; b++) {
         const gfx_skin_batch *bt = &m->batch[b];
         gfx_texture *t = bt->tex ? bt->tex : G.tex;
+        if (bt->src < 32 && (G.batch_hide >> bt->src & 1))
+            continue;
         if (!c->st)
             t = NULL;
         for (i = 0; i < bt->nbone; i++) {

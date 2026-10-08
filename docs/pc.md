@@ -2038,3 +2038,28 @@ Not tested / still open: selling from the pouch at the house box ("持ち物を�
   (pl_mv030 moves him 55 units and snaps to the ground above in one tick). No stage unique spot or set object for ivy/vines was found
   (spot kinds present: 2 fishing, 3 box, 4, 16 bed, 17, 21 delivery, 24, 25 bench) and walking into walls on stages 33-40 never
   started a climb. Needs the stage / quest where the owner saw it.
+
+## Per-kind materials: the raptor crests (agent D, 8 Oct 2026)
+
+Owner's PS2 footage: the Velociprey (16) has a smaller, differently shaped crest than the Velocidrome (27); the PC drew
+the drome's crest on both. Cause: em16_amh (shared by 16 and 27, likewise em13 for 13/28 and em30 for 30/31) holds
+BOTH crests and both claw sets, as materials 4 (small: the prey's) and 5 (big: the drome's), one over the other, plus
+four eye states (materials 0-3) and a chest piece (9). Not bones, scale curves or motions: em16_tbl has no scale
+channel at all. The PS2 picks per draw in em_material_sub (main 0x10CEA0, called by enemy_trans per clay): it
+writes every material's alpha (flMATERIAL +0x10) = EMW+0x798, then 0 for the hidden ones. Raptor case
+(0x10DC18-0x10DEA0), m = index in the clay's material list (AMO 0x50000):
+- preys 16/13/30 hide m 5, dromes 27/28/31 hide m 4;
+- eyes: sel = game_w+0x1E (u16 tick) % 98, or 0 while EMW+0x444+0x60 (prey) / +0x50 (drome) is set; sel 0-3 shows
+  m 2, 4-5 m 1, 6-7 m 3, else m 0 (a blink every 98 ticks);
+- m 9 only during motion 0x410 / 0x415 (EMW+0x2DC).
+
+PC: rt_em_material_hide (src/pc/rt/rt_em.c) ports that case and returns a material mask; viewer.c's monster draw
+turns it into the new render state GFX_RS_BATCH_HIDE (bit = clay batch; fl_part.batch_mat maps batches to materials;
+GL, NV2A CPU and GPU-skinned paths skip those batches; gfx_skin_batch.src keeps the source batch). amo_part now keeps
+its 0x50000 list (matlist). Other kinds' cases of em_material_sub (Rathian 1, 2, 6-9, 11, 14, 15, 17-19, 21-24, 26, 34:
+[guess] part-break / damage materials: kind 1 tests EMW+0x312 / 0x31A / 0x948) are NOT ported yet: those monsters
+still draw every material. Test aids: `RT_EM_ALL_MATS=1` (the old behaviour), `RT_EM_MAT_TRACE=1` (each new hidden
+mask per kind). Check: test_activities `raptor_crest` (quests 136 / 137: prey hides 5 not 4, drome 4 not 5).
+Verified by game-camera shots (quest 136 stage 40 with RT_PL_WARP_EM=1, tick 150, with and without RT_EM_ALL_MATS: the
+prey's crest is the small one and its claws are no longer the drome's red ones; quest 137 stage 34: the drome keeps
+the big crest). Ioprey's material 4 is a single-triangle nub, so the Ioprey shows almost no crest.

@@ -153,7 +153,8 @@ static int load_part(amo_part *pt, fmt_blob f, const chunk *mc, int be)
         }
     }
     free(primmat);
-    free(matlist);
+    pt->nmatlist = nmatlist;
+    pt->matlist = matlist;              /* kept: fmt_amo_free */
     return 0;
 }
 
@@ -217,7 +218,7 @@ void fmt_amo_free(amo_model *m)
         amo_part *p = &m->part[i];
         free(p->pos); free(p->nrm); free(p->st); free(p->col);
         free(p->infl_n); free(p->infl_bone); free(p->infl_w);
-        free(p->index); free(p->strip);
+        free(p->index); free(p->strip); free(p->matlist);
     }
     free(m->part);
     free(m->mat);

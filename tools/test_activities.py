@@ -7,7 +7,7 @@ Each activity prints one line  PASS|FAIL <name>: <what was measured>.  The runs 
 Random outcomes (gathering, fishing, combining, trading) use RT_SEED so a run repeats; the checks are on invariants
 (ids from the stage's own pick tables, counts, prices as the shop's own UI shows them), not on one lucky result.
 
-Field: gather_herb gather_mine gather_net fishing carve_small carve_large
+Field: gather_herb gather_mine gather_net fishing carve_small carve_large raptor_crest
 Items in a quest: potion whetstone paintball pitfall tranq barrel bbq drinks combine trader
 Village: shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take box_equip
 HUD / demo: demo_input map_item
@@ -105,6 +105,23 @@ def herbivore_pose():
     if not hs: return False, 'no pose-check output'
     lows = [int(m.group(1)) for m in re.finditer(r'pose-check: kind 12 slot \d+ joints down to (-?\d+) below the feet', t)]
     return max(hs) < 350 and (not lows or min(lows) > -60), 'highest Aptonoth joint %d above its feet (limit 350; the bug gave ~680), lowest %d (limit -60: a respawned monster showed its bind pose 120 below the ground for 10 ticks)' % (max(hs), min(lows or [0]))
+
+@test
+def raptor_crest():
+    """the Velociprey (16) and the Velocidrome (27) share em16_amh, which holds both crests (and claw sets) as materials 4 (small)
+    and 5 (big); the PS2's em_material_sub (0x10CEA0) hides 5 for the prey and 4 for the drome (the PC drew both, so the prey wore
+    the drome's crest). Checked on the materials the PC draws for each kind in quests 136 (stage 40) and 137 (stage 34)"""
+    res = {}
+    for kind, quest, stage in ((16, 136, 40), (27, 137, 34)):
+        t = run('raptor_crest_%d' % kind, 'idle*150', 0, quest=quest, stage=stage, secs=5,
+                env={'RT_EM_MAT_TRACE': 1, 'RT_PL_TARGET': 'k%d' % kind, 'RT_PL_WARP_EM': 1, 'RT_PL_GOD': 1})
+        if crashed(t): return False, 'crash (kind %d)' % kind
+        ms = [int(m.group(1), 16) for m in re.finditer(r'em-mat: kind %d part 0 hides materials 0x([0-9a-f]+)' % kind, t)]
+        if not ms: return False, 'kind %d never drawn' % kind
+        res[kind] = ms
+    ok = all(m & 0x20 and not m & 0x10 for m in res[16]) and all(m & 0x10 and not m & 0x20 for m in res[27])
+    return ok, 'hidden material masks: Velociprey %s (5 = big crest hidden), Velocidrome %s (4 = small crest hidden)' % (
+        ' '.join('%03x' % m for m in res[16]), ' '.join('%03x' % m for m in res[27]))
 
 @test
 def long_fight():

@@ -80,6 +80,7 @@ int gfx_skin_build(gfx_skin_mesh *m, const gfx_clay_desc *d, const gfx_skin_desc
                 cur->first = m->nindex;
                 cur->vfirst = m->nv;
                 cur->tex = d->batch[b].tex;
+                cur->src = b;
             }
             for (c = 0; c < nn; c++) {
                 int q;

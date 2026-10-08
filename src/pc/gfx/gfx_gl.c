@@ -35,6 +35,7 @@ static struct {
     unsigned afunc;              /* GL alpha func (fl 0x5F) */
     float aref;
     uint32_t fade;               /* 0xAARRGGBB, 0xFFFFFFFF = none */
+    uint32_t batch_hide;         /* GFX_RS_BATCH_HIDE */
     gfx_texture *tex;
     GLint filter, wrap;          /* fl 0x63 / 0x64, applied when a texture is bound */
     void (APIENTRY *blend_eq)(GLenum);   /* glBlendEquation (GL 1.4), may be NULL */
@@ -285,6 +286,9 @@ void gfx_set_render_state(int state, uintptr_t v)
     case GFX_RS_FADE_COLOR:
         G.fade = (uint32_t)v;
         break;
+    case GFX_RS_BATCH_HIDE:
+        G.batch_hide = (uint32_t)v;
+        break;
     case GFX_RS_ZWRITE:
         G.zwrite = v != 0;
         glDepthMask(v ? GL_TRUE : GL_FALSE);
@@ -515,6 +519,8 @@ static void gfx_execute_clay_gl(gfx_clay *c)
     }
     for (b = 0; b < c->nbatch; b++) {
         gfx_texture *t = c->batch[b].tex ? c->batch[b].tex : G.tex;
+        if (b < 32 && (G.batch_hide >> b & 1))
+            continue;
         if (t && c->st) {
             glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, t->id);

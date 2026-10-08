@@ -126,6 +126,54 @@ WEAK void act_set(void *w, int a, int b)
  * diffuse colour (GetPlayerDiffuseData); the host lights monsters itself. */
 void GetEmMaterialData(EMW *em) { (void)em; }
 
+/* em_material_sub (main 0x10CEA0, called per clay i by enemy_trans with the
+ * model's clay list): per kind, it writes each of the clay's materials'
+ * alpha (flMATERIAL +0x10) = EMW+0x798 and then 0 for the materials not
+ * shown this frame; the host turns those zeros into a hidden-material mask
+ * (GFX_RS_BATCH_HIDE). Only the raptor case (kinds 13/16/27/28/30/31, asm
+ * 0x10DC18-0x10DEA0) is ported; m = index into the clay's material list:
+ *  - the Velociprey / Genprey / Ioprey (16, 13, 30) hide m 5, the dromes hide
+ *    m 4: em16/em13/em30_amh hold both crests (and claw sets) as materials 4
+ *    (small, the prey's) and 5 (big, the drome's) over each other;
+ *  - eyes: m 0-3 are eye states; one is shown: sel = game_w+0x1E (u16 tick
+ *    counter) % 98, or 0 while the per-monster byte at EMW+0x444+0x50
+ *    (dromes) / +0x60 (preys) is set (eyes closed): sel 0-3 shows m 2,
+ *    4-5 m 1, 6-7 m 3, otherwise m 0;
+ *  - m 9 is shown only during motion 0x410 / 0x415 (EMW+0x2DC).
+ * Other kinds: nothing hidden (their cases are not ported). */
+uint32_t rt_em_material_hide(const void *em, const uint32_t *matlist, int nmatlist)
+{
+    int kind = PU8(em, 2), prey, sel, m;
+    uint32_t hide = 0;
+    if (kind != 13 && kind != 16 && kind != 27 && kind != 28 && kind != 30 && kind != 31)
+        return 0;
+    prey = kind == 16 || kind == 13 || kind == 30;
+    if (PU8(em, 0x444 + (prey ? 0x60 : 0x50)))
+        sel = 0;
+    else
+        sel = (s16)(PU16(&game_w, 0x1E) % 0x62);
+    for (m = 0; m < nmatlist; m++) {
+        int off = 0;
+        if (m == (prey ? 5 : 4))
+            off = 1;
+        if ((u32)sel < 8) {
+            if (sel < 4)
+                off |= m == 0 || m == 1 || m == 3;
+            else if (sel < 6)
+                off |= m == 0 || m == 2 || m == 3;
+            else
+                off |= m == 0 || m == 1 || m == 2;
+        } else {
+            off |= m == 1 || m == 2 || m == 3;
+        }
+        if (m == 9 && PU16(em, 0x2DC) != 0x410 && PU16(em, 0x2DC) != 0x415)
+            off = 1;
+        if (off && matlist[m] < 32)
+            hide |= 1u << matlist[m];
+    }
+    return hide;
+}
+
 /* enemy_trans: the monster's draw prim; the host draws the monster model
  * itself (viewer.c), so the prim does nothing here. */
 void enemy_trans(void *prim) { (void)prim; }

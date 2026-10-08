@@ -103,16 +103,42 @@ static void pick_owner(int kind, int a, int b, const void *skel)
 }
 
 /* fl_model_draw with each part's own blend/filter/clamp (clay_attr_set) */
-static void draw_model_attr(fl_model *m, int sky)
+/* em: a monster's em_work entry, whose hidden materials (em_material_sub,
+ * rt_em_material_hide) are not drawn; NULL = all drawn */
+static void draw_model_attr_em(fl_model *m, int sky, const void *em)
 {
     int i;
     for (i = 0; i < m->npart; i++)
         if (sky < 0 || sky == m->part[i].is_sky) {
+            uint32_t hide = 0;
+            if (em && !getenv("RT_EM_ALL_MATS")) {  /* test aid: draw every material */
+                uint32_t mh = rt_em_material_hide(em, m->amo.part[i].matlist, m->amo.part[i].nmatlist);
+                hide = fl_part_batch_hide(&m->part[i], mh);
+                if (getenv("RT_EM_MAT_TRACE")) {    /* test aid (test_activities raptor_crest): each new (kind, hidden materials) */
+                    static uint32_t seen[40][8];
+                    int kd = ((const uint8_t *)em)[2], k;
+                    for (k = 0; k < 8 && seen[kd % 40][k] && seen[kd % 40][k] != (mh | 0x80000000u); k++)
+                        ;
+                    if (k < 8 && !seen[kd % 40][k]) {
+                        seen[kd % 40][k] = mh | 0x80000000u;
+                        fprintf(stderr, "em-mat: kind %d part %d hides materials 0x%03x\n", kd, i, (unsigned)mh);
+                    }
+                }
+            }
             PICK_FN(powner.kind, powner.a, powner.b, i, 0, 0, powner.skel, 0);
             rt_clay_attr_set(part_attr(m, i));
+            if (hide)
+                gfx_set_render_state(GFX_RS_BATCH_HIDE, hide);
             gfx_execute_clay(m->part[i].clay);
+            if (hide)
+                gfx_set_render_state(GFX_RS_BATCH_HIDE, 0);
             rt_clay_attr_reset();
         }
+}
+
+static void draw_model_attr(fl_model *m, int sky)
+{
+    draw_model_attr_em(m, sky, NULL);
 }
 
 /* The effect models (eft_mdlw, load_eft / load_shadow at 0x111110): AFS
@@ -1171,7 +1197,7 @@ static void monsters_sync(int draw, const fl_light *L)
             fl_model_pose(&m->model, (const flmat *)m->skel.world, L);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
             pick_owner(PK_MONSTER, i, kind, &m->skel);
-            draw_model_attr(&m->model, -1);
+            draw_model_attr_em(&m->model, -1, em);
         }
     }
 }

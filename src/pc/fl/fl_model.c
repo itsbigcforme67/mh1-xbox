@@ -55,6 +55,8 @@ static void build_part(fl_model *m, int pi)
     uint8_t *col = malloc(4 * (size_t)(p->nvert + 1));
     gfx_clay_desc d;
 
+    for (k = 0; k < 32; k++)
+        fp->batch_mat[k] = -1;
     /* count triangles per material (slot nmat-1 = no material) */
     for (s = 0; s < p->nstrip; s++) {
         int mat = p->strip[s].material;
@@ -94,6 +96,8 @@ static void build_part(fl_model *m, int pi)
                 idx[pos++] = c;
             }
         }
+        if (nbatch < 32)
+            fp->batch_mat[nbatch] = (int16_t)(mi < m->amo.nmat ? mi : -1);
         batch[nbatch].first = start;
         batch[nbatch].count = pos - start;
         batch[nbatch].tex = NULL;
@@ -421,6 +425,16 @@ void fl_model_pose(fl_model *m, const flmat *bone_world_mats, const fl_light *L)
     }
     free(skin);
     rt_prof_end(RTP_SKIN);
+}
+
+uint32_t fl_part_batch_hide(const fl_part *fp, uint32_t mat_hide)
+{
+    uint32_t r = 0;
+    int b;
+    for (b = 0; b < 32 && mat_hide; b++)
+        if (fp->batch_mat[b] >= 0 && fp->batch_mat[b] < 32 && (mat_hide >> fp->batch_mat[b] & 1))
+            r |= 1u << b;
+    return r;
 }
 
 void fl_model_draw(fl_model *m, int sky)

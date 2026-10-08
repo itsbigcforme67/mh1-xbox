@@ -97,6 +97,8 @@ typedef struct {
     amo_strip *strip;
     int has_attr;
     int32_t attr[18];              /* 0xF0000 attribute words (stage.md 2) */
+    int nmatlist;                  /* 0x50000: the part's material numbers, in file order; the PS2 */
+    uint32_t *matlist;             /* clay's material list (CLAY+8), which em_material_sub indexes */
 } amo_part;
 
 typedef struct {
