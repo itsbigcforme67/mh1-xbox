@@ -29,6 +29,8 @@ void rt_fl_reset_states(void)
     gfx_set_render_state(GFX_RS_ALPHA_REF, RT_ALPHA_REF);
     gfx_set_render_state(GFX_RS_FADE_COLOR, 0xFFFFFFFFu);
     gfx_set_render_state(GFX_RS_ZWRITE, 1);
+    gfx_set_render_state(GFX_RS_ZFUNC, 3);
+    gfx_set_render_state(GFX_RS_ALPHA_FUNC, 4);
     gfx_set_render_state(GFX_RS_BLEND, 1);       /* = SetTrnslMode(4, 5) */
     gfx_set_render_state(GFX_RS_BLEND_OP, 0);
     gfx_set_render_state(GFX_RS_FILTER, 0);
@@ -61,8 +63,6 @@ void flSetRenderState(int state, u32 value)
         rt_2d_set_texture(value);
         break;
     }
-    case 0x6D:   /* alpha test method (GS TEST 0x7000 bits): 3 normal, 7 set13 glare [not traced] */
-        break;
     case 0x0F:   /* fog colour (GS FOGCOL); fog is only switched on by 0x12, which
                   * nothing calls yet: InitRenderState(0) sets 0x0F-0x11 */
         gfx_set_render_state(GFX_RS_FOG_COLOR, value & 0xFFFFFF);
@@ -74,12 +74,11 @@ void flSetRenderState(int state, u32 value)
         gfx_set_render_state(state == 0x10 ? GFX_RS_FOG_START : GFX_RS_FOG_END, (uintptr_t)&fog[state - 0x10]);
         break;
     }
-    case 0x5F:   /* Z test mode 0-7 -> RenderOperation (mode << 19) -> GS TEST
-                  * (flSetRenderState's table lit_482, 0x35BE50). The game passes
-                  * 4 (InitRenderState(0)): the normal depth test. Taken as a
-                  * compare-function index whose last value (7) is "always"
-                  * [guess]: 7 turns the host depth test off, the rest on. */
-        gfx_set_render_state(GFX_RS_ZTEST, (value & 7) != 7);
+    case 0x5F:   /* alpha-test compare (flrs07 -> TEST.ATST): 4 greater is normal, 5 notequal (yn UI) */
+        gfx_set_render_state(GFX_RS_ALPHA_FUNC, value);
+        break;
+    case 0x6D:   /* GS depth-test mode (TEST.ZTST): 3 normal, 7 always (stage layer 0 / sky, set13 glare, sprites), 1 greater */
+        gfx_set_render_state(GFX_RS_ZFUNC, value);
         break;
     case 0x5A:   /* the three light blocks (0x68 bytes: Pl_light_set / light_set): the host reads them (rt_light.c) */
     case 0x5B:

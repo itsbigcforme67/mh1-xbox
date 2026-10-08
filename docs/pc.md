@@ -1709,8 +1709,14 @@ Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item
   so ground and wall parts slid ("shadows that scroll", "weird textures"). gfx_clay_desc.noscroll (set from the part's attribute chunk when it has one with +0x1C = 0) now makes GL and nv2a use the identity matrix; parts with no attribute chunk still take the matrix (set14).
 - Draw order: trans() draws stage, actors (GameTrans), then shells, prims, set objects, effects. The viewer drew the game prims (rt_game_draw) before the monsters, hunter, NPCs and weapon, so a translucent effect (dust, fire, sparks) wrote depth first and
   cut holes ("blocks") in the actors behind it. rt_game_draw now runs after the actors. Shots with quest 10 (Rathian, stage 40): the dust puff and the flame on the hunter blend over the body instead of showing a square cut.
-- ZBUF check: RS 0x6C = 1 means z-write ON (ZMSK = (rs & 0x8000) != 0x8000), as the host has it. Still open: RS 0x6D is the GS ZTST (0 never, 1 greater, 3 gequal normal, 7 always: sky layer, set13 glare, sprites); the host ignores it and
+- (round 28: 0x6D and 0x5F are now implemented, see below) ZBUF check: RS 0x6C = 1 means z-write ON (ZMSK = (rs & 0x8000) != 0x8000), as the host has it. Still open: RS 0x6D is the GS ZTST (0 never, 1 greater, 3 gequal normal, 7 always: sky layer, set13 glare, sprites); the host ignores it and
   RS 0x5F is the alpha-test compare (not ZTEST, as rt_fl.c comments it; value 4 = greater). Not changed (needs both backends).
+
+Round 28 (agent F): RS 0x6D (GS ZTST: 1 greater = GL less, 3 normal = lequal, 7 always, others never) is GFX_RS_ZFUNC and RS 0x5F (alpha-test compare, the game's 0-7 are the GL compare enums in order; 4 greater is normal, 5 notequal in the yn UI)
+is GFX_RS_ALPHA_FUNC, in gfx_gl.c and gfx_nv2a.c; rt_fl_reset_states restores 3 / 4. 0x5F no longer switches the depth test. The sky layer (state 7 then 3), set13 glare and sprites now draw with "always"; shots of stages 4, 5, 21, 26, 39, 60
+are unchanged within animation noise (old-vs-old differs as much). UV scroll against the asm: PS2SHADER_ADD_UVSCROLL (0x17CD30) copies rows 0, 1 and 3 of the 0x19 matrix, so st' = st * M like the GL texture matrix (row-vector memory = GL column-major);
+the translate 1 - (X1E & 0x7F)/128 falls 1 -> 0 over 128 ticks, game_w.x1E counts +1 per tick on the PC (checked), so direction, speed and period are the PS2's; wrap is the part's own clamp bit (state 0x64). Stage 5 fern: GS TEX1 is
+0x60 (bilinear mag and min, no mipmaps) and the GL/nv2a filters are the same, so the blocky leaves are the low-resolution alpha texture magnified, as on the PS2.
 
 Findings of the second pass (agent D, 7 Oct 2026)
 - **161 / 165 "18 of 20"**: the missing monsters are the second wave. Condition program op 32 (`quest_w.x3A = a`, "32/1/0/0" right after

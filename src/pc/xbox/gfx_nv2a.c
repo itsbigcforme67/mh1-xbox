@@ -463,6 +463,12 @@ void gfx_set_render_state(int state, uintptr_t v)
     case GFX_RS_ALPHA_REF:
         push1(NV097_SET_ALPHA_REF, (uint32_t)(v & 255));
         break;
+    case GFX_RS_ALPHA_FUNC:
+        push1(NV097_SET_ALPHA_FUNC, 0x200 + (v & 7));      /* the game's 0-7 are the GL compare enums in order */
+        break;
+    case GFX_RS_ZFUNC:
+        push1(NV097_SET_DEPTH_FUNC, v == 1 ? 0x201 : v == 3 ? 0x203 : v == 7 ? 0x207 : 0x200);
+        break;
     case GFX_RS_FADE_COLOR:
         G.fade = (uint32_t)v;
         break;

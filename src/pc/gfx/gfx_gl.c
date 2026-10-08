@@ -31,6 +31,8 @@ static struct {
     SDL_GLContext ctx;
     int w, h;
     float view[16], proj[16], world[16], texmat[16];
+    unsigned afunc;              /* GL alpha func (fl 0x5F) */
+    float aref;
     uint32_t fade;               /* 0xAARRGGBB, 0xFFFFFFFF = none */
     gfx_texture *tex;
     GLint filter, wrap;          /* fl 0x63 / 0x64, applied when a texture is bound */
@@ -99,7 +101,9 @@ int gfx_init(int width, int height, const char *title, int hidden)
     glDepthFunc(GL_LEQUAL);
     glDisable(GL_CULL_FACE);           /* strip winding is not consistent */
     glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER, 0.0f);
+    G.afunc = GL_GREATER;
+    G.aref = 0.0f;
+    glAlphaFunc(G.afunc, G.aref);
     glDisable(GL_LIGHTING);
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glFogi(GL_FOG_MODE, GL_LINEAR);
@@ -235,7 +239,15 @@ void gfx_set_render_state(int state, uintptr_t v)
         memcpy(G.proj, (const float *)v, sizeof G.proj);
         break;
     case GFX_RS_ALPHA_REF:
-        glAlphaFunc(GL_GREATER, (float)(v & 255) / 255.0f);
+        G.aref = (float)(v & 255) / 255.0f;
+        glAlphaFunc(G.afunc, G.aref);
+        break;
+    case GFX_RS_ALPHA_FUNC:
+        G.afunc = 0x200 + (v & 7);      /* the game's 0-7 are GL_NEVER .. GL_ALWAYS in order */
+        glAlphaFunc(G.afunc, G.aref);
+        break;
+    case GFX_RS_ZFUNC:
+        glDepthFunc(v == 1 ? GL_LESS : v == 3 ? GL_LEQUAL : v == 7 ? GL_ALWAYS : GL_NEVER);
         break;
     case GFX_RS_FADE_COLOR:
         G.fade = (uint32_t)v;

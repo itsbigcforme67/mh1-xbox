@@ -64,11 +64,13 @@ enum {
     GFX_RS_WORLD        = 0x1A,  /* value: const float[16] (flMATRIX[0]) */
     GFX_RS_BLEND_FUNC   = 0x5E,  /* value: fl blend factors, src | dst << 4, each
                                     GFX_BF_*; also turns blending on */
+    GFX_RS_ALPHA_FUNC   = 0x5F,  /* value: the game's alpha-test compare 0-7 (flrs07): 0 never, 1 less, 2 equal, 3 lequal, 4 greater (normal), 5 notequal, 6 gequal, 7 always */
     GFX_RS_ALPHA_REF    = 0x60,  /* value: 0-255, alpha test GREATER ref */
     GFX_RS_FILTER       = 0x63,  /* value: 0 bilinear, 0x10000 point (fl/GS TEX1) */
     GFX_RS_TEX_CLAMP    = 0x64,  /* value: 0 repeat, else clamp (fl/GS CLAMP: 0x20000, 0x40000) */
     GFX_RS_FADE_COLOR   = 0x67,  /* value: 0xAARRGGBB multiplied into every vertex */
     GFX_RS_ZWRITE       = 0x6C,  /* value: 0/1 */
+    GFX_RS_ZFUNC        = 0x6D,  /* value: the game's GS ZTST: 1 greater (= GL less), 3 gequal (normal, = GL lequal), 7 always; others never */
     /* port-only states */
     GFX_RS_PROJECTION   = 0x100, /* value: const float[16] */
     GFX_RS_BLEND        = 0x101, /* value: 0 off, 1 src-alpha/inv-src-alpha */
