@@ -217,7 +217,7 @@ LOBBY3="src/lobby/b/lbsnd01.c src/lobby/b/lb_by122.c src/lobby/b/lb_by123.c src/
         src/lobby/b/nm/value_result.c"
 # PICK: whole-file C from which only the named functions are wanted (all its
 # other definitions are weakened: the copies already linked win)
-PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint src/game/em/em_modechg.c:em01_local_area_move_init"
+PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint"
 # main merged the lobby-client b/ files (lb_by20, lb_by103, lb_bz29, lb_bz104,
 # lb_bz110, lb_bz137, lbuiv, lbuiw) into one TU, f/lb_cli.c (8 Oct 2026):
 # the functions the PC used from them
