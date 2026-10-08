@@ -517,11 +517,17 @@ static void eval_group(const ahi_skel *sk, int g, const aan_motion *m, float t, 
          * height curve for it (Aptonoth idle / walk / eat, ids 1001, 1004-1006) has no height, not the pivot's
          * 427 units: the body hung 680 units above the ground on stages whose ground is not y = 0. */
         if (g == 0 && k == 1) {
-            int c, has = 0;
+            int c, has = 0, j, n = 0, i2 = -1;
+            for (j = 0; j < sk->nbone && i2 < 0; j++)       /* the third bone of group 0 */
+                if (sk->bone[j].group == 0 && n++ == 2)
+                    i2 = j;
             for (c = 0; c < m->ncurve[k]; c++)
                 if (m->curve[k][c].channel == 7)
                     has = 1;
-            if (!has)
+            /* only the pivot pair (bone 3 binds at exactly minus bone 2's offset, as the Aptonoth's does): birds, other monsters and
+             * set models whose second bone is an ordinary joint keep their bind height */
+            if (!has && i2 >= 0 && sk->bone[i2].t[1] != 0.0f && fabsf(sk->bone[i2].t[1] + sk->bone[i].t[1]) < 0.05f
+                && fabsf(sk->bone[i2].t[0] + sk->bone[i].t[0]) < 0.05f && fabsf(sk->bone[i2].t[2] + sk->bone[i].t[2]) < 0.05f)
                 chan[i][7] = 0.0f;
         }
         k++;
