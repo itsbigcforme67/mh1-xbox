@@ -75,6 +75,8 @@ void shell06_set(struct PLW *pl, int unused, int joint);
 void Eft24_set(struct PLW *pl, int arg);
 void eft14_set(f32 *pos, s16 arg, f32 scale);
 void func_6362B0(struct PLW *pl, int a) { shell00_set(pl, a); }
+int Tutorial_flag_set(int flag);
+void func_63AFA0(int flag) { Tutorial_flag_set(flag); }     /* evdemo: the Elder's teaching a demo adds (0x63AFA0) */
 void func_549200(struct PLW *pl, int a) { eft12_set(pl, (s16)a); }
 void func_628FB0(struct PLW *pl, int a, int b) { shell03_set(pl, a, b); }
 void func_5547B0(f32 *pos, int a, int b) { Eft18_set2(pos, (s16)a, b); }

@@ -213,11 +213,11 @@ BMATCH="$BMATCH $(grep -v '^#' tools/pc_lobby_matched.txt | tr '\n' ' ')"
 # NPC sound types, the guild-hall board / status init, the village menu
 # sounds (cnWrap_SoundRequest), the forge's value_result, lobby client
 # helpers (round 19)
-LOBBY3="src/lobby/b/lb_by122.c src/lobby/b/lb_by123.c src/lobby/b/lb_bz98.c src/lobby/b/lb_bz145.c \
+LOBBY3="src/lobby/b/lbsnd01.c src/lobby/b/lb_by122.c src/lobby/b/lb_by123.c src/lobby/b/lb_bz98.c src/lobby/b/lb_bz145.c \
         src/lobby/b/nm/value_result.c"
 # PICK: whole-file C from which only the named functions are wanted (all its
 # other definitions are weakened: the copies already linked win)
-PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint"
+PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint src/game/em/em_modechg.c:em01_local_area_move_init"
 # main merged the lobby-client b/ files (lb_by20, lb_by103, lb_bz29, lb_bz104,
 # lb_bz110, lb_bz137, lbuiv, lbuiw) into one TU, f/lb_cli.c (8 Oct 2026):
 # the functions the PC used from them
@@ -337,7 +337,7 @@ for f in $GAME; do
     src/main/stage/f_stage.c) ABI="-Dhit_point_cbd=rtabi_hit_point_cbd" ;;
     # lobby C: frame_check2 / em_frame_check declared with the float first
     # (include/lobby_f.h, the lobby NPC files) or second (include/lbnpc.h)
-    src/lobby/lb/lb_em*_nm.c|src/lobby/lb/lbem*.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
+    src/lobby/lb/lb_em*_nm.c|src/lobby/lb/lbem*.c|src/lobby/b/lbsnd01.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
     src/lobby/lb/lbnpc_nm.c) ABI="-Dframe_check2=rtabi_frame_check2_em" ;;
     # the shop lists call ItemboxWindowX(f32 x, s16 cur, int flags) (PS2: x in f12); lb_ib.c defines it as (cur, flags, base)
     src/lobby/b/lb_by139.c|src/lobby/f/lb_shp.c|src/lobby/f/lb_tu_ib.c) ABI="-Dframe_check2=rtabi_frame_check2 -DItemboxWindowX=rtabi_ItemboxWindowX" ;;

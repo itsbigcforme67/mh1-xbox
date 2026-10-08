@@ -2118,3 +2118,22 @@ Host `sim_tick` (viewer.c) + `rt_game_move` stand in for f_framec.c `move()` (no
   reach), so it stays as it was.
 - Pause menu / quest end: the PS2 does not stop `move()` for the pit menu (only the sw input zeroing in sw_set_sub, `Cockpit_menu_chk`),
   and the PC runs the same game C there; the quest-end states are game modes (game3/5), driven by rt_flow.
+
+### Quest 154 hang and the stand-in sweep (agent C, 8 Oct 2026)
+- **Quest 154 (Cephadrome) never cleared after body_hit.** Not a hang (the loop ran): the dead Cephadrome sat in `em_die02` sub 1 forever. Its
+  test `pos[1] < x7E4 - x7E0` compared the float y (-401.918365) with the x87 80-bit result (-401.9183578): one rounding off, so it never
+  counted as "out of the sand". The PS2 FPU is single precision. Game C (and the host objects) now build with `-msse2 -mfpmath=sse`
+  (x86 gcc only; ARM / Windows / Xbox unchanged): the fight passes at every warp offset (`RT_WARP_R=n` aid), where it passed or failed by luck before.
+  Other places with the same excess-precision comparison are fixed by the same flag. `RT_SLAY_DEBUG`/`RT_PL_SLAY armed ...` prints help find a boss that
+  is dead already.
+- **Sweep** (`RT_STANDIN_FILE=path` appends every first-called stand-in; `tools/sweep_random.py [secs]` runs 150 s of random pad input in ten
+  quests plus the village at each shop, the forge, the Elder and the house; plus the whole test set). Unique stand-ins seen, by what a player notices:
+  1. `flPADShockSet` (controller rumble from vib_set / vib_set_pl: every hit, roar, quake) -> now SDL rumble (pad_sdl.c; vib_tbl strength 1-7, frames).
+  2. `sound_call_005C48C0` (66 runs: village NPC sound requests at fixed frames, lb_vs01) -> lobby/b/lbsnd01.c linked (em_frame_check adaptor).
+  3. `func_63AFA0` = Tutorial_flag_set (a demo adds "the Elder's teaching", message + sound) -> alias in rt_overlay.c.
+  4. `em01_local_area_move_init` (Rathian / Rathalos per-stage stay and run-away timers: when they change area) -> PICKed from em_modechg.c.
+  5. Not visible on the PC, left: flAdjustScreen, flCalcTrans(SI), view_reset, set_viewproj, init_*_work, clr_*_work, ot_init, round_init, stage_free,
+     load_*, FlushCache, flSndPack*, flSndPortStop, flFlip, setBGcolor, View_init (host owns screen, loading, draw order), em_effect_pull (the host draws monsters),
+     lb_member_*Check and text_lobby_trans_ot3_o (online lobby), Equip_moji_color_rare_i (chat list colour), flExp, ADXM_Lock/Unlock, edit_create_model,
+     apiask_28_OpenDic, Disp_NowLoading2, release_texture, flReleaseMotionSetHandle, all_model_free, armor_model_free.
+  docs/agents/targets.md did not exist in this tree: none of the above are in a claimed file as far as I could see (re-check after merging).

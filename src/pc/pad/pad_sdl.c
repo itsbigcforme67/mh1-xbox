@@ -239,3 +239,14 @@ int pad_script_next(pad_state *p)
     left--;
     return 1;
 }
+
+/* flPADShockSet (the game's vib_set / vib_set_pl: vib_tbl rows {strength 1-7, frames}): the controller's rumble */
+int flPADShockSet(int port, int strength, int frames)
+{
+    if (port != 0 || !ctl || strength <= 0)
+        return 0;
+    if (strength > 7)
+        strength = 7;
+    SDL_GameControllerRumble(ctl, (Uint16)(strength * 9362), (Uint16)(strength * 9362), (Uint32)(frames > 0 ? frames * 1000 / 30 : 100));
+    return 0;
+}
