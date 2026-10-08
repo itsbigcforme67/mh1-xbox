@@ -23,6 +23,7 @@ struct gfx_clay {
     uint8_t *col, *drawcol;
     uint16_t *index;
     gfx_batch *batch;
+    int noscroll;               /* UV scroll (fl 0x19) does not apply */
 };
 
 static struct {
@@ -286,6 +287,7 @@ gfx_clay *gfx_create_clay(const gfx_clay_desc *d)
     c->nvert = d->nvert;
     c->nindex = d->nindex;
     c->nbatch = d->nbatch;
+    c->noscroll = d->noscroll;
     c->pos = malloc(sizeof(float) * 3 * (d->nvert + 1));
     memcpy(c->pos, d->pos, sizeof(float) * 3 * d->nvert);
     if (d->st) {
@@ -333,7 +335,7 @@ static void gfx_execute_clay_gl(gfx_clay *c)
         col = c->drawcol;
     }
     glMatrixMode(GL_TEXTURE);
-    glLoadMatrixf(G.texmat);       /* fl 0x19: UV scroll (set14) */
+    glLoadMatrixf(c->noscroll ? ident : G.texmat);       /* fl 0x19: UV scroll (set14), only for parts whose attribute asks for it */
     glMatrixMode(GL_PROJECTION);
     glLoadMatrixf(G.proj);
     glMatrixMode(GL_MODELVIEW);

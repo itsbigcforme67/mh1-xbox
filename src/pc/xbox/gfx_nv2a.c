@@ -57,6 +57,7 @@ struct gfx_clay {
     uint8_t *col, *drawcol;
     uint16_t *index;
     gfx_batch *batch;
+    int noscroll;               /* UV scroll (fl 0x19) does not apply */
     /* GPU skinning (gfx_clay_set_skin): the regrouped batches, their
      * vertices in contiguous memory (SKIN_STRIDE bytes each), this frame's
      * pose */
@@ -561,9 +562,9 @@ static void upload_constants(const float *mvp, const float *tex, int fog)
 }
 
 /* the texture matrix for T: rect textures take texel coordinates */
-static void tex_matrix(const gfx_texture *t, float *out)
+static void tex_matrix(const gfx_texture *t, float *out, const gfx_clay *c)
 {
-    memcpy(out, G.texmat, 64);
+    memcpy(out, c->noscroll ? ident : G.texmat, 64);
     if (t && t->rect) {
         int i;
         for (i = 0; i < 4; i++) {
@@ -659,6 +660,7 @@ gfx_clay *gfx_create_clay(const gfx_clay_desc *d)
     c->nvert = d->nvert;
     c->nindex = d->nindex;
     c->nbatch = d->nbatch;
+    c->noscroll = d->noscroll;
     c->pos = malloc(sizeof(float) * 3 * (d->nvert + 1));
     memcpy(c->pos, d->pos, sizeof(float) * 3 * d->nvert);
     if (d->st) {
@@ -803,7 +805,7 @@ static void execute_cpu(gfx_clay *c)
             if (!c->st)
                 t = NULL;
             bind_texture(t);
-            tex_matrix(t, tm);
+            tex_matrix(t, tm, c);
             upload_constants(mvp, tm, 1);
             draw_indexed(c->index + c->batch[b].first, c->batch[b].count);
         }
@@ -871,7 +873,7 @@ static void execute_cpu(gfx_clay *c)
         if (!c->st)
             t = NULL;
         bind_texture(t);
-        tex_matrix(t, tm);
+        tex_matrix(t, tm, c);
         upload_constants(mvp, tm, 1);
         if (clip_idx)
             draw_indexed(clip_idx + clip_first[b], clip_count[b]);
@@ -1104,7 +1106,7 @@ static void draw_skinned(gfx_clay *c, const float *mvp)
             }
         }
         bind_texture(t);
-        tex_matrix(t, tm);
+        tex_matrix(t, tm, c);
         memcpy(k + 16, tm, 64);
         push_consts(0, k, 20);
         if (bt->nbone)

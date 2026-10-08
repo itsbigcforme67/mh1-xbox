@@ -127,6 +127,7 @@ static void build_part(fl_model *m, int pi)
     d.nbatch = nbatch;
     d.batch = batch;
     d.dynamic = fp->skinned || fp->lit;
+    d.noscroll = p->has_attr && p->attr[7] == 0;     /* attr +0x1C: the UV-scroll type (aa_uvscroll) */
     fp->clay = gfx_create_clay(&d);
     if (d.dynamic) {
         static int check = -1;

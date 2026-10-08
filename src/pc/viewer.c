@@ -759,7 +759,7 @@ static int load_stage_models(int st)
     if (getenv("RT_LIGHT_TRACE") && atoi(getenv("RT_LIGHT_TRACE")) >= 2) {     /* lighting type (attr +0x14) of the area and set parts */
         int q;
         for (q = 0; q < stage.amo.npart; q++)
-            fprintf(stderr, "stage %d area part %d lighting type %d (attr +0x04 family %d)\n", st, q, stage.amo.part[q].attr[5], stage.amo.part[q].attr[1]);
+            fprintf(stderr, "stage %d area part %d lighting type %d (attr +0x04 family %d) uvscroll %d has_attr %d\n", st, q, stage.amo.part[q].attr[5], stage.amo.part[q].attr[1], stage.amo.part[q].attr[7], stage.amo.part[q].has_attr);
         for (q = 0; q < set.amo.npart; q++)
             fprintf(stderr, "stage %d set part %d lighting type %d (attr +0x04 family %d)\n", st, q, set.amo.part[q].attr[5], set.amo.part[q].attr[1]);
     }
@@ -1894,9 +1894,6 @@ int main(int argc, char **argv)
             rt_stage_draw();            /* trans_stage: area model + placed set parts */
             rt_prof_end(RTP_STAGE_DRAW);
         }
-        rt_prof_begin(RTP_PRIMS);
-        rt_game_draw();                 /* game C prims (set14 waterfalls) */
-        rt_prof_end(RTP_PRIMS);
         if (rt_monster_shown(0) && slot0_rathian()) {     /* in use and on this stage */
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)rathian.world);
             draw_model_attr(&rathian.model, -1);
@@ -1919,6 +1916,12 @@ int main(int argc, char **argv)
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)wid);
             draw_model_attr(&weapon.model, -1);
         }
+        /* The game's own order (trans(), weapon/trans.c): stage, then the actors (GameTrans), then the shells, prims, set
+         * objects and effects. The translucent ones (smoke, dust, sparks, breath) blend over the monsters and the hunter, and the
+         * depth they write does not hide the actors behind them (they used to be drawn first, which cut holes in monsters). */
+        rt_prof_begin(RTP_PRIMS);
+        rt_game_draw();                 /* game C prims (set14 waterfalls, effects) */
+        rt_prof_end(RTP_PRIMS);
         rt_prof_begin(RTP_2D);
         rt_game_draw_2d();              /* screen layers: HUD, info banner, text (after the 3D scene) */
         rt_fade_draw();                 /* fade_draw: the screen fade (Fade_task) */

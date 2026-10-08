@@ -99,6 +99,7 @@ typedef struct {
     int nbatch;
     const gfx_batch *batch;
     int dynamic;               /* positions/colours change every frame */
+    int noscroll;              /* the part's attribute has no UV scroll (+0x1C = 0): fl state 0x19 does not move its texture */
 } gfx_clay_desc;
 
 /* Immediate 2D triangle list (screen prims of the game's menus / HUD):

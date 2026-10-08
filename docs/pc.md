@@ -1704,6 +1704,14 @@ Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item
 - Shots (build/show/light/, game camera, no --follow, 960x540, before = fixed light, after = RT_LIGHT_GAME=1): stage 4 almost identical (key light 1.0 plus ambient 0.6 saturates a lot); stage 5 hunter darker (no ambient row); stages 13 and 28 slightly bluer/brighter with a cool
   tint, light 2 now follows the camera; Rathian in the stage 40 cave a bit darker and greyer; flash: hunter brighter. Monster shots are not tick-identical (different game timing), so only the overall tint is comparable.
 
+### Scrolling textures and translucent effects (agent F, round 27)
+- UV scroll (fl state 0x19) only moves parts whose attribute asks for it (attr +0x1C, aa_uvscroll -> state 0x62; on stage 60 exactly parts 4, 6, 8, the ones trans_stage gives a matrix). The PC applied the last matrix to every clay drawn after it,
+  so ground and wall parts slid ("shadows that scroll", "weird textures"). gfx_clay_desc.noscroll (set from the part's attribute chunk when it has one with +0x1C = 0) now makes GL and nv2a use the identity matrix; parts with no attribute chunk still take the matrix (set14).
+- Draw order: trans() draws stage, actors (GameTrans), then shells, prims, set objects, effects. The viewer drew the game prims (rt_game_draw) before the monsters, hunter, NPCs and weapon, so a translucent effect (dust, fire, sparks) wrote depth first and
+  cut holes ("blocks") in the actors behind it. rt_game_draw now runs after the actors. Shots with quest 10 (Rathian, stage 40): the dust puff and the flame on the hunter blend over the body instead of showing a square cut.
+- ZBUF check: RS 0x6C = 1 means z-write ON (ZMSK = (rs & 0x8000) != 0x8000), as the host has it. Still open: RS 0x6D is the GS ZTST (0 never, 1 greater, 3 gequal normal, 7 always: sky layer, set13 glare, sprites); the host ignores it and
+  RS 0x5F is the alpha-test compare (not ZTEST, as rt_fl.c comments it; value 4 = greater). Not changed (needs both backends).
+
 Findings of the second pass (agent D, 7 Oct 2026)
 - **161 / 165 "18 of 20"**: the missing monsters are the second wave. Condition program op 32 (`quest_w.x3A = a`, "32/1/0/0" right after
   the "10 left" message) switches the quest to monster-list variant 1 (Em_data_st_adrs_get's last argument); Quest_next_em_set spawns
