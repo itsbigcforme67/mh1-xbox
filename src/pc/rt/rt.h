@@ -195,6 +195,8 @@ typedef struct {
     int tex;
 } rt_em_mat;
 int rt_em_materials(const void *em, int clay, int n, rt_em_mat *out);
+/* the cut-off tail of monster em, drawn apart from the body (eft09_t): 1 and its root position / yaw */
+int rt_em_cut_tail(const void *em, float pos[3], float *yaw);
 void rt_hit_check(void);                /* the game's hit_check (shells vs monsters/players) */
 int rt_player_weapon(int no, float *root0, float *root1);   /* weapon root matrices (weapon_trans) */
 int rt_player_weapon_model(int no);     /* PLW+0x34C */

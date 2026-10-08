@@ -162,7 +162,7 @@ static int em_model_col(fl_model *m, const void *em, float f[3])
     return any;
 }
 
-static void draw_model_attr_em(fl_model *m, int sky, const void *em, int light_col)
+static void draw_model_attr_em(fl_model *m, int sky, const void *em, int light_col, int only)
 {
     int i;
     for (i = 0; i < m->npart; i++) {
@@ -171,7 +171,7 @@ static void draw_model_attr_em(fl_model *m, int sky, const void *em, int light_c
         rt_em_mat st[32];
         int bst[32], g, b, n = ap->nmatlist < 32 ? ap->nmatlist : 32;
         uint32_t done;
-        if (!(sky < 0 || sky == fp->is_sky))
+        if (!(sky < 0 || sky == fp->is_sky) || (only >= 0 && i != only))
             continue;
         if (!em || getenv("RT_EM_ALL_MATS")) {     /* test aid: every clay and material as in the file */
             PICK_FN(powner.kind, powner.a, powner.b, i, 0, 0, powner.skel, 0);
@@ -181,7 +181,7 @@ static void draw_model_attr_em(fl_model *m, int sky, const void *em, int light_c
             continue;
         }
         {
-            int drawn = rt_em_materials(em, i, n, st);
+            int drawn = rt_em_materials(em, i, n, st) || only == i;     /* only: the cut tail, drawn apart */
             if (getenv("RT_EM_MAT_TRACE")) {       /* test aid (test_activities em_materials) */
                 uint32_t h = 0;
                 int k;
@@ -274,7 +274,36 @@ static void draw_model_attr_em(fl_model *m, int sky, const void *em, int light_c
 
 static void draw_model_attr(fl_model *m, int sky)
 {
-    draw_model_attr_em(m, sky, NULL, 0);
+    draw_model_attr_em(m, sky, NULL, 0, -1);
+}
+
+/* The cut-off tail of a monster (eft09_t, rt_em_cut_tail): clay 1 alone, its tail bones in their
+ * bind pose under Scale(EMW+0xB8) * RotY * Trans at the place it was cut, in world space. */
+static void draw_cut_tail(fl_model *m, const fl_skel *sk, const uint8_t *em, const fl_light *L, int light_col)
+{
+    float pos[3], sc[3], r[3] = { 0, 0, 0 };
+    flmat root, id, *wm;
+    int k, skip[64];
+    if (m->npart < 2 || m->npart > 64 || getenv("RT_EM_ALL_MATS") || !rt_em_cut_tail(em, pos, &r[1]))
+        return;
+    memcpy(sc, em + 0xB8, sizeof sc);
+    if (sc[0] == 0.0f)
+        sc[0] = sc[1] = sc[2] = 1.0f;
+    flmat_srt(root, sc, r, pos);
+    wm = malloc(sizeof(flmat) * (sk->skel.nbone + 1));
+    if (wm && fl_skel_cut_tail(sk, root, wm)) {
+        for (k = 0; k < m->npart; k++) {
+            skip[k] = m->part[k].skip;
+            m->part[k].skip = k != 1;
+        }
+        fl_model_pose(m, (const flmat *)wm, L);
+        for (k = 0; k < m->npart; k++)
+            m->part[k].skip = skip[k];
+        flmat_identity(id);
+        gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
+        draw_model_attr_em(m, -1, em, light_col, 1);
+    }
+    free(wm);
 }
 
 /* The effect models (eft_mdlw, load_eft / load_shadow at 0x111110): AFS
@@ -1355,7 +1384,8 @@ static void monsters_sync(int draw, const fl_light *L)
             fl_model_pose(&m->model, (const flmat *)m->skel.world, light_col ? &lc : L);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
             pick_owner(PK_MONSTER, i, kind, &m->skel);
-            draw_model_attr_em(&m->model, -1, em, light_col);
+            draw_model_attr_em(&m->model, -1, em, light_col, -1);
+            draw_cut_tail(&m->model, &m->skel, em, light_col ? &lc : L, light_col);
         }
     }
 }
@@ -2122,13 +2152,15 @@ int main(int argc, char **argv)
         if (weapon.game && pl.game && play)
             weapon_pose(light_hunter(lp));
 
-        if (getenv("RT_CAM_EM")) {      /* test aid "slot,dist,height,yaw" (or "kKIND,..."): free camera on monster slot */
+        if (getenv("RT_CAM_EM")) {      /* test aid "slot,dist,height,yaw" (or "kKIND,...", "tKIND,..." its cut tail): free camera on monster slot */
             float p[3], d = 1500, hh = 600, yw = 0;
             int a, sl = 0;
-            if (getenv("RT_CAM_EM")[0] == 'k') {    /* "kN,...": the first live monster of kind N on this stage */
+            const char *ce = getenv("RT_CAM_EM");
+            int on_tail = ce[0] == 't';             /* "tN,...": that monster's cut-off tail */
+            if (ce[0] == 'k' || on_tail) {    /* "kN,...": the first live monster of kind N on this stage */
                 extern uint8_t em_work[];
                 int kd = 0, j;
-                sscanf(getenv("RT_CAM_EM") + 1, "%d,%f,%f,%f", &kd, &d, &hh, &yw);
+                sscanf(ce + 1, "%d,%f,%f,%f", &kd, &d, &hh, &yw);
                 for (j = 0; j < 20; j++)
                     if (em_work[0xA10 * j] && em_work[0xA10 * j + 2] == kd && em_work[0xA10 * j + 0x736] == (uint8_t)rt_game_stage()) {
                         sl = j;
@@ -2138,6 +2170,12 @@ int main(int argc, char **argv)
                 sscanf(getenv("RT_CAM_EM"), "%d,%f,%f,%f", &sl, &d, &hh, &yw);
             }
             rt_monster_get(sl, p, &a);
+            if (on_tail) {
+                extern uint8_t em_work[];
+                float tp[3], ty;
+                if (rt_em_cut_tail(em_work + 0xA10 * sl, tp, &ty))
+                    memcpy(p, tp, sizeof tp);
+            }
             cam[0] = p[0] + sinf(yw) * d;
             cam[1] = p[1] + hh;
             cam[2] = p[2] + cosf(yw) * d;
@@ -2178,7 +2216,8 @@ int main(int argc, char **argv)
             pick_owner(PK_MONSTER, 0, 1, &rathian.skel);
             if (rathian.game) {                 /* em_work[0]: its clays / materials as enemy_trans */
                 extern uint8_t em_work[];
-                draw_model_attr_em(&rathian.model, -1, em_work, 0);
+                draw_model_attr_em(&rathian.model, -1, em_work, 0, -1);
+                draw_cut_tail(&rathian.model, &rathian.skel, em_work, light_cur(), 0);
             } else {
                 draw_model_attr(&rathian.model, -1);
             }

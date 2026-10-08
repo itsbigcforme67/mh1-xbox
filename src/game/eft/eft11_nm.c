@@ -97,11 +97,11 @@ static void eft11_i(EFTW *ew) {
     ew->pos[0] = em->pos[0];
     ew->pos[1] = 50.2f + em->x5AC;
     ew->pos[2] = em->pos[2];
-    for (i = 0; i < 13; i++) {
-        w[i].pos = eft11_def[i].pos;
-        w[i].scale = eft11_def[i].scale;
-        w[i].alpha = eft11_def[i].alpha;
-        w[i].roty = eft11_def[i].roty;
+    for (i = 0; i < 13; i++, w++) {
+        w->pos = eft11_def[i].pos;
+        w->scale = eft11_def[i].scale;
+        w->alpha = eft11_def[i].alpha;
+        w->roty = eft11_def[i].roty;
         ew->work14 = (s32)eft11_t0;
     }
 }

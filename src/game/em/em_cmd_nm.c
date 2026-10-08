@@ -1846,135 +1846,106 @@ u8 *em_cmd_before_stage_ck(EMW *em, u8 *p) {
 
 CMD_SEL_FUNC_W(em_cmd_before_stage_sel, 0x3E, u8, u8, em->x92E)
 
+/* Walks the area routes of this stage (g->pos) to the one that leads to stage `target` (0xFF: the nearest
+ * route), then looks along its points for the first one that can be reached: a point whose hit_ck is set is
+ * only taken when nothing blocks the line from the monster to it. That line is cast at a height of
+ * 10 * the second byte of the command (em->x9F0) above the ground positions, as the original does
+ * (the old copy cast it flat, on the xz plane, and tested the wrong halfword of the point).
+ * Not a byte match (register allocation of the saved registers; the structure follows the asm). */
 u8 *em_cmd_ground_area_move(EMW *em, u8 *p) {
-    f32 v0[3];
-    f32 v1[3];
-    f32 hit[3];
+    EM_ROUTE_PT *pt;
     f32 dist;
-    f32 best;
     EM_STG_POS *g;
+    f32 hit[3];
+    s16 idx;
     EM_ROUTE *rt;
     EM_ROUTE *wk;
-    EM_ROUTE_PT *pt;
-    u8 *next;
+    f32 h;
+    s16 i;
+    f32 v1[3];
     s32 found;
-    s32 sel;
-    s32 bestidx;
-    s32 i;
-    s32 idx;
-    s32 j;
-    u16 stage;
     u8 target;
-    u8 gs;
+    s16 j;
+    f32 best;
+    u16 stage;
+    s32 sel;
+    f32 v0[3];
 
-    next = p + 2;
     em->x8BE = 0;
-    target = p[0];
-    EM_FIELD(em, u8 *, 0x9F0) = p[1];
+    target = *p++;
+    EM_FIELD(em, u8 *, 0x9F0) = *p++;
+    h = 10.0f * (f32)(u32)EM_FIELD(em, u8 *, 0x9F0);
+#ifndef __MWERKS__
+    idx = 0;
+#endif
     sel = 0;
-    gs = em->stg;
-    if (gs == target) {
-        return next;
+    if (em->stg == target) {
+        return p;
     }
-    g = gp_ck(em, em->area->x18, gs);
+    g = gp_ck(em, em->area->x18, em->stg);
     wk = (EM_ROUTE *)g->pos;
     if (wk == NULL) {
-        return next;
+        return p;
     }
-    rt = wk;
     em->x73A = target;
     stage = em->x73A;
     if (stage == 0xFF) {
         best = -1.0f;
-        i = 0;
-        bestidx = 0;
-        if (g->num > 0) {
-loop_11:
+        for (i = 0; i < g->num; i++, wk++) {
             pt = wk->pt;
             if (pt == NULL) {
                 j = 0;
                 em->x9DB = 7;
-            } else {
-                dist = CalcDistanceXZ(em->pos, pt->pos);
-                if (best == -1.0f) {
-                    bestidx = (s16)i;
-                    best = dist;
-                    goto block_18;
-                }
-                if (!(best <= dist)) {
-                    bestidx = (s16)i;
-                    best = dist;
-block_18:
-                    ;
-                }
-                i = (s16)(i + 1);
-                wk += 1;
-                if (i >= g->num) {
-                    goto block_21;
-                }
-                goto loop_11;
+                goto tail;
             }
-        } else {
-block_21:
-            idx = (s16)bestidx;
-            goto block_31;
+            dist = CalcDistanceXZ(em->pos, pt->pos);
+            if (best == -1.0f) {
+                idx = i;
+                best = dist;
+            } else if (!(best <= dist)) {
+                idx = i;
+                best = dist;
+            }
         }
     } else {
-        i = 0;
-        if (g->num > 0) {
-loop_24:
+        for (i = 0; i < g->num; i++, wk++) {
             if (wk->stg == stage) {
                 sel = 1;
-            } else {
-                i = (s16)(i + 1);
-                wk += 1;
-                if (i < g->num) {
-                    goto loop_24;
-                }
+                break;
             }
         }
         idx = i;
         if (sel == 0) {
             j = 0;
             em->x9DB = 1;
-        } else {
-block_31:
-            em->x86D = idx;
-            found = 0;
-            rt = (EM_ROUTE *)g->pos;
-            pt = rt[em->x86D].pt;
-            j = 0;
-            if (rt[em->x86D].num > 0) {
-loop_33:
-                if (pt->move != 0) {
-                    if (*(u8 *)0x3F3404 != em->stg) {
-                        found = 1;
-                        j = (s16)(rt[em->x86D].num - 1);
-                    } else {
-                        SetVector(v0, em->pos[0], em->pos[2], 0.0f);
-                        SetVector(v1, pt->pos[0], pt->pos[2], 0.0f);
-                        if (GetWallHitLine(v0, v1, hit, em->x95E) == 0) {
-                            found = 1;
-                        } else {
-                            goto block_40;
-                        }
-                    }
-                } else {
-block_40:
-                    j = (s16)(j + 1);
-                    pt += 1;
-                    if (j < rt[em->x86D].num) {
-                        goto loop_33;
-                    }
-                }
+            goto tail;
+        }
+    }
+    em->x86D = idx;
+    found = 0;
+    rt = (EM_ROUTE *)g->pos;
+    pt = rt[em->x86D].pt;
+    for (j = 0; j < rt[em->x86D].num; j++, pt++) {
+        if (pt->hit_ck != 0) {
+            if (*(u8 *)0x3F3404 != em->stg) {
+                found = 1;
+                j = rt[em->x86D].num - 1;
+                break;
             }
-            if (found == 0) {
-                pt -= 1;
-                em->x9DB = 2;
-                j = (s16)(rt[em->x86D].num - 1);
+            SetVector(v0, em->pos[0], em->pos[1] + h, em->pos[2]);
+            SetVector(v1, pt->pos[0], pt->pos[1] + h, pt->pos[2]);
+            if (GetWallHitLine(v0, v1, hit, em->x95E) == 0) {
+                found = 1;
+                break;
             }
         }
     }
+    if (found == 0) {
+        pt--;
+        em->x9DB = 2;
+        j = rt[em->x86D].num - 1;
+    }
+tail:
     if (em->x9DB != 0 && em->x8C3 != 0) {
         em->x9DB = 0;
         j = 0;
@@ -1992,7 +1963,7 @@ block_40:
     em->x881 = em->x827;
     em->x882 = em->x828;
     em->x883 = em->x829;
-    em->cmd_p868 = next;
+    em->cmd_p868 = p;
     em->x86C = pt->move;
     return ground_area_move_ptr_set(em, em->x86C);
 }
@@ -4550,17 +4521,18 @@ void NextStage_No_Set(EMW *em) {
 }
 
 void NextStage_Dir_Set(EMW *em, f32 *out) {
-    EM_STG_BOX *to;
     EM_STG_BOX *cur;
-    f32 dx;
-    f32 dz;
     s8 flag;
+    EM_STG_BOX *to;
+    f32 dz;
+    f32 dx;
 
     to = Stage_data_get((u16)em->x73A);
     cur = Stage_data_get(em->stg);
     flag = 0;
     dx = (to->x + to->w / 2.0f) - (cur->x + cur->w / 2.0f);
-    dz = (to->z + to->d / 2.0f) - (cur->z + cur->d / 2.0f);
+    dz = to->d / 2.0f + to->z;
+    dz -= cur->d / 2.0f + cur->z;
     if (dx <= cur->w / 3.0f) {
         out[0] = 0.0f;
     } else if (dx <= (2.0f * cur->w) / 3.0f) {
@@ -4572,7 +4544,7 @@ void NextStage_Dir_Set(EMW *em, f32 *out) {
     if (dz <= cur->d / 3.0f) {
         out[2] = 0.0f;
     } else if (dz <= (2.0f * cur->d) / 3.0f) {
-        flag = flag | 2;
+        flag |= 2;
         out[2] = cur->d / 2.0f;
     } else {
         out[2] = cur->d;

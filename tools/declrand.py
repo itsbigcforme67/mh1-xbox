@@ -11,7 +11,7 @@ src=open(f).read(); a,b=fn_span(src,mark)
 t=src[a:b]
 lines=t.split('\n')
 i=1; decl=[]
-while re.match(r'^    [A-Za-z_][\w \*]*?[\w\]]+( = [^;]+)?;$',lines[i]) and '(' not in lines[i].split('=')[0]:
+while re.match(r'^    [A-Za-z_][\w \*]*?[\w\]\[]+( = [^;]+)?;$',lines[i]) and '(' not in lines[i].split('=')[0]:
     decl.append(lines[i]); i+=1
 rest=lines[i:]
 print(len(decl),'decl lines')

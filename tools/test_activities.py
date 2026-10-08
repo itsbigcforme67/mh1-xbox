@@ -7,7 +7,7 @@ Each activity prints one line  PASS|FAIL <name>: <what was measured>.  The runs 
 Random outcomes (gathering, fishing, combining, trading) use RT_SEED so a run repeats; the checks are on invariants
 (ids from the stage's own pick tables, counts, prices as the shop's own UI shows them), not on one lucky result.
 
-Field: gather_herb gather_mine gather_net fishing carve_small carve_large em_materials
+Field: gather_herb gather_mine gather_net fishing carve_small carve_large em_materials tail_cut
 Items in a quest: potion whetstone paintball pitfall tranq barrel bbq drinks combine trader
 Village: shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take box_equip
 HUD / demo: demo_input map_item
@@ -137,6 +137,31 @@ def em_materials():
         bad.append('Fatalis damage %s' % masks(t['q103b'], 2, 1))
     return not bad, 'FAILED: ' + '; '.join(bad) if bad else ('crests 16 %03x / 27 %03x, Cephadrome darker, one rock variant, Rathian broken '
         'parts shown, Fatalis damaged materials' % (p16[0], p27[0]))
+
+@test
+def tail_cut():
+    """Rathian (quest 10, stage 40) tail cut (RT_EM_POKE: part 8 broken + a hit at tick 200, so Em_Dmg_Sys picks the cut-tail
+    damage -> em_tail_off_sub -> eft09 tail_off): the body no longer draws clay 1 (the tail), the cut tail is drawn where it
+    was cut with a carving point; a second run warps the hunter there (the Rathian pinned elsewhere) and carves it (items gained)"""
+    poke = {'RT_EM_POKE': '1:0x957:1@200;1:0x38D:1@200', 'RT_EM_MAT_TRACE': 1, 'RT_QUEST_STAGE': 1, 'RT_PL_GOD': 1,
+            'RT_EM_PIN': '400:8000,12500'}     # both runs: after the cut the Rathian is kept away from the carving hunter (body hit)
+    t = run('tail_cut', 'idle*400', 0, quest=10, secs=14, env=poke)
+    if crashed(t): return False, 'crash'
+    m = re.search(r'em-tail: kind 1 tail cut at (-?\d+) (-?\d+) (-?\d+) yaw \S+ pick (-?\d+)', t)
+    if not m: return False, 'tail never cut'
+    x, y, z, pick = map(int, m.groups())
+    if 'em-mat: kind 1 part 1 not drawn' not in t: return False, 'the body still draws its tail'
+    if pick < 0: return False, 'no carving point on the cut tail'
+    warp = ';'.join('%d,%d,%d' % (k, x, z) for k in (300, 330, 400, 480, 560))
+    e = dict(poke, RT_PL_WARP=warp)
+    t2 = run('tail_cut_carve', 'idle*320' + ',circle*2,idle*28' * 12, 0, quest=10, secs=25, env=e)
+    if crashed(t2): return False, 'crash (carving)'
+    m2 = re.search(r'em-tail: kind 1 tail cut at (-?\d+) (-?\d+) (-?\d+)', t2)
+    if not m2 or tuple(map(int, m2.groups())) != (x, y, z): return False, 'the second run cut the tail elsewhere (%s)' % (m2 and m2.groups(),)
+    g, fin = gains(t2, {})
+    names = item_names()
+    return bool(g), 'tail cut at %d %d %d (pick point %d), body draws no tail, carved: %s' % (x, y, z, pick, ', '.join(
+        '%s(%d) x%d' % (names[k], k, v) for k, v in sorted(g.items())) or 'nothing')
 
 @test
 def long_fight():

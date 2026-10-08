@@ -1145,7 +1145,7 @@ would be the shortcut if steps 3 and 5 turn out too slow.
   type from the same chunk (states 0x00, 0x62, 0x12, 0x01, baked into the
   clay on the PS2) are not applied. Alpha test is > 0x40 for host draws;
   the stage uses the game's own state 0x60 values (0x80 / 0).
-- **Rathian:** (fixed 8 Oct 2026, fl_model.c attach_tail_tip: tree 45-47 follows bone 44's movement from its bind pose) the tail tip (AHI tree 1) was not attached, so it lay on the
+- **Rathian:** (fixed 8 Oct 2026, fl_model.c attach_tail_tip; corrected the same day to eft09_t's rule, tree 45/46/47 = nodes 43/43/44, see "Per-kind materials" / tail cutting) the tail tip (AHI tree 1) was not attached, so it lay on the
   ground. No blending between motions.
 - **Hunter:** no weapon. Hair and cloth bones (ptmat ≥ 64) keep their bind
   offset.
@@ -2070,9 +2070,10 @@ What the PS2 does (enemy_trans 0x168B10, per clay i of the model):
   em09_material_sub (game 0x5ACA60) for 9/18/23, em20_material_sub (0x5FCBB0, game C) for 20, em_material_sub (main
   0x10CEA0, asm only) for the rest. Each writes the material's alpha (flMATERIAL +0x10, the diffuse alpha the VU1
   program multiplies into the directional lights) = EMW+0x798, then 0 for the materials not shown.
-- what they switch: sleeping-eye materials (shown while EMW+0x948 bit 0 = asleep), part-break variants by
+- what they switch: cut-surface caps of the body and the cut tail (shown once EMW+0x948 bit 0 = tail cut is set;
+  an earlier version of this note called it "asleep"), part-break variants by
   hagi[k].cnt (EMW 0x30A + 8k: Rathian 1, Rathalos 11, Lao-Shan 7, Gravios 17, Basarios 22; Diablos / Monoblos 14/26
-  horns by EX+0x1A), cut-surface caps (always off until eft09 shows the cut tail), blinking eyes (raptors: every 98
+  horns by EX+0x1A), blinking eyes (raptors: every 98
   ticks; 19/24: every 9), mouths by motion (19/24), Fatalis (2) damage materials by EX+0x52 (its hit points:
   thresholds 0x6400 / 0x4B00 / 0x3200 / 0x1900; below 0x1900 materials m1/m5 of clay 3 swap to texture APX 2), the
   Cephadrome (8, shares em08 with Cephalos 34) gets diffuse (0.396, 0.376, 0.255) on every material, Monoblos (26)
@@ -2087,13 +2088,38 @@ one pass per distinct material state, the others hidden with GFX_RS_BATCH_HIDE; 
 GFX_RS_FADE_COLOR, texture through GFX_RS_BATCH_TEX (GL, NV2A CPU and GPU-skinned paths). A colour override that
 covers the whole model (Cephadrome) scales the directional light colours instead, as the VU1 MATERIAL block does
 (em_model_col); a partial one (Monoblos) multiplies the vertex colour (approximation: also scales ambient).
-Not ported: em_alpha_clay (the clays enemy_trans draws with alpha reference 0) and the cut tail at the place it fell
-(eft09_t with arg != 0).
+Not ported: em_alpha_clay (the clays enemy_trans draws with alpha reference 0 instead of 0xC0; the PC uses one
+alpha reference, 0x40, for every host draw, and the scale of state 0x60 against the PC's texture alpha was not
+checked, so it was left alone).
+
+Tail cutting (8 Oct 2026). The tailed monsters (kinds 1, 6, 8, 11, 14, 15, 17, 21, 22, 26; all have 48 bones and a
+second bone tree 45-47 that carries only clay 1, modelled around the origin):
+- the cut: Em_Dmg_Sys breaks hagi part 8 -> x957 -> result 0xB -> the damage action that ends in em_tail_off_sub
+  (x948 |= 1, clay flag 1 cleared again, tail_off). eft09_m also calls tail_off itself: kinds 1/11/14/26 in mode 4
+  sub 0xF, 17/22 in mode 4 sub 0x11, the others at frame 300 of motion 0x429. tail_off (game C, eft09.c) sets the
+  effect's arg = 1, pos = node 43's world position, ang = its yaw, and makes a carving point
+  (Em_tail_hagi_point_set; eft09_m moves it to pos every tick until it is carved out). All of this is game C that
+  already ran on the PC; what was missing was the drawing.
+- before the cut, eft09_t gives the tail tree the body's tail nodes: bones 45, 46 = node 43, bone 47 = node 44.
+  fl_model.c attach_tail_tip does that now; the old host version (tree moved with bone 44 from its bind place)
+  stood the tail tip up above the Rathian's back (free-play shot, stage 4).
+- after the cut, eft09_t draws clay 1 alone, the tree in its bind pose under Scale(EMW+0xB8) * RotY(ang + 0x4000)
+  * Trans(pos), while the monster is active (x01) and the effect is on this stage; the body no longer draws clay 1
+  (its flag is clear and the effect's arg is set). PC: rt_em_cut_tail (rt_em.c), fl_skel_cut_tail (fl_model.c),
+  draw_cut_tail (viewer.c: poses clay 1 alone with those bones, world identity, its materials as enemy_trans).
+- not done: nothing moves the cut tail after the cut on the PS2 either (no fall: it stays at node 43's height of
+  that moment, about 117 above the ground for the Rathian in her nest, which looks like lying on the ground).
+- checked: quest 10 with the poke below: the cut at tick 200, the body ends in a stump, the cut tail lies by the
+  nest with its cut-surface cap; the hunter warped there carves 2 items (Rathian scale 183, item 179). Rathalos
+  (11, quest 170), Diablos (14, 174) and Gravios (17, 172) cut the same way (trace); Basarios (22) and Monoblos (26)
+  did not reach the cut-tail action within 400 ticks of the poke (not looked into).
+- test_activities `tail_cut`: the cut, body without its tail, a carving point, and carving it in a second run.
 
 Test aids: `RT_EM_ALL_MATS=1` (draw every clay and material, the old behaviour), `RT_EM_MAT_TRACE=1` (each new hidden
-mask per kind and part, clays not drawn, the light colour), `RT_EM_POKE="kind:offset:value[:2|4];..."` (write a byte /
-s16 / 32 bits of every monster of that kind before it is drawn: broken parts, Fatalis hit points, 0x798 fade),
-`RT_CAM_EM=kKIND,dist,height,yaw` (the free camera on the first monster of a kind). Check: test_activities
+mask per kind and part, clays not drawn, the light colour), `RT_EM_POKE="kind:offset:value[:2|4][@tick];..."` (write a
+byte / s16 / 32 bits of every monster of that kind each game tick before its AI, or only at that player tick:
+broken parts, Fatalis hit points, the 0x798 fade; a tail cut is `1:0x957:1@200;1:0x38D:1@200`),
+`RT_CAM_EM=kKIND,dist,height,yaw` (the free camera on the first monster of a kind; `tKIND,...` on its cut tail). Check: test_activities
 `em_materials` (raptor crests, Cephadrome colour, one rock variant of 29, Rathian broken parts, Fatalis damage).
 Verified with free-camera shots, new against RT_EM_ALL_MATS (not committed): Velociprey small crest and dark claws;
 the rock monster (29, quest 173) shows one grey rock instead of five overlapping coloured variants; red cut-surface
