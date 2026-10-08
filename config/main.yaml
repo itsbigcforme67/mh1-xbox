@@ -246,6 +246,8 @@ segments:
       - [0x02B054, asm, text/Menu_chatcnfg_mv]
       - [0x02B5A0, c, menu/menu38]
       - [0x02B688, asm, text/disp_name]
+      - [0x02BBC0, c, menu/menu_ftime]
+      - [0x02BC98, asm, text/font_print_quest_money]
       - [0x02BCA0, c, menu/menu20]
       - [0x02BF48, asm, text/quest_condition_print]
       - [0x02C780, c, menu/menu21]

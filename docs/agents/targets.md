@@ -196,5 +196,12 @@ Left: apiask_* (kanji conversion API of the soft keyboard), save_file_req (optio
    str_gattai (strg01.c) uses the MWCC va_start (stdarg now); the bgm01-04 matched files lack the str_getstat check of bgm_nm.c (village
    silent after the house): kept on bgm_nm.
 
-## 5. Byte matches
-NormalClipCheckF3 and PointHitCheckF3 (cp01, now 0x120240-0x120C7C): used by every ground query (shit8). main 42.054 % -> 42.095 %.
+## 5. Byte matches (6 functions, main 42.054 % -> 42.150 %)
+- NormalClipCheckF3, PointHitCheckF3 (cp01, now 0x120240-0x120C7C): used by every ground query (shit8).
+- menu_data_monster_sub (menu_dmon.c): Monster_list_search returns s8 and the temp is a `long`.
+- maru_disp_sub (menu_maru.c), get_near_point_sub (camarea_gnps.c, camera rail sections), font_print_quest_time (menu_ftime.c, buf[8],
+  `(t / 30) & 0xFFFFFFFF`): all three found with the permuter (tools/perm.py, 8-10 minutes each) and then written back naturally.
+  The permuter solved 4 of 17 functions that were 2-13 instructions off; it cannot read K&R definitions (omake_nm.c, f_quest_nm.c).
+Tried without success within the cap: Pit_mv, Pit_mv_lb, Sel_back_disp, key_rept_du, WallHitInit/GroundHitInit, stolen_item_stack, ZoomRateCalc,
+Pl_slash_lv_ck, Pl_slash_calc, pl_at012, aan_ofs_calc, em_dur_set, Get_cam_grid_XZ, disp_others_info, Quest_next_em_set, FaceLinePos, Item_preparation,
+point_cam_sub, hit_sphr_sphr2 (18 -> 11 of 64), hit_cap_cap2_m (the two float temps t2 / h swap registers, nothing moves them).
