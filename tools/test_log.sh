@@ -7,7 +7,7 @@
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/pc/mhview}   # RUN=wine for the Windows exe
 OUT=build/show/log; rm -rf $OUT; mkdir -p $OUT/logs
-export MH1_SAVE_DIR="$PWD/$OUT/card" RT_NOMOVIE=1
+export MH1_SAVE_DIR="$PWD/$OUT/card" MH1_LOG_DIR="$PWD/$OUT/logs" RT_NOMOVIE=1
 fail() { echo "log test FAILED: $1 (see $OUT)"; exit 1; }
 i=0; while [ $i -lt 24 ]; do : > "$OUT/logs/mh1_20200101_10$(printf %02d $i)00.log"; i=$((i + 1)); done
 $RUN $BIN disc/mh1 --boot --frames 80 --time 20 --shot $OUT/a.png > $OUT/a.out 2>&1
