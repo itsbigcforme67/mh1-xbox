@@ -130,7 +130,7 @@ refusals() {
 
 case "$1" in
 box) box ;;
-hunt2|hunt4|handover|leave) shift 0; hunts "$@" ;;
-"") run 2 && run 4 && hunts hunt2 hunt4 handover leave && box && refusals ;;
+hunt2|hunt4|handover|leave|carts|timeout|abandon|multi) hunts "$@" ;;
+"") run 2 && run 4 && hunts hunt2 hunt4 handover leave carts timeout abandon multi && box && refusals ;;
 *) run "$1" && refusals ;;
 esac

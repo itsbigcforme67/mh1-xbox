@@ -48,6 +48,11 @@ typedef int hsock;
 #endif
 
 int net_dest_allowed(uint32_t addr);
+#if defined(MSG_NOSIGNAL)
+#define SEND_FLAGS MSG_NOSIGNAL
+#else
+#define SEND_FLAGS 0
+#endif
 
 #define RXCAP 0x10000
 typedef struct {
@@ -116,7 +121,7 @@ static int send_all(PEER *p, const uint8_t *buf, int len)
 {
     int off = 0, spins = 0;
     while (p->up && off < len) {
-        int k = (int)send(p->fd, (const char *)buf + off, len - off, 0);
+        int k = (int)send(p->fd, (const char *)buf + off, len - off, SEND_FLAGS);   /* no SIGPIPE when the peer is gone */
         if (k > 0) {
             off += k;
             continue;

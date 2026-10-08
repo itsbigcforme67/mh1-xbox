@@ -481,6 +481,16 @@ void rt_np_init_slots(void)
     GW8(0x1B0) = 2;                 /* frames of network delay (net_start_ck computes it from the ping) */
     for (s = 0; s < 8; s++)
         game_w.pl_state[s] = s < n ? 1 : 0;
+    {   /* the quest's first monsters were made (pull_enemy_work, em_init) before the slots were known:
+         * give them this machine's slot as those do (+0x8C3: 0 = the host owns them, +0x88E) */
+        extern u8 em_work[];
+        int k;
+        for (k = 0; k < 20; k++)
+            if (em_work[0xA10 * k]) {
+                em_work[0xA10 * k + 0x8C3] = (u8)me;
+                em_work[0xA10 * k + 0x88E] = (u8)me;
+            }
+    }
     for (s = 0; s < n; s++) {
         PLW *pl = &player_work[s];
         if (s != me) {
@@ -500,6 +510,10 @@ void rt_np_init_slots(void)
          * clock, init_ran_suu): the quest's set-up then places the same things */
         extern u16 Rnd_w[];
         Rnd_w[0] = Rnd_w[1] = (u16)(0x1234 + np_quest());
+    }
+    if (getenv("RT_QUEST_TIME")) {  /* test aid: the quest's time left (ticks), for time-out tests */
+        extern u8 quest_w[];
+        *(s32 *)(quest_w + 0x10) = atoi(getenv("RT_QUEST_TIME"));
     }
     rt_online = 1;
     if (trace < 0)
@@ -536,6 +550,18 @@ void rt_np_after_init(void)
         }
         if (t >= 3000)
             fprintf(stderr, "co-op: not every player was ready after 30 s, starting anyway\n");
+    }
+}
+
+/* mcsls_force_drop (mcsls, from net_receive_sys kind 12: a player abandoned the quest):
+ * the session layer drops him, which the game sees as pl_state 0xFF (his monsters are then
+ * handed on by Em_Master_Change) */
+void mcsls_force_drop(u8 slot)
+{
+    if (slot < game_w.pl_num && slot != game_w.master && game_w.pl_state[slot] != 0xFF) {
+        game_w.pl_state[slot] = 0xFF;
+        player_work[slot].x01 = 0;
+        fprintf(stderr, "co-op: player %d abandoned the quest\n", slot);
     }
 }
 
@@ -627,6 +653,15 @@ void rt_np_tick(void)
         n_ticks++;
     }
     np_poll();
+    if (rt_online && getenv("RT_QUEST_RETIRE")) {     /* test aid: abandon the quest at that tick (the quest menu's
+                                                       * "return to the village": Quest_retire_set) */
+        static int tk;
+        void Quest_retire_set(void);
+        if (++tk == atoi(getenv("RT_QUEST_RETIRE"))) {
+            fprintf(stderr, "co-op: tick %d abandoning the quest\n", tk);
+            Quest_retire_set();
+        }
+    }
     if (rt_online) {        /* a player who left: as mcsls_force_drop marks it (pl_state 0xFF), and no longer shown */
         int s;
         for (s = 0; s < game_w.pl_num; s++)
@@ -681,7 +716,7 @@ void rt_np_tick(void)
                 if (!e[0] || e[2] == 0)
                     continue;
                 fprintf(stderr, "np-em: tick %d me %d em %d kind %d stg %d hp %d owner %d net %d act %d/%d pos %.0f %.0f\n", k, game_w.master, s,
-                        e[2], e[0x736], *(s16 *)(e + 0x302), e[0x8C3] ? e[0x88E] : game_w.master, e[0x9E2], e[0x14], e[0x15],
+                        e[2], e[0x736], *(s16 *)(e + 0x302), e[0x8C3] ? -1 : game_w.master, e[0x9E2], e[0x14], e[0x15],
                         *(f32 *)(e + 0xAC), *(f32 *)(e + 0xB4));
             }
         }

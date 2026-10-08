@@ -340,7 +340,13 @@ int CpInetTcpSend(int h, const void *buf, int len)
     if (n->state != S_UP)
         return -1;
     while (done < len) {
-        int k = (int)send(n->fd, (const char *)buf + done, len - done, 0);
+        int k = (int)send(n->fd, (const char *)buf + done, len - done,
+#ifdef MSG_NOSIGNAL
+                         MSG_NOSIGNAL   /* a closed peer is an error result, not SIGPIPE */
+#else
+                         0
+#endif
+                         );
         if (k > 0) {
             done += k;
             continue;
