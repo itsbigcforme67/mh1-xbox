@@ -183,10 +183,18 @@ int rt_game_stage(void);           /* game_w.stage */
 void rt_player_tick(int no);
 void rt_player_game_init(int no);
 void rt_monster_joints(int no, const float *world, int n);  /* em_work[no] joint world matrices */
-/* em_material_sub (0x10CEA0): the AMO materials (bit = material number,
- * < 32) this monster does not draw, for a clay whose material list
- * (0x50000) is matlist; rt_em.c */
-uint32_t rt_em_material_hide(const void *em, const uint32_t *matlist, int nmatlist);
+/* enemy_trans' per-clay and per-material state (rt_em.c): whether clay
+ * "clay" of monster em is drawn (return 1), and for each of its n materials
+ * (index into the AMO part's 0x50000 list) the alpha (0 = hidden; the
+ * corpse fade-out otherwise), a diffuse colour override and a texture
+ * override (APX index in the kind's *_tex.bin, -1 = none) */
+typedef struct {
+    float alpha;
+    int has_col;
+    float col[3];
+    int tex;
+} rt_em_mat;
+int rt_em_materials(const void *em, int clay, int n, rt_em_mat *out);
 void rt_hit_check(void);                /* the game's hit_check (shells vs monsters/players) */
 int rt_player_weapon(int no, float *root0, float *root1);   /* weapon root matrices (weapon_trans) */
 int rt_player_weapon_model(int no);     /* PLW+0x34C */

@@ -97,7 +97,7 @@ static void build_part(fl_model *m, int pi)
             }
         }
         if (nbatch < 32)
-            fp->batch_mat[nbatch] = (int16_t)(mi < m->amo.nmat ? mi : -1);
+            fp->batch_mat[nbatch] = (int16_t)(mi < m->amo.nmat ? mi : -2);
         batch[nbatch].first = start;
         batch[nbatch].count = pos - start;
         batch[nbatch].tex = NULL;

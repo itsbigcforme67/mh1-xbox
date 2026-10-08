@@ -2039,27 +2039,47 @@ Not tested / still open: selling from the pouch at the house box ("持ち物を�
   (spot kinds present: 2 fishing, 3 box, 4, 16 bed, 17, 21 delivery, 24, 25 bench) and walking into walls on stages 33-40 never
   started a climb. Needs the stage / quest where the owner saw it.
 
-## Per-kind materials: the raptor crests (agent D, 8 Oct 2026)
+## Per-kind materials: enemy_trans' clays and materials (agent D, 8 Oct 2026)
 
-Owner's PS2 footage: the Velociprey (16) has a smaller, differently shaped crest than the Velocidrome (27); the PC drew
-the drome's crest on both. Cause: em16_amh (shared by 16 and 27, likewise em13 for 13/28 and em30 for 30/31) holds
-BOTH crests and both claw sets, as materials 4 (small: the prey's) and 5 (big: the drome's), one over the other, plus
-four eye states (materials 0-3) and a chest piece (9). Not bones, scale curves or motions: em16_tbl has no scale
-channel at all. The PS2 picks per draw in em_material_sub (main 0x10CEA0, called by enemy_trans per clay): it
-writes every material's alpha (flMATERIAL +0x10) = EMW+0x798, then 0 for the hidden ones. Raptor case
-(0x10DC18-0x10DEA0), m = index in the clay's material list (AMO 0x50000):
-- preys 16/13/30 hide m 5, dromes 27/28/31 hide m 4;
-- eyes: sel = game_w+0x1E (u16 tick) % 98, or 0 while EMW+0x444+0x60 (prey) / +0x50 (drome) is set; sel 0-3 shows
-  m 2, 4-5 m 1, 6-7 m 3, else m 0 (a blink every 98 ticks);
-- m 9 only during motion 0x410 / 0x415 (EMW+0x2DC).
+Started from the owner's PS2 footage: the Velociprey (16) has a smaller crest of a different shape than the Velocidrome (27),
+the PC drew the drome's on both. em16_amh (16 and 27; em13 for 13/28, em30 for 30/31) holds BOTH crests and claw sets as
+materials 4 (small: prey) and 5 (big: drome) over each other. Not bones or motions (em16_tbl has no scale channel at all).
 
-PC: rt_em_material_hide (src/pc/rt/rt_em.c) ports that case and returns a material mask; viewer.c's monster draw
-turns it into the new render state GFX_RS_BATCH_HIDE (bit = clay batch; fl_part.batch_mat maps batches to materials;
-GL, NV2A CPU and GPU-skinned paths skip those batches; gfx_skin_batch.src keeps the source batch). amo_part now keeps
-its 0x50000 list (matlist). Other kinds' cases of em_material_sub (Rathian 1, 2, 6-9, 11, 14, 15, 17-19, 21-24, 26, 34:
-[guess] part-break / damage materials: kind 1 tests EMW+0x312 / 0x31A / 0x948) are NOT ported yet: those monsters
-still draw every material. Test aids: `RT_EM_ALL_MATS=1` (the old behaviour), `RT_EM_MAT_TRACE=1` (each new hidden
-mask per kind). Check: test_activities `raptor_crest` (quests 136 / 137: prey hides 5 not 4, drome 4 not 5).
-Verified by game-camera shots (quest 136 stage 40 with RT_PL_WARP_EM=1, tick 150, with and without RT_EM_ALL_MATS: the
-prey's crest is the small one and its claws are no longer the drome's red ones; quest 137 stage 34: the drome keeps
-the big crest). Ioprey's material 4 is a single-triangle nub, so the Ioprey shows almost no crest.
+What the PS2 does (enemy_trans 0x168B10, per clay i of the model):
+- clay i is drawn only while EMW+0x4E6+i is set (em_init sets all 32; em29 keeps one of its five variant clays; kind 3
+  draws only clay EMW+0x11). Clay 1 of kinds 1/6/8/11/14/15/17/21/22/26 is the tail: em20_init clears its flag and
+  eft09 draws it (with the body's tail bones until cut, then where it fell); the PC keeps drawing it with the body.
+- then a per-kind material function on the clay's materials (CLAY+8 = the AMO part's 0x50000 list, index m):
+  em09_material_sub (game 0x5ACA60) for 9/18/23, em20_material_sub (0x5FCBB0, game C) for 20, em_material_sub (main
+  0x10CEA0, asm only) for the rest. Each writes the material's alpha (flMATERIAL +0x10, the diffuse alpha the VU1
+  program multiplies into the directional lights) = EMW+0x798, then 0 for the materials not shown.
+- what they switch: sleeping-eye materials (shown while EMW+0x948 bit 0 = asleep), part-break variants by
+  hagi[k].cnt (EMW 0x30A + 8k: Rathian 1, Rathalos 11, Lao-Shan 7, Gravios 17, Basarios 22; Diablos / Monoblos 14/26
+  horns by EX+0x1A), cut-surface caps (always off until eft09 shows the cut tail), blinking eyes (raptors: every 98
+  ticks; 19/24: every 9), mouths by motion (19/24), Fatalis (2) damage materials by EX+0x52 (its hit points:
+  thresholds 0x6400 / 0x4B00 / 0x3200 / 0x1900; below 0x1900 materials m1/m5 of clay 3 swap to texture APX 2), the
+  Cephadrome (8, shares em08 with Cephalos 34) gets diffuse (0.396, 0.376, 0.255) on every material, Monoblos (26)
+  clay 0 m0 reddens with EX+0x1B / 60, Gypceros (20) per em20_material_sub.
+- EMW+0x798 < 1 (the AI counts it down after carving: em04b, em21_r10, em15 ...) fades the whole monster out (alpha
+  reference 0 while fading).
+
+PC: rt_em_materials (src/pc/rt/rt_em.c) ports em_material_sub (all cases enemy_trans reaches) and em09_material_sub,
+and runs the game's em20_material_sub on a stand-in material table; it returns per material alpha / colour / texture
+and whether the clay is drawn. viewer.c draw_model_attr_em (every monster, also the host Rathian) draws each clay in
+one pass per distinct material state, the others hidden with GFX_RS_BATCH_HIDE; alpha and colour through
+GFX_RS_FADE_COLOR, texture through GFX_RS_BATCH_TEX (GL, NV2A CPU and GPU-skinned paths). A colour override that
+covers the whole model (Cephadrome) scales the directional light colours instead, as the VU1 MATERIAL block does
+(em_model_col); a partial one (Monoblos) multiplies the vertex colour (approximation: also scales ambient).
+Not ported: em_alpha_clay (the clays enemy_trans draws with alpha reference 0) and the cut tail at the place it fell
+(eft09_t with arg != 0).
+
+Test aids: `RT_EM_ALL_MATS=1` (draw every clay and material, the old behaviour), `RT_EM_MAT_TRACE=1` (each new hidden
+mask per kind and part, clays not drawn, the light colour), `RT_EM_POKE="kind:offset:value[:2|4];..."` (write a byte /
+s16 / 32 bits of every monster of that kind before it is drawn: broken parts, Fatalis hit points, 0x798 fade),
+`RT_CAM_EM=kKIND,dist,height,yaw` (the free camera on the first monster of a kind). Check: test_activities
+`em_materials` (raptor crests, Cephadrome colour, one rock variant of 29, Rathian broken parts, Fatalis damage).
+Verified with free-camera shots, new against RT_EM_ALL_MATS (not committed): Velociprey small crest and dark claws;
+the rock monster (29, quest 173) shows one grey rock instead of five overlapping coloured variants; red cut-surface
+caps gone from the Cephadrome's tail and the Plesioth's body; the Cephadrome darker; a Kut-Ku at 0x798 = 0.5 is half
+transparent; Rathian / Rathalos / Diablos / Khezu / Gravios / Monoblos look as before at full health (their variants
+overlap exactly), their masks per part are in the trace. Fatalis damage was checked by trace only (dark stage).

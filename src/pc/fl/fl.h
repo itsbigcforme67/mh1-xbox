@@ -35,7 +35,8 @@ typedef struct {
     int skip;               /* set by the caller: not drawn this frame, fl_model_pose leaves it */
     int gpu;                /* skinned and lit by the backend (gfx_clay_pose), not here */
     gfx_skin_mesh *check;   /* RT_SKIN_CHECK=1: the GPU data, compared with the CPU result */
-    int16_t batch_mat[32];  /* the AMO material number of the clay's batch b (one batch per material), -1 none */
+    int16_t batch_mat[32];  /* the AMO material number of the clay's batch b (one batch per material); -2 the batch of
+                               strips without a material, -1 no batch b */
 } fl_part;
 
 typedef struct {

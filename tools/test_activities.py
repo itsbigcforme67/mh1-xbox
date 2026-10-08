@@ -7,7 +7,7 @@ Each activity prints one line  PASS|FAIL <name>: <what was measured>.  The runs 
 Random outcomes (gathering, fishing, combining, trading) use RT_SEED so a run repeats; the checks are on invariants
 (ids from the stage's own pick tables, counts, prices as the shop's own UI shows them), not on one lucky result.
 
-Field: gather_herb gather_mine gather_net fishing carve_small carve_large raptor_crest
+Field: gather_herb gather_mine gather_net fishing carve_small carve_large em_materials
 Items in a quest: potion whetstone paintball pitfall tranq barrel bbq drinks combine trader
 Village: shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take box_equip
 HUD / demo: demo_input map_item
@@ -107,21 +107,36 @@ def herbivore_pose():
     return max(hs) < 350 and (not lows or min(lows) > -60), 'highest Aptonoth joint %d above its feet (limit 350; the bug gave ~680), lowest %d (limit -60: a respawned monster showed its bind pose 120 below the ground for 10 ticks)' % (max(hs), min(lows or [0]))
 
 @test
-def raptor_crest():
-    """the Velociprey (16) and the Velocidrome (27) share em16_amh, which holds both crests (and claw sets) as materials 4 (small)
-    and 5 (big); the PS2's em_material_sub (0x10CEA0) hides 5 for the prey and 4 for the drome (the PC drew both, so the prey wore
-    the drome's crest). Checked on the materials the PC draws for each kind in quests 136 (stage 40) and 137 (stage 34)"""
-    res = {}
-    for kind, quest, stage in ((16, 136, 40), (27, 137, 34)):
-        t = run('raptor_crest_%d' % kind, 'idle*150', 0, quest=quest, stage=stage, secs=5,
-                env={'RT_EM_MAT_TRACE': 1, 'RT_PL_TARGET': 'k%d' % kind, 'RT_PL_WARP_EM': 1, 'RT_PL_GOD': 1})
-        if crashed(t): return False, 'crash (kind %d)' % kind
-        ms = [int(m.group(1), 16) for m in re.finditer(r'em-mat: kind %d part 0 hides materials 0x([0-9a-f]+)' % kind, t)]
-        if not ms: return False, 'kind %d never drawn' % kind
-        res[kind] = ms
-    ok = all(m & 0x20 and not m & 0x10 for m in res[16]) and all(m & 0x10 and not m & 0x20 for m in res[27])
-    return ok, 'hidden material masks: Velociprey %s (5 = big crest hidden), Velocidrome %s (4 = small crest hidden)' % (
-        ' '.join('%03x' % m for m in res[16]), ' '.join('%03x' % m for m in res[27]))
+def em_materials():
+    """enemy_trans' per-clay / per-material state (rt_em_materials: em_material_sub 0x10CEA0, em09/em20_material_sub), checked on
+    the hidden-material masks the PC draws with (RT_EM_MAT_TRACE): the Velociprey (16) and Velocidrome (27) share em16_amh with both
+    crests as materials 4 (small) and 5 (big), each hides the other's; Cephadrome (8) gets its darker diffuse, Cephalos (34) not;
+    the rock monster (29) draws one of its five variant clays; Rathian (1) shows its broken-part variants when EMW hagi counts are
+    set (RT_EM_POKE); Fatalis (2) swaps to its damaged materials at low EX+0x52 hit points"""
+    def masks(t, kind, part):
+        return [int(m.group(1), 16) for m in re.finditer(r'em-mat: kind %d part %d hides materials 0x([0-9a-f]+)' % (kind, part), t)]
+    runs = {'q137': (137, {}), 'q154': (154, {}), 'q173': (173, {}), 'q10': (10, {}),
+            'q10b': (10, {'RT_EM_POKE': '1:0x312:1;1:0x31A:1;1:0x33A:2'}), 'q103b': (103, {'RT_EM_POKE': '2:0x496:3000:2'})}
+    t = {}
+    for tag, (q, env) in runs.items():
+        e = {'RT_EM_MAT_TRACE': 1, 'RT_QUEST_STAGE': 1}
+        e.update(env)
+        t[tag] = run('em_materials_' + tag, 'idle*150', 0, quest=q, secs=5, env=e)
+        if crashed(t[tag]): return False, 'crash (quest %d)' % q
+    bad = []
+    p16, p27 = masks(t['q137'], 16, 0), masks(t['q137'], 27, 0)
+    if not p16 or not p27 or not all(m & 0x20 and not m & 0x10 for m in p16) or not all(m & 0x10 and not m & 0x20 for m in p27):
+        bad.append('raptor crests %s / %s' % (p16, p27))
+    if 'kind 8 light colour 0.396 0.376 0.255' not in t['q154'] or 'kind 34 light colour' in t['q154']:
+        bad.append('Cephadrome colour')
+    if not re.search(r'em-mat: kind 29 part \d not drawn', t['q173']):
+        bad.append('rock monster draws every variant')
+    if 0x78 not in masks(t['q10'], 1, 3) or not any(m & 1 for m in masks(t['q10b'], 1, 4)) or 0x78 in masks(t['q10b'], 1, 3)[-1:]:
+        bad.append('Rathian broken parts %s %s / %s %s' % (masks(t['q10'], 1, 3), masks(t['q10'], 1, 4), masks(t['q10b'], 1, 3), masks(t['q10b'], 1, 4)))
+    if 0xc50 not in masks(t['q103b'], 2, 1):
+        bad.append('Fatalis damage %s' % masks(t['q103b'], 2, 1))
+    return not bad, 'FAILED: ' + '; '.join(bad) if bad else ('crests 16 %03x / 27 %03x, Cephadrome darker, one rock variant, Rathian broken '
+        'parts shown, Fatalis damaged materials' % (p16[0], p27[0]))
 
 @test
 def long_fight():

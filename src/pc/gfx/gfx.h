@@ -75,8 +75,10 @@ enum {
     GFX_RS_PROJECTION   = 0x100, /* value: const float[16] */
     GFX_RS_BLEND        = 0x101, /* value: 0 off, 1 src-alpha/inv-src-alpha */
     GFX_RS_ZTEST        = 0x102, /* value: 0/1 */
-    GFX_RS_BATCH_HIDE   = 0x103  /* value: bit b set = batch b (< 32) of the next clays is not drawn; 0 = all drawn.
+    GFX_RS_BATCH_HIDE   = 0x103, /* value: bit b set = batch b (< 32) of the next clays is not drawn; 0 = all drawn.
                                     The PS2 hides a material by writing 0 to its alpha (em_material_sub 0x10CEA0) */
+    GFX_RS_BATCH_TEX    = 0x104  /* value: gfx_texture* drawn instead of every batch's own texture (a material's texture
+                                    swapped, em_material_sub kind 2); 0 = the batches' own */
 };
 /* Blend factor codes of fl state 0x5E, read from flPS2SendRenderState_ALPHA
  * (graphics.md 5a). The GS can only blend Cs and Cd with As, Ad or a fixed
