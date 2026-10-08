@@ -1718,6 +1718,12 @@ are unchanged within animation noise (old-vs-old differs as much). UV scroll aga
 the translate 1 - (X1E & 0x7F)/128 falls 1 -> 0 over 128 ticks, game_w.x1E counts +1 per tick on the PC (checked), so direction, speed and period are the PS2's; wrap is the part's own clamp bit (state 0x64). Stage 5 fern: GS TEX1 is
 0x60 (bilinear mag and min, no mipmaps) and the GL/nv2a filters are the same, so the blocky leaves are the low-resolution alpha texture magnified, as on the PS2.
 
+Round 29 (agent F): the UV-scroll matrix now applies only to parts whose attribute chunk asks for it (a part with no chunk never scrolls; only 9 parts in the game have none, stages 27, 33, 38, 71, 78, 79, 82, 85, 87, no waterfall).
+Quest 131 forest/cave stages 21-24, what really scrolls (RT_UV_TRACE=1 lists every clay drawn with a live matrix; RT_LIGHT_TRACE=2 lists the parts): the sky and canopy layers of 21/24 (set19, tiny drifting offsets), the ground layer of stages 22/23
+(trans_stage case 0x16/0x17, clay 6: v = 1 - (stage tick & 63) / 64, a full texture tile every 2 s, with alpha ref 0) and the set13 light-shaft billboards in the caves (u scroll, drawn with ZTST "always", z-write off, over everything as on the PS2).
+These are the game's own code; no stale-matrix leak was left. The marsh floor of 22/23 is the likeliest "weirdly scrolling grass patch": it is the part-6 layer, so unless its speed is wrong it is meant to move. Pause/unpause (Start twice, 40 to 400 ticks, stages 22-38)
+showed no leftover white shape in any shot (white-pixel count equal with and without the pause). Not reproduced: the owner's white thing; the cave light shaft (set13, ZTST always) is the only white translucent thing on a cave floor.
+
 Findings of the second pass (agent D, 7 Oct 2026)
 - **161 / 165 "18 of 20"**: the missing monsters are the second wave. Condition program op 32 (`quest_w.x3A = a`, "32/1/0/0" right after
   the "10 left" message) switches the quest to monster-list variant 1 (Em_data_st_adrs_get's last argument); Quest_next_em_set spawns
