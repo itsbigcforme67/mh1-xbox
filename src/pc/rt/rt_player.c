@@ -343,10 +343,10 @@ void rt_player_tick(int no)
             }
             f32 d[2] = { p->pos[0] - t[0], p->pos[2] - t[2] }, l = sqrtf(d[0] * d[0] + d[1] * d[1]);
             if (l < 1) { d[0] = 1; l = 1; }
-            p->pos[0] = t[0] + d[0] / l * r;
-            p->pos[2] = t[2] + d[1] / l * r;
             if (hp >= 0)
                 p->pos[1] = t[1];
+            p->pos[0] = t[0] + d[0] / l * r;     /* (alive: just outside its first body sphere, r = radius + 40; body_hit then only nudges) */
+            p->pos[2] = t[2] + d[1] / l * r;
             p->ang[1] = Em_Calc_angY(p->pos, t);
             if (getenv("RT_PL_TRACE") || getenv("RT_QUEST_TRACE"))
             fprintf(stderr, "rt_player: tick %d warped to %.0f %.0f (carve point %d at %.0f %.0f %.0f)\n",

@@ -217,8 +217,8 @@ def scenario(tag):
             ok = False
         return ok
     if tag == 'multi':
-        pl = [(dict(FIGHT, RT_PL_GOTO='60,f'), ATK * 14, 0), ({'RT_PL_GOTO': '400,f'}, '', 0)]
-        logs, bad = run(tag, pl, secs=150, quest=7)
+        pl = [(dict(FIGHT, RT_PL_GOTO='60,f', RT_DMG_MUL='160'), ATK * 30, 0), ({'RT_PL_GOTO': '400,f'}, '', 0)]
+        logs, bad = run(tag, pl, secs=300, quest=7)   # (each Velocidrome's intro demo holds the hunters ~25 s)
         R = [parse(d) for d in logs]
         ok = not bad
         hp = [sorted({v for v in R[k]['hp'].values()}, reverse=True) for k in range(2)]

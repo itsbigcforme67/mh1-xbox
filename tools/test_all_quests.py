@@ -127,6 +127,8 @@ def test(q):
             env['RT_PL_SLAY'] = '8000'       # a boss that stays out of reach (Rathalos aloft) is brought down after 8000 ticks
         elif p['boss'] >= 0:                 # the quest's main monster must die too (quest_enemy_ck): slay it from the start
             env['RT_PL_SLAY'] = '300,%d' % p['boss']
+        if need >= 20 and kind != p['boss']:   # swarms: the monsters push each other about (body_hit); finish what the sword did not
+            env['RT_PL_SLAY'] = '15000,%d,%d' % (kind, p['boss']) if p['boss'] >= 0 else '15000,%d' % kind
             note.append('boss kind %d slain by RT_PL_SLAY' % p['boss'])
     # pad: circle (deliver / carve / reward) and cam_u (draw+attack) on a repeating pattern
     # repeating pad pattern: attack flick, circle presses (carve / deliver / take reward items), cross, ddown, circle

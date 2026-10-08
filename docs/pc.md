@@ -2100,3 +2100,21 @@ the rock monster (29, quest 173) shows one grey rock instead of five overlapping
 caps gone from the Cephadrome's tail and the Plesioth's body; the Cephadrome darker; a Kut-Ku at 0x798 = 0.5 is half
 transparent; Rathian / Rathalos / Diablos / Khezu / Gravios / Monoblos look as before at full health (their variants
 overlap exactly), their masks per part are in the trace. Fatalis damage was checked by trace only (dark stage).
+
+### move() gates audit (agent C, 8 Oct 2026)
+Host `sim_tick` (viewer.c) + `rt_game_move` stand in for f_framec.c `move()` (not called). Compared step by step:
+- `player_mv` gated by `info_stop`: now matched (above). `item_check` / `body_hit` are the other two steps gated by it.
+- Quest timer (`Quest_timer_calc`), monsters (each em AI tests `info_stop` itself), set objects (set13), stage draw, Pit_mv (returns while
+  `game_w+0x21F`), bgm: all game C, so they follow the flag already. Checked in a run: the quest timer holds still during quest 131's demo
+  (added to `demo_input`).
+- `item_check`/`move_item` (dropped-item pool) stay host stand-ins. `body_hit` (hunter-hunter and monster-monster push-apart) is now
+  called every tick while info_stop == 0 (viewer.c sim_tick; `RT_BODY_HIT=0` opts out). It is cheap (0.1 s per 2000 ticks: the slow
+  runs seen earlier were machine load from other agents). Test changes it needed: `RT_EM_PIN` takes a timeline ("0:x,z;300:x,z");
+  pitfall / tranq put the Rathian on the trap at tick 300 (her own walk now depends on the hunter distance body_hit records at
+  +0x3AC); carve_small accepts either Aptonoth carve (18 / 227); test_urgent's reward-screen script is cross / ddown / circle /
+  circle every 70 ticks (reward lists change with the RNG, grids of 8); test_all_quests: swarm hunts of 20+ get an RT_PL_SLAY fallback at
+  tick 15000; test_coop_hunt `multi` runs 300 s with RT_DMG_MUL=160 (each intro demo holds the hunters ~25 s). The warp-to-monster aid
+  already stands outside the first body sphere (radius + 40); a search for a push-free spot made the quest loop fail (carves out of
+  reach), so it stays as it was.
+- Pause menu / quest end: the PS2 does not stop `move()` for the pit menu (only the sw input zeroing in sw_set_sub, `Cockpit_menu_chk`),
+  and the PC runs the same game C there; the quest-end states are game modes (game3/5), driven by rt_flow.
