@@ -69,8 +69,6 @@ static u8 *eft_free[EFT_N];
 static int eft_ctr;
 static u8 *eft_w_top;
 static void *eft_heap[EFT_N];
-void *rt_eft_push_caller[EFT_N];
-int rt_eft_push_type[EFT_N];
 
 #define LNK_PREV(p) (*(u8 **)((p) + 0x0C))
 #define LNK_NEXT(p) (*(u8 **)((p) + 0x10))
@@ -142,8 +140,6 @@ EFTW *pull_eft_work2(int n)
 void push_eft_work(EFTW *ew)
 {
     u8 *p = (u8 *)ew;
-    rt_eft_push_caller[(p - EFT_RAW(0)) / EFT_SIZE] = __builtin_return_address(0);
-    rt_eft_push_type[(p - EFT_RAW(0)) / EFT_SIZE] = p[2];
     if (getenv("RT_EFT_CHECK")) {   /* test aid: an effect freed twice sits twice on the free stack and is handed to two owners */
         int i;
         for (i = 0; i < eft_ctr; i++)
@@ -164,6 +160,20 @@ void push_eft_work(EFTW *ew)
     memset(p, 0, 8);
     *(s16 *)(p + 0x3C) = 0;
     *(void **)(p + 0x38) = NULL;
+}
+
+/* clr_eft_work (0x100EF0): at a stage change every used effect without a prim2 is freed (the prim pool is emptied by prim_init
+ * at the same time; effects left alive kept queueing prim slots that had been handed to other users: an old ambient eft14
+ * drew a weapon-trail prim of eft05 whose work was already gone, crash in eft05_t). */
+void rt_eft_clear_stage(void)
+{
+    u8 *p = eft_w_top, *n;
+    while (p) {
+        n = LNK_NEXT(p);
+        if (p[0] && p[0x3E] == 0)
+            push_eft_work((EFTW *)p);
+        p = n;
+    }
 }
 
 /* move_eft (0x101260) */

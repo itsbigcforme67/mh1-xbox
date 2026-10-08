@@ -413,7 +413,8 @@ void rt_player_parts(int no, const float *world, int n)
 }
 
 /* ------------------------------------------------ callees of agent F's pl49..pl83 not ported */
-void clr_eft_work(void) { STUB("clr_eft_work") }
+void rt_eft_clear_stage(void);
+void clr_eft_work(void) { rt_eft_clear_stage(); }    /* adxs04.c: frees every effect that holds no prim2 */
 void clr_item_work(void) { STUB("clr_item_work") }
 void clr_shell_work(void) { STUB("clr_shell_work") }
 void clr_used_heap(void) { STUB("clr_used_heap") }
