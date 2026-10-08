@@ -111,5 +111,8 @@ int  fl_skel_set_motion(fl_skel *s, int group, fmt_blob tbl, int id, int be);
 void fl_skel_update(fl_skel *s, float t);
 
 void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS]);
+/* the tailed monsters' cut-off tail: world matrices with the tail tree (45-47) in its bind pose under
+ * root (fl_model.c); 0 = no tail tree */
+int  fl_skel_cut_tail(const fl_skel *s, const flmat root, flmat *out);
 
 #endif
