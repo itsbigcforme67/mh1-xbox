@@ -496,7 +496,7 @@ def box_equip():
 def demo_input():
     """event demo (quest 131 stage 39 tutorial camera, game_w.info_stop = 1): pad input is ignored, the hunter stays put;
     when the demo ends (info_stop 0) the same held stick walks him (f_framec.c move(): player_mv only when info_stop == 0)"""
-    t = run('demo_in', {10: 'up*700'}, 710, stage=39, env={'RT_PL_TRACE': 1})
+    t = run('demo_in', {10: 'up*700'}, 710, stage=39, env={'RT_PL_TRACE': 1, 'RT_QUEST_TRACE': 1})
     P = [l for l in t.split('\n') if l.startswith('pl:')]
     pos = lambda i: tuple(float(x) for x in re.search(r'pos (\S+) (\S+) (\S+)', P[i]).groups())
     stop = [int(re.search(r' is (\d+)$', l).group(1)) for l in P]
@@ -504,7 +504,12 @@ def demo_input():
     a = stop.index(1); b = a + stop[a:].index(0)
     still = max(abs(pos(i)[0] - pos(a)[0]) + abs(pos(i)[2] - pos(a)[2]) for i in range(a, b))
     moved = abs(pos(b + 150)[2] - pos(b)[2])
-    return still < 1 and moved > 100, 'demo ticks %d-%d: hunter moved %.0f units during it, %.0f in the 150 ticks after' % (a, b, still, moved)
+    # the quest timer (Quest_timer_calc, gated by info_stop) must not run during the demo either
+    tm = [(int(m.group(1)), int(m.group(2))) for m in re.finditer(r'rt_flow: tick (\d+) mode 2 .* time (\d+) ', t)]
+    inside = {v for k, v in tm if a + 5 < k < b - 5}
+    timer_ok = len(inside) <= 1
+    return still < 1 and moved > 100 and timer_ok, ('demo ticks %d-%d: hunter moved %.0f units during it, %.0f in the 150 ticks after; '
+                                                   'quest timer values inside the demo: %s') % (a, b, still, moved, sorted(inside))
 
 @test
 def map_item():

@@ -1973,3 +1973,16 @@ Not tested / still open: selling from the pouch at the house box ("持ち物を�
   (pl_mv030 moves him 55 units and snaps to the ground above in one tick). No stage unique spot or set object for ivy/vines was found
   (spot kinds present: 2 fishing, 3 box, 4, 16 bed, 17, 21 delivery, 24, 25 bench) and walking into walls on stages 33-40 never
   started a climb. Needs the stage / quest where the owner saw it.
+
+### move() gates audit (agent C, 8 Oct 2026)
+Host `sim_tick` (viewer.c) + `rt_game_move` stand in for f_framec.c `move()` (not called). Compared step by step:
+- `player_mv` gated by `info_stop`: now matched (above). `item_check` / `body_hit` are the other two steps gated by it.
+- Quest timer (`Quest_timer_calc`), monsters (each em AI tests `info_stop` itself), set objects (set13), stage draw, Pit_mv (returns while
+  `game_w+0x21F`), bgm: all game C, so they follow the flag already. Checked in a run: the quest timer holds still during quest 131's demo
+  (added to `demo_input`).
+- Not ported, no gate to miss: `item_check`/`move_item` (dropped-item pool, host stand-ins) and `body_hit` (hunter-hunter and monster-monster
+  push-apart, linked but never called). `RT_BODY_HIT=1` calls it when info_stop == 0: it works but changes the fights (the warp/aim test
+  aids put the hunter inside monsters, pitfall / tranq / carve tests and urgent 136 fail) and slowed the sweep, so it stays off by
+  default; the PC lets monsters and co-op hunters overlap.
+- Pause menu / quest end: the PS2 does not stop `move()` for the pit menu (only the sw input zeroing in sw_set_sub, `Cockpit_menu_chk`),
+  and the PC runs the same game C there; the quest-end states are game modes (game3/5), driven by rt_flow.
