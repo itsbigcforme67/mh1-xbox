@@ -105,6 +105,34 @@ def herbivore_pose():
     return max(hs) < 350, 'highest Aptonoth joint %d above its feet (limit 350; the bug gave ~680)' % max(hs)
 
 @test
+def long_fight():
+    """Quest 131 -> stage 39 (real stage change), Aptonoths fought for 3 minutes with every pad action (attacks in all directions, roll, items, guard,
+    sheathing), the screen drawn every 10 ticks (headless runs otherwise draw only the last frame, so effect draw
+    code never ran): the weapon-trail prim of an effect work that was freed / recycled crashed eft05_t (pl = NULL)"""
+    import random
+    rnd = random.Random(7)
+    dirs = ['up', 'down', 'left', 'right', 'up+left', 'up+right', 'down+left', 'down+right']
+    cams = ['cam_u', 'cam_d', 'cam_l', 'cam_r']
+    btn = ['cross', 'circle', 'square', 'triangle', 'l1', 'r1', 'l2', 'r2']
+    ev, n = ['idle*700'], 0
+    while n < 5400:
+        r = rnd.random()
+        if r < 0.45:
+            a, b = rnd.randint(1, 4), rnd.randint(5, 40); ev += ['%s*%d' % (rnd.choice(cams), a), 'idle*%d' % b]; n += a + b
+        elif r < 0.7:
+            a = rnd.randint(5, 60); ev.append('%s*%d' % (rnd.choice(dirs), a)); n += a
+        elif r < 0.9:
+            a, b = rnd.randint(1, 6), rnd.randint(3, 30); ev += ['%s*%d' % (rnd.choice(btn), a), 'idle*%d' % b]; n += a + b
+        else:
+            a = rnd.randint(10, 60); ev.append('idle*%d' % a); n += a
+    shots = ','.join(str(x) for x in range(800, 5200, 3))     # a draw every 3 ticks: with the real stage change 21 -> 39 and a hunter
+    t = run('long_fight', ','.join(ev), 0, quest=131, secs=190,   # who is not in god mode, the weapon-trail prim of a freed effect showed up
+            env={'RT_PL_GOTO': '60,39', 'RT_SHOTS': shots, 'RT_SEED': 7})
+    if crashed(t): return False, 'crash'
+    skipped = 'skipped a prim whose effect work' in t
+    return True, '%d frames drawn, no crash%s' % (t.count('wrote '), '; a freed effect prim was skipped (see log)' if skipped else '')
+
+@test
 def carve_small():
     """Aptonoth (kind 12) killed and carved: raw meat (18) and its other parts"""
     cyc = ',cam_u*2,idle*30' * 4 + ',circle*2,idle*28' * 6
