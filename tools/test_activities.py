@@ -142,8 +142,9 @@ def em_materials():
 def tail_cut():
     """Rathian (quest 10, stage 40) tail cut (RT_EM_POKE: part 8 broken + a hit at tick 200, so Em_Dmg_Sys picks the cut-tail
     damage -> em_tail_off_sub -> eft09 tail_off): the body no longer draws clay 1 (the tail), the cut tail is drawn where it
-    was cut with a carving point; a second run warps the hunter there and carves it (items gained)"""
-    poke = {'RT_EM_POKE': '1:0x957:1@200;1:0x38D:1@200', 'RT_EM_MAT_TRACE': 1, 'RT_QUEST_STAGE': 1, 'RT_PL_GOD': 1}
+    was cut with a carving point; a second run warps the hunter there (the Rathian pinned elsewhere) and carves it (items gained)"""
+    poke = {'RT_EM_POKE': '1:0x957:1@200;1:0x38D:1@200', 'RT_EM_MAT_TRACE': 1, 'RT_QUEST_STAGE': 1, 'RT_PL_GOD': 1,
+            'RT_EM_PIN': '400:8000,12500'}     # both runs: after the cut the Rathian is kept away from the carving hunter (body hit)
     t = run('tail_cut', 'idle*400', 0, quest=10, secs=14, env=poke)
     if crashed(t): return False, 'crash'
     m = re.search(r'em-tail: kind 1 tail cut at (-?\d+) (-?\d+) (-?\d+) yaw \S+ pick (-?\d+)', t)
@@ -151,7 +152,7 @@ def tail_cut():
     x, y, z, pick = map(int, m.groups())
     if 'em-mat: kind 1 part 1 not drawn' not in t: return False, 'the body still draws its tail'
     if pick < 0: return False, 'no carving point on the cut tail'
-    warp = ';'.join('%d,%d,%d' % (k, x, z - 50) for k in (300, 330, 400, 480, 560))
+    warp = ';'.join('%d,%d,%d' % (k, x, z) for k in (300, 330, 400, 480, 560))
     e = dict(poke, RT_PL_WARP=warp)
     t2 = run('tail_cut_carve', 'idle*320' + ',circle*2,idle*28' * 12, 0, quest=10, secs=25, env=e)
     if crashed(t2): return False, 'crash (carving)'
