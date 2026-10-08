@@ -696,7 +696,7 @@ void disp_whole_map(int ofs, f32 x0, f32 scale) {
     }
     SetTrnslMode(4, 5);
     SetFilterMode(0);
-    if (Pl_Skill_ck(me, 0x2E) == 1 || Pl_item_num_ck(me, 0x8E) == 0) {
+    if (Pl_Skill_ck(me, 0x2E) == 1 || Pl_item_num_ck(me, 0x8E) != 0) {   /* asm: beqz -> the explored-window branch only WITHOUT the map (item 142) */
         q.uv[0] = 0;
         q.uv[1] = 0;
         *(u32 *)&q.uv[2] = 0xF000F0;
