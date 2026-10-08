@@ -2,7 +2,8 @@
 # Play-test the PC build with a controller or the keyboard.
 #   tools/play.sh            from power-on: logos, title, new game (character
 #                            creation) or continue (load), then Kokoto village
-#   tools/play.sh quest      straight into quest 10 (Rathian), normal rules
+#   tools/play.sh quest [N]  straight into quest N (default 10, Rathian), normal rules
+#   tools/play.sh select     level select: pick a quest from the list (Enter = 131)
 #   tools/play.sh easy       same, but the hunter can't faint
 #   tools/play.sh village    straight into Kokoto village (no save data)
 # Saves (memory card) go to ~/.local/share/mh1pc/memcard0 (MH1_SAVE_DIR
@@ -22,7 +23,12 @@ if [ "$(uname -m)" = aarch64 ]; then    # ARM box: armhf build via tools/build_a
 fi
 [ -x build/pc/mhview ] || $BUILD || exit 1
 case "$1" in
-    quest)   set -- --quest 10 ;;
+    quest)   set -- --quest "${2:-10}" ;;
+    select)  # the quest table from the co-op host's list (src/pc/rt/rt_np.c)
+             echo "Level select (quest number, stars, goal):"
+             grep -o '{ *[0-9]\+, *[0-9], *"[^"]*" *}' src/pc/rt/rt_np.c |
+                 sed 's/{ *\([0-9]*\), *\([0-9]\), *"\([^"]*\)" *}/  \1  \2*  \3/'
+             printf 'quest> '; read -r q; set -- --quest "${q:-131}" ;;
     easy)    export RT_PL_GOD=1; set -- --quest 10 ;;
     village) export RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1; set -- --quest 10 ;;
     *)       set -- --boot ;;
