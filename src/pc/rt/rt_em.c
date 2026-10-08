@@ -408,7 +408,7 @@ int rt_em_cut_tail(const void *emp, float pos[3], float *yaw)
 int rt_em_materials(const void *emp, int clay, int n, rt_em_mat *o)
 {
     u8 *em = (u8 *)emp;
-    int kind = PU8(em, 2), m;
+    int kind = PU8(em, 2), m, drawn = 1;
     if (n > 32)
         n = 32;
     for (m = 0; m < n; m++) {
@@ -424,7 +424,7 @@ int rt_em_materials(const void *emp, int clay, int n, rt_em_mat *o)
     if (clay < 0x20 && !PU8(em, 0x4E6 + (kind == 3 ? 0 : clay))) {
         const EFTW *t = (const EFTW *)PP(em, 0x878);
         if (!(clay == 1 && t && t->owner == (EMW *)em && t->type == 9 && t->arg == 0))
-            return 0;
+            drawn = 0;          /* (the materials are still set: the cut tail is drawn with them, eft09_t) */
     }
     if (kind == 9 || kind == 18 || kind == 23)
         em09_mat(em, clay, n, o);
@@ -432,7 +432,7 @@ int rt_em_materials(const void *emp, int clay, int n, rt_em_mat *o)
         em20_mat(em, clay, n, o);
     else
         em_mat(em, clay, n, o);
-    return 1;
+    return drawn;
 }
 #undef HAGI
 #undef TAIL_CUT
@@ -822,6 +822,25 @@ static void em_poke(u8 *em)
     }
 }
 
+/* test aid RT_EM_TAILOFF="kind@tick;...": at that player tick, cut the tail of every monster of that kind
+ * through eft09's own tail_off, the way eft09_m does it at frame 300 of motion 0x429 (kinds 6, 8, 15, 21
+ * have no breakable part 8, so damage never cuts them; this only shows how their cut tail is drawn) */
+void tail_off(EFTW *ew);
+static void em_tailoff(EMW *em)
+{
+    const char *p = getenv("RT_EM_TAILOFF");
+    while (p && *p) {
+        int k = -1, t = -1;
+        EFTW *ew = (EFTW *)PP(em, 0x878);
+        if (sscanf(p, "%i@%i", &k, &t) == 2 && k == em->kind && t == rt_tick_count() && ew && ew->owner == em
+            && ew->type == 9 && ew->mode == 1 && ew->arg == 0)
+            tail_off(ew);
+        p = strchr(p, ';');
+        if (p)
+            p++;
+    }
+}
+
 int rt_monster_tick(int no)
 {
     EMW *em = &em_work[no];
@@ -829,6 +848,8 @@ int rt_monster_tick(int no)
         return 0;
     if (getenv("RT_EM_POKE"))
         em_poke((u8 *)em);
+    if (getenv("RT_EM_TAILOFF"))
+        em_tailoff(em);
     if (no == 0 && getenv("RT_EM_PIN")) {   /* test aid "x,z" or "tick:x,z;tick:x,z": monster 0 is put back there every tick from that
                                              * tick on (the last entry reached wins); it can still turn and act */
         static int pin_tk;

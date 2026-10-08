@@ -2111,15 +2111,31 @@ second bone tree 45-47 that carries only clay 1, modelled around the origin):
   that moment, about 117 above the ground for the Rathian in her nest, which looks like lying on the ground).
 - checked: quest 10 with the poke below: the cut at tick 200, the body ends in a stump, the cut tail lies by the
   nest with its cut-surface cap; the hunter warped there carves 2 items (Rathian scale 183, item 179). Rathalos
-  (11, quest 170), Diablos (14, 174) and Gravios (17, 172) cut the same way (trace); Basarios (22) and Monoblos (26)
-  did not reach the cut-tail action within 400 ticks of the poke (not looked into).
-- test_activities `tail_cut`: the cut, body without its tail, a carving point, and carving it in a second run.
+  (11, quest 170), Diablos (14, 174) and Gravios (17, 172) cut the same way (trace).
+- which kinds can be cut (em_dur_tbl, main 0x356CF0): kinds 1, 11, 14, 17, 22, 26 have part 8 (the tail, durability
+  140-200) and damage kind x953 = 9, so a break of part 8 sets x957 and the next hit runs the cut action. Kinds 6, 8,
+  15, 21 have no part 8 (-1, x953 = 8) and no tail entry in em_hagi_type_tbl: damage never cuts them; eft09_m would
+  cut them at frame 300 of motion 0x429, which their AI does not play (no em_char_set 0x41). So in this version
+  Kut-Ku, Cephadrome, Khezu and Plesioth keep their tails.
+- Basarios (22): asleep in its rock disguise (act 0/22) a hit only wakes it and uses up x957 without the cut
+  action; awake, the same poke cuts (4/4 -> 4/17, tail_off). Real attacks also cut it on the PC: hunter beside
+  joint 43 (RT_PL_WARP_JOINT=43), RT_PL_AIM, RT_DMG_MUL=10, part 8 went 140 -> 0 in about 4400 ticks and the
+  tail came off (game-camera shot). Monoblos (26): the poke does start the cut action (4/4 -> 4/15) but each time
+  it had moved to stage 52 while the hunter was on 53, so the cut tail (drawn only on its own stage) was not seen.
+- kinds 6, 8, 15, 21 checked with RT_EM_TAILOFF (tail_off forced): body without clay 1, the cut tail drawn at the
+  tail's place (Kut-Ku and Khezu on the ground, Plesioth's in the water, Cephadrome's under the sand where it
+  swims); no carving point (no table entry), cut-surface caps hidden (x948 is set only by em_tail_off_sub).
+- fixed with it: the cut tail took its materials only when its clay was "drawn"; rt_em_materials now sets them
+  for clay 1 even when the body does not draw it.
+- test_activities `tail_cut`: the Rathian's cut, body without its tail, a carving point, carving it in a second
+  run; and the Basarios' cut (woken first).
 
 Test aids: `RT_EM_ALL_MATS=1` (draw every clay and material, the old behaviour), `RT_EM_MAT_TRACE=1` (each new hidden
 mask per kind and part, clays not drawn, the light colour), `RT_EM_POKE="kind:offset:value[:2|4][@tick];..."` (write a
 byte / s16 / 32 bits of every monster of that kind each game tick before its AI, or only at that player tick:
 broken parts, Fatalis hit points, the 0x798 fade; a tail cut is `1:0x957:1@200;1:0x38D:1@200`),
-`RT_CAM_EM=kKIND,dist,height,yaw` (the free camera on the first monster of a kind; `tKIND,...` on its cut tail). Check: test_activities
+`RT_CAM_EM=kKIND,dist,height,yaw` (the free camera on the first monster of a kind; `tKIND,...` on its cut tail). `RT_EM_TAILOFF="kind@tick"` (eft09
+tail_off forced at that tick), `RT_PL_WARP_JOINT=n` (with RT_PL_WARP_EM: next to joint n of the living target). Check: test_activities
 `em_materials` (raptor crests, Cephadrome colour, one rock variant of 29, Rathian broken parts, Fatalis damage).
 Verified with free-camera shots, new against RT_EM_ALL_MATS (not committed): Velociprey small crest and dark claws;
 the rock monster (29, quest 173) shows one grey rock instead of five overlapping coloured variants; red cut-surface
