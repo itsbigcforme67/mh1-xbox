@@ -85,6 +85,17 @@ int rt_np_arg(int argc, char **argv, int *i)
         want_addr = argv[++*i];
         return 1;
     }
+    if (!strcmp(a, "--allow") && *i + 1 < argc) {      /* a public address allowed on purpose (RT_NET_ALLOW) */
+        static char buf[512];
+        const char *old = getenv("RT_NET_ALLOW");
+        snprintf(buf, sizeof buf, "%s%s%s", old ? old : "", old ? "," : "", argv[++*i]);
+#ifdef _WIN32
+        _putenv_s("RT_NET_ALLOW", buf);
+#else
+        setenv("RT_NET_ALLOW", buf, 1);
+#endif
+        return 1;
+    }
     if (!strcmp(a, "--hunter") && *i + 1 < argc) {     /* the save slot (1-3) of this player's hunter */
         want_hunter = atoi(argv[++*i]) - 1;
         return 1;

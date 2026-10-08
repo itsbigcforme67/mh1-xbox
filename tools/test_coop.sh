@@ -144,7 +144,13 @@ refusals() {
     done
     timeout 30 "$BIN" "$DISC" --host 8.8.8.8 --quest 131 --mute > $OUT/refuse.log 2>&1
     grep -q "will not listen on 8.8.8.8" $OUT/refuse.log || { echo "coop: --host 8.8.8.8 was not refused"; return 1; }
-    echo "coop: public / MH Oldschool addresses refused"
+    # --allow: one public address on purpose (192.0.2.1: TEST-NET-1, reserved for documentation, nobody answers);
+    # MH Oldschool stays refused even when named
+    timeout 15 "$BIN" "$DISC" --allow 192.0.2.1 --join 192.0.2.1 --mute > $OUT/refuse.log 2>&1
+    grep -q "connecting to 192.0.2.1" $OUT/refuse.log || { echo "coop: --allow 192.0.2.1 did not allow it"; return 1; }
+    timeout 15 "$BIN" "$DISC" --allow 34.75.107.68 --join 34.75.107.68 --mute > $OUT/refuse.log 2>&1
+    grep -q "refusing 34.75.107.68" $OUT/refuse.log || { echo "coop: --allow let an MH Oldschool address through"; return 1; }
+    echo "coop: public / MH Oldschool addresses refused; --allow opens one address, never MH Oldschool"
 }
 
 case "$1" in

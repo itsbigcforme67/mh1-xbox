@@ -344,13 +344,16 @@ Run it (ONLINE=1 build only):
 
 | Option | |
 |---|---|
-| `--host [IP]` | host the quest; listens on 127.0.0.1, or on the given private LAN address of this machine. Without `--quest` it prints the Elder's quests on the console and asks for a number |
-| `--coop` | ask in small dialogs (zenity, else kdialog; on Windows or without them, on the console): host or join, then the quest and the number of players, or the host's address |
+| `--host [IP]` | host the quest; listens on every interface (or the given private address of this machine); joiners are accepted only from loopback / private addresses or `--allow`ed ones. Without `--quest` it prints the Elder's quests on the console and asks for a number |
+| `--hunter N` | the save slot (1-3) of this player's hunter; default: the first used slot of the player's card |
+| `--allow IP` | one public address allowed on purpose (a friend over the internet; repeatable; `RT_NET_ALLOW=a,b`). MH Oldschool stays refused |
+| `--coop` | ask in a small window (Windows: a Win32 window; Linux: zenity, else kdialog; else the console): host or join, then the quest and the number of players, or the host's address |
 | `--join IP` | join the host at IP (loopback or private addresses only; MH Oldschool and public addresses are refused) |
 | `--port N` | TCP port, default 10300 (both sides) |
 | `--players N` | host: start when N players (2-4) are in; after `RT_NP_WAIT` seconds (default 300) it starts with whoever came |
 | `RT_WEAPON=id` | the player's weapon (Ken_data id), sent to the others in the mini data |
-| `RT_PL_LOOK=sex,face,hair,legs,head,body,arms,waist[,hair colour]` | the player's look and armour (Armor_*_Data rows; default male, armour 5): co-op starts without a save yet |
+| `RT_PL_LOOK=sex,face,hair,legs,head,body,arms,waist[,hair colour]` | only without a save (or with `RT_NP_NOSAVE=1`): the look and armour (Armor_*_Data rows; default male, armour 5) |
+| `RT_QUEST_TIME=ticks`, `RT_QUEST_RETIRE=tick` | test aids: the quest's time left at the start; abandon the quest at that tick (`Quest_retire_set`) |
 | `RT_NP_TRACE=1`, `RT_NP_POS=n`, `RT_NP_EM=n` | test aids: every packet; every player's position, action, the box bits and first pouch slot; every monster's HP, owner and action, every n ticks |
 
 What happens:
@@ -400,28 +403,60 @@ asm; HP as a byte), and used the unnamed `D_642160` (= `em_atk_mode_timer_tbl`);
 supply-box screen, **single player too**) passed the `item_str` table instead of `item_str[0]` to `sprintf` and overflowed
 its buffer once the cursor slot was empty.
 
-Tested (`tools/test_coop.sh`, about 2 minutes; parts: `2`, `4`, `hunt`, `handover`, `box`):
-* `2` / `4`: as above.
-* `hunt`: quest 137 (one Velocidrome on stage 34). Both players walk 21 -> 39 -> 35 -> 34 (area changes with two players);
-  the host fights with the test aids of test_all_quests (warp next to it, damage x40, no damage taken), the joiner watches.
-  Both machines see the same HP values (500, 180, 0), the host as owner on both, the kill, the clear on the same tick
-  (802 / 803), and each other on stage 34. Screenshots `build/show/coop_hunt_slot*.png` (the joiner's view: its own great
-  sword and armour, the dead Velocidrome, the host).
-* `handover`: the host stays at the camp, the joiner fights: the monster is handed to the joiner (owner slot 1 on both),
-  the host's copy follows the joiner's packets to HP 0, both clear.
-* `box`: the joiner takes the first supply-box item: the host decides (channel 7), the joiner gets it (pouch 142:1), both
-  see the slot taken, the host does not get it.
+**Round 4 (owner's play-test list).**
+* Each player's **own saved hunter**: the card's image is decoded as `decode_data` does, the options and the three slots
+  go into `option_w` (`save_data_sub(0, 0xF)`), the slot into `User_data` (`Load_userdata`), `select_w[0xB6]` = slot
+  as the Continue screen sets it. The mini data is built from `User_data` (what `Set_userdata` / `Set_equip_data`
+  read) plus the name (0x12 bytes, our addition: the PS2 sent handles separately); the own slot gets `Set_userdata`
+  (name, pouch, equipment). After the quest (game mode 6) `rt_np_session_end` writes the slot back like the bed save
+  (`Save_userdata`, `save_data_sub(1, slot bit)`, `encode_data`; only this slot changes), closes the session and the
+  village runs single player.
+* **Quest start ownership fixed**: the first monsters are made before the slots are known, so every machine thought it
+  owned them; now they get this machine's slot (the host owns them, as on the PS2).
+* **Failures**: 3 carts fail the quest on every machine (each machine runs every hunter's faint, `pl_die000` ->
+  `Quest_remuneration_calc`, and the reward pool runs out everywhere); time-out (each machine's own timer, the lower one
+  sent every 5 minutes); abandon (`Quest_retire_set` -> sys 0xC -> `mcsls_force_drop`, now `pl_state 0xFF` on the
+  others). **Capture is not tested** (needs traps and tranquillisers in a scripted fight); note that `Quest_net_sub` has
+  no case for code 8 (capture), so the others only see the monster's state through its packets (as on the PS2).
+* **Two big monsters at once**: quest 96 (Rathalos + Rathian) could not be finished by the test aids (the Rathian's HP
+  stops at 1 under `RT_PL_SLAY`, offline too), quest 97 (two Diablos) is out of the aids' reach (underground); the test
+  uses quest 7 instead: three Velocidromes one after another.
+* **Timer drift (point 5)**: not a PC artefact. The drift comes from `info_stop` during event demos (a player who walks into
+  a boss's intro has his timer stopped for its length, ~15 s) and on the PS2 also from loading (the PS2's game loop does
+  not tick while it loads; on the PC an area loads within 5 ticks). The original rule is kept: every machine sends its
+  timer every 9000 ticks and at 0, the lower one wins.
+* **Bugs found**: the host died of SIGPIPE when a joiner had already closed its socket (`MSG_NOSIGNAL` now, also in the
+  lobby client); a quest stage's set object prim was drawn in the village after a co-op quest (`rt_village_enter` now
+  clears the prims as `all_reset` does; single player too).
+* **Windows**: `ONLINE=1 tools/build_win.sh` builds `build/win/mhview_online.exe` (Winsock, ws2_32); a Wine joiner plays
+  with a Linux host in the test. The Win32 dialog is compiled, not opened in a test (it would appear on the desktop).
+* **Internet**: the host listens on all interfaces; joiners from public addresses only when `--allow`ed; MH Oldschool
+  always refused. The accept filter for a public joiner is not tested (no public address here).
 
-Not done yet, in the order they matter:
-* Not tested: quest failure and the abandon / timer messages (sys 6 codes 4/10, 5, 0xC), capture, giving items between
-  players (kinds 7/8), a player fainting and the cart, more than one big monster, 3-4 player hunts, a player leaving during
-  a hunt (`Em_Master_Change` should hand his monsters on).
-* The quest timers drift: a player who changes areas more often has the timer stopped longer (stage loading); the game
-  sends its timer every 9000 ticks (5 minutes) and the lower one wins, so they only meet then.
-* A player's equipment comes from `RT_WEAPON` / `RT_PL_LOOK`, not from the save; the reward / village after the quest are
-  each machine's own; no in-quest chat (channel 6); names are "HUNTER n".
-* The zenity / kdialog dialogs were checked for shell syntax only (a run would open windows on the desktop); the console
-  fallback is tested. No Windows dialog (Windows uses the console or the flags); the Winsock path is untested.
+Tested (`tools/test_coop.sh`, about 15 minutes, all headless on 127.0.0.1; parts `2`, `4`, `hunt2`, `hunt4`,
+`handover`, `leave`, `carts`, `timeout`, `abandon`, `multi`, `box`, `wine`; the hunts in `tools/test_coop_hunt.py`):
+* `2` / `4`: walking, positions exact on every machine.
+* `hunt2` / `hunt4`: quest 137 with saved hunters ANNA, BOB, CARL, DAVE (made by the test from a new game, quest 131 and
+  a bed save): every machine sees every name, the host's monster HP values (500, 180, 0), the host as the only owner,
+  the clear within a tick or so, its own reward screen, the village, and its own save with more money (1550 -> 1725
+  for two, 1637 each for four; checked by decoding the card).
+* `handover`: the host stays at the camp, the joiner fights, the monster passes to him on both machines, both clear.
+* `leave`: 3 players; slot 1 fights and owns the monster, then quits; the monster passes to slot 2 (on the area), who
+  kills it; host and slot 2 clear and save.
+* `carts`: the host faints twice, the joiner once: both fail at the same tick (D5 6), both reach the village.
+* `timeout`: 20 s of quest time: both fail at the same tick.
+* `abandon`: the joiner abandons at tick 300: back to the village and saved; the host is told, clears and saves.
+* `multi`: quest 7, two of the three Velocidromes killed in 150 s, the same kills left on both machines.
+* `box`: the supply box decided by the host. `wine`: the Windows build (Winsock) joins a Linux host.
+* Refusals: public and MH Oldschool addresses; `--allow 192.0.2.1` lets that one address through (TEST-NET, nobody
+  answers), `--allow 34.75.107.68` still refuses MH Oldschool.
+
+Not done yet:
+* If the host leaves, the others lose each other (the host relays); they go on alone.
+* Capture, giving items between players (kinds 7/8), in-quest chat (channel 6), two big monsters on one area at once.
+* The co-op starts at the quest, not from the village's quest board; the village afterwards is single player.
+* The zenity / kdialog / Win32 windows were not opened in a test (they would appear on the desktop); the console
+  fallback is tested.
 
 ## 4. Run it
 
