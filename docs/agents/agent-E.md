@@ -959,3 +959,29 @@ Scoping and design in docs/network.md sections 1a and 3.4. Short version:
   (single-player crash once the box cursor slot is empty). Lesson: near-matches with the right instruction count can
   still have wrong load widths; check lb/lh/lbu against the asm when a value looks truncated.
 - Lesson: PC glue that hardcoded `player_work[0]` (test aids, stage sounds, HUD) must use `game_w.master` online.
+
+## Targeted decompilation of the game overlay and the village lobby (8 Oct 2026)
+
+List, method and findings: docs/agents/targets.md. Short version of what is worth knowing for the next session:
+- game.bin has 40 unmatched functions, all `*_nm.c` near-matches, 31 of which run in the headless tests; the lobby's
+  unmatched offline code is `lb_disp_name`, `lb_pl_turn_sub`, `lb_insert_target_list`, `Lb_set_mini_data`,
+  `ef_move_sub_0053E360`. Everything else the `src/lobby/**/*_nm.c` files report as "differing" is a stale copy of a
+  function that is matched in another file (check `tools/unmatched.py lobby` before working on one).
+- `tools/semdiff.py` (multiset compare of original and our instructions, registers and relocations erased) is the
+  fastest way to tell "register allocation only" from "different behaviour". It found: `em12_main` (Em_Dmg_Sys result
+  switch lacked case 14; its jump table says so), `em_cmd_ground_area_move` (an m2c draft with wrong SetVector args and
+  the wrong halfword of the route point), `lb_disp_name` (a float truncation too many). Look at `sltiu N` / `jr` lines in
+  the DIFFERS output: a different N means a different number of switch cases.
+- `COV=1 tools/build_pc.sh` builds with `-finstrument-functions`; `RT_COV=file` makes each process append the functions it
+  entered; `tools/cov_report.py file build/pc/mhview LIST...` maps them (the processes are ASLR-based and write at the same
+  time, the report handles both). Do not run the normal tests against the COV binary and then forget it is in build/pc.
+- Host weak stubs (`rt_em.c` WSTUB/WEAK) can hide a missing definition: `nm` the objects and compare. Found
+  `em01_local_area_move_init` (matched in em_modechg.c, never linked) and the lobby effect 25 (`eft25_i/_d/_e/_t` matched,
+  `eft25_m` only in lb_e25.c): they ran as no-ops.
+- `declhill.py` and `declrand.py` stopped at the first array declaration (`f32 v[3];`) and silently tried nothing; fixed.
+  `tools/declsearch.py` is a random move search over the declaration order (arrays allowed).
+- Not matched, notes: `em_cmd_ground_area_move` is now structurally the same as the original (for loops, `p` advanced with
+  `*p++`) and differs only in which saved registers the variables get (decl order moves the count between 152 and 140);
+  `NextStage_Dir_Set` is 3 instructions off (add.s operand registers) after `to->d / 2 + to->z` with the declaration order
+  found by declbf; `eft11_i` is much closer with `w->` and `w++` in the copy loop (120 vs 163) but the eft11_t0 address load
+  stays early.

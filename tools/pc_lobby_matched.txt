@@ -81,3 +81,7 @@ src/lobby/f/lb_gaf01.c
 src/lobby/f/lb_ge2501.c
 src/lobby/f/lb_ag01.c
 src/lobby/f/lb_ag02.c
+src/lobby/f/lb_ge2502.c
+src/lobby/f/lb_ge2503.c
+src/lobby/f/lb_ge2504.c
+src/lobby/f/lb_ge2505.c

@@ -222,7 +222,7 @@ PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint"
 # lb_bz110, lb_bz137, lbuiv, lbuiw) into one TU, f/lb_cli.c (8 Oct 2026):
 # the functions the PC used from them
 PICK="$PICK src/lobby/f/lb_cli.c:lbc_text_lobby_trans,Lbs_GetRoomInfo,Lbc_set_prim,Lbc_init_network_work,Lbc_connect,text_lobby_trans_ot3,GetRoomRule,Lbs_MatchStart"
-PICK="$PICK src/lobby/f/lb_v17.c:Lb_make_quest_tbl src/lobby/f/lb_t.c:get_CA_size src/lobby/f/lb_uif.c:put_button_help src/lobby/f/lb_gy01.c:lb_guild_check_keyQuest src/lobby/b/lbsnd02.c:sound_req_com src/lobby/b/lbsnd03.c:ashi_sd_req_005C4980"
+PICK="$PICK src/lobby/f/lb_e25.c:eft25_m src/lobby/f/lb_v17.c:Lb_make_quest_tbl src/lobby/f/lb_t.c:get_CA_size src/lobby/f/lb_uif.c:put_button_help src/lobby/f/lb_gy01.c:lb_guild_check_keyQuest src/lobby/b/lbsnd02.c:sound_req_com src/lobby/b/lbsnd03.c:ashi_sd_req_005C4980"
 LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*}"; done)"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
 WEAK="$WEAK_EM mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
@@ -255,13 +255,14 @@ if [ -n "$ONLINE" ]; then
     EXTRA_CFLAGS="$EXTRA_CFLAGS -DMH1_ONLINE=1"
 fi
 # Stand-ins replaced by the game's own C (docs/pc.md "Stand-ins wired"): only the named functions are taken
-PICK_X="src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
+PICK_X="src/game/em/em_modechg.c:em01_local_area_move_init,Em_Mode_Chg src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
 GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
 PICK_MAIN="$PICK_MAIN $PICK_X"
 
 SDL_CFLAGS=${SDL_CFLAGS:-"-I/usr/include/SDL2 -D_REENTRANT"}
 # build id shown in the debug log header (rt_log.c): git hash, "+" when the tree has changes
 : ${MH1_VERSION:=$(git rev-parse --short=10 HEAD 2>/dev/null || echo unknown)$(git diff --quiet HEAD 2>/dev/null || echo +)}
+EXTRA_CFLAGS="$EXTRA_CFLAGS ${COV:+-finstrument-functions}"   # function coverage (src/pc/rt/rt_cov.c, tools/cov_report.py)
 CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L $EXTRA_CFLAGS"
 # -fno-aggressive-loop-optimizations: decompiled loops index past declared
 # array ends (EMW.hagi[8] read with i == 8 in Em_Dmg_Sys): without it gcc
@@ -273,7 +274,7 @@ CFLAGS="$M32 -std=c99 -O2 -g -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOUR
 # 94 without setting it: the hunter flew off to z = 1e21 and the screen
 # went blank. Zero is what such a slot ends near in every case seen.
 GAME_NOAGG=${GAME_NOAGG--fno-aggressive-loop-optimizations}   # gcc only (empty for clang)
-GAMEFLAGS="$M32 $GAME_EXTRA -std=gnu99 -O2 -g -fno-strict-aliasing $GAME_NOAGG -ftrivial-auto-var-init=zero -Iinclude -w"
+GAMEFLAGS="$M32 $GAME_EXTRA ${COV:+-finstrument-functions} -std=gnu99 -O2 -g -fno-strict-aliasing $GAME_NOAGG -ftrivial-auto-var-init=zero -Iinclude -w"
 LIBS=${LIBS:-"-lSDL2 -lGL -lm"}
 LINK1_OPTS=${LINK1_OPTS--Wl,--warn-unresolved-symbols}   # lld (Windows) has no such switch: LINK1_TOLERANT=1 and --error-limit=0
 EXE=${EXE:-}               # ".exe" for the Windows build (tools/build_win.sh)   # host symbols by name: build/pc/rt_symtab.c (tools/gen_symtab.py), no dlsym
@@ -486,7 +487,7 @@ OBJS="$OBJS build/pc/rt_tables.o"
 MEMSTAT="-include src/pc/rt/rt_memstat.h"
 $CC $CFLAGS $SYS -c src/pc/rt/rt_memstat.c -o build/pc/rt_memstat.o
 OBJS="$OBJS build/pc/rt_memstat.o"
-for f in $NETRT rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_light rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie rt_prof rt_log rt_pick; do
+for f in $NETRT $([ -n "$COV" ] && echo rt_cov) rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_light rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_boot rt_movie rt_prof rt_log rt_pick; do
     # shellcheck disable=SC2086
     XF=""; [ $f = rt_log ] && XF="-D_GNU_SOURCE"   # ucontext / sigaltstack
     [ $f = rt_menu ] && XF="-DMH1_NO_UTF8"       # include/plf.h declares memset(void *, int, int)
