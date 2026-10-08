@@ -99,11 +99,12 @@ def herbivore_pose():
     attacks (no damage aids) must reach it: RT_PL_WARP_EM only puts the hunter next to it, the hits are the pad's"""
     atk = ',cam_u*2,idle*22,cam_r*2,idle*22,cam_u*2,idle*30,circle*2,idle*10' * 12
     t = run('herbivore_pose', 'idle*700' + atk, 0, quest=131, stage=39, secs=40,
-            env={'RT_PL_GOD': 1, 'RT_PL_WARP_EM': '650-90000', 'RT_PL_AIM': 1, 'RT_PL_TARGET': 'k12', 'RT_POSE_CHECK': 1})
+            env={'RT_PL_GOD': 1, 'RT_PL_WARP_EM': '650-90000', 'RT_PL_AIM': 1, 'RT_PL_TARGET': 'k12', 'RT_POSE_CHECK': 1, 'RT_DMG_MUL': 3})
     if crashed(t): return False, 'crash'
     hs = [int(m.group(1)) for m in re.finditer(r'pose-check: kind 12 slot \d+ joints up to (-?\d+) above the feet \(motion 100[4-6]\)', t)]   # walk and eat motions only: a freshly respawned monster shows the unposed bind pose (motion not yet set) for a few ticks
     if not hs: return False, 'no pose-check output'
-    return max(hs) < 350, 'highest Aptonoth joint %d above its feet (limit 350; the bug gave ~680)' % max(hs)
+    lows = [int(m.group(1)) for m in re.finditer(r'pose-check: kind 12 slot \d+ joints down to (-?\d+) below the feet', t)]
+    return max(hs) < 350 and (not lows or min(lows) > -60), 'highest Aptonoth joint %d above its feet (limit 350; the bug gave ~680), lowest %d (limit -60: a respawned monster showed its bind pose 120 below the ground for 10 ticks)' % (max(hs), min(lows or [0]))
 
 @test
 def long_fight():
