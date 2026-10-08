@@ -247,6 +247,18 @@ SHLW *pull_shell_work(int n)
     return (SHLW *)p;
 }
 
+void push_shell_work(SHLW *sh);
+void rt_shell_clear_stage(void)
+{
+    u8 *p = shell_w_top, *n;
+    while (p) {
+        n = LNK_NEXT(p);
+        if (p[0] && p[9] == 0)
+            push_shell_work((SHLW *)p);
+        p = n;
+    }
+}
+
 void push_shell_work(SHLW *sh)
 {
     u8 *p = (u8 *)sh;

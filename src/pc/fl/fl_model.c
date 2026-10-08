@@ -534,6 +534,27 @@ static void eval_group(const ahi_skel *sk, int g, const aan_motion *m, float t, 
     }
 }
 
+/* The second bone tree of Rathian / Rathalos (bones 45-47, group 3, no motion of its own) is the cut-off tail tip: a separate mesh
+ * that sits at its bind place unless something moves it, i.e. on the ground under the monster. Until the tail is cut it belongs on the
+ * tail: the whole tree follows bone 44 (the tail's last bone) the way bone 44 has moved from its bind pose. */
+static void attach_tail_tip(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])
+{
+    const ahi_skel *sk = &s->skel;
+    flmat bind[64], inv, m;
+    float (*bc)[9];
+    int i;
+    if (sk->nbone != 48 || sk->bone[45].parent != -1 || sk->bone[45].group != 3 || sk->bone[44].group != 2 || g[3].m)
+        return;
+    bc = calloc(sk->nbone, sizeof *bc);
+    bind_channels(sk, bc);
+    bone_world(sk, (const float (*)[9])bc, bind);
+    free(bc);
+    flmat_invert_affine(inv, bind[44]);
+    flmat_mul(m, inv, s->world[44]);
+    for (i = 45; i < 48; i++)
+        flmat_mul(s->world[i], bind[i], m);
+}
+
 void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])
 {
     int gi, i, c;
@@ -584,5 +605,6 @@ void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])
         }
     }
     bone_world(&s->skel, (const float (*)[9])s->chan, s->world);
+    attach_tail_tip(s, g);
     rt_prof_end(RTP_MOTION);
 }

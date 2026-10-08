@@ -1086,7 +1086,7 @@ would be the shortcut if steps 3 and 5 turn out too slow.
   type from the same chunk (states 0x00, 0x62, 0x12, 0x01, baked into the
   clay on the PS2) are not applied. Alpha test is > 0x40 for host draws;
   the stage uses the game's own state 0x60 values (0x80 / 0).
-- **Rathian:** the tail tip (AHI tree 1) is not attached, so it lies on the
+- **Rathian:** (fixed 8 Oct 2026, fl_model.c attach_tail_tip: tree 45-47 follows bone 44's movement from its bind pose) the tail tip (AHI tree 1) was not attached, so it lay on the
   ground. No blending between motions.
 - **Hunter:** no weapon. Hair and cloth bones (ptmat ≥ 64) keep their bind
   offset.
