@@ -70,7 +70,7 @@ Found by reading the asm against the near-match C after `semdiff.py` flagged it,
 Checked against the asm and found equivalent (so the "differing" figure is only allocation/scheduling):
 `em_char_set` (monster motion request), `em_cmd_escape_area_set`, `em_cmd_dansa_sel`,
 `em_cmd_angle_ck` (its `!= -1U` test on a byte is dead in the original too), `lb_target_angle`,
-`Em_Mode_Chg`, the neck code reads consistently (unsigned shifts in the original, same values).
+`Em_Mode_Chg`; the neck code (em_neck_move_sub, neck_ang_set) was read for logic only, the original uses unsigned shifts and compares where the copy has u16 promoted to int (same values).
 
 ## Ranked list: unmatched game functions (what the PC runs from `*_nm.c`)
 
@@ -81,7 +81,7 @@ block order differ. Diff counts are `check.py` (inflated by shifts).
 |---|----------|-------|-----|-------|
 | 1 | `em_neck_move_sub`, `neck_ang_set` (em_core_nm.c) | 1956, 1392 | yes | head turning every tick; unsigned/signed shift noise only, logic read OK; 35 / 73 real hunks |
 | 2 | `em_char_set` | 936 | yes | motion request; read against asm, equivalent (stack spill vs fp) |
-| 3 | `em_cmd_end_command`, `em_cmd_samestage_pl_target_sel`, `em_cmd_all_pl_target_sel` | 2276, 1052, 900 | yes | AI program interpreter / target pick; DIFFERS only by u8 loop temps |
+| 3 | `em_cmd_end_command`, `em_cmd_samestage_pl_target_sel`, `em_cmd_all_pl_target_sel` | 2276, 1052, 900 | yes | AI program interpreter / target pick; semdiff differences are frame size, u8 loop temps and a duplicated constant load; only the area-route case of end_command and the first half of samestage_pl_target_sel were read against the asm |
 | 4 | `em_cmd_ground_area_move` | 1012 | yes | FIXED (real bug), allocation left |
 | 5 | `em12_main` | 1660 | yes | FIXED (switch), jump table vs ladder left |
 | 6 | `em_cmd_escape_area_set`, `NextStage_No_Set`, `NextStage_Dir_Set` (EQ, 3 instr off) | 812, 856, 540 | yes | area change; read OK |
