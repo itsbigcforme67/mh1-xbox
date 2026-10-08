@@ -416,7 +416,7 @@ MATCHED_B="src/main/cam/cam.c \
     src/main/omake/omaked.c \
     src/main/omake/omakee.c \
     src/main/option/option01.c \
-    src/main/ud/f_ud.c src/main/menu/menu_dmon.c src/main/menu/menu_maru.c"
+    src/main/ud/f_ud.c src/main/menu/menu_dmon.c src/main/menu/menu_maru.c src/main/cam/camarea_gnps.c"
 MATCHED_A="$MATCHED_A $MATCHED_B"
 WEAK_B="cam_nm camarea_nm camr_nm camr2_nm camr4_nm camr5_nm hit2_nm menu_nm menu_disp_nm option_nm omake_nm listsel_nm ud_nm udmisc_nm"
 [ -n "$MATCHED_SKIP" ] && MATCHED_A=$(echo $MATCHED_A | tr ' ' '\n' | grep -vE "$MATCHED_SKIP" | tr '\n' ' ')   # bisecting aid
