@@ -228,9 +228,17 @@ void rt_sys_init(void)
     Tsk_Execute((void *)Card_task, 13);
 }
 
+#ifndef MH1_ONLINE     /* ONLINE=1: rt_np.c counts it (and paces the ticks) */
+extern u16 System_timer;
+#endif
 void rt_sys_tick(void)
 {
     int i;
+#ifndef MH1_ONLINE
+    /* the PS2's Scheduler (tsk_01.c) counts System_timer every frame: the map's boss icon pulse, the extras menu
+     * glow and the monsters' eye/blink tables read it (it stood at 0 on the PC) */
+    System_timer++;
+#endif
     for (i = 6; i < 16; i++) {
         u8 *t = tcb_w + 0x20 * i;
         s16 *st = (s16 *)t, *tm = (s16 *)(t + 2);

@@ -51,19 +51,19 @@ u8 hit_sphr_sphr(f32 *a, f32 *b, f32 ra, f32 rb) {
 u8 hit_sphr_sphr2(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb) {
     f32 d = flvecCalcDistance(a, b);
     f32 t;
-    f32 dx;
     f32 dy;
     f32 dz;
 
     if (d <= ra + rb) {
         if (!(d <= 0.001f)) {
             t = rb / d;
-            dx = a[0] - b[0];
+            d = a[0] - b[0];
             dy = a[1] - b[1];
             dz = a[2] - b[2];
-            out[0] = dx * t + b[0];
+            out[0] = d * t + b[0];
             out[1] = dy * t + b[1];
-            out[2] = dz * t + b[2];
+            d = dz * t;
+            out[2] = d + b[2];
         } else {
             flvecCopy(out, b);
         }

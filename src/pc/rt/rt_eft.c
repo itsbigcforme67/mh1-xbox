@@ -624,6 +624,16 @@ void rt_actor_joints(const void *chr, const float *mats, int n)
     }
 }
 
+/* number of host joints known for an actor (0: none) */
+int rt_actor_joint_count(const void *chr)
+{
+    int i;
+    for (i = 0; i < 32; i++)
+        if (joints[i].chr == chr && joints[i].m)
+            return joints[i].n;
+    return 0;
+}
+
 static const f32 *joint_mat(const void *chr, int j)
 {
     int i;
@@ -838,7 +848,6 @@ s16 Get_atk_value(void *pl, int kind)
         return 0;
     return Ken_data[*(u16 *)(p + 0x360)][0xB + (kind & 0xFF)];
 }
-STUB_V(em_material_sub, (void *em, int a, CLAY *c))
 /* skinned-model drawing (fl hierarchy), used by eft01/eft05/eft09 */
 STUB_V(flCalcTrans, (void *h, FLMAT *m))
 STUB_V(flCalcTransSI, (void *h, FLMAT *m))

@@ -126,51 +126,38 @@ WEAK void act_set(void *w, int a, int b)
  * diffuse colour (GetPlayerDiffuseData); the host lights monsters itself. */
 void GetEmMaterialData(EMW *em) { (void)em; }
 
-/* em_material_sub (main 0x10CEA0, called per clay i by enemy_trans with the
- * model's clay list): per kind, it writes each of the clay's materials'
- * alpha (flMATERIAL +0x10) = EMW+0x798 and then 0 for the materials not
- * shown this frame; the host turns those zeros into a hidden-material mask
- * (GFX_RS_BATCH_HIDE). Only the raptor case (kinds 13/16/27/28/30/31, asm
- * 0x10DC18-0x10DEA0) is ported; m = index into the clay's material list:
- *  - the Velociprey / Genprey / Ioprey (16, 13, 30) hide m 5, the dromes hide
- *    m 4: em16/em13/em30_amh hold both crests (and claw sets) as materials 4
- *    (small, the prey's) and 5 (big, the drome's) over each other;
- *  - eyes: m 0-3 are eye states; one is shown: sel = game_w+0x1E (u16 tick
- *    counter) % 98, or 0 while the per-monster byte at EMW+0x444+0x50
- *    (dromes) / +0x60 (preys) is set (eyes closed): sel 0-3 shows m 2,
- *    4-5 m 1, 6-7 m 3, otherwise m 0;
- *  - m 9 is shown only during motion 0x410 / 0x415 (EMW+0x2DC).
- * Other kinds: nothing hidden (their cases are not ported). */
-uint32_t rt_em_material_hide(const void *em, const uint32_t *matlist, int nmatlist)
+/* em_material_sub (main 0x10CEA0, src/main/emw/emmat_nm.c: the game's own code, m2c output of the asm): per monster kind
+ * it writes the alpha (flMATERIAL +0x10) of each material of clay `part`: EMW+0x798, or 0 for the materials hidden this
+ * frame (blinking eyes, the raptors' two crests, broken and cut parts, ...). The host turns those zeros into the
+ * hidden-material mask (GFX_RS_BATCH_HIDE): the real function runs on a scratch material array and a scratch
+ * descriptor (count and indices 0..n-1) while EMW+0x50C points at a scratch model work. Before 8 Oct 2026 only the
+ * raptor case (kinds 13/16/27/28/30/31) was ported by hand. */
+void em_material_sub(void *em, int part, void *clays);
+uint32_t rt_em_material_hide(const void *em, int part, const uint32_t *matlist, int nmatlist)
 {
-    int kind = PU8(em, 2), prey, sel, m;
+    enum { MATS = 40, PARTS = 64 };
+    static u8 mats[MATS * 0x4C];
+    static u8 mdl[0x60];
+    static u8 clays[PARTS * 0x8C];
+    EMW *w = (EMW *)em;
+    struct EM_MDL *save;
     uint32_t hide = 0;
-    if (kind != 13 && kind != 16 && kind != 27 && kind != 28 && kind != 30 && kind != 31)
+    int m;
+    if (part < 0 || part >= PARTS || nmatlist > MATS - 1 || nmatlist > 30)
         return 0;
-    prey = kind == 16 || kind == 13 || kind == 30;
-    if (PU8(em, 0x444 + (prey ? 0x60 : 0x50)))
-        sel = 0;
-    else
-        sel = (s16)(PU16(&game_w, 0x1E) % 0x62);
-    for (m = 0; m < nmatlist; m++) {
-        int off = 0;
-        if (m == (prey ? 5 : 4))
-            off = 1;
-        if ((u32)sel < 8) {
-            if (sel < 4)
-                off |= m == 0 || m == 1 || m == 3;
-            else if (sel < 6)
-                off |= m == 0 || m == 2 || m == 3;
-            else
-                off |= m == 0 || m == 1 || m == 2;
-        } else {
-            off |= m == 1 || m == 2 || m == 3;
-        }
-        if (m == 9 && PU16(em, 0x2DC) != 0x410 && PU16(em, 0x2DC) != 0x415)
-            off = 1;
-        if (off && matlist[m] < 32)
+    memset(mats, 0, sizeof mats);
+    memset(clays + part * 0x8C, 0, 0x8C);
+    PS32(clays + part * 0x8C, 4) = nmatlist;
+    for (m = 0; m < nmatlist; m++)
+        PS32(clays + part * 0x8C, 8 + 4 * m) = m;
+    *(u8 **)(mdl + 0x10) = mats;
+    save = w->mdl;
+    w->mdl = (struct EM_MDL *)mdl;
+    em_material_sub(w, part, clays);
+    w->mdl = save;
+    for (m = 0; m < nmatlist; m++)
+        if (PS32(mats + m * 0x4C, 0x10) == 0 && matlist[m] < 32)
             hide |= 1u << matlist[m];
-    }
     return hide;
 }
 
@@ -532,6 +519,28 @@ int rt_monster_spawn(int kind, const float pos[3], int ang_y)
 }
 
 void rt_em_world_mat(EMW *em);
+/* Lao-Shan Lung (kind 7): hunters stand and ride on its back. The game's move() runs old_pos_save (the
+ * joints' world matrices of the previous tick into sys_old_mat / sys_old_pos) before enemy_mv and
+ * em_ride_sub (src/main/em/emride_nm.c) after it; the host keeps the joint matrices in the node array. */
+extern f32 sys_old_mat[][16];
+extern f32 sys_old_pos[][3];
+void em_ride_sub(EMW *em);
+u8 *rt_actor_nodes(const void *work, int *max);
+int rt_actor_joint_count(const void *chr);
+static void ride_old_save(EMW *em)
+{
+    int max, i, n = rt_actor_joint_count(em);
+    u8 *nodes = rt_actor_nodes(em, &max);
+    if (!nodes)
+        return;
+    if (n > max)
+        n = max;
+    for (i = 0; i < n; i++) {
+        memcpy(sys_old_mat[i], nodes + i * 0x190, 64);
+        memcpy(sys_old_pos[i], nodes + i * 0x190 + 0x30, 12);
+    }
+}
+
 /* One game tick of monster no: the game's enemy_mv (src/main/em/f_em_nm.c). */
 int rt_monster_tick(int no)
 {
@@ -559,9 +568,13 @@ int rt_monster_tick(int no)
          * em_eye_search_set clear x88C), so it stays idle; frog fishing needs an idle Plesioth */
         if (getenv("RT_EM_BLIND"))
             PU8(em, 0x88B) = 0;
+        if (em->kind == 7)
+            ride_old_save(em);
         r = enemy_mv(em);
         if (em->be_flag)
             rt_em_world_mat(em);
+        if (r == 0 && em->kind == 7)
+            em_ride_sub(em);
         return r;
     }
 }

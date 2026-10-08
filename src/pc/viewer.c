@@ -112,7 +112,7 @@ static void draw_model_attr_em(fl_model *m, int sky, const void *em)
         if (sky < 0 || sky == m->part[i].is_sky) {
             uint32_t hide = 0;
             if (em && !getenv("RT_EM_ALL_MATS")) {  /* test aid: draw every material */
-                uint32_t mh = rt_em_material_hide(em, m->amo.part[i].matlist, m->amo.part[i].nmatlist);
+                uint32_t mh = rt_em_material_hide(em, i, m->amo.part[i].matlist, m->amo.part[i].nmatlist);
                 hide = fl_part_batch_hide(&m->part[i], mh);
                 if (getenv("RT_EM_MAT_TRACE")) {    /* test aid (test_activities raptor_crest): each new (kind, hidden materials) */
                     static uint32_t seen[40][8];
