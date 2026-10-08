@@ -774,3 +774,23 @@ Next when resuming:
 4. Decomp agents: whole-file TUs (lbtu3, split_rodata_objects) are what still
    gains; near-match grinding mostly doesn't.
 5. Owner may play-test the PC build and report bugs (tools/play.sh).
+
+## 2026-10-08 checkpoint
+
+main = origin/main (a963743f+): rebuild OK x5; PC tests all pass (quest_loop, progression,
+urgent, name_entry, movie, frog, all_quests 38/38, audio, log, activities 35, pick), online and
+co-op (2, hunt2, handover), Xbox links. 57.995% matched.
+
+Done since 7 Oct: owner play-testing loop (debug logs, F8 bug reporter with exact replay,
+level select tools/play.sh select, desktop launcher); Windows builds (test releases 1-3 on GitHub,
+public, pre-release); libmpeg2 movies; real soft keyboard; co-op over direct connect (2-4 players,
+--coop, ONLINE=1, docs/pc.md "How to play co-op"); online lobby groundwork vs a local test server
+(docs/network.md, draft message to MH Oldschool, never connect without permission); Xbox: memory
+trims (~51/64 MB est.), GPU skinning, saves, pad, xemu prep (needs owner's BIOS/MCPX/HDD);
+many owner-reported bugs fixed (Aptonoth float, forest crash, map item, cutscene input, raptor
+crests via em_material_sub for all kinds, tail tip + tail cutting, fog veil order, scroll rule,
+effects order, body_hit on, x87 -> SSE single precision float); targeted decomp: PC now runs
+matched C for ~160 main files (agent B), semdiff review of near-match copies (agent E).
+
+Open: vine climbing (needs location), Monoblos tail cut visual, em_ride_sub (Lao back) untested in
+play, Xbox hardware runs, PS2 reference comparison (PCSX2/BIOS or ESP32 pad + debug ELF plan).
