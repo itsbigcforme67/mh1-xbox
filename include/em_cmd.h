@@ -16,7 +16,7 @@
 typedef struct EM_ROUTE_PT {
     f32 pos[3];         /* 0x00 */
     f32 radius;         /* 0x0C distance at which the point counts as reached */
-    u8 _pad10[2];
+    u16 hit_ck;         /* 0x10 nonzero: the wall test is made from the monster to this point */
     u16 move;           /* 0x12 ground_area_move_ptr_set index */
 } EM_ROUTE_PT;
 

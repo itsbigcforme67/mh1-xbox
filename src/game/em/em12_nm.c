@@ -1737,27 +1737,33 @@ void em12_main(EMW *em) {
         case 13:
             hit = 1;
             break;
-        case 12:
-            if (em->kind != 0x19) {
-                int a = (u16)(em->dm_ang - em->ang[1]);
-
-                hit = 1;
-                if (em->kind == 12 && (f32)em->x302 > 0.2f * (f32)em->x792) {
-                    if (a < 0x8001) {
-                        em_act_set(em, 4, 0);
-                    } else {
-                        em_act_set(em, 4, 2);
-                    }
-                } else if (!(em->mode == 4 && (em->x15 == 3 || em->x15 == 4))) {
-                    if (a < 0x8001) {
-                        em_act_set(em, 4, 3);
-                    } else {
-                        em_act_set(em, 4, 4);
-                    }
-                }
-                em->x839 = 0;
+        case 14:
+            /* the original's jump table sends 14 here: the same reaction as 12, but not for kind 0x19
+             * (the old copy had no case 14 and applied the kind test to 12 as well) */
+            if (em->kind == 0x19) {
+                break;
             }
+            /* fall through */
+        case 12: {
+            int a = (u16)(em->dm_ang - em->ang[1]);
+
+            hit = 1;
+            if (em->kind == 12 && (f32)em->x302 > 0.2f * (f32)em->x792) {
+                if (a < 0x8001) {
+                    em_act_set(em, 4, 0);
+                } else {
+                    em_act_set(em, 4, 2);
+                }
+            } else if (!(em->mode == 4 && (em->x15 == 3 || em->x15 == 4))) {
+                if (a < 0x8001) {
+                    em_act_set(em, 4, 3);
+                } else {
+                    em_act_set(em, 4, 4);
+                }
+            }
+            em->x839 = 0;
             break;
+        }
         }
         if (hit != 0) {
             if (em->x889 != 1) {
