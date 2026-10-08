@@ -161,8 +161,9 @@ static void rnd_apply(void)
 {
     Rnd_w[0] = Rnd_w[1] = 0;
     if (rnd_seed) {
-        Rnd_w[0] = (u16)(rnd_seed % 0xFF52 + 1);
-        Rnd_w[1] = (u16)((rnd_seed >> 7) % 0xFF52 + 1);
+        unsigned m = rnd_seed * 2654435761u;      /* (small seeds like 1, 2, 3 would give near-identical Lehmer streams) */
+        Rnd_w[0] = (u16)((m >> 8) % 0xFF52 + 1);
+        Rnd_w[1] = (u16)((m >> 3) % 0xFF52 + 1);
     }
 }
 

@@ -88,3 +88,9 @@ void rtabi_Eft10_set(f32 scale, void *em, int arg, int x07) { Eft10_set(em, arg,
  * Rathalos hunt that passed one, crashed on garbage arguments (quest 139). */
 void Eft02_set4(unsigned short a, int ang, int arg, float *pos, float scale);
 void rtabi_Eft02_set4(float scale, int a, int ang, int arg, float *pos) { Eft02_set4((unsigned short)a, ang, arg, pos, scale); }
+
+/* ItemboxWindowX: the shop lists (lb_by139.c, lb_shp.c) declare (f32 x, s16 cur, int flags); the definition
+ * (src/lobby/f/lb_ib.c) is (int cur, int flags, f32 base). Without this the weapon shop's sell list
+ * (the item-box style slot grid) crashed with garbage arguments. */
+void ItemboxWindowX(int cur, int flags, f32 base);
+void rtabi_ItemboxWindowX(f32 x, s16 cur, int flags) { ItemboxWindowX(cur, flags, x); }

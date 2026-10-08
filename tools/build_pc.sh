@@ -336,6 +336,8 @@ for f in $GAME; do
     # (include/lobby_f.h, the lobby NPC files) or second (include/lbnpc.h)
     src/lobby/lb/lb_em*_nm.c|src/lobby/lb/lbem*.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
     src/lobby/lb/lbnpc_nm.c) ABI="-Dframe_check2=rtabi_frame_check2_em" ;;
+    # the shop lists call ItemboxWindowX(f32 x, s16 cur, int flags) (PS2: x in f12); lb_ib.c defines it as (cur, flags, base)
+    src/lobby/b/lb_by139.c|src/lobby/f/lb_shp.c) ABI="-Dframe_check2=rtabi_frame_check2 -DItemboxWindowX=rtabi_ItemboxWindowX" ;;
     src/lobby/f/*) ABI="-Dframe_check2=rtabi_frame_check2" ;;
     # game_core (swset, move, trans, hit_check) is the host tick (rt_quest.c)
     src/main/game/f_gameb.c) ABI="-Dgame_core=ps2_game_core" ;;

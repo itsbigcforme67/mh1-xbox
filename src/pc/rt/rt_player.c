@@ -514,6 +514,39 @@ void rt_player_tick(int no)
                 s++;
         }
     }
+    if (getenv("RT_PL_HP")) {       /* test aid: "t:hp,t:hp": the hunter's vital (+0x302) set at those player ticks */
+        static int tk;
+        const char *s = getenv("RT_PL_HP");
+        tk++;
+        while (*s) {
+            int t = atoi(s), v = 0;
+            while (*s && *s != ':')
+                s++;
+            if (*s)
+                v = atoi(++s);
+            if (t == tk) {
+                fprintf(stderr, "rt_player: tick %d vital set to %d\n", tk, v);
+                PF(&player_work[no], s16, 0x302) = (s16)v;
+            }
+            while (*s && *s != ',')
+                s++;
+            if (*s)
+                s++;
+        }
+    }
+    if (getenv("RT_PL_POKE")) {     /* test aid: "t:hexoff:val,...": PLW s16 at +hexoff := val at that player tick (e.g. 87E = sharpness) */
+        static int tk;
+        const char *s = getenv("RT_PL_POKE");
+        int t, off, v, used;
+        tk++;
+        while (sscanf(s, "%d:%x:%i%n", &t, &off, &v, &used) == 3) {
+            if (t == tk)
+                PF(&player_work[no], s16, off) = (s16)v;
+            s += used;
+            if (*s++ != ',')
+                break;
+        }
+    }
     pl_move();
     {   /* PLW+0x60: the world matrix player_modify (weapon3.c, run from trans() on the
          * PS2) builds; the host poses the skeleton itself, but game code reads it
@@ -542,10 +575,11 @@ void rt_player_tick(int no)
     }
     if (getenv("RT_PL_TRACE")) {
         PLW *pl = &player_work[no];
-        printf("pl: act %d/%d step %d chr %d/%d fr %.1f spd %.1f pos %.0f %.0f %.0f ang %04X st %d sw %04X/%04X hp %d bite %d\n",
+        printf("pl: act %d/%d step %d chr %d/%d fr %.1f spd %.1f pos %.0f %.0f %.0f ang %04X st %d sw %04X/%04X hp %d bite %d sh %d dr %d/%d/%d\n",
                pl->flag14, pl->flag15, PF(pl, u8, 5), PF(pl, u16, 0x2DC), PF(pl, u16, 0x2DE),
                PF(pl, f32, 0x19C), PF(pl, f32, 0x1A0), pl->pos[0], pl->pos[1], pl->pos[2],
-               pl->ang[1] & 0xFFFF, pl->st, pl->sw.now, pl->sw.trg, PF(pl, s16, 0x302), pl->x881);
+               pl->ang[1] & 0xFFFF, pl->st, pl->sw.now, pl->sw.trg, PF(pl, s16, 0x302), pl->x881, PF(pl, s16, 0x87E),
+               PF(pl, s16, 0x918), PF(pl, s16, 0x91A), PF(pl, s16, 0x8C0));
     }
 }
 

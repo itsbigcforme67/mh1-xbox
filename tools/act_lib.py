@@ -99,3 +99,24 @@ def mix_recipes():
             b, res, ri, bit = struct.unpack_from('<hhbb', rc, 6 * (idx + k))
             out.append((a, b, res, ri, bit))
     return out
+
+_names = None
+def item_names():
+    """{item id: name} from main's item_str (pointer table at 0x33AB40, Shift-JIS)"""
+    import struct
+    global _names
+    if _names is None:
+        tb = main_bytes(0x33AB40, 0x51C)
+        _names = {}
+        for i in range(len(tb) // 4):
+            p, = struct.unpack_from('<I', tb, 4 * i)
+            try:
+                s = main_bytes(p, 40).split(b'\0')[0]
+                _names[i] = s.decode('cp932', 'replace')
+            except KeyError:
+                pass
+    return _names
+
+def item_info(i):
+    """Item_data row (0x10 bytes at 0x3396D0): kind, use-type ..."""
+    return main_bytes(0x3396D0 + 0x10 * i, 0x10)
