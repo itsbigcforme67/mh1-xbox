@@ -63,10 +63,12 @@ def main():
     print('REPLAY %d ticks of pad input in input.txt, seed %s' % (rp.get('ticks', 0), rep.get('random_seed')))
     if '--replay' in sys.argv:
         disc = os.environ.get('DISC', 'disc/mh1')
-        print('  RT_SEED=%s build/pc/mhview %s %s --input @%s --shot replay.png --time %.1f' % (
-            rep.get('random_seed'), disc, rep.get('arguments', '').replace(' --input', ' #--input'), os.path.join(d, 'input.txt'),
-            rp.get('ticks', 0) / 30.0))
-        print('  (use the same --quest / --boot / --stage arguments as above, drop the original --input; RT_PICK_AT=%s stops it at the reported tick)' % g.get('tick'))
+        args = rep.get('arguments', '').split()
+        if '--input' in args:       # the original run's own --input (a test script) is replaced by the recording
+            k = args.index('--input'); del args[k:k + 2]
+        print('  RT_SEED=%s RT_PICK_AT=%s RT_PICK_EXIT=1 build/pc/mhview %s --input @%s' % (rep.get('random_seed'), g.get('tick'), ' '.join(args), os.path.join(d, 'input.txt')))
+        print('  (freezes at game tick %s and writes a new report whose game state, hunter and monsters equal this one, screenshot included; RT_PICK_NOTE=text; RT_PICK_EXIT=1 quits after the report;' % g.get('tick'))
+        print('   do not stop with --shot --time: --time counts frames, and the recorded pad ticks are fewer than the game tick)')
     if '--log' in sys.argv:
         print('LOG TAIL')
         print(open(os.path.join(d, 'log_tail.txt'), errors='replace').read())

@@ -1793,6 +1793,13 @@ showed no leftover white shape in any shot (white-pixel count equal with and wit
   is player_mk, CameraMove, light_move, move_eft, move_shell, move_set. sim_tick now calls rt_game_move after the player and camera block (and before light_move). Shots at ticks 1150-1260 of the replay, old vs new binary: the slanted edges at 1210 and 1240 are gone.
   Side effect: set objects and effects now see this tick's hunter and camera (one tick less lag); the 9 PC tests, test_all_quests and the Xbox link pass.
 
+Replays are exact (agent F, round 31). I earlier wrote that the replay of the owner's report "diverges"; it did not. The recording (the pad state of every game tick, rt_pad_set -> rt_pick_record_pad) plus RT_SEED reproduce the session exactly:
+`RT_SEED=3425120 RT_PICK_AT=1269 RT_PICK_EXIT=1 build/pc/mhview disc/mh1 --play --size 1024x768 --quest 151 --input @report/input.txt` writes a new report whose game section (hunter [9467.1, -89.3, 8826.0] angle 4368, camera, the three monsters) equals the owner's
+report.json to the last digit, and its screenshot has the same composition. What looked like a divergence was the suggested command: `--shot --time 41.9` stops by frame count at 1257 ticks (input.txt has 1257 pad ticks; the game tick is 1269, the first 12 ticks of a quest
+read no pad), so the shot showed the hunter 12 ticks early. Stop with RT_PICK_AT=<game.tick> instead. Changes: show_report.py --replay and report.json's "how" print that command; RT_PICK_EXIT=1 makes the run quit once the report is written (headless);
+tools/test_pick.sh's replay step now uses exactly that command and asserts the game section equals the recorded one (`pick OK: ... replay reaches the same state`), and checks that show_report prints the RT_PICK_AT command.
+The sources listed in the task do not leak: pad is sampled per game tick in sim_tick, sticks are recorded as signed bytes, the right stick / mouse only move the free camera (not the game camera), and the random state is seeded (RT_SEED) with no wall-clock input in the game tick.
+
 Findings of the second pass (agent D, 7 Oct 2026)
 - **161 / 165 "18 of 20"**: the missing monsters are the second wave. Condition program op 32 (`quest_w.x3A = a`, "32/1/0/0" right after
   the "10 left" message) switches the quest to monster-list variant 1 (Em_data_st_adrs_get's last argument); Quest_next_em_set spawns
