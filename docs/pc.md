@@ -286,6 +286,53 @@ Differences that may matter: the Win32 ABI aligns `double` / `long long` in stru
 to 4 (the Xbox build is the same as Windows here and works); clang instead of gcc compiled the game C
 (the test quests all ran under Wine, but only test_quest_loop and test_log, not all_quests / audio).
 
+## How to play co-op (agent E, 7 Oct 2026)
+
+Up to four players hunt one quest together, each on his own PC (Linux or Windows), connected directly: one player
+hosts, the others join him. There is no lobby or town; afterwards everyone is back in his own (single-player)
+village. Details and what is not done yet: docs/network.md, sections 1a and 3.4.
+
+**1. Build the online version** (the normal build has no network code at all):
+
+    ONLINE=1 tools/build_pc.sh        # Linux: build/pc/mhview_online
+    ONLINE=1 tools/build_win.sh       # Windows: build/win/mhview_online.exe (+ SDL2.dll)
+
+**2. Your hunter.** Each player plays the hunter of his own save (the memory card folder: Linux
+`~/.local/share/mh1pc/memcard0`, Windows `%APPDATA%\mh1pc\memcard0`): name, look, armour, weapon and pouch. Make one
+by playing normally first (new game, save in the house bed). `--hunter 2` picks save slot 2 (default: the first one).
+After the quest, the reward and the money are written to that save automatically, and you are in the village.
+
+**3. Start.** Everyone runs `mhview_online DISC_DIR --coop`. A small window asks:
+* host: the quest (the Elder's quests, 1 to 5 stars) and the number of players (2-4). The host waits until everyone
+  is in, then the quest starts for all;
+* join: the host's address.
+On Linux the window needs zenity or kdialog (else the questions come in the terminal). Without the window:
+
+    mhview_online disc --host --quest 137 --players 2       # host
+    mhview_online disc --join 192.168.1.20                   # the others: the host's address
+
+`--port N` changes the port (default 10300, both sides).
+
+**4. Same house / same network (LAN):** the joiners use the host PC's LAN address (e.g. 192.168.1.20: `ip addr` on
+Linux, `ipconfig` on Windows). Allow mhview_online in the firewall (Windows asks the first time).
+
+**5. Over the internet:** the host's router must forward **TCP port 10300** (or the `--port` chosen) to the host's
+PC, and the joiners use the host's public address.
+The port is safe by default: **it only talks to local addresses** (127.x, 10.x, 172.16-31.x, 192.168.x). To play with
+a friend over the internet, name his address on purpose, on both sides:
+
+    mhview_online disc --allow 203.0.113.7 --coop             # host: accepts the friend at 203.0.113.7
+    mhview_online disc --allow 198.51.100.4 --coop            # friend: may connect to the host at 198.51.100.4
+
+`--allow` can be given several times (or `RT_NET_ALLOW=a,b`). The MH Oldschool servers are refused even when named
+(CLAUDE.md: the project does not connect to them without their operators' permission).
+
+**What works / what to expect:** everyone sees the others with their armour and weapons and their names; monsters
+are shared (one PC runs each monster, the others follow it, and it moves to another player when that PC leaves the
+area or the game); kills, quest clear, the 3-cart failure, time-out and abandoning are shared; the supply box is
+decided by the host. If the **host** leaves, the joiners can no longer see each other (the host relays everything).
+No chat yet. The tests: `tools/test_coop.sh` (about 15 minutes, all headless on 127.0.0.1).
+
 ## Layout
 
 | path | what |

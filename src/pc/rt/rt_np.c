@@ -34,6 +34,7 @@ extern u8 Ken_data[][0x18];
 extern u8 Battle_type[];
 
 static int rt_online;
+static int want_hunter = -1;       /* --hunter N: the save slot (0-based), -1 = the first used */
 static int want_role;               /* 1 host, 2 join (from the command line) */
 static const char *want_addr;
 static int want_port = NP_DEFAULT_PORT, want_players = 2;
@@ -82,6 +83,21 @@ int rt_np_arg(int argc, char **argv, int *i)
     if (!strcmp(a, "--join") && *i + 1 < argc) {
         want_role = 2;
         want_addr = argv[++*i];
+        return 1;
+    }
+    if (!strcmp(a, "--allow") && *i + 1 < argc) {      /* a public address allowed on purpose (RT_NET_ALLOW) */
+        static char buf[512];
+        const char *old = getenv("RT_NET_ALLOW");
+        snprintf(buf, sizeof buf, "%s%s%s", old ? old : "", old ? "," : "", argv[++*i]);
+#ifdef _WIN32
+        _putenv_s("RT_NET_ALLOW", buf);
+#else
+        setenv("RT_NET_ALLOW", buf, 1);
+#endif
+        return 1;
+    }
+    if (!strcmp(a, "--hunter") && *i + 1 < argc) {     /* the save slot (1-3) of this player's hunter */
+        want_hunter = atoi(argv[++*i]) - 1;
         return 1;
     }
     if (!strcmp(a, "--port") && *i + 1 < argc) {
@@ -161,10 +177,120 @@ static int have_tool(const char *t)
 }
 #endif
 static char ask_addr[64];
+#ifdef _WIN32
+/* Windows: one small window (no resource file): Host / Join, the quest list, the number of
+ * players, the host's address, OK / Cancel. Returns 1 host, 2 join, 0 cancelled. */
+enum { ID_HOST = 101, ID_JOIN, ID_QUEST, ID_PLAYERS, ID_ADDR, ID_OK, ID_CANCEL };
+static int dlg_result, dlg_sel, dlg_np;
+static HWND dlg_q, dlg_n, dlg_a, dlg_h;
+static LRESULT CALLBACK dlg_proc(HWND w, UINT m, WPARAM wp, LPARAM lp)
+{
+    if (m == WM_COMMAND) {
+        int id = LOWORD(wp);
+        if (id == ID_HOST || id == ID_JOIN) {
+            int host = id == ID_HOST;
+            EnableWindow(dlg_q, host);
+            EnableWindow(dlg_n, host);
+            EnableWindow(dlg_a, !host);
+        } else if (id == ID_OK) {
+            dlg_result = SendMessageA(dlg_h, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1 : 2;
+            dlg_sel = (int)SendMessageA(dlg_q, CB_GETCURSEL, 0, 0);
+            dlg_np = 2 + (int)SendMessageA(dlg_n, CB_GETCURSEL, 0, 0);
+            GetWindowTextA(dlg_a, ask_addr, sizeof ask_addr);
+            DestroyWindow(w);
+        } else if (id == ID_CANCEL) {
+            dlg_result = 0;
+            DestroyWindow(w);
+        }
+        return 0;
+    }
+    if (m == WM_CLOSE) {
+        dlg_result = 0;
+        DestroyWindow(w);
+        return 0;
+    }
+    if (m == WM_DESTROY) {
+        PostQuitMessage(0);
+        return 0;
+    }
+    return DefWindowProcA(w, m, wp, lp);
+}
+static int win_dialog(int *quest_no)
+{
+    WNDCLASSA wc;
+    HWND w;
+    HINSTANCE hi = GetModuleHandleA(NULL);
+    HFONT f = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+    MSG msg;
+    char buf[64];
+    int k, sel;
+    memset(&wc, 0, sizeof wc);
+    wc.lpfnWndProc = dlg_proc;
+    wc.hInstance = hi;
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
+    wc.lpszClassName = "mh1coop";
+    RegisterClassA(&wc);
+    w = CreateWindowA("mh1coop", "MH1 co-op", WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
+                      CW_USEDEFAULT, CW_USEDEFAULT, 440, 250, NULL, NULL, hi, NULL);
+#define CTL(cls, text, style, x, y, cw, ch, id) \
+    SendMessageA(CreateWindowA(cls, text, WS_CHILD | WS_VISIBLE | (style), x, y, cw, ch, w, (HMENU)(intptr_t)(id), hi, NULL), \
+                 WM_SETFONT, (WPARAM)f, 1)
+    dlg_h = CreateWindowA("BUTTON", "Host a quest", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP, 12, 10, 140, 20, w,
+                          (HMENU)ID_HOST, hi, NULL);
+    SendMessageA(dlg_h, WM_SETFONT, (WPARAM)f, 1);
+    SendMessageA(dlg_h, BM_SETCHECK, BST_CHECKED, 0);
+    CTL("BUTTON", "Join a host", BS_AUTORADIOBUTTON, 220, 10, 140, 20, ID_JOIN);
+    CTL("STATIC", "Quest", 0, 12, 40, 60, 20, 0);
+    dlg_q = CreateWindowA("COMBOBOX", "", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL, 80, 38, 330, 300, w,
+                          (HMENU)ID_QUEST, hi, NULL);
+    SendMessageA(dlg_q, WM_SETFONT, (WPARAM)f, 1);
+    for (k = 0; k < (int)(sizeof quests / sizeof quests[0]); k++) {
+        snprintf(buf, sizeof buf, "%d  %d*  %s", quests[k].no, quests[k].stars, quests[k].goal);
+        SendMessageA(dlg_q, CB_ADDSTRING, 0, (LPARAM)buf);
+    }
+    SendMessageA(dlg_q, CB_SETCURSEL, 0, 0);
+    CTL("STATIC", "Players", 0, 12, 72, 60, 20, 0);
+    dlg_n = CreateWindowA("COMBOBOX", "", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST, 80, 70, 60, 200, w, (HMENU)ID_PLAYERS, hi, NULL);
+    SendMessageA(dlg_n, WM_SETFONT, (WPARAM)f, 1);
+    SendMessageA(dlg_n, CB_ADDSTRING, 0, (LPARAM)"2");
+    SendMessageA(dlg_n, CB_ADDSTRING, 0, (LPARAM)"3");
+    SendMessageA(dlg_n, CB_ADDSTRING, 0, (LPARAM)"4");
+    SendMessageA(dlg_n, CB_SETCURSEL, 0, 0);
+    CTL("STATIC", "Host address (to join)", 0, 12, 106, 150, 20, 0);
+    dlg_a = CreateWindowA("EDIT", "127.0.0.1", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, 170, 104, 160, 22, w,
+                          (HMENU)ID_ADDR, hi, NULL);
+    SendMessageA(dlg_a, WM_SETFONT, (WPARAM)f, 1);
+    EnableWindow(dlg_a, 0);
+    CTL("BUTTON", "OK", BS_DEFPUSHBUTTON, 230, 170, 85, 26, ID_OK);
+    CTL("BUTTON", "Cancel", 0, 325, 170, 85, 26, ID_CANCEL);
+#undef CTL
+    dlg_result = 0;
+    while (GetMessageA(&msg, NULL, 0, 0) > 0) {
+        if (!IsDialogMessageA(w, &msg)) {
+            TranslateMessage(&msg);
+            DispatchMessageA(&msg);
+        }
+    }
+    if (dlg_result == 1) {
+        sel = dlg_sel;
+        *quest_no = sel >= 0 && sel < (int)(sizeof quests / sizeof quests[0]) ? quests[sel].no : 131;
+        want_players = dlg_np;
+        if (want_players < 2 || want_players > 4)
+            want_players = 2;
+    } else if (dlg_result == 2) {
+        want_addr = ask_addr;
+    }
+    return dlg_result;
+}
+#endif
 static int ask_coop(int *quest_no)
 {
     char line[64];
-#ifndef _WIN32
+#ifdef _WIN32
+    if (!getenv("RT_NO_GUI"))
+        return win_dialog(quest_no);
+#else
     int z = have_tool("zenity"), kd = !z && have_tool("kdialog");
     if (getenv("RT_NO_GUI"))
         z = kd = 0;
@@ -217,6 +343,137 @@ static int ask_coop(int *quest_no)
     return 2;
 }
 
+/* ------------------------------------------------ the player's own save
+ * A co-op player uses the hunter of his own memory card (the PC's card directory, rt_mc.c):
+ * the save image BISLPM-65495MH is decoded as decode_data does (mccomb.c; header u16 0x100,
+ * key, checksum, 0x5963, then 0x8A20 words XORed with key = key * 0xB0 % 65363), the options
+ * and the three hunter slots go into option_w as a Continue does (save_data_sub(0, ...)),
+ * and the slot's data into User_data (Load_userdata); select_w[0xB6] = the slot, as the
+ * Continue screen sets it, so the village's bed save writes the right slot. After the quest
+ * the slot is written back to the card (rt_np_session_end). --hunter N picks the slot (1-3),
+ * else the first used one. Without a save the hunter comes from RT_WEAPON / RT_PL_LOOK. */
+#define SAVE_SIZE 0x11450
+extern u8 *data_load_ptr;
+extern u8 option_w[];
+extern u8 select_w[];
+extern u8 User_data[];
+int save_data_sub(int save, int mask);
+void Load_userdata(int slot);
+void Save_userdata(int slot);
+void encode_data_002814E0(void *buf);
+const char *rt_mc_root(void);
+static int save_slot = -1;          /* the card slot this player's hunter came from, -1 none */
+
+static void save_path(char *out, size_t n)
+{
+    snprintf(out, n, "%s/BISLPM-65495MH/BISLPM-65495MH", rt_mc_root());
+}
+
+static int save_decode(u8 *b)
+{
+    u16 *w = (u16 *)b, key, stored, sum = 0;
+    int i;
+    if (w[0] != 0x100)
+        return -1;
+    key = w[1];
+    stored = w[2];
+    for (i = 0; i < 0x8A20; i++) {
+        w[4 + i] ^= key;
+        sum = (u16)(sum + w[4 + i]);
+        if (key == 0)
+            key = 1;
+        key = (u16)((key * 0xB0) % 65363);
+    }
+    return sum == stored ? 0 : -2;
+}
+
+static u8 *save_read(void)
+{
+    char path[600];
+    FILE *f;
+    u8 *b;
+    save_path(path, sizeof path);
+    if (!(f = fopen(path, "rb")))
+        return NULL;
+    b = calloc(1, 0x12000);
+    if (fread(b, 1, SAVE_SIZE, f) != SAVE_SIZE || save_decode(b) != 0) {
+        fprintf(stderr, "co-op: %s is not a readable save\n", path);
+        free(b);
+        b = NULL;
+    }
+    fclose(f);
+    return b;
+}
+
+static int load_own_hunter(void)
+{
+    u8 *b = save_read(), *keep = data_load_ptr;
+    int s;
+    if (!b)
+        return -1;
+    data_load_ptr = b;
+    save_data_sub(0, 0xF);          /* options + the three slots into option_w (not the patch) */
+    data_load_ptr = keep;
+    free(b);
+    for (s = 0; s < 3; s++)
+        if ((want_hunter < 0 || want_hunter == s) && option_w[0x10 + s * 0x480] != 0)
+            break;
+    if (s == 3) {
+        fprintf(stderr, "co-op: no hunter in %s slot %d\n", want_hunter < 0 ? "any" : "the chosen", want_hunter + 1);
+        return -1;
+    }
+    Load_userdata(s);
+    select_w[0xB6] = (u8)s;
+    save_slot = s;
+    fprintf(stderr, "co-op: hunter \"%.18s\" from save slot %d (%d zenny)\n", (char *)User_data + 8, s + 1, *(s32 *)(User_data + 0x20));
+    return 0;
+}
+
+/* the player's hunter back into his own save (the bed save's steps: Save_userdata,
+ * save_data_sub(1, ...), encode_data; only this slot changes) */
+static void save_own_hunter(void)
+{
+    char path[600];
+    u8 *b, *keep = data_load_ptr;
+    FILE *f;
+    if (save_slot < 0 || !(b = save_read()))
+        return;
+    Save_userdata(save_slot);
+    data_load_ptr = b;
+    save_data_sub(1, 2 << save_slot);
+    data_load_ptr = keep;
+    encode_data_002814E0(b);
+    save_path(path, sizeof path);
+    if ((f = fopen(path, "wb")) != NULL) {
+        fwrite(b, 1, SAVE_SIZE, f);
+        fclose(f);
+        fprintf(stderr, "co-op: hunter saved to slot %d (%d zenny)\n", save_slot + 1, *(s32 *)(User_data + 0x20));
+    }
+    free(b);
+}
+
+/* the mini data of the saved hunter (User_data, as Set_userdata / Set_equip_data read it) */
+u8 Get_weapon_id(void *e);
+#define Get_weapon_id_u(p) Get_weapon_id(p)
+static void mini_from_save(u8 *m)
+{
+    const u8 *u = User_data;
+    int wid;
+    memset(m, 0, NP_MINI);
+    m[3] = u[1];
+    *(s32 *)(m + 4) = *(const s32 *)(u + 4);
+    memcpy(m + 8, u + 0x3CC, 6);        /* the weapon triple */
+    wid = *(const u16 *)(u + 0x3CE);
+    m[0] = Battle_type[Get_weapon_id_u(m + 8)];
+    m[0xE] = u[0x3D2];
+    m[0xF] = (u8)(u[2] + 1);
+    memcpy(m + 0x10, u + 0x3D3, 4);
+    m[0x14] = u[3];
+    m[0x16] = u[0x3D7];
+    memcpy(m + 0x18, u + 8, 0x12);      /* the name */
+    (void)wid;
+}
+
 /* This player's mini data (Lb_set_mini_data's layout, lb_village_nm.c; docs/network.md 1a):
  *   0 weapon job, 3 sex (PLW+0x11), 4 s32 hair colour (+0x5FC), 8/A/C the weapon triple
  *   (+0x35E/0x360/0x362: type 6 sword or 7 gun in the high byte of the first, the id),
@@ -251,7 +508,6 @@ static void make_mini(u8 *m)
 
 /* Set_mini_data_to_pl (f_ud.c, not in the PC build): a player's equipment and look from
  * the mini data, as init_pl_work does for the other players online */
-u8 Get_weapon_id(void *e);
 static void apply_mini(PLW *pl, const u8 *m)
 {
     u8 *p = (u8 *)pl;
@@ -265,6 +521,8 @@ static void apply_mini(PLW *pl, const u8 *m)
     p[0x34C] = Get_weapon_id(p + 0x35E);
     memcpy(p + 0x352, m + 0xE, 6);
     pl->kind = Battle_type[pl->work34C];
+    if (m[0x18])
+        memcpy(pl->name, m + 0x18, sizeof pl->name);
 }
 
 /* Before the quest is set up: host waits for the joiners and announces the quest; a joiner
@@ -280,7 +538,10 @@ int rt_np_setup(int quest_no)
         if (!want_role)
             return -1;
     }
-    make_mini(mini);
+    if (getenv("RT_NP_NOSAVE") || load_own_hunter() != 0)
+        make_mini(mini);            /* no save: RT_WEAPON / RT_PL_LOOK */
+    else
+        mini_from_save(mini);
     if (want_role == 1) {
         if (!quest_no)
             quest_no = quest_list_ask();    /* the list on the console */
@@ -341,6 +602,16 @@ void rt_np_init_slots(void)
     GW8(0x1B0) = 2;                 /* frames of network delay (net_start_ck computes it from the ping) */
     for (s = 0; s < 8; s++)
         game_w.pl_state[s] = s < n ? 1 : 0;
+    {   /* the quest's first monsters were made (pull_enemy_work, em_init) before the slots were known:
+         * give them this machine's slot as those do (+0x8C3: 0 = the host owns them, +0x88E) */
+        extern u8 em_work[];
+        int k;
+        for (k = 0; k < 20; k++)
+            if (em_work[0xA10 * k]) {
+                em_work[0xA10 * k + 0x8C3] = (u8)me;
+                em_work[0xA10 * k + 0x88E] = (u8)me;
+            }
+    }
     for (s = 0; s < n; s++) {
         PLW *pl = &player_work[s];
         if (s != me) {
@@ -349,13 +620,21 @@ void rt_np_init_slots(void)
             pl->stg = game_w.stage;
             PF(pl, u8, 0x10) = 0;
         }
-        snprintf(pl->name, sizeof pl->name, "HUNTER %d", s + 1);   /* (no handles are exchanged yet) */
+        snprintf(pl->name, sizeof pl->name, "HUNTER %d", s + 1);   /* without a save */
         apply_mini(pl, np_mini(s));
+        if (s == me && save_slot >= 0) {
+            void Set_userdata(PLW *pl);
+            Set_userdata(pl);       /* name, pouch, equipment from the save (init_pl_work's own-player path) */
+        }
     }
     {   /* the same random numbers to start with on every machine (the PS2 seeds them from its
          * clock, init_ran_suu): the quest's set-up then places the same things */
         extern u16 Rnd_w[];
         Rnd_w[0] = Rnd_w[1] = (u16)(0x1234 + np_quest());
+    }
+    if (getenv("RT_QUEST_TIME")) {  /* test aid: the quest's time left (ticks), for time-out tests */
+        extern u8 quest_w[];
+        *(s32 *)(quest_w + 0x10) = atoi(getenv("RT_QUEST_TIME"));
     }
     rt_online = 1;
     if (trace < 0)
@@ -372,6 +651,15 @@ void rt_np_after_init(void)
         return;
     for (s = 0; s < game_w.pl_num; s++)
         armor_create_model(&player_work[s]);
+    for (s = 0; s < game_w.pl_num; s++) {     /* who is who (names in hex: the game writes Shift-JIS) */
+        const u8 *n = (const u8 *)player_work[s].name;
+        int k;
+        fprintf(stderr, "co-op: slot %d%s name", s, s == game_w.master ? " (me)" : "");
+        for (k = 0; k < 0x12 && n[k]; k++)
+            fprintf(stderr, " %02X", n[k]);
+        fprintf(stderr, " weapon %d armour %d %d %d %d %d\n", PF(&player_work[s], u16, 0x360), PF(&player_work[s], u8, 0x352),
+                PF(&player_work[s], u8, 0x354), PF(&player_work[s], u8, 0x355), PF(&player_work[s], u8, 0x356), PF(&player_work[s], u8, 0x357));
+    }
     {   /* the start barrier (net_start_ck's job, game13): every player has loaded the stage
          * before anyone's hunt starts, so slow machines do not miss the first packets */
         static int round;
@@ -383,6 +671,18 @@ void rt_np_after_init(void)
         }
         if (t >= 3000)
             fprintf(stderr, "co-op: not every player was ready after 30 s, starting anyway\n");
+    }
+}
+
+/* mcsls_force_drop (mcsls, from net_receive_sys kind 12: a player abandoned the quest):
+ * the session layer drops him, which the game sees as pl_state 0xFF (his monsters are then
+ * handed on by Em_Master_Change) */
+void mcsls_force_drop(u8 slot)
+{
+    if (slot < game_w.pl_num && slot != game_w.master && game_w.pl_state[slot] != 0xFF) {
+        game_w.pl_state[slot] = 0xFF;
+        player_work[slot].x01 = 0;
+        fprintf(stderr, "co-op: player %d abandoned the quest\n", slot);
     }
 }
 
@@ -474,6 +774,15 @@ void rt_np_tick(void)
         n_ticks++;
     }
     np_poll();
+    if (rt_online && getenv("RT_QUEST_RETIRE")) {     /* test aid: abandon the quest at that tick (the quest menu's
+                                                       * "return to the village": Quest_retire_set) */
+        static int tk;
+        void Quest_retire_set(void);
+        if (++tk == atoi(getenv("RT_QUEST_RETIRE"))) {
+            fprintf(stderr, "co-op: tick %d abandoning the quest\n", tk);
+            Quest_retire_set();
+        }
+    }
     if (rt_online) {        /* a player who left: as mcsls_force_drop marks it (pl_state 0xFF), and no longer shown */
         int s;
         for (s = 0; s < game_w.pl_num; s++)
@@ -528,7 +837,7 @@ void rt_np_tick(void)
                 if (!e[0] || e[2] == 0)
                     continue;
                 fprintf(stderr, "np-em: tick %d me %d em %d kind %d stg %d hp %d owner %d net %d act %d/%d pos %.0f %.0f\n", k, game_w.master, s,
-                        e[2], e[0x736], *(s16 *)(e + 0x302), e[0x8C3] ? e[0x88E] : game_w.master, e[0x9E2], e[0x14], e[0x15],
+                        e[2], e[0x736], *(s16 *)(e + 0x302), e[0x8C3] ? -1 : game_w.master, e[0x9E2], e[0x14], e[0x15],
                         *(f32 *)(e + 0xAC), *(f32 *)(e + 0xB4));
             }
         }
@@ -540,6 +849,34 @@ void rt_np_tick(void)
                         p->flag15, *(u32 *)((u8 *)&game_w + 0x1A8), PF(p, s16, 0x828), PF(p, s16, 0x82A));
             }
     }
+}
+
+/* After the quest (game mode 6, back to the village): the player's hunter into his own
+ * save, then single player again (the village is offline): Online_ck off, this machine's
+ * hunter in slot 0, the connection closed. Returns the slot the hunter had, -1 = no session
+ * (the viewer then draws slot 0 again). */
+void ItemCopy_Pl2Ud(PLW *pl);
+int rt_np_session_end(void)
+{
+    int me = game_w.master, s;
+    if (!want_role || !rt_online)
+        return -1;
+    ItemCopy_Pl2Ud(&player_work[me]);       /* the pouch as it is now */
+    save_own_hunter();
+    rt_online = 0;
+    np_close();
+    /* (the village sets player_work[0] up again from User_data: Clear_lobby_ram, Local_main) */
+    for (s = 1; s < 8; s++) {
+        player_work[s].be_flag = 0;
+        player_work[s].x01 = 0;
+        game_w.pl_state[s] = 0;
+    }
+    player_work[0].id = 0;
+    game_w.master = 0;
+    game_w.pl_num = 1;
+    game_w.pl_state[0] = 1;
+    fprintf(stderr, "co-op: session over, back to single player\n");
+    return me;
 }
 
 void rt_np_close(void)

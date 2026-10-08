@@ -15,7 +15,8 @@
  *
  * Safety (CLAUDE.md): only loopback / private addresses (net_dest_allowed in net_cpinet.c,
  * which also refuses the MH Oldschool addresses); the host listens on 127.0.0.1 unless given a
- * private address to bind.
+ * private address to bind; joiners are accepted only from loopback / private addresses or ones allowed on
+ * purpose (--allow, RT_NET_ALLOW).
  */
 #include "../rt/rt_plat.h"
 #include <stdint.h>
@@ -48,6 +49,11 @@ typedef int hsock;
 #endif
 
 int net_dest_allowed(uint32_t addr);
+#if defined(MSG_NOSIGNAL)
+#define SEND_FLAGS MSG_NOSIGNAL
+#else
+#define SEND_FLAGS 0
+#endif
 
 #define RXCAP 0x10000
 typedef struct {
@@ -116,7 +122,7 @@ static int send_all(PEER *p, const uint8_t *buf, int len)
 {
     int off = 0, spins = 0;
     while (p->up && off < len) {
-        int k = (int)send(p->fd, (const char *)buf + off, len - off, 0);
+        int k = (int)send(p->fd, (const char *)buf + off, len - off, SEND_FLAGS);   /* no SIGPIPE when the peer is gone */
         if (k > 0) {
             off += k;
             continue;
@@ -278,8 +284,8 @@ int np_host(const char *bind_ip, int port, const uint8_t *my_mini)
     if (CpInetInitialize() != 0)
         return -1;
     if (!bind_ip)
-        bind_ip = "127.0.0.1";
-    if (parse_addr(bind_ip, &a) != 0 || !net_dest_allowed(a)) {
+        bind_ip = "0.0.0.0";       /* every interface: who may join is checked per connection (net_dest_allowed) */
+    if (parse_addr(bind_ip, &a) != 0 || (a != 0 && !net_dest_allowed(a))) {    /* 0.0.0.0: every interface (joiners are checked) */
         fprintf(stderr, "net_peer: will not listen on %s (only loopback or a private LAN address)\n", bind_ip);
         return -1;
     }
@@ -331,6 +337,7 @@ int np_join(const char *host_ip, int port, const uint8_t *my_mini)
     sa.sin_family = AF_INET;
     sa.sin_port = htons((uint16_t)port);
     memcpy(&sa.sin_addr, &a, 4);
+    fprintf(stderr, "net_peer: connecting to %s:%d\n", host_ip, port);
     if (connect(peer[0].fd, (struct sockaddr *)&sa, sizeof sa) != 0) {
         fprintf(stderr, "net_peer: cannot connect to %s:%d\n", host_ip, port);
         hs_close(peer[0].fd);
@@ -358,6 +365,14 @@ void np_poll(void)
             uint8_t f[8], slot;
             if (c == HS_BAD)
                 break;
+            {   /* a joiner from the internet only when his address is allowed (as for connecting out) */
+                uint32_t from;
+                memcpy(&from, &sa.sin_addr, 4);
+                if (!net_dest_allowed(from)) {
+                    hs_close(c);
+                    continue;
+                }
+            }
             for (s = 1; s < NP_MAX && (peer[s].up || s < nplayers); s++)
                 ;
             if (started || s >= NP_MAX) {      /* full, or the quest has started: no late joining */

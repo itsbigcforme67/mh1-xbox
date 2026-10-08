@@ -105,7 +105,24 @@ static int dest_allowed(uint32_t addr)
         return 1;
     if (getenv("RT_NET_ALLOW_PUBLIC") && atoi(getenv("RT_NET_ALLOW_PUBLIC")) == 1)
         return 1;
-    fprintf(stderr, "net: refusing %u.%u.%u.%u: only loopback and private addresses unless RT_NET_ALLOW_PUBLIC=1\n",
+    {   /* RT_NET_ALLOW="a.b.c.d,e.f.g.h" (or --allow on the command line): these public addresses only, chosen
+         * deliberately (a friend's internet address for co-op); the MH Oldschool refusal above still applies */
+        const char *l = getenv("RT_NET_ALLOW");
+        char one[32];
+        while (l && *l) {
+            size_t n = strcspn(l, ",; ");
+            if (n && n < sizeof one) {
+                memcpy(one, l, n);
+                one[n] = 0;
+                if (InetIPAddrFromString(one) == addr)
+                    return 1;
+            }
+            l += n;
+            while (*l == ',' || *l == ';' || *l == ' ')
+                l++;
+        }
+    }
+    fprintf(stderr, "net: refusing %u.%u.%u.%u: only loopback and private addresses (allow one with --allow ADDRESS / RT_NET_ALLOW)\n",
             b[0], b[1], b[2], b[3]);
     return 0;
 }
@@ -340,7 +357,13 @@ int CpInetTcpSend(int h, const void *buf, int len)
     if (n->state != S_UP)
         return -1;
     while (done < len) {
-        int k = (int)send(n->fd, (const char *)buf + done, len - done, 0);
+        int k = (int)send(n->fd, (const char *)buf + done, len - done,
+#ifdef MSG_NOSIGNAL
+                         MSG_NOSIGNAL   /* a closed peer is an error result, not SIGPIPE */
+#else
+                         0
+#endif
+                         );
         if (k > 0) {
             done += k;
             continue;

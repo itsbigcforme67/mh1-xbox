@@ -836,6 +836,7 @@ int rt_np_players(void);
 int rt_np_visible(int slot);
 void rt_np_tick(void);
 void rt_np_close(void);
+int rt_np_session_end(void);
 static hunter rh[4];
 static monster rw[4];               /* their weapons */
 static int rh_ok[4];
@@ -1232,6 +1233,10 @@ static void village_step(void)
         quest_back();
         return;
     }
+#ifdef MH1_ONLINE
+    if (rt_np_session_end() >= 0)   /* co-op over: the hunter saved, single player again */
+        lp = 0;
+#endif
     if (!rt_village_active())
         rt_village_enter();
     q = rt_village_tick();

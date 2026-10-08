@@ -44,6 +44,11 @@ void rt_village_enter(void)
 {
     memset(em_work, 0, 0xA10 * 20);     /* the quest's monsters are gone (all_reset) */
     clr_set_work();                     /* and the quest stage's set objects (all_reset -> clr_stg_work) */
+    {   /* and every prim (all_reset -> prim_init): a set object's prim outlived its cleared work and
+         * was drawn in the village (set19_trans on stage 87: crash after a co-op quest) */
+        void prim_init(void);
+        prim_init();
+    }
     rt_cam_init(game_w[0x14]);          /* camera work (also with the host's own camera) */
     {
         void rt_lb_reload(void);
