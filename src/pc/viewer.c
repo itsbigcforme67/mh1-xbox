@@ -925,6 +925,7 @@ static void remote_hunters(int draw, const fl_light *L) { (void)draw; (void)L; }
  * the host pieces in the PS2 order. With --quest it runs inside the game's
  * own mode loop (game2 -> game_core, src/main/game/f_game.c; rt_flow.c). */
 static void monsters_sync(int draw, const fl_light *L);
+int rt_monster_motion_ready(int no);
 static void sim_tick(void)
 {
     rt_game_move();
@@ -1116,20 +1117,31 @@ static void monsters_sync(int draw, const fl_light *L)
         for (j = 0; j < nb; j++)
             flmat_mul(jw[i][j], m->skel.world[j], w);
         rt_monster_joints(i, &jw[i][0][0], nb);
-        if (getenv("RT_POSE_CHECK")) {  /* test aid: highest joint above the monster's feet per kind (tools/test_activities.py herbivore_pose) */
+        if (getenv("RT_POSE_CHECK") && rt_monster_motion_ready(i)) {  /* test aid: highest joint above the monster's feet per kind (tools/test_activities.py herbivore_pose) */
             static float hmax[40][1200];
             int mo = ((uint16_t *)(em + 0x2DC))[0] % 1200;
             float hh = 0;
             for (j = 0; j < nb; j++)
                 if (jw[i][j][13] - t[1] > hh)
                     hh = jw[i][j][13] - t[1];
+            {   /* lowest joint: a body sunk into the ground (hit reactions, death) */
+                static float lmin[40][1200];
+                float lo = 0;
+                for (j = 0; j < nb; j++)
+                    if (jw[i][j][13] - t[1] < lo)
+                        lo = jw[i][j][13] - t[1];
+                if (lo < lmin[kind][mo] - 20.0f) {
+                    lmin[kind][mo] = lo;
+                    fprintf(stderr, "pose-check: kind %d slot %d joints down to %.0f below the feet (motion %d)\n", kind, i, lo, mo);
+                }
+            }
             if (hh > hmax[kind][mo] + 20.0f) {
                 hmax[kind][mo] = hh;
                 fprintf(stderr, "pose-check: kind %d slot %d joints up to %.0f above the feet (motion %d)\n", kind, i,
                         hh, mo);
             }
         }
-        if (draw) {
+        if (draw && rt_monster_motion_ready(i)) {
             fl_model_pose(&m->model, (const flmat *)m->skel.world, L);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
             draw_model_attr(&m->model, -1);
