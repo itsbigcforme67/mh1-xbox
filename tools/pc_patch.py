@@ -215,6 +215,20 @@ PATCHES = {
     "src/main/hit/hit_nm.c": [
         ("static void hit_hit_sub_em(", "void hit_hit_sub_em("),
     ],
+    # camg.c / menu10.c (matched): Pl_stg_ck / Em_stg_ck / Pl_master_ck read a0, which the PS2 leaves in place
+    "src/main/cam/camg.c": [
+        ("s32 Pl_stg_ck(void);", "s32 Pl_stg_ck();"),
+        ("s32 Em_stg_ck(void);", "s32 Em_stg_ck();"),
+        ("void Pl_set_quake_sub(PLW *pl, s32 type) {\n    CAMQUAKE *q = &CameraWork.qk[0];\n\n    if (Pl_stg_ck() & 0xFF) {",
+         "void Pl_set_quake_sub(PLW *pl, s32 type) {\n    CAMQUAKE *q = &CameraWork.qk[0];\n\n    if (Pl_stg_ck(pl) & 0xFF) {"),
+        ("    if (Em_stg_ck() & 0xFF) {", "    if (Em_stg_ck(em) & 0xFF) {"),
+        ("void Pachinger_set_quake_sub(PLW *pl, s32 type) {\n    CAMQUAKE *q = &CameraWork.qk[1];\n\n    if (Pl_stg_ck() & 0xFF) {",
+         "void Pachinger_set_quake_sub(PLW *pl, s32 type) {\n    CAMQUAKE *q = &CameraWork.qk[1];\n\n    if (Pl_stg_ck(pl) & 0xFF) {"),
+    ],
+    "src/main/menu/menu10.c": [
+        ("int Pl_master_ck(void);", "int Pl_master_ck();"),
+        ("Pl_master_ck() == 0", "Pl_master_ck((void *)arg) == 0"),
+    ],
     "src/lobby/cnet/cnlbs_nm.c": [
         ("int cnLBS_SendMessage(int arg0, int arg1) {\n    int slot = __cnetSub_Set_BgProcess(1, 0);",
          "int cnLBS_SendMessage(int arg0, int arg1, int cb) {\n    int slot = __cnetSub_Set_BgProcess(1, 0, cb);"),

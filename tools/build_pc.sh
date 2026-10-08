@@ -348,10 +348,81 @@ MATCHED_A="src/main/eft/eft02.c \
     src/main/sys/empty_23E4E0.c \
     src/main/weapon/weapon3.c \
     src/main/weapon/wtrans01.c"
+# batch B (same idea)
+MATCHED_B="src/main/cam/cam.c \
+    src/main/cam/camarea01.c \
+    src/main/cam/camarea02.c \
+    src/main/cam/camarea03.c \
+    src/main/cam/camarea04.c \
+    src/main/cam/camarea05.c \
+    src/main/cam/camb.c \
+    src/main/cam/camc.c \
+    src/main/cam/camg.c \
+    src/main/cam/camp.c \
+    src/main/cam/camq0.c \
+    src/main/cam/camr01.c \
+    src/main/cam/camr02.c \
+    src/main/cam/camr03.c \
+    src/main/cam/camr2.c \
+    src/main/cam/camr2n01.c \
+    src/main/cam/camr2s01.c \
+    src/main/cam/camr2x01.c \
+    src/main/cam/camr4.c \
+    src/main/cam/camr7.c \
+    src/main/menu/menu01.c \
+    src/main/menu/menu02.c \
+    src/main/menu/menu03.c \
+    src/main/menu/menu04.c \
+    src/main/menu/menu05.c \
+    src/main/menu/menu06.c \
+    src/main/menu/menu07.c \
+    src/main/menu/menu08.c \
+    src/main/menu/menu09.c \
+    src/main/menu/menu10.c \
+    src/main/menu/menu11.c \
+    src/main/menu/menu12.c \
+    src/main/menu/menu13.c \
+    src/main/menu/menu14.c \
+    src/main/menu/menu15.c \
+    src/main/menu/menu16.c \
+    src/main/menu/menu17.c \
+    src/main/menu/menu18.c \
+    src/main/menu/menu19.c \
+    src/main/menu/menu20.c \
+    src/main/menu/menu21.c \
+    src/main/menu/menu22.c \
+    src/main/menu/menu24.c \
+    src/main/menu/menu25.c \
+    src/main/menu/menu26.c \
+    src/main/menu/menu27.c \
+    src/main/menu/menu28.c \
+    src/main/menu/menu29.c \
+    src/main/menu/menu30.c \
+    src/main/menu/menu31.c \
+    src/main/menu/menu32.c \
+    src/main/menu/menu33.c \
+    src/main/menu/menu34.c \
+    src/main/menu/menu35.c \
+    src/main/menu/menu36.c \
+    src/main/menu/menu37.c \
+    src/main/menu/menu38.c \
+    src/main/menu/menu39.c \
+    src/main/menu/menu40.c \
+    src/main/menu/menu41.c \
+    src/main/menu/pit02.c \
+    src/main/menu/pit04.c \
+    src/main/omake/omakeb.c \
+    src/main/omake/omakec.c \
+    src/main/omake/omaked.c \
+    src/main/omake/omakee.c \
+    src/main/option/option01.c \
+    src/main/ud/f_ud.c"
+MATCHED_A="$MATCHED_A $MATCHED_B"
+WEAK_B="cam_nm camarea_nm camr_nm camr2_nm camr4_nm camr5_nm hit2_nm menu_nm menu_disp_nm option_nm omake_nm listsel_nm ud_nm udmisc_nm"
 [ -n "$MATCHED_SKIP" ] && MATCHED_A=$(echo $MATCHED_A | tr ' ' '\n' | grep -vE "$MATCHED_SKIP" | tr '\n' ' ')   # bisecting aid
 GAME="$GAME $MATCHED_A"
 WEAK_A="pl_nm f_frame_nm hit_nm hit2_nm hit3_nm tri_nm shit1_nm shit3_nm shit4_nm shit2 f_quest_nm f_quest0_nm item_nm f_em_nm emsrch_nm weapon3_nm weapon_nm light_nm f_stage_nm f_rewardb_nm f_sound_nm eft02_nm eft20_nm"
-WEAK="$WEAK $WEAK_A"
+WEAK="$WEAK $WEAK_A $WEAK_B"
 GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
 PICK_MAIN="$PICK_MAIN $PICK_X"
 
@@ -653,7 +724,7 @@ for f in $MATCHED_A; do
         case "$h" in build/pc/rt_gen.o|build/pc/rt_tables.o|build/pc/rt_symtab.o) continue ;; esac
         nmc --defined-only -g "$h" | awk '$2 == "T" {print $3}'
     done | sort -u > build/pc/.hostsyms
-    nmc --defined-only -g "$o" | awk '$2 == "T" {print $3}' | sort -u | comm -12 - build/pc/.hostsyms | while read -r n; do echo "weak $o $n"; done >> $REQ
+    nmc --defined-only -g "$o" | awk '$2 == "T" || $2 == "W" {print $3}' | sort -u | comm -12 - build/pc/.hostsyms | while read -r n; do echo "weak $o $n"; done >> $REQ
 done
 sort -u -o $REQ $REQ
 # the objects in link order (pc_link_adapt.py, tools/build_xbox.py). rt_gen.o
