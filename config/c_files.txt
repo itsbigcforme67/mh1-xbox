@@ -2104,3 +2104,5 @@ main 0x00248E90 0x00248FC4 ime/imev
 main 0x00249120 0x002493A4 ime/imew
 main 0x00249540 0x00249B44 ime/imex
 main 0x00249D20 0x0024A238 ime/imey
+main 0x0012A1D0 0x0012A26C menu/menu_dmon
+main 0x0012CCD0 0x0012CD90 menu/menu_maru

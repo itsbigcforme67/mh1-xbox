@@ -170,7 +170,7 @@ nm copies carried PC fixes that the matched files needed again (item 4 below).
 8. Effects/draw: eft06_m, eft13_*, eft20_*, light_*, set13_*, weapon3_nm (weapon_trans, pl_item_trans), trans_stage.c (PC rewrite, 15 KB).
 Almost there (instructions differing / total, check.py): Sel_back_disp 2/36 (two instructions swapped), Pit_mv_lb 3/104, Pit_mv 4/382
 (`now` goes through a0 in the original), menu_data_monster_sub 5/39, key_rept_du 5/60, GroundHitInit/WallHitInit 6/70, stolen_item_stack 6/138,
-ZoomRateCalc 8/34. 45-minute caps were reached on Pit_mv, Pit_slash_lv_ck, flMemcpy, hit_sphr_sphr2 (18 -> 11) and cap2_m.
+ZoomRateCalc 8/34. 45-minute caps were reached on Pit_mv, Pl_slash_lv_ck, flMemcpy, hit_sphr_sphr2 (18 -> 11) and cap2_m.
 
 ## 3. Stand-ins that fire or are called (rt_gen.c, 400 names)
 Platform (loaders, GS, SPU, vib, online Bs*/CallBack_*/cnLBS_*, IME apiask_*): correct as no-ops. Game-logic ones found and fixed here:
