@@ -1853,23 +1853,23 @@ CMD_SEL_FUNC_W(em_cmd_before_stage_sel, 0x3E, u8, u8, em->x92E)
  * (the old copy cast it flat, on the xz plane, and tested the wrong halfword of the point).
  * Not a byte match (register allocation of the saved registers; the structure follows the asm). */
 u8 *em_cmd_ground_area_move(EMW *em, u8 *p) {
-    f32 v0[3];
-    f32 v1[3];
-    f32 hit[3];
-    f32 dist;
-    f32 best;
-    EM_STG_POS *g;
-    EM_ROUTE *rt;
     EM_ROUTE_PT *pt;
-    EM_ROUTE *wk;
-    s32 found;
-    s32 sel;
-    s16 i;
+    f32 dist;
+    EM_STG_POS *g;
+    f32 hit[3];
     s16 idx;
-    s16 j;
-    u16 stage;
-    u8 target;
+    EM_ROUTE *rt;
+    EM_ROUTE *wk;
     f32 h;
+    s16 i;
+    f32 v1[3];
+    s32 found;
+    u8 target;
+    s16 j;
+    f32 best;
+    u16 stage;
+    s32 sel;
+    f32 v0[3];
 
     em->x8BE = 0;
     target = *p++;
