@@ -208,6 +208,7 @@ int rt_boot_tick(void)
 /* Draw this frame's picture of the boot screens (the last tick's draws). */
 void rt_boot_draw(void)
 {
+    PICK(PK_HUD, 200, 0, 0, 0);
     gfx_rec_replay();
 }
 
@@ -249,8 +250,11 @@ void rt_sys_tick(void)
  * it after the tasks); RT_NO_FADE=1 leaves fades out (debugging) */
 void rt_fade_draw(void)
 {
-    if (!getenv("RT_NO_FADE"))
+    if (!getenv("RT_NO_FADE")) {
+        PICK(PK_FADE, 0, 0, 0, 0);
         fade_draw();
+        PICK(PK_OTHER, 0, 0, 0, 0);
+    }
 }
 
 /* ------------------------------------------------------------ trans

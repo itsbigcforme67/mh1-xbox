@@ -117,8 +117,10 @@ void flExecuteClay(s32 handle, int flag)
 {
     gfx_clay *c = rt_clay(handle);
     (void)flag;
-    if (c)
+    if (c) {
+        PICK_HANDLE(handle);
         gfx_execute_clay(c);
+    }
 }
 
 /* ------------------------------------------------------------ clay attributes */

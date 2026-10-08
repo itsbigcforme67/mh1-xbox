@@ -333,6 +333,65 @@ area or the game); kills, quest clear, the 3-cart failure, time-out and abandoni
 decided by the host. If the **host** leaves, the joiners can no longer see each other (the host relays everything).
 No chat yet. The tests: `tools/test_coop.sh` (about 15 minutes, all headless on 127.0.0.1).
 
+## Bug reporter (F8) (agent B, 8 Oct 2026)
+
+In the GL builds (Linux, Windows) F8 or Back/View + Start on a controller freezes the game: no game ticks, the
+audio device is paused, the game clock stops (and continues where it was after Esc / Enter). The frame is grabbed,
+then drawn once more into an id buffer (below). The mouse picks broken things: click = the draw call under the
+cursor, drag = a box (every id inside), right click = undo the last pick, typing = the note (Ctrl+V pastes),
+Enter saves the report, Esc or F8 cancels. Picked objects are tinted and outlined on the frozen picture and
+listed in a panel (descriptions like "monster kind 16 slot 2 part 0", "stage 21 area part 2", "HUD/2D element
+tex 36 256x256 at 313,267 trans_pit_1"). A pointer line goes to stderr and the debug log.
+
+**Id buffer.** While `gfx_pick_pass` is set the GL backend draws every clay / 2D call flat in an id colour (no
+blend / fog / dither; textures keep their alpha test; the game's z test and write stay, so an effect that does
+not write depth does not hide what is behind it) and asks `gfx_pick_cb` (rt_pick.c `pick_register`) for the id,
+passing the draw's render states (texture, blend src / dst / operation, z test / write / func, alpha function and
+reference, filter, clamp, fog, fade colour, UV scroll matrix, world matrix, 2D box). The frame is the normal
+draw code run again (the viewer's `goto redraw` after the frame; the game draws several frames per tick anyway,
+so it is repeatable). Each draw site tags what it draws with `PICK(kind, a, b, c, d)` (rt_pick.h; one branch
+when no pass runs): stage area / sky parts and set-model parts through the game's clay handles
+(rt_bind_stage_model / rt_bind_set_model register them: kind, stage, part), game prims by their owner
+(effect work index / type / arg, set object work, the draw function's symbol name), host-drawn models
+(monsters: slot, kind, part, skeleton; hunters: player, slot legs / face / hair / body / arms / waist, part;
+weapons; village NPCs), the HUD prims and the sprite list (the prim's trans function name), font glyphs (code,
+palette), the movie, and the screen fade (not drawn in the pass). Depth is read too, so a click also yields the world
+position of the hit point and, for skinned models, the nearest bone (distance to the skeleton's joints).
+
+**Report folder** `reports/report_<date>_<time>/` next to the `logs` folder (`~/.local/share/mh1pc/reports`,
+`%APPDATA%\mh1pc\reports`; never in the repository): `screenshot.png`, `annotated.png` (tints, outlines, click and box
+marks with numbers), `idbuffer.png` (false colours), `report.json`, `log_tail.txt` (the last 300 log lines),
+`clip.gif` (the last ~10 s, 320x240, ~6 fps, kept in a 14 MB ring that is allocated on the first capture and
+costs one glReadPixels every 170 ms), `input.txt`. report.json: note, build, window, arguments, random seed, marks,
+the picked objects (kind, description, ids a/b/c/d and clay handle, draw function, skeleton frame, world
+position, render states, hit position, nearest bone, per-kind fields: motion id / frame / mode / step / HP of
+the monster or hunter), and the game state (tick, mode, step, stage, quest, map areas, camera eye / target / fov,
+the hunter's position / angle / motion / HP, every monster of the area with position, motion, mode, HP).
+`python3 tools/show_report.py REPORT_DIR [--log] [--replay]` prints it readably.
+
+**Replay.** The pad state of every game tick since the start (one `rt_pad_set` call per tick, run-length coded) is
+saved as `input.txt` in the --input script format, extended with `xBITS:lx:ly:rx:ry*n` (analog sticks, hex fl pad
+bits; the script reader now grows without the old 256-step limit, and `--input @file` reads a script from a
+file). With the seed (`RT_SEED=n`, in the report) and the same `--boot` / `--quest` / `--stage` arguments a headless
+`--input @input.txt --time <ticks/30>` run reproduces the session; `RT_PICK_AT=<tick>` freezes (and with
+RT_PICK_CLICKS reports) at the reported tick, and test_pick.sh checks that this reaches the same game state.
+Not recorded: typed text of the name entry (use RT_NAME), the mouse (free camera), the wall clock.
+
+**Test aids.** `RT_PICK_AT=tick` (freeze at that tick), `RT_PICK_CLICKS="x,y;x0,y0,x1,y1;..."` (a click and a box in
+window pixels), `RT_PICK_NOTE=text`, `RT_PICK_UI=1` (the same picks as real SDL events pushed one per frozen frame:
+mouse down / up, text input, Enter; `RT_PICK_UI_SHOT=file.png` writes the frozen frame with the panel),
+`RT_PICK_RING_MS=0` (clip frame every drawn frame). `tools/test_pick.sh` (~20 s, RUN / BIN for Wine) checks the
+files and JSON, the event path, the replay and show_report.py. Checked 8 Oct 2026 on Linux and the Windows exe
+under Wine.
+
+`tools/bug_report.sh` / `bug_report.bat` pack the newest three reports with the logs. The screenshots show the
+game's graphics (the player sends them on purpose; nothing is uploaded by the program). Compiled out on the Xbox
+(`pick.h` has empty stand-ins under XBOX; rt_pick.c only holds the tags and the id table, and links there).
+Not verified: a real mouse and keyboard session (the event path is driven by pushed events), the controller
+combo (the pad_combo_held read is 5 lines; no pad press was made), high-DPI displays (mouse coordinates are taken as
+framebuffer pixels), the clip's colours (3-3-2 palette, no dithering), reports of the movie / boot screens (the
+boot screens are one tagged replay, so a click picks the whole picture).
+
 ## Layout
 
 | path | what |

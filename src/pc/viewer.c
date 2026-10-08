@@ -16,6 +16,7 @@
 #include "audio/audio.h"
 
 #include <SDL.h>
+#include "pick.h"
 #ifdef MH1_WIN
 #include <fcntl.h>
 #include <io.h>
@@ -91,12 +92,23 @@ static uint32_t part_attr(const fl_model *m, int k)
     return p->has_attr ? rt_clay_attr_word(p->attr) : 0;
 }
 
+/* the bug reporter's tag for the model drawn next (what it is: kind, a, b of the PICK tag; skeleton for the nearest bone) */
+static struct { int kind, a, b; const void *skel; } powner;
+static void pick_owner(int kind, int a, int b, const void *skel)
+{
+    powner.kind = kind;
+    powner.a = a;
+    powner.b = b;
+    powner.skel = skel;
+}
+
 /* fl_model_draw with each part's own blend/filter/clamp (clay_attr_set) */
 static void draw_model_attr(fl_model *m, int sky)
 {
     int i;
     for (i = 0; i < m->npart; i++)
         if (sky < 0 || sky == m->part[i].is_sky) {
+            PICK_FN(powner.kind, powner.a, powner.b, i, 0, 0, powner.skel, 0);
             rt_clay_attr_set(part_attr(m, i));
             gfx_execute_clay(m->part[i].clay);
             rt_clay_attr_reset();
@@ -250,6 +262,8 @@ static int write_png(const char *path, int w, int h, const uint8_t *rgb)
     free(z);
     return 0;
 }
+
+int viewer_write_png(const char *path, int w, int h, const uint8_t *rgb) { return write_png(path, w, h, rgb); }
 
 /* ------------------------------------------------------------ actors */
 typedef struct {
@@ -716,8 +730,10 @@ static void ed_hunter_draw(void *arg)
     gfx_set_render_state(GFX_RS_BLEND, 1);
     gfx_set_render_state(GFX_RS_ZWRITE, 1);
     gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)h->world);
-    for (s = 0; s < HUNTER_PARTS; s++)
+    for (s = 0; s < HUNTER_PARTS; s++) {
+        pick_owner(PK_HUNTER, no, s, &h->master);
         draw_model_attr(&h->part[s], -1);
+    }
 }
 static void ed_hunter_hook(int no)
 {
@@ -772,6 +788,13 @@ static int load_stage_models(int st)
         for (k = 0; k < nc; k++) {
             c[k] = stage.part[k].clay;
             at[k] = part_attr(&stage, k);
+        }
+        {
+            extern unsigned char rt_stage_sky_flags[64];
+            extern int rt_stage_model_no;
+            rt_stage_model_no = st;
+            for (k = 0; k < nc; k++)
+                rt_stage_sky_flags[k] = (unsigned char)stage.part[k].is_sky;
         }
         rt_bind_stage_model(c, at, nc);
     }
@@ -903,9 +926,12 @@ static void remote_hunters(int draw, const fl_light *L)
         L = light_hunter(s);
         hunter_pose(h, 0, L);
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)h->world);
-        for (j = 0; j < HUNTER_PARTS; j++)
+        for (j = 0; j < HUNTER_PARTS; j++) {
+            pick_owner(PK_HUNTER, s, j, &h->master);
             draw_model_attr(&h->part[j], -1);
+        }
         if (rw[s].game) {
+            pick_owner(PK_WEAPON, s, 0, NULL);
             static flmat wid;
             weapon_pose_of(&rw[s], s, L);
             flmat_identity(wid);
@@ -1132,6 +1158,7 @@ static void monsters_sync(int draw, const fl_light *L)
         if (draw) {
             fl_model_pose(&m->model, (const flmat *)m->skel.world, L);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
+            pick_owner(PK_MONSTER, i, kind, &m->skel);
             draw_model_attr(&m->model, -1);
         }
     }
@@ -1194,6 +1221,7 @@ static void npc_draw(const fl_light *L)
         for (k = 0; k < m->model.npart; k++) {
             if (kind == 0 && (k >= 0x20 || !em[0x4E6 + k]))
                 continue;
+            PICK_FN(PK_NPC, i, kind, k, 0, 0, &m->skel, 0);
             rt_clay_attr_set(part_attr(&m->model, k));
             gfx_execute_clay(m->model.part[k].clay);
             rt_clay_attr_reset();
@@ -1313,7 +1341,28 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--quest") && i + 1 < argc) quest_no = (int)strtol(argv[++i], NULL, 0);
         else if (!strcmp(argv[i], "--play")) play = 1;
         else if (!strcmp(argv[i], "--boot")) { boot = 1; play = 1; }
-        else if (!strcmp(argv[i], "--input") && i + 1 < argc) { script = argv[++i]; play = 1; }
+        else if (!strcmp(argv[i], "--input") && i + 1 < argc) {
+            script = argv[++i];
+            play = 1;
+            if (script[0] == '@') {         /* --input @file: the script is in a file (the bug reporter's input.txt) */
+                FILE *sf = fopen(script + 1, "rb");
+                if (sf) {
+                    size_t n, cap = 1 << 16, len = 0;
+                    char *b = malloc(cap);
+                    while ((n = fread(b + len, 1, cap - len - 1, sf)) > 0) {
+                        len += n;
+                        if (len + 2 >= cap)
+                            b = realloc(b, cap *= 2);
+                    }
+                    b[len] = 0;
+                    while (len && (b[len - 1] == '\n' || b[len - 1] == '\r' || b[len - 1] == ' '))
+                        b[--len] = 0;
+                    fclose(sf);
+                    script = b;
+                } else
+                    fprintf(stderr, "cannot read the input script %s\n", script + 1);
+            }
+        }
         else if (!strcmp(argv[i], "--sw-trace")) sw_trace = 1;
 #ifdef MH1_ONLINE
         else if (!strcmp(argv[i], "--nettest") && i + 1 < argc) nettest = argv[++i];
@@ -1390,6 +1439,7 @@ int main(int argc, char **argv)
         }
     }
 #endif
+    rt_pick_set_args(argc, argv);
     if (!disc) {
         fprintf(stderr, "usage:%s DISC_DIR [--shot out.png] [--frames N] [--time S] "
                 "[--size WxH] [--cam x,y,z,yaw,pitch] [--stage N] [--play] [--input SCRIPT]\n", argv[0]);
@@ -1688,6 +1738,8 @@ int main(int argc, char **argv)
         float spd = 40;
 
         while (SDL_PollEvent(&ev)) {
+            if (pick_event(&ev))        /* F8: the bug reporter (frozen: it takes all input) */
+                continue;
             pad_event(&ev);     /* typed text (the name entry) */
             if (ev.type == SDL_QUIT || (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE))
                 running = 0;
@@ -1697,6 +1749,21 @@ int main(int argc, char **argv)
                 if (cam[4] > 1.5f) cam[4] = 1.5f;
                 if (cam[4] < -1.5f) cam[4] = -1.5f;
             }
+        }
+        if (play)
+            pick_poll_pad();            /* Back/View + Start on the controller */
+        {   /* the bug reporter stops the game clock while it is frozen */
+            static int holding;
+            static Uint32 hold_t0;
+            int hnow = pick_hold_ticks(ticks);
+            if (hnow && !holding)
+                hold_t0 = SDL_GetTicks();
+            if (!hnow && holding && fixed_time < 0) {
+                t0 += SDL_GetTicks() - hold_t0;
+                t = (SDL_GetTicks() - t0) / 1000.0f;
+                fr = t * 30.0f;
+            }
+            holding = hnow;
         }
         if (game_cam && have_view) {    /* look-at from the game camera's eye/target (roll ignored) */
             lookat_world(camw, gc_eye, gc_tar);
@@ -1730,7 +1797,7 @@ int main(int argc, char **argv)
             shot_next = 0;              /* RT_SHOTS past --time: dropped */
         /* RT_PROF=1: CPU time per subsystem (rt_prof.c), per game tick and
          * per drawn frame, every 300 ticks */
-        while (ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
+        while (!pick_hold_ticks(ticks) && ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
             rt_prof_begin(RTP_LOGIC);
             if (booting) {      /* ACRMain: pad, then the task scheduler */
                 pad_state ps;
@@ -1808,6 +1875,11 @@ int main(int argc, char **argv)
             rt_prof_tick();
         }
         rt_prof_begin(RTP_DRAW);
+        if (pick_frozen()) {            /* the bug reporter: the frozen frame, no scene */
+            pick_frozen_frame();
+            goto frame_done;
+        }
+    redraw:                             /* (the id pass draws the frame once more) */
         if (booting) {          /* the boot screens: the last tick's picture */
             gfx_begin_frame(0);
             rt_boot_draw();
@@ -1896,13 +1968,16 @@ int main(int argc, char **argv)
         }
         if (rt_monster_shown(0) && slot0_rathian()) {     /* in use and on this stage */
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)rathian.world);
+            pick_owner(PK_MONSTER, 0, 1, &rathian.skel);
             draw_model_attr(&rathian.model, -1);
         }
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)pl.world);
         {
             int s;
-            for (s = 0; s < HUNTER_PARTS; s++)
+            for (s = 0; s < HUNTER_PARTS; s++) {
+                pick_owner(PK_HUNTER, lp, s, &pl.master);
                 draw_model_attr(&pl.part[s], -1);
+            }
         }
         if (!rt_village_active())
             remote_hunters(1, light_cur());     /* co-op: the other players' hunters */
@@ -1914,6 +1989,7 @@ int main(int argc, char **argv)
             static flmat wid;
             flmat_identity(wid);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)wid);
+            pick_owner(PK_WEAPON, lp, 0, NULL);
             draw_model_attr(&weapon.model, -1);
         }
         /* The game's own order (trans(), weapon/trans.c): stage, then the actors (GameTrans), then the shells, prims, set
@@ -1927,6 +2003,8 @@ int main(int argc, char **argv)
         rt_fade_draw();                 /* fade_draw: the screen fade (Fade_task) */
         rt_prof_end(RTP_2D);
     frame_done:
+        if (pick_frame_hook())
+            goto redraw;
 
         frame_no++;
         rt_log_frame();
@@ -1951,7 +2029,7 @@ int main(int argc, char **argv)
             if (shot_list && *shot_list == ',')
                 shot_list++;
         }
-        if (shot && frame_no >= frames && shot_next <= 0 && (!shot_list || ticks >= 2 + (int)fr)
+        if (shot && frame_no >= frames && shot_next <= 0 && !pick_busy() && (!shot_list || ticks >= 2 + (int)fr)
             && (!step || frame_no / 30.0f >= fixed_time)) {
             uint8_t *rgb = malloc((size_t)W * H * 3);
             gfx_read_pixels(rgb);
@@ -1960,6 +2038,7 @@ int main(int argc, char **argv)
             free(rgb);
             running = 0;
         }
+        pick_ring_frame();              /* the bug report's clip of the last seconds */
         rt_prof_begin(RTP_GFX);
         gfx_end_frame();
         rt_prof_end(RTP_GFX);

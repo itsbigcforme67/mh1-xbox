@@ -57,12 +57,13 @@ const char *rt_host_symname(const void *addr, unsigned *off);   /* rt_symtab.c (
 #define MH1_VERSION "unknown"
 #endif
 #define KEEP_LOGS 20
-#define RING_LINES 200
+#define RING_LINES 300
 #define LINE_MAX_ 240
 
 static FILE *lf;
 static int lfd = -1;
 static char log_path[700];
+static char log_dir_s[700];
 static char ring[RING_LINES][LINE_MAX_];
 static unsigned ring_n;                 /* lines ever written */
 static unsigned long t0;                /* ms at start */
@@ -691,6 +692,7 @@ void rt_log_init(const char *disc, int argc, char **argv)
     if (h && strlen(h) > 2 && strlen(h) < sizeof home)
         snprintf(home, sizeof home, "%s", h);
     logs_dir(dir, sizeof dir);
+    snprintf(log_dir_s, sizeof log_dir_s, "%s", dir);
     make_dirs(dir);
     rotate(dir);
     stamp(st, sizeof st);
@@ -729,6 +731,32 @@ void rt_log_init(const char *disc, int argc, char **argv)
     }
 }
 
+const char *rt_log_build(void) { return MH1_VERSION; }
+const char *rt_log_dir(void) { return log_dir_s; }
+const char *rt_log_file(void) { return log_path; }
+
+/* the last n log lines (already scrubbed), malloc'ed text; the bug reporter saves it */
+char *rt_log_tail(int n)
+{
+    unsigned have = ring_n < RING_LINES ? ring_n : RING_LINES, first, i;
+    size_t len = 0;
+    char *o;
+    if (n < 1 || (unsigned)n > have)
+        n = (int)have;
+    first = ring_n - (unsigned)n;
+    o = (char *)malloc((size_t)n * LINE_MAX_ + 1);
+    if (!o)
+        return NULL;
+    for (i = first; i < ring_n; i++) {
+        size_t l = strlen(ring[i % RING_LINES]);
+        memcpy(o + len, ring[i % RING_LINES], l);
+        len += l;
+    }
+    o[len] = 0;
+    return o;
+}
+
+int rt_log_tick(void) { return cur_tick; }
 int rt_log_started(void) { return inited; }
 
 void rt_log_shutdown(void)

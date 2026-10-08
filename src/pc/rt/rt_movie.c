@@ -307,6 +307,7 @@ void movie_draw(void)
     gfx_set_render_state(GFX_RS_FILTER, 0);
     gfx_set_render_state(GFX_RS_BLEND, 0);
     gfx_set_render_state(GFX_RS_TEX_CLAMP, 1);
+    PICK(PK_MOVIE, mv.no, 0, 0, 0);
     gfx_draw_2d(512, 448, 6, pos, st, NULL);
     gfx_set_render_state(GFX_RS_TEX_CLAMP, 0);
     gfx_set_render_state(GFX_RS_BLEND, 1);
