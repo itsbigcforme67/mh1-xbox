@@ -1002,7 +1002,7 @@ static void sim_tick(void)
             printf("tick %d: em0 pos %.0f %.0f %.0f ang %04X\n", ticks, p[0], p[1], p[2], a & 0xFFFF);
         }
     }
-    if (ticks >= 2 && rt_player_uses_game() && getenv("RT_BODY_HIT")) {
+    if (ticks >= 2 && rt_player_uses_game() && !(getenv("RT_BODY_HIT") && getenv("RT_BODY_HIT")[0] == '0')) {
         extern unsigned char game_w[];
         void body_hit(void);
         if (game_w[0x21F] == 0)         /* move(): item_check / body_hit only while info_stop == 0 (hunters and monsters pushed apart) */

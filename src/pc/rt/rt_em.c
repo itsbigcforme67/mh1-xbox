@@ -490,11 +490,27 @@ int rt_monster_tick(int no)
     EMW *em = &em_work[no];
     if (!em->be_flag)
         return 0;
-    if (no == 0 && getenv("RT_EM_PIN")) {   /* test aid "x,z": monster 0 is put back there every tick (it can still turn and act) */
-        float px, pz;
-        if (sscanf(getenv("RT_EM_PIN"), "%f,%f", &px, &pz) == 2) {
-            em->pos[0] = px;
-            em->pos[2] = pz;
+    if (no == 0 && getenv("RT_EM_PIN")) {   /* test aid "x,z" or "tick:x,z;tick:x,z": monster 0 is put back there every tick from that
+                                             * tick on (the last entry reached wins); it can still turn and act */
+        static int pin_tk;
+        const char *q = getenv("RT_EM_PIN");
+        float px, pz, bx = 0, bz = 0;
+        int t, have = 0, used;
+        pin_tk++;
+        while (*q) {
+            t = 0;
+            if (sscanf(q, "%d:%f,%f%n", &t, &px, &pz, &used) != 3) {
+                t = 0;
+                if (sscanf(q, "%f,%f%n", &px, &pz, &used) != 2)
+                    break;
+            }
+            if (t <= pin_tk) { bx = px; bz = pz; have = 1; }
+            q += used;
+            if (*q == ';') q++;
+        }
+        if (have) {
+            em->pos[0] = bx;
+            em->pos[2] = bz;
         }
     }
     if (getenv("RT_EM_TRACE"))

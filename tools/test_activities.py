@@ -136,14 +136,14 @@ def long_fight():
 
 @test
 def carve_small():
-    """Aptonoth (kind 12) killed and carved: raw meat (18) and its other parts"""
+    """Aptonoth (kind 12) killed and carved: raw meat (18) or small wyvern bone (227) (which one is the carve roll)"""
     cyc = ',cam_u*2,idle*30' * 4 + ',circle*2,idle*28' * 6
     t = run('carve_small', 'idle*60' + cyc * 4, 0, quest=131, stage=39, secs=40,
             env={'RT_PL_GOD': 1, 'RT_DMG_MUL': 40, 'RT_PL_WARP_EM': '90-9000', 'RT_PL_TARGET': 'k12'})
     g, fin = gains(t, {})
     if crashed(t): return False, 'crash'
     names = item_names()
-    return 18 in g and all(0 < k < 330 for k in g), 'carved: %s' % ', '.join('%s(%d) x%d' % (names[k], k, v) for k, v in sorted(g.items()))
+    return bool(g) and set(g) <= {18, 227}, 'carved: %s' % ', '.join('%s(%d) x%d' % (names[k], k, v) for k, v in sorted(g.items()))
 
 @test
 def carve_large():
@@ -179,6 +179,14 @@ def whetstone():
         out.append('%s(%d): sharpness 50 -> %d, 3 -> 2' % (item_names()[item], item, h[-1][1]))
     return True, '; '.join(out)
 
+def trap_pin():
+    """hunter at (8716,11886) facing a Rathian that waits at (8000,12800); the trap lands 80 units in front of him and the monster is
+    put on it from tick 300 (the trap is armed by ~235): her own walk now depends on the body push (hunter-monster distance)"""
+    S, M = (8716, 11886), (8000, 12800)
+    n = math.hypot(M[0] - S[0], M[1] - S[1])
+    T = (int(S[0] + (M[0] - S[0]) / n * 80), int(S[1] + (M[1] - S[1]) / n * 80))
+    return {'RT_PL_WARP': '10,%d,%d' % S, 'RT_EM_POS': '%d,%d' % M, 'RT_EM_PIN': '0:%d,%d;300:%d,%d' % (M + T)}
+
 PIN = (8671, 11945)     # quest 10 stage 40: where the Rathian stands once her first idle walk ends (RT_EM_PIN holds her there)
 def near_pin(d):
     ux, uz = 10000 - PIN[0], 10000 - PIN[1]; n = math.hypot(ux, uz)
@@ -208,8 +216,7 @@ def paintball():
 def pitfall():
     """pitfall trap (30, carry limit 1) set in the Rathian's path: she walks in and is held (x959 = 6, x9EA = 50)"""
     t = run('pit', {70: 'square*2'}, 600, quest=10,
-            env={'RT_QUEST_STAGE': 1, 'RT_PL_ITEMS': '30:1', 'RT_PL_WARP': '10,8716,11886', 'RT_EM_POS': '8000,12800',
-                 'RT_PL_AIM': 1, 'RT_PL_GOD': 1, 'RT_EM_TRACE': 1, 'RT_PL_TRACE': 1})
+            env=dict(trap_pin(), RT_QUEST_STAGE=1, RT_PL_ITEMS='30:1', RT_PL_AIM=1, RT_PL_GOD=1, RT_EM_TRACE=1, RT_PL_TRACE=1))
     held = [l for l in em0(t) if re.search(r' tr 50/6', l)]
     fin = final_pouch(t)
     act = re.search(r'act (\d+/\d+)/\d+', held[0]).group(1) if held else '-'
@@ -218,9 +225,9 @@ def pitfall():
 @test
 def tranq():
     """trap + tranquilizer balls (159) on the weakened Rathian: capture sleep (act 6/4)"""
-    t = run('tranq', {70: 'square*2', 330: 'square*2', 450: 'square*2', 570: 'square*2'}, 900, quest=10,
-            env={'RT_QUEST_STAGE': 1, 'RT_EM_HP': 300, 'RT_PL_ITEMS': '30:1,159:3', 'RT_PL_POKE': '300:888:1',
-                 'RT_PL_WARP': '10,8716,11886', 'RT_EM_POS': '8000,12800', 'RT_PL_AIM': 1, 'RT_PL_GOD': 1, 'RT_EM_TRACE': 1})
+    t = run('tranq', {70: 'square*2', 400: 'square*2', 520: 'square*2', 640: 'square*2'}, 900, quest=10,
+            env=dict(trap_pin(), RT_QUEST_STAGE=1, RT_EM_HP=300, RT_PL_ITEMS='30:1,159:3', RT_PL_POKE='300:888:1',
+                     RT_PL_AIM=1, RT_PL_GOD=1, RT_EM_TRACE=1))
     cap = [l for l in em0(t) if re.search(r' act 6/4/', l)]
     fin = final_pouch(t)
     return bool(cap), 'tranquilizer balls 3 -> %s, monster in capture sleep act 6/4: %s' % (fin.get(159, 0), 'yes' if cap else 'no')
