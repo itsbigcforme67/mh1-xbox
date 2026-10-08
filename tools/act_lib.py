@@ -20,7 +20,7 @@ def run(tag, events, end, quest=131, stage=None, env=None, secs=None, extra=(), 
     """one headless run; returns the log text (stdout+stderr). secs defaults to the script length."""
     e = dict(os.environ, RT_NOMOVIE='1', RT_QUEST_TRACE='1')
     e.update({k: str(v) for k, v in (env or {}).items()})
-    a = [EXE, DISC, '--quest', str(quest)] + (['--stage', str(stage)] if stage is not None else [])
+    a = [EXE, DISC] + (['--quest', str(quest)] if quest is not None else []) + (['--stage', str(stage)] if stage is not None else [])
     a += ['--play', '--input', events if isinstance(events, str) else mk_input(events, end),
           '--shot', os.path.join(OUT, tag + '.png'), '--time', str(secs or end / 30.0 + 1)] + list(extra)
     log = os.path.join(OUT, tag + '.log')

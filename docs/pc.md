@@ -1847,6 +1847,12 @@ Findings that are not bugs (kept as the decompiled code has it):
 - The hunter's gathering needs the weapon sheathed and the first circle after a warp is eaten by the landing action (tests
   wait ~100 ticks).
 
+Carve sweep (one-off, not in the test file: quest/stage per kind from the quest dumps, RT_PL_SLAY + RT_PL_TARGET=kN + RT_PL_WARP_EM,
+circle presses): items came out for kinds 1, 4, 5, 6, 11-17, 20-22, 25-28, 30, 34 (Rathian, Rathalos, Kut-Ku, Gypceros, Basarios,
+Gravios, Khezu, Plesioth, Diablos/Monoblos, the raptors, Aptonoth, Velocidrome family, Giaprey ...; item names plausible for the
+monster). Nothing came out for 2 (Fatalis: carved through its own pick points in round 21), 3, 7 (Lao-Shan), 8, 9, 19, 23, 24, 29, 31:
+the dead monster there never got a carve point (small monsters without a carve table, or the sweep's warp missed); not investigated.
+
 Not tested / still open: selling from the pouch at the house box ("持ち物を売る" works as a smoke test: +2z for a stored herb),
 "持ち物を整理する" (no visible effect in the smoke run), the trader's buy/sell variants beyond 71 -> 77 and gifts, shock trap
 (see above), a quest that actually asks for a capture.
