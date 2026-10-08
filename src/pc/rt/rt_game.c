@@ -473,15 +473,15 @@ void rt_game_draw(void)
                 continue;           /* RT_SKIP_TYPE=n: debugging, skip prims of owner type n */
             {   /* A prim queued this tick whose effect work has been freed (or freed and handed out again: eft_take zeroes the
                  * work, so its owner is NULL) before the draw: the PS2 keeps the old bytes and draws a last stale frame, the PC
-                 * would read through NULL (crash report 22:20 on stage 39: eft05_t, the weapon trail, pl = ew->owner = NULL). */
+                 * would read through NULL (crash report 22:20 on stage 39: eft05_t, the weapon trail, pl = ew->owner = NULL). Cause was the stubbed
+                 * clr_eft_work (rt_eft_clear_stage); this stays as a safety net. */
                 extern u8 eft_work[];
-                extern void *rt_eft_push_caller[]; extern int rt_eft_push_type[];
                 u8 *o = (u8 *)p->owner;
                 if (o >= eft_work && o < eft_work + 128 * 0x40 && (!o[0] || (o[2] == 5 && !*(void **)(o + 0x34)))) {
                     static int warned;
                     if (!warned++)
-                        fprintf(stderr, "rt_game_draw: skipped a prim whose effect work %d (type %d) is free or has no owner (draw fn rt_game_draw%+ld) last freed by %p (type %d), mode %d\n",
-                                (int)(o - eft_work) / 0x40, o[2], (long)((char *)p->trans - (char *)rt_game_draw), rt_eft_push_caller[(o - eft_work) / 0x40], rt_eft_push_type[(o - eft_work) / 0x40], o[4]);
+                        fprintf(stderr, "rt_game_draw: skipped a prim whose effect work %d (type %d) is free or has no owner\n",
+                                (int)(o - eft_work) / 0x40, o[2]);
                     continue;
                 }
             }

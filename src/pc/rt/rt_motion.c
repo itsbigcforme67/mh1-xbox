@@ -462,6 +462,14 @@ void rt_monster_get(int no, float pos[3], int *ang_y)
     *ang_y = w->ang[1];
 }
 
+/* 0 while the monster's motion has not been started yet (a monster respawned in the slot: its first ticks pose the bind pose,
+ * which has the body 120 units below the ground) */
+int rt_monster_motion_ready(int no)
+{
+    const FRW *w = (const FRW *)&em_work[no];
+    return w->mdl && ((const RT_MPLAY *)w->mdl->mot0)->set[0] != 0;
+}
+
 void rt_monster_pose(int no, void *skel)
 {
     rt_motion_pose(skel, &em_work[no]);
