@@ -1302,3 +1302,12 @@ Tricks (each confirmed by a match):
   materials 4/5; em_material_sub (0x10CEA0) hides one per kind by material alpha 0. Ported the raptor case to
   rt_em_material_hide + GFX_RS_BATCH_HIDE; details in docs/pc.md "Per-kind materials". The other kinds' cases of
   em_material_sub are still not ported (part-break materials).
+- 8 Oct 2026, all monster materials (PC): the rest of em_material_sub, em09/em20_material_sub, the per-clay
+  EMW+0x4E6 flags and the 0x798 fade, through rt_em_materials + GFX_RS_BATCH_HIDE / BATCH_TEX / FADE_COLOR; test
+  em_materials; docs/pc.md "Per-kind materials". Note: clay 1 of the big monsters is the eft09 tail.
+- 8 Oct 2026, tail cutting (PC): the cut logic (Em_Dmg_Sys -> em_tail_off_sub -> eft09 tail_off, carving point) was
+  already game C; added the drawing: tail tree on nodes 43/43/44 before the cut, the cut tail drawn apart afterwards
+  (rt_em_cut_tail, fl_skel_cut_tail, draw_cut_tail). EMW+0x948 bit 0 is "tail cut", not "asleep" (corrected).
+  Test tail_cut. em_alpha_clay left alone (alpha-reference scale unchecked).
+- 8 Oct 2026, tail cut follow-up: cuttable = part 8 in em_dur_tbl (1, 11, 14, 17, 22, 26); 6/8/15/21 never cut.
+  Basarios needs to be awake; real attacks cut it on the PC. Cut tail now gets its materials (bug fixed).

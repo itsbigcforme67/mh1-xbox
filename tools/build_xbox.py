@@ -59,6 +59,9 @@ def xcmd(cmd, out):
             continue
         if x in ('-m32', '-D_REENTRANT', '-g', '-Wall', '-Wextra'):
             continue
+        if x == '-msse2':       # the recorded x86 commands use SSE2 for single-precision floats; the Xbox Pentium III has SSE1 only
+            n.append('-msse')
+            continue
         if x in ('-idirafter', '-o'):
             skip = 1
             continue

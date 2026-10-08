@@ -86,15 +86,18 @@ void flSetRenderState(int state, u32 value)
         if (value)
             memcpy(rt_light_blk[state - 0x5A], (const void *)(uintptr_t)value, 0x68);
         break;
-    case 0x01:   /* shader kind / family / ambient: the host lights clays itself */
-    case 0x0E:   /* (fl_model's VU1-style lighting) */
-    case 0x15:
-        break;
     default:
+        if (state >= 0x3A && state < 0x5A)     /* material m - 0x3A of the next clay (em_material_sub, em20_material_sub):
+                                                   the host reads the per-kind state from rt_em_materials instead */
+            break;
         if (state >= 0 && state < 0x100 && !warned[state]) {
             warned[state] = 1;
             fprintf(stderr, "rt: flSetRenderState 0x%X not mapped yet\n", state);
         }
+        break;
+    case 0x01:   /* shader kind / family / ambient: the host lights clays itself */
+    case 0x0E:   /* (fl_model's VU1-style lighting) */
+    case 0x15:
         break;
     }
 }

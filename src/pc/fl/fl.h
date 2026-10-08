@@ -35,7 +35,8 @@ typedef struct {
     int skip;               /* set by the caller: not drawn this frame, fl_model_pose leaves it */
     int gpu;                /* skinned and lit by the backend (gfx_clay_pose), not here */
     gfx_skin_mesh *check;   /* RT_SKIN_CHECK=1: the GPU data, compared with the CPU result */
-    int16_t batch_mat[32];  /* the AMO material number of the clay's batch b (one batch per material), -1 none */
+    int16_t batch_mat[32];  /* the AMO material number of the clay's batch b (one batch per material); -2 the batch of
+                               strips without a material, -1 no batch b */
 } fl_part;
 
 typedef struct {
@@ -110,5 +111,8 @@ int  fl_skel_set_motion(fl_skel *s, int group, fmt_blob tbl, int id, int be);
 void fl_skel_update(fl_skel *s, float t);
 
 void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS]);
+/* the tailed monsters' cut-off tail: world matrices with the tail tree (45-47) in its bind pose under
+ * root (fl_model.c); 0 = no tail tree */
+int  fl_skel_cut_tail(const fl_skel *s, const flmat root, flmat *out);
 
 #endif

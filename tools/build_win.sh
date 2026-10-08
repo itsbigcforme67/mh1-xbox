@@ -35,6 +35,7 @@ export SDL_CFLAGS="-I$SDL/include/SDL2 -DSDL_MAIN_HANDLED"
 export LIBS="-L$SDL/lib -lSDL2 -lopengl32 -lcomdlg32 -lshell32 -lwinmm -lm"
 # ONLINE=1: the online build (Winsock; build/win/mhview_online.exe, docs/network.md), passed on to build_pc.sh
 [ -n "$ONLINE" ] && LIBS="$LIBS -lws2_32 -lgdi32"
+export FPSSE="-msse2 -mfpmath=sse"   # single-precision floats as the PS2 (x87 80-bit temporaries hung the Cephadrome death, quest 154)
 export GAME_EXTRA="$RELAX -w -fno-builtin"   # as nxdk-cc: the game headers declare memset() K&R
 export EXTRA_CFLAGS="-DMH1_WIN -include src/pc/rt/win_utf8.h" GAME_NOAGG=""
 sh $T/tools/build_pc.sh

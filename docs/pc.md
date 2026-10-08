@@ -1145,7 +1145,7 @@ would be the shortcut if steps 3 and 5 turn out too slow.
   type from the same chunk (states 0x00, 0x62, 0x12, 0x01, baked into the
   clay on the PS2) are not applied. Alpha test is > 0x40 for host draws;
   the stage uses the game's own state 0x60 values (0x80 / 0).
-- **Rathian:** (fixed 8 Oct 2026, fl_model.c attach_tail_tip: tree 45-47 follows bone 44's movement from its bind pose) the tail tip (AHI tree 1) was not attached, so it lay on the
+- **Rathian:** (fixed 8 Oct 2026, fl_model.c attach_tail_tip; corrected the same day to eft09_t's rule, tree 45/46/47 = nodes 43/43/44, see "Per-kind materials" / tail cutting) the tail tip (AHI tree 1) was not attached, so it lay on the
   ground. No blending between motions.
 - **Hunter:** no weapon. Hair and cloth bones (ptmat ≥ 64) keep their bind
   offset.
@@ -1783,6 +1783,23 @@ Quest 131 forest/cave stages 21-24, what really scrolls (RT_UV_TRACE=1 lists eve
 These are the game's own code; no stale-matrix leak was left. The marsh floor of 22/23 is the likeliest "weirdly scrolling grass patch": it is the part-6 layer, so unless its speed is wrong it is meant to move. Pause/unpause (Start twice, 40 to 400 ticks, stages 22-38)
 showed no leftover white shape in any shot (white-pixel count equal with and without the pause). Not reproduced: the owner's white thing; the cave light shaft (set13, ZTST always) is the only white translucent thing on a cave floor.
 
+### First F8 bug report, "fog/light cone is messed up" (agent F, round 30) - and how an agent uses a report
+- Using a report: `cp -r ~/.local/share/mh1pc/reports/report_X build/rep/` (read-only original), `python3 tools/show_report.py build/rep/report_X --replay` prints the note, the game state, the picked object (here: stage 35 set-model part 0,
+  51 verts, 64x64, SRC_ALPHA/ONE, z-write off, scroll matrix) and the replay command. Replay: `RT_SEED=<seed> RT_PICK_AT=<tick> build/pc/mhview disc/mh1 --play --size 1024x768 --quest 151 --input @build/rep/report_X/input.txt --shot out.png --time 41.9`
+  (1257 ticks replay in about a second, headless; RT_SHOTS=t1,t2,... writes a shot at each tick). The replay is close but not identical to the played frame (the hunter faces another way), so look at several ticks around the reported one (1150-1260 here)
+  and compare an old binary against the new one. `RT_UV_TRACE=1` lists every clay drawn with a live scroll matrix (that is how the 51-vert clay was found in the replay).
+- Cause: stage 35 (0x23) set13 arg 6 is a fog/light veil kept 50 units in front of the camera (set13_m: disp pos = camera + rview_mat[2] * -50, scrolling u, faded by sp). The PC ran `rt_game_move` (move_set, move_eft, move_shell) at the START of sim_tick, before the player and
+  CameraMove, so the veil was placed from the previous tick's camera; when the camera swings (hunter turning, 20 to 50 units per tick) the veil is no longer in front of the lens and its straight, slanted edges show ("a huge flat brightened polygon"). The PS2 order (f_frame_nm.c)
+  is player_mk, CameraMove, light_move, move_eft, move_shell, move_set. sim_tick now calls rt_game_move after the player and camera block (and before light_move). Shots at ticks 1150-1260 of the replay, old vs new binary: the slanted edges at 1210 and 1240 are gone.
+  Side effect: set objects and effects now see this tick's hunter and camera (one tick less lag); the 9 PC tests, test_all_quests and the Xbox link pass.
+
+Replays are exact (agent F, round 31). I earlier wrote that the replay of the owner's report "diverges"; it did not. The recording (the pad state of every game tick, rt_pad_set -> rt_pick_record_pad) plus RT_SEED reproduce the session exactly:
+`RT_SEED=3425120 RT_PICK_AT=1269 RT_PICK_EXIT=1 build/pc/mhview disc/mh1 --play --size 1024x768 --quest 151 --input @report/input.txt` writes a new report whose game section (hunter [9467.1, -89.3, 8826.0] angle 4368, camera, the three monsters) equals the owner's
+report.json to the last digit, and its screenshot has the same composition. What looked like a divergence was the suggested command: `--shot --time 41.9` stops by frame count at 1257 ticks (input.txt has 1257 pad ticks; the game tick is 1269, the first 12 ticks of a quest
+read no pad), so the shot showed the hunter 12 ticks early. Stop with RT_PICK_AT=<game.tick> instead. Changes: show_report.py --replay and report.json's "how" print that command; RT_PICK_EXIT=1 makes the run quit once the report is written (headless);
+tools/test_pick.sh's replay step now uses exactly that command and asserts the game section equals the recorded one (`pick OK: ... replay reaches the same state`), and checks that show_report prints the RT_PICK_AT command.
+The sources listed in the task do not leak: pad is sampled per game tick in sim_tick, sticks are recorded as signed bytes, the right stick / mouse only move the free camera (not the game camera), and the random state is seeded (RT_SEED) with no wall-clock input in the game tick.
+
 Findings of the second pass (agent D, 7 Oct 2026)
 - **161 / 165 "18 of 20"**: the missing monsters are the second wave. Condition program op 32 (`quest_w.x3A = a`, "32/1/0/0" right after
   the "10 left" message) switches the quest to monster-list variant 1 (Em_data_st_adrs_get's last argument); Quest_next_em_set spawns
@@ -2039,27 +2056,126 @@ Not tested / still open: selling from the pouch at the house box ("持ち物を�
   (spot kinds present: 2 fishing, 3 box, 4, 16 bed, 17, 21 delivery, 24, 25 bench) and walking into walls on stages 33-40 never
   started a climb. Needs the stage / quest where the owner saw it.
 
-## Per-kind materials: the raptor crests (agent D, 8 Oct 2026)
+## Per-kind materials: enemy_trans' clays and materials (agent D, 8 Oct 2026)
 
-Owner's PS2 footage: the Velociprey (16) has a smaller, differently shaped crest than the Velocidrome (27); the PC drew
-the drome's crest on both. Cause: em16_amh (shared by 16 and 27, likewise em13 for 13/28 and em30 for 30/31) holds
-BOTH crests and both claw sets, as materials 4 (small: the prey's) and 5 (big: the drome's), one over the other, plus
-four eye states (materials 0-3) and a chest piece (9). Not bones, scale curves or motions: em16_tbl has no scale
-channel at all. The PS2 picks per draw in em_material_sub (main 0x10CEA0, called by enemy_trans per clay): it
-writes every material's alpha (flMATERIAL +0x10) = EMW+0x798, then 0 for the hidden ones. Raptor case
-(0x10DC18-0x10DEA0), m = index in the clay's material list (AMO 0x50000):
-- preys 16/13/30 hide m 5, dromes 27/28/31 hide m 4;
-- eyes: sel = game_w+0x1E (u16 tick) % 98, or 0 while EMW+0x444+0x60 (prey) / +0x50 (drome) is set; sel 0-3 shows
-  m 2, 4-5 m 1, 6-7 m 3, else m 0 (a blink every 98 ticks);
-- m 9 only during motion 0x410 / 0x415 (EMW+0x2DC).
+Started from the owner's PS2 footage: the Velociprey (16) has a smaller crest of a different shape than the Velocidrome (27),
+the PC drew the drome's on both. em16_amh (16 and 27; em13 for 13/28, em30 for 30/31) holds BOTH crests and claw sets as
+materials 4 (small: prey) and 5 (big: drome) over each other. Not bones or motions (em16_tbl has no scale channel at all).
 
-PC: rt_em_material_hide (src/pc/rt/rt_em.c) ports that case and returns a material mask; viewer.c's monster draw
-turns it into the new render state GFX_RS_BATCH_HIDE (bit = clay batch; fl_part.batch_mat maps batches to materials;
-GL, NV2A CPU and GPU-skinned paths skip those batches; gfx_skin_batch.src keeps the source batch). amo_part now keeps
-its 0x50000 list (matlist). Other kinds' cases of em_material_sub (Rathian 1, 2, 6-9, 11, 14, 15, 17-19, 21-24, 26, 34:
-[guess] part-break / damage materials: kind 1 tests EMW+0x312 / 0x31A / 0x948) are NOT ported yet: those monsters
-still draw every material. Test aids: `RT_EM_ALL_MATS=1` (the old behaviour), `RT_EM_MAT_TRACE=1` (each new hidden
-mask per kind). Check: test_activities `raptor_crest` (quests 136 / 137: prey hides 5 not 4, drome 4 not 5).
-Verified by game-camera shots (quest 136 stage 40 with RT_PL_WARP_EM=1, tick 150, with and without RT_EM_ALL_MATS: the
-prey's crest is the small one and its claws are no longer the drome's red ones; quest 137 stage 34: the drome keeps
-the big crest). Ioprey's material 4 is a single-triangle nub, so the Ioprey shows almost no crest.
+What the PS2 does (enemy_trans 0x168B10, per clay i of the model):
+- clay i is drawn only while EMW+0x4E6+i is set (em_init sets all 32; em29 keeps one of its five variant clays; kind 3
+  draws only clay EMW+0x11). Clay 1 of kinds 1/6/8/11/14/15/17/21/22/26 is the tail: em20_init clears its flag and
+  eft09 draws it (with the body's tail bones until cut, then where it fell); the PC keeps drawing it with the body.
+- then a per-kind material function on the clay's materials (CLAY+8 = the AMO part's 0x50000 list, index m):
+  em09_material_sub (game 0x5ACA60) for 9/18/23, em20_material_sub (0x5FCBB0, game C) for 20, em_material_sub (main
+  0x10CEA0, asm only) for the rest. Each writes the material's alpha (flMATERIAL +0x10, the diffuse alpha the VU1
+  program multiplies into the directional lights) = EMW+0x798, then 0 for the materials not shown.
+- what they switch: cut-surface caps of the body and the cut tail (shown once EMW+0x948 bit 0 = tail cut is set;
+  an earlier version of this note called it "asleep"), part-break variants by
+  hagi[k].cnt (EMW 0x30A + 8k: Rathian 1, Rathalos 11, Lao-Shan 7, Gravios 17, Basarios 22; Diablos / Monoblos 14/26
+  horns by EX+0x1A), blinking eyes (raptors: every 98
+  ticks; 19/24: every 9), mouths by motion (19/24), Fatalis (2) damage materials by EX+0x52 (its hit points:
+  thresholds 0x6400 / 0x4B00 / 0x3200 / 0x1900; below 0x1900 materials m1/m5 of clay 3 swap to texture APX 2), the
+  Cephadrome (8, shares em08 with Cephalos 34) gets diffuse (0.396, 0.376, 0.255) on every material, Monoblos (26)
+  clay 0 m0 reddens with EX+0x1B / 60, Gypceros (20) per em20_material_sub.
+- EMW+0x798 < 1 (the AI counts it down after carving: em04b, em21_r10, em15 ...) fades the whole monster out (alpha
+  reference 0 while fading).
+
+PC: rt_em_materials (src/pc/rt/rt_em.c) ports em_material_sub (all cases enemy_trans reaches) and em09_material_sub,
+and runs the game's em20_material_sub on a stand-in material table; it returns per material alpha / colour / texture
+and whether the clay is drawn. viewer.c draw_model_attr_em (every monster, also the host Rathian) draws each clay in
+one pass per distinct material state, the others hidden with GFX_RS_BATCH_HIDE; alpha and colour through
+GFX_RS_FADE_COLOR, texture through GFX_RS_BATCH_TEX (GL, NV2A CPU and GPU-skinned paths). A colour override that
+covers the whole model (Cephadrome) scales the directional light colours instead, as the VU1 MATERIAL block does
+(em_model_col); a partial one (Monoblos) multiplies the vertex colour (approximation: also scales ambient).
+Not ported: em_alpha_clay (the clays enemy_trans draws with alpha reference 0 instead of 0xC0; the PC uses one
+alpha reference, 0x40, for every host draw, and the scale of state 0x60 against the PC's texture alpha was not
+checked, so it was left alone).
+
+Tail cutting (8 Oct 2026). The tailed monsters (kinds 1, 6, 8, 11, 14, 15, 17, 21, 22, 26; all have 48 bones and a
+second bone tree 45-47 that carries only clay 1, modelled around the origin):
+- the cut: Em_Dmg_Sys breaks hagi part 8 -> x957 -> result 0xB -> the damage action that ends in em_tail_off_sub
+  (x948 |= 1, clay flag 1 cleared again, tail_off). eft09_m also calls tail_off itself: kinds 1/11/14/26 in mode 4
+  sub 0xF, 17/22 in mode 4 sub 0x11, the others at frame 300 of motion 0x429. tail_off (game C, eft09.c) sets the
+  effect's arg = 1, pos = node 43's world position, ang = its yaw, and makes a carving point
+  (Em_tail_hagi_point_set; eft09_m moves it to pos every tick until it is carved out). All of this is game C that
+  already ran on the PC; what was missing was the drawing.
+- before the cut, eft09_t gives the tail tree the body's tail nodes: bones 45, 46 = node 43, bone 47 = node 44.
+  fl_model.c attach_tail_tip does that now; the old host version (tree moved with bone 44 from its bind place)
+  stood the tail tip up above the Rathian's back (free-play shot, stage 4).
+- after the cut, eft09_t draws clay 1 alone, the tree in its bind pose under Scale(EMW+0xB8) * RotY(ang + 0x4000)
+  * Trans(pos), while the monster is active (x01) and the effect is on this stage; the body no longer draws clay 1
+  (its flag is clear and the effect's arg is set). PC: rt_em_cut_tail (rt_em.c), fl_skel_cut_tail (fl_model.c),
+  draw_cut_tail (viewer.c: poses clay 1 alone with those bones, world identity, its materials as enemy_trans).
+- not done: nothing moves the cut tail after the cut on the PS2 either (no fall: it stays at node 43's height of
+  that moment, about 117 above the ground for the Rathian in her nest, which looks like lying on the ground).
+- checked: quest 10 with the poke below: the cut at tick 200, the body ends in a stump, the cut tail lies by the
+  nest with its cut-surface cap; the hunter warped there carves 2 items (Rathian scale 183, item 179). Rathalos
+  (11, quest 170), Diablos (14, 174) and Gravios (17, 172) cut the same way (trace).
+- which kinds can be cut (em_dur_tbl, main 0x356CF0): kinds 1, 11, 14, 17, 22, 26 have part 8 (the tail, durability
+  140-200) and damage kind x953 = 9, so a break of part 8 sets x957 and the next hit runs the cut action. Kinds 6, 8,
+  15, 21 have no part 8 (-1, x953 = 8) and no tail entry in em_hagi_type_tbl: damage never cuts them; eft09_m would
+  cut them at frame 300 of motion 0x429, which their AI does not play (no em_char_set 0x41). So in this version
+  Kut-Ku, Cephadrome, Khezu and Plesioth keep their tails.
+- Basarios (22): asleep in its rock disguise (act 0/22) a hit only wakes it and uses up x957 without the cut
+  action; awake, the same poke cuts (4/4 -> 4/17, tail_off). Real attacks also cut it on the PC: hunter beside
+  joint 43 (RT_PL_WARP_JOINT=43), RT_PL_AIM, RT_DMG_MUL=10, part 8 went 140 -> 0 in about 4400 ticks and the
+  tail came off (game-camera shot). Monoblos (26): the poke does start the cut action (4/4 -> 4/15) but each time
+  it had moved to stage 52 while the hunter was on 53, so the cut tail (drawn only on its own stage) was not seen.
+- kinds 6, 8, 15, 21 checked with RT_EM_TAILOFF (tail_off forced): body without clay 1, the cut tail drawn at the
+  tail's place (Kut-Ku and Khezu on the ground, Plesioth's in the water, Cephadrome's under the sand where it
+  swims); no carving point (no table entry), cut-surface caps hidden (x948 is set only by em_tail_off_sub).
+- fixed with it: the cut tail took its materials only when its clay was "drawn"; rt_em_materials now sets them
+  for clay 1 even when the body does not draw it.
+- test_activities `tail_cut`: the Rathian's cut, body without its tail, a carving point, carving it in a second
+  run; and the Basarios' cut (woken first).
+
+Test aids: `RT_EM_ALL_MATS=1` (draw every clay and material, the old behaviour), `RT_EM_MAT_TRACE=1` (each new hidden
+mask per kind and part, clays not drawn, the light colour), `RT_EM_POKE="kind:offset:value[:2|4][@tick];..."` (write a
+byte / s16 / 32 bits of every monster of that kind each game tick before its AI, or only at that player tick:
+broken parts, Fatalis hit points, the 0x798 fade; a tail cut is `1:0x957:1@200;1:0x38D:1@200`),
+`RT_CAM_EM=kKIND,dist,height,yaw` (the free camera on the first monster of a kind; `tKIND,...` on its cut tail). `RT_EM_TAILOFF="kind@tick"` (eft09
+tail_off forced at that tick), `RT_PL_WARP_JOINT=n` (with RT_PL_WARP_EM: next to joint n of the living target). Check: test_activities
+`em_materials` (raptor crests, Cephadrome colour, one rock variant of 29, Rathian broken parts, Fatalis damage).
+Verified with free-camera shots, new against RT_EM_ALL_MATS (not committed): Velociprey small crest and dark claws;
+the rock monster (29, quest 173) shows one grey rock instead of five overlapping coloured variants; red cut-surface
+caps gone from the Cephadrome's tail and the Plesioth's body; the Cephadrome darker; a Kut-Ku at 0x798 = 0.5 is half
+transparent; Rathian / Rathalos / Diablos / Khezu / Gravios / Monoblos look as before at full health (their variants
+overlap exactly), their masks per part are in the trace. Fatalis damage was checked by trace only (dark stage).
+
+### move() gates audit (agent C, 8 Oct 2026)
+Host `sim_tick` (viewer.c) + `rt_game_move` stand in for f_framec.c `move()` (not called). Compared step by step:
+- `player_mv` gated by `info_stop`: now matched (above). `item_check` / `body_hit` are the other two steps gated by it.
+- Quest timer (`Quest_timer_calc`), monsters (each em AI tests `info_stop` itself), set objects (set13), stage draw, Pit_mv (returns while
+  `game_w+0x21F`), bgm: all game C, so they follow the flag already. Checked in a run: the quest timer holds still during quest 131's demo
+  (added to `demo_input`).
+- `item_check`/`move_item` (dropped-item pool) stay host stand-ins. `body_hit` (hunter-hunter and monster-monster push-apart) is now
+  called every tick while info_stop == 0 (viewer.c sim_tick; `RT_BODY_HIT=0` opts out). It is cheap (0.1 s per 2000 ticks: the slow
+  runs seen earlier were machine load from other agents). Test changes it needed: `RT_EM_PIN` takes a timeline ("0:x,z;300:x,z");
+  pitfall / tranq put the Rathian on the trap at tick 300 (her own walk now depends on the hunter distance body_hit records at
+  +0x3AC); carve_small accepts either Aptonoth carve (18 / 227); test_urgent's reward-screen script is cross / ddown / circle /
+  circle every 70 ticks (reward lists change with the RNG, grids of 8); test_all_quests: swarm hunts of 20+ get an RT_PL_SLAY fallback at
+  tick 15000; test_coop_hunt `multi` runs 300 s with RT_DMG_MUL=160 (each intro demo holds the hunters ~25 s). The warp-to-monster aid
+  already stands outside the first body sphere (radius + 40); a search for a push-free spot made the quest loop fail (carves out of
+  reach), so it stays as it was.
+- Pause menu / quest end: the PS2 does not stop `move()` for the pit menu (only the sw input zeroing in sw_set_sub, `Cockpit_menu_chk`),
+  and the PC runs the same game C there; the quest-end states are game modes (game3/5), driven by rt_flow.
+
+### Quest 154 hang and the stand-in sweep (agent C, 8 Oct 2026)
+- **Quest 154 (Cephadrome) never cleared after body_hit.** Not a hang (the loop ran): the dead Cephadrome sat in `em_die02` sub 1 forever. Its
+  test `pos[1] < x7E4 - x7E0` compared the float y (-401.918365) with the x87 80-bit result (-401.9183578): one rounding off, so it never
+  counted as "out of the sand". The PS2 FPU is single precision. Game C (and the host objects) now build with `-msse2 -mfpmath=sse`
+  (x86 gcc only; ARM / Windows / Xbox unchanged): the fight passes at every warp offset (`RT_WARP_R=n` aid), where it passed or failed by luck before.
+  Other places with the same excess-precision comparison are fixed by the same flag. `RT_SLAY_DEBUG`/`RT_PL_SLAY armed ...` prints help find a boss that
+  is dead already.
+- **Sweep** (`RT_STANDIN_FILE=path` appends every first-called stand-in; `tools/sweep_random.py [secs]` runs 150 s of random pad input in ten
+  quests plus the village at each shop, the forge, the Elder and the house; plus the whole test set). Unique stand-ins seen, by what a player notices:
+  1. `flPADShockSet` (controller rumble from vib_set / vib_set_pl: every hit, roar, quake) -> now SDL rumble (pad_sdl.c; vib_tbl strength 1-7, frames).
+  2. `sound_call_005C48C0` (66 runs: village NPC sound requests at fixed frames, lb_vs01) -> lobby/b/lbsnd01.c linked (em_frame_check adaptor).
+  3. `func_63AFA0` = Tutorial_flag_set (a demo adds "the Elder's teaching", message + sound) -> alias in rt_overlay.c.
+  4. `em01_local_area_move_init` (Rathian / Rathalos per-stage stay and run-away timers: when they change area) -> PICKed from em_modechg.c.
+  5. Not visible on the PC, left: flAdjustScreen, flCalcTrans(SI), view_reset, set_viewproj, init_*_work, clr_*_work, ot_init, round_init, stage_free,
+     load_*, FlushCache, flSndPack*, flSndPortStop, flFlip, setBGcolor, View_init (host owns screen, loading, draw order), em_effect_pull (the host draws monsters),
+     lb_member_*Check and text_lobby_trans_ot3_o (online lobby), Equip_moji_color_rare_i (chat list colour), flExp, ADXM_Lock/Unlock, edit_create_model,
+     apiask_28_OpenDic, Disp_NowLoading2, release_texture, flReleaseMotionSetHandle, all_model_free, armor_model_free.
+  docs/agents/targets.md did not exist in this tree: none of the above are in a claimed file as far as I could see (re-check after merging).

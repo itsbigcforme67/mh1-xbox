@@ -8,7 +8,7 @@ f,mark,fn=sys.argv[1:4]
 src=open(f).read(); a,b=fn_span(src,mark)
 lines=src[a:b].split('\n')
 i=1; decl=[]
-while re.match(r'^    [A-Za-z_][\w \*]*?[\w\]]+( = [^;]+)?;$',lines[i]) and '(' not in lines[i].split('=')[0]:
+while re.match(r'^    [A-Za-z_][\w \*]*?[\w\]\[]+( = [^;]+)?;$',lines[i]) and '(' not in lines[i].split('=')[0]:
     decl.append(lines[i]); i+=1
 rest=lines[i:]
 z=os.path.join(os.path.dirname(f),'zzh.c')

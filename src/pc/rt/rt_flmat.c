@@ -251,6 +251,27 @@ void flvecApplyMat33(f32 *out, f32 *v, FLMAT *m)
     out[2] = x * (*m)[0][2] + y * (*m)[1][2] + z * (*m)[2][2];
 }
 
+/* flMemcpy (0x16F680): forward byte copy, nothing returned (the village's chat/net buffers: lb_a.c, lb_n04.c).
+ * A no-op stand-in until 8 Oct 2026. flExp (0x1735F0) is expf (src/main/fl/flm02.c): sysw.c builds its gauss table with it. */
+void flMemcpy(unsigned char *d, const unsigned char *s, int n)
+{
+    int i;
+    for (i = 0; i < n; i++)
+        *d++ = *s++;
+}
+f32 flExp(f32 x);
+f32 flExp(f32 x) { return expf(x); }
+
+/* flvecApplyMat(out, v, m) (0x172EE0, VU0): the 4-vector v times the 4x4 matrix, all four components
+ * (v.w = 1 picks up the translation row). It was a no-op stand-in until 8 Oct 2026: calc_mat_angY read garbage. */
+void flvecApplyMat(f32 *out, f32 *v, FLMAT *m)
+{
+    f32 x = v[0], y = v[1], z = v[2], w = v[3];
+    int k;
+    for (k = 0; k < 4; k++)
+        out[k] = x * (*m)[0][k] + y * (*m)[1][k] + z * (*m)[2][k] + w * (*m)[3][k];
+}
+
 /* flvecRotY(v, a): v = v * Ry(a) (x' = c x + s z, z' = -s x + c z). */
 void flvecRotY(f32 *v, f32 a)
 {

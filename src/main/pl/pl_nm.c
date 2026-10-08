@@ -1596,7 +1596,7 @@ void pl_horm_sub(PLW *pl) {
         } while (i < 0x14);
     }
     if (pl->work81C == 0) {
-        v = pl->work81A;
+        v = (u16)pl->work81A;
         t = v + 0x400;
         if (v != 0) {
             if ((t < 0x801) && (t >= 0)) {
@@ -1615,7 +1615,7 @@ void pl_horm_sub(PLW *pl) {
             if (ang < 0xD556) {
                 ang = 0xD556;
             }
-            v = pl->work81A;
+            v = (u16)pl->work81A;
             if (v >= 0x8000) {
                 t = v - 0x800;
                 if (ang >= t) {
@@ -1630,7 +1630,7 @@ void pl_horm_sub(PLW *pl) {
             if (ang >= 0x2AAC) {
                 ang = 0x2AAB;
             }
-            v = pl->work81A;
+            v = (u16)pl->work81A;
             t = v + 0x800;
             if (v < 0x8000) {
                 if (t >= ang) {

@@ -81,7 +81,7 @@ void lb_disp_name(u8 *arg0) {
                     var_v0 = temp_s2_2 / 2;
                     spF0[0] -= (f32)(var_v0 * 8);
                     flfntLocate((s32)(1.25f * (f32)(s32)spF0[0]), (s32)spF0[1]);
-                    temp_s5 = (s16)(s32)(1.25f * (f32)(s32)spF0[0]);
+                    temp_s5 = (s16)(s32)(1.25f * spF0[0]);   /* not truncated first, unlike the flfntLocate x (checked against the asm) */
                     temp_s1_2 = (s16)(s32)spF0[1];
                     flfntSetSize(0x10, 0x10);
                     temp_v1 = cw + var_fp;

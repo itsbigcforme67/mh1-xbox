@@ -7,7 +7,7 @@ Each activity prints one line  PASS|FAIL <name>: <what was measured>.  The runs 
 Random outcomes (gathering, fishing, combining, trading) use RT_SEED so a run repeats; the checks are on invariants
 (ids from the stage's own pick tables, counts, prices as the shop's own UI shows them), not on one lucky result.
 
-Field: gather_herb gather_mine gather_net fishing carve_small carve_large raptor_crest
+Field: gather_herb gather_mine gather_net fishing carve_small carve_large em_materials tail_cut
 Items in a quest: potion whetstone paintball pitfall tranq barrel bbq drinks combine trader
 Village: shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take box_equip
 HUD / demo: demo_input map_item
@@ -107,21 +107,69 @@ def herbivore_pose():
     return max(hs) < 350 and (not lows or min(lows) > -60), 'highest Aptonoth joint %d above its feet (limit 350; the bug gave ~680), lowest %d (limit -60: a respawned monster showed its bind pose 120 below the ground for 10 ticks)' % (max(hs), min(lows or [0]))
 
 @test
-def raptor_crest():
-    """the Velociprey (16) and the Velocidrome (27) share em16_amh, which holds both crests (and claw sets) as materials 4 (small)
-    and 5 (big); the PS2's em_material_sub (0x10CEA0) hides 5 for the prey and 4 for the drome (the PC drew both, so the prey wore
-    the drome's crest). Checked on the materials the PC draws for each kind in quests 136 (stage 40) and 137 (stage 34)"""
-    res = {}
-    for kind, quest, stage in ((16, 136, 40), (27, 137, 34)):
-        t = run('raptor_crest_%d' % kind, 'idle*150', 0, quest=quest, stage=stage, secs=5,
-                env={'RT_EM_MAT_TRACE': 1, 'RT_PL_TARGET': 'k%d' % kind, 'RT_PL_WARP_EM': 1, 'RT_PL_GOD': 1})
-        if crashed(t): return False, 'crash (kind %d)' % kind
-        ms = [int(m.group(1), 16) for m in re.finditer(r'em-mat: kind %d part 0 hides materials 0x([0-9a-f]+)' % kind, t)]
-        if not ms: return False, 'kind %d never drawn' % kind
-        res[kind] = ms
-    ok = all(m & 0x20 and not m & 0x10 for m in res[16]) and all(m & 0x10 and not m & 0x20 for m in res[27])
-    return ok, 'hidden material masks: Velociprey %s (5 = big crest hidden), Velocidrome %s (4 = small crest hidden)' % (
-        ' '.join('%03x' % m for m in res[16]), ' '.join('%03x' % m for m in res[27]))
+def em_materials():
+    """enemy_trans' per-clay / per-material state (rt_em_materials: em_material_sub 0x10CEA0, em09/em20_material_sub), checked on
+    the hidden-material masks the PC draws with (RT_EM_MAT_TRACE): the Velociprey (16) and Velocidrome (27) share em16_amh with both
+    crests as materials 4 (small) and 5 (big), each hides the other's; Cephadrome (8) gets its darker diffuse, Cephalos (34) not;
+    the rock monster (29) draws one of its five variant clays; Rathian (1) shows its broken-part variants when EMW hagi counts are
+    set (RT_EM_POKE); Fatalis (2) swaps to its damaged materials at low EX+0x52 hit points"""
+    def masks(t, kind, part):
+        return [int(m.group(1), 16) for m in re.finditer(r'em-mat: kind %d part %d hides materials 0x([0-9a-f]+)' % (kind, part), t)]
+    runs = {'q137': (137, {}), 'q154': (154, {}), 'q173': (173, {}), 'q10': (10, {}),
+            'q10b': (10, {'RT_EM_POKE': '1:0x312:1;1:0x31A:1;1:0x33A:2'}), 'q103b': (103, {'RT_EM_POKE': '2:0x496:3000:2'})}
+    t = {}
+    for tag, (q, env) in runs.items():
+        e = {'RT_EM_MAT_TRACE': 1, 'RT_QUEST_STAGE': 1}
+        e.update(env)
+        t[tag] = run('em_materials_' + tag, 'idle*150', 0, quest=q, secs=5, env=e)
+        if crashed(t[tag]): return False, 'crash (quest %d)' % q
+    bad = []
+    p16, p27 = masks(t['q137'], 16, 0), masks(t['q137'], 27, 0)
+    if not p16 or not p27 or not all(m & 0x20 and not m & 0x10 for m in p16) or not all(m & 0x10 and not m & 0x20 for m in p27):
+        bad.append('raptor crests %s / %s' % (p16, p27))
+    if 'kind 8 light colour 0.396 0.376 0.255' not in t['q154'] or 'kind 34 light colour' in t['q154']:
+        bad.append('Cephadrome colour')
+    if not re.search(r'em-mat: kind 29 part \d not drawn', t['q173']):
+        bad.append('rock monster draws every variant')
+    if 0x78 not in masks(t['q10'], 1, 3) or not any(m & 1 for m in masks(t['q10b'], 1, 4)) or 0x78 in masks(t['q10b'], 1, 3)[-1:]:
+        bad.append('Rathian broken parts %s %s / %s %s' % (masks(t['q10'], 1, 3), masks(t['q10'], 1, 4), masks(t['q10b'], 1, 3), masks(t['q10b'], 1, 4)))
+    if 0xc50 not in masks(t['q103b'], 2, 1):
+        bad.append('Fatalis damage %s' % masks(t['q103b'], 2, 1))
+    return not bad, 'FAILED: ' + '; '.join(bad) if bad else ('crests 16 %03x / 27 %03x, Cephadrome darker, one rock variant, Rathian broken '
+        'parts shown, Fatalis damaged materials' % (p16[0], p27[0]))
+
+@test
+def tail_cut():
+    """Rathian (quest 10, stage 40) tail cut (RT_EM_POKE: part 8 broken + a hit at tick 200, so Em_Dmg_Sys picks the cut-tail
+    damage -> em_tail_off_sub -> eft09 tail_off): the body no longer draws clay 1 (the tail), the cut tail is drawn where it
+    was cut with a carving point; a second run warps the hunter there (the Rathian pinned elsewhere) and carves it (items gained)"""
+    poke = {'RT_EM_POKE': '1:0x957:1@200;1:0x38D:1@200', 'RT_EM_MAT_TRACE': 1, 'RT_QUEST_STAGE': 1, 'RT_PL_GOD': 1,
+            'RT_EM_PIN': '400:8000,12500'}     # both runs: after the cut the Rathian is kept away from the carving hunter (body hit)
+    t = run('tail_cut', 'idle*400', 0, quest=10, secs=14, env=poke)
+    if crashed(t): return False, 'crash'
+    m = re.search(r'em-tail: kind 1 tail cut at (-?\d+) (-?\d+) (-?\d+) yaw \S+ pick (-?\d+)', t)
+    if not m: return False, 'tail never cut'
+    x, y, z, pick = map(int, m.groups())
+    if 'em-mat: kind 1 part 1 not drawn' not in t: return False, 'the body still draws its tail'
+    if pick < 0: return False, 'no carving point on the cut tail'
+    warp = ';'.join('%d,%d,%d' % (k, x, z) for k in (300, 330, 400, 480, 560))
+    e = dict(poke, RT_PL_WARP=warp)
+    t2 = run('tail_cut_carve', 'idle*320' + ',circle*2,idle*28' * 12, 0, quest=10, secs=25, env=e)
+    if crashed(t2): return False, 'crash (carving)'
+    m2 = re.search(r'em-tail: kind 1 tail cut at (-?\d+) (-?\d+) (-?\d+)', t2)
+    if not m2 or tuple(map(int, m2.groups())) != (x, y, z): return False, 'the second run cut the tail elsewhere (%s)' % (m2 and m2.groups(),)
+    g, fin = gains(t2, {})
+    names = item_names()
+    # Basarios (22, quest 173): asleep in its rock disguise a hit only wakes it (the cut flag x957 is used up without the
+    # cut action), so the first hit at 200 wakes it and the part-8 break + hit at 500 cuts (mode 4 sub 0x11 -> tail_off)
+    t3 = run('tail_cut_22', 'idle*800', 0, quest=173, secs=27, env={'RT_EM_POKE': '22:0x38D:1@200;22:0x957:1@500;22:0x38D:1@500',
+             'RT_EM_MAT_TRACE': 1, 'RT_QUEST_STAGE': 1, 'RT_PL_GOD': 1})
+    if crashed(t3): return False, 'crash (Basarios)'
+    m3 = re.search(r'em-tail: kind 22 tail cut at (-?\d+) (-?\d+) (-?\d+) yaw \S+ pick (-?\d+)', t3)
+    if not m3 or int(m3.group(4)) < 0 or 'em-mat: kind 22 part 1 not drawn' not in t3:
+        return False, 'Basarios tail not cut / no carving point / body still draws it'
+    return bool(g), 'Rathian tail cut at %d %d %d (pick point %d), body draws no tail, carved: %s; Basarios tail cut at %s %s %s' % (
+        x, y, z, pick, ', '.join('%s(%d) x%d' % (names[k], k, v) for k, v in sorted(g.items())) or 'nothing', *m3.groups()[:3])
 
 @test
 def long_fight():
@@ -153,14 +201,14 @@ def long_fight():
 
 @test
 def carve_small():
-    """Aptonoth (kind 12) killed and carved: raw meat (18) and its other parts"""
+    """Aptonoth (kind 12) killed and carved: raw meat (18) or small wyvern bone (227) (which one is the carve roll)"""
     cyc = ',cam_u*2,idle*30' * 4 + ',circle*2,idle*28' * 6
     t = run('carve_small', 'idle*60' + cyc * 4, 0, quest=131, stage=39, secs=40,
             env={'RT_PL_GOD': 1, 'RT_DMG_MUL': 40, 'RT_PL_WARP_EM': '90-9000', 'RT_PL_TARGET': 'k12'})
     g, fin = gains(t, {})
     if crashed(t): return False, 'crash'
     names = item_names()
-    return 18 in g and all(0 < k < 330 for k in g), 'carved: %s' % ', '.join('%s(%d) x%d' % (names[k], k, v) for k, v in sorted(g.items()))
+    return bool(g) and set(g) <= {18, 227}, 'carved: %s' % ', '.join('%s(%d) x%d' % (names[k], k, v) for k, v in sorted(g.items()))
 
 @test
 def carve_large():
@@ -196,6 +244,14 @@ def whetstone():
         out.append('%s(%d): sharpness 50 -> %d, 3 -> 2' % (item_names()[item], item, h[-1][1]))
     return True, '; '.join(out)
 
+def trap_pin():
+    """hunter at (8716,11886) facing a Rathian that waits at (8000,12800); the trap lands 80 units in front of him and the monster is
+    put on it from tick 300 (the trap is armed by ~235): her own walk now depends on the body push (hunter-monster distance)"""
+    S, M = (8716, 11886), (8000, 12800)
+    n = math.hypot(M[0] - S[0], M[1] - S[1])
+    T = (int(S[0] + (M[0] - S[0]) / n * 80), int(S[1] + (M[1] - S[1]) / n * 80))
+    return {'RT_PL_WARP': '10,%d,%d' % S, 'RT_EM_POS': '%d,%d' % M, 'RT_EM_PIN': '0:%d,%d;300:%d,%d' % (M + T)}
+
 PIN = (8671, 11945)     # quest 10 stage 40: where the Rathian stands once her first idle walk ends (RT_EM_PIN holds her there)
 def near_pin(d):
     ux, uz = 10000 - PIN[0], 10000 - PIN[1]; n = math.hypot(ux, uz)
@@ -225,8 +281,7 @@ def paintball():
 def pitfall():
     """pitfall trap (30, carry limit 1) set in the Rathian's path: she walks in and is held (x959 = 6, x9EA = 50)"""
     t = run('pit', {70: 'square*2'}, 600, quest=10,
-            env={'RT_QUEST_STAGE': 1, 'RT_PL_ITEMS': '30:1', 'RT_PL_WARP': '10,8716,11886', 'RT_EM_POS': '8000,12800',
-                 'RT_PL_AIM': 1, 'RT_PL_GOD': 1, 'RT_EM_TRACE': 1, 'RT_PL_TRACE': 1})
+            env=dict(trap_pin(), RT_QUEST_STAGE=1, RT_PL_ITEMS='30:1', RT_PL_AIM=1, RT_PL_GOD=1, RT_EM_TRACE=1, RT_PL_TRACE=1))
     held = [l for l in em0(t) if re.search(r' tr 50/6', l)]
     fin = final_pouch(t)
     act = re.search(r'act (\d+/\d+)/\d+', held[0]).group(1) if held else '-'
@@ -235,9 +290,9 @@ def pitfall():
 @test
 def tranq():
     """trap + tranquilizer balls (159) on the weakened Rathian: capture sleep (act 6/4)"""
-    t = run('tranq', {70: 'square*2', 330: 'square*2', 450: 'square*2', 570: 'square*2'}, 900, quest=10,
-            env={'RT_QUEST_STAGE': 1, 'RT_EM_HP': 300, 'RT_PL_ITEMS': '30:1,159:3', 'RT_PL_POKE': '300:888:1',
-                 'RT_PL_WARP': '10,8716,11886', 'RT_EM_POS': '8000,12800', 'RT_PL_AIM': 1, 'RT_PL_GOD': 1, 'RT_EM_TRACE': 1})
+    t = run('tranq', {70: 'square*2', 400: 'square*2', 520: 'square*2', 640: 'square*2'}, 900, quest=10,
+            env=dict(trap_pin(), RT_QUEST_STAGE=1, RT_EM_HP=300, RT_PL_ITEMS='30:1,159:3', RT_PL_POKE='300:888:1',
+                     RT_PL_AIM=1, RT_PL_GOD=1, RT_EM_TRACE=1))
     cap = [l for l in em0(t) if re.search(r' act 6/4/', l)]
     fin = final_pouch(t)
     return bool(cap), 'tranquilizer balls 3 -> %s, monster in capture sleep act 6/4: %s' % (fin.get(159, 0), 'yes' if cap else 'no')
@@ -514,7 +569,7 @@ def box_equip():
 def demo_input():
     """event demo (quest 131 stage 39 tutorial camera, game_w.info_stop = 1): pad input is ignored, the hunter stays put;
     when the demo ends (info_stop 0) the same held stick walks him (f_framec.c move(): player_mv only when info_stop == 0)"""
-    t = run('demo_in', {10: 'up*700'}, 710, stage=39, env={'RT_PL_TRACE': 1})
+    t = run('demo_in', {10: 'up*700'}, 710, stage=39, env={'RT_PL_TRACE': 1, 'RT_QUEST_TRACE': 1})
     P = [l for l in t.split('\n') if l.startswith('pl:')]
     pos = lambda i: tuple(float(x) for x in re.search(r'pos (\S+) (\S+) (\S+)', P[i]).groups())
     stop = [int(re.search(r' is (\d+)$', l).group(1)) for l in P]
@@ -522,7 +577,12 @@ def demo_input():
     a = stop.index(1); b = a + stop[a:].index(0)
     still = max(abs(pos(i)[0] - pos(a)[0]) + abs(pos(i)[2] - pos(a)[2]) for i in range(a, b))
     moved = abs(pos(b + 150)[2] - pos(b)[2])
-    return still < 1 and moved > 100, 'demo ticks %d-%d: hunter moved %.0f units during it, %.0f in the 150 ticks after' % (a, b, still, moved)
+    # the quest timer (Quest_timer_calc, gated by info_stop) must not run during the demo either
+    tm = [(int(m.group(1)), int(m.group(2))) for m in re.finditer(r'rt_flow: tick (\d+) mode 2 .* time (\d+) ', t)]
+    inside = {v for k, v in tm if a + 5 < k < b - 5}
+    timer_ok = len(inside) <= 1
+    return still < 1 and moved > 100 and timer_ok, ('demo ticks %d-%d: hunter moved %.0f units during it, %.0f in the 150 ticks after; '
+                                                   'quest timer values inside the demo: %s') % (a, b, still, moved, sorted(inside))
 
 @test
 def map_item():

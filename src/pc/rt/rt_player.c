@@ -338,15 +338,22 @@ void rt_player_tick(int no)
                 }
                 if (k >= 0 && sph[3] > 0) {
                     t = sph;
-                    r = sph[3] + 40.0f;
+                    r = sph[3] + 40.0f + (getenv("RT_WARP_R") ? (float)atof(getenv("RT_WARP_R")) : 0.0f);
                 }
+            }
+            if (hp < 0 && getenv("RT_PL_WARP_JOINT")) {     /* "n": next to joint n of the living target instead (43: a tail) */
+                void get_joint_pos(void *chr, int joint, f32 *out);
+                static f32 jp[3];
+                get_joint_pos(tg, atoi(getenv("RT_PL_WARP_JOINT")), jp);
+                t = jp;
+                r = 150.0f;
             }
             f32 d[2] = { p->pos[0] - t[0], p->pos[2] - t[2] }, l = sqrtf(d[0] * d[0] + d[1] * d[1]);
             if (l < 1) { d[0] = 1; l = 1; }
-            p->pos[0] = t[0] + d[0] / l * r;
-            p->pos[2] = t[2] + d[1] / l * r;
             if (hp >= 0)
                 p->pos[1] = t[1];
+            p->pos[0] = t[0] + d[0] / l * r;     /* (alive: just outside its first body sphere, r = radius + 40; body_hit then only nudges) */
+            p->pos[2] = t[2] + d[1] / l * r;
             p->ang[1] = Em_Calc_angY(p->pos, t);
             if (getenv("RT_PL_TRACE") || getenv("RT_QUEST_TRACE"))
             fprintf(stderr, "rt_player: tick %d warped to %.0f %.0f (carve point %d at %.0f %.0f %.0f)\n",
@@ -733,6 +740,9 @@ void rt_hit_check(void)
             kinds[nk++] = atoi(++g);
         if (nk)
             kind = 0;
+        if (rt_tick_count() == t || ((rt_tick_count() - t) % 1000 == 0 && rt_tick_count() > t && getenv("RT_SLAY_DEBUG")))
+            fprintf(stderr, "rt_player: RT_PL_SLAY armed at tick %d: target slot %d (kind %d, hp %d, stage %d, hunter stage %d)\n", rt_tick_count(),
+                    (int)((e - em_work) / 0xA10), e[2], *(s16 *)(e + 0x302), e[0x736], player_work[game_w.master].stg);
         for (i = 0; i < 20 && rt_tick_count() >= t && (rt_tick_count() - t) % 120 == 0; i++) {   /* every 120 ticks: a hit every tick keeps a reacting monster in its flinch (the Plesioth in fly18 sets x8BB, which floors hp at 1) */
             u8 *tg = em_work + 0xA10 * i;
             int match = 0, k;

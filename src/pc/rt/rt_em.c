@@ -10,6 +10,8 @@
 #include "game.h"
 #include "quest.h"
 #include "fl.h"
+#include "clay.h"
+#include "eft.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,6 +27,7 @@ static void once(const char *n) { rt_log_standin(n); if (getenv("RT_TRACE")) fpr
 #define PU16(p, o) (*(u16 *)((u8 *)(p) + (o)))
 #define PS32(p, o) (*(s32 *)((u8 *)(p) + (o)))
 #define PF(p, o) (*(f32 *)((u8 *)(p) + (o)))
+#define PP(p, o) (*(void **)((u8 *)(p) + (o)))
 
 extern s16 *em_dur_tbl[];
 int ran_suu(int);
@@ -126,40 +129,314 @@ WEAK void act_set(void *w, int a, int b)
  * diffuse colour (GetPlayerDiffuseData); the host lights monsters itself. */
 void GetEmMaterialData(EMW *em) { (void)em; }
 
-/* em_material_sub (main 0x10CEA0, src/main/emw/emmat_nm.c: the game's own code, m2c output of the asm): per monster kind
- * it writes the alpha (flMATERIAL +0x10) of each material of clay `part`: EMW+0x798, or 0 for the materials hidden this
- * frame (blinking eyes, the raptors' two crests, broken and cut parts, ...). The host turns those zeros into the
- * hidden-material mask (GFX_RS_BATCH_HIDE): the real function runs on a scratch material array and a scratch
- * descriptor (count and indices 0..n-1) while EMW+0x50C points at a scratch model work. Before 8 Oct 2026 only the
- * raptor case (kinds 13/16/27/28/30/31) was ported by hand. */
-void em_material_sub(void *em, int part, void *clays);
-uint32_t rt_em_material_hide(const void *em, int part, const uint32_t *matlist, int nmatlist)
+/* ------------------------------------------------ per-material state (enemy_trans)
+ * enemy_trans (main 0x168B10) draws clay i of a monster only while EMW+0x4E6+i
+ * is set (em_init sets all; em29 keeps one per type); kind 3 draws only clay
+ * EMW+0x11. Before each clay it calls a per-kind material function on the
+ * clay's materials (CLAY+8 = the AMO part's 0x50000 list, index m below):
+ * em09_material_sub (game 0x5ACA60) for kinds 9/18/23, em20_material_sub
+ * (game 0x5FCBB0, compiled game C) for 20, em_material_sub (main 0x10CEA0,
+ * asm only, ported here) for the rest. They write the material's alpha
+ * (flMATERIAL +0x10, the diffuse colour's alpha) = EMW+0x798 (1.0; the AI
+ * counts it down to fade a carved corpse out), then 0 for the materials not
+ * shown; a few also set the diffuse colour (+0x04..0x0C) or the texture
+ * (+0x44). Field meanings from the game C where known: hagi[k].cnt (EMW
+ * 0x30A + 8k) = times part k was broken; EMW+0x948 bit 0 = the tail is cut
+ * (em_tail_off_sub and the cut-tail damage actions set it): the cut-surface
+ * caps of the body and of the cut tail show then; the rest is named by offset. */
+#define HAGI(k) PU8(em, 0x30A + 8 * (k))
+#define TAIL_CUT (PU8(em, 0x948) & 1)
+#define OFF(mm) (o[mm].alpha = 0.0f)
+
+int em_frame_check2(void *w, int n, f32 f);
+void em20_material_sub(EMW *em, int type, u8 *tbl);
+
+/* em09_material_sub (game 0x5ACA60, asm only): clays 0 and 1 show one of
+ * the eye/mouth states m 1-4 picked by EX+0x4A */
+static void em09_mat(u8 *em, int clay, int n, rt_em_mat *o)
 {
-    enum { MATS = 40, PARTS = 64 };
-    static u8 mats[MATS * 0x4C];
-    static u8 mdl[0x60];
-    static u8 clays[PARTS * 0x8C];
-    EMW *w = (EMW *)em;
-    struct EM_MDL *save;
-    uint32_t hide = 0;
-    int m;
-    if (part < 0 || part >= PARTS || nmatlist > MATS - 1 || nmatlist > 30)
-        return 0;
-    memset(mats, 0, sizeof mats);
-    memset(clays + part * 0x8C, 0, 0x8C);
-    PS32(clays + part * 0x8C, 4) = nmatlist;
-    for (m = 0; m < nmatlist; m++)
-        PS32(clays + part * 0x8C, 8 + 4 * m) = m;
-    *(u8 **)(mdl + 0x10) = mats;
-    save = w->mdl;
-    w->mdl = (struct EM_MDL *)mdl;
-    em_material_sub(w, part, clays);
-    w->mdl = save;
-    for (m = 0; m < nmatlist; m++)
-        if (PS32(mats + m * 0x4C, 0x10) == 0 && matlist[m] < 32)
-            hide |= 1u << matlist[m];
-    return hide;
+    int m, s = PU8(em, 0x444 + 0x4A);
+    if (clay != 0 && clay != 1)
+        return;
+    for (m = 0; m < n; m++) {
+        int a = s == 1 ? (m == 4 || m == 3 || m == 1) : s == 2 ? (m == 4 || m == 2 || m == 1)
+              : s == 3 ? (m == 3 || m == 2 || m == 1) : (m == 4 || m == 3 || m == 2);
+        if (a)
+            OFF(m);
+    }
 }
+
+/* em20_material_sub (Gypceros) is game C: run it on a stand-in material
+ * table (flMATERIAL 0x4C bytes) and clay list, then read the alphas back */
+static void em20_mat(u8 *em, int clay, int n, rt_em_mat *o)
+{
+    static u8 mat[32][0x4C];
+    static CLAY cl[32];
+    struct { u8 pad[0x10]; u8 *mat; } mdl;
+    void *keep = PP(em, 0x50C);
+    int m;
+    if (clay >= 32)
+        return;
+    memset(&mdl, 0, sizeof mdl);
+    mdl.mat = &mat[0][0];
+    cl[clay].mat_num = n;
+    for (m = 0; m < n; m++)
+        cl[clay].mat_no[m] = m;
+    PP(em, 0x50C) = &mdl;
+    em20_material_sub((EMW *)em, clay, (u8 *)cl);
+    PP(em, 0x50C) = keep;
+    for (m = 0; m < n; m++)
+        memcpy(&o[m].alpha, &mat[m][0x10], 4);
+}
+
+/* em_material_sub (main 0x10CEA0): the cases per kind */
+static void em_mat(u8 *em, int clay, int n, rt_em_mat *o)
+{
+    int kind = PU8(em, 2), m, sel = 0, flag = 0;
+    s16 hp;
+    float t;
+    switch (kind) {
+    case 13: case 16: case 27: case 28: case 30: case 31:  /* raptors: blink, see below */
+        sel = PU8(em, 0x444 + (kind == 31 || kind == 28 || kind == 27 ? 0x50 : 0x60)) ? 0 : (s16)(PU16(&game_w, 0x1E) % 98);
+        break;
+    case 14: case 26:               /* Diablos / Monoblos: frame 10 of motion 0x459 */
+        flag = PU16(em, 0x2DC) == 0x459 && !em_frame_check2(em, 0, 10.0f);
+        break;
+    case 19: case 24:
+        sel = (s16)(PU16(&game_w, 0x1E) % 9);
+        break;
+    }
+    for (m = 0; m < n; m++) {
+        switch (kind) {
+        case 1:                     /* Rathian: broken head / back variants, tail-cut caps */
+            if (clay == 0) {
+                if ((m == 0 && HAGI(1) > 0) || (m == 1 && HAGI(2) > 0) || m == 5 || (m == 6 && !TAIL_CUT))
+                    OFF(m);
+            } else if (clay == 1) {
+                if (m == 1 && !TAIL_CUT)
+                    OFF(m);
+            } else if (clay == 2) {
+                if (m == 3)
+                    OFF(m);
+            } else if (clay == 3) {
+                if (((m == 0 || m == 1) && HAGI(6) < 2) || (m == 2 && HAGI(2) == 0) || (m == 3 && HAGI(1) == 0))
+                    OFF(m);
+            } else if (clay == 4) {
+                if (m == 0 && HAGI(6) >= 2)
+                    OFF(m);
+            }
+            break;
+        case 2:                     /* Fatalis: damage by the hit points at EX+0x52 */
+            hp = PS16(em, 0x444 + 0x52);
+            if (clay == 1) {
+                if (((m == 0 || m == 1) && hp < 0x6401) || (m == 2 && hp < 0x4B01) || (m == 3 && hp < 0x3201))
+                    OFF(m);
+            } else if (clay == 3) {
+                if (m == 1 || m == 5)
+                    o[m].tex = hp < 0x1901 ? 2 : 1;     /* mem_tex[0x9A + EMW+0x34F + k]: APX k of the model's textures */
+                else if ((m == 3 || m == 8) && hp < 0x1901)
+                    OFF(m);
+            } else if (clay == 4) {
+                if ((m == 1 && hp >= 0x6401) || (m == 2 && (hp >= 0x4B01 || hp < 0x3201)) || (m == 3 && hp >= 0x3201)
+                    || (m == 0 && hp >= 0x1901))
+                    OFF(m);
+            }
+            break;
+        case 6:                     /* Yian Kut-Ku */
+            if (clay == 0) {
+                if ((m == 5 && !TAIL_CUT) || m == 6)
+                    OFF(m);
+            } else if (clay == 1) {
+                if (m == 1 || ((m == 2 || m == 3) && !TAIL_CUT))
+                    OFF(m);
+            } else if (clay == 2) {
+                if (m == 0)
+                    OFF(m);
+            }
+            break;
+        case 7:                     /* Lao-Shan Lung: broken parts */
+            if (clay == 2) {
+                if ((m == 0 && HAGI(6) >= 2) || (m == 1 && HAGI(5) >= 2) || (m == 2 && HAGI(0) >= 2) || (m == 3 && HAGI(0) > 0))
+                    OFF(m);
+            } else if (clay == 4) {
+                if (m == 0 && HAGI(4) >= 3)
+                    OFF(m);
+            } else if (clay == 5) {
+                if ((m == 0 && HAGI(6) < 2) || (m == 1 && HAGI(5) < 2) || (m == 2 && HAGI(0) < 2) || (m == 3 && HAGI(0) <= 0)
+                    || (m == 4 && HAGI(4) < 3))
+                    OFF(m);
+            }
+            break;
+        case 8: case 34:            /* Cephadrome / Cephalos (one model); the drome is darker */
+            if (kind == 8) {
+                o[m].has_col = 1;
+                o[m].col[0] = 0.39607844f;      /* 0x3ECACACB */
+                o[m].col[1] = 0.37647063f;      /* 0x3EC0C0C1 */
+                o[m].col[2] = 0.25490198f;      /* 0x3E828283 */
+            }
+            if ((clay == 0 && (m == 2 || (m == 3 && !TAIL_CUT))) || (clay == 1 && m == 2 && !TAIL_CUT) || (clay == 2 && m == 2))
+                OFF(m);
+            break;
+        case 11:                    /* Rathalos */
+            if (clay == 0) {
+                if ((m == 3 && HAGI(1) > 0) || (m == 4 && HAGI(2) > 0))
+                    OFF(m);
+            } else if (clay == 1) {
+                if (m == 1 && !TAIL_CUT)
+                    OFF(m);
+            } else if (clay == 2) {
+                if (((m == 4 || m == 0) && HAGI(6) < 2) || m == 1 || (m == 5 && HAGI(1) == 0) || (m == 6 && HAGI(2) == 0))
+                    OFF(m);
+            } else if (clay == 3) {
+                if (m == 4 || (m == 5 && !TAIL_CUT))
+                    OFF(m);
+            } else if (clay == 4) {
+                if (m == 0 && HAGI(6) >= 2)
+                    OFF(m);
+            }
+            break;
+        case 13: case 16: case 27: case 28: case 30: case 31:
+            if (m == (kind == 30 || kind == 16 || kind == 13 ? 5 : 4))   /* the other kind's crest / claws */
+                OFF(m);
+            if ((u32)sel < 4 ? (m == 3 || m == 1 || m == 0) : sel < 6 ? (m == 3 || m == 2 || m == 0)
+                : sel < 8 ? (m == 2 || m == 1 || m == 0) : (m == 3 || m == 2 || m == 1))      /* eyes */
+                OFF(m);
+            if (m == 9 && PU16(em, 0x2DC) != 0x410 && PU16(em, 0x2DC) != 0x415)
+                OFF(m);
+            break;
+        case 14: case 26: {         /* Diablos / Monoblos: horns by EX+0x1A (broken count), tail-cut caps */
+            int h = PU8(em, 0x444 + 0x1A);
+            if (clay == 0) {
+                if (kind == 14 && m == 3 && h >= 2 && (!flag || h != 2))
+                    OFF(m);
+                if (m == 4 && h > 0 && (!flag || h != 1))
+                    OFF(m);
+                if (m == (kind == 14 ? 6 : 7))
+                    OFF(m);
+                if (kind == 26 && m == 0) {     /* Monoblos: reddens with EX+0x1B (s8) / 60 */
+                    t = (f32)PS8(em, 0x45F) / 60.0f;
+                    o[m].has_col = 1;
+                    o[m].col[0] = 1.0f - 0.17254902f * t;   /* 0x3E30B0B0 */
+                    o[m].col[1] = o[m].col[2] = 1.0f - 0.8039216f * t;  /* 0x3F4DCDCE */
+                }
+            } else if (clay == 1) {
+                if (m == 2 && !TAIL_CUT)
+                    OFF(m);
+            } else if (clay == 2) {
+                int hh = PU8(em, 0x444 + 0x1A);
+                if (m == 4 || (m == 5 && !TAIL_CUT)
+                    || (m == (kind == 14 ? 7 : 6) && (hh == 0 || (flag && hh == 1)))
+                    || (kind == 14 && m == 6 && (hh < 2 || (flag && hh == 2))))
+                    OFF(m);
+            }
+            break;
+        }
+        case 15:                    /* Khezu */
+            if ((clay == 1 && m == 1 && !TAIL_CUT) || (clay == 3 && m == 1) || (clay == 4 && (m == 3 || (m == 4 && !TAIL_CUT))))
+                OFF(m);
+            break;
+        case 17:                    /* Gravios */
+            if ((clay == 0 && m == 3) || (clay == 1 && m == 2 && !TAIL_CUT)
+                || (clay == 2 && ((m == 4 && HAGI(6) >= 2) || (m == 5 && HAGI(6) > 0) || m == 6 || (m == 7 && !TAIL_CUT)))
+                || (clay == 3 && ((m == 0 && HAGI(6) < 2) || (m == 1 && HAGI(6) == 0))))
+                OFF(m);
+            break;
+        case 19: case 24:           /* eye blink every 9 ticks, mouth by motion */
+            if (m >= 2 && m <= 4) {
+                if (sel == 0 || sel == 1 ? (m == 4 || m == 3) : sel >= 3 && sel <= 6 ? (m == 3 || m == 2) : (m == 4 || m == 2))
+                    OFF(m);
+            } else if (m == 1 || (m >= 5 && m <= 7)) {
+                int mo = PU16(em, 0x2DC);
+                if (mo == 0x3E9 || mo == 0x3EA || mo == 0x3EB || mo == 0x3EE || mo == 0x3EF || mo == 0x3F2 || mo == 0x3F3 || mo == 0x3F4) {
+                    if (mo == 0x3F4 && !em_frame_check2(em, 0, 72.0f)) {
+                        if (m == 7 || m == 6)
+                            OFF(m);
+                    } else if (PU16(&game_w, 0x1E) & 1) {
+                        if (m == 7)
+                            OFF(m);
+                    } else if (m == 6 || m == 5 || m == 1) {
+                        OFF(m);
+                    }
+                } else if (m == 7 || m == 6) {
+                    OFF(m);
+                }
+            }
+            break;
+        case 21:                    /* Plesioth */
+            if ((clay == 0 && (m == 2 || (m == 3 && !TAIL_CUT))) || (clay == 1 && m == 2 && !TAIL_CUT) || (clay == 2 && m == 2))
+                OFF(m);
+            break;
+        case 22:                    /* Basarios */
+            if ((clay == 0 && m == 2) || (clay == 1 && m == 1 && !TAIL_CUT)
+                || (clay == 2 && ((m == 4 && HAGI(6) > 0) || m == 5 || (m == 6 && !TAIL_CUT)))
+                || (clay == 3 && ((m == 0 && HAGI(6) < 2) || (m == 1 && HAGI(6) == 0))))
+                OFF(m);
+            break;
+        }
+    }
+}
+
+/* eft09 (game C, src/game/eft/eft09.c): tail_off (called by em_tail_off_sub when the cut-tail damage
+ * action starts) sets the effect's arg = 1, pos = the world position of node 43 (the tail) and
+ * u0A.ang = its yaw (calc_mat_angY), and puts a carving point there (Em_tail_hagi_point_set, moved
+ * to pos every tick until carved out). eft09_t then draws clay 1 alone, its tail bones posed from
+ * their bind pose under the root Scale(EMW+0xB8) * RotY(ang + 0x4000) * Trans(pos), while the
+ * monster is active (x01) and the effect lives on this stage. 1 = draw it; root yaw in radians. */
+int rt_em_cut_tail(const void *emp, float pos[3], float *yaw)
+{
+    const u8 *em = (const u8 *)emp;
+    const EFTW *t = (const EFTW *)PP(em, 0x878);
+    if (!t || t->owner != (EMW *)em || t->type != 9 || t->mode != 1 || t->arg == 0 || !PU8(em, 1)
+        || t->stg != game_w.stage)
+        return 0;
+    memcpy(pos, t->pos, 3 * sizeof(float));
+    *yaw = (float)((t->u0A.ang + 0x4000) & 0xFFFF) * (6.2831853f / 65536.0f);
+    if (getenv("RT_EM_MAT_TRACE")) {
+        static const void *said[20];
+        int k;
+        for (k = 0; k < 20 && said[k] && said[k] != em; k++)
+            ;
+        if (k < 20 && !said[k]) {
+            said[k] = em;
+            fprintf(stderr, "em-tail: kind %d tail cut at %.0f %.0f %.0f yaw %04X pick %d\n", PU8(em, 2), pos[0], pos[1], pos[2],
+                    t->u0A.ang & 0xFFFF, (s8)t->x07);
+        }
+    }
+    return 1;
+}
+
+int rt_em_materials(const void *emp, int clay, int n, rt_em_mat *o)
+{
+    u8 *em = (u8 *)emp;
+    int kind = PU8(em, 2), m, drawn = 1;
+    if (n > 32)
+        n = 32;
+    for (m = 0; m < n; m++) {
+        o[m].alpha = PF(em, 0x798);
+        o[m].has_col = 0;
+        o[m].tex = -1;
+    }
+    if (kind == 3 && clay != PU8(em, 0x11))
+        return 0;
+    /* clay 1 of kinds 1/6/8/11/14/15/17/21/22/26 is the tail: em20_init clears its flag and eft09 draws
+     * it (eft09_t): with the body's tail bones until it is cut off (EFTW arg 0), then lying where it
+     * was cut (rt_em_cut_tail); the host draws the uncut tail with the body */
+    if (clay < 0x20 && !PU8(em, 0x4E6 + (kind == 3 ? 0 : clay))) {
+        const EFTW *t = (const EFTW *)PP(em, 0x878);
+        if (!(clay == 1 && t && t->owner == (EMW *)em && t->type == 9 && t->arg == 0))
+            drawn = 0;          /* (the materials are still set: the cut tail is drawn with them, eft09_t) */
+    }
+    if (kind == 9 || kind == 18 || kind == 23)
+        em09_mat(em, clay, n, o);
+    else if (kind == 20)
+        em20_mat(em, clay, n, o);
+    else
+        em_mat(em, clay, n, o);
+    return drawn;
+}
+#undef HAGI
+#undef TAIL_CUT
+#undef OFF
 
 /* enemy_trans: the monster's draw prim; the host draws the monster model
  * itself (viewer.c), so the prim does nothing here. */
@@ -542,16 +819,80 @@ static void ride_old_save(EMW *em)
 }
 
 /* One game tick of monster no: the game's enemy_mv (src/main/em/f_em_nm.c). */
+/* test aid RT_EM_POKE="kind:offset:value[:size][@tick];...": every game tick (or only at player tick `tick`), before the
+ * monster's AI runs, write a byte (size 2: s16, 4: 32 bits, e.g. a float's bits 0x3F000000 = 0.5) of every monster of
+ * that kind: broken parts (hagi counts), hit points, the 0x798 fade, a tail cut (0x957 + a hit at 0x38D) */
+int rt_tick_count(void);
+static void em_poke(u8 *em)
+{
+    const char *p = getenv("RT_EM_POKE");
+    while (p && *p) {
+        int k = -1, off = 0, v = 0, sz = 1, t = -1;
+        const char *at = strchr(p, '@'), *end = strchr(p, ';');
+        if (at && (!end || at < end))
+            t = atoi(at + 1);
+        if (sscanf(p, "%i:%i:%i:%i", &k, &off, &v, &sz) >= 3 && k == PU8(em, 2) && off > 0 && off < 0xA10
+            && (t < 0 || t == rt_tick_count())) {
+            if (sz == 4)
+                PS32(em, off) = (s32)v;
+            else if (sz == 2)
+                PS16(em, off) = (s16)v;
+            else
+                PU8(em, off) = (u8)v;
+        }
+        p = end ? end + 1 : NULL;
+    }
+}
+
+/* test aid RT_EM_TAILOFF="kind@tick;...": at that player tick, cut the tail of every monster of that kind
+ * through eft09's own tail_off, the way eft09_m does it at frame 300 of motion 0x429 (kinds 6, 8, 15, 21
+ * have no breakable part 8, so damage never cuts them; this only shows how their cut tail is drawn) */
+void tail_off(EFTW *ew);
+static void em_tailoff(EMW *em)
+{
+    const char *p = getenv("RT_EM_TAILOFF");
+    while (p && *p) {
+        int k = -1, t = -1;
+        EFTW *ew = (EFTW *)PP(em, 0x878);
+        if (sscanf(p, "%i@%i", &k, &t) == 2 && k == em->kind && t == rt_tick_count() && ew && ew->owner == em
+            && ew->type == 9 && ew->mode == 1 && ew->arg == 0)
+            tail_off(ew);
+        p = strchr(p, ';');
+        if (p)
+            p++;
+    }
+}
+
 int rt_monster_tick(int no)
 {
     EMW *em = &em_work[no];
     if (!em->be_flag)
         return 0;
-    if (no == 0 && getenv("RT_EM_PIN")) {   /* test aid "x,z": monster 0 is put back there every tick (it can still turn and act) */
-        float px, pz;
-        if (sscanf(getenv("RT_EM_PIN"), "%f,%f", &px, &pz) == 2) {
-            em->pos[0] = px;
-            em->pos[2] = pz;
+    if (getenv("RT_EM_POKE"))
+        em_poke((u8 *)em);
+    if (getenv("RT_EM_TAILOFF"))
+        em_tailoff(em);
+    if (no == 0 && getenv("RT_EM_PIN")) {   /* test aid "x,z" or "tick:x,z;tick:x,z": monster 0 is put back there every tick from that
+                                             * tick on (the last entry reached wins); it can still turn and act */
+        static int pin_tk;
+        const char *q = getenv("RT_EM_PIN");
+        float px, pz, bx = 0, bz = 0;
+        int t, have = 0, used;
+        pin_tk++;
+        while (*q) {
+            t = 0;
+            if (sscanf(q, "%d:%f,%f%n", &t, &px, &pz, &used) != 3) {
+                t = 0;
+                if (sscanf(q, "%f,%f%n", &px, &pz, &used) != 2)
+                    break;
+            }
+            if (t <= pin_tk) { bx = px; bz = pz; have = 1; }
+            q += used;
+            if (*q == ';') q++;
+        }
+        if (have) {
+            em->pos[0] = bx;
+            em->pos[2] = bz;
         }
     }
     if (getenv("RT_EM_TRACE"))

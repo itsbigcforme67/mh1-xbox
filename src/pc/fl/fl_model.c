@@ -97,7 +97,7 @@ static void build_part(fl_model *m, int pi)
             }
         }
         if (nbatch < 32)
-            fp->batch_mat[nbatch] = (int16_t)(mi < m->amo.nmat ? mi : -1);
+            fp->batch_mat[nbatch] = (int16_t)(mi < m->amo.nmat ? mi : -2);
         batch[nbatch].first = start;
         batch[nbatch].count = pos - start;
         batch[nbatch].tex = NULL;
@@ -548,25 +548,46 @@ static void eval_group(const ahi_skel *sk, int g, const aan_motion *m, float t, 
     }
 }
 
-/* The second bone tree of Rathian / Rathalos (bones 45-47, group 3, no motion of its own) is the cut-off tail tip: a separate mesh
- * that sits at its bind place unless something moves it, i.e. on the ground under the monster. Until the tail is cut it belongs on the
- * tail: the whole tree follows bone 44 (the tail's last bone) the way bone 44 has moved from its bind pose. */
+/* The second bone tree (bones 45-47, group 3, no motion of its own) of the tailed monsters (kinds 1, 6, 8,
+ * 11, 14, 15, 17, 21, 22, 26: every one has 48 bones and this tree) carries only clay 1, the tail tip that
+ * can be cut off. Its vertices are modelled around the origin (tail-local). Until it is cut, eft09_t
+ * (game 0x544DD0+) gives the tree the body's tail node matrices: bones 45 and 46 = node 43, bone 47 =
+ * node 44 (mdl+0x48 list <- bone list +0x4330, +0x4330, +0x44C0). (The earlier host version moved the
+ * tree with bone 44 from its bind place, which stood the tip up above the monster's back.) */
+static int has_tail_tree(const ahi_skel *sk)
+{
+    return sk->nbone == 48 && sk->bone[45].parent == -1 && sk->bone[46].parent == 45 && sk->bone[47].parent == 46
+           && sk->bone[45].group == 3 && sk->bone[44].group == 2;
+}
+
 static void attach_tail_tip(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])
 {
-    const ahi_skel *sk = &s->skel;
-    flmat bind[64], inv, m;
-    float (*bc)[9];
-    int i;
-    if (sk->nbone != 48 || sk->bone[45].parent != -1 || sk->bone[45].group != 3 || sk->bone[44].group != 2 || g[3].m)
+    if (!has_tail_tree(&s->skel) || g[3].m)
         return;
-    bc = calloc(sk->nbone, sizeof *bc);
-    bind_channels(sk, bc);
-    bone_world(sk, (const float (*)[9])bc, bind);
-    free(bc);
-    flmat_invert_affine(inv, bind[44]);
-    flmat_mul(m, inv, s->world[44]);
-    for (i = 45; i < 48; i++)
-        flmat_mul(s->world[i], bind[i], m);
+    memcpy(s->world[45], s->world[43], sizeof(flmat));
+    memcpy(s->world[46], s->world[43], sizeof(flmat));
+    memcpy(s->world[47], s->world[44], sizeof(flmat));
+}
+
+/* The cut-off tail (eft09_t after tail_off: flCalcTransSI(mtx, root)): out = the skeleton's world
+ * matrices with the tail tree in its bind pose under root (world space). 0 if there is no tail tree. */
+int fl_skel_cut_tail(const fl_skel *s, const flmat root, flmat *out)
+{
+    const ahi_skel *sk = &s->skel;
+    float ch[9];
+    flmat loc;
+    int i;
+    if (!has_tail_tree(sk))
+        return 0;
+    memcpy(out, s->world, sizeof(flmat) * sk->nbone);
+    for (i = 45; i < 48; i++) {
+        memcpy(ch, sk->bone[i].s, 3 * sizeof(float));
+        memcpy(ch + 3, sk->bone[i].r, 3 * sizeof(float));
+        memcpy(ch + 6, sk->bone[i].t, 3 * sizeof(float));
+        flmat_srt(loc, ch, ch + 3, ch + 6);
+        flmat_mul(out[i], loc, i == 45 ? root : out[sk->bone[i].parent]);
+    }
+    return 1;
 }
 
 void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])

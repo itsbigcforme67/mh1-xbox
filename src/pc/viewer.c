@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include "rt/rt_memstat.h"
 #include "rt/rt_prof.h"
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #ifdef XBOX
@@ -103,42 +104,206 @@ static void pick_owner(int kind, int a, int b, const void *skel)
 }
 
 /* fl_model_draw with each part's own blend/filter/clamp (clay_attr_set) */
-/* em: a monster's em_work entry, whose hidden materials (em_material_sub,
- * rt_em_material_hide) are not drawn; NULL = all drawn */
-static void draw_model_attr_em(fl_model *m, int sky, const void *em)
+/* em: a monster's em_work entry; its clays and materials are drawn as
+ * enemy_trans does (rt_em_materials: clays switched off, materials hidden,
+ * faded, re-coloured or re-textured); NULL = everything plainly.
+ * light_col: the colour override was put into the light already (all
+ * materials alike, monsters_sync), not applied per draw here. */
+static void em_mat_trace(int kind, int part, int drawn, uint32_t hidden)
+{
+    static uint32_t seen[40][16][8];
+    uint32_t key = drawn ? hidden | 0x80000000u : 0x40000000u;
+    int k;
+    if (part >= 16)
+        return;
+    for (k = 0; k < 8 && seen[kind % 40][part][k] && seen[kind % 40][part][k] != key; k++)
+        ;
+    if (k == 8 || seen[kind % 40][part][k])
+        return;
+    seen[kind % 40][part][k] = key;
+    if (drawn)
+        fprintf(stderr, "em-mat: kind %d part %d hides materials 0x%03x\n", kind, part, (unsigned)hidden);
+    else
+        fprintf(stderr, "em-mat: kind %d part %d not drawn\n", kind, part);
+}
+
+/* 1 when every visible material of every drawn clay of monster em has the
+ * same diffuse override (Cephadrome, kind 8): f = override / the file's
+ * diffuse. The VU1 programs multiply the directional light colours by the
+ * material diffuse (graphics.md 4.2, MATERIAL), so the host scales its
+ * light by f for this model instead of tinting per draw. */
+static int em_model_col(fl_model *m, const void *em, float f[3])
+{
+    int i, k, any = 0;
+    for (i = 0; i < m->npart; i++) {
+        const amo_part *ap = &m->amo.part[i];
+        rt_em_mat st[32];
+        int n = ap->nmatlist < 32 ? ap->nmatlist : 32;
+        if (!rt_em_materials(em, i, n, st))
+            continue;
+        for (k = 0; k < n; k++) {
+            const float *cb;
+            float g[3];
+            int c;
+            if (st[k].alpha <= 0.0f)
+                continue;
+            if (!st[k].has_col || ap->matlist[k] >= (uint32_t)m->amo.nmat)
+                return 0;
+            cb = m->amo.mat[ap->matlist[k]].col_b;
+            for (c = 0; c < 3; c++)
+                g[c] = cb[c] > 0.0f ? st[k].col[c] / cb[c] : st[k].col[c];
+            if (!any)
+                memcpy(f, g, sizeof g);
+            else if (fabsf(f[0] - g[0]) > 0.01f || fabsf(f[1] - g[1]) > 0.01f || fabsf(f[2] - g[2]) > 0.01f)
+                return 0;
+            any = 1;
+        }
+    }
+    return any;
+}
+
+static void draw_model_attr_em(fl_model *m, int sky, const void *em, int light_col, int only)
 {
     int i;
-    for (i = 0; i < m->npart; i++)
-        if (sky < 0 || sky == m->part[i].is_sky) {
-            uint32_t hide = 0;
-            if (em && !getenv("RT_EM_ALL_MATS")) {  /* test aid: draw every material */
-                uint32_t mh = rt_em_material_hide(em, i, m->amo.part[i].matlist, m->amo.part[i].nmatlist);
-                hide = fl_part_batch_hide(&m->part[i], mh);
-                if (getenv("RT_EM_MAT_TRACE")) {    /* test aid (test_activities raptor_crest): each new (kind, hidden materials) */
-                    static uint32_t seen[40][8];
-                    int kd = ((const uint8_t *)em)[2], k;
-                    for (k = 0; k < 8 && seen[kd % 40][k] && seen[kd % 40][k] != (mh | 0x80000000u); k++)
-                        ;
-                    if (k < 8 && !seen[kd % 40][k]) {
-                        seen[kd % 40][k] = mh | 0x80000000u;
-                        fprintf(stderr, "em-mat: kind %d part %d hides materials 0x%03x\n", kd, i, (unsigned)mh);
-                    }
-                }
-            }
+    for (i = 0; i < m->npart; i++) {
+        const amo_part *ap = &m->amo.part[i];
+        fl_part *fp = &m->part[i];
+        rt_em_mat st[32];
+        int bst[32], g, b, n = ap->nmatlist < 32 ? ap->nmatlist : 32;
+        uint32_t done;
+        if (!(sky < 0 || sky == fp->is_sky) || (only >= 0 && i != only))
+            continue;
+        if (!em || getenv("RT_EM_ALL_MATS")) {     /* test aid: every clay and material as in the file */
             PICK_FN(powner.kind, powner.a, powner.b, i, 0, 0, powner.skel, 0);
             rt_clay_attr_set(part_attr(m, i));
+            gfx_execute_clay(fp->clay);
+            rt_clay_attr_reset();
+            continue;
+        }
+        {
+            int drawn = rt_em_materials(em, i, n, st) || only == i;     /* only: the cut tail, drawn apart */
+            if (getenv("RT_EM_MAT_TRACE")) {       /* test aid (test_activities em_materials) */
+                uint32_t h = 0;
+                int k;
+                for (k = 0; k < n; k++)
+                    if (st[k].alpha <= 0.0f && ap->matlist[k] < 32)
+                        h |= 1u << ap->matlist[k];
+                em_mat_trace(((const uint8_t *)em)[2], i, drawn, h);
+            }
+            if (!drawn)
+                continue;
+        }
+        /* each batch (one per material number) takes the state of its material; batches
+         * with the same state are drawn together, the others hidden (GFX_RS_BATCH_HIDE) */
+        for (b = 0; b < 32; b++) {
+            int k;
+            bst[b] = fp->batch_mat[b] == -2 ? -2 : -1;
+            if (fp->batch_mat[b] < 0)
+                continue;
+            for (k = 0; k < n; k++)
+                if (ap->matlist[k] == (uint32_t)fp->batch_mat[b])
+                    break;
+            bst[b] = k < n ? k : -2;        /* -2: not in the list, drawn plainly */
+        }
+        PICK_FN(powner.kind, powner.a, powner.b, i, 0, 0, powner.skel, 0);
+        rt_clay_attr_set(part_attr(m, i));
+        done = 0;
+        for (g = 0; g < 33; g++) {
+            /* pass g: the first batch not drawn yet picks the state; the batches with the same state go with it */
+            uint32_t grp = 0, all = 0, hide, fade = 0xFFFFFFFFu;
+            const rt_em_mat *s0 = NULL;
+            int first = -1;
+            for (b = 0; b < 32; b++) {
+                const rt_em_mat *sb = bst[b] >= 0 ? &st[bst[b]] : NULL;
+                if (bst[b] == -1)
+                    continue;
+                all |= 1u << b;
+                if ((done >> b & 1) || (sb && sb->alpha <= 0.0f))     /* drawn, or hidden */
+                    continue;
+                if (first < 0) {
+                    first = b;
+                    s0 = sb;
+                }
+                if (b != first && ((sb == NULL) != (s0 == NULL)
+                    || (sb && (sb->alpha != s0->alpha || sb->tex != s0->tex
+                               || (!light_col && (sb->has_col != s0->has_col
+                                                  || (sb->has_col && memcmp(sb->col, s0->col, sizeof sb->col))))))))
+                    continue;
+                grp |= 1u << b;
+            }
+            if (first < 0)
+                break;
+            done |= grp;
+            hide = all & ~grp;
+            if (s0) {
+                float c[4] = { 1, 1, 1, s0->alpha < 1.0f ? s0->alpha : 1.0f };
+                int k;
+                if (s0->has_col && !light_col) {         /* diffuse override against the file's diffuse */
+                    const float *cb = m->amo.mat[ap->matlist[bst[first]]].col_b;
+                    for (k = 0; k < 3; k++)
+                        c[k] = cb[k] > 0.0f ? s0->col[k] / cb[k] : s0->col[k];
+                }
+                if (c[0] != 1 || c[1] != 1 || c[2] != 1 || c[3] != 1) {
+                    unsigned u[4];
+                    for (k = 0; k < 4; k++)
+                        u[k] = (unsigned)(c[k] <= 0 ? 0 : c[k] >= 1 ? 255 : c[k] * 255.0f + 0.5f);
+                    fade = u[3] << 24 | u[0] << 16 | u[1] << 8 | u[2];
+                }
+                if (s0->tex >= 0 && s0->tex < m->ntex)
+                    gfx_set_render_state(GFX_RS_BATCH_TEX, (uintptr_t)m->tex[s0->tex]);
+                if (s0->alpha < 1.0f)
+                    gfx_set_render_state(GFX_RS_ALPHA_REF, 0);  /* enemy_trans: alpha reference 0 while fading */
+            }
+            if (fade != 0xFFFFFFFFu)
+                gfx_set_render_state(GFX_RS_FADE_COLOR, fade);
             if (hide)
                 gfx_set_render_state(GFX_RS_BATCH_HIDE, hide);
-            gfx_execute_clay(m->part[i].clay);
+            gfx_execute_clay(fp->clay);
             if (hide)
                 gfx_set_render_state(GFX_RS_BATCH_HIDE, 0);
-            rt_clay_attr_reset();
+            if (fade != 0xFFFFFFFFu)
+                gfx_set_render_state(GFX_RS_FADE_COLOR, 0xFFFFFFFFu);
+            if (s0 && s0->tex >= 0)
+                gfx_set_render_state(GFX_RS_BATCH_TEX, 0);
+            if (s0 && s0->alpha < 1.0f)
+                gfx_set_render_state(GFX_RS_ALPHA_REF, 0x40);
         }
+        rt_clay_attr_reset();
+    }
 }
 
 static void draw_model_attr(fl_model *m, int sky)
 {
-    draw_model_attr_em(m, sky, NULL);
+    draw_model_attr_em(m, sky, NULL, 0, -1);
+}
+
+/* The cut-off tail of a monster (eft09_t, rt_em_cut_tail): clay 1 alone, its tail bones in their
+ * bind pose under Scale(EMW+0xB8) * RotY * Trans at the place it was cut, in world space. */
+static void draw_cut_tail(fl_model *m, const fl_skel *sk, const uint8_t *em, const fl_light *L, int light_col)
+{
+    float pos[3], sc[3], r[3] = { 0, 0, 0 };
+    flmat root, id, *wm;
+    int k, skip[64];
+    if (m->npart < 2 || m->npart > 64 || getenv("RT_EM_ALL_MATS") || !rt_em_cut_tail(em, pos, &r[1]))
+        return;
+    memcpy(sc, em + 0xB8, sizeof sc);
+    if (sc[0] == 0.0f)
+        sc[0] = sc[1] = sc[2] = 1.0f;
+    flmat_srt(root, sc, r, pos);
+    wm = malloc(sizeof(flmat) * (sk->skel.nbone + 1));
+    if (wm && fl_skel_cut_tail(sk, root, wm)) {
+        for (k = 0; k < m->npart; k++) {
+            skip[k] = m->part[k].skip;
+            m->part[k].skip = k != 1;
+        }
+        fl_model_pose(m, (const flmat *)wm, L);
+        for (k = 0; k < m->npart; k++)
+            m->part[k].skip = skip[k];
+        flmat_identity(id);
+        gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
+        draw_model_attr_em(m, -1, em, light_col, 1);
+    }
+    free(wm);
 }
 
 /* The effect models (eft_mdlw, load_eft / load_shadow at 0x111110): AFS
@@ -980,7 +1145,6 @@ static void monsters_sync(int draw, const fl_light *L);
 int rt_monster_motion_ready(int no);
 static void sim_tick(void)
 {
-    rt_game_move();
     if (pl.game && play && ticks >= 2) {
         pad_state ps;
         if (script)
@@ -1026,6 +1190,8 @@ static void sim_tick(void)
         lookat_world(cw, gc_eye, gc_tar);
         rt_set_camera(cw);
     }
+    rt_game_move();             /* move_set / move_eft / move_shell: after the player and CameraMove as in game_core (f_frame_nm.c), so
+                                 * camera-attached sets (set13's fog veils, 50 units in front of the eye) use this tick's camera */
     light_move();               /* game_core's step after CameraMove (f_frame_nm.c): turns light 2 of set 1 with the view, runs the
                                  * flash effect. The host's sim_tick stands in for game_core, so it has to call it (only
                                  * the lights of RT_LIGHT_GAME read what it does) */
@@ -1053,6 +1219,12 @@ static void sim_tick(void)
             rt_monster_get(0, p, &a);
             printf("tick %d: em0 pos %.0f %.0f %.0f ang %04X\n", ticks, p[0], p[1], p[2], a & 0xFFFF);
         }
+    }
+    if (ticks >= 2 && rt_player_uses_game() && !(getenv("RT_BODY_HIT") && getenv("RT_BODY_HIT")[0] == '0')) {
+        extern unsigned char game_w[];
+        void body_hit(void);
+        if (game_w[0x21F] == 0)         /* move(): item_check / body_hit only while info_stop == 0 (hunters and monsters pushed apart) */
+            body_hit();
     }
     if (quest_no && pl.game && play && ticks >= 2 && rt_player_uses_game()) {
         void stage_mv_ck(void);
@@ -1194,10 +1366,26 @@ static void monsters_sync(int draw, const fl_light *L)
             }
         }
         if (draw && rt_monster_motion_ready(i)) {
-            fl_model_pose(&m->model, (const flmat *)m->skel.world, L);
+            fl_light lc;
+            float f[3];
+            int light_col = L && !getenv("RT_EM_ALL_MATS") && em_model_col(&m->model, em, f);
+            if (light_col) {            /* the diffuse override scales the directional lights (em_model_col) */
+                int l, c;
+                if (getenv("RT_EM_MAT_TRACE")) {
+                    static char said[40];
+                    if (!said[kind]++)
+                        fprintf(stderr, "em-mat: kind %d light colour %.3f %.3f %.3f\n", kind, f[0], f[1], f[2]);
+                }
+                lc = *L;
+                for (l = 0; l < 3; l++)
+                    for (c = 0; c < 3; c++)
+                        lc.col[l][c] *= f[c];
+            }
+            fl_model_pose(&m->model, (const flmat *)m->skel.world, light_col ? &lc : L);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
             pick_owner(PK_MONSTER, i, kind, &m->skel);
-            draw_model_attr_em(&m->model, -1, em);
+            draw_model_attr_em(&m->model, -1, em, light_col, -1);
+            draw_cut_tail(&m->model, &m->skel, em, light_col ? &lc : L, light_col);
         }
     }
 }
@@ -1964,11 +2152,30 @@ int main(int argc, char **argv)
         if (weapon.game && pl.game && play)
             weapon_pose(light_hunter(lp));
 
-        if (getenv("RT_CAM_EM")) {      /* test aid "slot,dist,height,yaw": free camera on monster slot */
+        if (getenv("RT_CAM_EM")) {      /* test aid "slot,dist,height,yaw" (or "kKIND,...", "tKIND,..." its cut tail): free camera on monster slot */
             float p[3], d = 1500, hh = 600, yw = 0;
             int a, sl = 0;
-            sscanf(getenv("RT_CAM_EM"), "%d,%f,%f,%f", &sl, &d, &hh, &yw);
+            const char *ce = getenv("RT_CAM_EM");
+            int on_tail = ce[0] == 't';             /* "tN,...": that monster's cut-off tail */
+            if (ce[0] == 'k' || on_tail) {    /* "kN,...": the first live monster of kind N on this stage */
+                extern uint8_t em_work[];
+                int kd = 0, j;
+                sscanf(ce + 1, "%d,%f,%f,%f", &kd, &d, &hh, &yw);
+                for (j = 0; j < 20; j++)
+                    if (em_work[0xA10 * j] && em_work[0xA10 * j + 2] == kd && em_work[0xA10 * j + 0x736] == (uint8_t)rt_game_stage()) {
+                        sl = j;
+                        break;
+                    }
+            } else {
+                sscanf(getenv("RT_CAM_EM"), "%d,%f,%f,%f", &sl, &d, &hh, &yw);
+            }
             rt_monster_get(sl, p, &a);
+            if (on_tail) {
+                extern uint8_t em_work[];
+                float tp[3], ty;
+                if (rt_em_cut_tail(em_work + 0xA10 * sl, tp, &ty))
+                    memcpy(p, tp, sizeof tp);
+            }
             cam[0] = p[0] + sinf(yw) * d;
             cam[1] = p[1] + hh;
             cam[2] = p[2] + cosf(yw) * d;
@@ -2007,7 +2214,13 @@ int main(int argc, char **argv)
         if (rt_monster_shown(0) && slot0_rathian()) {     /* in use and on this stage */
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)rathian.world);
             pick_owner(PK_MONSTER, 0, 1, &rathian.skel);
-            draw_model_attr(&rathian.model, -1);
+            if (rathian.game) {                 /* em_work[0]: its clays / materials as enemy_trans */
+                extern uint8_t em_work[];
+                draw_model_attr_em(&rathian.model, -1, em_work, 0, -1);
+                draw_cut_tail(&rathian.model, &rathian.skel, em_work, light_cur(), 0);
+            } else {
+                draw_model_attr(&rathian.model, -1);
+            }
         }
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)pl.world);
         {
