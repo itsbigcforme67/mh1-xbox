@@ -26,8 +26,8 @@ setup() {   # mark quests cleared, sleep in the bed (save)
 hunt() {    # hunt NAME STAGE KIND D: Elder -> gate -> hunt -> reward -> bed save
     D=$4
     EV=""; for t in $(seq 2110 50 2610); do EV="$EV;$t:circle*2"; done; EV="$EV;2700:square*2"
-    for t in $(seq 2900 32 4600); do EV="$EV;$t:cam_u*2"; done
-    for t in $(seq $((4700 + D)) 60 $((5480 + D))); do EV="$EV;$t:ddown*2;$((t + 20)):circle*2"; done
+    for t in $(seq 2900 32 $((3500 + D))); do EV="$EV;$t:cam_u*2"; done
+    for t in $(seq $((4700 + D)) 70 $((5480 + D))); do EV="$EV;$t:cross*2;$((t + 15)):ddown*2;$((t + 30)):circle*2;$((t + 45)):circle*2"; done
     EV="$EV;$((5680 + D)):square*2;$((5780 + D)):$(cat tools/pc_scripts/bed_save.txt)"
     S=$(python3 tools/mk_input.py $C "${EV#;}" $((7000 + D)))
     RT_QUEST_TRACE=1 RT_LB_WARP="400,10901,12409,38AB;1000,10650,15225;1145,11225,14400,0;1245,2259,745,4001" \
