@@ -954,7 +954,6 @@ static void monsters_sync(int draw, const fl_light *L);
 int rt_monster_motion_ready(int no);
 static void sim_tick(void)
 {
-    rt_game_move();
     if (pl.game && play && ticks >= 2) {
         pad_state ps;
         if (script)
@@ -1000,6 +999,8 @@ static void sim_tick(void)
         lookat_world(cw, gc_eye, gc_tar);
         rt_set_camera(cw);
     }
+    rt_game_move();             /* move_set / move_eft / move_shell: after the player and CameraMove as in game_core (f_frame_nm.c), so
+                                 * camera-attached sets (set13's fog veils, 50 units in front of the eye) use this tick's camera */
     light_move();               /* game_core's step after CameraMove (f_frame_nm.c): turns light 2 of set 1 with the view, runs the
                                  * flash effect. The host's sim_tick stands in for game_core, so it has to call it (only
                                  * the lights of RT_LIGHT_GAME read what it does) */
