@@ -627,7 +627,7 @@ static void detect_test_run(int argc, char **argv)
     for (i = 0; environ && environ[i]; i++)
         if (!strncmp(environ[i], "RT_", 3))
             test_run = 1;
-#else
+#elif defined(MH1_WINDOWS)
     {
         extern char **_environ;
         for (i = 0; _environ && _environ[i]; i++)
