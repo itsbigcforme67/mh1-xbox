@@ -63,6 +63,17 @@ Playing
   as on the Japanese PS2.
   Saves: %APPDATA%\mh1pc\memcard0 (save in your house's bed or after a quest, load with CONTINUE).
 
+Using your real PS2 save
+  Drag your save file onto mhview.exe (or onto play.bat), or onto the game window while it runs. Accepted:
+  .psu (uLaunchELF / EMS), .max (Action Replay Max), .cbs (CodeBreaker), .sps / .xps (SharkPort / X-Port),
+  and a whole memory card image (.ps2, .mcd, .mc2, .bin; for example from PCSX2 or a card dumped with
+  mymc / uLaunchELF), from which the Monster Hunter save (BISLPM-65495MH) is taken. Then choose CONTINUE.
+  A save you already had on the PC is first copied to %APPDATA%\mh1pc\memcard0.backups. The save is
+  checked with the game's own checksum first; a damaged or foreign file is refused and nothing changes.
+  Back to a PS2 or PCSX2: from a command prompt run  mhview.exe --export-save MyHunter.psu  (or .max,
+  .cbs, .sps, .xps, or .ps2 for a new 8 MB memory card image holding just this save).
+  The command line forms are  mhview.exe --import-save FILE  and  mhview.exe --export-save FILE.
+
 Bug reports
   Press F8 in the game (or hold Back/View and press Start on a controller) when you see something wrong. The
   game freezes. Click the broken things with the mouse (or drag a box around them; right-click undoes a pick),
