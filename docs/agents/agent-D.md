@@ -1309,3 +1309,5 @@ Tricks (each confirmed by a match):
   already game C; added the drawing: tail tree on nodes 43/43/44 before the cut, the cut tail drawn apart afterwards
   (rt_em_cut_tail, fl_skel_cut_tail, draw_cut_tail). EMW+0x948 bit 0 is "tail cut", not "asleep" (corrected).
   Test tail_cut. em_alpha_clay left alone (alpha-reference scale unchecked).
+- 8 Oct 2026, tail cut follow-up: cuttable = part 8 in em_dur_tbl (1, 11, 14, 17, 22, 26); 6/8/15/21 never cut.
+  Basarios needs to be awake; real attacks cut it on the PC. Cut tail now gets its materials (bug fixed).

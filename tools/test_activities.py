@@ -160,8 +160,16 @@ def tail_cut():
     if not m2 or tuple(map(int, m2.groups())) != (x, y, z): return False, 'the second run cut the tail elsewhere (%s)' % (m2 and m2.groups(),)
     g, fin = gains(t2, {})
     names = item_names()
-    return bool(g), 'tail cut at %d %d %d (pick point %d), body draws no tail, carved: %s' % (x, y, z, pick, ', '.join(
-        '%s(%d) x%d' % (names[k], k, v) for k, v in sorted(g.items())) or 'nothing')
+    # Basarios (22, quest 173): asleep in its rock disguise a hit only wakes it (the cut flag x957 is used up without the
+    # cut action), so the first hit at 200 wakes it and the part-8 break + hit at 500 cuts (mode 4 sub 0x11 -> tail_off)
+    t3 = run('tail_cut_22', 'idle*800', 0, quest=173, secs=27, env={'RT_EM_POKE': '22:0x38D:1@200;22:0x957:1@500;22:0x38D:1@500',
+             'RT_EM_MAT_TRACE': 1, 'RT_QUEST_STAGE': 1, 'RT_PL_GOD': 1})
+    if crashed(t3): return False, 'crash (Basarios)'
+    m3 = re.search(r'em-tail: kind 22 tail cut at (-?\d+) (-?\d+) (-?\d+) yaw \S+ pick (-?\d+)', t3)
+    if not m3 or int(m3.group(4)) < 0 or 'em-mat: kind 22 part 1 not drawn' not in t3:
+        return False, 'Basarios tail not cut / no carving point / body still draws it'
+    return bool(g), 'Rathian tail cut at %d %d %d (pick point %d), body draws no tail, carved: %s; Basarios tail cut at %s %s %s' % (
+        x, y, z, pick, ', '.join('%s(%d) x%d' % (names[k], k, v) for k, v in sorted(g.items())) or 'nothing', *m3.groups()[:3])
 
 @test
 def long_fight():

@@ -341,6 +341,13 @@ void rt_player_tick(int no)
                     r = sph[3] + 40.0f + (getenv("RT_WARP_R") ? (float)atof(getenv("RT_WARP_R")) : 0.0f);
                 }
             }
+            if (hp < 0 && getenv("RT_PL_WARP_JOINT")) {     /* "n": next to joint n of the living target instead (43: a tail) */
+                void get_joint_pos(void *chr, int joint, f32 *out);
+                static f32 jp[3];
+                get_joint_pos(tg, atoi(getenv("RT_PL_WARP_JOINT")), jp);
+                t = jp;
+                r = 150.0f;
+            }
             f32 d[2] = { p->pos[0] - t[0], p->pos[2] - t[2] }, l = sqrtf(d[0] * d[0] + d[1] * d[1]);
             if (l < 1) { d[0] = 1; l = 1; }
             if (hp >= 0)
