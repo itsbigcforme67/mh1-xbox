@@ -986,3 +986,26 @@ Near-matches now: sk_key_repeat 3 (original keeps the masked hold value in a1: t
 setup_rw_sub 5 (the original hoists all five table address constants to the top), sk_pltchange 3 (f/e saved-register swap, decl shuffles of all 6
 lines tried), Han2zen 4 (`c = *src++` temp register layout), dakuten_ck 5 (the original does `t += 2` in the compare's delay slot and reads t[0]
 after it), ng_word_sub 28 (mode is sign-extended in place in s0 in the original), ItemListWindow 20, PlayerStatusWindow 33.
+
+## Targeted decompilation, main module (8 Oct 2026) - tools and lessons
+Findings and the target ranking are in docs/agents/targets.md (section "Agent B"). Tools (tools/targets/):
+- nm.py / nm2.py: which main functions the PC links that are unmatched / that are matched but come from another object.
+- standins.sh: no-op stand-ins (build/pc/rt_gen.c) and the game objects that call them. Run it after every change of the link set.
+- swlist.py, dalias.py, weaken.py, localundef.sh: wiring helpers (matched files to add; D_/func_ names the game module names; link
+  errors; calls into a near-match's file-statics).
+- pcbuild.sh: tools/build_pc.sh until it links (the weak-symbol requests need up to 3 passes after the link set changes).
+  MATCHED_SKIP=regex / CPFILES / CP01_OFF bisect which matched file or cp01 function breaks a test (bt*.sh run one test each).
+  Changing a -D flag does not rebuild an object by itself: `rm build/pc/NAME.o` first.
+- cmpnm.py + showpair.py: rank/see the differences between a matched function and the near-match of the same name.
+- tryvar.py (whole function variants), tryrep.py (text variants inside a function), alignall.py (how far off every PC-run
+  unmatched function is), tubuild.py (assemble a whole-file TU from per-function chunks).
+Lessons:
+- Matched main C that calls `func_XXXXXX` / `D_XXXXXX` reaches the game module by address: rename at compile time
+  (-Dfunc_X=name), never with a linker alias (it binds to the object that defines the target, which may be the weak near-match).
+  func_ addresses can also belong to the lobby overlay (0x60E330 = Eft25_set_pos), check config/symbols/*.txt for both.
+- A host replacement (rt_*.c) must keep winning where the game memory model is replaced: weaken the matched object's symbol, not the host's.
+- A host function that is a no-op stand-in but is called by matched code breaks it silently (flvecApplyMat -> calc_mat_angY).
+  Differential test: link the matched file, run the tests, bisect with CP01_OFF-style renames.
+- "a0 left over" calls (tools/argregs.py --check) must be patched for the PC in tools/pc_patch.py for every matched file added.
+- rebuild.sh compiles EVERY src/**/*.c with MWCC (also *_nm.c): a new near-match file must at least compile there (void * arithmetic does not).
+- Never run two build_pc.sh at once in one worktree (they share build/pc/*.log and objects); never pkill -f a build script (all agents share it).
