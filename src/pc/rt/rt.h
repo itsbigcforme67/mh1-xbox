@@ -30,6 +30,8 @@ void *rt_bss_shadow(uint32_t va);
 /* Fill the game's data tables (rt_data.c) from the loaded images.
  * Returns the number of tables that could not be found. */
 int rt_import_data(void);
+/* Replace pointer-table strings from a text file (RT_TEXT_TABLE, rt_data.c) */
+int rt_text_override(const char *path);
 /* After rt_import_data and rt_set_lobby: the lobby tables (rt_data.c). */
 int rt_import_lobby(void);
 /* Pointer words (R_MIPS_32 relocations of the ELF) and symbols. */
