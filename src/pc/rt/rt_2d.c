@@ -177,6 +177,13 @@ static void quad(float x0, float y0, float x1, float y1, const u32 c[4], const f
         float s[12] = { u0, v0, u1, v0, u0, v1, u1, v0, u1, v1, u0, v1 };
         memcpy(st, s, sizeof st);
     }
+    /* an untextured rectangle over the whole frame is a fade / dim: on a widescreen display it covers the whole window */
+    if (!uv && x0 <= 0 && y0 <= 0 && x1 >= SCR_W && y1 >= SCR_H && !gfx_2d_anchor) {
+        gfx_set_2d_anchor(GFX_A_STRETCH);
+        gfx_draw_2d(SCR_W, SCR_H, 6, pos, NULL, col);
+        gfx_set_2d_anchor(GFX_A_CENTER);
+        return;
+    }
     gfx_draw_2d(SCR_W, SCR_H, 6, pos, uv ? st : NULL, col);
 }
 

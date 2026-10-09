@@ -77,6 +77,7 @@ enum {
     GFX_RS_ZTEST        = 0x102, /* value: 0/1 */
     GFX_RS_BATCH_HIDE   = 0x103, /* value: bit b set = batch b (< 32) of the next clays is not drawn; 0 = all drawn.
                                     The PS2 hides a material by writing 0 to its alpha (em_material_sub 0x10CEA0) */
+    GFX_RS_2D_ANCHOR    = 0x105, /* value: GFX_A_*, how the next 2D draws sit on a widescreen display (GL backend; others ignore) */
     GFX_RS_BATCH_TEX    = 0x104  /* value: gfx_texture* drawn instead of every batch's own texture (a material's texture
                                     swapped, em_material_sub kind 2); 0 = the batches' own */
 };
@@ -86,6 +87,17 @@ enum {
 enum { GFX_BF_ZERO, GFX_BF_ONE, GFX_BF_SRC_ALPHA, GFX_BF_INV_SRC_ALPHA,
        GFX_BF_DST_ALPHA, GFX_BF_INV_DST_ALPHA };
 void gfx_set_render_state(int state, uintptr_t value);
+/* 2D anchors (widescreen, docs/pc.md): the game's 2D is laid out for a 512 x 448 frame shown at 4:3. GFX_A_CENTER keeps
+ * it on that 4:3 rectangle (menus, 2D screens; pillarbox bars beside it), LEFT / RIGHT keep a HUD widget at the left /
+ * right edge of the wide scene, STRETCH covers the whole window (fades). gfx_2d_anchor is the current value, for code
+ * that queues draws to be made later (the font stacks). */
+enum { GFX_A_CENTER, GFX_A_LEFT, GFX_A_RIGHT, GFX_A_STRETCH };
+extern int gfx_2d_anchor;
+static inline void gfx_set_2d_anchor(int a)
+{
+    gfx_2d_anchor = a;
+    gfx_set_render_state(GFX_RS_2D_ANCHOR, (uintptr_t)a);
+}
 /* convenience for float-valued states */
 void gfx_set_render_state_f(int state, float value);
 

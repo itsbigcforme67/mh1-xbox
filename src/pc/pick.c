@@ -18,6 +18,9 @@
 #include "rt/rt_log.h"
 #include "fl/fl.h"
 #include "pad/pad.h"
+#ifndef XBOX
+#include "gfx/gfx_gl.h"
+#endif
 #include "audio/audio.h"
 
 #include <SDL.h>
@@ -401,8 +404,14 @@ static int unproject(int x, int y, float out[3])
     mat_mul(pv, proj, view);
     if (mat_inv(inv, pv))
         return 0;
-    v[0] = (x + 0.5f) / W * 2 - 1;
-    v[1] = 1 - (y + 0.5f) / H * 2;
+    {   /* the 3D scene's rectangle (a 4:3 one in a wider window, gfx_gl.c) */
+        int r[4] = { 0, 0, W, H };
+#ifndef XBOX
+        gfx_pick_viewport(r);
+#endif
+        v[0] = (x + 0.5f - r[0]) / r[2] * 2 - 1;
+        v[1] = 1 - (y + 0.5f - r[1]) / r[3] * 2;
+    }
     v[2] = d * 2 - 1;
     v[3] = 1;
     {

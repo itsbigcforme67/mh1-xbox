@@ -23,6 +23,7 @@
 #endif
 #ifndef XBOX
 #include "install.h"
+#include "gfx/gfx_gl.h"
 #endif
 #include <stdio.h>
 #include "rt/rt_memstat.h"
@@ -787,7 +788,18 @@ static void write_wav(const char *path, const int16_t *pcm, size_t frames)
 /* main()'s state (file scope so the game tick can run as game_core) */
 static const char *disc = NULL, *shot = NULL, *install_iso = NULL, *install_dir = NULL;
 static int install_only;
-static int frames = 1, W = 1280, H = 720, i, running = 1, frame_no = 0;
+static int size_given, frames = 1, W = 1280, H = 720, i, running = 1, frame_no = 0;
+/* the 3D scene's aspect: the window's, in widescreen mode (the vertical fov stays as the game sets it, so the
+ * horizontal one grows: Hor+), else the original 4:3 (gfx_gl.c) */
+static float scene_aspect(void)
+{
+#ifdef XBOX
+    return (float)W / H;
+#else
+    return gfx_scene_aspect();
+#endif
+}
+
 static float cam[5] = { 11900, 700, 8900, 0.75f, -0.2f };   /* x y z yaw pitch */
 static float fixed_time = -1;
 static const char *shot_list;     /* RT_SHOTS */
@@ -914,7 +926,7 @@ static void ed_hunter_draw(void *arg)
     rt_cam_view(eye, tar, &roll, &fov);
     lookat_world(camw, eye, tar);
     flmat_invert_affine(view, camw);
-    flmat_perspective(proj, fov > 0.01f ? fov : 1.0f, (float)W / H, 10.0f, 80000.0f);
+    flmat_perspective(proj, fov > 0.01f ? fov : 1.0f, scene_aspect(), 10.0f, 80000.0f);
     gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);
     gfx_set_render_state(GFX_RS_VIEW, (uintptr_t)view);
     gfx_set_render_state(GFX_RS_ALPHA_REF, 0x40);
@@ -1556,11 +1568,17 @@ int main(int argc, char **argv)
     }
 #endif
     rt_stack_paint();
+#ifndef XBOX
+    gfx_opts_load(argc, argv);      /* mh1pc.ini; the display flags below override it */
+#endif
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shot") && i + 1 < argc) shot = argv[++i];
         else if (!strcmp(argv[i], "--frames") && i + 1 < argc) frames = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--time") && i + 1 < argc) fixed_time = (float)atof(argv[++i]);
-        else if (!strcmp(argv[i], "--size") && i + 1 < argc) sscanf(argv[++i], "%dx%d", &W, &H);
+        else if (!strcmp(argv[i], "--size") && i + 1 < argc) { sscanf(argv[++i], "%dx%d", &W, &H); size_given = 1; }
+#ifndef XBOX
+        else if (gfx_opts_arg(argc, argv, &i)) ;       /* --fullscreen, --vsync, --widescreen, ... (docs/pc.md) */
+#endif
         else if (!strcmp(argv[i], "--cam") && i + 1 < argc)
             cam_given = sscanf(argv[++i], "%f,%f,%f,%f,%f", &cam[0], &cam[1], &cam[2], &cam[3], &cam[4]) > 0;
         else if (!strcmp(argv[i], "--stage") && i + 1 < argc) { stage_no = (int)strtol(argv[++i], NULL, 0); stage_given = 1; }
@@ -1726,10 +1744,15 @@ int main(int argc, char **argv)
         rt_mem_trim();
     if (boot && !quest_no)
         quest_no = 10;      /* the set-up below as for a quest; the boot ends in the village (game mode 6) */
+#ifndef XBOX
+    if (!shot)
+        gfx_opts_finish(size_given, &W, &H);        /* the remembered window, else 960x720 (4:3) / 1280x720 (widescreen) */
+#endif
     if (gfx_init(W, H, "MH1 PC viewer", shot != NULL) != 0) {
         rt_warn("graphics start-up failed (no window / OpenGL context)");
         return 1;
     }
+    gfx_size(&W, &H);
     rt_log("boot: window %dx%d%s", W, H, shot ? " (hidden, screenshot run)" : "");
     { extern void rt_seed_random(int); rt_seed_random(script != NULL); }
     if (script && !pad_script_set(script)) {
@@ -1960,10 +1983,19 @@ int main(int argc, char **argv)
             t = frame_no / 30.0f;
         float fr = t * 30.0f;                      /* game motions run at 30 fps */
         flmat proj, camw, view;
+        if (!shot)
+            gfx_size(&W, &H);                       /* the window may have been resized / gone fullscreen */
         const Uint8 *keys;
         float spd = 40;
 
         while (SDL_PollEvent(&ev)) {
+#ifndef XBOX
+            if (ev.type == SDL_KEYDOWN && !ev.key.repeat &&
+                ((ev.key.keysym.sym == SDLK_RETURN && (ev.key.keysym.mod & KMOD_ALT)) || ev.key.keysym.sym == SDLK_F11)) {
+                gfx_toggle_fullscreen();                    /* Alt+Enter / F11: never reaches the game's pad */
+                continue;
+            }
+#endif
             if (pick_event(&ev))        /* F8: the bug reporter (frozen: it takes all input) */
                 continue;
             pad_event(&ev);     /* typed text (the name entry) */
@@ -2015,7 +2047,7 @@ int main(int argc, char **argv)
         flmat_invert_affine(view, camw);
         rt_set_camera(camw);            /* rview_mat / rview_matY for game billboards */
         /* the game's angle of view taken as the vertical fov [guess] */
-        flmat_perspective(proj, game_cam && have_view ? gc_fov : 1.0f, (float)W / H, 10.0f, 80000.0f);
+        flmat_perspective(proj, game_cam && have_view ? gc_fov : 1.0f, scene_aspect(), 10.0f, 80000.0f);
 
         /* game logic ticks at 30 per second (at least 2, so set objects
          * have run their init and queued their prims) */
@@ -2195,7 +2227,7 @@ int main(int argc, char **argv)
         }
         flmat_invert_affine(view, camw);
         rt_set_camera(camw);
-        flmat_perspective(proj, game_cam && have_view ? gc_fov : 1.0f, (float)W / H, 10.0f, 80000.0f);
+        flmat_perspective(proj, game_cam && have_view ? gc_fov : 1.0f, scene_aspect(), 10.0f, 80000.0f);
 
         gfx_begin_frame(0x8098B8);
         gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);
@@ -2293,6 +2325,10 @@ int main(int argc, char **argv)
         rt_prof_begin(RTP_GFX);
         gfx_end_frame();
         rt_prof_end(RTP_GFX);
+#ifndef XBOX
+        if (!shot)
+            gfx_frame_pace();           /* --fps-cap: drawing only; the game ticks at 30 Hz from the clock above */
+#endif
         rt_prof_end(RTP_DRAW);
         rt_prof_frame();
     }
@@ -2306,6 +2342,10 @@ int main(int argc, char **argv)
 #endif
     if (snd == 0)
         rt_snd_shutdown();
+#ifndef XBOX
+    if (!shot)
+        gfx_opts_save();            /* mh1pc.ini: window size / position, fullscreen */
+#endif
     gfx_shutdown();
     fmt_afs_close(&afs);
     rt_stack_report("at exit");
