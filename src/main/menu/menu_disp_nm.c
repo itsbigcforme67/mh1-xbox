@@ -1501,8 +1501,12 @@ void disp_pl_vital(void) {
         col = 0xFFF0F000;
     } else {
         v = ((System_timer & 0x3F) << 10) & 0xFFFF;
-        a = ((s8)40.0f + 0xE7) & 0xFF;
-        col = (((s8)(40.0f * flSin(0.0000958738f * (f32)v)) + 0x9F) & 0xFF) | ((a << 16) | 0xFF000000 | (a << 8));
+        {
+            f32 sv = flSin(0.0000958738f * (f32)v);
+
+            a = ((s8)(18.0f * sv) + 0xE7) & 0xFF;
+            col = (((s8)(40.0f * sv) + 0x9F) & 0xFF) | ((a << 16) | 0xFF000000 | (a << 8));
+        }
     }
     g.col = col;
     g.cur = *(s16 *)((u8 *)pl + 0x748);
