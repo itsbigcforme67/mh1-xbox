@@ -1765,7 +1765,7 @@ void disp_pachinger(void) {
 
 /* 0x1319D0 */
 void disp_cannon(void) {
-    PFLP12 q;
+    PFLPS2 q;
     PLW *pl = lpPit->pl;
     f32 x;
     u32 i;
@@ -1784,27 +1784,27 @@ void disp_cannon(void) {
         }
         if (lpPit->x2A != 0) {
             x = 120.0f;
-            q.p[1] = 0x32;
+            q.s[1] = 0x32;
         } else {
-            q.p[1] = 0x123;
+            q.s[1] = 0x123;
             x = 320.0f - 6.0f * (f32)*((u8 *)pl + 0x1D);
         }
-        q.p[2] = 9;
-        q.p[3] = 0x14;
+        q.s[2] = 9;
+        q.s[3] = 0x14;
         q.col = -1;
         q.uv[1] = 0xEC;
-        q.uv[5] = 0xFF;
+        q.uv[3] = 0xFF;
         i = 0;
         if (*((u8 *)pl + 0x1D) != 0) {
             do {
                 if (i < *((u8 *)pl + 0x1C)) {
-                    q.uv[3] = 0xD8;
+                    q.uv[2] = 0xD8;
                     q.uv[0] = 0xCC;
                 } else {
                     q.uv[0] = 0xE0;
-                    q.uv[3] = 0xEC;
+                    q.uv[2] = 0xEC;
                 }
-                q.p[0] = 0.8f * x;
+                q.s[0] = 0.8f * x;
                 flps0008(&q);
                 i++;
                 x += 12.0f;
@@ -1822,23 +1822,23 @@ void disp_cannon(void) {
 
 /* 0x131C00 */
 void disp_gun_load_mess(int n) {
-    PFLP12 q;
+    PFLPS2 q;
     s16 *m = gun_load_mess[n];
     int v = ((System_timer & 0x1F) << 11) & 0xFFFF;
     int a = ((s8)(96.0f * flSin(0.0000958738f * (f32)v)) + 0x9F) & 0xFF;
 
     if (lpPit->x2A != 0) {
         q.col = ((a & 0xFF) << 24) | 0xFFFFFF;
-        q.p[0] = m[0];
-        q.p[1] = 0x3A;
+        q.s[0] = m[0];
+        q.s[1] = 0x3A;
     } else {
         int b = a & 0xFF;
         q.col = b | ((b << 16) | 0xFF000000 | (b << 8));
-        q.p[0] = m[7];
-        q.p[1] = 0xD5;
+        q.s[0] = m[7];
+        q.s[1] = 0xD5;
     }
-    q.p[2] = m[1];
-    q.p[3] = m[2];
+    q.s[2] = m[1];
+    q.s[3] = m[2];
     q.uv[0] = m[3];
     q.uv[1] = m[4];
     q.uv[2] = m[5];
