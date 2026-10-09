@@ -1708,6 +1708,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "select.bin is missing: no title screen\n");
         rt_warn("select.bin is missing: no title screen");
     }
+    rt_text_finish();       /* translation table (RT_TEXT_TABLE), if any */
     rt_log("boot: game data tables imported");
 #ifdef MH1_ONLINE
     if (nettest)        /* headless online test (src/pc/rt/rt_net.c, docs/network.md) */

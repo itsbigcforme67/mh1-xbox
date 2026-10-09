@@ -106,6 +106,8 @@ int load_file_mdl(s32 dst, s32 idx)
         return 0;
     }
     memcpy((void *)dst, p, n);
+    if (idx >= 1999 && idx < 1999 + 179 && rt_text_active())    /* a mission file m001..: quest text */
+        rt_text_quest(idx - 1998, (uint8_t *)dst, n, 0x40000);
     free(p);
     return 1;
 }

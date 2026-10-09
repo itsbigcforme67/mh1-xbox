@@ -30,8 +30,17 @@ void *rt_bss_shadow(uint32_t va);
 /* Fill the game's data tables (rt_data.c) from the loaded images.
  * Returns the number of tables that could not be found. */
 int rt_import_data(void);
-/* Replace pointer-table strings from a text file (RT_TEXT_TABLE, rt_data.c) */
-int rt_text_override(const char *path);
+/* The text layer (rt_text.c, docs/english.md). Address spaces of a string id:
+ * 0 main, 1 game.bin, 2 lobby.bin, 3 select.bin; 5 quest files. */
+int rt_text_parse(const char *path);                  /* NULL: RT_TEXT_TABLE; once */
+const char *rt_text_for(int space, uint32_t va);      /* replacement text or NULL */
+void rt_text_finish(void);                            /* after all imports: host-pointer registry */
+const char *rt_text_tr(const char *p);                /* p itself unless it is a registered string */
+size_t rt_text_quest(int no, uint8_t *buf, size_t n, size_t cap);   /* mission file text */
+int rt_text_active(void);
+int rt_text_proportional(void);
+void rt_text_font_ready(const unsigned char *adv);    /* ASCII advance widths (px at size 20) */
+int rt_data_hosts(int space, uint32_t va, const void **out);
 /* After rt_import_data and rt_set_lobby: the lobby tables (rt_data.c). */
 int rt_import_lobby(void);
 /* Pointer words (R_MIPS_32 relocations of the ELF) and symbols. */

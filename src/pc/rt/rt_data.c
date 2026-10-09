@@ -137,6 +137,7 @@ extern const struct rt_table rt_auto_tables[];
  * (build/pc/rt_gen.c from tools/gen_rt_auto.py): main and lobby.bin */
 extern const struct rt_table rt_gen_main_tables[];
 
+#define LB_VRAM 0x533980u       /* game.bin / lobby.bin / select.bin share this vram */
 /* PS2 address -> host pointer (see the header comment) */
 static int map_tables;     /* 1 while relocating the host tables (for RT_TRACE) */
 static void *map_ptr(uint32_t v)
@@ -147,6 +148,8 @@ static void *map_ptr(uint32_t v)
     int func = 0;
     const char *name;
     void *h;
+    if ((h = (void *)rt_text_for(v < LB_VRAM ? 0 : 1, v)) != NULL)
+        return h;
     for (t = rt_auto_tables; t->name; t++)
         if (v >= t->va && v < t->va + t->size)
             return (uint8_t *)t->dst + (v - t->va);
@@ -208,6 +211,7 @@ int rt_import_data(void)
     size_t i;
     int k, missing = 0;
     const struct rt_table *t;
+    rt_text_parse(NULL);        /* the translation table, if any: pointer words are re-pointed while relocating */
     missing += import_list(rt_gen_main_tables);
     for (t = rt_auto_tables; t->name; t++) {
         const uint8_t *p = rt_addr(t->va, t->size);
@@ -256,92 +260,7 @@ int rt_import_data(void)
     } else {
         fprintf(stderr, "rt: no relocations in the ELF: pointers in data tables stay PS2 addresses\n");
     }
-    if (getenv("RT_TEXT_TABLE"))        /* English option proof of concept */
-        rt_text_override(getenv("RT_TEXT_TABLE"));
     return missing;
-}
-
-/* ------------------------------------------------------------ text overrides
- * Proof of concept for an English option (docs/english.md): a text file
- * names pointer-table slots of main by PS2 address and gives a replacement
- * string for each. Format, one per line ('#' starts a comment):
- *     0x2EF860[0] = Items          <- table at PS2 address, slot index
- * "\n" in the text is a line feed; every other byte goes to the game as
- * typed (the game's own font code draws it; "~C05" colour codes work).
- * The file is the player's or translator's own data, never part of the
- * repo. Only tables the port keeps as host copies can be patched (the
- * Capcom string literals themselves stay in the loaded image). */
-static uint8_t *text_slot(uint32_t va)
-{
-    const struct rt_table *t;
-    size_t i;
-    for (t = rt_auto_tables; t->name; t++)
-        if (va >= t->va && va + 4 <= t->va + t->size)
-            return (uint8_t *)t->dst + (va - t->va);
-    for (t = rt_gen_main_tables; t->name; t++)
-        if (va >= t->va && va + 4 <= t->va + t->size)
-            return (uint8_t *)t->dst + (va - t->va);
-    for (i = 0; i < sizeof tables / sizeof tables[0]; i++)
-        if (va >= tables[i].va && va + 4 <= tables[i].va + tables[i].size)
-            return (uint8_t *)tables[i].dst + (va - tables[i].va);
-    return NULL;
-}
-
-int rt_text_override(const char *path)
-{
-    FILE *f = fopen(path, "rb");
-    char line[1024];
-    int n = 0, bad = 0;
-    if (!f) {
-        fprintf(stderr, "rt: text table %s: cannot open\n", path);
-        return -1;
-    }
-    if (sizeof(void *) != 4) {      /* the tables hold 32-bit pointer words */
-        fclose(f);
-        return -1;
-    }
-    while (fgets(line, sizeof line, f)) {
-        char *q = line, *eq, *w, *r;
-        unsigned long va, idx = 0;
-        uint8_t *slot;
-        uint32_t v;
-        char *str;
-        size_t len = strlen(q);
-        while (len && (q[len - 1] == '\n' || q[len - 1] == '\r'))
-            q[--len] = 0;
-        if (!len || q[0] == '#')
-            continue;
-        eq = strstr(q, " = ");
-        va = strtoul(q, &r, 0);
-        if (!eq || r == q) {
-            bad++;
-            continue;
-        }
-        if (*r == '[')
-            idx = strtoul(r + 1, NULL, 0);
-        slot = text_slot((uint32_t)va + 4 * (uint32_t)idx);
-        if (!slot) {
-            fprintf(stderr, "rt: text table: 0x%lX[%lu] is not a patchable table\n", va, idx);
-            bad++;
-            continue;
-        }
-        str = malloc(strlen(eq + 3) + 1);
-        for (w = str, r = eq + 3; *r; r++) {
-            if (r[0] == '\\' && r[1] == 'n') {
-                *w++ = '\n';
-                r++;
-            } else {
-                *w++ = *r;
-            }
-        }
-        *w = 0;
-        v = (uint32_t)(uintptr_t)str;       /* leaked on purpose: lives as long as the game */
-        memcpy(slot, &v, 4);
-        n++;
-    }
-    fclose(f);
-    fprintf(stderr, "rt: text table %s: %d strings replaced, %d lines rejected\n", path, n, bad);
-    return bad ? -1 : 0;
 }
 
 /* ------------------------------------------------------------ lobby.bin
@@ -367,6 +286,8 @@ static void *map_lb(uint32_t v)
     void *h;
     if (!rt_lb_in_range(v))
         return map_ptr(v);
+    if ((h = (void *)rt_text_for(2, v)) != NULL)
+        return h;
     name = rt_lb_sym_at(v, &off, &func);
     if (func && name) {
         if ((h = rt_host_sym(name)) != NULL)
@@ -460,6 +381,8 @@ static void *map_sel(uint32_t v)
     void *h;
     if (!rt_sel_in_range(v))
         return map_ptr(v);
+    if ((h = (void *)rt_text_for(3, v)) != NULL)
+        return h;
     name = rt_sel_sym_at(v, &off, &func);
     if (func && name) {
         if ((h = rt_host_sym(name)) != NULL)
@@ -482,4 +405,35 @@ int rt_import_select(void)
     memset(rt_sel_mem + n, 0, SEL_SPAN - n);
     rt_sel_relocate_range(LB_VRAM, rt_sel_mem, n, map_sel);
     return 0;
+}
+
+/* ------------------------------------------------------------ text layer
+ * (rt_text.c, docs/english.md.) rt_data.c's part: where a string of the
+ * Japanese build lives in host memory. A string id is (address space, PS2
+ * address); the host may hold it in a data table array, in the loaded image
+ * or in the lobby / select block, and the consumers (font_print, sprintf)
+ * see whichever pointer the game C holds, so all are reported. */
+int rt_data_hosts(int space, uint32_t va, const void **out)
+{
+    const struct rt_table *t;
+    size_t i;
+    int n = 0;
+    if (space == 0 || space == 1) {         /* main / game.bin */
+        for (t = rt_auto_tables; t->name; t++)
+            if (va >= t->va && va < t->va + t->size)
+                out[n++] = (uint8_t *)t->dst + (va - t->va);
+        for (t = rt_gen_main_tables; t->name; t++)
+            if (va >= t->va && va < t->va + t->size)
+                out[n++] = (uint8_t *)t->dst + (va - t->va);
+        for (i = 0; i < sizeof tables / sizeof tables[0]; i++)
+            if (va >= tables[i].va && va < tables[i].va + tables[i].size)
+                out[n++] = (uint8_t *)tables[i].dst + (va - tables[i].va);
+        if (rt_addr(va, 1))
+            out[n++] = rt_addr(va, 1);
+    } else if (space == 2 && va - LB_VRAM < LB_SPAN) {
+        out[n++] = rt_lb_mem + (va - LB_VRAM);
+    } else if (space == 3 && va - LB_VRAM < SEL_SPAN) {
+        out[n++] = rt_sel_mem + (va - LB_VRAM);
+    }
+    return n;
 }

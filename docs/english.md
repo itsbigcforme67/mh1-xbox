@@ -319,6 +319,44 @@ the half-width glyphs at 9 px advance (size 18), confirming that pointer
 tables can be re-pointed with no code changes and that English already
 renders (monospaced). The literals-in-code part of the design is not tested.
 
+### 5.1 The text layer (built 8 Oct 2026, agent D)
+
+Code: src/pc/rt/rt_text.c (table, registry, quest text, wrapping), rt_text_sp.c
+(sprintf / strcpy / strcat for the game C only: tools/build_pc.sh compiles the
+decompiled game C with `-Dsprintf=rt_text_sprintf -Dstrcpy=rt_text_strcpy
+-Dstrcat=rt_text_strcat`, host code keeps libc), hooks in rt_data.c (map_ptr /
+map_lb / map_sel re-point pointer words, `rt_data_hosts`), rt_font.c (the
+font_print family looks its format up; proportional ASCII), rt_hit.c
+(`load_file_mdl` hands mission files to `rt_text_quest`).
+
+Use: `python3 tools/text_dump.py` writes `text/template_ja.txt` (gitignored;
+ids with the Japanese as a comment: main 4017, game 223, lobby 2994, select 33,
+yn 269, quest 560). Copy it to `text/en.txt`, fill in the entries, run with
+`RT_TEXT_TABLE=text/en.txt` (empty or missing table: Japanese, unchanged).
+Ids: `main:0xVA`, `game:`, `lobby:`, `select:` (PS2 address of the string),
+`quest:N:0xFILEOFFSET`, `0xTABLE[idx]` (a pointer slot). Value: `\n`, `~Cnn`,
+`{w=px}` prefix = wrap at spaces to that width (size 20). `@proportional = 0`
+or `RT_PROP=0` keeps fixed-width ASCII.
+
+Proportional ASCII: ink widths measured from the font at load, advance = ink
+width + 1 (space 8) for strings with no double-byte character; mixed strings
+keep the fixed advance.
+
+Verified (own test strings, x86 PC build, screenshots in scratchpad only): the
+five pause-menu labels; three item names in the item list (box fits, narrow
+letters narrow); quest 10 title / goal / failure / client text on the pause
+menu's quest-check pages (the client text wrapped to six lines by `{w=250}`);
+the quest-clear banner (RT_FONT_TRACE shows the replacement during a scripted
+quest 131 clear). All PC tests pass with no table loaded (urgent, progression,
+name_entry, movie, frog, audio, log, pick, activities 35/35, quest_loop,
+all_quests 38/38); build_win.sh and build_xbox.py build.
+
+Not verified / known gaps: the Windows build and the Xbox build with a table;
+the village quest board and shop text (lobby overlay: ids are dumped and the
+lobby pointer relocation is hooked, but I only tested main and quest text);
+strings used through other string functions (memcpy, strncpy) are not caught;
+a string the code takes the address of inside another string is not.
+
 ## 6. Open questions
 
 - Ask the owner: do they have a US PS2 disc (SLUS-20896)? Do they want the
