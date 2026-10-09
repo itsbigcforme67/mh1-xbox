@@ -2526,7 +2526,7 @@ void trans_box(void) {
             q.uv[1] = vv + 1;
             q.uv[2] = uu + 0x1F;
             q.uv[3] = vv + 0x1F;
-            q.col = item_col_tbl[Item_data[lpPit->x66][6]];
+            q.col = item_col_tbl[Item_data[lpPit->x66][6]] & 0xFFFFFF;
             t = 57.0f * flSqrt((f32)lpPit->x64);
             q.col |= ((u32)t & 0xFF) << 24;
             flps0008(&q);
