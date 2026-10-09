@@ -2763,6 +2763,7 @@ void disp_item_sub_select(void) {
             s18 = item_sel_sub(pl, pl->work888, 1) & 0xFFFF;
         } else if (n == 3) {
             b0 = item_sel_sub(pl, pl->work888, 0);
+            s18 = item_sel_sub(pl, pl->work888, 1) & 0xFFFF;
         } else if (n == 1 || n == 0) {
         } else {
             s18 = item_sel_sub(pl, pl->work888, 1) & 0xFFFF;
