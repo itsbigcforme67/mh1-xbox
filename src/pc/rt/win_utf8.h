@@ -44,6 +44,7 @@ static inline int mh1_rename(const char *a, const char *b)
     return MoveFileExW(mh1_u8w(a, wa, 1100), mh1_u8w(b, wb, 1100), MOVEFILE_REPLACE_EXISTING) ? 0 : -1;
 }
 static inline int mh1_mkdir(const char *p) { wchar_t w[1100]; return _wmkdir(mh1_u8w(p, w, 1100)); }
+static inline int mh1_rmdir(const char *p) { wchar_t w[1100]; return _wrmdir(mh1_u8w(p, w, 1100)); }
 static inline int mh1_stat(const char *p, struct stat *st) { wchar_t w[1100]; return _wstat64i32(mh1_u8w(p, w, 1100), (struct _stat64i32 *)st); }
 static inline const char *mh1_getenv(const char *name)
 {
@@ -95,5 +96,6 @@ static inline int mh1_closedir(MH1_DIR *d) { int r = _wclosedir(d->d); free(d); 
 #define readdir mh1_readdir
 #define closedir mh1_closedir
 #define mkdir(p, m) mh1_mkdir(p)
+#define rmdir(p) mh1_rmdir(p)
 #endif
 #endif

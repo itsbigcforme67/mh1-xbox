@@ -28,6 +28,8 @@ Checks to run after changes (all headless, about a minute together):
   test_name_entry, test_movie, test_frog, test_audio, test_activities, test_all_quests
   (~2.5 min), then `. ~/xboxdev/env.sh; python3 tools/build_xbox.py` and
   `tools/rebuild.sh`.
+- `tools/test_save.sh` and `tools/test_save_import.sh` (agent C, 8 Oct 2026): PS2 save import / export, section
+  "Importing a PS2 save".
 - `tools/rebuild.sh`: the PS2 rebuild (all five OK) when game C was touched.
 - `tools/test_log.sh` (agent B, 7 Oct 2026; ~3 s): the automatic debug log (below) is created, rotated
   and, with RT_CRASH_TEST=1, gets a crash section. `RUN=wine BIN=build/win/mhview.exe` runs it (and
@@ -391,6 +393,34 @@ Not verified: a real mouse and keyboard session (the event path is driven by pus
 combo (the pad_combo_held read is 5 lines; no pad press was made), high-DPI displays (mouse coordinates are taken as
 framebuffer pixels), the clip's colours (3-3-2 palette, no dithering), reports of the movie / boot screens (the
 boot screens are one tagged replay, so a click picks the whole picture).
+
+## Importing a PS2 save (agent C, 8 Oct 2026)
+
+Players can bring a real PS2 save to the PC and take it back. Formats and sources: docs/formats/saves.md.
+
+- `mhview --import-save FILE`: FILE is a .psu, .max, .cbs, .sps, .xps or a raw memory card image
+  (.ps2/.mcd/.mc2/.bin, with or without ECC); the format is found from the bytes, not the name. From a card
+  image the save `BISLPM-65495MH` is picked (the error lists what the card holds if it is missing).
+  The data is checked with the game's own test (version word, 16-bit sum) before anything changes. An
+  existing save moves to `<card folder>.backups/BISLPM-65495MH-<date>-<time>` (outside the card folder, so
+  the game never sees it); the new one is written to `<card folder>.import` first and swapped in, so a
+  failure leaves the old save as it was.
+- A save file dropped on the exe (or play.bat) is imported and the game starts; one dropped on the window
+  while playing is imported with a message box (CONTINUE reads the card when chosen; quit first if you are
+  already in the game, saving would replace it).
+- `mhview --export-save FILE`: .psu, .max, .cbs, .sps/.xps, or .ps2/.mcd (a new standard 8 MB card with ECC,
+  as PCSX2 writes it, holding only this save). Refuses a save that fails the game's check.
+- No console / card binding: the save data has only its own checksum (`decode_data`); `check_sum_ck` compares
+  a time stamp stored in the data itself. So no id needs to be faked and a PS2 save loads as is.
+- Code: `src/pc/fmt/ps2save.c` + `lzari.c` (portable, no file calls: the Xbox build can use them once it has a
+  glue like `src/pc/rt/rt_save.c`, which takes the card folder as an argument), `rt_save.c` (host folder,
+  backup, CLI), hooks in `viewer.c` (`rt_save_cli`, dropped files).
+- Tests: `tools/test_save.sh` (a few seconds, sanitizers, needs nothing; builds its own made-up save in every
+  container, round trips, truncation / bit-flip survival, import / export with backups, refusals) and
+  `tools/test_save_import.sh` (~1.5 min, needs disc/mh1: the game writes a save, it is exported to all six
+  formats, imported, and CONTINUE must show 1550z each time). One-off cross-check with mymc+ is in
+  saves.md. Not tested: a real PS2 save (none available), real CBS / SPS / XPS files from the tools
+  themselves; the owner's save will tell. Known limits: no export into an existing card image, no .npo / .psv.
 
 ## Layout
 
