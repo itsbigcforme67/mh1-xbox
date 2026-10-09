@@ -1331,7 +1331,7 @@ void pl_item_trans(PLX *pl) {
                 v[2] = 128.0f;
                 flvecRotY(v, ANG2RAD(pl->ang[1]));
                 t[0] = pl->pos[0] + v[0];
-                t[1] = 80.0f + pl->gy;
+                t[1] = 77.0f + pl->gy;
                 t[2] = pl->pos[2] + v[2];
                 v[0] = -52.0f;
                 v[1] = 0.0f;
