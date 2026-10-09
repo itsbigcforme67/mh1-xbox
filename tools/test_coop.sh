@@ -9,8 +9,7 @@
 #     village with each player's own saved hunter (tools/test_coop_hunt.py); box = the supply box decided by the
 #     host; wine = the Windows build under Wine joins (skipped without it); default: all (about 15 minutes)
 #   tools/test_coop.sh relay   the same through mh1-server's session relay (tools/server, docs/server.md): 2 and 4
-#     walking, then hunt2, hunt4 and leave with RELAY=1 (not part of the default run); RELAY=1 tools/test_coop_hunt.py
-#     hostleave fails for now (docs/server.md 11)
+#     walking, then hunt2, hunt4, leave and hostleave with RELAY=1 (not part of the default run)
 # Starts only its own processes and stops them (by PID).
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/pc/mhview_online}
@@ -193,7 +192,7 @@ refusals() {
 
 case "$1" in
 box) box ;;
-relay) relayrun 2 && relayrun 4 && { export RELAY=1; hunts hunt2 hunt4 leave; } ;;
+relay) relayrun 2 && relayrun 4 && { export RELAY=1; hunts hunt2 hunt4 leave hostleave; } ;;
 wine) winepair ;;
 hunt2|hunt4|handover|leave|carts|timeout|abandon|multi) hunts "$@" ;;
 "") run 2 && run 4 && hunts hunt2 hunt4 handover leave carts timeout abandon multi && box && winepair && refusals ;;

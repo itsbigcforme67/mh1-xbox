@@ -96,7 +96,12 @@ void Em_Master_Change(EMW *em) {
             }
         }
         for (j = 0; j < n; j++) {
-            if ((mask & (1 << i)) && game_w.pl_state[j] == 1) {
+            /* PC deviation (agent B, 9 Oct 2026): the original tests game_w.pl_state[j] here (asm 0x5399E8: lbu
+             * 0x208(game_w + j), j the loop counter), not the candidate i's. While nobody has dropped both are 1, so
+             * nothing changes; after a player dropped (0xFF) the original never hands the monster on (e.g. slot 1
+             * takes it over from a host who left, is at the camp, and slot 2 fights it: tools/test_coop_hunt.py
+             * hostleave). The PC checks the candidate. */
+            if ((mask & (1 << i)) && game_w.pl_state[i] == 1) {
                 em->x9D9 = 60;
                 em->x949 = i;
                 em->x88E = em->x949;

@@ -454,8 +454,16 @@ Tested (`tools/test_coop.sh`, about 15 minutes, all headless on 127.0.0.1; parts
 * Refusals: public and MH Oldschool addresses; `--allow 192.0.2.1` lets that one address through (TEST-NET, nobody
   answers), `--allow 34.75.107.68` still refuses MH Oldschool.
 
+* **Monster owner after a drop** (agent B, 9 Oct 2026): `rt_np_init_slots` gave the first monsters' owner slot
+  (`EMW+0x88E`) this machine's slot instead of the host's (0), so when the host left the others never took the monster
+  over; and `Em_Master_Change` (em_master_nm.c) hands a monster to a player on its area only if `pl_state[j]` of the
+  loop counter is 1 (the original's own test, asm 0x5399E8), which fails forever once slot 0 dropped. The PC checks the
+  candidate's `pl_state[i]` instead (identical while nobody has dropped). `RELAY=1 tools/test_coop_hunt.py hostleave`
+  (through mh1-server's relay, docs/server.md) passes: slot 1 takes the monster over, hands it to slot 2, both clear.
+
 Not done yet:
-* If the host leaves, the others lose each other (the host relays); they go on alone.
+* If the host leaves a direct-connect session, the others lose each other (the host relays); they go on alone
+  (through mh1-server's relay they stay together, above).
 * Capture, giving items between players (kinds 7/8), in-quest chat (channel 6), two big monsters on one area at once.
 * The co-op starts at the quest, not from the village's quest board; the village afterwards is single player.
 * The zenity / kdialog / Win32 windows were not opened in a test (they would appear on the desktop); the console

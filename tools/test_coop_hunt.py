@@ -19,9 +19,9 @@ Velocidrome, kind 27, on stage 34) and checks the logs:
                  two in the time given: every machine sees both die and the same kills left.
   hostleave      (relay only) 3 players: slot 0, the quest's host, fights and owns the monster, then quits; with a
                  player hosting that ended the session for everyone, through the relay the others hunt on: the monster
-                 passes on and slot 2 finishes it; slots 1 and 2 clear. FAILS for now (docs/server.md 11): the relay
-                 tells everyone, but the followers never take the monster over (rt_np_init_slots gives the first
-                 monsters' owner field +0x88E this machine's slot instead of the host's).
+                 passes on and slot 2 finishes it; slots 1 and 2 clear. (Passes since 9 Oct 2026: rt_np_init_slots gives
+                 the first monsters' owner field +0x88E the host's slot, and em_master_nm.c checks the hand-over
+                 candidate's own state, docs/network.md 3.4.)
 With RELAY=1 every player joins mh1-server's session relay (tools/server/mh1_server.py, docs/server.md) instead of
 instance 0 hosting; instance 0 joins first and so gets slot 0. The relay's log: build/coop/TAG_relay.log.
 usage: [RELAY=1] test_coop_hunt.py SCENARIO [...]"""

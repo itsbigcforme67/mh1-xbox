@@ -234,7 +234,7 @@ Differences from a player hosting:
 
 * **The host may leave**: when slot 0 quits, the others are told (BYE) and stay connected to each other. In
   direct-connect mode the host's leaving ended the session for everyone (docs/network.md 3.4 "Not done yet"). Whether
-  the hunt can go on is then up to the game: today it stalls (section 11, `hostleave`).
+  the hunt can go on is then up to the game: it does (section 11, `hostleave`, fixed 9 Oct 2026).
 * **Checks**: frame sizes (2..0x202), only types a player may send (game channels 1-10, HELLO, BYE, READY; never
   WELCOME / START), the sender byte is set by the relay (no impersonation), a token bucket (300 frames/s sustained,
   600 burst: about 10x a hunt's need), 30 s to say HELLO, 120 s silence in a hunt, 256 KB unread backlog. A breach
@@ -375,8 +375,8 @@ moderators may mute / ban; data handling per the privacy notice; the server's so
   stub's login check (a fake client sending the game's real 6101 packet: right password, wrong password, unknown
   login), the mcs record splitter and relay rule.
 * `tools/test_coop.sh relay` (the ONLINE=1 PC build, headless, 127.0.0.1): 2 and 4 players walking through the relay
-  (positions exact on every machine), then `RELAY=1` hunts: `hunt2`, `hunt4`, `leave`. `RELAY=1
-  tools/test_coop_hunt.py hostleave` is a known failure (below). The default `tools/test_coop.sh` run is unchanged
+  (positions exact on every machine), then `RELAY=1` hunts: `hunt2`, `hunt4`, `leave`, `hostleave` (passes
+  since 9 Oct 2026, below). The default `tools/test_coop.sh` run is unchanged
   (the position check was only moved into a function both modes use).
 * The lobby stub with the real client: `mh1_server.py account add 00000000 --password LOCALTEST0000000`, `serve
   --lobby-port 0 --db ...`, then `mhview_online --nettest full` (rt_net.c's test login): the login is accepted and the
@@ -394,10 +394,10 @@ moderators may mute / ban; data handling per the privacy notice; the server's so
 | relay hunt2 (quest 137) | OK: both see HP 500, 420, 100, 0, clear at ticks 1114 / 1115, both saved 1725 z; 243 frames, 9.0 KB in 102 s |
 | relay hunt4 | OK: clear at 1114, 1114, 1114, 1099, all saved 1637 z; 430 frames, 14.9 KB in 102 s |
 | relay leave (slot 1 owns, quits; slot 2 finishes) | OK: clear at 1313 / 1327, saved 1666 z; 276 frames, 10.0 KB |
-| relay hostleave | **FAILED**: see below |
+| relay hostleave | OK since agent B's fix (9 Oct 2026, below) |
 | lobby stub + real client login | OK (right password), refused (wrong password) |
 
-**hostleave, what happens**: the relay tells slots 1 and 2 that slot 0 left (both log "player 0 left"), but nobody
+**hostleave, what happened** (fixed 9 Oct 2026 by agent B: `+0x88E = 0` in rt_np.c, and em_master_nm.c checks the hand-over candidate's `pl_state[i]` where the original reads `pl_state[j]`, docs/network.md 3.4): the relay tells slots 1 and 2 that slot 0 left (both log "player 0 left"), but nobody
 takes the monster over, so slot 2's hits never land and the quest cannot be finished. Cause (confirmed by a test build,
 not committed): `rt_np_init_slots` (src/pc/rt/rt_np.c) sets each first monster's owner field `EMW+0x88E` to **this
 machine's** slot instead of the host's (0). `Em_Master_Change` (em_master_nm.c) only reassigns a monster when
