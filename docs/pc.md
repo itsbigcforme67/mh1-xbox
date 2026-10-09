@@ -2318,3 +2318,32 @@ Host `sim_tick` (viewer.c) + `rt_game_move` stand in for f_framec.c `move()` (no
      lb_member_*Check and text_lobby_trans_ot3_o (online lobby), Equip_moji_color_rare_i (chat list colour), flExp, ADXM_Lock/Unlock, edit_create_model,
      apiask_28_OpenDic, Disp_NowLoading2, release_texture, flReleaseMotionSetHandle, all_model_free, armor_model_free.
   docs/agents/targets.md did not exist in this tree: none of the above are in a claimed file as far as I could see (re-check after merging).
+
+### F8 report "he keeps rewind moving and walking into walls" (Aptonoth, quest 131 stage 39) (agent D, 9 Oct 2026)
+- **Replay.** `RT_SEED=13339246 RT_PICK_AT=2602 RT_PICK_EXIT=1 build/pc/mhview disc/mh1 --play --size 1024x768 --quest 131 --input @REPORT/input.txt`
+  reaches the recorded state exactly (hunter, camera, all six monsters) with the report's build a963743f (built from `git archive` into a
+  scratch folder) and with current main; the two builds' per-tick RT_EM_TRACE of all monsters differ in two lines by 1 unit (the later wall
+  fixes). So nothing in the game-side movement changed since the report.
+- **Cause: the draw, not the game.** RT_EM_TRACE positions never jump back. The game moves each Aptonoth by its walk loop's root motion
+  (motion 1011, frames 58-216, 2 frames per tick: frame_move -> pl_velocity_sub), and the PS2 then clears the root bone's translation
+  (FRSKL.vel = 0) so the drawn body stays at the actor. The PC poses the hunter and the Rathian (slot 0) with `root_lock` (that bone's X/Z
+  kept at its bind value), but every other monster model (`em_mdl[]`, viewer.c em_model_load: all small monsters and every non-Rathian
+  boss) was posed WITHOUT it: the walk's root translation was drawn on top of the game's movement. The body ran ahead of the actor by up
+  to 390 units over one loop (~2.7 s; into rocks the actor itself never touches) and snapped back ~295 units at the loop wrap
+  (`RT_EM_DRAW_TRACE=1`: per tick, slot, motion, frame, game position and the world position of the root motion bone). That is both
+  "too fast" (the drawn speed was about 2.6x the game's) and "teleports back", and this report's "rewind moving".
+- **Fix:** `em_mdl[kind].skel.root_lock = 1` (viewer.c; `RT_EM_ROOT_FREE=1` brings the old look back for comparisons). Replay after the fix:
+  the same game state at tick 2602 and the identical RT_EM_TRACE (draw only), the drawn body now at most 0.4 units per tick away from the
+  actor's own movement and never more than 40 from it (the bind offset of that bone), was 297 / 393. Test: `test_activities.py herbivore_rewind`
+  (40 s of quest 131 stage 39, five Aptonoths walking; fails without the fix: 297 per tick, 393 away). The same joint matrices feed the
+  game's hit checks (rt_monster_joints), so hunter attacks on a walking small monster or non-Rathian boss were tested against a body
+  up to 390 units ahead of where it stands; they now hit where it is drawn and where it is. Village NPCs (`npc_mdl`) are still
+  posed without root_lock: not checked whether any of their motions has root travel.
+- **"Walking into walls" (left as it is, faithful).** The wandering walk is em12's `em_mov00` (matched em12.c): 210-300 ticks of walk turning
+  0x40 per tick, never looking at walls; HitWallPlayer slides it along (slot 0 lost ~200 of 300 units per loop to the wall push). With the
+  body drawn ahead it looked as if it walked into the rock; with the fix it stays outside. Seen in a 40 s run: two Aptonoths jump ~100 units
+  apart in one tick. body_hit skips monster pairs while either has `EMW+0x7EA` set (em_move sets it from the last tick's wall flag 0x74C;
+  the asm at 0x1510F0 / 0x151198 does the same), so an Aptonoth eating against a wall lets another walk into it, and the whole overlap is
+  pushed out the first tick the wall flag drops. Faithful to the code; whether the original keeps the wall flag set for a monster standing
+  still against a wall (the PC's GetWallHitBitEm / PushAdjust3 are near-matches) is not verified [open]. RT_EM_TRACE now ends with
+  `wall <0x74C>/<0x7EA>`.

@@ -7,7 +7,7 @@ Each activity prints one line  PASS|FAIL <name>: <what was measured>.  The runs 
 Random outcomes (gathering, fishing, combining, trading) use RT_SEED so a run repeats; the checks are on invariants
 (ids from the stage's own pick tables, counts, prices as the shop's own UI shows them), not on one lucky result.
 
-Field: gather_herb gather_mine gather_net fishing carve_small carve_large em_materials tail_cut
+Field: gather_herb gather_mine gather_net fishing carve_small carve_large em_materials tail_cut herbivore_pose herbivore_rewind
 Items in a quest: potion whetstone paintball pitfall tranq barrel bbq drinks combine trader
 Village: shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take box_equip
 HUD / demo: demo_input map_item
@@ -105,6 +105,36 @@ def herbivore_pose():
     if not hs: return False, 'no pose-check output'
     lows = [int(m.group(1)) for m in re.finditer(r'pose-check: kind 12 slot \d+ joints down to (-?\d+) below the feet', t)]
     return max(hs) < 350 and (not lows or min(lows) > -60), 'highest Aptonoth joint %d above its feet (limit 350; the bug gave ~680), lowest %d (limit -60: a respawned monster showed its bind pose 120 below the ground for 10 ticks)' % (max(hs), min(lows or [0]))
+
+@test
+def herbivore_rewind(free=False):
+    """Aptonoths (kind 12) wander on stage 39 for 40 s with the hunter standing: the drawn body (root motion bone, RT_EM_DRAW_TRACE)
+    must follow the game position. Owner report 8 Oct 2026 ("keeps rewind moving and walking into walls"): the walk loop's root
+    translation was drawn on top of the game's root-motion movement, so the body ran up to ~390 units ahead (into rocks) and
+    snapped back ~300 units at each loop wrap. Limits: the body moves at most 15 units per tick relative to the position (the
+    position itself can jump: body_hit resolves a long overlap of two Aptonoths in one tick, see docs/pc.md), body within 100 of it.
+    free=True runs it without the fix (RT_EM_ROOT_FREE=1) to show the check catches it."""
+    t = run('herbivore_rewind' + ('_free' if free else ''), 'idle*1200', 0, quest=131, stage=39, secs=41,
+            env=dict({'RT_EM_DRAW_TRACE': 1, 'RT_SEED': 13339246}, **({'RT_EM_ROOT_FREE': 1} if free else {})))
+    if crashed(t): return False, 'crash'
+    last, worst, off, walked, n, pjump = {}, 0.0, 0.0, 0.0, 0, 0.0
+    for m in re.finditer(r'emdraw t(\d+) slot (\d+) kind 12 mot (\d+) frame \S+ pos (\S+) (\S+) body (\S+) \S+ (\S+)', t):
+        tk, s = int(m.group(1)), int(m.group(2))
+        px, pz, bx, bz = (float(m.group(i)) for i in (4, 5, 6, 7))
+        p = last.get(s)
+        if p and p[0] == tk:
+            continue                # the host poses twice per tick (joints before the hit check, then the draw): one per tick
+        if p and p[0] == tk - 1:
+            worst = max(worst, math.hypot((bx - px) - (p[3] - p[1]), (bz - pz) - (p[4] - p[2])))
+            walked += math.hypot(px - p[1], pz - p[2])
+            pjump = max(pjump, math.hypot(px - p[1], pz - p[2]))
+            n += 1
+        off = max(off, math.hypot(bx - px, bz - pz))
+        last[s] = (tk, px, pz, bx, bz)
+    if n < 500: return False, 'only %d Aptonoth ticks traced' % n
+    if walked < 300: return False, 'the Aptonoths hardly walked (%.0f units), nothing checked' % walked
+    return worst <= 15 and off <= 100, 'Aptonoths walked %.0f units over %d ticks; body moved at most %.1f per tick against the position (limit 15; ' \
+        'the bug: ~300 back at each walk loop), body at most %.0f from it (limit 100; the bug: ~390); largest position step %.0f' % (walked, n, worst, off, pjump)
 
 @test
 def em_materials():
@@ -213,7 +243,8 @@ def carve_small():
 @test
 def carve_large():
     """Rathian (quest 10, stage 40) killed (RT_EM_HP/RT_DMG_MUL) and carved: Rathian parts"""
-    cyc = ',cam_u*2,idle*30' * 4 + ',circle*2,idle*28' * 6
+    # square sheathes first: with the weapon out circle is an attack, not a carve
+    cyc = ',cam_u*2,idle*30' * 4 + ',square*2,idle*40' + ',circle*2,idle*28' * 6
     t = run('carve_large', 'idle*60' + cyc * 4, 0, quest=10, secs=40,
             env={'RT_QUEST_STAGE': 1, 'RT_EM_HP': 30, 'RT_DMG_MUL': 40, 'RT_PL_GOD': 1, 'RT_PL_WARP_EM': '90-9000', 'RT_PL_TARGET': '0:0'})
     g, fin = gains(t, {})

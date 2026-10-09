@@ -1331,6 +1331,12 @@ static void em_model_load(int slot, int kind)
             fprintf(stderr, "monster kind %d: model %s not loaded\n", kind, a);
             return;
         }
+        /* the game moves the monster by its root motion (frame_move -> pl_velocity_sub) and the PS2 then clears the
+         * root bone's translation (FRSKL.vel = 0) before drawing: keep that bone's X/Z at its bind value, as for the
+         * Rathian and the hunter. Without it the walk loops were drawn moving forward on top of the game's movement
+         * (up to 390 units ahead of the collision position, so the body went into rocks) and snapped back ~300 units
+         * at every loop wrap: owner report 8 Oct 2026, "keeps rewind moving and walking into walls" (Aptonoth, stage 39) */
+        e->skel.root_lock = !getenv("RT_EM_ROOT_FREE");
         em_have[kind] = 1;
     }
     if (e->tbl.p)
@@ -1340,6 +1346,7 @@ static void em_model_load(int slot, int kind)
 /* every monster in use on this stage but the host's Rathian (em_work[0]
  * with the em01 set-up above), posed by the game's motion player; also
  * their joint matrices for the game's hit checks */
+int rt_log_tick(void);
 static void monsters_sync(int draw, const fl_light *L)
 {
     extern uint8_t em_work[];
@@ -1368,6 +1375,18 @@ static void monsters_sync(int draw, const fl_light *L)
         for (j = 0; j < nb; j++)
             flmat_mul(jw[i][j], m->skel.world[j], w);
         rt_monster_joints(i, &jw[i][0][0], nb);
+        if (!draw && getenv("RT_EM_DRAW_TRACE") && rt_monster_motion_ready(i) && nb > 1) {
+            /* test aid: where the drawn body is (the root motion bone, AAN bone 1 of group 0, in world space) next to
+             * the game position; printed twice per tick, by the joint sync before hit_check and the one after the tick (tools/test_activities.py herbivore_rewind) */
+            int b, k = 0;
+            for (b = 0; b < nb; b++)
+                if (m->skel.skel.bone[b].group == 0 && k++ == 1)
+                    break;
+            if (b < nb)
+                printf("emdraw t%d slot %d kind %d mot %d frame %.1f pos %.1f %.1f body %.1f %.1f %.1f\n", rt_log_tick(), i,
+                       kind, ((uint16_t *)(em + 0x2DC))[0], *(float *)(em + 0x19C), t[0], t[2], jw[i][b][12],
+                       jw[i][b][13], jw[i][b][14]);
+        }
         if (getenv("RT_POSE_CHECK") && rt_monster_motion_ready(i)) {  /* test aid: highest joint above the monster's feet per kind (tools/test_activities.py herbivore_pose) */
             static float hmax[40][1200];
             int mo = ((uint16_t *)(em + 0x2DC))[0] % 1200;
