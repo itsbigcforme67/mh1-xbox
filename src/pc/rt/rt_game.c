@@ -584,6 +584,8 @@ void rt_game_draw_2d(void)
             if (p->trans)
                 p->trans(p);
             rt_fl_reset_states();
+            if (gfx_2d_anchor)
+                gfx_set_2d_anchor(GFX_A_CENTER);    /* the HUD prims (menu_nm.c) anchor their widgets; the rest stays 4:3 */
         }
         PICK(PK_TEXT, fstack[i], 0, 0, 0);
         font_draw_stack_no(fstack[i]);

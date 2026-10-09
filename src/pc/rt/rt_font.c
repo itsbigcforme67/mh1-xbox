@@ -38,6 +38,7 @@ typedef struct {
     f32 z;
     u8 w, h;
     s16 pal;
+    u8 anchor;          /* gfx_2d_anchor when printed: the glyphs are drawn later, with their widget */
     u32 str;            /* offset into strbuf */
 } FNT_ENT;
 
@@ -187,6 +188,7 @@ void flfntPrintf(const char *fmt, ...)
     e->w = size_w;
     e->h = size_h;
     e->pal = cur_pal;
+    e->anchor = (u8)gfx_2d_anchor;
     e->str = strpos;
     va_start(ap, fmt);
     n = vsnprintf(strbuf + strpos, STRBUF - strpos, fmt, ap);
@@ -316,8 +318,13 @@ void flfntDraw(int n)
     gfx_set_render_state(GFX_RS_ALPHA_REF, 0x40);
     gfx_set_render_state(GFX_RS_FILTER, 0);
     gfx_set_render_state(GFX_RS_TEX_CLAMP, 1);
-    for (i = 0; i < nstack[n]; i++)
+    for (i = 0; i < nstack[n]; i++) {
+        if (stack[n][i].anchor != gfx_2d_anchor)
+            gfx_set_2d_anchor(stack[n][i].anchor);
         font_puts(strbuf + stack[n][i].str, &stack[n][i]);
+    }
+    if (gfx_2d_anchor)
+        gfx_set_2d_anchor(GFX_A_CENTER);
     gfx_set_render_state(GFX_RS_TEX_CLAMP, 0);
     rt_2d_restore_texture();
 }

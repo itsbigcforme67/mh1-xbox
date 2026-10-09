@@ -260,7 +260,9 @@ void rt_fade_draw(void)
 {
     if (!getenv("RT_NO_FADE")) {
         PICK(PK_FADE, 0, 0, 0, 0);
+        gfx_set_2d_anchor(GFX_A_STRETCH);       /* the fade covers the whole window, not just the 4:3 part */
         fade_draw();
+        gfx_set_2d_anchor(GFX_A_CENTER);
         PICK(PK_OTHER, 0, 0, 0, 0);
     }
 }

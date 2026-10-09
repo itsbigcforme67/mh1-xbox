@@ -7,6 +7,7 @@
  * which is exactly OpenGL's column-major memory layout, so they load as-is.
  */
 #include "gfx.h"
+#include "gfx_gl.h"
 #include "../rt/rt_prof.h"
 #include "../rt/rt_log.h"
 
@@ -43,7 +44,61 @@ static struct {
     /* the states as set, for the bug reporter's pick info (gfx_pick_info) */
     int blend_on, bsrc, bdst, bop, ztest, zwrite, zfunc, fog;
     GLuint white;
+    int anchor;                  /* GFX_RS_2D_ANCHOR */
+    int max_aniso;               /* 0: the extension is missing */
+    int fs;                      /* fullscreen now */
+    int hidden;
 } G;
+
+gfx_options gfx_opt = { 0, 1, 0, 0, 1, 0, 0, -1, -1, 0, 0 };
+
+#ifndef GL_MULTISAMPLE
+#define GL_MULTISAMPLE 0x809D
+#endif
+#ifndef GL_GENERATE_MIPMAP
+#define GL_GENERATE_MIPMAP 0x8191
+#endif
+#define GL_TEX_MAX_ANISO 0x84FE
+#define GL_MAX_TEX_ANISO 0x84FF
+
+/* The display layout (docs/pc.md, "Display options"). rc is the 4:3 rectangle the game's 2D screens use (the frame
+ * is shown at 4:3 as on a TV); sc is the 3D scene rectangle: rc, or in widescreen mode the whole window. All in
+ * window pixels, origin top left. */
+typedef struct { int x, y, w, h; } rect;
+static rect rc, sc;
+
+static void layout(void)
+{
+    int w = G.w, h = G.h;
+    if (w * 3 >= h * 4) {
+        rc.h = h;
+        rc.w = h * 4 / 3;
+    } else {
+        rc.w = w;
+        rc.h = w * 3 / 4;
+    }
+    rc.x = (w - rc.w) / 2;
+    rc.y = (h - rc.h) / 2;
+    if (gfx_opt.widescreen && w * 3 >= h * 4)
+        sc.x = 0, sc.y = 0, sc.w = w, sc.h = h;
+    else
+        sc = rc;
+}
+
+float gfx_scene_aspect(void)
+{
+    return sc.h ? (float)sc.w / sc.h : 4.0f / 3.0f;
+}
+
+void gfx_pick_viewport(int r[4])
+{
+    r[0] = sc.x; r[1] = sc.y; r[2] = sc.w; r[3] = sc.h;
+}
+
+static void set_scene_viewport(void)
+{
+    glViewport(sc.x, G.h - sc.y - sc.h, sc.w, sc.h);
+}
 
 
 #ifndef GL_FUNC_ADD
@@ -73,18 +128,66 @@ int gfx_init(int width, int height, const char *title, int hidden)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    G.win = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                             width, height, SDL_WINDOW_OPENGL | (hidden ? SDL_WINDOW_HIDDEN : 0));
-    if (!G.win) {
-        SDL_Log("SDL_CreateWindow: %s", SDL_GetError());
-        return -1;
+    G.hidden = hidden;
+    {
+        int ms = gfx_opt.msaa, wx = SDL_WINDOWPOS_CENTERED, wy = SDL_WINDOWPOS_CENTERED;
+        Uint32 fl = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (hidden ? SDL_WINDOW_HIDDEN : 0);
+        if (gfx_opt.win_x != -1 || gfx_opt.win_y != -1) {       /* the remembered position, if a display still holds it */
+            int d, nd = SDL_GetNumVideoDisplays();
+            for (d = 0; d < nd; d++) {
+                SDL_Rect b;
+                if (SDL_GetDisplayBounds(d, &b) == 0 && gfx_opt.win_x + 64 <= b.x + b.w && gfx_opt.win_x + width - 64 >= b.x &&
+                    gfx_opt.win_y >= b.y && gfx_opt.win_y + 64 <= b.y + b.h) {
+                    wx = gfx_opt.win_x;
+                    wy = gfx_opt.win_y;
+                    break;
+                }
+            }
+        }
+        if (gfx_opt.fullscreen && !hidden)
+            fl |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        for (;;) {
+            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, ms > 0);
+            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, ms);
+            G.win = SDL_CreateWindow(title, wx, wy, width, height, fl);
+            if (G.win) {
+                G.ctx = SDL_GL_CreateContext(G.win);
+                if (G.ctx)
+                    break;
+                SDL_DestroyWindow(G.win);
+                G.win = NULL;
+            }
+            if (ms == 0) {
+                SDL_Log("window / GL context: %s", SDL_GetError());
+                return -1;
+            }
+            rt_log("MSAA %dx is not available (%s): trying without", ms, SDL_GetError());
+            ms = 0;
+        }
+        gfx_opt.msaa = ms;
+        G.fs = (fl & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP;
     }
-    G.ctx = SDL_GL_CreateContext(G.win);
-    if (!G.ctx) {
-        SDL_Log("SDL_GL_CreateContext: %s", SDL_GetError());
-        return -1;
+    SDL_GL_SetSwapInterval(gfx_opt.vsync && !hidden ? 1 : 0);
+    if (!hidden && gfx_opt.vsync && SDL_GL_GetSwapInterval() != 1)
+        rt_log("vsync could not be switched on");
+    {
+        const char *ext = (const char *)glGetString(GL_EXTENSIONS);
+        if (ext && strstr(ext, "GL_EXT_texture_filter_anisotropic")) {
+            GLfloat m = 1;
+            glGetFloatv(GL_MAX_TEX_ANISO, &m);
+            G.max_aniso = (int)m;
+        }
+        if (gfx_opt.aniso > G.max_aniso)
+            gfx_opt.aniso = G.max_aniso > 1 ? G.max_aniso : 1;
+        if (gfx_opt.msaa) {
+            int got = 0;
+            SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &got);
+            rt_log("MSAA: %d samples asked, %d got", gfx_opt.msaa, got);
+        }
+        rt_log("display: %s, vsync %s, aniso %dx (max %d), 2D filter %s, %s", G.fs ? "fullscreen" : "windowed",
+               gfx_opt.vsync ? "on" : "off", gfx_opt.aniso, G.max_aniso, gfx_opt.nearest2d ? "nearest" : "linear",
+               gfx_opt.widescreen ? "widescreen (Hor+)" : "4:3");
     }
-    SDL_GL_SetSwapInterval(1);
     {
         const char *v = (const char *)glGetString(GL_VENDOR), *r = (const char *)glGetString(GL_RENDERER),
                    *ver = (const char *)glGetString(GL_VERSION);
@@ -95,15 +198,17 @@ int gfx_init(int width, int height, const char *title, int hidden)
         rt_log("SDL %d.%d.%d (built with %d.%d.%d), video driver %s", rv.major, rv.minor, rv.patch, cv.major, cv.minor, cv.patch,
                SDL_GetCurrentVideoDriver() ? SDL_GetCurrentVideoDriver() : "?");
     }
-    G.w = width;
-    G.h = height;
+    SDL_GL_GetDrawableSize(G.win, &G.w, &G.h);
+    layout();
     memcpy(G.view, ident, sizeof ident);
     memcpy(G.proj, ident, sizeof ident);
     memcpy(G.world, ident, sizeof ident);
     memcpy(G.texmat, ident, sizeof ident);
     G.fade = 0xFFFFFFFFu;
 
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, G.w, G.h);
+    if (gfx_opt.msaa)
+        glEnable(GL_MULTISAMPLE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glDisable(GL_CULL_FACE);           /* strip winding is not consistent */
@@ -144,11 +249,33 @@ void gfx_size(int *w, int *h)
 
 static void gfx_begin_frame_gl(uint32_t c)
 {
+    int w, h;
+    SDL_GL_GetDrawableSize(G.win, &w, &h);
+    if (w > 0 && h > 0 && (w != G.w || h != G.h)) {         /* resized, or fullscreen toggled */
+        G.w = w;
+        G.h = h;
+    }
+    layout();
+    glViewport(0, 0, G.w, G.h);
     glDepthMask(GL_TRUE);
-    if (gfx_pick_pass)
-        c = 0;                  /* the id pass: id 0 = nothing */
-    glClearColor(((c >> 16) & 255) / 255.0f, ((c >> 8) & 255) / 255.0f, (c & 255) / 255.0f, 1);
+    if (gfx_pick_pass) {
+        c = 0;                  /* the id pass: id 0 = nothing, and no MSAA blending of ids */
+        if (gfx_opt.msaa)
+            glDisable(GL_MULTISAMPLE);
+    } else if (gfx_opt.msaa) {
+        glEnable(GL_MULTISAMPLE);
+    }
+    glDisable(GL_SCISSOR_TEST);
+    glClearColor(0, 0, 0, 1);                   /* the bars */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (sc.w != G.w || sc.h != G.h) {
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(sc.x, G.h - sc.y - sc.h, sc.w, sc.h);
+    }
+    glClearColor(((c >> 16) & 255) / 255.0f, ((c >> 8) & 255) / 255.0f, (c & 255) / 255.0f, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glDisable(GL_SCISSOR_TEST);
+    G.anchor = 0;
 }
 
 void gfx_begin_frame(uint32_t c)
@@ -161,6 +288,33 @@ void gfx_begin_frame(uint32_t c)
 void gfx_end_frame(void)
 {
     SDL_GL_SwapWindow(G.win);
+}
+
+/* Alt+Enter: desktop fullscreen (the window keeps the desktop's resolution, the 3D is drawn at it) and back */
+int gfx_toggle_fullscreen(void)
+{
+    if (!G.win || G.hidden)
+        return 0;
+    if (!G.fs) {                                /* remember the window before it goes */
+        SDL_GetWindowPosition(G.win, &gfx_opt.win_x, &gfx_opt.win_y);
+        SDL_GetWindowSize(G.win, &gfx_opt.win_w, &gfx_opt.win_h);
+    }
+    G.fs = !G.fs;
+    if (SDL_SetWindowFullscreen(G.win, G.fs ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) != 0) {
+        rt_log("fullscreen toggle failed: %s", SDL_GetError());
+        G.fs = !G.fs;
+    }
+    gfx_opt.fullscreen = G.fs;
+    return G.fs;
+}
+
+/* the windowed geometry, for the settings file */
+void gfx_window_geometry(void)
+{
+    if (!G.win || G.hidden || G.fs)
+        return;
+    SDL_GetWindowPosition(G.win, &gfx_opt.win_x, &gfx_opt.win_y);
+    SDL_GetWindowSize(G.win, &gfx_opt.win_w, &gfx_opt.win_h);
 }
 
 int gfx_read_pixels(uint8_t *rgb)
@@ -222,6 +376,8 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    if (gfx_opt.aniso > 1)          /* mip levels for the anisotropic 3D draws (the 2D draws never sample them) */
+        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
     return t;
 }
@@ -312,6 +468,9 @@ void gfx_set_render_state(int state, uintptr_t v)
         }
         break;
     }
+    case GFX_RS_2D_ANCHOR:
+        G.anchor = (int)v;
+        break;
     case GFX_RS_BLEND_OP:
         G.bop = (int)v;
         if (G.blend_eq)
@@ -503,6 +662,7 @@ static void gfx_execute_clay_gl(gfx_clay *c)
                     (void *)(c->nbatch ? c->batch[0].tex : 0), G.texmat[12], G.texmat[13]);
         }
     }
+    set_scene_viewport();
     glMatrixMode(GL_TEXTURE);
     glLoadMatrixf(c->noscroll ? ident : G.texmat);       /* fl 0x19: UV scroll (set14), only for parts whose attribute asks for it */
     glMatrixMode(GL_PROJECTION);
@@ -528,7 +688,14 @@ static void gfx_execute_clay_gl(gfx_clay *c)
         if (t && c->st) {
             glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, t->id);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, G.filter);
+            if (gfx_opt.aniso > 1 && G.filter == GL_LINEAR && !pid) {   /* trilinear + anisotropic (mipmaps: gfx_create_texture) */
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                glTexParameterf(GL_TEXTURE_2D, GL_TEX_MAX_ANISO, (float)gfx_opt.aniso);
+            } else {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, G.filter);
+                if (G.max_aniso)
+                    glTexParameterf(GL_TEXTURE_2D, GL_TEX_MAX_ANISO, 1.0f);
+            }
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, G.filter);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, G.wrap);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, G.wrap);
@@ -587,9 +754,29 @@ static void gfx_draw_2d_gl(int w, int h, int nvert, const float *pos, const floa
     glDepthMask(GL_FALSE);
     glMatrixMode(GL_TEXTURE);
     glLoadIdentity();
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, w, h, 0, -1, 1);
+    {   /* the virtual screen w x h on the 4:3 rectangle; anchored draws slide to the scene's left / right edge; stretched
+         * ones (fades, a window-sized virtual screen: the bug reporter) cover the whole window */
+        float ox, oy, sx, sy;
+        int an = G.anchor;
+        if (an == GFX_A_STRETCH || (w == G.w && h == G.h)) {
+            ox = oy = 0;
+            sx = (float)G.w / w;
+            sy = (float)G.h / h;
+        } else {
+            sx = (float)rc.w / w;
+            sy = (float)rc.h / h;
+            ox = (float)rc.x;
+            oy = (float)rc.y;
+            if (an == GFX_A_LEFT)
+                ox += (float)(sc.x - rc.x);
+            else if (an == GFX_A_RIGHT)
+                ox += (float)(sc.x + sc.w - rc.x - rc.w);
+        }
+        glViewport(0, 0, G.w, G.h);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(-ox / sx, (G.w - ox) / sx, (G.h - oy) / sy, -oy / sy, -1, 1);
+    }
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     if (pid)
@@ -607,8 +794,13 @@ static void gfx_draw_2d_gl(int w, int h, int nvert, const float *pos, const floa
         glTexCoordPointer(2, GL_FLOAT, 0, st);
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, t->id);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, G.filter);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, G.filter);
+        {
+            GLint f2 = gfx_opt.nearest2d && !pid ? GL_NEAREST : G.filter;       /* "clean" scaling of the pixel art */
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, f2);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, f2);
+            if (G.max_aniso)
+                glTexParameterf(GL_TEXTURE_2D, GL_TEX_MAX_ANISO, 1.0f);
+        }
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, G.wrap);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, G.wrap);
     } else if (pid) {

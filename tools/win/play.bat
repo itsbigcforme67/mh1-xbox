@@ -25,23 +25,24 @@ if not defined DISC if exist disc_dir.txt set /p DISC=<disc_dir.txt
 rem no data folder given: mhview.exe finds its data folder itself, or asks for the ISO (drag it onto the window)
 set "DARG="
 if defined DISC set DARG="%DISC%"
-if not defined MH_SIZE set "MH_SIZE=1024x768"
+set "SZ="
+if defined MH_SIZE set "SZ=--size %MH_SIZE%"
 if /i "%MODE%"=="quest" goto quest
 if /i "%MODE%"=="easy" goto easy
 if /i "%MODE%"=="village" goto village
-mhview.exe %DARG% --play --size %MH_SIZE% --boot
+mhview.exe %DARG% --play %SZ% %MH_ARGS% --boot
 goto done
 :quest
-mhview.exe %DARG% --play --size %MH_SIZE% --quest 10
+mhview.exe %DARG% --play %SZ% %MH_ARGS% --quest 10
 goto done
 :easy
 set RT_PL_GOD=1
-mhview.exe %DARG% --play --size %MH_SIZE% --quest 10
+mhview.exe %DARG% --play %SZ% %MH_ARGS% --quest 10
 goto done
 :village
 set RT_VILLAGE_START=1
 set RT_VILLAGE_SKIP_INTRO=1
-mhview.exe %DARG% --play --size %MH_SIZE% --quest 10
+mhview.exe %DARG% --play %SZ% %MH_ARGS% --quest 10
 goto done
 :done
 if errorlevel 1 (

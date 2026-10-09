@@ -43,6 +43,7 @@ typedef struct {
 static rec_list list[2];
 static int building = -1, shown = -1;
 int gfx_rec_on;
+int gfx_2d_anchor;      /* gfx.h */
 
 static rec_cmd *push(rec_list *l)
 {
