@@ -46,6 +46,7 @@ C_PIECE = {  # per kind: 0 plaza, 1 lobby, 2 room: entry, count, name, joinuser,
 C_PLACE = 0x6891
 
 VERBOSE = False
+COOP_PORT = 10300                   # the co-op session's port: this + the room number (--coop-port)
 
 
 def log(*a):
@@ -478,6 +479,80 @@ class Client(socketserver.BaseRequestHandler):
         n = len(r.members) if r else 0
         self.send(ANS, 0x640B, struct.pack(">HHHHHH", i, n, 4, 0, 0, 0), seq=seq)
 
+    # matching: every member says ready (MatchEntry 6504, u8 1 / 0), the leader starts (6508 notice); the server tells
+    # the room 6910, then each client reads the match (lbc_game_ready_00 -> cnLBS_Read_MatchInfomation: 6911 member
+    # count, 6912 its own player number, 6913 / 6917 per player, 6915 battle code, 6914 game rule, 6916 the game
+    # server address), logs out of the lobby server (lbc_game_ready_04) and goes to the game server (Game_task step 3).
+    # Here the "game server" is the room leader's own game (the PC's co-op host, docs/network.md 3.4): 6916 gives the
+    # leader's address and a port of this room.
+    def room_ready(self, r):
+        return sum(1 for m in r.members if getattr(m, "ready", 0))
+
+    def on_6504_1(self, seq, p):            # MatchEntry: u8 1 ready / 0 cancel
+        self.ready = p[0] if p else 0
+        self.send(ANS, 0x6504, b"", seq=seq)
+        r = self.my_room()
+        if r:
+            for o in r.members:     # NoticeMatchEntryUser (6506): u16 ready, u16 members
+                o.safe_send(NOTE, 0x6506, struct.pack(">HH", self.room_ready(r), len(r.members)))
+
+    def on_6412_1(self, seq, p):            # MatchEntryUser: u16 room -> u16 room, u16 ready, u16 members
+        i = struct.unpack(">H", p[:2])[0]
+        r = self.room(i)
+        self.send(ANS, 0x6412, struct.pack(">HHH", i, self.room_ready(r) if r else 0, len(r.members) if r else 0), seq=seq)
+
+    def on_6508_16(self, seq, p):           # MatchStart (the leader): to every member, notice 6910
+        r = self.my_room()
+        if not r:
+            return
+        r.match = list(r.members)
+        log("match start in room %d: %s" % (r.id, ", ".join(m.user_handle for m in r.match)))
+        for o in r.match:
+            o.safe_send(NOTE, 0x6910, b"")
+
+    def match_room(self):
+        for lobby, rs in list(ROOMS.items()):
+            for r in rs:
+                if self in getattr(r, "match", []):
+                    return r
+        return None
+
+    def on_6911_1(self, seq, p):            # MatchJoin: u8 number of players
+        r = self.match_room()
+        self.send(ANS, 0x6911, bytes([len(r.match) if r else 0]), seq=seq)
+
+    def on_6912_1(self, seq, p):            # MatchPlSide: u8 this player's number, 1-based (the client keeps it - 1 as
+        r = self.match_room()               # USER_PL_ID, the slot; the leader is 1 = slot 0, the co-op host)
+        self.send(ANS, 0x6912, bytes([r.match.index(self) + 1 if r else 0]), seq=seq)
+
+    def on_6913_1(self, seq, p):            # MatchOpponentInfo(u8 n): u8 n, u8, str id, str handle, str mini, str, u8
+        r = self.match_room()
+        n = p[0] if p else 1
+        m = r.match[n - 1] if r and 1 <= n <= len(r.match) else self
+        self.send(ANS, 0x6913, bytes([n, 0]) + str16(m.user_id) + str16(m.user_handle[:16]) + str16(m.mini) + str16("") +
+                  bytes([0]), seq=seq)
+
+    def on_6917_1(self, seq, p):            # MatchOpponentStatus(u8 n): u8 n, u16 side (1), 5 x u32 (meaning not known: 0)
+        n = p[0] if p else 1
+        self.send(ANS, 0x6917, bytes([n]) + struct.pack(">HIIIII", 1, 0, 0, 0, 0, 0), seq=seq)
+
+    def on_6915_1(self, seq, p):            # MatchBattleCode: str (16 characters kept at cw+0x35E0)
+        r = self.match_room()
+        self.send(ANS, 0x6915, str16("ROOM%02d%010d" % (r.id if r else 0, int(time.time()) % 10 ** 10)), seq=seq)
+
+    def on_6914_1(self, seq, p):            # MatchGameRule: str
+        self.send(ANS, 0x6914, str16(""), seq=seq)
+
+    def on_6916_1(self, seq, p):            # MatchMcsIpAddr: str 4 address bytes, str 2 port bytes (big endian)
+        r = self.match_room()
+        leader = r.match[0] if r else self
+        ip = leader.client_address[0]
+        port = COOP_PORT + (r.id if r else 0)
+        self.send(ANS, 0x6916, str16(bytes(int(x) for x in ip.split("."))) + str16(struct.pack(">H", port)), seq=seq)
+
+    def on_6918_16(self, seq, p):           # MatchRejection: the client gave up on the match
+        log("%s rejected the match" % self.user_handle)
+
     def on_640A_1(self, seq, p):            # room member list: as the lobby's (630A)
         i = struct.unpack(">H", p[:2])[0]
         r = self.room(i)
@@ -559,14 +634,16 @@ class Server(socketserver.ThreadingTCPServer):
 
 
 def main():
-    global VERBOSE
+    global VERBOSE, COOP_PORT
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=10200)
     ap.add_argument("--allow-public", action="store_true", help="bind a non-private address")
     ap.add_argument("-v", "--verbose", action="store_true")
+    ap.add_argument("--coop-port", type=int, default=10300, help="the matched room's leader hosts on this + room number")
     a = ap.parse_args()
     VERBOSE = a.verbose
+    COOP_PORT = a.coop_port
     if not is_private(a.host) and not a.allow_public:
         sys.exit("refusing to bind %s: only loopback / private addresses unless --allow-public" % a.host)
     srv = Server((a.host, a.port), Client)

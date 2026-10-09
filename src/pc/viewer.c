@@ -1549,6 +1549,18 @@ static void village_step(void)
                 extern uint8_t game_w[];
                 lp = game_w[0xD1] < 8 ? game_w[0xD1] : 0;
             }
+            if (q > 0) {        /* a matched room: its quest as a co-op session (rt_np.c), the leader hosting */
+                int q2 = rt_np_setup(q);
+                if (q2 > 0) {
+                    lp = rt_np_slot();
+                    quest_no = q2;
+                    rt_log("online: co-op quest %d, %d players, slot %d", quest_no, rt_np_players(), lp);
+                    quest_from_village();
+                    return;
+                }
+                rt_log("online: the co-op session did not start");
+                lp = 0;
+            }
             if (q < 0)
                 quest_back();
             return;

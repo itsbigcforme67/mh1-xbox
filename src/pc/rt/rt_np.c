@@ -529,6 +529,20 @@ static void apply_mini(PLW *pl, const u8 *m)
         memcpy(pl->name, m + 0x18, sizeof pl->name);
 }
 
+/* The online town's matched room (rt_online.c): this machine hosts the session (the room leader, slot 0) or joins
+ * the leader at the address the lobby server gave as the game server (6916); the server knows the player count. */
+static int join_retry;
+void rt_np_configure(int role, const char *addr, int port, int players)
+{
+    static char a[64];
+    join_retry = 1;
+    want_role = role;
+    snprintf(a, sizeof a, "%s", addr ? addr : "");
+    want_addr = role == 2 ? a : NULL;
+    want_port = port;
+    want_players = players < 2 ? 2 : players > 4 ? 4 : players;
+}
+
 /* Before the quest is set up: host waits for the joiners and announces the quest; a joiner
  * connects and waits for it. Returns the quest number, 0 = no co-op, -1 = failed. */
 int rt_np_setup(int quest_no)
@@ -542,7 +556,11 @@ int rt_np_setup(int quest_no)
         if (!want_role)
             return -1;
     }
-    if (getenv("RT_NP_NOSAVE") || load_own_hunter() != 0)
+    if (join_retry) {               /* from the online town: the town's hunter (the card's, or the test name) */
+        if (!getenv("RT_NP_NOSAVE"))
+            load_own_hunter();
+        mini_from_save(mini);
+    } else if (getenv("RT_NP_NOSAVE") || load_own_hunter() != 0)
         make_mini(mini);            /* no save: RT_WEAPON / RT_PL_LOOK */
     else
         mini_from_save(mini);
@@ -567,8 +585,12 @@ int rt_np_setup(int quest_no)
         np_poll();
         np_host_start(quest_no);
     } else {
-        if (np_join(want_addr, want_port, mini) != 0)
-            return -1;
+        /* the host may not listen yet (in the online town both leave the lobby server at the same moment): retry */
+        for (t = 0; np_join(want_addr, want_port, mini) != 0; t++) {
+            if (t >= 20 || !join_retry)
+                return -1;
+            sleep_ms(500);
+        }
         for (t = 0; !np_started() && np_connected(0) && t < wait_s * 100; t++) {
             np_poll();
             sleep_ms(10);

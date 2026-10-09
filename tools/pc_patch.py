@@ -30,9 +30,22 @@ PATCHES = {
          "extern unsigned char rt_lb_mem[];\n#define A_U8(a) (*(u8 *)(rt_lb_mem + ((a) - 0x533980)))\n#define A_S32(a) (*(s32 *)(rt_lb_mem + ((a) - 0x533980)))"),
     ],
     # ONLINE=1 lobby client (docs/network.md "The online town"): a0 left over (tools/argregs.py, the asm at the call)
+    # lbc_game_ready_02 is called from lobby_client_game_ready's step table without arguments; gcc keeps var_a2 in the
+    # incoming argument slot, which then lies in the caller's frame (its saved ebx / ebp were overwritten)
+    "src/lobby/f/lb_cli.c": [
+        ("void lbc_game_ready_02(int arg0, int arg1, s32 arg2);", "void lbc_game_ready_02();"),
+        ("void lbc_game_ready_02(int arg0, int arg1, s32 arg2) {\n    s32 var_a2;", "void lbc_game_ready_02(void) {\n    s32 var_a2;\n    s32 arg2 = 0;"),
+    ],
     "src/lobby/f/lb_plz2.c": [
         ("    int id = Lb_get_plID() & 0xFF;", "    int id = Lb_get_plID(a) & 0xFF;"),           # 0x59504C: a0 = a
         ("        r = getHandleFromID();", "        r = getHandleFromID(a);"),
+    ],
+    # Lb_join (joining a room from the quest board): the quest card's info gets the quest (a0 = s0, 0x5B0618); the quest
+    # type is a byte (sb at 0x5B064C), the draft stored a word over PLW+0x567..0x569
+    "src/lobby/b/nm/Lb_join.c": [
+        ("            Lb_menu_quest_info();", "            Lb_menu_quest_info(var_v0);"),
+        ("            (*(int *)((u8 *)&D_3E5506 + (game_w.master * 0xA00))) = temp_a1;",
+         "            (*(u8 *)((u8 *)&D_3E5506 + (game_w.master * 0xA00))) = temp_a1;"),
     ],
     "src/lobby/f/lb_a.c": [
         ("    Chat_log_add(Lb_get_plID() & 0xFF, msg);", "    Chat_log_add(Lb_get_plID(msg) & 0xFF, msg);"),   # 0x5C55D0: a0 = msg (id first)

@@ -289,6 +289,35 @@ static void town_chat(void)
     }
 }
 
+/* The match was made (lbc_game_ready_04 logged out of the lobby server, internet_lobby_act returned 0). On the PS2
+ * Game_task step 3 (internet_to_modem, cmcs_*) now connects to the game server and runs the mcsls session. The PC
+ * hands the matched room to the co-op session it already has (rt_np.c / net_peer.c, docs/network.md 3.4): the
+ * player number the server gave (MatchPlSide -> USER_PL_ID) is the slot, slot 0 (the room leader) hosts, the others
+ * join it at the "game server" address of 6916 (the test server gives the leader's address and port 10300 + room).
+ * Returns the quest (select_w+0xAC, set from the room by lb_guild_make_room / Lb_join). */
+extern u8 USER_PL_ID, select_w[];
+void cnLBS_Get_GameServerAddress(u32 *addr, u16 *port);
+int CpInetTcpAbort(int h);
+void rt_np_configure(int role, const char *addr, int port, int players);
+static int matched(void)
+{
+    u32 a = 0;
+    u16 pt = 0;
+    char ip[32];
+    int slot = USER_PL_ID, n = cw[0x2C47], quest = *(s16 *)(select_w + 0xAC), port;
+    cnLBS_Get_GameServerAddress(&a, &pt);
+    port = ((pt & 0xFF) << 8) | (pt >> 8);          /* it returns the port in network order */
+    snprintf(ip, sizeof ip, "%u.%u.%u.%u", a & 0xFF, (a >> 8) & 0xFF, (a >> 16) & 0xFF, a >> 24);
+    say("matched: %s", slot == 0 ? "this machine hosts the session (slot 0)" : "joining the room leader", 0);
+    fprintf(stderr, "online: match: quest %d, %d players, slot %d, game server %s port %d\n", quest, n, slot, ip, port);
+    rt_log("online: match: quest %d, %d players, slot %d, game server %s port %d", quest, n, slot, ip, port);
+    CpInetTcpAbort(*(s32 *)(ConnWork + 4));         /* internet_connect_minimum_cleanup: the lobby connection */
+    rt_np_configure(slot == 0 ? 1 : 2, ip, port, n);
+    active = 0;
+    wanted = 0;
+    return quest > 0 ? quest : -1;
+}
+
 /* One tick. Returns the quest number once a match was made, -1 when the online mode ended, else 0. */
 int rt_online_tick(void)
 {
@@ -386,6 +415,7 @@ int rt_online_tick(void)
         if (r == 0) {
             say("match made%s (internet_lobby_act returned %d)", "", 0);
             phase = O_MATCHED;
+            return matched();
         }
         return 0;
     case O_FAILED:
