@@ -777,7 +777,7 @@ void weapon_trans(f32 alpha, PLX *pl) {
         }
         h = 1.0f;
         g = 1.0f;
-        y = sc;
+        y = 1.0f;
         if (pl->x1C4 == 0) {
             switch (pl->char0) {
             case 0x579:
