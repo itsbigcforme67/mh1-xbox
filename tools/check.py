@@ -50,6 +50,25 @@ def module_image(module):
     return struct.unpack_from("<I", data, 8)[0], data
 
 
+def matched_ranges():
+    """module -> [(start, end)] of the byte-matched C runs registered in config/c_files.txt"""
+    out = {}
+    for l in open(os.path.join(ROOT, "config/c_files.txt")):
+        p = l.split()
+        if len(p) == 4 and not p[0].startswith('#') and ':' not in p[0]:
+            try:
+                out.setdefault(p[0], []).append((int(p[1], 16), int(p[2], 16)))
+            except ValueError:
+                pass
+    return out
+
+
+def prefer_unmatched(cands, mr):
+    """same-named originals: keep the ones that are not inside a matched run (the near-match C copies those)"""
+    un = [c for c in cands if not any(a <= c[1] and c[1] + c[2] <= b for a, b in mr.get(c[0], []))]
+    return un or cands
+
+
 def original_functions():
     """name -> list of (module, addr, size); names repeat across files."""
     out = {}
@@ -183,6 +202,7 @@ def main():
     images = {}
     results, all_ok = [], True
     names = func_names_by_addr()
+    MR = matched_ranges()
     for name, (code, masks, calls) in funcs.items():
         cands = orig.get(name, [])
         m = re.search(r"_([0-9A-F]{8})$", name)
@@ -196,6 +216,8 @@ def main():
                     break
         if args.module:
             cands = [c for c in cands if c[0] == args.module] or cands
+        if not args.add:
+            cands = prefer_unmatched(cands, MR)
         for a_ in args.at:
             n_, v_ = a_.split("=")
             if n_ == name:
@@ -211,11 +233,12 @@ def main():
             base, img = images[mod]
             o = img[addr - base: addr - base + size]
             ok, lines = compare(code, masks, o, addr, calls, names, mod)
-            if best is None or ok:
-                best = (ok, lines, mod, addr, size)
+            nd = sum(1 for l in lines if l.startswith(">>"))
+            if best is None or ok or nd < best[5]:     # same-named functions: keep the closest original
+                best = (ok, lines, mod, addr, size, nd)
             if ok:
                 break
-        ok, lines, mod, addr, size = best
+        ok, lines, mod, addr, size, _nd = best
         all_ok &= ok
         results.append((mod, addr, size, name, ok))
         print("%s  %-32s %-6s 0x%08X %5d bytes%s" % (
