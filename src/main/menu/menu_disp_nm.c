@@ -1741,7 +1741,7 @@ void disp_pachinger(void) {
             }
         }
         q.col = -1;
-        ((s16 *)&q.uv0)[0] = 0xD8;
+        ((s16 *)&q.uv0)[1] = 0xD8;
         q.uv1 = 0x100;
         ((s16 *)&q.uv1)[1] = 0xEC;
         {
