@@ -34,6 +34,9 @@ PATCHES = {
         ("    int id = Lb_get_plID() & 0xFF;", "    int id = Lb_get_plID(a) & 0xFF;"),           # 0x59504C: a0 = a
         ("        r = getHandleFromID();", "        r = getHandleFromID(a);"),
     ],
+    "src/lobby/f/lb_a.c": [
+        ("    Chat_log_add(Lb_get_plID() & 0xFF, msg);", "    Chat_log_add(Lb_get_plID(msg) & 0xFF, msg);"),   # 0x5C55D0: a0 = msg (id first)
+    ],
     "src/lobby/f/lb_ae.c": [
         ("        id = Lb_get_plID() & 0xFF;", "        id = Lb_get_plID(a) & 0xFF;"),       # 0x5C4E8C: a0 = the sender id
     ],

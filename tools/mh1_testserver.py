@@ -316,7 +316,9 @@ class Client(socketserver.BaseRequestHandler):
         if lobby is None:
             return
         out = str16(self.user_id) + str16(self.user_handle[:16]) + str16(text) + bytes([0, 0, 0, 0])
-        for o in REG.others(self, 1, lobby):
+        # to everyone in the lobby, the sender too: Lb_send_chat (lb_ad.c) does not log its own line when it
+        # chats to the whole lobby (cw+0x32BE == 0), it only shows what comes back
+        for o in REG.members(1, lobby):
             o.safe_send(NOTE, 0x6702, out)
 
     def on_6708_16(self, seq, p):           # chat binary: the town's game data (lb_send_data: type byte + payload)

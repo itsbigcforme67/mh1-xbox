@@ -210,6 +210,60 @@ static void pace(void)
     n++;
 }
 
+/* Chat in the town from the PC keyboard: Tab starts typing (the pad keys are off meanwhile), Enter sends the line
+ * through the game's own Lb_send_chat (lb_ad.c: 6701 to the lobby; the server sends it back to everyone, the
+ * game's chat log shows it: CallBack_Event_ChatMessage -> Lb_chat_receipt -> Chat_log_add), Backspace deletes.
+ * Test aid RT_NET_SAY="tick:text;tick:text": say that at that town tick. */
+extern int pad_kb_wanted;
+int pad_text_take(char *out, int n);
+void pad_text_mode(int on);
+void Lb_send_chat(int who, char *text, int mode);
+static char chat_line[0x40];
+static int chat_n, town_ticks;
+static void chat_send(const char *t)
+{
+    char b[0x40];
+    snprintf(b, sizeof b, "%s", t);
+    say("say \"%s\"%.0d", b, 0);
+    Lb_send_chat(game_w[0xD1], b, 0);
+}
+static void town_chat(void)
+{
+    char in[64];
+    int n, i;
+    const char *e = getenv("RT_NET_SAY");
+    town_ticks++;
+    while (e && *e) {
+        int t = atoi(e);
+        const char *c = strchr(e, ':'), *end;
+        if (!c)
+            break;
+        end = strchr(c, ';');
+        if (t == town_ticks) {
+            char b[0x40];
+            snprintf(b, sizeof b, "%.*s", (int)(end ? end - c - 1 : (int)strlen(c + 1)), c + 1);
+            chat_send(b);
+        }
+        e = end ? end + 1 : NULL;
+    }
+    pad_kb_wanted = 1;                  /* Tab: typing on / off */
+    n = pad_text_take(in, sizeof in);
+    for (i = 0; i < n; i++) {
+        if (in[i] == '\n') {
+            chat_line[chat_n] = 0;
+            if (chat_n)
+                chat_send(chat_line);
+            chat_n = 0;
+            pad_text_mode(0);
+        } else if (in[i] == '\b') {
+            if (chat_n)
+                chat_n--;
+        } else if (chat_n < (int)sizeof chat_line - 1) {
+            chat_line[chat_n++] = in[i];
+        }
+    }
+}
+
 /* One tick. Returns the quest number once a match was made, -1 when the online mode ended, else 0. */
 int rt_online_tick(void)
 {
@@ -241,6 +295,31 @@ int rt_online_tick(void)
             fprintf(stderr, "online: tick %d client %d/%d/%d/%d town step %d stage %d ret %d\n", ticks, cw[0x2C31],
                     cw[0x2C32], cw[0x2C33], cw[0x2C34], (s8)lb_sys[3], game_w[0x14], r);
             last31 = cw[0x2C31]; last33 = cw[0x2C33]; last34 = cw[0x2C34]; last3 = lb_sys[3];
+        }
+        if (cw[0x2C31] == 3 && lb_sys[3] == 4)
+            town_chat();
+        if (trace && cw[0x2C31] == 3 && lb_sys[3] == 4) {     /* a new town stage: its unique spots (exits, counters) */
+            static int spots_stage = -1;
+            if (game_w[0x14] != spots_stage) {
+                void *Stage_unique_data_get(int st);
+                u8 *q = Stage_unique_data_get(game_w[0x14]);
+                spots_stage = game_w[0x14];
+                for (; q && *(float *)(q + 4) != -1.0f; q += 0x18)
+                    fprintf(stderr, "online: stage %d spot kind %d at %.0f %.0f %.0f r %.0f ang %04X\n", spots_stage,
+                            *(u16 *)(q + 2), *(float *)(q + 4), *(float *)(q + 8), *(float *)(q + 0xC),
+                            *(float *)(q + 0x10), *(u16 *)(q + 0x14));
+            }
+        }
+        if (trace) {        /* a new line in the game's chat log (PitMenu: logtop +0x1E, log[64] of 0x5D bytes at +0x23) */
+            extern u8 PitMenu[];
+            static int last_top = -1;
+            if (PitMenu[0x1E] != last_top) {
+                u8 *l = PitMenu + 0x23 + 0x5D * ((PitMenu[0x1E] - 1) & 0x3F);
+                if (last_top >= 0)
+                    fprintf(stderr, "online: tick %d chat log: from \"%.17s\" (%.8s): \"%.31s%.31s\"\n", ticks, (char *)l + 0x4C,
+                            (char *)l + 0x44, (char *)l, l[0x3E] > 1 ? (char *)l + 0x1F : "");
+                last_top = PitMenu[0x1E];
+            }
         }
         if (trace && ticks % 60 == 0 && cw[0x2C31] == 3) {     /* every hunter in the town: slot, name, stage, position */
             extern u8 player_work[];

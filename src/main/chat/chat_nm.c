@@ -810,7 +810,7 @@ void Plaza_chat_log_add(int msg) {
 extern u8 chat_font_color[];
 int sprintf(char *, const char *, ...);
 void font_print_uf(void *, ...);
-void font_print_double2(int, int, int, int);
+void font_print_double2(int, int, int, int, char *);
 void Put_megaphone(int, int, int);
 void disp_chat_log_sub(int, s16, int);
 void Put_receive_mark(int);
@@ -972,7 +972,7 @@ void disp_chat_log_sub(int top, s16 yofs, int a) {
                 }
                 if (l->uid[0] != 0) {
                     chat_log_name(buf, l);
-                    font_print_double2(0x1E, (s16)(y + yofs), 1, l->col[2]);
+                    font_print_double2(0x1E, (s16)(y + yofs), 1, l->col[2], buf);
                     y -= 0x13;
                     if (y < 0xD1) {
                         goto next;
@@ -989,7 +989,7 @@ next:
                 l = &PitMenu.log[i & 0x3F];
                 if (l->uid[0] != 0) {
                     chat_log_name(buf, l);
-                    font_print_double2(0x1E, (s16)(y + yofs), 1, l->col[2]);
+                    font_print_double2(0x1E, (s16)(y + yofs), 1, l->col[2], buf);
                     y += 0x13;
                     if (y >= 0x190) {
                         continue;
