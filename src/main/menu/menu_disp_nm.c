@@ -2689,10 +2689,13 @@ void disp_item_sub_select(void) {
             break;
         case 3:
             e0 = item_sel_sub(pl, d0, 0);
+            break;
+        case 5:
+            e0 = item_sel_sub(pl, d0, 0);
             f0 = item_sel_sub(pl, s18, 1);
             g0 = item_sel_sub(pl, e0, 0);
             break;
-        case 5:
+        default:
             e0 = item_sel_sub(pl, d0, 0);
             f0 = item_sel_sub(pl, s18, 1);
             g0 = item_sel_sub(pl, e0, 0);
