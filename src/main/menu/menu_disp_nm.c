@@ -2853,10 +2853,10 @@ void disp_item_sub_select(void) {
                             }
                         }
                     }
-                }
-                flfntSetSize(0x14, 0x14);
-                if (disp_shell_name(pl->work88E, 0xFE) == 1) {
-                    sl[2] = pl->work88E;
+                    flfntSetSize(0x14, 0x14);
+                    if (disp_shell_name(pl->work88E, 0xFE) == 1) {
+                        sl[2] = pl->work88E;
+                    }
                 }
             } else {
                 sl[0] = Pl_shell_set(pl, pl->work88E, 1);
@@ -2885,10 +2885,10 @@ void disp_item_sub_select(void) {
                             }
                         }
                     }
-                }
-                flfntSetSize(0x14, 0x14);
-                if (disp_shell_name(pl->work88E, 0x116) == 1) {
-                    sl[1] = pl->work88E;
+                    flfntSetSize(0x14, 0x14);
+                    if (disp_shell_name(pl->work88E, 0x116) == 1) {
+                        sl[1] = pl->work88E;
+                    }
                 }
             }
             q.s[1] = 0xEE;
@@ -2930,9 +2930,9 @@ void disp_item_sub_select(void) {
                 } else if (disp_shell_name(sl[0], 0x120) == 0) {
                     sl[0] = 0xFF;
                 }
-            }
-            if (disp_shell_name(pl->work88E, 0x108) == 1) {
-                sl[1] = pl->work88E;
+                if (disp_shell_name(pl->work88E, 0x108) == 1) {
+                    sl[1] = pl->work88E;
+                }
             }
             q.s[1] = 0xEE;
             {
