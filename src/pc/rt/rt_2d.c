@@ -154,6 +154,18 @@ void load_pit(void)
     mkTexture(4, 0x11C, 0);
 }
 
+/* The HUD on a widescreen display (docs/pc.md): trans_pit_0/1/2 (src/main/menu/menu18.c) call these instead of the
+ * widgets themselves (tools/build_pc.sh renames the calls); each sets the edge the widget keeps to, calls the real
+ * function and goes back to the 4:3 centre. The font stacks remember the anchor of each print (rt_font.c). */
+#define HUD_ANCHOR(name, edge) void name(void); void rt_hud_##name(void) { gfx_set_2d_anchor(edge); name(); gfx_set_2d_anchor(GFX_A_CENTER); }
+HUD_ANCHOR(disp_timer, GFX_A_LEFT)
+HUD_ANCHOR(disp_pl_vital, GFX_A_LEFT)
+HUD_ANCHOR(disp_slash_level, GFX_A_LEFT)
+HUD_ANCHOR(disp_others_info, GFX_A_LEFT)
+HUD_ANCHOR(disp_map, GFX_A_RIGHT)
+HUD_ANCHOR(disp_item, GFX_A_RIGHT)
+HUD_ANCHOR(disp_item_sub_select_ex, GFX_A_RIGHT)
+
 /* ------------------------------------------------------------ prims */
 static void rgba(u8 *o, u32 c)
 {
