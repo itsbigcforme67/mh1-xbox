@@ -703,7 +703,7 @@ void disp_whole_map(int ofs, f32 x0, f32 scale) {
         q.s[0] = 0.8f * x0;
         q.s[1] = ofs;
         q.s[2] = 0.8f * (320.0f * scale);
-        q.s[3] = 0.8f * (320.0f * scale);
+        q.s[3] = 320.0f * scale;
     } else {
         x = 240.0f * (FX(me, 0x754) * lpPit->map_sx);
         lo_x = x - 32.0f;
