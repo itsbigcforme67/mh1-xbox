@@ -1338,7 +1338,7 @@ void player_info_sub(f32 x, PLW *pl, s16 y) {
         SetTrnslMode(4, 1);
         reload_tex(1, 0x118);
         SetTextureStage(0x118);
-        disp_map_sign((s16)((s16)(int)(0.8f * (5.0f + x)) + 8), (s16)(yy + 0xC),
+        disp_map_sign((s16)((s16)(int)(0.8f * (2.0f + x)) + 8), (s16)(yy + 0xC),
                       *(s16 *)((u8 *)lpPit + id * 2 + 0x34), disp_pl_rgb[id & 3]);
     }
 }
