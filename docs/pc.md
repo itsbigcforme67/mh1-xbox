@@ -31,6 +31,8 @@ Checks to run after changes (all headless, about a minute together):
 - `tools/test_save.sh` and `tools/test_save_import.sh` (agent C, 8 Oct 2026): PS2 save import / export, section
   "Importing a PS2 save".
 - `tools/rebuild.sh`: the PS2 rebuild (all five OK) when game C was touched.
+- `tools/test_menu.sh` (agent F, 9 Oct 2026; ~5 s, needs the save of test_quest_loop.sh): the F10 settings menu pauses the game, resumes after
+  Esc and writes its changes to the ini (section "Settings menu").
 - `tools/test_log.sh` (agent B, 7 Oct 2026; ~3 s): the automatic debug log (below) is created, rotated
   and, with RT_CRASH_TEST=1, gets a crash section. `RUN=wine BIN=build/win/mhview.exe` runs it (and
   test_quest_loop.sh) on the Windows build.
@@ -96,7 +98,9 @@ Precedence: built-in defaults < file < command-line flags.
 | `--msaa N` | `msaa` | 0, 2 or 4 samples (falls back to 0 if the driver refuses; the bug reporter's id pass switches it off) |
 | `--aniso N` | `aniso` | 1 (off) to 16: anisotropic + trilinear for the 3D textures (mip levels are generated only when N > 1; the 2D art never uses them) |
 | `--widescreen` or `--aspect 16:9` / `--aspect 4:3` | `widescreen` | see below |
-| `--filter2d nearest\|linear` | `filter2d` | HUD / menu / text art: nearest keeps the original pixels hard at any scale |
+| `--filter2d nearest\|linear\|sharp` | `filter2d` | HUD / menu / text art: nearest keeps the original pixels hard at any scale; sharp is nearest at the whole-number part of the scale and bilinear for the rest (below) |
+| `--english`, `--japanese`, `--text-table FILE` | `language` (`ja`/`en`), `text_table` | text language, see "Settings menu" |
+| `--confirm circle\|cross` | `confirm` | button layout, see "Settings menu" |
 | `--ini FILE`, `--no-ini` | | use another settings file / ignore it |
 
 Layout (gfx_gl.c `layout()`): `rc` is the largest 4:3 rectangle in the window, `sc` the 3D scene rectangle.
@@ -114,10 +118,68 @@ Layout (gfx_gl.c `layout()`): `rc` is the largest 4:3 rectangle in the window, `
   and everything else stay centred. Draws whose virtual size equals the window (the bug reporter) are stretched.
 - Culling: nothing to adjust. flCheckMeshFOV and Create_FOV are stand-ins on the PC (rt_main.c: everything is
   visible, the GPU clips), so there is no 4:3 frustum to pop objects at the new edges. The bug reporter's unproject
-  uses the scene rectangle (gfx_pick_viewport). Not ported anyway: flvecrRotTransPers (world to screen, player name tags),
-  which would need the same anchor math when it is.
-- Known gaps: the village HUD (lobby, `*_lb` trans) is not anchored (it stays centred); no in-game options menu
-  (flags / ini only); the 2D "clean" filter is plain nearest, not integer scaling.
+  uses the scene rectangle (gfx_pick_viewport).
+- Village (9 Oct 2026): the lobby draws through trans_pit_1_lb / trans_pit_2_lb (the same menu18.c as the quest HUD). What it
+  puts on screen while walking is the talk window (Disp_NPC_message), the chat and message lines (Pit_disp_chat,
+  Pit_disp_receive_mes) and the item-pickup / info banner; the village menus, shops, forge, item box and the quest board
+  (the Elder's list) are whole 4:3 layouts and stay centred on purpose. chat_nm.c is compiled with the three chat
+  functions renamed (tools/build_pc.sh, `rt_real_*`) and rt_2d.c defines them again with the left anchor, so every caller
+  (the lb and the quest-side trans_pit_2) gets it: the talk window sits at the window's left edge, no longer 190 px in.
+  The offline village has no other HUD (no map, timer or vitals); the green info banner already reached the left edge.
+- flvecrRotTransPers (world point -> screen; 9 Oct 2026): rt_2d.c now calls gfx_project (gfx.h), which multiplies the point
+  by the current world (flSetRenderState 0x1A, which every caller sets to identity first), view and projection states and
+  returns x, y in the 512 x 448 frame (the frame the HUD draws on, so a tag lands on its hunter in 4:3 and in widescreen,
+  where x runs below 0 and above 512), z 0..1, w = clip w (> 0 in front, which is what the callers test). The PS2 routine
+  (src/main/fl/flm04.c) does view * world * (projection * viewport) in its register file; same result here, from the gfx
+  backend's matrices (GL, nv2a; gfx_null returns zeros). Users: the player name tags (lb_ai.c, Pit name display in
+  menu_disp_nm.c, lb_v08), the ballista / bow sights (weapon2.c) and the sound pan (snd_nm.c: before, every 3D sound
+  was panned as if at x = 0). Checked: the hunter's own "TEST" tag sits on its head in the village at 1280x720 4:3 and
+  16:9. The village NPCs have no name tags offline (nothing to anchor); the tags the game draws for other players only
+  appear online / co-op, with the same projection.
+- 2D filter "sharp" (9 Oct 2026): a GLSL 1.20 fragment shader (functions fetched at run time; without shaders the filter
+  is bilinear) on the 2D draws. With N = floor(window pixels per game pixel) the texture coordinate is pulled to the texel
+  centre except within 1/N texel of an edge, so the art is nearest at the integer part of the scale and the bilinear
+  blend is confined to 1..2 window pixels at each texel edge (at an exact integer scale it is nearest). Scales below 2
+  are plain bilinear. Compared at 1600x900: crisper window borders and glyph edges than linear, without nearest's
+  uneven pixel widths.
+- RT_2D_TRACE=1 prints every 2D draw (virtual size, anchor, box, texture size) to stderr: for widescreen work.
+
+### Settings menu (agent F, 9 Oct 2026)
+
+F10 opens it at any time (on the controller Back + L3; the title / mode-select screen shows a small "F10" hint). The game
+does not tick while it is open (viewer.c asks menu_hold_ticks, as for the bug reporter; the clock is shifted so nothing
+catches up afterwards), the music is paused and the last picture stays drawn under a dimmed overlay, so live changes show
+at once. Keyboard: Up / Down, Left / Right, Enter / Space (next value), Esc / F10 close. Controller: D-pad or left stick,
+cross changes, circle / start / back close (on release, so the game does not see the press). Mouse: click a row (right
+click = previous), wheel. Code: src/pc/menu.c (own 5x7 font from pick.c on an atlas texture, window-pixel 2D draws),
+menu.h (stubs on the Xbox), hooks in viewer.c.
+
+| row | what | live? |
+|---|---|---|
+| Display | windowed / fullscreen (same as Alt+Enter) | yes |
+| Aspect ratio | 4:3 / 16:9 wide (Hor+, as above) | yes |
+| VSync | swap interval | yes |
+| Frame rate cap | off, 30, 60, 72, 90, 120, 144, 165, 240 | yes |
+| Anti-aliasing | off / 2x / 4x | at the next start (the GL context decides it) |
+| Anisotropic filter | off .. driver limit | yes: textures made before get their mip levels with glGenerateMipmap (a registry of live textures in gfx_gl.c) |
+| 2D art filter | smooth / sharp (integer) / nearest | yes |
+| Text language | Japanese / English (English only when a table file exists) | at the next start |
+| Button layout | circle confirms (Japan) / cross confirms (West) | yes |
+| Music / Effects volume | the game's own options: option_w[1] / option_w[2], 0..7 | yes |
+| Restore display defaults / Close | | |
+
+Notes. The volumes are not a copy: they edit the same bytes the game's OPTION screen edits (option_w, system_w 0x36 / 0x37,
+str_master_vol(1), as option_nm.c does), and the memory card keeps them when the game saves. Language: the text layer
+(rt_text.c, docs/english.md) re-points the game's string tables while the data is imported, so the choice is read at
+start-up: `language = en` in the ini hands the table to RT_TEXT_TABLE when one is found (the `text_table` key or
+`--text-table`, else RT_TEXT_TABLE, else text/en.txt next to mh1pc.ini, in the working folder or next to the program); without
+a table the row stays Japanese and says what is missing. Button layout: rt_pad_set swaps the cross and circle bits (one
+of them held) for the whole game, so the in-game menus and the controls both move; the button icons the game draws in its
+text keep the Japanese shapes (they are font glyphs). The settings are written to mh1pc.ini when the menu closes (and at exit).
+
+Test: `tools/test_menu.sh` (uses the save of test_quest_loop.sh): RT_MENU_AT=tick opens the menu at that tick,
+RT_MENU_KEYS="down,right,enter,esc,..." feeds one key per two frames, RT_MENU_SAVE=1 lets a --shot run write the ini. It checks
+that the game does not tick while the menu is open and runs on after Esc, and that the changes reach the ini.
 
 Tested 8 Oct 2026 (headless shots, build/show/F, never committed): village, quest 131 and the pause menu at
 960x720 4:3 and 1280x720 widescreen, plus --msaa 4 --aniso 8 --filter2d nearest; the PC test set at the defaults.
