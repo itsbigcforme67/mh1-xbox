@@ -2067,7 +2067,7 @@ int Pl_item_stack(PLW *pl, int id, int num) {
     s16 j;
     s16 cnt;
     s16 m;
-    s16 sv;
+    u16 sv;
     if (typ[0] == 5) {
         return Share_item_stack(pl, id, num);
     }
