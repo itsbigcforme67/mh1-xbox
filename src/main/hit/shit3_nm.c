@@ -46,8 +46,9 @@ f32 GetGroundHit(f32 *pos) {
                 tri[6] = pl->v[2][0];
                 tri[7] = pl->v[2][2];
                 if (!(pl->n[1] <= 0.0f) && PointHitCheckF3(tri, pt) == 1 && n < 5) {
+                    f32 t = pl->n[0] * pos[0] + pl->n[2] * pos[2];
                     n++;
-                    *hp = -(pl->d + pl->n[0] * pos[0] + pl->n[2] * pos[2]) / pl->n[1];
+                    *hp = -(pl->d + t) / pl->n[1];
                     hp++;
                 }
                 cell++;
