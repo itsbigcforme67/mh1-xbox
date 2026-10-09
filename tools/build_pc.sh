@@ -221,7 +221,34 @@ PICK="src/lobby/f/lb_ah.c:Lb_put_unique_act_hint"
 # main merged the lobby-client b/ files (lb_by20, lb_by103, lb_bz29, lb_bz104,
 # lb_bz110, lb_bz137, lbuiv, lbuiw) into one TU, f/lb_cli.c (8 Oct 2026):
 # the functions the PC used from them
+if [ -n "$ONLINE" ]; then
+    # online (docs/network.md "The online town"): the whole lobby client (login, top menu, plaza, lobby, rooms,
+    # matching) and the plaza screens; their functions win over the near-match / stand-in copies
+    BMATCH="$BMATCH src/lobby/f/lb_cli.c src/lobby/f/lb_online_nm.c"
+    LOBBY="$LOBBY src/lobby/f/lb_plz2.c src/lobby/f/lb_plz3.c"     # (the matched lbui* runs they contain win)
+    # the lobby client's helpers and the server-notice callbacks (b/ runs), the town's receive dispatcher (lb_ae.c),
+    # the plaza chat (lb_pc.c)
+    for b in by95 by04 cb05 by06 cb02 by01 bz54 cb01 by02 by03 cb04 bz53 bz52 rm01 by05 cb03 bz58 bz55 bz59 bz57 bz56 bz51 \
+             by39 bz03 bz22 bz09 bz23 bz06 bz73 bz72 bz07 bz08 gs01 bz160 by117 bz131 bz66 c507 c504 lmp01 bz99 bz100 \
+             bz101 bz102 bz13 bz18 bz10 bz11 bz12 bz14 bz76 bz77 bz78 bz79 by40 id01 bz143 tsh01 bz49 crr01 bz155 by22 \
+             by34 bz161 bz64 by35 bz156 nt02 c506 jip01 by132 c512 c516 bz134 bz04 bz74 bz75 ncf01 bz127 bz50 \
+             by12 nt01 dsi01 tos01; do
+        LOBBY="$LOBBY src/lobby/b/lb_$b.c"
+    done
+    LOBBY="$LOBBY src/lobby/b/nm/CallBack_Event_MatchEntryUser.c src/lobby/b/nm/CallBack_Event_RoomLeaver.c \
+           src/lobby/b/nm/lm_member_list_mv.c src/lobby/b/nm/lm_room_member_mv.c src/lobby/b/nm/Lb_join.c \
+           src/lobby/b/nm/nwDispStr_Html.c src/lobby/b/nm/Analysis_TagCode.c src/lobby/b/nm/plaza_capcomPage.c \
+           src/lobby/b/nm/plaza_checkFriendTrans.c src/lobby/b/nm/plaza_mailBoxTrans.c src/lobby/b/nm/plaza_setMyCommentTrans.c \
+           src/lobby/f/lb_e10.c src/lobby/b/nm/lb_select_set_data.c src/lobby/b/nm/lb_select_tag.c src/lobby/b/nm/disp_string_handle.c \
+           src/lobby/b/nm/check_halfcode.c src/lobby/b/nm/plaza_searchMemberTrans.c \
+           src/lobby/b/nm/plaza_setChatModeTrans.c"
+    PICK="$PICK src/lobby/f/lb_ab.c:lb_member_changeCheck,lb_member_inCheck,lb_member_outCheck src/lobby/f/lb_w.c:lb_rule_seet_set \
+          src/lobby/f/lb_v.c:lb_rule_seet_trans,lb_guild_make_room"
+    PICK="$PICK src/lobby/f/lb_ae.c:Lb_check_receipt,lb_set_pl_pos,lb_set_pl_status,lb_set_pl_stage,lb_check_chair,lb_set_chair,lb_recv_myChair,lb_chidori_off,lb_trade_start,lb_trade_check,lb_trade_result,lb_send_my_status,lb_commer_message"
+    PICK="$PICK src/lobby/f/lb_pc.c:Plaza_chat_init,Plaza_chat_move,plaza_chat_log_disp_line,plaza_name_sprint,Plaza_chatlog_mv,Plaza_log_id_chk,Plaza_ReibunEdit_i,Plaza_ReibunEdit_mv,Plaza_disp_ReibunEdit,plaza_disp_chat_log_sub,Plaza_disp_chatlog,Plaza_chatlog_i,Reibun_select_mv,Reibun_Edit_Start,Reibun_Edit_Core,Reibun_print,Lb_send_chat,ChatKinsoku_chk,Name_ID_change,plaza_log_id_chk_sub,Plaza_get_chat_line_num"
+else
 PICK="$PICK src/lobby/f/lb_cli.c:lbc_text_lobby_trans,Lbs_GetRoomInfo,Lbc_set_prim,Lbc_init_network_work,Lbc_connect,text_lobby_trans_ot3,GetRoomRule,Lbs_MatchStart"
+fi
 PICK="$PICK src/lobby/f/lb_e25.c:eft25_m src/lobby/f/lb_v17.c:Lb_make_quest_tbl src/lobby/f/lb_t.c:get_CA_size src/lobby/f/lb_uif.c:put_button_help src/lobby/f/lb_gy01.c:lb_guild_check_keyQuest src/lobby/b/lbsnd02.c:sound_req_com src/lobby/b/lbsnd03.c:ashi_sd_req_005C4980"
 LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*}"; done)"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
@@ -236,7 +263,7 @@ GAME="$GAME $HIT $CAM $EFT $PL $EM $QUEST $LOBBY $MC $BOOT $SK"
 # DNAS answering success). The result is build/pc/mhview_online; a plain build never
 # contains any of it, so single player and all tests are unaffected.
 MHV=mhview
-NETFILES=""; NETRT=""; NETFRONT=""
+NETFILES=""; NETRT=""; NETFRONT=""; NETALIASES=""
 if [ -n "$ONLINE" ]; then
     MHV=mhview_online
     # the game's own network C that is linked (the lobby-server client, the connect / DNS helpers).
@@ -248,9 +275,13 @@ if [ -n "$ONLINE" ]; then
            src/lobby/cnet/cnlbsf.c src/lobby/cnet/cnlbsg.c src/lobby/cnet/cnlbsh.c src/lobby/cnet/cnlbs_nm.c \
            src/lobby/b/lb_bz20.c src/lobby/b/lb_c509.c src/lobby/b/lb_bz81.c src/lobby/b/lb_tcp01.c"
     GAME="$GAME $NETMAIN $NETLB"
-    WEAK="$WEAK lb__cnlbs_nm"
+    WEAK="$WEAK lb__cnlbs_nm lb__lbui_nm"   # lbui_nm: the plaza TUs lb_plz2/3 (matched C) win
+    # main's cnLBS file-download C calls the lobby's cnet helpers by address
+    NETALIASES="func_5AD280=__cnetSub_Set_BgProcess func_5AD1B0=_cnet_Return_CallBack func_5ADB60=GetRecvData8 \
+             func_5ADB90=GetRecvData32 func_5ADEE0=SetSendCommand func_5AE090=SetSendCommandLen func_5AE0B0=SetSendData8 \
+             func_5AE120=SetSendData32 func_5AE300=Write_Socket"
     NETFRONT="src/pc/net/net_cpinet.c src/pc/net/net_dnas.c src/pc/net/net_netcnf.c src/pc/net/net_peer.c"
-    NETRT="rt_net rt_np"
+    NETRT="rt_net rt_np rt_online"
     PC="$PC $NETFRONT"
     EXTRA_CFLAGS="$EXTRA_CFLAGS -DMH1_ONLINE=1"
 fi
@@ -513,7 +544,7 @@ ALIASES_A="D_63BBB0=enemy_scale \
 # is the copy, not the matched winner
 FNDEFS=$(for a in $ALIASES_A; do case "$a" in func_*) printf '%s ' "-D$a" ;; esac; done)
 ALIASES_A=$(for a in $ALIASES_A; do case "$a" in func_*) ;; *) echo "$a" ;; esac; done)
-ALIASES="$ALIASES $ALIASES_A"
+ALIASES="$ALIASES $ALIASES_A $NETALIASES"
 if [ -n "$PC_SYS" ]; then
     SYS="$PC_SYS"
 elif echo 'int main(void){return 0;}' | gcc -m32 -x c - -o build/pc/.m32test $LIBS 2>/dev/null; then
@@ -611,14 +642,15 @@ for f in $GAME; do
     # lobby C that gcc rejects as is: a 128-bit quadword copy (lq/sq on the
     # PS2), a static that the header declares global, a call without the
     # argument the header gives
-    src/lobby/f/lb_f.c|src/lobby/f/lb_d.c|src/lobby/f/lb_n.c|src/lobby/f/lb_q01.c|src/lobby/f/lb_u.c)
+    src/lobby/f/lb_f.c|src/lobby/f/lb_d.c|src/lobby/f/lb_n.c|src/lobby/f/lb_q01.c|src/lobby/f/lb_u.c|src/lobby/b/lb_bz1[0-38].c|src/lobby/f/lb_w.c|src/lobby/f/lb_v.c|src/lobby/f/lb_ab.c|src/lobby/f/lb_e10.c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/^typedef unsigned __int128 u128;/typedef struct { unsigned int w[4]; } u128;/;
              s/^static s8 check_sender0()/s8 check_sender0()/;
-             s/^\( *\)Lbc_init_network_work();/\1Lbc_init_network_work(0);/' "$f" > "$src"
+             s/^\( *\)Lbc_init_network_work();/\1Lbc_init_network_work(0);/;
+             s/font_set_stack_no(\*(s32 \*)(a + 0x18), b, c);/font_set_stack_no(*(s32 *)(a + 0x18));/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
     # lb_cli.c: a struct of 128-bit quadwords (lq/sq copies on the PS2)
-    src/lobby/f/lb_cli.c)
+    src/lobby/f/lb_cli.c|src/lobby/b/lb_bz16[01].c)
         src="build/pc/abs/$b.c"; mkdir -p build/pc/abs
         sed 's/typedef struct BRPD { unsigned __int128 q\[29\]; } BRPD;/typedef struct BRPD { struct { unsigned int w[4]; } q[29]; } BRPD;/' "$f" > "$src"
         INC="$INC -I$(dirname "$f")" ;;
@@ -777,7 +809,7 @@ sed -n 's/^-Wl,--defsym,\([^=]*\)=.*/\1/p' build/pc/rt_gen.defsym 2>/dev/null | 
     { grep -vxF "$(for a in $ALIASES; do echo "${a%%=*}"; done)" || true; } > build/pc/aliased.txt
 sort -u build/pc/undefined.txt build/pc/aliased.txt -o build/pc/undefined.txt
 comm -23 build/pc/defined.txt build/pc/aliased.txt > build/pc/defined.tmp && mv build/pc/defined.tmp build/pc/defined.txt
-python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
+RT_GEN_LB_ALIASES=$ONLINE python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
 cc_obj rt_gen "$CC $CFLAGS $SYS -w -c build/pc/rt_gen.c -o build/pc/rt_gen.o"
 echo build/pc/rt_gen.o >> build/pc/objs.txt
 # the generated D_xxxx aliases (gen_rt_auto.py writes them as --defsym lines)

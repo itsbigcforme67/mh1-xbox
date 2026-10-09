@@ -77,6 +77,38 @@ def main():
             if a <= va < a + size and k != n and (img == "main") == (va < OVL):
                 alias[n] = (k, va - a)
                 break
+    # RT_GEN_LB_ALIASES=1 (the ONLINE=1 build): the lbtu3 alias names of the lobby-client TUs
+    # (config/lobby_aliases.txt: CallBack_X_o, Lbc_set_prim_k, ClassInfo_c43, pNet_c7, ... = an address) name the
+    # same object as the symbol at that address: a function alias when that function is linked, the data itself
+    # otherwise (a stand-in would make a callback or a table a no-op function)
+    import os
+    if os.environ.get("RT_GEN_LB_ALIASES"):
+        at = {}
+        for src in (main_s, lb_s):
+            for k, v in src.items():
+                if v[0] not in at or (v[1] == "func" and at[v[0]][1] != "func"):
+                    at[v[0]] = (k, v[1])
+        try:
+            lines = open("config/lobby_aliases.txt").read().splitlines()
+        except OSError:
+            lines = []
+        for line in lines:
+            m = re.match(r"^\s*(\w+)\s*=\s*0x([0-9A-Fa-f]+);", line)
+            if not m or m.group(1) not in names:
+                continue
+            n, va = m.group(1), int(m.group(2), 16)
+            k, kind = at.get(va, (None, None))
+            if kind == "func":
+                if k in defined:
+                    alias[n] = (k, 0)
+                continue
+            if va >= OVL:
+                lb_s[n] = (va, "data", 0)          # an alias into rt_lb_mem below
+                continue
+            for a, size, k2, img in sized:
+                if a <= va < a + size and img == "main":
+                    alias[n] = (k2, va - a)
+                    break
     for n, (k, off) in alias.items():
         names.discard(n)
         if k not in defined:

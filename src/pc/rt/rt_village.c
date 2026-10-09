@@ -37,7 +37,12 @@ void rt_prims_reset(void);
 
 static int active, tick, all_ticks, last_step = -1, last_x68 = -1, last_6 = -1;
 
+#ifdef MH1_ONLINE
+int rt_online_active(void);
+int rt_village_active(void) { return active || rt_online_active(); }     /* the online town is drawn as the village */
+#else
 int rt_village_active(void) { return active; }
+#endif
 
 /* Game_task mode 6 (offline): what the PS2 does before Local_main runs */
 void rt_village_enter(void)

@@ -108,7 +108,16 @@ void Game_task(u8 *t)
     if (!boot_done)
         rt_log("boot: title / new hunter / load finished (Game_task started after %d ticks): going to the village", boot_ticks);
     boot_done = 1;
+#ifdef MH1_ONLINE
+    if (system_w[0x10]) {       /* "go to town" (network mode): the online town (rt_online.c) */
+        void rt_online_request(void);
+        rt_log("boot: network mode chosen: online town");
+        rt_online_request();
+    }
+    if (0) {
+#else
     if (system_w[0x10]) {       /* "go to town" (network mode): not on the PC yet */
+#endif
         fprintf(stderr, "rt_boot: network mode is not available on the PC: going to the village\n");
         system_w[0x10] = 0;
     }

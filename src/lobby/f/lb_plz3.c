@@ -498,6 +498,85 @@ asm int plaza_enterLobbyTrans()
 {
 #include "plaza_enterLobbyTrans.inc"
 }
+#else
+/* PC build (ONLINE=1): the plaza's lobby list (7 lobbies a page: name, users) or the member list of the chosen
+ * lobby; agent C's reading of the asm (wip/plaza_enterLobbyTrans_tu.c), the lobby count is ClassInfo+6 (lhu at
+ * 0x59A0A4, the draft had +2). Not compared with the PS2 picture. */
+extern char tl_member_buff[];
+extern char tl_msg_tbl[];
+extern char lit_2315[];
+
+
+void plaza_enterLobbyTrans(int x, int y)
+{
+    char b2[0x40];
+    char b1[0x40];
+    int i = 0, pg, a, c, v;
+    LB_PINFO *q;
+    char *m = tl_member_buff;
+
+    put_mainWindow(x, y);          /* a0 / a1 = x, y left over */
+    flfntSetSize(0x12, 0x12);
+    if (pNet->step != 2 && pNet->step != 3) {
+        put_main_cursor2_p12(x, y, (u8)pNet->x0A % 7);
+        put_titles((s16)x + 10, (s16)y + 0x28, *(int *)tl_msg_tbl);
+        y = (s16)(y + 0x3E);
+        pg = (u8)pNet->x0A / 7 * 7;
+        q = LobbyInfo + pg;
+        v = (s16)x + 10;
+        do {
+            if (pg < *(u16 *)((u8 *)&ClassInfo + 6)) {
+                c = *(s16 *)((u8 *)q + 14);
+                a = (s16)(*(s16 *)((u8 *)q + 2) - c);
+                if (a < 0)
+                    a = 0;
+                sprintf(b1, lit_193_0065DBE8, Get_ServerName(), q->name);
+                sprintf(b2, lit_2315, ((char **)lb_num_str)[a % 10], ((char **)lb_num_str)[c % 10]);
+                Lb_put_icon_k((s16)v + 202, y, 7, -1);
+                Lb_put_icon_k((s16)v + 309, y, 8, -1);
+                if (i == (u8)pNet->x0A % 7) {
+                    font_print_double_k(v, y, 1, 4, b1);
+                    font_print_double_k((s16)v + 232, y, 1, 4, b2);
+                } else {
+                    font_set_palette(0);
+                    flfntLocate(v, y);
+                    font_print(lit_2316, b1);
+                    flfntLocate((s16)v + 232, y);
+                    font_print(lit_2316, b2);
+                }
+            } else {
+                sprintf(b2, lit_2317);
+                if (i == (u8)pNet->x0A % 7) {
+                    font_print_double_k(v, y, 1, 4, b2);
+                } else {
+                    font_set_palette(0);
+                    flfntLocate(v, y);
+                    font_print(lit_2316, b2);
+                }
+            }
+            y = (s16)(y + 22);
+            i++;
+            q++;
+            pg++;
+        } while (i < 7);
+        flfntLocate((s16)x + 316, y);
+        Put_page_num_k((s16)x + 316, y, (u8)pNet->x0A / 7, 2, 0);
+    } else {
+        put_titles((s16)x + 10, (s16)y + 0x28, *(int *)(tl_msg_tbl + 4));
+        y = (s16)(y + 0x3E);
+        if (pNet->x06 == 0) {
+            flfntSetSize(0x16, 0x12);
+            font_set_palette(4);
+            font_print_double_k((s16)x + 10 + 70, y + 60, 1, 4, *(char **)(tl_msg_tbl + 8));
+        } else {
+            for (i = 0; i < 8; i++) {
+                put_member_info((s16)x + 10, y, m + 640, m + 648, m + 666, 1);
+                y = (s16)(y + 22);
+                m += 764;
+            }
+        }
+    }
+}
 #endif
 
 void plaza_movePlazaTrans(a)
@@ -884,6 +963,109 @@ void plaza_chatTrans() {
 asm void plaza_trans_ot0()
 {
 #include "plaza_trans_ot0.inc"
+}
+#else
+/* PC build (ONLINE=1): agent C's near-match (wip/plaza_trans_ot0_tu_2diff.c: one register differs from 0x598... asm) */
+extern u8 D_3A27D6[];
+extern char lit_3241[];
+typedef struct { u8 p[0xF0]; s16 x; s16 y; } TXF;
+void plaza_trans_ot0(a)
+LB_NETW *a;
+{
+    int sp60[3] = {0, 0x01C00280, 0xB0101010};
+    u32 col = 0xFF602020;
+    char sp40[0x20];
+    char sp30[0x10];
+    int sp20[4] = {0x005600D8, 0x0D1B120F, 0x80000000, 0xFF2A0000};
+    TXF *t;
+    u8 *p;
+
+    font_set_stack_no(*(int *)((u8 *)a + 0x18));
+    if (pNet->depth > 1) {
+        Put_F(sp60);
+    }
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
+    SetFilterMode(1);
+    flSetRenderState(0x60, 0);
+    Put_2TF(textLobbyTbl + 0x14);
+    DispSceneTitle();
+    DispHelpLine();
+    p = &pNet->sel;
+    if (pNet->sel == 0xE || pNet->sel == 0xC) {
+        col = 0xFF606025;
+        sp20[3] = 0xCC151200;
+    }
+    switch (*p) {
+    case 0:
+    case 8:
+    case 3:
+    case 4:
+        break;
+    default:
+        DispFrameMessage(sp20, 0);
+        Draw_square(0xD8, 0x76, 0x192, 1, col);
+        Draw_square(0xD8, 0x13C, 0x192, 1, col);
+        break;
+    }
+    switch (pNet->sel) {
+    case 12:
+    case 14:
+    default:
+        SetSceneSubTitleColor(0xCC151200);
+        plaza_chatTrans(pNet);
+        Plaza_disp_chat();
+        break;
+    case 0:
+        plaza_enterLobbyTrans(0xD8, 0x50);
+        break;
+    case 1:
+        plaza_movePlazaTrans();
+        break;
+    case 2:
+        break;
+    case 3:
+        plaza_checkFriendTrans(0xD8, 0x50, 0);
+        break;
+    case 5:
+    case 6:
+        plaza_searchMemberTrans();
+        break;
+    case 4:
+        plaza_mailBoxTrans(0xD8, 0x50, 0);
+        break;
+    case 7:
+        plaza_checkMyStatusTrans();
+        break;
+    case 8:
+        plaza_setMyCommentTrans(0xD8, 0x50, 0);
+        break;
+    case 9:
+        DispFrameMessage(sp20, 0);
+        Draw_square(0xD8, 0x76, 0x192, 1, col);
+        Draw_square(0xD8, 0x13C, 0x192, 1, col);
+        plaza_setChatModeTrans();
+        plaza_chatTrans(pNet);
+        break;
+    case 10:
+        Plaza_disp_ReibunEdit();
+        break;
+    case 11:
+        Plaza_disp_chatlog();
+        break;
+    case 13:
+        break;
+    }
+    DispSceneSubTitle();
+    DispButtonHelp(pNet);
+    flfntSetSize(0x12, 0x12);
+    t = (TXF *)text_lobby_msg[2];
+    Lb_put_msg_type2(&t->x);
+    sprintf(sp40, lit_3241, *(u16 *)(D_3A27D6 + ClassInfo.plaza * 0x15C));
+    han2zen(sp40, sp30);
+    font_set_palette(0);
+    flfntLocate(t->x + 0x48, t->y);
+    font_print(lit_2316, sp30);
 }
 #endif
 

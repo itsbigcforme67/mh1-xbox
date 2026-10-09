@@ -16,6 +16,37 @@ stops the build so a stale patch is noticed. Found with tools/argregs.py
 import sys
 
 PATCHES = {
+    # cnLBS file download (main, ONLINE=1): the lobby work by absolute address -> rt_lb_mem (the host copy of lobby.bin)
+    "src/main/net/cnlbs01.c": [
+        ("#define A_U8(a) (*(u8 *)(a))\n#define A_S32(a) (*(s32 *)(a))",
+         "extern unsigned char rt_lb_mem[];\n#define A_U8(a) (*(u8 *)(rt_lb_mem + ((a) - 0x533980)))\n#define A_S32(a) (*(s32 *)(rt_lb_mem + ((a) - 0x533980)))"),
+    ],
+    "src/main/net/cnlbs02.c": [
+        ("#define A_U8(a) (*(u8 *)(a))\n#define A_S32(a) (*(s32 *)(a))",
+         "extern unsigned char rt_lb_mem[];\n#define A_U8(a) (*(u8 *)(rt_lb_mem + ((a) - 0x533980)))\n#define A_S32(a) (*(s32 *)(rt_lb_mem + ((a) - 0x533980)))"),
+    ],
+    "src/main/net/cnlbs03.c": [
+        ("#define A_U8(a) (*(u8 *)(a))\n#define A_S32(a) (*(s32 *)(a))",
+         "extern unsigned char rt_lb_mem[];\n#define A_U8(a) (*(u8 *)(rt_lb_mem + ((a) - 0x533980)))\n#define A_S32(a) (*(s32 *)(rt_lb_mem + ((a) - 0x533980)))"),
+    ],
+    # ONLINE=1 lobby client (docs/network.md "The online town"): a0 left over (tools/argregs.py, the asm at the call)
+    "src/lobby/f/lb_plz2.c": [
+        ("    int id = Lb_get_plID() & 0xFF;", "    int id = Lb_get_plID(a) & 0xFF;"),           # 0x59504C: a0 = a
+        ("        r = getHandleFromID();", "        r = getHandleFromID(a);"),
+    ],
+    "src/lobby/f/lb_ae.c": [
+        ("        id = Lb_get_plID() & 0xFF;", "        id = Lb_get_plID(a) & 0xFF;"),       # 0x5C4E8C: a0 = the sender id
+    ],
+    "src/lobby/b/lb_bz08.c": [
+        ("void cnWrap_SetFontColor(void) {\n    flfntSetPalette();", "void cnWrap_SetFontColor(int c) {\n    flfntSetPalette(c);"),
+    ],
+    "src/lobby/b/nm/lm_member_list_mv.c": [
+        ("                Lb_PlStatusSet();", "                Lb_PlStatusSet(p->menu);"),      # 0x5B2F08: a0 = the member index
+    ],
+    # the menu step tables are called without arguments; the steps read the menu work (a0 left over)
+    "src/lobby/b/lb_bz131.c": [
+        ("    ((int (**)())&ranking_jmp_175)[F(u8, arg0, 2)]();", "    ((int (**)())&ranking_jmp_175)[F(u8, arg0, 2)](arg0);"),
+    ],
     # a0 = em left over (were -D macros in build_pc.sh; clang rejects the
     # macro expanding inside the K&R prototype, so patch the calls only)
     "src/game/em/em_core_nm.c": [

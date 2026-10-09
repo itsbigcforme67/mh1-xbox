@@ -44,6 +44,7 @@ static int trace = -1;
 /* Online_ck (0x162D60): system_w+0x10 != 0 on the PS2 */
 int Online_ck(void) { return rt_online; }
 int rt_np_active(void) { return rt_online; }
+void rt_np_set_online(int on) { rt_online = on; }      /* the online town (rt_online.c) */
 
 static double now_s(void)
 {
@@ -428,6 +429,9 @@ static int load_own_hunter(void)
     fprintf(stderr, "co-op: hunter \"%.18s\" from save slot %d (%d zenny)\n", (char *)User_data + 8, s + 1, *(s32 *)(User_data + 0x20));
     return 0;
 }
+
+/* the online town (rt_online.c) started without the title's CONTINUE (--online): the card's hunter */
+int rt_np_load_hunter(void) { return load_own_hunter(); }
 
 /* the player's hunter back into his own save (the bed save's steps: Save_userdata,
  * save_data_sub(1, ...), encode_data; only this slot changes) */

@@ -1530,6 +1530,20 @@ static void village_step(void)
     if (rt_np_session_end() >= 0)   /* co-op over: the hunter saved, single player again */
         lp = 0;
 #endif
+#ifdef MH1_ONLINE
+    {   /* the network mode (title menu, or --online): the online town (rt_online.c) instead of the village */
+        int rt_online_wanted(void), rt_online_active(void), rt_online_tick(void);
+        void rt_online_enter(void);
+        if (rt_online_wanted()) {
+            if (!rt_online_active())
+                rt_online_enter();
+            q = rt_online_tick();
+            if (q < 0)
+                quest_back();
+            return;
+        }
+    }
+#endif
     if (!rt_village_active())
         rt_village_enter();
     q = rt_village_tick();
@@ -1624,6 +1638,7 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i], "--sw-trace")) sw_trace = 1;
 #ifdef MH1_ONLINE
         else if (!strcmp(argv[i], "--nettest") && i + 1 < argc) nettest = argv[++i];
+        else if (!strcmp(argv[i], "--online")) { void rt_online_request(void); rt_online_request(); }   /* the online town */
         else if (rt_np_arg(argc, argv, &i)) ;      /* co-op: --host [IP] / --join IP, --port, --players */
 #endif
         else if (!strcmp(argv[i], "--audio-dump") && i + 1 < argc) audio_dump = argv[++i];
