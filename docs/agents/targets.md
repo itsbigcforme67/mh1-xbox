@@ -205,3 +205,25 @@ Left: apiask_* (kanji conversion API of the soft keyboard), save_file_req (optio
 Tried without success within the cap: Pit_mv, Pit_mv_lb, Sel_back_disp, key_rept_du, WallHitInit/GroundHitInit, stolen_item_stack, ZoomRateCalc,
 Pl_slash_lv_ck, Pl_slash_calc, pl_at012, aan_ofs_calc, em_dur_set, Get_cam_grid_XZ, disp_others_info, Quest_next_em_set, FaceLinePos, Item_preparation,
 point_cam_sub, hit_sphr_sphr2 (18 -> 11 of 64), hit_cap_cap2_m (the two float temps t2 / h swap registers, nothing moves them).
+
+## 6. Second pass (agent B, 8 Oct 2026): hit detection, player, collision
+New tools: tools/calldiff.py (ordered call-target diff of a near-match against the original; finds a wrong callee),
+tools/sigdiff.py (float-op and constant/offset multiset diff; useful where semdiff is noisy). Method that found the bugs:
+`tools/draft.py main FUNC` (m2c) read against the near-match C, then calldiff for the callee list.
+Real behaviour differences fixed:
+1. GetWallHitBitEm (monster wall push, shit11_nm.c) called sphr_face_o4; the original calls sphr_face_o3, the same
+   sphere-vs-wall test as the player (o4 is only used by GetWallHitBit2). Monsters used the radius-adjusted height test and
+   the near-point y rewrite of o4.
+2. PushAdjust3 (shit14_nm.c, multi-contact wall push, both players and monsters): the two "edge contact is behind the face"
+   tests were inverted (`!(dot <= 0)`); the asm records the cover when dot <= 0 (checked in the asm: c.le.s, xori 1, beqz).
+   Wrong contacts were dropped from the push sum. A[]/B[] are now zeroed because the original reads A[k] past nA.
+Verified equivalent (no change): hit_cap_cap2_m, hit_cap_cap3_m (every differing instruction is the f20/f22 swap of t2 and h,
+a commutative float add, call-argument scheduling, or the unreachable default of the inner switch; calls match by name;
+no data relocations), hit_sphr_sphr2 (float registers and a commutative add only; 18 -> 11 stays, a declaration-move search
+over all 22 locals of cap2_m found nothing), basic_com_ck (switch ladders and branch order only), pl_at009, pl_turn_sub,
+Pl_slash_lv_ck, Pl_shell_set, body_hit, body_hit_sub_em/new (aligned diff), sphr_face_o3/o4 (the original duplicates the edge
+loop for the two centre points; ours uses a pointer), GetWallHitBit2, GetWallHitBitPl, hosei_sub, GetFloorSlide,
+GetGroundHitArea, GetWallHitLine, GetEyeHitLine (a quirk kept: the seen-polygon test only compares seen[0]).
+Not reached in the coverage run (test_all_quests + loop + activities): hit_cap_cap2_m/cap3_m, hit_sphr_sphr2, pl_move_sub.
+Not done: GetGroundHitStatusAreaPl/Em, GetGroundHitAreaUpper, pl_move_sub (sigdiff shows one c.lt.s the original has and ours lacks),
+gun_adj_sub, Pl_item_stack, camera (cam_nm, camr*).

@@ -59,7 +59,7 @@ int PushAdjust3(HSWEEP *sw, f32 *pos, u8 *flagp) {
     f32 d[3];
     f32 box[12];
     f32 L;
-    int nA = 0;
+    int nA = 0; /* A[]/B[] zeroed below: the original reads A[k] past nA (stack garbage) in the cover pass */
     int nB = 0;
     int nd = 0;
     int i, j, k;
@@ -69,6 +69,10 @@ int PushAdjust3(HSWEEP *sw, f32 *pos, u8 *flagp) {
     HPOLY *pb;
     f32 t;
 
+    for (i = 0; i < 0x20; i++) {
+        A[i] = 0;
+        B[i] = 0;
+    }
     switch (hit_poly_num) {
     case 0:
         break;
@@ -111,7 +115,7 @@ int PushAdjust3(HSWEEP *sw, f32 *pos, u8 *flagp) {
                         r = share_edge(pb, pa, c);
                         if (r == 2) {
                             PointToPoint(d, c, hit_decision[A[ia]].v[0]);
-                            if (!(flvecInnerProduct(d, hit_decision[A[ia]].n) <= 0.0f)) {
+                            if (flvecInnerProduct(d, hit_decision[A[ia]].n) <= 0.0f) {   /* behind the face (the asm records when the product is <= 0) */
                                 why[nd] = 2;
                                 cov[nd] = B[ib];
                                 nd++;
@@ -156,7 +160,7 @@ int PushAdjust3(HSWEEP *sw, f32 *pos, u8 *flagp) {
                                 r = share_edge(pa, pb, c);
                                 if (r == 2) {
                                     PointToPoint(d, c, hit_decision[A[k]].v[0]);
-                                    if (!(flvecInnerProduct(d, hit_decision[A[k]].n) <= 0.0f)) {
+                                    if (flvecInnerProduct(d, hit_decision[A[k]].n) <= 0.0f) {   /* behind the face */
                                         why[nd] = 2;
                                         cov[nd] = B[j];
                                         nd++;

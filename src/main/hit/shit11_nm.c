@@ -1,8 +1,8 @@
 /* shit11_nm (not built): wall collision of players and monsters against the
  * stage wall HITS (f_sphr 0x00114D90-0x00115EB0). Both build an HSWEEP from
  * the entity's old/new position, look at the 2x2 (or more) grid cells
- * around the new position, test every wall polygon (sphr_face_o3: players,
- * sphr_face_o4: monsters) and let PushAdjust3 move the entity out. The
+ * around the new position, test every wall polygon (sphr_face_o3: players AND
+ * monsters through GetWallHitBitEm; sphr_face_o4 is GetWallHitBit2's) and let PushAdjust3 move the entity out. The
  * touched polygons end up in hited_wall_no[]; players get them (angle
  * relative to their facing, kind, normal) in pl_wall_mat[id] (up to 21
  * entries, 0xC bytes, terminated by flags = 0, a "special" wall first),
@@ -242,7 +242,7 @@ void GetWallHitBitEm(f32 r, f32 *seg, int mask, void *em) {
                                         }
                                     }
                                     if (found == 0) {
-                                        if (sphr_face_o4(&sw, poly, pos) != 0) {
+                                        if (sphr_face_o3(&sw, poly, pos) != 0) { /* the original calls o3 here too (o4 is only used by GetWallHitBit2) */
                                             hit_wall[nh++] = poly;
                                         }
                                         ring[nr++] = poly;
