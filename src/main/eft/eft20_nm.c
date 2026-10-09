@@ -512,7 +512,7 @@ void eft20_i(EFTW *ew) {
                 }
                 break;
             case 7:
-                ew->scale *= 0.7f + (0.2f / 1000.0f) * ((u16)ran_suu(1) & 0x3FF);
+                ew->scale *= 0.7f + 0.0002f * ((u16)ran_suu(1) & 0x3FF);
                 break;
             case 10:
                 if (shell != 0) {

@@ -1750,15 +1750,15 @@ void em12_main(EMW *em) {
             hit = 1;
             if (em->kind == 12 && (f32)em->x302 > 0.2f * (f32)em->x792) {
                 if (a < 0x8001) {
-                    em_act_set(em, 4, 0);
-                } else {
                     em_act_set(em, 4, 2);
+                } else {
+                    em_act_set(em, 4, 1);
                 }
             } else if (!(em->mode == 4 && (em->x15 == 3 || em->x15 == 4))) {
                 if (a < 0x8001) {
-                    em_act_set(em, 4, 3);
-                } else {
                     em_act_set(em, 4, 4);
+                } else {
+                    em_act_set(em, 4, 3);
                 }
             }
             em->x839 = 0;

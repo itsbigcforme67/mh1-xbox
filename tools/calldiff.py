@@ -15,6 +15,7 @@ with tempfile.TemporaryDirectory(dir=os.path.join(C.ROOT, 'build')) as tmp:
     funcs = C.read_obj(os.path.join(C.ROOT, obj))
 orig = C.original_functions(); names = C.func_names_by_addr()
 base_img = C.module_image(mod)
+MR = C.matched_ranges()
 def nm(a):
     s = names.get((mod, a)) or names.get(('main', a)) or set()
     return '/'.join(sorted(s)) or '0x%X' % a
@@ -22,17 +23,27 @@ for name, (code, masks, calls) in funcs.items():
     if want and name not in want: continue
     c = [x for x in orig.get(name, []) if x[0] == mod]
     if not c: continue
-    _, addr, size = c[0]
+    c = C.prefer_unmatched(c, MR)
     base, img = base_img
-    o = img[addr - base: addr - base + size]
-    oc = []
-    for i in range(0, len(o), 4):
-        w = struct.unpack_from('<I', o, i)[0]
-        if w >> 26 in (2, 3):
-            tg = ((addr + i + 4) & 0xF0000000) | ((w & 0x3FFFFFF) << 2)
-            if w >> 26 == 3 or not (addr <= tg < addr + size):
-                oc.append(nm(tg))
+    def ocalls(addr, size):
+        o = img[addr - base: addr - base + size]
+        oc = []
+        for i in range(0, len(o), 4):
+            w = struct.unpack_from('<I', o, i)[0]
+            if w >> 26 in (2, 3):
+                tg = ((addr + i + 4) & 0xF0000000) | ((w & 0x3FFFFFF) << 2)
+                if w >> 26 == 3 or not (addr <= tg < addr + size):
+                    oc.append(nm(tg))
+        return oc
     mc = [re.sub(r'_[0-9A-F]{8}$', '', calls[k]) if False else calls[k] for k in sorted(calls)]
+    # same-named originals (per-monster files): take the candidate whose callee multiset is closest to ours
+    def dist(oc):
+        a_ = collections.Counter(re.sub(r'_[0-9A-F]{8}$', '', x.split('/')[0]) for x in oc)
+        b_ = collections.Counter(re.sub(r'_[0-9A-F]{8}$', '', x) for x in mc)
+        return sum(((a_ - b_) + (b_ - a_)).values())
+    best = min(((dist(ocalls(a, s)), a, s) for _, a, s in c), key=lambda t: (t[0], abs(t[2] - len(code))))
+    _, addr, size = best
+    oc = ocalls(addr, size)
     def norm(s):
         s = re.sub(r'^func_0*([0-9A-Fa-f]+)$', lambda m: '0x' + m.group(1).upper(), s)
         return re.sub(r'_[0-9A-F]{8}$', '', s)

@@ -244,3 +244,52 @@ No further behaviour differences found; every flag was a false alarm after readi
 - Camera: cam_sub_stg, cam_sub_std (full read), point_cam_sub, SetCameraData, cam_rail_move, Spline, tri_diag users, DKA5, Cardano
   (root order), GetOrthogonalPoint (the `sltiu s0, 5` entry guard is the loop test), k_HitEmCamera (the inlined sign/larger-magnitude
   accumulate is the PUSH_ACC macro: signs differ -> keep the larger, else subtract). All equivalent.
+
+
+## Semantic review round 3 (agent E, 9 Oct 2026)
+
+Method: COV=1 build + the 11 PC tests + tools/sweep_random.py -> 286 unmatched functions entered (tools/cov_report.py); the 65 near-match
+files that define the ones with C were screened with semdiff, sigdiff, calldiff and the new tools/memdiff.py (exact load/store width, sign
+and offset; sign-only pairs listed separately), then every function was read against m2c/asm by five reviewers (player/collision/item,
+monsters, menus/quest/lobby, camera/light/set/weapon, effects/shell08). tools/check.py and calldiff.py now pick, among same-named
+originals (per-monster em_act, em_mov ...), the one that is not inside a matched run and is closest, so the per-monster files no longer
+compare against the wrong original. All functions below were read in full; verdict EQUIVALENT unless listed under Fixed.
+
+Reviewed and equivalent (no change): gun/sougun_adj parts other than the sign, Menu_mix_mv, item_stock_mv, quest_condition_prog (every case),
+Pit_init/reset/mv/mv_lb, menu_option_mv, Em_direct_set, Quest_next_em_set, Share_item_*, Ext_pick_point_init, remuneration_item_set,
+quest_item_ck2, reward_itembox, point_cam_sub, SetCameraData, Get_cam_grid_XZ, light_init, Pl_light_set, set13_m, eft06_m, eft13_*,
+eft20_m/t/pos_set, eft05_t, eft11_i, eft18_set_com, eft22_end_init, shell08_trans/rgba, em_neck_move_sub, neck_ang_set, Em_Master_Change,
+em_move, em_ride_sub, em_search_set, em_cmd_* (all), NextStage_Dir_Set, basic_com_ck, body_hit*, pl_turn_sub, pl_horm_sub, hosei_sub,
+VectorHitCheck, hit_hit_sub_em, WallHitInit/GroundHitInit, GetGroundShellHit/GetWaterHit/GetTenjoHit/GetYouganHit, HitWallPlayer,
+Item_preparation, and the lobby near-matches. Host rewrites in src/pc/rt (rt_*.c) have no original copy to compare and were not in scope.
+
+Fixed (one commit each):
+* `6749eced lb_disp_name: pass the quest icon numbers (0xF / 0xE) to Lb_put_icon_free instead of -1`
+* `2b009807 disp_mode_menu: draw nothing for the unhandled sub-states instead of using uninitialised locals`
+* `9f71ee89 disp_whole_map: full-map quad height is 320*scale, not 0.8*320*scale`
+* `3140d112 shell08_m: give the type 0/11 glow height a defined value on frames 34-36`
+* `83063320 disp_cannon, disp_gun_load_mess: build the sprite in the flps0008 layout`
+* `74e40eeb disp_pl_vital: stamina-warning flash colour used a constant instead of 18*sin for red/green`
+* `d9c1dbbe player_info_sub: place the map-sign ping at x+2 like the player icon, not x+5`
+* `ef826f55 pl_move_sub: pass the real fifth argument (PLW+0x7E4) to GetGroundHitStatusAreaPl instead of the PC adaptor's dummy`
+* `86a06860 disp_item_sub_select: only draw the current shell name when another shell exists`
+* `ce348858 em12_main: fix left/right hit reaction acts for damage types 12/14`
+* `bde8ea57 disp_item_sub_select: item-slot ladder case n==3 also looks up the previous item`
+* `6f75e0ed disp_item_sub_select: fix the case table of the item-slot switch when the list is being scrolled`
+* `bbec3774 weapon_trans: gun/bowgun barrel node Y scale starts at 1.0, not the weapon scale`
+* `8fbd1df5 em09_act_set: only clear x388 for act 4 when the new act is not 1`
+* `8bfe8d6a Pl_item_stack: keep the selected-item / selected-shell index (PLW+0x888/0x88E) unsigned like the original (lhu)`
+* `eeb51612 weapon_trans: bowgun (kind 5) barrel node uses its own Y scale, not the weapon scale`
+* `3412e353 eft20_i: type 7 scale jitter uses the 0.0002f constant (0x3951B717) instead of 0.2f/1000.0f (0x3951B718); one float ulp difference in the dust scale, no visible effect`
+* `ac85adc0 trans_box: mask the item colour to 24 bits before adding the fade alpha`
+* `512f1ed7 Pit_disp_pit_effect: set uv[3] (v start of the third vertex) instead of overwriting uv[5] twice`
+* `edcc83fd gun_adj_sub / sougun_adj_sub: read stick power (PLW+0x384) as unsigned like the original (lhu), not signed`
+* `f79a8fc9 disp_pachinger: write 0xD8 to the high half of the second uv word, as the original does`
+* `a57f34b3 pl_item_trans: char 0x323 aim pitch subtracts the base before rotating, not after`
+* `9cdac8b5 pl_item_trans: shield-bash sword trail base height is gy+77, not gy+80`
+* `12c5cb5d NextStage_No_Set: compare the target stage as unsigned 16 bit like the original`
+* `5dc923b2 set13_trans: stage 5 skips the flare roll (original jumps past it)`
+* `e219fb3a GetGroundHit: add plane constant to the (n0*x+n2*z) sum, as the original does (mula/madd then add), not left to right; float rounding of the ground height now matches`
+
+Not done: `disp_item_sub_normal` (not entered in the tests) may repeat the PFLP12-into-flps0008 layout mistake fixed in disp_cannon;
+tools/build_pc.sh `rtabi_*` adaptors (frame_check*, Eft06_set, Eft02_set6) could hide a dropped argument like the GetGroundHitStatusAreaPl one.

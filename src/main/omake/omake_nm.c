@@ -536,8 +536,12 @@ void disp_mode_menu(void)
             y = 0x96;
             msgs = game_menu_msg;
             break;
+        default:
+            return;
         }
         break;
+    default:
+        return;
     }
     flfntSetSize(0x18, 0x18);
     for (i = 0; i < n; i++) {

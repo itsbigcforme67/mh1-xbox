@@ -550,7 +550,7 @@ void weapon_trans(f32 alpha, PLX *pl) {
     int i, k;
     int pi;
     f32 sc = 1.0f;
-    f32 f, g, h;
+    f32 f, g, h, y;
 
     flSetRenderState(0x67, -1);
     reload_tex(4, pl->id * 4 + 0x1A);
@@ -777,12 +777,13 @@ void weapon_trans(f32 alpha, PLX *pl) {
         }
         h = 1.0f;
         g = 1.0f;
+        y = 1.0f;
         if (pl->x1C4 == 0) {
             switch (pl->char0) {
             case 0x579:
                 if (pl->kind == 5) {
                     g = weapon_dat_make((PLW *)pl, we11_1401_z);
-                    weapon_dat_make((PLW *)pl, we11_1401_y);
+                    y = weapon_dat_make((PLW *)pl, we11_1401_y);
                 } else {
                     g = weapon_dat_make((PLW *)pl, we13_1401_z);
                     h = weapon_dat_make((PLW *)pl, we13_1401_y);
@@ -792,14 +793,14 @@ void weapon_trans(f32 alpha, PLX *pl) {
                 if (pl->work1C == 0) {
                     if (pl->kind == 5) {
                         g = weapon_dat_make((PLW *)pl, we11_1405_z);
-                        weapon_dat_make((PLW *)pl, we11_1405_y);
+                        y = weapon_dat_make((PLW *)pl, we11_1405_y);
                     } else {
                         g = weapon_dat_make((PLW *)pl, we13_1405_z);
                         h = weapon_dat_make((PLW *)pl, we13_1405_y);
                     }
                 } else if (pl->kind == 5) {
                     g = weapon_dat_make((PLW *)pl, we11_1405_z2);
-                    weapon_dat_make((PLW *)pl, we11_1405_y2);
+                    y = weapon_dat_make((PLW *)pl, we11_1405_y2);
                 } else {
                     g = weapon_dat_make((PLW *)pl, we13_1405_z2);
                     h = weapon_dat_make((PLW *)pl, we13_1405_y2);
@@ -807,13 +808,13 @@ void weapon_trans(f32 alpha, PLX *pl) {
                 break;
             case 0x580:
                 g = weapon_dat_make((PLW *)pl, we13_1408_z);
-                if (pl->kind == 5) weapon_dat_make((PLW *)pl, we13_1408_y);
+                if (pl->kind == 5) y = weapon_dat_make((PLW *)pl, we13_1408_y);
                 else h = weapon_dat_make((PLW *)pl, we13_1408_y);
                 break;
             case 0x57C:
                 if (pl->kind == 5) {
                     g = weapon_dat_make((PLW *)pl, we11_1404_z);
-                    weapon_dat_make((PLW *)pl, we11_1404_y);
+                    y = weapon_dat_make((PLW *)pl, we11_1404_y);
                 } else {
                     g = weapon_dat_make((PLW *)pl, we13_1404_z);
                     h = weapon_dat_make((PLW *)pl, we13_1404_y);
@@ -843,7 +844,8 @@ void weapon_trans(f32 alpha, PLX *pl) {
                 if (pl->flag12 != 0 && jt != 2) {
                     if (pl->work1C != 0) {
                         if (pl->kind == 5) {
-                            g = 2.0f;
+                            y = 0.55f;
+                    g = 2.0f;
                         } else {
                             h = 0.8f;
                             g = 3.0f;
@@ -854,7 +856,8 @@ void weapon_trans(f32 alpha, PLX *pl) {
                     if (pl->kind == 1) flmatSetXYZ33(&nd[2].m, 0.0f, 0.0f, 0.0f);
                     flmatSetXYZ33(&nd[3].m, 0.0f, 0.0f, 0.0f);
                     if (pl->kind == 5) {
-                        g = 2.2f;
+                        y = 0.4f;
+                    g = 2.2f;
                     } else {
                         h = -0.5f;
                         g = 3.0f;
@@ -869,6 +872,7 @@ void weapon_trans(f32 alpha, PLX *pl) {
             if (pl->char0 == 0x579) {
             blk199:
                 if (pl->kind == 5) {
+                    y = 0.55f;
                     g = 2.0f;
                 } else {
                     h = 0.8f;
@@ -883,6 +887,7 @@ void weapon_trans(f32 alpha, PLX *pl) {
                 if (pl->kind == 1) flmatSetXYZ33(&nd[2].m, 0.0f, 0.0f, 0.0f);
                 flmatSetXYZ33(&nd[3].m, 0.0f, 0.0f, 0.0f);
                 if (pl->kind == 5) {
+                    y = 0.4f;
                     g = 2.2f;
                 } else {
                     h = -0.5f;
@@ -890,7 +895,7 @@ void weapon_trans(f32 alpha, PLX *pl) {
                 }
             }
         }
-        flmatMakeScale(&nd[3].m, h, sc, g);
+        flmatMakeScale(&nd[3].m, h, y, g);
         flmatSetTrans(&nd[3].m, p[0], p[1], p[2]);
         break;
     }
@@ -1331,7 +1336,7 @@ void pl_item_trans(PLX *pl) {
                 v[2] = 128.0f;
                 flvecRotY(v, ANG2RAD(pl->ang[1]));
                 t[0] = pl->pos[0] + v[0];
-                t[1] = 80.0f + pl->gy;
+                t[1] = 77.0f + pl->gy;
                 t[2] = pl->pos[2] + v[2];
                 v[0] = -52.0f;
                 v[1] = 0.0f;
@@ -1350,10 +1355,10 @@ void pl_item_trans(PLX *pl) {
                     v[0] += ((f32 *)m)[12];
                     v[1] += ((f32 *)m)[13];
                     v[2] += ((f32 *)m)[14];
-                    flvecRotY(v, -ry);
                     v[0] -= tx;
                     v[1] -= ty;
                     v[2] -= tz;
+                    flvecRotY(v, -ry);
                     rx = flArcTan2(v[2], v[1]);
                 } else {
                     rx = 0.0f;
