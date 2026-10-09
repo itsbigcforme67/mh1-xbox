@@ -75,6 +75,53 @@ near-black views for stages 21/42/20/48 where the camera sits in geometry; with 
 camera every stage is lit normally. The Fortress start (stage 14, quest 101) is a rampart: the game's own intro
 camera pulls out below the wall at tick ~200, which looks like a wall niche but is not a spawn bug.
 
+## Display options (agent F, 8 Oct 2026)
+
+Window, fullscreen, quality and widescreen. Defaults keep the original look: a 4:3 picture (the PS2 frame is
+512 x 448 shown at 4:3), vsync on, no MSAA, bilinear 2D art. Code: src/pc/gfx/gfx_gl.c (layout, MSAA, anisotropic,
+2D filter, fullscreen), src/pc/gfx/gfx_opts.c (settings file, flags, frame cap), src/pc/gfx/gfx_gl.h. The Xbox
+build does not use any of it (it stays 4:3; gfx_nv2a.c ignores the new render state 0x105).
+
+Settings file `mh1pc.ini`, next to the save folder (Linux `~/.local/share/mh1pc/mh1pc.ini`, Windows
+`%APPDATA%\mh1pc\mh1pc.ini`; with MH1_SAVE_DIR it sits in that folder's parent). `key = value`, written back on a
+normal exit (not by --shot runs), so the window size / position and Alt+Enter fullscreen are remembered.
+Precedence: built-in defaults < file < command-line flags.
+
+| flag | ini key | meaning |
+|----|----|----|
+| `--fullscreen` / `--windowed` | `fullscreen` | desktop fullscreen (borderless, the 3D is drawn at the desktop resolution). Alt+Enter or F11 toggles at run time |
+| `--size WxH` | `window_w`, `window_h`, `window_x`, `window_y` | windowed size / position (remembered; default 960x720, 1280x720 with widescreen). The window is resizable; the 3D is always drawn at its real pixel size |
+| `--vsync` / `--no-vsync` | `vsync` (1/0) | swap interval |
+| `--fps-cap N` | `fps_cap` | most drawn frames per second, 0 = off. Only drawing is limited: the game logic runs from a clock at 30 Hz, so 60 fps or uncapped never speeds the game up (the motions are interpolated per frame, positions change per tick) |
+| `--msaa N` | `msaa` | 0, 2 or 4 samples (falls back to 0 if the driver refuses; the bug reporter's id pass switches it off) |
+| `--aniso N` | `aniso` | 1 (off) to 16: anisotropic + trilinear for the 3D textures (mip levels are generated only when N > 1; the 2D art never uses them) |
+| `--widescreen` or `--aspect 16:9` / `--aspect 4:3` | `widescreen` | see below |
+| `--filter2d nearest\|linear` | `filter2d` | HUD / menu / text art: nearest keeps the original pixels hard at any scale |
+| `--ini FILE`, `--no-ini` | | use another settings file / ignore it |
+
+Layout (gfx_gl.c `layout()`): `rc` is the largest 4:3 rectangle in the window, `sc` the 3D scene rectangle.
+- 4:3 mode (default): 3D and 2D both on `rc`, black bars around it in any other window shape.
+- Widescreen (windows at least 4:3 wide; narrower ones fall back to 4:3): the 3D fills the window. The game's
+  field of view is the vertical one (flmat_perspective takes it as fovy), so only the aspect ratio changes and the
+  horizontal view widens (Hor+); the hunter and the framing stay as in 4:3. Menus, the title, movies and all
+  2D screens stay on the centred 4:3 rectangle with black bars; fades and full-frame untextured rectangles
+  (dimming) cover the whole window (rt_2d.c `quad`, rt_boot.c `rt_fade_draw`).
+- HUD anchoring: new render state `GFX_RS_2D_ANCHOR` (gfx.h: GFX_A_CENTER / LEFT / RIGHT / STRETCH). The in-quest HUD
+  is trans_pit_0/1/2 of the matched menu18.c, which cannot be edited, so tools/build_pc.sh renames its calls
+  (`-Ddisp_timer=rt_hud_disp_timer ...`) to wrappers in rt_2d.c that set the anchor: timer / vitals / sharpness / other
+  players' info keep to the left edge, the map and the item bar (and the ammo select) to the right edge. Text of those
+  widgets sits on the font stacks and is drawn later, so rt_font.c stores the anchor with each print. Pause menus
+  and everything else stay centred. Draws whose virtual size equals the window (the bug reporter) are stretched.
+- Culling: nothing to adjust. flCheckMeshFOV and Create_FOV are stand-ins on the PC (rt_main.c: everything is
+  visible, the GPU clips), so there is no 4:3 frustum to pop objects at the new edges. The bug reporter's unproject
+  uses the scene rectangle (gfx_pick_viewport). Not ported anyway: flvecrRotTransPers (world to screen, player name tags),
+  which would need the same anchor math when it is.
+- Known gaps: the village HUD (lobby, `*_lb` trans) is not anchored (it stays centred); no in-game options menu
+  (flags / ini only); the 2D "clean" filter is plain nearest, not integer scaling.
+
+Tested 8 Oct 2026 (headless shots, build/show/F, never committed): village, quest 131 and the pause menu at
+960x720 4:3 and 1280x720 widescreen, plus --msaa 4 --aniso 8 --filter2d nearest; the PC test set at the defaults.
+
 ## Build
 
 The build is 32-bit (`gcc -m32`, see "Port runtime" below and

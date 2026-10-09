@@ -74,6 +74,16 @@ Using your real PS2 save
   .cbs, .sps, .xps, or .ps2 for a new 8 MB memory card image holding just this save).
   The command line forms are  mhview.exe --import-save FILE  and  mhview.exe --export-save FILE.
 
+Display options
+  Alt+Enter (or F11) toggles fullscreen. The window can be resized; its size and position are remembered in
+  %APPDATA%\mh1pc\mh1pc.ini (a plain text file you can edit). The picture is the original 4:3 by default.
+  Flags (put them after the game name in play.bat's line, or set MH_ARGS=... before running play.bat):
+    --fullscreen / --windowed      --size 1280x720           --widescreen (16:9, wider view, HUD at the screen edges;
+    --vsync / --no-vsync           --fps-cap 60               menus stay 4:3 in the middle)
+    --msaa 2|4 (smoother edges)    --aniso 1..16 (sharper ground textures at a slant)
+    --filter2d nearest|linear      --ini FILE / --no-ini
+  The game itself always runs at its original 30 steps per second, whatever the frame rate.
+
 Bug reports
   Press F8 in the game (or hold Back/View and press Start on a controller) when you see something wrong. The
   game freezes. Click the broken things with the mouse (or drag a box around them; right-click undoes a pick),
