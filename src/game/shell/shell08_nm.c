@@ -103,6 +103,9 @@ void shell08_m(SHLW *sh) {
     all = shell08_all_time[sh->arg];
     idx = shell08_index[sh->arg];
     flag = 0;
+    /* The original leaves f20 (the ground height) unset on frames > 33 of type 0/11 and
+     * still places the glow at 10 + f20: stale register garbage. Keep the glow on the shot. */
+    y = sh->pos2.y - 10.0f;
     if (sh->arg != 8) {
         sh->x61 = 0x63;
     }
