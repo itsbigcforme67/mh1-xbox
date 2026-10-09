@@ -665,7 +665,7 @@ void gun_adj_sub(PLW *pl) {
     u16 step;
     u16 now;
     u16 an;
-    s16 pw;
+    u16 pw;
 
     if (Pl_master_ck(pl) != 0) {
         switch (pl->kind) {
@@ -766,7 +766,7 @@ void sougun_adj_sub(PLW *pl, u16 id) {
     u16 step;
     u16 now;
     u16 an;
-    s16 pw;
+    u16 pw;
     u16 t;
     u16 d;
 
