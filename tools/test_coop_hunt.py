@@ -17,7 +17,14 @@ Velocidrome, kind 27, on stage 34) and checks the logs:
                  host is told, fights on and clears.
   multi          quest 7: three Velocidromes one after the other (the next arrives after a kill); the host kills
                  two in the time given: every machine sees both die and the same kills left.
-usage: test_coop_hunt.py SCENARIO [...]"""
+  hostleave      (relay only) 3 players: slot 0, the quest's host, fights and owns the monster, then quits; with a
+                 player hosting that ended the session for everyone, through the relay the others hunt on: the monster
+                 passes on and slot 2 finishes it; slots 1 and 2 clear. FAILS for now (docs/server.md 11): the relay
+                 tells everyone, but the followers never take the monster over (rt_np_init_slots gives the first
+                 monsters' owner field +0x88E this machine's slot instead of the host's).
+With RELAY=1 every player joins mh1-server's session relay (tools/server/mh1_server.py, docs/server.md) instead of
+instance 0 hosting; instance 0 joins first and so gets slot 0. The relay's log: build/coop/TAG_relay.log.
+usage: [RELAY=1] test_coop_hunt.py SCENARIO [...]"""
 import os, re, shutil, struct, subprocess, sys, time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,6 +32,7 @@ BIN = os.environ.get('BIN', os.path.join(ROOT, 'build/pc/mhview_online'))
 DISC = os.environ.get('DISC', os.path.join(ROOT, 'disc/mh1'))
 OUT = os.path.join(ROOT, 'build/coop')
 PORT = int(os.environ.get('PORT', '10330'))
+RELAY = os.environ.get('RELAY') == '1'
 NAMES = ['ANNA', 'BOB', 'CARL', 'DAVE']     # (the name entry takes 4 characters)
 ATK = ',cam_u*2,idle*30' * 4 + ',circle*2,idle*28' * 6           # attack flicks, circle (carve)
 REW = (',idle*120' + ',circle*2,idle*28' * 6 + ',cross*2,idle*14,ddown*2,idle*14,circle*2,idle*14') * 40   # reward screen
@@ -49,8 +57,15 @@ def card_gold(d):
 
 def run(tag, players, secs=170, quest=137, kind=27):
     """players: list of (env, input); index 0 is the host. Returns the logs."""
-    port = PORT + {'hunt2': 1, 'hunt4': 2, 'handover': 3, 'leave': 4, 'carts': 5, 'timeout': 6, 'abandon': 7, 'multi': 8}[tag]
+    port = PORT + {'hunt2': 1, 'hunt4': 2, 'handover': 3, 'leave': 4, 'carts': 5, 'timeout': 6, 'abandon': 7, 'multi': 8,
+                   'hostleave': 9}[tag]
     procs, logs = [], []
+    relay = None
+    if RELAY:       # mh1-server's relay holds the session; every player joins it (docs/server.md 4)
+        relay = subprocess.Popen([sys.executable, os.path.join(ROOT, 'tools/server/mh1_server.py'), 'serve', '--session',
+                                  '%d:%d:%d' % (port, quest, len(players)), '--start-wait', '60'],
+                                 stdout=open(os.path.join(OUT, '%s_relay.log' % tag), 'w'), stderr=subprocess.STDOUT)
+        time.sleep(0.5)
     for k in range(len(players)):     # each player's own card: a copy of the hunter test_coop.sh made
         d = os.path.join(OUT, 'card_%s_%d' % (tag, k))
         shutil.rmtree(d, ignore_errors=True)
@@ -62,13 +77,16 @@ def run(tag, players, secs=170, quest=137, kind=27):
         e = {a: b for a, b in e.items() if b is not None}     # None: not set at all
         args = [BIN, DISC, '--mute', '--input', 'idle*60' + inp, '--shot', os.path.join(ROOT, 'build/show/coop_%s_slot%d.png' % (tag, k)),
                 '--time', str(t or secs)]
-        args += ['--host', '--quest', str(quest), '--players', str(len(players)), '--port', str(port)] if k == 0 else \
+        args += ['--host', '--quest', str(quest), '--players', str(len(players)), '--port', str(port)] if k == 0 and not RELAY else \
                 ['--join', '127.0.0.1', '--port', str(port)]
         log = os.path.join(OUT, '%s_%d.log' % (tag, k))
         logs.append(log)
         procs.append(subprocess.Popen(args, env=e, stdout=subprocess.DEVNULL, stderr=open(log, 'w')))
         time.sleep(1.0 if k == 0 else 0.3)
     bad = [k for k, p in enumerate(procs) if p.wait(timeout=600) != 0]
+    if relay is not None:
+        relay.terminate()       # (by PID) SIGTERM: the relay prints each hunt's traffic and stops
+        relay.wait(timeout=10)
     return [open(l, 'rb').read().decode('latin-1') for l in logs], bad
 
 
@@ -183,6 +201,22 @@ def scenario(tag):
         early = [set(R[k]['own'][t] for t in R[k]['own'] if 300 < t < 800) for k in range(3)]
         if early != [{-1}, {1}, {-1}]:
             print('coop leave: before leaving, slot 1 should own the monster (owner columns %s)' % early); ok = False
+        return ok
+    if tag == 'hostleave':
+        if not RELAY:
+            raise SystemExit('hostleave needs RELAY=1 (with a player hosting, his leaving ends the session)')
+        # slot 0 fights softly (damage x3) and leaves after 30 s; slot 2 arrives later and finishes; slot 1 watches
+        pl = [(dict(RT_PL_WARP_EM='100-90000', RT_DMG_MUL='3', RT_PL_GOTO='60,f'), ATK * 5, 30),
+              ({}, REW, 0),
+              (dict(RT_PL_WARP_EM='1200-90000', RT_DMG_MUL='40', RT_PL_GOTO='300,f'), ',idle*1140' + ATK * 5 + REW, 0)]
+        logs, bad = run(tag, pl, secs=190)
+        ok, R = check(tag, logs, bad, 2, [1, 2], 3, quitter=0)
+        for k in (1, 2):
+            if 0 not in R[k]['left']:
+                print('coop hostleave: instance %d was not told that player 0 left' % k); ok = False
+            late = set(R[k]['own'][t] for t in R[k]['own'] if 1100 < t < 1400)
+            if late != ({2} if k == 2 else {-1}):
+                print('coop hostleave: instance %d: owner after the leave %s, expected slot 2' % (k, late)); ok = False
         return ok
     if tag in ('carts', 'timeout'):
         if tag == 'carts':
