@@ -1311,3 +1311,9 @@ Tricks (each confirmed by a match):
   Test tail_cut. em_alpha_clay left alone (alpha-reference scale unchecked).
 - 8 Oct 2026, tail cut follow-up: cuttable = part 8 in em_dur_tbl (1, 11, 14, 17, 22, 26); 6/8/15/21 never cut.
   Basarios needs to be awake; real attacks cut it on the PC. Cut tail now gets its materials (bug fixed).
+- 9 Oct 2026, owner F8 report "keeps rewind moving and walking into walls" (Aptonoth, quest 131 stage 39): exact replay with
+  the report's build a963743f (git archive into a scratch folder, built there) and main reach the same state. Cause: the host
+  posed every non-Rathian monster model (em_mdl) without root_lock, so walk loops drew their root travel on top of the game's
+  root-motion movement (body up to 390 ahead, ~295 snap back per loop). Fix: root_lock on em_mdl (viewer.c). Aids:
+  RT_EM_DRAW_TRACE, RT_EM_ROOT_FREE; RT_EM_TRACE gained `wall 0x74C/0x7EA`. Test: test_activities.py herbivore_rewind.
+  Details and the wall / body_hit notes in docs/pc.md ("F8 report ... rewind moving").

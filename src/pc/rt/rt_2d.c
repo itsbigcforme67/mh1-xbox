@@ -165,6 +165,13 @@ HUD_ANCHOR(disp_others_info, GFX_A_LEFT)
 HUD_ANCHOR(disp_map, GFX_A_RIGHT)
 HUD_ANCHOR(disp_item, GFX_A_RIGHT)
 HUD_ANCHOR(disp_item_sub_select_ex, GFX_A_RIGHT)
+/* the village (trans_pit_1_lb / trans_pit_2_lb, and the quest-side trans_pit_2): the talk window and the chat / message lines sit
+ * at the left of the frame; src/main/chat/chat_nm.c is compiled with these three renamed (tools/build_pc.sh), so every caller
+ * gets the anchored version. The village's own menus (DispLobbyMenu, shops, item box) are whole 4:3 layouts and stay centred. */
+#define LEFT_WRAP(name) void rt_real_##name(void); void name(void) { gfx_set_2d_anchor(GFX_A_LEFT); rt_real_##name(); gfx_set_2d_anchor(GFX_A_CENTER); }
+LEFT_WRAP(Disp_NPC_message)
+LEFT_WRAP(Pit_disp_chat)
+LEFT_WRAP(Pit_disp_receive_mes)
 
 /* ------------------------------------------------------------ prims */
 static void rgba(u8 *o, u32 c)
@@ -315,7 +322,10 @@ void flmatSetZYX33(f32 x, f32 y, f32 z, f32 *m)
     flmatRotX33(m, x);
 }
 
-/* flvecrRotTransPers (0x1734D0): world point -> screen (map markers);
- * flmatrStore (0x173450). Not ported yet. */
-void flvecrRotTransPers(f32 *out, f32 *in) { (void)in; out[0] = out[1] = out[2] = 0; }
+/* flvecrRotTransPers (0x1734D0, src/main/fl/flm04.c): a world point through flMATRIX[0] (the world state the caller just set
+ * with flSetRenderState 0x1A), the view and the projection, then the viewport: out = x, y, z, w (x and y in the 512 x 448
+ * frame, w the clip w: callers test w or z > 0 for "in front"). The PS2 does it with the matrices in its register file;
+ * here the gfx backend holds the same three states (gfx_project), so the answer follows the window and widescreen layout.
+ * Used by the player name tags (village and quest), the sound pan and the ballista / bow sights. */
+void flvecrRotTransPers(f32 *out, f32 *in) { gfx_project(in, out); }
 void flmatrStore(void *m) { (void)m; }

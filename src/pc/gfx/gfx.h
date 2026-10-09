@@ -123,6 +123,11 @@ typedef struct {
 extern int gfx_pick_pass;
 extern uint32_t (*gfx_pick_cb)(const gfx_pick_info *);
 void gfx_pick_matrices(float view[16], float proj[16]);
+/* World point -> the game's 2D screen (flvecrRotTransPers, rt_2d.c): through the current world, view and projection states;
+ * out = x, y in the 512 x 448 virtual frame (the same frame the HUD draws on, so a name tag lands on its hunter in 4:3 and
+ * widescreen alike: in widescreen x runs below 0 and above 512), z 0 near .. 1 far (-1 behind the eye), w = the clip w
+ * (> 0 in front). Returns 1 when the point is in front of the eye. */
+int gfx_project(const float in[3], float out[4]);
 int gfx_read_depth(float *d);                              /* GL backend: the depth buffer, top-down, window size */   /* GL backend: the view / projection of the last draw */
 
 /* ------------------------------------------------------------ clays */

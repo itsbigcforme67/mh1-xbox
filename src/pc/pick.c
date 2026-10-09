@@ -76,6 +76,9 @@ static const unsigned char *glyph_rows(int c)
     return c >= 32 && c <= 126 ? font5x7[c - 32] : unknown;
 }
 
+/* the same 5x7 font for the settings menu (menu.c): 7 rows of 5 bits (bit 4 = left) for ASCII 32..126, else a box */
+const unsigned char *pick_font_rows(int c) { return glyph_rows(c); }
+
 /* ------------------------------------------------------------ CPU drawing into an RGB image */
 static void px(uint8_t *img, int x, int y, int r, int g, int b)
 {

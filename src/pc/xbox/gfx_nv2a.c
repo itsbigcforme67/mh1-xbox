@@ -103,6 +103,29 @@ static void mat_mul(float *out, const float *a, const float *b)       /* out = a
     memcpy(out, r, sizeof r);
 }
 
+/* gfx.h: the game's 512 x 448 frame fills the picture here */
+int gfx_project(const float in[3], float out[4])
+{
+    float a[4] = { in[0], in[1], in[2], 1.0f }, b[4], c[4];
+    int j;
+    for (j = 0; j < 4; j++)
+        b[j] = a[0] * G.world[j] + a[1] * G.world[4 + j] + a[2] * G.world[8 + j] + a[3] * G.world[12 + j];
+    for (j = 0; j < 4; j++)
+        a[j] = b[0] * G.view[j] + b[1] * G.view[4 + j] + b[2] * G.view[8 + j] + b[3] * G.view[12 + j];
+    for (j = 0; j < 4; j++)
+        c[j] = a[0] * G.proj[j] + a[1] * G.proj[4 + j] + a[2] * G.proj[8 + j] + a[3] * G.proj[12 + j];
+    out[3] = c[3];
+    if (c[3] <= 1e-6f) {
+        out[0] = out[1] = 0;
+        out[2] = -1;
+        return 0;
+    }
+    out[0] = (c[0] / c[3] * 0.5f + 0.5f) * 512.0f;
+    out[1] = (0.5f - c[1] / c[3] * 0.5f) * 448.0f;
+    out[2] = c[2] / c[3] * 0.5f + 0.5f;
+    return 1;
+}
+
 static void push1(uint32_t reg, uint32_t v)
 {
     uint32_t *p = pb_begin();

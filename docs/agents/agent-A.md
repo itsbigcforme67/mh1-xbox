@@ -692,3 +692,17 @@ Details in docs/pc.md (handover summary at the top, round 23 at the end).
   report to DbgPrint + E:\mh1_prof.txt.
 - Lesson: wall clock and even thread CPU time are inflated on this shared machine (load ~7.5/8);
   compare counts (evaluations, vertices) and A/B runs taken back to back.
+
+## mh1-server: design and first code (9 Oct 2026)
+
+- docs/server.md: the design (services from the client code, architecture, security, hosting, privacy, PS2 patch
+  path per the owner's 9 Oct decision, milestones, owner decisions). Code in tools/server/ (Python stdlib):
+  relay.py (net_peer-frame session relay, works with today's `--join` unchanged), accounts.py (SQLite), lobby_stub.py
+  (subclasses tools/mh1_testserver.Client: account check at 6101, optional 6914/6916 relay hand-off), mcs.py (mcsls
+  relay skeleton, synthetic tests only), mh1_server.py (CLI), test_server.py (unit tests).
+- Verified: tools/test_coop.sh relay (2 and 4 walking, hunt2, hunt4, leave through the relay); the stub against the
+  real client's --nettest login (right / wrong password).
+- Found: rt_np_init_slots sets the first monsters' owner field +0x88E to this machine's slot instead of the host's,
+  so followers never notice the host leaving (hostleave scenario fails; docs/server.md 11). Agent B's file, not changed.
+- Lesson: the lobby key is mmbbc_encode(8 digits, seq of the 6101 request); non-digits are skipped, so an account id
+  on the wire is 8 digits.

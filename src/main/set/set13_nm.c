@@ -465,6 +465,8 @@ void set13_trans(PRIM *pr) {
             flmatMakeTrans(&uv, 0.0078125f * (sw->timer & 0x7F), 0.0f, 0.0f);
             flSetRenderState(0x19, (u32)&uv);
             break;
+        case 5:
+            break;
         default:
             flmatRotZ33(&m, 0.2f * set13_roll(sx, sz, pr));
             break;

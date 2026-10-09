@@ -17,6 +17,7 @@
 
 #include <SDL.h>
 #include "pick.h"
+#include "menu.h"
 #ifdef MH1_WIN
 #include <fcntl.h>
 #include <io.h>
@@ -1337,6 +1338,12 @@ static void em_model_load(int slot, int kind)
             fprintf(stderr, "monster kind %d: model %s not loaded\n", kind, a);
             return;
         }
+        /* the game moves the monster by its root motion (frame_move -> pl_velocity_sub) and the PS2 then clears the
+         * root bone's translation (FRSKL.vel = 0) before drawing: keep that bone's X/Z at its bind value, as for the
+         * Rathian and the hunter. Without it the walk loops were drawn moving forward on top of the game's movement
+         * (up to 390 units ahead of the collision position, so the body went into rocks) and snapped back ~300 units
+         * at every loop wrap: owner report 8 Oct 2026, "keeps rewind moving and walking into walls" (Aptonoth, stage 39) */
+        e->skel.root_lock = !getenv("RT_EM_ROOT_FREE");
         em_have[kind] = 1;
     }
     if (e->tbl.p)
@@ -1346,6 +1353,7 @@ static void em_model_load(int slot, int kind)
 /* every monster in use on this stage but the host's Rathian (em_work[0]
  * with the em01 set-up above), posed by the game's motion player; also
  * their joint matrices for the game's hit checks */
+int rt_log_tick(void);
 static void monsters_sync(int draw, const fl_light *L)
 {
     extern uint8_t em_work[];
@@ -1374,6 +1382,18 @@ static void monsters_sync(int draw, const fl_light *L)
         for (j = 0; j < nb; j++)
             flmat_mul(jw[i][j], m->skel.world[j], w);
         rt_monster_joints(i, &jw[i][0][0], nb);
+        if (!draw && getenv("RT_EM_DRAW_TRACE") && rt_monster_motion_ready(i) && nb > 1) {
+            /* test aid: where the drawn body is (the root motion bone, AAN bone 1 of group 0, in world space) next to
+             * the game position; printed twice per tick, by the joint sync before hit_check and the one after the tick (tools/test_activities.py herbivore_rewind) */
+            int b, k = 0;
+            for (b = 0; b < nb; b++)
+                if (m->skel.skel.bone[b].group == 0 && k++ == 1)
+                    break;
+            if (b < nb)
+                printf("emdraw t%d slot %d kind %d mot %d frame %.1f pos %.1f %.1f body %.1f %.1f %.1f\n", rt_log_tick(), i,
+                       kind, ((uint16_t *)(em + 0x2DC))[0], *(float *)(em + 0x19C), t[0], t[2], jw[i][b][12],
+                       jw[i][b][13], jw[i][b][14]);
+        }
         if (getenv("RT_POSE_CHECK") && rt_monster_motion_ready(i)) {  /* test aid: highest joint above the monster's feet per kind (tools/test_activities.py herbivore_pose) */
             static float hmax[40][1200];
             int mo = ((uint16_t *)(em + 0x2DC))[0] % 1200;
@@ -1758,6 +1778,14 @@ int main(int argc, char **argv)
     }
 #endif
     rt_pick_set_args(argc, argv);
+#ifndef XBOX
+    {   /* the settings that are read once: the translation table (before the game data is imported) and the button layout */
+        extern int rt_pad_swap_confirm;
+        gfx_opts_apply_language();
+        rt_pad_swap_confirm = pc_opt.western_pad;
+        menu_set_shot(shot != NULL);
+    }
+#endif
     if (!disc) {
         fprintf(stderr, "usage:%s DISC_DIR [--shot out.png] [--frames N] [--time S] "
                 "[--size WxH] [--cam x,y,z,yaw,pitch] [--stage N] [--play] [--input SCRIPT]\n", argv[0]);
@@ -2071,6 +2099,8 @@ int main(int argc, char **argv)
                 continue;
             }
 #endif
+            if (menu_event(&ev))        /* F10: the settings menu (open: it takes the keys and the mouse) */
+                continue;
             if (pick_event(&ev))        /* F8: the bug reporter (frozen: it takes all input) */
                 continue;
             pad_event(&ev);     /* typed text (the name entry) */
@@ -2099,10 +2129,12 @@ int main(int argc, char **argv)
         }
         if (play)
             pick_poll_pad();            /* Back/View + Start on the controller */
+        if (!shot)
+            menu_poll_pad();            /* Back + L3 opens the settings menu; its controller navigation */
         {   /* the bug reporter stops the game clock while it is frozen */
             static int holding;
             static Uint32 hold_t0;
-            int hnow = pick_hold_ticks(ticks);
+            int hnow = pick_hold_ticks(ticks) | menu_hold_ticks(ticks);
             if (hnow && !holding)
                 hold_t0 = SDL_GetTicks();
             if (!hnow && holding && fixed_time < 0) {
@@ -2144,7 +2176,7 @@ int main(int argc, char **argv)
             shot_next = 0;              /* RT_SHOTS past --time: dropped */
         /* RT_PROF=1: CPU time per subsystem (rt_prof.c), per game tick and
          * per drawn frame, every 300 ticks */
-        while (!pick_hold_ticks(ticks) && ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
+        while (!pick_hold_ticks(ticks) && !menu_hold_ticks(ticks) && ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
             rt_prof_begin(RTP_LOGIC);
             if (booting) {      /* ACRMain: pad, then the task scheduler */
                 pad_state ps;
@@ -2378,6 +2410,7 @@ int main(int argc, char **argv)
     frame_done:
         if (pick_frame_hook())
             goto redraw;
+        menu_draw();                    /* the settings menu over the last picture (and the title screen's hint) */
 
         frame_no++;
         rt_log_frame();
@@ -2402,7 +2435,7 @@ int main(int argc, char **argv)
             if (shot_list && *shot_list == ',')
                 shot_list++;
         }
-        if (shot && frame_no >= frames && shot_next <= 0 && !pick_busy() && (!shot_list || ticks >= 2 + (int)fr)
+        if (shot && frame_no >= frames && shot_next <= 0 && !pick_busy() && !menu_busy() && (!shot_list || ticks >= 2 + (int)fr)
             && (!step || frame_no / 30.0f >= fixed_time)) {
             uint8_t *rgb = malloc((size_t)W * H * 3);
             gfx_read_pixels(rgb);

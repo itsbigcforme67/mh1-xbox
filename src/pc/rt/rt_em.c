@@ -896,10 +896,11 @@ int rt_monster_tick(int no)
         }
     }
     if (getenv("RT_EM_TRACE"))
-        printf("em%d: stg %d step %d act %d/%d/%d char %d frame %.1f pos %.0f %.0f %.0f ang %04X hp %d mode %d mt %d/%.0f/%d pt %d tr %d/%d\n",
+        printf("em%d: stg %d step %d act %d/%d/%d char %d frame %.1f pos %.0f %.0f %.0f ang %04X hp %d mode %d mt %d/%.0f/%d pt %d tr %d/%d wall %X/%d\n",
                 no, em->stg, em->x04, PU8(em, 0x14), PU8(em, 0x15), PU8(em, 0x05), PS16(em, 0x2DC), PF(em, 0x19C),
                 em->pos[0], em->pos[1], em->pos[2], em->ang[1] & 0xFFFF, PS16(em, 0x302), PU8(em, 0x888),
-                PS32(em, 0x194), PF(em, 0x1A8), PS32(em, 0x1C8), PS16(em, 0x56A), PU8(em, 0x9EA), PU8(em, 0x959));
+                PS32(em, 0x194), PF(em, 0x1A8), PS32(em, 0x1C8), PS16(em, 0x56A), PU8(em, 0x9EA), PU8(em, 0x959),
+                (unsigned)PS32(em, 0x74C), PU16(em, 0x7EA));
     {
         /* the world matrix at EMW+0x60, as enemy_mk (0x10AEB0) builds it in trans():
          * the host poses the skeleton itself, but game code reads this matrix

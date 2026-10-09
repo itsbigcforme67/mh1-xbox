@@ -8,6 +8,9 @@
 #     N = 2..4 walking; hunt2 / hunt4 / handover / leave = hunts of quest 137 to the clear, the reward and the
 #     village with each player's own saved hunter (tools/test_coop_hunt.py); box = the supply box decided by the
 #     host; wine = the Windows build under Wine joins (skipped without it); default: all (about 15 minutes)
+#   tools/test_coop.sh relay   the same through mh1-server's session relay (tools/server, docs/server.md): 2 and 4
+#     walking, then hunt2, hunt4 and leave with RELAY=1 (not part of the default run); RELAY=1 tools/test_coop_hunt.py
+#     hostleave fails for now (docs/server.md 11)
 # Starts only its own processes and stops them (by PID).
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/pc/mhview_online}
@@ -45,12 +48,17 @@ run() {
         wait $p || fail=1
     done
     [ $fail = 0 ] || { echo "coop $n: an instance failed"; tail -5 $OUT/p${n}_*.log; return 1; }
-    python3 - "$n" "$OUT" <<'EOF'
+    poscheck $n p
+}
+
+# every instance must see every player where that player itself is (logs $OUT/$2${n}_K.log, K = 0..n-1)
+poscheck() {
+    python3 - "$1" "$OUT" "$2" <<'EOF'
 import re, sys
-n, out = int(sys.argv[1]), sys.argv[2]
+n, out, pre = int(sys.argv[1]), sys.argv[2], sys.argv[3]
 last = {}     # (me, slot) -> (stg, x, y, z) at the last traced tick
 for me in range(n):
-    for line in open(f"{out}/p{n}_{me}.log", errors="replace"):
+    for line in open(f"{out}/{pre}{n}_{me}.log", errors="replace"):
         m = re.match(r"np-pos: tick (\d+) me (\d+) slot (\d+) stg (\d+) pos (\S+) (\S+) (\S+)", line)
         if m:
             last[(int(m[2]), int(m[3]))] = (int(m[4]), float(m[5]), float(m[6]), float(m[7]))
@@ -68,9 +76,39 @@ for me in range(n):
 moved = all(((last[(s, s)][1] - 9500) ** 2 + (last[(s, s)][3] - 9850) ** 2) ** 0.5 > 150 for s in range(n))
 if not moved:
     print(f"coop {n}: some player did not walk away from the start"); ok = False
-print(f"coop {n}: {'OK' if ok else 'FAILED'}")
+print(f"coop {n}{' via the relay' if pre == 'r' else ''}: {'OK' if ok else 'FAILED'}")
 sys.exit(0 if ok else 1)
 EOF
+}
+
+relayrun() {
+    # the same walk as run, but nobody hosts: mh1-server's session relay (tools/server, docs/server.md 4) holds the
+    # session and every instance joins it, as players behind NAT would
+    n=$1
+    port=$((PORT + 20 + n))
+    python3 tools/server/mh1_server.py serve --session $port:131:$n --start-wait 60 > $OUT/relay$n.log 2>&1 &
+    rp=$!
+    sleep 0.5
+    pids=""
+    set -- "idle*20,up*60,idle*400" "idle*25,left*70,idle*400" "idle*30,right*50,idle*400" "idle*35,down*40,idle*400"
+    k=0
+    while [ $k -lt $n ]; do
+        w=156; [ $k = 2 ] && w=1
+        RT_WEAPON=$w timeout 120 "$BIN" "$DISC" --join 127.0.0.1 --port $port --mute --input "$1" \
+            --shot build/show/coop_relay${n}_slot$k.png --time 8 > $OUT/r${n}_$k.log 2>&1 &
+        pids="$pids $!"
+        k=$((k + 1))
+        shift
+        sleep 0.3
+    done
+    fail=0
+    for p in $pids; do
+        wait $p || fail=1
+    done
+    kill $rp 2>/dev/null; wait $rp 2>/dev/null
+    [ $fail = 0 ] || { echo "coop relay $n: an instance failed"; tail -5 $OUT/r${n}_*.log $OUT/relay$n.log; return 1; }
+    grep "hunt over" $OUT/relay$n.log | sed "s/^/coop relay $n: relay: /"
+    poscheck $n r
 }
 
 box() {
@@ -155,6 +193,7 @@ refusals() {
 
 case "$1" in
 box) box ;;
+relay) relayrun 2 && relayrun 4 && { export RELAY=1; hunts hunt2 hunt4 leave; } ;;
 wine) winepair ;;
 hunt2|hunt4|handover|leave|carts|timeout|abandon|multi) hunts "$@" ;;
 "") run 2 && run 4 && hunts hunt2 hunt4 handover leave carts timeout abandon multi && box && winepair && refusals ;;

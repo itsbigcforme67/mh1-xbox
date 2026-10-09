@@ -16,7 +16,7 @@ nmc() { if [ -n "$SYM_PREFIX" ]; then $NM "$@" | sed "s/^\\([0-9a-fA-F]* [A-Za-z
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
     src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c \
-    src/pc/fmt/snd.c src/pc/movie/sfd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c src/pc/gfx/gfx_opts.c src/pc/gfx/gfx_pal.c src/pc/gfx/gfx_skin.c src/pc/install.c src/pc/pick.c src/pc/fmt/ps2save.c src/pc/fmt/lzari.c"
+    src/pc/fmt/snd.c src/pc/movie/sfd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c src/pc/gfx/gfx_opts.c src/pc/gfx/gfx_pal.c src/pc/gfx/gfx_skin.c src/pc/install.c src/pc/pick.c src/pc/menu.c src/pc/fmt/ps2save.c src/pc/fmt/lzari.c"
 RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_game.c src/pc/rt/rt_fl.c src/pc/rt/rt_overlay.c src/pc/rt/rt_main.c src/pc/rt/rt_eft.c src/pc/rt/rt_hit.c src/pc/rt/rt_cam.c"   # (listing only)
 # Decompiled game C run natively. set14_nm.c is the whole set14 file
 # (set14_trans is a near-match on the PS2 side, believed equivalent).
@@ -597,6 +597,9 @@ for f in $GAME; do
     src/main/menu/menu18.c) ABI="-Ddisp_timer=rt_hud_disp_timer -Ddisp_pl_vital=rt_hud_disp_pl_vital -Ddisp_slash_level=rt_hud_disp_slash_level \
         -Ddisp_others_info=rt_hud_disp_others_info -Ddisp_map=rt_hud_disp_map -Ddisp_item=rt_hud_disp_item \
         -Ddisp_item_sub_select_ex=rt_hud_disp_item_sub_select_ex" ;;
+    # widescreen: the village's talk window and chat / message lines keep to the left edge, whoever calls them (rt_2d.c)
+    src/main/chat/chat_nm.c) ABI="-DDisp_NPC_message=rt_real_Disp_NPC_message -DPit_disp_chat=rt_real_Pit_disp_chat \
+        -DPit_disp_receive_mes=rt_real_Pit_disp_receive_mes" ;;
     # em_cmd_nm.c GetWaterData / em_core_nm.c NextStage_No_Set: a0 = em left over (tools/pc_patch.py)
     # em12_nm.c calls Eft02_set4 with the float first (PS2: scale in f12); the definition is (a, ang, arg, pos, scale)
     src/game/em/em12_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft02_set4=rtabi_Eft02_set4" ;;

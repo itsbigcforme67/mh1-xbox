@@ -19,6 +19,7 @@ int gfx_init(int width, int height, const char *title, int hidden)
     return 0;
 }
 void gfx_shutdown(void) {}
+int gfx_project(const float in[3], float out[4]) { (void)in; out[0] = out[1] = out[2] = out[3] = 0; return 0; }
 void gfx_size(int *w, int *h) { *w = W; *h = H; }
 void gfx_begin_frame(uint32_t clear_rgb) { (void)clear_rgb; }
 void gfx_end_frame(void) {}

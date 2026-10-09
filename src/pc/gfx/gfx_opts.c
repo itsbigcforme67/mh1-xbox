@@ -19,6 +19,7 @@
 
 const char *rt_mc_root(void);
 
+pc_options pc_opt;
 static char ini_path[1024];
 static int ini_off;
 
@@ -54,7 +55,11 @@ static void set_key(const char *k, const char *v)
     else if (!strcmp(k, "msaa")) gfx_opt.msaa = snap_msaa(atoi(v));
     else if (!strcmp(k, "aniso")) gfx_opt.aniso = clampi(atoi(v), 1, 16);
     else if (!strcmp(k, "widescreen")) gfx_opt.widescreen = truth(v);
-    else if (!strcmp(k, "filter2d")) gfx_opt.nearest2d = !strcasecmp(v, "nearest");
+    else if (!strcmp(k, "filter2d"))
+        gfx_opt.filter2d = !strcasecmp(v, "nearest") ? F2D_NEAREST : !strcasecmp(v, "sharp") ? F2D_SHARP : F2D_LINEAR;
+    else if (!strcmp(k, "language")) pc_opt.lang_en = !strcasecmp(v, "en") || !strcasecmp(v, "english");
+    else if (!strcmp(k, "confirm")) pc_opt.western_pad = !strcasecmp(v, "cross");
+    else if (!strcmp(k, "text_table")) snprintf(pc_opt.text_table, sizeof pc_opt.text_table, "%s", v);
     else if (!strcmp(k, "window_x")) gfx_opt.win_x = atoi(v);
     else if (!strcmp(k, "window_y")) gfx_opt.win_y = atoi(v);
     else if (!strcmp(k, "window_w")) gfx_opt.win_w = clampi(atoi(v), 0, 16384);
@@ -114,6 +119,10 @@ int gfx_opts_arg(int argc, char **argv, int *i)
         gfx_opt.widescreen = strcmp(v, "4:3") != 0;     /* 16:9 (or any other value): widescreen */
     }
     else if (!strcmp(a, "--filter2d") && *i + 1 < argc) set_key("filter2d", argv[++*i]);
+    else if (!strcmp(a, "--english")) pc_opt.lang_en = 1;
+    else if (!strcmp(a, "--japanese")) pc_opt.lang_en = 0;
+    else if (!strcmp(a, "--confirm") && *i + 1 < argc) set_key("confirm", argv[++*i]);
+    else if (!strcmp(a, "--text-table") && *i + 1 < argc) set_key("text_table", argv[++*i]);
     else if (!strcmp(a, "--ini") && *i + 1 < argc) { snprintf(ini_path, sizeof ini_path, "%s", argv[++*i]); }
     else if (!strcmp(a, "--no-ini")) ini_off = 1;
     else return 0;
@@ -153,8 +162,14 @@ void gfx_opts_save(void)
     fprintf(f, "aniso = %d\n", gfx_opt.aniso);
     fprintf(f, "# widescreen: 0 = the original 4:3, 1 = 16:9 and wider (wider field of view, HUD at the screen edges).\n");
     fprintf(f, "widescreen = %d\n", gfx_opt.widescreen);
-    fprintf(f, "# filter2d: linear or nearest (HUD and menu art).\n");
-    fprintf(f, "filter2d = %s\n", gfx_opt.nearest2d ? "nearest" : "linear");
+    fprintf(f, "# filter2d: linear, nearest, or sharp (nearest at an integer scale, bilinear for the rest) for the HUD and menu art.\n");
+    fprintf(f, "filter2d = %s\n", gfx_opt.filter2d == F2D_NEAREST ? "nearest" : gfx_opt.filter2d == F2D_SHARP ? "sharp" : "linear");
+    fprintf(f, "# language: ja, or en when a translation table is found (text_table, else text/en.txt; docs/english.md). Read at start-up.\n");
+    fprintf(f, "language = %s\n", pc_opt.lang_en ? "en" : "ja");
+    if (pc_opt.text_table[0])
+        fprintf(f, "text_table = %s\n", pc_opt.text_table);
+    fprintf(f, "# confirm: circle (Japanese layout) or cross (Western: circle and cross swapped, menus and play alike)\n");
+    fprintf(f, "confirm = %s\n", pc_opt.western_pad ? "cross" : "circle");
     fprintf(f, "# the windowed position and size, kept on exit\n");
     if (gfx_opt.win_w > 0) {
         fprintf(f, "window_x = %d\nwindow_y = %d\nwindow_w = %d\nwindow_h = %d\n", gfx_opt.win_x, gfx_opt.win_y, gfx_opt.win_w,
@@ -183,5 +198,61 @@ void gfx_frame_pace(void)
             SDL_Delay((Uint32)(ms - 2));
         while (SDL_GetPerformanceCounter() < next)
             ;
+    }
+}
+
+/* the translation table to use: the settings file's text_table, RT_TEXT_TABLE, text/en.txt next to the settings file, in the
+ * working folder or next to the program. NULL when there is none (the English option is then not offered). */
+const char *gfx_text_table_find(void)
+{
+    static char found[1100];
+    char cand[5][1100];
+    int n = 0, k;
+    const char *e = getenv("RT_TEXT_TABLE");
+    char *base;
+    if (pc_opt.text_table[0])
+        snprintf(cand[n++], sizeof cand[0], "%s", pc_opt.text_table);
+    if (e && *e)
+        snprintf(cand[n++], sizeof cand[0], "%s", e);
+    default_path();
+    snprintf(cand[n], sizeof cand[0], "%s", ini_path);
+    {
+        char *sl = strrchr(cand[n], '/');
+        if (!sl)
+            sl = strrchr(cand[n], '\\');
+        if (sl)
+            snprintf(sl, sizeof cand[0] - (size_t)(sl - cand[n]), "/text/en.txt");
+        else
+            snprintf(cand[n], sizeof cand[0], "text/en.txt");
+        n++;
+    }
+    snprintf(cand[n++], sizeof cand[0], "text/en.txt");
+    base = SDL_GetBasePath();
+    if (base) {
+        snprintf(cand[n++], sizeof cand[0], "%stext/en.txt", base);
+        SDL_free(base);
+    }
+    for (k = 0; k < n; k++) {
+        FILE *f = fopen(cand[k], "rb");
+        if (f) {
+            fclose(f);
+            snprintf(found, sizeof found, "%s", cand[k]);
+            return found;
+        }
+    }
+    return NULL;
+}
+
+/* start-up: English text asked for and a table found: hand it to the text layer (rt_text.c reads RT_TEXT_TABLE) */
+void gfx_opts_apply_language(void)
+{
+    const char *t;
+    if (!pc_opt.lang_en || getenv("RT_TEXT_TABLE"))
+        return;
+    if ((t = gfx_text_table_find()) != NULL) {
+        SDL_setenv("RT_TEXT_TABLE", t, 0);
+        rt_log("settings: English text from %s", t);
+    } else {
+        rt_log("settings: language = en, but no translation table was found (text/en.txt): Japanese");
     }
 }

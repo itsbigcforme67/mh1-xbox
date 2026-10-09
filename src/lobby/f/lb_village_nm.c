@@ -4897,11 +4897,11 @@ void lb_disp_name(u8 *arg0) {
                             }
                         } else {
 block_37:
-                            Lb_put_icon_free(((s16)(((var_s1 + (temp_s2_2 * 4)) - 0xC))), ((s16)((var_s3_2 - 0x1A))), 0x16, *(s32 *)(lb_quest_color_tbl + ((temp_v1_3 & 0xF) * 4)), -1);
+                            Lb_put_icon_free(((s16)(((var_s1 + (temp_s2_2 * 4)) - 0xC))), ((s16)((var_s3_2 - 0x1A))), 0x16, *(s32 *)(lb_quest_color_tbl + ((temp_v1_3 & 0xF) * 4)), 0xF);
                         }
                     } else if (temp_v1_3 & 0x30) {
                         if ((temp_v1_3 & 0x10) || (System_timer & 0x10)) {
-                            Lb_put_icon_free(((s16)(((var_s1 + (temp_s2_2 * 4)) - 0xC))), ((s16)((var_s3_2 - 0x1A))), 0x16, *(s32 *)(lb_quest_color_tbl + ((temp_v1_3 & 0xF) * 4)), -1);
+                            Lb_put_icon_free(((s16)(((var_s1 + (temp_s2_2 * 4)) - 0xC))), ((s16)((var_s3_2 - 0x1A))), 0x16, *(s32 *)(lb_quest_color_tbl + ((temp_v1_3 & 0xF) * 4)), 0xE);
                         }
                     } else {
                         Lb_put_status(((s16)((var_s1 + (temp_s2_2 * 8) + 6))), ((s16)(var_s0_2)), 0x14, -1, M2C_FIELD(temp_v1 + 0x1346, u8 *, 2));
