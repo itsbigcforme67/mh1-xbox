@@ -565,8 +565,10 @@ for f in $GAME; do
     # widescreen: the HUD widgets of trans_pit_0/1/2 keep to the left / right screen edge (rt_2d.c, rt_hud_*)
     src/main/menu/menu18.c) ABI="-Ddisp_timer=rt_hud_disp_timer -Ddisp_pl_vital=rt_hud_disp_pl_vital -Ddisp_slash_level=rt_hud_disp_slash_level \
         -Ddisp_others_info=rt_hud_disp_others_info -Ddisp_map=rt_hud_disp_map -Ddisp_item=rt_hud_disp_item \
-        -Ddisp_item_sub_select_ex=rt_hud_disp_item_sub_select_ex \
-        -DDisp_NPC_message=rt_hud_Disp_NPC_message -DPit_disp_chat=rt_hud_Pit_disp_chat -DPit_disp_receive_mes=rt_hud_Pit_disp_receive_mes" ;;
+        -Ddisp_item_sub_select_ex=rt_hud_disp_item_sub_select_ex" ;;
+    # widescreen: the village's talk window and chat / message lines keep to the left edge, whoever calls them (rt_2d.c)
+    src/main/chat/chat_nm.c) ABI="-DDisp_NPC_message=rt_real_Disp_NPC_message -DPit_disp_chat=rt_real_Pit_disp_chat \
+        -DPit_disp_receive_mes=rt_real_Pit_disp_receive_mes" ;;
     # em_cmd_nm.c GetWaterData / em_core_nm.c NextStage_No_Set: a0 = em left over (tools/pc_patch.py)
     # em12_nm.c calls Eft02_set4 with the float first (PS2: scale in f12); the definition is (a, ang, arg, pos, scale)
     src/game/em/em12_nm.c) ABI="-Dem_frame_check=rtabi_em_frame_check -DEft02_set4=rtabi_Eft02_set4" ;;

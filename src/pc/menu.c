@@ -203,12 +203,12 @@ static const char *value(int row, char *buf, size_t n, const char **note)
         *note = "Alt+Enter or F11 switches too";
         return gfx_opt.fullscreen ? "Fullscreen" : "Windowed";
     case R_ASPECT:
-        *note = gfx_opt.widescreen ? "wider view; menus and movies stay 4:3, the HUD sits at the screen edges" : "the original 4:3 picture";
+        *note = gfx_opt.widescreen ? "wider view; menus stay 4:3, the HUD hugs the edges" : "the original 4:3 picture";
         return gfx_opt.widescreen ? "16:9 (wide)" : "4:3 (original)";
     case R_VSYNC:
         return gfx_opt.vsync ? "On" : "Off";
     case R_FPS:
-        *note = "drawn frames only: the game logic always runs at 30 per second";
+        *note = "drawn frames only; the game logic stays at 30 Hz";
         if (gfx_opt.fps_cap <= 0)
             return "Off";
         snprintf(buf, n, "%d", gfx_opt.fps_cap);
@@ -224,23 +224,23 @@ static const char *value(int row, char *buf, size_t n, const char **note)
         snprintf(buf, n, gfx_opt.aniso > 1 ? "%dx" : "Off", gfx_opt.aniso);
         return buf;
     case R_FILTER:
-        *note = gfx_opt.filter2d == F2D_SHARP ? "nearest at a whole-number scale, smooth for the rest" : "";
+        *note = gfx_opt.filter2d == F2D_SHARP ? "nearest at whole-number scales, smooth between" : "";
         return gfx_opt.filter2d == F2D_NEAREST ? "Nearest (hard pixels)" : gfx_opt.filter2d == F2D_SHARP ? "Sharp (integer scale)" : "Smooth (bilinear)";
     case R_LANG:
         if (!M.have_table) {
-            *note = "English needs a translation table, text/en.txt (docs/english.md)";
+            *note = "English needs text/en.txt (docs/english.md)";
             return "Japanese";
         }
         if (pc_opt.lang_en != M.lang0)
             *note = "applies at the next start";
         return pc_opt.lang_en ? "English" : "Japanese";
     case R_PAD:
-        *note = "swaps circle and cross for the whole game (button icons on screen keep the Japanese shapes)";
+        *note = "swaps circle and cross everywhere; icons stay as is";
         return pc_opt.western_pad ? "Cross confirms (West)" : "Circle confirms (Japan)";
     case R_MUSIC:
     case R_EFFECTS: {
         int v = clampi(option_w[row == R_MUSIC ? 1 : 2], 0, 7), i;
-        *note = "the game's own option, kept with the save";
+        *note = "the game's own option, kept in the save";
         for (i = 0; i < 7; i++)
             buf[i] = i < v ? '#' : '-';
         snprintf(buf + 7, n - 7, " %d", v);

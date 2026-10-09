@@ -165,11 +165,13 @@ HUD_ANCHOR(disp_others_info, GFX_A_LEFT)
 HUD_ANCHOR(disp_map, GFX_A_RIGHT)
 HUD_ANCHOR(disp_item, GFX_A_RIGHT)
 HUD_ANCHOR(disp_item_sub_select_ex, GFX_A_RIGHT)
-/* the village (trans_pit_1_lb / trans_pit_2_lb, same file): the talk window and the chat / message lines sit at the left of the
- * frame; the village's own menus (DispLobbyMenu, shops, item box) are whole 4:3 layouts and stay centred */
-HUD_ANCHOR(Disp_NPC_message, GFX_A_LEFT)
-HUD_ANCHOR(Pit_disp_chat, GFX_A_LEFT)
-HUD_ANCHOR(Pit_disp_receive_mes, GFX_A_LEFT)
+/* the village (trans_pit_1_lb / trans_pit_2_lb, and the quest-side trans_pit_2): the talk window and the chat / message lines sit
+ * at the left of the frame; src/main/chat/chat_nm.c is compiled with these three renamed (tools/build_pc.sh), so every caller
+ * gets the anchored version. The village's own menus (DispLobbyMenu, shops, item box) are whole 4:3 layouts and stay centred. */
+#define LEFT_WRAP(name) void rt_real_##name(void); void name(void) { gfx_set_2d_anchor(GFX_A_LEFT); rt_real_##name(); gfx_set_2d_anchor(GFX_A_CENTER); }
+LEFT_WRAP(Disp_NPC_message)
+LEFT_WRAP(Pit_disp_chat)
+LEFT_WRAP(Pit_disp_receive_mes)
 
 /* ------------------------------------------------------------ prims */
 static void rgba(u8 *o, u32 c)
