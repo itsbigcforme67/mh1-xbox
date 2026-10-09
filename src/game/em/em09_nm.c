@@ -147,8 +147,8 @@ void em09_act_set(em, kind, no) EMW *em; int kind; u16 no; {
         em->x388 = 0;
         break;
     case 4:
-        em->x388 = 0;
-        if (no == 1) {
+        if (no != 1) {
+            em->x388 = 0;
         }
         break;
     }
