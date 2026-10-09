@@ -4449,7 +4449,7 @@ void NextStage_No_Set(EMW *em) {
         i = 0;
         for (;;) {
             id = conn[i];
-            if (em->x73A == id) {
+            if ((u16)em->x73A == id) {
                 ok = 1;
                 break;
             }

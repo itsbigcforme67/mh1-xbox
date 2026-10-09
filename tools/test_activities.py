@@ -595,8 +595,8 @@ def map_item():
     for tag, items in (('map_yes', '142:1,1:2'), ('map_no', '1:2')):
         run(tag, 'idle*100', 100, stage=45, env={'RT_PL_ITEMS': items})
         im = Image.open(os.path.join(OUT, tag + '.png')).convert('RGB').crop((900, 120, 1280, 420))
-        px[tag] = sum(1 for p in im.getdata() if p[1] > p[0] + 25 and p[1] > p[2] + 40)    # the map's olive-green lines
-    return px['map_yes'] > 50 and px['map_no'] < 10, 'green map pixels in the HUD corner: with the map %d, without %d' % (px['map_yes'], px['map_no'])
+        px[tag] = sum(1 for p in im.getdata() if p[1] > p[0] + 8 and p[1] > p[2] + 20)    # the map's olive-green lines
+    return px['map_yes'] > 200 and px['map_no'] < 10, 'green map pixels in the HUD corner: with the map %d, without %d' % (px['map_yes'], px['map_no'])
 
 # --------------------------------------------------------------------------------------------- driver
 def run_one(name):

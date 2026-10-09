@@ -703,7 +703,7 @@ void disp_whole_map(int ofs, f32 x0, f32 scale) {
         q.s[0] = 0.8f * x0;
         q.s[1] = ofs;
         q.s[2] = 0.8f * (320.0f * scale);
-        q.s[3] = 0.8f * (320.0f * scale);
+        q.s[3] = 320.0f * scale;
     } else {
         x = 240.0f * (FX(me, 0x754) * lpPit->map_sx);
         lo_x = x - 32.0f;
@@ -1338,7 +1338,7 @@ void player_info_sub(f32 x, PLW *pl, s16 y) {
         SetTrnslMode(4, 1);
         reload_tex(1, 0x118);
         SetTextureStage(0x118);
-        disp_map_sign((s16)((s16)(int)(0.8f * (5.0f + x)) + 8), (s16)(yy + 0xC),
+        disp_map_sign((s16)((s16)(int)(0.8f * (2.0f + x)) + 8), (s16)(yy + 0xC),
                       *(s16 *)((u8 *)lpPit + id * 2 + 0x34), disp_pl_rgb[id & 3]);
     }
 }
@@ -1501,8 +1501,12 @@ void disp_pl_vital(void) {
         col = 0xFFF0F000;
     } else {
         v = ((System_timer & 0x3F) << 10) & 0xFFFF;
-        a = ((s8)40.0f + 0xE7) & 0xFF;
-        col = (((s8)(40.0f * flSin(0.0000958738f * (f32)v)) + 0x9F) & 0xFF) | ((a << 16) | 0xFF000000 | (a << 8));
+        {
+            f32 sv = flSin(0.0000958738f * (f32)v);
+
+            a = ((s8)(18.0f * sv) + 0xE7) & 0xFF;
+            col = (((s8)(40.0f * sv) + 0x9F) & 0xFF) | ((a << 16) | 0xFF000000 | (a << 8));
+        }
     }
     g.col = col;
     g.cur = *(s16 *)((u8 *)pl + 0x748);
@@ -1741,7 +1745,7 @@ void disp_pachinger(void) {
             }
         }
         q.col = -1;
-        ((s16 *)&q.uv0)[0] = 0xD8;
+        ((s16 *)&q.uv0)[1] = 0xD8;
         q.uv1 = 0x100;
         ((s16 *)&q.uv1)[1] = 0xEC;
         {
@@ -1761,7 +1765,7 @@ void disp_pachinger(void) {
 
 /* 0x1319D0 */
 void disp_cannon(void) {
-    PFLP12 q;
+    PFLPS2 q;
     PLW *pl = lpPit->pl;
     f32 x;
     u32 i;
@@ -1780,27 +1784,27 @@ void disp_cannon(void) {
         }
         if (lpPit->x2A != 0) {
             x = 120.0f;
-            q.p[1] = 0x32;
+            q.s[1] = 0x32;
         } else {
-            q.p[1] = 0x123;
+            q.s[1] = 0x123;
             x = 320.0f - 6.0f * (f32)*((u8 *)pl + 0x1D);
         }
-        q.p[2] = 9;
-        q.p[3] = 0x14;
+        q.s[2] = 9;
+        q.s[3] = 0x14;
         q.col = -1;
         q.uv[1] = 0xEC;
-        q.uv[5] = 0xFF;
+        q.uv[3] = 0xFF;
         i = 0;
         if (*((u8 *)pl + 0x1D) != 0) {
             do {
                 if (i < *((u8 *)pl + 0x1C)) {
-                    q.uv[3] = 0xD8;
+                    q.uv[2] = 0xD8;
                     q.uv[0] = 0xCC;
                 } else {
                     q.uv[0] = 0xE0;
-                    q.uv[3] = 0xEC;
+                    q.uv[2] = 0xEC;
                 }
-                q.p[0] = 0.8f * x;
+                q.s[0] = 0.8f * x;
                 flps0008(&q);
                 i++;
                 x += 12.0f;
@@ -1818,23 +1822,23 @@ void disp_cannon(void) {
 
 /* 0x131C00 */
 void disp_gun_load_mess(int n) {
-    PFLP12 q;
+    PFLPS2 q;
     s16 *m = gun_load_mess[n];
     int v = ((System_timer & 0x1F) << 11) & 0xFFFF;
     int a = ((s8)(96.0f * flSin(0.0000958738f * (f32)v)) + 0x9F) & 0xFF;
 
     if (lpPit->x2A != 0) {
         q.col = ((a & 0xFF) << 24) | 0xFFFFFF;
-        q.p[0] = m[0];
-        q.p[1] = 0x3A;
+        q.s[0] = m[0];
+        q.s[1] = 0x3A;
     } else {
         int b = a & 0xFF;
         q.col = b | ((b << 16) | 0xFF000000 | (b << 8));
-        q.p[0] = m[7];
-        q.p[1] = 0xD5;
+        q.s[0] = m[7];
+        q.s[1] = 0xD5;
     }
-    q.p[2] = m[1];
-    q.p[3] = m[2];
+    q.s[2] = m[1];
+    q.s[3] = m[2];
     q.uv[0] = m[3];
     q.uv[1] = m[4];
     q.uv[2] = m[5];
@@ -2359,7 +2363,7 @@ void Pit_disp_pit_effect(void) {
                 SetBlendingMode(e->d->blend);
                 q.col = e->d->col | (e->alpha << 24);
                 q.uv[4] = q.uv[0] = e->d->u + 1;
-                q.uv[5] = q.uv[1] = e->d->v + 1;
+                q.uv[3] = q.uv[1] = e->d->v + 1;
                 q.uv[2] = e->d->u + e->d->w - 1;
                 q.uv[5] = e->d->v + e->d->h - 1;
                 flSinCos((6.2831855f * (f32)e->d->ang) / 65536.0f, &s, &c);
@@ -2526,7 +2530,7 @@ void trans_box(void) {
             q.uv[1] = vv + 1;
             q.uv[2] = uu + 0x1F;
             q.uv[3] = vv + 0x1F;
-            q.col = item_col_tbl[Item_data[lpPit->x66][6]];
+            q.col = item_col_tbl[Item_data[lpPit->x66][6]] & 0xFFFFFF;
             t = 57.0f * flSqrt((f32)lpPit->x64);
             q.col |= ((u32)t & 0xFF) << 24;
             flps0008(&q);
@@ -2689,10 +2693,13 @@ void disp_item_sub_select(void) {
             break;
         case 3:
             e0 = item_sel_sub(pl, d0, 0);
+            break;
+        case 5:
+            e0 = item_sel_sub(pl, d0, 0);
             f0 = item_sel_sub(pl, s18, 1);
             g0 = item_sel_sub(pl, e0, 0);
             break;
-        case 5:
+        default:
             e0 = item_sel_sub(pl, d0, 0);
             f0 = item_sel_sub(pl, s18, 1);
             g0 = item_sel_sub(pl, e0, 0);
@@ -2760,6 +2767,7 @@ void disp_item_sub_select(void) {
             s18 = item_sel_sub(pl, pl->work888, 1) & 0xFFFF;
         } else if (n == 3) {
             b0 = item_sel_sub(pl, pl->work888, 0);
+            s18 = item_sel_sub(pl, pl->work888, 1) & 0xFFFF;
         } else if (n == 1 || n == 0) {
         } else {
             s18 = item_sel_sub(pl, pl->work888, 1) & 0xFFFF;
@@ -2849,10 +2857,10 @@ void disp_item_sub_select(void) {
                             }
                         }
                     }
-                }
-                flfntSetSize(0x14, 0x14);
-                if (disp_shell_name(pl->work88E, 0xFE) == 1) {
-                    sl[2] = pl->work88E;
+                    flfntSetSize(0x14, 0x14);
+                    if (disp_shell_name(pl->work88E, 0xFE) == 1) {
+                        sl[2] = pl->work88E;
+                    }
                 }
             } else {
                 sl[0] = Pl_shell_set(pl, pl->work88E, 1);
@@ -2881,10 +2889,10 @@ void disp_item_sub_select(void) {
                             }
                         }
                     }
-                }
-                flfntSetSize(0x14, 0x14);
-                if (disp_shell_name(pl->work88E, 0x116) == 1) {
-                    sl[1] = pl->work88E;
+                    flfntSetSize(0x14, 0x14);
+                    if (disp_shell_name(pl->work88E, 0x116) == 1) {
+                        sl[1] = pl->work88E;
+                    }
                 }
             }
             q.s[1] = 0xEE;
@@ -2926,9 +2934,9 @@ void disp_item_sub_select(void) {
                 } else if (disp_shell_name(sl[0], 0x120) == 0) {
                     sl[0] = 0xFF;
                 }
-            }
-            if (disp_shell_name(pl->work88E, 0x108) == 1) {
-                sl[1] = pl->work88E;
+                if (disp_shell_name(pl->work88E, 0x108) == 1) {
+                    sl[1] = pl->work88E;
+                }
             }
             q.s[1] = 0xEE;
             {
