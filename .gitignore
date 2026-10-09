@@ -34,3 +34,6 @@ tools/ps2recomp/
 
 # owner-supplied Xbox files for xemu (BIOS, MCPX ROM, HDD image): never committed
 xbox_files/
+
+# translation tables made by tools/text_dump.py (hold the game text)
+text/

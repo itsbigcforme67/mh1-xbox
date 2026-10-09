@@ -446,7 +446,7 @@ GAME_NOAGG=${GAME_NOAGG--fno-aggressive-loop-optimizations}   # gcc only (empty 
 # FPSSE can be set by the caller (build_win.sh: -msse2 for i686 clang; build_xbox.py uses -msse, the Pentium III has no SSE2);
 # ARM is single precision already.
 if [ -z "${FPSSE+x}" ]; then FPSSE=""; [ "$M32" = "-m32" ] && [ "${CC:-gcc}" = gcc ] && FPSSE="-msse2 -mfpmath=sse"; fi
-GAMEFLAGS="$M32 $FPSSE $GAME_EXTRA ${COV:+-finstrument-functions} -std=gnu99 -O2 -g -fno-strict-aliasing $GAME_NOAGG -ftrivial-auto-var-init=zero -Iinclude -w"
+GAMEFLAGS="$M32 $FPSSE $GAME_EXTRA ${COV:+-finstrument-functions} -std=gnu99 -O2 -g -fno-strict-aliasing $GAME_NOAGG -ftrivial-auto-var-init=zero -Dsprintf=rt_text_sprintf -Dstrcpy=rt_text_strcpy -Dstrcat=rt_text_strcat -Iinclude -w"
 LIBS=${LIBS:-"-lSDL2 -lGL -lm"}
 LINK1_OPTS=${LINK1_OPTS--Wl,--warn-unresolved-symbols}   # lld (Windows) has no such switch: LINK1_TOLERANT=1 and --error-limit=0
 EXE=${EXE:-}               # ".exe" for the Windows build (tools/build_win.sh)   # host symbols by name: build/pc/rt_symtab.c (tools/gen_symtab.py), no dlsym
@@ -716,7 +716,7 @@ OBJS="$OBJS build/pc/rt_tables.o"
 MEMSTAT="-include src/pc/rt/rt_memstat.h"
 $CC $CFLAGS $SYS -c src/pc/rt/rt_memstat.c -o build/pc/rt_memstat.o
 OBJS="$OBJS build/pc/rt_memstat.o"
-for f in $NETRT $([ -n "$COV" ] && echo rt_cov) rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_light rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_save rt_boot rt_movie rt_prof rt_log rt_pick; do
+for f in $NETRT $([ -n "$COV" ] && echo rt_cov) rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_light rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_font rt_village rt_mc rt_save rt_boot rt_movie rt_prof rt_log rt_pick rt_text rt_text_sp; do
     # shellcheck disable=SC2086
     XF=""; [ $f = rt_log ] && XF="-D_GNU_SOURCE"   # ucontext / sigaltstack
     [ $f = rt_menu ] && XF="-DMH1_NO_UTF8"       # include/plf.h declares memset(void *, int, int)

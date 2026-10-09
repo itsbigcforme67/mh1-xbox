@@ -52,6 +52,7 @@ static f32 cur_z = 10.0f;
 static u8 size_w = 20, size_h = 20;
 static s16 cur_pal;
 static int halftype;
+static u8 asc_adv[256];         /* proportional ASCII advances at size 20 (text layer), 0: not measured */
 static u32 pal[32][4];          /* RGBA bytes as a word: R | G << 8 | B << 16 | A << 24 */
 /* glyph textures per glyph and palette: glyph_tex[glyph] -> 32 slots,
  * allocated when the glyph is first drawn (a flat table was 1 MB) */
@@ -134,6 +135,7 @@ void flfntInit(void)
  * 0x6D2); np is not used here: the PC loads it itself. */
 extern u32 nfcol_tbl[][3];
 extern u32 nfrvcol_tbl[][4];
+static void measure_ascii(void);
 void rt_font_init(void)
 {
     size_t n = 0;
@@ -146,6 +148,8 @@ void rt_font_init(void)
             font_data = NULL;
         }
     }
+    if (font_data)
+        measure_ascii();
     flfntCreate(NULL);
     flfntInit();
     for (i = 1; i < 0xE; i++)               /* font_set's palettes */
@@ -265,10 +269,44 @@ static void putc_glyph(int idx, const FNT_ENT *e)
     gfx_draw_2d(640, 448, 6, pos, st, NULL);
 }
 
+/* The font's half-width ASCII glyphs all sit in the left 10 columns of
+ * their 20 x 20 cell and the pen moves a fixed w/2, so English is
+ * monospaced. With a translation table loaded (rt_text.c) a string with no
+ * double-byte character advances by each glyph's ink width + 1 instead
+ * (measured here from the font itself, nothing copied). */
+static void measure_ascii(void)
+{
+    unsigned c;
+    memset(asc_adv, 0, sizeof asc_adv);
+    for (c = 0x21; c < 0x7F; c++) {
+        int idx = sjis2index(ascii2sjis(c)), x, y, maxx = -1;
+        const u8 *g;
+        if (idx < 0)
+            continue;
+        g = font_data + idx * 100;
+        for (y = 0; y < 20; y++)
+            for (x = 0; x < 20; x++)
+                if (((g[(y * 20 + x) >> 2] >> (6 - 2 * ((y * 20 + x) & 3))) & 3) && x > maxx)
+                    maxx = x;
+        asc_adv[c] = (u8)(maxx < 0 ? 6 : maxx + 2);
+    }
+    asc_adv[' '] = 8;
+    rt_text_font_ready(asc_adv);
+}
+
+static int pure_ascii(const u8 *p)
+{
+    for (; *p; p++)
+        if ((*p >= 0x80 && *p < 0xA0) || (*p >= 0xE0 && *p < 0x100) || (*p >= 0xA1 && *p <= 0xDF))
+            return 0;
+    return 1;
+}
+
 /* flfntFontPuts (0x216DE0) */
 static void font_puts(const char *s, const FNT_ENT *e)
 {
     const u8 *p = (const u8 *)s;
+    int prop = asc_adv[' '] && pure_ascii(p) && rt_text_proportional();
     pen_x = e->x;
     pen_y = e->y;
     for (;;) {
@@ -297,6 +335,8 @@ static void font_puts(const char *s, const FNT_ENT *e)
         }
         if (!ascii)
             pen_x += e->w;
+        else if (prop)
+            pen_x += (s16)((c < 0x80 && asc_adv[c] ? asc_adv[c] : 10) * e->w / 20);
         else if (halftype)
             pen_x += e->w >> 1;
         else
@@ -368,7 +408,7 @@ void rt_font_frame_end(void)
 
 /* ------------------------------------------------------------ f_font prints */
 static char tmpstr[0x400];
-#define FMT_TMP(fmt) do { va_list ap; va_start(ap, fmt); vsnprintf(tmpstr, sizeof tmpstr, fmt, ap); va_end(ap); } while (0)
+#define FMT_TMP(fmt) do { va_list ap; fmt = rt_text_tr(fmt); va_start(ap, fmt); vsnprintf(tmpstr, sizeof tmpstr, fmt, ap); va_end(ap); } while (0)
 
 void font_set_palette(int n);
 
@@ -421,6 +461,7 @@ void font_print_ex(int x, int y, int p, const char *fmt, ...)
  * +3,+2 (+2,+2) in palette a, then the text in palette b */
 void font_print_double(int x, int y, int a, int b, const char *s)
 {
+    s = rt_text_tr(s);
     flfntLocate((s16)(x + 3), (s16)(y + 2));
     font_set_palette(a);
     flfntPrintf("%s", s);
@@ -430,6 +471,7 @@ void font_print_double(int x, int y, int a, int b, const char *s)
 }
 void font_print_double2(int x, int y, int a, int b, const char *s)
 {
+    s = rt_text_tr(s);
     flfntLocate((s16)(x + 2), (s16)(y + 2));
     font_set_palette(a);
     flfntPrintf("%s", s);
@@ -439,7 +481,7 @@ void font_print_double2(int x, int y, int a, int b, const char *s)
 }
 
 /* font_print_uf (0x162570): the string as is */
-void font_print_uf(const char *s) { flfntPrintf("%s", s); }
+void font_print_uf(const char *s) { flfntPrintf("%s", rt_text_tr(s)); }
 
 /* font_sp_ck (0x161DE0): one '~' code at s: ~Cnn palette (code 0x100|nn),
  * ~Ann work string nn (0x200|nn), ~~ ; mode 1 gives length adjustments
@@ -499,6 +541,7 @@ void font_print_sp(const char *fmt, ...)
     s16 x0, x, y, code;
     const char *p;
     va_list ap;
+    fmt = rt_text_tr(fmt);
     va_start(ap, fmt);
     vsnprintf(tmp, sizeof tmp, fmt, ap);
     va_end(ap);
@@ -538,7 +581,9 @@ void font_print_sp(const char *fmt, ...)
             y += size_h;
             flfntPrintf("%s", bufs[cur]);
             flfntLocate(x0, y);
-        } else if (halftype)
+        } else if (asc_adv[' '] && rt_text_proportional() && c < 0x80 && asc_adv[c])
+            x += (s16)(asc_adv[c] * size_w / 20);       /* as font_puts does for pure-ASCII text */
+        else if (halftype)
             x += size_w >> 1;
         else
             x += (s16)(2 * size_w / 3);
