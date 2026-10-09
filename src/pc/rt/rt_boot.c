@@ -61,6 +61,24 @@ static int boot_active, boot_done, boot_ticks;
 
 int rt_boot_active(void) { return boot_active; }
 
+/* the title / mode select (Demo_task, Select_task running): where the PC settings hint is shown (src/pc/menu.c) */
+extern u8 Select_task[];
+void Demo_task(void *);
+int rt_boot_title(void)
+{
+    extern u8 tcb_w[];
+    int i;
+    if (!boot_active)
+        return 0;
+    for (i = 0; i < 16; i++) {
+        u8 *t = tcb_w + 0x20 * i;
+        void *fn = *(void **)(t + 4);
+        if (*(s16 *)t != 0 && (fn == (void *)Select_task || fn == (void *)Demo_task))
+            return 1;
+    }
+    return 0;
+}
+
 /* ------------------------------------------------------------ system work
  * system_w_set (main, src/main/sys/ioread_nm.c): the options into system_w */
 void system_w_set(void)

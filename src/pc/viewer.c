@@ -17,6 +17,7 @@
 
 #include <SDL.h>
 #include "pick.h"
+#include "menu.h"
 #ifdef MH1_WIN
 #include <fcntl.h>
 #include <io.h>
@@ -1720,6 +1721,14 @@ int main(int argc, char **argv)
     }
 #endif
     rt_pick_set_args(argc, argv);
+#ifndef XBOX
+    {   /* the settings that are read once: the translation table (before the game data is imported) and the button layout */
+        extern int rt_pad_swap_confirm;
+        gfx_opts_apply_language();
+        rt_pad_swap_confirm = pc_opt.western_pad;
+        menu_set_shot(shot != NULL);
+    }
+#endif
     if (!disc) {
         fprintf(stderr, "usage:%s DISC_DIR [--shot out.png] [--frames N] [--time S] "
                 "[--size WxH] [--cam x,y,z,yaw,pitch] [--stage N] [--play] [--input SCRIPT]\n", argv[0]);
@@ -2033,6 +2042,8 @@ int main(int argc, char **argv)
                 continue;
             }
 #endif
+            if (menu_event(&ev))        /* F10: the settings menu (open: it takes the keys and the mouse) */
+                continue;
             if (pick_event(&ev))        /* F8: the bug reporter (frozen: it takes all input) */
                 continue;
             pad_event(&ev);     /* typed text (the name entry) */
@@ -2061,10 +2072,12 @@ int main(int argc, char **argv)
         }
         if (play)
             pick_poll_pad();            /* Back/View + Start on the controller */
+        if (!shot)
+            menu_poll_pad();            /* Back + L3 opens the settings menu; its controller navigation */
         {   /* the bug reporter stops the game clock while it is frozen */
             static int holding;
             static Uint32 hold_t0;
-            int hnow = pick_hold_ticks(ticks);
+            int hnow = pick_hold_ticks(ticks) | menu_hold_ticks(ticks);
             if (hnow && !holding)
                 hold_t0 = SDL_GetTicks();
             if (!hnow && holding && fixed_time < 0) {
@@ -2106,7 +2119,7 @@ int main(int argc, char **argv)
             shot_next = 0;              /* RT_SHOTS past --time: dropped */
         /* RT_PROF=1: CPU time per subsystem (rt_prof.c), per game tick and
          * per drawn frame, every 300 ticks */
-        while (!pick_hold_ticks(ticks) && ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
+        while (!pick_hold_ticks(ticks) && !menu_hold_ticks(ticks) && ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
             rt_prof_begin(RTP_LOGIC);
             if (booting) {      /* ACRMain: pad, then the task scheduler */
                 pad_state ps;
@@ -2339,6 +2352,7 @@ int main(int argc, char **argv)
     frame_done:
         if (pick_frame_hook())
             goto redraw;
+        menu_draw();                    /* the settings menu over the last picture (and the title screen's hint) */
 
         frame_no++;
         rt_log_frame();
@@ -2363,7 +2377,7 @@ int main(int argc, char **argv)
             if (shot_list && *shot_list == ',')
                 shot_list++;
         }
-        if (shot && frame_no >= frames && shot_next <= 0 && !pick_busy() && (!shot_list || ticks >= 2 + (int)fr)
+        if (shot && frame_no >= frames && shot_next <= 0 && !pick_busy() && !menu_busy() && (!shot_list || ticks >= 2 + (int)fr)
             && (!step || frame_no / 30.0f >= fixed_time)) {
             uint8_t *rgb = malloc((size_t)W * H * 3);
             gfx_read_pixels(rgb);

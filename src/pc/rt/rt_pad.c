@@ -53,9 +53,14 @@ void swset(void);
 static u16 host_bits;
 static int host_stick[4];   /* lx, ly, rx, ry: -127..127, y down */
 
+/* the PC settings menu's "Western" layout (cross confirms): circle and cross trade places for the whole game, menus and play */
+int rt_pad_swap_confirm;
+
 void rt_pad_set(uint16_t fl_bits, int lx, int ly, int rx, int ry)
 {
     rt_pick_record_pad(fl_bits, lx, ly, rx, ry);
+    if (rt_pad_swap_confirm && ((fl_bits & 0x30) == 0x10 || (fl_bits & 0x30) == 0x20))
+        fl_bits ^= 0x30;                        /* 0x10 cross <-> 0x20 circle (one of them held; both held stay as they are) */
     host_bits = fl_bits;
     host_stick[0] = lx;
     host_stick[1] = ly;

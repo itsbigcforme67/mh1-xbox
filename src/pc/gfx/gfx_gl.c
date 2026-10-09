@@ -16,8 +16,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
-struct gfx_texture { GLuint id; int w, h, src; long xbox; };
+struct gfx_texture { GLuint id; int w, h, src; long xbox; struct gfx_texture *next, *prev; };
 
 struct gfx_clay {
     int nvert, nindex, nbatch;
@@ -48,6 +49,12 @@ static struct {
     int max_aniso;               /* 0: the extension is missing */
     int fs;                      /* fullscreen now */
     int hidden;
+    gfx_texture *tex_head;       /* every live texture (live anisotropic switch-on: mip levels for the older ones) */
+    int mips;                    /* every texture has its mip levels */
+    void (APIENTRY *gen_mip)(GLenum);
+    unsigned sharp_prog;         /* the "sharp" 2D filter's program (0: no shaders) */
+    int sharp_u_size, sharp_u_n; /* its uniforms */
+    int sharp_tried;
 } G;
 
 gfx_options gfx_opt = { 0, 1, 0, 0, 1, 0, 0, -1, -1, 0, 0 };
@@ -118,6 +125,142 @@ static const GLenum blend_factor[6] = {
 
 static const float ident[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
 
+
+/* ------------------------------------------------------------ the "sharp" 2D filter
+ * Nearest at an integer scale, bilinear for the rest ("sharp bilinear"): the 2D art is scaled by N = floor(window pixels per
+ * game pixel) with nearest sampling, and the remaining fraction (1 .. 2 window pixels wide transitions) is bilinear, so pixel
+ * art stays crisp at any window size without uneven pixel widths. A fragment shader on the fixed-function pipeline (GLSL 1.20,
+ * GL 2.0 entry points fetched at run time: the Windows opengl32 header stops at 1.1); without shaders the filter is bilinear. */
+#ifndef GL_FRAGMENT_SHADER
+#define GL_FRAGMENT_SHADER 0x8B30
+#define GL_COMPILE_STATUS 0x8B81
+#define GL_LINK_STATUS 0x8B82
+#endif
+typedef unsigned (APIENTRY *PFN_create)(void);
+typedef unsigned (APIENTRY *PFN_createsh)(unsigned);
+typedef void (APIENTRY *PFN_source)(unsigned, int, const char **, const int *);
+typedef void (APIENTRY *PFN_u1)(unsigned);
+typedef void (APIENTRY *PFN_attach)(unsigned, unsigned);
+typedef void (APIENTRY *PFN_geti)(unsigned, unsigned, int *);
+typedef int (APIENTRY *PFN_uloc)(unsigned, const char *);
+typedef void (APIENTRY *PFN_uni2)(int, float, float);
+typedef void (APIENTRY *PFN_uni1)(int, float);
+typedef void (APIENTRY *PFN_infolog)(unsigned, int, int *, char *);
+static struct {
+    PFN_create create_program;
+    PFN_createsh create_shader;
+    PFN_source shader_source;
+    PFN_u1 compile_shader, link_program, use_program;
+    PFN_attach attach;
+    PFN_geti get_shader, get_program;
+    PFN_uloc uloc;
+    PFN_uni2 uni2;
+    PFN_uni1 uni1;
+    PFN_infolog shader_log;
+} GL2;
+
+static const char *sharp_fs =
+    "#version 120\n"
+    "uniform sampler2D tex;\n"
+    "uniform vec2 size;\n"
+    "uniform float n;\n"                                       /* the integer scale */
+    "void main() {\n"
+    "  vec2 uv = gl_TexCoord[0].xy * size;\n"
+    "  vec2 i = floor(uv);\n"
+    "  vec2 d = fract(uv) - 0.5;\n"
+    "  float rr = 0.5 - 0.5 / n;\n"
+    "  vec2 g = (d - clamp(d, -rr, rr)) * n + 0.5;\n"
+    "  gl_FragColor = texture2D(tex, (i + g) / size) * gl_Color;\n"
+    "}\n";
+
+static void sharp_init(void)
+{
+    unsigned fs, pr;
+    int ok = 0;
+    if (G.sharp_tried)
+        return;
+    G.sharp_tried = 1;
+    GL2.create_program = (PFN_create)SDL_GL_GetProcAddress("glCreateProgram");
+    GL2.create_shader = (PFN_createsh)SDL_GL_GetProcAddress("glCreateShader");
+    GL2.shader_source = (PFN_source)SDL_GL_GetProcAddress("glShaderSource");
+    GL2.compile_shader = (PFN_u1)SDL_GL_GetProcAddress("glCompileShader");
+    GL2.link_program = (PFN_u1)SDL_GL_GetProcAddress("glLinkProgram");
+    GL2.use_program = (PFN_u1)SDL_GL_GetProcAddress("glUseProgram");
+    GL2.attach = (PFN_attach)SDL_GL_GetProcAddress("glAttachShader");
+    GL2.get_shader = (PFN_geti)SDL_GL_GetProcAddress("glGetShaderiv");
+    GL2.get_program = (PFN_geti)SDL_GL_GetProcAddress("glGetProgramiv");
+    GL2.uloc = (PFN_uloc)SDL_GL_GetProcAddress("glGetUniformLocation");
+    GL2.uni2 = (PFN_uni2)SDL_GL_GetProcAddress("glUniform2f");
+    GL2.uni1 = (PFN_uni1)SDL_GL_GetProcAddress("glUniform1f");
+    GL2.shader_log = (PFN_infolog)SDL_GL_GetProcAddress("glGetShaderInfoLog");
+    if (!GL2.create_program || !GL2.create_shader || !GL2.shader_source || !GL2.compile_shader || !GL2.link_program ||
+        !GL2.use_program || !GL2.attach || !GL2.get_shader || !GL2.get_program || !GL2.uloc || !GL2.uni2 || !GL2.uni1) {
+        rt_log("2D filter sharp: no shader support, bilinear instead");
+        return;
+    }
+    fs = GL2.create_shader(GL_FRAGMENT_SHADER);
+    GL2.shader_source(fs, 1, &sharp_fs, NULL);
+    GL2.compile_shader(fs);
+    GL2.get_shader(fs, GL_COMPILE_STATUS, &ok);
+    if (!ok) {
+        char log[512] = "";
+        if (GL2.shader_log)
+            GL2.shader_log(fs, sizeof log, NULL, log);
+        rt_log("2D filter sharp: shader does not compile (%s), bilinear instead", log);
+        return;
+    }
+    pr = GL2.create_program();
+    GL2.attach(pr, fs);
+    GL2.link_program(pr);
+    GL2.get_program(pr, GL_LINK_STATUS, &ok);
+    if (!ok) {
+        rt_log("2D filter sharp: shader does not link, bilinear instead");
+        return;
+    }
+    G.sharp_prog = pr;
+    G.sharp_u_size = GL2.uloc(pr, "size");
+    G.sharp_u_n = GL2.uloc(pr, "n");
+}
+
+int gfx_sharp_ok(void)
+{
+    sharp_init();
+    return G.sharp_prog != 0;
+}
+
+int gfx_aniso_max(void) { return G.max_aniso; }
+
+/* live anisotropic filtering: the textures made while it was off have no mip levels yet */
+int gfx_apply_aniso(void)
+{
+    gfx_texture *t;
+    if (gfx_opt.aniso > G.max_aniso)
+        gfx_opt.aniso = G.max_aniso > 1 ? G.max_aniso : 1;
+    if (gfx_opt.aniso <= 1 || G.mips)
+        return 1;
+    if (!G.gen_mip)
+        G.gen_mip = (void (APIENTRY *)(GLenum))SDL_GL_GetProcAddress("glGenerateMipmap");
+    if (!G.gen_mip)
+        G.gen_mip = (void (APIENTRY *)(GLenum))SDL_GL_GetProcAddress("glGenerateMipmapEXT");
+    if (!G.gen_mip) {
+        rt_log("anisotropic filtering: this driver cannot make mip levels for the loaded textures: restart to apply");
+        return 0;
+    }
+    for (t = G.tex_head; t; t = t->next) {
+        glBindTexture(GL_TEXTURE_2D, t->id);
+        G.gen_mip(GL_TEXTURE_2D);
+    }
+    G.mips = 1;
+    return 1;
+}
+
+void gfx_set_vsync(int on)
+{
+    gfx_opt.vsync = on != 0;
+    if (G.win && !G.hidden)
+        SDL_GL_SetSwapInterval(gfx_opt.vsync ? 1 : 0);
+}
+
 int gfx_init(int width, int height, const char *title, int hidden)
 {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -185,7 +328,7 @@ int gfx_init(int width, int height, const char *title, int hidden)
             rt_log("MSAA: %d samples asked, %d got", gfx_opt.msaa, got);
         }
         rt_log("display: %s, vsync %s, aniso %dx (max %d), 2D filter %s, %s", G.fs ? "fullscreen" : "windowed",
-               gfx_opt.vsync ? "on" : "off", gfx_opt.aniso, G.max_aniso, gfx_opt.nearest2d ? "nearest" : "linear",
+               gfx_opt.vsync ? "on" : "off", gfx_opt.aniso, G.max_aniso, gfx_opt.filter2d == F2D_NEAREST ? "nearest" : gfx_opt.filter2d == F2D_SHARP ? "sharp" : "linear",
                gfx_opt.widescreen ? "widescreen (Hor+)" : "4:3");
     }
     {
@@ -308,6 +451,14 @@ int gfx_toggle_fullscreen(void)
     return G.fs;
 }
 
+/* the settings menu: fullscreen on / off (the same switch as Alt+Enter) */
+void gfx_set_fullscreen(int on)
+{
+    if (!G.win || G.hidden || (on != 0) == G.fs)
+        return;
+    gfx_toggle_fullscreen();
+}
+
 /* the windowed geometry, for the settings file */
 void gfx_window_geometry(void)
 {
@@ -370,6 +521,10 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
         t->xbox = mem ? gfx_xbox_texture_bytes(w, h, rgba) : 0;
     }
     rt_ms_add("textures as the Xbox keeps them (P8/RGBA8, GPU)", t->xbox);
+    t->next = G.tex_head;
+    if (G.tex_head)
+        G.tex_head->prev = t;
+    G.tex_head = t;
     glGenTextures(1, &t->id);
     glBindTexture(GL_TEXTURE_2D, t->id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -378,6 +533,10 @@ gfx_texture *gfx_create_texture(int w, int h, const uint8_t *rgba)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     if (gfx_opt.aniso > 1)          /* mip levels for the anisotropic 3D draws (the 2D draws never sample them) */
         glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+    if (!t->next)                   /* G.mips: every live texture has its mip levels */
+        G.mips = gfx_opt.aniso > 1;
+    else if (gfx_opt.aniso <= 1)
+        G.mips = 0;
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
     return t;
 }
@@ -386,6 +545,12 @@ void gfx_release_texture(gfx_texture *t)
 {
     if (!t)
         return;
+    if (t->prev)
+        t->prev->next = t->next;
+    else
+        G.tex_head = t->next;
+    if (t->next)
+        t->next->prev = t->prev;
     glDeleteTextures(1, &t->id);
     rt_ms_add("textures in GPU memory (RGBA8, GPU)", -(long)t->w * t->h * 4);
     rt_ms_add("textures as on disc (4/8-bit+CLUT, GPU)", -(long)t->src);
@@ -623,6 +788,37 @@ void gfx_pick_matrices(float view[16], float proj[16])
     memcpy(proj, G.proj, sizeof G.proj);
 }
 
+static void vec_mat(float o[4], const float v[4], const float *m)       /* row vector times matrix */
+{
+    int j;
+    for (j = 0; j < 4; j++)
+        o[j] = v[0] * m[j] + v[1] * m[4 + j] + v[2] * m[8 + j] + v[3] * m[12 + j];
+}
+
+int gfx_project(const float in[3], float out[4])
+{
+    float a[4] = { in[0], in[1], in[2], 1.0f }, b[4], c[4];
+    float nx, ny, nz, px, py;
+    vec_mat(b, a, G.world);
+    vec_mat(a, b, G.view);
+    vec_mat(c, a, G.proj);
+    out[3] = c[3];
+    if (c[3] <= 1e-6f) {
+        out[0] = out[1] = 0;
+        out[2] = -1;
+        return 0;
+    }
+    nx = c[0] / c[3];
+    ny = c[1] / c[3];
+    nz = c[2] / c[3];
+    px = sc.x + (nx * 0.5f + 0.5f) * sc.w;                  /* window pixels */
+    py = sc.y + (0.5f - ny * 0.5f) * sc.h;
+    out[0] = (px - rc.x) * 512.0f / (rc.w ? rc.w : 1);      /* the 4:3 rectangle is the 512 x 448 frame */
+    out[1] = (py - rc.y) * 448.0f / (rc.h ? rc.h : 1);
+    out[2] = nz * 0.5f + 0.5f;
+    return 1;
+}
+
 static void gfx_execute_clay_gl(gfx_clay *c)
 {
     if (gfx_rec_clay(c))
@@ -688,7 +884,7 @@ static void gfx_execute_clay_gl(gfx_clay *c)
         if (t && c->st) {
             glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, t->id);
-            if (gfx_opt.aniso > 1 && G.filter == GL_LINEAR && !pid) {   /* trilinear + anisotropic (mipmaps: gfx_create_texture) */
+            if (gfx_opt.aniso > 1 && G.mips && G.filter == GL_LINEAR && !pid) {   /* trilinear + anisotropic (mipmaps: gfx_create_texture) */
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
                 glTexParameterf(GL_TEXTURE_2D, GL_TEX_MAX_ANISO, (float)gfx_opt.aniso);
             } else {
@@ -730,6 +926,22 @@ static void gfx_draw_2d_gl(int w, int h, int nvert, const float *pos, const floa
     rt_prof_count(RTPC_DRAWS, 1);
     gfx_texture *t = st ? G.tex : NULL;
     uint32_t pid = 0;
+    {   /* RT_2D_TRACE=1: every 2D draw's box (virtual screen w x h), anchor and texture size (widescreen work) */
+        static int tr = -1;
+        if (tr < 0)
+            tr = getenv("RT_2D_TRACE") != NULL;
+        if (tr && !gfx_pick_pass) {
+            float x0 = 1e30f, y0 = 1e30f, x1 = -1e30f, y1 = -1e30f;
+            int k;
+            for (k = 0; k < nvert; k++) {
+                if (pos[2 * k] < x0) x0 = pos[2 * k];
+                if (pos[2 * k] > x1) x1 = pos[2 * k];
+                if (pos[2 * k + 1] < y0) y0 = pos[2 * k + 1];
+                if (pos[2 * k + 1] > y1) y1 = pos[2 * k + 1];
+            }
+            fprintf(stderr, "2d %dx%d anchor %d box %.0f,%.0f-%.0f,%.0f tex %dx%d\n", w, h, G.anchor, x0, y0, x1, y1, t ? t->w : 0, t ? t->h : 0);
+        }
+    }
     if (gfx_pick_pass) {
         gfx_pick_info gi;
         int k;
@@ -749,6 +961,7 @@ static void gfx_draw_2d_gl(int w, int h, int nvert, const float *pos, const floa
     }
     GLboolean dt = glIsEnabled(GL_DEPTH_TEST);
     GLboolean dm;
+    int use_sharp = 0;
     glGetBooleanv(GL_DEPTH_WRITEMASK, &dm);
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
@@ -795,7 +1008,22 @@ static void gfx_draw_2d_gl(int w, int h, int nvert, const float *pos, const floa
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, t->id);
         {
-            GLint f2 = gfx_opt.nearest2d && !pid ? GL_NEAREST : G.filter;       /* "clean" scaling of the pixel art */
+            int mode = pid ? F2D_LINEAR : gfx_opt.filter2d;
+            GLint f2 = mode == F2D_NEAREST ? GL_NEAREST : G.filter;       /* "clean" scaling of the pixel art */
+            if (mode == F2D_SHARP) {
+                /* nearest at the integer part of the scale, bilinear for the rest (fragment shader); the sampler stays bilinear.
+                 * The scale is window pixels per virtual pixel of this draw (a window-sized virtual screen: 1 = plain bilinear) */
+                float scale = (w == G.w && h == G.h) ? 1.0f : (float)rc.w / (float)w;
+                if (gfx_sharp_ok() && G.filter == GL_LINEAR && scale >= 2.0f) {
+                    use_sharp = 1;
+                    f2 = GL_LINEAR;
+                    GL2.use_program(G.sharp_prog);
+                    GL2.uni2(G.sharp_u_size, (float)t->w, (float)t->h);
+                    GL2.uni1(G.sharp_u_n, floorf(scale));
+                } else if (G.filter != GL_LINEAR) {
+                    f2 = G.filter;
+                }
+            }
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, f2);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, f2);
             if (G.max_aniso)
@@ -810,6 +1038,8 @@ static void gfx_draw_2d_gl(int w, int h, int nvert, const float *pos, const floa
         glDisable(GL_TEXTURE_2D);
     }
     glDrawArrays(GL_TRIANGLES, 0, nvert);
+    if (use_sharp)
+        GL2.use_program(0);
     if (pid)
         pick_gl_off();
     glDisableClientState(GL_COLOR_ARRAY);
