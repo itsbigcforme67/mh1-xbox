@@ -1350,10 +1350,10 @@ void pl_item_trans(PLX *pl) {
                     v[0] += ((f32 *)m)[12];
                     v[1] += ((f32 *)m)[13];
                     v[2] += ((f32 *)m)[14];
-                    flvecRotY(v, -ry);
                     v[0] -= tx;
                     v[1] -= ty;
                     v[2] -= tz;
+                    flvecRotY(v, -ry);
                     rx = flArcTan2(v[2], v[1]);
                 } else {
                     rx = 0.0f;
