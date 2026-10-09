@@ -629,13 +629,15 @@ void rt_np_init_slots(void)
     for (s = 0; s < 8; s++)
         game_w.pl_state[s] = s < n ? 1 : 0;
     {   /* the quest's first monsters were made (pull_enemy_work, em_init) before the slots were known:
-         * give them this machine's slot as those do (+0x8C3: 0 = the host owns them, +0x88E) */
+         * the host (slot 0) owns them, as on the PS2: +0x8C3 = 0 on the host ("this machine runs it"), non-zero
+         * elsewhere; +0x88E = the owner's slot, 0 on every machine (it was this machine's slot: when the host left,
+         * Em_Master_Change on the others looked at their own pl_state and never took the monster over) */
         extern u8 em_work[];
         int k;
         for (k = 0; k < 20; k++)
             if (em_work[0xA10 * k]) {
                 em_work[0xA10 * k + 0x8C3] = (u8)me;
-                em_work[0xA10 * k + 0x88E] = (u8)me;
+                em_work[0xA10 * k + 0x88E] = 0;
             }
     }
     for (s = 0; s < n; s++) {
