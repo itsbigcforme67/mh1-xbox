@@ -242,6 +242,17 @@ int rt_online_tick(void)
                     cw[0x2C32], cw[0x2C33], cw[0x2C34], (s8)lb_sys[3], game_w[0x14], r);
             last31 = cw[0x2C31]; last33 = cw[0x2C33]; last34 = cw[0x2C34]; last3 = lb_sys[3];
         }
+        if (trace && ticks % 60 == 0 && cw[0x2C31] == 3) {     /* every hunter in the town: slot, name, stage, position */
+            extern u8 player_work[];
+            int i;
+            for (i = 0; i < 8; i++) {
+                u8 *p = player_work + 0xA00 * i;
+                if (p[0])
+                    fprintf(stderr, "online: tick %d slot %d%s \"%.16s\" stage %d pos %.0f %.0f %.0f\n", ticks, i,
+                            i == game_w[0xD1] ? " (me)" : "", (char *)p + 0x8D4, p[0x736], *(float *)(p + 0xAC),
+                            *(float *)(p + 0xB0), *(float *)(p + 0xB4));
+            }
+        }
         if (r == 0) {
             say("match made%s (internet_lobby_act returned %d)", "", 0);
             phase = O_MATCHED;
@@ -294,4 +305,12 @@ void __cnet_bgProg_ReadFileDownloadAllocation(void)
     say("quest download%s: none (event quests are not supported, %d files)", "", 0);
     if (cb)
         cb(r, &r);
+}
+
+/* the other hunters the host draws in the town: in use (Lb_set_player), not this machine's, on the same stage */
+int rt_online_visible(int slot)
+{
+    extern u8 player_work[];
+    u8 *p = player_work + 0xA00 * (slot & 7), *me = player_work + 0xA00 * (game_w[0xD1] & 7);
+    return active && phase == O_LOBBY && slot != game_w[0xD1] && p[0] && p[0x736] == me[0x736];
 }

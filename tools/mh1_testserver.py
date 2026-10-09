@@ -319,6 +319,42 @@ class Client(socketserver.BaseRequestHandler):
         for o in REG.others(self, 1, lobby):
             o.safe_send(NOTE, 0x6702, out)
 
+    def on_6708_16(self, seq, p):           # chat binary: the town's game data (lb_send_data: type byte + payload)
+        # client: one obfuscated string (__cnet_SendSet_ChatBinary). To every other member of the same lobby as
+        # notice 6708: str sender id, str data (_cnet_RecvFromLbs_NoticeChatBinary -> CallBack_Event_LbsBinary ->
+        # Lb_check_receipt(id, data)). Positions, actions, chairs, status, stage changes all travel this way.
+        data, _ = self.enc_string(p, 0, seq)
+        lobby = REG.where.get(self, {}).get(1)
+        if VERBOSE:
+            log("binary type %d (%d bytes) in lobby %s" % (data[0] if data else -1, len(data), lobby))
+        if lobby is None:
+            return
+        out = str16(self.user_id) + str16(data)
+        for o in REG.others(self, 1, lobby):
+            o.safe_send(NOTE, 0x6708, out)
+
+    def tell_target(self, ident):
+        for o in REG.members(1, REG.where.get(self, {}).get(1)):
+            if o.user_id.encode()[:6] == ident[:6]:
+                return o
+        return None
+
+    def on_670B_1(self, seq, p):            # chat to one hunter: obfuscated id (6), obfuscated text, u8
+        ident, off = self.enc_string(p, 0, seq)
+        text, off = self.enc_string(p, off, seq)
+        self.send(ANS, 0x670B, b"", seq=seq)
+        o = self.tell_target(ident)
+        if o is not None:
+            o.safe_send(NOTE, 0x670C, str16(self.user_id) + str16(self.user_handle[:16]) + str16(text) + bytes([0, 0, 0, 0]))
+
+    def on_670D_1(self, seq, p):            # chat binary to one hunter (trades, item requests, comments)
+        ident, off = self.enc_string(p, 0, seq)
+        data, off = self.enc_string(p, off, seq)
+        self.send(ANS, 0x670D, b"", seq=seq)
+        o = self.tell_target(ident)
+        if o is not None:
+            o.safe_send(NOTE, 0x670E, str16(self.user_id) + str16(data))
+
     def on_630A_1(self, seq, p):            # lobby member list: u16 ?, u8 fields per entry, u8 count, entries
         i = struct.unpack(">H", p[:2])[0]
         members = REG.members(1, i)

@@ -1077,10 +1077,12 @@ int rt_np_visible(int slot);
 void rt_np_tick(void);
 void rt_np_close(void);
 int rt_np_session_end(void);
-static hunter rh[4];
-static monster rw[4];               /* their weapons */
-static int rh_ok[4];
-static uint8_t *rh_wmem[4];
+static hunter rh[8];                /* 4 in a co-op quest, up to 8 in the online town */
+static monster rw[8];               /* their weapons */
+static int rh_ok[8];
+static uint8_t *rh_wmem[8];
+int rt_online_active(void);
+int rt_online_visible(int slot);
 static void remote_motion_start(void)
 {
     int s;
@@ -1110,11 +1112,11 @@ static void remote_hunters(int draw, const fl_light *L)
 {
     static flmat jw[128];
     int s;
-    for (s = 0; s < 4; s++) {
+    for (s = 0; s < 8; s++) {
         hunter *h = &rh[s];
         float p[3];
         int a, nb, j, sx, ids[HUNTER_PARTS], g;
-        if (s == lp || !rt_np_visible(s))
+        if (s == lp || !(rt_online_active() ? rt_online_visible(s) : rt_np_visible(s)))
             continue;
         if (!rh_ok[s]) {
             rh_ok[s] = hunter_load(h, parts, 1, 101) == 0 ? 1 : -1;
@@ -1161,6 +1163,11 @@ static void remote_hunters(int draw, const fl_light *L)
 static void remote_motion_start(void) {}
 static void remote_weapons(void) {}
 static void remote_hunters(int draw, const fl_light *L) { (void)draw; (void)L; }
+#endif
+#ifdef MH1_ONLINE
+static int rt_online_town(void) { return rt_online_active(); }
+#else
+static int rt_online_town(void) { return 0; }
 #endif
 
 /* ------------------------------------------------------------ one game tick
@@ -1538,6 +1545,10 @@ static void village_step(void)
             if (!rt_online_active())
                 rt_online_enter();
             q = rt_online_tick();
+            {   /* the local hunter is the town's player_work[game_w.master] (the lobby member list's order) */
+                extern uint8_t game_w[];
+                lp = game_w[0xD1] < 8 ? game_w[0xD1] : 0;
+            }
             if (q < 0)
                 quest_back();
             return;
@@ -2180,7 +2191,8 @@ int main(int argc, char **argv)
             if (pl.game && play && ticks >= 2) {
                 rt_prof_begin(RTP_JOINTS);
                 sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
-                remote_hunters(0, light_cur());
+                if (!rt_village_active() || rt_online_town())
+                    remote_hunters(0, light_cur());
                 if (!rt_village_active())
                     monsters_sync(0, light_cur());
                 rt_prof_end(RTP_JOINTS);
@@ -2328,8 +2340,8 @@ int main(int argc, char **argv)
                 draw_model_attr(&pl.part[s], -1);
             }
         }
-        if (!rt_village_active())
-            remote_hunters(1, light_cur());     /* co-op: the other players' hunters */
+        if (!rt_village_active() || rt_online_town())
+            remote_hunters(1, light_cur());     /* co-op / the online town: the other players' hunters */
         if (rt_village_active())
             npc_draw(light_cur());
         else
