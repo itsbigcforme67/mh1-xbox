@@ -227,3 +227,20 @@ GetGroundHitArea, GetWallHitLine, GetEyeHitLine (a quirk kept: the seen-polygon 
 Not reached in the coverage run (test_all_quests + loop + activities): hit_cap_cap2_m/cap3_m, hit_sphr_sphr2, pl_move_sub.
 Not done: GetGroundHitStatusAreaPl/Em, GetGroundHitAreaUpper, pl_move_sub (sigdiff shows one c.lt.s the original has and ours lacks),
 gun_adj_sub, Pl_item_stack, camera (cam_nm, camr*).
+
+### 6b. Follow-up pass (agent B, 8 Oct 2026): calldiff flags, pl_move_sub, ground status, camera
+No further behaviour differences found; every flag was a false alarm after reading the original (m2c via tools/draft.py and the asm).
+- calldiff over every `*_nm.c` of main, game, lobby, yn and select: the callee lists match except cases that are restructuring only.
+  `eft20_m` (cases 0 and 1 have identical bodies in the original, ours merges them), `eft06_m` (the original calls the `continue`
+  helper at 14 sites, ours once; the two missing add_prim are the duplicated x07 = 0 / 1 bodies of type 6), `set13_trans` (the original
+  inlines set13_roll twice; roll sign checked against the register assignment: ax*bz - az*bx), `Pl_light_set` (memcpy and the
+  pl_light_byte helper are equal), `em_neck_move_sub` (neck_ang_set is duplicated in the original; the state machine was read
+  through), `Lb_*` and `yn_*` (helpers and struct copies; the quest-counter list is online only).
+  In game/lobby the per-monster files share names (em_act00 ...), so calldiff reports false differences there.
+- pl_move_sub: the "missing" c.lt.s is a second `py < fy` test directly after the same test (dead). The rest of the function
+  (ground follow, pch_on toggle, camera/light copies) read against the asm.
+- GetGroundHitStatusAreaPl/Em, GetGroundHitAreaUpper: read against m2c, equivalent (also the uninitialised result when no polygon
+  is under the point, which the original has too).
+- Camera: cam_sub_stg, cam_sub_std (full read), point_cam_sub, SetCameraData, cam_rail_move, Spline, tri_diag users, DKA5, Cardano
+  (root order), GetOrthogonalPoint (the `sltiu s0, 5` entry guard is the loop test), k_HitEmCamera (the inlined sign/larger-magnitude
+  accumulate is the PUSH_ACC macro: signs differ -> keep the larger, else subtract). All equivalent.
