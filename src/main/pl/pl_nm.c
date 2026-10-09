@@ -1672,7 +1672,10 @@ void hit_timer_calc();
 void HitWallPlayer();
 void GetFloorSlide();
 void St_unique_adr_set();
-int GetGroundHitStatusAreaPl();
+/* the PC build maps this name to a 4-argument adaptor (rt_abi.c) that supplies a dummy for the fifth
+ * argument; pl_move_sub passes the real one (PLW+0x7E4), so call the definition directly */
+#undef GetGroundHitStatusAreaPl
+int GetGroundHitStatusAreaPl(void *, f32 *, f32 *, f32 *, f32 *);
 void GetPlayerMaterialData();
 void pl_light_ck();
 f32 Get_dist_to_view();
@@ -1745,7 +1748,7 @@ void pl_move_sub(PLW *pl) {
         }
     }
     St_unique_adr_set(pl);
-    if (GetGroundHitStatusAreaPl(pl, pl->pos, (f32 *)((u8 *)pl + 0x70C), &gy) == 1 && act_ck(pl, 4, 0) == 0) pl->x5AC = gy;
+    if (GetGroundHitStatusAreaPl(pl, pl->pos, (f32 *)((u8 *)pl + 0x70C), &gy, (f32 *)((u8 *)pl + 0x7E4)) == 1 && act_ck(pl, 4, 0) == 0) pl->x5AC = gy;
     if (Pl_stg_ck(pl) & 0xFF) GetPlayerMaterialData(pl);
     if (pl->st != 2 && pl->flag604 == 0 && act_ck(pl, 0, 0x3A) == 0 && pl->flag14 != 4 && (Pl_stg_ck(pl) & 0xFF)) {
         f32 fy = pl->x5AC;
