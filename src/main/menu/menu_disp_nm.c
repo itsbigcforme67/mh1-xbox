@@ -2359,7 +2359,7 @@ void Pit_disp_pit_effect(void) {
                 SetBlendingMode(e->d->blend);
                 q.col = e->d->col | (e->alpha << 24);
                 q.uv[4] = q.uv[0] = e->d->u + 1;
-                q.uv[5] = q.uv[1] = e->d->v + 1;
+                q.uv[3] = q.uv[1] = e->d->v + 1;
                 q.uv[2] = e->d->u + e->d->w - 1;
                 q.uv[5] = e->d->v + e->d->h - 1;
                 flSinCos((6.2831855f * (f32)e->d->ang) / 65536.0f, &s, &c);
