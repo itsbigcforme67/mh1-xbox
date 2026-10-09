@@ -26,7 +26,7 @@ FRONT = ['src/pc/viewer.c', 'src/pc/fl/fl_model.c', 'src/pc/xbox/gfx_null.c', 's
          'src/pc/pad/pad_sdl.c', 'src/pc/fmt/snd.c', 'src/pc/movie/sfd.c', 'src/pc/audio/audio_mix.c', 'src/pc/audio/audio_sdl.c',
          'src/pc/gfx/gfx_rec.c', 'src/pc/gfx/gfx_pal.c', 'src/pc/gfx/gfx_skin.c', 'src/pc/rt/rt_mem.c', 'src/pc/xbox/mc_xbox.c', 'src/pc/xbox/xbox_libc.c']
 COMPAT = 'src/pc/xbox/xbox_compat.h'     # fopen with '/' -> '\\' (xbox_libc.c)
-SKIP = {'rt_mc', 'rt_symtab', 'rt_memstat'}
+SKIP = {'rt_mc', 'rt_save', 'rt_symtab', 'rt_memstat'}
 LIBS = ['xboxkrnl/libxboxkrnl.lib', 'libpdclib.lib', 'winmm.lib', 'libwinapi.lib', 'libnxdk_hal.lib', 'libnxdk.lib',
         'libnxdk_automount_d.lib', 'libpbkit.lib', 'nxdk_usb.lib', 'libxboxrt.lib', 'libzlib.lib', 'libSDL2.lib']
 
