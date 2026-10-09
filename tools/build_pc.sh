@@ -814,7 +814,10 @@ nmc --defined-only $OBJS | awk 'NF == 3 {print $3}' | sort -u > build/pc/defined
 # previous build
 sed -n 's/^-Wl,--defsym,\([^=]*\)=.*/\1/p' build/pc/rt_gen.defsym 2>/dev/null | sort -u |
     { grep -vxF "$(for a in $ALIASES; do echo "${a%%=*}"; done)" || true; } > build/pc/aliased.txt
-sort -u build/pc/undefined.txt build/pc/aliased.txt -o build/pc/undefined.txt
+# the targets of the fixed aliases (helpLineTbl_c2=helpLineTbl, ...) that nothing defines yet: generated too (they used
+# to come only from an older build's carried-over list, which a fresh build directory does not have)
+for a in $ALIASES; do t=${a#*=}; echo "${t%%+*}"; done | sort -u | comm -23 - build/pc/defined.txt > build/pc/alias_targets.txt
+sort -u build/pc/undefined.txt build/pc/aliased.txt build/pc/alias_targets.txt -o build/pc/undefined.txt
 comm -23 build/pc/defined.txt build/pc/aliased.txt > build/pc/defined.tmp && mv build/pc/defined.tmp build/pc/defined.txt
 RT_GEN_LB_ALIASES=$ONLINE python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
 cc_obj rt_gen "$CC $CFLAGS $SYS -w -c build/pc/rt_gen.c -o build/pc/rt_gen.o"

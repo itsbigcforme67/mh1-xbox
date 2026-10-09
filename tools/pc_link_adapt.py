@@ -75,6 +75,18 @@ def main():
     for o, syms in weak.items():
         hdr.setdefault(o, []).extend('#pragma weak %s' % s for s in sorted(syms))
     missing = 0
+    # an alias of an alias (helpLineTbl_c2 -> helpLineTbl -> rt_lb_mem + off): follow the chain to a defined symbol,
+    # since the inner alias's .set only exists after this run recompiles its object
+    amap = {a[0]: (a[1], a[2]) for a in alias}
+    chained = []
+    for s, t, off in alias:
+        seen = 0
+        while t not in defs and t in amap and seen < 8:
+            t, o2 = amap[t]
+            off += o2
+            seen += 1
+        chained.append((s, t, off))
+    alias = chained
     for s, t, off in alias:
         cand = defs.get(t, [])
         strong = [o for o in cand if t not in weak.get(o, ())]
