@@ -231,8 +231,33 @@ static void town_chat(void)
 {
     char in[64];
     int n, i;
-    const char *e = getenv("RT_NET_SAY");
+    const char *e;
     town_ticks++;
+    if (town_ticks == 1 && getenv("RT_NET_REGISTERED")) {  /* test aid: the guild master's hunter registration (event flag 4,
+                                                             * kept in the save) as done */
+        void Event_flag_set(int);
+        Event_flag_set(4);
+    }
+    if ((e = getenv("RT_LB_WARP")) != NULL) {     /* test aid "tick,x,z[,ang];...": the hunter there at that town tick */
+        extern u8 player_work[];
+        u8 *p = player_work + 0xA00 * (game_w[0xD1] & 7);
+        while (e && *e) {
+            int t = 0, a = -1;
+            float x, z;
+            int k = sscanf(e, "%d,%f,%f,%x", &t, &x, &z, &a);
+            if (k >= 3 && t == town_ticks) {
+                *(float *)(p + 0xAC) = x;
+                *(float *)(p + 0xB4) = z;
+                if (k == 4)
+                    *(u16 *)(p + 0xE) = (u16)a;
+                fprintf(stderr, "online: town tick %d: hunter warped to %.0f %.0f\n", t, x, z);
+            }
+            e = strchr(e, ';');
+            if (e)
+                e++;
+        }
+    }
+    e = getenv("RT_NET_SAY");
     while (e && *e) {
         int t = atoi(e);
         const char *c = strchr(e, ':'), *end;
@@ -299,15 +324,41 @@ int rt_online_tick(void)
         if (cw[0x2C31] == 3 && lb_sys[3] == 4)
             town_chat();
         if (trace && cw[0x2C31] == 3 && lb_sys[3] == 4) {     /* a new town stage: its unique spots (exits, counters) */
-            static int spots_stage = -1;
+            static int spots_stage = -1, npc_at = -1;
+            if (ticks == npc_at) {
+                {   /* its NPCs (slot, model kind, type, talk kind, position), as RT_VILLAGE_TRACE prints them */
+                    extern u8 em_work[];
+                    int k;
+                    for (k = 0; k < 20; k++) {
+                        u8 *e = em_work + 0xA10 * k;
+                        if (e[0] && e[0x1E])
+                            fprintf(stderr, "online: stage %d npc slot %d kind %d type %d talk %d pos %.0f %.0f %.0f\n", game_w[0x14],
+                                    k, e[2], e[0x1B], e[0x452], *(float *)(e + 0xAC), *(float *)(e + 0xB0), *(float *)(e + 0xB4));
+                    }
+                }
+            }
             if (game_w[0x14] != spots_stage) {
                 void *Stage_unique_data_get(int st);
                 u8 *q = Stage_unique_data_get(game_w[0x14]);
                 spots_stage = game_w[0x14];
+                npc_at = ticks + 30;
                 for (; q && *(float *)(q + 4) != -1.0f; q += 0x18)
                     fprintf(stderr, "online: stage %d spot kind %d at %.0f %.0f %.0f r %.0f ang %04X\n", spots_stage,
                             *(u16 *)(q + 2), *(float *)(q + 4), *(float *)(q + 8), *(float *)(q + 0xC),
                             *(float *)(q + 0x10), *(u16 *)(q + 0x14));
+            }
+        }
+        if (trace && cw[0x2C31] == 3) {   /* the town's talk / menu state (lb_sys+0x68, +6, +7) and the registration flag */
+            static int l68 = -1, l6 = -1, l7 = -1, lf = -1;
+            int Event_flag_ck(int);
+            int f = Event_flag_ck(4);
+            if (*(s32 *)(lb_sys + 0x68) != l68 || (s8)lb_sys[6] != l6 || (s8)lb_sys[7] != l7 || f != lf) {
+                l68 = *(s32 *)(lb_sys + 0x68);
+                l6 = (s8)lb_sys[6];
+                l7 = (s8)lb_sys[7];
+                lf = f;
+                fprintf(stderr, "online: tick %d town state x68 %d talk %d/%d registered %d room %d/%d\n", ticks, l68, l6, l7, f,
+                        cw[0x35D3], cw[0x32C5]);
             }
         }
         if (trace) {        /* a new line in the game's chat log (PitMenu: logtop +0x1E, log[64] of 0x5D bytes at +0x23) */

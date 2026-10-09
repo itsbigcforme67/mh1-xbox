@@ -5,6 +5,7 @@
 #include "lobby_a.h"
 #include "lbnet.h"
 char *strncpy();
+char *strcpy();
 
 extern s32 netr_ret;
 extern char MediaVersion[];
@@ -159,4 +160,69 @@ void tk_logout_message_sub(int arg0, int arg1)
 {
     (void)arg0;
     (void)arg1;
+}
+
+/* Lbc_GetRoomRule (0x5BC150, asm-only in lb_cli.c): the rules of this player's room (the floor-order room number):
+ * step 1 reads them from the server (cnLBS_Read_RoomRuleAllocation, the 66xx requests), step 3 copies the rule
+ * table (0x14A5 bytes an entry on the wire side, 0x14A8 in RoomRule) into RoomRule and returns 1.
+ * Written from the asm (0x5BC150-0x5BC3D4), not compared with check.py. */
+extern u8 RoomRule[];
+int cnLbc_CheckInFloorOrder(int);
+int cnLBS_Read_RoomRuleAllocation(int val, int cb);
+int cnLBS_Get_RoomRuleAllocation(int unused, void *d);
+void CallBack_Result_RuleAllocation(CNET_RES res);
+s32 Lbc_GetRoomRule(void)
+{
+    static u8 buf[0x2A000];             /* the PS2 keeps it on its 0x29520-byte stack frame (sp+0x70) */
+    int room = cnLbc_CheckInFloorOrder(2) & 0xFFFF;
+    u8 *stp = cw + 0x2C35;
+    int i, j, a, t;
+    u8 *s, *d;
+
+    switch (*stp) {
+    case 0:
+        *stp = 1;
+        break;
+    case 1:
+        *stp = 2;
+        wait_init();
+        cw[0x2C45] = 0x10;
+        cnLBS_Read_RoomRuleAllocation(room, (int)(long)CallBack_Result_RuleAllocation);
+        break;
+    case 2:
+        Check_CallBackWait();
+        break;
+    case 3:
+        *stp = 0;
+        cw[0x2C3A] = 0;
+        cw[0x32BF] = 1;
+        cnLBS_Get_RoomRuleAllocation(room, buf);
+        memset(RoomRule, 0, 0x29555);
+        RoomRule[0] = buf[0];
+        RoomRule[1] = buf[1];
+        RoomRule[0x54] = buf[3];
+        s = buf;
+        d = RoomRule;
+        for (i = 0; i < RoomRule[0x54]; i++) {
+            strcpy((char *)d + 0x56, (char *)s + 5);
+            d[0x98] = s[0x46];
+            d[0x97] = s[0x47];
+            d[0x9A] = d[0x99] = s[0x48];
+            for (j = 0; j < d[0x97]; j++)
+                strcpy((char *)d + 0xBD + 0x41 * j, (char *)s + 0x69 + 0x41 * j);
+            for (a = 0; a < 0x20; a++) {
+                d[0x8DD + a] = s[0x889 + a];
+                for (t = 0; t < 0x20; t++) {
+                    d[0x60 * a + 0x8FD + 3 * t] = s[0x60 * a + 0x8A9 + 3 * t];
+                    d[0x60 * a + 0x8FE + 3 * t] = s[0x60 * a + 0x8AA + 3 * t];
+                    d[0x60 * a + 0x8FF + 3 * t] = s[0x60 * a + 0x8AB + 3 * t];
+                }
+            }
+            s += 0x14A5;
+            d += 0x14A8;
+        }
+        pNet[6] = 3;
+        return 1;
+    }
+    return 0;
 }

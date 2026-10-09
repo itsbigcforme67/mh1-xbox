@@ -493,6 +493,8 @@ void rt_game_draw(void)
         for (t = 0; t < OT_N; t++)
             for (k = 0; k < nqueue[t]; k++) {
                 SETW *o = (SETW *)queue[t][k].p->owner;
+                if ((uintptr_t)o < 0x10000)     /* the lobby's player prims keep the player number there (Lb_set_player) */
+                    o = NULL;
                 fprintf(stderr, "rt: ot%d prim pri %d owner type %d arg %d pos %.0f,%.0f,%.0f\n", t, queue[t][k].pri,
                         o ? o->type : -1, o ? o->arg : -1, queue[t][k].p->pos[0], queue[t][k].p->pos[1], queue[t][k].p->pos[2]);
             }

@@ -116,6 +116,37 @@ class Registry:
 REG = Registry()
 
 
+class Room:
+    """one of the 8 room slots of a lobby (the quest groups made at the guild counter)"""
+    def __init__(self, i):
+        self.id = i
+        self.reset()
+
+    def reset(self):
+        self.members = []           # clients, the creator (leader) first
+        self.name = b""
+        self.explain = b""
+        self.pw = b""
+        self.prop = 0               # u32 room property (SetRoomProperty 6509: the quest number and the leader's rank)
+        self.rules = {}
+
+    def status(self):
+        # 1 = free (the guild counter creates a room in the first free slot, Lbc_ReserveRoom), 3 = open for joining
+        # (lbc_in_lobby_00_05: 3 -> join, 1 -> create). Other values make the client show the server message.
+        return 3 if self.members else 1
+
+
+ROOMS = {}                          # lobby id -> [Room x 8]
+ROOMS_LOCK = threading.Lock()
+
+
+def rooms_of(lobby):
+    with ROOMS_LOCK:
+        if lobby not in ROOMS:
+            ROOMS[lobby] = [Room(i + 1) for i in range(8)]
+        return ROOMS[lobby]
+
+
 class Client(socketserver.BaseRequestHandler):
     def setup(self):
         self.sock = self.request
@@ -179,6 +210,7 @@ class Client(socketserver.BaseRequestHandler):
         except (ConnectionError, OSError):
             pass
         finally:
+            self.leave_room()
             lobby = REG.leave(self)
             if lobby is not None:
                 for o in REG.others(self, 1, lobby):
@@ -263,8 +295,7 @@ class Client(socketserver.BaseRequestHandler):
 
     def build_piece_handlers(self):
         for kind, c in self.PIECE.items():
-            self.h[(c["count"], REQ)] = lambda seq, p, k=kind, c=c: self.send(
-                ANS, c["count"], struct.pack(">H", len(self.TABLE[k])), seq=seq)
+            self.h[(c["count"], REQ)] = lambda seq, p, k=kind, c=c: self.piece_count(k, c, seq, p)
             self.h[(c["name"], REQ)] = lambda seq, p, k=kind, c=c: self.piece_name(k, c, seq, p)
             self.h[(c["status"], REQ)] = lambda seq, p, k=kind, c=c: self.piece_status(k, c, seq, p)
             self.h[(c["join"], REQ)] = lambda seq, p, k=kind, c=c: self.piece_join(k, c, seq, p)
@@ -272,36 +303,189 @@ class Client(socketserver.BaseRequestHandler):
             self.h[(c["entry"], REQ)] = lambda seq, p, k=kind, c=c: self.piece_entry(k, c, seq, p)
             self.h[(c["exit"], REQ)] = lambda seq, p, k=kind, c=c: self.piece_exit(k, c, seq, p)
 
+    def lobby(self):
+        return REG.where.get(self, {}).get(1)
+
+    def room(self, i):
+        rs = rooms_of(self.lobby())
+        return rs[i - 1] if 1 <= i <= len(rs) else None
+
+    def piece_count(self, k, c, seq, p):
+        n = 8 if k == 2 else len(self.TABLE[k])
+        self.send(ANS, c["count"], struct.pack(">H", n), seq=seq)
+
     def piece_name(self, k, c, seq, p):
         i = struct.unpack(">H", p[:2])[0]
-        self.send(ANS, c["name"], struct.pack(">H", i) + str16(self.TABLE[k][i - 1][0]), seq=seq)
+        name = self.room(i).name if k == 2 else self.TABLE[k][i - 1][0]
+        self.send(ANS, c["name"], struct.pack(">H", i) + str16(name), seq=seq)
 
     def piece_status(self, k, c, seq, p):
         i = struct.unpack(">H", p[:2])[0]
-        self.send(ANS, c["status"], struct.pack(">HB", i, self.TABLE[k][i - 1][1]), seq=seq)
+        st = self.room(i).status() if k == 2 else self.TABLE[k][i - 1][1]
+        self.send(ANS, c["status"], struct.pack(">HB", i, st), seq=seq)
 
     def piece_join(self, k, c, seq, p):
         i = struct.unpack(">H", p[:2])[0]
-        self.send(ANS, c["join"], struct.pack(">HHH", i, REG.count(k, i), 100), seq=seq)
+        if k == 2:
+            self.send(ANS, c["join"], struct.pack(">HHH", i, len(self.room(i).members), 4), seq=seq)
+        else:
+            self.send(ANS, c["join"], struct.pack(">HHH", i, REG.count(k, i), 100), seq=seq)
 
     def piece_explain(self, k, c, seq, p):
         i = struct.unpack(">H", p[:2])[0]
-        self.send(ANS, c["explain"], struct.pack(">H", i) + str16("private test " + ("plaza", "lobby", "room")[k]), seq=seq)
+        text = self.room(i).explain if k == 2 else "private test " + ("plaza", "lobby")[k]
+        self.send(ANS, c["explain"], struct.pack(">H", i) + str16(text), seq=seq)
 
     def piece_entry(self, k, c, seq, p):
         i = struct.unpack(">H", p[:2])[0]
+        if k == 2:      # RoomEntry: u16 room, obfuscated password
+            r = self.room(i)
+            if r is None or not r.members or len(r.members) >= 4:
+                self.send(ANS, c["entry"], str16("this room cannot be joined"), seq=seq, res=1)
+                return
+            REG.enter(self, 2, i)
+            others = list(r.members)
+            r.members.append(self)
+            log("%s joins room %d of lobby %s (%d members)" % (self.user_handle, i, self.lobby(), len(r.members)))
+            self.send(ANS, c["entry"], b"", seq=seq)
+            for o in others:    # NoticeRoomCommer (6503): str id, str handle, str mini
+                o.safe_send(NOTE, 0x6503, str16(self.user_id) + str16(self.user_handle[:16]) + str16(self.mini))
+            self.room_changed(r)
+            return
         REG.enter(self, k, i)
         self.send(ANS, c["entry"], b"", seq=seq)
         if k == 1:      # tell the others in the lobby (NoticeLobbyCommer)
             for o in REG.others(self, 1, i):
                 o.safe_send(NOTE, 0x6411, str16(self.user_id) + str16(self.user_handle[:16]) + str16(self.mini))
 
+    def leave_room(self):
+        i = REG.leave(self, 2)
+        if i is None:
+            return
+        r = self.room(i)
+        if r is None or self not in r.members:
+            return
+        r.members.remove(self)
+        for o in r.members:     # NoticeRoomLeaver (6502): str id
+            o.safe_send(NOTE, 0x6502, str16(self.user_id))
+        if not r.members:
+            r.reset()
+        self.room_changed(r)
+
+    def room_changed(self, r):
+        """the lobby's other hunters see the room's status and member count change (notices 6404 / 6403)"""
+        for o in REG.members(1, self.lobby()):
+            o.safe_send(NOTE, 0x6404, struct.pack(">HB", r.id, r.status()))
+            o.safe_send(NOTE, 0x6403, struct.pack(">HHH", r.id, len(r.members), 4))
+
     def piece_exit(self, k, c, seq, p):
+        if k == 2:
+            self.leave_room()
+            self.send(ANS, c["exit"], b"", seq=seq)
+            return
         i = REG.leave(self, k)
         self.send(ANS, c["exit"], b"", seq=seq)
         if k == 1 and i is not None:
             for o in REG.others(self, 1, i):
                 o.safe_send(NOTE, 0x6410, str16(self.user_id))
+
+    # rooms: made at the guild counter (lb_guild_make_room: read the rooms, reserve the first free one, its rules,
+    # set name / password / rules / explanation, finish, property), joined from the quest board (Lb_join)
+    def on_6407_1(self, seq, p):            # RoomCreate: u16 room
+        i = struct.unpack(">H", p[:2])[0]
+        r = self.room(i)
+        if r is None or r.members:
+            self.send(ANS, 0x6407, str16("the room is taken"), seq=seq, res=1)
+            return
+        r.reset()
+        r.members = [self]
+        REG.enter(self, 2, i)
+        log("%s creates room %d in lobby %s" % (self.user_handle, i, self.lobby()))
+        self.send(ANS, 0x6407, b"", seq=seq)
+        self.room_changed(r)
+
+    def on_6603_1(self, seq, p):            # number of rules of a room: u8 (0: the client's own rule sheet only)
+        self.send(ANS, 0x6603, bytes([0]), seq=seq)
+
+    def on_6601_1(self, seq, p):            # may the room have a name: u8 1
+        self.send(ANS, 0x6601, bytes([1]), seq=seq)
+
+    def on_6602_1(self, seq, p):            # may it have a password
+        self.send(ANS, 0x6602, bytes([1]), seq=seq)
+
+    def on_660F_1(self, seq, p):            # may it have an explanation
+        self.send(ANS, 0x660F, bytes([1]), seq=seq)
+
+    def my_room(self):
+        i = REG.where.get(self, {}).get(2)
+        return self.room(i) if i else None
+
+    def on_6609_1(self, seq, p):            # room name (obfuscated string)
+        r = self.my_room()
+        name, _ = self.enc_string(p, 0, seq)
+        if r:
+            r.name = name
+        self.send(ANS, 0x6609, b"", seq=seq)
+
+    def on_660A_1(self, seq, p):            # room password
+        r = self.my_room()
+        pw, _ = self.enc_string(p, 0, seq)
+        if r:
+            r.pw = pw
+        self.send(ANS, 0x660A, b"", seq=seq)
+
+    def on_660B_1(self, seq, p):            # one rule: u8 rule, u8 choice
+        r = self.my_room()
+        if r and len(p) >= 2:
+            r.rules[p[0]] = p[1]
+        self.send(ANS, 0x660B, b"", seq=seq)
+
+    def on_6610_1(self, seq, p):            # explanation (the recruiting message)
+        r = self.my_room()
+        text, _ = self.enc_string(p, 0, seq)
+        if r:
+            r.explain = text
+        self.send(ANS, 0x6610, b"", seq=seq)
+
+    def on_660C_1(self, seq, p):            # rules finished
+        self.send(ANS, 0x660C, b"", seq=seq)
+        r = self.my_room()
+        if r:
+            self.room_changed(r)
+
+    def on_6509_1(self, seq, p):            # SetRoomProperty: u32 (lb_guild_make_room: quest << 1, leader's HR << 9)
+        r = self.my_room()
+        if r:
+            r.prop = struct.unpack(">I", p[:4])[0]
+            log("room %d property %08X (quest %d)" % (r.id, r.prop, (r.prop >> 1) & 0xFF))
+            for o in REG.members(1, self.lobby()):
+                o.safe_send(NOTE, 0x650A, struct.pack(">HI", r.id, r.prop))
+        self.send(ANS, 0x6509, b"", seq=seq)
+
+    def on_650A_1(self, seq, p):            # RoomProperty: u16 room -> u16 room, u32
+        i = struct.unpack(">H", p[:2])[0]
+        r = self.room(i)
+        self.send(ANS, 0x650A, struct.pack(">HI", i, r.prop if r else 0), seq=seq)
+
+    def on_6405_1(self, seq, p):            # RoomPasswordInfo: u16 room -> u16 room, u8 (1: has a password)
+        i = struct.unpack(">H", p[:2])[0]
+        r = self.room(i)
+        self.send(ANS, 0x6405, struct.pack(">HB", i, 1 if r and r.pw else 0), seq=seq)
+
+    def on_640B_1(self, seq, p):            # RoomJoinInfo: u16 room -> u16 room, 5 x u16 (meaning not known: members, 4, 0, 0, 0)
+        i = struct.unpack(">H", p[:2])[0]
+        r = self.room(i)
+        n = len(r.members) if r else 0
+        self.send(ANS, 0x640B, struct.pack(">HHHHHH", i, n, 4, 0, 0, 0), seq=seq)
+
+    def on_640A_1(self, seq, p):            # room member list: as the lobby's (630A)
+        i = struct.unpack(">H", p[:2])[0]
+        r = self.room(i)
+        members = r.members if r else []
+        out = struct.pack(">HBB", 0, 3, len(members))
+        for m in members:
+            out += str16(m.user_id) + str16(m.user_handle[:16]) + str16(m.mini)
+        self.send(ANS, 0x640A, out, seq=seq)
 
     def safe_send(self, *a, **kw):
         try:

@@ -584,7 +584,7 @@ for f in $GAME; do
     src/main/stage/f_stage.c) ABI="-Dhit_point_cbd=rtabi_hit_point_cbd" ;;
     # lobby C: frame_check2 / em_frame_check declared with the float first
     # (include/lobby_f.h, the lobby NPC files) or second (include/lbnpc.h)
-    src/lobby/lb/lb_em*_nm.c|src/lobby/lb/lbem*.c|src/lobby/b/lbsnd01.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
+    src/lobby/lb/lb_em*_nm.c|src/lobby/lb/lbem*.c|src/lobby/b/lbsnd01.c|src/lobby/b/lbsnd02.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
     src/lobby/lb/lbnpc_nm.c) ABI="-Dframe_check2=rtabi_frame_check2_em" ;;
     # the shop lists call ItemboxWindowX(f32 x, s16 cur, int flags) (PS2: x in f12); lb_ib.c defines it as (cur, flags, base)
     src/lobby/b/lb_by139.c|src/lobby/f/lb_shp.c|src/lobby/f/lb_tu_ib.c) ABI="-Dframe_check2=rtabi_frame_check2 -DItemboxWindowX=rtabi_ItemboxWindowX" ;;
@@ -778,6 +778,13 @@ for a in $ALIASES; do
     t=${a#*=}; case "$t" in *+*) off=${t#*+}; t=${t%%+*} ;; *) off=0 ;; esac
     echo "alias ${a%%=*} $t $off" >> $REQ
 done
+# a plain and an ONLINE=1 build share build/pc: the last build's generated aliases only carry over to a build of
+# the same kind (the online one aliases lobby-client names a plain build does not link)
+if [ "$(cat build/pc/.variant 2>/dev/null)" != "$MHV" ]; then
+    rm -f build/pc/rt_gen.defsym
+    [ -f "build/pc/rt_gen.defsym.$MHV" ] && cp "build/pc/rt_gen.defsym.$MHV" build/pc/rt_gen.defsym
+fi
+echo "$MHV" > build/pc/.variant
 # the generated aliases of the last build too, so their objects are not
 # compiled again twice per build (gen_rt_auto.py output is stable)
 [ -f build/pc/rt_gen.defsym ] && sed -n 's/^-Wl,--defsym,\([^=]*\)=\([^+]*\)+\?\(.*\)$/alias \1 \2 \3/p' build/pc/rt_gen.defsym | sed 's/ $/ 0/' >> $REQ
@@ -834,4 +841,5 @@ fi
 $CC $CFLAGS $SYS -w -c build/pc/rt_symtab.c -o build/pc/rt_symtab.o
 # shellcheck disable=SC2086
 $CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/$MHV$EXE $LIBS
+cp build/pc/rt_gen.defsym "build/pc/rt_gen.defsym.$MHV"     # for the next build of this kind (see .variant above)
 echo "built build/pc/$MHV$EXE (32-bit)"
