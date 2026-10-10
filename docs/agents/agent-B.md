@@ -1026,3 +1026,22 @@ Details: docs/network.md 3.5 (flow, config, fixes) and 5.6 (the town / room / ma
 - gdb works here (`gdb -q -batch -ex run -ex bt --args ...`); add `-ex "set disable-randomization off"` when a crash
   only happens without gdb.
 - Test aids: RT_ONLINE_TRACE, RT_NET_SAY, RT_LB_WARP (town ticks), RT_NET_REGISTERED, RT_NAME, --online.
+
+## Online round 2 (agent B, 10 Oct 2026): back to the town, friends / search / mail, Windows under Wine
+Details in docs/network.md 3.5 and 5.7. Notes for the next one:
+- The return after a quest is the PS2's Game_task mode 6 online without Load_overlay(3); see network.md 3.5. Test aid
+  `RT_ONLINE_RELOGIN=town tick` drops the connection and logs in again without a quest (fast check of the second login).
+- Lesson: a matched function that returns nothing in C while its callers use v0 (`connect_ps2`: CpInetTcpOpen's handle
+  left in v0) gives the PC a stale eax. Grep the callers of `void` functions whose result is assigned.
+- Lesson: m2c int-mode drafts (b/nm) spell s16 casts as `(x << 0x30) >> 0x30`; gcc folds that to 0 in 32-bit C.
+  tools/pc_shift64.py rewrites them. plaza_enterLobbyTrans.c and plaza_disp_mail.c in b/nm still have them (not linked).
+- Lesson: hand-written lobby C from drafts (f/lb_aa.c and friends) may read a struct where the asm reads through its
+  first pointer (`lw s2,0(a0)`); check the first loads against the asm when a screen crashes.
+- Raw functions' asm: build/raw/NAME.inc + objdump (`-b binary -m mips:5900 --adjust-vma=ADDR`); for lobby functions
+  not in c_rawfuncs, slice disc/mh1/overlays/lobby.bin at ADDR - 0x533980. Name jal targets from docs/survey/mh1_symbols.csv.
+- Headless screen exploration: two clients against the test server, `RT_SHOTS` at host ticks, a 2x2 montage (PIL is
+  installed) to look at four shots at once. The town menu: start, page 2 with dright (player list, member list,
+  friend list, short mail, comment, standby, logout); circle confirms, cross goes back, triangle opens the chat.
+- A hunter that receives nothing from the server for 2 minutes logs out (cw+0x35F4); the test server's 6001 line check
+  every 30 s keeps idle test clients in.
+- Guild hall NPC "talk 1" stands near the spawn point after the return; it is not a duplicate hunter.

@@ -7,8 +7,10 @@
 # Then a room is made and joined and its quest starts as a co-op quest. Screenshots in build/show/online_town (never
 # committed). About 3 minutes. Build first:
 # ONLINE=1 tools/build_pc.sh
+# The Windows build under Wine: RUN=wine BIN=build/win/mhview_online.exe tools/test_online_town.sh (ONLINE=1 tools/build_win.sh)
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/pc/mhview_online}
+RUN=${RUN:-}       # RUN=wine BIN=build/win/mhview_online.exe: the Windows build under Wine
 OUT=build/show/online_town; rm -rf $OUT; mkdir -p $OUT
 SP=""; PA=""
 fail() { echo "online town test FAILED: $1 (see $OUT)"; [ -n "$PA" ] && kill $PA 2>/dev/null; [ -n "$SP" ] && kill $SP 2>/dev/null; exit 1; }
@@ -27,7 +29,7 @@ INB="idle*200,circle*2,idle*100,circle*2,idle*100,circle*2,idle*150,circle*2,idl
 run() {     # name seconds input extra-env...
     nm=$1; t=$2; in=$3; shift 3
     env MH1_SAVE_DIR="$PWD/$OUT/card_$nm" RT_NAME=$nm RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 RT_ONLINE_TRACE=1 \
-        RT_NET_PORT=$PORT "$@" timeout 200 $BIN disc/mh1 --quest 10 --play --online --mute --input "$in" \
+        RT_NET_PORT=$PORT "$@" timeout 200 $RUN $BIN disc/mh1 --quest 10 --play --online --mute --input "$in" \
         --shot $OUT/$nm.png --time $t --size 640x480 > $OUT/$nm.log 2>&1
 }
 run ANNA 42 "$IN" RT_NET_SAY="450:hello from ANNA" &
@@ -86,12 +88,12 @@ IB=$(python3 tools/mk_input.py - "$LOGIN;1950:square*3$JOIN;2700:square*3;2760:c
 QUEST="RT_NOMOVIE=1 RT_QUEST_TRACE=1 RT_MC_TRACE=1"
 env $QUEST RT_PL_ITEMS=77:15 RT_PL_WARP="150,10350,10640,7000" MH1_SAVE_DIR="$PWD/$OUT/card_ANNA" RT_VILLAGE_START=1 \
     RT_VILLAGE_SKIP_INTRO=1 RT_ONLINE_TRACE=1 RT_NET_PORT=$PORT RT_NET_REGISTERED=1 RT_LB_WARP="60,5545,2750,8000;300,1300,1600,C000;2200,3100,2100,8000" \
-    RT_SHOTS=2700,5900 timeout 300 $BIN disc/mh1 --quest 10 --play --online --mute --input "$IA" --shot $OUT/ANNA.png --time 207 \
+    RT_SHOTS=2700,5900 timeout 300 $RUN $BIN disc/mh1 --quest 10 --play --online --mute --input "$IA" --shot $OUT/ANNA.png --time 207 \
     --size 640x480 > $OUT/ANNA.log 2>&1 &
 PA=$!
 sleep 2
 env $QUEST MH1_SAVE_DIR="$PWD/$OUT/card_BOB" RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 RT_ONLINE_TRACE=1 RT_NET_PORT=$PORT \
-    RT_NET_REGISTERED=1 RT_LB_WARP="60,5545,2750,8000;300,1850,1500,8000;2100,3100,2100,8000" RT_SHOTS=2600,5900 timeout 300 $BIN \
+    RT_NET_REGISTERED=1 RT_LB_WARP="60,5545,2750,8000;300,1850,1500,8000;2100,3100,2100,8000" RT_SHOTS=2600,5900 timeout 300 $RUN $BIN \
     disc/mh1 --quest 10 --play --online --mute --input "$IB" --shot $OUT/BOB.png --time 205 --size 640x480 > $OUT/BOB.log 2>&1 \
     || fail "client BOB stopped early (room)"
 wait $PA || { PA=""; fail "client ANNA stopped early (room)"; }
@@ -156,18 +158,18 @@ done
 grep -aq "this machine hosts" $OUT/ANNA.log && fail "ANNA hosted although the server relays"
 # safety: a public address is refused before a socket is opened; the game goes back to the village
 env MH1_SAVE_DIR="$PWD/$OUT/card_X" RT_NAME=X RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 RT_NET_HOST=8.8.8.8 RT_NET_PORT=10200 \
-    timeout 100 $BIN disc/mh1 --quest 10 --play --online --mute --shot $OUT/refused.png --time 5 --size 320x240 > $OUT/refused.log 2>&1
+    timeout 100 $RUN $BIN disc/mh1 --quest 10 --play --online --mute --shot $OUT/refused.png --time 5 --size 320x240 > $OUT/refused.log 2>&1
 grep -aq "net: refusing 8.8.8.8" $OUT/refused.log || fail "8.8.8.8 was not refused"
 grep -aq "back to the village" $OUT/refused.log || fail "no fallback to the village after the refusal"
 # a public server set in the settings file (online_server) is the player's choice and allowed (192.0.2.1: TEST-NET-1,
 # nobody answers); an MH Oldschool address there is still refused
 printf 'online_server = 192.0.2.1:10200\nonline_login = 12345678\n' > $OUT/public.ini
 env MH1_SAVE_DIR="$PWD/$OUT/card_X" RT_NAME=X RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 \
-    timeout 100 $BIN disc/mh1 --ini $OUT/public.ini --quest 10 --play --online --mute --shot $OUT/public.png --time 3 --size 320x240 > $OUT/public.log 2>&1
+    timeout 100 $RUN $BIN disc/mh1 --ini $OUT/public.ini --quest 10 --play --online --mute --shot $OUT/public.png --time 3 --size 320x240 > $OUT/public.log 2>&1
 grep -aq "connecting to 192.0.2.1 port 10200" $OUT/public.log || fail "the configured public server was not tried"
 grep -aq "refusing 192.0.2.1" $OUT/public.log && fail "the configured public server was refused"
 printf 'online_server = 34.75.107.68:10200\n' > $OUT/mho.ini
 env MH1_SAVE_DIR="$PWD/$OUT/card_X" RT_NAME=X RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 \
-    timeout 100 $BIN disc/mh1 --ini $OUT/mho.ini --quest 10 --play --online --mute --shot $OUT/mho.png --time 3 --size 320x240 > $OUT/mho.log 2>&1
+    timeout 100 $RUN $BIN disc/mh1 --ini $OUT/mho.ini --quest 10 --play --online --mute --shot $OUT/mho.png --time 3 --size 320x240 > $OUT/mho.log 2>&1
 grep -aq "net: refusing 34.75.107.68" $OUT/mho.log || fail "an MH Oldschool address in the settings was not refused"
 echo "online town OK: two clients logged in through the game's screens, the plaza, the town; each sees the other; chat both ways; a room made, joined, matched, its quest played as a co-op quest and cleared, the reward saved ($gold0 -> $gold1 zenny), both back in the town seeing each other; the room's quest started through mh1-server's relay; public address refused, a configured public server allowed, MH Oldschool refused"

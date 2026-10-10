@@ -503,7 +503,9 @@ frame until it returns 0 (a match), then `internet_to_modem` (the game server, `
    while one answer is on the way).
 6. The town: the viewer draws up to 8 town hunters (`rt_online_visible`: in use, same stage); the local one is
    `player_work[game_w.master]` (the lobby member list's order). Their moves come from the game's own `lb_send_data`
-   -> chat binary 6708 -> `Lb_check_receipt`. Name tags (`flvecrRotTransPers`) are not drawn.
+   -> chat binary 6708 -> `Lb_check_receipt`. Name tags: the game's `lb_disp_name` (lb_ai.c) draws them over every
+   hunter on the stage (own and others, with the weapon icon and the status / quest marks) now that
+   `flvecrRotTransPers` is real (seen on screen, 10 Oct 2026: build/show/online_town/*_5900.png).
 7. Chat: Tab starts typing on the PC keyboard, Enter sends through the game's `Lb_send_chat` (6701); the game's chat
    log window shows what the server sends back. The soft keyboard paths (`Plaza_chat_move`) are the game's.
 8. When `internet_lobby_act` returns 0, `matched()` reads the slot (`USER_PL_ID`, from MatchPlSide), the player count
@@ -534,21 +536,63 @@ chat log name line passed no string ("(null)", also single player); `sound_req_c
 argument adaptor (crash on the guild hall's NPCs); the cnLBS file-download C (main cnlbs01-03) read the lobby's work
 by absolute address. Written for the PC from the asm (not compared with check.py): `lbc_login_init`,
 `tk_logout_message_sub`, `Lbc_GetRoomRule` (`src/lobby/f/lb_online_nm.c`); `plaza_trans_ot0` and
-`plaza_enterLobbyTrans` (agent C's readings, `lb_plz3.c` `#else`). Still stand-ins (drawn as nothing): `disp_status`
-(the friend / search status lines), `lb_select_tag` (static in its near-match draft).
+`plaza_enterLobbyTrans` (agent C's readings, `lb_plz3.c` `#else`). Added 10 Oct 2026 (agent B, from the asm, not
+compared with check.py): `disp_status` (`lb_plz3.c` `#else`: a hunter's status card for my status, a friend, a search
+result), `plaza_mailBoxTrans` (b/nm, rewritten), and links of `lb_select_tag` (the quest board's room tags; its draft
+was `static`) and `Plaza_add_friend` (`f/lb_pz12_nm.c`). Fixed on the way: `Lb_PlayerStatus` (lb_aa.c) read the
+lb_player entry where the asm reads its PLW (crash on "player list"); the plaza `*Trans` drafts in b/nm computed every
+screen position as `(x << 0x30) >> 0x30`, a 64-bit sign extension that 32-bit C evaluates to 0 (gcc folds it), now
+`(s16)` casts (tools/pc_shift64.py); calls that lacked the arguments the asm passes
+(`disp_status`, `put_member_info`, `font_print_double`'s string, `flfntLocate`'s y) take them from the asm.
 
-Not done yet: after the quest the PC goes to the offline village (the PS2 reconnects: `Game_task` mode 6 online,
-`internet_connect_minimum_cleanup`, a new login with `CnetWork+5 == 3` and `To_MyLobby`); the guest rooms (stages
-84 / 85); mail, friends, user search; name tags over the hunters; patches; the Windows / Xbox builds of the town were
-not run (the Windows build compiles).
+**The return to the town after an online quest** (done 10 Oct 2026, `tools/test_online_town.sh`). What the PS2 does
+(Game_task mode 6 online, f_game_nm.c; the draft's `*(u8 *)0x6EF8F5` is `CnetWork+5`, 0x6F0000 - 0x670B in the asm):
+all_reset, Load_overlay(3), Clear_lobby_ram, AQ_session_exit_online, internet_connect_minimum_cleanup (returns 2),
+then `CnetWork+5 = 3` (also set when a match is made) and Game_task step 2 from `game_w.step = 1` again (server
+connection, net_ToNetworkLobby, internet_lobby_act). With `CnetWork+5 == 3` the login sends the kept id and handle
+without the id screen (`CallBack_Result_LoginLobbyServer` case 1), `lbc_login_finish` rebuilds the quest table,
+`lbc_login_finish_after` saves the game to the card (`McOperationSet(7, 2)`: `CardOnsv1*`, which first checks that the
+card is the one the game started with: `check_sum_ck`), then `To_MyLobby` -> `lobby_return_to_lobby`: 6891 current place,
+the plaza and lobby lists, the lobby's member list (no lobby entry request: the server already has the hunter there),
+the quest download, the town. The PC (rt_online.c): after `matched()` the online mode stays on; at the next game mode 6
+`rt_online_enter` runs those steps (Clear_lobby_ram, COM_R_No_*, CnetWork+5 = 3) and connects again. Not done:
+Load_overlay(3) (`rt_lb_reload` would reset the lobby client and the cnet library; `MH_lobbyClear` in
+lobby_return_to_lobby clears what the town needs). The co-op session's own save (`rt_np_session_end`) still runs
+first, so a failed reconnect does not lose the reward. Three bugs found: `connect_ps2` returns nothing in C but its
+callers use v0 (CpInetTcpOpen's handle): on the PC `tcp_init` kept a stale eax, the second connection polled the first,
+closed socket (fixed with a PC `#else`); `rt_np_session_end` ran twice (the town turns Online_ck on again), the second
+time turning Online_ck off in the town, so `Lb_make_quest_tbl` read the offline table past its end; the co-op start
+reloaded the hunter from the card (what was done in the town, e.g. the guild registration, was lost); and the PC's
+own card save left the card's check values stale, so the game's save said the start card was missing (now kept with
+`check_sum_set` as the game's saves do). The town after the return: the guild hall (stage 77, where the hunters left),
+both hunters see each other.
 
+**Friends, search, mail on screen** (10 Oct 2026, two headless clients, the town menu page 2): player list -> a hunter's
+status (2 pages) -> square "add to the friend list" (yes / yes; `Plaza_add_friend`, the net file saved); friend list
+(6709 per friend: online), circle = status (`disp_status`: name, id, weapon, HR, where: server, plaza, lobby; 6703
+and 670D for the comment); R1 = short mail -> send (6704) -> "mail sent"; the other hunter gets 6705, the mail icon,
+and reads it in his mail box (list, then the text). The net file (friends, received mail): the PS2 keeps it on the card
+(`SaveNetFile_ForLobby`, main 0x28A3D0, loaded by `ms_network_sub`, which the PC skips); the PC writes CNFile and
+RecvMailInfo to `mh1pc_net.bin` next to the save (a PC format) and reads it when the online mode starts.
+
+**Guest rooms** (stages 0x51-0x55, "hotel" rooms behind the town's spot kinds 18-20; `lb_basic_master`, lb_r.c;
+`lb_goto_guest_room` / `Lb_check_hotel`): read from the code, these are local: the hunter rents one with money by rank
+and goes there alone (`Lb_Pl_stg_ck` draws other hunters only on stages 0x4C / 0x4D), no lobby-server message besides
+the 6708 stage change. Not tried on screen. (`Lbc_GuestReadRoom` / `Lbs_GuestEnterRoom` in lb_cli.c are the joining
+side of the guild quest rooms, already in use.) Annex messages 6210-6215 have handlers but no sender in the client.
+
+Not done yet: patches; personal data registration; the Xbox build of the town was not run. The Windows build runs the
+town under Wine (section 4).
 ## 4. Run it
 
     ONLINE=1 tools/build_pc.sh                       # build/pc/mhview_online
     tools/test_online.sh                             # server + clients, ~12 s
     python3 tools/mh1_testserver.py -v --port 10200  # by hand
     RT_NET_PORT=10200 build/pc/mhview_online disc/mh1 --nettest full
-    tools/test_online_town.sh                        # the screens, the town, a room and its co-op quest, ~3 min
+    tools/test_online_town.sh                        # the screens, the town, a room, its co-op quest to the clear, the
+                                                     # return to the town (~7 min; makes the hunters' cards once with
+                                                     # tools/test_coop.sh saves, ~10 min)
+    RUN=wine BIN=build/win/mhview_online.exe tools/test_online_town.sh   # the same with the Windows build (passes, 10 Oct 2026)
     RT_NET_PORT=10200 build/pc/mhview_online disc/mh1 --boot   # then the title's network mode (or: --quest 10 --play --online)
 
 ## 5. The lobby-server protocol (PS2 wire format, derived from the client)
@@ -675,9 +719,24 @@ showed a problem. `str` = `u16 length` + bytes; client strings are obfuscated (5
 
 After 6916 the client logs out of the lobby server (6002, `lbc_game_ready_04`) and `internet_lobby_act` returns 0.
 
-Still read from the code only: mail and user search (6703-6709), condition search, personal data (6181-6189), file
-download (6881 / 6882), patches (6121-6125), server rules with choices (6604-6608, 660E), the shutdown / line check
-codes (6001-6007).
+### 5.7 Line check, current place, user search, mail, administrator message (test server, 10 Oct 2026)
+
+| Code | Dir, cat | Payload | Notes |
+|---|---|---|---|
+| 6001 | S->C req, empty; C->S ans, empty | line check | the client logs out ("connection lost", `To_LogOut(6)`) when nothing came from the server for 0xE10 ticks = 2 minutes (`internet_lobby_act`, `cw+0x35F4`): a hunter alone and idle needs it. The test server sends it every 30 s (the real interval is not known) |
+| 6891 | req empty -> ans `u16 plaza`, `u16 lobby`, `u16` (0) | current place | asked at every login (`lobby_return_to_lobby`); zeros = none: the top menu. After a match the client logs out without leaving the lobby; the test server remembers that place by hunter id and gives it at the next login with that id (the return after a quest), and puts the hunter back into the lobby (6411 to the others): the client does not send a lobby entry then |
+| 6703 | C->S req: obfuscated id (6) -> ans `str id`, `u16 plaza`, `u16 lobby`, `u16 room`, `u8`, `u8`, `str message` | where a hunter is | `cnLBS_SerchUserPlace`; plaza / lobby 1-based, 0 = none (`disp_status` page 0, `lb_chatMemberCheck`); error result + `str` = not found |
+| 6709 | C->S req: `u8 max` (0x50), `u8 n`, n x (`u8 type`, value) | condition search | types: 1 id (obfuscated, 6), 2 handle (obfuscated), 3 `u8` weapon kind (mini +0), 6 `u8 lo, u8 hi` rank range (`lo*4+1 .. hi*4+4`, mini +1, a guess), 4 / 5 `u8` (never sent by the screens); n = 0 = everyone. Friend list: one type-1 search per friend |
+| 6709 / 670A | S->C ans: `u8 total`, `u8 start`, `u8 count`, `u8 last`, count x (`str id` <= 8, `str handle` <= 16, `str mini` <= 0x40) | the results | stored from record `start`; with `last == 0` the client sends a **6709 notice** `u8 start+count` and waits for an answer with **that notice's sequence**; the test server sends it as 670A (same handler; which code the real server used is a guess). Pages of 10 records here |
+| 6704 | C->S req: obfuscated id (6), obfuscated text (<= 0x7E) -> ans empty | short mail | error result + `str` = shown (the test server: unknown id). A new mail is preceded by a type-1 search; replies and mail to a friend are not, so mail to a hunter who is away is kept and delivered after his next login (test server; a guess about the real one) |
+| 6705 | S->C notice: `str from id`, `str handle`, `str text` | a mail arrives | `CallBack_Event_RecvMail`: 8 slots `RecvMailInfo` (0x9A: unread, id, handle, text), the mail icon blinks while one is unread |
+| 6706 | S->C req: `str title`, `str html` -> C->S ans empty | administrator message | shown as an HTML dialog; the test server sends one after the login with `--admin-message TEXT` |
+
+All verified with tools/server/test_server.py (`TestServerFeatureTest`: a fake client speaking the real packets) and,
+for 6709 / 6703 / 670D / 6704 / 6705, on screen with two game clients (section 3.5).
+
+Still read from the code only: personal data (6181-6189), file download (6881 / 6882), patches (6121-6125), server rules
+with choices (6604-6608, 660E), the shutdown codes (6002-6007).
 
 ### 5.5 The in-game session (`mcsls`, not linked)
 
@@ -694,13 +753,10 @@ chat and sees the other leave.
 
 ## 7. What is missing, and ideas
 
-1. **The return to the town after an online quest** (section 3.5): the PC goes to the offline village. Note for it:
-   `rt_lb_reload` (village entry) resets all of lobby.bin's data, `CnetSys_w` and `client_work` included; the online
-   path does not call it (rt_online.c clears only the monsters, set objects and prims), a return must not either.
+1. **The return to the town after an online quest**: done (section 3.5), without `rt_lb_reload`.
 2. **The portal**: replaced by `mh1online.ini` (section 3.5). The real portal's other pages (account creation,
    personal data, the top page links) are skipped, nothing is registered with a server.
-3. **Rooms, matching and the in-game session** (`mcsls`, magic 0x82), patch download, regulations, personal data,
-   mail, user search, file (quest) download: formats are in the code, not in the test server.
+3. **The in-game session** (`mcsls`, magic 0x82), patch download, regulations, personal data, file (quest) download: formats are in the code, not in the test server.
 4. **DNAS**: the bypass is local. If MH Oldschool's server still expects the DNAS traffic from a console (their DNS
    answers `*.dnas.playstation.org`), a port that skips it must be acceptable to them.
 5. Winsock / Xbox (nxdk) builds of `net_cpinet.c`: written, untested.
