@@ -588,15 +588,13 @@ void flvecRotX(f32 *v, f32 a)
 }
 
 /* ------------------------------------------------------------ actors */
-/* Joints: on the PS2 get_joint_pos(chr, j) reads the world matrix of node
- * j of the actor's skeleton (chr+0x50C -> model -> +0x24, 0x190 bytes a
- * node). The host skeletons live in the viewer, which hands their world
- * matrices over each frame (rt_actor_joints); actors without them use
- * their position (stand-in). */
-static FLMAT joint_m;
+/* Joints: get_joint_pos / wmat / mat (the game's emsrch02.c) read the world matrix of node j of the actor's skeleton
+ * (chr+0x50C -> model -> +0x24, 0x190 bytes a node). The host skeletons live in the viewer, which hands their world
+ * matrices over each sync (rt_actor_joints); rt_actor_nodes_fill keeps every live actor's nodes filled in between. */
 static struct { const void *chr; const f32 *m; int n; } joints[32];   /* 4 players + 20 monsters + spare */
 
 u8 *rt_actor_nodes(const void *work, int *max);
+void *rt_motion_attach(void *work);
 void rt_actor_joints(const void *chr, const float *mats, int n)
 {
     int i, f = -1;
@@ -629,8 +627,13 @@ void rt_actor_nodes_fill_one(void *work)
     u8 *nodes = rt_actor_nodes(chr, &max);
     const f32 *m = NULL;
     FLMAT t;
-    if (!nodes)
-        return;
+    if (!nodes) {               /* a live actor without a model work (the online town's NPCs): give it one, the game reads
+                                 * its joints through it (eft00_set on an NPC: get_joint_pos_em) */
+        rt_motion_attach(chr);
+        nodes = rt_actor_nodes(chr, &max);
+        if (!nodes)
+            return;
+    }
     for (i = 0; i < 32; i++)
         if (joints[i].chr == chr && joints[i].m) {
             n = joints[i].n;
@@ -671,60 +674,6 @@ int rt_actor_joint_count(const void *chr)
     return 0;
 }
 
-static const f32 *joint_mat(const void *chr, int j)
-{
-    int i;
-    for (i = 0; i < 32; i++)
-        if (joints[i].chr == chr && joints[i].m && j >= 0 && j < joints[i].n)
-            return joints[i].m + 16 * j;
-    return NULL;
-}
-
-void get_joint_pos(void *chr, int joint, f32 *out)
-{
-    const f32 *m = joint_mat(chr, (s16)joint);
-    const f32 *p = m ? m + 12 : (const f32 *)((u8 *)chr + 0xAC);
-    out[0] = p[0];
-    out[1] = p[1];
-    out[2] = p[2];
-}
-
-void get_joint_pos_em(void *chr, int joint, f32 *out) { get_joint_pos(chr, joint, out); }
-
-/* get_joint_mat (0x10A1D0): node joint's local matrix (mdl+0x24 nodes,
- * 0x190 bytes each, +0x40), which callers turn in place (the player's
- * waist/neck twist). The host poses its skeleton from the motion alone, so
- * those edits are not shown yet [gap]. */
-FLMAT *get_joint_mat(void *chr, int joint, int arg)
-{
-    static FLMAT scratch;
-    int max;
-    u8 *nodes = rt_actor_nodes(chr, &max);
-    (void)arg;
-    if (!nodes || (s16)joint < 0 || (s16)joint >= max)
-        return &scratch;
-    return (FLMAT *)(nodes + (s16)joint * 0x190 + 0x40);
-}
-
-FLMAT *get_joint_wmat(void *chr, int joint)
-{
-    const f32 *m = joint_mat(chr, (s16)joint);
-    const f32 *p = (const f32 *)((u8 *)chr + 0xAC);
-    if (m) {
-        memcpy(joint_m, m, sizeof joint_m);
-        return &joint_m;
-    }
-    memset(joint_m, 0, sizeof joint_m);
-    joint_m[0][0] = joint_m[1][1] = joint_m[2][2] = joint_m[3][3] = 1.0f;
-    joint_m[3][0] = p[0];
-    joint_m[3][1] = p[1];
-    joint_m[3][2] = p[2];
-    return &joint_m;
-}
-
-void flvecApplyMat33(f32 *out, f32 *v, FLMAT *m);
-
-FLMAT *get_joint_wmat_em(void *chr, int joint) { return get_joint_wmat(chr, joint); }
 
 /* ------------------------------------------------------------ ground */
 /* GetGroundHit, GetGroundShellHit, GetWaterHit: the game's own C now

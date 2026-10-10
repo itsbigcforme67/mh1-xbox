@@ -599,8 +599,10 @@ src/pc/rt/:
   the viewer) and the helpers the eft C calls: eft_vec/alpha/rgba_linear,
   make_mat_srt, eft_trans_sub(_col/_opa), Eft_rendope_set, shell_rate_add,
   vectors, GetGroundHit (host collision callback; GetWaterHit says "no
-  water"). Joint queries (get_joint_pos/wmat) read the joint matrices the
-  viewer hands over each tick (sync_joints / monsters_sync). The skinned-model
+  water"). Joint queries are the game's (get_joint_pos / wmat / mat, emsrch02.c, since 11 Oct 2026): they read the
+  actor's node array, which rt_actor_nodes_fill keeps filled for every live actor at the start of each tick and after
+  each joint sync (host joints from sync_joints / monsters_sync, a matrix at the actor's position for the rest; an actor
+  without a model work, e.g. an online-town NPC, gets one). The skinned-model
   drawing calls (flCalcTrans, flSetSkinTrans...) are stubs; RT_TRACE lists them.
   `RT_SPAWN="eft17:4,eft14:3,..."` spawns test effects at the hunter.
 - `rt_overlay.c`: main C calls overlay functions by address
