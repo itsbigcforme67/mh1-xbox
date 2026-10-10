@@ -1009,3 +1009,20 @@ Lessons:
 - "a0 left over" calls (tools/argregs.py --check) must be patched for the PC in tools/pc_patch.py for every matched file added.
 - rebuild.sh compiles EVERY src/**/*.c with MWCC (also *_nm.c): a new near-match file must at least compile there (void * arithmetic does not).
 - Never run two build_pc.sh at once in one worktree (they share build/pc/*.log and objects); never pkill -f a build script (all agents share it).
+
+## Online town on screen (agent B, 9 Oct 2026)
+Details: docs/network.md 3.5 (flow, config, fixes) and 5.6 (the town / room / match messages). Notes for the next one:
+- The ONLINE=1 build links the whole lb_cli.c TU (BMATCH), the plaza TUs lb_plz2/3 (plain LOBBY: the matched lbui* runs
+  win) and ~70 b/ runs + b/nm drafts (tools/build_pc.sh ONLINE block). lbui_nm is weak there.
+- `config/lobby_aliases.txt` names (`X_o`, `X_k`, `ClassInfo_c43`, ...) resolve on the PC only with RT_GEN_LB_ALIASES=1
+  (gen_rt_auto.py): before, a `_o` callback became a do-nothing stand-in.
+- Headless online runs must be paced to 30 ticks/s (rt_online.c `pace`), else a screenshot run does hundreds of ticks
+  per round trip and jobs look stuck.
+- Lesson: a function called through a step table WITHOUT arguments but defined WITH parameters can corrupt its caller
+  on x86 (gcc keeps locals in the incoming argument slots, which then are the caller's frame): lbc_game_ready_02.
+  Grep step-table targets for parameter lists when linking a new TU.
+- Lesson: m2c drafts of draw functions with `int sp100; sprintf(&sp100, ...)` smash the stack (plaza_enterLobbyTrans
+  draft); use agent C's wip readings instead.
+- gdb works here (`gdb -q -batch -ex run -ex bt --args ...`); add `-ex "set disable-randomization off"` when a crash
+  only happens without gdb.
+- Test aids: RT_ONLINE_TRACE, RT_NET_SAY, RT_LB_WARP (town ticks), RT_NET_REGISTERED, RT_NAME, --online.
