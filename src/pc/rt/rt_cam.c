@@ -48,9 +48,6 @@ void flMemset(void *p, s32 v, s32 n) { memset(p, v, (size_t)n); }
 
 int act_ck(void *chr, int a, int b);
 
-/* Cockpit_chat_chk (0x275220): the online chat menu is open; never here */
-s32 Cockpit_chat_chk(void) { return 0; }
-
 /* View_move: the host builds its camera from lpView (rt_cam_view). */
 void View_move(void) {}
 

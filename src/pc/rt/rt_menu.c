@@ -200,7 +200,6 @@ void SoftKeyboard_exit(void)
         text_begin_fn(0);
 }
 void net_send_chat() {}
-int Reibun_select_mv() { return 0; }
 int func_5BD520() { return 0; }
 int func_5CB100() { return 0; }
 /* tutorial overlay pieces (game.bin 0x63B0C0 / 0x63B470): only in the
