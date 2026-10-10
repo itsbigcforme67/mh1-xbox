@@ -17,7 +17,6 @@ PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
     src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c \
     src/pc/fmt/snd.c src/pc/movie/sfd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c src/pc/gfx/gfx_opts.c src/pc/gfx/gfx_pal.c src/pc/gfx/gfx_skin.c src/pc/install.c src/pc/pick.c src/pc/menu.c src/pc/fmt/ps2save.c src/pc/fmt/lzari.c"
-RT="src/pc/rt/rt_mem.c src/pc/rt/rt_flmat.c src/pc/rt/rt_data.c src/pc/rt/rt_game.c src/pc/rt/rt_fl.c src/pc/rt/rt_overlay.c src/pc/rt/rt_main.c src/pc/rt/rt_eft.c src/pc/rt/rt_hit.c src/pc/rt/rt_cam.c"   # (listing only)
 # Decompiled game C run natively. set14_nm.c is the whole set14 file
 # (set14_trans is a near-match on the PS2 side, believed equivalent).
 # stage_set.c (main) spawns each stage's set objects; its calls into the
@@ -79,10 +78,9 @@ PL="$(ls src/main/pl/pl[0-9][0-9].c | tr '\n' ' ') src/main/pl/pl_nm.c src/main/
     src/main/weapon/weapon_nm.c src/main/sound/f_sound_nm.c"
 # Monsters: the monster loop (enemy_mv / em_move, main f_em, src/main/em/
 # f_em_nm.c) and game.bin's shared monster code (em_core, em_master,
-# em_taisei: whole-file near-matches) plus em01 (the Rathian). Per-monster
-# AI files are added when they exist (agent B's em01_ai_nm.c; agent D's
-# em_cmd_nm.c, the command interpreter); src/pc/rt/rt_em.c has weak
-# stand-ins for what is missing.
+# em_taisei: whole-file near-matches) plus em01 (the Rathian), its AI
+# (agent B's em01_ai_nm.c) and the command interpreter (agent D's
+# em_cmd_nm.c); src/pc/rt/rt_em.c has weak stand-ins for what is missing.
 EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c src/game/em/em_taisei.c \
     src/game/em/em01.c src/game/em/em01_horm.c src/game/em/em18_init.c src/game/em/em18b.c \
     src/game/em/em16_nm.c src/game/em/em16.c src/game/em/em12_nm.c src/game/em/em29.c"
@@ -99,9 +97,7 @@ QUEST="src/main/evdemo/evdemo.c src/main/quest/f_quest_nm.c src/game/tuto/tutori
        src/main/reward/f_reward.c src/main/reward/f_reward2.c src/main/reward/f_reward3.c src/main/reward/f_rewardb.c \
        src/main/reward/f_rewardc.c src/main/reward/f_reward4.c src/main/reward/f_rewardd_nm.c \
        src/main/ud/ud_nm.c src/main/font/disp2_nm.c src/main/font/disp1_nm.c"
-for f in src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c; do
-    [ -f "$f" ] && EM="$EM $f"
-done
+EM="$EM src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c"
 # More monster families (round 20): the AI draft (emNN_ai_nm.c or the
 # whole-file emNN_nm.c), the matched setter files, and the setters'
 # near-match copy linked weak (WEAK_EM) for what is still asm there.
@@ -132,24 +128,6 @@ EM="$EM src/game/em/em02_ai_nm.c src/game/em/em02.c src/game/em/em02_init.c"
 EM="$EM src/game/em/em07_ai_nm.c src/game/em/em07.c"
 EM="$EM src/game/em/em10_nm.c src/game/em/em33.c"
 WEAK_EM="em20_nm em17_nm em27_nm em04_nm em09_nm em08_ai_nm em21_nm em14_nm em15_nm"
-# Monster C that is still on other agents' branches (not merged into main):
-# when this checkout has the branch and main does not have the file yet, the
-# file and that branch's include/ are exported to build/pc/ext/<branch>/
-# (gitignored) and compiled against those headers (same struct layouts, more
-# fields named). Remove entries once merged (agent B's em01_ai_nm.c and
-# em_taisei_nm.c were, 6 Oct 2026).
-# (agent D's em_cmd_nm.c was merged into main on 6 Oct 2026; none left)
-EXT=""
-for e in $EXT; do
-    br=${e%%:*}; f=${e#*:}
-    [ -f "$f" ] && continue                       # main has it
-    git rev-parse -q --verify "$br" >/dev/null 2>&1 || continue
-    d="build/pc/ext/$br"
-    rm -rf "$d/include"; mkdir -p "$d/include" "$(dirname "$d/$f")"
-    git archive "$br" include | tar -x -C "$d"
-    git show "$br:$f" > "$d/$f"
-    EM="$EM $d/$f"
-done
 # The village (lobby.bin: Kokoto village offline, the town online): agent
 # F's whole-file lobby C (src/lobby/f/lb_X.c, the lb_zNN singletons) and
 # agent B's whole-file near-matches (src/lobby/lb/*_nm.c, lb_talk.c), plus
@@ -284,7 +262,7 @@ if [ -n "$ONLINE" ]; then
     EXTRA_CFLAGS="$EXTRA_CFLAGS -DMH1_ONLINE=1"
 fi
 # Stand-ins replaced by the game's own C (docs/pc.md "Stand-ins wired"): only the named functions are taken
-PICK_X="src/main/em/emmk01.c:ride_ofs_calc src/main/fl/flmat04.c:flmatAddTrans2 src/game/em/em_modechg.c:em01_local_area_move_init,Em_Mode_Chg src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
+PICK_X="src/main/em/emmk01.c:ride_ofs_calc src/main/fl/flmat04.c:flmatAddTrans2 src/game/em/em_modechg.c:em01_local_area_move_init,Em_Mode_Chg src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
 # the matched cp math library (cp01-cp03, agent B 8 Oct)
 GAME="$GAME src/main/cp/cp01.c src/main/cp/cp02.c src/main/cp/cp03.c"
 # Matched C (byte-exact) replacing near-match copies, batch A (agent B, 8 Oct 2026): the *_nm.c versions stay linked weak
@@ -582,7 +560,7 @@ for f in $GAME; do
     src/lobby/lb/lb_em*_nm.c|src/lobby/lb/lbem*.c|src/lobby/b/lbsnd01.c|src/lobby/b/lbsnd02.c) ABI="-Dem_frame_check=rtabi_em_frame_check" ;;
     src/lobby/lb/lbnpc_nm.c) ABI="-Dframe_check2=rtabi_frame_check2_em" ;;
     # the shop lists call ItemboxWindowX(f32 x, s16 cur, int flags) (PS2: x in f12); lb_ib.c defines it as (cur, flags, base)
-    src/lobby/b/lb_by139.c|src/lobby/f/lb_shp.c|src/lobby/f/lb_tu_ib.c) ABI="-Dframe_check2=rtabi_frame_check2 -DItemboxWindowX=rtabi_ItemboxWindowX" ;;
+    src/lobby/b/lb_by139.c|src/lobby/f/lb_tu_ib.c) ABI="-Dframe_check2=rtabi_frame_check2 -DItemboxWindowX=rtabi_ItemboxWindowX" ;;
     src/lobby/f/*) ABI="-Dframe_check2=rtabi_frame_check2" ;;
     # game_core (swset, move, trans, hit_check) is the host tick (rt_quest.c)
     src/main/game/f_gameb.c) ABI="-Dgame_core=ps2_game_core" ;;
@@ -625,7 +603,6 @@ for f in $GAME; do
     esac
     INC=""
     src="$f"
-    case "$f" in build/pc/ext/*) INC="-I$(echo "$f" | cut -d/ -f1-4)/include" ;; esac
     # f_quest_nm.c declares va_list as char * (the PS2 ABI): use the host's
     case "$f" in
     src/main/quest/f_quest_nm.c|src/main/quest/strg01.c)
