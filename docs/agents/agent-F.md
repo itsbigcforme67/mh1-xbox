@@ -633,10 +633,10 @@ How to find dead PC code without guessing (used for the 10 Oct clean-up, see doc
   PS2 data tables to host symbols by name at run time (em_prog_tbl entries are only reached that way).
 - After removing anything, build/pc/undefined.txt must not gain names (else gen_rt_auto.py silently makes
   a no-op stand-in for them).
-- Host versions that still win over matched C (kept, they differ from the game's code or its ABI on x86):
-  Em_area_ck / Em_max_parts_get / em_dur_init / get_joint_* (rt_em, rt_eft, rt_main), Gold_add /
-  Event_flag_* / Get_hunter_rank (rt_quest, test traces use them), Get_equip_value (partial, rt_pl),
-  ItemCopy_* / Reibun_select_mv (rt_menu), Copy_user_id (rt_flow no-op), the camera requests (rt_pl,
-  rt_em), light_set / get_tex_num / trans_stage_sub / Pl_light_init / get_mdlw_ptr, init/clr_item_work,
-  Cockpit_chat_chk, Material_set_sub, Get_atk_value. Replacing them with the matched C changes behaviour
-  and needs its own checks.
+- Host versions that still win over matched C (11 Oct: the others were replaced by the matched code, one commit each):
+  get_joint_pos / _wmat / _mat (+ _em twins; rt_eft.c): the host returns the actor's position when the viewer has
+  not handed over joints (actors without a host skeleton, joint index past the skeleton), the game's emsrch02.c
+  would read whatever is in the node array; Material_set_sub (rt_eft.c): the host's eft_trans_sub passes a port
+  CLAY, not the game's material set, so the game's loop would read garbage; get_mdlw_ptr (rt_motion.c): the PC
+  keeps its own model works (one per player), the game's light03.c indexes the PS2 model heap. All three need
+  the host structures changed first.
