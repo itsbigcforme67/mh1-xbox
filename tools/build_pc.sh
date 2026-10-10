@@ -298,6 +298,7 @@ MATCHED_A="src/main/eft/eft02.c \
     src/main/item/item02.c \
     src/main/item/item03.c \
     src/main/item/item04.c \
+    src/main/model/light01.c \
     src/main/model/light02.c \
     src/main/pl/pl_ammo.c \
     src/main/pl/pl_demo.c \

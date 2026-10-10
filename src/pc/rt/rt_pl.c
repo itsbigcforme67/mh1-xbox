@@ -100,12 +100,6 @@ int Get_view_dir(void)
 int Ana_ok_ck(void) { return GW8(0x212) < 1; }
 int Taru_ok_ck(void) { return game_w.stage == GW8(0x2F) ? 0 : GW8(0x210) < 2; }
 int Niku_ok_ck(void) { return GW8(0x211) < 3; }
-void Pl_light_init(void *pl)
-{
-    PU32(pl, 0x578) = 0;
-    PU32(pl, 0x57C) = 0;
-    PU32(pl, 0x580) = 0;
-}
 
 /* ------------------------------------------------ stubs */
 /* network (single player on the PC) */
