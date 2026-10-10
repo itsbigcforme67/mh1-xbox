@@ -20,4 +20,5 @@ int CpInetTcpSend(int sock, const void *buf, int len);
 int CpInetTcpClose(int *sock);
 uint32_t InetIPAddrFromString(const char *s);
 void net_stats(unsigned long long *tx, unsigned long long *rx);
+void net_allow_server(const char *host);    /* the server the player configured: its addresses count as allowed */
 #endif

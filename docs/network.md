@@ -330,7 +330,7 @@ is exactly "return 1 at once", which `net_dnas.c` does. The internal `sceDNAS2*`
 | `tools/lbs_cmdtab.py` | prints the lobby-server command table from the user's disc (`disc/mh1/split/lobby.bin`) |
 | `src/pc/rt/rt_online.c` | the online town: config (portal replacement), connect, `internet_lobby_act`, chat keyboard, browser / quest download stand-ins, the hand-off to co-op (3.5) |
 | `src/lobby/f/lb_online_nm.c` | PC C for lb_cli.c's asm-only functions (`lbc_login_init`, `Lbc_GetRoomRule`, `tk_logout_message_sub`) |
-| `tools/test_online_town.sh` | the town test (two clients, ~3 min) |
+| `tools/test_online_town.sh` | the town test (two clients, a room hosted by a player and one through mh1-server's relay; ~6 min) |
 | `tools/pc_patch.py` | argument fixes for the cnet files |
 
 ### 3.4 Co-op over direct connect (agent E, 7 Oct 2026, round 2)
@@ -485,9 +485,12 @@ frame until it returns 0 (a match), then `internet_to_modem` (the game server, `
 
 **What the PC does** (`rt_online.c`, called from the viewer's game mode 6 instead of the village):
 1. The network mode is asked for by the title menu (`Game_task` with `system_w+0x10`, rt_boot.c) or by `--online`.
-2. The portal's place is taken by `mh1online.ini` next to `mh1pc.ini` (written with the defaults on first use):
-   `server = 127.0.0.1:10200`, `name = Local test server`, `id = 0000000001` (the MMBB id), `password = LOCALTEST0000000`;
-   `RT_NET_HOST` / `RT_NET_PORT` / `RT_NET_ID` / `RT_NET_PASS` override it. It fills `bsCsvWork` (password, server id,
+2. The portal's place is taken by three keys of `mh1pc.ini` (gfx_opts.c keeps them; defaults written on a normal
+   exit): `online_server = 127.0.0.1:10200`, `online_login = 00000000` (the MMBB id; the login packet carries its first
+   8 digits, docs/server.md 2.1), `online_password = LOCALTEST0000000`. A public address (or name) in `online_server`
+   is the player's choice and is allowed (`net_allow_server`, net_cpinet.c); MH Oldschool's addresses stay refused.
+   `RT_NET_HOST` / `RT_NET_PORT` / `RT_NET_ID` / `RT_NET_PASS` override them for tests (an address given that way gets
+   no exception). Not in the F10 menu yet (it has no text fields). It fills `bsCsvWork` (password, server id,
    `host:port`, user counts), `BsLbsInfo[0]` (id, name: `Get_ServerName`), `BsLbsCount = 1` (one server: the first
    login goes straight on; with several the client logs out and shows the server list), `CurDevice` (kind 1, a guess:
    the broadband adaptor; `DeviceGetOptionalStatus` reads it for the login's first data). Then `tcp_init` (the game's),
@@ -506,7 +509,8 @@ frame until it returns 0 (a match), then `internet_to_modem` (the game server, `
 8. When `internet_lobby_act` returns 0, `matched()` reads the slot (`USER_PL_ID`, from MatchPlSide), the player count
    (`cw+0x2C47`), the quest (`select_w+0xAC`) and the "game server" (`cnLBS_Get_GameServerAddress`, 6916), closes the
    lobby connection and configures the co-op session (`rt_np_configure`): slot 0 hosts, the others join that
-   address (with retries for 10 s). The viewer then starts the quest as `--host` / `--join` would (section 3.4).
+   address (with retries for 10 s). If 6914 (MatchGameRule) said `mh1-relay`, the address is mh1-server's session relay
+   (docs/server.md 4.3): every player joins it, nobody hosts. The viewer then starts the quest as `--host` / `--join` would (section 3.4).
 
 The town's places (stage 76 = the square; spot 8 -> 77 the guild hall; spots 9 / 10 -> 78, 11 -> 79, 12 -> 80, 13 =
 back to the plaza). In the guild hall (77): the receptionist (NPC talk kind 0, at (1090, 1600)) takes quests

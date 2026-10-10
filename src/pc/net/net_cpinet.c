@@ -90,6 +90,9 @@ static const uint8_t mho_deny[][4] = {      /* MH Oldschool public infrastructur
     { 34, 75, 107, 68 }, { 151, 80, 238, 99 }, { 151, 80, 238, 101 }, { 151, 80, 238, 104 },
 };
 
+static uint32_t allowed_srv[8];             /* the configured server's addresses (net_allow_server) */
+static int n_allowed_srv;
+
 static int dest_allowed(uint32_t addr)
 {
     const uint8_t *b = (const uint8_t *)&addr;
@@ -105,6 +108,9 @@ static int dest_allowed(uint32_t addr)
         return 1;
     if (getenv("RT_NET_ALLOW_PUBLIC") && atoi(getenv("RT_NET_ALLOW_PUBLIC")) == 1)
         return 1;
+    for (i = 0; i < (size_t)n_allowed_srv; i++)    /* the player's own choice in the settings (online_server) */
+        if (allowed_srv[i] == addr)
+            return 1;
     {   /* RT_NET_ALLOW="a.b.c.d,e.f.g.h" (or --allow on the command line): these public addresses only, chosen
          * deliberately (a friend's internet address for co-op); the MH Oldschool refusal above still applies */
         const char *l = getenv("RT_NET_ALLOW");
@@ -125,6 +131,27 @@ static int dest_allowed(uint32_t addr)
     fprintf(stderr, "net: refusing %u.%u.%u.%u: only loopback and private addresses (allow one with --allow ADDRESS / RT_NET_ALLOW)\n",
             b[0], b[1], b[2], b[3]);
     return 0;
+}
+
+/* The lobby server the player set in mh1pc.ini (online_server): a public address there is a deliberate choice, so its
+ * addresses (a name is resolved now) are allowed, as --allow does for one address. MH Oldschool stays refused. */
+void net_allow_server(const char *host)
+{
+    struct addrinfo hints, *res = NULL, *r;
+    uint32_t a = InetIPAddrFromString(host);
+    if (a != 0 && a != 0xFFFFFFFFu) {
+        if (n_allowed_srv < 8)
+            allowed_srv[n_allowed_srv++] = a;
+        return;
+    }
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    if (getaddrinfo(host, NULL, &hints, &res) != 0)
+        return;
+    for (r = res; r && n_allowed_srv < 8; r = r->ai_next)
+        allowed_srv[n_allowed_srv++] = ((struct sockaddr_in *)r->ai_addr)->sin_addr.s_addr;
+    freeaddrinfo(res);
 }
 
 /* the same policy for the co-op transport (net_peer.c) */

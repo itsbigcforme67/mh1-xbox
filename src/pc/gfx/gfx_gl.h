@@ -24,6 +24,9 @@ typedef struct {
     int lang_en;         /* 1: English text from the translation table (text/en.txt, docs/english.md); read at start-up */
     int western_pad;     /* 1: cross confirms and circle cancels (swapped), 0: the Japanese circle-confirm layout */
     char text_table[512];/* path of the translation table from the settings file ("" = look in the default places) */
+    char online_server[128];  /* the online town (ONLINE=1, docs/network.md 3.5): lobby server "host:port" ("" = 127.0.0.1:10200) */
+    char online_login[16];    /* the 8-digit login (the MMBB id the KDDI portal gave the PS2) */
+    char online_password[24]; /* its password (16 characters) */
 } pc_options;
 extern pc_options pc_opt;
 const char *gfx_text_table_find(void);                /* the translation table file that exists, or NULL */

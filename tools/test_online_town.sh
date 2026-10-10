@@ -86,9 +86,42 @@ grep -aq "match: quest .*slot 1, game server 127.0.0.1" $OUT/BOB.log || fail "BO
 for nm in ANNA BOB; do
     grep -aq "co-op: quest [0-9]*, 2 player(s)" $OUT/$nm.log || fail "$nm did not start the co-op quest"
 done
+# the same room through mh1-server (tools/server, docs/server.md): its lobby (the test server's handling) with
+# --lobby-relay answers 6914 with "mh1-relay" and 6916 with its session relay; both players join the relay
+python3 tools/server/mh1_server.py serve --lobby-port 0 --lobby-relay --relay-ports 10370-10379 > $OUT/server3.log 2>&1 &
+SP=$!
+i=0; PORT=""
+while [ $i -lt 50 ] && [ -z "$PORT" ]; do
+    PORT=$(sed -n 's/^mh1-server lobby on 127.0.0.1:\([0-9]*\).*/\1/p' $OUT/server3.log)
+    [ -n "$PORT" ] || { sleep 0.1; i=$((i + 1)); }
+done
+[ -n "$PORT" ] || fail "mh1-server did not start"
+run ANNA 125 "$IA" RT_NET_REGISTERED=1 RT_LB_WARP="60,5545,2750,8000;300,1300,1600,C000;2200,3100,2100,8000" RT_SHOTS=3500 &
+PA=$!
+sleep 2
+run BOB 120 "$IB" RT_NET_REGISTERED=1 RT_LB_WARP="60,5545,2750,8000;300,1850,1500,8000;2100,3100,2100,8000" RT_SHOTS=3400 || fail "client BOB stopped early (relay)"
+wait $PA || { PA=""; fail "client ANNA stopped early (relay)"; }
+PA=""
+kill $SP 2>/dev/null; SP=""
+for nm in ANNA BOB; do
+    grep -aq "the game server is a session relay: joining it" $OUT/$nm.log || fail "$nm did not take the relay hand-off"
+    grep -aq "co-op: quest [0-9]*, 2 player(s)" $OUT/$nm.log || fail "$nm did not start the co-op quest through the relay"
+done
+grep -aq "this machine hosts" $OUT/ANNA.log && fail "ANNA hosted although the server relays"
 # safety: a public address is refused before a socket is opened; the game goes back to the village
 env MH1_SAVE_DIR="$PWD/$OUT/card_X" RT_NAME=X RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 RT_NET_HOST=8.8.8.8 RT_NET_PORT=10200 \
     timeout 100 $BIN disc/mh1 --quest 10 --play --online --mute --shot $OUT/refused.png --time 5 --size 320x240 > $OUT/refused.log 2>&1
 grep -aq "net: refusing 8.8.8.8" $OUT/refused.log || fail "8.8.8.8 was not refused"
 grep -aq "back to the village" $OUT/refused.log || fail "no fallback to the village after the refusal"
-echo "online town OK: two clients logged in through the game's screens, the plaza, the town; each sees the other at $a_bob / $a_anna; chat both ways; a room made, joined, matched and its quest started as a co-op quest; public address refused"
+# a public server set in the settings file (online_server) is the player's choice and allowed (192.0.2.1: TEST-NET-1,
+# nobody answers); an MH Oldschool address there is still refused
+printf 'online_server = 192.0.2.1:10200\nonline_login = 12345678\n' > $OUT/public.ini
+env MH1_SAVE_DIR="$PWD/$OUT/card_X" RT_NAME=X RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 \
+    timeout 100 $BIN disc/mh1 --ini $OUT/public.ini --quest 10 --play --online --mute --shot $OUT/public.png --time 3 --size 320x240 > $OUT/public.log 2>&1
+grep -aq "connecting to 192.0.2.1 port 10200" $OUT/public.log || fail "the configured public server was not tried"
+grep -aq "refusing 192.0.2.1" $OUT/public.log && fail "the configured public server was refused"
+printf 'online_server = 34.75.107.68:10200\n' > $OUT/mho.ini
+env MH1_SAVE_DIR="$PWD/$OUT/card_X" RT_NAME=X RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 \
+    timeout 100 $BIN disc/mh1 --ini $OUT/mho.ini --quest 10 --play --online --mute --shot $OUT/mho.png --time 3 --size 320x240 > $OUT/mho.log 2>&1
+grep -aq "net: refusing 34.75.107.68" $OUT/mho.log || fail "an MH Oldschool address in the settings was not refused"
+echo "online town OK: two clients logged in through the game's screens, the plaza, the town; each sees the other at $a_bob / $a_anna; chat both ways; a room made, joined, matched and its quest started as a co-op quest (a player hosting, then through mh1-server's relay); public address refused, a configured public server allowed, MH Oldschool refused"

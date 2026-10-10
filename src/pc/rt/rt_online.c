@@ -15,10 +15,11 @@
  * The PC runs this file in game mode 6 (where the offline game runs the village, rt_village.c): the host draws
  * the town stage, the hunters and the game's 2D as for the village.
  *
- * Config (the portal replacement): mh1online.ini next to mh1pc.ini (written with defaults on first use):
- *   server = 127.0.0.1:10200      lobby server (loopback / private addresses only; MH Oldschool is refused)
- *   id = 0000000001               the MMBB id the portal gave (10 characters, sent in the login)
- *   password = LOCALTEST0000000   the password the portal's server table carried (16 characters)
+ * Config (the portal replacement): mh1pc.ini (gfx_opts.c keeps the keys, written on a normal exit):
+ *   online_server = 127.0.0.1:10200   lobby server; a public address set here is allowed (net_allow_server), MH
+ *                                     Oldschool is always refused
+ *   online_login = 00000000           the 8-digit login (the MMBB id the portal gave; 8 digits are sent, docs/server.md)
+ *   online_password = LOCALTEST0000000  its password (16 characters)
  * RT_NET_HOST / RT_NET_PORT / RT_NET_ID / RT_NET_PASS override the file (tests).
  */
 #include <stdio.h>
@@ -28,6 +29,8 @@
 #include "rt.h"
 #include "rt_log.h"
 #include "types.h"
+#include "../gfx/gfx_gl.h"
+#include "../net/net_cpinet.h"
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -53,7 +56,7 @@ const char *rt_mc_root(void);
 void rt_cam_init(int stage);
 
 static int wanted, active, phase, ticks, trace = -1;
-static char host[128] = "127.0.0.1", key[16] = "0000000001", pass[24] = "LOCALTEST0000000";
+static char host[128] = "127.0.0.1", key[16] = "00000000", pass[24] = "LOCALTEST0000000";
 static int port = 10200;
 static char sname[64] = "Local test server";
 
@@ -71,54 +74,32 @@ static void say(const char *fmt, const char *a, int b)
     rt_log("online: %s", m);
 }
 
-/* the portal replacement: mh1online.ini (written with the defaults when missing), then the environment */
+/* the portal replacement: the online_* keys of mh1pc.ini (gfx_opts.c reads and keeps them), then the environment */
 static void rt_online_config(void)
 {
-    char path[1100], line[300], *s;
-    FILE *f;
     const char *e;
-    snprintf(path, sizeof path, "%s", rt_mc_root());
-    s = strrchr(path, '/');
-    if (!s)
-        s = strrchr(path, '\\');
-    if (s)
-        snprintf(s, sizeof path - (size_t)(s - path), "/mh1online.ini");
-    else
-        snprintf(path, sizeof path, "mh1online.ini");
-    f = fopen(path, "r");
-    if (!f) {
-        f = fopen(path, "w");
-        if (f) {
-            fprintf(f, "# MH1 PC online settings (what the KDDI portal page gave the PS2).\n"
-                       "# Only loopback / private addresses are accepted: run tools/mh1_testserver.py.\n"
-                       "server = %s:%d\nname = %s\nid = %s\npassword = %s\n", host, port, sname, key, pass);
-            fclose(f);
-            say("wrote %s with the defaults (local test server)", path, 0);
-        }
-    } else {
-        while (fgets(line, sizeof line, f)) {
-            char *k = line, *v = strchr(line, '='), *t;
-            if (!v || *k == '#' || *k == ';')
-                continue;
-            *v++ = 0;
-            while (isspace((unsigned char)*k)) k++;
-            for (t = k + strlen(k); t > k && isspace((unsigned char)t[-1]); ) *--t = 0;
-            while (isspace((unsigned char)*v)) v++;
-            for (t = v + strlen(v); t > v && isspace((unsigned char)t[-1]); ) *--t = 0;
-            if (!strcmp(k, "server")) {
-                char *c = strrchr(v, ':');
-                if (c) { *c = 0; port = atoi(c + 1); }
-                snprintf(host, sizeof host, "%s", v);
-            } else if (!strcmp(k, "id")) {
-                snprintf(key, sizeof key, "%.10s", v);
-            } else if (!strcmp(k, "name")) {
-                snprintf(sname, sizeof sname, "%s", v);
-            } else if (!strcmp(k, "password")) {
-                snprintf(pass, sizeof pass, "%.16s", v);
-            }
-        }
-        fclose(f);
+    char *c;
+    if (!pc_opt.online_server[0])           /* the defaults (written to mh1pc.ini on a normal exit) */
+        snprintf(pc_opt.online_server, sizeof pc_opt.online_server, "%s:%d", host, port);
+    else {      /* the player's own choice: a public address there is allowed (MH Oldschool never is) */
+        char h[128];
+        snprintf(h, sizeof h, "%s", pc_opt.online_server);
+        if ((c = strrchr(h, ':')) != NULL)
+            *c = 0;
+        CpInetInitialize();
+        net_allow_server(h);
     }
+    if (!pc_opt.online_login[0])
+        snprintf(pc_opt.online_login, sizeof pc_opt.online_login, "%s", key);
+    if (!pc_opt.online_password[0])
+        snprintf(pc_opt.online_password, sizeof pc_opt.online_password, "%s", pass);
+    snprintf(host, sizeof host, "%s", pc_opt.online_server);
+    if ((c = strrchr(host, ':')) != NULL) {
+        *c = 0;
+        port = atoi(c + 1);
+    }
+    snprintf(key, sizeof key, "%.10s", pc_opt.online_login);
+    snprintf(pass, sizeof pass, "%.16s", pc_opt.online_password);
     if ((e = getenv("RT_NET_HOST")) && *e) snprintf(host, sizeof host, "%s", e);
     if ((e = getenv("RT_NET_PORT")) && *e) port = atoi(e);
     if ((e = getenv("RT_NET_ID")) && *e) snprintf(key, sizeof key, "%.10s", e);
@@ -308,11 +289,19 @@ static int matched(void)
     cnLBS_Get_GameServerAddress(&a, &pt);
     port = ((pt & 0xFF) << 8) | (pt >> 8);          /* it returns the port in network order */
     snprintf(ip, sizeof ip, "%u.%u.%u.%u", a & 0xFF, (a >> 8) & 0xFF, (a >> 16) & 0xFF, a >> 24);
-    say("matched: %s", slot == 0 ? "this machine hosts the session (slot 0)" : "joining the room leader", 0);
     fprintf(stderr, "online: match: quest %d, %d players, slot %d, game server %s port %d\n", quest, n, slot, ip, port);
     rt_log("online: match: quest %d, %d players, slot %d, game server %s port %d", quest, n, slot, ip, port);
     CpInetTcpAbort(*(s32 *)(ConnWork + 4));         /* internet_connect_minimum_cleanup: the lobby connection */
-    rt_np_configure(slot == 0 ? 1 : 2, ip, port, n);
+    {   /* the game rule string of 6914 (MatchGameRule, CnetSys_w+0x30323): "mh1-relay" = the 6916 address is
+         * mh1-server's session relay (docs/server.md 4.3): every player joins it, the relay orders the slots as 6912 */
+        extern u8 CnetSys_w[];
+        int relay = !strncmp((char *)CnetSys_w + 0x30323, "mh1-relay", 9);
+        if (relay)
+            say("the game server is a session relay%s: joining it (slot %d)", "", slot);
+        else
+            say("matched: %s", slot == 0 ? "this machine hosts the session (slot 0)" : "joining the room leader", 0);
+        rt_np_configure(slot == 0 && !relay ? 1 : 2, ip, port, n);
+    }
     active = 0;
     wanted = 0;
     return quest > 0 ? quest : -1;

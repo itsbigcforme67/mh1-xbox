@@ -257,7 +257,7 @@ forwards them).
 
 ### 4.3 Lobby to relay hand-off (needs a small client change, for agent B / the coordinator)
 
-B's client (rt_online.c `matched`) treats the 6916 address as the room leader's game: slot 0 hosts, the others join.
+**Done in the client (agent B, 9 Oct 2026)**: rt_online.c `matched` reads the 6914 string; with `mh1-relay` every player joins the 6916 address, otherwise slot 0 hosts as before. Tested: tools/test_online_town.sh runs a room through `mh1_server.py serve --lobby-port 0 --lobby-relay`.
 With the relay every member must **join** the 6916 address. Proposal (not implemented on the client side): the lobby
 answers 6914 MatchGameRule with the string `mh1-relay` (lobby_stub.py does this with `--lobby-relay`), and the client
 then joins with its 6912 slot instead of hosting. The relay orders the slots by the lobby's member order (hunter names)
@@ -281,7 +281,7 @@ punching; carrier-grade NAT and mobile hotspots work too. Only the server needs 
   player), keeping the MH Oldschool refusal.
 * **Login settings**: `login` (8 digits) and `password` for the 6101 packet (today hard-coded test values in rt_net.c).
 * The 4.3 hand-off.
-None of these were made here (src/pc/net and the ONLINE build are agent B's area right now).
+Done by agent B (9 Oct 2026): `online_server`, `online_login`, `online_password` in mh1pc.ini (docs/network.md 3.5), the configured server's addresses allowed (`net_allow_server`), the 4.3 hand-off. Not yet: fields in the F10 menu.
 
 ## 6. Compatibility with MH Oldschool
 

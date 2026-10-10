@@ -60,6 +60,9 @@ static void set_key(const char *k, const char *v)
     else if (!strcmp(k, "language")) pc_opt.lang_en = !strcasecmp(v, "en") || !strcasecmp(v, "english");
     else if (!strcmp(k, "confirm")) pc_opt.western_pad = !strcasecmp(v, "cross");
     else if (!strcmp(k, "text_table")) snprintf(pc_opt.text_table, sizeof pc_opt.text_table, "%s", v);
+    else if (!strcmp(k, "online_server")) snprintf(pc_opt.online_server, sizeof pc_opt.online_server, "%s", v);
+    else if (!strcmp(k, "online_login")) snprintf(pc_opt.online_login, sizeof pc_opt.online_login, "%s", v);
+    else if (!strcmp(k, "online_password")) snprintf(pc_opt.online_password, sizeof pc_opt.online_password, "%s", v);
     else if (!strcmp(k, "window_x")) gfx_opt.win_x = atoi(v);
     else if (!strcmp(k, "window_y")) gfx_opt.win_y = atoi(v);
     else if (!strcmp(k, "window_w")) gfx_opt.win_w = clampi(atoi(v), 0, 16384);
@@ -170,6 +173,12 @@ void gfx_opts_save(void)
         fprintf(f, "text_table = %s\n", pc_opt.text_table);
     fprintf(f, "# confirm: circle (Japanese layout) or cross (Western: circle and cross swapped, menus and play alike)\n");
     fprintf(f, "confirm = %s\n", pc_opt.western_pad ? "cross" : "circle");
+    if (pc_opt.online_server[0] || pc_opt.online_login[0] || pc_opt.online_password[0]) {
+        fprintf(f, "# online (the ONLINE=1 build): lobby server host:port (a public address set here is allowed; MH Oldschool\n"
+                   "# is always refused), the 8-digit login and its password\n");
+        fprintf(f, "online_server = %s\nonline_login = %s\nonline_password = %s\n", pc_opt.online_server, pc_opt.online_login,
+                pc_opt.online_password);
+    }
     fprintf(f, "# the windowed position and size, kept on exit\n");
     if (gfx_opt.win_w > 0) {
         fprintf(f, "window_x = %d\nwindow_y = %d\nwindow_w = %d\nwindow_h = %d\n", gfx_opt.win_x, gfx_opt.win_y, gfx_opt.win_w,
