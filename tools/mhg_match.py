@@ -1,4 +1,4 @@
-"""mhg_match.py: how many MH1 functions appear unchanged in PS2 Monster Hunter G (addresses and
+"""mhg_match.py [mhg|mh2]: how many MH1 functions appear unchanged in PS2 Monster Hunter G or MH2 (Dos) (addresses and
 immediates masked). Needs disc/mh1/split and disc/mhg/overlays."""
 import struct,csv,sys,collections
 import os
@@ -15,10 +15,16 @@ ov1={'game.bin':0x533980,'lobby.bin':0x533980,'select.bin':0x533980,'yn.bin':0x5
 mh1={'main':(open(R+'disc/mh1/split/main.bin','rb').read(),0x100000)}
 for k,b in ov1.items(): mh1[k]=(open(R+'disc/mh1/split/'+k,'rb').read()[0x40:],b)
 # G modules
-ge=open(R+'disc/mhg/SLPM_658.69','rb').read()
-G={'main':ge[0x200:0x200+0x1ef200]}
-for k in ['game.bin','lobby.bin','sub_main.bin','select.bin','yn.bin']:
-    G[k]=open(R+'disc/mhg/overlays/'+k,'rb').read()[0x40:]
+# target: mhg (default) or mh2 (Dos: disc/mh2, overlays carved from DATA.BIN)
+T=sys.argv[1] if len(sys.argv)>1 else 'mhg'
+elf,off,size={'mhg':('mhg/SLPM_658.69',0x200,0x1ef200),'mh2':('mh2/SLPM_662.80',0x280,0xc8600)}[T]
+ge=open(R+'disc/'+elf,'rb').read()
+G={'main':ge[off:off+size]}
+import glob
+for f in sorted(glob.glob(R+'disc/'+T+'/overlays/*.bin')):
+    k=os.path.basename(f)
+    if k.startswith(('dnas','nethttp')): continue
+    G[k]=open(f,'rb').read()[0x40:]
 K=6
 gw={};idx=collections.defaultdict(list);graw={}
 for k,b in G.items():

@@ -23,3 +23,20 @@ unchanged in G, ignoring addresses, jump targets and 16-bit immediates.
 - G keeps MH1's compiler and overlay layout, so the same matching setup should work.
 - The Wii G (PowerPC, a different compiler) cannot reuse the matched C byte for byte. Only
   the C's meaning carries over.
+
+## MH2 (Dos), SLPM_662.80 VER 1.04, English patch v1.03 image
+
+Run: `tools/mhg_match.py mh2`. The overlays are stored uncompressed in DATA.BIN; carve
+them at each 'MWo3' magic, 0x40 + text + data bytes long.
+
+- Same compiler ("MW MIPS C Compiler (2.4.1.01)"), same MWo3 overlay system, same
+  overlay names, plus new ones: gm_sub, plsel, lbguild, and stubs for test.
+  The ELF is stripped.
+- The game is much bigger. game.bin's text is 1.9 MB (MH1: 1.08 MB) and sub_main's is
+  1.1 MB. The main ELF shrank to 0.8 MB because code moved into sub_main.
+- Unchanged MH1 functions, by share of code bytes: main 27%, game 10%, lobby 6%, yn 26%.
+  Overall about 17%.
+- Movies are CRI Sofdec (MWSFD/PS2EE 3.33). MH1 uses plain MPEG-2.
+- Verdict: still the same engine family, and the tools, compiler setup, file formats and
+  PC/Xbox platform layer carry over. Most of the game code is new or rewritten, so MH2
+  would be close to a new decompilation that has MH1 to lean on.
