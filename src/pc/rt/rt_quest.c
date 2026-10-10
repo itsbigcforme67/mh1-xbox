@@ -31,23 +31,6 @@ void rt_quest_mem_init(void) { mission_area = mission_buf; }
 
 /* ------------------------------------------------ user data (main ud, 0x272xxx) */
 
-extern u32 h_rank_tbl[];
-/* Get_hunter_rank (0x272320): number of h_rank_tbl entries (ended by
- * 9999999) that the hunter points (u+0x1C) reach */
-u8 Get_hunter_rank(u8 *u)
-{
-    u32 pts = PU32(u, 0x1C), *t = h_rank_tbl;
-    u8 n = 0;
-    if (*t == 0x98967F)
-        return 0;
-    for (; pts >= *t; ) {
-        t++;
-        n++;
-        if (*t == 0x98967F)
-            break;
-    }
-    return n;
-}
 
 /* ------------------------------------------------ network (offline) */
 #ifndef MH1_ONLINE     /* ONLINE=1: the game's (netsyn08.c, co-op) */
@@ -150,6 +133,7 @@ void rt_hud_tick(void)
 
 /* ------------------------------------------------ money (main ud / f_reward) */
 extern s32 quest_price;
+void Gold_add(int n);    /* f_ud.c */
 /* Quest_price_return (0x290E50): give back the quest fee once */
 void Quest_price_return(void)
 {

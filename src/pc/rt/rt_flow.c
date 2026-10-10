@@ -153,6 +153,6 @@ NOP0(net_start_ck) NOP(net_receive_pl_pos_set)
 #endif
 NOP(flInitPhaseStarted) NOP(flInitPhaseFinished)
 NOP(em_effect_pull) NOP(Disp_load_start)
-NOP(Copy_user_id) NOP(Disp_NowLoading2)
+NOP(Disp_NowLoading2)
 
 /* trans: rt_boot.c (draws only while the boot screens run) */

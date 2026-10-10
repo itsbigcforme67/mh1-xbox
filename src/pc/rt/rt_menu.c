@@ -208,13 +208,6 @@ int func_5CB100() { return 0; }
 int func_63B0C0() { return 0; }
 void func_63B470() {}
 
-/* ItemCopy_Pl2Ud / ItemCopy_Ud2Pl (0x272280 / 0x2722A0, as udmisc02.c): the
- * pouch (PLW+0x828, 0x50 bytes of {id, n}) <-> User_data+0x37C. The village copies
- * the user's pouch to the hunter every tick (Lb_move_common) and back after
- * its item menus (lb_menu_item_mv). */
-extern u8 User_data[];
-void ItemCopy_Pl2Ud(PLW *pl) { __builtin_memcpy((u8 *)User_data + 0x37C, (u8 *)pl + 0x828, 0x50); }
-void ItemCopy_Ud2Pl(PLW *pl) { __builtin_memcpy((u8 *)pl + 0x828, (u8 *)User_data + 0x37C, 0x50); }
 
 /* ------------------------------------------------ not ported yet (no-ops) */
 #define NOP(name) void name() { static int o; if (!o++) rt_log_standin(#name); if (o == 1 && getenv("RT_TRACE")) fprintf(stderr, "rt_menu: %s not ported\n", #name); }

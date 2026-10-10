@@ -816,16 +816,6 @@ int Em_area_ck(int a)
 int softdip_ck(void) { return 0; }   /* 0x1593D0: returns 0 */
 
 STUB_V(vib_set_pl, (void *pl, int a))
-/* Get_atk_value (f_ud, src/main/ud/ud_nm.c): element/ailment value kind
- * (0-6) of the weapon, Ken_data[PLW+0x360][0xB + kind] when PLW+0x35F == 6 */
-extern unsigned char Ken_data[][0x18];
-s16 Get_atk_value(void *pl, int kind)
-{
-    unsigned char *p = pl;
-    if ((unsigned)(kind & 0xFF) > 6 || p[0x35F] != 6)
-        return 0;
-    return Ken_data[*(u16 *)(p + 0x360)][0xB + (kind & 0xFF)];
-}
 /* skinned-model drawing (fl hierarchy), used by eft01/eft05/eft09 */
 STUB_V(flCalcTrans, (void *h, FLMAT *m))
 STUB_V(flCalcTransSI, (void *h, FLMAT *m))
