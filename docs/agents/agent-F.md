@@ -621,3 +621,22 @@ Tools (scratch, not committed): adiff.py (aligns check.py -v output with difflib
   lb_process_kyoukaListProg (9/376: with `F(s32,&shop_process2_help,N*4)` instead of `shop_process2_help[N]` (char[] in the TU gives lb instead of lw) only the last x6E+1 clamp block is off: original puts lim in v1, mine coalesces it with the ternary reg; permuter 800 iterations found nothing),
   itembox_cursor_mv (2: daddiu vs addiu for `lo = 9` in a branch delay slot; many variants tried), Lb_room_member (1: addu operand order), lb_guild_make_room (14), lb_eat_set (original keeps a dead `k` counter alive + frame 144), set_dialog_square, Draw_menu_square, lb_process_select (192/235).
 - Tools used: scratch scripts swap/put/try2 (swap an asm stub for its nm C, try variants and count check.py differences). permuter on a TU function: perm.py's base.c needs the `asm ` prefixes removed (sed) before running tools/permuter/permuter.py directly.
+
+## Clean-up round (10 Oct 2026)
+
+How to find dead PC code without guessing (used for the 10 Oct clean-up, see docs/pc.md "History"):
+- Which object a linked global comes from: the strong definition, else the first weak one in link order
+  (build/pc/objs.txt; the front-end sources come first). Check it on the binary with
+  `nm build/pc/mhview` + `addr2line -e build/pc/mhview 0xADDR` (the source file of the winning copy).
+- A weak definition in src/pc/rt whose symbol resolves elsewhere is dead. An object none of whose globals
+  wins is dead in the PC build. Do not judge by "nothing calls it": rt_data.c resolves pointers in the
+  PS2 data tables to host symbols by name at run time (em_prog_tbl entries are only reached that way).
+- After removing anything, build/pc/undefined.txt must not gain names (else gen_rt_auto.py silently makes
+  a no-op stand-in for them).
+- Host versions that still win over matched C (kept, they differ from the game's code or its ABI on x86):
+  Em_area_ck / Em_max_parts_get / em_dur_init / get_joint_* (rt_em, rt_eft, rt_main), Gold_add /
+  Event_flag_* / Get_hunter_rank (rt_quest, test traces use them), Get_equip_value (partial, rt_pl),
+  ItemCopy_* / Reibun_select_mv (rt_menu), Copy_user_id (rt_flow no-op), the camera requests (rt_pl,
+  rt_em), light_set / get_tex_num / trans_stage_sub / Pl_light_init / get_mdlw_ptr, init/clr_item_work,
+  Cockpit_chat_chk, Material_set_sub, Get_atk_value. Replacing them with the matched C changes behaviour
+  and needs its own checks.

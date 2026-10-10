@@ -1,81 +1,70 @@
-# PC viewer (first piece of the PC port)
+# PC port (started as the PC viewer)
 
-## Handover summary (agent A, 7 Oct 2026; read this first)
+## Handover summary (updated 10 Oct 2026, agent F; read this first)
 
-The PC build (`tools/build_pc.sh` -> `build/pc/mhview`, 32-bit x86; ARM via
-`tools/build_arm.sh`) plays MH1 offline from power-on: logos, title, new
-hunter / continue, memory card on host files, the village (Elder, shops,
-forge, item box, house bed save), quests from the Elder, every monster kind,
-items (gathering, fishing, bombs), quest clear / failure, reward, and the
-star-level progression. Game logic is the decompiled C (matched files and
-*_nm near-matches); src/pc/ holds the platform side and the glue.
+The PC build (`tools/build_pc.sh` -> `build/pc/mhview`, 32-bit x86) plays MH1 from power-on: logos, opening
+movie, title, new hunter / continue, memory card on host files (and PS2 save import), the village (Elder,
+shops, forge, item box, bed save), every offline quest of the Elder's star levels 1-5 with every monster
+kind, items, gathering, fishing, carving, tail cuts, quest clear / failure, reward and the star-level
+progression. `ONLINE=1` adds the game's own online code (town, rooms, co-op quests; docs/network.md).
+The same objects make the Windows exe (`tools/build_win.sh`), the ARM build (`tools/build_arm.sh`) and the
+Xbox XBE (`tools/build_xbox.py`, docs/xbox.md). Game logic is the decompiled C (matched files, and
+`*_nm.c` near-matches where a file is not matched yet); src/pc/ is the platform side and the glue.
 
-Checks to run after changes (all headless, about a minute together):
-- `tools/test_quest_loop.sh`: power-on -> new game -> quest 131 -> reward ->
-  bed save -> CONTINUE (1550z).
-- `tools/test_progression.sh`: star levels 1 -> 3 with marked clears, kept by
-  the save.
-- `tools/test_urgent.sh`: urgent quests 136 and 137 hunted for real; each
-  clear opens the next star level.
-- `tools/test_audio.sh` (agent D, 7 Oct 2026; ~10 s): headless audio dumps of the
-  title, the village (walking) and a quest fight; fails on a near-silent
-  second (RMS < 150) or a BGM stream that stops partway. Caught: entering the
-  house calls str_stop_all and lobby_bgm_set then "kept" a stream that no
-  longer played (the village stayed silent for good; bgm_nm.c now checks
-  str_getstat).
-- The whole PC test set, run it in this order after any change (build_pc.sh
-  alone first): test_quest_loop, test_progression, test_urgent,
-  test_name_entry, test_movie, test_frog, test_audio, test_activities, test_all_quests
-  (~2.5 min), then `. ~/xboxdev/env.sh; python3 tools/build_xbox.py` and
-  `tools/rebuild.sh`.
-- `tools/test_save.sh` and `tools/test_save_import.sh` (agent C, 8 Oct 2026): PS2 save import / export, section
-  "Importing a PS2 save".
-- `tools/rebuild.sh`: the PS2 rebuild (all five OK) when game C was touched.
-- `tools/test_menu.sh` (agent F, 9 Oct 2026; ~5 s, needs the save of test_quest_loop.sh): the F10 settings menu pauses the game, resumes after
-  Esc and writes its changes to the ini (section "Settings menu").
-- `tools/test_log.sh` (agent B, 7 Oct 2026; ~3 s): the automatic debug log (below) is created, rotated
-  and, with RT_CRASH_TEST=1, gets a crash section. `RUN=wine BIN=build/win/mhview.exe` runs it (and
-  test_quest_loop.sh) on the Windows build.
-- Every run writes a debug log automatically (`~/.local/share/mh1pc/logs`, Windows `%APPDATA%\mh1pc\logs`),
-  and `tools/win/` + `tools/build_win.sh` make a Windows exe: see "Debug log" and "Windows build".
+Build and check, in this order, after any change (all headless):
+- `tools/build_pc.sh` (and `ONLINE=1 tools/build_pc.sh` -> `build/pc/mhview_online` when online code or
+  shared runtime code changed).
+- PC tests, a few minutes together: `test_quest_loop`, `test_progression`, `test_urgent`,
+  `test_name_entry`, `test_movie`, `test_frog`, `test_all_quests` (every offline quest, ~1.5 min),
+  `test_audio`, `test_log`, `test_activities` (gathering, fishing, carving, shops, materials, tail cuts,
+  a long fight...), `test_pick` (F8 reporter), `test_save` / `test_save_import` (PS2 saves), `test_menu`
+  (F10 settings; needs test_quest_loop's save). All are `tools/<name>.sh`; each prints one OK / FAIL
+  summary (test_activities and test_all_quests one line per case) `RUN=wine BIN=build/win/mhview.exe`
+  runs test_log and test_quest_loop on the Windows build.
+- Online (ONLINE=1 build): `tools/test_online.sh`, `tools/test_online_town.sh`, `tools/test_coop.sh [N]`
+  (local test servers on 127.0.0.1 only).
+- `. ~/xboxdev/env.sh; python3 tools/build_xbox.py` (links from build/pc's objects: run build_pc.sh
+  first), `tools/build_win.sh`, and `tools/rebuild.sh` (the PS2 rebuild, all five modules OK) whenever
+  game C, include/ or config/ changed.
 
-How the PC wires game C (where most bugs were): no-op stand-ins generated
-for missing functions (build/pc/rt_gen.c, tools/gen_rt_auto.py) — grep them
-first when a feature does nothing; per-file ABI adaptors for calls whose
-PS2 argument registers differ from the C prototype (src/pc/rt/rt_abi.c, ABI=
-lines in build_pc.sh; tools/argregs.py); fields the PS2 fills in trans()
-that move-side code reads (world matrices at EMW/PLW+0x60 are rebuilt per
-tick). Test aids are environment variables (RT_*), listed in the "Run"
-section and the round sections below; RT_PL_GOTO, RT_PL_TARGET=kN and
-RT_QCLEAR are the newest.
+How the PC wires game C (where most bugs were found):
+- Lists in tools/build_pc.sh: GAME (whole files), MATCHED_A/B (byte-exact files that replace near-match
+  copies), WEAK* (objects whose every definition is weak, so a matched copy wins), PICK / PICK_X (take
+  only the named functions from a file), ALIASES (unnamed PS2 data / functions by address), ABI= (per-file
+  -D renames to argument-order adaptors in src/pc/rt/rt_abi.c, for calls whose PS2 registers differ from
+  the C prototype; tools/argregs.py), tools/pc_patch.py (PC-only source fixes for register
+  pass-through calls), tools/pc_abs.py (absolute PS2 addresses in m2c-based files).
+- Whatever is still undefined at link time becomes a generated no-op stand-in (build/pc/rt_gen.c,
+  tools/gen_rt_auto.py) that logs its first call: grep build/pc/rt_gen.c and the debug log
+  (`stand-in called`) first when a feature does nothing. Hand-written stand-ins live in src/pc/rt/rt_*.c;
+  the weak ones give way when the game's C is linked (10 Oct: every weak one that no longer won was
+  removed, see History).
+- Host-side state the PS2 fills in trans(): the viewer poses every actor each tick and hands the joint
+  matrices to the game (sync_joints for hunters, monsters_sync for every em_work slot), so get_joint_pos,
+  parts and hit_check see this tick's skeleton.
+- Data tables come from the user's disc at run time (src/pc/rt/tables.txt, rt_data.c); nothing Capcom is
+  in the repo.
 
-Movies (agent B, 7 Oct 2026): the opening, the extras' movies and the title's
-idle loop (logos -> opening -> title, the game's own demo task) play from
-AFS00.AFS; see "Movies (libmpeg2)" below. The soft keyboard is the game's own.
+Test aids are environment variables (RT_*), listed in "Run" and in the sections that introduced them;
+the scripted tests show how they combine (RT_PL_GOTO, RT_PL_TARGET=kN, RT_PL_WARP_EM, RT_DMG_MUL,
+RT_PL_GOD, RT_EM_POKE, RT_EM_PIN, RT_SHOTS, RT_CAM_EM). Every run writes a debug log
+(`~/.local/share/mh1pc/logs`, Windows `%APPDATA%\mh1pc\logs`): see "Debug log".
 
-- `tools/test_activities.sh` (agent C, 7 Oct 2026; ~15 s headless, 8 runs at a time): the activities the quest sweep does not
-  cover, one PASS/FAIL line each (gathering, fishing, carving, village shops / forge / item box, item combining, items used
-  in a quest, the field trader). Section "Activity tests" at the end of this file.
-- `tools/test_all_quests.sh` (agent D, 7 Oct 2026; ~2.5 minutes, headless): every offline quest of the Elder's star
-  levels 1-5 (131-171) started with `--quest N`, played to quest clear, reward screen, money, village. Table below.
+Known gaps: lighting uses a fixed light set by default (the game's stage lights are opt-in,
+RT_LIGHT_GAME=1, until compared with a PS2 capture); reverb is an approximation; nothing has been
+compared side by side with the PS2; ARM frame rate measured only up to round 20 (25-28 fps at 960x720).
+The sections below are in the order they were written; "History" at the end lists what was superseded.
 
-Known gaps: reverb is an
-approximation, online play, ARM frame rate measured only up to round 20
-(25-28 fps at 960x720), nothing systematically compared with the PS2.
+Screenshot caveats (agent D, 7 Oct 2026): `--follow` (host follow camera, no wall collision) ends up
+inside rock in caves and nests (stages 40, 36, 37, 18, 14): use the game camera, or RT_CAM_EM for a monster.
+RT_PL_WARP / RT_PL_WARP_EM teleport the hunter without resetting the game camera (the eye stays pinned far
+away); a real stage change calls rt_cam_init and is fine. Free-cam `--stage N` shots (no `--quest`) show
+the village minimap, a flat blue sky, and near-black views for stages 21/42/20/48 where the camera sits in
+geometry; with `--quest N --stage S` and the game camera every stage is lit normally. The Fortress start
+(stage 14, quest 101) is a rampart: the game's own intro camera pulls out below the wall at tick ~200.
 
-`build/pc/mhview` is a real-time viewer written in C99. It loads MH1 data
-straight from the user's disc files at run time, with nothing extracted to
-disk, and shows a stage (default 4, st04; `--stage N` for others) with the Rathian
-(em01) and a hunter standing in it. Both play their motions in real time. Camera is free-fly.
-
-Screenshot caveats (agent D, 7 Oct 2026, gallery pass): `--follow` switches to the host follow camera, which has
-no wall collision, so it ends up inside rock in caves and nests (stages 40, 36, 37, 18, 14); use the game camera
-(no `--follow`) for shots. RT_PL_WARP / RT_PL_WARP_EM teleport the hunter without resetting the game camera, so the
-eye stays pinned thousands of units away (k_HitWallCamera/GetWallHitBit2 pushing it back); a real stage change calls
-rt_cam_init and is fine. Free-cam `--stage N` shots (no `--quest`) show the village minimap, a flat blue sky, and
-near-black views for stages 21/42/20/48 where the camera sits in geometry; with `--quest N --stage S` and the game
-camera every stage is lit normally. The Fortress start (stage 14, quest 101) is a rampart: the game's own intro
-camera pulls out below the wall at tick ~200, which looks like a wall niche but is not a spawn bug.
+`build/pc/mhview` without `--boot`, `--quest` or `--play` is the original viewer: a stage (default 4,
+`--stage N`) with the free-play Rathian and a hunter, free-fly camera.
 
 ## Display options (agent F, 8 Oct 2026)
 
@@ -169,7 +158,7 @@ menu.h (stubs on the Xbox), hooks in viewer.c.
 | Restore display defaults / Close | | |
 
 Notes. The volumes are not a copy: they edit the same bytes the game's OPTION screen edits (option_w, system_w 0x36 / 0x37,
-str_master_vol(1), as option_nm.c does), and the memory card keeps them when the game saves. Language: the text layer
+str_master_vol(1), as the game's OPTION code does), and the memory card keeps them when the game saves. Language: the text layer
 (rt_text.c, docs/english.md) re-points the game's string tables while the data is imported, so the choice is read at
 start-up: `language = en` in the ini hands the table to RT_TEXT_TABLE when one is found (the `text_table` key or
 `--text-table`, else RT_TEXT_TABLE, else text/en.txt next to mh1pc.ini, in the working folder or next to the program); without
@@ -563,7 +552,7 @@ Running natively now:
 | src/main/stage/trans_stage.c | trans_stage: draws the area model and the set-model parts the stage places (see "Stage drawing") |
 | all decompiled eft*/shell* (game and main), list EFT= in build_pc.sh | effects and shells: what set objects and stage_set_set spawn (Eft14_set2 camp fire on st21, Shell10_set barrels on stage 0x11, Shell22_set2, Eft17_set_ex, Eft13_set_pos ...) now run as the real C |
 | src/main/hit/hit2.c, hit2c.c | sphere/capsule tests set13 uses |
-| src/main/hit/shit*_nm.c, shit2.c, tri_nm.c, hitw_nm.c | the stage collision (f_sphr, agent D): load_stage_hit, GetGroundHit*, GetWaterHit, GetFloorSlide, HitWallPlayer -> GetWallHitBitPl/Em -> sphr_face_o3/o4 -> PushAdjust3, GetWallHitLine/GetEyeHitLine (see "Collision" below) |
+| src/main/hit/shit*_nm.c (and the matched shit*.c), tri_nm.c, hitw_nm.c | the stage collision (f_sphr, agent D): load_stage_hit, GetGroundHit*, GetWaterHit, GetFloorSlide, HitWallPlayer -> GetWallHitBitPl/Em -> sphr_face_o3/o4 -> PushAdjust3, GetWallHitLine/GetEyeHitLine (see "Collision" below) |
 
 The `_nm.c` files are near-matches on the PS2 side (logic believed
 equivalent), so they run here too. For split files the whole-file `_nm.c`
@@ -596,10 +585,10 @@ src/pc/rt/:
   VU0 asm, and rview_mat / rview_matY (rt_set_camera, as View_move builds
   them: rview_mat = camera world matrix, rview_matY = Ry(camera yaw + 90°)).
 - `rt_main.c`: small main-program functions not decompiled yet, written
-  natively from the asm: clr_flash, hit_cap_pk, Pl_stg_ck/Em_stg_ck,
-  frame_check2, flvecApplyMat33_2. Stubs: hit_point_cyl, Create_FOV /
-  flCheckMeshFOV (everything counts as visible; the GPU clips),
-  reload_tex (textures stay resident), camera quake, monster sound.
+  natively from the asm: hit_cap_pk, flvecApplyMat33_2, Em_max_parts_get,
+  trans_stage_sub. Stubs: Create_FOV / flCheckMeshFOV (everything counts as
+  visible; the GPU clips), reload_tex (textures stay resident), light_set /
+  get_tex_num, and the weak callees of move() nothing linked defines.
 - `rt_eft.c`: effects and shells. The effect list (eft_work, 128 x 0x40,
   free stack + linked list from eft_w_top: pull_eft_work/2, push_eft_work,
   move_eft, trans_eft/trans_eft_up), the shell list (64 x 0xD4,
@@ -610,10 +599,9 @@ src/pc/rt/:
   the viewer) and the helpers the eft C calls: eft_vec/alpha/rgba_linear,
   make_mat_srt, eft_trans_sub(_col/_opa), Eft_rendope_set, shell_rate_add,
   vectors, GetGroundHit (host collision callback; GetWaterHit says "no
-  water"). Joint queries (get_joint_pos/wmat) return the actor's position:
-  no skeletons run as game C yet. Player/monster-only helpers (sound,
-  vibration, attack data, skinned-model drawing flCalcTrans/flSetSkinTrans,
-  shell08_trans) are stubs; RT_TRACE lists them.
+  water"). Joint queries (get_joint_pos/wmat) read the joint matrices the
+  viewer hands over each tick (sync_joints / monsters_sync). The skinned-model
+  drawing calls (flCalcTrans, flSetSkinTrans...) are stubs; RT_TRACE lists them.
   `RT_SPAWN="eft17:4,eft14:3,..."` spawns test effects at the hunter.
 - `rt_overlay.c`: main C calls overlay functions by address
   (func_6229B0 = set14_set, func_54B8C0 = Eft14_set2, ...). Each is routed
@@ -758,8 +746,7 @@ The Rathian runs the game's own monster code since 6 Oct 2026: each tick
 rt_monster_tick calls enemy_mv (src/main/em/f_em_nm.c, written from the
 asm) -> em_move (sight, smell, hate, anger, status upkeep from em_core /
 em_master / em_taisei) -> em01_main (agent B's em01_ai_nm.c) and the
-command interpreter (agent D's em_cmd_nm.c, still on branch agent-D:
-build_pc.sh exports it with that branch's headers to build/pc/ext) ->
+command interpreter (agent D's em_cmd_nm.c) ->
 frame_move -> HitWallPlayer / GetGroundHitStatusAreaEm. Her per-animation
 sound/effect script is the game's (em_prog_tbl[1][3] = em01_effect_move).
 - Set-up (rt_em.c): `--quest N` reads the mission file into a host
@@ -800,7 +787,8 @@ sound/effect script is the game's (em_prog_tbl[1][3] = em01_effect_move).
   hit on part 6 (durability 100) makes her flinch (4/2, motion 1063).
   2100-tick runs on stage 40 and stage 4 without crashes. Nobody has
   compared any of it with the PS2 side by side.
-- Not done: carving points (Em_hagi_point_set returns -1), quest clear /
+- Not done on 6 Oct (carving, quest clear, death handling, the map marker, small monsters and stage
+  changes all work now; see the sections below): carving points (Em_hagi_point_set returns -1), quest clear /
   monster death handling (Quest_enemy_die prints), map marker
   (WyvernAreaMove), event flags (no save data), Quest_restart after the
   hunter dies (stub), other quests' small monsters (QEM lists per stage at
@@ -813,8 +801,8 @@ With `--quest N` the PC runs the game's own quest flow (6 Oct 2026, agent A):
   as game11 does: mission file questName[N] into mission_area, quest_w
   tables, stage, time limit, monster states (quest_em_init). The quest's
   monsters come from station_em_set / Quest_next_em_set -> Em_direct_set
-  (src/main/quest/f_quest_nm.c; f_quest0_nm.c holds main
-  0x2267F0-0x226C24, written from the asm). Kinds whose program
+  (src/main/quest/f_quest_nm.c; main 0x2267F0-0x226C24 is the matched
+  qstb01-07.c). Kinds whose program
   (em_prog_tbl) is not ported get no model slot and are not spawned.
 - Game modes: rt_flow.c runs game_w.mode each tick through the matched
   f_game.c / f_gameb.c: game2 (quest: game_core, Info_control,
@@ -892,7 +880,7 @@ With `--quest N` the PC runs the game's own quest flow (6 Oct 2026, agent A):
   tools/pc_abs.py. Village motions: com_motion_load(1) (lbcom_tbl); NPC
   models npc00/npc01/em09/em32 (npc_create_model).
 - Pause menu (start in the field): menu_nm.c / menu_disp_nm.c with
-  ListSelect / PageSelect / Menu_select_mv (listsel_nm.c) and
+  ListSelect / PageSelect / Menu_select_mv (matched menu runs; listsel_nm.c until 10 Oct) and
   DispFrameMessageA (dispframe_nm.c): item list, discard, quest info,
   retire (D5 7 -> game3 -> game5 -> village).
 - Small monsters: every em_work slot is ticked (rt_monster_tick) and
@@ -929,7 +917,7 @@ With `--quest N` the PC runs the game's own quest flow (6 Oct 2026, agent A):
   are no longer spawned.
 - Village start menu: Pit_init's lobby branch -> Lb_Menu_Init; Pit_mv_lb
   -> Lb_menu_move_Core, trans_pit_1_lb -> DispLobbyMenu / Disp_lb_menu
-  (src/lobby/b/lb_menu_nm.c, from the asm). main's func_5B3D70.. forward
+  (matched lobby b/ runs; lb_menu_nm.c, from the asm, until 10 Oct). main's func_5B3D70.. forward
   to the lobby C (rt_menu.c). Quest status, items (discard), combine
   list, data, status and equipment screens checked on screenshots.
   pit_help_str_tbl[4]/[5] point into lobby.bin (mapped in rt_data.c).
@@ -1183,58 +1171,6 @@ func_XXXXXX calls in rt_overlay.c, and add whatever it calls into rt_*.c.
 For split files use the whole-file `_nm.c` (e.g. set05_nm.c), not the
 matching pieces.
 
-## Plan: a player and a monster on the runtime with real input
-
-Written 5 Oct 2026 (agent A), not started. Coverage numbers are matched
-bytes from config/c_files.txt by address range; near-match `_nm.c` files
-add more logic that already runs on the PC.
-
-What the game's own loop does each tick (read from the asm): pad read
-(pad_get.c, matched) -> player_mv (pl01.c, matched) -> pl_move (0x14C3E0:
-pl_sw_set, pl_move_sub, hit_timer_calc_shl) -> per-weapon state machine
-through pl_prog_tbl (0x2F1590) -> motion update (frame_init / frame_move,
-0x125920 / 0x125F10) -> enemy_mv (0x10CB20) -> em_move (0x10BF30) ->
-per-monster em_prog_tbl (0x2E8330) programs in game.bin -> CameraMove
-(0x21F590) -> draw: trans_stage (ported), player_trans (0x1678C0),
-enemy_trans (0x168B10), prims (ported), effects/shells (ported).
-
-| piece | where | state |
-|----|----|----|
-| pad -> sw buffers | main pad_get.c, pl_normal2.c (sw_set_sub) | matched; runs on the PC with the host pad backend (rt_pad.c, src/pc/pad) |
-| player loop entry | pl01.c player_mv / pl_init | matched |
-| player states (walk, run, roll, weapon, items) | main 0x134950-0x14D1C8 (f_pl) + helpers to 0x155000 | f_pl ~260 functions matched + pl_nm.c (agent F); all of it runs on the PC, the helpers from rt_pl.c (see "Player") |
-| motion system | main f_frame 0x125340-0x1267BC (18 functions) + fl motion layer 0x173A50-0x1746A0 | f_frame: 16/18 match, all 18 run on the PC (f_frame_nm.c); fl layer native in rt_motion.c |
-| player/monster drawing | player_trans, enemy_trans, 45 functions | ~3 %; the viewer's hunter_pose / fl_model_pose do the same job natively |
-| collision | GetGroundHit, wall hits (main 0x111000-0x125000) | f_sphr all in C (agent D, near-matches); runs on the PC for the hunter and the Rathian (see "Collision") |
-| monster common (em_core, em_master, em_taisei) | game 0x533980-0x53A000 | ~65 % matched + near-matches |
-| Rathian/other monster AI | game em01.. (363 functions, 150 KB) | ~13 % matched; em01.c (Rathian action setters) partly |
-| camera | main f_cam, f_cam_223B50 (agent D), g_SetAreaData (camarea_nm.c) | runs on the PC in --play (see "Camera") |
-
-Done (agent A, 5 Oct 2026): steps 1 and 2 below, and a host stand-in for
-step 3 (rt_player.c) so the hunter runs and turns with the pad.
-
-Suggested order (each step ends in a screenshot or a short input replay):
-1. Host input: map an SDL controller to the PS2 pad bits and fill the
-   buffers pad_get.c reads; record/replay pad logs for offscreen tests.
-2. Motion bridge: implement frame_init/frame_move/frame_check natively on
-   top of fl_skel (same motion ids and frame counters in PLW/EMW), so game
-   C that sets char0/char1 animates the viewer's models.
-3. Player locomotion first: decompile only the "normal" state family
-   (to_normal, walk/run/turn, roll) of f_pl plus pl_move_sub, with
-   GetGroundHit on the host collision. Weapons later, one at a time
-   (sword and shield first: smallest table).
-4. Camera: build cam_t.c into the PC port (CameraMove behind the player)
-   instead of the free-fly camera.
-5. Monster: em_core/em_master already run; add the Rathian's (em01)
-   program table and its action setters, its motion bank, and the
-   joint queries (get_joint_pos/wmat) from fl_skel so effects attach.
-6. Hits and damage last (pl_damage is matched; attack data tables are
-   imported by rt_data already).
-No big rewrite is needed: the runtime pattern (decompiled C + rt_* stand-ins
-+ imported tables) scales; the work is decompiling the player state and
-motion code. Static recompilation of the remaining asm (DECISIONS "Open")
-would be the shortcut if steps 3 and 5 turn out too slow.
-
 ## Design notes, for the port
 
 - **Small, fixed-function gfx interface.** The original Xbox GPU (NV2A)
@@ -1270,28 +1206,6 @@ would be the shortcut if steps 3 and 5 turn out too slow.
 - **Placement:** each actor is posed at frame 0; its lowest vertex gives
   the offset from the game position (on the ground, GetGroundHit) to the
   model origin.
-
-## Known gaps
-
-- **Render states:** per-part blend, filter and clamp come from the
-  0xF0000 chunk (clay_attr_set). Cull, UV-scroll flag, fog and lighting
-  type from the same chunk (states 0x00, 0x62, 0x12, 0x01, baked into the
-  clay on the PS2) are not applied. Alpha test is > 0x40 for host draws;
-  the stage uses the game's own state 0x60 values (0x80 / 0).
-- **Rathian:** (fixed 8 Oct 2026, fl_model.c attach_tail_tip; corrected the same day to eft09_t's rule, tree 45/46/47 = nodes 43/43/44, see "Per-kind materials" / tail cutting) the tail tip (AHI tree 1) was not attached, so it lay on the
-  ground. No blending between motions.
-- **Hunter:** no weapon. Hair and cloth bones (ptmat ≥ 64) keep their bind
-  offset.
-- **Runtime:** fade colour (state 0x67) is 0xAARRGGBB with alpha 0xFF =
-  1.0 (eft05 packs r << 16, eft_trans_sub sends 255 * a). No players/monsters run as game C yet, so player_work is
-  zero (set13 uses the master player's position on some stages).
-- **Scene:** `--stage N` loads any stage (files from main's per-stage
-  tables); em01 and one armour set are fixed. On stages other than 4 the
-  hunter stands at stage_start_pos[stage] (main 0x2F2620), the camera 2500
-  behind it (on a few room stages, e.g. 20, the camera is then inside a
-  wall: use --cam). Stage 0x11 (st11 files) has barrels (Shell10) at
-  1400..4100 where the area model has no geometry: probably an unused
-  stage [guess].
 
 ### ARM (Armbian RK3518 box, 6 Oct 2026)
 
@@ -1861,7 +1775,7 @@ Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item
   the GL and nv2a backends need nothing.
 - Not done: per-actor adjustments (pl_light_change near-monster rows for stages 12/13/14/28/30 and the actor's own light table; Pl_light_set's blend with the player colour override), the stage set (set 0) for
   set objects, and the thunder flash: flash_move is linked but nothing decompiled starts it (no C writes the light_work flag byte; it is set from code not yet ported).
-- Before/after (--stage N --play --follow 350,160,-0.15, 640x360, RT_LIGHT_FIXED=1 vs default), hunter in the middle, build/show/light/cmp*.png: stage 4 (waterfall plain): warmer key light from the
+- Before/after (--stage N --play --follow 350,160,-0.15, 640x360, RT_LIGHT_FIXED=1 (since removed) vs default), hunter in the middle, build/show/light/cmp*.png: stage 4 (waterfall plain): warmer key light from the
   upper right, shadow side a lot darker, more contrast; stage 5 (dark jungle): the table has no ambient row, so the hunter is nearly black on the shadow side (the old fixed set lit him evenly);
   stage 13 / 17 / 28 (cave and rock stages): slightly dimmer and bluer hunter; stage 6 (marsh grass): nearly unchanged. Village hunter (quest tests): a little darker with a visible light side.
 
@@ -2341,3 +2255,44 @@ Host `sim_tick` (viewer.c) + `rt_game_move` stand in for f_framec.c `move()` (no
   pushed out the first tick the wall flag drops. Faithful to the code; whether the original keeps the wall flag set for a monster standing
   still against a wall (the PC's GetWallHitBitEm / PushAdjust3 are near-matches) is not verified [open]. RT_EM_TRACE now ends with
   `wall <0x74C>/<0x7EA>`.
+
+## History (superseded plans, gaps and workarounds)
+
+What used to be true and was replaced. The detail is in git history (`git log -S` the name) and in the
+dated sections above.
+
+- **The first plan (agent A, 5 Oct 2026)**: "a player and a monster on the runtime with real input" in six
+  steps: host pad -> PS2 pad buffers (rt_pad.c), a native motion bridge under frame_init / frame_move
+  (rt_motion.c), the player's normal states as game C, the game camera, the Rathian's program and joints,
+  hits and damage last; static recompilation of the remaining asm was the fallback. All six were done by
+  7 Oct with decompiled C (player 6 Oct, monster 6 Oct, camera and hit_check right after); no
+  recompiler was needed.
+- **Old known gaps (5-7 Oct)**, now closed: no players or monsters as game C (player_work was all zero);
+  hunter drawn without a weapon; the Rathian's tail tip lay on the ground (attach_tail_tip, 8 Oct, then
+  eft09_t's rule); per-part UV scroll and the z test ignored (round 27 / 28 sections). Still true from that
+  list (not re-checked): the hunter's hair and cloth bones (ptmat >= 64) keep their bind offset; stage 0x11 (st11) has
+  barrels (Shell10) at 1400..4100 where the area model has nothing: probably an unused stage [guess].
+- **test_audio's first catch (agent D, 7 Oct)**: entering the house calls str_stop_all and lobby_bgm_set,
+  which then "kept" a stream that no longer played, so the village stayed silent; bgm_nm.c checks
+  str_getstat since.
+- **Host stand-ins replaced by the game's code, removed 10 Oct 2026 (agent F clean-up):**
+  - the viewer's own Rathian object for em_work[0] (em01 model, pose, joints, draw, cut tail): every
+    monster now goes through monsters_sync. It had drawn her 62.75 units high (`rathian_yoff`, the lowest
+    vertex of an old host-motion frame), joints for hit_check included;
+  - RT_HOST_MOTION (the viewer's first AAN player), RT_EM_STANDIN / RT_EM_FIXED (root motion and em_move
+    collision written on the host: rt_monster_motion_tick, rt_monster_place, rt_monster_collide,
+    rt_snd_monster_motion), RT_PL_STANDIN (turn-and-run hunter), RT_NOREVERB (duplicate of RT_NO_REVERB),
+    RT_MIXTEST (recipe listing; test_activities checks item combining);
+  - the stale-effect-prim guard in rt_game_draw (cause was the stubbed clr_eft_work, real since commit ad21345e;
+    it never fired in the test set or a 15000-tick fight);
+  - 123 weak stand-ins in rt_*.c that the linked game C always overrode (the emNN_init / main / act_set
+    family, move()'s callees, the quest-side Em_hagi_* / Quest_enemy_*, the cp maths copies once
+    cp01-03 matched), with build_pc.sh's CPFILES / CP01_OFF bisecting switches (tools/targets/bt4/bt5.sh);
+  - near-match copies whose every function is matched and linked from the matched file (eft02_nm,
+    hit3_nm, shit2, f_quest0_nm, listsel_nm, lb_em09_nm / lb_em10_nm, lb_menu_nm, 20 lobby b/nm files,
+    two plaza drafts), and the PC build's dead objects (pl_normal_nm, f_rewardb_nm, option_nm, and the
+    matched emsrch01 / light01 / light03, whose functions the host versions provide);
+  - build_pc.sh's EXT mechanism (exporting monster C from other agents' branches, empty since 6 Oct).
+- **Flags that no longer exist**: RT_LIGHT_FIXED (the fixed light is the default again since round 25;
+  RT_LIGHT_GAME=1 opts in to the game's lights), RT_HOST_MOTION, RT_EM_STANDIN, RT_EM_FIXED,
+  RT_PL_STANDIN, RT_NOREVERB, RT_MIXTEST, CPFILES, CP01_OFF.
