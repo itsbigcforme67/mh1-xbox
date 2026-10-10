@@ -13,6 +13,7 @@
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/pc/mhview}   # RUN=wine BIN=build/win/mhview.exe: the Windows build under Wine
 export RT_NOMOVIE=1   # the opening movie would only lengthen the scripted boot (test_movie.sh covers it)
+export RT_SEED=${RT_SEED:-2}   # the scripted hunts and carves need this luck (the carve rolls depend on everything that used ran_suu before)
 OUT=build/show/prog; mkdir -p $OUT
 [ -f build/show/loop/card/BISLPM-65495MH/BISLPM-65495MH ] || tools/test_quest_loop.sh >/dev/null || exit 1
 export MH1_SAVE_DIR="$PWD/$OUT/card"; rm -rf "$MH1_SAVE_DIR"; cp -r build/show/loop/card "$MH1_SAVE_DIR"

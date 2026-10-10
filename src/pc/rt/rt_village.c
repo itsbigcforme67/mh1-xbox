@@ -49,6 +49,11 @@ void rt_village_enter(void)
 {
     memset(em_work, 0, 0xA10 * 20);     /* the quest's monsters are gone (all_reset) */
     clr_set_work();                     /* and the quest stage's set objects (all_reset -> clr_stg_work) */
+    {   /* and every effect and shell (all_reset -> init_move_work): a quest's shell kept moving in the village, reading
+         * the joints of its cleared monster (shell08_i after quest 140) */
+        void rt_eft_shell_reset(void);
+        rt_eft_shell_reset();
+    }
     {   /* and every prim (all_reset -> prim_init): a set object's prim outlived its cleared work and
          * was drawn in the village (set19_trans on stage 87: crash after a co-op quest) */
         void prim_init(void);

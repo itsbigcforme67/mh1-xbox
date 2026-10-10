@@ -797,6 +797,14 @@ void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n)
 }
 
 /* ------------------------------------------------------------ loop */
+/* every effect / shell slot free (what init_eft_work / init_shell_work do in all_reset; those two stay the host's
+ * no-ops, see rt_pl.c): the host's village entry */
+void rt_eft_shell_reset(void)
+{
+    eft_init();
+    shl_init();
+}
+
 void rt_eft_init(void)
 {
     eft_init();
