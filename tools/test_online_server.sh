@@ -66,7 +66,7 @@ run ANNA 207 "$IA" "60,5545,2750,8000;300,1300,1600,C000;2200,3100,2100,8000" RT
 PA=$!
 sleep 2
 # CARL (no card, a new hunter) tries the same room from the quest board after BOB: the room is for 2 (ANNA's rule
-# sheet, sent as room rule 0), the server refuses him ("this room is full")
+# sheet, sent as room rule 0), the server refuses him ("満員のため参加できません。", shown by the game)
 CJOIN=""; t=2480; while [ $t -le 2880 ]; do CJOIN="$CJOIN;$t:circle*2"; t=$((t + 40)); done
 SHOTS=2640,2660,2680,2700 run CARL 118 "$(python3 tools/mk_input.py - "$LOGIN;2440:square*3$CJOIN" 3500)" "60,5545,2750,8000;300,1850,1500,8000" RT_NAME=CARL &
 PC=$!
