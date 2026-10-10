@@ -1,4 +1,4 @@
-"""mhg_match.py [mhg|mh2]: how many MH1 functions appear unchanged in PS2 Monster Hunter G or MH2 (Dos) (addresses and
+"""mhg_match.py [mhg|mh2|mhp]: how many MH1 functions appear unchanged in PS2 Monster Hunter G , MH2 (Dos) or MHP (PSP main ELF only) (addresses and
 immediates masked). Needs disc/mh1/split and disc/mhg/overlays."""
 import struct,csv,sys,collections
 import os
@@ -17,7 +17,7 @@ for k,b in ov1.items(): mh1[k]=(open(R+'disc/mh1/split/'+k,'rb').read()[0x40:],b
 # G modules
 # target: mhg (default) or mh2 (Dos: disc/mh2, overlays carved from DATA.BIN)
 T=sys.argv[1] if len(sys.argv)>1 else 'mhg'
-elf,off,size={'mhg':('mhg/SLPM_658.69',0x200,0x1ef200),'mh2':('mh2/SLPM_662.80',0x280,0xc8600)}[T]
+elf,off,size={'mhg':('mhg/SLPM_658.69',0x200,0x1ef200),'mh2':('mh2/SLPM_662.80',0x280,0xc8600),'mhp':('mhp/PSP_GAME/SYSDIR/BOOT.BIN',0xd94,0xab790)}[T]
 ge=open(R+'disc/'+elf,'rb').read()
 G={'main':ge[off:off+size]}
 import glob

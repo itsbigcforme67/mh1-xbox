@@ -40,3 +40,23 @@ them at each 'MWo3' magic, 0x40 + text + data bytes long.
 - Verdict: still the same engine family, and the tools, compiler setup, file formats and
   PC/Xbox platform layer carry over. Most of the game code is new or rewritten, so MH2
   would be close to a new decompilation that has MH1 to lean on.
+
+## Monster Hunter Portable (PSP, ULJM, 2005)
+
+- BOOT.BIN is an unencrypted ELF. Its .comment says "MW MIPS C Compiler (2.4.1.01)" / PSP,
+  so it uses the same Metrowerks linker family. It is stripped: the symbol table has a
+  single entry.
+- The code sits in the 0.7 MB ELF text plus MWo3 overlays in USRDIR/DATA.BIN. That file
+  has a table of sector offsets and no names, and holds 5821 files, 105 of them MWo3.
+  Overlays: game_task 1.2 MB, game_sub 0.45 MB, lobby_task 0.38 MB (ad-hoc play),
+  download_task, plus 92 small stageNN overlays. About 3 MB of code in all, close to G.
+- Code reuse: 14 MH1 functions are found unchanged (tools/mhg_match.py mhp), and none
+  match even by instruction shape (opcodes only, 64-bit ops mapped to 32-bit). The PSP
+  back end schedules and allocates registers differently, so nothing transfers at the
+  byte level.
+- Data reuse: 9.6% of MH1 game.bin's distinct 32-byte chunks appear verbatim in MHP's
+  code and data. That is mostly game tables, which make up about a quarter of game.bin.
+  main 3%, lobby 1%. File formats changed for the PSP GPU (.TMH textures, PSMF movies,
+  AT3 audio).
+- Verdict: matching decompilation would start from zero. MH1's C helps only as a guide to
+  what each function does. Pick PS2 G or MH2 first.
