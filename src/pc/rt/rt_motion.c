@@ -407,52 +407,6 @@ void rt_monster_motion_start(int no, int mdl_no, const uint8_t *tbl, int kind, c
     }
 }
 
-void rt_monster_save_old(void *em);
-void rt_monster_collide(void *em);
-u8 Em_stg_ck(void *);
-
-/* One tick of em_work[no]: em_move's order (old position, frame_move with
- * root motion, walls and ground: rt_hit.c) once it is placed on the stage
- * (rt_monster_place), else only the motion. */
-int rt_monster_motion_tick(int no)
-{
-    EMW *em = &em_work[no];
-    int r;
-    if (!((FRW *)em)->be_flag)
-        return frame_move((FRW *)em);
-    rt_monster_save_old(em);
-    rt_snd_monster_motion(no);      /* walk sounds (em01 ef_move_sub's list), before the frame steps */
-    r = frame_move((FRW *)em);
-    if (Em_stg_ck(em) & 0xFF)
-        rt_monster_collide(em);
-    return r;
-}
-
-/* Put em_work[no] on the current stage at pos facing ang_y (0x10000 per
- * turn): in use, monster kind `kind` (em+2, selects its wall spheres
- * em_hit_push_tbl[kind]), wall tests on (+0x4D4, as the em init code at
- * 0x10BE08 sets it). */
-void rt_monster_place(int no, int kind, const float pos[3], int ang_y)
-{
-    EMW *em = &em_work[no];
-    FRW *w = (FRW *)em;
-    u8 *b = (u8 *)em;
-    w->be_flag = 1;
-    b[0x2] = (u8)kind;
-    b[0x4D4] = 1;
-    b[0x736] = game_w.stage;
-    w->pos[0] = pos[0];
-    w->pos[1] = pos[1];
-    w->pos[2] = pos[2];
-    w->ang[1] = ang_y & 0xFFFF;
-    w->scl[0] = w->scl[1] = w->scl[2] = 1.0f;
-    *(f32 *)(b + 0x5AC) = pos[1];
-    /* hit points +0x302 / max +0x792: the quest's monster set-up is not
-     * ported; 2000 is a stand-in [guess] so hit_check counts it alive */
-    *(s16 *)(b + 0x302) = 2000;
-    *(s16 *)(b + 0x792) = 2000;
-}
-
 void rt_monster_get(int no, float pos[3], int *ang_y)
 {
     FRW *w = (FRW *)&em_work[no];

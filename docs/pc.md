@@ -254,8 +254,7 @@ shells and their hit volumes), `RT_SKIP_TYPE=n` (do not draw prims of
 effects/sets of type n).
 Monster: `RT_EM_TRACE=1` (per tick: enemy_mv step, action, motion, frame,
 position, angle, hit points, mode 0 calm / 1 attack; at spawn the part
-durabilities), `RT_EM_STANDIN=1` (the old host stand-in: root motion and
-collision only, no AI). Test aids that change the game (scripted fights
+durabilities). Test aids that change the game (scripted fights
 only): `RT_PL_GOD=1` (hunter vital back to 100 each tick), `RT_PL_AIM=1`
 (hunter faces monster 0 while standing), `RT_DMG_MUL=n` (damage to
 monster 0 times n). `RT_EM_POS` also moves a `--quest` monster.
@@ -666,10 +665,8 @@ it at draw time is not traced yet [guess]).
 The Rathian runs the same way: create_em_motion builds em01_tbl.bin's
 handles (Em_max_parts_get, ported in rt_main.c from main 0x10B770: 3 part
 groups for kind 1), em_work[0] (not in use, be_flag 0) holds its motion
-layers, ids 1003/1203/1403 (slot 3 of banks 0/2/4). Verified: with
-`RT_HOST_MOTION=1` (the viewer's old AAN player for both actors) the shot
-build/show/A/em_host_view.png matches em_game_view.png except for a
-one-frame phase difference.
+layers, ids 1003/1203/1403 (slot 3 of banks 0/2/4). (The viewer's first AAN player, RT_HOST_MOTION, matched it
+to a one-frame phase difference; it was removed on 10 Oct 2026.)
 
 `RT_MOTION_SCAN=1` lists every common motion with its length, loop and root
 travel (how plcom 3 was found).
@@ -1017,12 +1014,10 @@ longer used by the viewer.
   GetFloorSlide(pl, v, 1), GetGroundHitStatusAreaPl -> +0x5AC; y snaps to
   it when below or less than 30 above, else a host fall (the PS2 starts
   the fall action Pl_act_set(pl, 0, 9)).
-- Monster (rt_hit.c rt_monster_collide, from em_move 0x10BF30): old
-  position, frame_move (root motion), HitWallPlayer (spheres
-  em_hit_push_tbl[kind]: the Rathian, kind 1, has one sphere of radius 500
-  at y 160), GetGroundHitStatusAreaEm, y = ground. rt_monster_place puts
-  em_work[0] on the stage; the viewer draws the Rathian where the game has
-  it (RT_EM_FIXED=1 keeps the old fixed placement).
+- Monster (em_move 0x10BF30, the game's own C since 6 Oct; the host stand-in rt_monster_collide /
+  rt_monster_place was removed on 10 Oct 2026): old position, frame_move (root motion), HitWallPlayer
+  (spheres em_hit_push_tbl[kind]: the Rathian, kind 1, has one sphere of radius 500 at y 160),
+  GetGroundHitStatusAreaEm, y = ground.
 - Fixes found on the way: PointToPoint is d = a - b (the host had b - a,
   which also affected effect code that uses it); table pointers into PS2
   .bss (wall_tbl_add -> stNN_wall_tbl) now point at zeroed host memory

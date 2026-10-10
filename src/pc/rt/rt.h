@@ -156,10 +156,6 @@ void rt_player_get(int no, float pos[3], int *ang_y);
  * kind for em_parts_num): create_em_motion from its *_tbl.bin, ids[g] on
  * layer g (ids >= 1000). */
 void rt_monster_motion_start(int no, int mdl_no, const uint8_t *tbl, int kind, const int *ids, int layers);
-int rt_monster_motion_tick(int no);
-/* Place em_work[no] on the stage (then each tick also runs em_move's wall
- * and ground collision) and read back where it is. */
-void rt_monster_place(int no, int kind, const float pos[3], int ang_y);
 /* rt_em.c: quest mission data and the game's monster loop (enemy_mv) */
 int rt_quest_load(int no);
 int rt_quest_monster_stage(int *kind);
@@ -230,7 +226,6 @@ void rt_snd_em_add(int kind);        /* a monster kind's sound pack on port 6 */
 void rt_snd_tick(void);
 void rt_snd_stage_tick(void);
 void rt_snd_player_motion(int no);
-void rt_snd_monster_motion(int no);
 void rt_snd_shutdown(void);
 
 /* The game camera (src/main/cam CameraMove, rt_cam.c): init for a stage

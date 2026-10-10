@@ -465,7 +465,7 @@ typedef struct {
     fl_skel skel;            /* drives model (same AHI) */
     flmat world;
     fmt_blob tbl;            /* *_tbl.bin */
-    int game;                /* 1: posed by the game's motion code (em_work[0]) */
+    int game;                /* the weapon model (weapon_load): loaded */
     uint8_t *mem[3];
 } monster;
 
@@ -554,25 +554,19 @@ static float min_y_of(const fl_model *m)
     return y;
 }
 
-static int monster_load(monster *e, const char *amh, const char *tex, const char *tbl, int slot)
+static int monster_load(monster *e, const char *amh, const char *tex, const char *tbl)
 {
     fmt_blob link = load(amh, &e->mem[0]), tx = load(tex, &e->mem[1]), tb = load(tbl, &e->mem[2]);
     fmt_blob amo, ahi;
-    int g;
     if (!link.p)
         return -1;
     e->tbl = tb;
-    e->game = 0;
     amo = fmt_link_entry(link, 0, FMT_LE);
     ahi = fmt_link_entry(link, 1, FMT_LE);
     if (fl_model_create(&e->model, amo, ahi, tx, 1, FMT_LE) != 0 || fl_skel_create(&e->skel, ahi, FMT_LE) != 0)
         return -1;
     drop(&e->mem[0]);
     drop(&e->mem[1]);
-    /* em tables: one bank per group, bank 2g (motion.md 3) */
-    for (g = 0; g < 3; g++)
-        if (tb.p)
-            fl_skel_set_motion(&e->skel, g, tb, 200 * g + slot, FMT_LE);
     flmat_identity(e->world);
     return 0;
 }
@@ -730,21 +724,12 @@ static void place(flmat w, float x, float y, float z, float yaw)
     flmat_srt(w, s, r, t);
 }
 
-/* Joint world matrices of the hunter (player_work[0]) and the Rathian
- * (em_work[0]) for the game C: parts, get_joint_pos, hit_data_expand.
- * On the PS2 they come from the draw (trans) that runs between move()
+/* Joint world matrices of the hunter (player_work[0]) for the game C: parts, get_joint_pos, hit_data_expand
+ * (the monsters' are monsters_sync's). On the PS2 they come from the draw (trans) that runs between move()
  * and hit_check(), so this runs once per game tick, before hit_check. */
-/* em_work[0] is the host's Rathian object (em01 model) only while it is a
- * Rathian (kind 1; 0 in free hunts); any other kind in slot 0 (Kut-Ku,
- * Rathalos, ...) is posed, drawn and given joints by monsters_sync */
-static int slot0_rathian(void)
+static void sync_joints(hunter *h, float hyoff)
 {
-    extern uint8_t em_work[];
-    return em_work[2] <= 1;
-}
-static void sync_joints(hunter *h, float hyoff, monster *e, float eyoff)
-{
-    static flmat jw[128], ew[128];
+    static flmat jw[128];
     float p[3];
     int a, nb, j;
     if (h->game) {
@@ -755,15 +740,6 @@ static void sync_joints(hunter *h, float hyoff, monster *e, float eyoff)
         for (j = 0; j < nb; j++)
             flmat_mul(jw[j], h->master.world[j], h->world);
         rt_player_parts(lp, &jw[0][0], nb);
-    }
-    if (e->game && e->skel.root_lock && slot0_rathian()) {
-        rt_monster_get(0, p, &a);
-        place(e->world, p[0], p[1] + eyoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
-        rt_monster_pose(0, &e->skel);
-        nb = e->skel.skel.nbone < 128 ? e->skel.skel.nbone : 128;
-        for (j = 0; j < nb; j++)
-            flmat_mul(ew[j], e->skel.world[j], e->world);
-        rt_monster_joints(0, &ew[0][0], nb);
     }
 }
 
@@ -825,7 +801,6 @@ static size_t n;
 static fmt_blob stage_link, stage_tex, set_link, set_tex;
 static uint8_t *keep[8];
 static fl_model stage, set;
-static monster rathian;
 static hunter pl;
 static fl_light light;
 extern unsigned char light_work[];
@@ -869,7 +844,6 @@ static float hx = 10900, hz = 7700, rx = 10000, rz = 6700, gy;
 static Uint32 t0;
 static int set_h0 = -1, ticks = 0, stage_no = 4, cam_given = 0, stage_given = 0, quest_no = 0;
 static float follow[3] = { 900.0f, 450.0f, -0.3f };
-static float rathian_yoff = 0;
 static int follow_given = 0, game_cam = 0, have_view = 0;
 static const char *audio_dump = NULL;      /* --audio-dump out.wav: mix each game tick into a wav */
 static int mute = 0, snd = -1;
@@ -1231,23 +1205,18 @@ static void sim_tick(void)
                                  * the lights of RT_LIGHT_GAME read what it does) */
     if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
         rt_prof_begin(RTP_JOINTS);
-        sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
+        sync_joints(&pl, hunter_yoff);
         remote_hunters(0, light_cur());
         monsters_sync(0, light_cur());
         rt_prof_end(RTP_JOINTS);
         rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
     }
-    if (ticks >= 2 && !getenv("RT_EM_STANDIN")) {
+    if (ticks >= 2) {
         int i;
-        for (i = 1; i < 20; i++)        /* move()'s monster loop: the others (em_work[0] below) */
+        for (i = 1; i < 20; i++)        /* move()'s monster loop; em_work[0] last (the host's order since the first port) */
             rt_monster_tick(i);
-    }
-    if (rathian.game && ticks >= 2) {
-        if (getenv("RT_EM_STANDIN"))
-            rt_monster_motion_tick(0);
-        else
-            rt_monster_tick(0);
-        if (sw_trace && rathian.skel.root_lock) {
+        rt_monster_tick(0);
+        if (sw_trace && rt_monster_shown(0)) {
             float p[3];
             int a;
             rt_monster_get(0, p, &a);
@@ -1304,18 +1273,17 @@ static void quest_back(void)
     }
 }
 
-/* Quest monsters other than the Rathian of the host's own set-up (the
- * game's em_create_model -> here): the model of kind `kind` (cached by
- * kind) and the motions of model slot `slot` (create_em_motion from
- * em<kind>_tbl.bin, as the PS2 loads them with the model). */
+/* Monster models (the game's em_create_model -> em_model_load): the model of kind `kind` (cached by
+ * kind) and the motions of model slot `slot` (create_em_motion from em<kind>_tbl.bin, as the PS2 loads
+ * them with the model). Every monster in em_work is posed, drawn and given joints by monsters_sync. */
 static monster em_mdl[40];
 static int em_have[40];
-static void em_model_load(int slot, int kind)
+static monster *em_kind_model(int kind)
 {
     char a[32], t[32], b[32];
     monster *e;
     if (kind <= 0 || kind >= 40)
-        return;
+        return NULL;
     e = &em_mdl[kind];
     if (!em_have[kind]) {
         /* the game's per-kind AFS entries: model (load_enemy_model,
@@ -1334,9 +1302,9 @@ static void em_model_load(int slot, int kind)
             if (idx > 0 && idx < afs.count)
                 snprintf(nm[k], 32, "%s", afs.name[idx]);
         }
-        if (monster_load(e, a, t, b, 0) != 0) {
+        if (monster_load(e, a, t, b) != 0) {
             fprintf(stderr, "monster kind %d: model %s not loaded\n", kind, a);
-            return;
+            return NULL;
         }
         /* the game moves the monster by its root motion (frame_move -> pl_velocity_sub) and the PS2 then clears the
          * root bone's translation (FRSKL.vel = 0) before drawing: keep that bone's X/Z at its bind value, as for the
@@ -1346,13 +1314,17 @@ static void em_model_load(int slot, int kind)
         e->skel.root_lock = !getenv("RT_EM_ROOT_FREE");
         em_have[kind] = 1;
     }
-    if (e->tbl.p)
+    return e;
+}
+static void em_model_load(int slot, int kind)
+{
+    monster *e = em_kind_model(kind);
+    if (e && e->tbl.p)
         rt_em_motion_create(slot, kind, e->tbl.p);
 }
 
-/* every monster in use on this stage but the host's Rathian (em_work[0]
- * with the em01 set-up above), posed by the game's motion player; also
- * their joint matrices for the game's hit checks */
+/* every monster in use on this stage, posed by the game's motion player; also their joint matrices for
+ * the game's hit checks */
 int rt_log_tick(void);
 static void monsters_sync(int draw, const fl_light *L)
 {
@@ -1365,7 +1337,7 @@ static void monsters_sync(int draw, const fl_light *L)
         flmat w;
         float s[3], r[3], t[3];
         int kind = em[2];
-        if (!em[0] || em[0x1E] || (i == 0 && rathian.game && kind <= 1) || kind <= 0 || kind >= 40 || !em_have[kind])
+        if (!em[0] || em[0x1E] || kind <= 0 || kind >= 40 || !em_have[kind])
             continue;
         if (em[0x736] != (uint8_t)rt_game_stage())
             continue;
@@ -1941,12 +1913,14 @@ int main(int argc, char **argv)
     if (!mute)
         snd = rt_snd_init(disc, audio_dump == NULL && shot == NULL);
 
-    if (monster_load(&rathian, "em01_amh.bin", "em01_tex.bin", "em01_tbl.bin", 3) != 0)
-        fprintf(stderr, "em01 load failed\n");
-    else if (rathian.tbl.p && !getenv("RT_HOST_MOTION")) {       /* animate with the game's create_em_motion/frame_move */
+    {   /* the free-play Rathian (kind 1, em_work[0], model slot 0; spawned below): its model, and the motions
+         * create_em_motion builds, started on the walk loop */
+        monster *e = em_kind_model(1);
         static const int ids[3] = { 1003, 1203, 1403 };   /* slot 3 of banks 0/2/4 */
-        rt_monster_motion_start(0, 0, rathian.tbl.p, 1, ids, 3);
-        rathian.game = 1;
+        if (!e || !e->tbl.p)
+            fprintf(stderr, "em01 load failed\n");
+        else
+            rt_monster_motion_start(0, 0, e->tbl.p, 1, ids, 3);
     }
     if (hunter_load(&pl, parts, 1, 101) != 0)
         fprintf(stderr, "hunter load failed\n");
@@ -1969,30 +1943,18 @@ int main(int argc, char **argv)
         light.ambient[0] = light.ambient[1] = light.ambient[2] = 0.38f;
     }
 
-    /* stand both on the ground: pose at frame 0, put the lowest vertex on
-     * the collision floor */
-    fl_skel_update(&rathian.skel, 0);
-    fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, light_cur());
     if (getenv("RT_EM_POS"))            /* test placement of the Rathian: "x,z" */
         sscanf(getenv("RT_EM_POS"), "%f,%f", &rx, &rz);
     gy = 0;
     rt_ground_y(rx, rz, 1e6f, &gy);
-    place(rathian.world, rx, gy - min_y_of(&rathian.model), rz, 0.6f);
-    rathian_yoff = -min_y_of(&rathian.model);
-    if (rathian.game && !getenv("RT_EM_FIXED")) {
-        /* em_work[0] on the stage: the game moves it by its root motion
-         * (walk loop 1003) and em_move's wall/ground collision keeps it on
-         * the ground and inside the walls */
+    {   /* em_work[0] on the stage (a quest: its own monsters): the game's monster code (enemy_mv, rt_em.c) moves it
+         * by its root motion, em_move's wall/ground collision keeps it on the ground and inside the walls */
         float p[3] = { rx, gy, rz };
-        if (getenv("RT_EM_STANDIN"))     /* old host stand-in: root motion and collision only */
-            rt_monster_place(0, 1, p, (int)(0.6f * 65536.0f / 6.2831853f));
-        else {                          /* the game's monster code: enemy_mv / em01 (rt_em.c) */
-            if (getenv("RT_EM_KIND"))   /* test aid: another kind, with its own model */
-                em_model_load(0, atoi(getenv("RT_EM_KIND")));
-            rt_monster_spawn(1, p, (int)(0.6f * 65536.0f / 6.2831853f));
-        }
-        rathian.skel.root_lock = 1;
+        if (getenv("RT_EM_KIND"))       /* test aid: another kind, with its own model */
+            em_model_load(0, atoi(getenv("RT_EM_KIND")));
+        rt_monster_spawn(1, p, (int)(0.6f * 65536.0f / 6.2831853f));
     }
+    /* the hunter on the ground: posed at frame 0, the lowest vertex on the collision floor */
     hunter_pose(&pl, 0, light_cur());
     {
         float lo = 1e30f;
@@ -2009,7 +1971,7 @@ int main(int argc, char **argv)
             float p[3] = { hx, gy, hz };
             rt_set_player(lp, p);
             rt_debug_spawn(p);          /* RT_SPAWN test effects at the hunter */
-            if (pl.tbl.p && !getenv("RT_HOST_MOTION")) {   /* animate with the game's frame_init/frame_move */
+            if (pl.tbl.p) {     /* animate with the game's frame_init/frame_move */
                 rt_player_motion_start(lp, pl.tbl.p, 1, 101);
                 pl.game = 1;
                 pl.no = lp;
@@ -2234,7 +2196,7 @@ int main(int argc, char **argv)
              * (windowed and --shot runs stay tick-for-tick the same) */
             if (pl.game && play && ticks >= 2) {
                 rt_prof_begin(RTP_JOINTS);
-                sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
+                sync_joints(&pl, hunter_yoff);
                 if (!rt_village_active() || rt_online_town())
                     remote_hunters(0, light_cur());
                 if (!rt_village_active())
@@ -2281,12 +2243,6 @@ int main(int argc, char **argv)
             cam[4] = follow[2];
             }
         }
-        if (rathian.game && rathian.skel.root_lock) {   /* drawn where the game has it */
-            float p[3];
-            int a;
-            rt_monster_get(0, p, &a);
-            place(rathian.world, p[0], p[1] + rathian_yoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
-        }
         {   /* the hunter the game built last (character, armour) */
             int sx, ids[HUNTER_PARTS], g = rt_player_look(lp, &sx, ids);
             if (g && g != pl.look_gen) {
@@ -2294,15 +2250,9 @@ int main(int argc, char **argv)
                 hunter_relook(&pl, sx, ids);
             }
         }
-        if (rathian.game)
-            rt_monster_pose(0, &rathian.skel);
-        else
-            fl_skel_update(&rathian.skel, fr);
-        if ((rt_monster_shown(0) && slot0_rathian()) || getenv("RT_POSE_ALL"))     /* skinned only when drawn (below) */
-            fl_model_pose(&rathian.model, (const flmat *)rathian.skel.world, light_cur());
         hunter_pose(&pl, fr, light_hunter(lp));
         if (pl.game && play)            /* joint world matrices for the game C (parts, get_joint_pos) */
-            sync_joints(&pl, hunter_yoff, &rathian, rathian_yoff);
+            sync_joints(&pl, hunter_yoff);
         if (weapon.game && pl.game && play)
             weapon_pose(light_hunter(lp));
 
@@ -2364,17 +2314,6 @@ int main(int argc, char **argv)
             rt_prof_begin(RTP_STAGE_DRAW);
             rt_stage_draw();            /* trans_stage: area model + placed set parts */
             rt_prof_end(RTP_STAGE_DRAW);
-        }
-        if (rt_monster_shown(0) && slot0_rathian()) {     /* in use and on this stage */
-            gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)rathian.world);
-            pick_owner(PK_MONSTER, 0, 1, &rathian.skel);
-            if (rathian.game) {                 /* em_work[0]: its clays / materials as enemy_trans */
-                extern uint8_t em_work[];
-                draw_model_attr_em(&rathian.model, -1, em_work, 0, -1);
-                draw_cut_tail(&rathian.model, &rathian.skel, em_work, light_cur(), 0);
-            } else {
-                draw_model_attr(&rathian.model, -1);
-            }
         }
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)pl.world);
         {
