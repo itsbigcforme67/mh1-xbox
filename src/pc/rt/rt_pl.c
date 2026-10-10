@@ -78,28 +78,6 @@ static int rt_pl_trace(void)
     return t;
 }
 
-/* ------------------------------------------------ g_act_set (0x14ECB0..) */
-
-
-
-
-/* ------------------------------------------------ motion requests (0x151220..) */
-/* pl_chr_set_com (0x151220): queue motion chr on layer n: +0x2DC[n] = chr,
- * +0x2EC[n] = blend / 2 (the layers run at speed 2), +0x2E4[n] = start
- * frame, +0x2FC[n] = 0 (pl_chr_sub calls frame_init for it). The fifth
- * argument (t0) is the layer. */
-static void pl_chr_set_com(void *pl, int chr, int blend, int frame, int n)
-{
-    PS16(pl, 0x2DC + n * 2) = (s16)chr;
-    PS16(pl, 0x2EC + n * 2) = (s16)(blend / 2);
-    PS16(pl, 0x2E4 + n * 2) = (s16)frame;
-    PU8(pl, 0x2FC + n) = 0;
-}
-
-
-
-
-
 /* ------------------------------------------------ Pl_bari_ck file (0x14FC40..) */
 
 /* Get_equip_value (0x2A1F70?, f_ud): the master's equipment stat n from
@@ -107,10 +85,6 @@ static void pl_chr_set_com(void *pl, int chr, int blend, int frame, int n)
 s16 Get_equip_value(int n);
 
 int Pl_item_num_ck(void *pl, int id);
-
-
-
-
 
 /* Get_equip_value (f_ud? 0x2A..; read from the asm): sums from the
  * equipment tables for the master player's User_data equipment. User_data
@@ -145,19 +119,6 @@ s16 Get_equip_value(int n)
     }
 }
 
-/* ------------------------------------------------ f_pl 0x1513B0.. (rates) */
-
-
-/* ------------------------------------------------ World_calc file (0x152050..) */
-
-
-
-
-
-
-
-
-
 /* ------------------------------------------------ misc (g_Pl_hold_item_ck ..) */
 
 /* Get_dist_to_view (0x169DC0) / Get_view_dir (0x169DD0): distance from
@@ -170,16 +131,6 @@ int Get_view_dir(void)
 {
     f32 a = flArcTan2(-(lpView[5] - lpView[2]), lpView[3] - lpView[0]);
     return (int)(0.5f + 65536.0f * a / 6.2831855f) & 0xFFFF;
-}
-/* calc_vec_ang2 (0x120430): heading from b to a */
-__attribute__((weak)) int calc_vec_ang2(f32 *a, f32 *b)
-{
-    f32 v[3];
-    v[0] = a[0] - b[0];
-    v[1] = 0.0f;
-    v[2] = a[2] - b[2];
-    flvecNormalize(v);
-    return (int)(0.5f + 65536.0f * flArcTan2(-v[2], v[0]) / 6.2831855f) & 0xFFFF;
 }
 
 /* small game_w tests */
@@ -302,7 +253,6 @@ int rt_player_edit_look(int no, int *sex, int id[6])
     *sex = sx;
     return 0x1000000 | sx << 16 | face << 8 | hair;
 }
-__attribute__((weak)) void yure_init(void *pl) { (void)pl; }        /* hair/cloth sway */
 /* the player's draw callbacks (trans_pl_sub, weapon_nm.c, calls these):
  * in the game and the village the viewer draws the hunter and the weapon
  * itself; during the boot (character creation / continue screens, whose
@@ -339,11 +289,6 @@ int Get_hit_id(void)
 }
 void Hit_id_init(void) { GW8(0xD4) = 0; }
 
-
-
-
-
-
 /* pl_body_make (0x14F9B0): the player's body capsule from the joint
  * matrices at +0x124 / +0x130 (hips) and +0x160 (head), widened by r
  * (RotMatVec not ported: the axis tilt is left out; NULL joints fall
@@ -368,10 +313,6 @@ int Code_Make(int a, int n, int b, int m)
 /* fptodp: the PS2 libc float->double helper (debug printf in hit_nm.c) */
 int fptodp(float f) { (void)f; return 0; }   /* hit_nm.c declares it int; debug output only */
 
-/* pl01 program (pl_local_init, pl01_effect_move, ef_move_sub ...):
- * src/main/sound/f_sound_nm.c. parts_chg (swap a hand's part model,
- * 0x1213xx?) is not ported: the viewer draws fixed parts. */
-__attribute__((weak)) void parts_chg(void *pl, int part, int no) { (void)pl; (void)part; (void)no; }
 void func_60E2B0(void *pl, int a) { (void)pl; (void)a; }   /* lobby Eft25_set */
 
 /* ------------------------------------------------ parts (0x120F90) */

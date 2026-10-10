@@ -104,13 +104,7 @@ void flmatSetXYZ33(FLMAT *m, f32 x, f32 y, f32 z)
     flmatRotZ33(m, z);
 }
 
-/* calc_mat_angY (0x120520): yaw of the matrix's local +z axis, 0x10000 per
- * turn: atan2(-dz, dx) of (0,0,1) * m - m's translation. */
-__attribute__((weak)) u16 calc_mat_angY(FLMAT *m)
-{
-    f32 dx = (*m)[2][0], dz = (*m)[2][2];
-    return (u16)(int)(65536.0f * atan2f(-dz, dx) / 6.2831855f + 0.5f);
-}
+u16 calc_mat_angY(FLMAT *m);    /* src/main/cp/cp01.c */
 
 /* View_move's camera part: rview_mat = inverse(view) = the camera's world
  * matrix (flmatMakeLookAt: rows right, up, back (eye - target), eye), and
@@ -230,18 +224,6 @@ void flmatRotXYZ33(FLMAT *m, f32 x, f32 y, f32 z)
     flmatRotZ33(m, z);
 }
 
-/* RotateX/Y/Z (g_cpAng2Rad): m = R(a) * m on the 3x3 part. */
-static void rotate_pre(FLMAT *m, void (*rot)(FLMAT *, f32), f32 a)
-{
-    FLMAT r;
-    flmatInit(&r);
-    rot(&r, a);
-    flmatMul33(m, &r, m);
-}
-__attribute__((weak)) void RotateX(FLMAT *m, f32 a) { rotate_pre(m, flmatRotX33, a); }
-__attribute__((weak)) void RotateY(FLMAT *m, f32 a) { rotate_pre(m, flmatRotY33, a); }
-__attribute__((weak)) void RotateZ(FLMAT *m, f32 a) { rotate_pre(m, flmatRotZ33, a); }
-
 /* flvecApplyMat33(out, v, m): out = v * m (3x3). */
 void flvecApplyMat33(f32 *out, f32 *v, FLMAT *m)
 {
@@ -278,15 +260,6 @@ void flvecRotY(f32 *v, f32 a)
     f32 s = sinf(a), c = cosf(a), x = v[0], z = v[2];
     v[0] = c * x + s * z;
     v[2] = -s * x + c * z;
-}
-
-/* calc_vec_ang (g_cpAng2Rad): angle of (x0 - x1, z0 - z1), 0x10000 per
- * turn: atan2(-dz, dx) of the normalised vector. */
-__attribute__((weak)) u16 calc_vec_ang(f32 x0, f32 z0, f32 x1, f32 z1)
-{
-    f32 v[3] = { x0 - x1, 0.0f, z0 - z1 };
-    flvecNormalize(v);
-    return (u16)(int)(65536.0f * atan2f(-v[2], v[0]) / 6.2831855f + 0.5f);
 }
 
 /* ------------------------------------------------------------ more fl
@@ -394,69 +367,3 @@ f32 flConvertStoR(u32 a)
     return r;
 }
 
-/* cpRotMatrix (0x1202C0): m = Rx Ry Rz of three 0x10000-per-turn angles */
-__attribute__((weak)) FLMAT *cpRotMatrix(s32 *ang, FLMAT *m)
-{
-    flmatInit(m);
-    flmatSetXYZ33(m, flConvertStoR((u32)ang[0]), flConvertStoR((u32)ang[1]), flConvertStoR((u32)ang[2]));
-    return m;
-}
-
-/* CalcDistanceXZ (0x120F20): distance in the XZ plane */
-__attribute__((weak)) f32 CalcDistanceXZ(f32 *a, f32 *b)
-{
-    f32 dx = a[0] - b[0], dz = a[2] - b[2];
-    return sqrtf(dx * dx + dz * dz);
-}
-
-/* RotMatVec (main 0x120570): rotation matrix m whose row `axis` (0 X,
- * 1 Y, 2 Z) is the normalised v; another row comes from a cross product
- * with a fixed axis (a second one when v is parallel to the first,
- * |cross|^2 < 0.001), the third completes the frame. */
-__attribute__((weak)) void RotMatVec(f32 *v, FLMAT *m, int axis)
-{
-    f32 u[3], x[3], y[3], z[3];
-    flvecNormalize(v);
-    switch (axis & 0xFF) {
-    case 0:
-        u[0] = 0; u[1] = 0; u[2] = 1.0f;
-        flvecOuterProduct(y, u, v);
-        if (flvecInnerProduct(y, y) < 0.001f) {
-            u[2] = 0; u[0] = 1.0f;
-            flvecOuterProduct(y, u, v);
-        }
-        flvecNormalize(y);
-        flvecCopy(x, v);
-        flvecOuterProduct(z, x, y);
-        break;
-    case 1:
-        u[0] = 0; u[1] = 0; u[2] = 1.0f;
-        flvecOuterProduct(x, v, u);
-        if (flvecInnerProduct(x, x) < 0.001f) {
-            u[2] = 0; u[1] = 1.0f;
-            flvecOuterProduct(x, u, v);
-        }
-        flvecNormalize(x);
-        flvecCopy(y, v);
-        flvecOuterProduct(z, x, y);
-        break;
-    case 2:
-        u[0] = 0; u[1] = 1.0f; u[2] = 0;
-        flvecOuterProduct(x, u, v);
-        if (flvecInnerProduct(x, x) < 0.001f) {
-            u[2] = 1.0f; u[1] = 0;
-            flvecOuterProduct(x, v, u);
-        }
-        flvecNormalize(x);
-        flvecCopy(z, v);
-        flvecOuterProduct(y, z, x);
-        break;
-    default:   /* the original leaves the rows uninitialised */
-        x[0] = 1; x[1] = x[2] = 0; y[1] = 1; y[0] = y[2] = 0; z[2] = 1; z[0] = z[1] = 0;
-        break;
-    }
-    flmatInit(m);
-    flvecCopy((*m)[0], x);
-    flvecCopy((*m)[1], y);
-    flvecCopy((*m)[2], z);
-}

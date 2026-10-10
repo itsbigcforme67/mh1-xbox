@@ -41,32 +41,10 @@ f32 *lpView = view;
 void RollView(f32 r) { lpView[0x34 / 4] = r; }
 void SetAngleOfView(f32 a) { lpView[0x2C / 4] = a; }
 
-/* out = a * t + b * (1 - t) */
-__attribute__((weak)) void cpInterVector(f32 *out, f32 *a, f32 *b, f32 t)
-{
-    f32 u = 1.0f - t;
-    out[0] = a[0] * t + b[0] * u;
-    out[1] = a[1] * t + b[1] * u;
-    out[2] = a[2] * t + b[2] * u;
-}
-
-__attribute__((weak)) void SubVector(f32 *d, f32 *a, f32 *b)
-{
-    d[0] = a[0] - b[0];
-    d[1] = a[1] - b[1];
-    d[2] = a[2] - b[2];
-}
-
 f32 flArcTan2(f32, f32);
-/* AarcTan2: flArcTan2 in 0x10000-per-turn units (10430.378 = 0x8000/pi) */
-__attribute__((weak)) s16 AarcTan2(f32 y, f32 x)
-{
-    return (s16)(s32)(10430.378f * flArcTan2(y, x));
-}
 
 f32 flPow(f32 a, f32 b) { return powf(a, b); }
 void flMemset(void *p, s32 v, s32 n) { memset(p, v, (size_t)n); }
-
 
 int act_ck(void *chr, int a, int b);
 

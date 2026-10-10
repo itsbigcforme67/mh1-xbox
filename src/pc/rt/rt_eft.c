@@ -579,13 +579,6 @@ int eft_trans_sub_opa(CLAY *clay, FLMAT *m, void *mat)
     return 1;
 }
 
-/* ------------------------------------------------------------ vectors */
-__attribute__((weak)) void SetVector(f32 *v, f32 x, f32 y, f32 z) { v[0] = x; v[1] = y; v[2] = z; }
-__attribute__((weak)) void AddVector(f32 *d, f32 *a, f32 *b) { d[0] = a[0] + b[0]; d[1] = a[1] + b[1]; d[2] = a[2] + b[2]; }
-__attribute__((weak)) void ScaleVector(f32 *d, f32 *a, f32 s) { d[0] = a[0] * s; d[1] = a[1] * s; d[2] = a[2] * s; }
-/* PointToPoint (g_cpAng2Rad): d = a - b (checked against the asm; was b - a) */
-__attribute__((weak)) void PointToPoint(f32 *d, f32 *a, f32 *b) { d[0] = a[0] - b[0]; d[1] = a[1] - b[1]; d[2] = a[2] - b[2]; }
-
 /* flvecRotX (0x172FF0): rotate v about X by a radians */
 void flvecRotX(f32 *v, f32 a)
 {
@@ -809,9 +802,6 @@ static void once(const char *name)
 #define STUB_V(name, args) void name args { static int o; if (!o++) once(#name); }
 #define STUB_I(name, args) int name args { static int o; if (!o++) once(#name); return 0; }
 
-
-
-
 /* Em_area_ck (0x10B790): index (0-3) of area a in game_w+0x28, else -1 */
 int Em_area_ck(int a)
 {
@@ -831,8 +821,6 @@ int Em_area_ck(int a)
 
 /* shell_flag_set: src/main/pl/pl_normal.c (built). shell_rate_add/_g
  * (0x151660, 0x1516A0): velocity integration */
-
-
 
 int softdip_ck(void) { return 0; }   /* 0x1593D0: returns 0 */
 

@@ -151,113 +151,16 @@ int rt_load_stage_hit(int stage)
 /* ------------------------------------------------------------ helpers */
 /* Stage_data_get (0x226900): src/main/quest/f_quest0_nm.c */
 
-/* NormalClipF3 (0x120950): z of the 2D cross product (b - a) x (c - a);
- * points are (x, y) pairs (callers pass x/z). When the two products are
- * one float ulp apart the result is exactly 0 (the original compares the
- * bit patterns). */
-__attribute__((weak)) f32 NormalClipF3(f32 *a, f32 *b, f32 *c)
-{
-    union { f32 f; s32 i; } t1, t2;
-    t1.f = (b[0] - a[0]) * (c[1] - a[1]);
-    t2.f = (c[0] - a[0]) * (b[1] - a[1]);
-    if (t1.i == t2.i + 1)
-        t1.f = t2.f;
-    if (t1.i == t2.i - 1)
-        t1.f = t2.f;
-    return t1.f - t2.f;
-}
-
-/* NormalClipCheckF3 (0x120A00): p inside triangle abc? 0 no (or a
- * degenerate triangle), 1 inside a clockwise triangle, 2 inside a
- * counter-clockwise one (edges count as inside). */
-__attribute__((weak)) int NormalClipCheckF3(f32 *a, f32 *b, f32 *c, f32 *p)
-{
-    f32 d = NormalClipF3(a, b, c);
-    if (d == 0.0f)
-        return 0;
-    if (d < 0.0f) {
-        if (!(NormalClipF3(a, b, p) <= 0.0f)) return 0;
-        if (!(NormalClipF3(b, c, p) <= 0.0f)) return 0;
-        return NormalClipF3(c, a, p) <= 0.0f;
-    }
-    if (NormalClipF3(a, b, p) < 0.0f) return 0;
-    if (NormalClipF3(b, c, p) < 0.0f) return 0;
-    if (NormalClipF3(c, a, p) < 0.0f) return 0;
-    return 2;
-}
-
-/* PointHitCheckF3 (0x120BA0): tri = 3 points with a stride of 3 floats
- * (x, z, -), p = (x, z). 1 when p is inside. The orientation test uses the
- * truncated integer of the cross product, as the original. */
-__attribute__((weak)) int PointHitCheckF3(f32 *tri, f32 *p)
-{
-    int cw = (int)NormalClipF3(tri, tri + 3, tri + 6) <= 0;
-    int r = NormalClipCheckF3(tri, tri + 3, tri + 6, p) & 0xFF;
-    s8 v = 0;
-    if (r != 0) {
-        if (cw)
-            v = r == 1 ? 1 : -1;
-        else
-            v = r == 2 ? 1 : -1;
-    }
-    return v > 0;
-}
-
 void PointToPoint(f32 *, f32 *, f32 *);
 void flvecOuterProduct(f32 *, f32 *, f32 *);
 void flvecNormalize(f32 *);
 f32 flvecCalcLength(f32 *);
 f32 flAbs(f32);
 
-/* UnitNormalVectorCCW (0x1208D0): out = unit normal of triangle abc;
- * 0 when it has no length. */
-__attribute__((weak)) int UnitNormalVectorCCW(f32 *a, f32 *b, f32 *c, f32 *out)
-{
-    f32 v1[4], v2[4];
-    PointToPoint(v1, a, b);
-    PointToPoint(v2, c, b);
-    flvecOuterProduct(out, v2, v1);
-    flvecNormalize(out);
-    return flvecCalcLength(out) != 0.0f;
-}
-
-/* NvecFloatAdjust (0x120C80): out = v with components below 0.001 in
- * magnitude set to 0. */
-__attribute__((weak)) void NvecFloatAdjust(f32 *out, f32 *v)
-{
-    out[0] = v[0];
-    out[1] = v[1];
-    out[2] = v[2];
-    if (flAbs(v[0]) < 0.001f) out[0] = 0.0f;
-    if (flAbs(v[1]) < 0.001f) out[1] = 0.0f;
-    if (flAbs(v[2]) < 0.001f) out[2] = 0.0f;
-}
-
 void flmatInit(FLMAT *);
 void RotateX(FLMAT *, f32);
 void RotateY(FLMAT *, f32);
 void RotateZ(FLMAT *, f32);
-
-/* cpAng2Rad (u16 angle * 2pi/0x10000) for three s32 angles */
-__attribute__((weak)) void cpAng2Rad_all(s32 *ang, f32 *out)
-{
-    int k;
-    for (k = 0; k < 3; k++)
-        out[k] = 9.58738e-05f * (f32)(ang[k] & 0xFFFF);
-}
-
-/* cpRotMatrixYXZ2 (0x120310): m = rotation by Y, then X, then Z
- * (each RotateN pre-multiplies). */
-__attribute__((weak)) FLMAT *cpRotMatrixYXZ2(s32 *ang, FLMAT *m)
-{
-    f32 r[3];
-    cpAng2Rad_all(ang, r);
-    flmatInit(m);
-    RotateY(m, r[1]);
-    RotateX(m, r[0]);
-    RotateZ(m, r[2]);
-    return m;
-}
 
 /* flConvertRtoS (0x173320): radians to a 0x10000-per-turn angle. */
 u32 flConvertRtoS(f32 r)

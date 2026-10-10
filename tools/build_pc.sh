@@ -287,8 +287,8 @@ if [ -n "$ONLINE" ]; then
 fi
 # Stand-ins replaced by the game's own C (docs/pc.md "Stand-ins wired"): only the named functions are taken
 PICK_X="src/main/em/emmk01.c:ride_ofs_calc src/main/fl/flmat04.c:flmatAddTrans2 src/game/em/em_modechg.c:em01_local_area_move_init,Em_Mode_Chg src/main/model/light_init_nm.c:light_init src/main/model/light_nm.c:light_change_normal,pl_light_change,Pl_light_set src/main/model/light04.c:light_move src/main/model/light05.c:flash_move src/main/sound/rev01.c:Init_rev_set,Zero_rev_set src/main/emw/emw01.c:clr_em_work,push_em_work_all src/main/emw/emw02.c:push_em_yobi,pull_em_yobi,smoke_init,smell_init,senko_init,ear_init,em_yobi_init src/main/sprite/putspr3.c:Put_sprite_rotate src/main/sprite/putspr_nm.c:Draw_square src/main/em/emsrch_nm.c:get_joint_mat_em,em_search_set src/main/set/set06.c:Set06_set src/main/set/set21.c:Set21_set src/main/staff/staff_nm.c:Staff_init,Staff_main src/main/sound/sndc03.c:Npc_se_req src/main/stage/f_stage_nm.c:stage_spr_disp src/main/weapon/weapon3_nm.c:lb_pl_item_trans"
-# the matched cp math library (cp01-cp03, agent B 8 Oct): the rt_*.c copies are weak
-GAME="$GAME ${CPFILES-src/main/cp/cp01.c src/main/cp/cp02.c src/main/cp/cp03.c}"
+# the matched cp math library (cp01-cp03, agent B 8 Oct)
+GAME="$GAME src/main/cp/cp01.c src/main/cp/cp02.c src/main/cp/cp03.c"
 # Matched C (byte-exact) replacing near-match copies, batch A (agent B, 8 Oct 2026): the *_nm.c versions stay linked weak
 # for the functions that are still unmatched. docs/agents/targets.md
 MATCHED_A="src/main/eft/eft02.c \
@@ -696,8 +696,6 @@ for f in $GAME; do
     case " $MATCHED_A " in *" $f "*) ABI="$ABI $FNDEFS" ;; esac
     # stage code (f_stage_nm.c, f_stageb.c) calls game.bin's Set09_set_ex and the lobby overlay's Eft25_set_pos by address
     case "$f" in src/main/stage/f_stage_nm.c|src/main/stage/f_stageb.c) ABI="$ABI -Dfunc_618F00=Set09_set_ex -Dfunc_60E330=Eft25_set_pos" ;; esac
-    # bisecting aid: CP01_OFF="fn ..." keeps the host version of those cp01 functions (they are renamed in the matched object)
-    case "$f" in src/main/cp/cp01.c) for n in $CP01_OFF; do ABI="$ABI -D$n=ps2_$n"; done ;; esac
     case "$f" in src/main/item/item_nm.c) ABI="-Dinit_item_work=ps2_init_item_work -Dclr_item_work=ps2_clr_item_work -Dmove_item=ps2_move_item -Ditem_check=ps2_item_check -Dpush_item_work=ps2_push_item_work" ;; src/main/tu/sk_all.c) ABI="-DSoftKeyboard_set=sk_real_set -DSoftKeyboard_move=sk_real_move -DSoftKeyboard_exit=sk_real_exit" ;; esac
     cc_obj "$b" "$CC $INC $GAMEFLAGS $ABI $SYS -c $src -o $o"
     OBJS="$OBJS $o"
