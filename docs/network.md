@@ -505,7 +505,11 @@ frame until it returns 0 (a match), then `internet_to_modem` (the game server, `
    `player_work[game_w.master]` (the lobby member list's order). Their moves come from the game's own `lb_send_data`
    -> chat binary 6708 -> `Lb_check_receipt`. Name tags: the game's `lb_disp_name` (lb_ai.c) draws them over every
    hunter on the stage (own and others, with the weapon icon and the status / quest marks) now that
-   `flvecrRotTransPers` is real (seen on screen, 10 Oct 2026: build/show/online_town/*_5900.png).
+   `flvecrRotTransPers` is real (seen on screen, 10 Oct 2026: build/show/online_town/*_5900.png). Weapons: every town
+   hunter carries its own (10 Oct 2026): `Lb_set_mini_data_to_pl` puts the weapon triple at PLW+0x35E but not the model
+   (+0x34C) and kind the viewer draws from, so `rt_np_town_weapon` derives them as the quest's `Set_mini_data_to_pl`
+   (f_ud.c) does, and the viewer reloads a hunter's weapon model when it changes (`weapon_follow`, also the local
+   hunter's: before, it kept the model of the `--quest` start).
 7. Chat: Tab starts typing on the PC keyboard, Enter sends through the game's `Lb_send_chat` (6701); the game's chat
    log window shows what the server sends back. The soft keyboard paths (`Plaza_chat_move`) are the game's.
 8. When `internet_lobby_act` returns 0, `matched()` reads the slot (`USER_PL_ID`, from MatchPlSide), the player count

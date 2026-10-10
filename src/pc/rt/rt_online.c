@@ -369,6 +369,10 @@ int rt_online_tick(void)
             last31 = cw[0x2C31]; last33 = cw[0x2C33]; last34 = cw[0x2C34]; last3 = lb_sys[3];
         }
         if (cw[0x2C31] == 3 && lb_sys[3] == 4) {
+            void rt_np_town_weapon(int slot);
+            int k;
+            for (k = 0; k < 8; k++)
+                rt_np_town_weapon(k);
             town_chat();
             static int relogged;
             if (getenv("RT_ONLINE_RELOGIN") && town_ticks == atoi(getenv("RT_ONLINE_RELOGIN")) && !relogged++) {
