@@ -643,7 +643,14 @@ void __cnet_Recv_PatchData(void) {
     u16 a;
     u16 b;
 
+#ifdef __MWERKS__
     GetRecvDataOption(CnetSys_w.patch_ptr, GetRecvData16(&a, GetRecvData16(&b, recv_work)), a);
+#else   /* the length must be read before it is passed: C leaves the argument order open (gcc on x86 evaluated `a` first) */
+    {
+        u8 *cur = (u8 *)GetRecvData16(&a, GetRecvData16(&b, recv_work));
+        GetRecvDataOption(CnetSys_w.patch_ptr, cur, a);
+    }
+#endif
     CnetSys_w.patch_ptr += a;
 }
 

@@ -122,6 +122,8 @@ PLACES = {}
 CLIENTS = set()                     # every connection (also before it entered a plaza)
 KNOWN_IDS = set()                   # ids that logged in since the server started (mail to them is kept)
 MAILBOX = {}                        # id -> [6705 payloads] for hunters not logged in
+PATCH = None                        # --patch FILE: bytes sent as a patch at the login (client tests only)
+EVENT_FILES = []                    # --event-quest FILE: the downloadable (event) quest files, in order
 LINE_CHECK = 30.0                   # seconds between 6001 line checks
 ADMIN_MESSAGE = ""                  # --admin-message: sent to each hunter after the login (6706)
 
@@ -278,6 +280,9 @@ class Client(socketserver.BaseRequestHandler):
 
     def on_6103_2(self, seq, p):            # first data (client type, version, ...)
         log("first data %s" % p.hex())
+        if PATCH is not None:       # --patch: a patch instead of the account list (docs/network.md 5.8)
+            self.send_patch(PATCH)
+            return
         # an empty account list: a new hunter, the client then sends 6132
         self.send(NOTE, C_USERLIST, bytes([0]))
 
@@ -760,6 +765,58 @@ class Client(socketserver.BaseRequestHandler):
             out += str16(m.user_id) + str16(m.user_handle[:16]) + str16(m.mini)
         self.send(ANS, 0x630A, out, seq=seq)
 
+    # event quests (file download, docs/network.md 5.8): asked at every lobby entry (Lbc_DownloadQuest)
+    def on_6881_1(self, seq, p):            # FileDownloadHeader -> u8 n, n x u32 size (0 files: no event quest)
+        self.send(ANS, 0x6881, bytes([len(EVENT_FILES)]) + b"".join(struct.pack(">I", len(f)) for f in EVENT_FILES),
+                  seq=seq)
+
+    def on_6882_1(self, seq, p):            # FileDownloadData: u8 file, u32 offset, u32 size (0x200) -> the chunk
+        i, ofs, n = struct.unpack(">BII", p[:9])
+        if i >= len(EVENT_FILES):
+            self.send(ANS, 0x6882, str16("no such file"), seq=seq, res=1)
+            return
+        chunk = EVENT_FILES[i][ofs:ofs + n]
+        self.send(ANS, 0x6882, struct.pack(">BII", i, ofs, len(chunk)) + struct.pack(">H", len(chunk)) + chunk, seq=seq)
+
+    # personal data (docs/network.md 5.8): the PS2 registers name, zip, address, telephone, age and mail address after
+    # the portal's registration page (cnLBS_RegistPersonalData). The test server accepts and stores NOTHING (privacy:
+    # docs/server.md section 9); it only logs which fields came.
+    def on_6181_1(self, seq, p):            # PersonalDataChange: may the data be sent -> result 0
+        self.send(ANS, 0x6181, b"", seq=seq)
+
+    def pd_field(name):
+        def h(self, seq, p):
+            log("%s sent personal data field %s (%d bytes, not stored)" % (self.user_handle, name, len(p)))
+        return h
+    on_6182_16 = pd_field("name")
+    on_6183_16 = pd_field("zip")
+    on_6184_16 = pd_field("address")
+    on_6185_16 = pd_field("telephone")
+    on_6186_16 = pd_field("age")
+    on_6187_16 = pd_field("mail address")
+
+    def on_6188_1(self, seq, p):            # PersonalDataRegisted: done -> result 0
+        self.send(ANS, 0x6188, b"", seq=seq)
+
+    def send_patch(self, data):
+        """6121 start (str name: 4-char id + 10-char version, u16, u32 byte count, u32 byte sum), 6122 data (u16 block,
+        u16 n, n bytes), 6123 footer, all notices; then 6125 finish (request): the client checks the sum and goes to its
+        patch step (lbc_login_patch). Only for testing the client's handling: a real patch is PS2 code encrypted with DNAS
+        keys, and the PC refuses every patch."""
+        log("sending a patch of %d bytes" % len(data))
+        self.send(NOTE, 0x6121, str16(b"TEST0000000001") + struct.pack(">HII", 0, len(data), sum(data) & 0xFFFFFFFF))
+        for k in range(0, len(data), 0x200):
+            chunk = data[k:k + 0x200]
+            self.send(NOTE, 0x6122, struct.pack(">HH", k // 0x200, len(chunk)) + chunk)
+        self.send(NOTE, 0x6123, b"")
+        self.send(REQ, 0x6125, b"")
+
+    def on_6125_2(self, seq, p):            # the client applied the patch (a PS2 would; the PC never answers this)
+        log("%s applied the patch" % (self.user_handle or "a client"))
+
+    def on_6124_2(self, seq, p):            # patch line check answer
+        pass
+
     def on_6001_2(self, seq, p):            # the line check's answer
         pass
 
@@ -773,7 +830,7 @@ class Server(socketserver.ThreadingTCPServer):
 
 
 def main():
-    global VERBOSE, COOP_PORT, ADMIN_MESSAGE
+    global VERBOSE, COOP_PORT, ADMIN_MESSAGE, EVENT_FILES, PATCH
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=10200)
@@ -781,7 +838,13 @@ def main():
     ap.add_argument("-v", "--verbose", action="store_true")
     ap.add_argument("--coop-port", type=int, default=10300, help="the matched room's leader hosts on this + room number")
     ap.add_argument("--admin-message", default="", help="an administrator message (6706) every hunter gets after the login")
+    ap.add_argument("--event-quest", action="append", default=[], metavar="FILE",
+                    help="a downloadable event quest file (a mission file in the disc's format, quest number >= 0xC8; "
+                         "it comes from your own disc: never commit or share one)")
+    ap.add_argument("--patch", metavar="FILE", help="send FILE as a patch during the login (to test the client's refusal)")
     a = ap.parse_args()
+    PATCH = open(a.patch, "rb").read() if a.patch else None
+    EVENT_FILES = [open(f, "rb").read() for f in a.event_quest]
     ADMIN_MESSAGE = a.admin_message
     VERBOSE = a.verbose
     COOP_PORT = a.coop_port
