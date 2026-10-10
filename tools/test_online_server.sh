@@ -19,13 +19,32 @@ for nm in ANNA BOB; do
 done
 gold() { python3 -c "import sys; sys.path.insert(0, 'tools'); from test_coop_hunt import card_gold; print(card_gold('$OUT/card_$1'))"; }
 a_gold0=$(gold ANNA); b_gold0=$(gold BOB)
-python3 tools/server/mh1_server.py serve -v --lobby-port 0 --lobby-relay --relay-ports 10380-10389 > $OUT/server.log 2>&1 &
-SP=$!
-i=0; PORT=""
-while [ $i -lt 50 ] && [ -z "$PORT" ]; do
-    PORT=$(sed -n 's/^mh1-server lobby on 127.0.0.1:\([0-9]*\).*/\1/p' $OUT/server.log)
-    [ -n "$PORT" ] || { sleep 0.1; i=$((i + 1)); }
+# the server as an operator would run it: a config file, an account store, one account per player (invite-only)
+cat > $OUT/mh1-server.conf <<CONF
+[server]
+bind = 127.0.0.1
+lobby-port = 0
+lobby-relay = yes
+relay-ports = 10380-10389
+db = accounts.sqlite3
+verbose = yes
+CONF
+for nm in ANNA BOB; do
+    python3 tools/server/mh1_server.py account add --db $OUT/accounts.sqlite3 --note "test $nm" > $OUT/account_$nm.txt || fail "account add"
 done
+id_of() { sed -n 's/^login \([0-9]*\) password .*/\1/p' $OUT/account_$1.txt; }
+pw_of() { sed -n 's/^login [0-9]* password \(.*\)/\1/p' $OUT/account_$1.txt; }
+start_server() {     # log file
+    python3 tools/server/mh1_server.py serve --config $OUT/mh1-server.conf > $1 2>&1 &
+    SP=$!
+    i=0; PORT=""
+    while [ $i -lt 50 ] && [ -z "$PORT" ]; do
+        PORT=$(sed -n 's/^mh1-server lobby on 127.0.0.1:\([0-9]*\).*/\1/p' $1)
+        [ -n "$PORT" ] || { sleep 0.1; i=$((i + 1)); }
+    done
+}
+stop_server() { kill $SP 2>/dev/null; wait $SP 2>/dev/null; SP=""; }
+start_server $OUT/server.log
 [ -n "$PORT" ] || fail "mh1-server did not start"
 LOGIN="200:circle*2;302:circle*2;404:circle*2;556:circle*2;738:square*3"
 TALK=""; t=1041; while [ $t -le 1441 ]; do TALK="$TALK;$t:circle*2"; t=$((t + 40)); done
@@ -39,7 +58,7 @@ IB=$(python3 tools/mk_input.py - "$LOGIN;1950:square*3$JOIN;2700:square*3;2760:c
 run() {     # name seconds input warps [env...]
     nm=$1; t=$2; in=$3; w=$4; shift 4
     env "$@" MH1_SAVE_DIR="$PWD/$OUT/card_$nm" RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 RT_ONLINE_TRACE=1 RT_QUEST_TRACE=1 \
-        RT_NOMOVIE=1 RT_MC_TRACE=1 RT_NET_REGISTERED=1 RT_NET_PORT=$PORT RT_LB_WARP="$w" RT_SHOTS=5900 timeout 360 $RUN $BIN \
+        RT_NOMOVIE=1 RT_MC_TRACE=1 RT_NET_REGISTERED=1 RT_NET_PORT=$PORT RT_NET_ID=$(id_of $nm) RT_NET_PASS=$(pw_of $nm) RT_LB_WARP="$w" RT_SHOTS=5900 timeout ${TMO:-360} $RUN $BIN \
         disc/mh1 --quest 10 --play --online --mute --input "$in" --shot $OUT/$nm.png --time $t --size 640x480 > $OUT/$nm.log 2>&1
 }
 run ANNA 207 "$IA" "60,5545,2750,8000;300,1300,1600,C000;2200,3100,2100,8000" RT_PL_ITEMS=77:15 RT_PL_WARP="150,10350,10640,7000" $ENVA &
@@ -48,7 +67,7 @@ sleep 2
 run BOB 205 "$IB" "60,5545,2750,8000;300,1850,1500,8000;2100,3100,2100,8000" $ENVB || fail "client BOB stopped early"
 wait $PA || { PA=""; fail "client ANNA stopped early"; }
 PA=""
-kill $SP 2>/dev/null; wait $SP 2>/dev/null; SP=""
+stop_server
 grep -q "ＡＮＮＡ creates room" $OUT/server.log || fail "ANNA did not create a room"
 grep -q "ＢＯＢ joins room" $OUT/server.log || fail "BOB did not join the room"
 grep -q "quest 1 started with 2 player(s)" $OUT/server.log || fail "the relay did not start the hunt"
@@ -71,4 +90,31 @@ for nm in ANNA BOB; do
     sed -n '/back to the town after the quest/,$p' $OUT/$nm.log | grep -a 'online: tick [0-9]* slot [0-9] "' | grep -aq ' shown$' \
         || fail "$nm does not show the other in the town after the quest"
 done
-echo "mh1-server OK${RUN:+ ($RUN $BIN)}: login, town, a room, the hunt through the relay to the clear and the reward (ANNA $a_gold0 -> $a_gold1, BOB $b_gold0 -> $b_gold1 zenny, saved), both back in the town"
+# a crash, and the server restarted: the same store, the same hunters (their ids), the place kept. Both log in again
+# (the id screen offers the stored hunter: circle logs in with it); BOB's game is killed in the town (kill -9: no
+# logout), ANNA is told he left; BOB starts again and his login puts him straight back into the lobby (6891), where
+# ANNA shows him again
+a_id=$(grep -a "ＡＮＮＡ" $OUT/server.log | sed -n "s/.*account '\([A-Z0-9]*\)' handle 'ＡＮＮＡ'.*/\1/p" | head -1)
+b_id=$(grep -a "ＢＯＢ" $OUT/server.log | sed -n "s/.*account '\([A-Z0-9]*\)' handle 'ＢＯＢ'.*/\1/p" | head -1)
+[ -n "$a_id" ] && [ -n "$b_id" ] || fail "no hunter ids in the server log"
+start_server $OUT/server_restart.log
+[ -n "$PORT" ] || fail "mh1-server did not start again"
+LOGIN2="200:circle*2;302:circle*2;404:circle*2;556:circle*2"
+run ANNA 75 "$(python3 tools/mk_input.py - "$LOGIN2" 2300)" "" &
+PA=$!
+sleep 2
+# BOB's game is killed (SIGKILL, as a crash: no logout) 35 s after its start, in the town
+TMO="-s KILL 35" run BOB 60 "$(python3 tools/mk_input.py - "$LOGIN2" 1800)" ""
+mv $OUT/BOB.log $OUT/BOB_crashed.log
+sleep 3
+run BOB 30 "$(python3 tools/mk_input.py - "$LOGIN2" 900)" "" || fail "BOB's second start stopped early"
+wait $PA || { PA=""; fail "client ANNA stopped early (restart)"; }
+PA=""
+stop_server
+grep -q "account '$a_id' handle 'ＡＮＮＡ'" $OUT/server_restart.log || fail "ANNA did not get her stored hunter ($a_id) after the restart"
+grep -q "account '$b_id' handle 'ＢＯＢ'" $OUT/server_restart.log || fail "BOB did not get his stored hunter ($b_id) after the restart"
+grep -aq "town step 4" $OUT/BOB_crashed.log || fail "BOB did not reach the town before the crash"
+grep -q "6410" $OUT/server_restart.log || fail "nobody was told that BOB left (6410) after his crash"
+[ "$(grep -c "ＢＯＢ returns to plaza 1 lobby" $OUT/server_restart.log)" -ge 2 ] || fail "BOB's login after the crash did not go back to his lobby"
+grep -a 'slot [0-9] "' $OUT/BOB.log | grep -aq ' shown$' || fail "BOB does not show ANNA after coming back"
+echo "mh1-server OK${RUN:+ ($RUN $BIN)}: accounts (invite-only store, config file), login, town, a room, the hunt through the relay to the clear and the reward (ANNA $a_gold0 -> $a_gold1, BOB $b_gold0 -> $b_gold1 zenny, saved), both back in the town; after a server restart the same hunters ($a_id, $b_id), a crashed client back in his lobby"

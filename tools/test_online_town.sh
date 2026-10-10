@@ -136,7 +136,7 @@ PY
 [ "$(after BOB | grep -a 'slot [0-9] (me)' | sed 's/.* pos \([-0-9]* [-0-9]* [-0-9]*\).*/\1/' | sort -u | wc -l)" -gt 1 ] || fail "BOB did not walk after the quest"
 # the same room through mh1-server (tools/server, docs/server.md): its lobby (the test server's handling) with
 # --lobby-relay answers 6914 with "mh1-relay" and 6916 with its session relay; both players join the relay
-python3 tools/server/mh1_server.py serve --lobby-port 0 --lobby-relay --relay-ports 10370-10379 > $OUT/server3.log 2>&1 &
+python3 tools/server/mh1_server.py serve --open --lobby-port 0 --lobby-relay --relay-ports 10370-10379 > $OUT/server3.log 2>&1 &
 SP=$!
 i=0; PORT=""
 while [ $i -lt 50 ] && [ -z "$PORT" ]; do
