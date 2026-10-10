@@ -144,7 +144,7 @@ NOP(Plsel_task) NOP(ot_init) NOP(Load_overlay)
 NOP0(net_start_ck) NOP(net_receive_pl_pos_set)
 #endif
 NOP(flInitPhaseStarted) NOP(flInitPhaseFinished)
-/* EvDemoInitialize / EvDemoMove: src/main/evdemo/evdemo.c (round 20) */ NOP(em_effect_pull) NOP(Disp_load_start)
+NOP(em_effect_pull) NOP(Disp_load_start)
 NOP(Copy_user_id) NOP(Disp_NowLoading2)
 
 /* trans: rt_boot.c (draws only while the boot screens run) */

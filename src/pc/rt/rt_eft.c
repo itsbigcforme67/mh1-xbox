@@ -813,19 +813,9 @@ int Em_area_ck(int a)
     return -1;
 }
 
-/* Em_Calc_angY: game.bin em_core (src/game/em/em_core_nm.c, built). */
-
-/* frame_check* come from the decompiled src/main/frame/f_frame_nm.c */
-
-/* atck_data_set_shl / pl_atck_data_set_shl: src/pc/rt/rt_pl.c */
-
-/* shell_flag_set: src/main/pl/pl_normal.c (built). shell_rate_add/_g
- * (0x151660, 0x1516A0): velocity integration */
-
 int softdip_ck(void) { return 0; }   /* 0x1593D0: returns 0 */
 
 STUB_V(vib_set_pl, (void *pl, int a))
-/* pl_light_change / Pl_light_set: src/main/model/light_nm.c (PICK_X); the host reads what they hand to flSetRenderState(0x5A..) in rt_light.c */
 /* Get_atk_value (f_ud, src/main/ud/ud_nm.c): element/ailment value kind
  * (0-6) of the weapon, Ken_data[PLW+0x360][0xB + kind] when PLW+0x35F == 6 */
 extern unsigned char Ken_data[][0x18];
@@ -841,7 +831,6 @@ STUB_V(flCalcTrans, (void *h, FLMAT *m))
 STUB_V(flCalcTransSI, (void *h, FLMAT *m))
 STUB_V(flSetMatrixList, (void *a, void *b))
 STUB_V(flSetSkinTransMatrixList, (void *a, void *b))
-/* shell08_trans: src/game/shell/shell08_nm.c (near-match C, built). */
 
 /* ------------------------------------------------------------ test spawns
  * RT_SPAWN="eft13:N,eft17:N,shell22:N,eft14:N,eft08:N" spawns those effects
