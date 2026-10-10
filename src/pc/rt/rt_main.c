@@ -80,11 +80,6 @@ WEAK void move_shell(void) {}
 WEAK void move_set(void) {}
 
 
-/* Em_max_parts_get (main 0x10B770): number of motion part groups of
- * monster kind em (em_parts_num[(s16)em]); create_em_motion builds 2 banks
- * per group. */
-extern u8 em_parts_num[];
-u8 Em_max_parts_get(int em) { return em_parts_num[(s16)em]; }
 
 /* Online_ck (0x162D60): system_w+0x10 != 0. The port runs offline. */
 #ifndef MH1_ONLINE     /* ONLINE=1: rt_np.c (on during a co-op quest) */

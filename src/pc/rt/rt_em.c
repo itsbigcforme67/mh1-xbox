@@ -45,28 +45,6 @@ WSTUB(em16_local_area_move_init) WSTUB(em18_local_area_move_init) WSTUB(em19_loc
 WSTUB(em29_local_area_move_init) WSTUB(em33_local_area_move_init)
 
 /* ------------------------------------------------ main f_em / f_pl helpers */
-/* em_dur_init (main 0x10A070): the breakable parts' durability from
- * em_dur_tbl[kind] (9 s16 values, then the part count byte at +0x953):
- * per part 8 bytes at +0x304 {on, index, 0, 0, s16 durability, 0}. */
-void em_dur_init(EMW *em)
-{
-    s16 *t = em_dur_tbl[em->kind];
-    u8 *e = (u8 *)em;
-    int i;
-    for (i = 0; i < 9; i++, t++, e += 8) {
-        if (*t > 0) {
-            e[0x304] = 1;
-            e[0x305] = (u8)i;
-            e[0x306] = 0;
-            e[0x307] = 0;
-            *(s16 *)(e + 0x308) = *t;
-            e[0x30A] = 0;
-        } else {
-            e[0x304] = 0;
-        }
-    }
-    PU8(em, 0x953) = (u8)*t;
-}
 
 
 

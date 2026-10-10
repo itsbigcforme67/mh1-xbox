@@ -802,16 +802,6 @@ static void once(const char *name)
 #define STUB_V(name, args) void name args { static int o; if (!o++) once(#name); }
 #define STUB_I(name, args) int name args { static int o; if (!o++) once(#name); return 0; }
 
-/* Em_area_ck (0x10B790): index (0-3) of area a in game_w+0x28, else -1 */
-int Em_area_ck(int a)
-{
-    const u8 *g = (const u8 *)&game_w;
-    int i;
-    for (i = 0; i < 4; i++)
-        if (g[0x28 + i] == (u8)(s16)a)
-            return i;
-    return -1;
-}
 
 int softdip_ck(void) { return 0; }   /* 0x1593D0: returns 0 */
 

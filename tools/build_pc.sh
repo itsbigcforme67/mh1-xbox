@@ -270,6 +270,7 @@ GAME="$GAME src/main/cp/cp01.c src/main/cp/cp02.c src/main/cp/cp03.c"
 MATCHED_A="src/main/eft/eft02.c \
     src/main/eft/eft02b.c \
     src/main/eft/eft20b.c \
+    src/main/em/emsrch01.c \
     src/main/em/emsrch02.c \
     src/main/em/emsrch03.c \
     src/main/emw/ems01.c \
