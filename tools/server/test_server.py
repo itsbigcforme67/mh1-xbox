@@ -403,8 +403,41 @@ class TestServerFeatureTest(unittest.TestCase):
         b2.request(0x6891, b"")
         self.assertEqual(struct.unpack(">HHH", b2.until(0x6891)[4]), (1, 2, 0))
         self.assertEqual(a.until(0x6411)[1], 0x6411)           # ANNA is told he is back
+        # personal data (6181 may I, 6182-6187 the fields, 6188 done): both answered with result 0, nothing stored
+        a.request(0x6181, b"")
+        self.assertEqual(a.until(0x6181)[3], 0)
+        for code, field in ((0x6182, b"NAME"), (0x6183, b"000-0000"), (0x6184, b"ADDR"), (0x6185, b"000")):
+            q = a.next()
+            a.send(16, code, a.enc(field, q), q)
+        a.send(16, 0x6186, bytes([30]), a.next())
+        q = a.next()
+        a.send(16, 0x6187, a.enc(b"x@example.invalid", q), q)
+        a.request(0x6188, b"")
+        self.assertEqual(a.until(0x6188)[3], 0)
+        # event quests: none by default (6881: u8 0)
+        a.request(0x6881, b"")
+        self.assertEqual(a.until(0x6881)[4], bytes([0]))
         a.close()
         b2.close()
+
+    def test_event_quest_download(self):
+        self.ts.EVENT_FILES = [bytes(range(256)) * 3]
+        try:
+            c = FakeLobbyClient(self.port, b"CARL")
+            c.request(0x6881, b"")
+            p = c.until(0x6881)[4]
+            self.assertEqual(p, bytes([1]) + struct.pack(">I", 768))
+            got = b""
+            for ofs in range(0, 768, 0x200):
+                c.request(0x6882, struct.pack(">BII", 0, ofs, 0x200))
+                p = c.until(0x6882)[4]
+                f, o, n = struct.unpack(">BII", p[:9])
+                self.assertEqual((f, o, n, struct.unpack(">H", p[9:11])[0]), (0, ofs, min(0x200, 768 - ofs), n))
+                got += p[11:11 + n]
+            self.assertEqual(got, bytes(range(256)) * 3)
+            c.close()
+        finally:
+            self.ts.EVENT_FILES = []
 
 
 class McsTest(unittest.TestCase):

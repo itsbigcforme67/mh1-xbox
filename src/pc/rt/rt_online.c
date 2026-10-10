@@ -61,6 +61,7 @@ static int port = 10200;
 static char sname[64] = "Local test server";
 
 enum { O_CONNECT, O_LOBBY, O_MATCHED, O_FAILED };
+int rt_online_visible(int slot);
 static void netfile_load(void);
 
 int rt_online_wanted(void) { return wanted; }
@@ -368,6 +369,10 @@ int rt_online_tick(void)
             last31 = cw[0x2C31]; last33 = cw[0x2C33]; last34 = cw[0x2C34]; last3 = lb_sys[3];
         }
         if (cw[0x2C31] == 3 && lb_sys[3] == 4) {
+            void rt_np_town_weapon(int slot);
+            int k;
+            for (k = 0; k < 8; k++)
+                rt_np_town_weapon(k);
             town_chat();
             static int relogged;
             if (getenv("RT_ONLINE_RELOGIN") && town_ticks == atoi(getenv("RT_ONLINE_RELOGIN")) && !relogged++) {
@@ -437,9 +442,9 @@ int rt_online_tick(void)
             for (i = 0; i < 8; i++) {
                 u8 *p = player_work + 0xA00 * i;
                 if (p[0])
-                    fprintf(stderr, "online: tick %d slot %d%s \"%.16s\" stage %d pos %.0f %.0f %.0f\n", ticks, i,
+                    fprintf(stderr, "online: tick %d slot %d%s \"%.16s\" stage %d pos %.0f %.0f %.0f%s\n", ticks, i,
                             i == game_w[0xD1] ? " (me)" : "", (char *)p + 0x8D4, p[0x736], *(float *)(p + 0xAC),
-                            *(float *)(p + 0xB0), *(float *)(p + 0xB4));
+                            *(float *)(p + 0xB0), *(float *)(p + 0xB4), rt_online_visible(i) ? " shown" : "");
             }
         }
         if (r == 0) {
@@ -473,37 +478,173 @@ int MainBrowser(void)
     return 1;
 }
 
-/* ------------------------------------------------------------ quest download
- * Entering a lobby, the plaza first asks the server for its downloadable (event) quest files
- * (Lbc_DownloadQuest -> cnLBS_Read_FileDownload, a background job). The job itself,
- * __cnet_bgProg_ReadFileDownloadAllocation (main 0x27D4A0, 0x240 bytes), is not decompiled; here it ends at once
- * with "no files" (count 0 at 0x6AFF7C, which cnLBS_Get_FileDownloadInfo reports), as against a server without
- * event quests. The burst slot it runs in: run 0x677324, callback 0x677328, state 0x677344, step 0x677345. */
+/* ------------------------------------------------------------ patches
+ * A lobby server can send a patch during the login (6121 start: name, u32 count, u32 byte sum; 6122 data; 6125 finish;
+ * docs/network.md 5.8). On the PS2 lbc_login_patch then runs ms_net_patch_set (main 0x2687E0): the patch is PS2 machine
+ * code / data pokes ("M-HUNTER" list applied by PatchExecCS over the loaded overlays), encrypted with the console's
+ * DNAS keys, decrypted, applied, saved to the card; the client then logs out. The PC cannot apply PS2 code patches
+ * (and has no DNAS keys): it refuses, lbc_login_patch's error path (step 6) logs out with the game's message. Before,
+ * ms_net_patch_set was a do-nothing stand-in returning 0 and the login waited forever. */
+void ms_net_patch_set_init(void) {}
+int ms_net_patch_set(void)
+{
+    say("the server sent a patch%s: refused (PS2 code patches cannot be applied on the PC)%.0d", "", 0);
+    return -1;
+}
+
+/* ------------------------------------------------------------ quest download (event quests)
+ * Entering a lobby, the plaza first asks the server for its downloadable (event) quest files (Lbc_DownloadQuest ->
+ * cnLBS_Read_FileDownload(mission_area, cb), a background job in burst slot 11 of CnetSys_w). The job and the two answer
+ * handlers are main functions without C so far; written here from the asm (agent B, 10 Oct 2026; not compared with
+ * check.py), replacing the stand-in that ended the job at once with "no files":
+ *   6881 ans  u8 n (<= 32), n x u32 size: the files are placed one after the other from the destination
+ *   6882 req  u8 file, u32 offset, u32 0x200 (one per tick while a background slot is free, pipelined)
+ *   6882 ans  u8 file, u32 offset, u32 length, u16 n + n bytes (GetRecvDataOption3: at most length bytes copied)
+ * The file table (0x6AFF80, 32 x {u32 size, u32 received, ptr}) and the count (0x6AFF7C) are what
+ * cnLBS_Get_FileDownloadInfo reports. Burst slot: +0 run, +4 callback, +8 file, +0xC offset, +0x20 in use, +0x21 step,
+ * +0x22 result of the last answer (set by the two __cnet_CallBack_Result_* of cnlbs03.c). */
 extern unsigned char rt_lb_mem[];
 #define LBA(a) (rt_lb_mem + ((a) - 0x533980u))
 typedef struct { s8 val; s8 id; u8 pad[6]; } ON_RES;
-void __cnet_bgProg_ReadFileDownloadAllocation(void)
+typedef struct { s32 size, received; u8 *ptr; } DL_FILE;
+extern u8 recv_work[];
+u8 *GetRecvData8(void *d, void *cur);
+u8 *GetRecvData32(void *d, void *cur);
+u8 *GetRecvDataOption3(void *d, int max, void *cur);
+void _cnet_Return_CallBack(int a);
+int __cnetSub_Get_RestBgWork(void);
+int cnLBS_Read_FileDownloadHeader(void *cb);
+int cnLBS_Read_FileDownloadData(int file, int ofs, int len, void *cb);
+void __cnet_CallBack_Result_Plaza_NumOfPlaza_0027D420(ON_RES r);
+void _cnet_CallBack_Result_Plaza_PlazaStatus_0027D460(ON_RES r);
+#define DL_FILES ((DL_FILE *)LBA(0x6AFF80))
+#define DL_COUNT (*LBA(0x6AFF7C))
+#define DL_SLOT 0x677324u
+#define DL_RRES (*(s8 *)LBA(0x67736C))
+
+void _cnet_RecvFromLbs_AnswerFileDownloadHeader(void)
 {
-    void (*cb)(ON_RES, ON_RES *);
-    ON_RES r;
-    if (*LBA(0x677344) == 0)
-        return;
-    memset(&r, 0, sizeof r);
-    *LBA(0x6AFF7C) = 0;
-    *LBA(0x677344) = 0;
-    *LBA(0x677345) = 0;
-    memcpy(&cb, LBA(0x677328), sizeof cb);
-    say("quest download%s: none (event quests are not supported, %d files)", "", 0);
-    if (cb)
-        cb(r, &r);
+    u8 n, *cur, *at;
+    int i;
+    if (DL_RRES == 0) {
+        cur = GetRecvData8(&n, recv_work);
+        DL_COUNT = n;
+        for (i = 0; i < n && i < 32; i++)
+            cur = GetRecvData32(&DL_FILES[i].size, cur);
+        memcpy(&at, LBA(0x6AFF74), sizeof at);      /* the destination cnLBS_Read_FileDownload was given */
+        for (i = 0; i < n && i < 32; i++) {
+            DL_FILES[i].ptr = at;
+            at += DL_FILES[i].size;
+        }
+        say("event quests on the server%s: %d file(s)", "", n);
+    }
+    _cnet_Return_CallBack(0);
 }
 
-/* the other hunters the host draws in the town: in use (Lb_set_player), not this machine's, on the same stage */
+void _cnet_RecvFromLbs_AnswerFileDownloadData(void)
+{
+    u8 f, *cur;
+    s32 ofs, len;
+    if (DL_RRES == 0) {
+        cur = GetRecvData8(&f, recv_work);
+        cur = GetRecvData32(&ofs, cur);
+        cur = GetRecvData32(&len, cur);
+        if (f < 32) {
+            DL_FILES[f].received += len;
+            GetRecvDataOption3(DL_FILES[f].ptr + ofs, len & 0xFFFF, cur);
+        }
+        *LBA(0x6B0100) = f;
+        memcpy(LBA(0x6B0104), &ofs, 4);
+        memcpy(LBA(0x6B0108), &len, 4);
+    }
+    _cnet_Return_CallBack(0);
+}
+
+void __cnet_bgProg_ReadFileDownloadAllocation(void)
+{
+    u8 *b = LBA(DL_SLOT);
+    s32 *file = (s32 *)(b + 8), *ofs = (s32 *)(b + 0xC);
+    void (*cb)(ON_RES, ON_RES *);
+    ON_RES r;
+    int f, o;
+    if (!b[0x20])
+        return;
+    switch (b[0x21]) {
+    case 0:
+        b[0x21]++;
+        *file = 0;
+        *ofs = 0;
+        b[0x22] = 0;
+        b[0x23] = 0;
+        DL_COUNT = 0;
+        memset(DL_FILES, 0, 0x180);
+        cnLBS_Read_FileDownloadHeader((void *)__cnet_CallBack_Result_Plaza_NumOfPlaza_0027D420);
+        return;
+    case 1:
+        if (b[0x22] == 1) {
+            b[0x22] = 0;
+            b[0x21] = DL_COUNT == 0 ? 4 : 2;
+        } else if (b[0x22] == 2) {
+            b[0x21] = 5;
+        }
+        return;
+    case 2:
+        b[0x22] = 0;
+        o = *ofs;
+        f = *file;
+        if (__cnetSub_Get_RestBgWork() > 0) {
+            cnLBS_Read_FileDownloadData(f & 0xFF, o, 0x200, (void *)_cnet_CallBack_Result_Plaza_PlazaStatus_0027D460);
+            *ofs = o + 0x200;
+            if (!((u32)(o + 0x200) < (u32)DL_FILES[f].size))
+                b[0x21]++;
+        }
+        return;
+    case 3:
+        f = *file;
+        if ((u32)DL_FILES[f].received < (u32)DL_FILES[f].size)
+            return;
+        if (f + 1 < DL_COUNT) {
+            *file = f + 1;
+            *ofs = 0;
+            b[0x21] = 2;
+        } else {
+            b[0x21]++;
+        }
+        return;
+    case 4:
+    case 5:
+        memset(&r, 0, sizeof r);
+        r.val = b[0x21] == 4 ? 0 : -1;
+        b[0x20] = 0;
+        b[0x21] = 0;
+        memcpy(&cb, LBA(DL_SLOT + 4), sizeof cb);
+        if (DL_COUNT && r.val == 0) {
+            u32 sum = 0;
+            int i, k;
+            for (k = 0; k < DL_COUNT; k++)
+                for (i = 0; i < DL_FILES[k].size; i++)
+                    sum = sum * 31 + DL_FILES[k].ptr[i];
+            say("event quest download%s: done, check %08X", "", (int)sum);
+        } else if (r.val == 0) {
+            say("quest download%s: none (%d files)", "", 0);
+        } else {
+            say("quest download%s: failed (%d)", "", r.val);
+        }
+        if (cb)
+            cb(r, &r);
+        return;
+    }
+}
+
+/* the other hunters the host draws in the town: in use (Lb_set_player), not this machine's, and shown by the game's
+ * own rule (Lb_Pl_stg_ck, lb_h.c): on this machine's stage, and only on the square (0x4C) and the guild hall (0x4D).
+ * In the inn and the guest rooms (0x50-0x55) and the other buildings each hunter is alone, as on the PS2. */
 int rt_online_visible(int slot)
 {
     extern u8 player_work[];
-    u8 *p = player_work + 0xA00 * (slot & 7), *me = player_work + 0xA00 * (game_w[0xD1] & 7);
-    return active && phase == O_LOBBY && slot != game_w[0xD1] && p[0] && p[0x736] == me[0x736];
+    int Lb_Pl_stg_ck(void *pl);
+    u8 *p = player_work + 0xA00 * (slot & 7);
+    return active && phase == O_LOBBY && slot != game_w[0xD1] && p[0] && Lb_Pl_stg_ck(p);
 }
 
 /* ------------------------------------------------------------ the net file (friends, mail)

@@ -46,11 +46,11 @@ done
 grep -aq 'browser page .* skipped' $OUT/ANNA.log || fail "no browser replacement"
 grep -aq 'quest download: none' $OUT/ANNA.log || fail "no lobby entry"
 # positions: what each sees of the other at the end = what the other has itself
-a_bob=$(grep -a 'slot [0-9] "BOB"' $OUT/ANNA.log | tail -1 | sed 's/.* pos //')
-b_bob=$(grep -a 'slot [0-9] (me) "BOB"' $OUT/BOB.log | tail -1 | sed 's/.* pos //')
-b_anna=$(grep -a 'slot [0-9] "ANNA"' $OUT/BOB.log | tail -1 | sed 's/.* pos //')
-a_anna=$(grep -a 'slot [0-9] (me) "ANNA"' $OUT/ANNA.log | tail -1 | sed 's/.* pos //')
-first_bob=$(grep -a 'slot [0-9] (me) "BOB"' $OUT/BOB.log | head -1 | sed 's/.* pos //')
+a_bob=$(grep -a 'slot [0-9] "BOB"' $OUT/ANNA.log | tail -1 | sed 's/.* pos \([-0-9]* [-0-9]* [-0-9]*\).*/\1/')
+b_bob=$(grep -a 'slot [0-9] (me) "BOB"' $OUT/BOB.log | tail -1 | sed 's/.* pos \([-0-9]* [-0-9]* [-0-9]*\).*/\1/')
+b_anna=$(grep -a 'slot [0-9] "ANNA"' $OUT/BOB.log | tail -1 | sed 's/.* pos \([-0-9]* [-0-9]* [-0-9]*\).*/\1/')
+a_anna=$(grep -a 'slot [0-9] (me) "ANNA"' $OUT/ANNA.log | tail -1 | sed 's/.* pos \([-0-9]* [-0-9]* [-0-9]*\).*/\1/')
+first_bob=$(grep -a 'slot [0-9] (me) "BOB"' $OUT/BOB.log | head -1 | sed 's/.* pos \([-0-9]* [-0-9]* [-0-9]*\).*/\1/')
 [ -n "$a_bob" ] && [ "$a_bob" = "$b_bob" ] || fail "ANNA sees BOB at '$a_bob', BOB is at '$b_bob'"
 [ -n "$b_anna" ] && [ "$b_anna" = "$a_anna" ] || fail "BOB sees ANNA at '$b_anna', ANNA is at '$a_anna'"
 [ "$first_bob" != "$b_bob" ] || fail "BOB did not move ($b_bob)"
@@ -121,19 +121,19 @@ gold1=$(python3 -c "import sys; sys.path.insert(0, 'tools'); from test_coop_hunt
 [ "$gold1" -gt "$gold0" ] || fail "ANNA's card has $gold1 zenny after the quest, $gold0 before: the reward was not saved"
 # back in the town: each sees the other where the other is (the last trace lines after the return)
 after() { sed -n '/back to the town after the quest/,$p' $OUT/$1.log; }
-a_bob=$(after ANNA | grep -a 'online: tick [0-9]* slot [0-9] "' | tail -1)
+a_bob=$(after ANNA | grep -a 'online: tick [0-9]* slot [0-9] "' | grep -a ' shown$' | tail -1)
 b_me=$(after BOB | grep -a 'online: tick [0-9]* slot [0-9] (me)' | tail -1)
-b_anna=$(after BOB | grep -a 'online: tick [0-9]* slot [0-9] "' | tail -1)
+b_anna=$(after BOB | grep -a 'online: tick [0-9]* slot [0-9] "' | grep -a ' shown$' | tail -1)
 [ -n "$a_bob" ] || fail "ANNA does not see BOB in the town after the quest"
 [ -n "$b_anna" ] || fail "BOB does not see ANNA in the town after the quest"
 [ -n "$b_me" ] || fail "no position of BOB after the quest"
 python3 - "$a_bob" "$b_me" <<'PY' || fail "after the quest ANNA sees BOB at '$a_bob', BOB says '$b_me'"
 import sys
-a = [float(v) for v in sys.argv[1].split(' pos ')[1].split()]
-b = [float(v) for v in sys.argv[2].split(' pos ')[1].split()]
+a = [float(v) for v in sys.argv[1].split(' pos ')[1].split()[:3]]
+b = [float(v) for v in sys.argv[2].split(' pos ')[1].split()[:3]]
 sys.exit(0 if max(abs(x - y) for x, y in zip(a, b)) <= 2 else 1)
 PY
-[ "$(after BOB | grep -a 'slot [0-9] (me)' | sed 's/.* pos //' | sort -u | wc -l)" -gt 1 ] || fail "BOB did not walk after the quest"
+[ "$(after BOB | grep -a 'slot [0-9] (me)' | sed 's/.* pos \([-0-9]* [-0-9]* [-0-9]*\).*/\1/' | sort -u | wc -l)" -gt 1 ] || fail "BOB did not walk after the quest"
 # the same room through mh1-server (tools/server, docs/server.md): its lobby (the test server's handling) with
 # --lobby-relay answers 6914 with "mh1-relay" and 6916 with its session relay; both players join the relay
 python3 tools/server/mh1_server.py serve --lobby-port 0 --lobby-relay --relay-ports 10370-10379 > $OUT/server3.log 2>&1 &

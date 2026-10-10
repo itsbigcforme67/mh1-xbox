@@ -545,6 +545,20 @@ static void apply_mini(PLW *pl, const u8 *m)
         memcpy(pl->name, m + 0x18, sizeof pl->name);
 }
 
+/* The online town (rt_online.c): each hunter's weapon model and kind from the weapon triple its mini data put in its
+ * player work (Lb_set_mini_data_to_pl writes PLW+0x35E but not the model): what the quest's Set_mini_data_to_pl
+ * (f_ud.c) derives, so the viewer draws the right weapon on every town hunter (before, slots kept the model of the
+ * last quest or none). */
+void rt_np_town_weapon(int slot)
+{
+    PLW *pl = &player_work[slot & 7];
+    u8 *p = (u8 *)pl;
+    if (!p[0] || (*(s16 *)(p + 0x35E) == 0 && *(s16 *)(p + 0x360) == 0 && *(s16 *)(p + 0x362) == 0))
+        return;
+    p[0x34C] = Get_weapon_id(p + 0x35E);
+    pl->kind = Battle_type[pl->work34C];
+}
+
 /* The online town's matched room (rt_online.c): this machine hosts the session (the room leader, slot 0) or joins
  * the leader at the address the lobby server gave as the game server (6916); the server knows the player count. */
 static int join_retry;
