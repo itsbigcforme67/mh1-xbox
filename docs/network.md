@@ -709,16 +709,16 @@ showed a problem. `str` = `u16 length` + bytes; client strings are obfuscated (5
 | 670B / 670D | C->S req | obfuscated id (6), obfuscated text / data (+ `u8` for 670B) | to one hunter: server answers empty, sends 670C (like 6702) / 670E (like 6708) to that id |
 | 6401 | req -> ans | `u16 n` | rooms of the current lobby: the test server always says 8 (`Lbc_ReadRoomInfo` preset ids 1-8) |
 | 6404 | req `u16` -> ans | `u16 id`, `u8 status` | **1 = free** (the counter creates in the first free one, `Lbc_ReserveRoom`), **3 = open to join** (`lbc_in_lobby_00_05`); anything else shows the server message |
-| 6403 | req / notice | `u16 id`, `u16 members`, `u16 max` | max 4 |
+| 6403 | req / notice | `u16 id`, `u16 members`, `u16 max` | max = the room's players (rule 0 below; the quest board shows "players members / max", single digits) |
 | 640D, 6402 | req -> ans | `u16 id`, `str` | explanation (the recruiting message), name |
 | 6405 | req `u16` -> ans | `u16 id`, `u8` | 1 = has a password |
-| 640B | req `u16` -> ans | `u16 id`, 5 x `u16` | join info, meaning not known: sent `members, 4, 0, 0, 0` |
+| 640B | req `u16` -> ans | `u16 id`, 5 x `u16` | join info, meaning not known: sent `members, max, 0, 0, 0` |
 | 650A / 6509 | req `u16` -> ans `u16 id`, `u32` / req `u32` -> ans empty | room property: `quest << 1`, the leader's rank `<< 9` (lb_guild_make_room); also pushed as 650A notice |
 | 6407 | req `u16 room` -> ans empty | create (reserve) the room; the creator is its leader |
-| 6603 | req `u16 room` -> ans `u8 n` | number of server rules; 0 (the room's own rule sheet is the client's: players, password, message). With n > 0 the client also asks 6604-6608 / 660E per rule (not exercised) |
+| 6603 | req `u16 room` -> ans `u8 n` | number of server rules (<= 32); see "Room rules" below |
 | 6601 / 6602 / 660F | req `u16` -> ans `u8` | may the room have a name / password / explanation: 1 |
 | 6609 / 660A / 6610 | req obfuscated string -> ans empty | name, password, explanation; 660B `u8 rule, u8 choice`; 660C (no payload) -> ans empty ends the set (`__cnet_bgProg_RoomSetRule`) |
-| 6406 | req `u16 room`, obfuscated password -> ans empty | join; error result + `str` = refused. Notice 6503 to the others: `str id`, `str handle`, `str mini`; leaving 6501 -> 6502 `str id` |
+| 6406 | req `u16 room`, obfuscated password -> ans empty | join; error result + `str` = refused (the client shows the text as an HTML dialog and stops; it never compares passwords itself). The test server refuses a wrong password and a full room. Notice 6503 to the others: `str id`, `str handle`, `str mini`; leaving 6501 -> 6502 `str id` |
 | 640A | req `u16 room` -> ans | as 630A | room members |
 | 6504 | req `u8` (1 ready / 0 cancel) -> ans empty | notice 6506 to the room: `u16 ready`, `u16 members` (the leader starts when ready + 1 >= members) |
 | 6412 | req `u16 room` -> ans `u16 id`, `u16 ready`, `u16 members` | |
@@ -731,6 +731,48 @@ showed a problem. `str` = `u16 length` + bytes; client strings are obfuscated (5
 | 6916 | req -> ans `str` 4 address bytes, `str` 2 port bytes (big endian) | the game server (`cnLBS_Get_GameServerAddress`). The test server gives the room leader's address and `--coop-port` (10300) + room: the PC's co-op host. **A PS2 would expect a real relaying game server here** (5.5) |
 
 After 6916 the client logs out of the lobby server (6002, `lbc_game_ready_04`) and `internet_lobby_act` returns 0.
+
+**Room rules** (11 Oct 2026; read from the client by a research pass, the server side tested with a fake client in
+test_server.py and on screen with three game clients in tools/test_online_server.sh). The creator's client reads the
+rules of the room it reserved (`Lbc_GetRoomRule`, `__cnet_bgProg_ReadRoomRule`), the joiner's client those of the room it
+joins (`Lbc_GuestReadRoom`). All are requests with `u16 room` (+ `u8 k` rule, 0-based, + `u8 c` choice); every answer
+echoes k (and c), the client files the answers by them (pipelined, any order); a missing answer hangs the read until
+the 2-minute timeout. Strings from the server are plain `str`, at most 0x40 bytes.
+
+| Code | Request | Answer | Meaning |
+|---|---|---|---|
+| 6603 | `u16 room` | `u8 n` | number of rules (an error result shows the server's message) |
+| 6607 | `u16 room, u8 k` | `u8 k, u8 numof` | choices of rule k (<= 32) |
+| 6601 / 6602 / 660F | `u16 room` | `u8` | may the room have a name / a password / an explanation (1) |
+| 6604 | `u16 room, u8 k` | `u8 k, str` | rule k's name |
+| 6606 | `u16 room, u8 k` | `u8 k, u8 now` | its current choice (the default for a new room; the room's for a joiner) |
+| 6605 | `u16 room, u8 k` | `u8 k, u8 perm` | 1 = the creator may set it |
+| 6608 | `u16 room, u8 k, u8 c` | `u8 k, u8 c, str` | choice c's name |
+| 660E | `u16 room, u8 k, u8 c` | `u8 k, u8 c, u8 m`, m x 3 bytes (m <= 32) | meaning not known; 0 |
+| 660B | `u8 k, u8 c` (creator, after the reads, for each rule with perm 1) | empty (ignored) | the creator's choice |
+
+What the game does with them: the rule sheet (`lb_rule_seet_set`) has only its own rows (players 1-4, password,
+message); server rules never appear on screen. `lb_guild_make_room` matches the sheet's players ("１人".."４人",
+`lb_rule_member`, Shift-JIS) against rule 0's choice names and sets rule 0's choice to the match; every other rule keeps
+`now`. So **rule 0 is the player count** when the server names its choices "１人".."４人"; nothing else in the client
+reads a rule's value (no client-side rank, weapon or quest checks besides `check_room_require`: event quests, quest
+0x65 and 0x67-0x6B and 4-star quests by the hunter's online rank, from the 6509 property). The test server and
+mh1-server offer one rule, rule 0 "人数" with "１人".."４人" (default 4): the room holds that many (6403 / 640B max;
+6406 refused when full: the quest board already shows "players 2/2" and the game's dialog shows the refusal). Other
+rules can be added to `ROOM_RULES` in tools/mh1_testserver.py; the server would have to enforce them itself, and the
+creator cannot change them. Passwords: the sheet's password (<= 8 characters) goes out as 660A only when 6602 said 1;
+6405 tells joiners that a password is needed, the joiner types it (`join_input_password`) and sends it with 6406; the
+server compares (the test server refuses "パスワードが違います。"). The room name (6609) is always sent empty.
+Server messages (an error result's `str`, the 6706 administrator message, the 614C top information) are drawn by the
+game's HTML text (`nwDispStr_Html` -> `Analysis_StringData` / `Analysis_TagCode` / `Display_StringData`): it draws
+nothing unless the text starts with a tag, so servers send `<BODY>text<END>` (tags BODY, SIZE=n, COLOR=n, BR, CENTER,
+LEFT, RIGHT, END, LF=n, C=n). On the PC those three functions were do-nothing stand-ins (every message dialog was an
+empty frame); written from the asm on 11 Oct 2026 (src/lobby/b/nm/html_text.c; not compared with check.py). The test
+server sends its administrator message at the first lobby entry (at the login the client is still behind the login
+screens' held fade-out and the dialog would sit under it); circle closes it.
+Fixed on the PC on the way: `nwDispStr_Html` (the server message's HTML dialog) had the m2c signature (f32, int):
+the string pointer was a float's bits (crash on the refusal); `cnWrap_FontDisp` (lb_bz155.c) took (string, x, y)
+where the callers pass (x, y, size, string) (crash on the admin message).
 
 ### 5.7 Line check, current place, user search, mail, administrator message (test server, 10 Oct 2026)
 

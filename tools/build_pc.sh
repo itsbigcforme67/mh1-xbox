@@ -213,7 +213,7 @@ if [ -n "$ONLINE" ]; then
     done
     LOBBY="$LOBBY src/lobby/b/nm/CallBack_Event_MatchEntryUser.c src/lobby/b/nm/CallBack_Event_RoomLeaver.c \
            src/lobby/b/nm/lm_member_list_mv.c src/lobby/b/nm/lm_room_member_mv.c src/lobby/b/nm/Lb_join.c \
-           src/lobby/b/nm/nwDispStr_Html.c src/lobby/b/nm/Analysis_TagCode.c src/lobby/b/nm/plaza_capcomPage.c \
+           src/lobby/b/nm/nwDispStr_Html.c src/lobby/b/nm/html_text.c src/lobby/b/nm/Analysis_TagCode.c src/lobby/b/nm/plaza_capcomPage.c \
            src/lobby/b/nm/plaza_checkFriendTrans.c src/lobby/b/nm/plaza_mailBoxTrans.c src/lobby/b/nm/plaza_setMyCommentTrans.c \
            src/lobby/f/lb_e10.c src/lobby/b/nm/lb_select_set_data.c src/lobby/b/nm/lb_select_tag.c src/lobby/b/nm/disp_string_handle.c \
            src/lobby/b/nm/check_halfcode.c src/lobby/b/nm/plaza_searchMemberTrans.c \

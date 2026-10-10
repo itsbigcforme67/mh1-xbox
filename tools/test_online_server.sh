@@ -3,7 +3,8 @@
 # clients log in through the game's screens, meet in the town, ANNA posts quest 1 at the guild counter, BOB joins,
 # the match goes through mh1-server's session relay (nobody hosts), ANNA clears the quest (delivery, RT_PL_ITEMS),
 # both get the reward screen, the game saves the reward to their cards and both are back in the town, each showing
-# the other. Each plays the hunter of its own card (tools/test_coop.sh saves). About 4 minutes.
+# the other. Each plays the hunter of its own card (tools/test_coop.sh saves). The room is for 2 (the rule sheet's
+# players, room rule 0): CARL is refused. About 5 minutes.
 #   tools/test_online_server.sh                                                   the Linux build
 #   RUN=wine BIN=build/win/mhview_online.exe tools/test_online_server.sh         the Windows build under Wine
 cd "$(dirname "$0")/.."
@@ -29,7 +30,7 @@ relay-ports = 10380-10389
 db = accounts.sqlite3
 verbose = yes
 CONF
-for nm in ANNA BOB; do
+for nm in ANNA BOB CARL; do
     python3 tools/server/mh1_server.py account add --db $OUT/accounts.sqlite3 --note "test $nm" > $OUT/account_$nm.txt || fail "account add"
 done
 id_of() { sed -n 's/^login \([0-9]*\) password .*/\1/p' $OUT/account_$1.txt; }
@@ -58,18 +59,28 @@ IB=$(python3 tools/mk_input.py - "$LOGIN;1950:square*3$JOIN;2700:square*3;2760:c
 run() {     # name seconds input warps [env...]
     nm=$1; t=$2; in=$3; w=$4; shift 4
     env "$@" MH1_SAVE_DIR="$PWD/$OUT/card_$nm" RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 RT_ONLINE_TRACE=1 RT_QUEST_TRACE=1 \
-        RT_NOMOVIE=1 RT_MC_TRACE=1 RT_NET_REGISTERED=1 RT_NET_PORT=$PORT RT_NET_ID=$(id_of $nm) RT_NET_PASS=$(pw_of $nm) RT_LB_WARP="$w" RT_SHOTS=5900 timeout ${TMO:-360} $RUN $BIN \
+        RT_NOMOVIE=1 RT_MC_TRACE=1 RT_NET_REGISTERED=1 RT_NET_PORT=$PORT RT_NET_ID=$(id_of $nm) RT_NET_PASS=$(pw_of $nm) RT_LB_WARP="$w" RT_SHOTS=${SHOTS:-5900} timeout ${TMO:-360} $RUN $BIN \
         disc/mh1 --quest 10 --play --online --mute --input "$in" --shot $OUT/$nm.png --time $t --size 640x480 > $OUT/$nm.log 2>&1
 }
 run ANNA 207 "$IA" "60,5545,2750,8000;300,1300,1600,C000;2200,3100,2100,8000" RT_PL_ITEMS=77:15 RT_PL_WARP="150,10350,10640,7000" $ENVA &
 PA=$!
 sleep 2
+# CARL (no card, a new hunter) tries the same room from the quest board after BOB: the room is for 2 (ANNA's rule
+# sheet, sent as room rule 0), the server refuses him ("this room is full")
+CJOIN=""; t=2480; while [ $t -le 2880 ]; do CJOIN="$CJOIN;$t:circle*2"; t=$((t + 40)); done
+SHOTS=2640,2660,2680,2700 run CARL 118 "$(python3 tools/mk_input.py - "$LOGIN;2440:square*3$CJOIN" 3500)" "60,5545,2750,8000;300,1850,1500,8000" RT_NAME=CARL &
+PC=$!
 run BOB 205 "$IB" "60,5545,2750,8000;300,1850,1500,8000;2100,3100,2100,8000" $ENVB || fail "client BOB stopped early"
+wait $PC || fail "client CARL stopped early"
 wait $PA || { PA=""; fail "client ANNA stopped early"; }
 PA=""
 stop_server
 grep -q "ＡＮＮＡ creates room" $OUT/server.log || fail "ANNA did not create a room"
 grep -q "ＢＯＢ joins room" $OUT/server.log || fail "BOB did not join the room"
+grep -q "room 1 rule 0 = 1 (２人)" $OUT/server.log || fail "ANNA's rule sheet did not set room rule 0 to 2 players"
+grep -q "cmd 6403 .* 000100020002$" $OUT/server.log || fail "the lobby was not told that room 1 is full (2 of 2)"
+grep -q "CARL cannot join room 1: full (2 players)" $OUT/server.log || fail "CARL was not refused from the full 2-player room"
+grep -q "CARL joins room" $OUT/server.log && fail "CARL joined the full room"
 grep -q "quest 1 started with 2 player(s)" $OUT/server.log || fail "the relay did not start the hunt"
 for nm in ANNA BOB; do
     grep -aq "the game server is a session relay: joining it" $OUT/$nm.log || fail "$nm did not join the relay"
@@ -117,4 +128,4 @@ grep -aq "town step 4" $OUT/BOB_crashed.log || fail "BOB did not reach the town 
 grep -q "6410" $OUT/server_restart.log || fail "nobody was told that BOB left (6410) after his crash"
 [ "$(grep -c "ＢＯＢ returns to plaza 1 lobby" $OUT/server_restart.log)" -ge 2 ] || fail "BOB's login after the crash did not go back to his lobby"
 grep -a 'slot [0-9] "' $OUT/BOB.log | grep -aq ' shown$' || fail "BOB does not show ANNA after coming back"
-echo "mh1-server OK${RUN:+ ($RUN $BIN)}: accounts (invite-only store, config file), login, town, a room, the hunt through the relay to the clear and the reward (ANNA $a_gold0 -> $a_gold1, BOB $b_gold0 -> $b_gold1 zenny, saved), both back in the town; after a server restart the same hunters ($a_id, $b_id), a crashed client back in his lobby"
+echo "mh1-server OK${RUN:+ ($RUN $BIN)}: accounts (invite-only store, config file), login, town, a room for 2 (room rule 0; a third hunter refused), the hunt through the relay to the clear and the reward (ANNA $a_gold0 -> $a_gold1, BOB $b_gold0 -> $b_gold1 zenny, saved), both back in the town; after a server restart the same hunters ($a_id, $b_id), a crashed client back in his lobby"

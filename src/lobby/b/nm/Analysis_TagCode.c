@@ -21,7 +21,7 @@ extern char tag_buffer[];
 extern char tag_buffer[];
 extern char tag_buffer[];
 void Analysis_TagCode(void) {
-    int sp38;
+    char sp38[8];   /* the asm clears 8 bytes at sp+0x38: an int here overflowed on the PC */
     int var_s1;
     s8 var_s0;
     s8 var_v1;
@@ -95,7 +95,7 @@ block_54:
         }
         break;
     case 3:
-        memset(&sp38, 0, 8);
+        memset(sp38, 0, 8);
         temp_a0_6 = dp;
         F(s32, temp_a0_6, 4) = (F(s32, temp_a0_6, 4) | 4);
         if ((F(s8, &tag_buffer, 6) >= 0x30) && (F(s8, &tag_buffer, 6) < 0x3A)) {
@@ -111,7 +111,7 @@ block_54:
         }
         break;
     case 10:
-        memset(&sp38, 0, 8);
+        memset(sp38, 0, 8);
         temp_a0_7 = dp;
         F(s32, temp_a0_7, 4) = (F(s32, temp_a0_7, 4) | 4);
         if ((F(s8, &tag_buffer, 2) >= 0x30) && (F(s8, &tag_buffer, 2) < 0x3A)) {
