@@ -80,7 +80,7 @@ for nm in ANNA BOB; do
     grep -aq "rt_flow: tick [0-9]* mode 2 step 0 D5 3" $OUT/$nm.log || fail "$nm did not see event quest 200 cleared"
     grep -aq "rt_flow: tick [0-9]* mode 5 " $OUT/$nm.log || fail "$nm had no reward screen"
     grep -aq "rt_flow: rewards: [0-9]" $OUT/$nm.log || fail "$nm got no reward items"
-    grep -aq "rt_quest: Gold_add" $OUT/$nm.log || fail "$nm got no reward money"
+    grep -aEq "rt_quest: tick [0-9]+ money \+[1-9]" $OUT/$nm.log || fail "$nm got no reward money"
     grep -aq "online: back to the town after the quest" $OUT/$nm.log || fail "$nm did not go back to the town"
     grep -aq "back to the village" $OUT/$nm.log && fail "$nm went to the offline village"
 done
