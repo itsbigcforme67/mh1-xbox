@@ -55,12 +55,13 @@ void rt_prims_reset(void);
 const char *rt_mc_root(void);
 void rt_cam_init(int stage);
 
-static int wanted, active, phase, ticks, trace = -1;
+static int wanted, active, phase, ticks, trace = -1, back;
 static char host[128] = "127.0.0.1", key[16] = "00000000", pass[24] = "LOCALTEST0000000";
 static int port = 10200;
 static char sname[64] = "Local test server";
 
 enum { O_CONNECT, O_LOBBY, O_MATCHED, O_FAILED };
+static void netfile_load(void);
 
 int rt_online_wanted(void) { return wanted; }
 int rt_online_active(void) { return active; }
@@ -140,6 +141,29 @@ void rt_online_enter(void)
         if (!User_data[8] && rt_np_load_hunter() != 0 && getenv("RT_NAME"))
             snprintf((char *)User_data + 8, 0x10, "%s", getenv("RT_NAME"));
     }
+    if (back) {     /* after an online quest (Game_task mode 6 online, f_game_nm.c): all_reset, Load_overlay(3),
+                     * Clear_lobby_ram, AQ_session_exit_online, internet_connect_minimum_cleanup (done in matched()),
+                     * then CnetWork+5 = 3 and server_connect / net_ToNetworkLobby / internet_lobby_act again: a second
+                     * login that sends the kept id and handle (CallBack_Result_LoginLobbyServer case 1), saves the hunter
+                     * (lbc_login_finish_after: McOperationSet(7, 2)) and goes To_MyLobby -> lobby_return_to_lobby (the
+                     * server's current place 6891). Load_overlay(3) is not repeated here (rt_lb_reload would reset the
+                     * lobby client's work and the cnet library's state that the PC keeps across the quest); what it
+                     * would clear for the town is cleared by MH_lobbyClear in lobby_return_to_lobby. */
+        extern u8 CnetWork[];
+        extern u8 COM_R_No_0, COM_R_No_1, COM_R_No_2, COM_R_No_3, COM_R_No_4, COM_RET;
+        void Clear_lobby_ram(void);
+        Clear_lobby_ram();
+        CnetWork[5] = 3;
+        COM_R_No_0 = 1;             /* as Game_task mode 6 step 2 sets them (tcp_init's step is COM_R_No_2) */
+        COM_R_No_1 = 0;
+        COM_R_No_2 = 0;
+        COM_R_No_3 = 0;
+        COM_R_No_4 = 0;
+        COM_RET = 0;
+        say("back to the town after the quest%s: a new login (CnetWork+5 = %d)", "", CnetWork[5]);
+    }
+    if (!back)      /* the friend list and mail of the last session (ms_network_sub's net file load on the PS2) */
+        netfile_load();
     say("connecting to %s port %d", host, port);
     CpInetInitialize();
     {   /* the network device ms_network_sub would have chosen (DeviceGetOptionalStatus reads it for the login's first
@@ -279,6 +303,7 @@ static void town_chat(void)
 extern u8 USER_PL_ID, select_w[];
 void cnLBS_Get_GameServerAddress(u32 *addr, u16 *port);
 int CpInetTcpAbort(int h);
+int CpInetTcpDelete(int *h);
 void rt_np_configure(int role, const char *addr, int port, int players);
 static int matched(void)
 {
@@ -292,6 +317,7 @@ static int matched(void)
     fprintf(stderr, "online: match: quest %d, %d players, slot %d, game server %s port %d\n", quest, n, slot, ip, port);
     rt_log("online: match: quest %d, %d players, slot %d, game server %s port %d", quest, n, slot, ip, port);
     CpInetTcpAbort(*(s32 *)(ConnWork + 4));         /* internet_connect_minimum_cleanup: the lobby connection */
+    CpInetTcpDelete((int *)(ConnWork + 4));
     {   /* the game rule string of 6914 (MatchGameRule, CnetSys_w+0x30323): "mh1-relay" = the 6916 address is
          * mh1-server's session relay (docs/server.md 4.3): every player joins it, the relay orders the slots as 6912 */
         extern u8 CnetSys_w[];
@@ -303,10 +329,11 @@ static int matched(void)
         rt_np_configure(slot == 0 && !relay ? 1 : 2, ip, port, n);
     }
     active = 0;
-    wanted = 0;
+    back = 1;           /* the online mode stays on: after the quest (game mode 6) the town again, as the PS2 does */
     return quest > 0 ? quest : -1;
 }
 
+extern u8 COM_R_No_2;
 /* One tick. Returns the quest number once a match was made, -1 when the online mode ended, else 0. */
 int rt_online_tick(void)
 {
@@ -326,6 +353,7 @@ int rt_online_tick(void)
             system_w[0x10] = 1;
             phase = O_LOBBY;
         } else if (r == -1 || ticks > 30 * 30) {
+            fprintf(stderr, "online: tcp_init %d (step %d)\n", r, COM_R_No_2);
             say("could not connect to %s port %d", host, port);
             phase = O_FAILED;
         }
@@ -339,8 +367,21 @@ int rt_online_tick(void)
                     cw[0x2C32], cw[0x2C33], cw[0x2C34], (s8)lb_sys[3], game_w[0x14], r);
             last31 = cw[0x2C31]; last33 = cw[0x2C33]; last34 = cw[0x2C34]; last3 = lb_sys[3];
         }
-        if (cw[0x2C31] == 3 && lb_sys[3] == 4)
+        if (cw[0x2C31] == 3 && lb_sys[3] == 4) {
             town_chat();
+            static int relogged;
+            if (getenv("RT_ONLINE_RELOGIN") && town_ticks == atoi(getenv("RT_ONLINE_RELOGIN")) && !relogged++) {
+                /* test aid: the return to the town without a quest: drop the connection as after a match and log in
+                 * again as Game_task mode 6 does (CnetWork+5 = 3) */
+                int CpInetTcpAbort(int h), CpInetTcpDelete(int *h);
+                fprintf(stderr, "online: RT_ONLINE_RELOGIN: dropping the connection at town tick %d\n", town_ticks);
+                CpInetTcpAbort(*(s32 *)(ConnWork + 4));
+                CpInetTcpDelete((int *)(ConnWork + 4));
+                back = 1;
+                rt_online_enter();
+                return 0;
+            }
+        }
         if (trace && cw[0x2C31] == 3 && lb_sys[3] == 4) {     /* a new town stage: its unique spots (exits, counters) */
             static int spots_stage = -1, npc_at = -1;
             if (ticks == npc_at) {
@@ -410,6 +451,7 @@ int rt_online_tick(void)
     case O_FAILED:
         active = 0;
         wanted = 0;
+        back = 0;
         rt_np_set_online(0);
         system_w[0x10] = 0;
         say("back to the village%s (offline, %d)", "", 0);
@@ -462,4 +504,51 @@ int rt_online_visible(int slot)
     extern u8 player_work[];
     u8 *p = player_work + 0xA00 * (slot & 7), *me = player_work + 0xA00 * (game_w[0xD1] & 7);
     return active && phase == O_LOBBY && slot != game_w[0xD1] && p[0] && p[0x736] == me[0x736];
+}
+
+/* ------------------------------------------------------------ the net file (friends, mail)
+ * The PS2 keeps the friend list (Friend_data, 50 x 0x30) in a "net file" on the memory card: cpn_PutCNData copies it
+ * into CNFile (0x1BEC bytes), SaveNetFile_ForLobby (main 0x28A3D0, a step machine with card dialogs) writes it, and the
+ * network start (ms_network_sub, skipped on the PC) loads it back (cpn_GetCNData). The PC keeps CNFile and the received
+ * mail (RecvMailInfo, 8 x 0x9A) in its own file next to the save, mh1pc_net.bin (a PC format, not the PS2 card file):
+ * written whenever the lobby saves the net file (adding / deleting a friend), read when the online mode starts.
+ * Before, both were do-nothing stand-ins returning 0 and the friend list waited for the save forever. */
+extern u8 CNFile[], RecvMailInfo[];
+#define NETFILE_MAGIC "MH1PCNET1"
+static void netfile_path(char *out, int n)
+{
+    snprintf(out, n, "%s/mh1pc_net.bin", rt_mc_root());
+}
+void SaveNetFile_init(void) {}
+s32 SaveNetFile_ForLobby(void)
+{
+    char p[600];
+    FILE *f;
+    netfile_path(p, sizeof p);
+    if ((f = fopen(p, "wb")) == NULL) {
+        say("net file: cannot write %s%.0d", p, 0);
+        return -1;
+    }
+    fwrite(NETFILE_MAGIC, 1, sizeof NETFILE_MAGIC, f);
+    fwrite(CNFile, 1, 0x1BEC, f);
+    fwrite(RecvMailInfo, 1, 0x4D0, f);
+    fclose(f);
+    say("net file saved (friends, mail)%s%.0d", "", 0);
+    return 1;
+}
+static void netfile_load(void)
+{
+    char p[600], m[sizeof NETFILE_MAGIC];
+    FILE *f;
+    void cpn_GetCNData(void);
+    netfile_path(p, sizeof p);
+    if ((f = fopen(p, "rb")) == NULL)
+        return;
+    if (fread(m, 1, sizeof m, f) == sizeof m && !memcmp(m, NETFILE_MAGIC, sizeof m) && fread(CNFile, 1, 0x1BEC, f) == 0x1BEC) {
+        if (fread(RecvMailInfo, 1, 0x4D0, f) != 0x4D0)
+            memset(RecvMailInfo, 0, 0x4D0);
+        cpn_GetCNData();
+        say("net file loaded (friends, mail)%s%.0d", "", 0);
+    }
+    fclose(f);
 }

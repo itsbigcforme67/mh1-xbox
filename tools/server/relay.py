@@ -108,6 +108,7 @@ class Session:
 
     def reset(self):
         self.members = {}               # slot -> Member
+        self.pending = []               # connected, slot not given yet (lobby sessions: until the hello names the hunter)
         self.started = False
         self.t_first = None
         self.start_task = None
@@ -123,16 +124,19 @@ class Session:
             self.log("refused %s (not an allowed address)" % host)
             writer.close()
             return
-        if self.started or len(self.members) >= self.want:
+        if self.started or len(self.members) + len(self.pending) >= self.want:
             self.log("refused %s (%s)" % (host, "hunt running" if self.started else "full"))
             writer.close()
             return
-        slot = min(s for s in range(NP_MAX) if s not in self.members)
-        m = Member(self, reader, writer, slot)
-        self.members[slot] = m
+        m = Member(self, reader, writer, None)
+        if self.names:      # the lobby's room: the slot follows its member order, known at HELLO (the hunter's name)
+            self.pending.append(m)
+        else:               # a session from the command line: the order of arrival
+            m.slot = min(s for s in range(NP_MAX) if s not in self.members)
+            self.members[m.slot] = m
         if self.t_first is None:
             self.t_first = time.monotonic()
-        self.stats["peak_players"] = max(self.stats["peak_players"], len(self.members))
+        self.stats["peak_players"] = max(self.stats["peak_players"], len(self.members) + len(self.pending))
         sock = writer.get_extra_info("socket")
         if sock is not None:
             import socket
@@ -141,8 +145,11 @@ class Session:
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
             except OSError:
                 pass
-        self.log("player from %s:%d gets slot %d" % (m.peer[0], m.peer[1], slot))
-        m.send(frame(0, WELCOME, bytes([slot])))
+        if m.slot is not None:
+            self.log("player from %s:%d gets slot %d" % (m.peer[0], m.peer[1], m.slot))
+            m.send(frame(0, WELCOME, bytes([m.slot])))
+        else:
+            self.log("player from %s:%d connected, slot at its hello" % m.peer[:2])
         try:
             await self.read_loop(m)
         except (ConnectionError, OSError, asyncio.IncompleteReadError):
@@ -181,11 +188,17 @@ class Session:
             if m.mini is not None or self.started:
                 return True                 # a second hello: ignored
             m.mini = (data + bytes(NP_MINI))[:NP_MINI]
+            if m.slot is None:
+                if not self.give_slot(m):
+                    return False
             self.log("slot %d hello (%s)" % (m.slot, self.relay.mini_name(m.mini)))
             self.maybe_start()
             return True
         if typ == BYE:
             self.drop(m, "left")
+            return False
+        if m.slot is None:
+            self.drop(m, "frame type 0x%02X before its hello" % typ)
             return False
         f = frame(m.slot, typ, data)       # the relay knows who sent it (as the host does)
         self.stats["frames"] += 1
@@ -195,7 +208,41 @@ class Session:
                 o.send(f)
         return True
 
+    def give_slot(self, m):
+        """a lobby session: the slot of the hunter's place in the room's member list (6912 MatchPlSide gave each player
+        that number - 1), so the slots are right from the WELCOME on; a name not in the list (or a taken place) gets
+        the first slot no listed hunter needs"""
+        nm = self.relay.mini_name(m.mini)
+        want = self.names.index(nm) if nm in self.names else None
+        if want is None or want in self.members or want >= self.want:
+            expected = {i for i, n in enumerate(self.names) if n not in self.arrived_names()}
+            free = [s for s in range(self.want) if s not in self.members]
+            want = ([s for s in free if s not in expected] or free[::-1] or [None])[0]     # else from the top
+        if want is None:
+            self.drop(m, "no free slot")
+            return False
+        self.pending.remove(m)
+        m.slot = want
+        self.members[want] = m
+        self.log("player from %s:%d (%s) gets slot %d (the room's order)" % (m.peer[0], m.peer[1], nm, want))
+        m.send(frame(0, WELCOME, bytes([want])))
+        return True
+
+    def arrived_names(self):
+        return {self.relay.mini_name(o.mini) for o in self.members.values() if o.mini}
+
     def drop(self, m, why):
+        if m in self.pending:
+            self.pending.remove(m)
+            m.alive = False
+            try:
+                m.writer.close()
+            except (ConnectionError, OSError, RuntimeError):
+                pass
+            self.log("player from %s:%d gone before its hello: %s" % (m.peer[0], m.peer[1], why))
+            if not self.members and not self.pending:
+                self.finish()
+            return
         if not m.alive and self.members.get(m.slot) is not m:
             return
         m.alive = False
@@ -210,7 +257,7 @@ class Session:
                 bye = frame(m.slot, BYE)
                 for o in self.members.values():
                     o.send(bye)
-            if not self.members:
+            if not self.members and not self.pending:
                 self.finish()
             elif not self.started:
                 self.maybe_start()
@@ -220,7 +267,7 @@ class Session:
         if self.started:
             return
         ready = [x for x in self.members.values() if x.mini is not None]
-        if ready and len(ready) == len(self.members) and len(self.members) >= self.want:
+        if ready and not self.pending and len(ready) == len(self.members) and len(self.members) >= self.want:
             self.schedule_start(Limits.grace)
         elif self.start_task is None and self.t_first is not None:
             left = Limits.start_wait - (time.monotonic() - self.t_first)
@@ -240,7 +287,7 @@ class Session:
         ms = [m for m in self.members.values() if m.mini is not None]
         if self.started or not ms:
             return
-        for m in list(self.members.values()):       # no hello by now: not part of this hunt
+        for m in list(self.members.values()) + list(self.pending):     # no hello by now: not part of this hunt
             if m.mini is None:
                 self.drop(m, "no hello before the start")
         # slots: the lobby's order when it gave one (by hunter name), else the order of arrival; always 0..n-1

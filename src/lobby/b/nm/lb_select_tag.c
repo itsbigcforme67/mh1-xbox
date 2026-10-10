@@ -1,4 +1,4 @@
-/* lb_select_tag (0x5B1350): logic complete; 178/376 differ, almost all register naming: the original spills the per-iteration copy of i (spA0, 160(sp)) and keeps the class count in fp, we do the opposite. Not built. */
+/* lb_select_tag (0x5B1350): logic complete; 178/376 differ, almost all register naming: the original spills the per-iteration copy of i (spA0, 160(sp)) and keeps the class count in fp, we do the opposite. Not built for the PS2; the PC build links it (was static, so the room list on the quest board drew nothing). */
 #define flfntLocate flfntLocate_hdr
 #define font_print_double font_print_double_hdr
 #include "lobby_b.h"
@@ -37,7 +37,7 @@ typedef struct { f32 f[5]; } F5;
 typedef struct { s16 x, y, w, h; u32 col; u8 pad[0xC]; } TF;
 void Lb_put_icon();
 void Put_2TF();
-static void lb_select_tag(void) {
+void lb_select_tag(void) {    /* (not static: Lb_join_trans, lb_bz134.c, calls it; the PC links this draft) */
     TF t;
     RI *r;
     s32 i;

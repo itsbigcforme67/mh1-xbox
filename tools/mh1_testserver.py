@@ -115,6 +115,15 @@ class Registry:
 
 
 REG = Registry()
+# where a hunter was when his connection ended inside a lobby (after a match the client logs out without leaving it):
+# user id -> (plaza, lobby). The next login with that id (CnetWork+5 == 3: the return from an online quest sends the
+# kept id) asks its current place (6891) and is put back there (lobby_return_to_lobby)
+PLACES = {}
+CLIENTS = set()                     # every connection (also before it entered a plaza)
+KNOWN_IDS = set()                   # ids that logged in since the server started (mail to them is kept)
+MAILBOX = {}                        # id -> [6705 payloads] for hunters not logged in
+LINE_CHECK = 30.0                   # seconds between 6001 line checks
+ADMIN_MESSAGE = ""                  # --admin-message: sent to each hunter after the login (6706)
 
 
 class Room:
@@ -161,7 +170,21 @@ class Client(socketserver.BaseRequestHandler):
         self.lock = threading.Lock()
         self.mini = b"\0" * 0x40
         self.h = {}
+        self.search = []
         self.build_piece_handlers()
+        CLIENTS.add(self)
+        self.alive = True
+        threading.Thread(target=self.line_check, daemon=True).start()
+
+    def line_check(self):
+        """6001 line check (S->C request, empty; the client answers 6001). The client logs out when it has received
+        nothing for 0xE10 ticks = 2 minutes (internet_lobby_act, cw+0x35F4: "connection lost", To_LogOut(6)), so a
+        hunter alone and idle in a quiet lobby needs something from the server. How often the real server checked is not
+        known: every LINE_CHECK seconds here."""
+        while self.alive:
+            time.sleep(LINE_CHECK)
+            if self.alive:
+                self.safe_send(REQ, C_LINECHECK, b"")
 
     # ---- packet io ----
     def send(self, cat, cmd, payload=b"", seq=None, res=0):
@@ -211,7 +234,12 @@ class Client(socketserver.BaseRequestHandler):
         except (ConnectionError, OSError):
             pass
         finally:
+            self.alive = False
             self.leave_room()
+            w = REG.where.get(self, {})
+            if w.get(1) is not None and self.user_handle:
+                PLACES[self.user_id] = (w.get(0) or 1, w[1])
+            CLIENTS.discard(self)
             lobby = REG.leave(self)
             if lobby is not None:
                 for o in REG.others(self, 1, lobby):
@@ -270,15 +298,29 @@ class Client(socketserver.BaseRequestHandler):
         self.mini, _ = self.enc_string(p, 0, seq)
         self.send(ANS, C_MINIDATA, b"", seq=seq)
 
-    def on_6141_16(self, seq, p):           # login finished: nothing to answer
+    def on_6141_16(self, seq, p):           # login finished: nothing to answer; mail kept while away, the admin message
         log("login finished")
+        KNOWN_IDS.add(self.user_id[:6])
+        self.deliver_mail()
+        if ADMIN_MESSAGE:           # 6706 request: str title, str html (the client shows it, then answers 6706)
+            self.send(REQ, 0x6706, str16("MH1 test server") + str16(ADMIN_MESSAGE))
 
     def on_614C_1(self, seq, p):            # top information
         html = "<html><body>MH1 test server<br>private test server, not an MH Oldschool server</body></html>"
         self.send(ANS, C_TOPINFO, bytes([0]) + str16(html), seq=seq)
 
-    def on_6891_1(self, seq, p):            # current place
-        self.send(ANS, C_PLACE, struct.pack(">HHH", 0, 0, 0), seq=seq)
+    def on_6891_1(self, seq, p):            # current place: u16 plaza, u16 lobby, u16 (0); zeros = none (the top menu)
+        place = PLACES.pop(self.user_id, None)
+        if place is None:
+            self.send(ANS, C_PLACE, struct.pack(">HHH", 0, 0, 0), seq=seq)
+            return
+        plaza, lobby = place
+        REG.enter(self, 0, plaza)       # back where he was: the client reads the lobby's members next (630A) and
+        REG.enter(self, 1, lobby)       # does not send a lobby entry (Lbs_request_enter_lobby2)
+        log("%s returns to plaza %d lobby %d" % (self.user_handle, plaza, lobby))
+        self.send(ANS, C_PLACE, struct.pack(">HHH", plaza, lobby, 0), seq=seq)
+        for o in REG.others(self, 1, lobby):
+            o.safe_send(NOTE, 0x6411, str16(self.user_id) + str16(self.user_handle[:16]) + str16(self.mini))
 
     # plazas, lobbies, rooms: "pieces" of the town. The client asks for the same things for each kind
     # (count, name, join user counts, status, explanation); only the wire codes differ.
@@ -616,6 +658,100 @@ class Client(socketserver.BaseRequestHandler):
         if o is not None:
             o.safe_send(NOTE, 0x670E, str16(self.user_id) + str16(data))
 
+    # user search, mail, admin message (docs/network.md 5.7) ---------------------------------------------------------
+    def find_user(self, ident):
+        """a logged-in hunter by id (the client sends 6 characters)"""
+        ident = ident.split(b"\0")[0][:6]
+        with REG.lock:
+            for c in list(REG.where):
+                if c.user_id.encode()[:6] == ident:
+                    return c
+        for c in list(CLIENTS):
+            if c.user_id.encode()[:6] == ident and c.user_handle:
+                return c
+        return None
+
+    def on_6703_1(self, seq, p):            # SearchUser: obfuscated id -> where that hunter is
+        ident, _ = self.enc_string(p, 0, seq)
+        o = self.find_user(ident)
+        if o is None:
+            self.send(ANS, 0x6703, str16("that hunter is not logged in"), seq=seq, res=1)
+            return
+        w = REG.where.get(o, {})
+        # str id, u16 plaza, u16 lobby, u16 room (1-based, 0 = none), u8, u8 (not shown by the client: 0), str message
+        self.send(ANS, 0x6703, str16(o.user_id) + struct.pack(">HHHBB", w.get(0) or 0, w.get(1) or 0, w.get(2) or 0, 0, 0) +
+                  str16(""), seq=seq)
+
+    SEARCH_PAGE = 10        # records per answer; the client asks for the rest with the 6709 notice ("certify")
+
+    def search_match(self, o, conds):
+        m = o.mini
+        for t, v in conds:
+            if t == 1 and o.user_id.encode()[:6] != v.split(b"\0")[0][:6]:
+                return False
+            if t == 2 and v.split(b"\0")[0] not in o.user_handle.encode("cp932", "replace"):
+                return False
+            if t == 3 and m[0] != v[0]:                     # weapon kind (mini +0)
+                return False
+            if t == 6 and not (v[0] * 4 + 1 <= m[1] <= v[1] * 4 + 4):     # rank range (mini +1), guess
+                return False
+        return True                 # (types 4 and 5: never sent by the game's screens, not checked)
+
+    def on_6709_1(self, seq, p):            # ConditionSearchUser: u8 max, u8 n, n x (u8 type, value)
+        mx, n = p[0], p[1]
+        off, conds = 2, []
+        for _ in range(n):
+            t = p[off]
+            off += 1
+            if t in (1, 2):
+                v, off = self.enc_string(p, off, seq)
+            elif t == 6:
+                v, off = p[off:off + 2], off + 2
+            else:
+                v, off = p[off:off + 1], off + 1
+            conds.append((t, v))
+        with REG.lock:
+            users = [c for c in REG.where if c.user_handle]
+        self.search = [o for o in users if self.search_match(o, conds)][:mx or 80]
+        log("%s searches %s: %d found" % (self.user_handle, conds, len(self.search)))
+        self.search_page(0x6709, seq, 0)
+
+    def search_page(self, code, seq, start):
+        rs = self.search[start:start + self.SEARCH_PAGE]
+        last = 1 if start + len(rs) >= len(self.search) else 0
+        out = bytes([len(self.search), start, len(rs), last])
+        for o in rs:
+            out += str16(o.user_id[:8]) + str16(o.user_handle.encode("cp932", "replace")[:16]) + str16(o.mini[:0x40])
+        self.send(ANS, code, out, seq=seq)
+
+    def on_6709_16(self, seq, p):           # the client got a page with "more to come": u8 next record; the next page
+        # goes back as an answer with this notice's sequence number (the client's slot now waits on it). Code 670A (its
+        # answer row has the same handler as 6709's; which code the real server used is a guess)
+        self.search_page(0x670A, seq, p[0] if p else 0)
+
+    def on_6704_1(self, seq, p):            # SendMail: obfuscated id (6), obfuscated text
+        ident, off = self.enc_string(p, 0, seq)
+        text, _ = self.enc_string(p, off, seq)
+        ident = ident.split(b"\0")[0][:6].decode("ascii", "replace")
+        o = self.find_user(ident.encode())
+        mail = str16(self.user_id) + str16(self.user_handle.encode("cp932", "replace")[:16]) + str16(text[:0x7E])
+        if o is not None:
+            o.safe_send(NOTE, 0x6705, mail)
+        elif ident in KNOWN_IDS:
+            MAILBOX.setdefault(ident, []).append(mail)      # delivered at the next login (guess: what the real one did)
+        else:
+            self.send(ANS, 0x6704, str16("there is no hunter with that id"), seq=seq, res=1)
+            return
+        log("mail from %s to %s%s" % (self.user_handle, ident, "" if o else " (kept until the next login)"))
+        self.send(ANS, 0x6704, b"", seq=seq)
+
+    def deliver_mail(self):
+        for mail in MAILBOX.pop(self.user_id[:6], []):
+            self.safe_send(NOTE, 0x6705, mail)
+
+    def on_6706_2(self, seq, p):            # the client closed the administrator message
+        log("%s read the administrator message" % self.user_handle)
+
     def on_630A_1(self, seq, p):            # lobby member list: u16 ?, u8 fields per entry, u8 count, entries
         i = struct.unpack(">H", p[:2])[0]
         members = REG.members(1, i)
@@ -623,6 +759,9 @@ class Client(socketserver.BaseRequestHandler):
         for m in members:
             out += str16(m.user_id) + str16(m.user_handle[:16]) + str16(m.mini)
         self.send(ANS, 0x630A, out, seq=seq)
+
+    def on_6001_2(self, seq, p):            # the line check's answer
+        pass
 
     def on_6002_1(self, seq, p):            # logout
         self.send(ANS, C_LOGOUT, b"", seq=seq)
@@ -634,14 +773,16 @@ class Server(socketserver.ThreadingTCPServer):
 
 
 def main():
-    global VERBOSE, COOP_PORT
+    global VERBOSE, COOP_PORT, ADMIN_MESSAGE
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=10200)
     ap.add_argument("--allow-public", action="store_true", help="bind a non-private address")
     ap.add_argument("-v", "--verbose", action="store_true")
     ap.add_argument("--coop-port", type=int, default=10300, help="the matched room's leader hosts on this + room number")
+    ap.add_argument("--admin-message", default="", help="an administrator message (6706) every hunter gets after the login")
     a = ap.parse_args()
+    ADMIN_MESSAGE = a.admin_message
     VERBOSE = a.verbose
     COOP_PORT = a.coop_port
     if not is_private(a.host) and not a.allow_public:
