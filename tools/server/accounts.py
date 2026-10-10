@@ -15,9 +15,10 @@ import os
 import secrets
 import sqlite3
 import string
+import threading
 import time
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS account (
     login       TEXT PRIMARY KEY,           -- 8 digits (what the game's login packet can carry)
@@ -50,6 +51,12 @@ CREATE TABLE IF NOT EXISTS mail (
     body        BLOB NOT NULL,
     sent        INTEGER NOT NULL,
     delivered   INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS place (            -- where a hunter was when his connection ended inside a lobby (schema 2)
+    hunter_id   TEXT PRIMARY KEY REFERENCES hunter(hunter_id) ON DELETE CASCADE,
+    plaza       INTEGER NOT NULL,
+    lobby       INTEGER NOT NULL,
+    t           INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS audit (
     t           INTEGER NOT NULL,
@@ -102,9 +109,40 @@ class RateLimit:
         self.fails.pop(key, None)
 
 
+class _Rows:
+    """a finished query: its rows and rowcount (read under the lock)"""
+    def __init__(self, cur):
+        self.rows = cur.fetchall()
+        self.rowcount = cur.rowcount
+
+    def fetchone(self):
+        return self.rows[0] if self.rows else None
+
+    def fetchall(self):
+        return self.rows
+
+    def __iter__(self):
+        return iter(self.rows)
+
+
+class _LockedDB:
+    """one SQLite connection shared by the lobby's connection threads: every statement under one lock"""
+    def __init__(self, conn):
+        self.conn = conn
+        self.lock = threading.RLock()
+
+    def execute(self, sql, args=()):
+        with self.lock:
+            return _Rows(self.conn.execute(sql, args))
+
+    def executescript(self, sql):
+        with self.lock:
+            self.conn.executescript(sql)
+
+
 class AccountDB:
     def __init__(self, path):
-        self.db = sqlite3.connect(path, check_same_thread=False, isolation_level=None)
+        self.db = _LockedDB(sqlite3.connect(path, check_same_thread=False, isolation_level=None))
         self.db.execute("PRAGMA foreign_keys = ON")
         self.db.execute("PRAGMA journal_mode = WAL") if path != ":memory:" else None
         v = self.db.execute("PRAGMA user_version").fetchone()[0]
@@ -206,7 +244,7 @@ class AccountDB:
     def set_mini(self, hunter_id, mini):
         self.db.execute("UPDATE hunter SET mini = ?, updated = ? WHERE hunter_id = ?", (bytes(mini[:0x40]), int(time.time()), hunter_id))
 
-    # ---- friends and mail (6703-6705; formats not traced yet, docs/server.md 3.2) ----
+    # ---- friends and mail (docs/network.md 5.7; the game keeps its friend list on the player's card, see docs/server.md) ----
     def add_friend(self, hunter_id, friend_id):
         self.db.execute("INSERT OR IGNORE INTO friend VALUES (?, ?, ?)", (hunter_id, friend_id, int(time.time())))
 
@@ -222,11 +260,28 @@ class AccountDB:
         self.db.execute("UPDATE mail SET delivered = 1 WHERE to_id = ?", (hunter_id,))
         return [(r[1], r[2], r[3]) for r in rows]
 
+    def hunter_handle(self, hunter_id):
+        r = self.db.execute("SELECT handle FROM hunter WHERE hunter_id = ?", (hunter_id,)).fetchone()
+        return bytes(r[0]) if r else None
+
+    def set_handle(self, hunter_id, handle):
+        self.db.execute("UPDATE hunter SET handle = ?, updated = ? WHERE hunter_id = ?", (bytes(handle[:16]), int(time.time()), hunter_id))
+
+    # ---- the place a hunter left (a lost connection, a crash, the match's logout): back there at the next login ----
+    def place_save(self, hunter_id, plaza, lobby):
+        self.db.execute("INSERT OR REPLACE INTO place VALUES (?, ?, ?, ?)", (hunter_id, plaza, lobby, int(time.time())))
+
+    def place_take(self, hunter_id, max_age=900):
+        r = self.db.execute("SELECT plaza, lobby, t FROM place WHERE hunter_id = ?", (hunter_id,)).fetchone()
+        self.db.execute("DELETE FROM place WHERE hunter_id = ?", (hunter_id,))
+        return (r[0], r[1]) if r and time.time() - r[2] <= max_age else None
+
     def prune(self, mail_days=30, audit_days=90):
         """data minimisation (docs/server.md 9): delivered mail and old audit lines go"""
         now = int(time.time())
         self.db.execute("DELETE FROM mail WHERE delivered = 1 OR sent < ?", (now - mail_days * 86400,))
         self.db.execute("DELETE FROM audit WHERE t < ?", (now - audit_days * 86400,))
+        self.db.execute("DELETE FROM place WHERE t < ?", (now - 86400,))
 
     def export(self, login):
         """everything stored about one account (a player's data request)"""

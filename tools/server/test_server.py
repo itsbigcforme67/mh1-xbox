@@ -260,7 +260,7 @@ class LobbyStubTest(unittest.TestCase):
 class FakeLobbyClient:
     """the game's lobby client as far as these tests need it: the real login packets (obfuscated strings, docs/network.md
     5.2-5.3), then requests by code"""
-    def __init__(self, port, handle, ident=b"******"):
+    def __init__(self, port, handle, ident=b"******", key="00000000", pw="LOCALTEST0000000", expect_list=None, refused=False):
         import mh1_testserver as ts
         self.ts = ts
         self.s = socket.create_connection(("127.0.0.1", port), timeout=3)
@@ -268,14 +268,19 @@ class FakeLobbyClient:
         self.buf = b""
         cat, cmd, seq, res, p = self.recv()
         self.xfee = struct.unpack(">H", p)[0]
-        self.answer(0x6101, seq, struct.pack(">H", 10) + mmbbc_encode("00000000", seq) + self.enc(b"LOCALTEST0000000", seq))
+        self.answer(0x6101, seq, struct.pack(">H", 10) + mmbbc_encode(key, seq) + self.enc(pw.encode(), seq))
         cat, cmd, seq, res, p = self.recv()
         self.answer(0x6102, seq, self.enc(b"", seq))
         cat, cmd, seq, res, p = self.recv()
         self.answer(0x6103, seq, bytes([0, 1, 4]) + self.enc(b"0123456789", seq) + bytes(16))
-        self.until(0x6131)
+        lst = self.until(0x6131)[4]
+        if expect_list is not None:
+            assert lst[0] == expect_list, lst
         self.request(0x6132, lambda q: self.enc(ident, q) + self.enc(handle, q))
         ans = self.until(0x6132)
+        self.refused = ans[3] != 0
+        if self.refused:
+            return
         self.id = ans[4][2:].decode()
         self.until(0x6104)
         m = bytearray(0x40)
@@ -438,6 +443,58 @@ class TestServerFeatureTest(unittest.TestCase):
             c.close()
         finally:
             self.ts.EVENT_FILES = []
+
+
+class StoredLobbyTest(unittest.TestCase):
+    """mh1-server's lobby with its SQLite store: hunters keep their ids, mail and places survive a server restart,
+    an id of another account is refused, a crashed client's room and lobby are cleaned up"""
+    def lobby(self, path):
+        import lobby_stub as L
+        db = A.AccountDB(path)
+        lb = L.Lobby("127.0.0.1", 0, accounts=db, log=lambda *a: None)
+        return lb, lb.start(), db
+
+    def test_store(self):
+        import tempfile
+        d = tempfile.mkdtemp()
+        path = os.path.join(d, "s.sqlite3")
+        db = A.AccountDB(path)
+        la, pa = db.create_account("11112222", "PASSWORDANNA0000")
+        lb_, pb = db.create_account("33334444", "PASSWORDBOB00000")
+        del db
+        srv, port, db = self.lobby(path)
+        try:
+            a = FakeLobbyClient(port, b"ANNA", key=la, pw=pa)
+            b = FakeLobbyClient(port, b"BOB", key=lb_, pw=pb)
+            self.assertEqual(len(a.id), 6)
+            a.enter(1, 1)
+            b.enter(1, 1)
+            # BOB's game dies (the socket just closes): ANNA is told, his place is kept
+            b.s.close()
+            self.assertEqual(a.until(0x6410)[1], 0x6410)
+            bid, aid = b.id, a.id
+            # mail to BOB while he is away: kept in the store
+            a.request(0x6704, lambda q: a.enc(bid.encode(), q) + a.enc(b"see you", q))
+            self.assertEqual(a.until(0x6704)[3], 0)
+            a.close()
+        finally:
+            srv.stop()
+        # the server restarts on the same store
+        srv, port, db = self.lobby(path)
+        try:
+            b2 = FakeLobbyClient(port, b"BOB", ident=bid.encode(), key=lb_, pw=pb, expect_list=1)
+            self.assertEqual(b2.id, bid)                                    # the stored hunter
+            p = b2.until(0x6705)[4]
+            self.assertEqual(strs(p, 0, 3)[0], [aid.encode(), b"ANNA", b"see you"])
+            b2.request(0x6891, b"")
+            self.assertEqual(struct.unpack(">HHH", b2.until(0x6891)[4]), (1, 1, 0))   # back where he was
+            b2.close()
+            # ANNA's hunter id with BOB's account: refused
+            x = FakeLobbyClient(port, b"BOB", ident=aid.encode(), key=lb_, pw=pb, expect_list=1, refused=True)
+            self.assertTrue(x.refused)
+            x.close()
+        finally:
+            srv.stop()
 
 
 class McsTest(unittest.TestCase):

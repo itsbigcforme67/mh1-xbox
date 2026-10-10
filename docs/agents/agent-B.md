@@ -1057,3 +1057,12 @@ Details in docs/network.md 3.5 and 5.8. Notes:
   gcc on x86 evaluates the plain `a` first. Found in __cnet_Recv_PatchData; grep for the pattern when a received
   length looks like garbage.
 - Event quest data for tests comes from the disc: RT_MISSION_DUMP + tools/mk_event_quest.py into build/ only.
+
+## Online round 4 (agent B, 10 Oct 2026): event quest to the reward, Wine against mh1-server, a hostable mh1-server
+- tools/test_online_server.sh is the end-to-end check of mh1-server (accounts from `account add`, the config file, the
+  relay, a restart, a client killed with SIGKILL via `timeout -s KILL`); it passes with the Windows build under Wine.
+- The test server's storage is behind hooks (place_save / place_take, hunter_list / hunter_select, mail_keep /
+  mail_pending, mini_saved): tools/server/lobby_stub.py overrides them with SQLite. New lobby features go into
+  mh1_testserver.py and get the store through those hooks.
+- A client whose run function is backgrounded (`run ... &`) is a subshell: killing its PID leaves the game running.
+  Use `timeout -s KILL N` to crash a client in a test.

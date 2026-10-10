@@ -13,7 +13,7 @@ OUT=build/show/online_guest; rm -rf $OUT; mkdir -p $OUT
 SP=""; PA=""
 fail() { echo "guest room test FAILED: $1 (see $OUT)"; [ -n "$PA" ] && kill $PA 2>/dev/null; [ -n "$SP" ] && kill $SP 2>/dev/null; exit 1; }
 [ -x "$BIN" ] || fail "$BIN is missing: run ONLINE=1 tools/build_pc.sh"
-python3 tools/server/mh1_server.py serve --lobby-port 0 > $OUT/server.log 2>&1 &
+python3 tools/server/mh1_server.py serve --open --lobby-port 0 > $OUT/server.log 2>&1 &
 SP=$!
 i=0; PORT=""
 while [ $i -lt 50 ] && [ -z "$PORT" ]; do

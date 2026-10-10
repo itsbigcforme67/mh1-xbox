@@ -1,17 +1,21 @@
-"""lobby_stub.py - the lobby service of mh1-server, for now a thin layer over tools/mh1_testserver.py.
+"""lobby_stub.py - the lobby service of mh1-server: tools/mh1_testserver.py's protocol handling plus accounts.
 
-The lobby protocol (login, plazas, lobbies, rooms, chat, matching) is being grown by agent B in tools/mh1_testserver.py
-(docs/network.md 5). This stub does not copy it: it imports that module and subclasses its connection handler, adding
-only what a public server needs on top (docs/server.md 3.2):
+The lobby protocol (login, plazas, lobbies, rooms, chat, search, mail, matching, event quests; docs/network.md 5) lives
+in tools/mh1_testserver.py; this module subclasses its connection handler and replaces its in-memory storage hooks with
+the SQLite store (accounts.py, docs/server.md 3.2):
 
-  * accounts: the login (6101: 8-digit key + obfuscated password) is checked against the SQLite store; unknown logins,
-    wrong passwords, banned accounts and rate-limited addresses are refused (the connection is closed: how the real
-    server refused a login is not known);
-  * the relay hand-off (only with `relay_matches=True`): the game server address of a match (6916 MatchMcsIpAddr) is
-    the relay's, with a session made for that room, and 6914 MatchGameRule says "mh1-relay" so a client can tell that
-    every player joins (the PC client does not read it yet: docs/server.md 4.3).
-
-Everything else is whatever mh1_testserver.Client does today. When B's server grows, this stub gets it for free.
+  * the login (6101: 8-digit key + obfuscated password) is checked against the store; unknown logins, wrong passwords,
+    banned accounts and rate-limited addresses are refused (the connection is closed: the real refusal is not known);
+  * the account's hunters come from the store (6131), a new hunter gets a stored id (6132; at most 3 per account), an
+    id of another account is refused, the mini data (6190) is kept: ids stay the same across logins, so the friend
+    lists the players keep on their cards stay valid;
+  * mail to a hunter who is away is kept in the store and delivered at his next login (6704 / 6705);
+  * where a hunter was when his connection ended inside a lobby (a crash, a lost line, the match's logout) is kept
+    for 15 minutes: his next login goes back there (6891);
+  * the relay hand-off (with `relay_matches=True`): 6914 says "mh1-relay", 6916 gives the relay's address and a session
+    made for that room.
+Without a store (`accounts=None`, `mh1_server.py serve --open`) any login is accepted and the storage is the test
+server's memory: for tests on 127.0.0.1 only.
 """
 import asyncio
 import os
@@ -35,6 +39,16 @@ def decode_login_key(key_digits, seq):
     return "%04d%04d" % (v1, v2)
 
 
+def ts_strs(p, n, off=0):
+    """n strings (u16 length + bytes) from p"""
+    out = []
+    for _ in range(n):
+        ln = struct.unpack(">H", p[off:off + 2])[0]
+        out.append(p[off + 2:off + 2 + ln])
+        off += 2 + ln
+    return out, off
+
+
 def make_handler(accounts=None, relay=None, relay_host="127.0.0.1", relay_matches=False, loop=None, log=print):
     base = ts.Client
 
@@ -55,6 +69,49 @@ def make_handler(accounts=None, relay=None, relay_host="127.0.0.1", relay_matche
                     raise ConnectionError("login refused")
                 self.login = login
             base.on_6101_2(self, seq, p)
+
+        if accounts is not None:
+            def hunter_list(self):
+                return [(i, bytes(h), bytes(m) if m else b"") for i, h, m in accounts.hunters(self.login)]
+
+            def hunter_select(self, ident, handle):
+                if not ident:
+                    try:
+                        hid = accounts.add_hunter(self.login, handle)
+                    except ValueError as e:
+                        return "!" + str(e)
+                    log("lobby: account %s: new hunter %s" % (self.login, hid))
+                    return hid
+                if accounts.hunter_owner(ident) != self.login:
+                    return "!this hunter belongs to another account"
+                accounts.set_handle(ident, handle)
+                return ident
+
+            def mini_saved(self):
+                accounts.set_mini(self.user_id, self.mini)
+
+            def place_save(self, plaza, lobby):
+                if accounts.hunter_owner(self.user_id):
+                    accounts.place_save(self.user_id, plaza, lobby)
+
+            def place_take(self):
+                return accounts.place_take(self.user_id)
+
+            def hunter_seen(self):
+                pass
+
+            def mail_keep(self, ident, payload):
+                if accounts.hunter_handle(ident) is None:
+                    return False
+                (frm, handle, text), _ = ts_strs(payload, 3)
+                accounts.queue_mail(ident, frm.decode("ascii", "replace"), text)
+                return True
+
+            def mail_pending(self):
+                out = []
+                for frm, body, sent in accounts.take_mail(self.user_id):
+                    out.append(ts.str16(frm) + ts.str16((accounts.hunter_handle(frm) or b"?")[:16]) + ts.str16(body[:0x7E]))
+                return out
 
         if relay_matches and relay is not None:
             def on_6914_1(self, seq, p):        # MatchGameRule: tell the client that the "game server" is a relay

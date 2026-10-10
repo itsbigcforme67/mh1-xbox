@@ -603,7 +603,9 @@ town under Wine (section 4).
                                                      # tools/test_coop.sh saves, ~10 min)
     RUN=wine BIN=build/win/mhview_online.exe tools/test_online_town.sh   # the same with the Windows build (passes, 10 Oct 2026)
     tools/test_online_guest.sh                       # guest rooms, two clients against mh1-server (~2 min)
-    tools/test_online_event.sh                       # an event quest downloaded, posted, started; a patch refused (~3 min)
+    tools/test_online_event.sh                       # an event quest downloaded, posted, cleared; a patch refused (~4.5 min)
+    tools/test_online_server.sh                      # login to town to quest to town against mh1-server (relay) (~4 min)
+    RUN=wine BIN=build/win/mhview_online.exe tools/test_online_server.sh   # the same with the Windows build (passes, 10 Oct 2026)
     RT_NET_PORT=10200 build/pc/mhview_online disc/mh1 --boot   # then the title's network mode (or: --quest 10 --play --online)
 
 ## 5. The lobby-server protocol (PS2 wire format, derived from the client)
@@ -748,7 +750,7 @@ for 6709 / 6703 / 670D / 6704 / 6705, on screen with two game clients (section 3
 
 ### 5.8 Event quests (file download), patches, personal data (10 Oct 2026)
 
-**Event quests** (`tools/test_online_event.sh`: two clients download one, post it, start it as a co-op quest).
+**Event quests** (`tools/test_online_event.sh`: two clients download one, post it, play it as a co-op quest to the clear, get the reward screen with items and money, saved to their cards, and are back in the town, where they download it again).
 Lbc_DownloadQuest runs at every lobby entry: cnLBS_Read_FileDownload(mission_area, cb), a job in burst slot 11.
 
 | Code | Dir, cat | Payload | Notes |

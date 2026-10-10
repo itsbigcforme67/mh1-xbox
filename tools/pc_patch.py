@@ -36,6 +36,10 @@ PATCHES = {
         ("void lbc_game_ready_02(int arg0, int arg1, s32 arg2);", "void lbc_game_ready_02();"),
         ("void lbc_game_ready_02(int arg0, int arg1, s32 arg2) {\n    s32 var_a2;", "void lbc_game_ready_02(void) {\n    s32 var_a2;\n    s32 arg2 = 0;"),
     ],
+    "src/lobby/lb/lbuii.c": [      # the linked copy of Lb_get_comment (the lbui run wins over lb_plz2's): talking to a
+                                    # hunter in the town crashed in Lb_get_plID(NULL)
+        ("    int id = Lb_get_plID() & 0xFF;", "    int id = Lb_get_plID(a) & 0xFF;"),           # 0x59504C: a0 = a
+    ],
     "src/lobby/f/lb_plz2.c": [
         ("    int id = Lb_get_plID() & 0xFF;", "    int id = Lb_get_plID(a) & 0xFF;"),           # 0x59504C: a0 = a
         ("        r = getHandleFromID();", "        r = getHandleFromID(a);"),
