@@ -309,12 +309,10 @@ void rt_player_parts(int no, const float *world, int n)
 /* ------------------------------------------------ callees of agent F's pl49..pl83 not ported */
 void rt_eft_clear_stage(void);
 void clr_eft_work(void) { rt_eft_clear_stage(); }    /* adxs04.c: frees every effect that holds no prim2 */
-void clr_item_work(void) { STUB("clr_item_work") }
 void rt_shell_clear_stage(void);
 void clr_shell_work(void) { rt_shell_clear_stage(); }   /* 0x159030: frees every used shell whose byte +9 is 0 */
 void clr_used_heap(void) { STUB("clr_used_heap") }
 void init_eft_work(void) { STUB("init_eft_work") }
-void init_item_work(void) { STUB("init_item_work") }
 void init_set_work(void) { STUB("init_set_work") }
 void init_shell_work(void) { STUB("init_shell_work") }
 #ifndef MH1_ONLINE     /* ONLINE=1: the game's (netsyn05.c, co-op) */
