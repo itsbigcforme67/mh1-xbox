@@ -156,3 +156,8 @@ anything the coordinator must know to merge. Then stop.
 - Keep it tidy (owner's request): when your fix makes an older workaround,
   duplicate code path, stand-in, build-list entry or test aid obsolete, remove
   the old one in the same change and say so in the commit message.
+
+- When you change a trace line or log format, grep every test script for the old text
+  (`grep -rn 'old text' tools/`) and update them in the same commit. Another agent's
+  branch may add a new test that reads it too, so say so in your report. (11 Oct:
+  F changed the money trace and B's new test_online_event still grepped the old line.)
