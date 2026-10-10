@@ -5,9 +5,11 @@ NOT an MH Oldschool server and not Capcom's: written from the game client's code
 
   relay     the in-hunt session relay (relay.py): players' games join it with `--join SERVER --port P` and hunt
             together through it, as with a player hosting but with nobody needing an open port
-  lobby     the lobby protocol (lobby_stub.py over tools/mh1_testserver.py) with accounts from SQLite
+  lobby     the lobby protocol (lobby_stub.py over tools/mh1_testserver.py) with accounts from SQLite: invite-only,
+            only accounts the operator made (`account add`) can log in
   accounts  manage the SQLite account store
 
+    python3 tools/server/mh1_server.py serve --config mh1-server.conf      (docs/server.md "Run your own server")
     python3 tools/server/mh1_server.py serve [--session 10301:131:2] [--lobby-port 10200] [--db mh1.sqlite3] ...
     python3 tools/server/mh1_server.py account add|list|ban|unban|passwd|delete|export ...
 
@@ -45,11 +47,24 @@ async def serve(a):
         print("mh1-server relay session on %s:%d (quest %d, %d players)" % (a.bind, s.port, quest, players), flush=True)
     lobby = None
     if a.lobby_port is not None:
-        from lobby_stub import Lobby
+        from lobby_stub import Lobby, ts
+        ts.VERBOSE = a.verbose
+        ts.ADMIN_MESSAGE = a.admin_message or ""
+        ts.LINE_CHECK = a.line_check
+        ts.EVENT_FILES = [open(f, "rb").read() for f in a.event_quest]
+        if not a.db and not a.open:
+            sys.exit("mh1-server: the lobby needs an account store (--db FILE, or db = in the config file); "
+                     "--open (any login, no store) is for local tests only")
+        if a.open and a.db:
+            sys.exit("mh1-server: --open and --db exclude each other")
+        if a.open and a.bind not in ("127.0.0.1", "localhost", "::1"):
+            sys.exit("mh1-server: --open only on 127.0.0.1 (anyone could log in)")
         db = AccountDB(a.db) if a.db else None
+        if db:
+            db.prune()
         lobby = Lobby(a.bind, a.lobby_port, accounts=db, relay=relay, relay_host=a.public_address or a.bind,
                       relay_matches=a.lobby_relay, loop=asyncio.get_event_loop())
-        print("mh1-server lobby on %s:%d%s" % (a.bind, lobby.start(), " (accounts: %s)" % a.db if db else " (no accounts: any login)"),
+        print("mh1-server lobby on %s:%d%s" % (a.bind, lobby.start(), " (accounts: %s)" % a.db if db else " (--open: any login)"),
               flush=True)
     stop = asyncio.Event()
     for sig in (signal.SIGINT, signal.SIGTERM):
@@ -85,6 +100,36 @@ def account_cmd(a):
         print(json.dumps(db.export(a.login), indent=1))
 
 
+def load_config(a, ap, sp):
+    """the [server] section of an INI file sets every option the command line did not give"""
+    import configparser
+    cp = configparser.ConfigParser()
+    if not cp.read(a.config, encoding="utf-8"):
+        ap.error("cannot read %s" % a.config)
+    if not cp.has_section("server"):
+        ap.error("%s has no [server] section" % a.config)
+    given = {act.dest for act in sp._actions if any(o in sys.argv for o in act.option_strings)}
+    acts = {act.dest: act for act in sp._actions if act.dest != "help"}
+    for key, val in cp.items("server"):
+        dest = key.replace("-", "_")
+        if dest not in acts:
+            ap.error("%s: unknown key %r" % (a.config, key))
+        if dest in given:
+            continue
+        act = acts[dest]
+        if act.nargs == 0:                  # store_true
+            setattr(a, dest, cp.getboolean("server", key))
+        elif isinstance(act, argparse._AppendAction):
+            vals = [v.strip() for v in val.replace(",", "\n").split("\n") if v.strip()]
+            setattr(a, dest, [act.type(v) if act.type else v for v in vals])
+        else:
+            setattr(a, dest, act.type(val) if act.type else val)
+    if a.db and not os.path.isabs(a.db):     # relative to the config file
+        a.db = os.path.join(os.path.dirname(os.path.abspath(a.config)), a.db)
+    a.event_quest = [f if os.path.isabs(f) else os.path.join(os.path.dirname(os.path.abspath(a.config)), f)
+                     for f in a.event_quest]
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = ap.add_subparsers(dest="cmd")
@@ -99,13 +144,23 @@ def main():
     s.add_argument("--lobby-relay", action="store_true", help="matches go through the relay (6916; needs a client that joins it)")
     s.add_argument("--public-address", help="the address players reach this server at (for 6916)")
     s.add_argument("--db", help="SQLite account store; without it the lobby accepts any login")
+    s.add_argument("-v", "--verbose", action="store_true", help="log the lobby's traffic and events")
     c = sub.add_parser("account", help="manage accounts")
     c.add_argument("what", choices=["add", "list", "ban", "unban", "passwd", "delete", "export"])
     c.add_argument("login", nargs="?")
     c.add_argument("--password")
     c.add_argument("--note", help="ban reason / operator note")
     c.add_argument("--db", default="mh1-server.sqlite3")
+    s.add_argument("--open", action="store_true", help="no account store: any login (local tests on 127.0.0.1 only)")
+    s.add_argument("--admin-message", help="a message every hunter gets after the login (6706)")
+    s.add_argument("--event-quest", action="append", default=[], metavar="FILE",
+                   help="a downloadable event quest (docs/network.md 5.8; from your own disc, never shared)")
+    s.add_argument("--line-check", type=float, default=30.0, help="seconds between line checks (6001)")
+    s.add_argument("--config", help="an INI file with a [server] section (keys as these options, see mh1-server.conf.example); "
+                                     "options on the command line win")
     a = ap.parse_args()
+    if a.cmd == "serve" and a.config:
+        load_config(a, ap, s)
     if a.cmd == "serve":
         if not a.session and a.lobby_port is None:
             ap.error("nothing to serve: give --session and / or --lobby-port")

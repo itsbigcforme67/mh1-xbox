@@ -240,7 +240,7 @@ class Client(socketserver.BaseRequestHandler):
             self.leave_room()
             w = REG.where.get(self, {})
             if w.get(1) is not None and self.user_handle:
-                PLACES[self.user_id] = (w.get(0) or 1, w[1])
+                self.place_save(w.get(0) or 1, w[1])
             CLIENTS.discard(self)
             lobby = REG.leave(self)
             if lobby is not None:
@@ -283,29 +283,46 @@ class Client(socketserver.BaseRequestHandler):
         if PATCH is not None:       # --patch: a patch instead of the account list (docs/network.md 5.8)
             self.send_patch(PATCH)
             return
-        # an empty account list: a new hunter, the client then sends 6132
-        self.send(NOTE, C_USERLIST, bytes([0]))
+        # the account's hunters (6131: u8 n, n x (str id, str handle, str mini)); the client then sends 6132 with one of
+        # them or "******" for a new one
+        hs = self.hunter_list()
+        self.send(NOTE, C_USERLIST, bytes([len(hs)]) + b"".join(str16(i) + str16(h[:16]) + str16((m or b"")[:0x40])
+                                                                 for i, h, m in hs))
 
     def on_6132_1(self, seq, p):            # account selected / created
         ident, off = self.enc_string(p, 0, seq)
         handle, _ = self.enc_string(p, off, seq)
-        self.user_handle = handle.decode("cp932", "replace")
-        if ident.strip(b"*\0 ") == b"":
-            ident = self.user_id.encode()
-        else:
-            self.user_id = ident.decode("ascii", "replace")
-        log("account %r handle %r" % (ident, self.user_handle))
+        ident = ident.split(b"\0")[0].strip(b"* ")
+        hid = self.hunter_select(ident.decode("ascii", "replace"), handle.split(b"\0")[0])
+        if not isinstance(hid, str) or hid.startswith("!"):
+            msg = hid[1:] if isinstance(hid, str) else "this hunter cannot log in"
+            log("account %r handle %r refused: %s" % (ident, handle, msg))
+            self.send(ANS, C_USERID, str16(msg), seq=seq, res=1)
+            return
+        self.user_id = hid
+        self.user_handle = handle.split(b"\0")[0].decode("cp932", "replace")
+        log("account %r handle %r" % (self.user_id, self.user_handle))
         self.send(ANS, C_USERID, str16(self.user_id), seq=seq)
         self.send(NOTE, C_LOGINOK, b"")
+
+    def hunter_list(self):                  # [(id, handle bytes, mini bytes)]: none here, every login is a new hunter
+        return []
+
+    def hunter_select(self, ident, handle): # the id to use; "!message" refuses. Here: a new id, or the one given
+        return ident or self.user_id
+
+    def mini_saved(self):                   # 6190 arrived (self.mini)
+        pass
 
     def on_6190_1(self, seq, p):            # mini data (the hunter's public data) registered
         n = struct.unpack(">H", p[:2])[0]
         self.mini, _ = self.enc_string(p, 0, seq)
+        self.mini_saved()
         self.send(ANS, C_MINIDATA, b"", seq=seq)
 
     def on_6141_16(self, seq, p):           # login finished: nothing to answer; mail kept while away, the admin message
         log("login finished")
-        KNOWN_IDS.add(self.user_id[:6])
+        self.hunter_seen()
         self.deliver_mail()
         if ADMIN_MESSAGE:           # 6706 request: str title, str html (the client shows it, then answers 6706)
             self.send(REQ, 0x6706, str16("MH1 test server") + str16(ADMIN_MESSAGE))
@@ -315,7 +332,7 @@ class Client(socketserver.BaseRequestHandler):
         self.send(ANS, C_TOPINFO, bytes([0]) + str16(html), seq=seq)
 
     def on_6891_1(self, seq, p):            # current place: u16 plaza, u16 lobby, u16 (0); zeros = none (the top menu)
-        place = PLACES.pop(self.user_id, None)
+        place = self.place_take()
         if place is None:
             self.send(ANS, C_PLACE, struct.pack(">HHH", 0, 0, 0), seq=seq)
             return
@@ -742,16 +759,35 @@ class Client(socketserver.BaseRequestHandler):
         mail = str16(self.user_id) + str16(self.user_handle.encode("cp932", "replace")[:16]) + str16(text[:0x7E])
         if o is not None:
             o.safe_send(NOTE, 0x6705, mail)
-        elif ident in KNOWN_IDS:
-            MAILBOX.setdefault(ident, []).append(mail)      # delivered at the next login (guess: what the real one did)
+        elif self.mail_keep(ident, mail):   # kept until that hunter's next login (guess: what the real one did)
+            pass
         else:
             self.send(ANS, 0x6704, str16("there is no hunter with that id"), seq=seq, res=1)
             return
         log("mail from %s to %s%s" % (self.user_handle, ident, "" if o else " (kept until the next login)"))
         self.send(ANS, 0x6704, b"", seq=seq)
 
+    # storage hooks: memory here; mh1-server (tools/server/lobby_stub.py) keeps them in its SQLite store
+    def place_save(self, plaza, lobby):     # the connection ended inside a lobby
+        PLACES[self.user_id] = (plaza, lobby)
+
+    def place_take(self):                   # the place to go back to at the next login (6891), once
+        return PLACES.pop(self.user_id, None)
+
+    def hunter_seen(self):                  # login finished
+        KNOWN_IDS.add(self.user_id[:6])
+
+    def mail_keep(self, ident, payload):    # a mail for a hunter not logged in: True = kept
+        if ident not in KNOWN_IDS:
+            return False
+        MAILBOX.setdefault(ident, []).append(payload)
+        return True
+
+    def mail_pending(self):
+        return MAILBOX.pop(self.user_id[:6], [])
+
     def deliver_mail(self):
-        for mail in MAILBOX.pop(self.user_id[:6], []):
+        for mail in self.mail_pending():
             self.safe_send(NOTE, 0x6705, mail)
 
     def on_6706_2(self, seq, p):            # the client closed the administrator message

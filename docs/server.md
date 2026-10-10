@@ -20,11 +20,41 @@ Nothing here was checked against a Capcom or MH Oldschool server, and nothing in
     127.0.0.1 (section 11). The quest's host (slot 0) leaving no longer ends the session for the others, but the hunt
     then stalls because of a bug in the PC co-op glue (section 11, for agent B).
   * `accounts.py`, accounts, hunters, friends and mail in **SQLite**, scrypt password hashes, rate-limited logins.
-  * `lobby_stub.py`, the lobby: a thin layer over agent B's `tools/mh1_testserver.py` that adds the account check at
-    login and can hand matches to the relay. It grows with B's server instead of copying it.
+  * `lobby_stub.py`, the lobby: `tools/mh1_testserver.py`'s protocol handling (login, town, rooms, chat, search, mail,
+    matching, event quests) with its storage in the SQLite store: account check at login (invite-only: no store, no
+    lobby, except `--open` on 127.0.0.1 for tests), stored hunters and ids (6131 / 6132 / 6190), mail kept for hunters
+    who are away, the place a hunter left kept for 15 minutes (a crashed client logs in straight back into its lobby),
+    the relay hand-off. A config file (`--config`, `tools/server/mh1-server.conf.example`). Section "Run your own server".
+    Tested end to end with two game clients (Linux and the Windows build under Wine): tools/test_online_server.sh.
   * `mcs.py`, a skeleton of the **PS2-faithful** game-session relay (the 0x1031 / 0x82 login and the mcsls records),
     tested only with synthetic bytes; nothing uses it yet.
 * **Owner decisions needed**: section 13 (hosting and who runs it, money, the name, the DNAS legal note of the PS2 patch, PS2 cross-play).
+
+## Run your own server (10 Oct 2026)
+
+A private server for you and friends, on your own machine or home network. Invite-only: only the accounts you make can
+log in. Nothing here talks to MH Oldschool or any other server.
+
+1. Python 3.8 or newer, nothing else. From the repository: `cp tools/server/mh1-server.conf.example mh1-server.conf` and
+   edit it (`bind`, `lobby-port`, `db`; the comments explain each key).
+2. One account per player: `python3 tools/server/mh1_server.py account add --db mh1-server.sqlite3 --note "Alex"`. It
+   prints a login (8 digits) and a password (16 characters, shown once: give both to that player). `account list`,
+   `ban LOGIN --note why`, `unban`, `passwd LOGIN` (a new password), `delete LOGIN`, `export LOGIN` (everything stored
+   about one account) manage them.
+3. Run it: `python3 tools/server/mh1_server.py serve --config mh1-server.conf`. It prints the lobby's address; stop it
+   with Ctrl+C. The store is one SQLite file: back it up while the server is stopped.
+4. Each player sets in `mh1pc.ini` (next to the game; written on the first normal exit): `online_server = HOST:PORT`
+   (your machine's address and the lobby port), `online_login = ` the 8 digits, `online_password = ` the 16 characters,
+   then picks the network mode on the title screen.
+5. Hunts go through the server's relay (`lobby-relay = yes`, ports `relay-ports`): nobody needs to open ports except
+   the machine running the server, for the lobby port and the relay ports, and only if players are outside your home
+   network. Players outside need `bind` = an address they can reach, `allow-public = yes`, and you should read sections
+   8-10 first (the owner has not decided on public hosting).
+6. Optional: `admin-message` (shown after each login), `event-quest` files (made from your own disc with
+   tools/mk_event_quest.py: Capcom data, never share them), `verbose = yes` for a full traffic log.
+
+What it does not do yet: TLS (section 7.2; the game's password obfuscation is not encryption), the PS2-faithful mcsls
+session (4.2), server rules with choices, patches (never sent).
 
 ## 1. The pieces, and what talks to what
 
@@ -213,8 +243,9 @@ like the PS2 era is a sensible cap.
 |---|---|---|
 | account | login (8 digits), scrypt hash, created, last login, banned + reason, operator note | login |
 | hunter | hunter id (6 chars, the server gives it: 6132), account, handle (Shift-JIS bytes), the 0x40 mini data | 6131 list, lobby member lists, matching |
-| friend | hunter -> hunter | the friend list (format of the game's side not traced yet) |
+| friend | hunter -> hunter | not used: the game keeps its friend list on the player's card (network.md 5.7: it only stores ids and asks where each friend is with 6709); what the server must do for it is keep hunter ids stable, which the hunter table does |
 | mail | queued mail between hunters until delivered | 6704/6705 when the player is offline |
+| place | hunter, plaza, lobby, time (schema 2) | the place a hunter left without logging out (a crash, a lost line, the match's logout): his next login within 15 minutes goes back there (6891) |
 | audit | login ok / failed / banned / deletions, with time | abuse handling; pruned after 90 days |
 
 Schema version in `PRAGMA user_version`; WAL mode; one file to back up. Saves stay on the players' machines (the game

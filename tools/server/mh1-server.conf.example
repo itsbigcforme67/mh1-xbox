@@ -1,0 +1,27 @@
+# mh1-server configuration (docs/server.md "Run your own server"). Copy to mh1-server.conf and run
+#   python3 tools/server/mh1_server.py serve --config mh1-server.conf
+# Every key is a `serve` option without its leading dashes; options given on the command line win.
+[server]
+# where to listen. 127.0.0.1 = this machine only. Players on your home network: your LAN address (192.168.x.y).
+# A public address needs allow-public = yes and an operator who read docs/server.md sections 8-10.
+bind = 127.0.0.1
+allow-public = no
+# the address players connect to (given to them for the hunt relay); default: bind
+# public-address = 192.168.1.20
+# the lobby (the game's "server" setting points here: online_server = HOST:10200 in mh1pc.ini)
+lobby-port = 10200
+# hunts go through this server's relay (nobody needs an open port); the relay's ports
+lobby-relay = yes
+relay-ports = 10301-10399
+# the account store (SQLite; relative to this file). Invite-only: only accounts made with
+#   python3 tools/server/mh1_server.py account add --db mh1-server.sqlite3
+# can log in. Give each player their login and password (16 characters, shown once).
+db = mh1-server.sqlite3
+# a message every hunter gets after the login (optional)
+# admin-message = Welcome! This is a private server.
+# downloadable event quests (from your own disc, docs/network.md 5.8; never share these files)
+# event-quest = events/event200.bin
+# seconds between line checks (an idle client logs out after 2 minutes without traffic)
+line-check = 30
+# log the lobby's traffic (a lot)
+verbose = no
