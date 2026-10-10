@@ -814,4 +814,11 @@ Owner decisions: no robot playtesting (human F8 reports); keep code tidy (remove
 workarounds); OpenAL on hold; PS2 online via a patched game is acceptable.
 Waiting on owner: Xbox setup/files, PS2 setup, English questions, server hosting/name/
 invite-only/DNAS note, MH Oldschool message.
-Running: agent F tidy-up (Rathian draw path unify, obsolete guards/stand-ins/build entries, docs).
+Later 10-11 Oct (65f0c343, all checks pass incl. test_online_guest/test_online_event): F tidy-up (one monster draw
+path, 123 dead weak stand-ins, ~30 near-match copies, docs/pc.md handover) and 26 host overrides
+replaced by matched C (faint camera, bowgun upgrades, chat phrases, item pool); B online round 3 (guest
+rooms solo per game rule, town weapons, event quest download+start, patch refusal, personal data
+not sent). Survey of other games: docs/survey/mhg_vs_mh1.md (G ~52% reuse, MH2 ~17%, MHP ~0%; no
+US MH1 disc on this machine).
+Running: B round 4 (event quest reward, Wine, hostable mh1-server); F (Monoblos tail cut, Lao back
+riding, 3 risky overrides).
