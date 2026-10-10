@@ -794,3 +794,24 @@ matched C for ~160 main files (agent B), semdiff review of near-match copies (ag
 
 Open: vine climbing (needs location), Monoblos tail cut visual, em_ride_sub (Lao back) untested in
 play, Xbox hardware runs, PS2 reference comparison (PCSX2/BIOS or ESP32 pad + debug ELF plan).
+
+## 2026-10-10 checkpoint
+
+main = origin/main (1ff526d7): rebuild OK x5; all 13 PC tests, test_online, test_online_town,
+test_coop (incl relay, hostleave), tools/server/test_server.py pass; Xbox links; Windows builds.
+57.995% matched.
+
+Since 8 Oct: Windows test build 3 published; PS2 save import/export (all formats); English text
+layer (RT_TEXT_TABLE, tools/text_dump.py, proportional ASCII; no translation shipped - waiting on
+owner: US disc? Grender permission? title art?); display options + F10 settings menu + widescreen;
+x87->SSE float fix (Cephadrome hang, PC/Win/Xbox); semantic review: ~30 real behaviour fixes
+(monster hit reactions, bowgun aim, ground rounding, HUD/map, collision push); monster draw
+root_lock (owner F8 "rewind moving"); online town on screen (login, plaza, town, guild hall,
+rooms, quest, back to town, friends, mail) vs local test server; mh1-server design
+(docs/server.md) + session relay + SQLite accounts; Xbox online research (docs/xbox_online.md).
+
+Owner decisions: no robot playtesting (human F8 reports); keep code tidy (remove superseded
+workarounds); OpenAL on hold; PS2 online via a patched game is acceptable.
+Waiting on owner: Xbox setup/files, PS2 setup, English questions, server hosting/name/
+invite-only/DNAS note, MH Oldschool message.
+Running: agent F tidy-up (Rathian draw path unify, obsolete guards/stand-ins/build entries, docs).
