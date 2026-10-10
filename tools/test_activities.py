@@ -198,8 +198,16 @@ def tail_cut():
     m3 = re.search(r'em-tail: kind 22 tail cut at (-?\d+) (-?\d+) (-?\d+) yaw \S+ pick (-?\d+)', t3)
     if not m3 or int(m3.group(4)) < 0 or 'em-mat: kind 22 part 1 not drawn' not in t3:
         return False, 'Basarios tail not cut / no carving point / body still draws it'
-    return bool(g), 'Rathian tail cut at %d %d %d (pick point %d), body draws no tail, carved: %s; Basarios tail cut at %s %s %s' % (
-        x, y, z, pick, ', '.join('%s(%d) x%d' % (names[k], k, v) for k, v in sorted(g.items())) or 'nothing', *m3.groups()[:3])
+    # Monoblos (26, quest 171, stage 53): it stays burrowed for ~1700 ticks after the start; once it is up, the part-8 break +
+    # hit at 2100 cuts (4/4 -> 4/15). The frame drawn at the end (tick 2400) shows the stump and the dropped club on its stage.
+    t4 = run('tail_cut_26', 'idle*2400', 0, quest=171, secs=80, env={'RT_EM_POKE': '26:0x957:1@2100;26:0x38D:1@2100',
+             'RT_EM_MAT_TRACE': 1, 'RT_QUEST_STAGE': 1, 'RT_PL_GOD': 1})
+    if crashed(t4): return False, 'crash (Monoblos)'
+    m4 = re.search(r'em-tail: kind 26 tail cut at (-?\d+) (-?\d+) (-?\d+) yaw \S+ pick (-?\d+)', t4)
+    if not m4 or int(m4.group(4)) < 0 or 'em-mat: kind 26 part 1 not drawn' not in t4:
+        return False, 'Monoblos tail not cut / no carving point / body still draws it'
+    return bool(g), 'Rathian tail cut at %d %d %d (pick point %d), body draws no tail, carved: %s; Basarios tail cut at %s %s %s; Monoblos at %s %s %s' % (
+        x, y, z, pick, ', '.join('%s(%d) x%d' % (names[k], k, v) for k, v in sorted(g.items())) or 'nothing', *m3.groups()[:3], *m4.groups()[:3])
 
 @test
 def long_fight():
