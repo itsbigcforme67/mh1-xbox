@@ -45,7 +45,8 @@ async def serve(a):
         print("mh1-server relay session on %s:%d (quest %d, %d players)" % (a.bind, s.port, quest, players), flush=True)
     lobby = None
     if a.lobby_port is not None:
-        from lobby_stub import Lobby
+        from lobby_stub import Lobby, ts
+        ts.VERBOSE = a.verbose
         db = AccountDB(a.db) if a.db else None
         lobby = Lobby(a.bind, a.lobby_port, accounts=db, relay=relay, relay_host=a.public_address or a.bind,
                       relay_matches=a.lobby_relay, loop=asyncio.get_event_loop())
@@ -99,6 +100,7 @@ def main():
     s.add_argument("--lobby-relay", action="store_true", help="matches go through the relay (6916; needs a client that joins it)")
     s.add_argument("--public-address", help="the address players reach this server at (for 6916)")
     s.add_argument("--db", help="SQLite account store; without it the lobby accepts any login")
+    s.add_argument("-v", "--verbose", action="store_true", help="log the lobby's traffic and events")
     c = sub.add_parser("account", help="manage accounts")
     c.add_argument("what", choices=["add", "list", "ban", "unban", "passwd", "delete", "export"])
     c.add_argument("login", nargs="?")
