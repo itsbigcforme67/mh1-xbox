@@ -640,3 +640,9 @@ How to find dead PC code without guessing (used for the 10 Oct clean-up, see doc
   CLAY, not the game's material set, so the game's loop would read garbage; get_mdlw_ptr (rt_motion.c): the PC
   keeps its own model works (one per player), the game's light03.c indexes the PS2 model heap. All three need
   the host structures changed first.
+  Looked at again on 11 Oct, still left: for get_joint_* the clean route is to have the host fill the node array
+  of every live actor every tick (a monster off this stage, an NPC or a hunter without a host skeleton gets a
+  translation-only matrix at its position in every node), then emsrch02.c would give what the host gives today;
+  that touches every actor kind (hunters, remote hunters, NPCs, monsters on other stages) and is not a one-commit
+  change. Material_set_sub needs the port's CLAY to carry the game's material set first; get_mdlw_ptr needs a
+  real model heap.

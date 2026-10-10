@@ -7,7 +7,7 @@ Each activity prints one line  PASS|FAIL <name>: <what was measured>.  The runs 
 Random outcomes (gathering, fishing, combining, trading) use RT_SEED so a run repeats; the checks are on invariants
 (ids from the stage's own pick tables, counts, prices as the shop's own UI shows them), not on one lucky result.
 
-Field: gather_herb gather_mine gather_net fishing carve_small carve_large em_materials tail_cut herbivore_pose herbivore_rewind
+Field: gather_herb gather_mine gather_net fishing carve_small carve_large em_materials tail_cut lao_ride herbivore_pose herbivore_rewind
 Items in a quest: potion whetstone paintball pitfall tranq barrel bbq drinks combine trader
 Village: shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take box_equip
 HUD / demo: demo_input map_item
@@ -198,8 +198,38 @@ def tail_cut():
     m3 = re.search(r'em-tail: kind 22 tail cut at (-?\d+) (-?\d+) (-?\d+) yaw \S+ pick (-?\d+)', t3)
     if not m3 or int(m3.group(4)) < 0 or 'em-mat: kind 22 part 1 not drawn' not in t3:
         return False, 'Basarios tail not cut / no carving point / body still draws it'
-    return bool(g), 'Rathian tail cut at %d %d %d (pick point %d), body draws no tail, carved: %s; Basarios tail cut at %s %s %s' % (
-        x, y, z, pick, ', '.join('%s(%d) x%d' % (names[k], k, v) for k, v in sorted(g.items())) or 'nothing', *m3.groups()[:3])
+    # Monoblos (26, quest 171, stage 53): it stays burrowed for ~1700 ticks after the start; once it is up, the part-8 break +
+    # hit at 2100 cuts (4/4 -> 4/15). The frame drawn at the end (tick 2400) shows the stump and the dropped club on its stage.
+    t4 = run('tail_cut_26', 'idle*2400', 0, quest=171, secs=80, env={'RT_EM_POKE': '26:0x957:1@2100;26:0x38D:1@2100',
+             'RT_EM_MAT_TRACE': 1, 'RT_QUEST_STAGE': 1, 'RT_PL_GOD': 1})
+    if crashed(t4): return False, 'crash (Monoblos)'
+    m4 = re.search(r'em-tail: kind 26 tail cut at (-?\d+) (-?\d+) (-?\d+) yaw \S+ pick (-?\d+)', t4)
+    if not m4 or int(m4.group(4)) < 0 or 'em-mat: kind 26 part 1 not drawn' not in t4:
+        return False, 'Monoblos tail not cut / no carving point / body still draws it'
+    return bool(g), 'Rathian tail cut at %d %d %d (pick point %d), body draws no tail, carved: %s; Basarios tail cut at %s %s %s; Monoblos at %s %s %s' % (
+        x, y, z, pick, ', '.join('%s(%d) x%d' % (names[k], k, v) for k, v in sorted(g.items())) or 'nothing', *m3.groups()[:3], *m4.groups()[:3])
+
+@test
+def lao_ride():
+    """Lao-Shan Lung (kind 7, quest 101, stage 14) carries a hunter on its back: em_ride_sub (emride_nm.c) puts him on a back
+    quad (RT_PL_RIDE puts him 20 above one after the opening demo) and carries him with the joint he stands on; on the back the
+    game allows walking (act 0/0x12) and the balance stagger (0/0x16 when the carried step is 7 or more), no attacks.
+    Fails if he is not carried along as the Lao walks, or leaves its back (height under 500: the back is at 700-960)"""
+    ev = 'idle*2200' + ',up*60,idle*30,left*40,idle*30' * 12
+    t = run('lao_ride', ev, 0, quest=101, secs=135, env={'RT_QUEST_STAGE': 1, 'RT_PL_GOD': 1, 'RT_PL_TRACE': 1, 'RT_PL_RIDE': 2100})
+    if crashed(t): return False, 'crash'
+    if 'on ride quad' not in t: return False, 'no Lao-Shan to ride'
+    pl = [l.split() for l in t.splitlines() if l.startswith('pl: act ')]
+    after = pl[2101:]
+    if len(after) < 1000: return False, 'trace too short (%d ticks after the ride)' % len(after)
+    acts = {l[2] for l in after}
+    ys = [float(l[13]) for l in after]
+    x0, z0, x1, z1 = float(after[0][12]), float(after[0][14]), float(after[-1][12]), float(after[-1][14])
+    moved = ((x1 - x0) ** 2 + (z1 - z0) ** 2) ** 0.5
+    if min(ys) < 500: return False, 'left the back (height %.0f)' % min(ys)
+    if moved < 1000: return False, 'not carried (moved %.0f)' % moved
+    if '0/18' not in acts: return False, 'never walked on the back (acts %s)' % sorted(acts)
+    return True, 'carried %.0f units on the back, height %.0f-%.0f, acts %s' % (moved, min(ys), max(ys), ' '.join(sorted(acts)))
 
 @test
 def long_fight():

@@ -1486,6 +1486,16 @@ All PC side; no include/ or PS2-built file changed.
   monster arrives at tick ~44000, killed there (RT_EM_HP=1300 to save time)
   -> clear -> reward. The death dust crashed: Eft10_set needed an ABI adaptor
   for em07/em08 (rtabi_Eft10_set).
+- Riding the Lao-Shan's back (11 Oct 2026): em_ride_sub (emride_nm.c) runs after enemy_mv. move() calls enemy_mk
+  between them, which poses the skeleton, so em_ride_sub reads this tick's joint matrices against the ones
+  old_pos_save kept from the last tick. The PC posed monsters only after the tick, so both were the same: a
+  rider was never carried and hung in the air where the back had been. rt_monster_tick now has the viewer pose
+  the Lao (em_pose_now -> em_slot_sync) before em_ride_sub. Checked on quest 101 (stage 14) after the opening
+  demo (the hunter has no input until tick ~2010): carried 5000+ units as it walks, height 700-970 on the back,
+  walking on it (act 0/0x12) and the balance stagger (0/0x16, pl_ride_ck: a carried step of 7 or more). The
+  game allows no attacks there (basic_com_ck's riding branch: walk, circle = search, thrown off at act 2/7 when
+  the Lao sets x87F). Test aid `RT_PL_RIDE=tick[,quad]` puts the hunter 20 above a ride quad of the first
+  Lao-Shan on his stage; test_activities `lao_ride`.
 - Music: bgm_server and the game's stage_bgm_set (src/main/sound/bgm_nm.c)
   are linked: monster-found and fight music (S_FOUND1 -> S_FIGHT2), quest
   clear (S_CLEAR1), faint (S_DEATH1), ADX one-shots (adx_se_set). Still no
@@ -2167,15 +2177,20 @@ second bone tree 45-47 that carries only clay 1, modelled around the origin):
 - Basarios (22): asleep in its rock disguise (act 0/22) a hit only wakes it and uses up x957 without the cut
   action; awake, the same poke cuts (4/4 -> 4/17, tail_off). Real attacks also cut it on the PC: hunter beside
   joint 43 (RT_PL_WARP_JOINT=43), RT_PL_AIM, RT_DMG_MUL=10, part 8 went 140 -> 0 in about 4400 ticks and the
-  tail came off (game-camera shot). Monoblos (26): the poke does start the cut action (4/4 -> 4/15) but each time
-  it had moved to stage 52 while the hunter was on 53, so the cut tail (drawn only on its own stage) was not seen.
+  tail came off (game-camera shot). Monoblos (26, quest 171, stage 53): it stays burrowed (act 6/0) for about 1700
+  ticks after the start and a hit does not cut it then; poked at tick 2100 (`26:0x957:1@2100;26:0x38D:1@2100`) it cuts
+  (4/4 -> 4/15): the body keeps the segmented tail and ends in a stump (clay 2 m10 shown, the cut tail's m11 shown,
+  clay 1 no longer drawn), the dropped piece is the spiked club, lying where node 43 was (11 Oct 2026, free-camera
+  shots from four sides of the piece and behind the body, before / after). Earlier tries had it on stage 52 while the
+  hunter was on 53. RT_EM_PIN is no help for this check: the pinned body is put back each tick after its AI moved
+  it, so the cut point lands away from the body (once inside a rock ledge).
 - kinds 6, 8, 15, 21 checked with RT_EM_TAILOFF (tail_off forced): body without clay 1, the cut tail drawn at the
   tail's place (Kut-Ku and Khezu on the ground, Plesioth's in the water, Cephadrome's under the sand where it
   swims); no carving point (no table entry), cut-surface caps hidden (x948 is set only by em_tail_off_sub).
 - fixed with it: the cut tail took its materials only when its clay was "drawn"; rt_em_materials now sets them
   for clay 1 even when the body does not draw it.
 - test_activities `tail_cut`: the Rathian's cut, body without its tail, a carving point, carving it in a second
-  run; and the Basarios' cut (woken first).
+  run; the Basarios' cut (woken first); the Monoblos' cut (once it is up).
 
 Test aids: `RT_EM_ALL_MATS=1` (draw every clay and material, the old behaviour), `RT_EM_MAT_TRACE=1` (each new hidden
 mask per kind and part, clays not drawn, the light colour), `RT_EM_POKE="kind:offset:value[:2|4][@tick];..."` (write a
