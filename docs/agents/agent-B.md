@@ -1045,3 +1045,15 @@ Details in docs/network.md 3.5 and 5.7. Notes for the next one:
 - A hunter that receives nothing from the server for 2 minutes logs out (cw+0x35F4); the test server's 6001 line check
   every 30 s keeps idle test clients in.
 - Guild hall NPC "talk 1" stands near the spawn point after the return; it is not a duplicate hunter.
+
+## Online round 3 (agent B, 10 Oct 2026): guest rooms, weapons in the town, event quests, patches, personal data
+Details in docs/network.md 3.5 and 5.8. Notes:
+- Town spots act on the square button (pad "square"): the inn door (square, spot 12), the guest rooms (inn spots
+  18-20), the exits back (kind 5). RT_LB_WARP onto the spot, then square.
+- The viewer now shows other hunters by the game's rule (Lb_Pl_stg_ck): only on stages 0x4C / 0x4D. The town trace
+  marks shown hunters with " shown"; hunter names in the trace are Shift-JIS bytes, so grep with plain substrings,
+  not `.` across a name.
+- Lesson: an argument that is filled by another argument's call (`f(p, g(&a, ...), a)`) has no defined order in C;
+  gcc on x86 evaluates the plain `a` first. Found in __cnet_Recv_PatchData; grep for the pattern when a received
+  length looks like garbage.
+- Event quest data for tests comes from the disc: RT_MISSION_DUMP + tools/mk_event_quest.py into build/ only.
