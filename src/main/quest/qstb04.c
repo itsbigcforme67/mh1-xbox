@@ -1,4 +1,4 @@
-/* qstb04 - f_quest0 0x002267F0-0x00226830: Modori_dama_ck. Whole file in f_quest0_nm.c. */
+/* qstb04 - f_quest0 0x002267F0-0x00226830: Modori_dama_ck. */
 #include "quest.h"
 
 extern u8 *mission_area;

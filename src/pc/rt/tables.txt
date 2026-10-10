@@ -602,7 +602,7 @@ shell06_body_tbl
 shell06_flag_tbl
 shell06_tbl
 sleeve_param_tbl0
-# quest flow (f_quest0_nm.c, f_quest_nm.c)
+# quest flow (qstb*.c, f_quest*.c, f_quest_nm.c)
 quest_data_tbl
 Item_get_tbl
 select_w work

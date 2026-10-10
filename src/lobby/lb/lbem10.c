@@ -1,4 +1,4 @@
-/* lbem10, run 1: sound_call_0053D7D0 .. dummy_em_prog_0053DCF0 (lobby.bin 0x0053D7D0-0x0053DCF8): the matching functions of lb_em10_nm.c. */
+/* lbem10, run 1: sound_call_0053D7D0 .. dummy_em_prog_0053DCF0 (lobby.bin 0x0053D7D0-0x0053DCF8): the whole lb_em10 file. */
 #include "lobby.h"
 #include "em.h"
 

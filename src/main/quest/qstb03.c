@@ -1,4 +1,4 @@
-/* SLPM_654.95 0x002269E0-0x00226C24: Stage_item_probability_get .. Quest_init. See f_quest0_nm.c. */
+/* SLPM_654.95 0x002269E0-0x00226C24: Stage_item_probability_get .. Quest_init. */
 #include "quest.h"
 
 extern u8 *mission_area;

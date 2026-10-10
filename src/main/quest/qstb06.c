@@ -1,5 +1,5 @@
 /* qstb06 - 0x00226920-0x002269E0: Stage_item_data_get, Stage_unique_data_get (same offset-or-pointer tables as
- * Stage_mv_data_get, see qstb05.c). Whole part in f_quest0_nm.c. */
+ * Stage_mv_data_get, see qstb05.c). */
 #include "quest.h"
 
 void *Stage_item_data_get(int n)

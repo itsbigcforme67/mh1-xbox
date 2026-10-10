@@ -149,7 +149,7 @@ int rt_load_stage_hit(int stage)
 }
 
 /* ------------------------------------------------------------ helpers */
-/* Stage_data_get (0x226900): src/main/quest/f_quest0_nm.c */
+/* Stage_data_get (0x226900): src/main/quest/qstb02.c */
 
 void PointToPoint(f32 *, f32 *, f32 *);
 void flvecOuterProduct(f32 *, f32 *, f32 *);

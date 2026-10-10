@@ -9,9 +9,7 @@ lb/lbui_nm.c lb/lbui lb/lbui
 lb/lbshop2_nm.c lb/lbshop2 lb/lbshop2
 lb/lb_mix_nm.c lb/lbmix lb/lbmix
 lb/lb_shop_nm.c lb/lbshp lb/lbshp
-lb/lb_em04_nm.c lb/lbem04 lb/lbem04
-lb/lb_em09_nm.c lb/lbem09 lb/lbem09
-lb/lb_em10_nm.c lb/lbem10 lb/lbem10"
+lb/lb_em04_nm.c lb/lbem04 lb/lbem04"
 : > /tmp/c_files.add
 grep -v '^$' config/c_files.txt > /tmp/c_files.new
 echo "$FAMILIES" | while read nm prefix regdir; do

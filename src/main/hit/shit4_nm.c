@@ -1,6 +1,6 @@
 /* shit4_nm (not built): the rest of f_sphr (SLPM_654.95 0x00114D90-0x0011CA70,
  * stage hit queries) written as C but not matched yet; see shit1.c (loader),
- * shit2.c (grid helpers) and shit3_nm.c (ground height queries). Function
+ * shit2a.c (grid helpers) and shit3_nm.c (ground height queries). Function
  * by function status in docs/agents/agent-D.md. Names are guesses from the
  * code. */
 #include "types.h"

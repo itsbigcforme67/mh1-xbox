@@ -1,6 +1,6 @@
 /*
  * rt_quest.c - the quest flow on the port runtime: what f_quest
- * (src/main/quest/f_quest0_nm.c, f_quest_nm.c), the game modes
+ * (src/main/quest: qstb*.c, f_quest*.c, f_quest_nm.c), the game modes
  * (src/main/game/f_game.c) and the result / reward screens call that is
  * not decompiled yet. Written from the asm where noted; offline only (the
  * network calls do nothing).

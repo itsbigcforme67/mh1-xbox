@@ -35,9 +35,9 @@ GAME="src/game/set/set14.c src/game/set/set00.c src/main/stage/stage_set.c \
 PICK_MAIN="src/main/sys/adxs05.c:Kaeru_ck"
 # Stage collision (f_sphr, agent D): the whole-file near-matches where they
 # exist (shit1_nm has load_stage_hit + WallHitInit/GroundHitInit, shit3_nm
-# GetGroundTblAdrs, shit4_nm NormalClipFace/add_vec_sub2/check_angle), plus
-# shit2.c (field checks and GetWallTblAdrs, also in shit15.c).
-HIT="src/main/hit/shit1_nm.c src/main/hit/shit2.c src/main/hit/shit3_nm.c src/main/hit/shit4_nm.c \
+# GetGroundTblAdrs, shit4_nm NormalClipFace/add_vec_sub2/check_angle); the
+# grid helpers and GetWallTblAdrs are matched (shit2a.c, shit15.c).
+HIT="src/main/hit/shit1_nm.c src/main/hit/shit3_nm.c src/main/hit/shit4_nm.c \
      src/main/hit/shit8_nm.c src/main/hit/shit9_nm.c src/main/hit/shit10_nm.c src/main/hit/shit11_nm.c \
      src/main/hit/shit12_nm.c src/main/hit/shit13_nm.c src/main/hit/shit14_nm.c \
      src/main/hit/tri_nm.c src/main/hit/hitw_nm.c"
@@ -54,7 +54,7 @@ CAM="src/main/cam/cam_nm.c src/main/cam/camm.c src/main/cam/camd.c src/main/cam/
 # plus the _nm.c near-matches. Files in WEAK are near-match copies that
 # repeat some matching functions: their symbols are made weak so the
 # matching copies win.
-EFT="src/game/eft/eft00.c src/main/eft/eft01.c src/main/eft/eft02_nm.c src/game/eft/eft04_nm.c \
+EFT="src/game/eft/eft00.c src/main/eft/eft01.c src/game/eft/eft04_nm.c \
      src/game/eft/eft05_nm.c src/main/eft/eft06.c src/main/eft/eft06b.c src/main/eft/eft06_nm.c \
      src/game/eft/eft07.c src/game/eft/eft08.c src/game/eft/eft09.c src/game/eft/eft10.c \
      src/game/eft/eft11_nm.c src/game/eft/eft12.c src/main/eft/eft13.c src/main/eft/eft13b.c \
@@ -73,9 +73,9 @@ EFT="src/game/eft/eft00.c src/main/eft/eft01.c src/main/eft/eft02_nm.c src/game/
 # Player code (f_pl, agent F): every matched plNN.c plus pl_nm.c (the
 # near-matches: pl_move_sub, pl_turn_sub, basic_com_ck, ...).
 PL="$(ls src/main/pl/pl[0-9][0-9].c | tr '\n' ' ') src/main/pl/pl_nm.c src/main/pl/pl_normal.c \
-    src/main/pl/normal_char_set.c src/main/pl/pl_normal_nm.c src/main/pl/pl_stg_ck_tw.c \
+    src/main/pl/normal_char_set.c src/main/pl/pl_stg_ck_tw.c \
     src/game/pl/pl_damage.c src/game/pl/pl_damageb.c src/game/pl/pl_damage_nm.c \
-    src/main/hit/hit_nm.c src/main/hit/hit2_nm.c src/main/hit/hit3_nm.c src/main/stage/f_stage.c \
+    src/main/hit/hit_nm.c src/main/hit/hit2_nm.c src/main/stage/f_stage.c \
     src/main/weapon/weapon_nm.c src/main/sound/f_sound_nm.c"
 # Monsters: the monster loop (enemy_mv / em_move, main f_em, src/main/em/
 # f_em_nm.c) and game.bin's shared monster code (em_core, em_master,
@@ -86,18 +86,18 @@ PL="$(ls src/main/pl/pl[0-9][0-9].c | tr '\n' ' ') src/main/pl/pl_nm.c src/main/
 EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c src/game/em/em_taisei.c \
     src/game/em/em01.c src/game/em/em01_horm.c src/game/em/em18_init.c src/game/em/em18b.c \
     src/game/em/em16_nm.c src/game/em/em16.c src/game/em/em12_nm.c src/game/em/em29.c"
-# Quest flow (agent C/E): f_quest (whole file near-match) and its first
-# part f_quest0_nm.c (accessors, Quest_init; written from the asm), the
-# tutorial checks it calls (game.bin tutorial.c)
-QUEST="src/main/evdemo/evdemo.c src/main/quest/f_quest0_nm.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c \
+# Quest flow (agent C/E): f_quest (whole file near-match; its first part,
+# accessors and Quest_init, is matched: qstb01-07.c), the tutorial checks it
+# calls (game.bin tutorial.c)
+QUEST="src/main/evdemo/evdemo.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c \
        src/main/game/f_game.c src/main/game/f_gameb.c src/main/font/dsp01.c \
        src/main/menu/menu_nm.c src/main/menu/menu_disp_nm.c \
-       src/main/chat/chat_nm.c src/main/chat/dispframe_nm.c src/main/menu/listsel_nm.c src/main/font/fontst_nm.c \
+       src/main/chat/chat_nm.c src/main/chat/dispframe_nm.c src/main/font/fontst_nm.c \
        src/main/font/fontst2_nm.c src/main/font/gfs_nm.c src/main/set/set01.c src/main/sys/vib.c \
        src/main/sprite/putspr.c src/main/sprite/putspr2.c src/main/sprite/calcpoint.c src/main/sprite/trans2.c src/main/sprite/sysw.c src/main/sprite/spriteput_nm.c \
        src/main/load/mkmap.c \
        src/main/reward/f_reward.c src/main/reward/f_reward2.c src/main/reward/f_reward3.c src/main/reward/f_rewardb.c \
-       src/main/reward/f_rewardc.c src/main/reward/f_reward4.c src/main/reward/f_rewardb_nm.c src/main/reward/f_rewardd_nm.c \
+       src/main/reward/f_rewardc.c src/main/reward/f_reward4.c src/main/reward/f_rewardd_nm.c \
        src/main/ud/ud_nm.c src/main/font/disp2_nm.c src/main/font/disp1_nm.c"
 for f in src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c; do
     [ -f "$f" ] && EM="$EM $f"
@@ -159,10 +159,10 @@ done
 LOBBY="$(ls src/lobby/f/lb_[a-p].c src/lobby/f/lb_z*.c | tr '\n' ' ') src/lobby/f/lb_pl_nm.c \
        $(ls src/lobby/lb/*_nm.c | tr '\n' ' ') src/lobby/lb/lb_talk.c"
 [ -f src/lobby/f/lb_village_nm.c ] && LOBBY="$LOBBY src/lobby/f/lb_village_nm.c"
-# the village start menu (Lb_ck_menu -> lbmw = lb_menu_w): Lb_Menu_Init,
-# the menu's move and draw (b/nm near-matches, b/lb_menu_nm.c from the asm)
+# the village start menu (Lb_ck_menu -> lbmw = lb_menu_w): Lb_Menu_Init and
+# the menu's move and draw (matched b/ runs)
 LOBBY="$LOBBY src/lobby/b/lb_bz15.c src/lobby/b/lb_bz17.c src/lobby/b/lb_bz19.c src/lobby/b/lb_bz135.c \
-       src/lobby/b/nm/Lb_menu_move_Core.c src/lobby/b/lb_by86.c src/lobby/b/lb_menu_nm.c"
+       src/lobby/b/lb_by86.c"
 # Memory card (main f_mc): the save screens (mccomb.c, matched; its
 # mc_sel_ck is original bytes on the PS2, so the near-match copy in
 # mccomb_nm.c, weak, gives it here), the McAct layer and the low-level
@@ -175,11 +175,11 @@ MC="$MC src/main/ud/udmisc_nm.c"
 # Power-on (rt_boot.c): select.bin's boot tasks (Init_task, the logos and
 # title, character creation and the continue screen: select00/demo
 # matched, edit_nm the whole edit file), main's mode menu (omake_nm),
-# options (option_nm), screen fade (fade_nm), the task scheduler (tsk_nm)
+# screen fade (fade_nm), the task scheduler (tsk_nm)
 # and TransSet/GameTrans (weapon/trans.c; its trans() is the host's,
 # rt_boot.c)
 BOOT="src/select/select00.c src/select/demo.c src/select/edit_nm.c src/main/omake/omake_nm.c \
-      src/main/option/option_nm.c src/main/fade/fade_nm.c src/main/sys/tsk_nm.c src/main/weapon/trans.c"
+      src/main/fade/fade_nm.c src/main/sys/tsk_nm.c src/main/weapon/trans.c"
 # Village features beyond the walk-and-talk loop (agent F's lobby f/ files,
 # agent B's b/ runs and b/nm near-matches): the item box (lb_ib.c whole
 # file; Lb_ItemBox_init from lb_tu_ib.c), the shops (item shop, forge
@@ -191,16 +191,14 @@ LOBBY2="src/lobby/f/lb_ib.c src/lobby/f/lb_tu_ib.c src/lobby/f/lb_ad.c src/lobby
         src/lobby/b/lb_by89.c src/lobby/b/lb_by90.c src/lobby/b/lb_by91.c src/lobby/b/lb_by43.c src/lobby/b/lb_by92.c \
         src/lobby/b/lb_by51.c src/lobby/b/lb_bz70.c src/lobby/b/lbarm01.c src/lobby/b/lb_by56.c src/lobby/b/lb_bz01.c \
         src/lobby/b/lb_by07.c \
-        src/lobby/b/nm/Lb_shop_trans2.c src/lobby/b/nm/Lb_process_shop.c src/lobby/b/nm/lb_cat_material.c \
-        src/lobby/b/nm/lb_normal_material.c src/lobby/f/lb_ay.c src/lobby/f/lb_aw.c src/lobby/f/lb_dr2.c \
+        src/lobby/f/lb_ay.c src/lobby/f/lb_aw.c src/lobby/f/lb_dr2.c \
         src/lobby/b/lb_by82.c src/lobby/b/lb_by61.c src/lobby/b/lb_by62.c src/lobby/b/lb_by84.c src/lobby/b/lb_by49.c \
         src/lobby/b/lb_by60.c src/lobby/b/lb_by50.c src/lobby/b/lb_by45.c src/lobby/b/lb_bz02.c src/lobby/b/lb_by54.c \
         src/lobby/b/lb_by80.c src/lobby/b/lb_by77.c src/lobby/b/lb_by76.c \
-        src/lobby/b/nm/lb_armor2_listItem.c src/lobby/b/nm/lb_armor_put_itemDetail.c src/lobby/b/nm/lb_armor_tag_decide00.c \
-        src/lobby/b/nm/lb_process_drawHelp.c src/lobby/b/nm/lb_process_select.c src/lobby/b/nm/lb_put_shopList.c \
-        src/lobby/b/nm/Put_page_num.c src/lobby/b/nm/shop_process_after.c \
-        src/lobby/b/lb_by44.c src/lobby/b/lb_by46.c src/lobby/b/lb_by47.c src/lobby/b/lb_by48.c src/lobby/b/lb_by52.c src/lobby/b/lb_by53.c src/lobby/b/lb_by57.c src/lobby/b/lb_by58.c src/lobby/b/lb_by59.c src/lobby/b/lb_by78.c src/lobby/b/lb_by81.c src/lobby/b/lb_by83.c src/lobby/b/nm/lb_armor_tag_decide01.c src/lobby/b/nm/lb_process_make_kyoukaList.c src/lobby/b/nm/lb_process_set_armorList.c src/lobby/b/nm/lb_process_set_weaponList.c src/lobby/b/nm/Lb_put_armorIcon.c src/lobby/b/nm/Lb_put_job_limit.c src/lobby/b/nm/shop_armor2_question.c src/lobby/b/nm/shop_armor2_stack.c src/lobby/b/nm/shop_armor_question.c src/lobby/f/lb_ax.c src/lobby/f/lb_s14.c \
-        src/lobby/b/lb_by55.c src/lobby/b/nm/item_to_stack.c src/lobby/b/nm/lb_process_kyoukaListProg.c src/lobby/b/nm/lb_process_use_item.c"
+        src/lobby/b/nm/lb_process_drawHelp.c src/lobby/b/nm/lb_process_select.c \
+        src/lobby/b/nm/Put_page_num.c \
+        src/lobby/b/lb_by44.c src/lobby/b/lb_by46.c src/lobby/b/lb_by47.c src/lobby/b/lb_by48.c src/lobby/b/lb_by52.c src/lobby/b/lb_by53.c src/lobby/b/lb_by57.c src/lobby/b/lb_by58.c src/lobby/b/lb_by59.c src/lobby/b/lb_by78.c src/lobby/b/lb_by81.c src/lobby/b/lb_by83.c src/lobby/f/lb_ax.c src/lobby/f/lb_s14.c \
+        src/lobby/b/lb_by55.c src/lobby/b/nm/lb_process_kyoukaListProg.c src/lobby/b/nm/lb_process_use_item.c"
 # agent B's matched village functions (lobby round 7: NPC placement and
 # walk, pig/cat NPCs, shop list/select, forge, armour shop, start menu):
 # linked as they are; the near-match / stand-in copies of the same
@@ -252,7 +250,7 @@ fi
 PICK="$PICK src/lobby/f/lb_e25.c:eft25_m src/lobby/f/lb_v17.c:Lb_make_quest_tbl src/lobby/f/lb_t.c:get_CA_size src/lobby/f/lb_uif.c:put_button_help src/lobby/f/lb_gy01.c:lb_guild_check_keyQuest src/lobby/b/lbsnd02.c:sound_req_com src/lobby/b/lbsnd03.c:ashi_sd_req_005C4980"
 LOBBY="$LOBBY $LOBBY2 $BMATCH $LOBBY3 $(for p in $PICK; do printf '%s ' "${p%%:*}"; done)"
 WEAK_LB2="$(for f in $LOBBY2; do printf 'lb__%s ' "$(basename "$f" .c)"; done)"
-WEAK="$WEAK_EM camarea_nm mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm pl_normal_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
+WEAK="$WEAK_EM camarea_nm mccomb_nm udmisc_nm set17_nm shell06_nm eft20_nm cam_nm pl_damage_nm fontst_nm gfs_nm sysw vib fontst2_nm ud_nm disp1_nm"
 # soft keyboard (main f_sk, all-C TU; sk20.c has the texture load/blend helpers)
 # item combining (item_nm.c: the recipe lookup; its dropped-item pool keeps the host stand-ins, renamed)
 SK="src/main/item/item_nm.c src/main/tu/sk_all.c src/main/tu/hk_all.c src/main/sk/sk20.c src/main/sk/cmd_nm.c"
@@ -294,7 +292,6 @@ GAME="$GAME src/main/cp/cp01.c src/main/cp/cp02.c src/main/cp/cp03.c"
 MATCHED_A="src/main/eft/eft02.c \
     src/main/eft/eft02b.c \
     src/main/eft/eft20b.c \
-    src/main/em/emsrch01.c \
     src/main/em/emsrch02.c \
     src/main/em/emsrch03.c \
     src/main/emw/ems01.c \
@@ -322,9 +319,7 @@ MATCHED_A="src/main/eft/eft02.c \
     src/main/item/item02.c \
     src/main/item/item03.c \
     src/main/item/item04.c \
-    src/main/model/light01.c \
     src/main/model/light02.c \
-    src/main/model/light03.c \
     src/main/pl/pl_ammo.c \
     src/main/pl/pl_demo.c \
     src/main/pl/pl_flagck.c \
@@ -449,10 +444,10 @@ MATCHED_B="src/main/cam/cam.c \
     src/main/option/option01.c \
     src/main/ud/f_ud.c src/main/menu/menu_dmon.c src/main/menu/menu_maru.c src/main/cam/camarea_gnps.c src/main/menu/menu_ftime.c"
 MATCHED_A="$MATCHED_A $MATCHED_B"
-WEAK_B="cam_nm camarea_nm camr_nm camr2_nm camr4_nm camr5_nm hit2_nm menu_nm menu_disp_nm option_nm omake_nm listsel_nm ud_nm udmisc_nm"
+WEAK_B="cam_nm camarea_nm camr_nm camr2_nm camr4_nm camr5_nm hit2_nm menu_nm menu_disp_nm omake_nm ud_nm udmisc_nm"
 [ -n "$MATCHED_SKIP" ] && MATCHED_A=$(echo $MATCHED_A | tr ' ' '\n' | grep -vE "$MATCHED_SKIP" | tr '\n' ' ')   # bisecting aid
 GAME="$GAME $MATCHED_A src/main/em/emride_nm.c"   # em_ride_sub (agent B): written from the asm, near-match
-WEAK_A="pl_nm f_frame_nm hit_nm hit2_nm hit3_nm tri_nm shit1_nm shit3_nm shit4_nm shit2 f_quest_nm f_quest0_nm item_nm f_em_nm emsrch_nm weapon3_nm weapon_nm light_nm f_stage_nm f_rewardb_nm f_sound_nm eft02_nm eft20_nm"
+WEAK_A="pl_nm f_frame_nm hit_nm hit2_nm tri_nm shit1_nm shit3_nm shit4_nm f_quest_nm item_nm f_em_nm emsrch_nm weapon3_nm weapon_nm light_nm f_stage_nm f_sound_nm eft20_nm"
 WEAK="$WEAK $WEAK_A $WEAK_B"
 GAME="$GAME $(for p in $PICK_X; do printf '%s ' "${p%%:*}"; done)"
 PICK_MAIN="$PICK_MAIN $PICK_X"

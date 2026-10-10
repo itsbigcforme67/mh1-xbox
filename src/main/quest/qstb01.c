@@ -1,4 +1,4 @@
-/* SLPM_654.95 0x00226830-0x002268A0: Quest_failed_set .. Quest_f_dra_ck. See f_quest0_nm.c. */
+/* SLPM_654.95 0x00226830-0x002268A0: Quest_failed_set .. Quest_f_dra_ck. */
 #include "quest.h"
 
 extern u8 *mission_area;

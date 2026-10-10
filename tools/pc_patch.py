@@ -95,11 +95,6 @@ PATCHES = {
     "src/lobby/b/lb_by136.c": [
         ("    Lb_pl_timer_calc();", "    Lb_pl_timer_calc(em);"),
     ],
-    # m2c dropped arguments (as the two other calls of this file have them)
-    "src/lobby/b/nm/lb_process_set_weaponList.c": [
-        ("var_s1_2 = Get_equip_name(F(u8, var_s0, 0));", "var_s1_2 = Get_equip_name(F(u8, var_s0, 0), F(u16, var_s0, 2));"),
-        ("strcpy(var_s5 + 4);", "strcpy(var_s5 + 4, (char *)var_s1_2);"),
-    ],
     # item box: the sell screen's quantity select gets (pad, 1) (a0/a1 at
     # the branch, 0x60B260); equip_ok_chk passes its e on
     "src/lobby/f/lb_ib.c": [
@@ -118,10 +113,6 @@ PATCHES = {
     ],
     "src/lobby/b/lb_bz01.c": [
         ("    flfntLocate();", "    flfntLocate(arg0, arg1);"),
-    ],
-    # Put_page_num's 5th argument is 1 (t0 in the delay slot, 0x537990)
-    "src/lobby/b/nm/Lb_shop_trans2.c": [
-        ("Put_page_num(0x20E, 0x38, lbShop.x6C, lbShop.x6D);", "Put_page_num(0x20E, 0x38, lbShop.x6C, lbShop.x6D, 1);"),
     ],
     # mode_sel_end's default case exits its own task (a0 = tsk left over)
     "src/main/omake/omake_nm.c": [
@@ -252,11 +243,6 @@ PATCHES = {
     "src/main/sound/bgm01.c": [
         ("void adx_se_set(int a0, int id) {\n    if (Pl_master_ck() == 1) {", "void adx_se_set(int a0, int id) {\n    if (Pl_master_ck(a0) == 1) {"),
         ("void adx_se_stop(void) {\n    if (Pl_master_ck() == 1) {", "void adx_se_stop(void *pl) {\n    if (Pl_master_ck(pl) == 1) {"),
-    ],
-    # eft02.c (matched) uses the near-match's move callback
-    "src/main/eft/eft02_nm.c": [
-        ("static void eft02_move(EFTW *ew);", "void eft02_move(EFTW *ew);"),
-        ("static void eft02_move(EFTW *ew) {", "void eft02_move(EFTW *ew) {"),
     ],
     # hitd.c (matched) calls the near-match's monster shell hit
     "src/main/hit/hit_nm.c": [

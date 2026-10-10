@@ -34,12 +34,12 @@ void Eft06_set(void *chr, s16 arg, int x05, int joint, f32 scale);
 void rtabi_Eft06_set(f32 scale, PLW *pl, int arg, int x05, int joint) { Eft06_set(pl, (s16)arg, x05, joint, scale); }
 
 /* Eft02_set6: plf.h (f32 scale, PLW *, int, int); definition
- * (src/main/eft/eft02_nm.c) (EMW *, int arg, int joint, f32 scale) */
+ * (src/main/eft/eft02b.c) (EMW *, int arg, int joint, f32 scale) */
 void Eft02_set6(void *em, int arg, int joint, f32 scale);
 void rtabi_Eft02_set6(f32 scale, PLW *pl, int arg, int joint) { Eft02_set6(pl, arg, joint, scale); }
 
 /* hit_point_cbd: src/main/stage/f_stage.c declares (f32 h, f32 w, f32 *p,
- * f32 *a, f32 *b); definition (src/main/hit/hit3_nm.c) (p, a, b, h, w) */
+ * f32 *a, f32 *b); definition (src/main/hit/hit3.c) (p, a, b, h, w) */
 u8 hit_point_cbd(f32 *p, f32 *a, f32 *b, f32 h, f32 w);
 int rtabi_hit_point_cbd(f32 h, f32 w, f32 *p, f32 *a, f32 *b) { return hit_point_cbd(p, a, b, h, w); }
 
@@ -70,7 +70,7 @@ void rtabi_Eft13_set_em_scl(void *em, int j, f32 scale, int arg) { Eft13_set_em_
 void Eft15_set3(void *em, int arg, int x07, f32 scale);
 void rtabi_Eft15_set3(void *em, int arg, f32 scale, int x07) { Eft15_set3(em, arg, x07, scale); }
 /* Eft02_set3: em_master_nm.c (f32 scale, EMW *, ang, arg, joint, f32 *pos);
- * definition (src/main/eft/eft02_nm.c) (em, ang, arg, joint, pos, scale) */
+ * definition (src/main/eft/eft02b.c) (em, ang, arg, joint, pos, scale) */
 void Eft02_set3(void *em, int ang, int arg, int joint, f32 *pos, f32 scale);
 void rtabi_Eft02_set3(f32 scale, void *em, int ang, int arg, int joint, f32 *pos) { Eft02_set3(em, ang, arg, joint, pos, scale); }
 
@@ -86,7 +86,7 @@ void Eft10_set(void *em, int arg, int x07, f32 scale);
 void rtabi_Eft10_set(f32 scale, void *em, int arg, int x07) { Eft10_set(em, arg, x07, scale); }
 
 /* em12_nm.c (em12_blood_req) calls Eft02_set4(scale, a, ang, 3, pos) as m2c read the asm (scale in f12 on the PS2); the
- * definition (src/main/eft/eft02_nm.c) is (a, ang, arg, pos, scale). Without this the Aptonoth's blood spray, and so a
+ * definition (src/main/eft/eft02b.c) is (a, ang, arg, pos, scale). Without this the Aptonoth's blood spray, and so a
  * Rathalos hunt that passed one, crashed on garbage arguments (quest 139). */
 void Eft02_set4(unsigned short a, int ang, int arg, float *pos, float scale);
 void rtabi_Eft02_set4(float scale, int a, int ang, int arg, float *pos) { Eft02_set4((unsigned short)a, ang, arg, pos, scale); }

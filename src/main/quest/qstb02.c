@@ -1,4 +1,4 @@
-/* SLPM_654.95 0x00226900-0x00226914: Stage_data_get .. Stage_data_get. See f_quest0_nm.c. */
+/* SLPM_654.95 0x00226900-0x00226914: Stage_data_get .. Stage_data_get. */
 #include "quest.h"
 
 extern u8 *mission_area;
