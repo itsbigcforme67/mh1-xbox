@@ -763,6 +763,11 @@ rules can be added to `ROOM_RULES` in tools/mh1_testserver.py; the server would 
 creator cannot change them. Passwords: the sheet's password (<= 8 characters) goes out as 660A only when 6602 said 1;
 6405 tells joiners that a password is needed, the joiner types it (`join_input_password`) and sends it with 6406; the
 server compares (the test server refuses "パスワードが違います。"). The room name (6609) is always sent empty.
+Tested with game clients (tools/test_online_server.sh, 11 Oct 2026): ANNA's sheet "パスワード制限: あり", its field opens
+the keyboard (type 3, 8 characters), the room gets the password; CARL types a wrong one at the join keyboard (type 0)
+and gets the game's dialog "パスワードが違います。", BOB types the right one and joins, CARL's second try finds the room
+full. The keyboards are filled by the test aid `RT_SK_TEXT="text;text;..."` (rt_menu.c: the n-th soft keyboard opened
+gets the n-th text, as if typed on the host keyboard and confirmed; `RT_SK_TRACE=1` logs each keyboard).
 Server messages (an error result's `str`, the 6706 administrator message, the 614C top information) are drawn by the
 game's HTML text (`nwDispStr_Html` -> `Analysis_StringData` / `Analysis_TagCode` / `Display_StringData`): it draws
 nothing unless the text starts with a tag, so servers send `<BODY>text<END>` (tags BODY, SIZE=n, COLOR=n, BR, CENTER,
