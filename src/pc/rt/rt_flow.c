@@ -75,6 +75,14 @@ int rt_flow_tick(void)
             fprintf(stderr, "\n");
         }
     }
+    if (getenv("RT_QUEST_TRACE")) {     /* the money (User_data+0x20) when it changes: the reward (Gold_add, f_ud.c), fees */
+        extern u8 User_data[];
+        static s32 old_gold = -1;
+        s32 g = *(s32 *)(User_data + 0x20);
+        if (old_gold >= 0 && g != old_gold)
+            fprintf(stderr, "rt_quest: tick %d money %+d -> %d\n", tick, g - old_gold, g);
+        old_gold = g;
+    }
     if (getenv("RT_QUEST_TRACE") && game_w[0] == 5 && game_w[1] == 1 && st != last) {   /* the reward list (game_w+0x128) */
         s16 *r = (s16 *)(game_w + 0x128);
         int i;

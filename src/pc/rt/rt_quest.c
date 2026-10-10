@@ -32,10 +32,6 @@ void rt_quest_mem_init(void) { mission_area = mission_buf; }
 /* ------------------------------------------------ user data (main ud, 0x272xxx) */
 
 extern u32 h_rank_tbl[];
-/* Event_flag_set / _clear / _ck (0x272EC0..): u16 flags at User_data+0x24 */
-void Event_flag_set(int n) { PU16(&User_data, 0x24 + 2 * (n / 16)) |= (u16)(1 << (n & 0xF)); }
-void Event_flag_clear(int n) { PU16(&User_data, 0x24 + 2 * (n / 16)) &= (u16)~(1 << (n & 0xF)); }
-int Event_flag_ck(int n) { return (PU16(&User_data, 0x24 + 2 * (n / 16)) & (1 << (n & 0xF))) != 0; }
 /* Get_hunter_rank (0x272320): number of h_rank_tbl entries (ended by
  * 9999999) that the hunter points (u+0x1C) reach */
 u8 Get_hunter_rank(u8 *u)
@@ -154,18 +150,6 @@ void rt_hud_tick(void)
 
 /* ------------------------------------------------ money (main ud / f_reward) */
 extern s32 quest_price;
-/* Gold_add (0x2722C0): User_data+0x20 money, clamped to 0..9999999 */
-void Gold_add(int n)
-{
-    s32 *g = (s32 *)((u8 *)&User_data + 0x20);
-    *g += n;
-    if (*g >= 10000000)
-        *g = 9999999;
-    if (*g < 0)
-        *g = 0;
-    if (getenv("RT_QUEST_TRACE"))
-        fprintf(stderr, "rt_quest: Gold_add(%d) -> money %d\n", n, *g);
-}
 /* Quest_price_return (0x290E50): give back the quest fee once */
 void Quest_price_return(void)
 {

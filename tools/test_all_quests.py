@@ -145,7 +145,7 @@ def test(q):
     rc, d, dt = run(q, env, inp, secs, 'q%d' % q)
     clear = re.search(r'D5 3', d) is not None
     rew = re.search(r'tick \d+ mode 5 step', d)     # the reward screen (its item list may be empty, e.g. 150)
-    gold = re.findall(r'Gold_add\(\d+\) -> money (\d+)', d)
+    gold = re.findall(r'money \+\d+ -> (\d+)', d)
     vill = 'rt_village: tick' in d and d.find('rt_village: tick') > d.find(' mode 5 step') > 0
     crash = rc not in (0, None) or 'Segmentation' in d or 'Assertion' in d
     why = []
