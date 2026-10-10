@@ -226,8 +226,7 @@ def long_fight():
     t = run('long_fight', ','.join(ev), 0, quest=131, secs=190,   # who is not in god mode, the weapon-trail prim of a freed effect showed up
             env={'RT_PL_GOTO': '60,39', 'RT_SHOTS': shots, 'RT_SEED': 7})
     if crashed(t): return False, 'crash'
-    skipped = 'skipped a prim whose effect work' in t
-    return True, '%d frames drawn, no crash%s' % (t.count('wrote '), '; a freed effect prim was skipped (see log)' if skipped else '')
+    return True, '%d frames drawn, no crash' % t.count('wrote ')
 
 @test
 def carve_small():
