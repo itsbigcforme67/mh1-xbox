@@ -271,10 +271,6 @@ void GetPlayerMaterialData(void *pl) { (void)pl; }
 /* messages, sounds not ported */
 /* adx_se_set / adx_se_stop / die_bgm_set: the game's (src/main/sound/bgm_nm.c) */
 void armor_sd_req(void *pl, int a) { (void)pl; (void)a; }
-/* camera requests (death / come back / pile bunker) */
-void PlayerDieCameraRequest(void) {}
-void PlComebackCameraRequest(void) {}
-void PilebunkerCameraRequest(void) {}
 /* Item_regained: f_quest_nm.c */
 void *rt_pull_enemy_work(void);
 void *pull_enemy_work(void) { return rt_pull_enemy_work(); }   /* rt_em.c */
