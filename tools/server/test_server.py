@@ -348,6 +348,9 @@ class TestServerFeatureTest(unittest.TestCase):
     def setUp(self):
         import mh1_testserver as ts
         self.ts = ts
+        with ts.REG.lock:           # module state of an earlier test's server
+            ts.REG.where.clear()
+        ts.ROOMS.clear()
         self.srv = ts.Server(("127.0.0.1", 0), ts.Client)
         self.port = self.srv.server_address[1]
         threading.Thread(target=self.srv.serve_forever, daemon=True).start()
@@ -424,6 +427,53 @@ class TestServerFeatureTest(unittest.TestCase):
         self.assertEqual(a.until(0x6881)[4], bytes([0]))
         a.close()
         b2.close()
+
+    def test_room_rules_password_full(self):
+        a = FakeLobbyClient(self.port, b"ANNA")
+        b = FakeLobbyClient(self.port, b"BOB")
+        c = FakeLobbyClient(self.port, b"CARL")
+        for x in (a, b, c):
+            x.enter(1, 3)
+        # the creator reads the rules as Lbc_GetRoomRule does: 6603, 6607 per rule, 6604 / 6606 / 6605, 6608 / 660E
+        a.request(0x6407, struct.pack(">H", 1))
+        self.assertEqual(a.until(0x6407)[3], 0)
+        a.request(0x6603, struct.pack(">H", 1))
+        n = a.until(0x6603)[4][0]
+        self.assertEqual(n, 1)
+        a.request(0x6607, struct.pack(">HB", 1, 0))
+        self.assertEqual(a.until(0x6607)[4], bytes([0, 4]))
+        a.request(0x6604, struct.pack(">HB", 1, 0))
+        self.assertEqual(strs(a.until(0x6604)[4], 1, 1)[0][0], "人数".encode("cp932"))
+        a.request(0x6606, struct.pack(">HB", 1, 0))
+        self.assertEqual(a.until(0x6606)[4], bytes([0, 3]))
+        a.request(0x6608, struct.pack(">HBB", 1, 0, 1))
+        p = a.until(0x6608)[4]
+        self.assertEqual((p[:2], strs(p, 2, 1)[0][0]), (bytes([0, 1]), bytes.fromhex("8251906c")))     # "２人"
+        a.request(0x660E, struct.pack(">HBB", 1, 0, 1))
+        self.assertEqual(a.until(0x660E)[4], bytes([0, 1, 0]))
+        # the creator's sheet: 2 players, a password
+        a.request(0x660A, lambda q: a.enc(b"SECRET", q))
+        a.until(0x660A)
+        a.request(0x660B, bytes([0, 1]))
+        a.until(0x660B)
+        a.request(0x660C, b"")
+        a.until(0x660C)
+        b.request(0x6405, struct.pack(">H", 1))
+        self.assertEqual(b.until(0x6405)[4], struct.pack(">HB", 1, 1))
+        b.request(0x6606, struct.pack(">HB", 1, 0))                     # a joiner sees the room's choice
+        self.assertEqual(b.until(0x6606)[4], bytes([0, 1]))
+        b.request(0x6406, lambda q: struct.pack(">H", 1) + b.enc(b"WRONG", q))
+        cat, cmd, seq, res, p = b.until(0x6406)
+        self.assertEqual((res, strs(p, 0, 1)[0][0]), (1, "<BODY>パスワードが違います。<END>".encode("cp932")))
+        b.request(0x6406, lambda q: struct.pack(">H", 1) + b.enc(b"SECRET", q))
+        self.assertEqual(b.until(0x6406)[3], 0)
+        c.request(0x6406, lambda q: struct.pack(">H", 1) + c.enc(b"SECRET", q))
+        cat, cmd, seq, res, p = c.until(0x6406)
+        self.assertEqual((res, strs(p, 0, 1)[0][0]), (1, "<BODY>満員のため参加できません。<END>".encode("cp932")))
+        c.request(0x6403, struct.pack(">H", 1))
+        self.assertEqual(c.until(0x6403)[4], struct.pack(">HHH", 1, 2, 2))
+        for x in (a, b, c):
+            x.close()
 
     def test_event_quest_download(self):
         self.ts.EVENT_FILES = [bytes(range(256)) * 3]

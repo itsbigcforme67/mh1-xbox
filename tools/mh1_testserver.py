@@ -68,6 +68,13 @@ def lbs_decode(data, seq, xfee):
     return bytes((c ^ KEY[i & 7] ^ ((xfee + (seq & 0xFF) + i) & 0xFF)) for i, c in enumerate(data))
 
 
+def html_msg(text):
+    """a server message the client shows (an error result's text, 6706): the game's HTML text (nwDispStr_Html, the
+    PC's src/lobby/b/nm/html_text.c) draws nothing unless the text starts with a tag, so it goes as <BODY>text<END>
+    (tags: BODY, SIZE=n, COLOR=n, BR, CENTER, LEFT, RIGHT, END, LF=n, C=n)"""
+    return str16("<BODY>" + text + "<END>")
+
+
 def str16(s):
     """u16 length + bytes: the plain string format the client's GetRecvDataString reads"""
     b = s if isinstance(s, bytes) else s.encode("cp932", "replace")
@@ -125,7 +132,7 @@ MAILBOX = {}                        # id -> [6705 payloads] for hunters not logg
 PATCH = None                        # --patch FILE: bytes sent as a patch at the login (client tests only)
 EVENT_FILES = []                    # --event-quest FILE: the downloadable (event) quest files, in order
 LINE_CHECK = 30.0                   # seconds between 6001 line checks
-ADMIN_MESSAGE = ""                  # --admin-message: sent to each hunter after the login (6706)
+ADMIN_MESSAGE = ""                  # --admin-message: sent to each hunter at the first lobby entry (6706)
 
 
 class Room:
@@ -140,7 +147,8 @@ class Room:
         self.explain = b""
         self.pw = b""
         self.prop = 0               # u32 room property (SetRoomProperty 6509: the quest number and the leader's rank)
-        self.rules = {}
+        self.rules = {}             # rule index -> the creator's choice (660B)
+        self.max = 4                # players: rule 0's choice + 1 (the rule sheet's "players")
 
     def status(self):
         # 1 = free (the guild counter creates a room in the first free slot, Lbc_ReserveRoom), 3 = open for joining
@@ -148,6 +156,15 @@ class Room:
         return 3 if self.members else 1
 
 
+# The room rules this server offers (docs/network.md 5.6 "Room rules"): (name, [choices], default choice). The game
+# stores them but shows none; it matches only rule 0 against its own player-count strings (lb_guild_make_room,
+# lb_rule_member: "１人".."４人" in Shift-JIS) and then sends the creator's "players" as rule 0's choice (660B 0, n-1).
+# The server enforces it: the room holds that many (6403 max, 6406 refused when full). More rules can be added here;
+# the creator cannot change them (the sheet has no rows for them): each keeps its default.
+ROOM_RULES = [
+    ("人数".encode("cp932"), [("%d人" % n).translate({ord(c): 0xFF10 + ord(c) - 0x30 for c in "0123456789"}).encode("cp932")
+                               for n in range(1, 5)], 3),
+]
 ROOMS = {}                          # lobby id -> [Room x 8]
 ROOMS_LOCK = threading.Lock()
 
@@ -297,7 +314,7 @@ class Client(socketserver.BaseRequestHandler):
         if not isinstance(hid, str) or hid.startswith("!"):
             msg = hid[1:] if isinstance(hid, str) else "this hunter cannot log in"
             log("account %r handle %r refused: %s" % (ident, handle, msg))
-            self.send(ANS, C_USERID, str16(msg), seq=seq, res=1)
+            self.send(ANS, C_USERID, html_msg(msg), seq=seq, res=1)
             return
         self.user_id = hid
         self.user_handle = handle.split(b"\0")[0].decode("cp932", "replace")
@@ -320,12 +337,11 @@ class Client(socketserver.BaseRequestHandler):
         self.mini_saved()
         self.send(ANS, C_MINIDATA, b"", seq=seq)
 
-    def on_6141_16(self, seq, p):           # login finished: nothing to answer; mail kept while away, the admin message
+    def on_6141_16(self, seq, p):           # login finished: nothing to answer; mail kept while away
         log("login finished")
         self.hunter_seen()
         self.deliver_mail()
-        if ADMIN_MESSAGE:           # 6706 request: str title, str html (the client shows it, then answers 6706)
-            self.send(REQ, 0x6706, str16("MH1 test server") + str16(ADMIN_MESSAGE))
+
 
     def on_614C_1(self, seq, p):            # top information
         html = "<html><body>MH1 test server<br>private test server, not an MH Oldschool server</body></html>"
@@ -392,7 +408,7 @@ class Client(socketserver.BaseRequestHandler):
     def piece_join(self, k, c, seq, p):
         i = struct.unpack(">H", p[:2])[0]
         if k == 2:
-            self.send(ANS, c["join"], struct.pack(">HHH", i, len(self.room(i).members), 4), seq=seq)
+            self.send(ANS, c["join"], struct.pack(">HHH", i, len(self.room(i).members), self.room(i).max), seq=seq)
         else:
             self.send(ANS, c["join"], struct.pack(">HHH", i, REG.count(k, i), 100), seq=seq)
 
@@ -405,8 +421,20 @@ class Client(socketserver.BaseRequestHandler):
         i = struct.unpack(">H", p[:2])[0]
         if k == 2:      # RoomEntry: u16 room, obfuscated password
             r = self.room(i)
-            if r is None or not r.members or len(r.members) >= 4:
-                self.send(ANS, c["entry"], str16("this room cannot be joined"), seq=seq, res=1)
+            pw = b""
+            if len(p) > 2:
+                pw, _ = self.enc_string(p, 2, seq)
+                pw = pw.split(b"\0")[0]
+            if r is None or not r.members:
+                self.send(ANS, c["entry"], html_msg("この部屋には参加できません。"), seq=seq, res=1)
+                return
+            if len(r.members) >= r.max:
+                log("%s cannot join room %d: full (%d players)" % (self.user_handle, i, r.max))
+                self.send(ANS, c["entry"], html_msg("満員のため参加できません。"), seq=seq, res=1)   # "full: cannot join"
+                return
+            if r.pw and pw != r.pw:
+                log("%s cannot join room %d: wrong password" % (self.user_handle, i))
+                self.send(ANS, c["entry"], html_msg("パスワードが違います。"), seq=seq, res=1)   # "wrong password"
                 return
             REG.enter(self, 2, i)
             others = list(r.members)
@@ -419,6 +447,12 @@ class Client(socketserver.BaseRequestHandler):
             return
         REG.enter(self, k, i)
         self.send(ANS, c["entry"], b"", seq=seq)
+        if k == 1 and ADMIN_MESSAGE and not getattr(self, "admin_sent", False):
+            # 6706 request: str title, str html; the client shows it in the town (once its screens allow it) and answers
+            # 6706 when closed (circle). Sent at the first lobby entry: at the login the client is still behind the
+            # login screens' fade-out and the dialog would sit under it
+            self.admin_sent = True
+            self.send(REQ, 0x6706, str16("MH1 test server") + html_msg(ADMIN_MESSAGE))
         if k == 1:      # tell the others in the lobby (NoticeLobbyCommer)
             for o in REG.others(self, 1, i):
                 o.safe_send(NOTE, 0x6411, str16(self.user_id) + str16(self.user_handle[:16]) + str16(self.mini))
@@ -441,7 +475,7 @@ class Client(socketserver.BaseRequestHandler):
         """the lobby's other hunters see the room's status and member count change (notices 6404 / 6403)"""
         for o in REG.members(1, self.lobby()):
             o.safe_send(NOTE, 0x6404, struct.pack(">HB", r.id, r.status()))
-            o.safe_send(NOTE, 0x6403, struct.pack(">HHH", r.id, len(r.members), 4))
+            o.safe_send(NOTE, 0x6403, struct.pack(">HHH", r.id, len(r.members), r.max))
 
     def piece_exit(self, k, c, seq, p):
         if k == 2:
@@ -460,7 +494,7 @@ class Client(socketserver.BaseRequestHandler):
         i = struct.unpack(">H", p[:2])[0]
         r = self.room(i)
         if r is None or r.members:
-            self.send(ANS, 0x6407, str16("the room is taken"), seq=seq, res=1)
+            self.send(ANS, 0x6407, html_msg("この部屋は使用中です。"), seq=seq, res=1)
             return
         r.reset()
         r.members = [self]
@@ -469,8 +503,41 @@ class Client(socketserver.BaseRequestHandler):
         self.send(ANS, 0x6407, b"", seq=seq)
         self.room_changed(r)
 
-    def on_6603_1(self, seq, p):            # number of rules of a room: u8 (0: the client's own rule sheet only)
-        self.send(ANS, 0x6603, bytes([0]), seq=seq)
+    # room rules (6603-6608, 660E; docs/network.md 5.6): the client reads them for the room it makes (Lbc_GetRoomRule)
+    # and for the room it joins (Lbc_GuestReadRoom); every request carries u16 room, rule k (0-based), choice c, and
+    # every answer echoes k (and c): the client files them by those numbers. A missing answer hangs its read.
+    def on_6603_1(self, seq, p):            # number of rules: u8 n
+        self.send(ANS, 0x6603, bytes([len(ROOM_RULES)]), seq=seq)
+
+    def rule_args(self, p):
+        i, k = struct.unpack(">HB", p[:3])
+        return self.room(i), k, (p[3] if len(p) > 3 else 0)
+
+    def on_6607_1(self, seq, p):            # number of choices: u8 k, u8 n
+        r, k, _ = self.rule_args(p)
+        self.send(ANS, 0x6607, bytes([k, len(ROOM_RULES[k][1]) if k < len(ROOM_RULES) else 0]), seq=seq)
+
+    def on_6604_1(self, seq, p):            # the rule's name: u8 k, str (<= 0x40 bytes)
+        r, k, _ = self.rule_args(p)
+        self.send(ANS, 0x6604, bytes([k]) + str16(ROOM_RULES[k][0][:0x40] if k < len(ROOM_RULES) else b""), seq=seq)
+
+    def on_6606_1(self, seq, p):            # its current choice: u8 k, u8 c (the room's, else the default)
+        r, k, _ = self.rule_args(p)
+        now = r.rules.get(k, ROOM_RULES[k][2]) if r is not None and k < len(ROOM_RULES) else 0
+        self.send(ANS, 0x6606, bytes([k, now]), seq=seq)
+
+    def on_6605_1(self, seq, p):            # may the creator set it: u8 k, u8 1
+        r, k, _ = self.rule_args(p)
+        self.send(ANS, 0x6605, bytes([k, 1]), seq=seq)
+
+    def on_6608_1(self, seq, p):            # a choice's name: u8 k, u8 c, str (<= 0x40 bytes)
+        r, k, c = self.rule_args(p)
+        names = ROOM_RULES[k][1] if k < len(ROOM_RULES) else []
+        self.send(ANS, 0x6608, bytes([k, c]) + str16(names[c][:0x40] if c < len(names) else b""), seq=seq)
+
+    def on_660E_1(self, seq, p):            # a choice's triples (meaning not known): u8 k, u8 c, u8 0
+        r, k, c = self.rule_args(p)
+        self.send(ANS, 0x660E, bytes([k, c, 0]), seq=seq)
 
     def on_6601_1(self, seq, p):            # may the room have a name: u8 1
         self.send(ANS, 0x6601, bytes([1]), seq=seq)
@@ -496,13 +563,17 @@ class Client(socketserver.BaseRequestHandler):
         r = self.my_room()
         pw, _ = self.enc_string(p, 0, seq)
         if r:
-            r.pw = pw
+            r.pw = pw.split(b"\0")[0]
+            log("room %d has a password" % r.id)
         self.send(ANS, 0x660A, b"", seq=seq)
 
     def on_660B_1(self, seq, p):            # one rule: u8 rule, u8 choice
         r = self.my_room()
-        if r and len(p) >= 2:
+        if r and len(p) >= 2 and p[0] < len(ROOM_RULES) and p[1] < len(ROOM_RULES[p[0]][1]):
             r.rules[p[0]] = p[1]
+            if p[0] == 0:           # players
+                r.max = p[1] + 1
+            log("room %d rule %d = %d (%s)" % (r.id, p[0], p[1], ROOM_RULES[p[0]][1][p[1]].decode("cp932", "replace")))
         self.send(ANS, 0x660B, b"", seq=seq)
 
     def on_6610_1(self, seq, p):            # explanation (the recruiting message)
@@ -541,7 +612,7 @@ class Client(socketserver.BaseRequestHandler):
         i = struct.unpack(">H", p[:2])[0]
         r = self.room(i)
         n = len(r.members) if r else 0
-        self.send(ANS, 0x640B, struct.pack(">HHHHHH", i, n, 4, 0, 0, 0), seq=seq)
+        self.send(ANS, 0x640B, struct.pack(">HHHHHH", i, n, r.max if r else 4, 0, 0, 0), seq=seq)
 
     # matching: every member says ready (MatchEntry 6504, u8 1 / 0), the leader starts (6508 notice); the server tells
     # the room 6910, then each client reads the match (lbc_game_ready_00 -> cnLBS_Read_MatchInfomation: 6911 member
@@ -697,7 +768,7 @@ class Client(socketserver.BaseRequestHandler):
         ident, _ = self.enc_string(p, 0, seq)
         o = self.find_user(ident)
         if o is None:
-            self.send(ANS, 0x6703, str16("that hunter is not logged in"), seq=seq, res=1)
+            self.send(ANS, 0x6703, html_msg("そのハンターはログインしていません。"), seq=seq, res=1)
             return
         w = REG.where.get(o, {})
         # str id, u16 plaza, u16 lobby, u16 room (1-based, 0 = none), u8, u8 (not shown by the client: 0), str message
@@ -762,7 +833,7 @@ class Client(socketserver.BaseRequestHandler):
         elif self.mail_keep(ident, mail):   # kept until that hunter's next login (guess: what the real one did)
             pass
         else:
-            self.send(ANS, 0x6704, str16("there is no hunter with that id"), seq=seq, res=1)
+            self.send(ANS, 0x6704, html_msg("そのIDのハンターはいません。"), seq=seq, res=1)
             return
         log("mail from %s to %s%s" % (self.user_handle, ident, "" if o else " (kept until the next login)"))
         self.send(ANS, 0x6704, b"", seq=seq)
@@ -809,7 +880,7 @@ class Client(socketserver.BaseRequestHandler):
     def on_6882_1(self, seq, p):            # FileDownloadData: u8 file, u32 offset, u32 size (0x200) -> the chunk
         i, ofs, n = struct.unpack(">BII", p[:9])
         if i >= len(EVENT_FILES):
-            self.send(ANS, 0x6882, str16("no such file"), seq=seq, res=1)
+            self.send(ANS, 0x6882, html_msg("ファイルがありません。"), seq=seq, res=1)
             return
         chunk = EVENT_FILES[i][ofs:ofs + n]
         self.send(ANS, 0x6882, struct.pack(">BII", i, ofs, len(chunk)) + struct.pack(">H", len(chunk)) + chunk, seq=seq)

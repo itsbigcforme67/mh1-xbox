@@ -478,6 +478,60 @@ first monsters on every machine.
 
 * How the real server refused a login (the stub closes the connection; the client shows a connection error).
 * The 0x1031 header the server sends, the meaning of 0x1032, and whether keep-alives were consumed (4.2).
-* Formats of mail, friends and user search (6703-6709), file download (6881/6882), rankings (6144-6146).
+* Rankings (6144-6146). (Mail, user search, friends, file download, patches, personal data: known since 10 Oct
+  2026, network.md 5.7 / 5.8.)
 * How many players a plaza / lobby held on the original service.
 * Whether a client-side session code (4.3) or the 6914 rule string is the better hand-off; agent B's call.
+
+## 15. Gaps before a public launch (written 11 Oct 2026, nothing of this is built)
+
+What `mh1-server` has today is enough for a private server among friends (section "Run your own server"). Before the
+owner opens one to the public, each of these needs a decision or work. Effort: S = days, M = a week or two, L = more.
+
+**Security and the transport**
+1. **The password is readable on the wire.** The game obfuscates it with a fixed table, the server's 16-bit value and
+   the packet number (network.md 5.2): anyone who can see the traffic (shared Wi-Fi, an ISP, a hosting provider) can
+   read every login. Server-made random passwords limit the damage to this game, but a captured password gives full
+   access to that account. Options: TLS for the PC / Xbox lobby connection (a client change; 7.2; M), or a login token
+   that changes after each login (client and server change; M). Real PS2s through the patch (2.6) cannot get either.
+2. **Nothing else is encrypted either**: chat, mail, hunter names, the relay's game traffic. Acceptable for a game if
+   the terms say so; TLS (1) would cover the lobby, the relay would need its own (M).
+3. **The game trusts the server completely**: lengths in received packets are not checked by the client (patch data,
+   6705 mail strings overflow into other buffers: network.md 5.7 / 5.8). A hostile server can crash clients. Players
+   should only use servers they trust; the client could add checks (S-M per message family).
+4. **Denial of service**: no limit on connections per address, sessions, or chat / mail rate in the lobby (7.3; S).
+   No limit on the size of the SQLite store (mail flooding; S). A firewall and a reverse proxy in front (ops).
+5. **Account recovery**: a lost password needs the operator (`account passwd`); no self-service, no e-mail on file by
+   design (S-M if wanted, but then personal data is stored).
+
+**Abuse and moderation**
+6. **Cheating cannot be prevented** (7.3): the hunt is decided by the players' games. Public servers will see edited
+   saves and modified clients; the only answers are reports and bans.
+7. **Tools still missing** (9): kick and mute while online, a word filter for names / chat / mail / room texts, a report
+   command, an operator console or page that shows who is online and where, a chat / mail log kept for a short time
+   for handling reports (which is personal data: privacy notice), per-account rate limits (S-M together).
+8. **Sign-up**: invite-only today (the operator runs `account add`). A public server needs a sign-up path (a small web
+   page, or a key handed out by moderators; M) and a policy against throwaway accounts.
+
+**Operations**
+9. **Backups**: one SQLite file; a daily `sqlite3 .backup` copy off the machine, and a tested restore (S).
+10. **Running it**: a systemd unit or container with restart on failure, log rotation, disk / memory alerts, a status
+    check that logs in with a test account (S). Upgrades: the schema has a version; a migration step for future
+    changes (exists only as `CREATE IF NOT EXISTS` today; S).
+11. **Scale**: one Python process with a thread per lobby connection and asyncio for the relay; fine for tens to a few
+    hundred players (3.3), not measured beyond 4 clients. A load test with many fake clients before launch (M).
+12. **Monitoring the relay**: hunts that stall, sessions that never start, players who drop (the relay logs them; no
+    alerting; S).
+13. **Time and place state**: the "place" a hunter left is kept 15 minutes; lobbies and rooms themselves live in
+    memory and are lost on a server restart (players then log in to the top menu or their kept lobby; rooms must be
+    made again). Fine for a hobby server; a restart drops every hunt in progress (the relay is in the same process).
+
+**People and rules**
+14. An operator and one or two moderators, their contact address, the privacy notice and the terms (9), the name and
+    the "unofficial, not affiliated" line (13.3), and a decision on PS2 cross-play (2.6, 13.4).
+15. Event quests may only come from the operator's own disc (7.4); a public server cannot ship them.
+
+**What is solid already** (tested on 127.0.0.1 with the game's own clients, Linux and Windows under Wine): accounts
+with scrypt hashes and rate limits, stable hunter ids, the lobby, rooms (with rules, network.md 5.6), matching, the
+relay (2-4 players, a player leaving or crashing), mail kept for absent hunters, a crashed client back in its lobby,
+event quests, a config file, invite-only by default.

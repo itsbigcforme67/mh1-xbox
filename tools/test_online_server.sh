@@ -3,7 +3,8 @@
 # clients log in through the game's screens, meet in the town, ANNA posts quest 1 at the guild counter, BOB joins,
 # the match goes through mh1-server's session relay (nobody hosts), ANNA clears the quest (delivery, RT_PL_ITEMS),
 # both get the reward screen, the game saves the reward to their cards and both are back in the town, each showing
-# the other. Each plays the hunter of its own card (tools/test_coop.sh saves). About 4 minutes.
+# the other. Each plays the hunter of its own card (tools/test_coop.sh saves). The room is for 2 (the rule sheet's
+# players, room rule 0): CARL is refused. About 5 minutes.
 #   tools/test_online_server.sh                                                   the Linux build
 #   RUN=wine BIN=build/win/mhview_online.exe tools/test_online_server.sh         the Windows build under Wine
 cd "$(dirname "$0")/.."
@@ -29,7 +30,7 @@ relay-ports = 10380-10389
 db = accounts.sqlite3
 verbose = yes
 CONF
-for nm in ANNA BOB; do
+for nm in ANNA BOB CARL; do
     python3 tools/server/mh1_server.py account add --db $OUT/accounts.sqlite3 --note "test $nm" > $OUT/account_$nm.txt || fail "account add"
 done
 id_of() { sed -n 's/^login \([0-9]*\) password .*/\1/p' $OUT/account_$1.txt; }
@@ -52,24 +53,43 @@ REW=""; t=3300; while [ $t -le 4800 ]; do
     REW="$REW;$t:circle*2;$((t+30)):circle*2;$((t+60)):circle*2;$((t+90)):circle*2;$((t+120)):circle*2;$((t+150)):circle*2;$((t+180)):cross*2;$((t+200)):ddown*2;$((t+220)):circle*2"
     t=$((t + 250))
 done
-IA=$(python3 tools/mk_input.py - "$LOGIN$TALK;1521:dleft*2;1543:dleft*2;1565:ddown*2;1587:ddown*2;1609:ddown*2;1631:circle*2;1691:circle*2;1751:circle*2;2800:square*3;2860:circle*2;2920:circle*2;2980:circle*2$REW" 6300)
+# the rule sheet: players 4 -> 2 (dleft x2), down to the password, "あり" (dright), down to its field, circle opens the
+# keyboard (RT_SK_TEXT types the password), down twice to "条件決定", circle
+IA=$(python3 tools/mk_input.py - "$LOGIN$TALK;1521:dleft*2;1543:dleft*2;1565:ddown*2;1600:dright*2;1625:ddown*2;1650:circle*2;1720:ddown*2;1745:ddown*2;1770:circle*2;1830:circle*2;1890:circle*2;2800:square*3;2860:circle*2;2920:circle*2;2980:circle*2$REW" 6300)
 JOIN=""; t=2000; while [ $t -le 2450 ]; do JOIN="$JOIN;$t:circle*2"; t=$((t + 50)); done
 IB=$(python3 tools/mk_input.py - "$LOGIN;1950:square*3$JOIN;2700:square*3;2760:circle*2;2820:circle*2$REW;5600:up*45;5650:left*30" 6300)
 run() {     # name seconds input warps [env...]
     nm=$1; t=$2; in=$3; w=$4; shift 4
     env "$@" MH1_SAVE_DIR="$PWD/$OUT/card_$nm" RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 RT_ONLINE_TRACE=1 RT_QUEST_TRACE=1 \
-        RT_NOMOVIE=1 RT_MC_TRACE=1 RT_NET_REGISTERED=1 RT_NET_PORT=$PORT RT_NET_ID=$(id_of $nm) RT_NET_PASS=$(pw_of $nm) RT_LB_WARP="$w" RT_SHOTS=5900 timeout ${TMO:-360} $RUN $BIN \
+        RT_NOMOVIE=1 RT_MC_TRACE=1 RT_NET_REGISTERED=1 RT_NET_PORT=$PORT RT_NET_ID=$(id_of $nm) RT_NET_PASS=$(pw_of $nm) RT_LB_WARP="$w" RT_SHOTS=${SHOTS:-5900} timeout ${TMO:-360} $RUN $BIN \
         disc/mh1 --quest 10 --play --online --mute --input "$in" --shot $OUT/$nm.png --time $t --size 640x480 > $OUT/$nm.log 2>&1
 }
-run ANNA 207 "$IA" "60,5545,2750,8000;300,1300,1600,C000;2200,3100,2100,8000" RT_PL_ITEMS=77:15 RT_PL_WARP="150,10350,10640,7000" $ENVA &
+run ANNA 207 "$IA" "60,5545,2750,8000;300,1300,1600,C000;2200,3100,2100,8000" RT_PL_ITEMS=77:15 RT_PL_WARP="150,10350,10640,7000" \
+    RT_SK_TEXT=MH1PASS7 RT_SK_TRACE=1 $ENVA &
 PA=$!
 sleep 2
-run BOB 205 "$IB" "60,5545,2750,8000;300,1850,1500,8000;2100,3100,2100,8000" $ENVB || fail "client BOB stopped early"
+# CARL (no card, a new hunter) tries the room from the quest board twice: first with a wrong password (refused:
+# "パスワードが違います。"), then after BOB joined (refused: the room is for 2, ANNA's rule sheet, room rule 0)
+CJOIN=""; t=1880; while [ $t -le 2240 ]; do CJOIN="$CJOIN;$t:circle*2"; t=$((t + 40)); done
+t=2480; while [ $t -le 2880 ]; do CJOIN="$CJOIN;$t:circle*2"; t=$((t + 40)); done
+SHOTS=2100,2160,2640,2700 run CARL 118 "$(python3 tools/mk_input.py - "$LOGIN;1850:square*3$CJOIN;2440:square*3" 3500)" \
+    "60,5545,2750,8000;300,1850,1500,8000" RT_NAME=CARL RT_SK_TEXT="WRONG123;WRONG123" RT_SK_TRACE=1 &
+PC=$!
+run BOB 205 "$IB" "60,5545,2750,8000;300,1850,1500,8000;2100,3100,2100,8000" RT_SK_TEXT=MH1PASS7 RT_SK_TRACE=1 $ENVB \
+    || fail "client BOB stopped early"
+wait $PC || fail "client CARL stopped early"
 wait $PA || { PA=""; fail "client ANNA stopped early"; }
 PA=""
 stop_server
 grep -q "ＡＮＮＡ creates room" $OUT/server.log || fail "ANNA did not create a room"
 grep -q "ＢＯＢ joins room" $OUT/server.log || fail "BOB did not join the room"
+grep -q "room 1 rule 0 = 1 (２人)" $OUT/server.log || fail "ANNA's rule sheet did not set room rule 0 to 2 players"
+grep -q "cmd 6403 .* 000100020002$" $OUT/server.log || fail "the lobby was not told that room 1 is full (2 of 2)"
+grep -q "CARL cannot join room 1: full (2 players)" $OUT/server.log || fail "CARL was not refused from the full 2-player room"
+grep -q "room 1 has a password" $OUT/server.log || fail "ANNA's rule sheet did not give the room a password"
+grep -q "CARL cannot join room 1: wrong password" $OUT/server.log || fail "CARL's wrong password was not refused"
+grep -aq 'sk: keyboard [0-9]* gets "MH1PASS7"' $OUT/BOB.log || fail "BOB did not type the password on the join keyboard"
+grep -q "CARL joins room" $OUT/server.log && fail "CARL joined the full room"
 grep -q "quest 1 started with 2 player(s)" $OUT/server.log || fail "the relay did not start the hunt"
 for nm in ANNA BOB; do
     grep -aq "the game server is a session relay: joining it" $OUT/$nm.log || fail "$nm did not join the relay"
@@ -117,4 +137,4 @@ grep -aq "town step 4" $OUT/BOB_crashed.log || fail "BOB did not reach the town 
 grep -q "6410" $OUT/server_restart.log || fail "nobody was told that BOB left (6410) after his crash"
 [ "$(grep -c "ＢＯＢ returns to plaza 1 lobby" $OUT/server_restart.log)" -ge 2 ] || fail "BOB's login after the crash did not go back to his lobby"
 grep -a 'slot [0-9] "' $OUT/BOB.log | grep -aq ' shown$' || fail "BOB does not show ANNA after coming back"
-echo "mh1-server OK${RUN:+ ($RUN $BIN)}: accounts (invite-only store, config file), login, town, a room, the hunt through the relay to the clear and the reward (ANNA $a_gold0 -> $a_gold1, BOB $b_gold0 -> $b_gold1 zenny, saved), both back in the town; after a server restart the same hunters ($a_id, $b_id), a crashed client back in his lobby"
+echo "mh1-server OK${RUN:+ ($RUN $BIN)}: accounts (invite-only store, config file), login, town, a room for 2 with a password (room rule 0; a wrong password and a third hunter refused, the right one let in), the hunt through the relay to the clear and the reward (ANNA $a_gold0 -> $a_gold1, BOB $b_gold0 -> $b_gold1 zenny, saved), both back in the town; after a server restart the same hunters ($a_id, $b_id), a crashed client back in his lobby"

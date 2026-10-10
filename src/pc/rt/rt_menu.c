@@ -126,14 +126,20 @@ void rt_set_text_input(void (*begin)(int on), int (*take)(char *out, int n))
 extern unsigned char *lpSKey;
 char *strcpy(char *, const char *);
 int strcmp(const char *, const char *);
+char *strchr(const char *, int);
+unsigned int strlen(const char *);
 void han2zen(u8 *src, u8 *dst);
 void sk_real_set(int type, u8 mode, s16 maxlen, char *init);
 s8 sk_real_move(char *out, s16 sw, s16 hold);
 void sk_real_exit(void);
 s8 SoftKeyboard_alive_check(void);
 extern int pad_kb_wanted;
+static int sk_opened;           /* soft keyboards opened so far (RT_SK_TEXT) */
 void SoftKeyboard_set(int type, u8 mode, s16 maxlen, char *init)
 {
+    sk_opened++;
+    if (getenv("RT_SK_TRACE"))
+        fprintf(stderr, "sk: keyboard %d opened (type %d, mode %d, at most %d bytes)\n", sk_opened, type, mode, maxlen);
     sk_real_set(type, mode, maxlen, init);
     pad_kb_wanted = 1;
     if (text_begin_fn)
@@ -144,6 +150,20 @@ s8 SoftKeyboard_move(char *out, s16 sw, s16 hold)
     int maxlen = *(s16 *)(lpSKey + 0x3A), done = 0;
     char in[64];
     int n, i;
+    if (getenv("RT_SK_TEXT")) {     /* test aid "text;text;...": the n-th keyboard opened gets the n-th text, as typed
+                                     * on the host keyboard (half-width ASCII) and confirmed; an empty entry = untouched */
+        const char *e = getenv("RT_SK_TEXT");
+        int k;
+        for (k = 1; k < sk_opened && e; k++)
+            e = strchr(e, ';') ? strchr(e, ';') + 1 : NULL;
+        if (e && *e && *e != ';') {
+            int l = (int)(strchr(e, ';') ? strchr(e, ';') - e : (long)strlen(e));
+            snprintf(out, (size_t)(l < maxlen ? l : maxlen) + 1, "%s", e);
+            if (getenv("RT_SK_TRACE"))
+                fprintf(stderr, "sk: keyboard %d gets \"%s\" (RT_SK_TEXT)\n", sk_opened, out);
+            return 1;
+        }
+    }
     if (getenv("RT_NAME")) {
         char tmp[40];
         snprintf(tmp, sizeof tmp, "%.*s", maxlen / 2, getenv("RT_NAME"));
