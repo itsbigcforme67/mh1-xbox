@@ -152,3 +152,7 @@ anything the coordinator must know to merge. Then stop.
 - `addiu -1; pcpyld; bne` (often shown as a `.word` before a -1 compare) is a 64-bit
   compare of an unsigned 64-bit value with -1: declare the field `unsigned long long`
   (u64), not s64. (agent C, round 19; fixed four IME functions)
+
+- Keep it tidy (owner's request): when your fix makes an older workaround,
+  duplicate code path, stand-in, build-list entry or test aid obsolete, remove
+  the old one in the same change and say so in the commit message.
