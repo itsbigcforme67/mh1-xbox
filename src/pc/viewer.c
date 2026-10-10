@@ -1351,93 +1351,105 @@ static void em_model_load(int slot, int kind)
 /* every monster in use on this stage, posed by the game's motion player; also their joint matrices for
  * the game's hit checks */
 int rt_log_tick(void);
-static void monsters_sync(int draw, const fl_light *L)
+static flmat em_jw[20][128];        /* per slot: rt_monster_joints keeps the pointer */
+/* em_work[i]: posed by the game's motion player, its joint matrices handed to the game (and drawn when draw) */
+static void em_slot_sync(int i, int draw, const fl_light *L)
 {
     extern uint8_t em_work[];
-    static flmat jw[20][128];       /* per slot: rt_monster_joints keeps the pointer */
-    int i, j, nb;
-    for (i = 0; i < 20; i++) {
-        uint8_t *em = em_work + 0xA10 * i;
-        monster *m;
-        flmat w;
-        float s[3], r[3], t[3];
-        int kind = em[2];
-        if (!em[0] || em[0x1E] || kind <= 0 || kind >= 40 || !em_have[kind])
-            continue;
-        if (em[0x736] != (uint8_t)rt_game_stage())
-            continue;
-        m = &em_mdl[kind];
-        rt_monster_pose(i, &m->skel);
-        memcpy(s, em + 0xB8, sizeof s);
-        if (s[0] == 0.0f) s[0] = s[1] = s[2] = 1.0f;
-        r[0] = 0;
-        r[1] = (float)(*(int32_t *)(em + 0xA4) & 0xFFFF) * (6.2831853f / 65536.0f);
-        r[2] = 0;
-        memcpy(t, em + 0xAC, sizeof t);
-        flmat_srt(w, s, r, t);
-        nb = m->skel.skel.nbone < 128 ? m->skel.skel.nbone : 128;
+    flmat (*jw)[128] = em_jw;
+    int j, nb;
+    uint8_t *em = em_work + 0xA10 * i;
+    monster *m;
+    flmat w;
+    float s[3], r[3], t[3];
+    int kind = em[2];
+    if (!em[0] || em[0x1E] || kind <= 0 || kind >= 40 || !em_have[kind])
+        return;
+    if (em[0x736] != (uint8_t)rt_game_stage())
+        return;
+    m = &em_mdl[kind];
+    rt_monster_pose(i, &m->skel);
+    memcpy(s, em + 0xB8, sizeof s);
+    if (s[0] == 0.0f) s[0] = s[1] = s[2] = 1.0f;
+    r[0] = 0;
+    r[1] = (float)(*(int32_t *)(em + 0xA4) & 0xFFFF) * (6.2831853f / 65536.0f);
+    r[2] = 0;
+    memcpy(t, em + 0xAC, sizeof t);
+    flmat_srt(w, s, r, t);
+    nb = m->skel.skel.nbone < 128 ? m->skel.skel.nbone : 128;
+    for (j = 0; j < nb; j++)
+        flmat_mul(jw[i][j], m->skel.world[j], w);
+    rt_monster_joints(i, &jw[i][0][0], nb);
+    if (!draw && getenv("RT_EM_DRAW_TRACE") && rt_monster_motion_ready(i) && nb > 1) {
+        /* test aid: where the drawn body is (the root motion bone, AAN bone 1 of group 0, in world space) next to
+         * the game position; printed twice per tick, by the joint sync before hit_check and the one after the tick (tools/test_activities.py herbivore_rewind) */
+        int b, k = 0;
+        for (b = 0; b < nb; b++)
+            if (m->skel.skel.bone[b].group == 0 && k++ == 1)
+                break;
+        if (b < nb)
+            printf("emdraw t%d slot %d kind %d mot %d frame %.1f pos %.1f %.1f body %.1f %.1f %.1f\n", rt_log_tick(), i,
+                   kind, ((uint16_t *)(em + 0x2DC))[0], *(float *)(em + 0x19C), t[0], t[2], jw[i][b][12],
+                   jw[i][b][13], jw[i][b][14]);
+    }
+    if (getenv("RT_POSE_CHECK") && rt_monster_motion_ready(i)) {  /* test aid: highest joint above the monster's feet per kind (tools/test_activities.py herbivore_pose) */
+        static float hmax[40][1200];
+        int mo = ((uint16_t *)(em + 0x2DC))[0] % 1200;
+        float hh = 0;
         for (j = 0; j < nb; j++)
-            flmat_mul(jw[i][j], m->skel.world[j], w);
-        rt_monster_joints(i, &jw[i][0][0], nb);
-        if (!draw && getenv("RT_EM_DRAW_TRACE") && rt_monster_motion_ready(i) && nb > 1) {
-            /* test aid: where the drawn body is (the root motion bone, AAN bone 1 of group 0, in world space) next to
-             * the game position; printed twice per tick, by the joint sync before hit_check and the one after the tick (tools/test_activities.py herbivore_rewind) */
-            int b, k = 0;
-            for (b = 0; b < nb; b++)
-                if (m->skel.skel.bone[b].group == 0 && k++ == 1)
-                    break;
-            if (b < nb)
-                printf("emdraw t%d slot %d kind %d mot %d frame %.1f pos %.1f %.1f body %.1f %.1f %.1f\n", rt_log_tick(), i,
-                       kind, ((uint16_t *)(em + 0x2DC))[0], *(float *)(em + 0x19C), t[0], t[2], jw[i][b][12],
-                       jw[i][b][13], jw[i][b][14]);
-        }
-        if (getenv("RT_POSE_CHECK") && rt_monster_motion_ready(i)) {  /* test aid: highest joint above the monster's feet per kind (tools/test_activities.py herbivore_pose) */
-            static float hmax[40][1200];
-            int mo = ((uint16_t *)(em + 0x2DC))[0] % 1200;
-            float hh = 0;
+            if (jw[i][j][13] - t[1] > hh)
+                hh = jw[i][j][13] - t[1];
+        {   /* lowest joint: a body sunk into the ground (hit reactions, death) */
+            static float lmin[40][1200];
+            float lo = 0;
             for (j = 0; j < nb; j++)
-                if (jw[i][j][13] - t[1] > hh)
-                    hh = jw[i][j][13] - t[1];
-            {   /* lowest joint: a body sunk into the ground (hit reactions, death) */
-                static float lmin[40][1200];
-                float lo = 0;
-                for (j = 0; j < nb; j++)
-                    if (jw[i][j][13] - t[1] < lo)
-                        lo = jw[i][j][13] - t[1];
-                if (lo < lmin[kind][mo] - 20.0f) {
-                    lmin[kind][mo] = lo;
-                    fprintf(stderr, "pose-check: kind %d slot %d joints down to %.0f below the feet (motion %d)\n", kind, i, lo, mo);
-                }
-            }
-            if (hh > hmax[kind][mo] + 20.0f) {
-                hmax[kind][mo] = hh;
-                fprintf(stderr, "pose-check: kind %d slot %d joints up to %.0f above the feet (motion %d)\n", kind, i,
-                        hh, mo);
+                if (jw[i][j][13] - t[1] < lo)
+                    lo = jw[i][j][13] - t[1];
+            if (lo < lmin[kind][mo] - 20.0f) {
+                lmin[kind][mo] = lo;
+                fprintf(stderr, "pose-check: kind %d slot %d joints down to %.0f below the feet (motion %d)\n", kind, i, lo, mo);
             }
         }
-        if (draw && rt_monster_motion_ready(i)) {
-            fl_light lc;
-            float f[3];
-            int light_col = L && !getenv("RT_EM_ALL_MATS") && em_model_col(&m->model, em, f);
-            if (light_col) {            /* the diffuse override scales the directional lights (em_model_col) */
-                int l, c;
-                if (getenv("RT_EM_MAT_TRACE")) {
-                    static char said[40];
-                    if (!said[kind]++)
-                        fprintf(stderr, "em-mat: kind %d light colour %.3f %.3f %.3f\n", kind, f[0], f[1], f[2]);
-                }
-                lc = *L;
-                for (l = 0; l < 3; l++)
-                    for (c = 0; c < 3; c++)
-                        lc.col[l][c] *= f[c];
-            }
-            fl_model_pose(&m->model, (const flmat *)m->skel.world, light_col ? &lc : L);
-            gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
-            pick_owner(PK_MONSTER, i, kind, &m->skel);
-            draw_model_attr_em(&m->model, -1, em, light_col, -1);
-            draw_cut_tail(&m->model, &m->skel, em, light_col ? &lc : L, light_col);
+        if (hh > hmax[kind][mo] + 20.0f) {
+            hmax[kind][mo] = hh;
+            fprintf(stderr, "pose-check: kind %d slot %d joints up to %.0f above the feet (motion %d)\n", kind, i,
+                    hh, mo);
         }
     }
+    if (draw && rt_monster_motion_ready(i)) {
+        fl_light lc;
+        float f[3];
+        int light_col = L && !getenv("RT_EM_ALL_MATS") && em_model_col(&m->model, em, f);
+        if (light_col) {            /* the diffuse override scales the directional lights (em_model_col) */
+            int l, c;
+            if (getenv("RT_EM_MAT_TRACE")) {
+                static char said[40];
+                if (!said[kind]++)
+                    fprintf(stderr, "em-mat: kind %d light colour %.3f %.3f %.3f\n", kind, f[0], f[1], f[2]);
+            }
+            lc = *L;
+            for (l = 0; l < 3; l++)
+                for (c = 0; c < 3; c++)
+                    lc.col[l][c] *= f[c];
+        }
+        fl_model_pose(&m->model, (const flmat *)m->skel.world, light_col ? &lc : L);
+        gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
+        pick_owner(PK_MONSTER, i, kind, &m->skel);
+        draw_model_attr_em(&m->model, -1, em, light_col, -1);
+        draw_cut_tail(&m->model, &m->skel, em, light_col ? &lc : L, light_col);
+    }
+}
+static void monsters_sync(int draw, const fl_light *L)
+{
+    int i;
+    for (i = 0; i < 20; i++)
+        em_slot_sync(i, draw, L);
+}
+/* enemy_mk's part of the tick (move(): enemy_mv -> enemy_mk -> em_ride_sub): the new pose's joints before
+ * em_ride_sub carries the hunters on the Lao-Shan Lung's back (rt_em.c) */
+static void em_pose_now(int i)
+{
+    em_slot_sync(i, 0, NULL);
 }
 
 /* Village NPC models (npc_create_model -> here): slot = NPC kind. */
@@ -1865,6 +1877,7 @@ int main(int argc, char **argv)
 
     rt_set_file_loader(afs_entry);
     rt_set_em_model_loader(em_model_load);  /* before the quest's em_create_model calls */
+    rt_set_em_pose_fn(em_pose_now);         /* enemy_mk's joints for em_ride_sub (rt_em.c) */
     if (quest_no) {
         /* --quest N: Quest_init + Quest_start as game11 does. The hunt
          * starts where the game starts it: the quest's start stage

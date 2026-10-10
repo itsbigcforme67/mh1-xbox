@@ -686,6 +686,8 @@ extern f32 sys_old_pos[][3];
 void em_ride_sub(EMW *em);
 u8 *rt_actor_nodes(const void *work, int *max);
 int rt_actor_joint_count(const void *chr);
+static void (*em_pose_fn)(int slot);
+void rt_set_em_pose_fn(void (*fn)(int slot)) { em_pose_fn = fn; }
 static void ride_old_save(EMW *em)
 {
     int max, i, n = rt_actor_joint_count(em);
@@ -797,8 +799,11 @@ int rt_monster_tick(int no)
         r = enemy_mv(em);
         if (em->be_flag)
             rt_em_world_mat(em);
-        if (r == 0 && em->kind == 7)
+        if (r == 0 && em->kind == 7) {
+            if (em_pose_fn)     /* enemy_mk: the PS2 builds this tick's joint matrices before em_ride_sub reads them */
+                em_pose_fn(no);
             em_ride_sub(em);
+        }
         return r;
     }
 }

@@ -285,6 +285,45 @@ void rt_player_tick(int no)
                 s++;
         }
     }
+    if (getenv("RT_PL_RIDE")) {     /* test aid "tick[,quad]": at that player tick put the hunter on ride quad n (default 0) of the
+                                     * first Lao-Shan Lung (kind 7) on his stage, 20 above its centre; em_ride_sub then starts the ride */
+        static int tk;
+        int t0 = 0, qn = 0, i;
+        tk++;
+        sscanf(getenv("RT_PL_RIDE"), "%d,%d", &t0, &qn);
+        if (tk == t0) {
+            extern u8 em_work[];
+            extern f32 *em_ride_data[];
+            u8 *rt_actor_nodes(const void *work, int *max);
+            PLW *p = &player_work[no];
+            for (i = 0; i < 20; i++) {
+                u8 *em = em_work + 0xA10 * i;
+                const f32 *q = em_ride_data[7], *sc = (const f32 *)(em + 0xB8);
+                int max, k, j;
+                u8 *nodes;
+                f32 c[3] = { 0, 0, 0 };
+                if (!em[0] || em[2] != 7 || em[0x736] != p->stg || !q || !(nodes = rt_actor_nodes(em, &max)))
+                    continue;
+                for (k = 0; k < qn && *q != -1.0f; k++)
+                    q += 13;
+                if (*q == -1.0f)
+                    break;
+                j = (int)*q++;
+                for (k = 0; k < 4; k++, q += 3) {
+                    f32 v[3] = { q[0] * sc[0], q[1] * sc[1], q[2] * sc[2] };
+                    const f32 *m = (const f32 *)(nodes + j * 0x190);   /* the joint's world matrix (row vectors) */
+                    int a;
+                    for (a = 0; a < 3; a++)
+                        c[a] += (v[0] * m[a] + v[1] * m[4 + a] + v[2] * m[8 + a] + m[12 + a]) / 4;
+                }
+                p->pos[0] = c[0];
+                p->pos[1] = c[1] + 20.0f;
+                p->pos[2] = c[2];
+                fprintf(stderr, "rt_player: tick %d on ride quad %d (joint %d) of monster %d at %.0f %.0f %.0f\n", tk, qn, j, i, c[0], c[1], c[2]);
+                break;
+            }
+        }
+    }
     if (getenv("RT_PL_GOTO")) {     /* test aid: "tick,stage": from that player tick, walk the area exits
                                        (stage_mv_ck's STG_MV lists, shortest path) until the hunter is on that stage */
         static int tk, last;

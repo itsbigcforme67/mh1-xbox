@@ -1486,6 +1486,16 @@ All PC side; no include/ or PS2-built file changed.
   monster arrives at tick ~44000, killed there (RT_EM_HP=1300 to save time)
   -> clear -> reward. The death dust crashed: Eft10_set needed an ABI adaptor
   for em07/em08 (rtabi_Eft10_set).
+- Riding the Lao-Shan's back (11 Oct 2026): em_ride_sub (emride_nm.c) runs after enemy_mv. move() calls enemy_mk
+  between them, which poses the skeleton, so em_ride_sub reads this tick's joint matrices against the ones
+  old_pos_save kept from the last tick. The PC posed monsters only after the tick, so both were the same: a
+  rider was never carried and hung in the air where the back had been. rt_monster_tick now has the viewer pose
+  the Lao (em_pose_now -> em_slot_sync) before em_ride_sub. Checked on quest 101 (stage 14) after the opening
+  demo (the hunter has no input until tick ~2010): carried 5000+ units as it walks, height 700-970 on the back,
+  walking on it (act 0/0x12) and the balance stagger (0/0x16, pl_ride_ck: a carried step of 7 or more). The
+  game allows no attacks there (basic_com_ck's riding branch: walk, circle = search, thrown off at act 2/7 when
+  the Lao sets x87F). Test aid `RT_PL_RIDE=tick[,quad]` puts the hunter 20 above a ride quad of the first
+  Lao-Shan on his stage; test_activities `lao_ride`.
 - Music: bgm_server and the game's stage_bgm_set (src/main/sound/bgm_nm.c)
   are linked: monster-found and fight music (S_FOUND1 -> S_FIGHT2), quest
   clear (S_CLEAR1), faint (S_DEATH1), ADX one-shots (adx_se_set). Still no
