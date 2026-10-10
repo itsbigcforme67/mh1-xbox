@@ -1,0 +1,25 @@
+# PS2 Monster Hunter G vs MH1: how much carries over (10 Oct 2026)
+
+Measured with tools/mhg_match.py. It counts MH1 functions whose instructions show up
+unchanged in G, ignoring addresses, jump targets and 16-bit immediates.
+
+| MH1 module | functions | found in G | share of code bytes |
+|---|---|---|---|
+| main   | 6978 | 5040 | 65.5% |
+| game   | 2640 | 1797 | 55.0% |
+| lobby  | 3486 |  915 | 22.5% |
+| select |   44 |   11 | 23.4% |
+| yn     |  141 |   96 | 57.4% |
+
+- About 52% of all MH1 code, and about 61% outside the lobby, is in G unchanged in shape.
+  Most of the rest is probably edited versions of the same functions, not new code; this
+  count does not measure that.
+- G moved part of main into a new overlay, sub_main.bin. 295 MH1 main functions turned
+  up there.
+- AFS archives: 2003 of the 2318 MH1 AFS_DATA names are also in G (G has 3347). Every
+  AFS00 and AFS01 name from MH1 is in G as well.
+- G is stripped, so the names have to come from MH1. Matched functions give those names
+  directly.
+- G keeps MH1's compiler and overlay layout, so the same matching setup should work.
+- The Wii G (PowerPC, a different compiler) cannot reuse the matched C byte for byte. Only
+  the C's meaning carries over.
