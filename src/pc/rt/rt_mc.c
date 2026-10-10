@@ -96,20 +96,6 @@ static void done(int cmd, int res)
         fprintf(stderr, "rt_mc: cmd %d -> %d\n", cmd, res);
 }
 
-static void mkdirs(const char *p)
-{
-    char tmp[600];
-    char *s;
-    snprintf(tmp, sizeof tmp, "%s", p);
-    for (s = tmp + 1; *s; s++)
-        if (*s == '/' || *s == '\\') {
-            char c = *s;
-            *s = 0;
-            mkdir(tmp, 0755);
-            *s = c;
-        }
-    mkdir(tmp, 0755);
-}
 
 /* The host directory that stands for the card in port 0. */
 const char *rt_mc_root(void)
@@ -131,7 +117,7 @@ const char *rt_mc_root(void)
         else
             snprintf(root, sizeof root, "%s/.local/share/mh1pc/memcard0", h ? h : ".");
 #endif
-        mkdirs(root);
+        rt_mkdirs(root);
     }
     return root;
 }

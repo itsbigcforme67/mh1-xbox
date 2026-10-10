@@ -20,9 +20,6 @@
 #ifdef MH1_WINDOWS
 #include <direct.h>
 #include <windows.h>
-#define MKDIR(p) mh1_mkdir(p)
-#else
-#define MKDIR(p) mkdir((p), 0755)
 #endif
 
 static const struct { const char *name; uint32_t size, crc; int required; } want[] = {
@@ -58,25 +55,12 @@ int install_has_data(const char *dir)
     return exists(p);
 }
 
-static void mkdirs(const char *path)
-{
-    char tmp[1024], *s;
-    snprintf(tmp, sizeof tmp, "%s", path);
-    for (s = tmp + 1; *s; s++)
-        if (*s == '/' || *s == '\\') {
-            char c = *s;
-            *s = 0;
-            MKDIR(tmp);
-            *s = c;
-        }
-    MKDIR(tmp);
-}
 
 static int writable_dir(const char *dir)
 {
     char p[1100];
     FILE *f;
-    mkdirs(dir);
+    rt_mkdirs(dir);
     snprintf(p, sizeof p, "%s/.w_test", dir);
     f = fopen(p, "wb");
     if (!f)
@@ -298,7 +282,7 @@ int install_from_iso(const char *isopath, const char *dest, int gui)
         }
         total += fl[k].size;
     }
-    mkdirs(dest);
+    rt_mkdirs(dest);
     if (!writable_dir(dest)) {
         fclose(iso.f);
         snprintf(msg, sizeof msg, "Cannot write to %s.", dest);

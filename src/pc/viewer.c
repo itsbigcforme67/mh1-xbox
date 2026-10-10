@@ -1203,7 +1203,7 @@ static void sim_tick(void)
     light_move();               /* game_core's step after CameraMove (f_frame_nm.c): turns light 2 of set 1 with the view, runs the
                                  * flash effect. The host's sim_tick stands in for game_core, so it has to call it (only
                                  * the lights of RT_LIGHT_GAME read what it does) */
-    if (pl.game && play && ticks >= 2 && rt_player_uses_game()) {
+    if (pl.game && play && ticks >= 2) {
         rt_prof_begin(RTP_JOINTS);
         sync_joints(&pl, hunter_yoff);
         remote_hunters(0, light_cur());
@@ -1223,13 +1223,13 @@ static void sim_tick(void)
             printf("tick %d: em0 pos %.0f %.0f %.0f ang %04X\n", ticks, p[0], p[1], p[2], a & 0xFFFF);
         }
     }
-    if (ticks >= 2 && rt_player_uses_game() && !(getenv("RT_BODY_HIT") && getenv("RT_BODY_HIT")[0] == '0')) {
+    if (ticks >= 2 && !(getenv("RT_BODY_HIT") && getenv("RT_BODY_HIT")[0] == '0')) {
         extern unsigned char game_w[];
         void body_hit(void);
         if (game_w[0x21F] == 0)         /* move(): item_check / body_hit only while info_stop == 0 (hunters and monsters pushed apart) */
             body_hit();
     }
-    if (quest_no && pl.game && play && ticks >= 2 && rt_player_uses_game()) {
+    if (quest_no && pl.game && play && ticks >= 2) {
         void stage_mv_ck(void);
         stage_mv_ck();                  /* move_stage -> stage_m's area-exit check (f_stage.c):
                                          * pl+0x738 = 1 -> game2 steps 2-6 load the next area */
@@ -1977,7 +1977,7 @@ int main(int argc, char **argv)
                 pl.no = lp;
                 pl.master.root_lock = 1;    /* the game moves the actor by the root motion */
                 rt_player_set_ang(lp, (int)(2.6f * 65536.0f / 6.2831853f));
-                if (play && rt_player_uses_game()) {
+                if (play) {
                     /* the weapon class's own motions (ids >= 1000): wNN_tbl.bin,
                      * NN = job (PLW+2), like create_pl_motion's table */
                     static uint8_t *wmem;

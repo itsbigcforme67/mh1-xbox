@@ -9,6 +9,7 @@
  */
 #define _DEFAULT_SOURCE
 #include "rt_save.h"
+#include "rt_log.h"
 #include "../fmt/ps2save.h"
 #include <dirent.h>
 #include <errno.h>
@@ -21,7 +22,6 @@
 #include <unistd.h>
 #ifdef MH1_WINDOWS
 #include <direct.h>
-#define mkdir(p, m) mh1_mkdir(p)
 #define localtime_r(t, tmv) (localtime_s((tmv), (t)), (tmv))
 #endif
 
@@ -63,19 +63,6 @@ static int spit(const char *path, const void *d, size_t n)
     return ok ? 0 : -1;
 }
 
-static void mkdirs(const char *p)
-{
-    char tmp[1024], *s;
-    snprintf(tmp, sizeof tmp, "%s", p);
-    for (s = tmp + 1; *s; s++)
-        if (*s == '/' || *s == '\\') {
-            char c = *s;
-            *s = 0;
-            mkdir(tmp, 0755);
-            *s = c;
-        }
-    mkdir(tmp, 0755);
-}
 
 static void rmtree_files(const char *dir)
 {
@@ -164,7 +151,7 @@ int rt_save_import(const char *root, const char *path, char *msg, size_t n)
     snprintf(dst, sizeof dst, "%s/%s", root, RT_SAVE_DIR);
     rmtree_files(tmp);
     snprintf(p, sizeof p, "%s/%s", tmp, RT_SAVE_DIR);
-    mkdirs(p);
+    rt_mkdirs(p);
     for (i = 0; i < sv.nfiles; i++) {
         snprintf(p, sizeof p, "%s/%s/%s", tmp, RT_SAVE_DIR, sv.files[i].name);
         if (spit(p, sv.files[i].data, sv.files[i].size) != 0) {
@@ -182,7 +169,7 @@ int rt_save_import(const char *root, const char *path, char *msg, size_t n)
         localtime_r(&now, &tmv);
         strftime(stamp, sizeof stamp, "%Y%m%d-%H%M%S", &tmv);
         snprintf(bak, sizeof bak, "%s.backups", root);
-        mkdirs(bak);
+        rt_mkdirs(bak);
         snprintf(bak, sizeof bak, "%s.backups/%s-%s", root, RT_SAVE_DIR, stamp);
         for (i = 2; stat(bak, &st) == 0 && i < 100; i++)       /* two imports in one second */
             snprintf(bak, sizeof bak, "%s.backups/%s-%s-%d", root, RT_SAVE_DIR, stamp, i);
@@ -195,7 +182,7 @@ int rt_save_import(const char *root, const char *path, char *msg, size_t n)
             return 1;
         }
     }
-    mkdirs(root);
+    rt_mkdirs(root);
     snprintf(p, sizeof p, "%s/%s", tmp, RT_SAVE_DIR);
     if (rename(p, dst) != 0) {
         MSG("cannot put the new save in place (%s)", strerror(errno));

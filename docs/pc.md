@@ -247,8 +247,7 @@ offscreen in a hidden window, reads the back buffer and writes a PNG.
 
 Environment variables for the player: `RT_WEAPON=id` (Ken_data id, default
 156, the first sword and shield; 1 = the first great sword), `RT_PL_TRACE=1`
-(action, step, motions, frame, position per tick), `RT_PL_STANDIN=1` (the
-old host stand-in), `RT_EM_POS=x,z` (put the Rathian there, for hit tests),
+(action, step, motions, frame, position per tick), `RT_EM_POS=x,z` (put the Rathian there, for hit tests),
 `RT_HIT_DM=1` (print damage the Rathian takes; `2` also lists live attack
 shells and their hit volumes), `RT_SKIP_TYPE=n` (do not draw prims of
 effects/sets of type n).
@@ -682,8 +681,8 @@ travel (how plcom 3 was found).
   from ps2pad_hard_to_soft_ds2 (0x306500) [inferred; the mapping to the
   game's bits is ioRead_sub's and is exact]. Stick angle: 0 = right,
   0x4000 = up.
-- rt_player.c runs the game's player code (see "Player"); with
-  RT_PL_STANDIN=1 the old host stand-in (turn and run only) is used.
+- rt_player.c runs the game's player code (see "Player"); the first host stand-in (turn and run only,
+  RT_PL_STANDIN) was removed on 10 Oct 2026.
 - Verified 5 Oct 2026: `--input "idle*10,up*50,left*15" --sw-trace --time
   2.5` prints sw.ang 0x4000 / pow 127 for "up" and 0x8000 for "left", the
   hunter turns to the camera's forward direction and runs about 300 units

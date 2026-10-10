@@ -58,8 +58,6 @@ void audio_reverb(float wet, float size)
 {
     int c, k;
     audio_lock();
-    if (getenv("RT_NOREVERB"))      /* test aid: mixer cost without the reverb */
-        wet = 0;
     if (wet <= 0.0f) {
         rv_wet = 0.0f;
         for (c = 0; c < 2; c++)

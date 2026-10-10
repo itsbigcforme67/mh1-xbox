@@ -18,6 +18,20 @@
 #include "../../src/pc/fmt/ps2save.h"
 #include "../../src/pc/rt/rt_save.h"
 
+/* rt_save.c creates its folders with rt_mkdirs (src/pc/rt/rt_log.c, not linked here) */
+void rt_mkdirs(const char *path)
+{
+    char tmp[1024], *s;
+    snprintf(tmp, sizeof tmp, "%s", path);
+    for (s = tmp + 1; *s; s++)
+        if (*s == '/') {
+            *s = 0;
+            mkdir(tmp, 0755);
+            *s = '/';
+        }
+    mkdir(tmp, 0755);
+}
+
 static int fails, checks;
 #define CHECK(c, ...) do { checks++; if (!(c)) { fails++; printf("FAIL %s:%d: ", __FILE__, __LINE__); printf(__VA_ARGS__); printf("\n"); } } while (0)
 

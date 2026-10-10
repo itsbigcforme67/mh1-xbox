@@ -117,9 +117,9 @@ static void stamp(char *out, size_t n)          /* local date and time: YYYYMMDD
 #endif
 }
 
-static void make_dirs(const char *path)
+void rt_mkdirs(const char *path)
 {
-    char tmp[700];
+    char tmp[1024];
     char *s;
     snprintf(tmp, sizeof tmp, "%s", path);
     for (s = tmp + 1; *s; s++)
@@ -736,7 +736,7 @@ void rt_log_init(const char *disc, int argc, char **argv)
     detect_test_run(argc, argv);
     logs_dir(dir, sizeof dir);
     snprintf(log_dir_s, sizeof log_dir_s, "%s", dir);
-    make_dirs(dir);
+    rt_mkdirs(dir);
     rotate(dir);
     stamp(st, sizeof st);
     for (k = 0; k < 100 && !lf; k++) {

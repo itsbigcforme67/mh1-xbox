@@ -28,6 +28,8 @@ void rt_warn(const char *fmt, ...) RT_LOG_PRINTF(1, 2);
 void rt_warn_once(const char *key, const char *fmt, ...) RT_LOG_PRINTF(2, 3);
 /* a no-op stand-in function was called: one line the first time per name */
 void rt_log_standin(const char *name);
+/* create a directory and its parents ('/' or '\\' separated; existing ones are fine) */
+void rt_mkdirs(const char *path);
 /* a host path for the log: $HOME / the user's profile folder replaced by ~ */
 const char *rt_log_path(const char *p);
 

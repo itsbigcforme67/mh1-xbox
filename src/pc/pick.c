@@ -433,19 +433,6 @@ static int unproject(int x, int y, float out[3])
 }
 
 /* ------------------------------------------------------------ saving */
-static void mkdirs(const char *path)
-{
-    char tmp[900], *s;
-    snprintf(tmp, sizeof tmp, "%s", path);
-    for (s = tmp + 1; *s; s++)
-        if (*s == '/' || *s == '\\') {
-            char c = *s;
-            *s = 0;
-            mkdir(tmp, 0755);
-            *s = c;
-        }
-    mkdir(tmp, 0755);
-}
 
 static void write_text(const char *dir, const char *name, const char *text)
 {
@@ -767,7 +754,7 @@ static void save_report(void)
             snprintf(dir, sizeof dir, "%s/%s", base, name);
         }
     }
-    mkdirs(dir);
+    rt_mkdirs(dir);
     snprintf(p, sizeof p, "%s/screenshot.png", dir);
     viewer_write_png(p, W, H, shot);
     ann = (uint8_t *)malloc((size_t)W * H * 3);
