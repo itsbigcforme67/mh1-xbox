@@ -261,7 +261,12 @@ forwards them).
 With the relay every member must **join** the 6916 address. Proposal (not implemented on the client side): the lobby
 answers 6914 MatchGameRule with the string `mh1-relay` (lobby_stub.py does this with `--lobby-relay`), and the client
 then joins with its 6912 slot instead of hosting. The relay orders the slots by the lobby's member order (hunter names)
-so they match 6912.
+so they match 6912. Since 10 Oct 2026 (agent B) a lobby session gives the slot when the player's HELLO names the
+hunter (the WELCOME waits for it; net_peer.c's joiner sends HELLO right after connecting and takes any WELCOME), so the
+slots are the room's from the first frame on; before, they were given in connection order and renumbered at the start.
+A hunter not in the room's list gets the first slot no listed hunter needs (from the top). Sessions from the command
+line (`--session`) keep the order of arrival. Tested: test_server.py `test_lobby_order_from_the_start`,
+`test_lobby_order_stranger`.
 
 A cleaner long-term version needs one more client change: a `SESSION` frame (type 0x45, the match's battle code from
 6915) sent before HELLO, so one relay port serves every hunt and the relay can tell sessions apart without a port each.

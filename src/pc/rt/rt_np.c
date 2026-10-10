@@ -36,6 +36,7 @@ extern u8 Battle_type[];
 static int rt_online;
 static int want_hunter = -1;       /* --hunter N: the save slot (0-based), -1 = the first used */
 static int want_role;               /* 1 host, 2 join (from the command line) */
+static int session_over;            /* rt_np_session_end ran (the hunter saved) */
 static const char *want_addr;
 static int want_port = NP_DEFAULT_PORT, want_players = 2;
 static unsigned long st_tx, st_rx, st_drop;
@@ -414,6 +415,13 @@ static int load_own_hunter(void)
         return -1;
     data_load_ptr = b;
     save_data_sub(0, 0xF);          /* options + the three slots into option_w (not the patch) */
+    {   /* what the card load at the title does after decoding (CardAtld: check_sum_set): the card's check values,
+         * which the game's own saves compare first (CardOnsv1, the save after an online quest: else "the card used
+         * at game start is not inserted") */
+        extern u8 card_w[];
+        void check_sum_set(u8 *s);
+        check_sum_set(card_w);
+    }
     data_load_ptr = keep;
     free(b);
     for (s = 0; s < 3; s++)
@@ -452,6 +460,14 @@ static void save_own_hunter(void)
         fwrite(b, 1, SAVE_SIZE, f);
         fclose(f);
         fprintf(stderr, "co-op: hunter saved to slot %d (%d zenny)\n", save_slot + 1, *(s32 *)(User_data + 0x20));
+        if (save_decode(b) == 0) {  /* the card's new check values, as the game's own saves keep them (CardOnsv104:
+                                     * decode_to_ck, check_sum_set): the save after an online quest compares them */
+            extern u8 card_w[];
+            void check_sum_set(u8 *s);
+            data_load_ptr = b;
+            check_sum_set(card_w);
+            data_load_ptr = keep;
+        }
     }
     free(b);
 }
@@ -536,6 +552,7 @@ void rt_np_configure(int role, const char *addr, int port, int players)
 {
     static char a[64];
     join_retry = 1;
+    session_over = 0;
     want_role = role;
     snprintf(a, sizeof a, "%s", addr ? addr : "");
     want_addr = role == 2 ? a : NULL;
@@ -556,8 +573,10 @@ int rt_np_setup(int quest_no)
         if (!want_role)
             return -1;
     }
-    if (join_retry) {               /* from the online town: the town's hunter (the card's, or the test name) */
-        if (!getenv("RT_NP_NOSAVE"))
+    if (join_retry) {               /* from the online town: the town's hunter as it is now (User_data: the card's, or
+                                     * the test name), not reloaded from the card: what was done in the town and not
+                                     * saved yet (the hunter registration, purchases) stays, as on the PS2 */
+        if (!getenv("RT_NP_NOSAVE") && !User_data[8])
             load_own_hunter();
         mini_from_save(mini);
     } else if (getenv("RT_NP_NOSAVE") || load_own_hunter() != 0)
@@ -887,8 +906,9 @@ void ItemCopy_Pl2Ud(PLW *pl);
 int rt_np_session_end(void)
 {
     int me = game_w.master, s;
-    if (!want_role || !rt_online)
+    if (!want_role || !rt_online || session_over)
         return -1;
+    session_over = 1;       /* (the online town turns Online_ck on again; the next match's rt_np_configure clears it) */
     ItemCopy_Pl2Ud(&player_work[me]);       /* the pouch as it is now */
     save_own_hunter();
     rt_online = 0;

@@ -239,7 +239,7 @@ if [ -n "$ONLINE" ]; then
            src/lobby/b/nm/plaza_checkFriendTrans.c src/lobby/b/nm/plaza_mailBoxTrans.c src/lobby/b/nm/plaza_setMyCommentTrans.c \
            src/lobby/f/lb_e10.c src/lobby/b/nm/lb_select_set_data.c src/lobby/b/nm/lb_select_tag.c src/lobby/b/nm/disp_string_handle.c \
            src/lobby/b/nm/check_halfcode.c src/lobby/b/nm/plaza_searchMemberTrans.c \
-           src/lobby/b/nm/plaza_setChatModeTrans.c"
+           src/lobby/b/nm/plaza_setChatModeTrans.c src/lobby/f/lb_pz12_nm.c"   # (lb_pz12_nm: Plaza_add_friend, raw on the PS2)
     PICK="$PICK src/lobby/f/lb_ab.c:lb_member_changeCheck,lb_member_inCheck,lb_member_outCheck src/lobby/f/lb_w.c:lb_rule_seet_set \
           src/lobby/f/lb_v.c:lb_rule_seet_trans,lb_guild_make_room"
     PICK="$PICK src/lobby/f/lb_ae.c:Lb_check_receipt,lb_set_pl_pos,lb_set_pl_status,lb_set_pl_stage,lb_check_chair,lb_set_chair,lb_recv_myChair,lb_chidori_off,lb_trade_start,lb_trade_check,lb_trade_result,lb_send_my_status,lb_commer_message"

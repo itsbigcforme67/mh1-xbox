@@ -8,6 +8,7 @@ import os
 import socket
 import struct
 import sys
+import threading
 import time
 import unittest
 
@@ -137,20 +138,33 @@ class RelayTest(unittest.TestCase):
             await rl.close()
         arun(go())
 
-    def test_lobby_order_renumbers(self):
+    def test_lobby_order_from_the_start(self):
         async def go():
             rl = R.Relay(verbose=False)
             port = await rl.create_session(131, 2, names=[b"BOB".hex(" ").upper(), b"ANNA".hex(" ").upper()])
             a = await FakePeer.join(port, b"ANNA")
-            self.assertEqual(await a.recv(), (0, R.WELCOME, b"\0"))
+            self.assertEqual(await a.recv(), (0, R.WELCOME, b"\1"))     # the room's order: ANNA is its second member
             b = await FakePeer.join(port, b"BOB")
-            await b.recv()
-            self.assertEqual(await a.recv(), (0, R.WELCOME, b"\1"))     # the lobby made BOB slot 0
-            self.assertEqual(await b.recv(), (0, R.WELCOME, b"\0"))
-            self.assertEqual((await a.recv())[1], R.START)
+            self.assertEqual(await b.recv(), (0, R.WELCOME, b"\0"))     # BOB slot 0, no renumbering at the start
+            frm, typ, d = await a.recv()
+            self.assertEqual((typ, d[1]), (R.START, 2))
+            self.assertEqual((await b.recv())[1], R.START)
             a.w.close(); b.w.close()
             await asyncio.sleep(0.2)
             self.assertNotIn(port, rl.sessions)                          # a lobby session lives for one hunt
+            await rl.close()
+        arun(go())
+
+    def test_lobby_order_stranger(self):
+        async def go():
+            rl = R.Relay(verbose=False)
+            port = await rl.create_session(131, 2, names=[b"BOB".hex(" ").upper(), b"ANNA".hex(" ").upper()])
+            c = await FakePeer.join(port, b"CARL")                      # not in the room's list: a slot no member needs
+            b = await FakePeer.join(port, b"BOB")
+            self.assertEqual(await b.recv(), (0, R.WELCOME, b"\0"))
+            self.assertEqual(await c.recv(), (0, R.WELCOME, b"\1"))
+            c.w.close(); b.w.close()
+            await asyncio.sleep(0.2)
             await rl.close()
         arun(go())
 
@@ -241,6 +255,156 @@ class LobbyStubTest(unittest.TestCase):
             self.assertFalse(self.login(port, "87654321", pw))
         finally:
             lb.stop()
+
+
+class FakeLobbyClient:
+    """the game's lobby client as far as these tests need it: the real login packets (obfuscated strings, docs/network.md
+    5.2-5.3), then requests by code"""
+    def __init__(self, port, handle, ident=b"******"):
+        import mh1_testserver as ts
+        self.ts = ts
+        self.s = socket.create_connection(("127.0.0.1", port), timeout=3)
+        self.seq = 0x40
+        self.buf = b""
+        cat, cmd, seq, res, p = self.recv()
+        self.xfee = struct.unpack(">H", p)[0]
+        self.answer(0x6101, seq, struct.pack(">H", 10) + mmbbc_encode("00000000", seq) + self.enc(b"LOCALTEST0000000", seq))
+        cat, cmd, seq, res, p = self.recv()
+        self.answer(0x6102, seq, self.enc(b"", seq))
+        cat, cmd, seq, res, p = self.recv()
+        self.answer(0x6103, seq, bytes([0, 1, 4]) + self.enc(b"0123456789", seq) + bytes(16))
+        self.until(0x6131)
+        self.request(0x6132, lambda q: self.enc(ident, q) + self.enc(handle, q))
+        ans = self.until(0x6132)
+        self.id = ans[4][2:].decode()
+        self.until(0x6104)
+        m = bytearray(0x40)
+        m[0], m[1] = 3, 7       # weapon kind 3, rank 7
+        self.request(0x6190, lambda q: self.enc(bytes(m), q))
+        self.until(0x6190)
+        self.send(16, 0x6141, b"", self.next())
+
+    def enc(self, b, seq):
+        e = self.ts.lbs_decode(b, seq, self.xfee)               # the obfuscation is its own inverse
+        return struct.pack(">HH", len(e) + 2, sum(b) & 0x7FFF) + e
+
+    def next(self):
+        self.seq += 1
+        return self.seq
+
+    def send(self, cat, cmd, p, seq):
+        self.s.sendall(struct.pack(">BBHHHB3s", 0x81, cat, cmd, len(p), seq, 0, b"\xff" * 3) + p)
+
+    def answer(self, cmd, seq, p):
+        self.send(2, cmd, p, seq)
+
+    def request(self, cmd, body):
+        q = self.next()
+        self.send(1, cmd, body(q) if callable(body) else body, q)
+        return q
+
+    def recv(self):
+        while len(self.buf) < 12 or len(self.buf) < 12 + struct.unpack(">H", self.buf[4:6])[0]:
+            d = self.s.recv(4096)
+            if not d:
+                raise ConnectionError("closed")
+            self.buf += d
+        cat, cmd, ln, seq, res = struct.unpack(">BHHHB", self.buf[1:9])
+        p, self.buf = self.buf[12:12 + ln], self.buf[12 + ln:]
+        return cat, cmd, seq, res, p
+
+    def until(self, cmd):
+        while True:
+            r = self.recv()
+            if r[1] == cmd:
+                return r
+
+    def enter(self, plaza=1, lobby=1):
+        self.request(0x6207, struct.pack(">H", plaza))
+        self.until(0x6207)
+        self.request(0x6305, struct.pack(">H", lobby))
+        self.until(0x6305)
+
+    def close(self):
+        self.s.close()
+
+
+def strs(p, off, n):
+    out = []
+    for _ in range(n):
+        ln = struct.unpack(">H", p[off:off + 2])[0]
+        out.append(p[off + 2:off + 2 + ln])
+        off += 2 + ln
+    return out, off
+
+
+class TestServerFeatureTest(unittest.TestCase):
+    """tools/mh1_testserver.py: user search, condition search with pages, mail, the return to the lobby after a match"""
+    def setUp(self):
+        import mh1_testserver as ts
+        self.ts = ts
+        self.srv = ts.Server(("127.0.0.1", 0), ts.Client)
+        self.port = self.srv.server_address[1]
+        threading.Thread(target=self.srv.serve_forever, daemon=True).start()
+
+    def tearDown(self):
+        self.srv.shutdown()
+        self.srv.server_close()
+
+    def test_search_mail_return(self):
+        a = FakeLobbyClient(self.port, b"ANNA")
+        b = FakeLobbyClient(self.port, b"BOB")
+        a.enter(1, 2)
+        b.enter(1, 2)
+        # 6703: where is BOB
+        a.request(0x6703, lambda q: a.enc(b.id.encode(), q))
+        cat, cmd, seq, res, p = a.until(0x6703)
+        (ident,), off = strs(p, 0, 1)
+        self.assertEqual((res, ident.decode()), (0, b.id))
+        self.assertEqual(struct.unpack(">HHH", p[off:off + 6]), (1, 2, 0))
+        a.request(0x6703, lambda q: a.enc(b"999999", q))
+        self.assertEqual(a.until(0x6703)[3], 1)               # not logged in: an error and a message
+        # 6709: everyone (no conditions), then by weapon kind and rank; pages of SEARCH_PAGE records
+        self.ts.Client.SEARCH_PAGE = 1
+        try:
+            a.request(0x6709, bytes([0x50, 0]))
+            cat, cmd, seq, res, p = a.until(0x6709)
+            total, start, count, last = p[:4]
+            self.assertEqual((total, start, count, last), (2, 0, 1, 0))
+            a.send(16, 0x6709, bytes([1]), 0x99)                # "certify": the next page, answered with this seq
+            cat, cmd, seq, res, p = a.until(0x670A)
+            self.assertEqual((seq, cat) + tuple(p[:4]), (0x99, 2, 2, 1, 1, 1))
+        finally:
+            self.ts.Client.SEARCH_PAGE = 10
+        a.request(0x6709, lambda q: bytes([0x50, 2, 3, 3, 6, 1, 1]))     # weapon kind 3, rank 5..8
+        p = a.until(0x6709)[4]
+        self.assertEqual(p[0], 2)
+        a.request(0x6709, lambda q: bytes([0x50, 1, 1]) + a.enc(b.id.encode(), q))
+        p = a.until(0x6709)[4]
+        self.assertEqual(p[0], 1)
+        self.assertEqual(strs(p, 4, 2)[0][1], b"BOB")
+        # 6704 mail to an online hunter: 6705 to him
+        a.request(0x6704, lambda q: a.enc(b.id.encode(), q) + a.enc(b"hello BOB", q))
+        self.assertEqual(a.until(0x6704)[3], 0)
+        p = b.until(0x6705)[4]
+        self.assertEqual(strs(p, 0, 3)[0], [a.id.encode(), b"ANNA", b"hello BOB"])
+        # mail to a hunter who logged out is kept until his next login
+        bid = b.id
+        b.close()
+        time.sleep(0.2)
+        a.request(0x6704, lambda q: a.enc(bid.encode(), q) + a.enc(b"later", q))
+        self.assertEqual(a.until(0x6704)[3], 0)
+        a.request(0x6704, lambda q: a.enc(b"424242", q) + a.enc(b"nobody", q))
+        self.assertEqual(a.until(0x6704)[3], 1)
+        # BOB left inside lobby 2 (as after a match): his next login with his id is put back there (6891)
+        b2 = FakeLobbyClient(self.port, b"BOB", bid.encode())
+        p = b2.until(0x6705)[4]
+        self.assertEqual(strs(p, 0, 3)[0][2], b"later")
+        b2.request(0x6891, b"")
+        self.assertEqual(struct.unpack(">HHH", b2.until(0x6891)[4]), (1, 2, 0))
+        self.assertEqual(a.until(0x6411)[1], 0x6411)           # ANNA is told he is back
+        a.close()
+        b2.close()
 
 
 class McsTest(unittest.TestCase):

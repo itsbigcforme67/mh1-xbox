@@ -8,6 +8,7 @@
 #     N = 2..4 walking; hunt2 / hunt4 / handover / leave = hunts of quest 137 to the clear, the reward and the
 #     village with each player's own saved hunter (tools/test_coop_hunt.py); box = the supply box decided by the
 #     host; wine = the Windows build under Wine joins (skipped without it); default: all (about 15 minutes)
+#   tools/test_coop.sh saves [NAME...]   only make the hunters' cards (build/coop/save_NAME, ~5 minutes each)
 #   tools/test_coop.sh relay   the same through mh1-server's session relay (tools/server, docs/server.md): 2 and 4
 #     walking, then hunt2, hunt4, leave and hostleave with RELAY=1 (not part of the default run)
 # Starts only its own processes and stops them (by PID).
@@ -191,6 +192,7 @@ refusals() {
 }
 
 case "$1" in
+saves) shift; for nm in ${@:-ANNA BOB CARL DAVE}; do mksave $nm || exit 1; done ;;    # the hunters' cards only (test_online_town.sh)
 box) box ;;
 relay) relayrun 2 && relayrun 4 && { export RELAY=1; hunts hunt2 hunt4 leave hostleave; } ;;
 wine) winepair ;;

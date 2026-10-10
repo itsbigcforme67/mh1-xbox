@@ -1,4 +1,4 @@
-/* lb_pz12_nm - lobby.bin 0x00597640-0x00597B04: Plaza_add_friend(id), near-match (15 instructions differ: only the register numbers of sw/a/st: original has sw in a3, a in a1, step pointer in a2; mine a1/a2/a3). NOT built. */
+/* lb_pz12_nm - lobby.bin 0x00597640-0x00597B04: Plaza_add_friend(id), near-match (15 instructions differ: only the register numbers of sw/a/st: original has sw in a3, a in a1, step pointer in a2; mine a1/a2/a3). Not built for the PS2 (raw there); the ONLINE PC build links it (tools/build_pc.sh). */
 #pragma readonly_strings on
 #include "lbui_proto.h"
 #define X05 (*(u8 *)&a->x05)

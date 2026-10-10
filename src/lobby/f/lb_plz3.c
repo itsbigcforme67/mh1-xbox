@@ -693,6 +693,107 @@ asm int disp_status()
 {
 #include "disp_status.inc"
 }
+#else
+/* PC: written from the asm of 0x59AE60 (not compared with check.py; agent B, 10 Oct 2026). A hunter's status card
+ * (my status, a friend, a search result): title, page number, then for pages 0 / 1 the handle, the id, the weapon kind
+ * and the hunter rank; page 0 the server / plaza / lobby, page 1 the comment, page 2 the equipment with icons.
+ * Arguments as the asm takes them: a0 x, a1 y, a2 id, a3 handle, t0 the mini data (+0 weapon kind, +1 rank, +9 / +0xA
+ * the weapon kind / id, +0xE and +0x10..0x13 the armour), t1 the page, t2 the page count, t3 the comment. */
+void Lb_put_job();
+int disp_status(int x0, int y0, int id, int handle, int mini_, int page_, int pages, int comment)
+{
+    u8 *mini = (u8 *)mini_;
+    s16 x = (s16)x0, y = (s16)((s16)y0 + 0x28), xt = (s16)(x + 0xA), xv = (s16)(xt + 0x3C), xe, xi;
+    s8 page = (s8)page_;
+    char b1[0x50], b2[0x50];
+    static char *const *tabs[5];
+    static const u8 tab_field[5] = { 0x10, 0x11, 0x12, 0x13, 0xE };
+    static const u8 tab_icon[5] = { 0x13, 0x14, 0x16, 0x15, 0x17 };
+    int k;
+    u16 n;
+    put_titles(xt, y, *(int *)(tl_mail_tbl + 0x2C));
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
+    SetFilterMode(1);
+    flSetRenderState(0x60, 0);
+    Put_page_num((s16)(xt + 0x12C), y, page, (s8)pages, 0);
+    if (page < 2) {
+        y = (s16)(y + 0x16);
+        flfntLocate(xt, y);
+        font_print(lit_2316, *(int *)(tl_mail_tbl + 8));
+        flfntSetSize(0x12, 0x12);
+        flfntLocate(xv, y);
+        font_print(lit_2316, handle);
+        flfntSetSize(0x12, 0x12);
+        y = (s16)(y + 0x16);
+        flfntLocate(xt, y);
+        font_print(lit_2316, *(int *)(tl_mail_tbl + 0xC));
+        flfntLocate(xv, y);
+        han2zen(id, b1);
+        font_print(lit_2316, b1);
+        y = (s16)(y + 0x16);
+        flfntLocate(xt, y);
+        font_print(lit_2316, *(int *)(tl_mail_tbl + 0x1C));
+        flfntLocate(xv, y);
+        font_print(lit_2316, ((int *)tl_job_tbl)[mini[0]]);
+        y = (s16)(y + 0x16);
+        flfntLocate(xt, y);
+        font_print(lit_2316, *(int *)(tl_mail_tbl + 0x20));
+        flfntLocate(xv, y);
+        sprintf(b1, lit_2602, mini[1]);
+        han2zen(b1, b2);
+        font_print(lit_2316, b2);
+        flfntLocate((s16)(xt + 0x64), y);
+        font_print(lit_2603, ((int *)hunter_appellation)[mini[1]]);
+    }
+    switch (page) {
+    case 0:     /* where: server, plaza, lobby */
+        y = (s16)(y + 0x16);
+        flfntLocate(xt, y);
+        font_print(lit_2316, *(int *)(tl_mail_tbl + 0x24));
+        flfntLocate((s16)(xt + 0x50), y);
+        if ((n = *(u16 *)((u8 *)cw + 0x30B4)) != 0)
+            font_print(lit_193_0065DBE8, Get_ServerName(), (u8 *)PlazaInfo + (n - 1) * 0x15C + 0x14);
+        flfntLocate((s16)(xt + 0x50), (s16)(y + 0x16));
+        if ((n = *(u16 *)((u8 *)cw + 0x30B6)) != 0) {
+            sprintf(b1, lit_193_0065DBE8, Get_ServerName(), (u8 *)LobbyInfo + (n - 1) * 0x15C + 0x14);
+            han2zen(b1, b2);
+            font_print(lit_2316, b2);
+        }
+        break;
+    case 1:     /* the comment */
+        y = (s16)(y + 0x16);
+        flfntLocate(xt, y);
+        font_print(lit_2316, *(int *)(tl_mail_tbl + 0x28));
+        lb_put_comment((s16)(xt + 0x5E), y, comment, 0);
+        break;
+    case 2:     /* the equipment: weapon, then the armour pieces, each with its icon */
+        tabs[0] = (char *const *)D_336C00;
+        tabs[1] = (char *const *)D_3371E0;
+        tabs[2] = (char *const *)D_337800;
+        tabs[3] = (char *const *)D_337E10;
+        tabs[4] = (char *const *)D_338360;
+        xe = (s16)(x + 0x2C);
+        xi = (s16)(xe - 0x20);
+        y = (s16)(y + 0x18);
+        flfntLocate(xe, y);
+        if (mini[9] == 6)
+            font_print(lit_2316, *(int *)(D_3351D4 + *(u16 *)(mini + 0xA) * 0x18));
+        else
+            font_print(lit_2316, *(int *)(D_3367BC + *(u16 *)(mini + 0xA) * 0x14));
+        Lb_put_job(xi, (s16)(y - 5), 0x1C, -1, mini[0], 0);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
+        for (k = 0; k < 5; k++) {
+            y = (s16)(y + 0x1E);
+            flfntLocate(xe, y);
+            font_print(lit_2316, *(int *)((u8 *)tabs[k] + mini[tab_field[k]] * 0x14));
+            Lb_put_icon(xi, (s16)(y - 5), tab_icon[k], -1);
+        }
+        break;
+    }
+    return 0;
+}
 #endif
 
 

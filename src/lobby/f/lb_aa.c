@@ -77,7 +77,9 @@ int Lb_PlayerStatus(u8 *pl, int idx) {
     u8 a1;
     int y;
     int n;
-    if (pl[0] == 0) {
+    u8 *w = *(u8 **)pl;     /* the lb_player entry's PLW (asm: lw s2,0(a0)); in use, mini index, skills are the PLW's
+                             * (before: read from the entry itself, the PC crashed in PrintPlayerJob on "player list") */
+    if (w[0] == 0) {
         DispFrameList(frame_status_main_0064DDC0 + (idx & 0xFF) * 0x18, lit_349_00664B78, -1);
         return -1;
     }
@@ -87,7 +89,7 @@ int Lb_PlayerStatus(u8 *pl, int idx) {
     DispFrameList(frame_status_main_0064DDC0 + s1 * 0x18, sp50, -1);
     DispFrameListOptionArrow(frame_status_main_0064DDC0);
     DispFrameMessage(frame_status_sub_0064DDF0 + s1 * 0x10, status_sub_str_00389F50[s1]);
-    mini = GetAdrsMiniData(pl[0xC]);
+    mini = GetAdrsMiniData(w[0xC]);
     switch (s0) {
     case 0:
         font_set_palette(0);
@@ -96,22 +98,22 @@ int Lb_PlayerStatus(u8 *pl, int idx) {
         flfntLocate(0x17A, 0x66);
         font_print_uf(pl + 4);
         flfntLocate(0x17A, 0x7A);
-        PrintPlayerJob(pl[0]);
+        PrintPlayerJob(*(void **)pl);
         flfntLocate(0x17A, 0x8E);
         a1 = mini[1];
         font_print(lit_351_00664BC0, a1, hunter_appellation[a1]);
-        Put_comment(0x132, 0xAE, 0x14, cw + (u16)pl[0xC] * 0x62 + 0x288C);
+        Put_comment(0x132, 0xAE, 0x14, cw + *(u16 *)(w + 0xC) * 0x62 + 0x288C);
         break;
     case 1:
-        PlayerEquipmentWindow(pl);
-        if (pl[0x910] == 0) {
+        PlayerEquipmentWindow(w);
+        if (w[0x910] == 0) {
             flfntLocate(0x132, 0x13A);
             font_print_uf(*(void **)0x334FC0);
         } else {
             y = 0x13A;
             j = 0;
             do {
-                n = (int)pl + j;
+                n = (int)w + j;
                 if (*(u8 *)(n + 0x910) != 0) {
                     flfntLocate(0x132, y);
                     font_print(lit_352_00664BD0, Skill_name[*(u8 *)(n + 0x910)]);

@@ -45,7 +45,7 @@ void plaza_setChatModeTrans(void) {
         flfntSetSize(0x12, 0x12);
         put_main_cursor(F(u8, pNet, 0xA) - 1);
         Lb_put_msg_type2(temp_s0 + 0x150);
-        flfntLocate( ((F(s16, temp_s0, 0x150) + 0x90) << 0x30) >> 0x30, F(s16, temp_s0, 0x152));
+        flfntLocate( ((s16)((F(s16, temp_s0, 0x150) + 0x90))), F(s16, temp_s0, 0x152));
         sprintf(spD0, &lit_2602, 7 - F(u8, (u8 *)cw, 0x32BE));
         han2zen(spD0, &spA0);
         font_print(&lit_2316, &spA0);
@@ -56,11 +56,11 @@ void plaza_setChatModeTrans(void) {
             Lb_put_msg_type2();
         }
         if (F(u8, (u8 *)cw, 0x32BE) == 0) {
-            Put_megaphone( ((F(s16, temp_s0, 0x158) - 0x1A) << 0x30) >> 0x30,  ((F(s16, temp_s0_2, 2) - 4) << 0x30) >> 0x30, 0);
+            Put_megaphone( ((s16)((F(s16, temp_s0, 0x158) - 0x1A))),  ((s16)((F(s16, temp_s0_2, 2) - 4))), 0);
         }
         temp_a0 = (int)pNet;
         temp_s3 = F(s16, temp_s0, 0x158);
-        var_s2 =  ((F(s16, temp_s0_2, 2) + 0x16) << 0x30) >> 0x30;
+        var_s2 =  ((s16)((F(s16, temp_s0_2, 2) + 0x16)));
         if (F(u8, temp_a0, 3) < 3) {
             temp_v1 = (s16)temp_s3;
             temp_s6 = temp_v1 + 0xA4;
@@ -70,37 +70,37 @@ void plaza_setChatModeTrans(void) {
 loop_8:
             temp_s4 = (*(s32 *)var_s7);
             if (temp_s4 != 0) {
-                if (F(u8, pNet, 0xA) == (( (var_s5 << 0x30) >> 0x30) + 1)) {
+                if (F(u8, pNet, 0xA) == (( ((s16)(var_s5))) + 1)) {
                     sprintf(spD0, temp_s4 + 0x4C, 8);
                     font_print_double(temp_s3, (s16) var_s2, 1, 4);
                     strcpy(spD0, temp_s4 + 0x44);
                     han2zen(spD0, &spA0);
-                    font_print_double((s16) ( (temp_s6 << 0x30) >> 0x30), (s16) var_s2, 1, 4);
+                    font_print_double((s16) ( ((s16)(temp_s6))), (s16) var_s2, 1, 4);
                 } else {
                     font_set_palette(0);
                     flfntLocate( temp_s3, (s16) var_s2);
                     font_print(&lit_2316, temp_s4 + 0x4C);
                     strcpy(spD0, temp_s4 + 0x44);
                     han2zen(spD0, &spA0);
-                    flfntLocate( (temp_s6 << 0x30) >> 0x30, (s16) var_s2);
+                    flfntLocate( ((s16)(temp_s6)), (s16) var_s2);
                     font_print(&lit_2316, &spA0);
                 }
                 var_s1 = 0;
                 var_s0 = (int)&chatIDList;
 loop_13:
                 if (memcmp(temp_s4 + 0x44, var_s0, 8) != 0) {
-                    var_s1 =  ((var_s1 + 1) << 0x30) >> 0x30;
+                    var_s1 =  ((s16)((var_s1 + 1)));
                     var_s0 += 8;
                     if (var_s1 < 7) {
                         goto loop_13;
                     }
                 }
-                if (( (var_s1 << 0x30) >> 0x30) != 7) {
-                    Put_megaphone( (temp_fp << 0x30) >> 0x30,  ((( (var_s2 << 0x30) >> 0x30) - 4) << 0x30) >> 0x30, 0);
+                if (( ((s16)(var_s1))) != 7) {
+                    Put_megaphone( ((s16)(temp_fp)),  ((s16)((( ((s16)(var_s2))) - 4))), 0);
                 }
-                var_s5 =  ((var_s5 + 1) << 0x30) >> 0x30;
+                var_s5 =  ((s16)((var_s5 + 1)));
                 var_s7 += 4;
-                var_s2 =  ((var_s2 + 0x16) << 0x30) >> 0x30;
+                var_s2 =  ((s16)((var_s2 + 0x16)));
                 if (var_s5 >= 7) {
 
                 } else {
@@ -119,7 +119,7 @@ loop_13:
         temp_s4_2 = ((s16)temp_s3) + 0xA4;
         do {
             if ((*(s8 *)var_s5_2) != 0) {
-                temp_s1 =  (var_s0_2 << 0x30) >> 0x30;
+                temp_s1 =  ((s16)(var_s0_2));
                 if (F(u8, pNet, 0xA) == (temp_s1 + 1)) {
                     sprintf(spD0, var_s6, 0x10);
                     temp_s1_2 = 1 << temp_s1;
@@ -131,9 +131,9 @@ loop_13:
                     memcpy(spD0, var_s5_2, 8);
                     han2zen(spD0, &spA0);
                     if (chatListFlag & temp_s1_2) {
-                        font_print_double((s16) ( (temp_s4_2 << 0x30) >> 0x30), (s16) var_s2, 1, 4);
+                        font_print_double((s16) ( ((s16)(temp_s4_2))), (s16) var_s2, 1, 4);
                     } else {
-                        font_print_double((s16) ( (temp_s4_2 << 0x30) >> 0x30), (s16) var_s2, 1, 0xA);
+                        font_print_double((s16) ( ((s16)(temp_s4_2))), (s16) var_s2, 1, 0xA);
                     }
                 } else {
                     if (chatListFlag & (1 << temp_s1)) {
@@ -145,14 +145,14 @@ loop_13:
                     font_print(&lit_2316);
                     strcpy(spD0);
                     han2zen(spD0, &spA0);
-                    flfntLocate( (temp_s4_2 << 0x30) >> 0x30, (s16) var_s2);
+                    flfntLocate( ((s16)(temp_s4_2)), (s16) var_s2);
                     font_print(&lit_2316, &spA0);
                 }
             }
             var_s5_2 += 8;
-            var_s2 =  ((var_s2 + 0x16) << 0x30) >> 0x30;
+            var_s2 =  ((s16)((var_s2 + 0x16)));
             var_s6 += 0x10;
-            var_s0_2 =  ((var_s0_2 + 1) << 0x30) >> 0x30;
+            var_s0_2 =  ((s16)((var_s0_2 + 1)));
             var_s7_2 += 0x10;
             var_fp += 8;
         } while (var_s0_2 < 7);
