@@ -385,10 +385,12 @@ void enemy_trans(void *prim) { (void)prim; }
 /* em_work_set (0x16A010): takes a model work for the monster and copies the
  * model data game_w+0x88[mdl_no]; the host has its own model and only needs
  * the motion model work (frame.h FRMDL) for frame_init/frame_move. */
+void rt_actor_nodes_fill_one(void *work);
 void em_work_set(EMW *em)
 {
     if (!em->mdl)
         rt_motion_attach(em);
+    rt_actor_nodes_fill_one(em);    /* its nodes at its position until the viewer poses it (rt_eft.c) */
 }
 
 /* push_em_work (0x169EB0): frees the draw prim and model work, clears the

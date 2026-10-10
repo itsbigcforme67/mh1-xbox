@@ -617,6 +617,50 @@ void rt_actor_joints(const void *chr, const float *mats, int n)
     }
 }
 
+/* The node arrays of every live actor (hunters, monsters, NPCs: their model work at +0x50C -> +0x24, 0x190 bytes a node,
+ * the world matrix first) as the PS2 has them after trans(): the host skeleton's joints where the viewer handed them over
+ * (rt_actor_joints), and for the nodes past them, or an actor without a host skeleton (a monster on another stage, a
+ * village NPC, an actor whose model is not loaded), a matrix at the actor's position, which is what get_joint_pos / wmat
+ * have answered for those. Run after every joint sync. */
+void rt_actor_nodes_fill_one(void *work)
+{
+    u8 *chr = work;
+    int max, j, n = 0, i;
+    u8 *nodes = rt_actor_nodes(chr, &max);
+    const f32 *m = NULL;
+    FLMAT t;
+    if (!nodes)
+        return;
+    for (i = 0; i < 32; i++)
+        if (joints[i].chr == chr && joints[i].m) {
+            n = joints[i].n;
+            m = joints[i].m;
+            break;
+        }
+    if (n > max)
+        n = max;
+    for (j = 0; j < n; j++)         /* (a monster that left the stage keeps the joints it had there; a new model work starts empty) */
+        memcpy(nodes + j * 0x190, m + 16 * j, 64);
+    if (n >= max)
+        return;
+    memset(t, 0, sizeof t);
+    t[0][0] = t[1][1] = t[2][2] = t[3][3] = 1.0f;
+    memcpy(t[3], chr + 0xAC, 12);
+    for (j = n; j < max; j++)
+        memcpy(nodes + j * 0x190, t, 64);
+}
+void rt_actor_nodes_fill(void)
+{
+    u8 *pw = (u8 *)player_work, *ew = (u8 *)em_work;
+    int i;
+    for (i = 0; i < 8; i++)
+        if (pw[0xA00 * i])
+            rt_actor_nodes_fill_one(pw + 0xA00 * i);
+    for (i = 0; i < 20; i++)
+        if (ew[0xA10 * i])
+            rt_actor_nodes_fill_one(ew + 0xA10 * i);
+}
+
 /* number of host joints known for an actor (0: none) */
 int rt_actor_joint_count(const void *chr)
 {

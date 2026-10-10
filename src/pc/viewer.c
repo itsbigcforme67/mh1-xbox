@@ -1233,6 +1233,7 @@ static void sim_tick(void)
         sync_joints(&pl, hunter_yoff);
         remote_hunters(0, light_cur());
         monsters_sync(0, light_cur());
+        rt_actor_nodes_fill();  /* every live actor's node array as after trans() (rt_eft.c) */
         rt_prof_end(RTP_JOINTS);
         rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
     }
@@ -2179,6 +2180,7 @@ int main(int argc, char **argv)
          * per drawn frame, every 300 ticks */
         while (!pick_hold_ticks(ticks) && !menu_hold_ticks(ticks) && ticks < 2 + (int)fr && !(shot_next > 0 && ticks >= shot_next)) {
             rt_prof_begin(RTP_LOGIC);
+            rt_actor_nodes_fill();      /* every actor's node array as the last tick left it (boot screens, village, quests) */
             if (booting) {      /* ACRMain: pad, then the task scheduler */
                 pad_state ps;
                 if (script)
@@ -2240,6 +2242,7 @@ int main(int argc, char **argv)
                     remote_hunters(0, light_cur());
                 if (!rt_village_active())
                     monsters_sync(0, light_cur());
+                rt_actor_nodes_fill();
                 rt_prof_end(RTP_JOINTS);
             }
             if (tick_trace) {           /* RT_TICK_TRACE=1: compare windowed and headless runs */

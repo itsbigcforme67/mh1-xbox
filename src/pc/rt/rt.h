@@ -176,6 +176,8 @@ int rt_village_tick(void);
 int rt_village_active(void);
 void rt_set_npc_model_loader(void (*fn)(int slot, int amh, int tex));
 void rt_set_em_model_loader(void (*fn)(int slot, int kind));
+void rt_actor_nodes_fill(void);
+void rt_actor_nodes_fill_one(void *work);      /* every live actor's node array: host joints, else its position (rt_eft.c) */
 void rt_set_em_pose_fn(void (*fn)(int slot));   /* the viewer poses em_work[slot] now and hands its joints over */
 void rt_monster_joints(int no, const float *world, int n);
 /* create_em_motion for model slot `slot` from a monster's *_tbl.bin */

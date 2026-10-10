@@ -70,6 +70,7 @@ void rt_player_game_init(int no)
         rt_np_init_slots();
     }
 #endif
+    rt_actor_nodes_fill_one(pl);   /* its nodes at its position until the viewer poses it (rt_eft.c) */
     pl_init(0);
 #ifdef MH1_ONLINE
     {
