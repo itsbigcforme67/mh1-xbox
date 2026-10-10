@@ -575,11 +575,16 @@ and reads it in his mail box (list, then the text). The net file (friends, recei
 (`SaveNetFile_ForLobby`, main 0x28A3D0, loaded by `ms_network_sub`, which the PC skips); the PC writes CNFile and
 RecvMailInfo to `mh1pc_net.bin` next to the save (a PC format) and reads it when the online mode starts.
 
-**Guest rooms** (stages 0x51-0x55, "hotel" rooms behind the town's spot kinds 18-20; `lb_basic_master`, lb_r.c;
-`lb_goto_guest_room` / `Lb_check_hotel`): read from the code, these are local: the hunter rents one with money by rank
-and goes there alone (`Lb_Pl_stg_ck` draws other hunters only on stages 0x4C / 0x4D), no lobby-server message besides
-the 6708 stage change. Not tried on screen. (`Lbc_GuestReadRoom` / `Lbs_GuestEnterRoom` in lb_cli.c are the joining
-side of the guild quest rooms, already in use.) Annex messages 6210-6215 have handlers but no sender in the client.
+**Guest rooms** (stages 0x51-0x55; verified on screen 10 Oct 2026, `tools/test_online_guest.sh`). The square's spot
+12 (the action button, square on the pad, at 7080,3030) leads into the inn (0x50); there spot kind 18 (1400,2775) is
+the free room 0x51, kinds 19 / 20 the rented ones (0x52 / 0x53, 0x54 / 0x55 with R1; `lb_goto_guest_room` /
+`Lb_check_hotel`: hunter rank and money, paid once a session), kind 5 the way back. They are local: no lobby-server
+message besides the 6708 stage change, and each hunter is alone there: `Lb_Pl_stg_ck` (lb_h.c) shows another hunter
+only on my stage and only on the square (0x4C) and the guild hall (0x4D). The PC viewer drew every hunter on the same
+stage until 10 Oct 2026; `rt_online_visible` now asks `Lb_Pl_stg_ck`. The test: two clients against mh1-server take
+room 0x51 at the same time, neither shows the other there or in the inn, back on the square both are shown again where
+the other says it is. (`Lbc_GuestReadRoom` / `Lbs_GuestEnterRoom` in lb_cli.c are the joining side of the guild quest
+rooms, in use since round 1.) Annex messages 6210-6215 have handlers but no sender in the client.
 
 Not done yet: patches; personal data registration; the Xbox build of the town was not run. The Windows build runs the
 town under Wine (section 4).
@@ -593,6 +598,7 @@ town under Wine (section 4).
                                                      # return to the town (~7 min; makes the hunters' cards once with
                                                      # tools/test_coop.sh saves, ~10 min)
     RUN=wine BIN=build/win/mhview_online.exe tools/test_online_town.sh   # the same with the Windows build (passes, 10 Oct 2026)
+    tools/test_online_guest.sh                       # guest rooms, two clients against mh1-server (~2 min)
     RT_NET_PORT=10200 build/pc/mhview_online disc/mh1 --boot   # then the title's network mode (or: --quest 10 --play --online)
 
 ## 5. The lobby-server protocol (PS2 wire format, derived from the client)

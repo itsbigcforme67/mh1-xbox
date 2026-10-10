@@ -61,6 +61,7 @@ static int port = 10200;
 static char sname[64] = "Local test server";
 
 enum { O_CONNECT, O_LOBBY, O_MATCHED, O_FAILED };
+int rt_online_visible(int slot);
 static void netfile_load(void);
 
 int rt_online_wanted(void) { return wanted; }
@@ -437,9 +438,9 @@ int rt_online_tick(void)
             for (i = 0; i < 8; i++) {
                 u8 *p = player_work + 0xA00 * i;
                 if (p[0])
-                    fprintf(stderr, "online: tick %d slot %d%s \"%.16s\" stage %d pos %.0f %.0f %.0f\n", ticks, i,
+                    fprintf(stderr, "online: tick %d slot %d%s \"%.16s\" stage %d pos %.0f %.0f %.0f%s\n", ticks, i,
                             i == game_w[0xD1] ? " (me)" : "", (char *)p + 0x8D4, p[0x736], *(float *)(p + 0xAC),
-                            *(float *)(p + 0xB0), *(float *)(p + 0xB4));
+                            *(float *)(p + 0xB0), *(float *)(p + 0xB4), rt_online_visible(i) ? " shown" : "");
             }
         }
         if (r == 0) {
@@ -498,12 +499,15 @@ void __cnet_bgProg_ReadFileDownloadAllocation(void)
         cb(r, &r);
 }
 
-/* the other hunters the host draws in the town: in use (Lb_set_player), not this machine's, on the same stage */
+/* the other hunters the host draws in the town: in use (Lb_set_player), not this machine's, and shown by the game's
+ * own rule (Lb_Pl_stg_ck, lb_h.c): on this machine's stage, and only on the square (0x4C) and the guild hall (0x4D).
+ * In the inn and the guest rooms (0x50-0x55) and the other buildings each hunter is alone, as on the PS2. */
 int rt_online_visible(int slot)
 {
     extern u8 player_work[];
-    u8 *p = player_work + 0xA00 * (slot & 7), *me = player_work + 0xA00 * (game_w[0xD1] & 7);
-    return active && phase == O_LOBBY && slot != game_w[0xD1] && p[0] && p[0x736] == me[0x736];
+    int Lb_Pl_stg_ck(void *pl);
+    u8 *p = player_work + 0xA00 * (slot & 7);
+    return active && phase == O_LOBBY && slot != game_w[0xD1] && p[0] && Lb_Pl_stg_ck(p);
 }
 
 /* ------------------------------------------------------------ the net file (friends, mail)
