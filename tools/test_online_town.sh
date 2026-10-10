@@ -121,16 +121,16 @@ gold1=$(python3 -c "import sys; sys.path.insert(0, 'tools'); from test_coop_hunt
 [ "$gold1" -gt "$gold0" ] || fail "ANNA's card has $gold1 zenny after the quest, $gold0 before: the reward was not saved"
 # back in the town: each sees the other where the other is (the last trace lines after the return)
 after() { sed -n '/back to the town after the quest/,$p' $OUT/$1.log; }
-a_bob=$(after ANNA | grep -a 'online: tick [0-9]* slot [0-9] "' | tail -1)
+a_bob=$(after ANNA | grep -a 'online: tick [0-9]* slot [0-9] "' | grep -a ' shown$' | tail -1)
 b_me=$(after BOB | grep -a 'online: tick [0-9]* slot [0-9] (me)' | tail -1)
-b_anna=$(after BOB | grep -a 'online: tick [0-9]* slot [0-9] "' | tail -1)
+b_anna=$(after BOB | grep -a 'online: tick [0-9]* slot [0-9] "' | grep -a ' shown$' | tail -1)
 [ -n "$a_bob" ] || fail "ANNA does not see BOB in the town after the quest"
 [ -n "$b_anna" ] || fail "BOB does not see ANNA in the town after the quest"
 [ -n "$b_me" ] || fail "no position of BOB after the quest"
 python3 - "$a_bob" "$b_me" <<'PY' || fail "after the quest ANNA sees BOB at '$a_bob', BOB says '$b_me'"
 import sys
-a = [float(v) for v in sys.argv[1].split(' pos ')[1].split()]
-b = [float(v) for v in sys.argv[2].split(' pos ')[1].split()]
+a = [float(v) for v in sys.argv[1].split(' pos ')[1].split()[:3]]
+b = [float(v) for v in sys.argv[2].split(' pos ')[1].split()[:3]]
 sys.exit(0 if max(abs(x - y) for x, y in zip(a, b)) <= 2 else 1)
 PY
 [ "$(after BOB | grep -a 'slot [0-9] (me)' | sed 's/.* pos \([-0-9]* [-0-9]* [-0-9]*\).*/\1/' | sort -u | wc -l)" -gt 1 ] || fail "BOB did not walk after the quest"
