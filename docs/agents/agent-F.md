@@ -633,16 +633,11 @@ How to find dead PC code without guessing (used for the 10 Oct clean-up, see doc
   PS2 data tables to host symbols by name at run time (em_prog_tbl entries are only reached that way).
 - After removing anything, build/pc/undefined.txt must not gain names (else gen_rt_auto.py silently makes
   a no-op stand-in for them).
-- Host versions that still win over matched C (11 Oct: the others were replaced by the matched code, one commit each):
-  get_joint_pos / _wmat / _mat (+ _em twins; rt_eft.c): the host returns the actor's position when the viewer has
-  not handed over joints (actors without a host skeleton, joint index past the skeleton), the game's emsrch02.c
-  would read whatever is in the node array; Material_set_sub (rt_eft.c): the host's eft_trans_sub passes a port
-  CLAY, not the game's material set, so the game's loop would read garbage; get_mdlw_ptr (rt_motion.c): the PC
-  keeps its own model works (one per player), the game's light03.c indexes the PS2 model heap. All three need
-  the host structures changed first.
-  Looked at again on 11 Oct, still left: for get_joint_* the clean route is to have the host fill the node array
-  of every live actor every tick (a monster off this stage, an NPC or a hunter without a host skeleton gets a
-  translation-only matrix at its position in every node), then emsrch02.c would give what the host gives today;
-  that touches every actor kind (hunters, remote hunters, NPCs, monsters on other stages) and is not a one-commit
-  change. Material_set_sub needs the port's CLAY to carry the game's material set first; get_mdlw_ptr needs a
-  real model heap.
+- Host versions that still win over matched C (12 Oct): Material_set_sub (rt_eft.c): the game's loop hands
+  flSetRenderState(0x3A + i) a pointer into the model's material table (MDLW +0x10), which the port's model works
+  do not have (NULL), so it needs a real material table per model first; get_mdlw_ptr (rt_motion.c): the PC keeps
+  its own model works, the game's light03.c indexes the PS2 model heap. get_joint_* are the game's since 12 Oct
+  (rt_actor_nodes_fill keeps every live actor's node array filled).
+- Still host no-ops: init_eft_work / init_shell_work (all_reset in the character editor): making them real moves
+  the random stream of the whole boot (the scripted tests would need new seeds). Each em_work clear (village entry,
+  clr_em_work) drops the slots' model works and new ones are allocated (a leak of ~50 KB per slot per clear).
