@@ -1038,6 +1038,26 @@ static void weapon_load(monster *w, int no)
     }
 }
 
+/* a hunter's weapon model again when the game changed it (player_work.work34C): the online town's hunters (their mini
+ * data names the weapon; a hunter can change it in the town), the local hunter after a purchase. *have = the model
+ * loaded, -1 = none yet. */
+static int weapon_have = -1;         /* the local hunter's weapon model loaded */
+__attribute__((unused)) static void weapon_follow(monster *w, int no, int *have)
+{
+    int m = rt_player_weapon_model(no);
+    if (m == *have || rt_weapon_afs(m, 0) <= 0)
+        return;
+    if (w->game) {
+        fl_model_release(&w->model);
+        fl_skel_release(&w->skel);
+        w->game = 0;
+    }
+    weapon_load(w, no);
+    if (getenv("RT_ONLINE_TRACE"))
+        fprintf(stderr, "online: slot %d weapon model %d (was %d)%s\n", no, m, *have, w->game ? "" : ", not loaded");
+    *have = m;
+}
+
 /* ------------------------------------------------------------ co-op hunters
  * The other players' hunters (ONLINE=1, rt_np.c): their player works are moved by the
  * game's own code from the packets (net_receive_pl -> Pl_act_set, Pl_adj_calc); the host
@@ -1054,6 +1074,7 @@ void rt_np_close(void);
 int rt_np_session_end(void);
 static hunter rh[8];                /* 4 in a co-op quest, up to 8 in the online town */
 static monster rw[8];               /* their weapons */
+static int rw_model[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };  /* the weapon model each holds (weapon_follow) */
 static int rh_ok[8];
 static uint8_t *rh_wmem[8];
 int rt_online_active(void);
@@ -1079,8 +1100,10 @@ static void remote_weapons(void)
         wt = load(wname, &rh_wmem[s]);
         if (wt.p)
             rt_motion_load_pl(s, wt.p);
-        if (!rw[s].game)
+        if (!rw[s].game) {
             weapon_load(&rw[s], s);
+            rw_model[s] = rt_player_weapon_model(s);
+        }
     }
 }
 static void remote_hunters(int draw, const fl_light *L)
@@ -1107,6 +1130,8 @@ static void remote_hunters(int draw, const fl_light *L)
             h->look_gen = g;
             hunter_relook(h, sx, ids);
         }
+        if (rt_online_active())     /* the town: each hunter's own weapon (co-op quests load them at the start) */
+            weapon_follow(&rw[s], s, &rw_model[s]);
         rt_player_get(s, p, &a);
         place(h->world, p[0], p[1] + hunter_yoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
         if (!draw) {        /* the joint matrices the game C reads (hit volumes of the parts) */
@@ -1993,6 +2018,7 @@ int main(int argc, char **argv)
                     else
                         fprintf(stderr, "no %s: weapon motions missing\n", wname);
                     weapon_load(&weapon, lp);
+                    weapon_have = rt_player_weapon_model(lp);
                 }
             }
             hunter_yoff = -lo;
@@ -2253,6 +2279,8 @@ int main(int argc, char **argv)
         hunter_pose(&pl, fr, light_hunter(lp));
         if (pl.game && play)            /* joint world matrices for the game C (parts, get_joint_pos) */
             sync_joints(&pl, hunter_yoff);
+        if (rt_online_town() && pl.game && play)    /* the town: a weapon bought or changed there (and the slot's) */
+            weapon_follow(&weapon, lp, &weapon_have);
         if (weapon.game && pl.game && play)
             weapon_pose(light_hunter(lp));
 

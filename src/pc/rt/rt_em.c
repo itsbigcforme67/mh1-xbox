@@ -472,9 +472,20 @@ s32 *Em_data_com_adrs_get(s32 *p, int which);
  * at its tables, sets the stage (Quest_pl_stage_init), the time limit and
  * the monster states (quest_em_init). src/main/quest/f_quest*_nm.c. */
 s32 *Em_data_st_adrs_get(s32 *p, int id, int which, s8 idx);
+/* a downloaded event quest (numbers >= 0xC8, online: Lbc_DownloadQuest put its mission file into mission_area at the
+ * lobby entry; Quest_start uses it as it is) is there: its info record (offset at +0) carries that number at +0x1D */
+static int event_quest_ready(int no)
+{
+    extern u8 *mission_area;
+    u32 o;
+    if (no < 0xC8 || no > 0xFF || !mission_area)
+        return 0;
+    memcpy(&o, mission_area, 4);
+    return o > 0 && o < 0x3FF00 && mission_area[o + 0x1D] == no;
+}
 int rt_quest_load(int no)
 {
-    if (no <= 0 || no >= 0xB2) {
+    if (no <= 0 || (no >= 0xB2 && !event_quest_ready(no))) {
         rt_warn("quest %d: not a valid quest number", no);
         return -1;
     }
@@ -487,6 +498,18 @@ int rt_quest_load(int no)
     *((u8 *)&select_w + 0xAC) = (u8)no;
     *((u8 *)&select_w + 0xAD) = 0;
     Quest_start();
+    if (getenv("RT_MISSION_DUMP") && no < 0xC8) {   /* test aid: the loaded mission file (the buffer, trailing zeros
+                                                     * cut), e.g. to serve as an event quest (tools/mk_event_quest.py) */
+        extern u8 *mission_area;
+        FILE *f = fopen(getenv("RT_MISSION_DUMP"), "wb");
+        int n = 0x40000;
+        while (n > 0 && mission_area[n - 1] == 0)
+            n--;
+        if (f) {
+            fwrite(mission_area, 1, (size_t)n, f);
+            fclose(f);
+        }
+    }
     Start_item_init();      /* game11: the quest's supply box (game_w+0x128 list, dsp03) */
     {   /* game11 next: the quest's event demos (first sight of a monster:
          * Kut-Ku 148, Cephadrome 154, Monoblos 171 ...; evdemo.c). The

@@ -505,7 +505,11 @@ frame until it returns 0 (a match), then `internet_to_modem` (the game server, `
    `player_work[game_w.master]` (the lobby member list's order). Their moves come from the game's own `lb_send_data`
    -> chat binary 6708 -> `Lb_check_receipt`. Name tags: the game's `lb_disp_name` (lb_ai.c) draws them over every
    hunter on the stage (own and others, with the weapon icon and the status / quest marks) now that
-   `flvecrRotTransPers` is real (seen on screen, 10 Oct 2026: build/show/online_town/*_5900.png).
+   `flvecrRotTransPers` is real (seen on screen, 10 Oct 2026: build/show/online_town/*_5900.png). Weapons: every town
+   hunter carries its own (10 Oct 2026): `Lb_set_mini_data_to_pl` puts the weapon triple at PLW+0x35E but not the model
+   (+0x34C) and kind the viewer draws from, so `rt_np_town_weapon` derives them as the quest's `Set_mini_data_to_pl`
+   (f_ud.c) does, and the viewer reloads a hunter's weapon model when it changes (`weapon_follow`, also the local
+   hunter's: before, it kept the model of the `--quest` start).
 7. Chat: Tab starts typing on the PC keyboard, Enter sends through the game's `Lb_send_chat` (6701); the game's chat
    log window shows what the server sends back. The soft keyboard paths (`Plaza_chat_move`) are the game's.
 8. When `internet_lobby_act` returns 0, `matched()` reads the slot (`USER_PL_ID`, from MatchPlSide), the player count
@@ -575,13 +579,18 @@ and reads it in his mail box (list, then the text). The net file (friends, recei
 (`SaveNetFile_ForLobby`, main 0x28A3D0, loaded by `ms_network_sub`, which the PC skips); the PC writes CNFile and
 RecvMailInfo to `mh1pc_net.bin` next to the save (a PC format) and reads it when the online mode starts.
 
-**Guest rooms** (stages 0x51-0x55, "hotel" rooms behind the town's spot kinds 18-20; `lb_basic_master`, lb_r.c;
-`lb_goto_guest_room` / `Lb_check_hotel`): read from the code, these are local: the hunter rents one with money by rank
-and goes there alone (`Lb_Pl_stg_ck` draws other hunters only on stages 0x4C / 0x4D), no lobby-server message besides
-the 6708 stage change. Not tried on screen. (`Lbc_GuestReadRoom` / `Lbs_GuestEnterRoom` in lb_cli.c are the joining
-side of the guild quest rooms, already in use.) Annex messages 6210-6215 have handlers but no sender in the client.
+**Guest rooms** (stages 0x51-0x55; verified on screen 10 Oct 2026, `tools/test_online_guest.sh`). The square's spot
+12 (the action button, square on the pad, at 7080,3030) leads into the inn (0x50); there spot kind 18 (1400,2775) is
+the free room 0x51, kinds 19 / 20 the rented ones (0x52 / 0x53, 0x54 / 0x55 with R1; `lb_goto_guest_room` /
+`Lb_check_hotel`: hunter rank and money, paid once a session), kind 5 the way back. They are local: no lobby-server
+message besides the 6708 stage change, and each hunter is alone there: `Lb_Pl_stg_ck` (lb_h.c) shows another hunter
+only on my stage and only on the square (0x4C) and the guild hall (0x4D). The PC viewer drew every hunter on the same
+stage until 10 Oct 2026; `rt_online_visible` now asks `Lb_Pl_stg_ck`. The test: two clients against mh1-server take
+room 0x51 at the same time, neither shows the other there or in the inn, back on the square both are shown again where
+the other says it is. (`Lbc_GuestReadRoom` / `Lbs_GuestEnterRoom` in lb_cli.c are the joining side of the guild quest
+rooms, in use since round 1.) Annex messages 6210-6215 have handlers but no sender in the client.
 
-Not done yet: patches; personal data registration; the Xbox build of the town was not run. The Windows build runs the
+Not done yet: the Xbox build of the town was not run; personal data is never sent by the PC (section 5.8). The Windows build runs the
 town under Wine (section 4).
 ## 4. Run it
 
@@ -593,6 +602,8 @@ town under Wine (section 4).
                                                      # return to the town (~7 min; makes the hunters' cards once with
                                                      # tools/test_coop.sh saves, ~10 min)
     RUN=wine BIN=build/win/mhview_online.exe tools/test_online_town.sh   # the same with the Windows build (passes, 10 Oct 2026)
+    tools/test_online_guest.sh                       # guest rooms, two clients against mh1-server (~2 min)
+    tools/test_online_event.sh                       # an event quest downloaded, posted, started; a patch refused (~3 min)
     RT_NET_PORT=10200 build/pc/mhview_online disc/mh1 --boot   # then the title's network mode (or: --quest 10 --play --online)
 
 ## 5. The lobby-server protocol (PS2 wire format, derived from the client)
@@ -735,8 +746,56 @@ After 6916 the client logs out of the lobby server (6002, `lbc_game_ready_04`) a
 All verified with tools/server/test_server.py (`TestServerFeatureTest`: a fake client speaking the real packets) and,
 for 6709 / 6703 / 670D / 6704 / 6705, on screen with two game clients (section 3.5).
 
-Still read from the code only: personal data (6181-6189), file download (6881 / 6882), patches (6121-6125), server rules
-with choices (6604-6608, 660E), the shutdown codes (6002-6007).
+### 5.8 Event quests (file download), patches, personal data (10 Oct 2026)
+
+**Event quests** (`tools/test_online_event.sh`: two clients download one, post it, start it as a co-op quest).
+Lbc_DownloadQuest runs at every lobby entry: cnLBS_Read_FileDownload(mission_area, cb), a job in burst slot 11.
+
+| Code | Dir, cat | Payload | Notes |
+|---|---|---|---|
+| 6881 | C->S req empty -> ans | `u8 n` (<= 32), n x `u32 size` | the files are placed one after the other from mission_area. n = 0: no event quest. Error result: dialog, back to the server list |
+| 6882 | C->S req | `u8 file`, `u32 offset`, `u32 0x200` | one per tick while a background slot is free (pipelined) |
+| 6882 | S->C ans | `u8 file`, `u32 offset`, `u32 length`, `u16 n` + n bytes | copied to the file + offset; the job waits until `received >= size` per file (a missing chunk hangs until the 2 minute logout) |
+
+File 0 is a mission file in the disc's format with a quest number >= 0xC8 at its info record +0x1D (the record's offset
+is the file's first u32, little endian): the guild counter's level menu gets a last line "event quest" (only when
+`cw+0x2C2F` = 1: a file was downloaded), the quest card shows it (no contract fee), the room property carries quest
+200, and Quest_start uses mission_area as it is for numbers >= 0xC8. Files after file 0 have no reader. The PC: the job
+(main 0x27D4A0) and both answer handlers (0x27D030, 0x27D2B0) written from the asm in rt_online.c (not compared with
+check.py; before, a stand-in ended the job with no files); `rt_quest_load` accepts a number >= 0xC8 when mission_area
+holds that quest. The test server: `--event-quest FILE`; tools/mk_event_quest.py renumbers a mission file dumped from
+your own disc (`RT_MISSION_DUMP`): Capcom data, never commit or share one.
+
+**Patches** (login, only while the login job runs; test: the second part of test_online_event.sh):
+
+| Code | Dir, cat | Payload |
+|---|---|---|
+| 6121 | S->C notice (must be cat 16) | `str name` (4-char id + 10-char version), `u16`, `u32 byte count`, `u32 byte sum` |
+| 6122 | S->C notice | `u16 block` (ignored), `u16 n`, n bytes (appended to the patch buffer, 0x20040 bytes, no bounds check) |
+| 6123 | S->C notice | footer, ignored |
+| 6124 | S->C req `u16` -> C->S ans the same `u16` | line check |
+| 6125 | S->C req | finish: the client sums the bytes; a match goes to its patch step, else logout |
+| 6125 | C->S ans empty | after the patch was applied and saved (a PS2 only) |
+
+What a patch is (read from the code by a research pass, not run): an encrypted (DNAS personal keys) list
+`"M-HUNTER"`, u32 count, entries {u32 overlay key, u32 RAM address, u32 length (bit 31: a source address follows), bytes}
+that PatchExecCS copies over the loaded code / data of main and the overlays, kept on the card (save+0x208) and applied
+again at each boot. The PC cannot apply PS2 code patches and has no DNAS keys: `ms_net_patch_set` refuses (-1),
+lbc_login_patch's error path logs out ("disconnecting"). Bug found: `__cnet_Recv_PatchData` passed the chunk length
+read in the same call's argument list (`GetRecvDataOption(ptr, GetRecvData16(&a, ...), a)`); C leaves the order open and
+gcc read `a` first (garbage length): the PC branch reads it first. The test server sends a patch with `--patch FILE`
+(only to test the client). Our servers never send patches. Regulation messages 6110 / 6111 / 6112 / 6801: no answer
+or agree flow in the client; never send them.
+
+**Personal data** (6181-6189): the PS2 sends it after the portal's registration page (`lbc_login_users_personal_data`:
+the in-game browser on `afs://02/3`; when the page changed `BrPersonalData`, cnLBS_RegistPersonalData): 6181 req (empty)
+-> ans result 0; 6182-6185 and 6187 notices (name, zip, address, telephone, mail address: one obfuscated string each),
+6186 notice `u8 age`; 6188 req (empty) -> ans result 0; an error shows the server's message and the login goes on.
+6189 (server request) has an empty handler: never send it. The PC skips the browser, so it never sends personal data,
+and nothing asks for it (a design choice, as mh1-server's "store nothing", docs/server.md 9). The test server answers
+6181 / 6188 with 0 and stores nothing (tested with a fake client in test_server.py).
+
+Still read from the code only: server rules with choices (6604-6608, 660E), the shutdown codes (6002-6007).
 
 ### 5.5 The in-game session (`mcsls`, not linked)
 
@@ -756,7 +815,8 @@ chat and sees the other leave.
 1. **The return to the town after an online quest**: done (section 3.5), without `rt_lb_reload`.
 2. **The portal**: replaced by `mh1online.ini` (section 3.5). The real portal's other pages (account creation,
    personal data, the top page links) are skipped, nothing is registered with a server.
-3. **The in-game session** (`mcsls`, magic 0x82), patch download, regulations, personal data, file (quest) download: formats are in the code, not in the test server.
+3. **The in-game session** (`mcsls`, magic 0x82) and regulations: formats are in the code, not in the test server.
+   Event quests, patches (refused) and personal data: section 5.8.
 4. **DNAS**: the bypass is local. If MH Oldschool's server still expects the DNAS traffic from a console (their DNS
    answers `*.dnas.playstation.org`), a port that skips it must be acceptable to them.
 5. Winsock / Xbox (nxdk) builds of `net_cpinet.c`: written, untested.
