@@ -748,7 +748,7 @@ for 6709 / 6703 / 670D / 6704 / 6705, on screen with two game clients (section 3
 
 ### 5.8 Event quests (file download), patches, personal data (10 Oct 2026)
 
-**Event quests** (`tools/test_online_event.sh`: two clients download one, post it, start it as a co-op quest).
+**Event quests** (`tools/test_online_event.sh`: two clients download one, post it, play it as a co-op quest to the clear, get the reward screen with items and money, saved to their cards, and are back in the town, where they download it again).
 Lbc_DownloadQuest runs at every lobby entry: cnLBS_Read_FileDownload(mission_area, cb), a job in burst slot 11.
 
 | Code | Dir, cat | Payload | Notes |
