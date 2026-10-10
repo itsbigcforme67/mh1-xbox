@@ -80,44 +80,7 @@ static int rt_pl_trace(void)
 
 /* ------------------------------------------------ Pl_bari_ck file (0x14FC40..) */
 
-/* Get_equip_value (0x2A1F70?, f_ud): the master's equipment stat n from
- * User_data (0 attack, 1 defence, 2-5 resistances, 6-12 sword element) */
-s16 Get_equip_value(int n);
-
 int Pl_item_num_ck(void *pl, int id);
-
-/* Get_equip_value (f_ud? 0x2A..; read from the asm): sums from the
- * equipment tables for the master player's User_data equipment. User_data
- * +0x3CD equipment type (6 sword, 7 gun), +0x3CE weapon id, +0x3D0 gun
- * upgrades, +0x3D2..+0x3D6 armour ids. Only the sword path and the armour
- * sums are written; guns give their base value [partial port]. */
-s16 Get_equip_value(int n)
-{
-    extern u8 Armor_Head_Data[][0x14], Armor_Body_Data[][0x14], Armor_Arm_Data[][0x14],
-              Armor_Waist_Data[][0x14], Armor_Leg_Data[][0x14];
-    u8 *u = User_data;
-    u16 wid = PU16(u, 0x3CE);
-    int type = PU8(u, 0x3CD);
-    int k;
-    switch (n & 0xFF) {
-    case 0:
-        if (type == 7) return (s16)PS16(Gun_data[wid], 8);
-        return Ken_data[wid][8];
-    case 1: case 2: case 3: case 4: case 5:
-        k = n == 1 ? 8 : 9 + (n - 2);
-        {
-            s16 v = (s16)((s8)Armor_Head_Data[PU8(u, 0x3D3)][k] + (s8)Armor_Body_Data[PU8(u, 0x3D4)][k]
-                        + (s8)Armor_Arm_Data[PU8(u, 0x3D5)][k] + (s8)Armor_Waist_Data[PU8(u, 0x3D6)][k]
-                        + (s8)Armor_Leg_Data[PU8(u, 0x3D2)][k]);
-            if (n == 1)
-                v += type == 7 ? (s8)Gun_data[wid][0xA] : (s8)Ken_data[wid][0xA];
-            return v;
-        }
-    default:
-        if (n <= 12 && type == 6) return Ken_data[wid][0xB + n - 6];
-        return 0;
-    }
-}
 
 /* ------------------------------------------------ misc (g_Pl_hold_item_ck ..) */
 

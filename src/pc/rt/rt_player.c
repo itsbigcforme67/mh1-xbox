@@ -14,7 +14,7 @@
  * Set-up (rt_player_game_init) does what init_pl_work (main 0x1116E0,
  * g_game_init) does for the master player in an offline quest: equipment
  * (+0x35E type/+0x360 weapon id, +0x34C = Ken_data[id][0], kind =
- * Battle_type[+0x34C]) and User_data for Get_equip_value; then the game's
+ * Battle_type[+0x34C]) and User_data for Get_equip_value (f_ud.c); then the game's
  * pl_init(0) (pl01.c) places the hunter at stage_start_pos and starts the
  * idle motion (pl_init_sub -> normal_char_set).
  */
