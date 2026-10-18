@@ -737,7 +737,7 @@ OBJS="$OBJS build/pc/rt_memstat.o"
 python3 tools/gen_rt_meta.py build/pc/rt_meta.c
 cc_obj rt_meta "$CC $CFLAGS $SYS -w -c build/pc/rt_meta.c -o build/pc/rt_meta.o"
 OBJS="$OBJS build/pc/rt_meta.o"
-for f in $NETRT $([ -n "$COV" ] && echo rt_cov) rt_ver rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_light rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_hud_gun rt_font rt_village rt_mc rt_save rt_boot rt_movie rt_prof rt_log rt_pick rt_text rt_text_sp rt_dbg; do
+for f in $NETRT $([ -n "$COV" ] && echo rt_cov) rt_ver rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_light rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_hud_gun rt_font rt_village rt_mc rt_save rt_boot rt_movie rt_prof rt_log rt_pick rt_text rt_text_sp rt_dbg rt_ref; do
     # shellcheck disable=SC2086
     XF=""; [ $f = rt_log ] && XF="-D_GNU_SOURCE"   # ucontext / sigaltstack
     [ $f = rt_menu ] && XF="-DMH1_NO_UTF8"       # include/plf.h declares memset(void *, int, int)

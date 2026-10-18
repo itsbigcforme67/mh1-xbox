@@ -267,6 +267,15 @@ void rt_sys_init(void)
     Tsk_Execute((void *)Card_task, 13);
 }
 
+/* The start of the PS2's Scheduler (tsk_01.c) after the boot, before the tasks run (Game_task: the quest, the village):
+ * one ran_suu(1) every frame. The PC's host flow left it out, so channel 1 of the random state (effects, sounds)
+ * fell one step behind the PS2 every tick (the lockstep referee showed it, docs/referee.md). */
+u32 ran_suu(int ch);
+void rt_sys_frame_start(void)
+{
+    ran_suu(1);
+}
+
 #ifndef MH1_ONLINE     /* ONLINE=1: rt_np.c counts it (and paces the ticks) */
 extern u16 System_timer;
 #endif

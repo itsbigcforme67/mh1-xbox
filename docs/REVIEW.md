@@ -797,6 +797,26 @@ obvious workarounds.
   tools/test_activities.py map_item: green-pixel threshold 200 -> 150 (the gradient darkens what is behind the map).
 - **To revert:** the commits "G picture match: stage screen gradient ..." and "G: stage environment block, set13 kind 8 ...".
 
+## Lockstep referee (agent D, 18 Oct 2026)
+Found by tools/referee.py against the real game in PCSX2 (docs/referee.md); every change re-checked the same way.
+Both games unless marked.
+- **Dropped:** the host's monster order 1..19 then 0 (viewer.c sim_tick); **now** 0..19 as move(). **Why:** random draws
+  in the PS2's order (small monsters placed as on the PS2).
+- **Dropped:** sim_tick's order (joints + hit_check before the monsters, body_hit after the effects); **now** player,
+  monsters, body_hit, effects / sets / light, area exit, BGM, HUD, then joints + hit_check (move(), trans(),
+  hit_check()). **Why:** monster attacks hit a tick late.
+- **Dropped:** rt_quest_load starting game2 at once (mode 2); **now** mode 1 step 3 (game13): rt_flow.c runs one
+  game_core and then spawns the stage's sets (rt_game_quest_sets; rt_game_init defers stage_set_set while game13 is
+  pending), then mode 2. In a run that starts in a quest (`--quest`) the game13 tick waits for the host's first two
+  ticks. **Why:** the PS2's game13; the world was three ticks behind at every quest start. Tests that count ticks from
+  a quest start see the hunt start one tick later.
+- **Added:** rt_sys_frame_start (the Scheduler's ran_suu(1) each frame after the boot); rounding of the stick angle
+  (rt_pad.c); G: em_body_push_tbl (body_hit_sub_em's own table, pl_nm.c) and em_dur_rows noptr (pc_data.txt).
+- **Added, not on by default:** RT_FPU_PS2=1 (rt_ref.c): SSE rounding toward zero + no denormals, as the EE FPU.
+  The referee turns it on; for players it is the owner's call (it would make the game's float math match the PS2,
+  e.g. motion loops ending on the same tick, but the host's own float code runs under it too).
+- **To revert:** the commits "referee: ..." on agent-D.
+
 ## G Xbox bugs 11-14 (agent A, 17 Oct 2026)
 - **Dropped:** write_png's stdio writes (fopen/fwrite of each chunk) and pick.c write_text's fwrite; **now** the file is
   built in memory and written by viewer_write_file (Xbox: one CreateFile/WriteFile in xbox_report.c xbox_write_file).

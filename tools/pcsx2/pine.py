@@ -58,6 +58,49 @@ class Pine:
         op, f = OPS[kind]
         self.call(op, struct.pack('<I', addr) + struct.pack('<' + f, v))
 
+    def batch(self, msgs, reply_sizes):
+        """Several ops in one PINE message (PCSX2 runs them in order): msgs = [(op, args)], returns the data parts."""
+        body = b''.join(struct.pack('<B', op) + a for op, a in msgs)
+        self.s.sendall(struct.pack('<I', 4 + len(body)) + body)
+        n = struct.unpack('<I', self._recv(4))[0]
+        data = self._recv(n - 4)
+        if data[0] != 0:
+            raise RuntimeError('PINE batch failed')
+        out, i = [], 1
+        for k in reply_sizes:
+            out.append(data[i:i + k])
+            i += k
+        return out
+
+    def read_bytes(self, addr, n, chunk=0x8000):
+        """n bytes from addr (8-aligned reads of 64 bits, batched)."""
+        a0, a1 = addr & ~7, (addr + n + 7) & ~7
+        buf = b''
+        for c in range(a0, a1, chunk):
+            k = min(chunk, a1 - c) // 8
+            buf += b''.join(self.batch([(3, struct.pack('<I', c + 8 * i)) for i in range(k)], [8] * k))
+        return buf[addr - a0:addr - a0 + n]
+
+    def read_many(self, ranges):
+        """[(addr, n)] -> [bytes], all in one PINE message (addresses 8-aligned)."""
+        ops, sizes = [], []
+        for a, n in ranges:
+            for i in range(0, (n + 7) & ~7, 8):
+                ops.append((3, struct.pack('<I', a + i)))
+                sizes.append(8)
+        parts = self.batch(ops, sizes)
+        out, j = [], 0
+        for a, n in ranges:
+            k = (n + 7) // 8
+            out.append(b''.join(parts[j:j + k])[:n])
+            j += k
+        return out
+
+    def write_bytes(self, addr, data):
+        """data to addr, 32 bits at a time (4-aligned, length a multiple of 4), one message."""
+        self.batch([(6, struct.pack('<II', addr + i, struct.unpack_from('<I', data, i)[0])) for i in range(0, len(data), 4)],
+                   [0] * (len(data) // 4))
+
     def readf(self, addr):
         return struct.unpack('<f', struct.pack('<I', self.read('r32', addr)))[0]
 

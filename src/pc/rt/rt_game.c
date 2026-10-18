@@ -220,9 +220,14 @@ int rt_bind_stage_model(gfx_clay *const *c, const uint32_t *attr, int n)
  * (scripted runs stay deterministic, RT_SEED=n forces a seed). */
 extern u16 Rnd_w[2];
 
+int rt_ref_rng_on;                   /* the referee's random-call log (RT_REF_RNG, rt_ref.c) */
+void rt_ref_rng(void *ra, int ch);
 u32 ran_suu(int ch)
 {
-    u32 x = Rnd_w[ch] ? Rnd_w[ch] : 1;
+    u32 x;
+    if (rt_ref_rng_on)
+        rt_ref_rng(__builtin_return_address(0), ch);
+    x = Rnd_w[ch] ? Rnd_w[ch] : 1;
     Rnd_w[ch] = (u16)(x * 176 % 0xFF53);
     return Rnd_w[ch];
 }
@@ -421,6 +426,18 @@ void *Stage_data_get(int stg);
 
 extern u8 quest_w[];
 void rt_prims_reset(void);
+static int sets_pending;    /* stage + 1 whose set objects wait for game13 */
+/* game13 (f_game.c): move() first, then stage_fog_set / stage_set_set: at a quest start the stage's set objects (and
+ * the effects they start) appear after the world's first move, as on the PS2 (the lockstep referee: the camp's
+ * effects started one tick early on the PC) */
+void rt_game_quest_sets(void)
+{
+    if (sets_pending) {
+        stage_set_set(sets_pending - 1);
+        sets_pending = 0;
+    }
+}
+
 void rt_game_init(int stage)
 {
     /* a quest (rt_quest_load: Quest_start) has already set game_w up, as
@@ -443,7 +460,10 @@ void rt_game_init(int stage)
                              * set objects that are gone now (a windowed frame would
                              * draw them: eft13_t on a freed effect, village -> quest) */
     rt_eft_init();          /* init_eft_work / init_shell_work */
-    stage_set_set(stage);   /* the game's own spawn list (src/main/stage/stage_set.c) */
+    if (game_w.mode == 1 && game_w.step == 3)
+        sets_pending = stage + 1;   /* a quest start: game13 spawns them after its move() (rt_game_quest_sets, rt_flow.c) */
+    else
+        stage_set_set(stage);   /* the game's own spawn list (src/main/stage/stage_set.c) */
     if (getenv("RT_SPOT_TRACE")) {  /* test aid: the stage's unique spots (3 = supply box, 6 = exit ...) */
         void *Stage_unique_data_get(int st);
         u8 *r = Stage_unique_data_get(stage);

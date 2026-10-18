@@ -41,7 +41,8 @@ hunt() {    # hunt NAME STAGE KIND D: Elder -> gate -> hunt -> reward -> bed sav
     grep -m1 "rt_village: level" $P/$1_cont.log
 }
 setup 84-87
-hunt q136 40 16 0
+hunt q136 40 16 -40     # (-40: the square at the house door came 6 ticks before the warp into the house once the quest
+                        # start got game13's tick, 18 Oct 2026; the door window is village ticks 102-202 of the visit)
 grep -q "quest 136 (accepted 1)" $P/q136.log || fail "136 not accepted"
 grep -q "level 1, cleared: 83 84 85 86 87 88$" $P/q136_cont.log || fail "2 stars after a real 136 clear"
 setup 8a,8e

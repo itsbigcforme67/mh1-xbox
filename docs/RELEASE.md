@@ -132,7 +132,25 @@ Code found while auditing:
 5. N2 lighting check against one PS2 capture; N3 weapon node scaling; N7 remaining near-match reviews.
 6. B6 / N8 / N9 if online is in the release.
 
-## 6. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
+## 6. Lockstep referee against the real MH1 (agent D, 18 Oct 2026)
+
+tools/referee.py (docs/referee.md) runs MH1 JP the same way as G: the owner's disc in PCSX2 (CONTINUE with the PC
+port's save from tools/test_quest_loop.sh, the Elder's first quest card) and build/pc/mhview, same quest, same pad,
+compared tick by tick. Scenarios: walk (quest 1), sword and shield, great sword (quest 1, area 22), fights with the
+Rathian (quest 10, area 40) and the Kut-Ku quest 4 (area 36) [verified: build/referee/mh1_*/report.txt].
+
+**How in sync:** walk / weapons: identical every tick (only sound-layer random draws differ). Rathian: identical for
+241 ticks, Kut-Ku: 318; the first difference is the one-tick-late root motion (below).
+
+**Fixed (shared code, the same changes as docs/RELEASE_G.md section 11 R-F1..R-F5; MH1 verified by these runs):** the
+Scheduler's ran_suu(1), stick angle rounding, the monster order 0..19, game_core's order (hit_check after the
+monsters, body_hit before the effects), the game13 tick at the quest start.
+
+**Left, ranked:** (1) root motion of a new motion one tick late on the PC (RELEASE_G N-R1); (2) PS2 float rounding
+(N-R2, RT_FPU_PS2); (3) the Elder's tutorial window / "△ PUSH" not ported (tuto.c) [inferred for MH1: the same code];
+(4) sound-layer random draws a tick late; (5) the quest clock while loading (owner's call).
+
+## 7. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
 Every G-only / MH1-only change since 13 Oct checked against MH1. For MH1:
 - Debug menu "Can't faint" / RT_PL_GOD: holds against a hit over 100 in one tick and keeps the hunter's own maximum
   (was put back to 100 each tick: a hunter with 150 hp was cut to 100) [verified: MH1 trace, full_check].

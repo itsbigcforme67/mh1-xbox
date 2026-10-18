@@ -944,8 +944,11 @@ static int script_live = 1;                 /* the --input script still has step
 
 /* each game tick's pad: the script or the controller (+ keyboard, unless the debug menu's free camera has it); the
  * debug menu takes its open combo out (dbgmenu_tick_pad) */
+int rt_ref_pad(pad_state *ps);
 static void read_pad(pad_state *ps)
 {
+    if (rt_ref_pad(ps))         /* the lockstep referee's pad (rt_ref.c, tools/referee.py) */
+        return;
     if (script)
         script_live = pad_script_next(ps);
     else
@@ -1414,25 +1417,16 @@ static void sim_tick(void)
         lookat_world(cw, gc_eye, gc_tar);
         rt_set_camera(cw);
     }
-    rt_game_move();             /* move_set / move_eft / move_shell: after the player and CameraMove as in game_core (f_frame_nm.c), so
-                                 * camera-attached sets (set13's fog veils, 50 units in front of the eye) use this tick's camera */
-    light_move();               /* game_core's step after CameraMove (f_frame_nm.c): turns light 2 of set 1 with the view, runs the
-                                 * flash effect. The host's sim_tick stands in for game_core, so it has to call it (only
-                                 * the lights of RT_LIGHT_GAME read what it does) */
-    if (pl.game && play && ticks >= 2) {
-        rt_prof_begin(RTP_JOINTS);
-        sync_joints(&pl, hunter_yoff);
-        remote_hunters(0, light_cur());
-        monsters_sync(0, light_cur());
-        rt_actor_nodes_fill();  /* every live actor's node array as after trans() (rt_eft.c) */
-        rt_prof_end(RTP_JOINTS);
-        rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
-    }
+    /* game_core's order (f_frame_nm.c move(), then trans() and hit_check()): the player, the monsters (slots 0..19), body_hit,
+     * ..., the effects / shells / sets, the area exit check, the HUD; the joints of this tick's poses and hit_check last.
+     * Until 18 Oct 2026 hit_check ran before the monsters moved and body_hit after the effects: a monster's attack hit
+     * the hunter one tick later than on the PS2 (the lockstep referee, docs/referee.md) */
     if (ticks >= 2) {
         int i;
-        for (i = 1; i < 20; i++)        /* move()'s monster loop; em_work[0] last (the host's order since the first port) */
+        for (i = 0; i < 20; i++)        /* move()'s monster loop, slots 0..19 as on the PS2 (f_frame_nm.c). em_work[0] ran last
+                                         * until 18 Oct 2026: the monsters then drew their random numbers in another order and
+                                         * the small ones of an area started elsewhere (the lockstep referee, docs/referee.md) */
             rt_monster_tick(i);
-        rt_monster_tick(0);
         if (sw_trace && rt_monster_shown(0)) {
             float p[3];
             int a;
@@ -1446,6 +1440,11 @@ static void sim_tick(void)
         if (game_w[GWX(0x21F)] == 0)         /* move(): item_check / body_hit only while info_stop == 0 (hunters and monsters pushed apart) */
             body_hit();
     }
+    rt_game_move();             /* move_set / move_eft / move_shell: after the player and CameraMove as in game_core (f_frame_nm.c), so
+                                 * camera-attached sets (set13's fog veils, 50 units in front of the eye) use this tick's camera */
+    light_move();               /* game_core's step after CameraMove (f_frame_nm.c): turns light 2 of set 1 with the view, runs the
+                                 * flash effect. The host's sim_tick stands in for game_core, so it has to call it (only
+                                 * the lights of RT_LIGHT_GAME read what it does) */
     if (quest_no && pl.game && play && ticks >= 2) {
         void stage_mv_ck(void);
         stage_mv_ck();                  /* move_stage -> stage_m's area-exit check (f_stage.c):
@@ -1459,6 +1458,15 @@ static void sim_tick(void)
         rt_hud_tick();                  /* Pit_mv: HUD layers (last step of move()) */
     if (snd == 0)
         rt_snd_stage_tick();            /* move_stage's river / waterfall loops (Snd_server runs per tick below) */
+    if (pl.game && play && ticks >= 2) {
+        rt_prof_begin(RTP_JOINTS);
+        sync_joints(&pl, hunter_yoff);
+        remote_hunters(0, light_cur());
+        monsters_sync(0, light_cur());
+        rt_actor_nodes_fill();  /* every live actor's node array as after trans() (rt_eft.c) */
+        rt_prof_end(RTP_JOINTS);
+        rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
+    }
 }
 
 /* After the reward screen (game mode 6) the PS2 goes back to the village,
@@ -2482,6 +2490,7 @@ int main(int argc, char **argv)
     gfx_size(&W, &H);
     rt_log("boot: window %dx%d%s", W, H, shot ? " (hidden, screenshot run)" : hide ? " (hidden, scripted run)" : "");
     { extern void rt_seed_random(int); rt_seed_random(script != NULL); }
+    { void rt_ref_init(void); rt_ref_init(); }     /* the lockstep referee (RT_REF_*, rt_ref.c) */
     if (script && !pad_script_set(script)) {
         fprintf(stderr, "bad --input script\n");
         rt_warn("bad --input script");
@@ -2502,6 +2511,7 @@ int main(int argc, char **argv)
          * the quest's own monster instead (the old scripted-test set-up);
          * --stage N overrides both. */
         int k = -1, st;
+        { void rt_ref_user_data(void); rt_ref_user_data(); }   /* RT_REF_UD: the PS2's User_data */
         if (rt_ver_mhg() && boot) {
             /* G stand-in (docs/mhg.md): the boot's set-up quest is not loaded; G's Quest_start
              * (sub_main 0x4B3AA0, edited, twice MH1's size) has no G C yet */
@@ -2898,9 +2908,12 @@ int main(int argc, char **argv)
                 continue;
             }
             if (quest_no) {
+                { void rt_ref_tick(int); rt_ref_tick(ticks); }      /* the referee's record of the tick's start */
                 /* outside game2 the host tick (sim_tick) does not run: the
                  * pad is still read every tick (result / reward screens) */
-                if (rt_flow_mode() != 2 && play) {
+                extern unsigned char game_w[];
+                if (rt_flow_mode() != 2 && play && !(game_w[0] == 1 && game_w[1] == 3)) {    /* (not while game13 waits: its tick
+                                                                                             * reads the pad in sim_tick) */
                     pad_state ps;
                     read_pad(&ps);
                     rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
@@ -2909,6 +2922,7 @@ int main(int argc, char **argv)
                     else
                         rt_pad_tick();
                 }
+                { void rt_sys_frame_start(void); rt_sys_frame_start(); }  /* the Scheduler's ran_suu(1) (rt_boot.c) */
                 rt_flow_tick();         /* game2 / game3 / game5 (f_game.c): game_core = sim_tick */
                 rt_sys_tick();          /* Fade_task (the scheduler's system tasks) */
             }

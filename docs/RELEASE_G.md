@@ -383,7 +383,65 @@ channel, HUD corners left out; the hunters still differ: the PS2 hunter wears no
 - Not done: eft05's non-Dual-Swords uses (G's eft05 already runs for every weapon; not compared with the PS2), em17's
   small acts, em07 item / hagi sets, set04.
 
-## 11. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
+## 11. Lockstep referee against the real G (agent D, 17-18 Oct 2026)
+
+tools/referee.py (docs/referee.md) plays the same quest with the same pad on the owner's G disc in PCSX2 and on the
+PC port, tick by tick, and compares hunter, monsters, pouch, quest state and random numbers. Scenarios run: walking in
+the Elder's first quest (10001); sword and shield, great sword, hammer, lance, Dual Swords, a bowgun (quest 1, Forest
+and Hills area 1); fights with the Rathian (quest 10, area 40) and the Yian Kut-Ku's quest (quest 2, area 36).
+All runs [verified: build/referee/<scenario>/report.txt, pair_*.png; not committed].
+
+**How in sync it is now.** Weapon scenarios (600 play ticks, every weapon class): hunter, monsters (incl. the
+quest's own monster in quest 1), pouch and quest state identical every tick; the only differences are random-number
+draws by the sound layer (channel 1, one tick apart; no gameplay effect) and the Dual Swords walk start below. Fights:
+identical for 186-369 ticks (Rathian 203, Kut-Ku quest 369), then the first difference comes from N-R1 below; after
+it the runs drift apart as expected (another hit lands, another knockback).
+
+**Fixed (both games where shared; each verified by re-running the referee's PC side against the same PS2 trace):**
+- R-F1 *port glue, both games*: the Scheduler's per-frame `ran_suu(1)` was missing after the boot (rt_boot.c
+  rt_sys_frame_start): random channel 1 fell one draw behind every tick.
+- R-F2 *port glue, both games*: stick angles were truncated (269 instead of 270 degrees for straight down): the hunter
+  walked one degree off (rt_pad.c rounds now).
+- R-F3 *port glue, both games*: monsters ran in the order 1..19, 0 (the PS2: 0..19): random draws in another order,
+  small monsters placed elsewhere when an area loads.
+- R-F4 *port glue, both games*: game_core's order: hit_check ran before the monsters moved and body_hit after the
+  effects; a monster's attack (the Rathian's roar) reached the hunter one tick late. Now player, monsters, body_hit,
+  effects / sets, area exit, HUD, then the joints and hit_check, as move() / trans() / hit_check().
+- R-F5 *port glue, both games*: the quest start: the PS2's game13 runs one move() of the world and then spawns the
+  stage's set objects; the PC started game2 at once (and spawned the sets before). Monsters and the hunter were
+  three ticks behind at the start of every quest; now the PC also has the game13 tick (rt_flow.c, rt_game.c).
+- R-F6 *port glue, G*: em_dur_tbl's rows (part durabilities) were relocated as pointers by the pointer scan (0x0078
+  0x0050 read as G address 0x500078): the Yian Kut-Ku-sized kind 20 had a part with 22849 HP and one missing
+  (config/mhg/pc_data.txt noptr). Other s16 tables could have the same fault: worth a sweep of pc_ptrs.txt entries
+  that fall inside s16 tables.
+- R-F7 *G still on MH1 logic*: body_hit_sub_em (monster against monster) uses G's own sphere table (game 0x673260;
+  the Rathian 300 instead of the wall table's 500): small monsters were pushed off the Rathian (pl_nm.c).
+
+**Left, ranked by how much a player meets it:**
+1. N-R1 (both games, MH1 seen too) *port glue*: on the first tick of a new motion the PS2 already moves the hunter
+   by its root motion (frame_move -> pl_velocity_sub), the PC one tick later (seen at the start of an attack, a
+   roar's ear-cover pl_dm016, a knockback); the body push against a monster then also lands a tick later. A few
+   units; this is the first difference in every fight. Where: the host's flPlayMotionExSI / skeleton velocity
+   (rt_motion.c) against f_frameb.c frame_move [inferred].
+2. N-R2 (both games) *platform*: the PS2's floats round toward zero. A Velociprey's run loop (2.4 a tick, 48 frames)
+   wraps a tick later on the PS2 (47.99998) than on the PC (48.0) and the monster ends 5 units elsewhere. RT_FPU_PS2=1
+   (rt_ref.c: SSE rounding toward zero, no denormals) fixes it in the referee's runs; the referee uses it. Making it
+   the default for players is the owner's call (it also changes the host's own float code: libm, drawing, audio) —
+   REVIEW "Lockstep referee".
+3. N-R3 (G) *G-only feature missing*: the Elder's tutorial in the first quests: "△ PUSH" opens his paged lessons
+   (soncho_no_oshie, SonchoMove / DispTutorial, game tuto.c) and blocks the buttons while open. The PC shows neither
+   the prompt nor the window (tuto.c is not in the PC build). MH1 has the same tutorial and the same gap [inferred].
+4. N-R4 (G) Dual Swords: the first ticks of walking after a demon-mode attack move the hunter 1.3 units further
+   on the PC (9.5 units by the end of the walk) [verified ds scenario, tick 254]; cause not found.
+5. N-R5 (both) *sound layer*: the PC's sound requests draw their random number one tick later than G's flSndRequest /
+   flSndChange (channel 1 only; sound pitch variation; no gameplay effect).
+6. N-R6 (both) *referee path only*: `--quest` runs show a default hunter (armour, no name in the HUD) instead of the
+   save's look; the real village -> quest path uses the save. Not a player bug; it makes the referee's pictures differ.
+7. Quest timer: the PS2's clock also runs while an area loads (34 ticks per area change from the disc); the PC loads
+   in one tick. A player on the PC gets slightly more time per area change; true to the hardware would be counting
+   the PS2's load time [owner's call; not changed].
+
+## 12. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
 Every G-only / MH1-only change since 13 Oct checked against the other game. For G:
 - Debug menu: "Can't faint" now holds against any hit (30000 while the hit is taken, then the hunter's maximum; was 100:
   a high-rank hit over 100 fainted the hunter); the RT_PL_GOD aid's life bar no longer runs off the screen

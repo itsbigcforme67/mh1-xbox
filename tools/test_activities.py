@@ -262,7 +262,9 @@ def long_fight():
 def carve_small():
     """Aptonoth (kind 12) killed and carved: raw meat (18) or small wyvern bone (227) (which one is the carve roll)"""
     cyc = ',cam_u*2,idle*30' * 4 + ',circle*2,idle*28' * 6
-    t = run('carve_small', 'idle*60' + cyc * 4, 0, quest=131, stage=39, secs=40,
+    # (60 s: since the PC runs move()'s order (lockstep referee, 18 Oct 2026) the herd moves differently and the kill
+    # can come after 35 s)
+    t = run('carve_small', 'idle*60' + cyc * 6, 0, quest=131, stage=39, secs=60,
             env={'RT_PL_GOD': 1, 'RT_DMG_MUL': 40, 'RT_PL_WARP_EM': '90-9000', 'RT_PL_TARGET': 'k12'})
     g, fin = gains(t, {})
     if crashed(t): return False, 'crash'

@@ -107,6 +107,22 @@ int rt_flow_tick(void)
         last = st;
     }
     switch (m) {
+    case 1:
+        if (game_w[1] == 3) {   /* game13 (f_game.c), after the host has loaded the quest (rt_quest_load): one move() of the
+                                 * world before the hunt (the hunter grounded, the monsters' first step, the stage's
+                                 * effects started), then game2. In a run that starts in the quest it waits for the
+                                 * host's first two ticks (the viewer holds the world for those: viewer.c sim_tick) */
+            if (tick >= 3) {
+                void rt_game_quest_sets(void);
+                game_core();
+                rt_game_quest_sets();   /* game13's stage_set_set after its move() (rt_game.c) */
+                game_w[0] = 2;
+                game_w[1] = 0;
+            }
+            break;
+        }
+        game_core();
+        break;
     case 2: game2(); break;
     case 3: game3(); break;
     case 4: game4(); break;

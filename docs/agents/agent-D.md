@@ -1447,3 +1447,28 @@ without the laptop each starts its copy on the disk. Done; details and test resu
   `ulimit: error setting limit` (it raises its own cap to 3 GB inside full_check's 1.5 GB cap): test_ps2_online now gets
   the 3 GB cap in full_check like test_ps2_patch. Run alone after that it gets further and stops at "no terms notice"
   (02_net.png black) in PCSX2: not looked into (no PS2 code changed here); for agent C.
+
+## Lockstep referee (agent D, 17-18 Oct 2026)
+Task: the automatic referee against the real game (DECISIONS "Lockstep referee"). Tool tools/referee.py, PC side
+src/pc/rt/rt_ref.c, write-up docs/referee.md, results docs/RELEASE_G.md section 11 / docs/RELEASE.md section 6,
+dropped-behaviour list docs/REVIEW.md "Lockstep referee".
+- PS2 control without changing the disc: a 40-instruction hook written into free EE RAM (0xFF000, checked zero) and the
+  jal flPADGetALL in ACRMain pointed at it; it blocks each frame (once game_w mode 2 is seen) until the host's "go"
+  word, and copies the host's pad words into flpad_adr[0]. A second hook replaces ran_suu's first two instructions
+  with a jump to a logger (ring at 0xFD000: return address, channel). PCSX2's recompiler picked both changes up
+  without a state reload. PINE batches (several ops in one message; pine.py read_many / write_bytes) read 30 KB of
+  state per tick; ~30 play ticks a second.
+- Line-up: "play ticks" (game_w mode 2, step <= 1), because area loads take dozens of PS2 ticks and one PC tick.
+  Same start: the PS2's User_data and Rnd_w at play tick 0 go to the PC (RT_REF_UD / RT_REF_RND); the PS2's Rnd_w
+  at every play tick too (RT_REF_RNDS), so a random-call difference stays in its tick.
+- Lessons: (1) MH1/G attack with the right stick (cam_u etc.), circle/triangle in the field do other things, and no
+  weapon is drawn in the base camp: weapon scenarios change area first (pokes like an area exit, g_ref_shot.sh's way).
+  (2) G quest 10001's camp has the Elder's tutorial on triangle ("△ PUSH"): the PS2 masks all buttons while it is
+  open (Cockpit_menu_chk in sw_set_sub), the PC has no tutorial window. (3) gdb hardware watchpoints on em_work /
+  player_work fields in the PC run, with the referee's env (pad, pokes, RNG), find the code that moves a value in one
+  run (build/referee/<s>/gdb*.cmd). (4) `nm` symbols of the PIE PC binary name ran_suu callers from the offset to
+  ran_suu itself. (5) The MH1 save of test_quest_loop.sh stands at the village gate; MH1 menus differ from G's.
+- Fixed: R-F1..R-F7 in RELEASE_G section 11 (ran_suu(1) per frame, stick rounding, monster order, game_core order,
+  game13 tick, em_dur rows noptr (G), G's monster body table). Not fixed, ranked there: root motion a tick late on the
+  PC (first difference in every fight, both games), PS2 float rounding (RT_FPU_PS2, owner's call), the Elder's
+  tutorial window, a Dual Swords walk-start difference, the sound layer's random draws.

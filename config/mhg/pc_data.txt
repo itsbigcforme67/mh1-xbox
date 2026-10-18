@@ -43,6 +43,8 @@ eft06_em_scale = 0x00503B80; // size:0xD0
 em_prog_tbl = 0x00520800; // size:0xD0
 em_parts_num = 0x005207C0; // size:0x34       # motion layers per kind (Em_max_parts_get); was imported at 0x28: kinds 40-51 read past it
 em_dur_tbl = 0x005088C0; // size:0xD0
+em_dur_rows = 0x005084E0; // size:0x3E0 noptr     # em_dur_tbl's rows (9 part hit points + 1, s16): pairs like 0x78, 0x50 read as G
+                                                  # addresses (0x500078) by the pointer scan and were relocated (kind 20's parts 4/5; lockstep referee)
 [game]
 eft19_em_ofs_tbl = 0x0067DA30; // size:0xD0
 enemy_mahi_size = 0x0066F0B0; // size:0xD0
@@ -84,6 +86,8 @@ em_eye_dmg_timer_tbl = 0x00676490; // size:0x68
 fish_type_tbl = 0x0067E510; // size:0x70        # 2 x 14 lists (G fish_type_set: mission header 0x42 picks the set)
 em_body_tbl = 0x00672ED0; // size:0xD0          # (hit_calc_shl, body_hit_sub_new: aligned lui/lo in the edited twins)
 em_hit_push_tbl = 0x00673150; // size:0xD0
+em_body_push_tbl = 0x00673260; // size:0xD0      # G-only: body_hit_sub_em's monster-to-monster spheres (sub_main 0x4C9B4C; MH1 used
+                                                  # em_hit_push_tbl, the wall table: the Rathian 500 there, 300 here; lockstep referee)
 em_pos_tbl = 0x00673D70; // size:0xD0           # (em_status_init)
 em_hagi_type_tbl = 0x006D5D50; // size:0x10     # G: 4 pointers (quest rank, mission header 0x42) to per-kind carve tables (Em_hagi_point_set 0x4B7250)
 Item_get_tbl = 0x006D4350; // size:0x5E0        # (Stage_item_probability_get; agent C found it too) G: 376 pick ids up to st01_unique_tbl (MH1 232; pick id 235 read past the end)

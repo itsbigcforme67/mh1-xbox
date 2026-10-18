@@ -634,9 +634,11 @@ int rt_quest_load(int no)
             fprintf(stderr, "\n");
         }
     }
-    /* game13's start of the hunt: mode 2 (game2), timers */
-    game_w.mode = 2;
-    game_w.step = 0;
+    /* game13 (game1 step 3) is next: on the next flow tick it runs one move() and starts the hunt (mode 2, game2);
+     * rt_flow.c. Until 18 Oct 2026 the hunt started here at once, one world tick behind the PS2 (the lockstep referee,
+     * docs/referee.md) */
+    game_w.mode = 1;
+    game_w.step = 3;
     Quest_timer_reset();
     if (getenv("RT_QUEST_TIME"))    /* test aid: the quest's time left (ticks), for time-out tests (online: rt_np.c) */
         quest_w.x10 = atoi(getenv("RT_QUEST_TIME"));

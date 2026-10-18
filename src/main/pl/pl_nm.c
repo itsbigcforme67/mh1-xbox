@@ -1148,8 +1148,16 @@ void body_hit_sub_em(PLW *pl, PLW *o) {
     f32 *pv;
     f32 *pl_len;
     if (game_w.x1DC == 0) {
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        /* G (sub_main 0x4C9B00): its own monster-to-monster sphere table (game.bin 0x673260), not the wall table MH1
+         * shares here (the PC pushed small monsters off the Rathian's 500-unit wall sphere; the lockstep referee) */
+        extern f32 *em_body_push_tbl[];
+        s3 = em_body_push_tbl[o->kind];
+        s4 = em_body_push_tbl[pl->kind];
+#else
         s3 = D_63FC50[o->kind];
         s4 = D_63FC50[pl->kind];
+#endif
     } else {
         s3 = D_6103A0[o->kind];
         s4 = D_6103A0[pl->kind];

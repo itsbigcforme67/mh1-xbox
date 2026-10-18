@@ -79,7 +79,9 @@ static void stick(int x, int y, s16 *ang, s16 *pow)
     r = atan2((double)-y, (double)x);
     if (r < 0)
         r += 2 * M_PI;
-    *ang = (s16)(int)(r / (2 * M_PI) * 360.0);
+    /* rounded: truncating gave 269 for a stick held straight down (3/2 pi / 2 pi * 360 is a hair under 270 in
+     * double), so the hunter ran 1 degree off; the lockstep referee showed it against PCSX2 (docs/referee.md) */
+    *ang = (s16)((int)floor(r / (2 * M_PI) * 360.0 + 0.5) % 360);
     p = (int)sqrt((double)x * x + (double)y * y);
     *pow = (s16)(p > 127 ? 127 : p);
 }
