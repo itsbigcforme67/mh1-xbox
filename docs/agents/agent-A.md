@@ -1154,3 +1154,16 @@ Hidden PC G runs only (pictures build/A/text, build/A/rwbg, build/A/q10035, buil
   end_session restores the game's texture (rt_2d_restore_texture; the game caches its bound texture); stage_spr_disp
   skipped in the id pass (xemu_pick_test G failed 'stage' pick: the full-screen layer covered everything). PC GL
   near-plane trace (temporary) at the weapon shop: skinned clays fully behind the eye only, none crossing.
+
+## Cross-game audit (18 Oct 2026; COORDINATOR queue 0d)
+Full list: docs/audit_cross_game.md (738 commit/file lines + 30 hand-checked fixes from commit messages).
+- Method: all 166 G-touching commit messages since 13 Oct read; every VERSION_MHG / rt_ver_mhg / !VERSION_MHG line in
+  src/pc and tools read in its current context (grep -B/-A); the 396 G branches in decompiled files judged from the commit
+  message plus a scan of their added comments for PC / host / crash / stand-in wording (121 lines). A reverse sweep of
+  src/pc for raw MH1 User_data / select_w offsets found the pouch test (#4).
+- Most G platform fixes were already shared: the GB5 bug fixes, the reporter, fog, the black quest-start frame, rt_mem.
+- G-only pointer / size fixes (mhg_pcmeta, pc_data sizes) cannot apply to MH1: MH1's pointers and sizes come from its own
+  ELF symbols and relocations (tools/gen_rt_meta.py says so); only three MH1 tables are hand-sized (tables.txt).
+- Lesson: the life bar showed why RT_PL_GOD's 30000 was G-only (the bar ran off the screen); setting it only around
+  pl_move (where Pl_damage_sub takes the hit of the last hit_check) and the maximum PLW+0x792 after keeps both right.
+- G's quest_bit_tbl (sub_main 0x4FECA0) read with gdb: 0-50, 1001-1039, 2001-2050, 3001-3007, 10001-10048, 20001-20050.

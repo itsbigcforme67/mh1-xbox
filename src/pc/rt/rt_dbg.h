@@ -36,9 +36,9 @@ int  rt_dbg_in_quest(void);                     /* the pouch is the hunter's wor
 
 int  rt_dbg_money(void);
 void rt_dbg_set_money(int v);
-int  rt_dbg_hr(void);                           /* -1: not offered (G) */
+int  rt_dbg_hr(void);                           /* User_data hunter rank (MH1 +0x37B, G +0xC23) */
 void rt_dbg_set_hr(int v);
-int  rt_dbg_clear_all_quests(void);             /* MH1: every quest of the Elder's board marked cleared; returns how many */
+int  rt_dbg_clear_all_quests(void);             /* the offline quests marked cleared (MH1: the Elder's board; G: village 1-50 + training); returns how many */
 
 /* equipment: kind 0 melee weapon, 1 gun, 2 head, 3 body, 4 arm, 5 waist, 6 leg */
 enum { DBG_EQ_MELEE, DBG_EQ_GUN, DBG_EQ_HEAD, DBG_EQ_BODY, DBG_EQ_ARM, DBG_EQ_WAIST, DBG_EQ_LEG, DBG_EQ_N };

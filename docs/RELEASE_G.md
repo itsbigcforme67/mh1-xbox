@@ -440,3 +440,11 @@ it the runs drift apart as expected (another hit lands, another knockback).
 7. Quest timer: the PS2's clock also runs while an area loads (34 ticks per area change from the disc); the PC loads
    in one tick. A player on the PC gets slightly more time per area change; true to the hardware would be counting
    the PS2's load time [owner's call; not changed].
+
+## 12. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
+Every G-only / MH1-only change since 13 Oct checked against the other game. For G:
+- Debug menu: "Can't faint" now holds against any hit (30000 while the hit is taken, then the hunter's maximum; was 100:
+  a high-rank hit over 100 fainted the hunter); the RT_PL_GOD aid's life bar no longer runs off the screen
+  [verified: G quest 9 sweep run, shot]. "Hunter rank" and "Mark all offline quests cleared" rows now on G too (rank at
+  User_data+0xC23; the 98 offline quests) [verified: tools/test_dbgmenu.sh].
+- Quest start: the "save has a pouch" test reads G's pouch (+0xC24), was MH1's offset (no visible effect found).

@@ -10,6 +10,7 @@ condition program, the monsters per stage and the start stage's spots. The plan 
   - hunt goals (op 2 kind/count): RT_PL_GOTO walks the area exits to the stage with most monsters of that kind,
     RT_PL_TARGET=kN + RT_PL_WARP_EM + RT_DMG_MUL + RT_PL_GOD fight and carve, a repeating pad script attacks.
 PASS = quest clear (D5 3), reward list printed, money counted, village (game mode 6) entered afterwards, no crash.
+A full run (no quest numbers) also checks the failure paths on quest 139 (0x8B): three faints (g_carts) and a time-out.
 G mode (G=1, tools/test_all_quests_g.sh; build/mhg/pc/mhview_g on disc/mhg, always hidden): the G offline quests
 (village 00001-00050 = 1-50, training 10001-10048), PASS = the monster(s) spawn, quest clear (D5 3) with the same aids, reward
 screen with its list, no crash; then a second run with RT_QUEST_TIME (the quest's time left) idles in the camp: the quest
@@ -229,15 +230,21 @@ def g_result(q, p, rc, d, dt, clear, note, secs):
         why.append('no quest clear in %ds (last: %s)' % (secs, last[-1][9:90] if last else '-'))
     elif not re.search(r'tick \d+ mode 5 step', d): why.append('clear but no reward screen')
     elif 'rt_flow: rewards:' not in d: why.append('reward screen without a reward list')
-    # time-out: the quest's time set to 20 s, the hunter idles in the camp (150 s: a quest's event demo, e.g. the
-    # Lao-Shan's ~70 s one, stops the quest clock while it runs)
-    rc2, d2, _ = run(q, {'RT_QUEST_TIME': '600'}, 'idle*5000', 150, 'q%d_to' % q)
-    if rc2 not in (0, None) or 'Segmentation' in d2: why.append('time-out run: crash/exit %s' % rc2)
-    elif not re.search(r'x06 6', d2): why.append('no quest failure on time-out')
+    why += timeout_check(q)
     return ('PASS' if not why else 'FAIL'), '; '.join(why) or '%s (%d monsters), %.0fs' % ('; '.join(note), spawned, dt), p
 
+def timeout_check(q):
+    """time-out: the quest's time set to 20 s, the hunter idles in the camp (150 s: a quest's event demo, e.g. the
+    Lao-Shan's ~70 s one, stops the quest clock while it runs). The quest must fail (x06 6), no crash. G: every quest;
+    MH1: once, in a full run (main)."""
+    rc2, d2, _ = run(q, {'RT_QUEST_TIME': '600'}, 'idle*5000', 150, 'q%d_to' % q)
+    if rc2 not in (0, None) or 'Segmentation' in d2: return ['time-out run: crash/exit %s' % rc2]
+    if not re.search(r'x06 6', d2): return ['no quest failure on time-out']
+    return []
+
 def g_carts(q=9, kind=11):
-    """G: three faints fail the quest. No GOD and no warp: the hunter walks to the monster's stage (RT_PL_GOTO f)
+    """Three faints fail the quest (G quest 9, MH1 quest 139 = 0x8B: a Rathian, kind 11, start camp stage 21 in both).
+    No GOD and no warp: the hunter walks to the monster's stage (RT_PL_GOTO f)
     and swings; RT_PL_HP keeps his vital at 5 so the monster's own hits faint him. PASS = two returns to the camp,
     then the quest fails (x06 6) with time left, no crash."""
     hp = ','.join('%d:5' % t for t in range(400, 30000, 200))
@@ -288,10 +295,17 @@ if __name__ == '__main__':
             why += ' (now passes: drop it from KNOWN)'
         print('%-5s quest %3d %s %s' % (r, q, tag, why), flush=True)
         bad += r == 'FAIL'
-    if G and not sys.argv[1:]:
-        r, why = g_carts()
-        print('%-5s carts  quest   9 %s' % (r, why), flush=True)
+    if not sys.argv[1:]:
+        # the failure paths (MH1 too since the cross-game audit of 18 Oct 2026; G had them from 14 Oct): three faints,
+        # and for MH1 one time-out run (G runs one per quest in g_result)
+        cq = 9 if G else 0x8B
+        r, why = g_carts(cq)
+        print('%-5s carts  quest %3d %s' % (r, cq, why), flush=True)
         bad += r == 'FAIL'
+        if not G:
+            why = timeout_check(0x8B)
+            print('%-5s timeout quest 139 %s' % ('FAIL' if why else 'PASS', '; '.join(why) or 'quest failed on time-out'), flush=True)
+            bad += bool(why)
     if G and (not sys.argv[1:] or os.environ.get('DUAL') == '1'):
         r, why = g_dual()
         print('%-5s dual   quest  10 %s' % (r, why), flush=True)

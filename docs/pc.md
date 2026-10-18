@@ -195,7 +195,8 @@ keyboard. Players' description and the row list: docs/PLAYING.md "Debug menu for
   table Stage_mv_data_get reads, checked against the mission buffer; the warp sets PLW+0x738 / +0x73A / +0x73C.. and
   Pl_ofs_set as stage_mv_ck does, game2 steps 2-6 do the load), items (`item_str`, `Item_data` +3 stack limit; G's
   item_str is 523 entries: config/mhg/pc_data.txt), pouch (PLW+0x828 in a quest, User_data+0x37C otherwise), item box
-  (User_data+0x1C4; G through UDO, lbsys_g.h), money (+0x20), MH1 hunter rank (+0x37B) and Quest_clear_bit_set,
+  (User_data+0x1C4; G through UDO, lbsys_g.h), money (+0x20), hunter rank (MH1 +0x37B, G +0xC23) and Quest_clear_bit_set
+  (MH1: the Elder's quest_local_tbl; G: the 98 offline quests of quest_bit_tbl, village 1-50 and training 10001-10048; G since 18 Oct 2026),
   equipment (Ken_data / Gun_data / Armor_*_Data names; MH1 Warehouse_equip_stack + Warehouse_equip + Set_equip_idx, the
   game's own equipment-box functions; G writes its equipped set at User_data+0xC74.. as G's Get_equip_value reads it).
 - Toggles reuse the test-aid code: rt_dbg.god = the RT_PL_GOD block, rt_dbg.warp_em_slot = the RT_PL_WARP_EM block (target:
@@ -212,7 +213,7 @@ keyboard. Players' description and the row list: docs/PLAYING.md "Debug menu for
   `debug_menu = 1/0`, `--debug-menu` / `--no-debug-menu` (Xbox: RT_ARGS), RT_DEBUG_MENU=1/0 decide over the default.
   Only with --play / --boot / --input (the viewer's free-play mode has no game to edit).
 - Test: `tools/test_dbgmenu.sh` (after test_quest_loop.sh): village edits with the game paused, quest 131 from the list,
-  quest 10 killed from the menu, frame step, and G (quest list 244 entries, quest 4, pouch). `tools/dbg_keys.py` turns
+  quest 10 killed from the menu, frame step, and G (quest list 244 entries, quest 4, pouch, hunter rank, mark all cleared). `tools/dbg_keys.py` turns
   "open d5 x x r1 o" into an --input script; RT_DBG_SHOTS=prefix writes prefix_NN.png of each new menu page.
 - Checked in xemu (MH1 nv2a build, hidden, scripted pad from D:\data\input.txt with RT_ARGS=--quest 10 --play): the
   menu, the quest list and the pouch page look as on the PC; quest 134 started from it. Not checked: a real controller
@@ -331,7 +332,7 @@ effects/sets of type n).
 Monster: `RT_EM_TRACE=1` (per tick: enemy_mv step, action, motion, frame,
 position, angle, hit points, mode 0 calm / 1 attack; at spawn the part
 durabilities). Test aids that change the game (scripted fights
-only): `RT_PL_GOD=1` (hunter vital back to 100 each tick), `RT_PL_AIM=1`
+only): `RT_PL_GOD=1` (no faint: hunter vital 30000 while the hit is taken in pl_move, then back to his maximum; the debug menu's "Can't faint" is the same), `RT_PL_AIM=1`
 (hunter faces monster 0 while standing), `RT_DMG_MUL=n` (damage to
 monster 0 times n). `RT_EM_POS` also moves a `--quest` monster.
 
