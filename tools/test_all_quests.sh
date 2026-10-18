@@ -5,6 +5,7 @@
 #   hunt quests: RT_PL_GOTO walks the area exits (several stages, or "f" = follow the boss), RT_PL_TARGET=kN, RT_PL_WARP_EM,
 #   RT_DMG_MUL, RT_PL_GOD fight and carve; a boss that stays out of reach gets RT_PL_SLAY (a lethal hit);
 #   the pad pattern also takes the reward items and picks "end receiving".
+# Without quest numbers also the failure paths on quest 139: three faints (no GOD/warp) and a time-out (as the G sweep).
 # Not automated (SKIP) and known failures (KNOWN) are listed by tools/test_all_quests.py and in docs/pc.md.
 # usage: tools/test_all_quests.sh [quest numbers, decimal]   (~3 minutes for all). Logs: build/show/allq/qNNN.log
 cd "$(dirname "$0")/.."

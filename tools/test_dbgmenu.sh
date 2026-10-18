@@ -6,7 +6,8 @@
 #     tick it opened at);
 #  2. MH1 quest 10 on the Rathian's area: hit volumes on, "kill the monsters in this area" -> the quest is cleared;
 #  2b. frame step: one tick per R3 press;
-#  3. Monster Hunter G (when build/mhg/pc/mhview_g and disc/mhg exist): quest list, quest 4 started, an item in the pouch.
+#  3. Monster Hunter G (when build/mhg/pc/mhview_g and disc/mhg exist): quest list, quest 4 started, an item in the pouch;
+#     hunter rank and mark-all-cleared rows.
 # Pictures of every menu page: build/show/dbgmenu/*_NN.png (RT_DBG_SHOTS). ~1 min.
 cd "$(dirname "$0")/.."
 export MH1_HIDDEN=1   # no window on the owner's screen, no real controller
@@ -53,7 +54,7 @@ last=$(grep -E "^T [0-9]+ " $OUT/s.err | tail -1 | awk '{print $2}')
 if [ "$last" -ge 63 ] && [ "$last" -le 65 ]; then echo "frame step OK: the game stopped at tick $last (3 steps after the menu)"
 else echo "frame step FAILED: last tick $last"; fail=1; fi
 
-# 3. G: main rows 0 quest, 4 pouch (no hunter rank / clear rows in G)
+# 3. G: main rows 0 quest, 5 pouch
 if [ -x build/mhg/pc/mhview_g ] && [ -d disc/mhg ]; then
     S="$(python3 $K "w60 open x d3 x w300 open d5 x x d3 r x w30")"
     MH1_SAVE_DIR="$PWD/$OUT/gcard" RT_DBG_SHOTS=$OUT/g RT_QUEST_TRACE=1 build/mhg/pc/mhview_g disc/mhg --quest 10 --input "$S" \
@@ -62,6 +63,13 @@ if [ -x build/mhg/pc/mhview_g ] && [ -d disc/mhg ]; then
     if grep -q "start quest 4" $OUT/g.txt && grep -q "village: quest 4 starts" $OUT/g.err && grep -q "pouch (quest) slot 0 = item 14 x 1" $OUT/g.txt; then
         echo "G OK: $(grep -o '[0-9]* quests found' $OUT/g.txt), quest 4 started, item 14 in the pouch"
     else echo "G FAILED (see $OUT/g.txt)"; fail=1; fi
+    # 3b. G hunter rank (row 9) and "mark all offline quests cleared" (row 10): MH1-only rows until 18 Oct 2026
+    S="$(python3 $K "w60 open d9 r r d x w30")"
+    MH1_SAVE_DIR="$PWD/$OUT/gcard" build/mhg/pc/mhview_g disc/mhg --quest 10 --input "$S" --shot $OUT/gr_end.png --time 8 \
+        2> $OUT/gr.err >/dev/null
+    dlog > $OUT/gr.txt
+    if grep -q "hunter rank 2" $OUT/gr.txt && grep -q " 98 offline quests marked cleared" $OUT/gr.txt; then echo "G OK: hunter rank 0 -> 2, 98 offline quests marked cleared"
+    else echo "G rank/clear FAILED (see $OUT/gr.txt)"; fail=1; fi
 else
     echo "G skipped (no build/mhg/pc/mhview_g or disc/mhg)"
 fi

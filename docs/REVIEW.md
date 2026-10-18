@@ -809,3 +809,17 @@ obvious workarounds.
   lb_village_nm.c prototypes lobby_bgm_set(int).
 - **Changed:** stage_spr_disp is not drawn in the reporter's id pass.
 - **To revert:** the commit "G GB5 bugs 11-14: weapon model after equip, house music, report save, reporter texture".
+
+## Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
+- **Dropped:** the "can't faint" values split by game and caller (RT_PL_GOD on G: vital 30000 after pl_move; RT_PL_GOD on
+  MH1 and the debug menu on both: 100 after pl_move). **Now:** both games, aid and menu alike: 30000 just before pl_move
+  (the hit of the last hit_check is taken there), the hunter's maximum (PLW+0x792) after it. **Why:** with 100 a hit over
+  100 in one tick fainted the hunter (G quest 9's Rathian; the menu on G high rank), an MH1 hunter with 150 max hp was
+  cut to 100, and G's 30000 drew the life bar off the screen.
+- **Dropped:** G stubs of the debug menu's hunter rank / mark-all-cleared (rows hidden on G). **Now:** G rank at
+  User_data+0xC23, G clear-all over quest_bit_tbl's 98 offline quests. **Why:** the rows were MH1-only for no reason
+  but the unknown G offsets.
+- **Changed:** rt_player_game_init's "has the save a pouch" test reads G's pouch (+0xC24) on G, not MH1's +0x37C.
+- **Changed:** tools/test_all_quests.py: the MH1 full sweep now also runs the carts check and one time-out run (quest 139);
+  the G time-out check is the shared `timeout_check`.
+- **To revert:** the commit "Cross-game audit ...".

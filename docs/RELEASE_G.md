@@ -382,3 +382,11 @@ channel, HUD corners left out; the hunters still differ: the PS2 hunter wears no
   em_dmg05 side argument. em16_to_normal: G's per-kind action speed.
 - Not done: eft05's non-Dual-Swords uses (G's eft05 already runs for every weapon; not compared with the PS2), em17's
   small acts, em07 item / hagi sets, set04.
+
+## 11. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
+Every G-only / MH1-only change since 13 Oct checked against the other game. For G:
+- Debug menu: "Can't faint" now holds against any hit (30000 while the hit is taken, then the hunter's maximum; was 100:
+  a high-rank hit over 100 fainted the hunter); the RT_PL_GOD aid's life bar no longer runs off the screen
+  [verified: G quest 9 sweep run, shot]. "Hunter rank" and "Mark all offline quests cleared" rows now on G too (rank at
+  User_data+0xC23; the 98 offline quests) [verified: tools/test_dbgmenu.sh].
+- Quest start: the "save has a pouch" test reads G's pouch (+0xC24), was MH1's offset (no visible effect found).

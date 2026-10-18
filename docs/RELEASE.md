@@ -131,3 +131,10 @@ Code found while auditing:
 4. B3: English from the player's US disc (docs/mh1_us.md 5 (a)).
 5. N2 lighting check against one PS2 capture; N3 weapon node scaling; N7 remaining near-match reviews.
 6. B6 / N8 / N9 if online is in the release.
+
+## 6. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
+Every G-only / MH1-only change since 13 Oct checked against MH1. For MH1:
+- Debug menu "Can't faint" / RT_PL_GOD: holds against a hit over 100 in one tick and keeps the hunter's own maximum
+  (was put back to 100 each tick: a hunter with 150 hp was cut to 100) [verified: MH1 trace, full_check].
+- tools/test_all_quests.sh (full run) now also checks the failure paths offline: three faints and a time-out on quest 139
+  (both PASS: no fault, a test gap the G sweep already covered).

@@ -130,14 +130,16 @@ void rt_player_game_init(int no)
             Shell_type_set(pl, 0);
         }
     }
-    {   /* Set_userdata copies the user's pouch (User_data+0x37C) to the
+    {   /* Set_userdata copies the user's pouch (User_data+0x37C; G +0xC24, include/ud.h) to the
          * hunter; without save data the user's pouch starts as the one
-         * pl_init / RT_PL_ITEMS gave him */
+         * pl_init / RT_PL_ITEMS gave him. (G read MH1's +0x37C, stored equipment there, until 18 Oct 2026: no
+         * effect seen, the hunter's pouch already matched the save's, but a G save with no stored equipment there
+         * took the "no save data" branch; cross-game audit) */
         void ItemCopy_Pl2Ud(PLW *), ItemCopy_Ud2Pl(PLW *);
         extern u8 User_data[];
-        int k, any = 0;
+        int k, any = 0, pouch = rt_ver_mhg() ? 0xC24 : 0x37C;
         for (k = 0; k < 0x50; k++)
-            any |= User_data[0x37C + k];
+            any |= User_data[pouch + k];
         if (any && !getenv("RT_PL_ITEMS"))
             ItemCopy_Ud2Pl(pl);
         else
@@ -626,6 +628,11 @@ void rt_player_tick(int no)
     }
     /* f_framec.c move(): `if (game_w.info_stop == 0) player_mv();` - during an event demo (first sight of a boss,
      * the quest's tutorial demo) the hunter gets no pad input and does not move */
+    int god = getenv("RT_PL_GOD") || rt_dbg.god;
+    if (god)    /* test aid / the debug menu's "can't faint": the damage of the last hit_check is taken in pl_move
+                 * (Pl_damage_sub -> Pl_vital_calc): with 30000 there no hit faints the hunter, and Pl_vital_calc clamps
+                 * the result to the maximum (PLW+0x792) */
+        PF(&player_work[no], s16, 0x302) = 30000;
     if (game_w.info_stop == 0 || getenv("RT_DEMO_FREE"))     /* RT_DEMO_FREE=1: test aid, input in demos as before */
         pl_move();
     {   /* PLW+0x60: the world matrix player_modify (weapon3.c, run from trans() on the
@@ -649,11 +656,12 @@ void rt_player_tick(int no)
             memcpy((u8 *)p + 0x60, &m, sizeof m);    /* 0x60-0x9F, as flmatCopy */
         }
     }
-    if (getenv("RT_PL_GOD") || rt_dbg.god) {      /* test aid: the hunter's vital (+0x302) back to 100 each tick, no stun gauge (+0x7AA);
-                                                    * the debug menu's "can't faint" */
-        PF(&player_work[no], s16, 0x302) = getenv("RT_PL_GOD") && rt_ver_mhg() ? 30000 : 100;  /* test aid on G: a high-rank hit takes more than 100 in one
-                                                                            * tick (quest 9's Rathian carted a GOD hunter); Pl_vital_calc
-                                                                            * clamps it to the maximum after the hit */
+    if (god) {      /* after pl_move: the vital back to the hunter's maximum (the life bar full, as drawn), no stun gauge (+0x7AA).
+                     * Both games, the RT_PL_GOD aid and the menu alike (18 Oct 2026, cross-game audit). Before: 100 each tick
+                     * after pl_move (a hit over 100 in one tick fainted the hunter: G quest 9's high-rank Rathian; an MH1
+                     * hunter with 150 hp was cut to 100), and 30000 for G's RT_PL_GOD only (the bar ran off the screen) */
+        s16 mx = PF(&player_work[no], s16, 0x792);
+        PF(&player_work[no], s16, 0x302) = mx > 0 ? mx : 100;
         PF(&player_work[no], s16, 0x7AA) = 0;
     }
     if (getenv("RT_PL_TRACE")) {
