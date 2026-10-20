@@ -1440,6 +1440,15 @@ static void sim_tick(void)
         if (game_w[GWX(0x21F)] == 0)         /* move(): item_check / body_hit only while info_stop == 0 (hunters and monsters pushed apart) */
             body_hit();
     }
+    if (pl.game && play && ticks >= 2) {
+        /* player_mk (move(), after body_hit): the hunters' joint matrices of this tick, before the effects / sets read them
+         * (the monsters' come from enemy_mk, right after each one moved: rt_monster_tick -> em_pose_now). Until 18 Oct
+         * 2026 all joints were made at the end of the tick, so body_hit and the effects saw the last tick's */
+        rt_prof_begin(RTP_JOINTS);
+        sync_joints(&pl, hunter_yoff);
+        remote_hunters(0, light_cur());
+        rt_prof_end(RTP_JOINTS);
+    }
     rt_game_move();             /* move_set / move_eft / move_shell: after the player and CameraMove as in game_core (f_frame_nm.c), so
                                  * camera-attached sets (set13's fog veils, 50 units in front of the eye) use this tick's camera */
     light_move();               /* game_core's step after CameraMove (f_frame_nm.c): turns light 2 of set 1 with the view, runs the
@@ -1460,10 +1469,8 @@ static void sim_tick(void)
         rt_snd_stage_tick();            /* move_stage's river / waterfall loops (Snd_server runs per tick below) */
     if (pl.game && play && ticks >= 2) {
         rt_prof_begin(RTP_JOINTS);
-        sync_joints(&pl, hunter_yoff);
-        remote_hunters(0, light_cur());
-        monsters_sync(0, light_cur());
-        rt_actor_nodes_fill();  /* every live actor's node array as after trans() (rt_eft.c) */
+        rt_actor_nodes_fill();  /* every live actor's node array as after trans() (rt_eft.c): the joints made in move()
+                                 * (player_mk above, enemy_mk per monster); trans() makes none, so hit_check sees those */
         rt_prof_end(RTP_JOINTS);
         rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
     }
@@ -1658,11 +1665,14 @@ static void monsters_sync(int draw, const fl_light *L)
     for (i = 0; i < 20; i++)
         em_slot_sync(i, draw, L);
 }
-/* enemy_mk's part of the tick (move(): enemy_mv -> enemy_mk -> em_ride_sub): the new pose's joints before
- * em_ride_sub carries the hunters on the Lao-Shan Lung's back (rt_em.c) */
+/* enemy_mk's part of the tick (move(): enemy_mv -> enemy_mk -> em_ride_sub): the new pose's joints, before body_hit
+ * and em_ride_sub (the Lao-Shan Lung carrying the hunters) read them (rt_em.c) */
 static void em_pose_now(int i)
 {
+    void rt_actor_nodes_fill_one(void *work);
+    extern uint8_t em_work[];
     em_slot_sync(i, 0, NULL);
+    rt_actor_nodes_fill_one(em_work + 0xA10 * i);
 }
 
 /* Village NPC models (npc_create_model -> here): slot = NPC kind. */
@@ -2141,6 +2151,14 @@ static void mem_tick(int t)
     }
 }
 
+static void usage(FILE *f, const char *exe)
+{
+    fprintf(f, "usage: %s DISC_DIR [--shot out.png] [--frames N] [--time S] "
+            "[--size WxH] [--cam x,y,z,yaw,pitch] [--view ex,ey,ez,tx,ty,tz[,fov]] [--stage N] [--quest N] [--play] [--boot] "
+            "[--input SCRIPT] [--audio-dump FILE.wav] [--install FILE.iso]\n"
+            "  (docs/pc.md lists the RT_* switches; MH1_HIDDEN=1: no window, no install dialog)\n", exe);
+}
+
 int main(int argc, char **argv)
 {
 #ifdef MH1_WIN       /* text-mode stdout / stderr would write CRLF into redirected logs (the tests grep them) */
@@ -2180,6 +2198,11 @@ int main(int argc, char **argv)
     }
 #endif
     rt_stack_paint();
+    for (i = 1; i < argc; i++)      /* --help: the usage on stdout, no SDL, no window, no install dialog */
+        if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) {
+            usage(stdout, argv[0]);
+            return 0;
+        }
     gfx_opts_load(argc, argv);      /* mh1pc.ini (Xbox: settings.ini in the game folder); the display flags below override it */
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shot") && i + 1 < argc) shot = argv[++i];
@@ -2358,7 +2381,11 @@ int main(int argc, char **argv)
         if (!iso && (!disc || (disc && !install_has_data(disc))) && !shot) {
             if (install_find_data(found, sizeof found))
                 disc = found;
-            else if (!disc) {
+            else if (!disc && getenv("MH1_HIDDEN") && !getenv("MH1_SHOW")) {
+                /* a hidden run (agents, tests) never opens the install dialog on the desktop */
+                fprintf(stderr, "no game data found and no DISC_DIR given (MH1_HIDDEN is set: no install dialog)\n");
+                return 1;
+            } else if (!disc) {
                 char got[1024];
                 if (install_prompt(got, sizeof got) == 0) {
                     snprintf(found, sizeof found, "%s", got);
@@ -2374,7 +2401,7 @@ int main(int argc, char **argv)
                 snprintf(dest, sizeof dest, "%s", install_dir);
             else
                 install_default_dir(dest, sizeof dest);
-            if (install_from_iso(iso, dest, !getenv("RT_NO_GUI")) != 0)
+            if (install_from_iso(iso, dest, !getenv("RT_NO_GUI") && !(getenv("MH1_HIDDEN") && !getenv("MH1_SHOW"))) != 0)
                 return 1;
             snprintf(final, sizeof final, "%s", dest);
             disc = final;
@@ -2396,8 +2423,7 @@ int main(int argc, char **argv)
         menu_set_shot(shot != NULL);
     }
     if (!disc) {
-        fprintf(stderr, "usage:%s DISC_DIR [--shot out.png] [--frames N] [--time S] "
-                "[--size WxH] [--cam x,y,z,yaw,pitch] [--view ex,ey,ez,tx,ty,tz[,fov]] [--stage N] [--play] [--input SCRIPT]\n", argv[0]);
+        usage(stderr, argv[0]);
         return 1;
     }
     if (stage_given && (stage_no < 0 || stage_no >= 88)) {

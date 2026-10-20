@@ -108,6 +108,22 @@ def in_ptr_obj(m, a):
 
 RESIDENT = {"main": "main", "sub_main": "main"}     # one resident module for the scan's exact rule
 PC_DATA_RANGES = []                                 # objects config/mhg/pc_data.txt names (trusted targets)
+def read_noptr_words():
+    """config/mhg/pc_noptr.txt: single data words that hold a number although their value lies in a module's range
+    (short-integer pairs, colours); left out of pc_ptrs.txt. '[module]' sections, one hex address per line."""
+    out, mod = collections.defaultdict(set), None
+    path = P("config/mhg/pc_noptr.txt")
+    if os.path.exists(path):
+        for l in open(path):
+            l = l.split("#", 1)[0].strip()
+            if l.startswith("["):
+                mod = l.strip("[]")
+            elif l:
+                out[mod].add(int(l, 16))
+    return out
+
+
+NOPTR_WORDS = read_noptr_words()
 NOPTR_RANGES = []                                   # pc_data objects marked `noptr`: no pointer words inside (the scan's hits are numbers)
 ALLPTR_OBJS = []                                    # pc_data objects marked `allptr`: (module, addr, size), every word that
                                                     # points into a G module (bss too) is a pointer (per-stage tables)
@@ -493,6 +509,7 @@ def main():
                     code[mm].append((a0, a0 + sz0))
         for m in G_MODS:
             s = set(a for a in found[m] | carried[m] if not any(lo <= a < lo + sz for lo, sz in NOPTR_RANGES))
+            s -= NOPTR_WORDS.get(m, set())      # config/mhg/pc_noptr.txt: numbers the scan took for addresses
             bad = set(a for a in s if a in found[m] and a not in carried[m] and a not in split_ptrs.get(m, set())
                       and any(lo <= a < hi for lo, hi in code[m]))
             if bad:

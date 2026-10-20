@@ -222,10 +222,15 @@ void SoftKeyboard_exit(void)
 void net_send_chat() {}
 int func_5BD520() { return 0; }
 int func_5CB100() { return 0; }
-/* tutorial overlay pieces (game.bin 0x63B0C0 / 0x63B470): only in the
- * village tutorial */
-int func_63B0C0() { return 0; }
-void func_63B470() {}
+/* the Elder's lessons in the training quests (game.bin tuto.c, both games): Pit_mv calls SonchoMove (0x63B0C0; G
+ * 0x66E350) while game_w.x1E7 marks a training quest, and keeps the cockpit menu open (the buttons blocked) while it
+ * returns non-zero; trans_pit_1 draws the "PUSH" sign / the lesson window (DispTutorial, 0x63B470; G 0x66E700).
+ * Stand-ins returning 0 / drawing nothing until 18 Oct 2026 (the lockstep referee: the PS2 masked the buttons while
+ * the window was open, the PC did not; docs/RELEASE_G.md section 11) */
+unsigned char SonchoMove(unsigned short pad);
+void DispTutorial(void);
+int func_63B0C0(int pad) { return SonchoMove((unsigned short)pad); }
+void func_63B470(void) { DispTutorial(); }
 
 
 /* ------------------------------------------------ not ported yet (no-ops) */

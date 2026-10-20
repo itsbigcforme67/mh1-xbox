@@ -447,3 +447,6 @@ eft13_all_time = 0x00504DA0; // size:0x50 noptr
 eft13_index = 0x00504DF0; // size:0x50 noptr
 eft13_param = 0x00504E40; // size:0x50 noptr
 eft13_water_flag = 0x00504E90; // size:0x50 noptr
+[sub_main]
+tuto_str_tbl = 0x005282F0; // size:0x14      # the Elder's lesson window texts (G DispTutorial, game 0x66E700): the PUSH sign, a locked lesson, back, the Elder's name, the page counter (pointers)
+tuto_title_str = 0x00529050; // size:0x20 noptr   # its frame title (a text; MH1 passes a pointer word, soncho_no_oshie)

@@ -82,8 +82,10 @@ EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c sr
     src/game/em/em16_nm.c src/game/em/em16.c src/game/em/em12_nm.c src/game/em/em29.c"
 # Quest flow (agent C/E): f_quest (whole file near-match; its first part,
 # accessors and Quest_init, is matched: qstb01-07.c), the tutorial checks it
-# calls (game.bin tutorial.c)
+# calls (game.bin tutorial.c), the Elder's lesson window of the training quests (tuto.c: SonchoInit /
+# SonchoMove / DispTutorial, tutob.c, tuto_nm.c's print_tuto_message; Pit_mv / trans_pit_1 call them by address)
 QUEST="src/main/evdemo/evdemo.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c \
+       src/game/tuto/tuto.c src/game/tuto/tutob.c src/game/tuto/tuto_nm.c \
        src/main/game/f_game.c src/main/game/f_gameb.c src/main/font/dsp01.c src/main/font/dsp02.c \
        src/main/menu/menu_nm.c src/main/menu/menu_disp_nm.c \
        src/main/chat/chat_nm.c src/main/chat/dispframe_nm.c src/main/font/fontst_nm.c \

@@ -1,0 +1,100 @@
+# PS2 Monster Hunter G data words that tools/mhg_pcmeta.py's scan took for pointers but that hold numbers
+# (short-integer pairs, colours, key codes): their value happens to fall inside a module's address range.
+# mhg_pcmeta.py leaves them out of config/mhg/pc_ptrs.txt, so the PC import keeps the number. Found by the
+# sweep of 18 Oct 2026 (agent D; docs/RELEASE_G.md section 11): scan-only words next to small numbers in
+# objects whose MH1 twin has no relocation there. Addresses only, one module per section.
+[main]
+254354  # push00 +0x154: s16 pairs
+25435C  # push00 +0x15C: s16 pairs
+254364  # push00 +0x164: s16 pairs
+2543A8  # push00 +0x1A8: s16 pairs
+2543E8  # push00 +0x1E8: s16 pairs
+254418  # push00 +0x218: s16 pairs
+2544A4  # push00 +0x2A4: s16 pairs
+2544BC  # push00 +0x2BC: s16 pairs
+25455C  # push00 +0x35C: s16 pairs
+25E2F8  # ef2_efct_tbl0 +0x8: a colour
+25E4D4  # ef3_efct_tbl2 +0x4: a colour
+25E4F4  # ef3_efct_tbl3 +0x4: a colour
+2891DC  # Snd_weapon_tbl +0x19C: sound numbers (s16 pairs)
+2A59C4  # moji_tbl_abn_h +0x1B4: character codes (s16)
+2A59D4  # moji_tbl_abn_h +0x1C4: character codes (s16)
+2B0D60  # sex_char_tbl +0x60: s16 character-code pairs after the four real pointers
+2B0D70  # sex_char_tbl +0x70: s16 character-code pairs after the four real pointers
+2B0DC0  # sex_char_tbl +0xC0: s16 character-code pairs after the four real pointers
+2B0DD0  # sex_char_tbl +0xD0: s16 character-code pairs after the four real pointers
+2B0DF8  # sex_char_tbl +0xF8: s16 character-code pairs after the four real pointers
+2B0F00  # sex_char_tbl +0x200: s16 character-code pairs after the four real pointers
+2B0F90  # sex_char_tbl +0x290: s16 character-code pairs after the four real pointers
+2BD760  # Keycode_table_101 +0x58: ASCII pairs
+2BD774  # Keycode_table_101 +0x6C: ASCII pairs
+2BD954  # Keycode_table_101 +0x24C: ASCII pairs
+2BE358  # Keypad_table +0x50: key codes
+2BE3AC  # Keypad_table +0xA4: key codes
+2EC360  # eft20_type2_time_tbl +0x40: s16 times
+2EDFE4  # mp06_st03_em20_data_def_q +0x4: a byte list
+[sub_main]
+5082E8  # hit_se_tbl +0x28: sound numbers
+50BAA8  # bou_sei_tbl +0x378: weapon tree rows (s16 pairs)
+50E478  # bou_sei_tbl +0x2D48: weapon tree rows (s16 pairs)
+50E490  # bou_sei_tbl +0x2D60: weapon tree rows (s16 pairs)
+50E4A8  # bou_sei_tbl +0x2D78: weapon tree rows (s16 pairs)
+50E4C0  # bou_sei_tbl +0x2D90: weapon tree rows (s16 pairs)
+50E4D8  # bou_sei_tbl +0x2DA8: weapon tree rows (s16 pairs)
+50E4F0  # bou_sei_tbl +0x2DC0: weapon tree rows (s16 pairs)
+50E508  # bou_sei_tbl +0x2DD8: weapon tree rows (s16 pairs)
+50E520  # bou_sei_tbl +0x2DF0: weapon tree rows (s16 pairs)
+50E538  # bou_sei_tbl +0x2E08: weapon tree rows (s16 pairs)
+50E868  # bou_sei_tbl +0x3138: weapon tree rows (s16 pairs)
+50E880  # bou_sei_tbl +0x3150: weapon tree rows (s16 pairs)
+50E898  # bou_sei_tbl +0x3168: weapon tree rows (s16 pairs)
+50E8B0  # bou_sei_tbl +0x3180: weapon tree rows (s16 pairs)
+50E8C8  # bou_sei_tbl +0x3198: weapon tree rows (s16 pairs)
+50EA90  # bou_sei_tbl +0x3360: weapon tree rows (s16 pairs)
+50EAA8  # bou_sei_tbl +0x3378: weapon tree rows (s16 pairs)
+50EAC0  # bou_sei_tbl +0x3390: weapon tree rows (s16 pairs)
+50EAD8  # bou_sei_tbl +0x33A8: weapon tree rows (s16 pairs)
+50EAF0  # bou_sei_tbl +0x33C0: weapon tree rows (s16 pairs)
+50EB08  # bou_sei_tbl +0x33D8: weapon tree rows (s16 pairs)
+50EB20  # bou_sei_tbl +0x33F0: weapon tree rows (s16 pairs)
+50EB38  # bou_sei_tbl +0x3408: weapon tree rows (s16 pairs)
+510B60  # bou_sei_tbl +0x5430: weapon tree rows (s16 pairs)
+510B78  # bou_sei_tbl +0x5448: weapon tree rows (s16 pairs)
+510B90  # bou_sei_tbl +0x5460: weapon tree rows (s16 pairs)
+510BA8  # bou_sei_tbl +0x5478: weapon tree rows (s16 pairs)
+510BC0  # bou_sei_tbl +0x5490: weapon tree rows (s16 pairs)
+510BD8  # bou_sei_tbl +0x54A8: weapon tree rows (s16 pairs)
+510BF0  # bou_sei_tbl +0x54C0: weapon tree rows (s16 pairs)
+510ED8  # bou_sei_tbl +0x57A8: weapon tree rows (s16 pairs)
+510EF0  # bou_sei_tbl +0x57C0: weapon tree rows (s16 pairs)
+5110A0  # bou_sei_tbl +0x5970: weapon tree rows (s16 pairs)
+5110B8  # bou_sei_tbl +0x5988: weapon tree rows (s16 pairs)
+5110D0  # bou_sei_tbl +0x59A0: weapon tree rows (s16 pairs)
+5110E8  # bou_sei_tbl +0x59B8: weapon tree rows (s16 pairs)
+511100  # bou_sei_tbl +0x59D0: weapon tree rows (s16 pairs)
+511118  # bou_sei_tbl +0x59E8: weapon tree rows (s16 pairs)
+511130  # bou_sei_tbl +0x5A00: weapon tree rows (s16 pairs)
+512E00  # kakou_tbl +0x450: forge upgrade rows (s16 pairs)
+5132C8  # kakou_tbl +0x918: forge upgrade rows (s16 pairs)
+5137F0  # kakou_tbl +0xE40: forge upgrade rows (s16 pairs)
+513C58  # kakou_tbl +0x12A8: forge upgrade rows (s16 pairs)
+514510  # kakou_tbl +0x1B60: forge upgrade rows (s16 pairs)
+5146F0  # kakou_tbl +0x1D40: forge upgrade rows (s16 pairs)
+514900  # kakou_tbl +0x1F50: forge upgrade rows (s16 pairs)
+514BD0  # kakou_tbl +0x2220: forge upgrade rows (s16 pairs)
+52096C  # em_prog_tbl +0x16C: an s16 pair past MH1's table
+[yn]
+A0EDE4  # yn_spr_data +0x124: sprite coordinates (s16 x/y/w/h)
+A0EDFC  # yn_spr_data +0x13C: sprite coordinates (s16 x/y/w/h)
+A0EEE0  # yn_spr_data +0x220: sprite coordinates (s16 x/y/w/h)
+A0EEEC  # yn_spr_data +0x22C: sprite coordinates (s16 x/y/w/h)
+A0EF10  # yn_spr_data +0x250: sprite coordinates (s16 x/y/w/h)
+A0EF1C  # yn_spr_data +0x25C: sprite coordinates (s16 x/y/w/h)
+A0EFF4  # yn_spr_data +0x334: sprite coordinates (s16 x/y/w/h)
+A0F00C  # yn_spr_data +0x34C: sprite coordinates (s16 x/y/w/h)
+A0F018  # yn_spr_data +0x358: sprite coordinates (s16 x/y/w/h)
+A0F024  # yn_spr_data +0x364: sprite coordinates (s16 x/y/w/h)
+A0F030  # yn_spr_data +0x370: sprite coordinates (s16 x/y/w/h)
+A0F03C  # yn_spr_data +0x37C: sprite coordinates (s16 x/y/w/h)
+A0F048  # yn_spr_data +0x388: sprite coordinates (s16 x/y/w/h)
+A0F18C  # yn_spr_data +0x4CC: sprite coordinates (s16 x/y/w/h)

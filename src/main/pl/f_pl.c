@@ -3228,6 +3228,10 @@ static void pl_mv001(PLW *pl, u32 arg1) {
             case 1:
             case 4:
             case 5:
+#ifdef VERSION_MHG
+            case 6:     /* G (game 0x54F830, jump table of 7): the Dual Swords blend into the walk start over 6 like the
+                         * great sword; MH1's code gave them the default 4 (the lockstep referee's ds scenario, tick 254) */
+#endif
                 pl_chr_set2(pl, 0x3EC, 6, 0);
                 break;
             }

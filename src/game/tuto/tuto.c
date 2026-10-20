@@ -70,6 +70,28 @@ extern char lit_443_0068F080[];
 extern char lit_444_0068F0A0[];
 extern char lit_445_0068F0B0[];
 extern char lit_446_0068F0C8[];
+#ifdef VERSION_MHG
+/* G (written from G's asm for the PC build, game 0x66E270-0x66EBB0): the five texts come from a table of pointers
+ * (sub_main 0x5282F0: the "PUSH" sign, a locked lesson's title, "back", the Elder's name, the page counter) and the
+ * frame title is the text itself (sub_main 0x529050), not a pointer word; config/mhg/pc_data.txt names both. */
+extern char *tuto_str_tbl[];
+extern char tuto_title_str[];
+#define TUTO_STR(i, mh1) tuto_str_tbl[i]
+#define TUTO_TITLE ((s32)(unsigned long)tuto_title_str)
+/* G's texture slots 0x142 / 0x141 hold what MH1 has at 0x11B / 0x11A (the monster pictures / the bar); the PC build
+ * keeps MH1's slot numbers (rt_2d.c load_pit), so this C uses those */
+#define TUTO_TEX_SIGN 0x11B
+#define TUTO_TEX_BAR 0x11A
+#define TUTO_SUB_N 7            /* lessons in a sub-list (MH1 6) */
+#define TUTO_SUB_Y 0x13E        /* "back" line under the sub-list (MH1 0x128) */
+#else
+#define TUTO_STR(i, mh1) (mh1)
+#define TUTO_TITLE soncho_no_oshie_00389C54
+#define TUTO_TEX_SIGN 0x11B
+#define TUTO_TEX_BAR 0x11A
+#define TUTO_SUB_N 6
+#define TUTO_SUB_Y 0x128
+#endif
 
 int Event_flag_ck(int);
 void Event_flag_set(int);
@@ -107,6 +129,20 @@ void SonchoInit(void) {
     soncho = &soncho_w;
     *(u32 *)&soncho->mode = 0;
     *(u16 *)&soncho->cur = 0;
+#ifdef VERSION_MHG
+    /* G: the training quests 10001.. (game 0x66E270) */
+    if (game_w.quest == 10010) {
+        soncho->no = 7;
+    } else if (game_w.quest == 10014) {
+        soncho->no = 8;
+    } else if (game_w.quest == 10015) {
+        soncho->no = 9;
+    } else if (game_w.quest == 10019) {
+        soncho->no = 10;
+    } else {
+        soncho->no = game_w.quest - 10001;
+    }
+#else
     if (game_w.quest == 0x94) {
         soncho->no = 8;
     } else if (game_w.quest == 0x96) {
@@ -114,6 +150,7 @@ void SonchoInit(void) {
     } else {
         soncho->no = game_w.quest - 0x83;
     }
+#endif
     soncho->num = tuto_message_num(soncho->no);
     soncho->alpha = 0;
 }
@@ -179,7 +216,7 @@ u8 SonchoMove(u16 pad) {
                 }
                 break;
             case 1:
-                ListSelect(&soncho->cur2, pad, 6);
+                ListSelect(&soncho->cur2, pad, TUTO_SUB_N);
                 if (pad & 0x40) {
                     soncho->sub2 = 0;
                     se_req(7, 0x14, 0);
@@ -225,8 +262,8 @@ void DispTutorial(void) {
     switch (soncho->mode) {
     case 0:
         if (soncho->unread != 0) {
-            reload_tex(1, 0x11B);
-            SetTextureStage(0x11B);
+            reload_tex(1, TUTO_TEX_SIGN);
+            SetTextureStage(TUTO_TEX_SIGN);
             spr.x = 0x10;
             spr.y = 0x6A;
             spr.w = 0x33;
@@ -236,8 +273,8 @@ void DispTutorial(void) {
             spr.col = (soncho->alpha << 24) | 0xFFFFFF;
             flps0008(&spr);
             if (soncho->alpha == 0xFF && player_work[game_w.master].work88C == 0) {
-                reload_tex(1, 0x11A);
-                SetTextureStage(0x11A);
+                reload_tex(1, TUTO_TEX_BAR);
+                SetTextureStage(TUTO_TEX_BAR);
                 spr.x = 0x10;
                 spr.y = 0xAF;
                 spr.w = 0x33;
@@ -250,7 +287,7 @@ void DispTutorial(void) {
                 flfntSetSize(0x12, 0x12);
                 font_set_palette(3);
                 flfntLocate(0x2C, 0xB2);
-                font_print_uf(lit_442_0068F070);
+                font_print_uf(TUTO_STR(0, lit_442_0068F070));
             }
         }
         break;
@@ -261,7 +298,7 @@ void DispTutorial(void) {
             switch (soncho->sub2) {
             case 0:
                 pf_message_list[7] = soncho->num + 1;
-                DispFrameList(pf_message_list, soncho_no_oshie_00389C54, soncho->cur);
+                DispFrameList(pf_message_list, TUTO_TITLE, soncho->cur);
                 y = 0x8E;
                 n = soncho->num;
                 m = soncho->msgs;
@@ -276,18 +313,18 @@ void DispTutorial(void) {
                         }
                         font_print_uf(m->title);
                     } else {
-                        font_print_uf(lit_443_0068F080);
+                        font_print_uf(TUTO_STR(1, lit_443_0068F080));
                     }
                 }
                 break;
             case 1:
-                DispFrameList(pf_message_list + 0x18, soncho_no_oshie_00389C54, soncho->cur2 + 1);
-                y = 0x128;
+                DispFrameList(pf_message_list + 0x18, TUTO_TITLE, soncho->cur2 + 1);
+                y = TUTO_SUB_Y;
                 break;
             }
             font_set_palette(0);
             flfntLocate(0x1BE, y);
-            font_print_uf(lit_444_0068F0A0);
+            font_print_uf(TUTO_STR(2, lit_444_0068F0A0));
             button_icon_tbl[1].y = y;
             PutButtonICON(&button_icon_tbl[1], 1);
             break;
@@ -307,8 +344,8 @@ void DispTutorial(void) {
                 *(s16 *)&spr.uv1 = 0xA6;
                 flps0008(&spr);
             }
-            reload_tex(1, 0x11B);
-            SetTextureStage(0x11B);
+            reload_tex(1, TUTO_TEX_SIGN);
+            SetTextureStage(TUTO_TEX_SIGN);
             spr.x = 0xE6;
             spr.y = 0x40;
             spr.w = 0x33;
@@ -319,12 +356,12 @@ void DispTutorial(void) {
             flps0008(&spr);
             font_set_palette(3);
             flfntLocate(0xE6, 0x86);
-            font_print_uf(lit_445_0068F0B0);
+            font_print_uf(TUTO_STR(3, lit_445_0068F0B0));
             font_set_palette(0);
             print_tuto_message(((char **)soncho->item->list)[soncho->page]);
             font_set_palette(0);
             flfntLocate(0x125, 0x12C);
-            font_print(lit_446_0068F0C8, soncho->page + 1, soncho->item->pages);
+            font_print(TUTO_STR(4, lit_446_0068F0C8), soncho->page + 1, soncho->item->pages);
             break;
         }
         break;

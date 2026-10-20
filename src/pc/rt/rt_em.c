@@ -886,10 +886,15 @@ int rt_monster_tick(int no)
         r = enemy_mv(em);
         if (em->be_flag)
             rt_em_world_mat(em);
-        if (r == 0 && em->kind == 7) {
-            if (em_pose_fn)     /* enemy_mk: the PS2 builds this tick's joint matrices before em_ride_sub reads them */
+        if (r == 0) {
+            /* enemy_mk (move(), right after enemy_mv): the PS2 builds this tick's joint matrices (flCalcTransSI) before
+             * body_hit / item_check and em_ride_sub read them. Until 18 Oct 2026 only the Lao-Shan Lung (em_ride_sub) got
+             * them here, the rest at the end of the tick: body_hit pushed hunter and monster apart one tick late (the
+             * lockstep referee's first difference in every fight, docs/referee.md) */
+            if (em_pose_fn)
                 em_pose_fn(no);
-            em_ride_sub(em);
+            if (em->kind == 7)
+                em_ride_sub(em);
         }
         return r;
     }

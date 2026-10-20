@@ -12,7 +12,7 @@ Items in a quest: potion whetstone paintball pitfall tranq barrel bbq drinks com
 Village: npc_walk shop_buy shop_sell shop_qty wshop_buy wshop_sell ashop_buy ashop_sell forge_weapon forge_armour forge_upgrade box_store box_take box_equip bed_prompt
 HUD / demo: demo_input map_item
 """
-import math, re, sys, time
+import math, os, re, sys, time
 from concurrent.futures import ThreadPoolExecutor
 from act_lib import *
 
@@ -426,7 +426,10 @@ def trader():
         ev[tk] = 'circle*2'; tk += 40
         if i % 3 == 2: ev[tk] = 'dleft*2'; tk += 20
     res = []
-    for seed in (1, 5, 6, 8):
+    # seed 6 trades with the PC's old round-to-nearest floats (RT_FPU_PS2=0), seed 27 with the PS2 rounding (the default
+    # since 18 Oct 2026): the trader's offer depends on the hunter's path there; TRADER_SEEDS="..." tries others
+    for seed in os.environ.get('TRADER_SEEDS', '1 5 6 8 27').split():
+        seed = int(seed)
         t = run('trader', ev, tk + 100, stage=41, env={'RT_SEED': seed, 'RT_PL_ITEMS': '71:5', 'RT_PL_WARP': '10,10058,10050'})
         if crashed(t): return False, 'crash'
         g, fin = gains(t, {71: 5})

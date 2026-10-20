@@ -102,24 +102,66 @@ void rt_ref_rng(void *ra, int ch)
         fprintf(rng, "%d %d %ld\n", game_w[0] == 2 && game_w[1] <= 1 ? ptick : -1, ch, (long)((char *)ra - (char *)ran_suu));
 }
 
-/* RT_FPU_PS2=1: the PS2's float rounding for the game's float math: the EE FPU rounds toward zero and has no
- * denormals; SSE does the same with MXCSR's rounding bits at "toward zero" and flush-to-zero / denormals-are-zero.
+/* The PS2's float rounding for the game's float math, ON BY DEFAULT (owner, 18 Oct 2026; RT_FPU_PS2=0 turns it off):
+ * the EE FPU rounds toward zero and has no denormals; SSE does the same with MXCSR's rounding bits at "toward zero"
+ * and flush-to-zero / denormals-are-zero. The game C is built with SSE math (build_pc.sh FPSSE, build_win.sh,
+ * build_xbox.py -msse), so the mode reaches all of it. The host's own float code on 32-bit x86 (rt_*.c, the
+ * renderer, libm, the mixer) is x87 code and does not read MXCSR, so it keeps round-to-nearest.
  * The referee showed why it matters: a Velociprey's run motion counts its frame up by 2.4 a tick; on the PS2 the sum
  * reaches 47.99998 and the 48-frame loop wraps a tick later than the PC's exact 48.0, and the monster lands 5 units
- * elsewhere (docs/referee.md). Test switch only for now: the host's own float code (libm, drawing, audio) runs under
- * the same mode. */
+ * elsewhere (docs/referee.md).
+ * DAZ (bit 6) is only set when the CPU has it: the Xbox's Pentium III has no DAZ, and ldmxcsr with a bit outside
+ * MXCSR_MASK raises #GP (the mask comes from fxsave; 0 there means the old default mask 0xFFBF, no DAZ).
+ * MXCSR is per thread: this runs on the game thread (viewer.c's main) before the game starts. */
+static unsigned int fpu_mode = 0x1F80;
+static unsigned int fpu_mxcsr(void)
+{
+    unsigned int m = 0x1F80;
+#if defined(__i386__) || defined(__x86_64__)
+    __asm__ volatile("stmxcsr %0" : "=m"(m));
+#endif
+    return m;
+}
 static void fpu_ps2(void)
 {
 #if defined(__i386__) || defined(__x86_64__)
     const char *e = getenv("RT_FPU_PS2");
-    if (e && *e && *e != '0') {
-        unsigned int m;
-        __asm__ volatile("stmxcsr %0" : "=m"(m));
-        m |= 0x6000u | 0x8040u;     /* RC = 11 (toward zero), FTZ, DAZ (the game C is built with SSE math, build_pc.sh FPSSE) */
-        __asm__ volatile("ldmxcsr %0" : : "m"(m));
-        rt_log("fpu: PS2 rounding (toward zero, no denormals)");
+    unsigned int m, mask;
+    static unsigned char fx[512 + 16];
+    unsigned char *p = (unsigned char *)(((unsigned long)fx + 15) & ~15ul);
+    if (e && *e == '0') {
+        rt_log("fpu: PC rounding (RT_FPU_PS2=0)");
+        fpu_mode = fpu_mxcsr();
+        return;
     }
+    __asm__ volatile("fxsave %0" : "=m"(*(unsigned char (*)[512])p));
+    memcpy(&mask, p + 28, 4);
+    if (!mask)
+        mask = 0xFFBF;
+    m = fpu_mxcsr();
+    m |= 0x6000u | 0x8000u;     /* RC = 11 (toward zero), FTZ */
+    if (mask & 0x40u)
+        m |= 0x40u;             /* DAZ */
+    m &= mask;
+    __asm__ volatile("ldmxcsr %0" : : "m"(m));
+    fpu_mode = fpu_mxcsr();
+    rt_log("fpu: PS2 rounding (toward zero, flush to zero%s), mxcsr %04X", mask & 0x40u ? ", denormals are zero" : "",
+           fpu_mode);
 #endif
+}
+
+/* at each quest start (rt_log.c): the game thread's MXCSR, and the mode set again if something changed it (a
+ * library, a kernel that does not keep MXCSR across thread switches) */
+void rt_fpu_check(void)
+{
+    unsigned int m = fpu_mxcsr();
+    if (m != fpu_mode) {
+        rt_log("fpu: mxcsr %04X, expected %04X: set again", m, fpu_mode);
+#if defined(__i386__) || defined(__x86_64__)
+        { unsigned int w = fpu_mode; __asm__ volatile("ldmxcsr %0" : : "m"(w)); }
+#endif
+    } else
+        rt_log("fpu: mxcsr %04X", m);
 }
 
 void rt_ref_init(void)

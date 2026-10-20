@@ -187,6 +187,13 @@ void rt_hud_init(void)
     load_pit();
     PitWork_init();
     Pit_init();
+    if (Tutorial_quest_ck()) {  /* stage_init's next step (flow01.c: Pit_init, SonchoInit 0x63B020, Q_camera_init): the
+                                 * Elder's lessons. The PS2 runs it for every quest and then indexes tuto_flag_tbl with
+                                 * (quest - first training quest), far past the table for the others; only training
+                                 * quests use it (game_w.x1E7, from the same check), so the PC skips it there */
+        void SonchoInit(void);
+        SonchoInit();
+    }
     Info_Initialization();
 }
 void rt_hud_tick(void)

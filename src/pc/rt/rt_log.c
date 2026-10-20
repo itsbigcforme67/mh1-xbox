@@ -376,6 +376,7 @@ void rt_log_game(int mode, int step, int stage, int quest, int result)
         if (mode == 2 && cur_mode != 2) {
             cur_quest = quest;
             rt_log("quest %d START (stage %d)", quest, stage);
+            { void rt_fpu_check(void); rt_fpu_check(); }
             last_quest_mode = 2;
         } else if (cur_mode == 2 && mode == 3) {
             rt_log("quest %d CLEAR (result code %d)", cur_quest, result);
