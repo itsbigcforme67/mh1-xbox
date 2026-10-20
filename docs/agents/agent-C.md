@@ -2039,3 +2039,24 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
 - **Recommendation written (network.md 3.11):** retire the lobby's "mh1-relay" hand-off in two steps (mcs as the
   default first; remove after real hardware, Wine and mcs.py limits); keep relay.py's stand-alone session and
   net_peer direct connect.
+
+## G online (GB7): where I stopped (19 Oct 2026, paused at the owner's request)
+- **Done (committed WIP):** MH1LAUNCH patches the real G disc in RAM (PATCH_MHG in src/ps2patch/launcher.c, G blob linked
+  with tools/ps2launch/syms_mhg.ld at 0x2130D0; MH1 blob byte-identical). mh1-server has a G mode: a client is G once it
+  sends 61A0 (MH1's 6102 waits 0.5 s for it); places / rooms / user search / hunters (accounts schema 3) are per game.
+  G handlers live in tools/mhg_lobby.py (reloaded when the file changes, so a logged-in PS2 is not dropped); G's
+  required info file ("file 0") is made by tools/g_info.py (layout read from the client, in its header).
+- **Seen in PCSX2** (real G + launcher, hidden, flock'd): login, Capcom ID, info file download, G's plaza menu
+  ("G Plaza 1": 街に入る / エリア移動 / ランド移動 / friend list / searches / info). Not committed: screenshots in build/C/gonl.
+- **G protocol found so far** (to go into docs/network.md "G online"): no 6102; 61A0 req u8 (7) -> ans u32,u32; first data
+  kind byte 7 (MH1 4); version string "0411210839" (MH1 "0401290111", MakeMediaVersion from the build date); 61A1 -> u32,u32
+  (mcsls send window); 6148/6149 record upload requests (answer 0 = none); 6881 needs >= 1 file (0 files -> logout),
+  6883 per-file (u8 i, u32 size, u32 version); 68A0 -> u8 n<=3 + 4 bytes, 68A1 news strings; plazas sorted in 5 classes
+  by the explanation's first char '1'..'5' (PlazaInfo+91), class rank limits / town-type list in the info file;
+  630B (u16, u8) / 630D (u16, u32) per-lobby attributes (meaning unknown); 6310-6317 town search/entry: 6310 empty,
+  6312/6313/6314 ans u8, 6315/6316/6311/6317 empty answers (requests: u16 or obfuscated strings).
+  Command table diff: scratch tool (lbs table at G lobby 0x63B910.., 293 rows) — worth committing as tools/lbs_cmdtab.py --g.
+- **Next:** pick 街に入る in the G plaza and handle what G sends (6314 town search by type name, lobby list, town entry);
+  then write docs/network.md G section + RELEASE_G.md GB7; then the PC G online build (VERSION=mhg + ONLINE=1: cnet GV
+  indices must be G's in the G PC build), two G PCs, PS2 G + PC G. Exploration scripts: build/C/gonl/{boot,k,run}.sh
+  (boot.sh: server + PCSX2 + scripted menus to the plaza, ~4 min; savestates break PCSX2's socket networking).

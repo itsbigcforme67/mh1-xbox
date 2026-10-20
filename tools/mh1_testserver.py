@@ -137,21 +137,31 @@ MAILBOX = {}                        # id -> [6705 payloads] for hunters not logg
 PATCH = None                        # --patch FILE: bytes sent as a patch at the login (client tests only)
 EVENT_FILES = []                    # --event-quest FILE: the downloadable (event) quest files, in order
 LINE_CHECK = 30.0                   # seconds between 6001 line checks
-G_NEWS = []                         # G: news texts sent after the login (68A0 / 68A1), at most 3
 G_DETECT_WAIT = 0.5                 # seconds the login waits for G's 61A0 before it asks an MH1 client for 6102
 ADMIN_MESSAGE = ""                  # --admin-message: sent to each hunter at the first lobby entry (6706)
 
 
-def g_files():
-    """Monster Hunter G's download files (docs/network.md "G online"): file 0 is G's online information file, read by
-    the plaza and the guild (lobby 0x569610, 0x56A850, 0x56AB70, Lb_guild ...); G refuses to go on without it (0 files
-    = logout, lobby 0x581210). Files 1-3 would be event quests (a 512-byte header each, the whole file on demand).
-    Our file 0 is made by g_info.py from what the client reads (no Capcom bytes)."""
-    import g_info
-    return [g_info.info_file()] + list(G_EVENT_FILES)
+_MHG = [None, 0]
 
 
-G_EVENT_FILES = []                  # G: event quest files (none yet)
+def mhg():
+    """tools/mhg_lobby.py, the G handlers; read again when the file changed (so a running server picks up a change
+    without dropping its clients: a PS2 in PCSX2 cannot reconnect without going through its menus again)"""
+    import importlib
+    import os
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mhg_lobby.py")
+    t = os.path.getmtime(path)
+    if _MHG[0] is None:
+        import mhg_lobby
+        _MHG[0], _MHG[1] = mhg_lobby, t
+    elif t != _MHG[1]:
+        try:
+            _MHG[0] = importlib.reload(_MHG[0])
+            _MHG[1] = t
+            log("mhg_lobby.py reloaded")
+        except Exception as e:      # a half-saved file: keep the old one
+            log("mhg_lobby.py reload failed: %r" % e)
+    return _MHG[0]
 
 
 class Room:
@@ -291,6 +301,11 @@ class Client(socketserver.BaseRequestHandler):
         self.send(REQ, C_CONNPAIR, struct.pack(">H", self.xfee))
 
     def dispatch(self, magic, cat, cmd, seq, res, payload):
+        if self.game == "mhg":      # Monster Hunter G's own commands and G versions of MH1's (tools/mhg_lobby.py)
+            g = getattr(mhg(), "on_%04X_%d" % (cmd, cat), None)
+            if g:
+                g(self, seq, payload)
+                return
         h = self.h.get((cmd, cat)) or getattr(self, "on_%04X_%d" % (cmd, cat), None)
         if h:
             h(seq, payload)
@@ -343,12 +358,6 @@ class Client(socketserver.BaseRequestHandler):
         hs = self.hunter_list()
         self.send(NOTE, C_USERLIST, bytes([len(hs)]) + b"".join(str16(i) + str16(h[:16]) + str16((m or b"")[:0x40])
                                                                  for i, h, m in hs))
-
-    def on_61A1_1(self, seq, p):            # G only, after 6131: no payload -> u32, u32
-        # G's answer handler (lobby 0x5B0300): a non-zero first value / 60 * 30 becomes MCSLS_SWIN_LIMIT (the in-hunt
-        # session's send window), a non-zero second value / 60 a float next to it (gp-0x6C18). Zero leaves both at the
-        # client's defaults. The original server's values are not known.
-        self.send(ANS, 0x61A1, struct.pack(">II", 0, 0), seq=seq)
 
     def on_6132_1(self, seq, p):            # account selected / created
         ident, off = self.enc_string(p, 0, seq)
@@ -946,45 +955,11 @@ class Client(socketserver.BaseRequestHandler):
     # event quests (file download, docs/network.md 5.8): asked at every lobby entry (Lbc_DownloadQuest)
     def files(self):
         """the download files of this client's game: MH1 the event quests; G its info file first (g_files())"""
-        return g_files() if self.game == "mhg" else EVENT_FILES
+        return mhg().g_files() if self.game == "mhg" else EVENT_FILES
 
     def on_6881_1(self, seq, p):            # FileDownloadHeader -> u8 n, n x u32 size (0 files: no event quest)
         fs = self.files()
         self.send(ANS, 0x6881, bytes([len(fs)]) + b"".join(struct.pack(">I", len(f)) for f in fs), seq=seq)
-
-    def on_6883_1(self, seq, p):            # G: one file's record: u8 file -> u8 file, u32 size, u32 version
-        # G keeps the 8 bytes per file with its download (mission_area+0x23F4 + 8 * file) and downloads a file again
-        # only when they differ (lobby 0x581210). The version is ours: a checksum of the file.
-        i = p[0]
-        fs = self.files()
-        f = fs[i] if i < len(fs) else b""
-        self.send(ANS, 0x6883, struct.pack(">BII", i, len(f), zlib.crc32(f) & 0x7FFFFFFF), seq=seq)
-
-    # G's town (lobby) attributes, asked for each lobby with name / status / join users (lobby 0x5AC620 / 0x5AC7A0;
-    # kept in G's lobby records of 356 bytes, flags 0x80 / 0x10). What they mean is not known yet: 0.
-    def on_630D_1(self, seq, p):            # G: u16 lobby -> u16 lobby, u32
-        self.send(ANS, 0x630D, p[:2] + struct.pack(">I", 0), seq=seq)
-
-    def on_630B_1(self, seq, p):            # G: u16 lobby -> u16 lobby, u8
-        self.send(ANS, 0x630B, p[:2] + b"\0", seq=seq)
-
-    def on_6148_1(self, seq, p):            # G: u8 login kind -> u8: 0 = nothing wanted; 1-3 / 4 = the server asks
-        # for one of the hunter's records (sub_main 0x4C8F50 / 0x4C8F90: 336 bytes from User_data for 1-3, 44 for
-        # 4), which the client then sends with 6149 (u8 kind, u8 what, obfuscated record) and asks again. Rankings on
-        # Capcom's side, we guess; this server keeps nothing and asks for nothing.
-        self.send(ANS, 0x6148, b"\0", seq=seq)
-
-    def on_6149_1(self, seq, p):            # G: a record the server asked for (never, here): -> u8 0 (done)
-        self.send(ANS, 0x6149, b"\0", seq=seq)
-
-    def on_68A0_1(self, seq, p):            # G: news after the login: -> u8 n (<= 3), 4 bytes (sent back with 68A1)
-        n = len(G_NEWS)
-        self.send(ANS, 0x68A0, bytes([n, 0, 0, 0, 0]), seq=seq)
-
-    def on_68A1_1(self, seq, p):            # G: u8 k, 3 bytes -> str (text of news k, up to 1280 bytes, the game's HTML)
-        k = p[0]
-        t = G_NEWS[k] if k < len(G_NEWS) else ""
-        self.send(ANS, 0x68A1, html_msg(t), seq=seq)
 
     def on_6882_1(self, seq, p):            # FileDownloadData: u8 file, u32 offset, u32 size (0x200) -> the chunk
         i, ofs, n = struct.unpack(">BII", p[:9])
