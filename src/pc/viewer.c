@@ -1383,16 +1383,6 @@ static void sim_tick(void)
         rt_np_tick();           /* co-op: the other players' packets (net_receive_pl) */
 #endif
         rt_player_tick(lp);
-        if (game_cam) {
-            flmat cw;
-            rt_cam_tick();      /* CameraMove (src/main/cam) */
-            /* rview_mat follows the game camera every tick (sound
-             * distances, billboards), also when several ticks run
-             * in one drawn frame */
-            rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
-            lookat_world(cw, gc_eye, gc_tar);
-            rt_set_camera(cw);
-        }
         /* right stick turns the follow camera */
         cam[3] -= ps.rx * (0.04f / 127.0f);
         if (sw_trace) {
@@ -1467,6 +1457,19 @@ static void sim_tick(void)
         sync_joints(&pl, hunter_yoff);
         remote_hunters(0, light_cur());
         rt_prof_end(RTP_JOINTS);
+    }
+    if (pl.game && play && ticks >= 2 && game_cam) {
+        /* CameraMove: in move() after body_hit, the wall pass and player_mk (f_frame_nm.c), so the camera follows where
+         * the hunter ended up this tick. It ran right after the player until 20 Oct 2026: after a monster pushed the
+         * hunter the camera (and with it the stick's direction for the next tick) was a tick behind (the referee, Kut-Ku) */
+        flmat cw;
+        rt_cam_tick();      /* CameraMove (src/main/cam) */
+        /* rview_mat follows the game camera every tick (sound
+         * distances, billboards), also when several ticks run
+         * in one drawn frame */
+        rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
+        lookat_world(cw, gc_eye, gc_tar);
+        rt_set_camera(cw);
     }
     rt_game_move();             /* move_set / move_eft / move_shell: after the player and CameraMove as in game_core (f_frame_nm.c), so
                                  * camera-attached sets (set13's fog veils, 50 units in front of the eye) use this tick's camera */
