@@ -1440,6 +1440,25 @@ static void sim_tick(void)
         if (game_w[GWX(0x21F)] == 0)         /* move(): item_check / body_hit only while info_stop == 0 (hunters and monsters pushed apart) */
             body_hit();
     }
+    if (ticks >= 2) {
+        /* move()'s wall pass after body_hit (f_frame_nm.c): every hunter (in an online game, or with PLW+0x7EC set) and
+         * every monster with +0x7EC set is pushed out of the walls again with keep = 1. The PC lacked it until 20 Oct
+         * 2026: a hunter pushed into a wall by a monster stayed there for a tick and the next tick's push started from
+         * there (the lockstep referee, Kut-Ku fight) */
+        extern unsigned char game_w[], player_work[], em_work[];
+        void HitWallPlayer(void *w, int keep);
+        int k;
+        for (k = 0; k < 8; k++) {
+            unsigned char *w = player_work + 0xA00 * k;
+            if (w[0] && (game_w[0x2E] == 1 || w[0x7EC]))
+                HitWallPlayer(w, 1);
+        }
+        for (k = 0; k < 20; k++) {
+            unsigned char *w = em_work + 0xA10 * k;
+            if (w[0] && w[0x7EC])
+                HitWallPlayer(w, 1);
+        }
+    }
     if (pl.game && play && ticks >= 2) {
         /* player_mk (move(), after body_hit): the hunters' joint matrices of this tick, before the effects / sets read them
          * (the monsters' come from enemy_mk, right after each one moved: rt_monster_tick -> em_pose_now). Until 18 Oct
