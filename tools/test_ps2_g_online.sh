@@ -136,4 +136,6 @@ if [ -n "$KEEP" ]; then
     exit 0
 fi
 cleanup
-echo "ps2 G online test: OK (the real G disc through MH1LAUNCH on our server: login, info file, plaza, town list, town${HUNT:+, guild counter, a room, the match, the game server, the quest}")"
+W="login, info file, plaza, town list, town"
+[ -z "$HUNT" ] || W="$W, guild counter, a room, the match, the game server, the quest's camp"
+echo "ps2 G online test: OK (the real G disc through MH1LAUNCH on our server: $W)"
