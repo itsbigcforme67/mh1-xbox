@@ -149,3 +149,10 @@ monsters, body_hit before the effects), the game13 tick at the quest start.
 **Left, ranked:** (1) root motion of a new motion one tick late on the PC (RELEASE_G N-R1); (2) PS2 float rounding
 (N-R2, RT_FPU_PS2); (3) the Elder's tutorial window / "△ PUSH" not ported (tuto.c) [inferred for MH1: the same code];
 (4) sound-layer random draws a tick late; (5) the quest clock while loading (owner's call).
+
+## 7. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
+Every G-only / MH1-only change since 13 Oct checked against MH1. For MH1:
+- Debug menu "Can't faint" / RT_PL_GOD: holds against a hit over 100 in one tick and keeps the hunter's own maximum
+  (was put back to 100 each tick: a hunter with 150 hp was cut to 100) [verified: MH1 trace, full_check].
+- tools/test_all_quests.sh (full run) now also checks the failure paths offline: three faints and a time-out on quest 139
+  (both PASS: no fault, a test gap the G sweep already covered).

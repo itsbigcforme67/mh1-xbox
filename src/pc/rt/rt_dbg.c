@@ -385,18 +385,36 @@ void rt_dbg_set_money(int v)
     rt_log("debug menu: money %d", *(s32 *)(User_data + 0x20));
 }
 
+/* hunter rank: User_data+0x37B (MH1), +0xC23 (G, include/ud.h UDW). Both rows were MH1-only until the cross-game
+ * audit of 18 Oct 2026 (G showed neither) */
 #ifdef VERSION_MHG
-int rt_dbg_hr(void) { return -1; }
-void rt_dbg_set_hr(int v) { (void)v; }
-int rt_dbg_clear_all_quests(void) { return 0; }
+#define UD_RANK 0xC23
 #else
-int rt_dbg_hr(void) { return User_data[0x37B]; }
+#define UD_RANK 0x37B
+#endif
+int rt_dbg_hr(void) { return User_data[UD_RANK]; }
 void rt_dbg_set_hr(int v)
 {
-    User_data[0x37B] = (u8)(v < 0 ? 0 : v > 99 ? 99 : v);
-    rt_log("debug menu: hunter rank %d", User_data[0x37B]);
+    User_data[UD_RANK] = (u8)(v < 0 ? 0 : v > 99 ? 99 : v);
+    rt_log("debug menu: hunter rank %d", User_data[UD_RANK]);
 }
 void Quest_clear_bit_set(int n);
+#ifdef VERSION_MHG
+int rt_dbg_clear_all_quests(void)
+{   /* G's clear bits follow quest_bit_tbl (src/main/ud/ud_nm.c: 0..50, the 1001-3007 online series, 10001.. training, 20001..; 0xEA60
+     * ends it): the offline ones are the village quests 1-50 and the training quests 10001.. */
+    extern u16 quest_bit_tbl[];
+    const u16 *p;
+    int n = 0;
+    for (p = quest_bit_tbl; *p != 0xEA60; p++)
+        if ((*p >= 1 && *p < 1000) || (*p >= 10000 && *p < 20000)) {
+            Quest_clear_bit_set(*p);
+            n++;
+        }
+    rt_log("debug menu: %d offline quests marked cleared", n);
+    return n;
+}
+#else
 int rt_dbg_clear_all_quests(void)
 {
     extern u8 *quest_local_tbl[];

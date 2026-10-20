@@ -310,3 +310,11 @@ Owner to decide.
   game-code gap (G still on MH1 logic) or at the port's glue (table sizes, host stand-ins). Built for G first, and for
   MH1 JP with the same tool.
 - Owner rule: every fix found this way (or any other way) that also applies to MH1 goes into MH1 too, and the reverse.
+
+### PS2 float rounding on by default; quest clock left as is (owner, 18 Oct 2026)
+- The referee (docs/referee.md) showed the PS2 rounds floats toward zero and the PC rounds to nearest; with the PC set
+  to round like the PS2 (`RT_FPU_PS2`), fights stay identical to the real game much longer. Decided: make it the default
+  for MH1 and G, on PC and Xbox, after a test round that drawing, sound, movies and the online/co-op paths are unaffected
+  (`RT_FPU_PS2=0` keeps the old behaviour for comparison).
+- The PS2 quest clock runs during area loads; the port loads almost instantly, so players get a few seconds more per
+  quest. Decided: leave it (a side effect of faster loading, not a change to the game's rules).

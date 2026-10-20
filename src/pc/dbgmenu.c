@@ -160,8 +160,6 @@ static void main_build(void)
     for (r = 0; r < R_N; r++) {
         if ((r == R_AREA || r == R_KILL || r == R_WARP || r == R_HP || r == R_TIMER) && !in_quest())
             continue;
-        if ((r == R_HR || r == R_CLEAR) && rt_ver_mhg())
-            continue;
         if ((r == R_POUCH || r == R_BOX || r == R_MONEY || r == R_EQUIP || r == R_HR || r == R_CLEAR) && !in_game())
             continue;
 #ifdef XBOX
