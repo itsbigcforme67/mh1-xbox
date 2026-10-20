@@ -270,6 +270,8 @@ if [ -n "$ONLINE" ]; then
            src/lobby/b/lb_bz20.c src/lobby/b/lb_c509.c src/lobby/b/lb_bz81.c src/lobby/b/lb_tcp01.c \
            src/ps2patch/online.c $NETLB_MCS"   # (online.c: the server table fill shared with the PS2 online patch)
     GAME="$GAME $NETMAIN $NETLB src/lobby/b/lb_cmcs01.c src/main/boot/boot02.c src/main/plsel/plsel_nm.c"
+    # G: its lobby-server receive handlers that differ from MH1's (named per table address in config/mhg/pc_names.txt)
+    [ "$VERSION" = mhg ] && GAME="$GAME src/lobby/cnet/cnet_g.c"
     WEAK="$WEAK lb__cnlbs_nm lb__lbui_nm"   # lbui_nm: the plaza TUs lb_plz2/3 (matched C) win
     # main's cnLBS file-download C calls the lobby's cnet helpers by address
     NETALIASES="func_5AD280=__cnetSub_Set_BgProcess func_5AD1B0=_cnet_Return_CallBack func_5ADB60=GetRecvData8 \
@@ -441,7 +443,7 @@ GAMEFLAGS="$M32 $FPSSE $GAME_EXTRA ${COV:+-finstrument-functions} -std=gnu99 -O2
 if [ "$VERSION" = mhg ]; then
     GAMEFLAGS="$GAMEFLAGS -DVERSION_MHG"; CFLAGS="$CFLAGS -DVERSION_MHG"
     # the G online build: lbnet.h / cnlbs01 / cnlbs03 take G's command indices and work sizes (g_alias.h MHG_NET)
-    [ -n "$ONLINE" ] && GAMEFLAGS="$GAMEFLAGS -DMHG_ONLINE=1"
+    [ -n "$ONLINE" ] && { GAMEFLAGS="$GAMEFLAGS -DMHG_ONLINE=1"; CFLAGS="$CFLAGS -DMHG_ONLINE=1"; }
 fi
 LIBS=${LIBS:-"-lSDL2 -lGL -lm"}
 LINK1_OPTS=${LINK1_OPTS--Wl,--warn-unresolved-symbols}   # lld (Windows) has no such switch: LINK1_TOLERANT=1 and --error-limit=0

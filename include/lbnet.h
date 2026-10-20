@@ -7,6 +7,13 @@
 #define MHG_NET 1       /* GV() gives G's values in the G PC online build (g_alias.h) */
 #endif
 #include "g_alias.h"
+/* G's layout of the lobby-server client's work (CnetSys_w, CNO): the PS2 G build, and the G PC online build, whose
+ * lobby client runs on G's lobby.bin data and G's new handlers (written from G's code with G's offsets) */
+#if defined(MHG_PS2) || defined(MHG_NET)
+#define LBNET_G 1
+#else
+#define LBNET_G 0
+#endif
 
 /* event/result record passed by value (8 bytes) to notice and completion callbacks */
 typedef struct CNET_RES {
@@ -40,7 +47,7 @@ typedef struct CNET_BURST {
     u8 x21;             /* 0x21 progress */
     u8 res;             /* 0x22 result: 1 ok, 2 failed */
     u8 cnt;             /* 0x23 */
-#ifdef MHG_PS2
+#if LBNET_G
     u8 gx24[4];         /* 0x24 G: the slot is 0x28 bytes (4 more at the end: a guess) */
 #endif
 } CNET_BURST;
@@ -57,7 +64,7 @@ typedef struct CNET_PIECE {
     u16 mb;             /* 0x1A */
     u8 status;          /* 0x1C */
     u8 pwinfo;          /* 0x1D password info */
-#ifdef MHG_PS2
+#if LBNET_G
     u8 gx1E[2];         /* 0x1E G: two bytes more before the name (read from G's getters); the explanation is 2 shorter */
     char name[0x42];    /* 0x20 */
     char explain[0x102];/* 0x62 */
@@ -67,7 +74,7 @@ typedef struct CNET_PIECE {
 #endif
 } CNET_PIECE;
 /* offsets of the name / explanation inside a table entry written as raw MH1 offsets (CNO + G's 2 byte shift) */
-#ifdef MHG_PS2
+#if LBNET_G
 #define CNOE(o) (CNO(o) + 2)
 #else
 #define CNOE(o) (o)
@@ -105,7 +112,7 @@ typedef struct CNET_CSEARCH {   /* condition search result (0x1CC4 bytes) */
 typedef struct CNET_B308 { u8 b[0x308]; } CNET_B308;
 typedef struct CNET_B1004 { u8 b[0x1004]; } CNET_B1004;
 typedef struct CNET_H1004 { s16 h[0x802]; } CNET_H1004;
-#ifdef MHG_PS2
+#if LBNET_G
 typedef struct CNET_W5D4 { s32 w[0x1C1]; } CNET_W5D4;   /* G: 0x704 bytes */
 #else
 typedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;
@@ -161,7 +168,7 @@ typedef struct CNET_RULE {
     u8 sel[0x20];       /* 0x14B chosen value per rule */
 } CNET_RULE;
 
-#ifdef MHG_PS2
+#if LBNET_G
 typedef struct CNET_SYS {
     s32 active;  /* 0x000  */
     u8 _pad004[0x10];
@@ -346,7 +353,7 @@ typedef struct CNET_SYS {
     s16 curplace[3];  /* 0x3BA58 current place (3 values) */
 } CNET_SYS;
 #endif
-#ifdef MHG_PS2
+#if LBNET_G
 /* G's CnetSys_w starts 0xA8 below the symbol file's CnetSys_w (0x006FA808): the PS2 G build names its own symbol
  * (PROVIDEd in config/mhg/g_names.txt); files that do not include this header keep the old symbol and old offsets */
 #define CnetSys_w CnetSys_g
@@ -358,7 +365,7 @@ typedef unsigned long long u64;
 /* CNO(off): the offset of a CnetSys_w byte that is written as a MH1 offset in the source; G has a different layout
  * (config/mhg/lbnet_fields_g.txt). The zones are the MH1 offset ranges that moved together; a plaza / lobby / room
  * table entry is reached through the table's offset, so use CNO on the whole constant (CNO(0x61DE)). */
-#ifdef MHG_PS2
+#if LBNET_G
 #define CNO(o) ((o) + ((o) < 0xFDC ? 0 : (o) < 0x1436 ? 0xA8 : (o) < 0x145E ? 0x39272 : (o) < 0x1462 ? 0x1CE : \
     (o) < 0x268E ? 0x1CD : (o) < 0x39EE ? 0x1CE : (o) < 0x3CEE ? 0x28E : (o) < 0x3FEE ? 0x34E : \
     (o) < 0x404E ? 0x40E : (o) < 0x4052 ? 0x410 : (o) < 0x4054 ? 0x2F8B6 : (o) < 0x4064 ? 0x40E : \

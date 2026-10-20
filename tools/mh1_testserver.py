@@ -441,6 +441,12 @@ class Client(socketserver.BaseRequestHandler):
     def table(self, k):
         return (self.G_TABLE if self.game == "mhg" else self.TABLE)[k]
 
+    def entry(self, k, i):
+        """plaza / lobby i (1-based) of this game's table; an id past the end (a client asking more than the count)
+        gets a closed, unnamed entry instead of an exception"""
+        t = self.table(k)
+        return t[i - 1] if 1 <= i <= len(t) else ("", 0, "")
+
     def build_piece_handlers(self):
         for kind, c in self.PIECE.items():
             self.h[(c["count"], REQ)] = lambda seq, p, k=kind, c=c: self.piece_count(k, c, seq, p)
@@ -464,12 +470,12 @@ class Client(socketserver.BaseRequestHandler):
 
     def piece_name(self, k, c, seq, p):
         i = struct.unpack(">H", p[:2])[0]
-        name = self.room(i).name if k == 2 else self.table(k)[i - 1][0]
+        name = self.room(i).name if k == 2 else self.entry(k, i)[0]
         self.send(ANS, c["name"], struct.pack(">H", i) + str16(name), seq=seq)
 
     def piece_status(self, k, c, seq, p):
         i = struct.unpack(">H", p[:2])[0]
-        st = self.room(i).status() if k == 2 else self.table(k)[i - 1][1]
+        st = self.room(i).status() if k == 2 else self.entry(k, i)[1]
         self.send(ANS, c["status"], struct.pack(">HB", i, st), seq=seq)
 
     def piece_join(self, k, c, seq, p):
@@ -491,8 +497,8 @@ class Client(socketserver.BaseRequestHandler):
         i = struct.unpack(">H", p[:2])[0]
         if k == 2:
             text = self.room(i).explain
-        elif self.game == "mhg" and len(self.table(k)[i - 1]) > 2:
-            text = self.table(k)[i - 1][2]
+        elif self.game == "mhg" and len(self.entry(k, i)) > 2:
+            text = self.entry(k, i)[2]
         else:
             text = "private test " + ("plaza", "lobby")[k]
         self.send(ANS, c["explain"], struct.pack(">H", i) + str16(text), seq=seq)
