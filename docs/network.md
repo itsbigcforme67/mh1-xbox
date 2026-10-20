@@ -1100,6 +1100,80 @@ sending it: harmless, and closer to the original if it was the login's answer.
   "hostleave" through the relay (the room's leader leaving) is a case to repeat on mcs before step 2: there, drop-outs
   of the owner were tested (above), not of the room leader (slot 0) with three players left.
 
+### 3.12 Monster Hunter G online (agent C, 18-20 Oct 2026; GB7, in progress)
+
+G (SLPM-65869) uses the same lobby-server protocol as MH1 (same framing, login, obfuscation, `LOCKROCK`, sequence
+rules; `cnLBS_LoginLobbyServer`, `mmbbc_encode`, `tcp_init`, `create_server_table` are identical), with a command table
+of 293 rows (MH1 258; G lobby.bin `lbs_command_tbl_h/l` 0x63B910 / 0x63BA40, `lbs_fromto_tbl` 0x63BB70,
+`lbs_category_tbl` 0x63BCA0, `lbs_command_jmp` 0x63BDD0) and a different town structure. Everything below was read
+from G's client (`tools/mhg_dis.py lobby ADDR`, G addresses; lobby.bin loads at 0x542600) and checked against the real
+G disc in PCSX2 on mh1-server unless marked [code only]. Nothing was checked against Capcom's or MH Oldschool's server.
+
+**The PS2 side (step 3 of the task, done first because the real client is the reference):** MH1LAUNCH patches G in
+RAM the same way as MH1 (section 3.8): DNAS call in `ms_network_bb_authentication` (G 0x212B7C) -> `v0 = 1`,
+`ms_net_patch_set` (G 0x2130B0-0x214754, only `lbc_login_patch` calls it) becomes `return 1` and holds the blob
+(linked at 0x2130D0 with tools/ps2launch/syms_mhg.ld), `Load_overlay`'s call of `PatchExecCS` (G 0x1F198C) goes to
+the hook, which points G's `internet_browser` (lobby 0x5A2910, 768 bytes, CRC32 0x9482CFD7) at our server-table fill.
+G's `internet_browser` has the same steps as MH1's (one more `MMBB_LOGIN == 3` case we never take); `bsCsvWork`'s
+layout is the same (G `tcp_init` / `create_server_table` identical). G finds and uses the NET file and the network
+setting MH1's test card already holds ("NETファイルが見つかりました"; G's connection screen adds プロキシー設定).
+[checked: the real G logs in, picks a Capcom ID, downloads the info file, shows the plaza menu and walks in the town
+(build/show/g_online/ps2_g_town.png), 20 Oct 2026]
+
+**How mh1-server tells the games apart:** G has no 6102 (telephone): its 6101 handler (G 0x5AF470) answers the
+connection pair and sends **61A0** at once. The server holds MH1's 6102 back 0.5 s; a client that sends 61A0 is G
+(`Client.game = "mhg"`). Also different: the first data (6103) says client kind **7** (MH1 4) and the version string
+is G's build date **"0411210839"** (MH1 "0401290111"; `MakeMediaVersion` from `media_date_tbl` / `media_time_tbl`).
+G and MH1 never share a plaza, lobby, room or user search (`Registry` keys every place by game); an account's hunters
+are per game (accounts.py schema 3: column `game`), so a G save shows its own three Capcom ID slots.
+
+**G's login, in order** (codes as on the wire; S = server, C = client):
+
+| Code | Dir | Payload | Notes |
+|---|---|---|---|
+| 6101 | S req / C ans | as MH1 | |
+| 61A0 | C req `u8` (7) -> S ans `u32, u32` | the byte is first-data byte 2 (CnetSys_w+0x10D2) | the answer goes to 0x734DEC/F0 and the login callback gets event 12, which G's callback ignores; meaning unknown, we send 0, 0. Then S sends 6103 |
+| 6103 | S req -> C ans | `0, 1, 7`, version "0411210839", 8 `u16` | |
+| 600E | C req x4 | echo, as MH1 | |
+| 6131 | S notice | the account's G hunters | |
+| 61A1 | C req (empty) -> S ans `u32 a, u32 b` | a != 0: `MCSLS_SWIN_LIMIT = a / 60 * 30` (the in-hunt send window); b != 0: a float at gp-0x6C18 = b / 60 | server tuning of the hunt session [code only for the effect]; we send 0, 0 = the client's defaults |
+| 6132 / 6104 / 6190 | | as MH1 | |
+| 6148 | C req `u8` login kind (CnetWork+5) -> S ans `u8 r` | r = 0: nothing; 1-3: the server asks for a 336-byte record, 4: a 44-byte one (sub_main 0x4C8F50 / 0x4C8F90, from User_data); the client sends it with **6149** (`u8 kind, u8 r, obfuscated record`, ans `u8`) and asks again | rankings / records upload [guess]; we answer 0 and keep nothing |
+| 614C / 6141 | | as MH1 | |
+| 6881 | C req -> S ans `u8 n`, n x `u32 size` | **n must be >= 1**: with 0 files and no file 0 kept from before, G logs out (lobby 0x581210 step 99 -> `To_LogOut(4)`) | |
+| 6883 | C req `u8 i` -> S ans `u8 i, u32 size, u32 version` | per file; G keeps the 8 bytes (mission_area+0x23F4 + 8 i) and downloads again only when they differ | we send a CRC as the version |
+| 6882 | as MH1 | file 0 to mission_area+0x2414; files 1-3: 512 bytes each to quest_title+0x30 (event quest headers; the whole file later on demand, `Lbc_DownloadQuest` G 0x581610) | |
+| 68A0 | C req -> S ans `u8 n` (<= 3), 4 bytes | news; for each k < n: **68A1** C req `u8 k` + the 3 last bytes -> S ans `str` (to file0+2504 + 1280 k) | we send n = 0 |
+| 670F | C req `u8` -> S ans (empty) | [meaning unknown] | |
+| 6891, 6203.. | | current place, plaza list as MH1, but plaza reads ask the explanation too (mask 15) | |
+
+**G's info file ("file 0", 2504 bytes, made by tools/g_info.py):** read by the plaza and the town menus. Layout
+(offsets in the file): 16 town types x 32 bytes (name at +8, Shift-JIS, sent to the server when picked); 0x208 a text
+colour per type; 0x22E 5 classes x 16 bytes "type open in this class"; 0x27E 5 x (lowest, highest) of the hunter's mini
+data byte 1 allowed per class [guess: hunter rank]; 0x288 5 x 256-byte class help texts; 0x788 / 0x888 two more texts;
+0x988 64 bytes unread. Capcom's own file is unknown to us; the content is ours.
+
+**Plazas ("エリア") and classes ("ランド"):** after the login G shows a class menu (5 entries, lobby 0x57DDC0; picks
+class k only if the hunter's mini-data byte 1 is within the file's limits) and enters a plaza whose explanation starts
+with the class's digit ('1'..'5', PlazaInfo+91). mh1-server's G plazas: one per class. The plaza menu (G Plaza 1:
+街に入る / エリア移動 / ランド移動 / フレンドリスト / プレイヤー検索 / クエスト検索 / ハンターズサイト / イベント情報) [checked].
+
+**Towns (lobbies):** the town list asks per lobby: 6303 join users (G reads **u16 id + four u16**: shown as
+"人数 a/b", "街中 c", "クエスト d"; MH1 reads three), 6304 status, 6302 name, **630D** (`u16 id` -> `u16 id, u32`,
+flag 0x80 of G's 356-byte lobby record) and **630B** (`u16 id` -> `u16 id, u8`, flag 0x10) [both: meaning unknown, 0].
+Entering: **6305 carries `u16 lobby, u16 2, u16 0`** (MH1: the lobby only), then 630A member list, the file download
+again, 6303; the town's game data (6708 types 2, 3, 15, 16 ...) as MH1 [checked: the real G walks in our town].
+Other new rows [code only]: 6310 (`u16` -> empty, sets the entry floor), 6312 / 6313 / 6314 (`u16` -> `u8`), 6311,
+6315, 6316, 6317 (empty answers; 6315-6317 send an obfuscated string), 630C (`u32` -> empty), 640C notice, 6415-6417,
+6707, 6710, 6711 (user / condition searches), 6010 notice (server message, callback 45), 6144-6146.
+Dropped from MH1: 6102, 6142 (bill estimate), 6110-6112 (regulation), 6210-6215 (annexes), 6703 (search, now 6710).
+
+**The PC G online build** (`ONLINE=1 tools/build_pc_mhg.sh` -> build/mhg/pc/mhview_g_online) compiles; in it the
+lobby client takes G's command indices and work sizes (`MHG_NET`, include/g_alias.h). It does not get past the login
+yet: the PC links MH1's handler C for G's table rows (by G symbol name), and about 90 G handlers are new or edited
+(list: `tools/lbs_cmdtab.py`-style dump of G's table against tools/mhg_dis.py). Next: those handlers (m2c drafts from
+asm/mhg work: `tools/draft.py mhg/lobby NAME`), then G's lobby screens (lbc_* edited), the town, the hunt.
+
 ## 4. Run it
 
     ONLINE=1 tools/build_pc.sh                       # build/pc/mhview_online
