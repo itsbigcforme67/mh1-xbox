@@ -134,7 +134,7 @@ def make_handler(accounts=None, relay=None, relay_host="127.0.0.1", relay_matche
                 with ts.ROOMS_LOCK:
                     port = getattr(r, "relay_port", None)
                     if port is None or getattr(r, "relay_match", None) is not r.match:
-                        quest = (getattr(r, "prop", 0) >> 1) & 0xFF
+                        quest = ts.room_quest(getattr(r, "prop", 0), self.game)
                         names = [m.user_handle.encode("cp932", "replace").hex(" ").upper() for m in r.match]
                         fut = asyncio.run_coroutine_threadsafe(relay.create_session(quest, len(r.match), names), loop)
                         port = fut.result(5)
@@ -155,7 +155,7 @@ def make_handler(accounts=None, relay=None, relay_host="127.0.0.1", relay_matche
                 with ts.ROOMS_LOCK:
                     if getattr(r, "mcs_match", None) is not r.match:
                         r.mcs_match = r.match
-                        quest = (getattr(r, "prop", 0) >> 1) & 0xFF
+                        quest = ts.room_quest(getattr(r, "prop", 0), self.game)
                         name = "room %d quest %d" % (r.id, quest)
                         loop.call_soon_threadsafe(mcs.add_match, keys, name)
                 ip = bytes(int(x) for x in relay_host.split("."))

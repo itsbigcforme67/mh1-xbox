@@ -1136,7 +1136,7 @@ are per game (accounts.py schema 3: column `game`), so a G save shows its own th
 | 6103 | S req -> C ans | `0, 1, 7`, version "0411210839", 8 `u16` | |
 | 600E | C req x4 | echo, as MH1 | |
 | 6131 | S notice | the account's G hunters | |
-| 61A1 | C req (empty) -> S ans `u32 a, u32 b` | a != 0: `MCSLS_SWIN_LIMIT = a / 60 * 30` (the in-hunt send window); b != 0: a float at gp-0x6C18 = b / 60 | server tuning of the hunt session [code only for the effect]; we send 0, 0 = the client's defaults |
+| 61A1 | C req (empty) -> S ans `u32 a, u32 b` | a != 0: `MCSLS_SWIN_LIMIT = a / 60 * 30` (the in-hunt send window); b != 0: `DROP_TIMEOUT` (float, G 0x2EBF58, MH1's neighbour of MCSLS_SWIN_LIMIT) = b / 60 | server tuning of the hunt session [code only for the effect]; we send 0, 0 = the client's defaults |
 | 6132 / 6104 / 6190 | | as MH1 | |
 | 6148 | C req `u8` login kind (CnetWork+5) -> S ans `u8 r` | r = 0: nothing; 1-3: the server asks for a 336-byte record, 4: a 44-byte one (sub_main 0x4C8F50 / 0x4C8F90, from User_data); the client sends it with **6149** (`u8 kind, u8 r, obfuscated record`, ans `u8`) and asks again | rankings / records upload [guess]; we answer 0 and keep nothing |
 | 614C / 6141 | | as MH1 | |
@@ -1167,6 +1167,19 @@ Other new rows [code only]: 6310 (`u16` -> empty, sets the entry floor), 6312 / 
 6315, 6316, 6317 (empty answers; 6315-6317 send an obfuscated string), 630C (`u32` -> empty), 640C notice, 6415-6417,
 6707, 6710, 6711 (user / condition searches), 6010 notice (server message, callback 45), 6144-6146.
 Dropped from MH1: 6102, 6142 (bill estimate), 6110-6112 (regulation), 6210-6215 (annexes), 6703 (search, now 6710).
+
+**The guild hall, a room and a quest** [checked 20 Oct 2026, the real G disc alone: `HUNT=1 tools/test_ps2_g_online.sh`,
+build/show/g_online/ps2_g_counter.png, ps2_g_online_quest.png]: the guild hall is stage 0x4D as in MH1; G's counter has three
+ladies (the middle one: quest levels ★..★★★★★ by HR range, ????, イベントクエスト; the right one only for top hunters) and
+needs the guild registration (event flag 4, User_data+0x24 bit 4 as in MH1; G User_data 0x32C210). Making a room asks
+the same as MH1 (6401 count, then per room 6403 / 6404 / 640B / 640D / 6405 / 650A, 6407 create, the rules 6603 / 6607 /
+6601 / 6602 / 660F / 6604 / 6606 / 6605 / 6608 / 660E, 660B the player count) plus **6415** (`u16 room, 4 bytes`, e.g.
+`01 00 02 01`; empty answer; [guess] the quest's attributes for the board) before 660C, then 640A / 6403 / 6412 and
+**6509 with G's property: `u16 hunter value (User_data+0x1A) << 16 | u16 quest`** (lobby 0x55BBC8; MH1: quest << 1 |
+HR << 9). Rooms' join users (6403) carry four u16 in G too (members, max, 0, 0 from us). The departure spot is (2920,
+1840) in the hall ("□: クエストに出発", then yes); the match (6504 / 6508 / 6910 / 6911-6917 / 6914 "mh1-mcs" / 6916),
+the logout (6002) and the **0x82 login to mcs.py** are as MH1's, and G loads the quest (森のキノコ狩り, the Forest and
+Hills camp) on our game server. Not tried yet: two G players in one room, a monster, the return to the town.
 
 **The PC G online build** (`ONLINE=1 tools/build_pc_mhg.sh` -> build/mhg/pc/mhview_g_online) compiles; in it the
 lobby client takes G's command indices and work sizes (`MHG_NET`, include/g_alias.h). It does not get past the login

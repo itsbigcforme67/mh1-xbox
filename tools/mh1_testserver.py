@@ -198,6 +198,12 @@ ROOMS = {}                          # lobby id -> [Room x 8]
 ROOMS_LOCK = threading.Lock()
 
 
+def room_quest(prop, game="mh1"):
+    """the quest of a room property (6509): MH1 lb_guild_make_room sends quest << 1 | leader's HR << 9; G (lobby
+    0x55BBC8) sends the quest in the low half and a 16-bit hunter value (User_data+0x1A) in the high half"""
+    return prop & 0xFFFF if game == "mhg" else (prop >> 1) & 0xFF
+
+
 def rooms_of(lobby, game="mh1"):
     with ROOMS_LOCK:
         k = lobby if game == "mh1" else (game, lobby)
@@ -481,7 +487,7 @@ class Client(socketserver.BaseRequestHandler):
     def piece_join(self, k, c, seq, p):
         i = struct.unpack(">H", p[:2])[0]
         if k == 2:
-            self.send(ANS, c["join"], struct.pack(">HHH", i, len(self.room(i).members), self.room(i).max), seq=seq)
+            self.send(ANS, c["join"], self.room_join(self.room(i)), seq=seq)
         elif k == 1:
             # lobby: (all hunters in the lobby, those of them in its rooms). The town list (plaza_enterLobbyTrans,
             # lobby 0x599F60) shows "<total - in rooms>人 <in rooms>人" through a table of single full-width digits
@@ -561,7 +567,14 @@ class Client(socketserver.BaseRequestHandler):
         """the lobby's other hunters see the room's status and member count change (notices 6404 / 6403)"""
         for o in REG.members(1, self.lobby(), self.game):
             o.safe_send(NOTE, 0x6404, struct.pack(">HB", r.id, r.status()))
-            o.safe_send(NOTE, 0x6403, struct.pack(">HHH", r.id, len(r.members), r.max))
+            o.safe_send(NOTE, 0x6403, self.room_join(r))
+
+    def room_join(self, r):
+        """a room's join users (6403): MH1 u16 id, members, max; G reads four u16 after the id (lobby 0x5BB590 ->
+        _sub_ReceiveJoinUser): members, max, then two values we send as 0 [meaning not known]"""
+        if self.game == "mhg":
+            return struct.pack(">HHHHH", r.id, len(r.members), r.max, 0, 0)
+        return struct.pack(">HHH", r.id, len(r.members), r.max)
 
     def piece_exit(self, k, c, seq, p):
         if k == 2:
@@ -679,7 +692,7 @@ class Client(socketserver.BaseRequestHandler):
         r = self.my_room()
         if r:
             r.prop = struct.unpack(">I", p[:4])[0]
-            log("room %d property %08X (quest %d)" % (r.id, r.prop, (r.prop >> 1) & 0xFF))
+            log("room %d property %08X (quest %d)" % (r.id, r.prop, room_quest(r.prop, self.game)))
             for o in REG.members(1, self.lobby(), self.game):
                 o.safe_send(NOTE, 0x650A, struct.pack(">HI", r.id, r.prop))
         self.send(ANS, 0x6509, b"", seq=seq)

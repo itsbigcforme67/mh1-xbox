@@ -10,6 +10,12 @@
 #   MAKECARD=1  make the G card first (~3 min more): MH1's NET-file card (build/ps2online/card_net.ps2, from
 #               tools/test_ps2_online.sh: Sony's network setting + a NET file, which G reads too) plus a new G hunter
 #               "aaaa" made and saved by G's own NEW GAME screens -> build/ps2online/card_g_net.ps2
+#   HUNT=1      then a quest through our server: into the guild hall, the hunter registered with the guild (event flag
+#               4, a RAM write through PINE as the PC tests' RT_NET_REGISTERED), the quest counter: quest level ★, the
+#               first quest card (森のキノコ狩り), a room for 1, the departure spot, the match, the game server (mcs.py)
+#               login and the quest's camp. (Warps through PINE: G player_work 0x34D450.)
+#   KEEP=1      leave PCSX2 (PINE slot 28054, display :96) and the server running in the town (exploring by hand;
+#               stop them with the PIDs it prints; the emulator lock is held until then)
 # Needs: PCSX2 + the owner's BIOS (tools/run_pcsx2.sh), disc/mhg/Monster Hunter G (Japan).iso, the launcher
 # (tools/ps2launch/build.sh).
 cd "$(dirname "$0")/.."
@@ -80,7 +86,7 @@ SP=$!
 sleep 2; grep -q "lobby on $IP:10200" $O/server.log || fail "server did not start"
 printf 'server = %s\nlogin = %s\npassword = %s\n' $IP:10200 $LOGIN "$PASS" > build/ps2launch/MH1LAUNCH.CNF
 
-tools/run_pcsx2.sh --net --iso "$ISO" --elf build/ps2launch/MH1LAUNCH.ELF --card $CARD --seconds 900 \
+PINE=28054 tools/run_pcsx2.sh --net --iso "$ISO" --elf build/ps2launch/MH1LAUNCH.ELF --card $CARD --seconds $([ -n "$KEEP" ] && echo 36000 || echo 900) \
     --log $O/emulog.txt > $O/run.txt 2>&1 &
 RP=$!
 sleep 45
@@ -103,5 +109,31 @@ shot 03_town_list
 k 6 c; k 30 Left c
 shot 04_town
 grep -q "binary type .* in lobby 1" $O/server.log || fail "G did not reach the town"
+if [ -n "$HUNT" ]; then
+    P="python3 tools/pcsx2/pine.py --slot 28054"
+    PL=$((0x34D450))
+    warp() { $P wf $((PL + 0xAC)) "$1" 25 "$2" ";" w16 $((PL + 0x570)) "$3" > /dev/null; sleep 2; }
+    warp 5545 2750 0x8000; k 8 z                    # the guild hall's door (square)
+    [ "$($P r8 0x35ED34 | awk '{print $2}')" = 0x4D ] || fail "not in the guild hall"
+    V=$($P r16 0x32C234 | awk '{print $2}'); $P w16 0x32C234 $((V | 0x10)) > /dev/null   # User_data+0x24 bit 4
+    warp 1120 1950 0x8000                            # the middle counter lady
+    k 3 c; k 2.5 c; k 2.5 c; k 2.5 c; k 2.5 c; k 2.5 c; k 2.5 c
+    shot 05_counter
+    k 2.5 c; k 3 c                                   # "recruit members?" yes -> the rule sheet
+    k 3 c; k 3 c; k 1 Left; k 1 Left; k 1 Left; k 1 Down; k 1 Down; k 1 Down; k 4 c; k 3 c; k 3 c
+    shot 06_room
+    grep -q "creates room 1 in lobby 1" $O/server.log || fail "no room made"
+    warp 2920 1840 0x8000                            # the departure spot: square = depart, yes
+    k 3 z; k 25 c
+    grep -q "match start in room 1" $O/server.log || fail "no match start"
+    grep -q "mcs: login .* (1 of 1 in)" $O/server.log || fail "G did not log in to the game server"
+    shot 07_quest
+fi
+if [ -n "$KEEP" ]; then
+    echo "KEEP: PCSX2 run $RP, server $SP (display :$DNUM, PINE 28054); stop: kill $RP $SP"
+    trap - EXIT INT TERM HUP
+    wait $RP
+    exit 0
+fi
 cleanup
-echo "ps2 G online test: OK (the real G disc through MH1LAUNCH on our server: login, info file, plaza, town list, town)"
+echo "ps2 G online test: OK (the real G disc through MH1LAUNCH on our server: login, info file, plaza, town list, town${HUNT:+, guild counter, a room, the match, the game server, the quest}")"

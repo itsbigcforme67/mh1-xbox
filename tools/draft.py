@@ -80,7 +80,7 @@ def blocks(module):
 def jump_tables(module, fn_text):
     """Switch tables referenced by lit_NNN_ADDR in the function: rename to jtbl_* and emit a
     .rodata block with .L labels so m2c can see the switch (select/yn/game data files)."""
-    names = sorted(set(re.findall(r"%hi\((lit_\d+(?:_[0-9A-F]+)?)\)", fn_text)))
+    names = sorted(set(re.findall(r"%hi\((lit_\d+(?:_[0-9A-F]+)?|jtbl_[0-9A-F]{8})\)", fn_text)))
     labels = set(re.findall(r"^\s*\.L([0-9A-F]{8}):", fn_text, re.M))
     out = ""
     for n in names:
@@ -97,7 +97,7 @@ def jump_tables(module, fn_text):
                         if cnt:
                             labels.add(w)
             if words and all(w.upper() in labels for w in words):
-                jt = n.replace("lit_", "jtbl_")
+                jt = n.replace("lit_", "jtbl_") if n.startswith("lit_") else "jt_" + n
                 fn_text = fn_text.replace(n, jt)
                 out += ".section .rodata\nglabel %s\n" % jt + "".join("    .word .L%s\n" % w.upper() for w in words) + "\n"
             break
