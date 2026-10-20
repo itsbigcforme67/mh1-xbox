@@ -1,4 +1,7 @@
 /* cnlbs03 - cnLBS file download requests 0x0027D380-0x0027D4A0: __cnet_SendReq_FileDownloadData, __cnet_CallBack_Result_Plaza_NumOfPlaza_0027D420, _cnet_CallBack_Result_Plaza_PlazaStatus_0027D460. Whole file in cnlbs_nm.c. */
+#if defined(VERSION_MHG) && defined(MHG_ONLINE)
+#define MHG_NET 1       /* G's command indices in the G PC online build (g_alias.h) */
+#endif
 #include "g_alias.h"
 #include "types.h"
 

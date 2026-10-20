@@ -79,3 +79,28 @@ def on_68A1_1(self, seq, p):            # G: u8 k, 3 bytes -> str (text of news 
     k = p[0]
     t = G_NEWS[k] if k < len(G_NEWS) else ""
     self.send(ANS, 0x68A1, html_msg(t), seq=seq)
+
+
+# join users (plaza 6205, lobby 6303, also pushed as notices): G declared client kind 7 in its first data and reads
+# u16 id + FOUR u16 (lobby 0x5AD560, _sub_ReceiveJoinUser 0x5ACAE0; MH1's kind 4 reads three). The town list shows
+# "人数 a/b", "街中 c", "クエスト d" [guess: the order a b c d is all / most / in the town / in rooms; checked on screen]
+G_TOWN_MAX = 100
+
+
+def join_counts(self, k, i):
+    if k == 1:
+        busy = sum(len(r.members) for r in ts.rooms_of(i, self.game))
+        total = ts.REG.count(1, i, self.game)
+        return total, G_TOWN_MAX, max(total - busy, 0), busy
+    total = ts.REG.count(k, i, self.game)
+    return total, G_TOWN_MAX * 4, total, 0
+
+
+def on_6205_1(self, seq, p):
+    i = struct.unpack(">H", p[:2])[0]
+    self.send(ANS, 0x6205, struct.pack(">HHHHH", i, *join_counts(self, 0, i)), seq=seq)
+
+
+def on_6303_1(self, seq, p):
+    i = struct.unpack(">H", p[:2])[0]
+    self.send(ANS, 0x6303, struct.pack(">HHHHH", i, *join_counts(self, 1, i)), seq=seq)

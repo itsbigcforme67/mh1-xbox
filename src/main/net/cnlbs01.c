@@ -1,4 +1,7 @@
 /* cnlbs01 - cnLBS file download requests 0x0027CF10-0x0027D028: cnLBS_Read_FileDownload, cnLBS_Get_FileDownloadInfo, cnLBS_Read_FileDownloadHeader. Whole file in cnlbs_nm.c. */
+#if defined(VERSION_MHG) && defined(MHG_ONLINE)
+#define MHG_NET 1       /* G's command indices in the G PC online build (g_alias.h) */
+#endif
 #include "g_alias.h"
 #include "types.h"
 

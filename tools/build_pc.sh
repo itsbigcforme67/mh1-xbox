@@ -440,6 +440,8 @@ GAMEFLAGS="$M32 $FPSSE $GAME_EXTRA ${COV:+-finstrument-functions} -std=gnu99 -O2
 # VERSION=mhg: PS2 Monster Hunter G (docs/mhg.md); run through tools/build_pc_mhg.sh, which builds in its own tree
 if [ "$VERSION" = mhg ]; then
     GAMEFLAGS="$GAMEFLAGS -DVERSION_MHG"; CFLAGS="$CFLAGS -DVERSION_MHG"
+    # the G online build: lbnet.h / cnlbs01 / cnlbs03 take G's command indices and work sizes (g_alias.h MHG_NET)
+    [ -n "$ONLINE" ] && GAMEFLAGS="$GAMEFLAGS -DMHG_ONLINE=1"
 fi
 LIBS=${LIBS:-"-lSDL2 -lGL -lm"}
 LINK1_OPTS=${LINK1_OPTS--Wl,--warn-unresolved-symbols}   # lld (Windows) has no such switch: LINK1_TOLERANT=1 and --error-limit=0

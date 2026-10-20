@@ -194,19 +194,46 @@ typedef struct NEMV {
 } NEMV;
 
 #ifdef VERSION_MHG
-/* G layout (offsets found from netsyn05 / sub_main diffs; other fields not mapped yet) */
+/* G layout: MH1 offset -> G offset by tools/mhg_fields.py game_w (votes from aligned twin functions; one-vote rows
+ * noted) and netsyn05 / sub_main diffs. Field names stay MH1's (x1B0 = MH1 offset 0x1B0) so the shared C compiles. */
 typedef struct NGW {
     u8     mode;              /* 0x000 */
     u8     step;              /* 0x001 */
     u8  x002_[0x3A - 0x2];
-    u8     master;            /* 0x03A */
-    u8  x03B_[0x100 - 0x3B];
-    NITEM  item[32];          /* 0x100 */
-    s32    x1A8[2];           /* 0x180 */
-    u8  x188_[0x1EA - 0x188];
-    u16    x1E2;              /* 0x1EA */
-    u16    x1E4;              /* 0x1EC */
-    u8     x21B;              /* 0x1EE */
+    u8     master;            /* 0x03A (MH1 0x0D1) */
+    u8  x03B_[0x3C - 0x3B];
+    u8     pl_num;            /* 0x03C (MH1 0x0D3) */
+    u8  x03D_[0xDA - 0x3D];
+    u8     xD6;               /* 0x0DA (MH1 0x0D6) */
+    u8     xD7;               /* 0x0DB (MH1 0x0D7, 1 vote) */
+    u8  x0DC_[0xF4 - 0xDC];
+    s32    x124;              /* 0x0F4 (MH1 0x124) */
+    u8  x0F8_[0xFF - 0xF8];
+    s8     x21D;              /* 0x0FF (MH1 0x21D) */
+    NITEM  item[32];          /* 0x100 (MH1 0x128) */
+    s32    x1A8[2];           /* 0x180 (MH1 0x1A8) */
+    u8  x188_[0x18C - 0x188];
+    s16    x1B0;              /* 0x18C (MH1 0x1B0) */
+    u8  x18E_[0x190 - 0x18E];
+    u8     xD8[4];            /* 0x190 (MH1 0x0D8) */
+    u8  x194_[0x19A - 0x194];
+    u8     xE0[4];            /* 0x19A (MH1 0x0E0) */
+    u8  x19E_[0x1A4 - 0x19E];
+    u8     pl_state[8];       /* 0x1A4 (MH1 0x208) */
+    u8  x1AC_[0x1AE - 0x1AC];
+    u8     xE8[8];            /* 0x1AE (MH1 0x0E8) */
+    u8     xF8[8];            /* 0x1B6 [guess: MH1 0x0F8 follows xE8 by 0x10 there; not voted] */
+    u8  x1BE_[0x1D6 - 0x1BE];
+    u8     x108[8];           /* 0x1D6 (MH1 0x108) */
+    u8     x110[4];           /* 0x1DE [guess: follows x108 as in MH1; not voted] */
+    u8  x1E2_[0x1EA - 0x1E2];
+    u16    x1E2;              /* 0x1EA (MH1 0x1E2) */
+    u16    x1E4;              /* 0x1EC (MH1 0x1E4) */
+    u8     x21B;              /* 0x1EE (MH1 0x21B) */
+    u8  x1EF_[0x1F1 - 0x1EF];
+    u8     x21E;              /* 0x1F1 (MH1 0x21E) */
+    u8  x1F2_[0x1F6 - 0x1F2];
+    s8     x1E8[4][8];        /* 0x1F6 (MH1 0x1E8) */
 } NGW;
 #else
 typedef struct NGW {

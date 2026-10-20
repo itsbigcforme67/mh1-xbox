@@ -23,5 +23,10 @@ ln -sfn "$TOP/build/mhg" $T/build/mhg
 export MH1_VERSION="$(git rev-parse --short=10 HEAD 2>/dev/null || echo unknown)$(git diff --quiet HEAD 2>/dev/null || echo +)-mhg"
 VERSION=mhg sh $T/tools/build_pc.sh
 mkdir -p build/mhg/pc
-cp $T/build/pc/mhview build/mhg/pc/mhview_g
-echo "built build/mhg/pc/mhview_g (PS2 Monster Hunter G)"
+if [ -n "$ONLINE" ]; then     # ONLINE=1: G's online build (docs/network.md "G online"), build/mhg/pc/mhview_g_online
+    cp $T/build/pc/mhview_online build/mhg/pc/mhview_g_online
+    echo "built build/mhg/pc/mhview_g_online (PS2 Monster Hunter G, online)"
+else
+    cp $T/build/pc/mhview build/mhg/pc/mhview_g
+    echo "built build/mhg/pc/mhview_g (PS2 Monster Hunter G)"
+fi

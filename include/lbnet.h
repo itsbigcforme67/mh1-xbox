@@ -3,6 +3,9 @@
 /* lobby network layer (cnLBS / __cnet*). CnetSys_w is one big work area of
  * the online lobby client; fields are added as functions are matched. */
 #include "types.h"
+#if defined(VERSION_MHG) && defined(MHG_ONLINE) && !defined(MHG_NET)
+#define MHG_NET 1       /* GV() gives G's values in the G PC online build (g_alias.h) */
+#endif
 #include "g_alias.h"
 
 /* event/result record passed by value (8 bytes) to notice and completion callbacks */
