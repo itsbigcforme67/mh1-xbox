@@ -417,29 +417,48 @@ it the runs drift apart as expected (another hit lands, another knockback).
 - R-F7 *G still on MH1 logic*: body_hit_sub_em (monster against monster) uses G's own sphere table (game 0x673260;
   the Rathian 300 instead of the wall table's 500): small monsters were pushed off the Rathian (pl_nm.c).
 
+**Second round (agent D, 18-20 Oct 2026; the referee's PC side re-run against the same PS2 traces):**
+- R-F8 *platform, both games* (owner's decision 18 Oct, DECISIONS "PS2 float rounding on by default"): PS2 float
+  rounding is the default (rt_ref.c fpu_ps2; `RT_FPU_PS2=0` turns it off): SSE rounding toward zero, flush to zero,
+  denormals-are-zero only where the CPU has it (MXCSR_MASK; the Xbox's Pentium III has no DAZ and ldmxcsr with it
+  would fault). The game C is SSE code (build_pc.sh / build_win.sh / build_xbox.py); the host's own float code on
+  32-bit x86 (renderer, mixer, libm) is x87 and keeps round-to-nearest, so nothing had to be switched per tick. Each
+  quest start logs "fpu: mxcsr ..." and sets the mode again if it changed. Test round, rounding off vs on [verified]:
+  the title, logos and opening movie's sound byte-identical; stage pictures identical; G's reference shots of 4 stages
+  (tools/g_ref_shot.sh --pc-only) differ in < 0.01% of pixels; fights differ only as the game takes another path;
+  full_check all ok (test_activities' trader needed another seed: its offer depends on the hunter's path); Windows
+  build under wine and the Xbox G / MH1 builds in xemu reach a quest start with the mode set (mxcsr FFE0 in the logs).
+- R-F9 *port glue, both games*: N-R1 below was not root motion. The PS2's move() builds each monster's joint matrices
+  right after it moves (enemy_mk -> flCalcTransSI) and the hunters' after body_hit (player_mk); the PC made all joints
+  at the end of the tick, so body_hit pushed hunter and monster apart with last tick's joints (found with a gdb
+  watchpoint on the hunter's position: body_hit_sub_new, a jumping Velociprey). Now rt_monster_tick builds them after
+  enemy_mv (rt_em.c, em_pose_now) and sim_tick after body_hit (viewer.c); hit_check uses those. Rathian 203 -> 245,
+  MH1 Rathian 241 -> 291.
+- R-F10 *G-only feature*: N-R3, the Elder's tutorial, is ported for both games (game tuto.c, tutob.c, tuto_nm.c in
+  the PC build; SonchoMove / DispTutorial behind Pit_mv's / trans_pit_1's calls by address, rt_menu.c; SonchoInit at
+  the HUD set-up of a training quest, rt_quest.c). G's differences written from G's asm (game 0x66E270..0x66EDE0):
+  its training quests 10001.., 7 lessons in a sub-list, the texts through a pointer table (sub_main 0x5282F0) and the
+  frame title as text (pc_data.txt tuto_str_tbl / tuto_title_str) [verified: screenshots of the sign, the list and a
+  page in G 10001 and MH1 131; the PS2 reference shot shows the same sign].
+- R-F11 *G still on MH1 logic*: N-R4: G's pl_mv001 (game 0x54F830) blends the Dual Swords (kind 6) into the walk
+  start over 6 like the great sword; MH1's code gave them the default 4 (f_pl.c). The ds scenario is identical now.
+- R-F12 *port glue, G*: the sweep R-F6 asked for: 94 words of pc_ptrs.txt were numbers (s16 pairs in the weapon tree
+  bou_sei_tbl and the forge's kakou_tbl, the yes/no screen's sprite positions yn_spr_data, push00, key codes, colour
+  words in the effect tables). They are listed in config/mhg/pc_noptr.txt, which tools/mhg_pcmeta.py leaves out of
+  pc_ptrs.txt. Found as scan-only words next to small numbers in objects whose MH1 twin has no relocation there.
+  MH1 is not affected (its ELF has real relocations).
+
 **Left, ranked by how much a player meets it:**
-1. N-R1 (both games, MH1 seen too) *port glue*: on the first tick of a new motion the PS2 already moves the hunter
-   by its root motion (frame_move -> pl_velocity_sub), the PC one tick later (seen at the start of an attack, a
-   roar's ear-cover pl_dm016, a knockback); the body push against a monster then also lands a tick later. A few
-   units; this is the first difference in every fight. Where: the host's flPlayMotionExSI / skeleton velocity
-   (rt_motion.c) against f_frameb.c frame_move [inferred].
-2. N-R2 (both games) *platform*: the PS2's floats round toward zero. A Velociprey's run loop (2.4 a tick, 48 frames)
-   wraps a tick later on the PS2 (47.99998) than on the PC (48.0) and the monster ends 5 units elsewhere. RT_FPU_PS2=1
-   (rt_ref.c: SSE rounding toward zero, no denormals) fixes it in the referee's runs; the referee uses it. Making it
-   the default for players is the owner's call (it also changes the host's own float code: libm, drawing, audio) —
-   REVIEW "Lockstep referee".
-3. N-R3 (G) *G-only feature missing*: the Elder's tutorial in the first quests: "△ PUSH" opens his paged lessons
-   (soncho_no_oshie, SonchoMove / DispTutorial, game tuto.c) and blocks the buttons while open. The PC shows neither
-   the prompt nor the window (tuto.c is not in the PC build). MH1 has the same tutorial and the same gap [inferred].
-4. N-R4 (G) Dual Swords: the first ticks of walking after a demon-mode attack move the hunter 1.3 units further
-   on the PC (9.5 units by the end of the walk) [verified ds scenario, tick 254]; cause not found.
-5. N-R5 (both) *sound layer*: the PC's sound requests draw their random number one tick later than G's flSndRequest /
+1. N-R7 (both games): in the Kut-Ku fights the push between the hunter and a small monster (kind 23 / 19) comes out
+   2-4 units different at tick 369 (G) / 319 (MH1); the monster's matrix, motion frame and the hunter's blend agree.
+   Likely the joints the host skeleton gives for that kind against flCalcTransSI's [inferred, not traced further].
+2. N-R8 (G): Rathian scenario: a Velociprey drifts 2 units in 40 ticks (its facing one unit apart from early on).
+3. N-R5 (both) *sound layer*: the PC's sound requests draw their random number one tick later than G's flSndRequest /
    flSndChange (channel 1 only; sound pitch variation; no gameplay effect).
-6. N-R6 (both) *referee path only*: `--quest` runs show a default hunter (armour, no name in the HUD) instead of the
+4. N-R6 (both) *referee path only*: `--quest` runs show a default hunter (armour, no name in the HUD) instead of the
    save's look; the real village -> quest path uses the save. Not a player bug; it makes the referee's pictures differ.
-7. Quest timer: the PS2's clock also runs while an area loads (34 ticks per area change from the disc); the PC loads
-   in one tick. A player on the PC gets slightly more time per area change; true to the hardware would be counting
-   the PS2's load time [owner's call; not changed].
+5. Quest timer: the PS2's clock also runs while an area loads; the PC loads in one tick (owner, 18 Oct: left as is).
+(N-R1..N-R4 of the first round are fixed: R-F9, R-F8, R-F10, R-F11.)
 
 ## 12. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
 Every G-only / MH1-only change since 13 Oct checked against the other game. For G:

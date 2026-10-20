@@ -146,9 +146,13 @@ Rathian (quest 10, area 40) and the Kut-Ku quest 4 (area 36) [verified: build/re
 Scheduler's ran_suu(1), stick angle rounding, the monster order 0..19, game_core's order (hit_check after the
 monsters, body_hit before the effects), the game13 tick at the quest start.
 
-**Left, ranked:** (1) root motion of a new motion one tick late on the PC (RELEASE_G N-R1); (2) PS2 float rounding
-(N-R2, RT_FPU_PS2); (3) the Elder's tutorial window / "△ PUSH" not ported (tuto.c) [inferred for MH1: the same code];
-(4) sound-layer random draws a tick late; (5) the quest clock while loading (owner's call).
+**Second round (agent D, 18-20 Oct 2026; the same fixes as docs/RELEASE_G.md section 11 R-F8..R-F10):** PS2 float
+rounding is the default (RT_FPU_PS2=0 turns it off); joints built in move() as enemy_mk / player_mk do (Rathian
+241 -> 291, Kut-Ku 318 -> 319); the Elder's tutorial ("△ PUSH", lessons, pages, buttons blocked while open) ported
+[verified: MH1 quest 131 screenshots]. G's Dual Swords and pc_noptr fixes are G-only.
+
+**Left, ranked:** (1) a body push 2-4 units off in the Kut-Ku fight (RELEASE_G N-R7); (2) sound-layer random draws
+a tick late; (3) the quest clock while loading (owner, 18 Oct: left as is).
 
 ## 7. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
 Every G-only / MH1-only change since 13 Oct checked against MH1. For MH1:

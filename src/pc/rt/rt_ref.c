@@ -295,6 +295,28 @@ void rt_ref_tick(int raw)
         fwrite(z, 1, 2, out);
         fflush(out);
     }
+    if (play && getenv("RT_REF_NODES") && getenv("RT_REF_NODES_OUT")) {
+        /* RT_REF_NODES=SLOT:COUNT:FIRST-LAST (debug aid, tools/referee.py REF_NODES): the world matrices of monster
+         * SLOT's first COUNT skeleton nodes at the start of these play ticks, as the PS2 side reads them */
+        static FILE *nf;
+        int sl, cnt, a, b, j, k;
+        u8 *rt_actor_nodes(const void *work, int *max);
+        if (sscanf(getenv("RT_REF_NODES"), "%d:%d:%d-%d", &sl, &cnt, &a, &b) == 4 && ptick >= a && ptick <= b && sl >= 0 &&
+            sl < EM_N) {
+            int max;
+            u8 *nd = rt_actor_nodes(em_work + EM_STRIDE * sl, &max);
+            if (!nf)
+                nf = fopen(getenv("RT_REF_NODES_OUT"), "w");
+            if (nf && nd) {
+                fprintf(nf, "%d", ptick);
+                for (j = 0; j < cnt && j < max; j++)
+                    for (k = 0; k < 16; k++)
+                        fprintf(nf, " %g", (double)((f32 *)(nd + 0x190 * j))[k]);
+                fprintf(nf, "\n");
+                fflush(nf);
+            }
+        }
+    }
     if (play)
         do_pokes();     /* after the record, as the PS2 side writes them with the go */
     if (play && ptick < nrnds && !(rnds[ptick][0] == 0xFFFF && rnds[ptick][1] == 0xFFFF)) {

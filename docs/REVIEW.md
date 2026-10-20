@@ -812,9 +812,8 @@ Both games unless marked.
   a quest start see the hunt start one tick later.
 - **Added:** rt_sys_frame_start (the Scheduler's ran_suu(1) each frame after the boot); rounding of the stick angle
   (rt_pad.c); G: em_body_push_tbl (body_hit_sub_em's own table, pl_nm.c) and em_dur_rows noptr (pc_data.txt).
-- **Added, not on by default:** RT_FPU_PS2=1 (rt_ref.c): SSE rounding toward zero + no denormals, as the EE FPU.
-  The referee turns it on; for players it is the owner's call (it would make the game's float math match the PS2,
-  e.g. motion loops ending on the same tick, but the host's own float code runs under it too).
+- **Added:** RT_FPU_PS2 (rt_ref.c): SSE rounding toward zero + no denormals, as the EE FPU. On by default since
+  20 Oct 2026 (owner's decision, next section).
 - **To revert:** the commits "referee: ..." on agent-D.
 
 ## G Xbox bugs 11-14 (agent A, 17 Oct 2026)
@@ -843,3 +842,21 @@ Both games unless marked.
 - **Changed:** tools/test_all_quests.py: the MH1 full sweep now also runs the carts check and one time-out run (quest 139);
   the G time-out check is the shared `timeout_check`.
 - **To revert:** the commit "Cross-game audit ...".
+
+## Referee, second round: PS2 rounding default, joints in move(), tutorial (agent D, 18-20 Oct 2026)
+- **Changed:** PS2 float rounding (RT_FPU_PS2) is on by default, both games, PC and Xbox; RT_FPU_PS2=0 gives the old
+  round-to-nearest. **Why:** owner's decision 18 Oct after the referee (docs/RELEASE_G.md section 11 R-F8).
+- **Dropped:** the joint sync at the end of sim_tick (sync_joints / remote_hunters / monsters_sync(0) before
+  hit_check) and the Lao-Shan-only em_pose_fn call; **now** each monster's joints right after it moves (rt_em.c,
+  enemy_mk) and the hunters' after body_hit (viewer.c, player_mk); hit_check uses those. **Why:** body_hit pushed
+  hunter and monster apart one tick late (R-F9).
+- **Dropped:** the stand-ins func_63B0C0 (returned 0) / func_63B470 (drew nothing) in rt_menu.c; **now** the game's
+  SonchoMove / DispTutorial (tuto.c in the PC build), SonchoInit at a training quest's HUD set-up. **Why:** the
+  Elder's lessons were missing and the buttons were not blocked while the PS2 showed them (R-F10).
+- **Changed:** viewer.c: --help / -h prints the usage and exits before SDL; with MH1_HIDDEN set (and no MH1_SHOW) a run
+  without game data exits with a message instead of opening the install dialog, and an ISO install shows no dialogs.
+  **Why:** an agent's `mhview --help` opened the install dialog on the owner's screen (18 Oct).
+- **Added:** config/mhg/pc_noptr.txt: 94 G data words that are numbers, left out of pc_ptrs.txt (R-F12).
+- **Changed:** tools/test_activities.py trader: seeds 1 5 6 8 27 (TRADER_SEEDS overrides); with PS2 rounding seed 6
+  no longer offers the trade.
+- **To revert:** the commits "WIP: PS2 float rounding ..." / "referee round 2 ..." on agent-D.

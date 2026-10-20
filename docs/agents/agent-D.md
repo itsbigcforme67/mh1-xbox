@@ -1473,25 +1473,22 @@ dropped-behaviour list docs/REVIEW.md "Lockstep referee".
   PC (first difference in every fight, both games), PS2 float rounding (RT_FPU_PS2, owner's call), the Elder's
   tutorial window, a Dual Swords walk-start difference, the sound layer's random draws.
 
-## Where I stopped (19 Oct 2026, WIP; owner asked to go light)
-Owner decisions of 18 Oct (PS2 float rounding default + referee items). Done in the WIP commits on agent-D, not yet
-through a final full_check:
-- RT_FPU_PS2 on by default (rt_ref.c fpu_ps2; RT_FPU_PS2=0 off). MXCSR toward zero + FTZ, DAZ only when MXCSR_MASK
-  has it (the Pentium III has no DAZ: ldmxcsr would fault). rt_log logs "fpu: mxcsr" at each quest start and sets the
-  mode again if it changed (flag bits 0-5 ignored). Host float code on 32-bit x86 is x87 (no effect there).
-  Test round (RT_FPU_PS2=0 vs default): title/movie audio identical, stages and G reference shots identical
-  (<0.01% pixels), fights differ only by game path; full_check run 1 all ok except test_activities trader (seed
-  dependent: seed 27 added, passes both ways). xemu: MH1 + G reach a quest start with the mode logged (mxcsr FFE0).
-  Not done yet: Windows run under wine (build/win built), the final full_check, Xbox G quest-start shot check.
-- --help / -h prints usage without SDL; hidden runs never open the install dialog (test_log.sh checks both).
-- Root motion "a tick late" was really the joints: PS2 move() builds each monster's joints right after it moves
-  (enemy_mk) and the hunters' after body_hit (player_mk). rt_em.c / viewer.c do the same now. Referee: rathian
-  203 -> 245 (slow drift), mh1_rathian 241 -> 291; kutku 369 / mh1_kutku 319 unchanged (a body push 2-4 units off).
-- Elder's tutorial (tuto.c, both games) ported: PUSH sign, lesson list, pages, buttons blocked; G differences from
-  G's asm (quest numbers, 7 sub-lessons, text table tuto_str_tbl/tuto_title_str in pc_data.txt). Checked by
-  screenshots (MH1 quest 131, G 10001).
-- G Dual Swords walk-start blend 6 (f_pl.c pl_mv001 case 6): ds scenario now identical over 600 ticks.
-- pc_ptrs sweep: config/mhg/pc_noptr.txt (94 words: bou_sei_tbl, kakou_tbl, yn_spr_data, push00, key/colour words)
-  read by mhg_pcmeta.py; not yet checked in game (forge/upgrade screens in G). MH1 uses real relocations (n/a).
-Next: wine check, full_check + VERSION=mhg rebuild + Xbox builds, docs (referee.md table, RELEASE_G 11, RELEASE 6,
-REVIEW.md entries, DECISIONS entry), then the final commit.
+## Referee round 2 (agent D, 18-20 Oct 2026)
+Owner decisions of 18 Oct. Details and numbers: docs/RELEASE_G.md section 11 R-F8..R-F12, docs/referee.md (results of
+20 Oct), docs/REVIEW.md "Referee, second round".
+- PS2 float rounding on by default (rt_ref.c fpu_ps2; RT_FPU_PS2=0 off). DAZ only where MXCSR_MASK has it (Pentium
+  III: none, ldmxcsr would fault). Host x87 code unaffected. Checked: A/B pictures and sound dumps, G reference shots,
+  full_check (35 ok), Windows exe under wine, Xbox MH1 + G in xemu (mxcsr FFE0 at boot, kept at the quest start;
+  FFF1 there is only sticky exception flags, which the check ignores).
+- Lesson: "root motion a tick late" was the joints. move() builds a monster's joints right after it moves
+  (enemy_mk) and the hunters' after body_hit (player_mk); find such things with a gdb watchpoint on the moved field
+  in the referee's PC run (env as tools/referee.py run_pc builds it).
+- Elder's tutorial ported (tuto.c + tutob.c + tuto_nm.c into the PC build, tables.txt, G texts in pc_data.txt; G's
+  texture slots 0x141/0x142 are the PC's 0x11A/0x11B because the PC keeps MH1's slot numbers). Works on PC and Xbox
+  (xemu shots of the lesson list in G 10001 and MH1 131).
+- G Dual Swords walk-start blend (f_pl.c). pc_noptr.txt sweep (94 words; G forge cases of tools/test_gvillage.py OK).
+- --help / hidden-run install dialog fix (viewer.c; test_log.sh checks it).
+- Debug aid: REF_NODES=SLOT:COUNT:FIRST-LAST tools/referee.py run S writes the PS2's (ps2_nodes.txt) and the PC's
+  (pc_nodes.txt, RT_REF_NODES) joint matrices of one monster; `tools/referee.py nodes DIR` compares them.
+- Note: rt_log's "quest N START" prints the quest as a byte: G's 10001 shows as 17.
+Next: N-R7 (Kut-Ku body push) with REF_NODES, then N-R8 (Velociprey drift) and the MH1 fights.

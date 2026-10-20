@@ -810,6 +810,9 @@ def run_pc(gname, out, pads, pokes, ud_file, rnd, ticks, shots=None, rsync=None)
                RT_REF_UD=ud_file, RT_REF_RND='%d,%d' % rnd, RT_SEED='1', RT_REF_RNG=os.path.join(out, 'pc_rng.txt'))
     if rsync:
         env['RT_REF_RNDS'] = rsync
+    if os.environ.get('REF_NODES') and not shots:
+        env['RT_REF_NODES'] = os.environ['REF_NODES']
+        env['RT_REF_NODES_OUT'] = os.path.join(out, 'pc_nodes.txt')
     if os.environ.get('REF_FPU', '1') != '0':
         env['RT_FPU_PS2'] = '1'     # the PS2's float rounding (rt_ref.c); REF_FPU=0: the PC's default
     secs = ticks / 30.0 + 8
@@ -872,6 +875,11 @@ def run(name, out, ticks=None):
         f = open(os.path.join(out, 'ps2.ref'), 'wb')
         f.write(ps2_header(gname, g))
         rlog = open(os.path.join(out, 'ps2_rng.txt'), 'w')
+        nodes_spec = None
+        if os.environ.get('REF_NODES'):
+            a_, c_, r_ = os.environ['REF_NODES'].split(':')
+            nodes_spec = (int(a_), int(c_), 0, int(r_.split('-')[0]), int(r_.split('-')[1]))
+            nlog = open(os.path.join(out, 'ps2_nodes.txt'), 'w')
         rcount = ps2.r32(RING)
         pt, prev_pt, k, t0 = -1, None, 1, time.time()
         while pt < n:
@@ -890,12 +898,24 @@ def run(name, out, ticks=None):
                 pt += 1
                 tlog.write('%d %.3f\n' % (pt, time.time() - tv0))
             f.write(ps2_record(g, parts, pt if play else -1, k))
+            if play and nodes_spec and nodes_spec[3] <= pt <= nodes_spec[4]:
+                # REF_NODES=SLOT:COUNT:FIRST-LAST (debug aid): the world matrices of monster SLOT's first COUNT skeleton
+                # nodes (EMW+0x50C -> model work +0x24, 0x190 bytes a node) at the start of these play ticks; the PC
+                # writes the same (RT_REF_NODES, rt_ref.c) for tools/referee.py nodes DIR
+                sl, cnt = nodes_spec[0], nodes_spec[1]
+                mdl = struct.unpack_from('<I', parts[1], sl * g['em_stride'] + 0x50C)[0]
+                if mdl:
+                    sk = ps2.r32(mdl + 0x24)
+                    raw = ps2.p.read_many([(sk + 0x190 * j, 64) for j in range(cnt)])
+                    nlog.write('%d %s\n' % (pt, ' '.join('%g' % v for b in raw for v in struct.unpack('<16f', b))))
             pad = pads[pt] if play and 0 <= pt < len(pads) else (0, 0, 0, 0, 0)
             prev_pt = pt if play else -1
             ps2.go(k, fpad_words(pad), [(r, o, t, v) for (p_, r, o, t, v) in pokes if play and p_ == pt])
             k += 1
         f.close()
         rlog.close()
+        if nodes_spec:
+            nlog.close()
         tlog.close()
         print('%s: PS2 %d ticks (%d play ticks) in %.0f s' % (name, k, pt + 1, time.time() - t0))
         ps2.unhook()
@@ -954,7 +974,7 @@ def pc_side(name, out, rng_sync=True):
 
 
 def main(argv):
-    if not argv or argv[0] not in ('run', 'pc', 'compare', 'list', 'state'):
+    if not argv or argv[0] not in ('run', 'pc', 'compare', 'list', 'state', 'nodes'):
         raise SystemExit(__doc__)
     out = None
     if '--out' in argv:
@@ -972,6 +992,17 @@ def main(argv):
     elif argv[0] == 'pc':
         for name in [a for a in argv[1:] if not a.startswith('--')]:
             pc_side(name, out or os.path.join(ROOT, 'build/referee', name), rng_sync='--free-rng' not in argv)
+    elif argv[0] == 'nodes':     # REF_NODES runs: per tick, the largest PS2 - PC distance of a node's position
+        d = argv[1]
+        rd = lambda fn: {int(l.split()[0]): [float(x) for x in l.split()[1:]] for l in open(os.path.join(d, fn))}
+        a, b = rd('ps2_nodes.txt'), rd('pc_nodes.txt')
+        for t in sorted(set(a) & set(b)):
+            n = min(len(a[t]), len(b[t])) // 16
+            dist = [math.dist(a[t][16 * j + 12:16 * j + 15], b[t][16 * j + 12:16 * j + 15]) for j in range(n)]
+            worst = max(range(n), key=lambda j: dist[j])
+            print('%d: nodes %d, largest %.2f at node %d (PS2 %s / PC %s), mean %.2f' % (
+                t, n, dist[worst], worst, ['%.1f' % v for v in a[t][16 * worst + 12:16 * worst + 15]],
+                ['%.1f' % v for v in b[t][16 * worst + 12:16 * worst + 15]], sum(dist) / n))
     elif argv[0] == 'compare':
         d = argv[1]
         report(Trace(os.path.join(d, 'ps2.ref')), Trace(os.path.join(d, 'pc.ref')), os.path.join(d, 'report.txt'))
