@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""mhg_c.py NAME... : a first draft of PC C for Monster Hunter G lobby functions (G online port, docs/network.md 3.12).
+
+Runs m2c (tools/draft.py mhg/lobby NAME) and rewrites what the PC cannot use as it is:
+  - gp-relative globals (M2C_FIELD(saved_reg_gp, T, -0xNNNN), G gp 0x2F2B70) and literal addresses (*(T *)0xNNNNNN,
+    D_00NNNNNN) become the G symbol's name (config/mhg/symbols + config/mhg/pc_names.txt), or NAME+0xOFF inside a
+    named object; addresses without a name are left as /*G:0xNNNNNN*/ marks to name by hand (pc_names.txt), never as
+    a literal address on the PC.
+  - M2C_FIELD(p, T *, off) -> (*(T *)((u8 *)(p) + off)), M2C_UNK -> s32.
+The result is a starting point to read and fix (argument counts, types, jump tables), not finished C."""
+import bisect
+import os
+import re
+import subprocess
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+GP = 0x2F2B70
+
+
+def load_names():
+    names = {}
+    for f in os.listdir(os.path.join(ROOT, 'config/mhg/symbols')):
+        for ln in open(os.path.join(ROOT, 'config/mhg/symbols', f)):
+            m = re.match(r'(\S+) = 0x([0-9A-Fa-f]+);(?:.*size:0x([0-9A-Fa-f]+))?', ln)
+            if m and not m[1].startswith(('D_', 'lit_', 'jtbl_', 'func_', 'lobby_func_', 'sub_main_func_')):
+                names.setdefault(int(m[2], 16), (m[1], int(m[3], 16) if m[3] else 0))
+    p = os.path.join(ROOT, 'config/mhg/pc_names.txt')
+    for ln in open(p):
+        f = ln.split('#', 1)[0].split()
+        if len(f) >= 3:
+            names[int(f[2], 16)] = (f[1], 0)
+    return names
+
+
+NAMES = load_names()
+KEYS = sorted(NAMES)
+
+
+def name_of(a):
+    if a in NAMES:
+        return NAMES[a][0]
+    i = bisect.bisect_right(KEYS, a) - 1
+    if i >= 0:
+        n, sz = NAMES[KEYS[i]]
+        if sz and a - KEYS[i] < sz:
+            return '%s+0x%X' % (n, a - KEYS[i])
+    return None
+
+
+def ref(a, t):
+    n = name_of(a)
+    if n is None:
+        return '(*(%s)G_TODO(0x%06X))' % (t, a)
+    if '+' in n:
+        base, off = n.split('+')
+        return '(*(%s)((u8 *)&%s + %s))' % (t, base, off)
+    return '(*(%s)&%s)' % (t, n)
+
+
+def fix(src):
+    src = re.sub(r'M2C_FIELD\(saved_reg_gp, ([^,]+), (-?0x[0-9A-Fa-f]+|-?\d+)\)',
+                 lambda m: ref(GP + int(m[2], 0), m[1]), src)
+    src = re.sub(r'\*\((\w+ \*)\)0x([0-9A-Fa-f]+)', lambda m: ref(int(m[2], 16), m[1]), src)
+
+    def dn(m):
+        n = name_of(int(m[1], 16))
+        return n.replace('+', ' + ') if n and '+' not in n else ('/*G:0x%s*/D_%s' % (m[1].lstrip('0'), m[1]) if n is None
+                                                                  else '(*(u8 *)((u8 *)&%s + %s))' % tuple(n.split('+')))
+    src = re.sub(r'\bD_00([0-9A-F]{6})\b', dn, src)
+    src = re.sub(r'\bD_([0-9A-F]{6})\b', dn, src)
+    src = fields(src)
+    src = src.replace('M2C_UNK', 's32')
+    return src
+
+
+def fields(src):
+    """M2C_FIELD(p, T *, off) -> (*(T *)((u8 *)(p) + off)), innermost first, with balanced parentheses"""
+    while True:
+        i = src.rfind('M2C_FIELD(')
+        if i < 0:
+            return src
+        j, depth, args, start = i + len('M2C_FIELD('), 1, [], i + len('M2C_FIELD(')
+        while depth:
+            c = src[j]
+            if c == '(':
+                depth += 1
+            elif c == ')':
+                depth -= 1
+                if depth == 0:
+                    args.append(src[start:j])
+            elif c == ',' and depth == 1:
+                args.append(src[start:j])
+                start = j + 1
+            j += 1
+        p, t, off = (a.strip() for a in args)
+        src = src[:i] + '(*(%s)((u8 *)(%s) + %s))' % (t, p, off) + src[j:]
+
+
+def main():
+    p = subprocess.run([sys.executable, os.path.join(ROOT, 'tools/draft.py'), 'mhg/lobby'] + sys.argv[1:],
+                       capture_output=True, text=True)
+    print(fix(p.stdout))
+
+
+if __name__ == '__main__':
+    main()
