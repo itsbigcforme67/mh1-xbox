@@ -155,7 +155,7 @@ static void fpu_ps2(void)
 void rt_fpu_check(void)
 {
     unsigned int m = fpu_mxcsr();
-    if (m != fpu_mode) {
+    if ((m & ~0x3Fu) != (fpu_mode & ~0x3Fu)) {     /* bits 0-5: sticky exception flags, not the mode */
         rt_log("fpu: mxcsr %04X, expected %04X: set again", m, fpu_mode);
 #if defined(__i386__) || defined(__x86_64__)
         { unsigned int w = fpu_mode; __asm__ volatile("ldmxcsr %0" : : "m"(w)); }
