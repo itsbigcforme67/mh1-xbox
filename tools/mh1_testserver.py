@@ -14,6 +14,7 @@ Binds to loopback by default; it refuses non-private bind addresses unless --all
 import argparse
 import socketserver
 import struct
+import zlib
 import sys
 import threading
 import time
@@ -82,7 +83,9 @@ def str16(s):
 
 
 class Registry:
-    """who is where (kind 0 plaza, 1 lobby, 2 room -> id -> clients), shared by all connections"""
+    """who is where (kind 0 plaza, 1 lobby, 2 room -> id -> clients), shared by all connections. Places are per game:
+    an MH1 client and a Monster Hunter G client (Client.game) never share a plaza, lobby or room (docs/network.md
+    "G online": the two games' town data and quests differ), so every lookup also compares the game."""
     def __init__(self):
         self.lock = threading.Lock()
         self.where = {}             # client -> {kind: id}
@@ -97,6 +100,7 @@ class Registry:
     def enter(self, cl, kind, i):
         with self.lock:
             self.where.setdefault(cl, {})[kind] = i
+            self.where[cl]["game"] = getattr(cl, "game", "mh1")
 
     def leave(self, cl, kind=None):
         """kind None: the client is gone; else it left that kind of place. Returns the id it left (or None)."""
@@ -110,15 +114,16 @@ class Registry:
             return w.pop(kind, None)
 
     def others(self, cl, kind, i):
+        g = getattr(cl, "game", "mh1")
         with self.lock:
-            return [c for c, w in self.where.items() if c is not cl and w.get(kind) == i]
+            return [c for c, w in self.where.items() if c is not cl and w.get(kind) == i and w.get("game") == g]
 
-    def members(self, kind, i):
+    def members(self, kind, i, game="mh1"):
         with self.lock:
-            return [c for c, w in self.where.items() if w.get(kind) == i]
+            return [c for c, w in self.where.items() if w.get(kind) == i and w.get("game") == game]
 
-    def count(self, kind, i):
-        return len(self.members(kind, i))
+    def count(self, kind, i, game="mh1"):
+        return len(self.members(kind, i, game))
 
 
 REG = Registry()
@@ -132,7 +137,21 @@ MAILBOX = {}                        # id -> [6705 payloads] for hunters not logg
 PATCH = None                        # --patch FILE: bytes sent as a patch at the login (client tests only)
 EVENT_FILES = []                    # --event-quest FILE: the downloadable (event) quest files, in order
 LINE_CHECK = 30.0                   # seconds between 6001 line checks
+G_NEWS = []                         # G: news texts sent after the login (68A0 / 68A1), at most 3
+G_DETECT_WAIT = 0.5                 # seconds the login waits for G's 61A0 before it asks an MH1 client for 6102
 ADMIN_MESSAGE = ""                  # --admin-message: sent to each hunter at the first lobby entry (6706)
+
+
+def g_files():
+    """Monster Hunter G's download files (docs/network.md "G online"): file 0 is G's online information file, read by
+    the plaza and the guild (lobby 0x569610, 0x56A850, 0x56AB70, Lb_guild ...); G refuses to go on without it (0 files
+    = logout, lobby 0x581210). Files 1-3 would be event quests (a 512-byte header each, the whole file on demand).
+    Our file 0 is made by g_info.py from what the client reads (no Capcom bytes)."""
+    import g_info
+    return [g_info.info_file()] + list(G_EVENT_FILES)
+
+
+G_EVENT_FILES = []                  # G: event quest files (none yet)
 
 
 class Room:
@@ -169,14 +188,17 @@ ROOMS = {}                          # lobby id -> [Room x 8]
 ROOMS_LOCK = threading.Lock()
 
 
-def rooms_of(lobby):
+def rooms_of(lobby, game="mh1"):
     with ROOMS_LOCK:
-        if lobby not in ROOMS:
-            ROOMS[lobby] = [Room(i + 1) for i in range(8)]
-        return ROOMS[lobby]
+        k = lobby if game == "mh1" else (game, lobby)
+        if k not in ROOMS:
+            ROOMS[k] = [Room(i + 1) for i in range(8)]
+        return ROOMS[k]
 
 
 class Client(socketserver.BaseRequestHandler):
+    game = "mh1"                            # "mhg" once the client sent G's 61A0 (on_61A0_1)
+
     def setup(self):
         self.sock = self.request
         self.sock.settimeout(60)
@@ -284,7 +306,23 @@ class Client(socketserver.BaseRequestHandler):
         n = struct.unpack(">H", p[:2])[0]
         pw, _ = self.enc_string(p, 2 + n, seq)
         log("connection pair: password %r" % pw)
-        self.send(REQ, C_TEL, b"")
+        # MH1 now waits for 6102 (telephone number). Monster Hunter G has no 6102: its 6101 handler sends 61A0 right
+        # after this answer (docs/network.md "G online"). The game is known only then, so 6102 waits a moment and is
+        # not sent once 61A0 came.
+        threading.Timer(G_DETECT_WAIT, self.tel_if_mh1).start()
+
+    def tel_if_mh1(self):
+        if self.game == "mh1" and self.alive:
+            self.safe_send(REQ, C_TEL, b"")
+
+    def on_61A0_1(self, seq, p):            # G only: u8 (7 from the PS2 G disc; meaning not known) -> u32, u32
+        # The answer's two numbers go to G's CnetSys work (0x734DEC / 0x734DF0) and the login callback gets event 12,
+        # which G's lbc_login callback ignores (its jump table has 6 entries); nothing else reads them that we found.
+        # The original server's values are not known: zeros. Then the login goes on as MH1's after 6102: first data.
+        self.game = "mhg"
+        log("game: Monster Hunter G (61A0 %s)" % p.hex())
+        self.send(ANS, 0x61A0, struct.pack(">II", 0, 0), seq=seq)
+        self.send(REQ, C_FIRSTDATA, b"")
 
     def on_6102_2(self, seq, p):            # telephone number
         tel, _ = self.enc_string(p, 0, seq)
@@ -305,6 +343,12 @@ class Client(socketserver.BaseRequestHandler):
         hs = self.hunter_list()
         self.send(NOTE, C_USERLIST, bytes([len(hs)]) + b"".join(str16(i) + str16(h[:16]) + str16((m or b"")[:0x40])
                                                                  for i, h, m in hs))
+
+    def on_61A1_1(self, seq, p):            # G only, after 6131: no payload -> u32, u32
+        # G's answer handler (lobby 0x5B0300): a non-zero first value / 60 * 30 becomes MCSLS_SWIN_LIMIT (the in-hunt
+        # session's send window), a non-zero second value / 60 a float next to it (gp-0x6C18). Zero leaves both at the
+        # client's defaults. The original server's values are not known.
+        self.send(ANS, 0x61A1, struct.pack(">II", 0, 0), seq=seq)
 
     def on_6132_1(self, seq, p):            # account selected / created
         ident, off = self.enc_string(p, 0, seq)
@@ -376,6 +420,18 @@ class Client(socketserver.BaseRequestHandler):
         2: [],
     }
 
+    # Monster Hunter G's plazas: G sorts plazas into five classes by the first character of the plaza's explanation
+    # ('1'..'5', PlazaInfo+91, lobby 0x57DDC0); the classes' names, rank limits and help texts are in G's info file
+    # (tools/g_info.py). Our classes: see g_info.CLASSES; one plaza per class.
+    G_TABLE = {
+        0: [("\u3000G Plaza %d" % (k + 1), 3, "%d" % (k + 1)) for k in range(5)],
+        1: [("\u3000G Lobby 1", 3), ("\u3000G Lobby 2", 3), ("\u3000G Lobby 3", 3), ("\u3000G Lobby 4", 3)],
+        2: [],
+    }
+
+    def table(self, k):
+        return (self.G_TABLE if self.game == "mhg" else self.TABLE)[k]
+
     def build_piece_handlers(self):
         for kind, c in self.PIECE.items():
             self.h[(c["count"], REQ)] = lambda seq, p, k=kind, c=c: self.piece_count(k, c, seq, p)
@@ -390,21 +446,21 @@ class Client(socketserver.BaseRequestHandler):
         return REG.where.get(self, {}).get(1)
 
     def room(self, i):
-        rs = rooms_of(self.lobby())
+        rs = rooms_of(self.lobby(), self.game)
         return rs[i - 1] if 1 <= i <= len(rs) else None
 
     def piece_count(self, k, c, seq, p):
-        n = 8 if k == 2 else len(self.TABLE[k])
+        n = 8 if k == 2 else len(self.table(k))
         self.send(ANS, c["count"], struct.pack(">H", n), seq=seq)
 
     def piece_name(self, k, c, seq, p):
         i = struct.unpack(">H", p[:2])[0]
-        name = self.room(i).name if k == 2 else self.TABLE[k][i - 1][0]
+        name = self.room(i).name if k == 2 else self.table(k)[i - 1][0]
         self.send(ANS, c["name"], struct.pack(">H", i) + str16(name), seq=seq)
 
     def piece_status(self, k, c, seq, p):
         i = struct.unpack(">H", p[:2])[0]
-        st = self.room(i).status() if k == 2 else self.TABLE[k][i - 1][1]
+        st = self.room(i).status() if k == 2 else self.table(k)[i - 1][1]
         self.send(ANS, c["status"], struct.pack(">HB", i, st), seq=seq)
 
     def piece_join(self, k, c, seq, p):
@@ -416,15 +472,20 @@ class Client(socketserver.BaseRequestHandler):
             # lobby 0x599F60) shows "<total - in rooms>人 <in rooms>人" through a table of single full-width digits
             # (lobby 0x64E350, indexed without a bound): each number must stay 0..9. It was (count, 100): index 100
             # past the table, "(null)人" on the PS2. [guess] the second number means hunters gathered for a quest.
-            busy = min(sum(len(r.members) for r in rooms_of(i)), 9)
-            total = busy + min(max(REG.count(k, i) - busy, 0), 9)
+            busy = min(sum(len(r.members) for r in rooms_of(i, self.game)), 9)
+            total = busy + min(max(REG.count(k, i, self.game) - busy, 0), 9)
             self.send(ANS, c["join"], struct.pack(">HHH", i, total, busy), seq=seq)
         else:
-            self.send(ANS, c["join"], struct.pack(">HHH", i, REG.count(k, i), 100), seq=seq)
+            self.send(ANS, c["join"], struct.pack(">HHH", i, REG.count(k, i, self.game), 100), seq=seq)
 
     def piece_explain(self, k, c, seq, p):
         i = struct.unpack(">H", p[:2])[0]
-        text = self.room(i).explain if k == 2 else "private test " + ("plaza", "lobby")[k]
+        if k == 2:
+            text = self.room(i).explain
+        elif self.game == "mhg" and len(self.table(k)[i - 1]) > 2:
+            text = self.table(k)[i - 1][2]
+        else:
+            text = "private test " + ("plaza", "lobby")[k]
         self.send(ANS, c["explain"], struct.pack(">H", i) + str16(text), seq=seq)
 
     def piece_entry(self, k, c, seq, p):
@@ -483,7 +544,7 @@ class Client(socketserver.BaseRequestHandler):
 
     def room_changed(self, r):
         """the lobby's other hunters see the room's status and member count change (notices 6404 / 6403)"""
-        for o in REG.members(1, self.lobby()):
+        for o in REG.members(1, self.lobby(), self.game):
             o.safe_send(NOTE, 0x6404, struct.pack(">HB", r.id, r.status()))
             o.safe_send(NOTE, 0x6403, struct.pack(">HHH", r.id, len(r.members), r.max))
 
@@ -604,7 +665,7 @@ class Client(socketserver.BaseRequestHandler):
         if r:
             r.prop = struct.unpack(">I", p[:4])[0]
             log("room %d property %08X (quest %d)" % (r.id, r.prop, (r.prop >> 1) & 0xFF))
-            for o in REG.members(1, self.lobby()):
+            for o in REG.members(1, self.lobby(), self.game):
                 o.safe_send(NOTE, 0x650A, struct.pack(">HI", r.id, r.prop))
         self.send(ANS, 0x6509, b"", seq=seq)
 
@@ -722,7 +783,7 @@ class Client(socketserver.BaseRequestHandler):
         out = str16(self.user_id) + str16(self.user_handle[:16]) + str16(text) + bytes([0, 0, 0, 0])
         # to everyone in the lobby, the sender too: Lb_send_chat (lb_ad.c) does not log its own line when it
         # chats to the whole lobby (cw+0x32BE == 0), it only shows what comes back
-        for o in REG.members(1, lobby):
+        for o in REG.members(1, lobby, self.game):
             o.safe_send(NOTE, 0x6702, out)
 
     def on_6708_16(self, seq, p):           # chat binary: the town's game data (lb_send_data: type byte + payload)
@@ -740,7 +801,7 @@ class Client(socketserver.BaseRequestHandler):
             o.safe_send(NOTE, 0x6708, out)
 
     def tell_target(self, ident):
-        for o in REG.members(1, REG.where.get(self, {}).get(1)):
+        for o in REG.members(1, REG.where.get(self, {}).get(1), self.game):
             if o.user_id.encode()[:6] == ident[:6]:
                 return o
         return None
@@ -767,10 +828,10 @@ class Client(socketserver.BaseRequestHandler):
         ident = ident.split(b"\0")[0][:6]
         with REG.lock:
             for c in list(REG.where):
-                if c.user_id.encode()[:6] == ident:
+                if c.user_id.encode()[:6] == ident and c.game == self.game:
                     return c
         for c in list(CLIENTS):
-            if c.user_id.encode()[:6] == ident and c.user_handle:
+            if c.user_id.encode()[:6] == ident and c.user_handle and c.game == self.game:
                 return c
         return None
 
@@ -876,23 +937,62 @@ class Client(socketserver.BaseRequestHandler):
 
     def on_630A_1(self, seq, p):            # lobby member list: u16 ?, u8 fields per entry, u8 count, entries
         i = struct.unpack(">H", p[:2])[0]
-        members = REG.members(1, i)
+        members = REG.members(1, i, self.game)
         out = struct.pack(">HBB", 0, 3, len(members))
         for m in members:
             out += str16(m.user_id) + str16(m.user_handle[:16]) + str16(m.mini)
         self.send(ANS, 0x630A, out, seq=seq)
 
     # event quests (file download, docs/network.md 5.8): asked at every lobby entry (Lbc_DownloadQuest)
+    def files(self):
+        """the download files of this client's game: MH1 the event quests; G its info file first (g_files())"""
+        return g_files() if self.game == "mhg" else EVENT_FILES
+
     def on_6881_1(self, seq, p):            # FileDownloadHeader -> u8 n, n x u32 size (0 files: no event quest)
-        self.send(ANS, 0x6881, bytes([len(EVENT_FILES)]) + b"".join(struct.pack(">I", len(f)) for f in EVENT_FILES),
-                  seq=seq)
+        fs = self.files()
+        self.send(ANS, 0x6881, bytes([len(fs)]) + b"".join(struct.pack(">I", len(f)) for f in fs), seq=seq)
+
+    def on_6883_1(self, seq, p):            # G: one file's record: u8 file -> u8 file, u32 size, u32 version
+        # G keeps the 8 bytes per file with its download (mission_area+0x23F4 + 8 * file) and downloads a file again
+        # only when they differ (lobby 0x581210). The version is ours: a checksum of the file.
+        i = p[0]
+        fs = self.files()
+        f = fs[i] if i < len(fs) else b""
+        self.send(ANS, 0x6883, struct.pack(">BII", i, len(f), zlib.crc32(f) & 0x7FFFFFFF), seq=seq)
+
+    # G's town (lobby) attributes, asked for each lobby with name / status / join users (lobby 0x5AC620 / 0x5AC7A0;
+    # kept in G's lobby records of 356 bytes, flags 0x80 / 0x10). What they mean is not known yet: 0.
+    def on_630D_1(self, seq, p):            # G: u16 lobby -> u16 lobby, u32
+        self.send(ANS, 0x630D, p[:2] + struct.pack(">I", 0), seq=seq)
+
+    def on_630B_1(self, seq, p):            # G: u16 lobby -> u16 lobby, u8
+        self.send(ANS, 0x630B, p[:2] + b"\0", seq=seq)
+
+    def on_6148_1(self, seq, p):            # G: u8 login kind -> u8: 0 = nothing wanted; 1-3 / 4 = the server asks
+        # for one of the hunter's records (sub_main 0x4C8F50 / 0x4C8F90: 336 bytes from User_data for 1-3, 44 for
+        # 4), which the client then sends with 6149 (u8 kind, u8 what, obfuscated record) and asks again. Rankings on
+        # Capcom's side, we guess; this server keeps nothing and asks for nothing.
+        self.send(ANS, 0x6148, b"\0", seq=seq)
+
+    def on_6149_1(self, seq, p):            # G: a record the server asked for (never, here): -> u8 0 (done)
+        self.send(ANS, 0x6149, b"\0", seq=seq)
+
+    def on_68A0_1(self, seq, p):            # G: news after the login: -> u8 n (<= 3), 4 bytes (sent back with 68A1)
+        n = len(G_NEWS)
+        self.send(ANS, 0x68A0, bytes([n, 0, 0, 0, 0]), seq=seq)
+
+    def on_68A1_1(self, seq, p):            # G: u8 k, 3 bytes -> str (text of news k, up to 1280 bytes, the game's HTML)
+        k = p[0]
+        t = G_NEWS[k] if k < len(G_NEWS) else ""
+        self.send(ANS, 0x68A1, html_msg(t), seq=seq)
 
     def on_6882_1(self, seq, p):            # FileDownloadData: u8 file, u32 offset, u32 size (0x200) -> the chunk
         i, ofs, n = struct.unpack(">BII", p[:9])
-        if i >= len(EVENT_FILES):
+        fs = self.files()
+        if i >= len(fs):
             self.send(ANS, 0x6882, html_msg("ファイルがありません。"), seq=seq, res=1)
             return
-        chunk = EVENT_FILES[i][ofs:ofs + n]
+        chunk = fs[i][ofs:ofs + n]
         self.send(ANS, 0x6882, struct.pack(">BII", i, ofs, len(chunk)) + struct.pack(">H", len(chunk)) + chunk, seq=seq)
 
     # personal data (docs/network.md 5.8): the PS2 registers name, zip, address, telephone, age and mail address after

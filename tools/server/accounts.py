@@ -18,7 +18,7 @@ import string
 import threading
 import time
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS account (
     login       TEXT PRIMARY KEY,           -- 8 digits (what the game's login packet can carry)
@@ -35,7 +35,8 @@ CREATE TABLE IF NOT EXISTS hunter (
     handle      BLOB NOT NULL,              -- the hunter's name as the game sends it (Shift-JIS, up to 16 bytes)
     mini        BLOB,                       -- the 0x40-byte mini data (6190): equipment and look, public
     created     INTEGER NOT NULL,
-    updated     INTEGER NOT NULL
+    updated     INTEGER NOT NULL,
+    game        TEXT NOT NULL DEFAULT 'mh1' -- 'mh1' or 'mhg' (schema 3): a G save is a different hunter
 );
 CREATE INDEX IF NOT EXISTS hunter_login ON hunter(login);
 CREATE TABLE IF NOT EXISTS friend (
@@ -149,6 +150,9 @@ class AccountDB:
         if v > SCHEMA_VERSION:
             raise RuntimeError("%s is from a newer mh1-server (schema %d)" % (path, v))
         self.db.executescript(SCHEMA)
+        cols = [r[1] for r in self.db.execute("PRAGMA table_info(hunter)").fetchall()]
+        if "game" not in cols:      # schema 2 -> 3: every hunter made before is an MH1 hunter
+            self.db.execute("ALTER TABLE hunter ADD COLUMN game TEXT NOT NULL DEFAULT 'mh1'")
         self.db.execute("PRAGMA user_version = %d" % SCHEMA_VERSION)
         self.by_login = RateLimit(5, 300.0)
         self.by_addr = RateLimit(20, 300.0)
@@ -219,19 +223,25 @@ class AccountDB:
         return self.db.execute("SELECT login, created, last_login, banned, ban_reason, note FROM account ORDER BY login").fetchall()
 
     # ---- hunters (6131 / 6132 / 6190) ----
-    def hunters(self, login):
-        """the account's hunters for 6131: [(hunter_id, handle, mini)]"""
-        return self.db.execute("SELECT hunter_id, handle, mini FROM hunter WHERE login = ? ORDER BY created",
-                               (login,)).fetchall()
+    def hunters(self, login, game="mh1"):
+        """the account's hunters of one game for 6131: [(hunter_id, handle, mini)] (MH1 and G keep separate lists:
+        the client shows three Capcom ID slots per game)"""
+        return self.db.execute("SELECT hunter_id, handle, mini FROM hunter WHERE login = ? AND game = ? ORDER BY created",
+                               (login, game)).fetchall()
 
-    def add_hunter(self, login, handle, max_per_account=3):
-        if len(self.hunters(login)) >= max_per_account:
+    def hunter_game(self, hunter_id):
+        r = self.db.execute("SELECT game FROM hunter WHERE hunter_id = ?", (hunter_id,)).fetchone()
+        return r[0] if r else None
+
+    def add_hunter(self, login, handle, max_per_account=3, game="mh1"):
+        if len(self.hunters(login, game)) >= max_per_account:
             raise ValueError("an account has at most %d hunters" % max_per_account)
         now = int(time.time())
         for _ in range(100):
             hid = "".join(secrets.choice(ID_CHARS) for _ in range(6))
             try:
-                self.db.execute("INSERT INTO hunter VALUES (?, ?, ?, NULL, ?, ?)", (hid, login, bytes(handle[:16]), now, now))
+                self.db.execute("INSERT INTO hunter VALUES (?, ?, ?, NULL, ?, ?, ?)",
+                                (hid, login, bytes(handle[:16]), now, now, game))
                 return hid
             except sqlite3.IntegrityError:
                 continue
@@ -286,7 +296,8 @@ class AccountDB:
     def export(self, login):
         """everything stored about one account (a player's data request)"""
         acc = self.db.execute("SELECT login, created, last_login, banned, ban_reason FROM account WHERE login = ?", (login,)).fetchone()
-        hs = self.db.execute("SELECT hunter_id, hex(handle), hex(mini), created, updated FROM hunter WHERE login = ?", (login,)).fetchall()
+        hs = self.db.execute("SELECT hunter_id, hex(handle), hex(mini), created, updated, game FROM hunter WHERE login = ?",
+                             (login,)).fetchall()
         ids = [h[0] for h in hs]
         fr = [(i, self.friends(i)) for i in ids]
         return dict(account=acc, hunters=hs, friends=fr)
