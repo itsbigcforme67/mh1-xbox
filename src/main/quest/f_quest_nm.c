@@ -207,7 +207,16 @@ EMW *Em_direct_set(QEM *q)
         em->kind = q->id;
         em->type = q->x02;
         EM8(em, 0x9EB) = q->x2C;
+#ifdef VERSION_MHG
+        {   /* G (sub_main 0x4B5714): kinds marked in em_tsuushin_tbl get their quest stage before their init runs, so
+             * e.g. the Plesioth's init does not take the hunter's start stage for its own (it went to act 0/1 and then
+             * left the water at once: referee g_plesioth, agent D 22 Oct 2026) */
+            extern u8 em_tsuushin_tbl[];
+            em->stg = em_tsuushin_tbl[em->kind] ? q->x07 : game_w.stage;
+        }
+#else
         em->stg = game_w.stage;
+#endif
         em->hungry = q->x0C;
         em->thirst = q->x10;
         em->x8A0 = q->x14;
