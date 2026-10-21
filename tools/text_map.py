@@ -1126,6 +1126,15 @@ def quest_fields_g(d):
     return out[:4]
 
 
+def quest_map(d):
+    """the quest's map (stage) number: word 5 of the first header section (MH1 JP, US and G alike; 2 forest and hills,
+    3 desert, 4 swamp, 5 volcano, 6 jungle - checked on the JP quests whose text names the place)"""
+    try:
+        return struct.unpack_from("<I", d, struct.unpack_from("<I", d, 0)[0] + 20)[0]
+    except struct.error:
+        return None
+
+
 def quest_nz(d):
     t0 = struct.unpack_from("<I", d, 0x60)[0]
     n = max((t0 - 0x70) // 4, 0)
@@ -1142,7 +1151,7 @@ def quest_match_us(J, U, thresh=0.9):
         sc = []
         for u in U:
             a, b = jn[n], un[u]
-            if a and b:
+            if a and b and quest_map(J[n]) == quest_map(U[u]):
                 sc.append((sum(1 for i, x in a.items() if b.get(i) == x) / max(len(a), len(b)), u))
         sc.sort(reverse=True)
         if not sc or sc[0][0] < thresh:
@@ -1232,6 +1241,7 @@ def quest_pairs_g(J, G):
             if b:
                 for n in idx.get((i, b), ()):
                     votes[n] += 1
+        votes = collections.Counter({n: c for n, c in votes.items() if quest_map(J[n]) == quest_map(d)})
         if votes:
             (n, c), = votes.most_common(1)
             if c >= 2 or (c == 1 and f and f[0][1] and len(idx.get((0, f[0][1]), ())) == 1):
@@ -1241,7 +1251,7 @@ def quest_pairs_g(J, G):
                         pairs.setdefault(("quest", n, oj), []).append((("quest", g, og), bj == bg))
     # G quests with no identical text: tie by the non-text data (monster, map, reward sections, rule words)
     for g, n in quest_data_ties(J, G).items():
-        if g in gmatch or n not in jf:
+        if g in gmatch or n not in jf or quest_map(J[n]) != quest_map(G[g]):
             continue
         f = quest_fields_g(G[g])
         gmatch[g] = n
@@ -1282,6 +1292,45 @@ def good_english(jb, xb):
     if conv_sig(jb) != conv_sig(xb):
         return False, "format mismatch"
     return True, ""
+
+
+# quest and talk text whose numbers the US rebalanced (monster counts, item counts, the number of skills): the English
+# must not carry a number the Japanese (and so G's data) does not have
+US_REBALANCED = re.compile(r"^(irai_|quest_|lb_quest|npc_|talk_)")
+
+
+PLACE_EN = re.compile(rb"(?i)forest|hills|swamp|marsh|desert|dune|jungle|volcan|crater|lava|fort\b")
+PLACE_JP = re.compile(r"森|丘|沼|湿地|砂漠|密林|ジャングル|火山|溶岩|砦")
+
+
+def same_numbers(jb, xb):
+    """True unless the English has a number the Japanese lacks (kanji and full-width digits count; '(8MB)' is the US
+    memory-card name, a number written as a word is not seen)"""
+    jn = collections.Counter(_numbers(norm_marks(jb)))
+    en = collections.Counter(_en_numbers(re.sub(rb"\(?8 ?MB\)?", b"", xb)))
+    return not (en - jn)
+
+
+def us_rewritten_talk(jt, en_jp, cells):
+    """JP talk lines whose US slot holds lines the US wrote for its new weapon (Dual Swords): in a talk table, the
+    span from the first to the last English line naming Dual Swords where the Japanese has no 双剣 (spans at most 3
+    rows apart are joined). The US kept the row count, so the rows after the span are still right."""
+    out = []
+    for key, (oa, lst) in cells.items():
+        if not re.match(r"^(npc_|talk_)", key[1]):
+            continue
+        rows = [jk for _o, jk in sorted(lst) if jk in en_jp]
+        bad = [i for i, jk in enumerate(rows) if b"dual sword" in en_jp[jk].lower().replace(b"\n", b" ")
+               and "双剣" not in _u(jt(jk))]
+        spans = []
+        for i in bad:
+            if spans and i - spans[-1][1] <= 3:
+                spans[-1][1] = i
+            else:
+                spans.append([i, i])
+        for a, b in spans:
+            out.extend(rows[a:b + 1])
+    return out
 
 
 def _norm_jp(b):
@@ -1556,17 +1605,27 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
             continue
         b = jtext(jk)
         m = norm_marks(b)
-        idx["exact"][_norm_jp(b)].append((b, xb))
-        idx["layout"][norm_layout(b)].append((b, xb))
-        idx["marks"][m].append((b, xb))
+        e = (b, xb, jk)
+        idx["exact"][_norm_jp(b)].append(e)
+        idx["layout"][norm_layout(b)].append(e)
+        idx["marks"][m].append(e)
         if any(c in BTN_SYMS for c in m) and "~B" not in m:
-            idx["buttons"][_btn_key(m)].append((b, xb))
-        idx["numbers"][re.sub(r"\d+", "#", m)].append((b, xb))
+            idx["buttons"][_btn_key(m)].append(e)
+        idx["numbers"][re.sub(r"\d+", "#", m)].append(e)
+
+    def same_place(lst, gk):
+        """a G quest field takes English from quest text of a JP quest on another map only when neither the Japanese
+        nor the English names a place (G moved some MH1 quests to other maps; the English must not name the old one)"""
+        if gk[0] != "quest":
+            return lst
+        gm = quest_map(Gq[gk[1]])
+        return [e for e in lst if e[2][0] != "quest" or quest_map(Jq[e[2][1]]) == gm
+                or not (PLACE_EN.search(e[1]) or PLACE_JP.search(_u(e[0])))]
 
     def consensus(lst, gb):
         gd = sorted(_numbers(norm_marks(gb)))
         c = collections.Counter()
-        for b, xb in lst:
+        for b, xb, _jk in lst:
             en = _en_numbers(xb)
             if en and sorted(en) != gd:
                 continue
@@ -1585,7 +1644,7 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
             continue
         done = False
         for name, key in (("exact", _norm_jp(gb)), ("layout", norm_layout(gb)), ("marks", m)):
-            lst = idx[name].get(key)
+            lst = same_place(idx[name].get(key) or [], gk)
             if not lst:
                 continue
             xb, c = consensus(lst, gb)
@@ -1598,9 +1657,9 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
         if done:
             continue
         if "~B" in m:
-            lst = idx["buttons"].get(_btn_key(m))
+            lst = same_place(idx["buttons"].get(_btn_key(m)) or [], gk)
             outs, reason = set(), ""
-            for b, xb in lst or ():
+            for b, xb, _jk in lst:
                 st, gtok = _btn_tokens(norm_marks(b)), _btn_tokens(m)
                 if len(st) != len(gtok):
                     continue
@@ -1635,10 +1694,10 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
             # MH1 name + a G-rank letter (G, S, 改): the English form of the suffix is a naming choice (Freedom's style)
             amb[gk] = "MH1 name plus a G-rank suffix (naming left for Freedom)"
             continue
-        lst = idx["numbers"].get(re.sub(r"\d+", "#", m))
+        lst = same_place(idx["numbers"].get(re.sub(r"\d+", "#", m)) or [], gk)
         if lst:
             outs, reasons = set(), set()
-            for b, xb in lst:
+            for b, xb, _jk in lst:
                 y, r = number_template(norm_marks(b), m, xb)
                 if y is None:
                     reasons.add(r)
@@ -1688,8 +1747,7 @@ def mhp_texts(disc):
 MANUAL = os.path.join(HERE, "text_pairs_manual.txt")
 # tutorial pages after the first weapon page: the US build inserted pages (Dual Swords and others), so the position
 # pairing gives the next page's English (checked by eye, Oct 2026: the Great Sword page got the Dual Swords text)
-SHIFTED_US_TABLES = {"plaza_main_msg", "tuto01_05_msg02", "tuto01_05_msg03", "tuto01_05_msg05", "tuto07_msg00",
-                     "tuto09_msg00", "tuto09_msg04", "tuto10_msg00"}
+SHIFTED_US_TABLES = {"plaza_main_msg"}
 
 
 def manual_pairs(path=MANUAL):
@@ -1901,6 +1959,230 @@ def mc_paragraphs(lines):
     return paras
 
 
+# ---------------------------------------------------------------- multi-line pages paired by content (tutorial)
+def group_pairs(jp, us, om, cells, en_jp, owner):
+    """The other line-split dialogs (LINESPLIT tables except mc_msg: yes/no dialogs, network messages, help lines) whose
+    table the US build has at a located address. Each table is one message, one pointer per line (the yn overlay
+    keeps a (y position, pointer) pair per line); the US cut the lines at other places. The US lines are read from the
+    located address up to the next located table (or a zero pair). Lines whose Japanese is a short label with its own
+    English elsewhere (はい / いいえ) are matched to the US line with that English; the other lines are paired one to one
+    when both sides have as many, else the US words are re-wrapped over the JP lines at the US width (+0..6 characters).
+    The ~A00 / %s tokens and the numbers of the message must agree. -> [(table key, slot index, JP key, English)] like
+    linesplit_pairs."""
+    starts = sorted(om.info[k][0] + om.found[k][1] for k in cells if k in om.found)
+    label = {}
+    for jk, xb in en_jp.items():
+        if jk[0] != "quest" and not _fragment(owner, jk) and len(jp.cstr(*jk)) <= 12:
+            label.setdefault(jp.cstr(*jk).strip(), set()).add(xb.strip())
+    out = []
+    for key in cells:
+        if not LINESPLIT.match(key[1]) or key[1].startswith("mc_msg") or key not in om.found:
+            continue
+        oa, lst = cells[key]
+        xs, d, _how = om.found[key]
+        xa = om.info[key][0] + d
+        nxt = next((a for a in starts if a > xa), xa + 0x100)
+        base, b = us.mod[xs]
+        ulines = []
+        for o in range(xa, min(nxt, xa + 0x140), 4):
+            if not 0 <= o - base <= len(b) - 4:
+                break
+            v, = struct.unpack_from("<I", b, o - base)
+            sp = us.resolve(v, xs) if v >= 0x100000 else None
+            t = us.cstr(sp, v, 300) if sp else None
+            if t is not None and not is_japanese(t) and all(c >= 0x20 for c in t):
+                ulines.append(t)
+            elif v == 0 and ulines and o + 4 < nxt and struct.unpack_from("<I", b, o - base + 4)[0] == 0:
+                break
+        jl = sorted(lst)
+        if not ulines or not jl:
+            continue
+        jt = [jp.cstr(*jk) for _o, jk in jl]
+        if sorted(MC_TOKEN.findall(b"\n".join(jt))) != sorted(MC_TOKEN.findall(b"\n".join(ulines))):
+            continue
+        if sorted(_numbers(norm_marks(b"".join(jt)))) != sorted(_en_numbers(b" ".join(ulines))):
+            continue                # the US changed a number (a size in KB): not the same message
+        # labels first (from the end: Yes / No close the dialog)
+        assign, ubody = {}, list(ulines)
+        jbody = []
+        for (off, jk), t in zip(jl, jt):
+            eng = label.get(t.strip())
+            hit = next((u for u in ubody if eng and u.strip() in eng), None) if eng else None
+            if hit is not None and len(t.strip()) <= 12:
+                assign[off // 4] = (jk, hit)
+                ubody.remove(hit)
+            else:
+                jbody.append((off, jk))
+        if not jbody:
+            pass
+        elif len(jbody) == len(ubody):
+            for (off, jk), u in zip(jbody, ubody):
+                assign[off // 4] = (jk, u.strip() or b" ")
+        else:
+            words = b" ".join(ubody).split()
+            w0 = max(len(u.strip()) for u in ubody) if ubody else 0
+            ls = None
+            for w in range(w0, w0 + 7):
+                ls = mc_wrap(words, w)
+                if len(ls) <= len(jbody):
+                    break
+            if not ls or len(ls) > len(jbody):
+                continue
+            for k, (off, jk) in enumerate(jbody):
+                assign[off // 4] = (jk, ls[k] if k < len(ls) else b" ")
+        for idx, (jk, txt) in sorted(assign.items()):
+            out.append((key, idx, jk, txt))
+    return out
+
+
+PAGE_TABLES = re.compile(r"^tuto\d+(_\d+)?_msg\d+$")
+
+
+def term_dict(jp, en_jp, owner):
+    """{JP term (normal form): set of lower-case English} from short MH1 pairs (names, labels)"""
+    terms = {}
+    for jk, xb in en_jp.items():
+        if jk[0] == "quest" or _fragment(owner, jk):
+            continue
+        t = norm_marks(jp.cstr(*jk))
+        e = xb.decode("latin-1").strip()
+        if 2 <= len(t) <= 8 and 3 <= len(e) <= 24 and "~" not in e and "\n" not in e:
+            terms.setdefault(t, set()).add(e.lower().rstrip("s"))
+    return terms
+
+
+def page_pairs(jp, us, om, cells, en_jp, owner, name_re=PAGE_TABLES, thresh=0.6, margin=0.05):
+    """Pages of several lines (one JP pointer table per page) paired with the US pages by what they say, not by
+    position: the US build inserted pages (Dual Swords), dropped some and swapped others. A US page is a run of
+    string pointers in the US region where the JP tables were located. Score of a JP page against a US page with
+    the same number of lines: the order of control codes, icon codes and numbers in each line (difflib ratio), averaged
+    with the share of the page's MH1 terms (names and labels with a US translation) whose English is on the US page.
+    Taken greedily from the best score (>= thresh) when it leads the page's next candidate by `margin`; a near tie is
+    settled by order (the candidate nearest to the place after the previous page's US page), else the page is left out.
+    Returns ({jp key: us key}, {table name: (US page address or None, score)})."""
+    btn = {sym: c for c, sym in us_button_table(jp, en_jp, owner).items()}
+
+    def jtok(b):
+        t = "".join(chr(ord(c) - 0xFEE0) if "０" <= c <= "９" else c for c in _u(b))
+        return re.findall(r"~[CB]\d\d|\d+", "".join(btn.get(c, c) for c in t))
+
+    def utok(b):
+        return re.findall(r"~[CB]\d\d|\d+", b.decode("latin-1"))
+
+    pages = sorted((cells[k][0], k) for k in cells if name_re.match(k[1]))
+    J = [(k, [jk for _o, jk in sorted(cells[k][1])]) for _a, k in pages]
+    found = [(om.found[k][0], om.info[k][0] + om.found[k][1]) for _a, k in pages if k in om.found]
+    if not found:
+        return {}, {}
+    xs = collections.Counter(sp for sp, _a in found).most_common(1)[0][0]
+    lo, hi = min(a for sp, a in found if sp == xs), max(a for sp, a in found if sp == xs) + 0x800
+    uc = x_ptr_cells(us, xs)
+    U, cur, prev = [], [], None
+    for pos in sorted(p for p in uc if lo <= p < hi):
+        if prev is not None and pos != prev + 4:
+            U.append(cur)
+            cur = []
+        cur.append((pos, uc[pos]))
+        prev = pos
+    if cur:
+        U.append(cur)
+    U = [(r[0][0], [x for _p, x in r]) for r in U if len(r) >= 2]
+    terms = term_dict(jp, en_jp, owner)
+
+    def lsim(a, b):
+        return 0.5 if not a and not b else difflib.SequenceMatcher(None, a, b, autojunk=False).ratio()
+
+    def tsim(j, u):
+        jt = norm_marks(b"".join(jp.cstr(*x) for x in j))
+        ut = b" ".join(us.cstr(*y) for y in u).decode("latin-1").lower().replace("\n", " ")
+        hit = [t for t in terms if t in jt]
+        hit = [t for t in hit if not any(t != o and t in o for o in hit)]
+        return sum(1 for t in hit if any(e in ut for e in terms[t])) / len(hit) if hit else None
+
+    sc = {}
+    for i, (_k, jl) in enumerate(J):
+        for k, (_a, ul) in enumerate(U):
+            if len(jl) != len(ul):
+                continue
+            c = sum(lsim(jtok(jp.cstr(*x)), utok(us.cstr(*y))) for x, y in zip(jl, ul)) / len(jl)
+            t = tsim(jl, ul)
+            sc[(i, k)] = c if t is None else (c + t) / 2
+    got, used = {}, set()
+    ties = []
+    for (i, k), v in sorted(sc.items(), key=lambda kv: (-kv[1], kv[0])):
+        if i in got or k in used or v < thresh or i in [t[0] for t in ties]:
+            continue
+        rest = [w for (a, b), w in sc.items() if a == i and b != k and b not in used]
+        if rest and max(rest) > v - margin:
+            ties.append((i, v))
+            continue
+        got[i] = (k, v)
+        used.add(k)
+    for i, v in sorted(ties):
+        if i in got:
+            continue
+        cands = [k for (a, k), w in sc.items() if a == i and k not in used and w > v - margin]
+        before = [got[a][0] for a in got if a < i]
+        want = (max(before) + 1) if before else 0
+        best = sorted(cands, key=lambda k: abs(k - want))
+        if best and (len(best) == 1 or abs(best[0] - want) < abs(best[1] - want)):
+            got[i] = (best[0], sc[(i, best[0])])
+            used.add(best[0])
+    out, rep = {}, {}
+    for i, (key, jl) in enumerate(J):
+        if i in got:
+            k, v = got[i]
+            for x, y in zip(jl, U[k][1]):
+                out[x] = y
+            rep[key[1]] = (U[k][0], v)
+        else:
+            rep[key[1]] = (None, 0.0)
+    return out, rep
+
+
+def reflow(slots, texts, ulines):
+    """{slot index: English line}: the US message's paragraphs re-flowed over the JP lines of each paragraph (blank
+    lines stay where the JP message has them); {} when the US text does not fit"""
+    # JP paragraphs: runs of text slots between blank lines
+    jparas, cur = [], []
+    for idx, (jk, t) in enumerate(zip(slots, texts)):
+        if t.strip() and jk is not None:
+            cur.append(idx)
+        elif cur:
+            jparas.append(cur)
+            cur = []
+    if cur:
+        jparas.append(cur)
+    uparas = mc_paragraphs(ulines)
+    if not jparas or not uparas:
+        return {}
+    assign = {}
+
+    def fit(para_lines, idxs):
+        words = b" ".join(para_lines).split()
+        if len(para_lines) == len(idxs) and all(len(x) <= MC_WIDTH[1] for x in para_lines):
+            return para_lines
+        for w in MC_WIDTH:
+            ls = mc_wrap(words, w)
+            if len(ls) <= len(idxs):
+                return ls
+        return None
+    if len(jparas) == len(uparas):
+        res = [fit(u, j) for u, j in zip(uparas, jparas)]
+        if all(r is not None for r in res):
+            for r, j in zip(res, jparas):
+                for k, idx in enumerate(j):
+                    assign[idx] = r[k] if k < len(r) else b" "
+    if not assign:
+        allidx = [i for j in jparas for i in j]
+        r = fit([l for u in uparas for l in u], allidx)
+        if r is None:
+            return {}
+        for k, idx in enumerate(allidx):
+            assign[idx] = r[k] if k < len(r) else b" "
+    return assign
+
+
 def linesplit_pairs(jp, us, om, cells, funcs_unused=None):
     """The memory-card messages (mc_msg_NN): the JP and the US build both keep one message as a group of line
     pointers, but cut the lines at other places and use another number of lines and blank lines. The US group of
@@ -1978,46 +2260,8 @@ def linesplit_pairs(jp, us, om, cells, funcs_unused=None):
             continue                # not text (a data table that looks like one)
         if sig(ulines) != sig(texts) and sig(texts) and sig(ulines):
             continue
-        # JP paragraphs: runs of text slots between blank lines
-        jparas, cur = [], []
-        for idx, (jk, t) in enumerate(zip(slots, texts)):
-            if t.strip() and jk is not None:
-                cur.append(idx)
-            elif cur:
-                jparas.append(cur)
-                cur = []
-        if cur:
-            jparas.append(cur)
-        uparas = mc_paragraphs(ulines)
-        if not jparas or not uparas:
-            continue
-        assign = {}
-
-        def fit(para_lines, idxs):
-            words = b" ".join(para_lines).split()
-            if len(para_lines) == len(idxs) and all(len(x) <= MC_WIDTH[1] for x in para_lines):
-                return para_lines
-            for w in MC_WIDTH:
-                ls = mc_wrap(words, w)
-                if len(ls) <= len(idxs):
-                    return ls
-            return None
-        if len(jparas) == len(uparas):
-            res = [fit(u, j) for u, j in zip(uparas, jparas)]
-            if all(r is not None for r in res):
-                for r, j in zip(res, jparas):
-                    for k, idx in enumerate(j):
-                        assign[idx] = r[k] if k < len(r) else b" "
-        if not assign:
-            allidx = [i for j in jparas for i in j]
-            r = fit([l for u in uparas for l in u], allidx)
-            if r is None:
-                continue
-            for k, idx in enumerate(allidx):
-                assign[idx] = r[k] if k < len(r) else b" "
-        for idx, txt in assign.items():
-            if slots[idx] is not None:
-                out.append((key, idx, slots[idx], txt))
+        for idx, txt in reflow(slots, texts, ulines).items():
+            out.append((key, idx, slots[idx], txt))
     return out
 
 
@@ -2081,6 +2325,14 @@ def main():
     # both discs): no English is better than the neighbour's
     for jk in [k for k in outu if owner.get(k) and owner[k][1] in SHIFTED_US_TABLES]:
         del outu[jk]
+    # tutorial pages: by content (the US inserted, dropped and swapped pages, so position pairing is wrong)
+    pg, pg_rep = page_pairs(jp, us, omu, cells, en_jp={jk: us.cstr(*c.most_common(1)[0][0]) for jk, c in outu.items()},
+                            owner=owner)
+    for jk in [k for k in outu if owner.get(k) and PAGE_TABLES.match(owner[k][1])]:
+        del outu[jk]
+    for jk, xk in pg.items():
+        outu[jk] = collections.Counter({xk: 1})
+    log("tutorial pages by content: %d of %d paired" % (sum(1 for v in pg_rep.values() if v[0]), len(pg_rep)))
     man_jp, man_g, man_gf, man_drop = manual_pairs()
     for jk, xk in man_jp.items():
         outu[jk] = collections.Counter({xk: 1})
@@ -2092,10 +2344,15 @@ def main():
             drop["line-split dialog (needs per-message alignment)"] += 1
             continue
         ok, why = good_english(jt(jk), xb)
+        if ok and ow and US_REBALANCED.match(ow[1]) and not same_numbers(jt(jk), xb):
+            ok, why = False, "US changed a number (quest / talk text)"
         if ok:
             en_jp[jk] = xb
         else:
             drop[why] += 1
+    for jk in us_rewritten_talk(jt, en_jp, cells):
+        del en_jp[jk]
+        drop["US rewrote the talk (Dual Swords)"] += 1
     # quests
     Jq = read_quests(args.jp, r"m(\d{3})\.mib$")
     Uq = read_quests(args.us, r"u(\d{3})\.mib$")
@@ -2106,12 +2363,17 @@ def main():
     for k, xb in qp.items():
         jb = cstr_at(Jq[k[1]], k[2])
         ok, why = good_english(jb, xb)
+        if ok and not same_numbers(jb, xb):
+            ok, why = False, "US changed a number"
         if ok:
             en_jp[k] = xb
             nq += 1
         else:
             drop["quest " + why] += 1
     lsp = linesplit_pairs(jp, us, omu, cells)
+    gsp = group_pairs(jp, us, omu, cells, en_jp, owner)
+    log("other line-split dialogs: %d slots from the US groups" % len(gsp))
+    lsp += gsp
     slot_jp, slot_cov = {}, set()
     for key, idx, jk, xb in lsp:
         slot_jp[("slot", omu.info[key][0] + 4 * idx)] = xb
@@ -2376,6 +2638,19 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
     hows = collections.Counter(v[2] for v in omu.found.values())
     howg = collections.Counter(v[2] for v in omg.found.values())
     q_exact = sum(1 for n, (u, s) in qm.items() if s >= 0.99)
+    # G quests left untied because the JP quest with the same text is on another map (flagged, no English by tie)
+    jtext = collections.defaultdict(set)
+    for n, d in Jq.items():
+        for i, (o, b) in enumerate(quest_fields_jp(d)):
+            if b:
+                jtext[(i, b)].add(n)
+    q_map_flag = []
+    for gn, d in sorted(Gq.items()):
+        if gn in gqmatch:
+            continue
+        hits = collections.Counter(n for i, (o, b) in enumerate(quest_fields_g(d)) if b for n in jtext.get((i, b), ()))
+        if hits and hits.most_common(1)[0][1] >= 2 and quest_map(Jq[hits.most_common(1)[0][0]]) != quest_map(d):
+            q_map_flag.append((gn, hits.most_common(1)[0][0]))
     txt = ["# Text coverage: official English for MH1 JP and Monster Hunter G",
            "",
            "Made by `tools/text_map.py --report` from the three discs (disc/mh1, disc/mh1_us, disc/mhg). Counts and ids only; "
@@ -2395,10 +2670,13 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
            "integer) of the whole object agree with the JP layout (95% for layout guesses, 25-80% for code or name hits because "
            "the tables were edited). Rows are then paired by position, or, where rows were inserted, by their number fields (US) "
            "or by their Japanese text (G); the item-id arrays follow the Item_data record alignment.",
-           "3. **Quest number.** MH1 JP quest files are tied to US files by their non-text data (%d of %d JP quests, %d with an identical "
-           "data block; the village quests 131-177 and a few others were rebalanced and are left out). G quests are tied to JP "
-           "quests by identical title/goal/failure/details fields, else by the non-text data (monster, map and reward sections, rule "
-           "words; %d of %d G quests)." % (len(qm), len(Jq), q_exact, len(gqmatch), len(Gq)),
+           "3. **Quest data, not number.** MH1 JP quest files are tied to US files by their non-text data, and only on the same "
+           "map (%d of %d JP quests, %d with an identical data block; the village quests 131-177 and a few others were rebalanced "
+           "and are left out). G quests are tied to JP quests by identical title/goal/failure/details fields, else by the non-text "
+           "data (monster, map and reward sections, rule words), again only on the same map (%d of %d G quests). A G quest field "
+           "that takes English by text alone (rule 6) takes it from a JP quest on another map only when neither text names a place. "
+           "G quests whose text matches a JP quest on another map (G moved them) get no English by tie (flagged: %s)." % (len(qm), len(Jq), q_exact, len(gqmatch), len(Gq),
+                                                                        ", ".join("G %d / JP %d" % x for x in q_map_flag) or "none"),
            "4. **Content anchor (G only).** A JP string at least 12 bytes long whose bytes are identical and unique in JP and in G "
            "gives its table a shift vote (3211 such anchors); the anchor itself pairs nothing (content rules: 6).",
            "5. **Same Japanese text (MH1 JP).** A JP string left unpaired (its US table not located, or the US code no longer reads it, e.g. the item list's title) takes the English of identical Japanese text elsewhere when all paired occurrences agree.",

@@ -1448,3 +1448,9 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
 - Details, ambiguous cases and the decision input: docs/english_g.md. Numbers: docs/text_coverage.md.
 - Not done: re-pairing the shifted tutorial pages by content; checking the village/town NPC tables page by page; the
   memory-card / online lines that have a JP twin but no paired US line.
+- Round 2 (same day): tutorial pages paired by content (page_pairs, 22/23), yes/no + network-setting dialogs as whole
+  messages (group_pairs, 161 slots), quest ties need the same map (quest_map: header section 0 word 5) and G quest
+  fields take other-map English only when no place is named (22 G quests flagged, e.g. G 10018 moved to the forest),
+  US number changes in quest/talk text dropped (same_numbers), US Dual Swords rewrites in talk dropped
+  (us_rewritten_talk). MH1 JP 6272 -> 6379 (78%), G 6776 -> 6839. Tried and dropped: tying the unlocated network
+  messages (net_con_msg, ms_err_str) by content over all US messages - it paired wrong messages.

@@ -17,20 +17,9 @@ game:0x6DBC40	tutorial pages	edited in G	ambiguous: the English names a button t
 game:0x6DC0B0	other tables (lit_190_0068ED) [G table]	G only
 game:0x6DC180	other tables (lit_190_0068ED) [G table]	G only
 game:0x6DC280	other tables (lit_190_0068ED) [G table]	G only
-game:0x6DC330	tutorial pages	twin without US English
-game:0x6DC3F0	tutorial pages	twin without US English
-game:0x6DC4D0	tutorial pages	twin without US English	in Portable
-game:0x6DC570	tutorial pages	twin without US English
-game:0x6DC630	tutorial pages	twin without US English
-game:0x6DC710	tutorial pages	twin without US English	in Portable
-game:0x6DC7A0	tutorial pages	twin without US English
-game:0x6DC860	tutorial pages	twin without US English
-game:0x6DC8D0	tutorial pages	twin without US English
-game:0x6DC970	tutorial pages	twin without US English	in Portable
-game:0x6DC9F0	tutorial pages	twin without US English
-game:0x6DCAA0	tutorial pages	twin without US English
-game:0x6DCB80	tutorial pages	twin without US English
-game:0x6DCC50	tutorial pages	twin without US English	in Portable
+game:0x6DC630	tutorial pages	edited in G
+game:0x6DC9F0	tutorial pages	edited in G
+game:0x6DCC50	tutorial pages	edited in G	in Portable
 game:0x6DCD50	code literals (game)	G only	in Portable
 game:0x6DCE00	code literals (game)	G only	in Portable
 game:0x6DD170	tutorial pages	edited in G	ambiguous: the English names a button the Japanese does not
@@ -53,30 +42,17 @@ game:0x6DEF70	code literals (game)	G only	in Portable
 game:0x6DEFD0	tutorial pages	twin without US English	in Portable
 game:0x6DF020	tutorial pages	twin without US English	in Portable
 game:0x6DF100	tutorial pages	twin without US English	in Portable
-game:0x6DF1C0	tutorial pages	twin without US English	in Portable
-game:0x6DF240	tutorial pages	twin without US English	in Portable
-game:0x6DF2C0	tutorial pages	twin without US English	in Portable
-game:0x6DF370	tutorial pages	twin without US English	in Portable
 game:0x6DF3E0	code literals (game)	G only	in Portable
 game:0x6DF4A0	code literals (game)	G only	in Portable
 game:0x6DF570	code literals (game)	G only	in Portable
 game:0x6DF660	code literals (game)	G only	in Portable
-game:0x6DF6C0	tutorial pages	twin without US English	in Portable
-game:0x6DF790	tutorial pages	twin without US English	in Portable
-game:0x6DF820	tutorial pages	twin without US English	in Portable
 game:0x6DF8A0	other tables (lit_214_0068EFC) [G table]	G only	in Portable
 game:0x6DF980	other tables (lit_214_0068EFC) [G table]	G only	in Portable
 game:0x6DFA80	other tables (lit_214_0068EFC) [G table]	G only	in Portable
 game:0x6DFB90	code literals (game)	G only	in Portable
 game:0x6DFC50	code literals (game)	G only	in Portable
-game:0x6DFD30	tutorial pages	twin without US English	in Portable
-game:0x6DFDE0	tutorial pages	twin without US English	in Portable
-game:0x6DFE50	tutorial pages	twin without US English	in Portable
 game:0x6DFEF0	code literals (game)	G only	in Portable
 game:0x6DFF90	code literals (game)	G only	in Portable
-game:0x6E0070	tutorial pages	twin without US English	in Portable
-game:0x6E0100	tutorial pages	twin without US English	in Portable
-game:0x6E0170	tutorial pages	twin without US English	in Portable
 game:0x6E0200	code literals (game)	G only	in Portable
 game:0x6E0290	code literals (game)	G only	in Portable
 game:0x6E02F0	code literals (game)	G only	in Portable
@@ -164,10 +140,10 @@ lobby:0x5F3620	other tables (lit_329_00661C) [G table]	G only	in Portable
 lobby:0x5F3670	other tables (lit_329_00661C) [G table]	G only	in Portable
 lobby:0x5F3790	other tables (lit_329_00661C) [G table]	G only	in Portable
 lobby:0x5F3B30	other tables (lit_357) [G table]	G only	in Portable
-lobby:0x5F58B0	other tables (lit_408_006637E) [G table]	G only	in Portable	ambiguous: numbers: number not written as digits in the English
+lobby:0x5F58B0	other tables (lit_408_006637E) [G table]	G only	in Portable
 lobby:0x5F59A0	quest board / quest text tables	edited in G	in Portable	ambiguous: numbers: number changed to or from 1 (singular/plural)
 lobby:0x5F59E0	quest board / quest text tables	twin without US English	in Portable
-lobby:0x5F5DA0	quest board / quest text tables [G table]	G only	in Portable	ambiguous: numbers: number not written as digits in the English
+lobby:0x5F5DA0	quest board / quest text tables [G table]	G only	in Portable
 lobby:0x5F5EE0	other tables (lit_442) [G table]	G only	in Portable
 lobby:0x5F6290	other tables (lit_420_00663C) [G table]	G only	in Portable
 lobby:0x5F63D0	other tables (lit_420_00663C) [G table]	G only	in Portable	ambiguous: numbers: number changed to or from 1 (singular/plural)
@@ -585,7 +561,7 @@ lobby:0x6222F0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x622350	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x6223B0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x622410	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x622470	village NPC lines and talk	edited in G	in Portable
+lobby:0x622470	village NPC lines and talk	twin without US English	in Portable
 lobby:0x622690	village NPC lines and talk	edited in G
 lobby:0x622700	village NPC lines and talk [G table]	G only
 lobby:0x622790	village NPC lines and talk [G table]	G only
@@ -655,7 +631,7 @@ lobby:0x62B570	village NPC lines and talk [G table]	G only
 lobby:0x62C380	village NPC lines and talk	edited in G
 lobby:0x62C3F0	village NPC lines and talk	edited in G
 lobby:0x62C4A0	village NPC lines and talk	edited in G
-lobby:0x62C570	village NPC lines and talk	edited in G	ambiguous: numbers: number not written as digits in the English
+lobby:0x62C570	village NPC lines and talk	twin without US English
 lobby:0x62C5F0	village NPC lines and talk	edited in G
 lobby:0x62C660	village NPC lines and talk [G table]	G only
 lobby:0x62CB40	village NPC lines and talk	edited in G
@@ -780,6 +756,7 @@ lobby:0x63FB70	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x63FB90	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x63FBC0	other tables (pit_help_itembox_str) [G table]	G only	in Portable
 lobby:0x63FD60	other tables (pit_help_itembox_str)	twin without US English	in Portable
+lobby:0x63FFC0	other tables (pit_help_itembox_str)	twin without US English	in Portable
 lobby:0x6400C8	other tables (pit_help_itembox_str) [G table]	G only	in Portable
 lobby:0x6400D8	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x6400E0	village / plaza / guild / shop UI [G table]	G only	in Portable
@@ -1570,7 +1547,6 @@ main:0x2C1AE0	online, keyboard, word filter	twin without US English
 main:0x2C1B10	online, keyboard, word filter	twin without US English
 main:0x2C1B40	online, keyboard, word filter	twin without US English
 main:0x2C1B58	online, keyboard, word filter	twin without US English
-main:0x2C1B68	online, keyboard, word filter	twin without US English
 main:0x2C1B80	online, keyboard, word filter	twin without US English
 main:0x2C1BA0	online, keyboard, word filter	twin without US English
 main:0x2C1BC0	online, keyboard, word filter	twin without US English
@@ -1627,7 +1603,6 @@ main:0x2C23B0	online, keyboard, word filter	twin without US English
 main:0x2C23E0	online, keyboard, word filter	twin without US English
 main:0x2C2410	online, keyboard, word filter	twin without US English
 main:0x2C2440	online, keyboard, word filter	twin without US English
-main:0x2C2470	online, keyboard, word filter	twin without US English
 main:0x2C24C0	online, keyboard, word filter	twin without US English
 main:0x2C24E0	online, keyboard, word filter	twin without US English
 main:0x2C2500	online, keyboard, word filter	twin without US English
@@ -1657,6 +1632,7 @@ main:0x2C2960	online, keyboard, word filter	twin without US English
 main:0x2C2990	online, keyboard, word filter	twin without US English
 main:0x2C29C0	online, keyboard, word filter	twin without US English
 main:0x2C29F0	online, keyboard, word filter	twin without US English
+main:0x2C2A20	online, keyboard, word filter	twin without US English	in Portable
 main:0x2C2A40	online, keyboard, word filter	twin without US English
 main:0x2C2A80	online, keyboard, word filter	twin without US English
 main:0x2C2AD0	online, keyboard, word filter	twin without US English
@@ -4500,18 +4476,16 @@ quest:2046:0xA0	quests	G only	in Portable
 quest:2047:0x68	quests	G only	in Portable
 quest:2047:0x6F	quests	G only	in Portable
 quest:2047:0x9C	quests	G only	in Portable
-quest:2048:0x68	quests	G only	in Portable
-quest:2048:0xAA	quests	G only	in Portable
-quest:2049:0x68	quests	G only	in Portable
-quest:2049:0xAA	quests	G only	in Portable
-quest:2050:0x68	quests	G only	in Portable
-quest:2050:0xA4	quests	G only	in Portable
+quest:2048:0x68	quests	edited in G	in Portable
+quest:2049:0x68	quests	edited in G	in Portable
+quest:2050:0x68	quests	edited in G	in Portable
+quest:2050:0xA4	quests	edited in G	in Portable
 quest:3003:0xB2	quests	G only	in Portable
-quest:10020:0xB0	quests	G only	in Portable	ambiguous: numbers: number not written as digits in the English
+quest:10020:0xB0	quests	G only	in Portable
 quest:10021:0x68	quests	twin without US English	in Portable
 quest:10021:0x7D	quests	twin without US English	in Portable	ambiguous: numbers: number changed to or from 1 (singular/plural)
 quest:10021:0xAC	quests	twin without US English	in Portable
-quest:10024:0xA8	quests	twin without US English	in Portable	ambiguous: numbers: number not written as digits in the English
+quest:10024:0xA8	quests	twin without US English	in Portable
 quest:10025:0xA8	quests	G only	in Portable
 quest:10028:0xA4	quests	G only	in Portable
 quest:10029:0x68	quests	G only
@@ -6401,35 +6375,17 @@ sub_main:0x541830	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x541870	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x5418E0	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x541900	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x541950	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x541970	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x5419A0	menus, options, HUD [G table]	G only	in Portable
 yn:0xA0AF94	code literals (yn)	G only
 yn:0xA10938	memory card and yes/no dialogs [G table]	G only
 yn:0xA10948	memory card and yes/no dialogs [G table]	G only
 yn:0xA10958	memory card and yes/no dialogs [G table]	G only
-yn:0xA10968	memory card and yes/no dialogs	twin without US English
 yn:0xA10978	memory card and yes/no dialogs [G table]	G only
-yn:0xA10980	memory card and yes/no dialogs	twin without US English
-yn:0xA10990	memory card and yes/no dialogs	twin without US English
-yn:0xA109A0	memory card and yes/no dialogs	twin without US English
-yn:0xA109B0	memory card and yes/no dialogs	twin without US English
+yn:0xA10980	memory card and yes/no dialogs	edited in G
 yn:0xA109D0	memory card and yes/no dialogs [G table]	G only
 yn:0xA109F0	memory card and yes/no dialogs [G table]	G only
 yn:0xA10A08	memory card and yes/no dialogs	twin without US English
 yn:0xA10A20	memory card and yes/no dialogs	twin without US English
 yn:0xA10A40	memory card and yes/no dialogs	twin without US English
-yn:0xA10A60	memory card and yes/no dialogs	twin without US English
-yn:0xA10A68	memory card and yes/no dialogs	twin without US English
-yn:0xA10A80	memory card and yes/no dialogs	twin without US English
-yn:0xA10AB0	memory card and yes/no dialogs	twin without US English
-yn:0xA10AD0	memory card and yes/no dialogs	twin without US English
-yn:0xA10AE8	memory card and yes/no dialogs	twin without US English
-yn:0xA10AF0	memory card and yes/no dialogs	twin without US English
-yn:0xA10B10	memory card and yes/no dialogs	twin without US English
-yn:0xA10B30	memory card and yes/no dialogs	twin without US English
-yn:0xA10B50	memory card and yes/no dialogs	twin without US English
-yn:0xA10B80	memory card and yes/no dialogs	twin without US English
 yn:0xA10BE0	memory card and yes/no dialogs	twin without US English
 yn:0xA10C10	memory card and yes/no dialogs	twin without US English
 yn:0xA10C40	memory card and yes/no dialogs	twin without US English
@@ -6438,11 +6394,7 @@ yn:0xA10C90	memory card and yes/no dialogs	twin without US English
 yn:0xA10CC0	memory card and yes/no dialogs	twin without US English
 yn:0xA10CF0	memory card and yes/no dialogs	twin without US English
 yn:0xA10D20	memory card and yes/no dialogs	twin without US English
-yn:0xA10D50	memory card and yes/no dialogs	twin without US English
-yn:0xA10D70	memory card and yes/no dialogs	twin without US English
-yn:0xA10DA0	memory card and yes/no dialogs	twin without US English
 yn:0xA10DC0	memory card and yes/no dialogs	twin without US English
-yn:0xA10DE0	memory card and yes/no dialogs	twin without US English
 yn:0xA10E00	code literals (yn)	G only
 yn:0xA10E10	memory card and yes/no dialogs	twin without US English
 yn:0xA10E30	memory card and yes/no dialogs	twin without US English
@@ -6454,35 +6406,20 @@ yn:0xA10F20	memory card and yes/no dialogs	twin without US English
 yn:0xA10F60	memory card and yes/no dialogs	twin without US English
 yn:0xA10F90	memory card and yes/no dialogs	twin without US English
 yn:0xA10FB0	code literals (yn)	G only
-yn:0xA10FE0	memory card and yes/no dialogs	twin without US English
-yn:0xA11000	memory card and yes/no dialogs	twin without US English
+yn:0xA10FE0	memory card and yes/no dialogs	edited in G
+yn:0xA11000	memory card and yes/no dialogs	edited in G
 yn:0xA11030	memory card and yes/no dialogs	twin without US English
-yn:0xA11050	memory card and yes/no dialogs	twin without US English
+yn:0xA11050	memory card and yes/no dialogs	edited in G
 yn:0xA11080	code literals (yn)	G only
-yn:0xA110A0	memory card and yes/no dialogs	twin without US English
-yn:0xA110C0	memory card and yes/no dialogs	twin without US English
-yn:0xA110F0	memory card and yes/no dialogs	twin without US English
 yn:0xA11110	memory card and yes/no dialogs	twin without US English
 yn:0xA11130	memory card and yes/no dialogs	twin without US English
-yn:0xA11160	memory card and yes/no dialogs	twin without US English
+yn:0xA11160	memory card and yes/no dialogs	edited in G
 yn:0xA11180	memory card and yes/no dialogs [G table]	G only
-yn:0xA111A0	memory card and yes/no dialogs	twin without US English	in Portable
-yn:0xA111C0	memory card and yes/no dialogs	twin without US English	in Portable
-yn:0xA111F0	memory card and yes/no dialogs	twin without US English	in Portable
-yn:0xA11220	memory card and yes/no dialogs	twin without US English
 yn:0xA11250	memory card and yes/no dialogs	twin without US English
-yn:0xA11270	memory card and yes/no dialogs	twin without US English
-yn:0xA11290	memory card and yes/no dialogs	twin without US English
-yn:0xA112C0	memory card and yes/no dialogs	twin without US English
-yn:0xA112F0	memory card and yes/no dialogs	twin without US English
-yn:0xA11320	memory card and yes/no dialogs	twin without US English
 yn:0xA11340	code literals (yn)	G only
 yn:0xA11380	memory card and yes/no dialogs	twin without US English
-yn:0xA113B0	memory card and yes/no dialogs	twin without US English
-yn:0xA113D0	memory card and yes/no dialogs	twin without US English
-yn:0xA11400	memory card and yes/no dialogs	twin without US English
+yn:0xA113B0	memory card and yes/no dialogs	edited in G
+yn:0xA113D0	memory card and yes/no dialogs	edited in G
+yn:0xA11400	memory card and yes/no dialogs	edited in G
 yn:0xA11430	code literals (yn)	G only
 yn:0xA11470	code literals (yn)	G only
-yn:0xA11490	memory card and yes/no dialogs	twin without US English
-yn:0xA114D0	memory card and yes/no dialogs	twin without US English
-yn:0xA11500	memory card and yes/no dialogs	twin without US English
