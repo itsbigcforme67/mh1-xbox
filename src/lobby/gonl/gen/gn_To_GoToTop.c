@@ -11,6 +11,7 @@ void To_GoToTop(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 0;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 0;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
+    (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9E)) = 0;
     SetDialogData(0x19, arg1, arg2, arg3);
 }
 

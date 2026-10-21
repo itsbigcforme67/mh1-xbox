@@ -4,7 +4,7 @@
 #include "../gonl.h"
 
 s32 Pl_chat_act_req();
-s32 func_001193E0();                            /* extern */
+s32 func_001193E0();
 extern void *lpSKey;
 
 s32 func_0012D080(void) {
@@ -17,7 +17,7 @@ s32 func_0012D080(void) {
         temp_v1 = (*(u8 *)((u8 *)(lpSKey) + 0x666));
         if (((s32) temp_v1 >= 0x3A) && ((s32) temp_v1 < 0x46)) {
             Pl_chat_act_req((temp_v1 - 0x39) & 0xFF);
-            func_001193E0();
+            func_001193E0(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return 0;
         }
     }

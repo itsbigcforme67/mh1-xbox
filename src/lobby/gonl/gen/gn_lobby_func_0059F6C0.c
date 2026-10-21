@@ -4,9 +4,12 @@
 #include "../gonl.h"
 
 void * strcpy();
+extern u8 g_main_2EFAE8;
+extern u8 g_main_2EFAE8;
 extern s32 g_lb_654E00;
 
 void lobby_func_0059F6C0(void *arg0) {
+    (*(s32 *)&g_main_2EFAE8) = 0xB000240A;
     strcpy(&g_lb_654E00, arg0);
 }
 

@@ -25,6 +25,7 @@ void lobby_func_005ABAD0(void *arg0) {
         var_v1 = var_v1 >> 1;
     } while (var_a1 < 0x20U);
     (*(s16 *)((u8 *)&CnetSys_w + 0x1032)) = 0;
+    (*(s16 *)((u8 *)&CnetSys_w + 0x43B6)) = 0;
     memset(&(*(s32 *)((u8 *)&CnetSys_w + 0x67F0)), 0, 0x30AC);
 }
 

@@ -4,14 +4,13 @@
 #include "../gonl.h"
 
 s32 SoftKeyboard_set();
-s32 func_0021E370();                     /* extern */
-
+s32 func_0021E370();
 void func_00220F40(s32 arg0, s32 arg1, s32 arg2, void *arg3) {
     SoftKeyboard_set(arg0 & 0xFF, arg1, arg2, arg3);
     if (arg0 & 0x80000000) {
-        func_0021E370(0);
+        func_0021E370(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     }
-    func_0021E370(-1);
+    func_0021E370(-1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
 }
 

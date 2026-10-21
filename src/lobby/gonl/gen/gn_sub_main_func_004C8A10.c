@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s64 sub_main_func_004C9250();                       /* extern */
+s64 sub_main_func_004C9250();
 extern s32 g_sub_4FF1D0;
 
-s32 sub_main_func_004C8A10(void *arg0, s32 arg1) {
+s32 sub_main_func_004C8A10(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_a2;
     s32 temp_a3;
     s32 var_a5;
@@ -19,7 +19,7 @@ s32 sub_main_func_004C8A10(void *arg0, s32 arg1) {
     }
     var_a4 = (*(s32 *)((u8 *)&g_sub_4FF1D0 + ((arg1 & 0xFF) * 4)));
     var_a1 = (*(u16 *)var_a4);
-    temp_a2 = ((s16) (sub_main_func_004C9250()));
+    temp_a2 = ((s16) (sub_main_func_004C9250(arg0, arg1, arg2, arg3)));
     if (var_a1 != 0xFF) {
         temp_a3 = ((s16) (temp_a2));
 loop_5:

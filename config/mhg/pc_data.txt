@@ -500,6 +500,8 @@ g_main_2EFBC4 = 0x002EFBC4; // size:0x4   # tools/mhg_gonl.py: G data the G onli
 [main]
 g_main_2FF154 = 0x002FF154; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [main]
+g_main_300A7B = 0x00300A7B; // size:0x15   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
+[main]
 g_main_302290 = 0x00302290; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [main]
 g_main_302CB0 = 0x00302CB0; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
@@ -514,6 +516,8 @@ g_main_306468 = 0x00306468; // size:0x100   # tools/mhg_gonl.py: G data the G on
 [main]
 g_main_3064AF = 0x003064AF; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [sub_main]
+g_sub_4FEE90 = 0x004FEE90; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
+[sub_main]
 g_sub_4FF1D0 = 0x004FF1D0; // size:0x10   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [sub_main]
 g_sub_51B9B0 = 0x0051B9B0; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
@@ -521,7 +525,3 @@ g_sub_51B9B0 = 0x0051B9B0; // size:0x100   # tools/mhg_gonl.py: G data the G onl
 g_sub_541E30 = 0x00541E30; // size:0x20   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [sub_main]
 g_sub_541E40 = 0x00541E40; // size:0x10   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
-[main]
-g_main_300A7B = 0x00300A7B; // size:0x15   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
-[sub_main]
-g_sub_4FEE90 = 0x004FEE90; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)

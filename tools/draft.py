@@ -44,7 +44,10 @@ CBWAIT_INLINE = (
 
 
 def inline_leaves(text):
-    return re.sub(r"^.*\bjal\s+CallBackWaitInit\n(.*\n)", lambda m: m.group(1) + CBWAIT_INLINE, text, flags=re.M)
+    text = re.sub(r"^.*\bjal\s+CallBackWaitInit\n(.*\n)", lambda m: m.group(1) + CBWAIT_INLINE, text, flags=re.M)
+    # a tail jump to another function (`j NAME`): m2c drops its delay slot (a store, an argument): run the slot first
+    return re.sub(r"^(.*\bj\s+[A-Za-z_]\w*\n)(\s*/\*[^*]*\*/\s+)(?!nop)(.*\n)",
+                  lambda m: m.group(2) + m.group(3) + m.group(1) + "    nop\n", text, flags=re.M)
 
 
 def named_regs(text):

@@ -3,13 +3,15 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+extern u8 g_main_2EF390;
 extern u8 cw;
+extern u8 g_main_2EF390;
 extern u8 pNet;
-s32 SetDialogData_HTML();                       /* extern */
+s32 SetDialogData_HTML();                    /* extern */
 
 void lobby_func_0056B4B0(void) {
     (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) = 0;
     (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = (s16) (*(u8 *)((u8 *)((*(void **)&cw)) + 0x101A));
-    SetDialogData_HTML();
+    SetDialogData_HTML((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + 0x9C8);
 }
 

@@ -132,6 +132,7 @@ lobby g_lb_636B5C 0x636B5C  # tools/mhg_gonl.py: a G address the G online code u
 lobby g_lb_636BC0 0x636BC0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_636BD8 0x636BD8  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_636BF0 0x636BF0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636C10 0x636C10  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_636CD0 0x636CD0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_636CF0 0x636CF0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_636CF4 0x636CF4  # tools/mhg_gonl.py: a G address the G online code uses, no name yet

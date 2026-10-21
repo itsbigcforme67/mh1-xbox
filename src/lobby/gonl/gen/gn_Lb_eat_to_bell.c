@@ -5,11 +5,11 @@
 
 extern u8 dialogData;
 extern u8 htmlStr;
-s32 set_dialog_square();                 /* extern */
+s32 set_dialog_square();        /* extern */
 
 void Lb_eat_to_bell(s32 arg0) {
     (*(s32 *)&htmlStr) = arg0;
     (*(s8 *)((u8 *)&dialogData + 0x12)) = 1;
-    set_dialog_square(0x1F4);
+    set_dialog_square(0x1F4, 0x17C);
 }
 

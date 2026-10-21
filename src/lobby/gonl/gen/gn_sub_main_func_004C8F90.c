@@ -3,19 +3,19 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s64 sub_main_func_004C9250();
 extern u8 view_work;
-s64 sub_main_func_004C9250();              /* extern */
 extern u8 g_main_2FF154;
 extern u8 User_data;
 
-s32 *sub_main_func_004C8F90(s32 arg0, s32 arg1) {
+s32 *sub_main_func_004C8F90(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 *var_v1;   /* (s32 *) */
     s32 temp_v1;
     s32 var_a0;
     s32 var_a5;
     u8 *var_a4;
 
-    temp_v1 = ((s16) (sub_main_func_004C9250(&User_data)));
+    temp_v1 = ((s16) (sub_main_func_004C9250(&User_data, arg1, arg2, arg3)));
     switch (arg0) {                                 /* irregular */
     case 2:
         var_a0 = 0;

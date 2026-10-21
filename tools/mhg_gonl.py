@@ -225,6 +225,7 @@ def convert(src):
 # MH1 function of that name, so G's gets a name of its own in every generated file
 G_RENAME = {
     '_cnet_CallBack_Result_PersonalDataChange': 'gonl_cb_FileDownload',    # G 0x5BFD00: the file download burst's result
+    'check_sender0': 'gonl_send_pl_status0',                   # G 0x59A820: Lb_send_pl_status(a0, 0) (MH1's is a compare)
     'cnLBS_Get_PlazaStatus': 'gonl_Get_LobbyStatus',           # G 0x5AC320: a lobby (town) record's status
     'cnLBS_Get_mhPlazaJoinUser': 'gonl_Get_LobbyJoinUser',     # G 0x5AC1F0: a lobby record's two user counts
     'cnLBS_Get_RoomStatus': 'gonl_Get_PlazaStatus',            # G 0x5E37C0: a plaza record's status (MH1: a room's)

@@ -3,9 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 sub_main_func_004C87C0();                /* extern */
-
-s32 sub_main_func_004C8600(s32 unused_a0, s32 unused_a1, s32 arg2) {
-    return (sub_main_func_004C87C0(0) & 0xFFFF) >= (arg2 & 0xFFFF);
+s32 sub_main_func_004C87C0();
+s32 sub_main_func_004C8600(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    return (sub_main_func_004C87C0(arg0, arg1, NULL, arg3) & 0xFFFF) >= (arg2 & 0xFFFF);
 }
 
