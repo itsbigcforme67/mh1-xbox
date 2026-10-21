@@ -16,9 +16,9 @@ obvious workarounds.
 - **Dropped:** the GALLERY's "closed entry" answer for its 15 event scenes (omake_g.c) and the black credits; **now**
   the host plays the scenes (viewer.c gal_scene_*: the quest's stage and monsters, the event-demo camera, no hunter) and
   the credits start G's ROLL01..06 clips (rt_movie_clip). **Why:** GB2's open part.
-- **Changed (G):** the monsters' event-demo checks in em01_ai_nm, em04b, em12_nm, em16_nm, em19b, em20_ai_nm, em27a
-  compare G's quest numbers (include/em_demo_g.h QN(mh1, g); MH1 unchanged); G-only demo acts added for em02 (kinds != 2,
-  stage 0x58), em04, em09, em15, em16, em19, em20 from G's asm; em02's G branch keys on the kind, not on MH1's quest
+- **Changed (G):** the monsters' event-demo checks in em04b, em12_nm, em19b, em20_ai_nm compare G's quest numbers
+  (include/em_demo_g.h QN(mh1, g); MH1 unchanged; em01/em16/em27 had the same fix on main from the G quest lane, kept);
+  G-only demo acts added for em02 (kinds != 2, stage 0x58), em04, em09, em15, em19, em20 from G's asm; em02's G branch keys on the kind, not on MH1's quest
   list. em20_ai_nm read MH1's info_stop address (0x3F360F) in both games: now game_w.info_stop. **Why:** G's in-quest
   first-sight demos had the camera but the monster did not act (also in quests, not only the gallery).
 - **Changed (G):** G's per-stage tables (92 entries), stage_start_pos and Demo_cam_tbl (38) imported at G's sizes, the

@@ -1126,7 +1126,7 @@ refused, package without MH1_HIDDEN -> passes to graphics start-up, no PLAYER.tx
   kept stages/flags/acts and swapped MH1's quest numbers for its training quests (include/em_demo_g.h lists none, each
   site uses QN(mh1, g)). G-only demos: em02 kind != 2 on stage 0x58 (13 steps, the crimson dragon's flight), em20 quest
   10028 (9 steps, a walked route), em15 10046 (7 steps), and "hidden until the flag" demos for em04/em09 (10028), em16
-  (10035), em19 (10046). Not done: em03's quest 10008 demo (not in the gallery; the PC em03 has no demo code at all).
+  (10035, also done on main by the quest lane: main's em01/em16/em27 kept at the merge), em19 (10046). Not done: em03's quest 10008 demo (not in the gallery; the PC em03 has no demo code at all).
 - **Data fixes on the way:** G's per-stage AFS tables have 92 entries (stage 88 = event quest 60029's volcano), the split
   sized them 88; Demo_cam_tbl has 38 cameras and the lists of 5-9 / 35-37 had no symbol (camera 35/36 crashed
   point_cam_sub); the credits' page 4/5 first line (s16 500, 80) was taken for a pointer (pc_noptr.txt): page 4 never
