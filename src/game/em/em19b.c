@@ -29,18 +29,31 @@ typedef struct QUEST_W {
 #define ANG2DEG(a) (360.0f * (f32)(a) / 65536.0f)
 #define DEG2RAD(d) (2.0f * (3.1415927f * ((d) / 360.0f)))
 
-/* Keep the flier between the ground and 1000 above it. */
+/* Keep the flier between the ground and 1000 above it. G (game 0x614F30 .. 0x617120, every em19 site; agent D, 22 Oct
+ * 2026: referee g_basarios / g_monoblos) does not stop it at 1000: it pushes it down 20 a tick, so a climb of 30 a tick
+ * goes on at 10; and its em_fly05 / em_fly09 have no ceiling. */
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+#define EM19_TOP(em) ((em)->pos[1] = (em)->pos[1] - 20.0f)
+#define EM19_G_NOTOP 1
+#else
+#define EM19_TOP(em) ((em)->pos[1] = 1000.0f + (em)->x5AC)
+#define EM19_G_NOTOP 0
+#endif
 #define EM19_CLAMP_Y(em)                                    \
     if ((em)->pos[1] < (em)->x5AC) {                        \
         (em)->pos[1] = (em)->x5AC;                          \
     } else if ((em)->pos[1] > 1000.0f + (em)->x5AC) {       \
-        (em)->pos[1] = 1000.0f + (em)->x5AC;                \
+        EM19_TOP(em);                                       \
     }
 #define EM19_CLAMP_Y2(em)                                   \
     if ((em)->pos[1] <= (em)->x5AC) {                       \
         (em)->pos[1] = (em)->x5AC;                          \
     } else if ((em)->pos[1] > 1000.0f + (em)->x5AC) {       \
-        (em)->pos[1] = 1000.0f + (em)->x5AC;                \
+        EM19_TOP(em);                                       \
+    }
+#define EM19_CLAMP_Y_LOW(em)                                \
+    if ((em)->pos[1] < (em)->x5AC) {                        \
+        (em)->pos[1] = (em)->x5AC;                          \
     }
 
 extern u8 em19_act_tbl[];
@@ -475,7 +488,11 @@ static void em_fly05(EMW *em) {
             }
         }
         em_rate_add_g(em);
+#if EM19_G_NOTOP
+        EM19_CLAMP_Y_LOW(em);
+#else
         EM19_CLAMP_Y(em);
+#endif
         if (--em->work08 <= 0) {
             em->x05++;
             em19_next_act_set(em);
@@ -505,7 +522,7 @@ static void em_fly06(EMW *em) {
             em_char_set(em, 0x11, 0, 0);
             em->x388 = 0;
         } else if (em->pos[1] > 1000.0f + em->x5AC) {
-            em->pos[1] = 1000.0f + em->x5AC;
+            EM19_TOP(em);
         }
         break;
     case 2:
@@ -590,7 +607,11 @@ static void em_fly09(EMW *em) {
     case 1:
         em19_dir_adj(em);
         em19_rate_add_calc(em);
+#if EM19_G_NOTOP
+        EM19_CLAMP_Y_LOW(em);
+#else
         EM19_CLAMP_Y(em);
+#endif
         if (--em->work08 <= 0) {
             em->x05++;
             em19_next_act_set(em);
@@ -833,7 +854,7 @@ static void em_dm01(EMW *em) {
             em_char_set(em, 0xE, 0, 0);
             em_rate_clear(em);
         } else if (em->pos[1] > 1000.0f + em->x5AC) {
-            em->pos[1] = 1000.0f + em->x5AC;
+            EM19_TOP(em);
         }
         break;
     case 2:
@@ -919,7 +940,7 @@ static void em_dm04(EMW *em) {
             em_char_set(em, 0xE, 0, 0);
             em_rate_clear(em);
         } else if (em->pos[1] > 1000.0f + em->x5AC) {
-            em->pos[1] = 1000.0f + em->x5AC;
+            EM19_TOP(em);
         }
         break;
     case 2:
@@ -1057,7 +1078,7 @@ static void em_die01(EMW *em) {
             em_char_set(em, 0xE, 0, 0);
             em_rate_clear(em);
         } else if (em->pos[1] > 1000.0f + em->x5AC) {
-            em->pos[1] = 1000.0f + em->x5AC;
+            EM19_TOP(em);
         }
         break;
     case 2:
