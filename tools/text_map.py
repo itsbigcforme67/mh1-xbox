@@ -1325,13 +1325,15 @@ def propagate_same_text(jp, S, owner, en_jp, minlen=4):
     return n
 
 
-def propagate_same_text_g(jp, g, GS, en_jp, en_g, minlen=4):
+def propagate_same_text_g(jp, g, GS, en_jp, en_g, owner, minlen=4):
     """A G string no table paired takes the English of the same Japanese text (blanks at the ends ignored) from
     the JP build or from G itself when every paired occurrence has the same English: the G-only label tables
-    (menu words, shop commands) repeat MH1 words whose US twin was paired in another table."""
+    (menu words, shop commands) repeat MH1 words whose US twin was paired in another table. Lines of the item
+    description tables are not used here: their US lines are a re-wrap of the whole description, so one JP line
+    and its US line need not say the same thing (g_rules pairs whole descriptions instead)."""
     eng = collections.defaultdict(collections.Counter)
     for jk, xb in en_jp.items():
-        if jk[0] != "quest":
+        if jk[0] != "quest" and not _fragment(owner, jk):
             eng[_norm_jp(jp.cstr(*jk))][xb] += 1
     for gk, xb in en_g.items():
         if gk[0] not in ("quest", "slot") and gk in GS:
@@ -1351,8 +1353,343 @@ def propagate_same_text_g(jp, g, GS, en_jp, en_g, minlen=4):
     return new
 
 
+# ---------------------------------------------------------------- G: rules that reuse MH1 English for moved / edited text
+# Each rule says exactly what may differ between the MH1 JP text that has US English and the G text; nothing else may.
+#   exact     same bytes (blanks at the ends ignored) - for quest fields and for whole descriptions
+#   layout    + full-width / half-width letters and digits, blanks, line breaks (the English keeps its own breaks)
+#   marks     + kanji digits written as digits, punctuation and quote brackets (。、！？・…「」≪≫【】)
+#   buttons   + G wrote a pad symbol (○ □ △ ×) as a ~Bnn icon code: the English's US icon code is re-pointed to G's code
+#               for the same symbol (US code -> symbol table learned from the MH1 pairs)
+#   numbers   + G changed a number: the number is replaced in the English when it occurs there exactly once and neither
+#               the old nor the new number is 1 (singular / plural would change: listed as ambiguous instead)
+# Sources are whole messages only: lines of the description tables and of the line-split dialogs are not, so descriptions
+# are matched as whole runs of lines (concatenated text) and get the US lines in order when the line count is the same.
+# A text with two different English translations is ambiguous and left out; so is any English whose digits disagree
+# with the Japanese, whose printf conversions differ, or that is still Japanese.
+CTRL = re.compile(r"~[A-Z]\d\d")
+BTN_SYMS = "○□△×"
+KANSUJI = dict(zip("一二三四五六七八九", "123456789"))
+PUNCT = re.compile(r"[、。，,．.！!？?・…‥「」『』≪≫【】\"']")
+
+
+def _fragment(owner, jk):
+    """a JP string that is one line of a multi-line message (description tables, line-split dialogs)"""
+    ow = owner.get(jk)
+    return bool(ow and (ow[1] in EXP_TABLES or LINESPLIT.match(ow[1])))
+
+
+def _u(b):
+    return b.decode("cp932", "replace")
+
+
+def norm_layout(b):
+    t = "".join(chr(ord(c) - 0xFEE0) if "！" <= c <= "｝" else c for c in _u(b))
+    return re.sub(r"[ 　\n]", "", t)
+
+
+def norm_marks(b):
+    return PUNCT.sub("", "".join(KANSUJI.get(c, c) for c in norm_layout(b)))
+
+
+def _numbers(t):
+    """digit runs of a (unicode) text outside ~X00 control codes"""
+    return [int(x) for x in re.findall(r"\d+", CTRL.sub("", t))]
+
+
+def _en_numbers(xb):
+    return _numbers(xb.decode("latin-1"))
+
+
+def _btn_key(t):
+    return re.sub(r"~B\d\d|[%s]" % BTN_SYMS, "\x01", t)
+
+
+def _btn_tokens(t):
+    return re.findall(r"~B\d\d|[%s]" % BTN_SYMS, t)
+
+
+def us_button_table(jp, en_jp, owner):
+    """{US icon code: pad symbol} from MH1 pairs whose JP symbols and US codes line up one to one"""
+    votes = collections.defaultdict(collections.Counter)
+    for jk, xb in en_jp.items():
+        if jk[0] == "quest" or _fragment(owner, jk):
+            continue
+        syms = [c for c in _u(jp.cstr(*jk)) if c in BTN_SYMS]
+        codes = re.findall(r"~B\d\d", xb.decode("latin-1"))
+        if syms and len(syms) == len(codes):
+            for s, c in zip(syms, codes):
+                votes[c][s] += 1
+    out = {}
+    for c, v in votes.items():
+        s, n = v.most_common(1)[0]
+        if n >= 3 and n >= 0.9 * sum(v.values()):
+            out[c] = s
+    if len(set(out.values())) != len(out):           # two codes for one symbol: not a table
+        return {}
+    return out
+
+
+def _sub_number(xb, old, new):
+    """English bytes with the number `old` replaced by `new`, or None when it is not there exactly once"""
+    t = xb.decode("latin-1")
+    pat = re.compile(r"(?<![0-9])(?<!~[A-Z])(?<!~[A-Z][0-9])%d(?![0-9])" % old)
+    if len(pat.findall(t)) != 1:
+        return None
+    return pat.sub(str(new), t).encode("latin-1")
+
+
+def number_template(jt_, gt_, xb):
+    """(english, reason): the English of JP text jt_ re-numbered for G text gt_ (same text but numbers), see 'numbers'"""
+    jn, gn = _numbers(jt_), _numbers(gt_)
+    if len(jn) != len(gn):
+        return None, "numbers"
+    diffs = [(a, b) for a, b in zip(jn, gn) if a != b]
+    if not diffs:
+        return xb, ""
+    for a, b in diffs:
+        if jn.count(a) != 1:
+            return None, "number used twice in the Japanese"
+        if a == 1 or b == 1:
+            return None, "number changed to or from 1 (singular/plural)"
+        xb = _sub_number(xb, a, b)
+        if xb is None:
+            return None, "number not written as digits in the English"
+    return xb, ""
+
+
+def g_ptr_runs(g, GS):
+    """runs (2..8) of consecutive G pointer words that all point at scanned strings: [(space, [g key])]"""
+    out = []
+    for sp in g.mod:
+        if sp == "nethttp":
+            continue
+        cells = x_ptr_cells(g, sp)
+        cur, prev = [], None
+        for pos in sorted(cells):
+            if prev is not None and pos != prev + 4:
+                if 2 <= len(cur) <= 8:
+                    out.append((sp, cur))
+                cur = []
+            if cells[pos] in GS:
+                cur.append(cells[pos])
+                prev = pos
+            else:
+                if 2 <= len(cur) <= 8:
+                    out.append((sp, cur))
+                cur, prev = [], None
+        if 2 <= len(cur) <= 8:
+            out.append((sp, cur))
+    return out
+
+
+def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
+    """Rule-based English for G strings the structure did not pair (see the rules above). JP strings in `skip`
+    (memory-card lines whose English was re-flowed from a US message group) are not used as sources.
+    Returns ({g key: english}, Counter(rule), [(g key, reason)] ambiguous)."""
+    def jtext(k):
+        return cstr_at(Jq[k[1]], k[2]) if k[0] == "quest" else jp.cstr(*k)
+
+    def gtext(k):
+        return cstr_at(Gq[k[1]], k[2]) if k[0] == "quest" else g.cstr(*k)
+
+    new, rule, amb = {}, collections.Counter(), {}
+
+    def take(gk, xb, why):
+        if gk in en_g or gk in new:
+            return
+        if good_english(gtext(gk), xb)[0]:
+            new[gk] = xb
+            rule[why] += 1
+            amb.pop(gk, None)
+
+    # ---- whole descriptions (runs of lines)
+    desc = collections.defaultdict(list)          # norm text -> [(JP text, [US lines])]
+    for exp in EXP_TABLES:
+        for run in exp_runs_jp(cells, exp):
+            if len(run) > 1 and all(k in en_jp for k in run):
+                key = norm_marks(b"".join(jp.cstr(*k) for k in run))
+                desc[key].append((key, [en_jp[k] for k in run]))
+    desc_mask = collections.defaultdict(list)
+    for key, lst in desc.items():
+        desc_mask[re.sub(r"\d+", "#", key)].extend(lst)
+    for sp, run in g_ptr_runs(g, GS):
+        gt_ = norm_marks(b"".join(g.cstr(*k) for k in run))
+        if len(gt_) < 8:
+            continue
+        cands = desc.get(gt_)
+        why = "whole description"
+        if not cands:
+            cands = desc_mask.get(re.sub(r"\d+", "#", gt_), [])
+            why = "whole description, numbers"
+        if not cands:
+            continue
+        outs = set()
+        reason = ""
+        for j, lines in cands:
+            if len(lines) != len(run):
+                reason = "description re-wrapped to another number of lines"
+                continue
+            joined = b"\x00".join(lines)
+            xb, r = number_template(j, gt_, joined) if why.endswith("numbers") else (joined, "")
+            if xb is None:
+                reason = r
+                continue
+            outs.add(xb)
+        if len(outs) == 1:
+            lines = outs.pop().split(b"\x00")
+            for k, xb in zip(run, lines):
+                if k not in en_g:
+                    new.setdefault(k, xb)
+                    rule[why] += 1
+        elif len(outs) > 1:
+            for k in run:
+                amb.setdefault(k, "two different English descriptions")
+        elif reason:
+            for k in run:
+                amb.setdefault(k, reason)
+
+    # ---- whole messages: index the JP sources by each normal form
+    us_btn = us_button_table(jp, en_jp, owner)
+    idx = {n: collections.defaultdict(list) for n in ("exact", "layout", "marks", "buttons", "numbers")}
+    for jk, xb in en_jp.items():
+        if jk[0] == "slot" or _fragment(owner, jk) or jk in skip:
+            continue
+        b = jtext(jk)
+        m = norm_marks(b)
+        idx["exact"][_norm_jp(b)].append((b, xb))
+        idx["layout"][norm_layout(b)].append((b, xb))
+        idx["marks"][m].append((b, xb))
+        if any(c in BTN_SYMS for c in m) and "~B" not in m:
+            idx["buttons"][_btn_key(m)].append((b, xb))
+        idx["numbers"][re.sub(r"\d+", "#", m)].append((b, xb))
+
+    def consensus(lst, gb):
+        gd = sorted(_numbers(norm_marks(gb)))
+        c = collections.Counter()
+        for b, xb in lst:
+            en = _en_numbers(xb)
+            if en and sorted(en) != gd:
+                continue
+            c[xb] += 1
+        return _one_english(c) if c else None, c
+
+    targets = [k for k in GS if k not in en_g and k not in new]
+    for n, d in Gq.items():
+        for o, b in quest_fields_g(d):
+            if b and ("quest", n, o) not in en_g:
+                targets.append(("quest", n, o))
+    for gk in targets:
+        gb = gtext(gk)
+        m = norm_marks(gb)
+        if len(m) < 2:
+            continue
+        done = False
+        for name, key in (("exact", _norm_jp(gb)), ("layout", norm_layout(gb)), ("marks", m)):
+            lst = idx[name].get(key)
+            if not lst:
+                continue
+            xb, c = consensus(lst, gb)
+            if xb is not None:
+                take(gk, xb, name)
+            elif len(c) > 1:
+                amb[gk] = "the same Japanese has two different English texts"
+            done = True
+            break
+        if done:
+            continue
+        if "~B" in m:
+            lst = idx["buttons"].get(_btn_key(m))
+            outs, reason = set(), ""
+            for b, xb in lst or ():
+                st, gtok = _btn_tokens(norm_marks(b)), _btn_tokens(m)
+                if len(st) != len(gtok):
+                    continue
+                to_g, ok = {}, True
+                for s, t in zip(st, gtok):
+                    if t in BTN_SYMS:
+                        ok = ok and s == t
+                    elif to_g.setdefault(s, t) != t:
+                        ok = False
+                if not ok:
+                    continue
+                t = xb.decode("latin-1")
+                for code in set(re.findall(r"~B\d\d", t)):
+                    s = us_btn.get(code)
+                    if s not in to_g:
+                        reason = "the English names a button the Japanese does not"
+                        ok = False
+                        break
+                if not ok:
+                    continue
+                outs.add(re.sub(r"~B\d\d", lambda mo: to_g[us_btn[mo.group(0)]], t).encode("latin-1"))
+            if len(outs) == 1:
+                take(gk, outs.pop(), "buttons")
+                continue
+            if len(outs) > 1:
+                amb[gk] = "two different English texts"
+            elif reason:
+                amb[gk] = reason
+            if lst:
+                continue
+        if len(m) >= 3 and m[-1] in "GS改" and m[:-1] in idx["marks"]:
+            # MH1 name + a G-rank letter (G, S, 改): the English form of the suffix is a naming choice (Freedom's style)
+            amb[gk] = "MH1 name plus a G-rank suffix (naming left for Freedom)"
+            continue
+        lst = idx["numbers"].get(re.sub(r"\d+", "#", m))
+        if lst:
+            outs, reasons = set(), set()
+            for b, xb in lst:
+                y, r = number_template(norm_marks(b), m, xb)
+                if y is None:
+                    reasons.add(r)
+                else:
+                    outs.add(y)
+            if len(outs) == 1 and not reasons:
+                take(gk, outs.pop(), "numbers")
+            elif outs or reasons:
+                amb[gk] = "numbers: " + ("; ".join(sorted(reasons)) if reasons else "two different English texts")
+    for gk, xb in new.items():
+        amb.pop(gk, None)
+    return new, rule, sorted(amb.items(), key=lambda kv: key_id(kv[0]))
+
+
+# ---------------------------------------------------------------- Monster Hunter Portable (PSP JP): what Freedom may cover
+SJIS_RUN = re.compile(rb"(?:[\x81-\x9f\xe0-\xea][\x40-\x7e\x80-\xfc]|[\x20-\x7e\x0a\x09])+\x00")
+
+
+def mhp_texts(disc):
+    """normal forms (norm_marks) of the Shift-JIS strings in Monster Hunter Portable's USRDIR/DATA.BIN. Portable is
+    the PSP release of G; Monster Hunter Freedom is its US release, so a G text that Portable has word for word is
+    one that Freedom has an official English line for (to be paired once the owner supplies Freedom). Only the
+    uncompressed strings are seen, so this is a lower bound. Set of str; empty when the disc is not there."""
+    path = os.path.join(disc, "PSP_GAME", "USRDIR", "DATA.BIN")
+    out = set()
+    if not os.path.exists(path):
+        return out
+    ch = 16 << 20
+    with open(path, "rb") as f:
+        off = 0
+        while True:
+            f.seek(off)
+            d = f.read(ch + 4096)
+            if not d:
+                break
+            for m in SJIS_RUN.finditer(d):
+                if m.start() >= ch:
+                    break
+                b = m.group(0)[:-1]
+                nd = sum(1 for i in range(len(b) - 1) if td.dbl(b, i))
+                if nd >= 1 and td.texty(b, nd):
+                    out.add(norm_marks(b))
+            off += ch
+    return out
+
+
 MANUAL = os.path.join(HERE, "text_pairs_manual.txt")
-SHIFTED_US_TABLES = {"plaza_main_msg"}
+# tutorial pages after the first weapon page: the US build inserted pages (Dual Swords and others), so the position
+# pairing gives the next page's English (checked by eye, Oct 2026: the Great Sword page got the Dual Swords text)
+SHIFTED_US_TABLES = {"plaza_main_msg", "tuto01_05_msg02", "tuto01_05_msg03", "tuto01_05_msg05", "tuto07_msg00",
+                     "tuto09_msg00", "tuto09_msg04", "tuto10_msg00"}
 
 
 def manual_pairs(path=MANUAL):
@@ -1428,6 +1765,22 @@ AREAS = [
     (r"^(net_|bs_|netDialog|ng_word|kbd_|softkey|roma_)", "online, keyboard, word filter"),
     (r"^(menu_|option_|info_|pit_help_menu|main_menu|omake|edit_msg|hunter_|title)", "menus, options, HUD"),
 ]
+
+
+G_CATEGORIES = ["items", "weapons", "armour and skills", "monsters", "quests", "NPC dialogue and tutorials", "menus and UI",
+                "system (memory card, online, keyboard, code literals)"]
+
+
+def g_category(area, b=b""):
+    # the romaji -> kana input tables of the software keyboard: one to three kana, nothing to translate
+    if area.startswith("online") and b and len(b) <= 6 and len(b) % 2 == 0 and all(b[i] in (0x82, 0x83) for i in range(0, len(b), 2)):
+        return "keyboard kana tables (not text)"
+    for pre, c in (("items", 0), ("weapons", 1), ("armour", 2), ("skills", 2), ("monsters", 3), ("quests", 4),
+                   ("quest board", 4), ("village NPC", 5), ("tutorial", 5), ("menus", 6), ("village / plaza", 6),
+                   ("other tables", 6), ("memory card", 7), ("online", 7), ("code literals", 7), ("unnamed", 7)):
+        if area.startswith(pre):
+            return G_CATEGORIES[c]
+    return "other"
 
 
 def area_of_name(name):
@@ -1699,6 +2052,8 @@ def main():
     ap.add_argument("--us", default=os.path.join(ROOT, "disc", "mh1_us"))
     ap.add_argument("--g", default=os.path.join(ROOT, "disc", "mhg"))
     ap.add_argument("-o", "--out", default=os.path.join(ROOT, "build", "text"))
+    ap.add_argument("--mhp", default=os.path.join(ROOT, "disc", "mhp"),
+                    help="Monster Hunter Portable (PSP JP) folder, only to estimate what Freedom covers (report)")
     ap.add_argument("--report", help="write the coverage report (counts and ids, no text) to this file")
     ap.add_argument("--ids", help="write the list of G strings without English (ids and areas only) to this file")
     ap.add_argument("--no-cache", action="store_true")
@@ -1828,12 +2183,15 @@ def main():
         xb = us.cstr(*xk)
         if xb and not is_japanese(xb):
             en_g[gk] = xb
-    same_g = propagate_same_text_g(jp, g, GS, en_jp, en_g)
+    same_g = propagate_same_text_g(jp, g, GS, en_jp, en_g, owner)
     en_g.update(same_g)
+    rule_g, gstat_rules, amb_g = g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, slot_cov)
+    en_g.update(rule_g)
     for kind, k in man_drop:
         if kind == "g":
             en_g.pop(k, None)
     log("G: same Japanese text elsewhere: %d more G strings" % len(same_g))
+    log("G: rules: %d more G strings %s; %d ambiguous" % (len(rule_g), dict(gstat_rules), len(amb_g)))
     log("G: %d G strings with English; %s; %.0fs" % (len(en_g), dict(gstat), time.time() - t0))
     hdr = ["English text table for Monster Hunter G, made by tools/text_map.py from your own discs. Do not share.",
            "ids are G's (main incl. sub_main, game, lobby, select, yn addresses; quest:N:offset of mNNNNN.mib); source: the US disc via MH1 JP"]
@@ -1845,7 +2203,7 @@ def main():
     summary = dict(jp_strings=len(S), jp_en=len(en_jp), g_strings=len(GS), g_en=len(en_g), gstat=gstat, drop=drop)
     if args.report or args.ids:
         write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, en_jp, en_g, gmap, gstat, drop,
-                     Jq, Uq, Gq, qm, gqmatch, funcs, objs)
+                     Jq, Uq, Gq, qm, gqmatch, funcs, objs, len(same_g), gstat_rules, amb_g, set(rule_g), cache)
     return summary
 
 
@@ -1865,27 +2223,49 @@ def g_data_symbols():
 
 
 def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, en_jp, en_g, gmap, gstat, drop,
-                 Jq, Uq, Gq, qm, gqmatch, funcs, objs):
+                 Jq, Uq, Gq, qm, gqmatch, funcs, objs, n_same=0, gstat_rules=None, amb_g=(), rule_keys=(), cache=None):
     gtwin = {}
     for jk, lst in gmap.items():
         for gk, same in lst:
             gtwin.setdefault(gk, (jk, same))
     gsyms = g_data_symbols()
-    gcell = {}
+    gcell, gptr = {}, {}
     for sp in g.mod:
         if sp == "nethttp":
             continue
         for pos, (tsp, v) in x_ptr_cells(g, sp).items():
             gcell.setdefault((tsp, v), (sp, pos))
+            gptr[(sp, pos)] = (tsp, v)
 
-    def g_area(gk):
+    def twin_area(gk):
         if gk in gtwin and gtwin[gk][0][0] != "quest":
             jo = owner.get(gtwin[gk][0])
-            return area_of_name(jo[1]) if jo else "code literals"
+            return area_of_name(jo[1]) if jo else None
+        return None
+
+    def g_area(gk):
+        a = twin_area(gk)
+        if a:
+            return a
+        if gk in gtwin and gtwin[gk][0][0] != "quest":
+            return "code literals"
         if gk[0] == "quest":
             return "quests"
         c = gcell.get(gk)
         if c:
+            # the table it sits in: the nearest pointer of the same run of string pointers that leads to an MH1 twin
+            for d in range(1, 65):
+                hit = None
+                for pos in (c[1] - 4 * d, c[1] + 4 * d):
+                    t = gptr.get((c[0], pos))
+                    a = twin_area(t) if t else None
+                    if a and a != "code literals":
+                        hit = a
+                        break
+                if hit:
+                    return hit + " [G table]"
+                if (c[0], c[1] - 4 * d) not in gptr and (c[0], c[1] + 4 * d) not in gptr:
+                    break
             lst = gsyms.get(c[0]) or []
             k = bisect.bisect_right([a for a, _n in lst], c[1]) - 1
             if k >= 0 and c[1] - lst[k][0] < 0x8000:
@@ -1902,7 +2282,7 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
             if b:
                 gall[("quest", gn, o)] = b
     rows = collections.defaultdict(collections.Counter)
-    notlist = []
+    notlist, perg = [], []
     for gk in sorted(gall, key=lambda k: (str(k[0]),) + tuple(k[1:])):
         area = g_area(gk)
         if gk in en_g:
@@ -1918,6 +2298,7 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
         else:
             st = "G only"
         rows[area][st] += 1
+        perg.append((gk, area, st))
         if st != "english":
             notlist.append((key_id(gk), area, st))
     # MH1 JP side
@@ -1946,6 +2327,43 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
         return "\n".join(lines), tot
 
     gtab, gtot = table(rows, ["twin without US English", "edited in G", "G only"])
+    # ---- per category, with the new rules and the Portable estimate
+    mhp = cached(cache and cache + "_mhp.pkl", lambda: mhp_texts(args.mhp)) if getattr(args, "mhp", None) else set()
+    amb = dict(amb_g)
+    in_mhp = set()
+    if mhp:
+        in_mhp = {gk for gk, b in gall.items() if norm_marks(b) in mhp}
+        # G's descriptions are one pointer per line; Portable keeps each description as one string with line breaks
+        for _sp, run in g_ptr_runs(g, GS):
+            if norm_marks(b"".join(g.cstr(*k) for k in run)) in mhp:
+                in_mhp.update(run)
+    crow = collections.defaultdict(collections.Counter)
+    for gk, area, st in perg:
+        c = g_category(area, gall[gk])
+        crow[c]["n"] += 1
+        if st == "english":
+            crow[c]["en"] += 1
+            if gk in rule_keys:
+                crow[c]["rule"] += 1
+            continue
+        crow[c]["left"] += 1
+        if gk in amb:
+            crow[c]["amb"] += 1
+        if gk in in_mhp:
+            crow[c]["mhp"] += 1
+    ctab = ["| category | G strings | official English | of which by the text rules | left | left, ambiguous for a rule | "
+            "left, same Japanese in Portable | left, not in Portable |", "|---|---:|---:|---:|---:|---:|---:|---:|"]
+    ctot = collections.Counter()
+    for c in G_CATEGORIES + ["keyboard kana tables (not text)", "other"]:
+        r = crow.get(c)
+        if not r:
+            continue
+        ctot.update(r)
+        ctab.append("| %s | %d | %d (%d%%) | %d | %d | %d | %d | %d |" % (c, r["n"], r["en"], 100 * r["en"] // max(r["n"], 1), r["rule"],
+                                                                     r["left"], r["amb"], r["mhp"], r["left"] - r["mhp"]))
+    ctab.append("| **total** | **%d** | **%d (%d%%)** | %d | %d | %d | %d | %d |" % (ctot["n"], ctot["en"], 100 * ctot["en"] // max(ctot["n"], 1),
+                                                                         ctot["rule"], ctot["left"], ctot["amb"], ctot["mhp"], ctot["left"] - ctot["mhp"]))
+    amb_why = collections.Counter(r for _k, r in amb_g)
     jtab, jtot = table(jrows, ["none"])
     unf_us = collections.Counter()
     for key, n, p, how in rowsu:
@@ -1961,7 +2379,8 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
     txt = ["# Text coverage: official English for MH1 JP and Monster Hunter G",
            "",
            "Made by `tools/text_map.py --report` from the three discs (disc/mh1, disc/mh1_us, disc/mhg). Counts and ids only; "
-           "no game text is quoted. Re-run it to refresh the numbers (about 3 minutes, 1 GB of RAM). Ids are `space:0xADDRESS` "
+           "no game text is quoted. Re-run it to refresh the numbers (about 3 minutes and 1 GB of RAM the first time, under a minute "
+           "with the cache in build/text/). Ids are `space:0xADDRESS` "
            "(PS2 address) and `quest:N:0xFILEOFFSET`, as in docs/english.md.",
            "",
            "## How the English is tied to the Japanese (by structure)",
@@ -1981,8 +2400,17 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
            "quests by identical title/goal/failure/details fields, else by the non-text data (monster, map and reward sections, rule "
            "words; %d of %d G quests)." % (len(qm), len(Jq), q_exact, len(gqmatch), len(Gq)),
            "4. **Content anchor (G only).** A JP string at least 12 bytes long whose bytes are identical and unique in JP and in G "
-           "gives its table a shift vote (3211 such anchors); for G nothing is paired by content alone.",
+           "gives its table a shift vote (3211 such anchors); the anchor itself pairs nothing (content rules: 6).",
            "5. **Same Japanese text (MH1 JP).** A JP string left unpaired (its US table not located, or the US code no longer reads it, e.g. the item list's title) takes the English of identical Japanese text elsewhere when all paired occurrences agree.",
+           "6. **Text rules (G only, `g_rules`).** A G string still without English takes the English of MH1 JP text that differs "
+           "from it only as a rule allows: *exact* (same bytes; reaches the quest fields of G quests no quest tie found), *layout* "
+           "(full/half-width letters, blanks, line breaks), *marks* (kanji digits, punctuation, quote brackets), *buttons* (G wrote "
+           "a pad symbol as a ~Bnn icon code; the US code is re-pointed to G's code for the same symbol), *numbers* (a changed number "
+           "is replaced in the English when it is written there once as digits and neither number is 1), and *whole description* "
+           "(a G description, one pointer per line, whose whole text matches an MH1 description gets its US lines in order when "
+           "the line count is the same). Sources are whole messages only: single lines of the description tables and of the "
+           "line-split dialogs are never used, and identical-text propagation (5, and its G form) no longer uses description lines "
+           "either (a US description line is a re-wrap, not the translation of the JP line beside it). See docs/english_g.md.",
            "",
            "A pair is dropped when its printf conversions differ, when the 'English' is still Japanese, or when it equals the JP bytes.",
            "G strings whose Japanese text changed from MH1 get the English of the old text only if the change is small (text "
@@ -1992,6 +2420,20 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
            % (len([k for k in cells if k in omu.found]), len(cells), ", ".join("%s %d" % kv for kv in hows.most_common()),
               len([k for k in cells if k in omg.found]), ", ".join("%s %d" % kv for kv in howg.most_common()),
               sum(unf_us.values()), sum(unf_g.values())),
+           "",
+           "## Monster Hunter G by category",
+           "",
+           "Categories group the areas below (armour includes skills; NPC dialogue includes tutorials; menus and UI include "
+           "the shop / guild screens and the unnamed 'other tables'; system is memory card, online, keyboard and code literals). "
+           "*Text rules* are the G-only rules of tools/text_map.py (g_rules: whole descriptions, exact quest fields, layout, marks, "
+           "buttons, numbers): %s; %d more by identical text elsewhere. *Ambiguous* means a rule found MH1 English but it was "
+           "left out (%s). *Portable* is Monster Hunter Portable (PSP JP, disc/mhp), the Japanese of Monster Hunter Freedom: "
+           "a G string whose Japanese is in Portable word for word (same normal form as the *marks* rule) is one Freedom should "
+           "have an official English line for; only the uncompressed strings of its DATA.BIN were scanned (%d texts), so it is a "
+           "lower bound." % (", ".join("%s %d" % kv for kv in (gstat_rules or {}).items()), n_same,
+                             ", ".join("%s %d" % kv for kv in amb_why.most_common()) or "none", len(mhp)),
+           "",
+           "\n".join(ctab),
            "",
            "## MH1 JP strings with official US English",
            "",
@@ -2013,20 +2455,26 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
            "### What is left, and where it can come from",
            "",
            "- **G only** (no MH1 twin: G's new quests, items, monsters, the plaza/gathering hall code and tables): no official "
-           "English exists on the US disc. Candidate source: the MHG 'English Remix' patch (Amaillo, Rev. 15; the author allows reuse). "
-           "Not downloaded or used; list only.",
+           "English exists on the US disc. The owner's plan (docs/DECISIONS.md): Monster Hunter Freedom (PSP US) next, then our own "
+           "translation in Freedom's style; the *Portable* column above counts what Freedom should cover (docs/english_g.md). "
+           "The MHG 'English Remix' patch (Amaillo) is a community source, not used.",
            "- **edited in G** and **twin without US English**: the Remix again, or the US text if a person checks it.",
            "- **Code literals** that no table points to (HUD banners, result lines): not paired in this version (the "
            "code-reference pairs reach few of them because most literals are reached through pointer cells in data).",
-           "- The full list of ids without English, with area and reason: `docs/survey/mhg_text_untranslated.txt`.",
+           "- The full list of ids without English, with area, reason, 'in Portable' and why a text rule left it out: "
+           "`docs/survey/mhg_text_untranslated.txt`.",
            ""]
     if args.report:
         open(args.report, "w").write("\n".join(txt))
     if args.ids:
         with open(args.ids, "w") as f:
-            f.write("# G string ids without official US English: id, area, reason. Generated by tools/text_map.py --ids.\n")
+            f.write("# G string ids without official US English: id, area, reason[, 'in Portable' when Monster Hunter Portable has the "
+                    "same Japanese][, why a text rule left it out]. Generated by tools/text_map.py --ids.\n")
+            ambi = {key_id(k): r for k, r in amb_g}
+            mi = {key_id(k) for k in in_mhp}
             for i, a, s_ in notlist:
-                f.write("%s\t%s\t%s\n" % (i, a, s_))
+                f.write("%s\t%s\t%s%s%s\n" % (i, a, s_, "\tin Portable" if i in mi else "",
+                                              ("\tambiguous: " + ambi[i]) if i in ambi else ""))
     log("report written")
 
 

@@ -1438,3 +1438,13 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
    name with "%s%s" ("%12s%s" in the plaza list): our names now start with a full-width space. The PC's port of
    plaza_enterLobbyTrans has `% 10` on both indexes (not in the original; kept as a guard). Also seen: the plaza
    header "参加者：　　人" shows no number on the PC (not looked into).
+
+## G English coverage from MH1 US (20 Oct 2026, light job: Python and docs only)
+- tools/text_map.py: new `g_rules` (exact quest fields, layout, marks, buttons, numbers, whole descriptions) and an
+  estimate of what Monster Hunter Portable (disc/mhp DATA.BIN, plain Shift-JIS) has word for word; G 6363 -> 6776
+  strings with official English (47% -> 51%); 4935 of the rest are in Portable (Freedom), ~1350 real strings in neither.
+- Fixed: description lines are no longer propagated one line at a time (US lines are a re-wrap); 7 tutorial tables whose
+  US pages were inserted/shifted (Great Sword page had the Dual Swords text) are now in SHIFTED_US_TABLES (MH1 JP 6272 -> 6249).
+- Details, ambiguous cases and the decision input: docs/english_g.md. Numbers: docs/text_coverage.md.
+- Not done: re-pairing the shifted tutorial pages by content; checking the village/town NPC tables page by page; the
+  memory-card / online lines that have a JP twin but no paired US line.
