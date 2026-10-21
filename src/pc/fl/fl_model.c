@@ -203,6 +203,10 @@ static void build_part(fl_model *m, int pi)
     free(cnt);
 }
 
+/* extra Y turns for bone_world (fl_skel extra_*): set by fl_skel_pose_groups for its own call only */
+static int bw_nx;
+static const int *bw_xb;
+static const float *bw_xr;
 static void bone_world(const ahi_skel *s, const float (*chan)[9], flmat *out)
 {
     int i, done = 0, guard = 0;
@@ -214,6 +218,18 @@ static void bone_world(const ahi_skel *s, const float (*chan)[9], flmat *out)
             if (ok[i] || (par >= 0 && par < s->nbone && !ok[par]))
                 continue;
             flmat_srt(loc, chan[i], chan[i] + 3, chan[i] + 6);
+            {   /* flmatRotY33 on the bone's local matrix (row-vector: rows 0-2 times Ry; translation kept) */
+                int k, r;
+                for (k = 0; k < bw_nx; k++)
+                    if (bw_xb[k] == i) {
+                        float c = cosf(bw_xr[k]), sn = sinf(bw_xr[k]);
+                        for (r = 0; r < 3; r++) {
+                            float x = loc[4 * r], z = loc[4 * r + 2];
+                            loc[4 * r] = x * c + z * sn;
+                            loc[4 * r + 2] = -x * sn + z * c;
+                        }
+                    }
+            }
             if (par >= 0 && par < s->nbone)
                 flmat_mul(out[i], loc, out[par]);
             else
@@ -670,8 +686,12 @@ void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])
     int gi, i, c;
     float (*tmp)[9] = NULL;
     if (s->last_ok && s->last_lock == s->root_lock && !memcmp(s->last, g, sizeof s->last)
-        && !getenv("RT_POSE_ALL"))
+        && s->last_nextra == s->nextra && !memcmp(s->last_extra_bone, s->extra_bone, sizeof s->extra_bone)
+        && !memcmp(s->last_extra_ry, s->extra_ry, sizeof s->extra_ry) && !getenv("RT_POSE_ALL"))
         return;                             /* this pose is what chan / world hold */
+    s->last_nextra = s->nextra;
+    memcpy(s->last_extra_bone, s->extra_bone, sizeof s->extra_bone);
+    memcpy(s->last_extra_ry, s->extra_ry, sizeof s->extra_ry);
     rt_prof_begin(RTP_MOTION);
     rt_prof_count(RTPC_SKEL_EVALS, 1);
     memcpy(s->last, g, sizeof s->last);
@@ -714,7 +734,11 @@ void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])
             }
         }
     }
+    bw_nx = s->nextra;
+    bw_xb = s->extra_bone;
+    bw_xr = s->extra_ry;
     bone_world(&s->skel, (const float (*)[9])s->chan, s->world);
+    bw_nx = 0;
     attach_tail_tip(s, g);
     rt_prof_end(RTP_MOTION);
 }

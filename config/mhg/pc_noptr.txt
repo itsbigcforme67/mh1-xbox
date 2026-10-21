@@ -4,6 +4,8 @@
 # sweep of 18 Oct 2026 (agent D; docs/RELEASE_G.md section 11): scan-only words next to small numbers in
 # objects whose MH1 twin has no relocation there. Addresses only, one module per section.
 [main]
+2EC490  # em_vital_tbl row of kind 12: s16 hit points (game 0x5499A0)
+2EC4AC  # em_vital_tbl row of kind 19: s16 hit points (the referee: 32648 instead of 40)
 254354  # push00 +0x154: s16 pairs
 25435C  # push00 +0x15C: s16 pairs
 254364  # push00 +0x164: s16 pairs

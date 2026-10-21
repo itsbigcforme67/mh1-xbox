@@ -942,3 +942,34 @@ void rt_monster_clear_all(void)
         em_work[i].be_flag = 0;
 }
 
+
+/* mlCalcTransEM's neck turn (main 0x10AA00; G sub_main 0x4DCE60), for the host skeleton: monster no's four neck joints
+ * (em_neck_tbl[kind] bytes 6..9) and their extra turn about Y (EMW+0x6E8 neck angles, flConvertStoR). MH1: kinds 1, 7,
+ * 11; G adds 37, 41, 42, 49, 50. Returns how many (0: the kind has none). On the PS2 enemy_mk turns these joints
+ * before flCalcTransSI; the host skeleton drew and hit-tested monsters with their heads straight ahead until
+ * 20 Oct 2026 (agent D; the lockstep referee: a Rathalos's body push 3 units off). */
+f32 flConvertStoR(u32 a);
+int rt_em_neck(int no, int bones[4], float ry[4])
+{
+    EMW *em = &em_work[no];
+    const s8 *t;
+    int k;
+    extern s8 *em_neck_tbl[];
+    switch (em->kind) {
+    case 1: case 7: case 11:
+#ifdef VERSION_MHG
+    case 37: case 41: case 42: case 49: case 50:
+#endif
+        break;
+    default:
+        return 0;
+    }
+    t = em_neck_tbl[em->kind];
+    if (!t)
+        return 0;
+    for (k = 0; k < 4; k++) {
+        bones[k] = t[6 + k];
+        ry[k] = flConvertStoR(em->neck[k] & 0xFFFF);
+    }
+    return 4;
+}

@@ -109,6 +109,26 @@ SCENARIOS = {
 }
 # G's other large monsters (agent D, 20 Oct 2026): quest, the monster's stage and where it starts there (a PC dry run,
 # RT_EM_TRACE); the hunter is put 600 units south of it (facing north), great sword, FIGHT pad, 450 play ticks
+# items in a quest (G ids: potion 7, whetstone 120, paintball 51, small barrel bomb 66, pitfall 61): pouch slot 0 is
+# filled by a poke before each use, square uses it. Next to the Rathian (quest 10, area 40, as 'rathian')
+def pouch0(pt, item, n):
+    return [(pt, 'plw', 0x828, 'u16', item), (pt, 'plw', 0x82A, 'u16', n)]
+
+
+SCENARIOS['g_items'] = dict(
+    game='mhg', quest=10, weapon=(6, 156), ticks=560,
+    pad='idle*70,square*2,idle*78,square*2,idle*148,square*2,idle*78,square*2,idle*78,square*2,idle*100',
+    pokes=area(30, 40, 10000.0, 0.0, 10000.0) + [(60, 'plw', 0x302, 'u16', 50)] + pouch0(60, 7, 3) +
+    [(140, 'plw', 0x87E, 'u16', 50)] + pouch0(140, 120, 3) + pouch0(290, 51, 3) + pouch0(370, 66, 1) +
+    pouch0(450, 61, 1))
+# gathering: bare-handed herbs on Forest and Hills area 39 (12200, 10300), then mining with a pickaxe (113) on area 32
+# (7790, 6980), then the bug net (116) on area 36 (12057, 9607): tools/test_activities.py's spots
+SCENARIOS['g_gather'] = dict(
+    game='mhg', quest=1, weapon=(6, 156), ticks=760,
+    pad='idle*100,' + ','.join(['circle*2,idle*58'] * 3) + ',idle*40,' + ','.join(['square*2,idle*58'] * 3) +
+        ',idle*60,' + ','.join(['square*2,idle*58'] * 3),
+    pokes=area(30, 39, 12200.0, 0.0, 10300.0) + area(300, 32, 7790.0, 0.0, 6980.0) + pouch0(300, 113, 3) +
+    area(540, 36, 12057.0, 0.0, 9607.0) + pouch0(540, 116, 3))
 for _n, _q, _st, _x, _z in (('g_rathalos', 10017, 40, 8943, 12232), ('g_gypceros', 19, 69, 9852, 12257),
                             ('g_basarios', 23, 75, 10241, 10417), ('g_gravios', 26, 69, 9907, 12267),
                             ('g_diablos', 14, 53, 9638, 7864), ('g_monoblos', 10041, 53, 9638, 7864),
