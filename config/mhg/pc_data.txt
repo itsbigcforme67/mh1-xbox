@@ -9,6 +9,8 @@ select_w = 0x0035EC30; // size:0xF0            # quest number at +0xD0 (MH1 +0xA
 start_area_lists = 0x002EECF0; // size:0x88           # start-area lists {weight, stage}.., 0xFF and their pointer lists (Quest_pl_stage_init)
 gsave_fmt = 0x002EA6B0; // size:0x58 noptr                # save slot screen formats (NO DATA, slot:name, TIME, MONEY / HR, MONEY), G disp_savesel_moji
 [sub_main]
+eft20_fade13_g = 0x00506990; // size:0x20 noptr        # G only: eft20 arg 13's fade keys {s32 time, rgba}.., -1 (eft20_t)
+eft20_fade21_g = 0x005073E0; // size:0x30 noptr        # G only: eft20 arg 21's fade keys (eft20_t)
 quest_size_lim_def = 0x004FD8D0; // size:0xA            # monster size limits per class {min, max} x5, copied to quest_size_lim (Quest_start)
 quest_bonus_tbl = 0x004FDB40; // size:0x20           # reward-level bonus by random number (Quest_start, quest_w.x14E)
 quest_size_dist_data = 0x004FDB60; // size:0xE0           # size distributions (7 x 32 bytes, through quest_size_dist_tbl)
