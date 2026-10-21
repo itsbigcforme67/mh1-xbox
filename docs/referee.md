@@ -142,3 +142,13 @@ play differently (kutku: first difference 478 in one run, 622 in the next); comp
 against one PS2 trace. Debug aid: `REF_NODES=SLOT:COUNT:FIRST-LAST tools/referee.py run S` also records the joint
 matrices of monster SLOT (-1: the hunter) on both sides; `tools/referee.py nodes DIR` lists per tick how far apart
 they are (the hunter's 0.3-unit offset of R-F17 was found this way).
+
+**Village scenarios** (22 Oct 2026): `village=True` in a scenario: the PS2 locks at once in the village's game mode (G:
+0) from the gate save state instead of departing; the PC starts in the village (RT_VILLAGE_START) with the PS2's
+User_data and counts play ticks from when it stands on the PS2's village stage (RT_REF_MODE=6, RT_REF_STAGE); both
+sides' User_data at the end go into report.txt (byte ranges that differ). The play time (G +0xC1C) always differs:
+the PC run also counts its start-up ticks.
+
+**Story-scene scenarios** (22 Oct 2026): g_scene_khezu (quest 10046, stage 70) and g_scene_rath (10028, stage 69)
+enter the scene's stage directly so the first-sight demo plays; they run 1500 play ticks (the Rathalos scene alone is
+about 1300).

@@ -129,6 +129,15 @@ SCENARIOS['g_gather'] = dict(
         ',idle*60,' + ','.join(['square*2,idle*58'] * 3),
     pokes=area(30, 39, 12200.0, 0.0, 10300.0) + area(300, 32, 7790.0, 0.0, 6980.0) + pouch0(300, 113, 3) +
     area(540, 36, 12057.0, 0.0, 9607.0) + pouch0(540, 116, 3))
+# carving: the Rathian (quest 10, area 40) with 1 hit point left (poked at tick 35), great sword attacks until she
+# falls, then the weapon away (square) and circle at the body; the pouch is compared every tick (carve rolls are random
+# draws: with the PS2's random state in step they must give the same parts)
+SCENARIOS['g_carve'] = dict(game='mhg', quest=10, weapon=(6, 1), ticks=700,
+                            pad='idle*80,' + ','.join(['up*10,cam_u*3,idle*25,cam_u*3,idle*25'] * 5) + ',idle*60,square*2,idle*40,' +
+                                ','.join(['circle*2,idle*28'] * 10),
+                            pokes=area(30, 40, 10000.0, 0.0, 10000.0) + [(35, 'em0', 0x302, 'u16', 1),
+                                   (81, 'em0', 0xAC, 'f32', 10000.0), (81, 'em0', 0xB4, 'f32', 10250.0)])
+SCENARIOS['mh1_carve'] = dict(SCENARIOS['g_carve'], game='mh1')
 # a village day (lockstep in game mode 6 from the gate save state; the PC starts in the village with the PS2's
 # User_data): the hunter is put next to an NPC at village tick 30 (G spots of tools/test_gvillage.py), circle talks;
 # the saved hunter (User_data) of both sides is compared at the end (report.txt)
@@ -162,9 +171,10 @@ for _n, _q, _st, _x, _z in (('g_rathalos', 10017, 40, 8943, 12232), ('g_gypceros
                             ('g_khezu', 25, 70, 14000, 10500), ('g_plesioth', 11, 54, 9493, 10873),
                             ('g_cephadrome', 13, 56, 14380, 14930), ('g_kind37', 10038, 52, 12138, 9271),
                             ('g_kind44', 10042, 53, 9638, 7864), ('g_kind49', 10033, 33, 8943, 12232),
-                            ('g_lao', 10048, 14, 8150, 9310)):
+                            ('g_lao', 10048, 14, 8150, 9310),
+                            ('g_scene_rath', 10028, 69, 9907, 12267), ('g_scene_khezu', 10046, 70, 14000, 10500)):
     SCENARIOS[_n] = dict(game='mhg', quest=_q, weapon=(6, 1), pad=FIGHT,
-                         pokes=area(30, _st, float(_x), 0.0, float(_z - 600)), ticks=450)
+                         pokes=area(30, _st, float(_x), 0.0, float(_z - 600)), ticks=1500 if 'scene' in _n else 450)
 
 
 def expand_pad(script):

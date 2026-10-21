@@ -5796,6 +5796,115 @@ static void em_move05_005F6810(EMW *em, EM20W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G game 0x622400 (written from the asm; agent D, 21 Oct 2026): act 6/1, the Rathalos scene of quest 10028 (stage 69).
+ * It is placed by the nest, walks three legs toward set points (each ends after its timer or within 200 of the point),
+ * roars, then waits for the demo's flag 20 and turns normal. G's act 6 no 1; MH1's is em_demo00. */
+static void em20_g_scene(EMW *em, EM20W *w) {
+    f32 d;
+
+    em->x9E1 = 5;           /* (G 0x9D9) */
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em->pos[0] = 11318.0f;
+        em->pos[1] = 0.0f;
+        em->pos[2] = 14653.0f;
+        em->tgt_pos[0] = 10130.0f;
+        em->tgt_pos[1] = 0.0f;
+        em->tgt_pos[2] = 13160.0f;
+        em->ang[0] = 0;
+        em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+        em_char_set(em, 1, 0, 0);
+        em->ang[2] = 0;
+        em_rate_clear(em);
+        em->work08 = 150;
+        break;
+    case 1:
+        if (--em->work08 > 0)
+            break;
+        em->x05++;
+        em->ang[0] = 0;
+        em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+        em_char_set(em, 3, 0, 0);
+        em->ang[2] = 0;
+        em->work08 = 180;
+        break;
+    case 2:
+    case 3:
+        d = CalcDistanceXZ(em->pos, em->tgt_pos);
+        if (--em->work08 > 0 && !(d <= 200.0f))
+            break;
+        if (em->x05 == 3) {
+            em->pos[0] = 10130.0f;
+            em->pos[1] = 0.0f;
+            em->pos[2] = 13160.0f;
+            em->tgt_pos[0] = 10060.0f;
+            em->tgt_pos[1] = 0.0f;
+            em->tgt_pos[2] = 8250.0f;
+        } else if (em->x05 == 2) {
+            em->tgt_pos[0] = 9650.0f;
+            em->tgt_pos[1] = 0.0f;
+            em->tgt_pos[2] = 6990.0f;
+            em_char_set(em, 104, 0, 0);
+        }
+        em->x05++;
+        em->ang[0] = 0;
+        em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+        em->ang[2] = 0;
+        em->work08 = 300;
+        break;
+    case 4:
+        d = CalcDistanceXZ(em->pos, em->tgt_pos);
+        if (--em->work08 > 0 && !(d <= 200.0f))
+            break;
+        em->x05++;
+        em->tgt_pos[0] = 9870.0f;
+        em->tgt_pos[1] = 0.0f;
+        em->tgt_pos[2] = 6760.0f;
+        em_char_set(em, 101, 0, 0);
+        break;
+    case 5:
+        if (em->x194 != 0)
+            break;
+        em->x05++;
+        em->ang[0] = 0;
+        em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+        em_char_set(em, 3, 0, 0);
+        em->ang[2] = 0;
+        em->work08 = 150;
+        break;
+    case 6:
+        w->x08 = em->work08 & 1;
+        d = CalcDistanceXZ(em->pos, em->tgt_pos);
+        if (--em->work08 > 0 && !(d <= 200.0f))
+            break;
+        em->x05++;
+        em_char_set(em, 51, 0, 0);
+        w->x08 = 0;
+        em->work08 = 360;
+        break;
+    case 7:
+        if (--em->work08 > 0)
+            break;
+        em->x05++;
+        em_char_set(em, 1, 0, 0);
+        break;
+    case 8:
+        if (Event_flag_ck(20) == 1) {
+            em->x05++;
+            em->x9E1 = 0;
+            em->x40C = 0;
+            em20_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+#endif
+
 static void em_move06_005F6880(EMW *em, EM20W *w) {
     u8 temp_a2;
 
@@ -5805,6 +5914,10 @@ static void em_move06_005F6880(EMW *em, EM20W *w) {
         em_demo00_005F55D0(em, w);
         break;
     case 1:
+#ifdef VERSION_MHG
+        em20_g_scene(em, w);
+        break;
+#endif
         em_demo00_005F55D0(em, w);
         break;
     case 2:

@@ -2357,6 +2357,32 @@ static void em_demo05_005D6530(EMW *em, EM16W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G game 0x6025F0 (agent D, 21 Oct 2026): act 6/6, the small monsters' scene (quests 10006/10010/10041/10035, em16
+ * story switch): idle, wait for the demo's flag 22, turn normal */
+static void em16_g_demo06(EMW *em) {
+    em->x9E1 = 5;           /* (G 0x9D9) */
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 1, 0, 0);
+        em->x01 = 0;
+        em->x839 = 0;
+        break;
+    case 1:
+        if (Event_flag_ck(22) == 1) {
+            em->x05++;
+            em->x01 = 1;
+            em16_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+#endif
+
 void em_move06_005D65E0(EMW *em, EM16W *w) {
     switch (em->x15) {
     case 0: em_demo00_005D5CC0(em, w); break;
@@ -2365,6 +2391,9 @@ void em_move06_005D65E0(EMW *em, EM16W *w) {
     case 3: em_demo03_005D63F0(em, w); break;
     case 4: em_demo04_005D6480(em, w); break;
     case 5: em_demo05_005D6530(em, w); break;
+#ifdef VERSION_MHG
+    case 6: em16_g_demo06(em); break;
+#endif
     }
 }
 

@@ -511,6 +511,35 @@ Open from this round: N-R10 (G) Gravios turn end (em17, tick 48: the PS2 runs it
 inputs compared are equal); N-R11 (G) kind 13 first action (act speed 1.2 on the PS2 at spawn, 1.0 on the PC: G's
 em16 act set); N-R12 the village day (shops, box, forge) is not compared: the lockstep hook only runs in quests.
 
+**Fifth round (agent D, 21-22 Oct 2026):**
+- R-F23 *G still on MH1 logic*: the monsters' first-encounter story scenes test MH1's quest numbers (0x87 ..); G's quests
+  are 10005 .. (rt_quest.c rt_story_quest maps them, em01 / em04 / em12 / em16 / em19 / em20 / em27) and G added scenes
+  of its own (em03 10008, em04 / em09 / em20 10028, em15 / em19 10046, em16 10035), written from G's asm. g_monoblos:
+  the Velociprey-type monsters of quest 10041 now play their scene: first difference 33 -> 219.
+  The scenes' own act 6 code is G's too (em04 6/1, em09 6/0, em15 6/0, em16 6/6, em19 6/1, em20 6/1: each waits for
+  G's demo flag; MH1's code there waits for MH1 flags and kept the monster in its scene for the whole quest: quest
+  10046's Khezu never fought back, test_all_quests_g caught it). em04's quest check lives in em04b.c (the built file;
+  em04_nm.c is a weak copy). g_scene_khezu (10046): 450 ticks, no difference; g_scene_rath (10028): the Rathalos scene
+  identical for 1500 ticks, the Velociprey 33 -> 1151 (then a facing step of 0x100, open).
+- R-F24 *G still on MH1 logic*: em_eye_search_set's eye joint for G's new kinds (37 41 42 49 like the Rathian, 38 39 43-48
+  like their base monsters, 36, 40, 50): the subspecies looked out of their body and saw the hunter early. g_kind37
+  44 -> 284 (red-health tick only), g_kind44 no difference.
+- R-F25 *port glue, both games*: Game_task's frame counter (game_w+0x1E) and the play time (User_data+0x374, G +0xC1C:
+  the save screen's TIME) now count every game tick in every mode; the PC counted the frame only during quest ticks and
+  the play time never (rt_game.c rt_game_task_tick).
+- Referee: village lockstep (the hook locks in the village's game mode, G: 0; the PC starts in the village with the
+  PS2's User_data: RT_REF_MODE / RT_REF_STAGE / RT_REF_UD_OUT) and the saved hunter compared at the end:
+  g_vil_shop (an item bought), g_vil_wshop (a weapon bought), g_vil_forge: User_data identical but for the play time
+  (the PC run also counts its own start-up ticks). g_carve: the Rathian at 1 hit point killed and carved: the same tick,
+  the same part on both sides (mh1_carve: the same gathering). Line-up aids added: the monsters' needs counters and G
+  size at play tick 0.
+- Still open: N-R10 Gravios notices the hunter a tick early (its head joints 31-39 are up to 20 units from the PS2's
+  although every motion layer, frame and blend agree: likely a node order or a head override on the PS2 side, not found);
+  N-R13 g_plesioth starts with the Plesioth elsewhere (tick 0: PS2 at its start, PC already moving); N-R14 small
+  monster kind 19 flies 8-13 units higher on the PC; N-R12 the reward screen is not compared yet (the lockstep only
+  runs in the quest and the village; the clear / result modes load files at their own pace).
+  G's offline quests have no Kirin, Rathian / Rathalos subspecies other than kinds 37 / 44 / 49 (the quest dry runs).
+
 **Left, ranked by how much a player meets it:**
 1. N-R7 (both games): position differences of one float step (0.001 units at 10000) appear on the first tick of some
    root motions (a monster starting to walk); they grow into 1-2 unit drifts after 200-300 ticks and change a push or

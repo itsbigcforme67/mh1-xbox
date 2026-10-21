@@ -1170,25 +1170,11 @@ void em04_main(EMW *em) {
         em_dur_set(em, 0);
         break;
     }
-#ifdef VERSION_MHG
-int rt_story_quest(void);
-#define STORYQ rt_story_quest()
-#else
-#define STORYQ quest_w.x08
-#endif
-    if (STORYQ == 0x87 && em->kind == 5 && em->stg == 0x2A && Event_flag_ck(0xF) == 0) {
+    if (quest_w.x08 == 0x87 && em->kind == 5 && em->stg == 0x2A && Event_flag_ck(0xF) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {
             em04_act_set_k(em, 6, 0, 1);
         }
-    }
-#ifdef VERSION_MHG
-    else if (*(u16 *)((u8 *)&quest_w + 8) == 10028 && em->kind == 5 && em->stg == 69 && Event_flag_ck(20) == 0) {
-        if (game_w.info_stop == 1 && em->mode != 6) {      /* G (game 0x5BACA0) */
-            em04_act_set_k(em, 6, 1, 1);
-        }
-    }
-#endif
-    else {
+    } else {
         switch (em->x734) {
         case 3:
             if (em->x839 != 0) {

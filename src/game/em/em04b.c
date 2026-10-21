@@ -303,11 +303,42 @@ static void em_demo00(EMW *em) {
     }
 }
 
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* G game 0x5BA840 (written from the asm; agent D, 21 Oct 2026): act 6/1, quest 10028's scene: em_demo00 with G's
+ * flag 20 */
+static void em_demo01_g(EMW *em) {
+    em->x9E1 = 5;           /* (G 0x9D9) */
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 1, 0, 0);
+        em->x01 = 0;
+        em->x839 = 0;
+        break;
+    case 1:
+        if (Event_flag_ck(20) == 1) {
+            em->x05++;
+            em->x01 = 1;
+            em04_next_act_set(em);
+        }
+        break;
+    }
+}
+#endif
+
 static void em_move06(EMW *em) {
     switch (em->x15) {
     case 0:
         em_demo00(em);
         break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 1:
+        em_demo01_g(em);
+        break;
+#endif
     }
 }
 
@@ -384,7 +415,21 @@ void em04_main(EMW *em) {
         em_dur_set(em, 0);
         break;
     }
-    if (quest_w.x08 == 0x87 && em->kind == 5 && em->stg == 0x2A && Event_flag_ck(0xF) == 0) {
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    /* G game 0x5BAC10 (agent D, 21 Oct 2026): the 0x87 scene is G's 10005; G adds quest 10028's scene (stage 69) */
+    if ((u16)quest_w.x08 == 10028 && em->kind == 5 && em->stg == 69 && Event_flag_ck(20) == 0) {
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            em04_act_set(em, 6, 1, 1);
+        }
+    } else
+#endif
+    if (
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        (u16)quest_w.x08 == 10005
+#else
+        quest_w.x08 == 0x87
+#endif
+        && em->kind == 5 && em->stg == 0x2A && Event_flag_ck(0xF) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {
             em04_act_set(em, 6, 0, 1);
         }

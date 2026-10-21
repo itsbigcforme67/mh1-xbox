@@ -1156,11 +1156,41 @@ static void em_demo00(EMW *em) {
     }
 }
 
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* G game 0x617030 (agent D, 21 Oct 2026): act 6/1, quest 10046's scene: em_demo00 with G's flag 26 */
+static void em_demo01_g(EMW *em) {
+    em->x9E1 = 5;
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 1, 0, 0);
+        em->x01 = 0;
+        em->x839 = 0;
+        break;
+    case 1:
+        if (Event_flag_ck(26, 1) == 1) {
+            em->x05++;
+            em->x01 = 1;
+            em19_next_act_set(em);
+        }
+        break;
+    }
+}
+#endif
+
 static void em_move06(EMW *em) {
     switch (em->x15) {
     case 0:
         em_demo00(em);
         break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 1:
+        em_demo01_g(em);
+        break;
+#endif
     }
 }
 

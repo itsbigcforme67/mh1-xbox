@@ -1345,6 +1345,33 @@ sub:
     }
 }
 
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* G game 0x5D65E0 (agent D, 21 Oct 2026): act 6/0, kind 23's scene in quest 10028: idle until the demo's flag 20 */
+static void em09_g_demo00(EMW *em) {
+    int Event_flag_ck(int);
+
+    em->x9E1 = 5;           /* (G 0x9D9) */
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 1, 0, 0);
+        em->x01 = 0;
+        em->x839 = 0;
+        break;
+    case 1:
+        if (Event_flag_ck(20) == 1) {
+            em->x05++;
+            em->x01 = 1;
+            em09_next_act_set(em);
+        }
+        break;
+    }
+}
+#endif
+
 void em09_main_sub(EMW *em) {
     switch (em->mode) {
     case 0: em_move00_005A90A0(em); break;
@@ -1353,7 +1380,11 @@ void em09_main_sub(EMW *em) {
     case 3: em_move03_005AA670(em); break;
     case 4: em_move04_005AAC30(em); break;
     case 5: em_move05_005AB180(em); break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 6: if (em->x15 == 0) em09_g_demo00(em); break;     /* G game 0x5D6680 */
+#else
     case 6: em_move00_005A90A0(em); break;
+#endif
     case 7: em_move00_005A90A0(em); break;
     }
 }

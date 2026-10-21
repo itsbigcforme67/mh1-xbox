@@ -160,6 +160,9 @@ during PS2 area loads).
 Rathalos, Lao-Shan) and motion blends mix matrices as flBlendMotionEx does; MH1 Rathian's later differences moved from
 ~290 to 733 [verified: referee pc runs].
 
+**Fifth round (22 Oct 2026; RELEASE_G R-F25, shared):** the frame counter and the play time count every game tick in
+every mode (the PC's saves showed no play time). mh1_carve: gathering identical.
+
 **Left, ranked:** (1) float-step drifts after 200-300 ticks (RELEASE_G N-R7); (2) N-R9; (2) sound-layer random draws
 a tick late; (3) the quest clock while loading (owner, 18 Oct: left as is).
 
