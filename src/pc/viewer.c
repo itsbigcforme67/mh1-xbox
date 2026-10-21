@@ -1666,7 +1666,7 @@ static void em_slot_sync(int i, int draw, const fl_light *L)
                     hh, mo);
         }
     }
-    if (draw && rt_monster_motion_ready(i)) {
+    if (draw && em[1] && rt_monster_motion_ready(i)) {   /* em+1 (x01) 0: not drawn (em_move: no prim without it) */
         fl_light lc;
         float f[3];
         int light_col = L && !getenv("RT_EM_ALL_MATS") && em_model_col(&m->model, em, f);

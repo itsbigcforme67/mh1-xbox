@@ -137,6 +137,18 @@ void xbox_log_quit(void)
     xbox_log_show();
 }
 
+/* Commit a log file to the disk: stdio's fflush only hands the bytes to the kernel's file cache, which a crash
+ * (an exception that freezes the box) never writes out, so the owner's log of a crash ended long before it
+ * (21 Oct 2026). NtFlushBuffersFile writes the cached data through. pdclib's FILE starts with the OS handle. */
+void xbox_log_commit(FILE *f)
+{
+    IO_STATUS_BLOCK io;
+    if (!f)
+        return;
+    fflush(f);
+    NtFlushBuffersFile(*(HANDLE *)f, &io);
+}
+
 /* after E: is mounted */
 void xbox_log_start(void)
 {
@@ -167,6 +179,7 @@ void xbox_log_frame(int frame, unsigned ms)
     static unsigned shown, logged, dlogged;
     if (ms / 1000 != shown) {
         shown = ms / 1000;
+        xbox_log_commit(stderr);    /* the last second's lines on the disk (a crash keeps them) */
         debugPrint("frame %d, %u s\n", frame, shown);
     }
     if (ms / 30000 != logged) {

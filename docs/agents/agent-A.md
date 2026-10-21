@@ -1167,3 +1167,64 @@ Full list: docs/audit_cross_game.md (738 commit/file lines + 30 hand-checked fix
 - Lesson: the life bar showed why RT_PL_GOD's 30000 was G-only (the bar ran off the screen); setting it only around
   pl_move (where Pl_damage_sub takes the hit of the last hit_check) and the maximum PLW+0x792 after keeps both right.
 - G's quest_bit_tbl (sub_main 0x4FECA0) read with gdb: 0-50, 1001-1039, 2001-2050, 3001-3007, 10001-10048, 20001-20050.
+
+## G round 15: the rest of the quest lane (20 Oct 2026)
+All PC C from G's asm (VERSION_MHG in *_nm.c / PC-only branches; the PS2 builds keep their bytes). Not match-checked:
+check.py needs wibo, which this round could not run (PC-only round). Commits on agent-A, "G quest lane: ...".
+- **Method**: tools/gdraft.py (G m2c draft) next to tools/draft.py (MH1 draft, where MH1 asm still exists) or the PC C,
+  normalised (temp names, D_/func_ names, the G 0x960+ EMW shift) and diffed; per-case call multisets for the big
+  sound/effect scripts (scratch casecmp.py: split on `case 0x3E8+`, calls with float args sorted out of the m2c order);
+  every hit read in the asm (`tools/mhg_fdiff.py game F -g`) for breaks, jump tables (read from build/mhg/split) and
+  registers m2c lost (em_char_set2's 5th arg, em_frame_check3's 2nd float). Then hidden god-mode hunts with a temporary
+  act trace (mode.x15 per change) and tools/test_all_quests_g.sh.
+- **Lesson (EMW in G)**: every EMW field from 0x960 on sits 8 bytes lower in G (include/em.h). An fdiff line
+  `sb x,2538` vs `sb x,2530` is the same field (x9EA), not a new one; I first "ported" em17's 0x9E2 writes and reverted.
+- **Lesson (names)**: mhg_map pairs G functions by similarity, so a G function can carry another MH1 function's name
+  (G em17's 0x60A480 is listed as em_atk07 but G calls it for x15 1; MH1's atk07 is unreachable in G). Always read the
+  dispatcher's jump table (em_move03) before porting by name.
+- **em17** (Gravios/Basarios): see the commit; new: G em_move03 table, atk01_g / atk02_g (a jump), atk04_g / atk05_g
+  variants, the 10043 demo (G rewrote it: a scripted walk, 3 idle motions on layer 1), ef_move_sub's new motions.
+  Hunts (quests 23 / 26 / 10043, 200-400 s): acts 3.0 / 3.1 / 3.5-3.9 seen, all return to 0.1.
+- **em27** (Velocidrome family): G moved the revival into em27_act_set(5, 4) (Quest_enemy_revival_set, em_status_init,
+  em27_revive_init = em27_init + MH1's die04 start points); die04 only picks the act. Last round's "revives forever"
+  came from porting die04 alone. Quest 7 now: three kills, two revivals, clear. Also em27_main's "face the hit" turn
+  (G sets ang[1] by the hit quadrant before each flinch/fall act), G quest 10014 for the demo stop.
+- **em16** (Velociprey family): same face-the-hit turn, demo stops 10006/10010/10041 + the new 10035 (demo act 6.6,
+  G 0x6025F0: hidden until event flag 0x16). That showed a **platform bug (both games)**: viewer.c drew monsters whose
+  x01 is 0; the game's em_move only queues the monster's prim when x01 != 0 (src/main/em/f_em_nm.c). Fixed in
+  em_slot_sync (one line). Pictures: build/A/q10035b/grid2.png (Velociprey gone in the opening scene), grid3.png (they
+  come after it).
+- **em01** (Rathian/Rathalos + G variants 0x25/0x2A, 0x29/0x31): macros EM01_KIND1 / EM01_KIND11; G em01_main, four new
+  attacks (x15 26-29), atk09/10/17/22/20, flight curves 15/16 (em01.c + pc_data sizes), ef_move_sub. Not seen in the
+  hunts: x15 26-29 (chosen by G's act tables in situations the god-mode hunts did not hit).
+- **eft20** (monster dust/splash effects): i/m/t as G (kind 0x24 as 2, the nine kinds' landing shells, args 13/21 with
+  G's fade keys imported by name, arg 29 scaled). Args 13/21 only come from Gravios motion 0x45A: not seen in a hunt.
+- **em07** (Lao-Shan): pick ids by kind and quest rank (mission header 0x42). **set04**: G's i/m/trans (stages
+  0x59-0x5B, which G's 88-entry stage tables do not have: dead in G; default branches differ).
+- **eft05 for the other weapons**: compared by code, not pictures: G's callers pass the same args (0 blood, 1 white;
+  arg 2/3 are Dual Swords only); G's Eft05_set skips single trails in demon mode; eft05_t's row-2 length scale is 1 for
+  an unscaled hand joint. Nothing to port.
+- **Coverage** (COV=1 G build, the full tools/test_all_quests_g.sh run with RT_COV, build/A/cov2/report.txt): 5579
+  functions entered, 1010 flagged "G twin differs, no G marker" (many false positives: G code in #elif branches, PC
+  shims, abs files). Ranked list of the real ones in RELEASE_G section 13.
+- tools/mhg_fdiff.py: per-process temp file (agents ran it at the same time and read each other's bytes).
+
+## The Xbox G crash at the Elder's quest list (21 Oct 2026, coordinator's top priority)
+- **Owner**: on the real Xbox (G, fresh save) the Elder's level list (only 緊急クエスト selectable, which is right for a
+  new save: check_questLevelSelect allows only the urgent row while the star level is -1; the urgent quest is key quest
+  10001) -> "おぬしに頼めそうな依頼はこれぐらいじゃ" -> next -> crash.
+- **Reproduced in xemu** (build/A/xurg: fresh disk, RT_ARGS=--quest 1 --play + RT_VILLAGE_START, the PC pad script):
+  `Fatal System Error 0x1E (0xC0000005, 0x0023B7C0, 0, 0x54484749)`: in _xfmt (vsprintf) reading a format at
+  0x54484749 ("IGHT" as bytes). A temporary rt_log in lb_set_questpage_info: Xbox `type 16385 attr 0x54484749`, PC
+  `type 1`. **Cause**: lb_guild_g.c declared `int Lb_get_quest_type();` but it returns s8 (lb_t01.c); clang's callee
+  returns the whole register (`mov %ecx,%eax; ret`, upper bytes from the row's flag word 0x4001), gcc's happened to be
+  clean; lb_quest_attribute[16385] was text. **Fix**: the s8 declaration (lb_guild_g.c, and #ifndef __MWERKS__ in
+  lb_x01.c / lb_v06.c for MH1). Checked: the new XBE's caller now has `movsbl %al,%eax` after the call. Not yet re-run in
+  xemu (the owner's other session had xemu and little memory left).
+- **Same hazard elsewhere**: tools/check_kr_returns.py lists every `int f();` of a function defined with a char/short
+  return (907 lines, many of them old asm-era names): each is a possible Xbox-only bug. Not fixed in bulk.
+- **tools/test_urgent_g.sh** (new, in full_check): NEW hunter in the village -> Elder -> urgent 10001 -> depart ->
+  deliver -> clear -> back in the village at star level 0. It passes on the PC; it cannot see the Xbox bug itself (gcc).
+- **Xbox log** (both games): mh1log.txt and logs\*.log were only fflush'ed into the kernel's file cache, which a crash
+  never writes out (the owner's log ended long before the crash). xbox_log_commit (xbox_log.c) does fflush +
+  NtFlushBuffersFile: every rt_log line after 0.5 s, every warning / error at once, and stderr once a second.

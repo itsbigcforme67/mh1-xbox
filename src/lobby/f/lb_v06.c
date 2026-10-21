@@ -22,7 +22,11 @@ void lb_set_questpage_info();
 void Lbc_set_prim();
 void Lb_guild_trans();
 void Lb_num_to_str();
+#ifdef __MWERKS__
 int Lb_get_quest_type();
+#else
+s8 Lb_get_quest_type();     /* it returns s8 (lb_t01.c): as int, the Xbox clang used garbage upper bytes */
+#endif
 int Lb_get_quest_str();
 int sprintf(char *, const char *, ...);
 char *strcpy();

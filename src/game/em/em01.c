@@ -94,7 +94,11 @@ void em01_move_act_set(EMW *em, u16 no, u16 arg) {
     switch (no) {
     case 0:
     case 2:
+#ifdef VERSION_MHG      /* G em01_move_act_set (game 0x5A56E0): kinds 0x2A / 0x25 as kind 1 */
+        if (em->x302 < (s16)(em->x792 * ((em->kind == 1 || em->kind == 0x2A || em->kind == 0x25) ? 0.1f : 0.3f))) {
+#else
         if (em->x302 < (s16)(em->x792 * ((em->kind == 1) ? 0.1f : 0.3f))) {
+#endif
             no = 6;
             goto act6;
         }
@@ -496,7 +500,11 @@ void ground_point_search(EMW *em) {
     }
     pos = 0;
     p = em->area->stg_pos;
+#ifdef VERSION_MHG      /* G ground_point_search (game 0x5A6610): 92 entries */
+    for (i = 0; i < 92; p++, i++) {
+#else
     for (i = 0; i < 88; p++, i++) {
+#endif
         if (p->stg == -1 || em->area->stg_pos[i].stg == em->stg) {
             pos = em->area->stg_pos[i].pos;
             break;
@@ -1255,9 +1263,18 @@ void em01_fly_adjy2_init(EMW *em, u8 type) {
     case 7:
         break;
     case 2:
+#ifdef VERSION_MHG      /* G em01_fly_adjy2_init (game 0x5A85F0): type 15 = type 2 (the Rathalos kinds' take-off), 16 new */
+    case 15:
+#endif
         w->adj_y = 1;
         w->adj_tm = 0x26;
         break;
+#ifdef VERSION_MHG
+    case 16:
+        w->adj_y = 1;
+        w->adj_tm = 0x40;
+        break;
+#endif
     case 3:
         w->adj_y = 1;
         w->adj_tm = 0x1E;

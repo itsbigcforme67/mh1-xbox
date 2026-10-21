@@ -283,13 +283,29 @@ static void put_line(char level, const char *text)
     xbox_serial_write(line, n + 1);         /* xemu: serial port (xbox_log.c) */
     fwrite(line, 1, (size_t)n + 1, stderr); /* hardware: mh1log.txt in the game's folder, which its network loader
                                              * sends to the laptop (the log file under logs\ never leaves the box) */
+    {   /* through to the disk now and then (xbox_log.c xbox_log_commit), and at once for warnings and errors */
+        static unsigned long last_commit;
+        void xbox_log_commit(FILE *f);
+        if (level == 'W' || level == 'E' || now_ms() - last_commit > 500) {
+            xbox_log_commit(stderr);
+            last_commit = now_ms();
+        }
+    }
 #endif
     if (lf) {
         fwrite(line, 1, (size_t)n + 1, lf);
+#ifdef MH1_XBOX
+        if (level == 'W' || level == 'E' || now_ms() - last_flush > 500) {
+            void xbox_log_commit(FILE *f);
+            xbox_log_commit(lf);        /* fflush + the kernel's cache to the disk (a crash keeps the lines) */
+            last_flush = now_ms();
+        }
+#else
         if (level == 'W' || now_ms() - last_flush > 3000) {
             fflush(lf);
             last_flush = now_ms();
         }
+#endif
     }
 }
 

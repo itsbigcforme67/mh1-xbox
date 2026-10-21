@@ -532,3 +532,62 @@ Every G-only / MH1-only change since 13 Oct checked against the other game. For 
   [verified: G quest 9 sweep run, shot]. "Hunter rank" and "Mark all offline quests cleared" rows now on G too (rank at
   User_data+0xC23; the 98 offline quests) [verified: tools/test_dbgmenu.sh].
 - Quest start: the "save has a pouch" test reads G's pouch (+0xC24), was MH1's offset (no visible effect found).
+
+## 13. The quest lane, seventh pass (agent A, 20 Oct 2026; details docs/agents/agent-A.md "G round 15")
+PC-only round: all G code below is C written from G's asm (VERSION_MHG), not byte-checked (check.py needs wibo).
+Each was compared with an m2c draft of the G asm against the MH1 draft / the PC C, the odd places read in the asm.
+
+**Section 8 / 10's list, done:**
+- **set04**: G's set04_i / _m / _trans. G's new cases are for stages 0x59-0x5B, which G's 88-entry stage tables do not
+  have (FINDS.md); what changes in practice is the default branch and the first-frame draw.
+- **em17 small acts** (Gravios / Basarios): G's attack table (em_move03, 12 entries; MH1's atk07 is unreachable in G),
+  a new jump attack, beam variants (Shell08 types 12 / 13), acts 12 / 14 / 18 / 23 / 26 (the 5% heal now after 600
+  ticks), dmg00 / 04 / 11, the quest 10043 demo (G rewrote it), type-1 sounds, the sound/effect script's new motions
+  and the Black Gravios (kind 0x2F) in the Gravios checks [verified: hunts of quests 23 / 26 / 10043, every attack
+  returns to normal; test_all_quests_g].
+- **em07 item / hagi sets** (Lao-Shan Lung): G's item ids by kind and quest rank (MH1's ids are other items in G's
+  list) [asm read; quest 10048 passes; the items themselves not looked at in a hunt].
+- **eft05 for the other weapons**: nothing to port: G's callers pass the same arguments (args 2 / 3 are the Dual
+  Swords'), G's Eft05_set only adds the demon-mode skip [compared by code, not with PS2 pictures].
+- **em27 die04 the way G does it** (Velocidrome family): G moved the revival into em27_act_set (die act 4:
+  Quest_enemy_revival_set, em_status_init, the start point), die04 only picks the act. Porting both together fixes
+  last round's endless revival [verified: quest 7: three kills with two revivals, then clear; 7 / 15 / 24 / 32 / 42 /
+  10014-10031 pass]. Also G's em27_main (the monster turns by the hit's side before a flinch or fall), die03 / dmg03
+  motions, atk06's variant and G's attack 14.
+- **eft20** (monster dust, splashes, breath dust): G's eft20_i / _m / _t (kind 0x24, the nine kinds' landing hits,
+  args 13 / 21 for Gravios motion 0x45A with G's fade keys, arg 29 scaled) [asm + draft compare; 13 / 21 not seen].
+
+**Beyond the list (ranked by how often a player meets them):**
+- **em01** (Rathian / Rathalos and G's variants, kinds 0x25 / 0x2A / 0x29 / 0x31): the variants now take their
+  originals' paths everywhere (MH1's code only knew kinds 1 / 11), G's em01_main (status checks by G's quest numbers,
+  hunger countdown, demo stops), the airborne fireball attacks (atk09 / 10 / 17 / 22) as G, four new attacks (x15
+  26-29), flight curves 15 / 16, the sound/effect script [verified: hunts of kinds 11 / 1 / 49 / 37, 400 s each;
+  13 em01 quests pass; x15 26-29 not hit in those hunts].
+- **em16** (Velociprey family): the same hit-side turn as em27, G's demo-stop quests and the new quest-10035 act
+  (hidden during the Plesioth opening scene), init speed per kind, a new attack, kind 35.
+- **Monsters with x01 = 0 were drawn on the PC (both games)**: the game only queues a monster's prim when x01 != 0;
+  the PC's monster drawing ignored it. Found through em16 in quest 10035 [verified: build/A/q10035b pictures].
+- **shell08's per-type tables** imported at G's 14 types (G's new types 12 / 13 read past the PC's copies).
+
+**Left, ranked by how often a player meets it** (coverage of the whole quest suite, build/A/cov2/report.txt, then
+checked by hand; "real" = G's asm differs in behaviour, not only in registers / addresses):
+1. **shell08_m / _i / _trans / _impact_set / _h** (fireballs and beams of Rathian, Rathalos, Gravios, Basarios): G
+   reorganised them (types 12 / 13 join the 0/11 and 2/3/9 groups, a sound for type 12, a different ground test,
+   changed timings for old types). Still MH1's code on the PC; the biggest real gap left in a hunt.
+2. **eft13** (smoke / dust puffs: eft13_set_pos_em, _m, _i, _set_sub_em; 0.86-0.93 similar), **eft04_m**,
+   **Eft04_set_time**, **eft02_t**, **eft06 type 2**: effects on every hunt [diffs seen, not read case by case].
+3. **em20_main** (Kut-Ku / Gypceros), **em14_main** (Diablos / Monoblos), **em09_main**, **em04_main**, **em03_init**,
+   **em02** (Fatalis: init, hagi, fly curves): per-monster G edits like the ones ported this round.
+4. **shell06** (init_sub / set), **shell04_m**, **shell14** (pos_get / m00), **set14_trans**: monster shells and a set
+   piece.
+5. **GetWallHitBitPl / Em / 2** (walls): flagged at 0.88-0.92 similar, but what differs looks like register and stack
+   allocation; to be read before calling it a gap.
+6. **em01_init's first act** (G no longer sets act 0.1 itself; left as MH1's) and **em27_init / em16_init**'s G
+   motion helper (0x549FE0): small start-of-hunt differences.
+
+## 14. Xbox: the Elder's quest list crash (agent A, 21 Oct 2026)
+- Owner's bug (real Xbox, G, any save): the Elder's urgent quest -> next -> crash. Reproduced in xemu (access violation in
+  vsprintf on the quest sheet). Cause: `int Lb_get_quest_type();` for an s8 function; clang returned garbage upper bytes
+  (type 16385), the quest sheet used it as an index into its string table. Fixed (G and the MH1 callers); verified in the
+  XBE's code, xemu re-run pending. New: tools/test_urgent_g.sh (board -> depart -> clear -> star level 0) in the full
+  check; tools/check_kr_returns.py lists the other declarations with the same hazard (to be gone through).
