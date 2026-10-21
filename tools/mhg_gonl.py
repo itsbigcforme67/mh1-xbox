@@ -67,6 +67,8 @@ def convert(src):
     # m2c's void * temporaries: byte pointers (GNU C's void * arithmetic is by bytes too, but they get dereferenced)
     src = re.sub(r'^    void \*(temp_|var_)', r'    u8 *\1', src, flags=re.M)     # a field of unknown type: G reads bytes there (lbu) in every case seen
     src = by_value_args(src)
+    src = byte_pointers(src)
+    src = byte_globals(src)
     src = unprototype(src)
     # m2c's declarations of names that became NAME+offset are no declarations any more
     src = re.sub(r'^extern [^;\n]*\(\*\([^;\n]*;\n', '', src, flags=re.M)
@@ -90,19 +92,67 @@ def frame_size(addr):
 
 
 def stack_buffers(src, addr):
-    """m2c declares a stack slot whose address is taken (&spXX) as one variable of the type it saw, but G uses it as
-    the start of a buffer (a copied record, a list): give each such slot the room up to the end of G's frame (a union
-    with a byte array), so the PC's writes through the pointer stay inside it"""
+    """G's stack slots are one frame: m2c's locals spXX (one variable each, of the type it saw) become views into one
+    byte array of G's frame size, so a record copied to sp70 is read back through sp71 / sp72 as on the PS2, and a
+    slot used as a buffer has the room G gave it"""
     n = frame_size(addr)
     if not n:
         return src
-    for name in sorted(set(re.findall(r'&(sp([0-9A-F]+))\b', src))):
-        var, off = name[0], int(name[1], 16)
-        m = re.search(r'^    ([\w ]+?\**)\s*\b%s;\n' % var, src, re.M)
-        if not m or off >= n:
+    decls = list(re.finditer(r'^    ([\w ]+?\**)\s*\b(sp([0-9A-F]+));\n', src, re.M))
+    used = set(re.findall(r'\b(sp([0-9A-F]+))\b', src))
+    if not used:
+        return src
+    typed = {}
+    for m in decls:
+        if int(m.group(3), 16) < n:
+            typed[m.group(2)] = m.group(1).strip()
+            src = src.replace(m.group(0), '', 1)
+    lines = ['    u8 g_frame[0x%X] __attribute__((aligned(16)));   /* G\'s stack frame */\n' % n]
+    for var, off in sorted(used, key=lambda v: int(v[1], 16)):
+        if int(off, 16) >= n:
             continue
-        typ = m.group(1).strip()
-        src = src.replace(m.group(0), '    union { %s v; u8 b[0x%X]; } u_%s;\n#define %s (u_%s.v)\n' % (typ, n - off, var, var, var), 1)
+        lines.append('#define %s (*(%s *)(g_frame + 0x%s))\n' % (var, typed.get(var, 'u8'), off))
+    # after the function's opening brace
+    k = src.index('{\n', src.index(') {')) + 2
+    return src[:k] + ''.join(lines) + src[k:]
+
+
+def byte_pointers(src):
+    """m2c's pointer arithmetic is in bytes (a `s32 *` walked by `var += 0x11`, a `u16 *` by `+= 2`): pointer locals become
+    u8 * and each dereference `*var` reads its type through a cast"""
+    for m in list(re.finditer(r'^    ((?:s8|u8|s16|u16|s32|u32|f32|s64|u64|s128) \*+)(\w+);$', src, re.M)):
+        typ, var = m.group(1).strip(), m.group(2)
+        if typ in ('s8 *', 'u8 *'):
+            continue
+        src = src.replace(m.group(0), '    u8 @%s;   /* (%s) */' % (var, typ), 1)
+        src = re.sub(r'\*%s\b' % var, '(*(%s)%s)' % (typ, var), src)
+        src = src.replace('    u8 @%s;' % var, '    u8 *%s;' % var)
+    return src
+
+
+def byte_globals(src):
+    """the same for globals: m2c's `*(&NAME + k)` / `&NAME + k` count k in bytes whatever NAME's type"""
+    types = dict((m.group(2), m.group(1).strip()) for m in re.finditer(r'^extern ([\w ]+?\**)\s*(\w+);', src, re.M))
+    for name, typ in types.items():
+        if typ in ('u8', 's8'):
+            continue
+        # *(&NAME + E) with E balanced
+        out, i = '', 0
+        key = '*(&%s + ' % name
+        while True:
+            j = src.find(key, i)
+            if j < 0:
+                out += src[i:]
+                break
+            k, depth = j + 2, 1
+            while depth:
+                c = src[k]
+                depth += (c == '(') - (c == ')')
+                k += 1
+            expr = src[j + len(key):k - 1]
+            out += src[i:j] + '(*(%s *)((u8 *)&%s + %s))' % (typ, name, expr)
+            i = k
+        src = re.sub(r'(?<!\(u8 \*\))&%s \+ ' % name, '(u8 *)&%s + ' % name, out)
     return src
 
 

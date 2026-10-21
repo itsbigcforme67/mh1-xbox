@@ -2060,3 +2060,17 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
   then write docs/network.md G section + RELEASE_G.md GB7; then the PC G online build (VERSION=mhg + ONLINE=1: cnet GV
   indices must be G's in the G PC build), two G PCs, PS2 G + PC G. Exploration scripts: build/C/gonl/{boot,k,run}.sh
   (boot.sh: server + PCSX2 + scripted menus to the plaza, ~4 min; savestates break PCSX2's socket networking).
+
+## G online, round 2 (20 Oct 2026)
+- **PS2 side done and tested:** `tools/test_ps2_g_online.sh` (real G disc via MH1LAUNCH: login, info file, plaza,
+  town list, town) and `HUNT=1` (guild registration flag by PINE, counter, room for 1, departure, match, mcs login,
+  the quest's camp). docs/network.md 3.12 has the protocol. Server: tools/mhg_lobby.py (G handlers, reloaded on change).
+- **PC side, in progress:** cnet layer (src/lobby/cnet/cnet_g.c + MHG_NET / LBNET_G) logs in with G's protocol
+  (`--nettest`). G's lobby UI (login screens, class menu, plaza, town list, counter, rooms) is G code the PC lacks:
+  tools/mhg_reach.py sizes it (about 340 G functions beyond the village); tools/mhg_gonl.py makes PC C of each from
+  m2c (src/lobby/gonl/gen, one file per function; HAND-FIXED files are kept). Lessons on m2c output for the PC:
+  pointer arithmetic is in bytes (byte_pointers / byte_globals passes), stack slots are one frame (stack_buffers:
+  defines into g_frame), callees unprototyped, 8-byte by-value args read by field, functions G calls keeping a1-a3
+  across a leaf need a hand fix, widths of `*(&global + k)` reads of unknown globals can be wrong (review).
+- **Next:** compile all gen files (cg loop), link into the G online build (BMATCH, build_pc.sh), give the g_main_*
+  names that are no host object storage, run the PC G client with real screens, debug screen by screen.
