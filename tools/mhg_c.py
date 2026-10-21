@@ -115,7 +115,9 @@ def asm_widths(asm):
                 del taint[args[0]]
             continue
         if op in ('addiu', 'daddiu') and len(args) == 3 and '%lo(' in args[2]:
-            taint[args[0]] = re.search(r'%lo\((\w+)\)', args[2]).group(1)
+            t = re.search(r'%lo\((\w+)', args[2])
+            if t:
+                taint[args[0]] = t.group(1)
             continue
         if op in ('addu', 'daddu', 'or') and len(args) == 3:
             src = [taint.get(a) for a in args[1:] if a in taint]

@@ -208,6 +208,7 @@ def convert(src):
     src = arg_positions(src)
     src = tail_jumps(src)
     src = narrow_s64(src)
+    src = deref_ints(src)
     src = function_tables(src)
     src = unprototype(src)
     # m2c's declarations of names that became NAME+offset are no declarations any more
@@ -237,6 +238,23 @@ G_RENAME = {
 def renamed(src):
     for a, b in G_RENAME.items():
         src = re.sub(r'\b%s\b' % re.escape(a), b, src)
+    return src
+
+
+# one-line corrections applied to a function's draft every time it is generated (instead of a HAND-FIXED copy)
+FIXUPS = {
+    'lbc_login_init': [   # the PC's cnLBS_LoginLobbyServer takes CNET_LOGIN by value (EE GCC passes a pointer to a copy)
+        (r'cnLBS_LoginLobbyServer\(&sp40, ', 'cnLBS_LoginLobbyServer(*(struct { u8 b[0x40]; } *)&sp40, ')],
+    'lobby_func_00570320': [   # a byte of LobbyInfo+0x16 at a byte offset m2c holds in a pointer
+        (r'\*\(&\(\*\(u8 \*\)\(\(u8 \*\)&LobbyInfo \+ 0x16\)\) \+ var_a0\)', '*((u8 *)&LobbyInfo + 0x16 + (s32) var_a0)')],
+}
+
+
+def fixups(name, src):
+    for a, b in FIXUPS.get(name, []):
+        src, n = re.subn(a, b, src)
+        if n == 0:
+            print('fixup for %s did not apply: %s' % (name, a))
     return src
 
 
@@ -478,6 +496,14 @@ def narrow_s64(src):
     return re.sub(r'(?<![*\w])\([su]64\) ', '(s32) ', src)
 
 
+def deref_ints(src):
+    """`*(temp + k)` where temp is an int that holds an address (m2c read a pointer as s32): a byte read through it"""
+    ints = set(re.findall(r'^    s32 (\w+);', src, re.M))
+    for v in ints:
+        src = re.sub(r'(?<![\w)\]])\*\(%s \+ ' % v, '*(u8 *)(%s + ' % v, src)
+    return src
+
+
 def struct_args(src):
     """a callback called with its 8-byte result by value and a pointer to it: `f((s64) sp18, &sp18)` passes the bytes
     at sp18, not sp18's value widened"""
@@ -655,7 +681,7 @@ def main():
             bad.append(n)
             d = '#error "m2c could not decompile %s: write it by hand"\n/*\n%s*/\n' % (n, d.replace('*/', '* /'))
         else:
-            d = renamed(stack_buffers(convert(d), gaddr(n)))
+            d = fixups(n, renamed(stack_buffers(convert(d), gaddr(n))))
         open(path, 'w').write(HEADER % (G_RENAME.get(n, n), gaddr(n)) + d)
     if NEW_NAMES:
         write_names(NEW_NAMES)

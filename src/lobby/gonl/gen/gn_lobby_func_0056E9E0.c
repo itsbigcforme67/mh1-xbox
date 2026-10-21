@@ -1,16 +1,16 @@
-/* HAND-FIXED (a u8 read of a byte-pointer sum). G online (PC): lobby_func_0056E9E0, written from Monster Hunter G's code at lobby 0x56E9E0 by tools/mhg_gonl.py (an m2c draft with
+/* G online (PC): lobby_func_0056E9E0, written from Monster Hunter G's code at lobby 0x56E9E0 by tools/mhg_gonl.py (an m2c draft with
  * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_00580910();
 extern u8 g_main_2EFBB0;
 extern u8 g_main_2EFBB0;
 extern u8 pNet;
 extern u8 tl_member_buff;
 s32 cnLBS_Get_SerchUserPlace(); /* extern */
-s32 lobby_func_00580910();             /* extern */
 
-s32 lobby_func_0056E9E0(void) {
+s32 lobby_func_0056E9E0(s32 unused_a0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     s32 temp_a1;
     s32 temp_v0;
     s32 temp_v0_2;
@@ -57,7 +57,7 @@ block_12:
 block_39:
         return 2;
     case 2:                                         /* switch 1 */
-        temp_v0_2 = lobby_func_00580910(temp_v0 + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) * 0x28), temp_a1, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)) * 7);
+        temp_v0_2 = lobby_func_00580910(temp_v0 + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) * 0x28), temp_a1, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)) * 7, arg3);
         switch (temp_v0_2) {                        /* switch 2; irregular */
         case 3:                                     /* switch 2 */
             (*(s8 *)((u8 *)((((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) * 0x24A) + &(*(u8 *)((u8 *)&tl_member_buff + 0x18)))) + 0x15A)) = 1;
