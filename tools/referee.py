@@ -107,6 +107,37 @@ SCENARIOS = {
                       ticks=1100),
     'bowgun':    dict(game='mhg', quest=1, weapon=(7, 2), pad='idle*80,' + GUN, pokes=TO22, ticks=600),
 }
+# G's other large monsters (agent D, 20 Oct 2026): quest, the monster's stage and where it starts there (a PC dry run,
+# RT_EM_TRACE); the hunter is put 600 units south of it (facing north), great sword, FIGHT pad, 450 play ticks
+# items in a quest (G ids: potion 7, whetstone 120, paintball 51, small barrel bomb 66, pitfall 61): pouch slot 0 is
+# filled by a poke before each use, square uses it. Next to the Rathian (quest 10, area 40, as 'rathian')
+def pouch0(pt, item, n):
+    return [(pt, 'plw', 0x828, 'u16', item), (pt, 'plw', 0x82A, 'u16', n)]
+
+
+SCENARIOS['g_items'] = dict(
+    game='mhg', quest=10, weapon=(6, 156), ticks=560,
+    pad='idle*70,square*2,idle*78,square*2,idle*148,square*2,idle*78,square*2,idle*78,square*2,idle*100',
+    pokes=area(30, 40, 10000.0, 0.0, 10000.0) + [(60, 'plw', 0x302, 'u16', 50)] + pouch0(60, 7, 3) +
+    [(140, 'plw', 0x87E, 'u16', 50)] + pouch0(140, 120, 3) + pouch0(290, 51, 3) + pouch0(370, 66, 1) +
+    pouch0(450, 61, 1))
+# gathering: bare-handed herbs on Forest and Hills area 39 (12200, 10300), then mining with a pickaxe (113) on area 32
+# (7790, 6980), then the bug net (116) on area 36 (12057, 9607): tools/test_activities.py's spots
+SCENARIOS['g_gather'] = dict(
+    game='mhg', quest=1, weapon=(6, 156), ticks=760,
+    pad='idle*100,' + ','.join(['circle*2,idle*58'] * 3) + ',idle*40,' + ','.join(['square*2,idle*58'] * 3) +
+        ',idle*60,' + ','.join(['square*2,idle*58'] * 3),
+    pokes=area(30, 39, 12200.0, 0.0, 10300.0) + area(300, 32, 7790.0, 0.0, 6980.0) + pouch0(300, 113, 3) +
+    area(540, 36, 12057.0, 0.0, 9607.0) + pouch0(540, 116, 3))
+for _n, _q, _st, _x, _z in (('g_rathalos', 10017, 40, 8943, 12232), ('g_gypceros', 19, 69, 9852, 12257),
+                            ('g_basarios', 23, 75, 10241, 10417), ('g_gravios', 26, 69, 9907, 12267),
+                            ('g_diablos', 14, 53, 9638, 7864), ('g_monoblos', 10041, 53, 9638, 7864),
+                            ('g_khezu', 25, 70, 14000, 10500), ('g_plesioth', 11, 54, 9493, 10873),
+                            ('g_cephadrome', 13, 56, 14380, 14930), ('g_kind37', 10038, 52, 12138, 9271),
+                            ('g_kind44', 10042, 53, 9638, 7864), ('g_kind49', 10033, 33, 8943, 12232),
+                            ('g_lao', 10048, 14, 8150, 9310)):
+    SCENARIOS[_n] = dict(game='mhg', quest=_q, weapon=(6, 1), pad=FIGHT,
+                         pokes=area(30, _st, float(_x), 0.0, float(_z - 600)), ticks=450)
 
 
 def expand_pad(script):
@@ -944,6 +975,14 @@ def pc_side(name, out, rng_sync=True):
     _, r0, r1, n = open(os.path.join(out, 'run.txt')).read().split()
     rnd, n = (int(r0), int(r1)), int(n)
     ps = Trace(os.path.join(out, 'ps2.ref'))
+    # line-up aid (like Rnd_w at play tick 0): each monster's random number of its last action set (EMW+0x39A) as the
+    # PS2 has it at play tick 0. The monsters spawn and set their first action while the area loads, before play tick
+    # 0, when the PC's random state is not the PS2's yet; without this a Gypceros picked another move at tick 49
+    if 0 in ps.recs:
+        for i in range(EM_N):
+            e = ps.region(ps.recs[0], 'em', i)
+            if e[0]:
+                pokes = pokes + [(0, 'em%d' % i, 0x39A, 'u16', struct.unpack_from('<H', e, 0x39A)[0])]
     rsync = None
     if rng_sync:        # the PS2's Rnd_w at the start of each play tick, set on the PC after its record of the tick
         rsync = os.path.join(out, 'ps2_rnd.txt')

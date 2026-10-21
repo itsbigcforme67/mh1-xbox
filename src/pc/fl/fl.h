@@ -103,6 +103,12 @@ typedef struct {
      * host asks up to three times per tick) is not evaluated again */
     fl_group_pose last[FL_MAX_GROUPS];
     int last_ok, last_lock;
+    /* extra turns about a bone's own Y after its motion (the game's mlCalcTransEM: a monster's neck turned toward its
+     * target, kinds 1 / 7 / 11), set before fl_skel_pose_groups; nextra 0 = none */
+    int nextra, extra_bone[4];
+    float extra_ry[4];
+    int last_nextra, last_extra_bone[4];
+    float last_extra_ry[4];
 } fl_skel;
 
 int  fl_skel_create(fl_skel *s, fmt_blob ahi, int be);

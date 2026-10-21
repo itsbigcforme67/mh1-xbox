@@ -5721,6 +5721,56 @@ void em01_main(EMW *em) {
 
     em_mode_timer_sub(em);
     em_no_floor_ck(em);
+#ifdef VERSION_MHG
+    /* G (game 0x59E7C0, written from the asm; agent D, 20 Oct 2026): the Rathian-type rate also for the new kinds 42
+     * and 37, no needs at difficulty 8-10, and the per-quest lists by G's quest numbers, with the countdown-only hunger
+     * (game_func_00547C20) where MH1 had none */
+    {
+        void game_func_00547C20(EMW *em);
+        int is1 = em->kind == 1 || em->kind == 42 || em->kind == 37;
+        u16 q = *(u16 *)((u8 *)&quest_w + 8);
+        rate = is1 ? 0.1f : 0.3f;
+        if (em->x8C2 != 1 && em->x8B6 == 0 && game_w.x2E != 8 && game_w.x2E != 9 && game_w.x2E != 10) {
+            switch (q) {
+            case 10047: case 2049: case 2048: case 1037:
+                if (!is1)
+                    em_thirst_ck(em);
+                game_func_00547C20(em);
+                break;
+            case 60026: case 2050: case 2030: case 1034:
+                if (is1) {
+                    em_hinshi_ck(em, rate);
+                    em_sleep_ck(em);
+                } else {
+                    em_thirst_ck(em);
+                }
+                game_func_00547C20(em);
+                break;
+            case 2033: case 2032: case 2031: case 1033: case 1032: case 1031: case 45: case 44:
+                if (is1) {
+                    em_hinshi_ck(em, rate);
+                    em_egg_ck(em);
+                    em_thirst_ck(em);
+                    game_func_00547C20(em);
+                    em_sleep_ck(em);
+                } else {
+                    em_egg_ck(em);
+                    em_thirst_ck(em);
+                    em_hungry_ck(em);
+                }
+                break;
+            default:
+                em_hinshi_ck(em, rate);
+                em_egg_ck(em);
+                em_thirst_ck(em);
+                em_hungry_ck(em);
+                em_sleep_ck(em);
+                break;
+            }
+        }
+    }
+    if (0)
+#endif
     if (em->kind == 1) {
         rate = 0.1f;
     } else {

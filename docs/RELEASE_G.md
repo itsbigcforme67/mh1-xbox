@@ -467,6 +467,50 @@ it the runs drift apart as expected (another hit lands, another knockback).
   host's drawing offset that puts the model's feet on the ground (0.3 units low; REF_NODES -1 showed it).
 Rathian 245 -> 286; MH1 Rathian 291 -> 365.
 
+**Fourth round: G's other monsters, items, gathering (agent D, 20-21 Oct 2026).** New referee scenarios
+(tools/referee.py): g_rathalos (quest 10017), g_gypceros (19), g_basarios (23), g_gravios (26), g_diablos (14),
+g_monoblos (10041), g_khezu (25), g_plesioth (11), g_cephadrome (13), g_kind37 / g_kind44 / g_kind49 (G subspecies
+quests 10038 / 10042 / 10033), g_lao (10048): the hunter is put next to the monster with a great sword and the FIGHT
+pad for 450 ticks; g_items (potion, whetstone, paintball, small barrel bomb, pitfall trap by pouch pokes next to the
+Rathian); g_gather (herbs, mining with a pickaxe, the bug net). Fixed:
+- R-F18 *G still on MH1 logic*: G's monster needs housekeeping in em01_main / em15_main / em20_main (G's difficulty
+  and quest lists, the countdown-only hunger game 0x547C20 on most quests): a Gypceros's hunger counted down on the
+  PS2 only, and its next move differed at tick 49 (em20_ai_nm.c, em01_ai_nm.c, em15_nm.c, em_core_nm.c).
+- R-F19 *G still on MH1 logic*: G's em03 / em04 / em12 / em19 / em29 inits apply the monster's size to small monsters
+  (base scale at EMW+0x600, em_size_scale_set): those small monsters were drawn and hit-tested at size 1.0 (a kind 19 at 1.0 instead of 0.8) (f_em_nm.c).
+- R-F20 *port glue, G*: more numbers taken for pointers (config/mhg/pc_noptr.txt): em_vital_tbl rows of kinds 12 and 19
+  (small monsters spawned with 32648 or -12408 hit points) and Item_get_tbl rows 99 / 100 / 143 (the bug net gave item
+  0xF645). The earlier sweep had filed these words under a wrong object name (st43_sun_rgba_data).
+- R-F21 *port glue, both games*: monster necks did not turn on the host skeleton: enemy_mk's mlCalcTransEM turns the four
+  neck joints of kinds 1 / 7 / 11 (G also 37 / 41 / 42 / 49 / 50) about Y toward the target; the host drew and
+  hit-tested heads straight ahead (fl_skel extra turns, rt_em.c rt_em_neck).
+- R-F22 *port glue, both games*: motion blends: the PS2's flBlendMotionEx mixes each node's local matrix (rows x and y
+  mixed, normalised, z = x cross y, y = z cross x: flmatBlend); the host lerped Euler angles, which bends differently
+  (a Rathalos's wing joints 18 units off mid-blend). Now the same matrix blend (fl_model.c); REF_NODES showed the
+  joints within 0.01 through the blend afterwards. Affects every hunter and monster blend, both games.
+- Referee line-up aid: each monster's action random number (EMW+0x39A) as the PS2 has it at play tick 0 (the first
+  actions are set while the area loads, before the PC gets the PS2's random state).
+
+| scenario | first gameplay difference after the fixes |
+|---|---|
+| g_rathalos | 157 (was 63): a choice in its attack program |
+| g_gypceros | 114 (was 49): a small monster (kind 5) facing |
+| g_basarios | 106 (was 32): a kind-19 small monster's height while flying |
+| g_gravios | 48: the Gravios ends its turn one tick early and attacks (open, below) |
+| g_diablos | 337: red-health recovery tick (N-R9) |
+| g_monoblos | 33: a small monster (kind 13) picks another first move at the area start (open) |
+| g_khezu, g_cephadrome, g_lao | none in 450 ticks |
+| g_kind44 | 62: the subspecies drifts 2 units |
+| g_kind49 | 33: the PC hunter walks into an area exit at its poked start (scenario position) |
+| g_items | 103: red-health recovery tick (N-R9); items used identically |
+| g_gather | 44: Aptonoth drift 2 units; gathered items identical (herbs none at that spot on both, ore, bug) |
+| kutku | 909 (was 804) |
+| g_plesioth, g_kind37 | no comparison yet: the PS2 quest did not start / stopped (referee scenario problem) |
+
+Open from this round: N-R10 (G) Gravios turn end (em17, tick 48: the PS2 runs its command program a tick later; the
+inputs compared are equal); N-R11 (G) kind 13 first action (act speed 1.2 on the PS2 at spawn, 1.0 on the PC: G's
+em16 act set); N-R12 the village day (shops, box, forge) is not compared: the lockstep hook only runs in quests.
+
 **Left, ranked by how much a player meets it:**
 1. N-R7 (both games): position differences of one float step (0.001 units at 10000) appear on the first tick of some
    root motions (a monster starting to walk); they grow into 1-2 unit drifts after 200-300 ticks and change a push or
