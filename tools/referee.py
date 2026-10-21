@@ -165,6 +165,21 @@ SCENARIOS['g_vil_forge'] = dict(game='mhg', village=True, ticks=380,
                                 pad=vpad(dict(list({45: 'circle*2', 75: 'circle*2', 105: 'circle*2',
                                                     135: 'circle*2'}.items()) + list(_circ(165, 4).items())), 380),
                                 pokes=[(1, 'ud', 0x20, 'u32', 50000)] + vwarp(30, 9960, 11920))
+_sell = {45: 'circle*2', 75: 'circle*2', 105: 'circle*2', 120: 'ddown*2'}; _sell.update(_circ(135, 4))
+_forge = {45: 'circle*2', 75: 'circle*2', 105: 'circle*2', 135: 'circle*2'}; _forge.update(_circ(165, 4))
+for _g, _pouch, _herb, _ore in (('g', 0xC24, 129, 155), ('mh1', 0x37C, 65, 109)):    # pouch slot 0: id, count (u16 each)
+    _gm = 'mhg' if _g == 'g' else 'mh1'
+    if _g == 'mh1':
+        SCENARIOS['mh1_vil_shop'] = dict(game=_gm, village=True, ticks=320, pad=vpad(_circ(45, 7), 320),
+                                         pokes=[(1, 'ud', 0x20, 'u32', 5000)] + vwarp(30, 10000, 13425))
+        SCENARIOS['mh1_vil_wshop'] = dict(game=_gm, village=True, ticks=360, pad=vpad(_circ(45, 8), 360),
+                                          pokes=[(1, 'ud', 0x20, 'u32', 50000)] + vwarp(30, 9860, 12076))
+    SCENARIOS[_g + '_vil_sell'] = dict(game=_gm, village=True, ticks=320, pad=vpad(_sell, 320),
+                                       pokes=[(1, 'ud', 0x20, 'u32', 500), (1, 'ud', _pouch, 'u32', _herb | 5 << 16)]
+                                       + vwarp(30, 10000, 13425))
+    SCENARIOS[_g + '_vil_forge_ore'] = dict(game=_gm, village=True, ticks=380, pad=vpad(_forge, 380),
+                                            pokes=[(1, 'ud', 0x20, 'u32', 50000), (1, 'ud', _pouch, 'u32', _ore | 5 << 16)]
+                                            + vwarp(30, 9960, 11920))
 for _n, _q, _st, _x, _z in (('g_rathalos', 10017, 40, 8943, 12232), ('g_gypceros', 19, 69, 9852, 12257),
                             ('g_basarios', 23, 75, 10241, 10417), ('g_gravios', 26, 69, 9907, 12267),
                             ('g_diablos', 14, 53, 9638, 7864), ('g_monoblos', 10041, 53, 9638, 7864),
