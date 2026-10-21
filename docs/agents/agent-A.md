@@ -1208,3 +1208,23 @@ check.py needs wibo, which this round could not run (PC-only round). Commits on 
   functions entered, 1010 flagged "G twin differs, no G marker" (many false positives: G code in #elif branches, PC
   shims, abs files). Ranked list of the real ones in RELEASE_G section 13.
 - tools/mhg_fdiff.py: per-process temp file (agents ran it at the same time and read each other's bytes).
+
+## The Xbox G crash at the Elder's quest list (21 Oct 2026, coordinator's top priority)
+- **Owner**: on the real Xbox (G, fresh save) the Elder's level list (only 緊急クエスト selectable, which is right for a
+  new save: check_questLevelSelect allows only the urgent row while the star level is -1; the urgent quest is key quest
+  10001) -> "おぬしに頼めそうな依頼はこれぐらいじゃ" -> next -> crash.
+- **Reproduced in xemu** (build/A/xurg: fresh disk, RT_ARGS=--quest 1 --play + RT_VILLAGE_START, the PC pad script):
+  `Fatal System Error 0x1E (0xC0000005, 0x0023B7C0, 0, 0x54484749)`: in _xfmt (vsprintf) reading a format at
+  0x54484749 ("IGHT" as bytes). A temporary rt_log in lb_set_questpage_info: Xbox `type 16385 attr 0x54484749`, PC
+  `type 1`. **Cause**: lb_guild_g.c declared `int Lb_get_quest_type();` but it returns s8 (lb_t01.c); clang's callee
+  returns the whole register (`mov %ecx,%eax; ret`, upper bytes from the row's flag word 0x4001), gcc's happened to be
+  clean; lb_quest_attribute[16385] was text. **Fix**: the s8 declaration (lb_guild_g.c, and #ifndef __MWERKS__ in
+  lb_x01.c / lb_v06.c for MH1). Checked: the new XBE's caller now has `movsbl %al,%eax` after the call. Not yet re-run in
+  xemu (the owner's other session had xemu and little memory left).
+- **Same hazard elsewhere**: tools/check_kr_returns.py lists every `int f();` of a function defined with a char/short
+  return (907 lines, many of them old asm-era names): each is a possible Xbox-only bug. Not fixed in bulk.
+- **tools/test_urgent_g.sh** (new, in full_check): NEW hunter in the village -> Elder -> urgent 10001 -> depart ->
+  deliver -> clear -> back in the village at star level 0. It passes on the PC; it cannot see the Xbox bug itself (gcc).
+- **Xbox log** (both games): mh1log.txt and logs\*.log were only fflush'ed into the kernel's file cache, which a crash
+  never writes out (the owner's log ended long before the crash). xbox_log_commit (xbox_log.c) does fflush +
+  NtFlushBuffersFile: every rt_log line after 0.5 s, every warning / error at once, and stderr once a second.

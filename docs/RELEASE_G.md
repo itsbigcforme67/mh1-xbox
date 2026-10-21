@@ -584,3 +584,10 @@ checked by hand; "real" = G's asm differs in behaviour, not only in registers / 
    allocation; to be read before calling it a gap.
 6. **em01_init's first act** (G no longer sets act 0.1 itself; left as MH1's) and **em27_init / em16_init**'s G
    motion helper (0x549FE0): small start-of-hunt differences.
+
+## 14. Xbox: the Elder's quest list crash (agent A, 21 Oct 2026)
+- Owner's bug (real Xbox, G, any save): the Elder's urgent quest -> next -> crash. Reproduced in xemu (access violation in
+  vsprintf on the quest sheet). Cause: `int Lb_get_quest_type();` for an s8 function; clang returned garbage upper bytes
+  (type 16385), the quest sheet used it as an index into its string table. Fixed (G and the MH1 callers); verified in the
+  XBE's code, xemu re-run pending. New: tools/test_urgent_g.sh (board -> depart -> clear -> star level 0) in the full
+  check; tools/check_kr_returns.py lists the other declarations with the same hazard (to be gone through).

@@ -12,6 +12,12 @@ obvious workarounds.
 
 ## Open
 
+### Xbox log written through to the disk (21 Oct 2026, agent A)
+- **Changed (MH1 and G, Xbox):** the log files are committed to the disk (fflush + NtFlushBuffersFile) at most every
+  0.5 s and on every warning / error, and stderr once a second (was: fflush only, every 3 s, which a crash never wrote
+  out). **Why:** the owner's crash log stopped long before the crash. **Cost:** a disk write per half second while
+  logging. **To revert:** the commit "Xbox G: the Elder's quest list crash ...".
+
 ### G quest lane, seventh pass (20 Oct 2026, agent A; RELEASE_G section 13)
 - **Changed (MH1 and G):** viewer.c em_slot_sync no longer draws a monster whose x01 (em+1) is 0 (was: drawn whenever
   it was alive on the stage). **Why:** the game's em_move only queues the monster's prim when x01 != 0; G's quest
