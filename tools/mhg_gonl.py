@@ -155,7 +155,21 @@ def declare_ctx_calls(src):
     return head + src
 
 
+BLOCKS = {}
+
+
+def asm_of(name):
+    """the function's asm block (tools/draft.py's view of asm/mhg/<module>)"""
+    import draft as draft_py
+    mod = 'mhg/' + (module_of(gaddr(name)) or 'lobby')
+    if mod not in BLOCKS:
+        BLOCKS[mod] = draft_py.blocks(mod)
+    b = BLOCKS[mod].get(name)
+    return b[1] if b else ''
+
+
 def draft(name):
+    mhg_c.WIDTHS = mhg_c.asm_widths(asm_of(name))
     # m2c's EE target: G passes arguments 5-8 in $8-$11 (mips-mwcc reads them from the stack and loses them)
     env = dict(os.environ, DRAFT_T=os.environ.get('DRAFT_T', 'mipsee-gcc-c'))
     if CTX:     # (without the function itself: m2c would take its parameter types from there, void * for an s32 *)
@@ -262,11 +276,30 @@ def symbol_addr(name):
     return None
 
 
+def calls_through_bytes(src):
+    out, i = '', 0
+    for m in re.finditer(r'(?<![\w)])\*\(&(\w+) \+ \(', src):
+        if m.start() < i:
+            continue
+        k, depth = m.end(), 1          # the index expression, balanced
+        while k < len(src) and depth:
+            depth += (src[k] == '(') - (src[k] == ')')
+            k += 1
+        inner = src[m.end():k - 1]
+        if not inner.endswith(' * 4') or not src.startswith(')(', k):
+            continue
+        out += src[i:m.start()] + '(*(s32 *)((u8 *)&%s + (%s)))' % (m.group(1), inner)
+        i = k + 1
+    return out + src[i:]
+
+
 def function_tables(src):
     """m2c's call through a table of functions, (*(s32 *)((u8 *)&TBL + (I * 4)))(...), becomes a call through a C
     array of the same functions by name (the PC's copy of G's table holds addresses the PC cannot call)"""
     import struct
     d = open(os.path.join(ROOT, 'build/mhg/split/lobby.bin'), 'rb').read()
+    # (a table of bytes-typed data called through: `*(&TBL + (I * 4))(` is the same call)
+    src = calls_through_bytes(src)
     key = '(*(s32 *)((u8 *)&'
     out, i, decls = '', 0, ''
     while True:

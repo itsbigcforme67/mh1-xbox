@@ -85,6 +85,58 @@ def ref(a, t):
     return '(*(%s)&%s)' % (t, n)
 
 
+WIDTHS = {}    # asm symbol -> set of access widths in the function being converted (asm_widths)
+WTYPE = {1: 'u8', 2: 'u16', 4: 's32', 8: 's64', 16: 's128'}
+
+
+def asm_widths(asm):
+    """the widths G's code uses for each symbol it takes the address of (`addiu r, r, %lo(SYM)` then a load / store
+    through r, or through r plus an index): m2c leaves data it reaches by a computed address untyped, and the PC must
+    keep the width"""
+    W = {'lb': 1, 'lbu': 1, 'sb': 1, 'lh': 2, 'lhu': 2, 'sh': 2, 'lw': 4, 'lwu': 4, 'sw': 4, 'lwc1': 4, 'swc1': 4,
+         'ld': 8, 'sd': 8, 'lq': 16, 'sq': 16}
+    out, taint = {}, {}
+    for ln in asm.splitlines():
+        m = re.match(r'\s*/\*.*?\*/\s+(\w+)\s+(.*)$', ln)
+        if not m:
+            if re.match(r'\s*(glabel|alabel|\.L)', ln):
+                pass
+            continue
+        op, args = m.group(1), [a.strip() for a in m.group(2).split(',')]
+        mm = re.match(r'(-?\w+)?\(?%lo\((\w+)\)\)?\((\$\w+)\)', args[-1]) if args else None
+        if op in W and mm:
+            out.setdefault(mm.group(2), set()).add(W[op])
+            continue
+        if op in W and len(args) == 2:
+            b = re.match(r'.*\((\$\w+)\)$', args[1])
+            if b and b.group(1) in taint:
+                out.setdefault(taint[b.group(1)], set()).add(W[op])
+            if op.startswith('l') and args[0] in taint:
+                del taint[args[0]]
+            continue
+        if op in ('addiu', 'daddiu') and len(args) == 3 and '%lo(' in args[2]:
+            taint[args[0]] = re.search(r'%lo\((\w+)\)', args[2]).group(1)
+            continue
+        if op in ('addu', 'daddu', 'or') and len(args) == 3:
+            src = [taint.get(a) for a in args[1:] if a in taint]
+            if src:
+                taint[args[0]] = src[0]
+            elif args[0] in taint:
+                del taint[args[0]]
+            continue
+        if args and args[0].startswith('$') and args[0] in taint and op not in ('lui',):
+            del taint[args[0]]
+    return out
+
+
+def unk_type(name):
+    w = WIDTHS.get(name)
+    if w is None and re.match(r'D_0*[0-9A-F]{6}$', name):
+        a = int(name[2:], 16)
+        w = next((v for k, v in WIDTHS.items() if re.match(r'D_0*[0-9A-F]{6}$', k) and int(k[2:], 16) == a), None)
+    return WTYPE.get(min(w), 'u8') if w and len(w) == 1 else 'u8'
+
+
 def fix(src):
     src = re.sub(r'M2C_FIELD\(saved_reg_gp, ([^,]+), (-?0x[0-9A-Fa-f]+|-?\d+)\)',
                  lambda m: ref(GP + int(m[2], 0), m[1]), src)
@@ -96,14 +148,14 @@ def fix(src):
     for m in re.finditer(r'^extern ([\w ]+?\**)\s*(\(\*)?D_0*([0-9A-F]{6})\b(\[)?', src, re.M):
         if not m.group(2):
             t = m.group(1).strip()
-            dtype[m.group(3)] = 'u8' if t in ('M2C_UNK', '?') else t
+            dtype[m.group(3)] = unk_type('D_' + m.group(3)) if t in ('M2C_UNK', '?') else t
             if m.group(4):
                 arrays.add(m.group(3))
 
     # m2c counts `*(&D_X + k)` / `&D_X + k` in bytes: keep that before D_X gets its typed name (data of unknown type
     # first becomes bytes: an `sb` through `*(&D_X + k)` must stay a byte store)
     import mhg_gonl
-    src = re.sub(r'^extern M2C_UNK (\w+);', r'extern u8 \1;', src, flags=re.M)
+    src = re.sub(r'^extern M2C_UNK (\w+);', lambda m: 'extern %s %s;' % (unk_type(m.group(1)), m.group(1)), src, flags=re.M)
     src = mhg_gonl.byte_globals(src)
 
     def dn(m):

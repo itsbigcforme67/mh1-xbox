@@ -39,7 +39,7 @@ extern s16 g_lb_6B46A2;
 extern s8 g_lb_6B46A4;
 extern s8 g_lb_6B46A5;
 extern s8 g_lb_6B46A6;
-extern u8 tl_member_buff;
+extern u16 tl_member_buff;
 
 s32 lobby_func_00569D40(void) {
     s32 temp_a0;
@@ -106,7 +106,7 @@ s32 lobby_func_00569D40(void) {
             (*(u8 *)((u8 *)(temp_v0_2) + 0x23)) = (u8) (temp_a2 + 1);
             (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x32)) = 0U;
             (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((s32) (*(s16 *)((u8 *)&ClassInfo + 0x6)), 7, (s32) temp_a2, M2C_ERROR(/* Read from unset register $a3 */));
-            (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) = 0;
+            (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) = 0;
 block_128:
             return 2;
         case 1:                                     /* switch 1 */
@@ -128,7 +128,7 @@ block_128:
                     temp_a1_2 = (*(void **)&pNet);
                     (*(u8 *)((u8 *)(temp_a1_2) + 0x32)) = 0U;
                     (*(u8 *)((u8 *)&ClassInfo + 0x4)) = temp_s1 + 1;
-                    (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = (s8) *(&(*(u8 *)((u8 *)&LobbyInfo + 0x6)) + temp_a0_2);
+                    (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = (s8) (*(u16 *)((u8 *)&(*(u16 *)((u8 *)&LobbyInfo + 0x6)) + temp_a0_2));
                     cnWrap_SoundRequest(6, (s32) temp_a1_2, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                     memset(&(*(s8 *)((u8 *)&lb_quest_all + 0xA0)), 0, 0x398);
                     temp_v1_2 = (*(void **)&pNet);

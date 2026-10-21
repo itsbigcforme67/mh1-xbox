@@ -5,7 +5,7 @@
 
 s32 lobby_func_00559C30();
 s32 Lb_get_quest_type();                         /* extern */
-extern u8 lb_quest_font_color;
+extern u16 lb_quest_font_color;
 
 s16 lobby_func_00559E20(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_a0;
@@ -26,6 +26,6 @@ s16 lobby_func_00559E20(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     }
     var_v0 = Lb_get_quest_type(temp_v0);
 block_8:
-    return *(&lb_quest_font_color + (var_v0 * 2));
+    return (*(u16 *)((u8 *)&lb_quest_font_color + (var_v0 * 2)));
 }
 

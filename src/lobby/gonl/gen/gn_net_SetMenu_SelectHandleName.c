@@ -5,11 +5,15 @@
 
 s32 transSelectHandleName();
 extern u8 ret_stat_0038A900;
-extern u8 ranking_jmp_175;
+s32 id_select_00();
+s32 id_select_01();
+s32 id_select_02();
+static s32 (*const ranking_jmp_175_g[])() = { id_select_00, id_select_01, id_select_02 };   /* G's table of functions, by name */
+extern s32 ranking_jmp_175;
 
 s8 net_SetMenu_SelectHandleName(void *arg0) {
     (*(s8 *)&ret_stat_0038A900) = -1;
-    *(&ranking_jmp_175 + ((*(u8 *)((u8 *)(arg0) + 0x22)) * 4))();
+    ranking_jmp_175_g[(*(u8 *)((u8 *)(arg0) + 0x22))](arg0);
     transSelectHandleName(arg0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     return (*(s8 *)&ret_stat_0038A900);
 }

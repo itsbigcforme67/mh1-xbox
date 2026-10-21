@@ -34,7 +34,6 @@ void lobby_func_0056B0C0(void) {
     u8 temp_a0;
     u8 temp_a0_2;
     u8 temp_a3;
-    u8 temp_a4_2;
     u8 *temp_a4;
     u8 *temp_v0;
     u8 *temp_v1;
@@ -79,13 +78,12 @@ void lobby_func_0056B0C0(void) {
         lobby_func_00569390(temp_v0 + 0x2B, temp_v0 + 0x1C, 7, (s32) (*(s16 *)((u8 *)&ClassInfo + 0x2)), temp_s1);
         temp_v1_2 = (*(void **)&pNet);
         temp_a3_2 = (*(s16 *)((u8 *)(temp_v1_2) + 0x1C));
-        temp_a4_2 = (*(u8 *)((u8 *)(temp_v1_2) + 0x2B));
-        temp_a2_2 = temp_a4_2 + (temp_a3_2 * 7);
+        temp_a2_2 = (*(u8 *)((u8 *)(temp_v1_2) + 0x2B)) + (temp_a3_2 * 7);
         temp_a1_3 = temp_a2_2 * 0x15C;
         temp_a0_2 = (*(&(*(u8 *)((u8 *)&PlazaInfo + 0x5B)) + temp_a1_3) - 0x31) & 0xFF;
         if (temp_a0_2 != (*(u8 *)((u8 *)(temp_v1_2) + 0x27))) {
             (*(u8 *)((u8 *)(temp_v1_2) + 0x27)) = temp_a0_2;
-            lobby_func_0059F740((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) << 8) + 0x288, temp_a1_3, temp_a2_2, (s32) temp_a3_2, (s32) temp_a4_2, (s32) (temp_v1_2 + 0x27), M2C_ERROR(/* Read from unset register $a6 */), M2C_ERROR(/* Read from unset register $a7 */));
+            lobby_func_0059F740((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) << 8) + 0x288, temp_a1_3, temp_a2_2, (s32) temp_a3_2);
             return;
         }
         return;

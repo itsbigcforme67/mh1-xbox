@@ -16,7 +16,7 @@ s32 cnLBS_LobbyEntry(s32 arg0, void *arg1, s32 arg2) {
     var_v0 = -1;
     if (temp_v0 != -1) {
         __cnet_KeepEntryFloorInfo(1, arg0, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
-        *(&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C)) = __cnet_SendReq_RoomEntry(arg0, arg1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+        (*(u16 *)((u8 *)&(*(u16 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C))) = __cnet_SendReq_RoomEntry(arg0, arg1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         var_v0 = temp_v0;
     }
     return var_v0;

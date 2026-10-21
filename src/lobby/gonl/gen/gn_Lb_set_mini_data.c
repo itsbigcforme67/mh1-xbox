@@ -33,10 +33,10 @@ void Lb_set_mini_data(void *arg0) {
     sp32 = (*(u8 *)&g_main_2EF2A8);
     sp40 = (*(u8 *)((u8 *)(temp_s0) + 0x916));
     sp31 = (*(u8 *)((u8 *)&User_data + 0xC23));
-    (*(s16 *)((u8 *)(&sp3A) + 0)) = (s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&User_data + 0xC74))) + 0));
-    (*(s16 *)((u8 *)(&sp3A) + 2)) = (s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&User_data + 0xC74))) + 2));
-    (*(s16 *)((u8 *)(&sp3A) + 4)) = (s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&User_data + 0xC74))) + 4));
-    sp30 = Get_weapon_job(&(*(u8 *)((u8 *)&User_data + 0xC74)));
+    (*(s16 *)((u8 *)(&sp3A) + 0)) = (s16) (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&User_data + 0xC74))) + 0));
+    (*(s16 *)((u8 *)(&sp3A) + 2)) = (s16) (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&User_data + 0xC74))) + 2));
+    (*(s16 *)((u8 *)(&sp3A) + 4)) = (s16) (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&User_data + 0xC74))) + 4));
+    sp30 = Get_weapon_job(&(*(u16 *)((u8 *)&User_data + 0xC74)));
     if (sp30 == 5) {
         var_v0 = 1;
         goto block_3;

@@ -28,7 +28,7 @@ extern u8 textLobbyTbl;
 s32 Lb_put_button();   /* extern */
 s32 font_print();            /* extern */
 s32 func_0012A800();                       /* extern */
-extern u8 g_lb_5FBBF0;
+extern u16 g_lb_5FBBF0;
 extern void *g_lb_636CD0;
 extern u8 g_lb_63E530;
 extern u8 PlazaInfo;

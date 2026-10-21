@@ -6,8 +6,8 @@
 s32 Quest_clear_bit_ck();
 s32 ran_suu();
 extern u16 D_005E7810;
-extern u8 g_lb_5E7812;
-extern u8 g_lb_5E7814;
+extern u16 g_lb_5E7812;
+extern u16 g_lb_5E7814;
 
 void lobby_func_00543520(u16 *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     s32 temp_a1;
@@ -39,19 +39,19 @@ loop_10:
             temp_s5 = var_a6 * 2;
             temp_a4 = &(&D_005E7810)[var_a6];
             if (temp_s6 == (*(u16 *)((u8 *)(temp_a4) + 0))) {
-                var_a7 = *(&g_lb_5E7814 + temp_s5);
-                var_a0 = *(&g_lb_5E7812 + temp_s5);
+                var_a7 = (*(u16 *)((u8 *)&g_lb_5E7814 + temp_s5));
+                var_a0 = (*(u16 *)((u8 *)&g_lb_5E7812 + temp_s5));
                 goto block_23;
             }
             if (temp_s6 == (*(u16 *)((u8 *)(temp_a4) + 2))) {
                 if (((temp_v1 & 0xFFFF) < 0x33) || (Quest_clear_bit_ck(arg1) != 1)) {
-                    var_a7 = *(&g_lb_5E7814 + temp_s5);
+                    var_a7 = (*(u16 *)((u8 *)&g_lb_5E7814 + temp_s5));
                     var_a0 = (*(u16 *)((u8 *)(&(&D_005E7810)[var_a6]) + 0));
                     goto block_23;
                 }
             } else if (temp_s6 == (*(u16 *)((u8 *)(temp_a4) + 4))) {
                 if (((temp_v1 & 0xFFFF) < 0x1F) || (Quest_clear_bit_ck(arg1) != 1)) {
-                    var_a7 = *(&g_lb_5E7812 + temp_s5);
+                    var_a7 = (*(u16 *)((u8 *)&g_lb_5E7812 + temp_s5));
                     var_a0 = (*(u16 *)((u8 *)(&(&D_005E7810)[var_a6]) + 0));
                     goto block_23;
                 }

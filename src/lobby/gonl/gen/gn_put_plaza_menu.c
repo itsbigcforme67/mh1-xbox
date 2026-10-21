@@ -8,7 +8,7 @@ s32 font_print_double();
 s32 font_set_palette();
 extern u8 pNet;
 s32 Lb_put_msg2();             /* extern */
-extern u8 lb_ibox_str;
+extern s32 lb_ibox_str;
 extern u8 g_main_2EEE70;
 
 void put_plaza_menu(void) {
@@ -31,14 +31,14 @@ void put_plaza_menu(void) {
                     font_set_palette(0xA);
                 }
                 if ((*(u8 *)((u8 *)(var_s1) + 0)) == 0) {
-                    Lb_put_msg2(0x19, var_s0, *(&lb_ibox_str + ((*(s16 *)((u8 *)(var_s1) + 2)) * 4)));
+                    Lb_put_msg2(0x19, var_s0, (*(s32 *)((u8 *)&lb_ibox_str + ((*(s16 *)((u8 *)(var_s1) + 2)) * 4))));
                 } else {
-                    Lb_put_msg2(0x2B, var_s0, *(&lb_ibox_str + ((*(s16 *)((u8 *)(var_s1) + 2)) * 4)));
+                    Lb_put_msg2(0x2B, var_s0, (*(s32 *)((u8 *)&lb_ibox_str + ((*(s16 *)((u8 *)(var_s1) + 2)) * 4))));
                 }
             } else if (var_a1 == 0) {
-                font_print_double(0x19, var_s0, 1, 0, *(&lb_ibox_str + ((*(s16 *)((u8 *)(var_s1) + 2)) * 4)));
+                font_print_double(0x19, var_s0, 1, 0, (*(s32 *)((u8 *)&lb_ibox_str + ((*(s16 *)((u8 *)(var_s1) + 2)) * 4))));
             } else {
-                font_print_double(0x2B, var_s0, 1, 0, *(&lb_ibox_str + ((*(s16 *)((u8 *)(var_s1) + 2)) * 4)));
+                font_print_double(0x2B, var_s0, 1, 0, (*(s32 *)((u8 *)&lb_ibox_str + ((*(s16 *)((u8 *)(var_s1) + 2)) * 4))));
             }
             var_s1 += 4;
             var_a1 = *var_s1;

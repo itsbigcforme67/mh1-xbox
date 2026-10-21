@@ -3,7 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-extern u8 g_lb_733CAA;
+extern u16 g_lb_733CAA;
 
 void lobby_func_005E6D20(void *arg0) {
     u8 *var_a3;   /* (s32 *) */

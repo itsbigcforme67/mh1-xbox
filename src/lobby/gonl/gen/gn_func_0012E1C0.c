@@ -5,7 +5,7 @@
 
 s32 ran_suu();
 f32 flSin(u8, f32);                                 /* extern */
-extern u8 g_main_25F250;
+extern s32 g_main_25F250;
 extern u8 g_main_2EF264;
 extern u8 g_main_2EF268;
 
@@ -28,7 +28,7 @@ s32 func_0012E1C0(s32 arg0) {
     if ((s32) g_main_2EF264 < (temp_s1 & 0xFFFF)) {
         g_main_2EF268 = ran_suu(1) & 0xFFFF & 7;
     }
-    temp_f1 = 256.0f * (0.5f * (1.0f + flSin(g_main_2EF264, 2.0f * (3.1415927f * (((360.0f * (f32) (g_main_2EF264 << 8)) / 65536.0f) / 360.0f))))) * *(&g_main_25F250 + (g_main_2EF268 * 4));
+    temp_f1 = 256.0f * (0.5f * (1.0f + flSin(g_main_2EF264, 2.0f * (3.1415927f * (((360.0f * (f32) (g_main_2EF264 << 8)) / 65536.0f) / 360.0f))))) * (*(s32 *)((u8 *)&g_main_25F250 + (g_main_2EF268 * 4)));
     if (!(temp_f1 >= 2.1474836e9f)) {
         var_v1 = temp_f1;
     } else {

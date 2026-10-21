@@ -8,7 +8,7 @@ s32 Lb_trans_pl();
 s32 get_prim();
 void * get_prim_ptr();
 void * memcpy();
-extern u8 lb_player;
+extern s32 lb_player;
 extern u8 pl01_adr_tbl;
 extern u8 player_work;
 
@@ -19,7 +19,7 @@ void Lb_set_player(s32 arg0, void *arg1, void *arg2) {
     u8 *temp_s0;
 
     temp_a3 = arg0 & 0xFF;
-    temp_s1 = &lb_player + (temp_a3 * 0x38);
+    temp_s1 = (u8 *)&lb_player + (temp_a3 * 0x38);
     temp_s0 = &player_work + (temp_a3 * 0xA00);
     *temp_s1 = temp_s0;
     (*(s8 *)((u8 *)(temp_s0) + 0)) = 1;

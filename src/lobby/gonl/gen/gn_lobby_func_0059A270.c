@@ -12,7 +12,7 @@ extern u8 game_w;
 extern u8 lb_gbyte_2EF2A4;
 extern u8 pNet;
 extern u8 client_work;
-extern u8 lb_player;
+extern s32 lb_player;
 extern u8 lb_sys;
 extern u8 my_user_mini_data;
 extern u8 network_work;

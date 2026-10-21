@@ -63,7 +63,7 @@ void lobby_func_005775C0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             flfntLocate((s32) (((s16) (temp_s0))), (s32) var_s4);
             temp_a1 = (*(s32 *)&cw);
             if ((*(u8 *)((u8 *)((temp_a1 + (var_s1 * 0x24A))) + 0x1265)) != 2) {
-                if ((*(u8 *)((u8 *)((temp_a1 + ((temp_s2 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 7)) * 0x24A))) + 0x1265)) == 0) {
+                if ((*(u8 *)((u8 *)((temp_a1 + ((temp_s2 + ((*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 7)) * 0x24A))) + 0x1265)) == 0) {
                     var_s2 = (*(s32 *)((u8 *)&tl_hr_tbl + 0x38));
                 } else {
                     var_s2 = (*(s32 *)((u8 *)&tl_hr_tbl + 0x3C));
@@ -90,6 +90,6 @@ void lobby_func_005775C0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         var_s5 = ((s16) ((var_s5 + 1)));
         var_s3 += 0x30;
     } while (var_s5 < 7);
-    Put_page_num((s32) (((s16) (((((s16) ((spA0 + 0xA)))) + 0x12C)))), (s32) var_s4, arg3, (s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x606)), 0);
+    Put_page_num((s32) (((s16) (((((s16) ((spA0 + 0xA)))) + 0x12C)))), (s32) var_s4, arg3, (s32) (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&tl_member_buff + 0x1398))) + 0x606)), 0);
 }
 

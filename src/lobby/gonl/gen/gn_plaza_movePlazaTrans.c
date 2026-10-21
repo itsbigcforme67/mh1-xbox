@@ -16,7 +16,7 @@ s32 font_print();           /* extern */
 s32 sprintf();    /* extern */
 extern u8 g_lb_63E248;
 extern u8 g_lb_63E250;
-extern u8 PlazaInfo;
+extern u16 PlazaInfo;
 extern u8 lit_2316;
 
 void plaza_movePlazaTrans(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
@@ -35,7 +35,7 @@ void plaza_movePlazaTrans(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     var_s3 = 0x8E;
     var_s2 = 0;
     var_s1 = (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) * 7;
-    var_s0 = &PlazaInfo + (var_s1 * 0x15C);
+    var_s0 = (u8 *)&PlazaInfo + (var_s1 * 0x15C);
     do {
         sprintf(&spA0, &g_lb_63E248, (*(u16 *)((u8 *)(var_s0) + 6)), (*(u16 *)((u8 *)(var_s0) + 8)));
         if (var_s1 < (s32) (*(u16 *)((u8 *)&ClassInfo + 0x2))) {

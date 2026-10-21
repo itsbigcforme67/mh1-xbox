@@ -14,7 +14,7 @@ s32 lobby_func_005E3480(s32 arg0, s32 arg1) {
     temp_v0 = __cnetSub_Set_BgProcess(1, 0, arg1);
     var_v0 = -1;
     if (temp_v0 != -1) {
-        *(&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C)) = __cnet_SendReq_PieceName(0, arg0);
+        (*(u16 *)((u8 *)&(*(u16 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C))) = __cnet_SendReq_PieceName(0, arg0);
         var_v0 = temp_v0;
     }
     return var_v0;

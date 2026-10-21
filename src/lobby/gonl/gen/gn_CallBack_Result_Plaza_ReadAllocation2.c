@@ -15,7 +15,7 @@ s32 cnLBS_Get_PlazaCount();                /* extern */
 s32 cnLBS_Get_PlazaName();           /* extern */
 s32 gonl_Get_LobbyStatus();         /* extern */
 s32 gonl_Get_LobbyJoinUser(); /* extern */
-extern u8 LobbyInfo;
+extern u16 LobbyInfo;
 
 s32 CallBack_Result_Plaza_ReadAllocation2(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     u8 *var_s0;   /* (s32 *) */

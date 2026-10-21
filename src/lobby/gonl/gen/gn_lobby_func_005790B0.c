@@ -12,7 +12,7 @@ extern u8 g_main_2EFBAC;
 extern u8 tl_mail_tbl;
 s32 func_0012BDD0();        /* extern */
 s32 sprintf(); /* extern */
-extern u8 tl_etc;
+extern s32 tl_etc;
 extern u8 g_lb_63E348;
 extern u8 g_lb_63E350;
 extern u8 lit_2316;
@@ -39,7 +39,7 @@ void lobby_func_005790B0(void) {
             sprintf(&sp40, &g_lb_63E348, temp_a0 + 0x9A);
             han2zen(&sp40, &spA0);
             temp_a5 = (*(s32 *)&g_main_2EFBAC);
-            sprintf(&sp40, &g_lb_63E350, (*(void * *)((u8 *)&tl_mail_tbl + 0xC)), &spA0, (*(s32 *)((u8 *)&tl_mail_tbl + 0x8)), temp_a5 + var_s0 + 0xA2, (*(s32 *)((u8 *)((&tl_etc + ((*(u8 *)((u8 *)((temp_a5 + (((s8) (var_s2))))) + 0x23C)) * 4))) + 0x2C)));
+            sprintf(&sp40, &g_lb_63E350, (*(void * *)((u8 *)&tl_mail_tbl + 0xC)), &spA0, (*(s32 *)((u8 *)&tl_mail_tbl + 0x8)), temp_a5 + var_s0 + 0xA2, (*(s32 *)((u8 *)(((u8 *)&tl_etc + ((*(u8 *)((u8 *)((temp_a5 + (((s8) (var_s2))))) + 0x23C)) * 4))) + 0x2C)));
             func_0012BDD0(&lit_2316, &sp40);
         }
         var_s1 += 0x18;

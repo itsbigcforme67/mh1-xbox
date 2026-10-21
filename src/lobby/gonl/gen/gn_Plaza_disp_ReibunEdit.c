@@ -10,7 +10,7 @@ s32 flfntSetSize();
 s32 font_set_palette();
 s32 put_main_cursor();
 extern u8 reibun_edit;
-extern u8 str_tbl_reibun0;
+extern s32 str_tbl_reibun0;
 
 void Plaza_disp_ReibunEdit(void) {
     s32 var_s0;
@@ -22,7 +22,7 @@ void Plaza_disp_ReibunEdit(void) {
     font_set_palette(0);
     var_s1 = 6;
     var_s0 = 0xA4;
-    var_s3 = &str_tbl_reibun0 + ((((*(u8 *)((u8 *)&reibun_edit + 0x3)) / 6) + ((u8) (*(u8 *)((u8 *)&reibun_edit + 0x3)) >> 0x1F)) * 0x60);
+    var_s3 = (u8 *)&str_tbl_reibun0 + ((((*(u8 *)((u8 *)&reibun_edit + 0x3)) / 6) + ((u8) (*(u8 *)((u8 *)&reibun_edit + 0x3)) >> 0x1F)) * 0x60);
     do {
         flfntLocate(0xDA, var_s0);
         Reibun_print(0x2C, (*(void **)((u8 *)(var_s3) + 0xC)));

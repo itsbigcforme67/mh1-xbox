@@ -5,7 +5,7 @@
 
 s32 cnLBS_Get_ServerMessage();
 extern u8 cw;
-void lobby_func_0057EFF0(s32 arg0) {
+void lobby_func_0057EFF0(s64 arg0) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp18 (*(s64 *)(g_frame + 0x18))
     u8 *temp_a1;

@@ -31,7 +31,7 @@ s32 lobby_func_005E65F0(void *arg0, s32 arg1) {
     temp_v0_2 = __cnetSub_Set_BgProcess(1, 0, arg1);
     var_v0 = -1;
     if (temp_v0_2 != -1) {
-        *(&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0_2 * 0x1C)) = lobby_func_005E66A0(&sp20, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+        (*(u16 *)((u8 *)&(*(u16 *)((u8 *)&pFunc + 0xEE)) + (temp_v0_2 * 0x1C))) = lobby_func_005E66A0(&sp20, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         var_v0 = temp_v0_2;
     }
     return var_v0;

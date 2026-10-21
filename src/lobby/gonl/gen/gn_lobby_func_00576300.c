@@ -31,7 +31,7 @@ s32 font_print_ex(); /* extern */
 s32 sprintf(); /* extern */
 extern void *g_lb_636B48;
 extern void *g_lb_636DF8;
-extern u8 tl_etc;
+extern s32 tl_etc;
 extern u8 g_lb_63E2A8;
 extern u8 lit_2316;
 extern u8 my_user_id;
@@ -156,7 +156,7 @@ void lobby_func_00576300(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
                         temp_s2 = ((s16) (var_v0));
                         font_print_double(0xE2, var_s0, 1, (s32) temp_s2, &spA0);
                         if (*var_s5_2 != 0) {
-                            font_print_double(0x1F8, var_s0, 1, (s32) temp_s2, (*(void **)((u8 *)((&tl_etc + ((*(u8 *)((u8 *)(var_s4_2) + 0x35D)) * 4))) + 0x18)));
+                            font_print_double(0x1F8, var_s0, 1, (s32) temp_s2, (*(void **)((u8 *)(((u8 *)&tl_etc + ((*(u8 *)((u8 *)(var_s4_2) + 0x35D)) * 4))) + 0x18)));
                         } else {
                             font_print_double(0x1F8, var_s0, 1, (s32) temp_s2, (*(s32 * *)((u8 *)&tl_hr_tbl + 0x44)));
                         }
@@ -173,7 +173,7 @@ void lobby_func_00576300(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
                         temp_s2_2 = ((s16) (var_v0_2));
                         font_print_ex(0xE2, var_s0, temp_s2_2, &spA0);
                         if (*var_s5_2 != 0) {
-                            font_print_ex(0x1F8, var_s0, temp_s2_2, (*(s32 **)((u8 *)((&tl_etc + ((*(u8 *)((u8 *)(var_s4_2) + 0x35D)) * 4))) + 0x18)));
+                            font_print_ex(0x1F8, var_s0, temp_s2_2, (*(s32 **)((u8 *)(((u8 *)&tl_etc + ((*(u8 *)((u8 *)(var_s4_2) + 0x35D)) * 4))) + 0x18)));
                         } else {
                             font_print_ex(0x1F8, var_s0, temp_s2_2, (*(s32 * *)((u8 *)&tl_hr_tbl + 0x44)));
                         }

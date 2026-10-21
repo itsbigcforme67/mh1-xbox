@@ -85,7 +85,7 @@ block_20:
         lobby_func_0058BAA0(&my_user_mini_data, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         cnLBS_Send_UserMiniData(&my_user_mini_data, 0x40, CallBack_SendMiniData);
         var_a1_2 = 0;
-        var_a0 = &(*(u8 *)((u8 *)&lb_sys + 0xA0));
+        var_a0 = &(*(u16 *)((u8 *)&lb_sys + 0xA0));
         do {
             (*(s16 *)((u8 *)(var_a0) + 0)) = 0;
             (*(s16 *)((u8 *)(var_a0) + 2)) = 0;

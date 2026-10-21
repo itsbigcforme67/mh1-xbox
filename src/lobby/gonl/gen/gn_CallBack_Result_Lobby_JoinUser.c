@@ -6,7 +6,7 @@
 s32 cnLbc_CheckInFloorOrder();
 extern u8 cw;
 s32 gonl_Get_LobbyJoinUser(); /* extern */
-extern u8 g_main_3034BA;
+extern u16 g_main_3034BA;
 extern u8 LobbyInfo;
 
 void CallBack_Result_Lobby_JoinUser(s64 arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -25,7 +25,7 @@ void CallBack_Result_Lobby_JoinUser(s64 arg0, s32 arg1, s32 arg2, s32 arg3) {
             gonl_Get_LobbyJoinUser(temp_v0 & 0xFFFF, temp_v0_2 + 6, temp_v0_2 + 0x12);
             return;
         }
-        *(&g_main_3034BA + (temp_v0 * 0x15C)) = 0;
+        (*(u16 *)((u8 *)&g_main_3034BA + (temp_v0 * 0x15C))) = 0;
     }
 }
 

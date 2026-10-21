@@ -5,14 +5,14 @@
 
 s32 Online_ck();
 s32 Quest_clear_bit_ck();
-extern u8 quest_lv_tbl;
+extern s32 quest_lv_tbl;
 
 s32 lobby_func_005426D0(s32 arg0) {
     u8 *var_s0;   /* (u16 *) */
     u16 temp_a0;
     u16 temp_a0_2;
 
-    var_s0 = *(&quest_lv_tbl + ((arg0 & 0xFF) * 4));
+    var_s0 = (*(s32 *)((u8 *)&quest_lv_tbl + ((arg0 & 0xFF) * 4)));
     if ((*(u16 *)var_s0) != 0) {
 loop_1:
         if (Online_ck() == 1) {

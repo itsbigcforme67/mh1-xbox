@@ -38,9 +38,9 @@ void lobby_func_0056C480(void) {
         var_a3 += 2;
         var_a2 += 7;
     } while (var_a5 < 0xC);
-    memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618);
+    memset(&(*(u16 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618);
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2E)) = 1;
-    (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) = net_Check_FriendSuu(&g_main_302CB0, 0x32);
+    (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) = net_Check_FriendSuu(&g_main_302CB0, 0x32);
     lobby_func_0056D6E0(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     lobby_func_00571AF0(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
 }

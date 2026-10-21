@@ -25,7 +25,7 @@ s32 font_print();           /* extern */
 s32 put_titles();                  /* extern */
 extern void *g_lb_636B44;
 extern u8 RecvMailInfo;
-extern u8 lb_num_str;
+extern s32 lb_num_str;
 extern u8 lit_2316;
 
 void plaza_mailBoxTrans(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -128,7 +128,7 @@ loop_14:
             put_titles(((s16) (temp_s0)), ((s16) (temp_s1)), (*(s32 *)((u8 *)&tl_msg_tbl + 0xC)));
             temp_s2 = ((s16) (temp_s0));
             put_titles(((s16) ((temp_s2 + 0x12C))), ((s16) (temp_s1)), (*(s32 *)((u8 *)&tl_mail_tbl + 0x4)));
-            put_titles(((s16) ((temp_s2 + 0x168))), ((s16) (temp_s1)), *(&(*(u8 *)((u8 *)&lb_num_str + 0x4)) + ((*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x236)) * 4)));
+            put_titles(((s16) ((temp_s2 + 0x168))), ((s16) (temp_s1)), (*(s32 *)((u8 *)&(*(s32 *)((u8 *)&lb_num_str + 0x4)) + ((*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x236)) * 4))));
             plaza_disp_mail((s32) temp_s2, (s32) (((s16) (((((s16) (temp_s1))) + 0x16)))), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return;
         case 2:                                     /* switch 2 */

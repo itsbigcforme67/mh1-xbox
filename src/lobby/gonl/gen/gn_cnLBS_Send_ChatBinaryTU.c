@@ -14,7 +14,7 @@ s32 cnLBS_Send_ChatBinaryTU(s32 arg0, void *arg1, void *arg2, s32 arg3, s32 arg4
     temp_v0 = __cnetSub_Set_BgProcess(1, 0, arg4);
     var_v0 = -1;
     if (temp_v0 != -1) {
-        *(&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C)) = lobby_func_005B0730(arg0, arg1, arg2, arg3);
+        (*(u16 *)((u8 *)&(*(u16 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C))) = lobby_func_005B0730(arg0, arg1, arg2, arg3);
         var_v0 = temp_v0;
     }
     return var_v0;

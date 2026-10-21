@@ -52,8 +52,8 @@ void lobby_func_00576A70(void) {
             lobby_func_005737C0(g_lb_636B50, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         var_s3 = 0;
-        var_s5 = (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 7;
-        var_s2 = (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 0x70;
+        var_s5 = (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 7;
+        var_s2 = (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 0x70;
 loop_4:
         temp_a1 = (*(u8 **)&g_main_2EFBC0);
         temp_a0 = *temp_a1;

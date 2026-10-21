@@ -21,13 +21,13 @@ s32 font_print();           /* extern */
 s32 func_0012BDD0();                         /* extern */
 s32 put_titles();                  /* extern */
 s32 sprintf();           /* extern */
-extern u8 g_lb_636A00;
+extern s32 g_lb_636A00;
 extern u8 g_lb_63E128;
-extern u8 hunter_appellation;
+extern s32 hunter_appellation;
 extern u8 lbCommer;
 extern u8 lit_2316;
 extern u8 my_user_mini_data;
-extern u8 tl_job_tbl;
+extern s32 tl_job_tbl;
 
 void plaza_setMyCommentTrans(s32 arg0, s32 arg1, s32 arg2) {
     u8 g_frame[0x100] __attribute__((aligned(16)));   /* G's stack frame */
@@ -82,13 +82,13 @@ void plaza_setMyCommentTrans(s32 arg0, s32 arg1, s32 arg2) {
     flfntLocate(arg0, (s32) temp_s0_4);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x18)));
     flfntLocate((s32) (((s16) (temp_s3))), (s32) temp_s0_4);
-    font_print(&lit_2316, *(&tl_job_tbl + ((*(u8 *)((u8 *)(var_s4) + 0)) * 4)));
+    font_print(&lit_2316, (*(s32 *)((u8 *)&tl_job_tbl + ((*(u8 *)((u8 *)(var_s4) + 0)) * 4))));
     temp_s0_5 = ((s16) ((temp_s0_4 + 0x16)));
     flfntLocate(arg0, (s32) temp_s0_5);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x1C)));
     temp_a2 = (*(u8 *)((u8 *)&User_data + 0xC23));
     if (temp_a2 != 0) {
-        sprintf(&spC0, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x1C)), temp_a2, *(&hunter_appellation + (temp_a2 * 4)));
+        sprintf(&spC0, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x1C)), temp_a2, (*(s32 *)((u8 *)&hunter_appellation + (temp_a2 * 4))));
     } else {
         sprintf(&spC0, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x20)), temp_a2);
     }
@@ -102,8 +102,8 @@ void plaza_setMyCommentTrans(s32 arg0, s32 arg1, s32 arg2) {
     } else {
         flfntLocate((s32) (((s16) ((temp_s2 + 0x40)))), (s32) temp_s0_6);
     }
-    memcpy(*(&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4)), &g_lb_63E128, 4);
-    func_0012BDD0(*(&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4)));
+    memcpy((*(s32 *)((u8 *)&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4))), &g_lb_63E128, 4);
+    func_0012BDD0((*(s32 *)((u8 *)&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4))));
     Lb_put_status((s32) (((s16) ((temp_s2 + 0x40)))), (s32) temp_s0_6, 0x14, -1, (s32) (*(u8 *)((u8 *)(var_s4) + 2)));
     temp_s0_7 = ((s16) ((temp_s0_6 + 0x16)));
     flfntLocate(arg0, (s32) temp_s0_7);

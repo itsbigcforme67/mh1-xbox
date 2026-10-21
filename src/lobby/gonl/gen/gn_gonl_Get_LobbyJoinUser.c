@@ -9,8 +9,8 @@ s32 gonl_Get_LobbyJoinUser(s32 arg0, u16 *arg1, u16 *arg2) {
     s32 temp_a3;
 
     temp_a3 = (arg0 & 0xFFFF) * 0x164;
-    *arg1 = *(&(*(u8 *)((u8 *)&CnetSys_w + 0x6696)) + temp_a3);
-    *arg2 = *(&(*(u8 *)((u8 *)&CnetSys_w + 0x6698)) + temp_a3);
+    *arg1 = (*(u16 *)((u8 *)&(*(u16 *)((u8 *)&CnetSys_w + 0x6696)) + temp_a3));
+    *arg2 = (*(u16 *)((u8 *)&(*(u16 *)((u8 *)&CnetSys_w + 0x6698)) + temp_a3));
     return 0;
 }
 

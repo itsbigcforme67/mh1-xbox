@@ -4,7 +4,7 @@
 #include "../gonl.h"
 
 s32 flps0008();
-extern u8 lb_icon_tbl;
+extern u16 lb_icon_tbl;
 
 void Lb_put_icon(s32 arg0, s16 arg1, u32 arg2, s32 arg3) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */
@@ -19,7 +19,7 @@ void Lb_put_icon(s32 arg0, s16 arg1, u32 arg2, s32 arg3) {
     u8 *temp_a4;
 
     if (arg2 != 0x30) {
-        temp_a4 = &lb_icon_tbl + (arg2 * 8);
+        temp_a4 = (u8 *)&lb_icon_tbl + (arg2 * 8);
         sp10 = M2C_BITWISE(s16, (0.8f * (f32) arg0));
         sp12 = arg1;
         sp14 = M2C_BITWISE(s16, (0.8f * (f32) ((*(s16 *)((u8 *)(temp_a4) + 4)) - (*(s16 *)((u8 *)(temp_a4) + 0)))));

@@ -48,7 +48,7 @@ extern u8 pNet;
 extern u8 tl_member_buff;
 s32 Visual_main();                            /* extern */
 s32 cnLBS_Get_SerchUserPlace(); /* extern */
-extern u8 g_lb_636E10;
+extern s32 g_lb_636E10;
 extern s8 g_lb_6B46D0;
 extern u8 my_user_id;
 extern u8 seekStr;
@@ -123,7 +123,7 @@ void lobby_func_0056ED50(void) {
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = 2U;
                 lobby_func_0056DA20(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             }
-            lobby_func_0059F6C0(*(&g_lb_636E10 + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) * 4)), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+            lobby_func_0059F6C0((*(s32 *)((u8 *)&g_lb_636E10 + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) * 4))), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1371)) = (u8) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F));
             cnWrap_SoundRequest(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return;
@@ -371,7 +371,7 @@ block_94:
                     (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136E)) = (u8) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A));
                     (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = 0xCU;
                     lobby_func_00571450((s32) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)), temp_a1_2, (s32) (*(s8 *)((u8 *)&tl_member_buff + 0x138A)), M2C_ERROR(/* Read from unset register $a3 */));
-                    (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(u8 **)&g_main_2EFBC4) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x5C) + 4);
+                    (*(void **)((u8 *)(&(*(s32 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(u8 **)&g_main_2EFBC4) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x5C) + 4);
                     cnWrap_SoundRequest(6, (s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                     return;
                 }
@@ -453,9 +453,9 @@ block_94:
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = 0xCU;
             lobby_func_00571450((s32) temp_a0, temp_a1_5, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) != 2) {
-                (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(u8 **)&g_main_2EFBC4) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x5C) + 4);
+                (*(void **)((u8 *)(&(*(s32 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(u8 **)&g_main_2EFBC4) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x5C) + 4);
             } else {
-                (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(u8 **)&g_main_2EFBC4) + 4);
+                (*(void **)((u8 *)(&(*(s32 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(u8 **)&g_main_2EFBC4) + 4);
             }
             cnWrap_SoundRequest(6, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return;

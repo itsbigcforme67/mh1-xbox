@@ -41,7 +41,7 @@ s32 Plaza_disp_chatlog();                       /* extern */
 s32 font_print();           /* extern */
 s32 sprintf(); /* extern */
 extern u8 ClassInfo;
-extern u8 g_main_30645A;
+extern u16 g_main_30645A;
 extern u8 lit_2316;
 extern s128 lit_3199;
 extern u8 lit_3241;
@@ -135,7 +135,7 @@ void plaza_trans_ot0(void *arg0) {
     DispButtonHelp((*(void **)&pNet), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
-    sprintf(&sp70, &lit_3241, (*(s32 *)((u8 *)&tl_mail_tbl + 0x30)), *(&g_main_30645A + (ClassInfo * 0x15C)), (*(s32 *)((u8 *)&lb_shop_msg + 0x8)));
+    sprintf(&sp70, &lit_3241, (*(s32 *)((u8 *)&tl_mail_tbl + 0x30)), (*(u16 *)((u8 *)&g_main_30645A + (ClassInfo * 0x15C))), (*(s32 *)((u8 *)&lb_shop_msg + 0x8)));
     han2zen(&sp70, &sp30);
     flfntLocate(0x1AE, 0x1F);
     font_print(&lit_2316, &sp30);

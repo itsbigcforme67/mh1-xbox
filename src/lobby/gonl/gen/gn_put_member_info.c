@@ -16,7 +16,7 @@ extern u8 tl_msg_tbl;
 s32 font_print();              /* extern */
 s32 sprintf(); /* extern */
 extern u8 g_lb_63E288;
-extern u8 lb_num_str;
+extern s32 lb_num_str;
 extern u8 lit_2316;
 extern u8 lit_2633;
 extern u8 my_user_id;
@@ -34,7 +34,7 @@ void put_member_info(s32 arg0, s32 arg1, s8 *arg2, void *arg3, void *arg4, s32 a
         han2zen(arg2, &spD0);
         if (arg4 != NULL) {
             temp_a6 = (*(u8 *)((u8 *)(arg4) + 1));
-            sprintf(&sp70, &g_lb_63E288, &spD0, (*(s32 *)((u8 *)&tl_msg_tbl + 0x20)), *(&lb_num_str + ((((*(u8 *)((u8 *)(arg4) + 1)) / 10) + (temp_a6 >> 0x1F)) * 4)), *(&lb_num_str + (((s32) temp_a6 % 10) * 4)), temp_a6);
+            sprintf(&sp70, &g_lb_63E288, &spD0, (*(s32 *)((u8 *)&tl_msg_tbl + 0x20)), (*(s32 *)((u8 *)&lb_num_str + ((((*(u8 *)((u8 *)(arg4) + 1)) / 10) + (temp_a6 >> 0x1F)) * 4))), (*(s32 *)((u8 *)&lb_num_str + (((s32) temp_a6 % 10) * 4))), temp_a6);
         } else {
             sprintf(&sp70, &lit_2633, &spD0);
         }

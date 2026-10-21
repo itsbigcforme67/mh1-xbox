@@ -6,8 +6,8 @@
 s32 Online_ck();
 s32 Quest_clear_bit_ck();
 s32 ran_suu();
-extern u8 flag_quest_tbl;
-extern u8 flag_quest_tbl_local;
+extern s32 flag_quest_tbl;
+extern s32 flag_quest_tbl_local;
 
 u16 lobby_func_0055EB40(s32 arg0) {
     s32 temp_hi;
@@ -25,9 +25,9 @@ u16 lobby_func_0055EB40(s32 arg0) {
         return 0U;
     }
     if (Online_ck() == 1) {
-        var_v0 = &flag_quest_tbl + (arg0 * 4);
+        var_v0 = (u8 *)&flag_quest_tbl + (arg0 * 4);
     } else {
-        var_v0 = &flag_quest_tbl_local + (arg0 * 4);
+        var_v0 = (u8 *)&flag_quest_tbl_local + (arg0 * 4);
     }
     temp_s3 = (*(u16 **)var_v0);
     var_v1 = 0;

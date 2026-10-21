@@ -7,11 +7,17 @@ s32 Check_InterruptFlag();
 s32 Disp_NowLoading2();
 extern u8 cw;
 extern u8 pNet;
-extern u8 lobby_client_game_ready_jmp_2838;
+s32 lbc_game_ready_00();
+s32 lbc_game_ready_01();
+s32 lbc_game_ready_02();
+s32 lbc_game_ready_03();
+s32 lbc_game_ready_04();
+static s32 (*const lobby_client_game_ready_jmp_2838_g[])() = { lbc_game_ready_00, lbc_game_ready_01, lbc_game_ready_02, lbc_game_ready_03, lbc_game_ready_04 };   /* G's table of functions, by name */
+extern s32 lobby_client_game_ready_jmp_2838;
 
 void lobby_client_game_ready(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (Check_InterruptFlag(arg0, arg1, arg2, arg3) == 0) {
-        *(&lobby_client_game_ready_jmp_2838 + ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) * 4))();
+        lobby_client_game_ready_jmp_2838_g[(*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9B))](arg0, arg1, arg2, arg3);
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x31)) = 0;
         Disp_NowLoading2(4);
     }

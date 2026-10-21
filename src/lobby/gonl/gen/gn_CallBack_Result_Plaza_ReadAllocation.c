@@ -13,7 +13,7 @@ extern u8 cw;
 s32 cnLBS_Get_LobbyName();           /* extern */
 s32 gonl_Get_PlazaStatus();          /* extern */
 s32 gonl_Get_PlazaJoinUser(); /* extern */
-extern u8 PlazaInfo;
+extern u16 PlazaInfo;
 
 void CallBack_Result_Plaza_ReadAllocation(s64 arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 g_frame[0x50] __attribute__((aligned(16)));   /* G's stack frame */

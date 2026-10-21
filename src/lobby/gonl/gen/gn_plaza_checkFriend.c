@@ -107,7 +107,7 @@ s32 plaza_checkFriend(s16 arg0) {
                 memcpy(temp_a0_3 + 0x9A, &RecvMailInfo + ((*(s8 *)((u8 *)(temp_a0_3) + 0x236)) * 0x9A) + 1, 8);
                 temp_a0_4 = (*(void **)&g_main_2EFBAC);
                 memcpy(temp_a0_4 + 0xA2, &RecvMailInfo + ((*(s8 *)((u8 *)(temp_a0_4) + 0x236)) * 0x9A) + 9, 0x10);
-                (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(void **)&g_main_2EFBAC) + 0x9A);
+                (*(void **)((u8 *)(&(*(s32 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(void **)&g_main_2EFBAC) + 0x9A);
                 cnWrap_SoundRequest(6, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             } else {
                 cnWrap_SoundRequest(7, temp_a1, M2C_ERROR(/* Read from unset register $a2 */), 2);
@@ -149,7 +149,7 @@ block_54:
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 0;
             strcpy((*(void **)&g_main_2EFBAC) + 0x9A, (*(void **)&cw) + 0xEE7);
             strcpy((*(void **)&g_main_2EFBAC) + 0xA2, (*(void **)&cw) + 0xEEF);
-            (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(void **)&g_main_2EFBAC) + 0x9A);
+            (*(void **)((u8 *)(&(*(s32 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(void **)&g_main_2EFBAC) + 0x9A);
             cnWrap_SoundRequest(6, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         } else if (temp_a2 & 1) {
             temp_v1_2 = (*(void **)&g_main_2EFBAC);
@@ -161,7 +161,7 @@ block_54:
             memcpy(temp_a0_7 + 0x9A, &RecvMailInfo + ((*(s8 *)((u8 *)(temp_a0_7) + 0x236)) * 0x9A) + 1, 8);
             temp_a0_8 = (*(void **)&g_main_2EFBAC);
             memcpy(temp_a0_8 + 0xA2, &RecvMailInfo + ((*(s8 *)((u8 *)(temp_a0_8) + 0x236)) * 0x9A) + 9, 0x10);
-            (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(void **)&g_main_2EFBAC) + 0x9A);
+            (*(void **)((u8 *)(&(*(s32 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(void **)&g_main_2EFBAC) + 0x9A);
             cnWrap_SoundRequest(6, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         goto block_54;

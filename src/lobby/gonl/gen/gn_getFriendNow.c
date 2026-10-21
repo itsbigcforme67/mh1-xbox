@@ -35,7 +35,7 @@ s32 getFriendNow(u8 arg0, s32 arg1) {
     temp_v0 = &g_main_302CB0 + temp_a2;
     switch (g_lb_6B42BD) {                           /* switch 1; irregular */
     case 0:                                         /* switch 1 */
-        *(&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 2)) = (*(u16 *)&g_main_2EFAD8);
+        (*(u16 *)((u8 *)&(*(u16 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 2))) = (*(u16 *)&g_main_2EFAD8);
         (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60D)) = (s8) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60D)) + 1);
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = arg0;
         /* fallthrough */
