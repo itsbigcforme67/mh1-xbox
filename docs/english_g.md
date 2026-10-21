@@ -341,8 +341,9 @@ Added to the tour (second pass): **quest_board** (the elder's quest levels, list
 and **quest_info** now reaches the four quest-info pages in a quest. Found there: the quest card's labels were
 Japanese (報酬金, 契約金 ...): the US has two spellings of each label (the village "Reward:  " and the board's
 "Reward："), so the text rules left them out; a G string now takes the version from its own overlay when that leaves one
-(*same overlay*, 5 labels). Still Japanese on the card: "なし" (two US words: None / No) and the page counter
-"クエスト詳細 1/3". The quest-info pages: "Total Reward", "Reward Remaining", "Time Remaining" run into their values
+(*same overlay*, 5 labels). Third pass (21 Oct): G split MH1's "クエスト詳細　　　　／３" into a label and separate
+page counters ("１／３" stays as digits); the label "Quest Info", "Quest Level ★" and the special-conditions "なし"
+("None") are hand pairs now. MH1 in English is in docs/english.md section 8. The quest-info pages: "Total Reward", "Reward Remaining", "Time Remaining" run into their values
 (short-form table below).
 **The town** (network mode) is not reachable on the PC for G: the PC's online town has been built and tested for MH1 only
 (ONLINE=1, docs/network.md); a G online client is not set up, so the town NPC and plaza screens were not looked at.

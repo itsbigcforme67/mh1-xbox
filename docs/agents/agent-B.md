@@ -1480,3 +1480,7 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
   under full_check's 1.5 GB cap Wine itself segfaults on the stale build/win/mhview_online.exe (built 10 Oct, not rebuilt
   by full_check, so none of these changes are in it); run alone without the cap the Windows joiner joins and both sides
   agree on its position (8905 41 9701), the host then exits non-zero on "connection closed" (the test's timing).
+- Round 7 (MH1 in English): g_eng_tour.py --mh1 (16 scenes incl. the online town on the test server, sheets in
+  build/B/eng_mh1/); text_map: hand-checked G pairs also fill / correct MH1 strings with the same Japanese (181 / 12:
+  the shop's 売る said "Buy"), MH1 status rows fixed, select-overlay and gallery hand pairs, 'keeptail' (quest card page
+  row), G quest card hand pairs. Ranked list: docs/english.md section 8. full_check 21 Oct: all ok (emulator tests skipped).

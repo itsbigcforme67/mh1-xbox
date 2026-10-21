@@ -1337,6 +1337,12 @@ def _norm_jp(b):
     return b.strip(b" ").replace(b"\x81\x40", b" ").strip(b" ")
 
 
+def _shares_word(a, b):
+    """two English labels share a word (case and a plural s ignored): spellings of one label in two contexts"""
+    w = lambda x: {re.sub(rb"s$", b"", t) for t in re.findall(rb"[a-z]+", x.lower())}
+    return bool(w(a) & w(b))
+
+
 def _one_english(c):
     """the English of a Counter of candidates when they differ only in blanks at the ends (most common spelling,
     the shorter one on a tie); None when they really differ"""
@@ -2049,6 +2055,26 @@ def manual_pairs(path=MANUAL):
     return jpm, gm, gf, drop
 
 
+def manual_keeptail(path=MANUAL):
+    """`keeptail jp|g SPACE:0xADDR`: the US label dropped the Japanese row's tail that the code fills in around (the page
+    counter of 'クエスト詳細　　　　／３', whose digit the game draws into the blanks): the English gets that tail back
+    (one full-width blank less, the English label being wider)"""
+    out = []
+    if os.path.exists(path):
+        for line in open(path):
+            f = line.split("#")[0].split()
+            if len(f) == 3 and f[0] == "keeptail" and f[1] in ("jp", "g"):
+                out.append((f[1], x_key(f[2])))
+    return out
+
+
+def keep_tail(jb, xb):
+    m = re.search(rb"((?:\x81\x40)+)((?:\x81[\x5e-\x5f]|\x82[\x4f-\x58])+)$", jb)   # blanks, then ／ and digits
+    if not m or len(m.group(1)) < 4:
+        return xb
+    return xb.rstrip() + m.group(1)[2:] + m.group(2)
+
+
 def manual_msgs(path=MANUAL):
     """Hand-checked message pairs `msg SPACE:0xJPTABLE SPACE:0xUSGROUP`: a JP message table (a zero-ended run of line
     pointers) and the first US line pointer of the same message; the English is re-flowed over the JP lines (reflow)."""
@@ -2722,8 +2748,37 @@ def main():
         if kind == "jp":
             en_jp.pop(k, None)
     log("US: %d JP strings with English (%d quest fields); dropped %s; %.0fs" % (len(en_jp), nq, dict(drop), time.time() - t0))
+    # hand-checked G pairs (tools/text_pairs_manual.txt, read on both discs) also hold for MH1 strings with the same Japanese:
+    # they fill MH1 strings the structure could not pair (the bed's save hint, the shop's yes/no) and win over a position
+    # pair that disagrees (the shop menus' 売る had the US "Buy" of the row above)
+    man_text = collections.defaultdict(collections.Counter)
+    for gk, xk in list(man_g.items()) + list(man_gf.items()):
+        xb = us.cstr(*xk)
+        if xb and not is_japanese(xb):
+            man_text[_norm_jp(g.cstr(*gk))][xb] += 1
+    n_add = n_fix = 0
+    for jk in S:
+        if jk in slot_cov or _fragment(owner, jk):
+            continue
+        jb = jp.cstr(*jk)
+        c = man_text.get(_norm_jp(jb))
+        xb = _one_english(c) if c else None
+        if not xb or len(_norm_jp(jb)) < 2 or not good_english(jb, xb)[0]:
+            continue
+        if jk not in en_jp:
+            en_jp[jk] = xb
+            n_add += 1
+        elif not _shares_word(en_jp[jk], xb):     # only a different meaning, not a context spelling (plural, abbreviation)
+            if os.environ.get("TM_DEBUG"):
+                log("  corrected %s %r -> %r" % (key_id(jk), en_jp[jk], xb))
+            en_jp[jk] = xb
+            n_fix += 1
+    log("MH1 from the hand-checked G pairs: %d added, %d corrected" % (n_add, n_fix))
     hdr = ["English text table for MH1 JP, made by tools/text_map.py from your own discs. Do not share.",
            "ids are the Japanese build's (rt_text.c); source: the US disc"]
+    for kind, k in manual_keeptail():
+        if kind == "jp" and k in en_jp:
+            en_jp[k] = keep_tail(jp.cstr(*k), en_jp[k])
     talk_jp = {jk for jk in en_jp if owner.get(jk) and TALK_TABLES.match(owner[jk][1])}
     write_table(os.path.join(args.out, "en_mh1.txt"),
                 {k: (talk_layout(v) if k in talk_jp else v) for k, v in merged(en_jp, slot_cov, slot_jp).items()}, hdr)
