@@ -272,7 +272,7 @@ void flfntPrintf(const char *fmt, ...)
     e->anchor = (u8)gfx_2d_anchor;
     e->str = strpos;
     va_start(ap, fmt);
-    n = vsnprintf(strbuf + strpos, STRBUF - strpos, fmt, ap);
+    n = rt_text_vsnprintf(strbuf + strpos, STRBUF - strpos, fmt, ap);
     va_end(ap);
     if (n < 0)
         n = 0;
@@ -371,19 +371,27 @@ static void measure_ascii(void)
     rt_text_font_ready(asc_adv);
 }
 
+/* proportional ASCII only for text with a letter in it: numbers, brackets and blanks keep the game's fixed grid, so
+ * values the game draws over each other line up (G's shop count "~C00%2d(%3d)" and its red "   ~C02%3d" over it) */
 static int pure_ascii(const u8 *p)
 {
-    for (; *p; p++)
+    int letter = 0;
+    u8 prev = 0;
+    for (; *p; prev = *p++) {
         if ((*p >= 0x80 && *p < 0xA0) || (*p >= 0xE0 && *p < 0x100) || (*p >= 0xA1 && *p <= 0xDF))
             return 0;
-    return 1;
+        if ((*p | 0x20) >= 'a' && (*p | 0x20) <= 'z' && !(*p == 'C' && prev == '~'))
+            letter = 1;
+    }
+    return letter;
 }
 
 /* flfntFontPuts (0x216DE0) */
-static void font_puts(const char *s, const FNT_ENT *e)
+static void font_puts(const char *s, const FNT_ENT *e0)
 {
     const u8 *p = (const u8 *)s;
     int prop = asc_adv[' '] && pure_ascii(p) && rt_text_proportional();
+    FNT_ENT ent = *e0, *e = &ent;
     pen_x = e->x;
     pen_y = e->y;
     for (;;) {
@@ -391,6 +399,13 @@ static void font_puts(const char *s, const FNT_ENT *e)
         int ascii;
         if (c == 0)
             break;
+        /* ~Cnn: a colour code (G prints them with its plain prints too, e.g. the shop's "~C02%2d~C00(%3d)" count;
+         * without this they were drawn as letters over the number): palette nn from here on, no width */
+        if (c == '~' && p[0] == 'C' && p[1] >= '0' && p[1] <= '9' && p[2] >= '0' && p[2] <= '9') {
+            ent.pal = (s16)((p[1] - '0') * 10 + (p[2] - '0'));
+            p += 3;
+            continue;
+        }
         if (c == '\n') {
             pen_x = e->x;
             pen_y += e->h;
@@ -485,7 +500,7 @@ void rt_font_frame_end(void)
 
 /* ------------------------------------------------------------ f_font prints */
 static char tmpstr[0x400];
-#define FMT_TMP(fmt) do { va_list ap; fmt = rt_text_tr(fmt); va_start(ap, fmt); vsnprintf(tmpstr, sizeof tmpstr, fmt, ap); va_end(ap); } while (0)
+#define FMT_TMP(fmt) do { va_list ap; fmt = rt_text_tr(fmt); va_start(ap, fmt); rt_text_vsnprintf(tmpstr, sizeof tmpstr, fmt, ap); va_end(ap); } while (0)
 
 void font_set_palette(int n);
 
@@ -637,7 +652,7 @@ void font_print_sp(const char *fmt, ...)
     va_list ap;
     fmt = rt_text_tr(fmt);
     va_start(ap, fmt);
-    vsnprintf(tmp, sizeof tmp, fmt, ap);
+    rt_text_vsnprintf(tmp, sizeof tmp, fmt, ap);
     va_end(ap);
     x0 = x = loc_x;
     y = loc_y;

@@ -100,12 +100,16 @@ SCENES = {
                               RT_POUCH="129:5,1:3,155:2", RT_BOX_ITEMS="130:4,131:2", RT_WARE="6:1,6:2,2:1,2:5")),
     # the elder's talk (first meeting, story event 1)
     "elder_talk": village(circles(45, 22), 720, [80, 140, 200, 260, 320, 380, 440, 500, 560, 640], warp=ELDER),
+    # the elder's quest board after his talk: quest levels, the quest list, a quest's info pages
+    "quest_board": village(ev(circles(45, 22), {700: "circle*2", 760: "circle*2", 830: "dright*2", 890: "dright*2", 950: "dright*2",
+                                                1010: "cross*2", 1060: "ddown*2", 1090: "circle*2"}),
+                           1200, [690, 740, 800, 860, 920, 980, 1040, 1080, 1130, 1180], warp=ELDER),
     # pause menu in the village: rows, status (two pages), equipment, hunting record
     "pause": village({60: "start*2", 100: "circle*2", 160: "dright*2", 200: "cross*2", 230: "ddown*2", 250: "circle*2", 310: "cross*2",
                       340: "ddown*2", 360: "ddown*2", 380: "circle*2", 440: "cross*2", 470: "ddown*2", 490: "ddown*2", 510: "circle*2"}, 600,
                      [80, 130, 180, 280, 330, 420, 460, 560]),
     # in a quest: pause menu, quest info pages, the item pouch
-    "quest_info": dict(args=["--quest", "1", "--play"], input="idle*200,start*2,idle*40,ddown*2,idle*20,ddown*2,idle*20,circle*2,idle*60,dright*2,idle*60,"
+    "quest_info": dict(args=["--quest", "1", "--play"], input="idle*200,start*2,idle*40,ddown*2,idle*20,ddown*2,idle*20,ddown*2,idle*20,circle*2,idle*60,dright*2,idle*60,"
                        "dright*2,idle*60,cross*2,idle*30,cross*2,idle*60,start*2,idle*40,circle*2,idle*90", time=30,
                        shots=[220, 260, 330, 400, 460, 560, 640], env=dict(RT_STEP="1", RT_QUEST_STAGE="1"), card="qcard"),
     # a hunt cleared with the test aids of tools/test_all_quests.py (quest 4, Yian Kut-Ku): clear banner, reward screen and list

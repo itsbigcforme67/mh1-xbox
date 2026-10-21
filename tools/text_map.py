@@ -1664,6 +1664,12 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
             if not lst:
                 continue
             xb, c = consensus(lst, gb)
+            if xb is None and len(c) > 1:
+                # two US versions of one label (the village's "Reward:  " and the board's "Reward："): the one from the
+                # same overlay as the G string (the same screen family) when that leaves one
+                xb, _c2 = consensus([e for e in lst if e[2][0] == gk[0]], gb)
+                if xb is not None:
+                    name = "same overlay"
             if xb is not None:
                 take(gk, xb, name)
             elif len(c) > 1:

@@ -10,14 +10,14 @@
 #include <stdarg.h>
 
 const char *rt_text_tr(const char *p);
-int vsprintf(char *, const char *, va_list);
+int rt_text_vsnprintf(char *buf, __SIZE_TYPE__ n, const char *fmt, va_list ap);
 
 int rt_text_sprintf(char *s, const char *fmt, ...)
 {
     va_list ap;
     int n;
     va_start(ap, fmt);
-    n = vsprintf(s, rt_text_tr(fmt), ap);
+    n = rt_text_vsnprintf(s, 0x10000, rt_text_tr(fmt), ap);    /* the game's buffers are its own size; as vsprintf */
     va_end(ap);
     return n;
 }
@@ -40,4 +40,14 @@ char *rt_text_strcat(char *d, const char *s)
     while ((*d++ = *s++) != 0)
         ;
     return r;
+}
+
+/* strlen of the string the game will show (tools/build_pc.sh: -Dstrlen for the files that size a frame by it) */
+unsigned int rt_text_strlen(const char *s)
+{
+    unsigned int n = 0;
+    s = rt_text_tr(s);
+    while (s[n])
+        n++;
+    return n;
 }

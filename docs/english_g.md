@@ -322,13 +322,44 @@ presses of ddown in a script move n+1 rows (noted in the tool).
    "Dragon Res" touch their values; in the game menu help "○ Confirm ✕ Cancel" the ✕ icon (at a fixed place)
    covers the end of "Confirm"; 22-character talk rows touch the window's right border. Shorter wording (Freedom's,
    or ours) is the fix.
-6. **The table has English, the screen shows Japanese** (the game draws another copy of the text; a gap in the text
-   hooks, not in the table): the window titles 装備詳細確認 (table: "Equip Details") and クエスト状況確認 ("View Quest
-   Details"), the "あと１分で村に戻ります" banner after a clear (table: "Returning to village in 1 min.").
-7. **Not ours:** the item shop's owned-count line "所持数×~C00C02( 0)" is garbled the same way without the table (a
-   PC port drawing bug of the ~C code in that line).
+6. **The table has English, the screen showed Japanese: fixed (both games).** The game prints many strings as an
+   argument: `font_print("%s", str)`, the frame titles of DispFrameListA (`font_print_sp(fmt, title)`), the info
+   banners of set01.c. The text layer only looked up the format. Now `rt_text_vsnprintf` (src/pc/rt/rt_text.c) looks up
+   every `%s` argument too; it is used by flfntPrintf, font_print*, font_print_sp and the game's sprintf. With no table
+   it is plain vsnprintf. The info banners also size their frame with `strlen` of the shown string: set01.c is built
+   with `-Dstrlen=rt_text_strlen` (tools/build_pc.sh), which measures the English. Seen in G: "Equip Details" and
+   "View Quest Details" window titles, "Returning to village in 1 min." in a frame that fits.
+7. **The item shop's count line "所持数×~C00C02( 0)": fixed (PC port, both games, with or without English).** G prints
+   "~C02%2d~C00(%3d)" with a plain print; the PC's glyph loop drew the colour codes as letters. font_puts
+   (src/pc/rt/rt_font.c) now reads ~Cnn as a palette change. Proportional English spacing is now used only for text
+   with a letter in it, so numbers the game draws over each other keep the fixed grid (the red "   ~C02%3d" over the
+   box count lines up again).
 8. **Font:** nothing wrong seen in the narrow ASCII set (proportional widths, quotes and apostrophes draw); no
    character fell back to a missing glyph in these screens.
 
-Not reached by the scripts this time: the quest board / counter list, the quest info pages inside a quest (the pause
-menu script opened the monster list), the town (network mode stops at the card dialog in a hidden run).
+Added to the tour (second pass): **quest_board** (the elder's quest levels, list and quest card after his first talk)
+and **quest_info** now reaches the four quest-info pages in a quest. Found there: the quest card's labels were
+Japanese (報酬金, 契約金 ...): the US has two spellings of each label (the village "Reward:  " and the board's
+"Reward："), so the text rules left them out; a G string now takes the version from its own overlay when that leaves one
+(*same overlay*, 5 labels). Still Japanese on the card: "なし" (two US words: None / No) and the page counter
+"クエスト詳細 1/3". The quest-info pages: "Total Reward", "Reward Remaining", "Time Remaining" run into their values
+(short-form table below).
+**The town** (network mode) is not reachable on the PC for G: the PC's online town has been built and tested for MH1 only
+(ONLINE=1, docs/network.md); a G online client is not set up, so the town NPC and plaza screens were not looked at.
+
+### Short-form wording (ours, not official)
+
+English that does not fit G's layout. These are **our proposals in US style**, not text from any official release;
+Freedom's wording, once paired, takes precedence where it exists. Not applied to the tables (the owner decides).
+
+| where (G id) | US / table text | problem seen | proposed short form |
+|---|---|---|---|
+| quest-info page 1 (main:0x5388F8) | "Total Reward:" | runs into the value at a fixed column | "Reward:" |
+| quest-info page 1 (main:0x538908) | "Reward Remaining:" | runs into the value | "Left:" |
+| quest-info page 1 (main:0x538918) | "Time Remaining:" | runs into the value | "Time Left:" |
+| forge tab (lobby:0x63F210) | "Improve Wpn" | past the right edge of the screen | "Upgrade" |
+| shop / forge side tabs | "Weapons", "Create Wpn" | at the right edge | "Wpns", "Make" |
+| armour stats (main:0x538E50 / 0x538E70 / 0x539180) | "Thunder Res:", "Dragon Res:" | touch their values | "Thunder:", "Dragon:" (and "Fire:", "Water:" to match) |
+| game menu help (main:0x53A900) | "  Confirm    Cancel" | the ✕ icon (fixed place) covers "Confirm" | "  OK         Cancel" (Cancel at the same column) |
+| quest card (lobby:0x640138) | "Special Conditions：" | longest label on the card, close to the edge | "Conditions：" |
+
