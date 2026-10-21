@@ -8,6 +8,7 @@
 #include "fl.h"
 #include "pl.h"
 #include "plf.h"
+#include "em_demo_g.h"
 
 /* Per-monster work at EMW+0x444 (em27.c has the same start). */
 typedef struct EM27W {
@@ -2159,7 +2160,7 @@ void em27_main(EMW *em) {
         }
         break;
     }
-    if (quest_w.x08 == 0x89 && em->stg == 0x22 && Event_flag_ck(0xC) == 0) {
+    if (quest_w.x08 == QN(0x89, 10014) && em->stg == 0x22 && Event_flag_ck(0xC) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {
             em27_act_set(em, 6, 0, 1);
         }

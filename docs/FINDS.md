@@ -358,3 +358,18 @@ guess: not back from a quest). At the next Poogie visit: notice "the pet is hold
 Pouch_GiveItem with a random item from a weighted table (D_007E81FC / D_007E8204, lobby data; contents need a Dos disc),
 then the state clears. Only lobby code reads the flag (gm_sub and sub_main only reset it): the hunt's drops and carves are
 not affected. Likely origin of the rumour: pet twice, hunt, come back to a present.
+
+## G's gallery: a d-pad that moves the credits' movie clips, and data the split missed (agent E, 21 Oct 2026)
+- **A placement aid left in the movie player [guess].** G main 0x1E3E80 (the Sofdec server that runs the credits' clips)
+  adds or subtracts 1 from the clip's screen position (movie work +0x94 x, +0x96 y) whenever bits 0x400 / 0x800 / 0x1000 /
+  0x2000 of the halfword at 0x35F068 are set, every frame. 0x35F068 lies in the pad block (Psw at 0x35F050), so it looks
+  like a developer's d-pad nudge for placing the ROLL01..06 clips; which pad and whether it can be reached in a retail
+  game is not checked.
+- **The credits' clip list [checked].** {page, clip} pairs at G 0x50B678: pages 1, 4, 7, 12, 19 and 28 start ROLL01, 03,
+  04, 02, 05 and 06 (AFS00 0x76 + clip), the n-th clip of the run at the n-th of six places (0x50B690). On the PC,
+  page 4 never showed and its clip never started until 21 Oct 2026: the page's first line (x 500, y 80 = 0x005001F4) was
+  taken for a pointer into sub_main by the data scan (fixed in config/mhg/pc_noptr.txt).
+- **Four stages and three demo cameras the tables did not show [checked].** G's per-stage AFS tables (stage_model_data,
+  STAGE_TEX ...) have 92 entries, not 88: stages 88-91 are G's own (88 = the volcano of event quest 60029, the gallery's
+  "災厄降臨" scene). Demo_cam_tbl has 38 cameras; the command lists of cameras 5-9 and 35-37 have no symbol in the split.
+  m60029.mib (AFS_DATA 0xC6A), an event quest's mission file, is on the disc for the gallery's sake.

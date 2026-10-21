@@ -7,6 +7,7 @@
  * (EMW+0x5AC) and 1000 above it. Names of the action steps follow the split
  * (em_act00, em_fly00...). */
 #include "em.h"
+#include "em_demo_g.h"
 #include "game.h"
 
 /* Per-monster work at EMW+0x444. */
@@ -1156,11 +1157,41 @@ static void em_demo00(EMW *em) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G 0x617030 (G only): demo00 again for G's own event demo (quest 10046), waiting for event flag 0x1A */
+static void em_demo01_g(EMW *em) {
+    em->x9E1 = 5;
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 1, 0, 0);
+        em->x01 = 0;
+        em->x839 = 0;
+        break;
+    case 1:
+        if (Event_flag_ck(0x1A, 1) == 1) {
+            em->x05++;
+            em->x01 = 1;
+            em19_next_act_set(em);
+        }
+        break;
+    }
+}
+#endif
+
 static void em_move06(EMW *em) {
     switch (em->x15) {
     case 0:
         em_demo00(em);
         break;
+#ifdef VERSION_MHG
+    case 1:
+        em_demo01_g(em);
+        break;
+#endif
     }
 }
 
@@ -1270,10 +1301,16 @@ void em19_main(EMW *em) {
         em->x839 = 0;
         break;
     }
-    if (quest_w.no == 0x8A && em->stg == 0x25 && Event_flag_ck(0xD) == 0) {
+    if (quest_w.no == QN(0x8A, 10010) && em->stg == 0x25 && Event_flag_ck(0xD) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {
             em19_act_set(em, 6, 0, 1);
         }
+#ifdef VERSION_MHG
+    } else if (quest_w.no == 10046 && em->stg == 0x46 && Event_flag_ck(0x1A) == 0) {    /* G only (G 0x617508) */
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            em19_act_set(em, 6, 1, 1);
+        }
+#endif
     } else {
         switch (em->x734) {
         case 3:

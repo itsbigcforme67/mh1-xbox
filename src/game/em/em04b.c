@@ -4,6 +4,7 @@
  * escape), the demo state, em04_main (damage system, quest 0x87 special
  * case) and em04_main_sub (mode dispatch). */
 #include "em04.h"
+#include "em_demo_g.h"
 
 typedef struct QUEST_W {
     u8 _pad00[8];
@@ -303,11 +304,41 @@ static void em_demo00(EMW *em) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G 0x5BA840 (G only): demo00 again for G's own event demo (quest 10028), waiting for event flag 0x14 */
+static void em_demo01_g(EMW *em) {
+    em->x9E1 = 5;
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 1, 0, 0);
+        em->x01 = 0;
+        em->x839 = 0;
+        break;
+    case 1:
+        if (Event_flag_ck(0x14) == 1) {
+            em->x05++;
+            em->x01 = 1;
+            em04_next_act_set(em);
+        }
+        break;
+    }
+}
+#endif
+
 static void em_move06(EMW *em) {
     switch (em->x15) {
     case 0:
         em_demo00(em);
         break;
+#ifdef VERSION_MHG
+    case 1:
+        em_demo01_g(em);
+        break;
+#endif
     }
 }
 
@@ -384,10 +415,16 @@ void em04_main(EMW *em) {
         em_dur_set(em, 0);
         break;
     }
-    if (quest_w.x08 == 0x87 && em->kind == 5 && em->stg == 0x2A && Event_flag_ck(0xF) == 0) {
+    if (quest_w.x08 == QN(0x87, 10005) && em->kind == 5 && em->stg == 0x2A && Event_flag_ck(0xF) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {
             em04_act_set(em, 6, 0, 1);
         }
+#ifdef VERSION_MHG
+    } else if (quest_w.x08 == 10028 && em->kind == 5 && em->stg == 0x45 && Event_flag_ck(0x14) == 0) {    /* G only (G 0x5BAC88) */
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            em04_act_set(em, 6, 1, 1);
+        }
+#endif
     } else {
         switch (em->x734) {
         case 3:

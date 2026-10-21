@@ -7,6 +7,20 @@
 quest_w = 0x0032D010; // size:0x290            # G grew it (Quest_init memsets 0x290)
 select_w = 0x0035EC30; // size:0xF0            # quest number at +0xD0 (MH1 +0xAC)
 start_area_lists = 0x002EECF0; // size:0x88           # start-area lists {weight, stage}.., 0xFF and their pointer lists (Quest_pl_stage_init)
+Demo_cam_tbl = 0x002A0D40; // size:0x98             # G's 38 demo cameras (the split sized it 35: cameras 35-37, the GALLERY's scenes 13 / 14, read past it)
+demo_cam_g05 = 0x00297850; // size:0x8D0 noptr      # demo camera command lists the split left unnamed (cameras 5-9, 35-37); each up to the next
+demo_cam_g06 = 0x00298120; // size:0xBD0 noptr
+demo_cam_g07 = 0x00298CF0; // size:0xDE0 noptr
+demo_cam_g08 = 0x00299AD0; // size:0x1F40 noptr
+demo_cam_g09 = 0x0029BA10; // size:0xB0 noptr
+demo_cam_g35 = 0x0029BAC0; // size:0x31E0 noptr
+demo_cam_g36 = 0x0029ECA0; // size:0x1F70 noptr
+demo_cam_g37 = 0x002A0C10; // size:0x130 noptr
+stage_model_data = 0x002593B0; // size:0x170 noptr   # per-stage AFS indexes: G has 92 stages (88-91 are G's own; the split sized them 88)
+stage_hit_data_w = 0x00259520; // size:0x170 noptr
+set_model_data = 0x00259690; // size:0x170 noptr
+STAGE_TEX = 0x0025ABD0; // size:0x170 noptr
+SET_TEX = 0x0025CF70; // size:0x170 noptr
 gsave_fmt = 0x002EA6B0; // size:0x58 noptr                # save slot screen formats (NO DATA, slot:name, TIME, MONEY / HR, MONEY), G disp_savesel_moji
 [sub_main]
 quest_size_lim_def = 0x004FD8D0; // size:0xA            # monster size limits per class {min, max} x5, copied to quest_size_lim (Quest_start)
@@ -344,6 +358,9 @@ gal_staff_lines = 0x0050A740; // size:0xEC0           # the staff roll's lines o
 gal_staff_pages = 0x0050B600; // size:0x78
 logo_tbl = 0x0050B6B0; // size:0x140 noptr             # {u, v, w, h, texture - 0x111} per logo (MH1's table is shorter)
 gal_end_msg = 0x0052D4E0; // size:0x18 noptr
+stage_start_pos = 0x00520A30; // size:0x450 noptr    # 92 stages x {x, y, z} (88-91 are G's own)
+gal_staff_cue = 0x0050B678; // size:0xE noptr         # credits movie clips: {page, clip} pairs, 0xFF ends (G main 0x1E4180, func_001E4360)
+gal_staff_clip_pos = 0x0050B690; // size:0x18 noptr    # {x, y} (u16) of the n-th clip of a credits run, n up to 5 (G main 0x1E40D0)
 # memory card messages: G's list has 63 entries (MH1 51); the 0xCC the symbol view gave read past the host array at entry 51 (the OPTIONS / GALLERY save crashed)
 [main]
 McardMsgTbl = 0x002B0B40; // size:0xFC

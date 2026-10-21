@@ -478,9 +478,12 @@ static int event_quest_ready(int no)
     memcpy(&o, mission_area, 4);
     return o > 0 && o < 0x3FF00 && mission_area[o + 0x1D] == no;
 }
+/* G: a quest number from 50000 (event quests: Quest_start loads no file for them) whose mission file the caller has
+ * put into mission_area itself (the GALLERY's event scene 13, m60029.mib; viewer.c gal_scene_start) */
+int rt_quest_mission_given;
 int rt_quest_load(int no)
 {
-    if (rt_ver_mhg() ? (no <= 0 || no >= 50000) :   /* G: quest groups 00xxx..20xxx (mNNNNN.mib) */
+    if (rt_ver_mhg() ? (no <= 0 || (no >= 50000 && !rt_quest_mission_given)) :   /* G: quest groups 00xxx..20xxx (mNNNNN.mib) */
             (no <= 0 || (no >= 0xB2 && !event_quest_ready(no)))) {
         rt_warn("quest %d: not a valid quest number", no);
         return -1;

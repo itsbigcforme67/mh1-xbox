@@ -127,6 +127,26 @@ void Disp_load_start(int arg, int mode) {
     }
 }
 
+/* G 0x12D960: the loading screen with a message of the caller's (the GALLERY's event scenes, sub_main 0x4A91D0, give
+ * the scene's title): mode 0 the request (drawn by the loads as Disp_load_start's), else drawn now with the still
+ * "NOW LOADING" and the request cleared. Agent E, 20 Oct 2026, from G's asm, not byte-checked. */
+void func_0012D960(int mode, char *msg) {
+    if (mode == 0) {
+        load_req_msg = msg;
+        load_req = 2;
+        return;
+    }
+    font_stack_reset();
+    load_req = 0;
+    load_wave_step();
+    disp_load_spr();
+    disp_load_chars(1);
+    flfntSetSize(0x18, 0x18);
+    font_print_double((s16)((0x280 - (int)strlen(msg) * 12) / 2), 200, 1, 0, msg);
+    font_draw_stack_no(0);
+    font_stack_reset();
+}
+
 /* G 0x12D6F0 (the village before Lb_stage_load, game0): the request, NOW LOADING alone */
 void Disp_NowLoading(void) {
     load_req = -1;

@@ -3,6 +3,7 @@
  * per-animation sound/effect script (ef_move_sub). The setters are in em01.c. The whole file is in this
  * _nm file, matching runs are split off into em01_ai*.c. Field meanings are guesses. */
 #include "em.h"
+#include "em_demo_g.h"
 #include "game.h"
 #include "fl.h"
 #include "pl.h"
@@ -5965,7 +5966,7 @@ void em01_main(EMW *em) {
         break;
     }
     switch (quest_w.x08) {
-    case 0x8A:
+    case QN(0x8A, 10010):
         if (em->stg == 0x25 && Event_flag_ck(0xD) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em01_act_set(em, 6, 1, 1);
@@ -5973,7 +5974,7 @@ void em01_main(EMW *em) {
             break;
         }
         goto cmd;
-    case 0x8B:
+    case QN(0x8B, 10032):
         if (em->stg == 0x21 && Event_flag_ck(0xE) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em01_act_set(em, 6, 2, 1);

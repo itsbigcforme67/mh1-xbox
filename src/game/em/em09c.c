@@ -10,6 +10,10 @@
 #include "pl.h"
 #include "plf.h"
 #include "fl.h"
+#ifdef VERSION_MHG
+#include "quest.h"
+int Event_flag_ck();
+#endif
 
 /* Per-monster work at EMW+0x444. */
 typedef struct EM09W {
@@ -1315,6 +1319,14 @@ void em09_main(EMW *em) {
             w->x4B = 1;
         }
     }
+#ifdef VERSION_MHG
+    if (quest_w.no == 10028 && em->kind == 0x17 && em->stg == 0x45 && Event_flag_ck(0x14) == 0) {
+        /* G only (G em09_main 0x5D6A9C): quest 10028's event demo; the monster waits hidden for its flag */
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            em09_act_set(em, 6, 0, 1);
+        }
+    } else
+#endif
     switch (em->x734) {
     case 3:
         if (em->x839 != 0) {
@@ -1330,6 +1342,34 @@ void em09_main(EMW *em) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G 0x5D65E0 / 0x5D6680 (G only): mode 6, the event demo: hidden until event flag 0x14, then the next act */
+static void em_move06_g(EMW *em) {
+    if (em->x15 != 0) {
+        return;
+    }
+    em->x9E1 = 5;
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 1, 0, 0);
+        em->x01 = 0;
+        em->x839 = 0;
+        break;
+    case 1:
+        if (Event_flag_ck(0x14) == 1) {
+            em->x05++;
+            em->x01 = 1;
+            em09_next_act_set(em);
+        }
+        break;
+    }
+}
+#endif
+
 void em09_main_sub(EMW *em) {
     switch (em->mode) {
     case 0: em_move00_005A90A0(em); break;
@@ -1338,7 +1378,11 @@ void em09_main_sub(EMW *em) {
     case 3: em_move03_005AA670(em); break;
     case 4: em_move04_005AAC30(em); break;
     case 5: em_move05_005AB180(em); break;
+#ifdef VERSION_MHG
+    case 6: em_move06_g(em); break;
+#else
     case 6: em_move00_005A90A0(em); break;
+#endif
     case 7: em_move00_005A90A0(em); break;
     }
 }

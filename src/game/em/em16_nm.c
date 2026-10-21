@@ -4,6 +4,7 @@
  * demo, revival, em16_main (damage system), em16_uvmove, the sound/effect script. The action setters and
  * fly_adjy2 are in em16.c. Field meanings are guesses. */
 #include "em.h"
+#include "em_demo_g.h"
 #include "game.h"
 #include "fl.h"
 #include "pl.h"
@@ -2357,6 +2358,31 @@ static void em_demo05_005D6530(EMW *em, EM16W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G 0x6025F0 (G only): demo05 for G's quest 10035 (stage 0x36), waiting for event flag 0x16 */
+static void em_demo06_g(EMW *em, EM16W *w) {
+    em->x9E1 = 5;
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 1, 0, 0);
+        em->x01 = 0;
+        em->x839 = 0;
+        break;
+    case 1:
+        if (Event_flag_ck(0x16) == 1) {
+            em->x05++;
+            em->x01 = 1;
+            em16_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+#endif
+
 void em_move06_005D65E0(EMW *em, EM16W *w) {
     switch (em->x15) {
     case 0: em_demo00_005D5CC0(em, w); break;
@@ -2365,6 +2391,9 @@ void em_move06_005D65E0(EMW *em, EM16W *w) {
     case 3: em_demo03_005D63F0(em, w); break;
     case 4: em_demo04_005D6480(em, w); break;
     case 5: em_demo05_005D6530(em, w); break;
+#ifdef VERSION_MHG
+    case 6: em_demo06_g(em, w); break;
+#endif
     }
 }
 
@@ -2628,7 +2657,7 @@ void em16_main(EMW *em) {
         }
     }
     switch (quest_w.x08) {
-    case 0x88:
+    case QN(0x88, 10006):
         if (em->stg == 0x23 && Event_flag_ck(0xA) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em16_act_set(em, 6, 3, 0);
@@ -2636,7 +2665,7 @@ void em16_main(EMW *em) {
             break;
         }
         goto cmd;
-    case 0x8A:
+    case QN(0x8A, 10010):
         if (em->stg == 0x28 && Event_flag_ck(0x13) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em16_act_set(em, 6, 4, 0);
@@ -2644,7 +2673,7 @@ void em16_main(EMW *em) {
             break;
         }
         goto cmd;
-    case 0xAB:
+    case QN(0xAB, 10041):
         if (em->stg == 0x35 && Event_flag_ck(0x12) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em16_act_set(em, 6, 5, 0);
@@ -2652,6 +2681,16 @@ void em16_main(EMW *em) {
             break;
         }
         goto cmd;
+#ifdef VERSION_MHG
+    case 10035:                         /* G only (G 0x603460) */
+        if (em->stg == 0x36 && Event_flag_ck(0x16) == 0) {
+            if (game_w.info_stop == 1 && em->mode != 6) {
+                em16_act_set(em, 6, 6, 1);
+            }
+            break;
+        }
+        goto cmd;
+#endif
     default:
     cmd:
         if (em->x839 != 0) {

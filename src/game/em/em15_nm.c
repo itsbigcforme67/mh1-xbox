@@ -4386,13 +4386,83 @@ static void em_move05_005CAD90(EMW *em, EM15W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+int Event_flag_ck();
+/* G 0x5F58C0 (G only): quest 10046's event demo on stage 0x46: the monster is put at a fixed spot facing 0x8000 and plays
+ * motions 0x67 (240 ticks), 0x6E (300 ticks), 0x75, 0x33, 0x36 and 0x01 (each to its end), then waits for event flag
+ * 0x1A (the demo's end) and goes back to normal. From G's asm (jump table 0x6D9190 in code order), agent E, 21 Oct 2026. */
+static void em_demo00_g(EMW *em, EM15W *w) {
+    em->x9E1 = 5;
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->pos[0] = 12015.0f;
+        em->pos[1] = 1500.0f;
+        em->pos[2] = 12300.0f;
+        em->ang[0] = 0;
+        em->ang[1] = 0x8000;
+        em->ang[2] = 0;
+        em_char_set(em, 0x67, 0, 0);
+        em->work08 = 0xF0;
+        break;
+    case 1:
+        if (--em->work08 > 0) {
+            break;
+        }
+        em->x05++;
+        em_char_set(em, 0x6E, 0, 0);
+        em->work08 = 0x12C;
+        break;
+    case 2:
+        if (--em->work08 > 0) {
+            break;
+        }
+        em->x05++;
+        em_char_set(em, 0x75, 0, 0);
+        em->x388 = 0;
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x33, 0, 0);
+        }
+        break;
+    case 4:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x36, 0, 0);
+        }
+        break;
+    case 5:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x1, 0, 0);
+        }
+        break;
+    case 6:
+        if (Event_flag_ck(0x1A) == 1) {
+            em->x05++;
+            em15_to_normal(em);
+        }
+        break;
+    }
+    (void)w;
+}
+#endif
+
 static void em_move06_005CAE00(EMW *em, EM15W *w) {
     u8 temp_a2;
 
     temp_a2 = em->x15;
     switch (temp_a2) {                              /* irregular */
     case 0:
+#ifdef VERSION_MHG
+        em_demo00_g(em, w);
+#else
         em_demo04_005C9F20(em, w);
+#endif
         break;
     case 1:
         em_demo04_005C9F20(em, w);
@@ -4648,6 +4718,14 @@ void em15_main(EMW *em) {
         }
         break;
     }
+#ifdef VERSION_MHG
+    if (quest_w.no == 10046 && em->stg == 0x46 && Event_flag_ck(0x1A) == 0) {
+        /* G only (G em15_main 0x5F7450): quest 10046's event demo (game_func_005F58C0 below) */
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            em15_act_set(em, 6, 0, 1);
+        }
+    } else
+#endif
     if (em->x839 != 0) {
         em_cmd_ck(em);
         em->x839 = 0;

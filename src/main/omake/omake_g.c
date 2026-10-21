@@ -8,6 +8,8 @@
 
 /* PC / Xbox only (tools/build_pc.sh, VERSION=mhg); tools/build.py compiles every src file with MWCC, which gets an empty file */
 #if defined(VERSION_MHG) && !defined(__MWERKS__)
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -232,7 +234,7 @@ void Omake_task(GSELT *t)
  * Four pages of entries (movies, and in-engine event scenes), three columns of cells per row; L/R pages (a page-turn
  * wipe), circle plays, cross leaves. Entries are unlocked by omake flags; the "seen" flags (option_w + 0x2C52) take the NEW
  * marker off. A work block of its own lives at G 0x541E00 (here `gw`). Movies play on the port's movie player; the
- * scene viewer (G 0x4A91D0: a stage and a monster loaded into the game's own demo camera) is not ported, see RELEASE_G.md. */
+ * event scenes (G 0x4A91D0: a stage and its monsters under the game's own demo camera) on the host (gal_scene). */
 typedef struct GENT {           /* one entry of a page (4 bytes) */
     u8 kind;                    /* 0 movie, 1 event scene */
     u8 sub;                     /* cell style (0 small, 1 large) */
@@ -631,8 +633,10 @@ static void gal_wipe(void)
 }
 
 
-/* ===== G's staff roll (G sub_main 0x4E88A0-0x4E8FD0): the credits scroll up over 30 pages of lines. G plays movie clips behind
- * them by section (G 0x1E4360 with the cue list at 0x50B678): not on the port, the credits run on black. ===== */
+/* ===== G's staff roll (G sub_main 0x4E88A0-0x4E8FD0): the credits scroll up over 30 pages of lines. When the page on screen
+ * changes to one in G's cue list (0x50B678, {page, clip}) a movie clip starts (G main 0x1E4360 -> 0x1E41D0: AFS00 entry
+ * 0x76 + clip, ROLL01..06.sfd, 256 x 224, the n-th clip of the run at the n-th place of 0x50B690); on the port through
+ * rt_movie_clip (rt_movie.c). ===== */
 typedef struct GSTAFF_LINE {
     s16 x;              /* 0x3E7 ends a page */
     s16 y;              /* 0: below the previous line */
@@ -645,6 +649,10 @@ typedef struct GSTAFF_LINE {
 extern GSTAFF_LINE *gal_staff_pages[];  /* sub_main 0x50B600: 30 pages */
 extern s16 logo_tbl[];                  /* 0x50B6B0: {u, v, w, h, texture - 0x111} */
 extern char gal_end_msg[];              /* 0x52D4E0 */
+extern u8 gal_staff_cue[];              /* 0x50B678: {page, clip} pairs, 0xFF ends */
+extern u16 gal_staff_clip_pos[];        /* 0x50B690: {x, y} of the n-th clip (n up to 5) */
+int rt_movie_clip(int afs_no, int x, int y, int w, int h);
+static int gal_clip_n, gal_clip_on;     /* G movie work +0xA1 (clips started this run), +0xA0 (one is playing) */
 void flps0008();
 void font_reset();
 void str_stop();
@@ -667,8 +675,31 @@ static void gal_staff_reset(void)           /* G 0x4E8C90 */
     sw.scroll = 448.0f;
 }
 
+/* G main 0x1E4360 / 0x1E41D0: the clip for page `pg`, if the cue list has one */
+static void gal_staff_cue_clip(int pg)
+{
+    const u8 *c;
+    int n;
+
+    for (c = gal_staff_cue; c[0] != 0xFF; c += 2) {
+        if (c[0] == pg) {
+            break;
+        }
+    }
+    if (c[0] == 0xFF) {
+        return;
+    }
+    n = gal_clip_n < 6 ? gal_clip_n : 5;
+    if (rt_movie_clip(0x76 + c[1], gal_staff_clip_pos[n * 2], gal_staff_clip_pos[n * 2 + 1], 0x100, 0xE0) == 0) {
+        gal_clip_on = 1;
+    }
+    gal_clip_n++;
+}
+
 static void gal_staff_init(void)            /* G 0x4E88A0 */
 {
+    gal_clip_n = 0;
+    gal_clip_on = 0;
     sw.x1 = 0;
     sw.x4 = 0;
     sw.step = 99;
@@ -703,14 +734,22 @@ static void gal_staff_logo(s16 x, s16 y, int no, int sect)      /* G 0x4E8AE0 */
         if (p.y + p.h / 2 < 203) {
             sw.vis = 3;
         }
+        sw.cur = sect;          /* only a logo on the screen marks its page (it was set for every logo before 20 Oct 2026) */
     }
-    sw.cur = sect;
 }
 
 static void gal_staff_disp(void)            /* G 0x4E8CC0 */
 {
     int pg, yoff = 0;
     int size = 0x12;
+
+    if (gal_clip_on) {                      /* the clip under the lines (G main 0x1E4250, every frame) */
+        if (movie_status_ck() == 3) {
+            gal_clip_on = 0;
+        } else if (movie_server() != 0) {
+            movie_draw();
+        }
+    }
 
     if (sw.end == 0) {
         sw.scroll -= 2.0f;
@@ -791,6 +830,8 @@ static int gal_staff_main(void)             /* G 0x4E8900: 1 while it runs, 0 wh
             sw.step = 3;
             sw.timer = 0x3E;
             fade_set(0xE);
+        } else if (sw.cur != -1 && sw.cur != sw.prev) {
+            gal_staff_cue_clip(sw.cur);
         }
         break;
     case 3:
@@ -803,6 +844,7 @@ static int gal_staff_main(void)             /* G 0x4E8900: 1 while it runs, 0 wh
     case 4:
         if ((Fade_busy_ck() & 0xFF) != 1) {
             movie_exit();
+            gal_clip_on = 0;
             str_stop(0);
             return 0;
         }
@@ -823,13 +865,18 @@ static void gal_init(GSELT *t)
 
     if ((Fade_busy_ck() & 0xFF) != 1) {
         t->step++;
-#ifndef XBOX
-        if (getenv("RT_OMAKE")) {   /* test aid: RT_OMAKE=0x7FF opens these omake flags (the gallery's unlocks) */
+        /* test aids (the Xbox build reads them from D:\data\env.txt, xbox_env.c) */
+        if (getenv("RT_OMAKE")) {   /* RT_OMAKE=0x7FF opens these omake flags (the gallery's unlocks) */
             *(u32 *)(option_w + 0x2C4C) |= (u32)strtoul(getenv("RT_OMAKE"), NULL, 0);
         }
-#endif
         gw.page = 0;
         gw.cur = 0;
+        if (getenv("RT_GAL_PICK")) {    /* "PAGE:CELL": the cursor starts there (tools/test_gallery_g.sh) */
+            int pg = 0, c = 0;
+            sscanf(getenv("RT_GAL_PICK"), "%d:%d", &pg, &c);
+            gw.page = (u8)pg;
+            gw.cur = (s16)c;
+        }
         gw.anim = 0;
         gw.dir = 0;
         gw.acnt = 0;
@@ -904,12 +951,8 @@ static void gal_main(GSELT *t)
                 if (e->idx == 8 && e->kind == 0) {
                     t->step++;
                     gal_staff_init();
-                } else if (e->kind == 0) {
-                    t->step = 4;
                 } else {
-                    /* the scene viewer is not on the port: the entry answers like a closed one */
-                    se_req(7, 0x15, 0);
-                    goto draw;
+                    t->step = 4;        /* a movie (gal_play) or an event scene (gal_scene) */
                 }
                 t->sub = 0;
                 fade_set(1);
@@ -1062,6 +1105,56 @@ static void gal_play(GSELT *t)
     }
 }
 
+/* G 0x4A91D0: an event scene. The PS2 loads a training quest's stage and monsters here (Quest_start, stage_init,
+ * st_model_load, round_init, the stage's and the monsters' sound packs over several frames), starts the quest's event
+ * demo camera on them (evdemo_camera_request with the scene's descriptor) and moves the world each frame until the
+ * scene's length less 16 frames, or START; then all_reset and the gallery again (its textures reloaded). On the port
+ * the host does the loading and the world (viewer.c gal_scene_start / gal_scene_tick: it loads in one tick and draws
+ * the 3D scene, which the PS2 did through this task's trans()); this task waits for it. */
+void rt_gal_scene_begin(const void *desc, int len, int quest, int mission_afs, const char *title);
+int rt_gal_scene_busy(void);
+extern u8 evdemo_g_tbl[];               /* game 0x678280: the event demo records (19 x 16 bytes, evdemo.c) */
+static void gal_scene(GSELT *t)
+{
+    const GSCN *sc = &gal_scene_tbl[gw.entry];
+    /* the descriptor is a game-overlay address (gal_scene_tbl is noptr in config/mhg/pc_data.txt): one of evdemo_g_tbl */
+    u32 da = (u32)(uintptr_t)sc->desc - 0x678280u;
+    const u8 *desc = da < 19 * 16 ? evdemo_g_tbl + da : evdemo_g_tbl;
+
+    switch (t->sub) {
+    case 0:
+        t->cnt = 0;
+        if ((Fade_busy_ck() & 0xFF) == 1) {
+            gal_disp(t);
+            break;
+        }
+        t->sub++;
+        /* fall through */
+    case 1:
+        /* the quest: the scene's row of the training-quest table (0x4A6D90); page 4's second cell, open only with the
+         * whole page (0x4A6EB0, gw.all), plays event quest 60029 whose mission file the disc keeps as AFS entry 0xC6A */
+        rt_gal_scene_begin(desc, sc->len, (u16)gal_scene_lookup(sc->id, 1),
+                           (gw.page == 3 && gw.cur == 1 && gw.all) ? 0xC6A : 0, gw.title);
+        t->sub++;
+        break;
+    case 2:
+        if (rt_gal_scene_busy()) {
+            break;
+        }
+        gal_leave(gw.cur);
+        /* back to the gallery: its pictures again (0x4A91D0's last step reloads three texture sets) */
+        if (mem_tex[0x111] == 0) {
+            func_0010EF50(PIT_TEX[2], 0x111, 0);
+        }
+        func_0010EF50(PIT_TEX[4], 0x21, 0);
+        setBGcolor(0);
+        t->step = 1;
+        t->sub = 0;
+        fade_set(2);
+        break;
+    }
+}
+
 /* G 0x4A8FE0 */
 static void gal_exit(GSELT *t)
 {
@@ -1101,7 +1194,11 @@ void sub_main_func_004A9960(GSELT *t)
         }
         break;
     case 4:
-        gal_play(t);
+        if (GENTRY(gw.page, gw.cur)->kind == 0) {
+            gal_play(t);
+        } else {
+            gal_scene(t);
+        }
         break;
     case 5:
         switch (t->sub) {
