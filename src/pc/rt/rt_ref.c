@@ -48,7 +48,7 @@ extern u16 Rnd_w[2];
 #define PLW_SIZE 0xA00
 
 static FILE *out;
-static int on, started, ptick, rawtick;
+static int on, started, ptick, rawtick, cur_play;
 static pad_state *pads;
 static int npads;
 typedef struct { int pt; char reg[8]; int off; char type[4]; double v; } poke;
@@ -262,7 +262,20 @@ void rt_ref_tick(int raw)
     if (!on)
         return;
     rawtick = raw;
-    play = game_w[0] == 2 && game_w[1] <= 1;
+    {   /* RT_REF_MODE=6: the lockstep runs in the village instead (tools/referee.py village scenarios): a play tick is
+         * any tick in game mode 6; RT_REF_UD_OUT=file gets User_data after each of them (the referee compares the last) */
+        static int mode = -1;
+        if (mode < 0)
+            mode = getenv("RT_REF_MODE") ? atoi(getenv("RT_REF_MODE")) : 2;
+        int rt_village_active(void);
+        static int vstage = -2;
+        if (vstage == -2)       /* RT_REF_STAGE: the village's stage as the PS2 has it (its play tick 0): the PC's
+                                 * village counts from when it stands there (after its load) */
+            vstage = getenv("RT_REF_STAGE") ? atoi(getenv("RT_REF_STAGE")) : -1;
+        play = mode == 2 ? game_w[0] == 2 && game_w[1] <= 1
+                         : game_w[0] == mode && (mode != 6 || rt_village_active()) && (vstage < 0 || game_w[0x14] == vstage);
+    }
+    cur_play = play;
     if (play && !started) {
         const char *r = getenv("RT_REF_RND");
         started = 1;
@@ -317,6 +330,13 @@ void rt_ref_tick(int raw)
             }
         }
     }
+    if (play && getenv("RT_REF_UD_OUT")) {
+        FILE *uf = fopen(getenv("RT_REF_UD_OUT"), "wb");
+        if (uf) {
+            fwrite(User_data, 1, UD_SIZE, uf);
+            fclose(uf);
+        }
+    }
     if (play)
         do_pokes();     /* after the record, as the PS2 side writes them with the go */
     if (play && ptick < nrnds && !(rnds[ptick][0] == 0xFFFF && rnds[ptick][1] == 0xFFFF)) {
@@ -331,7 +351,7 @@ int rt_ref_pad(pad_state *ps)
     if (!on || !pads)
         return 0;
     memset(ps, 0, sizeof *ps);
-    if (started && game_w[0] == 2 && game_w[1] <= 1 && ptick < npads)
+    if (started && cur_play && ptick < npads)     /* (a play tick as rt_ref_tick saw it: quest or village) */
         *ps = pads[ptick];
     return 1;
 }
