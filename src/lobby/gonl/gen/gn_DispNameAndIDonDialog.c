@@ -7,8 +7,8 @@ s32 Draw_square();
 s32 flfntSetSize();
 s32 font_print_double();
 extern u8 cw;
-extern u8 lit_226_0065C500;
-extern u8 lit_227_0065C508;
+extern s32 lit_226_0065C500;
+extern s32 lit_227_0065C508;
 
 void DispNameAndIDonDialog(s32 arg0, void *arg1, void *arg2) {
     s32 temp_s0;

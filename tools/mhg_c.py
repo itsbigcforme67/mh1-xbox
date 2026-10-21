@@ -103,7 +103,7 @@ def asm_widths(asm):
                 pass
             continue
         op, args = m.group(1), [a.strip() for a in m.group(2).split(',')]
-        mm = re.match(r'(-?\w+)?\(?%lo\((\w+)\)\)?\((\$\w+)\)', args[-1]) if args else None
+        mm = re.match(r'(-?\w+)?\(?%(?:lo|gp_rel)\((\w+)\)\)?\((\$\w+)\)', args[-1]) if args else None
         if op in W and mm:
             out.setdefault(mm.group(2), set()).add(W[op])
             continue
@@ -114,8 +114,8 @@ def asm_widths(asm):
             if op.startswith('l') and args[0] in taint:
                 del taint[args[0]]
             continue
-        if op in ('addiu', 'daddiu') and len(args) == 3 and '%lo(' in args[2]:
-            t = re.search(r'%lo\((\w+)', args[2])
+        if op in ('addiu', 'daddiu') and len(args) == 3 and ('%lo(' in args[2] or '%gp_rel(' in args[2]):
+            t = re.search(r'%(?:lo|gp_rel)\((\w+)', args[2])
             if t:
                 taint[args[0]] = t.group(1)
             continue
@@ -136,7 +136,9 @@ def unk_type(name):
     if w is None and re.match(r'D_0*[0-9A-F]{6}$', name):
         a = int(name[2:], 16)
         w = next((v for k, v in WIDTHS.items() if re.match(r'D_0*[0-9A-F]{6}$', k) and int(k[2:], 16) == a), None)
-    return WTYPE.get(min(w), 'u8') if w and len(w) == 1 else 'u8'
+    if not w:
+        return 's32'        # (no access seen through %lo, e.g. gp-relative: m2c's old default, words)
+    return WTYPE.get(min(w), 'u8') if len(w) == 1 else 'u8'
 
 
 def fix(src):

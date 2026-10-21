@@ -35,7 +35,7 @@ extern void *g_lb_636590;
 extern void *g_lb_636594;
 extern s32 g_lb_653950;
 extern s8 g_lb_6B42BC;
-extern u8 g_main_302290;
+extern s32 g_main_302290;
 
 s32 lobby_func_0056B790(void) {
     u8 *var_s1;   /* (s32 *) */
@@ -133,19 +133,19 @@ block_99:
             return 3;
         }
         if (temp_v1_2 & 0x20) {
-            temp_v0_2 = lobby_func_005C1560(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, &(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18), (s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)));
+            temp_v0_2 = lobby_func_005C1560(&(*(s32 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, &(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18), (s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)));
             if (temp_v0_2 == -1) {
-                temp_v0_3 = lobby_func_005C1510(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+                temp_v0_3 = lobby_func_005C1510(&(*(s32 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 if (temp_v0_3 == -1) {
                     SetDialogData(0x33, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
                     (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60E)) = (s8) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C));
                     (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) = 7;
                 } else {
-                    memcpy(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)) + (temp_v0_3 * 0x18), &(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18), 0x18);
+                    memcpy((u8 *)&(*(s32 *)((u8 *)&BsProxyUrlstr + 0x110)) + (temp_v0_3 * 0x18), &(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18), 0x18);
                 }
             } else {
-                lobby_func_005C15F0((s32) &(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), temp_v0_2 & 0xFF, 8, M2C_ERROR(/* Read from unset register $a3 */));
+                lobby_func_005C15F0((s32) &(*(s32 *)((u8 *)&BsProxyUrlstr + 0x110)), temp_v0_2 & 0xFF, 8, M2C_ERROR(/* Read from unset register $a3 */));
             }
             cnWrap_SoundRequest(6, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         } else if (temp_v1_2 & 0x200) {
@@ -159,7 +159,7 @@ block_99:
         goto block_99;
     case 2:                                         /* switch 1 */
         (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0);
-        temp_v0_4 = lobby_func_005C14D0(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+        temp_v0_4 = lobby_func_005C14D0(&(*(s32 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         temp_v1_3 = temp_s0 & 0xFFFF;
         if (temp_v0_4 == 0) {
             if (temp_v1_3 & 0x240) {
@@ -176,7 +176,7 @@ block_99:
                 lobby_func_0059F6E0(0xB000240A, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 cnWrap_SoundRequest(3, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             } else if (temp_a0 & 0x20) {
-                lobby_func_005C15F0((s32) &(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), (s32) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x611)), 8, M2C_ERROR(/* Read from unset register $a3 */));
+                lobby_func_005C15F0((s32) &(*(s32 *)((u8 *)&BsProxyUrlstr + 0x110)), (s32) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x611)), 8, M2C_ERROR(/* Read from unset register $a3 */));
                 if ((s8) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x611)) != 0) {
                     (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x611)) = (u8) ((s8) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x611)) - 1);
                 }
@@ -231,8 +231,8 @@ block_99:
         switch (temp_v0_5) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2E)) = 0U;
-            memcpy((*(void **)&cw) + 0xEE7, &g_main_302290 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18), 8);
-            memcpy((*(void **)&cw) + 0xEEF, &g_main_302290 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18) + 8, 0x10);
+            memcpy((*(void **)&cw) + 0xEE7, (u8 *)&g_main_302290 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18), 8);
+            memcpy((*(void **)&cw) + 0xEEF, (u8 *)&g_main_302290 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18) + 8, 0x10);
             lobby_func_005C15F0((s32) &g_main_302290, (s32) (u8) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)), 8, M2C_ERROR(/* Read from unset register $a3 */));
             (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) = lobby_func_005C14D0(&g_main_302290, 8, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             if (((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) != 0) && ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) != 0)) {

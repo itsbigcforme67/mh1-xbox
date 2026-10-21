@@ -4,7 +4,7 @@
 #include "../gonl.h"
 
 s32 GetRecvData16();
-extern u8 recv_work;
+extern s32 recv_work;
 
 void __cnet_Recv_PieceJoinUserMH(void *arg0, s32 arg1, void *arg2) {
     s32 temp_s0;

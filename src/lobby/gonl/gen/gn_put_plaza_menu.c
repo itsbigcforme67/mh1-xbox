@@ -9,7 +9,7 @@ s32 font_set_palette();
 extern u8 pNet;
 s32 Lb_put_msg2();             /* extern */
 extern s32 lb_ibox_str;
-extern u8 g_main_2EEE70;
+extern s32 g_main_2EEE70;
 
 void put_plaza_menu(void) {
     s32 var_s0;
@@ -17,7 +17,7 @@ void put_plaza_menu(void) {
     u8 var_a1;
     u8 *temp_a0;
 
-    var_s1 = *(&g_main_2EEE70 + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) * 4));
+    var_s1 = (*(s32 *)((u8 *)&g_main_2EEE70 + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) * 4)));
     var_s0 = 0x56;
     flfntSetSize(0x12, 0x12);
     var_a1 = *var_s1;

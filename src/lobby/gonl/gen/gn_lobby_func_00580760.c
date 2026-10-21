@@ -5,7 +5,7 @@
 
 s32 lobby_func_005E6EC0();
 extern u8 cw;
-extern u8 g_main_2EFBB0;
+extern s32 g_main_2EFBB0;
 
 void lobby_func_00580760(s64 arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */

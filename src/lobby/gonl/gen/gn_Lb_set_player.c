@@ -9,7 +9,7 @@ s32 get_prim();
 void * get_prim_ptr();
 void * memcpy();
 extern s32 lb_player;
-extern u8 pl01_adr_tbl;
+extern s32 pl01_adr_tbl;
 extern u8 player_work;
 
 void Lb_set_player(s32 arg0, void *arg1, void *arg2) {

@@ -8,7 +8,7 @@ s32 SetSendCommandLen();
 s32 SetSendData8();
 s32 Write_Socket();
 extern u8 CnetSys_w;
-extern u8 send_work;
+extern s32 send_work;
 
 void __cnet_SendSet_TelephoneNumber(void) {
     SetSendCommand(&send_work, 0x20);

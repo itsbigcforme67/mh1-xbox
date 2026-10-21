@@ -30,7 +30,7 @@ s32 font_print();            /* extern */
 s32 func_0012A800();                       /* extern */
 extern u16 g_lb_5FBBF0;
 extern void *g_lb_636CD0;
-extern u8 g_lb_63E530;
+extern s32 g_lb_63E530;
 extern u8 PlazaInfo;
 
 void lobby_func_0057D5D0(void *arg0) {
@@ -72,7 +72,7 @@ void lobby_func_0057D5D0(void *arg0) {
     SetTextureStage(0x17B);
     flfntSetSize(0x12, 0x12);
     var_s3 = 0;
-    var_s2 = &(*(u8 *)((u8 *)&textLobbyTbl + 0x50));
+    var_s2 = &(*(s32 *)((u8 *)&textLobbyTbl + 0x50));
     var_s1 = &g_lb_5FBBF0;
     var_s0 = &g_lb_636CD0;
     do {

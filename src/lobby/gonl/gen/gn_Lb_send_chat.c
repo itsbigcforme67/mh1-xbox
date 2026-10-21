@@ -15,8 +15,8 @@ s32 Lb_chat_receipt();                 /* extern */
 s32 Visual_main();                               /* extern */
 extern s8 chatIDList;
 extern u8 chat_cnfg_font_color;
-extern u8 my_user_handle;
-extern u8 my_user_id;
+extern s32 my_user_handle;
+extern s32 my_user_id;
 
 void Lb_send_chat(s32 unused_a0, s32 arg1, s32 arg2) {
     u8 g_frame[0x190] __attribute__((aligned(16)));   /* G's stack frame */

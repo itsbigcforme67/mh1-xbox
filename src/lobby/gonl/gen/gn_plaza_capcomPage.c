@@ -15,8 +15,8 @@ extern u8 jtbl_2033;
 extern u8 pNet;
 s32 Lbc_SendBrowserResult(); /* extern */
 s32 To_BootUpBrowser();                         /* extern */
-extern u8 first_url;
-extern u8 lit_2032_0065DD40;
+extern s32 first_url;
+extern s32 lit_2032_0065DD40;
 
 void plaza_capcomPage(void) {
     s32 temp_a4;

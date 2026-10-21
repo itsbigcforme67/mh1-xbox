@@ -37,13 +37,13 @@ s32 sprintf();           /* extern */
 extern u8 ClassInfo;
 extern s32 *lb_ibox_str;
 extern s32 g_lb_636A00;
-extern u8 g_lb_63E128;
-extern u8 g_lb_63E278;
-extern u8 g_lb_63E280;
+extern s32 g_lb_63E128;
+extern s32 g_lb_63E278;
+extern s32 g_lb_63E280;
 extern s32 g_sub_51B9B0;
-extern u8 PlazaInfo;
+extern s32 PlazaInfo;
 extern s32 hunter_appellation;
-extern u8 lit_2316;
+extern s32 lit_2316;
 extern s32 tl_job_tbl;
 
 void disp_status(s32 arg0, s32 arg1, void *arg2, s32 *arg3, void *arg4, s32 arg5, s32 arg6, void *arg7, s16 arg_sp0) {
@@ -127,7 +127,7 @@ void disp_status(s32 arg0, s32 arg1, void *arg2, s32 *arg3, void *arg4, s32 arg5
         Lb_put_msg_type2((s32) (((s16) ((temp_s0 + 0xA)))), (s32) temp_s4_5, 0x19, M2C_ERROR(/* Read from unset register $a3 */));
         flfntLocate((s32) (((s16) ((temp_s2 + 0x50)))), (s32) temp_s4_5);
         if ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28)) == 7) {
-            font_print(&g_lb_63E278, Get_ServerName(), &PlazaInfo + ((ClassInfo - 1) * 0x15C) + 0x1A, ClassInfo);
+            font_print(&g_lb_63E278, Get_ServerName(), (u8 *)&PlazaInfo + ((ClassInfo - 1) * 0x15C) + 0x1A, ClassInfo);
             return;
         }
         nwDispStr_Html((*(s32 *)&cw) + (arg_sp0 * 0x24A) + 0x1064, 0x43960000, (f32) temp_s4_5);

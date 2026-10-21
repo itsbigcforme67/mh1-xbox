@@ -11,10 +11,10 @@ void * memcpy();
 void * memset();
 extern u8 USER_PL_ID;
 extern u8 cw;
-extern u8 g_sub_541E30;
-extern u8 room_member_handle;
-extern u8 room_member_id;
-extern u8 room_member_mini_data;
+extern s32 g_sub_541E30;
+extern s32 room_member_handle;
+extern s32 room_member_id;
+extern s32 room_member_mini_data;
 
 void lbc_game_ready_00(s32 unused_a0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 g_frame[0x780] __attribute__((aligned(16)));   /* G's stack frame */

@@ -10,8 +10,8 @@ s32 lobby_func_0057C7E0();
 void * strcpy();
 extern u8 cw;
 s32 To_BootUpBrowser();                         /* extern */
-extern u8 first_url;
-extern u8 lit_452_0065E820;
+extern s32 first_url;
+extern s32 lit_452_0065E820;
 
 void lbc_login_reguration(s32 arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 temp_a1;

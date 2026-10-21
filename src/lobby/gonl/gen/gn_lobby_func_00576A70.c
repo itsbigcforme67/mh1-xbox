@@ -24,9 +24,9 @@ s32 sprintf();    /* extern */
 extern s32 lb_ibox_str;
 extern void *g_lb_636B50;
 extern void *g_lb_636DF8;
-extern u8 g_lb_63E268;
-extern u8 g_lb_63E2B8;
-extern u8 lit_2316;
+extern s32 g_lb_63E268;
+extern s32 g_lb_63E2B8;
+extern s32 lit_2316;
 
 void lobby_func_00576A70(void) {
     u8 g_frame[0x1B0] __attribute__((aligned(16)));   /* G's stack frame */

@@ -42,9 +42,9 @@ s32 font_print();           /* extern */
 s32 sprintf(); /* extern */
 extern u8 ClassInfo;
 extern u16 g_main_30645A;
-extern u8 lit_2316;
+extern s32 lit_2316;
 extern s128 lit_3199;
-extern u8 lit_3241;
+extern s32 lit_3241;
 
 void plaza_trans_ot0(void *arg0) {
     u8 g_frame[0x90] __attribute__((aligned(16)));   /* G's stack frame */
@@ -64,7 +64,7 @@ void plaza_trans_ot0(void *arg0) {
     SetTextureStage(0x180);
     SetFilterMode(1);
     flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
-    Put_2TF(&(*(u8 *)((u8 *)&textLobbyTbl + 0x14)));
+    Put_2TF(&(*(s32 *)((u8 *)&textLobbyTbl + 0x14)));
     lobby_func_00578C40((s32) (((s16) (((*(s16 *)((u8 *)&textLobbyTbl + 0x16)) + 0x1B)))), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     DispSceneTitle(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     DispHelpLine(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));

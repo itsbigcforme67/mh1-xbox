@@ -23,7 +23,7 @@ extern u8 game_w;
 extern u8 jtbl_1035_0065E950;
 extern u8 pNet;
 s32 cnLBS_Read_CurrentPlace(); /* extern */
-extern u8 player_work;
+extern s32 player_work;
 
 void lobby_return_to_lobby(s32 unused_a0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 *var_s0;   /* (s32 *) */
@@ -73,7 +73,7 @@ block_43:
             (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
             cnLBS_Read_PlazaAllocation(0, 0xF, (s32) lobby_func_0057ECE0, (s32) temp_a3);
-            Set_userdata(&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00));
+            Set_userdata((u8 *)&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00));
             Lbc_SendMiniData(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             break;
         case 1:                                     /* switch 2 */

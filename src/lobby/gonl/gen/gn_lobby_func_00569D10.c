@@ -5,7 +5,7 @@
 
 void * memset();
 extern u8 pNet;
-extern u8 tl_member_buff;
+extern s32 tl_member_buff;
 
 void lobby_func_00569D10(void) {
     (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) = 0;

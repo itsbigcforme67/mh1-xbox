@@ -6,7 +6,7 @@
 s32 SetSendCommand();
 s32 SetSendCommandLen();
 s32 Write_Socket();
-extern u8 send_work;
+extern s32 send_work;
 
 s32 __cnet_SendReq_PieceExit(void) {
     s32 temp_s0;

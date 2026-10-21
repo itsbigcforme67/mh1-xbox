@@ -5,13 +5,13 @@
 
 s32 cnLBS_Get_PlazaName();           /* extern */
 s32 cnetGet_Room_LastRecvNumber();         /* extern */
-extern u8 LobbyInfo;
+extern s32 LobbyInfo;
 
 void lobby_func_00587260(void) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp1E (*(u16 *)(g_frame + 0x1E))
 
     cnetGet_Room_LastRecvNumber(&sp1E);
-    cnLBS_Get_PlazaName(sp1E, &LobbyInfo + ((sp1E - 1) * 0x15C) + 0x1A);
+    cnLBS_Get_PlazaName(sp1E, (u8 *)&LobbyInfo + ((sp1E - 1) * 0x15C) + 0x1A);
 }
 

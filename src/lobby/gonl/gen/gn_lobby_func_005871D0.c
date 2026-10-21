@@ -5,13 +5,13 @@
 
 s32 gonl_Get_PlazaStatus();          /* extern */
 s32 cnetGet_Room_LastRecvNumber();         /* extern */
-extern u8 PlazaInfo;
+extern s32 PlazaInfo;
 
 void lobby_func_005871D0(void) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp1E (*(u16 *)(g_frame + 0x1E))
 
     cnetGet_Room_LastRecvNumber(&sp1E);
-    gonl_Get_PlazaStatus(sp1E, &PlazaInfo + ((sp1E - 1) * 0x15C) + 0x16);
+    gonl_Get_PlazaStatus(sp1E, (u8 *)&PlazaInfo + ((sp1E - 1) * 0x15C) + 0x16);
 }
 

@@ -26,15 +26,15 @@ s32 font_print();                 /* extern */
 s32 func_0012BDD0();                      /* extern */
 s32 sprintf();    /* extern */
 extern s32 lb_ibox_str;
-extern u8 g_lb_63E2B8;
+extern s32 g_lb_63E2B8;
 extern u16 g_lb_6B4510;
 extern s8 g_lb_6B451C;
 extern u8 g_lb_6B451D;
 extern u8 g_lb_6B451E;
 extern u16 g_main_3034B4;
 extern s32 D_00528A80;
-extern u8 LobbyInfo;
-extern u8 lit_2316;
+extern s32 LobbyInfo;
+extern s32 lit_2316;
 
 void lobby_func_00576F20(void) {
     u8 g_frame[0xB0] __attribute__((aligned(16)));   /* G's stack frame */
@@ -62,7 +62,7 @@ void lobby_func_00576F20(void) {
     font_print((*(s32 * *)((u8 *)&tl_msg_tbl + 0x28)));
     flfntLocate(0x15A, 0x82);
     font_set_palette((s32) (*(u16 *)((u8 *)&g_main_3034B4 + (g_lb_6B4510 * 0x15C))));
-    font_print(&LobbyInfo + ((g_lb_6B4510 - 1) * 0x15C) + 0x1A);
+    font_print((u8 *)&LobbyInfo + ((g_lb_6B4510 - 1) * 0x15C) + 0x1A);
     font_set_palette(0);
     temp_s3 = ((s16) (0x98));
     flfntLocate(0xE2, (s32) temp_s3);

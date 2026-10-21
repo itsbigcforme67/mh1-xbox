@@ -8,8 +8,8 @@ s32 SetSendCommandLen();
 s32 SetSendStringData2();
 s32 Write_Socket();
 extern u8 CnetSys_w;
-extern u8 lit_336_0065E008;
-extern u8 send_work;
+extern s32 lit_336_0065E008;
+extern s32 send_work;
 
 s32 __cnet_SendReq_EchoPacket(void) {
     s32 temp_s0;

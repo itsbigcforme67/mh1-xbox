@@ -10,7 +10,7 @@ s32 lobby_func_00580C70();
 s32 lobby_func_00582A20();
 extern u8 cw;
 extern u8 pNet;
-extern u8 put_back;
+extern s32 put_back;
 
 void lobby_client_game_in_lobby(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 temp_v1;

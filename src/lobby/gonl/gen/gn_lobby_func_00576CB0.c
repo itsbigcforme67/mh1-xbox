@@ -14,7 +14,7 @@ extern u8 tl_msg_tbl;
 s32 font_print();                 /* extern */
 extern s32 g_lb_636CF0;
 extern s32 lb_quest_color_tbl;
-extern u8 lit_2316;
+extern s32 lit_2316;
 
 void lobby_func_00576CB0(void) {
     u8 *var_s1;   /* (s32 *) */

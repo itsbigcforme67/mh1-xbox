@@ -17,7 +17,7 @@ extern u8 tl_member_buff;
 extern u8 tl_msg_tbl;
 extern u8 g_lb_6B46D1;
 extern u8 g_lb_6B4759;
-extern u8 g_lb_6B475C;
+extern s32 g_lb_6B475C;
 extern s8 seekStr;
 
 void lobby_func_00575FB0(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
@@ -53,7 +53,7 @@ void lobby_func_00575FB0(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
         flfntLocate(lobby_func_005935C0(&sp20, 0x1B0, 0x12, M2C_ERROR(/* Read from unset register $a3 */)), 0xA4);
         font_print_uf(&sp20);
         Lb_put_msg_type2(0xE2, 0xD0, 4, M2C_ERROR(/* Read from unset register $a3 */));
-        han2zen(&(*(u8 *)((u8 *)&seekStr + 0x44)), &sp20);
+        han2zen(&(*(s32 *)((u8 *)&seekStr + 0x44)), &sp20);
         flfntLocate(lobby_func_005935C0(&sp20, 0x1B0, 0x12, M2C_ERROR(/* Read from unset register $a3 */)), 0xD0);
         font_print_uf(&sp20);
         Lb_put_msg_type2(0xE2, 0xFC, 4, M2C_ERROR(/* Read from unset register $a3 */));

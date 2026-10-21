@@ -36,8 +36,8 @@ extern u8 tl_member_buff;
 s32 Visual_main();                              /* extern */
 s16 net_Check_FriendSuu();        /* extern */
 extern s8 g_lb_653A50;
-extern u8 g_main_302CB0;
-extern u8 my_user_id;
+extern s32 g_main_302CB0;
+extern s32 my_user_id;
 
 s32 lobby_func_00572110(void) {
     s16 temp_a1_7;
@@ -224,7 +224,7 @@ block_109:
             if ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) == 0) {
                 cnWrap_SoundRequest(7, (s32) temp_a1_7, (s32) temp_a2_2, M2C_ERROR(/* Read from unset register $a3 */));
             } else {
-                temp_s0_2 = &g_main_302CB0 + ((((s16) ((((s16) ((temp_a2_2 + (temp_a1_7 * 7)))))))) * 0x30);
+                temp_s0_2 = (u8 *)&g_main_302CB0 + ((((s16) ((((s16) ((temp_a2_2 + (temp_a1_7 * 7)))))))) * 0x30);
                 if (memcmp(temp_s0_2, temp_v0_4 + (((s32) ((*(s8 *)((u8 *)(temp_v0_4) + 0x237)) + 1) % 3) * 0x5C) + 0x9A, 8) != 0) {
                     temp_a1_8 = (*(void **)&g_main_2EFBAC);
                     if (memcmp(temp_s0_2, temp_a1_8 + (((s32) ((*(s8 *)((u8 *)(temp_a1_8) + 0x237)) + 2) % 3) * 0x5C) + 0x9A, 8) == 0) {

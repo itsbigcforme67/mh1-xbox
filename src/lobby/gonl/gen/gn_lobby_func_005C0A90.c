@@ -8,7 +8,7 @@ s32 SetSendCommandLen();
 s32 SetSendData8();
 s32 SetSendStringData2();
 s32 Write_Socket();
-extern u8 send_work;
+extern s32 send_work;
 
 s32 lobby_func_005C0A90(s32 arg0, s32 arg1, void *arg2, s32 arg3) {
     s32 temp_s0;

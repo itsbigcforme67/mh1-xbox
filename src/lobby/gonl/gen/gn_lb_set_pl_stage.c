@@ -9,7 +9,7 @@ extern u8 cw;
 extern u8 game_w;
 s32 Lb_Pl_basic_flagset(); /* extern */
 s32 Lb_pl_chr_set(); /* extern */
-extern u8 lbCommer;
+extern s32 lbCommer;
 extern u8 player_work;
 
 void lb_set_pl_stage(s32 arg0, u8 *arg1) {
@@ -45,7 +45,7 @@ void lb_set_pl_stage(s32 arg0, u8 *arg1) {
         if ((*arg1 == 0) && ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0)) {
             temp_a1_2 = temp_s0 * 0x5C;
             if (*(&(*(u8 *)((u8 *)&lbCommer + 0x8)) + temp_a1_2) != 0) {
-                Lb_put_chat(7, (s32) (&lbCommer + temp_a1_2 + 8), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+                Lb_put_chat(7, (s32) ((u8 *)&lbCommer + temp_a1_2 + 8), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             }
         }
     }

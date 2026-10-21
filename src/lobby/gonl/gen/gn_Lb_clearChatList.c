@@ -5,7 +5,7 @@
 
 void * memset();
 extern u8 cw;
-extern u8 chatIDList;
+extern s32 chatIDList;
 
 void Lb_clearChatList(void) {
     u8 *var_s0;   /* (s32 *) */

@@ -12,7 +12,7 @@ s32 font_print_double();
 s32 lobby_func_0059DA90();
 s32 reload_tex();
 extern u8 subTitleCol;
-extern u8 helpLineTbl;
+extern s32 helpLineTbl;
 
 void DispSceneTitle(void) {
     u8 *temp_a0;

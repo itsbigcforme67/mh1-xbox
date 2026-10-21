@@ -17,7 +17,7 @@ extern void *g_lb_636E04;
 extern void *g_lb_636E08;
 extern void *g_lb_636EC0;
 extern void *g_lb_636EC4;
-extern u8 g_lb_63E020;
+extern s32 g_lb_63E020;
 extern u8 g_main_3064AF;
 extern s16 tl_member_buff;
 

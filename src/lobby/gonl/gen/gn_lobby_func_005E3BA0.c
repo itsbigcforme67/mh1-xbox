@@ -5,7 +5,7 @@
 
 s32 GetRecvData16();
 s32 GetRecvDataString();
-extern u8 recv_work;
+extern s32 recv_work;
 
 void lobby_func_005E3BA0(void *arg0, void *arg1) {
     GetRecvDataString(arg1, GetRecvData16(arg0, &recv_work));

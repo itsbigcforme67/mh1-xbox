@@ -18,7 +18,7 @@ extern u8 tl_msg_tbl;
 s32 font_print();                 /* extern */
 extern s8 g_lb_6B475C;
 extern u8 g_main_2EEE68;
-extern u8 lit_2316;
+extern s32 lit_2316;
 extern s8 seekStr;
 extern s32 tl_hr_tbl;
 extern s32 tl_job_tbl;

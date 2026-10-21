@@ -21,7 +21,7 @@ extern u8 cw;
 extern u8 pNet;
 s32 cnLBS_LobbyExit(); /* extern */
 s32 sprintf();         /* extern */
-extern u8 g_lb_63E538;
+extern s32 g_lb_63E538;
 
 void lobby_func_00582A20(void) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */

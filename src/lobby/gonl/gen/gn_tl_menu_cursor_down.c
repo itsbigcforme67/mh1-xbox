@@ -4,7 +4,7 @@
 #include "../gonl.h"
 
 extern u8 pNet;
-extern u8 g_main_2EEE70;
+extern s32 g_main_2EEE70;
 
 void tl_menu_cursor_down(void) {
     s32 temp_a4;
@@ -13,7 +13,7 @@ void tl_menu_cursor_down(void) {
     u8 *temp_a0;
     u8 *temp_a0_2;
 
-    temp_a4 = *(&g_main_2EEE70 + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) * 4));
+    temp_a4 = (*(s32 *)((u8 *)&g_main_2EEE70 + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) * 4)));
 loop_1:
     temp_a0 = (*(void **)&pNet);
     temp_a2 = (*(u8 *)((u8 *)(temp_a0) + 0x2A));

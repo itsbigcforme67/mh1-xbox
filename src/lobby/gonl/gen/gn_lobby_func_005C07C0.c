@@ -10,7 +10,7 @@ s32 Write_Socket();
 extern u8 g_lb_734DFD;
 extern u8 g_lb_734DFE;
 extern u8 g_lb_734DFF;
-extern u8 send_work;
+extern s32 send_work;
 
 s32 lobby_func_005C07C0(s32 arg0) {
     s32 temp_s0;

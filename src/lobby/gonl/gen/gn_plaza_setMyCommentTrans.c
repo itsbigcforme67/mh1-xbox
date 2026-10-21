@@ -22,10 +22,10 @@ s32 func_0012BDD0();                         /* extern */
 s32 put_titles();                  /* extern */
 s32 sprintf();           /* extern */
 extern s32 g_lb_636A00;
-extern u8 g_lb_63E128;
+extern s32 g_lb_63E128;
 extern s32 hunter_appellation;
-extern u8 lbCommer;
-extern u8 lit_2316;
+extern s32 lbCommer;
+extern s32 lit_2316;
 extern u8 my_user_mini_data;
 extern s32 tl_job_tbl;
 
@@ -47,7 +47,7 @@ void plaza_setMyCommentTrans(s32 arg0, s32 arg1, s32 arg2) {
     u8 temp_a2;
 
     if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) {
-        var_s4 = &lbCommer + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x5C) + 0x1C;
+        var_s4 = (u8 *)&lbCommer + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x5C) + 0x1C;
     } else {
         var_s4 = &my_user_mini_data;
     }

@@ -15,7 +15,7 @@ extern u8 lb_sys;
 s32 Init_InterruptFlag();                       /* extern */
 s32 Plaza_chat_clear();                         /* extern */
 s32 cnLBS_Read_PlazaJoinUser(); /* extern */
-extern u8 g_lb_6DE120;
+extern s32 g_lb_6DE120;
 
 void To_EnterLobby(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB99)) = 3;

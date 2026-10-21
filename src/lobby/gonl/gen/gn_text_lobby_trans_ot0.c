@@ -33,7 +33,7 @@ void text_lobby_trans_ot0(void *arg0) {
             SetTextureStage(0x174);
             SetFilterMode(1);
             flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
-            Put_2TF(&(*(u8 *)((u8 *)&textLobbyTbl + 0x28)));
+            Put_2TF(&(*(s32 *)((u8 *)&textLobbyTbl + 0x28)));
         } else if (((u32) (temp_v1 - 5) < 2U) || (temp_v1 == 3)) {
             Disp_back();
         } else {
@@ -42,7 +42,7 @@ void text_lobby_trans_ot0(void *arg0) {
     } else {
         reload_tex(1, 0x140);
         SetTextureStage(0x140);
-        Put_2TF(&(*(u8 *)((u8 *)&textLobbyTbl + 0x28)));
+        Put_2TF(&(*(s32 *)((u8 *)&textLobbyTbl + 0x28)));
     }
     reload_tex(1, 0x180);
     SetTextureStage(0x180);

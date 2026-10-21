@@ -9,8 +9,8 @@ s32 memcmp();
 extern u8 cw;
 extern u8 pNet;
 s32 MainBsDispose();                            /* extern */
-extern u8 BrPersonalData;
-extern u8 tmpPersonalData;
+extern s32 BrPersonalData;
+extern s32 tmpPersonalData;
 
 s32 lbc_browser_04(void) {
     s32 temp_v0;

@@ -9,7 +9,7 @@ s32 lobby_func_0057F090();
 extern u8 cw;
 s32 cnLBS_Get_PlazaName();           /* extern */
 s32 cnLBS_Read_PlazaName(); /* extern */
-extern u8 LobbyInfo;
+extern s32 LobbyInfo;
 
 s32 Lbs_request_enter_lobby2(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_v0;
@@ -32,7 +32,7 @@ block_12:
         goto block_12;
     case 0x2:
         temp_v0 = cnLbc_CheckInFloorOrder(1, arg1, arg2, arg3);
-        cnLBS_Get_PlazaName(temp_v0 & 0xFFFF, &LobbyInfo + ((temp_v0 - 1) * 0x15C) + 0x1A);
+        cnLBS_Get_PlazaName(temp_v0 & 0xFFFF, (u8 *)&LobbyInfo + ((temp_v0 - 1) * 0x15C) + 0x1A);
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0U;
         return 0;
     default:

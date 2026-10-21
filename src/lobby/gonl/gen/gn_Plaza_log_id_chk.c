@@ -8,8 +8,8 @@ s32 plaza_log_id_chk_sub();
 s32 strcmp();
 extern u8 PitMenu;
 extern u8 lb_rule_member;
-extern u8 g_lb_63E918;
-extern u8 my_user_id;
+extern s32 g_lb_63E918;
+extern s32 my_user_id;
 
 u32 Plaza_log_id_chk(s32 **arg0) {
     u8 *var_s0;   /* (s32 **) */
@@ -22,7 +22,7 @@ u32 Plaza_log_id_chk(s32 **arg0) {
         *arg0 = NULL;
         return 0U;
     }
-    var_s3 = &(*(u8 *)((u8 *)&PitMenu + 0x2A));
+    var_s3 = &(*(s32 *)((u8 *)&PitMenu + 0x2A));
     var_s1 = 0;
     if (var_s2 != 0) {
         var_s0 = arg0;

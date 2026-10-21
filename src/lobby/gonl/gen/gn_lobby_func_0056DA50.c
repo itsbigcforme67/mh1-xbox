@@ -18,7 +18,7 @@ extern u8 tl_member_buff;
 s8 Visual_main();                          /* extern */
 extern u8 g_lb_5FBC28;
 extern u8 g_lb_5FBC29;
-extern u8 g_lb_653A50;
+extern s32 g_lb_653A50;
 extern s8 g_lb_6B46D0;
 extern s8 g_lb_6B46D1;
 extern u8 g_main_2EEE68;

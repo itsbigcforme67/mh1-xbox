@@ -8,7 +8,7 @@ s32 Lbc_set_prim();
 s32 fade_set();
 extern u8 cw;
 s32 cnWrap_BgmVolume();                  /* extern */
-extern u8 put_back;
+extern s32 put_back;
 
 void _cnet_RecvFromLbs_NoticeMailMessage(void) {
     u8 *temp_v1;

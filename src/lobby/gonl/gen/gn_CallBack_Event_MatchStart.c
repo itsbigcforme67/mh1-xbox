@@ -11,9 +11,9 @@ void * memset();
 extern u8 cw;
 extern u8 game_w;
 extern u8 player_work;
-extern u8 room_member_handle;
-extern u8 room_member_id;
-extern u8 room_member_mini_data;
+extern s32 room_member_handle;
+extern s32 room_member_id;
+extern s32 room_member_mini_data;
 
 void CallBack_Event_MatchStart(void) {
     u8 *var_s0;   /* (s32 *) */

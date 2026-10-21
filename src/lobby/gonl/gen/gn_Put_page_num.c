@@ -15,9 +15,9 @@ extern u8 lb_num_str;
 s32 Lb_get_cursor_col();                            /* extern */
 s32 font_print();           /* extern */
 s32 sprintf(); /* extern */
-extern u8 lit_2316;
-extern u8 lit_2418;
-extern u8 lit_2419;
+extern s32 lit_2316;
+extern s32 lit_2418;
+extern s32 lit_2419;
 
 void Put_page_num(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     u8 g_frame[0xB0] __attribute__((aligned(16)));   /* G's stack frame */

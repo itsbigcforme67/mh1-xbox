@@ -29,7 +29,7 @@ extern u8 player_work;
 s32 cnWrap_BgmFadeOut();                 /* extern */
 s32 cnWrap_BgmStop();                           /* extern */
 s32 tk_logout_init();      /* extern */
-extern u8 put_back;
+extern s32 put_back;
 
 void lbc_logout_00(s32 unused_a0, s32 unused_a1, s32 unused_a2, s32 arg3, s64 arg_sp0) {
     u8 temp_a0_2;
@@ -124,7 +124,7 @@ void lbc_logout_00(s32 unused_a0, s32 unused_a1, s32 unused_a2, s32 arg3, s64 ar
             temp_v1_5 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_v1_5) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1_5) + 0xB9C)) + 1);
             CpInetTcpAbort((*(s32 *)((u8 *)&ConnWork + 0x4)));
-            CpInetTcpDelete(&(*(u8 *)((u8 *)&ConnWork + 0x4)));
+            CpInetTcpDelete(&(*(s32 *)((u8 *)&ConnWork + 0x4)));
             return;
         }
         break;

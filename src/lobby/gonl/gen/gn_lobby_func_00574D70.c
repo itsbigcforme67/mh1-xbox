@@ -65,7 +65,7 @@ void lobby_func_00574D70(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         return;
     case 2:                                         /* switch 2 */
         lobby_func_00574CB0((s32) arg0, (s32) arg1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
-        if (lobby_func_005C14D0(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) == 0) {
+        if (lobby_func_005C14D0(&(*(s32 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) == 0) {
             lobby_func_005737C0(g_lb_636B5C, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return;
         }

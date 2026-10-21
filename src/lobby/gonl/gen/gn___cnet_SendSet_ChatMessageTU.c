@@ -7,7 +7,7 @@ s32 SetSendCommand();
 s32 SetSendCommandLen();
 s32 SetSendData16();
 s32 Write_Socket();
-extern u8 send_work;
+extern s32 send_work;
 
 s32 __cnet_SendSet_ChatMessageTU(s32 arg0, s32 arg1, s32 arg2) {
     s32 temp_s0;

@@ -13,7 +13,7 @@ s32 sub_main_func_004C8600();
 s32 sub_main_func_004C8A10();
 s32 sub_main_func_004C9410();
 s32 get_questLevelNum();                     /* extern */
-extern u8 User_data;
+extern s32 User_data;
 
 s32 lobby_func_00543180(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_v0;

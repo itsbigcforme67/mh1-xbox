@@ -15,7 +15,7 @@ s32 put_main_cursor2();
 extern u8 BsProxyUrlstr;
 extern u8 tl_member_buff;
 s32 font_print();           /* extern */
-extern u8 lit_2316;
+extern s32 lit_2316;
 
 void lobby_func_005748B0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0xD0] __attribute__((aligned(16)));   /* G's stack frame */
@@ -50,7 +50,7 @@ void lobby_func_005748B0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                 flfntLocate(0x1F4, (s32) var_s5);
                 font_print(&lit_2316, &spB0);
             }
-            if (((s32) (lobby_func_005C1560(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, var_s4, M2C_ERROR(/* Read from unset register $a3 */)) << 0x30) >> 0x30) != -1) {
+            if (((s32) (lobby_func_005C1560(&(*(s32 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, var_s4, M2C_ERROR(/* Read from unset register $a3 */)) << 0x30) >> 0x30) != -1) {
                 Lb_put_icon((s32) (((s16) (temp_s1))), (s32) var_s5, 0x2C, -1);
             }
         }

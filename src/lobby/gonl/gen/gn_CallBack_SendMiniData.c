@@ -6,7 +6,7 @@
 s32 cnLBS_Get_ServerMessage();
 void * memcpy();
 extern u8 cw;
-extern u8 my_user_mini_data;
+extern s32 my_user_mini_data;
 
 void CallBack_SendMiniData(s64 arg0) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */

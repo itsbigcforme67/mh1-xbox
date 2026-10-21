@@ -24,7 +24,7 @@ extern u8 jtbl_0063E490;
 extern u8 pNet;
 s32 cnLBS_Send_LoginFinish(); /* extern */
 s32 cnLBS_Send_UserMiniData(); /* extern */
-extern u8 my_user_mini_data;
+extern s32 my_user_mini_data;
 
 void lbc_login_finish_after(void) {
     s32 temp_a0_4;

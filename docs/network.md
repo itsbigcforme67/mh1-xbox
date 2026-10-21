@@ -1199,8 +1199,16 @@ MH1's copies; HAND-FIXED files are kept). What m2c output needed for the PC (all
   result callback, the 6205 / 620A plaza handlers);
 - G data the PC imported at MH1's size: quest_lv_tbl / flag_quest_tbl (8 levels, MH1 6) in config/mhg/pc_data.txt;
   G's lobby work area (main 0x2EF390, app_mem_top + 0x126200 on the PS2) is a host buffer set in rt_online.c.
-State (20 Oct): the PC logs in with G's screens (Capcom ID select drawn by G's code), downloads the info file list,
-reads the five plazas; next the plaza menu, the town, then two G PCs (tools/test_online_g.sh to come).
+More G code under MH1 names that is other code (G_RENAME in the tool): the plaza / town record getters
+(cnLBS_Get_RoomStatus / mhRoomJoinUser read a plaza record in G, cnLBS_Get_PlazaStatus / mhPlazaJoinUser a town record);
+G's cnLBS_Read_RoomProperty sends 630D, not 650A (src/lobby/cnet/cnlbs.c, MHG_NET); main data pointing into lobby.bin
+(G's plaza menu lists, main 0x2EEE70) is also written into the host copies the code reads (rt_main_lobby_patch_named);
+G's 14 fades. What m2c cannot know is now taken from G's asm: the access width of data reached by a computed address
+(`addiu r, %lo(SYM)` then lb / lh / lw through r), and calls to generated G functions pass all four argument registers
+(G hands $a1-$a3 on unnamed). One-line corrections live in the tool (FIXUPS), so regenerating keeps them.
+State (21 Oct): on the PC, G's own screens: login, Capcom ID select, info file download (6881 / 6883 / 6882), the plaza
+class menu, the plaza menu, its town list (G Lobby 1-4 with counts) and the town entry request (6305; the client then
+waits on the answer's callback). Next: the town itself, two G PCs (tools/test_online_g.sh), the PS2 G disc with a PC.
 
 ## 4. Run it
 

@@ -8,7 +8,7 @@ s32 cnLBS_LobbyEntry();
 s32 cnLbc_CheckInFloorOrder();
 s32 lobby_func_0057EFF0();
 extern u8 cw;
-extern u8 g_lb_63E540;
+extern s32 g_lb_63E540;
 
 s32 Lbs_request_enter_lobby(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     u8 temp_v1_2;

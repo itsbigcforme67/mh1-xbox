@@ -15,7 +15,7 @@ extern u8 pNet;
 extern u8 tl_member_buff;
 s32 net_Check_FriendSuu();        /* extern */
 extern void *g_lb_636B4C;
-extern u8 g_main_302CB0;
+extern s32 g_main_302CB0;
 
 void lobby_func_00574FC0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_a4;
@@ -46,7 +46,7 @@ void lobby_func_00574FC0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     }
     if ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) == 5) {
         temp_a4 = (*(s32 *)&cw);
-        temp_a2_2 = &g_main_302CB0 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x30);
+        temp_a2_2 = (u8 *)&g_main_302CB0 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x30);
         disp_status(arg0, arg1, temp_a2_2, temp_a2_2 + 8, temp_a4 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x24A) + 0x101C, (s32) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x614)), 3, temp_a4 + 0xAF8, (s32) (s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)));
         return;
     }

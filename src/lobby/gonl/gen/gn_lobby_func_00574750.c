@@ -11,7 +11,7 @@ s32 lobby_func_005791D0();
 s32 put_main_cursor2();
 s32 font_print();           /* extern */
 extern s8 g_main_302290;
-extern u8 lit_2316;
+extern s32 lit_2316;
 
 void lobby_func_00574750(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0x80] __attribute__((aligned(16)));   /* G's stack frame */

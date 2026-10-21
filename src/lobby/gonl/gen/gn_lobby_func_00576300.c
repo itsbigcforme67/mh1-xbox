@@ -32,9 +32,9 @@ s32 sprintf(); /* extern */
 extern void *g_lb_636B48;
 extern void *g_lb_636DF8;
 extern s32 tl_etc;
-extern u8 g_lb_63E2A8;
-extern u8 lit_2316;
-extern u8 my_user_id;
+extern s32 g_lb_63E2A8;
+extern s32 lit_2316;
+extern s32 my_user_id;
 
 void lobby_func_00576300(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
     u8 g_frame[0x100] __attribute__((aligned(16)));   /* G's stack frame */

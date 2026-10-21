@@ -21,8 +21,8 @@ extern u8 net_char_change;
 extern u8 pNet;
 s32 FlushCache();                /* extern */
 extern s128 BrPersonalData;
-extern u8 FirstURL;
-extern u8 first_url;
+extern s32 FirstURL;
+extern s32 first_url;
 extern s128 tmpPersonalData;
 
 void lobby_func_0057C7E0(s32 unused_a0, s32 arg1, s32 unused_a2, s32 arg3) {

@@ -493,7 +493,8 @@ def narrow_s64(src):
         return '%s(%s) {' % (head, ', '.join(out) if out else 'void')
     src = re.sub(r'^(\w[\w *]*?\b\w+)\(([^()]*)\) \{$', sig, src, flags=re.M)
     src = re.sub(r'^    [su]64 ((?:var|temp)_\w+);', r'    s32 \1;', src, flags=re.M)
-    return re.sub(r'(?<![*\w])\([su]64\) ', '(s32) ', src)
+    # (not an 8-byte result being passed on: `(s64) *(s64 *)&sp18`)
+    return re.sub(r'(?<![*\w])\([su]64\) (?!\*\(s64 \*\)&|sp[0-9A-F]+\b)', '(s32) ', src)
 
 
 def deref_ints(src):

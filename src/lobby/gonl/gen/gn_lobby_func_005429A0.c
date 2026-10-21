@@ -5,7 +5,7 @@
 
 s32 sub_main_func_004C85C0();
 extern u8 D_005E7800;
-extern u8 User_data;
+extern s32 User_data;
 
 s32 lobby_func_005429A0(void) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */

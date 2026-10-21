@@ -15,11 +15,11 @@ extern u8 pNet;
 extern u8 tl_msg_tbl;
 s32 font_print();              /* extern */
 s32 sprintf(); /* extern */
-extern u8 g_lb_63E288;
+extern s32 g_lb_63E288;
 extern s32 lb_num_str;
-extern u8 lit_2316;
-extern u8 lit_2633;
-extern u8 my_user_id;
+extern s32 lit_2316;
+extern s32 lit_2633;
+extern s32 my_user_id;
 
 void put_member_info(s32 arg0, s32 arg1, s8 *arg2, void *arg3, void *arg4, s32 arg5) {
     u8 g_frame[0xE0] __attribute__((aligned(16)));   /* G's stack frame */

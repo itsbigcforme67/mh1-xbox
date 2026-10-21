@@ -7,16 +7,16 @@ s32 Online_ck();
 void * memset();
 extern u8 cw;
 extern u8 pNet;
-extern u8 lb_prim;
-extern u8 text_lobby_trans_ot3;
+extern s32 lb_prim;
+extern s32 text_lobby_trans_ot3;
 
 void Lbc_init_network_work(void) {
     memset((*(void **)&pNet), 0, 0x38);
     (*(s32 **)((u8 *)((*(void **)&pNet)) + 0)) = &lb_prim;
-    (*(s32 **)((u8 *)((*(void **)&pNet)) + 4)) = &(*(u8 *)((u8 *)&lb_prim + 0x20));
-    (*(s32 **)((u8 *)((*(void **)&pNet)) + 8)) = &(*(u8 *)((u8 *)&lb_prim + 0x40));
-    (*(s32 **)((u8 *)((*(void **)&pNet)) + 0xC)) = &(*(u8 *)((u8 *)&lb_prim + 0x60));
-    (*(s32 **)((u8 *)((*(void **)&pNet)) + 0x10)) = &(*(u8 *)((u8 *)&lb_prim + 0x80));
+    (*(s32 **)((u8 *)((*(void **)&pNet)) + 4)) = &(*(s32 *)((u8 *)&lb_prim + 0x20));
+    (*(s32 **)((u8 *)((*(void **)&pNet)) + 8)) = &(*(s32 *)((u8 *)&lb_prim + 0x40));
+    (*(s32 **)((u8 *)((*(void **)&pNet)) + 0xC)) = &(*(s32 *)((u8 *)&lb_prim + 0x60));
+    (*(s32 **)((u8 *)((*(void **)&pNet)) + 0x10)) = &(*(s32 *)((u8 *)&lb_prim + 0x80));
     (*(s32 **)((u8 *)((*(s32 **)((u8 *)((*(void **)&pNet)) + 0x10))) + 0x14)) = &text_lobby_trans_ot3;
     (*(s32 *)((u8 *)((*(s32 **)((u8 *)((*(void **)&pNet)) + 0))) + 0x18)) = 0;
     (*(s32 *)((u8 *)((*(s32 **)((u8 *)((*(void **)&pNet)) + 4))) + 0x18)) = 1;

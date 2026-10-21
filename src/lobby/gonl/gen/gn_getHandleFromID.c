@@ -12,7 +12,7 @@ s32 lobby_func_00581210();
 extern u8 D_0035EFEB;
 extern u8 cw;
 extern u8 pNet;
-extern u8 network_work;
+extern s32 network_work;
 
 s32 getHandleFromID(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
     s32 temp_v0;

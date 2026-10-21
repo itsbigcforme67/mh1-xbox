@@ -6,7 +6,7 @@
 s32 memcmp();
 void * memcpy();
 s32 cnLBS_Get_NoticeUserMiniData();    /* extern */
-extern u8 lbCommer;
+extern s32 lbCommer;
 
 void CallBack_NoticeUserMiniData(void) {
     u8 g_frame[0xA0] __attribute__((aligned(16)));   /* G's stack frame */
@@ -20,7 +20,7 @@ void CallBack_NoticeUserMiniData(void) {
     var_s0 = &lbCommer;
 loop_1:
     if (memcmp(var_s0, &sp40, 8) == 0) {
-        memcpy(&lbCommer + ((((s8) (var_s1))) * 0x5C) + 0x1C, &sp5C, 0x40);
+        memcpy((u8 *)&lbCommer + ((((s8) (var_s1))) * 0x5C) + 0x1C, &sp5C, 0x40);
         return;
     }
     var_s1 = ((s8) ((var_s1 + 1)));

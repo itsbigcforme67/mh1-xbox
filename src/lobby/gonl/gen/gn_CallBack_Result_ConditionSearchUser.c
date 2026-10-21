@@ -6,7 +6,7 @@
 s32 cnLBS_Get_ServerMessage();
 extern u8 cw;
 s32 cnLBS_Get_ConditionSearchUser(); /* extern */
-extern u8 g_main_2EFBC4;
+extern s32 g_main_2EFBC4;
 
 void CallBack_Result_ConditionSearchUser(s64 arg0) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */

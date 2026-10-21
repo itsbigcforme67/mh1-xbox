@@ -8,7 +8,7 @@ s32 lobby_func_005E6EE0();
 void * memset();
 extern u8 pFunc;
 extern s16 g_lb_733664;
-extern u8 g_lb_733E3A;
+extern s32 g_lb_733E3A;
 
 s32 lobby_func_005E6E30(s32 arg0, s32 arg1) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */

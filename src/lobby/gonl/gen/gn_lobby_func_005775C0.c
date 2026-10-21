@@ -17,10 +17,10 @@ extern u8 tl_member_buff;
 s32 font_print(); /* extern */
 s32 sprintf(); /* extern */
 extern void *g_lb_636B4C;
-extern u8 g_lb_63E2A8;
+extern s32 g_lb_63E2A8;
 extern s16 g_lb_6B42B8;
 extern u8 g_main_302CB0;
-extern u8 lit_2316;
+extern s32 lit_2316;
 
 void lobby_func_005775C0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0x140] __attribute__((aligned(16)));   /* G's stack frame */

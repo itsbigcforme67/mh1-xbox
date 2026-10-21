@@ -8,7 +8,7 @@ extern u8 game_w;
 s32 Lb_get_plID();                        /* extern */
 s32 Lb_send_chair_release();              /* extern */
 extern s32 lb_sys;
-extern u8 player_work;
+extern s32 player_work;
 
 void lb_set_chair(s32 unused_a0, void *arg1) {
     u8 temp_a2;
@@ -31,7 +31,7 @@ void lb_set_chair(s32 unused_a0, void *arg1) {
             Lb_pl_to_chair(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return;
         }
-        Lb_send_chair_release(&player_work + ((temp_s0_2 & 0xFF) * 0xA00));
+        Lb_send_chair_release((u8 *)&player_work + ((temp_s0_2 & 0xFF) * 0xA00));
     }
 }
 

@@ -14,7 +14,7 @@ extern u8 cw;
 extern u8 g_main_2EFBAC;
 extern u8 tl_mail_tbl;
 s32 font_print();           /* extern */
-extern u8 lit_2316;
+extern s32 lit_2316;
 
 void lobby_func_00578A90(s32 arg0, s32 arg1) {
     u8 g_frame[0x100] __attribute__((aligned(16)));   /* G's stack frame */

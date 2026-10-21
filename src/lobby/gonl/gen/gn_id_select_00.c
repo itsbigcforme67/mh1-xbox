@@ -23,7 +23,7 @@ void id_select_00(void *arg0) {
     var_s2 = 0;
     var_s1 = 0;
 loop_1:
-    if (memcmp((*(s32 *)&cw) + var_s1 + 0x2B, &(*(u8 *)((u8 *)&User_data + 0x8)), 0x10) == 0) {
+    if (memcmp((*(s32 *)&cw) + var_s1 + 0x2B, &(*(s32 *)((u8 *)&User_data + 0x8)), 0x10) == 0) {
         (*(s8 *)((u8 *)(arg0) + 0x29)) = var_s2;
         return;
     }

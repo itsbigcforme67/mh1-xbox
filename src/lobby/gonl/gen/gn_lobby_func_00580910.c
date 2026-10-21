@@ -10,7 +10,7 @@ s32 lobby_func_005E69B0();
 s32 memcmp();
 extern u8 cw;
 s32 Visual_main();                               /* extern */
-extern u8 my_user_id;
+extern s32 my_user_id;
 
 s32 lobby_func_00580910(s8 *arg0, s32 unused_a1, s32 arg2, s32 arg3) {
     s32 temp_a1;

@@ -14,10 +14,10 @@ extern u8 ClassInfo;
 extern u8 pNet;
 s32 font_print();           /* extern */
 s32 sprintf();    /* extern */
-extern u8 g_lb_63E248;
-extern u8 g_lb_63E250;
+extern s32 g_lb_63E248;
+extern s32 g_lb_63E250;
 extern u16 PlazaInfo;
-extern u8 lit_2316;
+extern s32 lit_2316;
 
 void plaza_movePlazaTrans(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0xB0] __attribute__((aligned(16)));   /* G's stack frame */

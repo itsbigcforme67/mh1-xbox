@@ -5,7 +5,7 @@
 
 s32 cnLBS_Get_mhLobbyJoinUser(); /* extern */
 s32 cnetGet_Room_LastRecvNumber();         /* extern */
-extern u8 g_lb_6DE120;
+extern s32 g_lb_6DE120;
 
 void CallBack_Event_RoomJoinUser(void) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
@@ -13,7 +13,7 @@ void CallBack_Event_RoomJoinUser(void) {
     u8 *temp_v0;
 
     cnetGet_Room_LastRecvNumber(&sp1E);
-    temp_v0 = &g_lb_6DE120 + ((sp1E - 1) * 0x15C);
+    temp_v0 = (u8 *)&g_lb_6DE120 + ((sp1E - 1) * 0x15C);
     cnLBS_Get_mhLobbyJoinUser(sp1E, temp_v0 + 6, temp_v0 + 0x12);
 }
 

@@ -12,9 +12,9 @@ s32 put_main_cursor();
 extern u8 pNet;
 s32 func_0012BDD0();                      /* extern */
 extern void *g_lb_636A00;
-extern u8 g_lb_63E128;
-extern u8 g_lb_63E2E0;
-extern u8 g_lb_63E2E8;
+extern s32 g_lb_63E128;
+extern s32 g_lb_63E2E0;
+extern s32 g_lb_63E2E8;
 
 void lobby_func_005782A0(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     s32 var_a3;

@@ -13,7 +13,7 @@ s32 font_set_stack_no();
 s32 lobby_func_00584E10();
 extern u8 cw;
 s32 font_print();                 /* extern */
-extern u8 lit_3323;
+extern s32 lit_3323;
 
 void lbc_admin_message_00(void) {
     u8 temp_a0;

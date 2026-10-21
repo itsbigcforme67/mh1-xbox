@@ -15,7 +15,7 @@ extern u8 game_w;
 extern u8 lb_sys;
 s32 cnLBS_Get_LobbyMemberList(); /* extern */
 extern s8 lbCommer;
-extern u8 my_user_id;
+extern s32 my_user_id;
 
 void CallBack_Result_Plaza_LobbyMember(s64 arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 g_frame[0xE0] __attribute__((aligned(16)));   /* G's stack frame */

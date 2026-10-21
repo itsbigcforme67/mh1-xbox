@@ -17,8 +17,8 @@ extern u8 pNet;
 s32 To_BootUpBrowser();                         /* extern */
 s32 cnLBS_RegistPersonalData(); /* extern */
 extern s128 BrPersonalData;
-extern u8 first_url;
-extern u8 lit_707_0065E8D0;
+extern s32 first_url;
+extern s32 lit_707_0065E8D0;
 extern s128 tmpPersonalData;
 
 void lbc_login_users_personal_data(void) {

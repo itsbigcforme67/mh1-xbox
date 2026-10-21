@@ -58,8 +58,8 @@ s32 cnLBS_Init_LoginLobbyServer();              /* extern */
 s32 cnLBS_LoginLobbyServer(); /* extern */
 s32 cnLBS_Set_CallBackNoticeEvent(); /* extern */
 s32 cnLBS_Set_LoginFirstData();   /* extern */
-extern u8 MediaVersion;
-extern u8 bsCsvWork;
+extern s32 MediaVersion;
+extern s32 bsCsvWork;
 
 void lbc_login_init(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0x90] __attribute__((aligned(16)));   /* G's stack frame */
@@ -168,7 +168,7 @@ void lbc_login_init(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
         sp40 = 1;
         sp41 = (*(s8 *)((u8 *)&net_common_w + 0x12));
         sp60 = (*(s32 *)&stage_hit_area_f);
-        strncpy(&sp42, &(*(u8 *)((u8 *)&bsCsvWork + 0x11)), 0xA);
+        strncpy(&sp42, &(*(s32 *)((u8 *)&bsCsvWork + 0x11)), 0xA);
         strncpy(&sp4D, &bsCsvWork, 0x10);
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;

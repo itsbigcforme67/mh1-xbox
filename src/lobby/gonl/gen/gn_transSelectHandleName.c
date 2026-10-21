@@ -28,7 +28,7 @@ s32 Lb_put_button();   /* extern */
 s32 font_print();            /* extern */
 extern s32 g_lb_636EC0;
 extern s32 g_lb_636EC4;
-extern u8 g_lb_645018;
+extern s32 g_lb_645018;
 extern s128 lit_324_00617F70;
 extern s128 lit_326_00617F80;
 
@@ -48,7 +48,7 @@ void transSelectHandleName(void *arg0) {
     SetTextureStage(0x174);
     SetFilterMode(1);
     flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
-    Put_2TF(&(*(u8 *)((u8 *)&textLobbyTbl + 0x28)));
+    Put_2TF(&(*(s32 *)((u8 *)&textLobbyTbl + 0x28)));
     DispFrameMessage(&sp40, NULL);
     sp42 += 0x58;
     DispFrameMessage(&sp40, NULL);
@@ -59,7 +59,7 @@ void transSelectHandleName(void *arg0) {
     DispFrameMessage(&sp30, NULL);
     font_print_double(0x34, 0x90, 1, 0, (*(void * *)((u8 *)&tl_mail_tbl + 0x8)));
     flfntSetSize(0x18, 0x14);
-    font_print_double(0x70, 0x90, 1, 0, &(*(u8 *)((u8 *)&User_data + 0x8)));
+    font_print_double(0x70, 0x90, 1, 0, &(*(s32 *)((u8 *)&User_data + 0x8)));
     var_s1 = 0;
     do {
         temp_a1 = var_s1 & 0xFF;

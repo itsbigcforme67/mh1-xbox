@@ -5,11 +5,11 @@
 
 s32 add_prim2();
 extern u8 pNet;
-extern u8 g_main_2EF31C;
-extern u8 ot2;
-extern u8 ot5;
-extern u8 ot6;
-extern u8 ot7;
+extern s32 g_main_2EF31C;
+extern s32 ot2;
+extern s32 ot5;
+extern s32 ot6;
+extern s32 ot7;
 
 void lbc_text_lobby_trans(void) {
     u8 *temp_a1;

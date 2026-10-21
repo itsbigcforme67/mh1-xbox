@@ -8,7 +8,7 @@ s32 SetSendCommandLen();
 s32 SetSendData16();
 s32 SetSendData8();
 s32 Write_Socket();
-extern u8 send_work;
+extern s32 send_work;
 
 s32 lobby_func_005E66A0(void *arg0) {
     u8 g_frame[0x80] __attribute__((aligned(16)));   /* G's stack frame */

@@ -13,7 +13,7 @@ extern u8 tl_member_buff;
 s32 cnLBS_Get_SerchUserPlace(); /* extern */
 extern s16 g_lb_6B42B4;
 extern s8 g_lb_6B42BD;
-extern u8 g_main_302CB0;
+extern s32 g_main_302CB0;
 
 s32 getFriendNow(u8 arg0, s32 arg1) {
     s32 temp_a2;
@@ -32,7 +32,7 @@ s32 getFriendNow(u8 arg0, s32 arg1) {
     u8 *temp_v1;
 
     temp_a2 = g_lb_6B42B4 * 0x150;
-    temp_v0 = &g_main_302CB0 + temp_a2;
+    temp_v0 = (u8 *)&g_main_302CB0 + temp_a2;
     switch (g_lb_6B42BD) {                           /* switch 1; irregular */
     case 0:                                         /* switch 1 */
         (*(u16 *)((u8 *)&(*(u16 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 2))) = (*(u16 *)&g_main_2EFAD8);

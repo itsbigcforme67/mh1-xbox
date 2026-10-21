@@ -11,7 +11,7 @@ extern u8 pNet;
 extern u8 tl_member_buff;
 
 void lobby_func_0056B730(void) {
-    memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618);
+    memset(&(*(s32 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618);
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2E)) = 1;
     SetDialogData(0x50, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     SetDialogYesNo(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));

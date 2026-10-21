@@ -11,8 +11,8 @@ extern u8 cw;
 extern u8 g_main_2EFBAC;
 extern u8 pNet;
 extern u8 tl_member_buff;
-extern u8 g_main_302290;
-extern u8 g_main_302CB0;
+extern s32 g_main_302290;
+extern s32 g_main_302CB0;
 extern s32 lb_sys;
 
 void Lb_on_dialog(void) {
@@ -35,7 +35,7 @@ void Lb_on_dialog(void) {
         case 3:                                     /* switch 1 */
             switch ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C))) { /* switch 2; irregular */
             case 14:                                /* switch 2 */
-                temp_a2 = &g_main_302CB0 + (((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 7)) * 0x30);
+                temp_a2 = (u8 *)&g_main_302CB0 + (((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 7)) * 0x30);
                 DispNameAndIDonDialog(0x98, temp_a2 + 8, temp_a2, M2C_ERROR(/* Read from unset register $a3 */));
                 return;
             case 17:                                /* switch 2 */
@@ -54,7 +54,7 @@ void Lb_on_dialog(void) {
         case 14:                                    /* switch 1 */
             switch ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C))) { /* switch 3; irregular */
             case 4:                                 /* switch 3 */
-                temp_a2_2 = &g_main_302290 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18);
+                temp_a2_2 = (u8 *)&g_main_302290 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18);
                 DispNameAndIDonDialog(0x98, temp_a2_2 + 8, temp_a2_2, M2C_ERROR(/* Read from unset register $a3 */));
                 return;
             case 6:                                 /* switch 3 */

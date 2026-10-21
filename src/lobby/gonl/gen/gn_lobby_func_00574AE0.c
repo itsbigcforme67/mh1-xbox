@@ -13,7 +13,7 @@ s32 lobby_func_005799F0();
 s32 lobby_func_005C1560();
 extern u8 BsProxyUrlstr;
 s32 font_print();                /* extern */
-extern u8 lit_2316;
+extern s32 lit_2316;
 
 void lobby_func_00574AE0(s32 arg0, s32 arg1, s32 arg2) {
     u8 g_frame[0xA0] __attribute__((aligned(16)));   /* G's stack frame */

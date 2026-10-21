@@ -15,8 +15,8 @@ extern u8 ClassInfo;
 extern u8 cw;
 s32 Init_InterruptFlag();                       /* extern */
 s32 Plaza_chat_clear();                         /* extern */
-extern u8 LobbyInfo;
-extern u8 put_back;
+extern s32 LobbyInfo;
+extern s32 put_back;
 
 void To_EnterPlaza2Lobby(s32 arg0) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB99)) = 2;

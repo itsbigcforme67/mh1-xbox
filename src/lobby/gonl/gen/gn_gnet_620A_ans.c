@@ -7,7 +7,7 @@ s32 _cnet_Return_CallBack();
 s32 lobby_func_005E3BE0();
 void * strcpy();
 extern u8 CnetSys_w;
-extern u8 CnetSys_g;
+extern s32 CnetSys_g;
 
 void gnet_620A_ans(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
     u8 g_frame[0x120] __attribute__((aligned(16)));   /* G's stack frame */
@@ -18,7 +18,7 @@ void gnet_620A_ans(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
     if ((*(s8 *)((u8 *)&CnetSys_w + 0xFEC)) == 0) {
         lobby_func_005E3BE0(&sp11E, &sp10, arg2, arg3);
         (*(u16 *)((u8 *)&(*(u16 *)((u8 *)&CnetSys_w + 0x426C)) + (sp11E * 0x164))) = sp11E;
-        strcpy(&CnetSys_g + ((sp11E - 1) * 0x164) + 0x44D2, &sp10);
+        strcpy((u8 *)&CnetSys_g + ((sp11E - 1) * 0x164) + 0x44D2, &sp10);
         temp_v1 = (u8 *)&(*(s32 *)((u8 *)&CnetSys_w + 0x4264)) + (sp11E * 0x164);
         (*(s32 *)temp_v1) |= 8;
     }

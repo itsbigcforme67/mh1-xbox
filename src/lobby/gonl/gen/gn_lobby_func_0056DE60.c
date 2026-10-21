@@ -28,8 +28,8 @@ extern s8 g_lb_653A50;
 extern u8 g_lb_6B46D0;
 extern u8 g_lb_6B46D1;
 extern u8 g_lb_6B4759;
-extern u8 g_main_302CB0;
-extern u8 my_user_id;
+extern s32 g_main_302CB0;
+extern s32 my_user_id;
 extern s8 seekStr;
 
 s32 lobby_func_0056DE60(void) {
@@ -183,11 +183,11 @@ block_46:
             }
             (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) = 0;
             if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) == 1) {
-                var_s0 = &g_main_302CB0 + ((((s16) (temp_a0))) * 0x30);
+                var_s0 = (u8 *)&g_main_302CB0 + ((((s16) (temp_a0))) * 0x30);
                 var_s1 = var_s0;
                 goto block_69;
             }
-            var_s0 = &g_main_302CB0 + ((((s16) (temp_a0))) * 0x30);
+            var_s0 = (u8 *)&g_main_302CB0 + ((((s16) (temp_a0))) * 0x30);
             var_s1 = var_s0 + 8;
             if (Visual_main(var_s1, (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1374))) >= 9) {
                 SetDialogData(0x6B, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));

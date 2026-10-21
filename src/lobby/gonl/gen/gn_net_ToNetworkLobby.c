@@ -20,10 +20,10 @@ extern u8 quest_price;
 extern u8 tl_member_buff;
 s32 cnLBS_Init_LoginLobbyServer();              /* extern */
 s32 cnLbc_SetIspRestTime();               /* extern */
-extern u8 g_lb_6B42D0;
-extern u8 client_work;
+extern s32 g_lb_6B42D0;
+extern s32 client_work;
 extern u8 RecvMailInfo;
-extern u8 network_work;
+extern s32 network_work;
 
 void net_ToNetworkLobby(void) {
     u8 *temp_v1;   /* (s32 *) */
@@ -76,7 +76,7 @@ void net_ToNetworkLobby(void) {
     } while (var_a1 < 8);
     memset((*(u8 **)&cw) + 0xF80, 0, 0x9A);
     memset((*(u8 **)&cw) + 0xEE6, 0, 0x9A);
-    memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618);
+    memset(&(*(s32 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618);
     var_a1_2 = 0;
     var_a4 = &(*(s16 *)((u8 *)&lb_sys + 0xA0));
     var_a3 = 0;

@@ -6,7 +6,7 @@
 s32 __cnetSub_Get_RestBgWork();
 s32 lobby_func_005C0400();
 extern u8 g_lb_731162;
-extern u8 gonl_cb_FileDownload;
+extern s32 gonl_cb_FileDownload;
 
 void lobby_func_005BFC30(void *arg0) {
     u8 temp_s1;

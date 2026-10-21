@@ -23,8 +23,8 @@ extern u8 pNet;
 extern u8 tl_member_buff;
 s32 net_Check_FriendData(); /* extern */
 s32 net_Check_FriendFree();       /* extern */
-extern u8 g_main_302CB0;
-extern u8 my_user_id;
+extern s32 g_main_302CB0;
+extern s32 my_user_id;
 
 s32 Plaza_add_friend(void) {
     s16 temp_v0_3;
@@ -95,7 +95,7 @@ block_49:
             } else {
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2E)) = 1;
             }
-            temp_s2 = &g_main_302CB0 + (var_s0 * 0x30);
+            temp_s2 = (u8 *)&g_main_302CB0 + (var_s0 * 0x30);
             memset(temp_s2, 0, 8);
             memcpy(temp_s2, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), 8);
             temp_s2_2 = temp_s2 + 8;

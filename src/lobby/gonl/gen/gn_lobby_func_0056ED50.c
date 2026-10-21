@@ -50,8 +50,8 @@ s32 Visual_main();                            /* extern */
 s32 cnLBS_Get_SerchUserPlace(); /* extern */
 extern s32 g_lb_636E10;
 extern s8 g_lb_6B46D0;
-extern u8 my_user_id;
-extern u8 seekStr;
+extern s32 my_user_id;
+extern s32 seekStr;
 
 void lobby_func_0056ED50(void) {
     s16 temp_s0;

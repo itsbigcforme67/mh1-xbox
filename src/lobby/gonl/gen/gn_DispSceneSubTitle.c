@@ -10,7 +10,7 @@ extern u8 cw;
 extern u8 g_main_2EFAE8;
 extern u8 game_w;
 s32 Draw_menu_square(); /* extern */
-extern u8 g_lb_654E00;
+extern s32 g_lb_654E00;
 
 void DispSceneSubTitle(void) {
     u8 *temp_v1;

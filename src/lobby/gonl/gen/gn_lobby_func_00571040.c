@@ -23,8 +23,8 @@ extern u8 cw;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
-extern u8 g_main_302290;
-extern u8 my_user_id;
+extern s32 g_main_302290;
+extern s32 my_user_id;
 
 s32 lobby_func_00571040(void) {
     s16 temp_v0_3;
@@ -94,7 +94,7 @@ block_49:
             } else {
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2E)) = 1;
             }
-            temp_s1 = &g_main_302290 + (var_v0 * 0x18);
+            temp_s1 = (u8 *)&g_main_302290 + (var_v0 * 0x18);
             memset(temp_s1, 0, 8);
             memcpy(temp_s1, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), 8);
             temp_s1_2 = temp_s1 + 8;

@@ -13,9 +13,9 @@ extern u8 tl_mail_tbl;
 s32 func_0012BDD0();        /* extern */
 s32 sprintf(); /* extern */
 extern s32 tl_etc;
-extern u8 g_lb_63E348;
-extern u8 g_lb_63E350;
-extern u8 lit_2316;
+extern s32 g_lb_63E348;
+extern s32 g_lb_63E350;
+extern s32 lit_2316;
 
 void lobby_func_005790B0(void) {
     u8 g_frame[0xD0] __attribute__((aligned(16)));   /* G's stack frame */

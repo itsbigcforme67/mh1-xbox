@@ -5,7 +5,7 @@
 
 s32 cnLBS_Init_LobbyBgProcess();
 extern u8 CnetSys_w;
-extern u8 CnetSys_g;
+extern s32 CnetSys_g;
 
 void lobby_func_005E3250(void *arg0) {
     u8 *var_a3;   /* (s32 *) */

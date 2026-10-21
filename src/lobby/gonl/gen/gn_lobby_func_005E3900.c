@@ -4,10 +4,10 @@
 #include "../gonl.h"
 
 void * strcpy();
-extern u8 CnetSys_g;
+extern s32 CnetSys_g;
 
 s32 lobby_func_005E3900(s32 arg0, void *arg1) {
-    strcpy(arg1, &CnetSys_g + (((arg0 & 0xFFFF) - 1) * 0x164) + 0x44D2);
+    strcpy(arg1, (u8 *)&CnetSys_g + (((arg0 & 0xFFFF) - 1) * 0x164) + 0x44D2);
     return 0;
 }
 

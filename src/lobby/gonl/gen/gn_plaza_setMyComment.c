@@ -27,7 +27,7 @@ s32 plaza_setMyComment(s32 arg0, s32 unused_a1, s32 arg2, s32 arg3) {
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         (*(u8 *)((u8 *)(temp_v1) + 0x23)) = (u8) (temp_v1_2 + 1);
-        memcpy((*(s32 *)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724, &(*(u8 *)((u8 *)&User_data + 0xC9C)), 0x62);
+        memcpy((*(s32 *)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724, &(*(s32 *)((u8 *)&User_data + 0xC9C)), 0x62);
         var_s1 = 0;
         var_s0 = &g_lb_636A00;
         do {
@@ -52,7 +52,7 @@ block_14:
             goto block_14;
         }
         if (temp_a0 & 0x40) {
-            memcpy(&(*(u8 *)((u8 *)&User_data + 0xC9C)), (*(s32 *)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724, 0x62);
+            memcpy(&(*(s32 *)((u8 *)&User_data + 0xC9C)), (*(s32 *)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724, 0x62);
             return 3;
         }
         goto block_14;

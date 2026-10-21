@@ -7,7 +7,7 @@ s32 lobby_func_005E6B80();
 extern u8 g_main_2EF2A8;
 extern u8 g_main_2EF2A8;
 s32 cnLBS_Send_UserMiniData(); /* extern */
-extern u8 CallBack_Result_SendUserMiniData;
+extern s32 CallBack_Result_SendUserMiniData;
 extern u8 my_user_mini_data;
 
 s32 lobby_func_00570DA0(u8 arg0, s32 unused_a1, s32 arg2, s32 arg3) {

@@ -26,7 +26,7 @@ s32 put_titles();                  /* extern */
 extern void *g_lb_636B44;
 extern u8 RecvMailInfo;
 extern s32 lb_num_str;
-extern u8 lit_2316;
+extern s32 lit_2316;
 
 void plaza_mailBoxTrans(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0xC0] __attribute__((aligned(16)));   /* G's stack frame */

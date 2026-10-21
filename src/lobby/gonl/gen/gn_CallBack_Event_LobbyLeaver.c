@@ -13,7 +13,7 @@ extern u8 game_w;
 extern u8 lb_sys;
 s32 Lb_send_myChair();                          /* extern */
 s32 cnLBS_Get_RoomLeaveUser();         /* extern */
-extern u8 lbCommer;
+extern s32 lbCommer;
 extern u8 player_work;
 
 void CallBack_Event_LobbyLeaver(void) {
@@ -37,7 +37,7 @@ void CallBack_Event_LobbyLeaver(void) {
 loop_1:
     if (memcmp(var_s1, &sp40, 8) == 0) {
         temp_s1 = var_s0 * 0x5C;
-        memset(&lbCommer + temp_s1, 0, 0x5C);
+        memset((u8 *)&lbCommer + temp_s1, 0, 0x5C);
         temp_v1 = (*(void **)&cw);
         if ((*(u8 *)((u8 *)(temp_v1) + 0xFA61)) != 0) {
             temp_v1_2 = temp_v1 + temp_s1;

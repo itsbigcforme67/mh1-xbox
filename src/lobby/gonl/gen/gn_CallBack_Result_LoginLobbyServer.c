@@ -15,9 +15,9 @@ s32 cnLBS_Get_LoginWarningMessage();  /* extern */
 s32 cnLBS_Send_LoginUserAccount(); /* extern */
 s32 cnetGet_Login_DecideUserHandle();     /* extern */
 s32 cnetGet_Login_DecideUserID();         /* extern */
-extern u8 my_user_handle;
-extern u8 my_user_id;
-extern u8 my_user_mini_data;
+extern s32 my_user_handle;
+extern s32 my_user_id;
+extern s32 my_user_mini_data;
 
 void CallBack_Result_LoginLobbyServer(s64 arg0, s32 unused_a1, s32 arg2, s32 arg3) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */

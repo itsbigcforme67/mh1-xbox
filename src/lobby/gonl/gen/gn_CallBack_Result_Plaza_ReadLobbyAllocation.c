@@ -23,7 +23,7 @@ void CallBack_Result_Plaza_ReadLobbyAllocation(s64 arg0, s32 unused_a1, s32 unus
         (*(u8 *)((u8 *)(temp_a1) + 0xBA9)) = 0U;
         if ((s8) sp38 == 0) {
             var_s1 = 0;
-            var_s0 = &(*(u8 *)((u8 *)&lb_quest_all + 0xA0));
+            var_s0 = &(*(s32 *)((u8 *)&lb_quest_all + 0xA0));
             do {
                 cnLBS_Get_LobbyMemberList(var_s1 & 0xFFFF, var_s0, var_s0 + 8, var_s0 + 0x1C);
                 lobby_func_0058BAA0(var_s0 + 0x1C, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));

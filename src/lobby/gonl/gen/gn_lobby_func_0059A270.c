@@ -13,9 +13,9 @@ extern u8 lb_gbyte_2EF2A4;
 extern u8 pNet;
 extern u8 client_work;
 extern s32 lb_player;
-extern u8 lb_sys;
-extern u8 my_user_mini_data;
-extern u8 network_work;
+extern s32 lb_sys;
+extern s32 my_user_mini_data;
+extern s32 network_work;
 extern u8 player_work;
 
 void lobby_func_0059A270(void) {

@@ -29,7 +29,7 @@ block_5:
             temp_a2 = arg0 & 0xFF;
             sendDat = arg1;
             if (temp_a2 != 0) {
-                flMemcpy(&(*(u8 *)((u8 *)&sendDat + 0x1)), arg2, temp_a2);
+                flMemcpy(&(*(s32 *)((u8 *)&sendDat + 0x1)), arg2, temp_a2);
             }
             cnLBS_Send_ChatBinary();
         }

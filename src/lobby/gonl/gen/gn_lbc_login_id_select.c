@@ -30,8 +30,8 @@ u8 cnetGet_Login_NoOfUserAccount();                 /* extern */
 s32 cnetGet_Login_UserHandle();      /* extern */
 s32 cnetGet_Login_UserID();             /* extern */
 s32 cnetGet_Login_UserMiniData();    /* extern */
-extern u8 network_work;
-extern u8 player_work;
+extern s32 network_work;
+extern s32 player_work;
 
 void lbc_login_id_select(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
     s32 temp_s0;
@@ -137,9 +137,9 @@ void lbc_login_id_select(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
         (*(u8 *)((u8 *)((*(void **)&cw)) + 1)) = temp_s1;
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
-        Set_userdata(&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00));
+        Set_userdata((u8 *)&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00));
         temp_s2 = temp_s1 * 0x11;
-        memcpy((*(void **)&cw) + temp_s2 + 0x2B, &(*(u8 *)((u8 *)&User_data + 0x8)), 0x10);
+        memcpy((*(void **)&cw) + temp_s2 + 0x2B, &(*(s32 *)((u8 *)&User_data + 0x8)), 0x10);
         temp_v1_3 = (*(void **)&cw);
         temp_s0 = temp_s1 * 8;
         if ((*(s8 *)((u8 *)((temp_s0 + temp_v1_3)) + 0xB)) == 0) {

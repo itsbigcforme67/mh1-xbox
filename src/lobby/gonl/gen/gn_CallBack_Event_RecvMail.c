@@ -11,7 +11,7 @@ void * strncpy();
 extern u8 g_main_2EFBAC;
 extern u8 g_main_2EFBAC;
 s32 cnLBS_Get_RecvMessage(); /* extern */
-extern u8 g_main_302290;
+extern s32 g_main_302290;
 extern u8 RecvMailInfo;
 
 void CallBack_Event_RecvMail(void) {
@@ -155,10 +155,10 @@ loop_1:
                 var_a1_8 += 2;
             } while (var_a0_8 > 0);
             memset(&RecvMailInfo, 0, 0x9A);
-            strncpy(&(*(u8 *)((u8 *)&RecvMailInfo + 0x1)), &sp40, 8);
-            strncpy(&(*(u8 *)((u8 *)&RecvMailInfo + 0x9)), &sp48, 0x10);
-            strncpy(&(*(u8 *)((u8 *)&RecvMailInfo + 0x1A)), &sp5C, 0x80);
-            KinshiYogo_chk(&(*(u8 *)((u8 *)&RecvMailInfo + 0x1A)));
+            strncpy(&(*(s32 *)((u8 *)&RecvMailInfo + 0x1)), &sp40, 8);
+            strncpy(&(*(s32 *)((u8 *)&RecvMailInfo + 0x9)), &sp48, 0x10);
+            strncpy(&(*(s32 *)((u8 *)&RecvMailInfo + 0x1A)), &sp5C, 0x80);
+            KinshiYogo_chk(&(*(s32 *)((u8 *)&RecvMailInfo + 0x1A)));
             temp_a0 = (*(void **)&g_main_2EFBAC);
             (*(s8 *)&RecvMailInfo) = 1;
             (*(u8 *)((u8 *)(temp_a0) + 0x234)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0x234)) + 1);

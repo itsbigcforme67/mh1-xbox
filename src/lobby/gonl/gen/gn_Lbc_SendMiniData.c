@@ -11,9 +11,9 @@ extern u8 cw;
 extern u8 game_w;
 extern u8 lb_sys;
 s32 cnLBS_Send_UserMiniData(); /* extern */
-extern u8 CallBack_Result_SendUserMiniData;
-extern u8 lbCommer;
-extern u8 my_user_mini_data;
+extern s32 CallBack_Result_SendUserMiniData;
+extern s32 lbCommer;
+extern s32 my_user_mini_data;
 
 s32 Lbc_SendMiniData(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */
@@ -36,7 +36,7 @@ s32 Lbc_SendMiniData(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     memcpy((*(s32 *)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x5C) + 0x3A8, &sp10, 0x40);
     memcpy((*(s32 *)&cw) + 0x1DC, &sp10, 0x40);
     memcpy(&my_user_mini_data, &sp10, 0x40);
-    memcpy(&lbCommer + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x5C) + 0x1C, &sp10, 0x40);
+    memcpy((u8 *)&lbCommer + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x5C) + 0x1C, &sp10, 0x40);
     cnLBS_Send_UserMiniData(&sp10, 0x40, &CallBack_Result_SendUserMiniData);
     (*(s8 *)((u8 *)&lb_sys + 0x7F)) = 0;
     return 0;
