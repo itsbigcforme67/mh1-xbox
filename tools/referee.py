@@ -983,6 +983,15 @@ def pc_side(name, out, rng_sync=True):
             e = ps.region(ps.recs[0], 'em', i)
             if e[0]:
                 pokes = pokes + [(0, 'em%d' % i, 0x39A, 'u16', struct.unpack_from('<H', e, 0x39A)[0])]
+                # the other numbers the quest start draws at random before play tick 0: the hunger / thirst /
+                # sleep counters (EMW+0x898..0x8A3) and, in G, the monster's size (G EMW+0x9F8 = the PC's +0xA02)
+                # with the scale it gives (+0xB8..0xC3; base scale +0x600)
+                for off in (0x898, 0x89C, 0x8A0):
+                    pokes = pokes + [(0, 'em%d' % i, off, 'u32', struct.unpack_from('<I', e, off)[0])]
+                if gname == 'mhg':
+                    pokes = pokes + [(0, 'em%d' % i, 0xA02, 'u16', struct.unpack_from('<H', e, 0x9F8)[0])]
+                    for off in (0xB8, 0xBC, 0xC0, 0x600):
+                        pokes = pokes + [(0, 'em%d' % i, off, 'f32', struct.unpack_from('<f', e, off)[0])]
     rsync = None
     if rng_sync:        # the PS2's Rnd_w at the start of each play tick, set on the PC after its record of the tick
         rsync = os.path.join(out, 'ps2_rnd.txt')

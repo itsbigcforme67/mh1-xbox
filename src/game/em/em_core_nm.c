@@ -77,7 +77,16 @@ s8 em_eye_search_set(EMW *em) {
     em->x3AC = 0;
     best = 0.0f;
     pl = player_work;
+#ifdef VERSION_MHG
+    /* G (game 0x542640, read from the asm; agent D, 21 Oct 2026): the new kinds look out of their base kind's eye
+     * joint: 37 41 42 49 like the Rathian, 38 39 43 44 45 46 47 48 like Kut-Ku / Gypceros / Monoblos / Diablos / Khezu /
+     * Plesioth / Gravios / Basarios, 36 like Fatalis (joint 0x33), 50 like Lao-Shan (0x23), 40 from its body like kinds
+     * 9 / 23. The PC used MH1's list: the subspecies fell to the default (eye at the body), so they saw the hunter
+     * from elsewhere (the lockstep referee, g_kind37: the Rathalos subspecies noticed him five ticks early) */
+    switch (em->kind == 40 ? 9 : em->kind == 50 ? 7 : em->kind == 36 ? 2 : em->kind >= 37 && em->kind <= 49 ? 1 : em->kind) {
+#else
     switch (em->kind) {
+#endif
     case 1:
     case 11:
     case 6:
