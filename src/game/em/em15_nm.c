@@ -4468,6 +4468,26 @@ void em15_main(EMW *em) {
         }
     }
     em_mode_timer_sub(em);
+#ifdef VERSION_MHG
+    /* G (game 0x5F6BF0, written from the asm; agent D, 20 Oct 2026): type 1 only counts its hunger down; the rest by
+     * difficulty (6: with thirst) instead of MH1's quest numbers 0x28 / 0x29 */
+    if (em->x8C2 != 1) {
+        void game_func_00547C20(EMW *em);
+        if (em->type == 1) {
+            game_func_00547C20(em);
+        } else if (game_w.x2E == 6) {
+            em_hinshi_ck(em, 0.2f);
+            em_thirst_ck(em);
+            em_hungry_ck(em);
+            em_sleep_ck(em);
+        } else {
+            em_hinshi_ck(em, 0.2f);
+            em_hungry_ck(em);
+            em_sleep_ck(em);
+        }
+    }
+    if (0)
+#endif
     if (em->x8C2 != 1) {
         q = quest_w.no;
         switch (q) {
