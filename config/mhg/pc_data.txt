@@ -47,6 +47,10 @@ em_parts_num = 0x005207C0; // size:0x34       # motion layers per kind (Em_max_p
 em_dur_tbl = 0x005088C0; // size:0xD0
 em_dur_rows = 0x005084E0; // size:0x3E0 noptr     # em_dur_tbl's rows (9 part hit points + 1, s16): pairs like 0x78, 0x50 read as G
                                                   # addresses (0x500078) by the pointer scan and were relocated (kind 20's parts 4/5; lockstep referee)
+# em01's flight height curves (G em01_fly_adjy2_init has types 15 and 16; agent A, 20 Oct 2026)
+[game]
+fly_adjy2_hosei_tbl_00653E40 = 0x006955D0; // size:0x44    # 17 curve pointers per type (MH1 15)
+fly_adjz2_hosei_tbl_00654060 = 0x00695800; // size:0x44    # 17 (15 and 16 are 0)
 [game]
 eft19_em_ofs_tbl = 0x0067DA30; // size:0xD0
 enemy_mahi_size = 0x0066F0B0; // size:0xD0

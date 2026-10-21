@@ -1255,9 +1255,18 @@ void em01_fly_adjy2_init(EMW *em, u8 type) {
     case 7:
         break;
     case 2:
+#ifdef VERSION_MHG      /* G em01_fly_adjy2_init (game 0x5A85F0): type 15 = type 2 (the Rathalos kinds' take-off), 16 new */
+    case 15:
+#endif
         w->adj_y = 1;
         w->adj_tm = 0x26;
         break;
+#ifdef VERSION_MHG
+    case 16:
+        w->adj_y = 1;
+        w->adj_tm = 0x40;
+        break;
+#endif
     case 3:
         w->adj_y = 1;
         w->adj_tm = 0x1E;
