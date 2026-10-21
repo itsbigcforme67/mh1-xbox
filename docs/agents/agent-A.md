@@ -1241,3 +1241,10 @@ check.py needs wibo, which this round could not run (PC-only round). Commits on 
   Checks: MH1 and G PC builds, MH1 and G Xbox builds, test_all_quests_g (98 + carts + dual), test_all_quests (38),
   test_urgent, test_urgent_g. **The PS2 byte rebuild (5 OK / 7 OK) was not run** (free memory stayed under 1 GB): left
   for the coordinator's check.
+- **Rebuild break (21 Oct, fixed on main by agent D) and the tool made safe:** my --fix guarded only c_files-listed files
+  and headers, but the MH1 rebuild (tools/build.py) compiles every file under src/ (not pc/, mhg/, ps2patch/): three
+  lobby files got a `signed char SoftKeyboard_alive_check();` MWCC saw next to the header's int. --fix now guards every
+  change. New `--mwcc mh1|mhg`: reads what MWCC sees (each compiled unit plus the headers it includes, with __MWERKS__
+  and, for G, VERSION_MHG defined; #define renames skipped) and reports a function declared with two return types.
+  Checked: it reports the lb_ac.c case when that line is put back, and 0 on main for both versions. full_check's
+  kr_returns / kr_returns_g steps run it.

@@ -11,14 +11,18 @@ definition, where that is ABI-dependent:
 The definition a declaration means: one in the same file if there is one (statics with the same name live in many files),
 else the non-static definitions. A name defined with different return types in different places is skipped (reported
 with --verbose).
---fix rewrites each hit to the definition's type. In a file the PS2 build compiles (config/c_files.txt,
-config/mhg/c_files.txt: byte-matching), the original line stays for MWCC:
+--fix rewrites each hit to the definition's type. The original line always stays for MWCC (the PS2 builds compile more
+files than config/c_files.txt lists, and headers reach them; an unguarded change broke the MH1 rebuild on 21 Oct 2026):
     #ifdef __MWERKS__ / <original> / #else / <fixed> / #endif
 Types are written as plain C (signed char, unsigned short, float ...), so no header is needed.
 --implicit CMDDIR: also compile every recorded PC compile command (tools/build_pc.sh leaves them in build/pc/cmd; G:
 build/mhg/pctree/build/pc/cmd, run from build/mhg/pctree) with gcc -fsyntax-only -Wimplicit-function-declaration and
 report calls of char / short / float functions that have no declaration in scope (implicitly int: the same hazard).
-usage: tools/check_kr_returns.py [--fix] [--verbose] [--implicit CMDDIR] [DIR...]   (default src include); exit 1 when something is found
+--mwcc VERSION (mh1 or mhg): what MWCC (the PS2 rebuild) sees instead: every file tools/build.py compiles for that
+version (MH1: all of src/ but src/pc, src/mhg, src/ps2patch; G: config/mhg/c_files.txt), with the headers it includes,
+read with __MWERKS__ defined (and VERSION_MHG for G); a function declared or defined there with two different return
+types is a "conflicting types" error of the rebuild (21 Oct 2026: three lobby files). Exit 1 when one is found.
+usage: tools/check_kr_returns.py [--fix] [--verbose] [--implicit CMDDIR] [--mwcc mh1|mhg] [DIR...]   (default src include); exit 1 when something is found
 (without --fix). Standard library only."""
 import os, re, sys
 
@@ -27,6 +31,11 @@ IMPL = None
 if '--implicit' in argv:
     i = argv.index('--implicit')
     IMPL = argv[i + 1]
+    del argv[i:i + 2]
+MWCC = None
+if '--mwcc' in argv:
+    i = argv.index('--mwcc')
+    MWCC = argv[i + 1]
     del argv[i:i + 2]
 args = [a for a in argv if not a.startswith('--')]
 FIX = '--fix' in sys.argv
@@ -44,7 +53,7 @@ INTY = {'int', 's32', 'u32', 'long', 'unsigned int', 'unsigned', 'signed int', '
 files = [os.path.join(r, f) for d in dirs for r, _, fs in os.walk(d) for f in fs if f.endswith(('.c', '.h'))]
 txt = {f: open(f, errors='replace').read() for f in files}
 
-# files the PS2 builds compile (byte-matching)
+# (the files config/*c_files.txt lists; --fix no longer needs them: it guards every change)
 matched = set()
 for cf, base in (('config/c_files.txt', 'src/%s/%s.c'), ('config/mhg/c_files.txt', 'src/%s.c')):
     for l in open(cf):
@@ -146,10 +155,8 @@ if FIX:
             ind, ext, name, par, tail = m.group(1), m.group(2) or '', m.group(4), m.group(5), m.group(6)
             new_t = SMALL.get(want) or FLOAT.get(want) or 'int'
             fixed = '%s%s%s %s(%s);%s' % (ind, ext, new_t, name, par, tail)
-            if os.path.normpath(f) in matched or f.endswith('.h'):   # (a header may be included by a byte-matching file)
-                rep = '#ifdef __MWERKS__\n%s\n#else\n%s   /* the real return type (tools/check_kr_returns.py) */\n#endif' % (m.group(0), fixed)
-            else:
-                rep = fixed
+            # always guarded: the MH1 rebuild compiles every file under src/ (tools/build.py), and headers reach them
+            rep = '#ifdef __MWERKS__\n%s\n#else\n%s   /* the real return type (tools/check_kr_returns.py) */\n#endif' % (m.group(0), fixed)
             t = t[:m.start()] + rep + t[m.end():]
         open(f, 'w').write(t)
     print('fixed %d declaration(s) in %d file(s)' % (n, len(byfile)), file=sys.stderr)
@@ -181,4 +188,94 @@ if IMPL:
                 m_ += 1
     print('%d implicit use(s)' % m_, file=sys.stderr)
     n += m_
+if MWCC:
+    CANON = {'s8': 'signed char', 'u8': 'unsigned char', 's16': 'short', 'u16': 'unsigned short', 's32': 'int',
+             'u32': 'unsigned int', 'f32': 'float', 'f64': 'double', 'signed short': 'short', 'unsigned': 'unsigned int',
+             'signed int': 'int', 'long': 'long', 'unsigned long': 'unsigned long'}
+    defined = {'__MWERKS__'} | ({'VERSION_MHG'} if MWCC == 'mhg' else set())
+    def visible(t):
+        """the lines of t a compiler with `defined` sees (#ifdef / #ifndef / #if [!]defined(X) [&& ...] / #if 0 / #if 1;
+        anything else: both branches kept)"""
+        out, stack = [], []
+        for line in t.split('\n'):
+            st = line.strip()
+            def ev(cond):
+                cond = cond.strip()
+                if cond in ('0', '1'):
+                    return cond == '1'
+                parts = [x.strip() for x in cond.split('&&')]
+                vals = []
+                for x in parts:
+                    mm = re.fullmatch(r'(!)?\s*defined\s*\(?\s*(\w+)\s*\)?', x)
+                    if not mm:
+                        return None
+                    vals.append((mm.group(2) in defined) != bool(mm.group(1)))
+                return all(vals)
+            if st.startswith('#ifdef '):
+                stack.append([st.split()[1] in defined, False])
+            elif st.startswith('#ifndef '):
+                stack.append([st.split()[1] not in defined, False])
+            elif st.startswith('#if '):
+                v = ev(st[4:])
+                stack.append([v, False])
+            elif st.startswith('#elif') and stack:
+                v = ev(st[5:])
+                top = stack[-1]
+                if top[0] is True or top[1]:
+                    top[1] = True
+                    top[0] = False
+                else:
+                    top[0] = v
+            elif st.startswith('#else') and stack:
+                top = stack[-1]
+                if top[0] is None:
+                    pass
+                else:
+                    top[0] = not top[0] and not top[1]
+            elif st.startswith('#endif') and stack:
+                stack.pop()
+            elif all(x[0] is not False for x in stack):
+                out.append(line)
+        return '\n'.join(out)
+    if MWCC == 'mhg':
+        units = sorted({os.path.join('src', l.split('#', 1)[0].split()[3] + '.c') for l in open('config/mhg/c_files.txt')
+                        if len(l.split('#', 1)[0].split()) == 4})
+    else:
+        units = sorted(os.path.join(r, f) for r, _, fs in os.walk('src') for f in fs if f.endswith('.c')
+                       and not re.search(r'src/(pc|mhg|ps2patch)/', os.path.join(r, f)))
+    hcache = {}
+    def head(path):
+        if path not in hcache:
+            try:
+                hcache[path] = visible(open(path, errors='replace').read())
+            except OSError:
+                hcache[path] = ''
+        return hcache[path]
+    DECLX = re.compile(r'^\s*(?:extern\s+|static\s+)?(' + TYPE + r')\s+(\w+)\s*\(([^;{)]*)\)\s*[;{]', re.M)
+    bad = 0
+    for u in units:
+        if not os.path.exists(u):
+            continue
+        seen, todo, decls, macros = set(), [(u, visible(open(u, errors='replace').read()))], {}, set()
+        while todo:
+            path, t = todo.pop()
+            for mm in DECLX.finditer(t):
+                ty = norm(mm.group(1))
+                ty = CANON.get(ty, ty)
+                decls.setdefault(mm.group(2), {}).setdefault(ty, path)
+            macros.update(re.findall(r'^\s*#\s*define\s+(\w+)', t, re.M))   # (renaming tricks: #define f f_proto_unused)
+            for inc in re.findall(r'^\s*#include\s+"([^"]+)"', t, re.M):
+                for d in (os.path.dirname(path), 'include'):
+                    q = os.path.normpath(os.path.join(d, inc))
+                    if os.path.exists(q):
+                        if q not in seen:
+                            seen.add(q)
+                            todo.append((q, head(q)))
+                        break
+        for name, tys in sorted(decls.items()):
+            if len(tys) > 1 and name not in macros:
+                print('%s (MWCC %s): %s declared %s' % (u, MWCC, name, ' / '.join('%s (%s)' % kv for kv in sorted(tys.items()))))
+                bad += 1
+    print('%d MWCC return-type conflict(s)' % bad, file=sys.stderr)
+    n += bad
 sys.exit(1 if n and not FIX else 0)
