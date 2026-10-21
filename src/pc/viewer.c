@@ -1481,9 +1481,20 @@ static void sim_tick(void)
                                  * flash effect. The host's sim_tick stands in for game_core, so it has to call it (only
                                  * the lights of RT_LIGHT_GAME read what it does) */
     if (quest_no && pl.game && play && ticks >= 2) {
+        /* move_stage (f_stage_nm.c): the first game tick of an area runs stage_i (its step 0), only the next ones stage_m
+         * with the area-exit check. The PC checked on that first tick too: a hunter put on an exit left a tick early (the
+         * referee, g_kind49; agent D 22 Oct 2026) */
+        extern unsigned char game_w[];
+        static int mv_stage = -1;
+        static int mv_ticks = -1;
         void stage_mv_ck(void);
-        stage_mv_ck();                  /* move_stage -> stage_m's area-exit check (f_stage.c):
+        if (game_w[0x14] != mv_stage || ticks != mv_ticks + 1) {
+            mv_stage = game_w[0x14];    /* (a new area, or the first tick after a load: stage_i) */
+        } else {
+            stage_mv_ck();              /* move_stage -> stage_m's area-exit check (f_stage.c):
                                          * pl+0x738 = 1 -> game2 steps 2-6 load the next area */
+        }
+        mv_ticks = ticks;
     }
     if (quest_no && ticks >= 2) {
         void bgm_server(void);
