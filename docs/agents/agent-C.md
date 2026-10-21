@@ -2086,3 +2086,10 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
   src/pc/rt/rt_online.c (CW_OFS on cw[] reads; G's lobby work area).
 - **Open:** the info file's data (6882) is not requested on the PC yet (the PS2 asks for it); G main functions the PC
   lacks are weak stand-ins (Net_all_reset, Net_trans_set, net_flps0004/8); browser drawing (Bs*) stays MH1's.
+- **22 Oct (round 3, cont.):** the PC G client reaches G's town and is drawn there (G's Lb_stage_load). What it took
+  after the plaza: G code under MH1 names (G_RENAME: plaza / town record getters, the file download burst's callback,
+  0x59A820), m2c fixes in the tool (data widths from G's asm incl. gp-relative, four-register calls to G functions,
+  delay slots of tail jumps, (void) pass-throughs out of the context, 8-byte results as s64), G's fades / quest tables
+  imported, cnLBS_Get_FileDownloadInfo / cnLBS_Read_RoomProperty with G's data (shared cnet C, MHG_NET only).
+  Memory on this machine is short (other sessions' emulators): every build / run waits for > 2 GB free
+  (build/C/gpc/br.sh does). Emulator steps (PS2 G disc + PC, Xbox) wait for the coordinator.

@@ -1206,9 +1206,12 @@ G's cnLBS_Read_RoomProperty sends 630D, not 650A (src/lobby/cnet/cnlbs.c, MHG_NE
 G's 14 fades. What m2c cannot know is now taken from G's asm: the access width of data reached by a computed address
 (`addiu r, %lo(SYM)` then lb / lh / lw through r), and calls to generated G functions pass all four argument registers
 (G hands $a1-$a3 on unnamed). One-line corrections live in the tool (FIXUPS), so regenerating keeps them.
-State (21 Oct): on the PC, G's own screens: login, Capcom ID select, info file download (6881 / 6883 / 6882), the plaza
-class menu, the plaza menu, its town list (G Lobby 1-4 with counts) and the town entry request (6305; the client then
-waits on the answer's callback). Next: the town itself, two G PCs (tools/test_online_g.sh), the PS2 G disc with a PC.
+State (22 Oct): on the PC, G's own screens: login, Capcom ID select, info file download (6881 / 6883 / 6882), the
+plaza class menu, the plaza menu, its town list (G Lobby 1-4) and the town: 6305 / 630A / 6708, G's Lb_stage_load puts
+the hunter at one of G's five town starts (stage 0x4C) and the town is drawn. Also found on the way: m2c drops a tail
+jump's delay slot (a store, an argument) - tools/draft.py now runs the slot first; G's 0x59A820 (check_sender0 in the
+split) is Lb_send_pl_status(a0, 0). Test: tools/test_online_g.sh (TWO=1: two G PCs). Next: two G PCs seeing each
+other, the PS2 G disc with a PC, a G hunt, the Xbox.
 
 ## 4. Run it
 
