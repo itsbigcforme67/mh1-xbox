@@ -46,7 +46,7 @@ f32 flArcTan2(f32, f32);
 f32 flPow(f32 a, f32 b) { return powf(a, b); }
 void flMemset(void *p, s32 v, s32 n) { memset(p, v, (size_t)n); }
 
-int act_ck(void *chr, int a, int b);
+short act_ck(void *chr, int a, int b);
 
 /* View_move: the host builds its camera from lpView (rt_cam_view). */
 void View_move(void) {}

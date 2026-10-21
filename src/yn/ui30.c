@@ -1,5 +1,8 @@
 /* ui30 - yn.bin 0x00537770-0x00538114: yn_sprite_draw (draws the dialog parts for the current screen). Near-match drafts in ui2_nm.c. */
 #include "yn.h"
+#ifndef __MWERKS__
+signed char yn_mc_get_current();   /* (declared before its first use) */
+#endif
 
 int ADXM_ShutdownThrd();
 int ADXPS2_LoadFcacheDvd();
@@ -51,7 +54,11 @@ int yn_hard_select_set();
 int yn_log_sd();
 int yn_mc_device_check_all();
 int yn_mc_format();
+#ifdef __MWERKS__
 int yn_mc_get_current();
+#else
+signed char yn_mc_get_current();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int yn_mc_gmfile_check();
 int yn_mc_gmfile_current_set();
 int yn_mc_gmfile_save();

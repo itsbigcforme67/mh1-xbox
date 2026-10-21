@@ -1,5 +1,8 @@
 /* lb_z04 - auto-drafted 0x005D7E40-0x005D7F40: Lb_get_lb_rank, Lb_cursorUD (first drafted by tools/lbauto.py). */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 
 s32 Lb_get_lb_rank(void) {
     u8 temp_v0;

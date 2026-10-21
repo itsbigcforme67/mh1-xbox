@@ -2,6 +2,9 @@
    not C yet stay original bytes (asm stubs, build/raw/*.inc). */
 #include "lobby_f.h"
 #include "lbsys_g.h"
+#ifndef __MWERKS__
+signed char SoftKeyboard_alive_check();   /* (declared before its first use) */
+#endif
 f32 *Stage_data_get(int stg);
 int Get_view_dir();
 f32 flvecCalcDistance(f32 *, f32 *);
@@ -19,7 +22,11 @@ int Event_flag_ck();
 int Online_ck();
 int lb_ck_unique_act();
 int Lb_Pl_stg_ck();
+#ifdef __MWERKS__
 int SoftKeyboard_alive_check();
+#else
+signed char SoftKeyboard_alive_check();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 #if !defined(G_PART)
 void Lb_Pl_act_set(pl, a, b, flags)
 PLW *pl;

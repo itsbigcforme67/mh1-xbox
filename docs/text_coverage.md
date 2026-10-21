@@ -18,7 +18,7 @@ Objects located in the other build: US 457 of 689 string tables (graph 5009, cod
 
 ## Monster Hunter G by category
 
-Categories group the areas below (armour includes skills; NPC dialogue includes tutorials; menus and UI include the shop / guild screens and the unnamed 'other tables'; system is memory card, online, keyboard and code literals). *Text rules* are the G-only rules of tools/text_map.py (g_rules: whole descriptions, exact quest fields, layout, marks, buttons, numbers): whole description 42, buttons 29, exact 359, numbers 8, layout 29, marks 3, button labels 5; 1048 more by identical text elsewhere. *Ambiguous* means a rule found MH1 English but it was left out (MH1 name plus a G-rank suffix (naming left for Freedom) 19, the same Japanese has two different English texts 12, numbers: number changed to or from 1 (singular/plural) 10, the English names a button the Japanese does not 3, numbers: number not written as digits in the English 3, number not written as digits in the English 3). *Portable* is Monster Hunter Portable (PSP JP, disc/mhp), the Japanese of Monster Hunter Freedom: a G string whose Japanese is in Portable word for word (same normal form as the *marks* rule) is one Freedom should have an official English line for; all text entries of its DATA.BIN (string packs, record files, code overlays; none is compressed) and BOOT.BIN were read (10828 distinct texts).
+Categories group the areas below (armour includes skills; NPC dialogue includes tutorials; menus and UI include the shop / guild screens and the unnamed 'other tables'; system is memory card, online, keyboard and code literals). *Text rules* are the G-only rules of tools/text_map.py (g_rules: whole descriptions, exact quest fields, layout, marks, buttons, numbers): whole description 42, buttons 29, exact 359, numbers 8, layout 29, same overlay 5, marks 3, button labels 5; 1048 more by identical text elsewhere. *Ambiguous* means a rule found MH1 English but it was left out (MH1 name plus a G-rank suffix (naming left for Freedom) 19, numbers: number changed to or from 1 (singular/plural) 10, the same Japanese has two different English texts 7, the English names a button the Japanese does not 3, numbers: number not written as digits in the English 3, number not written as digits in the English 3). *Portable* is Monster Hunter Portable (PSP JP, disc/mhp), the Japanese of Monster Hunter Freedom: a G string whose Japanese is in Portable word for word (same normal form as the *marks* rule) is one Freedom should have an official English line for; all text entries of its DATA.BIN (string packs, record files, code overlays; none is compressed) and BOOT.BIN were read (10828 distinct texts).
 
 | category | G strings | official English | of which by the text rules | left | left, ambiguous for a rule | left, same Japanese in Portable | left, not in Portable |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -28,10 +28,10 @@ Categories group the areas below (armour includes skills; NPC dialogue includes 
 | monsters | 74 | 56 (75%) | 0 | 18 | 1 | 15 | 3 |
 | quests | 1199 | 1012 (84%) | 365 | 187 | 10 | 170 | 17 |
 | NPC dialogue and tutorials | 2498 | 1929 (77%) | 54 | 569 | 5 | 141 | 428 |
-| menus and UI | 1803 | 1163 (64%) | 8 | 640 | 11 | 457 | 183 |
+| menus and UI | 1803 | 1168 (64%) | 13 | 635 | 6 | 452 | 183 |
 | system (memory card, online, keyboard, code literals) | 877 | 343 (39%) | 6 | 534 | 3 | 142 | 392 |
 | keyboard kana tables (not text) | 421 | 4 (0%) | 0 | 417 | 0 | 142 | 275 |
-| **total** | **13263** | **7064 (53%)** | 466 | 6199 | 48 | 4727 | 1472 |
+| **total** | **13263** | **7069 (53%)** | 471 | 6194 | 43 | 4722 | 1472 |
 
 ## MH1 JP strings with official US English
 
@@ -122,7 +122,7 @@ Dropped pairs: line-split dialog (needs per-message alignment) 258, same as JP 1
 | village NPC lines and talk [G table] | 498 | 58 (11%) | 0 | 0 | 440 |
 | items (names, help) [G table] | 439 | 41 (9%) | 0 | 0 | 398 |
 | memory card and yes/no dialogs | 217 | 138 (63%) | 70 | 9 | 0 |
-| village / plaza / guild / shop UI [G table] | 182 | 50 (27%) | 0 | 0 | 132 |
+| village / plaza / guild / shop UI [G table] | 182 | 55 (30%) | 0 | 0 | 127 |
 | village / plaza / guild / shop UI | 181 | 157 (86%) | 18 | 6 | 0 |
 | menus, options, HUD [G table] | 179 | 42 (23%) | 0 | 0 | 137 |
 | quest board / quest text tables | 158 | 149 (94%) | 5 | 4 | 0 |
@@ -244,7 +244,7 @@ Dropped pairs: line-split dialog (needs per-message alignment) 258, same as JP 1
 | other tables (verify_button_00387D) [G table] | 1 | 0 (0%) | 0 | 0 | 1 |
 | other tables (Snd_weapon_tbl) [G table] | 1 | 0 (0%) | 0 | 0 | 1 |
 | other tables (pit_help_data_str) | 1 | 1 (100%) | 0 | 0 | 0 |
-| **total** | **13263** | **7064 (53%)** | 758 | 215 | 5226 |
+| **total** | **13263** | **7069 (53%)** | 758 | 215 | 5221 |
 
 G strings are counted from a scan of main and the overlays (Shift-JIS runs, as tools/text_dump.py; a few hundred false hits are possible) plus the four text fields of each quest file. Status of the pairs between a JP string and its G twin: identical text 3873, near text (edited a little) 1260, no US English for the JP string 1160, text edited in G (left out) 263.
 

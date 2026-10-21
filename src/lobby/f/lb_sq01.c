@@ -1,8 +1,15 @@
 /* lb_sq01 - guild quest counter, level list input 0x005C74B0-0x005C75E0: lb_select_quest_level (pNet+8 = cursor, +0x12 = level cap, +0x13 = chosen level).
    Whole file in lb_village_nm.c. The shared `return 2` is a label (done:) the cancel/confirm-refused path jumps to. */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* (declared before its first use) */
+#endif
 extern u8 *pNet;
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int get_questLevelNum();
 int lb_get_quest_level();
 s32 check_questLevelSelect();

@@ -7,6 +7,16 @@
 #include "fl.h"
 #include "pl.h"
 #include "plf.h"
+/* G: the Rathian / Rathalos variants (kinds 0x25 / 0x2A, 0x29 / 0x31: names a guess) take their originals' paths */
+#ifdef VERSION_MHG
+#define EM01_KIND1(em) ((em)->kind == 1 || (em)->kind == 0x2A || (em)->kind == 0x25)
+#define EM01_G(g, mh1) (g)
+#define EM01_KIND11(em) ((em)->kind == 0xB || (em)->kind == 0x29 || (em)->kind == 0x31)
+#else
+#define EM01_KIND1(em) ((em)->kind == 1)
+#define EM01_G(g, mh1) (mh1)
+#define EM01_KIND11(em) ((em)->kind == 0xB)
+#endif
 
 /* Raw access to EMW fields that em.h does not name yet. */
 #define EMF(em, T, o) (*(T *)((u8 *)(em) + (o)))
@@ -70,7 +80,7 @@ void eft09_set(EMW *, int);
 void Eft20_set(f32, EMW *, int, int);
 void shell01_set(EMW *, int);
 s16 em_hp_vital_set2(EMW *, s16, s16);
-int em_act_search(void *);
+unsigned short em_act_search(void *);
 void em_char_set(EMW *, int, int, int);
 void em_char_set2();
 void em_act_set(EMW *, int, u16);
@@ -310,6 +320,12 @@ void em01_init(EMW *em) {
     em->x948 = f;
     if (f == 0) {
         k = em->kind;
+#ifdef VERSION_MHG      /* G em01_init (game 0x590330): the tail effect only for the Rathian / Rathalos kinds */
+        if (EM01_KIND1(em) || EM01_KIND11(em)) {
+            em->ex[0xA3] = 0;
+            eft09_set(em, k);
+        }
+#else
         if (k != 0x14) {
         switch (k) {
         case 1: case 6: case 8: case 0xB: case 0xF: case 0xE:
@@ -319,6 +335,7 @@ void em01_init(EMW *em) {
             break;
         }
         }
+#endif
     }
 }
 
@@ -978,11 +995,11 @@ static void em_act18_00568500(EMW *em, EM01W *w) {
         em->x05++;
         em->x388 = 0;
         em->x3F4 = 0;
-        em_char_set(em, 0x20, 0, 0);
+        em_char_set(em, EM01_G(0x27, 0x20), 0, 0);   /* G: motions 0x27 / 0x22 */
         em->x88B = 0;
         em_range_set(em, 1);
         Em_Suimin_Start(em);
-        if (em->kind == 1) {
+        if (EM01_KIND1(em)) {
             em->work08 = 0x3138;
         } else {
             em->work08 = 0x2328;
@@ -991,11 +1008,11 @@ static void em_act18_00568500(EMW *em, EM01W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05++;
-            em_char_set(em, 0x1F, 0, 0);
+            em_char_set(em, EM01_G(0x22, 0x1F), 0, 0);
         }
         break;
     case 2:
-        if (em->kind == 1) {
+        if (EM01_KIND1(em)) {
             em_sleep_hp_add(em, 1, (s16)(0.6f * (f32)em->x792), 3);
         } else {
             em_sleep_hp_add(em, 1, (s16)(0.7f * (f32)em->x792), 3);
@@ -1119,7 +1136,7 @@ static void em_act21_00568A00(EMW *em, EM01W *w) {
         em_range_set(em, 1);
         em->x88B = 0;
         Em_Sleep_Start(em);
-        if (em->kind == 1) {
+        if (EM01_KIND1(em)) {
             em->work08 = 0x3138;
         } else {
             em->work08 = 0x2328;
@@ -1132,7 +1149,7 @@ static void em_act21_00568A00(EMW *em, EM01W *w) {
         }
         break;
     case 2:
-        if (em->kind == 1) {
+        if (EM01_KIND1(em)) {
             em_sleep_hp_add(em, 1, (s16)(0.6f * (f32)em->x792), 3);
         } else {
             em_sleep_hp_add(em, 1, (s16)(0.7f * (f32)em->x792), 3);
@@ -1173,7 +1190,7 @@ static void em_act23_00568C30(EMW *em, EM01W *w) {
     case 0:
         em->x05++;
         em->x388 = 0;
-        em_char_set(em, 0x21, 0, 0);
+        em_char_set(em, EM01_G(0x25, 0x21), 0, 0);   /* G: motion 0x25 */
         em_range_set(em, 0);
         em->x88B = 1;
         em_suimin_end(em);
@@ -1663,7 +1680,7 @@ static void em_fly00_0056A000(EMW *em, EM01W *w) {
         em->x388 = 0;
         em->x3F4 = 0;
         em_char_set(em, 0x12, 0, 0);
-        em01_fly_adjy2_init(em, 2);
+        em01_fly_adjy2_init(em, EM01_G(EM01_KIND11(em) ? 15 : 2, 2));   /* G: type 15 for the Rathalos kinds */
         w->x18 = 0;
         break;
     case 1:
@@ -1777,7 +1794,7 @@ static void em_fly03_0056A450(EMW *em, EM01W *w) {
         em->x3F4 = 0;
         em_char_set(em, 0x12, 0, 0);
         em_rate_clear(em);
-        em01_fly_adjy2_init(em, 2);
+        em01_fly_adjy2_init(em, EM01_G(EM01_KIND11(em) ? 15 : 2, 2));   /* G: type 15 for the Rathalos kinds */
         w->x18 = 0;
         break;
     case 1:
@@ -2385,7 +2402,7 @@ static void em_fly16_0056BC40(EMW *em, EM01W *w) {
         em->x3F4 = 0;
         em->x388 = 2;
         em_char_set(em, 0xF, 0, 0);
-        w->turn = 0x100;
+        w->turn = EM01_G(0x180, 0x100);   /* G: turns faster */
         w->dang = Em_Calc_angY(em->pos, em->tgt_pos);
         w->dang = w->dang - em->ang[1];
         w->x18 = 0;
@@ -3027,7 +3044,7 @@ static void em_atk07_0056D1E0(EMW *em, EM01W *w) {
             if (em01_horm_main(em)) {
                 em->x05++;
                 em->x3F4 = 0;
-                em_char_set(em, 0x1F, 0, 0);
+                em_char_set(em, EM01_G(0x22, 0x1F), 0, 0);   /* G: motion 0x22 */
             }
             break;
         }
@@ -3047,6 +3064,53 @@ static void em_atk07_0056D1E0(EMW *em, EM01W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G em_atk09 (game 0x597B90): the roar-and-fire from the air turns to the target on frame 60 of motion 0x31 (not at its
+ * end), with flight curve 16, and ends on em01_fly_adjy */
+static void em_atk09_0056DD30(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x31, 0, 0);
+        em01_fly_adjy2_init(em, 0xD);
+        break;
+    case 1:
+        sound_call_00574D40(em, 0x78, 0x20, 0x23);
+        senkai_player(em);
+        em01_fly_adjy2(em);
+        if (em_frame_check(em, 60.0f, 0)) {
+            em->x05 += 1;
+            em_char_set(em, 0x2E, 0, 0);
+            em01_fly_adjy2_init(em, 0x10);
+        }
+        break;
+    case 2:
+        sound_call_00574D40(em, 0x78, 0x20, 0x23);
+        senkai_player(em);
+        em01_fly_adjy2(em);
+        if (em_frame_check(em, 6.0f, 0)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 1, 0x1E94, 0);
+        }
+        if (em_frame_check(em, 40.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0xF, 2, 0x22);
+        }
+        break;
+    case 3:
+        em01_fly_adjy(em, 1);
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+#else
 static void em_atk09_0056DD30(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -3089,7 +3153,54 @@ static void em_atk09_0056DD30(EMW *em, EM01W *w) {
     }
     FLY_FLOOR(em);
 }
+#endif
 
+#ifdef VERSION_MHG
+/* G em_atk10 (game 0x597DA0): as G's atk09 (frame 60, curve 16), MH1's repeat count (w->x1A) is gone; Shell08 type 2 */
+static void em_atk10_0056DF20(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x31, 0, 0);
+        em01_fly_adjy2_init(em, 0xD);
+        break;
+    case 1:
+        sound_call_00574D40(em, 0x78, 0x20, 0x23);
+        senkai_player(em);
+        em01_fly_adjy2(em);
+        if (em_frame_check(em, 60.0f, 0)) {
+            em->x05 += 2;
+            em_char_set(em, 0x2E, 0, 0);
+            em01_fly_adjy2_init(em, 0x10);
+        }
+        break;
+    case 2:
+    case 3:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 6.0f, 0)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x1E94, 0);
+        }
+        if (em_frame_check(em, 40.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0xF, 2, 0x22);
+        }
+        break;
+    case 4:
+        em01_fly_adjy(em, 1);
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+#else
 static void em_atk10_0056DF20(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -3140,6 +3251,7 @@ static void em_atk10_0056DF20(EMW *em, EM01W *w) {
     }
     FLY_FLOOR(em);
 }
+#endif
 
 static void em_atk11_0056E160(EMW *em, EM01W *w) {
     f32 v[4];
@@ -3502,7 +3614,12 @@ void em_atk20(EMW *em, EM01W *w) {
         }
         break;
     case 2:
+#ifdef VERSION_MHG      /* G em_atk20 (game 0x598FA0): lands by height alone, and is kept above the floor */
+        em01_fly_adjy2(em);
+        if (em->pos[1] <= em->x5AC) {
+#else
         if ((em01_fly_adjy2(em) & 0xFF) && em->pos[1] <= em->x5AC) {
+#endif
             em->x05++;
             em_char_set(em, 0x5E, 0, 0);
             em->x388 = 0;
@@ -3518,6 +3635,9 @@ void em_atk20(EMW *em, EM01W *w) {
         }
         break;
     }
+#ifdef VERSION_MHG
+    FLY_FLOOR(em);
+#endif
 }
 
 /* A file static in the original. */
@@ -3638,6 +3758,66 @@ void em_atk25(EMW *em, EM01W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G em_atk17 (game 0x598AD0): as G's atk09/10: frame 60 of motion 0x31 with curve 16 (no repeat count), sound on the
+ * way up, then MH1's two-shot sequence; ends on em01_fly_adjy */
+static void em_atk17_0056EC80(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x31, 0, 0);
+        em01_fly_adjy2_init(em, 0xD);
+        break;
+    case 1:
+        sound_call_00574D40(em, 0x78, 0x20, 0x23);
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 60.0f, 0)) {
+            em->x05 += 2;
+            em_char_set(em, 0x2E, 0, 0);
+            em01_fly_adjy2_init(em, 0x10);
+        }
+        break;
+    case 2:
+    case 3:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 6.0f, 0)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x1E94, 0);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x2E, 4, 0);
+        }
+        break;
+    case 4:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 6.0f, 1)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x1E94, 0);
+        }
+        if (em_frame_check(em, 40.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0xF, 2, 0x22);
+        }
+        break;
+    case 5:
+        em01_fly_adjy(em, 1);
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em->x05++;
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+#else
 static void em_atk17_0056EC80(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -3701,6 +3881,7 @@ static void em_atk17_0056EC80(EMW *em, EM01W *w) {
     }
     FLY_FLOOR(em);
 }
+#endif
 
 /* kyusyu attack: the monster follows a player in the air (guess: "kyusyu" = suck/drain). */
 static void em_atk08_0056D300(EMW *em, EM01W *w) {
@@ -3934,6 +4115,66 @@ static void em_atk08_0056D300(EMW *em, EM01W *w) {
 }
 
 /* A file static in the original. */
+#ifdef VERSION_MHG
+/* G em_atk22 (game 0x599A60): as G's atk17, with three shots */
+void em_atk22(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x31, 0, 0);
+        em01_fly_adjy2_init(em, 0xD);
+        break;
+    case 1:
+        sound_call_00574D40(em, 0x78, 0x20, 0x23);
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 60.0f, 0)) {
+            em->x05 += 2;
+            em_char_set(em, 0x2E, 0, 0);
+            em01_fly_adjy2_init(em, 0x10);
+        }
+        break;
+    case 2:
+    case 3:
+    case 4:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 6.0f, 1)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x1E94, 0);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x2E, 4, 0);
+        }
+        break;
+    case 5:
+        em01_fly_adjy2(em);
+        senkai_player(em);
+        if (em_frame_check(em, 6.0f, 1)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x1E94, 0);
+        }
+        if (em_frame_check(em, 40.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0xF, 2, 0x22);
+        }
+        break;
+    case 6:
+        em01_fly_adjy(em, 1);
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em->x05++;
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+#else
 void em_atk22(EMW *em, EM01W *w) {
     switch (em->x05) {
     case 0:
@@ -3998,6 +4239,7 @@ void em_atk22(EMW *em, EM01W *w) {
     }
     FLY_FLOOR(em);
 }
+#endif
 
 /* Variant of atk 8 that lands (ground contact after the pursuit). */
 static void em_atk21_0056F340(EMW *em, EM01W *w) {
@@ -4248,7 +4490,7 @@ static void em_dmg03_005706E0(EMW *em, EM01W *w) {
         em->x3F4 = 0;
         em_cmd_reset(em);
         em_char_set(em, 0x40, 0, 0);
-        if (em->kind == 1) {
+        if (EM01_KIND1(em)) {
             Quest_enemy_hagi_set(em, 2);
         } else {
             Quest_enemy_hagi_set(em, 8);
@@ -4277,7 +4519,7 @@ static void em_dmg04_005707A0(EMW *em, EM01W *w) {
         Em_Sleep_Flag_Ck(em);
         break;
     case 1:
-        if (em_frame_check(em, 6.0f, 0) && (s8)em->ex[0xA3] != 0 && em->kind != 0x14) {
+        if (em_frame_check(em, 6.0f, 0) && (s8)em->ex[0xA3] != 0 && EM01_G(1, em->kind != 0x14)) {   /* G dropped the kind 0x14 test */
             em->ex[0xA3] = 0;
         }
         if (em_frame_check2(em, 0, 52.0f) && em_frame_check2(em, 0, 122.0f) == 0) {
@@ -5646,6 +5888,202 @@ static void em_move02_00573A50(EMW *em, EM01W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G's four new em01 attacks (em_move03 x15 26-29, game 0x59A330 / 0x59A420 / 0x59A640 / 0x59A860), PC C from the asm. */
+/* x15 26: motion 0x2A twice, turning 0x200 per tick, then back to normal */
+static void em_atk26_g(EMW *em, EM01W *w) {
+    u8 step = em->x05;
+
+    switch (step) {
+    case 0:
+        em->x05 = step + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x2A, 0, 0);
+        em_action_timer_calc(em, 0);
+        break;
+    case 1:
+        em->ang[1] += 0x200;
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em->x05++;
+            em_char_set(em, 0x2A, 0, 0);
+        }
+        break;
+    case 2:
+        em->ang[1] += 0x200;
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em->x05++;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+/* x15 27: motion 0x11 (a run toward the target, turning 0x40 per tick) until the timer runs out or the target is
+ * within 500, then motion 9 and back to normal */
+static void em_atk27_g(EMW *em, EM01W *w) {
+    f32 v[3];
+    s32 a;
+    u32 d;
+    u8 step = em->x05;
+
+    switch (step) {
+    case 0:
+        em->x05 = step + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x11, 0, 0);
+        break;
+    case 1:
+        if (w->has_tgt != 0) {
+            d = (u16)Em_Calc_angY(em->pos, em->tgt_pos);
+            a = em->ang[1];
+            d = (d - a) & 0xFFFF;
+            if (d < 0x8001) {
+                em->ang[1] = d < 0x40 ? a + d : a + 0x40;
+            } else {
+                em->ang[1] = d >= 0xFFC1 ? a + d : a - 0x40;
+            }
+            mot_miration_ret(em, v);
+            w->dist -= v[2];
+            if (w->dist <= 500.0f) {
+                em->work08 = 1;
+            }
+        }
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 9, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05 = step + 1;
+            em01_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+/* game 0x59A5B0: 10 units forward along the monster's facing (x and z) */
+static void em01_fly_fwd_g(EMW *em, EM01W *w) {
+    f32 v[3], out[3];
+    s32 a[3];
+    FLMAT m;
+
+    a[0] = 0;
+    a[1] = em->ang[1];
+    a[2] = 0;
+    SetVector(v, 0.0f, 0.0f, 10.0f);
+    cpRotMatrixYXZ2(a, &m);
+    flvecApplyMat33(out, v, (f32 *)&m);
+    em->pos[0] += out[0];
+    em->pos[2] += out[2];
+}
+
+/* x15 28: G's atk09 (one fireball from the air) flying forward, Shell08 angle 0x2D83 */
+static void em_atk28_g(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x31, 0, 0);
+        em01_fly_adjy2_init(em, 0xD);
+        break;
+    case 1:
+        sound_call_00574D40(em, 0x78, 0x20, 0x23);
+        em01_fly_adjy2(em);
+        em01_fly_fwd_g(em, w);
+        if (em_frame_check(em, 60.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0x2E, 0, 0);
+            em01_fly_adjy2_init(em, 0x10);
+        }
+        break;
+    case 2:
+        sound_call_00574D40(em, 0x78, 0x20, 0x23);
+        em01_fly_adjy2(em);
+        em01_fly_fwd_g(em, w);
+        if (em_frame_check(em, 6.0f, 0)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 1, 0x2D83, 0);
+        }
+        if (em_frame_check(em, 40.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0xF, 2, 0x22);
+        }
+        break;
+    case 3:
+        em01_fly_adjy(em, 1);
+        if (em->x194 == 0) {
+            em->x05++;
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+/* x15 29: G's atk22 (three fireballs from the air) flying forward, Shell08 angle 0x2D83 */
+static void em_atk29_g(EMW *em, EM01W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->x3F4 = 0;
+        em_char_set(em, 0x31, 0, 0);
+        em01_fly_adjy2_init(em, 0xD);
+        break;
+    case 1:
+        sound_call_00574D40(em, 0x78, 0x20, 0x23);
+        em01_fly_adjy2(em);
+        em01_fly_fwd_g(em, w);
+        if (em_frame_check(em, 60.0f, 0)) {
+            em->x05 += 2;
+            em_char_set(em, 0x2E, 0, 0);
+            em01_fly_adjy2_init(em, 0x10);
+        }
+        break;
+    case 2:
+    case 3:
+    case 4:
+        em01_fly_adjy2(em);
+        em01_fly_fwd_g(em, w);
+        if (em_frame_check(em, 6.0f, 1)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x2D83, 0);
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x2E, 4, 0);
+        }
+        break;
+    case 5:
+        em01_fly_adjy2(em);
+        em01_fly_fwd_g(em, w);
+        if (em_frame_check(em, 6.0f, 1)) {
+            Eft17_set(em, 0x24, 1, 0);
+            Eft17_set(em, 0x24, 2, 0);
+            Shell08_set_ang(em, 0x22, 0, 2, 0x2D83, 0);
+        }
+        if (em_frame_check(em, 40.0f, 0)) {
+            em->x05++;
+            em_char_set(em, 0xF, 2, 0x22);
+        }
+        break;
+    case 6:
+        em01_fly_adjy(em, 1);
+        if (EMF(em, s32, 0x1E4) == 0) {
+            em->x05++;
+            em01_to_fly(em, 0);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+#endif
 static void em_move03_00573C20(EMW *em, EM01W *w) {
     switch (em->x15) {
     case 0: em_atk00_0056CAA0(em, w); break;
@@ -5673,6 +6111,12 @@ static void em_move03_00573C20(EMW *em, EM01W *w) {
     case 23: em_atk23(em, w); break;
     case 24: em_atk24(em, w); break;
     case 25: em_atk25(em, w); break;
+#ifdef VERSION_MHG      /* G em_move03 (game 0x59E300): four new attacks */
+    case 26: em_atk26_g(em, w); break;
+    case 27: em_atk27_g(em, w); break;
+    case 28: em_atk28_g(em, w); break;
+    case 29: em_atk29_g(em, w); break;
+#endif
     }
 }
 
@@ -5712,6 +6156,13 @@ static void em_move06_00573FE0(EMW *em, EM01W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+void game_func_00547C20(EMW *em);    /* G hunger countdown (em_core_nm.c, agent D) */
+#endif
+/* G em01_main (game 0x59E7C0, compared with an m2c draft of G's asm): kinds 37 / 42 (Rathian variants, a guess) count as
+ * kind 1 (EM01_KIND1); the hunger/thirst/sleep checks are skipped while game_w.x2E is 8-10 and follow G's quest
+ * numbers, two of the groups now also run G's hunger countdown (game 0x547C20); reaction 11 is not repeated over
+ * itself or in the air; the demo stops are G's quests 10010 / 10032. */
 void em01_main(EMW *em) {
     EM01W *w = (EM01W *)em->ex;
     u8 dmg[4];
@@ -5721,61 +6172,65 @@ void em01_main(EMW *em) {
 
     em_mode_timer_sub(em);
     em_no_floor_ck(em);
-#ifdef VERSION_MHG
-    /* G (game 0x59E7C0, written from the asm; agent D, 20 Oct 2026): the Rathian-type rate also for the new kinds 42
-     * and 37, no needs at difficulty 8-10, and the per-quest lists by G's quest numbers, with the countdown-only hunger
-     * (game_func_00547C20) where MH1 had none */
-    {
-        void game_func_00547C20(EMW *em);
-        int is1 = em->kind == 1 || em->kind == 42 || em->kind == 37;
-        u16 q = *(u16 *)((u8 *)&quest_w + 8);
-        rate = is1 ? 0.1f : 0.3f;
-        if (em->x8C2 != 1 && em->x8B6 == 0 && game_w.x2E != 8 && game_w.x2E != 9 && game_w.x2E != 10) {
-            switch (q) {
-            case 10047: case 2049: case 2048: case 1037:
-                if (!is1)
-                    em_thirst_ck(em);
-                game_func_00547C20(em);
-                break;
-            case 60026: case 2050: case 2030: case 1034:
-                if (is1) {
-                    em_hinshi_ck(em, rate);
-                    em_sleep_ck(em);
-                } else {
-                    em_thirst_ck(em);
-                }
-                game_func_00547C20(em);
-                break;
-            case 2033: case 2032: case 2031: case 1033: case 1032: case 1031: case 45: case 44:
-                if (is1) {
-                    em_hinshi_ck(em, rate);
-                    em_egg_ck(em);
-                    em_thirst_ck(em);
-                    game_func_00547C20(em);
-                    em_sleep_ck(em);
-                } else {
-                    em_egg_ck(em);
-                    em_thirst_ck(em);
-                    em_hungry_ck(em);
-                }
-                break;
-            default:
-                em_hinshi_ck(em, rate);
-                em_egg_ck(em);
-                em_thirst_ck(em);
-                em_hungry_ck(em);
-                em_sleep_ck(em);
-                break;
-            }
-        }
-    }
-    if (0)
-#endif
-    if (em->kind == 1) {
+    if (EM01_KIND1(em)) {
         rate = 0.1f;
     } else {
         rate = 0.3f;
     }
+#ifdef VERSION_MHG
+    if (em->x8C2 != 1 && em->x8B6 == 0 && game_w.x2E != 8 && game_w.x2E != 9 && game_w.x2E != 10) {
+        switch (quest_w.x08) {
+        case 0x2C:
+        case 0x2D:
+        case 0x407:
+        case 0x408:
+        case 0x409:
+        case 0x7EF:
+        case 0x7F0:
+        case 0x7F1:
+            if (EM01_KIND1(em)) {
+                em_hinshi_ck(em, rate);
+                em_egg_ck(em);
+                em_thirst_ck(em);
+                game_func_00547C20(em);
+                em_sleep_ck(em);
+            } else {
+                em_egg_ck(em);
+                em_thirst_ck(em);
+                em_hungry_ck(em);
+            }
+            break;
+        case 0x40A:
+        case 0x7EE:
+        case 0x802:
+        case 0xEA7A:
+            if (EM01_KIND1(em)) {
+                em_hinshi_ck(em, rate);
+                em_sleep_ck(em);
+            } else {
+                em_thirst_ck(em);
+            }
+            game_func_00547C20(em);
+            break;
+        case 0x40D:
+        case 0x800:
+        case 0x801:
+        case 0x273F:
+            if (!EM01_KIND1(em)) {
+                em_thirst_ck(em);
+            }
+            game_func_00547C20(em);
+            break;
+        default:
+            em_hinshi_ck(em, rate);
+            em_egg_ck(em);
+            em_thirst_ck(em);
+            em_hungry_ck(em);
+            em_sleep_ck(em);
+            break;
+        }
+    }
+#else
     if (em->x8C2 != 1 && em->x8B6 == 0) {
         switch (quest_w.x08) {
         case 0x2C:
@@ -5820,6 +6275,7 @@ void em01_main(EMW *em) {
             break;
         }
     }
+#endif
     if (w->x06 != 0) {
         w->x06--;
     }
@@ -5870,7 +6326,7 @@ void em01_main(EMW *em) {
     case 7:
         if (em->x9EA != 0) {
             em_sleep2_dmg_timer_set(em);
-            if ((u8)em_hokaku_ck(em, 0.1f + ((em->kind == 1) ? 0.1f : 0.3f)) == 1) {
+            if ((u8)em_hokaku_ck(em, 0.1f + (EM01_KIND1(em) ? 0.1f : 0.3f)) == 1) {
                 em01_act_set(em, 6, 4, 4);
             } else {
                 em01_act_set(em, 0, 0x1F, 2);
@@ -5915,6 +6371,14 @@ void em01_main(EMW *em) {
         }
         break;
     case 11:
+#ifdef VERSION_MHG      /* G: not while already in one of these reactions, nor in the air */
+        if (em->mode == 4 && (em->x15 == 0xC || em->x15 == 0xD || em->x15 == 0x11 || em->x15 == 0x12 || em->x15 == 0x13)) {
+            break;
+        }
+        if (em->x388 == 2) {
+            break;
+        }
+#endif
         em01_act_set(em, 4, 4, 2);
         break;
     case 12:
@@ -5929,7 +6393,7 @@ void em01_main(EMW *em) {
                 break;
             case 6:
                 if (em->hagi[d].cnt >= 2) {
-                    if (em->kind == 1) {
+                    if (EM01_KIND1(em)) {
                         Quest_enemy_hagi_set(em, 1);
                     } else {
                         Quest_enemy_hagi_set(em, 4);
@@ -5964,14 +6428,8 @@ void em01_main(EMW *em) {
         }
         break;
     }
-#ifdef VERSION_MHG
-int rt_story_quest(void);
-#define STORYQ rt_story_quest()
-#else
-#define STORYQ quest_w.x08
-#endif
-    switch (STORYQ) {
-    case 0x8A:
+    switch (quest_w.x08) {
+    case EM01_G(10010, 0x8A):
         if (em->stg == 0x25 && Event_flag_ck(0xD) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em01_act_set(em, 6, 1, 1);
@@ -5979,7 +6437,7 @@ int rt_story_quest(void);
             break;
         }
         goto cmd;
-    case 0x8B:
+    case EM01_G(10032, 0x8B):
         if (em->stg == 0x21 && Event_flag_ck(0xE) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em01_act_set(em, 6, 2, 1);
@@ -6121,10 +6579,19 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         w->anim = em->char0;
     }
     switch (w->anim) {
+#ifdef VERSION_MHG      /* G: 0x3E9 / 0x3F8 / 0x406 / 0x408 / 0x409 take the default (move_default) */
+    case 0x3F1:
+        sound_call_00574D40(em, 4, 6, 0x1A);
+        sound_call_00574D40(em, 4, 0x20, 0x23);
+        sound_call_00574D40(em, 6, 0x13, 0);
+        sound_call_00574D40(em, 0x26, 4, 0x1A);
+        break;
+#else
     case 0x3E9:
     case 0x3F8:
     case 0x406:
         break;
+#endif
     case 0x3EB:
         sound_call_00574D40(em, 0x34, 1, 0x14);
         sound_call_00574D40(em, 0x74, 1, 0x1a);
@@ -6412,6 +6879,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         sound_call_00574D40(em, 4, 0xe, 0xc);
         sound_call_00574D40(em, 8, 0xe, 6);
         break;
+#ifndef VERSION_MHG
     case 0x407:
         sound_call_00574D40(em, 2, 0x2d, 0x23);
         sound_call_00574D40(em, 0xb6, 0x2d, 0x23);
@@ -6435,6 +6903,10 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         sound_call_00574D40(em, 0xb6, 3, 0x14);
         sound_call_00574D40(em, 0x38, 0x16, 0);
         break;
+#endif
+#ifdef VERSION_MHG
+    case 0x407:          /* G: as 0x40A */
+#endif
     case 0x40A:
         sound_call_00574D40(em, 0x24, 0x2f, 0x23);
         vb[1] = 10.0f;
@@ -6593,6 +7065,23 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
             }
         }
         break;
+#ifdef VERSION_MHG
+    case 0x412:
+        sound_call_00574D40(em, 8, 0x23, 0x23);
+        sound_call_00574D40(em, 0xE, 0xF, 0xC);
+        sound_call_00574D40(em, 0x1E, 0x14, 0x2A);
+        sound_call_00574D40(em, 0x2A, 0, 0x14);
+        sound_call_00574D40(em, 0x48, 1, 0x1A);
+        quake_call_00574E40(em, 0x2C, 1);
+        quake_call_00574E40(em, 0x49, 1);
+        if (em_frame_check(em, 30.0f, 0)) {
+            shell01_set(em, 0x11);
+        }
+        if (em->x8B6 && em_frame_check2(em, 0, 6.0f) && !em_frame_check2(em, 0, 38.0f) && !(*(u16 *)&game_w.x1E & 0x3)) {
+            Eft20_set(1.0f, em, 0x1A, 0);
+        }
+        break;
+#endif
     case 0x413:
         sound_call_00574D40(em, 8, 0x23, 0x23);
         sound_call_00574D40(em, 0xe, 0xf, 6);
@@ -6625,7 +7114,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         sound_call_00574D40(em, 0x32, 0x1b, 6);
         break;
     case 0x415:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 0x22, 0x5b, 0x23);
             sound_call_00574D40(em, 4, 0xd, 6);
             sound_call_00574D40(em, 8, 0xd, 0xc);
@@ -6727,6 +7216,22 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         sound_call_00574D40(em, 0x10, 1, 0x14);
         break;
     case 0x419:
+#ifdef VERSION_MHG      /* G: one more sound, dust on frame 92 near the ground, the breath dust on frames 60-132 */
+        sound_call_00574D40(em, 2, 0x48, 0x23);
+        sound_call_00574D40(em, 0x20, 0xf, 6);
+        sound_call_00574D40(em, 0x24, 0xf, 0xc);
+        sound_call_00574D40(em, 0x74, 0xb, 6);
+        sound_call_00574D40(em, 0x78, 0xb, 0xc);
+        sound_call_00574D40(em, 0xbe, 0xb, 6);
+        sound_call_00574D40(em, 0xc2, 0xb, 0xc);
+        if (em_frame_check(em, 92.0f, 0) && em->pos[1] <= 1000.0f + em->x5AC) {
+            Eft20_set(1.0f, em, 1, 0);
+        }
+        if (em->x8B6 && em_frame_check2(em, 0, 60.0f) && !em_frame_check2(em, 0, 132.0f) && !(*(u16 *)&game_w.x1E & 0x3)) {
+            Eft20_set(1.0f, em, 0x1a, (s16)((u16)ran_suu(1) & 0x1));
+        }
+        break;
+#endif
         sound_call_00574D40(em, 0x20, 0xf, 6);
         sound_call_00574D40(em, 0x24, 0xf, 0xc);
         sound_call_00574D40(em, 0x74, 0xb, 6);
@@ -6757,7 +7262,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         sound_call_00574D40(em, 0x11e, 0x13, 0);
         break;
     case 0x41B:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 4, 0x13, 0x2a);
             sound_call_00574D40(em, 0x26, 0x10, 0x1a);
             sound_call_00574D40(em, 0x38, 0x12, 0x1a);
@@ -6793,7 +7298,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         }
         break;
     case 0x41C:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 0x16, 0x28, 0x23);
             sound_call_00574D40(em, 0x48, 0x29, 0x23);
             sound_call_00574D40(em, 0x52, 0x18, 0x23);
@@ -6852,7 +7357,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         }
         break;
     case 0x41E:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 2, 0x12, 0);
             sound_call_00574D40(em, 0x1c, 4, 0x1a);
             sound_call_00574D40(em, 0x38, 4, 0x14);
@@ -6922,7 +7427,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         sound_call_00574D40(em, 0x68, 3, 0x1a);
         break;
     case 0x424:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 6, 0x53, 0x23);
             sound_call_00574D40(em, 0x48, 0x13, 0x2a);
             sound_call_00574D40(em, 0x30, 6, 0x1a);
@@ -6956,7 +7461,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         }
         break;
     case 0x425:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 6, 0x53, 0x23);
             sound_call_00574D40(em, 0xa, 0x12, 0x1a);
             sound_call_00574D40(em, 0x26, 6, 0x1a);
@@ -6978,7 +7483,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         }
         break;
     case 0x426:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 4, 0x4f, 0x23);
             sound_call_00574D40(em, 0x56, 0x1f, 0x23);
             sound_call_00574D40(em, 0x10, 3, 0x14);
@@ -6997,7 +7502,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         }
         break;
     case 0x427:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 4, 0x52, 0x23);
             sound_call_00574D40(em, 4, 0x13, 0);
             sound_call_00574D40(em, 0x4c, 0x1f, 0x23);
@@ -7010,7 +7515,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         }
         break;
     case 0x428:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 4, 0x52, 0x23);
             sound_call_00574D40(em, 4, 0x13, 0);
             sound_call_00574D40(em, 0x44, 0x20, 0x23);
@@ -7023,7 +7528,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         }
         break;
     case 0x429:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 4, 0x54, 0x23);
             sound_call_00574D40(em, 0xa8, 0x2a, 0x23);
             sound_call_00574D40(em, 4, 0x27, 0x2c);
@@ -7075,7 +7580,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         }
         break;
     case 0x42A:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 4, 0x52, 0x23);
             sound_call_00574D40(em, 4, 0x13, 0);
         } else {
@@ -7088,7 +7593,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         sound_call_00574D40(em, 0x46, 0x17, 0);
         break;
     case 0x42C:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 0x1c, 2, 0x1a);
             sound_call_00574D40(em, 0x30, 4, 0x14);
             sound_call_00574D40(em, 0xdc, 0x10, 0x1a);
@@ -7124,7 +7629,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         }
         break;
     case 0x42D:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 4, 0x52, 0);
             sound_call_00574D40(em, 4, 0x13, 0x2a);
             sound_call_00574D40(em, 0x18, 9, 0);
@@ -7177,7 +7682,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         }
         break;
     case 0x432:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 4, 0x52, 0);
             sound_call_00574D40(em, 4, 0x13, 0x2a);
             sound_call_00574D40(em, 0x18, 9, 0);
@@ -7246,7 +7751,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         sound_call_00574D40(em, 0x32, 0x2c, 0x23);
         break;
     case 0x43B:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 4, 0x16, 0);
             sound_call_00574D40(em, 4, 0x17, 0);
             sound_call_00574D40(em, 0xa, 0x10, 0x1a);
@@ -7322,7 +7827,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         }
         break;
     case 0x443:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 0x10, 6, 0x14);
             sound_call_00574D40(em, 0x38, 6, 0x1a);
             sound_call_00574D40(em, 0xb0, 3, 0x14);
@@ -7385,7 +7890,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         sound_call_00574D40(em, 0xa4, 0xf, 0xc);
         sound_call_00574D40(em, 0xd2, 0xc, 6);
         sound_call_00574D40(em, 0xd6, 0xc, 0xc);
-        if (em_frame_check(em, 98.0f, 0)) {
+        if (em_frame_check(em, EM01_G(108.0f, 98.0f), 0)) {
             shell01_set(em, 0x1e);
         }
         if (em_frame_check(em, 104.0f, 0)) {
@@ -7410,7 +7915,7 @@ static void ef_move_sub_00574EE0(EMW *em, EM01W *w) {
         }
         break;
     case 0x447:
-        if (em->kind == 0xb) {
+        if (EM01_KIND11(em)) {
             sound_call_00574D40(em, 4, 0x10, 0);
             sound_call_00574D40(em, 0xa, 0x12, 0);
             sound_call_00574D40(em, 0x14, 9, 0);

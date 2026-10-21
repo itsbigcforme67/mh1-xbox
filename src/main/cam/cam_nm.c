@@ -253,7 +253,7 @@ s32 pch_lock_chk(PLW *pl) {
     return 0;
 }
 
-s32 act_ck(PLW *, s32, s32);
+short act_ck(PLW *, s32, s32);
 
 s32 PachiTypeCheck(PLW *pl) {
     if ((s16)act_ck(pl, 0, 0x65) != 0 || (s16)act_ck(pl, 0, 0x66) != 0) {
@@ -851,7 +851,7 @@ s32 point_cam_sub(CAMW *cw, CAMS *cs, CAMD_DEMO *d) {
  * two stray alignment nops: the `k` switch and the blend-rate if). */
 void cpRotMatrix(s32 *, f32 *);
 void flvecApplyMat33(f32 *, f32 *, f32 *);
-int act_ck(PLW *, int, int);
+short act_ck(PLW *, int, int);
 f32 GetGroundHit(f32 *);
 f32 flArcTan2(f32, f32);
 f32 flArcCos(f32);

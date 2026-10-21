@@ -358,3 +358,11 @@ guess: not back from a quest). At the next Poogie visit: notice "the pet is hold
 Pouch_GiveItem with a random item from a weighted table (D_007E81FC / D_007E8204, lobby data; contents need a Dos disc),
 then the state clears. Only lobby code reads the flag (gm_sub and sub_main only reset it): the hunt's drops and carves are
 not affected. Likely origin of the rumour: pet twice, hunt, come back to a present.
+
+## G's code for stages 89-91 (agent A, 20 Oct 2026)
+- [checked: G asm game 0x64FBB0 / 0x64FD90 / 0x64FF60, sub_main stage_set_set] G's set04 (a swaying flip-book model
+  with a looping sound) has cases for stages 0x59-0x5B (89-91), and G's stage_set_set spawns it there, with set13's
+  sun and set09 / set14 / set19 pieces. G's per-stage tables have 88 entries (stage_start_pos, the stage file tables),
+  so those stages cannot be entered: leftovers of three planned (or cut) areas. [what they were: unknown]
+- [checked: asm] G's quest 10035 (the Plesioth opening scene) hides the two Velociprey of stage 54 until the scene's
+  event flag 0x16: a demo act (6, 6) G added only for that quest (game 0x6025F0).

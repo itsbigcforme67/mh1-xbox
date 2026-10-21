@@ -1,5 +1,9 @@
 /* ui04 - yn.bin screens and text 0x0053A100-0x0053A1D0: yn_strcpy, yn_port_init, yn_key_repeat. Whole file in ui_strip_tmp.c. */
 #include "yn.h"
+#ifndef __MWERKS__
+float flSin();   /* (declared before its first use) */
+signed char yn_mc_get_current();   /* (declared before its first use) */
+#endif
 
 int ADXM_ShutdownThrd();
 int ADXPS2_LoadFcacheDvd();
@@ -25,7 +29,11 @@ int flPS2DmaWait();
 int flReleasePaletteHandle();
 int flReleaseTextureHandle();
 int flSetRenderState();
+#ifdef __MWERKS__
 int flSin();
+#else
+float flSin();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int flfntDraw();
 int flfntInit();
 int flfntLocate();
@@ -51,7 +59,11 @@ int yn_hard_select_set();
 int yn_log_sd();
 int yn_mc_device_check_all();
 int yn_mc_format();
+#ifdef __MWERKS__
 int yn_mc_get_current();
+#else
+signed char yn_mc_get_current();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int yn_mc_gmfile_check();
 int yn_mc_gmfile_current_set();
 int yn_mc_gmfile_save();

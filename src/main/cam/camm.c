@@ -4,6 +4,9 @@
 #include "cam.h"
 #include "game.h"
 #include "fl.h"
+#ifndef __MWERKS__
+short act_ck(PLW *, int, int);   /* (declared before its first use) */
+#endif
 
 #ifndef NULL
 #define NULL 0
@@ -82,7 +85,11 @@ void cam_plEX_zoom(CAMW *, CAMS *, CAMZOOM *);
 
 void cpRotMatrix(s32 *, f32 *);
 void flvecApplyMat33(f32 *, f32 *, f32 *);
+#ifdef __MWERKS__
 int act_ck(PLW *, int, int);
+#else
+short act_ck(PLW *, int, int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 f32 GetGroundHit(f32 *);
 f32 flArcTan2(f32, f32);
 f32 flArcCos(f32);

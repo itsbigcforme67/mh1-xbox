@@ -1,5 +1,9 @@
 /* lb_by132 - agent B 0x005B0BA0-0x005B0CDC: lb_select_room_list (room list: choose / join a quest room; online). get_quest_info is called without arguments in the original. */
 #include "lobby_b.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned short Lbs_GetClassAdd();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 #include "lbsys_g.h"
 extern u32 joinQuest;
 s32 lb_select_room_list(void) {

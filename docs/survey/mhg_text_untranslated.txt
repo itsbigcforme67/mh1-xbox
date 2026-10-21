@@ -735,11 +735,6 @@ lobby:0x6400C8	other tables (pit_help_itembox_str) [G table]	G only	in Portable
 lobby:0x6400D8	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x6400E0	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x6400F0	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x6400F8	village / plaza / guild / shop UI [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
-lobby:0x640108	village / plaza / guild / shop UI [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
-lobby:0x640118	village / plaza / guild / shop UI [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
-lobby:0x640128	village / plaza / guild / shop UI [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
-lobby:0x640138	village / plaza / guild / shop UI [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
 lobby:0x640148	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x640158	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x640188	village / plaza / guild / shop UI [G table]	G only	in Portable

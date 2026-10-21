@@ -514,3 +514,42 @@ jp lobby:0x65C7B0 lobby:0x69D310
 jp main:0x36B178 sub_main:0x5BA600
 # town shop line whose US twin sits in another table
 jp lobby:0x619B60 lobby:0x6549F0
+# MH1 status windows (pause status, online member status): the US rows are Name / Weapon / HR / HRP / Money (no ID row),
+# so the position pairing gave the ID row "Name:" and the weapon row "HR:" (agent B, 21 Oct 2026)
+jp main:0x383678 sub_main:0x5BB3F8
+jp lobby:0x664B38 sub_main:0x5BB3F8
+drop jp main:0x383658
+drop jp lobby:0x664B18
+# G quest card (lobby board labels; agent B, 21 Oct 2026): G split MH1's "クエスト詳細　　　　／３" into a label and
+# separate page counters (１／３ ... stay as digits); the special-conditions "なし" of G's quest table is the US "None"
+g lobby:0x640188 lobby:0x6995B0
+g lobby:0x640148 lobby:0x69D328
+g lobby:0x6401C8 lobby:0x699E98
+g sub_main:0x53FCF8 lobby:0x69AF80
+# MH1 shop yes / no prompt: drawn as two overlapping pieces (the chosen word in colour over the plain row)
+jp lobby:0x654E00 lobby:0x69A4D8
+jp lobby:0x654E10 lobby:0x69A4E0
+jp lobby:0x654E28 lobby:0x69A4F0
+jp lobby:0x654E40 lobby:0x69A4F8
+# MH1 character creation and gallery (select overlay / title): the US sub_main holds them in the same order
+# (agent B, 21 Oct 2026; read on both discs; the two card-saving lines the US left in Japanese are not paired)
+jp select:0x53B658 sub_main:0x5BC750
+jp select:0x53B6A0 sub_main:0x5BC760
+jp select:0x53B6C0 sub_main:0x5BC780
+jp select:0x53B6D8 sub_main:0x5BC7A0
+jp select:0x53B6F0 sub_main:0x5BC7B0
+jp select:0x53B720 sub_main:0x5BC7E0
+jp select:0x53B740 sub_main:0x5BC800
+jp select:0x53B770 sub_main:0x5BC820
+jp select:0x53B7B0 sub_main:0x5BC850
+jp select:0x53B7D0 sub_main:0x5BC880
+jp select:0x53B7E0 sub_main:0x5BC8A0
+jp select:0x53B870 sub_main:0x5BC930
+jp main:0x36D1B8 sub_main:0x5BCB28
+jp main:0x36D1C8 sub_main:0x5BCB38
+# the quest card's page row: the US "Quest Info" lost the "／３" the game prints the page number next to
+keeptail jp lobby:0x665800
+# MH1 pause-menu title and the reward screen's time row (agent B, 21 Oct 2026)
+jp lobby:0x6165F4 lobby:0x68EFB4
+jp lobby:0x6167A4 lobby:0x68F144
+jp main:0x386A40 sub_main:0x5BA2B0

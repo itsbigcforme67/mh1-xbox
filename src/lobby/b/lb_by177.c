@@ -1,5 +1,6 @@
 /* lb_by177 - 0x0053BE00-0x0053BF30: Lb_put_materialItem (material row of the forge list: name, owned/stock counts, colour by availability). id is reused for the stock count (the original reuses its register). */
 #include "lobby_a.h"
+short Ud_stock_item_num_ck3();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 extern char lit_1287_006555F0[];
 extern char item_str[];
 void Lb_put_materialItem(y, id, need)

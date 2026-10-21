@@ -1,6 +1,12 @@
 /* lb_cli - one translation unit 0x005B7020-0x005C1B5C (lbtu3): the lobby client, the small HTML text renderer (nwDispStr_Html), the mail / comment requests and the server notice callbacks. */
 #define Lbs_MatchStart Lbs_MatchStart_hdr
 #include "g_alias.h"
+#ifndef __MWERKS__
+signed char MainBrowser();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned char McCardOperation();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned char cnetGet_Login_NoOfUserAccount();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+signed char net_SetMenu_SelectHandleName();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 #include "lbsys_g.h"
 #include "lobby_b.h"
 #undef Lbs_MatchStart

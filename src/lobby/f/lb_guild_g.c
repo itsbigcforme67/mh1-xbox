@@ -97,7 +97,7 @@ int Event_flag_ck();
 void Event_flag_set();
 int Quest_clear_bit_ck();
 int ran_suu();
-int Get_sw2();
+unsigned short Get_sw2();
 void cnWrap_SoundRequest();
 void Lbc_set_prim();
 void Lbc_init_network_work();
@@ -110,7 +110,7 @@ int Lbs_InRoomCheck();
 int Lb_put_npc_default();
 void Lb_menu_quest_info();
 void Lb_set_mini_data();
-int Lb_get_quest_type();
+s8 Lb_get_quest_type();   /* s8 (lb_t01.c): declared int, the Xbox clang read EAX's upper bytes: type 16385, crash (21 Oct 2026) */
 void Lb_num_to_str();
 int sprintf();
 char *strcpy();

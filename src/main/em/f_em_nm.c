@@ -61,7 +61,7 @@ void em_search_data_set(EMW *, u8);
 void em_range_set(EMW *, s8);
 void Ikari_Data_Set(EMW *);
 void em_tsuushin_set(EMW *);
-int Em_max_parts_get(int);
+unsigned char Em_max_parts_get(int);
 void em_dur_init(EMW *);
 void World_calc(void *);
 void eft01_set(void *, int);

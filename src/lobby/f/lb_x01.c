@@ -1,6 +1,11 @@
 /* lb_x01 - guild quest board page 0x005C9590-0x005C9908: lb_questpage_trans (draws the quest text lines; `if (Lbs_InRoomCheck() == 0 || i != 3)` shares one call;
    s3..s0 are declared first (descending registers), the second loop has its own p2/j declared after i/p). Whole file in lb_x.c. */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+s8 Lb_get_quest_type();     /* it returns s8 (lb_t01.c): as int, the Xbox clang used garbage upper bytes */   /* (declared before its first use) */
+signed char Lb_get_quest_type();   /* (declared before its first use) */
+unsigned short Get_sw2();   /* (declared before its first use) */
+#endif
 extern s8 key_quest_num;
 extern u8 *pNet;
 extern u8 lb_quest_info[];
@@ -16,13 +21,25 @@ extern char quest_title[];
 extern char lit_1489_00664A90[];
 extern s32 guildPrice;
 extern s32 pDetail;
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int get_questLevelNum();
 void lb_set_questpage_info();
 void Lbc_set_prim();
 void Lb_guild_trans();
 void Lb_num_to_str();
+#ifdef __MWERKS__
+#ifdef __MWERKS__
 int Lb_get_quest_type();
+#else
+signed char Lb_get_quest_type();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#else
+s8 Lb_get_quest_type();     /* it returns s8 (lb_t01.c): as int, the Xbox clang used garbage upper bytes */
+#endif
 int Lb_get_quest_str();
 int sprintf(char *, const char *, ...);
 char *strcpy();

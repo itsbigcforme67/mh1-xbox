@@ -1,5 +1,8 @@
 /* lb_al01 - browser screen element objects 0x005E2DE0-0x005E2E74: BsBgImgCharSet. Whole file in lb_al.c. */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+signed char SoftKeyboard_move();   /* (declared before its first use) */
+#endif
 extern BSSYS *bsSys;
 extern s8 BsBgImgReq;
 extern s8 BsPageObjReq;
@@ -36,7 +39,11 @@ extern char lit_880_00666050[];
 u32 strlen();
 char *strcpy();
 int SoftKeyboard_set();
+#ifdef __MWERKS__
 int SoftKeyboard_move();
+#else
+signed char SoftKeyboard_move();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void flfntSetSize();
 
 void BsBgImgCharSet(int a) {

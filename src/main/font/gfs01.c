@@ -1,6 +1,9 @@
 /* gfs01 - font stack, resets, pad accessors 0x00162640-0x00162DA8: font_set_stack_no, font_set_palette, font_reset, font_draw_end, LoadAskData, all_reset, all_motion_free, em_motion_free, stage_free, init_game_work, init_select_work, init_demo_work, softreset, softreset_ck, softkey_ck, Get_sw, Get_sw2, Get_sw_on2, kb_input_ck_enter, Get_kb_input, kb_chat_in_chk, decide_se, cursor_se, cancel_se, unmei_se, Online_ck, Now_Game_ck. Whole file in gfs_nm.c. */
 #include "types.h"
 #include "sysw.h"
+#ifndef __MWERKS__
+signed char SoftKeyboard_alive_check(void);   /* (declared before its first use) */
+#endif
 
 typedef struct PSWE { u16 w[17]; } PSWE;
 extern PSWE Psw[];
@@ -19,7 +22,11 @@ void flfntSetSize(int, int);
 void *flAllocMemory(int);
 int load_file_mdl(void *, int);
 int flReleaseMotionSetHandle(int);
+#ifdef __MWERKS__
 int SoftKeyboard_alive_check(void);
+#else
+signed char SoftKeyboard_alive_check(void);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void se_req(int, int, int);
 void adx_se_set(int, int);
 void all_motion_free(void);

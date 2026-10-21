@@ -1,5 +1,9 @@
 /* ui02 - yn.bin screens and text 0x00539D70-0x00539DE8: yn_printf, yn_set_pal, yn_set_size, yn_set_z, yn_set_halftype, yn_get_halftype. Whole file in ui_strip_tmp.c. */
 #include "yn.h"
+#ifndef __MWERKS__
+float flSin();   /* (declared before its first use) */
+signed char yn_mc_get_current();   /* (declared before its first use) */
+#endif
 #ifdef MHG_PS2 /* G prints through another function here */
 #define flfntPrintf func_0012BDD0
 #endif
@@ -28,7 +32,11 @@ int flPS2DmaWait();
 int flReleasePaletteHandle();
 int flReleaseTextureHandle();
 int flSetRenderState();
+#ifdef __MWERKS__
 int flSin();
+#else
+float flSin();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int flfntDraw();
 int flfntInit();
 int flfntLocate();
@@ -54,7 +62,11 @@ int yn_hard_select_set();
 int yn_log_sd();
 int yn_mc_device_check_all();
 int yn_mc_format();
+#ifdef __MWERKS__
 int yn_mc_get_current();
+#else
+signed char yn_mc_get_current();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int yn_mc_gmfile_check();
 int yn_mc_gmfile_current_set();
 int yn_mc_gmfile_save();

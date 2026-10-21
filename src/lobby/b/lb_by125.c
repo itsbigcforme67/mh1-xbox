@@ -1,5 +1,7 @@
 /* lb_by125 - agent B 0x0053BFD0-0x0053C1A8: Lb_put_armorIcon (equipment icon of a shop list entry: weapon/armor type icon or job icon). */
 #include "lobby_s.h"
+unsigned char Get_equip_rare();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned char Get_weapon_job2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #ifdef VERSION_MHG
 #define ICON(mh1, g) (g)       /* G's icon sheet starts one cell earlier: every armour icon is one further */
 #else

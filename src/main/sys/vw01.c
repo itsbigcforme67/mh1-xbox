@@ -1,6 +1,9 @@
 /* vw01 - view and projection 0x00169A80-0x00169C20: View_move. Whole file in view_nm.c. */
 #include "types.h"
 #include "sysw.h"
+#ifndef __MWERKS__
+unsigned short calc_mat_angY(void *);   /* (declared before its first use) */
+#endif
 
 typedef f32 MAT4[4][4];
 
@@ -28,7 +31,11 @@ void flmatMakeLookAt(void *, void *, void *, void *);
 void flSetRenderState(int, int);
 void flmatrLoad(void *, int);
 void flmatInvert(void *, void *);
+#ifdef __MWERKS__
 int calc_mat_angY(void *);
+#else
+unsigned short calc_mat_angY(void *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void flmatInit(void *);
 void flmatSetXYZ33(void *, f32, f32, f32);
 void flmatrMakeProjection(int, f32, f32, f32, f32);

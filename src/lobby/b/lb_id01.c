@@ -1,3 +1,6 @@
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 /* lb_id01 - agent C 0x005C2030-0x005C2178: id_select_01 (handle-name select menu; s32 sw = Get_sw2() & 0xFFFF, (s8)cw[0xB + n*8]). */
 #include "lobby_a.h"
 typedef struct { s16 x0000; u8 x0002; u8 x0003; s8 x0004; u8 pad0005[0x3]; u8 x0008; } ARG_id_select_01_arg0;

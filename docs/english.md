@@ -530,3 +530,51 @@ rows, the help box), the Status page (title, rows, page 1/2 and 2/2), the equipm
   the G-only pieces (2500+), the G-only item names, the memory-card dialogs of G-only slots, online text (US has another service), G's quest counter
   (not reached by a script: its NPC position is not in the docs). Not looked at: the options page's value rows, the character creation help box
   (no text in the select overlay, so the "junk bytes" box is not a table string).
+
+## 8. In game: MH1 JP in English (agent B, 21 Oct 2026)
+
+`python3 tools/g_eng_tour.py --mh1` runs the same hidden screen tour as for G (docs/english_g.md "In game") on
+build/pc/mhview with `RT_TEXT_TABLE=build/text/en_mh1.txt`, plus the online town (`town`: build/pc/mhview_online
+against tools/mh1_testserver.py on 127.0.0.1, the screens of tools/test_online_town.sh). Contact sheets:
+`build/B/eng_mh1/index.html` (not committed). 16 scenes; 1.5 GB cap per run.
+
+**Shared-code changes checked in MH1** (made for G, docs/english_g.md): the talk window rows (`talk_layout`) are clean
+in MH1 too (the elder's pages: no overlapping rows); the info banners and the %s lookup (rt_text_vsnprintf) print
+"Time Remaining: 110" on the reward screen and the menu labels; ~Cnn in plain prints and the letter-only proportional
+spacing change nothing visible in MH1's shop, forge, box and status screens.
+
+### Found in MH1, ranked (worst first)
+
+1. **Wrong English in the shop menu: fixed.** Every shop's second row 売る said "Buy" (the position pairing gave it the
+   row above's US line), so the menu read "買う / Buy" and the side tab "Buy". Fix: the hand-checked G pairs
+   (tools/text_pairs_manual.txt, read on both discs) now also hold for MH1 strings with the same Japanese
+   (text_map: "MH1 from the hand-checked G pairs"): they fill MH1 strings the structure missed (181, e.g. the bed's
+   "Save game data", the shop's yes / no) and replace a position pair whose English has no word in common with
+   theirs (12: 売る -> "Sell" x4, the status rows, "Dragon Buster" ...). Spelling variants of one label (plural, an
+   abbreviation) are left as they were.
+2. **Status rows shifted: fixed.** The pause and online status windows: ID showed "Name:", 名前 "Weapon:", 武器 "HR:",
+   ＨＲ "HRP:", ＨＲＰ "Money:" (the US rows have no ID line). Now ID has no English (Japanese), the others their own US
+   label (two hand pairs + the G pairs above).
+3. **Japanese on English screens, US line found and paired by hand:** character creation (Rotate, name prompts,
+   confirm questions, the select help: 12 lines of the select overlay that the US keeps in sub_main), the welcome
+   line, the gallery's "Play Movie" / "Cancel", the shop's yes / no pieces (drawn as a coloured word over a plain
+   row), the pause-menu title " Menu", the reward screen's time row.
+4. **Japanese, no US line:** the two card-saving lines of character creation (the US build left them in Japanese
+   itself), "セーブ中です・・・" (save in progress), the one-line "no memory card inserted" dialog, the online town's
+   Capcom ID screen (title, labels, help), the plaza's town list headers (街名称 / 街中 / クエスト), the plaza menu rows
+   and help, the town pause menu's "□名前/ＩＤ切替". The US online service was different, so most online text has no
+   US twin.
+5. **English that does not fit** (same as G, the same US labels): the quest-info page "Total Reward / Reward Remaining
+   / Time Remaining" run into their values; "Improve Wpn" at the screen edge; "Thunder Res:" / "Dragon Res:" touch
+   the values. Short forms: docs/english_g.md "Short-form wording" (ours, not official).
+6. **The table has English, the screen shows Japanese:** the equipment window's title 装備詳細確認 ("Equip Details")
+   and the pause menu's title row メニュー are drawn from MH1's frame structs (main 0x2EF878... hold the title pointers);
+   the %s lookup does not reach them in MH1 (it does in G). Not fixed: needs a look at how MH1's frame structs are
+   relocated (rt_data.c) [open].
+7. **The quest card's page row:** "クエスト詳細　　　　／３" had the US "Quest Info" without "／３"; the English now keeps the
+   Japanese tail ("keeptail" in tools/text_pairs_manual.txt), so the page counter reads "Quest Info … /3".
+8. **The online town's long server names** ("Local test server Test Lobby1") run into the next column in the plaza's
+   list: the names come from our test server, not the game.
+
+G gained from the same work: the quest card's "Quest Info", "Quest Level ★", "None" (hand pairs) and the reverse
+direction is MH1-only. Numbers: MH1 JP 6644 strings with US English (81%), G 7134.

@@ -10,7 +10,7 @@ extern char PitMenu[];
 #define PZ_ARROWS (*(u8 *)0x39DAE2) /* bit0 scroll down arrow, bit1 scroll up arrow, bit2/3 scrolled this frame */
 void SoftKeyboard_pos_set(f32, int);
 int SoftKeyboard_set();
-int SoftKeyboard_move();
+signed char SoftKeyboard_move();
 void SoftKeyboard_exit();
 void Plaza_chatlog_i();
 int ChatKinsoku_chk();

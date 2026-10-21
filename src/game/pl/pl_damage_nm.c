@@ -14,7 +14,7 @@ int Pl_master_ck(PLW *);
 void Pl_vital_calc(PLW *, s16);
 int Pl_Skill_ck(PLW *, int);
 void Pl_poison_add(PLW *, s16);
-int Pl_piyo_ck(PLW *);
+unsigned char Pl_piyo_ck(PLW *);
 void vib_set_pl(PLW *, int);
 int Code_Make(int, int, int, int);
 void Pl_se_req2(PLW *, int, int, f32 *, int, int);

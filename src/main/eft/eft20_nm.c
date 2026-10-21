@@ -54,6 +54,9 @@ extern s16 Eft_stg_type[];
 extern EFT_MDLW *eft_mdlw[5];
 extern FLMAT rview_mat;
 extern u8 Eft_kemuri_rgb[11][4];
+#ifdef VERSION_MHG
+extern u8 eft20_fade13_g[], eft20_fade21_g[];   /* G sub_main 0x506990 / 0x5073E0 (config/mhg/pc_data.txt) */
+#endif
 extern void *fade_type29_data[2];
 extern u8 fade_type25_em02[], fade_type25_em02_2[], fade_type25_74[], fade_type25_74_2[],
     fade_type25_74_3[], fade_type25_74_4[], fade_type25_74_5[], fade_type25_74_6[],
@@ -90,6 +93,46 @@ void flmatGetTrans(f32 *, FLMAT *);
 f32 GetGroundHit(f32 *);
 void func_628750(EMW *, f32 *, int);   /* game.bin shell01_set3 */
 s16 eft20_water_ck(EMW *chr, f32 *pos, s16 arg);
+/* G: kind 0x24 is handled as kind 2 (G_KIND2: "not like kind 2"), and the landing dust's shell01 hit differs for the
+ * kinds game 0x54A290 lists (6, 8, 0xF, 0x14, 0x16, 0x26, 0x27, 0x2D, 0x30) [asm read] */
+#ifdef VERSION_MHG
+static int eft20_g_kinds(int k)
+{
+    switch ((u8)k) {
+    case 6: case 8: case 0xF: case 0x14: case 0x16: case 0x26: case 0x27: case 0x2D: case 0x30:
+        return 1;
+    }
+    return 0;
+}
+#define EFT20_G(g, mh1) (g)
+#define G_KIND2(k) ((k) != 0x24 && (k) != 2)
+#define G_SHELL(k, mh1, g) (eft20_g_kinds(k) ? (g) : (mh1))
+/* x07 10-13 of args 2 and 3 (G): joint 0x2B / 0x1E / 2 (their matrices' translation) or joint 1, on the floor line */
+#define G_CASES_10_13                                       \
+        case 10:                                            \
+            flmatCopy(&m, get_joint_wmat_em(em, 0x2B));     \
+            flmatGetTrans(pos, &m);                         \
+            pos[1] = em->x5AC;                              \
+            break;                                          \
+        case 11:                                            \
+            flmatCopy(&m, get_joint_wmat_em(em, 0x1E));     \
+            flmatGetTrans(pos, &m);                         \
+            pos[1] = em->x5AC;                              \
+            break;                                          \
+        case 12:                                            \
+            flmatCopy(&m, get_joint_wmat_em(em, 2));        \
+            flmatGetTrans(pos, &m);                         \
+            pos[1] = em->x5AC;                              \
+            break;                                          \
+        case 13:                                            \
+            get_joint_pos_em(em, 1, pos);                   \
+            pos[1] = em->x5AC;
+#else
+#define EFT20_G(g, mh1) (mh1)
+#define G_KIND2(k) ((k) != 2)
+#define G_SHELL(k, mh1, g) (mh1)
+#endif
+
 void eft20_t(PRIM *pr);
 
 #define RAND_ROT(k) (s16)(0.5f + 65536.0f * ((k) * (0.001f * (f32)(((u16)ran_suu(1) & 0x3FF) - 0x200))) / 360.0f)
@@ -104,7 +147,7 @@ void release_prim(s16);
 void get_joint_pos(void *, int, f32 *);
 void flvecCopy(f32 *, f32 *);
 void flvecRotY(f32 *, f32);
-int GetWaterHit(f32 *, f32 *);
+unsigned char GetWaterHit(f32 *, f32 *);
 void se_req2(int, int, int, f32 *, int, int);
 void func_544C90(f32 *, int, int, f32);    /* game.bin Eft08_set */
 
@@ -444,6 +487,36 @@ void eft20_t(PRIM *pr) {
         eft_rgba_linear(fd, p->time, &col);
         eft_trans_sub_col(cl, &m, col, flag, mats);
         break;
+#ifdef VERSION_MHG
+    /* G eft20_t (sub_main 0x4D9000): the new args 13 (clay 42, turned about y, render mode 4, fade 0x506990) and 21
+     * (clay 74 as arg 29, camera-facing, fade 0x5073E0). The rot components G leaves unset are 0 here. */
+    case 13:
+        flSetRenderState(0x6C, 0);
+        sc[0] = p->size * p->scale[0];
+        sc[1] = p->size * p->scale[1];
+        sc[2] = p->size * p->scale[2];
+        rot[0] = 0.0f;
+        rot[1] = DEG2RAD(ANG2DEG(p->rot));
+        rot[2] = 0.0f;
+        make_mat_srt(sc, rot, pr->pos, 4, &m);
+        cl = &mw->clay[42];
+        eft_rgba_linear(eft20_fade13_g, p->time, &col);
+        eft_trans_sub_col(cl, &m, col, 2, mats);
+        break;
+    case 21:
+        sc[0] = p->size * p->scale[0];
+        sc[1] = p->size * p->scale[1];
+        sc[2] = p->size * p->scale[2];
+        rot[0] = 0.0f;
+        rot[1] = 0.0f;
+        rot[2] = DEG2RAD(ANG2DEG(p->rot));
+        make_mat_srt(sc, rot, pr->pos, 2, &m);
+        flmatMul33_2(&m, &rview_mat);
+        cl = &mw->clay[74];
+        eft_rgba_linear(eft20_fade21_g, p->time, &col);
+        eft_trans_sub_col(cl, &m, col, 0, mats);
+        break;
+#endif
     case 29:
         sc[0] = p->size * p->scale[0];
         sc[1] = p->size * p->scale[1];
@@ -493,17 +566,17 @@ void eft20_i(EFTW *ew) {
             case 14:
             case 18:
             case 19:
-                if (em->kind != 2) {
+                if (G_KIND2(em->kind)) {
                     if (shell != 0) {
                         switch (ew->arg) {
                         case 1:
-                            func_628690(ew, 0x21);
+                            func_628690(ew, G_SHELL(em->kind, 0x21, 0x2C));
                             break;
                         case 9:
-                            func_628690(ew, 0x27);
+                            func_628690(ew, G_SHELL(em->kind, 0x27, 0x2E));
                             break;
                         case 11:
-                            func_628690(ew, 0x26);
+                            func_628690(ew, G_SHELL(em->kind, 0x26, 0x2D));
                             break;
                         }
                     }
@@ -515,14 +588,29 @@ void eft20_i(EFTW *ew) {
                 ew->scale *= 0.7f + 0.0002f * ((u16)ran_suu(1) & 0x3FF);
                 break;
             case 10:
+#ifdef VERSION_MHG      /* G eft20_i (sub_main 0x4D6990): kinds 2 / 0x24 get shell type 0x15, x07 0xB turns it round */
+                if (G_KIND2(em->kind)) {
+                    if (shell != 0) {
+                        func_628690(ew, G_SHELL(em->kind, 0x20, 0x30));
+                    }
+                } else {
+                    if (shell != 0) {
+                        func_629C20(ew, 0x15);
+                    }
+                    if (ew->x07 == 0xB) {
+                        ew->u0A.joint -= 0x8000;
+                    }
+                }
+#else
                 if (shell != 0) {
                     func_628690(ew, 0x20);
                 }
+#endif
                 break;
             case 25:
                 ew->mode2 = (u16)ran_suu(1) & 1;
                 ew->stg = em->kind;
-                if (ew->stg == 2) {
+                if (!G_KIND2(ew->stg)) {
                     flmatCopy(&m, get_joint_wmat(em, 0x33));
                 } else {
                     flmatCopy(&m, get_joint_wmat(em, 0x24));
@@ -531,11 +619,11 @@ void eft20_i(EFTW *ew) {
                 break;
             case 26:
                 ew->stg = em->kind;
-                if (ew->stg == 2) {
+                if (!G_KIND2(ew->stg)) {
                     flmatCopy(&m, get_joint_wmat(em, 0x33));
                 } else {
                     flmatCopy(&m, get_joint_wmat(em, 0x24));
-                    if (ew->stg == 0x16) {
+                    if (ew->stg == 0x16 || EFT20_G(ew->stg == 0x30, 0)) {
                         if (em->mode == 3 && em->x15 == 4 && em->char0 == 0x456) {
                             ew->mode2 = 1;
                         } else {
@@ -652,6 +740,20 @@ void eft20_i(EFTW *ew) {
                 p->rot = 0;
                 p->drot = 0;
                 break;
+#ifdef VERSION_MHG      /* G eft20_i: new args 13 and 21 */
+            case 13:
+                p->rot = ran_suu(1);
+                p->drot = 0;
+                break;
+            case 21:
+                p->time = -i;
+                p->rot = ran_suu(1);
+                p->drot = (ran_suu(1) & 0xFF) - 0x80;
+                p->no = i;
+                p->x01 = 1;
+                p->size = ew->scale * (1.0f + 0.0005f * ((u16)ran_suu(1) & 0x3FF));
+                break;
+#endif
             case 19:
                 p->no = i;
                 p->rot = ran_suu(1);
@@ -742,11 +844,19 @@ void eft20_m(EFTW *ew) {
     switch (ew->arg) {
     case 7:
     case 12:
+#ifdef VERSION_MHG      /* G eft20_m (sub_main 0x4D7C30): args 13 / 21 (new in G), arg 29 scaled */
+    case 13:
+#endif
     case 17:
     case 26:
     case 28:
         time = all;
         break;
+#ifdef VERSION_MHG
+    case 21:
+        time = 0x2D;
+        break;
+#endif
     case 0:
         time = 0x41;
         break;
@@ -820,6 +930,10 @@ void eft20_m(EFTW *ew) {
         case 1:
         case 7:
         case 11:
+#ifdef VERSION_MHG
+        case 13:
+        case 21:
+#endif
         case 16:
         case 17:
         case 18:
@@ -913,11 +1027,23 @@ void eft20_m(EFTW *ew) {
             flvecApplyMat33_2(v, &rview_mat);
             break;
         case 8:
+#ifdef VERSION_MHG
+        case 13:
+#endif
         case 14:
         case 15:
             eft_vec_linear(p->time, eft20_data[idx++], v);
             flvecRotY(v, DEG2RAD(ANG2DEG(ew->u0A.joint)));
             break;
+#ifdef VERSION_MHG
+        case 21:
+            eft_vec_linear(p->time, eft20_data[idx++], v);
+            v[0] *= ew->scale;
+            v[2] *= ew->scale;
+            flvecRotY(v, DEG2RAD(ANG2DEG(ew->u0A.joint + i * 0x2AAA)));
+            p->rot += p->drot;
+            break;
+#endif
         case 11:
             eft_vec_linear(p->time, eft20_data[idx++], v);
             flvecRotY(v, DEG2RAD(ANG2DEG(ew->u0A.joint + ang)));
@@ -969,6 +1095,11 @@ void eft20_m(EFTW *ew) {
             break;
         case 29:
             eft_vec_linear(p->time, eft20_data[idx++], v);
+#ifdef VERSION_MHG
+            v[0] *= ew->scale;
+            v[1] *= ew->scale;
+            v[2] *= ew->scale;
+#endif
             flvecRotY(v, DEG2RAD(ANG2DEG(ew->u0A.joint + eft20_type29_order[i] * 0x2AAA)));
             p->rot += p->drot;
             break;
@@ -1003,43 +1134,6 @@ void eft20_m(EFTW *ew) {
         (pos)[2] += v[2];                                  \
     } while (0)
 
-/* G: kind 0x24 is handled as kind 2 (G_KIND2: "not like kind 2"), and the landing dust's shell01 hit differs for the
- * kinds game 0x54A290 lists (6, 8, 0xF, 0x14, 0x16, 0x26, 0x27, 0x2D, 0x30) [asm read] */
-#ifdef VERSION_MHG
-static int eft20_g_kinds(int k)
-{
-    switch ((u8)k) {
-    case 6: case 8: case 0xF: case 0x14: case 0x16: case 0x26: case 0x27: case 0x2D: case 0x30:
-        return 1;
-    }
-    return 0;
-}
-#define G_KIND2(k) ((k) != 0x24 && (k) != 2)
-#define G_SHELL(k, mh1, g) (eft20_g_kinds(k) ? (g) : (mh1))
-/* x07 10-13 of args 2 and 3 (G): joint 0x2B / 0x1E / 2 (their matrices' translation) or joint 1, on the floor line */
-#define G_CASES_10_13                                       \
-        case 10:                                            \
-            flmatCopy(&m, get_joint_wmat_em(em, 0x2B));     \
-            flmatGetTrans(pos, &m);                         \
-            pos[1] = em->x5AC;                              \
-            break;                                          \
-        case 11:                                            \
-            flmatCopy(&m, get_joint_wmat_em(em, 0x1E));     \
-            flmatGetTrans(pos, &m);                         \
-            pos[1] = em->x5AC;                              \
-            break;                                          \
-        case 12:                                            \
-            flmatCopy(&m, get_joint_wmat_em(em, 2));        \
-            flmatGetTrans(pos, &m);                         \
-            pos[1] = em->x5AC;                              \
-            break;                                          \
-        case 13:                                            \
-            get_joint_pos_em(em, 1, pos);                   \
-            pos[1] = em->x5AC;
-#else
-#define G_KIND2(k) ((k) != 2)
-#define G_SHELL(k, mh1, g) (mh1)
-#endif
 
 s16 eft20_pos_set(f32 *pos, EMW *em, s16 arg, s16 x07) {
     FLMAT m;

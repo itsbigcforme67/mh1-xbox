@@ -354,8 +354,16 @@ typedef union NPLRX {
 } NPLRX;
 
 extern u8 player_work[];
+#ifdef __MWERKS__
 int act_ck(void *, int, int);
+#else
+short act_ck(void *, int, int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int Pl_item_num_ck(void *, u16);
+#else
+short Pl_item_num_ck(void *, u16);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void Pl_item_stack(void *, u16, int);
 void Pl_act_set(void *, int, int, int);
 void Pl_adj_calc(void *, int, int);

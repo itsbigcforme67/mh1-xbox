@@ -1,6 +1,9 @@
 /* lb_fz01 0x005D2FF0-0x005D31E0: Lb_pl_to_chair */
 /* Lobby: turn, chair, chat send, npc spawn, talk checks, hand-written from m2c drafts. */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* (declared before its first use) */
+#endif
 extern PLW player_work[];
 extern u8 *St_unique_tbl[];
 extern u8 chatIDList[];
@@ -19,7 +22,11 @@ void Lb_send_pl_warp();
 int Lb_get_lb_rank();
 int Quest_clear_bit_ck();
 int Event_flag_ck();
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 u8 *pull_enemy_work();
 void cnLBS_Send_ChatMessage(char *, u16);
 void cnLBS_Send_ChatMessageTU(u8 *, char *, u16, void *);

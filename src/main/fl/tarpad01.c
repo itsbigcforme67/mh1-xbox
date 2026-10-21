@@ -2,6 +2,9 @@
  * tarpad_root is a 0x34 byte record per port (+6 slot byte, +8 button bits, +0x1C / +0x28 the two analog stick vectors). */
 #include "g_alias.h"
 #include "types.h"
+#ifndef __MWERKS__
+unsigned char lever_analog_to_digital(void *);   /* (declared before its first use) */
+#endif
 
 typedef struct TARPAD {
     u8 x0[6];
@@ -40,7 +43,11 @@ extern u8 ps2pad_clear[];
 
 int PADRead_for_PS2(int);
 void update_pad_stick_dir(void *, s16);
+#ifdef __MWERKS__
 int lever_analog_to_digital(void *);
+#else
+unsigned char lever_analog_to_digital(void *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void PADDeviceDestroy(void);
 void ps2PADWorkClear(void);
 void flpad_ram_clear(s32 *, int);

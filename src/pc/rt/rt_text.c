@@ -427,3 +427,78 @@ void rt_text_font_ready(const unsigned char *adv)
 }
 
 int rt_text_proportional(void) { return novr > 0 && proportional; }
+
+/* ------------------------------------------------------------ formats whose %s arguments are game strings
+ * vsnprintf, but each %s argument is looked up like a format (rt_text_tr): the game prints many strings as
+ * font_print("%s", title) or DispFrameListA's title, so a replaced string passed as an argument would stay Japanese
+ * (seen in G: the quest-info and equipment window titles, the "back to the village" banner). With no table this is
+ * plain vsnprintf. */
+#include <stdarg.h>
+int rt_text_vsnprintf(char *buf, size_t n, const char *fmt, va_list ap)
+{
+    size_t o = 0;
+    const char *p = fmt;
+    if (!novr)
+        return vsnprintf(buf, n, fmt, ap);
+    if (n)
+        buf[0] = 0;
+    while (*p) {
+        char spec[32];
+        size_t k = 0;
+        int w;
+        if (*p != '%') {
+            if (o + 1 < n)
+                buf[o] = *p;
+            o++;
+            p++;
+            continue;
+        }
+        spec[k++] = *p++;
+        while (*p && k < sizeof spec - 8 && strchr("-+ #0123456789.*hlLqjzt", *p)) {
+            if (*p == '*') {            /* a width / precision argument */
+                k += (size_t)snprintf(spec + k, sizeof spec - k, "%d", va_arg(ap, int));
+                p++;
+                continue;
+            }
+            spec[k++] = *p++;
+        }
+        if (!*p)
+            break;
+        spec[k++] = *p;
+        spec[k] = 0;
+        {
+            char tmp[0x400];
+            const char *mods = spec + 1;
+            char c = *p++;
+            int is_ll = strstr(mods, "ll") != NULL || strchr(mods, 'q') != NULL;
+            int is_l = !is_ll && strchr(mods, 'l') != NULL;
+            switch (c) {
+            case '%': w = snprintf(tmp, sizeof tmp, "%%"); break;
+            case 's': w = snprintf(tmp, sizeof tmp, spec, rt_text_tr(va_arg(ap, const char *))); break;
+            case 'c': w = snprintf(tmp, sizeof tmp, spec, va_arg(ap, int)); break;
+            case 'f': case 'F': case 'e': case 'E': case 'g': case 'G': case 'a': case 'A':
+                w = snprintf(tmp, sizeof tmp, spec, va_arg(ap, double)); break;
+            case 'p': w = snprintf(tmp, sizeof tmp, spec, va_arg(ap, void *)); break;
+            case 'n': (void)va_arg(ap, int *); w = 0; tmp[0] = 0; break;
+            case 'd': case 'i': case 'o': case 'u': case 'x': case 'X':
+                if (is_ll) w = snprintf(tmp, sizeof tmp, spec, va_arg(ap, long long));
+                else if (is_l) w = snprintf(tmp, sizeof tmp, spec, va_arg(ap, long));
+                else w = snprintf(tmp, sizeof tmp, spec, va_arg(ap, int));
+                break;
+            default:                    /* not a conversion the game uses: copy it as text */
+                w = snprintf(tmp, sizeof tmp, "%s", spec);
+                break;
+            }
+            if (w < 0)
+                w = 0;
+            if (w > (int)sizeof tmp - 1)
+                w = (int)sizeof tmp - 1;
+            if (o < n)
+                memcpy(buf + o, tmp, (size_t)w < n - o ? (size_t)w : n - o);
+            o += (size_t)w;
+        }
+    }
+    if (n)
+        buf[o < n ? o : n - 1] = 0;
+    return (int)o;
+}

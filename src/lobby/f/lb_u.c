@@ -1,6 +1,12 @@
 /* Lobby: guild (quest counter) state machine, hand-written from the m2c draft (SLPM_654.95 lobby overlay). */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+signed char Lb_get_quest_type();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 #include "lbsys_g.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* (declared before its first use) */
+#endif
 extern u8 lb_rule_exp[];
 extern u8 lb_pit[0xC];
 extern u8 lb_quest_info[0x40];
@@ -16,7 +22,11 @@ extern u8 lb_quest_exp[];
 extern u8 *pNet;
 extern PLW player_work[];
 extern u8 ClassInfo[];
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void Lbc_init_network_work();
 void Lbc_set_prim();
 extern u8 D_3F360A[16];

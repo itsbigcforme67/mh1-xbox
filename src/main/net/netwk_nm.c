@@ -123,7 +123,7 @@ int release_texture();
 int McActInit();
 int Load_overlay();
 int kbdExecServer();
-int SoftKeyboard_move();
+signed char SoftKeyboard_move();
 int SoftKeyboard_pos_set(f32, s16);
 int SoftKeyboard_set();
 int DispSoftkeyboard();

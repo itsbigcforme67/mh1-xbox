@@ -2,6 +2,9 @@
  * sun/flash sprites. SLPM_654.95 main, f_stage range. */
 #include "g_alias.h"
 #include "flow.h"
+#ifndef __MWERKS__
+unsigned char hit_point_cbd(f32, f32, f32 *, f32 *, f32 *);   /* (declared before its first use) */
+#endif
 
 extern s16 flash_flag;
 extern s16 flash_timer;
@@ -27,7 +30,11 @@ typedef struct STG_MV {
 
 STG_MV *Stage_mv_data_get();
 f32 flSqrt(f32);
+#ifdef __MWERKS__
 int hit_point_cbd(f32, f32, f32 *, f32 *, f32 *);
+#else
+unsigned char hit_point_cbd(f32, f32, f32 *, f32 *, f32 *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void Pl_ofs_set();
 void net_send_pl();
 void se_req2();

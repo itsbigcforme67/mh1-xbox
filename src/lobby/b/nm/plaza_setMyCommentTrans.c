@@ -1,4 +1,5 @@
 #include "lobby_a.h"
+unsigned char Get_weapon_job();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "lbsys_g.h"
 extern char tl_mail_tbl[];
 extern char lit_2316[];

@@ -1470,3 +1470,17 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
   talk_layout (Disp_NPC_message rows of 11 two-byte chars: odd-length English lines overlapped), re-flowed card lines no
   longer given string-wide (a fragment showed alone), the *button labels* rule (G's ~Bnn label rows). Ranked list in
   docs/english_g.md "In game".
+- Round 6 (PC fixes, both games): rt_text_vsnprintf (src/pc/rt/rt_text.c) looks up %s arguments of the game's prints
+  (window titles through DispFrameListA, set01 banners) and set01.c is built with -Dstrlen=rt_text_strlen (banner frame
+  fits the English); font_puts reads ~Cnn colour codes (G's shop count line) and keeps proportional spacing to text with
+  letters (numbers drawn over each other line up). Tour: quest_board scene, quest_info reaches the pages; the town is not
+  reachable for G on the PC (no G online client). text_map: 'same overlay' choice for labels with two US spellings.
+  Short-form wording table (ours) in docs/english_g.md.
+  full_check (21 Oct, after these changes): rebuild 5 OK, all PC/Xbox builds and tests ok except test_coop's Wine step:
+  under full_check's 1.5 GB cap Wine itself segfaults on the stale build/win/mhview_online.exe (built 10 Oct, not rebuilt
+  by full_check, so none of these changes are in it); run alone without the cap the Windows joiner joins and both sides
+  agree on its position (8905 41 9701), the host then exits non-zero on "connection closed" (the test's timing).
+- Round 7 (MH1 in English): g_eng_tour.py --mh1 (16 scenes incl. the online town on the test server, sheets in
+  build/B/eng_mh1/); text_map: hand-checked G pairs also fill / correct MH1 strings with the same Japanese (181 / 12:
+  the shop's 売る said "Buy"), MH1 status rows fixed, select-overlay and gallery hand pairs, 'keeptail' (quest card page
+  row), G quest card hand pairs. Ranked list: docs/english.md section 8. full_check 21 Oct: all ok (emulator tests skipped).

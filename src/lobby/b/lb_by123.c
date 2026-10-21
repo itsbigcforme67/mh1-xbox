@@ -1,6 +1,9 @@
 /* lb_by123 - agent B 0x005B39B0-0x005B3C70: guild-hall notice board (Lb_gh_board_trans, Lb_gh_board) and Lb_pl_status_i
  * (hunter status screen start). Village menu pieces. */
 #include "lobby_s.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 extern char *gh_boardStr[];
 extern char *gh_boardStr2[];
 extern char lit_519_0065E690[];

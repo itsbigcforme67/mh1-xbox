@@ -12,6 +12,9 @@
 #include "em.h"
 #include "pl.h"
 #include "fl.h"
+#ifndef __MWERKS__
+signed char Item_preparation_rate_0(void *, int);   /* (declared before its first use) */
+#endif
 
 #define FX(p, o) (*(f32 *)((u8 *)(p) + (o)))
 extern u8 quest_w[];
@@ -50,7 +53,11 @@ int Item_ok_chk(int, void *);
 int item_present_chk();
 int func_5D8370(s8);
 void func_5CB310(u8);
+#ifdef __MWERKS__
 int Item_preparation_rate_0(void *, int);
+#else
+signed char Item_preparation_rate_0(void *, int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void player_name_id_print(void *);
 void font_print_quest_money(int);
 void font_print_quest_time(int);

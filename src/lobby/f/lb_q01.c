@@ -1,6 +1,10 @@
 /* lb_q01 - lb_check_status 0x005D6740-0x005D704C: lb_check_status. Whole file in lb_q.c. */
 #include "lobby_f.h"
 #include "lbsys_g.h"
+#ifndef __MWERKS__
+signed char SoftKeyboard_alive_check();   /* (declared before its first use) */
+unsigned short Get_sw2();   /* (declared before its first use) */
+#endif
 typedef struct LBSP { f32 x, y, z; u16 ang; u8 _pad[2]; } LBSP;
 extern LBSP lb_start_pos[];
 extern LBSP lb_return_pos[];
@@ -35,8 +39,16 @@ void Lb_player_load();
 
 
 extern u8 ClassInfo[];
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int SoftKeyboard_alive_check();
+#else
+signed char SoftKeyboard_alive_check();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Lbs_RoomExit();
 void Lbc_SendMiniData();
 void NPCZoomInCameraCancel();

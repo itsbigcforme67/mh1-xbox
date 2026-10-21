@@ -19,7 +19,7 @@ void Lb_send_pl_warp();
 int Lb_get_lb_rank();
 int Quest_clear_bit_ck();
 int Event_flag_ck();
-int Get_sw2();
+unsigned short Get_sw2();
 u8 *pull_enemy_work();
 void cnLBS_Send_ChatMessage(char *, u16);
 void cnLBS_Send_ChatMessageTU(u8 *, char *, u16, void *);

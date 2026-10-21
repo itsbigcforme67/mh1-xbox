@@ -1,5 +1,8 @@
 /* Lobby: guild rule sheet editor (lb_rule_seet_set), hand-written from the m2c draft. */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* (declared before its first use) */
+#endif
 
 #define RDT(o) (*(u32 *)(lb_rule_data_tbl + (o)))
 extern u8 lb_rule_data_tbl[];
@@ -9,7 +12,11 @@ extern char *lb_rule_msg_etc[];
 extern char lit_1137_00664A60[];
 extern u8 lb_pit[0xC];
 int Lb_get_cursor_col();
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void GetRoomRule();
 void Lbc_set_prim();
 void Lb_guild_trans();

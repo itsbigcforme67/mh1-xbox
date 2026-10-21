@@ -48,7 +48,7 @@ void str_stop_all();
 void vib_stop_all();
 void save_file_req();
 void McOperationSet();
-int McCardOperation();
+unsigned char McCardOperation();
 void Tsk_Exit();
 void Load_overlay();
 void Select_Tsk_Execute();

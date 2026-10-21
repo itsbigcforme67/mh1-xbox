@@ -1,5 +1,6 @@
 /* em21 draft */
 #include "em.h"
+unsigned char Em_Dmg_Sys();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "game.h"
 #include "fl.h"
 #include "pl.h"

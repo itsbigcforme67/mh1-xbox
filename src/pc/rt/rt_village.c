@@ -115,6 +115,10 @@ void rt_village_enter(void)
             s = *e ? e + 1 : e;
         }
     }
+    if (getenv("RT_QCLEAR_ALL")) {      /* test aid: the debug menu's "Mark all offline quests cleared" (both games) */
+        int rt_dbg_clear_all_quests(void);
+        rt_dbg_clear_all_quests();
+    }
     if (getenv("RT_QUEST_TRACE")) {     /* star level as the Elder computes it, and the cleared quests */
         int lb_get_quest_level(int);
         int Quest_clear_bit_ck(int), q;

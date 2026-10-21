@@ -1,5 +1,7 @@
 /* lb_by162 - agent B 0x0053D450-0x0053D718: lb_armor_put_itemDetail. */
 #include "lobby_s.h"
+unsigned char Equip_moji_color_rare();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned char Get_equip_rare();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 extern char User_data[];
 extern char lit_551_00655880[];
 extern char lit_585_00655888[];

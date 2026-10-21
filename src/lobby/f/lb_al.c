@@ -36,7 +36,7 @@ extern char lit_880_00666050[];
 u32 strlen();
 char *strcpy();
 int SoftKeyboard_set();
-int SoftKeyboard_move();
+signed char SoftKeyboard_move();
 void flfntSetSize();
 void BsBgImgCharSet(int a) {
     BSWK *w;

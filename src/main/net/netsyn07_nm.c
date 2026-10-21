@@ -13,7 +13,7 @@ extern u8 net_time_cnt;
 extern s16 no_send_timer;
 extern s32 net_time[4][10];
 f32 flFloor(f32);
-int mcsls_get_ping_ave(int);
+unsigned short mcsls_get_ping_ave(int);
 void net_game_w_clear(void);
 void net_send_sys(u8, u8);
 void Quest_error_set2();

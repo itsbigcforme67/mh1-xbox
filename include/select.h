@@ -56,7 +56,11 @@ void init_card_w();
 void MemcardInit();
 void PitWork_init();
 void McOperationSet();
+#ifdef __MWERKS__
 int McCardOperation();
+#else
+unsigned char McCardOperation();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void system_w_set();
 
 extern s32 PIT_TEX[];
@@ -149,7 +153,11 @@ extern u8 help_mess_005387B0[];
 s8 Get_hunter_rank();
 void Set_equip_idx();
 void Warehouse_equip();
+#ifdef __MWERKS__
 int Warehouse_equip_stack();
+#else
+unsigned char Warehouse_equip_stack();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void flMemset();
 extern u8 User_data[];
 extern u8 option_w[];
@@ -236,7 +244,11 @@ void SoftKeyboard_set();
 s8 SoftKeyboard_move(s8 *, s16, s16);
 void SoftKeyboard_exit();
 void McOperationSet();
+#ifdef __MWERKS__
 int McCardOperation();
+#else
+unsigned char McCardOperation();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void Tsk_Execute();
 void Tsk_Exit();
 void Select_Tsk_Execute();
