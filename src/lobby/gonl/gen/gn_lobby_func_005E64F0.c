@@ -9,7 +9,7 @@ s32 __cnetSub_Set_BgProcess(); /* extern */
 s32 memset();        /* extern */
 extern s32 g_lb_731270;
 
-s32 lobby_func_005E64F0(s32 arg0, s32 arg1) {
+s32 lobby_func_005E64F0(void *arg0, s32 arg1) {
     s32 temp_v0;
     s32 var_v0;
 

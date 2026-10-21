@@ -3,11 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_sw2();
 s32 SetDialogYesNo();
 s32 cnWrap_SoundRequest();
 extern u8 pNet;
-s32 Get_sw2();                               /* extern */
-
 s32 Lb_select(void) {
     s32 temp_v1;
 

@@ -4,18 +4,18 @@
 #include "../gonl.h"
 
 s32 Check_CallBackWait();
+s32 Get_sw2();
 s32 Lb_eat_to_bell();
 s32 To_LogOut();
 s32 cnWrap_SoundRequest();
+s32 flfntSetSize();
 extern u8 cw;
 extern u8 lb_rule_member;
 extern u8 pNet;
-s32 Get_sw2();                               /* extern */
 s32 check_warning_level(); /* extern */
 s32 cnLBS_Answer_LoginWarningMessage(); /* extern */
 s32 cnWrap_FontDisp(); /* extern */
 s32 cnWrap_SetFontColor();               /* extern */
-s32 flfntSetSize();             /* extern */
 s32 memcpy(); /* extern */
 
 void lbc_login_warning_message(void) {

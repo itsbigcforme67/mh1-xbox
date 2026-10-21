@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 flfntLocate();
+s32 font_print_double();
 extern u8 cw;
 extern u8 game_w;
 extern u8 lb_shop_msg;
 s32 Lb_put_button();               /* extern */
-s32 flfntLocate();                      /* extern */
 s32 font_print();                            /* extern */
-s32 font_print_double(); /* extern */
 s32 strcpy();                     /* extern */
 extern s32 g_lb_636EB0;
 extern u8 bh_pos;
@@ -41,7 +41,7 @@ void put_button_help(s64 arg0, s64 arg1, s32 arg2, s32 arg3) {
     if (arg2 == 9) {
         var_s2 = (s16) (((s16) ((var_s2 - 0x1E))));
         var_s1 = (s16) (((s16) ((var_s1 - 2))));
-        flfntLocate(((s16) ((var_s2 + 3))), ((s16) ((var_s1 + 6))));
+        flfntLocate((s32) (((s16) ((var_s2 + 3)))), (s32) (((s16) ((var_s1 + 6)))));
         font_print((*(s32 *)((u8 *)&lb_shop_msg + 0xC)));
     }
     Lb_put_button((s64) var_s2, ((s16) (((((s16) ((s64) var_s1))) + (((s16) (var_s3)))))), arg2);
@@ -54,7 +54,7 @@ void put_button_help(s64 arg0, s64 arg1, s32 arg2, s32 arg3) {
             var_s0 = (s16) (((s16) ((var_s0 - 0x18))));
         }
         strcpy(&sp70, (*(s32 *)((u8 *)&g_lb_636EB0 + (temp_a0 * 4))));
-        font_print_double(temp_s1, (s64) var_s0, 1, 0, &sp70);
+        font_print_double((s32) temp_s1, (s32) var_s0, 1, 0, &sp70);
     }
 }
 

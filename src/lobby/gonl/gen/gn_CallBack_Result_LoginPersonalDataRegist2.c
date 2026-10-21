@@ -4,9 +4,8 @@
 #include "../gonl.h"
 
 s32 Lb_eat_to_bell();
+s32 cnLBS_Get_ServerMessage();
 extern u8 cw;
-s32 cnLBS_Get_ServerMessage();    /* extern */
-
 void CallBack_Result_LoginPersonalDataRegist2(s64 arg0) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp18 (*(s64 *)(g_frame + 0x18))
@@ -20,7 +19,7 @@ void CallBack_Result_LoginPersonalDataRegist2(s64 arg0) {
             return;
         }
         (*(u8 *)((u8 *)(temp_a1) + 0xB9D)) = 3U;
-        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, temp_a1);
+        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
         Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D));
     }
 }

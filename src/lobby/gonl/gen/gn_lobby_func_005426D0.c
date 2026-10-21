@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Online_ck();                                    /* extern */
-s32 Quest_clear_bit_ck();                        /* extern */
+s32 Online_ck();
+s32 Quest_clear_bit_ck();
 extern u8 quest_lv_tbl;
 
 s32 lobby_func_005426D0(s32 arg0) {
@@ -17,13 +17,13 @@ s32 lobby_func_005426D0(s32 arg0) {
 loop_1:
         if (Online_ck() == 1) {
             temp_a0 = (*(u16 *)var_s0);
-            if (((s32) temp_a0 < 0x2710) && (Quest_clear_bit_ck(temp_a0) == 0)) {
+            if (((s32) temp_a0 < 0x2710) && (Quest_clear_bit_ck((s32) temp_a0) == 0)) {
                 return 0;
             }
             goto block_9;
         }
         temp_a0_2 = (*(u16 *)var_s0);
-        if (((s32) temp_a0_2 >= 0x2710) && (Quest_clear_bit_ck(temp_a0_2) == 0)) {
+        if (((s32) temp_a0_2 >= 0x2710) && (Quest_clear_bit_ck((s32) temp_a0_2) == 0)) {
             return 0;
         }
 block_9:

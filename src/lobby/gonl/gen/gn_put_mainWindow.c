@@ -3,15 +3,15 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Draw_square();
 s32 Draw_menu_square(); /* extern */
-s32 Draw_square(); /* extern */
 
 void put_mainWindow(s64 arg0, s64 arg1) {
     s64 temp_s1;
 
     Draw_menu_square(((s16) (((((s16) (arg0))) - 6))), 0x1A0, 0x110, 1, 0xB000240A);
     temp_s1 = ((s16) (arg1));
-    Draw_square(arg0, ((s16) ((temp_s1 + 0x26))), 0x192, 1, 0xFF537F56);
-    Draw_square(arg0, ((s16) ((temp_s1 + 0xEC))), 0x192, 1, 0xFF537F56);
+    Draw_square((s32) arg0, (s32) (((s16) ((temp_s1 + 0x26)))), 0x192, 1, -0xAC80AA);
+    Draw_square((s32) arg0, (s32) (((s16) ((temp_s1 + 0xEC)))), 0x192, 1, -0xAC80AA);
 }
 

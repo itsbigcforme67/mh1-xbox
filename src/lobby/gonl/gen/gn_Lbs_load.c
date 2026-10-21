@@ -3,10 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 func_0010EF50();
+s32 load_pit();
 extern u8 NET_CON_TEX;
-s32 func_0010EF50();       /* extern */
-s32 load_pit();                                 /* extern */
-
 void Lbs_load(void) {
     load_pit();
     func_0010EF50((*(s32 *)&NET_CON_TEX), 0x174, 0);

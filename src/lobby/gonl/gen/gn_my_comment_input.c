@@ -3,17 +3,17 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_kb_input();
+s32 Get_sw();
+s32 SoftKeyboard_exit();
+s32 SoftKeyboard_move();
 s32 cnWrap_SoundRequest();
 extern u8 Psw;
 extern u8 pNet;
-s32 Get_kb_input();                             /* extern */
-s32 Get_sw();                                /* extern */
-s32 SoftKeyboard_exit();                     /* extern */
-s64 SoftKeyboard_move();               /* extern */
 s32 SoftKeyboard_pos_set();     /* extern */
 s32 func_00220F40(); /* extern */
 
-s32 my_comment_input(s32 arg0) {
+s32 my_comment_input(void *arg0) {
     s32 temp_s0;
     s64 temp_v1_3;
     u8 temp_v1_2;
@@ -34,7 +34,7 @@ block_15:
     default:
         return 0;
     case 1:
-        temp_v1_3 = ((s8) (SoftKeyboard_move(arg0, (*(s16 *)&Psw), (*(s16 *)((u8 *)&Psw + 0x4)))));
+        temp_v1_3 = ((s8) (SoftKeyboard_move(arg0, (s32) (*(s16 *)&Psw), (s32) (*(s16 *)((u8 *)&Psw + 0x4)))));
         if ((temp_v1_3 != -1) && (temp_v1_3 != 1)) {
             if ((temp_s0 & 0xFFFF) == 0x4000) {
                 temp_v1_4 = (*(void **)&pNet);
@@ -47,7 +47,7 @@ block_15:
         }
         goto block_15;
     case 2:
-        SoftKeyboard_exit(temp_v1 + 0x25);
+        SoftKeyboard_exit();
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 0U;
         return 1;
     }

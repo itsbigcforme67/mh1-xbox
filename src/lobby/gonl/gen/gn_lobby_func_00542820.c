@@ -3,7 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Quest_clear_bit_ck();                        /* extern */
+s32 Quest_clear_bit_ck();
 extern u16 *quest_lv_tbl;
 
 s32 lobby_func_00542820(void) {

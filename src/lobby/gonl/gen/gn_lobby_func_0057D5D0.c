@@ -6,9 +6,19 @@
 s32 DispHelpLine();
 s32 DispSceneTitle();
 s32 Lb_put_icon_free();
+s32 Paint_square();
+s32 Put_2TF();
+s32 SetTextureStage();
+s32 SetTrnslMode();
+s32 flfntLocate();
+s32 flfntSetSize();
+s32 font_print_double();
+s32 font_set_palette();
+s32 font_set_stack_no();
 s32 lobby_func_005926C0();
 s64 lobby_func_005935C0();
 s32 lobby_func_005936B0();
+s32 reload_tex();
 extern u8 BsLbsCount;
 extern u8 ClassInfo;
 extern u8 cw;
@@ -16,20 +26,10 @@ extern u8 lb_rule_member;
 extern u8 net_etc_mes_tbl;
 extern u8 textLobbyTbl;
 s32 Lb_put_button();   /* extern */
-s32 Paint_square(); /* extern */
-s32 Put_2TF();                         /* extern */
-s32 SetTextureStage();                   /* extern */
-s32 SetTrnslMode();             /* extern */
-s32 flfntLocate();              /* extern */
-s32 flfntSetSize();             /* extern */
 s32 font_print();            /* extern */
-s32 font_print_double(); /* extern */
-s32 font_set_palette();                  /* extern */
-s32 font_set_stack_no();                     /* extern */
 s32 func_0012A800();                       /* extern */
-s32 reload_tex();               /* extern */
 extern s32 g_lb_5FBBF0;
-extern s32 g_lb_636CD0;
+extern void *g_lb_636CD0;
 extern s32 g_lb_63E530;
 extern u8 PlazaInfo;
 
@@ -47,7 +47,6 @@ void lobby_func_0057D5D0(void *arg0) {
     u8 *var_s1;   /* (s32 *) */
     u8 *var_s2;   /* (s32 *) */
     u8 *var_s4_2;   /* (s32 *) */
-    s32 var_s4;
     f32 temp_f2;
     f32 var_a0_2;
     f32 var_a0_3;
@@ -56,15 +55,16 @@ void lobby_func_0057D5D0(void *arg0) {
     f32 var_f4;
     f32 var_f5;
     s16 temp_v0;
-    u8 *var_s0;   /* (s32 *) */
     s32 var_a0;
     s32 var_a5;
     s32 var_s3;
+    s32 var_s4;
     s32 var_s7;
     s32 var_v1;
     s64 temp_a2;
     s64 temp_fp;
     s64 temp_s0;
+    void **var_s0;
 
     font_set_stack_no((*(s32 *)((u8 *)(arg0) + 0x18)));
     lobby_func_005936B0();
@@ -84,7 +84,7 @@ void lobby_func_0057D5D0(void *arg0) {
         } else {
             var_s4 = 0;
         }
-        font_print_double(((s16) (lobby_func_005935C0((s64) (*(s32 *)var_s0), (s64) (*(s16 *)((u8 *)(var_s1) + 0))))), (*(s16 *)((u8 *)(var_s1) + 2)), 1, var_s4, (*(s32 *)var_s0));
+        font_print_double((s32) (((s16) (lobby_func_005935C0(*var_s0, (s64) (*(s16 *)((u8 *)(var_s1) + 0)), 0x12)))), (s32) (*(s16 *)((u8 *)(var_s1) + 2)), 1, var_s4, *var_s0);
         var_s3 += 1;
         var_s2 += 0x14;
         var_s1 += 4;
@@ -147,7 +147,7 @@ void lobby_func_0057D5D0(void *arg0) {
         temp_fp = ((s16) ((((s16) ((s64) temp_v0)))));
         spAC = (M2C_BITWISE(s32, var_a0_4) & 0xFF) + (((M2C_BITWISE(s32, var_a0_2) & 0xFF) << 0x10) + 0xFF000000 + ((M2C_BITWISE(s32, var_a0_3) & 0xFF) << 8));
         spB4 = spAC;
-        Paint_square(((s16) ((temp_fp + 4))), ((s16) ((temp_s0 + 3))), 0x8C, 0xC, 0xFF010101, var_a5);
+        Paint_square((s32) (((s16) ((temp_fp + 4)))), (s32) (((s16) ((temp_s0 + 3)))), 0x8C, 0xC, -0xFEFEFF);
         func_0012A800(&spA0);
         Lb_put_icon_free((s32) (((s16) ((temp_fp - 0x10)))), (s32) (((s16) ((temp_s0 - 7)))), 0x18, -1, 0x2E);
         var_s7 += 1;

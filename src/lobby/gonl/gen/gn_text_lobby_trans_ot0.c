@@ -5,18 +5,18 @@
 
 s32 DispHelpLine();
 s32 DispSceneTitle();
+s32 Disp_back();
+s32 Online_ck();
+s32 Put_2TF();
+s32 SetFilterMode();
+s32 SetTextureStage();
+s32 flSetRenderState();
+s32 font_set_stack_no();
 s32 lobby_func_005936B0();
+s32 reload_tex();
 extern u8 CnetWork;
 extern u8 cw;
 extern u8 textLobbyTbl;
-s32 Disp_back();                         /* extern */
-s32 Online_ck();                                    /* extern */
-s32 Put_2TF();                         /* extern */
-s32 SetFilterMode();                     /* extern */
-s32 SetTextureStage();                   /* extern */
-s32 flSetRenderState();         /* extern */
-s32 font_set_stack_no();                     /* extern */
-s32 reload_tex();               /* extern */
 
 void text_lobby_trans_ot0(void *arg0) {
     u8 temp_a0;
@@ -32,10 +32,10 @@ void text_lobby_trans_ot0(void *arg0) {
             reload_tex(1, 0x174);
             SetTextureStage(0x174);
             SetFilterMode(1);
-            flSetRenderState(0x60, 0);
+            flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
             Put_2TF(&(*(u8 *)((u8 *)&textLobbyTbl + 0x28)));
         } else if (((u32) (temp_v1 - 5) < 2U) || (temp_v1 == 3)) {
-            Disp_back(1);
+            Disp_back();
         } else {
             lobby_func_005936B0();
         }
@@ -47,7 +47,7 @@ void text_lobby_trans_ot0(void *arg0) {
     reload_tex(1, 0x180);
     SetTextureStage(0x180);
     SetFilterMode(1);
-    flSetRenderState(0x60, 0);
+    flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
     temp_a1 = (*(void **)&cw);
     if ((*(u8 *)((u8 *)(temp_a1) + 0xB99)) != 5) {
         temp_a0 = (*(u8 *)((u8 *)(temp_a1) + 0xB9B));

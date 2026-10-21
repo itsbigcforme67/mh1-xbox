@@ -3,16 +3,16 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_sw();
+s32 SoftKeyboard_exit();
+s32 SoftKeyboard_move();
 s32 cnWrap_SoundRequest();
 extern u8 Psw;
 extern u8 pNet;
-s32 Get_sw();                                /* extern */
-s32 SoftKeyboard_exit();                     /* extern */
-s64 SoftKeyboard_move();               /* extern */
 s32 SoftKeyboard_pos_set();     /* extern */
 s32 func_00220F40(); /* extern */
 
-s32 plaza_req_input(s32 arg0, s32 arg1) {
+s32 plaza_req_input(void *arg0, s32 arg1) {
     s32 temp_s0;
     s64 temp_v1_3;
     u8 temp_v1_2;
@@ -37,7 +37,7 @@ block_21:
     default:                                        /* switch 1 */
         return 0;
     case 1:                                         /* switch 1 */
-        temp_v1_3 = ((s8) (SoftKeyboard_move(arg0, (*(s16 *)&Psw), (*(s16 *)((u8 *)&Psw + 0x4)))));
+        temp_v1_3 = ((s8) (SoftKeyboard_move(arg0, (s32) (*(s16 *)&Psw), (s32) (*(s16 *)((u8 *)&Psw + 0x4)))));
         switch (temp_v1_3) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             if ((temp_s0 & 0xFFFF) == 0x4000) {
@@ -60,7 +60,7 @@ block_21:
         }
         goto block_21;
     case 2:                                         /* switch 1 */
-        SoftKeyboard_exit(temp_v1 + 0x25);
+        SoftKeyboard_exit();
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 0U;
         return 1;
     }

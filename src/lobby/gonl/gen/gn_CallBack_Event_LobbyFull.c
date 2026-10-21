@@ -3,16 +3,15 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnLBS_Get_ServerMessage();
 extern u8 cw;
-s32 cnLBS_Get_ServerMessage();    /* extern */
-
 void CallBack_Event_LobbyFull(void) {
     u8 *temp_a1;
 
     temp_a1 = (*(void **)&cw);
     if ((*(u8 *)((u8 *)(temp_a1) + 0xB99)) != 5) {
         (*(s8 *)((u8 *)(temp_a1) + 0xB76)) = 2;
-        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, temp_a1);
+        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
     }
 }
 

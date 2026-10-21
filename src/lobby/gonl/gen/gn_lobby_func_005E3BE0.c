@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 GetRecvData16();                       /* extern */
-s32 GetRecvDataString();                /* extern */
+s32 GetRecvData16();
+s32 GetRecvDataString();
 extern u8 recv_work;
 
-void lobby_func_005E3BE0(s32 arg1) {
-    GetRecvDataString(arg1, GetRecvData16(&recv_work));
+void lobby_func_005E3BE0(void *arg0, void *arg1) {
+    GetRecvDataString(arg1, GetRecvData16(arg0, &recv_work));
 }
 

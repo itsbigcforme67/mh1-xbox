@@ -3,6 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_sw2();
+s32 Get_sw_on2();
+s32 KinshiYogo_chk();
 s32 Lb_cursorUD();
 s32 Lb_select();
 s32 Lbc_SendMail();
@@ -26,9 +29,6 @@ extern u8 g_main_2EFBC4;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 Get_sw2();                               /* extern */
-s16 Get_sw_on2();                    /* extern */
-s32 KinshiYogo_chk();                     /* extern */
 s32 Visual_main();                              /* extern */
 s32 memcmp();                    /* extern */
 s32 memcpy();                /* extern */
@@ -42,9 +42,9 @@ extern s8 my_user_id;
 s32 lobby_func_00572110(void) {
     s16 temp_s0_3;
     s16 temp_v1_7;
-    s32 temp_a1_2;
-    s32 temp_a1_4;
-    s32 temp_a1_6;
+    s32 temp_a1;
+    s32 temp_a1_3;
+    s32 temp_a1_5;
     s32 temp_s0;
     s32 temp_v0_6;
     s32 temp_v0_7;
@@ -70,12 +70,11 @@ s32 lobby_func_00572110(void) {
     u8 *temp_a0_7;
     u8 *temp_a0_8;
     u8 *temp_a0_9;
-    u8 *temp_a1;
     u8 *temp_a1_10;
     u8 *temp_a1_11;
-    u8 *temp_a1_12;
-    u8 *temp_a1_3;
-    u8 *temp_a1_5;
+    u8 *temp_a1_2;
+    u8 *temp_a1_4;
+    u8 *temp_a1_6;
     u8 *temp_a1_7;
     u8 *temp_a1_8;
     u8 *temp_a1_9;
@@ -107,18 +106,17 @@ s32 lobby_func_00572110(void) {
     temp_s0 = Get_sw2(0) & 0xFFFF;
     temp_v0 = (*(void **)&g_main_2EFBAC);
     temp_a0 = (*(u8 *)((u8 *)(temp_v0) + 0x233));
-    temp_a1 = temp_v0 + 0x233;
     switch (temp_a0) {                              /* switch 1 */
     case 0:                                         /* switch 1 */
-        temp_a1_2 = temp_s0 & 0xFFFF;
-        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0, temp_a1);
-        if (temp_a1_2 & 0x40) {
+        temp_a1 = temp_s0 & 0xFFFF;
+        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0);
+        if (temp_a1 & 0x40) {
             (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x233)) = 0U;
             cnWrap_SoundRequest(3);
             (*(s8 *)&D_0035EFEB) = 1;
             return 0;
         }
-        if (temp_a1_2 & 0x20) {
+        if (temp_a1 & 0x20) {
             temp_a3 = (*(void **)&g_main_2EFBAC);
             temp_v1 = (*(s8 *)((u8 *)(temp_a3) + 0x237));
             switch (temp_v1) {                      /* switch 2; irregular */
@@ -133,8 +131,8 @@ s32 lobby_func_00572110(void) {
                 (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x238)) = 0;
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
                 (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x238)) = 0;
-                temp_a1_3 = (*(void **)&g_main_2EFBAC);
-                memcpy(&g_lb_653A50, temp_a1_3 + ((*(s8 *)((u8 *)(temp_a1_3) + 0x237)) * 0x5C) + 0x9A, 8);
+                temp_a1_2 = (*(void **)&g_main_2EFBAC);
+                memcpy(&g_lb_653A50, temp_a1_2 + ((*(s8 *)((u8 *)(temp_a1_2) + 0x237)) * 0x5C) + 0x9A, 8);
                 cnWrap_SoundRequest(0);
                 break;
             case 3:                                 /* switch 2 */
@@ -170,9 +168,9 @@ s32 lobby_func_00572110(void) {
 block_109:
         return 2;
     case 1:                                         /* switch 1 */
-        temp_a1_4 = temp_s0 & 0xFFFF;
+        temp_a1_3 = temp_s0 & 0xFFFF;
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        if (temp_a1_4 & 0x20) {
+        if (temp_a1_3 & 0x20) {
             temp_v1_3 = (*(void **)&g_main_2EFBAC);
             if ((*(s8 *)((u8 *)(temp_v1_3) + 0x238)) == 0) {
                 (*(u8 *)((u8 *)(temp_v1_3) + 0x233)) = (u8) ((*(u8 *)((u8 *)(temp_v1_3) + 0x233)) + 1);
@@ -183,7 +181,7 @@ block_109:
                 (*(u8 *)((u8 *)(temp_v1_3) + 0x233)) = 5U;
             }
             cnWrap_SoundRequest(0);
-        } else if (temp_a1_4 & 0x40) {
+        } else if (temp_a1_3 & 0x40) {
             (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x233)) = 0U;
             cnWrap_SoundRequest(3);
         } else {
@@ -202,28 +200,28 @@ block_109:
             if (getFriendNow(0, 7) != 0) {
 
             } else {
-                temp_a1_5 = (*(void **)&g_main_2EFBAC);
-                (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(temp_a1_5) + 0x22E)) * 2))) = (*(u16 *)&g_main_2EFAD8);
-                (*(u8 *)((u8 *)(temp_a1_5) + 0x233)) = (u8) ((*(u8 *)((u8 *)(temp_a1_5) + 0x233)) + 1);
+                temp_a1_4 = (*(void **)&g_main_2EFBAC);
+                (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(temp_a1_4) + 0x22E)) * 2))) = (*(u16 *)&g_main_2EFAD8);
+                (*(u8 *)((u8 *)(temp_a1_4) + 0x233)) = (u8) ((*(u8 *)((u8 *)(temp_a1_4) + 0x233)) + 1);
             }
         }
         goto block_109;
     case 4:                                         /* switch 1 */
-        temp_a1_6 = temp_s0 & 0xFFFF;
-        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0, temp_a1);
-        if (temp_a1_6 & 0x40) {
+        temp_a1_5 = temp_s0 & 0xFFFF;
+        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0);
+        if (temp_a1_5 & 0x40) {
             (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x233)) = 1U;
             (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x238)) = 0;
             cnWrap_SoundRequest(3);
-        } else if (temp_a1_6 & 0x20) {
+        } else if (temp_a1_5 & 0x20) {
             temp_v0_4 = (*(void **)&g_main_2EFBAC);
             if ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) == 0) {
                 cnWrap_SoundRequest(7);
             } else {
                 temp_s0_2 = (u8 *)&g_main_302CB0 + ((((s16) ((((s16) (((*(s8 *)((u8 *)(temp_v0_4) + 0x238)) + ((*(s16 *)((u8 *)(temp_v0_4) + 0x22E)) * 7)))))))) * 0x30);
                 if (memcmp(temp_s0_2, temp_v0_4 + (((s32) ((*(s8 *)((u8 *)(temp_v0_4) + 0x237)) + 1) % 3) * 0x5C) + 0x9A, 8) != 0) {
-                    temp_a1_7 = (*(void **)&g_main_2EFBAC);
-                    if (memcmp(temp_s0_2, temp_a1_7 + (((s32) ((*(s8 *)((u8 *)(temp_a1_7) + 0x237)) + 2) % 3) * 0x5C) + 0x9A, 8) == 0) {
+                    temp_a1_6 = (*(void **)&g_main_2EFBAC);
+                    if (memcmp(temp_s0_2, temp_a1_6 + (((s32) ((*(s8 *)((u8 *)(temp_a1_6) + 0x237)) + 2) % 3) * 0x5C) + 0x9A, 8) == 0) {
                         goto block_51;
                     }
                     temp_a0_3 = (*(void **)&g_main_2EFBAC);
@@ -263,7 +261,7 @@ block_51:
         }
         goto block_109;
     case 5:                                         /* switch 1 */
-        if (plaza_req_input((s32) &g_lb_653A50, 0) == 1) {
+        if (plaza_req_input(&g_lb_653A50, 0) == 1) {
             temp_a0_6 = (*(void **)&g_main_2EFBAC);
             if (memcmp(temp_a0_6 + ((*(s8 *)((u8 *)(temp_a0_6) + 0x237)) * 0x5C) + 0x9A, &g_lb_653A50, 8) != 0) {
                 temp_a0_7 = (*(void **)&g_main_2EFBAC);
@@ -277,8 +275,8 @@ block_51:
                     temp_a0_8 = (*(void **)&g_main_2EFBAC);
                     memset(temp_a0_8 + ((*(s8 *)((u8 *)(temp_a0_8) + 0x237)) * 0x5C) + 0xA2, 0, 0x10);
                 } else {
-                    temp_a1_8 = (*(void **)&g_main_2EFBAC);
-                    if (memcmp(&my_user_id, temp_a1_8 + ((*(s8 *)((u8 *)(temp_a1_8) + 0x237)) * 0x5C) + 0x9A, 8) == 0) {
+                    temp_a1_7 = (*(void **)&g_main_2EFBAC);
+                    if (memcmp(&my_user_id, temp_a1_7 + ((*(s8 *)((u8 *)(temp_a1_7) + 0x237)) * 0x5C) + 0x9A, 8) == 0) {
                         SetDialogData(0x3C);
                         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
                         (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x233)) = 0xBU;
@@ -288,15 +286,15 @@ block_51:
                         memset(temp_a0_9 + ((*(s8 *)((u8 *)(temp_a0_9) + 0x237)) * 0x5C) + 0x9A, 0, 0x5C);
                     } else {
                         if (g_lb_653A50 != 0) {
-                            temp_a1_9 = (*(void **)&g_main_2EFBAC);
-                            if (memcmp(&g_lb_653A50, temp_a1_9 + (((s32) ((*(s8 *)((u8 *)(temp_a1_9) + 0x237)) + 1) % 3) * 0x5C) + 0x9A, 8) != 0) {
+                            temp_a1_8 = (*(void **)&g_main_2EFBAC);
+                            if (memcmp(&g_lb_653A50, temp_a1_8 + (((s32) ((*(s8 *)((u8 *)(temp_a1_8) + 0x237)) + 1) % 3) * 0x5C) + 0x9A, 8) != 0) {
                                 goto block_69;
                             }
                             goto block_71;
                         }
 block_69:
-                        temp_a1_10 = (*(void **)&g_main_2EFBAC);
-                        if (memcmp(&g_lb_653A50, temp_a1_10 + (((s32) ((*(s8 *)((u8 *)(temp_a1_10) + 0x237)) + 2) % 3) * 0x5C) + 0x9A, 8) == 0) {
+                        temp_a1_9 = (*(void **)&g_main_2EFBAC);
+                        if (memcmp(&g_lb_653A50, temp_a1_9 + (((s32) ((*(s8 *)((u8 *)(temp_a1_9) + 0x237)) + 2) % 3) * 0x5C) + 0x9A, 8) == 0) {
 block_71:
                             SetDialogData(0x3D);
                             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
@@ -336,7 +334,7 @@ block_71:
         }
         goto block_109;
     case 7:                                         /* switch 1 */
-        if (lobby_func_0056D570((s32) ((*(void **)&cw) + 0xF00)) == 1) {
+        if (lobby_func_0056D570((*(void **)&cw) + 0xF00) == 1) {
             KinshiYogo_chk((*(void **)&cw) + 0xF00);
             if (((*(s8 *)((u8 *)((*(void **)&cw)) + 0xF00)) != 0) && (temp_a2_2 = (*(void **)&g_main_2EFBAC), (((*(u8 *)((u8 *)(temp_a2_2) + 0x23E)) + ((*(u8 *)((u8 *)(temp_a2_2) + 0x23C)) + (*(u8 *)((u8 *)(temp_a2_2) + 0x23D)))) != 3))) {
                 (*(s8 *)((u8 *)(temp_a2_2) + 0x237)) = (s8) ((*(s8 *)((u8 *)(temp_a2_2) + 0x237)) + 1);
@@ -355,8 +353,8 @@ block_71:
             temp_v1_14 = (*(void **)&g_main_2EFBAC);
             (*(u8 *)((u8 *)(temp_v1_14) + 0x233)) = (u8) ((*(u8 *)((u8 *)(temp_v1_14) + 0x233)) + 1);
             (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x23B)) = 0U;
-            temp_a1_11 = (*(void **)&g_main_2EFBAC);
-            strcpy((*(void **)&cw) + 0xF81, temp_a1_11 + ((*(u8 *)((u8 *)(temp_a1_11) + 0x23B)) * 0x5C) + 0x9A);
+            temp_a1_10 = (*(void **)&g_main_2EFBAC);
+            strcpy((*(void **)&cw) + 0xF81, temp_a1_10 + ((*(u8 *)((u8 *)(temp_a1_10) + 0x23B)) * 0x5C) + 0x9A);
             temp_v1_15 = (*(void **)&g_main_2EFBAC);
             (*(s8 *)((u8 *)(((*(u8 *)((u8 *)(temp_v1_15) + 0x23B)) + temp_v1_15)) + 0x23C)) = 0;
             break;
@@ -382,8 +380,8 @@ block_71:
                 temp_v1_17 = (*(void **)&g_main_2EFBAC);
                 (*(u8 *)((u8 *)(temp_v1_17) + 0x233)) = (u8) ((*(u8 *)((u8 *)(temp_v1_17) + 0x233)) + 1);
             } else {
-                temp_a1_12 = (*(void **)&g_main_2EFBAC);
-                strcpy((*(void **)&cw) + 0xF81, temp_a1_12 + ((*(u8 *)((u8 *)(temp_a1_12) + 0x23B)) * 0x5C) + 0x9A);
+                temp_a1_11 = (*(void **)&g_main_2EFBAC);
+                strcpy((*(void **)&cw) + 0xF81, temp_a1_11 + ((*(u8 *)((u8 *)(temp_a1_11) + 0x23B)) * 0x5C) + 0x9A);
                 temp_v1_18 = (*(void **)&g_main_2EFBAC);
                 (*(s8 *)((u8 *)(((*(u8 *)((u8 *)(temp_v1_18) + 0x23B)) + temp_v1_18)) + 0x23C)) = 0;
             }

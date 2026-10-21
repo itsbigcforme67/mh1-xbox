@@ -6,6 +6,7 @@
 s32 CallBack_Result_ReadFileDownload();
 s32 Check_CallBackWait();
 s32 To_LogOut();
+s32 cnLBS_Get_FileDownloadInfo();
 s32 lobby_func_005817C0();
 s32 lobby_func_0059A210();
 s32 lobby_func_005BF990();
@@ -15,7 +16,6 @@ extern u8 cw;
 extern u8 g_main_2EF390;
 extern u8 quest_title;
 extern u8 sp38;
-s32 cnLBS_Get_FileDownloadInfo();  /* extern */
 s32 memcpy();               /* extern */
 s32 memset();           /* extern */
 

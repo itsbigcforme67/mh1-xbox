@@ -3,11 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_sw2();
+s32 fade_set();
 extern u8 cw;
 extern u8 pNet;
-s32 Get_sw2();                               /* extern */
-s32 fade_set();             /* extern */
-
 void lbc_matching_failed_02(void) {
     s32 temp_a0;
     s32 temp_a2;
@@ -22,7 +21,7 @@ void lbc_matching_failed_02(void) {
     if ((temp_a0 >= 0x12C) || (((*(s32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) >= 0x3C) && (temp_a2 & 0xFFFF & 0x60))) {
         temp_v1 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1) + 0xB9B)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xB9B)) + 1);
-        fade_set(1, temp_a1, temp_a2);
+        fade_set(1);
     }
 }
 

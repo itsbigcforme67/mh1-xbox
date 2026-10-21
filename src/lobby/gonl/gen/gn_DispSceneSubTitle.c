@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 flfntSetSize();
+s32 font_print_double();
 extern u8 g_main_2EFAE8;
 extern u8 cw;
 extern u8 g_main_2EFAE8;
 extern u8 game_w;
 s32 Draw_menu_square(); /* extern */
-s32 flfntSetSize();             /* extern */
-s32 font_print_double(); /* extern */
 extern s32 g_lb_654E00;
 
 void DispSceneSubTitle(void) {

@@ -3,7 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 flps0008(); /* extern */
+s32 flps0008();
 extern u8 lb_icon_tbl;
 
 void Lb_put_icon(s32 arg0, s16 arg1, u32 arg2, s32 arg3) {
@@ -16,7 +16,6 @@ void Lb_put_icon(s32 arg0, s16 arg1, u32 arg2, s32 arg3) {
 #define sp1C (*(s32 *)(g_frame + 0x1C))
 #define sp20 (*(s32 *)(g_frame + 0x20))
     s16 temp_a0;
-    s16 var_a5;
     u8 *temp_a4;
 
     if (arg2 != 0x30) {
@@ -28,8 +27,7 @@ void Lb_put_icon(s32 arg0, s16 arg1, u32 arg2, s32 arg3) {
         if (temp_a0 < 0) {
             sp14 = -temp_a0;
         }
-        var_a5 = (*(s16 *)((u8 *)(temp_a4) + 6));
-        sp16 = var_a5 - (*(s16 *)((u8 *)(temp_a4) + 2));
+        sp16 = (*(s16 *)((u8 *)(temp_a4) + 6)) - (*(s16 *)((u8 *)(temp_a4) + 2));
         switch (arg2) {
         case 2:
         case 3:
@@ -49,8 +47,7 @@ void Lb_put_icon(s32 arg0, s16 arg1, u32 arg2, s32 arg3) {
         case 17:
         case 18:
             sp10 -= 4;
-            var_a5 = sp12 - 2;
-            sp12 = var_a5;
+            sp12 -= 2;
             sp14 = 0x14;
             sp16 = 0x16;
             break;
@@ -74,7 +71,7 @@ void Lb_put_icon(s32 arg0, s16 arg1, u32 arg2, s32 arg3) {
         (*(s16 *)((u8 *)(&sp1C) + 2)) = (s16) (*(s16 *)((u8 *)(temp_a4) + 2));
         (*(s16 *)((u8 *)(&sp20) + 0)) = (s16) (*(s16 *)((u8 *)(temp_a4) + 4));
         (*(s16 *)((u8 *)(&sp20) + 2)) = (s16) (*(s16 *)((u8 *)(temp_a4) + 6));
-        flps0008(&sp10, &sp20, &sp1C, temp_a4, var_a5);
+        flps0008(&sp10);
     }
 }
 

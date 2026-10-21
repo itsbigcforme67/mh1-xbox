@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 SaveNetFile_init();
 s32 SetDialogData();
+s32 str_pause();
+s32 str_stop();
 extern u8 D_0035EFEB;
 extern u8 cw;
-s32 SaveNetFile_init();                         /* extern */
 s32 cpn_GetCNData();                            /* extern */
-s32 str_pause();                /* extern */
-s32 str_stop();                          /* extern */
 
 s32 lobby_func_0056C350(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 0;

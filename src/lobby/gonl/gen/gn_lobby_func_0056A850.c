@@ -4,6 +4,7 @@
 #include "../gonl.h"
 
 s32 CallBack_Result_Plaza_ReadAllocation2();
+s32 Get_sw2();
 s32 Lb_eat_to_bell();
 s32 Lbs_LobbyExit();
 s32 SetDialogData();
@@ -12,7 +13,6 @@ s64 lobby_func_00569390();
 extern u8 g_main_2EF390;
 extern u8 cw;
 extern u8 g_main_2EF390;
-s32 Get_sw2();                               /* extern */
 extern u8 ClassInfo;
 extern s8 g_lb_5FBC10;
 extern s32 g_main_3064AF;

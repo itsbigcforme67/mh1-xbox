@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Event_flag_ck();
+s32 Quest_clear_bit_ck();
 s32 lobby_func_00542790();
 s32 lobby_func_005428F0();
 s32 lobby_func_005429A0();
 s32 lobby_func_00542A30();
-s32 Event_flag_ck();                         /* extern */
-s32 Quest_clear_bit_ck();                    /* extern */
 s32 get_questLevelNum();                     /* extern */
 s32 sub_main_func_004C8600(); /* extern */
 s32 sub_main_func_004C8A10();     /* extern */

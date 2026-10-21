@@ -9,7 +9,7 @@ s32 Check_CallBackWait();                    /* extern */
 s32 cnLBS_ConditionSearchUser(); /* extern */
 extern u8 CallBack_Result_ConditionSearchUser;
 
-s32 Lbc_ConditionSearch(void *arg0, s64 arg1, s32 arg3) {
+s32 Lbc_ConditionSearch(void *arg0, s64 arg1, s32 unused_a2, s32 arg3) {
     s8 sp11;
     union { s8 v; u8 b[0x230]; } u_sp10;
 #define sp10 (u_sp10.v)

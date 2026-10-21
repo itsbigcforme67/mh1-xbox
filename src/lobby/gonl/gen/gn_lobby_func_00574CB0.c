@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 flfntLocate();
+s32 han2zen();
 s32 lobby_func_005C14D0();
 extern u8 BsProxyUrlstr;
 extern u8 lb_shop_msg;
 extern u8 tl_msg_tbl;
-s32 flfntLocate();                      /* extern */
 s32 font_print(); /* extern */
-s32 han2zen();              /* extern */
 s32 sprintf();         /* extern */
 extern s32 g_lb_63E268;
 extern s32 g_lb_63E270;
@@ -21,7 +21,7 @@ void lobby_func_00574CB0(s64 arg0, s64 arg1) {
     s32 temp_s0;
 
     temp_s0 = lobby_func_005C14D0(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8);
-    flfntLocate(((s16) (((((s16) (arg0))) + 0x100))), ((s16) (((((s16) (arg1))) + 0x10))));
+    flfntLocate((s32) (((s16) (((((s16) (arg0))) + 0x100)))), (s32) (((s16) (((((s16) (arg1))) + 0x10)))));
     sprintf(&sp80, &g_lb_63E268, 8 - temp_s0);
     han2zen(&sp80, &sp40);
     font_print(&g_lb_63E270, (*(s32 *)((u8 *)&tl_msg_tbl + 0x18)), &sp40, (*(s32 *)((u8 *)&lb_shop_msg + 0x8)));

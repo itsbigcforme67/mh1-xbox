@@ -3,18 +3,18 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_sw2();
+s32 Put_2TF();
+s32 SetFilterMode();
+s32 SetTextureStage();
+s32 flSetRenderState();
+s32 flfntLocate();
+s32 flfntSetSize();
+s32 font_set_palette();
+s32 reload_tex();
 extern u8 cw;
 extern u8 helpLineTbl;
-s32 Get_sw2();                               /* extern */
-s32 Put_2TF();                             /* extern */
-s32 SetFilterMode();                     /* extern */
-s32 SetTextureStage();                   /* extern */
-s32 flSetRenderState();         /* extern */
-s32 flfntLocate();                      /* extern */
-s32 flfntSetSize();             /* extern */
 s32 font_print_sp();                    /* extern */
-s32 font_set_palette();                  /* extern */
-s32 reload_tex();               /* extern */
 extern s16 g_lb_654CFC;
 extern s16 g_lb_654CFE;
 extern s32 helpLineStr;
@@ -29,7 +29,7 @@ void DispHelpLine(void) {
     reload_tex(1, 0x180);
     SetTextureStage(0x180);
     SetFilterMode(1);
-    flSetRenderState(0x60, 0);
+    flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
     if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xB99)) == 1) {
         var_v0 = 0xA0302000;
     } else {
@@ -57,7 +57,7 @@ void DispHelpLine(void) {
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
     if (helpLineStr != 0) {
-        flfntLocate(g_lb_654CFC, g_lb_654CFE);
+        flfntLocate((s32) g_lb_654CFC, (s32) g_lb_654CFE);
         font_print_sp((s16) (*(s32 *)((u8 *)&helpLineStr + 0x4)), helpLineStr);
     }
 }

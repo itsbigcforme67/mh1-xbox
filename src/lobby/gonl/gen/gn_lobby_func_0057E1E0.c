@@ -7,14 +7,13 @@ s32 Check_InterruptFlag();
 s32 To_EnterLobby();
 s32 To_EnterPlaza();
 s32 To_LogOut();
+s32 fade_set();
 s32 getHandleFromID();
 s32 lbc_in_plaza_00();
 s32 lobby_func_0057E990();
+s32 str_stop();
 extern u8 cw;
 extern u8 pNet;
-s32 fade_set();                          /* extern */
-s32 str_stop();                          /* extern */
-
 void lobby_func_0057E1E0(void) {
     s32 temp_v0;
     u8 temp_a0;

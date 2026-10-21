@@ -4,9 +4,9 @@
 #include "../gonl.h"
 
 s32 Lb_put_icon();
+s32 SetTextureStage();
+s32 reload_tex();
 extern u8 pNet;
-s32 SetTextureStage();                   /* extern */
-s32 reload_tex();               /* extern */
 extern u8 RecvMailInfo;
 
 /* Warning: Gap in callee-saved word stack region.

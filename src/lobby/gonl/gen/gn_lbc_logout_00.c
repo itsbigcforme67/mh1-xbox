@@ -3,9 +3,16 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CpInetTcpAbort();
+s32 CpInetTcpDelete();
+s32 Fade_busy_ck();
 s32 Lbc_init_network_work();
 s32 Lbc_set_prim();
+s32 Pit_reset();
 s32 SetDialogData();
+s32 SoftKeyboard_exit();
+s32 fade_set();
+s32 str_stop();
 s32 tk_logout();
 extern u8 COM_R_No_0;
 extern u8 COM_R_No_1;
@@ -19,15 +26,8 @@ extern u8 game_w;
 extern u8 jtbl_3160;
 extern u8 pNet;
 extern u8 player_work;
-s32 CpInetTcpAbort();                        /* extern */
-s32 CpInetTcpDelete();                 /* extern */
-s32 Fade_busy_ck();            /* extern */
-s32 Pit_reset();                                /* extern */
-s32 SoftKeyboard_exit();                        /* extern */
 s32 cnWrap_BgmFadeOut();                 /* extern */
 s32 cnWrap_BgmStop();                           /* extern */
-s32 fade_set();                      /* extern */
-s32 str_stop();                          /* extern */
 s32 tk_logout_init();      /* extern */
 extern u8 put_back;
 
@@ -35,10 +35,8 @@ void lbc_logout_00(s64 arg_sp0) {
     u8 temp_a0_2;
     u8 temp_a0_3;
     u8 temp_a1;
-    u8 temp_a1_2;
     u8 *temp_a0;
-    u8 *temp_a1_3;
-    u8 *temp_a2;
+    u8 *temp_a1_2;
     u8 *temp_v0;
     u8 *temp_v1;
     u8 *temp_v1_2;
@@ -58,7 +56,6 @@ void lbc_logout_00(s64 arg_sp0) {
     }
     temp_v1 = (*(void **)&cw);
     temp_a1 = (*(u8 *)((u8 *)(temp_v1) + 0xB9C));
-    temp_a2 = temp_v1 + 0xB9C;
     switch (temp_a1) {                              /* switch 2 */
     case 0:                                         /* switch 2 */
         Lbc_init_network_work();
@@ -74,14 +71,13 @@ void lbc_logout_00(s64 arg_sp0) {
         (*(u8 *)((u8 *)(temp_a0) + 0xB9C)) = 3U;
         return;
     case 1:                                         /* switch 2 */
-        if ((Fade_busy_ck(&jtbl_3160, temp_a1, temp_a2) & 0xFF) != 1) {
+        if ((Fade_busy_ck() & 0xFF) != 1) {
             temp_v1_2 = (*(void **)&cw);
             if ((*(u8 *)((u8 *)(temp_v1_2) + 0xBB0)) != 0) {
                 str_stop(0);
                 str_stop(1);
-                temp_a1_2 = (*(u8 *)((u8 *)&game_w + 0x3A));
-                if ((*(s32 *)((u8 *)&(*(u8 *)((u8 *)&player_work + 0x15)) + (temp_a1_2 * 0xA00))) != 0x34) {
-                    fade_set(2, temp_a1_2);
+                if ((*(s32 *)((u8 *)&(*(u8 *)((u8 *)&player_work + 0x15)) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00))) != 0x34) {
+                    fade_set(2);
                     cnWrap_BgmStop();
                     Pit_reset();
                     temp_v1_3 = (*(void **)&cw);
@@ -103,7 +99,7 @@ void lbc_logout_00(s64 arg_sp0) {
         return;
     case 3:                                         /* switch 2 */
         (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = (u8) (temp_a1 + 1);
-        tk_logout_init(&jtbl_3160, temp_a1, temp_a2);
+        tk_logout_init(&jtbl_3160, temp_a1, temp_v1 + 0xB9C);
         SoftKeyboard_exit();
         temp_a0_2 = (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBB0));
         if (temp_a0_2 == 3) {
@@ -131,18 +127,18 @@ void lbc_logout_00(s64 arg_sp0) {
         }
         break;
     case 6:                                         /* switch 2 */
-        if ((Fade_busy_ck(&jtbl_3160, temp_a1, temp_a2) & 0xFF) != 1) {
-            temp_a1_3 = (*(void **)&cw);
-            (*(u8 *)((u8 *)(temp_a1_3) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a1_3) + 0xB9C)) + 1);
+        if ((Fade_busy_ck() & 0xFF) != 1) {
+            temp_a1_2 = (*(void **)&cw);
+            (*(u8 *)((u8 *)(temp_a1_2) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a1_2) + 0xB9C)) + 1);
             if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xBB0)) != 0) {
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-                fade_set(1, (u8) temp_a1_3);
+                fade_set(1);
                 return;
             }
         }
         break;
     case 7:                                         /* switch 2 */
-        if ((Fade_busy_ck(&jtbl_3160, temp_a1, temp_a2) & 0xFF) == 1) {
+        if ((Fade_busy_ck() & 0xFF) == 1) {
             if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xBB0)) != 0) {
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
             }

@@ -5,25 +5,25 @@
 
 s32 CallBack_SendMiniData();
 s32 Check_CallBackWait();
+s32 Fade_busy_ck();
+s32 McCardOperation();
+s32 McOperationSet();
+s32 Q_camera_init();
 s32 SetDialogData();
 s32 To_LogOut();
+s32 fade_set();
 s32 lobby_func_0057C0B0();
 s32 lobby_func_0057CC60();
 s32 lobby_func_00580FA0();
 s32 lobby_func_00581210();
 s32 lobby_func_0058BAA0();
+s32 str_stop_all();
 extern u8 CnetWork;
 extern u8 cw;
 extern u8 jtbl_0063E490;
 extern u8 pNet;
-s32 Fade_busy_ck();    /* extern */
-s32 McCardOperation();    /* extern */
-s32 McOperationSet(); /* extern */
-s32 Q_camera_init();                            /* extern */
 s32 cnLBS_Send_LoginFinish(); /* extern */
 s32 cnLBS_Send_UserMiniData(); /* extern */
-s32 fade_set();                          /* extern */
-s32 str_stop_all();                             /* extern */
 extern u8 my_user_mini_data;
 
 void lbc_login_finish_after(void) {
@@ -36,17 +36,15 @@ void lbc_login_finish_after(void) {
     u8 *temp_a0_2;
     u8 *temp_a0_3;
     u8 *temp_a2;
-    u8 *temp_a3;
     u8 *temp_v1_2;
 
     temp_a2 = (*(void **)&cw);
     temp_a1 = (*(u8 *)((u8 *)(temp_a2) + 0xB9C));
-    temp_a3 = temp_a2 + 0xB9C;
     switch (temp_a1) {
     case 0:
         if ((*(u8 *)((u8 *)&CnetWork + 0x5)) == 3) {
             (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
-            McOperationSet(7, temp_a1, temp_a2, temp_a3);
+            McOperationSet(7);
             if (Fade_busy_ck() & 0xFF) {
                 fade_set(2);
             }
@@ -56,7 +54,7 @@ void lbc_login_finish_after(void) {
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB97)) = 0;
         } else {
             (*(s8 *)((u8 *)(temp_a2) + 0xB97)) = 0;
-            cnLBS_Send_LoginFinish(&jtbl_0063E490, temp_a1, temp_a2, temp_a3);
+            cnLBS_Send_LoginFinish(&jtbl_0063E490, temp_a1, temp_a2, temp_a2 + 0xB9C);
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 2U;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
@@ -69,7 +67,7 @@ block_39:
     case 1:
         temp_v1 = (*(s32 *)((u8 *)(temp_a2) + 0xBB4));
         if (temp_v1 == 0) {
-            if (McCardOperation(temp_a2 + 0xBB4, temp_a1, temp_a2, temp_a3) & 0xFF) {
+            if (McCardOperation() & 0xFF) {
                 temp_v1_2 = (*(void **)&cw);
                 (*(u8 *)((u8 *)(temp_v1_2) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0xB9C)) + 1);
                 cnLBS_Send_LoginFinish();
@@ -123,7 +121,7 @@ block_39:
         goto block_39;
     case 7:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        if ((Fade_busy_ck(&jtbl_0063E490, temp_a1, temp_a2, temp_a3) & 0xFF) != 1) {
+        if ((Fade_busy_ck() & 0xFF) != 1) {
             if ((*(u8 *)((u8 *)&CnetWork + 0x5)) == 3) {
                 lobby_func_0057CC60();
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA5E)) = 1;

@@ -11,18 +11,17 @@ s32 SetDialogYesNo();
 s32 To_EnterPlaza();
 s32 To_LogOut();
 s32 cnWrap_SoundRequest();
+s32 fade_set();
 s32 lbc_top_menu_00();
 s32 lbc_top_menu_02();
 s32 lobby_func_0057DDC0();
 s32 lobby_func_0059F740();
 s32 lobby_func_0059F750();
+s32 str_fadeout();
+s32 str_stop();
 extern u8 Psw;
 extern u8 cw;
 extern u8 pNet;
-s32 fade_set();                          /* extern */
-s32 str_fadeout();              /* extern */
-s32 str_stop();                          /* extern */
-
 void lobby_func_0057D2E0(void) {
     s32 temp_v0;
     s32 temp_v0_2;

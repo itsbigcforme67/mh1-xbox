@@ -3,7 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 flps0008(); /* extern */
+s32 flps0008();
 extern u8 lb_icon_tbl;
 
 void Lb_put_icon_free2(s32 arg0, s16 arg1, s16 arg2, s32 arg3, s64 arg4) {
@@ -30,7 +30,7 @@ void Lb_put_icon_free2(s32 arg0, s16 arg1, s16 arg2, s32 arg3, s64 arg4) {
         (*(s16 *)((u8 *)(&sp1C) + 2)) = (s16) (*(s16 *)((u8 *)(temp_a3) + 2));
         (*(s16 *)((u8 *)(&sp20) + 0)) = (s16) (*(s16 *)((u8 *)(temp_a3) + 4));
         (*(s16 *)((u8 *)(&sp20) + 2)) = (s16) (*(s16 *)((u8 *)(temp_a3) + 6));
-        flps0008(&sp10, &sp20, &sp1C, temp_a3, temp_a4);
+        flps0008(&sp10);
     }
 }
 

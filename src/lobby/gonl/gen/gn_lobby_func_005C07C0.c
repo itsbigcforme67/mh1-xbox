@@ -3,23 +3,23 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 SetSendCommand();             /* extern */
-s32 SetSendCommandLen();               /* extern */
-s32 SetSendData8();                /* extern */
-s32 Write_Socket();                    /* extern */
+s32 SetSendCommand();
+s32 SetSendCommandLen();
+s32 SetSendData8();
+s32 Write_Socket();
 extern u8 g_lb_734DFD;
 extern u8 g_lb_734DFE;
 extern u8 g_lb_734DFF;
 extern u8 send_work;
 
-s32 lobby_func_005C07C0(u8 arg0) {
+s32 lobby_func_005C07C0(s32 arg0) {
     s32 temp_s0;
 
     temp_s0 = SetSendCommand(&send_work, 0x121) & 0xFFFF;
     SetSendData8(&send_work, arg0);
-    SetSendData8(&send_work, g_lb_734DFD);
-    SetSendData8(&send_work, g_lb_734DFE);
-    SetSendData8(&send_work, g_lb_734DFF);
+    SetSendData8(&send_work, (s32) g_lb_734DFD);
+    SetSendData8(&send_work, (s32) g_lb_734DFE);
+    SetSendData8(&send_work, (s32) g_lb_734DFF);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return temp_s0;

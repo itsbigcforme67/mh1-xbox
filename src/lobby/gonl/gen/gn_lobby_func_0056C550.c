@@ -5,12 +5,15 @@
 
 s32 CallBack_Result_Plaza_LobbyEntry();
 s32 Eft25_set();
+s32 Get_sw_on2();
 s32 Lb_eat_to_bell();
 s32 Lb_select();
 s32 Lbs_SeekId();
 s32 Lbs_request_enter_lobby2();
+s32 SaveNetFile_ForLobby();
 s32 SetDialogData();
 s32 SetDialogYesNo();
+s32 SoftKeyboard_alive_check();
 s32 cnWrap_SoundRequest();
 s32 getFriendNow();
 s64 lobby_func_00569390();
@@ -32,10 +35,7 @@ extern u8 g_main_2EFBC4;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s16 Get_sw_on2();                            /* extern */
 s32 Lbc_RequestNetComment();              /* extern */
-s32 SaveNetFile_ForLobby();                       /* extern */
-s32 SoftKeyboard_alive_check();                     /* extern */
 s32 func_00235C80();                            /* extern */
 s32 memcpy();            /* extern */
 s32 memset();      /* extern */
@@ -225,7 +225,7 @@ block_192:
         goto block_192;
     case 4:                                         /* switch 1 */
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_2 = Lbs_SeekId((s64) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)));
+        temp_v0_2 = Lbs_SeekId((s64) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)), (s32) ((u8 *)&g_main_302CB0 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x30)));
         switch (temp_v0_2) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) = (s8) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) + 1);
@@ -565,7 +565,7 @@ loop_158:
         goto block_192;
     case 15:                                        /* switch 1 */
         if ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x612)) == 0) {
-            temp_v0_10 = SaveNetFile_ForLobby((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)));
+            temp_v0_10 = SaveNetFile_ForLobby();
             if ((temp_v0_10 != -1) && (temp_v0_10 != 1)) {
                 goto block_176;
             }

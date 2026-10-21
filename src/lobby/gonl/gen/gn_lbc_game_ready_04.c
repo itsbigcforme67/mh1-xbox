@@ -5,6 +5,7 @@
 
 s32 CallBack_Result_Match_Logout();
 s32 Check_CallBackWait();
+s32 cnLBS_LogoutLobbyServer();
 extern u8 COM_R_No_0;
 extern u8 COM_R_No_1;
 extern u8 COM_R_No_2;
@@ -17,7 +18,6 @@ extern u8 System_timer;
 extern u8 cw;
 extern u8 net_game_invalid_flag;
 extern u8 netr_ret;
-s32 cnLBS_LogoutLobbyServer();         /* extern */
 s32 cnWrap_BgmFadeOut();     /* extern */
 
 void lbc_game_ready_04(void) {
@@ -48,7 +48,7 @@ void lbc_game_ready_04(void) {
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x31;
-        cnLBS_LogoutLobbyServer(CallBack_Result_Match_Logout);
+        cnLBS_LogoutLobbyServer((s32) CallBack_Result_Match_Logout);
         return;
     case 4:
         Check_CallBackWait();

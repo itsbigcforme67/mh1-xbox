@@ -3,8 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 se_req();          /* extern */
-
+s32 se_req();
 void cnWrap_SoundRequest(u32 arg0) {
     switch (arg0) {
     case 0:

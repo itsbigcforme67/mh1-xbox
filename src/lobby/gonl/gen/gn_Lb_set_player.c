@@ -4,10 +4,10 @@
 #include "../gonl.h"
 
 s32 Lb_pl_to_normal();
-s16 get_prim();                                     /* extern */
-void *get_prim_ptr();                            /* extern */
+s32 Lb_trans_pl();
+s32 get_prim();
+void * get_prim_ptr();
 s32 memcpy();          /* extern */
-extern u8 Lb_trans_pl;
 extern u8 lb_player;
 extern u8 pl01_adr_tbl;
 extern u8 player_work;
@@ -38,9 +38,9 @@ void Lb_set_player(s32 arg0, s32 arg1, s32 arg2) {
     (*(s8 *)((u8 *)(temp_s0) + 0x4D4)) = 1;
     temp_a0 = (*(s16 *)((u8 *)(temp_s0) + 0x568));
     if (temp_a0 != -1) {
-        (*(void **)((u8 *)(temp_s0) + 0x564)) = get_prim_ptr(temp_a0);
+        (*(void **)((u8 *)(temp_s0) + 0x564)) = get_prim_ptr((s32) temp_a0);
         (*(s32 *)((u8 *)((*(void **)((u8 *)(temp_s0) + 0x564))) + 0x18)) = (s32) (*(u16 *)((u8 *)(temp_s0) + 0xC));
-        (*(s32 **)((u8 *)((*(void **)((u8 *)(temp_s0) + 0x564))) + 0x14)) = &Lb_trans_pl;
+        (*(s32 (**)(void *))((u8 *)((*(void **)((u8 *)(temp_s0) + 0x564))) + 0x14)) = Lb_trans_pl;
     }
     Lb_pl_to_normal(temp_s0, 0, 0, 0);
     (*(s32 **)((u8 *)(temp_s0) + 0x3CC)) = &pl01_adr_tbl;

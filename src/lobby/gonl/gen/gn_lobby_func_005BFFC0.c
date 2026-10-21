@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnLBS_Read_FileDownloadData();
 s32 lobby_func_005C00A0();
 s32 __cnetSub_Get_RestBgWork();                     /* extern */
-s32 cnLBS_Read_FileDownloadData(); /* extern */
 extern u8 g_lb_731163;
 extern u32 g_lb_731168;
 
@@ -24,7 +24,7 @@ void lobby_func_005BFFC0(void *arg0) {
             var_a2 = g_lb_731168 - temp_a1;
             (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
         }
-        cnLBS_Read_FileDownloadData(g_lb_731163, temp_a1, var_a2, lobby_func_005C00A0);
+        cnLBS_Read_FileDownloadData((s32) g_lb_731163, (s32) temp_a1, var_a2, lobby_func_005C00A0);
     }
 }
 

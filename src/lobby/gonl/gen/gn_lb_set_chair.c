@@ -10,7 +10,7 @@ s32 Lb_send_chair_release();              /* extern */
 extern s32 lb_sys;
 extern u8 player_work;
 
-void lb_set_chair(void *arg1) {
+void lb_set_chair(s32 unused_a0, void *arg1) {
     u8 temp_a2;
     u8 temp_s0;
     u8 temp_s0_2;

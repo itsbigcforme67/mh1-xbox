@@ -3,18 +3,18 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_sw2();
 s32 Lbc_set_prim();
 s32 Lbs_plaza_trans();
 s32 SetHelpLineMsg();
+s32 lobby_bgm_set2();
 s32 lobby_func_00569610();
 s32 plaza_moveMain();
 s32 plaza_trans_ot0();
 s32 plaza_trans_ot1();
 extern u8 g_main_2EFA74;
 extern u8 g_main_2EFA74;
-s16 Get_sw2();                               /* extern */
 s32 SetSceneSubTitleColor();              /* extern */
-s32 lobby_bgm_set2();                    /* extern */
 extern u8 ClassInfo;
 extern u8 PlazaInfo;
 

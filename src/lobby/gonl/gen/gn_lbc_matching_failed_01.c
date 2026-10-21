@@ -5,10 +5,9 @@
 
 s32 Lb_eat_to_bell();
 s32 SetDialogData();
+s32 fade_set();
 extern u8 cw;
 extern u8 pNet;
-s32 fade_set();                          /* extern */
-
 void lbc_matching_failed_01(void) {
     u8 *temp_a0;
     u8 *temp_v1;

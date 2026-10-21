@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_sw();
 s32 cnWrap_SoundRequest();
 s32 tl_exit_sub_menu();
 extern u8 g_main_2EF390;
 extern u8 g_main_2EF390;
 extern u8 pNet;
-s32 Get_sw();                                /* extern */
 s32 SetDialogData_HTML();      /* extern */
 
 void lobby_func_0056B4E0(void) {

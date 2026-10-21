@@ -3,19 +3,19 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Put_2TF();
+s32 SetFilterMode();
+s32 SetTextureStage();
+s32 flSetRenderState();
+s32 flfntLocate();
+s32 flfntSetSize();
+s32 font_set_palette();
+s32 han2zen();
+s32 reload_tex();
 extern u8 lb_shop_msg;
 extern u8 textLobbyTbl;
 extern u8 tl_mail_tbl;
-s32 Put_2TF();                             /* extern */
-s32 SetFilterMode();                     /* extern */
-s32 SetTextureStage();                   /* extern */
-s32 flSetRenderState();         /* extern */
-s32 flfntLocate();                      /* extern */
-s32 flfntSetSize();             /* extern */
 s32 font_print();           /* extern */
-s32 font_set_palette();                  /* extern */
-s32 han2zen();              /* extern */
-s32 reload_tex();               /* extern */
 s32 sprintf(); /* extern */
 extern u8 ClassInfo;
 extern s32 g_main_306468;
@@ -32,7 +32,7 @@ void lobby_func_00578C40(s16 arg0) {
     reload_tex(1, 0x180);
     SetTextureStage(0x180);
     SetFilterMode(1);
-    flSetRenderState(0x60, 0);
+    flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
     (*(f32 *)((u8 *)(&sp90) + 0)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&textLobbyTbl + 0x14))) + 0));
     (*(f32 *)((u8 *)(&sp90) + 4)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&textLobbyTbl + 0x14))) + 4));
     (*(f32 *)((u8 *)(&sp90) + 8)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&textLobbyTbl + 0x14))) + 8));
@@ -44,7 +44,7 @@ void lobby_func_00578C40(s16 arg0) {
     font_set_palette(0);
     sprintf(&sp70, &lit_3241, (*(s32 *)((u8 *)&tl_mail_tbl + 0x34)), (*(s32 *)((u8 *)&g_main_306468 + (ClassInfo * 0x15C))), (*(s32 *)((u8 *)&lb_shop_msg + 0x8)));
     han2zen(&sp70, &sp30);
-    flfntLocate(((s16) ((sp90 + 0xA))), ((s16) ((sp92 + 3))));
+    flfntLocate((s32) (((s16) ((sp90 + 0xA)))), (s32) (((s16) ((sp92 + 3)))));
     font_print(&lit_2316, &sp30);
 }
 

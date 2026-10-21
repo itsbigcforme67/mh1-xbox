@@ -4,11 +4,11 @@
 #include "../gonl.h"
 
 s32 DispNameAndIDonDialog();
+s32 font_set_stack_no();
 extern u8 User_data;
 extern u8 cw;
 extern u8 pNet;
 s32 DispDialogData();                           /* extern */
-s32 font_set_stack_no();                     /* extern */
 
 void transOtSelectHandleName(void *arg0) {
     u8 *temp_a0;

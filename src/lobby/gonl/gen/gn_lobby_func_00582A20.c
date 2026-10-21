@@ -5,6 +5,8 @@
 
 s32 CallBack_Result_Lobby_LobbyExit();
 s32 Check_CallBackWait();
+s32 Fade_busy_ck();
+s32 Get_sw();
 s32 Lb_eat_to_bell();
 s32 Lb_put_inputMsgForHTML();
 s32 Lbc_set_prim();
@@ -12,14 +14,12 @@ s32 SetDialogData();
 s32 To_EnterPlaza2Lobby();
 s32 To_LogOut();
 s32 cnWrap_SoundRequest();
+s32 fade_set();
+s32 font_print_double();
+s32 font_set_stack_no();
 extern u8 cw;
 extern u8 pNet;
-s32 Fade_busy_ck(); /* extern */
-s32 Get_sw();                                /* extern */
 s32 cnLBS_LobbyExit();              /* extern */
-s32 fade_set(); /* extern */
-s32 font_print_double(); /* extern */
-s32 font_set_stack_no();                 /* extern */
 s32 sprintf();         /* extern */
 extern s32 g_lb_63E538;
 
@@ -34,7 +34,6 @@ void lobby_func_00582A20(void) {
     u8 *temp_a0_3;
     u8 *temp_a0_4;
     u8 *temp_a3;
-    u8 *temp_a4;
     u8 *temp_v1_2;
     u8 *temp_v1_3;
 
@@ -42,7 +41,6 @@ void lobby_func_00582A20(void) {
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
     temp_a3 = (*(void **)&cw);
     temp_a2 = (*(u8 *)((u8 *)(temp_a3) + 0xB9D));
-    temp_a4 = temp_a3 + 0xB9D;
     switch (temp_a2) {                              /* switch 1; irregular */
     case 0x0:                                       /* switch 1 */
         (*(u8 *)((u8 *)(temp_a3) + 0xB9D)) = (u8) (temp_a2 + 1);
@@ -60,13 +58,13 @@ void lobby_func_00582A20(void) {
     case 0x2:                                       /* switch 1 */
         if ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) == 2) {
             (*(s8 *)((u8 *)(temp_a3) + 0xFA61)) = 0;
-            fade_set(1, 2, temp_a2, temp_a3, temp_a4);
+            fade_set(1);
             temp_a0 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9D)) + 1);
         }
         break;
     case 0x3:                                       /* switch 1 */
-        if ((Fade_busy_ck(1, 2, temp_a2, temp_a3, temp_a4) & 0xFF) != 1) {
+        if ((Fade_busy_ck() & 0xFF) != 1) {
             Lbc_set_prim(0, 0, 0, 0);
             To_EnterPlaza2Lobby(1);
         }

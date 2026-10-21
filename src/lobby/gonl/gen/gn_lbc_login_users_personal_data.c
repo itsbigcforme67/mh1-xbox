@@ -5,12 +5,12 @@
 
 s32 CallBack_Result_LoginPersonalDataRegist();
 s32 Check_CallBackWait();
+s32 Get_sw2();
 s32 Lb_eat_to_bell();
 s32 To_LogOut();
 s32 lobby_func_0057C7E0();
 extern u8 cw;
 extern u8 pNet;
-s32 Get_sw2();                               /* extern */
 s32 To_BootUpBrowser();                         /* extern */
 s32 cnLBS_RegistPersonalData(); /* extern */
 s32 memcmp();   /* extern */

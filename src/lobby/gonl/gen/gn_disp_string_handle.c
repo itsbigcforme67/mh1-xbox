@@ -3,14 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 flfntLocate();
+s32 flfntSetSize();
+s32 font_print_double();
 extern u8 cw;
 extern u8 net_etc_mes_tbl;
 extern u8 tl_mail_tbl;
 s32 cnWrap_SetFontSize();                /* extern */
-s32 flfntLocate();                  /* extern */
-s32 flfntSetSize();             /* extern */
 s32 font_print();                            /* extern */
-s32 font_print_double(); /* extern */
 s32 memset();        /* extern */
 s32 sprintf();                    /* extern */
 s32 strcpy();                  /* extern */
@@ -38,9 +38,9 @@ void disp_string_handle(s32 arg0, s32 arg1) {
     }
     flfntSetSize(0x18, 0x14);
     temp_s0_2 = (temp_s0 * 0x58) + 0x62;
-    font_print_double(0x1A4, ((s16) (temp_s0_2)), 1, ((s8) ((((s8) (var_v0))))), &sp30);
+    font_print_double(0x1A4, (s32) (((s16) (temp_s0_2))), 1, (s32) (((s8) ((((s8) (var_v0)))))), &sp30);
     flfntSetSize(0x14, 0x14);
-    flfntLocate(0x168, ((s16) (temp_s0_2)));
+    flfntLocate(0x168, (s32) (((s16) (temp_s0_2))));
     font_print((*(s32 *)((u8 *)&tl_mail_tbl + 0x8)));
 }
 

@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 flfntLocate();
+s32 font_print_double();
+s32 font_set_palette();
+s32 han2zen();
 s32 lobby_func_005791D0();
 s32 put_main_cursor2();
-s32 flfntLocate();                  /* extern */
 s32 font_print();           /* extern */
-s32 font_print_double(); /* extern */
-s32 font_set_palette();                  /* extern */
-s32 han2zen();                   /* extern */
 extern s8 g_main_302290;
 extern u8 lit_2316;
 
@@ -32,13 +32,13 @@ loop_2:
         if (temp_v1 < 8) {
             han2zen(var_s2, &sp60);
             if ((((s16) ((temp_v1 != (((s8) (arg2))))))) == 0) {
-                font_print_double(0xF4, var_s3, 1, 4, var_s2 + 8);
-                font_print_double(0x1F4, var_s3, 1, 4, &sp60);
+                font_print_double(0xF4, (s32) var_s3, 1, 4, var_s2 + 8);
+                font_print_double(0x1F4, (s32) var_s3, 1, 4, &sp60);
             } else {
                 font_set_palette(0);
-                flfntLocate(0xF4, var_s3);
+                flfntLocate(0xF4, (s32) var_s3);
                 font_print(&lit_2316, var_s2 + 8);
-                flfntLocate(0x1F4, var_s3);
+                flfntLocate(0x1F4, (s32) var_s3);
                 font_print(&lit_2316, &sp60);
             }
             var_s2 += 0x18;

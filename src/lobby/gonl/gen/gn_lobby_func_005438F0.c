@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Quest_clear_bit_ck();
 s32 lobby_func_005437F0();
-s32 Quest_clear_bit_ck();                    /* extern */
 s32 get_questLevelNum();                     /* extern */
 
 s32 lobby_func_005438F0(s32 arg0) {

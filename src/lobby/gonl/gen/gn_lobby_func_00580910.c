@@ -5,25 +5,23 @@
 
 s32 CallBack_Result_SearchUserPlace();
 s32 Check_CallBackWait();
+s32 cnLBS_Get_ServerMessage();
 s32 lobby_func_005E69B0();
 extern u8 cw;
 s32 Visual_main();                               /* extern */
-s32 cnLBS_Get_ServerMessage();       /* extern */
 s32 memcmp();               /* extern */
 extern u8 my_user_id;
 
 s32 lobby_func_00580910(s8 *arg0) {
-    s32 temp_a1;
     u8 temp_v1_2;
     u8 *temp_v1;
     u8 *temp_v1_3;
 
     temp_v1 = (*(void **)&cw);
-    temp_a1 = temp_v1 + 0xB9D;
     temp_v1_2 = (*(u8 *)((u8 *)(temp_v1) + 0xB9D));
     switch (temp_v1_2) {                            /* irregular */
     case 0x0:
-        if ((*arg0 == 0) || (Visual_main(temp_a1) < 6)) {
+        if ((*arg0 == 0) || (Visual_main(temp_v1 + 0xB9D) < 6)) {
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0x63U;
             goto block_17;
         }
@@ -47,7 +45,7 @@ block_17:
         return 0;
     case 0x63:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = 0U;
-        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, temp_a1);
+        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
         return 1;
     }
 }

@@ -3,14 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Put_F();
 s32 put_main_cursor();
 s32 put_main_cursor2();
 extern u8 g_main_2EFBAC;
 extern u8 cw;
 extern u8 g_main_2EFBAC;
 extern u8 pNet;
-s32 Put_F();                               /* extern */
-
 void put_mail_input_square(s64 arg0, s64 arg1) {
     u8 g_frame[0xC0] __attribute__((aligned(16)));   /* G's stack frame */
 #define spA0 (*(s32 *)(g_frame + 0xA0))

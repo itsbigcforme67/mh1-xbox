@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Disp_back();
 s32 Lb_put_inputMsgForHTML();
+s32 font_set_stack_no();
 extern u8 cw;
-s32 Disp_back();                                /* extern */
-s32 font_set_stack_no();                 /* extern */
 s32 nwDispStr_Html();      /* extern */
 
 void lobby_func_00584E10(void) {

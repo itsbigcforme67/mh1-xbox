@@ -18,7 +18,7 @@ void Lb_send_chair_status(s32 arg0, s8 arg1, s8 arg2) {
     sp40 = arg1;
     sp41 = arg2;
     strcpy(&sp42, arg0);
-    lb_send_data(0xB, 5, (s32) &sp40);
-    Lb_send_data_to_myself(0xB, 5, (s32) &sp40);
+    lb_send_data(0xB, 5, &sp40);
+    Lb_send_data_to_myself(0xB, 5, &sp40);
 }
 

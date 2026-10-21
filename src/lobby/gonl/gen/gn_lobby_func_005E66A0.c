@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 SetSendCommand();       /* extern */
-s32 SetSendCommandLen();               /* extern */
-s32 SetSendData16();              /* extern */
-s32 SetSendData8();                /* extern */
-s32 Write_Socket();                    /* extern */
+s32 SetSendCommand();
+s32 SetSendCommandLen();
+s32 SetSendData16();
+s32 SetSendData8();
+s32 Write_Socket();
 extern u8 send_work;
 
 s32 lobby_func_005E66A0(void *arg0) {
@@ -35,18 +35,18 @@ s32 lobby_func_005E66A0(void *arg0) {
         (*(s16 *)((u8 *)(var_a2) + 2)) = temp_v0;
         var_a2 += 4;
     } while (var_a1 > 0);
-    temp_s3 = SetSendCommand(&send_work, 0x112, var_a2) & 0xFFFF;
-    SetSendData8(&send_work, sp50);
-    SetSendData16(&send_work, sp52);
-    SetSendData8(&send_work, sp51);
+    temp_s3 = SetSendCommand(&send_work, 0x112) & 0xFFFF;
+    SetSendData8(&send_work, (s32) sp50);
+    SetSendData16(&send_work, (s32) sp52);
+    SetSendData8(&send_work, (s32) sp51);
     temp_s0 = sp51;
     var_s2 = 0;
     if ((s32) temp_s0 > 0) {
         var_s1 = &sp50;
         do {
-            SetSendData8(&send_work, (*(u8 *)((u8 *)(var_s1) + 4)));
-            SetSendData8(&send_work, (*(u8 *)((u8 *)(var_s1) + 5)));
-            SetSendData8(&send_work, (*(u8 *)((u8 *)(var_s1) + 6)));
+            SetSendData8(&send_work, (s32) (*(u8 *)((u8 *)(var_s1) + 4)));
+            SetSendData8(&send_work, (s32) (*(u8 *)((u8 *)(var_s1) + 5)));
+            SetSendData8(&send_work, (s32) (*(u8 *)((u8 *)(var_s1) + 6)));
             var_s2 += 1;
             var_s1 += 4;
         } while (var_s2 < (s32) temp_s0);

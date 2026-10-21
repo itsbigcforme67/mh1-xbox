@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 flfntLocate();
+s32 font_set_palette();
+s32 font_set_stack_no();
 extern u8 System_timer;
 extern u8 lb_rule_member;
-s32 flfntLocate();              /* extern */
-s32 font_set_palette();                  /* extern */
-s32 font_set_stack_no();                 /* extern */
 s32 func_0012BDD0();                         /* extern */
 
 void Lb_put_inputMsgForHTML(void) {

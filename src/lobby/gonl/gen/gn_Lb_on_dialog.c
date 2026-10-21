@@ -4,13 +4,13 @@
 #include "../gonl.h"
 
 s32 DispNameAndIDonDialog();
+s32 Online_ck();
 s32 lobby_func_005790B0();
 extern u8 g_main_2EFBAC;
 extern u8 cw;
 extern u8 g_main_2EFBAC;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 Online_ck();                                    /* extern */
 extern s32 g_main_302290;
 extern s32 g_main_302CB0;
 extern s32 lb_sys;

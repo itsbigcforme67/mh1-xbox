@@ -3,14 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Net_all_reset();
+s32 init_set_work();
 extern u8 cw;
-s32 Net_all_reset();                     /* extern */
-s32 init_set_work();                            /* extern */
-
 void cnWrap_InitWork(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB98)) = 0;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xEE0)) = 0;
     init_set_work();
-    Net_all_reset(0);
+    Net_all_reset();
 }
 

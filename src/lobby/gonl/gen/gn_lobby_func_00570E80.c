@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_sw2();
 s32 Lb_cursorUD();
 s32 SetHelpLineMsg();
 s32 cnWrap_SoundRequest();
 s32 lobby_func_00570DA0();
 extern u8 pNet;
-s32 Get_sw2();                               /* extern */
 extern u8 my_user_mini_data;
 
 s32 lobby_func_00570E80(void) {

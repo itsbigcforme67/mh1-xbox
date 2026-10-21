@@ -3,9 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnLBS_Get_ServerMessage();
 extern u8 cw;
-s32 cnLBS_Get_ServerMessage();    /* extern */
-
 void CallBack_Event_MatchCancel(void) {
     u8 temp_a0;
     u8 *temp_a1;
@@ -13,7 +12,7 @@ void CallBack_Event_MatchCancel(void) {
     temp_a1 = (*(void **)&cw);
     temp_a0 = (*(u8 *)((u8 *)(temp_a1) + 0xB99));
     if ((temp_a0 != 5) && (temp_a0 == 4)) {
-        cnLBS_Get_ServerMessage(temp_a1 + 0xF75D, temp_a1);
+        cnLBS_Get_ServerMessage(temp_a1 + 0xF75D);
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB75)) = 2;
     }
 }

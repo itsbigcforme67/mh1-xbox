@@ -4,6 +4,8 @@
 #include "../gonl.h"
 
 s32 Eft25_set();
+s32 Get_sw2();
+s32 Get_sw_on2();
 s32 Lb_cursorUD();
 s32 Lb_eat_to_bell();
 s32 Lbc_ConditionSearch();
@@ -40,8 +42,6 @@ extern u8 g_main_2EFBB0;
 extern u8 g_main_2EFBC4;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 Get_sw2();                               /* extern */
-s16 Get_sw_on2();                   /* extern */
 s32 Visual_main();                            /* extern */
 s32 cnLBS_Get_SerchUserPlace(); /* extern */
 s32 memcmp();               /* extern */
@@ -252,7 +252,7 @@ void lobby_func_0056ED50(void) {
         break;
     case 7:                                         /* switch 1 */
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_8 = Lbc_ConditionSearch(&g_lb_6B46D0, (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) == 1, (s32) (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
+        temp_v0_8 = Lbc_ConditionSearch(&g_lb_6B46D0, (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) == 1, (s32) (*(s8 *)((u8 *)&tl_member_buff + 0x138A)), M2C_ERROR(/* Read from unset register $a3 */));
         switch (temp_v0_8) {                        /* switch 6; irregular */
         case 0:                                     /* switch 6 */
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)) = (u8) *(*(u8 **)&g_main_2EFBC4);
@@ -437,7 +437,7 @@ block_94:
         return;
     case 11:                                        /* switch 1 */
         temp_a1_4 = temp_s0 & 0xFFFF;
-        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
+        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0);
         if (temp_a1_4 & 0x40) {
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = 8U;
             cnWrap_SoundRequest(3);

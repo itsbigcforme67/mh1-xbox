@@ -4,15 +4,15 @@
 #include "../gonl.h"
 
 s32 Lb_put_icon();
+s32 flfntLocate();
+s32 flfntSetSize();
+s32 font_print_double();
+s32 font_print_uf();
+s32 font_set_palette();
+s32 han2zen();
 extern u8 pNet;
 extern u8 tl_msg_tbl;
-s32 flfntLocate();                      /* extern */
-s32 flfntSetSize();             /* extern */
-s32 font_print();           /* extern */
-s32 font_print_double(); /* extern */
-s32 font_print_uf();                   /* extern */
-s32 font_set_palette();                  /* extern */
-s32 han2zen();                   /* extern */
+s32 font_print();              /* extern */
 s32 memcmp();               /* extern */
 s32 sprintf(); /* extern */
 extern s32 g_lb_63E288;
@@ -21,7 +21,7 @@ extern u8 lit_2316;
 extern u8 lit_2633;
 extern u8 my_user_id;
 
-void put_member_info(s64 arg0, s32 arg1, s8 *arg2, s32 *arg3, void *arg4, s64 arg5) {
+void put_member_info(s32 arg0, s32 arg1, s8 *arg2, void *arg3, void *arg4, s64 arg5) {
     u8 g_frame[0xE0] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp70 (*(s32 *)(g_frame + 0x70))
 #define spD0 (*(s32 *)(g_frame + 0xD0))
@@ -48,7 +48,7 @@ void put_member_info(s64 arg0, s32 arg1, s8 *arg2, s32 *arg3, void *arg4, s64 ar
                 var_s5 = -0x7F7F01;
             }
             font_print_double(arg0, arg1, 1, var_s2, arg3);
-            font_print_double(((s16) (((((s16) (arg0))) + 0xA2))), arg1, 1, var_s2, &sp70);
+            font_print_double((s32) (((s16) (((((s16) ((s64) arg0))) + 0xA2)))), arg1, 1, var_s2, &sp70);
         } else {
             if (memcmp(arg2, &my_user_id, 8) == 0) {
                 var_a0 = 0xA;
@@ -60,7 +60,7 @@ void put_member_info(s64 arg0, s32 arg1, s8 *arg2, s32 *arg3, void *arg4, s64 ar
             font_set_palette(var_a0);
             flfntLocate(arg0, arg1);
             font_print(&lit_2316, arg3);
-            flfntLocate(((s16) (((((s16) (arg0))) + 0xA2))), arg1);
+            flfntLocate((s32) (((s16) (((((s16) ((s64) arg0))) + 0xA2)))), arg1);
             font_print_uf(&sp70);
         }
         if (arg4 != NULL) {

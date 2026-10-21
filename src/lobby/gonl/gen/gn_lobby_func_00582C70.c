@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 SoftKeyboard_exit();
 extern u8 cw;
 s32 Init_InterruptFlag();                /* extern */
-s32 SoftKeyboard_exit();                        /* extern */
 
 void lobby_func_00582C70(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB99)) = 3;

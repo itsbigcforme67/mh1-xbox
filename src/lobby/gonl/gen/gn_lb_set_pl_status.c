@@ -5,13 +5,13 @@
 
 s32 Lb_Pl_adj_calc();
 s32 Lb_act_set();
+s32 flMemcpy();
 s32 lobby_func_00595530();
 extern u8 lb_sys;
 s32 Lb_Pl_act_set2(); /* extern */
-s32 flMemcpy();               /* extern */
 extern u8 player_work;
 
-void lb_set_pl_status(s32 arg0) {
+void lb_set_pl_status(s32 arg0, void *arg1) {
     u8 g_frame[0x40] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp30 (*(s32 *)(g_frame + 0x30))
     s16 temp_v1;
@@ -20,7 +20,7 @@ void lb_set_pl_status(s32 arg0) {
     u8 *temp_s1;
 
     temp_s1 = (u8 *)&player_work + ((arg0 & 0xFF) * 0xA00);
-    flMemcpy(&sp30, 0xA);
+    flMemcpy(&sp30, arg1, 0xA);
     if (((*(u8 *)((u8 *)(&sp30) + 8)) == 0) || ((*(u8 *)((u8 *)(temp_s1) + 0x736)) == 0x4D)) {
         (*(s8 *)((u8 *)(temp_s1) + 0x3E8)) = 1;
         temp_v1 = ((*(u8 *)((u8 *)(&sp30) + 4)) << 8) & 0xFFFF;

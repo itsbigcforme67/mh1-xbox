@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 SetSendCommand();             /* extern */
-s32 SetSendCommandLen();               /* extern */
-s32 SetSendStringData2();    /* extern */
-s32 Write_Socket();                    /* extern */
+s32 SetSendCommand();
+s32 SetSendCommandLen();
+s32 SetSendStringData2();
+s32 Write_Socket();
 extern u8 send_work;
 
-s32 __cnet_SendReq_RuleNumOfChoice(s32 arg0, s32 arg1) {
+s32 __cnet_SendReq_RuleNumOfChoice(void *arg0, s32 arg1) {
     s32 temp_s0;
 
     temp_s0 = SetSendCommand(&send_work, 0x63) & 0xFFFF;

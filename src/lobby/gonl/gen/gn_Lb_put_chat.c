@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Chat_log_add();
+s32 Plaza_chat_log_add();
 extern u8 cw;
 extern u8 lb_rule_member;
-s32 Chat_log_add();           /* extern */
-s32 Plaza_chat_log_add();              /* extern */
 s32 memset();        /* extern */
 s32 sprintf();               /* extern */
 s32 strcpy();                     /* extern */
@@ -33,9 +33,9 @@ void Lb_put_chat(s32 arg0, s32 arg1) {
     sp14D = 6;
     sp14F = 6;
     if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) {
-        Chat_log_add(0xFF, &sp30);
+        Chat_log_add(0xFF, (s32) &sp30);
         return;
     }
-    Plaza_chat_log_add(&sp30);
+    Plaza_chat_log_add((s32) &sp30);
 }
 

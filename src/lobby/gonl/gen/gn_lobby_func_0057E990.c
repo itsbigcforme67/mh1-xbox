@@ -5,18 +5,18 @@
 
 s32 CallBack_Result_Plaza_PlazaEntry2();
 s32 Check_CallBackWait();
+s32 Get_sw();
 s32 Lb_eat_to_bell();
 s32 Lb_put_inputMsgForHTML();
 s32 Lbc_init_network_work();
 s32 SetDialogData();
 s32 cnWrap_SoundRequest();
+s32 font_print_double();
+s32 font_set_stack_no();
 s32 lobby_func_005E3AB0();
 extern u8 cw;
 extern u8 pNet;
-s32 Get_sw();                                /* extern */
 s32 Init_InterruptFlag(); /* extern */
-s32 font_print_double(); /* extern */
-s32 font_set_stack_no();                 /* extern */
 s32 sprintf();         /* extern */
 extern s32 g_lb_63E538;
 

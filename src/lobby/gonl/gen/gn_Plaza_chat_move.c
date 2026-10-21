@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 ChatKinsoku_chk();
 s32 Lb_send_chat();
+s32 SoftKeyboard_exit();
+s32 SoftKeyboard_move();
 extern u8 Psw;
 extern u8 game_w;
-s32 ChatKinsoku_chk();                          /* extern */
 s32 Plaza_chatlog_i();                          /* extern */
-s32 SoftKeyboard_exit();                     /* extern */
-s64 SoftKeyboard_move();              /* extern */
 
 s32 Plaza_chat_move(void) {
     u8 g_frame[0x50] __attribute__((aligned(16)));   /* G's stack frame */
@@ -22,17 +22,17 @@ s32 Plaza_chat_move(void) {
     temp_v1 = (*(u16 *)((u8 *)&Psw + 0x4));
     sp10 = 0;
     if (!(temp_v1 & 0x4000)) {
-        var_a0 = ((s8) (SoftKeyboard_move(&sp10, (*(s16 *)&Psw), ((s16) ((s64) temp_v1)))));
+        var_a0 = ((s8) (SoftKeyboard_move(&sp10, (s32) (*(s16 *)&Psw), (s32) (((s16) ((s64) temp_v1))))));
     }
     temp_v1_2 = ((s8) (var_a0));
     if (temp_v1_2 == -1) {
-        SoftKeyboard_exit(var_a0);
+        SoftKeyboard_exit();
         Plaza_chatlog_i();
         return -1;
     }
     if (temp_v1_2 != 0) {
         if ((sp10 != 0) && (temp_v1_2 > 0) && (ChatKinsoku_chk(&sp10) != 0)) {
-            Lb_send_chat((s32) (*(u8 *)((u8 *)&game_w + 0x3A)), (s32) &sp10);
+            Lb_send_chat((s32) (*(u8 *)((u8 *)&game_w + 0x3A)), (s32) &sp10, 0);
         }
         SoftKeyboard_exit();
         Plaza_chatlog_i();

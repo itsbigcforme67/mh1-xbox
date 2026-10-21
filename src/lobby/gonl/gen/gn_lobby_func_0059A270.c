@@ -5,12 +5,12 @@
 
 s32 Lb_set_mini_data();
 s32 Lbc_init_network_work();
+s32 flMemset();
+s32 init_set_work();
 extern u8 cw;
 extern u8 game_w;
 extern u8 lb_gbyte_2EF2A4;
 extern u8 pNet;
-s32 flMemset();      /* extern */
-s32 init_set_work(); /* extern */
 extern u8 client_work;
 extern u8 lb_player;
 extern u8 lb_sys;
@@ -49,7 +49,7 @@ void lobby_func_0059A270(void) {
         var_a1 += 0x118;
         var_a0 += 5;
     } while (var_a3 < 0xA);
-    init_set_work(var_a0, var_a1, var_a2, var_a3);
+    init_set_work();
     (*(u8 **)&cw) = &client_work;
     (*(u8 **)&pNet) = &network_work;
     Lbc_init_network_work();

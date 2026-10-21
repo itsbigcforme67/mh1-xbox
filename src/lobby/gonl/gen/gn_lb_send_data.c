@@ -3,14 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Online_ck();
+s32 flMemcpy();
 extern u8 cw;
 s32 Lbs_CheckMatchingFlag();                     /* extern */
-s32 Online_ck();                                    /* extern */
 s32 cnLBS_Send_ChatBinary();           /* extern */
-s32 flMemcpy();              /* extern */
 extern s8 sendDat;
 
-void lb_send_data(s32 arg0, s8 arg1, s32 arg2) {
+void lb_send_data(s32 arg0, s8 arg1, void *arg2) {
     s32 temp_a0;
     s32 temp_a2;
     u8 temp_a0_2;

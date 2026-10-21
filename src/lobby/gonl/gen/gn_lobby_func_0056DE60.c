@@ -4,6 +4,8 @@
 #include "../gonl.h"
 
 s32 Eft25_set();
+s32 Get_sw();
+s32 Get_sw_on2();
 s32 Lb_cursorUD();
 s32 SetDialogData();
 s32 SetDialogYesNo();
@@ -17,8 +19,6 @@ extern u8 g_main_2EFAD8;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 Get_sw();                                /* extern */
-s16 Get_sw_on2();                            /* extern */
 s8 Visual_main();                           /* extern */
 s32 memcmp();               /* extern */
 s32 memcpy();                /* extern */
@@ -228,7 +228,7 @@ block_69:
         }
         goto block_113;
     case 5:                                         /* switch 1 */
-        if (plaza_req_input((s32) &g_lb_653A50, (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 1) == 1) {
+        if (plaza_req_input(&g_lb_653A50, (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 1) == 1) {
             if ((g_lb_653A50 != 0) && ((memcmp(&g_lb_653A50, &g_lb_6B46D0 + (((s32) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) + 1) % 3) * 0x44) + 4, 8) == 0) || (memcmp(&g_lb_653A50, &g_lb_6B46D0 + (((s32) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) + 2) % 3) * 0x44) + 4, 8) == 0))) {
                 SetDialogData(0x3D);
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;

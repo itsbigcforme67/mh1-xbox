@@ -4,6 +4,7 @@
 #include "../gonl.h"
 
 s32 Check_InterruptFlag();
+s32 Disp_NowLoading2();
 extern u8 cw;
 extern u8 pNet;
 s32 lbc_game_ready_00();
@@ -12,7 +13,6 @@ s32 lbc_game_ready_02();
 s32 lbc_game_ready_03();
 s32 lbc_game_ready_04();
 static s32 (*const lobby_client_game_ready_jmp_2838_g[])() = { lbc_game_ready_00, lbc_game_ready_01, lbc_game_ready_02, lbc_game_ready_03, lbc_game_ready_04 };   /* G's table of functions, by name */
-s32 Disp_NowLoading2();                  /* extern */
 extern u8 lobby_client_game_ready_jmp_2838;
 
 void lobby_client_game_ready(void) {

@@ -4,15 +4,15 @@
 #include "../gonl.h"
 
 s32 Lb_put_icon();
+s32 flfntLocate();
+s32 font_print_double();
+s32 font_set_palette();
+s32 han2zen();
 s32 lobby_func_005791D0();
 s32 lobby_func_005799F0();
 s32 lobby_func_005C1560();
 extern u8 BsProxyUrlstr;
-s32 flfntLocate();                      /* extern */
 s32 font_print();                /* extern */
-s32 font_print_double(); /* extern */
-s32 font_set_palette();                  /* extern */
-s32 han2zen();                        /* extern */
 extern u8 lit_2316;
 
 void lobby_func_00574AE0(s64 arg0, s64 arg1, s64 arg2) {
@@ -35,11 +35,11 @@ void lobby_func_00574AE0(s64 arg0, s64 arg1, s64 arg2) {
         if (*var_s4 != 0) {
             han2zen(var_s4, &sp80);
             if ((((s16) (((((s16) (var_s3))) != (((s8) (arg2))))))) == 0) {
-                font_print_double(((s16) (temp_s0)), (s32) var_s5, 1, 4, var_s4 + 8);
+                font_print_double((s32) (((s16) (temp_s0))), (s32) var_s5, 1, 4, var_s4 + 8);
                 font_print_double(0x1F4, (s32) var_s5, 1, 4, &sp80);
             } else {
                 font_set_palette(0);
-                flfntLocate(((s16) (temp_s0)), (s32) var_s5);
+                flfntLocate((s32) (((s16) (temp_s0))), (s32) var_s5);
                 font_print(&lit_2316, var_s4 + 8);
                 flfntLocate(0x1F4, (s32) var_s5);
                 font_print(&lit_2316, &sp80);

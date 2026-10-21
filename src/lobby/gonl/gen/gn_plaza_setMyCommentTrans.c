@@ -4,6 +4,10 @@
 #include "../gonl.h"
 
 s32 Lb_put_status();
+s32 flfntLocate();
+s32 flfntSetSize();
+s32 font_set_palette();
+s32 han2zen();
 s32 lb_put_comment();
 s32 put_mainWindow();
 s32 put_mainWindowTex();
@@ -12,12 +16,8 @@ extern u8 cw;
 extern u8 game_w;
 extern u8 net_etc_mes_tbl;
 extern u8 tl_mail_tbl;
-s32 flfntLocate();                      /* extern */
-s32 flfntSetSize();             /* extern */
 s32 font_print();           /* extern */
-s32 font_set_palette();                  /* extern */
 s32 func_0012BDD0();                         /* extern */
-s32 han2zen();              /* extern */
 s32 memcpy();      /* extern */
 s32 put_titles();                  /* extern */
 s32 sprintf();           /* extern */
@@ -65,26 +65,26 @@ void plaza_setMyCommentTrans(s64 arg0, s64 arg1, s64 arg2) {
     put_titles(arg0, temp_s0, (*(s32 *)((u8 *)&tl_mail_tbl + 0x28)));
     font_set_palette(0);
     temp_s0_2 = ((s16) ((temp_s0 + 0x16)));
-    flfntLocate(arg0, temp_s0_2);
+    flfntLocate((s32) arg0, (s32) temp_s0_2);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x8)));
     temp_s2 = ((s16) (arg0));
     temp_s3 = temp_s2 + 0x36;
-    flfntLocate(((s16) (temp_s3)), temp_s0_2);
+    flfntLocate((s32) (((s16) (temp_s3))), (s32) temp_s0_2);
     font_print(&lit_2316, (*(void **)&cw) + 0x1C8);
     temp_s0_3 = ((s16) ((temp_s0_2 + 0x16)));
-    flfntLocate(arg0, temp_s0_3);
+    flfntLocate((s32) arg0, (s32) temp_s0_3);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0xC)));
-    flfntLocate(((s16) (temp_s3)), temp_s0_3);
+    flfntLocate((s32) (((s16) (temp_s3))), (s32) temp_s0_3);
     memcpy(&spC0, (*(void **)&cw) + 0x1C0, 8);
     han2zen(&spC0, &sp60);
     font_print(&lit_2316, &sp60);
     temp_s0_4 = ((s16) ((temp_s0_3 + 0x16)));
-    flfntLocate(arg0, temp_s0_4);
+    flfntLocate((s32) arg0, (s32) temp_s0_4);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x18)));
-    flfntLocate(((s16) (temp_s3)), temp_s0_4);
+    flfntLocate((s32) (((s16) (temp_s3))), (s32) temp_s0_4);
     font_print(&lit_2316, (*(s32 *)((u8 *)&tl_job_tbl + ((*(u8 *)((u8 *)(var_s4) + 0)) * 4))));
     temp_s0_5 = ((s16) ((temp_s0_4 + 0x16)));
-    flfntLocate(arg0, temp_s0_5);
+    flfntLocate((s32) arg0, (s32) temp_s0_5);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x1C)));
     temp_a2 = (*(u8 *)((u8 *)&User_data + 0xC23));
     if (temp_a2 != 0) {
@@ -92,22 +92,22 @@ void plaza_setMyCommentTrans(s64 arg0, s64 arg1, s64 arg2) {
     } else {
         sprintf(&spC0, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x20)), temp_a2);
     }
-    flfntLocate(((s16) (temp_s3)), temp_s0_5);
+    flfntLocate((s32) (((s16) (temp_s3))), (s32) temp_s0_5);
     font_print(&lit_2316, &spC0);
     temp_s0_6 = ((s16) ((temp_s0_5 + 0x16)));
-    flfntLocate(arg0, temp_s0_6);
+    flfntLocate((s32) arg0, (s32) temp_s0_6);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x2C)));
     if ((*(u8 *)((u8 *)(var_s4) + 2)) == 0) {
-        flfntLocate(((s16) ((temp_s2 + 0x1C))), temp_s0_6);
+        flfntLocate((s32) (((s16) ((temp_s2 + 0x1C)))), (s32) temp_s0_6);
     } else {
-        flfntLocate(((s16) ((temp_s2 + 0x40))), temp_s0_6);
+        flfntLocate((s32) (((s16) ((temp_s2 + 0x40)))), (s32) temp_s0_6);
     }
     memcpy((*(s32 *)((u8 *)&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4))), &g_lb_63E128, 4);
     func_0012BDD0((*(s32 *)((u8 *)&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4))));
     Lb_put_status((s32) (((s16) ((temp_s2 + 0x40)))), (s32) temp_s0_6, 0x14, -1, (s64) (*(u8 *)((u8 *)(var_s4) + 2)));
     temp_s0_7 = ((s16) ((temp_s0_6 + 0x16)));
-    flfntLocate(arg0, temp_s0_7);
+    flfntLocate((s32) arg0, (s32) temp_s0_7);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x24)));
-    lb_put_comment(((s16) ((temp_s2 + 0x5E))), ((s16) (((((s16) (temp_s0_7))) - 2))), (s32) ((*(void **)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724), 1);
+    lb_put_comment(((s16) ((temp_s2 + 0x5E))), ((s16) (((((s16) (temp_s0_7))) - 2))), (*(void **)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724, 1);
 }
 

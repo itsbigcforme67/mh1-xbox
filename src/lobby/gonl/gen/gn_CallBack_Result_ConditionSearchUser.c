@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnLBS_Get_ServerMessage();
 extern u8 cw;
 s32 cnLBS_Get_ConditionSearchUser(); /* extern */
-s32 cnLBS_Get_ServerMessage();            /* extern */
 extern s32 g_main_2EFBC4;
 
 void CallBack_Result_ConditionSearchUser(s64 arg0) {

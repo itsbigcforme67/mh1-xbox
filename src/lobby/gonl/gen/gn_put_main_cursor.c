@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Put_F();
 extern u8 pNet;
-s32 Put_F(); /* extern */
 extern u8 lit_3380;
 extern u8 lit_3382;
 
@@ -26,7 +26,7 @@ void put_main_cursor(s32 arg0) {
         sp26 = sp22 + 0x16;
         sp12 = sp22 - 2;
         sp16 = sp26 + 2;
-        Put_F(&sp10, &sp10, &sp22, &sp20);
+        Put_F(&sp10);
         Put_F(&sp20);
     }
 }

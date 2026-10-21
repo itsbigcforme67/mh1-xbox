@@ -4,15 +4,15 @@
 #include "../gonl.h"
 
 s32 Check_CallBackWait();
+s32 cnLBS_Get_ServerMessage();
 s32 lobby_func_00580EC0();
+s32 lobby_func_00580F30();
 s32 lobby_func_005C05B0();
 s32 lobby_func_005C0620();
 s32 lobby_func_005C0740();
 extern u8 g_main_2EF390;
 extern u8 cw;
 extern u8 g_main_2EF390;
-s32 cnLBS_Get_ServerMessage();    /* extern */
-
 s32 lobby_func_00580FA0(void) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp1F (*(u8 *)(g_frame + 0x1F))
@@ -64,7 +64,7 @@ block_31:
             var_a1 = (*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + 0x9C8;
 block_24:
             (*(u8 *)((u8 *)(temp_a0_2) + 0x101A)) = (u8) ((*(u8 *)((u8 *)(temp_a0_2) + 0x101A)) + 1);
-            lobby_func_005C0740((s32) (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9F)), var_a1);
+            lobby_func_005C0740((s32) (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9F)), var_a1, (s32) lobby_func_00580F30);
             goto block_31;
         case 1:                                     /* switch 2 */
             var_a1 = (*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + 0x9C8 + 0x500;
@@ -95,7 +95,7 @@ block_24:
         goto block_31;
     case 0x63:                                      /* switch 1 */
         (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = 0U;
-        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, temp_a0 + 0xB9D);
+        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
         return 1;
     }
 }

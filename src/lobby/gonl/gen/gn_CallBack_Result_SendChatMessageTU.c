@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Plaza_chat_log_add();
 extern u8 cw;
 extern u8 lb_rule_member;
 s32 Lb_chat_receipt();                 /* extern */
-s32 Plaza_chat_log_add();              /* extern */
 s32 sprintf();                    /* extern */
 s32 strcpy();                     /* extern */
 extern s32 g_lb_636BD8;
@@ -33,7 +33,7 @@ void CallBack_Result_SendChatMessageTU(s64 arg0) {
             Lb_chat_receipt(&sp20);
             return;
         }
-        Plaza_chat_log_add(&sp20);
+        Plaza_chat_log_add((s32) &sp20);
     }
 }
 

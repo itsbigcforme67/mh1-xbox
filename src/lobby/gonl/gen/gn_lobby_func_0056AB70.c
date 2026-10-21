@@ -3,20 +3,20 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 flfntLocate();
+s32 flfntSetSize();
+s32 font_print_double();
+s32 font_set_palette();
 extern u8 g_main_2EF390;
 extern u8 g_main_2EF390;
-s32 flfntLocate();         /* extern */
-s32 flfntSetSize();             /* extern */
-s32 font_print_double(); /* extern */
-s32 font_set_palette();                  /* extern */
 s32 sprintf();         /* extern */
 extern u8 ClassInfo;
 extern s32 g_lb_5FBC10;
-extern s32 *g_lb_636E00;
-extern s32 *g_lb_636E04;
-extern s32 *g_lb_636E08;
-extern s32 *g_lb_636EC0;
-extern s32 *g_lb_636EC4;
+extern void *g_lb_636E00;
+extern void *g_lb_636E04;
+extern void *g_lb_636E08;
+extern void *g_lb_636EC0;
+extern void *g_lb_636EC4;
 extern s32 g_lb_63E020;
 extern s32 g_main_3064AF;
 extern s16 tl_member_buff;
@@ -45,7 +45,7 @@ void lobby_func_0056AB70(s64 arg0) {
     spC0 = &tl_member_buff;
     spDE = (s16) arg0;
     temp_s0 = ((s16) (((*(s32 *)((u8 *)&g_main_3064AF + (ClassInfo * 0x15C))) - 0x31)));
-    flfntLocate(0xB4, ((s16) (((((s16) (arg0))) - 0x32))), 0x15C, ClassInfo);
+    flfntLocate(0xB4, (s32) (((s16) (((((s16) (arg0))) - 0x32)))));
     flfntSetSize(0x16, 0x16);
     font_set_palette(0);
     font_print_double(0xA6, 0x80, 1, 0, g_lb_636E04);
@@ -84,8 +84,8 @@ loop_5:
         if ((*(s8 *)((u8 *)((((((s16) (temp_s0))) * 0x10) + ((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20) + temp_s0_2)) + 0x22E)) == 0) {
             var_s2 = 0xA;
         }
-        flfntLocate(((s16) (temp_s1)), (s64) var_s4);
-        font_print_double(((s16) (temp_s1)), (s64) var_s4, 1, var_s2, (*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + (temp_s0_2 << 5) + 8);
+        flfntLocate((s32) (((s16) (temp_s1))), (s32) var_s4);
+        font_print_double((s32) (((s16) (temp_s1))), (s32) var_s4, 1, (s32) var_s2, (*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + (temp_s0_2 << 5) + 8);
         var_s6 += 1;
         var_s7 += 1;
         var_s4 = (s16) (((s16) ((var_s4 + 0x16))));

@@ -4,11 +4,11 @@
 #include "../gonl.h"
 
 s32 CallBack_Result_SendChatMessageTU();
+s32 Online_ck();
+s32 Plaza_chat_log_add();
 s32 cnLBS_Send_ChatBinaryTU();
 extern u8 cw;
 s32 Lb_chat_receipt();                 /* extern */
-s32 Online_ck();                                    /* extern */
-s32 Plaza_chat_log_add();              /* extern */
 s32 Visual_main();                               /* extern */
 s32 cnLBS_Send_ChatMessage();           /* extern */
 s32 memcpy();      /* extern */
@@ -18,7 +18,7 @@ extern u8 chat_cnfg_font_color;
 extern u8 my_user_handle;
 extern u8 my_user_id;
 
-void Lb_send_chat(s32 arg1, s32 arg2) {
+void Lb_send_chat(s32 unused_a0, s32 arg1, s32 arg2) {
     u8 g_frame[0x190] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp70 (*(s32 *)(g_frame + 0x70))
 #define sp78 (*(s32 *)(g_frame + 0x78))
@@ -54,7 +54,7 @@ void Lb_send_chat(s32 arg1, s32 arg2) {
             Lb_chat_receipt(&sp70);
             return;
         }
-        Plaza_chat_log_add(&sp70);
+        Plaza_chat_log_add((s32) &sp70);
     }
 }
 

@@ -3,9 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 ListSelect();
 s32 cnWrap_SoundRequest();
-s32 ListSelect();             /* extern */
-
 u8 lobby_func_0058F660(s32 arg0, u8 arg1) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp2F (*(u8 *)(g_frame + 0x2F))

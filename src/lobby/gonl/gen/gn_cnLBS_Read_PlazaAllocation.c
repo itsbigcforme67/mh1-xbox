@@ -7,7 +7,7 @@ s32 lobby_func_005E2DF0();
 extern u8 CnetSys_w;
 s32 memset();        /* extern */
 
-s32 cnLBS_Read_PlazaAllocation(s32 arg1, s32 arg2) {
+s32 cnLBS_Read_PlazaAllocation(s32 unused_a0, s32 arg1, s32 arg2) {
     if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0))) + 0x20)) == 0) {
         memset(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0)), 0, 0x28);
         (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0))) + 0x20)) = 1U;

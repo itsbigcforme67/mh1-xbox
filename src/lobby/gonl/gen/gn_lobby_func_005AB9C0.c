@@ -9,7 +9,6 @@ s32 lobby_func_005ABBA0();
 s32 lobby_func_005ABC40();
 s32 lobby_func_005ABC70();
 s32 lobby_func_005ABDE0();
-extern u8 jtbl_00644C20;
 void lobby_func_005AB9C0(void *arg0) {
     u8 temp_v1;
 
@@ -31,7 +30,7 @@ void lobby_func_005AB9C0(void *arg0) {
         lobby_func_005ABC70(arg0);
         return;
     case 5:
-        lobby_func_005ABDE0(arg0, (s32) &jtbl_00644C20);
+        lobby_func_005ABDE0(arg0);
         /* fallthrough */
     default:
         return;

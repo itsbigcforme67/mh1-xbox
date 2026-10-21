@@ -21,7 +21,7 @@ void lobby_func_005E3050(void *arg0) {
         sp18 = 2;
         sp19 = 0xA;
         (*(s16 *)((u8 *)&CnetSys_w + 0x1032)) = (*(u16 *)((u8 *)&CnetSys_w + 0x43B4)) * temp_a2;
-        (*(s32 (**)(s64, s8 *, u8, void *))((u8 *)(arg0) + 4))((s64) sp18, &sp18, temp_a2, arg0);
+        (*(s32 (**)(s64, s8 *, u8, void *))((u8 *)(arg0) + 4))(*(s64 *)&sp18, &sp18, temp_a2, arg0);
         return;
     case 2:
         (*(s8 *)((u8 *)(arg0) + 0x21)) = 2;

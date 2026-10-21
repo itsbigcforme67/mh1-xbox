@@ -7,13 +7,13 @@ s32 Lb_clearChatList();
 s32 Lbc_init_network_work();
 s32 Lbc_set_prim();
 s32 Lbs_load();
+s32 Pit_reset();
 s32 SetDialogData();
+s32 all_reset();
 extern u8 ClassInfo;
 extern u8 cw;
 s32 Init_InterruptFlag();                       /* extern */
-s32 Pit_reset();                                /* extern */
 s32 Plaza_chat_clear();                         /* extern */
-s32 all_reset();                                /* extern */
 s32 memset();        /* extern */
 extern u8 LobbyInfo;
 extern u8 put_back;

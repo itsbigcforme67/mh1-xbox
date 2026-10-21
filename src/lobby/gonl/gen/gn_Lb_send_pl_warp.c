@@ -11,6 +11,6 @@ void Lb_send_pl_warp(void *arg0) {
 
     sp18 = (s16) (*(f32 *)((u8 *)(arg0) + 0xAC));
     sp1A = (s16) (*(f32 *)((u8 *)(arg0) + 0xB4));
-    lb_send_data(4, 2, (s32) &sp18);
+    lb_send_data(4, 2, &sp18);
 }
 

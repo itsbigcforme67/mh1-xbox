@@ -5,6 +5,7 @@
 
 s32 Lb_cursorUD();
 s32 Plaza_add_friend();
+s32 SoftKeyboard_alive_check();
 s32 cnWrap_SoundRequest();
 s32 lobby_func_00570FF0();
 s32 lobby_func_00571040();
@@ -17,7 +18,6 @@ extern u8 cw;
 extern u8 g_main_2EFBAC;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 SoftKeyboard_alive_check();                     /* extern */
 s32 memcpy();            /* extern */
 s32 memset();  /* extern */
 s32 strcpy();       /* extern */

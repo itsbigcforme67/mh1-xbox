@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnLBS_Get_ServerMessage();
 extern u8 cw;
-s32 cnLBS_Get_ServerMessage(); /* extern */
 s32 memcpy();         /* extern */
 extern u8 my_user_mini_data;
 
@@ -27,7 +27,7 @@ void CallBack_SendMiniData(s64 arg0) {
         }
         temp_v1 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xB9C)) + 1);
-        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, temp_a1, temp_a1 + 0xBA9);
+        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
     }
 }
 

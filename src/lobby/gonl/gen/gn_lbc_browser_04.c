@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 MainBrowser();
+s32 fade_set();
 extern u8 cw;
 extern u8 pNet;
-s32 MainBrowser();                                  /* extern */
 s32 MainBsDispose();                            /* extern */
-s32 fade_set();                          /* extern */
 s32 memcmp();          /* extern */
 extern u8 BrPersonalData;
 extern u8 tmpPersonalData;

@@ -3,9 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Fade_busy_ck();
 s32 Lbs_load();
+s32 MainBsInitialize();
 s32 To_LogOut();
+s32 all_reset();
 s32 cnWrap_InitWork();
+s32 fade_set();
 s32 lbc_browser_04();
 s32 lobby_func_005A1E30();
 extern u8 BS_MODE_R_NO;
@@ -13,11 +17,7 @@ extern u8 BsLbsErrNum;
 extern u8 cw;
 extern u8 net_char_change;
 extern u8 pNet;
-s32 Fade_busy_ck();                       /* extern */
 s32 FlushCache();                /* extern */
-s32 MainBsInitialize();                  /* extern */
-s32 all_reset();                      /* extern */
-s32 fade_set();          /* extern */
 s32 memset();        /* extern */
 s32 strcpy();               /* extern */
 extern s128 BrPersonalData;
@@ -31,17 +31,13 @@ void lobby_func_0057C7E0(void) {
     s32 temp_v0_2;
     s32 var_v1;
     u8 temp_a0;
-    u8 temp_a0_4;
-    u8 temp_a0_5;
     u8 *temp_a0_2;
     u8 *temp_a0_3;
-    u8 *temp_a2;
     u8 *temp_v0;
     u8 *temp_v1;
 
     temp_v0 = (*(void **)&cw);
     temp_a0 = (*(u8 *)((u8 *)(temp_v0) + 0xBA7));
-    temp_a2 = temp_v0 + 0xBA7;
     switch (temp_a0) {                              /* switch 1 */
     case 0:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_v0) + 0xBA7)) = (u8) (temp_a0 + 1);
@@ -51,7 +47,7 @@ void lobby_func_0057C7E0(void) {
     case 1:                                         /* switch 1 */
         temp_v1 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1) + 0xBA7)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xBA7)) + 1);
-        all_reset(temp_a0, temp_a2);
+        all_reset();
         cnWrap_InitWork();
         Lbs_load();
         (*(s8 *)&net_char_change) = 1;
@@ -59,7 +55,7 @@ void lobby_func_0057C7E0(void) {
     case 2:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_v0) + 0xBA7)) = (u8) (temp_a0 + 1);
         (*(s8 *)&BS_MODE_R_NO) = 0;
-        FlushCache(0, temp_a2);
+        FlushCache(0, temp_v0 + 0xBA7);
         MainBsInitialize(1);
         memset(&FirstURL, 0, 0x100);
         strcpy(&FirstURL, &first_url);
@@ -75,7 +71,7 @@ void lobby_func_0057C7E0(void) {
             var_a0 += 0x10;
         } while (var_v1 > 0);
         (*(u8 *)((u8 *)(temp_v0) + 0xBA7)) = (u8) ((*(u8 *)((u8 *)(temp_v0) + 0xBA7)) + 1);
-        fade_set(2, var_a1, temp_a2);
+        fade_set(2);
         return;
     case 4:                                         /* switch 1 */
         temp_v0_2 = lbc_browser_04();
@@ -91,10 +87,9 @@ void lobby_func_0057C7E0(void) {
         }
         break;
     case 5:                                         /* switch 1 */
-        temp_a0_4 = Fade_busy_ck(temp_a0, temp_a2) & 0xFF;
-        if (temp_a0_4 != 1) {
+        if ((Fade_busy_ck() & 0xFF) != 1) {
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA7)) = 0U;
-            all_reset(temp_a0_4);
+            all_reset();
             Lbs_load();
             (*(s8 *)&net_char_change) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
@@ -105,10 +100,9 @@ void lobby_func_0057C7E0(void) {
         }
         return;
     case 6:                                         /* switch 1 */
-        temp_a0_5 = Fade_busy_ck(temp_a0, temp_a2) & 0xFF;
-        if (temp_a0_5 != 1) {
+        if ((Fade_busy_ck() & 0xFF) != 1) {
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA7)) = 0U;
-            all_reset(temp_a0_5);
+            all_reset();
             (*(s8 *)&net_char_change) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA8)) = 2;

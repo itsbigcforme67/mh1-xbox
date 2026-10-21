@@ -3,6 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_sw();
 s32 SetDialogData();
 s32 cnWrap_SoundRequest();
 s32 lobby_func_0056AF20();
@@ -11,7 +12,6 @@ s32 lobby_func_0059F750();
 extern u8 BsLbsCount;
 extern u8 cw;
 extern u8 textLobbyTbl;
-s32 Get_sw();                                /* extern */
 s32 func_0012E1C0();            /* extern */
 extern s8 ClassInfo;
 extern u8 PlazaInfo;

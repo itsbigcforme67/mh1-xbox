@@ -4,14 +4,14 @@
 #include "../gonl.h"
 
 s32 Eft25_set();
+s32 Get_sw();
+s32 Get_sw_on2();
 s32 Lb_cursorUD();
 s32 SetDialogData();
 s32 cnWrap_SoundRequest();
 s32 plaza_req_input();
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 Get_sw();                                /* extern */
-s16 Get_sw_on2();                   /* extern */
 s8 Visual_main();                          /* extern */
 s32 memcpy();         /* extern */
 s32 memset();             /* extern */
@@ -36,7 +36,7 @@ s32 lobby_func_0056DA50(void) {
     switch ((*(u8 *)((u8 *)&tl_member_buff + 0x1383))) {                           /* switch 1; irregular */
     case 0:                                         /* switch 1 */
         temp_a1 = temp_s1 & 0xFFFF;
-        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0, 1);
+        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0);
         if (temp_a1 & 0x20) {
             var_v0 = 2;
             if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 0) {
@@ -85,7 +85,7 @@ block_51:
     default:                                        /* switch 1 */
         return 2;
     case 1:                                         /* switch 1 */
-        if (plaza_req_input((s32) &g_lb_653A50, 1) == 1) {
+        if (plaza_req_input(&g_lb_653A50, 1) == 1) {
             strcpy(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, &g_lb_653A50);
             if (Visual_main(&g_lb_653A50) != 0) {
                 *(&g_lb_6B46D1 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) = Visual_main(&g_lb_653A50);
@@ -101,7 +101,7 @@ block_51:
         goto block_51;
     case 2:                                         /* switch 1 */
         temp_a1_2 = temp_s1 & 0xFFFF;
-        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0, 1);
+        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0);
         if (temp_a1_2 & 0x20) {
             SetDialogData(0x1E);
             cnWrap_SoundRequest(0);

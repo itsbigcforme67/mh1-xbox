@@ -9,6 +9,6 @@ void lobby_func_0059ACD0(s32 arg0) {
 #define sp1E (*(s16 *)(g_frame + 0x1E))
 
     sp1E = arg0 & 0xFF;
-    lb_send_data(2, 3, (s32) &sp1E);
+    lb_send_data(2, 3, &sp1E);
 }
 

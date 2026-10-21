@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 SetSendCommand();         /* extern */
-s32 SetSendCommandLen();               /* extern */
-s32 Write_Socket();                    /* extern */
+s32 SetSendCommand();
+s32 SetSendCommandLen();
+s32 Write_Socket();
 extern u8 send_work;
 
 void lobby_func_005B02C0(void) {

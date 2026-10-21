@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Put_2TF();
+s32 Put_sprite_rotate();
+s32 SetTextureStage();
+s32 reload_tex();
 extern u8 helpLineTbl;
-s32 Put_2TF();                   /* extern */
-s32 Put_sprite_rotate(); /* extern */
-s32 SetTextureStage();                   /* extern */
-s32 reload_tex();               /* extern */
 
 void lobby_func_0059F770(void) {
     u8 g_frame[0x100] __attribute__((aligned(16)));   /* G's stack frame */
@@ -26,8 +26,6 @@ void lobby_func_0059F770(void) {
     s16 temp_s5;
     s16 temp_s6;
     s16 temp_v0_4;
-    s32 temp_a1;
-    s32 temp_a2;
     s32 temp_s0;
     s32 temp_s1;
     s32 temp_v0_3;
@@ -82,9 +80,8 @@ void lobby_func_0059F770(void) {
         }
         spE4 -= var_v0 - temp_s0;
         spE4 = M2C_BITWISE(s16, (0.8f * (f32) spE4));
-        temp_a2 = (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0x12)) - (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0xE));
-        spF2 = spEE + (((s16) (M2C_BITWISE(s64, (0.025f * ((f32) spE4 * (f32) temp_a2))))));
-        Put_sprite_rotate(&spE0, 2, temp_a2, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0x12)));
+        spF2 = spEE + (((s16) (M2C_BITWISE(s64, (0.025f * ((f32) spE4 * (f32) ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0x12)) - (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0xE)))))))));
+        Put_sprite_rotate(&spE0, 2);
         var_s7 = ((s16) ((var_s7 + 1)));
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 2)) = temp_fp;
     } while (var_s7 < 2);
@@ -109,9 +106,8 @@ void lobby_func_0059F770(void) {
             } while (var_a0 < temp_s1);
         }
         spE6 -= var_a0 - temp_s1;
-        temp_a1 = (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0x12)) - (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0xE));
-        spF2 = spEE + (((s16) (M2C_BITWISE(s64, (0.025f * ((f32) spE6 * (f32) temp_a1))))));
-        Put_2TF(&spE0, temp_a1, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0x12)));
+        spF2 = spEE + (((s16) (M2C_BITWISE(s64, (0.025f * ((f32) spE6 * (f32) ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0x12)) - (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0xE)))))))));
+        Put_2TF(&spE0);
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0)) = (s16) spD0;
         var_s5 = ((s16) ((var_s5 + 1)));
     } while (var_s5 < 2);

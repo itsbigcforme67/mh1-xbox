@@ -4,13 +4,13 @@
 #include "../gonl.h"
 
 s32 Eft25_set();
+s32 Get_sw();
+s32 Get_sw_on2();
 s32 Lb_cursorUD();
 s32 SetDialogData();
 s32 cnWrap_SoundRequest();
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 Get_sw();                                /* extern */
-s16 Get_sw_on2();                            /* extern */
 extern s8 g_lb_6B46A0;
 extern s8 g_lb_6B46A1;
 extern s16 g_lb_6B46A2;

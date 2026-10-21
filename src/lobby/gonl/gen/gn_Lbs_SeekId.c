@@ -5,21 +5,19 @@
 
 s32 CallBack_Result_SearchUserPlace();
 s32 Check_CallBackWait();
+s32 cnLBS_Get_ServerMessage();
 extern u8 cw;
 s32 cnLBS_Get_SerchUserPlace(); /* extern */
 s32 cnLBS_Get_SerchUserPlaceMessage();    /* extern */
-s32 cnLBS_Get_ServerMessage();       /* extern */
 s32 cnLBS_SerchUserPlace(); /* extern */
 
 s32 Lbs_SeekId(s64 arg0, s32 arg1) {
-    s32 temp_a2;
     s32 temp_s0;
     u8 temp_v1_2;
     u8 *temp_v0;
     u8 *temp_v1;
 
     temp_v1 = (*(void **)&cw);
-    temp_a2 = temp_v1 + 0xB9D;
     temp_v1_2 = (*(u8 *)((u8 *)(temp_v1) + 0xB9D));
     switch (temp_v1_2) {                            /* irregular */
     case 0x0:
@@ -27,7 +25,7 @@ s32 Lbs_SeekId(s64 arg0, s32 arg1) {
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0xE;
-        cnLBS_SerchUserPlace(arg1, CallBack_Result_SearchUserPlace, temp_a2);
+        cnLBS_SerchUserPlace(arg1, CallBack_Result_SearchUserPlace, temp_v1 + 0xB9D);
 block_10:
     default:
         return 2;
@@ -44,7 +42,7 @@ block_10:
         return 0;
     case 0x63:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = 0U;
-        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, temp_a2);
+        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
         return 1;
     }
 }

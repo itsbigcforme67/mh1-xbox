@@ -1181,11 +1181,26 @@ HR << 9). Rooms' join users (6403) carry four u16 in G too (members, max, 0, 0 f
 the logout (6002) and the **0x82 login to mcs.py** are as MH1's, and G loads the quest (森のキノコ狩り, the Forest and
 Hills camp) on our game server. Not tried yet: two G players in one room, a monster, the return to the town.
 
-**The PC G online build** (`ONLINE=1 tools/build_pc_mhg.sh` -> build/mhg/pc/mhview_g_online) compiles; in it the
-lobby client takes G's command indices and work sizes (`MHG_NET`, include/g_alias.h). It does not get past the login
-yet: the PC links MH1's handler C for G's table rows (by G symbol name), and about 90 G handlers are new or edited
-(list: `tools/lbs_cmdtab.py`-style dump of G's table against tools/mhg_dis.py). Next: those handlers (m2c drafts from
-asm/mhg work: `tools/draft.py mhg/lobby NAME`), then G's lobby screens (lbc_* edited), the town, the hunt.
+**The PC G online build** (`ONLINE=1 tools/build_pc_mhg.sh` -> build/mhg/pc/mhview_g_online). The lobby client's
+network layer takes G's command indices and work layout (`MHG_NET`, include/g_alias.h; `LBNET_G` maps CnetSys_w to
+CnetSys_g, 0xA8 below G's symbol), G's own answer handlers are src/lobby/cnet/cnet_g.c (gnet_* names per table row in
+config/mhg/pc_names.txt), and the receive loop walks G's 293 table rows (MH1 258: 68A0 and later were dropped before).
+G's lobby screens are G code the PC does not have (about 570 functions reachable from internet_lobby_act that G edited
+or added): tools/mhg_gonl.py writes PC C for each from m2c (src/lobby/gonl/gen, one file per function, linked over
+MH1's copies; HAND-FIXED files are kept). What m2c output needed for the PC (all in the tool now):
+- G's ABI: arguments 5-8 in $8-$11 (m2c's `mipsee` target; tools/draft.py names those registers a4-a7);
+- argument counts: a context of every known signature (the generated functions, the PC's main / cnet packet helpers)
+  in build/mhg/gonl_ctx.h; without it m2c lists only the registers set before a call, positionally (a1 alone became
+  the first argument); a parameter list that starts at arg1 gets an unused first parameter;
+- m2c's pointer arithmetic is in bytes (pointer locals and globals become u8 *, reads keep their width through casts);
+  `(s64) (x << 0x38) >> 0x38` is a cast (as written it is undefined and GCC dropped a loop);
+- CallBackWaitInit (a leaf that keeps $a1-$a3) is inlined for m2c, so values held across it survive;
+- G names that the split took from MH1 by place but are other code get G_RENAME names (the file download burst's
+  result callback, the 6205 / 620A plaza handlers);
+- G data the PC imported at MH1's size: quest_lv_tbl / flag_quest_tbl (8 levels, MH1 6) in config/mhg/pc_data.txt;
+  G's lobby work area (main 0x2EF390, app_mem_top + 0x126200 on the PS2) is a host buffer set in rt_online.c.
+State (20 Oct): the PC logs in with G's screens (Capcom ID select drawn by G's code), downloads the info file list,
+reads the five plazas; next the plaza menu, the town, then two G PCs (tools/test_online_g.sh to come).
 
 ## 4. Run it
 

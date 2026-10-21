@@ -16,7 +16,7 @@ void lobby_func_005ABED0(s64 arg0) {
         (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0x23)) = (u8) ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0x23)) | 1);
         sp18 = 2;
         sp19 = 0xB;
-        (*(s32 (**)(s64, s8 *, s32 *))((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 4))((s64) sp18, &sp18, &(*(u8 *)((u8 *)&CnetSys_w + 0xDE8)));
+        (*(s32 (**)(s64, s8 *, s32 *))((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 4))(*(s64 *)&sp18, &sp18, &(*(u8 *)((u8 *)&CnetSys_w + 0xDE8)));
         return;
     }
     (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0x23)) = (u8) ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0x23)) | 0x80);

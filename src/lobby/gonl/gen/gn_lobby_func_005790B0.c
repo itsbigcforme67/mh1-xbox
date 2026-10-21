@@ -3,14 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 flfntLocate();
+s32 flfntSetSize();
+s32 font_set_palette();
+s32 han2zen();
 extern u8 g_main_2EFBAC;
 extern u8 g_main_2EFBAC;
 extern u8 tl_mail_tbl;
-s32 flfntLocate();                  /* extern */
-s32 flfntSetSize();             /* extern */
-s32 font_set_palette();                  /* extern */
 s32 func_0012BDD0();        /* extern */
-s32 han2zen();              /* extern */
 s32 sprintf(); /* extern */
 extern u8 tl_etc;
 extern s32 g_lb_63E348;
@@ -33,7 +33,7 @@ void lobby_func_005790B0(void) {
     var_s1 = 0xBC;
     var_s0 = 0;
     do {
-        flfntLocate(0x34, ((s16) (var_s1)));
+        flfntLocate(0x34, (s32) (((s16) (var_s1))));
         temp_a0 = (*(s32 *)&g_main_2EFBAC) + var_s0;
         if ((*(s8 *)((u8 *)(temp_a0) + 0x9A)) != 0) {
             sprintf(&sp40, &g_lb_63E348, temp_a0 + 0x9A);

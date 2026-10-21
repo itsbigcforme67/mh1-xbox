@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Online_ck();                                    /* extern */
-s32 Quest_clear_bit_ck();                        /* extern */
-s32 ran_suu();                               /* extern */
+s32 Online_ck();
+s32 Quest_clear_bit_ck();
+s32 ran_suu();
 extern u8 flag_quest_tbl;
 extern u8 flag_quest_tbl_local;
 
@@ -50,7 +50,7 @@ loop_13:
         temp_v1 = var_s1 & 0xFFFF;
         if ((temp_v1 < 0xBBC) || (temp_v1 >= 0xBC0)) {
             temp_s4 = temp_s3 + ((var_s1 & 0xFFFF) * 2);
-            if (Quest_clear_bit_ck((*(u16 *)temp_s4)) == 0) {
+            if (Quest_clear_bit_ck((s32) (*(u16 *)temp_s4)) == 0) {
                 return (*(u16 *)temp_s4);
             }
         }

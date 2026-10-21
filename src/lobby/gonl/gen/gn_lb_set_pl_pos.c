@@ -4,20 +4,20 @@
 #include "../gonl.h"
 
 s32 Lb_Pl_adj_calc();
+s32 flMemcpy();
 s32 lobby_func_00595530();
 extern u8 g_main_2EFAE0;
 extern u8 g_main_2EFAE0;
-s32 flMemcpy();               /* extern */
 extern u8 player_work;
 
-void lb_set_pl_pos(s32 arg0, s32 arg2) {
+void lb_set_pl_pos(s32 arg0, void *arg1, s32 arg2) {
     u8 g_frame[0x40] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp38 (*(s32 *)(g_frame + 0x38))
     s32 temp_a0;
     u8 *temp_s1;
 
     temp_s1 = (u8 *)&player_work + ((arg0 & 0xFF) * 0xA00);
-    flMemcpy(&sp38, 5);
+    flMemcpy(&sp38, arg1, 5);
     temp_a0 = arg2 & 0xFF;
     if ((*(u8 *)((u8 *)(temp_s1) + 0x3E8)) != 0) {
         switch (temp_a0) {                          /* irregular */

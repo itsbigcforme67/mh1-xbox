@@ -3,14 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_sw2();
 s32 Lb_select();
 s32 SetDialogData();
 s32 SetDialogYesNo();
 s32 cnWrap_SoundRequest();
 extern u8 cw;
 extern u8 ret_stat_0038A900;
-s32 Get_sw2();                               /* extern */
-
 void id_select_01(void *arg0) {
     s32 temp_a2;
     s32 temp_a2_2;

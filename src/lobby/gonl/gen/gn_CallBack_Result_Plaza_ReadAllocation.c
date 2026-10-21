@@ -3,6 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnLBS_Get_ServerMessage();
 s32 lobby_func_005E3420();
 s32 lobby_func_005E36A0();
 s32 lobby_func_005E36D0();
@@ -11,7 +12,6 @@ extern u8 ClassInfo;
 extern u8 cw;
 s32 cnLBS_Get_LobbyName();           /* extern */
 s32 cnLBS_Get_RoomStatus();          /* extern */
-s32 cnLBS_Get_ServerMessage(); /* extern */
 s32 cnLBS_Get_mhRoomJoinUser(); /* extern */
 extern u8 PlazaInfo;
 
@@ -50,7 +50,7 @@ void CallBack_Result_Plaza_ReadAllocation(s64 arg0) {
             }
         } else {
             (*(u8 *)((u8 *)(temp_a1) + 0xB9C)) = 0x63U;
-            cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, temp_a1, temp_a1 + 0xBA9);
+            cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
         }
     }
 }

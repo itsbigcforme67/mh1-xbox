@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_weapon_job();
 extern u8 g_main_2EF2A8;
 extern u8 User_data;
 extern u8 g_main_2EF2A8;
 extern u8 game_w;
-u8 Get_weapon_job();       /* extern */
 s32 memcpy();           /* extern */
 extern u8 player_work;
 
@@ -36,7 +36,7 @@ void Lb_set_mini_data(s32 *arg0) {
     (*(s16 *)((u8 *)(&sp3A) + 0)) = (s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&User_data + 0xC74))) + 0));
     (*(s16 *)((u8 *)(&sp3A) + 2)) = (s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&User_data + 0xC74))) + 2));
     (*(s16 *)((u8 *)(&sp3A) + 4)) = (s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&User_data + 0xC74))) + 4));
-    sp30 = Get_weapon_job(&(*(u8 *)((u8 *)&User_data + 0xC74)), (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&User_data + 0xC74))) + 0)), &sp3A);
+    sp30 = Get_weapon_job(&(*(u8 *)((u8 *)&User_data + 0xC74)));
     if (sp30 == 5) {
         var_v0 = 1;
         goto block_3;

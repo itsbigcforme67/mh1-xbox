@@ -3,16 +3,16 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 SetTextureStage();
+s32 flfntSetSize();
 s32 lobby_func_005A0E80();
 s32 put_button_help();
+s32 reload_tex();
 extern u8 g_main_2EFBAC;
 extern u8 cw;
 extern u8 g_main_2EFBAC;
 extern u8 tl_member_buff;
-s32 SetTextureStage();                   /* extern */
-s32 flfntSetSize();             /* extern */
 s32 func_0012D000();                         /* extern */
-s32 reload_tex();               /* extern */
 extern s32 g_lb_636B54;
 
 void DispButtonHelp(void *arg0) {
@@ -71,7 +71,7 @@ void DispButtonHelp(void *arg0) {
                 return;
             case 2:                                 /* switch 2 */
             case 4:                                 /* switch 2 */
-                lobby_func_005A0E80((s64) g_lb_636B54);
+                lobby_func_005A0E80(g_lb_636B54);
                 return;
             }
             break;
@@ -105,7 +105,7 @@ void DispButtonHelp(void *arg0) {
             case 4:                                 /* switch 4 */
             case 3:                                 /* switch 4 */
             case 1:                                 /* switch 4 */
-                lobby_func_005A0E80((s64) g_lb_636B54);
+                lobby_func_005A0E80(g_lb_636B54);
                 return;
             case 2:                                 /* switch 4 */
                 temp_s0_8 = temp_s0 & 0xFFFF;

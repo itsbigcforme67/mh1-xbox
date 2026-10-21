@@ -5,11 +5,11 @@
 
 s32 Lb_Pl_adj_calc();
 s32 Lb_send_pl_warp();
+s32 flSqrt();
+s32 flvecCopy();
 extern u8 game_w;
 s32 Lb_Pl_act_set2(); /* extern */
 s32 Lb_send_chair_release(); /* extern */
-f32 flSqrt();                                /* extern */
-s32 flvecCopy(void *, f32 *);                   /* extern */
 extern s32 lb_sys;
 extern u8 player_work;
 
@@ -70,7 +70,8 @@ block_16:
         var_s0 = (*(u16 *)((u8 *)((*(void **)((u8 *)(temp_s1) + 0x878))) + 0x14));
     } else {
         M2C_ERROR(/* unknown instruction: mula.s $f2, $f2 */);
-        if (flSqrt(M2C_ERROR(/* unknown instruction: madd.s $f12, $f0, $f0 */)) <= (*(f32 *)((u8 *)(var_s2) + 0x10))) {
+        M2C_ERROR(/* unknown instruction: madd.s $f12, $f0, $f0 */);
+        if (M2C_BITWISE(f32, flSqrt()) <= (*(f32 *)((u8 *)(var_s2) + 0x10))) {
             sp40 = (*(f32 *)((u8 *)(var_s2) + 4));
             sp44 = (*(f32 *)((u8 *)(var_s2) + 8));
             sp48 = (*(f32 *)((u8 *)(var_s2) + 0xC));

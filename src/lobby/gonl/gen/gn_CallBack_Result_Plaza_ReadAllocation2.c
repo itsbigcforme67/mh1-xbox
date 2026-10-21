@@ -3,6 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBack_Result_Plaza_PlazaExit2();
 s32 Check_CallBackWait();
 s32 To_LogOut();
 s32 lobby_func_005AB8B0();
@@ -31,7 +32,7 @@ s32 CallBack_Result_Plaza_ReadAllocation2(void) {
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x18;
-        lobby_func_005AB8B0(0, 0x87);
+        lobby_func_005AB8B0(0, 0x87, (s32) CallBack_Result_Plaza_PlazaExit2);
 block_12:
         return 2;
     case 1:

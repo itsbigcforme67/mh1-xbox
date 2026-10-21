@@ -3,7 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-u8 Get_weapon_id();                        /* extern */
+s32 Get_weapon_id();
 s32 memcpy(); /* extern */
 extern u8 Battle_type;
 extern u8 player_work;

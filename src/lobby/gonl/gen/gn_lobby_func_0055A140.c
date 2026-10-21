@@ -3,10 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Gold_add();
 s32 cnWrap_SoundRequest();
 extern u8 quest_price;
-s32 Gold_add();                              /* extern */
-
 void lobby_func_0055A140(s32 arg0) {
     Gold_add((*(s32 *)&quest_price));
     if (!(arg0 & 0xFF) && ((*(s32 *)&quest_price) != 0)) {

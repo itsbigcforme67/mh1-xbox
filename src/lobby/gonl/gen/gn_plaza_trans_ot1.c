@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 DispSoftkeyboard();
 s32 Lb_on_dialog();
+s32 SoftKeyboard_alive_check();
+s32 font_set_stack_no();
 extern u8 cw;
 extern u8 pNet;
 s32 DispDialogData();                         /* extern */
-s32 DispSoftkeyboard();                  /* extern */
-s32 SoftKeyboard_alive_check();                     /* extern */
-s32 font_set_stack_no();                     /* extern */
 
 void plaza_trans_ot1(void *arg0) {
     u8 temp_a0;

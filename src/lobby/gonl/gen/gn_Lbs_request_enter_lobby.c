@@ -6,6 +6,7 @@
 s32 Check_CallBackWait();
 s32 cnLBS_LobbyEntry();
 s32 cnLbc_CheckInFloorOrder();
+s32 lobby_func_0057EFF0();
 extern u8 cw;
 extern s32 g_lb_63E540;
 
@@ -21,7 +22,7 @@ s32 Lbs_request_enter_lobby(void) {
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0xC;
-        cnLBS_LobbyEntry(cnLbc_CheckInFloorOrder(1) & 0xFFFF, &g_lb_63E540);
+        cnLBS_LobbyEntry(cnLbc_CheckInFloorOrder(1) & 0xFFFF, &g_lb_63E540, (s32) lobby_func_0057EFF0);
 block_13:
         return 2;
     case 0x1:

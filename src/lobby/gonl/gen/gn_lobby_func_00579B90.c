@@ -3,8 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 release_texture();          /* extern */
-
+s32 release_texture();
 void lobby_func_00579B90(void) {
     release_texture(0x13F, 4);
     release_texture(0x144, 0x10);

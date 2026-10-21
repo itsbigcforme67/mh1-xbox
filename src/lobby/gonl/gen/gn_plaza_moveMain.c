@@ -3,6 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_sw2();
 s32 lobby_func_00569D40();
 s32 lobby_func_0056B0C0();
 s32 lobby_func_0056B4E0();
@@ -23,8 +24,6 @@ s32 plaza_setMyComment();
 s32 tl_exit_sub_menu();
 extern u8 D_0035EFEB;
 extern u8 pNet;
-s32 Get_sw2();                               /* extern */
-
 void plaza_moveMain(void) {
     u8 temp_v0;
 

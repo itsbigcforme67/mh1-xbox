@@ -76,13 +76,55 @@ def write_context():
             if params in ('', 'void'):
                 ps = []
             else:
-                ps = [ctx_type(re.sub(r'\b\w+$', '', p.strip()) or 's32') for p in params.split(',')]
+                ps = []
+                for p in params.split(','):     # by m2c's argN name: a function that ignores $a0 starts at arg1
+                    k = re.search(r'\barg(\d+)$', p.strip())
+                    k = int(k.group(1)) if k else len(ps)
+                    while len(ps) < k:
+                        ps.append('s32')
+                    ps.append(ctx_type(re.sub(r'\b\w+$', '', p.strip()) or 's32'))
             if None in ps or '...' in params:
                 continue
             r = 's32' if ret == 'void' else (ctx_type(ret) or None)     # (void as s32: G code reads a v0 its callee left)
             if r is None:
                 continue
             sigs[name] = (r, ps)
+    # then the PC's own C of the library functions G code calls (main's C, the cnet packet helpers): ANSI and K&R
+    # definitions. Not MH1's lobby / cnet request C: G changed some of those signatures (cnLBS_Send_UserMiniData takes a
+    # callback in G), and a call must keep what the G code passes.
+    import glob
+    pcsrc = [os.path.join(ROOT, 'src/lobby/cnet/cnlbsh.c')]
+    for d in ('src/main', 'src/pc/rt'):
+        pcsrc += sorted(glob.glob(os.path.join(ROOT, d, '**', '*.c'), recursive=True))
+    for f in pcsrc:
+        if f.endswith('_nm.c') and os.path.exists(f[:-5] + '.c'):
+            pass
+        try:
+            text = open(f, errors='replace').read()
+        except OSError:
+            continue
+        for m in re.finditer(r'^(\w[\w ]*?\**)\s*\b(\w+)\(([^()]*)\)\s*\{', text, re.M):
+            ret, name, params = m.group(1).strip(), m.group(2), m.group(3).strip()
+            if name in sigs or ret.startswith(('static', 'if', 'else', 'return', 'while', 'switch')):
+                continue
+            if params in ('', 'void'):
+                ps = []
+            else:
+                ps = [ctx_type(re.sub(r'\b\w+(\[\w*\])?$', '', p.strip()) or 's32') for p in params.split(',')]
+            if None in ps or '...' in params or ret in ('', 'else'):
+                continue
+            r = 's32' if ret == 'void' else ctx_type(ret)
+            if r:
+                sigs[name] = (r, ps)
+        for m in re.finditer(r'^(\w[\w ]*?\**)\s*\b(\w+)\(([\w, ]+)\)\n((?:[\w ]+?[\s*]+\w+(?:\[\w*\])?;\n)+)\{', text, re.M):
+            ret, name, plist, decls = m.group(1).strip(), m.group(2), m.group(3), m.group(4)
+            if name in sigs or ret.startswith('static'):
+                continue
+            types = dict((d.group(2), d.group(1)) for d in re.finditer(r'^\s*([\w ]+?[\s*]+)(\w+)(?:\[\w*\])?;', decls, re.M))
+            ps = [ctx_type(types.get(a.strip(), 'int')) for a in plist.split(',')]
+            r = 's32' if ret == 'void' else ctx_type(ret)
+            if None not in ps and r:
+                sigs[name] = (r, ps)
     os.makedirs(os.path.dirname(CTX_PATH), exist_ok=True)
     with open(CTX_PATH, 'w') as f:
         f.write('typedef int s32; typedef unsigned int u32; typedef long long s64;\n')
@@ -136,6 +178,8 @@ def convert(src):
     src = byte_globals(src)
     src = pointer_globals(src)
     src = sign_extends(src)
+    src = struct_args(src)
+    src = arg_positions(src)
     src = function_tables(src)
     src = unprototype(src)
     # m2c's declarations of names that became NAME+offset are no declarations any more
@@ -152,6 +196,8 @@ def convert(src):
 # MH1 function of that name, so G's gets a name of its own in every generated file
 G_RENAME = {
     '_cnet_CallBack_Result_PersonalDataChange': 'gonl_cb_FileDownload',    # G 0x5BFD00: the file download burst's result
+    '_cnet_RecvFromLbs_BothAnnexJoinUser': 'gnet_6205_both',    # G 0x5E3700: plaza / lobby join users (G's records)
+    '_cnet_RecvFromLbs_AnswerLobbyExplain': 'gnet_620A_ans',    # G 0x5E3940: plaza / lobby explanation (G's records)
 }
 
 
@@ -322,6 +368,27 @@ def byte_globals(src):
     return src
 
 
+def arg_positions(src):
+    """m2c names a parameter by its register (arg1 = $a1): a function that ignores $a0 is `f(s32 arg1, s32 arg2)`,
+    which C would take as the first two. Fill the gaps with unused parameters."""
+    def one(m):
+        ps = [p.strip() for p in m.group(2).split(',')] if m.group(2).strip() not in ('', 'void') else []
+        out = []
+        for p in ps:
+            k = re.search(r'\barg(\d+)$', p)
+            while k and len(out) < int(k.group(1)):
+                out.append('s32 unused_a%d' % len(out))
+            out.append(p)
+        return '%s(%s) {' % (m.group(1), ', '.join(out) if out else 'void')
+    return re.sub(r'^(\w[\w *]*?\b\w+)\(([^()]*)\) \{$', one, src, flags=re.M)
+
+
+def struct_args(src):
+    """a callback called with its 8-byte result by value and a pointer to it: `f((s64) sp18, &sp18)` passes the bytes
+    at sp18, not sp18's value widened"""
+    return re.sub(r'\(s64\) (sp[0-9A-F]+), &\1\b', r'*(s64 *)&\1, &\1', src)
+
+
 def sign_extends(src):
     """m2c's 64-bit sign / zero extension `(s64) (X << 0x38) >> 0x38` shifts a 32-bit int by 56 (undefined in C: GCC drops
     the loop that counts with it): a cast to the narrow type"""
@@ -469,7 +536,7 @@ def main():
     # the text / dialog drawing keeps MH1's C (it works in G's village): see KEEP_MH1
     gnet = set(int(l.split()[2], 16) for l in open(os.path.join(ROOT, 'config/mhg/pc_names.txt'))
                if len(l.split()) > 2 and l.split()[1].startswith('gnet_'))
-    names = [n for n in names if gaddr(n) not in gnet and n not in KEEP_MH1 and not re.match(r'(Bs|bs|Draw|draw)[A-Z]', n)]
+    names = [n for n in names if (gaddr(n) not in gnet or n in G_RENAME) and n not in KEEP_MH1 and not re.match(r'(Bs|bs|Draw|draw)[A-Z]', n)]
     # G functions the PC already has as reviewed C (the G village: src/lobby/f/lb_g.c, lb_guild_g.c; cnet_g.c) stay theirs
     have = set()
     for f in ('src/lobby/f/lb_g.c', 'src/lobby/f/lb_guild_g.c', 'src/lobby/cnet/cnet_g.c'):
@@ -478,6 +545,8 @@ def main():
     for n in names:
         path = os.path.join(out, 'gn_' + G_RENAME.get(n, n) + '.c')     # (gn_: an object name of its own; src/lobby/b/nm has files named after functions too)
         if os.path.exists(path) and 'HAND-FIXED' in open(path).read() and '--force' not in sys.argv:
+            for a in re.findall(r'\bg_(?:main|sub|lb)_([0-9A-F]{6})\b', open(path).read()):
+                gen_name(int(a, 16))      # (its names stay declared)
             continue
         d = draft(n)
         if 'Decompilation failure' in d or 'not found' in d:

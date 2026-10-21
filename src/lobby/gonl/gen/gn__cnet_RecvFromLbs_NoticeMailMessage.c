@@ -5,9 +5,9 @@
 
 s32 Lbc_init_network_work();
 s32 Lbc_set_prim();
+s32 fade_set();
 extern u8 cw;
 s32 cnWrap_BgmVolume();                  /* extern */
-s32 fade_set();                          /* extern */
 extern u8 put_back;
 
 void _cnet_RecvFromLbs_NoticeMailMessage(void) {

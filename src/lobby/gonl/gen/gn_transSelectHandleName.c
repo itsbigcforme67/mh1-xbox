@@ -3,29 +3,29 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 DispFrameMessage();
 s32 DispHelpLine();
 s32 DispSceneTitle();
+s32 Get_sw2();
+s32 Put_2TF();
+s32 SetFilterMode();
+s32 SetTextureStage();
 s32 disp_string_handle();
 s32 disp_string_id();
+s32 flSetRenderState();
+s32 flfntLocate();
+s32 flfntSetSize();
+s32 font_print_double();
+s32 font_set_palette();
 s32 lobby_func_005926C0();
+s32 reload_tex();
 extern u8 User_data;
 extern u8 lb_rule_member;
 extern u8 net_etc_mes_tbl;
 extern u8 textLobbyTbl;
 extern u8 tl_mail_tbl;
-s32 DispFrameMessage();          /* extern */
-s32 Get_sw2();                           /* extern */
 s32 Lb_put_button();   /* extern */
-s32 Put_2TF();                         /* extern */
-s32 SetFilterMode();                     /* extern */
-s32 SetTextureStage();                   /* extern */
-s32 flSetRenderState();         /* extern */
-s32 flfntLocate();              /* extern */
-s32 flfntSetSize();             /* extern */
 s32 font_print();            /* extern */
-s32 font_print_double(); /* extern */
-s32 font_set_palette();                  /* extern */
-s32 reload_tex(); /* extern */
 extern s32 g_lb_636EC0;
 extern s32 g_lb_636EC4;
 extern s32 g_lb_645018;
@@ -42,20 +42,20 @@ void transSelectHandleName(void *arg0) {
     Get_sw2(0);
     sp40 = lit_324_00617F70;
     sp30 = lit_326_00617F80;
-    reload_tex(1, 0x174, lit_324_00617F70, &sp40);
+    reload_tex(1, 0x174);
     SetTextureStage(0x174);
     SetFilterMode(1);
-    flSetRenderState(0x60, 0);
+    flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
     Put_2TF(&(*(u8 *)((u8 *)&textLobbyTbl + 0x28)));
-    DispFrameMessage(&sp40, 0);
+    DispFrameMessage(&sp40, NULL);
     sp42 += 0x58;
-    DispFrameMessage(&sp40, 0);
+    DispFrameMessage(&sp40, NULL);
     sp42 += 0x58;
-    DispFrameMessage(&sp40, 0);
+    DispFrameMessage(&sp40, NULL);
     flfntSetSize(0x14, 0x14);
-    font_print_double(0x32, 0x6A, 1, 5, (*(s32 * *)((u8 *)&lb_rule_member + 0x20)));
-    DispFrameMessage(&sp30, 0);
-    font_print_double(0x34, 0x90, 1, 0, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x8)));
+    font_print_double(0x32, 0x6A, 1, 5, (*(void * *)((u8 *)&lb_rule_member + 0x20)));
+    DispFrameMessage(&sp30, NULL);
+    font_print_double(0x34, 0x90, 1, 0, (*(void * *)((u8 *)&tl_mail_tbl + 0x8)));
     flfntSetSize(0x18, 0x14);
     font_print_double(0x70, 0x90, 1, 0, &(*(u8 *)((u8 *)&User_data + 0x8)));
     var_s1 = 0;

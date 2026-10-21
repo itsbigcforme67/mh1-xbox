@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnLBS_Get_ServerMessage();
 s32 lobby_func_005E6680();
 extern u8 cw;
-s32 cnLBS_Get_ServerMessage();            /* extern */
 extern s32 g_main_2EFBC0;
 
 void lobby_func_005803C0(s64 arg0) {

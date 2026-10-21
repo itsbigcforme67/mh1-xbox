@@ -3,6 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_sw2();
+s32 Get_sw_on2();
 s32 Lb_select();
 s32 SetDialogData();
 s32 SetDialogYesNo();
@@ -10,9 +12,6 @@ s32 cnWrap_SoundRequest();
 s32 tl_exit_sub_menu();
 extern u8 BsLbsCount;
 extern u8 pNet;
-s32 Get_sw2();                               /* extern */
-s16 Get_sw_on2();                       /* extern */
-
 void plaza_backToServer(void) {
     s32 temp_a3;
     s32 temp_v0;
@@ -32,7 +31,7 @@ void plaza_backToServer(void) {
             SetDialogYesNo(1);
             return;
         case 1:                                     /* switch 1 */
-            (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0, temp_a0 + 0x23);
+            (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0);
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
             temp_v0 = Lb_select();
             switch (temp_v0) {                      /* switch 2; irregular */

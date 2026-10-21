@@ -7,7 +7,7 @@ s32 lobby_func_005C0A90();
 extern u8 pFunc;
 s32 __cnetSub_Set_BgProcess(); /* extern */
 
-s32 lobby_func_005C09F0(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+s32 lobby_func_005C09F0(s32 arg0, s32 arg1, void *arg2, s32 arg3, s32 arg4) {
     s32 temp_v0;
     s32 var_v0;
 

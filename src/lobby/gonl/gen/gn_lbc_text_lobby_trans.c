@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 add_prim2();
 extern u8 pNet;
-s32 add_prim2(); /* extern */
 extern s32 g_main_2EF31C;
 extern u8 ot2;
 extern u8 ot5;

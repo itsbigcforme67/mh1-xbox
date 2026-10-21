@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 SetSendCommand();             /* extern */
-s32 SetSendCommandLen();               /* extern */
-s32 SetSendData16();              /* extern */
-s32 Write_Socket();                    /* extern */
+s32 SetSendCommand();
+s32 SetSendCommandLen();
+s32 SetSendData16();
+s32 Write_Socket();
 extern u8 send_work;
 
 s32 lobby_func_005E6D60(s32 arg0, s32 arg1) {

@@ -3,9 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnLBS_Get_ServerMessage();
 extern u8 cw;
-s32 cnLBS_Get_ServerMessage(); /* extern */
-
 void CallBack_Result_LoginPersonalDataRegist(s64 arg0) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp18 (*(s64 *)(g_frame + 0x18))
@@ -22,7 +21,7 @@ void CallBack_Result_LoginPersonalDataRegist(s64 arg0) {
         }
         temp_v1 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xB9C)) + 1);
-        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, temp_a1, temp_a1 + 0xBA9);
+        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
     }
 }
 

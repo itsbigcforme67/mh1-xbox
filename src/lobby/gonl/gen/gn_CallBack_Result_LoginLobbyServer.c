@@ -4,15 +4,15 @@
 #include "../gonl.h"
 
 s32 To_LogOut();
+s32 cnLBS_Get_ServerMessage();
+s32 fade_set();
 s32 lobby_func_0058BAA0();
 extern u8 CnetWork;
 extern u8 cw;
 s32 cnLBS_Get_LoginWarningMessage();  /* extern */
-s32 cnLBS_Get_ServerMessage();        /* extern */
 s32 cnLBS_Send_LoginUserAccount(); /* extern */
 s32 cnetGet_Login_DecideUserHandle();     /* extern */
 s32 cnetGet_Login_DecideUserID();         /* extern */
-s32 fade_set();                      /* extern */
 s32 memcpy();         /* extern */
 s32 memset();        /* extern */
 extern u8 my_user_handle;
@@ -41,7 +41,7 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 4;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 0;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
-                fade_set(1, (*(u8 *)((u8 *)&CnetWork + 0x5)));
+                fade_set(1);
                 return;
             case 2:                                 /* switch 2 */
             case 1:                                 /* switch 2 */
@@ -97,14 +97,14 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 6;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 2)) = 1;
-            fade_set(1, (u8) (((s8 *)&sp18)[1]));
+            fade_set(1);
             cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
             return;
         case 8:                                     /* switch 3 */
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 6;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 2)) = 2;
-            cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, (((s8 *)&sp18)[1]));
+            cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
             return;
         case 9:                                     /* switch 3 */
             To_LogOut(4);

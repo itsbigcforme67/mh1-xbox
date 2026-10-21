@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 KinshiYogo_chk();
 s32 cnWrap_SoundRequest();
 extern u8 g_main_2EFBAC;
 extern u8 g_main_2EFBAC;
-s32 KinshiYogo_chk();                  /* extern */
 s32 cnLBS_Get_RecvMessage();    /* extern */
 s32 memcmp();               /* extern */
 s32 memset();             /* extern */

@@ -5,19 +5,21 @@
 
 s32 CallBack_ReadCurrentPlace();
 s32 CallBack_Result_Plaza_LobbyEntry();
+s32 CallBack_Result_Plaza_ReadLobbyAllocation2();
 s32 Check_CallBackWait();
 s32 Lbc_SendMiniData();
 s32 MH_lobbyClear();
+s32 Set_userdata();
 s32 To_EnterLobby();
 s32 To_LogOut();
 s32 cnLBS_Read_PlazaAllocation();
+s32 lobby_func_0057ECE0();
 s32 lobby_func_00580FA0();
 s32 lobby_func_00581210();
 s32 lobby_func_005AB8B0();
 extern u8 cw;
 extern u8 game_w;
 extern u8 pNet;
-s32 Set_userdata();                       /* extern */
 s32 cnLBS_Read_CurrentPlace();      /* extern */
 s32 memset();        /* extern */
 extern u8 player_work;
@@ -66,7 +68,7 @@ block_43:
             (*(u8 *)((u8 *)(temp_a2) + 0xB9D)) = (u8) (temp_a0 + 1);
             (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
-            cnLBS_Read_PlazaAllocation(0, 0xF);
+            cnLBS_Read_PlazaAllocation(0, 0xF, (s32) lobby_func_0057ECE0);
             Set_userdata((u8 *)&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00));
             Lbc_SendMiniData();
             break;
@@ -91,7 +93,7 @@ block_43:
             MH_lobbyClear();
             (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
-            lobby_func_005AB8B0(0, 0x87);
+            lobby_func_005AB8B0(0, 0x87, (s32) CallBack_Result_Plaza_ReadLobbyAllocation2);
             break;
         case 1:                                     /* switch 3 */
             Check_CallBackWait();

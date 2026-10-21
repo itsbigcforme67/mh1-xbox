@@ -6,12 +6,12 @@
 s32 Lb_put_icon_free();
 s32 Lb_put_msg_type2();
 s32 Put_page_num();
+s32 flfntLocate();
+s32 font_print_double();
+s32 font_set_palette();
 extern u8 tl_member_buff;
 extern u8 tl_msg_tbl;
-s32 flfntLocate();                  /* extern */
 s32 font_print();                 /* extern */
-s32 font_print_double(); /* extern */
-s32 font_set_palette();                  /* extern */
 extern s32 g_lb_636CF0;
 extern s32 lb_quest_color_tbl;
 extern u8 lit_2316;
@@ -44,7 +44,7 @@ void lobby_func_00576CB0(void) {
     }
     var_s3 = ((s16) (0x8E));
     font_set_palette(0);
-    Lb_put_msg_type2(0xE2);
+    Lb_put_msg_type2(0xE2, (s32) var_s3, 0x39);
     if (((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 2) && ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 1)) {
         var_v0 = 7;
     } else {
@@ -64,7 +64,7 @@ void lobby_func_00576CB0(void) {
             } else {
                 font_set_palette(0);
             }
-            flfntLocate(0x186, var_s3);
+            flfntLocate(0x186, (s32) var_s3);
             font_print(&lit_2316, (*(s32 *)((u8 *)(var_s1) + 0xE8)));
             var_s1 += 4;
             var_s2 = ((s16) ((var_s2 + 1)));
@@ -76,7 +76,7 @@ void lobby_func_00576CB0(void) {
     } else {
         font_set_palette(0);
     }
-    Lb_put_msg_type2(0xE2);
+    Lb_put_msg_type2(0xE2, 0x128, 0x41);
     Put_page_num(0x208, 0x78, (s64) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 5, 0);
 }
 

@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 KinshiYogo_chk();
 s32 cnWrap_SoundRequest();
 s32 my_comment_input();
 extern u8 User_data;
 extern u8 cw;
 extern u8 game_w;
 extern u8 pNet;
-s32 KinshiYogo_chk();                        /* extern */
 s32 memcpy();      /* extern */
 extern s32 *g_lb_636A00;
 extern s32 g_lb_63E128;

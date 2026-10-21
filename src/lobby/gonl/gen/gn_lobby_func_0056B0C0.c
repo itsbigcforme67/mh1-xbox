@@ -3,6 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Get_sw2();
+s32 Get_sw_on2();
 s32 Lb_eat_to_bell();
 s32 SetDialogData();
 s32 cnWrap_SoundRequest();
@@ -15,20 +17,15 @@ s32 tl_exit_sub_menu();
 extern u8 PlazaInfo;
 extern u8 cw;
 extern u8 pNet;
-s32 Get_sw2();                               /* extern */
-s16 Get_sw_on2(); /* extern */
 extern u8 ClassInfo;
 
 void lobby_func_0056B0C0(void) {
-    s16 temp_a2;
     s32 temp_a1;
-    s32 temp_a1_2;
     s32 temp_s0;
     s32 temp_s1;
     s32 temp_v0_2;
     u8 temp_a0;
     u8 temp_a0_2;
-    u8 temp_a3;
     u8 *temp_a4;
     u8 *temp_v0;
     u8 *temp_v1;
@@ -37,17 +34,14 @@ void lobby_func_0056B0C0(void) {
 
     temp_a4 = (*(void **)&pNet);
     temp_s1 = Get_sw2(0) & 0xFFFF;
-    temp_a2 = (*(s16 *)((u8 *)(temp_a4) + 0x1C));
-    temp_a3 = (*(u8 *)((u8 *)(temp_a4) + 0x2B));
     temp_a0 = (*(u8 *)((u8 *)(temp_a4) + 0x23));
-    temp_a1 = temp_a2 * 7;
-    temp_s0 = temp_a3 + temp_a1;
+    temp_s0 = (*(u8 *)((u8 *)(temp_a4) + 0x2B)) + ((*(s16 *)((u8 *)(temp_a4) + 0x1C)) * 7);
     switch (temp_a0) {                              /* switch 1; irregular */
     case 0:                                         /* switch 1 */
-        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0, temp_a1, temp_a2, temp_a3, temp_a4, temp_a4 + 0x23);
-        temp_a1_2 = temp_s1 & 0xFFFF;
+        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0);
+        temp_a1 = temp_s1 & 0xFFFF;
         (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((s64) (*(s16 *)((u8 *)&ClassInfo + 0x2)), 7);
-        if (temp_a1_2 & 0x20) {
+        if (temp_a1 & 0x20) {
             if (lobby_func_0056AF20(temp_s0 + 1, 0, (s64) (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&PlazaInfo + 0x5B)) + (temp_s0 * 0x15C)))) == 0) {
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23)) = 2U;
                 cnWrap_SoundRequest(7);
@@ -65,7 +59,7 @@ void lobby_func_0056B0C0(void) {
             cnWrap_SoundRequest(0);
             return;
         }
-        if (temp_a1_2 & 0x40) {
+        if (temp_a1 & 0x40) {
             tl_exit_sub_menu(0);
             return;
         }

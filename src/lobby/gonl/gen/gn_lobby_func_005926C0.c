@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 flSetRenderState();
+s32 flps0005();
 extern u8 System_timer;
-s32 flSetRenderState();         /* extern */
 f32 flSin(f32);                                     /* extern */
-s32 flps0005();                            /* extern */
 
 void lobby_func_005926C0(s64 arg0, s64 arg1, s64 arg2, s64 arg3, s64 arg4, s32 arg5) {
     u8 g_frame[0x90] __attribute__((aligned(16)));   /* G's stack frame */
@@ -46,7 +46,7 @@ void lobby_func_005926C0(s64 arg0, s64 arg1, s64 arg2, s64 arg3, s64 arg4, s32 a
     }
     sp80 = sp78;
     sp84 = sp7C;
-    flSetRenderState(0x60, 0);
+    flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
     flps0005(&sp70);
 }
 

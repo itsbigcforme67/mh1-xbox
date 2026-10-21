@@ -3,7 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Quest_clear_bit_ck();                        /* extern */
+s32 Quest_clear_bit_ck();
 extern u8 flag_quest_tbl;
 extern u8 flag_quest_tbl_local;
 
@@ -21,7 +21,7 @@ loop_7:
     if (temp_a0 == 0) {
         return 1;
     }
-    if (Quest_clear_bit_ck(temp_a0) == 0) {
+    if (Quest_clear_bit_ck((s32) temp_a0) == 0) {
         return 0;
     }
     var_s0 += 2;

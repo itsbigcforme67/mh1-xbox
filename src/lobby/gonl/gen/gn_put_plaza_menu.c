@@ -3,16 +3,16 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 flfntSetSize();
+s32 font_print_double();
+s32 font_set_palette();
 extern u8 pNet;
 s32 Lb_put_msg2();             /* extern */
-s32 flfntSetSize();             /* extern */
-s32 font_print_double(); /* extern */
-s32 font_set_palette();              /* extern */
 extern u8 lb_ibox_str;
 extern s32 g_main_2EEE70;
 
 void put_plaza_menu(void) {
-    s64 var_s0;
+    s32 var_s0;
     u8 *var_s1;
     u8 var_a1;
     u8 *temp_a0;
@@ -26,9 +26,9 @@ void put_plaza_menu(void) {
             temp_a0 = (*(void **)&pNet);
             if ((*(u8 *)((u8 *)(temp_a0) + 0x22)) == 2) {
                 if ((var_a1 == 1) && ((*(u8 *)((u8 *)(temp_a0) + 0x28)) == (*(u8 *)((u8 *)(var_s1) + 1)))) {
-                    font_set_palette(4, var_a1);
+                    font_set_palette(4);
                 } else {
-                    font_set_palette(0xA, var_a1);
+                    font_set_palette(0xA);
                 }
                 if ((*(u8 *)((u8 *)(var_s1) + 0)) == 0) {
                     Lb_put_msg2(0x19, var_s0, (*(s32 *)((u8 *)&lb_ibox_str + ((*(s16 *)((u8 *)(var_s1) + 2)) * 4))));
@@ -42,7 +42,7 @@ void put_plaza_menu(void) {
             }
             var_s1 += 4;
             var_a1 = *var_s1;
-            var_s0 = ((s16) ((var_s0 + 0x16)));
+            var_s0 = (s32) (((s16) ((var_s0 + 0x16))));
         } while (var_a1 != 2);
     }
 }

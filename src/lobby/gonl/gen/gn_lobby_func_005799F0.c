@@ -3,9 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Put_F();
 extern u8 pNet;
-s32 Put_F();          /* extern */
-
 void lobby_func_005799F0(s64 arg0, s64 arg1, s32 arg2, s32 arg3, s32 arg4) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp10 (*(s16 *)(g_frame + 0x10))
@@ -54,7 +53,7 @@ void lobby_func_005799F0(s64 arg0, s64 arg1, s32 arg2, s32 arg3, s32 arg4) {
         sp26 = sp22 + 0x16;
         sp12 = sp22 - 2;
         sp16 = sp26 + 2;
-        Put_F(&sp10, &sp26, &sp22, var_a5);
+        Put_F(&sp10);
         Put_F(&sp20);
     }
 }

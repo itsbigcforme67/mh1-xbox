@@ -6,7 +6,7 @@
 s32 sprintf();                    /* extern */
 extern s32 g_lb_63E908;
 
-void lobby_func_0058EDD0(s32 arg1) {
+void lobby_func_0058EDD0(s32 unused_a0, s32 arg1) {
     sprintf(&g_lb_63E908, arg1);
 }
 

@@ -9,7 +9,7 @@ s32 Lbc_RequestNetComment();                 /* extern */
 s32 getUserInfo(s32 arg0) {
     s32 temp_v0;
 
-    temp_v0 = Lbs_SeekId(0x64);
+    temp_v0 = Lbs_SeekId(0x64, arg0);
     switch (temp_v0) {                              /* irregular */
     case 0:
         Lbc_RequestNetComment(arg0);

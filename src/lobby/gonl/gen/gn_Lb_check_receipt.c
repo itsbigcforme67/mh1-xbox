@@ -53,14 +53,14 @@ block_8:
     temp_v1 = temp_s0 & 0xFF;
     switch (temp_v1) {
     case 0:
-        lb_set_pl_pos(var_a0, (s32) temp_s1);
+        lb_set_pl_pos(var_a0, temp_s1, (s32) temp_s0);
         return;
     case 1:
     case 10:
-        lb_set_pl_status(var_a0);
+        lb_set_pl_status(var_a0, temp_s1);
         return;
     case 2:
-        lb_set_pl_pos(var_a0, (s32) temp_s1);
+        lb_set_pl_pos(var_a0, temp_s1, (s32) temp_s0);
         return;
     case 3:
         lb_set_pl_stage(var_a0, temp_s1);
@@ -80,7 +80,7 @@ block_8:
     default:
         return;
     case 5:
-        lb_set_chair((void *) (((s8) ((s64) var_a0))));
+        lb_set_chair((s32) (((s8) ((s64) var_a0))), temp_s1);
         return;
     case 17:
         lb_recv_myChair(temp_s1, &jtbl_218_0065ECA0);

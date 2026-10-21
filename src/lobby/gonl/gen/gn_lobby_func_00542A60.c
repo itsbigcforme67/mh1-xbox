@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Event_flag_ck();
+s32 Quest_clear_bit_ck();
 s32 lobby_func_005426D0();
 s32 lobby_func_00542790();
 s32 lobby_func_00542820();
 s32 lobby_func_005429A0();
 s32 lobby_func_00542A30();
-s32 Event_flag_ck();                /* extern */
-s32 Quest_clear_bit_ck();           /* extern */
 s32 get_questLevelNum();                     /* extern */
 s32 sub_main_func_004C8600(); /* extern */
 extern u8 User_data;
@@ -20,9 +20,9 @@ s32 lobby_func_00542A60(s32 arg0) {
     temp_v0 = arg0 & 0xFF;
     switch (temp_v0) {                              /* irregular */
     case 0x0:
-        return Event_flag_ck(4, 0xB);
+        return Event_flag_ck(4);
     case 0x1:
-        return Event_flag_ck(4, 0xB);
+        return Event_flag_ck(4);
     case 0x2:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 4) {
             return lobby_func_00542790(0, 0);
@@ -31,33 +31,33 @@ block_127:
     default:
         return 0;
     case 0x3:
-        if ((Event_flag_ck(0x51, 0xB) == 0) && (lobby_func_005426D0(0) != 0)) {
+        if ((Event_flag_ck(0x51) == 0) && (lobby_func_005426D0(0) != 0)) {
             return 1;
         }
         goto block_127;
     case 0x4:
-        return Quest_clear_bit_ck(0x27, 0xB);
+        return Quest_clear_bit_ck(0x27);
     case 0x5:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 8) {
             return lobby_func_00542790(0, 1);
         }
         goto block_127;
     case 0x6:
-        return Quest_clear_bit_ck(9, 0xB);
+        return Quest_clear_bit_ck(9);
     case 0x7:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0xC) {
             return lobby_func_00542790(0, 2);
         }
         goto block_127;
     case 0x8:
-        return Quest_clear_bit_ck(0xBB9, 0xB);
+        return Quest_clear_bit_ck(0xBB9);
     case 0x9:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x10) {
             return lobby_func_00542790(0, 3);
         }
         goto block_127;
     case 0xA:
-        return Quest_clear_bit_ck(0x40B, 0xB);
+        return Quest_clear_bit_ck(0x40B);
     case 0x2F:
         return sub_main_func_004C8600(&User_data, 0xB, 0x72);
     case 0x30:
@@ -68,9 +68,9 @@ block_127:
         }
         goto block_127;
     case 0xC:
-        return Quest_clear_bit_ck(0xBBA, 0xB);
+        return Quest_clear_bit_ck(0xBBA);
     case 0xD:
-        return Event_flag_ck(0x59, 0x14);
+        return Event_flag_ck(0x59);
     case 0xE:
         return sub_main_func_004C8600(&User_data, 6, 0x7A);
     case 0xF:
@@ -83,7 +83,7 @@ block_127:
         }
         goto block_127;
     case 0x12:
-        return Quest_clear_bit_ck(0x7EC, 0x14);
+        return Quest_clear_bit_ck(0x7EC);
     case 0x13:
         return sub_main_func_004C8600(&User_data, 1, 0x81);
     case 0x14:

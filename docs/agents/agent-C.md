@@ -2074,3 +2074,15 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
   across a leaf need a hand fix, widths of `*(&global + k)` reads of unknown globals can be wrong (review).
 - **Next:** compile all gen files (cg loop), link into the G online build (BMATCH, build_pc.sh), give the g_main_*
   names that are no host object storage, run the PC G client with real screens, debug screen by screen.
+
+## G online, round 3 (20 Oct 2026): the PC G client with G's own screens
+- **How:** tools/mhg_gonl.py turns ~570 G lobby functions into PC C (m2c with G's EE ABI, a signature context, byte
+  pointer passes, CallBackWaitInit inlined, G_RENAME for G code under MH1 names); details in docs/network.md 3.12
+  "The PC G online build". Debug loop: build/C/gpc/dbg.sh (test server on 10256 + gdb backtrace, shots).
+- **Reached:** login with G's screens (the Capcom ID select is G's drawing), 6104, the 6881/6883 file list, 68A0, the
+  plaza reads (6203-620A for five plazas).
+- **Shared code touched:** src/lobby/cnet/cnlbsg.c (the receive loop walks GV(258, 293) rows), tools/draft.py
+  (`DRAFT_T=mipsee-*` register names; alabel functions; G's CallBackWaitInit inlined for mhg/lobby),
+  src/pc/rt/rt_online.c (CW_OFS on cw[] reads; G's lobby work area).
+- **Open:** the info file's data (6882) is not requested on the PC yet (the PS2 asks for it); G main functions the PC
+  lacks are weak stand-ins (Net_all_reset, Net_trans_set, net_flps0004/8); browser drawing (Bs*) stays MH1's.
