@@ -100,3 +100,7 @@ A0F030  # yn_spr_data +0x370: sprite coordinates (s16 x/y/w/h)
 A0F03C  # yn_spr_data +0x37C: sprite coordinates (s16 x/y/w/h)
 A0F048  # yn_spr_data +0x388: sprite coordinates (s16 x/y/w/h)
 A0F18C  # yn_spr_data +0x4CC: sprite coordinates (s16 x/y/w/h)
+[game]
+6D2700  # Item_get_tbl row 99 (pick chances / items, u16 pairs; the referee: a bug net gave item 0xF645)
+6D2720  # Item_get_tbl row 100
+6D29C0  # Item_get_tbl row 143

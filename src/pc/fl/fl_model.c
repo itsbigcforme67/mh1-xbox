@@ -207,6 +207,10 @@ static void build_part(fl_model *m, int pi)
 static int bw_nx;
 static const int *bw_xb;
 static const float *bw_xr;
+/* blended bones (fl_skel_pose_groups): their local rotation rows come from flmatBlend of the two motions' local
+ * matrices, as flBlendMotionEx does on the PS2; the translation stays the channel blend */
+static const char *bw_blon;
+static const flmat *bw_bl;
 static void bone_world(const ahi_skel *s, const float (*chan)[9], flmat *out)
 {
     int i, done = 0, guard = 0;
@@ -218,6 +222,8 @@ static void bone_world(const ahi_skel *s, const float (*chan)[9], flmat *out)
             if (ok[i] || (par >= 0 && par < s->nbone && !ok[par]))
                 continue;
             flmat_srt(loc, chan[i], chan[i] + 3, chan[i] + 6);
+            if (bw_blon && bw_blon[i])
+                memcpy(loc, bw_bl[i], 12 * sizeof(float));     /* rows 0-2; row 3 (translation) from chan */
             {   /* flmatRotY33 on the bone's local matrix (row-vector: rows 0-2 times Ry; translation kept) */
                 int k, r;
                 for (k = 0; k < bw_nx; k++)
@@ -685,6 +691,8 @@ void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])
 {
     int gi, i, c;
     float (*tmp)[9] = NULL;
+    char *blon = NULL;
+    flmat *bl = NULL;
     if (s->last_ok && s->last_lock == s->root_lock && !memcmp(s->last, g, sizeof s->last)
         && s->last_nextra == s->nextra && !memcmp(s->last_extra_bone, s->extra_bone, sizeof s->extra_bone)
         && !memcmp(s->last_extra_ry, s->extra_ry, sizeof s->extra_ry) && !getenv("RT_POSE_ALL"))
@@ -708,9 +716,37 @@ void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])
             tmp = malloc(s->skel.nbone * sizeof *tmp);
         bind_channels(&s->skel, tmp);
         eval_group(&s->skel, gi, g[gi].m2, g[gi].t2, tmp);
+        if (!blon) {
+            blon = calloc(s->skel.nbone + 1, 1);
+            bl = malloc((s->skel.nbone + 1) * sizeof *bl);
+        }
         for (i = 0; i < s->skel.nbone; i++) {
             if (s->skel.bone[i].group != gi)
                 continue;
+            if (blon && bl) {   /* flmatBlend (rt_flmat.c, main 0x172xxx [read: asm]): rows x, y mixed, normalised,
+                                 * z = x cross y, y = z cross x (the PS2's flBlendMotionEx per node) */
+                flmat la, lb;
+                float x[3], y[3], z[3], n;
+                int k;
+                flmat_srt(la, s->chan[i], s->chan[i] + 3, s->chan[i] + 6);
+                flmat_srt(lb, tmp[i], tmp[i] + 3, tmp[i] + 6);
+                for (k = 0; k < 3; k++) {
+                    x[k] = la[k] * g[gi].wa + lb[k] * g[gi].wb;
+                    y[k] = la[4 + k] * g[gi].wa + lb[4 + k] * g[gi].wb;
+                }
+                n = sqrtf(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]); if (n > 0) { x[0] /= n; x[1] /= n; x[2] /= n; }
+                n = sqrtf(y[0] * y[0] + y[1] * y[1] + y[2] * y[2]); if (n > 0) { y[0] /= n; y[1] /= n; y[2] /= n; }
+                z[0] = x[1] * y[2] - x[2] * y[1]; z[1] = x[2] * y[0] - x[0] * y[2]; z[2] = x[0] * y[1] - x[1] * y[0];
+                n = sqrtf(z[0] * z[0] + z[1] * z[1] + z[2] * z[2]); if (n > 0) { z[0] /= n; z[1] /= n; z[2] /= n; }
+                y[0] = z[1] * x[2] - z[2] * x[1]; y[1] = z[2] * x[0] - z[0] * x[2]; y[2] = z[0] * x[1] - z[1] * x[0];
+                for (k = 0; k < 3; k++) {
+                    bl[i][k] = x[k];
+                    bl[i][4 + k] = y[k];
+                    bl[i][8 + k] = z[k];
+                }
+                bl[i][3] = bl[i][7] = bl[i][11] = 0.0f;
+                blon[i] = 1;
+            }
             for (c = 0; c < 9; c++) {
                 float a = s->chan[i][c], b = tmp[i][c];
                 if (c >= 3 && c < 6) {          /* angles: shortest way */
@@ -737,8 +773,13 @@ void fl_skel_pose_groups(fl_skel *s, const fl_group_pose g[FL_MAX_GROUPS])
     bw_nx = s->nextra;
     bw_xb = s->extra_bone;
     bw_xr = s->extra_ry;
+    bw_blon = getenv("RT_EULER_BLEND") ? NULL : blon;
+    bw_bl = (const flmat *)bl;
     bone_world(&s->skel, (const float (*)[9])s->chan, s->world);
     bw_nx = 0;
+    bw_blon = NULL;
+    free(blon);
+    free(bl);
     attach_tail_tip(s, g);
     rt_prof_end(RTP_MOTION);
 }
