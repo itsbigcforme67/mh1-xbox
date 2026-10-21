@@ -53,7 +53,7 @@ def ctx_type(t):
         return 'void *'
     if t in ('f32', 'float', 'f64', 'double'):
         return None
-    if t in ('s64', 'u64'):
+    if t in ('s64', 'u64', 'CNET_RES', 'GRES', 'CBRES'):     # (the 8-byte result structs go by value as one s64)
         return 's64'
     return 's32'
 
@@ -225,7 +225,6 @@ def convert(src):
 # MH1 function of that name, so G's gets a name of its own in every generated file
 G_RENAME = {
     '_cnet_CallBack_Result_PersonalDataChange': 'gonl_cb_FileDownload',    # G 0x5BFD00: the file download burst's result
-    'cnLBS_Read_LobbyMemberList': 'gonl_Read_LobbyAllocation',  # G 0x5BAD20..: a plaza's lobbies (6303/6304/6302/630D)
     'cnLBS_Get_PlazaStatus': 'gonl_Get_LobbyStatus',           # G 0x5AC320: a lobby (town) record's status
     'cnLBS_Get_mhPlazaJoinUser': 'gonl_Get_LobbyJoinUser',     # G 0x5AC1F0: a lobby record's two user counts
     'cnLBS_Get_RoomStatus': 'gonl_Get_PlazaStatus',            # G 0x5E37C0: a plaza record's status (MH1: a room's)
