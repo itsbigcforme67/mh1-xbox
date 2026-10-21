@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 Check_CallBackWait();
 s32 lobby_func_00580EC0();
 s32 lobby_func_005C05B0();
@@ -32,7 +31,8 @@ s32 lobby_func_00580FA0(void) {
     case 0x0:                                       /* switch 1 */
         (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) (temp_v1 + 1);
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0x101A)) = 0U;
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x1A;
         lobby_func_005C05B0((s32) lobby_func_00580EC0);
 block_31:
@@ -54,7 +54,8 @@ block_31:
         goto block_31;
     case 0x3:                                       /* switch 1 */
         (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) (temp_v1 + 1);
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x1B;
         temp_a0_2 = (*(void **)&cw);
         temp_v1_3 = (*(u8 *)((u8 *)(temp_a0_2) + 0xB9F));

@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 CallBack_SendMiniData();
 s32 Check_CallBackWait();
 s32 SetDialogData();
@@ -103,7 +102,8 @@ block_39:
         return;
     case 4:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 2;
         lobby_func_0058BAA0(&my_user_mini_data);
         cnLBS_Send_UserMiniData(&my_user_mini_data, 0x40, CallBack_SendMiniData);

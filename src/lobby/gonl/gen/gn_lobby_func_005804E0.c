@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 Check_CallBackWait();
 s32 lobby_func_00580450();
 s32 lobby_func_005E6C80();
@@ -23,9 +22,10 @@ s32 lobby_func_005804E0(s32 arg0) {
     switch (temp_v1_2) {                            /* irregular */
     case 0x0:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = (u8) (temp_v1_2 + 1);
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x15;
-        temp_v0 = (M2C_ERROR(/* Read from unset register $a1 */) * 0x10) + (*(s32 *)&g_main_2EFBC0);
+        temp_v0 = (arg0 * 0x10) + (*(s32 *)&g_main_2EFBC0);
         lobby_func_005E6C80(((*(u16 *)((u8 *)(temp_v0) + 8)) + 1) & 0xFFFF, ((*(u16 *)((u8 *)(temp_v0) + 0xA)) + 1) & 0xFFFF, (s32) lobby_func_00580450);
 block_11:
     default:

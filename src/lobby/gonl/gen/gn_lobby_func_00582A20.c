@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 CallBack_Result_Lobby_LobbyExit();
 s32 Check_CallBackWait();
 s32 Lb_eat_to_bell();
@@ -17,7 +16,7 @@ extern u8 cw;
 extern u8 pNet;
 s32 Fade_busy_ck(); /* extern */
 s32 Get_sw();                                /* extern */
-s32 cnLBS_LobbyExit();             /* extern */
+s32 cnLBS_LobbyExit();              /* extern */
 s32 fade_set(); /* extern */
 s32 font_print_double(); /* extern */
 s32 font_set_stack_no();                 /* extern */
@@ -50,7 +49,8 @@ void lobby_func_00582A20(void) {
         (*(u32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) = 0x12CU;
         Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D));
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = 0U;
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x26;
         cnLBS_LobbyExit(CallBack_Result_Lobby_LobbyExit);
         break;

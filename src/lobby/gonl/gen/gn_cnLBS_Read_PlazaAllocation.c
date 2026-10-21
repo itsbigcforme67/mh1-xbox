@@ -12,7 +12,7 @@ s32 cnLBS_Read_PlazaAllocation(s32 arg1, s32 arg2) {
         memset(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0)), 0, 0x28);
         (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0))) + 0x20)) = 1U;
         (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0))) + 4)) = arg2;
-        (*(void (**)())((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0))) + 0)) = lobby_func_005E2DF0;
+        (*(s32 (**)())((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0))) + 0)) = lobby_func_005E2DF0;
         (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0))) + 0x18)) = (s32) (arg1 & 0xF);
         return 0;
     }

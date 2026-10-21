@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 CallBack_Result_Plaza_LobbyMember2();
 s32 Check_CallBackWait();
 s32 lobby_func_005AE500();
@@ -33,7 +32,8 @@ s32 lbc_in_plaza_03(s64 arg0) {
         } else {
             strcpy(&sp20, (*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + (temp_v1_3 << 5) + 8);
         }
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x12;
         lobby_func_005AE500(&sp20, (s32) CallBack_Result_Plaza_LobbyMember2);
 block_16:

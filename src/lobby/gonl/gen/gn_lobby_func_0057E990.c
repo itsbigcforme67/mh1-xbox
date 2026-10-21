@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 CallBack_Result_Plaza_PlazaEntry2();
 s32 Check_CallBackWait();
 s32 Lb_eat_to_bell();
@@ -44,7 +43,8 @@ void lobby_func_0057E990(void) {
         Lbc_init_network_work();
         (*(u32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) = 0x12CU;
         Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D));
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0xD;
         lobby_func_005E3AB0((s32) CallBack_Result_Plaza_PlazaEntry2);
     default:                                        /* switch 1 */

@@ -65,8 +65,7 @@ void lobby_func_00574D70(s64 arg0, s64 arg1, s64 arg2) {
         return;
     case 2:                                         /* switch 2 */
         lobby_func_00574CB0(arg0, arg1);
-        lobby_func_005C14D0(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8);
-        if (M2C_ERROR(/* Read from unset register $v0 */) == 0) {
+        if (lobby_func_005C14D0(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8) == 0) {
             lobby_func_005737C0((s64) g_lb_636B5C);
             return;
         }

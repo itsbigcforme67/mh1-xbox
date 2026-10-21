@@ -3,8 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 lobby_func_0059F6F0();                      /* extern */
-
+s32 lobby_func_0059F6F0();
 void lobby_func_0059F740(void) {
     lobby_func_0059F6F0();
 }

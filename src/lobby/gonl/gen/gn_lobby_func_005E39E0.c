@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 __cnet_KeepEntryFloorInfo();
 extern u8 pFunc;
 s32 __cnetSub_Set_BgProcess(); /* extern */
-s32 __cnet_KeepEntryFloorInfo();    /* extern */
 s16 __cnet_SendReq_PieceEntry();        /* extern */
 
 s32 lobby_func_005E39E0(s32 arg0, s32 arg1) {

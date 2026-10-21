@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 CallBack_Result_Match_Logout();
 s32 Check_CallBackWait();
 extern u8 COM_R_No_0;
@@ -18,7 +17,7 @@ extern u8 System_timer;
 extern u8 cw;
 extern u8 net_game_invalid_flag;
 extern u8 netr_ret;
-s32 cnLBS_LogoutLobbyServer();        /* extern */
+s32 cnLBS_LogoutLobbyServer();         /* extern */
 s32 cnWrap_BgmFadeOut();     /* extern */
 
 void lbc_game_ready_04(void) {
@@ -46,7 +45,8 @@ void lbc_game_ready_04(void) {
     case 3:
         temp_v1_4 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1_4) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1_4) + 0xB9C)) + 1);
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x31;
         cnLBS_LogoutLobbyServer(CallBack_Result_Match_Logout);
         return;

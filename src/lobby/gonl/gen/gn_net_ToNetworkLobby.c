@@ -5,6 +5,8 @@
 
 s32 Lb_clearChatList();
 s32 MH_lobbyClear();
+s32 lobby_func_0059A1F0();
+s32 lobby_func_0059F410();
 extern u8 g_main_2EF390;
 extern u8 g_main_2EFBAC;
 extern u8 BsLbsErrNum;
@@ -17,8 +19,6 @@ extern u8 quest_price;
 extern u8 tl_member_buff;
 s32 cnLBS_Init_LoginLobbyServer();              /* extern */
 s32 cnLbc_SetIspRestTime();               /* extern */
-s32 lobby_func_0059A1F0();                      /* extern */
-s32 lobby_func_0059F410();                      /* extern */
 s32 memset();        /* extern */
 extern s32 g_lb_6B42D0;
 extern u8 client_work;

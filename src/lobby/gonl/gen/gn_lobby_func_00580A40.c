@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 Check_CallBackWait();
 s32 MH_lobbyClear();
 s32 To_LogOut();
@@ -21,9 +20,10 @@ s32 lobby_func_00580A40(s8 arg0, s8 arg1) {
     switch (temp_v1_2) {                            /* irregular */
     case 0x0:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = (u8) (temp_v1_2 + 1);
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0xA;
-        cnLBS_PlazaEntry(M2C_ERROR(/* Read from unset register $a2 */) & 0xFFFF, M2C_ERROR(/* Read from unset register $a1 */) & 0xFFFF, 0, (s32) lobby_func_00580B20);
+        cnLBS_PlazaEntry(arg0 & 0xFFFF, arg1 & 0xFFFF, 0, (s32) lobby_func_00580B20);
 block_10:
         return 2;
     case 0x1:

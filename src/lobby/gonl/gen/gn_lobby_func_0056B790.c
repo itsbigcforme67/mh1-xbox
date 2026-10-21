@@ -48,6 +48,7 @@ s32 lobby_func_0056B790(void) {
     s32 temp_v0_3;
     s32 temp_v0_4;
     s32 temp_v0_5;
+    s32 temp_v0_6;
     s32 temp_v1;
     s32 temp_v1_2;
     s32 temp_v1_3;
@@ -89,8 +90,7 @@ loop_6:
                 lobby_func_0059F6C0(g_lb_636590);
                 SetHelpLineMsg(0x1C);
             } else {
-                lobby_func_005C14D0(&g_main_302290, 8);
-                (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) = (s16) M2C_ERROR(/* Read from unset register $v0 */);
+                (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) = lobby_func_005C14D0(&g_main_302290, 8);
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x613)) = 0;
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) = 3;
                 lobby_func_0059F6C0(g_lb_636594);
@@ -158,9 +158,9 @@ block_99:
         goto block_99;
     case 2:                                         /* switch 1 */
         (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0);
-        lobby_func_005C14D0(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8);
+        temp_v0_4 = lobby_func_005C14D0(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8);
         temp_v1_3 = temp_s0 & 0xFFFF;
-        if (M2C_ERROR(/* Read from unset register $v0 */) == 0) {
+        if (temp_v0_4 == 0) {
             if (temp_v1_3 & 0x240) {
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) = 1;
                 lobby_func_0059F6E0(0xB000240A);
@@ -181,7 +181,7 @@ block_99:
                 }
                 cnWrap_SoundRequest(6);
             } else {
-                (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x611)) = Lb_cursorUD((s32) (s8) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x611)), M2C_ERROR(/* Read from unset register $v0 */));
+                (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x611)) = Lb_cursorUD((s32) (s8) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x611)), temp_v0_4);
             }
         }
         goto block_99;
@@ -226,15 +226,14 @@ block_99:
         goto block_99;
     case 4:                                         /* switch 1 */
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_4 = Lb_select();
-        switch (temp_v0_4) {                        /* switch 2; irregular */
+        temp_v0_5 = Lb_select();
+        switch (temp_v0_5) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2E)) = 0U;
             memcpy((*(void **)&cw) + 0xEE7, (u8 *)&g_main_302290 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18), 8);
             memcpy((*(void **)&cw) + 0xEEF, (u8 *)&g_main_302290 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18) + 8, 0x10);
             lobby_func_005C15F0((s32) &g_main_302290, (s32) (u8) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)), 8);
-            lobby_func_005C14D0(&g_main_302290, 8);
-            (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) = (s16) M2C_ERROR(/* Read from unset register $v0 */);
+            (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) = lobby_func_005C14D0(&g_main_302290, 8);
             if (((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) != 0) && ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) != 0)) {
                 (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) = (s16) ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) - 1);
             }
@@ -251,8 +250,8 @@ block_99:
         goto block_99;
     case 5:                                         /* switch 1 */
         if ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x612)) == 0) {
-            temp_v0_5 = SaveNetFile_ForLobby();
-            if ((temp_v0_5 != -1) && (temp_v0_5 != 1)) {
+            temp_v0_6 = SaveNetFile_ForLobby();
+            if ((temp_v0_6 != -1) && (temp_v0_6 != 1)) {
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
                 goto block_99;
             }

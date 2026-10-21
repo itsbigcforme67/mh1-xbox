@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 CallBack_Result_ReadFileDownload();
 s32 Check_CallBackWait();
 s32 To_LogOut();
@@ -27,6 +26,7 @@ s32 lobby_func_00581210(void) {
     s32 temp_a0;
     s32 temp_a0_2;
     s32 temp_a0_3;
+    s32 temp_a3;
     s32 temp_s0;
     s32 var_s0;
     u8 temp_v1_2;
@@ -47,7 +47,8 @@ s32 lobby_func_00581210(void) {
     case 0x0:                                       /* switch 1 */
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = (u8) (temp_v1_2 + 1);
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0x101A)) = 0U;
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x19;
         lobby_func_005BF990((s32) CallBack_Result_ReadFileDownload);
 block_46:
@@ -86,19 +87,21 @@ block_46:
         if ((*(u8 *)((u8 *)(temp_v1_4) + 0xB9E)) != 0) {
             cnLBS_Get_FileDownloadInfo(&sp3F, &sp38);
             temp_a2 = (*(void **)&cw);
-            temp_s0 = ((sp3F - (*(u8 *)((u8 *)(temp_a2) + 0xB9E))) & 0xFF) * 8;
+            temp_a3 = (sp3F - (*(u8 *)((u8 *)(temp_a2) + 0xB9E))) & 0xFF;
+            temp_s0 = temp_a3 * 8;
             temp_a1 = (*(void **)&g_main_2EF390) + 0x23F4 + temp_s0;
             sp38 += temp_s0;
             if (((*(s32 *)((u8 *)(sp38) + 0)) != (*(s32 *)((u8 *)(temp_a1) + 0))) || ((*(s32 *)((u8 *)(sp38) + 4)) != (*(s32 *)((u8 *)(temp_a1) + 4)))) {
                 (*(u8 *)((u8 *)(temp_a2) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a2) + 0xB9D)) + 1);
-                CallBackWaitInit();
-                temp_a0 = M2C_ERROR(/* Read from unset register $a3 */) & 0xFF;
+                (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+                (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
+                temp_a0 = temp_a3 & 0xFF;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x1C;
                 if (temp_a0 != 0) {
-                    lobby_func_005BFD60(M2C_ERROR(/* Read from unset register $a3 */), (s32) ((u8 *)&(*(u8 *)((u8 *)&quest_title + 0x30)) + ((temp_a0 - 1) << 9)), 0x200, (s32) lobby_func_005817C0);
+                    lobby_func_005BFD60(temp_a3, (s32) ((u8 *)&(*(u8 *)((u8 *)&quest_title + 0x30)) + ((temp_a0 - 1) << 9)), 0x200, (s32) lobby_func_005817C0);
                     memcpy((*(void **)&g_main_2EF390) + 0x23F4 + temp_s0, sp38, 8);
                 } else {
-                    lobby_func_005BFD60(M2C_ERROR(/* Read from unset register $a3 */), (*(void **)&g_main_2EF390) + 0x23F4 + 0x20, (*(s32 *)((u8 *)(sp38) + 0)), (s32) lobby_func_005817C0);
+                    lobby_func_005BFD60(temp_a3, (*(void **)&g_main_2EF390) + 0x23F4 + 0x20, (*(s32 *)((u8 *)(sp38) + 0)), (s32) lobby_func_005817C0);
                     memcpy((*(void **)&g_main_2EF390) + 0x23F4 + temp_s0, sp38, 8);
                 }
             } else {

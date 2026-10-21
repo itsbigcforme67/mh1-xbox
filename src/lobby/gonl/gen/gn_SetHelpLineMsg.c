@@ -3,9 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 lobby_func_0059F6F0();                   /* extern */
-
+s32 lobby_func_0059F6F0();
 void SetHelpLineMsg(s32 arg0) {
-    lobby_func_0059F6F0(arg0 * 4);
+    lobby_func_0059F6F0();
 }
 

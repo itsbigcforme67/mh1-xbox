@@ -3,11 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 Check_CallBackWait();
 s32 lobby_func_0057C020();
 s32 lobby_func_005E6B80();
 extern u8 cw;
+extern u8 my_user_mini_data;
+
 s32 lobby_func_0057C0B0(void) {
     s32 var_a0;
     u8 temp_v1_2;
@@ -19,8 +20,9 @@ s32 lobby_func_0057C0B0(void) {
     case 0x0:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = (u8) (temp_v1_2 + 1);
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 3;
-        CallBackWaitInit();
-        if ((*(u8 *)((u8 *)(M2C_ERROR(/* Read from unset register $a1 */)) + 2)) != 6) {
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
+        if ((*(u8 *)((u8 *)(&my_user_mini_data) + 2)) != 6) {
             var_a0 = 0;
         } else {
             var_a0 = 3;

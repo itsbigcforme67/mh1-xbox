@@ -79,7 +79,7 @@ def write_context():
                 ps = [ctx_type(re.sub(r'\b\w+$', '', p.strip()) or 's32') for p in params.split(',')]
             if None in ps or '...' in params:
                 continue
-            r = 'void' if ret == 'void' else (ctx_type(ret) or None)
+            r = 's32' if ret == 'void' else (ctx_type(ret) or None)     # (void as s32: G code reads a v0 its callee left)
             if r is None:
                 continue
             sigs[name] = (r, ps)
@@ -146,6 +146,19 @@ def convert(src):
     used = set(re.findall(r'\bg_(?:main|sub|lb)_[0-9A-F]{6}\b', src))
     decl = ''.join('extern u8 %s;\n' % n for n in sorted(used) if not re.search(r'extern [^;]*\b%s\b' % n, src))
     return declare_ctx_calls(decl + undeclared(src))
+
+
+# G functions that carry an MH1 name (the split matched them by place) but are other code: the PC's cnet C keeps the
+# MH1 function of that name, so G's gets a name of its own in every generated file
+G_RENAME = {
+    '_cnet_CallBack_Result_PersonalDataChange': 'gonl_cb_FileDownload',    # G 0x5BFD00: the file download burst's result
+}
+
+
+def renamed(src):
+    for a, b in G_RENAME.items():
+        src = re.sub(r'\b%s\b' % re.escape(a), b, src)
+    return src
 
 
 KEEP_MH1 = {'nwDispStr_Html', 'Display_StringData', 'Analysis_StringData', 'DispDialogData', 'Draw_menu_square'}
@@ -463,7 +476,7 @@ def main():
         have |= set(re.findall(r'^[A-Za-z_][\w \*]*?\b(\w+)\([^;]*$', open(os.path.join(ROOT, f)).read(), re.M))
     names = [n for n in names if n not in have]
     for n in names:
-        path = os.path.join(out, 'gn_' + n + '.c')     # (gn_: an object name of its own; src/lobby/b/nm has files named after functions too)
+        path = os.path.join(out, 'gn_' + G_RENAME.get(n, n) + '.c')     # (gn_: an object name of its own; src/lobby/b/nm has files named after functions too)
         if os.path.exists(path) and 'HAND-FIXED' in open(path).read() and '--force' not in sys.argv:
             continue
         d = draft(n)
@@ -471,8 +484,8 @@ def main():
             bad.append(n)
             d = '#error "m2c could not decompile %s: write it by hand"\n/*\n%s*/\n' % (n, d.replace('*/', '* /'))
         else:
-            d = stack_buffers(convert(d), gaddr(n))
-        open(path, 'w').write(HEADER % (n, gaddr(n)) + d)
+            d = renamed(stack_buffers(convert(d), gaddr(n)))
+        open(path, 'w').write(HEADER % (G_RENAME.get(n, n), gaddr(n)) + d)
     if NEW_NAMES:
         write_names(NEW_NAMES)
     print('%d functions, %d by hand (%s), %d new names' % (len(names), len(bad), ' '.join(bad), len(NEW_NAMES)))

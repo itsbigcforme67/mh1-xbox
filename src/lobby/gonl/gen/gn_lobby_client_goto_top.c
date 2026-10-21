@@ -3,12 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 CallBack_Result_GotoTop();
 s32 Check_CallBackWait();
 extern u8 cw;
 extern u8 pNet;
-s32 cnLBS_TopPageJump();           /* extern */
+s32 cnLBS_TopPageJump();       /* extern */
 
 void lobby_client_goto_top(void) {
     u8 temp_v1_2;
@@ -20,9 +19,10 @@ void lobby_client_goto_top(void) {
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = (u8) (temp_v1_2 + 1);
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x32;
-        cnLBS_TopPageJump(CallBack_Result_GotoTop);
+        cnLBS_TopPageJump(CallBack_Result_GotoTop, temp_v1 + 0xB9C);
         return;
     case 1:
         Check_CallBackWait();

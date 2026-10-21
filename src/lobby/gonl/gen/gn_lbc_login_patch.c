@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 Check_CallBackWait();
 s32 Lbs_load();
 s32 To_LogOut();
@@ -13,7 +12,7 @@ extern u8 jtbl_575_0065E890;
 extern u8 network_work;
 s32 Net_trans_set();                     /* extern */
 s32 all_reset();                                /* extern */
-s32 cnLBS_Answer_PatchFinish();                 /* extern */
+s32 cnLBS_Answer_PatchFinish(); /* extern */
 s32 cnLBS_Get_PatchInformation(); /* extern */
 s32 ms_net_patch_set(); /* extern */
 s32 ms_net_patch_set_init();                    /* extern */
@@ -62,8 +61,9 @@ void lbc_login_patch(void) {
     case 4:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
-        CallBackWaitInit();
-        cnLBS_Answer_PatchFinish();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
+        cnLBS_Answer_PatchFinish(0xE10, temp_a1, temp_a2, temp_a3);
         return;
     case 5:
         Check_CallBackWait();

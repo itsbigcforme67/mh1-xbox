@@ -10,8 +10,8 @@ s32 __cnetSub_Get_RestBgWork();                     /* extern */
 s32 cnLBS_Init_LobbyBgProcess();                /* extern */
 s32 cnLBS_Read_PlazaExplain(); /* extern */
 s32 cnLBS_Read_PlazaJoinUser(); /* extern */
-s32 cnLBS_Read_PlazaName();   /* extern */
-s32 cnLBS_Read_PlazaStatus(); /* extern */
+s32 cnLBS_Read_PlazaName();    /* extern */
+s32 cnLBS_Read_PlazaStatus();  /* extern */
 s32 cnLBS_Read_RoomProperty(); /* extern */
 
 void lobby_func_005ABC70(void *arg0) {

@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 CallBack_SendMiniData();
 s32 Check_CallBackWait();
 s32 Lb_make_quest_tbl();
@@ -51,7 +50,8 @@ void lbc_login_finish(void) {
         }
         break;
     case 1:                                         /* switch 1 */
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         if ((*(u8 *)((u8 *)&CnetWork + 0x5)) == 0) {
             if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA5E)) == 0) {
                 var_a1 = 0x4C;

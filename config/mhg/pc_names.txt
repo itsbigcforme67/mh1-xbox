@@ -106,6 +106,8 @@ lobby gnet_6145_ans 0x5E27C0  # G command table row (docs/network.md 3.12)
 lobby gnet_6146_ans 0x5E27D0  # G command table row (docs/network.md 3.12)
 lobby gnet_660B_ans 0x5BCA70  # G command table row (docs/network.md 3.12)
 lobby CnetSys_g 0x6FA760  # the start of G's lobby-server client work as the G C sees it (config/mhg/g_names.txt PROVIDE, include/lbnet.h)
+lobby g_lb_5E7812 0x5E7812  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_5E7814 0x5E7814  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_5FBBF0 0x5FBBF0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_5FBC10 0x5FBC10  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_5FBC28 0x5FBC28  # tools/mhg_gonl.py: a G address the G online code uses, no name yet

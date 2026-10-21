@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 Check_CallBackWait();
 s32 lobby_func_00580760();
 s32 lobby_func_005E6E30();
@@ -36,7 +35,8 @@ s32 lobby_func_005807E0(s8 *arg0) {
             (*(s8 *)&g_main_2EFBB8) = 0x64;
             (*(s8 **)&g_main_2EFBBC) = arg0;
             (*(s16 *)&g_main_2EFBBA) = Visual_main(arg0, temp_a1_2);
-            CallBackWaitInit();
+            (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+            (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x16;
             M2C_ERROR(/* unknown instruction: ldr $a0, -0x2fb8($gp) */);
             lobby_func_005E6E30(M2C_ERROR(/* unknown instruction: ldl $a0, -0x2fb1($gp) */), (s32) lobby_func_00580760);

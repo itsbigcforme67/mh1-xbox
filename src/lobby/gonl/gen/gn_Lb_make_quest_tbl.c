@@ -1,4 +1,4 @@
-/* G online (PC): Lb_make_quest_tbl, written from Monster Hunter G's code at lobby 0x55FA40 by tools/mhg_gonl.py (an m2c draft with
+/* HAND-FIXED (a1 across lb_guild_check_keyQuest). G online (PC): Lb_make_quest_tbl, written from Monster Hunter G's code at lobby 0x55FA40 by tools/mhg_gonl.py (an m2c draft with
  * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
@@ -6,6 +6,9 @@
 s32 lb_get_quest_level();
 s32 lb_guild_check_keyQuest();
 s32 lb_key_quest_ck();
+s32 lobby_func_005434A0();
+s32 lobby_func_00543520();
+s32 lobby_func_005438F0();
 s32 lobby_func_0055EB40();
 s32 lobby_func_0055FA20();
 extern u8 g_main_2EFA68;
@@ -16,15 +19,13 @@ extern u8 guildStr;
 s32 Quest_clear_bit_ck();                        /* extern */
 u16 get_flag_quest();                            /* extern */
 s32 get_new_quest();                    /* extern */
-s32 lobby_func_005434A0();                       /* extern */
-s32 lobby_func_00543520(); /* extern */
-s32 lobby_func_005438F0();                       /* extern */
 s32 memset();             /* extern */
 s32 ran_suu();                               /* extern */
 extern u16 lb_quest_all;
 extern u16 *quest_lv_tbl;
 
 void Lb_make_quest_tbl(void) {
+    s32 g_eb40;
     u8 g_frame[0x140] __attribute__((aligned(16)));   /* G's stack frame */
 #define spA0 (*(u8 * *)(g_frame + 0xA0))
 #define spB0 (*(u8 * *)(g_frame + 0xB0))
@@ -38,6 +39,7 @@ void Lb_make_quest_tbl(void) {
 #define sp130 (*(s32 *)(g_frame + 0x130))
     s16 var_v1;
     s32 temp_s1;
+    s32 temp_s4;
     s32 var_a1;
     s32 var_s0_2;
     s32 var_s0_3;
@@ -60,7 +62,6 @@ void Lb_make_quest_tbl(void) {
     u16 temp_a0_2;
     u16 temp_a2;
     u16 temp_a2_2;
-    u16 temp_s4;
     u16 temp_v1;
     u16 temp_v1_2;
     u16 temp_v1_3;
@@ -91,7 +92,7 @@ void Lb_make_quest_tbl(void) {
 loop_2:
         temp_a0 = (*(u16 *)var_s1);
         if (temp_a0 != 0) {
-            if (lobby_func_005434A0(temp_a0) == 0) {
+            if (lobby_func_005434A0((s32) temp_a0) == 0) {
                 var_s3 += 1;
                 (*(u16 *)var_s0) = (*(u16 *)var_s1);
                 var_s0 += 2;
@@ -107,7 +108,7 @@ loop_12:
         if (var_s0_2 < 8) {
             temp_a0_2 = (*(u16 *)var_s2);
             if (temp_a0_2 != 0) {
-                if (((s32) temp_a0_2 < 0x2710) && (lobby_func_005438F0(temp_a0_2) != 1) && (lobby_func_005434A0((*(u16 *)var_s2)) == 0)) {
+                if (((s32) temp_a0_2 < 0x2710) && (lobby_func_005438F0((s32) temp_a0_2) != 1) && (lobby_func_005434A0((s32) (*(u16 *)var_s2)) == 0)) {
                     var_s0_2 += 1;
                     (*(u16 *)var_s3_2) = (*(u16 *)var_s2);
                     var_s3_2 += 2;
@@ -159,8 +160,8 @@ loop_12:
         }
         if (sp130 == var_s6_2) {
             sp110 = get_flag_quest(sp130);
-            lobby_func_0055EB40(sp130);
-            if ((sp110 == 0) && (lb_guild_check_keyQuest(sp130) == 1) && !(M2C_ERROR(/* Read from unset register $a1 */) & 0xFFFF)) {
+            g_eb40 = lobby_func_0055EB40(sp130);   /* HAND-FIXED: kept in $a1 across the leaf below */
+            if ((sp110 == 0) && (lb_guild_check_keyQuest(sp130) == 1) && !(g_eb40 & 0xFFFF)) {
                 switch (sp130) {
                 case 0:
                     if (Quest_clear_bit_ck(0x27U) == 0) {
@@ -210,7 +211,7 @@ loop_12:
                 var_a0 = var_s3_3;
 loop_48:
                 if (sp110 == (*(u16 *)var_a0)) {
-                    lobby_func_00543520(var_s3_3, sp110, 7, 1, *var_s5_2);
+                    lobby_func_00543520(var_s3_3, (s32) sp110, 7, 1, (s32) *var_s5_2);
                 } else {
                     var_s0_3 += 1;
                     var_a0 += 2;
@@ -219,7 +220,7 @@ loop_48:
                     }
                 }
                 if ((var_s0_3 == 8) && (sp110 != 0)) {
-                    lobby_func_00543520(var_s3_3, sp110, 7, 1, *var_s5_2);
+                    lobby_func_00543520(var_s3_3, (s32) sp110, 7, 1, (s32) *var_s5_2);
                 }
             }
         }
@@ -229,7 +230,7 @@ loop_48:
             var_a0_2 = var_s3_3;
 loop_57:
             if (temp_s4 == (*(u16 *)var_a0_2)) {
-                lobby_func_00543520(var_s3_3, temp_s4, 0, 1, *var_s5_2);
+                lobby_func_00543520(var_s3_3, temp_s4, 0, 1, (s32) *var_s5_2);
             } else {
                 var_s0_4 += 1;
                 var_a0_2 += 2;
@@ -238,7 +239,7 @@ loop_57:
                 }
             }
             if ((var_s0_4 == 8) && (temp_s4 != 0)) {
-                lobby_func_00543520(var_s3_3, temp_s4, 0, 1, *var_s5_2);
+                lobby_func_00543520(var_s3_3, temp_s4, 0, 1, (s32) *var_s5_2);
             }
         } else {
             sp120 = 0;
@@ -287,8 +288,8 @@ loop_68:
                                 }
                             } else {
 block_92:
-                                if (lobby_func_005438F0((*(u16 *)var_s2_2)) != 1) {
-                                    lobby_func_00543520(var_s3_3, (*(u16 *)var_s2_2), temp_s1 & 0xFF, 0, *var_s5_2);
+                                if (lobby_func_005438F0((s32) (*(u16 *)var_s2_2)) != 1) {
+                                    lobby_func_00543520(var_s3_3, (s32) (*(u16 *)var_s2_2), temp_s1 & 0xFF, 0, (s32) *var_s5_2);
                                 }
                             }
                         }

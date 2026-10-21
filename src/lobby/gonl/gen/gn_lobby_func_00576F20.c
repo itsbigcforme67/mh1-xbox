@@ -43,6 +43,7 @@ void lobby_func_00576F20(void) {
     s16 temp_s0_2;
     s16 temp_s1;
     s32 temp_s0;
+    s32 temp_s4;
     s32 var_s1;
     s64 temp_s2;
     s64 temp_s3;
@@ -51,14 +52,12 @@ void lobby_func_00576F20(void) {
     s64 temp_s3_4;
     s64 temp_s3_5;
     s64 var_s0;
-    u8 *temp_s4;
     u8 *temp_v0;
 
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
     temp_s0 = lobby_func_00559FF0((*(s32 *)&g_main_2EFBC0) + ((*(s16 *)((u8 *)&tl_member_buff + 0x1380)) * 0x10) + 4) & 0xFFFF;
-    lobby_func_00559C30(temp_s0);
-    temp_s4 = M2C_ERROR(/* Read from unset register $v0 */);
+    temp_s4 = lobby_func_00559C30(temp_s0);
     flfntLocate(0xE2, 0x82);
     font_print((*(s32 * *)((u8 *)&tl_msg_tbl + 0x28)));
     flfntLocate(0x15A, 0x82);
@@ -78,7 +77,7 @@ void lobby_func_00576F20(void) {
     temp_s3_2 = ((s16) ((temp_s3 + 0x16)));
     flfntLocate(0xE2, temp_s3_2);
     font_print(&lit_2316, (*(s32 *)((u8 *)&tl_msg_tbl + 0x30)));
-    if (temp_s4 == NULL) {
+    if (temp_s4 == 0) {
         flfntLocate(0x15A, temp_s3_2);
         font_print(&lit_2316, lb_ibox_str);
     } else {
@@ -114,7 +113,7 @@ void lobby_func_00576F20(void) {
     flfntLocate(0xE2, temp_s3_4);
     font_print(&lit_2316, (*(s32 *)((u8 *)&tl_msg_tbl + 0x38)));
     flfntLocate(0x15A, temp_s3_4);
-    if (temp_s4 != NULL) {
+    if (temp_s4 != 0) {
         font_print(&lit_2316, (*(s32 *)((u8 *)&D_00528A80 + ((*(u8 *)((u8 *)(temp_s4) + 0x1C)) * 4))));
     } else {
         font_print(&lit_2316, (*(s32 *)((u8 *)&shop_process2_help + 0x1C)));

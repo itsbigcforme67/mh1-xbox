@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 To_LogOut();
 s32 lobby_func_0058BAA0();
 extern u8 CnetWork;
@@ -49,7 +48,8 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 4;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 6;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
-                CallBackWaitInit();
+                (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+                (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
                 lobby_func_0058BAA0(&my_user_mini_data);
                 temp_v0 = (*(void **)&cw);
                 cnLBS_Send_LoginUserAccount(temp_v0 + 0x1C0, temp_v0 + 0x1C8, &my_user_mini_data);
@@ -58,7 +58,8 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 4;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 6;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
-                CallBackWaitInit();
+                (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+                (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
                 lobby_func_0058BAA0(&my_user_mini_data);
                 cnLBS_Send_LoginUserAccount(&my_user_id, &my_user_handle, &my_user_mini_data);
                 return;
@@ -72,7 +73,8 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
             memset((*(void **)&cw) + 0x1C8, 0, 0x10);
             cnetGet_Login_DecideUserHandle((*(void **)&cw) + 0x1C8);
             memcpy(&my_user_handle, (*(void **)&cw) + 0x1C8, 0x10);
-            CallBackWaitInit();
+            (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+            (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 6;
             return;
         case 5:                                     /* switch 1 */

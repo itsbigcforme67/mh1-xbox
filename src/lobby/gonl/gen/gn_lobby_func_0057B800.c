@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 Check_CallBackWait();
 s32 lobby_func_0057B770();
 s32 lobby_func_005C08B0();
@@ -11,10 +10,11 @@ s32 lobby_func_005C09F0();
 extern u8 CnetWork;
 extern u8 cw;
 s32 sub_main_func_004C8F50(); /* extern */
-s32 sub_main_func_004C8F90();       /* extern */
+s32 sub_main_func_004C8F90();           /* extern */
 
 s32 lobby_func_0057B800(void) {
     s32 var_s1;
+    s32 temp_a2;
     s32 temp_s0;
     s32 var_s0;
     u8 temp_a0;
@@ -27,7 +27,8 @@ s32 lobby_func_0057B800(void) {
     case 0x0:                                       /* switch 1 */
         (*(u8 *)((u8 *)(temp_a1) + 0xB9D)) = (u8) (temp_a0 + 1);
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 5;
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         lobby_func_005C08B0((s32) (*(u8 *)((u8 *)&CnetWork + 0x5)), (s32) lobby_func_0057B770);
 block_26:
         return 2;
@@ -48,10 +49,11 @@ block_26:
             var_s1 = 2;
 block_21:
             temp_s0 = sub_main_func_004C8F50(var_s1, temp_a1, temp_a1 + 0xB9D);
-            sub_main_func_004C8F90(var_s1, var_s0);
-            CallBackWaitInit();
+            temp_a2 = sub_main_func_004C8F90(var_s1, var_s0);
+            (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+            (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 6;
-            lobby_func_005C09F0((s32) (*(u8 *)((u8 *)&CnetWork + 0x5)), (s32) (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9E)), M2C_ERROR(/* Read from unset register $a2 */), temp_s0 & 0xFFFF, (s32) lobby_func_0057B770);
+            lobby_func_005C09F0((s32) (*(u8 *)((u8 *)&CnetWork + 0x5)), (s32) (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9E)), temp_a2, temp_s0 & 0xFFFF, (s32) lobby_func_0057B770);
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 1U;
             goto block_26;
         case 4:                                     /* switch 2 */

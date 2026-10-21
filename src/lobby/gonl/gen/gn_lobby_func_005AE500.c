@@ -39,7 +39,7 @@ s32 lobby_func_005AE500(s8 *arg0, s32 arg1) {
         } while (var_v1_2 > 0);
         (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xEB0))) + 0x20)) = 1U;
         (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xEB0))) + 4)) = arg1;
-        (*(void (**)())((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xEB0))) + 0)) = lobby_func_005AE5D0;
+        (*(s32 (**)())((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xEB0))) + 0)) = lobby_func_005AE5D0;
         return 0;
     }
     return -1;

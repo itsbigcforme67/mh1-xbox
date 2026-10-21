@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 Check_CallBackWait();
 s32 lobby_func_0057F610();
 s32 lobby_func_0057F6A0();
@@ -19,9 +18,10 @@ s32 Lbs_GetLobbyMemberList(s32 arg0) {
     switch (temp_v1_2) {                            /* irregular */
     case 0x0:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = (u8) (temp_v1_2 + 1);
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x10;
-        lobby_func_005ADC70(((M2C_ERROR(/* Read from unset register $a1 */) & 0xFFFF) + 1) & 0xFFFF, (s32) lobby_func_0057F610);
+        lobby_func_005ADC70(((arg0 & 0xFFFF) + 1) & 0xFFFF, (s32) lobby_func_0057F610);
 block_16:
     default:
         return 2;
@@ -30,9 +30,10 @@ block_16:
         goto block_16;
     case 0x2:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = (u8) (temp_v1_2 + 1);
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x11;
-        lobby_func_005ADDA0(((M2C_ERROR(/* Read from unset register $a1 */) & 0xFFFF) + 1) & 0xFFFF, (s32) lobby_func_0057F6A0);
+        lobby_func_005ADDA0(((arg0 & 0xFFFF) + 1) & 0xFFFF, (s32) lobby_func_0057F6A0);
         goto block_16;
     case 0x3:
         Check_CallBackWait();

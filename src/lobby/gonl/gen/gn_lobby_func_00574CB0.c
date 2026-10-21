@@ -18,10 +18,11 @@ void lobby_func_00574CB0(s64 arg0, s64 arg1) {
     u8 g_frame[0xA0] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp40 (*(s32 *)(g_frame + 0x40))
 #define sp80 (*(s32 *)(g_frame + 0x80))
+    s32 temp_s0;
 
-    lobby_func_005C14D0(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8);
+    temp_s0 = lobby_func_005C14D0(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8);
     flfntLocate(((s16) (((((s16) (arg0))) + 0x100))), ((s16) (((((s16) (arg1))) + 0x10))));
-    sprintf(&sp80, &g_lb_63E268, 8 - M2C_ERROR(/* Read from unset register $v0 */));
+    sprintf(&sp80, &g_lb_63E268, 8 - temp_s0);
     han2zen(&sp80, &sp40);
     font_print(&g_lb_63E270, (*(s32 *)((u8 *)&tl_msg_tbl + 0x18)), &sp40, (*(s32 *)((u8 *)&lb_shop_msg + 0x8)));
 }

@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 Check_CallBackWait();
 s32 cnLBS_Read_PlazaAllocation();
 extern u8 cw;
@@ -16,7 +15,8 @@ s32 Lbs_ExitAndEnterPlaza(void) {
     switch (temp_v1_2) {                            /* irregular */
     case 0x0:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = (u8) (temp_v1_2 + 1);
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 9;
         cnLBS_Read_PlazaAllocation(0, 0xF);
 block_13:

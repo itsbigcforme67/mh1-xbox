@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 Check_CallBackWait();
 s32 Lb_eat_to_bell();
 s32 To_LogOut();
@@ -13,7 +12,7 @@ extern u8 lb_rule_member;
 extern u8 pNet;
 s32 Get_sw2();                               /* extern */
 s32 check_warning_level(); /* extern */
-s32 cnLBS_Answer_LoginWarningMessage();  /* extern */
+s32 cnLBS_Answer_LoginWarningMessage(); /* extern */
 s32 cnWrap_FontDisp(); /* extern */
 s32 cnWrap_SetFontColor();               /* extern */
 s32 flfntSetSize();             /* extern */
@@ -39,7 +38,8 @@ void lbc_login_warning_message(void) {
     case 0:
         if (check_warning_level((*(u8 *)((u8 *)(temp_a2) + 0xFA8A)), temp_a1, temp_a2, temp_a3, temp_a4) == 0) {
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 5U;
-            CallBackWaitInit();
+            (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+            (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
             cnLBS_Answer_LoginWarningMessage(0);
             return;
         }
@@ -89,8 +89,9 @@ void lbc_login_warning_message(void) {
         return;
     case 4:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
-        CallBackWaitInit();
-        cnLBS_Answer_LoginWarningMessage(1);
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
+        cnLBS_Answer_LoginWarningMessage(1, temp_a1, temp_a2, temp_a3, temp_a4);
         return;
     case 5:
         Check_CallBackWait();

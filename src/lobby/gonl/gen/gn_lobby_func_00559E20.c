@@ -4,26 +4,27 @@
 #include "../gonl.h"
 
 s32 lobby_func_00559C30();
-s32 Lb_get_quest_type();                     /* extern */
+s32 Lb_get_quest_type();                         /* extern */
 extern u8 lb_quest_font_color;
 
 s16 lobby_func_00559E20(s32 arg0) {
     s32 temp_a0;
+    s32 temp_v0;
     s32 var_v0;
 
-    lobby_func_00559C30(arg0);
+    temp_v0 = lobby_func_00559C30(arg0);
     temp_a0 = arg0 & 0xFFFF;
     if (temp_a0 >= 0xC350) {
-        if (M2C_ERROR(/* Read from unset register $v0 */) == 0) {
+        if (temp_v0 == 0) {
             return 0xA;
         }
-        if ((*(u16 *)((u8 *)(M2C_ERROR(/* Read from unset register $v0 */)) + 0x1E)) == temp_a0) {
-            var_v0 = Lb_get_quest_type(M2C_ERROR(/* Read from unset register $v0 */));
+        if ((*(u16 *)((u8 *)(temp_v0) + 0x1E)) == temp_a0) {
+            var_v0 = Lb_get_quest_type(temp_v0);
             goto block_8;
         }
         return 0xA;
     }
-    var_v0 = Lb_get_quest_type(M2C_ERROR(/* Read from unset register $v0 */));
+    var_v0 = Lb_get_quest_type(temp_v0);
 block_8:
     return (*(s32 *)((u8 *)&lb_quest_font_color + (var_v0 * 2)));
 }

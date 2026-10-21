@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 CallBack_ReadCurrentPlace();
 s32 CallBack_Result_Plaza_LobbyEntry();
 s32 Check_CallBackWait();
@@ -19,7 +18,7 @@ extern u8 cw;
 extern u8 game_w;
 extern u8 pNet;
 s32 Set_userdata();                       /* extern */
-s32 cnLBS_Read_CurrentPlace();     /* extern */
+s32 cnLBS_Read_CurrentPlace();      /* extern */
 s32 memset();        /* extern */
 extern u8 player_work;
 
@@ -49,7 +48,8 @@ void lobby_return_to_lobby(void) {
             var_s0 += 0xA00;
         } while (var_s1 < 0xA);
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 1;
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         cnLBS_Read_CurrentPlace(CallBack_ReadCurrentPlace);
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0U;
     default:                                        /* switch 1 */
@@ -64,7 +64,8 @@ block_43:
         switch (temp_a0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             (*(u8 *)((u8 *)(temp_a2) + 0xB9D)) = (u8) (temp_a0 + 1);
-            CallBackWaitInit();
+            (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+            (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
             cnLBS_Read_PlazaAllocation(0, 0xF);
             Set_userdata((u8 *)&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00));
             Lbc_SendMiniData();
@@ -88,7 +89,8 @@ block_43:
             (*(u8 *)((u8 *)(temp_a2) + 0xB9D)) = (u8) (temp_a0_2 + 1);
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) = 1;
             MH_lobbyClear();
-            CallBackWaitInit();
+            (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+            (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
             lobby_func_005AB8B0(0, 0x87);
             break;
         case 1:                                     /* switch 3 */

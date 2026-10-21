@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 lobby_func_005C02B0();             /* extern */
-extern u8 _cnet_CallBack_Result_PersonalDataChange;
+s32 lobby_func_005C02B0();
+extern u8 gonl_cb_FileDownload;
 
 void lobby_func_005BFBA0(void *arg0) {
     (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
     (*(s8 *)((u8 *)(arg0) + 0x23)) = 0;
-    lobby_func_005C02B0(&_cnet_CallBack_Result_PersonalDataChange);
+    lobby_func_005C02B0((s32) &gonl_cb_FileDownload);
 }
 

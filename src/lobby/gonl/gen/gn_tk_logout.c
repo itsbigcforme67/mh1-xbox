@@ -9,8 +9,8 @@ extern u8 COM_R_No_Logout;
 extern u8 cw;
 extern u8 game_w;
 s32 CpInetGetStatus();                            /* extern */
-s32 cnLBS_LogoutLobbyServer();    /* extern */
-s32 cnLBS_ShutDownLobbyServer();  /* extern */
+s32 cnLBS_LogoutLobbyServer();     /* extern */
+s32 cnLBS_ShutDownLobbyServer();   /* extern */
 s32 disconnect();                                 /* extern */
 
 s32 tk_logout(s32 arg0) {

@@ -3,13 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 CallBack_Result_SearchUserPlace();
 s32 Check_CallBackWait();
+s32 lobby_func_005E69B0();
 extern u8 cw;
 s32 Visual_main();                               /* extern */
 s32 cnLBS_Get_ServerMessage();       /* extern */
-s32 lobby_func_005E69B0();   /* extern */
 s32 memcmp();               /* extern */
 extern u8 my_user_id;
 
@@ -33,9 +32,10 @@ s32 lobby_func_00580910(s8 *arg0) {
         }
         temp_v1_3 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1_3) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_v1_3) + 0xB9D)) + 1);
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0xE;
-        lobby_func_005E69B0(arg0, CallBack_Result_SearchUserPlace);
+        lobby_func_005E69B0((s32) arg0, (s32) CallBack_Result_SearchUserPlace);
 block_17:
     default:
         return 2;

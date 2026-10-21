@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 Check_CallBackWait();
 s32 Lbc_init_network_work();
 s32 Lbc_set_prim();
@@ -136,7 +135,8 @@ void lbc_login_id_select(void) {
         (*(u8 *)((u8 *)(temp_v1_2) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0xB9C)) + 1);
         temp_s1 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29));
         (*(u8 *)((u8 *)((*(void **)&cw)) + 1)) = temp_s1;
-        CallBackWaitInit();
+        (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+        (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         Set_userdata((u8 *)&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00));
         temp_s2 = temp_s1 * 0x11;
         memcpy((*(void **)&cw) + temp_s2 + 0x2B, &(*(u8 *)((u8 *)&User_data + 0x8)), 0x10);

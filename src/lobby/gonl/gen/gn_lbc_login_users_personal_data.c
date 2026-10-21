@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 CallBackWaitInit();
 s32 CallBack_Result_LoginPersonalDataRegist();
 s32 Check_CallBackWait();
 s32 Lb_eat_to_bell();
@@ -68,7 +67,8 @@ void lbc_login_users_personal_data(void) {
         return;
     case 3:
         if (memcmp(&tmpPersonalData, &BrPersonalData, 0x1D0, temp_a3, temp_a4) != 0) {
-            CallBackWaitInit();
+            (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
+            (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
             temp_a2_3 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_a2_3) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a2_3) + 0xB9C)) + 1);
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x1D;
