@@ -12,6 +12,20 @@ obvious workarounds.
 
 ## Open
 
+### G quest lane, seventh pass (20 Oct 2026, agent A; RELEASE_G section 13)
+- **Changed (MH1 and G):** viewer.c em_slot_sync no longer draws a monster whose x01 (em+1) is 0 (was: drawn whenever
+  it was alive on the stage). **Why:** the game's em_move only queues the monster's prim when x01 != 0; G's quest
+  10035 hides two Velociprey that way during the opening scene and the PC showed them.
+  **To revert:** the commit "G quest lane: em16 (Velociprey family) as G; hidden monsters are not drawn (both games)".
+- **Dropped (G PC only):** MH1's em27 die04 (revival + start point inside die04) for G; **now** G's flow: em27_act_set
+  (5, 4) does the revival and the start point (em27_revive_init), die04 only picks the act. **Why:** porting die04
+  alone (16 Oct) made the Velocidrome family come back forever; this is how G does it.
+- **Dropped (G PC only):** MH1's em17 attack dispatch (em_move03) and the 10043 demo (em_demo00) for G; **now** G's
+  12-entry table (MH1's atk07 is not reached in G) and G's demo. MH1's em17 atk04 / atk05 / atk10 / atk17 / atk22
+  bodies replaced by G's for G. em01's atk09 / 10 / 17 / 22 likewise. MH1 builds unchanged.
+- **Dropped (G PC only):** set04_i / _m / _trans MH1 bodies for G (G's from the asm).
+- **To revert:** the commits "G quest lane: ..." on agent-A (20 Oct 2026).
+
 ### G release audit fixes (15 Oct 2026, agent A)
 - **Dropped:** the G stand-in for Lb_make_quest_tbl_local in lb_village_nm.c's G vs_square_init_init (and its G_STANDIN
   macro); **now** G's own builder (src/lobby/f/lb_guild_g.c) runs at village entry. **Why:** the elder's lists were empty.
